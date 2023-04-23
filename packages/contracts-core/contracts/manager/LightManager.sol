@@ -8,9 +8,8 @@ import {AGENT_TREE_HEIGHT} from "../libs/Constants.sol";
 import {MerkleMath} from "../libs/MerkleMath.sol";
 import {AgentFlag, AgentStatus, SlashStatus} from "../libs/Structures.sol";
 // ═════════════════════════════ INTERNAL IMPORTS ══════════════════════════════
-import {StatementManager} from "./StatementManager.sol";
+import {AgentManager, IAgentManager} from "./AgentManager.sol";
 import {DomainContext} from "../context/DomainContext.sol";
-import {IAgentManager} from "../interfaces/IAgentManager.sol";
 import {InterfaceBondingManager} from "../interfaces/InterfaceBondingManager.sol";
 import {InterfaceDestination} from "../interfaces/InterfaceDestination.sol";
 import {IDisputeHub} from "../interfaces/IDisputeHub.sol";
@@ -20,7 +19,7 @@ import {Versioned} from "../Version.sol";
 
 /// @notice LightManager keeps track of all agents, staying in sync with the BondingManager.
 /// Used on chains other than Synapse Chain, serves as "light client" for BondingManager.
-contract LightManager is Versioned, StatementManager, InterfaceLightManager {
+contract LightManager is Versioned, AgentManager, InterfaceLightManager {
     using AttestationLib for bytes;
     using AttestationReportLib for bytes;
 

@@ -2,7 +2,7 @@
 pragma solidity 0.8.17;
 
 import {IDisputeHub} from "../../../contracts/interfaces/IDisputeHub.sol";
-import {IStatementManager} from "../../../contracts/interfaces/IStatementManager.sol";
+import {IAgentManager} from "../../../contracts/interfaces/IAgentManager.sol";
 import {DisputeFlag, DisputeStatus, SystemEntity} from "../../../contracts/libs/Structures.sol";
 
 import {fakeSnapshot} from "../../utils/libs/FakeIt.t.sol";
@@ -43,7 +43,7 @@ abstract contract DisputeHubTest is SystemRegistryTest {
         vm.expectEmit();
         emit Dispute(guard, notaryDomain, notary);
         vm.prank(prover);
-        IStatementManager(localAgentManager()).submitStateReportWithSnapshot(
+        IAgentManager(localAgentManager()).submitStateReportWithSnapshot(
             rsi.stateIndex, srPayload, srSig, snapPayload, snapSig
         );
         checkDisputeOpened(hub, guard, notary);
@@ -68,7 +68,7 @@ abstract contract DisputeHubTest is SystemRegistryTest {
         vm.expectEmit();
         emit Dispute(guard, notaryDomain, notary);
         vm.prank(prover);
-        IStatementManager(localAgentManager()).submitStateReportWithAttestation(
+        IAgentManager(localAgentManager()).submitStateReportWithAttestation(
             rsi.stateIndex, srPayload, srSig, snapPayload, attPayload, attSig
         );
         checkDisputeOpened(hub, guard, notary);
@@ -94,7 +94,7 @@ abstract contract DisputeHubTest is SystemRegistryTest {
         vm.expectEmit();
         emit Dispute(guard, notaryDomain, notary);
         vm.prank(prover);
-        IStatementManager(localAgentManager()).submitStateReportWithSnapshotProof(
+        IAgentManager(localAgentManager()).submitStateReportWithSnapshotProof(
             rsi.stateIndex, srPayload, srSig, snapProof, attPayload, attSig
         );
         checkDisputeOpened(hub, guard, notary);

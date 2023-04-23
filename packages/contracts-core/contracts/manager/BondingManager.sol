@@ -9,10 +9,9 @@ import {Receipt, ReceiptLib} from "../libs/Receipt.sol";
 import {Snapshot, SnapshotLib} from "../libs/Snapshot.sol";
 import {AgentFlag, AgentStatus, SlashStatus} from "../libs/Structures.sol";
 // ═════════════════════════════ INTERNAL IMPORTS ══════════════════════════════
-import {StatementManager} from "./StatementManager.sol";
+import {AgentManager, IAgentManager} from "./AgentManager.sol";
 import {DomainContext} from "../context/DomainContext.sol";
 import {BondingManagerEvents} from "../events/BondingManagerEvents.sol";
-import {IAgentManager} from "../interfaces/IAgentManager.sol";
 import {InterfaceBondingManager} from "../interfaces/InterfaceBondingManager.sol";
 import {InterfaceLightManager} from "../interfaces/InterfaceLightManager.sol";
 import {InterfaceOrigin} from "../interfaces/InterfaceOrigin.sol";
@@ -22,7 +21,7 @@ import {Versioned} from "../Version.sol";
 
 /// @notice BondingManager keeps track of all existing _agents.
 /// Used on the Synapse Chain, serves as the "source of truth" for LightManagers on remote chains.
-contract BondingManager is Versioned, StatementManager, BondingManagerEvents, InterfaceBondingManager {
+contract BondingManager is Versioned, AgentManager, BondingManagerEvents, InterfaceBondingManager {
     using AttestationLib for bytes;
     using AttestationReportLib for bytes;
     using ReceiptLib for bytes;

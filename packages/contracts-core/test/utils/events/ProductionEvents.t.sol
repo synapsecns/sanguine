@@ -8,7 +8,6 @@ import {DisputeHubEvents} from "../../../contracts/events/DisputeHubEvents.sol";
 import {ExecutionHubEvents} from "../../../contracts/events/ExecutionHubEvents.sol";
 import {OriginEvents} from "../../../contracts/events/OriginEvents.sol";
 import {SnapshotHubEvents} from "../../../contracts/events/SnapshotHubEvents.sol";
-import {StatementManagerEvents} from "../../../contracts/events/StatementManagerEvents.sol";
 import {SummitEvents} from "../../../contracts/events/SummitEvents.sol";
 import {SystemRegistryEvents} from "../../../contracts/events/SystemRegistryEvents.sol";
 
@@ -21,7 +20,6 @@ abstract contract ProductionEvents is
     ExecutionHubEvents,
     OriginEvents,
     SnapshotHubEvents,
-    StatementManagerEvents,
     SummitEvents,
     SystemRegistryEvents
 {}
