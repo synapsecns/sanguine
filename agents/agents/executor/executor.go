@@ -720,6 +720,8 @@ func (e Executor) processLog(parentCtx context.Context, log ethTypes.Log, chainI
 		if err != nil {
 			return fmt.Errorf("could not store message: %w", err)
 		}
+
+		span.AddEvent("message stored")
 	case destinationContract:
 		//nolint:exhaustive
 		switch contractEvent.eventType {
@@ -742,6 +744,8 @@ func (e Executor) processLog(parentCtx context.Context, log ethTypes.Log, chainI
 			if err != nil {
 				return fmt.Errorf("could not store attestation: %w", err)
 			}
+
+			span.AddEvent("attestation stored")
 		case executedEvent:
 			originDomain, messageLeaf, ok := e.chainExecutors[chainID].destinationParser.ParseExecuted(log)
 			if !ok || originDomain == nil || messageLeaf == nil {
@@ -749,6 +753,8 @@ func (e Executor) processLog(parentCtx context.Context, log ethTypes.Log, chainI
 			}
 
 			e.chainExecutors[chainID].executed[*messageLeaf] = true
+
+			span.AddEvent("executed event parsed")
 		case otherEvent:
 			logger.Warnf("the log's event type is not supported")
 		default:
@@ -778,9 +784,11 @@ func (e Executor) processLog(parentCtx context.Context, log ethTypes.Log, chainI
 			if err != nil {
 				return fmt.Errorf("could not store states: %w", err)
 			}
+
+			span.AddEvent("snapshot's states stored")
 		}
 	case other:
-		logger.Warnf("the log's event type is not supported")
+		span.AddEvent("other contract event")
 	default:
 		return fmt.Errorf("log type not supported")
 	}
