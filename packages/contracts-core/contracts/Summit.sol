@@ -2,10 +2,11 @@
 pragma solidity 0.8.17;
 
 // ══════════════════════════════ LIBRARY IMPORTS ══════════════════════════════
-import {AgentFlag, AgentStatus} from "./libs/Structures.sol";
+import {AttestationLib} from "./libs/Attestation.sol";
 import {ByteString} from "./libs/ByteString.sol";
 import {Receipt, ReceiptLib} from "./libs/Receipt.sol";
 import {Snapshot, SnapshotLib} from "./libs/Snapshot.sol";
+import {AgentFlag, AgentStatus} from "./libs/Structures.sol";
 // ═════════════════════════════ INTERNAL IMPORTS ══════════════════════════════
 import {AgentManager} from "./manager/AgentManager.sol";
 import {DomainContext} from "./context/DomainContext.sol";

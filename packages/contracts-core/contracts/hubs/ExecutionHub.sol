@@ -9,6 +9,7 @@ import {ORIGIN_TREE_HEIGHT, SNAPSHOT_TREE_HEIGHT} from "../libs/Constants.sol";
 import {MerkleMath} from "../libs/MerkleMath.sol";
 import {Header, Message, MessageFlag, MessageLib} from "../libs/Message.sol";
 import {Receipt, ReceiptBody, ReceiptLib} from "../libs/Receipt.sol";
+import {SnapshotLib} from "../libs/Snapshot.sol";
 import {AgentFlag, AgentStatus, MessageStatus} from "../libs/Structures.sol";
 import {Tips} from "../libs/Tips.sol";
 import {TypeCasts} from "../libs/TypeCasts.sol";
@@ -312,7 +313,7 @@ abstract contract ExecutionHub is DisputeHub, ExecutionHubEvents, IExecutionHub 
         // This will revert if:
         //  - State index is out of range.
         //  - Snapshot Proof length exceeds Snapshot tree Height.
-        bytes32 snapshotRoot = _snapshotRoot(originRoot, header.origin(), snapProof, stateIndex);
+        bytes32 snapshotRoot = SnapshotLib.proofSnapRoot(originRoot, header.origin(), snapProof, stateIndex);
         // Fetch the attestation data for the snapshot root
         rootData = _rootData[snapshotRoot];
         // Check if snapshot root has been submitted

@@ -6,7 +6,7 @@ import {Attestation} from "../libs/Attestation.sol";
 import {AttestationReport} from "../libs/AttestationReport.sol";
 import {MerkleMath} from "../libs/MerkleMath.sol";
 import {Receipt} from "../libs/Receipt.sol";
-import {Snapshot, SNAPSHOT_TREE_HEIGHT} from "../libs/Snapshot.sol";
+import {Snapshot, SnapshotLib, SNAPSHOT_TREE_HEIGHT} from "../libs/Snapshot.sol";
 import {State, StateLib} from "../libs/State.sol";
 import {StateReport} from "../libs/StateReport.sol";
 import {AgentFlag, AgentStatus} from "../libs/Structures.sol";
@@ -166,36 +166,9 @@ abstract contract VerificationManager {
         // This will revert if:
         //  - State index is out of range.
         //  - Snapshot Proof length exceeds Snapshot tree Height.
-        bytes32 snapshotRoot = _snapshotRoot(state.root(), state.origin(), snapProof, stateIndex);
+        bytes32 snapshotRoot = SnapshotLib.proofSnapRoot(state.root(), state.origin(), snapProof, stateIndex);
         // Snapshot root should match the attestation root
         require(att.snapRoot() == snapshotRoot, "Incorrect snapshot root");
-    }
-
-    /**
-     * @dev Reconstructs Snapshot merkle Root from State Merkle Data (root + origin domain)
-     * and proof of inclusion of State Merkle Data (aka State "left sub-leaf") in Snapshot Merkle Tree.
-     * Reverts if any of these is true:
-     *  - State index is out of range.
-     *  - Snapshot Proof length exceeds Snapshot tree Height.
-     * @param originRoot    Root of Origin Merkle Tree
-     * @param origin        Domain of Origin chain
-     * @param snapProof     Proof of inclusion of State Merkle Data into Snapshot Merkle Tree
-     * @param stateIndex    Index of Origin State in the Snapshot
-     */
-    function _snapshotRoot(bytes32 originRoot, uint32 origin, bytes32[] memory snapProof, uint256 stateIndex)
-        internal
-        pure
-        returns (bytes32 snapshotRoot)
-    {
-        // Index of "leftLeaf" is twice the state position in the snapshot
-        uint256 leftLeafIndex = stateIndex << 1;
-        // Check that "leftLeaf" index fits into Snapshot Merkle Tree
-        require(leftLeafIndex < (1 << SNAPSHOT_TREE_HEIGHT), "State index out of range");
-        // Reconstruct left sub-leaf of the Origin State: (originRoot, originDomain)
-        bytes32 leftLeaf = StateLib.leftLeaf(originRoot, origin);
-        // Reconstruct snapshot root using proof of inclusion
-        // This will revert if snapshot proof length exceeds Snapshot Tree Height
-        return MerkleMath.proofRoot(leftLeafIndex, leftLeaf, snapProof, SNAPSHOT_TREE_HEIGHT);
     }
 
     // ════════════════════════════════════════════════ FLAG CHECKS ════════════════════════════════════════════════════
