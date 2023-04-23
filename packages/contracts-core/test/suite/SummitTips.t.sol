@@ -109,7 +109,7 @@ contract SummitTipsTest is DisputeHubTest {
         (bytes memory rcptPayload, bytes memory rcptSignature) = signReceipt(rcptNotary, re);
         vm.expectEmit();
         emit ReceiptAccepted(DOMAIN_REMOTE, rcptNotary, rcptPayload, rcptSignature);
-        InterfaceSummit(summit).submitReceipt(rcptPayload, rcptSignature);
+        bondingManager.submitReceipt(rcptPayload, rcptSignature);
     }
 
     function test_submitReceipt_notAccepted_pending() public checkQueueLength(1) {
@@ -118,7 +118,7 @@ contract SummitTipsTest is DisputeHubTest {
         re.body.finalExecutor = createExecutorEOA(re.body.finalExecutor, "Final Executor");
         (bytes memory rcptPayload, bytes memory rcptSignature) = signReceipt(rcptNotary, re);
         vm.recordLogs();
-        InterfaceSummit(summit).submitReceipt(rcptPayload, rcptSignature);
+        bondingManager.submitReceipt(rcptPayload, rcptSignature);
         assertEq(vm.getRecordedLogs().length, 0);
     }
 
@@ -128,7 +128,7 @@ contract SummitTipsTest is DisputeHubTest {
         re.body.finalExecutor = address(0);
         (bytes memory rcptPayload, bytes memory rcptSignature) = signReceipt(rcptNotary, re);
         vm.recordLogs();
-        InterfaceSummit(summit).submitReceipt(rcptPayload, rcptSignature);
+        bondingManager.submitReceipt(rcptPayload, rcptSignature);
         assertEq(vm.getRecordedLogs().length, 0);
     }
 
@@ -137,7 +137,7 @@ contract SummitTipsTest is DisputeHubTest {
         prepareReceipt(re, false, 0, false);
         (bytes memory rcptPayload, bytes memory rcptSignature) = signReceipt(guard0, re);
         vm.expectRevert("Signer is not a Notary");
-        InterfaceSummit(summit).submitReceipt(rcptPayload, rcptSignature);
+        bondingManager.submitReceipt(rcptPayload, rcptSignature);
     }
 
     function test_submitReceipt_revert_wrongNotaryDomain() public {
@@ -147,7 +147,7 @@ contract SummitTipsTest is DisputeHubTest {
         address notary = domains[DOMAIN_LOCAL].agent;
         (bytes memory rcptPayload, bytes memory rcptSignature) = signReceipt(notary, re);
         vm.expectRevert("Wrong Notary domain");
-        InterfaceSummit(summit).submitReceipt(rcptPayload, rcptSignature);
+        bondingManager.submitReceipt(rcptPayload, rcptSignature);
     }
 
     function test_submitReceipt_revert_notaryInDispute() public {
@@ -158,7 +158,7 @@ contract SummitTipsTest is DisputeHubTest {
         address notary = domains[DOMAIN_REMOTE].agent;
         (bytes memory rcptPayload, bytes memory rcptSignature) = signReceipt(notary, re);
         vm.expectRevert("Notary is in dispute");
-        InterfaceSummit(summit).submitReceipt(rcptPayload, rcptSignature);
+        bondingManager.submitReceipt(rcptPayload, rcptSignature);
     }
 
     function test_submitReceipt_revert_unknownSnapRoot() public {
@@ -168,7 +168,7 @@ contract SummitTipsTest is DisputeHubTest {
         address notary = domains[DOMAIN_REMOTE].agent;
         (bytes memory rcptPayload, bytes memory rcptSignature) = signReceipt(notary, re);
         vm.expectRevert("Unknown snapshot root");
-        InterfaceSummit(summit).submitReceipt(rcptPayload, rcptSignature);
+        bondingManager.submitReceipt(rcptPayload, rcptSignature);
     }
 
     // ═══════════════════════════════════════════ TESTS: TIPS AWARDING ════════════════════════════════════════════════
@@ -213,7 +213,7 @@ contract SummitTipsTest is DisputeHubTest {
         emit log_named_address("Receipt Notary", rcptNotaryFinal);
         emit log_named_address("Attestation Notary", re.body.attNotary);
         (bytes memory rcptPayload, bytes memory rcptSignature) = signReceipt(rcptNotaryFinal, re);
-        InterfaceSummit(summit).submitReceipt(rcptPayload, rcptSignature);
+        bondingManager.submitReceipt(rcptPayload, rcptSignature);
         skip(BONDING_OPTIMISTIC_PERIOD);
         assertTrue(InterfaceSummit(summit).distributeTips());
         checkAwardedTips(re, true);
@@ -465,7 +465,7 @@ contract SummitTipsTest is DisputeHubTest {
 
     function submitSnapshot(address agent, RawSnapshot memory rawSnap) public {
         (bytes memory snapPayload, bytes memory snapSignature) = signSnapshot(agent, rawSnap);
-        InterfaceSummit(summit).submitSnapshot(snapPayload, snapSignature);
+        bondingManager.submitSnapshot(snapPayload, snapSignature);
     }
 
     // ═════════════════════════════════════════════════ OVERRIDES ═════════════════════════════════════════════════════
