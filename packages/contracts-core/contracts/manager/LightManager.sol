@@ -2,20 +2,28 @@
 pragma solidity 0.8.17;
 
 // ══════════════════════════════ LIBRARY IMPORTS ══════════════════════════════
+import {Attestation, AttestationLib} from "../libs/Attestation.sol";
+import {AttestationReport, AttestationReportLib} from "../libs/AttestationReport.sol";
 import {AGENT_TREE_HEIGHT} from "../libs/Constants.sol";
 import {MerkleMath} from "../libs/MerkleMath.sol";
 import {AgentFlag, AgentStatus, SlashStatus} from "../libs/Structures.sol";
 // ═════════════════════════════ INTERNAL IMPORTS ══════════════════════════════
-import {AgentManager, IAgentManager} from "./AgentManager.sol";
+import {StatementManager} from "./StatementManager.sol";
 import {DomainContext} from "../context/DomainContext.sol";
+import {IAgentManager} from "../interfaces/IAgentManager.sol";
 import {InterfaceBondingManager} from "../interfaces/InterfaceBondingManager.sol";
+import {InterfaceDestination} from "../interfaces/InterfaceDestination.sol";
+import {IDisputeHub} from "../interfaces/IDisputeHub.sol";
 import {InterfaceLightManager} from "../interfaces/InterfaceLightManager.sol";
 import {InterfaceOrigin} from "../interfaces/InterfaceOrigin.sol";
 import {Versioned} from "../Version.sol";
 
 /// @notice LightManager keeps track of all agents, staying in sync with the BondingManager.
 /// Used on chains other than Synapse Chain, serves as "light client" for BondingManager.
-contract LightManager is Versioned, AgentManager, InterfaceLightManager {
+contract LightManager is Versioned, StatementManager, InterfaceLightManager {
+    using AttestationLib for bytes;
+    using AttestationReportLib for bytes;
+
     // ══════════════════════════════════════════════════ STORAGE ══════════════════════════════════════════════════════
     /// @inheritdoc IAgentManager
     bytes32 public agentRoot;
@@ -35,6 +43,46 @@ contract LightManager is Versioned, AgentManager, InterfaceLightManager {
     function initialize(address origin_, address destination_) external initializer {
         __AgentManager_init(origin_, destination_);
         __Ownable_init();
+    }
+
+    // ══════════════════════════════════════════ SUBMIT AGENT STATEMENTS ══════════════════════════════════════════════
+
+    /// @inheritdoc InterfaceLightManager
+    function submitAttestation(bytes memory attPayload, bytes memory attSignature)
+        external
+        returns (bool wasAccepted)
+    {
+        // This will revert if payload is not an attestation
+        Attestation att = attPayload.castToAttestation();
+        // This will revert if signer is not an known Notary
+        (AgentStatus memory status, address notary) = _verifyAttestation(att, attSignature);
+        // Check that Notary is active
+        _verifyActive(status);
+        // Check that Notary domain is local domain
+        require(status.domain == localDomain, "Wrong Notary domain");
+        // TODO: pass Attestation to Destination
+        InterfaceDestination(destination);
+        return true;
+    }
+
+    /// @inheritdoc InterfaceLightManager
+    function submitAttestationReport(bytes memory arPayload, bytes memory arSignature, bytes memory attSignature)
+        external
+        returns (bool wasAccepted)
+    {
+        // This will revert if payload is not an attestation report
+        AttestationReport report = arPayload.castToAttestationReport();
+        // This will revert if the report signer is not a known Guard
+        (AgentStatus memory guardStatus, address guard) = _verifyAttestationReport(report, arSignature);
+        // Check that Guard is active
+        _verifyActive(guardStatus);
+        // This will revert if attestation signer is not a known Notary
+        (AgentStatus memory notaryStatus, address notary) = _verifyAttestation(report.attestation(), attSignature);
+        // Notary needs to be Active/Unstaking
+        _verifyActiveUnstaking(notaryStatus);
+        // TODO: open a Dispute
+        IDisputeHub(destination);
+        return true;
     }
 
     // ═══════════════════════════════════════════════ AGENTS LOGIC ════════════════════════════════════════════════════

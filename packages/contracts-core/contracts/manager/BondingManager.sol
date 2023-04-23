@@ -2,20 +2,31 @@
 pragma solidity 0.8.17;
 
 // ══════════════════════════════ LIBRARY IMPORTS ══════════════════════════════
+import {Attestation, AttestationLib} from "../libs/Attestation.sol";
+import {AttestationReport, AttestationReportLib} from "../libs/AttestationReport.sol";
+import {DynamicTree, MerkleMath} from "../libs/MerkleTree.sol";
+import {Receipt, ReceiptLib} from "../libs/Receipt.sol";
+import {Snapshot, SnapshotLib} from "../libs/Snapshot.sol";
 import {AgentFlag, AgentStatus, SlashStatus} from "../libs/Structures.sol";
-import {DynamicTree, MerkleTree} from "../libs/MerkleTree.sol";
-import {MerkleMath} from "../libs/MerkleMath.sol";
 // ═════════════════════════════ INTERNAL IMPORTS ══════════════════════════════
-import {AgentManager, IAgentManager} from "./AgentManager.sol";
+import {StatementManager} from "./StatementManager.sol";
 import {DomainContext} from "../context/DomainContext.sol";
+import {IAgentManager} from "../interfaces/IAgentManager.sol";
 import {InterfaceBondingManager} from "../interfaces/InterfaceBondingManager.sol";
 import {InterfaceLightManager} from "../interfaces/InterfaceLightManager.sol";
 import {InterfaceOrigin} from "../interfaces/InterfaceOrigin.sol";
+import {ISnapshotHub} from "../interfaces/ISnapshotHub.sol";
+import {InterfaceSummit} from "../interfaces/InterfaceSummit.sol";
 import {Versioned} from "../Version.sol";
 
 /// @notice BondingManager keeps track of all existing _agents.
 /// Used on the Synapse Chain, serves as the "source of truth" for LightManagers on remote chains.
-contract BondingManager is Versioned, AgentManager, InterfaceBondingManager {
+contract BondingManager is Versioned, StatementManager, InterfaceBondingManager {
+    using AttestationLib for bytes;
+    using AttestationReportLib for bytes;
+    using ReceiptLib for bytes;
+    using SnapshotLib for bytes;
+
     // ══════════════════════════════════════════════════ STORAGE ══════════════════════════════════════════════════════
 
     // (agent => their status)
@@ -44,6 +55,75 @@ contract BondingManager is Versioned, AgentManager, InterfaceBondingManager {
         // Insert a zero address to make indexes for Agents start from 1.
         // Zeroed index is supposed to be used as a sentinel value meaning "no agent".
         _agents.push(address(0));
+    }
+
+    // ══════════════════════════════════════════ SUBMIT AGENT STATEMENTS ══════════════════════════════════════════════
+
+    /// @inheritdoc InterfaceBondingManager
+    function submitSnapshot(bytes memory snapPayload, bytes memory snapSignature)
+        external
+        returns (bytes memory attPayload)
+    {
+        // This will revert if payload is not a snapshot
+        Snapshot snapshot = snapPayload.castToSnapshot();
+        // This will revert if the signer is not a known Agent
+        (AgentStatus memory status, address agent) = _verifySnapshot(snapshot, snapSignature);
+        // Check that Agent is active
+        _verifyActive(status);
+        // TODO: pass Snapshot to Summit and return the created attestation
+        InterfaceSummit(destination);
+    }
+
+    /// @inheritdoc InterfaceBondingManager
+    function submitReceipt(bytes memory rcptPayload, bytes memory rcptSignature) external returns (bool wasAccepted) {
+        // This will revert if payload is not an receipt
+        Receipt rcpt = rcptPayload.castToReceipt();
+        // This will revert if the attestation signer is not a known Notary
+        (AgentStatus memory status, address notary) = _verifyReceipt(rcpt, rcptSignature);
+        // Notary needs to be Active
+        _verifyActive(status);
+        // TODO: pass Receipt to Summit
+        InterfaceSummit(destination);
+        return true;
+    }
+
+    // ══════════════════════════════════════════ VERIFY AGENT STATEMENTS ══════════════════════════════════════════════
+
+    /// @inheritdoc InterfaceBondingManager
+    function verifyAttestation(bytes memory attPayload, bytes memory attSignature)
+        external
+        returns (bool isValidAttestation)
+    {
+        // This will revert if payload is not an attestation
+        Attestation att = attPayload.castToAttestation();
+        // This will revert if the attestation signer is not a known Notary
+        (AgentStatus memory status, address notary) = _verifyAttestation(att, attSignature);
+        // Notary needs to be Active/Unstaking
+        _verifyActiveUnstaking(status);
+        isValidAttestation = ISnapshotHub(destination).isValidAttestation(attPayload);
+        if (!isValidAttestation) {
+            // TODO: slash Notary
+            notary;
+        }
+    }
+
+    /// @inheritdoc InterfaceBondingManager
+    function verifyAttestationReport(bytes memory arPayload, bytes memory arSignature)
+        external
+        returns (bool isValidReport)
+    {
+        // This will revert if payload is not an attestation report
+        AttestationReport report = arPayload.castToAttestationReport();
+        // This will revert if the report signer is not a known Guard
+        (AgentStatus memory status, address guard) = _verifyAttestationReport(report, arSignature);
+        // Guard needs to be Active/Unstaking
+        _verifyActiveUnstaking(status);
+        // Report is valid IF AND ONLY IF the reported attestation in invalid
+        isValidReport = !ISnapshotHub(destination).isValidAttestation(report.attestation().unwrap().clone());
+        if (!isValidReport) {
+            // TODO: slash Guard
+            guard;
+        }
     }
 
     // ════════════════════════════════════════════ AGENTS LOGIC (MVP) ═════════════════════════════════════════════════
