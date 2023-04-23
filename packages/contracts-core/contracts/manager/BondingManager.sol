@@ -11,6 +11,7 @@ import {AgentFlag, AgentStatus, SlashStatus} from "../libs/Structures.sol";
 // ═════════════════════════════ INTERNAL IMPORTS ══════════════════════════════
 import {StatementManager} from "./StatementManager.sol";
 import {DomainContext} from "../context/DomainContext.sol";
+import {BondingManagerEvents} from "../events/BondingManagerEvents.sol";
 import {IAgentManager} from "../interfaces/IAgentManager.sol";
 import {InterfaceBondingManager} from "../interfaces/InterfaceBondingManager.sol";
 import {InterfaceLightManager} from "../interfaces/InterfaceLightManager.sol";
@@ -21,7 +22,7 @@ import {Versioned} from "../Version.sol";
 
 /// @notice BondingManager keeps track of all existing _agents.
 /// Used on the Synapse Chain, serves as the "source of truth" for LightManagers on remote chains.
-contract BondingManager is Versioned, StatementManager, InterfaceBondingManager {
+contract BondingManager is Versioned, StatementManager, BondingManagerEvents, InterfaceBondingManager {
     using AttestationLib for bytes;
     using AttestationReportLib for bytes;
     using ReceiptLib for bytes;
@@ -101,6 +102,7 @@ contract BondingManager is Versioned, StatementManager, InterfaceBondingManager 
         _verifyActiveUnstaking(status);
         isValidAttestation = ISnapshotHub(destination).isValidAttestation(attPayload);
         if (!isValidAttestation) {
+            emit InvalidAttestation(attPayload, attSignature);
             _slashAgent(status.domain, notary, msg.sender);
         }
     }
@@ -119,6 +121,7 @@ contract BondingManager is Versioned, StatementManager, InterfaceBondingManager 
         // Report is valid IF AND ONLY IF the reported attestation in invalid
         isValidReport = !ISnapshotHub(destination).isValidAttestation(report.attestation().unwrap().clone());
         if (!isValidReport) {
+            emit InvalidAttestationReport(arPayload, arSignature);
             _slashAgent(status.domain, guard, msg.sender);
         }
     }

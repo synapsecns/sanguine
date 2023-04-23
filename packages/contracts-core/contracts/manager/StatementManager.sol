@@ -8,13 +8,14 @@ import {Snapshot, SnapshotLib} from "../libs/Snapshot.sol";
 import {State, StateLib} from "../libs/State.sol";
 import {StateReport, StateReportLib} from "../libs/StateReport.sol";
 // ═════════════════════════════ INTERNAL IMPORTS ══════════════════════════════
+import {StatementManagerEvents} from "../events/StatementManagerEvents.sol";
 import {IDisputeHub} from "../interfaces/IDisputeHub.sol";
 import {IExecutionHub} from "../interfaces/IExecutionHub.sol";
 import {IStateHub} from "../interfaces/IStateHub.sol";
 import {IStatementManager} from "../interfaces/IStatementManager.sol";
 import {AgentManager, AgentStatus} from "./AgentManager.sol";
 
-abstract contract StatementManager is AgentManager, IStatementManager {
+abstract contract StatementManager is AgentManager, StatementManagerEvents, IStatementManager {
     using AttestationLib for bytes;
     using ReceiptLib for bytes;
     using StateLib for bytes;
@@ -132,6 +133,7 @@ abstract contract StatementManager is AgentManager, IStatementManager {
         _verifyActiveUnstaking(status);
         isValidReceipt = IExecutionHub(destination).isValidReceipt(rcptPayload);
         if (!isValidReceipt) {
+            emit InvalidReceipt(rcptPayload, rcptSignature);
             _slashAgent(status.domain, notary, msg.sender);
         }
     }
@@ -153,8 +155,10 @@ abstract contract StatementManager is AgentManager, IStatementManager {
         Snapshot snapshot = snapPayload.castToSnapshot();
         require(snapshot.root() == att.snapRoot(), "Attestation not matches snapshot");
         // This will revert if state does not refer to this chain
-        isValidState = IStateHub(origin).isValidState(snapshot.state(stateIndex).unwrap().clone());
+        bytes memory statePayload = snapshot.state(stateIndex).unwrap().clone();
+        isValidState = IStateHub(origin).isValidState(statePayload);
         if (!isValidState) {
+            emit InvalidStateWithAttestation(stateIndex, statePayload, attPayload, attSignature);
             _slashAgent(status.domain, notary, msg.sender);
         }
     }
@@ -184,6 +188,7 @@ abstract contract StatementManager is AgentManager, IStatementManager {
         // This will revert if state does not refer to this chain
         isValidState = IStateHub(origin).isValidState(statePayload);
         if (!isValidState) {
+            emit InvalidStateWithAttestation(stateIndex, statePayload, attPayload, attSignature);
             _slashAgent(status.domain, notary, msg.sender);
         }
     }
@@ -202,6 +207,7 @@ abstract contract StatementManager is AgentManager, IStatementManager {
         // This will revert if state does not refer to this chain
         isValidState = IStateHub(origin).isValidState(snapshot.state(stateIndex).unwrap().clone());
         if (!isValidState) {
+            emit InvalidStateWithSnapshot(stateIndex, snapPayload, snapSignature);
             _slashAgent(status.domain, agent, msg.sender);
         }
     }
@@ -221,6 +227,7 @@ abstract contract StatementManager is AgentManager, IStatementManager {
         // This will revert if the reported state does not refer to this chain
         isValidReport = !IStateHub(origin).isValidState(report.state().unwrap().clone());
         if (!isValidReport) {
+            emit InvalidStateReport(srPayload, srSignature);
             _slashAgent(status.domain, guard, msg.sender);
         }
     }
