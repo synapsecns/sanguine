@@ -31,7 +31,8 @@ func (h OriginSuite) TestDispatchTopic() {
 	Nil(h.T(), err)
 	paddedTips := new(big.Int).SetBytes(encodedTips)
 
-	tx, err := h.originContract.SendBaseMessage(txContext.TransactOpts, h.destinationID, [32]byte{}, 1, paddedTips, nil, []byte{})
+	paddedRequest := big.NewInt(0)
+	tx, err := h.originContract.SendBaseMessage(txContext.TransactOpts, h.destinationID, [32]byte{}, 1, paddedTips, paddedRequest, []byte{})
 	Nil(h.T(), err)
 
 	h.testBackend.WaitForConfirmation(h.GetTestContext(), tx)

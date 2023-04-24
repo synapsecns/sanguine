@@ -118,10 +118,8 @@ func (e *RPCSuite) TestFilterer() {
 		Nil(e.T(), err)
 
 		paddedTips := new(big.Int).SetBytes(encodedTips)
-		paddedRequest := new(big.Int).SetBytes(dispatch.messageBody)
-
-		// TODO (joe): Figure out what to set for content
-		addedDispatch, err := e.OriginContract.SendBaseMessage(auth.TransactOpts, dispatch.destinationDomain, dispatch.recipientAddress, dispatch.optimisticSeconds, paddedTips, paddedRequest, []byte{})
+		paddedRequest := big.NewInt(0)
+		addedDispatch, err := e.OriginContract.SendBaseMessage(auth.TransactOpts, dispatch.destinationDomain, dispatch.recipientAddress, dispatch.optimisticSeconds, paddedTips, paddedRequest, dispatch.messageBody)
 		Nil(e.T(), err)
 
 		e.TestBackendOrigin.WaitForConfirmation(e.GetTestContext(), addedDispatch)

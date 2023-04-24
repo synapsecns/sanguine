@@ -204,10 +204,8 @@ func (e *ExecutorSuite) TestMerkleInsert() {
 	transactOpts.Value = types.TotalTips(tips[0])
 
 	paddedTips := new(big.Int).SetBytes(encodedTips)
-	paddedRequest := new(big.Int).SetBytes(messageBytes)
-
-	// TODO (joe): figure out what to set for content param
-	tx, err := e.OriginContract.SendBaseMessage(transactOpts.TransactOpts, destination, recipients[0], optimisticSeconds[0], paddedTips, paddedRequest, []byte{})
+	paddedRequest := big.NewInt(0)
+	tx, err := e.OriginContract.SendBaseMessage(transactOpts.TransactOpts, destination, recipients[0], optimisticSeconds[0], paddedTips, paddedRequest, messageBytes)
 	e.Nil(err)
 	e.TestBackendOrigin.WaitForConfirmation(e.GetTestContext(), tx)
 
@@ -259,12 +257,9 @@ func (e *ExecutorSuite) TestMerkleInsert() {
 	e.Nil(err)
 
 	paddedTips = new(big.Int).SetBytes(encodedTips)
-	paddedRequest = new(big.Int).SetBytes(messageBytes)
-
 	transactOpts.Value = types.TotalTips(tips[1])
-
-	// TODO (joe): figure out what to set for content param
-	tx, err = e.OriginContract.SendBaseMessage(transactOpts.TransactOpts, destination, recipients[1], optimisticSeconds[1], paddedTips, paddedRequest, []byte{})
+	// paddedRequest = big.NewInt(0)
+	tx, err = e.OriginContract.SendBaseMessage(transactOpts.TransactOpts, destination, recipients[1], optimisticSeconds[1], paddedTips, paddedRequest, messageBytes)
 	e.Nil(err)
 	e.TestBackendOrigin.WaitForConfirmation(e.GetTestContext(), tx)
 
@@ -606,10 +601,8 @@ func (e *ExecutorSuite) TestExecutor() {
 	txContextOrigin.Value = types.TotalTips(tips)
 
 	paddedTips := new(big.Int).SetBytes(encodedTips)
-	paddedRequest := new(big.Int).SetBytes(body)
-
-	// TODO (joe): figure out what to set for content param
-	tx, err := e.OriginContract.SendBaseMessage(txContextOrigin.TransactOpts, uint32(e.TestBackendDestination.GetChainID()), recipient, optimisticSeconds, paddedTips, paddedRequest, []byte{})
+	paddedRequest := big.NewInt(0)
+	tx, err := e.OriginContract.SendBaseMessage(txContextOrigin.TransactOpts, uint32(e.TestBackendDestination.GetChainID()), recipient, optimisticSeconds, paddedTips, paddedRequest, body)
 	e.Nil(err)
 	e.TestBackendOrigin.WaitForConfirmation(e.GetTestContext(), tx)
 
