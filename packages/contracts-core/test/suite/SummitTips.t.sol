@@ -109,7 +109,7 @@ contract SummitTipsTest is DisputeHubTest {
         (bytes memory rcptPayload, bytes memory rcptSignature) = signReceipt(rcptNotary, re);
         vm.expectEmit();
         emit ReceiptAccepted(DOMAIN_REMOTE, rcptNotary, rcptPayload, rcptSignature);
-        InterfaceSummit(summit).submitReceipt(rcptPayload, rcptSignature);
+        bondingManager.submitReceipt(rcptPayload, rcptSignature);
     }
 
     function test_submitReceipt_notAccepted_pending() public checkQueueLength(1) {
@@ -118,7 +118,7 @@ contract SummitTipsTest is DisputeHubTest {
         re.body.finalExecutor = createExecutorEOA(re.body.finalExecutor, "Final Executor");
         (bytes memory rcptPayload, bytes memory rcptSignature) = signReceipt(rcptNotary, re);
         vm.recordLogs();
-        InterfaceSummit(summit).submitReceipt(rcptPayload, rcptSignature);
+        bondingManager.submitReceipt(rcptPayload, rcptSignature);
         assertEq(vm.getRecordedLogs().length, 0);
     }
 
@@ -128,7 +128,7 @@ contract SummitTipsTest is DisputeHubTest {
         re.body.finalExecutor = address(0);
         (bytes memory rcptPayload, bytes memory rcptSignature) = signReceipt(rcptNotary, re);
         vm.recordLogs();
-        InterfaceSummit(summit).submitReceipt(rcptPayload, rcptSignature);
+        bondingManager.submitReceipt(rcptPayload, rcptSignature);
         assertEq(vm.getRecordedLogs().length, 0);
     }
 
@@ -137,7 +137,7 @@ contract SummitTipsTest is DisputeHubTest {
         prepareReceipt(re, false, 0, false);
         (bytes memory rcptPayload, bytes memory rcptSignature) = signReceipt(guard0, re);
         vm.expectRevert("Signer is not a Notary");
-        InterfaceSummit(summit).submitReceipt(rcptPayload, rcptSignature);
+        bondingManager.submitReceipt(rcptPayload, rcptSignature);
     }
 
     function test_submitReceipt_revert_wrongNotaryDomain() public {
@@ -147,18 +147,18 @@ contract SummitTipsTest is DisputeHubTest {
         address notary = domains[DOMAIN_LOCAL].agent;
         (bytes memory rcptPayload, bytes memory rcptSignature) = signReceipt(notary, re);
         vm.expectRevert("Wrong Notary domain");
-        InterfaceSummit(summit).submitReceipt(rcptPayload, rcptSignature);
+        bondingManager.submitReceipt(rcptPayload, rcptSignature);
     }
 
     function test_submitReceipt_revert_notaryInDispute() public {
         RawExecReceipt memory re = mockReceipt("First");
         prepareReceipt(re, false, 0, false);
         // Put DOMAIN_REMOTE notary in Dispute
-        check_submitStateReport(summit, DOMAIN_REMOTE, state0, RawStateIndex(0, 1));
+        check_submitStateReportWithSnapshot(summit, DOMAIN_REMOTE, state0, RawStateIndex(0, 1));
         address notary = domains[DOMAIN_REMOTE].agent;
         (bytes memory rcptPayload, bytes memory rcptSignature) = signReceipt(notary, re);
         vm.expectRevert("Notary is in dispute");
-        InterfaceSummit(summit).submitReceipt(rcptPayload, rcptSignature);
+        bondingManager.submitReceipt(rcptPayload, rcptSignature);
     }
 
     function test_submitReceipt_revert_unknownSnapRoot() public {
@@ -168,7 +168,7 @@ contract SummitTipsTest is DisputeHubTest {
         address notary = domains[DOMAIN_REMOTE].agent;
         (bytes memory rcptPayload, bytes memory rcptSignature) = signReceipt(notary, re);
         vm.expectRevert("Unknown snapshot root");
-        InterfaceSummit(summit).submitReceipt(rcptPayload, rcptSignature);
+        bondingManager.submitReceipt(rcptPayload, rcptSignature);
     }
 
     // ═══════════════════════════════════════════ TESTS: TIPS AWARDING ════════════════════════════════════════════════
@@ -213,7 +213,7 @@ contract SummitTipsTest is DisputeHubTest {
         emit log_named_address("Receipt Notary", rcptNotaryFinal);
         emit log_named_address("Attestation Notary", re.body.attNotary);
         (bytes memory rcptPayload, bytes memory rcptSignature) = signReceipt(rcptNotaryFinal, re);
-        InterfaceSummit(summit).submitReceipt(rcptPayload, rcptSignature);
+        bondingManager.submitReceipt(rcptPayload, rcptSignature);
         skip(BONDING_OPTIMISTIC_PERIOD);
         assertTrue(InterfaceSummit(summit).distributeTips());
         checkAwardedTips(re, true);
@@ -238,7 +238,7 @@ contract SummitTipsTest is DisputeHubTest {
         prepareTwoReceiptTest(1, 0);
         skip(BONDING_OPTIMISTIC_PERIOD);
         // Put DOMAIN_REMOTE agents[0] in Dispute
-        check_submitStateReport(summit, DOMAIN_REMOTE, state0, RawStateIndex(0, 1));
+        check_submitStateReportWithSnapshot(summit, DOMAIN_REMOTE, state0, RawStateIndex(0, 1));
         assertTrue(InterfaceSummit(summit).distributeTips());
     }
 
@@ -248,7 +248,7 @@ contract SummitTipsTest is DisputeHubTest {
         skip(BONDING_OPTIMISTIC_PERIOD);
         // Set attNotary status to Fraudulent
         vm.prank(originSynapse);
-        bondingManager.registrySlash(DOMAIN_REMOTE, attNotary, address(0));
+        bondingManager.slashAgentExposed(DOMAIN_REMOTE, attNotary, address(0));
         assertTrue(InterfaceSummit(summit).distributeTips());
     }
 
@@ -258,7 +258,7 @@ contract SummitTipsTest is DisputeHubTest {
         skip(BONDING_OPTIMISTIC_PERIOD);
         // Set attNotary status to Slashed
         vm.prank(originSynapse);
-        bondingManager.registrySlash(DOMAIN_REMOTE, attNotary, address(0));
+        bondingManager.slashAgentExposed(DOMAIN_REMOTE, attNotary, address(0));
         bondingManager.completeSlashing(DOMAIN_REMOTE, attNotary, bondingManager.getProof(attNotary));
         assertTrue(InterfaceSummit(summit).distributeTips());
     }
@@ -268,7 +268,7 @@ contract SummitTipsTest is DisputeHubTest {
         prepareTwoReceiptTest(0, 1);
         skip(BONDING_OPTIMISTIC_PERIOD);
         // Put DOMAIN_REMOTE agents[0] in Dispute
-        check_submitStateReport(summit, DOMAIN_REMOTE, state0, RawStateIndex(0, 1));
+        check_submitStateReportWithSnapshot(summit, DOMAIN_REMOTE, state0, RawStateIndex(0, 1));
         assertTrue(InterfaceSummit(summit).distributeTips());
     }
 
@@ -278,7 +278,7 @@ contract SummitTipsTest is DisputeHubTest {
         skip(BONDING_OPTIMISTIC_PERIOD);
         // Set rcptNotary status to Fraudulent
         vm.prank(originSynapse);
-        bondingManager.registrySlash(DOMAIN_REMOTE, rcptNotary, address(0));
+        bondingManager.slashAgentExposed(DOMAIN_REMOTE, rcptNotary, address(0));
         assertTrue(InterfaceSummit(summit).distributeTips());
     }
 
@@ -288,7 +288,7 @@ contract SummitTipsTest is DisputeHubTest {
         skip(BONDING_OPTIMISTIC_PERIOD);
         // Set rcptNotary status to Slashed
         vm.prank(originSynapse);
-        bondingManager.registrySlash(DOMAIN_REMOTE, rcptNotary, address(0));
+        bondingManager.slashAgentExposed(DOMAIN_REMOTE, rcptNotary, address(0));
         bondingManager.completeSlashing(DOMAIN_REMOTE, rcptNotary, bondingManager.getProof(rcptNotary));
         assertTrue(InterfaceSummit(summit).distributeTips());
     }
@@ -465,7 +465,7 @@ contract SummitTipsTest is DisputeHubTest {
 
     function submitSnapshot(address agent, RawSnapshot memory rawSnap) public {
         (bytes memory snapPayload, bytes memory snapSignature) = signSnapshot(agent, rawSnap);
-        InterfaceSummit(summit).submitSnapshot(snapPayload, snapSignature);
+        bondingManager.submitSnapshot(snapPayload, snapSignature);
     }
 
     // ═════════════════════════════════════════════════ OVERRIDES ═════════════════════════════════════════════════════

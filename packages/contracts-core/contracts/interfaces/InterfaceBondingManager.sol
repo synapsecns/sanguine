@@ -2,6 +2,82 @@
 pragma solidity 0.8.17;
 
 interface InterfaceBondingManager {
+    // ══════════════════════════════════════════ SUBMIT AGENT STATEMENTS ══════════════════════════════════════════════
+
+    /**
+     * @notice Accepts a snapshot signed by a Guard or a Notary and passes it to Summit contract to save.
+     * > Snapshot is a list of states for a set of Origin contracts residing on any of the chains.
+     * - Guard-signed snapshots: all the states in the snapshot become available for Notary signing.
+     * - Notary-signed snapshots: Snapshot Merkle Root is saved for valid snapshots, i.e.
+     * snapshots which are only using states previously submitted by any of the Guards.
+     * - Notary doesn't have to use states submitted by a single Guard in their snapshot.
+     * - Notary could then proceed to sign the attestation for their submitted snapshot.
+     * > Will revert if any of these is true:
+     * > - Snapshot payload is not properly formatted.
+     * > - Snapshot signer is not an active Agent.
+     * > - Agent snapshot contains a state with a nonce smaller or equal then they have previously submitted.
+     * > - Notary snapshot contains a state that hasn't been previously submitted by any of the Guards.
+     * > - Note: Agent will NOT be slashed for submitting such a snapshot.
+     * @param snapPayload       Raw payload with snapshot data
+     * @param snapSignature     Agent signature for the snapshot
+     * @return attPayload       Raw payload with data for attestation derived from Notary snapshot.
+     *                          Empty payload, if a Guard snapshot was submitted.
+     */
+    function submitSnapshot(bytes memory snapPayload, bytes memory snapSignature)
+        external
+        returns (bytes memory attPayload);
+
+    /**
+     * @notice Accepts a receipt signed by a Notary and passes it to Summit contract to save.
+     * > Receipt is a statement about message execution status on the remote chain.
+     * - This will distribute the message tips across the off-chain actors once the receipt optimistic period is over.
+     * > Will revert if any of these is true:
+     * > - Receipt payload is not properly formatted.
+     * > - Receipt signer is not an active Notary.
+     * > - Receipt signer is in Dispute.
+     * > - Receipt's snapshot root is unknown.
+     * @param rcptPayload       Raw payload with receipt data
+     * @param rcptSignature     Notary signature for the receipt
+     * @return wasAccepted      Whether the receipt was accepted
+     */
+    function submitReceipt(bytes memory rcptPayload, bytes memory rcptSignature) external returns (bool wasAccepted);
+
+    // ══════════════════════════════════════════ VERIFY AGENT STATEMENTS ══════════════════════════════════════════════
+
+    /**
+     * @notice Verifies an attestation signed by a Notary.
+     *  - Does nothing, if the attestation is valid (was submitted by this Notary as a snapshot).
+     *  - Slashes the Notary, if the attestation is invalid.
+     * > Will revert if any of these is true:
+     * > - Attestation payload is not properly formatted.
+     * > - Attestation signer is not an active Notary.
+     * @param attPayload        Raw payload with Attestation data
+     * @param attSignature      Notary signature for the attestation
+     * @return isValidAttestation   Whether the provided attestation is valid.
+     *                              Notary is slashed, if return value is FALSE.
+     */
+    function verifyAttestation(bytes memory attPayload, bytes memory attSignature)
+        external
+        returns (bool isValidAttestation);
+
+    /**
+     * @notice Verifies an attestation report signed by a Guard.
+     *  - Does nothing, if the report is valid (if the reported attestation is invalid).
+     *  - Slashes the Guard, if the report is invalid (if the reported attestation is valid).
+     * > Will revert if any of these is true:
+     * > - Report payload is not properly formatted.
+     * > - Report signer is not an active Guard.
+     * @param arPayload         Raw payload with AttestationReport data
+     * @param arSignature       Guard signature for the report
+     * @return isValidReport    Whether the provided report is valid.
+     *                          Guard is slashed, if return value is FALSE.
+     */
+    function verifyAttestationReport(bytes memory arPayload, bytes memory arSignature)
+        external
+        returns (bool isValidReport);
+
+    // ═══════════════════════════════════════════════ AGENTS LOGIC ════════════════════════════════════════════════════
+
     /**
      * @notice Adds a new agent for the domain. This is either a fresh address (Inactive),
      * or an agent who used to be active on the same domain before (Resting).
@@ -51,7 +127,7 @@ interface InterfaceBondingManager {
 
     /**
      * @notice Remote AgentManager should call this function to indicate that the agent
-     * has been proven to commit fraud in the SystemRegistry on the origin chain.
+     * has been proven to commit fraud on the origin chain.
      * @dev This initiates the process of agent slashing. It could be immediately
      * completed by anyone calling completeSlashing() providing a correct merkle proof
      * for the OLD agent status.
@@ -59,10 +135,10 @@ interface InterfaceBondingManager {
      * Destination could verify that a "remote" function was called when executing a manager message.
      * @param domain        Domain where the slashed agent was active
      * @param agent         Address of the slashed Agent
-     * @param prover        Address that initially provided fraud proof in SystemRegistry
+     * @param prover        Address that initially provided fraud proof to remote AgentManager
      * @return magicValue   Selector of this function
      */
-    function remoteRegistrySlash(uint32 msgOrigin, uint256 proofMaturity, uint32 domain, address agent, address prover)
+    function remoteSlashAgent(uint32 msgOrigin, uint256 proofMaturity, uint32 domain, address agent, address prover)
         external
         returns (bytes4 magicValue);
 

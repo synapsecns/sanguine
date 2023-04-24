@@ -121,8 +121,10 @@ library SnapshotLib {
         return snapshot.unwrap().len() / STATE_LENGTH;
     }
 
+    // ═════════════════════════════════════════ SNAPSHOT ROOT CALCULATION ═════════════════════════════════════════════
+
     /// @notice Returns the root for the "Snapshot Merkle Tree" composed of state leafs from the snapshot.
-    function root(Snapshot snapshot) internal pure returns (bytes32) {
+    function calculateRoot(Snapshot snapshot) internal pure returns (bytes32) {
         uint256 statesAmount_ = snapshot.statesAmount();
         bytes32[] memory hashes = new bytes32[](statesAmount_);
         for (uint256 i = 0; i < statesAmount_; ++i) {
@@ -135,6 +137,31 @@ library SnapshotLib {
         MerkleMath.calculateRoot(hashes, SNAPSHOT_TREE_HEIGHT - 1);
         // hashes[0] now stores the value for the Merkle Root of the list
         return hashes[0];
+    }
+
+    /// @notice Reconstructs Snapshot merkle Root from State Merkle Data (root + origin domain)
+    /// and proof of inclusion of State Merkle Data (aka State "left sub-leaf") in Snapshot Merkle Tree.
+    /// > Reverts if any of these is true:
+    /// > - State index is out of range.
+    /// > - Snapshot Proof length exceeds Snapshot tree Height.
+    /// @param originRoot    Root of Origin Merkle Tree
+    /// @param domain        Domain of Origin chain
+    /// @param snapProof     Proof of inclusion of State Merkle Data into Snapshot Merkle Tree
+    /// @param stateIndex    Index of Origin State in the Snapshot
+    function proofSnapRoot(bytes32 originRoot, uint32 domain, bytes32[] memory snapProof, uint256 stateIndex)
+        internal
+        pure
+        returns (bytes32)
+    {
+        // Index of "leftLeaf" is twice the state position in the snapshot
+        uint256 leftLeafIndex = stateIndex << 1;
+        // Check that "leftLeaf" index fits into Snapshot Merkle Tree
+        require(leftLeafIndex < (1 << SNAPSHOT_TREE_HEIGHT), "State index out of range");
+        // Reconstruct left sub-leaf of the Origin State: (originRoot, originDomain)
+        bytes32 leftLeaf = StateLib.leftLeaf(originRoot, domain);
+        // Reconstruct snapshot root using proof of inclusion
+        // This will revert if snapshot proof length exceeds Snapshot Tree Height
+        return MerkleMath.proofRoot(leftLeafIndex, leftLeaf, snapProof, SNAPSHOT_TREE_HEIGHT);
     }
 
     // ══════════════════════════════════════════════ PRIVATE HELPERS ══════════════════════════════════════════════════

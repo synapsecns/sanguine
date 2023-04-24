@@ -11,7 +11,7 @@ import {Versioned} from "../../contracts/Version.sol";
 
 import {Random} from "../utils/libs/Random.t.sol";
 import {RawAttestation, RawState, RawStateIndex} from "../utils/libs/SynapseStructs.t.sol";
-import {AgentFlag, SynapseTest} from "../utils/SynapseTest.t.sol";
+import {AgentFlag, AgentStatus, SynapseTest} from "../utils/SynapseTest.t.sol";
 import {ExecutionHubTest} from "./hubs/ExecutionHub.t.sol";
 
 // solhint-disable func-name-mixedcase
@@ -46,7 +46,7 @@ contract DestinationTest is ExecutionHubTest {
             address notary = domains[localDomain()].agents[random.nextUint256() % DOMAIN_AGENTS];
             RawAttestation memory ra = random.nextAttestation(index + 1);
             (attPayloads[index], attSignatures[index]) = signAttestation(notary, ra);
-            InterfaceDestination(destination).submitAttestation(attPayloads[index], attSignatures[index]);
+            lightManager.submitAttestation(attPayloads[index], attSignatures[index]);
         }
         for (uint32 index = 0; index < amount; ++index) {
             (bytes memory attPayload, bytes memory attSignature) =
@@ -62,7 +62,7 @@ contract DestinationTest is ExecutionHubTest {
         vm.warp(rootSubmittedAt);
         vm.expectEmit();
         emit AttestationAccepted(DOMAIN_LOCAL, notary, attPayload, attSig);
-        InterfaceDestination(destination).submitAttestation(attPayload, attSig);
+        lightManager.submitAttestation(attPayload, attSig);
         (uint48 snapRootTime,,) = InterfaceDestination(destination).destStatus();
         assertEq(snapRootTime, rootSubmittedAt);
     }
@@ -75,7 +75,7 @@ contract DestinationTest is ExecutionHubTest {
         vm.warp(rootSubmittedAt);
         vm.expectEmit();
         emit AttestationAccepted(DOMAIN_LOCAL, notary, attPayload, attSig);
-        InterfaceDestination(destination).submitAttestation(attPayload, attSig);
+        lightManager.submitAttestation(attPayload, attSig);
         (, uint48 agentRootTime, address statusNotary) = InterfaceDestination(destination).destStatus();
         // Check that values were assigned
         assertEq(InterfaceDestination(destination).nextAgentRoot(), ra.agentRoot);
@@ -101,14 +101,14 @@ contract DestinationTest is ExecutionHubTest {
         (bytes memory attPayload, bytes memory attSig) = signAttestation(notaryS, secondRA);
         vm.expectEmit();
         emit AttestationAccepted(DOMAIN_LOCAL, notaryS, attPayload, attSig);
-        assertTrue(InterfaceDestination(destination).submitAttestation(attPayload, attSig));
+        assertTrue(lightManager.submitAttestation(attPayload, attSig));
         (uint48 snapRootTime, uint48 agentRootTime, address notary) = InterfaceDestination(destination).destStatus();
         assertEq(snapRootTime, block.timestamp);
         assertEq(agentRootTime, firstRootSubmittedAt);
         assertEq(notary, notaryF);
     }
 
-    function test_submitAttestation_notAccepted_agentRootUpdated(
+    function test_acceptAttestation_notAccepted_agentRootUpdated(
         RawAttestation memory firstRA,
         uint32 firstRootSubmittedAt
     ) public {
@@ -116,47 +116,10 @@ contract DestinationTest is ExecutionHubTest {
         vm.assume(firstRA.agentRoot != agentRootLM);
         test_submitAttestation(firstRA, firstRootSubmittedAt);
         skip(AGENT_ROOT_OPTIMISTIC_PERIOD);
-        // Should not accept the attestation before doing any checks,
-        // so we could pass empty values here
-        assertFalse(InterfaceDestination(destination).submitAttestation("", ""));
-        (uint48 snapRootTime, uint48 agentRootTime, address notary) = InterfaceDestination(destination).destStatus();
-        assertEq(snapRootTime, firstRootSubmittedAt);
-        assertEq(agentRootTime, firstRootSubmittedAt);
-        assertEq(notary, domains[DOMAIN_LOCAL].agent);
-        // Should update the Agent Merkle Root
-        assertEq(lightManager.agentRoot(), firstRA.agentRoot);
-    }
-
-    function test_submitStateReport_notAccepted_agentRootUpdated(
-        RawAttestation memory firstRA,
-        uint32 firstRootSubmittedAt
-    ) public {
-        bytes32 agentRootLM = lightManager.agentRoot();
-        vm.assume(firstRA.agentRoot != agentRootLM);
-        test_submitAttestation(firstRA, firstRootSubmittedAt);
-        skip(AGENT_ROOT_OPTIMISTIC_PERIOD);
-        // Should not accept the attestation before doing any checks,
-        // so we could pass empty values here
-        assertFalse(IDisputeHub(destination).submitStateReport(0, "", "", "", ""));
-        (uint48 snapRootTime, uint48 agentRootTime, address notary) = InterfaceDestination(destination).destStatus();
-        assertEq(snapRootTime, firstRootSubmittedAt);
-        assertEq(agentRootTime, firstRootSubmittedAt);
-        assertEq(notary, domains[DOMAIN_LOCAL].agent);
-        // Should update the Agent Merkle Root
-        assertEq(lightManager.agentRoot(), firstRA.agentRoot);
-    }
-
-    function test_submitStateReportWithProof_notAccepted_agentRootUpdated(
-        RawAttestation memory firstRA,
-        uint32 firstRootSubmittedAt
-    ) public {
-        bytes32 agentRootLM = lightManager.agentRoot();
-        vm.assume(firstRA.agentRoot != agentRootLM);
-        test_submitAttestation(firstRA, firstRootSubmittedAt);
-        skip(AGENT_ROOT_OPTIMISTIC_PERIOD);
-        // Should not accept the attestation before doing any checks,
-        // so we could pass empty values here
-        assertFalse(IDisputeHub(destination).submitStateReportWithProof(0, "", "", new bytes32[](0), "", ""));
+        // Mock a call from lightManager, could as well use the empty values as they won't be checked for validity
+        vm.prank(address(lightManager));
+        AgentStatus memory status;
+        assertFalse(InterfaceDestination(destination).acceptAttestation(address(0), status, "", ""));
         (uint48 snapRootTime, uint48 agentRootTime, address notary) = InterfaceDestination(destination).destStatus();
         assertEq(snapRootTime, firstRootSubmittedAt);
         assertEq(agentRootTime, firstRootSubmittedAt);
@@ -203,19 +166,19 @@ contract DestinationTest is ExecutionHubTest {
         vm.expectEmit(true, true, true, true);
         emit Dispute(guard, DOMAIN_LOCAL, notary);
         vm.prank(prover);
-        InterfaceDestination(destination).submitAttestationReport(arPayload, arSig, attSig);
+        lightManager.submitAttestationReport(arPayload, arSig, attSig);
         checkDisputeOpened(destination, guard, notary);
     }
 
     function test_submitStateReport(RawState memory rs, RawStateIndex memory rsi) public boundIndex(rsi) {
-        check_submitStateReport(destination, DOMAIN_LOCAL, rs, rsi);
+        check_submitStateReportWithSnapshot(destination, DOMAIN_LOCAL, rs, rsi);
     }
 
     function test_submitStateReportWithProof(RawState memory rs, RawAttestation memory ra, RawStateIndex memory rsi)
         public
         boundIndex(rsi)
     {
-        check_submitStateReportWithProof(destination, DOMAIN_LOCAL, rs, ra, rsi);
+        check_submitStateReportWithSnapshotProof(destination, DOMAIN_LOCAL, rs, ra, rsi);
     }
 
     // ════════════════════════════════════════════ DISPUTE RESOLUTION ═════════════════════════════════════════════════
@@ -276,7 +239,7 @@ contract DestinationTest is ExecutionHubTest {
         test_submitAttestationReport(firstRA);
         (bytes memory attPayload, bytes memory attSig) = signAttestation(notary, secondRA);
         vm.expectRevert("Notary is in dispute");
-        InterfaceDestination(destination).submitAttestation(attPayload, attSig);
+        lightManager.submitAttestation(attPayload, attSig);
     }
 
     function test_submitAttestationReport_revert_guardInDispute(
@@ -291,7 +254,7 @@ contract DestinationTest is ExecutionHubTest {
         address notary = domains[DOMAIN_LOCAL].agents[1];
         (, bytes memory attSig) = signAttestation(notary, secondRA);
         vm.expectRevert("Guard already in dispute");
-        InterfaceDestination(destination).submitAttestationReport(arPayload, arSig, attSig);
+        lightManager.submitAttestationReport(arPayload, arSig, attSig);
     }
 
     function test_submitAttestationReport_revert_notaryInDispute(
@@ -306,7 +269,7 @@ contract DestinationTest is ExecutionHubTest {
         address notary = domains[DOMAIN_LOCAL].agent;
         (, bytes memory attSig) = signAttestation(notary, secondRA);
         vm.expectRevert("Notary already in dispute");
-        InterfaceDestination(destination).submitAttestationReport(arPayload, arSig, attSig);
+        lightManager.submitAttestationReport(arPayload, arSig, attSig);
     }
 
     // ══════════════════════════════════════════════════ HELPERS ══════════════════════════════════════════════════════
@@ -321,7 +284,7 @@ contract DestinationTest is ExecutionHubTest {
         (ra, snapProof) = createSnapshotProof(sm);
         snapRoot = ra.snapRoot;
         (bytes memory attPayload, bytes memory attSig) = signAttestation(domains[DOMAIN_LOCAL].agent, ra);
-        InterfaceDestination(destination).submitAttestation(attPayload, attSig);
+        lightManager.submitAttestation(attPayload, attSig);
     }
 
     /// @notice Returns local domain for the tested system contract
