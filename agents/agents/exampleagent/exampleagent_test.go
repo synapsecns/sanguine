@@ -11,7 +11,7 @@ func (u ExampleAgentSuite) TestExampleAgentSimulatedTestSuite() {
 	Nil(u.T(), err)
 	Equal(u.T(), uint32(u.TestBackendDestination.GetChainID()), agentStatus.Domain)
 
-	agentStatusFromEVM, err := u.DestinationDomainClient.Destination().GetAgentStatus(u.GetTestContext(), u.NotaryBondedSigner)
+	agentStatusFromEVM, err := u.DestinationDomainClient.LightManager().GetAgentStatus(u.GetTestContext(), u.NotaryBondedSigner)
 	Nil(u.T(), err)
 	Equal(u.T(), agentStatusFromEVM.Domain(), uint32(u.TestBackendDestination.GetChainID()))
 }
