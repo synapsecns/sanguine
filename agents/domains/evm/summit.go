@@ -3,8 +3,6 @@ package evm
 import (
 	"context"
 	"fmt"
-	"strings"
-
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/event"
@@ -43,34 +41,6 @@ type summitContract struct {
 	nonceManager nonce.Manager
 }
 
-func (a summitContract) SubmitSnapshot(ctx context.Context, signer signer.Signer, encodedSnapshot []byte, signature signer.Signature) error {
-	transactor, err := signer.GetTransactor(ctx, a.client.GetBigChainID())
-	if err != nil {
-		return fmt.Errorf("could not sign tx: %w", err)
-	}
-
-	transactOpts, err := a.nonceManager.NewKeyedTransactor(transactor)
-	if err != nil {
-		return fmt.Errorf("could not create tx: %w", err)
-	}
-
-	transactOpts.Context = ctx
-
-	rawSig, err := types.EncodeSignature(signature)
-	if err != nil {
-		return fmt.Errorf("could not encode signature: %w", err)
-	}
-	_, err = a.contract.SubmitSnapshot(transactOpts, encodedSnapshot, rawSig)
-	if err != nil {
-		if strings.Contains(err.Error(), "nonce too low") {
-			a.nonceManager.ClearNonce(signer.Address())
-		}
-		return fmt.Errorf("could not submit sanpshot: %w", err)
-	}
-
-	return nil
-}
-
 func (a summitContract) GetLatestState(ctx context.Context, origin uint32) (types.State, error) {
 	rawState, err := a.contract.GetLatestState(&bind.CallOpts{Context: ctx}, origin)
 	if err != nil {
@@ -106,15 +76,4 @@ func (a summitContract) WatchAttestationSaved(ctx context.Context, sink chan<- *
 	}
 
 	return sub, nil
-}
-
-func (a summitContract) GetAgentStatus(ctx context.Context, bondedAgentSigner signer.Signer) (types.AgentStatus, error) {
-	rawStatus, err := a.contract.AgentStatus(&bind.CallOpts{Context: ctx}, bondedAgentSigner.Address())
-	if err != nil {
-		return nil, fmt.Errorf("could not retrieve agent status: %w", err)
-	}
-
-	agentStatus := types.NewAgentStatus(rawStatus.Flag, rawStatus.Domain, rawStatus.Index)
-
-	return agentStatus, nil
 }

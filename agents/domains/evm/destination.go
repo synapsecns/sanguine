@@ -110,33 +110,3 @@ func (a destinationContract) AttestationsAmount(ctx context.Context) (uint64, er
 
 	return attestationsAmountBigInt.Uint64(), nil
 }
-
-func (a destinationContract) SubmitAttestation(ctx context.Context, signer signer.Signer, attPayload []byte, signature signer.Signature) error {
-	transactOpts, err := a.transactOptsSetup(ctx, signer)
-	if err != nil {
-		return fmt.Errorf("could not setup transact opts: %w", err)
-	}
-
-	rawSig, err := types.EncodeSignature(signature)
-	if err != nil {
-		return fmt.Errorf("could not encode signature: %w", err)
-	}
-
-	_, err = a.contract.SubmitAttestation(transactOpts, attPayload, rawSig)
-	if err != nil {
-		return fmt.Errorf("could not submit attestation: %w", err)
-	}
-
-	return nil
-}
-
-func (a destinationContract) GetAgentStatus(ctx context.Context, bondedAgentSigner signer.Signer) (types.AgentStatus, error) {
-	rawStatus, err := a.contract.AgentStatus(&bind.CallOpts{Context: ctx}, bondedAgentSigner.Address())
-	if err != nil {
-		return nil, fmt.Errorf("could not retrieve agent status: %w", err)
-	}
-
-	agentStatus := types.NewAgentStatus(rawStatus.Flag, rawStatus.Domain, rawStatus.Index)
-
-	return agentStatus, nil
-}

@@ -31,6 +31,10 @@ type DomainClient interface {
 	Summit() SummitContract
 	// Destination retrieves a handle for the destination contract
 	Destination() DestinationContract
+	// LightManager retrieves a handle for the light manager contract
+	LightManager() LightManagerContract
+	// BondingManager retrieves a handle for the bonding manager contract
+	BondingManager() BondingManagerContract
 }
 
 // OriginContract represents the origin contract on a particular chain.
@@ -45,14 +49,18 @@ type OriginContract interface {
 
 // SummitContract contains the interface for the summit.
 type SummitContract interface {
-	// SubmitSnapshot submits a snapshot to the summit.
-	SubmitSnapshot(ctx context.Context, signer signer.Signer, encodedSnapshot []byte, signature signer.Signature) error
 	// GetLatestState gets the latest state signed by any guard for the given origin
 	GetLatestState(ctx context.Context, origin uint32) (types.State, error)
 	// GetLatestAgentState gets the latest state signed by the bonded signer for the given origin
 	GetLatestAgentState(ctx context.Context, origin uint32, bondedAgentSigner signer.Signer) (types.State, error)
 	// WatchAttestationSaved looks for attesation saved events
 	WatchAttestationSaved(ctx context.Context, sink chan<- *summit.SummitAttestationSaved) (event.Subscription, error)
+}
+
+// BondingManagerContract contains the interface for the bonding manager.
+type BondingManagerContract interface {
+	// SubmitSnapshot submits a snapshot to the summit chain (via the Bonding Manager).
+	SubmitSnapshot(ctx context.Context, signer signer.Signer, encodedSnapshot []byte, signature signer.Signature) error
 	// GetAgentStatus returns the current agent status for the given agent.
 	GetAgentStatus(ctx context.Context, signer signer.Signer) (types.AgentStatus, error)
 }
@@ -63,7 +71,11 @@ type DestinationContract interface {
 	Execute(ctx context.Context, signer signer.Signer, message types.Message, originProof [32][32]byte, snapshotProof [][32]byte, index *big.Int, gasLimit uint64) error
 	// AttestationsAmount retrieves the number of attestations submitted to the destination.
 	AttestationsAmount(ctx context.Context) (uint64, error)
-	// SubmitAttestation submits an attestation to the destination
+}
+
+// LightManagerContract contains the interface for the light manager.
+type LightManagerContract interface {
+	// SubmitAttestation submits an attestation to the destination chain (via the light manager contract)
 	SubmitAttestation(ctx context.Context, signer signer.Signer, attPayload []byte, signature signer.Signature) error
 	// GetAgentStatus returns the current agent status for the given agent.
 	GetAgentStatus(ctx context.Context, signer signer.Signer) (types.AgentStatus, error)

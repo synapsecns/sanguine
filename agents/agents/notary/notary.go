@@ -382,7 +382,7 @@ func (n Notary) submitLatestSnapshot(parentCtx context.Context) {
 		))
 	} else {
 		logger.Infof("Notary submitting snapshot to summit")
-		err := n.summitDomain.Summit().SubmitSnapshot(ctx, n.unbondedSigner, encodedSnapshot, snapshotSignature)
+		err := n.summitDomain.BondingManager().SubmitSnapshot(ctx, n.unbondedSigner, encodedSnapshot, snapshotSignature)
 		if err != nil {
 			span.AddEvent("Error submitting snapshot", trace.WithAttributes(
 				attribute.String("err", err.Error()),
@@ -407,7 +407,7 @@ func (n Notary) submitAttestation(parentCtx context.Context, attestation types.A
 			attribute.String("err", err.Error()),
 		))
 	} else {
-		err = n.destinationDomain.Destination().SubmitAttestation(ctx, n.unbondedSigner, encodedAttestation, attestationSignature)
+		err = n.destinationDomain.LightManager().SubmitAttestation(ctx, n.unbondedSigner, encodedAttestation, attestationSignature)
 		if err != nil {
 			span.AddEvent("Error submitting attestation", trace.WithAttributes(
 				attribute.String("err", err.Error()),

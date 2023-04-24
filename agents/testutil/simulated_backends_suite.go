@@ -140,11 +140,12 @@ func (a *SimulatedBackendsTestSuite) SetupOrigin(deployManager *DeployManager) {
 
 	var err error
 	a.OriginDomainClient, err = evm.NewEVM(a.GetTestContext(), "origin_client", config.DomainConfig{
-		DomainID:           uint32(a.TestBackendOrigin.GetBigChainID().Uint64()),
-		Type:               types.EVM.String(),
-		OriginAddress:      a.OriginContract.Address().String(),
-		DestinationAddress: a.DestinationContractOnOrigin.Address().String(),
-		RPCUrl:             a.TestBackendOrigin.RPCAddress(),
+		DomainID:            uint32(a.TestBackendOrigin.GetBigChainID().Uint64()),
+		Type:                types.EVM.String(),
+		OriginAddress:       a.OriginContract.Address().String(),
+		DestinationAddress:  a.DestinationContractOnOrigin.Address().String(),
+		LightManagerAddress: a.LightManagerOnOrigin.Address().String(),
+		RPCUrl:              a.TestBackendOrigin.RPCAddress(),
 	})
 	if err != nil {
 		a.T().Fatal(err)
@@ -177,11 +178,12 @@ func (a *SimulatedBackendsTestSuite) SetupDestination(deployManager *DeployManag
 	}*/
 
 	a.DestinationDomainClient, err = evm.NewEVM(a.GetTestContext(), "destination_client", config.DomainConfig{
-		DomainID:           uint32(a.TestBackendDestination.GetBigChainID().Uint64()),
-		Type:               types.EVM.String(),
-		OriginAddress:      a.OriginContractOnDestination.Address().String(),
-		DestinationAddress: a.DestinationContract.Address().String(),
-		RPCUrl:             a.TestBackendDestination.RPCAddress(),
+		DomainID:            uint32(a.TestBackendDestination.GetBigChainID().Uint64()),
+		Type:                types.EVM.String(),
+		OriginAddress:       a.OriginContractOnDestination.Address().String(),
+		DestinationAddress:  a.DestinationContract.Address().String(),
+		LightManagerAddress: a.LightManagerOnDestination.Address().String(),
+		RPCUrl:              a.TestBackendDestination.RPCAddress(),
 	})
 	if err != nil {
 		a.T().Fatal(err)
@@ -200,10 +202,11 @@ func (a *SimulatedBackendsTestSuite) SetupSummit(deployManager *DeployManager) {
 
 	var err error
 	a.SummitDomainClient, err = evm.NewEVM(a.GetTestContext(), "summit_client", config.DomainConfig{
-		DomainID:      uint32(a.TestBackendSummit.GetBigChainID().Uint64()),
-		Type:          types.EVM.String(),
-		SummitAddress: a.SummitContract.Address().String(),
-		RPCUrl:        a.TestBackendSummit.RPCAddress(),
+		DomainID:              uint32(a.TestBackendSummit.GetBigChainID().Uint64()),
+		Type:                  types.EVM.String(),
+		SummitAddress:         a.SummitContract.Address().String(),
+		BondingManagerAddress: a.BondingManagerOnSummit.Address().String(),
+		RPCUrl:                a.TestBackendSummit.RPCAddress(),
 	})
 	if err != nil {
 		a.T().Fatal(err)
