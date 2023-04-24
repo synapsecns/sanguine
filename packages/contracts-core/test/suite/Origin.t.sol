@@ -1,14 +1,14 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.17;
 
-import {ISystemRegistry} from "../../contracts/interfaces/ISystemRegistry.sol";
+import {IAgentSecured} from "../../contracts/interfaces/IAgentSecured.sol";
 import {IStateHub} from "../../contracts/interfaces/IStateHub.sol";
 import {SNAPSHOT_MAX_STATES} from "../../contracts/libs/Constants.sol";
 import {SystemEntity} from "../../contracts/libs/Structures.sol";
 import {TipsLib} from "../../contracts/libs/Tips.sol";
 
 import {InterfaceOrigin} from "../../contracts/Origin.sol";
-import {Versioned} from "../../contracts/Version.sol";
+import {Versioned} from "../../contracts/base/Version.sol";
 
 import {RevertingApp} from "../harnesses/client/RevertingApp.t.sol";
 
@@ -29,12 +29,12 @@ import {
     RawTips
 } from "../utils/libs/SynapseStructs.t.sol";
 import {AgentFlag, SynapseTest} from "../utils/SynapseTest.t.sol";
-import {SystemRegistryTest} from "./system/SystemRegistry.t.sol";
+import {AgentSecuredTest} from "./base/AgentSecured.t.sol";
 
 // solhint-disable func-name-mixedcase
 // solhint-disable no-empty-blocks
 // solhint-disable ordering
-contract OriginTest is SystemRegistryTest {
+contract OriginTest is AgentSecuredTest {
     address public sender = makeAddr("Sender");
     address public recipient = makeAddr("Recipient");
     uint32 public period = 1 minutes;
@@ -50,7 +50,7 @@ contract OriginTest is SystemRegistryTest {
             uint32 domain = allDomains[d];
             for (uint256 i = 0; i < domains[domain].agents.length; ++i) {
                 address agent = domains[domain].agents[i];
-                checkAgentStatus(agent, ISystemRegistry(origin).agentStatus(agent), AgentFlag.Active);
+                checkAgentStatus(agent, IAgentSecured(origin).agentStatus(agent), AgentFlag.Active);
             }
         }
         // Check version

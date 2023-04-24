@@ -7,7 +7,7 @@ import {MerkleMath} from "../../../contracts/libs/MerkleMath.sol";
 import {AgentFlag, SlashStatus, SystemEntity} from "../../../contracts/libs/Structures.sol";
 import {AgentManagerTest} from "./AgentManager.t.sol";
 
-import {BondingManagerHarness, ISystemRegistry, Summit, SynapseTest} from "../../utils/SynapseTest.t.sol";
+import {BondingManagerHarness, IAgentSecured, Summit, SynapseTest} from "../../utils/SynapseTest.t.sol";
 
 // solhint-disable func-name-mixedcase
 // solhint-disable no-empty-blocks
@@ -196,7 +196,7 @@ contract BondingManagerTest is AgentManagerTest {
         (uint32 domain, address agent) = getAgent(domainId, agentId);
         skipBondingOptimisticPeriod();
         bytes memory msgPayload = managerMsgPayload(msgOrigin, remoteRegistrySlashCalldata(domain, agent, prover));
-        bytes memory expectedCall = abi.encodeWithSelector(ISystemRegistry.managerSlash.selector, domain, agent);
+        bytes memory expectedCall = abi.encodeWithSelector(IAgentSecured.managerSlash.selector, domain, agent);
         vm.expectEmit();
         emit StatusUpdated(AgentFlag.Fraudulent, domain, agent);
         vm.expectCall(summit, expectedCall);

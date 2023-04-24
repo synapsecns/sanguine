@@ -6,9 +6,7 @@ import {InterfaceOrigin} from "../../../contracts/interfaces/InterfaceOrigin.sol
 
 import {AgentManagerTest} from "./AgentManager.t.sol";
 
-import {
-    AgentFlag, AgentStatus, LightManagerHarness, ISystemRegistry, SynapseTest
-} from "../../utils/SynapseTest.t.sol";
+import {AgentFlag, AgentStatus, LightManagerHarness, IAgentSecured, SynapseTest} from "../../utils/SynapseTest.t.sol";
 
 // solhint-disable func-name-mixedcase
 // solhint-disable no-empty-blocks
@@ -73,7 +71,7 @@ contract LightManagerTest is AgentManagerTest {
         bytes32[] memory proof = getAgentProof(agent);
         vm.expectEmit();
         emit StatusUpdated(AgentFlag.Slashed, domain, agent);
-        bytes memory expectedCall = abi.encodeWithSelector(ISystemRegistry.managerSlash.selector, domain, agent);
+        bytes memory expectedCall = abi.encodeWithSelector(IAgentSecured.managerSlash.selector, domain, agent);
         vm.expectCall(destination, expectedCall);
         vm.expectCall(origin, expectedCall);
         // Anyone could add agents in Light Manager

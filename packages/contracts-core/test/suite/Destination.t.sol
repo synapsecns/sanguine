@@ -3,11 +3,11 @@ pragma solidity 0.8.17;
 
 import {SNAPSHOT_MAX_STATES} from "../../contracts/libs/Snapshot.sol";
 import {DisputeFlag} from "../../contracts/libs/Structures.sol";
-import {ISystemRegistry} from "../../contracts/interfaces/ISystemRegistry.sol";
+import {IAgentSecured} from "../../contracts/interfaces/IAgentSecured.sol";
 import {IDisputeHub} from "../../contracts/interfaces/IDisputeHub.sol";
 
 import {InterfaceDestination} from "../../contracts/Destination.sol";
-import {Versioned} from "../../contracts/Version.sol";
+import {Versioned} from "../../contracts/base/Version.sol";
 
 import {Random} from "../utils/libs/Random.t.sol";
 import {RawAttestation, RawState, RawStateIndex} from "../utils/libs/SynapseStructs.t.sol";
@@ -27,7 +27,7 @@ contract DestinationTest is ExecutionHubTest {
             uint32 domain = allDomains[d];
             for (uint256 i = 0; i < domains[domain].agents.length; ++i) {
                 address agent = domains[domain].agents[i];
-                checkAgentStatus(agent, ISystemRegistry(destination).agentStatus(agent), AgentFlag.Active);
+                checkAgentStatus(agent, IAgentSecured(destination).agentStatus(agent), AgentFlag.Active);
             }
         }
         // Check version
@@ -195,7 +195,7 @@ contract DestinationTest is ExecutionHubTest {
         emit AgentSlashed(domain, agent, prover);
         vm.recordLogs();
         vm.prank(address(lightManager));
-        ISystemRegistry(destination).managerSlash(domain, agent, prover);
+        IAgentSecured(destination).managerSlash(domain, agent, prover);
         if (isRemoteNotary) {
             // Should only emit AgentSlashed for remote Notaries
             assertEq(vm.getRecordedLogs().length, 1);
@@ -213,7 +213,7 @@ contract DestinationTest is ExecutionHubTest {
         test_submitAttestationReport(ra);
         // Slash the Notary
         vm.prank(address(lightManager));
-        ISystemRegistry(destination).managerSlash(DOMAIN_LOCAL, notary, address(0));
+        IAgentSecured(destination).managerSlash(DOMAIN_LOCAL, notary, address(0));
         checkDisputeResolved({hub: destination, honest: guard, slashed: notary});
     }
 
@@ -224,7 +224,7 @@ contract DestinationTest is ExecutionHubTest {
         test_submitAttestationReport(ra);
         // Slash the Guard
         vm.prank(address(lightManager));
-        ISystemRegistry(destination).managerSlash(0, guard, address(0));
+        IAgentSecured(destination).managerSlash(0, guard, address(0));
         checkDisputeResolved({hub: destination, honest: notary, slashed: guard});
     }
 

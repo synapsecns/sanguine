@@ -1,10 +1,10 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.17;
 
-import {ISystemRegistry} from "../../../contracts/interfaces/ISystemRegistry.sol";
+import {IAgentSecured} from "../../../contracts/interfaces/IAgentSecured.sol";
 import {AgentFlag, AgentStatus, SlashStatus, SystemEntity} from "../../../contracts/libs/Structures.sol";
 
-import {SystemContractTest} from "../system/SystemContract.t.sol";
+import {MessagingBaseTest} from "../base/MessagingBase.t.sol";
 import {AgentManagerHarness} from "../../harnesses/manager/AgentManagerHarness.t.sol";
 import {RawCallData, RawManagerCall} from "../../utils/libs/SynapseStructs.t.sol";
 
@@ -12,7 +12,7 @@ import {Address} from "@openzeppelin/contracts/utils/Address.sol";
 
 // solhint-disable func-name-mixedcase
 // solhint-disable ordering
-abstract contract AgentManagerTest is SystemContractTest {
+abstract contract AgentManagerTest is MessagingBaseTest {
     using Address for address;
 
     uint256 internal rootSubmittedAt;

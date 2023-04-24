@@ -2,11 +2,11 @@
 pragma solidity 0.8.17;
 
 import {IAgentManager} from "../../../contracts/interfaces/IAgentManager.sol";
-import {ISystemRegistry} from "../../../contracts/interfaces/ISystemRegistry.sol";
-import {SystemContractTest} from "./SystemContract.t.sol";
+import {IAgentSecured} from "../../../contracts/interfaces/IAgentSecured.sol";
+import {MessagingBaseTest} from "./MessagingBase.t.sol";
 import {AgentFlag, SynapseTest} from "../../utils/SynapseTest.t.sol";
 
-abstract contract SystemRegistryTest is SystemContractTest {
+abstract contract AgentSecuredTest is MessagingBaseTest {
     function expectAgentSlashed(uint32 domain, address agent, address prover) public {
         vm.expectEmit(localAgentManager());
         emit StatusUpdated(AgentFlag.Fraudulent, domain, agent);

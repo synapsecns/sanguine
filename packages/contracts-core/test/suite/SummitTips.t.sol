@@ -19,7 +19,7 @@ import {
 import {stdStorage, StdStorage} from "forge-std/Test.sol";
 
 contract SummitCheats is Summit {
-    constructor(uint32 domain, IAgentManager agentManager_) Summit(domain, agentManager_) {}
+    constructor(uint32 domain, address agentManager_) Summit(domain, agentManager_) {}
 
     function setActorTips(address actor, uint32 origin, uint128 earned, uint128 claimed) external {
         actorTips[actor][origin].earned = earned;
@@ -92,7 +92,7 @@ contract SummitTipsTest is DisputeHubTest {
         acceptSnapshot(snapshot1.formatStates());
         snapRoot1 = getSnapshotRoot();
         // Deploy Summit implementation with Cheats
-        summitCheats = address(new SummitCheats(DOMAIN_SYNAPSE, bondingManager));
+        summitCheats = address(new SummitCheats(DOMAIN_SYNAPSE, address(bondingManager)));
     }
 
     // ══════════════════════════════════════════ TESTS: SUBMIT RECEIPTS ═══════════════════════════════════════════════

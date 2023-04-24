@@ -4,7 +4,7 @@ pragma solidity 0.8.17;
 import {SynapseTest} from "../../utils/SynapseTest.t.sol";
 import {RawStateIndex} from "../../utils/libs/SynapseStructs.t.sol";
 
-abstract contract SystemContractTest is SynapseTest {
+abstract contract MessagingBaseTest is SynapseTest {
     modifier boundIndex(RawStateIndex memory rsi) {
         rsi.boundStateIndex();
         _;

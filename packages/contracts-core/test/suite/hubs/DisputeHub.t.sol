@@ -16,12 +16,12 @@ import {
     RawStateIndex,
     RawStateReport
 } from "../../utils/libs/SynapseStructs.t.sol";
-import {SystemRegistryTest} from "../system/SystemRegistry.t.sol";
+import {AgentSecuredTest} from "../base/AgentSecured.t.sol";
 
 // solhint-disable func-name-mixedcase
 // solhint-disable no-empty-blocks
 // solhint-disable ordering
-abstract contract DisputeHubTest is SystemRegistryTest {
+abstract contract DisputeHubTest is AgentSecuredTest {
     /// @notice Prevents this contract from being included in the coverage report
     function testDisputeHub() external {}
 

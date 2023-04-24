@@ -1,13 +1,13 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.17;
 
-import {ISystemRegistry} from "../../contracts/interfaces/ISystemRegistry.sol";
+import {IAgentSecured} from "../../contracts/interfaces/IAgentSecured.sol";
 import {ISnapshotHub} from "../../contracts/interfaces/ISnapshotHub.sol";
 import {SNAPSHOT_TREE_HEIGHT} from "../../contracts/libs/Constants.sol";
 import {MerkleMath} from "../../contracts/libs/MerkleMath.sol";
 
 import {InterfaceSummit} from "../../contracts/Summit.sol";
-import {Versioned} from "../../contracts/Version.sol";
+import {Versioned} from "../../contracts/base/Version.sol";
 
 import {AgentFlag, SynapseTest} from "../utils/SynapseTest.t.sol";
 import {State, RawAttestation, RawState, RawStateIndex} from "../utils/libs/SynapseStructs.t.sol";
@@ -50,7 +50,7 @@ contract SummitTest is DisputeHubTest {
             uint32 domain = allDomains[d];
             for (uint256 i = 0; i < domains[domain].agents.length; ++i) {
                 address agent = domains[domain].agents[i];
-                checkAgentStatus(agent, ISystemRegistry(summit).agentStatus(agent), AgentFlag.Active);
+                checkAgentStatus(agent, IAgentSecured(summit).agentStatus(agent), AgentFlag.Active);
             }
         }
         // Check version
@@ -297,7 +297,7 @@ contract SummitTest is DisputeHubTest {
         emit AgentSlashed(domain, agent, prover);
         vm.recordLogs();
         vm.prank(address(bondingManager));
-        ISystemRegistry(summit).managerSlash(domain, agent, prover);
+        IAgentSecured(summit).managerSlash(domain, agent, prover);
         assertEq(vm.getRecordedLogs().length, 2);
         checkDisputeResolved({hub: summit, honest: address(0), slashed: agent});
     }
@@ -310,7 +310,7 @@ contract SummitTest is DisputeHubTest {
         (address guard, address notary) = (domains[0].agents[0], domains[domain].agents[0]);
         // Slash the Notary
         vm.prank(address(bondingManager));
-        ISystemRegistry(summit).managerSlash(domain, notary, address(0));
+        IAgentSecured(summit).managerSlash(domain, notary, address(0));
         checkDisputeResolved({hub: summit, honest: guard, slashed: notary});
     }
 
@@ -322,7 +322,7 @@ contract SummitTest is DisputeHubTest {
         (address guard, address notary) = (domains[0].agents[0], domains[domain].agents[0]);
         // Slash the Guard
         vm.prank(address(bondingManager));
-        ISystemRegistry(summit).managerSlash(0, guard, address(0));
+        IAgentSecured(summit).managerSlash(0, guard, address(0));
         checkDisputeResolved({hub: summit, honest: notary, slashed: guard});
     }
 

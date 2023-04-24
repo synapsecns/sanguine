@@ -3,7 +3,7 @@ pragma solidity 0.8.17;
 
 import {AgentFlag, BondingManager} from "../../contracts/manager/BondingManager.sol";
 import {AgentStatus, LightManager} from "../../contracts/manager/LightManager.sol";
-import {ISystemRegistry} from "../../contracts/interfaces/ISystemRegistry.sol";
+import {IAgentSecured} from "../../contracts/interfaces/IAgentSecured.sol";
 import {Destination} from "../../contracts/Destination.sol";
 import {Origin} from "../../contracts/Origin.sol";
 import {Summit} from "../../contracts/Summit.sol";
@@ -115,7 +115,7 @@ abstract contract SynapseTest is ProductionEvents, SuiteEvents, SynapseAgents, S
         if (option == DEPLOY_MOCK_DESTINATION) {
             destination = address(new DestinationMock());
         } else if (option == DEPLOY_PROD_DESTINATION) {
-            destination = address(new Destination(DOMAIN_LOCAL, lightManager));
+            destination = address(new Destination(DOMAIN_LOCAL, address(lightManager)));
         } else {
             revert("Unknown option: Destination");
         }
@@ -127,7 +127,7 @@ abstract contract SynapseTest is ProductionEvents, SuiteEvents, SynapseAgents, S
         if (option == DEPLOY_MOCK_ORIGIN) {
             origin = address(new OriginMock());
         } else if (option == DEPLOY_PROD_ORIGIN) {
-            origin = address(new Origin(DOMAIN_LOCAL, lightManager));
+            origin = address(new Origin(DOMAIN_LOCAL, address(lightManager)));
             Origin(origin).initialize();
         } else {
             revert("Unknown option: Origin");
@@ -140,7 +140,7 @@ abstract contract SynapseTest is ProductionEvents, SuiteEvents, SynapseAgents, S
         if (option == DEPLOY_MOCK_ORIGIN_SYNAPSE) {
             originSynapse = address(new OriginMock());
         } else if (option == DEPLOY_PROD_ORIGIN_SYNAPSE) {
-            originSynapse = address(new Origin(DOMAIN_LOCAL, bondingManager));
+            originSynapse = address(new Origin(DOMAIN_LOCAL, address(bondingManager)));
             Origin(originSynapse).initialize();
         } else {
             revert("Unknown option: Origin");
@@ -153,7 +153,7 @@ abstract contract SynapseTest is ProductionEvents, SuiteEvents, SynapseAgents, S
         if (option == DEPLOY_MOCK_SUMMIT) {
             summit = address(new SummitMock());
         } else if (option == DEPLOY_PROD_SUMMIT) {
-            summit = address(new Summit(DOMAIN_SYNAPSE, bondingManager));
+            summit = address(new Summit(DOMAIN_SYNAPSE, address(bondingManager)));
             Summit(summit).initialize();
         } else {
             revert("Unknown option: Summit");
