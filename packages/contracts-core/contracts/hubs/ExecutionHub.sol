@@ -9,11 +9,12 @@ import {ORIGIN_TREE_HEIGHT, SNAPSHOT_TREE_HEIGHT} from "../libs/Constants.sol";
 import {MerkleMath} from "../libs/MerkleMath.sol";
 import {Header, Message, MessageFlag, MessageLib} from "../libs/Message.sol";
 import {Receipt, ReceiptBody, ReceiptLib} from "../libs/Receipt.sol";
-import {MessageStatus} from "../libs/Structures.sol";
+import {SnapshotLib} from "../libs/Snapshot.sol";
+import {AgentFlag, AgentStatus, MessageStatus} from "../libs/Structures.sol";
 import {Tips} from "../libs/Tips.sol";
 import {TypeCasts} from "../libs/TypeCasts.sol";
 // ═════════════════════════════ INTERNAL IMPORTS ══════════════════════════════
-import {AgentStatus, DisputeHub} from "./DisputeHub.sol";
+import {DisputeHub} from "./DisputeHub.sol";
 import {ExecutionHubEvents} from "../events/ExecutionHubEvents.sol";
 import {IExecutionHub} from "../interfaces/IExecutionHub.sol";
 import {IMessageRecipient} from "../interfaces/IMessageRecipient.sol";
@@ -32,6 +33,7 @@ abstract contract ExecutionHub is DisputeHub, ExecutionHubEvents, IExecutionHub 
     using BaseMessageLib for MemView;
     using ByteString for MemView;
     using MessageLib for bytes;
+    using ReceiptLib for bytes;
     using TypeCasts for bytes32;
 
     /// @notice Struct representing stored data for the snapshot root
@@ -146,30 +148,12 @@ abstract contract ExecutionHub is DisputeHub, ExecutionHubEvents, IExecutionHub 
         emit Executed(header.origin(), msgLeaf);
     }
 
-    /// @inheritdoc IExecutionHub
-    function verifyReceipt(bytes memory rcptPayload, bytes memory rcptSignature) external returns (bool isValid) {
-        // This will revert if payload is not an receipt
-        Receipt rcpt = _wrapReceipt(rcptPayload);
-        // This will revert if the attestation signer is not a known Notary
-        (AgentStatus memory status, address notary) = _verifyReceipt(rcpt, rcptSignature);
-        // Notary needs to be Active/Unstaking
-        _verifyActiveUnstaking(status);
-        // This will revert if receipt refers to another domain
-        // Note: this doesn't check the validity of tips, this is done in Summit contract
-        isValid = _isValidReceipt(rcpt.body());
-        if (!isValid) {
-            emit InvalidReceipt(rcptPayload, rcptSignature);
-            // Slash Notary and notify local AgentManager
-            _slashAgent(status.domain, notary);
-        }
-    }
-
     // ═══════════════════════════════════════════════════ VIEWS ═══════════════════════════════════════════════════════
 
     /// @inheritdoc IExecutionHub
     function isValidReceipt(bytes memory rcptPayload) external view returns (bool isValid) {
         // This will revert if payload is not an receipt
-        Receipt rcpt = _wrapReceipt(rcptPayload);
+        Receipt rcpt = rcptPayload.castToReceipt();
         // This will revert if receipt refers to another domain
         // Note: this doesn't check the validity of tips, this is done in Summit contract
         return _isValidReceipt(rcpt.body());
@@ -329,14 +313,18 @@ abstract contract ExecutionHub is DisputeHub, ExecutionHubEvents, IExecutionHub 
         // This will revert if:
         //  - State index is out of range.
         //  - Snapshot Proof length exceeds Snapshot tree Height.
-        bytes32 snapshotRoot = _snapshotRoot(originRoot, header.origin(), snapProof, stateIndex);
+        bytes32 snapshotRoot = SnapshotLib.proofSnapRoot(originRoot, header.origin(), snapProof, stateIndex);
         // Fetch the attestation data for the snapshot root
         rootData = _rootData[snapshotRoot];
         // Check if snapshot root has been submitted
         require(rootData.submittedAt != 0, "Invalid snapshot root");
+        // TODO: remove this check, the in Dispute in enough
         // Check if Notary who submitted the attestation is still active
         (address attNotary, AgentStatus memory attNotaryStatus) = _getAgent(rootData.notaryIndex);
-        _verifyActive(attNotaryStatus);
+        require(
+            attNotaryStatus.flag == AgentFlag.Active,
+            attNotaryStatus.domain == 0 ? "Not an active guard" : "Not an active notary"
+        );
         // Check that Notary who submitted the attestation is not in dispute
         require(!_inDispute(attNotary), "Notary is in dispute");
     }

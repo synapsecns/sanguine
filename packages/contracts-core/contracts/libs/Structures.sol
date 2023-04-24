@@ -42,6 +42,8 @@ struct AgentStatus {
 }
 // 184 bits available for tight packing
 
+using StructureUtils for AgentStatus global;
+
 /// @notice Potential statuses of an agent in terms of being in dispute
 /// - None: agent is not in dispute
 /// - Pending: agent is in unresolved dispute
@@ -94,4 +96,32 @@ enum MessageStatus {
     None,
     Failed,
     Success
+}
+
+library StructureUtils {
+    /// @notice Checks that Agent is Active
+    function verifyActive(AgentStatus memory status) internal pure {
+        require(status.flag == AgentFlag.Active, status.domain == 0 ? "Not an active guard" : "Not an active notary");
+    }
+
+    /// @notice Checks that Agent is Active or Unstaking
+    function verifyActiveUnstaking(AgentStatus memory status) internal pure {
+        require(
+            (status.flag == AgentFlag.Active || status.flag == AgentFlag.Unstaking),
+            status.domain == 0 ? "Not an active guard" : "Not an active notary"
+        );
+    }
+
+    /// @notice Checks that Agent is not Unknown
+    function verifyKnown(AgentStatus memory status) internal pure {
+        require(status.flag != AgentFlag.Unknown, status.domain == 0 ? "Not a known guard" : "Not a known notary");
+    }
+
+    /// @notice Checks that Agent is not Fraudulent/Slashed
+    function verifyNotSlashed(AgentStatus memory status) internal pure {
+        require(
+            status.flag != AgentFlag.Fraudulent && status.flag != AgentFlag.Slashed,
+            status.domain == 0 ? "Slashed guard" : "Slashed notary"
+        );
+    }
 }

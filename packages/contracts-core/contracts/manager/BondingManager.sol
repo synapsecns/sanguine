@@ -2,20 +2,31 @@
 pragma solidity 0.8.17;
 
 // ══════════════════════════════ LIBRARY IMPORTS ══════════════════════════════
+import {Attestation, AttestationLib} from "../libs/Attestation.sol";
+import {AttestationReport, AttestationReportLib} from "../libs/AttestationReport.sol";
+import {DynamicTree, MerkleMath} from "../libs/MerkleTree.sol";
+import {Receipt, ReceiptLib} from "../libs/Receipt.sol";
+import {Snapshot, SnapshotLib} from "../libs/Snapshot.sol";
 import {AgentFlag, AgentStatus, SlashStatus} from "../libs/Structures.sol";
-import {DynamicTree, MerkleTree} from "../libs/MerkleTree.sol";
-import {MerkleMath} from "../libs/MerkleMath.sol";
 // ═════════════════════════════ INTERNAL IMPORTS ══════════════════════════════
 import {AgentManager, IAgentManager} from "./AgentManager.sol";
-import {DomainContext} from "../context/DomainContext.sol";
+import {BondingManagerEvents} from "../events/BondingManagerEvents.sol";
 import {InterfaceBondingManager} from "../interfaces/InterfaceBondingManager.sol";
 import {InterfaceLightManager} from "../interfaces/InterfaceLightManager.sol";
 import {InterfaceOrigin} from "../interfaces/InterfaceOrigin.sol";
+import {ISnapshotHub} from "../interfaces/ISnapshotHub.sol";
+import {InterfaceSummit} from "../interfaces/InterfaceSummit.sol";
+import {SystemBase} from "../system/SystemBase.sol";
 import {Versioned} from "../Version.sol";
 
 /// @notice BondingManager keeps track of all existing _agents.
 /// Used on the Synapse Chain, serves as the "source of truth" for LightManagers on remote chains.
-contract BondingManager is Versioned, AgentManager, InterfaceBondingManager {
+contract BondingManager is Versioned, AgentManager, BondingManagerEvents, InterfaceBondingManager {
+    using AttestationLib for bytes;
+    using AttestationReportLib for bytes;
+    using ReceiptLib for bytes;
+    using SnapshotLib for bytes;
+
     // ══════════════════════════════════════════════════ STORAGE ══════════════════════════════════════════════════════
 
     // (agent => their status)
@@ -34,8 +45,8 @@ contract BondingManager is Versioned, AgentManager, InterfaceBondingManager {
 
     // ═════════════════════════════════════════ CONSTRUCTOR & INITIALIZER ═════════════════════════════════════════════
 
-    constructor(uint32 domain) DomainContext(domain) Versioned("0.0.3") {
-        require(_onSynapseChain(), "Only deployed on SynChain");
+    constructor(uint32 domain) SystemBase(domain) Versioned("0.0.3") {
+        require(domain == SYNAPSE_DOMAIN, "Only deployed on SynChain");
     }
 
     function initialize(address origin_, address destination_) external initializer {
@@ -46,14 +57,82 @@ contract BondingManager is Versioned, AgentManager, InterfaceBondingManager {
         _agents.push(address(0));
     }
 
+    // ══════════════════════════════════════════ SUBMIT AGENT STATEMENTS ══════════════════════════════════════════════
+
+    /// @inheritdoc InterfaceBondingManager
+    function submitSnapshot(bytes memory snapPayload, bytes memory snapSignature)
+        external
+        returns (bytes memory attPayload)
+    {
+        // This will revert if payload is not a snapshot
+        Snapshot snapshot = snapPayload.castToSnapshot();
+        // This will revert if the signer is not a known Agent
+        (AgentStatus memory status, address agent) = _verifySnapshot(snapshot, snapSignature);
+        // Check that Agent is active
+        status.verifyActive();
+        // This will revert if agent is a Notary that is in dispute
+        return InterfaceSummit(destination).acceptSnapshot(agent, status, snapPayload, snapSignature);
+    }
+
+    /// @inheritdoc InterfaceBondingManager
+    function submitReceipt(bytes memory rcptPayload, bytes memory rcptSignature) external returns (bool wasAccepted) {
+        // This will revert if payload is not an receipt
+        Receipt rcpt = rcptPayload.castToReceipt();
+        // This will revert if the attestation signer is not a known Notary
+        (AgentStatus memory status, address notary) = _verifyReceipt(rcpt, rcptSignature);
+        // Notary needs to be Active
+        status.verifyActive();
+        // This will revert if Notary is in dispute
+        return InterfaceSummit(destination).acceptReceipt(notary, status, rcptPayload, rcptSignature);
+    }
+
+    // ══════════════════════════════════════════ VERIFY AGENT STATEMENTS ══════════════════════════════════════════════
+
+    /// @inheritdoc InterfaceBondingManager
+    function verifyAttestation(bytes memory attPayload, bytes memory attSignature)
+        external
+        returns (bool isValidAttestation)
+    {
+        // This will revert if payload is not an attestation
+        Attestation att = attPayload.castToAttestation();
+        // This will revert if the attestation signer is not a known Notary
+        (AgentStatus memory status, address notary) = _verifyAttestation(att, attSignature);
+        // Notary needs to be Active/Unstaking
+        status.verifyActiveUnstaking();
+        isValidAttestation = ISnapshotHub(destination).isValidAttestation(attPayload);
+        if (!isValidAttestation) {
+            emit InvalidAttestation(attPayload, attSignature);
+            _slashAgent(status.domain, notary, msg.sender);
+        }
+    }
+
+    /// @inheritdoc InterfaceBondingManager
+    function verifyAttestationReport(bytes memory arPayload, bytes memory arSignature)
+        external
+        returns (bool isValidReport)
+    {
+        // This will revert if payload is not an attestation report
+        AttestationReport report = arPayload.castToAttestationReport();
+        // This will revert if the report signer is not a known Guard
+        (AgentStatus memory status, address guard) = _verifyAttestationReport(report, arSignature);
+        // Guard needs to be Active/Unstaking
+        status.verifyActiveUnstaking();
+        // Report is valid IF AND ONLY IF the reported attestation in invalid
+        isValidReport = !ISnapshotHub(destination).isValidAttestation(report.attestation().unwrap().clone());
+        if (!isValidReport) {
+            emit InvalidAttestationReport(arPayload, arSignature);
+            _slashAgent(status.domain, guard, msg.sender);
+        }
+    }
+
     // ════════════════════════════════════════════ AGENTS LOGIC (MVP) ═════════════════════════════════════════════════
 
     // TODO: remove these MVP functions once token staking is implemented
 
     /// @inheritdoc InterfaceBondingManager
     function addAgent(uint32 domain, address agent, bytes32[] memory proof) external onlyOwner {
-        // Check current status of the added agent
-        AgentStatus memory status = _agentStatus(agent);
+        // Check the STORED status of the added agent in the merkle tree
+        AgentStatus memory status = _storedAgentStatus(agent);
         // Agent index in `_agents`
         uint32 index;
         // Leaf representing currently saved agent information in the tree
@@ -85,8 +164,8 @@ contract BondingManager is Versioned, AgentManager, InterfaceBondingManager {
 
     /// @inheritdoc InterfaceBondingManager
     function initiateUnstaking(uint32 domain, address agent, bytes32[] memory proof) external onlyOwner {
-        // Check current status of the unstaking agent
-        AgentStatus memory status = _agentStatus(agent);
+        // Check the CURRENT status of the unstaking agent
+        AgentStatus memory status = agentStatus(agent);
         // Could only initiate the unstaking for the active agent for the domain
         require(status.flag == AgentFlag.Active && status.domain == domain, "Unstaking could not be initiated");
         // Leaf representing currently saved agent information in the tree.
@@ -100,8 +179,8 @@ contract BondingManager is Versioned, AgentManager, InterfaceBondingManager {
 
     /// @inheritdoc InterfaceBondingManager
     function completeUnstaking(uint32 domain, address agent, bytes32[] memory proof) external onlyOwner {
-        // Check current status of the unstaking agent
-        AgentStatus memory status = _agentStatus(agent);
+        // Check the CURRENT status of the unstaking agent
+        AgentStatus memory status = agentStatus(agent);
         // Could only complete the unstaking, if it was previously initiated
         // TODO: add more checks (time-based, possibly collecting info from other chains)
         require(status.flag == AgentFlag.Unstaking && status.domain == domain, "Unstaking could not be completed");
@@ -120,8 +199,8 @@ contract BondingManager is Versioned, AgentManager, InterfaceBondingManager {
     function completeSlashing(uint32 domain, address agent, bytes32[] memory proof) external {
         // Check that slashing was initiated by one of the System Registries
         require(slashStatus[agent].isSlashed, "Slashing not initiated");
-        // Check that agent is Active/Unstaking and that the domains match
-        AgentStatus memory status = _agentStatus(agent);
+        // Check that the STORED status is Active/Unstaking in the merkle tree and that the domains match
+        AgentStatus memory status = _storedAgentStatus(agent);
         require(
             (status.flag == AgentFlag.Active || status.flag == AgentFlag.Unstaking) && status.domain == domain,
             "Slashing could not be completed"
@@ -136,7 +215,7 @@ contract BondingManager is Versioned, AgentManager, InterfaceBondingManager {
     }
 
     /// @inheritdoc InterfaceBondingManager
-    function remoteRegistrySlash(uint32 msgOrigin, uint256 proofMaturity, uint32 domain, address agent, address prover)
+    function remoteSlashAgent(uint32 msgOrigin, uint256 proofMaturity, uint32 domain, address agent, address prover)
         external
         returns (bytes4 magicValue)
     {
@@ -146,12 +225,10 @@ contract BondingManager is Versioned, AgentManager, InterfaceBondingManager {
         require(proofMaturity >= BONDING_OPTIMISTIC_PERIOD, "!optimisticPeriod");
         // TODO: do we need to save this?
         msgOrigin;
-        // Check that Agent hasn't been already slashed and initiate the slashing
-        _initiateSlashing(domain, agent, prover);
-        // Notify local registries about the slashing
-        _notifySlashing(DESTINATION | ORIGIN, domain, agent, prover);
+        // Slash agent and notify local registries
+        _slashAgent(domain, agent, prover);
         // Magic value to return is selector of the called function
-        return this.remoteRegistrySlash.selector;
+        return this.remoteSlashAgent.selector;
     }
 
     // ════════════════════════════════════════════════ TIPS LOGIC ═════════════════════════════════════════════════════
@@ -213,7 +290,8 @@ contract BondingManager is Versioned, AgentManager, InterfaceBondingManager {
     /// @inheritdoc InterfaceBondingManager
     function getProof(address agent) external view returns (bytes32[] memory proof) {
         bytes32[] memory leafs = allLeafs();
-        AgentStatus memory status = _agentStatus(agent);
+        // Use the STORED agent status from the merkle tree
+        AgentStatus memory status = _storedAgentStatus(agent);
         // Use next available index for unknown agents
         uint256 index = status.flag == AgentFlag.Unknown ? _agents.length : status.index;
         return MerkleMath.calculateProof(leafs, index);
@@ -256,7 +334,7 @@ contract BondingManager is Versioned, AgentManager, InterfaceBondingManager {
     // ══════════════════════════════════════════════ INTERNAL VIEWS ═══════════════════════════════════════════════════
 
     /// @dev Returns the status of the agent.
-    function _agentStatus(address agent) internal view override returns (AgentStatus memory) {
+    function _storedAgentStatus(address agent) internal view override returns (AgentStatus memory) {
         return _agentMap[agent];
     }
 
@@ -269,7 +347,8 @@ contract BondingManager is Versioned, AgentManager, InterfaceBondingManager {
 
     /// @dev Returns the current leaf representing agent in the Agent Merkle Tree.
     function _getLeaf(address agent) internal view returns (bytes32 leaf) {
-        AgentStatus memory status = _agentStatus(agent);
+        // Get the agent status STORED in the merkle tree
+        AgentStatus memory status = _storedAgentStatus(agent);
         if (status.flag != AgentFlag.Unknown) {
             return _agentLeaf(status.flag, status.domain, agent);
         }

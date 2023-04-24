@@ -1,6 +1,8 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.17;
 
+import {AgentStatus} from "../libs/Structures.sol";
+
 interface InterfaceDestination {
     /**
      * @notice Attempts to pass a quarantined Agent Merkle Root to a local Light Manager.
@@ -12,34 +14,29 @@ interface InterfaceDestination {
     function passAgentRoot() external returns (bool rootPassed, bool rootPending);
 
     /**
-     * @notice Submit an Attestation signed by a Notary.
-     * @dev Will revert if any of these is true:
-     *  - Attestation payload is not properly formatted.
-     *  - Attestation signer is not an active Notary for local domain.
-     *  - Attestation's snapshot root has been previously submitted.
+     * @notice Accepts an attestation, which local `AgentManager` verified to have been signed
+     * by an active Notary for this chain.
+     * > Attestation is created whenever a Notary-signed snapshot is saved in Summit on Synapse Chain.
+     * - Saved Attestation could be later used to prove the inclusion of message in the Origin Merkle Tree.
+     * - Messages coming from chains included in the Attestation's snapshot could be proven.
+     * - Proof only exists for messages that were sent prior to when the Attestation's snapshot was taken.
+     * > Will revert if any of these is true:
+     * > - Called by anyone other than local `AgentManager`.
+     * > - Attestation payload is not properly formatted.
+     * > - Attestation signer is in Dispute.
+     * > - Attestation's snapshot root has been previously submitted.
+     * @param notary            Address of the Notary who signed the receipt
+     * @param status            Structure specifying agent status: (flag, domain, index)
      * @param attPayload        Raw payload with Attestation data
-     * @param attSignature      Notary signature for the reported attestation
-     * @return wasAccepted      Whether the Attestation was accepted (resulting in Dispute between the agents)
+     * @param attSignature      Notary signature for the Attestation
+     * @return wasAccepted      Whether the Attestation was accepted
      */
-    function submitAttestation(bytes memory attPayload, bytes memory attSignature)
-        external
-        returns (bool wasAccepted);
-
-    /**
-     * @notice Submit an AttestationReport signed by a Guard, as well as Notary signature
-     * for the reported Attestation.
-     * @dev Will revert if any of these is true:
-     *  - Report payload is not properly formatted.
-     *  - Report signer is not an active Guard.
-     *  - Attestation signer is not an active Notary for local domain.
-     * @param arPayload         Raw payload with AttestationReport data
-     * @param arSignature       Guard signature for the report
-     * @param attSignature      Notary signature for the reported attestation
-     * @return wasAccepted      Whether the Report was accepted (resulting in Dispute between the agents)
-     */
-    function submitAttestationReport(bytes memory arPayload, bytes memory arSignature, bytes memory attSignature)
-        external
-        returns (bool wasAccepted);
+    function acceptAttestation(
+        address notary,
+        AgentStatus memory status,
+        bytes memory attPayload,
+        bytes memory attSignature
+    ) external returns (bool wasAccepted);
 
     // ═══════════════════════════════════════════════════ VIEWS ═══════════════════════════════════════════════════════
 

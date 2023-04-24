@@ -2,6 +2,7 @@
 pragma solidity 0.8.17;
 
 import {IDisputeHub} from "../../../contracts/interfaces/IDisputeHub.sol";
+import {IAgentManager} from "../../../contracts/interfaces/IAgentManager.sol";
 import {DisputeFlag, DisputeStatus, SystemEntity} from "../../../contracts/libs/Structures.sol";
 
 import {fakeSnapshot} from "../../utils/libs/FakeIt.t.sol";
@@ -26,9 +27,12 @@ abstract contract DisputeHubTest is SystemRegistryTest {
 
     // ════════════════════════════════════════════ SUBMIT DATA HELPERS ════════════════════════════════════════════════
 
-    function check_submitStateReport(address hub, uint32 notaryDomain, RawState memory rs, RawStateIndex memory rsi)
-        public
-    {
+    function check_submitStateReportWithSnapshot(
+        address hub,
+        uint32 notaryDomain,
+        RawState memory rs,
+        RawStateIndex memory rsi
+    ) public {
         address prover = makeAddr("Prover");
         // Create Notary signature for the snapshot
         address notary = domains[notaryDomain].agent;
@@ -39,11 +43,38 @@ abstract contract DisputeHubTest is SystemRegistryTest {
         vm.expectEmit();
         emit Dispute(guard, notaryDomain, notary);
         vm.prank(prover);
-        IDisputeHub(hub).submitStateReport(rsi.stateIndex, srPayload, srSig, snapPayload, snapSig);
+        IAgentManager(localAgentManager()).submitStateReportWithSnapshot(
+            rsi.stateIndex, srPayload, srSig, snapPayload, snapSig
+        );
         checkDisputeOpened(hub, guard, notary);
     }
 
-    function check_submitStateReportWithProof(
+    function check_submitStateReportWithAttestation(
+        address hub,
+        uint32 notaryDomain,
+        RawState memory rs,
+        RawAttestation memory ra,
+        RawStateIndex memory rsi
+    ) public {
+        address prover = makeAddr("Prover");
+        ra = createAttestation(rs, ra, rsi);
+        bytes memory snapPayload = fakeSnapshot(rs, rsi).formatSnapshot();
+        // Create Notary signature for the attestation
+        address notary = domains[notaryDomain].agent;
+        (bytes memory attPayload, bytes memory attSig) = signAttestation(notary, ra);
+        // Create Guard signature for the report
+        address guard = domains[0].agent;
+        (bytes memory srPayload, bytes memory srSig) = createSignedStateReport(guard, rs);
+        vm.expectEmit();
+        emit Dispute(guard, notaryDomain, notary);
+        vm.prank(prover);
+        IAgentManager(localAgentManager()).submitStateReportWithAttestation(
+            rsi.stateIndex, srPayload, srSig, snapPayload, attPayload, attSig
+        );
+        checkDisputeOpened(hub, guard, notary);
+    }
+
+    function check_submitStateReportWithSnapshotProof(
         address hub,
         uint32 notaryDomain,
         RawState memory rs,
@@ -63,7 +94,9 @@ abstract contract DisputeHubTest is SystemRegistryTest {
         vm.expectEmit();
         emit Dispute(guard, notaryDomain, notary);
         vm.prank(prover);
-        IDisputeHub(hub).submitStateReportWithProof(rsi.stateIndex, srPayload, srSig, snapProof, attPayload, attSig);
+        IAgentManager(localAgentManager()).submitStateReportWithSnapshotProof(
+            rsi.stateIndex, srPayload, srSig, snapProof, attPayload, attSig
+        );
         checkDisputeOpened(hub, guard, notary);
     }
 

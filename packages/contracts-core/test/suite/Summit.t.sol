@@ -91,7 +91,7 @@ contract SummitTest is DisputeHubTest {
             expectAgentSlashed(domain, notary, address(this));
         }
         vm.recordLogs();
-        assertEq(InterfaceSummit(summit).verifyAttestation(attPayload, attSig), isValid, "!returnValue");
+        assertEq(bondingManager.verifyAttestation(attPayload, attSig), isValid, "!returnValue");
         if (isValid) {
             assertEq(vm.getRecordedLogs().length, 0, "Emitted logs when shouldn't");
         }
@@ -114,7 +114,7 @@ contract SummitTest is DisputeHubTest {
             expectAgentSlashed(0, guard, address(this));
         }
         vm.recordLogs();
-        assertEq(InterfaceSummit(summit).verifyAttestationReport(arPayload, arSig), isValid, "!returnValue");
+        assertEq(bondingManager.verifyAttestationReport(arPayload, arSig), isValid, "!returnValue");
         if (isValid) {
             assertEq(vm.getRecordedLogs().length, 0, "Emitted logs when shouldn't");
         }
@@ -144,7 +144,7 @@ contract SummitTest is DisputeHubTest {
             vm.expectEmit(true, true, true, true);
             emit SnapshotAccepted(0, domains[0].agents[i], guardSnapshots[i].snapshot, guardSnapshots[i].signature);
             bytes memory attPayload =
-                InterfaceSummit(summit).submitSnapshot(guardSnapshots[i].snapshot, guardSnapshots[i].signature);
+                bondingManager.submitSnapshot(guardSnapshots[i].snapshot, guardSnapshots[i].signature);
             assertEq(attPayload, "", "Guard: non-empty attestation");
             // Check latest Guard States
             for (uint32 j = 0; j < STATES; ++j) {
@@ -206,7 +206,7 @@ contract SummitTest is DisputeHubTest {
             vm.expectEmit(true, true, true, true);
             emit SnapshotAccepted(DOMAIN_LOCAL, notary, snapPayloads[i], snapSignatures[i]);
 
-            bytes memory attPayload = InterfaceSummit(summit).submitSnapshot(snapPayloads[i], snapSignatures[i]);
+            bytes memory attPayload = bondingManager.submitSnapshot(snapPayloads[i], snapSignatures[i]);
             assertEq(attPayload, attestation, "Notary: incorrect attestation");
             // Check attestation getter
             assertEq(ISnapshotHub(summit).getAttestation(ra.nonce), attestation, "!getAttestation");
@@ -272,7 +272,7 @@ contract SummitTest is DisputeHubTest {
     {
         // Restrict to non-zero existing domains
         domainId = bound(domainId, 1, allDomains.length - 1);
-        check_submitStateReport(summit, allDomains[domainId], rs, rsi);
+        check_submitStateReportWithSnapshot(summit, allDomains[domainId], rs, rsi);
     }
 
     function test_submitStateReportWithProof(
@@ -283,7 +283,7 @@ contract SummitTest is DisputeHubTest {
     ) public boundIndex(rsi) {
         // Restrict to non-zero existing domains
         domainId = bound(domainId, 1, allDomains.length - 1);
-        check_submitStateReportWithProof(summit, allDomains[domainId], rs, ra, rsi);
+        check_submitStateReportWithSnapshotProof(summit, allDomains[domainId], rs, ra, rsi);
     }
 
     // ════════════════════════════════════════════ DISPUTE RESOLUTION ═════════════════════════════════════════════════
@@ -339,7 +339,7 @@ contract SummitTest is DisputeHubTest {
         // Create report by Guard 1
         (bytes memory srPayload, bytes memory srSig) = createSignedStateReport(guard, secondRS);
         vm.expectRevert("Notary already in dispute");
-        IDisputeHub(summit).submitStateReport(0, srPayload, srSig, snapPayload, snapSig);
+        bondingManager.submitStateReportWithSnapshot(0, srPayload, srSig, snapPayload, snapSig);
     }
 
     function test_submitStateReport_revert_guardInDispute(RawState memory firstRS, RawState memory secondRS) public {
@@ -353,7 +353,7 @@ contract SummitTest is DisputeHubTest {
         // Create report by Guard 0
         (bytes memory srPayload, bytes memory srSig) = createSignedStateReport(guard, secondRS);
         vm.expectRevert("Guard already in dispute");
-        IDisputeHub(summit).submitStateReport(0, srPayload, srSig, snapPayload, snapSig);
+        bondingManager.submitStateReportWithSnapshot(0, srPayload, srSig, snapPayload, snapSig);
     }
 
     function test_submitStateReportWithProof_revert_notaryInDispute(
@@ -374,7 +374,9 @@ contract SummitTest is DisputeHubTest {
         // Generate Snapshot Proof
         bytes32[] memory snapProof = genSnapshotProof(rsi.stateIndex);
         vm.expectRevert("Notary already in dispute");
-        IDisputeHub(summit).submitStateReportWithProof(rsi.stateIndex, srPayload, srSig, snapProof, attPayload, attSig);
+        bondingManager.submitStateReportWithSnapshotProof(
+            rsi.stateIndex, srPayload, srSig, snapProof, attPayload, attSig
+        );
     }
 
     function test_submitStateReportWithProof_revert_guardInDispute(
@@ -395,7 +397,9 @@ contract SummitTest is DisputeHubTest {
         // Generate Snapshot Proof
         bytes32[] memory snapProof = genSnapshotProof(rsi.stateIndex);
         vm.expectRevert("Guard already in dispute");
-        IDisputeHub(summit).submitStateReportWithProof(rsi.stateIndex, srPayload, srSig, snapProof, attPayload, attSig);
+        bondingManager.submitStateReportWithSnapshotProof(
+            rsi.stateIndex, srPayload, srSig, snapProof, attPayload, attSig
+        );
     }
 
     function test_submitSnapshot_revert_notaryInDispute(RawState memory firstRS, RawState memory secondRS) public {
@@ -409,11 +413,11 @@ contract SummitTest is DisputeHubTest {
         (address guard, address notary) = (domains[0].agents[1], domains[domain].agents[0]);
         (bytes memory snapPayload, bytes memory guardSig) = createSignedSnapshot(guard, secondRS, rsi);
         // Guard 1 submits snapshot
-        InterfaceSummit(summit).submitSnapshot(snapPayload, guardSig);
+        bondingManager.submitSnapshot(snapPayload, guardSig);
         // Notary 0 signs the same snapshot
         bytes memory notarySig = signSnapshot(notary, snapPayload);
         vm.expectRevert("Notary is in dispute");
-        InterfaceSummit(summit).submitSnapshot(snapPayload, notarySig);
+        bondingManager.submitSnapshot(snapPayload, notarySig);
     }
 
     function test_submitSnapshot_success_guardInDispute(RawState memory firstRS, RawState memory secondRS) public {
@@ -428,7 +432,7 @@ contract SummitTest is DisputeHubTest {
         // Guard 0 submits snapshot - being in dispute does not interfere with future snapshots
         vm.expectEmit();
         emit SnapshotAccepted(0, guard, snapPayload, guardSig);
-        InterfaceSummit(summit).submitSnapshot(snapPayload, guardSig);
+        bondingManager.submitSnapshot(snapPayload, guardSig);
     }
 
     // ═════════════════════════════════════════════════ OVERRIDES ═════════════════════════════════════════════════════

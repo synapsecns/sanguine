@@ -39,8 +39,8 @@ contract SnapshotHarness {
         return payload.castToSnapshot().statesAmount();
     }
 
-    function root(bytes memory payload) public pure returns (bytes32) {
-        return payload.castToSnapshot().root();
+    function calculateRoot(bytes memory payload) public pure returns (bytes32) {
+        return payload.castToSnapshot().calculateRoot();
     }
 
     // ════════════════════════════════════════════════ FORMATTERS ═════════════════════════════════════════════════════

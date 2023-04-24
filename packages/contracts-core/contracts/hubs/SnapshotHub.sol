@@ -218,7 +218,7 @@ abstract contract SnapshotHub is SnapshotHubEvents, ISnapshotHub {
     {
         // Attestation nonce is its index in `_attestations` array
         uint32 attNonce = uint32(_attestations.length);
-        SummitAttestation memory summitAtt = _toSummitAttestation(snapshot.root(), agentRoot);
+        SummitAttestation memory summitAtt = _toSummitAttestation(snapshot.calculateRoot(), agentRoot);
         attPayload = _formatSummitAttestation(summitAtt, attNonce);
         _latestAttNonce[notary] = attNonce;
         /// @dev Add a single element to both `_attestations` and `_notarySnapshots`,
