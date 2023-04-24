@@ -83,7 +83,7 @@ func TestSnapshotRootAndProofs(t *testing.T) {
 
 	Equal(t, stateBLeaf, stateContractStateBLeaf)
 
-	snapshotContractRoot, err := snapshotContract.Root(&bind.CallOpts{Context: ctx}, encodedSnapshot)
+	snapshotContractRoot, err := snapshotContract.CalculateRoot(&bind.CallOpts{Context: ctx}, encodedSnapshot)
 	Nil(t, err)
 
 	Equal(t, snapshotRoot, snapshotContractRoot)
