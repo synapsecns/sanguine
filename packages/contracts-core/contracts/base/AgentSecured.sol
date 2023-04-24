@@ -2,18 +2,16 @@
 pragma solidity 0.8.17;
 
 // ═════════════════════════════ INTERNAL IMPORTS ══════════════════════════════
-import {SystemBase} from "./SystemBase.sol";
-import {SystemRegistryEvents} from "../events/SystemRegistryEvents.sol";
-import {AgentStatus, IAgentManager} from "../interfaces/IAgentManager.sol";
-import {ISystemRegistry} from "../interfaces/ISystemRegistry.sol";
+import {AgentSecuredEvents} from "../events/AgentSecuredEvents.sol";
+import {IAgentManager} from "../interfaces/IAgentManager.sol";
+import {AgentStatus, IAgentSecured} from "../interfaces/IAgentSecured.sol";
+import {MessagingBase} from "./MessagingBase.sol";
 
-/// @notice Shared utilities for Origin, Destination/Summit contracts.
-/// This abstract contract is responsible for all interactions with the local AgentManager,
-/// where all agent are being tracked.
-abstract contract SystemRegistry is SystemBase, SystemRegistryEvents, ISystemRegistry {
+abstract contract AgentSecured is MessagingBase, AgentSecuredEvents, IAgentSecured {
     // ════════════════════════════════════════════════ IMMUTABLES ═════════════════════════════════════════════════════
 
-    IAgentManager public immutable agentManager;
+    /// @inheritdoc IAgentSecured
+    address public immutable agentManager;
 
     // ══════════════════════════════════════════════════ STORAGE ══════════════════════════════════════════════════════
 
@@ -21,28 +19,33 @@ abstract contract SystemRegistry is SystemBase, SystemRegistryEvents, ISystemReg
     uint256[50] private __GAP; // solhint-disable-line var-name-mixedcase
 
     modifier onlyAgentManager() {
-        require(msg.sender == address(agentManager), "!agentManager");
+        require(msg.sender == agentManager, "!agentManager");
         _;
     }
 
-    // ════════════════════════════════════════════════ CONSTRUCTOR ════════════════════════════════════════════════════
-
-    constructor(IAgentManager agentManager_) {
+    constructor(string memory version_, uint32 localDomain_, address agentManager_)
+        MessagingBase(version_, localDomain_)
+    {
         agentManager = agentManager_;
     }
 
     // ════════════════════════════════════════════ ONLY AGENT MANAGER ═════════════════════════════════════════════════
 
-    /// @inheritdoc ISystemRegistry
+    /// @inheritdoc IAgentSecured
     function managerSlash(uint32 domain, address agent, address prover) external onlyAgentManager {
         _processSlashed(domain, agent, prover);
     }
 
     // ═══════════════════════════════════════════════════ VIEWS ═══════════════════════════════════════════════════════
 
-    /// @inheritdoc ISystemRegistry
+    /// @inheritdoc IAgentSecured
     function agentStatus(address agent) external view returns (AgentStatus memory) {
         return _agentStatus(agent);
+    }
+
+    /// @inheritdoc IAgentSecured
+    function getAgent(uint256 index) external view returns (address agent, AgentStatus memory status) {
+        return _getAgent(index);
     }
 
     // ══════════════════════════════════════════════ INTERNAL LOGIC ═══════════════════════════════════════════════════
@@ -57,11 +60,11 @@ abstract contract SystemRegistry is SystemBase, SystemRegistryEvents, ISystemReg
 
     /// @dev Returns status of the given agent: (flag, domain, index).
     function _agentStatus(address agent) internal view returns (AgentStatus memory) {
-        return agentManager.agentStatus(agent);
+        return IAgentManager(agentManager).agentStatus(agent);
     }
 
-    /// @dev Returns agent and their status for a given agent index.
+    /// @dev Returns agent and their status for a given agent index. Returns zero values for non existing indexes.
     function _getAgent(uint256 index) internal view returns (address agent, AgentStatus memory status) {
-        return agentManager.getAgent(index);
+        return IAgentManager(agentManager).getAgent(index);
     }
 }

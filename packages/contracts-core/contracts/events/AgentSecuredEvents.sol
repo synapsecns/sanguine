@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.17;
 
-abstract contract SystemRegistryEvents {
+abstract contract AgentSecuredEvents {
     /**
      * @notice Emitted when an Agent is slashed.
      * @param domain    Domain where a slashed Agent was active
