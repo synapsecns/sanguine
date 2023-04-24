@@ -4,24 +4,24 @@ pragma solidity 0.8.17;
 // ══════════════════════════════ LIBRARY IMPORTS ══════════════════════════════
 import {Attestation, AttestationLib} from "../libs/Attestation.sol";
 import {AttestationReport, AttestationReportLib} from "../libs/AttestationReport.sol";
+import {BONDING_OPTIMISTIC_PERIOD, SYNAPSE_DOMAIN} from "../libs/Constants.sol";
 import {DynamicTree, MerkleMath} from "../libs/MerkleTree.sol";
 import {Receipt, ReceiptLib} from "../libs/Receipt.sol";
 import {Snapshot, SnapshotLib} from "../libs/Snapshot.sol";
 import {AgentFlag, AgentStatus, SlashStatus} from "../libs/Structures.sol";
 // ═════════════════════════════ INTERNAL IMPORTS ══════════════════════════════
 import {AgentManager, IAgentManager} from "./AgentManager.sol";
+import {MessagingBase} from "../base/MessagingBase.sol";
 import {BondingManagerEvents} from "../events/BondingManagerEvents.sol";
 import {InterfaceBondingManager} from "../interfaces/InterfaceBondingManager.sol";
 import {InterfaceLightManager} from "../interfaces/InterfaceLightManager.sol";
 import {InterfaceOrigin} from "../interfaces/InterfaceOrigin.sol";
 import {ISnapshotHub} from "../interfaces/ISnapshotHub.sol";
 import {InterfaceSummit} from "../interfaces/InterfaceSummit.sol";
-import {SystemBase} from "../system/SystemBase.sol";
-import {Versioned} from "../Version.sol";
 
 /// @notice BondingManager keeps track of all existing _agents.
 /// Used on the Synapse Chain, serves as the "source of truth" for LightManagers on remote chains.
-contract BondingManager is Versioned, AgentManager, BondingManagerEvents, InterfaceBondingManager {
+contract BondingManager is AgentManager, BondingManagerEvents, InterfaceBondingManager {
     using AttestationLib for bytes;
     using AttestationReportLib for bytes;
     using ReceiptLib for bytes;
@@ -45,7 +45,7 @@ contract BondingManager is Versioned, AgentManager, BondingManagerEvents, Interf
 
     // ═════════════════════════════════════════ CONSTRUCTOR & INITIALIZER ═════════════════════════════════════════════
 
-    constructor(uint32 domain) SystemBase(domain) Versioned("0.0.3") {
+    constructor(uint32 domain) MessagingBase("0.0.3", domain) {
         require(domain == SYNAPSE_DOMAIN, "Only deployed on SynChain");
     }
 

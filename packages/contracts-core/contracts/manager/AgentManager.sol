@@ -9,18 +9,18 @@ import {State, StateLib} from "../libs/State.sol";
 import {StateReport, StateReportLib} from "../libs/StateReport.sol";
 import {AgentFlag, AgentStatus, SlashStatus} from "../libs/Structures.sol";
 // ═════════════════════════════ INTERNAL IMPORTS ══════════════════════════════
+import {MessagingBase} from "../base/MessagingBase.sol";
 import {AgentManagerEvents} from "../events/AgentManagerEvents.sol";
 import {IAgentManager} from "../interfaces/IAgentManager.sol";
 import {IDisputeHub} from "../interfaces/IDisputeHub.sol";
 import {IExecutionHub} from "../interfaces/IExecutionHub.sol";
 import {IStateHub} from "../interfaces/IStateHub.sol";
-import {ISystemRegistry} from "../interfaces/ISystemRegistry.sol";
-import {SystemBase} from "../system/SystemBase.sol";
+import {IAgentSecured} from "../interfaces/IAgentSecured.sol";
 import {VerificationManager} from "./VerificationManager.sol";
 // ═════════════════════════════ EXTERNAL IMPORTS ══════════════════════════════
 import {ECDSA} from "@openzeppelin/contracts/utils/cryptography/ECDSA.sol";
 
-abstract contract AgentManager is SystemBase, VerificationManager, AgentManagerEvents, IAgentManager {
+abstract contract AgentManager is MessagingBase, VerificationManager, AgentManagerEvents, IAgentManager {
     using AttestationLib for bytes;
     using ReceiptLib for bytes;
     using StateLib for bytes;
@@ -285,8 +285,8 @@ abstract contract AgentManager is SystemBase, VerificationManager, AgentManagerE
 
     /// @dev Notifies the local registries about the slashed agent.
     function _notifyRegistriesAgentSlashed(uint32 domain, address agent, address prover) internal {
-        ISystemRegistry(destination).managerSlash(domain, agent, prover);
-        ISystemRegistry(origin).managerSlash(domain, agent, prover);
+        IAgentSecured(destination).managerSlash(domain, agent, prover);
+        IAgentSecured(origin).managerSlash(domain, agent, prover);
     }
 
     /// @dev Slashes the Agent and notifies the local Destination and Origin contracts about the slashed agent.
