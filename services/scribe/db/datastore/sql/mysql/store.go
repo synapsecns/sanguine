@@ -36,11 +36,11 @@ func NewMysqlStore(parentCtx context.Context, dbURL string, handler metrics.Hand
 	}()
 
 	gdb, err := gorm.Open(mysql.Open(dbURL), &gorm.Config{
-		Logger:                 common_base.GetGormLogger(logger),
-		FullSaveAssociations:   true,
-		NamingStrategy:         NamingStrategy,
-		NowFunc:                time.Now,
-		SkipDefaultTransaction: true,
+		Logger:               common_base.GetGormLogger(logger),
+		FullSaveAssociations: true,
+		NamingStrategy:       NamingStrategy,
+		NowFunc:              time.Now,
+		//SkipDefaultTransaction: true,
 	})
 
 	if err != nil {
@@ -58,12 +58,13 @@ func NewMysqlStore(parentCtx context.Context, dbURL string, handler metrics.Hand
 
 	handler.AddGormCallbacks(gdb)
 
-	// migrate in a transaction since we skip this by default
-	err = gdb.Transaction(func(tx *gorm.DB) error {
-		//nolint: wrapcheck
-		return gdb.WithContext(ctx).AutoMigrate(base.GetAllModels()...)
-	})
+	//// migrate in a transaction since we skip this by default
+	//err = gdb.Transaction(func(tx *gorm.DB) error {
+	//	//nolint: wrapcheck
+	//	return gdb.WithContext(ctx).AutoMigrate(base.GetAllModels()...)
+	//})
 
+	err = gdb.WithContext(ctx).AutoMigrate(base.GetAllModels()...)
 	if err != nil {
 		return nil, fmt.Errorf("could not migrate on mysql: %w", err)
 	}

@@ -686,6 +686,7 @@ func (e Executor) processLog(parentCtx context.Context, log ethTypes.Log, chainI
 		attribute.Int("chainID", int(chainID)),
 		attribute.Int("contract", int(contractEvent.contractType)),
 		attribute.Int("event", int(contractEvent.eventType)),
+		attribute.String("txHash", log.TxHash.String()),
 	))
 
 	defer func() {
