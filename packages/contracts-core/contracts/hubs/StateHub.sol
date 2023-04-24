@@ -5,7 +5,7 @@ pragma solidity 0.8.17;
 import {HistoricalTree} from "../libs/MerkleTree.sol";
 import {State, StateLib} from "../libs/State.sol";
 // ═════════════════════════════ INTERNAL IMPORTS ══════════════════════════════
-import {DomainContext} from "../context/DomainContext.sol";
+import {SystemBase} from "../system/SystemBase.sol";
 import {StateHubEvents} from "../events/StateHubEvents.sol";
 import {IStateHub} from "../interfaces/IStateHub.sol";
 
@@ -16,7 +16,7 @@ import {IStateHub} from "../interfaces/IStateHub.sol";
  * - How "state" getters work
  * - How to compare "states" to one another
  */
-abstract contract StateHub is DomainContext, StateHubEvents, IStateHub {
+abstract contract StateHub is SystemBase, StateHubEvents, IStateHub {
     using StateLib for bytes;
 
     struct OriginState {

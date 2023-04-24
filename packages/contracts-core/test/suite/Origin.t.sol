@@ -252,13 +252,13 @@ contract OriginTest is SystemRegistryTest {
         if (!isValid) {
             // Expect Events to be emitted
             vm.expectEmit(true, true, true, true);
-            emit InvalidAttestationState(rsi.stateIndex, state, attPayload, attSig);
+            emit InvalidStateWithAttestation(rsi.stateIndex, state, attPayload, attSig);
             // TODO: check that anyone could make the call
             expectAgentSlashed(domain, notary, address(this));
         }
         vm.recordLogs();
         assertEq(
-            InterfaceOrigin(origin).verifyAttestation(rsi.stateIndex, snapshot, attPayload, attSig),
+            lightManager.verifyStateWithAttestation(rsi.stateIndex, snapshot, attPayload, attSig),
             isValid,
             "!returnValue"
         );
@@ -276,13 +276,13 @@ contract OriginTest is SystemRegistryTest {
         if (!isValid) {
             // Expect Events to be emitted
             vm.expectEmit(true, true, true, true);
-            emit InvalidAttestationState(rsi.stateIndex, state, attPayload, attSig);
+            emit InvalidStateWithAttestation(rsi.stateIndex, state, attPayload, attSig);
             // TODO: check that anyone could make the call
             expectAgentSlashed(domain, notary, address(this));
         }
         vm.recordLogs();
         assertEq(
-            InterfaceOrigin(origin).verifyAttestationWithProof(rsi.stateIndex, state, snapProof, attPayload, attSig),
+            lightManager.verifyStateWithSnapshotProof(rsi.stateIndex, state, snapProof, attPayload, attSig),
             isValid,
             "!returnValue"
         );
@@ -299,11 +299,11 @@ contract OriginTest is SystemRegistryTest {
         if (!isValid) {
             // Expect Events to be emitted
             vm.expectEmit(true, true, true, true);
-            emit InvalidSnapshotState(rsi.stateIndex, snapPayload, snapSig);
+            emit InvalidStateWithSnapshot(rsi.stateIndex, snapPayload, snapSig);
             // TODO: check that anyone could make the call
             expectAgentSlashed(DOMAIN_REMOTE, notary, address(this));
         }
-        assertEq(InterfaceOrigin(origin).verifySnapshot(rsi.stateIndex, snapPayload, snapSig), isValid, "!returnValue");
+        assertEq(lightManager.verifyStateWithSnapshot(rsi.stateIndex, snapPayload, snapSig), isValid, "!returnValue");
         if (isValid) {
             assertEq(vm.getRecordedLogs().length, 0, "Emitted logs when shouldn't");
         }
@@ -324,7 +324,7 @@ contract OriginTest is SystemRegistryTest {
             expectAgentSlashed(0, guard, address(this));
         }
         vm.recordLogs();
-        assertEq(InterfaceOrigin(origin).verifyStateReport(srPayload, srSig), isValid, "!returnValue");
+        assertEq(lightManager.verifyStateReport(srPayload, srSig), isValid, "!returnValue");
         if (isValid) {
             assertEq(vm.getRecordedLogs().length, 0, "Emitted logs when shouldn't");
         }

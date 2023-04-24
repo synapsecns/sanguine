@@ -2,19 +2,20 @@
 pragma solidity 0.8.17;
 
 // ══════════════════════════════ LIBRARY IMPORTS ══════════════════════════════
-import {AgentFlag, AgentStatus} from "./libs/Structures.sol";
+import {AttestationLib} from "./libs/Attestation.sol";
 import {ByteString} from "./libs/ByteString.sol";
+import {Receipt, ReceiptLib} from "./libs/Receipt.sol";
+import {Snapshot, SnapshotLib} from "./libs/Snapshot.sol";
+import {AgentFlag, AgentStatus} from "./libs/Structures.sol";
 // ═════════════════════════════ INTERNAL IMPORTS ══════════════════════════════
 import {AgentManager} from "./manager/AgentManager.sol";
-import {DomainContext} from "./context/DomainContext.sol";
 import {SummitEvents} from "./events/SummitEvents.sol";
 import {IAgentManager} from "./interfaces/IAgentManager.sol";
 import {InterfaceBondingManager} from "./interfaces/InterfaceBondingManager.sol";
 import {InterfaceSummit} from "./interfaces/InterfaceSummit.sol";
-import {DisputeHub, ExecutionHub, MessageStatus, Receipt, ReceiptBody, Tips} from "./hubs/ExecutionHub.sol";
+import {DisputeHub, ExecutionHub, MessageStatus, ReceiptBody, Tips} from "./hubs/ExecutionHub.sol";
 import {SnapshotHub} from "./hubs/SnapshotHub.sol";
-import {Attestation, AttestationLib, AttestationReport, Snapshot} from "./hubs/StatementHub.sol";
-import {DomainContext, Versioned} from "./system/SystemContract.sol";
+import {SystemBase, Versioned} from "./system/SystemBase.sol";
 import {SystemRegistry} from "./system/SystemRegistry.sol";
 // ═════════════════════════════ EXTERNAL IMPORTS ══════════════════════════════
 import {DoubleEndedQueue} from "@openzeppelin/contracts/utils/structs/DoubleEndedQueue.sol";
@@ -23,6 +24,8 @@ contract Summit is ExecutionHub, SnapshotHub, SummitEvents, InterfaceSummit {
     using AttestationLib for bytes;
     using ByteString for bytes;
     using DoubleEndedQueue for DoubleEndedQueue.Bytes32Deque;
+    using ReceiptLib for bytes;
+    using SnapshotLib for bytes;
 
     struct StoredSnapData {
         bytes32 r;
@@ -83,11 +86,11 @@ contract Summit is ExecutionHub, SnapshotHub, SummitEvents, InterfaceSummit {
     // ═════════════════════════════════════════ CONSTRUCTOR & INITIALIZER ═════════════════════════════════════════════
 
     constructor(uint32 domain, IAgentManager agentManager_)
-        DomainContext(domain)
+        SystemBase(domain)
         SystemRegistry(agentManager_)
         Versioned("0.0.3")
     {
-        require(_onSynapseChain(), "Only deployed on SynChain");
+        require(domain == SYNAPSE_DOMAIN, "Only deployed on SynChain");
     }
 
     function initialize() external initializer {
@@ -99,38 +102,35 @@ contract Summit is ExecutionHub, SnapshotHub, SummitEvents, InterfaceSummit {
     // ═════════════════════════════════════════════ ACCEPT STATEMENTS ═════════════════════════════════════════════════
 
     /// @inheritdoc InterfaceSummit
-    function submitReceipt(bytes memory rcptPayload, bytes memory rcptSignature) external returns (bool wasAccepted) {
-        // Call the hook and check if we can accept the statement
-        if (!_beforeStatement()) return false;
+    function acceptReceipt(
+        address notary,
+        AgentStatus memory status,
+        bytes memory rcptPayload,
+        bytes memory rcptSignature
+    ) external returns (bool wasAccepted) {
         // This will revert if payload is not an receipt
-        Receipt rcpt = _wrapReceipt(rcptPayload);
-        // This will revert if the attestation signer is not a known Notary
-        (AgentStatus memory status, address notary) = _verifyReceipt(rcpt, rcptSignature);
-        // Notary needs to be Active and not in Dispute
-        _verifyActive(status);
+        Receipt rcpt = rcptPayload.castToReceipt();
         require(!_inDispute(notary), "Notary is in dispute");
         // Receipt needs to be signed by a destination chain Notary
         ReceiptBody rcptBody = rcpt.body();
+        // TODO: remove this restriction
         require(rcptBody.destination() == status.domain, "Wrong Notary domain");
         wasAccepted = _saveReceipt(rcptBody, rcpt.tips(), status.index);
         if (wasAccepted) {
+            // TODO: save signature
             emit ReceiptAccepted(status.domain, notary, rcptPayload, rcptSignature);
         }
     }
 
     /// @inheritdoc InterfaceSummit
-    function submitSnapshot(bytes memory snapPayload, bytes memory snapSignature)
-        external
-        returns (bytes memory attPayload)
-    {
-        // Call the hook and check if we can accept the statement
-        if (!_beforeStatement()) return "";
+    function acceptSnapshot(
+        address agent,
+        AgentStatus memory status,
+        bytes memory snapPayload,
+        bytes memory snapSignature
+    ) external returns (bytes memory attPayload) {
         // This will revert if payload is not a snapshot
-        Snapshot snapshot = _wrapSnapshot(snapPayload);
-        // This will revert if the signer is not a known Agent
-        (AgentStatus memory status, address agent) = _verifySnapshot(snapshot, snapSignature);
-        // Check that Agent is active
-        _verifyActive(status);
+        Snapshot snapshot = snapPayload.castToSnapshot();
         if (status.domain == 0) {
             /// @dev We don't check if Guard is in dispute for accepting the snapshots.
             /// Guard could only be in Dispute, if they submitted a Report on a Notary.
@@ -156,43 +156,7 @@ contract Summit is ExecutionHub, SnapshotHub, SummitEvents, InterfaceSummit {
         emit SnapshotAccepted(status.domain, agent, snapPayload, snapSignature);
     }
 
-    // ═════════════════════════════════════════════ VERIFY STATEMENTS ═════════════════════════════════════════════════
-
-    /// @inheritdoc InterfaceSummit
-    function verifyAttestation(bytes memory attPayload, bytes memory attSignature) external returns (bool isValid) {
-        // This will revert if payload is not an attestation
-        Attestation att = _wrapAttestation(attPayload);
-        // This will revert if the attestation signer is not a known Notary
-        (AgentStatus memory status, address notary) = _verifyAttestation(att, attSignature);
-        // Notary needs to be Active/Unstaking
-        _verifyActiveUnstaking(status);
-        isValid = _isValidAttestation(att);
-        if (!isValid) {
-            emit InvalidAttestation(attPayload, attSignature);
-            // Slash Notary and notify local AgentManager
-            _slashAgent(status.domain, notary);
-        }
-    }
-
-    /// @inheritdoc InterfaceSummit
-    function verifyAttestationReport(bytes memory arPayload, bytes memory arSignature)
-        external
-        returns (bool isValid)
-    {
-        // This will revert if payload is not an attestation report
-        AttestationReport report = _wrapAttestationReport(arPayload);
-        // This will revert if the report signer is not a known Guard
-        (AgentStatus memory status, address guard) = _verifyAttestationReport(report, arSignature);
-        // Guard needs to be Active/Unstaking
-        _verifyActiveUnstaking(status);
-        // Report is valid, if the reported attestation is invalid
-        isValid = !_isValidAttestation(report.attestation());
-        if (!isValid) {
-            emit InvalidAttestationReport(arPayload, arSignature);
-            // Slash Guard and notify local AgentManager
-            _slashAgent(0, guard);
-        }
-    }
+    // ════════════════════════════════════════════════ TIPS LOGIC ═════════════════════════════════════════════════════
 
     /// @inheritdoc InterfaceSummit
     function distributeTips() public returns (bool queuePopped) {
@@ -314,8 +278,8 @@ contract Summit is ExecutionHub, SnapshotHub, SummitEvents, InterfaceSummit {
         // Attestation Notary needs to be known and not slashed
         address attNotary = rcptBody.attNotary();
         AgentStatus memory attNotaryStatus = _agentStatus(attNotary);
-        _verifyKnown(attNotaryStatus);
-        _verifyNotSlashed(attNotaryStatus);
+        attNotaryStatus.verifyKnown();
+        attNotaryStatus.verifyNotSlashed();
         // Check if tip values are non-zero
         if (tips.value() == 0) return false;
         // Check if there already exists receipt for the message
@@ -425,12 +389,6 @@ contract Summit is ExecutionHub, SnapshotHub, SummitEvents, InterfaceSummit {
     }
 
     // ══════════════════════════════════════════════ INTERNAL VIEWS ═══════════════════════════════════════════════════
-
-    /// @inheritdoc DisputeHub
-    function _beforeStatement() internal pure override returns (bool acceptNext) {
-        // Summit is always open for new Guard/Notary statements
-        return true;
-    }
 
     /// @dev Returns "snapshot part" of the summit tip.
     function _snapshotTip(uint64 summitTip) internal pure returns (uint64) {

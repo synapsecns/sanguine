@@ -16,11 +16,10 @@ import {OriginEvents} from "./events/OriginEvents.sol";
 import {IAgentManager} from "./interfaces/IAgentManager.sol";
 import {InterfaceOrigin} from "./interfaces/InterfaceOrigin.sol";
 import {StateHub} from "./hubs/StateHub.sol";
-import {AgentStatus, Attestation, Snapshot, StatementHub} from "./hubs/StatementHub.sol";
-import {DomainContext, Versioned} from "./system/SystemContract.sol";
+import {SystemBase, Versioned} from "./system/SystemBase.sol";
 import {SystemRegistry} from "./system/SystemRegistry.sol";
 
-contract Origin is StatementHub, StateHub, OriginEvents, InterfaceOrigin {
+contract Origin is SystemRegistry, StateHub, OriginEvents, InterfaceOrigin {
     using MemViewLib for bytes;
     using TipsLib for bytes;
     using TypeCasts for address;
@@ -28,7 +27,7 @@ contract Origin is StatementHub, StateHub, OriginEvents, InterfaceOrigin {
     // ═════════════════════════════════════════ CONSTRUCTOR & INITIALIZER ═════════════════════════════════════════════
 
     constructor(uint32 domain, IAgentManager agentManager_)
-        DomainContext(domain)
+        SystemBase(domain)
         SystemRegistry(agentManager_)
         Versioned("0.0.3")
     {} // solhint-disable-line no-empty-blocks
@@ -41,104 +40,6 @@ contract Origin is StatementHub, StateHub, OriginEvents, InterfaceOrigin {
         __Ownable_init();
         // Initialize "states": state of an "empty merkle tree" is saved
         _initializeStates();
-    }
-
-    // ═════════════════════════════════════════════ VERIFY STATEMENTS ═════════════════════════════════════════════════
-
-    /// @inheritdoc InterfaceOrigin
-    function verifyAttestation(
-        uint256 stateIndex,
-        bytes memory snapPayload,
-        bytes memory attPayload,
-        bytes memory attSignature
-    ) external returns (bool isValid) {
-        // This will revert if payload is not an attestation
-        Attestation att = _wrapAttestation(attPayload);
-        // This will revert if the attestation signer is not a known Notary
-        (AgentStatus memory status, address notary) = _verifyAttestation(att, attSignature);
-        // Notary needs to be Active/Unstaking
-        _verifyActiveUnstaking(status);
-        // This will revert if payload is not a snapshot
-        Snapshot snapshot = _wrapSnapshot(snapPayload);
-        // This will revert if snapshot/attestation Merkle data doesn't match
-        _verifySnapshotMerkle(att, snapshot);
-        // This will revert if state index is out of range
-        State state = snapshot.state(stateIndex);
-        // This will revert if  state refers to another domain
-        isValid = _isValidState(state);
-        if (!isValid) {
-            emit InvalidAttestationState(stateIndex, state.unwrap().clone(), attPayload, attSignature);
-            // Slash Notary and notify local AgentManager
-            _slashAgent(status.domain, notary);
-        }
-    }
-
-    /// @inheritdoc InterfaceOrigin
-    function verifyAttestationWithProof(
-        uint256 stateIndex,
-        bytes memory statePayload,
-        bytes32[] memory snapProof,
-        bytes memory attPayload,
-        bytes memory attSignature
-    ) external returns (bool isValid) {
-        // This will revert if payload is not an attestation
-        Attestation att = _wrapAttestation(attPayload);
-        // This will revert if the attestation signer is not a known Notary
-        (AgentStatus memory status, address notary) = _verifyAttestation(att, attSignature);
-        // Notary needs to be Active/Unstaking
-        _verifyActiveUnstaking(status);
-        // This will revert if payload is not a state
-        State state = _wrapState(statePayload);
-        // This will revert if any of these is true:
-        //  - Attestation root is not equal to Merkle Root derived from State and Snapshot Proof.
-        //  - Snapshot Proof's first element does not match the State metadata.
-        //  - Snapshot Proof length exceeds Snapshot tree Height.
-        //  - State index is out of range.
-        _verifySnapshotMerkle(att, stateIndex, state, snapProof);
-        // This will revert, if state refers to another domain
-        isValid = _isValidState(state);
-        if (!isValid) {
-            emit InvalidAttestationState(stateIndex, statePayload, attPayload, attSignature);
-            // Slash Notary and notify local AgentManager
-            _slashAgent(status.domain, notary);
-        }
-    }
-
-    /// @inheritdoc InterfaceOrigin
-    function verifySnapshot(uint256 stateIndex, bytes memory snapPayload, bytes memory snapSignature)
-        external
-        returns (bool isValid)
-    {
-        // This will revert if payload is not a snapshot
-        Snapshot snapshot = _wrapSnapshot(snapPayload);
-        // This will revert if the snapshot signer is not a known Agent
-        (AgentStatus memory status, address agent) = _verifySnapshot(snapshot, snapSignature);
-        // Agent needs to be Active/Unstaking
-        _verifyActiveUnstaking(status);
-        // This will revert, if state index is out of range, or state refers to another domain
-        isValid = _isValidState(snapshot.state(stateIndex));
-        if (!isValid) {
-            emit InvalidSnapshotState(stateIndex, snapPayload, snapSignature);
-            // Slash Agent and notify local AgentManager
-            _slashAgent(status.domain, agent);
-        }
-    }
-
-    /// @inheritdoc InterfaceOrigin
-    function verifyStateReport(bytes memory srPayload, bytes memory srSignature) external returns (bool isValid) {
-        // This will revert if payload is not a snapshot report
-        StateReport report = _wrapStateReport(srPayload);
-        // This will revert if the report signer is not a known Guard
-        (AgentStatus memory status, address guard) = _verifyStateReport(report, srSignature);
-        // Guard needs to be Active/Unstaking
-        _verifyActiveUnstaking(status);
-        // Report is valid, if the reported state is invalid
-        isValid = !_isValidState(report.state());
-        if (!isValid) {
-            emit InvalidStateReport(srPayload, srSignature);
-            // Slash Guard and notify local AgentManager
-            _slashAgent(0, guard);
-        }
     }
 
     // ═══════════════════════════════════════════════ SEND MESSAGES ═══════════════════════════════════════════════════

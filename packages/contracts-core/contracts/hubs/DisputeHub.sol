@@ -4,11 +4,13 @@ pragma solidity 0.8.17;
 // ══════════════════════════════ LIBRARY IMPORTS ══════════════════════════════
 import {DisputeFlag, DisputeStatus} from "../libs/Structures.sol";
 // ═════════════════════════════ INTERNAL IMPORTS ══════════════════════════════
-import {AgentStatus, Attestation, Snapshot, StatementHub, StateReport} from "./StatementHub.sol";
 import {DisputeHubEvents} from "../events/DisputeHubEvents.sol";
 import {IDisputeHub} from "../interfaces/IDisputeHub.sol";
+import {SystemRegistry} from "../system/SystemRegistry.sol";
 
-abstract contract DisputeHub is StatementHub, DisputeHubEvents, IDisputeHub {
+abstract contract DisputeHub is SystemRegistry, DisputeHubEvents, IDisputeHub {
+    // TODO: Merge with ExecutionHub
+
     // ══════════════════════════════════════════════════ STORAGE ══════════════════════════════════════════════════════
 
     // (agent => their dispute status)
@@ -20,69 +22,8 @@ abstract contract DisputeHub is StatementHub, DisputeHubEvents, IDisputeHub {
     // ══════════════════════════════════════════ INITIATE DISPUTE LOGIC ═══════════════════════════════════════════════
 
     /// @inheritdoc IDisputeHub
-    function submitStateReport(
-        uint256 stateIndex,
-        bytes memory srPayload,
-        bytes memory srSignature,
-        bytes memory snapPayload,
-        bytes memory snapSignature
-    ) external returns (bool wasAccepted) {
-        // Call the hook and check if we can accept the statement
-        if (!_beforeStatement()) return false;
-        // This will revert if payload is not a state report
-        StateReport report = _wrapStateReport(srPayload);
-        // This will revert if the report signer is not an known Guard
-        (AgentStatus memory guardStatus, address guard) = _verifyStateReport(report, srSignature);
-        // Check that Guard is active
-        _verifyActive(guardStatus);
-        // This will revert if payload is not a snapshot
-        Snapshot snapshot = _wrapSnapshot(snapPayload);
-        // This will revert if the snapshot signer is not a known Agent
-        (AgentStatus memory notaryStatus, address notary) = _verifySnapshot(snapshot, snapSignature);
-        // Snapshot signer needs to be a Notary, not a Guard
-        require(notaryStatus.domain != 0, "Snapshot signer is not a Notary");
-        // Notary needs to be Active/Unstaking
-        _verifyActiveUnstaking(notaryStatus);
-        // Snapshot state and reported state need to be the same
-        // This will revert if state index is out of range
-        require(snapshot.state(stateIndex).equals(report.state()), "States don't match");
-        // Reported State was used by the Notary for their signed snapshot => open dispute
-        _openDispute(guard, notaryStatus.domain, notary);
-        return true;
-    }
-
-    /// @inheritdoc IDisputeHub
-    function submitStateReportWithProof(
-        uint256 stateIndex,
-        bytes memory srPayload,
-        bytes memory srSignature,
-        bytes32[] memory snapProof,
-        bytes memory attPayload,
-        bytes memory attSignature
-    ) external returns (bool wasAccepted) {
-        // Call the hook and check if we can accept the statement
-        if (!_beforeStatement()) return false;
-        // This will revert if payload is not a state report
-        StateReport report = _wrapStateReport(srPayload);
-        // This will revert if the report signer is not an known Guard
-        (AgentStatus memory guardStatus, address guard) = _verifyStateReport(report, srSignature);
-        // Check that Guard is active
-        _verifyActive(guardStatus);
-        // This will revert if payload is not an attestation
-        Attestation att = _wrapAttestation(attPayload);
-        // This will revert if signer is not a known Notary
-        (AgentStatus memory notaryStatus, address notary) = _verifyAttestation(att, attSignature);
-        // Notary needs to be Active/Unstaking
-        _verifyActiveUnstaking(notaryStatus);
-        // This will revert if any of these is true:
-        //  - Attestation root is not equal to Merkle Root derived from State and Snapshot Proof.
-        //  - Snapshot Proof's first element does not match the State metadata.
-        //  - Snapshot Proof length exceeds Snapshot tree Height.
-        //  - State index is out of range.
-        _verifySnapshotMerkle(att, stateIndex, report.state(), snapProof);
-        // Reported State was used by the Notary for their signed attestation => open dispute
-        _openDispute(guard, notaryStatus.domain, notary);
-        return true;
+    function openDispute(address guard, uint32 domain, address notary) external onlyAgentManager {
+        _openDispute(guard, domain, notary);
     }
 
     // ═══════════════════════════════════════════════════ VIEWS ═══════════════════════════════════════════════════════
@@ -93,10 +34,6 @@ abstract contract DisputeHub is StatementHub, DisputeHubEvents, IDisputeHub {
     }
 
     // ══════════════════════════════════════════════ INTERNAL LOGIC ═══════════════════════════════════════════════════
-
-    /// @dev Hook that is called before every statement is handled.
-    /// @return acceptNext  Whether to accept the next statement
-    function _beforeStatement() internal virtual returns (bool acceptNext);
 
     /// @dev Opens a Dispute between a Guard and a Notary.
     /// This should be called, when the Guard submits a Report on a statement signed by the Notary.

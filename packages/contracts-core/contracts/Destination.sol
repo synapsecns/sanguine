@@ -13,10 +13,11 @@ import {IAgentManager} from "./interfaces/IAgentManager.sol";
 import {InterfaceDestination} from "./interfaces/InterfaceDestination.sol";
 import {InterfaceLightManager} from "./interfaces/InterfaceLightManager.sol";
 import {DisputeHub, ExecutionHub} from "./hubs/ExecutionHub.sol";
-import {DomainContext, Versioned} from "./system/SystemContract.sol";
+import {SystemBase, Versioned} from "./system/SystemBase.sol";
 import {SystemRegistry} from "./system/SystemRegistry.sol";
 
 contract Destination is ExecutionHub, DestinationEvents, InterfaceDestination {
+    using AttestationLib for bytes;
     using ByteString for bytes;
 
     // TODO: this could be further optimized in terms of storage
@@ -42,7 +43,7 @@ contract Destination is ExecutionHub, DestinationEvents, InterfaceDestination {
     // ═════════════════════════════════════════ CONSTRUCTOR & INITIALIZER ═════════════════════════════════════════════
 
     constructor(uint32 domain, IAgentManager agentManager_)
-        DomainContext(domain)
+        SystemBase(domain)
         SystemRegistry(agentManager_)
         Versioned("0.0.3")
     {} // solhint-disable-line no-empty-blocks
@@ -61,23 +62,19 @@ contract Destination is ExecutionHub, DestinationEvents, InterfaceDestination {
     // ═════════════════════════════════════════════ ACCEPT STATEMENTS ═════════════════════════════════════════════════
 
     /// @inheritdoc InterfaceDestination
-    function submitAttestation(bytes memory attPayload, bytes memory attSignature)
-        external
-        returns (bool wasAccepted)
-    {
+    function acceptAttestation(
+        address notary,
+        AgentStatus memory status,
+        bytes memory attPayload,
+        bytes memory attSignature
+    ) external returns (bool wasAccepted) {
         // First, try passing current agent merkle root
         (bool rootPassed, bool rootPending) = passAgentRoot();
         // Don't accept attestation, if the agent root was updated in LightManager,
         // as the following agent check will fail.
         if (rootPassed) return false;
         // This will revert if payload is not an attestation
-        Attestation att = _wrapAttestation(attPayload);
-        // This will revert if signer is not an known Notary
-        (AgentStatus memory status, address notary) = _verifyAttestation(att, attSignature);
-        // Check that Notary is active
-        _verifyActive(status);
-        // Check that Notary domain is local domain
-        require(status.domain == localDomain, "Wrong Notary domain");
+        Attestation att = attPayload.castToAttestation();
         // Check that Notary who submitted the attestation is not in dispute
         require(!_inDispute(notary), "Notary is in dispute");
         (bytes32 r, bytes32 s, uint8 v) = attSignature.castToSignature().toRSV();
@@ -88,28 +85,6 @@ contract Destination is ExecutionHub, DestinationEvents, InterfaceDestination {
         // Save Agent Root if required, and update the Destination's Status
         destStatus = _saveAgentRoot(rootPending, agentRoot, notary);
         emit AttestationAccepted(status.domain, notary, attPayload, attSignature);
-        return true;
-    }
-
-    /// @inheritdoc InterfaceDestination
-    function submitAttestationReport(bytes memory arPayload, bytes memory arSignature, bytes memory attSignature)
-        external
-        returns (bool wasAccepted)
-    {
-        // Call the hook and check if we can accept the statement
-        if (!_beforeStatement()) return false;
-        // This will revert if payload is not an attestation report
-        AttestationReport report = _wrapAttestationReport(arPayload);
-        // This will revert if the report signer is not a known Guard
-        (AgentStatus memory guardStatus, address guard) = _verifyAttestationReport(report, arSignature);
-        // Check that Guard is active
-        _verifyActive(guardStatus);
-        // This will revert if attestation signer is not a known Notary
-        (AgentStatus memory notaryStatus, address notary) = _verifyAttestation(report.attestation(), attSignature);
-        // Notary needs to be Active/Unstaking
-        _verifyActiveUnstaking(notaryStatus);
-        // Reported Attestation was signed by the Notary => open dispute
-        _openDispute(guard, notaryStatus.domain, notary);
         return true;
     }
 
@@ -169,14 +144,6 @@ contract Destination is ExecutionHub, DestinationEvents, InterfaceDestination {
     }
 
     // ══════════════════════════════════════════════ INTERNAL LOGIC ═══════════════════════════════════════════════════
-
-    /// @inheritdoc DisputeHub
-    function _beforeStatement() internal override returns (bool acceptNext) {
-        (bool rootPassed,) = passAgentRoot();
-        // We don't accept statements if the root was updated just now,
-        // as all the agent checks will fail otherwise.
-        return !rootPassed;
-    }
 
     /// @dev Opens a Dispute between a Guard and a Notary.
     /// This is overridden to allow disputes only between a Guard and a LOCAL Notary.

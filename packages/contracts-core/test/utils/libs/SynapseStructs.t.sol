@@ -371,7 +371,7 @@ library CastLib {
         uint40 timestamp
     ) internal view returns (RawAttestation memory ra) {
         Snapshot snapshot = rawSnap.castToSnapshot();
-        ra.snapRoot = snapshot.root();
+        ra.snapRoot = snapshot.calculateRoot();
         ra.agentRoot = agentRoot;
         ra.nonce = nonce;
         ra.blockNumber = blockNumber;

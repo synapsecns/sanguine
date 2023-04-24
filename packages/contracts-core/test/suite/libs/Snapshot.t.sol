@@ -55,7 +55,7 @@ contract SnapshotLibraryTest is SynapseLibraryTest {
         // MerkleMath library is covered in a separate uint test, we assume it is working fine
         MerkleMath.calculateRoot(stateHashes, SNAPSHOT_TREE_HEIGHT - 1);
         // Expected merkle root value is stateHashes[0]
-        assertEq(libHarness.root(payload), stateHashes[0], "!root");
+        assertEq(libHarness.calculateRoot(payload), stateHashes[0], "!root");
     }
 
     function test_isSnapshot_length(uint16 length) public {
