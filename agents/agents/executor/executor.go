@@ -695,14 +695,20 @@ func (e Executor) processLog(parentCtx context.Context, log ethTypes.Log, chainI
 
 	switch contractEvent.contractType {
 	case originContract:
+		span.AddEvent("origin contract")
+
 		message, err := e.logToMessage(log, chainID)
 		if err != nil {
 			return fmt.Errorf("could not convert log to leaf: %w", err)
 		}
 
+		span.AddEvent("converted log to message")
+
 		if message == nil {
 			return nil
 		}
+
+		span.AddEvent("message is not nil")
 
 		merkleIndex := e.chainExecutors[chainID].merkleTree.NumOfItems()
 		leaf, err := (*message).ToLeaf()
@@ -710,12 +716,18 @@ func (e Executor) processLog(parentCtx context.Context, log ethTypes.Log, chainI
 			return fmt.Errorf("could not convert message to leaf: %w", err)
 		}
 
+		span.AddEvent("converted message to leaf")
+
 		// Make sure the nonce of the message is being inserted at the right index.
 		if merkleIndex+1 != (*message).Nonce() {
 			return fmt.Errorf("nonce of message is not equal to the merkle index: %d != %d", (*message).Nonce(), merkleIndex+1)
 		}
 
+		span.AddEvent("nonce is correct")
+
 		e.chainExecutors[chainID].merkleTree.Insert(leaf[:])
+
+		span.AddEvent("inserted leaf into merkle tree")
 
 		err = e.executorDB.StoreMessage(ctx, *message, log.BlockNumber, false, 0)
 		if err != nil {
@@ -727,19 +739,26 @@ func (e Executor) processLog(parentCtx context.Context, log ethTypes.Log, chainI
 		//nolint:exhaustive
 		switch contractEvent.eventType {
 		case attestationAcceptedEvent:
+			span.AddEvent("attestation accepted event")
 			attestation, err := e.logToAttestation(log, chainID)
 			if err != nil {
 				return fmt.Errorf("could not convert log to attestation: %w", err)
 			}
 
+			span.AddEvent("attestation converted")
+
 			if attestation == nil {
 				return nil
 			}
+
+			span.AddEvent("attestation not nil")
 
 			logHeader, err := e.chainExecutors[chainID].rpcClient.HeaderByNumber(ctx, big.NewInt(int64(log.BlockNumber)))
 			if err != nil {
 				return fmt.Errorf("could not get log header: %w", err)
 			}
+
+			span.AddEvent("log header retrieved")
 
 			err = e.executorDB.StoreAttestation(ctx, *attestation, chainID, log.BlockNumber, logHeader.Time)
 			if err != nil {
