@@ -97,6 +97,7 @@ const App = ({ Component, pageProps }: AppProps) => {
     rpc['projectId'] = chain.id
     synapseProviders.push(rpc)
   })
+  console.log('ROOT RENDER')
   return (
     <WagmiConfig client={wagmiClient}>
       <RainbowKitProvider chains={chains} theme={darkTheme()}>
@@ -104,7 +105,11 @@ const App = ({ Component, pageProps }: AppProps) => {
           chainIds={chains.map((chain) => chain.id)}
           providers={synapseProviders}
         >
-          <Component {...pageProps} />
+          {process.env.NEXT_PUBLIC_ALCHEMY_KEY ? (
+            <Component {...pageProps} />
+          ) : (
+            <div>Alchemy key not set{process.env.NEXT_PUBLIC_ALCHEMY_KEY}</div>
+          )}
           <CustomToaster />
         </SynapseProvider>
       </RainbowKitProvider>

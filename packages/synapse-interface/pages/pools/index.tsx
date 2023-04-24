@@ -14,19 +14,26 @@ import { DEFAULT_FROM_CHAIN } from '@/constants/swap'
 
 import PoolTabs from './PoolTabs'
 
-export default function PoolsPage() {
-  const { address } = useAccount()
+const PoolsPage = () => {
+  const { address: currentAddress } = useAccount()
   const { chain } = useNetwork()
   const [connectedChainId, setConnectedChainId] = useState(0)
   const [tabIndex, setTabIndex] = useState(0)
-
+  const [address, setAddress] = useState(undefined)
+  console.log('PoolsPage RERENDER')
   useEffect(() => {
+    console.log('chain', chain)
     setConnectedChainId(chain?.id ?? DEFAULT_FROM_CHAIN)
   }, [chain])
-  console.log('DISPLAY_POOLS_BY_CHAIN', DISPLAY_POOLS_BY_CHAIN)
-  console.log('USD_POOLS_BY_CHAIN', USD_POOLS_BY_CHAIN)
-  console.log('ETH_POOLS_BY_CHAIN', ETH_POOLS_BY_CHAIN)
-  console.log('LEGACY_POOLS_BY_CHAIN', LEGACY_POOLS_BY_CHAIN)
+  useEffect(() => {
+    console.log('currentAddress', currentAddress)
+    setAddress(currentAddress)
+  }, [currentAddress])
+
+  // console.log('DISPLAY_POOLS_BY_CHAIN', DISPLAY_POOLS_BY_CHAIN)
+  // console.log('USD_POOLS_BY_CHAIN', USD_POOLS_BY_CHAIN)
+  // console.log('ETH_POOLS_BY_CHAIN', ETH_POOLS_BY_CHAIN)
+  // console.log('LEGACY_POOLS_BY_CHAIN', LEGACY_POOLS_BY_CHAIN)
   return (
     <LandingPageWrapper>
       <StandardPageContainer
@@ -35,6 +42,7 @@ export default function PoolsPage() {
       >
         {/* <HarmonyCheck fromChainId={chainId} toChainId={chainId} /> */}
         <PoolTabs
+          address={address}
           arr={[
             {
               index: 0,
@@ -59,10 +67,10 @@ export default function PoolsPage() {
             },
           ]}
           connectedChainId={connectedChainId}
-          tabIndex={tabIndex}
-          setTabIndex={setTabIndex}
         />
       </StandardPageContainer>
     </LandingPageWrapper>
   )
 }
+
+export default PoolsPage

@@ -1,11 +1,12 @@
 import { BigNumber } from '@ethersproject/bignumber'
 import { Zero, One, AddressZero } from '@ethersproject/constants'
 import { formatBNToPercentString } from '@bignumber/format'
-import { PoolTokenObject, Token } from '@types'
+import { PoolTokenObject } from '@types'
 
 export const MAX_BN_POW = BigNumber.from(10).pow(18)
 
 export const getPriceMultiplier = ({ poolType, prices }) => {
+  console.log('poolType', poolType, prices)
   switch (poolType) {
     case 'ETH':
       return prices.ethPrice
@@ -37,9 +38,10 @@ export const getBalanceInfo = async ({ lpTokenContract, account }) => {
   return arr
 }
 
-export const getTokenBalanceInfo = ({ tokenBalances, poolType, ...rest }) => {
+export const getTokenBalanceInfo = ({ tokenBalances, poolType, prices }) => {
   const tokenBalancesSum = calcBnSum(tokenBalances)
-  const priceMultiplier = getPriceMultiplier({ ...rest, poolType })
+  const priceMultiplier = getPriceMultiplier({ prices, poolType })
+  console.log('priceMultiplier', tokenBalancesSum, priceMultiplier)
   const tokenBalancesUSD = tokenBalancesSum?.mul(priceMultiplier ?? 0)
 
   return {

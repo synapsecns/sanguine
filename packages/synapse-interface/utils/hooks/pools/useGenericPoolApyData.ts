@@ -1,53 +1,70 @@
 import { formatUnits } from '@ethersproject/units'
-import { SYN_ETH_SUSHI_TOKEN } from '@constants/tokens/lp'
+import { SYN_ETH_SUSHI_TOKEN } from '@constants/tokens/sushiMaster'
 import { MINICHEF_ADDRESSES } from '@constants/minichef'
-import { useGenericMiniChefContract } from '@hooks/contracts/useMiniChefContract'
-import { useGenericTokenContract } from '@hooks/contracts/useContract'
-import { useSynPrices } from '@hooks/useSynPrices'
-import {
-  useSingleCallResult,
-  useSingleContractMultipleMethods,
-} from '@hooks/multicall'
+import { useSynPrices } from '@utils/hooks/useSynPrices'
+import { Zero, One } from '@ethersproject/constants'
+import { fetchBalance, fetchToken, readContract } from '@wagmi/core'
+import MINICHEF_ABI from '@abis/miniChef.json'
+import { BigNumber } from 'ethers'
+export const useGenericPoolApyData = async (chainId, poolToken) => {
+  if (!MINICHEF_ADDRESSES?.[chainId]) {
+    console.log('no minichef address found for chainId', chainId)
+    return {
+      fullCompoundedAPY: 0,
+      weeklyAPR: 0,
+      yearlyAPRUnvested: 0,
+    }
+  }
+  const minichefAddress: `0x${string}` = `0x${MINICHEF_ADDRESSES[chainId].slice(
+    2
+  )}`
 
-export const useGenericPoolApyData = (chainId, poolToken) => {
-  const miniChefContract = useGenericMiniChefContract(chainId)
-  const poolTokenContract = useGenericTokenContract(chainId, poolToken)
-
-  const synPriceData = useSynPrices()
-
-  const [synapsePerSecondResult, totalAllocPointsResult, poolInfoResult] =
-    useSingleContractMultipleMethods(
-      chainId,
-      miniChefContract,
-      {
-        synapsePerSecond: [],
-        totalAllocPoint: [],
-        poolInfo: [poolToken.poolId[chainId]],
-      },
-      { resultOnly: true }
-    )
-
-  const lpTokenBalanceResult = useSingleCallResult(
+  const synapsePerSecondResult: any = await readContract({
+    address: minichefAddress,
+    abi: MINICHEF_ABI,
+    functionName: 'synapsePerSecond',
     chainId,
-    poolTokenContract,
-    'balanceOf',
-    [MINICHEF_ADDRESSES[chainId]],
-    { resultOnly: true }
-  )
+  })
 
-  const lpTokenSupplyResult = useSingleCallResult(
+  const totalAllocPointsResult: any = await readContract({
+    address: minichefAddress,
+    abi: MINICHEF_ABI,
+    functionName: 'totalAllocPoint',
     chainId,
-    poolTokenContract,
-    'totalSupply',
-    [],
-    { resultOnly: true }
-  )
+  })
 
-  const synapsePerSecond = synapsePerSecondResult?.[0] ?? 0
-  const totalAllocPoints = totalAllocPointsResult?.[0] ?? 1
-  const allocPoints = poolInfoResult?.allocPoint ?? 1
-  const lpTokenBalance = lpTokenBalanceResult?.balance ?? 0
-  const lpTokenSupply = lpTokenSupplyResult?.[0] ?? 0
+  const poolInfoResult: any = await readContract({
+    address: minichefAddress,
+    abi: MINICHEF_ABI,
+    functionName: 'poolInfo',
+    chainId,
+    args: [poolToken.poolId[chainId]],
+  })
+
+  const lpTokenBalanceResult =
+    (
+      await fetchBalance({
+        address: minichefAddress,
+        chainId,
+        token: poolToken.addresses[chainId],
+      })
+    )?.value ?? Zero
+
+  const lpTokenSupplyResult =
+    (
+      await fetchToken({
+        address: poolToken.addresses[chainId],
+        chainId,
+      })
+    )?.totalSupply?.value ?? Zero
+
+  const synPriceData = await useSynPrices()
+
+  const synapsePerSecond: BigNumber = synapsePerSecondResult ?? Zero
+  const totalAllocPoints: BigNumber = totalAllocPointsResult ?? One
+  const allocPoints: BigNumber = poolInfoResult?.allocPoint ?? One
+  const lpTokenBalance: BigNumber = lpTokenBalanceResult ?? Zero
+  const lpTokenSupply: BigNumber = lpTokenSupplyResult ?? Zero
 
   let rewardsPerWeek
   try {
@@ -56,9 +73,11 @@ export const useGenericPoolApyData = (chainId, poolToken) => {
     rewardsPerWeek = 0
   }
 
-  const poolRewardsPerWeek = (allocPoints / totalAllocPoints) * rewardsPerWeek
-  if (poolRewardsPerWeek == 0) {
-    return
+  const poolRewardsPerWeek =
+    allocPoints.div(totalAllocPoints).toNumber() * rewardsPerWeek
+  if (poolRewardsPerWeek === 0) {
+    console.log("poolRewardsPerWeek === 0, can't calculate APY", chainId)
+    return {}
   }
 
   const synValueInUsd = synPriceData.synBalanceNumber * synPriceData.synPrice
@@ -87,8 +106,8 @@ export const useGenericPoolApyData = (chainId, poolToken) => {
   const yearlyCompoundedAPR = 100 * ((1 + decimalAPR / 365) ** 365 - 1)
 
   return {
-    fullCompoundedAPY: _.round(yearlyCompoundedAPR, 2),
-    weeklyAPR: _.round(weeklyAPR, 2),
-    yearlyAPRUnvested: _.round(yearlyAPR, 2),
+    fullCompoundedAPY: Math.round(yearlyCompoundedAPR * 100) / 100,
+    weeklyAPR: Math.round(weeklyAPR * 100) / 100,
+    yearlyAPRUnvested: Math.round(yearlyAPR * 100) / 100,
   }
 }

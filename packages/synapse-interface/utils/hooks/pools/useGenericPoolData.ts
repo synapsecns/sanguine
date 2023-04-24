@@ -1,4 +1,4 @@
-import { Zero } from '@ethersproject/constants'
+import { Zero, One } from '@ethersproject/constants'
 // import { useActiveWeb3React } from '@hooks/wallet/useActiveWeb3React'
 import { useGenericPoolApyData } from '@hooks/pools/useGenericPoolApyData'
 import { useEthPrice, useAvaxPrice } from '@hooks/usePrices'
@@ -10,31 +10,23 @@ import {
   MAX_BN_POW,
 } from '@utils/poolDataFuncs'
 import { STAKING_MAP_TOKENS } from '@constants/tokens'
-import { useSynapseContext } from '@utils/SynapseProvider'
 import { fetchBalance } from '@wagmi/core'
 import { PoolTokenObject } from '@types'
+import { BigNumber } from 'ethers'
 
-export const useGenericPoolData = async (chainId, poolName, address) => {
-  const SynapseSDK = useSynapseContext()
-  const poolToken = STAKING_MAP_TOKENS[chainId][poolName]
-  const { poolType, addresses, poolTokens, swapAddresses } = poolToken
-  const poolTokenAddress = addresses[chainId]
-  const poolAddress = swapAddresses[chainId]
-  if (!poolTokenAddress || !poolAddress) {
-    return null
-  }
-
-  // get LP token
-  const lpTokenAddress = (await SynapseSDK.getPoolInfo(chainId, poolAddress))
-    ?.lpToken
-
-  // get balances of all tokens in the pool
+const getBalanceData = async ({
+  poolAddress,
+  poolToken,
+  chainId,
+  address,
+  lpTokenAddress,
+}) => {
   const tokenBalances: PoolTokenObject[] = []
   const userTokenBalances: PoolTokenObject[] = []
   let poolTokenSum = Zero
-  let userLpTokenBalance = Zero
-  let lpTokenBalance = Zero
-  for (const token of poolTokens.length) {
+  let userLpTokenBalance = One
+  let lpTokenBalance = One
+  for (const token of poolToken?.poolTokens) {
     const isLP = token.addresses[chainId] === lpTokenAddress
 
     const rawBalance =
@@ -45,6 +37,7 @@ export const useGenericPoolData = async (chainId, poolName, address) => {
           token: token.addresses[chainId],
         })
       )?.value ?? Zero
+
     const rawUserBalance =
       (
         await fetchBalance({
@@ -53,9 +46,13 @@ export const useGenericPoolData = async (chainId, poolName, address) => {
           token: token.addresses[chainId],
         })
       )?.value ?? Zero
-    const balance = rawBalance?.pow(18 - token.decimals[chainId]) ?? Zero
+    const balance =
+      rawBalance?.mul(BigNumber.from(10)?.pow(18 - token.decimals[chainId])) ??
+      Zero
     const userBalance =
-      rawUserBalance?.pow(18 - token.decimals[chainId]) ?? Zero
+      rawUserBalance?.mul(
+        BigNumber.from(10)?.pow(18 - token.decimals[chainId])
+      ) ?? Zero
 
     // add to balances
     tokenBalances.push({
@@ -80,28 +77,50 @@ export const useGenericPoolData = async (chainId, poolName, address) => {
     }
 
     // running sum of all tokens in the pool
-    poolTokenSum = poolTokenSum.add(balance)
+    if (balance) {
+      poolTokenSum = poolTokenSum.add(balance)
+    }
   }
+  return {
+    tokenBalances,
+    userTokenBalances,
+    poolTokenSum,
+    userLpTokenBalance,
+    lpTokenBalance,
+  }
+}
+export const useGenericPoolData = async (
+  chainId,
+  poolName,
+  address,
+  SynapseSDK
+) => {
+  const poolToken = STAKING_MAP_TOKENS?.[chainId]?.[poolName]
+  const poolTokenAddress = poolToken?.addresses[chainId]
+  const poolAddress = poolToken?.swapAddresses[chainId]
+  if (!poolTokenAddress || !poolAddress) {
+    return null
+  }
+  // get LP token
+  const lpTokenAddress = (await SynapseSDK.getPoolInfo(chainId, poolAddress))
+    ?.lpToken
+  const {
+    tokenBalances,
+    userTokenBalances,
+    poolTokenSum,
+    userLpTokenBalance,
+    lpTokenBalance,
+  } = await getBalanceData({
+    poolAddress,
+    poolToken,
+    chainId,
+    address,
+    lpTokenAddress,
+  })
 
-  const virtualPriceResult = poolTokenSum.div(
-    tokenBalances.filter((t) => t.isLP)[0].balance
-  )
-
-  console.log('lp token', `0x${lpTokenAddress.slice(2)}`)
-
-  console.log('tokenBalances', tokenBalances)
-  // const swapContract = useGenericSwapContract(chainId, poolName)
-  // get
-  // const poolApyData = useGenericPoolApyData(chainId, poolToken)
-
-  // const lpTokenContract = useGenericContract(
-  //   chainId,
-  //   poolToken.addresses[chainId],
-  //   LPTOKEN_ABI
-  // )
-
-  const ethPrice = useEthPrice()
-  const avaxPrice = useAvaxPrice()
+  const virtualPriceResult = poolTokenSum?.div(lpTokenBalance)
+  const ethPrice = await useEthPrice()
+  const avaxPrice = await useAvaxPrice()
 
   let virtualPrice
   if (lpTokenBalance.isZero()) {
@@ -111,16 +130,13 @@ export const useGenericPoolData = async (chainId, poolName, address) => {
   }
 
   const { tokenBalancesSum, tokenBalancesUSD } = getTokenBalanceInfo({
-    tokenBalances,
+    tokenBalances: tokenBalances.map((t) => t.balance),
     prices: {
       ethPrice,
       avaxPrice,
     },
-    poolType,
+    poolType: poolToken?.poolType,
   })
-
-  // const { adminFee, swapFee } = await swapStorageRequest
-  // (weeksPerYear * KEEPPerWeek * KEEPPrice) / (BTCPrice * BTCInPool)
 
   // User share data
   const userShare = userLpTokenBalance
@@ -134,7 +150,7 @@ export const useGenericPoolData = async (chainId, poolName, address) => {
   const userPoolTokenBalancesSum = calcBnSum(userPoolTokenBalances)
 
   const sharedArgs = {
-    lpTokenBalance: tokenBalances.filter((t) => !t.isLP)[0].balance,
+    lpTokenBalance,
     tokenBalancesSum,
   }
 
@@ -148,6 +164,8 @@ export const useGenericPoolData = async (chainId, poolName, address) => {
     ...sharedArgs,
   })
 
+  const poolApyData = (await useGenericPoolApyData(chainId, poolToken)) ?? {}
+
   const poolDataObj = {
     name: poolName,
     tokens: generalPoolTokens,
@@ -156,7 +174,7 @@ export const useGenericPoolData = async (chainId, poolName, address) => {
     virtualPrice,
     volume: 'XXX', // TODO
     utilization: 'XXX', // TODO
-    apy: {}, //? DIFF apidata
+    apy: poolApyData, //? DIFF apidata
   }
 
   let userShareData
@@ -174,7 +192,7 @@ export const useGenericPoolData = async (chainId, poolName, address) => {
   } else {
     userShareData = null
   }
-  return [poolDataObj, userShareData]
+  return { poolDataObj, userShareData }
 
   // return [poolData, userPoolData]
 }

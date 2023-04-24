@@ -2,8 +2,7 @@ import { commify } from '@ethersproject/units'
 
 import { formatBNToString } from '@bignumber/format'
 
-export function getPoolStats(poolData) {
-
+export const getPoolStats = (poolData) => {
   const { apy, totalLockedUSD } = poolData ?? {}
 
   let fullCompoundedApyStr
@@ -11,7 +10,10 @@ export function getPoolStats(poolData) {
 
   if (poolData) {
     try {
-      if ((0 < apy?.fullCompoundedAPY) && (apy?.fullCompoundedAPY < Number.MAX_SAFE_INTEGER)) {
+      if (
+        0 < apy?.fullCompoundedAPY &&
+        apy?.fullCompoundedAPY < Number.MAX_SAFE_INTEGER
+      ) {
         fullCompoundedApyStr = apy?.fullCompoundedAPY
       }
     } catch (error) {
@@ -20,7 +22,7 @@ export function getPoolStats(poolData) {
     try {
       if (totalLockedUSD > 0) {
         totalLockedUSDStr = commify(formatBNToString(totalLockedUSD, 18, 0))
-        if (totalLockedUSDStr === "0") {
+        if (totalLockedUSDStr === '0') {
           totalLockedUSDStr = undefined
         }
       }
@@ -33,6 +35,6 @@ export function getPoolStats(poolData) {
     apy,
     totalLockedUSD,
     fullCompoundedApyStr,
-    totalLockedUSDStr
+    totalLockedUSDStr,
   }
 }

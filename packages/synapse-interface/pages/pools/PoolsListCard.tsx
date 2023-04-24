@@ -1,8 +1,8 @@
 // import { Link, useHistory } from 'react-router-dom'
 import Link from 'next/link'
 import { getPoolUrl } from '@urls'
-import { POOL_INVERTED_ROUTER_INDEX } from '@constants/poolRouter'
-import { fetchSigner, getNetwork, switchNetwork } from '@wagmi/core'
+// import { POOL_INVERTED_ROUTER_INDEX } from '@constants/poolRouter'
+import { switchNetwork } from '@wagmi/core'
 import { useEffect, useState } from 'react'
 // import { POOLS_MAP } from '@hooks/pools/usePools'
 
@@ -13,105 +13,132 @@ import { useGenericPoolData } from '@hooks/pools/useGenericPoolData'
 import Card from '@tw/Card'
 import Grid from '@tw/Grid'
 
-import ApyTooltip from '@components/ApyTooltip'
-
 import { getPoolStats } from './getPoolStats'
-
+import { memo } from 'react'
 import { CHAINS_BY_ID } from '@constants/chains'
-import { POOLS_BY_CHAIN } from '@constants/tokens'
-const PoolsListCard = ({ poolName, chainId, address, connectedChainId }) => {
-  const [poolData, setPoolData] = useState(undefined)
-  useEffect(() => {
-    useGenericPoolData(chainId, address, poolName).then((res) => {
-      console.log('resres: ', res)
-      setPoolData(res)
-    })
-  }, [])
-  // const [poolData] =
+import { STAKING_MAP_TOKENS } from '@constants/tokens'
+import { useSynapseContext } from '@/utils/SynapseProvider'
+const PoolsListCard = memo(
+  ({
+    poolName,
+    chainId,
+    address,
+    connectedChainId,
+  }: {
+    poolName: string
+    chainId: number
+    address: string
+    connectedChainId: number
+  }) => {
+    const [poolData, setPoolData] = useState(undefined)
+    const SynapseSDK = useSynapseContext()
 
-  const poolTokens = POOLS_BY_CHAIN[chainId][poolName]
-  const poolRouterIndex = POOL_INVERTED_ROUTER_INDEX[chainId][poolName]
+    console.log('PoolsListCard RERENDER')
+    useEffect(() => {
+      if (
+        connectedChainId === undefined ||
+        chainId === undefined ||
+        address === undefined ||
+        poolName === undefined
+      ) {
+        return
+      }
+      // TODO - separate the apy and tvl so they load async.
+      useGenericPoolData(chainId, poolName, address, SynapseSDK)
+        .then((res) => {
+          setPoolData(res.poolDataObj)
+        })
+        .catch((err) => {
+          console.log('ERROR useGenericPoolData: ', err)
+        })
+    }, [])
+    // const [poolData] =
+    const chain = CHAINS_BY_ID[chainId]
+    const poolTokens = STAKING_MAP_TOKENS[chainId][poolName]
+    // const poolRouterIndex = POOL_INVERTED_ROUTER_INDEX[chainId][poolName]
+    const { apy, fullCompoundedApyStr, totalLockedUSDStr } =
+      getPoolStats(poolData)
 
-  const { apy, fullCompoundedApyStr, totalLockedUSDStr } =
-    getPoolStats(poolData)
-
-  const { chainName, chainImg } = CHAINS_BY_ID[chainId]
-
-  return (
-    <div>
-      <Link
-        onClick={() => {
-          if (address === undefined) {
-            return alert('Please connect your wallet')
-          }
-          if (chainId != connectedChainId) {
-            const res = switchNetwork({ chainId: chainId })
-              .then((res) => {
-                return res
-              })
-              .catch(() => {
-                return undefined
-              })
-            if (res === undefined) {
-              console.log("can't switch chain, chainId: ", chainId)
-              return
+    return (
+      <div>
+        <Link
+          onClick={() => {
+            if (address === undefined) {
+              return alert('Please connect your wallet')
             }
-            // history.push(getPoolUrl({ poolRouterIndex }))
-          }
-        }}
-        href={getPoolUrl({ poolRouterIndex })}
-      >
-        <Card
-          title={
-            <PoolsCardTitle
-              chainImg={chainImg}
-              poolName={poolName}
-              chainName={chainName}
-            />
-          }
-          titleClassName="text-white font-light text-xl"
-          className={`
+            if (chainId != connectedChainId) {
+              const res = switchNetwork({ chainId: chainId })
+                .then((res) => {
+                  return res
+                })
+                .catch(() => {
+                  return undefined
+                })
+              if (res === undefined) {
+                console.log("can't switch chain, chainId: ", chainId)
+                return
+              }
+              // history.push(getPoolUrl({ poolRouterIndex }))
+            }
+          }}
+          // href={getPoolUrl({ poolRouterIndex })}
+          href="{getPoolUrl({ poolRouterIndex })}" // TODO: fix this
+        >
+          <Card
+            title={
+              <PoolsCardTitle
+                chainImg={chain?.chainImg?.src}
+                poolName={poolName}
+                chainName={chain?.chainName}
+              />
+            }
+            titleClassName="text-white font-light text-xl"
+            className={`
             bg-bgBase transition-all rounded-xl items-center
             hover:bg-bgLight
             py-6 mt-4 pr-2
             border border-transparent
           `}
-          divider={false}
-        >
-          <Grid gap={3} cols={{ xs: 3 }} className="mt-8">
-            <div>
-              <h3 className="text-sm text-opacity-50 text-secondaryTextColor">
-                Assets
-              </h3>
-              <CoinLabels coins={poolTokens} />
-            </div>
-            <div>
-              <h3 className="text-sm text-opacity-50 text-secondaryTextColor">
-                TVL
-              </h3>
-              <div className="mt-2 text-white">
-                ${totalLockedUSDStr ?? <i className="opacity-50"> - </i>}
+            divider={false}
+          >
+            <Grid gap={3} cols={{ xs: 3 }} className="mt-8">
+              <div>
+                <h3 className="text-sm text-opacity-50 text-secondaryTextColor">
+                  Assets
+                </h3>
+                {poolTokens?.poolTokens && (
+                  <CoinLabels coins={poolTokens?.poolTokens} />
+                )}
               </div>
-            </div>
-            <div>
-              <h3 className="text-sm text-opacity-50 text-secondaryTextColor">
-                APY{' '}
-                {/* {fullCompoundedApyStr && (
-                <ApyTooltip className="-m-8" apyData={apy} />
-              )} */}
-              </h3>
-              <div className="mt-2 text-green-400">
-                <>
-                  {fullCompoundedApyStr ?? <i className="opacity-50"> - </i>}%
-                </>
+              <div>
+                <h3 className="text-sm text-opacity-50 text-secondaryTextColor">
+                  TVL
+                </h3>
+                <div className={'mt-2 text-white '}>
+                  {totalLockedUSDStr ? (
+                    '$' + totalLockedUSDStr
+                  ) : (
+                    <div className="animate-pulse rounded bg-slate-700 h-6 w-12" />
+                  )}
+                </div>
               </div>
-            </div>
-          </Grid>
-        </Card>
-      </Link>
-    </div>
-  )
-}
+              <div>
+                <h3 className="text-sm text-opacity-50 text-secondaryTextColor">
+                  APY{' '}
+                </h3>
+                <div className="mt-2 text-green-400">
+                  <>
+                    {fullCompoundedApyStr ?? <i className="opacity-50"> - </i>}%
+                  </>
+                </div>
+              </div>
+            </Grid>
+          </Card>
+        </Link>
+      </div>
+    )
+  }
+)
 
 const PoolsCardTitle = ({ chainName, poolName, chainImg }) => {
   let displayPoolName = poolName.replace(chainName, `<b>${chainName}</b>`)
@@ -127,9 +154,16 @@ const PoolsCardTitle = ({ chainName, poolName, chainImg }) => {
 const CoinLabels = ({ coins }) => {
   return (
     <div className="flex mt-3">
-      {coins.map((coin, i) => (
-        <img alt="" className="w-5 mr-1 rounded-full" src={coin.icon} key={i} />
-      ))}
+      {coins
+        ? coins?.map((coin, i) => (
+            <img
+              alt=""
+              className="w-5 mr-1 rounded-full"
+              src={coin.icon.src}
+              key={i}
+            />
+          ))
+        : null}
     </div>
   )
 }

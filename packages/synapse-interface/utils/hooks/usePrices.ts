@@ -7,29 +7,28 @@ import {
   CHAINLINK_AVAX_PRICE_ADDRESSES,
 } from '@constants/chainlink'
 import { readContract } from '@wagmi/core'
-
-export const useEthPrice = async () => {
+export const useEthPrice = async (): Promise<BigNumber> => {
   // the price result returned by latestAnswer is 8 decimals
-  const ethPriceResult = await readContract({
+  const ethPriceResult: any = await readContract({
     address: `0x${CHAINLINK_ETH_PRICE_ADDRESSES[ALL_CHAINS.ETH.id].slice(2)}`,
     abi: CHAINLINK_AGGREGATOR_ABI,
     functionName: 'latestAnswer',
+    chainId: 1,
   })
-  console.log('ethPriceResult', ethPriceResult)
-  const bnEthPrice = ethPriceResult?.[0] ?? Zero
+  const ethPriceBigNumber = BigNumber.from(ethPriceResult?._hex) ?? Zero
 
-  return bnEthPrice.div(BigNumber.from(10).pow(8))
+  return ethPriceBigNumber.div(BigNumber.from(10).pow(8))
 }
 
-export const useAvaxPrice = async () => {
+export const useAvaxPrice = async (): Promise<BigNumber> => {
   // the price result returned by latestAnswer is 8 decimals
-  const avaxPriceResult = await readContract({
+  const avaxPriceResult: any = await readContract({
     address: `0x${CHAINLINK_AVAX_PRICE_ADDRESSES[ALL_CHAINS.ETH.id].slice(2)}`,
     abi: CHAINLINK_AGGREGATOR_ABI,
     functionName: 'latestAnswer',
+    chainId: 1,
   })
-  console.log('avaxPriceResult', avaxPriceResult)
-  const bnAvaxPrice = avaxPriceResult?.[0] ?? Zero
+  const avaxPriceBigNumber = BigNumber.from(avaxPriceResult?._hex) ?? Zero
 
-  return bnAvaxPrice.div(BigNumber.from(10).pow(8))
+  return avaxPriceBigNumber.div(BigNumber.from(10).pow(8))
 }
