@@ -128,6 +128,98 @@ func (_m *ILightManager) FilterInitialized(opts *bind.FilterOpts) (*lightmanager
 	return r0, r1
 }
 
+// FilterInvalidReceipt provides a mock function with given fields: opts
+func (_m *ILightManager) FilterInvalidReceipt(opts *bind.FilterOpts) (*lightmanager.LightManagerInvalidReceiptIterator, error) {
+	ret := _m.Called(opts)
+
+	var r0 *lightmanager.LightManagerInvalidReceiptIterator
+	if rf, ok := ret.Get(0).(func(*bind.FilterOpts) *lightmanager.LightManagerInvalidReceiptIterator); ok {
+		r0 = rf(opts)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).(*lightmanager.LightManagerInvalidReceiptIterator)
+		}
+	}
+
+	var r1 error
+	if rf, ok := ret.Get(1).(func(*bind.FilterOpts) error); ok {
+		r1 = rf(opts)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
+// FilterInvalidStateReport provides a mock function with given fields: opts
+func (_m *ILightManager) FilterInvalidStateReport(opts *bind.FilterOpts) (*lightmanager.LightManagerInvalidStateReportIterator, error) {
+	ret := _m.Called(opts)
+
+	var r0 *lightmanager.LightManagerInvalidStateReportIterator
+	if rf, ok := ret.Get(0).(func(*bind.FilterOpts) *lightmanager.LightManagerInvalidStateReportIterator); ok {
+		r0 = rf(opts)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).(*lightmanager.LightManagerInvalidStateReportIterator)
+		}
+	}
+
+	var r1 error
+	if rf, ok := ret.Get(1).(func(*bind.FilterOpts) error); ok {
+		r1 = rf(opts)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
+// FilterInvalidStateWithAttestation provides a mock function with given fields: opts
+func (_m *ILightManager) FilterInvalidStateWithAttestation(opts *bind.FilterOpts) (*lightmanager.LightManagerInvalidStateWithAttestationIterator, error) {
+	ret := _m.Called(opts)
+
+	var r0 *lightmanager.LightManagerInvalidStateWithAttestationIterator
+	if rf, ok := ret.Get(0).(func(*bind.FilterOpts) *lightmanager.LightManagerInvalidStateWithAttestationIterator); ok {
+		r0 = rf(opts)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).(*lightmanager.LightManagerInvalidStateWithAttestationIterator)
+		}
+	}
+
+	var r1 error
+	if rf, ok := ret.Get(1).(func(*bind.FilterOpts) error); ok {
+		r1 = rf(opts)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
+// FilterInvalidStateWithSnapshot provides a mock function with given fields: opts
+func (_m *ILightManager) FilterInvalidStateWithSnapshot(opts *bind.FilterOpts) (*lightmanager.LightManagerInvalidStateWithSnapshotIterator, error) {
+	ret := _m.Called(opts)
+
+	var r0 *lightmanager.LightManagerInvalidStateWithSnapshotIterator
+	if rf, ok := ret.Get(0).(func(*bind.FilterOpts) *lightmanager.LightManagerInvalidStateWithSnapshotIterator); ok {
+		r0 = rf(opts)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).(*lightmanager.LightManagerInvalidStateWithSnapshotIterator)
+		}
+	}
+
+	var r1 error
+	if rf, ok := ret.Get(1).(func(*bind.FilterOpts) error); ok {
+		r1 = rf(opts)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
 // FilterOwnershipTransferred provides a mock function with given fields: opts, previousOwner, newOwner
 func (_m *ILightManager) FilterOwnershipTransferred(opts *bind.FilterOpts, previousOwner []common.Address, newOwner []common.Address) (*lightmanager.LightManagerOwnershipTransferredIterator, error) {
 	ret := _m.Called(opts, previousOwner, newOwner)
@@ -343,6 +435,98 @@ func (_m *ILightManager) ParseInitialized(log types.Log) (*lightmanager.LightMan
 	return r0, r1
 }
 
+// ParseInvalidReceipt provides a mock function with given fields: log
+func (_m *ILightManager) ParseInvalidReceipt(log types.Log) (*lightmanager.LightManagerInvalidReceipt, error) {
+	ret := _m.Called(log)
+
+	var r0 *lightmanager.LightManagerInvalidReceipt
+	if rf, ok := ret.Get(0).(func(types.Log) *lightmanager.LightManagerInvalidReceipt); ok {
+		r0 = rf(log)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).(*lightmanager.LightManagerInvalidReceipt)
+		}
+	}
+
+	var r1 error
+	if rf, ok := ret.Get(1).(func(types.Log) error); ok {
+		r1 = rf(log)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
+// ParseInvalidStateReport provides a mock function with given fields: log
+func (_m *ILightManager) ParseInvalidStateReport(log types.Log) (*lightmanager.LightManagerInvalidStateReport, error) {
+	ret := _m.Called(log)
+
+	var r0 *lightmanager.LightManagerInvalidStateReport
+	if rf, ok := ret.Get(0).(func(types.Log) *lightmanager.LightManagerInvalidStateReport); ok {
+		r0 = rf(log)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).(*lightmanager.LightManagerInvalidStateReport)
+		}
+	}
+
+	var r1 error
+	if rf, ok := ret.Get(1).(func(types.Log) error); ok {
+		r1 = rf(log)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
+// ParseInvalidStateWithAttestation provides a mock function with given fields: log
+func (_m *ILightManager) ParseInvalidStateWithAttestation(log types.Log) (*lightmanager.LightManagerInvalidStateWithAttestation, error) {
+	ret := _m.Called(log)
+
+	var r0 *lightmanager.LightManagerInvalidStateWithAttestation
+	if rf, ok := ret.Get(0).(func(types.Log) *lightmanager.LightManagerInvalidStateWithAttestation); ok {
+		r0 = rf(log)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).(*lightmanager.LightManagerInvalidStateWithAttestation)
+		}
+	}
+
+	var r1 error
+	if rf, ok := ret.Get(1).(func(types.Log) error); ok {
+		r1 = rf(log)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
+// ParseInvalidStateWithSnapshot provides a mock function with given fields: log
+func (_m *ILightManager) ParseInvalidStateWithSnapshot(log types.Log) (*lightmanager.LightManagerInvalidStateWithSnapshot, error) {
+	ret := _m.Called(log)
+
+	var r0 *lightmanager.LightManagerInvalidStateWithSnapshot
+	if rf, ok := ret.Get(0).(func(types.Log) *lightmanager.LightManagerInvalidStateWithSnapshot); ok {
+		r0 = rf(log)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).(*lightmanager.LightManagerInvalidStateWithSnapshot)
+		}
+	}
+
+	var r1 error
+	if rf, ok := ret.Get(1).(func(types.Log) error); ok {
+		r1 = rf(log)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
 // ParseOwnershipTransferred provides a mock function with given fields: log
 func (_m *ILightManager) ParseOwnershipTransferred(log types.Log) (*lightmanager.LightManagerOwnershipTransferred, error) {
 	ret := _m.Called(log)
@@ -405,29 +589,6 @@ func (_m *ILightManager) ParseStatusUpdated(log types.Log) (*lightmanager.LightM
 	var r1 error
 	if rf, ok := ret.Get(1).(func(types.Log) error); ok {
 		r1 = rf(log)
-	} else {
-		r1 = ret.Error(1)
-	}
-
-	return r0, r1
-}
-
-// RegistrySlash provides a mock function with given fields: opts, domain, agent, prover
-func (_m *ILightManager) RegistrySlash(opts *bind.TransactOpts, domain uint32, agent common.Address, prover common.Address) (*types.Transaction, error) {
-	ret := _m.Called(opts, domain, agent, prover)
-
-	var r0 *types.Transaction
-	if rf, ok := ret.Get(0).(func(*bind.TransactOpts, uint32, common.Address, common.Address) *types.Transaction); ok {
-		r0 = rf(opts, domain, agent, prover)
-	} else {
-		if ret.Get(0) != nil {
-			r0 = ret.Get(0).(*types.Transaction)
-		}
-	}
-
-	var r1 error
-	if rf, ok := ret.Get(1).(func(*bind.TransactOpts, uint32, common.Address, common.Address) error); ok {
-		r1 = rf(opts, domain, agent, prover)
 	} else {
 		r1 = ret.Error(1)
 	}
@@ -558,6 +719,121 @@ func (_m *ILightManager) SlashStatus(opts *bind.CallOpts, arg0 common.Address) (
 	return r0, r1
 }
 
+// SubmitAttestation provides a mock function with given fields: opts, attPayload, attSignature
+func (_m *ILightManager) SubmitAttestation(opts *bind.TransactOpts, attPayload []byte, attSignature []byte) (*types.Transaction, error) {
+	ret := _m.Called(opts, attPayload, attSignature)
+
+	var r0 *types.Transaction
+	if rf, ok := ret.Get(0).(func(*bind.TransactOpts, []byte, []byte) *types.Transaction); ok {
+		r0 = rf(opts, attPayload, attSignature)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).(*types.Transaction)
+		}
+	}
+
+	var r1 error
+	if rf, ok := ret.Get(1).(func(*bind.TransactOpts, []byte, []byte) error); ok {
+		r1 = rf(opts, attPayload, attSignature)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
+// SubmitAttestationReport provides a mock function with given fields: opts, arPayload, arSignature, attSignature
+func (_m *ILightManager) SubmitAttestationReport(opts *bind.TransactOpts, arPayload []byte, arSignature []byte, attSignature []byte) (*types.Transaction, error) {
+	ret := _m.Called(opts, arPayload, arSignature, attSignature)
+
+	var r0 *types.Transaction
+	if rf, ok := ret.Get(0).(func(*bind.TransactOpts, []byte, []byte, []byte) *types.Transaction); ok {
+		r0 = rf(opts, arPayload, arSignature, attSignature)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).(*types.Transaction)
+		}
+	}
+
+	var r1 error
+	if rf, ok := ret.Get(1).(func(*bind.TransactOpts, []byte, []byte, []byte) error); ok {
+		r1 = rf(opts, arPayload, arSignature, attSignature)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
+// SubmitStateReportWithAttestation provides a mock function with given fields: opts, stateIndex, srPayload, srSignature, snapPayload, attPayload, attSignature
+func (_m *ILightManager) SubmitStateReportWithAttestation(opts *bind.TransactOpts, stateIndex *big.Int, srPayload []byte, srSignature []byte, snapPayload []byte, attPayload []byte, attSignature []byte) (*types.Transaction, error) {
+	ret := _m.Called(opts, stateIndex, srPayload, srSignature, snapPayload, attPayload, attSignature)
+
+	var r0 *types.Transaction
+	if rf, ok := ret.Get(0).(func(*bind.TransactOpts, *big.Int, []byte, []byte, []byte, []byte, []byte) *types.Transaction); ok {
+		r0 = rf(opts, stateIndex, srPayload, srSignature, snapPayload, attPayload, attSignature)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).(*types.Transaction)
+		}
+	}
+
+	var r1 error
+	if rf, ok := ret.Get(1).(func(*bind.TransactOpts, *big.Int, []byte, []byte, []byte, []byte, []byte) error); ok {
+		r1 = rf(opts, stateIndex, srPayload, srSignature, snapPayload, attPayload, attSignature)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
+// SubmitStateReportWithSnapshot provides a mock function with given fields: opts, stateIndex, srPayload, srSignature, snapPayload, snapSignature
+func (_m *ILightManager) SubmitStateReportWithSnapshot(opts *bind.TransactOpts, stateIndex *big.Int, srPayload []byte, srSignature []byte, snapPayload []byte, snapSignature []byte) (*types.Transaction, error) {
+	ret := _m.Called(opts, stateIndex, srPayload, srSignature, snapPayload, snapSignature)
+
+	var r0 *types.Transaction
+	if rf, ok := ret.Get(0).(func(*bind.TransactOpts, *big.Int, []byte, []byte, []byte, []byte) *types.Transaction); ok {
+		r0 = rf(opts, stateIndex, srPayload, srSignature, snapPayload, snapSignature)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).(*types.Transaction)
+		}
+	}
+
+	var r1 error
+	if rf, ok := ret.Get(1).(func(*bind.TransactOpts, *big.Int, []byte, []byte, []byte, []byte) error); ok {
+		r1 = rf(opts, stateIndex, srPayload, srSignature, snapPayload, snapSignature)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
+// SubmitStateReportWithSnapshotProof provides a mock function with given fields: opts, stateIndex, srPayload, srSignature, snapProof, attPayload, attSignature
+func (_m *ILightManager) SubmitStateReportWithSnapshotProof(opts *bind.TransactOpts, stateIndex *big.Int, srPayload []byte, srSignature []byte, snapProof [][32]byte, attPayload []byte, attSignature []byte) (*types.Transaction, error) {
+	ret := _m.Called(opts, stateIndex, srPayload, srSignature, snapProof, attPayload, attSignature)
+
+	var r0 *types.Transaction
+	if rf, ok := ret.Get(0).(func(*bind.TransactOpts, *big.Int, []byte, []byte, [][32]byte, []byte, []byte) *types.Transaction); ok {
+		r0 = rf(opts, stateIndex, srPayload, srSignature, snapProof, attPayload, attSignature)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).(*types.Transaction)
+		}
+	}
+
+	var r1 error
+	if rf, ok := ret.Get(1).(func(*bind.TransactOpts, *big.Int, []byte, []byte, [][32]byte, []byte, []byte) error); ok {
+		r1 = rf(opts, stateIndex, srPayload, srSignature, snapProof, attPayload, attSignature)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
 // TransferOwnership provides a mock function with given fields: opts, newOwner
 func (_m *ILightManager) TransferOwnership(opts *bind.TransactOpts, newOwner common.Address) (*types.Transaction, error) {
 	ret := _m.Called(opts, newOwner)
@@ -604,6 +880,121 @@ func (_m *ILightManager) UpdateAgentStatus(opts *bind.TransactOpts, agent common
 	return r0, r1
 }
 
+// VerifyReceipt provides a mock function with given fields: opts, rcptPayload, rcptSignature
+func (_m *ILightManager) VerifyReceipt(opts *bind.TransactOpts, rcptPayload []byte, rcptSignature []byte) (*types.Transaction, error) {
+	ret := _m.Called(opts, rcptPayload, rcptSignature)
+
+	var r0 *types.Transaction
+	if rf, ok := ret.Get(0).(func(*bind.TransactOpts, []byte, []byte) *types.Transaction); ok {
+		r0 = rf(opts, rcptPayload, rcptSignature)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).(*types.Transaction)
+		}
+	}
+
+	var r1 error
+	if rf, ok := ret.Get(1).(func(*bind.TransactOpts, []byte, []byte) error); ok {
+		r1 = rf(opts, rcptPayload, rcptSignature)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
+// VerifyStateReport provides a mock function with given fields: opts, srPayload, srSignature
+func (_m *ILightManager) VerifyStateReport(opts *bind.TransactOpts, srPayload []byte, srSignature []byte) (*types.Transaction, error) {
+	ret := _m.Called(opts, srPayload, srSignature)
+
+	var r0 *types.Transaction
+	if rf, ok := ret.Get(0).(func(*bind.TransactOpts, []byte, []byte) *types.Transaction); ok {
+		r0 = rf(opts, srPayload, srSignature)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).(*types.Transaction)
+		}
+	}
+
+	var r1 error
+	if rf, ok := ret.Get(1).(func(*bind.TransactOpts, []byte, []byte) error); ok {
+		r1 = rf(opts, srPayload, srSignature)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
+// VerifyStateWithAttestation provides a mock function with given fields: opts, stateIndex, snapPayload, attPayload, attSignature
+func (_m *ILightManager) VerifyStateWithAttestation(opts *bind.TransactOpts, stateIndex *big.Int, snapPayload []byte, attPayload []byte, attSignature []byte) (*types.Transaction, error) {
+	ret := _m.Called(opts, stateIndex, snapPayload, attPayload, attSignature)
+
+	var r0 *types.Transaction
+	if rf, ok := ret.Get(0).(func(*bind.TransactOpts, *big.Int, []byte, []byte, []byte) *types.Transaction); ok {
+		r0 = rf(opts, stateIndex, snapPayload, attPayload, attSignature)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).(*types.Transaction)
+		}
+	}
+
+	var r1 error
+	if rf, ok := ret.Get(1).(func(*bind.TransactOpts, *big.Int, []byte, []byte, []byte) error); ok {
+		r1 = rf(opts, stateIndex, snapPayload, attPayload, attSignature)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
+// VerifyStateWithSnapshot provides a mock function with given fields: opts, stateIndex, snapPayload, snapSignature
+func (_m *ILightManager) VerifyStateWithSnapshot(opts *bind.TransactOpts, stateIndex *big.Int, snapPayload []byte, snapSignature []byte) (*types.Transaction, error) {
+	ret := _m.Called(opts, stateIndex, snapPayload, snapSignature)
+
+	var r0 *types.Transaction
+	if rf, ok := ret.Get(0).(func(*bind.TransactOpts, *big.Int, []byte, []byte) *types.Transaction); ok {
+		r0 = rf(opts, stateIndex, snapPayload, snapSignature)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).(*types.Transaction)
+		}
+	}
+
+	var r1 error
+	if rf, ok := ret.Get(1).(func(*bind.TransactOpts, *big.Int, []byte, []byte) error); ok {
+		r1 = rf(opts, stateIndex, snapPayload, snapSignature)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
+// VerifyStateWithSnapshotProof provides a mock function with given fields: opts, stateIndex, statePayload, snapProof, attPayload, attSignature
+func (_m *ILightManager) VerifyStateWithSnapshotProof(opts *bind.TransactOpts, stateIndex *big.Int, statePayload []byte, snapProof [][32]byte, attPayload []byte, attSignature []byte) (*types.Transaction, error) {
+	ret := _m.Called(opts, stateIndex, statePayload, snapProof, attPayload, attSignature)
+
+	var r0 *types.Transaction
+	if rf, ok := ret.Get(0).(func(*bind.TransactOpts, *big.Int, []byte, [][32]byte, []byte, []byte) *types.Transaction); ok {
+		r0 = rf(opts, stateIndex, statePayload, snapProof, attPayload, attSignature)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).(*types.Transaction)
+		}
+	}
+
+	var r1 error
+	if rf, ok := ret.Get(1).(func(*bind.TransactOpts, *big.Int, []byte, [][32]byte, []byte, []byte) error); ok {
+		r1 = rf(opts, stateIndex, statePayload, snapProof, attPayload, attSignature)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
 // Version provides a mock function with given fields: opts
 func (_m *ILightManager) Version(opts *bind.CallOpts) (string, error) {
 	ret := _m.Called(opts)
@@ -640,6 +1031,98 @@ func (_m *ILightManager) WatchInitialized(opts *bind.WatchOpts, sink chan<- *lig
 
 	var r1 error
 	if rf, ok := ret.Get(1).(func(*bind.WatchOpts, chan<- *lightmanager.LightManagerInitialized) error); ok {
+		r1 = rf(opts, sink)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
+// WatchInvalidReceipt provides a mock function with given fields: opts, sink
+func (_m *ILightManager) WatchInvalidReceipt(opts *bind.WatchOpts, sink chan<- *lightmanager.LightManagerInvalidReceipt) (event.Subscription, error) {
+	ret := _m.Called(opts, sink)
+
+	var r0 event.Subscription
+	if rf, ok := ret.Get(0).(func(*bind.WatchOpts, chan<- *lightmanager.LightManagerInvalidReceipt) event.Subscription); ok {
+		r0 = rf(opts, sink)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).(event.Subscription)
+		}
+	}
+
+	var r1 error
+	if rf, ok := ret.Get(1).(func(*bind.WatchOpts, chan<- *lightmanager.LightManagerInvalidReceipt) error); ok {
+		r1 = rf(opts, sink)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
+// WatchInvalidStateReport provides a mock function with given fields: opts, sink
+func (_m *ILightManager) WatchInvalidStateReport(opts *bind.WatchOpts, sink chan<- *lightmanager.LightManagerInvalidStateReport) (event.Subscription, error) {
+	ret := _m.Called(opts, sink)
+
+	var r0 event.Subscription
+	if rf, ok := ret.Get(0).(func(*bind.WatchOpts, chan<- *lightmanager.LightManagerInvalidStateReport) event.Subscription); ok {
+		r0 = rf(opts, sink)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).(event.Subscription)
+		}
+	}
+
+	var r1 error
+	if rf, ok := ret.Get(1).(func(*bind.WatchOpts, chan<- *lightmanager.LightManagerInvalidStateReport) error); ok {
+		r1 = rf(opts, sink)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
+// WatchInvalidStateWithAttestation provides a mock function with given fields: opts, sink
+func (_m *ILightManager) WatchInvalidStateWithAttestation(opts *bind.WatchOpts, sink chan<- *lightmanager.LightManagerInvalidStateWithAttestation) (event.Subscription, error) {
+	ret := _m.Called(opts, sink)
+
+	var r0 event.Subscription
+	if rf, ok := ret.Get(0).(func(*bind.WatchOpts, chan<- *lightmanager.LightManagerInvalidStateWithAttestation) event.Subscription); ok {
+		r0 = rf(opts, sink)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).(event.Subscription)
+		}
+	}
+
+	var r1 error
+	if rf, ok := ret.Get(1).(func(*bind.WatchOpts, chan<- *lightmanager.LightManagerInvalidStateWithAttestation) error); ok {
+		r1 = rf(opts, sink)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
+// WatchInvalidStateWithSnapshot provides a mock function with given fields: opts, sink
+func (_m *ILightManager) WatchInvalidStateWithSnapshot(opts *bind.WatchOpts, sink chan<- *lightmanager.LightManagerInvalidStateWithSnapshot) (event.Subscription, error) {
+	ret := _m.Called(opts, sink)
+
+	var r0 event.Subscription
+	if rf, ok := ret.Get(0).(func(*bind.WatchOpts, chan<- *lightmanager.LightManagerInvalidStateWithSnapshot) event.Subscription); ok {
+		r0 = rf(opts, sink)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).(event.Subscription)
+		}
+	}
+
+	var r1 error
+	if rf, ok := ret.Get(1).(func(*bind.WatchOpts, chan<- *lightmanager.LightManagerInvalidStateWithSnapshot) error); ok {
 		r1 = rf(opts, sink)
 	} else {
 		r1 = ret.Error(1)

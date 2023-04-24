@@ -23,6 +23,78 @@ type IBondingManagerFilterer interface {
 	//
 	// Solidity: event Initialized(uint8 version)
 	ParseInitialized(log types.Log) (*BondingManagerInitialized, error)
+	// FilterInvalidAttestation is a free log retrieval operation binding the contract event 0x5ce497fe75d0d52e5ee139d2cd651d0ff00692a94d7052cb37faef5592d74b2b.
+	//
+	// Solidity: event InvalidAttestation(bytes attPayload, bytes attSignature)
+	FilterInvalidAttestation(opts *bind.FilterOpts) (*BondingManagerInvalidAttestationIterator, error)
+	// WatchInvalidAttestation is a free log subscription operation binding the contract event 0x5ce497fe75d0d52e5ee139d2cd651d0ff00692a94d7052cb37faef5592d74b2b.
+	//
+	// Solidity: event InvalidAttestation(bytes attPayload, bytes attSignature)
+	WatchInvalidAttestation(opts *bind.WatchOpts, sink chan<- *BondingManagerInvalidAttestation) (event.Subscription, error)
+	// ParseInvalidAttestation is a log parse operation binding the contract event 0x5ce497fe75d0d52e5ee139d2cd651d0ff00692a94d7052cb37faef5592d74b2b.
+	//
+	// Solidity: event InvalidAttestation(bytes attPayload, bytes attSignature)
+	ParseInvalidAttestation(log types.Log) (*BondingManagerInvalidAttestation, error)
+	// FilterInvalidAttestationReport is a free log retrieval operation binding the contract event 0x6f83f9b71f5c687c7dd205d520001d4e5adc1f16e4e2ee5b798c720d643e5a9e.
+	//
+	// Solidity: event InvalidAttestationReport(bytes arPayload, bytes arSignature)
+	FilterInvalidAttestationReport(opts *bind.FilterOpts) (*BondingManagerInvalidAttestationReportIterator, error)
+	// WatchInvalidAttestationReport is a free log subscription operation binding the contract event 0x6f83f9b71f5c687c7dd205d520001d4e5adc1f16e4e2ee5b798c720d643e5a9e.
+	//
+	// Solidity: event InvalidAttestationReport(bytes arPayload, bytes arSignature)
+	WatchInvalidAttestationReport(opts *bind.WatchOpts, sink chan<- *BondingManagerInvalidAttestationReport) (event.Subscription, error)
+	// ParseInvalidAttestationReport is a log parse operation binding the contract event 0x6f83f9b71f5c687c7dd205d520001d4e5adc1f16e4e2ee5b798c720d643e5a9e.
+	//
+	// Solidity: event InvalidAttestationReport(bytes arPayload, bytes arSignature)
+	ParseInvalidAttestationReport(log types.Log) (*BondingManagerInvalidAttestationReport, error)
+	// FilterInvalidReceipt is a free log retrieval operation binding the contract event 0x4d4c3a87f0d5fbcea3c51d5baa727fceedb200dd7c9287f7ef85b60b794d6a8d.
+	//
+	// Solidity: event InvalidReceipt(bytes rcptPayload, bytes rcptSignature)
+	FilterInvalidReceipt(opts *bind.FilterOpts) (*BondingManagerInvalidReceiptIterator, error)
+	// WatchInvalidReceipt is a free log subscription operation binding the contract event 0x4d4c3a87f0d5fbcea3c51d5baa727fceedb200dd7c9287f7ef85b60b794d6a8d.
+	//
+	// Solidity: event InvalidReceipt(bytes rcptPayload, bytes rcptSignature)
+	WatchInvalidReceipt(opts *bind.WatchOpts, sink chan<- *BondingManagerInvalidReceipt) (event.Subscription, error)
+	// ParseInvalidReceipt is a log parse operation binding the contract event 0x4d4c3a87f0d5fbcea3c51d5baa727fceedb200dd7c9287f7ef85b60b794d6a8d.
+	//
+	// Solidity: event InvalidReceipt(bytes rcptPayload, bytes rcptSignature)
+	ParseInvalidReceipt(log types.Log) (*BondingManagerInvalidReceipt, error)
+	// FilterInvalidStateReport is a free log retrieval operation binding the contract event 0x9b0db5e74572fe0188dcef5afafe498161864c5706c3003c98ee506ae5c0282d.
+	//
+	// Solidity: event InvalidStateReport(bytes srPayload, bytes srSignature)
+	FilterInvalidStateReport(opts *bind.FilterOpts) (*BondingManagerInvalidStateReportIterator, error)
+	// WatchInvalidStateReport is a free log subscription operation binding the contract event 0x9b0db5e74572fe0188dcef5afafe498161864c5706c3003c98ee506ae5c0282d.
+	//
+	// Solidity: event InvalidStateReport(bytes srPayload, bytes srSignature)
+	WatchInvalidStateReport(opts *bind.WatchOpts, sink chan<- *BondingManagerInvalidStateReport) (event.Subscription, error)
+	// ParseInvalidStateReport is a log parse operation binding the contract event 0x9b0db5e74572fe0188dcef5afafe498161864c5706c3003c98ee506ae5c0282d.
+	//
+	// Solidity: event InvalidStateReport(bytes srPayload, bytes srSignature)
+	ParseInvalidStateReport(log types.Log) (*BondingManagerInvalidStateReport, error)
+	// FilterInvalidStateWithAttestation is a free log retrieval operation binding the contract event 0x541491c63a99c21d0612ba7b3c4d90f7662f54a123363e65fae5c51e34e8a492.
+	//
+	// Solidity: event InvalidStateWithAttestation(uint256 stateIndex, bytes statePayload, bytes attPayload, bytes attSignature)
+	FilterInvalidStateWithAttestation(opts *bind.FilterOpts) (*BondingManagerInvalidStateWithAttestationIterator, error)
+	// WatchInvalidStateWithAttestation is a free log subscription operation binding the contract event 0x541491c63a99c21d0612ba7b3c4d90f7662f54a123363e65fae5c51e34e8a492.
+	//
+	// Solidity: event InvalidStateWithAttestation(uint256 stateIndex, bytes statePayload, bytes attPayload, bytes attSignature)
+	WatchInvalidStateWithAttestation(opts *bind.WatchOpts, sink chan<- *BondingManagerInvalidStateWithAttestation) (event.Subscription, error)
+	// ParseInvalidStateWithAttestation is a log parse operation binding the contract event 0x541491c63a99c21d0612ba7b3c4d90f7662f54a123363e65fae5c51e34e8a492.
+	//
+	// Solidity: event InvalidStateWithAttestation(uint256 stateIndex, bytes statePayload, bytes attPayload, bytes attSignature)
+	ParseInvalidStateWithAttestation(log types.Log) (*BondingManagerInvalidStateWithAttestation, error)
+	// FilterInvalidStateWithSnapshot is a free log retrieval operation binding the contract event 0x8ec8481d2e38a1ffe2c6ec35459332dc9e6248b1219d287dfa4143a68a75bbd1.
+	//
+	// Solidity: event InvalidStateWithSnapshot(uint256 stateIndex, bytes snapPayload, bytes snapSignature)
+	FilterInvalidStateWithSnapshot(opts *bind.FilterOpts) (*BondingManagerInvalidStateWithSnapshotIterator, error)
+	// WatchInvalidStateWithSnapshot is a free log subscription operation binding the contract event 0x8ec8481d2e38a1ffe2c6ec35459332dc9e6248b1219d287dfa4143a68a75bbd1.
+	//
+	// Solidity: event InvalidStateWithSnapshot(uint256 stateIndex, bytes snapPayload, bytes snapSignature)
+	WatchInvalidStateWithSnapshot(opts *bind.WatchOpts, sink chan<- *BondingManagerInvalidStateWithSnapshot) (event.Subscription, error)
+	// ParseInvalidStateWithSnapshot is a log parse operation binding the contract event 0x8ec8481d2e38a1ffe2c6ec35459332dc9e6248b1219d287dfa4143a68a75bbd1.
+	//
+	// Solidity: event InvalidStateWithSnapshot(uint256 stateIndex, bytes snapPayload, bytes snapSignature)
+	ParseInvalidStateWithSnapshot(log types.Log) (*BondingManagerInvalidStateWithSnapshot, error)
 	// FilterOwnershipTransferred is a free log retrieval operation binding the contract event 0x8be0079c531659141344cd1fd0a4f28419497f9722a3daafe3b4186f6b6457e0.
 	//
 	// Solidity: event OwnershipTransferred(address indexed previousOwner, address indexed newOwner)

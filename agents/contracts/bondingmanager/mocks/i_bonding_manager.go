@@ -243,6 +243,144 @@ func (_m *IBondingManager) FilterInitialized(opts *bind.FilterOpts) (*bondingman
 	return r0, r1
 }
 
+// FilterInvalidAttestation provides a mock function with given fields: opts
+func (_m *IBondingManager) FilterInvalidAttestation(opts *bind.FilterOpts) (*bondingmanager.BondingManagerInvalidAttestationIterator, error) {
+	ret := _m.Called(opts)
+
+	var r0 *bondingmanager.BondingManagerInvalidAttestationIterator
+	if rf, ok := ret.Get(0).(func(*bind.FilterOpts) *bondingmanager.BondingManagerInvalidAttestationIterator); ok {
+		r0 = rf(opts)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).(*bondingmanager.BondingManagerInvalidAttestationIterator)
+		}
+	}
+
+	var r1 error
+	if rf, ok := ret.Get(1).(func(*bind.FilterOpts) error); ok {
+		r1 = rf(opts)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
+// FilterInvalidAttestationReport provides a mock function with given fields: opts
+func (_m *IBondingManager) FilterInvalidAttestationReport(opts *bind.FilterOpts) (*bondingmanager.BondingManagerInvalidAttestationReportIterator, error) {
+	ret := _m.Called(opts)
+
+	var r0 *bondingmanager.BondingManagerInvalidAttestationReportIterator
+	if rf, ok := ret.Get(0).(func(*bind.FilterOpts) *bondingmanager.BondingManagerInvalidAttestationReportIterator); ok {
+		r0 = rf(opts)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).(*bondingmanager.BondingManagerInvalidAttestationReportIterator)
+		}
+	}
+
+	var r1 error
+	if rf, ok := ret.Get(1).(func(*bind.FilterOpts) error); ok {
+		r1 = rf(opts)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
+// FilterInvalidReceipt provides a mock function with given fields: opts
+func (_m *IBondingManager) FilterInvalidReceipt(opts *bind.FilterOpts) (*bondingmanager.BondingManagerInvalidReceiptIterator, error) {
+	ret := _m.Called(opts)
+
+	var r0 *bondingmanager.BondingManagerInvalidReceiptIterator
+	if rf, ok := ret.Get(0).(func(*bind.FilterOpts) *bondingmanager.BondingManagerInvalidReceiptIterator); ok {
+		r0 = rf(opts)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).(*bondingmanager.BondingManagerInvalidReceiptIterator)
+		}
+	}
+
+	var r1 error
+	if rf, ok := ret.Get(1).(func(*bind.FilterOpts) error); ok {
+		r1 = rf(opts)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
+// FilterInvalidStateReport provides a mock function with given fields: opts
+func (_m *IBondingManager) FilterInvalidStateReport(opts *bind.FilterOpts) (*bondingmanager.BondingManagerInvalidStateReportIterator, error) {
+	ret := _m.Called(opts)
+
+	var r0 *bondingmanager.BondingManagerInvalidStateReportIterator
+	if rf, ok := ret.Get(0).(func(*bind.FilterOpts) *bondingmanager.BondingManagerInvalidStateReportIterator); ok {
+		r0 = rf(opts)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).(*bondingmanager.BondingManagerInvalidStateReportIterator)
+		}
+	}
+
+	var r1 error
+	if rf, ok := ret.Get(1).(func(*bind.FilterOpts) error); ok {
+		r1 = rf(opts)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
+// FilterInvalidStateWithAttestation provides a mock function with given fields: opts
+func (_m *IBondingManager) FilterInvalidStateWithAttestation(opts *bind.FilterOpts) (*bondingmanager.BondingManagerInvalidStateWithAttestationIterator, error) {
+	ret := _m.Called(opts)
+
+	var r0 *bondingmanager.BondingManagerInvalidStateWithAttestationIterator
+	if rf, ok := ret.Get(0).(func(*bind.FilterOpts) *bondingmanager.BondingManagerInvalidStateWithAttestationIterator); ok {
+		r0 = rf(opts)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).(*bondingmanager.BondingManagerInvalidStateWithAttestationIterator)
+		}
+	}
+
+	var r1 error
+	if rf, ok := ret.Get(1).(func(*bind.FilterOpts) error); ok {
+		r1 = rf(opts)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
+// FilterInvalidStateWithSnapshot provides a mock function with given fields: opts
+func (_m *IBondingManager) FilterInvalidStateWithSnapshot(opts *bind.FilterOpts) (*bondingmanager.BondingManagerInvalidStateWithSnapshotIterator, error) {
+	ret := _m.Called(opts)
+
+	var r0 *bondingmanager.BondingManagerInvalidStateWithSnapshotIterator
+	if rf, ok := ret.Get(0).(func(*bind.FilterOpts) *bondingmanager.BondingManagerInvalidStateWithSnapshotIterator); ok {
+		r0 = rf(opts)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).(*bondingmanager.BondingManagerInvalidStateWithSnapshotIterator)
+		}
+	}
+
+	var r1 error
+	if rf, ok := ret.Get(1).(func(*bind.FilterOpts) error); ok {
+		r1 = rf(opts)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
 // FilterOwnershipTransferred provides a mock function with given fields: opts, previousOwner, newOwner
 func (_m *IBondingManager) FilterOwnershipTransferred(opts *bind.FilterOpts, previousOwner []common.Address, newOwner []common.Address) (*bondingmanager.BondingManagerOwnershipTransferredIterator, error) {
 	ret := _m.Called(opts, previousOwner, newOwner)
@@ -573,6 +711,144 @@ func (_m *IBondingManager) ParseInitialized(log types.Log) (*bondingmanager.Bond
 	return r0, r1
 }
 
+// ParseInvalidAttestation provides a mock function with given fields: log
+func (_m *IBondingManager) ParseInvalidAttestation(log types.Log) (*bondingmanager.BondingManagerInvalidAttestation, error) {
+	ret := _m.Called(log)
+
+	var r0 *bondingmanager.BondingManagerInvalidAttestation
+	if rf, ok := ret.Get(0).(func(types.Log) *bondingmanager.BondingManagerInvalidAttestation); ok {
+		r0 = rf(log)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).(*bondingmanager.BondingManagerInvalidAttestation)
+		}
+	}
+
+	var r1 error
+	if rf, ok := ret.Get(1).(func(types.Log) error); ok {
+		r1 = rf(log)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
+// ParseInvalidAttestationReport provides a mock function with given fields: log
+func (_m *IBondingManager) ParseInvalidAttestationReport(log types.Log) (*bondingmanager.BondingManagerInvalidAttestationReport, error) {
+	ret := _m.Called(log)
+
+	var r0 *bondingmanager.BondingManagerInvalidAttestationReport
+	if rf, ok := ret.Get(0).(func(types.Log) *bondingmanager.BondingManagerInvalidAttestationReport); ok {
+		r0 = rf(log)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).(*bondingmanager.BondingManagerInvalidAttestationReport)
+		}
+	}
+
+	var r1 error
+	if rf, ok := ret.Get(1).(func(types.Log) error); ok {
+		r1 = rf(log)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
+// ParseInvalidReceipt provides a mock function with given fields: log
+func (_m *IBondingManager) ParseInvalidReceipt(log types.Log) (*bondingmanager.BondingManagerInvalidReceipt, error) {
+	ret := _m.Called(log)
+
+	var r0 *bondingmanager.BondingManagerInvalidReceipt
+	if rf, ok := ret.Get(0).(func(types.Log) *bondingmanager.BondingManagerInvalidReceipt); ok {
+		r0 = rf(log)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).(*bondingmanager.BondingManagerInvalidReceipt)
+		}
+	}
+
+	var r1 error
+	if rf, ok := ret.Get(1).(func(types.Log) error); ok {
+		r1 = rf(log)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
+// ParseInvalidStateReport provides a mock function with given fields: log
+func (_m *IBondingManager) ParseInvalidStateReport(log types.Log) (*bondingmanager.BondingManagerInvalidStateReport, error) {
+	ret := _m.Called(log)
+
+	var r0 *bondingmanager.BondingManagerInvalidStateReport
+	if rf, ok := ret.Get(0).(func(types.Log) *bondingmanager.BondingManagerInvalidStateReport); ok {
+		r0 = rf(log)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).(*bondingmanager.BondingManagerInvalidStateReport)
+		}
+	}
+
+	var r1 error
+	if rf, ok := ret.Get(1).(func(types.Log) error); ok {
+		r1 = rf(log)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
+// ParseInvalidStateWithAttestation provides a mock function with given fields: log
+func (_m *IBondingManager) ParseInvalidStateWithAttestation(log types.Log) (*bondingmanager.BondingManagerInvalidStateWithAttestation, error) {
+	ret := _m.Called(log)
+
+	var r0 *bondingmanager.BondingManagerInvalidStateWithAttestation
+	if rf, ok := ret.Get(0).(func(types.Log) *bondingmanager.BondingManagerInvalidStateWithAttestation); ok {
+		r0 = rf(log)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).(*bondingmanager.BondingManagerInvalidStateWithAttestation)
+		}
+	}
+
+	var r1 error
+	if rf, ok := ret.Get(1).(func(types.Log) error); ok {
+		r1 = rf(log)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
+// ParseInvalidStateWithSnapshot provides a mock function with given fields: log
+func (_m *IBondingManager) ParseInvalidStateWithSnapshot(log types.Log) (*bondingmanager.BondingManagerInvalidStateWithSnapshot, error) {
+	ret := _m.Called(log)
+
+	var r0 *bondingmanager.BondingManagerInvalidStateWithSnapshot
+	if rf, ok := ret.Get(0).(func(types.Log) *bondingmanager.BondingManagerInvalidStateWithSnapshot); ok {
+		r0 = rf(log)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).(*bondingmanager.BondingManagerInvalidStateWithSnapshot)
+		}
+	}
+
+	var r1 error
+	if rf, ok := ret.Get(1).(func(types.Log) error); ok {
+		r1 = rf(log)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
 // ParseOwnershipTransferred provides a mock function with given fields: log
 func (_m *IBondingManager) ParseOwnershipTransferred(log types.Log) (*bondingmanager.BondingManagerOwnershipTransferred, error) {
 	ret := _m.Called(log)
@@ -642,31 +918,8 @@ func (_m *IBondingManager) ParseStatusUpdated(log types.Log) (*bondingmanager.Bo
 	return r0, r1
 }
 
-// RegistrySlash provides a mock function with given fields: opts, domain, agent, prover
-func (_m *IBondingManager) RegistrySlash(opts *bind.TransactOpts, domain uint32, agent common.Address, prover common.Address) (*types.Transaction, error) {
-	ret := _m.Called(opts, domain, agent, prover)
-
-	var r0 *types.Transaction
-	if rf, ok := ret.Get(0).(func(*bind.TransactOpts, uint32, common.Address, common.Address) *types.Transaction); ok {
-		r0 = rf(opts, domain, agent, prover)
-	} else {
-		if ret.Get(0) != nil {
-			r0 = ret.Get(0).(*types.Transaction)
-		}
-	}
-
-	var r1 error
-	if rf, ok := ret.Get(1).(func(*bind.TransactOpts, uint32, common.Address, common.Address) error); ok {
-		r1 = rf(opts, domain, agent, prover)
-	} else {
-		r1 = ret.Error(1)
-	}
-
-	return r0, r1
-}
-
-// RemoteRegistrySlash provides a mock function with given fields: opts, msgOrigin, proofMaturity, domain, agent, prover
-func (_m *IBondingManager) RemoteRegistrySlash(opts *bind.TransactOpts, msgOrigin uint32, proofMaturity *big.Int, domain uint32, agent common.Address, prover common.Address) (*types.Transaction, error) {
+// RemoteSlashAgent provides a mock function with given fields: opts, msgOrigin, proofMaturity, domain, agent, prover
+func (_m *IBondingManager) RemoteSlashAgent(opts *bind.TransactOpts, msgOrigin uint32, proofMaturity *big.Int, domain uint32, agent common.Address, prover common.Address) (*types.Transaction, error) {
 	ret := _m.Called(opts, msgOrigin, proofMaturity, domain, agent, prover)
 
 	var r0 *types.Transaction
@@ -765,6 +1018,121 @@ func (_m *IBondingManager) SlashStatus(opts *bind.CallOpts, arg0 common.Address)
 	return r0, r1
 }
 
+// SubmitReceipt provides a mock function with given fields: opts, rcptPayload, rcptSignature
+func (_m *IBondingManager) SubmitReceipt(opts *bind.TransactOpts, rcptPayload []byte, rcptSignature []byte) (*types.Transaction, error) {
+	ret := _m.Called(opts, rcptPayload, rcptSignature)
+
+	var r0 *types.Transaction
+	if rf, ok := ret.Get(0).(func(*bind.TransactOpts, []byte, []byte) *types.Transaction); ok {
+		r0 = rf(opts, rcptPayload, rcptSignature)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).(*types.Transaction)
+		}
+	}
+
+	var r1 error
+	if rf, ok := ret.Get(1).(func(*bind.TransactOpts, []byte, []byte) error); ok {
+		r1 = rf(opts, rcptPayload, rcptSignature)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
+// SubmitSnapshot provides a mock function with given fields: opts, snapPayload, snapSignature
+func (_m *IBondingManager) SubmitSnapshot(opts *bind.TransactOpts, snapPayload []byte, snapSignature []byte) (*types.Transaction, error) {
+	ret := _m.Called(opts, snapPayload, snapSignature)
+
+	var r0 *types.Transaction
+	if rf, ok := ret.Get(0).(func(*bind.TransactOpts, []byte, []byte) *types.Transaction); ok {
+		r0 = rf(opts, snapPayload, snapSignature)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).(*types.Transaction)
+		}
+	}
+
+	var r1 error
+	if rf, ok := ret.Get(1).(func(*bind.TransactOpts, []byte, []byte) error); ok {
+		r1 = rf(opts, snapPayload, snapSignature)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
+// SubmitStateReportWithAttestation provides a mock function with given fields: opts, stateIndex, srPayload, srSignature, snapPayload, attPayload, attSignature
+func (_m *IBondingManager) SubmitStateReportWithAttestation(opts *bind.TransactOpts, stateIndex *big.Int, srPayload []byte, srSignature []byte, snapPayload []byte, attPayload []byte, attSignature []byte) (*types.Transaction, error) {
+	ret := _m.Called(opts, stateIndex, srPayload, srSignature, snapPayload, attPayload, attSignature)
+
+	var r0 *types.Transaction
+	if rf, ok := ret.Get(0).(func(*bind.TransactOpts, *big.Int, []byte, []byte, []byte, []byte, []byte) *types.Transaction); ok {
+		r0 = rf(opts, stateIndex, srPayload, srSignature, snapPayload, attPayload, attSignature)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).(*types.Transaction)
+		}
+	}
+
+	var r1 error
+	if rf, ok := ret.Get(1).(func(*bind.TransactOpts, *big.Int, []byte, []byte, []byte, []byte, []byte) error); ok {
+		r1 = rf(opts, stateIndex, srPayload, srSignature, snapPayload, attPayload, attSignature)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
+// SubmitStateReportWithSnapshot provides a mock function with given fields: opts, stateIndex, srPayload, srSignature, snapPayload, snapSignature
+func (_m *IBondingManager) SubmitStateReportWithSnapshot(opts *bind.TransactOpts, stateIndex *big.Int, srPayload []byte, srSignature []byte, snapPayload []byte, snapSignature []byte) (*types.Transaction, error) {
+	ret := _m.Called(opts, stateIndex, srPayload, srSignature, snapPayload, snapSignature)
+
+	var r0 *types.Transaction
+	if rf, ok := ret.Get(0).(func(*bind.TransactOpts, *big.Int, []byte, []byte, []byte, []byte) *types.Transaction); ok {
+		r0 = rf(opts, stateIndex, srPayload, srSignature, snapPayload, snapSignature)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).(*types.Transaction)
+		}
+	}
+
+	var r1 error
+	if rf, ok := ret.Get(1).(func(*bind.TransactOpts, *big.Int, []byte, []byte, []byte, []byte) error); ok {
+		r1 = rf(opts, stateIndex, srPayload, srSignature, snapPayload, snapSignature)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
+// SubmitStateReportWithSnapshotProof provides a mock function with given fields: opts, stateIndex, srPayload, srSignature, snapProof, attPayload, attSignature
+func (_m *IBondingManager) SubmitStateReportWithSnapshotProof(opts *bind.TransactOpts, stateIndex *big.Int, srPayload []byte, srSignature []byte, snapProof [][32]byte, attPayload []byte, attSignature []byte) (*types.Transaction, error) {
+	ret := _m.Called(opts, stateIndex, srPayload, srSignature, snapProof, attPayload, attSignature)
+
+	var r0 *types.Transaction
+	if rf, ok := ret.Get(0).(func(*bind.TransactOpts, *big.Int, []byte, []byte, [][32]byte, []byte, []byte) *types.Transaction); ok {
+		r0 = rf(opts, stateIndex, srPayload, srSignature, snapProof, attPayload, attSignature)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).(*types.Transaction)
+		}
+	}
+
+	var r1 error
+	if rf, ok := ret.Get(1).(func(*bind.TransactOpts, *big.Int, []byte, []byte, [][32]byte, []byte, []byte) error); ok {
+		r1 = rf(opts, stateIndex, srPayload, srSignature, snapProof, attPayload, attSignature)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
 // TransferOwnership provides a mock function with given fields: opts, newOwner
 func (_m *IBondingManager) TransferOwnership(opts *bind.TransactOpts, newOwner common.Address) (*types.Transaction, error) {
 	ret := _m.Called(opts, newOwner)
@@ -781,6 +1149,167 @@ func (_m *IBondingManager) TransferOwnership(opts *bind.TransactOpts, newOwner c
 	var r1 error
 	if rf, ok := ret.Get(1).(func(*bind.TransactOpts, common.Address) error); ok {
 		r1 = rf(opts, newOwner)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
+// VerifyAttestation provides a mock function with given fields: opts, attPayload, attSignature
+func (_m *IBondingManager) VerifyAttestation(opts *bind.TransactOpts, attPayload []byte, attSignature []byte) (*types.Transaction, error) {
+	ret := _m.Called(opts, attPayload, attSignature)
+
+	var r0 *types.Transaction
+	if rf, ok := ret.Get(0).(func(*bind.TransactOpts, []byte, []byte) *types.Transaction); ok {
+		r0 = rf(opts, attPayload, attSignature)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).(*types.Transaction)
+		}
+	}
+
+	var r1 error
+	if rf, ok := ret.Get(1).(func(*bind.TransactOpts, []byte, []byte) error); ok {
+		r1 = rf(opts, attPayload, attSignature)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
+// VerifyAttestationReport provides a mock function with given fields: opts, arPayload, arSignature
+func (_m *IBondingManager) VerifyAttestationReport(opts *bind.TransactOpts, arPayload []byte, arSignature []byte) (*types.Transaction, error) {
+	ret := _m.Called(opts, arPayload, arSignature)
+
+	var r0 *types.Transaction
+	if rf, ok := ret.Get(0).(func(*bind.TransactOpts, []byte, []byte) *types.Transaction); ok {
+		r0 = rf(opts, arPayload, arSignature)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).(*types.Transaction)
+		}
+	}
+
+	var r1 error
+	if rf, ok := ret.Get(1).(func(*bind.TransactOpts, []byte, []byte) error); ok {
+		r1 = rf(opts, arPayload, arSignature)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
+// VerifyReceipt provides a mock function with given fields: opts, rcptPayload, rcptSignature
+func (_m *IBondingManager) VerifyReceipt(opts *bind.TransactOpts, rcptPayload []byte, rcptSignature []byte) (*types.Transaction, error) {
+	ret := _m.Called(opts, rcptPayload, rcptSignature)
+
+	var r0 *types.Transaction
+	if rf, ok := ret.Get(0).(func(*bind.TransactOpts, []byte, []byte) *types.Transaction); ok {
+		r0 = rf(opts, rcptPayload, rcptSignature)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).(*types.Transaction)
+		}
+	}
+
+	var r1 error
+	if rf, ok := ret.Get(1).(func(*bind.TransactOpts, []byte, []byte) error); ok {
+		r1 = rf(opts, rcptPayload, rcptSignature)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
+// VerifyStateReport provides a mock function with given fields: opts, srPayload, srSignature
+func (_m *IBondingManager) VerifyStateReport(opts *bind.TransactOpts, srPayload []byte, srSignature []byte) (*types.Transaction, error) {
+	ret := _m.Called(opts, srPayload, srSignature)
+
+	var r0 *types.Transaction
+	if rf, ok := ret.Get(0).(func(*bind.TransactOpts, []byte, []byte) *types.Transaction); ok {
+		r0 = rf(opts, srPayload, srSignature)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).(*types.Transaction)
+		}
+	}
+
+	var r1 error
+	if rf, ok := ret.Get(1).(func(*bind.TransactOpts, []byte, []byte) error); ok {
+		r1 = rf(opts, srPayload, srSignature)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
+// VerifyStateWithAttestation provides a mock function with given fields: opts, stateIndex, snapPayload, attPayload, attSignature
+func (_m *IBondingManager) VerifyStateWithAttestation(opts *bind.TransactOpts, stateIndex *big.Int, snapPayload []byte, attPayload []byte, attSignature []byte) (*types.Transaction, error) {
+	ret := _m.Called(opts, stateIndex, snapPayload, attPayload, attSignature)
+
+	var r0 *types.Transaction
+	if rf, ok := ret.Get(0).(func(*bind.TransactOpts, *big.Int, []byte, []byte, []byte) *types.Transaction); ok {
+		r0 = rf(opts, stateIndex, snapPayload, attPayload, attSignature)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).(*types.Transaction)
+		}
+	}
+
+	var r1 error
+	if rf, ok := ret.Get(1).(func(*bind.TransactOpts, *big.Int, []byte, []byte, []byte) error); ok {
+		r1 = rf(opts, stateIndex, snapPayload, attPayload, attSignature)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
+// VerifyStateWithSnapshot provides a mock function with given fields: opts, stateIndex, snapPayload, snapSignature
+func (_m *IBondingManager) VerifyStateWithSnapshot(opts *bind.TransactOpts, stateIndex *big.Int, snapPayload []byte, snapSignature []byte) (*types.Transaction, error) {
+	ret := _m.Called(opts, stateIndex, snapPayload, snapSignature)
+
+	var r0 *types.Transaction
+	if rf, ok := ret.Get(0).(func(*bind.TransactOpts, *big.Int, []byte, []byte) *types.Transaction); ok {
+		r0 = rf(opts, stateIndex, snapPayload, snapSignature)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).(*types.Transaction)
+		}
+	}
+
+	var r1 error
+	if rf, ok := ret.Get(1).(func(*bind.TransactOpts, *big.Int, []byte, []byte) error); ok {
+		r1 = rf(opts, stateIndex, snapPayload, snapSignature)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
+// VerifyStateWithSnapshotProof provides a mock function with given fields: opts, stateIndex, statePayload, snapProof, attPayload, attSignature
+func (_m *IBondingManager) VerifyStateWithSnapshotProof(opts *bind.TransactOpts, stateIndex *big.Int, statePayload []byte, snapProof [][32]byte, attPayload []byte, attSignature []byte) (*types.Transaction, error) {
+	ret := _m.Called(opts, stateIndex, statePayload, snapProof, attPayload, attSignature)
+
+	var r0 *types.Transaction
+	if rf, ok := ret.Get(0).(func(*bind.TransactOpts, *big.Int, []byte, [][32]byte, []byte, []byte) *types.Transaction); ok {
+		r0 = rf(opts, stateIndex, statePayload, snapProof, attPayload, attSignature)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).(*types.Transaction)
+		}
+	}
+
+	var r1 error
+	if rf, ok := ret.Get(1).(func(*bind.TransactOpts, *big.Int, []byte, [][32]byte, []byte, []byte) error); ok {
+		r1 = rf(opts, stateIndex, statePayload, snapProof, attPayload, attSignature)
 	} else {
 		r1 = ret.Error(1)
 	}
@@ -824,6 +1353,144 @@ func (_m *IBondingManager) WatchInitialized(opts *bind.WatchOpts, sink chan<- *b
 
 	var r1 error
 	if rf, ok := ret.Get(1).(func(*bind.WatchOpts, chan<- *bondingmanager.BondingManagerInitialized) error); ok {
+		r1 = rf(opts, sink)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
+// WatchInvalidAttestation provides a mock function with given fields: opts, sink
+func (_m *IBondingManager) WatchInvalidAttestation(opts *bind.WatchOpts, sink chan<- *bondingmanager.BondingManagerInvalidAttestation) (event.Subscription, error) {
+	ret := _m.Called(opts, sink)
+
+	var r0 event.Subscription
+	if rf, ok := ret.Get(0).(func(*bind.WatchOpts, chan<- *bondingmanager.BondingManagerInvalidAttestation) event.Subscription); ok {
+		r0 = rf(opts, sink)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).(event.Subscription)
+		}
+	}
+
+	var r1 error
+	if rf, ok := ret.Get(1).(func(*bind.WatchOpts, chan<- *bondingmanager.BondingManagerInvalidAttestation) error); ok {
+		r1 = rf(opts, sink)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
+// WatchInvalidAttestationReport provides a mock function with given fields: opts, sink
+func (_m *IBondingManager) WatchInvalidAttestationReport(opts *bind.WatchOpts, sink chan<- *bondingmanager.BondingManagerInvalidAttestationReport) (event.Subscription, error) {
+	ret := _m.Called(opts, sink)
+
+	var r0 event.Subscription
+	if rf, ok := ret.Get(0).(func(*bind.WatchOpts, chan<- *bondingmanager.BondingManagerInvalidAttestationReport) event.Subscription); ok {
+		r0 = rf(opts, sink)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).(event.Subscription)
+		}
+	}
+
+	var r1 error
+	if rf, ok := ret.Get(1).(func(*bind.WatchOpts, chan<- *bondingmanager.BondingManagerInvalidAttestationReport) error); ok {
+		r1 = rf(opts, sink)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
+// WatchInvalidReceipt provides a mock function with given fields: opts, sink
+func (_m *IBondingManager) WatchInvalidReceipt(opts *bind.WatchOpts, sink chan<- *bondingmanager.BondingManagerInvalidReceipt) (event.Subscription, error) {
+	ret := _m.Called(opts, sink)
+
+	var r0 event.Subscription
+	if rf, ok := ret.Get(0).(func(*bind.WatchOpts, chan<- *bondingmanager.BondingManagerInvalidReceipt) event.Subscription); ok {
+		r0 = rf(opts, sink)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).(event.Subscription)
+		}
+	}
+
+	var r1 error
+	if rf, ok := ret.Get(1).(func(*bind.WatchOpts, chan<- *bondingmanager.BondingManagerInvalidReceipt) error); ok {
+		r1 = rf(opts, sink)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
+// WatchInvalidStateReport provides a mock function with given fields: opts, sink
+func (_m *IBondingManager) WatchInvalidStateReport(opts *bind.WatchOpts, sink chan<- *bondingmanager.BondingManagerInvalidStateReport) (event.Subscription, error) {
+	ret := _m.Called(opts, sink)
+
+	var r0 event.Subscription
+	if rf, ok := ret.Get(0).(func(*bind.WatchOpts, chan<- *bondingmanager.BondingManagerInvalidStateReport) event.Subscription); ok {
+		r0 = rf(opts, sink)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).(event.Subscription)
+		}
+	}
+
+	var r1 error
+	if rf, ok := ret.Get(1).(func(*bind.WatchOpts, chan<- *bondingmanager.BondingManagerInvalidStateReport) error); ok {
+		r1 = rf(opts, sink)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
+// WatchInvalidStateWithAttestation provides a mock function with given fields: opts, sink
+func (_m *IBondingManager) WatchInvalidStateWithAttestation(opts *bind.WatchOpts, sink chan<- *bondingmanager.BondingManagerInvalidStateWithAttestation) (event.Subscription, error) {
+	ret := _m.Called(opts, sink)
+
+	var r0 event.Subscription
+	if rf, ok := ret.Get(0).(func(*bind.WatchOpts, chan<- *bondingmanager.BondingManagerInvalidStateWithAttestation) event.Subscription); ok {
+		r0 = rf(opts, sink)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).(event.Subscription)
+		}
+	}
+
+	var r1 error
+	if rf, ok := ret.Get(1).(func(*bind.WatchOpts, chan<- *bondingmanager.BondingManagerInvalidStateWithAttestation) error); ok {
+		r1 = rf(opts, sink)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
+// WatchInvalidStateWithSnapshot provides a mock function with given fields: opts, sink
+func (_m *IBondingManager) WatchInvalidStateWithSnapshot(opts *bind.WatchOpts, sink chan<- *bondingmanager.BondingManagerInvalidStateWithSnapshot) (event.Subscription, error) {
+	ret := _m.Called(opts, sink)
+
+	var r0 event.Subscription
+	if rf, ok := ret.Get(0).(func(*bind.WatchOpts, chan<- *bondingmanager.BondingManagerInvalidStateWithSnapshot) event.Subscription); ok {
+		r0 = rf(opts, sink)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).(event.Subscription)
+		}
+	}
+
+	var r1 error
+	if rf, ok := ret.Get(1).(func(*bind.WatchOpts, chan<- *bondingmanager.BondingManagerInvalidStateWithSnapshot) error); ok {
 		r1 = rf(opts, sink)
 	} else {
 		r1 = ret.Error(1)

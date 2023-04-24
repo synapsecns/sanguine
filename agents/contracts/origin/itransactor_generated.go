@@ -36,22 +36,6 @@ type IOriginTransactor interface {
 	//
 	// Solidity: function transferOwnership(address newOwner) returns()
 	TransferOwnership(opts *bind.TransactOpts, newOwner common.Address) (*types.Transaction, error)
-	// VerifyAttestation is a paid mutator transaction binding the contract method 0x48a0e440.
-	//
-	// Solidity: function verifyAttestation(uint256 stateIndex, bytes snapPayload, bytes attPayload, bytes attSignature) returns(bool isValid)
-	VerifyAttestation(opts *bind.TransactOpts, stateIndex *big.Int, snapPayload []byte, attPayload []byte, attSignature []byte) (*types.Transaction, error)
-	// VerifyAttestationWithProof is a paid mutator transaction binding the contract method 0x17d5a28a.
-	//
-	// Solidity: function verifyAttestationWithProof(uint256 stateIndex, bytes statePayload, bytes32[] snapProof, bytes attPayload, bytes attSignature) returns(bool isValid)
-	VerifyAttestationWithProof(opts *bind.TransactOpts, stateIndex *big.Int, statePayload []byte, snapProof [][32]byte, attPayload []byte, attSignature []byte) (*types.Transaction, error)
-	// VerifySnapshot is a paid mutator transaction binding the contract method 0x5ccda030.
-	//
-	// Solidity: function verifySnapshot(uint256 stateIndex, bytes snapPayload, bytes snapSignature) returns(bool isValid)
-	VerifySnapshot(opts *bind.TransactOpts, stateIndex *big.Int, snapPayload []byte, snapSignature []byte) (*types.Transaction, error)
-	// VerifyStateReport is a paid mutator transaction binding the contract method 0xdfe39675.
-	//
-	// Solidity: function verifyStateReport(bytes srPayload, bytes srSignature) returns(bool isValid)
-	VerifyStateReport(opts *bind.TransactOpts, srPayload []byte, srSignature []byte) (*types.Transaction, error)
 	// WithdrawTips is a paid mutator transaction binding the contract method 0x4e04e7a7.
 	//
 	// Solidity: function withdrawTips(address recipient, uint256 amount) returns()
