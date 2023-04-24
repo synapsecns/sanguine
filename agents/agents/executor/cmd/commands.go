@@ -249,13 +249,22 @@ var ExecutorRunCommand = &cli.Command{
 	},
 }
 
+func init() {
+	metricsPortFlag.Value = uint(freeport.GetPort())
+}
+
 // InitExecutorDB initializes a database given a database type and path.
 //
 //nolint:cyclop
-func InitExecutorDB(ctx context.Context, database string, path string, tablePrefix string, metrics metrics.Handler) (db.ExecutorDB, error) {
+func InitExecutorDB(parentCtx context.Context, database string, path string, tablePrefix string, handler metrics.Handler) (_ db.ExecutorDB, err error) {
+	ctx, span := handler.Tracer().Start(parentCtx, "start-sqlite")
+	defer func() {
+		metrics.EndSpanWithErr(span, err)
+	}()
+
 	switch {
 	case database == "sqlite":
-		sqliteStore, err := sqlite.NewSqliteStore(ctx, path, metrics)
+		sqliteStore, err := sqlite.NewSqliteStore(ctx, path, handler)
 		if err != nil {
 			return nil, fmt.Errorf("failed to create sqlite store: %w", err)
 		}
@@ -267,7 +276,7 @@ func InitExecutorDB(ctx context.Context, database string, path string, tablePref
 			dbname := os.Getenv("MYSQL_DATABASE")
 			connString := fmt.Sprintf("%s:%s@tcp(%s:%d)/%s?parseTime=true", core.GetEnv("MYSQL_USER", "root"), os.Getenv("MYSQL_PASSWORD"), core.GetEnv("MYSQL_HOST", "127.0.0.1"), core.GetEnvInt("MYSQL_PORT", 3306), dbname)
 
-			mysqlStore, err := mysql.NewMysqlStore(ctx, connString, metrics)
+			mysqlStore, err := mysql.NewMysqlStore(ctx, connString, handler)
 			if err != nil {
 				return nil, fmt.Errorf("failed to create mysql store: %w", err)
 			}
@@ -281,7 +290,7 @@ func InitExecutorDB(ctx context.Context, database string, path string, tablePref
 
 		mysql.NamingStrategy = namingStrategy
 
-		mysqlStore, err := mysql.NewMysqlStore(ctx, path, metrics)
+		mysqlStore, err := mysql.NewMysqlStore(ctx, path, handler)
 		if err != nil {
 			return nil, fmt.Errorf("failed to create mysql store: %w", err)
 		}
@@ -291,8 +300,4 @@ func InitExecutorDB(ctx context.Context, database string, path string, tablePref
 	default:
 		return nil, fmt.Errorf("invalid database type: %s", database)
 	}
-}
-
-func init() {
-	metricsPortFlag.Value = uint(freeport.GetPort())
 }
