@@ -711,6 +711,9 @@ func (e Executor) processLog(parentCtx context.Context, log ethTypes.Log, chainI
 		span.AddEvent("message is not nil")
 
 		merkleIndex := e.chainExecutors[chainID].merkleTree.NumOfItems()
+
+		span.AddEvent("got merkle index", trace.WithAttributes(attribute.Int("merkleIndex", int(merkleIndex))))
+
 		leaf, err := (*message).ToLeaf()
 		if err != nil {
 			return fmt.Errorf("could not convert message to leaf: %w", err)
