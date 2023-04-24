@@ -4,11 +4,11 @@ pragma solidity 0.8.17;
 // ══════════════════════════════ LIBRARY IMPORTS ══════════════════════════════
 import {DisputeFlag, DisputeStatus} from "../libs/Structures.sol";
 // ═════════════════════════════ INTERNAL IMPORTS ══════════════════════════════
+import {AgentSecured} from "../base/AgentSecured.sol";
 import {DisputeHubEvents} from "../events/DisputeHubEvents.sol";
 import {IDisputeHub} from "../interfaces/IDisputeHub.sol";
-import {SystemRegistry} from "../system/SystemRegistry.sol";
 
-abstract contract DisputeHub is SystemRegistry, DisputeHubEvents, IDisputeHub {
+abstract contract DisputeHub is AgentSecured, DisputeHubEvents, IDisputeHub {
     // TODO: Merge with ExecutionHub
 
     // ══════════════════════════════════════════════════ STORAGE ══════════════════════════════════════════════════════

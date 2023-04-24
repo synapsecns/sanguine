@@ -4,19 +4,18 @@ pragma solidity 0.8.17;
 // ══════════════════════════════ LIBRARY IMPORTS ══════════════════════════════
 import {AttestationLib} from "./libs/Attestation.sol";
 import {ByteString} from "./libs/ByteString.sol";
+import {BONDING_OPTIMISTIC_PERIOD, SYNAPSE_DOMAIN} from "./libs/Constants.sol";
 import {Receipt, ReceiptLib} from "./libs/Receipt.sol";
 import {Snapshot, SnapshotLib} from "./libs/Snapshot.sol";
 import {AgentFlag, AgentStatus} from "./libs/Structures.sol";
 // ═════════════════════════════ INTERNAL IMPORTS ══════════════════════════════
-import {AgentManager} from "./manager/AgentManager.sol";
+import {AgentSecured} from "./base/AgentSecured.sol";
 import {SummitEvents} from "./events/SummitEvents.sol";
 import {IAgentManager} from "./interfaces/IAgentManager.sol";
 import {InterfaceBondingManager} from "./interfaces/InterfaceBondingManager.sol";
 import {InterfaceSummit} from "./interfaces/InterfaceSummit.sol";
 import {DisputeHub, ExecutionHub, MessageStatus, ReceiptBody, Tips} from "./hubs/ExecutionHub.sol";
 import {SnapshotHub} from "./hubs/SnapshotHub.sol";
-import {SystemBase, Versioned} from "./system/SystemBase.sol";
-import {SystemRegistry} from "./system/SystemRegistry.sol";
 // ═════════════════════════════ EXTERNAL IMPORTS ══════════════════════════════
 import {DoubleEndedQueue} from "@openzeppelin/contracts/utils/structs/DoubleEndedQueue.sol";
 
@@ -85,11 +84,7 @@ contract Summit is ExecutionHub, SnapshotHub, SummitEvents, InterfaceSummit {
 
     // ═════════════════════════════════════════ CONSTRUCTOR & INITIALIZER ═════════════════════════════════════════════
 
-    constructor(uint32 domain, IAgentManager agentManager_)
-        SystemBase(domain)
-        SystemRegistry(agentManager_)
-        Versioned("0.0.3")
-    {
+    constructor(uint32 domain, address agentManager_) AgentSecured("0.0.3", domain, agentManager_) {
         require(domain == SYNAPSE_DOMAIN, "Only deployed on SynChain");
     }
 
@@ -144,7 +139,7 @@ contract Summit is ExecutionHub, SnapshotHub, SummitEvents, InterfaceSummit {
             // Check that Notary who submitted the snapshot is not in dispute
             require(!_inDispute(agent), "Notary is in dispute");
             // Fetch current Agent Root from BondingManager
-            bytes32 agentRoot = agentManager.agentRoot();
+            bytes32 agentRoot = IAgentManager(agentManager).agentRoot();
             // This will revert if any of the states from the Notary snapshot
             // haven't been submitted by any of the Guards before.
             attPayload = _acceptNotarySnapshot(snapshot, agentRoot, agent, status.index);

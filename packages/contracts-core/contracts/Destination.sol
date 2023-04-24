@@ -8,13 +8,12 @@ import {ByteString} from "./libs/ByteString.sol";
 import {AGENT_ROOT_OPTIMISTIC_PERIOD} from "./libs/Constants.sol";
 import {AgentStatus, DestinationStatus} from "./libs/Structures.sol";
 // ═════════════════════════════ INTERNAL IMPORTS ══════════════════════════════
+import {AgentSecured} from "./base/AgentSecured.sol";
 import {DestinationEvents} from "./events/DestinationEvents.sol";
 import {IAgentManager} from "./interfaces/IAgentManager.sol";
 import {InterfaceDestination} from "./interfaces/InterfaceDestination.sol";
 import {InterfaceLightManager} from "./interfaces/InterfaceLightManager.sol";
 import {DisputeHub, ExecutionHub} from "./hubs/ExecutionHub.sol";
-import {SystemBase, Versioned} from "./system/SystemBase.sol";
-import {SystemRegistry} from "./system/SystemRegistry.sol";
 
 contract Destination is ExecutionHub, DestinationEvents, InterfaceDestination {
     using AttestationLib for bytes;
@@ -42,11 +41,8 @@ contract Destination is ExecutionHub, DestinationEvents, InterfaceDestination {
 
     // ═════════════════════════════════════════ CONSTRUCTOR & INITIALIZER ═════════════════════════════════════════════
 
-    constructor(uint32 domain, IAgentManager agentManager_)
-        SystemBase(domain)
-        SystemRegistry(agentManager_)
-        Versioned("0.0.3")
-    {} // solhint-disable-line no-empty-blocks
+    // solhint-disable-next-line no-empty-blocks
+    constructor(uint32 domain, address agentManager_) AgentSecured("0.0.3", domain, agentManager_) {}
 
     /// @notice Initializes Destination contract:
     /// - msg.sender is set as contract owner
@@ -92,7 +88,7 @@ contract Destination is ExecutionHub, DestinationEvents, InterfaceDestination {
 
     /// @inheritdoc InterfaceDestination
     function passAgentRoot() public returns (bool rootPassed, bool rootPending) {
-        bytes32 oldRoot = agentManager.agentRoot();
+        bytes32 oldRoot = IAgentManager(agentManager).agentRoot();
         bytes32 newRoot = nextAgentRoot;
         // Check if agent root differs from the current one in LightManager
         if (oldRoot == newRoot) return (false, false);
