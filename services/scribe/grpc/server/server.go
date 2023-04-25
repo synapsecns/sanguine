@@ -102,7 +102,8 @@ func (s *server) StreamLogs(req *pbscribe.StreamLogsRequest, res pbscribe.Scribe
 		for {
 			logs, err := s.db.RetrieveLogsInRangeAsc(ctx, logFilter, fromBlock, toBlock, page)
 			if err != nil {
-				return fmt.Errorf("could not retrieve logs: %w", err)
+				time.Sleep(1 * time.Second)
+				continue
 			}
 
 			retrievedLogs = append(retrievedLogs, logs...)
