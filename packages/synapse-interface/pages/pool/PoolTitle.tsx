@@ -1,22 +1,24 @@
-import { POOLS_MAP } from '@hooks/pools/usePools'
-
-export default function PoolTitle({ poolName, poolChainId }) {
-  const coins = POOLS_MAP[poolChainId]?.[poolName]
+import { Token } from '@types'
+const PoolTitle = ({ pool }: { pool: Token }) => {
+  const tokens = pool?.poolTokens
 
   return (
-    <div className="inline-flex items-center mt-2">
-      <div className="items-center hidden mr-4 md:flex lg:flex">
-        {coins.map((coin) => (
-          <img
-            key={coin.symbol}
-            className="relative inline-block w-8 -mr-2 text-white shadow-solid"
-            src={coin.icon}
-          />
-        ))}
+    tokens && (
+      <div className="inline-flex items-center mt-2">
+        <div className="items-center hidden mr-4 md:flex lg:flex">
+          {tokens.map((token) => (
+            <img
+              key={token.symbol}
+              className="relative inline-block w-8 -mr-2 text-white shadow-solid"
+              src={token.icon.src}
+            />
+          ))}
+        </div>
+        <h3 className="ml-2 mr-2 text-lg font-medium text-white md:ml-0 md:text-2xl">
+          {pool?.name}
+        </h3>
       </div>
-      <h3 className="ml-2 mr-2 text-lg font-medium text-white md:ml-0 md:text-2xl">
-        {poolName}
-      </h3>
-    </div>
+    )
   )
 }
+export default PoolTitle
