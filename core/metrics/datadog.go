@@ -19,6 +19,9 @@ type datadogHandler struct {
 	*baseHandler
 	profilerOptions []profiler.Option
 	buildInfo       config.BuildInfo
+	// version is a temporary workaround for the fact that
+	// we don't yet have a clean way to set tags.datadoghq.com/version
+	version string
 }
 
 // NewDatadogMetricsHandler creates a new datadog metrics handler.
@@ -27,15 +30,18 @@ func NewDatadogMetricsHandler(buildInfo config.BuildInfo) Handler {
 		buildInfo: buildInfo,
 	}
 
+	const datadogVersion = "1.00"
+	datadogBuildInfo := config.NewBuildInfo(datadogVersion, buildInfo.Commit(), buildInfo.Version(), buildInfo.Name())
+
 	// This is a no-op handler to prevent panics. it gets set in start!
-	handler.baseHandler = newBaseHandler(buildInfo)
+	handler.baseHandler = newBaseHandler(datadogBuildInfo)
 
 	handler.profilerOptions = []profiler.Option{
-		profiler.WithService(buildInfo.Name()),
+		profiler.WithService(datadogBuildInfo.Name()),
 		profiler.WithEnv(core.GetEnv("ENVIRONMENT", "default")),
-		profiler.WithVersion(buildInfo.Version()),
+		profiler.WithVersion(datadogBuildInfo.Version()),
 		profiler.WithTags(
-			fmt.Sprintf("commit:%s", buildInfo.Commit()),
+			fmt.Sprintf("commit:%s", datadogBuildInfo.Commit()),
 		),
 		profiler.WithLogStartup(true),
 		profiler.WithProfileTypes(getProfileTypesFromEnv()...),
