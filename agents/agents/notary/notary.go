@@ -429,7 +429,13 @@ func (n Notary) Start(ctx context.Context) error {
 	if err != nil {
 		return fmt.Errorf("could not get latest block number from Summit: %w", err)
 	}
+	// Try starting from previous day
 	n.lastSummitBlock = uint64(latestBlockNUmber)
+	if n.lastSummitBlock > 3000 {
+		n.lastSummitBlock = uint64(latestBlockNUmber) - uint64(3000)
+	} else {
+		n.lastSummitBlock = uint64(0)
+	}
 
 	// Ensure that gRPC is up and running.
 	logger.Info("Notary: ensure that gRPC is up and running.")
