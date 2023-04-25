@@ -82,7 +82,10 @@ const PoolsListCard = memo(
             }
           }}
           // href={getPoolUrl({ poolRouterIndex })}
-          href="{getPoolUrl({ poolRouterIndex })}" // TODO: fix this
+          href={getPoolUrl({
+            poolRouterIndex:
+              STAKING_MAP_TOKENS?.[chainId]?.[poolName]?.routerIndex,
+          })} // TODO: fix this
         >
           <Card
             title={

@@ -19,6 +19,7 @@ export const AIRDROP_PATH = '/claim'
 export const SWAP_PATH = '/swap'
 export const STAKE_PATH = '/stake'
 export const POOLS_PATH = '/pools'
+export const POOL_PATH = '/pool'
 export const BRIDGE_PATH = '/'
 export const CONTRACTS_PATH = '/contracts'
 export const PORTFOLIO_PATH = '/portfolio'
@@ -45,11 +46,11 @@ export const getPoolUrl = ({
         chainId: CHAINS.ETH.id,
       })
     } else {
-      return `${POOLS_PATH}/${token.routerIndex}`
+      return `${POOL_PATH}/${token.routerIndex}`
     }
   }
 
-  return `${POOLS_PATH}/${poolRouterIndex}`
+  return `${POOL_PATH}/${poolRouterIndex}`
 }
 
 export const getExplorerTxUrl = ({
