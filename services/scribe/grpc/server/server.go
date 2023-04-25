@@ -91,6 +91,8 @@ func (s *server) StreamLogs(req *pbscribe.StreamLogsRequest, res pbscribe.Scribe
 		}
 
 		ctx, span := s.handler.Tracer().Start(res.Context(), "grpc.StreamLogsLoop", trace.WithAttributes(
+			attribute.Int("chain_id", int(req.Filter.ChainId)),
+			attribute.String("contract_address", req.Filter.ContractAddress.GetData()),
 			attribute.Int("fromBlock", int(fromBlock)),
 			attribute.Int("toBlock", int(toBlock)),
 		))
