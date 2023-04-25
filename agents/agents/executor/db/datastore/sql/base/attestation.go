@@ -49,7 +49,7 @@ func (s Store) GetAttestation(ctx context.Context, attestationMask types.DBAttes
 
 	agentsAttestation := agentsTypes.NewAttestation(
 		common.HexToHash(attestation.SnapshotRoot),
-		attestation.Height,
+		common.HexToHash(attestation.AgentRoot),
 		attestation.AttestationNonce,
 		big.NewInt(int64(attestation.SummitBlockNumber)),
 		big.NewInt(int64(attestation.SummitTimestamp)),
@@ -135,8 +135,8 @@ func DBAttestationToAttestation(dbAttestation types.DBAttestation) Attestation {
 		attestation.SnapshotRoot = *dbAttestation.SnapshotRoot
 	}
 
-	if dbAttestation.Height != nil {
-		attestation.Height = *dbAttestation.Height
+	if dbAttestation.AgentRoot != nil {
+		attestation.AgentRoot = *dbAttestation.AgentRoot
 	}
 
 	if dbAttestation.AttestationNonce != nil {
@@ -166,7 +166,7 @@ func DBAttestationToAttestation(dbAttestation types.DBAttestation) Attestation {
 func AttestationToDBAttestation(attestation Attestation) types.DBAttestation {
 	destination := attestation.Destination
 	snapshotRoot := attestation.SnapshotRoot
-	height := attestation.Height
+	agentRoot := attestation.AgentRoot
 	attestationNonce := attestation.AttestationNonce
 	summitBlockNumber := attestation.SummitBlockNumber
 	summitTimestamp := attestation.SummitTimestamp
@@ -176,7 +176,7 @@ func AttestationToDBAttestation(attestation Attestation) types.DBAttestation {
 	return types.DBAttestation{
 		Destination:            &destination,
 		SnapshotRoot:           &snapshotRoot,
-		Height:                 &height,
+		AgentRoot:              &agentRoot,
 		AttestationNonce:       &attestationNonce,
 		SummitBlockNumber:      &summitBlockNumber,
 		SummitTimestamp:        &summitTimestamp,
@@ -188,11 +188,12 @@ func AttestationToDBAttestation(attestation Attestation) types.DBAttestation {
 // agentsTypesAttestationToAttestation converts an agentsTypes.Attestation to an Attestation.
 func agentsTypesAttestationToAttestation(attestation agentsTypes.Attestation, destination uint32, destinationBlockNumber, destinationTimestamp uint64) Attestation {
 	snapshotRoot := attestation.SnapshotRoot()
+	agentRoot := attestation.AgentRoot()
 
 	return Attestation{
 		Destination:            destination,
 		SnapshotRoot:           common.BytesToHash(snapshotRoot[:]).String(),
-		Height:                 attestation.Height(),
+		AgentRoot:              common.BytesToHash(agentRoot[:]).String(),
 		AttestationNonce:       attestation.Nonce(),
 		SummitBlockNumber:      attestation.BlockNumber().Uint64(),
 		SummitTimestamp:        attestation.Timestamp().Uint64(),

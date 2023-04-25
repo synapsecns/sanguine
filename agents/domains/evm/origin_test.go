@@ -40,7 +40,9 @@ func (d TestDispatch) Call(i ContractSuite) (blockNumber uint32) {
 	encodedTips, err := types.EncodeTips(types.NewTips(big.NewInt(0), big.NewInt(0), big.NewInt(0), big.NewInt(0)))
 	Nil(i.T(), err)
 
-	tx, err := i.OriginContract.Dispatch(auth.TransactOpts, d.domain, d.recipientAddress, d.optimisticSeconds, encodedTips, d.message)
+	paddedTips := new(big.Int).SetBytes(encodedTips)
+	paddedRequest := big.NewInt(0)
+	tx, err := i.OriginContract.SendBaseMessage(auth.TransactOpts, d.domain, d.recipientAddress, d.optimisticSeconds, paddedTips, paddedRequest, d.message)
 	Nil(i.T(), err)
 	i.TestBackendOrigin.WaitForConfirmation(i.GetTestContext(), tx)
 

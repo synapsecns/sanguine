@@ -107,14 +107,14 @@ func DecodeSnapshot(toDecode []byte) (Snapshot, error) {
 // EncodeAttestation encodes an attestation.
 func EncodeAttestation(attestation Attestation) ([]byte, error) {
 	b := make([]byte, 0)
-	height := []byte{attestation.Height()}
 	nonceBytes := make([]byte, uint32Len)
 
 	binary.BigEndian.PutUint32(nonceBytes, attestation.Nonce())
 	snapshotRoot := attestation.SnapshotRoot()
+	agentRoot := attestation.AgentRoot()
 
 	b = append(b, snapshotRoot[:]...)
-	b = append(b, height...)
+	b = append(b, agentRoot[:]...)
 	b = append(b, nonceBytes...)
 	b = append(b, math.PaddedBigBytes(attestation.BlockNumber(), uint40Len)...)
 	b = append(b, math.PaddedBigBytes(attestation.Timestamp(), uint40Len)...)
@@ -128,18 +128,19 @@ func DecodeAttestation(toDecode []byte) (Attestation, error) {
 		return nil, fmt.Errorf("invalid attestation length, expected %d, got %d", attestationSize, len(toDecode))
 	}
 
-	snapshotRoot := toDecode[attestationOffsetRoot:attestationOffsetDepth]
-	height := toDecode[attestationOffsetDepth:attestationOffsetNonce][0]
+	snapshotRoot := toDecode[attestationOffsetRoot:attestationOffsetAgentRoot]
+	agentRoot := toDecode[attestationOffsetAgentRoot:attestationOffsetNonce]
 	nonce := binary.BigEndian.Uint32(toDecode[attestationOffsetNonce:attestationOffsetBlockNumber])
 	blockNumber := new(big.Int).SetBytes(toDecode[attestationOffsetBlockNumber:attestationOffsetTimestamp])
 	timestamp := new(big.Int).SetBytes(toDecode[attestationOffsetTimestamp:attestationSize])
 
-	var snapshotRootB32 [32]byte
+	var snapshotRootB32, agentRootB32 [32]byte
 	copy(snapshotRootB32[:], snapshotRoot)
+	copy(agentRootB32[:], agentRoot)
 
 	return attestation{
 		snapshotRoot: snapshotRootB32,
-		height:       height,
+		agentRoot:    agentRootB32,
 		nonce:        nonce,
 		blockNumber:  blockNumber,
 		timestamp:    timestamp,
@@ -273,4 +274,37 @@ func EncodeMessage(m Message) ([]byte, error) {
 	buf.Write(m.Body())
 
 	return buf.Bytes(), nil
+}
+
+// EncodeAgentStatus encodes a agent status.
+func EncodeAgentStatus(agentStatus AgentStatus) ([]byte, error) {
+	b := make([]byte, 0)
+	domainBytes := make([]byte, uint32Len)
+	indexBytes := make([]byte, uint32Len)
+
+	binary.BigEndian.PutUint32(domainBytes, agentStatus.Domain())
+	binary.BigEndian.PutUint32(indexBytes, agentStatus.Index())
+
+	b = append(b, agentStatus.Flag())
+	b = append(b, domainBytes...)
+	b = append(b, indexBytes...)
+
+	return b, nil
+}
+
+// DecodeAgentStatus decodes an agent status.
+func DecodeAgentStatus(toDecode []byte) (AgentStatus, error) {
+	if len(toDecode) != agentStatusSize {
+		return nil, fmt.Errorf("invalid agent status length, expected %d, got %d", agentStatusSize, len(toDecode))
+	}
+
+	flagBytes := toDecode[agentStatusOffsetFlag:agentStatusOffsetDomain]
+	domain := binary.BigEndian.Uint32(toDecode[agentStatusOffsetDomain:agentStatusOffsetIndex])
+	index := binary.BigEndian.Uint32(toDecode[agentStatusOffsetDomain:agentStatusSize])
+
+	return agentStatus{
+		flag:   flagBytes[0],
+		domain: domain,
+		index:  index,
+	}, nil
 }

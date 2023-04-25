@@ -12,40 +12,32 @@ import (
 
 // IOriginTransactor ...
 type IOriginTransactor interface {
-	// Dispatch is a paid mutator transaction binding the contract method 0xf7560e40.
-	//
-	// Solidity: function dispatch(uint32 _destination, bytes32 _recipient, uint32 _optimisticSeconds, bytes _tips, bytes _messageBody) payable returns(uint32 messageNonce, bytes32 messageHash)
-	Dispatch(opts *bind.TransactOpts, _destination uint32, _recipient [32]byte, _optimisticSeconds uint32, _tips []byte, _messageBody []byte) (*types.Transaction, error)
 	// Initialize is a paid mutator transaction binding the contract method 0x8129fc1c.
 	//
 	// Solidity: function initialize() returns()
 	Initialize(opts *bind.TransactOpts) (*types.Transaction, error)
+	// ManagerSlash is a paid mutator transaction binding the contract method 0x5f7bd144.
+	//
+	// Solidity: function managerSlash(uint32 domain, address agent, address prover) returns()
+	ManagerSlash(opts *bind.TransactOpts, domain uint32, agent common.Address, prover common.Address) (*types.Transaction, error)
 	// RenounceOwnership is a paid mutator transaction binding the contract method 0x715018a6.
 	//
 	// Solidity: function renounceOwnership() returns()
 	RenounceOwnership(opts *bind.TransactOpts) (*types.Transaction, error)
-	// SetSystemRouter is a paid mutator transaction binding the contract method 0xfbde22f7.
+	// SendBaseMessage is a paid mutator transaction binding the contract method 0xf71c4347.
 	//
-	// Solidity: function setSystemRouter(address _systemRouter) returns()
-	SetSystemRouter(opts *bind.TransactOpts, _systemRouter common.Address) (*types.Transaction, error)
-	// SlashAgent is a paid mutator transaction binding the contract method 0x31f36451.
+	// Solidity: function sendBaseMessage(uint32 destination, bytes32 recipient, uint32 optimisticPeriod, uint256 paddedTips, uint256 paddedRequest, bytes content) payable returns(uint32 messageNonce, bytes32 messageHash)
+	SendBaseMessage(opts *bind.TransactOpts, destination uint32, recipient [32]byte, optimisticPeriod uint32, paddedTips *big.Int, paddedRequest *big.Int, content []byte) (*types.Transaction, error)
+	// SendManagerMessage is a paid mutator transaction binding the contract method 0xa1c702a7.
 	//
-	// Solidity: function slashAgent(uint256 , uint32 _callOrigin, uint8 _caller, (uint32,address,bool) _info) returns()
-	SlashAgent(opts *bind.TransactOpts, arg0 *big.Int, _callOrigin uint32, _caller uint8, _info AgentInfo) (*types.Transaction, error)
-	// SyncAgent is a paid mutator transaction binding the contract method 0x81cfb5f1.
-	//
-	// Solidity: function syncAgent(uint256 , uint32 _callOrigin, uint8 _caller, (uint32,address,bool) _info) returns()
-	SyncAgent(opts *bind.TransactOpts, arg0 *big.Int, _callOrigin uint32, _caller uint8, _info AgentInfo) (*types.Transaction, error)
+	// Solidity: function sendManagerMessage(uint32 destination, uint32 optimisticPeriod, bytes payload) returns(uint32 messageNonce, bytes32 messageHash)
+	SendManagerMessage(opts *bind.TransactOpts, destination uint32, optimisticPeriod uint32, payload []byte) (*types.Transaction, error)
 	// TransferOwnership is a paid mutator transaction binding the contract method 0xf2fde38b.
 	//
 	// Solidity: function transferOwnership(address newOwner) returns()
 	TransferOwnership(opts *bind.TransactOpts, newOwner common.Address) (*types.Transaction, error)
-	// VerifyAttestation is a paid mutator transaction binding the contract method 0x663a711b.
+	// WithdrawTips is a paid mutator transaction binding the contract method 0x4e04e7a7.
 	//
-	// Solidity: function verifyAttestation(bytes _snapPayload, uint256 _stateIndex, bytes _attPayload, bytes _attSignature) returns(bool isValid)
-	VerifyAttestation(opts *bind.TransactOpts, _snapPayload []byte, _stateIndex *big.Int, _attPayload []byte, _attSignature []byte) (*types.Transaction, error)
-	// VerifySnapshot is a paid mutator transaction binding the contract method 0x538f5b98.
-	//
-	// Solidity: function verifySnapshot(bytes _snapPayload, uint256 _stateIndex, bytes _snapSignature) returns(bool isValid)
-	VerifySnapshot(opts *bind.TransactOpts, _snapPayload []byte, _stateIndex *big.Int, _snapSignature []byte) (*types.Transaction, error)
+	// Solidity: function withdrawTips(address recipient, uint256 amount) returns()
+	WithdrawTips(opts *bind.TransactOpts, recipient common.Address, amount *big.Int) (*types.Transaction, error)
 }
