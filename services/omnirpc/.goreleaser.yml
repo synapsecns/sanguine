@@ -11,7 +11,7 @@ builds:
     binary: omnirpc
     ldflags:
       # We need to build a static binary because we are building in a glibc based system and running in a musl container
-      - -s -w -extldflags "-static"
+      - -s -w -extldflags '-static'
     # required workaround for https://github.com/Shopify/sarama/issues/2206
     # See: https://github.com/golang/go/issues/35067#issuecomment-544805311 because we're statically compiling,
     # without forcing netgo, we use the cgo resolver which will not work for .local (a canonical tld in kubernetes)
@@ -66,11 +66,11 @@ dockers:
       - 'ghcr.io/synapsecns/sanguine/omnirpc:{{ .Tag }}'
       - 'ghcr.io/synapsecns/sanguine/omnirpc:{{ .FullCommit }}'
     build_flag_templates:
-      - "--label=org.opencontainers.image.created={{.Date}}"
-      - "--label=org.opencontainers.image.name={{.ProjectName}}"
-      - "--label=org.opencontainers.image.revision={{.FullCommit}}"
-      - "--label=org.opencontainers.image.version={{.Version}}"
-      - "--label=org.opencontainers.image.source={{.GitURL}}"
+      - '--label=org.opencontainers.image.created={{.Date}}'
+      - '--label=org.opencontainers.image.name={{.ProjectName}}'
+      - '--label=org.opencontainers.image.revision={{.FullCommit}}'
+      - '--label=org.opencontainers.image.version={{.Version}}'
+      - '--label=org.opencontainers.image.source={{.GitURL}}'
     dockerfile: ../../docker/omnirpc.Dockerfile
     ids:
       - omnirpc

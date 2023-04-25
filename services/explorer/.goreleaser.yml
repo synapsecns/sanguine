@@ -66,6 +66,12 @@ dockers:
       - 'ghcr.io/synapsecns/sanguine/explorer:latest'
       - 'ghcr.io/synapsecns/sanguine/explorer:{{ .Tag }}'
       - 'ghcr.io/synapsecns/sanguine/explorer:{{ .FullCommit }}'
+    build_flag_templates:
+      - '--label=org.opencontainers.image.created={{.Date}}'
+      - '--label=org.opencontainers.image.name={{.ProjectName}}'
+      - '--label=org.opencontainers.image.revision={{.FullCommit}}'
+      - '--label=org.opencontainers.image.version={{.Version}}'
+      - '--label=org.opencontainers.image.source={{.GitURL}}'
     dockerfile: ../../docker/explorer.Dockerfile
     ids:
       - explorer
