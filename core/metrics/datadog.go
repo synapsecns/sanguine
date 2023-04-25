@@ -25,6 +25,10 @@ type datadogHandler struct {
 }
 
 const ddCommitTag = "git.commit.sha"
+const ddEnvTag = "DD_ENV"
+const ddServiceTag = "DD_SERVICE"
+const ddVersionTag = "DD_VERSION"
+const defaultEnv = "default"
 
 // NewDatadogMetricsHandler creates a new datadog metrics handler.
 func NewDatadogMetricsHandler(buildInfo config.BuildInfo) Handler {
@@ -32,15 +36,14 @@ func NewDatadogMetricsHandler(buildInfo config.BuildInfo) Handler {
 		buildInfo: buildInfo,
 	}
 
-	const datadogVersion = "1.00"
-	datadogBuildInfo := config.NewBuildInfo(datadogVersion, buildInfo.Commit(), buildInfo.Name(), buildInfo.Date())
+	datadogBuildInfo := config.NewBuildInfo(core.GetEnv(ddVersionTag, buildInfo.Version()), buildInfo.Commit(), core.GetEnv(ddServiceTag, buildInfo.Name()), buildInfo.Date())
 
 	// This is a no-op handler to prevent panics. it gets set in start!
 	handler.baseHandler = newBaseHandler(datadogBuildInfo)
 
 	handler.profilerOptions = []profiler.Option{
 		profiler.WithService(datadogBuildInfo.Name()),
-		profiler.WithEnv(core.GetEnv("ENVIRONMENT", "default")),
+		profiler.WithEnv(core.GetEnv(ddEnvTag, defaultEnv)),
 		profiler.WithVersion(datadogBuildInfo.Version()),
 		profiler.WithTags(
 			fmt.Sprintf("%s:%s", ddCommitTag, datadogBuildInfo.Commit()),
@@ -72,7 +75,7 @@ func (d *datadogHandler) Start(ctx context.Context) error {
 
 	ddPrpopgator := tracer.NewPropagator(&tracer.PropagatorConfig{B3: true})
 	tracerProvider := opentelemetry.NewTracerProvider(tracer.WithRuntimeMetrics(), tracer.WithProfilerEndpoints(true), tracer.WithAnalytics(true),
-		tracer.WithPropagator(ddPrpopgator), tracer.WithEnv(core.GetEnv("ENVIRONMENT", "default")), tracer.WithService(d.buildInfo.Name()), tracer.WithServiceVersion(d.buildInfo.Version()))
+		tracer.WithPropagator(ddPrpopgator), tracer.WithEnv(core.GetEnv(ddVersionTag, defaultEnv)), tracer.WithService(d.buildInfo.Name()), tracer.WithServiceVersion(d.buildInfo.Version()))
 
 	d.baseHandler = newBaseHandlerWithTracerProvider(d.buildInfo, tracerProvider, propagator)
 
