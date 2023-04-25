@@ -12,6 +12,8 @@ import (
 	"github.com/synapsecns/sanguine/services/scribe/db/datastore/sql/base"
 	pbscribe "github.com/synapsecns/sanguine/services/scribe/grpc/types/types/v1"
 	"go.opentelemetry.io/contrib/instrumentation/google.golang.org/grpc/otelgrpc"
+	"go.opentelemetry.io/otel/attribute"
+	"go.opentelemetry.io/otel/trace"
 	"google.golang.org/grpc"
 	"strconv"
 	"time"
@@ -24,7 +26,8 @@ func SetupGRPCServer(ctx context.Context, engine *gin.Engine, eventDB db.EventDB
 		grpc.StreamInterceptor(otelgrpc.StreamServerInterceptor(otelgrpc.WithTracerProvider(handler.GetTracerProvider()))),
 	)
 	sImpl := server{
-		db: eventDB,
+		db:      eventDB,
+		handler: handler,
 	}
 
 	mux := runtime.NewServeMux()
@@ -46,6 +49,7 @@ type server struct {
 	// db is the db to use for the server
 	db db.EventDB
 	pbscribe.UnimplementedScribeServiceServer
+	handler metrics.Handler
 }
 
 func (s *server) FilterLogs(ctx context.Context, req *pbscribe.FilterLogsRequest) (*pbscribe.FilterLogsResponse, error) {
@@ -86,10 +90,15 @@ func (s *server) StreamLogs(req *pbscribe.StreamLogsRequest, res pbscribe.Scribe
 			fromBlock = nextFromBlock
 		}
 
+		ctx, span := s.handler.Tracer().Start(res.Context(), "grpc.StreamLogsLoop", trace.WithAttributes(
+			attribute.Int("fromBlock", int(fromBlock)),
+			attribute.Int("toBlock", int(toBlock)),
+		))
+
 		page := 1
 
 		for {
-			logs, err := s.db.RetrieveLogsInRangeAsc(res.Context(), logFilter, fromBlock, toBlock, page)
+			logs, err := s.db.RetrieveLogsInRangeAsc(ctx, logFilter, fromBlock, toBlock, page)
 			if err != nil {
 				return fmt.Errorf("could not retrieve logs: %w", err)
 			}
@@ -100,6 +109,8 @@ func (s *server) StreamLogs(req *pbscribe.StreamLogsRequest, res pbscribe.Scribe
 			if len(logs) < base.PageSize {
 				break
 			}
+
+			span.AddEvent("Getting next page. Page: " + strconv.Itoa(page))
 
 			page++
 		}
@@ -114,6 +125,8 @@ func (s *server) StreamLogs(req *pbscribe.StreamLogsRequest, res pbscribe.Scribe
 			}
 		}
 
+		span.AddEvent("Got logs. Count: " + strconv.Itoa(len(retrievedLogs)))
+
 		if !streamNewBlocks {
 			return nil
 		}
@@ -121,11 +134,11 @@ func (s *server) StreamLogs(req *pbscribe.StreamLogsRequest, res pbscribe.Scribe
 	STREAM:
 		for {
 			select {
-			case <-res.Context().Done():
+			case <-ctx.Done():
 				return nil
 			default:
 				time.Sleep(time.Duration(wait) * time.Second)
-				latestScribeBlock, err := s.db.RetrieveLastIndexed(res.Context(), common.HexToAddress(req.Filter.ContractAddress.GetData()), req.Filter.ChainId)
+				latestScribeBlock, err := s.db.RetrieveLastIndexed(ctx, common.HexToAddress(req.Filter.ContractAddress.GetData()), req.Filter.ChainId)
 				if err != nil {
 					return fmt.Errorf("could not retrieve last indexed block: %w", err)
 				}
@@ -134,11 +147,18 @@ func (s *server) StreamLogs(req *pbscribe.StreamLogsRequest, res pbscribe.Scribe
 					nextFromBlock = toBlock + 1
 					toBlock = latestScribeBlock
 					wait = 0
+
+					span.AddEvent("New block. From: " + strconv.Itoa(int(nextFromBlock)) + " To: " + strconv.Itoa(int(toBlock)))
+
 					break STREAM
 				}
 				wait = 1
 			}
 		}
+
+		go func() {
+			span.End()
+		}()
 	}
 }
 
