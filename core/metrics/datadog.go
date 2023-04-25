@@ -33,7 +33,7 @@ func NewDatadogMetricsHandler(buildInfo config.BuildInfo) Handler {
 	}
 
 	const datadogVersion = "1.00"
-	datadogBuildInfo := config.NewBuildInfo(datadogVersion, buildInfo.Commit(), buildInfo.Version(), buildInfo.Name())
+	datadogBuildInfo := config.NewBuildInfo(datadogVersion, buildInfo.Commit(), buildInfo.Name(), buildInfo.Date())
 
 	// This is a no-op handler to prevent panics. it gets set in start!
 	handler.baseHandler = newBaseHandler(datadogBuildInfo)
