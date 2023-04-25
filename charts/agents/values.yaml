@@ -8,7 +8,7 @@ image:
   repository: ghcr.io/synapsecns/sanguine/agents
   pullPolicy: Always
   # Overrides the image tag whose default is the chart appVersion.
-  tag: "5c0465564558571b63c5880a631c6969c21bc2d8"
+  tag: "2c83bebf63ebf80474d5018f1532fa55a589ca1c"
 
 imagePullSecrets: []
 nameOverride: ""
@@ -78,10 +78,10 @@ definitions:
     - name: METRICS_HANDLER
       value: "jaeger"
     - name: JAEGER_ENDPOINT
-      value: "http://agents-jaeger-collector:14268/api/traces"
+      value: "http://agents-devnet-jaeger-collector:14268/api/traces"
 
 notary:
-  enabled: true
+  enabled: false
   args: ["notary-run", "--config=/config/notary_config1.yaml", "--metrics-port=5080"]
   podAnnotations: {}
   nodeSelector: {}
@@ -125,7 +125,7 @@ notary:
               fieldPath: metadata.namespace
 
 guard:
-  enabled: true
+  enabled: false
   args: ["guard-run", "--config=/config/guard_config.yaml", "--metrics-port=5082"]
   podAnnotations: {}
   nodeSelector: {}
@@ -147,7 +147,7 @@ guard:
               fieldPath: metadata.namespace
 
 executor:
-  type: "embedded"
+  type: "remote-fresh"
 
 executor_remote_existing:
   # TODO: We need to figure out certificates or how to communicate with the gRPC scribe via gRPC gateway's REST capabilities.
@@ -220,7 +220,7 @@ executor_remote_fresh:
     - name: create-database-agents
       image: mysql/mysql-server:latest
       imagePullPolicy: IfNotPresent
-      command: ['bash', '-c', "until mysql -h${POD_NAME}.${POD_NAMESPACE} -uroot -pMysqlPassword --execute=\"CREATE DATABASE IF NOT EXISTS agents\"; do 'echo waiting for db'; sleep 10; done"]
+      command: ['bash', '-c', "until mysql -h${POD_NAME}.${POD_NAMESPACE} -uroot -pMysqlPassword -e'CREATE DATABASE IF NOT EXISTS agents;'; do 'echo waiting for db'; sleep 1; done"]
       env:
         - name: POD_NAME
           value: agents-mysql
@@ -336,19 +336,26 @@ omnirpc:
   enabled: true
   fullnameOverride: agents-omnirpc
   replicaCount: 3
+  env: *default_env
 
 scribe:
   enabled: true
+  indexer:
+    env: *default_env
+  server:
+    env: *default_env
+  image:
+    tag: "96aff2cd738c632fac3ad20f7cf9a7eff7aadcb0"
   fullnameOverride: executor-scribe
   files:
     config.yaml: |-
       chains:
         - chain_id: 137
           required_confirmations: 50
-          contract_sub_chunk_size: 1000
-          contract_chunk_size: 1000
-          store_concurrency: 1
-          store_concurrency_threshold: 500
+          contract_sub_chunk_size: 20000
+          contract_chunk_size: 20000
+          store_concurrency: 100
+          store_concurrency_threshold: 50000
           contracts:
             - address: 0xF3773BE7cb59235Ced272cF324aaeb0A4115280f
               start_block: 40189736
@@ -356,8 +363,6 @@ scribe:
               start_block: 40189736
         - chain_id: 10
           required_confirmations: 50
-          contract_sub_chunk_size: 500
-          contract_chunk_size: 500
           store_concurrency: 1
           store_concurrency_threshold: 500
           contracts:
@@ -371,14 +376,12 @@ scribe:
           required_confirmations: 50
           contract_sub_chunk_size: 2000
           contract_chunk_size: 10000
-          store_concurrency: 1
-          store_concurrency_threshold: 500
           contracts:
             - address: 0xF3773BE7cb59235Ced272cF324aaeb0A4115280f
               start_block: 27262747
             - address: 0xde5BB62aBCF588EC200674757EDB2f6889aCd065
               start_block: 27262744
-      rpc_url: "https://rpc.interoperability.institute/confirmations"
+      rpc_url: http://scribe-omnirpc/confirmations
       refresh_rate: 0
 
 notary_files:
@@ -808,11 +811,11 @@ executor_embedded_files:
         origin_address: 0xF3773BE7cb59235Ced272cF324aaeb0A4115280f
         destination_address: 0xde5BB62aBCF588EC200674757EDB2f6889aCd065
       - chain_id: 10
-        temp_rpc: "https://optimism-rpc.gateway.pokt.network"
+        temp_rpc: "https://rpc.interoperability.institute/confirmations/1/rpc/10"
         origin_address: 0xF3773BE7cb59235Ced272cF324aaeb0A4115280f
         destination_address: 0xde5BB62aBCF588EC200674757EDB2f6889aCd065
       - chain_id: 43114
-        temp_rpc: "https://api.avax.network/ext/bc/C/rpc"
+        temp_rpc: "https://rpc.interoperability.institute/confirmations/1/rpc/43114"
         origin_address: 0xF3773BE7cb59235Ced272cF324aaeb0A4115280f
         destination_address: 0xde5BB62aBCF588EC200674757EDB2f6889aCd065
     unbonded_signer:
