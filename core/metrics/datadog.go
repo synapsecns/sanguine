@@ -90,7 +90,7 @@ const DDProfileEnv = "DD_PROFILES"
 
 // getProfileTypesFromEnv gets a list of enabled profile types from environment variables.
 func getProfileTypesFromEnv() (profiles []profiler.ProfileType) {
-	profileEnv := core.GetEnv(DDProfileEnv, strings.Join([]string{profiler.CPUProfile.String(), profiler.MetricsProfile.String()}, ","))
+	profileEnv := core.GetEnv(DDProfileEnv, strings.Join([]string{profiler.CPUProfile.String(), profiler.MetricsProfile.String(), profiler.GoroutineProfile.String(), profiler.MutexProfile.String(), profiler.HeapProfile.String()}, ","))
 	profilesStr := strings.Split(strings.ToLower(profileEnv), ",")
 
 	// strip duplicates by using a set
