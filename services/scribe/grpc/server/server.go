@@ -153,15 +153,15 @@ func (s *server) StreamLogs(req *pbscribe.StreamLogsRequest, res pbscribe.Scribe
 
 					span.AddEvent("New block. From: " + strconv.Itoa(int(nextFromBlock)) + " To: " + strconv.Itoa(int(toBlock)))
 
+					go func() {
+						span.End()
+					}()
+
 					break STREAM
 				}
 				wait = 1
 			}
 		}
-
-		go func() {
-			span.End()
-		}()
 	}
 }
 
