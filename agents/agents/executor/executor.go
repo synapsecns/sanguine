@@ -343,7 +343,7 @@ func (e Executor) Execute(parentCtx context.Context, message types.Message) (_ b
 		Nonce:   &stateNonce,
 	}
 
-	_, snapshotProof, _, stateIndex, err := e.executorDB.GetStateMetadata(ctx, stateMask)
+	_, snapshotProof, stateIndex, err := e.executorDB.GetStateMetadata(ctx, stateMask)
 	if err != nil {
 		return false, fmt.Errorf("could not get state index: %w", err)
 	}
@@ -388,7 +388,8 @@ func (e Executor) Execute(parentCtx context.Context, message types.Message) (_ b
 				return false, fmt.Errorf("could not execute message after %f attempts", b.Attempt())
 			}
 
-			err = e.chainExecutors[message.DestinationDomain()].boundDestination.Execute(ctx, e.signer, message, originProof, snapshotProofB32, big.NewInt(int64(*stateIndex)))
+			// TODO (joe and lex): Set gas limit for now to be equal to what was set in the message
+			err = e.chainExecutors[message.DestinationDomain()].boundDestination.Execute(ctx, e.signer, message, originProof, snapshotProofB32, big.NewInt(int64(*stateIndex)), uint64(10000000))
 			if err != nil {
 				timeout = b.Duration()
 				span.AddEvent("error when executing", trace.WithAttributes(
@@ -449,7 +450,7 @@ func (e Executor) verifyMessageMerkleProof(message types.Message) (bool, error) 
 		return false, fmt.Errorf("could not convert message to leaf: %w", err)
 	}
 
-	inTree := merkle.VerifyMerkleProof(root, leaf[:], message.Nonce()-1, proof, merkle.MessageTreeDepth)
+	inTree := merkle.VerifyMerkleProof(root, leaf[:], message.Nonce()-1, proof, merkle.MessageTreeHeight)
 
 	return inTree, nil
 }
@@ -476,12 +477,12 @@ func (e Executor) verifyStateMerkleProof(parentCtx context.Context, state types.
 		ChainID: &chainID,
 	}
 
-	snapshotRoot, proof, treeHeight, stateIndex, err := e.executorDB.GetStateMetadata(ctx, stateMask)
+	snapshotRoot, proof, stateIndex, err := e.executorDB.GetStateMetadata(ctx, stateMask)
 	if err != nil {
 		return false, fmt.Errorf("could not get snapshot root: %w", err)
 	}
 
-	if snapshotRoot == nil || proof == nil || treeHeight == nil || stateIndex == nil {
+	if snapshotRoot == nil || proof == nil || stateIndex == nil {
 		return false, nil
 	}
 
@@ -496,7 +497,7 @@ func (e Executor) verifyStateMerkleProof(parentCtx context.Context, state types.
 		return false, fmt.Errorf("could not unmarshal proof: %w", err)
 	}
 
-	inTree := merkle.VerifyMerkleProof((*snapshotRoot)[:], leaf[:], (*stateIndex)*2, proofBytes, *treeHeight)
+	inTree := merkle.VerifyMerkleProof((*snapshotRoot)[:], leaf[:], (*stateIndex)*2, proofBytes, merkle.SnapshotTreeHeight)
 
 	return inTree, nil
 }
@@ -580,7 +581,7 @@ func newTreeFromDB(ctx context.Context, chainID uint32, executorDB db.ExecutorDB
 		rawMessages[i] = rawMessage[:]
 	}
 
-	merkleTree := merkle.NewTreeFromItems(rawMessages, merkle.MessageTreeDepth)
+	merkleTree := merkle.NewTreeFromItems(rawMessages, merkle.MessageTreeHeight)
 
 	return merkleTree, nil
 }
@@ -772,9 +773,7 @@ func (e Executor) processLog(parentCtx context.Context, log ethTypes.Log, chainI
 				return fmt.Errorf("could not get snapshot root and proofs: %w", err)
 			}
 
-			treeHeight := (*snapshot).TreeHeight()
-
-			err = e.executorDB.StoreStates(ctx, (*snapshot).States(), snapshotRoot, proofs, treeHeight)
+			err = e.executorDB.StoreStates(ctx, (*snapshot).States(), snapshotRoot, proofs)
 			if err != nil {
 				return fmt.Errorf("could not store states: %w", err)
 			}

@@ -13,11 +13,11 @@ import (
 func (t *DBSuite) TestStoreRetrieveAttestation() {
 	t.RunOnAllDBs(func(testDB db.ExecutorDB) {
 		snapshotRootA := common.BigToHash(big.NewInt(gofakeit.Int64()))
-		heightA := gofakeit.Uint8()
+		agentsRootA := common.BigToHash(big.NewInt(gofakeit.Int64()))
 		nonceA := gofakeit.Uint32()
 		blockNumberA := big.NewInt(int64(gofakeit.Uint32()))
 		timestampA := big.NewInt(int64(gofakeit.Uint32()))
-		attestationA := agentsTypes.NewAttestation(snapshotRootA, heightA, nonceA, blockNumberA, timestampA)
+		attestationA := agentsTypes.NewAttestation(snapshotRootA, agentsRootA, nonceA, blockNumberA, timestampA)
 		destinationA := gofakeit.Uint32()
 		destinationBlockNumberA := gofakeit.Uint64()
 		destinationTimestampA := gofakeit.Uint64()
@@ -26,11 +26,11 @@ func (t *DBSuite) TestStoreRetrieveAttestation() {
 		Nil(t.T(), err)
 
 		snapshotRootB := common.BigToHash(big.NewInt(gofakeit.Int64()))
-		heightB := gofakeit.Uint8()
+		agentsRootB := common.BigToHash(big.NewInt(gofakeit.Int64()))
 		nonceB := gofakeit.Uint32()
 		blockNumberB := big.NewInt(int64(gofakeit.Uint32()))
 		timestampB := big.NewInt(int64(gofakeit.Uint32()))
-		attestationB := agentsTypes.NewAttestation(snapshotRootB, heightB, nonceB, blockNumberB, timestampB)
+		attestationB := agentsTypes.NewAttestation(snapshotRootB, agentsRootB, nonceB, blockNumberB, timestampB)
 		destinationB := gofakeit.Uint32()
 		destinationBlockNumberB := gofakeit.Uint64()
 		destinationTimestampB := gofakeit.Uint64()
@@ -39,10 +39,11 @@ func (t *DBSuite) TestStoreRetrieveAttestation() {
 		Nil(t.T(), err)
 
 		snapshotRootAString := snapshotRootA.String()
+		agentRootAString := agentsRootA.String()
 		attestationMaskA := types.DBAttestation{
 			Destination:      &destinationA,
 			SnapshotRoot:     &snapshotRootAString,
-			Height:           &heightA,
+			AgentRoot:        &agentRootAString,
 			AttestationNonce: &nonceA,
 		}
 
@@ -71,11 +72,11 @@ func (t *DBSuite) TestGetEarliestSnapshotFromAttestation() {
 		destination := gofakeit.Uint32()
 
 		snapshotRootA := common.BigToHash(big.NewInt(gofakeit.Int64()))
-		heightA := gofakeit.Uint8()
+		agentRootA := common.BigToHash(big.NewInt(gofakeit.Int64()))
 		nonceA := gofakeit.Uint32()
 		blockNumberA := big.NewInt(int64(gofakeit.Uint32()))
 		timestampA := big.NewInt(int64(gofakeit.Uint32()))
-		attestationA := agentsTypes.NewAttestation(snapshotRootA, heightA, nonceA, blockNumberA, timestampA)
+		attestationA := agentsTypes.NewAttestation(snapshotRootA, agentRootA, nonceA, blockNumberA, timestampA)
 
 		destinationBlockNumberA := gofakeit.Uint64()
 		destinationTimestampA := gofakeit.Uint64()
@@ -84,11 +85,11 @@ func (t *DBSuite) TestGetEarliestSnapshotFromAttestation() {
 		Nil(t.T(), err)
 
 		snapshotRootB := common.BigToHash(big.NewInt(gofakeit.Int64()))
-		heightB := gofakeit.Uint8()
+		agentRootB := common.BigToHash(big.NewInt(gofakeit.Int64()))
 		nonceB := gofakeit.Uint32()
 		blockNumberB := big.NewInt(int64(gofakeit.Uint32()))
 		timestampB := big.NewInt(int64(gofakeit.Uint32()))
-		attestationB := agentsTypes.NewAttestation(snapshotRootB, heightB, nonceB, blockNumberB, timestampB)
+		attestationB := agentsTypes.NewAttestation(snapshotRootB, agentRootB, nonceB, blockNumberB, timestampB)
 
 		destinationBlockNumberB := destinationBlockNumberA + 1
 		destinationTimestampB := destinationTimestampA + 1
@@ -97,11 +98,11 @@ func (t *DBSuite) TestGetEarliestSnapshotFromAttestation() {
 		Nil(t.T(), err)
 
 		snapshotRootC := common.BigToHash(big.NewInt(gofakeit.Int64()))
-		heightC := gofakeit.Uint8()
+		agentRootC := common.BigToHash(big.NewInt(gofakeit.Int64()))
 		nonceC := gofakeit.Uint32()
 		blockNumberC := big.NewInt(int64(gofakeit.Uint32()))
 		timestampC := big.NewInt(int64(gofakeit.Uint32()))
-		attestationC := agentsTypes.NewAttestation(snapshotRootC, heightC, nonceC, blockNumberC, timestampC)
+		attestationC := agentsTypes.NewAttestation(snapshotRootC, agentRootC, nonceC, blockNumberC, timestampC)
 
 		destinationBlockNumberC := uint64(0)
 		destinationTimestampC := uint64(0)

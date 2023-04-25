@@ -114,10 +114,12 @@ func (e *RPCSuite) TestFilterer() {
 	for _, dispatch := range dispatches {
 		auth := e.TestBackendOrigin.GetTxContext(e.GetTestContext(), nil)
 
-		enodedTips, err := types.EncodeTips(types.NewTips(big.NewInt(0), big.NewInt(0), big.NewInt(0), big.NewInt(0)))
+		encodedTips, err := types.EncodeTips(types.NewTips(big.NewInt(0), big.NewInt(0), big.NewInt(0), big.NewInt(0)))
 		Nil(e.T(), err)
 
-		addedDispatch, err := e.OriginContract.Dispatch(auth.TransactOpts, dispatch.destinationDomain, dispatch.recipientAddress, dispatch.optimisticSeconds, enodedTips, dispatch.messageBody)
+		paddedTips := new(big.Int).SetBytes(encodedTips)
+		paddedRequest := big.NewInt(0)
+		addedDispatch, err := e.OriginContract.SendBaseMessage(auth.TransactOpts, dispatch.destinationDomain, dispatch.recipientAddress, dispatch.optimisticSeconds, paddedTips, paddedRequest, dispatch.messageBody)
 		Nil(e.T(), err)
 
 		e.TestBackendOrigin.WaitForConfirmation(e.GetTestContext(), addedDispatch)

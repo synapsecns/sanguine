@@ -3,6 +3,7 @@ package types
 import (
 	"context"
 	"fmt"
+	"github.com/ethereum/go-ethereum/crypto"
 	"math"
 
 	"github.com/ethereum/go-ethereum/common"
@@ -18,8 +19,6 @@ type Snapshot interface {
 
 	// SnapshotRootAndProofs returns the snapshot root, calculated from the states, as well as each state's proof.
 	SnapshotRootAndProofs() ([32]byte, [][][]byte, error)
-	// TreeHeight returns the height of the merkle tree given `len(states)*2` leafs.
-	TreeHeight() uint32
 	// SignSnapshot returns the signature of the snapshot payload signed by the signer
 	SignSnapshot(ctx context.Context, signer signer.Signer) (signer.Signature, []byte, common.Hash, error)
 }
@@ -40,7 +39,7 @@ func (s snapshot) States() []State {
 }
 
 func (s snapshot) SnapshotRootAndProofs() ([32]byte, [][][]byte, error) {
-	tree := merkle.NewTree(s.TreeHeight())
+	tree := merkle.NewTree(merkle.SnapshotTreeHeight)
 
 	for _, state := range s.states {
 		leftLeaf, rightLeaf, err := state.SubLeaves()
@@ -82,10 +81,16 @@ func (s snapshot) SignSnapshot(ctx context.Context, signer signer.Signer) (signe
 		return nil, nil, common.Hash{}, fmt.Errorf("could not encode snapshot: %w", err)
 	}
 
-	hashedSnapshot, err := HashRawBytes(encodedSnapshot)
+	snapshotSalt := crypto.Keccak256Hash([]byte("SNAPSHOT_SALT"))
+
+	hashedEncodedSnapshot := crypto.Keccak256Hash(encodedSnapshot).Bytes()
+	toSign := append(snapshotSalt.Bytes(), hashedEncodedSnapshot...)
+
+	hashedSnapshot, err := HashRawBytes(toSign)
 	if err != nil {
 		return nil, nil, common.Hash{}, fmt.Errorf("could not hash snapshot: %w", err)
 	}
+
 	signature, err := signer.SignMessage(ctx, core.BytesToSlice(hashedSnapshot), false)
 	if err != nil {
 		return nil, nil, common.Hash{}, fmt.Errorf("could not sign snapshot: %w", err)

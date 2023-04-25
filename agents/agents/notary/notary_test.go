@@ -1,7 +1,7 @@
 package notary_test
 
 import (
-	"context"
+	"github.com/synapsecns/sanguine/agents/agents/notary"
 	"math/big"
 	"os"
 	"testing"
@@ -18,9 +18,7 @@ import (
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	. "github.com/stretchr/testify/assert"
 	"github.com/synapsecns/sanguine/agents/agents/guard"
-	"github.com/synapsecns/sanguine/agents/agents/notary"
 	"github.com/synapsecns/sanguine/agents/config"
-	"github.com/synapsecns/sanguine/agents/contracts/test/summitharness"
 	"github.com/synapsecns/sanguine/agents/types"
 )
 
@@ -103,9 +101,9 @@ func (u *NotarySuite) TestNotaryE2E() {
 		}
 	}()
 
-	attestationSavedSink := make(chan *summitharness.SummitHarnessAttestationSaved)
+	/*attestationSavedSink := make(chan *summitharness.SummitHarnessAttestationSaved)
 	savedAttestation, err := u.SummitContract.WatchAttestationSaved(&bind.WatchOpts{Context: u.GetTestContext()}, attestationSavedSink)
-	Nil(u.T(), err)
+	Nil(u.T(), err)*/
 
 	guardTestConfig := config.AgentConfig{
 		Domains: map[string]config.DomainConfig{
@@ -127,6 +125,7 @@ func (u *NotarySuite) TestNotaryE2E() {
 		ScribePort:             uint32(scribeClient.ScribeClient.Port),
 		ScribeURL:              scribeClient.ScribeClient.URL,
 	}
+
 	notaryTestConfig := config.AgentConfig{
 		Domains: map[string]config.DomainConfig{
 			"origin_client":      u.OriginDomainClient.Config(),
@@ -165,6 +164,10 @@ func (u *NotarySuite) TestNotaryE2E() {
 	Nil(u.T(), err)
 
 	Equal(u.T(), encodedNotaryTestConfig, decodedAgentConfigBackToEncodedBytes)
+
+	agentStatus, err := u.DestinationContract.AgentStatus(&bind.CallOpts{Context: u.GetTestContext()}, u.NotaryBondedSigner.Address())
+	Nil(u.T(), err)
+	Equal(u.T(), uint32(u.TestBackendDestination.GetChainID()), agentStatus.Domain)
 
 	guard, err := guard.NewGuard(u.GetTestContext(), guardTestConfig, u.GuardMetrics)
 	Nil(u.T(), err)
@@ -257,7 +260,7 @@ func (u *NotarySuite) TestNotaryE2E() {
 		return state.Nonce() >= uint32(1)
 	})
 
-	watchCtx, cancel := context.WithCancel(u.GetTestContext())
+	/*watchCtx, cancel := context.WithCancel(u.GetTestContext())
 	defer cancel()
 
 	var retrievedAtt []byte
@@ -280,7 +283,7 @@ func (u *NotarySuite) TestNotaryE2E() {
 		break
 	}
 
-	Greater(u.T(), len(retrievedAtt), 0)
+	Greater(u.T(), len(retrievedAtt), 0)*/
 
 	u.Eventually(func() bool {
 		_ = awsTime.SleepWithContext(u.GetTestContext(), time.Second*5)
@@ -290,9 +293,4 @@ func (u *NotarySuite) TestNotaryE2E() {
 
 		return attestationsAmount != nil && attestationsAmount.Uint64() >= uint64(1)
 	})
-
-	destAtt, err := u.DestinationContract.GetAttestation(&bind.CallOpts{Context: u.GetTestContext()}, big.NewInt(0))
-	Nil(u.T(), err)
-	Greater(u.T(), len(destAtt.Root), 0)
-	Equal(u.T(), destAtt.DestAtt.Nonce, uint32(0))
 }

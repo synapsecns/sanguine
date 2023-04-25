@@ -25,6 +25,10 @@ type evmClient struct {
 	summit domains.SummitContract
 	// destination contains the destination contract
 	destination domains.DestinationContract
+	// lightManager contains the lightManager contract
+	lightManager domains.LightManagerContract
+	// bondingManager contains the bondingManager contract
+	bondingManager domains.BondingManagerContract
 }
 
 var _ domains.DomainClient = &evmClient{}
@@ -41,23 +45,40 @@ func NewEVM(ctx context.Context, name string, domain config.DomainConfig) (domai
 		return nil, fmt.Errorf("could not bind origin contract: %w", err)
 	}
 
-	boundSummit, err := NewSummitContract(ctx, underlyingClient, common.HexToAddress(domain.SummitAddress))
-	if err != nil {
-		return nil, fmt.Errorf("could not bind attestation contract: %w", err)
-	}
-
 	boundDestination, err := NewDestinationContract(ctx, underlyingClient, common.HexToAddress(domain.DestinationAddress))
 	if err != nil {
 		return nil, fmt.Errorf("could not bind destination contract: %w", err)
 	}
 
+	var boundSummit domains.SummitContract
+	var boundBondingManager domains.BondingManagerContract
+	var boundLightManager domains.LightManagerContract
+	if domain.SummitAddress == "" {
+		boundLightManager, err = NewLightManagerContract(ctx, underlyingClient, common.HexToAddress(domain.LightManagerAddress))
+		if err != nil {
+			return nil, fmt.Errorf("could not bind light manager contract: %w", err)
+		}
+	} else {
+		boundSummit, err = NewSummitContract(ctx, underlyingClient, common.HexToAddress(domain.SummitAddress))
+		if err != nil {
+			return nil, fmt.Errorf("could not bind summit contract: %w", err)
+		}
+
+		boundBondingManager, err = NewBondingManagerContract(ctx, underlyingClient, common.HexToAddress(domain.BondingManagerAddress))
+		if err != nil {
+			return nil, fmt.Errorf("could not bind bonding manager contract: %w", err)
+		}
+	}
+
 	return evmClient{
-		name:        name,
-		config:      domain,
-		client:      underlyingClient,
-		summit:      boundSummit,
-		origin:      boundOrigin,
-		destination: boundDestination,
+		name:           name,
+		config:         domain,
+		client:         underlyingClient,
+		summit:         boundSummit,
+		origin:         boundOrigin,
+		destination:    boundDestination,
+		lightManager:   boundLightManager,
+		bondingManager: boundBondingManager,
 	}, nil
 }
 
@@ -94,4 +115,14 @@ func (e evmClient) Summit() domains.SummitContract {
 // Destination gets the destination.
 func (e evmClient) Destination() domains.DestinationContract {
 	return e.destination
+}
+
+// LightManager gets the light manager.
+func (e evmClient) LightManager() domains.LightManagerContract {
+	return e.lightManager
+}
+
+// BondingManager gets the bonding manager.
+func (e evmClient) BondingManager() domains.BondingManagerContract {
+	return e.bondingManager
 }

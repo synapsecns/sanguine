@@ -22,8 +22,8 @@ func (t *DBSuite) TestGetTimestampForMessage() {
 		stateA := agentstypes.NewState(rootA, origin, nonceA, blockNumberA, timestampA)
 
 		snapshotRootA := common.BigToHash(big.NewInt(gofakeit.Int64()))
+		agentRootA := common.BigToHash(big.NewInt(gofakeit.Int64()))
 		proofA := [][]byte{[]byte(gofakeit.Word()), []byte(gofakeit.Word())}
-		treeHeightA := gofakeit.Uint32()
 
 		rootB := common.BigToHash(big.NewInt(gofakeit.Int64()))
 		blockNumberB := big.NewInt(int64(gofakeit.Uint32()))
@@ -31,8 +31,8 @@ func (t *DBSuite) TestGetTimestampForMessage() {
 		stateB := agentstypes.NewState(rootB, origin, nonceB, blockNumberB, timestampB)
 
 		snapshotRootB := common.BigToHash(big.NewInt(gofakeit.Int64()))
+		agentRootB := common.BigToHash(big.NewInt(gofakeit.Int64()))
 		proofB := [][]byte{[]byte(gofakeit.Word()), []byte(gofakeit.Word())}
-		treeHeightB := gofakeit.Uint32()
 
 		rootC := common.BigToHash(big.NewInt(gofakeit.Int64()))
 		blockNumberC := big.NewInt(int64(gofakeit.Uint32()))
@@ -40,19 +40,19 @@ func (t *DBSuite) TestGetTimestampForMessage() {
 		stateC := agentstypes.NewState(rootC, origin, nonceC, blockNumberC, timestampC)
 
 		snapshotRootC := common.BigToHash(big.NewInt(gofakeit.Int64()))
+		agentRootC := common.BigToHash(big.NewInt(gofakeit.Int64()))
 		proofC := [][]byte{[]byte(gofakeit.Word()), []byte(gofakeit.Word())}
-		treeHeightC := gofakeit.Uint32()
 
-		err := testDB.StoreState(t.GetTestContext(), stateA, snapshotRootA, proofA, treeHeightA, 1)
+		err := testDB.StoreState(t.GetTestContext(), stateA, snapshotRootA, proofA, 1)
 		Nil(t.T(), err)
-		err = testDB.StoreState(t.GetTestContext(), stateB, snapshotRootB, proofB, treeHeightB, 2)
+		err = testDB.StoreState(t.GetTestContext(), stateB, snapshotRootB, proofB, 2)
 		Nil(t.T(), err)
-		err = testDB.StoreState(t.GetTestContext(), stateC, snapshotRootC, proofC, treeHeightC, 3)
+		err = testDB.StoreState(t.GetTestContext(), stateC, snapshotRootC, proofC, 3)
 		Nil(t.T(), err)
 
-		attestationA := agentstypes.NewAttestation(snapshotRootA, uint8(treeHeightA), 1, big.NewInt(int64(gofakeit.Uint32())), big.NewInt(int64(gofakeit.Uint32())))
-		attestationB := agentstypes.NewAttestation(snapshotRootB, uint8(treeHeightB), 2, big.NewInt(int64(gofakeit.Uint32())), big.NewInt(int64(gofakeit.Uint32())))
-		attestationC := agentstypes.NewAttestation(snapshotRootC, uint8(treeHeightC), 3, big.NewInt(int64(gofakeit.Uint32())), big.NewInt(int64(gofakeit.Uint32())))
+		attestationA := agentstypes.NewAttestation(snapshotRootA, agentRootA, 1, big.NewInt(int64(gofakeit.Uint32())), big.NewInt(int64(gofakeit.Uint32())))
+		attestationB := agentstypes.NewAttestation(snapshotRootB, agentRootB, 2, big.NewInt(int64(gofakeit.Uint32())), big.NewInt(int64(gofakeit.Uint32())))
+		attestationC := agentstypes.NewAttestation(snapshotRootC, agentRootC, 3, big.NewInt(int64(gofakeit.Uint32())), big.NewInt(int64(gofakeit.Uint32())))
 
 		err = testDB.StoreAttestation(t.GetTestContext(), attestationA, origin+1, 2, 2)
 		Nil(t.T(), err)
@@ -78,7 +78,7 @@ func (t *DBSuite) TestGetTimestampForMessage() {
 func (t *DBSuite) TestGetEarliestStateInRange() {
 	t.RunOnAllDBs(func(testDB db.ExecutorDB) {
 		origin := gofakeit.Uint32()
-		var snapshotRoots []common.Hash
+		var snapshotRoots, agentRoots []common.Hash
 		for i := uint32(1); i <= 6; i++ {
 			root := common.BigToHash(big.NewInt(gofakeit.Int64()))
 			blockNumber := big.NewInt(int64(gofakeit.Uint32()))
@@ -86,21 +86,21 @@ func (t *DBSuite) TestGetEarliestStateInRange() {
 			state := agentstypes.NewState(root, origin, i, blockNumber, timestamp)
 
 			snapshotRoots = append(snapshotRoots, common.BigToHash(big.NewInt(gofakeit.Int64())))
+			agentRoots = append(agentRoots, common.BigToHash(big.NewInt(gofakeit.Int64())))
 			proof := [][]byte{[]byte(gofakeit.Word()), []byte(gofakeit.Word())}
-			treeHeight := gofakeit.Uint32()
 
-			err := testDB.StoreState(t.GetTestContext(), state, snapshotRoots[i-1], proof, treeHeight, 1)
+			err := testDB.StoreState(t.GetTestContext(), state, snapshotRoots[i-1], proof, 1)
 			Nil(t.T(), err)
 		}
 
 		// Attestation for state 2.
-		attestation0 := agentstypes.NewAttestation(snapshotRoots[1], 1, 1, big.NewInt(int64(gofakeit.Uint32())), big.NewInt(int64(gofakeit.Uint32())))
+		attestation0 := agentstypes.NewAttestation(snapshotRoots[1], agentRoots[1], 1, big.NewInt(int64(gofakeit.Uint32())), big.NewInt(int64(gofakeit.Uint32())))
 
 		// Attestation for state 4.
-		attestation1 := agentstypes.NewAttestation(snapshotRoots[3], 1, 2, big.NewInt(int64(gofakeit.Uint32())), big.NewInt(int64(gofakeit.Uint32())))
+		attestation1 := agentstypes.NewAttestation(snapshotRoots[3], agentRoots[2], 2, big.NewInt(int64(gofakeit.Uint32())), big.NewInt(int64(gofakeit.Uint32())))
 
 		// Attestation for state 5.
-		attestation2 := agentstypes.NewAttestation(snapshotRoots[4], 1, 3, big.NewInt(int64(gofakeit.Uint32())), big.NewInt(int64(gofakeit.Uint32())))
+		attestation2 := agentstypes.NewAttestation(snapshotRoots[4], agentRoots[3], 3, big.NewInt(int64(gofakeit.Uint32())), big.NewInt(int64(gofakeit.Uint32())))
 
 		err := testDB.StoreAttestation(t.GetTestContext(), attestation0, origin+1, 1, 1)
 		Nil(t.T(), err)

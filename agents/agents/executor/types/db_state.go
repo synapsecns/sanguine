@@ -18,8 +18,6 @@ type DBState struct {
 	OriginTimestamp *uint64
 	// Proof is the Snapshot Merkle Tree proof for the state.
 	Proof *json.RawMessage
-	// TreeHeight is the height of the Snapshot Merkle Tree that the state belongs to.
-	TreeHeight *uint32
 	// StateIndex is the index of the state in the Snapshot.
 	StateIndex *uint32
 }

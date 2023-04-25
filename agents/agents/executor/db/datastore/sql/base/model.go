@@ -80,8 +80,8 @@ type Attestation struct {
 	Destination uint32 `gorm:"column:destination;primaryKey"`
 	// SnapshotRoot is the snapshot root.
 	SnapshotRoot string `gorm:"column:snapshot_root;primaryKey"`
-	// Height is the height of the snapshot Merkle tree.
-	Height uint8 `gorm:"column:height"`
+	// AgentRoot is the agent root.
+	AgentRoot string `gorm:"column:agent_root"`
 	// AttestationNonce is the nonce of the attestation.
 	AttestationNonce uint32 `gorm:"column:attestation_nonce;primaryKey"`
 	// SummitBlockNumber is the block number when the attestation was created in Summit.
@@ -110,8 +110,6 @@ type State struct {
 	OriginTimestamp uint64 `gorm:"column:origin_timestamp"`
 	// Proof is the Snapshot Merkle Tree proof for the state.
 	Proof json.RawMessage `gorm:"column:proof"`
-	// TreeHeight is the height of the Snapshot Merkle Tree that the state belongs to.
-	TreeHeight uint32 `gorm:"column:tree_height"`
 	// StateIndex is the index of the state in the Snapshot.
 	StateIndex uint32 `gorm:"column:state_index"`
 }

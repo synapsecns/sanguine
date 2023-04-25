@@ -2,6 +2,13 @@ package testutil
 
 import (
 	"context"
+	"fmt"
+	"github.com/ethereum/go-ethereum/accounts/abi/bind"
+	"github.com/ethereum/go-ethereum/common"
+	"github.com/synapsecns/sanguine/agents/contracts/bondingmanager"
+	"github.com/synapsecns/sanguine/agents/contracts/lightmanager"
+	"github.com/synapsecns/sanguine/agents/contracts/test/bondingmanagerharness"
+	"github.com/synapsecns/sanguine/agents/contracts/test/lightmanagerharness"
 	"github.com/synapsecns/sanguine/ethergo/manager"
 
 	"github.com/synapsecns/sanguine/agents/contracts/test/attestationharness"
@@ -28,6 +35,7 @@ import (
 )
 
 // GetOrigin gets a typecast origin contract.
+// nolint:dupl
 func (d *DeployManager) GetOrigin(ctx context.Context, backend backends.SimulatedTestBackend) (contract contracts.DeployedContract, handle *origin.OriginRef) {
 	d.T().Helper()
 
@@ -35,13 +43,47 @@ func (d *DeployManager) GetOrigin(ctx context.Context, backend backends.Simulate
 }
 
 // GetMessageHarness gets the message harness.
+// nolint:dupl
 func (d *DeployManager) GetMessageHarness(ctx context.Context, backend backends.SimulatedTestBackend) (contract contracts.DeployedContract, handle *messageharness.MessageHarnessRef) {
 	d.T().Helper()
 
 	return manager.GetContract[*messageharness.MessageHarnessRef](ctx, d.T(), d, backend, MessageHarnessType)
 }
 
+// GetLightManager gets the light manager.
+// nolint:dupl
+func (d *DeployManager) GetLightManager(ctx context.Context, backend backends.SimulatedTestBackend) (contract contracts.DeployedContract, handle *lightmanager.LightManagerRef) {
+	d.T().Helper()
+
+	return manager.GetContract[*lightmanager.LightManagerRef](ctx, d.T(), d, backend, LightManagerType)
+}
+
+// GetLightManagerHarness gets the light manager harness.
+// nolint:dupl
+func (d *DeployManager) GetLightManagerHarness(ctx context.Context, backend backends.SimulatedTestBackend) (contract contracts.DeployedContract, handle *lightmanagerharness.LightManagerHarnessRef) {
+	d.T().Helper()
+
+	return manager.GetContract[*lightmanagerharness.LightManagerHarnessRef](ctx, d.T(), d, backend, LightManagerHarnessType)
+}
+
+// GetBondingManager gets the bonding manager.
+// nolint:dupl
+func (d *DeployManager) GetBondingManager(ctx context.Context, backend backends.SimulatedTestBackend) (contract contracts.DeployedContract, handle *bondingmanager.BondingManagerRef) {
+	d.T().Helper()
+
+	return manager.GetContract[*bondingmanager.BondingManagerRef](ctx, d.T(), d, backend, BondingManagerType)
+}
+
+// GetBondingManagerHarness gets the bonding manager harness.
+// nolint:dupl
+func (d *DeployManager) GetBondingManagerHarness(ctx context.Context, backend backends.SimulatedTestBackend) (contract contracts.DeployedContract, handle *bondingmanagerharness.BondingManagerHarnessRef) {
+	d.T().Helper()
+
+	return manager.GetContract[*bondingmanagerharness.BondingManagerHarnessRef](ctx, d.T(), d, backend, BondingManagerHarnessType)
+}
+
 // GetOriginHarness gets the origin harness.
+// nolint:dupl
 func (d *DeployManager) GetOriginHarness(ctx context.Context, backend backends.SimulatedTestBackend) (contract contracts.DeployedContract, handle *originharness.OriginHarnessRef) {
 	d.T().Helper()
 
@@ -49,6 +91,7 @@ func (d *DeployManager) GetOriginHarness(ctx context.Context, backend backends.S
 }
 
 // GetStateHarness gets the state harness.
+// nolint:dupl
 func (d *DeployManager) GetStateHarness(ctx context.Context, backend backends.SimulatedTestBackend) (contract contracts.DeployedContract, handle *stateharness.StateHarnessRef) {
 	d.T().Helper()
 
@@ -56,6 +99,7 @@ func (d *DeployManager) GetStateHarness(ctx context.Context, backend backends.Si
 }
 
 // GetSnapshotHarness gets the snapshot harness.
+// nolint:dupl
 func (d *DeployManager) GetSnapshotHarness(ctx context.Context, backend backends.SimulatedTestBackend) (contract contracts.DeployedContract, handle *snapshotharness.SnapshotHarnessRef) {
 	d.T().Helper()
 
@@ -63,6 +107,7 @@ func (d *DeployManager) GetSnapshotHarness(ctx context.Context, backend backends
 }
 
 // GetAttestationHarness gets the attestation harness.
+// nolint:dupl
 func (d *DeployManager) GetAttestationHarness(ctx context.Context, backend backends.SimulatedTestBackend) (contract contracts.DeployedContract, handle *attestationharness.AttestationHarnessRef) {
 	d.T().Helper()
 
@@ -70,6 +115,7 @@ func (d *DeployManager) GetAttestationHarness(ctx context.Context, backend backe
 }
 
 // GetDestinationHarness gets the destination harness.
+// nolint:dupl
 func (d *DeployManager) GetDestinationHarness(ctx context.Context, backend backends.SimulatedTestBackend) (contract contracts.DeployedContract, handle *destinationharness.DestinationHarnessRef) {
 	d.T().Helper()
 
@@ -77,6 +123,7 @@ func (d *DeployManager) GetDestinationHarness(ctx context.Context, backend backe
 }
 
 // GetSummitHarness gets the summit harness.
+// nolint:dupl
 func (d *DeployManager) GetSummitHarness(ctx context.Context, backend backends.SimulatedTestBackend) (contract contracts.DeployedContract, handle *summitharness.SummitHarnessRef) {
 	d.T().Helper()
 
@@ -84,6 +131,7 @@ func (d *DeployManager) GetSummitHarness(ctx context.Context, backend backends.S
 }
 
 // GetSummit gets the summit contract.
+// nolint:dupl
 func (d *DeployManager) GetSummit(ctx context.Context, backend backends.SimulatedTestBackend) (contract contracts.DeployedContract, handle *summit.SummitRef) {
 	d.T().Helper()
 
@@ -98,6 +146,7 @@ func (d *DeployManager) GetDestination(ctx context.Context, backend backends.Sim
 }
 
 // GetTipsHarness gets the tips harness for testing.
+// nolint:dupl
 func (d *DeployManager) GetTipsHarness(ctx context.Context, backend backends.SimulatedTestBackend) (contract contracts.DeployedContract, handle *tipsharness.TipsHarnessRef) {
 	d.T().Helper()
 
@@ -105,6 +154,7 @@ func (d *DeployManager) GetTipsHarness(ctx context.Context, backend backends.Sim
 }
 
 // GetHeaderHarness gets the header harness.
+// nolint:dupl
 func (d *DeployManager) GetHeaderHarness(ctx context.Context, backend backends.SimulatedTestBackend) (contract contracts.DeployedContract, handle *headerharness.HeaderHarnessRef) {
 	d.T().Helper()
 
@@ -112,6 +162,7 @@ func (d *DeployManager) GetHeaderHarness(ctx context.Context, backend backends.S
 }
 
 // GetAgentsTestContract gets the agents test contract.
+// nolint:dupl
 func (d *DeployManager) GetAgentsTestContract(ctx context.Context, backend backends.SimulatedTestBackend) (contract contracts.DeployedContract, handle *agentstestcontract.AgentsTestContractRef) {
 	d.T().Helper()
 
@@ -119,6 +170,7 @@ func (d *DeployManager) GetAgentsTestContract(ctx context.Context, backend backe
 }
 
 // GetTestClient gets the test client.
+// nolint:dupl
 func (d *DeployManager) GetTestClient(ctx context.Context, backend backends.SimulatedTestBackend) (contract contracts.DeployedContract, handle *testclient.TestClientRef) {
 	d.T().Helper()
 
@@ -126,8 +178,459 @@ func (d *DeployManager) GetTestClient(ctx context.Context, backend backends.Simu
 }
 
 // GetPingPongClient gets the ping pong test client.
+// nolint:dupl
 func (d *DeployManager) GetPingPongClient(ctx context.Context, backend backends.SimulatedTestBackend) (contract contracts.DeployedContract, handle *pingpongclient.PingPongClientRef) {
 	d.T().Helper()
 
 	return manager.GetContract[*pingpongclient.PingPongClientRef](ctx, d.T(), d, backend, PingPongClientType)
+}
+
+// InitializeBondingManagerHarnessContract handles initializing the bonding manager harness contract on the "SYN" chain.
+// nolint:dupl,cyclop
+func (d *DeployManager) InitializeBondingManagerHarnessContract(
+	ctx context.Context,
+	synChainBackend backends.SimulatedTestBackend) error {
+	d.T().Helper()
+
+	deployedOriginHarness, _ := d.GetOriginHarness(ctx, synChainBackend)
+	deployedDSummitHarness, _ := d.GetSummitHarness(ctx, synChainBackend)
+
+	_, bondingManagerHarnessContract := d.GetBondingManagerHarness(ctx, synChainBackend)
+	_, summitHarnessContract := d.GetSummitHarness(ctx, synChainBackend)
+	summitHarnessOwnerPtr, err := summitHarnessContract.SummitHarnessCaller.Owner(&bind.CallOpts{Context: ctx})
+	if err != nil {
+		return fmt.Errorf("could not get bonding manager harness: %w", err)
+	}
+	summitHarnessOwnerAuth := synChainBackend.GetTxContext(ctx, &summitHarnessOwnerPtr)
+
+	initializeBondingManagerHarnessTx, err := bondingManagerHarnessContract.Initialize(
+		summitHarnessOwnerAuth.TransactOpts,
+		deployedOriginHarness.Address(),
+		deployedDSummitHarness.Address())
+	if err != nil {
+		return fmt.Errorf("could not initialize bonding manager harness: %w", err)
+	}
+	synChainBackend.WaitForConfirmation(ctx, initializeBondingManagerHarnessTx)
+
+	return nil
+}
+
+// AddAgentsToBondingManagerHarnessContract handles adding the agents to the bonding manager harness contract on the "SYN" chain.
+// nolint:dupl,cyclop
+func (d *DeployManager) AddAgentsToBondingManagerHarnessContract(
+	ctx context.Context,
+	synChainBackend backends.SimulatedTestBackend,
+	agents []common.Address,
+	domains []uint32) ([32]byte, [][][32]byte, []bondingmanagerharness.AgentStatus, error) {
+	d.T().Helper()
+
+	if len(agents) != len(domains) {
+		return [32]byte{}, [][][32]byte{}, []bondingmanagerharness.AgentStatus{}, fmt.Errorf("agents and domains not same length")
+	}
+
+	_, bondingManagerHarnessContract := d.GetBondingManagerHarness(ctx, synChainBackend)
+
+	bondingManagerHarnessOwnerPtr, err := bondingManagerHarnessContract.BondingManagerHarnessCaller.Owner(&bind.CallOpts{Context: ctx})
+	if err != nil {
+		return [32]byte{}, [][][32]byte{}, []bondingmanagerharness.AgentStatus{}, fmt.Errorf("could not get bonding manager harness: %w", err)
+	}
+	bondingManagerHarnessOwnerAuth := synChainBackend.GetTxContext(ctx, &bondingManagerHarnessOwnerPtr)
+
+	for i := range agents {
+		agent := agents[i]
+		domain := domains[i]
+
+		agentProof, err := bondingManagerHarnessContract.GetProof(&bind.CallOpts{Context: ctx}, agent)
+		if err != nil {
+			return [32]byte{}, [][][32]byte{}, []bondingmanagerharness.AgentStatus{}, fmt.Errorf("could not get agent proof from bonding manager harness: %w", err)
+		}
+		txAddAgent, err := bondingManagerHarnessContract.AddAgent(bondingManagerHarnessOwnerAuth.TransactOpts, domain, agent, agentProof)
+		if err != nil {
+			return [32]byte{}, [][][32]byte{}, []bondingmanagerharness.AgentStatus{}, fmt.Errorf("could not add agent to bonding manager harness: %w", err)
+		}
+		synChainBackend.WaitForConfirmation(ctx, txAddAgent)
+	}
+
+	bondingManagerHarnessAgentRoot, err := bondingManagerHarnessContract.AgentRoot(&bind.CallOpts{Context: ctx})
+	if err != nil {
+		return [32]byte{}, [][][32]byte{}, []bondingmanagerharness.AgentStatus{}, fmt.Errorf("could not get bonding manager agent root: %w", err)
+	}
+
+	agentProofs := make([][][32]byte, len(agents))
+	agentStatuses := make([]bondingmanagerharness.AgentStatus, len(agents))
+	for i := range agents {
+		agent := agents[i]
+		agentStatus, err := bondingManagerHarnessContract.AgentStatus(&bind.CallOpts{Context: ctx}, agent)
+		if err != nil {
+			return [32]byte{}, [][][32]byte{}, []bondingmanagerharness.AgentStatus{}, fmt.Errorf("could not get agent status from bonding manager harness: %w", err)
+		}
+		agentStatuses[i] = agentStatus
+
+		agentProof, err := bondingManagerHarnessContract.GetProof(&bind.CallOpts{Context: ctx}, agent)
+		if err != nil {
+			return [32]byte{}, [][][32]byte{}, []bondingmanagerharness.AgentStatus{}, fmt.Errorf("could not get agent proof from bonding manager harness: %w", err)
+		}
+		agentProofs[i] = agentProof
+	}
+
+	return bondingManagerHarnessAgentRoot, agentProofs, agentStatuses, nil
+}
+
+// InitializeBondingManagerContract handles initializing the bonding manager contract on the "syn" chain.
+// nolint:dupl,cyclop
+func (d *DeployManager) InitializeBondingManagerContract(
+	ctx context.Context,
+	synChainBackend backends.SimulatedTestBackend) error {
+	d.T().Helper()
+
+	deployedOrigin, _ := d.GetOrigin(ctx, synChainBackend)
+	deployedSummit, _ := d.GetSummit(ctx, synChainBackend)
+
+	_, bondingManagerContract := d.GetBondingManager(ctx, synChainBackend)
+	bondingManagerOwnerPtr, err := bondingManagerContract.BondingManagerCaller.Owner(&bind.CallOpts{Context: ctx})
+	if err != nil {
+		return fmt.Errorf("could not get bonding manager: %w", err)
+	}
+	bondingManagerOwnerAuth := synChainBackend.GetTxContext(ctx, &bondingManagerOwnerPtr)
+
+	initializeBondingManagerTx, err := bondingManagerContract.Initialize(
+		bondingManagerOwnerAuth.TransactOpts,
+		deployedOrigin.Address(),
+		deployedSummit.Address())
+	if err != nil {
+		return fmt.Errorf("could not initialize bonding manager: %w", err)
+	}
+	synChainBackend.WaitForConfirmation(ctx, initializeBondingManagerTx)
+
+	return nil
+}
+
+// AddAgentsToBondingManagerContract handles adding the agents to the bonding manager contract on the "SYN" chain.
+// nolint:dupl,cyclop
+func (d *DeployManager) AddAgentsToBondingManagerContract(
+	ctx context.Context,
+	synChainBackend backends.SimulatedTestBackend,
+	agents []common.Address,
+	domains []uint32) ([32]byte, [][][32]byte, []bondingmanager.AgentStatus, error) {
+	d.T().Helper()
+
+	if len(agents) != len(domains) {
+		return [32]byte{}, [][][32]byte{}, []bondingmanager.AgentStatus{}, fmt.Errorf("agents and domains not same length")
+	}
+
+	_, bondingManagerContract := d.GetBondingManager(ctx, synChainBackend)
+	bondingManagerOwnerPtr, err := bondingManagerContract.BondingManagerCaller.Owner(&bind.CallOpts{Context: ctx})
+	if err != nil {
+		return [32]byte{}, [][][32]byte{}, []bondingmanager.AgentStatus{}, fmt.Errorf("could not get bonding manager: %w", err)
+	}
+	bondingManagerOwnerAuth := synChainBackend.GetTxContext(ctx, &bondingManagerOwnerPtr)
+
+	var proof [][32]byte
+	for i := range agents {
+		agent := agents[i]
+		domain := domains[i]
+
+		txAddAgent, err := bondingManagerContract.AddAgent(bondingManagerOwnerAuth.TransactOpts, domain, agent, proof)
+		if err != nil {
+			return [32]byte{}, [][][32]byte{}, []bondingmanager.AgentStatus{}, fmt.Errorf("could not add agent to bonding manager: %w", err)
+		}
+		synChainBackend.WaitForConfirmation(ctx, txAddAgent)
+	}
+
+	bondingManagerAgentRoot, err := bondingManagerContract.AgentRoot(&bind.CallOpts{Context: ctx})
+	if err != nil {
+		return [32]byte{}, [][][32]byte{}, []bondingmanager.AgentStatus{}, fmt.Errorf("could not get bonding manager agent root: %w", err)
+	}
+
+	agentProofs := make([][][32]byte, len(agents))
+	agentStatuses := make([]bondingmanager.AgentStatus, len(agents))
+	for i := range agents {
+		agent := agents[i]
+		agentStatus, err := bondingManagerContract.AgentStatus(&bind.CallOpts{Context: ctx}, agent)
+		if err != nil {
+			return [32]byte{}, [][][32]byte{}, []bondingmanager.AgentStatus{}, fmt.Errorf("could not get agent status from bonding manager: %w", err)
+		}
+		agentStatuses[i] = agentStatus
+
+		agentProof, err := bondingManagerContract.GetProof(&bind.CallOpts{Context: ctx}, agent)
+		if err != nil {
+			return [32]byte{}, [][][32]byte{}, []bondingmanager.AgentStatus{}, fmt.Errorf("could not get agent proof from bonding manager: %w", err)
+		}
+		agentProofs[i] = agentProof
+	}
+
+	return bondingManagerAgentRoot, agentProofs, agentStatuses, nil
+}
+
+// InitializeRemoteDeployedHarnessContracts handles initializing the harness contracts for light manager harness and destination harness on remote chain.
+// nolint:dupl,cyclop
+func (d *DeployManager) InitializeRemoteDeployedHarnessContracts(
+	ctx context.Context,
+	backend backends.SimulatedTestBackend,
+	bondingManagerHarnessAgentRoot [32]byte) error {
+	d.T().Helper()
+
+	deployedOriginHarness, _ := d.GetOriginHarness(ctx, backend)
+	deployedDestinationHarness, destinationHarnessContract := d.GetDestinationHarness(ctx, backend)
+
+	_, lightManagerHarnessContract := d.GetLightManagerHarness(ctx, backend)
+	_, originHarnessContract := d.GetOriginHarness(ctx, backend)
+	originHarnessOwnerPtr, err := originHarnessContract.OriginHarnessCaller.Owner(&bind.CallOpts{Context: ctx})
+	if err != nil {
+		return fmt.Errorf("could not get origin harness: %w", err)
+	}
+	originHarnessOwnerAuth := backend.GetTxContext(ctx, &originHarnessOwnerPtr)
+
+	initializeLightManagerHarnessTx, err := lightManagerHarnessContract.Initialize(
+		originHarnessOwnerAuth.TransactOpts,
+		deployedOriginHarness.Address(),
+		deployedDestinationHarness.Address())
+	if err != nil {
+		return fmt.Errorf("could not initialize light manager harness: %w", err)
+	}
+	backend.WaitForConfirmation(ctx, initializeLightManagerHarnessTx)
+
+	/*destinationHarnessOwnerPtr, err := destinationHarnessContract.DestinationHarnessCaller.Owner(&bind.CallOpts{Context: ctx})
+	if err != nil {
+		return fmt.Errorf("could not get destination harness: %w", err)
+	}
+	destinationHarnessOwnerAuth := backend.GetTxContext(ctx, &destinationHarnessOwnerPtr)*/
+
+	initializeDestinationHarnessTx, err := destinationHarnessContract.Initialize(originHarnessOwnerAuth.TransactOpts, bondingManagerHarnessAgentRoot)
+	if err != nil {
+		return fmt.Errorf("could not initialize destination harness: %w", err)
+	}
+	backend.WaitForConfirmation(ctx, initializeDestinationHarnessTx)
+
+	return nil
+}
+
+// AddAgentsToLightManagerHarnessContract handles adding the agents to the light manager harness contract on the remote chain.
+// nolint:dupl,cyclop
+func (d *DeployManager) AddAgentsToLightManagerHarnessContract(
+	ctx context.Context,
+	backend backends.SimulatedTestBackend,
+	agents []common.Address,
+	agentProofs [][][32]byte,
+	agentStatuses []bondingmanagerharness.AgentStatus) error {
+	d.T().Helper()
+
+	if len(agents) != len(agentProofs) {
+		return fmt.Errorf("agents and agentProofs not same length")
+	}
+
+	_, lightManagerHarnessContract := d.GetLightManagerHarness(ctx, backend)
+	lightManagerHarnessOwnerPtr, err := lightManagerHarnessContract.LightManagerHarnessCaller.Owner(&bind.CallOpts{Context: ctx})
+	if err != nil {
+		return fmt.Errorf("could not get light manager harness: %w", err)
+	}
+	lightManagerHarnessOwnerAuth := backend.GetTxContext(ctx, &lightManagerHarnessOwnerPtr)
+
+	for i := range agents {
+		agent := agents[i]
+		agentProof := agentProofs[i]
+		bondingManagerAgentStatus := agentStatuses[i]
+
+		lightManagerAgentStatus := lightmanagerharness.AgentStatus{
+			Flag:   bondingManagerAgentStatus.Flag,
+			Domain: bondingManagerAgentStatus.Domain,
+			Index:  bondingManagerAgentStatus.Index,
+		}
+
+		txAddAgent, err := lightManagerHarnessContract.UpdateAgentStatus(
+			lightManagerHarnessOwnerAuth.TransactOpts,
+			agent,
+			lightManagerAgentStatus,
+			agentProof)
+		if err != nil {
+			return fmt.Errorf("could not add agent to light manager harness: %w", err)
+		}
+		backend.WaitForConfirmation(ctx, txAddAgent)
+	}
+
+	return nil
+}
+
+// InitializeRemoteDeployedContracts handles initializing the contracts for light manager and destination on remote chain.
+// nolint:dupl,cyclop
+func (d *DeployManager) InitializeRemoteDeployedContracts(
+	ctx context.Context,
+	backend backends.SimulatedTestBackend,
+	bondingManagerAgentRoot [32]byte) error {
+	d.T().Helper()
+
+	deployedOrigin, _ := d.GetOrigin(ctx, backend)
+	deployedDestination, destinationContract := d.GetDestination(ctx, backend)
+
+	_, lightManagerContract := d.GetLightManager(ctx, backend)
+	lightManagerOwnerPtr, err := lightManagerContract.LightManagerCaller.Owner(&bind.CallOpts{Context: ctx})
+	if err != nil {
+		return fmt.Errorf("could not get light manager: %w", err)
+	}
+	lightManagerOwnerAuth := backend.GetTxContext(ctx, &lightManagerOwnerPtr)
+
+	initializeLightManagerTx, err := lightManagerContract.Initialize(
+		lightManagerOwnerAuth.TransactOpts,
+		deployedOrigin.Address(),
+		deployedDestination.Address())
+	if err != nil {
+		return fmt.Errorf("could not initialize light manager: %w", err)
+	}
+	backend.WaitForConfirmation(ctx, initializeLightManagerTx)
+
+	destinationOwnerPtr, err := destinationContract.DestinationCaller.Owner(&bind.CallOpts{Context: ctx})
+	if err != nil {
+		return fmt.Errorf("could not get destination harness: %w", err)
+	}
+	destinationOwnerAuth := backend.GetTxContext(ctx, &destinationOwnerPtr)
+
+	initializeDestinationTx, err := destinationContract.Initialize(destinationOwnerAuth.TransactOpts, bondingManagerAgentRoot)
+	if err != nil {
+		return fmt.Errorf("could not initialize destination: %w", err)
+	}
+	backend.WaitForConfirmation(ctx, initializeDestinationTx)
+
+	return nil
+}
+
+// AddAgentsToLightManagerContract handles adding the agents to the light manager contract on the remote chain.
+// nolint:dupl,cyclop
+func (d *DeployManager) AddAgentsToLightManagerContract(
+	ctx context.Context,
+	backend backends.SimulatedTestBackend,
+	agents []common.Address,
+	agentProofs [][][32]byte,
+	agentStatuses []bondingmanager.AgentStatus) error {
+	d.T().Helper()
+
+	if len(agents) != len(agentProofs) {
+		return fmt.Errorf("agents and agentProofs not same length")
+	}
+
+	_, lightManagerContract := d.GetLightManager(ctx, backend)
+	lightManagerOwnerPtr, err := lightManagerContract.LightManagerCaller.Owner(&bind.CallOpts{Context: ctx})
+	if err != nil {
+		return fmt.Errorf("could not get light manager: %w", err)
+	}
+	lightManagerOwnerAuth := backend.GetTxContext(ctx, &lightManagerOwnerPtr)
+
+	for i := range agents {
+		agent := agents[i]
+		agentProof := agentProofs[i]
+		bondingManagerAgentStatus := agentStatuses[i]
+
+		lightManagerAgentStatus := lightmanager.AgentStatus{
+			Flag:   bondingManagerAgentStatus.Flag,
+			Domain: bondingManagerAgentStatus.Domain,
+			Index:  bondingManagerAgentStatus.Index,
+		}
+
+		txAddAgent, err := lightManagerContract.UpdateAgentStatus(
+			lightManagerOwnerAuth.TransactOpts,
+			agent,
+			lightManagerAgentStatus,
+			agentProof)
+		if err != nil {
+			return fmt.Errorf("could not add agent to light manager: %w", err)
+		}
+		backend.WaitForConfirmation(ctx, txAddAgent)
+	}
+
+	return nil
+}
+
+// LoadHarnessContractsOnChains loads the harness contracts to the various chains and initializes them.
+// nolint:dupl,cyclop
+func (d *DeployManager) LoadHarnessContractsOnChains(
+	ctx context.Context,
+	synChainBackend backends.SimulatedTestBackend,
+	backends []backends.SimulatedTestBackend,
+	agents []common.Address,
+	agentDomains []uint32) error {
+	d.T().Helper()
+
+	err := d.InitializeBondingManagerHarnessContract(ctx, synChainBackend)
+	if err != nil {
+		return fmt.Errorf("could not initialize bonding manager harness on syn chain: %w", err)
+	}
+
+	bondingManagerHarnessAgentRoot, agentProofs, agentStatuses, err := d.AddAgentsToBondingManagerHarnessContract(
+		ctx,
+		synChainBackend,
+		agents,
+		agentDomains)
+
+	if err != nil {
+		return fmt.Errorf("could not add agents to bonding manager harness on syn chain: %w", err)
+	}
+
+	for _, backend := range backends {
+		err := d.InitializeRemoteDeployedHarnessContracts(
+			ctx,
+			backend,
+			bondingManagerHarnessAgentRoot)
+		if err != nil {
+			return fmt.Errorf("could not initialize remote deplyed harness contracts: %w", err)
+		}
+
+		err = d.AddAgentsToLightManagerHarnessContract(
+			ctx,
+			backend,
+			agents,
+			agentProofs,
+			agentStatuses)
+		if err != nil {
+			return fmt.Errorf("could not add agents to remote light manager harness contract: %w", err)
+		}
+	}
+
+	return nil
+}
+
+// LoadContractsOnChains loads the contracts to the various chains and initializes them.
+// nolint:dupl,cyclop
+func (d *DeployManager) LoadContractsOnChains(
+	ctx context.Context,
+	synChainBackend backends.SimulatedTestBackend,
+	backends []backends.SimulatedTestBackend,
+	agents []common.Address,
+	agentDomains []uint32) error {
+	d.T().Helper()
+
+	err := d.InitializeBondingManagerContract(ctx, synChainBackend)
+	if err != nil {
+		return fmt.Errorf("could not initialize bonding manager on syn chain: %w", err)
+	}
+
+	bondingManagerAgentRoot, agentProofs, agentStatuses, err := d.AddAgentsToBondingManagerContract(
+		ctx,
+		synChainBackend,
+		agents,
+		agentDomains)
+
+	if err != nil {
+		return fmt.Errorf("could not add agents to bonding manager on syn chain: %w", err)
+	}
+
+	for _, backend := range backends {
+		err := d.InitializeRemoteDeployedContracts(
+			ctx,
+			backend,
+			bondingManagerAgentRoot)
+		if err != nil {
+			return fmt.Errorf("could not initialize remote deplyed contracts: %w", err)
+		}
+
+		err = d.AddAgentsToLightManagerContract(
+			ctx,
+			backend,
+			agents,
+			agentProofs,
+			agentStatuses)
+		if err != nil {
+			return fmt.Errorf("could not add agents to remote light manager contract: %w", err)
+		}
+	}
+
+	return nil
 }

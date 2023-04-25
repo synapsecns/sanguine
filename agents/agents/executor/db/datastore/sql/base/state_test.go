@@ -19,7 +19,6 @@ func TestDBStateToState(t *testing.T) {
 	originBlockNumber := gofakeit.Uint64()
 	originTimestamp := gofakeit.Uint64()
 	proof := []string{common.BigToHash(big.NewInt(gofakeit.Int64())).String(), common.BigToHash(big.NewInt(gofakeit.Int64())).String()}
-	treeHeight := gofakeit.Uint32()
 	stateIndex := gofakeit.Uint32()
 
 	proofJSON, err := json.Marshal(proof)
@@ -35,7 +34,6 @@ func TestDBStateToState(t *testing.T) {
 		OriginBlockNumber: &originBlockNumber,
 		OriginTimestamp:   &originTimestamp,
 		Proof:             (*json.RawMessage)(&proofJSON),
-		TreeHeight:        &treeHeight,
 		StateIndex:        &stateIndex,
 	}
 
