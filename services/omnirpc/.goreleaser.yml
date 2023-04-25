@@ -65,6 +65,12 @@ dockers:
       - 'ghcr.io/synapsecns/sanguine/omnirpc:latest'
       - 'ghcr.io/synapsecns/sanguine/omnirpc:{{ .Tag }}'
       - 'ghcr.io/synapsecns/sanguine/omnirpc:{{ .FullCommit }}'
+    build_flag_templates:
+      - "--label=org.opencontainers.image.created={{.Date}}"
+      - "--label=org.opencontainers.image.name={{.ProjectName}}"
+      - "--label=org.opencontainers.image.revision={{.FullCommit}}"
+      - "--label=org.opencontainers.image.version={{.Version}}"
+      - "--label=org.opencontainers.image.source={{.GitURL}}"
     dockerfile: ../../docker/omnirpc.Dockerfile
     ids:
       - omnirpc

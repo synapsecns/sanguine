@@ -24,6 +24,8 @@ type datadogHandler struct {
 	version string
 }
 
+const ddCommitTag = "git.commit.sha"
+
 // NewDatadogMetricsHandler creates a new datadog metrics handler.
 func NewDatadogMetricsHandler(buildInfo config.BuildInfo) Handler {
 	handler := datadogHandler{
@@ -41,7 +43,7 @@ func NewDatadogMetricsHandler(buildInfo config.BuildInfo) Handler {
 		profiler.WithEnv(core.GetEnv("ENVIRONMENT", "default")),
 		profiler.WithVersion(datadogBuildInfo.Version()),
 		profiler.WithTags(
-			fmt.Sprintf("commit:%s", datadogBuildInfo.Commit()),
+			fmt.Sprintf("%s:%s", ddCommitTag, datadogBuildInfo.Commit()),
 		),
 		profiler.WithLogStartup(true),
 		profiler.WithProfileTypes(getProfileTypesFromEnv()...),
