@@ -5,7 +5,6 @@ import (
 	markdown "github.com/MichaelMure/go-term-markdown"
 	"github.com/ethereum/go-ethereum/ethclient"
 	"github.com/ethereum/go-ethereum/rpc"
-	"github.com/ipfs/go-log"
 	"github.com/jftuga/termsize"
 	"github.com/phayes/freeport"
 	"github.com/synapsecns/sanguine/agents/agents/executor"
@@ -19,9 +18,10 @@ import (
 	"github.com/synapsecns/sanguine/services/scribe/client"
 	scribeCmd "github.com/synapsecns/sanguine/services/scribe/cmd"
 	"github.com/synapsecns/sanguine/services/scribe/node"
+	"go.opentelemetry.io/otel/attribute"
+	"go.opentelemetry.io/otel/trace"
 	"golang.org/x/sync/errgroup"
 	"gorm.io/gorm/schema"
-	"time"
 
 	// used to embed markdown.
 	_ "embed"
@@ -152,7 +152,6 @@ var ExecutorRunCommand = &cli.Command{
 		// The flags below are used when `scribeTypeFlag` is set to "remote".
 		scribePortFlag, scribeURL},
 	Action: func(c *cli.Context) error {
-		time.Sleep(1 * time.Minute)
 		metricsProvider := metrics.Get()
 
 		executorConfig, executorDB, clients, err := createExecutorParameters(c, metricsProvider)
@@ -252,16 +251,27 @@ var ExecutorRunCommand = &cli.Command{
 	},
 }
 
-var logger = log.Logger("initexec")
+func init() {
+	metricsPortFlag.Value = uint(freeport.GetPort())
+}
 
 // InitExecutorDB initializes a database given a database type and path.
 //
 //nolint:cyclop
-func InitExecutorDB(ctx context.Context, database string, path string, tablePrefix string, metrics metrics.Handler) (db.ExecutorDB, error) {
-	logger.Errorf("path: %s", path)
+func InitExecutorDB(parentCtx context.Context, database string, path string, tablePrefix string, handler metrics.Handler) (_ db.ExecutorDB, err error) {
+	ctx, span := handler.Tracer().Start(parentCtx, "InitExecutorDB", trace.WithAttributes(
+		attribute.String("database", database),
+		attribute.String("path", path),
+		attribute.String("tablePrefix", tablePrefix),
+	))
+
+	defer func() {
+		metrics.EndSpanWithErr(span, err)
+	}()
+
 	switch {
 	case database == "sqlite":
-		sqliteStore, err := sqlite.NewSqliteStore(ctx, path, metrics)
+		sqliteStore, err := sqlite.NewSqliteStore(ctx, path, handler)
 		if err != nil {
 			return nil, fmt.Errorf("failed to create sqlite store: %w", err)
 		}
@@ -270,11 +280,10 @@ func InitExecutorDB(ctx context.Context, database string, path string, tablePref
 
 	case database == "mysql":
 		if os.Getenv("OVERRIDE_MYSQL") != "" {
-			logger.Errorf("override???")
 			dbname := os.Getenv("MYSQL_DATABASE")
 			connString := fmt.Sprintf("%s:%s@tcp(%s:%d)/%s?parseTime=true", core.GetEnv("MYSQL_USER", "root"), os.Getenv("MYSQL_PASSWORD"), core.GetEnv("MYSQL_HOST", "127.0.0.1"), core.GetEnvInt("MYSQL_PORT", 3306), dbname)
 
-			mysqlStore, err := mysql.NewMysqlStore(ctx, connString, metrics)
+			mysqlStore, err := mysql.NewMysqlStore(ctx, connString, handler)
 			if err != nil {
 				return nil, fmt.Errorf("failed to create mysql store: %w", err)
 			}
@@ -288,7 +297,7 @@ func InitExecutorDB(ctx context.Context, database string, path string, tablePref
 
 		mysql.NamingStrategy = namingStrategy
 
-		mysqlStore, err := mysql.NewMysqlStore(ctx, path, metrics)
+		mysqlStore, err := mysql.NewMysqlStore(ctx, path, handler)
 		if err != nil {
 			return nil, fmt.Errorf("failed to create mysql store: %w", err)
 		}
@@ -298,8 +307,4 @@ func InitExecutorDB(ctx context.Context, database string, path string, tablePref
 	default:
 		return nil, fmt.Errorf("invalid database type: %s", database)
 	}
-}
-
-func init() {
-	metricsPortFlag.Value = uint(freeport.GetPort())
 }
