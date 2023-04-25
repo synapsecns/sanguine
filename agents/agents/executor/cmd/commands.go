@@ -5,6 +5,7 @@ import (
 	markdown "github.com/MichaelMure/go-term-markdown"
 	"github.com/ethereum/go-ethereum/ethclient"
 	"github.com/ethereum/go-ethereum/rpc"
+	"github.com/ipfs/go-log"
 	"github.com/jftuga/termsize"
 	"github.com/phayes/freeport"
 	"github.com/synapsecns/sanguine/agents/agents/executor"
@@ -251,10 +252,13 @@ var ExecutorRunCommand = &cli.Command{
 	},
 }
 
+var logger = log.Logger("initexec")
+
 // InitExecutorDB initializes a database given a database type and path.
 //
 //nolint:cyclop
 func InitExecutorDB(ctx context.Context, database string, path string, tablePrefix string, metrics metrics.Handler) (db.ExecutorDB, error) {
+	logger.Errorf("path: %s", path)
 	switch {
 	case database == "sqlite":
 		sqliteStore, err := sqlite.NewSqliteStore(ctx, path, metrics)
@@ -266,6 +270,7 @@ func InitExecutorDB(ctx context.Context, database string, path string, tablePref
 
 	case database == "mysql":
 		if os.Getenv("OVERRIDE_MYSQL") != "" {
+			logger.Errorf("override???")
 			dbname := os.Getenv("MYSQL_DATABASE")
 			connString := fmt.Sprintf("%s:%s@tcp(%s:%d)/%s?parseTime=true", core.GetEnv("MYSQL_USER", "root"), os.Getenv("MYSQL_PASSWORD"), core.GetEnv("MYSQL_HOST", "127.0.0.1"), core.GetEnvInt("MYSQL_PORT", 3306), dbname)
 
