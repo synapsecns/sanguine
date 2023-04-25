@@ -146,6 +146,9 @@ body {
   animation-delay: 0.75s;
 }
 
+
+
+
 @keyframes dotFlashing {
   0% {
     background-color: #ffffff;
@@ -155,4 +158,40 @@ body {
     background-color: #ae8cfe;
 
   }
+}
+
+/* CLASSNAMES FOR LANDING PAGE BG */
+
+.absolute-lightened-bg{
+  position: relative;
+}
+
+.absolute-lightened-bg:before {
+  content:"";
+  position: absolute;
+  background: #1F1D22;
+  width: 4000px;
+  left: -2000px;
+  height: 100%;
+  z-index: -69;
+  overflow: hidden;
+}
+
+.absolute-darkened-bg{
+  position: relative;
+}
+
+.absolute-darkened-bg:before {
+  content:"";
+  position: absolute;
+  background: #121114;
+  width: 4000px;
+  left: -2000px;
+  height: 100%;
+  z-index: 0;
+  overflow: hidden;
+}
+
+.no-mt {
+  margin-top: 0 !important;
 }
