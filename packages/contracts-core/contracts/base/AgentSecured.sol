@@ -6,6 +6,15 @@ import {IAgentManager} from "../interfaces/IAgentManager.sol";
 import {AgentStatus, DisputeFlag, IAgentSecured} from "../interfaces/IAgentSecured.sol";
 import {MessagingBase} from "./MessagingBase.sol";
 
+/**
+ * @notice Base contract for messaging contracts that are secured by the agent manager.
+ * `AgentSecured` relies on `AgentManager` to provide the following functionality:
+ * - Keep track of agents and their statuses.
+ * - Pass agent-signed statements that were verified by the agent manager.
+ * - These statements are considered valid indefinitely, unless the agent is disputed.
+ * - Disputes are opened and resolved by the agent manager.
+ * > `AgentSecured` implementation should never use statements signed by agents that are disputed.
+ */
 abstract contract AgentSecured is MessagingBase, IAgentSecured {
     // ════════════════════════════════════════════════ IMMUTABLES ═════════════════════════════════════════════════════
 

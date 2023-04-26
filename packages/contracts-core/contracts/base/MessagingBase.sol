@@ -6,6 +6,12 @@ import {Versioned} from "./Version.sol";
 // ═════════════════════════════ EXTERNAL IMPORTS ══════════════════════════════
 import {OwnableUpgradeable} from "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol";
 
+/**
+ * @notice Base contract for all messaging contracts.
+ * - Provides context on the local chain's domain.
+ * - Provides ownership functionality.
+ * - Will be providing pausing functionality when it is implemented.
+ */
 abstract contract MessagingBase is Versioned, OwnableUpgradeable {
     // ════════════════════════════════════════════════ IMMUTABLES ═════════════════════════════════════════════════════
 
