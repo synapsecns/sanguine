@@ -41,8 +41,9 @@ func (b *baseHandler) Propagator() propagation.TextMapPropagator {
 	return b.propagator
 }
 
-func (b *baseHandler) ConfigureHTTPClient(client *http.Client) {
-	client.Transport = otelhttp.NewTransport(client.Transport, otelhttp.WithTracerProvider(b.tp), otelhttp.WithPropagators(b.propagator))
+func (b *baseHandler) ConfigureHTTPClient(client *http.Client, opts ...otelhttp.Option) {
+	opts = append([]otelhttp.Option{otelhttp.WithTracerProvider(b.tp), otelhttp.WithPropagators(b.propagator)}, opts...)
+	client.Transport = otelhttp.NewTransport(client.Transport, opts...)
 }
 
 func (b *baseHandler) AddGormCallbacks(db *gorm.DB) {
