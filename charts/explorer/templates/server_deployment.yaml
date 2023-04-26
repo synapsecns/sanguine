@@ -50,15 +50,14 @@ spec:
             {{- toYaml .Values.securityContext | nindent 12 }}
           image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
           imagePullPolicy: {{ .Values.image.pullPolicy }}
+          {{- with .Values.indexer.args }}
           args:
-            - server
-            - '--port=5080'
-            - '--scribe-url=https://scribe.interoperability.institute/graphql'
-            - '--address=tcp://default:clickhouse@{{ .Release.Namespace }}-clickhouse:9000'
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+          {{- with .Values.indexer.ports }}
           ports:
-            - name: http
-              containerPort: 5080
-              protocol: TCP
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
           {{- if .Values.server.env }}
           env:
             {{- toYaml .Values.server.env | nindent 12 }}

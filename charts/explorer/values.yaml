@@ -113,6 +113,7 @@ indexer:
     - backfill
     - '--address=clickhouse://default:clickhouse@{{ .Release.Namespace }}-clickhouse:9000'
     - '--config=/config/config.yaml'
+  ports: []
   env:
     - name: POD_NAMESPACE
       valueFrom:
@@ -173,6 +174,10 @@ server:
     - '--port=80'
     - '--scribe-url=https://scribe.interoperability.institute/graphql'
     - '--address=tcp://default:clickhouse@${POD_NAMESPACE}-clickhouse:9000'
+  ports:
+    - name: http
+      containerPort: 5080
+      protocol: TCP
   # TODO: this should be in extraValues for testing
   extraInitContainers:
     - name: wait-for-omnirpc

@@ -49,10 +49,14 @@ spec:
             {{- toYaml .Values.securityContext | nindent 12 }}
           image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
           imagePullPolicy: {{ .Values.image.pullPolicy }}
+          {{- with .Values.indexer.args }}
           args:
-            - backfill
-            - '--address=clickhouse://default:clickhouse@{{ .Release.Namespace }}-clickhouse:9000'
-            - '--config=/config/config.yaml'
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+          {{- with .Values.indexer.ports }}
+          ports:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
           resources:
             {{- toYaml .Values.resources | nindent 12 }}
           {{- if .Values.indexer.env }}
