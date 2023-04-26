@@ -1,6 +1,8 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.17;
 
+import {Dispute, DisputeFlag} from "../../../contracts/libs/Structures.sol";
+import {IAgentSecured} from "../../../contracts/interfaces/IAgentSecured.sol";
 import {AgentManagerHarness} from "../../harnesses/manager/AgentManagerHarness.t.sol";
 import {SynapseTest} from "../../utils/SynapseTest.t.sol";
 
@@ -31,6 +33,32 @@ abstract contract MessagingBaseTest is SynapseTest {
     modifier onlySupportedDomain() virtual {
         require(localDomain() == DOMAIN_LOCAL || localDomain() == DOMAIN_SYNAPSE, "Unsupported local domain");
         _;
+    }
+
+    // ═══════════════════════════════════════════════ EXPECTATIONS ════════════════════════════════════════════════════
+
+    function expectDisputeOpened(address guard, address notary) public {
+        vm.expectEmit();
+        emit DisputeUpdated(guard, Dispute(DisputeFlag.Pending, uint32(agentIndex[notary]), address(0)));
+        vm.expectEmit();
+        emit DisputeUpdated(notary, Dispute(DisputeFlag.Pending, uint32(agentIndex[guard]), address(0)));
+        // TODO: check if Summit is called, when separated
+        bytes memory expectedCall =
+            abi.encodeWithSelector(IAgentSecured.openDispute.selector, agentIndex[guard], agentIndex[notary]);
+        vm.expectCall(localDestination(), expectedCall);
+    }
+
+    function expectDisputeResolved(address slashed, address honest, address prover) public {
+        vm.expectEmit();
+        emit DisputeUpdated(slashed, Dispute(DisputeFlag.Slashed, uint32(agentIndex[honest]), prover));
+        if (honest != address(0)) {
+            vm.expectEmit();
+            emit DisputeUpdated(honest, Dispute(DisputeFlag.None, 0, address(0)));
+        }
+        // TODO: check if Summit is called, when separated
+        bytes memory expectedCall =
+            abi.encodeWithSelector(IAgentSecured.resolveDispute.selector, agentIndex[slashed], agentIndex[honest]);
+        vm.expectCall(localDestination(), expectedCall);
     }
 
     // ══════════════════════════════════════════════ DISPUTE CHEATS ═══════════════════════════════════════════════════
