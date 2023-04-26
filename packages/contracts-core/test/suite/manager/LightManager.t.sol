@@ -55,8 +55,7 @@ contract LightManagerTest is AgentManagerTest {
         bytes32 root = addNewAgent(domain, agent);
         test_setAgentRoot(root);
         bytes32[] memory proof = getAgentProof(agent);
-        vm.expectEmit();
-        emit StatusUpdated(AgentFlag.Active, domain, agent);
+        expectStatusUpdated(AgentFlag.Active, domain, agent);
         // Anyone could add agents in Light Manager
         vm.prank(caller);
         lightManager.updateAgentStatus(agent, getAgentStatus(agent), proof);
@@ -69,13 +68,8 @@ contract LightManagerTest is AgentManagerTest {
         bytes32 root = updateAgent(AgentFlag.Slashed, agent);
         test_setAgentRoot(root);
         bytes32[] memory proof = getAgentProof(agent);
-        vm.expectEmit();
-        emit StatusUpdated(AgentFlag.Slashed, domain, agent);
-        // TODO: enable
-        // bytes memory expectedCall = abi.encodeWithSelector(IAgentSecured.managerSlash.selector, domain, agent);
-        // vm.expectCall(destination, expectedCall);
-        // vm.expectCall(origin, expectedCall);
-        // Anyone could add agents in Light Manager
+        expectStatusUpdated(AgentFlag.Slashed, domain, agent);
+        expectDisputeResolved(agent, address(0), caller);
         vm.prank(caller);
         lightManager.updateAgentStatus(agent, getAgentStatus(agent), proof);
         checkAgentStatus(agent, lightManager.agentStatus(agent), AgentFlag.Slashed);

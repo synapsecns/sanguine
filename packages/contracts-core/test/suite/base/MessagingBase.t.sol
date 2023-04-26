@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.17;
 
-import {Dispute, DisputeFlag} from "../../../contracts/libs/Structures.sol";
+import {AgentFlag, Dispute, DisputeFlag} from "../../../contracts/libs/Structures.sol";
 import {IAgentSecured} from "../../../contracts/interfaces/IAgentSecured.sol";
 import {AgentManagerHarness} from "../../harnesses/manager/AgentManagerHarness.t.sol";
 import {SynapseTest} from "../../utils/SynapseTest.t.sol";
@@ -36,6 +36,11 @@ abstract contract MessagingBaseTest is SynapseTest {
     }
 
     // ═══════════════════════════════════════════════ EXPECTATIONS ════════════════════════════════════════════════════
+
+    function expectStatusUpdated(AgentFlag flag, uint32 domain, address agent) public {
+        vm.expectEmit();
+        emit StatusUpdated(flag, domain, agent);
+    }
 
     function expectDisputeOpened(address guard, address notary) public {
         vm.expectEmit();

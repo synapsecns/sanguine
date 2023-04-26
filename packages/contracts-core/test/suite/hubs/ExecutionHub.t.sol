@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.17;
 
+import {AgentFlag} from "../../../contracts/libs/Structures.sol";
 import {IExecutionHub} from "../../../contracts/interfaces/IExecutionHub.sol";
 import {IAgentManager} from "../../../contracts/interfaces/IAgentManager.sol";
 import {SNAPSHOT_MAX_STATES} from "../../../contracts/libs/Snapshot.sol";
@@ -417,7 +418,9 @@ abstract contract ExecutionHubTest is AgentSecuredTest {
         address notary = domains[localDomain()].agent;
         bytes memory rcptSignature = signReceipt(notary, rcptPayload);
         // TODO: check that anyone could make the call
-        expectAgentSlashed(localDomain(), notary, address(this));
+        expectStatusUpdated(AgentFlag.Fraudulent, localDomain(), notary);
+        expectDisputeResolved(notary, address(0), address(this));
+        // expectAgentSlashed(localDomain(), notary, address(this));
         assertFalse(IAgentManager(localAgentManager()).verifyReceipt(rcptPayload, rcptSignature));
     }
 

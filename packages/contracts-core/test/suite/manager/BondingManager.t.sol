@@ -84,8 +84,7 @@ contract BondingManagerTest is AgentManagerTest {
         vm.assume(agent != address(0));
         bytes32[] memory proof = getZeroProof();
         bytes32 newRoot = addNewAgent(domain, agent);
-        vm.expectEmit();
-        emit StatusUpdated(AgentFlag.Active, domain, agent);
+        expectStatusUpdated(AgentFlag.Active, domain, agent);
         vm.expectEmit();
         emit RootUpdated(newRoot);
         bondingManager.addAgent(domain, agent, proof);
@@ -120,8 +119,7 @@ contract BondingManagerTest is AgentManagerTest {
     function updateStatus(address caller, AgentFlag flag, uint32 domain, address agent) public {
         bytes32[] memory proof = getAgentProof(agent);
         bytes32 newRoot = updateAgent(flag, agent);
-        vm.expectEmit();
-        emit StatusUpdated(flag, domain, agent);
+        expectStatusUpdated(flag, domain, agent);
         vm.expectEmit();
         emit RootUpdated(newRoot);
         vm.prank(caller);
@@ -196,12 +194,8 @@ contract BondingManagerTest is AgentManagerTest {
         (uint32 domain, address agent) = getAgent(domainId, agentId);
         skipBondingOptimisticPeriod();
         bytes memory msgPayload = managerMsgPayload(msgOrigin, remoteRegistrySlashCalldata(domain, agent, prover));
-        // TODO: enable
-        // bytes memory expectedCall = abi.encodeWithSelector(IAgentSecured.managerSlash.selector, domain, agent);
-        vm.expectEmit();
-        emit StatusUpdated(AgentFlag.Fraudulent, domain, agent);
-        // vm.expectCall(summit, expectedCall);
-        // vm.expectCall(originSynapse, expectedCall);
+        expectStatusUpdated(AgentFlag.Fraudulent, domain, agent);
+        expectDisputeResolved(agent, address(0), prover);
         managerMsgPrank(msgPayload);
         assertEq(uint8(bondingManager.agentStatus(agent).flag), uint8(AgentFlag.Fraudulent));
         // (bool isSlashed, address prover_) = bondingManager.slashStatus(agent);

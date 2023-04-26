@@ -254,7 +254,8 @@ contract OriginTest is AgentSecuredTest {
             vm.expectEmit(true, true, true, true);
             emit InvalidStateWithAttestation(rsi.stateIndex, state, attPayload, attSig);
             // TODO: check that anyone could make the call
-            expectAgentSlashed(domain, notary, address(this));
+            expectStatusUpdated(AgentFlag.Fraudulent, domain, notary);
+            expectDisputeResolved(notary, address(0), address(this));
         }
         vm.recordLogs();
         assertEq(
@@ -278,7 +279,8 @@ contract OriginTest is AgentSecuredTest {
             vm.expectEmit(true, true, true, true);
             emit InvalidStateWithAttestation(rsi.stateIndex, state, attPayload, attSig);
             // TODO: check that anyone could make the call
-            expectAgentSlashed(domain, notary, address(this));
+            expectStatusUpdated(AgentFlag.Fraudulent, domain, notary);
+            expectDisputeResolved(notary, address(0), address(this));
         }
         vm.recordLogs();
         assertEq(
@@ -301,7 +303,8 @@ contract OriginTest is AgentSecuredTest {
             vm.expectEmit(true, true, true, true);
             emit InvalidStateWithSnapshot(rsi.stateIndex, snapPayload, snapSig);
             // TODO: check that anyone could make the call
-            expectAgentSlashed(DOMAIN_REMOTE, notary, address(this));
+            expectStatusUpdated(AgentFlag.Fraudulent, DOMAIN_REMOTE, notary);
+            expectDisputeResolved(notary, address(0), address(this));
         }
         assertEq(lightManager.verifyStateWithSnapshot(rsi.stateIndex, snapPayload, snapSig), isValid, "!returnValue");
         if (isValid) {
@@ -321,7 +324,8 @@ contract OriginTest is AgentSecuredTest {
             vm.expectEmit(true, true, true, true);
             emit InvalidStateReport(srPayload, srSig);
             // TODO: check that anyone could make the call
-            expectAgentSlashed(0, guard, address(this));
+            expectStatusUpdated(AgentFlag.Fraudulent, 0, guard);
+            expectDisputeResolved(guard, address(0), address(this));
         }
         vm.recordLogs();
         assertEq(lightManager.verifyStateReport(srPayload, srSig), isValid, "!returnValue");
