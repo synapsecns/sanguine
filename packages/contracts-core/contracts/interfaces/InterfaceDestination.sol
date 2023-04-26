@@ -25,18 +25,14 @@ interface InterfaceDestination {
      * > - Attestation payload is not properly formatted.
      * > - Attestation signer is in Dispute.
      * > - Attestation's snapshot root has been previously submitted.
-     * @param notary            Address of the Notary who signed the receipt
      * @param status            Structure specifying agent status: (flag, domain, index)
+     * @param sigIndex          Index of stored Notary signature
      * @param attPayload        Raw payload with Attestation data
-     * @param attSignature      Notary signature for the Attestation
      * @return wasAccepted      Whether the Attestation was accepted
      */
-    function acceptAttestation(
-        address notary,
-        AgentStatus memory status,
-        bytes memory attPayload,
-        bytes memory attSignature
-    ) external returns (bool wasAccepted);
+    function acceptAttestation(AgentStatus memory status, uint256 sigIndex, bytes memory attPayload)
+        external
+        returns (bool wasAccepted);
 
     // ═══════════════════════════════════════════════════ VIEWS ═══════════════════════════════════════════════════════
 
