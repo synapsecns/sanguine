@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.17;
 
-import {AgentFlag} from "../libs/Structures.sol";
+import {AgentFlag, Dispute} from "../libs/Structures.sol";
 
 abstract contract AgentManagerEvents {
     /**
@@ -55,4 +55,12 @@ abstract contract AgentManagerEvents {
      * @param agent     Agent address
      */
     event StatusUpdated(AgentFlag flag, uint32 indexed domain, address indexed agent);
+
+    /**
+     * @notice Emitted whenever a Dispute status of an the agent is updated.
+     * See Structures.sol for details.
+     * @param agent     Agent address
+     * @param dispute   Dispute status: (flag, rivalIndex, fraudProver)
+     */
+    event DisputeUpdated(address agent, Dispute dispute);
 }

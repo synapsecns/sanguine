@@ -40,8 +40,12 @@ bytes32 constant RECEIPT_SALT = keccak256("RECEIPT_SALT");
 bytes32 constant RECEIPT_REPORT_SALT = keccak256("RECEIPT_REPORT_SALT");
 bytes32 constant SNAPSHOT_SALT = keccak256("SNAPSHOT_SALT");
 bytes32 constant STATE_REPORT_SALT = keccak256("STATE_REPORT_SALT");
-// ════════════════════════════════ DESTINATION ════════════════════════════════
-uint256 constant AGENT_ROOT_OPTIMISTIC_PERIOD = 1 days;
-// ══════════════════════════════════ ORIGIN ═══════════════════════════════════
+// ═════════════════════════════════ PROTOCOL ══════════════════════════════════
+/// @dev Optimistic period for new agent roots in LightManager
+uint32 constant AGENT_ROOT_OPTIMISTIC_PERIOD = 1 days;
+uint32 constant BONDING_OPTIMISTIC_PERIOD = 1 days;
 /// @dev Maximum bytes per message = 2 KiB (somewhat arbitrarily set to begin)
 uint256 constant MAX_CONTENT_BYTES = 2 * 2 ** 10;
+/// @dev Domain of the Synapse Chain
+// TODO: replace the placeholder with actual value (for MVP this is Optimism chainId)
+uint32 constant SYNAPSE_DOMAIN = 10;

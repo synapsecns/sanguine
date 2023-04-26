@@ -2,12 +2,15 @@
 pragma solidity 0.8.17;
 
 import {InterfaceOrigin} from "../../../contracts/interfaces/InterfaceOrigin.sol";
+import {InterfaceSummit} from "../../../contracts/interfaces/InterfaceSummit.sol";
 import {AGENT_TREE_HEIGHT} from "../../../contracts/libs/Constants.sol";
 import {MerkleMath} from "../../../contracts/libs/MerkleMath.sol";
-import {AgentFlag, SlashStatus, SystemEntity} from "../../../contracts/libs/Structures.sol";
+import {AgentFlag, AgentStatus} from "../../../contracts/libs/Structures.sol";
 import {AgentManagerTest} from "./AgentManager.t.sol";
 
-import {BondingManagerHarness, ISystemRegistry, Summit, SynapseTest} from "../../utils/SynapseTest.t.sol";
+import {BondingManagerHarness, IAgentSecured, Summit, SynapseTest} from "../../utils/SynapseTest.t.sol";
+
+import {RawExecReceipt, RawState, RawStateIndex} from "../../utils/libs/SynapseStructs.t.sol";
 
 // solhint-disable func-name-mixedcase
 // solhint-disable no-empty-blocks
@@ -17,8 +20,8 @@ contract BondingManagerTest is AgentManagerTest {
     bytes internal constant CANT_INITIATE = "Unstaking could not be initiated";
     bytes internal constant CANT_COMPLETE = "Unstaking could not be completed";
 
-    // Deploy Production version of Summit and mocks for everything else
-    constructor() SynapseTest(DEPLOY_PROD_SUMMIT) {}
+    // Deploy mocks for everything except BondingManager
+    constructor() SynapseTest(0) {}
 
     // ═══════════════════════════════════════════════ TESTS: SETUP ════════════════════════════════════════════════════
 
@@ -84,8 +87,7 @@ contract BondingManagerTest is AgentManagerTest {
         vm.assume(agent != address(0));
         bytes32[] memory proof = getZeroProof();
         bytes32 newRoot = addNewAgent(domain, agent);
-        vm.expectEmit();
-        emit StatusUpdated(AgentFlag.Active, domain, agent);
+        expectStatusUpdated(AgentFlag.Active, domain, agent);
         vm.expectEmit();
         emit RootUpdated(newRoot);
         bondingManager.addAgent(domain, agent, proof);
@@ -120,8 +122,7 @@ contract BondingManagerTest is AgentManagerTest {
     function updateStatus(address caller, AgentFlag flag, uint32 domain, address agent) public {
         bytes32[] memory proof = getAgentProof(agent);
         bytes32 newRoot = updateAgent(flag, agent);
-        vm.expectEmit();
-        emit StatusUpdated(flag, domain, agent);
+        expectStatusUpdated(flag, domain, agent);
         vm.expectEmit();
         emit RootUpdated(newRoot);
         vm.prank(caller);
@@ -190,28 +191,25 @@ contract BondingManagerTest is AgentManagerTest {
 
     // TODO: test_initiateSlashing
 
-    function test_remoteRegistrySlash(uint32 msgOrigin, uint256 domainId, uint256 agentId, address prover) public {
+    function test_remoteSlashAgent(uint32 msgOrigin, uint256 domainId, uint256 agentId, address prover) public {
         // Needs to be a REMOTE call
         vm.assume(msgOrigin != DOMAIN_SYNAPSE);
         (uint32 domain, address agent) = getAgent(domainId, agentId);
         skipBondingOptimisticPeriod();
-        bytes memory msgPayload = managerMsgPayload(msgOrigin, remoteRegistrySlashCalldata(domain, agent, prover));
-        bytes memory expectedCall = abi.encodeWithSelector(ISystemRegistry.managerSlash.selector, domain, agent);
-        vm.expectEmit();
-        emit StatusUpdated(AgentFlag.Fraudulent, domain, agent);
-        vm.expectCall(summit, expectedCall);
-        vm.expectCall(originSynapse, expectedCall);
+        bytes memory msgPayload = managerMsgPayload(msgOrigin, remoteSlashAgentCalldata(domain, agent, prover));
+        expectStatusUpdated(AgentFlag.Fraudulent, domain, agent);
+        expectDisputeResolved(agent, address(0), prover);
         managerMsgPrank(msgPayload);
         assertEq(uint8(bondingManager.agentStatus(agent).flag), uint8(AgentFlag.Fraudulent));
-        (bool isSlashed, address prover_) = bondingManager.slashStatus(agent);
-        assertTrue(isSlashed);
-        assertEq(prover_, prover);
+        // (bool isSlashed, address prover_) = bondingManager.slashStatus(agent);
+        // assertTrue(isSlashed);
+        // assertEq(prover_, prover);
     }
 
     function test_completeSlashing_active(uint256 domainId, uint256 agentId, address slasher) public {
         (uint32 domain, address agent) = getAgent(domainId, agentId);
         // Initiate slashing
-        test_remoteRegistrySlash(DOMAIN_REMOTE, domainId, agentId, address(1));
+        test_remoteSlashAgent(DOMAIN_REMOTE, domainId, agentId, address(1));
         updateStatus(slasher, AgentFlag.Slashed, domain, agent);
         checkAgentStatus(agent, bondingManager.agentStatus(agent), AgentFlag.Slashed);
     }
@@ -220,9 +218,73 @@ contract BondingManagerTest is AgentManagerTest {
         (uint32 domain, address agent) = getAgent(domainId, agentId);
         updateStatus(AgentFlag.Unstaking, domain, agent);
         // Initiate slashing
-        test_remoteRegistrySlash(DOMAIN_REMOTE, domainId, agentId, address(1));
+        test_remoteSlashAgent(DOMAIN_REMOTE, domainId, agentId, address(1));
         updateStatus(slasher, AgentFlag.Slashed, domain, agent);
         checkAgentStatus(agent, bondingManager.agentStatus(agent), AgentFlag.Slashed);
+    }
+
+    // ══════════════════════════════════════════ TEST: SUBMIT STATEMENTS ══════════════════════════════════════════════
+
+    function test_submitSnapshot(uint256 domainId, uint256 agentId, RawState memory rs, RawStateIndex memory rsi)
+        public
+        boundIndex(rsi)
+    {
+        (, address agent) = getAgent(domainId, agentId);
+        (bytes memory snapPayload, bytes memory snapSig) = createSignedSnapshot(agent, rs, rsi);
+        vm.expectCall(
+            summit,
+            abi.encodeWithSelector(
+                InterfaceSummit.acceptSnapshot.selector, agent, getAgentStatus(agent), snapPayload, snapSig
+            )
+        );
+        bondingManager.submitSnapshot(snapPayload, snapSig);
+    }
+
+    function test_submitSnapshot_passes_guardInDispute(RawState memory rs, RawStateIndex memory rsi)
+        public
+        boundIndex(rsi)
+    {
+        address guard = domains[0].agent;
+        openDispute({guard: guard, notary: domains[DOMAIN_REMOTE].agent});
+        (bytes memory snapPayload, bytes memory snapSig) = createSignedSnapshot(guard, rs, rsi);
+        vm.expectCall(
+            summit,
+            abi.encodeWithSelector(
+                InterfaceSummit.acceptSnapshot.selector, guard, getAgentStatus(guard), snapPayload, snapSig
+            )
+        );
+        bondingManager.submitSnapshot(snapPayload, snapSig);
+    }
+
+    function test_submitSnapshot_revert_notaryInDispute(RawState memory rs, RawStateIndex memory rsi)
+        public
+        boundIndex(rsi)
+    {
+        address notary = domains[DOMAIN_REMOTE].agent;
+        openDispute({guard: domains[0].agent, notary: notary});
+        (bytes memory snapPayload, bytes memory snapSig) = createSignedSnapshot(notary, rs, rsi);
+        vm.expectRevert("Notary is in dispute");
+        bondingManager.submitSnapshot(snapPayload, snapSig);
+    }
+
+    function test_submitReceipt(uint256 domainId, uint256 agentId, RawExecReceipt memory re) public {
+        (, address notary) = getNotary(domainId, agentId);
+        (bytes memory receiptPayload, bytes memory receiptSig) = signReceipt(notary, re);
+        vm.expectCall(
+            summit,
+            abi.encodeWithSelector(
+                InterfaceSummit.acceptReceipt.selector, notary, getAgentStatus(notary), receiptPayload, receiptSig
+            )
+        );
+        bondingManager.submitReceipt(receiptPayload, receiptSig);
+    }
+
+    function test_submitReceipt_revert_notaryInDispute(RawExecReceipt memory re) public {
+        address notary = domains[DOMAIN_REMOTE].agent;
+        openDispute({guard: domains[0].agent, notary: notary});
+        (bytes memory receiptPayload, bytes memory receiptSig) = signReceipt(notary, re);
+        vm.expectRevert("Notary is in dispute");
+        bondingManager.submitReceipt(receiptPayload, receiptSig);
     }
 
     // ════════════════════════════════════════════ TEST: WITHDRAW TIPS ════════════════════════════════════════════════
@@ -282,7 +344,7 @@ contract BondingManagerTest is AgentManagerTest {
         // Change status of four agents into Unstaking, Resting, Fraudulent and Slashed - one for each domain
         test_initiateUnstaking(0, 0);
         test_completeUnstaking(1, 1);
-        test_remoteRegistrySlash(DOMAIN_REMOTE, 2, 2, address(1));
+        test_remoteSlashAgent(DOMAIN_REMOTE, 2, 2, address(1));
         test_completeSlashing_active(3, 3, address(1));
         for (uint256 d = 0; d < allDomains.length; ++d) {
             uint32 domain = allDomains[d];

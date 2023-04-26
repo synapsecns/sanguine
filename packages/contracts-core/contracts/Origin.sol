@@ -12,25 +12,20 @@ import {State} from "./libs/State.sol";
 import {Tips, TipsLib} from "./libs/Tips.sol";
 import {TypeCasts} from "./libs/TypeCasts.sol";
 // ═════════════════════════════ INTERNAL IMPORTS ══════════════════════════════
+import {AgentSecured} from "./base/AgentSecured.sol";
 import {OriginEvents} from "./events/OriginEvents.sol";
-import {IAgentManager} from "./interfaces/IAgentManager.sol";
 import {InterfaceOrigin} from "./interfaces/InterfaceOrigin.sol";
 import {StateHub} from "./hubs/StateHub.sol";
-import {SystemBase, Versioned} from "./system/SystemBase.sol";
-import {SystemRegistry} from "./system/SystemRegistry.sol";
 
-contract Origin is SystemRegistry, StateHub, OriginEvents, InterfaceOrigin {
+contract Origin is StateHub, OriginEvents, InterfaceOrigin {
     using MemViewLib for bytes;
     using TipsLib for bytes;
     using TypeCasts for address;
 
     // ═════════════════════════════════════════ CONSTRUCTOR & INITIALIZER ═════════════════════════════════════════════
 
-    constructor(uint32 domain, IAgentManager agentManager_)
-        SystemBase(domain)
-        SystemRegistry(agentManager_)
-        Versioned("0.0.3")
-    {} // solhint-disable-line no-empty-blocks
+    // solhint-disable-next-line no-empty-blocks
+    constructor(uint32 domain, address agentManager_) AgentSecured("0.0.3", domain, agentManager_) {}
 
     /// @notice Initializes Origin contract:
     /// - msg.sender is set as contract owner
