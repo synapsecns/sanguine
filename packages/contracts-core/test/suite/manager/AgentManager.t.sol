@@ -263,7 +263,7 @@ abstract contract AgentManagerTest is MessagingBaseTest {
         return rmc.callPayload();
     }
 
-    function remoteRegistrySlashCalldata(uint32 domain, address agent, address prover)
+    function remoteSlashAgentCalldata(uint32 domain, address agent, address prover)
         public
         view
         returns (RawCallData memory)

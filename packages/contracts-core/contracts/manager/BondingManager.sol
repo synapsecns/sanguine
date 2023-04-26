@@ -201,7 +201,7 @@ contract BondingManager is AgentManager, BondingManagerEvents, InterfaceBondingM
 
     /// @inheritdoc InterfaceBondingManager
     function completeSlashing(uint32 domain, address agent, bytes32[] memory proof) external {
-        // Check that slashing was initiated by one of the System Registries
+        // Check that slashing was previously initiated in AgentManager
         require(_disputes[agent].flag == DisputeFlag.Slashed, "Slashing not initiated");
         // Check that the STORED status is Active/Unstaking in the merkle tree and that the domains match
         AgentStatus memory status = _storedAgentStatus(agent);
@@ -229,7 +229,7 @@ contract BondingManager is AgentManager, BondingManagerEvents, InterfaceBondingM
         require(proofMaturity >= BONDING_OPTIMISTIC_PERIOD, "!optimisticPeriod");
         // TODO: do we need to save this?
         msgOrigin;
-        // Slash agent and notify local registries
+        // Slash agent and notify local AgentSecured contracts
         _slashAgent(domain, agent, prover);
         // Magic value to return is selector of the called function
         return this.remoteSlashAgent.selector;

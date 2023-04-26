@@ -151,8 +151,8 @@ abstract contract MessagingBaseTest is SynapseTest {
         return addr == localAgentManager() || addr == localDestination() || addr == localOrigin();
     }
 
-    /// @notice Checks if contract is a local SystemRegistry
-    function isLocalSystemRegistry(address addr) public view returns (bool) {
+    /// @notice Checks if contract is a local AgentSecured contract
+    function isLocalAgentSecured(address addr) public view returns (bool) {
         return addr == localDestination() || addr == localOrigin();
     }
 }

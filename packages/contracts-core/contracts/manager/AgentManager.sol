@@ -282,8 +282,7 @@ abstract contract AgentManager is MessagingBase, VerificationManager, AgentManag
 
     // ══════════════════════════════════════════════ INTERNAL LOGIC ═══════════════════════════════════════════════════
 
-    /// @dev Hook that is called after agent was slashed on one of the Registries,
-    /// and the remaining Registries were notified.
+    /// @dev Hook that is called after agent was slashed in AgentManager and AgentSecured contracts were notified.
     // solhint-disable-next-line no-empty-blocks
     function _afterAgentSlashed(uint32 domain, address agent, address prover) internal virtual {}
 
