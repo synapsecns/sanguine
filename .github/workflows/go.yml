@@ -147,12 +147,22 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
+      - name: Get Coverage name
+        id: coverage
+        run: |
+          echo "::set-output name=flag::$(echo "${{ matrix.package }}" | rev | cut -d/ -f1 | rev)"
+
       - name: Get pyroscope path
         id: pyroscope-path
         run: echo "##[set-output name=PYROSCOPE_PATH;]$(which pyroscope-ci)"
         shell: bash
 
-
+      - name: Setup Pyroscope Tests
+        run: cd ${{matrix.package}} && $PYROSCOPE_PATH go install --applicationName=$APPLICATION_NAME .
+        shell: bash
+        env:
+          PYROSCOPE_PATH: '${{ steps.pyroscope-path.outputs.PYROSCOPE_PATH }}'
+          APPLICATION_NAME: ${{ steps.coverage.outputs.flag }}
 
       - name: Test
         uses: nick-fields/retry@v2
@@ -176,11 +186,6 @@ jobs:
           GOGC: -1
           ETHEREUM_RPC_URI: ${{ secrets.ETHEREUM_RPC_URI }}
 
-
-      - name: Get Coverage name
-        id: coverage
-        run: |
-          echo "::set-output name=flag::$(echo "${{ matrix.package }}" | rev | cut -d/ -f1 | rev)"
 
       - uses: codecov/codecov-action@v3
         name: Send Coverage (Codecov)
