@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"github.com/gin-gonic/gin"
 	"github.com/synapsecns/sanguine/core/config"
+	"go.opentelemetry.io/contrib/instrumentation/net/http/otelhttp"
 	"go.opentelemetry.io/otel/propagation"
 	"go.opentelemetry.io/otel/trace"
 	"gorm.io/gorm"
@@ -19,7 +20,7 @@ type Handler interface {
 	// Gin gets a gin middleware for tracing.
 	Gin() gin.HandlerFunc
 	// ConfigureHTTPClient configures tracing on an http client
-	ConfigureHTTPClient(client *http.Client)
+	ConfigureHTTPClient(client *http.Client, opts ...otelhttp.Option)
 	// AddGormCallbacks adds gorm callbacks for tracing.
 	AddGormCallbacks(db *gorm.DB)
 	// GetTracerProvider returns the tracer provider.
