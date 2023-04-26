@@ -47,7 +47,7 @@ Selector labels
 */}}
 {{- define "scribe.selectorLabels" -}}
 {{- range $key, $value := .Values.labels }}
-{{- printf "%s: %s\n" $key $value | indent 4 }}
+{{ $key }}: {{ $value | quote }}
 {{- end }}
 app.kubernetes.io/name: {{ include "scribe.name" . }}
 app.kubernetes.io/instance: {{ .Release.Name }}

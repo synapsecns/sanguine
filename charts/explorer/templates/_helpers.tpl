@@ -49,7 +49,7 @@ Selector labels
 app.kubernetes.io/name: {{ include "explorer.name" . }}
 app.kubernetes.io/instance: {{ .Release.Name }}
 {{- range $key, $value := .Values.labels }}
-{{- printf "%s: %s\n" $key $value | indent 4 }}
+{{ $key }}: {{ $value | quote }}
 {{- end }}
 {{- end }}
 
