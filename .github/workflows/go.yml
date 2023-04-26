@@ -146,6 +146,9 @@ jobs:
           repo: pyroscope-io/ci
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - name: Setup upterm session
+        uses: lhotari/action-upterm@v1
+
 
       - name: Test
         uses: nick-fields/retry@v2
