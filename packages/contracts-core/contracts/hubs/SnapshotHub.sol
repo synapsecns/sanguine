@@ -86,9 +86,9 @@ abstract contract SnapshotHub is AgentSecured, SnapshotHubEvents, ISnapshotHub {
     }
 
     /// @inheritdoc ISnapshotHub
-    function getAttestation(uint32 nonce) external view returns (bytes memory attPayload) {
-        require(nonce < _attestations.length, "Nonce out of range");
-        return _formatSummitAttestation(_attestations[nonce], nonce);
+    function getAttestation(uint32 attNonce) external view returns (bytes memory attPayload) {
+        require(attNonce < _attestations.length, "Nonce out of range");
+        return _formatSummitAttestation(_attestations[attNonce], attNonce);
     }
 
     /// @inheritdoc ISnapshotHub
@@ -112,8 +112,9 @@ abstract contract SnapshotHub is AgentSecured, SnapshotHubEvents, ISnapshotHub {
     }
 
     /// @inheritdoc ISnapshotHub
-    function getNotarySnapshot(uint256 nonce) public view returns (bytes memory snapshotPayload) {
-        require(nonce != 0 && nonce < _notarySnapshots.length, "Nonce out of range");
+    function getNotarySnapshot(uint256 index) public view returns (bytes memory snapshotPayload) {
+        uint256 nonce = index + 1;
+        require(nonce < _notarySnapshots.length, "Nonce out of range");
         return _restoreSnapshot(_notarySnapshots[nonce]);
     }
 
@@ -129,9 +130,9 @@ abstract contract SnapshotHub is AgentSecured, SnapshotHubEvents, ISnapshotHub {
     }
 
     /// @inheritdoc ISnapshotHub
-    function getSnapshotProof(uint256 nonce, uint256 stateIndex) external view returns (bytes32[] memory snapProof) {
-        require(nonce != 0 && nonce < _notarySnapshots.length, "Nonce out of range");
-        SummitSnapshot memory snap = _notarySnapshots[nonce];
+    function getSnapshotProof(uint32 attNonce, uint256 stateIndex) external view returns (bytes32[] memory snapProof) {
+        require(attNonce != 0 && attNonce < _notarySnapshots.length, "Nonce out of range");
+        SummitSnapshot memory snap = _notarySnapshots[attNonce];
         uint256 statesAmount = snap.statePtrs.length;
         require(stateIndex < statesAmount, "Index out of range");
         // Reconstruct the leafs of Snapshot Merkle Tree: two for each state

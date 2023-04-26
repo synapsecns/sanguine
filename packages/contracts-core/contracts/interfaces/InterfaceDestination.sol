@@ -42,8 +42,8 @@ interface InterfaceDestination {
     function attestationsAmount() external view returns (uint256);
 
     /**
-     * @notice Returns a Notary-signed attestation with a given index. Index refers to the list of all attestations
-     * accepted by this contract.
+     * @notice Returns a Notary-signed attestation with a given index.
+     * > Index refers to the list of all attestations accepted by this contract.
      * @param index             Attestation index
      * @return attPayload       Raw payload with Attestation data
      * @return attSignature     Notary signature for the reported attestation

@@ -30,7 +30,7 @@ contract SummitMock is SnapshotHubMock, AgentSecuredMock, InterfaceSummit {
 
     function getLatestState(uint32 origin) external view returns (bytes memory statePayload) {}
 
-    function getSignedSnapshot(uint256 nonce)
+    function getSignedSnapshot(uint256 index)
         external
         view
         returns (bytes memory snapPayload, bytes memory snapSignature)

@@ -192,14 +192,14 @@ contract Summit is ExecutionHub, SnapshotHub, SummitEvents, InterfaceSummit {
     }
 
     /// @inheritdoc InterfaceSummit
-    function getSignedSnapshot(uint256 nonce)
+    function getSignedSnapshot(uint256 index)
         external
         view
         returns (bytes memory snapPayload, bytes memory snapSignature)
     {
-        // This will revert if nonce is out of range
-        snapPayload = getNotarySnapshot(nonce);
-        SnapRootData memory rootData = _rootData[_roots[nonce - 1]];
+        // This will revert if index is out of range
+        snapPayload = getNotarySnapshot(index);
+        SnapRootData memory rootData = _rootData[_roots[index]];
         snapSignature = IAgentManager(agentManager).getStoredSignature(rootData.sigIndex);
     }
 
