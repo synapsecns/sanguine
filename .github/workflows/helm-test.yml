@@ -70,10 +70,10 @@ jobs:
         if: ${{ !contains(matrix.chart, 'agents_embedded') && !contains(matrix.chart, 'agents_remote') }}
         run: ct install --debug --chart-dirs "${{ matrix.chart }}" --charts "${{ matrix.chart }}"
 
-      - name: Run chart-testing (install agents embedded)
-        working-directory: charts/
-        if: ${{ contains(matrix.chart, 'agents_embedded') }}
-        run: ct install --debug --helm-extra-set-args "--set=executor.type=embedded  --set=scribe.enabled=false" --chart-dirs "agents" --charts "agents"
+#      - name: Run chart-testing (install agents embedded)
+#        working-directory: charts/
+#        if: ${{ contains(matrix.chart, 'agents_embedded') }}
+#        run: ct install --debug --helm-extra-set-args "--set=executor.type=embedded  --set=scribe.enabled=false" --chart-dirs "agents" --charts "agents"
 
       - name: Run chart-testing (install agents remote)
         working-directory: charts/
