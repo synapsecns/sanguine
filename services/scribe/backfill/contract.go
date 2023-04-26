@@ -346,16 +346,14 @@ func (c *ContractBackfiller) getLogs(parentCtx context.Context, startHeight, end
 					logsChan <- log
 				}
 
-			default:
-				if rangeFilter.Done() {
-					finLogs, _ := rangeFilter.Drain(ctx)
+			case <-rangeFilter.Done():
+				finLogs, _ := rangeFilter.Drain(ctx)
 
-					for _, log := range finLogs {
-						logsChan <- log
-					}
-					doneChan <- true
-					return
+				for _, log := range finLogs {
+					logsChan <- log
 				}
+				doneChan <- true
+				return
 			}
 		}
 	}()
