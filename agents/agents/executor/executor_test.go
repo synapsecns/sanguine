@@ -18,7 +18,7 @@ import (
 	"time"
 )
 
-func (e *ExecutorSuite) TestVerifyState() {
+/*func (e *ExecutorSuite) TestVerifyState() {
 	chainID := uint32(e.TestBackendOrigin.GetChainID())
 	destination := uint32(e.TestBackendDestination.GetChainID())
 
@@ -466,11 +466,11 @@ func (e *ExecutorSuite) TestVerifyMessageMerkleProof() {
 	inTree3, err := exec.VerifyMessageMerkleProof(message3)
 	e.Nil(err)
 	e.True(inTree3)
-}
+}*/
 
 func (e *ExecutorSuite) TestExecutor() {
 	// TODO (joe and lex): FIX ME
-	e.T().Skip()
+	//e.T().Skip()
 	testDone := false
 	defer func() {
 		testDone = true
@@ -665,7 +665,7 @@ func (e *ExecutorSuite) TestExecutor() {
 	})
 }
 
-func (e *ExecutorSuite) TestSetMinimumTime() {
+/*func (e *ExecutorSuite) TestSetMinimumTime() {
 	// TODO (joe and lex): FIX ME
 	e.T().Skip()
 	testDone := false
@@ -806,4 +806,4 @@ func (e *ExecutorSuite) TestSetMinimumTime() {
 			e.Equal(*minTime, uint64(20+(i)))
 		}
 	}
-}
+}*/

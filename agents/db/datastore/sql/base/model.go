@@ -81,31 +81,31 @@ type BlockEndModel struct {
 	BlockNumber uint32 `gorm:"block_number"`
 }
 
-// DispatchMessage is used to store information about dispatched messages from the Origin contract.
+// SentMessage is used to store information about sent messages from the Origin contract.
 // Monitoring uses these messages' nonces to check for missing messages on destination chains.
-type DispatchMessage struct {
-	// DMOrigin is the origin chainID of the message.
-	DMOrigin uint32 `gorm:"column:origin"`
-	// DMSender is the sender of the message.
-	DMSender string `gorm:"column:sender"`
-	// DMNonce is the nonce of the message.
-	DMNonce uint32 `gorm:"column:nonce"`
-	// DMDestination is the destination chainID of the message.
-	DMDestination uint32 `gorm:"column:destination"`
-	// DMRecipient is the recipient of the message.
-	DMRecipient string `gorm:"column:recipient"`
-	// DMOptimisticSeconds is the optimistic seconds of the message.
-	DMOptimisticSeconds uint32 `gorm:"column:optimistic_seconds"`
-	// DMNotaryTip is the notary tip of the message.
-	DMNotaryTip []byte `gorm:"column:notary_tip"`
-	// DMBroadcasterTip is the broadcaster tip of the message.
-	DMBroadcasterTip []byte `gorm:"column:broadcaster_tip"`
-	// DMProverTip is the prover tip of the message.
-	DMProverTip []byte `gorm:"column:prover_tip"`
-	// DMExecutorTip is the executor tip of the message.
-	DMExecutorTip []byte `gorm:"column:executor_tip"`
-	// DMBody is the body of the message.
-	DMBody []byte `gorm:"column:body"`
+type SentMessage struct {
+	// SMOrigin is the origin chainID of the message.
+	SMOrigin uint32 `gorm:"column:origin"`
+	// SMSender is the sender of the message.
+	SMSender string `gorm:"column:sender"`
+	// SMNonce is the nonce of the message.
+	SMNonce uint32 `gorm:"column:nonce"`
+	// SMDestination is the destination chainID of the message.
+	SMDestination uint32 `gorm:"column:destination"`
+	// SMRecipient is the recipient of the message.
+	SMRecipient string `gorm:"column:recipient"`
+	// SMOptimisticSeconds is the optimistic seconds of the message.
+	SMOptimisticSeconds uint32 `gorm:"column:optimistic_seconds"`
+	// SMNotaryTip is the notary tip of the message.
+	SMNotaryTip []byte `gorm:"column:notary_tip"`
+	// SMBroadcasterTip is the broadcaster tip of the message.
+	SMBroadcasterTip []byte `gorm:"column:broadcaster_tip"`
+	// SMProverTip is the prover tip of the message.
+	SMProverTip []byte `gorm:"column:prover_tip"`
+	// SMExecutorTip is the executor tip of the message.
+	SMExecutorTip []byte `gorm:"column:executor_tip"`
+	// SMBody is the body of the message.
+	SMBody []byte `gorm:"column:body"`
 }
 
 // AcceptedAttestation is used to track every received accepted attestation over all mirrors.

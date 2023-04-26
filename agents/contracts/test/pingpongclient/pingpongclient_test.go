@@ -34,7 +34,7 @@ func (h PingPongClientSuite) TestPing() {
 		h.T().Error(h.T(), fmt.Errorf("test context completed %w", h.GetTestContext().Err()))
 	case <-pingSentSub.Err():
 		h.T().Error(h.T(), pingSentSub.Err())
-	// get dispatch event
+	// get sent event
 	case item := <-pingSentSink:
 		h.NotNil(item)
 		break

@@ -11,8 +11,8 @@ import (
 type Parser interface {
 	// EventType determines if an event was initiated by the bridge or the user.
 	EventType(log ethTypes.Log) (_ EventType, ok bool)
-	// ParseDispatched parses a dispatched event
-	ParseDispatched(log ethTypes.Log) (_ types.CommittedMessage, ok bool)
+	// ParseSent parses a sent event
+	ParseSent(log ethTypes.Log) (_ types.CommittedMessage, ok bool)
 }
 
 type parserImpl struct {
@@ -43,14 +43,14 @@ func (p parserImpl) EventType(log ethTypes.Log) (_ EventType, ok bool) {
 	return EventType(len(topicMap()) + 2), false
 }
 
-// ParseDispatched parses an update event.
-func (p parserImpl) ParseDispatched(log ethTypes.Log) (_ types.CommittedMessage, ok bool) {
-	dispatched, err := p.filterer.ParseDispatched(log)
+// ParseSent parses an update event.
+func (p parserImpl) ParseSent(log ethTypes.Log) (_ types.CommittedMessage, ok bool) {
+	sent, err := p.filterer.ParseSent(log)
 	if err != nil {
 		return nil, false
 	}
 
-	commitedMessage := types.NewCommittedMessage(dispatched.Message)
+	commitedMessage := types.NewCommittedMessage(sent.Message)
 
 	return commitedMessage, true
 }
@@ -61,8 +61,8 @@ func (p parserImpl) ParseDispatched(log ethTypes.Log) (_ types.CommittedMessage,
 type EventType uint
 
 const (
-	// DispatchedEvent is a dispatched event.
-	DispatchedEvent EventType = 0
+	// SentEvent is a sent event.
+	SentEvent EventType = 0
 )
 
 // Int gets the int for an event type.

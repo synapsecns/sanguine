@@ -152,7 +152,7 @@ func (e Executor) StartAndListenOrigin(ctx context.Context, chainID uint32, addr
 	g.Go(func() error {
 		return e.streamLogs(ctx, e.grpcClient, e.grpcConn, chainID, address, nil, contractEventType{
 			contractType: originContract,
-			eventType:    dispatchedEvent,
+			eventType:    sentEvent,
 		})
 	})
 

@@ -231,11 +231,11 @@ func (e Executor) Run(ctx context.Context) error {
 	for _, chain := range e.config.Chains {
 		chain := chain
 
-		// Listen for dispatchEvents on origin.
+		// Listen for sentEvents on origin.
 		g.Go(func() error {
 			return e.streamLogs(ctx, e.grpcClient, e.grpcConn, chain.ChainID, chain.OriginAddress, nil, contractEventType{
 				contractType: originContract,
-				eventType:    dispatchedEvent,
+				eventType:    sentEvent,
 			})
 		})
 
@@ -417,8 +417,8 @@ const (
 )
 
 const (
-	// Origin's Dispatched event.
-	dispatchedEvent eventType = iota
+	// Origin's Sent event.
+	sentEvent eventType = iota
 	// Destination's AttestationAccepted event.
 	attestationAcceptedEvent
 	// Destination's AttestationExecuted event.
