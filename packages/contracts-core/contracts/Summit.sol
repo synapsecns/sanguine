@@ -97,23 +97,18 @@ contract Summit is ExecutionHub, SnapshotHub, SummitEvents, InterfaceSummit {
     // ═════════════════════════════════════════════ ACCEPT STATEMENTS ═════════════════════════════════════════════════
 
     /// @inheritdoc InterfaceSummit
-    function acceptReceipt(
-        address notary,
-        AgentStatus memory status,
-        bytes memory rcptPayload,
-        bytes memory rcptSignature
-    ) external returns (bool wasAccepted) {
+    function acceptReceipt(AgentStatus memory status, uint256 sigIndex, bytes memory rcptPayload)
+        external
+        returns (bool wasAccepted)
+    {
         // This will revert if payload is not an receipt
         Receipt rcpt = rcptPayload.castToReceipt();
         // Receipt needs to be signed by a destination chain Notary
         ReceiptBody rcptBody = rcpt.body();
         // TODO: remove this restriction
         require(rcptBody.destination() == status.domain, "Wrong Notary domain");
-        wasAccepted = _saveReceipt(rcptBody, rcpt.tips(), status.index);
-        if (wasAccepted) {
-            // TODO: save signature
-            emit ReceiptAccepted(status.domain, notary, rcptPayload, rcptSignature);
-        }
+        // TODO: save signature index
+        return _saveReceipt(rcptBody, rcpt.tips(), status.index);
     }
 
     /// @inheritdoc InterfaceSummit

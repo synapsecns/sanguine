@@ -273,7 +273,7 @@ contract BondingManagerTest is AgentManagerTest {
         vm.expectCall(
             summit,
             abi.encodeWithSelector(
-                InterfaceSummit.acceptReceipt.selector, notary, getAgentStatus(notary), receiptPayload, receiptSig
+                InterfaceSummit.acceptReceipt.selector, getAgentStatus(notary), nextSignatureIndex(), receiptPayload
             )
         );
         bondingManager.submitReceipt(receiptPayload, receiptSig);
