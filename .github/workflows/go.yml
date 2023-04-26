@@ -146,17 +146,22 @@ jobs:
           repo: pyroscope-io/ci
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      - name: Setup upterm session
-        uses: lhotari/action-upterm@v1
+
+      - name: Get pyroscope path
+        id: pyroscope-path
+        run: echo "##[set-output name=PYROSCOPE_PATH;]$(which pyroscope-ci)"
+        shell: bash
+
 
 
       - name: Test
         uses: nick-fields/retry@v2
         with:
-          command: cd ${{matrix.package}} && ${{ github.workspace }}/pyroscope-ci --apiKey=${{ secrets.PYROSCOPE_CLOUD_TOKEN }} -- go test -coverpkg=./... ./... -coverprofile=profile.cov
+          command: cd ${{matrix.package}} && $PYROSCOPE_PATH --apiKey=${{ secrets.PYROSCOPE_CLOUD_TOKEN }} -- go test -coverpkg=./... ./... -coverprofile=profile.cov
           max_attempts: 6
           timeout_minutes: 15
         env:
+          PYROSCOPE_PATH: '${{ steps.pyroscope-path.outputs.PYROSCOPE_PATH }}'
           ENABLE_MYSQL_TEST: true
           MYSQL_HOST: 0.0.0.0
           MYSQL_USER: user
