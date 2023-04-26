@@ -20,6 +20,7 @@ spec:
       {{- end }}
       labels:
         {{- include "omnirpc.selectorLabels" . | nindent 8 }}
+        {{- include "omnirpc.commonLabels" . | nindent 8 }}
     spec:
       {{- with .Values.imagePullSecrets }}
       imagePullSecrets:

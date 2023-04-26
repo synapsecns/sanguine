@@ -32,7 +32,9 @@ const pyroscopePath = "/pyroscope.yaml"
 // nolint: cyclop
 func (j *testJaeger) StartPyroscopeServer(ctx context.Context) *uiResource {
 	if !j.cfg.enablePyroscope {
-		return nil
+		return &uiResource{
+			uiURL: core.GetEnv(internal.PyroscopeEndpoint, fmt.Sprintf("%s not found", internal.PyroscopeEndpoint)),
+		}
 	}
 	if core.HasEnv(internal.PyroscopeEndpoint) {
 		return &uiResource{
