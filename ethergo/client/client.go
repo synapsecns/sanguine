@@ -69,6 +69,7 @@ func DialBackend(ctx context.Context, url string, handler metrics.Handler, opts 
 	for _, opt := range opts {
 		opt(client)
 	}
+	client.captureRequestRes = true
 
 	client.captureClient, err = newCaptureClient(ctx, url, handler, client.captureRequestRes)
 	if err != nil {
