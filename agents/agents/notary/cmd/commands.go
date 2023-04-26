@@ -80,7 +80,7 @@ var scribeURL = &cli.StringFlag{
 var NotaryRunCommand = &cli.Command{
 	Name:        "notary-run",
 	Description: "runs the notary service",
-	Flags:       []cli.Flag{configFlag, metricsPortFlag, ignoreInitErrorsFlag},
+	Flags:       []cli.Flag{configFlag, metricsPortFlag, scribeTypeFlag, scribePortFlag, scribeURL, ignoreInitErrorsFlag},
 	Action: func(c *cli.Context) error {
 		metricsProvider := metrics.Get()
 
