@@ -117,36 +117,22 @@ contract Summit is ExecutionHub, SnapshotHub, SummitEvents, InterfaceSummit {
     }
 
     /// @inheritdoc InterfaceSummit
-    function acceptSnapshot(
-        address agent,
-        AgentStatus memory status,
-        bytes memory snapPayload,
-        bytes memory snapSignature
-    ) external returns (bytes memory attPayload) {
+    function acceptSnapshot(AgentStatus memory status, uint256 sigIndex, bytes memory snapPayload)
+        external
+        returns (bytes memory attPayload)
+    {
         // This will revert if payload is not a snapshot
         Snapshot snapshot = snapPayload.castToSnapshot();
         if (status.domain == 0) {
-            /// @dev We don't check if Guard is in dispute for accepting the snapshots.
-            /// Guard could only be in Dispute, if they submitted a Report on a Notary.
-            /// This should not strip away their ability to post snapshots, as they require
-            /// a Notary signature in order to be used / gain tips anyway.
-
-            // This will revert if Guard has previously submitted
-            // a fresher state than one in the snapshot.
-            _acceptGuardSnapshot(snapshot, agent, status.index);
+            _acceptGuardSnapshot(snapshot, status.index);
         } else {
             // Fetch current Agent Root from BondingManager
             bytes32 agentRoot = IAgentManager(agentManager).agentRoot();
             // This will revert if any of the states from the Notary snapshot
             // haven't been submitted by any of the Guards before.
-            attPayload = _acceptNotarySnapshot(snapshot, agentRoot, agent, status.index);
-            // Save attestation derived from Notary snapshot.
-            (bytes32 r, bytes32 s, uint8 v) = snapSignature.castToSignature().toRSV();
-            // TODO: fix
-            _saveAttestation(attPayload.castToAttestation(), status.index, v);
-            _storedSnapshots.push(StoredSnapData({r: r, s: s}));
+            attPayload = _acceptNotarySnapshot(snapshot, agentRoot, status.index);
+            _saveAttestation(attPayload.castToAttestation(), status.index, sigIndex);
         }
-        emit SnapshotAccepted(status.domain, agent, snapPayload, snapSignature);
     }
 
     // ════════════════════════════════════════════════ TIPS LOGIC ═════════════════════════════════════════════════════
@@ -201,7 +187,7 @@ contract Summit is ExecutionHub, SnapshotHub, SummitEvents, InterfaceSummit {
         address[] memory guards = InterfaceBondingManager(address(agentManager)).getActiveAgents(0);
         SummitState memory latestState;
         for (uint256 i = 0; i < guards.length; ++i) {
-            SummitState memory state = _latestState(origin, guards[i]);
+            SummitState memory state = _latestState(origin, _agentStatus(guards[i]).index);
             if (state.nonce > latestState.nonce) latestState = state;
         }
         // Check if we found anything
@@ -218,9 +204,8 @@ contract Summit is ExecutionHub, SnapshotHub, SummitEvents, InterfaceSummit {
     {
         // This will revert if nonce is out of range
         snapPayload = getNotarySnapshot(nonce);
-        StoredSnapData memory storedSnap = _storedSnapshots[nonce - 1];
         SnapRootData memory rootData = _rootData[_roots[nonce - 1]];
-        snapSignature = ByteString.formatSignature({r: storedSnap.r, s: storedSnap.s, v: rootData.notaryV});
+        snapSignature = IAgentManager(agentManager).getStoredSignature(rootData.sigIndex);
     }
 
     // ═══════════════════════════════════════════ INTERNAL LOGIC: QUEUE ═══════════════════════════════════════════════

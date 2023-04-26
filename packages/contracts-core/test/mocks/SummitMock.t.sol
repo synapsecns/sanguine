@@ -17,12 +17,10 @@ contract SummitMock is SnapshotHubMock, AgentSecuredMock, InterfaceSummit {
         bytes memory rcptSignature
     ) external returns (bool wasAccepted) {}
 
-    function acceptSnapshot(
-        address agent,
-        AgentStatus memory status,
-        bytes memory snapPayload,
-        bytes memory snapSignature
-    ) external returns (bytes memory attPayload) {}
+    function acceptSnapshot(AgentStatus memory status, uint256 sigIndex, bytes memory snapPayload)
+        external
+        returns (bytes memory attPayload)
+    {}
 
     function distributeTips() external returns (bool queuePopped) {}
 

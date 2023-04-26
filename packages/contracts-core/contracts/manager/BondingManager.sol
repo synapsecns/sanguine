@@ -74,7 +74,10 @@ contract BondingManager is AgentManager, BondingManagerEvents, InterfaceBondingM
         if (status.domain != 0) {
             require(_disputes[agent].flag == DisputeFlag.None, "Notary is in dispute");
         }
-        return InterfaceSummit(destination).acceptSnapshot(agent, status, snapPayload, snapSignature);
+        // Store Agent signature for the Snapshot
+        uint256 sigIndex = _saveSignature(snapSignature);
+        attPayload = InterfaceSummit(destination).acceptSnapshot(status, sigIndex, snapPayload);
+        emit SnapshotAccepted(status.domain, agent, snapPayload, snapSignature);
     }
 
     /// @inheritdoc InterfaceBondingManager

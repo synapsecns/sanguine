@@ -234,7 +234,7 @@ contract BondingManagerTest is AgentManagerTest {
         vm.expectCall(
             summit,
             abi.encodeWithSelector(
-                InterfaceSummit.acceptSnapshot.selector, agent, getAgentStatus(agent), snapPayload, snapSig
+                InterfaceSummit.acceptSnapshot.selector, getAgentStatus(agent), nextSignatureIndex(), snapPayload
             )
         );
         bondingManager.submitSnapshot(snapPayload, snapSig);
@@ -250,7 +250,7 @@ contract BondingManagerTest is AgentManagerTest {
         vm.expectCall(
             summit,
             abi.encodeWithSelector(
-                InterfaceSummit.acceptSnapshot.selector, guard, getAgentStatus(guard), snapPayload, snapSig
+                InterfaceSummit.acceptSnapshot.selector, getAgentStatus(guard), nextSignatureIndex(), snapPayload
             )
         );
         bondingManager.submitSnapshot(snapPayload, snapSig);

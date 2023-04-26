@@ -40,20 +40,15 @@ interface InterfaceSummit {
      * > - Called by anyone other than local `AgentManager`.
      * > - Snapshot payload is not properly formatted.
      * > - Snapshot contains a state older then the Agent has previously submitted.
-     * > - Agent is a Notary, and they are in Dispute.
-     * @param agent             Address of the Agent who signed the snapshot
      * @param status            Structure specifying agent status: (flag, domain, index)
+     * @param sigIndex          Index of stored Agent signature
      * @param snapPayload       Raw payload with snapshot data
-     * @param snapSignature     Agent signature for the snapshot
      * @return attPayload       Raw payload with data for attestation derived from Notary snapshot.
      *                          Empty payload, if a Guard snapshot was submitted.
      */
-    function acceptSnapshot(
-        address agent,
-        AgentStatus memory status,
-        bytes memory snapPayload,
-        bytes memory snapSignature
-    ) external returns (bytes memory attPayload);
+    function acceptSnapshot(AgentStatus memory status, uint256 sigIndex, bytes memory snapPayload)
+        external
+        returns (bytes memory attPayload);
 
     // ════════════════════════════════════════════════ TIPS LOGIC ═════════════════════════════════════════════════════
 
