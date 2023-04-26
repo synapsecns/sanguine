@@ -29,11 +29,11 @@ dependencies:
     repository: "https://charts.bitnami.com/bitnami"
     condition: mysql.enabled
   - name: omnirpc
-    version: "0.2.0"
+    version: "0.2.1"
     repository: "file://../omnirpc/"
     condition: omnirpc.enabled
   - name: scribe
-    version: "0.2.3"
+    version: "0.2.4"
     repository: "file://../scribe/"
     condition: scribe.enabled
   - name: jaeger
