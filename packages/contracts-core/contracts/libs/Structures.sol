@@ -56,33 +56,28 @@ enum DisputeFlag {
 }
 
 /// @notice Struct representing information about an agent in dispute.
-/// Note: counterpart for Guard is Notary, counterpart for Notary is Guard.
+/// - Rival for Guard is the Notary they reported.
+/// - Rival for Notary is the Guard that reported them.
 /// @param flag         Dispute status
-/// @param counterpart  Agent address who the agent is in dispute with
-struct DisputeStatus {
+/// @param rivalIndex   Index of the rival who the agent is in dispute with
+/// @param fraudProver  Actor who provided fraud proof that resolved the dispute
+struct Dispute {
     DisputeFlag flag;
-    address counterpart;
+    uint32 rivalIndex;
+    address fraudProver;
 }
-// 88 bits available for tight packing
-
-/// @notice Struct representing information about a slashed agent.
-struct SlashStatus {
-    bool isSlashed;
-    address prover;
-}
-// 88 bits available for tight packing
+// 56 bits available for tight packing
 
 // ════════════════════════════════ DESTINATION ════════════════════════════════
 
 /// @notice Struct representing the status of Destination contract.
 /// @param snapRootTime     Timestamp when latest snapshot root was accepted
 /// @param agentRootTime    Timestamp when latest agent root was accepted
-/// @param notary           Notary who signed the latest agent root
-// TODO: replace notary with its index
+/// @param notaryIndex      Index of Notary who signed the latest agent root
 struct DestinationStatus {
-    uint48 snapRootTime;
-    uint48 agentRootTime;
-    address notary;
+    uint40 snapRootTime;
+    uint40 agentRootTime;
+    uint32 notaryIndex;
 }
 
 // ═══════════════════════════════ EXECUTION HUB ═══════════════════════════════

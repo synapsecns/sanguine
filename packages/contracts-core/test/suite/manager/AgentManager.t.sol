@@ -1,18 +1,23 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.17;
 
-import {ISystemRegistry} from "../../../contracts/interfaces/ISystemRegistry.sol";
-import {AgentFlag, AgentStatus, SlashStatus, SystemEntity} from "../../../contracts/libs/Structures.sol";
+import {IAgentManager} from "../../../contracts/interfaces/IAgentManager.sol";
+import {IAgentSecured} from "../../../contracts/interfaces/IAgentSecured.sol";
+import {AgentFlag, AgentStatus, SystemEntity} from "../../../contracts/libs/Structures.sol";
 
-import {SystemContractTest} from "../system/SystemContract.t.sol";
+import {MessagingBaseTest} from "../base/MessagingBase.t.sol";
 import {AgentManagerHarness} from "../../harnesses/manager/AgentManagerHarness.t.sol";
-import {RawCallData, RawManagerCall} from "../../utils/libs/SynapseStructs.t.sol";
+
+import {fakeSnapshot} from "../../utils/libs/FakeIt.t.sol";
+import {
+    RawAttestation, RawCallData, RawManagerCall, RawState, RawStateIndex
+} from "../../utils/libs/SynapseStructs.t.sol";
 
 import {Address} from "@openzeppelin/contracts/utils/Address.sol";
 
 // solhint-disable func-name-mixedcase
 // solhint-disable ordering
-abstract contract AgentManagerTest is SystemContractTest {
+abstract contract AgentManagerTest is MessagingBaseTest {
     using Address for address;
 
     uint256 internal rootSubmittedAt;
@@ -37,6 +42,196 @@ abstract contract AgentManagerTest is SystemContractTest {
         assertEq(uint8(status.flag), 0);
         assertEq(status.domain, 0);
         assertEq(status.index, 0);
+    }
+
+    // ════════════════════════════════════════════ TESTS: OPEN DISPUTE ════════════════════════════════════════════════
+
+    function test_submitStateReportWithSnapshot(RawState memory rs, RawStateIndex memory rsi) public boundIndex(rsi) {
+        address prover = makeAddr("Prover");
+        // Create Notary signature for the snapshot
+        address notary = domains[DOMAIN_LOCAL].agent;
+        (bytes memory snapPayload, bytes memory snapSig) = createSignedSnapshot(notary, rs, rsi);
+        // Create Guard signature for the report
+        address guard = domains[0].agent;
+        (bytes memory srPayload, bytes memory srSig) = createSignedStateReport(guard, rs);
+        expectDisputeOpened(guard, notary);
+        vm.prank(prover);
+        IAgentManager(localAgentManager()).submitStateReportWithSnapshot(
+            rsi.stateIndex, srPayload, srSig, snapPayload, snapSig
+        );
+    }
+
+    function test_submitStateReportWithAttestation(
+        RawState memory rs,
+        RawAttestation memory ra,
+        RawStateIndex memory rsi
+    ) public boundIndex(rsi) {
+        address prover = makeAddr("Prover");
+        ra = createAttestation(rs, ra, rsi);
+        bytes memory snapPayload = fakeSnapshot(rs, rsi).formatSnapshot();
+        // Create Notary signature for the attestation
+        address notary = domains[DOMAIN_LOCAL].agent;
+        (bytes memory attPayload, bytes memory attSig) = signAttestation(notary, ra);
+        // Create Guard signature for the report
+        address guard = domains[0].agent;
+        (bytes memory srPayload, bytes memory srSig) = createSignedStateReport(guard, rs);
+        expectDisputeOpened(guard, notary);
+        vm.prank(prover);
+        IAgentManager(localAgentManager()).submitStateReportWithAttestation(
+            rsi.stateIndex, srPayload, srSig, snapPayload, attPayload, attSig
+        );
+    }
+
+    function test_submitStateReportWithSnapshotProof(
+        RawState memory rs,
+        RawAttestation memory ra,
+        RawStateIndex memory rsi
+    ) public boundIndex(rsi) {
+        address prover = makeAddr("Prover");
+        ra = createAttestation(rs, ra, rsi);
+        // Create Notary signature for the attestation
+        address notary = domains[DOMAIN_LOCAL].agent;
+        (bytes memory attPayload, bytes memory attSig) = signAttestation(notary, ra);
+        // Create Guard signature for the report
+        address guard = domains[0].agent;
+        (bytes memory srPayload, bytes memory srSig) = createSignedStateReport(guard, rs);
+        // Generate Snapshot Proof
+        bytes32[] memory snapProof = genSnapshotProof(rsi.stateIndex);
+        expectDisputeOpened(guard, notary);
+        vm.prank(prover);
+        IAgentManager(localAgentManager()).submitStateReportWithSnapshotProof(
+            rsi.stateIndex, srPayload, srSig, snapProof, attPayload, attSig
+        );
+    }
+
+    // ═════════════════════════════════════════ TESTS: ALREADY IN DISPUTE ═════════════════════════════════════════════
+
+    function test_submitStateReportWithSnapshot_revert_guardInDispute(RawState memory rs, RawStateIndex memory rsi)
+        public
+        boundIndex(rsi)
+    {
+        address prover = makeAddr("Prover");
+        // Create Notary signature for the snapshot
+        address notary = domains[DOMAIN_LOCAL].agent;
+        (bytes memory snapPayload, bytes memory snapSig) = createSignedSnapshot(notary, rs, rsi);
+        // Create Guard signature for the report
+        address guard = domains[0].agent;
+        (bytes memory srPayload, bytes memory srSig) = createSignedStateReport(guard, rs);
+        openDispute(guard, domains[DOMAIN_LOCAL].agents[1]);
+        vm.expectRevert("Guard already in dispute");
+        vm.prank(prover);
+        IAgentManager(localAgentManager()).submitStateReportWithSnapshot(
+            rsi.stateIndex, srPayload, srSig, snapPayload, snapSig
+        );
+    }
+
+    function test_submitStateReportWithSnapshot_revert_notaryInDispute(RawState memory rs, RawStateIndex memory rsi)
+        public
+        boundIndex(rsi)
+    {
+        address prover = makeAddr("Prover");
+        // Create Notary signature for the snapshot
+        address notary = domains[DOMAIN_LOCAL].agent;
+        (bytes memory snapPayload, bytes memory snapSig) = createSignedSnapshot(notary, rs, rsi);
+        // Create Guard signature for the report
+        address guard = domains[0].agent;
+        (bytes memory srPayload, bytes memory srSig) = createSignedStateReport(guard, rs);
+        openDispute(domains[0].agents[1], notary);
+        vm.expectRevert("Notary already in dispute");
+        vm.prank(prover);
+        IAgentManager(localAgentManager()).submitStateReportWithSnapshot(
+            rsi.stateIndex, srPayload, srSig, snapPayload, snapSig
+        );
+    }
+
+    function test_submitStateReportWithAttestation_revert_guardInDispute(
+        RawState memory rs,
+        RawAttestation memory ra,
+        RawStateIndex memory rsi
+    ) public boundIndex(rsi) {
+        address prover = makeAddr("Prover");
+        ra = createAttestation(rs, ra, rsi);
+        bytes memory snapPayload = fakeSnapshot(rs, rsi).formatSnapshot();
+        // Create Notary signature for the attestation
+        address notary = domains[DOMAIN_LOCAL].agent;
+        (bytes memory attPayload, bytes memory attSig) = signAttestation(notary, ra);
+        // Create Guard signature for the report
+        address guard = domains[0].agent;
+        (bytes memory srPayload, bytes memory srSig) = createSignedStateReport(guard, rs);
+        openDispute(guard, domains[DOMAIN_LOCAL].agents[1]);
+        vm.expectRevert("Guard already in dispute");
+        vm.prank(prover);
+        IAgentManager(localAgentManager()).submitStateReportWithAttestation(
+            rsi.stateIndex, srPayload, srSig, snapPayload, attPayload, attSig
+        );
+    }
+
+    function test_submitStateReportWithAttestation_revert_notaryInDispute(
+        RawState memory rs,
+        RawAttestation memory ra,
+        RawStateIndex memory rsi
+    ) public boundIndex(rsi) {
+        address prover = makeAddr("Prover");
+        ra = createAttestation(rs, ra, rsi);
+        bytes memory snapPayload = fakeSnapshot(rs, rsi).formatSnapshot();
+        // Create Notary signature for the attestation
+        address notary = domains[DOMAIN_LOCAL].agent;
+        (bytes memory attPayload, bytes memory attSig) = signAttestation(notary, ra);
+        // Create Guard signature for the report
+        address guard = domains[0].agent;
+        (bytes memory srPayload, bytes memory srSig) = createSignedStateReport(guard, rs);
+        openDispute(domains[0].agents[1], notary);
+        vm.expectRevert("Notary already in dispute");
+        vm.prank(prover);
+        IAgentManager(localAgentManager()).submitStateReportWithAttestation(
+            rsi.stateIndex, srPayload, srSig, snapPayload, attPayload, attSig
+        );
+    }
+
+    function test_submitStateReportWithSnapshotProof_revert_guardInDispute(
+        RawState memory rs,
+        RawAttestation memory ra,
+        RawStateIndex memory rsi
+    ) public boundIndex(rsi) {
+        address prover = makeAddr("Prover");
+        ra = createAttestation(rs, ra, rsi);
+        // Create Notary signature for the attestation
+        address notary = domains[DOMAIN_LOCAL].agent;
+        (bytes memory attPayload, bytes memory attSig) = signAttestation(notary, ra);
+        // Create Guard signature for the report
+        address guard = domains[0].agent;
+        (bytes memory srPayload, bytes memory srSig) = createSignedStateReport(guard, rs);
+        // Generate Snapshot Proof
+        bytes32[] memory snapProof = genSnapshotProof(rsi.stateIndex);
+        openDispute(guard, domains[DOMAIN_LOCAL].agents[1]);
+        vm.expectRevert("Guard already in dispute");
+        vm.prank(prover);
+        IAgentManager(localAgentManager()).submitStateReportWithSnapshotProof(
+            rsi.stateIndex, srPayload, srSig, snapProof, attPayload, attSig
+        );
+    }
+
+    function test_submitStateReportWithSnapshotProof_revert_notaryInDispute(
+        RawState memory rs,
+        RawAttestation memory ra,
+        RawStateIndex memory rsi
+    ) public boundIndex(rsi) {
+        address prover = makeAddr("Prover");
+        ra = createAttestation(rs, ra, rsi);
+        // Create Notary signature for the attestation
+        address notary = domains[DOMAIN_LOCAL].agent;
+        (bytes memory attPayload, bytes memory attSig) = signAttestation(notary, ra);
+        // Create Guard signature for the report
+        address guard = domains[0].agent;
+        (bytes memory srPayload, bytes memory srSig) = createSignedStateReport(guard, rs);
+        // Generate Snapshot Proof
+        bytes32[] memory snapProof = genSnapshotProof(rsi.stateIndex);
+        openDispute(domains[0].agents[1], notary);
+        vm.expectRevert("Notary already in dispute");
+        vm.prank(prover);
+        IAgentManager(localAgentManager()).submitStateReportWithSnapshotProof(
+            rsi.stateIndex, srPayload, srSig, snapProof, attPayload, attSig
+        );
     }
 
     // ══════════════════════════════════════════════════ HELPERS ══════════════════════════════════════════════════════
@@ -68,7 +263,7 @@ abstract contract AgentManagerTest is SystemContractTest {
         return rmc.callPayload();
     }
 
-    function remoteRegistrySlashCalldata(uint32 domain, address agent, address prover)
+    function remoteSlashAgentCalldata(uint32 domain, address agent, address prover)
         public
         view
         returns (RawCallData memory)

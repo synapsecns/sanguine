@@ -14,7 +14,7 @@ import {AgentFlag, AgentStatus, MessageStatus} from "../libs/Structures.sol";
 import {Tips} from "../libs/Tips.sol";
 import {TypeCasts} from "../libs/TypeCasts.sol";
 // ═════════════════════════════ INTERNAL IMPORTS ══════════════════════════════
-import {DisputeHub} from "./DisputeHub.sol";
+import {AgentSecured, DisputeFlag} from "../base/AgentSecured.sol";
 import {ExecutionHubEvents} from "../events/ExecutionHubEvents.sol";
 import {IExecutionHub} from "../interfaces/IExecutionHub.sol";
 import {IMessageRecipient} from "../interfaces/IMessageRecipient.sol";
@@ -28,7 +28,7 @@ import {Address} from "@openzeppelin/contracts/utils/Address.sol";
  * On the Synapse Chain Notaries are submitting the snapshots that are later used for proving.
  * On the other chains Notaries are submitting the attestations that are later used for proving.
  */
-abstract contract ExecutionHub is DisputeHub, ExecutionHubEvents, IExecutionHub {
+abstract contract ExecutionHub is AgentSecured, ExecutionHubEvents, IExecutionHub {
     using Address for address;
     using BaseMessageLib for MemView;
     using ByteString for MemView;
@@ -318,14 +318,7 @@ abstract contract ExecutionHub is DisputeHub, ExecutionHubEvents, IExecutionHub 
         rootData = _rootData[snapshotRoot];
         // Check if snapshot root has been submitted
         require(rootData.submittedAt != 0, "Invalid snapshot root");
-        // TODO: remove this check, the in Dispute in enough
-        // Check if Notary who submitted the attestation is still active
-        (address attNotary, AgentStatus memory attNotaryStatus) = _getAgent(rootData.notaryIndex);
-        require(
-            attNotaryStatus.flag == AgentFlag.Active,
-            attNotaryStatus.domain == 0 ? "Not an active guard" : "Not an active notary"
-        );
         // Check that Notary who submitted the attestation is not in dispute
-        require(!_inDispute(attNotary), "Notary is in dispute");
+        require(_disputes[rootData.notaryIndex] == DisputeFlag.None, "Notary is in dispute");
     }
 }

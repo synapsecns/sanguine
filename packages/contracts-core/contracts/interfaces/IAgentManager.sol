@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.17;
 
-import {AgentStatus} from "../libs/Structures.sol";
+import {AgentStatus, Dispute} from "../libs/Structures.sol";
 
 interface IAgentManager {
     // ══════════════════════════════════════════ SUBMIT AGENT STATEMENTS ══════════════════════════════════════════════
@@ -239,10 +239,9 @@ interface IAgentManager {
     function getAgent(uint256 index) external view returns (address agent, AgentStatus memory status);
 
     /**
-     * @notice Returns whether the agent has been slashed.
-     * @param agent         Agent address
-     * @return isSlashed    Whether the agent has been slashed
-     * @return prover       Address that presented the proof of fraud committed by the agent
+     * @notice Returns the current Dispute status of a given agent. See Structures.sol for details.
+     * @param agent     Agent address
+     * @return          Status for the given agent: (flag, rivalIndex, fraudProver).
      */
-    function slashStatus(address agent) external view returns (bool isSlashed, address prover);
+    function disputeStatus(address agent) external view returns (Dispute memory);
 }

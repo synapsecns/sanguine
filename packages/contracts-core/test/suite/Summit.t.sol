@@ -1,23 +1,23 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.17;
 
-import {ISystemRegistry} from "../../contracts/interfaces/ISystemRegistry.sol";
+import {IAgentSecured} from "../../contracts/interfaces/IAgentSecured.sol";
 import {ISnapshotHub} from "../../contracts/interfaces/ISnapshotHub.sol";
 import {SNAPSHOT_TREE_HEIGHT} from "../../contracts/libs/Constants.sol";
 import {MerkleMath} from "../../contracts/libs/MerkleMath.sol";
 
 import {InterfaceSummit} from "../../contracts/Summit.sol";
-import {Versioned} from "../../contracts/Version.sol";
+import {Versioned} from "../../contracts/base/Version.sol";
 
 import {AgentFlag, SynapseTest} from "../utils/SynapseTest.t.sol";
 import {State, RawAttestation, RawState, RawStateIndex} from "../utils/libs/SynapseStructs.t.sol";
 import {Random} from "../utils/libs/Random.t.sol";
-import {IDisputeHub, DisputeHubTest} from "./hubs/DisputeHub.t.sol";
+import {AgentSecuredTest} from "./hubs/ExecutionHub.t.sol";
 
 // solhint-disable func-name-mixedcase
 // solhint-disable no-empty-blocks
 // solhint-disable code-complexity
-contract SummitTest is DisputeHubTest {
+contract SummitTest is AgentSecuredTest {
     struct SignedSnapshot {
         bytes snapshot;
         bytes signature;
@@ -50,7 +50,7 @@ contract SummitTest is DisputeHubTest {
             uint32 domain = allDomains[d];
             for (uint256 i = 0; i < domains[domain].agents.length; ++i) {
                 address agent = domains[domain].agents[i];
-                checkAgentStatus(agent, ISystemRegistry(summit).agentStatus(agent), AgentFlag.Active);
+                checkAgentStatus(agent, IAgentSecured(summit).agentStatus(agent), AgentFlag.Active);
             }
         }
         // Check version
@@ -88,7 +88,8 @@ contract SummitTest is DisputeHubTest {
             vm.expectEmit(true, true, true, true);
             emit InvalidAttestation(attPayload, attSig);
             // TODO: check that anyone could make the call
-            expectAgentSlashed(domain, notary, address(this));
+            expectStatusUpdated(AgentFlag.Fraudulent, domain, notary);
+            expectDisputeResolved(notary, address(0), address(this));
         }
         vm.recordLogs();
         assertEq(bondingManager.verifyAttestation(attPayload, attSig), isValid, "!returnValue");
@@ -111,7 +112,8 @@ contract SummitTest is DisputeHubTest {
             vm.expectEmit(true, true, true, true);
             emit InvalidAttestationReport(arPayload, arSig);
             // TODO: check that anyone could make the call
-            expectAgentSlashed(0, guard, address(this));
+            expectStatusUpdated(AgentFlag.Fraudulent, 0, guard);
+            expectDisputeResolved(guard, address(0), address(this));
         }
         vm.recordLogs();
         assertEq(bondingManager.verifyAttestationReport(arPayload, arSig), isValid, "!returnValue");
@@ -265,7 +267,8 @@ contract SummitTest is DisputeHubTest {
     }
 
     // ══════════════════════════════════════════════ DISPUTE OPENING ══════════════════════════════════════════════════
-
+    // TODO: move to AgentManager test
+    /*
     function test_submitStateReport(uint256 domainId, RawState memory rs, RawStateIndex memory rsi)
         public
         boundIndex(rsi)
@@ -297,7 +300,7 @@ contract SummitTest is DisputeHubTest {
         emit AgentSlashed(domain, agent, prover);
         vm.recordLogs();
         vm.prank(address(bondingManager));
-        ISystemRegistry(summit).managerSlash(domain, agent, prover);
+        IAgentSecured(summit).managerSlash(domain, agent, prover);
         assertEq(vm.getRecordedLogs().length, 2);
         checkDisputeResolved({hub: summit, honest: address(0), slashed: agent});
     }
@@ -310,7 +313,7 @@ contract SummitTest is DisputeHubTest {
         (address guard, address notary) = (domains[0].agents[0], domains[domain].agents[0]);
         // Slash the Notary
         vm.prank(address(bondingManager));
-        ISystemRegistry(summit).managerSlash(domain, notary, address(0));
+        IAgentSecured(summit).managerSlash(domain, notary, address(0));
         checkDisputeResolved({hub: summit, honest: guard, slashed: notary});
     }
 
@@ -322,7 +325,7 @@ contract SummitTest is DisputeHubTest {
         (address guard, address notary) = (domains[0].agents[0], domains[domain].agents[0]);
         // Slash the Guard
         vm.prank(address(bondingManager));
-        ISystemRegistry(summit).managerSlash(0, guard, address(0));
+        IAgentSecured(summit).managerSlash(0, guard, address(0));
         checkDisputeResolved({hub: summit, honest: notary, slashed: guard});
     }
 
@@ -434,8 +437,12 @@ contract SummitTest is DisputeHubTest {
         emit SnapshotAccepted(0, guard, snapPayload, guardSig);
         bondingManager.submitSnapshot(snapPayload, guardSig);
     }
-
+    */
     // ═════════════════════════════════════════════════ OVERRIDES ═════════════════════════════════════════════════════
+
+    function systemContract() public view override returns (address) {
+        return summit;
+    }
 
     /// @notice Returns local domain for the tested system contract
     function localDomain() public pure override returns (uint32) {

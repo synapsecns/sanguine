@@ -2,20 +2,18 @@
 pragma solidity 0.8.17;
 
 // ═════════════════════════════ INTERNAL IMPORTS ══════════════════════════════
-import {Versioned} from "../Version.sol";
+import {Versioned} from "./Version.sol";
 // ═════════════════════════════ EXTERNAL IMPORTS ══════════════════════════════
 import {OwnableUpgradeable} from "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol";
 
-abstract contract SystemBase is Versioned, OwnableUpgradeable {
-    // ══════════════════════════════════════════ CONSTANTS & IMMUTABLES ═══════════════════════════════════════════════
-
-    // domain of the Synapse Chain
-    // For MVP this is Optimism chainId
-    // TODO: replace the placeholder with actual value
-    uint32 public constant SYNAPSE_DOMAIN = 10;
-
-    // TODO: reevaluate optimistic period for staking/unstaking bonds
-    uint32 internal constant BONDING_OPTIMISTIC_PERIOD = 1 days;
+/**
+ * @notice Base contract for all messaging contracts.
+ * - Provides context on the local chain's domain.
+ * - Provides ownership functionality.
+ * - Will be providing pausing functionality when it is implemented.
+ */
+abstract contract MessagingBase is Versioned, OwnableUpgradeable {
+    // ════════════════════════════════════════════════ IMMUTABLES ═════════════════════════════════════════════════════
 
     /// @notice Domain of the local chain, set once upon contract creation
     uint32 public immutable localDomain;
@@ -25,9 +23,11 @@ abstract contract SystemBase is Versioned, OwnableUpgradeable {
     /// @dev gap for upgrade safety
     uint256[50] private __GAP; // solhint-disable-line var-name-mixedcase
 
-    constructor(uint32 domain) {
-        localDomain = domain;
+    constructor(string memory version_, uint32 localDomain_) Versioned(version_) {
+        localDomain = localDomain_;
     }
+
+    // TODO: Implement pausing
 
     /**
      * @dev Should be impossible to renounce ownership;

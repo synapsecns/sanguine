@@ -4,19 +4,18 @@ pragma solidity 0.8.17;
 // ══════════════════════════════ LIBRARY IMPORTS ══════════════════════════════
 import {AttestationLib} from "./libs/Attestation.sol";
 import {ByteString} from "./libs/ByteString.sol";
+import {BONDING_OPTIMISTIC_PERIOD, SYNAPSE_DOMAIN} from "./libs/Constants.sol";
 import {Receipt, ReceiptLib} from "./libs/Receipt.sol";
 import {Snapshot, SnapshotLib} from "./libs/Snapshot.sol";
-import {AgentFlag, AgentStatus} from "./libs/Structures.sol";
+import {AgentFlag, AgentStatus, DisputeFlag} from "./libs/Structures.sol";
 // ═════════════════════════════ INTERNAL IMPORTS ══════════════════════════════
-import {AgentManager} from "./manager/AgentManager.sol";
+import {AgentSecured} from "./base/AgentSecured.sol";
 import {SummitEvents} from "./events/SummitEvents.sol";
 import {IAgentManager} from "./interfaces/IAgentManager.sol";
 import {InterfaceBondingManager} from "./interfaces/InterfaceBondingManager.sol";
 import {InterfaceSummit} from "./interfaces/InterfaceSummit.sol";
-import {DisputeHub, ExecutionHub, MessageStatus, ReceiptBody, Tips} from "./hubs/ExecutionHub.sol";
+import {ExecutionHub, MessageStatus, ReceiptBody, Tips} from "./hubs/ExecutionHub.sol";
 import {SnapshotHub} from "./hubs/SnapshotHub.sol";
-import {SystemBase, Versioned} from "./system/SystemBase.sol";
-import {SystemRegistry} from "./system/SystemRegistry.sol";
 // ═════════════════════════════ EXTERNAL IMPORTS ══════════════════════════════
 import {DoubleEndedQueue} from "@openzeppelin/contracts/utils/structs/DoubleEndedQueue.sol";
 
@@ -85,11 +84,7 @@ contract Summit is ExecutionHub, SnapshotHub, SummitEvents, InterfaceSummit {
 
     // ═════════════════════════════════════════ CONSTRUCTOR & INITIALIZER ═════════════════════════════════════════════
 
-    constructor(uint32 domain, IAgentManager agentManager_)
-        SystemBase(domain)
-        SystemRegistry(agentManager_)
-        Versioned("0.0.3")
-    {
+    constructor(uint32 domain, address agentManager_) AgentSecured("0.0.3", domain, agentManager_) {
         require(domain == SYNAPSE_DOMAIN, "Only deployed on SynChain");
     }
 
@@ -110,7 +105,6 @@ contract Summit is ExecutionHub, SnapshotHub, SummitEvents, InterfaceSummit {
     ) external returns (bool wasAccepted) {
         // This will revert if payload is not an receipt
         Receipt rcpt = rcptPayload.castToReceipt();
-        require(!_inDispute(notary), "Notary is in dispute");
         // Receipt needs to be signed by a destination chain Notary
         ReceiptBody rcptBody = rcpt.body();
         // TODO: remove this restriction
@@ -141,10 +135,8 @@ contract Summit is ExecutionHub, SnapshotHub, SummitEvents, InterfaceSummit {
             // a fresher state than one in the snapshot.
             _acceptGuardSnapshot(snapshot, agent, status.index);
         } else {
-            // Check that Notary who submitted the snapshot is not in dispute
-            require(!_inDispute(agent), "Notary is in dispute");
             // Fetch current Agent Root from BondingManager
-            bytes32 agentRoot = agentManager.agentRoot();
+            bytes32 agentRoot = IAgentManager(agentManager).agentRoot();
             // This will revert if any of the states from the Notary snapshot
             // haven't been submitted by any of the Guards before.
             attPayload = _acceptNotarySnapshot(snapshot, agentRoot, agent, status.index);
@@ -167,15 +159,13 @@ contract Summit is ExecutionHub, SnapshotHub, SummitEvents, InterfaceSummit {
         // Check if optimistic period for the receipt is over
         if (block.timestamp < uint256(rcptStatus.submittedAt) + BONDING_OPTIMISTIC_PERIOD) return false;
         // Fetch Notary who signed the receipt. If they are Slashed or in Dispute, exit early.
-        (address rcptNotary, AgentStatus memory rcptNotaryStatus) = _getAgent(rcptStatus.receiptNotaryIndex);
-        if (_checkNotaryDisputed(messageHash, rcptNotary, rcptNotaryStatus)) return true;
+        if (_checkNotaryDisputed(messageHash, rcptStatus.receiptNotaryIndex)) return true;
         SummitReceipt memory summitRcpt = _receipts[messageHash];
         // Fetch Notary who signed the statement with snapshot root. If they are Slashed or in Dispute, exit early.
-        (address attNotary, AgentStatus memory attNotaryStatus) = _getAgent(summitRcpt.attNotaryIndex);
-        if (_checkNotaryDisputed(messageHash, attNotary, attNotaryStatus)) return true;
+        if (_checkNotaryDisputed(messageHash, summitRcpt.attNotaryIndex)) return true;
         // At this point Receipt is optimistically verified to be correct, as well as the receipt's attestation
         // Meaning we can go ahead and distribute the tip values among the tipped actors.
-        _awardTips(rcptNotary, attNotary, messageHash, summitRcpt, rcptStatus);
+        _awardTips(rcptStatus.receiptNotaryIndex, summitRcpt.attNotaryIndex, messageHash, summitRcpt, rcptStatus);
         // Save new receipt status
         rcptStatus.pending = false;
         rcptStatus.tipsAwarded = true;
@@ -237,21 +227,18 @@ contract Summit is ExecutionHub, SnapshotHub, SummitEvents, InterfaceSummit {
     /// @dev Checks if the given Notary has been disputed.
     /// - Notary was slashed => receipt is invalided and deleted
     /// - Notary is in Dispute => receipt handling is postponed
-    function _checkNotaryDisputed(bytes32 messageHash, address notary, AgentStatus memory status)
-        internal
-        returns (bool queuePopped)
-    {
-        if (status.flag == AgentFlag.Fraudulent || status.flag == AgentFlag.Slashed) {
+    function _checkNotaryDisputed(bytes32 messageHash, uint32 notaryIndex) internal returns (bool queuePopped) {
+        DisputeFlag flag = _disputes[notaryIndex];
+        if (flag == DisputeFlag.Slashed) {
             // Notary has been slashed, so we can't trust their statement.
             // Honest Notaries are incentivized to resubmit the Receipt or Attestation if it was in fact valid.
             _deleteFromQueue(messageHash);
-            return true;
-        }
-        if (_inDispute(notary)) {
+            queuePopped = true;
+        } else if (flag == DisputeFlag.Pending) {
             // Notary is not slashed, but is in Dispute. To keep the tips flow going we add the receipt to the back of
             // the queue, hoping that by the next interaction the dispute will have been resolved.
             _moveToBack();
-            return true;
+            queuePopped = true;
         }
     }
 
@@ -325,8 +312,8 @@ contract Summit is ExecutionHub, SnapshotHub, SummitEvents, InterfaceSummit {
 
     /// @dev Awards tips to the agent/actors that participated in message lifecycle
     function _awardTips(
-        address rcptNotary,
-        address attNotary,
+        uint32 rcptNotaryIndex,
+        uint32 attNotaryIndex,
         bytes32 messageHash,
         SummitReceipt memory summitRcpt,
         ReceiptStatus memory rcptStatus
@@ -341,10 +328,10 @@ contract Summit is ExecutionHub, SnapshotHub, SummitEvents, InterfaceSummit {
             _awardSnapshotTip(
                 _roots[summitRcpt.snapRootIndex], summitRcpt.stateIndex, summitRcpt.origin, tips.summitTip
             );
-            _awardAgentTip(attNotary, summitRcpt.origin, tips.attestationTip);
+            _awardAgentTip(attNotaryIndex, summitRcpt.origin, tips.attestationTip);
             _awardActorTip(summitRcpt.firstExecutor, summitRcpt.origin, tips.executionTip);
         }
-        _awardReceiptTip(rcptNotary, awardFirst, awardFinal, summitRcpt.origin, tips.summitTip);
+        _awardReceiptTip(rcptNotaryIndex, awardFirst, awardFinal, summitRcpt.origin, tips.summitTip);
         if (awardFinal) {
             // Message has been executed successfully
             _awardActorTip(summitRcpt.finalExecutor, summitRcpt.origin, tips.deliveryTip);
@@ -352,9 +339,13 @@ contract Summit is ExecutionHub, SnapshotHub, SummitEvents, InterfaceSummit {
     }
 
     /// @dev Award tip to the bonded agent
-    function _awardAgentTip(address agent, uint32 origin, uint64 tip) internal {
+    function _awardAgentTip(uint32 agentIndex, uint32 origin, uint64 tip) internal {
+        (address agent, AgentStatus memory status) = _getAgent(agentIndex);
         // If agent has been slashed, their earned tips go to treasury
-        _awardActorTip(_isSlashed(agent) ? address(0) : agent, origin, tip);
+        if (status.flag == AgentFlag.Fraudulent || status.flag == AgentFlag.Slashed) {
+            agent = address(0);
+        }
+        _awardActorTip(agent, origin, tip);
     }
 
     /// @dev Award tip to any actor whether bonded or unbonded
@@ -364,15 +355,21 @@ contract Summit is ExecutionHub, SnapshotHub, SummitEvents, InterfaceSummit {
     }
 
     /// @dev Award tip for posting Receipt to Summit contract.
-    function _awardReceiptTip(address rcptNotary, bool awardFirst, bool awardFinal, uint32 origin, uint64 summitTip)
+    function _awardReceiptTip(uint32 rcptNotaryIndex, bool awardFirst, bool awardFinal, uint32 origin, uint64 summitTip)
         internal
     {
         uint64 receiptTip = _receiptTip(summitTip);
-        // Tip for posting Receipt with status >= MessageStatus.Failed
-        uint64 receiptTipFirst = receiptTip / 2;
-        // Tip for posting Receipt with status == MessageStatus.Success
-        uint64 receiptTipFinal = receiptTip - receiptTipFirst;
-        _awardAgentTip(rcptNotary, origin, (awardFirst ? receiptTipFirst : 0) + (awardFinal ? receiptTipFinal : 0));
+        uint64 receiptTipAwarded;
+        if (awardFirst && awardFinal) {
+            receiptTipAwarded = receiptTip;
+        } else if (awardFirst) {
+            // Tip for posting Receipt with status >= MessageStatus.Failed
+            receiptTipAwarded = receiptTip / 2;
+        } else if (awardFinal) {
+            // Tip for posting Receipt with status == MessageStatus.Success
+            receiptTipAwarded = receiptTip - receiptTip / 2;
+        }
+        _awardAgentTip(rcptNotaryIndex, origin, receiptTipAwarded);
     }
 
     /// @dev Award tip for posting Snapshot to Summit contract.
@@ -382,10 +379,8 @@ contract Summit is ExecutionHub, SnapshotHub, SummitEvents, InterfaceSummit {
         uint32 attNonce = _rootData[snapRoot].attNonce;
         // Get the agents who submitted the given state for the attestation's snapshot
         (uint32 guardIndex, uint32 notaryIndex) = _stateAgents(attNonce, stateIndex);
-        (address snapGuard,) = _getAgent(guardIndex);
-        (address snapNotary,) = _getAgent(notaryIndex);
-        _awardAgentTip(snapGuard, origin, snapshotTip);
-        _awardAgentTip(snapNotary, origin, snapshotTip);
+        _awardAgentTip(guardIndex, origin, snapshotTip);
+        _awardAgentTip(notaryIndex, origin, snapshotTip);
     }
 
     // ══════════════════════════════════════════════ INTERNAL VIEWS ═══════════════════════════════════════════════════

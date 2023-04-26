@@ -1,14 +1,15 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.17;
 
-import {SystemEntity} from "../../../contracts/libs/Structures.sol";
+import {AgentFlag, AgentStatus, SystemEntity} from "../../../contracts/libs/Structures.sol";
+import {InterfaceDestination} from "../../../contracts/interfaces/InterfaceDestination.sol";
 import {InterfaceOrigin} from "../../../contracts/interfaces/InterfaceOrigin.sol";
 
 import {AgentManagerTest} from "./AgentManager.t.sol";
 
-import {
-    AgentFlag, AgentStatus, LightManagerHarness, ISystemRegistry, SynapseTest
-} from "../../utils/SynapseTest.t.sol";
+import {AgentFlag, AgentStatus, LightManagerHarness, IAgentSecured, SynapseTest} from "../../utils/SynapseTest.t.sol";
+
+import {RawAttestation} from "../../utils/libs/SynapseStructs.t.sol";
 
 // solhint-disable func-name-mixedcase
 // solhint-disable no-empty-blocks
@@ -57,8 +58,7 @@ contract LightManagerTest is AgentManagerTest {
         bytes32 root = addNewAgent(domain, agent);
         test_setAgentRoot(root);
         bytes32[] memory proof = getAgentProof(agent);
-        vm.expectEmit();
-        emit StatusUpdated(AgentFlag.Active, domain, agent);
+        expectStatusUpdated(AgentFlag.Active, domain, agent);
         // Anyone could add agents in Light Manager
         vm.prank(caller);
         lightManager.updateAgentStatus(agent, getAgentStatus(agent), proof);
@@ -71,12 +71,8 @@ contract LightManagerTest is AgentManagerTest {
         bytes32 root = updateAgent(AgentFlag.Slashed, agent);
         test_setAgentRoot(root);
         bytes32[] memory proof = getAgentProof(agent);
-        vm.expectEmit();
-        emit StatusUpdated(AgentFlag.Slashed, domain, agent);
-        bytes memory expectedCall = abi.encodeWithSelector(ISystemRegistry.managerSlash.selector, domain, agent);
-        vm.expectCall(destination, expectedCall);
-        vm.expectCall(origin, expectedCall);
-        // Anyone could add agents in Light Manager
+        expectStatusUpdated(AgentFlag.Slashed, domain, agent);
+        expectDisputeResolved(agent, address(0), caller);
         vm.prank(caller);
         lightManager.updateAgentStatus(agent, getAgentStatus(agent), proof);
         checkAgentStatus(agent, lightManager.agentStatus(agent), AgentFlag.Slashed);
@@ -114,6 +110,46 @@ contract LightManagerTest is AgentManagerTest {
         assertEq(uint8(lightManager.agentStatus(agent).flag), uint8(AgentFlag.Unknown));
         vm.expectRevert("Invalid proof");
         lightManager.updateAgentStatus(agent, status, proof);
+    }
+
+    // ══════════════════════════════════════════ TEST: SUBMIT STATEMENTS ══════════════════════════════════════════════
+
+    function test_submitAttestation(RawAttestation memory ra) public {
+        address notary = domains[localDomain()].agent;
+        (bytes memory attPayload, bytes memory attSignature) = signAttestation(notary, ra);
+        vm.expectCall(
+            destination,
+            abi.encodeWithSelector(
+                InterfaceDestination.acceptAttestation.selector,
+                notary,
+                getAgentStatus(notary),
+                attPayload,
+                attSignature
+            )
+        );
+        lightManager.submitAttestation(attPayload, attSignature);
+    }
+
+    function test_submitAttestation_revert_signedByGuard(RawAttestation memory ra) public {
+        address guard = domains[0].agent;
+        (bytes memory attPayload, bytes memory attSignature) = signAttestation(guard, ra);
+        vm.expectRevert("Signer is not a Notary");
+        lightManager.submitAttestation(attPayload, attSignature);
+    }
+
+    function test_submitAttestation_revert_signedByRemoteNotary(RawAttestation memory ra) public {
+        address notary = domains[DOMAIN_REMOTE].agent;
+        (bytes memory attPayload, bytes memory attSignature) = signAttestation(notary, ra);
+        vm.expectRevert("Wrong Notary domain");
+        lightManager.submitAttestation(attPayload, attSignature);
+    }
+
+    function test_submitAttestation_revert_notaryInDispute(RawAttestation memory ra) public {
+        address notary = domains[localDomain()].agent;
+        (bytes memory attPayload, bytes memory attSignature) = signAttestation(notary, ra);
+        openDispute({guard: domains[0].agent, notary: notary});
+        vm.expectRevert("Notary is in dispute");
+        lightManager.submitAttestation(attPayload, attSignature);
     }
 
     // ════════════════════════════════════════════ TEST: WITHDRAW TIPS ════════════════════════════════════════════════

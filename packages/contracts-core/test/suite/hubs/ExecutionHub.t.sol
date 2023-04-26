@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.17;
 
+import {AgentFlag} from "../../../contracts/libs/Structures.sol";
 import {IExecutionHub} from "../../../contracts/interfaces/IExecutionHub.sol";
 import {IAgentManager} from "../../../contracts/interfaces/IAgentManager.sol";
 import {SNAPSHOT_MAX_STATES} from "../../../contracts/libs/Snapshot.sol";
@@ -9,32 +10,33 @@ import {MessageStatus} from "../../../contracts/libs/Structures.sol";
 import {RevertingApp} from "../../harnesses/client/RevertingApp.t.sol";
 import {MessageRecipientMock} from "../../mocks/client/MessageRecipientMock.t.sol";
 
+import {fakeSnapshot} from "../../utils/libs/FakeIt.t.sol";
 import {Random} from "../../utils/libs/Random.t.sol";
 import {
     ReceiptLib,
     MessageFlag,
+    AttestationFlag,
     RawAttestation,
+    RawAttestationReport,
     RawBaseMessage,
     RawCallData,
     RawReceiptBody,
     RawExecReceipt,
     RawHeader,
     RawMessage,
+    RawSnapshot,
+    StateFlag,
     RawState,
     RawStateIndex,
+    RawStateReport,
     RawTips
 } from "../../utils/libs/SynapseStructs.t.sol";
-import {DisputeHubTest, IDisputeHub} from "./DisputeHub.t.sol";
+import {AgentSecuredTest} from "../base/AgentSecured.t.sol";
 
 // solhint-disable func-name-mixedcase
 // solhint-disable no-empty-blocks
 // solhint-disable ordering
-abstract contract ExecutionHubTest is DisputeHubTest {
-    struct SnapshotMock {
-        RawState rs;
-        RawStateIndex rsi;
-    }
-
+abstract contract ExecutionHubTest is AgentSecuredTest {
     address internal recipient;
     address internal executor;
     address internal executorNew;
@@ -150,7 +152,7 @@ abstract contract ExecutionHubTest is DisputeHubTest {
         adjustSnapshot(sm);
         (, bytes32[] memory snapProof) = prepareExecution(sm);
         // initiate dispute
-        check_submitStateReportWithSnapshot(systemContract(), localDomain(), sm.rs, sm.rsi);
+        openDispute({guard: domains[0].agent, notary: domains[localDomain()].agent});
         // Make sure that optimistic period is over
         uint32 timePassed = random.nextUint32();
         timePassed = uint32(bound(timePassed, rh.optimisticPeriod, rh.optimisticPeriod + 1 days));
@@ -416,7 +418,9 @@ abstract contract ExecutionHubTest is DisputeHubTest {
         address notary = domains[localDomain()].agent;
         bytes memory rcptSignature = signReceipt(notary, rcptPayload);
         // TODO: check that anyone could make the call
-        expectAgentSlashed(localDomain(), notary, address(this));
+        expectStatusUpdated(AgentFlag.Fraudulent, localDomain(), notary);
+        expectDisputeResolved(notary, address(0), address(this));
+        // expectAgentSlashed(localDomain(), notary, address(this));
         assertFalse(IAgentManager(localAgentManager()).verifyReceipt(rcptPayload, rcptSignature));
     }
 
@@ -475,15 +479,6 @@ abstract contract ExecutionHubTest is DisputeHubTest {
         sm.rsi.boundStateIndex();
     }
 
-    function createSnapshotProof(SnapshotMock memory sm)
-        public
-        returns (RawAttestation memory ra, bytes32[] memory snapProof)
-    {
-        ra = Random(sm.rs.root).nextAttestation(1);
-        ra = createAttestation(sm.rs, ra, sm.rsi);
-        snapProof = genSnapshotProof(sm.rsi.stateIndex);
-    }
-
     /// @notice Sets realistic values for the message header
     function adjustHeader(RawHeader memory rh, uint32 destination_) public view {
         rh.origin = DOMAIN_REMOTE;
@@ -501,6 +496,11 @@ abstract contract ExecutionHubTest is DisputeHubTest {
     function adjustSnapshot(SnapshotMock memory sm) public view {
         adjustState(sm.rs);
         sm.rsi.boundStateIndex();
+    }
+
+    /// @notice Returns address of the tested system contract
+    function systemContract() public view override returns (address) {
+        return localDestination();
     }
 
     /// @notice Returns tested system contract as IExecutionHub
