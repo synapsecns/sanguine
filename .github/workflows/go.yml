@@ -158,7 +158,7 @@ jobs:
         shell: bash
 
       - name: Setup Pyroscope Tests
-        run: $PYROSCOPE_PATH go install --applicationName=$APPLICATION_NAME ${{matrix.package}}/.
+        run: pwd && $PYROSCOPE_PATH go install --applicationName=$APPLICATION_NAME ${{matrix.package}}/.
         shell: bash
         env:
           PYROSCOPE_PATH: '${{ steps.pyroscope-path.outputs.PYROSCOPE_PATH }}'
