@@ -1,12 +1,15 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.17;
 
-import {SystemEntity} from "../../../contracts/libs/Structures.sol";
+import {AgentFlag, AgentStatus, SystemEntity} from "../../../contracts/libs/Structures.sol";
+import {InterfaceDestination} from "../../../contracts/interfaces/InterfaceDestination.sol";
 import {InterfaceOrigin} from "../../../contracts/interfaces/InterfaceOrigin.sol";
 
 import {AgentManagerTest} from "./AgentManager.t.sol";
 
 import {AgentFlag, AgentStatus, LightManagerHarness, IAgentSecured, SynapseTest} from "../../utils/SynapseTest.t.sol";
+
+import {RawAttestation} from "../../utils/libs/SynapseStructs.t.sol";
 
 // solhint-disable func-name-mixedcase
 // solhint-disable no-empty-blocks
@@ -107,6 +110,46 @@ contract LightManagerTest is AgentManagerTest {
         assertEq(uint8(lightManager.agentStatus(agent).flag), uint8(AgentFlag.Unknown));
         vm.expectRevert("Invalid proof");
         lightManager.updateAgentStatus(agent, status, proof);
+    }
+
+    // ══════════════════════════════════════════ TEST: SUBMIT STATEMENTS ══════════════════════════════════════════════
+
+    function test_submitAttestation(RawAttestation memory ra) public {
+        address notary = domains[localDomain()].agent;
+        (bytes memory attPayload, bytes memory attSignature) = signAttestation(notary, ra);
+        vm.expectCall(
+            destination,
+            abi.encodeWithSelector(
+                InterfaceDestination.acceptAttestation.selector,
+                notary,
+                getAgentStatus(notary),
+                attPayload,
+                attSignature
+            )
+        );
+        lightManager.submitAttestation(attPayload, attSignature);
+    }
+
+    function test_submitAttestation_revert_signedByGuard(RawAttestation memory ra) public {
+        address guard = domains[0].agent;
+        (bytes memory attPayload, bytes memory attSignature) = signAttestation(guard, ra);
+        vm.expectRevert("Signer is not a Notary");
+        lightManager.submitAttestation(attPayload, attSignature);
+    }
+
+    function test_submitAttestation_revert_signedByRemoteNotary(RawAttestation memory ra) public {
+        address notary = domains[DOMAIN_REMOTE].agent;
+        (bytes memory attPayload, bytes memory attSignature) = signAttestation(notary, ra);
+        vm.expectRevert("Wrong Notary domain");
+        lightManager.submitAttestation(attPayload, attSignature);
+    }
+
+    function test_submitAttestation_revert_notaryInDispute(RawAttestation memory ra) public {
+        address notary = domains[localDomain()].agent;
+        (bytes memory attPayload, bytes memory attSignature) = signAttestation(notary, ra);
+        openDispute({guard: domains[0].agent, notary: notary});
+        vm.expectRevert("Notary is in dispute");
+        lightManager.submitAttestation(attPayload, attSignature);
     }
 
     // ════════════════════════════════════════════ TEST: WITHDRAW TIPS ════════════════════════════════════════════════

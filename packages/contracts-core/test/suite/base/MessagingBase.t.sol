@@ -44,9 +44,9 @@ abstract contract MessagingBaseTest is SynapseTest {
 
     function expectDisputeOpened(address guard, address notary) public {
         vm.expectEmit();
-        emit DisputeUpdated(guard, Dispute(DisputeFlag.Pending, uint32(agentIndex[notary]), address(0)));
+        emit DisputeUpdated(guard, Dispute(DisputeFlag.Pending, agentIndex[notary], address(0)));
         vm.expectEmit();
-        emit DisputeUpdated(notary, Dispute(DisputeFlag.Pending, uint32(agentIndex[guard]), address(0)));
+        emit DisputeUpdated(notary, Dispute(DisputeFlag.Pending, agentIndex[guard], address(0)));
         // TODO: check if Summit is called, when separated
         bytes memory expectedCall =
             abi.encodeWithSelector(IAgentSecured.openDispute.selector, agentIndex[guard], agentIndex[notary]);
@@ -55,7 +55,7 @@ abstract contract MessagingBaseTest is SynapseTest {
 
     function expectDisputeResolved(address slashed, address honest, address prover) public {
         vm.expectEmit();
-        emit DisputeUpdated(slashed, Dispute(DisputeFlag.Slashed, uint32(agentIndex[honest]), prover));
+        emit DisputeUpdated(slashed, Dispute(DisputeFlag.Slashed, agentIndex[honest], prover));
         if (honest != address(0)) {
             vm.expectEmit();
             emit DisputeUpdated(honest, Dispute(DisputeFlag.None, 0, address(0)));
