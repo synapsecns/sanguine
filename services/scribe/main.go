@@ -2,6 +2,8 @@
 package main
 
 import (
+	"fmt"
+	"github.com/synapsecns/sanguine/core/metrics/pyroscope"
 	"github.com/synapsecns/sanguine/services/scribe/metadata"
 	"os"
 
@@ -9,5 +11,10 @@ import (
 )
 
 func main() {
-	cmd.Start(os.Args, metadata.BuildInfo())
+	buildInfo := metadata.BuildInfo()
+	err := pyroscope.Monitor(buildInfo)
+	if err != nil {
+		fmt.Println("could not start pyroscope: %v", err)
+	}
+	cmd.Start(os.Args, buildInfo)
 }
