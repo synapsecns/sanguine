@@ -19,11 +19,7 @@ contract DestinationMock is ExecutionHubMock, AgentSecuredMock, InterfaceDestina
 
     function attestationsAmount() external view returns (uint256) {}
 
-    function getSignedAttestation(uint256 index)
-        external
-        view
-        returns (bytes memory attPayload, bytes memory attSignature)
-    {}
+    function getAttestation(uint256 index) external view returns (bytes memory attPayload, bytes memory attSignature) {}
 
     function destStatus() external view returns (uint40 snapRootTime, uint40 agentRootTime, uint32 notaryIndex) {}
 

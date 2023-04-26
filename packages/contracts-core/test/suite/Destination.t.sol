@@ -37,7 +37,7 @@ contract DestinationTest is ExecutionHubTest {
         assertFalse(rootPending);
     }
 
-    function test_getSignedAttestation(Random memory random) public {
+    function test_getAttestation(Random memory random) public {
         uint256 amount = 10;
         bytes[] memory attPayloads = new bytes[](amount);
         bytes[] memory attSignatures = new bytes[](amount);
@@ -49,7 +49,7 @@ contract DestinationTest is ExecutionHubTest {
         }
         for (uint32 index = 0; index < amount; ++index) {
             (bytes memory attPayload, bytes memory attSignature) =
-                InterfaceDestination(destination).getSignedAttestation(index);
+                InterfaceDestination(destination).getAttestation(index);
             assertEq(attPayload, attPayloads[index], "!payload");
             assertEq(attSignature, attSignatures[index], "!signature");
         }

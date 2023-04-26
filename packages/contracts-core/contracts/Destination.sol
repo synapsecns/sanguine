@@ -5,7 +5,7 @@ pragma solidity 0.8.17;
 import {Attestation, AttestationLib} from "./libs/Attestation.sol";
 import {AttestationReport} from "./libs/AttestationReport.sol";
 import {ByteString} from "./libs/ByteString.sol";
-import {AGENT_ROOT_OPTIMISTIC_PERIOD} from "./libs/Constants.sol";
+import {AGENT_ROOT_OPTIMISTIC_PERIOD, SYNAPSE_DOMAIN} from "./libs/Constants.sol";
 import {AgentStatus, DestinationStatus, DisputeFlag} from "./libs/Structures.sol";
 // ═════════════════════════════ INTERNAL IMPORTS ══════════════════════════════
 import {AgentSecured} from "./base/AgentSecured.sol";
@@ -26,10 +26,9 @@ contract Destination is ExecutionHub, DestinationEvents, InterfaceDestination {
 
     // ══════════════════════════════════════════════════ STORAGE ══════════════════════════════════════════════════════
 
-    /// @inheritdoc InterfaceDestination
     /// @dev Invariant: this is either current LightManager root,
     /// or the pending root to be passed to LightManager once its optimistic period is over.
-    bytes32 public nextAgentRoot;
+    bytes32 internal _nextAgentRoot;
 
     /// @inheritdoc InterfaceDestination
     DestinationStatus public destStatus;
@@ -48,7 +47,7 @@ contract Destination is ExecutionHub, DestinationEvents, InterfaceDestination {
         // Initialize Ownable: msg.sender is set as "owner"
         __Ownable_init();
         // Set Agent Merkle Root in Light Manager
-        nextAgentRoot = agentRoot;
+        _nextAgentRoot = agentRoot;
         InterfaceLightManager(address(agentManager)).setAgentRoot(agentRoot);
         destStatus.agentRootTime = uint40(block.timestamp);
     }
@@ -80,8 +79,10 @@ contract Destination is ExecutionHub, DestinationEvents, InterfaceDestination {
 
     /// @inheritdoc InterfaceDestination
     function passAgentRoot() public returns (bool rootPassed, bool rootPending) {
+        // Agent root is not passed on Synapse Chain, as it could be accessed via BondingManager
+        if (localDomain == SYNAPSE_DOMAIN) return (false, false);
         bytes32 oldRoot = IAgentManager(agentManager).agentRoot();
-        bytes32 newRoot = nextAgentRoot;
+        bytes32 newRoot = _nextAgentRoot;
         // Check if agent root differs from the current one in LightManager
         if (oldRoot == newRoot) return (false, false);
         DestinationStatus memory status = destStatus;
@@ -89,7 +90,7 @@ contract Destination is ExecutionHub, DestinationEvents, InterfaceDestination {
         // So we just need to check the Dispute status of the Notary
         if (_disputes[status.notaryIndex] != DisputeFlag.None) {
             // Remove the pending agent merkle root, as its signer is in dispute
-            nextAgentRoot = oldRoot;
+            _nextAgentRoot = oldRoot;
             return (false, false);
         }
         // Check if agent root optimistic period is over
@@ -112,11 +113,7 @@ contract Destination is ExecutionHub, DestinationEvents, InterfaceDestination {
     }
 
     /// @inheritdoc InterfaceDestination
-    function getSignedAttestation(uint256 index)
-        external
-        view
-        returns (bytes memory attPayload, bytes memory attSignature)
-    {
+    function getAttestation(uint256 index) external view returns (bytes memory attPayload, bytes memory attSignature) {
         require(index < _roots.length, "Index out of range");
         bytes32 snapRoot = _roots[index];
         SnapRootData memory rootData = _rootData[snapRoot];
@@ -128,7 +125,16 @@ contract Destination is ExecutionHub, DestinationEvents, InterfaceDestination {
             blockNumber_: rootData.attBN,
             timestamp_: rootData.attTS
         });
-        attSignature = IAgentManager(agentManager).getStoredSignature(rootData.sigIndex);
+        // Attestation signatures are not required on Synapse Chain, as the attestations could be accessed via Summit.
+        if (localDomain != SYNAPSE_DOMAIN) {
+            attSignature = IAgentManager(agentManager).getStoredSignature(rootData.sigIndex);
+        }
+    }
+
+    /// @inheritdoc InterfaceDestination
+    function nextAgentRoot() external view returns (bytes32) {
+        // Return current agent root on Synapse Chain for consistency
+        return localDomain == SYNAPSE_DOMAIN ? IAgentManager(agentManager).agentRoot() : _nextAgentRoot;
     }
 
     // ══════════════════════════════════════════════ INTERNAL LOGIC ═══════════════════════════════════════════════════
@@ -143,12 +149,13 @@ contract Destination is ExecutionHub, DestinationEvents, InterfaceDestination {
         status = destStatus;
         // Update the timestamp for the latest snapshot root
         status.snapRootTime = uint40(block.timestamp);
+        // No need to save agent roots on Synapse Chain, as they could be accessed via BondingManager
         // Don't update agent root, if there is already a pending one
         // Update the data for latest agent root only if it differs from the saved one
-        if (!rootPending && nextAgentRoot != agentRoot) {
+        if (localDomain != SYNAPSE_DOMAIN && !rootPending && _nextAgentRoot != agentRoot) {
             status.agentRootTime = uint40(block.timestamp);
             status.notaryIndex = notaryIndex;
-            nextAgentRoot = agentRoot;
+            _nextAgentRoot = agentRoot;
             emit AgentRootAccepted(agentRoot);
         }
     }
