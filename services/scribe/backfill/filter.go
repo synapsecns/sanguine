@@ -77,7 +77,6 @@ func NewRangeFilter(address ethCommon.Address, backend ScribeBackend, startBlock
 // Start starts the filtering process. If the context is canceled, logs will stop being filtered.
 // This should be run on an independent goroutine.
 func (f *RangeFilter) Start(ctx context.Context) error {
-	defer close(f.logs)
 	defer close(f.doneChan)
 	for {
 		select {
