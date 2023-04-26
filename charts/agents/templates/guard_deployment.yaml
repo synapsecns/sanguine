@@ -20,6 +20,7 @@ spec:
       {{- end }}
       labels:
         {{- include "agents.selectorLabels" $ | nindent 8 }}
+        {{- include "agents.commonLabels" $ | nindent 8 }}
     spec:
       {{- with $.Values.imagePullSecrets }}
       imagePullSecrets:
