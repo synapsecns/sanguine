@@ -53,8 +53,10 @@ func (c *ClientSuite) checkRequest(makeReq func(client TestEVM)) {
 
 	var rpcRequest rpc.Requests
 
+	var body []byte
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		body, err := io.ReadAll(r.Body)
+		var err error
+		body, err = io.ReadAll(r.Body)
 		c.Require().NoError(err, "failed to read request body")
 
 		rpcRequest, err = rpc.ParseRPCPayload(body)
@@ -67,7 +69,7 @@ func (c *ClientSuite) checkRequest(makeReq func(client TestEVM)) {
 
 	defer server.Close()
 
-	evmClient, err := client.DialBackend(ctx, server.URL, mockTracer)
+	evmClient, err := client.DialBackend(ctx, server.URL, mockTracer, client.Capture(true))
 	c.Require().NoError(err)
 
 	castClient, ok := evmClient.(TestEVM)
@@ -78,13 +80,28 @@ func (c *ClientSuite) checkRequest(makeReq func(client TestEVM)) {
 	<-doneChan
 
 	spans := mockTracer.GetSpansByName(rpcRequest.Method())
+	requestSpans := mockTracer.GetSpansByName(client.RequestSpanName)
 	// make sure we got at most 1 span
 	c.Require().Equal(len(spans), 1, "expected 1 span, got %d", len(spans))
 	span := spans[0]
 
+	c.Require().Equal(len(requestSpans), 1, "expected 1 request span, got %d", len(spans))
+	requestSpan := requestSpans[0]
+	_ = requestSpan
+
 	// make sure the span has an exception
 	c.Require().True(spanHasException(span), "expected exception event, got none")
 	Equal(c.T(), spanAttributeByName(span, "endpoint").AsString(), server.URL)
+	Equal(c.T(), spanEventByName(requestSpan, client.RequestBodyEventName).AsString(), string(body))
+}
+
+func spanEventByName(stub tracetest.SpanStub, name string) *attribute.Value {
+	for _, event := range stub.Events {
+		if event.Name == name {
+			return &event.Attributes[0].Value
+		}
+	}
+	return nil
 }
 
 func spanAttributeByName(stub tracetest.SpanStub, name string) *attribute.Value {
