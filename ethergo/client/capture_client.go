@@ -13,12 +13,10 @@ import (
 	"net/http"
 )
 
-// captureClient is a wrapper around ethclient that can (but doesn't have to) captures requests and responses
+// captureClient is a wrapper around ethclient that can (but doesn't have to) captures requests and responses.
 type captureClient struct {
 	ethClient *ethclient.Client
 	w3Client  *w3.Client
-	req       *http.Request
-	resp      *http.Response
 }
 
 func newCaptureClient(ctx context.Context, url string, handler metrics.Handler, capture bool) (*captureClient, error) {
@@ -48,7 +46,7 @@ func newCaptureClient(ctx context.Context, url string, handler metrics.Handler, 
 
 // TODO: test this, move it to metrics package
 // captures requests and responses
-// TODO: test
+// TODO: test.
 type captureTransport struct {
 	transport http.RoundTripper
 	metrics   metrics.Handler
@@ -60,6 +58,7 @@ const (
 	responseEventName = "http.response.body"
 )
 
+// nolint: cyclop
 func (t *captureTransport) RoundTrip(req *http.Request) (_ *http.Response, err error) {
 	var response string
 
@@ -82,6 +81,7 @@ func (t *captureTransport) RoundTrip(req *http.Request) (_ *http.Response, err e
 	resp, err := t.transport.RoundTrip(req)
 
 	// Capture the response body
+	//nolint: nestif
 	if resp != nil && resp.Body != nil {
 		var responseBody bytes.Buffer
 		if resp.ContentLength == 0 && resp.Header.Get("Content-Encoding") == "" {
@@ -113,5 +113,6 @@ func (t *captureTransport) RoundTrip(req *http.Request) (_ *http.Response, err e
 		span.AddEvent(responseEventName, trace.WithAttributes(attribute.String("body", response)))
 	}
 
+	//nolint: wrapcheck
 	return resp, err
 }

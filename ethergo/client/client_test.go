@@ -87,7 +87,6 @@ func (c *ClientSuite) checkRequest(makeReq func(client TestEVM)) {
 
 	c.Require().Equal(len(requestSpans), 1, "expected 1 request span, got %d", len(spans))
 	requestSpan := requestSpans[0]
-	_ = requestSpan
 
 	// make sure the span has an exception
 	c.Require().True(spanHasException(span), "expected exception event, got none")
