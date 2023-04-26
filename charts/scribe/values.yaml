@@ -180,6 +180,7 @@ mysql:
   #    tag: 8.0-debian-11-r54
   enabled: true
   fullnameOverride: scribe-mysql
+  nameOverride: scribe-mysql
   architecture: standalone
   networkPolicy:
     enabled: true
