@@ -3,7 +3,7 @@ import * as CHAINS from '@constants/chains/master'
 export type Chain = {
   id: number
   chainSymbol: string
-  chainName: string
+  name: string
   altName?: string
   codeName: string
   chainLogo?: any
@@ -114,7 +114,7 @@ export class Token {
     | 'indigo'
     | 'cyan'
     | 'red'
-
+  priceUnits?: string
   constructor({
     addresses,
     wrapperAddresses,
@@ -148,6 +148,7 @@ export class Token {
     legacy,
     priorityPool,
     color,
+    priceUnits,
   }: {
     addresses: { [x: number]: string }
     wrapperAddresses?: Record<number, string>
@@ -192,6 +193,7 @@ export class Token {
       | 'indigo'
       | 'cyan'
       | 'red'
+    priceUnits?: string
   }) {
     const isMetaVar = Boolean(swapDepositAddresses || forceMeta)
     this.addresses = addresses
@@ -228,6 +230,7 @@ export class Token {
     this.legacy = legacy ?? false
     this.priorityPool = priorityPool ?? false
     this.color = color ?? 'gray'
+    this.priceUnits = priceUnits ?? 'USD'
   }
 }
 

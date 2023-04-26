@@ -1,5 +1,5 @@
 import { commifyBnToString } from '@bignumber/format'
-import AugmentWithUnits from '@components/AugmentWithUnits'
+import AugmentWithUnits from '../components/AugmentWithUnits'
 import InfoSectionCard from './InfoSectionCard'
 import { displaySymbol } from '@utils/displaySymbol'
 

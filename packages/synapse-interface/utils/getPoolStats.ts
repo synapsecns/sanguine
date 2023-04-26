@@ -1,5 +1,4 @@
 import { commify } from '@ethersproject/units'
-
 import { formatBNToString } from '@bignumber/format'
 
 export const getPoolStats = (poolData) => {

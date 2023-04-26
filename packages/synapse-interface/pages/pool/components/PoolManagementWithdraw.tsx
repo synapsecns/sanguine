@@ -7,63 +7,83 @@ import { formatUnits } from '@ethersproject/units'
 
 import { Transition } from '@headlessui/react'
 
-import { getCoinTextColorCombined } from '@styles/coins'
+import { getCoinTextColorCombined } from '@styles/tokens'
 
-import { ETH, WETH } from '@constants/tokens/basic'
+import { ETH } from '@constants/tokens/master'
+import { WETH } from '@constants/tokens/swapMaster'
 import { ALL } from '@constants/withdrawTypes'
 
 import { useDebounce } from '@hooks/useDebounce'
-import { useActiveWeb3React } from '@hooks/wallet/useActiveWeb3React'
 import { usePendingTxWrapper } from '@hooks/usePendingTxWrapper'
-import { useSwapPoolWithdraw } from '@hooks/pools/useSwapPoolWithdraw'
-import { useApproveAndWithdraw } from '@hooks/actions/useApproveAndWithdraw'
-import { usePoolToken } from '@hooks/pools/usePools'
-import { useTokenBalance } from '@hooks/tokens/useTokenBalances'
+// import { useApproveAndWithdraw } from '@hooks/actions/useApproveAndWithdraw'
+// import { usePoolToken } from '@hooks/pools/usePools'
+// import { useTokenBalance } from '@hooks/tokens/useTokenBalances'
 
 import Grid from '@tw/Grid'
 
 import TokenInput from '@components/TokenInput'
 import RadioButton from '@components/buttons/RadioButton'
-import ButtonLoadingSpinner from '@components/ButtonLoadingSpinner'
-
+import ButtonLoadingSpinner from '@components/buttons/ButtonLoadingSpinner'
 import RecievedTokenSection from './RecievedTokenSection'
 import PriceImpactDisplay from './PriceImpactDisplay'
 
 import { TransactionButton } from '@components/buttons/SubmitTxButton'
-
+import { Zero } from '@ethersproject/constants'
 // need to add pending for deposit func
+import { TransactionResponse } from '@ethersproject/providers'
 
-export default function PoolManagementWithdraw({ poolName }) {
-  const {
-    onChangeTokenInputValue,
-    clearInputs,
-    priceImpact,
+import { OPTIMISM_ETH_SWAP_TOKEN } from '@constants/tokens/poolMaster'
+export default function PoolManagementWithdraw({ pool, chainId, address }) {
+  // const {
+  //   onChangeTokenInputValue,
+  //   clearInputs,
+  //   priceImpact,
 
-    depositTokens,
-    poolTokens,
-    inputState,
-    setInputState,
-    tokenInputSum,
+  //   depositTokens,
+  //   poolTokens,
+  //   inputState,
+  //   setInputState,
+  //   tokenInputSum,
 
-    poolData,
-    withdrawType,
-    setWithdrawType,
-    percentage,
-    setPercentage,
+  //   poolData,
+  //   withdrawType,
+  //   setWithdrawType,
+  //   percentage,
+  //   setPercentage,
 
-    lpTokenValue,
-    setLpTokenValue,
-    lpTokenAmount,
-  } = useSwapPoolWithdraw(poolName)
+  //   lpTokenValue,
+  //   setLpTokenValue,
+  //   lpTokenAmount,
+  // } = useSwapPoolWithdraw(poolName)
+  const onChangeTokenInputValue = ''
+  const clearInputs = () => {}
+  const priceImpact = ''
 
+  const depositTokens = []
+  const poolTokens = ''
+  const inputState = ''
+  const setInputState = ''
+  const tokenInputSum = ''
+  const withdrawType = ALL
+  const poolData = ETH
+  const setWithdrawType = (v: string) => undefined
+  const percentage = ''
+  const setPercentage = (v: Number) => {}
+
+  const lpTokenValue = ''
+  const setLpTokenValue = (v: string) => {}
+  const lpTokenAmount = Zero
   const debouncedPoolData = useDebounce(poolData, 500)
 
-  const { chainId } = useActiveWeb3React()
-  const lpToken = usePoolToken(poolName)
-  const lpTokenBalance = useTokenBalance(lpToken)
+  const lpToken = pool.poolTokens
+  // const lpTokenBalance = useTokenBalance(lpToken) FUCK YOU
+  const lpTokenBalance = Zero
   const checkPoolNameChange = poolData?.name === debouncedPoolData?.name
-
-  const approveAndWithdraw = useApproveAndWithdraw(poolName)
+  const placeholder = async (): Promise<TransactionResponse> => {
+    console.log('placeholder')
+    return
+  }
+  // const approveAndWithdraw = useApproveAndWithdraw(poolName) TODO
 
   const [isPending, pendingTxWrapFunc] = usePendingTxWrapper()
 
@@ -87,7 +107,7 @@ export default function PoolManagementWithdraw({ poolName }) {
 
   useEffect(() => {
     if (withdrawType === ALL && lastChangeField == 'TOKEN_INPUT') {
-      if (lpTokenBalance > 0) {
+      if (lpTokenBalance.gt(Zero)) {
         const pn = lpTokenAmount.mul(100).div(lpTokenBalance).toNumber()
         if (pn > 100) {
           setPercentage(100)
@@ -166,7 +186,7 @@ export default function PoolManagementWithdraw({ poolName }) {
           />
         </div>
         {error && (
-          <div className="text-red-400 opacity-80">{error.message}</div>
+          <div className="text-red-400 opacity-80">{error?.message}</div>
         )}
       </div>
       <Grid gap={2} cols={{ xs: 1 }} className="mt-2">
@@ -201,32 +221,35 @@ export default function PoolManagementWithdraw({ poolName }) {
         token={lpToken}
         key={lpToken.symbol}
         inputValue={lpTokenValue}
-        max={lpTokenBalance}
-        onChange={(value) => {
+        max={lpTokenBalance.toString()}
+        onChange={(value: string) => {
           setLastChangeField('TOKEN_INPUT')
           if (value == '') {
             clearInputs()
           }
           setLpTokenValue(value)
         }}
-        disabled={false}
+        chainId={chainId}
+        address={address}
       />
       <TransactionButton
         label="Withdraw"
         pendingLabel="Withdrawing"
-        onClick={async () => {
-          await pendingTxWrapFunc(
-            approveAndWithdraw({
-              poolTokens: depositTokens,
-              inputState,
-              withdrawType,
-              infiniteApproval: false,
-              lpTokenAmountToSpend: lpTokenAmount,
-            })
-          )
-          clearInputs()
-          setLpTokenValue('')
-        }}
+        // OH GOD
+        // onClick={async () => {
+        //   await pendingTxWrapFunc(
+        //     approveAndWithdraw({
+        //       poolTokens: depositTokens,
+        //       inputState,
+        //       withdrawType,
+        //       infiniteApproval: false,
+        //       lpTokenAmountToSpend: lpTokenAmount,
+        //     })
+        //   )
+        //   clearInputs()
+        //   setLpTokenValue('')
+        // }}
+        onClick={placeholder}
       />
       <Transition
         appear={true}
@@ -241,8 +264,7 @@ export default function PoolManagementWithdraw({ poolName }) {
         className="-mx-6 origin-top "
       >
         <WithdrawCardFooter
-          poolName={poolName}
-          poolTokens={depositTokens}
+          pool={pool}
           inputState={inputState}
           priceImpact={priceImpact}
         />
@@ -251,7 +273,7 @@ export default function PoolManagementWithdraw({ poolName }) {
   )
 }
 
-function WithdrawCardFooter({ priceImpact, poolName, poolTokens, inputState }) {
+function WithdrawCardFooter({ priceImpact, pool, inputState }) {
   return (
     <div
       className={`py-3.5 pr-6 pl-6 mt-2 rounded-b-2xl bg-bgBase transition-all`}
@@ -259,13 +281,12 @@ function WithdrawCardFooter({ priceImpact, poolName, poolTokens, inputState }) {
       <Grid cols={{ xs: 2 }}>
         <div>
           <RecievedTokenSection
-            poolName={poolName}
-            poolTokens={poolTokens}
+            poolTokens={pool.poolTokens}
             inputState={inputState}
           />
         </div>
         <div>
-          <PriceImpactDisplay priceImpact={priceImpact} stacked={true} />
+          <PriceImpactDisplay priceImpact={priceImpact} />
         </div>
       </Grid>
     </div>

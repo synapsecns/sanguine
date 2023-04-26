@@ -13,7 +13,7 @@ import { useGenericPoolData } from '@hooks/pools/useGenericPoolData'
 import Card from '@tw/Card'
 import Grid from '@tw/Grid'
 
-import { getPoolStats } from './getPoolStats'
+import { getPoolStats } from '@utils/getPoolStats'
 import { memo } from 'react'
 import { CHAINS_BY_ID } from '@constants/chains'
 import { STAKING_MAP_TOKENS } from '@constants/tokens'
@@ -92,7 +92,7 @@ const PoolsListCard = memo(
               <PoolsCardTitle
                 chainImg={chain?.chainImg?.src}
                 poolName={poolName}
-                chainName={chain?.chainName}
+                chainName={chain?.name}
               />
             }
             titleClassName="text-white font-light text-xl"

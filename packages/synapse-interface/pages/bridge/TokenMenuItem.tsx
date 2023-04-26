@@ -104,12 +104,10 @@ const CoinOnChain = ({ token, chainId }: { token: Token; chainId: number }) => {
         <div className="opacity-60">on</div>
         <Image
           src={chain.chainImg}
-          alt={chain.chainName}
+          alt={chain.name}
           className="w-4 h-4 ml-2 mr-2 rounded-full"
         />
-        <div className="hidden md:inline-block opacity-70">
-          {chain.chainName}
-        </div>
+        <div className="hidden md:inline-block opacity-70">{chain.name}</div>
       </div>
     </div>
   ) : null

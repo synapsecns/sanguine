@@ -1,7 +1,7 @@
 import Card from '@tw/Card'
-import InfoSection from '@components/InfoSection'
+import InfoSection from '../components/InfoSection'
 
-export default function InfoSectionCard({ title, children }) {
+const InfoSectionCard = ({ title, children }) => {
   return (
     <Card
       title={title}
@@ -15,3 +15,4 @@ export default function InfoSectionCard({ title, children }) {
     </Card>
   )
 }
+export default InfoSectionCard

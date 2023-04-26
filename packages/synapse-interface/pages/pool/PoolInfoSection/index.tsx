@@ -6,17 +6,13 @@ import {
   bnPercentFormat,
 } from '@bignumber/format'
 
-import { PRICE_UNITS_INDEX } from '@constants/priceUnits'
-
-import InfoListItem from '@components/InfoListItem'
-import AugmentWithUnits from '@components/AugmentWithUnits'
+import InfoListItem from '../components/InfoListItem'
+import AugmentWithUnits from '../components/AugmentWithUnits'
 
 import InfoSectionCard from './InfoSectionCard'
 import CurrencyReservesCard from './CurrencyReservesCard'
-import { useActiveWeb3React } from '@hooks/wallet/useActiveWeb3React'
 
-export default function PoolInfoSection({ data, userData }) {
-  const { chainId } = useActiveWeb3React()
+const PoolInfoSection = ({ pool, data, chainId }) => {
   const swapFee = bnPercentFormat(data?.swapFee)
   // const defaultDepositFee = bnPercentFormat(data?.defaultDepositFee)
   let adminFee = bnPercentFormat(data?.adminFee)
@@ -25,7 +21,7 @@ export default function PoolInfoSection({ data, userData }) {
     adminFee = `${adminFee} of ${swapFee}`
   }
 
-  const standardUnits = PRICE_UNITS_INDEX[data?.name] ?? ''
+  const standardUnits = pool.priceUnits ?? ''
 
   const tokens = data?.tokens
 
@@ -75,3 +71,4 @@ export default function PoolInfoSection({ data, userData }) {
     </div>
   )
 }
+export default PoolInfoSection

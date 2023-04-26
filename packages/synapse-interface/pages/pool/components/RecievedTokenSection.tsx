@@ -1,20 +1,26 @@
 import _ from 'lodash'
 
 import { commify } from '@ethersproject/units'
-import { sanitizeValue } from '@utils/sanitizeValue'
-
-export default function RecievedTokenSection({
+import { cleanNumberInput } from '@utils/cleanNumberInput'
+import { Token } from '@types'
+const RecievedTokenSection = ({
   inputState,
   poolTokens,
   label,
-}) {
+}: {
+  inputState: any
+  poolTokens: Token[]
+  label?: string
+}) => {
   return (
     <div className="text-center sm:text-left">
       <p className="text-sm font-medium bg-opacity-70 pb-0.5 text-secondaryTextColor text-opacity-50 mb-2">
         {label ?? 'You will receive '}
       </p>
       {poolTokens
-        .filter((token) => sanitizeValue(inputState[token.symbol]) > 0)
+        .filter(
+          (token) => Number(cleanNumberInput(inputState[token.symbol])) > 0
+        )
         .map((token) => {
           return (
             <div className="flex items-center">
@@ -35,3 +41,4 @@ export default function RecievedTokenSection({
     </div>
   )
 }
+export default RecievedTokenSection

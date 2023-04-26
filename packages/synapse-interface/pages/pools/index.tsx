@@ -12,7 +12,7 @@ import StandardPageContainer from '@layouts/StandardPageContainer'
 import { LandingPageWrapper } from '@layouts/LandingPageWrapper'
 import { DEFAULT_FROM_CHAIN } from '@/constants/swap'
 
-import PoolTabs from './PoolTabs'
+import PoolCards from './PoolCards'
 
 const PoolsPage = () => {
   const { address: currentAddress } = useAccount()
@@ -27,10 +27,6 @@ const PoolsPage = () => {
     setAddress(currentAddress)
   }, [currentAddress])
 
-  // console.log('DISPLAY_POOLS_BY_CHAIN', DISPLAY_POOLS_BY_CHAIN)
-  // console.log('USD_POOLS_BY_CHAIN', USD_POOLS_BY_CHAIN)
-  // console.log('ETH_POOLS_BY_CHAIN', ETH_POOLS_BY_CHAIN)
-  // console.log('LEGACY_POOLS_BY_CHAIN', LEGACY_POOLS_BY_CHAIN)
   return (
     <LandingPageWrapper>
       <StandardPageContainer
@@ -38,7 +34,7 @@ const PoolsPage = () => {
         address={address}
       >
         {/* <HarmonyCheck fromChainId={chainId} toChainId={chainId} /> */}
-        <PoolTabs
+        <PoolCards
           address={address}
           arr={[
             {

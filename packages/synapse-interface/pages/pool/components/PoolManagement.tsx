@@ -1,40 +1,45 @@
 import { useState } from 'react'
-import { useLocation, useHistory } from 'react-router-dom'
 
 import LiquidityManagementTabs from './LiquidityManagementTabs'
 import PoolManagementDeposit from './PoolManagementDeposit'
 import PoolManagementWithdraw from './PoolManagementWithdraw'
+import { Token } from '@types'
+const PoolManagement = ({
+  pool,
+  address,
+  chainId,
+}: {
+  pool: Token
+  address: string
+  chainId: number
+}) => {
+  // const [cardNav, setCardNav] = useState(getLiquidityMode(location.hash)) // 'addLiquidity'
 
-export default function PoolManagement({
-  poolName,
-  poolStakingLink,
-  poolStakingLinkText,
-}) {
-  const location = useLocation()
-  const history = useHistory()
-
-  const [cardNav, setCardNav] = useState(getLiquidityMode(location.hash)) // 'addLiquidity'
-
+  const [cardNav, setCardNav] = useState('#addLiquidity') // 'addLiquidity'
   return (
     <div>
       <div className="rounded-lg text-default">
         <LiquidityManagementTabs
           cardNav={cardNav}
           setCardNav={(val) => {
-            history.push(`#${val}`)
+            // history.push(`#${val}`) TODO
             setCardNav(val)
           }}
         />
         <div className="mt-4">
           {cardNav === 'addLiquidity' && (
             <PoolManagementDeposit
-              poolName={poolName}
-              poolStakingLink={poolStakingLink}
-              poolStakingLinkText={poolStakingLinkText}
+              poolName={pool.name}
+              address={address}
+              chainId={chainId}
             />
           )}
           {cardNav === 'removeLiquidity' && (
-            <PoolManagementWithdraw poolName={poolName} />
+            <PoolManagementWithdraw
+              pool={pool}
+              chainId={chainId}
+              address={address}
+            />
           )}
         </div>
       </div>
@@ -52,3 +57,4 @@ function getLiquidityMode(browserHash) {
       return 'addLiquidity'
   }
 }
+export default PoolManagement

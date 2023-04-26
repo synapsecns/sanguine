@@ -37,7 +37,7 @@ const StandardPageContainer = ({
         Connected to the{' '}
         <p className={getNetworkTextColor(chain?.color) + ' mx-1'}>
           {' '}
-          {chain?.altName ?? chain?.chainName}{' '}
+          {chain?.altName ?? chain?.name}{' '}
         </p>
         chain
       </>

@@ -1,11 +1,11 @@
 import Grid from '@tw/Grid'
 import { Tab } from '@headlessui/react'
 import _ from 'lodash'
-import PoolsListCard from './PoolsListCard'
+import PoolsListCard from './PoolCard'
 
 import { PageHeader } from '@components/PageHeader'
 import { memo } from 'react'
-const PoolTabs = memo(
+const PoolCards = memo(
   ({
     arr,
     connectedChainId,
@@ -105,4 +105,4 @@ const PoolTabs = memo(
   }
 )
 
-export default PoolTabs
+export default PoolCards
