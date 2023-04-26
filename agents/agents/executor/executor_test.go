@@ -615,11 +615,8 @@ func (e *ExecutorSuite) TestExecutor() {
 
 	tree := merkle.NewTree(merkle.MessageTreeHeight)
 
-	sender, err := e.TestBackendOrigin.Signer().Sender(tx)
-	e.Nil(err)
-
-	header := types.NewHeader(uint32(e.TestBackendOrigin.GetChainID()), sender.Hash(), nonce, uint32(e.TestBackendDestination.GetChainID()), recipient, optimisticSeconds)
-	message := types.NewMessage(header, tips, body)
+	header := types.NewHeader(uint32(e.TestBackendOrigin.GetChainID()), nonce, uint32(e.TestBackendDestination.GetChainID()), optimisticSeconds)
+	message := types.NewMessage(uint8(0), header, body)
 	leaf, err := message.ToLeaf()
 	e.Nil(err)
 

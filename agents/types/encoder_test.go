@@ -37,15 +37,11 @@ func TestNewMessageEncodeDecode(t *testing.T) {
 	header := types.NewHeader(
 		origin, nonce, destination, optimisticSeconds)
 
-	notaryTip := randomUint96BigInt(t)
-	broadcasterTip := randomUint96BigInt(t)
-	proverTip := randomUint96BigInt(t)
-	executorTip := randomUint96BigInt(t)
+	flag := uint8(1)
 
-	tips := types.NewTips(notaryTip, broadcasterTip, proverTip, executorTip)
+	newMessage := types.NewMessage(flag, header, body)
 
-	newMessage := types.NewMessage(header, tips, body)
-
+	Equal(t, newMessage.Flag(), flag)
 	Equal(t, newMessage.OriginDomain(), origin)
 	Equal(t, newMessage.Nonce(), nonce)
 	Equal(t, newMessage.DestinationDomain(), destination)

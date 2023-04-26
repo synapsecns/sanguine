@@ -283,6 +283,12 @@ func TestMessageEncodeParity(t *testing.T) {
 	formattedHeader, err := headerContract.EncodeHeader(&bind.CallOpts{Context: ctx}, origin, nonce, destination, optimisticSeconds)
 	Nil(t, err)
 
+	goHeader, err := types.EncodeHeader(types.NewHeader(origin, nonce, destination, optimisticSeconds))
+	Nil(t, err)
+	formattedHeaderFromGo := new(big.Int).SetBytes(goHeader)
+
+	Equal(t, formattedHeader, formattedHeaderFromGo)
+
 	formattedMessage, err := messageContract.FormatMessage(&bind.CallOpts{Context: ctx}, flag, formattedHeader, body)
 	Nil(t, err)
 

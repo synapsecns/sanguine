@@ -228,13 +228,6 @@ func EncodeHeader(header Header) ([]byte, error) {
 	return buf.Bytes(), nil
 }
 
-// messageEncoder contains the binary structore of the message.
-type messageEncoder struct {
-	Version      uint16
-	HeaderLength uint16
-	TipsLength   uint16
-}
-
 // EncodeMessage encodes a message.
 func EncodeMessage(m Message) ([]byte, error) {
 	encodedHeader, err := EncodeHeader(m.Header())
@@ -242,25 +235,10 @@ func EncodeMessage(m Message) ([]byte, error) {
 		return []byte{}, fmt.Errorf("could not encode header: %w", err)
 	}
 
-	encodedTips, err := EncodeTips(m.Tips())
-	if err != nil {
-		return []byte{}, fmt.Errorf("could not encode tips: %w", err)
-	}
-
-	newMessage := messageEncoder{
-		HeaderLength: uint16(len(encodedHeader)),
-		TipsLength:   uint16(len(encodedTips)),
-	}
-
 	buf := new(bytes.Buffer)
 
-	err = binary.Write(buf, binary.BigEndian, newMessage)
-	if err != nil {
-		return nil, fmt.Errorf("could not write binary: %w", err)
-	}
-
+	buf.Write([]byte{m.Flag()})
 	buf.Write(encodedHeader)
-	buf.Write(encodedTips)
 	buf.Write(m.Body())
 
 	return buf.Bytes(), nil

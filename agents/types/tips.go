@@ -7,8 +7,6 @@ import (
 
 // Tips contain tips used for scientizing different agents.
 type Tips interface {
-	// Version gets the version of the tips header
-	Version() uint16
 	// NotaryTip gets the tips for the notary
 	NotaryTip() *big.Int
 	// BroadcasterTip gets the tips for the broadcaster
@@ -31,12 +29,7 @@ func NewTips(notaryTip, broadcasterTip, proverTip, executorTip *big.Int) Tips {
 
 // tips implements Tips.
 type tips struct {
-	version                                           uint16
 	notaryTip, broadcasterTip, proverTip, executorTip *big.Int
-}
-
-func (t tips) Version() uint16 {
-	return t.version
 }
 
 func (t tips) NotaryTip() *big.Int {

@@ -2,7 +2,6 @@ package types
 
 import (
 	"bytes"
-	"encoding/binary"
 	"encoding/gob"
 	"fmt"
 
@@ -14,10 +13,10 @@ import (
 //
 //nolint:interfacebloat
 type Message interface {
+	// Flag is the message flag
+	Flag() uint8
 	// Header gets the message header
 	Header() Header
-	// Tips gets the tips
-	Tips() Tips
 	// Body gets the message body
 	Body() []byte
 
@@ -35,19 +34,18 @@ type Message interface {
 
 // messageImpl implements a message. It is used for testutils. Real messages are emitted by the contract.
 type messageImpl struct {
-	version uint16
-	header  Header
-	tips    Tips
-	body    []byte
+	flag   uint8
+	header Header
+	body   []byte
 }
 
 const headerOffset uint16 = 0
 
 // NewMessage creates a new message from fields passed in.
-func NewMessage(header Header, tips Tips, body []byte) Message {
+func NewMessage(flag uint8, header Header, body []byte) Message {
 	return &messageImpl{
+		flag:   flag,
 		header: header,
-		tips:   tips,
 		body:   body,
 	}
 }
@@ -56,55 +54,29 @@ func (m messageImpl) Header() Header {
 	return m.header
 }
 
-func (m messageImpl) Tips() Tips {
-	return m.tips
+func (m messageImpl) Flag() uint8 {
+	return m.flag
 }
 
 // DecodeMessage decodes a message from a byte slice.
 func DecodeMessage(message []byte) (Message, error) {
-	reader := bytes.NewReader(message)
-
-	var encoded messageEncoder
-
-	err := binary.Read(reader, binary.BigEndian, &encoded)
-	if err != nil {
-		return nil, fmt.Errorf("could not parse encoded: %w", err)
-	}
-
-	rawHeader := message[headerOffset : encoded.HeaderLength+headerOffset]
+	flag := message[0]
+	rawHeader := message[1:17]
 
 	header, err := DecodeHeader(rawHeader)
 	if err != nil {
 		return nil, fmt.Errorf("could not decode header: %w", err)
 	}
 
-	rawTips := message[headerOffset+encoded.HeaderLength : headerOffset+encoded.HeaderLength+encoded.TipsLength]
-	unmarshalledTips, err := DecodeTips(rawTips)
-	if err != nil {
-		return nil, fmt.Errorf("could not decode unmarshalledTips: %w", err)
-	}
-
-	dataSize := binary.Size(encoded)
-
-	// make sure we can get the body of the message
-	if dataSize > len(message) {
-		return nil, fmt.Errorf("message too small, expected at least %d, got %d", dataSize, len(message))
-	}
-
-	rawBody := message[headerOffset+encoded.HeaderLength+encoded.TipsLength:]
+	rawBody := message[17:]
 
 	decoded := messageImpl{
-		version: encoded.Version,
-		body:    rawBody,
-		header:  header,
-		tips:    unmarshalledTips,
+		flag:   flag,
+		header: header,
+		body:   rawBody,
 	}
 
 	return decoded, nil
-}
-
-func (m messageImpl) Version() uint16 {
-	return m.version
 }
 
 func (m messageImpl) OriginDomain() uint32 {
