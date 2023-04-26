@@ -6,13 +6,12 @@ import {Attestation, AttestationLib} from "../libs/Attestation.sol";
 import {AttestationReport, AttestationReportLib} from "../libs/AttestationReport.sol";
 import {AGENT_TREE_HEIGHT, BONDING_OPTIMISTIC_PERIOD, SYNAPSE_DOMAIN} from "../libs/Constants.sol";
 import {MerkleMath} from "../libs/MerkleMath.sol";
-import {AgentFlag, AgentStatus, SlashStatus} from "../libs/Structures.sol";
+import {AgentFlag, AgentStatus, DisputeFlag} from "../libs/Structures.sol";
 // ═════════════════════════════ INTERNAL IMPORTS ══════════════════════════════
-import {AgentManager, IAgentManager} from "./AgentManager.sol";
+import {AgentManager, IAgentManager, IAgentSecured} from "./AgentManager.sol";
 import {MessagingBase} from "../base/MessagingBase.sol";
 import {InterfaceBondingManager} from "../interfaces/InterfaceBondingManager.sol";
 import {InterfaceDestination} from "../interfaces/InterfaceDestination.sol";
-import {IDisputeHub} from "../interfaces/IDisputeHub.sol";
 import {InterfaceLightManager} from "../interfaces/InterfaceLightManager.sol";
 import {InterfaceOrigin} from "../interfaces/InterfaceOrigin.sol";
 
@@ -58,7 +57,8 @@ contract LightManager is AgentManager, InterfaceLightManager {
         status.verifyActive();
         // Check that Notary domain is local domain
         require(status.domain == localDomain, "Wrong Notary domain");
-        // This will revert if Notary is in dispute
+        // Notary needs to be not in dispute
+        require(_disputes[notary].flag == DisputeFlag.None, "Notary is in dispute");
         return InterfaceDestination(destination).acceptAttestation(notary, status, attPayload, attSignature);
     }
 
@@ -78,7 +78,7 @@ contract LightManager is AgentManager, InterfaceLightManager {
         // Notary needs to be Active/Unstaking
         notaryStatus.verifyActiveUnstaking();
         // This will revert if either actor is already in dispute
-        IDisputeHub(destination).openDispute(guard, notaryStatus.domain, notary);
+        _openDispute(guard, guardStatus.index, notary, notaryStatus.index);
         return true;
     }
 
@@ -98,10 +98,10 @@ contract LightManager is AgentManager, InterfaceLightManager {
         // Update the agent status against this root
         _agentMap[root][agent] = status;
         emit StatusUpdated(status.flag, status.domain, agent);
-        // Notify local Registries, if agent flag is Slashed
+        // Notify local AgentSecured contracts, if agent flag is Slashed
         if (status.flag == AgentFlag.Slashed) {
-            // Prover is msg.sender
-            _notifyRegistriesAgentSlashed(status.domain, agent, msg.sender);
+            // This will revert if the agent has been slashed earlier
+            _resolveDispute(agent, status.index, msg.sender);
         }
     }
 
@@ -139,6 +139,18 @@ contract LightManager is AgentManager, InterfaceLightManager {
             optimisticPeriod: BONDING_OPTIMISTIC_PERIOD,
             payload: abi.encodeWithSelector(InterfaceBondingManager.remoteSlashAgent.selector, domain, agent, prover)
         });
+    }
+
+    /// @dev Notify local AgentSecured contracts about the opened dispute.
+    function _notifyDisputeOpened(uint32 guardIndex, uint32 notaryIndex) internal override {
+        // Origin contract doesn't need to know about the dispute
+        IAgentSecured(destination).openDispute(guardIndex, notaryIndex);
+    }
+
+    /// @dev Notify local AgentSecured contracts about the resolved dispute.
+    function _notifyDisputeResolved(uint32 slashedIndex, uint32 rivalIndex) internal override {
+        // Origin contract doesn't need to know about the dispute
+        IAgentSecured(destination).resolveDispute(slashedIndex, rivalIndex);
     }
 
     /// @dev Updates the Agent Merkle Root that Light Manager is tracking.

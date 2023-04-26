@@ -56,21 +56,17 @@ enum DisputeFlag {
 }
 
 /// @notice Struct representing information about an agent in dispute.
-/// Note: counterpart for Guard is Notary, counterpart for Notary is Guard.
+/// - Rival for Guard is the Notary they reported.
+/// - Rival for Notary is the Guard that reported them.
 /// @param flag         Dispute status
-/// @param counterpart  Agent address who the agent is in dispute with
-struct DisputeStatus {
+/// @param rivalIndex   Index of the rival who the agent is in dispute with
+/// @param fraudProver  Actor who provided fraud proof that resolved the dispute
+struct Dispute {
     DisputeFlag flag;
-    address counterpart;
+    uint32 rivalIndex;
+    address fraudProver;
 }
-// 88 bits available for tight packing
-
-/// @notice Struct representing information about a slashed agent.
-struct SlashStatus {
-    bool isSlashed;
-    address prover;
-}
-// 88 bits available for tight packing
+// 56 bits available for tight packing
 
 // ════════════════════════════════ DESTINATION ════════════════════════════════
 

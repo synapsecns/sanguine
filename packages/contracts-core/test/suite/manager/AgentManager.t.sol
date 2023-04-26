@@ -2,7 +2,7 @@
 pragma solidity 0.8.17;
 
 import {IAgentSecured} from "../../../contracts/interfaces/IAgentSecured.sol";
-import {AgentFlag, AgentStatus, SlashStatus, SystemEntity} from "../../../contracts/libs/Structures.sol";
+import {AgentFlag, AgentStatus, SystemEntity} from "../../../contracts/libs/Structures.sol";
 
 import {MessagingBaseTest} from "../base/MessagingBase.t.sol";
 import {AgentManagerHarness} from "../../harnesses/manager/AgentManagerHarness.t.sol";
