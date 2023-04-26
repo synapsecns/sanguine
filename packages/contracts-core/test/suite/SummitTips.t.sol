@@ -4,7 +4,7 @@ pragma solidity 0.8.17;
 import {IAgentManager, InterfaceSummit} from "../../contracts/Summit.sol";
 
 import {AgentFlag, Summit, SynapseTest} from "../utils/SynapseTest.t.sol";
-import {IDisputeHub, DisputeHubTest} from "./hubs/DisputeHub.t.sol";
+import {AgentSecuredTest} from "./hubs/ExecutionHub.t.sol";
 
 import {fakeState} from "../utils/libs/FakeIt.t.sol";
 import {
@@ -19,7 +19,7 @@ import {
 import {stdStorage, StdStorage} from "forge-std/Test.sol";
 
 contract SummitCheats is Summit {
-    constructor(uint32 domain, IAgentManager agentManager_) Summit(domain, agentManager_) {}
+    constructor(uint32 domain, address agentManager_) Summit(domain, agentManager_) {}
 
     function setActorTips(address actor, uint32 origin, uint128 earned, uint128 claimed) external {
         actorTips[actor][origin].earned = earned;
@@ -31,7 +31,7 @@ contract SummitCheats is Summit {
 // solhint-disable func-name-mixedcase
 // solhint-disable no-empty-blocks
 // solhint-disable ordering
-contract SummitTipsTest is DisputeHubTest {
+contract SummitTipsTest is AgentSecuredTest {
     using stdStorage for StdStorage;
 
     RawState internal state0;
@@ -92,7 +92,7 @@ contract SummitTipsTest is DisputeHubTest {
         acceptSnapshot(snapshot1.formatStates());
         snapRoot1 = getSnapshotRoot();
         // Deploy Summit implementation with Cheats
-        summitCheats = address(new SummitCheats(DOMAIN_SYNAPSE, bondingManager));
+        summitCheats = address(new SummitCheats(DOMAIN_SYNAPSE, address(bondingManager)));
     }
 
     // ══════════════════════════════════════════ TESTS: SUBMIT RECEIPTS ═══════════════════════════════════════════════
@@ -154,8 +154,8 @@ contract SummitTipsTest is DisputeHubTest {
         RawExecReceipt memory re = mockReceipt("First");
         prepareReceipt(re, false, 0, false);
         // Put DOMAIN_REMOTE notary in Dispute
-        check_submitStateReportWithSnapshot(summit, DOMAIN_REMOTE, state0, RawStateIndex(0, 1));
         address notary = domains[DOMAIN_REMOTE].agent;
+        openDispute({guard: domains[0].agent, notary: notary});
         (bytes memory rcptPayload, bytes memory rcptSignature) = signReceipt(notary, re);
         vm.expectRevert("Notary is in dispute");
         bondingManager.submitReceipt(rcptPayload, rcptSignature);
@@ -238,7 +238,7 @@ contract SummitTipsTest is DisputeHubTest {
         prepareTwoReceiptTest(1, 0);
         skip(BONDING_OPTIMISTIC_PERIOD);
         // Put DOMAIN_REMOTE agents[0] in Dispute
-        check_submitStateReportWithSnapshot(summit, DOMAIN_REMOTE, state0, RawStateIndex(0, 1));
+        openDispute({guard: domains[0].agent, notary: domains[DOMAIN_REMOTE].agents[0]});
         assertTrue(InterfaceSummit(summit).distributeTips());
     }
 
@@ -268,7 +268,7 @@ contract SummitTipsTest is DisputeHubTest {
         prepareTwoReceiptTest(0, 1);
         skip(BONDING_OPTIMISTIC_PERIOD);
         // Put DOMAIN_REMOTE agents[0] in Dispute
-        check_submitStateReportWithSnapshot(summit, DOMAIN_REMOTE, state0, RawStateIndex(0, 1));
+        openDispute({guard: domains[0].agent, notary: domains[DOMAIN_REMOTE].agents[0]});
         assertTrue(InterfaceSummit(summit).distributeTips());
     }
 
@@ -469,6 +469,10 @@ contract SummitTipsTest is DisputeHubTest {
     }
 
     // ═════════════════════════════════════════════════ OVERRIDES ═════════════════════════════════════════════════════
+
+    function systemContract() public view override returns (address) {
+        return summit;
+    }
 
     /// @notice Returns local domain for the tested system contract
     function localDomain() public pure override returns (uint32) {

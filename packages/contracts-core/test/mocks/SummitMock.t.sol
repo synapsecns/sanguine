@@ -3,10 +3,10 @@ pragma solidity 0.8.17;
 
 import {AgentStatus, InterfaceSummit} from "../../contracts/interfaces/InterfaceSummit.sol";
 import {SnapshotHubMock} from "./hubs/SnapshotHubMock.t.sol";
-import {SystemRegistryMock} from "./system/SystemRegistryMock.t.sol";
+import {AgentSecuredMock} from "./base/AgentSecuredMock.t.sol";
 
 // solhint-disable no-empty-blocks
-contract SummitMock is SnapshotHubMock, SystemRegistryMock, InterfaceSummit {
+contract SummitMock is SnapshotHubMock, AgentSecuredMock, InterfaceSummit {
     /// @notice Prevents this contract from being included in the coverage report
     function testSummitMock() external {}
 

@@ -4,24 +4,24 @@ pragma solidity 0.8.17;
 // ══════════════════════════════ LIBRARY IMPORTS ══════════════════════════════
 import {Attestation, AttestationLib} from "../libs/Attestation.sol";
 import {AttestationReport, AttestationReportLib} from "../libs/AttestationReport.sol";
+import {BONDING_OPTIMISTIC_PERIOD, SYNAPSE_DOMAIN} from "../libs/Constants.sol";
 import {DynamicTree, MerkleMath} from "../libs/MerkleTree.sol";
 import {Receipt, ReceiptLib} from "../libs/Receipt.sol";
 import {Snapshot, SnapshotLib} from "../libs/Snapshot.sol";
-import {AgentFlag, AgentStatus, SlashStatus} from "../libs/Structures.sol";
+import {AgentFlag, AgentStatus, DisputeFlag} from "../libs/Structures.sol";
 // ═════════════════════════════ INTERNAL IMPORTS ══════════════════════════════
-import {AgentManager, IAgentManager} from "./AgentManager.sol";
+import {AgentManager, IAgentManager, IAgentSecured} from "./AgentManager.sol";
+import {MessagingBase} from "../base/MessagingBase.sol";
 import {BondingManagerEvents} from "../events/BondingManagerEvents.sol";
 import {InterfaceBondingManager} from "../interfaces/InterfaceBondingManager.sol";
 import {InterfaceLightManager} from "../interfaces/InterfaceLightManager.sol";
 import {InterfaceOrigin} from "../interfaces/InterfaceOrigin.sol";
 import {ISnapshotHub} from "../interfaces/ISnapshotHub.sol";
 import {InterfaceSummit} from "../interfaces/InterfaceSummit.sol";
-import {SystemBase} from "../system/SystemBase.sol";
-import {Versioned} from "../Version.sol";
 
 /// @notice BondingManager keeps track of all existing _agents.
 /// Used on the Synapse Chain, serves as the "source of truth" for LightManagers on remote chains.
-contract BondingManager is Versioned, AgentManager, BondingManagerEvents, InterfaceBondingManager {
+contract BondingManager is AgentManager, BondingManagerEvents, InterfaceBondingManager {
     using AttestationLib for bytes;
     using AttestationReportLib for bytes;
     using ReceiptLib for bytes;
@@ -45,7 +45,7 @@ contract BondingManager is Versioned, AgentManager, BondingManagerEvents, Interf
 
     // ═════════════════════════════════════════ CONSTRUCTOR & INITIALIZER ═════════════════════════════════════════════
 
-    constructor(uint32 domain) SystemBase(domain) Versioned("0.0.3") {
+    constructor(uint32 domain) MessagingBase("0.0.3", domain) {
         require(domain == SYNAPSE_DOMAIN, "Only deployed on SynChain");
     }
 
@@ -70,7 +70,10 @@ contract BondingManager is Versioned, AgentManager, BondingManagerEvents, Interf
         (AgentStatus memory status, address agent) = _verifySnapshot(snapshot, snapSignature);
         // Check that Agent is active
         status.verifyActive();
-        // This will revert if agent is a Notary that is in dispute
+        // If Agent is a Notary, check that they are not in dispute
+        if (status.domain != 0) {
+            require(_disputes[agent].flag == DisputeFlag.None, "Notary is in dispute");
+        }
         return InterfaceSummit(destination).acceptSnapshot(agent, status, snapPayload, snapSignature);
     }
 
@@ -82,7 +85,8 @@ contract BondingManager is Versioned, AgentManager, BondingManagerEvents, Interf
         (AgentStatus memory status, address notary) = _verifyReceipt(rcpt, rcptSignature);
         // Notary needs to be Active
         status.verifyActive();
-        // This will revert if Notary is in dispute
+        // Notary needs to be not in dispute
+        require(_disputes[notary].flag == DisputeFlag.None, "Notary is in dispute");
         return InterfaceSummit(destination).acceptReceipt(notary, status, rcptPayload, rcptSignature);
     }
 
@@ -197,8 +201,8 @@ contract BondingManager is Versioned, AgentManager, BondingManagerEvents, Interf
 
     /// @inheritdoc InterfaceBondingManager
     function completeSlashing(uint32 domain, address agent, bytes32[] memory proof) external {
-        // Check that slashing was initiated by one of the System Registries
-        require(slashStatus[agent].isSlashed, "Slashing not initiated");
+        // Check that slashing was previously initiated in AgentManager
+        require(_disputes[agent].flag == DisputeFlag.Slashed, "Slashing not initiated");
         // Check that the STORED status is Active/Unstaking in the merkle tree and that the domains match
         AgentStatus memory status = _storedAgentStatus(agent);
         require(
@@ -225,7 +229,7 @@ contract BondingManager is Versioned, AgentManager, BondingManagerEvents, Interf
         require(proofMaturity >= BONDING_OPTIMISTIC_PERIOD, "!optimisticPeriod");
         // TODO: do we need to save this?
         msgOrigin;
-        // Slash agent and notify local registries
+        // Slash agent and notify local AgentSecured contracts
         _slashAgent(domain, agent, prover);
         // Magic value to return is selector of the called function
         return this.remoteSlashAgent.selector;
@@ -329,6 +333,18 @@ contract BondingManager is Versioned, AgentManager, BondingManagerEvents, Interf
         _agentMap[agent] = newStatus;
         emit StatusUpdated(newStatus.flag, newStatus.domain, agent);
         emit RootUpdated(newRoot);
+    }
+
+    /// @dev Notify local AgentSecured contracts about the opened dispute.
+    function _notifyDisputeOpened(uint32 guardIndex, uint32 notaryIndex) internal override {
+        IAgentSecured(destination).openDispute(guardIndex, notaryIndex);
+        // TODO: open Dispute in Summit when it's separated from Destination
+    }
+
+    /// @dev Notify local AgentSecured contracts about the resolved dispute.
+    function _notifyDisputeResolved(uint32 slashedIndex, uint32 rivalIndex) internal override {
+        IAgentSecured(destination).resolveDispute(slashedIndex, rivalIndex);
+        // TODO: resolve Dispute in Summit when it's separated from Destination
     }
 
     // ══════════════════════════════════════════════ INTERNAL VIEWS ═══════════════════════════════════════════════════

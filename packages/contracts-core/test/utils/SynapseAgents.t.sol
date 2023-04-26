@@ -76,6 +76,11 @@ abstract contract SynapseAgents is SynapseUtilities {
         agent = domains[domain].agents[agentId % DOMAIN_AGENTS];
     }
 
+    function getNotary(uint256 domainId, uint256 agentId) public view returns (uint32 domain, address notary) {
+        domain = allDomains[1 + (domainId % (allDomains.length - 1))];
+        notary = domains[domain].agents[agentId % DOMAIN_AGENTS];
+    }
+
     /// @dev Private to enforce using salt-specific signing
     function signMessage(address agent, bytes32 hashedMsg) private view returns (bytes memory signature) {
         uint256 privKey = agentPK[agent];
