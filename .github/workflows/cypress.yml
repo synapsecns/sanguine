@@ -2,6 +2,9 @@ name: UI Cypress Integration Tests
 
 on:
   push:
+    paths:
+      - 'packages/synapse-interface/**'
+      - '.github/workflows/cypress.yaml'
   pull_request:
     paths:
       - 'packages/synapse-interface/**'

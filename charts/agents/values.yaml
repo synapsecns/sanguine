@@ -13,6 +13,8 @@ image:
 imagePullSecrets: []
 nameOverride: ""
 fullnameOverride: ""
+labels:
+  type: "agents"
 
 serviceAccount:
   # Specifies whether a service account should be created
