@@ -220,6 +220,50 @@ func (_m *IBondingManager) Destination(opts *bind.CallOpts) (common.Address, err
 	return r0, r1
 }
 
+// DisputeStatus provides a mock function with given fields: opts, agent
+func (_m *IBondingManager) DisputeStatus(opts *bind.CallOpts, agent common.Address) (bondingmanager.Dispute, error) {
+	ret := _m.Called(opts, agent)
+
+	var r0 bondingmanager.Dispute
+	if rf, ok := ret.Get(0).(func(*bind.CallOpts, common.Address) bondingmanager.Dispute); ok {
+		r0 = rf(opts, agent)
+	} else {
+		r0 = ret.Get(0).(bondingmanager.Dispute)
+	}
+
+	var r1 error
+	if rf, ok := ret.Get(1).(func(*bind.CallOpts, common.Address) error); ok {
+		r1 = rf(opts, agent)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
+// FilterDisputeUpdated provides a mock function with given fields: opts
+func (_m *IBondingManager) FilterDisputeUpdated(opts *bind.FilterOpts) (*bondingmanager.BondingManagerDisputeUpdatedIterator, error) {
+	ret := _m.Called(opts)
+
+	var r0 *bondingmanager.BondingManagerDisputeUpdatedIterator
+	if rf, ok := ret.Get(0).(func(*bind.FilterOpts) *bondingmanager.BondingManagerDisputeUpdatedIterator); ok {
+		r0 = rf(opts)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).(*bondingmanager.BondingManagerDisputeUpdatedIterator)
+		}
+	}
+
+	var r1 error
+	if rf, ok := ret.Get(1).(func(*bind.FilterOpts) error); ok {
+		r1 = rf(opts)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
 // FilterInitialized provides a mock function with given fields: opts
 func (_m *IBondingManager) FilterInitialized(opts *bind.FilterOpts) (*bondingmanager.BondingManagerInitializedIterator, error) {
 	ret := _m.Called(opts)
@@ -688,6 +732,29 @@ func (_m *IBondingManager) Owner(opts *bind.CallOpts) (common.Address, error) {
 	return r0, r1
 }
 
+// ParseDisputeUpdated provides a mock function with given fields: log
+func (_m *IBondingManager) ParseDisputeUpdated(log types.Log) (*bondingmanager.BondingManagerDisputeUpdated, error) {
+	ret := _m.Called(log)
+
+	var r0 *bondingmanager.BondingManagerDisputeUpdated
+	if rf, ok := ret.Get(0).(func(types.Log) *bondingmanager.BondingManagerDisputeUpdated); ok {
+		r0 = rf(log)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).(*bondingmanager.BondingManagerDisputeUpdated)
+		}
+	}
+
+	var r1 error
+	if rf, ok := ret.Get(1).(func(types.Log) error); ok {
+		r1 = rf(log)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
 // ParseInitialized provides a mock function with given fields: log
 func (_m *IBondingManager) ParseInitialized(log types.Log) (*bondingmanager.BondingManagerInitialized, error) {
 	ret := _m.Called(log)
@@ -957,60 +1024,6 @@ func (_m *IBondingManager) RenounceOwnership(opts *bind.TransactOpts) (*types.Tr
 	var r1 error
 	if rf, ok := ret.Get(1).(func(*bind.TransactOpts) error); ok {
 		r1 = rf(opts)
-	} else {
-		r1 = ret.Error(1)
-	}
-
-	return r0, r1
-}
-
-// SYNAPSEDOMAIN provides a mock function with given fields: opts
-func (_m *IBondingManager) SYNAPSEDOMAIN(opts *bind.CallOpts) (uint32, error) {
-	ret := _m.Called(opts)
-
-	var r0 uint32
-	if rf, ok := ret.Get(0).(func(*bind.CallOpts) uint32); ok {
-		r0 = rf(opts)
-	} else {
-		r0 = ret.Get(0).(uint32)
-	}
-
-	var r1 error
-	if rf, ok := ret.Get(1).(func(*bind.CallOpts) error); ok {
-		r1 = rf(opts)
-	} else {
-		r1 = ret.Error(1)
-	}
-
-	return r0, r1
-}
-
-// SlashStatus provides a mock function with given fields: opts, arg0
-func (_m *IBondingManager) SlashStatus(opts *bind.CallOpts, arg0 common.Address) (struct {
-	IsSlashed bool
-	Prover    common.Address
-}, error) {
-	ret := _m.Called(opts, arg0)
-
-	var r0 struct {
-		IsSlashed bool
-		Prover    common.Address
-	}
-	if rf, ok := ret.Get(0).(func(*bind.CallOpts, common.Address) struct {
-		IsSlashed bool
-		Prover    common.Address
-	}); ok {
-		r0 = rf(opts, arg0)
-	} else {
-		r0 = ret.Get(0).(struct {
-			IsSlashed bool
-			Prover    common.Address
-		})
-	}
-
-	var r1 error
-	if rf, ok := ret.Get(1).(func(*bind.CallOpts, common.Address) error); ok {
-		r1 = rf(opts, arg0)
 	} else {
 		r1 = ret.Error(1)
 	}
@@ -1331,6 +1344,29 @@ func (_m *IBondingManager) Version(opts *bind.CallOpts) (string, error) {
 	var r1 error
 	if rf, ok := ret.Get(1).(func(*bind.CallOpts) error); ok {
 		r1 = rf(opts)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
+// WatchDisputeUpdated provides a mock function with given fields: opts, sink
+func (_m *IBondingManager) WatchDisputeUpdated(opts *bind.WatchOpts, sink chan<- *bondingmanager.BondingManagerDisputeUpdated) (event.Subscription, error) {
+	ret := _m.Called(opts, sink)
+
+	var r0 event.Subscription
+	if rf, ok := ret.Get(0).(func(*bind.WatchOpts, chan<- *bondingmanager.BondingManagerDisputeUpdated) event.Subscription); ok {
+		r0 = rf(opts, sink)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).(event.Subscription)
+		}
+	}
+
+	var r1 error
+	if rf, ok := ret.Get(1).(func(*bind.WatchOpts, chan<- *bondingmanager.BondingManagerDisputeUpdated) error); ok {
+		r1 = rf(opts, sink)
 	} else {
 		r1 = ret.Error(1)
 	}
