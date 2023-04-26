@@ -164,6 +164,13 @@ jobs:
           PYROSCOPE_PATH: '${{ steps.pyroscope-path.outputs.PYROSCOPE_PATH }}'
           APPLICATION_NAME: ${{ steps.coverage.outputs.flag }}
 
+      - name: Setup upterm session
+        uses: lhotari/action-upterm@v1
+        env:
+          PYROSCOPE_PATH: '${{ steps.pyroscope-path.outputs.PYROSCOPE_PATH }}'
+          APPLICATION_NAME: ${{ steps.coverage.outputs.flag }}
+          MATRIX_PACKAGE: ${{matrix.package}}
+
       - name: Test
         uses: nick-fields/retry@v2
         with:
