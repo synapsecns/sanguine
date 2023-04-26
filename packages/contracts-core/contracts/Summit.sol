@@ -119,13 +119,13 @@ contract Summit is ExecutionHub, SnapshotHub, SummitEvents, InterfaceSummit {
         // This will revert if payload is not a snapshot
         Snapshot snapshot = snapPayload.castToSnapshot();
         if (status.domain == 0) {
-            _acceptGuardSnapshot(snapshot, status.index);
+            _acceptGuardSnapshot(snapshot, status.index, sigIndex);
         } else {
             // Fetch current Agent Root from BondingManager
             bytes32 agentRoot = IAgentManager(agentManager).agentRoot();
             // This will revert if any of the states from the Notary snapshot
             // haven't been submitted by any of the Guards before.
-            attPayload = _acceptNotarySnapshot(snapshot, agentRoot, status.index);
+            attPayload = _acceptNotarySnapshot(snapshot, agentRoot, status.index, sigIndex);
             _saveAttestation(attPayload.castToAttestation(), status.index, sigIndex);
         }
     }
@@ -189,18 +189,6 @@ contract Summit is ExecutionHub, SnapshotHub, SummitEvents, InterfaceSummit {
         if (latestState.nonce != 0) {
             statePayload = _formatSummitState(latestState);
         }
-    }
-
-    /// @inheritdoc InterfaceSummit
-    function getSignedSnapshot(uint256 index)
-        external
-        view
-        returns (bytes memory snapPayload, bytes memory snapSignature)
-    {
-        // This will revert if index is out of range
-        snapPayload = getNotarySnapshot(index);
-        SnapRootData memory rootData = _rootData[_roots[index]];
-        snapSignature = IAgentManager(agentManager).getStoredSignature(rootData.sigIndex);
     }
 
     // ═══════════════════════════════════════════ INTERNAL LOGIC: QUEUE ═══════════════════════════════════════════════

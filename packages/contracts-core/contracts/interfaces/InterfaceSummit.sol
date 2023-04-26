@@ -94,17 +94,4 @@ interface InterfaceSummit {
      * @return statePayload Raw payload with latest active Guard state for origin
      */
     function getLatestState(uint32 origin) external view returns (bytes memory statePayload);
-
-    /**
-     * @notice Returns a Notary-signed snapshot with a given index.
-     * > Index refers to the list of all Notary snapshots accepted by this contract.
-     * > Attestation created from this snapshot always has nonce = index + 1.
-     * @param index             Snapshot index
-     * @return snapPayload      Raw payload with Attestation data
-     * @return snapSignature    Notary signature for the reported attestation
-     */
-    function getSignedSnapshot(uint256 index)
-        external
-        view
-        returns (bytes memory snapPayload, bytes memory snapSignature);
 }

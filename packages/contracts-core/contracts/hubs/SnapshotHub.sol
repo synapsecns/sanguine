@@ -9,6 +9,7 @@ import {State, StateLib} from "../libs/State.sol";
 // ═════════════════════════════ INTERNAL IMPORTS ══════════════════════════════
 import {AgentSecured} from "../base/AgentSecured.sol";
 import {SnapshotHubEvents} from "../events/SnapshotHubEvents.sol";
+import {IAgentManager} from "../interfaces/IAgentManager.sol";
 import {ISnapshotHub} from "../interfaces/ISnapshotHub.sol";
 
 /**
@@ -35,6 +36,7 @@ abstract contract SnapshotHub is AgentSecured, SnapshotHubEvents, ISnapshotHub {
     struct SummitSnapshot {
         // TODO: compress this - indexes might as well be uint32/uint64
         uint256[] statePtrs;
+        uint256 sigIndex;
     }
 
     struct SummitAttestation {
@@ -106,13 +108,21 @@ abstract contract SnapshotHub is AgentSecured, SnapshotHubEvents, ISnapshotHub {
     }
 
     /// @inheritdoc ISnapshotHub
-    function getGuardSnapshot(uint256 index) external view returns (bytes memory snapshotPayload) {
+    function getGuardSnapshot(uint256 index)
+        external
+        view
+        returns (bytes memory snapPayload, bytes memory snapSignature)
+    {
         require(index < _guardSnapshots.length, "Index out of range");
         return _restoreSnapshot(_guardSnapshots[index]);
     }
 
     /// @inheritdoc ISnapshotHub
-    function getNotarySnapshot(uint256 index) public view returns (bytes memory snapshotPayload) {
+    function getNotarySnapshot(uint256 index)
+        public
+        view
+        returns (bytes memory snapPayload, bytes memory snapSignature)
+    {
         uint256 nonce = index + 1;
         require(nonce < _notarySnapshots.length, "Nonce out of range");
         return _restoreSnapshot(_notarySnapshots[nonce]);
@@ -120,7 +130,11 @@ abstract contract SnapshotHub is AgentSecured, SnapshotHubEvents, ISnapshotHub {
 
     /// @inheritdoc ISnapshotHub
     // solhint-disable-next-line ordering
-    function getNotarySnapshot(bytes memory attPayload) external view returns (bytes memory snapshotPayload) {
+    function getNotarySnapshot(bytes memory attPayload)
+        external
+        view
+        returns (bytes memory snapPayload, bytes memory snapSignature)
+    {
         // This will revert if payload is not a formatted attestation
         Attestation attestation = attPayload.castToAttestation();
         require(_isValidAttestation(attestation), "Invalid attestation");
@@ -153,7 +167,7 @@ abstract contract SnapshotHub is AgentSecured, SnapshotHubEvents, ISnapshotHub {
 
     /// @dev Accepts a Snapshot signed by a Guard.
     /// It is assumed that the Guard signature has been checked outside of this contract.
-    function _acceptGuardSnapshot(Snapshot snapshot, uint32 guardIndex) internal {
+    function _acceptGuardSnapshot(Snapshot snapshot, uint32 guardIndex, uint256 sigIndex) internal {
         // Snapshot Signer is a Guard: save the states for later use.
         uint256 statesAmount = snapshot.statesAmount();
         uint256[] memory statePtrs = new uint256[](statesAmount);
@@ -164,13 +178,13 @@ abstract contract SnapshotHub is AgentSecured, SnapshotHubEvents, ISnapshotHub {
             assert(statePtrs[i] != 0);
         }
         // Save Guard snapshot for later retrieval
-        _saveGuardSnapshot(statePtrs);
+        _saveGuardSnapshot(statePtrs, sigIndex);
     }
 
     /// @dev Accepts a Snapshot signed by a Notary.
     /// It is assumed that the Notary signature has been checked outside of this contract.
     /// Returns the attestation created from the Notary snapshot.
-    function _acceptNotarySnapshot(Snapshot snapshot, bytes32 agentRoot, uint32 notaryIndex)
+    function _acceptNotarySnapshot(Snapshot snapshot, bytes32 agentRoot, uint32 notaryIndex, uint256 sigIndex)
         internal
         returns (bytes memory attPayload)
     {
@@ -194,7 +208,7 @@ abstract contract SnapshotHub is AgentSecured, SnapshotHubEvents, ISnapshotHub {
         }
         // Derive the snapshot merkle root and save it for a Notary attestation.
         // Save Notary snapshot for later retrieval
-        return _saveNotarySnapshot(snapshot, statePtrs, agentRoot, notaryIndex);
+        return _saveNotarySnapshot(snapshot, statePtrs, agentRoot, notaryIndex, sigIndex);
     }
 
     // ════════════════════════════════════ INTERNAL LOGIC: SAVE STATEMENT DATA ════════════════════════════════════════
@@ -205,20 +219,23 @@ abstract contract SnapshotHub is AgentSecured, SnapshotHubEvents, ISnapshotHub {
         assert(_attestations.length == 0);
         // Insert empty non-meaningful values, that can't be used to prove anything
         _attestations.push(_toSummitAttestation(bytes32(0), bytes32(0)));
-        _notarySnapshots.push(SummitSnapshot(new uint256[](0)));
+        _notarySnapshots.push(SummitSnapshot(new uint256[](0), 0));
     }
 
     /// @dev Saves the Guard snapshot.
-    function _saveGuardSnapshot(uint256[] memory statePtrs) internal {
-        _guardSnapshots.push(SummitSnapshot(statePtrs));
+    function _saveGuardSnapshot(uint256[] memory statePtrs, uint256 sigIndex) internal {
+        _guardSnapshots.push(SummitSnapshot(statePtrs, sigIndex));
     }
 
     /// @dev Saves the Notary snapshot and the attestation created from it.
     /// Returns the created attestation.
-    function _saveNotarySnapshot(Snapshot snapshot, uint256[] memory statePtrs, bytes32 agentRoot, uint32 notaryIndex)
-        internal
-        returns (bytes memory attPayload)
-    {
+    function _saveNotarySnapshot(
+        Snapshot snapshot,
+        uint256[] memory statePtrs,
+        bytes32 agentRoot,
+        uint32 notaryIndex,
+        uint256 sigIndex
+    ) internal returns (bytes memory attPayload) {
         // Attestation nonce is its index in `_attestations` array
         uint32 attNonce = uint32(_attestations.length);
         SummitAttestation memory summitAtt = _toSummitAttestation(snapshot.calculateRoot(), agentRoot);
@@ -227,7 +244,7 @@ abstract contract SnapshotHub is AgentSecured, SnapshotHubEvents, ISnapshotHub {
         /// @dev Add a single element to both `_attestations` and `_notarySnapshots`,
         /// enforcing the (_attestations.length == _notarySnapshots.length) invariant.
         _attestations.push(summitAtt);
-        _notarySnapshots.push(SummitSnapshot(statePtrs));
+        _notarySnapshots.push(SummitSnapshot(statePtrs, sigIndex));
         // Emit event with raw attestation data
         emit AttestationSaved(attPayload);
     }
@@ -271,7 +288,11 @@ abstract contract SnapshotHub is AgentSecured, SnapshotHubEvents, ISnapshotHub {
     }
 
     /// @dev Restores Snapshot payload from a list of state pointers used for the snapshot.
-    function _restoreSnapshot(SummitSnapshot memory snapshot) internal view returns (bytes memory) {
+    function _restoreSnapshot(SummitSnapshot memory snapshot)
+        internal
+        view
+        returns (bytes memory snapPayload, bytes memory snapSignature)
+    {
         uint256 statesAmount = snapshot.statePtrs.length;
         State[] memory states = new State[](statesAmount);
         for (uint256 i = 0; i < statesAmount; ++i) {
@@ -282,7 +303,8 @@ abstract contract SnapshotHub is AgentSecured, SnapshotHubEvents, ISnapshotHub {
             // Get the state that Agent used for the snapshot
             states[i] = _formatSummitState(_states[statePtr - 1]).castToState();
         }
-        return SnapshotLib.formatSnapshot(states);
+        snapPayload = SnapshotLib.formatSnapshot(states);
+        snapSignature = IAgentManager(agentManager).getStoredSignature(snapshot.sigIndex);
     }
 
     /// @dev Returns indexes of agents who provided state data for the Notary snapshot with the given nonce.

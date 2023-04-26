@@ -39,17 +39,25 @@ interface ISnapshotHub {
      * @notice Returns Guard snapshot from the list of all accepted Guard snapshots.
      * @dev Reverts if snapshot with given index hasn't been accepted yet.
      * @param index             Snapshot index in the list of all Guard snapshots
-     * @return snapshotPayload  Raw payload with Guard snapshot
+     * @return snapPayload      Raw payload with Guard snapshot
+     * @return snapSignature    Raw payload with Guard signature for snapshot
      */
-    function getGuardSnapshot(uint256 index) external view returns (bytes memory snapshotPayload);
+    function getGuardSnapshot(uint256 index)
+        external
+        view
+        returns (bytes memory snapPayload, bytes memory snapSignature);
 
     /**
      * @notice Returns Notary snapshot from the list of all accepted Guard snapshots.
      * @dev Reverts if snapshot with given index hasn't been accepted yet.
      * @param index             Snapshot index in the list of all Notary snapshots
-     * @return snapshotPayload  Raw payload with Notary snapshot
+     * @return snapPayload      Raw payload with Notary snapshot
+     * @return snapSignature    Raw payload with Notary signature for snapshot
      */
-    function getNotarySnapshot(uint256 index) external view returns (bytes memory snapshotPayload);
+    function getNotarySnapshot(uint256 index)
+        external
+        view
+        returns (bytes memory snapPayload, bytes memory snapSignature);
 
     /**
      * @notice Returns Notary snapshot that was used for creating a given attestation.
@@ -57,9 +65,13 @@ interface ISnapshotHub {
      *  - Attestation payload is not properly formatted.
      *  - Attestation is invalid (doesn't have a matching Notary snapshot).
      * @param attPayload        Raw payload with attestation data
-     * @return snapshotPayload  Raw payload with Notary snapshot used for creating the attestation
+     * @return snapPayload      Raw payload with Notary snapshot
+     * @return snapSignature    Raw payload with Notary signature for snapshot
      */
-    function getNotarySnapshot(bytes memory attPayload) external view returns (bytes memory snapshotPayload);
+    function getNotarySnapshot(bytes memory attPayload)
+        external
+        view
+        returns (bytes memory snapPayload, bytes memory snapSignature);
 
     /**
      * @notice Returns proof of inclusion of (root, origin) fields of a given snapshot's state

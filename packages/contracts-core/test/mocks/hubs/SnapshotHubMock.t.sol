@@ -16,11 +16,23 @@ contract SnapshotHubMock is ISnapshotHub {
 
     function getLatestNotaryAttestation(address notary) external view returns (bytes memory attPayload) {}
 
-    function getGuardSnapshot(uint256 index) external view returns (bytes memory snapshotPayload) {}
+    function getGuardSnapshot(uint256 index)
+        external
+        view
+        returns (bytes memory snapPayload, bytes memory snapSignature)
+    {}
 
-    function getNotarySnapshot(uint256 index) external view returns (bytes memory snapshotPayload) {}
+    function getNotarySnapshot(uint256 index)
+        external
+        view
+        returns (bytes memory snapPayload, bytes memory snapSignature)
+    {}
 
-    function getNotarySnapshot(bytes memory attPayload) external view returns (bytes memory snapshotPayload) {}
+    function getNotarySnapshot(bytes memory attPayload)
+        external
+        view
+        returns (bytes memory snapPayload, bytes memory snapSignature)
+    {}
 
     function getSnapshotProof(uint32 attNonce, uint256 stateIndex) external view returns (bytes32[] memory snapProof) {}
 }
