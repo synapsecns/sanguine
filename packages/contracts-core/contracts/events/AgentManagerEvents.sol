@@ -4,6 +4,19 @@ pragma solidity 0.8.17;
 import {AgentFlag, Dispute} from "../libs/Structures.sol";
 
 abstract contract AgentManagerEvents {
+    // ════════════════════════════════════════════ STATEMENT ACCEPTED ═════════════════════════════════════════════════
+
+    /**
+     * @notice Emitted when a snapshot is accepted by the Destination contract.
+     * @param domain        Domain where the signed Notary is active
+     * @param notary        Notary who signed the attestation
+     * @param attPayload    Raw payload with attestation data
+     * @param attSignature  Notary signature for the attestation
+     */
+    event AttestationAccepted(uint32 domain, address notary, bytes attPayload, bytes attSignature);
+
+    // ═════════════════════════════════════════ INVALID STATEMENT PROVED ══════════════════════════════════════════════
+
     /**
      * @notice Emitted when a proof of invalid receipt statement is submitted.
      * @param rcptPayload   Raw payload with the receipt statement
@@ -34,6 +47,8 @@ abstract contract AgentManagerEvents {
      * @param srSignature   Guard signature for the report
      */
     event InvalidStateReport(bytes srPayload, bytes srSignature);
+
+    // ═══════════════════════════════════════════════ DATA UPDATED ════════════════════════════════════════════════════
 
     /**
      * @notice Emitted whenever the root of the Agent Merkle Tree is updated.

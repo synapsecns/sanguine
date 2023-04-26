@@ -15,10 +15,10 @@ interface ISnapshotHub {
     /**
      * @notice Returns saved attestation with the given nonce.
      * @dev Reverts if attestation with given nonce hasn't been created yet.
-     * @param nonce         Nonce for the attestation
+     * @param attNonce      Nonce for the attestation
      * @return attPayload   Raw payload with formatted Attestation data
      */
-    function getAttestation(uint32 nonce) external view returns (bytes memory attPayload);
+    function getAttestation(uint32 attNonce) external view returns (bytes memory attPayload);
 
     /**
      * @notice Returns the state with the highest known nonce submitted by a given Agent.
@@ -36,20 +36,28 @@ interface ISnapshotHub {
     function getLatestNotaryAttestation(address notary) external view returns (bytes memory attPayload);
 
     /**
-     * @notice Returns Guard snapshot for the list of all accepted Guard snapshots.
+     * @notice Returns Guard snapshot from the list of all accepted Guard snapshots.
      * @dev Reverts if snapshot with given index hasn't been accepted yet.
      * @param index             Snapshot index in the list of all Guard snapshots
-     * @return snapshotPayload  Raw payload with Guard snapshot
+     * @return snapPayload      Raw payload with Guard snapshot
+     * @return snapSignature    Raw payload with Guard signature for snapshot
      */
-    function getGuardSnapshot(uint256 index) external view returns (bytes memory snapshotPayload);
+    function getGuardSnapshot(uint256 index)
+        external
+        view
+        returns (bytes memory snapPayload, bytes memory snapSignature);
 
     /**
-     * @notice Returns Notary snapshot that was used for creating an attestation with a given nonce.
-     * @dev Reverts if attestation with given nonce hasn't been created yet.
-     * @param nonce             Nonce for the attestation
-     * @return snapshotPayload  Raw payload with Notary snapshot used for creating the attestation
+     * @notice Returns Notary snapshot from the list of all accepted Guard snapshots.
+     * @dev Reverts if snapshot with given index hasn't been accepted yet.
+     * @param index             Snapshot index in the list of all Notary snapshots
+     * @return snapPayload      Raw payload with Notary snapshot
+     * @return snapSignature    Raw payload with Notary signature for snapshot
      */
-    function getNotarySnapshot(uint256 nonce) external view returns (bytes memory snapshotPayload);
+    function getNotarySnapshot(uint256 index)
+        external
+        view
+        returns (bytes memory snapPayload, bytes memory snapSignature);
 
     /**
      * @notice Returns Notary snapshot that was used for creating a given attestation.
@@ -57,9 +65,13 @@ interface ISnapshotHub {
      *  - Attestation payload is not properly formatted.
      *  - Attestation is invalid (doesn't have a matching Notary snapshot).
      * @param attPayload        Raw payload with attestation data
-     * @return snapshotPayload  Raw payload with Notary snapshot used for creating the attestation
+     * @return snapPayload      Raw payload with Notary snapshot
+     * @return snapSignature    Raw payload with Notary signature for snapshot
      */
-    function getNotarySnapshot(bytes memory attPayload) external view returns (bytes memory snapshotPayload);
+    function getNotarySnapshot(bytes memory attPayload)
+        external
+        view
+        returns (bytes memory snapPayload, bytes memory snapSignature);
 
     /**
      * @notice Returns proof of inclusion of (root, origin) fields of a given snapshot's state
@@ -67,9 +79,9 @@ interface ISnapshotHub {
      * @dev Reverts if any of these is true:
      *  - Attestation with given nonce hasn't been created yet.
      *  - State index is out of range of snapshot list.
-     * @param nonce         Nonce for the attestation
+     * @param attNonce      Nonce for the attestation
      * @param stateIndex    Index of state in the attestation's snapshot
      * @return snapProof    The snapshot proof
      */
-    function getSnapshotProof(uint256 nonce, uint256 stateIndex) external view returns (bytes32[] memory snapProof);
+    function getSnapshotProof(uint32 attNonce, uint256 stateIndex) external view returns (bytes32[] memory snapProof);
 }

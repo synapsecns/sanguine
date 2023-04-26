@@ -22,8 +22,6 @@ contract Destination is ExecutionHub, DestinationEvents, InterfaceDestination {
     // TODO: this could be further optimized in terms of storage
     struct StoredAttData {
         bytes32 agentRoot;
-        bytes32 r;
-        bytes32 s;
     }
 
     // ══════════════════════════════════════════════════ STORAGE ══════════════════════════════════════════════════════
@@ -58,12 +56,10 @@ contract Destination is ExecutionHub, DestinationEvents, InterfaceDestination {
     // ═════════════════════════════════════════════ ACCEPT STATEMENTS ═════════════════════════════════════════════════
 
     /// @inheritdoc InterfaceDestination
-    function acceptAttestation(
-        address notary,
-        AgentStatus memory status,
-        bytes memory attPayload,
-        bytes memory attSignature
-    ) external returns (bool wasAccepted) {
+    function acceptAttestation(AgentStatus memory status, uint256 sigIndex, bytes memory attPayload)
+        external
+        returns (bool wasAccepted)
+    {
         // First, try passing current agent merkle root
         (bool rootPassed, bool rootPending) = passAgentRoot();
         // Don't accept attestation, if the agent root was updated in LightManager,
@@ -71,15 +67,12 @@ contract Destination is ExecutionHub, DestinationEvents, InterfaceDestination {
         if (rootPassed) return false;
         // This will revert if payload is not an attestation
         Attestation att = attPayload.castToAttestation();
-        (bytes32 r, bytes32 s, uint8 v) = attSignature.castToSignature().toRSV();
         // This will revert if snapshot root has been previously submitted
-        _saveAttestation(att, status.index, v);
+        _saveAttestation(att, status.index, sigIndex);
         bytes32 agentRoot = att.agentRoot();
-        _storedAttestations.push(StoredAttData(agentRoot, r, s));
+        _storedAttestations.push(StoredAttData(agentRoot));
         // Save Agent Root if required, and update the Destination's Status
-        // TODO: rework when signatures are stored in AgentManager
-        destStatus = _saveAgentRoot(rootPending, agentRoot, _agentStatus(notary).index);
-        emit AttestationAccepted(status.domain, notary, attPayload, attSignature);
+        destStatus = _saveAgentRoot(rootPending, agentRoot, status.index);
         return true;
     }
 
@@ -135,7 +128,7 @@ contract Destination is ExecutionHub, DestinationEvents, InterfaceDestination {
             blockNumber_: rootData.attBN,
             timestamp_: rootData.attTS
         });
-        attSignature = ByteString.formatSignature({r: storedAtt.r, s: storedAtt.s, v: rootData.notaryV});
+        attSignature = IAgentManager(agentManager).getStoredSignature(rootData.sigIndex);
     }
 
     // ══════════════════════════════════════════════ INTERNAL LOGIC ═══════════════════════════════════════════════════

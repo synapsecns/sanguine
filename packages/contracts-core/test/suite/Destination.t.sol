@@ -118,7 +118,7 @@ contract DestinationTest is ExecutionHubTest {
         // Mock a call from lightManager, could as well use the empty values as they won't be checked for validity
         vm.prank(address(lightManager));
         AgentStatus memory status;
-        assertFalse(InterfaceDestination(destination).acceptAttestation(address(0), status, "", ""));
+        assertFalse(InterfaceDestination(destination).acceptAttestation(status, 0, ""));
         (uint40 snapRootTime, uint40 agentRootTime, uint32 index) = InterfaceDestination(destination).destStatus();
         assertEq(snapRootTime, firstRootSubmittedAt);
         assertEq(agentRootTime, firstRootSubmittedAt);

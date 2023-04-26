@@ -121,10 +121,9 @@ contract LightManagerTest is AgentManagerTest {
             destination,
             abi.encodeWithSelector(
                 InterfaceDestination.acceptAttestation.selector,
-                notary,
                 getAgentStatus(notary),
-                attPayload,
-                attSignature
+                nextSignatureIndex(),
+                attPayload
             )
         );
         lightManager.submitAttestation(attPayload, attSignature);

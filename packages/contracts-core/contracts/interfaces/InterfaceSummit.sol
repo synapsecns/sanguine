@@ -15,18 +15,14 @@ interface InterfaceSummit {
      * > - Receipt payload is not properly formatted.
      * > - Receipt signer is in Dispute.
      * > - Receipt's snapshot root is unknown.
-     * @param notary            Address of the Notary who signed the receipt
      * @param status            Structure specifying agent status: (flag, domain, index)
+     * @param sigIndex          Index of stored Notary signature
      * @param rcptPayload       Raw payload with receipt data
-     * @param rcptSignature     Notary signature for the receipt
      * @return wasAccepted      Whether the receipt was accepted
      */
-    function acceptReceipt(
-        address notary,
-        AgentStatus memory status,
-        bytes memory rcptPayload,
-        bytes memory rcptSignature
-    ) external returns (bool wasAccepted);
+    function acceptReceipt(AgentStatus memory status, uint256 sigIndex, bytes memory rcptPayload)
+        external
+        returns (bool wasAccepted);
 
     /**
      * @notice Accepts a snapshot, which local `AgentManager` verified to have been signed by an active Agent.
@@ -40,20 +36,15 @@ interface InterfaceSummit {
      * > - Called by anyone other than local `AgentManager`.
      * > - Snapshot payload is not properly formatted.
      * > - Snapshot contains a state older then the Agent has previously submitted.
-     * > - Agent is a Notary, and they are in Dispute.
-     * @param agent             Address of the Agent who signed the snapshot
      * @param status            Structure specifying agent status: (flag, domain, index)
+     * @param sigIndex          Index of stored Agent signature
      * @param snapPayload       Raw payload with snapshot data
-     * @param snapSignature     Agent signature for the snapshot
      * @return attPayload       Raw payload with data for attestation derived from Notary snapshot.
      *                          Empty payload, if a Guard snapshot was submitted.
      */
-    function acceptSnapshot(
-        address agent,
-        AgentStatus memory status,
-        bytes memory snapPayload,
-        bytes memory snapSignature
-    ) external returns (bytes memory attPayload);
+    function acceptSnapshot(AgentStatus memory status, uint256 sigIndex, bytes memory snapPayload)
+        external
+        returns (bytes memory attPayload);
 
     // ════════════════════════════════════════════════ TIPS LOGIC ═════════════════════════════════════════════════════
 
@@ -103,16 +94,4 @@ interface InterfaceSummit {
      * @return statePayload Raw payload with latest active Guard state for origin
      */
     function getLatestState(uint32 origin) external view returns (bytes memory statePayload);
-
-    /**
-     * @notice Returns a Notary-signed snapshot with a given index.
-     * Index refers to the list of all Notary snapshots accepted by this contract.
-     * @param nonce             Attestation nonce created from Notary snapshot
-     * @return snapPayload      Raw payload with Attestation data
-     * @return snapSignature    Notary signature for the reported attestation
-     */
-    function getSignedSnapshot(uint256 nonce)
-        external
-        view
-        returns (bytes memory snapPayload, bytes memory snapSignature);
 }

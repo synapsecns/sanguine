@@ -21,6 +21,7 @@ abstract contract AgentManagerTest is MessagingBaseTest {
     using Address for address;
 
     uint256 internal rootSubmittedAt;
+    uint256 private _signatureIndex;
 
     function test_setup() public virtual {
         assertEq(address(testedAM().destination()), localDestination());
@@ -235,6 +236,10 @@ abstract contract AgentManagerTest is MessagingBaseTest {
     }
 
     // ══════════════════════════════════════════════════ HELPERS ══════════════════════════════════════════════════════
+
+    function nextSignatureIndex() public returns (uint256 sigIndex) {
+        sigIndex = _signatureIndex++;
+    }
 
     function checkAgentStatus(address agent, AgentStatus memory status, AgentFlag flag) public virtual override {
         super.checkAgentStatus(agent, status, flag);

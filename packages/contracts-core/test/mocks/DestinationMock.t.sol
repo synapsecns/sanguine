@@ -12,12 +12,10 @@ contract DestinationMock is ExecutionHubMock, AgentSecuredMock, InterfaceDestina
 
     function passAgentRoot() external returns (bool rootPassed, bool rootPending) {}
 
-    function acceptAttestation(
-        address notary,
-        AgentStatus memory status,
-        bytes memory attPayload,
-        bytes memory attSignature
-    ) external returns (bool wasAccepted) {}
+    function acceptAttestation(AgentStatus memory status, uint256 sigIndex, bytes memory attPayload)
+        external
+        returns (bool wasAccepted)
+    {}
 
     function attestationsAmount() external view returns (uint256) {}
 
