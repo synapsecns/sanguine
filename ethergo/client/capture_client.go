@@ -20,7 +20,7 @@ type captureClient struct {
 }
 
 func newCaptureClient(ctx context.Context, url string, handler metrics.Handler, capture bool) (*captureClient, error) {
-	client := http.DefaultClient
+	client := new(http.Client)
 
 	if capture {
 		client.Transport = &captureTransport{
@@ -77,8 +77,13 @@ func (t *captureTransport) RoundTrip(req *http.Request) (_ *http.Response, err e
 	}
 
 	// Perform the HTTP request using the underlying transport
-	if t.transport != nil {
-		resp, err := t.transport.RoundTrip(req)
+	transport := t.transport
+	if transport == nil {
+		transport = http.DefaultTransport
+	}
+	resp, err := transport.RoundTrip(req)
+	if err != nil {
+		return nil, fmt.Errorf("failed to perform http request: %w", err)
 	}
 
 	// Capture the response body
