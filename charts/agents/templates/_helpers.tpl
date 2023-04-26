@@ -48,6 +48,9 @@ Selector labels
 {{- define "agents.selectorLabels" -}}
 app.kubernetes.io/name: {{ include "agents.name" . }}
 app.kubernetes.io/instance: {{ .Release.Name }}
+{{- range $key, $value := .Values.labels }}
+{{- printf "%s: %s\n" $key $value | indent 4 }}
+{{- end }}
 {{- end }}
 
 {{/*

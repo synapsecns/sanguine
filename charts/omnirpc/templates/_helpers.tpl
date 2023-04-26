@@ -35,9 +35,6 @@ Common labels
 */}}
 {{- define "omnirpc.labels" -}}
 helm.sh/chart: {{ include "omnirpc.chart" . }}
-{{- range $key, $value := .Values.labels }}
-{{- printf "%s: %s\n" $key $value | indent 4 }}
-{{- end }}
 {{ include "omnirpc.selectorLabels" . }}
 {{- if .Chart.AppVersion }}
 app.kubernetes.io/version: {{ .Chart.AppVersion | quote }}
@@ -51,6 +48,9 @@ Selector labels
 {{- define "omnirpc.selectorLabels" -}}
 app.kubernetes.io/name: {{ include "omnirpc.name" . }}
 app.kubernetes.io/instance: {{ .Release.Name }}
+{{- range $key, $value := .Values.labels }}
+{{- printf "%s: %s\n" $key $value | indent 4 }}
+{{- end }}
 {{- end }}
 
 {{/*

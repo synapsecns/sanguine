@@ -48,6 +48,9 @@ Selector labels
 {{- define "explorer.selectorLabels" -}}
 app.kubernetes.io/name: {{ include "explorer.name" . }}
 app.kubernetes.io/instance: {{ .Release.Name }}
+{{- range $key, $value := .Values.labels }}
+{{- printf "%s: %s\n" $key $value | indent 4 }}
+{{- end }}
 {{- end }}
 
 {{/*

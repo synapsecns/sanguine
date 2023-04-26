@@ -46,6 +46,9 @@ app.kubernetes.io/managed-by: {{ .Release.Service }}
 Selector labels
 */}}
 {{- define "scribe.selectorLabels" -}}
+{{- range $key, $value := .Values.labels }}
+{{- printf "%s: %s\n" $key $value | indent 4 }}
+{{- end }}
 app.kubernetes.io/name: {{ include "scribe.name" . }}
 app.kubernetes.io/instance: {{ .Release.Name }}
 {{- end }}
