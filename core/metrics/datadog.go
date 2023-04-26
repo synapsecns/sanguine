@@ -19,9 +19,6 @@ type datadogHandler struct {
 	*baseHandler
 	profilerOptions []profiler.Option
 	buildInfo       config.BuildInfo
-	// version is a temporary workaround for the fact that
-	// we don't yet have a clean way to set tags.datadoghq.com/version
-	version string
 }
 
 const ddCommitTag = "git.commit.sha"
