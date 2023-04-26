@@ -73,12 +73,11 @@ struct Dispute {
 /// @notice Struct representing the status of Destination contract.
 /// @param snapRootTime     Timestamp when latest snapshot root was accepted
 /// @param agentRootTime    Timestamp when latest agent root was accepted
-/// @param notary           Notary who signed the latest agent root
-// TODO: replace notary with its index
+/// @param notaryIndex      Index of Notary who signed the latest agent root
 struct DestinationStatus {
-    uint48 snapRootTime;
-    uint48 agentRootTime;
-    address notary;
+    uint40 snapRootTime;
+    uint40 agentRootTime;
+    uint32 notaryIndex;
 }
 
 // ═══════════════════════════════ EXECUTION HUB ═══════════════════════════════

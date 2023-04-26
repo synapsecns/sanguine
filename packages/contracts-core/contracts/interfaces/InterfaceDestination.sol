@@ -61,9 +61,9 @@ interface InterfaceDestination {
      * Returns status of Destination contract as far as snapshot/agent roots are concerned
      * @return snapRootTime     Timestamp when latest snapshot root was accepted
      * @return agentRootTime    Timestamp when latest agent root was accepted
-     * @return notary           Notary who signed the latest agent root
+     * @return notaryIndex      Index of Notary who signed the latest agent root
      */
-    function destStatus() external view returns (uint48 snapRootTime, uint48 agentRootTime, address notary);
+    function destStatus() external view returns (uint40 snapRootTime, uint40 agentRootTime, uint32 notaryIndex);
 
     /**
      * Returns Agent Merkle Root to be passed to LightManager once its optimistic period is over.
