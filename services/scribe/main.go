@@ -14,7 +14,7 @@ func main() {
 	buildInfo := metadata.BuildInfo()
 	err := pyroscope.Monitor(buildInfo)
 	if err != nil {
-		fmt.Println("could not start pyroscope: %v", err)
+		fmt.Printf("could not start pyroscope: %v", err)
 	}
 	cmd.Start(os.Args, buildInfo)
 }
