@@ -97,55 +97,37 @@ contract Summit is ExecutionHub, SnapshotHub, SummitEvents, InterfaceSummit {
     // ═════════════════════════════════════════════ ACCEPT STATEMENTS ═════════════════════════════════════════════════
 
     /// @inheritdoc InterfaceSummit
-    function acceptReceipt(
-        address notary,
-        AgentStatus memory status,
-        bytes memory rcptPayload,
-        bytes memory rcptSignature
-    ) external returns (bool wasAccepted) {
+    function acceptReceipt(AgentStatus memory status, uint256 sigIndex, bytes memory rcptPayload)
+        external
+        returns (bool wasAccepted)
+    {
         // This will revert if payload is not an receipt
         Receipt rcpt = rcptPayload.castToReceipt();
         // Receipt needs to be signed by a destination chain Notary
         ReceiptBody rcptBody = rcpt.body();
         // TODO: remove this restriction
         require(rcptBody.destination() == status.domain, "Wrong Notary domain");
-        wasAccepted = _saveReceipt(rcptBody, rcpt.tips(), status.index);
-        if (wasAccepted) {
-            // TODO: save signature
-            emit ReceiptAccepted(status.domain, notary, rcptPayload, rcptSignature);
-        }
+        // TODO: save signature index
+        return _saveReceipt(rcptBody, rcpt.tips(), status.index);
     }
 
     /// @inheritdoc InterfaceSummit
-    function acceptSnapshot(
-        address agent,
-        AgentStatus memory status,
-        bytes memory snapPayload,
-        bytes memory snapSignature
-    ) external returns (bytes memory attPayload) {
+    function acceptSnapshot(AgentStatus memory status, uint256 sigIndex, bytes memory snapPayload)
+        external
+        returns (bytes memory attPayload)
+    {
         // This will revert if payload is not a snapshot
         Snapshot snapshot = snapPayload.castToSnapshot();
         if (status.domain == 0) {
-            /// @dev We don't check if Guard is in dispute for accepting the snapshots.
-            /// Guard could only be in Dispute, if they submitted a Report on a Notary.
-            /// This should not strip away their ability to post snapshots, as they require
-            /// a Notary signature in order to be used / gain tips anyway.
-
-            // This will revert if Guard has previously submitted
-            // a fresher state than one in the snapshot.
-            _acceptGuardSnapshot(snapshot, agent, status.index);
+            _acceptGuardSnapshot(snapshot, status.index, sigIndex);
         } else {
             // Fetch current Agent Root from BondingManager
             bytes32 agentRoot = IAgentManager(agentManager).agentRoot();
             // This will revert if any of the states from the Notary snapshot
             // haven't been submitted by any of the Guards before.
-            attPayload = _acceptNotarySnapshot(snapshot, agentRoot, agent, status.index);
-            // Save attestation derived from Notary snapshot.
-            (bytes32 r, bytes32 s, uint8 v) = snapSignature.castToSignature().toRSV();
-            _saveAttestation(attPayload.castToAttestation(), status.index, v);
-            _storedSnapshots.push(StoredSnapData({r: r, s: s}));
+            attPayload = _acceptNotarySnapshot(snapshot, agentRoot, status.index, sigIndex);
+            _saveAttestation(attPayload.castToAttestation(), status.index, sigIndex);
         }
-        emit SnapshotAccepted(status.domain, agent, snapPayload, snapSignature);
     }
 
     // ════════════════════════════════════════════════ TIPS LOGIC ═════════════════════════════════════════════════════
@@ -200,26 +182,13 @@ contract Summit is ExecutionHub, SnapshotHub, SummitEvents, InterfaceSummit {
         address[] memory guards = InterfaceBondingManager(address(agentManager)).getActiveAgents(0);
         SummitState memory latestState;
         for (uint256 i = 0; i < guards.length; ++i) {
-            SummitState memory state = _latestState(origin, guards[i]);
+            SummitState memory state = _latestState(origin, _agentStatus(guards[i]).index);
             if (state.nonce > latestState.nonce) latestState = state;
         }
         // Check if we found anything
         if (latestState.nonce != 0) {
             statePayload = _formatSummitState(latestState);
         }
-    }
-
-    /// @inheritdoc InterfaceSummit
-    function getSignedSnapshot(uint256 nonce)
-        external
-        view
-        returns (bytes memory snapPayload, bytes memory snapSignature)
-    {
-        // This will revert if nonce is out of range
-        snapPayload = getNotarySnapshot(nonce);
-        StoredSnapData memory storedSnap = _storedSnapshots[nonce - 1];
-        SnapRootData memory rootData = _rootData[_roots[nonce - 1]];
-        snapSignature = ByteString.formatSignature({r: storedSnap.r, s: storedSnap.s, v: rootData.notaryV});
     }
 
     // ═══════════════════════════════════════════ INTERNAL LOGIC: QUEUE ═══════════════════════════════════════════════

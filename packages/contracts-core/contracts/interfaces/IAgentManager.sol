@@ -244,4 +244,12 @@ interface IAgentManager {
      * @return          Status for the given agent: (flag, rivalIndex, fraudProver).
      */
     function disputeStatus(address agent) external view returns (Dispute memory);
+
+    /**
+     * @notice Returns the signature with the given index stored in AgentManager.
+     * @dev Will revert if signature with given index doesn't exist.
+     * @param index     Signature index
+     * @return          Raw payload with signature
+     */
+    function getStoredSignature(uint256 index) external view returns (bytes memory);
 }

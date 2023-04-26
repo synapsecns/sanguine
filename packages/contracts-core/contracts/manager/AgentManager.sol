@@ -35,8 +35,11 @@ abstract contract AgentManager is MessagingBase, VerificationManager, AgentManag
     // (agent => their dispute status)
     mapping(address => Dispute) internal _disputes;
 
+    // TODO: optimize this
+    bytes[] internal _storedSignatures;
+
     /// @dev gap for upgrade safety
-    uint256[47] private __GAP; // solhint-disable-line var-name-mixedcase
+    uint256[46] private __GAP; // solhint-disable-line var-name-mixedcase
 
     // ════════════════════════════════════════════════ INITIALIZER ════════════════════════════════════════════════════
 
@@ -280,6 +283,11 @@ abstract contract AgentManager is MessagingBase, VerificationManager, AgentManag
         return _disputes[agent];
     }
 
+    /// @inheritdoc IAgentManager
+    function getStoredSignature(uint256 index) external view returns (bytes memory) {
+        return _storedSignatures[index];
+    }
+
     // ══════════════════════════════════════════════ INTERNAL LOGIC ═══════════════════════════════════════════════════
 
     /// @dev Hook that is called after agent was slashed in AgentManager and AgentSecured contracts were notified.
@@ -336,6 +344,12 @@ abstract contract AgentManager is MessagingBase, VerificationManager, AgentManag
     function _updateDispute(address agent, Dispute memory dispute) internal {
         _disputes[agent] = dispute;
         emit DisputeUpdated(agent, dispute);
+    }
+
+    /// @dev Saves the signature and returns its index.
+    function _saveSignature(bytes memory signature) internal returns (uint256 sigIndex) {
+        sigIndex = _storedSignatures.length;
+        _storedSignatures.push(signature);
     }
 
     // ══════════════════════════════════════════════ INTERNAL VIEWS ═══════════════════════════════════════════════════

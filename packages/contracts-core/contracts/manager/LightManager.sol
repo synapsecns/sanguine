@@ -59,7 +59,12 @@ contract LightManager is AgentManager, InterfaceLightManager {
         require(status.domain == localDomain, "Wrong Notary domain");
         // Notary needs to be not in dispute
         require(_disputes[notary].flag == DisputeFlag.None, "Notary is in dispute");
-        return InterfaceDestination(destination).acceptAttestation(notary, status, attPayload, attSignature);
+        // Store Notary signature for the attestation
+        uint256 sigIndex = _saveSignature(attSignature);
+        wasAccepted = InterfaceDestination(destination).acceptAttestation(status, sigIndex, attPayload);
+        if (wasAccepted) {
+            emit AttestationAccepted(status.domain, notary, attPayload, attSignature);
+        }
     }
 
     /// @inheritdoc InterfaceLightManager

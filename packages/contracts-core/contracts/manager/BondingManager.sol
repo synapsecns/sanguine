@@ -74,7 +74,10 @@ contract BondingManager is AgentManager, BondingManagerEvents, InterfaceBondingM
         if (status.domain != 0) {
             require(_disputes[agent].flag == DisputeFlag.None, "Notary is in dispute");
         }
-        return InterfaceSummit(destination).acceptSnapshot(agent, status, snapPayload, snapSignature);
+        // Store Agent signature for the Snapshot
+        uint256 sigIndex = _saveSignature(snapSignature);
+        attPayload = InterfaceSummit(destination).acceptSnapshot(status, sigIndex, snapPayload);
+        emit SnapshotAccepted(status.domain, agent, snapPayload, snapSignature);
     }
 
     /// @inheritdoc InterfaceBondingManager
@@ -87,7 +90,12 @@ contract BondingManager is AgentManager, BondingManagerEvents, InterfaceBondingM
         status.verifyActive();
         // Notary needs to be not in dispute
         require(_disputes[notary].flag == DisputeFlag.None, "Notary is in dispute");
-        return InterfaceSummit(destination).acceptReceipt(notary, status, rcptPayload, rcptSignature);
+        // Store Notary signature for the Snapshot
+        uint256 sigIndex = _saveSignature(rcptSignature);
+        wasAccepted = InterfaceSummit(destination).acceptReceipt(status, sigIndex, rcptPayload);
+        if (wasAccepted) {
+            emit ReceiptAccepted(status.domain, notary, rcptPayload, rcptSignature);
+        }
     }
 
     // ══════════════════════════════════════════ VERIFY AGENT STATEMENTS ══════════════════════════════════════════════

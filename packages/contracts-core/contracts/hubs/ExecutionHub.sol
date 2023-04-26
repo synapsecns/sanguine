@@ -44,6 +44,7 @@ abstract contract ExecutionHub is AgentSecured, ExecutionHubEvents, IExecutionHu
     /// @param index        Index of snapshot root in `_roots`
     /// @param submittedAt  Timestamp when the statement with the snapshot root was submitted
     /// @param notaryV      V-value from the Notary signature for the attestation
+    // TODO: tight pack this
     struct SnapRootData {
         uint32 notaryIndex;
         uint32 attNonce;
@@ -51,9 +52,8 @@ abstract contract ExecutionHub is AgentSecured, ExecutionHubEvents, IExecutionHu
         uint40 attTS;
         uint32 index;
         uint40 submittedAt;
-        uint8 notaryV;
+        uint256 sigIndex;
     }
-    // 32 bits left for tight packing
 
     /// @notice Struct representing stored receipt data for the message in Execution Hub.
     /// @param origin       Domain where message originated
@@ -237,18 +237,18 @@ abstract contract ExecutionHub is AgentSecured, ExecutionHubEvents, IExecutionHu
 
     /// @dev Saves a snapshot root with the attestation data provided by a Notary.
     /// It is assumed that the Notary signature has been checked outside of this contract.
-    function _saveAttestation(Attestation att, uint32 notaryIndex, uint8 notaryV) internal {
+    function _saveAttestation(Attestation att, uint32 notaryIndex, uint256 sigIndex) internal {
         bytes32 root = att.snapRoot();
         require(_rootData[root].submittedAt == 0, "Root already exists");
-        _rootData[root] = SnapRootData(
-            notaryIndex,
-            att.nonce(),
-            att.blockNumber(),
-            att.timestamp(),
-            uint32(_roots.length),
-            uint40(block.timestamp),
-            notaryV
-        );
+        _rootData[root] = SnapRootData({
+            notaryIndex: notaryIndex,
+            attNonce: att.nonce(),
+            attBN: att.blockNumber(),
+            attTS: att.timestamp(),
+            index: uint32(_roots.length),
+            submittedAt: uint40(block.timestamp),
+            sigIndex: sigIndex
+        });
         _roots.push(root);
     }
 
