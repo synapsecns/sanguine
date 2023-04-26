@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.17;
 
+import {AgentManagerHarness} from "../../harnesses/manager/AgentManagerHarness.t.sol";
 import {SynapseTest} from "../../utils/SynapseTest.t.sol";
 import {RawStateIndex} from "../../utils/libs/SynapseStructs.t.sol";
 
@@ -13,6 +14,12 @@ abstract contract MessagingBaseTest is SynapseTest {
     modifier onlySupportedDomain() virtual {
         require(localDomain() == DOMAIN_LOCAL || localDomain() == DOMAIN_SYNAPSE, "Unsupported local domain");
         _;
+    }
+
+    // ══════════════════════════════════════════════ DISPUTE CHEATS ═══════════════════════════════════════════════════
+
+    function openDispute(address guard, address notary) public {
+        AgentManagerHarness(localAgentManager()).openDisputeExposed(guard, notary);
     }
 
     // ══════════════════════════════════════════════════ HELPERS ══════════════════════════════════════════════════════
