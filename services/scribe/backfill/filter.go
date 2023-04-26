@@ -33,6 +33,9 @@ type RangeFilter struct {
 	contractAddress ethCommon.Address
 	// done is whether the RangeFilter has completed. It cannot be restarted and the object must be recreated.
 	done bool
+	// doneChan is a channel that is closed when the RangeFilter has completed.
+	// this is only to be used by external callers
+	doneChan chan bool
 	// subChunkSize is the size of each batch.
 	subChunkSize int
 	// chainID is the chain ID.
@@ -64,6 +67,7 @@ func NewRangeFilter(address ethCommon.Address, backend ScribeBackend, startBlock
 		logs:            make(chan *LogInfo, bufferSize),
 		backend:         backend,
 		contractAddress: address,
+		doneChan:        make(chan bool),
 		done:            false,
 		subChunkSize:    subChunkSize,
 		chainID:         chainID,
@@ -73,6 +77,8 @@ func NewRangeFilter(address ethCommon.Address, backend ScribeBackend, startBlock
 // Start starts the filtering process. If the context is canceled, logs will stop being filtered.
 // This should be run on an independent goroutine.
 func (f *RangeFilter) Start(ctx context.Context) error {
+	defer close(f.logs)
+	defer close(f.doneChan)
 	for {
 		select {
 		case <-ctx.Done():
@@ -91,6 +97,7 @@ func (f *RangeFilter) Start(ctx context.Context) error {
 
 			if chunk == nil {
 				f.done = true
+				f.doneChan <- true
 
 				return nil
 			}
@@ -196,8 +203,8 @@ func (f *RangeFilter) appendToChannel(ctx context.Context, logs *LogInfo) {
 }
 
 // Done returns a bool indicating whether the filtering operation is done.
-func (f *RangeFilter) Done() bool {
-	return f.done
+func (f *RangeFilter) Done() chan bool {
+	return f.doneChan
 }
 
 // GetLogChan returns a log chan with the logs filtered ahead to bufferSize. Iteration oder is only guaranteed with up to one
