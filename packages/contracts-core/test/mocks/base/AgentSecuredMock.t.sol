@@ -7,7 +7,9 @@ contract AgentSecuredMock is IAgentSecured {
     /// @notice Prevents this contract from being included in the coverage report
     function testAgentSecuredMock() external {}
 
-    function managerSlash(uint32 domain, address agent, address prover) external {}
+    function openDispute(uint32 guardIndex, uint32 notaryIndex) external {}
+
+    function resolveDispute(uint32 slashedIndex, uint32 rivalIndex) external {}
 
     function agentManager() external view returns (address) {}
 

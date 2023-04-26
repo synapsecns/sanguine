@@ -2,12 +2,11 @@
 pragma solidity 0.8.17;
 
 // ═════════════════════════════ INTERNAL IMPORTS ══════════════════════════════
-import {AgentSecuredEvents} from "../events/AgentSecuredEvents.sol";
 import {IAgentManager} from "../interfaces/IAgentManager.sol";
-import {AgentStatus, IAgentSecured} from "../interfaces/IAgentSecured.sol";
+import {AgentStatus, DisputeFlag, IAgentSecured} from "../interfaces/IAgentSecured.sol";
 import {MessagingBase} from "./MessagingBase.sol";
 
-abstract contract AgentSecured is MessagingBase, AgentSecuredEvents, IAgentSecured {
+abstract contract AgentSecured is MessagingBase, IAgentSecured {
     // ════════════════════════════════════════════════ IMMUTABLES ═════════════════════════════════════════════════════
 
     /// @inheritdoc IAgentSecured
@@ -15,8 +14,11 @@ abstract contract AgentSecured is MessagingBase, AgentSecuredEvents, IAgentSecur
 
     // ══════════════════════════════════════════════════ STORAGE ══════════════════════════════════════════════════════
 
+    // (agent index => their dispute flag: None/Pending/Slashed)
+    mapping(uint32 => DisputeFlag) internal _disputes;
+
     /// @dev gap for upgrade safety
-    uint256[50] private __GAP; // solhint-disable-line var-name-mixedcase
+    uint256[49] private __GAP; // solhint-disable-line var-name-mixedcase
 
     modifier onlyAgentManager() {
         require(msg.sender == agentManager, "!agentManager");
@@ -32,8 +34,15 @@ abstract contract AgentSecured is MessagingBase, AgentSecuredEvents, IAgentSecur
     // ════════════════════════════════════════════ ONLY AGENT MANAGER ═════════════════════════════════════════════════
 
     /// @inheritdoc IAgentSecured
-    function managerSlash(uint32 domain, address agent, address prover) external onlyAgentManager {
-        _processSlashed(domain, agent, prover);
+    function openDispute(uint32 guardIndex, uint32 notaryIndex) external onlyAgentManager {
+        _disputes[guardIndex] = DisputeFlag.Pending;
+        _disputes[notaryIndex] = DisputeFlag.Pending;
+    }
+
+    /// @inheritdoc IAgentSecured
+    function resolveDispute(uint32 slashedIndex, uint32 honestIndex) external onlyAgentManager {
+        _disputes[slashedIndex] = DisputeFlag.Slashed;
+        if (honestIndex != 0) delete _disputes[honestIndex];
     }
 
     // ═══════════════════════════════════════════════════ VIEWS ═══════════════════════════════════════════════════════
@@ -46,14 +55,6 @@ abstract contract AgentSecured is MessagingBase, AgentSecuredEvents, IAgentSecur
     /// @inheritdoc IAgentSecured
     function getAgent(uint256 index) external view returns (address agent, AgentStatus memory status) {
         return _getAgent(index);
-    }
-
-    // ══════════════════════════════════════════════ INTERNAL LOGIC ═══════════════════════════════════════════════════
-
-    /// @dev Child contract could define custom logic for processing the slashed Agent.
-    /// This will be called when the slashing was initiated in this contract or elsewhere.
-    function _processSlashed(uint32 domain, address agent, address prover) internal virtual {
-        emit AgentSlashed(domain, agent, prover);
     }
 
     // ══════════════════════════════════════════════ INTERNAL VIEWS ═══════════════════════════════════════════════════

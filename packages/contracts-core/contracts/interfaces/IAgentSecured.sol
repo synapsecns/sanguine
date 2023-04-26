@@ -1,17 +1,25 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.17;
 
-import {AgentStatus} from "../libs/Structures.sol";
+import {AgentStatus, DisputeFlag} from "../libs/Structures.sol";
 
 interface IAgentSecured {
     /**
-     * @notice Local AgentManager should call this function to indicate that the agent
-     * has been slashed, either on local or remote chain.
-     * @param domain    Domain where the slashed agent was active
-     * @param agent     Address of the slashed Agent
-     * @param prover    Account that supplied proof leading to agent slashing
+     * @notice Local AgentManager should call this function to indicate that a dispute
+     * between a Guard and a Notary has been opened.
+     * @param guardIndex    Index of the Guard in the Agent Merkle Tree
+     * @param notaryIndex   Index of the Notary in the Agent Merkle Tree
      */
-    function managerSlash(uint32 domain, address agent, address prover) external;
+    function openDispute(uint32 guardIndex, uint32 notaryIndex) external;
+
+    /**
+     * @notice Local AgentManager should call this function to indicate that a dispute
+     * has been resolved due to one of the agents being slashed.
+     * > `rivalIndex` will be ZERO, if the slashed agent was not in the Dispute.
+     * @param slashedIndex  Index of the slashed agent in the Agent Merkle Tree
+     * @param rivalIndex    Index of the their Dispute Rival in the Agent Merkle Tree
+     */
+    function resolveDispute(uint32 slashedIndex, uint32 rivalIndex) external;
 
     // ═══════════════════════════════════════════════════ VIEWS ═══════════════════════════════════════════════════════
 
