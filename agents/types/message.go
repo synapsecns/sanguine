@@ -14,8 +14,6 @@ import (
 //
 //nolint:interfacebloat
 type Message interface {
-	// Version gets the version of the message
-	Version() uint16
 	// Header gets the message header
 	Header() Header
 	// Tips gets the tips
@@ -25,14 +23,10 @@ type Message interface {
 
 	// OriginDomain returns the Slip-44 ID
 	OriginDomain() uint32
-	// Sender is the address of the sender
-	Sender() common.Hash
 	// Nonce is the count of all previous messages to the destination
 	Nonce() uint32
 	// DestinationDomain is the slip-44 id of the destination
 	DestinationDomain() uint32
-	// Recipient is the address of the recipient
-	Recipient() common.Hash
 	// ToLeaf converts a leaf to a keccac256
 	ToLeaf() (leaf [32]byte, err error)
 	// OptimisticSeconds gets the optimistic seconds count
@@ -47,17 +41,14 @@ type messageImpl struct {
 	body    []byte
 }
 
-const messageVersion uint16 = 1
-
-const headerOffset uint16 = 6
+const headerOffset uint16 = 0
 
 // NewMessage creates a new message from fields passed in.
 func NewMessage(header Header, tips Tips, body []byte) Message {
 	return &messageImpl{
-		header:  header,
-		tips:    tips,
-		version: messageVersion,
-		body:    body,
+		header: header,
+		tips:   tips,
+		body:   body,
 	}
 }
 
@@ -120,20 +111,12 @@ func (m messageImpl) OriginDomain() uint32 {
 	return m.Header().OriginDomain()
 }
 
-func (m messageImpl) Sender() common.Hash {
-	return m.Header().Sender()
-}
-
 func (m messageImpl) Nonce() uint32 {
 	return m.Header().Nonce()
 }
 
 func (m messageImpl) DestinationDomain() uint32 {
 	return m.Header().DestinationDomain()
-}
-
-func (m messageImpl) Recipient() common.Hash {
-	return m.Header().Recipient()
 }
 
 func (m messageImpl) OptimisticSeconds() uint32 {

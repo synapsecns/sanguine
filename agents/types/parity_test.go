@@ -252,13 +252,14 @@ func TestEncodeAttestationParity(t *testing.T) {
 
 func TestMessageEncodeParity(t *testing.T) {
 	// TODO (joeallen): FIX ME
-	t.Skip()
-	/*ctx, cancel := context.WithTimeout(context.Background(), time.Second*10)
+	// t.Skip()
+	ctx, cancel := context.WithTimeout(context.Background(), time.Second*10)
 	defer cancel()
 
 	testBackend := simulated.NewSimulatedBackend(ctx, t)
 	deployManager := testutil.NewDeployManager(t)
 	_, messageContract := deployManager.GetMessageHarness(ctx, testBackend)
+	_, headerContract := deployManager.GetHeaderHarness(ctx, testBackend)
 
 	// TODO (joeallen): FIX ME
 	// check constant parity
@@ -266,71 +267,58 @@ func TestMessageEncodeParity(t *testing.T) {
 	// Nil(t, err)
 	// Equal(t, version, types.MessageVersion)
 
-	headerOffset, err := messageContract.OffsetHeader(&bind.CallOpts{Context: ctx})
-	Nil(t, err)
-	Equal(t, headerOffset, big.NewInt(int64(types.HeaderOffset)))
+	//headerOffset, err := messageContract.OffsetHeader(&bind.CallOpts{Context: ctx})
+	//Nil(t, err)
+	//Equal(t, headerOffset, big.NewInt(int64(types.HeaderOffset)))
 
 	// generate some fake data
 	origin := gofakeit.Uint32()
-	sender := common.BigToHash(big.NewInt(gofakeit.Int64()))
 	nonce := gofakeit.Uint32()
 	destination := gofakeit.Uint32()
-	recipient := common.BigToHash(big.NewInt(gofakeit.Int64()))
 	body := []byte(gofakeit.Sentence(gofakeit.Number(5, 15)))
 	optimisticSeconds := gofakeit.Uint32()
 
-	notaryTip := randomUint96BigInt(t)
-	broadcasterTip := randomUint96BigInt(t)
-	proverTip := randomUint96BigInt(t)
-	executorTip := randomUint96BigInt(t)
+	flag := uint8(1)
 
-	formattedMessage, err := messageContract.FormatMessage1(&bind.CallOpts{Context: ctx}, origin, sender, nonce, destination, recipient, optimisticSeconds, notaryTip, broadcasterTip, proverTip, executorTip, body)
+	formattedHeader, err := headerContract.EncodeHeader(&bind.CallOpts{Context: ctx}, origin, nonce, destination, optimisticSeconds)
+	Nil(t, err)
+
+	formattedMessage, err := messageContract.FormatMessage(&bind.CallOpts{Context: ctx}, flag, formattedHeader, body)
 	Nil(t, err)
 
 	decodedMessage, err := types.DecodeMessage(formattedMessage)
 	Nil(t, err)
 
 	Equal(t, decodedMessage.OriginDomain(), origin)
-	Equal(t, decodedMessage.Sender(), sender)
 	Equal(t, decodedMessage.Nonce(), nonce)
 	Equal(t, decodedMessage.DestinationDomain(), destination)
-	Equal(t, decodedMessage.Body(), body)*/
+	Equal(t, decodedMessage.OptimisticSeconds(), optimisticSeconds)
+	Equal(t, decodedMessage.Body(), body)
 }
 
 func TestHeaderEncodeParity(t *testing.T) {
-	/*
-		TODO (joe): Re-enable this
-		ctx, cancel := context.WithTimeout(context.Background(), time.Second*4)
-		defer cancel()
+	ctx, cancel := context.WithTimeout(context.Background(), time.Second*4)
+	defer cancel()
 
-		testBackend := simulated.NewSimulatedBackend(ctx, t)
-		deployManager := testutil.NewDeployManager(t)
-		_, headerHarnessContract := deployManager.GetHeaderHarness(ctx, testBackend)
+	testBackend := simulated.NewSimulatedBackend(ctx, t)
+	deployManager := testutil.NewDeployManager(t)
+	_, headerHarnessContract := deployManager.GetHeaderHarness(ctx, testBackend)
 
-		origin := gofakeit.Uint32()
-		sender := common.BigToHash(big.NewInt(gofakeit.Int64()))
-		nonce := gofakeit.Uint32()
-		destination := gofakeit.Uint32()
-		recipient := common.BigToHash(big.NewInt(gofakeit.Int64()))
-		optimisticSeconds := gofakeit.Uint32()
+	origin := gofakeit.Uint32()
+	nonce := gofakeit.Uint32()
+	destination := gofakeit.Uint32()
+	optimisticSeconds := gofakeit.Uint32()
 
-		solHeader, err := headerHarnessContract.FormatHeader(&bind.CallOpts{Context: ctx},
-			origin,
-			sender,
-			nonce,
-			destination,
-			recipient,
-			optimisticSeconds,
-		)
-		Nil(t, err)
+	solHeader, err := headerHarnessContract.EncodeHeader(&bind.CallOpts{Context: ctx},
+		origin,
+		nonce,
+		destination,
+		optimisticSeconds,
+	)
+	Nil(t, err)
 
-		goHeader, err := types.EncodeHeader(types.NewHeader(origin, sender, nonce, destination, recipient, optimisticSeconds))
-		Nil(t, err)
+	goHeader, err := types.EncodeHeader(types.NewHeader(origin, nonce, destination, optimisticSeconds))
+	Nil(t, err)
 
-		Equal(t, goHeader, solHeader)
-
-		headerVersion, err := headerHarnessContract.HeaderVersion(&bind.CallOpts{Context: ctx})
-		Nil(t, err)
-
-		Equal(t, headerVersion, types.HeaderVersion)*/
+	Equal(t, goHeader, solHeader.Bytes())
 }

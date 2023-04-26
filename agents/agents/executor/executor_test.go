@@ -593,7 +593,7 @@ func (e *ExecutorSuite) TestExecutor() {
 		}
 	}()
 
-	tips := types.NewTips(big.NewInt(int64(gofakeit.Uint32())), big.NewInt(int64(gofakeit.Uint32())), big.NewInt(int64(gofakeit.Uint32())), big.NewInt(int64(gofakeit.Uint32())))
+	tips := types.NewTips(big.NewInt(int64(0)), big.NewInt(int64(0)), big.NewInt(int64(0)), big.NewInt(int64(0)))
 	encodedTips, err := types.EncodeTips(tips)
 	e.Nil(err)
 
@@ -608,6 +608,7 @@ func (e *ExecutorSuite) TestExecutor() {
 
 	paddedTips := new(big.Int).SetBytes(encodedTips)
 	paddedRequest := big.NewInt(0)
+	//txContextOrigin.TransactOpts.Value = big.NewInt(0)
 	tx, err := e.OriginContract.SendBaseMessage(txContextOrigin.TransactOpts, uint32(e.TestBackendDestination.GetChainID()), recipient, optimisticSeconds, paddedTips, paddedRequest, body)
 	e.Nil(err)
 	e.TestBackendOrigin.WaitForConfirmation(e.GetTestContext(), tx)

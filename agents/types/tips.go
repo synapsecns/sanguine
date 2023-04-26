@@ -22,7 +22,6 @@ type Tips interface {
 // NewTips creates a new tips type.
 func NewTips(notaryTip, broadcasterTip, proverTip, executorTip *big.Int) Tips {
 	return tips{
-		version:        tipsVersion,
 		notaryTip:      notaryTip,
 		broadcasterTip: broadcasterTip,
 		proverTip:      proverTip,

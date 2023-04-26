@@ -171,13 +171,11 @@ func HashRawBytes(rawBytes []byte) (common.Hash, error) {
 }
 
 const (
-	//nolint: staticcheck
-	tipsVersion       uint16 = 1
-	offsetNotary             = 2
-	offsetBroadcaster        = 14
-	offsetProver             = 26
-	offsetExecutor           = 38
-	uint96Len                = 12
+	offsetNotary      = 0
+	offsetBroadcaster = 12
+	offsetProver      = 24
+	offsetExecutor    = 36
+	uint96Len         = 12
 )
 
 // EncodeTips encodes a list of tips.
@@ -185,7 +183,6 @@ const (
 //nolint:makezero
 func EncodeTips(tips Tips) ([]byte, error) {
 	b := make([]byte, offsetNotary)
-	binary.BigEndian.PutUint16(b, tipsVersion)
 
 	b = append(b, math.PaddedBigBytes(tips.NotaryTip(), uint96Len)...)
 	b = append(b, math.PaddedBigBytes(tips.BroadcasterTip(), uint96Len)...)
@@ -206,24 +203,18 @@ func DecodeTips(toDecode []byte) (Tips, error) {
 }
 
 type headerEncoder struct {
-	Version           uint16
 	OriginDomain      uint32
-	Sender            [32]byte
 	Nonce             uint32
 	DestinationDomain uint32
-	Recipient         [32]byte
 	OptimisticSeconds uint32
 }
 
 // EncodeHeader encodes a message header.
 func EncodeHeader(header Header) ([]byte, error) {
 	newHeader := headerEncoder{
-		Version:           header.Version(),
 		OriginDomain:      header.OriginDomain(),
-		Sender:            header.Sender(),
 		Nonce:             header.Nonce(),
 		DestinationDomain: header.DestinationDomain(),
-		Recipient:         header.Recipient(),
 		OptimisticSeconds: header.OptimisticSeconds(),
 	}
 
@@ -257,7 +248,6 @@ func EncodeMessage(m Message) ([]byte, error) {
 	}
 
 	newMessage := messageEncoder{
-		Version:      m.Version(),
 		HeaderLength: uint16(len(encodedHeader)),
 		TipsLength:   uint16(len(encodedTips)),
 	}
