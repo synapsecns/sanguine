@@ -140,13 +140,38 @@ jobs:
           sleep 1
           done
 
+      - name: Install pyroscope-ci
+        uses: jaxxstorm/action-install-gh-release@v1.5.0
+        with: # Grab the latest version
+          repo: pyroscope-io/ci
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Get Coverage name
+        id: coverage
+        run: |
+          echo "::set-output name=flag::$(echo "${{ matrix.package }}" | rev | cut -d/ -f1 | rev)"
+
+      - name: Get pyroscope path
+        id: pyroscope-path
+        run: echo "##[set-output name=PYROSCOPE_PATH;]$(which pyroscope-ci)"
+        shell: bash
+
+      - name: Setup Pyroscope Tests
+        run: $PYROSCOPE_PATH go install --applicationName=$APPLICATION_NAME .
+        shell: bash
+        env:
+          PYROSCOPE_PATH: '${{ steps.pyroscope-path.outputs.PYROSCOPE_PATH }}'
+          APPLICATION_NAME: ${{ steps.coverage.outputs.flag }}
+
       - name: Test
         uses: nick-fields/retry@v2
         with:
-          command: cd ${{matrix.package}} && go test -coverpkg=./... ./... -coverprofile=profile.cov
+          command: cd ${{matrix.package}} && $PYROSCOPE_PATH exec --apiKey=${{ secrets.PYROSCOPE_CLOUD_TOKEN }} -- go test -coverpkg=./... ./... -coverprofile=profile.cov
           max_attempts: 6
           timeout_minutes: 15
         env:
+          PYROSCOPE_PATH: '${{ steps.pyroscope-path.outputs.PYROSCOPE_PATH }}'
           ENABLE_MYSQL_TEST: true
           MYSQL_HOST: 0.0.0.0
           MYSQL_USER: user
@@ -161,11 +186,6 @@ jobs:
           GOGC: -1
           ETHEREUM_RPC_URI: ${{ secrets.ETHEREUM_RPC_URI }}
 
-
-      - name: Get Coverage name
-        id: coverage
-        run: |
-          echo "::set-output name=flag::$(echo "${{ matrix.package }}" | rev | cut -d/ -f1 | rev)"
 
       - uses: codecov/codecov-action@v3
         name: Send Coverage (Codecov)
@@ -317,24 +337,8 @@ jobs:
         with:
           key: docker-generate-${{ runner.os }}-${{ matrix.package }}
 
-      # Setup npm
-      - name: Read .nvmrc
-        run: echo "##[set-output name=NVMRC;]$(cat .nvmrc)"
-        id: nvmrc
-
-      - name: 'Use NodeJS by nvmrc'
-        uses: actions/setup-node@v3
-        with:
-          node-version: '${{steps.nvmrc.outputs.NVMRC}}'
-          cache: 'yarn'
-
-      - uses: actions/cache@v3
-        with:
-          path: '**/node_modules'
-          key: ${{ runner.os }}-modules-${{ hashFiles('**/yarn.lock') }}
-
-      - name: Install Node Dependencies
-        run: yarn install --immutable
+      - name: Setup NodeJS
+        uses: ./.github/actions/setup-nodejs
 
       # Foundry is required for flattening
       - name: Install Foundry
@@ -427,24 +431,8 @@ jobs:
         with:
           key: docker-generate-${{ runner.os }}-${{ matrix.package }}
 
-      # Setup npm
-      - name: Read .nvmrc
-        run: echo "##[set-output name=NVMRC;]$(cat .nvmrc)"
-        id: nvmrc
-        if: ${{ contains(matrix.package, 'agents') }}
-
-
-      - name: 'Use NodeJS by nvmrc'
-        uses: actions/setup-node@v3
-        if: ${{ contains(matrix.package, 'agents') }}
-        with:
-          node-version: '${{steps.nvmrc.outputs.NVMRC}}'
-          cache: 'yarn'
-
-      - uses: actions/cache@v3
-        with:
-          path: '**/node_modules'
-          key: ${{ runner.os }}-modules-${{ hashFiles('**/yarn.lock') }}
+      - name: Setup NodeJS
+        uses: ./.github/actions/setup-nodejs
 
       # Foundry is required for flattening
       - name: Install Foundry

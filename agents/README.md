@@ -2,7 +2,6 @@
 
 The Agents are the off-chain components of Sanguine. They are responsible for signing, reporting, verifying, and executing messages across chains.
 
-
 ## Use
 
 From `sanguine/agents`, run `go run main.go` to expose the CLI for all agents. Visit each agents' respective directory's README.md for information on individual agent usage.

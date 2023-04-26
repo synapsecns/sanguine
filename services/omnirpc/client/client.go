@@ -27,6 +27,7 @@ type rpcClient struct {
 	config   *rpcOptions
 	endpoint string
 	handler  metrics.Handler
+	opts     []client.Options
 }
 
 // NewOmnirpcClient creates a new RPCClient.
@@ -35,6 +36,7 @@ func NewOmnirpcClient(endpoint string, handler metrics.Handler, options ...Optio
 	c.config = makeOptions(options)
 	c.endpoint = endpoint
 	c.handler = handler
+	c.opts = append(c.opts, client.Capture(c.config.captureReqRes))
 
 	return &c
 }
@@ -60,7 +62,7 @@ func (c *rpcClient) GetDefaultEndpoint(chainID int) string {
 
 func (c *rpcClient) GetConfirmationsClient(ctx context.Context, chainID, confirmations int) (client.EVM, error) {
 	endpoint := c.GetEndpoint(chainID, confirmations)
-	chainClient, err := client.DialBackend(ctx, endpoint, c.handler)
+	chainClient, err := client.DialBackend(ctx, endpoint, c.handler, c.opts...)
 	if err != nil {
 		return nil, fmt.Errorf("could not dial backend: %w", err)
 	}
@@ -69,7 +71,7 @@ func (c *rpcClient) GetConfirmationsClient(ctx context.Context, chainID, confirm
 
 func (c *rpcClient) GetChainClient(ctx context.Context, chainID int) (client.EVM, error) {
 	endpoint := c.GetDefaultEndpoint(chainID)
-	chainClient, err := client.DialBackend(ctx, endpoint, c.handler)
+	chainClient, err := client.DialBackend(ctx, endpoint, c.handler, c.opts...)
 	if err != nil {
 		return nil, fmt.Errorf("could not dial backend: %w", err)
 	}

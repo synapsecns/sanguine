@@ -17,7 +17,7 @@ describe('SynapseSDK', () => {
     'https://api.avax.network/ext/bc/C/rpc'
   )
   const optimisimProvider: Provider = new etherProvider.JsonRpcProvider(
-    'https://mainnet.optimism.io'
+    'https://1rpc.io/op'
   )
   const bscProvider: Provider = new etherProvider.JsonRpcProvider(
     'https://endpoints.omniatech.io/v1/bsc/mainnet/public'
@@ -152,6 +152,105 @@ describe('SynapseSDK', () => {
       )
       expect(data?.length).toBeGreaterThan(0)
       expect(to?.length).toBeGreaterThan(0)
+    })
+  })
+  describe('swap quote', () => {
+    it('test', async () => {
+      const chainIds = [42161]
+      const providers = [arbitrumProvider]
+      const Synapse = new SynapseSDK(chainIds, providers)
+      const { query } = await Synapse.swapQuote(
+        42161,
+        '0xFF970A61A04b1cA14834A43f5dE4533eBDDB5CC8',
+        '0xFd086bC7CD5C481DCC9C85ebE478A1C0b69FCbb9',
+        BigNumber.from('1000000')
+      )
+      expect(query?.length).toBeGreaterThan(0)
+      const { data, to } = await Synapse.swap(
+        42161,
+        '0x0AF91FA049A7e1894F480bFE5bBa20142C6c29a9',
+        '0xFF970A61A04b1cA14834A43f5dE4533eBDDB5CC8',
+        BigNumber.from('1000000'),
+        query!
+      )
+      expect(data?.length).toBeGreaterThan(0)
+      expect(to?.length).toBeGreaterThan(0)
+    })
+  })
+  describe('bridge gas', () => {
+    it('test', async () => {
+      const chainIds = [42161]
+      const providers = [arbitrumProvider]
+      const Synapse = new SynapseSDK(chainIds, providers)
+      const gas = await Synapse.getBridgeGas(42161)
+      expect(Number(gas.toString())).toBeGreaterThan(-1)
+    })
+  })
+  describe('get all pools', () => {
+    it('test', async () => {
+      const chainIds = [42161]
+      const providers = [arbitrumProvider]
+      const Synapse = new SynapseSDK(chainIds, providers)
+      const pools = await Synapse.getAllPools(42161)
+      expect(pools?.length).toBeGreaterThan(0)
+      console.log(pools?.[0]?.tokens?.[0])
+      expect(pools?.[0]?.tokens?.[0]?.token?.length).toBeGreaterThan(0)
+    })
+  })
+  describe('get pool info', () => {
+    it('test', async () => {
+      const chainIds = [42161]
+      const providers = [arbitrumProvider]
+      const Synapse = new SynapseSDK(chainIds, providers)
+      const poolInfo = await Synapse.getPoolInfo(
+        42161,
+        '0x9Dd329F5411466d9e0C488fF72519CA9fEf0cb40'
+      )
+      expect(poolInfo?.tokens?.toString()?.length).toBeGreaterThan(0)
+      expect(poolInfo?.lpToken?.length).toBeGreaterThan(0)
+    })
+  })
+  describe('get pool tokens', () => {
+    it('test', async () => {
+      const chainIds = [42161]
+      const providers = [arbitrumProvider]
+      const Synapse = new SynapseSDK(chainIds, providers)
+      const poolTokens = await Synapse.getPoolTokens(
+        42161,
+        '0x9Dd329F5411466d9e0C488fF72519CA9fEf0cb40'
+      )
+      expect(poolTokens?.length).toBeGreaterThan(0)
+      expect(poolTokens?.[0]?.token?.length).toBeGreaterThan(0)
+    })
+  })
+
+  describe('calculate add liquidity', () => {
+    it('test', async () => {
+      const chainIds = [42161]
+      const providers = [arbitrumProvider]
+      const Synapse = new SynapseSDK(chainIds, providers)
+      const tokenAmount = BigNumber.from('1000000')
+      const amount = await Synapse.calculateAddLiquidity(
+        42161,
+        '0xa067668661C84476aFcDc6fA5D758C4c01C34352',
+        [tokenAmount, tokenAmount]
+      )
+      console.log(amount?.toString())
+      expect(amount?.toString()?.length).toBeGreaterThan(0)
+    })
+  })
+
+  describe('calculate remove liquidity', () => {
+    it('test', async () => {
+      const chainIds = [42161]
+      const providers = [arbitrumProvider]
+      const Synapse = new SynapseSDK(chainIds, providers)
+      const amounts = await Synapse.calculateRemoveLiquidity(
+        42161,
+        '0xa067668661C84476aFcDc6fA5D758C4c01C34352',
+        BigNumber.from('1000000')
+      )
+      expect(amounts?.length).toBeGreaterThan(0)
     })
   })
 })

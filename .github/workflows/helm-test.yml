@@ -11,6 +11,15 @@ on:
 # TODO: it'd be nice to eventually work this into release process on new images
 # definitely not a right now thing
 jobs:
+  cancel-outdated:
+    name: Cancel Outdated Jobs
+    runs-on: ubuntu-latest
+    steps:
+      - id: skip_check
+        if: ${{ format('refs/heads/{0}', github.event.repository.default_branch) != github.ref && !contains(github.event.head_commit.message, '[no_skip]') }}
+        uses: fkirc/skip-duplicate-actions@v5
+        with:
+          cancel_others: 'true'
 
   lint-test:
     runs-on: ubuntu-latest
@@ -39,6 +48,8 @@ jobs:
         working-directory: charts/
         run: make dependencies
 
+      # Even if there are no changes to the chart itself, if running `make lint` changes Chart.lock,
+      # then lint-test will fail due to version bump. To solve this, run `make lint` and version bump.
       - name: Run chart-testing (list-changed)
         id: list-changed
         run: |

@@ -1,0 +1,197 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+body {
+  text-rendering: optimizeLegibility;
+}
+
+@font-face {
+  font-family: "Matter";
+  src: url("./font/Matter-Light.otf") format("opentype");
+  font-weight: 300;
+  font-style: normal;
+  font-display: loading;
+}
+
+@font-face {
+  font-family: "Matter";
+  src: url("./font/Matter-LightItalic.otf") format("opentype");
+  font-weight: 300;
+  font-style: italic;
+  font-display: loading;
+}
+
+@font-face {
+  font-family: "Matter";
+  src: url("./font/Matter-Regular.otf") format("opentype");
+  font-weight: 400;
+  font-style: normal;
+  font-display: loading;
+}
+
+@font-face {
+  font-family: "Matter";
+  src: url("./font/Matter-RegularItalic.otf") format("opentype");
+  font-weight: 400;
+  font-style: italic;
+  font-display: loading;
+}
+
+
+@font-face {
+  font-family: "Matter";
+  src: url("./font/Matter-Medium.otf") format("opentype");
+  font-weight: 500;
+  font-style: normal;
+  font-display: loading;
+}
+
+@font-face {
+  font-family: "Matter";
+  src: url("./font/Matter-MediumItalic.otf") format("opentype");
+  font-weight: 500;
+  font-style: italic;
+  font-display: loading;
+}
+
+@font-face {
+  font-family: "Matter";
+  src: url("./font/Matter-SemiBold.otf") format("opentype");
+  font-weight: 600;
+  font-style: normal;
+  font-display: loading;
+}
+
+@font-face {
+  font-family: "Matter";
+  src: url("./font/Matter-SemiBoldItalic.otf") format("opentype");
+  font-weight: 600;
+  font-style: italic;
+  font-display: loading;
+}
+
+@font-face {
+  font-family: "Matter";
+  src: url("./font/Matter-Bold.otf") format("opentype");
+  font-weight: 700;
+  font-style: normal;
+  font-display: loading;
+}
+
+@font-face {
+  font-family: "Matter";
+  src: url("./font/Matter-BoldItalic.otf") format("opentype");
+  font-weight: 700;
+  font-style: italic;
+  font-display: loading;
+}
+
+@font-face {
+  font-family: "Matter";
+  src: url("./font/Matter-Heavy.otf") format("opentype");
+  font-weight: 900;
+  font-style: normal;
+  font-display: loading;
+}
+
+@font-face {
+  font-family: "Matter";
+  src: url("./font/Matter-HeavyItalic.otf") format("opentype");
+  font-weight: 900;
+  font-style: italic;
+  font-display: loading;
+}
+
+
+/* ANIMATION FOR LOADER */
+
+.dot-flashing {
+  position: relative;
+  top: 1px;
+  width: 8px;
+  height: 8px;
+  border-radius: 5px;
+  background-color: #ae8cfe;
+  color: #ae8cfe;
+  animation: dotFlashing 1s infinite linear alternate;
+  animation-delay: .3s;
+}
+
+.dot-flashing::before, .dot-flashing::after {
+  content: '';
+  display: inline-block;
+  position: absolute;
+}
+
+.dot-flashing::before {
+  left: -12px;
+  width: 8px;
+  height: 8px;
+  border-radius: 5px;
+  background-color: #ae8cfe;
+  color: #ae8cfe;
+  animation: dotFlashing 1s infinite alternate;
+  animation-delay: 0s;
+}
+
+.dot-flashing::after {
+  left: 12px;
+  width: 8px;
+  height: 8px;
+  border-radius: 5px;
+  background-color: #ae8cfe;
+  color: #ae8cfe;
+  animation: dotFlashing 1s infinite alternate;
+  animation-delay: 0.75s;
+}
+
+
+
+
+@keyframes dotFlashing {
+  0% {
+    background-color: #ffffff;
+  }
+  50%,
+  100% {
+    background-color: #ae8cfe;
+
+  }
+}
+
+/* CLASSNAMES FOR LANDING PAGE BG */
+
+.absolute-lightened-bg{
+  position: relative;
+}
+
+.absolute-lightened-bg:before {
+  content:"";
+  position: absolute;
+  background: #1F1D22;
+  width: 4000px;
+  left: -2000px;
+  height: 100%;
+  z-index: -69;
+  overflow: hidden;
+}
+
+.absolute-darkened-bg{
+  position: relative;
+}
+
+.absolute-darkened-bg:before {
+  content:"";
+  position: absolute;
+  background: #121114;
+  width: 4000px;
+  left: -2000px;
+  height: 100%;
+  z-index: 0;
+  overflow: hidden;
+}
+
+.no-mt {
+  margin-top: 0 !important;
+}
