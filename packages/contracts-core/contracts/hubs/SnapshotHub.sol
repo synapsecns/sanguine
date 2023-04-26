@@ -7,13 +7,14 @@ import {MerkleMath} from "../libs/MerkleMath.sol";
 import {Snapshot, SnapshotLib} from "../libs/Snapshot.sol";
 import {State, StateLib} from "../libs/State.sol";
 // ═════════════════════════════ INTERNAL IMPORTS ══════════════════════════════
+import {AgentSecured} from "../base/AgentSecured.sol";
 import {SnapshotHubEvents} from "../events/SnapshotHubEvents.sol";
 import {ISnapshotHub} from "../interfaces/ISnapshotHub.sol";
 
 /**
  * @notice Hub to accept and save snapshots, as well as verify _attestations.
  */
-abstract contract SnapshotHub is SnapshotHubEvents, ISnapshotHub {
+abstract contract SnapshotHub is AgentSecured, SnapshotHubEvents, ISnapshotHub {
     using AttestationLib for bytes;
     using StateLib for bytes;
 
@@ -65,11 +66,12 @@ abstract contract SnapshotHub is SnapshotHubEvents, ISnapshotHub {
 
     /// @dev Pointer for the latest Agent State of a given origin
     /// with ZERO as a sentinel value for "no states submitted yet".
-    // (origin => (agent => {latest state index in _states PLUS 1}))
-    mapping(uint32 => mapping(address => uint256)) private _latestStatePtr;
+    // (origin => (agent index => {latest state index in _states PLUS 1}))
+    mapping(uint32 => mapping(uint32 => uint256)) private _latestStatePtr;
 
     /// @dev Latest nonce that a Notary created
-    mapping(address => uint32) private _latestAttNonce;
+    // (notary index => latest nonce)
+    mapping(uint32 => uint32) private _latestAttNonce;
 
     /// @dev gap for upgrade safety
     uint256[43] private __GAP; // solhint-disable-line var-name-mixedcase
@@ -91,14 +93,14 @@ abstract contract SnapshotHub is SnapshotHubEvents, ISnapshotHub {
 
     /// @inheritdoc ISnapshotHub
     function getLatestAgentState(uint32 origin, address agent) external view returns (bytes memory stateData) {
-        SummitState memory latestState = _latestState(origin, agent);
+        SummitState memory latestState = _latestState(origin, _agentStatus(agent).index);
         if (latestState.nonce == 0) return bytes("");
         return _formatSummitState(latestState);
     }
 
     /// @inheritdoc ISnapshotHub
     function getLatestNotaryAttestation(address notary) external view returns (bytes memory attPayload) {
-        uint32 latestAttNonce = _latestAttNonce[notary];
+        uint32 latestAttNonce = _latestAttNonce[_agentStatus(notary).index];
         if (latestAttNonce == 0) return bytes("");
         return _formatSummitAttestation(_attestations[latestAttNonce], latestAttNonce);
     }
@@ -150,12 +152,12 @@ abstract contract SnapshotHub is SnapshotHubEvents, ISnapshotHub {
 
     /// @dev Accepts a Snapshot signed by a Guard.
     /// It is assumed that the Guard signature has been checked outside of this contract.
-    function _acceptGuardSnapshot(Snapshot snapshot, address guard, uint32 guardIndex) internal {
+    function _acceptGuardSnapshot(Snapshot snapshot, uint32 guardIndex) internal {
         // Snapshot Signer is a Guard: save the states for later use.
         uint256 statesAmount = snapshot.statesAmount();
         uint256[] memory statePtrs = new uint256[](statesAmount);
         for (uint256 i = 0; i < statesAmount; ++i) {
-            statePtrs[i] = _saveState(snapshot.state(i), guard, guardIndex);
+            statePtrs[i] = _saveState(snapshot.state(i), guardIndex);
             // Guard either submitted a fresh state, or reused state submitted by another Guard
             // In any case, the "state pointer" would never be zero
             assert(statePtrs[i] != 0);
@@ -167,7 +169,7 @@ abstract contract SnapshotHub is SnapshotHubEvents, ISnapshotHub {
     /// @dev Accepts a Snapshot signed by a Notary.
     /// It is assumed that the Notary signature has been checked outside of this contract.
     /// Returns the attestation created from the Notary snapshot.
-    function _acceptNotarySnapshot(Snapshot snapshot, bytes32 agentRoot, address notary, uint32 notaryIndex)
+    function _acceptNotarySnapshot(Snapshot snapshot, bytes32 agentRoot, uint32 notaryIndex)
         internal
         returns (bytes memory attPayload)
     {
@@ -183,15 +185,15 @@ abstract contract SnapshotHub is SnapshotHubEvents, ISnapshotHub {
             statePtrs[i] = statePtr;
             // Check that Notary hasn't used a fresher state for this origin before
             uint32 origin = state.origin();
-            require(state.nonce() > _latestState(origin, notary).nonce, "Outdated nonce");
+            require(state.nonce() > _latestState(origin, notaryIndex).nonce, "Outdated nonce");
             // Save Notary if they are the first to use this state
             if (_states[statePtr - 1].notaryIndex == 0) _states[statePtr - 1].notaryIndex = notaryIndex;
             // Update Notary latest state for origin
-            _latestStatePtr[origin][notary] = statePtrs[i];
+            _latestStatePtr[origin][notaryIndex] = statePtrs[i];
         }
         // Derive the snapshot merkle root and save it for a Notary attestation.
         // Save Notary snapshot for later retrieval
-        return _saveNotarySnapshot(snapshot, statePtrs, agentRoot, notary);
+        return _saveNotarySnapshot(snapshot, statePtrs, agentRoot, notaryIndex);
     }
 
     // ════════════════════════════════════ INTERNAL LOGIC: SAVE STATEMENT DATA ════════════════════════════════════════
@@ -212,7 +214,7 @@ abstract contract SnapshotHub is SnapshotHubEvents, ISnapshotHub {
 
     /// @dev Saves the Notary snapshot and the attestation created from it.
     /// Returns the created attestation.
-    function _saveNotarySnapshot(Snapshot snapshot, uint256[] memory statePtrs, bytes32 agentRoot, address notary)
+    function _saveNotarySnapshot(Snapshot snapshot, uint256[] memory statePtrs, bytes32 agentRoot, uint32 notaryIndex)
         internal
         returns (bytes memory attPayload)
     {
@@ -220,7 +222,7 @@ abstract contract SnapshotHub is SnapshotHubEvents, ISnapshotHub {
         uint32 attNonce = uint32(_attestations.length);
         SummitAttestation memory summitAtt = _toSummitAttestation(snapshot.calculateRoot(), agentRoot);
         attPayload = _formatSummitAttestation(summitAtt, attNonce);
-        _latestAttNonce[notary] = attNonce;
+        _latestAttNonce[notaryIndex] = attNonce;
         /// @dev Add a single element to both `_attestations` and `_notarySnapshots`,
         /// enforcing the (_attestations.length == _notarySnapshots.length) invariant.
         _attestations.push(summitAtt);
@@ -230,10 +232,10 @@ abstract contract SnapshotHub is SnapshotHubEvents, ISnapshotHub {
     }
 
     /// @dev Saves the state signed by a Guard.
-    function _saveState(State state, address guard, uint32 guardIndex) internal returns (uint256 statePtr) {
+    function _saveState(State state, uint32 guardIndex) internal returns (uint256 statePtr) {
         uint32 origin = state.origin();
         // Check that Guard hasn't submitted a fresher State before
-        require(state.nonce() > _latestState(origin, guard).nonce, "Outdated nonce");
+        require(state.nonce() > _latestState(origin, guardIndex).nonce, "Outdated nonce");
         bytes32 stateHash = state.leaf();
         statePtr = _leafPtr[origin][stateHash];
         // Save state only if it wasn't previously submitted
@@ -248,7 +250,7 @@ abstract contract SnapshotHub is SnapshotHubEvents, ISnapshotHub {
             emit StateSaved(state.unwrap().clone());
         }
         // Update latest guard state for origin
-        _latestStatePtr[origin][guard] = statePtr;
+        _latestStatePtr[origin][guardIndex] = statePtr;
     }
 
     // ══════════════════════════════════════════════ INTERNAL VIEWS ═══════════════════════════════════════════════════
@@ -299,9 +301,9 @@ abstract contract SnapshotHub is SnapshotHubEvents, ISnapshotHub {
 
     /// @dev Returns the latest state submitted by the Agent for the origin.
     /// Will return an empty struct, if the Agent hasn't submitted a single origin State yet.
-    function _latestState(uint32 origin, address agent) internal view returns (SummitState memory state) {
+    function _latestState(uint32 origin, uint32 agentIndex) internal view returns (SummitState memory state) {
         // Get value for "index in _states PLUS 1"
-        uint256 latestPtr = _latestStatePtr[origin][agent];
+        uint256 latestPtr = _latestStatePtr[origin][agentIndex];
         // Check if the Agent has submitted at least one State for origin
         if (latestPtr != 0) {
             state = _states[latestPtr - 1];
