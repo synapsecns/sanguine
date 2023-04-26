@@ -69,7 +69,7 @@ func (s *server) FilterLogs(ctx context.Context, req *pbscribe.FilterLogsRequest
 //nolint:gocognit,cyclop
 func (s *server) StreamLogs(req *pbscribe.StreamLogsRequest, res pbscribe.ScribeService_StreamLogsServer) error {
 	streamNewBlocks := false
-	retrieveLogsBackoff := time.Duration(3)
+	retrieveLogsBackoff := 3
 	fromBlock, toBlock, err := s.setBlocks(res.Context(), req)
 	if err != nil {
 		return fmt.Errorf("could not set blocks: %w", err)
@@ -103,7 +103,7 @@ func (s *server) StreamLogs(req *pbscribe.StreamLogsRequest, res pbscribe.Scribe
 		for {
 			logs, err := s.db.RetrieveLogsInRangeAsc(ctx, logFilter, fromBlock, toBlock, page)
 			if err != nil {
-				time.Sleep(retrieveLogsBackoff * time.Second)
+				time.Sleep(time.Duration(retrieveLogsBackoff) * time.Second)
 				continue
 			}
 
