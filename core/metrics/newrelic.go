@@ -80,6 +80,10 @@ func (n *newRelicHandler) ConfigureHTTPClient(client *http.Client, opts ...otelh
 	client.Transport = nrRoundTripper{app: n.app, inner: nrTransport}
 }
 
+func (n *newRelicHandler) Type() HandlerType {
+	return NewRelic
+}
+
 type nrRoundTripper struct {
 	inner http.RoundTripper
 	app   *newrelic.Application
