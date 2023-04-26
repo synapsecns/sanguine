@@ -12,12 +12,12 @@ import {Versioned} from "../../contracts/base/Version.sol";
 import {AgentFlag, SynapseTest} from "../utils/SynapseTest.t.sol";
 import {State, RawAttestation, RawState, RawStateIndex} from "../utils/libs/SynapseStructs.t.sol";
 import {Random} from "../utils/libs/Random.t.sol";
-import {IDisputeHub, DisputeHubTest} from "./hubs/DisputeHub.t.sol";
+import {AgentSecuredTest} from "./hubs/ExecutionHub.t.sol";
 
 // solhint-disable func-name-mixedcase
 // solhint-disable no-empty-blocks
 // solhint-disable code-complexity
-contract SummitTest is DisputeHubTest {
+contract SummitTest is AgentSecuredTest {
     struct SignedSnapshot {
         bytes snapshot;
         bytes signature;
@@ -265,7 +265,8 @@ contract SummitTest is DisputeHubTest {
     }
 
     // ══════════════════════════════════════════════ DISPUTE OPENING ══════════════════════════════════════════════════
-
+    // TODO: move to AgentManager test
+    /*
     function test_submitStateReport(uint256 domainId, RawState memory rs, RawStateIndex memory rsi)
         public
         boundIndex(rsi)
@@ -434,8 +435,12 @@ contract SummitTest is DisputeHubTest {
         emit SnapshotAccepted(0, guard, snapPayload, guardSig);
         bondingManager.submitSnapshot(snapPayload, guardSig);
     }
-
+    */
     // ═════════════════════════════════════════════════ OVERRIDES ═════════════════════════════════════════════════════
+
+    function systemContract() public view override returns (address) {
+        return summit;
+    }
 
     /// @notice Returns local domain for the tested system contract
     function localDomain() public pure override returns (uint32) {
