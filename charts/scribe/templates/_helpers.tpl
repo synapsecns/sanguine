@@ -36,19 +36,24 @@ Common labels
 {{- define "scribe.labels" -}}
 helm.sh/chart: {{ include "scribe.chart" . }}
 {{ include "scribe.selectorLabels" . }}
+{{ include "scribe.commonLabels" . }}
 {{- if .Chart.AppVersion }}
 app.kubernetes.io/version: {{ .Chart.AppVersion | quote }}
 {{- end }}
 app.kubernetes.io/managed-by: {{ .Release.Service }}
 {{- end }}
 
+
+{{- define "scribe.commonLabels" -}}
+{{- range $key, $value := .Values.labels }}
+{{ $key }}: {{ $value | quote }}
+{{- end }}
+{{- end }}
+
 {{/*
 Selector labels
 */}}
 {{- define "scribe.selectorLabels" -}}
-{{- range $key, $value := .Values.labels }}
-{{ $key }}: {{ $value | quote }}
-{{- end }}
 app.kubernetes.io/name: {{ include "scribe.name" . }}
 app.kubernetes.io/instance: {{ .Release.Name }}
 {{- end }}
