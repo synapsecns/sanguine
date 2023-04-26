@@ -66,6 +66,18 @@ func (t *captureTransport) RoundTrip(req *http.Request) (_ *http.Response, err e
 		metrics.EndSpanWithErr(span, err)
 	}()
 
+	// Perform the HTTP request using the underlying transport
+	transport := t.transport
+	if transport == nil {
+		transport = http.DefaultTransport
+	}
+
+	// no need to capture if we're not recording
+	if !span.IsRecording() {
+		// nolint: wrapcheck
+		return transport.RoundTrip(req)
+	}
+
 	// Capture the request body
 	var requestBody bytes.Buffer
 	if req.Body != nil {
@@ -76,11 +88,6 @@ func (t *captureTransport) RoundTrip(req *http.Request) (_ *http.Response, err e
 		}
 	}
 
-	// Perform the HTTP request using the underlying transport
-	transport := t.transport
-	if transport == nil {
-		transport = http.DefaultTransport
-	}
 	resp, err := transport.RoundTrip(req)
 	if err != nil {
 		return nil, fmt.Errorf("failed to perform http request: %w", err)
