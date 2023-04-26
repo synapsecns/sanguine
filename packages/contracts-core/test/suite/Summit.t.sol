@@ -158,6 +158,10 @@ contract SummitTest is AgentSecuredTest {
             }
         }
 
+        for (uint32 i = 0; i < DOMAIN_AGENTS; ++i) {
+            assertEq(ISnapshotHub(summit).getGuardSnapshot(i), guardSnapshots[i].snapshot, "!getGuardSnapshot");
+        }
+
         // Check global latest state
         checkLatestState();
     }
@@ -234,7 +238,8 @@ contract SummitTest is AgentSecuredTest {
         }
 
         for (uint32 i = 0; i < DOMAIN_AGENTS; ++i) {
-            (bytes memory snapPayload, bytes memory snapSignature) = InterfaceSummit(summit).getSignedSnapshot(i + 1);
+            assertEq(ISnapshotHub(summit).getNotarySnapshot(i), snapPayloads[i], "!getNotarySnapshot");
+            (bytes memory snapPayload, bytes memory snapSignature) = InterfaceSummit(summit).getSignedSnapshot(i);
             assertEq(snapPayload, snapPayloads[i], "!payload");
             assertEq(snapSignature, snapSignatures[i], "!signature");
         }
