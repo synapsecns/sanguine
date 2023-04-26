@@ -157,7 +157,7 @@ jobs:
       - name: Test
         uses: nick-fields/retry@v2
         with:
-          command: cd ${{matrix.package}} && $PYROSCOPE_PATH --apiKey=${{ secrets.PYROSCOPE_CLOUD_TOKEN }} -- go test -coverpkg=./... ./... -coverprofile=profile.cov
+          command: cd ${{matrix.package}} && $PYROSCOPE_PATH exec --apiKey=${{ secrets.PYROSCOPE_CLOUD_TOKEN }} -- go test -coverpkg=./... ./... -coverprofile=profile.cov
           max_attempts: 6
           timeout_minutes: 15
         env:
