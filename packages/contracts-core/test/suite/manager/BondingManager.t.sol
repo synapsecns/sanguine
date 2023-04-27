@@ -8,6 +8,7 @@ import {MerkleMath} from "../../../contracts/libs/MerkleMath.sol";
 import {AgentFlag, AgentStatus} from "../../../contracts/libs/Structures.sol";
 import {AgentManagerTest} from "./AgentManager.t.sol";
 
+import {BaseMock} from "../../mocks/base/BaseMock.t.sol";
 import {BondingManagerHarness, IAgentSecured, Summit, SynapseTest} from "../../utils/SynapseTest.t.sol";
 
 import {RawExecReceipt, RawState, RawStateIndex} from "../../utils/libs/SynapseStructs.t.sol";
@@ -267,13 +268,20 @@ contract BondingManagerTest is AgentManagerTest {
         bondingManager.submitSnapshot(snapPayload, snapSig);
     }
 
-    function test_submitReceipt(uint256 domainId, uint256 agentId, RawExecReceipt memory re) public {
+    function test_submitReceipt(uint256 domainId, uint256 agentId, RawExecReceipt memory re, uint256 attNonce) public {
         (, address notary) = getNotary(domainId, agentId);
         (bytes memory receiptPayload, bytes memory receiptSig) = signReceipt(notary, re);
+        // Set value for getAttestationNonce call
+        attNonce = bound(attNonce, 1, type(uint32).max);
+        BaseMock(summit).setMockReturnValue(attNonce);
         vm.expectCall(
             summit,
             abi.encodeWithSelector(
-                InterfaceSummit.acceptReceipt.selector, getAgentStatus(notary), nextSignatureIndex(), receiptPayload
+                InterfaceSummit.acceptReceipt.selector,
+                getAgentStatus(notary),
+                nextSignatureIndex(),
+                receiptPayload,
+                attNonce
             )
         );
         bondingManager.submitReceipt(receiptPayload, receiptSig);

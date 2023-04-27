@@ -14,6 +14,8 @@ import {AgentManager, IAgentManager, IAgentSecured} from "./AgentManager.sol";
 import {MessagingBase} from "../base/MessagingBase.sol";
 import {BondingManagerEvents} from "../events/BondingManagerEvents.sol";
 import {InterfaceBondingManager} from "../interfaces/InterfaceBondingManager.sol";
+import {InterfaceDestination} from "../interfaces/InterfaceDestination.sol";
+import {IExecutionHub} from "../interfaces/IExecutionHub.sol";
 import {InterfaceLightManager} from "../interfaces/InterfaceLightManager.sol";
 import {InterfaceOrigin} from "../interfaces/InterfaceOrigin.sol";
 import {ISnapshotHub} from "../interfaces/ISnapshotHub.sol";
@@ -77,6 +79,8 @@ contract BondingManager is AgentManager, BondingManagerEvents, InterfaceBondingM
         // Store Agent signature for the Snapshot
         uint256 sigIndex = _saveSignature(snapSignature);
         attPayload = InterfaceSummit(destination).acceptSnapshot(status, sigIndex, snapPayload);
+        // TODO: enable when separated
+        // InterfaceDestination(destination).acceptAttestation(status, sigIndex, attPayload);
         emit SnapshotAccepted(status.domain, agent, snapPayload, snapSignature);
     }
 
@@ -92,7 +96,10 @@ contract BondingManager is AgentManager, BondingManagerEvents, InterfaceBondingM
         require(_disputes[notary].flag == DisputeFlag.None, "Notary is in dispute");
         // Store Notary signature for the Snapshot
         uint256 sigIndex = _saveSignature(rcptSignature);
-        wasAccepted = InterfaceSummit(destination).acceptReceipt(status, sigIndex, rcptPayload);
+        // Check that snapshot root is known
+        uint32 attNonce = IExecutionHub(destination).getAttestationNonce(rcpt.body().snapshotRoot());
+        require(attNonce != 0, "Unknown snapshot root");
+        wasAccepted = InterfaceSummit(destination).acceptReceipt(status, sigIndex, rcptPayload, attNonce);
         if (wasAccepted) {
             emit ReceiptAccepted(status.domain, notary, rcptPayload, rcptSignature);
         }
