@@ -26,18 +26,20 @@ contract BondingManagerTest is AgentManagerTest {
 
     // ═══════════════════════════════════════════════ TESTS: SETUP ════════════════════════════════════════════════════
 
-    function test_initializer(address caller, address origin_, address destination_) public {
+    function test_initializer(address caller, address origin_, address destination_, address summit_) public {
         bondingManager = new BondingManagerHarness(DOMAIN_SYNAPSE);
         vm.prank(caller);
-        bondingManager.initialize(origin_, destination_);
+        bondingManager.initialize(origin_, destination_, summit_);
         assertEq(bondingManager.owner(), caller);
-        assertEq(address(bondingManager.origin()), origin_);
-        assertEq(address(bondingManager.destination()), destination_);
+        assertEq(bondingManager.origin(), origin_);
+        assertEq(bondingManager.destination(), destination_);
+        assertEq(bondingManager.summit(), summit_);
         assertEq(bondingManager.leafsAmount(), 1);
     }
 
     function test_setup() public override {
         super.test_setup();
+        assertEq(bondingManager.summit(), localSummit(), "!summit");
         assertEq(bondingManager.version(), LATEST_VERSION, "!version");
     }
 
@@ -69,7 +71,7 @@ contract BondingManagerTest is AgentManagerTest {
     function test_addAgent_fromScratch() public {
         // Deploy fresh instance of BondingManager
         bondingManager = new BondingManagerHarness(DOMAIN_SYNAPSE);
-        bondingManager.initialize(originSynapse, summit);
+        bondingManager.initialize(originSynapse, destinationSynapse, summit);
         // Try to add all agents one by one
         for (uint256 d = 0; d < allDomains.length; ++d) {
             uint32 domain = allDomains[d];
@@ -281,7 +283,7 @@ contract BondingManagerTest is AgentManagerTest {
         (bytes memory receiptPayload, bytes memory receiptSig) = signReceipt(rcptNotary, re);
         // Set value for getAttestationNonce call
         attNonce = bound(attNonce, 1, type(uint32).max);
-        BaseMock(summit).setMockReturnValue(attNonce);
+        BaseMock(localDestination()).setMockReturnValue(attNonce);
         vm.expectCall(
             summit,
             abi.encodeWithSelector(
@@ -303,7 +305,7 @@ contract BondingManagerTest is AgentManagerTest {
         openDispute({guard: domains[0].agent, notary: rcptNotary});
         (bytes memory receiptPayload, bytes memory receiptSig) = signReceipt(rcptNotary, re);
         // Set value for getAttestationNonce call
-        BaseMock(summit).setMockReturnValue(1);
+        BaseMock(localDestination()).setMockReturnValue(1);
         vm.expectRevert("Notary is in dispute");
         bondingManager.submitReceipt(receiptPayload, receiptSig);
     }

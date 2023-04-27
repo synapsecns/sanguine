@@ -2,6 +2,7 @@
 pragma solidity 0.8.17;
 
 import {IAgentSecured} from "../../contracts/interfaces/IAgentSecured.sol";
+import {InterfaceDestination} from "../../contracts/interfaces/InterfaceDestination.sol";
 import {ISnapshotHub} from "../../contracts/interfaces/ISnapshotHub.sol";
 import {SNAPSHOT_TREE_HEIGHT} from "../../contracts/libs/Constants.sol";
 import {MerkleMath} from "../../contracts/libs/MerkleMath.sol";
@@ -213,6 +214,16 @@ contract SummitTest is AgentSecuredTest {
             emit AttestationSaved(attestation);
             vm.expectEmit(true, true, true, true);
             emit SnapshotAccepted(DOMAIN_LOCAL, notary, snapPayloads[i], snapSignatures[i]);
+            // Should pass the resulting attestation to Destination: acceptAttestation(status, sigIndex, attestation)
+            vm.expectCall(
+                destinationSynapse,
+                abi.encodeWithSelector(
+                    InterfaceDestination.acceptAttestation.selector,
+                    getAgentStatus(notary),
+                    type(uint256).max,
+                    attestation
+                )
+            );
 
             bytes memory attPayload = bondingManager.submitSnapshot(snapPayloads[i], snapSignatures[i]);
             assertEq(attPayload, attestation, "Notary: incorrect attestation");

@@ -58,8 +58,8 @@ contract SummitTipsTest is AgentSecuredTest {
 
     address internal summitCheats;
 
-    // Deploy Production version of Summit and mocks for everything else
-    constructor() SynapseTest(DEPLOY_PROD_SUMMIT) {}
+    // Deploy Production version of Destination and Summit and mocks for everything else
+    constructor() SynapseTest(DEPLOY_PROD_DESTINATION_SYNAPSE | DEPLOY_PROD_SUMMIT) {}
 
     modifier checkQueueLength(int256 diff) {
         uint256 len = InterfaceSummit(summit).receiptQueueLength();
