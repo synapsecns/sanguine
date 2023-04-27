@@ -2,13 +2,13 @@ import { JsonRpcProvider } from '@ethersproject/providers'
 import { SynapseSDK } from '@synapsecns/sdk-router'
 import { BigNumber } from '@ethersproject/bignumber'
 import express from 'express'
+
 import config from './config.json'
 
 //Setting up RPC providers:
 
 const providers = []
 const chainIds = []
-const welcomeString
 for (let i = 0; i < config.length; i++) {
   providers.push(new JsonRpcProvider(config[i].rpcUrl))
   chainIds.push(config[i].chainId)
@@ -21,14 +21,12 @@ const port = process.env.PORT || 3000
 
 //Intro Message for UI
 app.get('/', (req, res) => {
-  res.send(`Welcome to the Synapse Rest API for swap and bridge quotes \nAvailable Chains: \n${config.map((chain) => String(chain.chainId) + "\n")}`)
+  res.send(
+    `Welcome to the Synapse Rest API for swap and bridge quotes \nAvailable Chains: \n${config.map(
+      (chain) => String(chain.name) + '\n'
+    )}`
+  )
 })
-
-//Setting up arguments
-//@simon Need a list of all chain ids... maybe can use supportedchainIds from the sdk? was just having package issues.
-
-
-
 
 //Swap get request
 app.get('/swap/:chain/:fromToken/:toToken/:amount', async (req, res) => {
@@ -80,7 +78,7 @@ app.get(
 )
 
 app.listen(port, () => {
-  console.log('Server listening at ${port}')
+  console.log(`Server listening at ${port}`)
 })
 
 // export const allChains = [
