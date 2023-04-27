@@ -1,6 +1,9 @@
+import { useMemo } from 'react'
 import { LandingPageWrapper } from '@/components/layouts/LandingPageWrapper'
 import { useNetwork } from 'wagmi'
 import { Token } from '@/utils/types'
+import { Chain } from '@/utils/types'
+import { getNetworkTextColor } from '@/styles/chains'
 import {
   STAKABLE_TOKENS,
   STAKING_MAP_TOKENS,
@@ -11,18 +14,22 @@ import { PageHeader } from '@/components/PageHeader'
 import Card from '@/components/ui/tailwind/Card'
 import Grid from '@/components/ui/tailwind/Grid'
 
-function NoStakeCard({ chainName }: { chainName?: string }) {
+function NoStakeCard({ chain }: { chain?: Chain }) {
+  const chainName = chain?.chainName ?? 'current network'
+  const networkColor = chain?.color
   return (
     <Card
       divider={false}
       className={`
         transform transition-all duration-100
-        rounded-xl max-w-[320px]
+        rounded-xl max-w-[420px]
       `}
     >
-      <div className="w-full pt-4 text-gray-400">
+      <div className="w-full pt-4 text-center text-gray-400">
         No stakes available on{' '}
-        <span className={`font-medium`}>{chainName}</span>
+        <span className={`${getNetworkTextColor(networkColor)} font-medium`}>
+          {chainName}
+        </span>
       </div>
     </Card>
   )
@@ -31,11 +38,22 @@ function NoStakeCard({ chainName }: { chainName?: string }) {
 const StakePage = () => {
   const { chain: connectedChain } = useNetwork()
 
-  const connectedChainId = connectedChain ? connectedChain.id : undefined
-  const connectedChainInfo = connectedChainId
-    ? CHAINS_BY_ID[connectedChainId]
+  const connectedChainId: number | undefined = connectedChain
+    ? Number(connectedChain.id)
     : undefined
-)
+
+  const connectedChainInfo: Chain | undefined = useMemo(() => {
+    if (connectedChainId) {
+      const chainMapping = CHAINS_BY_ID
+      return chainMapping[connectedChainId]
+    } else {
+      return undefined
+    }
+  }, [connectedChainId])
+
+  // console.log('CHAINS_BY_ID: ', CHAINS_BY_ID)
+  // console.log('connectedChainInfo: ', connectedChainInfo)
+
   const availableStakingTokens: Token[] | [] =
     POOLS_BY_CHAIN[connectedChainId] ?? []
 
