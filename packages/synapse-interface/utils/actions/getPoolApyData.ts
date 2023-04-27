@@ -1,12 +1,18 @@
 import { formatUnits } from '@ethersproject/units'
 import { SYN_ETH_SUSHI_TOKEN } from '@constants/tokens/sushiMaster'
 import { MINICHEF_ADDRESSES } from '@constants/minichef'
-import { useSynPrices } from '@utils/hooks/useSynPrices'
-import { Zero, One } from '@ethersproject/constants'
-import { fetchBalance, fetchToken, readContract } from '@wagmi/core'
-import MINICHEF_ABI from '@abis/miniChef.json'
+import { Token } from '@types'
 import { BigNumber } from 'ethers'
-export const useGenericPoolApyData = async (chainId, poolToken) => {
+import { Zero, One } from '@ethersproject/constants'
+import { fetchBalance, readContracts, fetchToken } from '@wagmi/core'
+import MINICHEF_ABI from '@abis/miniChef.json'
+import { getSynPrices } from '@utils/actions/getPrices'
+export const getPoolApyData = async (
+  chainId: number,
+  poolToken: Token,
+  prices?: any
+) => {
+  console.log('APY DATA', chainId, poolToken.symbol)
   if (!MINICHEF_ADDRESSES?.[chainId]) {
     console.log('no minichef address found for chainId', chainId)
     return {
@@ -19,46 +25,52 @@ export const useGenericPoolApyData = async (chainId, poolToken) => {
     2
   )}`
 
-  const synapsePerSecondResult: any = await readContract({
-    address: minichefAddress,
-    abi: MINICHEF_ABI,
-    functionName: 'synapsePerSecond',
-    chainId,
+  const data = await readContracts({
+    contracts: [
+      {
+        address: minichefAddress,
+        abi: MINICHEF_ABI,
+        functionName: 'synapsePerSecond',
+        chainId,
+      },
+      {
+        address: minichefAddress,
+        abi: MINICHEF_ABI,
+        functionName: 'totalAllocPoint',
+        chainId,
+      },
+      {
+        address: minichefAddress,
+        abi: MINICHEF_ABI,
+        functionName: 'poolInfo',
+        chainId,
+        args: [poolToken.poolId[chainId]],
+      },
+    ],
   })
-
-  const totalAllocPointsResult: any = await readContract({
-    address: minichefAddress,
-    abi: MINICHEF_ABI,
-    functionName: 'totalAllocPoint',
-    chainId,
-  })
-
-  const poolInfoResult: any = await readContract({
-    address: minichefAddress,
-    abi: MINICHEF_ABI,
-    functionName: 'poolInfo',
-    chainId,
-    args: [poolToken.poolId[chainId]],
-  })
+  console.log('APY APY', poolToken.symbol, data)
+  const synapsePerSecondResult: any = data[0]
+  const totalAllocPointsResult: any = data[1]
+  const poolInfoResult: any = data[2] ?? []
 
   const lpTokenBalanceResult =
     (
       await fetchBalance({
         address: minichefAddress,
         chainId,
-        token: poolToken.addresses[chainId],
+        token: `0x${poolToken.addresses[chainId].slice(2)}`,
       })
     )?.value ?? Zero
 
   const lpTokenSupplyResult =
     (
       await fetchToken({
-        address: poolToken.addresses[chainId],
+        address: `0x${poolToken.addresses[chainId].slice(2)}`,
         chainId,
       })
     )?.totalSupply?.value ?? Zero
 
-  const synPriceData = await useSynPrices()
+  const synPriceData = prices?.synPrices ?? (await getSynPrices())
 
   const synapsePerSecond: BigNumber = synapsePerSecondResult ?? Zero
   const totalAllocPoints: BigNumber = totalAllocPointsResult ?? One
@@ -72,11 +84,9 @@ export const useGenericPoolApyData = async (chainId, poolToken) => {
   } catch (e) {
     rewardsPerWeek = 0
   }
-
   const poolRewardsPerWeek =
-    allocPoints.div(totalAllocPoints).toNumber() * rewardsPerWeek
+    (allocPoints.toNumber() / totalAllocPoints.toNumber()) * rewardsPerWeek
   if (poolRewardsPerWeek === 0) {
-    console.log("poolRewardsPerWeek === 0, can't calculate APY", chainId)
     return {}
   }
 
@@ -104,9 +114,14 @@ export const useGenericPoolApyData = async (chainId, poolToken) => {
   const yearlyAPR = weeklyAPR * 52
   const decimalAPR = yearlyAPR / 100
   const yearlyCompoundedAPR = 100 * ((1 + decimalAPR / 365) ** 365 - 1)
+  const fullCompoundedAPY = Math.round(yearlyCompoundedAPR * 100) / 100
+  const fullCompoundedAPYStr = isFinite(fullCompoundedAPY)
+    ? fullCompoundedAPY.toFixed(2)
+    : '-'
 
   return {
-    fullCompoundedAPY: Math.round(yearlyCompoundedAPR * 100) / 100,
+    fullCompoundedAPY,
+    fullCompoundedAPYStr,
     weeklyAPR: Math.round(weeklyAPR * 100) / 100,
     yearlyAPRUnvested: Math.round(yearlyAPR * 100) / 100,
   }

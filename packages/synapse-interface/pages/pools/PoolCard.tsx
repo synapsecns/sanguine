@@ -1,63 +1,58 @@
-// import { Link, useHistory } from 'react-router-dom'
 import Link from 'next/link'
 import { getPoolUrl } from '@urls'
-// import { POOL_INVERTED_ROUTER_INDEX } from '@constants/poolRouter'
 import { switchNetwork } from '@wagmi/core'
 import { useEffect, useState } from 'react'
-// import { POOLS_MAP } from '@hooks/pools/usePools'
-
-import { useGenericPoolData } from '@hooks/pools/useGenericPoolData'
-// import { useChainSwitcher } from '@hooks/wallet/useChainSwitcher'
-// import { useActiveWeb3React } from '@hooks/wallet/useActiveWeb3React'
-
+import { getPoolData } from '@utils/actions/getPoolData'
+import { getPoolApyData } from '@utils/actions/getPoolApyData'
+import { Token } from '@types'
 import Card from '@tw/Card'
 import Grid from '@tw/Grid'
-
-import { getPoolStats } from '@utils/getPoolStats'
 import { memo } from 'react'
 import { CHAINS_BY_ID } from '@constants/chains'
-import { STAKING_MAP_TOKENS } from '@constants/tokens'
-import { useSynapseContext } from '@/utils/SynapseProvider'
+import LoadingSpinner from '@tw/LoadingSpinner'
+
 const PoolsListCard = memo(
   ({
-    poolName,
+    pool,
     chainId,
     address,
     connectedChainId,
+    prices,
   }: {
-    poolName: string
+    pool: Token
     chainId: number
     address: string
     connectedChainId: number
+    prices: any
   }) => {
     const [poolData, setPoolData] = useState(undefined)
-    const SynapseSDK = useSynapseContext()
+    const [poolApyData, setPoolApyData] = useState(undefined)
 
     console.log('PoolsListCard RERENDER')
     useEffect(() => {
-      if (
-        connectedChainId === undefined ||
-        chainId === undefined ||
-        address === undefined ||
-        poolName === undefined
-      ) {
-        return
+      if (connectedChainId && chainId && address && pool) {
+        // TODO - separate the apy and tvl so they load async.
+        getPoolData(chainId, pool, address, false, prices)
+          .then((res) => {
+            console.log('res getPoolData', res)
+
+            setPoolData(res)
+          })
+          .catch((err) => {
+            console.log('Could not get Pool Data: ', err)
+          })
+        getPoolApyData(chainId, pool, prices)
+          .then((res) => {
+            console.log('res', res)
+            setPoolApyData(res)
+          })
+          .catch((err) => {
+            console.log('Could not get Pool APY Data: ', err)
+          })
       }
-      // TODO - separate the apy and tvl so they load async.
-      useGenericPoolData(chainId, poolName, address, SynapseSDK)
-        .then((res) => {
-          setPoolData(res.poolDataObj)
-        })
-        .catch((err) => {
-          console.log('ERROR useGenericPoolData: ', err)
-        })
     }, [])
-    // const [poolData] =
     const chain = CHAINS_BY_ID[chainId]
-    const poolTokens = STAKING_MAP_TOKENS[chainId][poolName]
     // const poolRouterIndex = POOL_INVERTED_ROUTER_INDEX[chainId][poolName]
-    const { apy, fullCompoundedApyStr, totalLockedUSDStr } =
-      getPoolStats(poolData)
 
     return (
       <div>
@@ -82,16 +77,13 @@ const PoolsListCard = memo(
             }
           }}
           // href={getPoolUrl({ poolRouterIndex })}
-          href={getPoolUrl({
-            poolRouterIndex:
-              STAKING_MAP_TOKENS?.[chainId]?.[poolName]?.routerIndex,
-          })} // TODO: fix this
+          href={getPoolUrl(pool)} // TODO: fix this
         >
           <Card
             title={
               <PoolsCardTitle
                 chainImg={chain?.chainImg?.src}
-                poolName={poolName}
+                poolName={pool.poolName}
                 chainName={chain?.name}
               />
             }
@@ -109,8 +101,8 @@ const PoolsListCard = memo(
                 <h3 className="text-sm text-opacity-50 text-secondaryTextColor">
                   Assets
                 </h3>
-                {poolTokens?.poolTokens && (
-                  <CoinLabels coins={poolTokens?.poolTokens} />
+                {pool.poolTokens && (
+                  <CoinLabels coins={pool.poolTokens} /> // change coin to token
                 )}
               </div>
               <div>
@@ -118,10 +110,11 @@ const PoolsListCard = memo(
                   TVL
                 </h3>
                 <div className={'mt-2 text-white '}>
-                  {totalLockedUSDStr ? (
-                    '$' + totalLockedUSDStr
+                  {poolData?.totalLockedUSDStr ? (
+                    '$' + poolData?.totalLockedUSDStr
                   ) : (
-                    <div className="animate-pulse rounded bg-slate-700 h-6 w-12" />
+                    // <div className="animate-pulse rounded bg-slate-700 h-6 w-12" />
+                    <LoadingSpinner />
                   )}
                 </div>
               </div>
@@ -131,7 +124,10 @@ const PoolsListCard = memo(
                 </h3>
                 <div className="mt-2 text-green-400">
                   <>
-                    {fullCompoundedApyStr ?? <i className="opacity-50"> - </i>}%
+                    {poolApyData?.fullCompoundedAPYStr
+                      ? String(poolApyData.fullCompoundedAPYStr)
+                      : '-'}
+                    %
                   </>
                 </div>
               </div>
@@ -143,12 +139,21 @@ const PoolsListCard = memo(
   }
 )
 
-const PoolsCardTitle = ({ chainName, poolName, chainImg }) => {
-  let displayPoolName = poolName.replace(chainName, `<b>${chainName}</b>`)
+const PoolsCardTitle = ({
+  chainName,
+  poolName,
+  chainImg,
+}: {
+  chainName: string
+  poolName: string
+  chainImg: string
+}) => {
+  let displayPoolName = poolName?.replace(chainName, `<b>${chainName}</b>`)
 
   return (
     <div className="flex items-center">
       <img src={chainImg} className="w-6 h-6 mr-2 rounded-full" />
+      {/* TODO: A better way to do this? */}
       <div dangerouslySetInnerHTML={{ __html: displayPoolName }} />
     </div>
   )

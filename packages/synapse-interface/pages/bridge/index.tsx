@@ -26,7 +26,7 @@ import { Token } from '@/utils/types'
 import { BRIDGE_PATH, HOW_TO_BRIDGE_URL } from '@/constants/urls'
 import { stringToBigNum } from '@/utils/stringToBigNum'
 import BridgeCard from './BridgeCard'
-import { useSynapseContext } from '@/utils/SynapseProvider'
+import { useSynapseContext } from '@/utils/providers/SynapseProvider'
 import {
   DEFAULT_FROM_CHAIN,
   DEFAULT_FROM_TOKEN,

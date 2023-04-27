@@ -6,69 +6,93 @@ import {
   bnPercentFormat,
 } from '@bignumber/format'
 
-import InfoListItem from '../components/InfoListItem'
 import AugmentWithUnits from '../components/AugmentWithUnits'
-
+import { Token } from '@types'
 import InfoSectionCard from './InfoSectionCard'
 import CurrencyReservesCard from './CurrencyReservesCard'
-
-const PoolInfoSection = ({ pool, data, chainId }) => {
-  const swapFee = bnPercentFormat(data?.swapFee)
-  // const defaultDepositFee = bnPercentFormat(data?.defaultDepositFee)
-  let adminFee = bnPercentFormat(data?.adminFee)
-
-  if (swapFee && adminFee) {
-    adminFee = `${adminFee} of ${swapFee}`
-  }
-
-  const standardUnits = pool.priceUnits ?? ''
-
-  const tokens = data?.tokens
-
-  let displayDecimals
-  if (standardUnits === 'ETH') {
-    displayDecimals = 3
-  } else {
-    displayDecimals = 0
-  }
-  const totalLocked = commifyBnWithDefault(data?.totalLocked, displayDecimals)
-  const totalLockedUSD = commifyBnWithDefault(data?.totalLockedUSD ?? Zero, 0)
-
-  const virtualPrice = data?.virtualPrice
-    ? commifyBnToString(data.virtualPrice, 5)
-    : null
+import LoadingSpinner from '@tw/LoadingSpinner'
+const PoolInfoSection = ({
+  pool,
+  poolData,
+  chainId,
+}: {
+  pool: Token
+  poolData: any
+  chainId: number
+}) => {
+  // const swapFee = bnPercentFormat('0.02')
+  // this needs to be fixed, need admin fee
 
   return (
     <div className="space-y-4">
       {/* <UserPoolInfoCard data={userData} /> */}
-      {tokens && (
-        <CurrencyReservesCard
-          title="Currency Reserves"
-          chainId={chainId}
-          tokens={tokens}
-          poolToken={data.poolToken}
-        />
-      )}
+      <CurrencyReservesCard
+        title="Currency Reserves"
+        chainId={chainId}
+        poolData={poolData}
+      />
       <InfoSectionCard title="Pool Info">
-        <InfoListItem labelText="Trading Fee" content={swapFee} />
+        <InfoListItem
+          labelText="Trading Fee"
+          content={true ? '0.02%' : <LoadingSpinner />}
+        />
         <InfoListItem
           labelText="Virtual Price"
           content={
-            <AugmentWithUnits content={virtualPrice} label={standardUnits} />
+            poolData?.virtualPriceStr ? (
+              <AugmentWithUnits
+                content={poolData.virtualPriceStr}
+                label={pool.priceUnits}
+              />
+            ) : (
+              <LoadingSpinner />
+            )
           }
         />
         <InfoListItem
           labelText="Total Liquidity"
           content={
-            <AugmentWithUnits content={totalLocked} label={standardUnits} />
+            poolData?.totalLockedUSDStr ? (
+              <AugmentWithUnits
+                content={poolData.totalLockedUSDStr}
+                label={pool.priceUnits}
+              />
+            ) : (
+              <LoadingSpinner />
+            )
           }
         />
         <InfoListItem
           labelText="Total Liquidity USD"
-          content={`$${totalLockedUSD}`}
+          content={
+            poolData?.totalLockedUSDStr ? (
+              `$${poolData.totalLockedUSDStr}`
+            ) : (
+              <LoadingSpinner />
+            )
+          }
         />
       </InfoSectionCard>
     </div>
   )
 }
 export default PoolInfoSection
+
+const InfoListItem = ({
+  labelText,
+  content,
+  className = '',
+}: {
+  labelText: string
+  content: any
+  className?: string
+}) => {
+  return (
+    <li
+      className={`pl-3 pr-4 py-2 text-sm w-full flex border-gray-200 ${className}`}
+    >
+      <div className="text-white">{labelText} </div>
+      <div className="self-center ml-auto text-white">{content}</div>
+    </li>
+  )
+}

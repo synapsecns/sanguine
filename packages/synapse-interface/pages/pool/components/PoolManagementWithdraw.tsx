@@ -33,7 +33,17 @@ import { Zero } from '@ethersproject/constants'
 import { TransactionResponse } from '@ethersproject/providers'
 
 import { OPTIMISM_ETH_SWAP_TOKEN } from '@constants/tokens/poolMaster'
-export default function PoolManagementWithdraw({ pool, chainId, address }) {
+export default function PoolManagementWithdraw({
+  pool,
+  chainId,
+  address,
+  poolUserData,
+}: {
+  pool: any
+  chainId: number
+  address: string
+  poolUserData: any
+}) {
   // const {
   //   onChangeTokenInputValue,
   //   clearInputs,

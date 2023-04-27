@@ -19,7 +19,6 @@ const PoolsPage = () => {
   const { chain } = useNetwork()
   const [connectedChainId, setConnectedChainId] = useState(0)
   const [address, setAddress] = useState(undefined)
-  console.log('PoolsPage RERENDER')
   useEffect(() => {
     setConnectedChainId(chain?.id ?? DEFAULT_FROM_CHAIN)
   }, [chain])

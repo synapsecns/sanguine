@@ -2,10 +2,10 @@ import Link from 'next/link'
 import { STAKE_PATH, POOLS_PATH, POOL_PATH } from '@urls'
 import { ChevronLeftIcon } from '@heroicons/react/outline'
 import { useEffect, useState, memo } from 'react'
-import { useSynapseContext } from '@/utils/SynapseProvider'
+import { useSynapseContext } from '@/utils/providers/SynapseProvider'
 import { Token } from '@types'
-import { useGenericPoolData } from '@hooks/pools/useGenericPoolData'
-import PoolTitle from './components/PoolTitle'
+import { getPoolData } from '@utils/actions/getPoolData'
+import { getPoolApyData } from '@utils/actions/getPoolApyData'
 import Button from '@tw/Button'
 import Card from '@tw/Card'
 import Grid from '@tw/Grid'
@@ -25,27 +25,38 @@ const PoolBody = memo(
   }) => {
     const SynapseSDK = useSynapseContext()
     const [poolData, setPoolData] = useState(undefined)
+    const [poolUserData, setPoolUserData] = useState(undefined)
+    const [poolAPYData, setPoolAPYData] = useState(undefined)
     useEffect(() => {
       if (connectedChainId && pool && address && poolChainId) {
         // TODO - separate the apy and tvl so they load async.
-        useGenericPoolData(poolChainId, pool, address, SynapseSDK)
+        getPoolData(poolChainId, pool, address, false)
           .then((res) => {
-            setPoolData(res.poolDataObj)
+            console.log('POOL BODY', '\nres:', res)
+            setPoolData(res)
           })
           .catch((err) => {
-            console.log('ERROR useGenericPoolData: ', err)
+            console.log('Could not get pool data', err)
+          })
+        getPoolData(poolChainId, pool, address, true)
+          .then((res) => {
+            console.log('POOL BODY', '\nres:', res)
+            setPoolUserData(res)
+          })
+          .catch((err) => {
+            console.log('Could not get pool data', err)
+          })
+        getPoolApyData(poolChainId, pool)
+          .then((res) => {
+            console.log('POOL BODY', '\nres:', res)
+            setPoolAPYData(res)
+          })
+          .catch((err) => {
+            console.log('Could not get pool data', err)
           })
       }
     }, [])
 
-    const apyData = poolData?.apy ?? {}
-
-    let fullyCompoundedApyLabel
-    if (isFinite(apyData.fullCompoundedAPY)) {
-      fullyCompoundedApyLabel = apyData.fullCompoundedAPY?.toFixed(2)
-    } else {
-      fullyCompoundedApyLabel = <i className="opacity-50"> - </i>
-    }
     return (
       <>
         <div className="px-0 md:px-32">
@@ -57,14 +68,29 @@ const PoolBody = memo(
           </Link>
           <div className="flex justify-between">
             <div className="mb-5">
-              <PoolTitle pool={pool} />
+              <div className="inline-flex items-center mt-2">
+                <div className="items-center hidden mr-4 md:flex lg:flex">
+                  {pool.poolTokens.map((token) => (
+                    <img
+                      key={token.symbol}
+                      className="relative inline-block w-8 -mr-2 text-white shadow-solid"
+                      src={token.icon.src}
+                    />
+                  ))}
+                </div>
+                <h3 className="ml-2 mr-2 text-lg font-medium text-white md:ml-0 md:text-2xl">
+                  {pool.name}
+                </h3>
+              </div>
             </div>
 
             <div className="flex space-x-4">
               <div className="text-right">
                 <div className="text-sm text-white text-opacity-60">APY</div>
                 <div className="text-xl font-medium text-green-400">
-                  {fullyCompoundedApyLabel}%
+                  {poolAPYData
+                    ? `${String(poolAPYData.fullCompoundedAPYStr)}%`
+                    : '-'}
                 </div>
               </div>
               <Link href={STAKE_PATH}>
@@ -85,6 +111,7 @@ const PoolBody = memo(
                 pool={pool}
                 address={address}
                 chainId={connectedChainId}
+                poolUserData={poolUserData}
                 // poolStakingLink={STAKE_PATH}
                 // poolStakingLinkText="Stake" // check this
               />
@@ -92,7 +119,7 @@ const PoolBody = memo(
             <div>
               <PoolInfoSection
                 pool={pool}
-                data={poolData}
+                poolData={poolData}
                 chainId={connectedChainId}
               />
             </div>

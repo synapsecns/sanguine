@@ -1,7 +1,7 @@
 import Tabs from '@tw/Tabs'
 import TabItem from '@tw/TabItem'
 
-export default function LiquidityManagementTabs({ cardNav, setCardNav }) {
+const LiquidityManagementTabs = ({ cardNav, setCardNav }) => {
   return (
     <Tabs>
       <TabItem
@@ -23,3 +23,4 @@ export default function LiquidityManagementTabs({ cardNav, setCardNav }) {
     </Tabs>
   )
 }
+export default LiquidityManagementTabs

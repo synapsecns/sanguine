@@ -1,10 +1,12 @@
 import { formatBNToPercentString, formatBNToString } from '@bignumber/format'
 import { BigNumber } from '@ethersproject/bignumber'
 
-export default function PriceImpactDisplay({ priceImpact }) {
+const PriceImpactDisplay = ({ priceImpact }: { priceImpact: BigNumber }) => {
   let colorClassName
   let labelText
-  let priceImpactBP = Number(formatBNToString(priceImpact.mul(100), 18, 2))
+  let priceImpactBP = Number(
+    formatBNToString(priceImpact.mul(BigNumber.from(100)), 18, 2)
+  )
   if (priceImpactBP > 0) {
     colorClassName = 'text-green-500'
     labelText = 'Bonus'
@@ -35,3 +37,4 @@ export default function PriceImpactDisplay({ priceImpact }) {
   }
   return content
 }
+export default PriceImpactDisplay

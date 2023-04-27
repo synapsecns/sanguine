@@ -35,7 +35,7 @@ import { alchemyProvider } from 'wagmi/providers/alchemy'
 import { publicProvider } from 'wagmi/providers/public'
 import * as CHAINS from '@constants/chains/master'
 
-import { SynapseProvider } from '@/utils/SynapseProvider'
+import { SynapseProvider } from '@/utils/providers/SynapseProvider'
 import CustomToaster from '@/components/toast'
 const App = ({ Component, pageProps }: AppProps) => {
   const rawChains = [

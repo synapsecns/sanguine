@@ -1,5 +1,5 @@
 import { ETH, SYN } from '@constants/tokens/master'
-
+import { Token } from '@types'
 import * as CHAINS from '@constants/chains/master'
 import { SYN_ETH_SUSHI_TOKEN } from '@constants/tokens/sushiMaster'
 // Hardcoding this shit for now until actual plan around routing
@@ -31,26 +31,16 @@ export const PRIVACY_POLICY_PATH =
   'https://explorer.synapseprotocol.com/privacy'
 export const SYNAPSE_PFP_PATH = '/returntomonke'
 
-export const getPoolUrl = ({
-  token,
-  poolRouterIndex,
-}: {
-  token?: any
-  poolRouterIndex?: number
-}) => {
-  if (token) {
-    if (token.symbol === SYN_ETH_SUSHI_TOKEN.symbol) {
-      return getSushiSwapUrl({
-        fromCoin: ETH,
-        toCoin: SYN,
-        chainId: CHAINS.ETH.id,
-      })
-    } else {
-      return `${POOL_PATH}/${token.routerIndex}`
-    }
+export const getPoolUrl = (token: Token) => {
+  if (token.symbol === SYN_ETH_SUSHI_TOKEN.symbol) {
+    return getSushiSwapUrl({
+      fromCoin: ETH,
+      toCoin: SYN,
+      chainId: CHAINS.ETH.id,
+    })
+  } else {
+    return `${POOL_PATH}/${token.routerIndex}`
   }
-
-  return `${POOL_PATH}/${poolRouterIndex}`
 }
 
 export const getExplorerTxUrl = ({

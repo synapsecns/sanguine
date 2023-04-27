@@ -6,7 +6,6 @@ import { PoolTokenObject } from '@types'
 export const MAX_BN_POW = BigNumber.from(10).pow(18)
 
 export const getPriceMultiplier = ({ poolType, prices }) => {
-  console.log('poolType', poolType, prices)
   switch (poolType) {
     case 'ETH':
       return prices.ethPrice
@@ -41,7 +40,6 @@ export const getBalanceInfo = async ({ lpTokenContract, account }) => {
 export const getTokenBalanceInfo = ({ tokenBalances, poolType, prices }) => {
   const tokenBalancesSum = calcBnSum(tokenBalances)
   const priceMultiplier = getPriceMultiplier({ prices, poolType })
-  console.log('priceMultiplier', tokenBalancesSum, priceMultiplier)
   const tokenBalancesUSD = tokenBalancesSum?.mul(priceMultiplier ?? 0)
 
   return {
@@ -61,12 +59,16 @@ export const getPoolTokenInfoArr = ({
 }) => {
   return tokenBalances.map((poolToken) => ({
     symbol: poolToken.token.symbol,
-    percent: formatBNToPercentString(
-      poolToken.balance
-        .mul(10 ** 5)
-        .div(lpTokenBalance.isZero() ? One : tokenBalancesSum),
-      5
-    ),
-    value: poolToken.balance,
+    percent: poolToken.balance.isZero()
+      ? '0'
+      : formatBNToPercentString(
+          poolToken.balance
+            .mul(10 ** 5)
+            .div(lpTokenBalance.isZero() ? One : tokenBalancesSum),
+          5
+        ),
+    balance: poolToken.balance,
+    token: poolToken.token,
+    isLp: poolToken.isLP,
   }))
 }

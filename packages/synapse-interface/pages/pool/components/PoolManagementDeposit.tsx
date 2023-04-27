@@ -10,7 +10,32 @@ import { TransactionResponse } from '@ethersproject/providers'
 
 import { TransactionButton } from '@components/buttons/SubmitTxButton'
 import { Zero } from '@ethersproject/constants'
-const PoolManagementDeposit = ({ poolName, chainId, address }) => {
+import { Token } from '@types'
+import { useState, useEffect } from 'react'
+const PoolManagementDeposit = ({
+  pool,
+  chainId,
+  address,
+  poolUserData,
+}: {
+  pool: Token
+  chainId: number
+  address: string
+  poolUserData: any
+}) => {
+  const [inputValue, setInputValue] = useState({})
+  const onChangeTokenInputValue = (tokenSymbol, value) => {
+    setInputValue({ ...inputValue, [tokenSymbol]: value })
+  }
+  useEffect(() => {
+    if (poolUserData) {
+      let initInputValue = {}
+      poolUserData.tokens.map((tokenObj, i) => {
+        initInputValue[tokenObj.token.symbol] = undefined
+      })
+      setInputValue(initInputValue)
+    }
+  }, [poolUserData])
   // const {
   //   onChangeTokenInputValue,
   //   clearInputs,
@@ -20,31 +45,39 @@ const PoolManagementDeposit = ({ poolName, chainId, address }) => {
   //   tokenInputSum,
   //   depositAmount,
   // } = useSwapPoolDeposit(poolName)
-  const onChangeTokenInputValue = () => console.log('onChangeTokenInputValue')
   const clearInputs = ''
-  const priceImpact = ''
+  const priceImpact = Zero
   const poolTokens = []
   const inputState = {}
   const tokenInputSum = Zero
   const depositAmount = ''
-
+  console.log('poolpoolpool', pool)
   const placeholder = async (): Promise<TransactionResponse> => {
     console.log('placeholder')
     return
   }
+  console.log('poolUserData', poolUserData)
   return (
     <div className="flex-col">
       <div className="px-2 pt-1 pb-4 bg-bgLight rounded-xl">
-        {poolTokens.map((token, i) => (
-          <TokenInputWithBalance
-            token={token}
-            inputValue={inputState[token.symbol]}
-            onChangeTokenInputValue={onChangeTokenInputValue}
-            key={i}
-            address={address}
-            chainId={chainId}
-          />
-        ))}
+        {pool &&
+          poolUserData &&
+          poolUserData.tokens.map((tokenObj, i) => {
+            const balanceToken = correctToken(tokenObj.token)
+            return (
+              <TokenInput
+                token={balanceToken}
+                key={balanceToken.symbol}
+                max={String(tokenObj.balance)}
+                inputValue={inputValue}
+                onChange={(value) =>
+                  onChangeTokenInputValue(tokenObj.token.symbol, value)
+                }
+                chainId={chainId}
+                address={address}
+              />
+            )
+          })}
       </div>
       <TransactionButton
         label="Add Liquidity"
@@ -66,26 +99,10 @@ const PoolManagementDeposit = ({ poolName, chainId, address }) => {
         onClick={placeholder}
       />
       <PriceImpactDisplay priceImpact={priceImpact} />
-      {/* {poolStakingLink && (
-        <div className="pb-4">
-          <PoolStakingButton
-            poolName={poolName}
-            poolStakingLink={poolStakingLink}
-            poolStakingLinkText={poolStakingLinkText}
-          />
-        </div>
-      )} */}
     </div>
   )
 }
-
-function TokenInputWithBalance({
-  token,
-  inputValue,
-  onChangeTokenInputValue,
-  address,
-  chainId,
-}) {
+const correctToken = (token: Token) => {
   let balanceToken
   if (token.symbol == WETH.symbol) {
     balanceToken = ETH
@@ -95,20 +112,7 @@ function TokenInputWithBalance({
   } else {
     balanceToken = token
   }
-  // ADDDM<E
-  // const balance = useTokenBalance(balanceToken)
-  const balance = 0
-  return (
-    <TokenInput
-      token={balanceToken}
-      key={balanceToken.symbol}
-      max={String(balance)}
-      inputValue={inputValue}
-      onChange={(value) => onChangeTokenInputValue(token.symbol, value)}
-      // disabled={false}
-      chainId={chainId}
-      address={address}
-    />
-  )
+  return balanceToken
 }
+
 export default PoolManagementDeposit

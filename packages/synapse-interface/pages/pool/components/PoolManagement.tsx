@@ -8,14 +8,16 @@ const PoolManagement = ({
   pool,
   address,
   chainId,
+  poolUserData,
 }: {
   pool: Token
   address: string
   chainId: number
+  poolUserData: any
 }) => {
   // const [cardNav, setCardNav] = useState(getLiquidityMode(location.hash)) // 'addLiquidity'
 
-  const [cardNav, setCardNav] = useState('#addLiquidity') // 'addLiquidity'
+  const [cardNav, setCardNav] = useState(getLiquidityMode('#addLiquidity')) // 'addLiquidity'
   return (
     <div>
       <div className="rounded-lg text-default">
@@ -29,9 +31,10 @@ const PoolManagement = ({
         <div className="mt-4">
           {cardNav === 'addLiquidity' && (
             <PoolManagementDeposit
-              poolName={pool.name}
+              pool={pool}
               address={address}
               chainId={chainId}
+              poolUserData={poolUserData}
             />
           )}
           {cardNav === 'removeLiquidity' && (
@@ -39,6 +42,7 @@ const PoolManagement = ({
               pool={pool}
               chainId={chainId}
               address={address}
+              poolUserData={poolUserData}
             />
           )}
         </div>

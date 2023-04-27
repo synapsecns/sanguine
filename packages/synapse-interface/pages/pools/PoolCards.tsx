@@ -2,9 +2,13 @@ import Grid from '@tw/Grid'
 import { Tab } from '@headlessui/react'
 import _ from 'lodash'
 import PoolsListCard from './PoolCard'
-
 import { PageHeader } from '@components/PageHeader'
-import { memo } from 'react'
+import { memo, useEffect, useState } from 'react'
+import {
+  getSynPrices,
+  getEthPrice,
+  getAvaxPrice,
+} from '@/utils/actions/getPrices'
 const PoolCards = memo(
   ({
     arr,
@@ -15,7 +19,28 @@ const PoolCards = memo(
     connectedChainId: number
     address: string
   }) => {
-    console.log('PoolTabs RERENDER')
+    const [synPrices, setSynPrices] = useState(undefined)
+    const [ethPrice, setEthPrice] = useState(undefined)
+    const [avaxPrice, setAvaxPrice] = useState(undefined)
+
+    // Prices to reduce number of calls
+    useEffect(() => {
+      getSynPrices()
+        .then((res) => {
+          setSynPrices(res)
+        })
+        .catch((err) => console.log('Could not get syn prices', err))
+      getEthPrice()
+        .then((res) => {
+          setEthPrice(res)
+        })
+        .catch((err) => console.log('Could not get eth prices', err))
+      getAvaxPrice()
+        .then((res) => {
+          setAvaxPrice(res)
+        })
+        .catch((err) => console.log('Could not get avax prices', err))
+    }, [])
     return (
       <Tab.Group>
         <div className="flex-wrap justify-between mb-8 px-36 md:flex">
@@ -53,52 +78,60 @@ const PoolCards = memo(
           </Grid>
         </div>
         <Tab.Panels className="flex justify-center">
-          {arr.map(({ poolsByChain, textLabel, label }, index) => {
-            // DOUBLE CHECK HERE
-            return (
-              <Tab.Panel key={index}>
-                <Grid cols={{ xs: 1, sm: 1, md: 2, lg: 3 }} gap={4}>
-                  {/* Render the pools for the selected chain first */}
-                  {poolsByChain[connectedChainId] &&
-                    poolsByChain[connectedChainId]?.length > 0 &&
-                    poolsByChain[connectedChainId].map((pt) => {
-                      return (
-                        <PoolsListCard
-                          key={pt.poolName}
-                          poolName={pt.poolName}
-                          chainId={connectedChainId}
-                          connectedChainId={connectedChainId}
-                          address={address}
-                        />
-                      )
-                    })}
+          {synPrices &&
+            ethPrice &&
+            avaxPrice &&
+            arr.map(({ poolsByChain, textLabel, label }, index) => {
+              // DOUBLE CHECK HERE
+              return (
+                <Tab.Panel key={index}>
+                  <Grid cols={{ xs: 1, sm: 1, md: 2, lg: 3 }} gap={4}>
+                    {/* Render the pools for the selected chain first */}
+                    {poolsByChain[connectedChainId] &&
+                      poolsByChain[connectedChainId]?.length > 0 &&
+                      poolsByChain[connectedChainId].map((pool) => {
+                        return (
+                          <PoolsListCard
+                            key={pool.poolName}
+                            pool={pool}
+                            chainId={connectedChainId}
+                            connectedChainId={connectedChainId}
+                            address={address}
+                            prices={{ synPrices, ethPrice, avaxPrice }}
+                          />
+                        )
+                      })}
 
-                  {/* Render all the other pools */}
-                  {_.entries(poolsByChain)
-                    .filter(
-                      ([otherChainId, poolsArr]) =>
-                        Number(otherChainId) != connectedChainId
-                    )
-                    .map(
-                      ([otherChainId, poolsArr], index) =>
-                        poolsByChain[otherChainId] &&
-                        poolsByChain[otherChainId]?.length > 0 &&
-                        poolsByChain[otherChainId].map((pt) => {
-                          return (
-                            <PoolsListCard
-                              key={pt.poolName}
-                              poolName={pt.poolName}
-                              chainId={Number(otherChainId)}
-                              connectedChainId={connectedChainId}
-                              address={address}
-                            />
-                          )
-                        })
-                    )}
-                </Grid>
-              </Tab.Panel>
-            )
-          })}
+                    {/* Render all the other pools */}
+                    {synPrices &&
+                      ethPrice &&
+                      avaxPrice &&
+                      _.entries(poolsByChain)
+                        .filter(
+                          ([otherChainId, poolsArr]) =>
+                            Number(otherChainId) != connectedChainId
+                        )
+                        .map(
+                          ([otherChainId, poolsArr], index) =>
+                            poolsByChain[otherChainId] &&
+                            poolsByChain[otherChainId]?.length > 0 &&
+                            poolsByChain[otherChainId].map((pool) => {
+                              return (
+                                <PoolsListCard
+                                  key={pool.poolName}
+                                  pool={pool}
+                                  chainId={Number(otherChainId)}
+                                  connectedChainId={connectedChainId}
+                                  address={address}
+                                  prices={{ synPrices, ethPrice, avaxPrice }}
+                                />
+                              )
+                            })
+                        )}
+                  </Grid>
+                </Tab.Panel>
+              )
+            })}
         </Tab.Panels>
       </Tab.Group>
     )

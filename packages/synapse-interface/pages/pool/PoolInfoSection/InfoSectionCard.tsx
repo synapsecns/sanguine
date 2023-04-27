@@ -1,5 +1,5 @@
 import Card from '@tw/Card'
-import InfoSection from '../components/InfoSection'
+import InfoSection from './InfoSection'
 
 const InfoSectionCard = ({ title, children }) => {
   return (

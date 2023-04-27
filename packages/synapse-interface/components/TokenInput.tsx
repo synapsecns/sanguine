@@ -15,7 +15,7 @@ const TokenInput = ({
 }: {
   token: Token
   max: string
-  inputValue: string
+  inputValue: any
   onChange: (v: string) => void
   chainId: number
   address: string
@@ -46,7 +46,7 @@ const TokenInput = ({
   } else {
     balanceStr = '0.0'
   }
-
+  console.log('token.icon.sr', token.icon.src)
   return (
     <div className="items-center">
       <div className="w-full">
@@ -55,12 +55,12 @@ const TokenInput = ({
           isConnected={address !== undefined}
           balanceStr={balanceStr}
           onClickBalance={onClickMax}
-          value={inputValue}
+          value={inputValue[symbol]}
           placeholder={'0.0000'}
           onChange={onChangeInput}
           disabled={inputValue == ''}
           showButton={false}
-          icon={token.icon}
+          icon={token.icon.src}
           token={token}
           isPending={false}
           onClickEnter={() => {}}

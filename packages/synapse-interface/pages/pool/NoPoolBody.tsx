@@ -10,13 +10,6 @@ const NoPoolBody = ({
   pool: Token
   poolChainId: number
 }) => {
-  console.log(
-    'pool',
-    pool,
-    poolChainId,
-    CHAINS_BY_ID,
-    CHAINS_BY_ID[poolChainId]
-  )
   return pool && poolChainId ? (
     <Grid cols={{ xs: 1 }} gap={2}>
       <Card
