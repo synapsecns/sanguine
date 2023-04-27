@@ -1,11 +1,5 @@
 import { Token } from '@/utils/types'
 
-interface StakeCardTitleProps {
-  token: Token
-  poolTokens: Token[]
-  poolLabel: string
-}
-
 const StakingPoolTokens = ({ poolTokens }: { poolTokens: Token[] }) => {
   if (poolTokens)
     return (
@@ -19,6 +13,12 @@ const StakingPoolTokens = ({ poolTokens }: { poolTokens: Token[] }) => {
         ))}
       </div>
     )
+}
+
+interface StakeCardTitleProps {
+  token: Token
+  poolTokens: Token[]
+  poolLabel: string
 }
 
 const StakeCardTitle = ({
