@@ -15,12 +15,11 @@ import {SummitEvents} from "./events/SummitEvents.sol";
 import {IAgentManager} from "./interfaces/IAgentManager.sol";
 import {InterfaceBondingManager} from "./interfaces/InterfaceBondingManager.sol";
 import {InterfaceSummit} from "./interfaces/InterfaceSummit.sol";
-import {ExecutionHub} from "./hubs/ExecutionHub.sol";
 import {SnapshotHub} from "./hubs/SnapshotHub.sol";
 // ═════════════════════════════ EXTERNAL IMPORTS ══════════════════════════════
 import {DoubleEndedQueue} from "@openzeppelin/contracts/utils/structs/DoubleEndedQueue.sol";
 
-contract Summit is ExecutionHub, SnapshotHub, SummitEvents, InterfaceSummit {
+contract Summit is SnapshotHub, SummitEvents, InterfaceSummit {
     using AttestationLib for bytes;
     using ByteString for bytes;
     using DoubleEndedQueue for DoubleEndedQueue.Bytes32Deque;
@@ -124,8 +123,6 @@ contract Summit is ExecutionHub, SnapshotHub, SummitEvents, InterfaceSummit {
             // This will revert if any of the states from the Notary snapshot
             // haven't been submitted by any of the Guards before.
             attPayload = _acceptNotarySnapshot(snapshot, agentRoot, status.index, sigIndex);
-            // TODO: remove when separated
-            _saveAttestation(attPayload.castToAttestation(), status.index, sigIndex);
         }
     }
 
