@@ -10,19 +10,26 @@ interface InterfaceSummit {
      * @notice Accepts a receipt, which local `AgentManager` verified to have been signed by an active Notary.
      * > Receipt is a statement about message execution status on the remote chain.
      * - This will distribute the message tips across the off-chain actors once the receipt optimistic period is over.
+     * - Notary who signed the receipt is referenced as the "Receipt Notary".
+     * - Notary who signed the attestation on destination chain is referenced as the "Attestation Notary".
      * > Will revert if any of these is true:
      * > - Called by anyone other than local `AgentManager`.
      * > - Receipt payload is not properly formatted.
      * > - Receipt signer is in Dispute.
      * > - Receipt's snapshot root is unknown.
-     * @param status            Structure specifying agent status: (flag, domain, index)
+     * @param rcptNotaryStatus  Structure specifying Receipt Notary status: (flag, domain, index)
+     * @param attNotaryStatus   Structure specifying Attestation Notary status: (flag, domain, index)
      * @param sigIndex          Index of stored Notary signature
      * @param rcptPayload       Raw payload with receipt data
      * @return wasAccepted      Whether the receipt was accepted
      */
-    function acceptReceipt(AgentStatus memory status, uint256 sigIndex, bytes memory rcptPayload, uint32 attNonce)
-        external
-        returns (bool wasAccepted);
+    function acceptReceipt(
+        AgentStatus memory rcptNotaryStatus,
+        AgentStatus memory attNotaryStatus,
+        uint256 sigIndex,
+        bytes memory rcptPayload,
+        uint32 attNonce
+    ) external returns (bool wasAccepted);
 
     /**
      * @notice Accepts a snapshot, which local `AgentManager` verified to have been signed by an active Agent.

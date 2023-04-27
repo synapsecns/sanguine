@@ -11,10 +11,13 @@ contract SummitMock is ExecutionHubMock, SnapshotHubMock, AgentSecuredMock, Inte
     /// @notice Prevents this contract from being included in the coverage report
     function testSummitMock() external {}
 
-    function acceptReceipt(AgentStatus memory status, uint256 sigIndex, bytes memory rcptPayload, uint32 attNonce)
-        external
-        returns (bool wasAccepted)
-    {}
+    function acceptReceipt(
+        AgentStatus memory rcptNotaryStatus,
+        AgentStatus memory attNotaryStatus,
+        uint256 sigIndex,
+        bytes memory rcptPayload,
+        uint32 attNonce
+    ) external returns (bool wasAccepted) {}
 
     function acceptSnapshot(AgentStatus memory status, uint256 sigIndex, bytes memory snapPayload)
         external

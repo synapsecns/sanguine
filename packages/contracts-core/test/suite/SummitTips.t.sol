@@ -140,16 +140,6 @@ contract SummitTipsTest is AgentSecuredTest {
         bondingManager.submitReceipt(rcptPayload, rcptSignature);
     }
 
-    function test_submitReceipt_revert_wrongNotaryDomain() public {
-        // TODO: remove when Notary restrictions are revisited
-        RawExecReceipt memory re = mockReceipt("First");
-        prepareReceipt(re, false, 0, false);
-        address notary = domains[DOMAIN_LOCAL].agent;
-        (bytes memory rcptPayload, bytes memory rcptSignature) = signReceipt(notary, re);
-        vm.expectRevert("Wrong Notary domain");
-        bondingManager.submitReceipt(rcptPayload, rcptSignature);
-    }
-
     function test_submitReceipt_revert_notaryInDispute() public {
         RawExecReceipt memory re = mockReceipt("First");
         prepareReceipt(re, false, 0, false);

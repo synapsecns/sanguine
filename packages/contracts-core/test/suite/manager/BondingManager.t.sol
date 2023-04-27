@@ -268,9 +268,17 @@ contract BondingManagerTest is AgentManagerTest {
         bondingManager.submitSnapshot(snapPayload, snapSig);
     }
 
-    function test_submitReceipt(uint256 domainId, uint256 agentId, RawExecReceipt memory re, uint256 attNonce) public {
-        (, address notary) = getNotary(domainId, agentId);
-        (bytes memory receiptPayload, bytes memory receiptSig) = signReceipt(notary, re);
+    function test_submitReceipt(
+        uint256 domainId,
+        uint256 agentId,
+        uint256 attNotaryId,
+        RawExecReceipt memory re,
+        uint256 attNonce
+    ) public {
+        (, address rcptNotary) = getNotary(domainId, agentId);
+        re.body.destination = DOMAIN_REMOTE;
+        re.body.attNotary = domains[DOMAIN_REMOTE].agents[attNotaryId % DOMAIN_AGENTS];
+        (bytes memory receiptPayload, bytes memory receiptSig) = signReceipt(rcptNotary, re);
         // Set value for getAttestationNonce call
         attNonce = bound(attNonce, 1, type(uint32).max);
         BaseMock(summit).setMockReturnValue(attNonce);
@@ -278,7 +286,8 @@ contract BondingManagerTest is AgentManagerTest {
             summit,
             abi.encodeWithSelector(
                 InterfaceSummit.acceptReceipt.selector,
-                getAgentStatus(notary),
+                getAgentStatus(rcptNotary),
+                getAgentStatus(re.body.attNotary),
                 nextSignatureIndex(),
                 receiptPayload,
                 attNonce
@@ -288,9 +297,13 @@ contract BondingManagerTest is AgentManagerTest {
     }
 
     function test_submitReceipt_revert_notaryInDispute(RawExecReceipt memory re) public {
-        address notary = domains[DOMAIN_REMOTE].agent;
-        openDispute({guard: domains[0].agent, notary: notary});
-        (bytes memory receiptPayload, bytes memory receiptSig) = signReceipt(notary, re);
+        address rcptNotary = domains[DOMAIN_LOCAL].agent;
+        re.body.destination = DOMAIN_REMOTE;
+        re.body.attNotary = domains[DOMAIN_REMOTE].agent;
+        openDispute({guard: domains[0].agent, notary: rcptNotary});
+        (bytes memory receiptPayload, bytes memory receiptSig) = signReceipt(rcptNotary, re);
+        // Set value for getAttestationNonce call
+        BaseMock(summit).setMockReturnValue(1);
         vm.expectRevert("Notary is in dispute");
         bondingManager.submitReceipt(receiptPayload, receiptSig);
     }

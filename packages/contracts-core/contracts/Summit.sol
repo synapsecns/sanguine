@@ -90,17 +90,23 @@ contract Summit is ExecutionHub, SnapshotHub, SummitEvents, InterfaceSummit {
     // ═════════════════════════════════════════════ ACCEPT STATEMENTS ═════════════════════════════════════════════════
 
     /// @inheritdoc InterfaceSummit
-    function acceptReceipt(AgentStatus memory status, uint256 sigIndex, bytes memory rcptPayload, uint32 attNonce)
-        external
-        returns (bool wasAccepted)
-    {
+    function acceptReceipt(
+        AgentStatus memory rcptNotaryStatus,
+        AgentStatus memory attNotaryStatus,
+        uint256 sigIndex,
+        bytes memory rcptPayload,
+        uint32 attNonce
+    ) external returns (bool wasAccepted) {
         // This will revert if payload is not an receipt
         Receipt rcpt = rcptPayload.castToReceipt();
-        // Receipt needs to be signed by a destination chain Notary
-        ReceiptBody rcptBody = rcpt.body();
-        // TODO: remove this restriction
-        require(rcptBody.destination() == status.domain, "Wrong Notary domain");
-        return _saveReceipt(rcptBody, rcpt.tips(), status.index, sigIndex, attNonce);
+        return _saveReceipt({
+            rcptBody: rcpt.body(),
+            tips: rcpt.tips(),
+            rcptNotaryIndex: rcptNotaryStatus.index,
+            attNotaryIndex: attNotaryStatus.index,
+            sigIndex: sigIndex,
+            attNonce: attNonce
+        });
     }
 
     /// @inheritdoc InterfaceSummit
@@ -220,16 +226,15 @@ contract Summit is ExecutionHub, SnapshotHub, SummitEvents, InterfaceSummit {
 
     /// @dev Saves the message from the receipt into the "quarantine queue". Once message leaves the queue,
     /// tips associated with the message are distributed across off-chain actors.
-    function _saveReceipt(ReceiptBody rcptBody, Tips tips, uint32 rcptNotaryIndex, uint256 sigIndex, uint32 attNonce)
-        internal
-        returns (bool)
-    {
+    function _saveReceipt(
+        ReceiptBody rcptBody,
+        Tips tips,
+        uint32 rcptNotaryIndex,
+        uint32 attNotaryIndex,
+        uint256 sigIndex,
+        uint32 attNonce
+    ) internal returns (bool) {
         // TODO: save signature index
-        // Attestation Notary needs to be known and not slashed
-        address attNotary = rcptBody.attNotary();
-        AgentStatus memory attNotaryStatus = _agentStatus(attNotary);
-        attNotaryStatus.verifyKnown();
-        attNotaryStatus.verifyNotSlashed();
         // Check if tip values are non-zero
         if (tips.value() == 0) return false;
         // Check if there already exists receipt for the message
@@ -247,7 +252,7 @@ contract Summit is ExecutionHub, SnapshotHub, SummitEvents, InterfaceSummit {
             destination: rcptBody.destination(),
             attNonce: attNonce,
             stateIndex: rcptBody.stateIndex(),
-            attNotaryIndex: attNotaryStatus.index,
+            attNotaryIndex: attNotaryIndex,
             firstExecutor: rcptBody.firstExecutor(),
             finalExecutor: rcptBody.finalExecutor()
         });

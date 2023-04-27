@@ -6,7 +6,7 @@ import {Attestation, AttestationLib} from "../libs/Attestation.sol";
 import {AttestationReport, AttestationReportLib} from "../libs/AttestationReport.sol";
 import {BONDING_OPTIMISTIC_PERIOD, SYNAPSE_DOMAIN} from "../libs/Constants.sol";
 import {DynamicTree, MerkleMath} from "../libs/MerkleTree.sol";
-import {Receipt, ReceiptLib} from "../libs/Receipt.sol";
+import {Receipt, ReceiptBody, ReceiptLib} from "../libs/Receipt.sol";
 import {Snapshot, SnapshotLib} from "../libs/Snapshot.sol";
 import {AgentFlag, AgentStatus, DisputeFlag} from "../libs/Structures.sol";
 // ═════════════════════════════ INTERNAL IMPORTS ══════════════════════════════
@@ -88,20 +88,25 @@ contract BondingManager is AgentManager, BondingManagerEvents, InterfaceBondingM
     function submitReceipt(bytes memory rcptPayload, bytes memory rcptSignature) external returns (bool wasAccepted) {
         // This will revert if payload is not an receipt
         Receipt rcpt = rcptPayload.castToReceipt();
-        // This will revert if the attestation signer is not a known Notary
-        (AgentStatus memory status, address notary) = _verifyReceipt(rcpt, rcptSignature);
-        // Notary needs to be Active
-        status.verifyActive();
-        // Notary needs to be not in dispute
+        // This will revert if the receipt signer is not a known Notary
+        (AgentStatus memory rcptNotaryStatus, address notary) = _verifyReceipt(rcpt, rcptSignature);
+        // Receipt Notary needs to be Active and not in dispute
+        rcptNotaryStatus.verifyActive();
         require(_disputes[notary].flag == DisputeFlag.None, "Notary is in dispute");
-        // Store Notary signature for the Snapshot
-        uint256 sigIndex = _saveSignature(rcptSignature);
-        // Check that snapshot root is known
-        uint32 attNonce = IExecutionHub(destination).getAttestationNonce(rcpt.body().snapshotRoot());
+        // Check that receipt's snapshot root exists in Summit
+        ReceiptBody rcptBody = rcpt.body();
+        uint32 attNonce = IExecutionHub(destination).getAttestationNonce(rcptBody.snapshotRoot());
         require(attNonce != 0, "Unknown snapshot root");
-        wasAccepted = InterfaceSummit(destination).acceptReceipt(status, sigIndex, rcptPayload, attNonce);
+        // Attestation Notary domain needs to match the destination domain
+        AgentStatus memory attNotaryStatus = agentStatus(rcptBody.attNotary());
+        require(attNotaryStatus.domain == rcptBody.destination(), "Wrong attestation Notary domain");
+        // Store Notary signature for the Receipt
+        uint256 sigIndex = _saveSignature(rcptSignature);
+        wasAccepted = InterfaceSummit(destination).acceptReceipt(
+            rcptNotaryStatus, attNotaryStatus, sigIndex, rcptPayload, attNonce
+        );
         if (wasAccepted) {
-            emit ReceiptAccepted(status.domain, notary, rcptPayload, rcptSignature);
+            emit ReceiptAccepted(rcptNotaryStatus.domain, notary, rcptPayload, rcptSignature);
         }
     }
 
