@@ -151,6 +151,11 @@ abstract contract ExecutionHub is AgentSecured, ExecutionHubEvents, IExecutionHu
     // ═══════════════════════════════════════════════════ VIEWS ═══════════════════════════════════════════════════════
 
     /// @inheritdoc IExecutionHub
+    function getAttestationNonce(bytes32 snapRoot) external view returns (uint32 attNonce) {
+        return _rootData[snapRoot].attNonce;
+    }
+
+    /// @inheritdoc IExecutionHub
     function isValidReceipt(bytes memory rcptPayload) external view returns (bool isValid) {
         // This will revert if payload is not an receipt
         Receipt rcpt = rcptPayload.castToReceipt();
