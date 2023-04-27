@@ -653,8 +653,16 @@ func (e Executor) streamLogs(ctx context.Context, grpcClient pbscribe.ScribeServ
 
 			log := response.Log.ToLog()
 			if log == nil {
+				logger.Errorf("could not convert log: %s", response.Log.TxHash.String())
 				return fmt.Errorf("could not convert log")
 			}
+
+			_, span := e.handler.Tracer().Start(ctx, "executor.streamLog", trace.WithAttributes(
+				attribute.Int(metrics.ChainID, int(chainID)),
+				attribute.Int("contract", int(contractEvent.contractType)),
+				attribute.Int("event", int(contractEvent.eventType)),
+				attribute.String(metrics.TxHash, log.TxHash.String()),
+			))
 
 			// If we are filtering for `executed` events, we do not need to `verifyAfter`
 			// since we are backfilling.
@@ -670,14 +678,7 @@ func (e Executor) streamLogs(ctx context.Context, grpcClient pbscribe.ScribeServ
 			}
 
 			e.chainExecutors[chainID].logChan <- log
-
-			_, span := e.handler.Tracer().Start(ctx, "executor.streamLog", trace.WithAttributes(
-				attribute.Int(metrics.ChainID, int(chainID)),
-				attribute.Int("contract", int(contractEvent.contractType)),
-				attribute.Int("event", int(contractEvent.eventType)),
-				attribute.String(metrics.TxHash, log.TxHash.String()),
-			))
-
+			span.AddEvent("log sent to channel")
 			e.chainExecutors[chainID].lastLog.blockNumber = log.BlockNumber
 			e.chainExecutors[chainID].lastLog.blockIndex = log.Index
 
