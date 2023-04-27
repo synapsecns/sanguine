@@ -64,6 +64,12 @@ dockers:
       - 'ghcr.io/synapsecns/sanguine/scribe:latest'
       - 'ghcr.io/synapsecns/sanguine/scribe:{{ .FullCommit }}'
       - 'ghcr.io/synapsecns/sanguine/scribe:{{ .Tag }}'
+    build_flag_templates:
+      - '--label=org.opencontainers.image.created={{.Date}}'
+      - '--label=org.opencontainers.image.name={{.ProjectName}}'
+      - '--label=org.opencontainers.image.revision={{.FullCommit}}'
+      - '--label=org.opencontainers.image.version={{.Version}}'
+      - '--label=org.opencontainers.image.source={{.GitURL}}'
     dockerfile: ../../docker/scribe.Dockerfile
     ids:
       - scribe

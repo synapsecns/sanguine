@@ -3,6 +3,7 @@ package metrics
 import (
 	"context"
 	"fmt"
+	"go.opentelemetry.io/contrib/instrumentation/net/http/otelhttp"
 	"net/http"
 	"os"
 	"sync"
@@ -72,10 +73,15 @@ func (n *newRelicHandler) Start(_ context.Context) (err error) {
 	return nil
 }
 
-func (n *newRelicHandler) ConfigureHTTPClient(client *http.Client) {
+func (n *newRelicHandler) ConfigureHTTPClient(client *http.Client, opts ...otelhttp.Option) {
+	// note: opts are ignored here
 	// use the newrelic transport
 	nrTransport := newrelic.NewRoundTripper(client.Transport)
 	client.Transport = nrRoundTripper{app: n.app, inner: nrTransport}
+}
+
+func (n *newRelicHandler) Type() HandlerType {
+	return NewRelic
 }
 
 type nrRoundTripper struct {

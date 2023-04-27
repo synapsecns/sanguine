@@ -37,6 +37,10 @@ func NewTestTracer(ctx context.Context, tb testing.TB) TestHandler {
 	return &th
 }
 
+func (t *testHandler) Type() HandlerType {
+	return Null
+}
+
 // GetSpansByName returns all spans with the given name.
 func (t *testHandler) GetSpansByName(name string) (spans []tracetest.SpanStub) {
 	allSpans := t.exporter.GetSpans()

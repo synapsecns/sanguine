@@ -38,3 +38,30 @@ export const CHAINS_BY_ID = getChainsByID()
 export const ORDERED_CHAINS_BY_ID = CHAINS_ARR.map((chain) => String(chain.id))
 
 // export const INVERTED_CHAIN_IDS =  Object.fromEntries(CHAIN_IDS).map((k, v) => v, k)// used to be INVERTED_CHAIN_ID_MAP
+
+export const ChainId = {
+  ETH: 1,
+  ROPSTEN: 3,
+  RINKEBY: 4,
+  GÖRLI: 5,
+  OPTIMISM: 10,
+  CRONOS: 25,
+  KOVAN: 42,
+  BSC: 56,
+  POLYGON: 137,
+  FANTOM: 250,
+  BOBA: 288,
+  METIS: 1088,
+  MOONBEAM: 1284,
+  MOONRIVER: 1285,
+  DOGECHAIN: 2000,
+  CANTO: 7700,
+  KLAYTN: 8217,
+  HARDHAT: 31337,
+  ARBITRUM: 42161,
+  AVALANCHE: 43114,
+  DFK: 53935,
+  AURORA: 1313161554,
+  HARMONY: 1666600000,
+  TERRA: 121014925, //"columbus-5", the day columbus reportedly landed in america followed by 5
+}

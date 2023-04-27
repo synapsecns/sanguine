@@ -29,10 +29,6 @@ type AgentConfig struct {
 	BondedSigner SignerConfig `yaml:"bonded_signer"`
 	// RefreshIntervalSeconds is the refresh interval in seconds
 	RefreshIntervalSeconds uint32 `yaml:"refresh_interval_seconds,omitempty"`
-	// ScribePort is the scribe port
-	ScribePort uint32 `yaml:"scribe_port,omitempty"`
-	// ScribePUrl is the scribe port
-	ScribeURL string `yaml:"scribe_url,omitempty"`
 	// EmbeddedScribeConfig is the config for the embedded scribe. This only needs to be
 	// included if an embedded Scribe is being used. If a remote Scribe is being used,
 	// this can be left empty.

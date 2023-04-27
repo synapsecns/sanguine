@@ -173,4 +173,4 @@ export const BLAZE_API_URL = 'https://synapse.dorime.org/api/v1/analytics'
 export const LLAMA_API_URL = 'https://api.llama.fi/protocol/synapse'
 
 export const BRIDGESYN_ANALYTICS_API =
-  'https://analytics-api.bridgesyn.com/api/v1/analytics'
+  'https://explorer.interoperability.institute/graphql'

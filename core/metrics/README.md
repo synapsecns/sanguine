@@ -17,4 +17,4 @@ Pass in the `JAEGER_ENDPOINT` enviornment variable
 
 ## Pyroscope
 
-Pass in the `PYROSCOPE_ENDPOINT` enviornment variable
+Pass in the `PYROSCOPE_ENDPOINT` environment variable
