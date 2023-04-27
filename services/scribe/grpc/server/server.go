@@ -124,6 +124,11 @@ func (s *server) StreamLogs(req *pbscribe.StreamLogsRequest, res pbscribe.Scribe
 			err = res.Send(&pbscribe.StreamLogsResponse{
 				Log: pbscribe.FromNativeLog(log),
 			})
+
+			span.AddEvent("Sending log.", trace.WithAttributes(
+				attribute.String(metrics.TxHash, log.TxHash.String()),
+			))
+
 			if err != nil {
 				return fmt.Errorf("could not send log: %w", err)
 			}
