@@ -10,21 +10,21 @@ import (
 
 func TestEncodeDecodeTips(t *testing.T) {
 	// we want to make sure we can deal w/ overflows
-	notaryTip := randomUint96BigInt(t)
-	broadcasterTip := randomUint96BigInt(t)
-	proverTip := randomUint96BigInt(t)
-	executorTip := randomUint96BigInt(t)
+	summitTip := randomUint64BigInt(t)
+	attestationTip := randomUint64BigInt(t)
+	executionTip := randomUint64BigInt(t)
+	deliveryTip := randomUint64BigInt(t)
 
-	encodedTips, err := types.EncodeTips(types.NewTips(notaryTip, broadcasterTip, proverTip, executorTip))
+	encodedTips, err := types.EncodeTips(types.NewTips(summitTip, attestationTip, executionTip, deliveryTip))
 	Nil(t, err)
 
 	decodedTips, err := types.DecodeTips(encodedTips)
 	Nil(t, err)
 
-	Equal(t, decodedTips.NotaryTip(), notaryTip)
-	Equal(t, decodedTips.BroadcasterTip(), broadcasterTip)
-	Equal(t, decodedTips.ProverTip(), proverTip)
-	Equal(t, decodedTips.ExecutorTip(), executorTip)
+	Equal(t, decodedTips.SummitTip(), summitTip)
+	Equal(t, decodedTips.AttestationTip(), attestationTip)
+	Equal(t, decodedTips.ExecutionTip(), executionTip)
+	Equal(t, decodedTips.DeliveryTip(), deliveryTip)
 }
 
 func TestNewMessageEncodeDecode(t *testing.T) {

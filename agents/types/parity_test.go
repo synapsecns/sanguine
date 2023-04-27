@@ -21,51 +21,37 @@ import (
 )
 
 func TestEncodeTipsParity(t *testing.T) {
-	/*
-		TODO (joe): re-enabled this
-		ctx, cancel := context.WithTimeout(context.Background(), time.Second*10)
-		defer cancel()
+	// TODO (joe): re-enabled this
+	ctx, cancel := context.WithTimeout(context.Background(), time.Second*10)
+	defer cancel()
 
+	testBackend := simulated.NewSimulatedBackend(ctx, t)
+	deployManager := testutil.NewDeployManager(t)
 
-		testBackend := simulated.NewSimulatedBackend(ctx, t)
-		deployManager := testutil.NewDeployManager(t)
+	_, handle := deployManager.GetTipsHarness(ctx, testBackend)
 
-		_, handle := deployManager.GetTipsHarness(ctx, testBackend)
+	// we want to make sure we can deal w/ overflows
+	summitTip := randomUint64BigInt(t)
+	attestationTip := randomUint64BigInt(t)
+	executionTip := randomUint64BigInt(t)
+	deliveryTip := randomUint64BigInt(t)
 
-		// make sure constants match
-		tipsVersion, err := handle.TipsVersion(&bind.CallOpts{Context: ctx})
-		Nil(t, err)
-		Equal(t, tipsVersion, types.TipsVersion)
+	solidityFormattedTips, err := handle.EncodeTips(&bind.CallOpts{Context: ctx},
+		summitTip.Uint64(), attestationTip.Uint64(), executionTip.Uint64(), deliveryTip.Uint64())
+	Nil(t, err)
 
-		notaryOffset, err := handle.OffsetNotary(&bind.CallOpts{Context: ctx})
-		Nil(t, err)
-		Equal(t, notaryOffset, big.NewInt(types.OffsetNotary))
+	goTips, err := types.EncodeTips(types.NewTips(summitTip, attestationTip, executionTip, deliveryTip))
+	Nil(t, err)
 
-		relayerOffset, err := handle.OffsetBroadcaster(&bind.CallOpts{Context: ctx})
-		Nil(t, err)
-		Equal(t, relayerOffset, big.NewInt(types.OffsetBroadcaster))
+	Equal(t, solidityFormattedTips.Bytes(), goTips)
 
-		proverOffset, err := handle.OffsetProver(&bind.CallOpts{Context: ctx})
-		Nil(t, err)
-		Equal(t, proverOffset, big.NewInt(types.OffsetProver))
+	decodedTips, err := types.DecodeTips(goTips)
+	Nil(t, err)
 
-		processorOffset, err := handle.OffsetExecutor(&bind.CallOpts{Context: ctx})
-		Nil(t, err)
-		Equal(t, processorOffset, big.NewInt(types.OffsetExecutor))
-
-		// we want to make sure we can deal w/ overflows
-		notaryTip := randomUint96BigInt(t)
-		broadcasterTip := randomUint96BigInt(t)
-		proverTip := randomUint96BigInt(t)
-		executorTip := randomUint96BigInt(t)
-
-		solidityFormattedTips, err := handle.FormatTips(&bind.CallOpts{Context: ctx}, notaryTip, broadcasterTip, proverTip, executorTip)
-		Nil(t, err)
-
-		goTips, err := types.EncodeTips(types.NewTips(notaryTip, broadcasterTip, proverTip, executorTip))
-		Nil(t, err)
-
-		Equal(t, goTips, solidityFormattedTips)*/
+	Equal(t, decodedTips.SummitTip(), summitTip)
+	Equal(t, decodedTips.AttestationTip(), attestationTip)
+	Equal(t, decodedTips.ExecutionTip(), executionTip)
+	Equal(t, decodedTips.DeliveryTip(), deliveryTip)
 }
 
 // randomUint96BigInt is a helper method for generating random uint96 values
@@ -90,6 +76,20 @@ func randomUint40BigInt(tb testing.TB) *big.Int {
 	// Max random value, a 130-bits integer, i.e 2^96 - 1
 	max := new(big.Int)
 	max.Exp(big.NewInt(2), big.NewInt(40), nil).Sub(max, big.NewInt(1))
+
+	// Generate cryptographically strong pseudo-random between 0 - max
+	n, err := rand.Int(rand.Reader, max)
+	Nil(tb, err)
+
+	return n
+}
+
+func randomUint64BigInt(tb testing.TB) *big.Int {
+	tb.Helper()
+
+	// Max random value, a 130-bits integer, i.e 2^96 - 1
+	max := new(big.Int)
+	max.Exp(big.NewInt(2), big.NewInt(64), nil).Sub(max, big.NewInt(1))
 
 	// Generate cryptographically strong pseudo-random between 0 - max
 	n, err := rand.Int(rand.Reader, max)
@@ -260,16 +260,6 @@ func TestMessageEncodeParity(t *testing.T) {
 	deployManager := testutil.NewDeployManager(t)
 	_, messageContract := deployManager.GetMessageHarness(ctx, testBackend)
 	_, headerContract := deployManager.GetHeaderHarness(ctx, testBackend)
-
-	// TODO (joeallen): FIX ME
-	// check constant parity
-	// version, err := messageContract.MessageVersion0(&bind.CallOpts{Context: ctx})
-	// Nil(t, err)
-	// Equal(t, version, types.MessageVersion)
-
-	//headerOffset, err := messageContract.OffsetHeader(&bind.CallOpts{Context: ctx})
-	//Nil(t, err)
-	//Equal(t, headerOffset, big.NewInt(int64(types.HeaderOffset)))
 
 	// generate some fake data
 	origin := gofakeit.Uint32()

@@ -171,35 +171,31 @@ func HashRawBytes(rawBytes []byte) (common.Hash, error) {
 }
 
 const (
-	offsetNotary      = 0
-	offsetBroadcaster = 12
-	offsetProver      = 24
-	offsetExecutor    = 36
-	uint96Len         = 12
+	uint64Len = 8
 )
 
 // EncodeTips encodes a list of tips.
 //
 //nolint:makezero
 func EncodeTips(tips Tips) ([]byte, error) {
-	b := make([]byte, offsetNotary)
+	b := make([]byte, 0)
 
-	b = append(b, math.PaddedBigBytes(tips.NotaryTip(), uint96Len)...)
-	b = append(b, math.PaddedBigBytes(tips.BroadcasterTip(), uint96Len)...)
-	b = append(b, math.PaddedBigBytes(tips.ProverTip(), uint96Len)...)
-	b = append(b, math.PaddedBigBytes(tips.ExecutorTip(), uint96Len)...)
+	b = append(b, math.PaddedBigBytes(tips.SummitTip(), uint64Len)...)
+	b = append(b, math.PaddedBigBytes(tips.AttestationTip(), uint64Len)...)
+	b = append(b, math.PaddedBigBytes(tips.ExecutionTip(), uint64Len)...)
+	b = append(b, math.PaddedBigBytes(tips.DeliveryTip(), uint64Len)...)
 
 	return b, nil
 }
 
 // DecodeTips decodes a tips typed mem view.
 func DecodeTips(toDecode []byte) (Tips, error) {
-	notaryTip := new(big.Int).SetBytes(toDecode[offsetNotary:offsetBroadcaster])
-	broadcasterTip := new(big.Int).SetBytes(toDecode[offsetBroadcaster:offsetProver])
-	proverTip := new(big.Int).SetBytes(toDecode[offsetProver:offsetExecutor])
-	executorTip := new(big.Int).SetBytes(toDecode[offsetExecutor:])
+	summitTip := new(big.Int).SetBytes(toDecode[0:8])
+	attestationTip := new(big.Int).SetBytes(toDecode[8:16])
+	executionTip := new(big.Int).SetBytes(toDecode[16:24])
+	deliveryTip := new(big.Int).SetBytes(toDecode[24:])
 
-	return NewTips(notaryTip, broadcasterTip, proverTip, executorTip), nil
+	return NewTips(summitTip, attestationTip, executionTip, deliveryTip), nil
 }
 
 type headerEncoder struct {
