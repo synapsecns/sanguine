@@ -26,7 +26,7 @@ export const TransactionButton = ({
   onSuccess?: () => void
   disabled?: boolean
 }) => {
-  const { isPending, pendingTxWrapFunc } = usePendingTxWrapper()
+  const [isPending, pendingTxWrapFunc] = usePendingTxWrapper()
 
   return (
     <Button
