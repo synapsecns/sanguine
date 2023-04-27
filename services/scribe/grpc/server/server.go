@@ -142,9 +142,10 @@ func (s *server) StreamLogs(req *pbscribe.StreamLogsRequest, res pbscribe.Scribe
 				return nil
 			default:
 				time.Sleep(time.Duration(wait) * time.Second)
+				wait = 1
 				latestScribeBlock, err := s.db.RetrieveLastIndexed(ctx, common.HexToAddress(req.Filter.ContractAddress.GetData()), req.Filter.ChainId)
 				if err != nil {
-					return fmt.Errorf("could not retrieve last indexed block: %w", err)
+					continue
 				}
 
 				if latestScribeBlock > toBlock {
@@ -160,7 +161,6 @@ func (s *server) StreamLogs(req *pbscribe.StreamLogsRequest, res pbscribe.Scribe
 
 					break STREAM
 				}
-				wait = 1
 			}
 		}
 	}
