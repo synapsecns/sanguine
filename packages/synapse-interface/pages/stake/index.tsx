@@ -11,9 +11,10 @@ import {
 } from '@/constants/tokens'
 import { CHAINS_BY_ID, ChainsByChainID } from '@/constants/chains'
 import { PageHeader } from '@/components/PageHeader'
-import NoStakeCard from './NoStakeCard'
-import Card from '@/components/ui/tailwind/Card'
 import Grid from '@/components/ui/tailwind/Grid'
+import Card from '@/components/ui/tailwind/Card'
+import StakeCard from './StakeCard'
+import NoStakeCard from './NoStakeCard'
 
 const StakePage = () => {
   const { chain: connectedChain } = useNetwork()

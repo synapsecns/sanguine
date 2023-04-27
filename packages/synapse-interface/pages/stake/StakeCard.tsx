@@ -1,11 +1,16 @@
 import { getTokenOnChain } from '@/utils/hooks/useTokenInfo'
 import { Token } from '@/utils/types'
 
-interface SwapCardProps {
+interface StakeCardProps {
   chainId: number
   token: Token
 }
 
-const SwapCard = ({ chainId, token }: SwapCardProps) => {}
+const StakeCard = ({ chainId, token }: StakeCardProps) => {
+  const tokenInfo = getTokenOnChain(chainId, token)
+  console.log('tokenInfo from swap card: ', tokenInfo)
 
-export default SwapCard
+  return <div className="flex-wrap space-y-2">token</div>
+}
+
+export default StakeCard
