@@ -51,11 +51,12 @@ const StakePage = () => {
     }
   }, [connectedChainId])
 
-  // console.log('CHAINS_BY_ID: ', CHAINS_BY_ID)
-  // console.log('connectedChainInfo: ', connectedChainInfo)
-
   const availableStakingTokens: Token[] | [] =
     POOLS_BY_CHAIN[connectedChainId] ?? []
+
+  // const availableStakingTokens = []
+  // console.log('CHAINS_BY_ID: ', CHAINS_BY_ID)
+  // console.log('connectedChainInfo: ', connectedChainInfo)
 
   const gridColumns: number = availableStakingTokens.length > 1 ? 2 : 1
 
@@ -70,7 +71,11 @@ const StakePage = () => {
       >
         <PageHeader title="Stake" subtitle="Stake your LP Tokens." />
         <Grid cols={gridColumns} className="mt-8">
-          {availableStakingTokens.length > 0 ? <></> : <NoStakeCard />}
+          {availableStakingTokens.length > 0 ? (
+            <></>
+          ) : (
+            <NoStakeCard chain={connectedChainInfo} />
+          )}
         </Grid>
       </main>
     </LandingPageWrapper>
