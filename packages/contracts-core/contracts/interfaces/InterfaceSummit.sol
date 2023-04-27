@@ -20,7 +20,7 @@ interface InterfaceSummit {
      * @param rcptPayload       Raw payload with receipt data
      * @return wasAccepted      Whether the receipt was accepted
      */
-    function acceptReceipt(AgentStatus memory status, uint256 sigIndex, bytes memory rcptPayload)
+    function acceptReceipt(AgentStatus memory status, uint256 sigIndex, bytes memory rcptPayload, uint32 attNonce)
         external
         returns (bool wasAccepted);
 
