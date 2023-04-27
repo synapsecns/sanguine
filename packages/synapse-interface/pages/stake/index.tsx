@@ -9,7 +9,7 @@ import {
   STAKING_MAP_TOKENS,
   POOLS_BY_CHAIN,
 } from '@/constants/tokens'
-import { CHAINS_BY_ID } from '@/constants/chains'
+import { CHAINS_BY_ID, ChainsByChainID } from '@/constants/chains'
 import { PageHeader } from '@/components/PageHeader'
 import Card from '@/components/ui/tailwind/Card'
 import Grid from '@/components/ui/tailwind/Grid'
@@ -44,7 +44,7 @@ const StakePage = () => {
 
   const connectedChainInfo: Chain | undefined = useMemo(() => {
     if (connectedChainId) {
-      const chainMapping = CHAINS_BY_ID
+      const chainMapping: ChainsByChainID = CHAINS_BY_ID
       return chainMapping[connectedChainId]
     } else {
       return undefined
@@ -54,9 +54,7 @@ const StakePage = () => {
   const availableStakingTokens: Token[] | [] =
     POOLS_BY_CHAIN[connectedChainId] ?? []
 
-  // const availableStakingTokens = []
-  // console.log('CHAINS_BY_ID: ', CHAINS_BY_ID)
-  // console.log('connectedChainInfo: ', connectedChainInfo)
+  console.log('availableStakingTokens: ', availableStakingTokens)
 
   const gridColumns: number = availableStakingTokens.length > 1 ? 2 : 1
 
