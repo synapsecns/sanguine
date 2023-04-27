@@ -8,9 +8,8 @@ interface StakeCardProps {
 
 const StakeCard = ({ chainId, token }: StakeCardProps) => {
   const tokenInfo = getTokenOnChain(chainId, token)
-  console.log('tokenInfo from swap card: ', tokenInfo)
 
-  return <div className="flex-wrap space-y-2">token</div>
+  return <div className="flex-wrap space-y-2">{tokenInfo?.poolName}</div>
 }
 
 export default StakeCard
