@@ -207,18 +207,18 @@ func NewExecutor(ctx context.Context, config config.Config, executorDB db.Execut
 func (e Executor) Run(ctx context.Context) error {
 	g, _ := errgroup.WithContext(ctx)
 
-	// Backfill executed messages.
-	for _, chain := range e.config.Chains {
-		chain := chain
-
-		g.Go(func() error {
-			return e.markAsExecuted(ctx, chain)
-		})
-	}
-
-	if err := g.Wait(); err != nil {
-		return fmt.Errorf("could not backfill executed messages: %w", err)
-	}
+	//// Backfill executed messages.
+	//for _, chain := range e.config.Chains {
+	//	chain := chain
+	//
+	//	g.Go(func() error {
+	//		return e.markAsExecuted(ctx, chain)
+	//	})
+	//}
+	//
+	//if err := g.Wait(); err != nil {
+	//	return fmt.Errorf("could not backfill executed messages: %w", err)
+	//}
 
 	// Listen for snapshotAcceptedEvents on summit.
 	g.Go(func() error {
