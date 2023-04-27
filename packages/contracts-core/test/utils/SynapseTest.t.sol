@@ -26,7 +26,8 @@ abstract contract SynapseTest is ProductionEvents, SuiteEvents, SynapseAgents, S
     uint256 private immutable deployMask;
 
     address internal originSynapse;
-    address internal summit; // Summit is Synapse Chain's Destination
+    address internal destinationSynapse;
+    address internal summit;
     BondingManagerHarness internal bondingManager;
 
     address internal destination;
@@ -46,6 +47,7 @@ abstract contract SynapseTest is ProductionEvents, SuiteEvents, SynapseAgents, S
         // Deploy a single set of messaging contracts for synapse chain
         deployBondingManager();
         deploySummit();
+        deployDestinationSynapse();
         deployOriginSynapse();
         // Setup agents in BondingManager
         initBondingManager();
@@ -107,7 +109,7 @@ abstract contract SynapseTest is ProductionEvents, SuiteEvents, SynapseAgents, S
     }
 
     function initBondingManager() public virtual {
-        bondingManager.initialize(originSynapse, summit);
+        bondingManager.initialize(originSynapse, destinationSynapse, summit);
     }
 
     function deployDestination() public virtual {
@@ -135,12 +137,24 @@ abstract contract SynapseTest is ProductionEvents, SuiteEvents, SynapseAgents, S
         vm.label(origin, "Origin Local");
     }
 
+    function deployDestinationSynapse() public virtual {
+        uint256 option = deployMask & DEPLOY_MASK_DESTINATION_SYNAPSE;
+        if (option == DEPLOY_MOCK_DESTINATION_SYNAPSE) {
+            destinationSynapse = address(new DestinationMock());
+        } else if (option == DEPLOY_PROD_DESTINATION_SYNAPSE) {
+            destinationSynapse = address(new Destination(DOMAIN_SYNAPSE, address(bondingManager)));
+        } else {
+            revert("Unknown option: Destination");
+        }
+        vm.label(destinationSynapse, "Destination Synapse");
+    }
+
     function deployOriginSynapse() public virtual {
         uint256 option = deployMask & DEPLOY_MASK_ORIGIN_SYNAPSE;
         if (option == DEPLOY_MOCK_ORIGIN_SYNAPSE) {
             originSynapse = address(new OriginMock());
         } else if (option == DEPLOY_PROD_ORIGIN_SYNAPSE) {
-            originSynapse = address(new Origin(DOMAIN_LOCAL, address(bondingManager)));
+            originSynapse = address(new Origin(DOMAIN_SYNAPSE, address(bondingManager)));
             Origin(originSynapse).initialize();
         } else {
             revert("Unknown option: Origin");
