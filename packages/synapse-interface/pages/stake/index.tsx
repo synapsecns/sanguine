@@ -49,7 +49,7 @@ const StakePage = () => {
         `}
       >
         <PageHeader title="Stake" subtitle="Stake your LP Tokens." />
-        <Grid cols={gridColumns} className="mt-8">
+        <Grid cols={{ xs: 1, sm: 1, md: gridColumns }} gap={6} className="mt-8">
           {availableStakingTokens.length > 0 ? (
             availableStakingTokens.map((token) => (
               <StakeCard chainId={connectedChainId} token={token} />
