@@ -1,6 +1,10 @@
 import { ChainId } from './chains'
 
-export const MINICHEF_ADDRESSES = {
+export interface ChainIdAddressMapping {
+  [ChainId: number]: string
+}
+
+export const MINICHEF_ADDRESSES: ChainIdAddressMapping = {
   [ChainId.BSC]: '0x8F5BBB2BB8c2Ee94639E55d5F41de9b4839C1280',
   [ChainId.ETH]: '0xd10eF2A513cEE0Db54E959eF16cAc711470B62cF',
   [ChainId.POLYGON]: '0x7875Af1a6878bdA1C129a4e2356A3fD040418Be5',
