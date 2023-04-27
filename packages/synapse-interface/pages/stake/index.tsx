@@ -35,8 +35,6 @@ const StakePage = () => {
   const availableStakingTokens: Token[] | [] =
     POOLS_BY_CHAIN[connectedChainId] ?? []
 
-  console.log('availableStakingTokens: ', availableStakingTokens)
-
   const gridColumns: number = availableStakingTokens.length > 1 ? 2 : 1
 
   return (

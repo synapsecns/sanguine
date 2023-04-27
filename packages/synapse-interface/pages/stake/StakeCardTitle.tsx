@@ -6,26 +6,30 @@ interface StakeCardTitleProps {
   poolLabel: string
 }
 
+const StakingPoolTokens = ({ poolTokens }: { poolTokens: Token[] }) => {
+  if (poolTokens)
+    return (
+      <div className="items-center hidden mr-4 md:flex lg:flex">
+        {poolTokens.map((token: Token) => (
+          <img
+            key={token.symbol}
+            className="relative inline-block w-6 -mr-1 text-white shadow-solid"
+            src={token.icon.src}
+          />
+        ))}
+      </div>
+    )
+}
+
 const StakeCardTitle = ({
   token,
   poolTokens,
   poolLabel,
 }: StakeCardTitleProps) => {
-  console.log('poolTokens from title: ', poolTokens)
   return (
     <div className="px-2 mb-5">
       <div className="inline-flex items-center mt-2">
-        {poolTokens && (
-          <div className="items-center hidden mr-4 md:flex lg:flex">
-            {poolTokens.map((token: Token) => (
-              <img
-                key={token.symbol}
-                className="relative inline-block w-6 -mr-1 text-white shadow-solid"
-                src={token.icon.src}
-              />
-            ))}
-          </div>
-        )}
+        <StakingPoolTokens poolTokens={poolTokens} />
         <h3 className="mr-2 text-xl font-medium text-white">{poolLabel}</h3>
       </div>
 
