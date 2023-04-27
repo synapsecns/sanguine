@@ -351,7 +351,7 @@ scribe:
   server:
     env: *default_env
   image:
-    tag: "5f170a1aba23246aceaac13fc283231481d41ec1"
+    tag: "7c51cdbb03cacf7c0a57fc6d3ed34c0a60836e07"
   fullnameOverride: executor-scribe
   files:
     config.yaml: |-
