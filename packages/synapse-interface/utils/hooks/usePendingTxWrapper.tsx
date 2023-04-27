@@ -17,5 +17,5 @@ export function usePendingTxWrapper() {
     }
     return tx
   }
-  return { isPending, pendingTxWrapFunc }
+  return [isPending, pendingTxWrapFunc]
 }
