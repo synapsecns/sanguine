@@ -152,7 +152,7 @@ abstract contract ExecutionHubTest is AgentSecuredTest {
         adjustSnapshot(sm);
         (, bytes32[] memory snapProof) = prepareExecution(sm);
         // initiate dispute
-        openDispute({guard: domains[0].agent, notary: domains[localDomain()].agent});
+        openDispute({guard: domains[0].agent, notary: domains[DOMAIN_LOCAL].agent});
         // Make sure that optimistic period is over
         uint32 timePassed = random.nextUint32();
         timePassed = uint32(bound(timePassed, rh.optimisticPeriod, rh.optimisticPeriod + 1 days));
@@ -353,7 +353,7 @@ abstract contract ExecutionHubTest is AgentSecuredTest {
             messageHash: getLeaf(0),
             snapshotRoot: getSnapshotRoot(),
             stateIndex: cachedStateIndex,
-            attNotary: domains[localDomain()].agent,
+            attNotary: domains[DOMAIN_LOCAL].agent,
             firstExecutor: executor,
             finalExecutor: executorNew
         });
@@ -385,7 +385,7 @@ abstract contract ExecutionHubTest is AgentSecuredTest {
         if (flag == MessageStatus.None) {
             assertEq(receiptBody.length, 0, "!receiptBody: empty");
         } else {
-            address notary = domains[localDomain()].agent;
+            address attNotary = domains[DOMAIN_LOCAL].agent;
             assertEq(
                 receiptBody,
                 ReceiptLib.formatReceiptBody(
@@ -394,7 +394,7 @@ abstract contract ExecutionHubTest is AgentSecuredTest {
                     messageHash,
                     snapRoot,
                     uint8(stateIndex),
-                    notary,
+                    attNotary,
                     firstExecutor,
                     finalExecutor
                 )
@@ -405,7 +405,7 @@ abstract contract ExecutionHubTest is AgentSecuredTest {
     function verify_receipt_valid(bytes memory receiptBody, RawTips memory rt) public {
         bytes memory rcptPayload = abi.encodePacked(receiptBody, rt.encodeTips());
         assertTrue(testedEH().isValidReceipt(rcptPayload));
-        address notary = domains[localDomain()].agent;
+        address notary = domains[DOMAIN_LOCAL].agent;
         bytes memory rcptSignature = signReceipt(notary, rcptPayload);
         vm.recordLogs();
         assertTrue(IAgentManager(localAgentManager()).verifyReceipt(rcptPayload, rcptSignature));
@@ -415,10 +415,10 @@ abstract contract ExecutionHubTest is AgentSecuredTest {
     function verify_receipt_invalid(RawExecReceipt memory re) public {
         bytes memory rcptPayload = re.formatReceipt();
         assertFalse(testedEH().isValidReceipt(rcptPayload));
-        address notary = domains[localDomain()].agent;
+        address notary = domains[DOMAIN_LOCAL].agent;
         bytes memory rcptSignature = signReceipt(notary, rcptPayload);
         // TODO: check that anyone could make the call
-        expectStatusUpdated(AgentFlag.Fraudulent, localDomain(), notary);
+        expectStatusUpdated(AgentFlag.Fraudulent, DOMAIN_LOCAL, notary);
         expectDisputeResolved(notary, address(0), address(this));
         // expectAgentSlashed(localDomain(), notary, address(this));
         assertFalse(IAgentManager(localAgentManager()).verifyReceipt(rcptPayload, rcptSignature));
