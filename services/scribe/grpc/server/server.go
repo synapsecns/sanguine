@@ -72,7 +72,7 @@ func (s *server) StreamLogs(req *pbscribe.StreamLogsRequest, res pbscribe.Scribe
 	retrieveLogsBackoff := 3
 	fromBlock, toBlock, err := s.setBlocks(res.Context(), req)
 	if err != nil {
-		return fmt.Errorf("could not set blocks: %w", err)
+		fromBlock, toBlock = 0, 0
 	}
 
 	wait := 0
