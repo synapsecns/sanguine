@@ -11,16 +11,17 @@ const StakeCardTitle = ({
   poolTokens,
   poolLabel,
 }: StakeCardTitleProps) => {
+  console.log('poolTokens from title: ', poolTokens)
   return (
     <div className="px-2 mb-5">
       <div className="inline-flex items-center mt-2">
         {poolTokens && (
           <div className="items-center hidden mr-4 md:flex lg:flex">
-            {poolTokens.map((coin) => (
+            {poolTokens.map((token: Token) => (
               <img
-                key={coin.symbol}
+                key={token.symbol}
                 className="relative inline-block w-6 -mr-1 text-white shadow-solid"
-                src={coin.icon}
+                src={token.icon.src}
               />
             ))}
           </div>

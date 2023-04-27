@@ -19,7 +19,6 @@ const StakeCard = ({ chainId, token }: StakeCardProps) => {
         poolTokens={stakingPoolTokens}
         poolLabel={stakingPoolLabel}
       />
-      {tokenInfo?.poolName}
     </div>
   )
 }
