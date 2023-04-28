@@ -88,7 +88,7 @@ abstract contract ExecutionHubTest is AgentSecuredTest {
         verify_receipt_valid(receiptBody, rbm.tips);
     }
 
-    function test_execute_base_recipientReverted(Random memory random) public {
+    function test_execute_base_recipientReverted_thenSuccess(Random memory random) public {
         recipient = address(new RevertingApp());
         // Create some simple data
         (RawBaseMessage memory rbm, RawHeader memory rh, SnapshotMock memory sm) = createDataRevertTest(random);
@@ -123,6 +123,34 @@ abstract contract ExecutionHubTest is AgentSecuredTest {
         verify_receipt_valid(receiptBodyFirst, rbm.tips);
         verify_receipt_valid(receiptBodySecond, rbm.tips);
         cachedStateIndex = uint8(sm.rsi.stateIndex);
+    }
+
+    function test_execute_base_recipientReverted_twice(Random memory random) public {
+        recipient = address(new RevertingApp());
+        // Create some simple data
+        (RawBaseMessage memory rbm, RawHeader memory rh, SnapshotMock memory sm) = createDataRevertTest(random);
+        // Create messages and get origin proof
+        bytes memory msgPayload = createBaseMessages(rbm, rh, localDomain());
+        bytes32[] memory originProof = getLatestProof(rh.nonce - 1);
+        // Create snapshot proof
+        adjustSnapshot(sm);
+        (bytes32 snapRoot, bytes32[] memory snapProof) = prepareExecution(sm);
+        // Make sure that optimistic period is over
+        uint32 timePassed = random.nextUint32();
+        timePassed = uint32(bound(timePassed, rh.optimisticPeriod, rh.optimisticPeriod + 1 days));
+        skip(timePassed);
+        vm.expectEmit();
+        emit Executed(rh.origin, keccak256(msgPayload), false);
+        vm.prank(executor);
+        testedEH().execute(msgPayload, originProof, snapProof, sm.rsi.stateIndex, rbm.request.gasLimit);
+        bytes memory receiptBodyFirst = verify_messageStatus(
+            keccak256(msgPayload), snapRoot, sm.rsi.stateIndex, MessageStatus.Failed, executor, address(0)
+        );
+        verify_receipt_valid(receiptBodyFirst, rbm.tips);
+        // Retry the same failed message
+        vm.expectRevert("Retried execution failed");
+        vm.prank(executorNew);
+        testedEH().execute(msgPayload, originProof, snapProof, sm.rsi.stateIndex, rbm.request.gasLimit);
     }
 
     function test_execute_base_revert_alreadyExecuted(Random memory random) public {
@@ -348,7 +376,7 @@ abstract contract ExecutionHubTest is AgentSecuredTest {
     }
 
     function test_verifyReceipt_invalid_msgStatusSuccess(uint256 mask) public {
-        test_execute_base_recipientReverted(Random(bytes32(mask)));
+        test_execute_base_recipientReverted_thenSuccess(Random(bytes32(mask)));
         RawReceiptBody memory rrb = RawReceiptBody({
             origin: DOMAIN_REMOTE,
             destination: localDomain(),

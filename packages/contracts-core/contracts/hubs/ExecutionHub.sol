@@ -139,7 +139,8 @@ abstract contract ExecutionHub is AgentSecured, ExecutionHubEvents, IExecutionHu
                 _firstExecutor[msgLeaf] = msg.sender;
             }
             _receiptData[msgLeaf] = rcptData;
-        } else if (success) {
+        } else {
+            require(success, "Retried execution failed");
             // There has been a failed attempt to execute the message before => don't touch origin and snapshot root
             // This is the successful attempt to execute the message => save the executor
             rcptData.executor = msg.sender;
