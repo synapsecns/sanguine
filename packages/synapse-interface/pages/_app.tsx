@@ -34,7 +34,6 @@ import {
 import { alchemyProvider } from 'wagmi/providers/alchemy'
 import { publicProvider } from 'wagmi/providers/public'
 import * as CHAINS from '@constants/chains/master'
-import { BRIDGABLE_TOKENS, SWAPABLE_TOKENS } from '@constants/tokens'
 import { SynapseProvider } from '@/utils/SynapseProvider'
 
 const App = ({ Component, pageProps }: AppProps) => {
@@ -58,8 +57,6 @@ const App = ({ Component, pageProps }: AppProps) => {
     dogechain,
     boba,
   ]
-  console.log('BRIDGABLE_TOKENS', JSON.stringify(BRIDGABLE_TOKENS))
-  console.log('SWAPABLE_TOKENS', JSON.stringify(SWAPABLE_TOKENS))
 
   // Add custom icons
   const chainsWithIcons = []

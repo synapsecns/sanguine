@@ -3,8 +3,14 @@
   "version": "1.0.1",
   "main": "app.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
-    "start": "node app.js"
+    "test": "echo No tests implemented yet",
+    "start": "node app.js",
+    "test:coverage": "echo 'No tests defined.'",
+    "lint:fix": "npm run lint -- --fix",
+    "lint:check": "eslint . --max-warnings=0",
+    "ci:lint": "npm run lint:check",
+    "build:go": " ",
+    "build:slither": " "
   },
   "type": "module",
   "keywords": [],
