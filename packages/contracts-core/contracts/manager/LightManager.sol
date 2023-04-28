@@ -61,7 +61,7 @@ contract LightManager is AgentManager, InterfaceLightManager {
         require(_disputes[notary].flag == DisputeFlag.None, "Notary is in dispute");
         // Store Notary signature for the attestation
         uint256 sigIndex = _saveSignature(attSignature);
-        wasAccepted = InterfaceDestination(destination).acceptAttestation(status, sigIndex, attPayload);
+        wasAccepted = InterfaceDestination(destination).acceptAttestation(status.index, sigIndex, attPayload);
         if (wasAccepted) {
             emit AttestationAccepted(status.domain, notary, attPayload, attSignature);
         }

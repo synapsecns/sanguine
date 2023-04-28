@@ -77,18 +77,28 @@ contract BondingManager is AgentManager, BondingManagerEvents, InterfaceBondingM
         (AgentStatus memory status, address agent) = _verifySnapshot(snapshot, snapSignature);
         // Check that Agent is active
         status.verifyActive();
-        // If Agent is a Notary, check that they are not in dispute
-        if (status.domain != 0) {
-            require(_disputes[agent].flag == DisputeFlag.None, "Notary is in dispute");
-        }
         // Store Agent signature for the Snapshot
         uint256 sigIndex = _saveSignature(snapSignature);
-        attPayload = InterfaceSummit(summit).acceptSnapshot(status, sigIndex, snapPayload);
-        emit SnapshotAccepted(status.domain, agent, snapPayload, snapSignature);
-        // Pass created unsigned attestation to the destination, sigIndex is set to max value to indicate "no signature"
-        if (status.domain != 0) {
-            InterfaceDestination(destination).acceptAttestation(status, type(uint256).max, attPayload);
+        if (status.domain == 0) {
+            // Guard that is in Dispute could still submit new snapshots, so we don't check that
+            InterfaceSummit(summit).acceptGuardSnapshot({
+                guardIndex: status.index,
+                sigIndex: sigIndex,
+                snapPayload: snapPayload
+            });
+        } else {
+            // Check that Notary is not in dispute
+            require(_disputes[agent].flag == DisputeFlag.None, "Notary is in dispute");
+            attPayload = InterfaceSummit(summit).acceptNotarySnapshot({
+                notaryIndex: status.index,
+                sigIndex: sigIndex,
+                agentRoot: _agentTree.root,
+                snapPayload: snapPayload
+            });
+            // Pass created attestation to Destination to enable executing messages coming to Synapse Chain
+            InterfaceDestination(destination).acceptAttestation(status.index, type(uint256).max, attPayload);
         }
+        emit SnapshotAccepted(status.domain, agent, snapPayload, snapSignature);
     }
 
     /// @inheritdoc InterfaceBondingManager
@@ -109,9 +119,14 @@ contract BondingManager is AgentManager, BondingManagerEvents, InterfaceBondingM
         require(attNotaryStatus.domain == rcptBody.destination(), "Wrong attestation Notary domain");
         // Store Notary signature for the Receipt
         uint256 sigIndex = _saveSignature(rcptSignature);
-        wasAccepted = InterfaceSummit(summit).acceptReceipt(
-            rcptNotaryStatus, attNotaryStatus, attNonce, sigIndex, Tips.unwrap(rcpt.tips()), rcptBody.unwrap().clone()
-        );
+        wasAccepted = InterfaceSummit(summit).acceptReceipt({
+            rcptNotaryIndex: rcptNotaryStatus.index,
+            attNotaryIndex: attNotaryStatus.index,
+            sigIndex: sigIndex,
+            attNonce: attNonce,
+            paddedTips: Tips.unwrap(rcpt.tips()),
+            rcptBodyPayload: rcptBody.unwrap().clone()
+        });
         if (wasAccepted) {
             emit ReceiptAccepted(rcptNotaryStatus.domain, notary, rcptPayload, rcptSignature);
         }
