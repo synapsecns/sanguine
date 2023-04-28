@@ -25,12 +25,12 @@ interface InterfaceDestination {
      * > - Attestation payload is not properly formatted.
      * > - Attestation signer is in Dispute.
      * > - Attestation's snapshot root has been previously submitted.
-     * @param status            Structure specifying agent status: (flag, domain, index)
+     * @param notaryIndex       Index of Attestation Notary in Agent Merkle Tree
      * @param sigIndex          Index of stored Notary signature
      * @param attPayload        Raw payload with Attestation data
      * @return wasAccepted      Whether the Attestation was accepted
      */
-    function acceptAttestation(AgentStatus memory status, uint256 sigIndex, bytes memory attPayload)
+    function acceptAttestation(uint32 notaryIndex, uint256 sigIndex, bytes memory attPayload)
         external
         returns (bool wasAccepted);
 
@@ -44,14 +44,13 @@ interface InterfaceDestination {
     /**
      * @notice Returns a Notary-signed attestation with a given index.
      * > Index refers to the list of all attestations accepted by this contract.
+     * @dev Attestations are created on Synapse Chain whenever a Notary-signed snapshot is accepted by Summit.
+     * Will return an empty signature if this contract is deployed on Synapse Chain.
      * @param index             Attestation index
      * @return attPayload       Raw payload with Attestation data
      * @return attSignature     Notary signature for the reported attestation
      */
-    function getSignedAttestation(uint256 index)
-        external
-        view
-        returns (bytes memory attPayload, bytes memory attSignature);
+    function getAttestation(uint256 index) external view returns (bytes memory attPayload, bytes memory attSignature);
 
     /**
      * Returns status of Destination contract as far as snapshot/agent roots are concerned

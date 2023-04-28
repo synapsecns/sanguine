@@ -7,8 +7,9 @@ abstract contract ExecutionHubEvents {
      * @notice Emitted when message is executed.
      * @param remoteDomain  Remote domain where message originated
      * @param messageHash   The keccak256 hash of the message that was executed
+     * @param success       Whether the message was executed successfully
      */
-    event Executed(uint32 indexed remoteDomain, bytes32 indexed messageHash);
+    event Executed(uint32 indexed remoteDomain, bytes32 indexed messageHash, bool success);
 
     /**
      * @notice Emitted when message tips are recorded.

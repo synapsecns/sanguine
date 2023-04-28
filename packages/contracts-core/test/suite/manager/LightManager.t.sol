@@ -120,10 +120,7 @@ contract LightManagerTest is AgentManagerTest {
         vm.expectCall(
             destination,
             abi.encodeWithSelector(
-                InterfaceDestination.acceptAttestation.selector,
-                getAgentStatus(notary),
-                nextSignatureIndex(),
-                attPayload
+                InterfaceDestination.acceptAttestation.selector, agentIndex[notary], nextSignatureIndex(), attPayload
             )
         );
         lightManager.submitAttestation(attPayload, attSignature);

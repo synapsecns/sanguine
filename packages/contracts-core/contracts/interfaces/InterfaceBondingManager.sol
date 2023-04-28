@@ -42,6 +42,21 @@ interface InterfaceBondingManager {
      */
     function submitReceipt(bytes memory rcptPayload, bytes memory rcptSignature) external returns (bool wasAccepted);
 
+    /**
+     * @notice Passes the message execution receipt from Destination to the Summit contract to save.
+     * > Will revert if any of these is true:
+     * > - Called by anyone other than Destination.
+     * @dev If a receipt is not accepted, any of the Notaries can submit it later using `submitReceipt`.
+     * @param attNotaryIndex    Index of the Notary who signed the attestation
+     * @param attNonce          Nonce of the attestation used for proving the executed message
+     * @param paddedTips        Tips for the message execution
+     * @param rcptBodyPayload   Raw payload with receipt body
+     * @return wasAccepted      Whether the receipt was accepted
+     */
+    function passReceipt(uint32 attNotaryIndex, uint32 attNonce, uint256 paddedTips, bytes memory rcptBodyPayload)
+        external
+        returns (bool wasAccepted);
+
     // ══════════════════════════════════════════ VERIFY AGENT STATEMENTS ══════════════════════════════════════════════
 
     /**

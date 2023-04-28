@@ -79,7 +79,7 @@ abstract contract ExecutionHubTest is AgentSecuredTest {
         // expectCall(address callee, uint256 msgValue, uint64 gas, bytes calldata data)
         vm.expectCall(recipient, 0, gasLimit, expectedCall);
         vm.expectEmit();
-        emit Executed(rh.origin, keccak256(msgPayload));
+        emit Executed(rh.origin, keccak256(msgPayload), true);
         vm.prank(executor);
         testedEH().execute(msgPayload, originProof, snapProof, sm.rsi.stateIndex, gasLimit);
         bytes memory receiptBody = verify_messageStatus(
@@ -88,7 +88,7 @@ abstract contract ExecutionHubTest is AgentSecuredTest {
         verify_receipt_valid(receiptBody, rbm.tips);
     }
 
-    function test_execute_base_recipientReverted(Random memory random) public {
+    function test_execute_base_recipientReverted_thenSuccess(Random memory random) public {
         recipient = address(new RevertingApp());
         // Create some simple data
         (RawBaseMessage memory rbm, RawHeader memory rh, SnapshotMock memory sm) = createDataRevertTest(random);
@@ -103,7 +103,7 @@ abstract contract ExecutionHubTest is AgentSecuredTest {
         timePassed = uint32(bound(timePassed, rh.optimisticPeriod, rh.optimisticPeriod + 1 days));
         skip(timePassed);
         vm.expectEmit();
-        emit Executed(rh.origin, keccak256(msgPayload));
+        emit Executed(rh.origin, keccak256(msgPayload), false);
         vm.prank(executor);
         testedEH().execute(msgPayload, originProof, snapProof, sm.rsi.stateIndex, rbm.request.gasLimit);
         bytes memory receiptBodyFirst = verify_messageStatus(
@@ -112,6 +112,8 @@ abstract contract ExecutionHubTest is AgentSecuredTest {
         verify_receipt_valid(receiptBodyFirst, rbm.tips);
         // Retry the same failed message
         RevertingApp(payable(recipient)).toggleRevert(false);
+        vm.expectEmit();
+        emit Executed(rh.origin, keccak256(msgPayload), true);
         vm.prank(executorNew);
         testedEH().execute(msgPayload, originProof, snapProof, sm.rsi.stateIndex, rbm.request.gasLimit);
         bytes memory receiptBodySecond = verify_messageStatus(
@@ -121,6 +123,34 @@ abstract contract ExecutionHubTest is AgentSecuredTest {
         verify_receipt_valid(receiptBodyFirst, rbm.tips);
         verify_receipt_valid(receiptBodySecond, rbm.tips);
         cachedStateIndex = uint8(sm.rsi.stateIndex);
+    }
+
+    function test_execute_base_recipientReverted_twice(Random memory random) public {
+        recipient = address(new RevertingApp());
+        // Create some simple data
+        (RawBaseMessage memory rbm, RawHeader memory rh, SnapshotMock memory sm) = createDataRevertTest(random);
+        // Create messages and get origin proof
+        bytes memory msgPayload = createBaseMessages(rbm, rh, localDomain());
+        bytes32[] memory originProof = getLatestProof(rh.nonce - 1);
+        // Create snapshot proof
+        adjustSnapshot(sm);
+        (bytes32 snapRoot, bytes32[] memory snapProof) = prepareExecution(sm);
+        // Make sure that optimistic period is over
+        uint32 timePassed = random.nextUint32();
+        timePassed = uint32(bound(timePassed, rh.optimisticPeriod, rh.optimisticPeriod + 1 days));
+        skip(timePassed);
+        vm.expectEmit();
+        emit Executed(rh.origin, keccak256(msgPayload), false);
+        vm.prank(executor);
+        testedEH().execute(msgPayload, originProof, snapProof, sm.rsi.stateIndex, rbm.request.gasLimit);
+        bytes memory receiptBodyFirst = verify_messageStatus(
+            keccak256(msgPayload), snapRoot, sm.rsi.stateIndex, MessageStatus.Failed, executor, address(0)
+        );
+        verify_receipt_valid(receiptBodyFirst, rbm.tips);
+        // Retry the same failed message
+        vm.expectRevert("Retried execution failed");
+        vm.prank(executorNew);
+        testedEH().execute(msgPayload, originProof, snapProof, sm.rsi.stateIndex, rbm.request.gasLimit);
     }
 
     function test_execute_base_revert_alreadyExecuted(Random memory random) public {
@@ -152,7 +182,7 @@ abstract contract ExecutionHubTest is AgentSecuredTest {
         adjustSnapshot(sm);
         (, bytes32[] memory snapProof) = prepareExecution(sm);
         // initiate dispute
-        openDispute({guard: domains[0].agent, notary: domains[localDomain()].agent});
+        openDispute({guard: domains[0].agent, notary: domains[DOMAIN_LOCAL].agent});
         // Make sure that optimistic period is over
         uint32 timePassed = random.nextUint32();
         timePassed = uint32(bound(timePassed, rh.optimisticPeriod, rh.optimisticPeriod + 1 days));
@@ -285,7 +315,7 @@ abstract contract ExecutionHubTest is AgentSecuredTest {
             abi.encodeWithSelector(bondingManager.remoteMockFunc.selector, rh.origin, timePassed, rh.nonce)
         );
         vm.expectEmit();
-        emit Executed(rh.origin, keccak256(msgPayload));
+        emit Executed(rh.origin, keccak256(msgPayload), true);
         vm.prank(executor);
         testedEH().execute(msgPayload, originProof, snapProof, sm.rsi.stateIndex, gasLimit);
         verify_messageStatus(
@@ -346,14 +376,14 @@ abstract contract ExecutionHubTest is AgentSecuredTest {
     }
 
     function test_verifyReceipt_invalid_msgStatusSuccess(uint256 mask) public {
-        test_execute_base_recipientReverted(Random(bytes32(mask)));
+        test_execute_base_recipientReverted_thenSuccess(Random(bytes32(mask)));
         RawReceiptBody memory rrb = RawReceiptBody({
             origin: DOMAIN_REMOTE,
             destination: localDomain(),
             messageHash: getLeaf(0),
             snapshotRoot: getSnapshotRoot(),
             stateIndex: cachedStateIndex,
-            attNotary: domains[localDomain()].agent,
+            attNotary: domains[DOMAIN_LOCAL].agent,
             firstExecutor: executor,
             finalExecutor: executorNew
         });
@@ -385,7 +415,7 @@ abstract contract ExecutionHubTest is AgentSecuredTest {
         if (flag == MessageStatus.None) {
             assertEq(receiptBody.length, 0, "!receiptBody: empty");
         } else {
-            address notary = domains[localDomain()].agent;
+            address attNotary = domains[DOMAIN_LOCAL].agent;
             assertEq(
                 receiptBody,
                 ReceiptLib.formatReceiptBody(
@@ -394,7 +424,7 @@ abstract contract ExecutionHubTest is AgentSecuredTest {
                     messageHash,
                     snapRoot,
                     uint8(stateIndex),
-                    notary,
+                    attNotary,
                     firstExecutor,
                     finalExecutor
                 )
@@ -405,7 +435,7 @@ abstract contract ExecutionHubTest is AgentSecuredTest {
     function verify_receipt_valid(bytes memory receiptBody, RawTips memory rt) public {
         bytes memory rcptPayload = abi.encodePacked(receiptBody, rt.encodeTips());
         assertTrue(testedEH().isValidReceipt(rcptPayload));
-        address notary = domains[localDomain()].agent;
+        address notary = domains[DOMAIN_LOCAL].agent;
         bytes memory rcptSignature = signReceipt(notary, rcptPayload);
         vm.recordLogs();
         assertTrue(IAgentManager(localAgentManager()).verifyReceipt(rcptPayload, rcptSignature));
@@ -415,10 +445,10 @@ abstract contract ExecutionHubTest is AgentSecuredTest {
     function verify_receipt_invalid(RawExecReceipt memory re) public {
         bytes memory rcptPayload = re.formatReceipt();
         assertFalse(testedEH().isValidReceipt(rcptPayload));
-        address notary = domains[localDomain()].agent;
+        address notary = domains[DOMAIN_LOCAL].agent;
         bytes memory rcptSignature = signReceipt(notary, rcptPayload);
         // TODO: check that anyone could make the call
-        expectStatusUpdated(AgentFlag.Fraudulent, localDomain(), notary);
+        expectStatusUpdated(AgentFlag.Fraudulent, DOMAIN_LOCAL, notary);
         expectDisputeResolved(notary, address(0), address(this));
         // expectAgentSlashed(localDomain(), notary, address(this));
         assertFalse(IAgentManager(localAgentManager()).verifyReceipt(rcptPayload, rcptSignature));
@@ -473,6 +503,7 @@ abstract contract ExecutionHubTest is AgentSecuredTest {
     {
         rbm.sender = random.next();
         rbm.content = "Test content";
+        rbm.tips = RawTips(1, 1, 1, 1);
         rh.nonce = 1;
         rh.optimisticPeriod = random.nextUint32();
         sm = SnapshotMock(random.nextState(), RawStateIndex(random.nextUint256(), random.nextUint256()));

@@ -5,37 +5,32 @@ pragma solidity 0.8.17;
 import {AttestationLib} from "./libs/Attestation.sol";
 import {ByteString} from "./libs/ByteString.sol";
 import {BONDING_OPTIMISTIC_PERIOD, SYNAPSE_DOMAIN} from "./libs/Constants.sol";
-import {Receipt, ReceiptLib} from "./libs/Receipt.sol";
+import {Receipt, ReceiptBody, ReceiptLib} from "./libs/Receipt.sol";
 import {Snapshot, SnapshotLib} from "./libs/Snapshot.sol";
-import {AgentFlag, AgentStatus, DisputeFlag} from "./libs/Structures.sol";
+import {AgentFlag, AgentStatus, DisputeFlag, MessageStatus} from "./libs/Structures.sol";
+import {Tips, TipsLib} from "./libs/Tips.sol";
 // ═════════════════════════════ INTERNAL IMPORTS ══════════════════════════════
 import {AgentSecured} from "./base/AgentSecured.sol";
 import {SummitEvents} from "./events/SummitEvents.sol";
 import {IAgentManager} from "./interfaces/IAgentManager.sol";
 import {InterfaceBondingManager} from "./interfaces/InterfaceBondingManager.sol";
 import {InterfaceSummit} from "./interfaces/InterfaceSummit.sol";
-import {ExecutionHub, MessageStatus, ReceiptBody, Tips} from "./hubs/ExecutionHub.sol";
 import {SnapshotHub} from "./hubs/SnapshotHub.sol";
 // ═════════════════════════════ EXTERNAL IMPORTS ══════════════════════════════
 import {DoubleEndedQueue} from "@openzeppelin/contracts/utils/structs/DoubleEndedQueue.sol";
 
-contract Summit is ExecutionHub, SnapshotHub, SummitEvents, InterfaceSummit {
+contract Summit is SnapshotHub, SummitEvents, InterfaceSummit {
     using AttestationLib for bytes;
     using ByteString for bytes;
     using DoubleEndedQueue for DoubleEndedQueue.Bytes32Deque;
     using ReceiptLib for bytes;
     using SnapshotLib for bytes;
 
-    struct StoredSnapData {
-        bytes32 r;
-        bytes32 s;
-    }
-
     // TODO: write docs, pack values
     struct SummitReceipt {
         uint32 origin;
         uint32 destination;
-        uint32 snapRootIndex;
+        uint32 attNonce;
         uint8 stateIndex;
         uint32 attNotaryIndex;
         address firstExecutor;
@@ -79,9 +74,6 @@ contract Summit is ExecutionHub, SnapshotHub, SummitEvents, InterfaceSummit {
     /// @inheritdoc InterfaceSummit
     mapping(address => mapping(uint32 => ActorTips)) public actorTips;
 
-    /// @dev Stored lookup data for all accepted Notary Snapshots
-    StoredSnapData[] internal _storedSnapshots;
-
     // ═════════════════════════════════════════ CONSTRUCTOR & INITIALIZER ═════════════════════════════════════════════
 
     constructor(uint32 domain, address agentManager_) AgentSecured("0.0.3", domain, agentManager_) {
@@ -97,37 +89,42 @@ contract Summit is ExecutionHub, SnapshotHub, SummitEvents, InterfaceSummit {
     // ═════════════════════════════════════════════ ACCEPT STATEMENTS ═════════════════════════════════════════════════
 
     /// @inheritdoc InterfaceSummit
-    function acceptReceipt(AgentStatus memory status, uint256 sigIndex, bytes memory rcptPayload)
-        external
-        returns (bool wasAccepted)
-    {
-        // This will revert if payload is not an receipt
-        Receipt rcpt = rcptPayload.castToReceipt();
-        // Receipt needs to be signed by a destination chain Notary
-        ReceiptBody rcptBody = rcpt.body();
-        // TODO: remove this restriction
-        require(rcptBody.destination() == status.domain, "Wrong Notary domain");
-        // TODO: save signature index
-        return _saveReceipt(rcptBody, rcpt.tips(), status.index);
+    function acceptReceipt(
+        uint32 rcptNotaryIndex,
+        uint32 attNotaryIndex,
+        uint256 sigIndex,
+        uint32 attNonce,
+        uint256 paddedTips,
+        bytes memory rcptBodyPayload
+    ) external onlyAgentManager returns (bool wasAccepted) {
+        // This will revert if payload is not a receipt body
+        return _saveReceipt({
+            rcptBody: rcptBodyPayload.castToReceiptBody(),
+            tips: TipsLib.wrapPadded(paddedTips),
+            rcptNotaryIndex: rcptNotaryIndex,
+            attNotaryIndex: attNotaryIndex,
+            sigIndex: sigIndex,
+            attNonce: attNonce
+        });
     }
 
     /// @inheritdoc InterfaceSummit
-    function acceptSnapshot(AgentStatus memory status, uint256 sigIndex, bytes memory snapPayload)
+    function acceptGuardSnapshot(uint32 guardIndex, uint256 sigIndex, bytes memory snapPayload)
         external
+        onlyAgentManager
+    {
+        // This will revert if payload is not a snapshot
+        _acceptGuardSnapshot(snapPayload.castToSnapshot(), guardIndex, sigIndex);
+    }
+
+    /// @inheritdoc InterfaceSummit
+    function acceptNotarySnapshot(uint32 notaryIndex, uint256 sigIndex, bytes32 agentRoot, bytes memory snapPayload)
+        external
+        onlyAgentManager
         returns (bytes memory attPayload)
     {
         // This will revert if payload is not a snapshot
-        Snapshot snapshot = snapPayload.castToSnapshot();
-        if (status.domain == 0) {
-            _acceptGuardSnapshot(snapshot, status.index, sigIndex);
-        } else {
-            // Fetch current Agent Root from BondingManager
-            bytes32 agentRoot = IAgentManager(agentManager).agentRoot();
-            // This will revert if any of the states from the Notary snapshot
-            // haven't been submitted by any of the Guards before.
-            attPayload = _acceptNotarySnapshot(snapshot, agentRoot, status.index, sigIndex);
-            _saveAttestation(attPayload.castToAttestation(), status.index, sigIndex);
-        }
+        return _acceptNotarySnapshot(snapPayload.castToSnapshot(), agentRoot, notaryIndex, sigIndex);
     }
 
     // ════════════════════════════════════════════════ TIPS LOGIC ═════════════════════════════════════════════════════
@@ -227,15 +224,15 @@ contract Summit is ExecutionHub, SnapshotHub, SummitEvents, InterfaceSummit {
 
     /// @dev Saves the message from the receipt into the "quarantine queue". Once message leaves the queue,
     /// tips associated with the message are distributed across off-chain actors.
-    function _saveReceipt(ReceiptBody rcptBody, Tips tips, uint32 rcptNotaryIndex) internal returns (bool) {
-        bytes32 snapRoot = rcptBody.snapshotRoot();
-        SnapRootData memory rootData = _rootData[snapRoot];
-        require(rootData.submittedAt != 0, "Unknown snapshot root");
-        // Attestation Notary needs to be known and not slashed
-        address attNotary = rcptBody.attNotary();
-        AgentStatus memory attNotaryStatus = _agentStatus(attNotary);
-        attNotaryStatus.verifyKnown();
-        attNotaryStatus.verifyNotSlashed();
+    function _saveReceipt(
+        ReceiptBody rcptBody,
+        Tips tips,
+        uint32 rcptNotaryIndex,
+        uint32 attNotaryIndex,
+        uint256 sigIndex,
+        uint32 attNonce
+    ) internal returns (bool) {
+        // TODO: save signature index
         // Check if tip values are non-zero
         if (tips.value() == 0) return false;
         // Check if there already exists receipt for the message
@@ -251,9 +248,9 @@ contract Summit is ExecutionHub, SnapshotHub, SummitEvents, InterfaceSummit {
         _receipts[messageHash] = SummitReceipt({
             origin: rcptBody.origin(),
             destination: rcptBody.destination(),
-            snapRootIndex: rootData.index,
+            attNonce: attNonce,
             stateIndex: rcptBody.stateIndex(),
-            attNotaryIndex: attNotaryStatus.index,
+            attNotaryIndex: attNotaryIndex,
             firstExecutor: rcptBody.firstExecutor(),
             finalExecutor: rcptBody.finalExecutor()
         });
@@ -294,9 +291,7 @@ contract Summit is ExecutionHub, SnapshotHub, SummitEvents, InterfaceSummit {
         bool awardFinal = rcptStatus.status == MessageStatus.Success;
         if (awardFirst) {
             // There has been a valid attempt to execute the message
-            _awardSnapshotTip(
-                _roots[summitRcpt.snapRootIndex], summitRcpt.stateIndex, summitRcpt.origin, tips.summitTip
-            );
+            _awardSnapshotTip(summitRcpt.attNonce, summitRcpt.stateIndex, summitRcpt.origin, tips.summitTip);
             _awardAgentTip(attNotaryIndex, summitRcpt.origin, tips.attestationTip);
             _awardActorTip(summitRcpt.firstExecutor, summitRcpt.origin, tips.executionTip);
         }
@@ -342,10 +337,8 @@ contract Summit is ExecutionHub, SnapshotHub, SummitEvents, InterfaceSummit {
     }
 
     /// @dev Award tip for posting Snapshot to Summit contract.
-    function _awardSnapshotTip(bytes32 snapRoot, uint8 stateIndex, uint32 origin, uint64 summitTip) internal {
+    function _awardSnapshotTip(uint32 attNonce, uint8 stateIndex, uint32 origin, uint64 summitTip) internal {
         uint64 snapshotTip = _snapshotTip(summitTip);
-        // Get the attestation nonce for the snapshot root
-        uint32 attNonce = _rootData[snapRoot].attNonce;
         // Get the agents who submitted the given state for the attestation's snapshot
         (uint32 guardIndex, uint32 notaryIndex) = _stateAgents(attNonce, stateIndex);
         _awardAgentTip(guardIndex, origin, snapshotTip);

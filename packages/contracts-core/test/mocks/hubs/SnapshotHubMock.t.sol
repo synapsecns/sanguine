@@ -2,13 +2,16 @@
 pragma solidity 0.8.17;
 
 import {ISnapshotHub} from "../../../contracts/interfaces/ISnapshotHub.sol";
+import {BaseMock} from "../base/BaseMock.t.sol";
 
 // solhint-disable no-empty-blocks
-contract SnapshotHubMock is ISnapshotHub {
+contract SnapshotHubMock is BaseMock, ISnapshotHub {
     /// @notice Prevents this contract from being included in the coverage report
     function testSnapshotHubMock() external {}
 
-    function isValidAttestation(bytes memory attPayload) external view returns (bool isValid) {}
+    function isValidAttestation(bytes memory) external view returns (bool isValid) {
+        return getReturnValueBool();
+    }
 
     function getAttestation(uint32 attNonce) external view returns (bytes memory attPayload) {}
 

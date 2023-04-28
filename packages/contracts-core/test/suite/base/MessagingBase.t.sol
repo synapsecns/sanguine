@@ -138,12 +138,17 @@ abstract contract MessagingBaseTest is SynapseTest {
 
     /// @notice Returns address of Destination on the tested domain
     function localDestination() public view virtual onlySupportedDomain returns (address) {
-        return localDomain() == DOMAIN_LOCAL ? address(destination) : address(summit);
+        return localDomain() == DOMAIN_LOCAL ? address(destination) : address(destinationSynapse);
     }
 
     /// @notice Returns address of Origin on the tested domain
     function localOrigin() public view virtual onlySupportedDomain returns (address) {
         return localDomain() == DOMAIN_LOCAL ? address(origin) : address(originSynapse);
+    }
+
+    /// @notice Returns address of Summit on the tested domain
+    function localSummit() public view virtual onlySupportedDomain returns (address) {
+        return localDomain() == DOMAIN_SYNAPSE ? address(summit) : address(0);
     }
 
     /// @notice Checks if contract is a local SystemContract

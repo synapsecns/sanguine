@@ -3,7 +3,7 @@ pragma solidity 0.8.17;
 
 import {IAgentManager, InterfaceSummit} from "../../contracts/Summit.sol";
 
-import {AgentFlag, Summit, SynapseTest} from "../utils/SynapseTest.t.sol";
+import {AgentFlag, AgentStatus, Summit, SynapseTest} from "../utils/SynapseTest.t.sol";
 import {AgentSecuredTest} from "./hubs/ExecutionHub.t.sol";
 
 import {fakeState} from "../utils/libs/FakeIt.t.sol";
@@ -58,8 +58,8 @@ contract SummitTipsTest is AgentSecuredTest {
 
     address internal summitCheats;
 
-    // Deploy Production version of Summit and mocks for everything else
-    constructor() SynapseTest(DEPLOY_PROD_SUMMIT) {}
+    // Deploy Production version of Destination and Summit and mocks for everything else
+    constructor() SynapseTest(DEPLOY_PROD_DESTINATION_SYNAPSE | DEPLOY_PROD_SUMMIT) {}
 
     modifier checkQueueLength(int256 diff) {
         uint256 len = InterfaceSummit(summit).receiptQueueLength();
@@ -140,16 +140,6 @@ contract SummitTipsTest is AgentSecuredTest {
         bondingManager.submitReceipt(rcptPayload, rcptSignature);
     }
 
-    function test_submitReceipt_revert_wrongNotaryDomain() public {
-        // TODO: remove when Notary restrictions are revisited
-        RawExecReceipt memory re = mockReceipt("First");
-        prepareReceipt(re, false, 0, false);
-        address notary = domains[DOMAIN_LOCAL].agent;
-        (bytes memory rcptPayload, bytes memory rcptSignature) = signReceipt(notary, re);
-        vm.expectRevert("Wrong Notary domain");
-        bondingManager.submitReceipt(rcptPayload, rcptSignature);
-    }
-
     function test_submitReceipt_revert_notaryInDispute() public {
         RawExecReceipt memory re = mockReceipt("First");
         prepareReceipt(re, false, 0, false);
@@ -169,6 +159,13 @@ contract SummitTipsTest is AgentSecuredTest {
         (bytes memory rcptPayload, bytes memory rcptSignature) = signReceipt(notary, re);
         vm.expectRevert("Unknown snapshot root");
         bondingManager.submitReceipt(rcptPayload, rcptSignature);
+    }
+
+    function test_acceptReceipt_revert_notAgentManager(address caller) public {
+        vm.assume(caller != localAgentManager());
+        vm.expectRevert("!agentManager");
+        vm.prank(caller);
+        InterfaceSummit(summit).acceptReceipt(0, 0, 0, 0, 0, "");
     }
 
     // ═══════════════════════════════════════════ TESTS: TIPS AWARDING ════════════════════════════════════════════════
