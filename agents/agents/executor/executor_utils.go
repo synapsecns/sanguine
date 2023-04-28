@@ -62,7 +62,12 @@ func (e Executor) logType(log ethTypes.Log, chainID uint32) contractEventType {
 			contractEvent.contractType = summitContract
 			contractEvent.eventType = snapshotAcceptedEvent
 		}
-	} else if originEvent, ok := e.chainExecutors[chainID].originParser.EventType(log); ok && originEvent == origin.SentEvent {
+
+		return contractEvent
+	}
+
+	//nolint:nestif
+	if originEvent, ok := e.chainExecutors[chainID].originParser.EventType(log); ok && originEvent == origin.SentEvent {
 		contractEvent.contractType = originContract
 		contractEvent.eventType = sentEvent
 	} else if destinationEvent, ok := e.chainExecutors[chainID].destinationParser.EventType(log); ok {

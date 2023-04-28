@@ -18,6 +18,8 @@ import (
 	"github.com/synapsecns/sanguine/services/scribe/client"
 	scribeCmd "github.com/synapsecns/sanguine/services/scribe/cmd"
 	"github.com/synapsecns/sanguine/services/scribe/node"
+	"go.opentelemetry.io/otel/attribute"
+	"go.opentelemetry.io/otel/trace"
 	"golang.org/x/sync/errgroup"
 	"gorm.io/gorm/schema"
 
@@ -211,7 +213,7 @@ var ExecutorRunCommand = &cli.Command{
 		case "remote":
 			scribeClient = client.NewRemoteScribe(uint16(c.Uint(scribePortFlag.Name)), c.String(scribeURL.Name), metricsProvider).ScribeClient
 		default:
-			return fmt.Errorf("invalid scribe type")
+			return fmt.Errorf("invalid scribe type: %s", c.String(scribeTypeFlag.Name))
 		}
 
 		handler, err := metrics.NewFromEnv(c.Context, metadata.BuildInfo())
@@ -258,7 +260,12 @@ func init() {
 //
 //nolint:cyclop
 func InitExecutorDB(parentCtx context.Context, database string, path string, tablePrefix string, handler metrics.Handler) (_ db.ExecutorDB, err error) {
-	ctx, span := handler.Tracer().Start(parentCtx, "start-sqlite")
+	ctx, span := handler.Tracer().Start(parentCtx, "InitExecutorDB", trace.WithAttributes(
+		attribute.String("database", database),
+		attribute.String("path", path),
+		attribute.String("tablePrefix", tablePrefix),
+	))
+
 	defer func() {
 		metrics.EndSpanWithErr(span, err)
 	}()
