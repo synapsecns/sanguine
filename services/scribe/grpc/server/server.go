@@ -137,6 +137,10 @@ func (s *server) StreamLogs(req *pbscribe.StreamLogsRequest, res pbscribe.Scribe
 		span.AddEvent("Got logs. Count: " + strconv.Itoa(len(retrievedLogs)))
 
 		if !streamNewBlocks {
+			go func() {
+				span.End()
+			}()
+
 			return nil
 		}
 
