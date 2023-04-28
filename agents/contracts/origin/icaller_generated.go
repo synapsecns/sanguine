@@ -11,10 +11,6 @@ import (
 
 // IOriginCaller ...
 type IOriginCaller interface {
-	// SYNAPSEDOMAIN is a free data retrieval call binding the contract method 0xbf61e67e.
-	//
-	// Solidity: function SYNAPSE_DOMAIN() view returns(uint32)
-	SYNAPSEDOMAIN(opts *bind.CallOpts) (uint32, error)
 	// AgentManager is a free data retrieval call binding the contract method 0x7622f78d.
 	//
 	// Solidity: function agentManager() view returns(address)
@@ -23,6 +19,13 @@ type IOriginCaller interface {
 	//
 	// Solidity: function agentStatus(address agent) view returns((uint8,uint32,uint32))
 	AgentStatus(opts *bind.CallOpts, agent common.Address) (AgentStatus, error)
+	// GetAgent is a free data retrieval call binding the contract method 0x2de5aaf7.
+	//
+	// Solidity: function getAgent(uint256 index) view returns(address agent, (uint8,uint32,uint32) status)
+	GetAgent(opts *bind.CallOpts, index *big.Int) (struct {
+		Agent  common.Address
+		Status AgentStatus
+	}, error)
 	// IsValidState is a free data retrieval call binding the contract method 0xa9dcf22d.
 	//
 	// Solidity: function isValidState(bytes statePayload) view returns(bool isValid)

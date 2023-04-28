@@ -11,10 +11,6 @@ import (
 
 // IBondingManagerCaller ...
 type IBondingManagerCaller interface {
-	// SYNAPSEDOMAIN is a free data retrieval call binding the contract method 0xbf61e67e.
-	//
-	// Solidity: function SYNAPSE_DOMAIN() view returns(uint32)
-	SYNAPSEDOMAIN(opts *bind.CallOpts) (uint32, error)
 	// AgentLeaf is a free data retrieval call binding the contract method 0xc99dcb9e.
 	//
 	// Solidity: function agentLeaf(address agent) view returns(bytes32 leaf)
@@ -35,6 +31,10 @@ type IBondingManagerCaller interface {
 	//
 	// Solidity: function destination() view returns(address)
 	Destination(opts *bind.CallOpts) (common.Address, error)
+	// DisputeStatus is a free data retrieval call binding the contract method 0x3463d1b1.
+	//
+	// Solidity: function disputeStatus(address agent) view returns((uint8,uint32,address))
+	DisputeStatus(opts *bind.CallOpts, agent common.Address) (Dispute, error)
 	// GetActiveAgents is a free data retrieval call binding the contract method 0xc1c0f4f6.
 	//
 	// Solidity: function getActiveAgents(uint32 domain) view returns(address[] agents)
@@ -70,13 +70,6 @@ type IBondingManagerCaller interface {
 	//
 	// Solidity: function owner() view returns(address)
 	Owner(opts *bind.CallOpts) (common.Address, error)
-	// SlashStatus is a free data retrieval call binding the contract method 0xc02b89ff.
-	//
-	// Solidity: function slashStatus(address ) view returns(bool isSlashed, address prover)
-	SlashStatus(opts *bind.CallOpts, arg0 common.Address) (struct {
-		IsSlashed bool
-		Prover    common.Address
-	}, error)
 	// Version is a free data retrieval call binding the contract method 0x54fd4d50.
 	//
 	// Solidity: function version() view returns(string versionString)

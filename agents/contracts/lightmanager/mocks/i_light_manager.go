@@ -105,6 +105,50 @@ func (_m *ILightManager) Destination(opts *bind.CallOpts) (common.Address, error
 	return r0, r1
 }
 
+// DisputeStatus provides a mock function with given fields: opts, agent
+func (_m *ILightManager) DisputeStatus(opts *bind.CallOpts, agent common.Address) (lightmanager.Dispute, error) {
+	ret := _m.Called(opts, agent)
+
+	var r0 lightmanager.Dispute
+	if rf, ok := ret.Get(0).(func(*bind.CallOpts, common.Address) lightmanager.Dispute); ok {
+		r0 = rf(opts, agent)
+	} else {
+		r0 = ret.Get(0).(lightmanager.Dispute)
+	}
+
+	var r1 error
+	if rf, ok := ret.Get(1).(func(*bind.CallOpts, common.Address) error); ok {
+		r1 = rf(opts, agent)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
+// FilterDisputeUpdated provides a mock function with given fields: opts
+func (_m *ILightManager) FilterDisputeUpdated(opts *bind.FilterOpts) (*lightmanager.LightManagerDisputeUpdatedIterator, error) {
+	ret := _m.Called(opts)
+
+	var r0 *lightmanager.LightManagerDisputeUpdatedIterator
+	if rf, ok := ret.Get(0).(func(*bind.FilterOpts) *lightmanager.LightManagerDisputeUpdatedIterator); ok {
+		r0 = rf(opts)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).(*lightmanager.LightManagerDisputeUpdatedIterator)
+		}
+	}
+
+	var r1 error
+	if rf, ok := ret.Get(1).(func(*bind.FilterOpts) error); ok {
+		r1 = rf(opts)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
 // FilterInitialized provides a mock function with given fields: opts
 func (_m *ILightManager) FilterInitialized(opts *bind.FilterOpts) (*lightmanager.LightManagerInitializedIterator, error) {
 	ret := _m.Called(opts)
@@ -412,6 +456,29 @@ func (_m *ILightManager) Owner(opts *bind.CallOpts) (common.Address, error) {
 	return r0, r1
 }
 
+// ParseDisputeUpdated provides a mock function with given fields: log
+func (_m *ILightManager) ParseDisputeUpdated(log types.Log) (*lightmanager.LightManagerDisputeUpdated, error) {
+	ret := _m.Called(log)
+
+	var r0 *lightmanager.LightManagerDisputeUpdated
+	if rf, ok := ret.Get(0).(func(types.Log) *lightmanager.LightManagerDisputeUpdated); ok {
+		r0 = rf(log)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).(*lightmanager.LightManagerDisputeUpdated)
+		}
+	}
+
+	var r1 error
+	if rf, ok := ret.Get(1).(func(types.Log) error); ok {
+		r1 = rf(log)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
 // ParseInitialized provides a mock function with given fields: log
 func (_m *ILightManager) ParseInitialized(log types.Log) (*lightmanager.LightManagerInitialized, error) {
 	ret := _m.Called(log)
@@ -642,27 +709,6 @@ func (_m *ILightManager) RenounceOwnership(opts *bind.TransactOpts) (*types.Tran
 	return r0, r1
 }
 
-// SYNAPSEDOMAIN provides a mock function with given fields: opts
-func (_m *ILightManager) SYNAPSEDOMAIN(opts *bind.CallOpts) (uint32, error) {
-	ret := _m.Called(opts)
-
-	var r0 uint32
-	if rf, ok := ret.Get(0).(func(*bind.CallOpts) uint32); ok {
-		r0 = rf(opts)
-	} else {
-		r0 = ret.Get(0).(uint32)
-	}
-
-	var r1 error
-	if rf, ok := ret.Get(1).(func(*bind.CallOpts) error); ok {
-		r1 = rf(opts)
-	} else {
-		r1 = ret.Error(1)
-	}
-
-	return r0, r1
-}
-
 // SetAgentRoot provides a mock function with given fields: opts, agentRoot_
 func (_m *ILightManager) SetAgentRoot(opts *bind.TransactOpts, agentRoot_ [32]byte) (*types.Transaction, error) {
 	ret := _m.Called(opts, agentRoot_)
@@ -679,39 +725,6 @@ func (_m *ILightManager) SetAgentRoot(opts *bind.TransactOpts, agentRoot_ [32]by
 	var r1 error
 	if rf, ok := ret.Get(1).(func(*bind.TransactOpts, [32]byte) error); ok {
 		r1 = rf(opts, agentRoot_)
-	} else {
-		r1 = ret.Error(1)
-	}
-
-	return r0, r1
-}
-
-// SlashStatus provides a mock function with given fields: opts, arg0
-func (_m *ILightManager) SlashStatus(opts *bind.CallOpts, arg0 common.Address) (struct {
-	IsSlashed bool
-	Prover    common.Address
-}, error) {
-	ret := _m.Called(opts, arg0)
-
-	var r0 struct {
-		IsSlashed bool
-		Prover    common.Address
-	}
-	if rf, ok := ret.Get(0).(func(*bind.CallOpts, common.Address) struct {
-		IsSlashed bool
-		Prover    common.Address
-	}); ok {
-		r0 = rf(opts, arg0)
-	} else {
-		r0 = ret.Get(0).(struct {
-			IsSlashed bool
-			Prover    common.Address
-		})
-	}
-
-	var r1 error
-	if rf, ok := ret.Get(1).(func(*bind.CallOpts, common.Address) error); ok {
-		r1 = rf(opts, arg0)
 	} else {
 		r1 = ret.Error(1)
 	}
@@ -1009,6 +1022,29 @@ func (_m *ILightManager) Version(opts *bind.CallOpts) (string, error) {
 	var r1 error
 	if rf, ok := ret.Get(1).(func(*bind.CallOpts) error); ok {
 		r1 = rf(opts)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
+// WatchDisputeUpdated provides a mock function with given fields: opts, sink
+func (_m *ILightManager) WatchDisputeUpdated(opts *bind.WatchOpts, sink chan<- *lightmanager.LightManagerDisputeUpdated) (event.Subscription, error) {
+	ret := _m.Called(opts, sink)
+
+	var r0 event.Subscription
+	if rf, ok := ret.Get(0).(func(*bind.WatchOpts, chan<- *lightmanager.LightManagerDisputeUpdated) event.Subscription); ok {
+		r0 = rf(opts, sink)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).(event.Subscription)
+		}
+	}
+
+	var r1 error
+	if rf, ok := ret.Get(1).(func(*bind.WatchOpts, chan<- *lightmanager.LightManagerDisputeUpdated) error); ok {
+		r1 = rf(opts, sink)
 	} else {
 		r1 = ret.Error(1)
 	}
