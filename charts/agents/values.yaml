@@ -8,7 +8,7 @@ image:
   repository: ghcr.io/synapsecns/sanguine/agents
   pullPolicy: Always
   # Overrides the image tag whose default is the chart appVersion.
-  tag: "46eaa8687077c6fb432159861d9b4c6e4fd10c37"
+  tag: "b3e74ed0aec2c2926e7c6b386288a7a769646cd4"
 
 imagePullSecrets: []
 nameOverride: ""
@@ -739,7 +739,7 @@ executor_remote_fresh_files:
   executor_signer.txt: |-
     e34aa778ae888697c62bfded57586ca522ba5ea2e6218a2a88707306c3873255
   executor_config.yaml: |-
-    execute_interval: 5
+    execute_interval: 5∂
     summit_chain_id: 420
     summit_address: 0x4E804e74268d6cF2C26DE0765260cFd9796DEd44
     chains:

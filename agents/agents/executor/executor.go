@@ -645,6 +645,7 @@ func (e Executor) streamLogs(ctx context.Context, grpcClient pbscribe.ScribeServ
 		default:
 			response, err := stream.Recv()
 			if errors.Is(err, io.EOF) {
+				logger.Errorf("stream closed: %s", err)
 				return nil
 			}
 			if err != nil {
@@ -671,11 +672,11 @@ func (e Executor) streamLogs(ctx context.Context, grpcClient pbscribe.ScribeServ
 
 				continue
 			}
-			if !e.chainExecutors[chainID].lastLog.verifyAfter(*log) {
-				logger.Warnf("log is not in chronological order. last log blockNumber: %d, blockIndex: %d. this log blockNumber: %d, blockIndex: %d, txHash: %s", e.chainExecutors[chainID].lastLog.blockNumber, e.chainExecutors[chainID].lastLog.blockIndex, log.BlockNumber, log.Index, log.TxHash.String())
-
-				continue
-			}
+			//if !e.chainExecutors[chainID].lastLog.verifyAfter(*log) {
+			//	logger.Warnf("log is not in chronological order. last log blockNumber: %d, blockIndex: %d. this log blockNumber: %d, blockIndex: %d, txHash: %s", e.chainExecutors[chainID].lastLog.blockNumber, e.chainExecutors[chainID].lastLog.blockIndex, log.BlockNumber, log.Index, log.TxHash.String())
+			//
+			//	continue
+			//}
 
 			e.chainExecutors[chainID].logChan <- log
 			span.AddEvent("log sent to channel")
