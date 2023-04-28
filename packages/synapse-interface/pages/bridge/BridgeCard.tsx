@@ -17,7 +17,11 @@ import { ChainSlideOver } from '@/components/misc/ChainSlideOver'
 import { BigNumber } from '@ethersproject/bignumber'
 import { Zero, MaxInt256 } from '@ethersproject/constants'
 import { formatBNToString } from '@bignumber/format'
-import { SECTION_TRANSITION_PROPS } from '@styles/transitions'
+import {
+  SECTION_TRANSITION_PROPS,
+  TRANSITION_PROPS,
+  TransitionClassesProps,
+} from '@styles/transitions'
 import { approveToken } from '@/utils/approveToken'
 import SettingsSlideOver from './SettingsSlideOver'
 import { DestinationAddressInput } from '../../components/input/DestinationAddressInput'
@@ -206,18 +210,6 @@ const BridgeCard = ({
       pendingLabel={pendingLabel}
     />
   )
-  const TRANSITION_PROPS = {
-    ...COIN_SLIDE_OVER_PROPS,
-    className: `
-      origin-bottom absolute
-      w-full h-full
-      md:w-[95%] md:h-[95%]
-      -ml-0 md:-ml-3
-      md:mt-3
-      bg-bgBase
-      z-20 rounded-3xl
-    `,
-  }
 
   return (
     <>

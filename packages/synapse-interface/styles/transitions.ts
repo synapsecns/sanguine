@@ -1,4 +1,4 @@
-export interface TransitionClasses {
+interface TransitionClasses {
   enter?: string
   enterFrom?: string
   enterTo?: string
@@ -8,13 +8,13 @@ export interface TransitionClasses {
   leaveTo?: string
 }
 
-export interface TransitionProps extends TransitionClasses {
+export interface TransitionClassesProps extends TransitionClasses {
   appear?: boolean
   unmount?: boolean
   className?: string
 }
 
-export const COIN_SLIDE_OVER_PROPS: TransitionProps = {
+export const COIN_SLIDE_OVER_PROPS: TransitionClassesProps = {
   appear: false,
   unmount: true,
   enter: 'transition duration-150 ease-out',
@@ -25,7 +25,7 @@ export const COIN_SLIDE_OVER_PROPS: TransitionProps = {
   leaveTo: 'transform-gpu scale-y-0 opacity-0',
 }
 
-export const SECTION_TRANSITION_PROPS: TransitionProps = {
+export const SECTION_TRANSITION_PROPS: TransitionClassesProps = {
   enter: 'transition duration-100 ease-out',
   enterFrom: 'transform-gpu scale-y-0 ',
   enterTo: 'transform-gpu scale-y-100 opacity-100',
@@ -35,7 +35,7 @@ export const SECTION_TRANSITION_PROPS: TransitionProps = {
   className: 'origin-top -mx-0 md:-mx-6',
 }
 
-export const TRANSITION_PROPS: TransitionProps = {
+export const TRANSITION_PROPS: TransitionClassesProps = {
   ...COIN_SLIDE_OVER_PROPS,
   className: `
     origin-bottom absolute
