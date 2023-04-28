@@ -672,11 +672,11 @@ func (e Executor) streamLogs(ctx context.Context, grpcClient pbscribe.ScribeServ
 
 				continue
 			}
-			//if !e.chainExecutors[chainID].lastLog.verifyAfter(*log) {
-			//	logger.Warnf("log is not in chronological order. last log blockNumber: %d, blockIndex: %d. this log blockNumber: %d, blockIndex: %d, txHash: %s", e.chainExecutors[chainID].lastLog.blockNumber, e.chainExecutors[chainID].lastLog.blockIndex, log.BlockNumber, log.Index, log.TxHash.String())
-			//
-			//	continue
-			//}
+			if contractEvent.eventType == dispatchedEvent && !e.chainExecutors[chainID].lastLog.verifyAfter(*log) {
+				logger.Warnf("log is not in chronological order. last log blockNumber: %d, blockIndex: %d. this log blockNumber: %d, blockIndex: %d, txHash: %s", e.chainExecutors[chainID].lastLog.blockNumber, e.chainExecutors[chainID].lastLog.blockIndex, log.BlockNumber, log.Index, log.TxHash.String())
+
+				continue
+			}
 
 			e.chainExecutors[chainID].logChan <- log
 			span.AddEvent("log sent to channel")
@@ -725,7 +725,7 @@ func (e Executor) processLog(parentCtx context.Context, log ethTypes.Log, chainI
 
 		// Make sure the nonce of the message is being inserted at the right index.
 		if merkleIndex+1 != (*message).Nonce() {
-			logger.Errorf("wahhh nonce is %d", (*message).Nonce())
+			return fmt.Errorf("nonce is not correct. expected: %d, got: %d", merkleIndex+1, (*message).Nonce())
 		}
 
 		e.chainExecutors[chainID].merkleTree.Insert(leaf[:])
