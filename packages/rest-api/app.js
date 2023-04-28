@@ -3,122 +3,185 @@ import { SynapseSDK } from '@synapsecns/sdk-router'
 import { BigNumber } from '@ethersproject/bignumber'
 import express from 'express'
 
-import config from './config.json'
-
+import chains from './config/chains.json' assert { type: 'json' };
+import tokens from './config/tokens.json' assert { type: 'json' };
 //Setting up RPC providers:
 
+const TEN = BigNumber.from(10)
 const providers = []
 const chainIds = []
-for (let i = 0; i < config.length; i++) {
-  providers.push(new JsonRpcProvider(config[i].rpcUrl))
-  chainIds.push(config[i].chainId)
+for (let i = 0; i < chains.length; i++) {
+  providers.push(new JsonRpcProvider(chains[i].rpc))
+  chainIds.push(chains[i].id)
 }
+
+
 //Set up a SynapseSDK Instance
 const Synapse = new SynapseSDK(chainIds, providers)
 
 const app = express()
 const port = process.env.PORT || 3000
-
+const tokenHtml = Object.keys(tokens).map(
+  (symbol) =>
+    "<b>" + String(symbol) + '</b>: <br/>' + String(Object.keys(tokens[symbol].addresses).map((addrChainId) => "<li>" + String(addrChainId) + ': ' + tokens[symbol].addresses[addrChainId] + '</li>').join(""))
+    + "</br>").join("")
 //Intro Message for UI
 app.get('/', (req, res) => {
   res.send(
-    `Welcome to the Synapse Rest API for swap and bridge quotes \nAvailable Chains: \n${config.map(
-      (chain) => String(chain.name) + '\n'
-    )}`
+    `
+    <h1>Welcome to the Synapse Rest API for swap and bridge quotes</h1>
+    <hr/>
+    <h2>Available Chains</h2>
+    <ul>
+     ${chains.map(
+      (chain) => "<li>" + String(chain.name) + ' (' + String(chain.id) + ')' + '</li>'
+    ).join("")}
+    </ul>
+    <h2>Available Tokens (symbols to use)</h2>
+    ${tokenHtml}`
   )
 })
 
 //Swap get request
-app.get('/swap/:chain/:fromToken/:toToken/:amount', async (req, res) => {
-  const chain = req.params.chain
-  //@simon Need logic here that takes in the chain and the token symbol and returns the token address for that chain (for both the to and From tokens) @simon
-  const fromToken = req.params.fromToken
-  const toToken = req.params.toToken
-  // @simon Need logic here that takes in the amount and multiplies it by the decimals for that token on its respective chain
-  const amount = req.params.amount
+app.get('/swap', async (req, res) => {
+  // Access query params
+  const query = req.query
 
-  const resp = await Synapse.swapQuote(
-    chain,
-    fromToken,
-    toToken,
+  // Chain
+  const chainId = query.chain
+
+  // Symbols
+  const fromTokenSymbol = query.fromToken
+  const toTokenSymbol = query.toToken
+  console.log("SYMBOLS", chainId, fromTokenSymbol, toTokenSymbol)
+  // Get Token Addresses
+  const fromTokenAddress = tokens[fromTokenSymbol]?.addresses?.[chainId]
+  const toTokenAddress = tokens[toTokenSymbol]?.addresses?.[chainId]
+
+  // Get Token Decimals
+  const fromTokenDecimals = tokens[fromTokenSymbol]?.decimals?.[chainId]
+  const toTokenDecimals = tokens[fromTokenSymbol]?.decimals?.[chainId]
+
+  console.log("SYMBOLsssS", fromTokenAddress, toTokenAddress, fromTokenDecimals, toTokenDecimals)
+
+  // Handle invalid params (either token symbols or chainIDs)
+  // TODO: add error handling for missing params
+  if (!fromTokenAddress || !toTokenAddress || !fromTokenDecimals || !toTokenDecimals) {
+    res.send(
+      `
+      <h1>Invalid Params</h1>
+      <hr/>
+      <b>Ensure that your request matches the following format: /swap?chain=1fromToken=USDC&toToken=DAI&amount=100</b>
+      <h2>Available Tokens (symbols to use)</h2>
+      ${tokenHtml}`)
+    return
+  }
+
+  // Handle amount
+  console.log("QUERY", query.amount)
+  console.log("QUERY", BigNumber.from(query.amount))
+  console.log("QUERY", BigNumber.from(query.amount).mul(TEN.pow(fromTokenDecimals)))
+
+  const amount = BigNumber.from(query.amount).mul(TEN.pow(fromTokenDecimals))
+
+  // Send request w/Synapse SDK
+  Synapse.swapQuote(
+    Number(chainId),
+    fromTokenAddress,
+    toTokenAddress,
     BigNumber.from(amount)
-  )
+  ).then((resp) => {
+    // Check for stable swap (going in its 6 decimals but coming out its 18 decimals so we need to adjust)
+    // Using arbitrary 6 decimals as a threshold for now
+    // TODO: Router contract v2 should return the amount out with decimals for the out-out token not the out-in token (eg.nusd).
+    const divisor = resp.maxAmountOut.gt(amount.mul(TEN.pow(6))) ? TEN.pow(18) : TEN.pow(toTokenDecimals)
 
-  //Hardcoded implementation for testing purposes only
-  // const resp = await Synapse.swapQuote(42161, '0xff970a61a04b1ca14834a43f5de4533ebddb5cc8', '0xfd086bc7cd5c481dcc9c85ebe478a1c0b69fcbb9', BigNumber.from(100000000));
-
-  res.json(resp)
+    // Add response field with adjusted maxAmountOutStr (to account for decimals)
+    resp.maxAmountOutStr = resp.maxAmountOut.div(divisor).toString()
+    res.json(resp)
+  }).catch((err) => {
+    // TODO: do a better return here
+    res.send(
+      `
+      <h1>Invalid Request</h1>
+      <code>${err}</code>
+      <hr/>
+      <b>Ensure that your request matches the following format: /swap?chain=1fromToken=USDC&toToken=DAI&amount=100</b>
+      <h2>Available Tokens (symbols to use)</h2>
+      ${tokenHtml}`)
+  })
 })
 
 //Bridge get request
 app.get(
-  '/bridge/:fromChain/:toChain/:fromToken/:toToken/:amount',
+  '/bridge',
   async (req, res) => {
-    const fromChain = req.params.fromChain
-    const toChain = req.params.toChain
-    //@simon Need logic here that takes in the chain and the token symbol and returns the token address for that chain (for both the to and From tokens) @simon
-    const fromToken = req.params.fromToken
-    const toToken = req.params.toToken
-    //@simon Need logic here that takes in the amount and multiplies it by the decimals for that token on its respective chain @simon
-    const amount = req.params.amount
+    // Access query params
+    const query = req.query
 
-    const resp = await Synapse.bridgeQuote(
-      fromChain,
-      toChain,
-      fromToken,
-      toToken,
+    // Chains
+    const fromChain = query.fromChain
+    const toChain = query.toChain
+
+    // Symbols
+    const fromTokenSymbol = query.fromToken
+    const toTokenSymbol = query.toToken
+
+    // Get Token Addresses
+    const fromTokenAddress = tokens[fromTokenSymbol]?.addresses?.[fromChain]
+    const toTokenAddress = tokens[toTokenSymbol]?.addresses?.[toChain]
+
+    // Get Token Decimals
+    const fromTokenDecimals = tokens[fromTokenSymbol]?.decimals?.[fromChain]
+    const toTokenDecimals = tokens[fromTokenSymbol]?.decimals?.[toChain]
+
+    // Handle invalid params (either token symbols or chainIDs)
+    // TODO: add error handling for missing params
+    if (!fromTokenAddress || !toTokenAddress || !fromTokenDecimals || !toTokenDecimals) {
+      res.send(
+        `
+        <h1>Invalid Request</h1>
+        <hr/>
+        <b>Ensure that your request matches the following format: /bridge?fromChain=1&toChain=42161&fromToken=USDC&toToken=USDC&amount=1000000</b>
+        <h2>Available Tokens (symbols to use)</h2>
+        ${tokenHtml}`)
+      return
+    }
+
+
+    // Handle amount
+    const amount = BigNumber.from(query.amount).mul(TEN.pow(fromTokenDecimals))
+
+    // Send request w/Synapse SDK
+    Synapse.bridgeQuote(
+      Number(fromChain),
+      Number(toChain),
+      fromTokenAddress,
+      toTokenAddress,
       BigNumber.from(amount)
-    )
+    ).then((resp) => {
+      // Check for stable swap (going in its 6 decimals but coming out its 18 decimals so we need to adjust)
+      // Using arbitrary 6 decimals as a threshold for now
+      // TODO: Router contract v2 should return the amount out with decimals for the out-out token not the out-in token (eg.nusd).
+      const divisor = resp.maxAmountOut.gt(amount.mul(TEN.pow(6))) ? TEN.pow(18) : TEN.pow(toTokenDecimals)
 
-    //Hardcoded implementation for testing purposes only
-    // const resp = await Synapse.swapQuote(42161, '0xff970a61a04b1ca14834a43f5de4533ebddb5cc8', '0xfd086bc7cd5c481dcc9c85ebe478a1c0b69fcbb9', BigNumber.from(100000000));
-
-    res.json(resp)
+      // Add response field with adjusted maxAmountOutStr (to account for decimals)
+      resp.maxAmountOutStr = resp.maxAmountOut.div(divisor).toString()
+      res.json(resp)
+    }).catch((err) => {
+      // TODO: do a better return here
+      res.send(
+        `
+        <h1>Invalid Request</h1>
+        <code>${err}</code>
+        <hr/>
+        <b>Ensure that your request matches the following format: /bridge?fromChain=1&toChain=42161&fromToken=USDC&toToken=USDC&amount=1000000</b>
+        <h2>Available Tokens (symbols to use)</h2>
+        ${tokenHtml}`)
+    })
   }
 )
 
 app.listen(port, () => {
   console.log(`Server listening at ${port}`)
 })
-
-// export const allChains = [
-//   1,
-//   10,
-//   56,
-//   250,
-//   288,
-//   1284,
-//   1285,
-//   137,
-//   43144,
-//   53935,
-//   42161,
-//   1313161554,
-//   1666600000,
-//   25,
-//   1088,
-//   8217,
-//   2000,
-//   7700
-// ]
-
-// export const rpcProviders = [
-//   new JsonRpcProvider('https://rpc.ankr.com/eth'),
-//   new JsonRpcProvider('https://rpc.ankr.com/optimism'),
-//   new JsonRpcProvider('https://bsc-dataseed1.ninicoin.io/'),
-//   new JsonRpcProvider('https://rpc.ftm.tools'),
-//   new JsonRpcProvider('https://replica-oolong.boba.network/'),
-//   new JsonRpcProvider('https://rpc.api.moonbeam.network'),
-//   new JsonRpcProvider('https://rpc.api.moonriver.moonbeam.network'),
-//   new JsonRpcProvider('https://rpc-mainnet.matic.quiknode.pro'),
-//   new JsonRpcProvider('https://api.avax.network/ext/bc/C/rpc'),
-//   new JsonRpcProvider('https://subnets.avax.network/defi-kingdoms/dfk-chain/rpc'),
-//   new JsonRpcProvider('https://arb1.arbitrum.io/rpc'),
-//   new JsonRpcProvider('https://mainnet.aurora.dev'),
-//   new JsonRpcProvider('https://harmony-mainnet.chainstacklabs.com'),
-//   new JsonRpcProvider('https://evm-cronos.crypto.org'),
-//   new JsonRpcProvider('https://andromeda.metis.io/?owner=1088'),
-//   new JsonRpcProvider('https://klaytn.blockpi.network/v1/rpc/public'),
-//   new JsonRpcProvider('https://rpc.ankr.com/dogechain'),
-//   new JsonRpcProvider('https://mainnode.plexnode.org:8545'),
-// ]
