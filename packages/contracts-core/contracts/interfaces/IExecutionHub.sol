@@ -34,6 +34,12 @@ interface IExecutionHub {
     // ═══════════════════════════════════════════════════ VIEWS ═══════════════════════════════════════════════════════
 
     /**
+     * @notice Returns attestation nonce for a given snapshot root.
+     * @dev Will return 0 if the root is unknown.
+     */
+    function getAttestationNonce(bytes32 snapRoot) external view returns (uint32 attNonce);
+
+    /**
      * @notice Checks the validity of the unsigned message receipt.
      * @dev Will revert if any of these is true:
      *  - Receipt payload is not properly formatted.

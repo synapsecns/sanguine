@@ -2,6 +2,7 @@
 pragma solidity 0.8.17;
 
 import {IAgentSecured} from "../../contracts/interfaces/IAgentSecured.sol";
+import {InterfaceDestination} from "../../contracts/interfaces/InterfaceDestination.sol";
 import {ISnapshotHub} from "../../contracts/interfaces/ISnapshotHub.sol";
 import {SNAPSHOT_TREE_HEIGHT} from "../../contracts/libs/Constants.sol";
 import {MerkleMath} from "../../contracts/libs/MerkleMath.sol";
@@ -9,7 +10,7 @@ import {MerkleMath} from "../../contracts/libs/MerkleMath.sol";
 import {InterfaceSummit} from "../../contracts/Summit.sol";
 import {Versioned} from "../../contracts/base/Version.sol";
 
-import {AgentFlag, SynapseTest} from "../utils/SynapseTest.t.sol";
+import {AgentFlag, AgentStatus, SynapseTest} from "../utils/SynapseTest.t.sol";
 import {State, RawAttestation, RawState, RawStateIndex} from "../utils/libs/SynapseStructs.t.sol";
 import {Random} from "../utils/libs/Random.t.sol";
 import {AgentSecuredTest} from "./hubs/ExecutionHub.t.sol";
@@ -57,6 +58,20 @@ contract SummitTest is AgentSecuredTest {
         assertEq(Versioned(summit).version(), LATEST_VERSION, "!version");
         // Check attestation getter for zero nonce
         assertEq(ISnapshotHub(summit).getAttestation(0), notaryAttestations[0].formatAttestation(), "!getAttestation");
+    }
+
+    function test_acceptGuardSnapshot_revert_notAgentManager(address caller) public {
+        vm.assume(caller != localAgentManager());
+        vm.expectRevert("!agentManager");
+        vm.prank(caller);
+        InterfaceSummit(summit).acceptGuardSnapshot(0, 0, "");
+    }
+
+    function test_acceptNotarySnapshot_revert_notAgentManager(address caller) public {
+        vm.assume(caller != localAgentManager());
+        vm.expectRevert("!agentManager");
+        vm.prank(caller);
+        InterfaceSummit(summit).acceptNotarySnapshot(0, 0, 0, "");
     }
 
     function test_verifyAttestation_existingNonce(Random memory random, uint256 mask) public {
@@ -213,6 +228,13 @@ contract SummitTest is AgentSecuredTest {
             emit AttestationSaved(attestation);
             vm.expectEmit(true, true, true, true);
             emit SnapshotAccepted(DOMAIN_LOCAL, notary, snapPayloads[i], snapSignatures[i]);
+            // Should pass the resulting attestation to Destination: acceptAttestation(status, sigIndex, attestation)
+            vm.expectCall(
+                destinationSynapse,
+                abi.encodeWithSelector(
+                    InterfaceDestination.acceptAttestation.selector, agentIndex[notary], type(uint256).max, attestation
+                )
+            );
 
             bytes memory attPayload = bondingManager.submitSnapshot(snapPayloads[i], snapSignatures[i]);
             assertEq(attPayload, attestation, "Notary: incorrect attestation");

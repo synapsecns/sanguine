@@ -10,39 +10,63 @@ interface InterfaceSummit {
      * @notice Accepts a receipt, which local `AgentManager` verified to have been signed by an active Notary.
      * > Receipt is a statement about message execution status on the remote chain.
      * - This will distribute the message tips across the off-chain actors once the receipt optimistic period is over.
+     * - Notary who signed the receipt is referenced as the "Receipt Notary".
+     * - Notary who signed the attestation on destination chain is referenced as the "Attestation Notary".
      * > Will revert if any of these is true:
      * > - Called by anyone other than local `AgentManager`.
-     * > - Receipt payload is not properly formatted.
+     * > - Receipt body payload is not properly formatted.
      * > - Receipt signer is in Dispute.
      * > - Receipt's snapshot root is unknown.
-     * @param status            Structure specifying agent status: (flag, domain, index)
+     * @param rcptNotaryIndex   Index of Receipt Notary in Agent Merkle Tree
+     * @param attNotaryIndex    Index of Attestation Notary in Agent Merkle Tree
      * @param sigIndex          Index of stored Notary signature
-     * @param rcptPayload       Raw payload with receipt data
+     * @param attNonce          Nonce of the attestation used for proving the executed message
+     * @param paddedTips        Padded encoded paid tips information
+     * @param rcptBodyPayload   Raw payload with receipt body
      * @return wasAccepted      Whether the receipt was accepted
      */
-    function acceptReceipt(AgentStatus memory status, uint256 sigIndex, bytes memory rcptPayload)
-        external
-        returns (bool wasAccepted);
+    function acceptReceipt(
+        uint32 rcptNotaryIndex,
+        uint32 attNotaryIndex,
+        uint256 sigIndex,
+        uint32 attNonce,
+        uint256 paddedTips,
+        bytes memory rcptBodyPayload
+    ) external returns (bool wasAccepted);
 
     /**
-     * @notice Accepts a snapshot, which local `AgentManager` verified to have been signed by an active Agent.
+     * @notice Accepts a snapshot, which local `AgentManager` verified to have been signed by an active Guard.
      * > Snapshot is a list of states for a set of Origin contracts residing on any of the chains.
-     * - Guard-signed snapshots: all the states in the snapshot become available for Notary signing.
-     * - Notary-signed snapshots: Snapshot Merkle Root is saved for valid snapshots, i.e.
+     * All the states in the Guard-signed snapshot become available for Notary signing.
+     * > Will revert if any of these is true:
+     * > - Called by anyone other than local `AgentManager`.
+     * > - Snapshot payload is not properly formatted.
+     * > - Snapshot contains a state older then the Guard has previously submitted.
+     * @param guardIndex        Index of Guard in Agent Merkle Tree
+     * @param sigIndex          Index of stored Agent signature
+     * @param snapPayload       Raw payload with snapshot data
+     */
+    function acceptGuardSnapshot(uint32 guardIndex, uint256 sigIndex, bytes memory snapPayload) external;
+
+    /**
+     * @notice Accepts a snapshot, which local `AgentManager` verified to have been signed by an active Notary.
+     * > Snapshot is a list of states for a set of Origin contracts residing on any of the chains.
+     * Snapshot Merkle Root is calculated and saved for valid snapshots, i.e.
      * snapshots which are only using states previously submitted by any of the Guards.
      * - Notary could use states singed by the same of different Guards in their snapshot.
      * - Notary could then proceed to sign the attestation for their submitted snapshot.
      * > Will revert if any of these is true:
      * > - Called by anyone other than local `AgentManager`.
      * > - Snapshot payload is not properly formatted.
-     * > - Snapshot contains a state older then the Agent has previously submitted.
-     * @param status            Structure specifying agent status: (flag, domain, index)
+     * > - Snapshot contains a state older then the Notary has previously submitted.
+     * > - Snapshot contains a state that no Guard has previously submitted.
+     * @param notaryIndex       Index of Notary in Agent Merkle Tree
      * @param sigIndex          Index of stored Agent signature
+     * @param agentRoot         Current root of the Agent Merkle Tree
      * @param snapPayload       Raw payload with snapshot data
      * @return attPayload       Raw payload with data for attestation derived from Notary snapshot.
-     *                          Empty payload, if a Guard snapshot was submitted.
      */
-    function acceptSnapshot(AgentStatus memory status, uint256 sigIndex, bytes memory snapPayload)
+    function acceptNotarySnapshot(uint32 notaryIndex, uint256 sigIndex, bytes32 agentRoot, bytes memory snapPayload)
         external
         returns (bytes memory attPayload);
 

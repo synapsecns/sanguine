@@ -37,7 +37,7 @@ contract DestinationTest is ExecutionHubTest {
         assertFalse(rootPending);
     }
 
-    function test_getSignedAttestation(Random memory random) public {
+    function test_getAttestation(Random memory random) public {
         uint256 amount = 10;
         bytes[] memory attPayloads = new bytes[](amount);
         bytes[] memory attSignatures = new bytes[](amount);
@@ -49,7 +49,7 @@ contract DestinationTest is ExecutionHubTest {
         }
         for (uint32 index = 0; index < amount; ++index) {
             (bytes memory attPayload, bytes memory attSignature) =
-                InterfaceDestination(destination).getSignedAttestation(index);
+                InterfaceDestination(destination).getAttestation(index);
             assertEq(attPayload, attPayloads[index], "!payload");
             assertEq(attSignature, attSignatures[index], "!signature");
         }
@@ -107,6 +107,13 @@ contract DestinationTest is ExecutionHubTest {
         assertEq(index, agentIndex[notaryF]);
     }
 
+    function test_acceptAttestation_revert_notAgentManager(address caller) public {
+        vm.assume(caller != localAgentManager());
+        vm.expectRevert("!agentManager");
+        vm.prank(caller);
+        InterfaceDestination(destination).acceptAttestation(0, 0, "");
+    }
+
     function test_acceptAttestation_notAccepted_agentRootUpdated(
         RawAttestation memory firstRA,
         uint32 firstRootSubmittedAt
@@ -117,8 +124,7 @@ contract DestinationTest is ExecutionHubTest {
         skip(AGENT_ROOT_OPTIMISTIC_PERIOD);
         // Mock a call from lightManager, could as well use the empty values as they won't be checked for validity
         vm.prank(address(lightManager));
-        AgentStatus memory status;
-        assertFalse(InterfaceDestination(destination).acceptAttestation(status, 0, ""));
+        assertFalse(InterfaceDestination(destination).acceptAttestation(0, 0, ""));
         (uint40 snapRootTime, uint40 agentRootTime, uint32 index) = InterfaceDestination(destination).destStatus();
         assertEq(snapRootTime, firstRootSubmittedAt);
         assertEq(agentRootTime, firstRootSubmittedAt);

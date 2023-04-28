@@ -5,7 +5,7 @@ pragma solidity 0.8.17;
 import {Attestation} from "../libs/Attestation.sol";
 import {BaseMessage, BaseMessageLib, MemView} from "../libs/BaseMessage.sol";
 import {ByteString, CallData} from "../libs/ByteString.sol";
-import {ORIGIN_TREE_HEIGHT, SNAPSHOT_TREE_HEIGHT} from "../libs/Constants.sol";
+import {ORIGIN_TREE_HEIGHT, SNAPSHOT_TREE_HEIGHT, SYNAPSE_DOMAIN} from "../libs/Constants.sol";
 import {MerkleMath} from "../libs/MerkleMath.sol";
 import {Header, Message, MessageFlag, MessageLib} from "../libs/Message.sol";
 import {Receipt, ReceiptBody, ReceiptLib} from "../libs/Receipt.sol";
@@ -16,6 +16,7 @@ import {TypeCasts} from "../libs/TypeCasts.sol";
 // ═════════════════════════════ INTERNAL IMPORTS ══════════════════════════════
 import {AgentSecured, DisputeFlag} from "../base/AgentSecured.sol";
 import {ExecutionHubEvents} from "../events/ExecutionHubEvents.sol";
+import {InterfaceBondingManager} from "../interfaces/InterfaceBondingManager.sol";
 import {IExecutionHub} from "../interfaces/IExecutionHub.sol";
 import {IMessageRecipient} from "../interfaces/IMessageRecipient.sol";
 // ═════════════════════════════ EXTERNAL IMPORTS ══════════════════════════════
@@ -115,13 +116,14 @@ abstract contract ExecutionHub is AgentSecured, ExecutionHubEvents, IExecutionHu
         // Check if optimistic period has passed
         uint256 proofMaturity = block.timestamp - rootData.submittedAt;
         require(proofMaturity >= header.optimisticPeriod(), "!optimisticPeriod");
+        uint256 paddedTips;
         bool success;
         // Only Base/Manager message flags exist
         if (message.flag() == MessageFlag.Base) {
             // This will revert if message body is not a formatted BaseMessage payload
             BaseMessage baseMessage = message.body().castToBaseMessage();
             success = _executeBaseMessage(header, proofMaturity, gasLimit, baseMessage);
-            emit TipsRecorded(msgLeaf, Tips.unwrap(baseMessage.tips()));
+            paddedTips = Tips.unwrap(baseMessage.tips());
         } else {
             // gasLimit is ignored when executing manager messages
             success = _executeManagerMessage(header, proofMaturity, message.body());
@@ -139,20 +141,30 @@ abstract contract ExecutionHub is AgentSecured, ExecutionHubEvents, IExecutionHu
                 _firstExecutor[msgLeaf] = msg.sender;
             }
             _receiptData[msgLeaf] = rcptData;
-        } else if (success) {
+        } else {
+            require(success, "Retried execution failed");
             // There has been a failed attempt to execute the message before => don't touch origin and snapshot root
             // This is the successful attempt to execute the message => save the executor
             rcptData.executor = msg.sender;
             _receiptData[msgLeaf] = rcptData;
         }
-        emit Executed(header.origin(), msgLeaf);
+        emit Executed(header.origin(), msgLeaf, success);
+        if (!_passReceipt(rootData.notaryIndex, rootData.attNonce, msgLeaf, paddedTips, rcptData)) {
+            // Emit event with the recorded tips so that Notaries could form a receipt to submit to Summit
+            emit TipsRecorded(msgLeaf, paddedTips);
+        }
     }
 
     // ═══════════════════════════════════════════════════ VIEWS ═══════════════════════════════════════════════════════
 
     /// @inheritdoc IExecutionHub
+    function getAttestationNonce(bytes32 snapRoot) external view returns (uint32 attNonce) {
+        return _rootData[snapRoot].attNonce;
+    }
+
+    /// @inheritdoc IExecutionHub
     function isValidReceipt(bytes memory rcptPayload) external view returns (bool isValid) {
-        // This will revert if payload is not an receipt
+        // This will revert if payload is not a receipt
         Receipt rcpt = rcptPayload.castToReceipt();
         // This will revert if receipt refers to another domain
         // Note: this doesn't check the validity of tips, this is done in Summit contract
@@ -172,27 +184,11 @@ abstract contract ExecutionHub is AgentSecured, ExecutionHubEvents, IExecutionHu
     }
 
     /// @inheritdoc IExecutionHub
-    function receiptBody(bytes32 messageHash) external view returns (bytes memory data) {
+    function receiptBody(bytes32 messageHash) external view returns (bytes memory rcptBodyPayload) {
         ReceiptData memory rcptData = _receiptData[messageHash];
         // Return empty payload if there has been no attempt to execute the message
         if (rcptData.origin == 0) return "";
-        // Determine the first executor who tried to execute the message
-        address firstExecutor = _firstExecutor[messageHash];
-        if (firstExecutor == address(0)) firstExecutor = rcptData.executor;
-        // Determine the snapshot root that was used for proving the message
-        bytes32 snapRoot = _roots[rcptData.rootIndex];
-        (address attNotary,) = _getAgent(_rootData[snapRoot].notaryIndex);
-        // ExecutionHub does not store the tips, the Notary will have to append the tips payload
-        return ReceiptLib.formatReceiptBody({
-            origin_: rcptData.origin,
-            destination_: localDomain,
-            messageHash_: messageHash,
-            snapshotRoot_: snapRoot,
-            stateIndex_: rcptData.stateIndex,
-            attNotary_: attNotary,
-            firstExecutor_: firstExecutor,
-            finalExecutor_: rcptData.executor
-        });
+        return _receiptBody(messageHash, rcptData);
     }
 
     // ══════════════════════════════════════════════ INTERNAL LOGIC ═══════════════════════════════════════════════════
@@ -233,6 +229,25 @@ abstract contract ExecutionHub is AgentSecured, ExecutionHubEvents, IExecutionHu
         // submit an attestation and execute a malicious Manager Message immediately, preventing this attack vector.
         require(magicValue.length == 32 && bytes32(magicValue) == callData.callSelector(), "!magicValue");
         return true;
+    }
+
+    function _passReceipt(
+        uint32 attNotaryIndex,
+        uint32 attNonce,
+        bytes32 messageHash,
+        uint256 paddedTips,
+        ReceiptData memory rcptData
+    ) internal returns (bool) {
+        // Do nothing if contract is not deployed on Synapse Chain
+        if (localDomain != SYNAPSE_DOMAIN) return false;
+        // Do nothing for messages with no tips (TODO: introduce incentives for manager messages?)
+        if (paddedTips == 0) return false;
+        return InterfaceBondingManager(agentManager).passReceipt({
+            attNotaryIndex: attNotaryIndex,
+            attNonce: attNonce,
+            paddedTips: paddedTips,
+            rcptBodyPayload: _receiptBody(messageHash, rcptData)
+        });
     }
 
     /// @dev Saves a snapshot root with the attestation data provided by a Notary.
@@ -320,5 +335,29 @@ abstract contract ExecutionHub is AgentSecured, ExecutionHubEvents, IExecutionHu
         require(rootData.submittedAt != 0, "Invalid snapshot root");
         // Check that Notary who submitted the attestation is not in dispute
         require(_disputes[rootData.notaryIndex] == DisputeFlag.None, "Notary is in dispute");
+    }
+
+    function _receiptBody(bytes32 messageHash, ReceiptData memory rcptData)
+        internal
+        view
+        returns (bytes memory rcptBodyPayload)
+    {
+        // Determine the first executor who tried to execute the message
+        address firstExecutor = _firstExecutor[messageHash];
+        if (firstExecutor == address(0)) firstExecutor = rcptData.executor;
+        // Determine the snapshot root that was used for proving the message
+        bytes32 snapRoot = _roots[rcptData.rootIndex];
+        (address attNotary,) = _getAgent(_rootData[snapRoot].notaryIndex);
+        // ExecutionHub does not store the tips, the Notary will have to append the tips payload
+        return ReceiptLib.formatReceiptBody({
+            origin_: rcptData.origin,
+            destination_: localDomain,
+            messageHash_: messageHash,
+            snapshotRoot_: snapRoot,
+            stateIndex_: rcptData.stateIndex,
+            attNotary_: attNotary,
+            firstExecutor_: firstExecutor,
+            finalExecutor_: rcptData.executor
+        });
     }
 }

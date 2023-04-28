@@ -6,14 +6,17 @@ import {Attestation, AttestationLib} from "../libs/Attestation.sol";
 import {AttestationReport, AttestationReportLib} from "../libs/AttestationReport.sol";
 import {BONDING_OPTIMISTIC_PERIOD, SYNAPSE_DOMAIN} from "../libs/Constants.sol";
 import {DynamicTree, MerkleMath} from "../libs/MerkleTree.sol";
-import {Receipt, ReceiptLib} from "../libs/Receipt.sol";
+import {Receipt, ReceiptBody, ReceiptLib} from "../libs/Receipt.sol";
 import {Snapshot, SnapshotLib} from "../libs/Snapshot.sol";
 import {AgentFlag, AgentStatus, DisputeFlag} from "../libs/Structures.sol";
+import {Tips} from "../libs/Tips.sol";
 // ═════════════════════════════ INTERNAL IMPORTS ══════════════════════════════
 import {AgentManager, IAgentManager, IAgentSecured} from "./AgentManager.sol";
 import {MessagingBase} from "../base/MessagingBase.sol";
 import {BondingManagerEvents} from "../events/BondingManagerEvents.sol";
 import {InterfaceBondingManager} from "../interfaces/InterfaceBondingManager.sol";
+import {InterfaceDestination} from "../interfaces/InterfaceDestination.sol";
+import {IExecutionHub} from "../interfaces/IExecutionHub.sol";
 import {InterfaceLightManager} from "../interfaces/InterfaceLightManager.sol";
 import {InterfaceOrigin} from "../interfaces/InterfaceOrigin.sol";
 import {ISnapshotHub} from "../interfaces/ISnapshotHub.sol";
@@ -28,6 +31,9 @@ contract BondingManager is AgentManager, BondingManagerEvents, InterfaceBondingM
     using SnapshotLib for bytes;
 
     // ══════════════════════════════════════════════════ STORAGE ══════════════════════════════════════════════════════
+
+    // The address of the Summit contract.
+    address public summit;
 
     // (agent => their status)
     mapping(address => AgentStatus) private _agentMap;
@@ -49,8 +55,9 @@ contract BondingManager is AgentManager, BondingManagerEvents, InterfaceBondingM
         require(domain == SYNAPSE_DOMAIN, "Only deployed on SynChain");
     }
 
-    function initialize(address origin_, address destination_) external initializer {
+    function initialize(address origin_, address destination_, address summit_) external initializer {
         __AgentManager_init(origin_, destination_);
+        summit = summit_;
         __Ownable_init();
         // Insert a zero address to make indexes for Agents start from 1.
         // Zeroed index is supposed to be used as a sentinel value meaning "no agent".
@@ -70,32 +77,75 @@ contract BondingManager is AgentManager, BondingManagerEvents, InterfaceBondingM
         (AgentStatus memory status, address agent) = _verifySnapshot(snapshot, snapSignature);
         // Check that Agent is active
         status.verifyActive();
-        // If Agent is a Notary, check that they are not in dispute
-        if (status.domain != 0) {
-            require(_disputes[agent].flag == DisputeFlag.None, "Notary is in dispute");
-        }
         // Store Agent signature for the Snapshot
         uint256 sigIndex = _saveSignature(snapSignature);
-        attPayload = InterfaceSummit(destination).acceptSnapshot(status, sigIndex, snapPayload);
+        if (status.domain == 0) {
+            // Guard that is in Dispute could still submit new snapshots, so we don't check that
+            InterfaceSummit(summit).acceptGuardSnapshot({
+                guardIndex: status.index,
+                sigIndex: sigIndex,
+                snapPayload: snapPayload
+            });
+        } else {
+            // Check that Notary is not in dispute
+            require(_disputes[agent].flag == DisputeFlag.None, "Notary is in dispute");
+            attPayload = InterfaceSummit(summit).acceptNotarySnapshot({
+                notaryIndex: status.index,
+                sigIndex: sigIndex,
+                agentRoot: _agentTree.root,
+                snapPayload: snapPayload
+            });
+            // Pass created attestation to Destination to enable executing messages coming to Synapse Chain
+            InterfaceDestination(destination).acceptAttestation(status.index, type(uint256).max, attPayload);
+        }
         emit SnapshotAccepted(status.domain, agent, snapPayload, snapSignature);
     }
 
     /// @inheritdoc InterfaceBondingManager
     function submitReceipt(bytes memory rcptPayload, bytes memory rcptSignature) external returns (bool wasAccepted) {
-        // This will revert if payload is not an receipt
+        // This will revert if payload is not a receipt
         Receipt rcpt = rcptPayload.castToReceipt();
-        // This will revert if the attestation signer is not a known Notary
-        (AgentStatus memory status, address notary) = _verifyReceipt(rcpt, rcptSignature);
-        // Notary needs to be Active
-        status.verifyActive();
-        // Notary needs to be not in dispute
+        // This will revert if the receipt signer is not a known Notary
+        (AgentStatus memory rcptNotaryStatus, address notary) = _verifyReceipt(rcpt, rcptSignature);
+        // Receipt Notary needs to be Active and not in dispute
+        rcptNotaryStatus.verifyActive();
         require(_disputes[notary].flag == DisputeFlag.None, "Notary is in dispute");
-        // Store Notary signature for the Snapshot
+        // Check that receipt's snapshot root exists in Summit
+        ReceiptBody rcptBody = rcpt.body();
+        uint32 attNonce = IExecutionHub(destination).getAttestationNonce(rcptBody.snapshotRoot());
+        require(attNonce != 0, "Unknown snapshot root");
+        // Attestation Notary domain needs to match the destination domain
+        AgentStatus memory attNotaryStatus = agentStatus(rcptBody.attNotary());
+        require(attNotaryStatus.domain == rcptBody.destination(), "Wrong attestation Notary domain");
+        // Store Notary signature for the Receipt
         uint256 sigIndex = _saveSignature(rcptSignature);
-        wasAccepted = InterfaceSummit(destination).acceptReceipt(status, sigIndex, rcptPayload);
+        wasAccepted = InterfaceSummit(summit).acceptReceipt({
+            rcptNotaryIndex: rcptNotaryStatus.index,
+            attNotaryIndex: attNotaryStatus.index,
+            sigIndex: sigIndex,
+            attNonce: attNonce,
+            paddedTips: Tips.unwrap(rcpt.tips()),
+            rcptBodyPayload: rcptBody.unwrap().clone()
+        });
         if (wasAccepted) {
-            emit ReceiptAccepted(status.domain, notary, rcptPayload, rcptSignature);
+            emit ReceiptAccepted(rcptNotaryStatus.domain, notary, rcptPayload, rcptSignature);
         }
+    }
+
+    /// @inheritdoc InterfaceBondingManager
+    function passReceipt(uint32 attNotaryIndex, uint32 attNonce, uint256 paddedTips, bytes memory rcptBodyPayload)
+        external
+        returns (bool wasAccepted)
+    {
+        require(msg.sender == destination, "Only Destination passes receipts");
+        return InterfaceSummit(summit).acceptReceipt({
+            rcptNotaryIndex: attNotaryIndex,
+            attNotaryIndex: attNotaryIndex,
+            sigIndex: type(uint256).max,
+            attNonce: attNonce,
+            paddedTips: paddedTips,
+            rcptBodyPayload: rcptBodyPayload
+        });
     }
 
     // ══════════════════════════════════════════ VERIFY AGENT STATEMENTS ══════════════════════════════════════════════
@@ -111,7 +161,7 @@ contract BondingManager is AgentManager, BondingManagerEvents, InterfaceBondingM
         (AgentStatus memory status, address notary) = _verifyAttestation(att, attSignature);
         // Notary needs to be Active/Unstaking
         status.verifyActiveUnstaking();
-        isValidAttestation = ISnapshotHub(destination).isValidAttestation(attPayload);
+        isValidAttestation = ISnapshotHub(summit).isValidAttestation(attPayload);
         if (!isValidAttestation) {
             emit InvalidAttestation(attPayload, attSignature);
             _slashAgent(status.domain, notary, msg.sender);
@@ -130,7 +180,7 @@ contract BondingManager is AgentManager, BondingManagerEvents, InterfaceBondingM
         // Guard needs to be Active/Unstaking
         status.verifyActiveUnstaking();
         // Report is valid IF AND ONLY IF the reported attestation in invalid
-        isValidReport = !ISnapshotHub(destination).isValidAttestation(report.attestation().unwrap().clone());
+        isValidReport = !ISnapshotHub(summit).isValidAttestation(report.attestation().unwrap().clone());
         if (!isValidReport) {
             emit InvalidAttestationReport(arPayload, arSignature);
             _slashAgent(status.domain, guard, msg.sender);
@@ -247,7 +297,7 @@ contract BondingManager is AgentManager, BondingManagerEvents, InterfaceBondingM
 
     /// @inheritdoc InterfaceBondingManager
     function withdrawTips(address recipient, uint32 origin_, uint256 amount) external {
-        require(msg.sender == destination, "Only Summit withdraws tips");
+        require(msg.sender == summit, "Only Summit withdraws tips");
         if (origin_ == localDomain) {
             // Call local Origin to withdraw tips
             InterfaceOrigin(address(origin)).withdrawTips(recipient, amount);
@@ -346,13 +396,13 @@ contract BondingManager is AgentManager, BondingManagerEvents, InterfaceBondingM
     /// @dev Notify local AgentSecured contracts about the opened dispute.
     function _notifyDisputeOpened(uint32 guardIndex, uint32 notaryIndex) internal override {
         IAgentSecured(destination).openDispute(guardIndex, notaryIndex);
-        // TODO: open Dispute in Summit when it's separated from Destination
+        IAgentSecured(summit).openDispute(guardIndex, notaryIndex);
     }
 
     /// @dev Notify local AgentSecured contracts about the resolved dispute.
     function _notifyDisputeResolved(uint32 slashedIndex, uint32 rivalIndex) internal override {
         IAgentSecured(destination).resolveDispute(slashedIndex, rivalIndex);
-        // TODO: resolve Dispute in Summit when it's separated from Destination
+        IAgentSecured(summit).resolveDispute(slashedIndex, rivalIndex);
     }
 
     // ══════════════════════════════════════════════ INTERNAL VIEWS ═══════════════════════════════════════════════════

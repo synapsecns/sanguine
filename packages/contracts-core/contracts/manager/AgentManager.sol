@@ -153,7 +153,7 @@ abstract contract AgentManager is MessagingBase, VerificationManager, AgentManag
         external
         returns (bool isValidReceipt)
     {
-        // This will revert if payload is not an receipt
+        // This will revert if payload is not a receipt
         Receipt rcpt = rcptPayload.castToReceipt();
         // This will revert if the attestation signer is not a known Notary
         (AgentStatus memory status, address notary) = _verifyReceipt(rcpt, rcptSignature);
