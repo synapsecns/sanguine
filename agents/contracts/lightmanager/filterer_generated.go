@@ -11,6 +11,18 @@ import (
 
 // ILightManagerFilterer ...
 type ILightManagerFilterer interface {
+	// FilterAttestationAccepted is a free log retrieval operation binding the contract event 0x5fb28b72a4ff089027990125e187d936f30d65013d66fac1e54e0625f7ea0065.
+	//
+	// Solidity: event AttestationAccepted(uint32 domain, address notary, bytes attPayload, bytes attSignature)
+	FilterAttestationAccepted(opts *bind.FilterOpts) (*LightManagerAttestationAcceptedIterator, error)
+	// WatchAttestationAccepted is a free log subscription operation binding the contract event 0x5fb28b72a4ff089027990125e187d936f30d65013d66fac1e54e0625f7ea0065.
+	//
+	// Solidity: event AttestationAccepted(uint32 domain, address notary, bytes attPayload, bytes attSignature)
+	WatchAttestationAccepted(opts *bind.WatchOpts, sink chan<- *LightManagerAttestationAccepted) (event.Subscription, error)
+	// ParseAttestationAccepted is a log parse operation binding the contract event 0x5fb28b72a4ff089027990125e187d936f30d65013d66fac1e54e0625f7ea0065.
+	//
+	// Solidity: event AttestationAccepted(uint32 domain, address notary, bytes attPayload, bytes attSignature)
+	ParseAttestationAccepted(log types.Log) (*LightManagerAttestationAccepted, error)
 	// FilterDisputeUpdated is a free log retrieval operation binding the contract event 0x4a4274ddec5680bd48ca531f9f0fb4cbcf1598a0e55deb8171fd95e99673e0f7.
 	//
 	// Solidity: event DisputeUpdated(address agent, (uint8,uint32,address) dispute)

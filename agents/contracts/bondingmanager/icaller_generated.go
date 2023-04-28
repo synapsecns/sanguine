@@ -54,6 +54,10 @@ type IBondingManagerCaller interface {
 	//
 	// Solidity: function getProof(address agent) view returns(bytes32[] proof)
 	GetProof(opts *bind.CallOpts, agent common.Address) ([][32]byte, error)
+	// GetStoredSignature is a free data retrieval call binding the contract method 0xddeffa66.
+	//
+	// Solidity: function getStoredSignature(uint256 index) view returns(bytes)
+	GetStoredSignature(opts *bind.CallOpts, index *big.Int) ([]byte, error)
 	// LeafsAmount is a free data retrieval call binding the contract method 0x33c3a8f3.
 	//
 	// Solidity: function leafsAmount() view returns(uint256 amount)
@@ -70,6 +74,10 @@ type IBondingManagerCaller interface {
 	//
 	// Solidity: function owner() view returns(address)
 	Owner(opts *bind.CallOpts) (common.Address, error)
+	// Summit is a free data retrieval call binding the contract method 0x9fbcb9cb.
+	//
+	// Solidity: function summit() view returns(address)
+	Summit(opts *bind.CallOpts) (common.Address, error)
 	// Version is a free data retrieval call binding the contract method 0x54fd4d50.
 	//
 	// Solidity: function version() view returns(string versionString)

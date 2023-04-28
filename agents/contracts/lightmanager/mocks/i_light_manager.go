@@ -126,6 +126,29 @@ func (_m *ILightManager) DisputeStatus(opts *bind.CallOpts, agent common.Address
 	return r0, r1
 }
 
+// FilterAttestationAccepted provides a mock function with given fields: opts
+func (_m *ILightManager) FilterAttestationAccepted(opts *bind.FilterOpts) (*lightmanager.LightManagerAttestationAcceptedIterator, error) {
+	ret := _m.Called(opts)
+
+	var r0 *lightmanager.LightManagerAttestationAcceptedIterator
+	if rf, ok := ret.Get(0).(func(*bind.FilterOpts) *lightmanager.LightManagerAttestationAcceptedIterator); ok {
+		r0 = rf(opts)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).(*lightmanager.LightManagerAttestationAcceptedIterator)
+		}
+	}
+
+	var r1 error
+	if rf, ok := ret.Get(1).(func(*bind.FilterOpts) error); ok {
+		r1 = rf(opts)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
 // FilterDisputeUpdated provides a mock function with given fields: opts
 func (_m *ILightManager) FilterDisputeUpdated(opts *bind.FilterOpts) (*lightmanager.LightManagerDisputeUpdatedIterator, error) {
 	ret := _m.Called(opts)
@@ -366,6 +389,29 @@ func (_m *ILightManager) GetAgent(opts *bind.CallOpts, index *big.Int) (struct {
 	return r0, r1
 }
 
+// GetStoredSignature provides a mock function with given fields: opts, index
+func (_m *ILightManager) GetStoredSignature(opts *bind.CallOpts, index *big.Int) ([]byte, error) {
+	ret := _m.Called(opts, index)
+
+	var r0 []byte
+	if rf, ok := ret.Get(0).(func(*bind.CallOpts, *big.Int) []byte); ok {
+		r0 = rf(opts, index)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).([]byte)
+		}
+	}
+
+	var r1 error
+	if rf, ok := ret.Get(1).(func(*bind.CallOpts, *big.Int) error); ok {
+		r1 = rf(opts, index)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
 // Initialize provides a mock function with given fields: opts, origin_, destination_
 func (_m *ILightManager) Initialize(opts *bind.TransactOpts, origin_ common.Address, destination_ common.Address) (*types.Transaction, error) {
 	ret := _m.Called(opts, origin_, destination_)
@@ -449,6 +495,29 @@ func (_m *ILightManager) Owner(opts *bind.CallOpts) (common.Address, error) {
 	var r1 error
 	if rf, ok := ret.Get(1).(func(*bind.CallOpts) error); ok {
 		r1 = rf(opts)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
+// ParseAttestationAccepted provides a mock function with given fields: log
+func (_m *ILightManager) ParseAttestationAccepted(log types.Log) (*lightmanager.LightManagerAttestationAccepted, error) {
+	ret := _m.Called(log)
+
+	var r0 *lightmanager.LightManagerAttestationAccepted
+	if rf, ok := ret.Get(0).(func(types.Log) *lightmanager.LightManagerAttestationAccepted); ok {
+		r0 = rf(log)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).(*lightmanager.LightManagerAttestationAccepted)
+		}
+	}
+
+	var r1 error
+	if rf, ok := ret.Get(1).(func(types.Log) error); ok {
+		r1 = rf(log)
 	} else {
 		r1 = ret.Error(1)
 	}
@@ -1022,6 +1091,29 @@ func (_m *ILightManager) Version(opts *bind.CallOpts) (string, error) {
 	var r1 error
 	if rf, ok := ret.Get(1).(func(*bind.CallOpts) error); ok {
 		r1 = rf(opts)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
+// WatchAttestationAccepted provides a mock function with given fields: opts, sink
+func (_m *ILightManager) WatchAttestationAccepted(opts *bind.WatchOpts, sink chan<- *lightmanager.LightManagerAttestationAccepted) (event.Subscription, error) {
+	ret := _m.Called(opts, sink)
+
+	var r0 event.Subscription
+	if rf, ok := ret.Get(0).(func(*bind.WatchOpts, chan<- *lightmanager.LightManagerAttestationAccepted) event.Subscription); ok {
+		r0 = rf(opts, sink)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).(event.Subscription)
+		}
+	}
+
+	var r1 error
+	if rf, ok := ret.Get(1).(func(*bind.WatchOpts, chan<- *lightmanager.LightManagerAttestationAccepted) error); ok {
+		r1 = rf(opts, sink)
 	} else {
 		r1 = ret.Error(1)
 	}

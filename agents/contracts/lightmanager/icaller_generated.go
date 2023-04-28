@@ -34,6 +34,10 @@ type ILightManagerCaller interface {
 		Agent  common.Address
 		Status AgentStatus
 	}, error)
+	// GetStoredSignature is a free data retrieval call binding the contract method 0xddeffa66.
+	//
+	// Solidity: function getStoredSignature(uint256 index) view returns(bytes)
+	GetStoredSignature(opts *bind.CallOpts, index *big.Int) ([]byte, error)
 	// LocalDomain is a free data retrieval call binding the contract method 0x8d3638f4.
 	//
 	// Solidity: function localDomain() view returns(uint32)

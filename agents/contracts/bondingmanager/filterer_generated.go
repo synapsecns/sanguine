@@ -11,6 +11,18 @@ import (
 
 // IBondingManagerFilterer ...
 type IBondingManagerFilterer interface {
+	// FilterAttestationAccepted is a free log retrieval operation binding the contract event 0x5fb28b72a4ff089027990125e187d936f30d65013d66fac1e54e0625f7ea0065.
+	//
+	// Solidity: event AttestationAccepted(uint32 domain, address notary, bytes attPayload, bytes attSignature)
+	FilterAttestationAccepted(opts *bind.FilterOpts) (*BondingManagerAttestationAcceptedIterator, error)
+	// WatchAttestationAccepted is a free log subscription operation binding the contract event 0x5fb28b72a4ff089027990125e187d936f30d65013d66fac1e54e0625f7ea0065.
+	//
+	// Solidity: event AttestationAccepted(uint32 domain, address notary, bytes attPayload, bytes attSignature)
+	WatchAttestationAccepted(opts *bind.WatchOpts, sink chan<- *BondingManagerAttestationAccepted) (event.Subscription, error)
+	// ParseAttestationAccepted is a log parse operation binding the contract event 0x5fb28b72a4ff089027990125e187d936f30d65013d66fac1e54e0625f7ea0065.
+	//
+	// Solidity: event AttestationAccepted(uint32 domain, address notary, bytes attPayload, bytes attSignature)
+	ParseAttestationAccepted(log types.Log) (*BondingManagerAttestationAccepted, error)
 	// FilterDisputeUpdated is a free log retrieval operation binding the contract event 0x4a4274ddec5680bd48ca531f9f0fb4cbcf1598a0e55deb8171fd95e99673e0f7.
 	//
 	// Solidity: event DisputeUpdated(address agent, (uint8,uint32,address) dispute)
@@ -119,6 +131,18 @@ type IBondingManagerFilterer interface {
 	//
 	// Solidity: event OwnershipTransferred(address indexed previousOwner, address indexed newOwner)
 	ParseOwnershipTransferred(log types.Log) (*BondingManagerOwnershipTransferred, error)
+	// FilterReceiptAccepted is a free log retrieval operation binding the contract event 0x9377955fede38ca63bc09f7b3fae7dd349934c78c058963a6d3c05d4eed04112.
+	//
+	// Solidity: event ReceiptAccepted(uint32 domain, address notary, bytes rcptPayload, bytes rcptSignature)
+	FilterReceiptAccepted(opts *bind.FilterOpts) (*BondingManagerReceiptAcceptedIterator, error)
+	// WatchReceiptAccepted is a free log subscription operation binding the contract event 0x9377955fede38ca63bc09f7b3fae7dd349934c78c058963a6d3c05d4eed04112.
+	//
+	// Solidity: event ReceiptAccepted(uint32 domain, address notary, bytes rcptPayload, bytes rcptSignature)
+	WatchReceiptAccepted(opts *bind.WatchOpts, sink chan<- *BondingManagerReceiptAccepted) (event.Subscription, error)
+	// ParseReceiptAccepted is a log parse operation binding the contract event 0x9377955fede38ca63bc09f7b3fae7dd349934c78c058963a6d3c05d4eed04112.
+	//
+	// Solidity: event ReceiptAccepted(uint32 domain, address notary, bytes rcptPayload, bytes rcptSignature)
+	ParseReceiptAccepted(log types.Log) (*BondingManagerReceiptAccepted, error)
 	// FilterRootUpdated is a free log retrieval operation binding the contract event 0x2cbc14f49c068133583f7cb530018af451c87c1cf1327cf2a4ff4698c4730aa4.
 	//
 	// Solidity: event RootUpdated(bytes32 newRoot)
@@ -131,6 +155,18 @@ type IBondingManagerFilterer interface {
 	//
 	// Solidity: event RootUpdated(bytes32 newRoot)
 	ParseRootUpdated(log types.Log) (*BondingManagerRootUpdated, error)
+	// FilterSnapshotAccepted is a free log retrieval operation binding the contract event 0x5ca3d740e03650b41813a4b418830f6ba39700ae010fe8c4d1bca0e8676b9c56.
+	//
+	// Solidity: event SnapshotAccepted(uint32 indexed domain, address indexed agent, bytes snapPayload, bytes snapSignature)
+	FilterSnapshotAccepted(opts *bind.FilterOpts, domain []uint32, agent []common.Address) (*BondingManagerSnapshotAcceptedIterator, error)
+	// WatchSnapshotAccepted is a free log subscription operation binding the contract event 0x5ca3d740e03650b41813a4b418830f6ba39700ae010fe8c4d1bca0e8676b9c56.
+	//
+	// Solidity: event SnapshotAccepted(uint32 indexed domain, address indexed agent, bytes snapPayload, bytes snapSignature)
+	WatchSnapshotAccepted(opts *bind.WatchOpts, sink chan<- *BondingManagerSnapshotAccepted, domain []uint32, agent []common.Address) (event.Subscription, error)
+	// ParseSnapshotAccepted is a log parse operation binding the contract event 0x5ca3d740e03650b41813a4b418830f6ba39700ae010fe8c4d1bca0e8676b9c56.
+	//
+	// Solidity: event SnapshotAccepted(uint32 indexed domain, address indexed agent, bytes snapPayload, bytes snapSignature)
+	ParseSnapshotAccepted(log types.Log) (*BondingManagerSnapshotAccepted, error)
 	// FilterStatusUpdated is a free log retrieval operation binding the contract event 0x8f9b8b0f4f062833bec85ea9a8465e4a1207b4be6eb565bbd0ae8b913588d04e.
 	//
 	// Solidity: event StatusUpdated(uint8 flag, uint32 indexed domain, address indexed agent)

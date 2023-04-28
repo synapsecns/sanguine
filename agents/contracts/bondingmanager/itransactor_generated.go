@@ -24,14 +24,18 @@ type IBondingManagerTransactor interface {
 	//
 	// Solidity: function completeUnstaking(uint32 domain, address agent, bytes32[] proof) returns()
 	CompleteUnstaking(opts *bind.TransactOpts, domain uint32, agent common.Address, proof [][32]byte) (*types.Transaction, error)
-	// Initialize is a paid mutator transaction binding the contract method 0x485cc955.
+	// Initialize is a paid mutator transaction binding the contract method 0xc0c53b8b.
 	//
-	// Solidity: function initialize(address origin_, address destination_) returns()
-	Initialize(opts *bind.TransactOpts, origin_ common.Address, destination_ common.Address) (*types.Transaction, error)
+	// Solidity: function initialize(address origin_, address destination_, address summit_) returns()
+	Initialize(opts *bind.TransactOpts, origin_ common.Address, destination_ common.Address, summit_ common.Address) (*types.Transaction, error)
 	// InitiateUnstaking is a paid mutator transaction binding the contract method 0x130c5673.
 	//
 	// Solidity: function initiateUnstaking(uint32 domain, address agent, bytes32[] proof) returns()
 	InitiateUnstaking(opts *bind.TransactOpts, domain uint32, agent common.Address, proof [][32]byte) (*types.Transaction, error)
+	// PassReceipt is a paid mutator transaction binding the contract method 0x6b47b3bc.
+	//
+	// Solidity: function passReceipt(uint32 attNotaryIndex, uint32 attNonce, uint256 paddedTips, bytes rcptBodyPayload) returns(bool wasAccepted)
+	PassReceipt(opts *bind.TransactOpts, attNotaryIndex uint32, attNonce uint32, paddedTips *big.Int, rcptBodyPayload []byte) (*types.Transaction, error)
 	// RemoteSlashAgent is a paid mutator transaction binding the contract method 0x9d228a51.
 	//
 	// Solidity: function remoteSlashAgent(uint32 msgOrigin, uint256 proofMaturity, uint32 domain, address agent, address prover) returns(bytes4 magicValue)
