@@ -8,7 +8,7 @@ image:
   repository: ghcr.io/synapsecns/sanguine/agents
   pullPolicy: Always
   # Overrides the image tag whose default is the chart appVersion.
-  tag: "ee3f799dd7b3c2a60e72b8ad014175535179c4b3"
+  tag: "0bff3429ce97f439cd3132011531182af2d14f93"
 
 imagePullSecrets: []
 nameOverride: ""
@@ -351,7 +351,7 @@ scribe:
   server:
     env: *default_env
   image:
-    tag: "7c51cdbb03cacf7c0a57fc6d3ed34c0a60836e07"
+    tag: "0bff3429ce97f439cd3132011531182af2d14f93"
   fullnameOverride: executor-scribe
   files:
     config.yaml: |-
