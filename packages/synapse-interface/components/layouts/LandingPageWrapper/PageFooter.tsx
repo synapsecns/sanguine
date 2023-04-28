@@ -169,7 +169,7 @@ function FooterBlock({ elements }: { elements: FooterDataProps[] }) {
 function DisplayText({ element }: { element: FooterDataProps }) {
   const { text, url, type } = element
 
-  if (type === 'url') {
+  if (type === FooterType.URL) {
     return (
       <div className="text-opacity-50 text-secondaryTextColor">
         <a
@@ -182,7 +182,7 @@ function DisplayText({ element }: { element: FooterDataProps }) {
         </a>
       </div>
     )
-  } else if (type === 'path') {
+  } else if (type === FooterType.PATH) {
     return (
       <div className="text-opacity-50 text-secondaryTextColor">
         <Link
