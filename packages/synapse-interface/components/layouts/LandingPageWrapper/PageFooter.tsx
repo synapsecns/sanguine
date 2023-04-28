@@ -17,10 +17,15 @@ import {
 } from '@/constants/urls'
 import { SynapseTitleLogo } from '.'
 
-interface FooterDataProps {
+enum FooterType {
+  PATH = 'path',
+  URL = 'url',
+}
+
+type FooterDataProps = {
   text: string
-  type: string
-  url: string
+  type: string | null
+  url: string | null
 }
 
 const functions: FooterDataProps[] = [
@@ -31,22 +36,22 @@ const functions: FooterDataProps[] = [
   },
   {
     text: 'Swap',
-    type: 'path',
+    type: FooterType.PATH,
     url: SWAP_PATH,
   },
   {
     text: 'Bridge',
-    type: 'path',
+    type: FooterType.PATH,
     url: BRIDGE_PATH,
   },
   {
     text: 'Pools',
-    type: 'path',
+    type: FooterType.PATH,
     url: POOLS_PATH,
   },
   {
     text: 'Stake',
-    type: 'path',
+    type: FooterType.PATH,
     url: STAKE_PATH,
   },
 ]
@@ -59,22 +64,22 @@ const developers: FooterDataProps[] = [
   },
   {
     text: 'References',
-    type: 'url',
+    type: FooterType.URL,
     url: GITHUB_URL,
   },
   {
     text: 'Documentation',
-    type: 'url',
+    type: FooterType.URL,
     url: DOCS_URL,
   },
   {
     text: 'GitHub',
-    type: 'url',
+    type: FooterType.URL,
     url: GITHUB_URL,
   },
   {
     text: 'Blog',
-    type: 'url',
+    type: FooterType.URL,
     url: MIRROR_URL,
   },
 ]
@@ -87,17 +92,17 @@ const support: FooterDataProps[] = [
   },
   {
     text: 'Discord',
-    type: 'url',
+    type: FooterType.URL,
     url: DISCORD_URL,
   },
   {
     text: 'Twitter',
-    type: 'url',
+    type: FooterType.URL,
     url: TWITTER_URL,
   },
   {
     text: 'Forum',
-    type: 'url',
+    type: FooterType.URL,
     url: FORUM_URL,
   },
   //   {
@@ -151,7 +156,7 @@ export function PageFooter() {
   )
 }
 
-function FooterBlock({ elements }: { elements: any[] }) {
+function FooterBlock({ elements }: { elements: FooterDataProps[] }) {
   return (
     <div className="text-base leading-8 text-left text-white md:text-left lg:text-right">
       {elements.map((element, i) => (
@@ -161,7 +166,7 @@ function FooterBlock({ elements }: { elements: any[] }) {
   )
 }
 
-function DisplayText({ element }: { element: any }) {
+function DisplayText({ element }: { element: FooterDataProps }) {
   const { text, url, type } = element
 
   if (type === 'url') {
