@@ -6,6 +6,9 @@ import (
 	"fmt"
 )
 
+// MessageHeaderSize is the size in bytes of a message header.
+const MessageHeaderSize = 4 * 4
+
 // Header contains information of a message.
 type Header interface {
 	// OriginDomain is the origin domain of the message

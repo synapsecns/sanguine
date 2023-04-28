@@ -9,12 +9,30 @@ import (
 	"github.com/ethereum/go-ethereum/crypto"
 )
 
+const (
+	// MessageFlagSize if the size in bytes of a message flag.
+	MessageFlagSize = 1
+	// MessageBodyOffset is the message body offset.
+	MessageBodyOffset = MessageFlagSize + MessageHeaderSize
+)
+
+// MessageFlag indicates if the message is normal "Base" message or "Manager" message.
+// MessageFlag indicates if the message is normal "Base" message or "Manager" message.
+type MessageFlag uint8
+
+const (
+	// MessageFlagBase is the normal message that has tips.
+	MessageFlagBase MessageFlag = iota
+	// MessageFlagManager is manager message and will not have tips.
+	MessageFlagManager
+)
+
 // Message is an interface that contains metadata.
 //
 //nolint:interfacebloat
 type Message interface {
 	// Flag is the message flag
-	Flag() uint8
+	Flag() MessageFlag
 	// Header gets the message header
 	Header() Header
 	// Body gets the message body
@@ -34,7 +52,7 @@ type Message interface {
 
 // messageImpl implements a message. It is used for testutils. Real messages are emitted by the contract.
 type messageImpl struct {
-	flag   uint8
+	flag   MessageFlag
 	header Header
 	body   []byte
 }
@@ -42,7 +60,7 @@ type messageImpl struct {
 const headerOffset uint16 = 0
 
 // NewMessage creates a new message from fields passed in.
-func NewMessage(flag uint8, header Header, body []byte) Message {
+func NewMessage(flag MessageFlag, header Header, body []byte) Message {
 	return &messageImpl{
 		flag:   flag,
 		header: header,
@@ -54,24 +72,24 @@ func (m messageImpl) Header() Header {
 	return m.header
 }
 
-func (m messageImpl) Flag() uint8 {
+func (m messageImpl) Flag() MessageFlag {
 	return m.flag
 }
 
 // DecodeMessage decodes a message from a byte slice.
 func DecodeMessage(message []byte) (Message, error) {
 	flag := message[0]
-	rawHeader := message[1:17]
+	rawHeader := message[MessageFlagSize:MessageBodyOffset]
 
 	header, err := DecodeHeader(rawHeader)
 	if err != nil {
 		return nil, fmt.Errorf("could not decode header: %w", err)
 	}
 
-	rawBody := message[17:]
+	rawBody := message[MessageBodyOffset:]
 
 	decoded := messageImpl{
-		flag:   flag,
+		flag:   MessageFlag(flag),
 		header: header,
 		body:   rawBody,
 	}

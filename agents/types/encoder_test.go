@@ -37,7 +37,7 @@ func TestNewMessageEncodeDecode(t *testing.T) {
 	header := types.NewHeader(
 		origin, nonce, destination, optimisticSeconds)
 
-	flag := uint8(1)
+	flag := types.MessageFlagBase
 
 	newMessage := types.NewMessage(flag, header, body)
 

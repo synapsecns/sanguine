@@ -233,7 +233,7 @@ func EncodeMessage(m Message) ([]byte, error) {
 
 	buf := new(bytes.Buffer)
 
-	buf.Write([]byte{m.Flag()})
+	buf.Write([]byte{uint8(m.Flag())})
 	buf.Write(encodedHeader)
 	buf.Write(m.Body())
 

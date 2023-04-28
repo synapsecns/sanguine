@@ -21,7 +21,7 @@ func (t *DBSuite) TestStoreRetrieveMessage() {
 		minimumTimeA := gofakeit.Uint64()
 
 		headerA := agentsTypes.NewHeader(chainIDA, nonceA, destinationA, gofakeit.Uint32())
-		typesMessageA := agentsTypes.NewMessage(uint8(1), headerA, messageA)
+		typesMessageA := agentsTypes.NewMessage(agentsTypes.MessageFlagBase, headerA, messageA)
 
 		err := testDB.StoreMessage(t.GetTestContext(), typesMessageA, blockNumberA, minimumTimeSetA, minimumTimeA)
 		Nil(t.T(), err)
@@ -35,7 +35,7 @@ func (t *DBSuite) TestStoreRetrieveMessage() {
 		minimumTimeB := gofakeit.Uint64()
 
 		headerB := agentsTypes.NewHeader(chainIDB, nonceB, destinationB, gofakeit.Uint32())
-		typesMessageB := agentsTypes.NewMessage(uint8(1), headerB, messageB)
+		typesMessageB := agentsTypes.NewMessage(agentsTypes.MessageFlagBase, headerB, messageB)
 
 		err = testDB.StoreMessage(t.GetTestContext(), typesMessageB, blockNumberB, minimumTimeSetB, minimumTimeB)
 		Nil(t.T(), err)
@@ -86,13 +86,13 @@ func (t *DBSuite) TestGetLastBlockNumber() {
 		blockNumberB := blockNumberA + 1
 
 		headerA := agentsTypes.NewHeader(chainID, nonceA, destinationA, gofakeit.Uint32())
-		typesMessageA := agentsTypes.NewMessage(uint8(1), headerA, messageA)
+		typesMessageA := agentsTypes.NewMessage(agentsTypes.MessageFlagBase, headerA, messageA)
 
 		err := testDB.StoreMessage(t.GetTestContext(), typesMessageA, blockNumberA, false, 0)
 		Nil(t.T(), err)
 
 		headerB := agentsTypes.NewHeader(chainID, nonceB, destinationB, gofakeit.Uint32())
-		typesMessageB := agentsTypes.NewMessage(uint8(1), headerB, messageB)
+		typesMessageB := agentsTypes.NewMessage(agentsTypes.MessageFlagBase, headerB, messageB)
 
 		err = testDB.StoreMessage(t.GetTestContext(), typesMessageB, blockNumberB, false, 0)
 		Nil(t.T(), err)
@@ -113,7 +113,7 @@ func (t *DBSuite) TestExecuteMessage() {
 		blockNumber := gofakeit.Uint64()
 
 		header := agentsTypes.NewHeader(chainID, nonce, destination, gofakeit.Uint32())
-		typesMessage := agentsTypes.NewMessage(uint8(1), header, message)
+		typesMessage := agentsTypes.NewMessage(agentsTypes.MessageFlagBase, header, message)
 
 		err := testDB.StoreMessage(t.GetTestContext(), typesMessage, blockNumber, true, 5)
 		Nil(t.T(), err)
@@ -153,7 +153,7 @@ func (t *DBSuite) TestGetExecutableMessages() {
 		blockNumber := gofakeit.Uint64()
 
 		header := agentsTypes.NewHeader(chainID, nonce, destination, gofakeit.Uint32())
-		typesMessage := agentsTypes.NewMessage(uint8(1), header, message)
+		typesMessage := agentsTypes.NewMessage(agentsTypes.MessageFlagBase, header, message)
 
 		err := testDB.StoreMessage(t.GetTestContext(), typesMessage, blockNumber, false, 10)
 		Nil(t.T(), err)
@@ -174,7 +174,7 @@ func (t *DBSuite) TestGetExecutableMessages() {
 		blockNumber = gofakeit.Uint64()
 
 		header = agentsTypes.NewHeader(chainID, nonce, destination, gofakeit.Uint32())
-		typesMessage = agentsTypes.NewMessage(uint8(1), header, message)
+		typesMessage = agentsTypes.NewMessage(agentsTypes.MessageFlagBase, header, message)
 
 		err = testDB.StoreMessage(t.GetTestContext(), typesMessage, blockNumber, true, 20)
 		Nil(t.T(), err)
@@ -213,7 +213,7 @@ func (t *DBSuite) TestGetUnsetMinimumTimeMessages() {
 		blockNumber := gofakeit.Uint64()
 
 		header := agentsTypes.NewHeader(chainID, nonce, destination, gofakeit.Uint32())
-		typesMessage := agentsTypes.NewMessage(uint8(1), header, message)
+		typesMessage := agentsTypes.NewMessage(agentsTypes.MessageFlagBase, header, message)
 
 		err := testDB.StoreMessage(t.GetTestContext(), typesMessage, blockNumber, false, 0)
 		Nil(t.T(), err)
@@ -232,7 +232,7 @@ func (t *DBSuite) TestGetUnsetMinimumTimeMessages() {
 		blockNumber = gofakeit.Uint64()
 
 		header = agentsTypes.NewHeader(chainID, nonce, destination, gofakeit.Uint32())
-		typesMessage = agentsTypes.NewMessage(uint8(1), header, message)
+		typesMessage = agentsTypes.NewMessage(agentsTypes.MessageFlagBase, header, message)
 
 		err = testDB.StoreMessage(t.GetTestContext(), typesMessage, blockNumber, true, 0)
 		Nil(t.T(), err)
@@ -253,7 +253,7 @@ func (t *DBSuite) TestSetMinimumTime() {
 		blockNumber := gofakeit.Uint64()
 
 		header := agentsTypes.NewHeader(chainID, nonce, destination, gofakeit.Uint32())
-		typesMessage := agentsTypes.NewMessage(uint8(1), header, message)
+		typesMessage := agentsTypes.NewMessage(agentsTypes.MessageFlagBase, header, message)
 
 		err := testDB.StoreMessage(t.GetTestContext(), typesMessage, blockNumber, false, 0)
 		Nil(t.T(), err)

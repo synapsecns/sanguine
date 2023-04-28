@@ -144,8 +144,8 @@ type CommittedMessage struct {
 }
 
 // Flag gets the message flag.
-func (c CommittedMessage) Flag() uint8 {
-	return c.CMFlag
+func (c CommittedMessage) Flag() types.MessageFlag {
+	return types.MessageFlag(c.CMFlag)
 }
 
 // Header gets the header.
