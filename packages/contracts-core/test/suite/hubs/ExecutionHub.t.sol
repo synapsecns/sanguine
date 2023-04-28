@@ -79,7 +79,7 @@ abstract contract ExecutionHubTest is AgentSecuredTest {
         // expectCall(address callee, uint256 msgValue, uint64 gas, bytes calldata data)
         vm.expectCall(recipient, 0, gasLimit, expectedCall);
         vm.expectEmit();
-        emit Executed(rh.origin, keccak256(msgPayload));
+        emit Executed(rh.origin, keccak256(msgPayload), true);
         vm.prank(executor);
         testedEH().execute(msgPayload, originProof, snapProof, sm.rsi.stateIndex, gasLimit);
         bytes memory receiptBody = verify_messageStatus(
@@ -103,7 +103,7 @@ abstract contract ExecutionHubTest is AgentSecuredTest {
         timePassed = uint32(bound(timePassed, rh.optimisticPeriod, rh.optimisticPeriod + 1 days));
         skip(timePassed);
         vm.expectEmit();
-        emit Executed(rh.origin, keccak256(msgPayload));
+        emit Executed(rh.origin, keccak256(msgPayload), false);
         vm.prank(executor);
         testedEH().execute(msgPayload, originProof, snapProof, sm.rsi.stateIndex, rbm.request.gasLimit);
         bytes memory receiptBodyFirst = verify_messageStatus(
@@ -112,6 +112,8 @@ abstract contract ExecutionHubTest is AgentSecuredTest {
         verify_receipt_valid(receiptBodyFirst, rbm.tips);
         // Retry the same failed message
         RevertingApp(payable(recipient)).toggleRevert(false);
+        vm.expectEmit();
+        emit Executed(rh.origin, keccak256(msgPayload), true);
         vm.prank(executorNew);
         testedEH().execute(msgPayload, originProof, snapProof, sm.rsi.stateIndex, rbm.request.gasLimit);
         bytes memory receiptBodySecond = verify_messageStatus(
@@ -285,7 +287,7 @@ abstract contract ExecutionHubTest is AgentSecuredTest {
             abi.encodeWithSelector(bondingManager.remoteMockFunc.selector, rh.origin, timePassed, rh.nonce)
         );
         vm.expectEmit();
-        emit Executed(rh.origin, keccak256(msgPayload));
+        emit Executed(rh.origin, keccak256(msgPayload), true);
         vm.prank(executor);
         testedEH().execute(msgPayload, originProof, snapProof, sm.rsi.stateIndex, gasLimit);
         verify_messageStatus(

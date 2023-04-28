@@ -145,7 +145,7 @@ abstract contract ExecutionHub is AgentSecured, ExecutionHubEvents, IExecutionHu
             rcptData.executor = msg.sender;
             _receiptData[msgLeaf] = rcptData;
         }
-        emit Executed(header.origin(), msgLeaf);
+        emit Executed(header.origin(), msgLeaf, success);
     }
 
     // ═══════════════════════════════════════════════════ VIEWS ═══════════════════════════════════════════════════════
