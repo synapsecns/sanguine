@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import Fuse from 'fuse.js'
-import {Zero} from '@ethersproject/constants'
+import { Zero } from '@ethersproject/constants'
 import { useKeyPress } from '@hooks/useKeyPress'
 import TokenMenuItem from '@pages/bridge/TokenMenuItem'
 import SlideSearchBox from '@pages/bridge/SlideSearchBox'

@@ -251,7 +251,7 @@ const BridgeCard = ({
           <Transition show={displayType === 'from'} {...TRANSITION_PROPS}>
             <TokenSlideOver key="fromBlock" {...fromArgs} />{' '}
           </Transition>
-          <Transition show={displayType === 'to'} {...TEST_TRANSITION_PROPS}>
+          <Transition show={displayType === 'to'} {...TRANSITION_PROPS}>
             <TokenSlideOver key="toBlock" {...toArgs} />
           </Transition>
           <Transition show={displayType === 'fromChain'} {...TRANSITION_PROPS}>
