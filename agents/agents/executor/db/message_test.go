@@ -20,9 +20,8 @@ func (t *DBSuite) TestStoreRetrieveMessage() {
 		minimumTimeSetA := gofakeit.Bool()
 		minimumTimeA := gofakeit.Uint64()
 
-		headerA := agentsTypes.NewHeader(chainIDA, common.BigToHash(big.NewInt(gofakeit.Int64())), nonceA, destinationA, common.BigToHash(big.NewInt(gofakeit.Int64())), gofakeit.Uint32())
-		tipsA := agentsTypes.NewTips(big.NewInt(0), big.NewInt(0), big.NewInt(0), big.NewInt(0))
-		typesMessageA := agentsTypes.NewMessage(headerA, tipsA, messageA)
+		headerA := agentsTypes.NewHeader(chainIDA, nonceA, destinationA, gofakeit.Uint32())
+		typesMessageA := agentsTypes.NewMessage(uint8(1), headerA, messageA)
 
 		err := testDB.StoreMessage(t.GetTestContext(), typesMessageA, blockNumberA, minimumTimeSetA, minimumTimeA)
 		Nil(t.T(), err)
@@ -35,9 +34,8 @@ func (t *DBSuite) TestStoreRetrieveMessage() {
 		minimumTimeSetB := gofakeit.Bool()
 		minimumTimeB := gofakeit.Uint64()
 
-		headerB := agentsTypes.NewHeader(chainIDB, common.BigToHash(big.NewInt(gofakeit.Int64())), nonceB, destinationB, common.BigToHash(big.NewInt(gofakeit.Int64())), gofakeit.Uint32())
-		tipsB := agentsTypes.NewTips(big.NewInt(0), big.NewInt(0), big.NewInt(0), big.NewInt(0))
-		typesMessageB := agentsTypes.NewMessage(headerB, tipsB, messageB)
+		headerB := agentsTypes.NewHeader(chainIDB, nonceB, destinationB, gofakeit.Uint32())
+		typesMessageB := agentsTypes.NewMessage(uint8(1), headerB, messageB)
 
 		err = testDB.StoreMessage(t.GetTestContext(), typesMessageB, blockNumberB, minimumTimeSetB, minimumTimeB)
 		Nil(t.T(), err)
@@ -87,16 +85,14 @@ func (t *DBSuite) TestGetLastBlockNumber() {
 		blockNumberA := gofakeit.Uint64()
 		blockNumberB := blockNumberA + 1
 
-		headerA := agentsTypes.NewHeader(chainID, common.BigToHash(big.NewInt(gofakeit.Int64())), nonceA, destinationA, common.BigToHash(big.NewInt(gofakeit.Int64())), gofakeit.Uint32())
-		tipsA := agentsTypes.NewTips(big.NewInt(0), big.NewInt(0), big.NewInt(0), big.NewInt(0))
-		typesMessageA := agentsTypes.NewMessage(headerA, tipsA, messageA)
+		headerA := agentsTypes.NewHeader(chainID, nonceA, destinationA, gofakeit.Uint32())
+		typesMessageA := agentsTypes.NewMessage(uint8(1), headerA, messageA)
 
 		err := testDB.StoreMessage(t.GetTestContext(), typesMessageA, blockNumberA, false, 0)
 		Nil(t.T(), err)
 
-		headerB := agentsTypes.NewHeader(chainID, common.BigToHash(big.NewInt(gofakeit.Int64())), nonceB, destinationB, common.BigToHash(big.NewInt(gofakeit.Int64())), gofakeit.Uint32())
-		tipsB := agentsTypes.NewTips(big.NewInt(0), big.NewInt(0), big.NewInt(0), big.NewInt(0))
-		typesMessageB := agentsTypes.NewMessage(headerB, tipsB, messageB)
+		headerB := agentsTypes.NewHeader(chainID, nonceB, destinationB, gofakeit.Uint32())
+		typesMessageB := agentsTypes.NewMessage(uint8(1), headerB, messageB)
 
 		err = testDB.StoreMessage(t.GetTestContext(), typesMessageB, blockNumberB, false, 0)
 		Nil(t.T(), err)
@@ -116,9 +112,8 @@ func (t *DBSuite) TestExecuteMessage() {
 		message := common.BigToHash(big.NewInt(gofakeit.Int64())).Bytes()
 		blockNumber := gofakeit.Uint64()
 
-		header := agentsTypes.NewHeader(chainID, common.BigToHash(big.NewInt(gofakeit.Int64())), nonce, destination, common.BigToHash(big.NewInt(gofakeit.Int64())), gofakeit.Uint32())
-		tips := agentsTypes.NewTips(big.NewInt(0), big.NewInt(0), big.NewInt(0), big.NewInt(0))
-		typesMessage := agentsTypes.NewMessage(header, tips, message)
+		header := agentsTypes.NewHeader(chainID, nonce, destination, gofakeit.Uint32())
+		typesMessage := agentsTypes.NewMessage(uint8(1), header, message)
 
 		err := testDB.StoreMessage(t.GetTestContext(), typesMessage, blockNumber, true, 5)
 		Nil(t.T(), err)
@@ -157,9 +152,8 @@ func (t *DBSuite) TestGetExecutableMessages() {
 		message := common.BigToHash(big.NewInt(gofakeit.Int64())).Bytes()
 		blockNumber := gofakeit.Uint64()
 
-		header := agentsTypes.NewHeader(chainID, common.BigToHash(big.NewInt(gofakeit.Int64())), nonce, destination, common.BigToHash(big.NewInt(gofakeit.Int64())), gofakeit.Uint32())
-		tips := agentsTypes.NewTips(big.NewInt(0), big.NewInt(0), big.NewInt(0), big.NewInt(0))
-		typesMessage := agentsTypes.NewMessage(header, tips, message)
+		header := agentsTypes.NewHeader(chainID, nonce, destination, gofakeit.Uint32())
+		typesMessage := agentsTypes.NewMessage(uint8(1), header, message)
 
 		err := testDB.StoreMessage(t.GetTestContext(), typesMessage, blockNumber, false, 10)
 		Nil(t.T(), err)
@@ -179,8 +173,8 @@ func (t *DBSuite) TestGetExecutableMessages() {
 		message = common.BigToHash(big.NewInt(gofakeit.Int64())).Bytes()
 		blockNumber = gofakeit.Uint64()
 
-		header = agentsTypes.NewHeader(chainID, common.BigToHash(big.NewInt(gofakeit.Int64())), nonce, destination, common.BigToHash(big.NewInt(gofakeit.Int64())), gofakeit.Uint32())
-		typesMessage = agentsTypes.NewMessage(header, tips, message)
+		header = agentsTypes.NewHeader(chainID, nonce, destination, gofakeit.Uint32())
+		typesMessage = agentsTypes.NewMessage(uint8(1), header, message)
 
 		err = testDB.StoreMessage(t.GetTestContext(), typesMessage, blockNumber, true, 20)
 		Nil(t.T(), err)
@@ -218,9 +212,8 @@ func (t *DBSuite) TestGetUnsetMinimumTimeMessages() {
 		message := common.BigToHash(big.NewInt(gofakeit.Int64())).Bytes()
 		blockNumber := gofakeit.Uint64()
 
-		header := agentsTypes.NewHeader(chainID, common.BigToHash(big.NewInt(gofakeit.Int64())), nonce, destination, common.BigToHash(big.NewInt(gofakeit.Int64())), gofakeit.Uint32())
-		tips := agentsTypes.NewTips(big.NewInt(0), big.NewInt(0), big.NewInt(0), big.NewInt(0))
-		typesMessage := agentsTypes.NewMessage(header, tips, message)
+		header := agentsTypes.NewHeader(chainID, nonce, destination, gofakeit.Uint32())
+		typesMessage := agentsTypes.NewMessage(uint8(1), header, message)
 
 		err := testDB.StoreMessage(t.GetTestContext(), typesMessage, blockNumber, false, 0)
 		Nil(t.T(), err)
@@ -238,8 +231,8 @@ func (t *DBSuite) TestGetUnsetMinimumTimeMessages() {
 		message = common.BigToHash(big.NewInt(gofakeit.Int64())).Bytes()
 		blockNumber = gofakeit.Uint64()
 
-		header = agentsTypes.NewHeader(chainID, common.BigToHash(big.NewInt(gofakeit.Int64())), nonce, destination, common.BigToHash(big.NewInt(gofakeit.Int64())), gofakeit.Uint32())
-		typesMessage = agentsTypes.NewMessage(header, tips, message)
+		header = agentsTypes.NewHeader(chainID, nonce, destination, gofakeit.Uint32())
+		typesMessage = agentsTypes.NewMessage(uint8(1), header, message)
 
 		err = testDB.StoreMessage(t.GetTestContext(), typesMessage, blockNumber, true, 0)
 		Nil(t.T(), err)
@@ -259,9 +252,8 @@ func (t *DBSuite) TestSetMinimumTime() {
 		message := common.BigToHash(big.NewInt(gofakeit.Int64())).Bytes()
 		blockNumber := gofakeit.Uint64()
 
-		header := agentsTypes.NewHeader(chainID, common.BigToHash(big.NewInt(gofakeit.Int64())), nonce, destination, common.BigToHash(big.NewInt(gofakeit.Int64())), gofakeit.Uint32())
-		tips := agentsTypes.NewTips(big.NewInt(0), big.NewInt(0), big.NewInt(0), big.NewInt(0))
-		typesMessage := agentsTypes.NewMessage(header, tips, message)
+		header := agentsTypes.NewHeader(chainID, nonce, destination, gofakeit.Uint32())
+		typesMessage := agentsTypes.NewMessage(uint8(1), header, message)
 
 		err := testDB.StoreMessage(t.GetTestContext(), typesMessage, blockNumber, false, 0)
 		Nil(t.T(), err)

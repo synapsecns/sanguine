@@ -332,7 +332,7 @@ func (e *ExecutorSuite) TestMerkleInsert() {
 
 func (e *ExecutorSuite) TestVerifyMessageMerkleProof() {
 	// TODO (joe and lex): FIX ME
-	//e.T().Skip()
+	// e.T().Skip()
 	chainID := uint32(e.TestBackendOrigin.GetChainID())
 	destination := uint32(e.TestBackendDestination.GetChainID())
 
@@ -437,7 +437,7 @@ func (e *ExecutorSuite) TestVerifyMessageMerkleProof() {
 
 func (e *ExecutorSuite) TestExecutor() {
 	// TODO (joe and lex): FIX ME
-	//e.T().Skip()
+	// e.T().Skip()
 	testDone := false
 	defer func() {
 		testDone = true
@@ -575,7 +575,7 @@ func (e *ExecutorSuite) TestExecutor() {
 
 	paddedTips := new(big.Int).SetBytes(encodedTips)
 	paddedRequest := big.NewInt(0)
-	//txContextOrigin.TransactOpts.Value = big.NewInt(0)
+	// txContextOrigin.TransactOpts.Value = big.NewInt(0)
 	tx, err := e.OriginContract.SendBaseMessage(txContextOrigin.TransactOpts, uint32(e.TestBackendDestination.GetChainID()), recipient, optimisticSeconds, paddedTips, paddedRequest, body)
 	e.Nil(err)
 	e.TestBackendOrigin.WaitForConfirmation(e.GetTestContext(), tx)

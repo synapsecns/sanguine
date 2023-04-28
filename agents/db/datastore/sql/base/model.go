@@ -1,7 +1,6 @@
 package base
 
 import (
-	"math/big"
 	"time"
 
 	"github.com/synapsecns/sanguine/core/dbcommon"
@@ -125,7 +124,7 @@ type AcceptedAttestation struct {
 // it allows for querying on both the committed message and the underlying fields.
 type CommittedMessage struct {
 	gorm.Model
-	CMVersion uint16 `gorm:"column:cm_version"`
+	CMFlag uint8 `gorm:"column:cm_flag"`
 	// CMDomainID is the id of the domain we're renaming
 	CMDomainID uint32 `gorm:"column:domain_id;uniqueIndex:cm_idx_id"`
 	// CMMessage is the fully detailed message that was created
@@ -134,51 +133,29 @@ type CommittedMessage struct {
 	CMLeaf []byte `gorm:"column:leaf"`
 	// CMOrigin returns the slip-44 of the message
 	CMOrigin uint32 `gorm:"column:origin"`
-	// CMSender is the sender of the message
-	CMSender []byte `gorm:"column:sender"`
 	// CMNonce is the nonce of the message
 	CMNonce uint32 `gorm:"column:nonce;uniqueIndex:cm_idx_id"`
 	// CMDestination is the sip-44 destination of the message
 	CMDestination uint32 `gorm:"column:destination"`
-	// CMRecipient is the recipient of the message
-	CMRecipient []byte `gorm:"column:recipient"`
 	// CMBody is the body of the message
 	CMBody []byte `gorm:"column:body"`
 	// CMOptimisticSeconds is the optimistic seconds of the message
 	CMOptimisticSeconds uint32 `gorm:"column:optimistic_seconds"`
-	// CMNotaryTip is the notarytip
-	CMNotaryTip []byte `gorm:"column:notary_tip"`
-	// CMBroadcasterTip is the relayer tip
-	CMBroadcasterTip []byte `gorm:"column:broadcaster_tip"`
-	// CMProverTip is the prover tip
-	CMProverTip []byte `gorm:"column:prover_tip"`
-	// CMExecutorTip is the processor tip
-	CMExecutorTip []byte `gorm:"column:executor_tip"`
 }
 
-// Version gets the message version.
-func (c CommittedMessage) Version() uint16 {
-	return c.CMVersion
+// Flag gets the message flag.
+func (c CommittedMessage) Flag() uint8 {
+	return c.CMFlag
 }
 
 // Header gets the header.
 func (c CommittedMessage) Header() types.Header {
-	return types.NewHeader(c.OriginDomain(), c.Sender(), c.Nonce(), c.DestinationDomain(), c.Recipient(), c.OptimisticSeconds())
-}
-
-// Tips gets the tips.
-func (c CommittedMessage) Tips() types.Tips {
-	return types.NewTips(new(big.Int).SetBytes(c.CMNotaryTip), new(big.Int).SetBytes(c.CMBroadcasterTip), new(big.Int).SetBytes(c.CMProverTip), new(big.Int).SetBytes(c.CMExecutorTip))
+	return types.NewHeader(c.OriginDomain(), c.Nonce(), c.DestinationDomain(), c.OptimisticSeconds())
 }
 
 // OriginDomain returns the Slip-44 ID.
 func (c CommittedMessage) OriginDomain() uint32 {
 	return c.CMOrigin
-}
-
-// Sender is the address of the sender.
-func (c CommittedMessage) Sender() common.Hash {
-	return common.BytesToHash(c.CMSender)
 }
 
 // Nonce is the count of all previous messages to the destination.
@@ -189,11 +166,6 @@ func (c CommittedMessage) Nonce() uint32 {
 // DestinationDomain is the slip-44 id of the destination.
 func (c CommittedMessage) DestinationDomain() uint32 {
 	return c.CMDestination
-}
-
-// Recipient is the address of the recipient.
-func (c CommittedMessage) Recipient() common.Hash {
-	return common.BytesToHash(c.CMRecipient)
 }
 
 // Body is the message contents.
