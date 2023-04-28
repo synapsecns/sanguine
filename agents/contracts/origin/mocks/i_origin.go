@@ -82,29 +82,6 @@ func (_m *IOrigin) AgentStatus(opts *bind.CallOpts, agent common.Address) (origi
 	return r0, r1
 }
 
-// FilterAgentSlashed provides a mock function with given fields: opts, domain, agent
-func (_m *IOrigin) FilterAgentSlashed(opts *bind.FilterOpts, domain []uint32, agent []common.Address) (*origin.OriginAgentSlashedIterator, error) {
-	ret := _m.Called(opts, domain, agent)
-
-	var r0 *origin.OriginAgentSlashedIterator
-	if rf, ok := ret.Get(0).(func(*bind.FilterOpts, []uint32, []common.Address) *origin.OriginAgentSlashedIterator); ok {
-		r0 = rf(opts, domain, agent)
-	} else {
-		if ret.Get(0) != nil {
-			r0 = ret.Get(0).(*origin.OriginAgentSlashedIterator)
-		}
-	}
-
-	var r1 error
-	if rf, ok := ret.Get(1).(func(*bind.FilterOpts, []uint32, []common.Address) error); ok {
-		r1 = rf(opts, domain, agent)
-	} else {
-		r1 = ret.Error(1)
-	}
-
-	return r0, r1
-}
-
 // FilterDispatched provides a mock function with given fields: opts, messageHash, nonce, destination
 func (_m *IOrigin) FilterDispatched(opts *bind.FilterOpts, messageHash [][32]byte, nonce []uint32, destination []uint32) (*origin.OriginDispatchedIterator, error) {
 	ret := _m.Called(opts, messageHash, nonce, destination)
@@ -220,6 +197,39 @@ func (_m *IOrigin) FilterStateSaved(opts *bind.FilterOpts) (*origin.OriginStateS
 	return r0, r1
 }
 
+// GetAgent provides a mock function with given fields: opts, index
+func (_m *IOrigin) GetAgent(opts *bind.CallOpts, index *big.Int) (struct {
+	Agent  common.Address
+	Status origin.AgentStatus
+}, error) {
+	ret := _m.Called(opts, index)
+
+	var r0 struct {
+		Agent  common.Address
+		Status origin.AgentStatus
+	}
+	if rf, ok := ret.Get(0).(func(*bind.CallOpts, *big.Int) struct {
+		Agent  common.Address
+		Status origin.AgentStatus
+	}); ok {
+		r0 = rf(opts, index)
+	} else {
+		r0 = ret.Get(0).(struct {
+			Agent  common.Address
+			Status origin.AgentStatus
+		})
+	}
+
+	var r1 error
+	if rf, ok := ret.Get(1).(func(*bind.CallOpts, *big.Int) error); ok {
+		r1 = rf(opts, index)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
 // Initialize provides a mock function with given fields: opts
 func (_m *IOrigin) Initialize(opts *bind.TransactOpts) (*types.Transaction, error) {
 	ret := _m.Called(opts)
@@ -285,13 +295,13 @@ func (_m *IOrigin) LocalDomain(opts *bind.CallOpts) (uint32, error) {
 	return r0, r1
 }
 
-// ManagerSlash provides a mock function with given fields: opts, domain, agent, prover
-func (_m *IOrigin) ManagerSlash(opts *bind.TransactOpts, domain uint32, agent common.Address, prover common.Address) (*types.Transaction, error) {
-	ret := _m.Called(opts, domain, agent, prover)
+// OpenDispute provides a mock function with given fields: opts, guardIndex, notaryIndex
+func (_m *IOrigin) OpenDispute(opts *bind.TransactOpts, guardIndex uint32, notaryIndex uint32) (*types.Transaction, error) {
+	ret := _m.Called(opts, guardIndex, notaryIndex)
 
 	var r0 *types.Transaction
-	if rf, ok := ret.Get(0).(func(*bind.TransactOpts, uint32, common.Address, common.Address) *types.Transaction); ok {
-		r0 = rf(opts, domain, agent, prover)
+	if rf, ok := ret.Get(0).(func(*bind.TransactOpts, uint32, uint32) *types.Transaction); ok {
+		r0 = rf(opts, guardIndex, notaryIndex)
 	} else {
 		if ret.Get(0) != nil {
 			r0 = ret.Get(0).(*types.Transaction)
@@ -299,8 +309,8 @@ func (_m *IOrigin) ManagerSlash(opts *bind.TransactOpts, domain uint32, agent co
 	}
 
 	var r1 error
-	if rf, ok := ret.Get(1).(func(*bind.TransactOpts, uint32, common.Address, common.Address) error); ok {
-		r1 = rf(opts, domain, agent, prover)
+	if rf, ok := ret.Get(1).(func(*bind.TransactOpts, uint32, uint32) error); ok {
+		r1 = rf(opts, guardIndex, notaryIndex)
 	} else {
 		r1 = ret.Error(1)
 	}
@@ -324,29 +334,6 @@ func (_m *IOrigin) Owner(opts *bind.CallOpts) (common.Address, error) {
 	var r1 error
 	if rf, ok := ret.Get(1).(func(*bind.CallOpts) error); ok {
 		r1 = rf(opts)
-	} else {
-		r1 = ret.Error(1)
-	}
-
-	return r0, r1
-}
-
-// ParseAgentSlashed provides a mock function with given fields: log
-func (_m *IOrigin) ParseAgentSlashed(log types.Log) (*origin.OriginAgentSlashed, error) {
-	ret := _m.Called(log)
-
-	var r0 *origin.OriginAgentSlashed
-	if rf, ok := ret.Get(0).(func(types.Log) *origin.OriginAgentSlashed); ok {
-		r0 = rf(log)
-	} else {
-		if ret.Get(0) != nil {
-			r0 = ret.Get(0).(*origin.OriginAgentSlashed)
-		}
-	}
-
-	var r1 error
-	if rf, ok := ret.Get(1).(func(types.Log) error); ok {
-		r1 = rf(log)
 	} else {
 		r1 = ret.Error(1)
 	}
@@ -508,20 +495,22 @@ func (_m *IOrigin) RenounceOwnership(opts *bind.TransactOpts) (*types.Transactio
 	return r0, r1
 }
 
-// SYNAPSEDOMAIN provides a mock function with given fields: opts
-func (_m *IOrigin) SYNAPSEDOMAIN(opts *bind.CallOpts) (uint32, error) {
-	ret := _m.Called(opts)
+// ResolveDispute provides a mock function with given fields: opts, slashedIndex, honestIndex
+func (_m *IOrigin) ResolveDispute(opts *bind.TransactOpts, slashedIndex uint32, honestIndex uint32) (*types.Transaction, error) {
+	ret := _m.Called(opts, slashedIndex, honestIndex)
 
-	var r0 uint32
-	if rf, ok := ret.Get(0).(func(*bind.CallOpts) uint32); ok {
-		r0 = rf(opts)
+	var r0 *types.Transaction
+	if rf, ok := ret.Get(0).(func(*bind.TransactOpts, uint32, uint32) *types.Transaction); ok {
+		r0 = rf(opts, slashedIndex, honestIndex)
 	} else {
-		r0 = ret.Get(0).(uint32)
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).(*types.Transaction)
+		}
 	}
 
 	var r1 error
-	if rf, ok := ret.Get(1).(func(*bind.CallOpts) error); ok {
-		r1 = rf(opts)
+	if rf, ok := ret.Get(1).(func(*bind.TransactOpts, uint32, uint32) error); ok {
+		r1 = rf(opts, slashedIndex, honestIndex)
 	} else {
 		r1 = ret.Error(1)
 	}
@@ -681,29 +670,6 @@ func (_m *IOrigin) Version(opts *bind.CallOpts) (string, error) {
 	var r1 error
 	if rf, ok := ret.Get(1).(func(*bind.CallOpts) error); ok {
 		r1 = rf(opts)
-	} else {
-		r1 = ret.Error(1)
-	}
-
-	return r0, r1
-}
-
-// WatchAgentSlashed provides a mock function with given fields: opts, sink, domain, agent
-func (_m *IOrigin) WatchAgentSlashed(opts *bind.WatchOpts, sink chan<- *origin.OriginAgentSlashed, domain []uint32, agent []common.Address) (event.Subscription, error) {
-	ret := _m.Called(opts, sink, domain, agent)
-
-	var r0 event.Subscription
-	if rf, ok := ret.Get(0).(func(*bind.WatchOpts, chan<- *origin.OriginAgentSlashed, []uint32, []common.Address) event.Subscription); ok {
-		r0 = rf(opts, sink, domain, agent)
-	} else {
-		if ret.Get(0) != nil {
-			r0 = ret.Get(0).(event.Subscription)
-		}
-	}
-
-	var r1 error
-	if rf, ok := ret.Get(1).(func(*bind.WatchOpts, chan<- *origin.OriginAgentSlashed, []uint32, []common.Address) error); ok {
-		r1 = rf(opts, sink, domain, agent)
 	} else {
 		r1 = ret.Error(1)
 	}

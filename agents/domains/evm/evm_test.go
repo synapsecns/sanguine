@@ -73,21 +73,21 @@ func (e *RPCSuite) TestFilterLogsMaxAttempts() {
 	mockFilterer.AssertNumberOfCalls(e.T(), "FilterLogs", evm.MaxAttempts)
 }
 
-type Dispatch struct {
+type Sent struct {
 	destinationDomain uint32
 	recipientAddress  [32]byte
 	messageBody       []byte
 	optimisticSeconds uint32
 }
 
-// GenerateDispatch generates a mock dispatch for testing.
-func GenerateDispatch() Dispatch {
+// GenerateSent generates a mock sent for testing.
+func GenerateSent() Sent {
 	newAddress := etherMocks.MockAddress().Bytes()
 	var recipient [32]byte
 
 	copy(recipient[:], newAddress)
 
-	return Dispatch{
+	return Sent{
 		destinationDomain: gofakeit.Uint32(),
 		recipientAddress:  recipient,
 		messageBody:       []byte(gofakeit.Paragraph(3, 2, 1, " ")),
@@ -95,10 +95,10 @@ func GenerateDispatch() Dispatch {
 	}
 }
 
-// GenerateDispatches generates a slice of dispatches.
-func GenerateDispatches(dispatchCount int) (arr []Dispatch) {
-	for i := 0; i < dispatchCount; i++ {
-		arr = append(arr, GenerateDispatch())
+// GenerateSents generates a slice of sents.
+func GenerateSents(sentCount int) (arr []Sent) {
+	for i := 0; i < sentCount; i++ {
+		arr = append(arr, GenerateSent())
 	}
 	return arr
 }
@@ -108,10 +108,10 @@ func (e *RPCSuite) TestFilterer() {
 		e.T().Skip("flakes on ci: since this will be replaced by scribe, we can deprecate this")
 	}
 
-	dispatches := GenerateDispatches(10)
+	sents := GenerateSents(10)
 
 	var lastTx *ethTypes.Transaction
-	for _, dispatch := range dispatches {
+	for _, sent := range sents {
 		auth := e.TestBackendOrigin.GetTxContext(e.GetTestContext(), nil)
 
 		encodedTips, err := types.EncodeTips(types.NewTips(big.NewInt(0), big.NewInt(0), big.NewInt(0), big.NewInt(0)))
@@ -119,11 +119,11 @@ func (e *RPCSuite) TestFilterer() {
 
 		paddedTips := new(big.Int).SetBytes(encodedTips)
 		paddedRequest := big.NewInt(0)
-		addedDispatch, err := e.OriginContract.SendBaseMessage(auth.TransactOpts, dispatch.destinationDomain, dispatch.recipientAddress, dispatch.optimisticSeconds, paddedTips, paddedRequest, dispatch.messageBody)
+		addedSent, err := e.OriginContract.SendBaseMessage(auth.TransactOpts, sent.destinationDomain, sent.recipientAddress, sent.optimisticSeconds, paddedTips, paddedRequest, sent.messageBody)
 		Nil(e.T(), err)
 
-		e.TestBackendOrigin.WaitForConfirmation(e.GetTestContext(), addedDispatch)
-		lastTx = addedDispatch
+		e.TestBackendOrigin.WaitForConfirmation(e.GetTestContext(), addedSent)
+		lastTx = addedSent
 	}
 
 	receipt, err := e.TestBackendOrigin.TransactionReceipt(e.GetTestContext(), lastTx.Hash())

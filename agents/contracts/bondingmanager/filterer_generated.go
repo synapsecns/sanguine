@@ -11,6 +11,18 @@ import (
 
 // IBondingManagerFilterer ...
 type IBondingManagerFilterer interface {
+	// FilterDisputeUpdated is a free log retrieval operation binding the contract event 0x4a4274ddec5680bd48ca531f9f0fb4cbcf1598a0e55deb8171fd95e99673e0f7.
+	//
+	// Solidity: event DisputeUpdated(address agent, (uint8,uint32,address) dispute)
+	FilterDisputeUpdated(opts *bind.FilterOpts) (*BondingManagerDisputeUpdatedIterator, error)
+	// WatchDisputeUpdated is a free log subscription operation binding the contract event 0x4a4274ddec5680bd48ca531f9f0fb4cbcf1598a0e55deb8171fd95e99673e0f7.
+	//
+	// Solidity: event DisputeUpdated(address agent, (uint8,uint32,address) dispute)
+	WatchDisputeUpdated(opts *bind.WatchOpts, sink chan<- *BondingManagerDisputeUpdated) (event.Subscription, error)
+	// ParseDisputeUpdated is a log parse operation binding the contract event 0x4a4274ddec5680bd48ca531f9f0fb4cbcf1598a0e55deb8171fd95e99673e0f7.
+	//
+	// Solidity: event DisputeUpdated(address agent, (uint8,uint32,address) dispute)
+	ParseDisputeUpdated(log types.Log) (*BondingManagerDisputeUpdated, error)
 	// FilterInitialized is a free log retrieval operation binding the contract event 0x7f26b83ff96e1f2b6a682f133852f6798a09c465da95921460cefb3847402498.
 	//
 	// Solidity: event Initialized(uint8 version)

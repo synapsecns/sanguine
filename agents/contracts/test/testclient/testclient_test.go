@@ -36,7 +36,7 @@ func (h TestClientSuite) TestSendMessage() {
 		h.T().Error(h.T(), fmt.Errorf("test context completed %w", h.GetTestContext().Err()))
 	case <-sub.Err():
 		h.T().Error(h.T(), sub.Err())
-	// get dispatch event
+	// get sent event
 	case item := <-messageSentSink:
 		h.NotNil(item)
 		break

@@ -20,11 +20,11 @@ type State interface {
 	Root() [32]byte
 	// Origin is the domain where Origin is located.
 	Origin() uint32
-	// Nonce is the amount of dispatched messages.
+	// Nonce is the amount of sent messages.
 	Nonce() uint32
-	// BlockNumber is the block of the last dispatched message.
+	// BlockNumber is the block of the last sent message.
 	BlockNumber() *big.Int
-	// Timestamp is the unix time of the last dispatched message.
+	// Timestamp is the unix time of the last sent message.
 	Timestamp() *big.Int
 
 	// Hash returns the hash of the state.
