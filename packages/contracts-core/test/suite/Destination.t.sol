@@ -107,6 +107,14 @@ contract DestinationTest is ExecutionHubTest {
         assertEq(index, agentIndex[notaryF]);
     }
 
+    function test_acceptAttestation_revert_notAgentManager(address caller) public {
+        vm.assume(caller != localAgentManager());
+        vm.expectRevert("!agentManager");
+        vm.prank(caller);
+        AgentStatus memory status;
+        InterfaceDestination(destination).acceptAttestation(status, 0, "");
+    }
+
     function test_acceptAttestation_notAccepted_agentRootUpdated(
         RawAttestation memory firstRA,
         uint32 firstRootSubmittedAt

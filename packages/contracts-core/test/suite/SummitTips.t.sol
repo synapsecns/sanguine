@@ -3,7 +3,7 @@ pragma solidity 0.8.17;
 
 import {IAgentManager, InterfaceSummit} from "../../contracts/Summit.sol";
 
-import {AgentFlag, Summit, SynapseTest} from "../utils/SynapseTest.t.sol";
+import {AgentFlag, AgentStatus, Summit, SynapseTest} from "../utils/SynapseTest.t.sol";
 import {AgentSecuredTest} from "./hubs/ExecutionHub.t.sol";
 
 import {fakeState} from "../utils/libs/FakeIt.t.sol";
@@ -159,6 +159,14 @@ contract SummitTipsTest is AgentSecuredTest {
         (bytes memory rcptPayload, bytes memory rcptSignature) = signReceipt(notary, re);
         vm.expectRevert("Unknown snapshot root");
         bondingManager.submitReceipt(rcptPayload, rcptSignature);
+    }
+
+    function test_acceptReceipt_revert_notAgentManager(address caller) public {
+        vm.assume(caller != localAgentManager());
+        vm.expectRevert("!agentManager");
+        vm.prank(caller);
+        AgentStatus memory status;
+        InterfaceSummit(summit).acceptReceipt(status, status, 0, 0, 0, "");
     }
 
     // ═══════════════════════════════════════════ TESTS: TIPS AWARDING ════════════════════════════════════════════════

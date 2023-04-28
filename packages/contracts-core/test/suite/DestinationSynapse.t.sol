@@ -48,6 +48,14 @@ contract DestinationSynapseTest is ExecutionHubTest {
         }
     }
 
+    function test_acceptAttestation_revert_notAgentManager(address caller) public {
+        vm.assume(caller != localAgentManager());
+        vm.expectRevert("!agentManager");
+        vm.prank(caller);
+        AgentStatus memory status;
+        InterfaceDestination(destinationSynapse).acceptAttestation(status, 0, "");
+    }
+
     // ══════════════════════════════════════════════════ HELPERS ══════════════════════════════════════════════════════
 
     /// @notice Prepares execution of the created messages
