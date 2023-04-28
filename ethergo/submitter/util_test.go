@@ -11,12 +11,14 @@ import (
 	"github.com/synapsecns/sanguine/ethergo/backends/simulated"
 	"github.com/synapsecns/sanguine/ethergo/mocks"
 	"github.com/synapsecns/sanguine/ethergo/submitter"
+	"github.com/synapsecns/sanguine/ethergo/submitter/db"
 	"go.opentelemetry.io/otel/attribute"
 	"gotest.tools/assert"
 	"math/big"
 	"math/rand"
 	"sync"
 	"testing"
+	"time"
 )
 
 func TestCopyTransactOpts(t *testing.T) {
@@ -189,7 +191,7 @@ func (s *SubmitterSuite) TestTxToAttributesDynamicTX() {
 
 func (s *SubmitterSuite) TestSortTxes() {
 	expected := make(map[uint64][]*types.Transaction)
-	var allTxes []*types.Transaction
+	var allTxes []db.TX
 	var mapMux sync.Mutex
 	var sliceMux sync.Mutex
 
@@ -214,7 +216,13 @@ func (s *SubmitterSuite) TestSortTxes() {
 				mapMux.Unlock()
 
 				sliceMux.Lock()
-				allTxes = append(allTxes, mockTX)
+				tx := db.TX{
+					Transaction: mockTX,
+					Status:      db.Stored,
+				}
+				tx.UnsafeSetCreationTime(time.Now())
+
+				allTxes = append(allTxes, tx)
 				// shuffle the slice each time
 				rand.Shuffle(len(allTxes), func(i, j int) {
 					allTxes[i], allTxes[j] = allTxes[j], allTxes[i]

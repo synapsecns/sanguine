@@ -13,6 +13,7 @@ type TestCopyOptions interface {
 	GasPrice() *big.Int
 	GasFeeCap() *big.Int
 	GasTipCap() *big.Int
+	TxType() *uint8
 }
 
 var _ TestCopyOptions = copyOptions{}
@@ -31,4 +32,8 @@ func (c copyOptions) GasFeeCap() *big.Int {
 
 func (c copyOptions) GasTipCap() *big.Int {
 	return c.gasTipCap
+}
+
+func (c copyOptions) TxType() *uint8 {
+	return c.txType
 }

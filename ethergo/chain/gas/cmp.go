@@ -19,13 +19,13 @@ import (
 //	-1 if x <  y
 //	 0 if x == y
 //	+1 if x >  y
-func CompareGas(x *types.Transaction, y *types.Transaction, gasBlock *types.Block) int {
+func CompareGas(x *types.Transaction, y *types.Transaction, baseFee *big.Int) int {
 	if x.Type() == types.LegacyTxType && y.Type() == types.LegacyTxType {
 		return x.GasPrice().Cmp(y.GasPrice())
 	}
 
-	if gasBlock != nil {
-		return x.EffectiveGasTipCmp(y, gasBlock.BaseFee())
+	if baseFee != nil {
+		return x.EffectiveGasTipCmp(y, baseFee)
 	}
 	return x.EffectiveGasTipCmp(y, nil)
 }
@@ -61,9 +61,9 @@ func OptsToComparableTx(opts *bind.TransactOpts) (comparableTx *types.Transactio
 // BumpGasFees bumps the gas price by percent increase. In the case of legacy txes this bumps the gas price
 // in the case of fees, this bumps both the tip and fee cap by percent. If the fee cap exceeds the percent bump
 // but the fee cap doesn't and the fee cap is still below the tip cap the new fee cap is used without bumping the tip cap.
-func BumpGasFees(opts *bind.TransactOpts, percentIncrease int, gasBlock *types.Block, maxPrice *big.Int) {
+func BumpGasFees(opts *bind.TransactOpts, percentIncrease int, baseFee *big.Int, maxPrice *big.Int) {
 	if IsDynamicTx(opts) {
-		bumpDynamicTxFees(opts, percentIncrease, gasBlock, maxPrice)
+		bumpDynamicTxFees(opts, percentIncrease, baseFee, maxPrice)
 	} else {
 		bumpLegacyTxFees(opts, percentIncrease, maxPrice)
 	}
@@ -83,13 +83,13 @@ func bumpLegacyTxFees(opts *bind.TransactOpts, percentIncrease int, maxPrice *bi
 }
 
 // bumpDynamicTxFees bumps a dynamicFeeTx fee.
-func bumpDynamicTxFees(opts *bind.TransactOpts, percentIncrease int, gasBlock *types.Block, maxPrice *big.Int) {
+func bumpDynamicTxFees(opts *bind.TransactOpts, percentIncrease int, baseFee, maxPrice *big.Int) {
 	newTipCap := BumpByPercent(opts.GasTipCap, percentIncrease)
 
 	// if new fee cap less than tip cap AND base (fee + fee cap) > tip cap
-	if maxPrice.Cmp(newTipCap) > 0 && big.NewInt(0).Sub(maxPrice, gasBlock.BaseFee()).Cmp(newTipCap) > 0 {
+	if maxPrice.Cmp(newTipCap) > 0 && big.NewInt(0).Sub(maxPrice, baseFee).Cmp(newTipCap) > 0 {
 		opts.GasTipCap = newTipCap
-		logger.Warnf("new tip cap %s still less than fee cap %s + base fee %s, bumping tip not and not fee", newTipCap, maxPrice, gasBlock.BaseFee())
+		logger.Warnf("new tip cap %s still less than fee cap %s + base fee %s, bumping tip not and not fee", newTipCap, maxPrice, baseFee)
 	}
 
 	opts.GasFeeCap = maxPrice

@@ -30,7 +30,10 @@ func (t *TXSubmitterDBSuite) TestGetNonceForChainID() {
 					t.Require().NoError(err)
 
 					// make sure nonces are correct
-					err = testDB.PutTX(t.GetTestContext(), tx, db.Pending)
+					err = testDB.PutTXS(t.GetTestContext(), db.TX{
+						Transaction: tx,
+						Status:      db.Pending,
+					})
 					t.Require().NoError(err)
 
 					nonce, err = testDB.GetNonceForChainID(t.GetTestContext(), mockAccount.Address, backend.GetBigChainID())
@@ -63,7 +66,7 @@ func (t *TXSubmitterDBSuite) TestGetTransactionsWithLimitPerChainID() {
 
 				// put the transactions in the database
 				for _, tx := range txs {
-					err := testDB.PutTX(t.GetTestContext(), tx, db.Pending)
+					err := testDB.PutTXS(t.GetTestContext(), db.NewTX(tx, db.Pending))
 					t.Require().NoError(err)
 				}
 

@@ -6,7 +6,6 @@ import (
 	"errors"
 	"fmt"
 	"github.com/ethereum/go-ethereum/common"
-	"github.com/ethereum/go-ethereum/core/types"
 	"github.com/synapsecns/sanguine/core/dbcommon"
 	"golang.org/x/exp/slices"
 	"math/big"
@@ -18,11 +17,19 @@ import (
 type Service interface {
 	// GetNonceForChainID gets the nonce for a given chain id.
 	GetNonceForChainID(ctx context.Context, fromAddress common.Address, chainID *big.Int) (nonce uint64, err error)
-	// PutTX stores a tx in the database.
-	PutTX(ctx context.Context, tx *types.Transaction, status Status) error
+	// PutTXS stores a tx in the database.
+	PutTXS(ctx context.Context, txs ...TX) error
 	// GetTXS gets all txs for a given address and chain id. If chain id is nil, it will get all txs for the address.
-	GetTXS(ctx context.Context, fromAddress common.Address, chainID *big.Int, statuses ...Status) (txs []*types.Transaction, err error)
+	GetTXS(ctx context.Context, fromAddress common.Address, chainID *big.Int, statuses ...Status) (txs []TX, err error)
+	// MarkAllBeforeOrAtNonceReplacedOrConfirmed marks all txs for a given chain id and address before a given nonce as replaced or confirmed.
+	// TODO: cleaner function name
+	MarkAllBeforeOrAtNonceReplacedOrConfirmed(ctx context.Context, signer common.Address, chainID *big.Int, nonce uint64) error
+	// DBTransaction executes a transaction on the database.
+	// the function passed in will be passed a new service that is scoped to the transaction.
+	DBTransaction(ctx context.Context, f DBTransactionFunc) error
 }
+
+type DBTransactionFunc func(ctx context.Context, svc Service) error
 
 // Status is the status of a tx.
 //
@@ -36,13 +43,19 @@ const (
 	Pending Status = iota + 1 // Pending
 	// Stored is the status of a tx that has been stored.
 	Stored // Stored
+	// Submitted is the status of a tx that has been submitted.
+	Submitted // Submitted
+	// FailedSubmit is the status of a tx that has failed to submit.
+	FailedSubmit // Failed
+	// ReplacedOrConfirmed is the status of a tx that has been replaced by a new tx or confirmed. The actual status will be set later.
+	ReplacedOrConfirmed // ReplacedOrConfirmed
 	// Replaced is the status of a tx that has been replaced by a new tx.
 	Replaced // Replaced
 	// Confirmed is the status of a tx that has been confirmed.
 	Confirmed // Confirmed
 )
 
-var allStatusTypes = []Status{Pending, Replaced, Confirmed}
+var allStatusTypes = []Status{Pending, ReplacedOrConfirmed}
 
 // check to make sure all statuses are included in all status types.
 func _() {

@@ -9,10 +9,14 @@ import (
 )
 
 // CopyTX copies a transaction and sets the nonce to the given value.
+// Note: when copying from a dynamic tx to a legacy tx, the chain id cannot be copied over since it's embedded in the signature
+// rather than the rlp envelope. Resigning will fix this.
 func CopyTX(unsignedTx *types.Transaction, options ...CopyOption) (*types.Transaction, error) {
 	// tx is immutable except within the confines of type. Here we manually copy over the inner values
 
 	// these need to be overwritten, but copied over anyway for parity
+	// the v paramater will be modified by the signer if converting from a dynamic tx to a legacy tx
+	// in order to add the chain id and correct
 	v, r, s := unsignedTx.RawSignatureValues()
 
 	newNonce := unsignedTx.Nonce()
@@ -33,7 +37,25 @@ func CopyTX(unsignedTx *types.Transaction, options ...CopyOption) (*types.Transa
 		newGasTipCap = toChange.gasTipCap
 	}
 
-	switch unsignedTx.Type() {
+	txType := unsignedTx.Type()
+	if toChange.txType != nil {
+		if txType == types.DynamicFeeTxType && *toChange.txType == types.LegacyTxType {
+			// if we're converting from a dynamic fee tx to a legacy tx, we need to resign the tx
+			// to fix the return of chainid. This will break the signature, but any modification will
+			// see eip-155 (https://eips.ethereum.org/EIPS/eip-155) for details on the signature scheme changes
+			var parityBit int
+
+			if v.Uint64() == 28 {
+				parityBit += 1
+			}
+
+			mulChainID := new(big.Int).Mul(unsignedTx.ChainId(), big.NewInt(2))
+			v = mulChainID.Add(mulChainID, big.NewInt(int64(parityBit+35)))
+		}
+		txType = *toChange.txType
+	}
+
+	switch txType {
 	case types.LegacyTxType:
 		return types.NewTx(&types.LegacyTx{
 			Nonce:    newNonce,
@@ -73,6 +95,8 @@ type copyOptions struct {
 	gasPrice  *big.Int
 	gasFeeCap *big.Int
 	gasTipCap *big.Int
+	// txType is the type of transaction to copy into
+	txType *uint8
 }
 
 // CopyOption is a function that sets a copy option
@@ -105,6 +129,15 @@ func WithGasFeeCap(gasFeeCap *big.Int) CopyOption {
 func WithGasTipCap(gasTipCap *big.Int) CopyOption {
 	return func(options *copyOptions) {
 		options.gasTipCap = gasTipCap
+	}
+}
+
+// WithTxType sets the tx type for the copy.
+// should be one of one of types.LegacyTxType, types.AccessListTxType, types.DynamicFeeTxType
+// Warning: txtype conversions are not well supported and should be avoided if possible.
+func WithTxType(txType uint8) CopyOption {
+	return func(options *copyOptions) {
+		options.txType = &txType
 	}
 }
 

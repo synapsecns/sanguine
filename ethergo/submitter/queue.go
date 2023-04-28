@@ -3,7 +3,6 @@ package submitter
 import (
 	"context"
 	"fmt"
-	"github.com/ethereum/go-ethereum/core/types"
 	"github.com/synapsecns/sanguine/core/metrics"
 	"github.com/synapsecns/sanguine/ethergo/submitter/db"
 	"go.opentelemetry.io/otel/attribute"
@@ -42,7 +41,7 @@ func (t *txSubmitterImpl) processQueue(parentCtx context.Context) (err error) {
 	}()
 
 	// get all the transactions in the queue
-	transactions, err := t.db.GetTXS(ctx, t.signer.Address(), nil, db.Pending, db.Replaced)
+	transactions, err := t.db.GetTXS(ctx, t.signer.Address(), nil, db.Pending, db.ReplacedOrConfirmed)
 	if err != nil {
 		return fmt.Errorf("could not get transactions: %w", err)
 	}
@@ -56,16 +55,6 @@ func (t *txSubmitterImpl) processQueue(parentCtx context.Context) (err error) {
 	for chainID := range sortedTXes {
 		_ = chainID
 	}
-
-	return nil
-}
-
-func (t *txSubmitterImpl) chainQueue(parentCtx context.Context, chainID uint64, txes []*types.Transaction) (err error) {
-	ctx, span := t.metrics.Tracer().Start(parentCtx, "submitter.ChainQueue")
-	defer func() {
-		metrics.EndSpanWithErr(span, err)
-	}()
-	_ = ctx
 
 	return nil
 }

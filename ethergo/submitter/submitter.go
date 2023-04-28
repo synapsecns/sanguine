@@ -10,8 +10,11 @@ import (
 	"github.com/synapsecns/sanguine/core"
 	"github.com/synapsecns/sanguine/core/mapmutex"
 	"github.com/synapsecns/sanguine/core/metrics"
+	"github.com/synapsecns/sanguine/core/retry"
+	"github.com/synapsecns/sanguine/ethergo/chain/gas"
 	"github.com/synapsecns/sanguine/ethergo/client"
 	"github.com/synapsecns/sanguine/ethergo/signer/signer"
+	"github.com/synapsecns/sanguine/ethergo/submitter/config"
 	"github.com/synapsecns/sanguine/ethergo/submitter/db"
 	"github.com/synapsecns/sanguine/ethergo/util"
 	"go.opentelemetry.io/otel/attribute"
@@ -57,6 +60,8 @@ type txSubmitterImpl struct {
 	// to prevent memory leaks, this has a buffer of 1.
 	// callers adding to this channel should not block.
 	retryNow chan bool
+	// config is the config for the transaction submitter.
+	config config.Config
 }
 
 // ClientFetcher is the interface for fetching a chain client.
@@ -65,7 +70,7 @@ type ClientFetcher interface {
 }
 
 // NewTransactionSubmitter creates a new transaction submitter.
-func NewTransactionSubmitter(metrics metrics.Handler, signer signer.Signer, fetcher ClientFetcher) TransactionSubmitter {
+func NewTransactionSubmitter(metrics metrics.Handler, signer signer.Signer, fetcher ClientFetcher, config config.Config) TransactionSubmitter {
 	return &txSubmitterImpl{
 		metrics:  metrics,
 		signer:   signer,
@@ -156,7 +161,10 @@ func (t *txSubmitterImpl) storeTX(ctx context.Context, tx *types.Transaction, st
 		metrics.EndSpanWithErr(span, err)
 	}()
 
-	err = t.db.PutTX(ctx, tx, status)
+	err = t.db.PutTXS(ctx, db.TX{
+		Transaction: tx,
+		Status:      status,
+	})
 	if err != nil {
 		return fmt.Errorf("could not put tx: %w", err)
 	}
@@ -192,7 +200,7 @@ func (t *txSubmitterImpl) SubmitTransaction(parentCtx context.Context, chainID *
 	}()
 
 	// make sure we have a client for this chain.
-	_, err = t.fetcher.GetClient(ctx, chainID)
+	chainClient, err := t.fetcher.GetClient(ctx, chainID)
 	if err != nil {
 		return 0, fmt.Errorf("could not get client: %w", err)
 	}
@@ -214,6 +222,12 @@ func (t *txSubmitterImpl) SubmitTransaction(parentCtx context.Context, chainID *
 	// since it's set, while allowing us to make sure the tx won't execute until we set a valid nonce.
 	// this also prevents a bug in the caller from breaking our lock
 	transactor.Nonce = new(big.Int).Add(new(big.Int).SetUint64(math.MaxUint64), big.NewInt(1))
+
+	err = t.setGasPrice(ctx, chainClient, transactor, chainID, nil)
+	if err != nil {
+		span.AddEvent("could not set gas price", trace.WithAttributes(attribute.String("error", err.Error())))
+	}
+
 	transactor.Signer = func(address common.Address, transaction *types.Transaction) (_ *types.Transaction, err error) {
 		locker = t.nonceMux.Lock(chainID)
 		// it's important that we unlock the nonce if we fail to sign the transaction.
@@ -229,12 +243,15 @@ func (t *txSubmitterImpl) SubmitTransaction(parentCtx context.Context, chainID *
 			return nil, fmt.Errorf("could not sign tx: %w", err)
 		}
 
-		transaction, err = util.CopyTX(transaction, util.WithNonce(newNonce))
+		txType := transaction.Type()
+		if t.config.SupportsEIP1559(int(chainID.Uint64())) {
+			txType = types.DynamicFeeTxType
+		}
+
+		transaction, err = util.CopyTX(transaction, util.WithNonce(newNonce), util.WithTxType(txType))
 		if err != nil {
 			return nil, fmt.Errorf("could not copy tx: %w", err)
 		}
-
-		// TODO: gas pricing
 
 		//nolint: wrapcheck
 		return parentTransactor.Signer(address, transaction)
@@ -255,6 +272,115 @@ func (t *txSubmitterImpl) SubmitTransaction(parentCtx context.Context, chainID *
 	t.triggerProcessQueue(ctx)
 
 	return tx.Nonce(), nil
+}
+
+// setGasPrice sets the gas price for the transaction.
+// it bumps if prevtx is set
+// TODO: use options.
+func (t *txSubmitterImpl) setGasPrice(ctx context.Context, client client.EVM,
+	transactor *bind.TransactOpts, bigChainID *big.Int, prevTx *types.Transaction) (err error) {
+	ctx, span := t.metrics.Tracer().Start(ctx, "submitter.setGasPrice")
+	defer func() {
+		metrics.EndSpanWithErr(span, err)
+	}()
+
+	chainID := int(bigChainID.Uint64())
+
+	maxPrice := t.config.GetMaxGasPrice(chainID)
+
+	// TODO: cache both of these values
+	if t.config.SupportsEIP1559(int(bigChainID.Uint64())) {
+		transactor.GasFeeCap = t.config.GetMaxGasPrice(chainID)
+
+		transactor.GasTipCap, err = client.SuggestGasTipCap(ctx)
+		if err != nil {
+			return fmt.Errorf("could not get gas tip cap: %w", err)
+		}
+	} else {
+		transactor.GasPrice, err = client.SuggestGasPrice(ctx)
+		if err != nil {
+			return fmt.Errorf("could not get gas price: %w", err)
+		}
+	}
+
+	if prevTx != nil {
+		// TODO: cache
+		gasBlock, err := t.getGasBlock(ctx, client)
+		if err != nil {
+			span.AddEvent("could not get gas block", trace.WithAttributes(attribute.String("error", err.Error())))
+		}
+
+		// if the prev tx was greater than this one, we should bump the gas price from that point
+		comparison := gas.CompareGas(prevTx, gas.OptsToComparableTx(transactor), gasBlock.BaseFee)
+		if comparison > 0 {
+			if prevTx.Type() == types.LegacyTxType {
+				transactor.GasPrice = core.CopyBigInt(prevTx.GasPrice())
+			} else {
+				transactor.GasTipCap = core.CopyBigInt(prevTx.GasTipCap())
+				transactor.GasFeeCap = core.CopyBigInt(prevTx.GasFeeCap())
+			}
+		}
+		gas.BumpGasFees(transactor, t.config.GetGasBumpPercentage(chainID), maxPrice, gasBlock.BaseFee)
+	}
+	return nil
+}
+
+// getGasBlock gets the gas block for the given chain.
+func (t *txSubmitterImpl) getGasBlock(ctx context.Context, chainClient client.EVM) (gasBlock *types.Header, err error) {
+	ctx, span := t.metrics.Tracer().Start(ctx, "submitter.getGasBlock")
+	defer func() {
+		metrics.EndSpanWithErr(span, err)
+	}()
+
+	err = retry.WithBackoff(ctx, func(ctx context.Context) (err error) {
+		gasBlock, err = chainClient.HeaderByNumber(ctx, nil)
+		if err != nil {
+			return fmt.Errorf("could not get gas block: %w", err)
+		}
+
+		return nil
+	}, retry.WithMin(time.Millisecond*50), retry.WithMax(time.Second*3), retry.WithMaxAttempts(4))
+
+	if err != nil {
+		return nil, fmt.Errorf("could not get gas block: %w", err)
+	}
+
+	return gasBlock, nil
+}
+
+// getGasEstimate gets the gas estimate for the given transaction.
+// TODO: handle l2s w/ custom gas pricing through contracts.
+func (t *txSubmitterImpl) getGasEstimate(ctx context.Context, chainClient client.EVM, chainID int, tx *types.Transaction) (gasEstimate uint64, err error) {
+	if !t.config.GetDynamicGasEstimate(chainID) {
+		return t.config.GetGasEstimate(chainID), nil
+	}
+
+	ctx, span := t.metrics.Tracer().Start(ctx, "submitter.getGasEstimate", trace.WithAttributes(
+		attribute.Int(metrics.ChainID, chainID),
+		attribute.String(metrics.TxHash, tx.Hash().String()),
+	))
+
+	defer func() {
+		span.AddEvent("estimated_gas", trace.WithAttributes(attribute.Int64("gas", int64(gasEstimate))))
+		metrics.EndSpanWithErr(span, err)
+	}()
+
+	// if it needs a dynamic gas estimate, we'll get it.
+	if t.config.GetDynamicGasEstimate(chainID) {
+		call, err := util.TxToCall(tx)
+		if err != nil {
+			return 0, fmt.Errorf("could not convert tx to call: %w", err)
+		}
+
+		gasEstimate, err = chainClient.EstimateGas(ctx, *call)
+		if err != nil {
+			span.AddEvent("could not estimate gas", trace.WithAttributes(attribute.String("error", err.Error())))
+			// fallback to default
+			return t.config.GetGasEstimate(chainID), nil
+		}
+	}
+
+	return gasEstimate, nil
 }
 
 var _ TransactionSubmitter = &txSubmitterImpl{}

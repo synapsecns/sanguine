@@ -307,7 +307,7 @@ func NewMysqlStore(parentCtx context.Context, dbURL string, handler metrics.Hand
 	if err != nil {
 		return nil, fmt.Errorf("could not migrate on mysql: %w", err)
 	}
-	return &Store{txdb.NewTXStore(gdb)}, nil
+	return &Store{txdb.NewTXStore(gdb, handler)}, nil
 }
 
 // NewSqliteStore creates a new sqlite data store.
@@ -345,5 +345,5 @@ func NewSqliteStore(parentCtx context.Context, dbPath string, handler metrics.Ha
 	if err != nil {
 		return nil, fmt.Errorf("could not migrate models: %w", err)
 	}
-	return &Store{txdb.NewTXStore(gdb)}, nil
+	return &Store{txdb.NewTXStore(gdb, handler)}, nil
 }

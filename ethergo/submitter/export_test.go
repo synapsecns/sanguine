@@ -4,6 +4,7 @@ import (
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/core/types"
+	"github.com/synapsecns/sanguine/ethergo/submitter/db"
 	"go.opentelemetry.io/otel/attribute"
 	"math/big"
 )
@@ -32,7 +33,7 @@ func TxToAttributes(transaction *types.Transaction) []attribute.KeyValue {
 }
 
 // SortTxes exports sortTxes for testing.
-func SortTxes(txs []*types.Transaction) map[uint64][]*types.Transaction {
+func SortTxes(txs []db.TX) map[uint64][]db.TX {
 	return sortTxes(txs)
 }
 

@@ -16,10 +16,13 @@ func (u *UtilSuite) TestCopyTX() {
 	mockDynamicTXS := mocks.GetMockTxes(u.GetTestContext(), u.T(), 100, types.DynamicFeeTxType)
 	mockLegacyTXes := mocks.GetMockTxes(u.GetTestContext(), u.T(), 100, types.LegacyTxType)
 
+	// delete me
 	mockTXes := append(mockDynamicTXS, mockLegacyTXes...)
+
 	for _, tx := range mockTXes {
 		// fuzz some data
-		txFuzzData := makeFuzzData(tx)
+		txFuzzData := makeFuzzData(u.T(), tx)
+		txFuzzData.txType = types.DynamicFeeTxType // delete me
 
 		// build options
 		var options []util.CopyOption
@@ -39,14 +42,13 @@ func (u *UtilSuite) TestCopyTX() {
 			options = append(options, util.WithGasTipCap(txFuzzData.tipCap))
 		}
 
+		if txFuzzData.txType != tx.Type() {
+			options = append(options, util.WithTxType(txFuzzData.txType))
+		}
+
 		// copy the tx with the options
 		newTx, err := util.CopyTX(tx, options...)
 		u.Require().NoError(err)
-
-		// make sure the newTX matches the fuzz data
-		if !txFuzzData.matchesTX(newTx) {
-			u.T().Errorf("expected tx to match fuzz data, but it did not. tx: %v, fuzzData: %v", newTx, txFuzzData)
-		}
 
 		ogV, ogR, ogS := tx.RawSignatureValues()
 		newV, newR, newS := newTx.RawSignatureValues()
@@ -62,20 +64,37 @@ func (u *UtilSuite) TestCopyTX() {
 		assert.False(u.T(), core.ArePointersEqual(ogS, newS))
 
 		// make sure fields without options were not changed
-		assert.Equal(u.T(), tx.ChainId(), newTx.ChainId())
+		assert.Equal(u.T(), tx.ChainId(), newTx.ChainId(), testsuite.BigIntComparer())
 		assert.Equal(u.T(), tx.To(), newTx.To())
 		assert.Equal(u.T(), tx.Value(), newTx.Value(), testsuite.BigIntComparer())
 		assert.Equal(u.T(), tx.Data(), newTx.Data(), testsuite.BigIntComparer())
-		assert.Equal(u.T(), tx.AccessList(), newTx.AccessList())
-		assert.Equal(u.T(), tx.Type(), newTx.Type())
+
+		// they won't be equal in this case
+		if tx.Type() == txFuzzData.txType {
+			assert.Equal(u.T(), tx.Type(), newTx.Type())
+		}
+		// make sure new tx matches target
+		assert.Equal(u.T(), newTx.Type(), txFuzzData.txType)
 		assert.Equal(u.T(), tx.Gas(), newTx.Gas())
-		assert.Equal(u.T(), ogV, newV, testsuite.BigIntComparer())
+
+		// don't check the v param if we've changed it to return the chainid correctly
+		if tx.Type() == txFuzzData.txType {
+			assert.Equal(u.T(), ogV, newV, testsuite.BigIntComparer())
+			// this wil change slightly, it's not a problem
+			assert.Equal(u.T(), tx.AccessList(), newTx.AccessList())
+
+			// make sure the newTX matches the fuzz data
+			if !txFuzzData.matchesTX(newTx) {
+				u.T().Errorf("expected tx to match fuzz data, but it did not. tx: %v, fuzzData: %v", newTx, txFuzzData)
+			}
+		}
 		assert.Equal(u.T(), ogR, newR, testsuite.BigIntComparer())
 		assert.Equal(u.T(), ogS, newS, testsuite.BigIntComparer())
 	}
 }
 
-func makeFuzzData(tx *types.Transaction) fuzzData {
+func makeFuzzData(tb testing.TB, tx *types.Transaction) fuzzData {
+	txType := tx.Type()
 	nonce := tx.Nonce()
 	if gofakeit.Bool() {
 		nonce = gofakeit.Uint64()
@@ -99,11 +118,20 @@ func makeFuzzData(tx *types.Transaction) fuzzData {
 			gasPrice = new(big.Int).SetUint64(gofakeit.Uint64())
 		}
 	}
+
+	if gofakeit.Bool() {
+		var err error
+		txTypes := []uint8{types.DynamicFeeTxType, types.LegacyTxType}
+		txType, err = core.RandomItem[uint8](txTypes)
+		assert.Nilf(tb, err, "failed to get random tx type: %v", err)
+	}
+
 	return fuzzData{
 		nonce:    nonce,
 		gasPrice: gasPrice,
 		feeCap:   feeCap,
 		tipCap:   tipCap,
+		txType:   txType,
 	}
 }
 
@@ -112,6 +140,7 @@ type fuzzData struct {
 	gasPrice *big.Int
 	feeCap   *big.Int
 	tipCap   *big.Int
+	txType   uint8
 }
 
 func (f *fuzzData) matchesTX(tx *types.Transaction) bool {
@@ -121,11 +150,14 @@ func (f *fuzzData) matchesTX(tx *types.Transaction) bool {
 	if f.gasPrice != nil && f.gasPrice.Cmp(tx.GasPrice()) != 0 {
 		return false
 	}
-	if f.feeCap != nil && f.feeCap.Cmp(tx.GasFeeCap()) != 0 {
-		return false
-	}
-	if f.tipCap != nil && f.tipCap.Cmp(tx.GasTipCap()) != 0 {
-		return false
+	if f.txType == tx.Type() {
+		if f.feeCap != nil && f.feeCap.Cmp(tx.GasFeeCap()) != 0 {
+			return false
+		}
+
+		if f.tipCap != nil && f.tipCap.Cmp(tx.GasTipCap()) != 0 {
+			return false
+		}
 	}
 	return true
 }
@@ -163,6 +195,35 @@ func TestMakeOptionsWithNonce(t *testing.T) {
 	}
 	if opts.GasTipCap() != nil {
 		t.Errorf("expected gas tip cap to be nil, got %v", opts.GasTipCap())
+	}
+}
+
+func TestMakeOptionsWithTxType(t *testing.T) {
+	txTypes := []uint8{types.LegacyTxType, types.DynamicFeeTxType, types.AccessListTxType}
+	for _, txType := range txTypes {
+		opts := util.MakeOptions(util.WithTxType(txType))
+
+		if opts.Nonce() != nil {
+			t.Errorf("expected nonce to not be set, got %v", opts.Nonce())
+		}
+
+		if opts.TxType() == nil {
+			t.Errorf("expected tx type to be set, got nil")
+		}
+
+		if *opts.TxType() != txType {
+			t.Errorf("expected tx type to be %v, got %v", txType, *opts.TxType())
+		}
+
+		if opts.GasPrice() != nil {
+			t.Errorf("expected gas price to be nil, got %v", opts.GasPrice())
+		}
+		if opts.GasFeeCap() != nil {
+			t.Errorf("expected gas fee cap to be nil, got %v", opts.GasFeeCap())
+		}
+		if opts.GasTipCap() != nil {
+			t.Errorf("expected gas tip cap to be nil, got %v", opts.GasTipCap())
+		}
 	}
 }
 

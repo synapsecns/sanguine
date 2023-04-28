@@ -7,6 +7,7 @@ import (
 	"github.com/ethereum/go-ethereum/core/types"
 	"github.com/synapsecns/sanguine/core"
 	"github.com/synapsecns/sanguine/ethergo/chain/gas"
+	"github.com/synapsecns/sanguine/ethergo/submitter/db"
 	"github.com/synapsecns/sanguine/ethergo/util"
 	"go.opentelemetry.io/otel/attribute"
 	"math/big"
@@ -99,8 +100,8 @@ func bigPtrToString(num *big.Int) string {
 }
 
 // sortTxes sorts a slice of transactions by nonce.
-func sortTxes(txs []*types.Transaction) map[uint64][]*types.Transaction {
-	txesByChainID := make(map[uint64][]*types.Transaction)
+func sortTxes(txs []db.TX) map[uint64][]db.TX {
+	txesByChainID := make(map[uint64][]db.TX)
 	// put the transactions in a map by chain id
 	for _, t := range txs {
 		txesByChainID[t.ChainId().Uint64()] = append(txesByChainID[t.ChainId().Uint64()], t)
@@ -114,7 +115,7 @@ func sortTxes(txs []*types.Transaction) map[uint64][]*types.Transaction {
 			jNonce := txesByChainID[key][j].Nonce()
 
 			if iNonce == jNonce {
-				gasCmp := gas.CompareGas(txesByChainID[key][i], txesByChainID[key][j], nil)
+				gasCmp := gas.CompareGas(txesByChainID[key][i].Transaction, txesByChainID[key][j].Transaction, nil)
 				if gasCmp == 0 || gasCmp == 1 {
 					return false
 				}

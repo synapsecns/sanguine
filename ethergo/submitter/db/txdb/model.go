@@ -3,6 +3,7 @@ package txdb
 import (
 	"github.com/synapsecns/sanguine/core/dbcommon"
 	"github.com/synapsecns/sanguine/ethergo/submitter/db"
+	"time"
 )
 
 // define common field names. See package docs  for an explanation of why we have to do this.
@@ -14,6 +15,8 @@ func init() {
 	chainIDFieldName = namer.GetConsistentName("ChainID")
 	nonceFieldName = namer.GetConsistentName("Nonce")
 	statusFieldName = namer.GetConsistentName("Status")
+	createdAtFieldName = namer.GetConsistentName("CreatedAt")
+	fromFieldName = namer.GetConsistentName("From")
 }
 
 var (
@@ -25,10 +28,17 @@ var (
 	nonceFieldName string
 	// statusFieldName is the field name of the status.
 	statusFieldName string
+	// createdAtFieldName is the field name of the created at time.
+	createdAtFieldName string
+	// fromFieldName is the field name of the from address.
+	fromFieldName string
 )
 
 // ETHTX contains a raw evm transaction that is unsigned.
 type ETHTX struct {
+	// CreatedAt is the time the transaction was created
+	CreatedAt time.Time
+	// TXHash is the hash of the transaction
 	TXHash string `gorm:"column:tx_hash;primaryKey"`
 	// From is the sender of the transaction
 	From string `gorm:"from;index"`

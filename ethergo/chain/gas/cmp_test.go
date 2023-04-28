@@ -201,15 +201,15 @@ func (s GasSuite) TestCompareGas() {
 				}, nil, nil, nil, nil)
 			}
 
-			out := gas.CompareGas(tc.x, tc.y, gasBlock)
+			out := gas.CompareGas(tc.x, tc.y, gasBlock.BaseFee())
 			Equal(t, tc.expectedOutput, out)
 
 			// test the reverse as a sanity check. Multiplying by engative 1 should be the opposite
 			// except in cases where
-			reverseOut := gas.CompareGas(tc.y, tc.x, gasBlock)
+			reverseOut := gas.CompareGas(tc.y, tc.x, gasBlock.BaseFee())
 			Equal(t, tc.expectedOutput*-1, reverseOut)
 
-			optsOut := gas.CompareGas(gas.OptsToComparableTx(s.toTransactOpts(tc.x)), gas.OptsToComparableTx(s.toTransactOpts(tc.y)), gasBlock)
+			optsOut := gas.CompareGas(gas.OptsToComparableTx(s.toTransactOpts(tc.x)), gas.OptsToComparableTx(s.toTransactOpts(tc.y)), gasBlock.BaseFee())
 			Equal(t, tc.expectedOutput, optsOut)
 		})
 	}
@@ -446,7 +446,7 @@ func (s GasSuite) TestBumpGasPrice() {
 				BaseFee: tc.baseFee,
 			}, nil, nil, nil, nil)
 
-			gas.BumpGasFees(tc.txOpts, tc.percentIncrease, gasBlock, gas.GetConfig().MaxPrice)
+			gas.BumpGasFees(tc.txOpts, tc.percentIncrease, gasBlock.BaseFee(), gas.GetConfig().MaxPrice)
 			tc.checkExpected(s.T())
 		})
 	}

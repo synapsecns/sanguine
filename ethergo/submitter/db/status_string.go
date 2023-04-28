@@ -10,13 +10,16 @@ func _() {
 	var x [1]struct{}
 	_ = x[Pending-1]
 	_ = x[Stored-2]
-	_ = x[Replaced-3]
-	_ = x[Confirmed-4]
+	_ = x[Submitted-3]
+	_ = x[FailedSubmit-4]
+	_ = x[ReplacedOrConfirmed-5]
+	_ = x[Replaced-6]
+	_ = x[Confirmed-7]
 }
 
-const _Status_name = "PendingStoredReplacedConfirmed"
+const _Status_name = "PendingStoredSubmittedFailedReplacedOrConfirmedReplacedConfirmed"
 
-var _Status_index = [...]uint8{0, 7, 13, 21, 30}
+var _Status_index = [...]uint8{0, 7, 13, 22, 28, 47, 55, 64}
 
 func (i Status) String() string {
 	i -= 1
