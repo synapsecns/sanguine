@@ -17,27 +17,27 @@ export interface TransitionClassesProps extends TransitionClasses {
 export const COIN_SLIDE_OVER_PROPS: TransitionClassesProps = {
   appear: true,
   unmount: true,
-  enter: 'duration-150 ease-out',
-  enterFrom: 'transform-gpu translate-y-full opacity-0',
-  enterTo: 'transform-gpu translate-y-0 opacity-100',
-  leave: 'duration-150 ease-out',
-  leaveFrom: 'transform-gpu translate-y-0 opacity-100',
-  leaveTo: 'transform-gpu translate-y-full opacity-0',
+  enter: 'duration-100 transition ease-out',
+  enterFrom: 'transform-gpu transform-y-200 opacity-0',
+  enterTo: 'transform-gpu transform-y-0 opacity-100',
+  leave: 'duration-100 transition ease-out',
+  leaveFrom: 'transform-gpu transform-y-0 opacity-100',
+  leaveTo: 'transform-gpu transform-y-200 opacity-0',
 }
 
 export const TEST_COIN_SLIDE_OVER_PROPS: TransitionClassesProps = {
-  appear: false,
+  appear: true,
   unmount: true,
   enter: 'transition duration-150 ease-out',
-  enterFrom: 'transform-gpu scale-y-0 opacity-0',
+  enterFrom: 'transform-gpu -scale-y-30 ',
   enterTo: 'transform-gpu scale-y-100 opacity-100',
   leave: 'transition duration-150 ease-out ',
   leaveFrom: 'transform-gpu scale-y-100 opacity-100',
-  leaveTo: 'transform-gpu scale-y-0 opacity-0',
+  leaveTo: 'transform-gpu -scale-y-30 opacity-50',
 }
 
 export const SECTION_TRANSITION_PROPS: TransitionClassesProps = {
-  enter: 'transition duration-100 ease-out',
+  enter: 'transition duration-75 ease-out',
   enterFrom: 'transform-gpu scale-y-0 ',
   enterTo: 'transform-gpu scale-y-100 opacity-100',
   leave: 'transition duration-75 ease-out ',
@@ -49,7 +49,8 @@ export const SECTION_TRANSITION_PROPS: TransitionClassesProps = {
 export const TRANSITION_PROPS: TransitionClassesProps = {
   ...COIN_SLIDE_OVER_PROPS,
   className: `
-    origin-bottom absolute
+    origin-top absolute
+    transition-all
     w-full h-full
     md:w-[95%] md:h-[95%]
     -ml-0 md:-ml-3
