@@ -55,7 +55,7 @@ contract Destination is ExecutionHub, DestinationEvents, InterfaceDestination {
     // ═════════════════════════════════════════════ ACCEPT STATEMENTS ═════════════════════════════════════════════════
 
     /// @inheritdoc InterfaceDestination
-    function acceptAttestation(AgentStatus memory status, uint256 sigIndex, bytes memory attPayload)
+    function acceptAttestation(uint32 notaryIndex, uint256 sigIndex, bytes memory attPayload)
         external
         onlyAgentManager
         returns (bool wasAccepted)
@@ -68,11 +68,11 @@ contract Destination is ExecutionHub, DestinationEvents, InterfaceDestination {
         // This will revert if payload is not an attestation
         Attestation att = attPayload.castToAttestation();
         // This will revert if snapshot root has been previously submitted
-        _saveAttestation(att, status.index, sigIndex);
+        _saveAttestation(att, notaryIndex, sigIndex);
         bytes32 agentRoot = att.agentRoot();
         _storedAttestations.push(StoredAttData(agentRoot));
         // Save Agent Root if required, and update the Destination's Status
-        destStatus = _saveAgentRoot(rootPending, agentRoot, status.index);
+        destStatus = _saveAgentRoot(rootPending, agentRoot, notaryIndex);
         return true;
     }
 

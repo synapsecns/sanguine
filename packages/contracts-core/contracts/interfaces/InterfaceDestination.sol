@@ -25,12 +25,12 @@ interface InterfaceDestination {
      * > - Attestation payload is not properly formatted.
      * > - Attestation signer is in Dispute.
      * > - Attestation's snapshot root has been previously submitted.
-     * @param status            Structure specifying agent status: (flag, domain, index)
+     * @param notaryIndex       Index of Attestation Notary in Agent Merkle Tree
      * @param sigIndex          Index of stored Notary signature
      * @param attPayload        Raw payload with Attestation data
      * @return wasAccepted      Whether the Attestation was accepted
      */
-    function acceptAttestation(AgentStatus memory status, uint256 sigIndex, bytes memory attPayload)
+    function acceptAttestation(uint32 notaryIndex, uint256 sigIndex, bytes memory attPayload)
         external
         returns (bool wasAccepted);
 

@@ -90,10 +90,10 @@ contract Summit is SnapshotHub, SummitEvents, InterfaceSummit {
 
     /// @inheritdoc InterfaceSummit
     function acceptReceipt(
-        AgentStatus memory rcptNotaryStatus,
-        AgentStatus memory attNotaryStatus,
-        uint32 attNonce,
+        uint32 rcptNotaryIndex,
+        uint32 attNotaryIndex,
         uint256 sigIndex,
+        uint32 attNonce,
         uint256 paddedTips,
         bytes memory rcptBodyPayload
     ) external onlyAgentManager returns (bool wasAccepted) {
@@ -101,30 +101,30 @@ contract Summit is SnapshotHub, SummitEvents, InterfaceSummit {
         return _saveReceipt({
             rcptBody: rcptBodyPayload.castToReceiptBody(),
             tips: TipsLib.wrapPadded(paddedTips),
-            rcptNotaryIndex: rcptNotaryStatus.index,
-            attNotaryIndex: attNotaryStatus.index,
+            rcptNotaryIndex: rcptNotaryIndex,
+            attNotaryIndex: attNotaryIndex,
             sigIndex: sigIndex,
             attNonce: attNonce
         });
     }
 
     /// @inheritdoc InterfaceSummit
-    function acceptSnapshot(AgentStatus memory status, uint256 sigIndex, bytes memory snapPayload)
+    function acceptGuardSnapshot(uint32 guardIndex, uint256 sigIndex, bytes memory snapPayload)
+        external
+        onlyAgentManager
+    {
+        // This will revert if payload is not a snapshot
+        _acceptGuardSnapshot(snapPayload.castToSnapshot(), guardIndex, sigIndex);
+    }
+
+    /// @inheritdoc InterfaceSummit
+    function acceptNotarySnapshot(uint32 notaryIndex, uint256 sigIndex, bytes32 agentRoot, bytes memory snapPayload)
         external
         onlyAgentManager
         returns (bytes memory attPayload)
     {
         // This will revert if payload is not a snapshot
-        Snapshot snapshot = snapPayload.castToSnapshot();
-        if (status.domain == 0) {
-            _acceptGuardSnapshot(snapshot, status.index, sigIndex);
-        } else {
-            // Fetch current Agent Root from BondingManager
-            bytes32 agentRoot = IAgentManager(agentManager).agentRoot();
-            // This will revert if any of the states from the Notary snapshot
-            // haven't been submitted by any of the Guards before.
-            attPayload = _acceptNotarySnapshot(snapshot, agentRoot, status.index, sigIndex);
-        }
+        return _acceptNotarySnapshot(snapPayload.castToSnapshot(), agentRoot, notaryIndex, sigIndex);
     }
 
     // ════════════════════════════════════════════════ TIPS LOGIC ═════════════════════════════════════════════════════
