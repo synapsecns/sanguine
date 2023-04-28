@@ -158,7 +158,7 @@ abstract contract ExecutionHub is AgentSecured, ExecutionHubEvents, IExecutionHu
 
     /// @inheritdoc IExecutionHub
     function isValidReceipt(bytes memory rcptPayload) external view returns (bool isValid) {
-        // This will revert if payload is not an receipt
+        // This will revert if payload is not a receipt
         Receipt rcpt = rcptPayload.castToReceipt();
         // This will revert if receipt refers to another domain
         // Note: this doesn't check the validity of tips, this is done in Summit contract

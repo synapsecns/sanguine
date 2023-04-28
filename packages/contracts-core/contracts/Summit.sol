@@ -97,7 +97,7 @@ contract Summit is SnapshotHub, SummitEvents, InterfaceSummit {
         uint256 paddedTips,
         bytes memory rcptBodyPayload
     ) external onlyAgentManager returns (bool wasAccepted) {
-        // This will revert if payload is not an receipt body
+        // This will revert if payload is not a receipt body
         return _saveReceipt({
             rcptBody: rcptBodyPayload.castToReceiptBody(),
             tips: TipsLib.wrapPadded(paddedTips),
