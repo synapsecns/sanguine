@@ -323,6 +323,13 @@ contract BondingManagerTest is AgentManagerTest {
         bondingManager.submitReceipt(receiptPayload, receiptSig);
     }
 
+    function test_passReceipt_revert_notDestination(address caller) public {
+        vm.assume(caller != localDestination());
+        vm.expectRevert("Only Destination passes receipts");
+        vm.prank(caller);
+        bondingManager.passReceipt(0, 0, 0, "");
+    }
+
     // ════════════════════════════════════════════ TEST: WITHDRAW TIPS ════════════════════════════════════════════════
 
     function test_withdrawTips_local(address recipient, uint256 amount) public {

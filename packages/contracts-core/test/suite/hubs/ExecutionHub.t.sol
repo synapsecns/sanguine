@@ -503,6 +503,7 @@ abstract contract ExecutionHubTest is AgentSecuredTest {
     {
         rbm.sender = random.next();
         rbm.content = "Test content";
+        rbm.tips = RawTips(1, 1, 1, 1);
         rh.nonce = 1;
         rh.optimisticPeriod = random.nextUint32();
         sm = SnapshotMock(random.nextState(), RawStateIndex(random.nextUint256(), random.nextUint256()));

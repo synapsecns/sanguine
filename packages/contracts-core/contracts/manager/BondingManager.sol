@@ -132,6 +132,22 @@ contract BondingManager is AgentManager, BondingManagerEvents, InterfaceBondingM
         }
     }
 
+    /// @inheritdoc InterfaceBondingManager
+    function passReceipt(uint32 attNotaryIndex, uint32 attNonce, uint256 paddedTips, bytes memory rcptBodyPayload)
+        external
+        returns (bool wasAccepted)
+    {
+        require(msg.sender == destination, "Only Destination passes receipts");
+        return InterfaceSummit(summit).acceptReceipt({
+            rcptNotaryIndex: attNotaryIndex,
+            attNotaryIndex: attNotaryIndex,
+            sigIndex: type(uint256).max,
+            attNonce: attNonce,
+            paddedTips: paddedTips,
+            rcptBodyPayload: rcptBodyPayload
+        });
+    }
+
     // ══════════════════════════════════════════ VERIFY AGENT STATEMENTS ══════════════════════════════════════════════
 
     /// @inheritdoc InterfaceBondingManager
