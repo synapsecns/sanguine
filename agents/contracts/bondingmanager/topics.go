@@ -1,4 +1,4 @@
-package summit
+package bondingmanager
 
 import (
 	"bytes"
@@ -12,7 +12,7 @@ func init() {
 	// set topics
 	var err error
 
-	parsedSummit, err := abi.JSON(strings.NewReader(SummitMetaData.ABI))
+	parsedSummit, err := abi.JSON(strings.NewReader(BondingManagerMetaData.ABI))
 	if err != nil {
 		panic(err)
 	}

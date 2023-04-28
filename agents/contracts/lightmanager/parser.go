@@ -1,30 +1,31 @@
-package destination
+package lightmanager
 
 import (
 	"fmt"
 
 	"github.com/ethereum/go-ethereum/common"
 	ethTypes "github.com/ethereum/go-ethereum/core/types"
+	"github.com/synapsecns/sanguine/agents/types"
 )
 
 // Parser parses events from the destination contract.
 type Parser interface {
 	// EventType determines if an event was initiated by the bridge or the user.
 	EventType(log ethTypes.Log) (_ EventType, ok bool)
-	// ParseExecuted parses an Executed event.
-	ParseExecuted(log ethTypes.Log) (origin *uint32, leaf *[32]byte, ok bool)
+	// ParseAttestationAccepted parses an AttestationAccepted event
+	ParseAttestationAccepted(log ethTypes.Log) (_ types.Attestation, ok bool)
 }
 
 type parserImpl struct {
 	// filterer is the parser filterer we use to parse events
-	filterer *DestinationFilterer
+	filterer *LightManagerFilterer
 }
 
-// NewParser creates a new parser for the destination contract.
-func NewParser(destinationAddress common.Address) (Parser, error) {
-	parser, err := NewDestinationFilterer(destinationAddress, nil)
+// NewParser creates a new parser for the light manager contract.
+func NewParser(lightManagerAddress common.Address) (Parser, error) {
+	parser, err := NewLightManagerFilterer(lightManagerAddress, nil)
 	if err != nil {
-		return nil, fmt.Errorf("could not create %T: %w", DestinationFilterer{}, err)
+		return nil, fmt.Errorf("could not create %T: %w", LightManagerFilterer{}, err)
 	}
 
 	return &parserImpl{filterer: parser}, nil
@@ -43,14 +44,19 @@ func (p parserImpl) EventType(log ethTypes.Log) (_ EventType, ok bool) {
 	return EventType(len(topicMap()) + 2), false
 }
 
-// ParseExecuted parses an Executed event.
-func (p parserImpl) ParseExecuted(log ethTypes.Log) (origin *uint32, leaf *[32]byte, ok bool) {
-	destinationExecuted, err := p.filterer.ParseExecuted(log)
+// ParseAttestationAccepted parses an AttestationAccepted event.
+func (p parserImpl) ParseAttestationAccepted(log ethTypes.Log) (_ types.Attestation, ok bool) {
+	lightManagerAttestationAccepted, err := p.filterer.ParseAttestationAccepted(log)
 	if err != nil {
-		return nil, nil, false
+		return nil, false
 	}
 
-	return &destinationExecuted.RemoteDomain, &destinationExecuted.MessageHash, true
+	attestation, err := types.DecodeAttestation(lightManagerAttestationAccepted.AttPayload)
+	if err != nil {
+		return nil, false
+	}
+
+	return attestation, true
 }
 
 // EventType is the type of the destination event
@@ -59,8 +65,8 @@ func (p parserImpl) ParseExecuted(log ethTypes.Log) (origin *uint32, leaf *[32]b
 type EventType uint
 
 const (
-	// ExecutedEvent is an Executed event.
-	ExecutedEvent EventType = 0
+	// AttestationAcceptedEvent is an AttestationAccepted event.
+	AttestationAcceptedEvent EventType = 0
 )
 
 // Int gets the int for an event type.

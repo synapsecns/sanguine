@@ -20,6 +20,8 @@ type Config struct {
 	SummitChainID uint32 `yaml:"summit_chain_id"`
 	// SummitAddress is the address of the summit contract.
 	SummitAddress string `yaml:"summit_address"`
+	// BondingManagerAddress is the address of the bonding manager contract.
+	BondingManagerAddress string `yaml:"bondingmanager_address"`
 	// BaseOmnirpcURL is the base url for omnirpc.
 	// The format is "https://omnirpc.url/". Notice the lack of "confirmations" on the URL
 	// in comparison to what `Scribe` uses.

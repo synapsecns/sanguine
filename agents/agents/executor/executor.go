@@ -5,6 +5,8 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"github.com/synapsecns/sanguine/agents/contracts/bondingmanager"
+	"github.com/synapsecns/sanguine/agents/contracts/lightmanager"
 	"github.com/synapsecns/sanguine/core/metrics"
 	"go.opentelemetry.io/contrib/instrumentation/google.golang.org/grpc/otelgrpc"
 	"go.opentelemetry.io/otel/attribute"
@@ -53,6 +55,10 @@ type chainExecutor struct {
 	originParser origin.Parser
 	// destinationParser is the destination parser.
 	destinationParser destination.Parser
+	// lightManagerParser is the light manager parser.
+	lightManagerParser *lightmanager.Parser
+	// bondingManagerParser is the bonding manager parser.
+	bondingManagerParser *bondingmanager.Parser
 	// summitParser is the summit parser.
 	summitParser *summit.Parser
 	// logChan is the log channel.
@@ -145,6 +151,8 @@ func NewExecutor(ctx context.Context, config config.Config, executorDB db.Execut
 		}
 
 		var summitParserRef *summit.Parser
+		var bondingManagerParserRef *bondingmanager.Parser
+		var lightManagerParserRef *lightmanager.Parser
 
 		if config.SummitChainID == chain.ChainID {
 			summitParser, err := summit.NewParser(common.HexToAddress(config.SummitAddress))
@@ -153,6 +161,20 @@ func NewExecutor(ctx context.Context, config config.Config, executorDB db.Execut
 			}
 
 			summitParserRef = &summitParser
+
+			bondingManagerParser, err := bondingmanager.NewParser(common.HexToAddress(config.BondingManagerAddress))
+			if err != nil {
+				return nil, fmt.Errorf("could not create bonding manager parser: %w", err)
+			}
+
+			bondingManagerParserRef = &bondingManagerParser
+		} else {
+			lightManagerParser, err := lightmanager.NewParser(common.HexToAddress(chain.LightManagerAddress))
+			if err != nil {
+				return nil, fmt.Errorf("could not create destination parser: %w", err)
+			}
+
+			lightManagerParserRef = &lightManagerParser
 		}
 
 		// chainRPCURL := fmt.Sprintf("%s/1/rpc/%d", config.BaseOmnirpcURL, chain.ChainID)
@@ -178,16 +200,18 @@ func NewExecutor(ctx context.Context, config config.Config, executorDB db.Execut
 				blockNumber: 0,
 				blockIndex:  0,
 			},
-			closeConnection:   make(chan bool, 1),
-			stopListenChan:    make(chan bool, 1),
-			originParser:      originParser,
-			destinationParser: destinationParser,
-			summitParser:      summitParserRef,
-			logChan:           make(chan *ethTypes.Log, logChanSize),
-			merkleTree:        tree,
-			rpcClient:         clients[chain.ChainID],
-			boundDestination:  boundDestination,
-			executed:          make(map[[32]byte]bool),
+			closeConnection:      make(chan bool, 1),
+			stopListenChan:       make(chan bool, 1),
+			originParser:         originParser,
+			destinationParser:    destinationParser,
+			summitParser:         summitParserRef,
+			lightManagerParser:   lightManagerParserRef,
+			bondingManagerParser: bondingManagerParserRef,
+			logChan:              make(chan *ethTypes.Log, logChanSize),
+			merkleTree:           tree,
+			rpcClient:            clients[chain.ChainID],
+			boundDestination:     boundDestination,
+			executed:             make(map[[32]byte]bool),
 		}
 	}
 
@@ -220,10 +244,10 @@ func (e Executor) Run(ctx context.Context) error {
 		return fmt.Errorf("could not backfill executed messages: %w", err)
 	}
 
-	// Listen for snapshotAcceptedEvents on summit.
+	// Listen for snapshotAcceptedEvents on bonding manager.
 	g.Go(func() error {
-		return e.streamLogs(ctx, e.grpcClient, e.grpcConn, e.config.SummitChainID, e.config.SummitAddress, nil, contractEventType{
-			contractType: summitContract,
+		return e.streamLogs(ctx, e.grpcClient, e.grpcConn, e.config.SummitChainID, e.config.BondingManagerAddress, nil, contractEventType{
+			contractType: bondingManagerContract,
 			eventType:    snapshotAcceptedEvent,
 		})
 	})
@@ -412,14 +436,15 @@ type eventType int
 const (
 	originContract contractType = iota
 	destinationContract
-	summitContract
+	lightManagerContract
+	bondingManagerContract
 	other
 )
 
 const (
 	// Origin's Sent event.
 	sentEvent eventType = iota
-	// Destination's AttestationAccepted event.
+	// LightManager's AttestationAccepted event.
 	attestationAcceptedEvent
 	// Destination's AttestationExecuted event.
 	executedEvent
@@ -752,7 +777,7 @@ func (e Executor) processLog(parentCtx context.Context, log ethTypes.Log, chainI
 
 			e.chainExecutors[chainID].executed[*messageLeaf] = true
 		}
-	case summitContract:
+	case bondingManagerContract:
 		//nolint:gocritic,exhaustive
 		switch contractEvent.eventType {
 		case snapshotAcceptedEvent:
