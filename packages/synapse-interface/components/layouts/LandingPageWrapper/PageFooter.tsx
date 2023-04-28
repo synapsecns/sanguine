@@ -17,7 +17,13 @@ import {
 } from '@/constants/urls'
 import { SynapseTitleLogo } from '.'
 
-const functions = [
+interface FooterDataProps {
+  text: string
+  type: string
+  url: string
+}
+
+const functions: FooterDataProps[] = [
   {
     text: 'Functions',
     type: null,
@@ -45,7 +51,7 @@ const functions = [
   },
 ]
 
-const developers = [
+const developers: FooterDataProps[] = [
   {
     text: 'Developers',
     type: null,
@@ -73,7 +79,7 @@ const developers = [
   },
 ]
 
-const support = [
+const support: FooterDataProps[] = [
   {
     text: 'Support',
     type: null,
@@ -119,7 +125,7 @@ export function PageFooter() {
         </Grid>
       </div>
       <div className="text-white pb-[70px] flex direction-row justify-center align-middle">
-        <div className="text-opacity-50 text-secondaryTextColor mr-2">
+        <div className="mr-2 text-opacity-50 text-secondaryTextColor">
           <a
             className="duration-75 hover:text-white hover:text-opacity-100 transform-gpu hover:transition-all"
             href={TERMS_OF_SERVICE_PATH}
@@ -130,7 +136,7 @@ export function PageFooter() {
           </a>
         </div>
         <p>｜</p>
-        <div className="text-opacity-50 text-secondaryTextColor ml-2">
+        <div className="ml-2 text-opacity-50 text-secondaryTextColor">
           <a
             className="duration-75 hover:text-white hover:text-opacity-100 transform-gpu hover:transition-all"
             href={PRIVACY_POLICY_PATH}
