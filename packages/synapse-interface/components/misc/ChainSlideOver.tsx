@@ -6,6 +6,7 @@ import { SelectSpecificNetworkButton } from '@components/buttons/SelectSpecificN
 import SlideSearchBox from '@pages/bridge/SlideSearchBox'
 import { DrawerButton } from '@components/buttons/DrawerButton'
 import { useNetwork } from 'wagmi'
+import { useMouseClickNavigation } from '@/utils/useMouseClickNavigation'
 
 export const ChainSlideOver = ({
   isOrigin,
@@ -20,6 +21,7 @@ export const ChainSlideOver = ({
   onChangeChain: (chainId: number, flip: boolean, type: 'from' | 'to') => void
   setDisplayType: (v: string) => void
 }) => {
+  const componentRef = useRef(null)
   const { chain } = useNetwork()
   const [currentIdx, setCurrentIdx] = useState(-1)
   const [searchStr, setSearchStr] = useState('')
@@ -101,10 +103,21 @@ export const ChainSlideOver = ({
   useEffect(escFunc, [escPressed])
   useEffect(arrowUpFunc, [arrowUp])
   useEffect(enterPressedFunc, [enterPressed])
-  useEffect(() => window.scrollTo(0, 0), [])
+
+  useEffect(() => {
+    const node = componentRef.current
+    const top = node.offsetTop + 100
+    window.scrollTo({
+      top: top,
+      behavior: 'smooth',
+    })
+  }, [])
 
   return (
-    <div className="max-h-full pb-4 -mt-3 overflow-auto scrollbar-hide rounded-3xl">
+    <div
+      ref={componentRef}
+      className="max-h-full pb-4 -mt-3 overflow-auto scrollbar-hide rounded-3xl"
+    >
       <div className="absolute z-10 w-full px-6 pt-3 bg-bgLight rounded-t-xl">
         <div className="flex items-center float-right mb-2 font-medium sm:float-none">
           <SlideSearchBox

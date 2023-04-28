@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useRef } from 'react'
 import Fuse from 'fuse.js'
 import { Zero } from '@ethersproject/constants'
 import { useKeyPress } from '@hooks/useKeyPress'
@@ -7,6 +7,7 @@ import SlideSearchBox from '@pages/bridge/SlideSearchBox'
 import { DrawerButton } from '@components/buttons/DrawerButton'
 
 import { Token } from '@/utils/types'
+import { useMouseClickNavigation } from '@/utils/useMouseClickNavigation'
 
 export const TokenSlideOver = ({
   isOrigin,
@@ -23,6 +24,7 @@ export const TokenSlideOver = ({
   setDisplayType: (v: string) => void
   handleTokenChange: (token: Token, type: 'from' | 'to') => void
 }) => {
+  const componentRef = useRef(null)
   const [currentIdx, setCurrentIdx] = useState(-1)
   const [searchStr, setSearchStr] = useState('')
   let tokenList: any[] = []
@@ -99,8 +101,14 @@ export const TokenSlideOver = ({
 
   useEffect(enterPressedFunc, [enterPressed])
 
-  // useEffect(() => ref?.current?.scrollTo(0, 0), [])
-  useEffect(() => window.scrollTo(0, 0), [])
+  useEffect(() => {
+    const node = componentRef.current
+    const top = node.offsetTop + 100
+    window.scrollTo({
+      top: top,
+      behavior: 'smooth',
+    })
+  }, [])
 
   function onSearch(str: string) {
     setSearchStr(str)
@@ -108,7 +116,10 @@ export const TokenSlideOver = ({
   }
 
   return (
-    <div className="max-h-full pb-4 -mt-3 overflow-auto scrollbar-hide rounded-3xl">
+    <div
+      ref={componentRef}
+      className="max-h-full pb-4 -mt-3 overflow-auto scrollbar-hide rounded-3xl"
+    >
       <div className="absolute z-10 w-full px-6 pt-3 bg-bgLight rounded-t-xl">
         <div className="flex items-center float-right mb-2 font-medium sm:float-none">
           <SlideSearchBox
