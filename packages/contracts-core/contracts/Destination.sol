@@ -57,6 +57,7 @@ contract Destination is ExecutionHub, DestinationEvents, InterfaceDestination {
     /// @inheritdoc InterfaceDestination
     function acceptAttestation(AgentStatus memory status, uint256 sigIndex, bytes memory attPayload)
         external
+        onlyAgentManager
         returns (bool wasAccepted)
     {
         // First, try passing current agent merkle root

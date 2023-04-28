@@ -96,7 +96,7 @@ contract Summit is SnapshotHub, SummitEvents, InterfaceSummit {
         uint256 sigIndex,
         uint256 paddedTips,
         bytes memory rcptBodyPayload
-    ) external returns (bool wasAccepted) {
+    ) external onlyAgentManager returns (bool wasAccepted) {
         // This will revert if payload is not an receipt body
         return _saveReceipt({
             rcptBody: rcptBodyPayload.castToReceiptBody(),
@@ -111,6 +111,7 @@ contract Summit is SnapshotHub, SummitEvents, InterfaceSummit {
     /// @inheritdoc InterfaceSummit
     function acceptSnapshot(AgentStatus memory status, uint256 sigIndex, bytes memory snapPayload)
         external
+        onlyAgentManager
         returns (bytes memory attPayload)
     {
         // This will revert if payload is not a snapshot
