@@ -30,16 +30,16 @@ func (s Store) GetTimestampForMessage(ctx context.Context, chainID, destination,
 					SELECT MIN(%s) FROM (
 						(SELECT * FROM %s WHERE %s = ? AND %s >= ?) AS stateTable
 						INNER JOIN
-						(SELECT %s, %s FROM %s) AS attestationTable
+						(SELECT %s, %s FROM %s WHERE %s = ?) AS attestationTable
 						ON stateTable.%s = attestationTable.%s
 					)
 				)`,
-			DestinationTimestampFieldName, attestationsTableName, DestinationFieldName, DestinationBlockNumberFieldName,
+			DestinationTimestampFieldName, attestationsTableName, DestinationBlockNumberFieldName,
 			DestinationBlockNumberFieldName,
 			statesTableName, ChainIDFieldName, NonceFieldName,
-			SnapshotRootFieldName, DestinationBlockNumberFieldName, attestationsTableName,
+			SnapshotRootFieldName, DestinationBlockNumberFieldName, attestationsTableName, DestinationFieldName,
 			SnapshotRootFieldName, SnapshotRootFieldName,
-		), destination, chainID, nonce).
+		), chainID, nonce, destination).
 		Scan(&timestamp)
 	if dbTx.Error != nil {
 		return nil, fmt.Errorf("failed to get timestamp for message: %w", dbTx.Error)
