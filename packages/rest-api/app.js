@@ -1,30 +1,50 @@
 import { JsonRpcProvider } from '@ethersproject/providers'
 import { SynapseSDK } from '@synapsecns/sdk-router'
 import { BigNumber } from '@ethersproject/bignumber'
+import { formatUnits } from '@ethersproject/units'
 import express from 'express'
 
 import chains from './config/chains.json' assert { type: 'json' };
 import tokens from './config/tokens.json' assert { type: 'json' };
-//Setting up RPC providers:
 
+// Constants
 const TEN = BigNumber.from(10)
+const tokenHtml = Object.keys(tokens).map(
+  (symbol) =>
+    "<b>" + String(symbol) + '</b>: <br/>' + String(Object.keys(tokens[symbol].addresses).map((addrChainId) => "<li>" + String(addrChainId) + ': ' + tokens[symbol].addresses[addrChainId] + '</li>').join(""))
+    + "</br>").join("")
+
+
+// Set up Synapse SDK
 const providers = []
 const chainIds = []
 for (let i = 0; i < chains.length; i++) {
   providers.push(new JsonRpcProvider(chains[i].rpc))
   chainIds.push(chains[i].id)
 }
-
-
-//Set up a SynapseSDK Instance
 const Synapse = new SynapseSDK(chainIds, providers)
 
+// Format helper function
+const formatBNToString = (
+  bn,
+  nativePrecison,
+  decimalPlaces,
+) => {
+  const fullPrecision = formatUnits(bn, nativePrecison)
+  const decimalIdx = fullPrecision.indexOf('.')
+  if (decimalPlaces === undefined || decimalIdx === -1) {
+    return fullPrecision
+  } else {
+    const rawNumber = Number(fullPrecision)
+    return rawNumber === 0 ? rawNumber.toFixed(1) : rawNumber.toFixed(decimalPlaces)
+  }
+}
+
+
+// Set up express server
 const app = express()
 const port = process.env.PORT || 3000
-const tokenHtml = Object.keys(tokens).map(
-  (symbol) =>
-    "<b>" + String(symbol) + '</b>: <br/>' + String(Object.keys(tokens[symbol].addresses).map((addrChainId) => "<li>" + String(addrChainId) + ': ' + tokens[symbol].addresses[addrChainId] + '</li>').join(""))
-    + "</br>").join("")
+
 //Intro Message for UI
 app.get('/', (req, res) => {
   res.send(
@@ -88,10 +108,10 @@ app.get('/swap', async (req, res) => {
     // Check for stable swap (going in its 6 decimals but coming out its 18 decimals so we need to adjust)
     // Using arbitrary 6 decimals as a threshold for now
     // TODO: Router contract v2 should return the amount out with decimals for the out-out token not the out-in token (eg.nusd).
-    const divisor = resp.maxAmountOut.gt(amount.mul(TEN.pow(6))) ? TEN.pow(18) : TEN.pow(toTokenDecimals)
+    const adjustedDecimals = resp.maxAmountOut.gt(amount.mul(TEN.pow(6))) ? 18 : toTokenDecimals
 
     // Add response field with adjusted maxAmountOutStr (to account for decimals)
-    resp.maxAmountOutStr = resp.maxAmountOut.div(divisor).toString()
+    resp.maxAmountOutStr = formatBNToString(resp.maxAmountOut, adjustedDecimals, 10)
     res.json(resp)
   }).catch((err) => {
     // TODO: do a better return here
@@ -157,10 +177,11 @@ app.get(
       // Check for stable swap (going in its 6 decimals but coming out its 18 decimals so we need to adjust)
       // Using arbitrary 6 decimals as a threshold for now
       // TODO: Router contract v2 should return the amount out with decimals for the out-out token not the out-in token (eg.nusd).
-      const divisor = resp.maxAmountOut.gt(amount.mul(TEN.pow(6))) ? TEN.pow(18) : TEN.pow(toTokenDecimals)
+      const adjustedDecimals = resp.maxAmountOut.gt(amount.mul(TEN.pow(6))) ? 18 : toTokenDecimals
 
       // Add response field with adjusted maxAmountOutStr (to account for decimals)
-      resp.maxAmountOutStr = resp.maxAmountOut.div(divisor).toString()
+      resp.maxAmountOutStr = formatBNToString(resp.maxAmountOut, adjustedDecimals, 10)
+
       res.json(resp)
     }).catch((err) => {
       // TODO: do a better return here
