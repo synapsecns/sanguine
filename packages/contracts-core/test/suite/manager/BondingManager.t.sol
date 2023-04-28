@@ -228,32 +228,44 @@ contract BondingManagerTest is AgentManagerTest {
 
     // ══════════════════════════════════════════ TEST: SUBMIT STATEMENTS ══════════════════════════════════════════════
 
-    function test_submitSnapshot(uint256 domainId, uint256 agentId, RawState memory rs, RawStateIndex memory rsi)
+    function test_submitSnapshot_guard(uint256 agentId, RawState memory rs, RawStateIndex memory rsi)
         public
         boundIndex(rsi)
     {
-        (, address agent) = getAgent(domainId, agentId);
-        (bytes memory snapPayload, bytes memory snapSig) = createSignedSnapshot(agent, rs, rsi);
+        address guard = getGuard(agentId);
+        (bytes memory snapPayload, bytes memory snapSig) = createSignedSnapshot(guard, rs, rsi);
         vm.expectCall(
             summit,
             abi.encodeWithSelector(
-                InterfaceSummit.acceptSnapshot.selector, getAgentStatus(agent), nextSignatureIndex(), snapPayload
+                InterfaceSummit.acceptGuardSnapshot.selector, agentIndex[guard], nextSignatureIndex(), snapPayload
             )
         );
         bondingManager.submitSnapshot(snapPayload, snapSig);
     }
 
-    function test_submitSnapshot_passes_guardInDispute(RawState memory rs, RawStateIndex memory rsi)
+    function test_submitSnapshot_guard_passesInDispute(RawState memory rs, RawStateIndex memory rsi)
         public
         boundIndex(rsi)
     {
-        address guard = domains[0].agent;
+        address guard = getGuard(0);
         openDispute({guard: guard, notary: domains[DOMAIN_REMOTE].agent});
-        (bytes memory snapPayload, bytes memory snapSig) = createSignedSnapshot(guard, rs, rsi);
+        test_submitSnapshot_guard(0, rs, rsi);
+    }
+
+    function test_submitSnapshot_notary(uint256 domainId, uint256 agentId, RawState memory rs, RawStateIndex memory rsi)
+        public
+        boundIndex(rsi)
+    {
+        address notary = getNotary(domainId, agentId);
+        (bytes memory snapPayload, bytes memory snapSig) = createSignedSnapshot(notary, rs, rsi);
         vm.expectCall(
             summit,
             abi.encodeWithSelector(
-                InterfaceSummit.acceptSnapshot.selector, getAgentStatus(guard), nextSignatureIndex(), snapPayload
+                InterfaceSummit.acceptNotarySnapshot.selector,
+                agentIndex[notary],
+                nextSignatureIndex(),
+                getAgentRoot(),
+                snapPayload
             )
         );
         bondingManager.submitSnapshot(snapPayload, snapSig);
@@ -277,7 +289,7 @@ contract BondingManagerTest is AgentManagerTest {
         RawExecReceipt memory re,
         uint256 attNonce
     ) public {
-        (, address rcptNotary) = getNotary(domainId, agentId);
+        address rcptNotary = getNotary(domainId, agentId);
         re.body.destination = DOMAIN_REMOTE;
         re.body.attNotary = domains[DOMAIN_REMOTE].agents[attNotaryId % DOMAIN_AGENTS];
         (bytes memory receiptPayload, bytes memory receiptSig) = signReceipt(rcptNotary, re);
@@ -288,10 +300,10 @@ contract BondingManagerTest is AgentManagerTest {
             summit,
             abi.encodeWithSelector(
                 InterfaceSummit.acceptReceipt.selector,
-                getAgentStatus(rcptNotary),
-                getAgentStatus(re.body.attNotary),
-                attNonce,
+                agentIndex[rcptNotary],
+                agentIndex[re.body.attNotary],
                 nextSignatureIndex(),
+                attNonce,
                 re.tips.encodeTips(),
                 re.body.formatReceiptBody()
             )

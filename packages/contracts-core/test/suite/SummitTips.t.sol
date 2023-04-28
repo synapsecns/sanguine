@@ -165,8 +165,7 @@ contract SummitTipsTest is AgentSecuredTest {
         vm.assume(caller != localAgentManager());
         vm.expectRevert("!agentManager");
         vm.prank(caller);
-        AgentStatus memory status;
-        InterfaceSummit(summit).acceptReceipt(status, status, 0, 0, 0, "");
+        InterfaceSummit(summit).acceptReceipt(0, 0, 0, 0, 0, "");
     }
 
     // ═══════════════════════════════════════════ TESTS: TIPS AWARDING ════════════════════════════════════════════════

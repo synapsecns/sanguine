@@ -60,12 +60,18 @@ contract SummitTest is AgentSecuredTest {
         assertEq(ISnapshotHub(summit).getAttestation(0), notaryAttestations[0].formatAttestation(), "!getAttestation");
     }
 
-    function test_acceptSnapshot_revert_notAgentManager(address caller) public {
+    function test_acceptGuardSnapshot_revert_notAgentManager(address caller) public {
         vm.assume(caller != localAgentManager());
         vm.expectRevert("!agentManager");
         vm.prank(caller);
-        AgentStatus memory status;
-        InterfaceSummit(summit).acceptSnapshot(status, 0, "");
+        InterfaceSummit(summit).acceptGuardSnapshot(0, 0, "");
+    }
+
+    function test_acceptNotarySnapshot_revert_notAgentManager(address caller) public {
+        vm.assume(caller != localAgentManager());
+        vm.expectRevert("!agentManager");
+        vm.prank(caller);
+        InterfaceSummit(summit).acceptNotarySnapshot(0, 0, 0, "");
     }
 
     function test_verifyAttestation_existingNonce(Random memory random, uint256 mask) public {
@@ -226,10 +232,7 @@ contract SummitTest is AgentSecuredTest {
             vm.expectCall(
                 destinationSynapse,
                 abi.encodeWithSelector(
-                    InterfaceDestination.acceptAttestation.selector,
-                    getAgentStatus(notary),
-                    type(uint256).max,
-                    attestation
+                    InterfaceDestination.acceptAttestation.selector, agentIndex[notary], type(uint256).max, attestation
                 )
             );
 

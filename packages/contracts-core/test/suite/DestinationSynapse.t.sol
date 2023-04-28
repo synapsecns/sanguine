@@ -52,8 +52,7 @@ contract DestinationSynapseTest is ExecutionHubTest {
         vm.assume(caller != localAgentManager());
         vm.expectRevert("!agentManager");
         vm.prank(caller);
-        AgentStatus memory status;
-        InterfaceDestination(destinationSynapse).acceptAttestation(status, 0, "");
+        InterfaceDestination(destinationSynapse).acceptAttestation(0, 0, "");
     }
 
     // ══════════════════════════════════════════════════ HELPERS ══════════════════════════════════════════════════════
