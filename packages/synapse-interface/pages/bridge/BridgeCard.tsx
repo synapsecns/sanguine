@@ -3,7 +3,6 @@ import { useSettings } from '@hooks/useSettings'
 import { SettingsIcon } from '@icons/SettingsIcon'
 import { Transition } from '@headlessui/react'
 import { validateAndParseAddress } from '@utils/validateAndParseAddress'
-// import { TRANSITIONS_PROPS } from '@constants/bridge'
 import { COIN_SLIDE_OVER_PROPS } from '@styles/transitions'
 import { ORDERED_CHAINS_BY_ID } from '@constants/chains'
 import Grid from '@tw/Grid'
@@ -20,7 +19,7 @@ import { formatBNToString } from '@bignumber/format'
 import {
   SECTION_TRANSITION_PROPS,
   TRANSITION_PROPS,
-  TransitionClassesProps,
+  TEST_TRANSITION_PROPS,
 } from '@styles/transitions'
 import { approveToken } from '@/utils/approveToken'
 import SettingsSlideOver from './SettingsSlideOver'
@@ -252,7 +251,7 @@ const BridgeCard = ({
           <Transition show={displayType === 'from'} {...TRANSITION_PROPS}>
             <TokenSlideOver key="fromBlock" {...fromArgs} />{' '}
           </Transition>
-          <Transition show={displayType === 'to'} {...TRANSITION_PROPS}>
+          <Transition show={displayType === 'to'} {...TEST_TRANSITION_PROPS}>
             <TokenSlideOver key="toBlock" {...toArgs} />
           </Transition>
           <Transition show={displayType === 'fromChain'} {...TRANSITION_PROPS}>
