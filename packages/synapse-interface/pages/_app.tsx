@@ -34,6 +34,7 @@ import {
 import { alchemyProvider } from 'wagmi/providers/alchemy'
 import { publicProvider } from 'wagmi/providers/public'
 import * as CHAINS from '@constants/chains/master'
+
 import { SynapseProvider } from '@/utils/SynapseProvider'
 
 const App = ({ Component, pageProps }: AppProps) => {
