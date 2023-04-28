@@ -4,6 +4,8 @@ import { BigNumber } from '@ethersproject/bignumber'
 import { formatUnits } from '@ethersproject/units'
 import express from 'express'
 
+
+// To run locally you may need to add the "node --experimental-json-modules ./your-file.js" flag for the following jsons to be read
 import chains from './config/chains.json' assert { type: 'json' };
 import tokens from './config/tokens.json' assert { type: 'json' };
 
