@@ -9,6 +9,7 @@ import {DynamicTree, MerkleMath} from "../libs/MerkleTree.sol";
 import {Receipt, ReceiptBody, ReceiptLib} from "../libs/Receipt.sol";
 import {Snapshot, SnapshotLib} from "../libs/Snapshot.sol";
 import {AgentFlag, AgentStatus, DisputeFlag} from "../libs/Structures.sol";
+import {Tips} from "../libs/Tips.sol";
 // ═════════════════════════════ INTERNAL IMPORTS ══════════════════════════════
 import {AgentManager, IAgentManager, IAgentSecured} from "./AgentManager.sol";
 import {MessagingBase} from "../base/MessagingBase.sol";
@@ -108,8 +109,9 @@ contract BondingManager is AgentManager, BondingManagerEvents, InterfaceBondingM
         require(attNotaryStatus.domain == rcptBody.destination(), "Wrong attestation Notary domain");
         // Store Notary signature for the Receipt
         uint256 sigIndex = _saveSignature(rcptSignature);
-        wasAccepted =
-            InterfaceSummit(summit).acceptReceipt(rcptNotaryStatus, attNotaryStatus, sigIndex, rcptPayload, attNonce);
+        wasAccepted = InterfaceSummit(summit).acceptReceipt(
+            rcptNotaryStatus, attNotaryStatus, attNonce, sigIndex, Tips.unwrap(rcpt.tips()), rcptBody.unwrap().clone()
+        );
         if (wasAccepted) {
             emit ReceiptAccepted(rcptNotaryStatus.domain, notary, rcptPayload, rcptSignature);
         }

@@ -290,9 +290,10 @@ contract BondingManagerTest is AgentManagerTest {
                 InterfaceSummit.acceptReceipt.selector,
                 getAgentStatus(rcptNotary),
                 getAgentStatus(re.body.attNotary),
+                attNonce,
                 nextSignatureIndex(),
-                receiptPayload,
-                attNonce
+                re.tips.encodeTips(),
+                re.body.formatReceiptBody()
             )
         );
         bondingManager.submitReceipt(receiptPayload, receiptSig);

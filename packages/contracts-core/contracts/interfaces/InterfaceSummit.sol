@@ -14,21 +14,24 @@ interface InterfaceSummit {
      * - Notary who signed the attestation on destination chain is referenced as the "Attestation Notary".
      * > Will revert if any of these is true:
      * > - Called by anyone other than local `AgentManager`.
-     * > - Receipt payload is not properly formatted.
+     * > - Receipt body payload is not properly formatted.
      * > - Receipt signer is in Dispute.
      * > - Receipt's snapshot root is unknown.
      * @param rcptNotaryStatus  Structure specifying Receipt Notary status: (flag, domain, index)
      * @param attNotaryStatus   Structure specifying Attestation Notary status: (flag, domain, index)
+     * @param attNonce          Nonce of the attestation used for proving the executed message
      * @param sigIndex          Index of stored Notary signature
-     * @param rcptPayload       Raw payload with receipt data
+     * @param paddedTips        Padded encoded paid tips information
+     * @param rcptBodyPayload   Raw payload with receipt body
      * @return wasAccepted      Whether the receipt was accepted
      */
     function acceptReceipt(
         AgentStatus memory rcptNotaryStatus,
         AgentStatus memory attNotaryStatus,
+        uint32 attNonce,
         uint256 sigIndex,
-        bytes memory rcptPayload,
-        uint32 attNonce
+        uint256 paddedTips,
+        bytes memory rcptBodyPayload
     ) external returns (bool wasAccepted);
 
     /**

@@ -8,7 +8,7 @@ import {BONDING_OPTIMISTIC_PERIOD, SYNAPSE_DOMAIN} from "./libs/Constants.sol";
 import {Receipt, ReceiptBody, ReceiptLib} from "./libs/Receipt.sol";
 import {Snapshot, SnapshotLib} from "./libs/Snapshot.sol";
 import {AgentFlag, AgentStatus, DisputeFlag, MessageStatus} from "./libs/Structures.sol";
-import {Tips} from "./libs/Tips.sol";
+import {Tips, TipsLib} from "./libs/Tips.sol";
 // ═════════════════════════════ INTERNAL IMPORTS ══════════════════════════════
 import {AgentSecured} from "./base/AgentSecured.sol";
 import {SummitEvents} from "./events/SummitEvents.sol";
@@ -92,15 +92,15 @@ contract Summit is SnapshotHub, SummitEvents, InterfaceSummit {
     function acceptReceipt(
         AgentStatus memory rcptNotaryStatus,
         AgentStatus memory attNotaryStatus,
+        uint32 attNonce,
         uint256 sigIndex,
-        bytes memory rcptPayload,
-        uint32 attNonce
+        uint256 paddedTips,
+        bytes memory rcptBodyPayload
     ) external returns (bool wasAccepted) {
-        // This will revert if payload is not an receipt
-        Receipt rcpt = rcptPayload.castToReceipt();
+        // This will revert if payload is not an receipt body
         return _saveReceipt({
-            rcptBody: rcpt.body(),
-            tips: rcpt.tips(),
+            rcptBody: rcptBodyPayload.castToReceiptBody(),
+            tips: TipsLib.wrapPadded(paddedTips),
             rcptNotaryIndex: rcptNotaryStatus.index,
             attNotaryIndex: attNotaryStatus.index,
             sigIndex: sigIndex,
