@@ -89,7 +89,7 @@ app.get('/swap', async (req, res) => {
       `
       <h1>Invalid Params</h1>
       <hr/>
-      <b>Ensure that your request matches the following format: /swap?chain=1fromToken=USDC&toToken=DAI&amount=100</b>
+      <b>Ensure that your request matches the following format: /swap?chain=1&fromToken=USDC&toToken=DAI&amount=100</b>
       <h2>Available Tokens (symbols to use)</h2>
       ${tokenHtml}`)
     return
@@ -120,7 +120,7 @@ app.get('/swap', async (req, res) => {
       <h1>Invalid Request</h1>
       <code>${err}</code>
       <hr/>
-      <b>Ensure that your request matches the following format: /swap?chain=1fromToken=USDC&toToken=DAI&amount=100</b>
+      <b>Ensure that your request matches the following format: /swap?chain=1&fromToken=USDC&toToken=DAI&amount=100</b>
       <h2>Available Tokens (symbols to use)</h2>
       ${tokenHtml}`)
   })
