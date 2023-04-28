@@ -156,7 +156,7 @@ func NewExecutor(ctx context.Context, config config.Config, executorDB db.Execut
 		}
 
 		// chainRPCURL := fmt.Sprintf("%s/1/rpc/%d", config.BaseOmnirpcURL, chain.ChainID)
-		//
+
 		underlyingClient, err := ethergoChain.NewFromURL(ctx, chain.TempRPC)
 		if err != nil {
 			return nil, fmt.Errorf("could not get evm: %w", err)
@@ -282,8 +282,8 @@ func (e Executor) Execute(parentCtx context.Context, message types.Message) (_ b
 	destinationDomain := message.DestinationDomain()
 
 	ctx, span := e.handler.Tracer().Start(parentCtx, "Execute", trace.WithAttributes(
-		attribute.Int("originDomain", int(originDomain)),
-		attribute.Int("destinationDomain", int(destinationDomain)),
+		attribute.Int(metrics.Origin, int(originDomain)),
+		attribute.Int(metrics.Destination, int(destinationDomain)),
 	))
 
 	defer func() {
@@ -392,7 +392,7 @@ func (e Executor) Execute(parentCtx context.Context, message types.Message) (_ b
 			if err != nil {
 				timeout = b.Duration()
 				span.AddEvent("error when executing", trace.WithAttributes(
-					attribute.Int("chainID", int(message.DestinationDomain())),
+					attribute.Int(metrics.ChainID, int(message.DestinationDomain())),
 					attribute.String("error", err.Error()),
 					attribute.Float64("timeout", timeout.Seconds()),
 				))
@@ -464,7 +464,7 @@ func (e Executor) verifyStateMerkleProof(parentCtx context.Context, state types.
 
 	ctx, span := e.handler.Tracer().Start(parentCtx, "verifyStateMerkleProof", trace.WithAttributes(
 		attribute.String("root", root),
-		attribute.Int("chainID", int(chainID)),
+		attribute.Int(metrics.ChainID, int(chainID)),
 	))
 
 	defer func() {
@@ -508,9 +508,9 @@ func (e Executor) verifyMessageOptimisticPeriod(parentCtx context.Context, messa
 	nonce := message.Nonce()
 
 	ctx, span := e.handler.Tracer().Start(parentCtx, "verifyMessageOptimisticPeriod", trace.WithAttributes(
-		attribute.Int("originChainID", int(chainID)),
-		attribute.Int("destinationChainID", int(destinationDomain)),
-		attribute.Int("nonce", int(nonce)),
+		attribute.Int(metrics.Origin, int(chainID)),
+		attribute.Int(metrics.Destination, int(destinationDomain)),
+		attribute.Int(metrics.Nonce, int(nonce)),
 	))
 
 	defer func() {
@@ -609,11 +609,11 @@ func (e Executor) streamLogs(ctx context.Context, grpcClient pbscribe.ScribeServ
 		return fmt.Errorf("could not get last stored block: %w", err)
 	}
 
-	fromBlock := strconv.FormatUint(lastStoredBlock, 10)
+	fromBlock := strconv.FormatUint(lastStoredBlock, 16)
 
 	toBlock := "latest"
 	if toBlockNumber != nil {
-		toBlock = strconv.FormatUint(*toBlockNumber, 10)
+		toBlock = strconv.FormatUint(*toBlockNumber, 16)
 	}
 
 	stream, err := grpcClient.StreamLogs(ctx, &pbscribe.StreamLogsRequest{
@@ -683,9 +683,10 @@ func (e Executor) processLog(parentCtx context.Context, log ethTypes.Log, chainI
 	contractEvent := e.logType(log, chainID)
 
 	ctx, span := e.handler.Tracer().Start(parentCtx, "processLog", trace.WithAttributes(
-		attribute.Int("chainID", int(chainID)),
+		attribute.Int(metrics.ChainID, int(chainID)),
 		attribute.Int("contract", int(contractEvent.contractType)),
 		attribute.Int("event", int(contractEvent.eventType)),
+		attribute.String(metrics.TxHash, log.TxHash.String()),
 	))
 
 	defer func() {
@@ -749,10 +750,6 @@ func (e Executor) processLog(parentCtx context.Context, log ethTypes.Log, chainI
 			}
 
 			e.chainExecutors[chainID].executed[*messageLeaf] = true
-		case otherEvent:
-			logger.Warnf("the log's event type is not supported")
-		default:
-			return fmt.Errorf("log type not supported")
 		}
 	case summitContract:
 		//nolint:gocritic,exhaustive
@@ -780,7 +777,7 @@ func (e Executor) processLog(parentCtx context.Context, log ethTypes.Log, chainI
 			}
 		}
 	case other:
-		logger.Warnf("the log's event type is not supported")
+		span.AddEvent("other contract event")
 	default:
 		return fmt.Errorf("log type not supported")
 	}
@@ -836,9 +833,9 @@ func (e Executor) executeExecutable(parentCtx context.Context, chainID uint32) (
 				}
 
 				ctx, span := e.handler.Tracer().Start(parentCtx, "executeExecutable", trace.WithAttributes(
-					attribute.Int("chain_id", int(chainID)),
+					attribute.Int(metrics.ChainID, int(chainID)),
 					attribute.Int("num_messages", len(messages)),
-					attribute.Int("page", page),
+					attribute.Int(metrics.Page, page),
 				))
 
 				for _, message := range messages {
@@ -918,9 +915,9 @@ func (e Executor) setMinimumTime(parentCtx context.Context, chainID uint32) (err
 			}
 
 			ctx, span := e.handler.Tracer().Start(parentCtx, "setMinimumTime", trace.WithAttributes(
-				attribute.Int("chain_id", int(chainID)),
+				attribute.Int(metrics.ChainID, int(chainID)),
 				attribute.Int("num_unset_messages", len(unsetMessages)),
-				attribute.Int("page", page),
+				attribute.Int(metrics.Page, page),
 			))
 
 			for _, message := range unsetMessages {

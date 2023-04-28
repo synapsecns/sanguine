@@ -1,0 +1,44 @@
+name: UI Cypress Integration Tests
+
+on:
+  push:
+    paths:
+      - 'packages/synapse-interface/**'
+      - '.github/workflows/cypress.yaml'
+  pull_request:
+    paths:
+      - 'packages/synapse-interface/**'
+      - '.github/workflows/cypress.yaml'
+
+jobs:
+  cancel-outdated:
+    name: Cancel Outdated Jobs
+    runs-on: ubuntu-latest
+    steps:
+      - id: skip_check
+        if: ${{ format('refs/heads/{0}', github.event.repository.default_branch) != github.ref && !contains(github.event.head_commit.message, '[no_skip]') }}
+        uses: fkirc/skip-duplicate-actions@v5
+        with:
+          cancel_others: 'true'
+
+  cypress-integration-tests:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - name: Setup NodeJS
+        uses: ./.github/actions/setup-nodejs
+
+      - name: Install dependencies
+        run: yarn install
+        working-directory: './packages/synapse-interface'
+
+      - name: Install sdk-router
+        run: yarn install
+        working-directory: './packages/sdk-router'
+
+      - name: Run Cypress tests
+        run: yarn cypress:run
+        working-directory: './packages/synapse-interface'

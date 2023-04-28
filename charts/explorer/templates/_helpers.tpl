@@ -36,11 +36,20 @@ Common labels
 {{- define "explorer.labels" -}}
 helm.sh/chart: {{ include "explorer.chart" . }}
 {{ include "explorer.selectorLabels" . }}
+{{ include "explorer.commonLabels" . }}
 {{- if .Chart.AppVersion }}
 app.kubernetes.io/version: {{ .Chart.AppVersion | quote }}
 {{- end }}
 app.kubernetes.io/managed-by: {{ .Release.Service }}
 {{- end }}
+
+
+{{- define "explorer.commonLabels" -}}
+{{- range $key, $value := .Values.labels }}
+{{ $key }}: {{ $value | quote }}
+{{- end }}
+{{- end }}
+
 
 {{/*
 Selector labels

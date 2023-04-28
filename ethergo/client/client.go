@@ -51,28 +51,28 @@ type EVM interface {
 }
 
 type clientImpl struct {
-	w3        *w3.Client
-	tracing   metrics.Handler
-	ethClient *ethclient.Client
-	rpcClient *rpc.Client
-	endpoint  string
+	tracing           metrics.Handler
+	captureClient     *captureClient
+	rpcClient         *rpc.Client
+	endpoint          string
+	captureRequestRes bool
+	// TODO: consider using sync.Pool for capture clients to improve performance
 }
 
 // DialBackend returns a scribe backend.
-func DialBackend(ctx context.Context, url string, handler metrics.Handler) (EVM, error) {
-	c, err := metrics.RPCClient(ctx, handler, url)
-
-	if err != nil {
-		return nil, fmt.Errorf("failed to create rpc client: %w", err)
-	}
-	res := ethclient.NewClient(c)
-	w3Client := w3.NewClient(c)
-
+func DialBackend(ctx context.Context, url string, handler metrics.Handler, opts ...Options) (_ EVM, err error) {
 	client := &clientImpl{
-		ethClient: res,
-		w3:        w3Client,
-		endpoint:  url,
-		tracing:   handler,
+		endpoint: url,
+		tracing:  handler,
+	}
+
+	for _, opt := range opts {
+		opt(client)
+	}
+
+	client.captureClient, err = newCaptureClient(ctx, url, handler, client.captureRequestRes)
+	if err != nil {
+		return nil, fmt.Errorf("could not create capture client: %w", err)
 	}
 
 	return client, nil
@@ -84,7 +84,15 @@ const (
 	endpointAttribute = "endpoint"
 )
 
-// Batch batches multiple w3 calls.
+func (c *clientImpl) getEthClient() *ethclient.Client {
+	return c.captureClient.ethClient
+}
+
+func (c *clientImpl) getW3Client() *w3.Client {
+	return c.captureClient.w3Client
+}
+
+// BatchWithContext batches multiple w3 calls.
 func (c *clientImpl) BatchWithContext(ctx context.Context, calls ...w3types.Caller) (err error) {
 	ctx, span := c.tracing.Tracer().Start(ctx, batchAttribute)
 	span.SetAttributes(parseCalls(calls))
@@ -94,7 +102,7 @@ func (c *clientImpl) BatchWithContext(ctx context.Context, calls ...w3types.Call
 		metrics.EndSpanWithErr(span, err)
 	}()
 	//nolint: wrapcheck
-	return c.w3.CallCtx(ctx, calls...)
+	return c.getW3Client().CallCtx(ctx, calls...)
 }
 
 // BatchCallContext calls BatchCallContext on the underlying client. Note: this will bypass the rate-limiter.
@@ -115,6 +123,7 @@ func (c *clientImpl) BatchCallContext(ctx context.Context, b []rpc.BatchElem) (e
 func (c *clientImpl) startSpan(parentCtx context.Context, method RPCMethod) (context.Context, trace.Span) {
 	ctx, span := c.tracing.Tracer().Start(parentCtx, method.String())
 	span.SetAttributes(attribute.String("endpoint", c.endpoint))
+
 	return ctx, span
 }
 
@@ -127,7 +136,7 @@ func (c *clientImpl) CallContract(ctx context.Context, call ethereum.CallMsg, bl
 		metrics.EndSpanWithErr(span, err)
 	}()
 
-	return c.ethClient.CallContract(requestCtx, call, blockNumber)
+	return c.getEthClient().CallContract(requestCtx, call, blockNumber)
 }
 
 // PendingCallContract calls contract on the underlying client
@@ -139,7 +148,7 @@ func (c *clientImpl) PendingCallContract(ctx context.Context, call ethereum.Call
 		metrics.EndSpanWithErr(span, err)
 	}()
 
-	return c.ethClient.PendingCallContract(requestCtx, call)
+	return c.getEthClient().PendingCallContract(requestCtx, call)
 }
 
 // PendingCodeAt calls PendingCodeAt on the underlying client
@@ -151,7 +160,7 @@ func (c *clientImpl) PendingCodeAt(ctx context.Context, account common.Address) 
 		metrics.EndSpanWithErr(span, err)
 	}()
 
-	return c.ethClient.PendingCodeAt(requestCtx, account)
+	return c.getEthClient().PendingCodeAt(requestCtx, account)
 }
 
 // PendingBalanceAt calls PendingBalanceAt on the underlying client
@@ -163,7 +172,7 @@ func (c *clientImpl) PendingBalanceAt(ctx context.Context, account common.Addres
 		metrics.EndSpanWithErr(span, err)
 	}()
 
-	return c.ethClient.PendingBalanceAt(requestCtx, account)
+	return c.getEthClient().PendingBalanceAt(requestCtx, account)
 }
 
 // PendingStorageAt calls PendingStorageAt on the underlying client
@@ -175,7 +184,7 @@ func (c *clientImpl) PendingStorageAt(ctx context.Context, account common.Addres
 		metrics.EndSpanWithErr(span, err)
 	}()
 
-	return c.ethClient.PendingStorageAt(requestCtx, account, key)
+	return c.getEthClient().PendingStorageAt(requestCtx, account, key)
 }
 
 // PendingNonceAt calls PendingNonceAt on the underlying client
@@ -187,7 +196,7 @@ func (c *clientImpl) PendingNonceAt(ctx context.Context, account common.Address)
 		metrics.EndSpanWithErr(span, err)
 	}()
 
-	return c.ethClient.PendingNonceAt(requestCtx, account)
+	return c.getEthClient().PendingNonceAt(requestCtx, account)
 }
 
 // PendingTransactionCount calls PendingTransactionCount on the underlying client
@@ -199,7 +208,7 @@ func (c *clientImpl) PendingTransactionCount(ctx context.Context) (count uint, e
 		metrics.EndSpanWithErr(span, err)
 	}()
 
-	return c.ethClient.PendingTransactionCount(requestCtx)
+	return c.getEthClient().PendingTransactionCount(requestCtx)
 }
 
 // NetworkID calls NetworkID on the underlying client
@@ -211,7 +220,7 @@ func (c *clientImpl) NetworkID(ctx context.Context) (id *big.Int, err error) {
 		metrics.EndSpanWithErr(span, err)
 	}()
 
-	return c.ethClient.NetworkID(requestCtx)
+	return c.getEthClient().NetworkID(requestCtx)
 }
 
 // SyncProgress calls SyncProgress on the underlying client
@@ -222,7 +231,7 @@ func (c *clientImpl) SyncProgress(ctx context.Context) (syncProgress *ethereum.S
 	defer func() {
 		metrics.EndSpanWithErr(span, err)
 	}()
-	return c.ethClient.SyncProgress(requestCtx)
+	return c.getEthClient().SyncProgress(requestCtx)
 }
 
 // SuggestGasPrice calls SuggestGasPrice on the underlying client
@@ -234,7 +243,7 @@ func (c *clientImpl) SuggestGasPrice(ctx context.Context) (gasPrice *big.Int, er
 		metrics.EndSpanWithErr(span, err)
 	}()
 
-	return c.ethClient.SuggestGasPrice(requestCtx)
+	return c.getEthClient().SuggestGasPrice(requestCtx)
 }
 
 // EstimateGas calls EstimateGas on the underlying client
@@ -246,7 +255,7 @@ func (c *clientImpl) EstimateGas(ctx context.Context, call ethereum.CallMsg) (ga
 		metrics.EndSpanWithErr(span, err)
 	}()
 
-	return c.ethClient.EstimateGas(requestCtx, call)
+	return c.getEthClient().EstimateGas(requestCtx, call)
 }
 
 // SendTransaction calls SendTransaction on the underlying client
@@ -258,7 +267,7 @@ func (c *clientImpl) SendTransaction(ctx context.Context, tx *types.Transaction)
 		metrics.EndSpanWithErr(span, err)
 	}()
 
-	return c.ethClient.SendTransaction(requestCtx, tx)
+	return c.getEthClient().SendTransaction(requestCtx, tx)
 }
 
 // FilterLogs calls FilterLogs on the underlying client
@@ -270,7 +279,7 @@ func (c *clientImpl) FilterLogs(ctx context.Context, query ethereum.FilterQuery)
 		metrics.EndSpanWithErr(span, err)
 	}()
 
-	return c.ethClient.FilterLogs(requestCtx, query)
+	return c.getEthClient().FilterLogs(requestCtx, query)
 }
 
 // SubscribeFilterLogs calls SubscribeFilterLogs on the underlying client
@@ -281,7 +290,7 @@ func (c *clientImpl) SubscribeFilterLogs(ctx context.Context, query ethereum.Fil
 	defer func() {
 		metrics.EndSpanWithErr(span, err)
 	}()
-	return c.ethClient.SubscribeFilterLogs(requestCtx, query, ch)
+	return c.getEthClient().SubscribeFilterLogs(requestCtx, query, ch)
 }
 
 // BlockByHash calls BlockByHash on the underlying client
@@ -293,7 +302,7 @@ func (c *clientImpl) BlockByHash(ctx context.Context, hash common.Hash) (block *
 		metrics.EndSpanWithErr(span, err)
 	}()
 
-	return c.ethClient.BlockByHash(requestCtx, hash)
+	return c.getEthClient().BlockByHash(requestCtx, hash)
 }
 
 // BlockByNumber calls BlockByNumber on the underlying client
@@ -305,7 +314,7 @@ func (c *clientImpl) BlockByNumber(ctx context.Context, number *big.Int) (block 
 		metrics.EndSpanWithErr(span, err)
 	}()
 
-	return c.ethClient.BlockByNumber(requestCtx, number)
+	return c.getEthClient().BlockByNumber(requestCtx, number)
 }
 
 // HeaderByHash calls HeaderByHash on the underlying client
@@ -317,7 +326,7 @@ func (c *clientImpl) HeaderByHash(ctx context.Context, hash common.Hash) (header
 		metrics.EndSpanWithErr(span, err)
 	}()
 
-	return c.ethClient.HeaderByHash(requestCtx, hash)
+	return c.getEthClient().HeaderByHash(requestCtx, hash)
 }
 
 // HeaderByNumber calls HeaderByNumber on the underlying client
@@ -329,7 +338,7 @@ func (c *clientImpl) HeaderByNumber(ctx context.Context, number *big.Int) (heade
 		metrics.EndSpanWithErr(span, err)
 	}()
 
-	return c.ethClient.HeaderByNumber(requestCtx, number)
+	return c.getEthClient().HeaderByNumber(requestCtx, number)
 }
 
 // TransactionCount calls TransactionCount on the underlying client
@@ -341,7 +350,7 @@ func (c *clientImpl) TransactionCount(ctx context.Context, blockHash common.Hash
 		metrics.EndSpanWithErr(span, err)
 	}()
 
-	return c.ethClient.TransactionCount(requestCtx, blockHash)
+	return c.getEthClient().TransactionCount(requestCtx, blockHash)
 }
 
 // TransactionInBlock calls TransactionInBlock on the underlying client
@@ -353,7 +362,7 @@ func (c *clientImpl) TransactionInBlock(ctx context.Context, blockHash common.Ha
 		metrics.EndSpanWithErr(span, err)
 	}()
 
-	return c.ethClient.TransactionInBlock(requestCtx, blockHash, index)
+	return c.getEthClient().TransactionInBlock(requestCtx, blockHash, index)
 }
 
 // SubscribeNewHead calls SubscribeNewHead on the underlying client
@@ -365,7 +374,7 @@ func (c *clientImpl) SubscribeNewHead(ctx context.Context, ch chan<- *types.Head
 		metrics.EndSpanWithErr(span, err)
 	}()
 
-	return c.ethClient.SubscribeNewHead(requestCtx, ch)
+	return c.getEthClient().SubscribeNewHead(requestCtx, ch)
 }
 
 // TransactionByHash calls TransactionByHash on the underlying client
@@ -377,7 +386,7 @@ func (c *clientImpl) TransactionByHash(ctx context.Context, txHash common.Hash) 
 		metrics.EndSpanWithErr(span, err)
 	}()
 
-	return c.ethClient.TransactionByHash(requestCtx, txHash)
+	return c.getEthClient().TransactionByHash(requestCtx, txHash)
 }
 
 // TransactionReceipt calls TransactionReceipt on the underlying client
@@ -389,7 +398,7 @@ func (c *clientImpl) TransactionReceipt(ctx context.Context, txHash common.Hash)
 		metrics.EndSpanWithErr(span, err)
 	}()
 
-	return c.ethClient.TransactionReceipt(requestCtx, txHash)
+	return c.getEthClient().TransactionReceipt(requestCtx, txHash)
 }
 
 // BalanceAt calls BalanceAt on the underlying client
@@ -401,7 +410,7 @@ func (c *clientImpl) BalanceAt(ctx context.Context, account common.Address, bloc
 		metrics.EndSpanWithErr(span, err)
 	}()
 
-	return c.ethClient.BalanceAt(requestCtx, account, blockNumber)
+	return c.getEthClient().BalanceAt(requestCtx, account, blockNumber)
 }
 
 // StorageAt calls StorageAt on the underlying client
@@ -413,7 +422,7 @@ func (c *clientImpl) StorageAt(ctx context.Context, account common.Address, key 
 		metrics.EndSpanWithErr(span, err)
 	}()
 
-	return c.ethClient.StorageAt(requestCtx, account, key, blockNumber)
+	return c.getEthClient().StorageAt(requestCtx, account, key, blockNumber)
 }
 
 // BlockNumber gets the latest block number
@@ -425,7 +434,7 @@ func (c *clientImpl) BlockNumber(ctx context.Context) (_ uint64, err error) {
 		metrics.EndSpanWithErr(span, err)
 	}()
 
-	return c.ethClient.BlockNumber(requestCtx)
+	return c.getEthClient().BlockNumber(requestCtx)
 }
 
 // CodeAt calls CodeAt on the underlying client
@@ -437,7 +446,7 @@ func (c *clientImpl) CodeAt(ctx context.Context, account common.Address, blockNu
 		metrics.EndSpanWithErr(span, err)
 	}()
 
-	return c.ethClient.CodeAt(requestCtx, account, blockNumber)
+	return c.getEthClient().CodeAt(requestCtx, account, blockNumber)
 }
 
 // SuggestGasTipCap gets the suggested gas tip for a chain.
@@ -449,7 +458,7 @@ func (c *clientImpl) SuggestGasTipCap(ctx context.Context) (tip *big.Int, err er
 		metrics.EndSpanWithErr(span, err)
 	}()
 
-	return c.ethClient.SuggestGasTipCap(requestCtx)
+	return c.getEthClient().SuggestGasTipCap(requestCtx)
 }
 
 // CallContext calls CallContext on the underlying client. Note: this will bypass the rate-limiter.
@@ -472,7 +481,7 @@ func (c *clientImpl) NonceAt(ctx context.Context, account common.Address, blockN
 	defer func() {
 		metrics.EndSpanWithErr(span, err)
 	}()
-	return c.ethClient.NonceAt(requestCtx, account, blockNumber)
+	return c.getEthClient().NonceAt(requestCtx, account, blockNumber)
 }
 
 // ChainID calls ChainID on the underlying client.
@@ -484,7 +493,7 @@ func (c *clientImpl) ChainID(ctx context.Context) (chainID *big.Int, err error) 
 		metrics.EndSpanWithErr(span, err)
 	}()
 
-	return c.ethClient.ChainID(requestCtx)
+	return c.getEthClient().ChainID(requestCtx)
 }
 
 // FeeHistory calls FeeHistory on the underlying client
@@ -496,7 +505,7 @@ func (c *clientImpl) FeeHistory(ctx context.Context, blockCount uint64, lastBloc
 		metrics.EndSpanWithErr(span, err)
 	}()
 
-	return c.ethClient.FeeHistory(requestCtx, blockCount, lastBlock, rewardPercentiles)
+	return c.getEthClient().FeeHistory(requestCtx, blockCount, lastBlock, rewardPercentiles)
 }
 
 // parseCalls parses out calls from w3types.Caller.

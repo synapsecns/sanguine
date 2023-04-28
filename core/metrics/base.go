@@ -41,8 +41,9 @@ func (b *baseHandler) Propagator() propagation.TextMapPropagator {
 	return b.propagator
 }
 
-func (b *baseHandler) ConfigureHTTPClient(client *http.Client) {
-	client.Transport = otelhttp.NewTransport(client.Transport, otelhttp.WithTracerProvider(b.tp), otelhttp.WithPropagators(b.propagator))
+func (b *baseHandler) ConfigureHTTPClient(client *http.Client, opts ...otelhttp.Option) {
+	opts = append([]otelhttp.Option{otelhttp.WithTracerProvider(b.tp), otelhttp.WithPropagators(b.propagator)}, opts...)
+	client.Transport = otelhttp.NewTransport(client.Transport, opts...)
 }
 
 func (b *baseHandler) AddGormCallbacks(db *gorm.DB) {
@@ -59,6 +60,10 @@ func (b *baseHandler) GetTracerProvider() trace.TracerProvider {
 // Tracer returns the tracer provider.
 func (b *baseHandler) Tracer() trace.Tracer {
 	return b.tracer
+}
+
+func (b *baseHandler) Type() HandlerType {
+	panic("must be overridden by children")
 }
 
 // newBaseHandler creates a new baseHandler for otel.
@@ -86,13 +91,19 @@ func newBaseHandler(buildInfo config.BuildInfo, extraOpts ...tracesdk.TracerProv
 	// will do nothing if not enabled.
 	StartPyroscope(buildInfo)
 
-	// default tracer for server
-	tracer := tp.Tracer(buildInfo.Name())
 	propagator := b3.New(b3.WithInjectEncoding(b3.B3MultipleHeader | b3.B3SingleHeader))
+	return newBaseHandlerWithTracerProvider(buildInfo, tp, propagator)
+}
+
+// newBaseHandlerWithTracerProvider creates a new baseHandler for any opentelemtry tracer.
+func newBaseHandlerWithTracerProvider(buildInfo config.BuildInfo, tracerProvider trace.TracerProvider, propagator propagation.TextMapPropagator) *baseHandler {
+	// default tracer for server
+	otel.SetTracerProvider(tracerProvider)
+	tracer := tracerProvider.Tracer(buildInfo.Name())
 	otel.SetTextMapPropagator(propagator)
 
 	return &baseHandler{
-		tp:         tp,
+		tp:         tracerProvider,
 		tracer:     tracer,
 		name:       buildInfo.Name(),
 		propagator: propagator,
