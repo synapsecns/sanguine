@@ -22,7 +22,7 @@ enum FooterType {
   URL = 'url',
 }
 
-type FooterDataProps = {
+interface FooterDataProps {
   text: string
   type: string | null
   url: string | null
