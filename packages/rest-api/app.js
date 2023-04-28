@@ -53,7 +53,7 @@ app.get('/swap', async (req, res) => {
   // Symbols
   const fromTokenSymbol = query.fromToken
   const toTokenSymbol = query.toToken
-  console.log("SYMBOLS", chainId, fromTokenSymbol, toTokenSymbol)
+
   // Get Token Addresses
   const fromTokenAddress = tokens[fromTokenSymbol]?.addresses?.[chainId]
   const toTokenAddress = tokens[toTokenSymbol]?.addresses?.[chainId]
@@ -61,8 +61,6 @@ app.get('/swap', async (req, res) => {
   // Get Token Decimals
   const fromTokenDecimals = tokens[fromTokenSymbol]?.decimals?.[chainId]
   const toTokenDecimals = tokens[fromTokenSymbol]?.decimals?.[chainId]
-
-  console.log("SYMBOLsssS", fromTokenAddress, toTokenAddress, fromTokenDecimals, toTokenDecimals)
 
   // Handle invalid params (either token symbols or chainIDs)
   // TODO: add error handling for missing params
@@ -78,10 +76,6 @@ app.get('/swap', async (req, res) => {
   }
 
   // Handle amount
-  console.log("QUERY", query.amount)
-  console.log("QUERY", BigNumber.from(query.amount))
-  console.log("QUERY", BigNumber.from(query.amount).mul(TEN.pow(fromTokenDecimals)))
-
   const amount = BigNumber.from(query.amount).mul(TEN.pow(fromTokenDecimals))
 
   // Send request w/Synapse SDK
