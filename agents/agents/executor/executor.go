@@ -716,18 +716,18 @@ func (e Executor) processLog(parentCtx context.Context, log ethTypes.Log, chainI
 			return nil
 		}
 
-		//merkleIndex := e.chainExecutors[chainID].merkleTree.NumOfItems()
-		//leaf, err := (*message).ToLeaf()
-		//if err != nil {
-		//	return fmt.Errorf("could not convert message to leaf: %w", err)
-		//}
+		merkleIndex := e.chainExecutors[chainID].merkleTree.NumOfItems()
+		leaf, err := (*message).ToLeaf()
+		if err != nil {
+			return fmt.Errorf("could not convert message to leaf: %w", err)
+		}
 
 		// Make sure the nonce of the message is being inserted at the right index.
-		//if merkleIndex+1 != (*message).Nonce() {
-		//	return fmt.Errorf("nonce of message is not equal to the merkle index: %d != %d", (*message).Nonce(), merkleIndex+1)
-		//}
+		if merkleIndex+1 != (*message).Nonce() {
+			return fmt.Errorf("nonce of message is not equal to the merkle index: %d != %d", (*message).Nonce(), merkleIndex+1)
+		}
 
-		//e.chainExecutors[chainID].merkleTree.Insert(leaf[:])
+		e.chainExecutors[chainID].merkleTree.Insert(leaf[:])
 
 		err = e.executorDB.StoreMessage(ctx, *message, log.BlockNumber, false, 0)
 		if err != nil {
