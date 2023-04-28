@@ -28,7 +28,7 @@ type FooterDataProps = {
   url: string | null
 }
 
-const functions: FooterDataProps[] = [
+const functionsList: FooterDataProps[] = [
   {
     text: 'Functions',
     type: null,
@@ -56,7 +56,7 @@ const functions: FooterDataProps[] = [
   },
 ]
 
-const developers: FooterDataProps[] = [
+const developersList: FooterDataProps[] = [
   {
     text: 'Developers',
     type: null,
@@ -84,7 +84,7 @@ const developers: FooterDataProps[] = [
   },
 ]
 
-const support: FooterDataProps[] = [
+const supportList: FooterDataProps[] = [
   {
     text: 'Support',
     type: null,
@@ -124,9 +124,9 @@ export function PageFooter() {
           <div className="items-center hidden col-span-3 lg:flex">
             <SynapseTitleLogo showText={true} />
           </div>
-          <FooterBlock elements={functions} />
-          <FooterBlock elements={developers} />
-          <FooterBlock elements={support} />
+          <FooterBlock elements={functionsList} />
+          <FooterBlock elements={developersList} />
+          <FooterBlock elements={supportList} />
         </Grid>
       </div>
       <div className="text-white pb-[70px] flex direction-row justify-center align-middle">
