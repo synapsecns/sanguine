@@ -4,7 +4,7 @@
   "main": "app.js",
   "scripts": {
     "test": "echo No tests implemented yet",
-    "start": " node --experimental-json-modules app.js",
+    "start": " node app.js",
     "test:coverage": "echo 'No tests defined.'",
     "lint:fix": "npm run lint -- --fix",
     "lint:check": "eslint . --max-warnings=0",
