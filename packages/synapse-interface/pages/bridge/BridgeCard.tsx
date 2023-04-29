@@ -16,11 +16,7 @@ import { ChainSlideOver } from '@/components/misc/ChainSlideOver'
 import { BigNumber } from '@ethersproject/bignumber'
 import { Zero, MaxInt256 } from '@ethersproject/constants'
 import { formatBNToString } from '@bignumber/format'
-import {
-  SECTION_TRANSITION_PROPS,
-  TRANSITION_PROPS,
-  TEST_TRANSITION_PROPS,
-} from '@styles/transitions'
+import { SECTION_TRANSITION_PROPS, TRANSITION_PROPS } from '@styles/transitions'
 import { approveToken } from '@/utils/approveToken'
 import SettingsSlideOver from './SettingsSlideOver'
 import { DestinationAddressInput } from '../../components/input/DestinationAddressInput'
