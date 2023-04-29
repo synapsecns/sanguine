@@ -51,11 +51,11 @@ spec:
             {{- toYaml .Values.securityContext | nindent 12 }}
           image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
           imagePullPolicy: {{ .Values.image.pullPolicy }}
-          {{- with .Values.indexer.args }}
+          {{- with .Values.server.args }}
           args:
             {{- tpl (toYaml .) $ | nindent 12 }}
           {{- end }}
-          {{- with .Values.indexer.ports }}
+          {{- with .Values.server.ports }}
           ports:
             {{- toYaml . | nindent 12 }}
           {{- end }}
