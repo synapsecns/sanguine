@@ -247,7 +247,7 @@ const BridgeCard = ({
         divider={false}
         className="max-w-lg px-1 pb-0 mb-3 transition-all duration-100 transform rounded-xl bg-bgBase md:px-6 lg:px-6"
       >
-        <React.Fragment>
+        <div>
           <Transition show={displayType === 'from'} {...TRANSITION_PROPS}>
             <TokenSlideOver key="fromBlock" {...fromArgs} />{' '}
           </Transition>
@@ -302,7 +302,7 @@ const BridgeCard = ({
             }
             {...COIN_SLIDE_OVER_PROPS}
           ></Transition>
-        </React.Fragment>
+        </div>
       </Card>
     </>
   )

@@ -103,7 +103,7 @@ export const TokenSlideOver = ({
 
   useEffect(() => {
     const node = componentRef.current
-    const top = node.offsetTop + 150
+    const top = node.offsetTop + 100
     window.scrollTo({
       top: top,
       behavior: 'smooth',
