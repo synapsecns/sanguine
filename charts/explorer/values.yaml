@@ -174,7 +174,7 @@ server:
     - server
     - '--port=80'
     - '--scribe-url=https://scribe.interoperability.institute/graphql'
-    - '--address=tcp://default:clickhouse@${POD_NAMESPACE}-clickhouse:9000'
+    - '--address=tcp://default:clickhouse@{{ .Release.Namespace }}-clickhouse:9000'
   ports:
     - name: http
       containerPort: 5080
