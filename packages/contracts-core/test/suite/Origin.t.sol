@@ -28,7 +28,7 @@ import {
     RawStateReport,
     RawTips
 } from "../utils/libs/SynapseStructs.t.sol";
-import {AgentFlag, SynapseTest} from "../utils/SynapseTest.t.sol";
+import {AgentFlag, Origin, SynapseTest} from "../utils/SynapseTest.t.sol";
 import {AgentSecuredTest} from "./base/AgentSecured.t.sol";
 
 // solhint-disable func-name-mixedcase
@@ -55,6 +55,17 @@ contract OriginTest is AgentSecuredTest {
         }
         // Check version
         assertEq(Versioned(origin).version(), LATEST_VERSION, "!version");
+    }
+
+    function test_initializer(address caller, uint32 domain, address agentManager_, address gasOracle_) public {
+        Origin origin_ = new Origin(domain, agentManager_, gasOracle_);
+        vm.prank(caller);
+        origin_.initialize();
+        assertEq(origin_.owner(), caller, "!owner");
+        assertEq(origin_.localDomain(), domain, "!localDomain");
+        assertEq(origin_.agentManager(), agentManager_, "!agentManager");
+        assertEq(origin_.gasOracle(), gasOracle_, "!gasOracle");
+        assertEq(origin_.statesAmount(), 1, "!statesAmount");
     }
 
     function test_sendMessages() public {
