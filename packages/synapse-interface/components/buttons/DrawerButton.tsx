@@ -31,7 +31,7 @@ export const DrawerButton = ({
       <ChevronUpIcon
         className={`
         inline w-6 text-white transition-all ease-in
-        duration-50 transform-gpu group-hover:opacity-50
+        duration-75 transform-gpu group-hover:opacity-50
         group-active:-rotate-180
         `}
       />

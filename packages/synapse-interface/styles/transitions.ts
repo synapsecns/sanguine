@@ -19,6 +19,7 @@ export const COIN_SLIDE_OVER_PROPS: TransitionClassesProps = {
   unmount: true,
   enter: 'duration-200 transition ease-out',
   enterFrom: 'transform-gpu transform-y-200 opacity-20',
+  entered: 'h-100',
   enterTo: 'transform-gpu transform-y-0 opacity-100',
   leave: 'duration-150 transition ease-out',
   leaveFrom: 'transform-gpu transform-y-0 opacity-100',
@@ -51,7 +52,7 @@ export const TRANSITION_PROPS: TransitionClassesProps = {
   className: `
     origin-top absolute
     transition-all
-    w-full h-full
+    w-full
     md:w-[95%] md:h-[95%]
     -ml-0 md:-ml-3
     md:mt-3
