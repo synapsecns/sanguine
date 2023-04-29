@@ -748,28 +748,7 @@ func (e Executor) processLog(parentCtx context.Context, log ethTypes.Log, chainI
 			return fmt.Errorf("could not store message: %w", err)
 		}
 	case destinationContract:
-		//nolint:exhaustive
-		switch contractEvent.eventType {
-		case attestationAcceptedEvent:
-			attestation, err := e.logToAttestation(log, chainID)
-			if err != nil {
-				return fmt.Errorf("could not convert log to attestation: %w", err)
-			}
-
-			if attestation == nil {
-				return nil
-			}
-
-			logHeader, err := e.chainExecutors[chainID].rpcClient.HeaderByNumber(ctx, big.NewInt(int64(log.BlockNumber)))
-			if err != nil {
-				return fmt.Errorf("could not get log header: %w", err)
-			}
-
-			err = e.executorDB.StoreAttestation(ctx, *attestation, chainID, log.BlockNumber, logHeader.Time)
-			if err != nil {
-				return fmt.Errorf("could not store attestation: %w", err)
-			}
-		case executedEvent:
+		if contractEvent.eventType == executedEvent {
 			originDomain, messageLeaf, ok := e.chainExecutors[chainID].destinationParser.ParseExecuted(log)
 			if !ok || originDomain == nil || messageLeaf == nil {
 				return fmt.Errorf("could not parse executed event")
@@ -778,9 +757,7 @@ func (e Executor) processLog(parentCtx context.Context, log ethTypes.Log, chainI
 			e.chainExecutors[chainID].executed[*messageLeaf] = true
 		}
 	case bondingManagerContract:
-		//nolint:gocritic,exhaustive
-		switch contractEvent.eventType {
-		case snapshotAcceptedEvent:
+		if contractEvent.eventType == snapshotAcceptedEvent {
 			snapshot, err := e.logToSnapshot(log, chainID)
 			if err != nil {
 				return fmt.Errorf("could not convert log to snapshot: %w", err)
@@ -798,6 +775,27 @@ func (e Executor) processLog(parentCtx context.Context, log ethTypes.Log, chainI
 			err = e.executorDB.StoreStates(ctx, (*snapshot).States(), snapshotRoot, proofs)
 			if err != nil {
 				return fmt.Errorf("could not store states: %w", err)
+			}
+		}
+	case lightManagerContract:
+		if contractEvent.eventType == attestationAcceptedEvent {
+			attestation, err := e.logToAttestation(log, chainID)
+			if err != nil {
+				return fmt.Errorf("could not convert log to attestation: %w", err)
+			}
+
+			if attestation == nil {
+				return nil
+			}
+
+			logHeader, err := e.chainExecutors[chainID].rpcClient.HeaderByNumber(ctx, big.NewInt(int64(log.BlockNumber)))
+			if err != nil {
+				return fmt.Errorf("could not get log header: %w", err)
+			}
+
+			err = e.executorDB.StoreAttestation(ctx, *attestation, chainID, log.BlockNumber, logHeader.Time)
+			if err != nil {
+				return fmt.Errorf("could not store attestation: %w", err)
 			}
 		}
 	case other:
