@@ -58,7 +58,6 @@ contract OriginTest is AgentSecuredTest {
     }
 
     function test_sendMessages() public {
-        uint256 encodedTips = tips.encodeTips();
         uint160 encodedRequest = request.encodeRequest();
         bytes memory content = "test content";
         bytes memory body = RawBaseMessage({
@@ -100,7 +99,7 @@ contract OriginTest is AgentSecuredTest {
         for (uint32 i = 0; i < MESSAGES; ++i) {
             vm.prank(sender);
             (uint32 messageNonce, bytes32 messageHash) = InterfaceOrigin(origin).sendBaseMessage(
-                DOMAIN_REMOTE, addressToBytes32(recipient), period, encodedTips, encodedRequest, content
+                DOMAIN_REMOTE, addressToBytes32(recipient), period, encodedRequest, content
             );
             // Check return values
             assertEq(messageNonce, i + 1, "!messageNonce");
