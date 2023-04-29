@@ -56,7 +56,7 @@ jobs:
       - name: Chart | Push
         uses: appany/helm-oci-chart-releaser@v0.3.0
         with:
-          name: agents
+          name: scribe
           repository: synapsecns/sanguine/scribe
           # note: this must be manually updated for the workaround
           tag: 0.2.5
