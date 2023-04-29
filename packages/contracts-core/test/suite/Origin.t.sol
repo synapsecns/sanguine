@@ -2,6 +2,7 @@
 pragma solidity 0.8.17;
 
 import {IAgentSecured} from "../../contracts/interfaces/IAgentSecured.sol";
+import {InterfaceGasOracle} from "../../contracts/interfaces/InterfaceGasOracle.sol";
 import {IStateHub} from "../../contracts/interfaces/IStateHub.sol";
 import {SNAPSHOT_MAX_STATES} from "../../contracts/libs/Constants.sol";
 import {SystemEntity} from "../../contracts/libs/Structures.sol";
@@ -11,6 +12,7 @@ import {InterfaceOrigin} from "../../contracts/Origin.sol";
 import {Versioned} from "../../contracts/base/Version.sol";
 
 import {RevertingApp} from "../harnesses/client/RevertingApp.t.sol";
+import {BaseMock, GasOracleMock} from "../mocks/GasOracleMock.t.sol";
 
 import {fakeState, fakeSnapshot} from "../utils/libs/FakeIt.t.sol";
 import {Random} from "../utils/libs/Random.t.sol";
@@ -66,6 +68,42 @@ contract OriginTest is AgentSecuredTest {
         assertEq(origin_.agentManager(), agentManager_, "!agentManager");
         assertEq(origin_.gasOracle(), gasOracle_, "!gasOracle");
         assertEq(origin_.statesAmount(), 1, "!statesAmount");
+    }
+
+    function test_sendBaseMessage_revert_tipsTooLow(RawTips memory minTips, uint256 msgValue) public {
+        minTips.boundTips(1 ** 32);
+        minTips.floorTips(1);
+        msgValue = msgValue % minTips.castToTips().value();
+        vm.etch(gasOracle, type(GasOracleMock).runtimeCode);
+        BaseMock(gasOracle).setMockReturnValue(minTips.encodeTips());
+        deal(sender, msgValue);
+        vm.expectRevert("Tips value too low");
+        vm.prank(sender);
+        InterfaceOrigin(origin).sendBaseMessage{value: msgValue}(
+            DOMAIN_REMOTE, addressToBytes32(recipient), period, request.encodeRequest(), "test content"
+        );
+    }
+
+    function test_getMinimumTipsValue(
+        uint32 destination_,
+        uint256 paddedRequest,
+        uint256 contentLength,
+        RawTips memory minTips
+    ) public {
+        minTips.boundTips(1 ** 32);
+        vm.etch(gasOracle, type(GasOracleMock).runtimeCode);
+        BaseMock(gasOracle).setMockReturnValue(minTips.encodeTips());
+        vm.expectCall(
+            gasOracle,
+            abi.encodeWithSelector(
+                InterfaceGasOracle.getMinimumTips.selector, destination_, paddedRequest, contentLength
+            )
+        );
+        assertEq(
+            InterfaceOrigin(origin).getMinimumTipsValue(destination_, paddedRequest, contentLength),
+            minTips.castToTips().value(),
+            "!getMinimumTipsValue"
+        );
     }
 
     function test_sendMessages() public {
