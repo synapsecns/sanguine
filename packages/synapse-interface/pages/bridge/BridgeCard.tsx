@@ -22,9 +22,11 @@ import SettingsSlideOver from './SettingsSlideOver'
 import { DestinationAddressInput } from '../../components/input/DestinationAddressInput'
 import BridgeInputContainer from '../../components/input/TokenAmountInput'
 import { TransactionResponse } from '@ethersproject/providers'
+import { useSpring, animated } from 'react-spring'
 
 import { Token } from '@/utils/types'
 import { BridgeQuote } from '@/utils/types'
+
 const BridgeCard = ({
   error,
   address,
@@ -206,6 +208,12 @@ const BridgeCard = ({
     />
   )
 
+  const spring = useSpring({
+    top: displayType === 'fromChain' ? '0%' : '-100%',
+    from: { y: 0 },
+    config: { mass: 1, tension: 240, friction: 30 },
+  })
+
   return (
     <>
       <div className="flex items-center justify-between mb-5 ml-5 mr-5 space-x-2">
@@ -251,7 +259,12 @@ const BridgeCard = ({
             <TokenSlideOver key="toBlock" {...toArgs} />
           </Transition>
           <Transition show={displayType === 'fromChain'} {...TRANSITION_PROPS}>
-            <ChainSlideOver key="fromChainBlock" {...fromArgs} />
+            <animated.div
+              style={spring}
+              className="fixed z-50 w-full h-full bg-gray-900 bg-opacity-50"
+            >
+              <ChainSlideOver key="fromChainBlock" {...fromArgs} />
+            </animated.div>
           </Transition>
           <Transition show={displayType === 'toChain'} {...TRANSITION_PROPS}>
             <ChainSlideOver key="fromChainBlock" {...toArgs} />

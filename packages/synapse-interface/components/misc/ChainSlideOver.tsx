@@ -104,14 +104,14 @@ export const ChainSlideOver = ({
   useEffect(arrowUpFunc, [arrowUp])
   useEffect(enterPressedFunc, [enterPressed])
 
-  useEffect(() => {
-    const node = componentRef.current
-    const top = node.offsetTop + 100
-    window.scrollTo({
-      top: top,
-      behavior: 'smooth',
-    })
-  }, [])
+  // useEffect(() => {
+  //   const node = componentRef.current
+  //   const top = node.offsetTop + 100
+  //   window.scrollTo({
+  //     top: top,
+  //     behavior: 'smooth',
+  //   })
+  // }, [])
 
   return (
     <div
