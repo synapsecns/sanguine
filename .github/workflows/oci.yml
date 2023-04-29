@@ -45,7 +45,7 @@ jobs:
         uses: appany/helm-oci-chart-releaser@v0.3.0
         with:
           name: agents
-          repository: synapsecns/sanguine/agents
+          repository: synapsecns/sanguine/helm
           # note: this must be manually updated for the workaround
           tag: 0.1.19
           path: charts/agents # Default charts/{name}
@@ -57,7 +57,7 @@ jobs:
         uses: appany/helm-oci-chart-releaser@v0.3.0
         with:
           name: scribe
-          repository: synapsecns/sanguine/scribe
+          repository: synapsecns/sanguine/helm
           # note: this must be manually updated for the workaround
           tag: 0.2.5
           path: charts/scribe # Default charts/{name}
