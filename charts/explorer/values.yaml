@@ -172,7 +172,7 @@ server:
   tolerations: []
   args:
     - server
-    - '--port=80'
+    - '--port=5080'
     - '--scribe-url=https://scribe.interoperability.institute/graphql'
     - '--address=tcp://default:clickhouse@{{ .Release.Namespace }}-clickhouse:9000'
   ports:
