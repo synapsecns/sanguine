@@ -766,51 +766,68 @@ jobs:
           tag_name: ${{ steps.tag_version.outputs.new_tag }}
           strip_prefix: 'contrib/terraform-provider-kubeproxy/'
 
-  helm-test:
-    name: Run Helm Tests w/ new images
+  make-charts:
     runs-on: ubuntu-latest
-    needs: [run-goreleaser, changes]
-    strategy:
-      matrix:
-        chart: [ 'agents_embedded', 'agents_remote', 'scribe', 'explorer', 'omnirpc' ]
-        package: ${{ fromJSON(needs.changes.outputs.packages_deps) }}
+    needs: [changes, run-goreleaser]
     steps:
       - name: Checkout
         uses: actions/checkout@v3
-        if: ${{ contains(matrix.chart, matrix.package)}}
+        with:
+          fetch-depth: 0
+
+      - name: determine which chart tests to run
+        run: |
+          echo "::set-output name=chart_tests::$(yq eval '.chart_tests' ${{matrix.package}}/.goreleaser.yml)"
+        env:
+          PACKAGES: ${{ fromJSON(needs.changes.outputs.packages_deps) }}
+  helm-test:
+    needs: [changes, run-goreleaser]
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        chart: [ 'agents_embedded', 'agents_remote', 'scribe', 'explorer', 'omnirpc' ]
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
         with:
           fetch-depth: 0
 
       - name: Set up Helm
-        if: ${{ contains(matrix.chart, matrix.package)}}
         uses: azure/setup-helm@v1
         with:
           version: v3.9.2
 
       - uses: actions/setup-python@v2
-        if: ${{ contains(matrix.chart, matrix.package)}}
         with:
           python-version: 3.7
 
       - name: Set up chart-testing
-        if: ${{ contains(matrix.chart, matrix.package)}}
         uses: helm/chart-testing-action@v2.3.1
 
       - name: Install helm dependencies
-        if: ${{ contains(matrix.chart, matrix.package)}}
         working-directory: charts/
         run: make dependencies
 
+      # Even if there are no changes to the chart itself, if running `make lint` changes Chart.lock,
+      # then lint-test will fail due to version bump. To solve this, run `make lint` and version bump.
+      - name: Run chart-testing (list-changed)
+        id: list-changed
+        run: |
+          changed=$(ct list-changed --target-branch ${{ github.event.repository.default_branch }})
+          if [[ -n '$changed' ]]; then
+            echo "::set-output name=changed::true"
+          fi
+
+      - name: Run chart-testing (lint)
+        run: ct lint --target-branch ${{ github.event.repository.default_branch }} --validate-maintainers=false
 
       - name: Create kind cluster
         uses: helm/kind-action@v1.4.0
-        if: ${{ contains(matrix.chart, matrix.package)}}
+        if: steps.list-changed.outputs.changed == 'true'
 
-
-    # TODO: set the image tag
       - name: Run chart-testing (install)
         working-directory: charts/
-        if: ${{ !contains(matrix.chart, 'agents_embedded') && !contains(matrix.chart, 'agents_remote') &&  contains(matrix.chart, matrix.package) }}
+        if: ${{ !contains(matrix.chart, 'agents_embedded') && !contains(matrix.chart, 'agents_remote') }}
         run: ct install --debug --chart-dirs "${{ matrix.chart }}" --charts "${{ matrix.chart }}"
 
       #      - name: Run chart-testing (install agents embedded)
@@ -820,5 +837,5 @@ jobs:
 
       - name: Run chart-testing (install agents remote)
         working-directory: charts/
-        if: ${{ contains(matrix.chart, 'agents_remote') &&  contains(matrix.chart, matrix.package)  }}
+        if: ${{ contains(matrix.chart, 'agents_remote') }}
         run: ct install --debug --helm-extra-set-args "--set=executor.type=remote-fresh" --chart-dirs "agents" --charts "agents"
