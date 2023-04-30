@@ -46,4 +46,20 @@ interface InterfaceOrigin {
      * @param amount        Tips value to withdraw
      */
     function withdrawTips(address recipient, uint256 amount) external;
+
+    // ═══════════════════════════════════════════════════ VIEWS ═══════════════════════════════════════════════════════
+
+    /**
+     * @notice Returns the minimum tips value for sending a message to a given destination.
+     * @dev Using at least `tipsValue` as `msg.value` for `sendBaseMessage()`
+     * will guarantee that the message will be accepted.
+     * @param destination       Domain of destination chain
+     * @param paddedRequest     Padded encoded message execution request on destination chain
+     * @param contentLength     The length of the message content
+     * @return tipsValue        Minimum tips value for a message to be accepted
+     */
+    function getMinimumTipsValue(uint32 destination, uint256 paddedRequest, uint256 contentLength)
+        external
+        view
+        returns (uint256 tipsValue);
 }

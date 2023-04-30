@@ -7,7 +7,7 @@ import {Origin} from "../../contracts/Origin.sol";
 /// Do not use for tests requiring interactions between messaging contracts.
 contract OriginHarness is Origin {
     // solhint-disable-next-line no-empty-blocks
-    constructor(uint32 domain, address agentManager_) Origin(domain, agentManager_) {}
+    constructor(uint32 domain, address agentManager_, address gasOracle_) Origin(domain, agentManager_, gasOracle_) {}
 
     // TODO: add / remove Agents in standalone Go tests
 }
