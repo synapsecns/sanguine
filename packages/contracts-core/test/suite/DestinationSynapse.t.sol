@@ -5,7 +5,7 @@ import {InterfaceDestination} from "../../contracts/interfaces/InterfaceDestinat
 
 import {Random} from "../utils/libs/Random.t.sol";
 import {RawAttestation, RawSnapshot, RawState} from "../utils/libs/SynapseStructs.t.sol";
-import {AgentFlag, AgentStatus, SynapseTest} from "../utils/SynapseTest.t.sol";
+import {AgentFlag, AgentStatus, BondingManager, Destination, SynapseTest} from "../utils/SynapseTest.t.sol";
 import {ExecutionHubTest} from "./hubs/ExecutionHub.t.sol";
 
 // solhint-disable func-name-mixedcase
@@ -14,6 +14,26 @@ import {ExecutionHubTest} from "./hubs/ExecutionHub.t.sol";
 contract DestinationSynapseTest is ExecutionHubTest {
     // Deploy Production version of Destination and Summit and mocks for everything else
     constructor() SynapseTest(DEPLOY_PROD_DESTINATION_SYNAPSE | DEPLOY_PROD_SUMMIT) {}
+
+    function test_cleanSetup(Random memory random) public override {
+        uint32 domain = DOMAIN_SYNAPSE;
+        address caller = random.nextAddress();
+        BondingManager manager = new BondingManager(domain);
+        bytes32 agentRoot = random.next();
+        Destination cleanContract = new Destination(domain, address(manager));
+        manager.initialize(address(0), address(cleanContract), address(0));
+        // agentRoot should be ignored on Synapse Chain
+        vm.prank(caller);
+        cleanContract.initialize(agentRoot);
+        assertEq(cleanContract.owner(), caller, "!owner");
+        assertEq(cleanContract.localDomain(), domain, "!localDomain");
+        assertEq(cleanContract.agentManager(), address(manager), "!agentManager");
+        assertEq(cleanContract.nextAgentRoot(), 0, "!nextAgentRoot");
+    }
+
+    function initializeLocalContract() public override {
+        Destination(localContract()).initialize(0);
+    }
 
     function test_getAttestation(Random memory random) public {
         uint256 amount = 10;
@@ -72,7 +92,7 @@ contract DestinationSynapseTest is ExecutionHubTest {
         bondingManager.submitSnapshot(snapPayload, notarySignature);
     }
 
-    /// @notice Returns local domain for the tested system contract
+    /// @notice Returns local domain for the tested contract
     function localDomain() public pure override returns (uint32) {
         return DOMAIN_SYNAPSE;
     }

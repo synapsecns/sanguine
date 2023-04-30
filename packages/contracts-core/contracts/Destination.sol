@@ -47,9 +47,12 @@ contract Destination is ExecutionHub, DestinationEvents, InterfaceDestination {
         // Initialize Ownable: msg.sender is set as "owner"
         __Ownable_init();
         // Set Agent Merkle Root in Light Manager
-        _nextAgentRoot = agentRoot;
-        InterfaceLightManager(address(agentManager)).setAgentRoot(agentRoot);
-        destStatus.agentRootTime = uint40(block.timestamp);
+        if (localDomain != SYNAPSE_DOMAIN) {
+            _nextAgentRoot = agentRoot;
+            InterfaceLightManager(address(agentManager)).setAgentRoot(agentRoot);
+            destStatus.agentRootTime = uint40(block.timestamp);
+        }
+        // No need to do anything on Synapse Chain, as the agent root is set in BondingManager
     }
 
     // ═════════════════════════════════════════════ ACCEPT STATEMENTS ═════════════════════════════════════════════════

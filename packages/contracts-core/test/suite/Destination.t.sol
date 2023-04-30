@@ -10,7 +10,7 @@ import {Versioned} from "../../contracts/base/Version.sol";
 
 import {Random} from "../utils/libs/Random.t.sol";
 import {RawAttestation, RawState, RawStateIndex} from "../utils/libs/SynapseStructs.t.sol";
-import {AgentFlag, AgentStatus, SynapseTest} from "../utils/SynapseTest.t.sol";
+import {AgentFlag, AgentStatus, Destination, LightManager, SynapseTest} from "../utils/SynapseTest.t.sol";
 import {ExecutionHubTest} from "./hubs/ExecutionHub.t.sol";
 
 // solhint-disable func-name-mixedcase
@@ -19,6 +19,8 @@ import {ExecutionHubTest} from "./hubs/ExecutionHub.t.sol";
 contract DestinationTest is ExecutionHubTest {
     // Deploy Production version of Destination and mocks for everything else
     constructor() SynapseTest(DEPLOY_PROD_DESTINATION) {}
+
+    // ═══════════════════════════════════════════════ TESTS: SETUP ════════════════════════════════════════════════════
 
     function test_setupCorrectly() public {
         // Check Agents: currently all Agents are known in LightManager
@@ -36,6 +38,28 @@ contract DestinationTest is ExecutionHubTest {
         assertFalse(rootPassed);
         assertFalse(rootPending);
     }
+
+    function test_cleanSetup(Random memory random) public override {
+        uint32 domain = random.nextUint32();
+        vm.assume(domain != DOMAIN_SYNAPSE);
+        address caller = random.nextAddress();
+        LightManager agentManager = new LightManager(domain);
+        bytes32 agentRoot = random.next();
+        Destination cleanContract = new Destination(domain, address(agentManager));
+        agentManager.initialize(address(0), address(cleanContract));
+        vm.prank(caller);
+        cleanContract.initialize(agentRoot);
+        assertEq(cleanContract.owner(), caller, "!owner");
+        assertEq(cleanContract.localDomain(), domain, "!localDomain");
+        assertEq(cleanContract.agentManager(), address(agentManager), "!agentManager");
+        assertEq(cleanContract.nextAgentRoot(), agentRoot, "!nextAgentRoot");
+    }
+
+    function initializeLocalContract() public override {
+        Destination(localContract()).initialize(0);
+    }
+
+    // ════════════════════════════════════════════════ OTHER TESTS ════════════════════════════════════════════════════
 
     function test_getAttestation(Random memory random) public {
         uint256 amount = 10;
@@ -295,7 +319,7 @@ contract DestinationTest is ExecutionHubTest {
         lightManager.submitAttestation(attPayload, attSig);
     }
 
-    /// @notice Returns local domain for the tested system contract
+    /// @notice Returns local domain for the tested contract
     function localDomain() public pure override returns (uint32) {
         return DOMAIN_LOCAL;
     }
