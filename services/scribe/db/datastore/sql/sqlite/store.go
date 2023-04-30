@@ -46,7 +46,7 @@ func NewSqliteStore(parentCtx context.Context, dbPath string, handler metrics.Ha
 
 	handler.AddGormCallbacks(gdb)
 
-	if skipMigrations {
+	if !skipMigrations {
 		err = gdb.WithContext(ctx).AutoMigrate(base.GetAllModels()...)
 		if err != nil {
 			return nil, fmt.Errorf("could not migrate models: %w", err)
