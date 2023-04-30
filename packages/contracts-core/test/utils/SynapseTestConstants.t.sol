@@ -42,6 +42,16 @@ abstract contract SynapseTestConstants {
     uint256 internal constant DEPLOY_MOCK_SUMMIT = 0x00_00_00;
     uint256 internal constant DEPLOY_PROD_SUMMIT = 0x01_00_00;
 
+    uint256 internal constant DEPLOY_MASK_GAS_ORACLE = 0xF0_00_00;
+    // Default option for deploying Gas Oracle
+    uint256 internal constant DEPLOY_MOCK_GAS_ORACLE = 0x00_00_00;
+    uint256 internal constant DEPLOY_PROD_GAS_ORACLE = 0x10_00_00;
+
+    uint256 internal constant DEPLOY_MASK_GAS_ORACLE_SYNAPSE = 0x0F_00_00_00;
+    // Default option for deploying Gas Oracle (Synapse Chain)
+    uint256 internal constant DEPLOY_MOCK_GAS_ORACLE_SYNAPSE = 0x00_00_00_00;
+    uint256 internal constant DEPLOY_PROD_GAS_ORACLE_SYNAPSE = 0x01_00_00_00;
+
     // ══════════════════════════════════════════════ ENCODING TESTS ═══════════════════════════════════════════════════
 
     uint256 internal constant MIN_BASE_MESSAGE_LENGTH = 32 + 32 + TIPS_LENGTH + REQUEST_LENGTH;

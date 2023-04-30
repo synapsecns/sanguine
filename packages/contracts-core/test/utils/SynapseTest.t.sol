@@ -13,6 +13,7 @@ import {BondingManagerHarness} from "../harnesses/manager/BondingManagerHarness.
 import {LightManagerHarness} from "../harnesses/manager/LightManagerHarness.t.sol";
 
 import {DestinationMock} from "../mocks/DestinationMock.t.sol";
+import {GasOracleMock} from "../mocks/GasOracleMock.t.sol";
 import {OriginMock} from "../mocks/OriginMock.t.sol";
 import {SummitMock} from "../mocks/SummitMock.t.sol";
 
@@ -118,9 +119,16 @@ abstract contract SynapseTest is ProductionEvents, SuiteEvents, SynapseAgents, S
     }
 
     function deployGasOracle() public virtual {
-        gasOracle = address(new GasOracle(DOMAIN_LOCAL));
-        GasOracle(gasOracle).initialize();
-        vm.label(gasOracle, "GasOracle");
+        uint256 option = deployMask & DEPLOY_MASK_GAS_ORACLE;
+        if (option == DEPLOY_MOCK_GAS_ORACLE) {
+            gasOracle = address(new GasOracleMock());
+        } else if (option == DEPLOY_PROD_GAS_ORACLE) {
+            gasOracle = address(new GasOracle(DOMAIN_LOCAL));
+            GasOracle(gasOracle).initialize();
+        } else {
+            revert("Unknown option: GasOracle");
+        }
+        vm.label(gasOracle, "GasOracle Local");
     }
 
     function deployDestination() public virtual {
@@ -150,8 +158,15 @@ abstract contract SynapseTest is ProductionEvents, SuiteEvents, SynapseAgents, S
     }
 
     function deployGasOracleSynapse() public virtual {
-        gasOracleSynapse = address(new GasOracle(DOMAIN_SYNAPSE));
-        GasOracle(gasOracleSynapse).initialize();
+        uint256 option = deployMask & DEPLOY_MASK_GAS_ORACLE_SYNAPSE;
+        if (option == DEPLOY_MOCK_GAS_ORACLE_SYNAPSE) {
+            gasOracleSynapse = address(new GasOracleMock());
+        } else if (option == DEPLOY_PROD_GAS_ORACLE_SYNAPSE) {
+            gasOracleSynapse = address(new GasOracle(DOMAIN_SYNAPSE));
+            GasOracle(gasOracleSynapse).initialize();
+        } else {
+            revert("Unknown option: GasOracle");
+        }
         vm.label(gasOracleSynapse, "GasOracle Synapse");
     }
 
