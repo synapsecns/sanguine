@@ -623,11 +623,11 @@ jobs:
   run-goreleaser:
     runs-on: ubuntu-latest
     needs: [build-goreleaser,changes]
-    if: ${{ needs.changes.outputs.package_count > 0 }}
+    if: ${{ needs.changes.outputs.package_count_deps > 0 }}
     strategy:
       matrix:
         # list of packages, if you update this update changes as well
-        package: ${{ fromJSON(needs.changes.outputs.packages) }}
+        package: ${{ fromJSON(needs.changes.outputs.packages_deps) }}
     container:
       image: ${{ needs.build-goreleaser.outputs.goreleaser-image }}
       volumes: [ /repo ]
