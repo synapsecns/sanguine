@@ -76,6 +76,7 @@ jobs:
   # to fix this in a future version.
   build-goreleaser:
     runs-on: ubuntu-latest
+    if: github.event_name == 'push'
     outputs:
       goreleaser-image: ${{ steps.name-export.outputs.TAG_NAME }}
     steps:
@@ -138,7 +139,7 @@ jobs:
           push: true
           file: ./docker/goreleaser/Dockerfile
           # TODO this needs to be versioned
-          tags: ghcr.io/synapsecns/sanguine-goreleaser:latest,${{ steps.name-export.outputs.TAG_NAME }}
+          tags: ghcr.io/synapsecns/sanguine-goreleaser:${{ steps.name-export.outputs.TAG_NAME }}
           cache-from: type=registry,ref=ghcr.io/synapsecns/sanguine-goreleaser:buildcache
           cache-to: type=registry,ref=ghcr.io/synapsecns/sanguine-goreleaser:buildcache,mode=max
           build-args: |
@@ -146,6 +147,13 @@ jobs:
             FILE_ARG=goreleaser-pro_Linux_x86_64.tar.gz
             DOWNLOAD_ARG=https://github.com/goreleaser/goreleaser-pro/releases/download/v1.13.1-pro/goreleaser-pro_Linux_x86_64.tar.gz
             VERSION_ARG=1.13.1-pro
+
+      # if on master, we want to push the latest tag
+      - name: Push Image (Master)
+        if: steps.branch-name.outputs.is_default != 'true' && steps.image_check.outputs.has_images == 'true'
+        run: |
+          docker tag ghcr.io/synapsecns/sanguine-goreleaser:${{ steps.name-export.outputs.TAG_NAME }} ghcr.io/synapsecns/sanguine-goreleaser:latest
+          docker push ghcr.io/synapsecns/sanguine-goreleaser:latest
   test:
     name: Go Coverage
     runs-on: ${{ matrix.platform }}
