@@ -32,8 +32,9 @@ using GasDataLib for ChainGas global;
 /// | (010..008] | dataPrice    | uint16 | 2     | Calldata price (in Wei per byte of content)         |
 /// | (008..006] | execBuffer   | uint16 | 2     | Tx fee safety buffer for message execution (in Wei) |
 /// | (006..004] | amortAttCost | uint16 | 2     | Amortized cost for attestation submission (in Wei)  |
-/// | (004..002] | etherPrice   | uint16 | 2     | Price of Chain's Ether (in Ethereum Mainnet's Wei)  |
-/// | (002..000] | markup       | uint16 | 2     | Markup for the message execution                    |
+/// | (004..002] | etherPrice   | uint16 | 2     | Chain's Ether Price / Mainnet Ether Price (in BWAD) |
+/// | (002..000] | markup       | uint16 | 2     | Markup for the message execution (in BWAD)          |
+/// > See Number.sol for more details on `Number` type and BWAD (binary WAD) math.
 ///
 /// ## ChainGas stack layout (from highest bits to lowest)
 ///
@@ -63,8 +64,8 @@ library GasDataLib {
     /// @param dataPrice_       Calldata price (in Wei per byte of content)
     /// @param execBuffer_      Tx fee safety buffer for message execution (in Wei)
     /// @param amortAttCost_    Amortized cost for attestation submission (in Wei)
-    /// @param etherPrice_      Price of Chain's Ether (in Ethereum Mainnet's Wei)
-    /// @param markup_          Markup for the message execution
+    /// @param etherPrice_      Ratio of Chain's Ether Price / Mainnet Ether Price (in BWAD)
+    /// @param markup_          Markup for the message execution (in BWAD)
     function encodeGasData(
         Number gasPrice_,
         Number dataPrice_,
@@ -113,13 +114,13 @@ library GasDataLib {
         return Number.wrap(uint16(GasData.unwrap(data) >> SHIFT_AMORT_ATT_COST));
     }
 
-    /// @notice Returns the price of Chain's Ether, in Ethereum Mainnet's Wei.
+    /// @notice Returns the ratio of Chain's Ether Price / Mainnet Ether Price, in BWAD math.
     function etherPrice(GasData data) internal pure returns (Number) {
         // Casting to uint16 will truncate the highest bits, which is the behavior we want
         return Number.wrap(uint16(GasData.unwrap(data) >> SHIFT_ETHER_PRICE));
     }
 
-    /// @notice Returns the markup for the message execution.
+    /// @notice Returns the markup for the message execution, in BWAD math.
     function markup(GasData data) internal pure returns (Number) {
         // Casting to uint16 will truncate the highest bits, which is the behavior we want
         return Number.wrap(uint16(GasData.unwrap(data)));

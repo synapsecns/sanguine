@@ -25,6 +25,14 @@ library NumberLib {
     /// @dev Amount of bits to shift to mantissa field
     uint16 private constant SHIFT_MANTISSA = 8;
 
+    /// @notice For bwad math (binary wad) we use 2**64 as "wad" unit.
+    /// @dev We are using not using 10**18 as wad, because it is not stored precisely in NumberLib.
+    uint256 internal constant BWAD_SHIFT = 64;
+    uint256 internal constant BWAD = 1 << BWAD_SHIFT;
+    /// @notice ~0.1% in bwad units.
+    uint256 internal constant PER_MILLE_SHIFT = BWAD_SHIFT - 10;
+    uint256 internal constant PER_MILLE = 1 << PER_MILLE_SHIFT;
+
     /// @notice Compresses uint256 number into 16 bits.
     function compress(uint256 value) internal pure returns (Number) {
         // Find `msb` such as `2**msb <= value < 2**(msb + 1)`
