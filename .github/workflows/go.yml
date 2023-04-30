@@ -766,9 +766,9 @@ jobs:
           tag_name: ${{ steps.tag_version.outputs.new_tag }}
           strip_prefix: 'contrib/terraform-provider-kubeproxy/'
 
-  make-charts:
+  make-chart-tests:
     runs-on: ubuntu-latest
-    needs: [changes, run-goreleaser]
+    needs: [changes] #, run-goreleaser]
     steps:
       - name: Checkout
         uses: actions/checkout@v3
@@ -777,11 +777,16 @@ jobs:
 
       - name: determine which chart tests to run
         run: |
-          echo "::set-output name=chart_tests::$(yq eval '.chart_tests' ${{matrix.package}}/.goreleaser.yml)"
+          echo $PACKAGES_JSON | jq '.[]' | while read -r package; do
+            package=$(echo $package | tr -d '"')
+            chart_list=$(echo $CHARTS | jq ".[] | select(startswith(\"$package\"))")
+            echo "Charts for $package: $chart_list"
+          done
         env:
-          PACKAGES: ${{ fromJSON(needs.changes.outputs.packages_deps) }}
+          PACKAGES_JSON: ${{ needs.changes.outputs.packages_deps }}
+          CHARTS: '[ "agents_embedded", "agents_remote", "scribe", "explorer", "omnirpc"]'
   helm-test:
-    needs: [changes, run-goreleaser]
+    needs: [run-goreleaser, make-chart-tests]
     runs-on: ubuntu-latest
     strategy:
       matrix:
