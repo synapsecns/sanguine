@@ -4,7 +4,7 @@ The Scribe is a service that goes through all chains and contracts specified in 
 
 ## Usage
 
-Run the following command to start the Scribe:
+Run the following command to start Scribe:
 
 ```bash
 $ go run main.go
