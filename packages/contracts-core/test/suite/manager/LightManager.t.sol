@@ -41,7 +41,7 @@ contract LightManagerTest is AgentManagerTest {
     }
 
     function initializeLocalContract() public override {
-        LightManager(systemContract()).initialize(address(0), address(0));
+        LightManager(localContract()).initialize(address(0), address(0));
     }
 
     // ═══════════════════════════════════════════════ TESTS: SETUP ════════════════════════════════════════════════════
@@ -202,7 +202,7 @@ contract LightManagerTest is AgentManagerTest {
 
     // ══════════════════════════════════════════════════ HELPERS ══════════════════════════════════════════════════════
 
-    /// @notice Returns local domain for the tested system contract
+    /// @notice Returns local domain for the tested contract
     function localDomain() public pure override returns (uint32) {
         return DOMAIN_LOCAL;
     }

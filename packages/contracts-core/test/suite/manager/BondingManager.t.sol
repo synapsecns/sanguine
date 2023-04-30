@@ -47,7 +47,7 @@ contract BondingManagerTest is AgentManagerTest {
     }
 
     function initializeLocalContract() public override {
-        BondingManager(systemContract()).initialize(address(0), address(0), address(0));
+        BondingManager(localContract()).initialize(address(0), address(0), address(0));
     }
 
     function test_setup() public override {
@@ -459,7 +459,7 @@ contract BondingManagerTest is AgentManagerTest {
 
     // ══════════════════════════════════════════════════ HELPERS ══════════════════════════════════════════════════════
 
-    /// @notice Returns local domain for the tested system contract
+    /// @notice Returns local domain for the tested contract
     function localDomain() public pure override returns (uint32) {
         return DOMAIN_SYNAPSE;
     }

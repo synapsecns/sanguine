@@ -32,7 +32,7 @@ contract DestinationSynapseTest is ExecutionHubTest {
     }
 
     function initializeLocalContract() public override {
-        Destination(systemContract()).initialize(0);
+        Destination(localContract()).initialize(0);
     }
 
     function test_getAttestation(Random memory random) public {
@@ -92,7 +92,7 @@ contract DestinationSynapseTest is ExecutionHubTest {
         bondingManager.submitSnapshot(snapPayload, notarySignature);
     }
 
-    /// @notice Returns local domain for the tested system contract
+    /// @notice Returns local domain for the tested contract
     function localDomain() public pure override returns (uint32) {
         return DOMAIN_SYNAPSE;
     }

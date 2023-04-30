@@ -137,11 +137,11 @@ abstract contract MessagingBaseTest is SynapseTest {
 
     // ══════════════════════════════════════════════════ HELPERS ══════════════════════════════════════════════════════
 
-    /// @notice Returns local domain for the tested system contract
+    /// @notice Returns local domain for the tested contract
     function localDomain() public view virtual returns (uint32);
 
-    /// @notice Returns address of the tested system contract
-    function systemContract() public view virtual returns (address);
+    /// @notice Returns address of the tested contract
+    function localContract() public view virtual returns (address);
 
     /// @notice Returns address of Agent Manager on the tested domain
     function localAgentManager() public view virtual onlySupportedDomain returns (address) {

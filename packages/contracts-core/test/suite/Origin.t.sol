@@ -75,7 +75,7 @@ contract OriginTest is AgentSecuredTest {
     }
 
     function initializeLocalContract() public override {
-        Origin(systemContract()).initialize();
+        Origin(localContract()).initialize();
     }
 
     function test_sendBaseMessage_revert_tipsTooLow(RawTips memory minTips, uint256 msgValue) public {
@@ -420,13 +420,13 @@ contract OriginTest is AgentSecuredTest {
 
     // ═════════════════════════════════════════════════ OVERRIDES ═════════════════════════════════════════════════════
 
-    /// @notice Returns local domain for the tested system contract
+    /// @notice Returns local domain for the tested contract
     function localDomain() public pure override returns (uint32) {
         return DOMAIN_LOCAL;
     }
 
-    /// @notice Returns address of the tested system contract
-    function systemContract() public view override returns (address) {
+    /// @notice Returns address of the tested contract
+    function localContract() public view override returns (address) {
         return localOrigin();
     }
 }

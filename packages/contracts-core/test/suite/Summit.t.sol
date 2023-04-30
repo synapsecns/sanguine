@@ -73,7 +73,7 @@ contract SummitTest is AgentSecuredTest {
     }
 
     function initializeLocalContract() public override {
-        Summit(systemContract()).initialize();
+        Summit(localContract()).initialize();
     }
 
     function test_acceptGuardSnapshot_revert_notAgentManager(address caller) public {
@@ -484,11 +484,11 @@ contract SummitTest is AgentSecuredTest {
     */
     // ═════════════════════════════════════════════════ OVERRIDES ═════════════════════════════════════════════════════
 
-    function systemContract() public view override returns (address) {
+    function localContract() public view override returns (address) {
         return summit;
     }
 
-    /// @notice Returns local domain for the tested system contract
+    /// @notice Returns local domain for the tested contract
     function localDomain() public pure override returns (uint32) {
         return DOMAIN_SYNAPSE;
     }

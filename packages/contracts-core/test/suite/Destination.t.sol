@@ -56,7 +56,7 @@ contract DestinationTest is ExecutionHubTest {
     }
 
     function initializeLocalContract() public override {
-        Destination(systemContract()).initialize(0);
+        Destination(localContract()).initialize(0);
     }
 
     // ════════════════════════════════════════════════ OTHER TESTS ════════════════════════════════════════════════════
@@ -319,7 +319,7 @@ contract DestinationTest is ExecutionHubTest {
         lightManager.submitAttestation(attPayload, attSig);
     }
 
-    /// @notice Returns local domain for the tested system contract
+    /// @notice Returns local domain for the tested contract
     function localDomain() public pure override returns (uint32) {
         return DOMAIN_LOCAL;
     }
