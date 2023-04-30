@@ -765,3 +765,60 @@ jobs:
           destination_repo: 'trajan0x/terraform-provider-kubeproxy'
           tag_name: ${{ steps.tag_version.outputs.new_tag }}
           strip_prefix: 'contrib/terraform-provider-kubeproxy/'
+
+  helm-test:
+    name: Run Helm Tests w/ new images
+    runs-on: ubuntu-latest
+    needs: [run-goreleaser, changes]
+    strategy:
+      matrix:
+        chart: [ 'agents_embedded', 'agents_remote', 'scribe', 'explorer', 'omnirpc' ]
+        package: ${{ fromJSON(needs.changes.outputs.packages_deps) }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+        if: ${{ contains(matrix.chart, matrix.package)}}
+        with:
+          fetch-depth: 0
+
+      - name: Set up Helm
+        if: ${{ contains(matrix.chart, matrix.package)}}
+        uses: azure/setup-helm@v1
+        with:
+          version: v3.9.2
+
+      - uses: actions/setup-python@v2
+        if: ${{ contains(matrix.chart, matrix.package)}}
+        with:
+          python-version: 3.7
+
+      - name: Set up chart-testing
+        if: ${{ contains(matrix.chart, matrix.package)}}
+        uses: helm/chart-testing-action@v2.3.1
+
+      - name: Install helm dependencies
+        if: ${{ contains(matrix.chart, matrix.package)}}
+        working-directory: charts/
+        run: make dependencies
+
+
+      - name: Create kind cluster
+        uses: helm/kind-action@v1.4.0
+        if: ${{ contains(matrix.chart, matrix.package)}}
+
+
+    # TODO: set the image tag
+      - name: Run chart-testing (install)
+        working-directory: charts/
+        if: ${{ !contains(matrix.chart, 'agents_embedded') && !contains(matrix.chart, 'agents_remote') &&  contains(matrix.chart, matrix.package) }}
+        run: ct install --debug --chart-dirs "${{ matrix.chart }}" --charts "${{ matrix.chart }}"
+
+      #      - name: Run chart-testing (install agents embedded)
+      #        working-directory: charts/
+      #        if: ${{ contains(matrix.chart, 'agents_embedded') }}
+      #        run: ct install --debug --helm-extra-set-args "--set=executor.type=embedded  --set=scribe.enabled=false" --chart-dirs "agents" --charts "agents"
+
+      - name: Run chart-testing (install agents remote)
+        working-directory: charts/
+        if: ${{ contains(matrix.chart, 'agents_remote') &&  contains(matrix.chart, matrix.package)  }}
+        run: ct install --debug --helm-extra-set-args "--set=executor.type=remote-fresh" --chart-dirs "agents" --charts "agents"
