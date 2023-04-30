@@ -171,10 +171,9 @@ var omniRPCFlag = &cli.StringFlag{
 }
 
 var skipMigrationFlag = &cli.BoolFlag{
-	Name:     "skip-migration",
-	Usage:    "--skip-migration",
-	Required: true,
-	Value:    false,
+	Name:  "skip-migrations",
+	Usage: "--skip-migrations",
+	Value: false,
 }
 
 var skipMigrationServerFlag = &cli.BoolFlag{
