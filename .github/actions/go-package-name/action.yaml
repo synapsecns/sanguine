@@ -1,0 +1,19 @@
+name: Get Go package name
+inputs:
+  package:
+    description: Relative package path (e.g. services/omnirpc)
+    required: true
+outputs:
+  name:
+    description: Go package name (e.g. omnirpc)
+    value: ${{ steps.package_name.outputs.flag }}
+
+description: Get Go package name from the relative path (e.g. services/omnirpc becomes omnirpc)
+runs:
+  using: composite
+  steps:
+    - name: Get Package name
+      id: package_name
+      shell: bash
+      run: |
+        echo "::set-output name=flag::$(echo "${{ inputs.package }}" | rev | cut -d/ -f1 | rev)"

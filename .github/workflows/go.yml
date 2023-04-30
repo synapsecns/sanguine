@@ -230,10 +230,12 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Get Coverage name
-        id: coverage
-        run: |
-          echo "::set-output name=flag::$(echo "${{ matrix.package }}" | rev | cut -d/ -f1 | rev)"
+
+      - name: Get package Name
+        uses: ./.github/actions/go-package-name
+        id: package_name
+        with:
+          package: ${{ matrix.package }}
 
       - name: Get pyroscope path
         id: pyroscope-path
@@ -245,7 +247,7 @@ jobs:
         shell: bash
         env:
           PYROSCOPE_PATH: '${{ steps.pyroscope-path.outputs.PYROSCOPE_PATH }}'
-          APPLICATION_NAME: ${{ steps.coverage.outputs.flag }}
+          APPLICATION_NAME: ${{ steps.package_name.outputs.name }}
 
       - name: Test
         uses: nick-fields/retry@v2
@@ -275,7 +277,7 @@ jobs:
         with:
           token: ${{ secrets.CODECOV }}
           files: profile.cov
-          flags: ${{ steps.coverage.outputs.flag }}
+          flags: ${{ steps.package_name.outputs.name }}
           fail_ci_if_error: true # optional (default = false)
           verbose: true # optional (default = false)
 
@@ -770,11 +772,6 @@ jobs:
     runs-on: ubuntu-latest
     needs: [changes] #, run-goreleaser]
     steps:
-      - name: Checkout
-        uses: actions/checkout@v3
-        with:
-          fetch-depth: 0
-
       - name: determine which chart tests to run
         run: |
           echo $PACKAGES_JSON | jq '.[]' | while read -r package; do
