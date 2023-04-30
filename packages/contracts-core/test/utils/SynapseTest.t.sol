@@ -119,6 +119,7 @@ abstract contract SynapseTest is ProductionEvents, SuiteEvents, SynapseAgents, S
 
     function deployGasOracle() public virtual {
         gasOracle = address(new GasOracle(DOMAIN_LOCAL));
+        GasOracle(gasOracle).initialize();
         vm.label(gasOracle, "GasOracle");
     }
 
@@ -149,6 +150,7 @@ abstract contract SynapseTest is ProductionEvents, SuiteEvents, SynapseAgents, S
 
     function deployGasOracleSynapse() public virtual {
         gasOracleSynapse = address(new GasOracle(DOMAIN_SYNAPSE));
+        GasOracle(gasOracleSynapse).initialize();
         vm.label(gasOracleSynapse, "GasOracle Synapse");
     }
 
