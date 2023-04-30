@@ -19,6 +19,7 @@ import {
     RawStateReport
 } from "../../utils/libs/SynapseStructs.t.sol";
 
+// solhint-disable func-name-mixedcase
 abstract contract MessagingBaseTest is SynapseTest {
     struct SnapshotMock {
         RawState rs;
@@ -34,6 +35,17 @@ abstract contract MessagingBaseTest is SynapseTest {
         require(localDomain() == DOMAIN_LOCAL || localDomain() == DOMAIN_SYNAPSE, "Unsupported local domain");
         _;
     }
+
+    // To ensure that every MessagingBase contract has this test
+    function test_cleanSetup(Random memory random) public virtual;
+
+    // To ensure that every MessagingBase contract has this test
+    function test_initializer_revert_alreadyInitialized() public {
+        expectRevertAlreadyInitialized();
+        initializeLocalContract();
+    }
+
+    function initializeLocalContract() public virtual;
 
     // ═══════════════════════════════════════════════ EXPECTATIONS ════════════════════════════════════════════════════
 
@@ -125,11 +137,11 @@ abstract contract MessagingBaseTest is SynapseTest {
 
     // ══════════════════════════════════════════════════ HELPERS ══════════════════════════════════════════════════════
 
-    /// @notice Returns local domain for the tested system contract
+    /// @notice Returns local domain for the tested contract
     function localDomain() public view virtual returns (uint32);
 
-    /// @notice Returns address of the tested system contract
-    function systemContract() public view virtual returns (address);
+    /// @notice Returns address of the tested contract
+    function localContract() public view virtual returns (address);
 
     /// @notice Returns address of Agent Manager on the tested domain
     function localAgentManager() public view virtual onlySupportedDomain returns (address) {

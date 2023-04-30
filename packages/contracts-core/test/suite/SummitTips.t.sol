@@ -7,6 +7,7 @@ import {AgentFlag, AgentStatus, Summit, SynapseTest} from "../utils/SynapseTest.
 import {AgentSecuredTest} from "./hubs/ExecutionHub.t.sol";
 
 import {fakeState} from "../utils/libs/FakeIt.t.sol";
+import {Random} from "../utils/libs/Random.t.sol";
 import {
     RawReceiptBody,
     RawExecReceipt,
@@ -93,6 +94,22 @@ contract SummitTipsTest is AgentSecuredTest {
         snapRoot1 = getSnapshotRoot();
         // Deploy Summit implementation with Cheats
         summitCheats = address(new SummitCheats(DOMAIN_SYNAPSE, address(bondingManager)));
+    }
+
+    function test_cleanSetup(Random memory random) public override {
+        uint32 domain = DOMAIN_SYNAPSE;
+        address agentManager = random.nextAddress();
+        address caller = random.nextAddress();
+        Summit cleanContract = new Summit(domain, agentManager);
+        vm.prank(caller);
+        cleanContract.initialize();
+        assertEq(cleanContract.owner(), caller, "!owner");
+        assertEq(cleanContract.agentManager(), agentManager, "!agentManager");
+        assertEq(cleanContract.localDomain(), domain, "!localDomain");
+    }
+
+    function initializeLocalContract() public override {
+        Summit(localContract()).initialize();
     }
 
     // ══════════════════════════════════════════ TESTS: SUBMIT RECEIPTS ═══════════════════════════════════════════════
@@ -467,11 +484,11 @@ contract SummitTipsTest is AgentSecuredTest {
 
     // ═════════════════════════════════════════════════ OVERRIDES ═════════════════════════════════════════════════════
 
-    function systemContract() public view override returns (address) {
+    function localContract() public view override returns (address) {
         return summit;
     }
 
-    /// @notice Returns local domain for the tested system contract
+    /// @notice Returns local domain for the tested contract
     function localDomain() public pure override returns (uint32) {
         return DOMAIN_SYNAPSE;
     }

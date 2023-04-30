@@ -7,8 +7,15 @@ import {InterfaceOrigin} from "../../../contracts/interfaces/InterfaceOrigin.sol
 
 import {AgentManagerTest} from "./AgentManager.t.sol";
 
-import {AgentFlag, AgentStatus, LightManagerHarness, IAgentSecured, SynapseTest} from "../../utils/SynapseTest.t.sol";
-
+import {
+    AgentFlag,
+    AgentStatus,
+    LightManager,
+    LightManagerHarness,
+    IAgentSecured,
+    SynapseTest
+} from "../../utils/SynapseTest.t.sol";
+import {Random} from "../../utils/libs/Random.t.sol";
 import {RawAttestation} from "../../utils/libs/SynapseStructs.t.sol";
 
 // solhint-disable func-name-mixedcase
@@ -18,13 +25,23 @@ contract LightManagerTest is AgentManagerTest {
     // Deploy mocks for every messaging contract
     constructor() SynapseTest(0) {}
 
-    function test_initializer(address caller, address origin_, address destination_) public {
-        lightManager = new LightManagerHarness(DOMAIN_LOCAL);
+    function test_cleanSetup(Random memory random) public override {
+        uint32 domain = random.nextUint32();
+        vm.assume(domain != DOMAIN_SYNAPSE);
+        address caller = random.nextAddress();
+        address origin_ = random.nextAddress();
+        address destination_ = random.nextAddress();
+        LightManager cleanContract = new LightManager(domain);
         vm.prank(caller);
-        lightManager.initialize(origin_, destination_);
-        assertEq(lightManager.owner(), caller);
-        assertEq(address(lightManager.origin()), origin_);
-        assertEq(address(lightManager.destination()), destination_);
+        cleanContract.initialize(origin_, destination_);
+        assertEq(cleanContract.localDomain(), domain);
+        assertEq(cleanContract.owner(), caller);
+        assertEq(cleanContract.origin(), origin_);
+        assertEq(cleanContract.destination(), destination_);
+    }
+
+    function initializeLocalContract() public override {
+        LightManager(localContract()).initialize(address(0), address(0));
     }
 
     // ═══════════════════════════════════════════════ TESTS: SETUP ════════════════════════════════════════════════════
@@ -185,7 +202,7 @@ contract LightManagerTest is AgentManagerTest {
 
     // ══════════════════════════════════════════════════ HELPERS ══════════════════════════════════════════════════════
 
-    /// @notice Returns local domain for the tested system contract
+    /// @notice Returns local domain for the tested contract
     function localDomain() public pure override returns (uint32) {
         return DOMAIN_LOCAL;
     }

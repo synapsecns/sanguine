@@ -129,6 +129,7 @@ abstract contract SynapseTest is ProductionEvents, SuiteEvents, SynapseAgents, S
             destination = address(new DestinationMock());
         } else if (option == DEPLOY_PROD_DESTINATION) {
             destination = address(new Destination(DOMAIN_LOCAL, address(lightManager)));
+            // Destination will be initialized once agents are setup
         } else {
             revert("Unknown option: Destination");
         }
@@ -160,6 +161,7 @@ abstract contract SynapseTest is ProductionEvents, SuiteEvents, SynapseAgents, S
             destinationSynapse = address(new DestinationMock());
         } else if (option == DEPLOY_PROD_DESTINATION_SYNAPSE) {
             destinationSynapse = address(new Destination(DOMAIN_SYNAPSE, address(bondingManager)));
+            Destination(destinationSynapse).initialize(0);
         } else {
             revert("Unknown option: Destination");
         }

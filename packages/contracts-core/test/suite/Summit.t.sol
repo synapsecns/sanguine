@@ -10,7 +10,7 @@ import {MerkleMath} from "../../contracts/libs/MerkleMath.sol";
 import {InterfaceSummit} from "../../contracts/Summit.sol";
 import {Versioned} from "../../contracts/base/Version.sol";
 
-import {AgentFlag, AgentStatus, SynapseTest} from "../utils/SynapseTest.t.sol";
+import {AgentFlag, AgentStatus, Summit, SynapseTest} from "../utils/SynapseTest.t.sol";
 import {State, RawAttestation, RawState, RawStateIndex} from "../utils/libs/SynapseStructs.t.sol";
 import {Random} from "../utils/libs/Random.t.sol";
 import {AgentSecuredTest} from "./hubs/ExecutionHub.t.sol";
@@ -58,6 +58,22 @@ contract SummitTest is AgentSecuredTest {
         assertEq(Versioned(summit).version(), LATEST_VERSION, "!version");
         // Check attestation getter for zero nonce
         assertEq(ISnapshotHub(summit).getAttestation(0), notaryAttestations[0].formatAttestation(), "!getAttestation");
+    }
+
+    function test_cleanSetup(Random memory random) public override {
+        uint32 domain = DOMAIN_SYNAPSE;
+        address agentManager = random.nextAddress();
+        address caller = random.nextAddress();
+        Summit cleanContract = new Summit(domain, agentManager);
+        vm.prank(caller);
+        cleanContract.initialize();
+        assertEq(cleanContract.owner(), caller, "!owner");
+        assertEq(cleanContract.agentManager(), agentManager, "!agentManager");
+        assertEq(cleanContract.localDomain(), domain, "!localDomain");
+    }
+
+    function initializeLocalContract() public override {
+        Summit(localContract()).initialize();
     }
 
     function test_acceptGuardSnapshot_revert_notAgentManager(address caller) public {
@@ -468,11 +484,11 @@ contract SummitTest is AgentSecuredTest {
     */
     // ═════════════════════════════════════════════════ OVERRIDES ═════════════════════════════════════════════════════
 
-    function systemContract() public view override returns (address) {
+    function localContract() public view override returns (address) {
         return summit;
     }
 
-    /// @notice Returns local domain for the tested system contract
+    /// @notice Returns local domain for the tested contract
     function localDomain() public pure override returns (uint32) {
         return DOMAIN_SYNAPSE;
     }

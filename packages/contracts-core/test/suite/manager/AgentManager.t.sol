@@ -259,7 +259,7 @@ abstract contract AgentManagerTest is MessagingBaseTest {
 
     function managerMsgPrank(bytes memory payload) public {
         vm.prank(localDestination());
-        systemContract().functionCall(payload);
+        localContract().functionCall(payload);
     }
 
     function managerMsgPayload(uint32 msgOrigin, RawCallData memory rcd) public view returns (bytes memory) {
@@ -283,12 +283,12 @@ abstract contract AgentManagerTest is MessagingBaseTest {
         return RawCallData({selector: lightManager.remoteWithdrawTips.selector, args: abi.encode(actor, amount)});
     }
 
-    /// @notice Returns address of the tested system contract
-    function systemContract() public view override returns (address) {
+    /// @notice Returns address of the tested contract
+    function localContract() public view override returns (address) {
         return localAgentManager();
     }
 
-    /// @notice Returns tested system contract as AgentManager
+    /// @notice Returns tested contract as AgentManager
     function testedAM() public view returns (AgentManagerHarness) {
         return AgentManagerHarness(localAgentManager());
     }
