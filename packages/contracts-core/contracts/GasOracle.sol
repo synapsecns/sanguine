@@ -1,6 +1,9 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.17;
 
+import {GasData, GasDataLib} from "./libs/GasData.sol";
+import {Number, NumberLib} from "./libs/Number.sol";
+import {Tips, TipsLib} from "./libs/Tips.sol";
 // ═════════════════════════════ INTERNAL IMPORTS ══════════════════════════════
 import {MessagingBase} from "./base/MessagingBase.sol";
 import {InterfaceGasOracle} from "./interfaces/InterfaceGasOracle.sol";
@@ -24,6 +27,19 @@ import {InterfaceGasOracle} from "./interfaces/InterfaceGasOracle.sol";
  * > Executors to be protected against that.
  */
 contract GasOracle is MessagingBase, InterfaceGasOracle {
+    struct StoredGasData {
+        Number gasPrice;
+        Number dataPrice;
+        Number execBuffer;
+        Number amortAttCost;
+        Number etherPrice;
+        Number markup;
+    }
+
+    // ══════════════════════════════════════════════════ STORAGE ══════════════════════════════════════════════════════
+
+    mapping(uint32 => StoredGasData) public _gasData;
+
     // ═════════════════════════════════════════ CONSTRUCTOR & INITIALIZER ═════════════════════════════════════════════
 
     // solhint-disable-next-line no-empty-blocks
@@ -36,8 +52,40 @@ contract GasOracle is MessagingBase, InterfaceGasOracle {
         __Ownable_init();
     }
 
+    /// @notice MVP function to set the gas data for the given domain.
+    function setGasData(
+        uint32 domain,
+        uint256 gasPrice,
+        uint256 dataPrice,
+        uint256 execBuffer,
+        uint256 amortAttCost,
+        uint256 etherPrice,
+        uint256 markup
+    ) external onlyOwner {
+        _gasData[domain] = StoredGasData({
+            gasPrice: NumberLib.compress(gasPrice),
+            dataPrice: NumberLib.compress(dataPrice),
+            execBuffer: NumberLib.compress(execBuffer),
+            amortAttCost: NumberLib.compress(amortAttCost),
+            etherPrice: NumberLib.compress(etherPrice),
+            markup: NumberLib.compress(markup)
+        });
+    }
+
     /// @inheritdoc InterfaceGasOracle
-    function getGasData() external view returns (uint256 paddedGasData) {}
+    function getGasData() external view returns (uint256 paddedGasData) {
+        StoredGasData memory gasData = _gasData[localDomain];
+        return GasData.unwrap(
+            GasDataLib.encodeGasData({
+                gasPrice_: gasData.gasPrice,
+                dataPrice_: gasData.dataPrice,
+                execBuffer_: gasData.execBuffer,
+                amortAttCost_: gasData.amortAttCost,
+                etherPrice_: gasData.etherPrice,
+                markup_: gasData.markup
+            })
+        );
+    }
 
     /// @inheritdoc InterfaceGasOracle
     function getMinimumTips(uint32 destination, uint256 paddedRequest, uint256 contentLength)
