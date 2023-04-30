@@ -71,6 +71,81 @@ jobs:
           FILTERED_PATHS_DEPS: ${{ steps.filter_go_deps.outputs.changed_modules }}
           FILTERED_PATHS_NODEPS: ${{ steps.filter_go_nodeps.outputs.changed_modules }}
 
+  # build the goreleaser container cgo cross compiler container. Note: this wil not be applied  until
+  # the next run since build-goreleaser and run-goreleaser are run concurrently. We expect github actions
+  # to fix this in a future version.
+  build-goreleaser:
+    runs-on: ubuntu-latest
+    outputs:
+      goreleaser-image: ${{ steps.name-export.outputs.TAG_NAME }}
+    steps:
+      - name: Git Checkout
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 0 # needed if using new-from-rev (see: https://golangci-lint.run/usage/configuration/#issues-configuration)
+          submodules: true
+
+
+      - name: Cache Docker images.
+        uses: ScribeMD/docker-cache@0.2.6
+        with:
+          key: docker-release-${{ runner.os }}-${{ matrix.package }}
+
+      - uses: dorny/paths-filter@v2
+        name: check if any changes warrant a new build of goreleaser-cgo-cross-compiler
+        id: changes
+        with:
+          token:  ${{ secrets.GITHUB_TOKEN }}
+          filters: |
+            src:
+              - 'docker/goreleaser/**'
+      -
+        name: Set up Docker Buildx
+        if: steps.changes.outputs.src == 'true'
+        uses: docker/setup-buildx-action@v2
+        with:
+          driver-opts: network=host
+
+      - name: Enviornment variables
+        # TODO: this if block needs to be run on every step now, but should be fixed in a future version: https://github.com/actions/runner/issues/662
+        if: steps.changes.outputs.src == 'true'
+        uses: franzdiebold/github-env-vars-action@v1.0.0
+        env:
+          ACTIONS_ALLOW_UNSECURE_COMMANDS: true
+
+      -
+        name: Login to GitHub Container Registry
+        if: steps.changes.outputs.src == 'true'
+        uses: docker/login-action@v1
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GHCR_DOCKER }}
+
+      # we do this so we can use it in subseuqnet steps
+      - name: Export latest tag name
+        id: name-export
+        run:
+          echo "##[set-output name=TAG_NAME;]$(echo $LATEST_TAG_NAME)"
+        env:
+          LATEST_TAG_NAME: ghcr.io/synapsecns/sanguine-goreleaser:${{ hashFiles('docker/goreleaser/**') }}
+      -
+        name: Build and push
+        if: steps.changes.outputs.src == 'true'
+        uses: docker/build-push-action@v3
+        with:
+          context: .
+          push: true
+          file: ./docker/goreleaser/Dockerfile
+          # TODO this needs to be versioned
+          tags: ghcr.io/synapsecns/sanguine-goreleaser:latest,${{ steps.name-export.outputs.TAG_NAME }}
+          cache-from: type=registry,ref=ghcr.io/synapsecns/sanguine-goreleaser:buildcache
+          cache-to: type=registry,ref=ghcr.io/synapsecns/sanguine-goreleaser:buildcache,mode=max
+          build-args: |
+            SHA_ARG=6528006a74f6272c0b4239d33ee9b8d4054ac39812b30c23b4115096316beb3e
+            FILE_ARG=goreleaser-pro_Linux_x86_64.tar.gz
+            DOWNLOAD_ARG=https://github.com/goreleaser/goreleaser-pro/releases/download/v1.13.1-pro/goreleaser-pro_Linux_x86_64.tar.gz
+            VERSION_ARG=1.13.1-pro
   test:
     name: Go Coverage
     runs-on: ${{ matrix.platform }}
@@ -543,3 +618,142 @@ jobs:
           remove-labels: 'needs-go-generate-${{matrix.package}}'
           repo-token: ${{ secrets.GITHUB_TOKEN }}
           issue-number: ${{ needs.issue_number.outputs.issue_number }}
+
+  # run-goreleaser. This will also allow us to test the helm images
+  run-goreleaser:
+    runs-on: ubuntu-latest
+    needs: [build-goreleaser,changes]
+    if: ${{ needs.changes.outputs.package_count_deps > 0 }}
+    strategy:
+      matrix:
+        # list of packages, if you update this update changes as well
+        package: ${{ fromJSON(needs.changes.outputs.packages_deps) }}
+    container:
+      image: ${{ needs.build-goreleaser.outputs.goreleaser-image }}
+      volumes: [ /repo ]
+    steps:
+      - name: Git Checkout
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+          submodules: 'recursive'
+
+
+      - name: Get branch name
+        id: branch-name
+        uses: tj-actions/branch-names@v6
+
+      - name: Bump version and push tag
+        id: tag_version
+        if: steps.branch-name.outputs.is_default == 'true'
+        uses: mathieudutour/github-tag-action@v6.0
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          tag_prefix: ${{matrix.package}}/v
+          release_branches: master
+          fetch_all_tags: true
+
+      - name: Tag Config
+        run: git config --global --add safe.directory /__w/sanguine/sanguine
+
+      -
+        name: Fetch all tags
+        run: git fetch --force --tags
+
+      # get the tag we just created
+      - name: Git Fetch Unshallow
+        run: git fetch
+
+      - name: Import GPG key
+        uses: crazy-max/ghaction-import-gpg@111c56156bcc6918c056dbef52164cfa583dc549 # v5.2.0
+        id: import_gpg
+        with:
+          gpg_private_key: ${{ secrets.GPG_PRIVATE_KEY }}
+          passphrase: ${{ secrets.GPG_PASSPHRASE }}
+
+      - name: Set up Go
+        uses: actions/setup-go@v3
+        with:
+          go-version: 1.20.x
+
+      -
+        name: Login to GitHub Container Registry
+        uses: docker/login-action@v1
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GHCR_DOCKER }}
+
+      - name: Run GoReleaser (Release)
+        if: steps.branch-name.outputs.is_default == 'true'
+        run: goreleaser  --timeout 900m --rm-dist --debug -f ${{matrix.package}}/.goreleaser.yml
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GONOSUM: '.*'
+          GORELEASER_KEY: ${{ secrets.GORELEASER_KEY }}
+          GOGC: 2000
+          GOMEMLIMIT: 6GiB
+          GPG_FINGERPRINT: ${{ steps.import_gpg.outputs.fingerprint }}
+
+      # use this to determine if we need goreleaser for a workflow
+      # TODO: it might be worth considering moving this into a seperate workflow so we can avoid doing a full clone + pulling the image when we don't need anything
+      - name: Check For Docker Images
+        if: steps.branch-name.outputs.is_default != 'true'
+        id: image_check
+        run: |
+          # will be 0 if none present
+          has_images=$(yq eval '.dockers != null' ${{matrix.package}}/.goreleaser.yml)
+          echo "##[set-output name=has_images;]$(echo $has_images)"
+
+
+      - name: Run GoReleaser (Snapshot)
+        if: steps.branch-name.outputs.is_default != 'true' && steps.image_check.outputs.has_images == 'true'
+        run: goreleaser --timeout 900m --snapshot --rm-dist --debug -f ${{matrix.package}}/.goreleaser.yml
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GONOSUM: '.*'
+          GORELEASER_KEY: ${{ secrets.GORELEASER_KEY }}
+          GOGC: 20
+          GOMEMLIMIT: 6GiB
+          GPG_FINGERPRINT: ${{ steps.import_gpg.outputs.fingerprint }}
+
+      - name: Push Docker Images (Snapshot)
+        if: steps.branch-name.outputs.is_default != 'true' && steps.image_check.outputs.has_images == 'true'
+        run: |
+          docker_image=$(yq '.dockers | length' dist/config.yaml)
+          image_name=$(yq '.project_name' ${{matrix.package}}/.goreleaser.yml)
+          if [ $docker_image -eq "0" ]; then
+            echo "No docker images to push"
+            exit 0
+          fi
+          docker tag ghcr.io/synapsecns/sanguine/$image_name:latest ghcr.io/synapsecns/$image_name:${GITHUB_SHA}
+          docker push ghcr.io/synapsecns/sanguine/$image_name:${GITHUB_SHA}
+      - name: Copy Releases
+        if: ${{ steps.branch-name.outputs.is_default == 'true' && contains( steps.tag_version.outputs.new_tag, 'terraform-provider-iap') }}
+        uses: docker://ghcr.io/synapsecns/sanguine/release-copier-action:latest
+        with:
+          github_token: ${{ secrets.PUBLISH_TOKEN }}
+          # TODO: will change with new org
+          destination_repo: 'trajan0x/terraform-provider-iap'
+          tag_name: ${{ steps.tag_version.outputs.new_tag }}
+          strip_prefix: 'contrib/terraform-provider-iap/'
+
+      - name: Copy Releases
+        if: ${{ steps.branch-name.outputs.is_default == 'true' && contains( steps.tag_version.outputs.new_tag, 'terraform-provider-helmproxy') }}
+        uses: docker://ghcr.io/synapsecns/sanguine/release-copier-action:latest
+        with:
+          github_token: ${{ secrets.PUBLISH_TOKEN }}
+          # TODO: will change with new org
+          destination_repo: 'trajan0x/terraform-provider-helmproxy'
+          tag_name: ${{ steps.tag_version.outputs.new_tag }}
+          strip_prefix: 'contrib/terraform-provider-helmproxy/'
+
+      - name: Copy Releases
+        if: ${{ steps.branch-name.outputs.is_default == 'true' && contains( steps.tag_version.outputs.new_tag, 'terraform-provider-kubeproxy') }}
+        uses: docker://ghcr.io/synapsecns/sanguine/release-copier-action:latest
+        with:
+          github_token: ${{ secrets.PUBLISH_TOKEN }}
+          # TODO: will change with new org
+          destination_repo: 'trajan0x/terraform-provider-kubeproxy'
+          tag_name: ${{ steps.tag_version.outputs.new_tag }}
+          strip_prefix: 'contrib/terraform-provider-kubeproxy/'
