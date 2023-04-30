@@ -19,6 +19,7 @@ import {
     RawStateReport
 } from "../../utils/libs/SynapseStructs.t.sol";
 
+// solhint-disable func-name-mixedcase
 abstract contract MessagingBaseTest is SynapseTest {
     struct SnapshotMock {
         RawState rs;
@@ -34,6 +35,17 @@ abstract contract MessagingBaseTest is SynapseTest {
         require(localDomain() == DOMAIN_LOCAL || localDomain() == DOMAIN_SYNAPSE, "Unsupported local domain");
         _;
     }
+
+    // To ensure that every MessagingBase contract has this test
+    function test_cleanSetup(Random memory random) public virtual;
+
+    // To ensure that every MessagingBase contract has this test
+    function test_initializer_revert_alreadyInitialized() public {
+        expectRevertAlreadyInitialized();
+        initializeLocalContract();
+    }
+
+    function initializeLocalContract() public virtual;
 
     // ═══════════════════════════════════════════════ EXPECTATIONS ════════════════════════════════════════════════════
 

@@ -59,15 +59,23 @@ contract OriginTest is AgentSecuredTest {
         assertEq(Versioned(origin).version(), LATEST_VERSION, "!version");
     }
 
-    function test_initializer(address caller, uint32 domain, address agentManager_, address gasOracle_) public {
-        Origin origin_ = new Origin(domain, agentManager_, gasOracle_);
+    function test_cleanSetup(Random memory random) public override {
+        uint32 domain = random.nextUint32();
+        address caller = random.nextAddress();
+        address agentManager = random.nextAddress();
+        address gasOracle_ = random.nextAddress();
+        Origin cleanContract = new Origin(domain, agentManager, gasOracle_);
         vm.prank(caller);
-        origin_.initialize();
-        assertEq(origin_.owner(), caller, "!owner");
-        assertEq(origin_.localDomain(), domain, "!localDomain");
-        assertEq(origin_.agentManager(), agentManager_, "!agentManager");
-        assertEq(origin_.gasOracle(), gasOracle_, "!gasOracle");
-        assertEq(origin_.statesAmount(), 1, "!statesAmount");
+        cleanContract.initialize();
+        assertEq(cleanContract.owner(), caller, "!owner");
+        assertEq(cleanContract.localDomain(), domain, "!localDomain");
+        assertEq(cleanContract.agentManager(), agentManager, "!agentManager");
+        assertEq(cleanContract.gasOracle(), gasOracle_, "!gasOracle");
+        assertEq(cleanContract.statesAmount(), 1, "!statesAmount");
+    }
+
+    function initializeLocalContract() public override {
+        Origin(systemContract()).initialize();
     }
 
     function test_sendBaseMessage_revert_tipsTooLow(RawTips memory minTips, uint256 msgValue) public {
