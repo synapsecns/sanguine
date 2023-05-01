@@ -44,4 +44,3 @@ scribe
 ## Regenerating protobuf definitions:
 
 `make generate`
-
