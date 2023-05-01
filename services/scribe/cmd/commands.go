@@ -2,6 +2,8 @@ package cmd
 
 import (
 	"context"
+	"github.com/synapsecns/sanguine/core/metrics"
+	"github.com/synapsecns/sanguine/services/scribe/metadata"
 	"time"
 
 	// used to embed markdown.
@@ -68,7 +70,7 @@ func createScribeParameters(c *cli.Context) (eventDB db.EventDB, clients map[uin
 		return nil, nil, scribeConfig, fmt.Errorf("could not decode config: %w", err)
 	}
 
-	eventDB, err = api.InitDB(c.Context, c.String(dbFlag.Name), c.String(pathFlag.Name))
+	eventDB, err = api.InitDB(c.Context, c.String(dbFlag.Name), c.String(pathFlag.Name), metrics.Get(), c.Bool(skipMigrationFlag.Name))
 	if err != nil {
 		return nil, nil, scribeConfig, fmt.Errorf("could not initialize database: %w", err)
 	}
@@ -76,7 +78,7 @@ func createScribeParameters(c *cli.Context) (eventDB db.EventDB, clients map[uin
 	clients = make(map[uint32][]backfill.ScribeBackend)
 	for _, client := range scribeConfig.Chains {
 		for confNum := 1; confNum <= MaxConfirmations; confNum++ {
-			backendClient, err := backfill.DialBackend(c.Context, fmt.Sprintf("%s/%d/rpc/%d", scribeConfig.RPCURL, confNum, client.ChainID))
+			backendClient, err := backfill.DialBackend(c.Context, fmt.Sprintf("%s/%d/rpc/%d", scribeConfig.RPCURL, confNum, client.ChainID), metrics.Get())
 			if err != nil {
 				return nil, nil, scribeConfig, fmt.Errorf("could not start client for %s", fmt.Sprintf("%s/1/rpc/%d", scribeConfig.RPCURL, client.ChainID))
 			}
@@ -90,7 +92,7 @@ func createScribeParameters(c *cli.Context) (eventDB db.EventDB, clients map[uin
 var backfillCommand = &cli.Command{
 	Name:        "backfill",
 	Description: "backfills up to a block and then halts",
-	Flags:       []cli.Flag{configFlag, dbFlag, pathFlag},
+	Flags:       []cli.Flag{configFlag, dbFlag, pathFlag, skipMigrationFlag},
 	Action: func(c *cli.Context) error {
 		db, clients, decodeConfig, err := createScribeParameters(c)
 		if err != nil {
@@ -100,8 +102,13 @@ var backfillCommand = &cli.Command{
 		// TODO delete once livefilling done
 		ctx, cancel := context.WithTimeout(c.Context, time.Minute*5)
 		cancelVar := cancel
+		handler, err := metrics.NewFromEnv(c.Context, metadata.BuildInfo())
+		if err != nil {
+			return fmt.Errorf("could not create metrics handler: %w", err)
+		}
+
 		for {
-			scribeBackfiller, err := backfill.NewScribeBackfiller(db, clients, decodeConfig)
+			scribeBackfiller, err := backfill.NewScribeBackfiller(db, clients, decodeConfig, handler)
 			if err != nil {
 				return fmt.Errorf("could not create scribe backfiller: %w", err)
 			}
@@ -125,7 +132,7 @@ var scribeCommand = &cli.Command{
 		if err != nil {
 			return err
 		}
-		scribe, err := node.NewScribe(db, clients, decodeConfig)
+		scribe, err := node.NewScribe(db, clients, decodeConfig, metrics.Get())
 		if err != nil {
 			return fmt.Errorf("could not create scribe: %w", err)
 		}
@@ -140,14 +147,15 @@ var scribeCommand = &cli.Command{
 var serverCommand = &cli.Command{
 	Name:        "server",
 	Description: "starts a graphql server",
-	Flags:       []cli.Flag{portFlag, dbFlag, pathFlag, omniRPCFlag},
+	Flags:       []cli.Flag{portFlag, dbFlag, pathFlag, omniRPCFlag, skipMigrationServerFlag},
 	Action: func(c *cli.Context) error {
 		err := api.Start(c.Context, api.Config{
-			Port:       uint16(c.Uint(portFlag.Name)),
-			Database:   c.String(dbFlag.Name),
-			Path:       c.String(pathFlag.Name),
-			OmniRPCURL: c.String(omniRPCFlag.Name),
-		})
+			Port:           uint16(c.Uint(portFlag.Name)),
+			Database:       c.String(dbFlag.Name),
+			Path:           c.String(pathFlag.Name),
+			OmniRPCURL:     c.String(omniRPCFlag.Name),
+			SkipMigrations: c.Bool(skipMigrationServerFlag.Name),
+		}, metrics.Get())
 		if err != nil {
 			return fmt.Errorf("could not start server: %w", err)
 		}
@@ -160,6 +168,19 @@ var omniRPCFlag = &cli.StringFlag{
 	Name:     "omnirpc",
 	Usage:    "--omnirpc https://omnirpc.url",
 	Required: true,
+}
+
+var skipMigrationFlag = &cli.BoolFlag{
+	Name:  "skip-migrations",
+	Usage: "--skip-migrations",
+	Value: false,
+}
+
+var skipMigrationServerFlag = &cli.BoolFlag{
+	Name:     skipMigrationFlag.Name,
+	Usage:    skipMigrationFlag.Usage,
+	Required: skipMigrationFlag.Required,
+	Value:    true,
 }
 
 var deploymentsPath = &cli.StringFlag{

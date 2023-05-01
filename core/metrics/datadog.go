@@ -6,24 +6,26 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/synapsecns/sanguine/core"
 	"github.com/synapsecns/sanguine/core/config"
+	"go.opentelemetry.io/contrib/propagators/b3"
 	gintrace "gopkg.in/DataDog/dd-trace-go.v1/contrib/gin-gonic/gin"
-	ddhttp "gopkg.in/DataDog/dd-trace-go.v1/contrib/net/http"
+	"gopkg.in/DataDog/dd-trace-go.v1/ddtrace/opentelemetry"
 	"gopkg.in/DataDog/dd-trace-go.v1/ddtrace/tracer"
 	"gopkg.in/DataDog/dd-trace-go.v1/profiler"
-	"gorm.io/gorm"
 	"k8s.io/apimachinery/pkg/util/sets"
-	"net/http"
 	"strings"
 )
 
 type datadogHandler struct {
+	*baseHandler
 	profilerOptions []profiler.Option
 	buildInfo       config.BuildInfo
 }
 
-func (d *datadogHandler) AddGormCallbacks(db *gorm.DB) {
-	// TODO: implement, see:  https://github.com/DataDog/dd-trace-go/blob/main/contrib/jinzhu/gorm/example_test.go
-}
+const ddCommitTag = "git.commit.sha"
+const ddEnvTag = "DD_ENV"
+const ddServiceTag = "DD_SERVICE"
+const ddVersionTag = "DD_VERSION"
+const defaultEnv = "default"
 
 // NewDatadogMetricsHandler creates a new datadog metrics handler.
 func NewDatadogMetricsHandler(buildInfo config.BuildInfo) Handler {
@@ -31,18 +33,27 @@ func NewDatadogMetricsHandler(buildInfo config.BuildInfo) Handler {
 		buildInfo: buildInfo,
 	}
 
+	datadogBuildInfo := config.NewBuildInfo(core.GetEnv(ddVersionTag, buildInfo.Version()), buildInfo.Commit(), core.GetEnv(ddServiceTag, buildInfo.Name()), buildInfo.Date())
+
+	// This is a no-op handler to prevent panics. it gets set in start!
+	handler.baseHandler = newBaseHandler(datadogBuildInfo)
+
 	handler.profilerOptions = []profiler.Option{
-		profiler.WithService(buildInfo.Name()),
-		profiler.WithEnv(core.GetEnv("ENVIRONMENT", "default")),
-		profiler.WithVersion(buildInfo.Version()),
+		profiler.WithService(datadogBuildInfo.Name()),
+		profiler.WithEnv(core.GetEnv(ddEnvTag, defaultEnv)),
+		profiler.WithVersion(datadogBuildInfo.Version()),
 		profiler.WithTags(
-			fmt.Sprintf("commit:%s", buildInfo.Commit()),
+			fmt.Sprintf("%s:%s", ddCommitTag, datadogBuildInfo.Commit()),
 		),
 		profiler.WithLogStartup(true),
 		profiler.WithProfileTypes(getProfileTypesFromEnv()...),
 	}
 
 	return &handler
+}
+
+func (d *datadogHandler) Type() HandlerType {
+	return DataDog
 }
 
 // Gin gets a gin middleware for datadog tracing.
@@ -57,7 +68,13 @@ func (d *datadogHandler) Start(ctx context.Context) error {
 		return fmt.Errorf("could not start profiler: %w", err)
 	}
 
-	tracer.Start(tracer.WithRuntimeMetrics(), tracer.WithProfilerEndpoints(true), tracer.WithAnalytics(true))
+	propagator := b3.New(b3.WithInjectEncoding(b3.B3MultipleHeader | b3.B3SingleHeader))
+
+	ddPrpopgator := tracer.NewPropagator(&tracer.PropagatorConfig{B3: true})
+	tracerProvider := opentelemetry.NewTracerProvider(tracer.WithRuntimeMetrics(), tracer.WithProfilerEndpoints(true), tracer.WithAnalytics(true),
+		tracer.WithPropagator(ddPrpopgator), tracer.WithEnv(core.GetEnv(ddEnvTag, defaultEnv)), tracer.WithService(d.buildInfo.Name()), tracer.WithServiceVersion(d.buildInfo.Version()))
+
+	d.baseHandler = newBaseHandlerWithTracerProvider(d.buildInfo, tracerProvider, propagator)
 
 	// stop on context cancellation
 	go func() {
@@ -68,18 +85,12 @@ func (d *datadogHandler) Start(ctx context.Context) error {
 	return nil
 }
 
-// ConfigureHTTPClient wraps the Transport of an http.Client with a datadog tracer.
-func (d *datadogHandler) ConfigureHTTPClient(client *http.Client) {
-	wrappedTrnasport := ddhttp.WrapClient(client).Transport
-	client.Transport = wrappedTrnasport
-}
-
 // DDProfileEnv is the data daog profile neviornment variable.
 const DDProfileEnv = "DD_PROFILES"
 
 // getProfileTypesFromEnv gets a list of enabled profile types from environment variables.
 func getProfileTypesFromEnv() (profiles []profiler.ProfileType) {
-	profileEnv := core.GetEnv(DDProfileEnv, strings.Join([]string{profiler.CPUProfile.String(), profiler.MetricsProfile.String()}, ","))
+	profileEnv := core.GetEnv(DDProfileEnv, strings.Join([]string{profiler.CPUProfile.String(), profiler.MetricsProfile.String(), profiler.GoroutineProfile.String(), profiler.MutexProfile.String(), profiler.HeapProfile.String()}, ","))
 	profilesStr := strings.Split(strings.ToLower(profileEnv), ",")
 
 	// strip duplicates by using a set

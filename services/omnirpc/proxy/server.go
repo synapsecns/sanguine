@@ -4,13 +4,13 @@ import (
 	"context"
 	"fmt"
 	"github.com/gin-gonic/gin"
-	"github.com/ipfs/go-log"
 	"github.com/synapsecns/sanguine/core/ginhelper"
 	"github.com/synapsecns/sanguine/core/metrics"
 	"github.com/synapsecns/sanguine/services/omnirpc/chainmanager"
 	"github.com/synapsecns/sanguine/services/omnirpc/collection"
 	"github.com/synapsecns/sanguine/services/omnirpc/config"
 	omniHTTP "github.com/synapsecns/sanguine/services/omnirpc/http"
+	"go.opentelemetry.io/otel/trace"
 	"net/http"
 	"strconv"
 	"sync"
@@ -19,6 +19,8 @@ import (
 
 // RPCProxy proxies rpc request to the fastest endpoint. Requests fallback in cases where data is not available.
 type RPCProxy struct {
+	// tracer is the tracer for the proxy
+	tracer trace.Tracer
 	// chainManager contains a list of chains and latency ordered rpcs
 	chainManager chainmanager.ChainManager
 	// config contains the config for each chain
@@ -29,13 +31,15 @@ type RPCProxy struct {
 	forwarderPool sync.Pool
 	// client contains the http client
 	client omniHTTP.Client
+	// handler is the metrics handler
+	handler metrics.Handler
 }
 
 // defaultInterval is the default refresh interval.
 const defaultInterval = 30
 
 // NewProxy creates a new rpc proxy.
-func NewProxy(config config.Config) *RPCProxy {
+func NewProxy(config config.Config, handler metrics.Handler) *RPCProxy {
 	if config.RefreshInterval == 0 {
 		logger.Warn("no refresh interval set (or interval is 0), using default of %d seconds", defaultInterval)
 	}
@@ -45,6 +49,8 @@ func NewProxy(config config.Config) *RPCProxy {
 		refreshInterval: time.Second * time.Duration(config.RefreshInterval),
 		port:            config.Port,
 		client:          omniHTTP.NewClient(omniHTTP.ClientTypeFromString(config.ClientType)),
+		handler:         handler,
+		tracer:          handler.Tracer(),
 	}
 }
 
@@ -53,8 +59,7 @@ func (r *RPCProxy) Run(ctx context.Context) {
 	go r.startProxyLoop(ctx)
 
 	router := ginhelper.New(logger)
-	router.Use(metrics.Get().Gin())
-	log.SetAllLoggers(log.LevelDebug)
+	router.Use(r.handler.Gin())
 
 	router.POST("/rpc/:id", func(c *gin.Context) {
 		chainID, err := strconv.Atoi(c.Param("id"))
@@ -92,7 +97,6 @@ func (r *RPCProxy) Run(ctx context.Context) {
 				"error": fmt.Sprintf("could not parse collection: %v", err),
 			})
 		}
-
 		c.Data(http.StatusOK, gin.MIMEJSON, res)
 	})
 

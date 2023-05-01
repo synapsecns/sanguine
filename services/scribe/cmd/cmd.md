@@ -1,6 +1,6 @@
 # Scribe
 
-The Scribe is a service that goes through all chains and contracts specified in a config file and creates a database with logs, receipts, and transactions.
+Scribe is a service that goes through all chains and contracts specified in a config file and creates a database with logs, receipts, and transactions.
 
 ## Usage
 

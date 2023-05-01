@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"github.com/phayes/freeport"
+	"github.com/synapsecns/sanguine/core/metrics"
 	"github.com/synapsecns/sanguine/services/scribe/api"
 )
 
@@ -13,6 +14,8 @@ type ScribeClient struct {
 	Port uint16
 	// URL is the URL for the connection.
 	URL string
+	// metrics is the metrics metrics.
+	metrics metrics.Handler
 }
 
 // EmbeddedScribe is a ScribeClient that is used locally.
@@ -26,11 +29,12 @@ type EmbeddedScribe struct {
 }
 
 // NewEmbeddedScribe creates a new EmbeddedScribe.
-func NewEmbeddedScribe(database, path string) EmbeddedScribe {
+func NewEmbeddedScribe(database, path string, metrics metrics.Handler) EmbeddedScribe {
 	return EmbeddedScribe{
 		ScribeClient: ScribeClient{
-			Port: uint16(freeport.GetPort()),
-			URL:  "localhost",
+			Port:    uint16(freeport.GetPort()),
+			URL:     "localhost",
+			metrics: metrics,
 		},
 		database: database,
 		path:     path,
@@ -49,7 +53,7 @@ func (e EmbeddedScribe) Start(ctx context.Context) error {
 		Database: e.database,
 		Path:     e.path,
 	}
-	err := api.Start(ctx, apiConfig)
+	err := api.Start(ctx, apiConfig, e.ScribeClient.metrics)
 	if err != nil {
 		return fmt.Errorf("could not start api: %w", err)
 	}
@@ -64,11 +68,12 @@ type RemoteScribe struct {
 }
 
 // NewRemoteScribe creates a new RemoteScribe.
-func NewRemoteScribe(httpPort uint16, url string) RemoteScribe {
+func NewRemoteScribe(httpPort uint16, url string, metrics metrics.Handler) RemoteScribe {
 	return RemoteScribe{
 		ScribeClient: ScribeClient{
-			Port: httpPort,
-			URL:  url,
+			Port:    httpPort,
+			URL:     url,
+			metrics: metrics,
 		},
 	}
 }

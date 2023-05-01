@@ -19,6 +19,10 @@ M-contracts:
 M-explorer-ui:
   - any: ['packages/explorer-ui/**/*']
 
+M-synapse-interface:
+  - any: ['packages/synapse-interface/**/*']
+
+
 M-charts:
   - any: ['charts/**/*']
 

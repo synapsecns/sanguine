@@ -36,10 +36,17 @@ Common labels
 {{- define "agents.labels" -}}
 helm.sh/chart: {{ include "agents.chart" . }}
 {{ include "agents.selectorLabels" . }}
+{{ include "agents.commonLabels" . }}
 {{- if .Chart.AppVersion }}
 app.kubernetes.io/version: {{ .Chart.AppVersion | quote }}
 {{- end }}
 app.kubernetes.io/managed-by: {{ .Release.Service }}
+{{- end }}
+
+{{- define "agents.commonLabels" -}}
+{{- range $key, $value := .Values.labels }}
+{{ $key }}: {{ $value | quote }}
+{{- end }}
 {{- end }}
 
 {{/*

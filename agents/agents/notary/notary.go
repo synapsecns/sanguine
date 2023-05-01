@@ -4,6 +4,10 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"github.com/synapsecns/sanguine/core/metrics"
+	"go.opentelemetry.io/contrib/instrumentation/google.golang.org/grpc/otelgrpc"
+	"go.opentelemetry.io/otel/attribute"
+	"go.opentelemetry.io/otel/trace"
 	"io"
 	"strconv"
 	"time"
@@ -39,12 +43,13 @@ type Notary struct {
 	summitParser            summit.Parser
 	scribeGrpcClient        pbscribe.ScribeServiceClient
 	lastSummitBlock         uint64
+	handler                 metrics.Handler
 }
 
 // NewNotary creates a new notary.
 //
 //nolint:cyclop
-func NewNotary(ctx context.Context, cfg config.AgentConfig) (_ Notary, err error) {
+func NewNotary(ctx context.Context, cfg config.AgentConfig, scribeClient client.ScribeClient, handler metrics.Handler) (_ Notary, err error) {
 	notary := Notary{
 		refreshInterval: time.Second * time.Duration(cfg.RefreshIntervalSeconds),
 	}
@@ -83,18 +88,19 @@ func NewNotary(ctx context.Context, cfg config.AgentConfig) (_ Notary, err error
 		return Notary{}, fmt.Errorf("could not create summit parser: %w", err)
 	}
 
-	scribeClient := client.ScribeClient{
-		Port: uint16(cfg.ScribePort),
-		URL:  cfg.ScribeURL,
-	}
-
 	// Scribe gRPC setup.
-	conn, err := grpc.DialContext(ctx, fmt.Sprintf("%s:%d", scribeClient.URL, scribeClient.Port), grpc.WithTransportCredentials(insecure.NewCredentials()))
+	conn, err := grpc.DialContext(ctx, fmt.Sprintf("%s:%d", scribeClient.URL, scribeClient.Port),
+		grpc.WithTransportCredentials(insecure.NewCredentials()),
+		grpc.WithUnaryInterceptor(otelgrpc.UnaryClientInterceptor(otelgrpc.WithTracerProvider(handler.GetTracerProvider()))),
+		grpc.WithStreamInterceptor(otelgrpc.StreamClientInterceptor(otelgrpc.WithTracerProvider(handler.GetTracerProvider()))),
+	)
 	if err != nil {
 		return Notary{}, fmt.Errorf("could not dial grpc: %w", err)
 	}
 
 	notary.scribeGrpcClient = pbscribe.NewScribeServiceClient(conn)
+
+	notary.handler = handler
 
 	return notary, nil
 }
@@ -185,104 +191,135 @@ func (n Notary) logToAttestation(log ethTypes.Log) (*types.Attestation, error) {
 }
 
 //nolint:cyclop
-func (n Notary) loadSummitMyLatestStates(ctx context.Context) {
+func (n Notary) loadSummitMyLatestStates(parentCtx context.Context) {
 	for _, domain := range n.domains {
+		ctx, span := n.handler.Tracer().Start(parentCtx, "loadSummitMyLatestStates", trace.WithAttributes(
+			attribute.Int(metrics.ChainID, int(domain.Config().DomainID)),
+		))
+
 		originID := domain.Config().DomainID
 		myLatestState, err := n.summitDomain.Summit().GetLatestAgentState(ctx, originID, n.bondedSigner)
 		if err != nil {
 			myLatestState = nil
-			logger.Errorf("Failed calling GetLatestAgentState for originID on the Summit contract: %d, err = %v", originID, err)
+			span.AddEvent("GetLatestAgentState failed", trace.WithAttributes(
+				attribute.String("err", err.Error()),
+			))
 		}
 		if myLatestState != nil && myLatestState.Nonce() > uint32(0) {
 			n.summitMyLatestStates[originID] = myLatestState
 		}
+
+		span.End()
 	}
 }
 
 //nolint:cyclop
-func (n Notary) loadSummitGuardLatestStates(ctx context.Context) {
+func (n Notary) loadSummitGuardLatestStates(parentCtx context.Context) {
 	for _, domain := range n.domains {
+		ctx, span := n.handler.Tracer().Start(parentCtx, "loadSummitGuardLatestStates", trace.WithAttributes(
+			attribute.Int(metrics.ChainID, int(domain.Config().DomainID)),
+		))
+
 		originID := domain.Config().DomainID
 
 		guardLatestState, err := n.summitDomain.Summit().GetLatestState(ctx, originID)
 		if err != nil {
 			guardLatestState = nil
-			logger.Errorf("Failed calling GetLatestState for originID %d on the Summit contract: err = %v", originID, err)
+			span.AddEvent("GetLatestState failed", trace.WithAttributes(
+				attribute.String("err", err.Error()),
+			))
 		}
 		if guardLatestState != nil && guardLatestState.Nonce() > uint32(0) {
 			n.summitGuardLatestStates[originID] = guardLatestState
 		}
+
+		span.End()
 	}
 }
 
 //nolint:cyclop
-func (n Notary) isValidOnOrigin(ctx context.Context, state types.State, domain domains.DomainClient) bool {
+func (n Notary) isValidOnOrigin(parentCtx context.Context, state types.State, domain domains.DomainClient) bool {
+	if state == nil {
+		return false
+	}
+
+	stateRoot := state.Root()
+	ctx, span := n.handler.Tracer().Start(parentCtx, "isValidOnOrigin", trace.WithAttributes(
+		attribute.Int(metrics.ChainID, int(domain.Config().DomainID)),
+		attribute.Int(metrics.Nonce, int(state.Nonce())),
+		attribute.String("stateRoot", common.Bytes2Hex(stateRoot[:])),
+	))
+
+	defer span.End()
+
 	stateOnOrigin, err := domain.Origin().SuggestState(ctx, state.Nonce())
 	if err != nil {
-		logger.Errorf("Failed calling SuggestState for originID %d on the Origin contract: err = %v", err)
+		span.AddEvent("SuggestState failed", trace.WithAttributes(
+			attribute.String("err", err.Error()),
+		))
 		// return false since we weren't able to validate the state on the origin
 		return false
 	}
 
 	if stateOnOrigin.Root() != state.Root() {
-		logger.Errorf("State roots do not equal")
+		span.AddEvent("State roots do not equal")
 		return false
 	}
 
 	if stateOnOrigin.Origin() != state.Origin() {
-		logger.Errorf("State origins do not equal")
+		span.AddEvent("State origins do not equal")
 		return false
 	}
 
 	if stateOnOrigin.Nonce() != state.Nonce() {
-		logger.Errorf("State nonces do not equal")
+		span.AddEvent("State nonces do not equal")
 		return false
 	}
 
 	if stateOnOrigin.BlockNumber() == nil {
-		logger.Errorf("State on origin had nil block number")
+		span.AddEvent("State on origin had nil block number")
 		return false
 	}
 
 	if state.BlockNumber() == nil {
-		logger.Errorf("State to validate had nil block number")
+		span.AddEvent("State to validate had nil block number")
 		return false
 	}
 
 	if stateOnOrigin.BlockNumber().Uint64() != state.BlockNumber().Uint64() {
-		logger.Errorf("State block numbers do not equal")
+		span.AddEvent("State block numbers do not equal")
 		return false
 	}
 
 	if stateOnOrigin.Timestamp() == nil {
-		logger.Errorf("State on origin had nil time stamp")
+		span.AddEvent("State on origin had nil time stamp")
 		return false
 	}
 
 	if state.Timestamp() == nil {
-		logger.Errorf("State to validate had nil time stamp")
+		span.AddEvent("State to validate had nil time stamp")
 		return false
 	}
 
 	if stateOnOrigin.Timestamp().Uint64() != state.Timestamp().Uint64() {
-		logger.Errorf("State timestamps do not equal")
+		span.AddEvent("State timestamps do not equal")
 		return false
 	}
 
 	stateOnOriginHash, err := stateOnOrigin.Hash()
 	if err != nil {
-		logger.Errorf("Error computing state on origin hash")
+		span.AddEvent("Error computing state on origin hash")
 		return false
 	}
 
 	stateHash, err := state.Hash()
 	if err != nil {
-		logger.Errorf("Error computing state on summit hash")
+		span.AddEvent("Error computing state on summit hash")
 		return false
 	}
 
 	if stateOnOriginHash != stateHash {
-		logger.Errorf("State hashes do not equal")
+		span.AddEvent("State hashes do not equal")
 		return false
 	}
 
@@ -290,9 +327,13 @@ func (n Notary) isValidOnOrigin(ctx context.Context, state types.State, domain d
 }
 
 //nolint:cyclop
-func (n Notary) getLatestSnapshot(ctx context.Context) (types.Snapshot, map[uint32]types.State) {
+func (n Notary) getLatestSnapshot(parentCtx context.Context) (types.Snapshot, map[uint32]types.State) {
 	statesToSubmit := make(map[uint32]types.State, len(n.domains))
 	for _, domain := range n.domains {
+		ctx, span := n.handler.Tracer().Start(parentCtx, "getLatestSnapshot", trace.WithAttributes(
+			attribute.Int(metrics.ChainID, int(domain.Config().DomainID)),
+		))
+
 		originID := domain.Config().DomainID
 		summitMyLatest, ok := n.summitMyLatestStates[originID]
 		if !ok || summitMyLatest == nil || summitMyLatest.Nonce() == 0 {
@@ -308,12 +349,14 @@ func (n Notary) getLatestSnapshot(ctx context.Context) (types.Snapshot, map[uint
 			continue
 		}
 		if !n.isValidOnOrigin(ctx, summitGuardLatest, domain) {
-			logger.Errorf("State not valid on origin %d, nonce %d",
-				summitGuardLatest.Origin(),
-				summitGuardLatest.Nonce())
+			span.AddEvent("State not valid on origin", trace.WithAttributes(
+				attribute.Int("nonce", int(summitGuardLatest.Nonce())),
+			))
 			continue
 		}
 		statesToSubmit[originID] = summitGuardLatest
+
+		span.End()
 	}
 	snapshotStates := make([]types.State, 0, len(statesToSubmit))
 	for _, state := range statesToSubmit {
@@ -330,7 +373,10 @@ func (n Notary) getLatestSnapshot(ctx context.Context) (types.Snapshot, map[uint
 }
 
 //nolint:cyclop
-func (n Notary) submitLatestSnapshot(ctx context.Context) {
+func (n Notary) submitLatestSnapshot(parentCtx context.Context) {
+	ctx, span := n.handler.Tracer().Start(parentCtx, "submitLatestSnapshot")
+	defer span.End()
+
 	snapshot, statesToSubmit := n.getLatestSnapshot(ctx)
 	if snapshot == nil {
 		return
@@ -338,12 +384,16 @@ func (n Notary) submitLatestSnapshot(ctx context.Context) {
 
 	snapshotSignature, encodedSnapshot, _, err := snapshot.SignSnapshot(ctx, n.bondedSigner)
 	if err != nil {
-		logger.Errorf("Error signing snapshot: %v", err)
+		span.AddEvent("Error signing snapshot", trace.WithAttributes(
+			attribute.String("err", err.Error()),
+		))
 	} else {
 		logger.Infof("Notary submitting snapshot to summit")
 		err := n.summitDomain.Summit().SubmitSnapshot(ctx, n.unbondedSigner, encodedSnapshot, snapshotSignature)
 		if err != nil {
-			logger.Errorf("Failed to submit snapshot to summit: %v", err)
+			span.AddEvent("Error submitting snapshot", trace.WithAttributes(
+				attribute.String("err", err.Error()),
+			))
 		} else {
 			for originID, state := range statesToSubmit {
 				n.summitMyLatestStates[originID] = state
@@ -353,21 +403,29 @@ func (n Notary) submitLatestSnapshot(ctx context.Context) {
 }
 
 //nolint:cyclop,unused
-func (n Notary) submitAttestation(ctx context.Context, attBytes []byte) {
+func (n Notary) submitAttestation(parentCtx context.Context, attBytes []byte) {
+	ctx, span := n.handler.Tracer().Start(parentCtx, "submitAttestation")
+	defer span.End()
 	hashedBytes, err := types.HashRawBytes(attBytes)
 	if err != nil {
-		logger.Errorf("could not hash attBytes: %w", err)
+		span.AddEvent("Error hashing attestation", trace.WithAttributes(
+			attribute.String("err", err.Error()),
+		))
 		return
 	}
 	signature, err := n.bondedSigner.SignMessage(ctx, core.BytesToSlice(hashedBytes), false)
 	if err != nil {
-		logger.Errorf("could not sign snapshot: %w", err)
+		span.AddEvent("Error signing attestation", trace.WithAttributes(
+			attribute.String("err", err.Error()),
+		))
 		return
 	}
 
 	err = n.destinationDomain.Destination().SubmitAttestation(ctx, n.unbondedSigner, attBytes, signature)
 	if err != nil {
-		logger.Errorf("Failed to submit snapshot to summit: %v", err)
+		span.AddEvent("Error submitting attestation", trace.WithAttributes(
+			attribute.String("err", err.Error()),
+		))
 	}
 }
 
@@ -384,7 +442,13 @@ func (n Notary) Start(ctx context.Context) error {
 	if err != nil {
 		return fmt.Errorf("could not get latest block number from Summit: %w", err)
 	}
+	// Try starting from previous day
 	n.lastSummitBlock = uint64(latestBlockNUmber)
+	if n.lastSummitBlock > 3000 {
+		n.lastSummitBlock = uint64(latestBlockNUmber) - uint64(3000)
+	} else {
+		n.lastSummitBlock = uint64(0)
+	}
 
 	// Ensure that gRPC is up and running.
 	logger.Info("Notary: ensure that gRPC is up and running.")

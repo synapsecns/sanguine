@@ -41,7 +41,7 @@ func (b BackfillSuite) TestScribeBackfill() {
 		go func() {
 			defer wg.Done()
 			simulatedBackend := geth.NewEmbeddedBackendForChainID(b.GetTestContext(), b.T(), big.NewInt(int64(chain)))
-			simulatedClient, err := backfill.DialBackend(b.GetTestContext(), simulatedBackend.RPCAddress())
+			simulatedClient, err := backfill.DialBackend(b.GetTestContext(), simulatedBackend.RPCAddress(), b.metrics)
 			Nil(b.T(), err)
 
 			mux.Lock()
@@ -113,7 +113,7 @@ func (b BackfillSuite) TestScribeBackfill() {
 	chainBackfillers := []*backfill.ChainBackfiller{}
 	for i, chainConfig := range allChainConfigs {
 		simulatedChainArr := []backfill.ScribeBackend{simulatedClients[i], simulatedClients[i]}
-		chainBackfiller, err := backfill.NewChainBackfiller(b.testDB, simulatedChainArr, chainConfig, 1)
+		chainBackfiller, err := backfill.NewChainBackfiller(b.testDB, simulatedChainArr, chainConfig, 1, b.metrics)
 		Nil(b.T(), err)
 		chainBackfillers = append(chainBackfillers, chainBackfiller)
 	}
@@ -128,7 +128,7 @@ func (b BackfillSuite) TestScribeBackfill() {
 	}
 
 	// Set up the scribe backfiller.
-	scribeBackfiller, err := backfill.NewScribeBackfiller(b.testDB, scribeBackends, scribeConfig)
+	scribeBackfiller, err := backfill.NewScribeBackfiller(b.testDB, scribeBackends, scribeConfig, b.metrics)
 	Nil(b.T(), err)
 
 	// Run the backfill test for each chain.

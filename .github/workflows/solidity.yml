@@ -4,9 +4,11 @@ on:
   pull_request:
     paths:
       - 'packages/contracts-core/**'
+      - '.github/workflows/solidity.yml'
   push:
     paths:
       - 'packages/contracts-core/**'
+      - '.github/workflows/solidity.yml'
 
 jobs:
   slither:
@@ -25,43 +27,35 @@ jobs:
           fetch-depth: 1
           submodules: 'recursive'
 
-      - name: Read .nvmrc
-        run: echo "##[set-output name=NVMRC;]$(cat .nvmrc)"
-        id: nvmrc
-
-      - name: 'Use NodeJS by nvmrc'
-        uses: actions/setup-node@v3
-        with:
-          node-version: '${{steps.nvmrc.outputs.NVMRC}}'
-          cache: 'yarn'
-
-
-      - uses: actions/cache@v3
-        with:
-          path: '**/node_modules'
-          key: ${{ runner.os }}-modules-${{ hashFiles('**/yarn.lock') }}
-
-      - name: Install Node Dependencies
-        run: yarn install --immutable
+      - name: Setup NodeJS
+        uses: ./.github/actions/setup-nodejs
 
       - name: Install Foundry
         uses: foundry-rs/foundry-toolchain@v1
         with:
           version: nightly
 
+      # TODO: find a flag for this
+      - name: Delete Untested Files
+        working-directory: ./packages/contracts-core
+        run: |
+          rm -rf test/
+          rm -rf script/
+
       - name: Build Contracts
         run: |
           npx lerna exec npm run build:slither
 
       - name: Run Slither
-        uses: crytic/slither-action@v0.1.1
+        uses: crytic/slither-action@v0.3.0
         continue-on-error: true
         id: slither
         with:
           node-version: '${{steps.nvmrc.outputs.NVMRC}}'
-          target: ./packages/contracts-core
+          target: ./packages/contracts-core/
           ignore-compile: true
           sarif: results.sarif
+          solc-version: 0.8.17
 
       - name: Upload SARIF file
         if: ${{!github.event.repository.private}}

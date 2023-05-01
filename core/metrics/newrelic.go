@@ -3,6 +3,7 @@ package metrics
 import (
 	"context"
 	"fmt"
+	"go.opentelemetry.io/contrib/instrumentation/net/http/otelhttp"
 	"net/http"
 	"os"
 	"sync"
@@ -17,6 +18,7 @@ import (
 )
 
 type newRelicHandler struct {
+	*baseHandler
 	app       *newrelic.Application
 	startMux  sync.Mutex
 	buildInfo config.BuildInfo
@@ -24,8 +26,11 @@ type newRelicHandler struct {
 
 // NewRelicMetricsHandler creates a new newrelic metrics handler.
 func NewRelicMetricsHandler(buildInfo config.BuildInfo) Handler {
+	logger.Warn("new relic metrics handler is not fully implemented, please add an otel bride")
+
 	return &newRelicHandler{
-		buildInfo: buildInfo,
+		buildInfo:   buildInfo,
+		baseHandler: newBaseHandler(buildInfo),
 	}
 }
 
@@ -42,6 +47,7 @@ func (n *newRelicHandler) Gin() gin.HandlerFunc {
 func (n *newRelicHandler) Start(_ context.Context) (err error) {
 	n.startMux.Lock()
 	defer n.startMux.Unlock()
+
 	if n.app == nil {
 		n.app, err = newrelic.NewApplication(
 			newrelic.ConfigAppName(n.buildInfo.Name()),
@@ -67,10 +73,15 @@ func (n *newRelicHandler) Start(_ context.Context) (err error) {
 	return nil
 }
 
-func (n *newRelicHandler) ConfigureHTTPClient(client *http.Client) {
+func (n *newRelicHandler) ConfigureHTTPClient(client *http.Client, opts ...otelhttp.Option) {
+	// note: opts are ignored here
 	// use the newrelic transport
 	nrTransport := newrelic.NewRoundTripper(client.Transport)
 	client.Transport = nrRoundTripper{app: n.app, inner: nrTransport}
+}
+
+func (n *newRelicHandler) Type() HandlerType {
+	return NewRelic
 }
 
 type nrRoundTripper struct {

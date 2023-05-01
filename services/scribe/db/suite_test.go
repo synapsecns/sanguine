@@ -4,8 +4,11 @@ import (
 	"database/sql"
 	"fmt"
 	"github.com/synapsecns/sanguine/core"
+	"github.com/synapsecns/sanguine/core/metrics"
+	"github.com/synapsecns/sanguine/core/metrics/localmetrics"
 	"github.com/synapsecns/sanguine/core/testsuite"
 	"github.com/synapsecns/sanguine/services/scribe/db"
+	"github.com/synapsecns/sanguine/services/scribe/metadata"
 	"os"
 	"sync"
 	"sync/atomic"
@@ -22,8 +25,9 @@ import (
 
 type DBSuite struct {
 	*testsuite.TestSuite
-	dbs      []db.EventDB
-	logIndex atomic.Int64
+	dbs           []db.EventDB
+	logIndex      atomic.Int64
+	scribeMetrics metrics.Handler
 }
 
 // NewEventDBSuite creates a new EventDBSuite.
@@ -40,11 +44,20 @@ func (t *DBSuite) SetupTest() {
 
 	t.logIndex.Store(0)
 
-	sqliteStore, err := sqlite.NewSqliteStore(t.GetTestContext(), filet.TmpDir(t.T(), ""))
+	sqliteStore, err := sqlite.NewSqliteStore(t.GetTestContext(), filet.TmpDir(t.T(), ""), t.scribeMetrics, false)
 	Nil(t.T(), err)
 
 	t.dbs = []db.EventDB{sqliteStore}
 	t.setupMysqlDB()
+}
+
+func (t *DBSuite) SetupSuite() {
+	t.TestSuite.SetupSuite()
+
+	localmetrics.SetupTestJaeger(t.GetSuiteContext(), t.T())
+	var err error
+	t.scribeMetrics, err = metrics.NewByType(t.GetSuiteContext(), metadata.BuildInfo(), metrics.Jaeger)
+	t.Require().Nil(err)
 }
 
 // connString gets the connection string.
@@ -78,7 +91,7 @@ func (t *DBSuite) setupMysqlDB() {
 	mysql.MaxIdleConns = 10
 
 	// create the sql store
-	mysqlStore, err := mysql.NewMysqlStore(t.GetTestContext(), connString)
+	mysqlStore, err := mysql.NewMysqlStore(t.GetTestContext(), connString, t.scribeMetrics, false)
 	Nil(t.T(), err)
 	// add the db
 	t.dbs = append(t.dbs, mysqlStore)

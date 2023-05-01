@@ -3,6 +3,7 @@ package testutil
 import (
 	"context"
 	"fmt"
+	"github.com/synapsecns/sanguine/core/metrics"
 	"net/http"
 	"testing"
 	"time"
@@ -26,11 +27,11 @@ import (
 )
 
 // NewTestEnvDB sets up the test env with a database.
-func NewTestEnvDB(ctx context.Context, t *testing.T) (db db.ConsumerDB, eventDB scribedb.EventDB, gqlClient *client.Client, logIndex atomic.Int64, cleanup func(), testBackend backends.SimulatedTestBackend, deployManager *DeployManager) {
+func NewTestEnvDB(ctx context.Context, t *testing.T, handler metrics.Handler) (db db.ConsumerDB, eventDB scribedb.EventDB, gqlClient *client.Client, logIndex atomic.Int64, cleanup func(), testBackend backends.SimulatedTestBackend, deployManager *DeployManager) {
 	t.Helper()
 	dbPath := filet.TmpDir(t, "")
 
-	sqliteStore, err := sqlite.NewSqliteStore(ctx, dbPath)
+	sqliteStore, err := sqlite.NewSqliteStore(ctx, dbPath, handler, false)
 	assert.Nil(t, err)
 
 	eventDB = sqliteStore
@@ -44,7 +45,7 @@ func NewTestEnvDB(ctx context.Context, t *testing.T) (db db.ConsumerDB, eventDB 
 			Port:     uint16(freePort),
 			Database: "sqlite",
 			Path:     dbPath,
-		}))
+		}, handler))
 	}()
 
 	baseURL := fmt.Sprintf("http://127.0.0.1:%d", freePort)

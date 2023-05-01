@@ -5,6 +5,9 @@ import (
 	"fmt"
 	"github.com/gin-gonic/gin"
 	"github.com/synapsecns/sanguine/core/config"
+	"go.opentelemetry.io/contrib/instrumentation/net/http/otelhttp"
+	"go.opentelemetry.io/otel/propagation"
+	"go.opentelemetry.io/otel/trace"
 	"gorm.io/gorm"
 	"net/http"
 	"os"
@@ -17,9 +20,17 @@ type Handler interface {
 	// Gin gets a gin middleware for tracing.
 	Gin() gin.HandlerFunc
 	// ConfigureHTTPClient configures tracing on an http client
-	ConfigureHTTPClient(client *http.Client)
+	ConfigureHTTPClient(client *http.Client, opts ...otelhttp.Option)
 	// AddGormCallbacks adds gorm callbacks for tracing.
 	AddGormCallbacks(db *gorm.DB)
+	// GetTracerProvider returns the tracer provider.
+	GetTracerProvider() trace.TracerProvider
+	// Tracer returns the tracer provider.
+	Tracer() trace.Tracer
+	// Propagator returns the propagator.
+	Propagator() propagation.TextMapPropagator
+	// Type returns the handler type.
+	Type() HandlerType
 }
 
 // HandlerType is the handler type to use
@@ -41,11 +52,13 @@ func init() {
 
 const (
 	// DataDog is the datadog driver.
-	DataDog HandlerType = 0 // Datadog
-	// NewRelic is the new relic driver.
-	NewRelic HandlerType = iota // NewRelic
+	DataDog HandlerType = iota + 1 // Datadog
+	// NewRelic is the new relic driver.t.
+	NewRelic // NewRelic
+	// Jaeger is the jaeger driver.
+	Jaeger // Jaeger
 	// Null is a null data type handler.
-	Null HandlerType = iota // Null
+	Null // Null
 )
 
 // Lower gets the lowercase version of the handler type. Useful for comparison
@@ -61,13 +74,35 @@ const HandlerEnv = "METRICS_HANDLER"
 // this will not set the global and generally, SetupFromEnv should be used instead.
 func NewFromEnv(ctx context.Context, buildInfo config.BuildInfo) (handler Handler, err error) {
 	metricsHandler := strings.ToLower(os.Getenv(HandlerEnv))
+	var ht HandlerType
 	//nolint: gocritic
 	switch metricsHandler {
 	case DataDog.Lower():
-		handler = NewDatadogMetricsHandler(buildInfo)
+		ht = DataDog
 	case NewRelic.Lower():
-		handler = NewRelicMetricsHandler(buildInfo)
+		ht = NewRelic
+	case Jaeger.Lower():
+		ht = Jaeger
 	case Null.Lower():
+		ht = Null
+	default:
+		ht = Null
+	}
+
+	return NewByType(ctx, buildInfo, ht)
+}
+
+// NewByType sets up a metrics handler by type.
+func NewByType(ctx context.Context, buildInfo config.BuildInfo, ht HandlerType) (handler Handler, err error) {
+	//nolint: gocritic
+	switch ht {
+	case DataDog:
+		handler = NewDatadogMetricsHandler(buildInfo)
+	case NewRelic:
+		handler = NewRelicMetricsHandler(buildInfo)
+	case Jaeger:
+		handler = NewJaegerHandler(buildInfo)
+	case Null:
 		handler = NewNullHandler()
 	default:
 		handler = NewNullHandler()

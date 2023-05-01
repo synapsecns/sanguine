@@ -7,7 +7,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - id: skip_check
-        if: ${{ format('refs/heads/{0}', github.event.repository.default_branch) != github.ref || contains(github.event.head_commit.message, '[no_skip]') }}
+        if: ${{ format('refs/heads/{0}', github.event.repository.default_branch) != github.ref && !contains(github.event.head_commit.message, '[no_skip]') }}
         uses: fkirc/skip-duplicate-actions@v5
         with:
           cancel_others: 'true'
@@ -41,3 +41,15 @@ jobs:
         with:
           name: yamllint-logfile
           path: ${{ steps.yaml-lint.outputs.logfile }}
+
+      # TODO: reinstate lint
+      # - name: Download actionlint
+      #   id: get_actionlint
+      #   run: bash <(curl https://raw.githubusercontent.com/rhysd/actionlint/main/scripts/download-actionlint.bash)
+      #   shell: bash
+
+      # - name: Check workflow files
+      #   run: |
+      #     echo "::add-matcher::.github/actionlint-matcher.json"
+      #     ${{ steps.get_actionlint.outputs.executable }} -color
+      #   shell: bash

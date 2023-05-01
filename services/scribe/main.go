@@ -2,20 +2,19 @@
 package main
 
 import (
-	"github.com/synapsecns/sanguine/core/config"
+	"fmt"
+	"github.com/synapsecns/sanguine/core/metrics/pyroscope"
+	"github.com/synapsecns/sanguine/services/scribe/metadata"
 	"os"
 
 	"github.com/synapsecns/sanguine/services/scribe/cmd"
 )
 
-var (
-	version = config.DefaultVersion
-	commit  = config.DefaultCommit
-	date    = config.DefaultDate
-)
-
 func main() {
-	buildInfo := config.NewBuildInfo(version, commit, "scribe", date)
-
+	buildInfo := metadata.BuildInfo()
+	err := pyroscope.Monitor(buildInfo)
+	if err != nil {
+		fmt.Printf("could not start pyroscope: %v", err)
+	}
 	cmd.Start(os.Args, buildInfo)
 }

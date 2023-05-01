@@ -31,11 +31,13 @@ module.exports = {
         allowAutomaticSingleRunInference: true,
       },
       rules: {
+        '@typescript-eslint/comma-dangle': 'off',
         '@typescript-eslint/adjacent-overload-signatures': 'error',
         '@typescript-eslint/array-type': 'off',
         '@typescript-eslint/ban-types': 'off',
         '@typescript-eslint/consistent-type-assertions': 'error',
         '@typescript-eslint/dot-notation': 'off',
+        '@typescript-eslint/explicit-function-return-type': 'off',
         '@typescript-eslint/indent': 'off',
         '@typescript-eslint/member-delimiter-style': [
           'off',

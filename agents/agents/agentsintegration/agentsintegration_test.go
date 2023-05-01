@@ -43,11 +43,11 @@ func (u *AgentsIntegrationSuite) TestAgentsE2E() {
 	_, testContractRef := u.TestDeployManager.GetAgentsTestContract(u.GetTestContext(), u.TestBackendDestination)
 	testTransactOpts := u.TestBackendDestination.GetTxContext(u.GetTestContext(), nil)
 
-	originClient, err := backfill.DialBackend(u.GetTestContext(), u.TestBackendOrigin.RPCAddress())
+	originClient, err := backfill.DialBackend(u.GetTestContext(), u.TestBackendOrigin.RPCAddress(), u.ScribeMetrics)
 	u.Nil(err)
-	destinationClient, err := backfill.DialBackend(u.GetTestContext(), u.TestBackendDestination.RPCAddress())
+	destinationClient, err := backfill.DialBackend(u.GetTestContext(), u.TestBackendDestination.RPCAddress(), u.ScribeMetrics)
 	u.Nil(err)
-	summitClient, err := backfill.DialBackend(u.GetTestContext(), u.TestBackendSummit.RPCAddress())
+	summitClient, err := backfill.DialBackend(u.GetTestContext(), u.TestBackendSummit.RPCAddress(), u.ScribeMetrics)
 	u.Nil(err)
 
 	originConfig := scribeConfig2.ContractConfig{
@@ -92,10 +92,10 @@ func (u *AgentsIntegrationSuite) TestAgentsE2E() {
 		uint32(u.TestBackendSummit.GetChainID()):      {summitClient, summitClient},
 	}
 
-	scribe, err := node.NewScribe(u.ScribeTestDB, clients, scribeConfig)
+	scribe, err := node.NewScribe(u.ScribeTestDB, clients, scribeConfig, u.ScribeMetrics)
 	u.Nil(err)
 
-	scribeClient := client.NewEmbeddedScribe("sqlite", u.DBPath)
+	scribeClient := client.NewEmbeddedScribe("sqlite", u.DBPath, u.ScribeMetrics)
 	go func() {
 		scribeErr := scribeClient.Start(u.GetTestContext())
 		u.Nil(scribeErr)
@@ -148,7 +148,7 @@ func (u *AgentsIntegrationSuite) TestAgentsE2E() {
 		summit:      u.TestBackendSummit.RPCAddress(),
 	}
 
-	exec, err := executor.NewExecutorInjectedBackend(u.GetTestContext(), excCfg, u.ExecutorTestDB, scribeClient.ScribeClient, executorClients, urls)
+	exec, err := executor.NewExecutorInjectedBackend(u.GetTestContext(), excCfg, u.ExecutorTestDB, scribeClient.ScribeClient, executorClients, urls, u.ExecutorMetrics)
 	Nil(u.T(), err)
 
 	go func() {
@@ -179,8 +179,6 @@ func (u *AgentsIntegrationSuite) TestAgentsE2E() {
 			File: filet.TmpFile(u.T(), "", u.GuardUnbondedWallet.PrivateKeyHex()).Name(),
 		},
 		RefreshIntervalSeconds: 5,
-		ScribePort:             uint32(scribeClient.ScribeClient.Port),
-		ScribeURL:              scribeClient.ScribeClient.URL,
 	}
 	notaryTestConfig := config.AgentConfig{
 		Domains: map[string]config.DomainConfig{
@@ -199,8 +197,6 @@ func (u *AgentsIntegrationSuite) TestAgentsE2E() {
 			File: filet.TmpFile(u.T(), "", u.NotaryUnbondedWallet.PrivateKeyHex()).Name(),
 		},
 		RefreshIntervalSeconds: 5,
-		ScribePort:             uint32(scribeClient.ScribeClient.Port),
-		ScribeURL:              scribeClient.ScribeClient.URL,
 	}
 	encodedNotaryTestConfig, err := notaryTestConfig.Encode()
 	Nil(u.T(), err)
@@ -221,7 +217,7 @@ func (u *AgentsIntegrationSuite) TestAgentsE2E() {
 
 	Equal(u.T(), encodedNotaryTestConfig, decodedAgentConfigBackToEncodedBytes)
 
-	guard, err := guard.NewGuard(u.GetTestContext(), guardTestConfig)
+	guard, err := guard.NewGuard(u.GetTestContext(), guardTestConfig, u.GuardMetrics)
 	Nil(u.T(), err)
 
 	tips := types.NewTips(big.NewInt(int64(0)), big.NewInt(int64(0)), big.NewInt(int64(0)), big.NewInt(int64(0)))
@@ -286,7 +282,7 @@ func (u *AgentsIntegrationSuite) TestAgentsE2E() {
 		return state.Nonce() >= uint32(1)
 	})
 
-	notary, err := notary.NewNotary(u.GetTestContext(), notaryTestConfig)
+	notary, err := notary.NewNotary(u.GetTestContext(), notaryTestConfig, scribeClient.ScribeClient, u.NotaryMetrics)
 	Nil(u.T(), err)
 
 	go func() {

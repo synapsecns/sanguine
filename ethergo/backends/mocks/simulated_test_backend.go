@@ -920,9 +920,9 @@ func (_m *SimulatedTestBackend) SetChainConfig(config *params.ChainConfig) {
 	_m.Called(config)
 }
 
-// SetT provides a mock function with given fields: _a0
-func (_m *SimulatedTestBackend) SetT(_a0 *testing.T) {
-	_m.Called(_a0)
+// SetT provides a mock function with given fields: t
+func (_m *SimulatedTestBackend) SetT(t *testing.T) {
+	_m.Called(t)
 }
 
 // SignTx provides a mock function with given fields: ogTx, signer, prv

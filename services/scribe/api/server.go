@@ -9,6 +9,7 @@ import (
 	"github.com/soheilhy/cmux"
 	"github.com/synapsecns/sanguine/core"
 	"github.com/synapsecns/sanguine/core/ginhelper"
+	"github.com/synapsecns/sanguine/core/metrics"
 	"github.com/synapsecns/sanguine/services/scribe/db"
 	"github.com/synapsecns/sanguine/services/scribe/db/datastore/sql/mysql"
 	"github.com/synapsecns/sanguine/services/scribe/db/datastore/sql/sqlite"
@@ -35,21 +36,23 @@ type Config struct {
 	Path string
 	// OmniRPCURL is the url of the omnirpc service.
 	OmniRPCURL string
+	// SkipMigrations skips the database migrations.
+	SkipMigrations bool
 }
 
 var logger = log.Logger("scribe-api")
 
 // Start starts the api server.
-func Start(ctx context.Context, cfg Config) error {
+func Start(ctx context.Context, cfg Config, handler metrics.Handler) error {
 	router := ginhelper.New(logger)
 
-	eventDB, err := InitDB(ctx, cfg.Database, cfg.Path)
+	eventDB, err := InitDB(ctx, cfg.Database, cfg.Path, handler, cfg.SkipMigrations)
 	if err != nil {
 		return fmt.Errorf("could not initialize database: %w", err)
 	}
 
-	gqlServer.EnableGraphql(router, eventDB, cfg.OmniRPCURL)
-	grpcServer, err := server.SetupGRPCServer(ctx, router, eventDB)
+	gqlServer.EnableGraphql(router, eventDB, cfg.OmniRPCURL, handler)
+	grpcServer, err := server.SetupGRPCServer(ctx, router, eventDB, handler)
 	if err != nil {
 		return fmt.Errorf("could not create grpc server: %w", err)
 	}
@@ -115,28 +118,32 @@ func Start(ctx context.Context, cfg Config) error {
 
 // InitDB initializes a database given a database type and path.
 // TODO: use enum for database type.
-func InitDB(ctx context.Context, databaseType string, path string) (db.EventDB, error) {
+func InitDB(ctx context.Context, databaseType string, path string, metrics metrics.Handler, skipMigrations bool) (db.EventDB, error) {
 	switch {
 	case databaseType == "sqlite":
-		sqliteStore, err := sqlite.NewSqliteStore(ctx, path)
+		sqliteStore, err := sqlite.NewSqliteStore(ctx, path, metrics, skipMigrations)
 		if err != nil {
 			return nil, fmt.Errorf("failed to create sqlite store: %w", err)
 		}
+
+		metrics.AddGormCallbacks(sqliteStore.DB())
 
 		return sqliteStore, nil
 	case databaseType == "mysql":
 		if os.Getenv("OVERRIDE_MYSQL") != "" {
 			dbname := os.Getenv("MYSQL_DATABASE")
 			connString := fmt.Sprintf("%s:%s@tcp(%s:%d)/%s?parseTime=true", core.GetEnv("MYSQL_USER", "root"), os.Getenv("MYSQL_PASSWORD"), core.GetEnv("MYSQL_HOST", "127.0.0.1"), core.GetEnvInt("MYSQL_PORT", 3306), dbname)
-			mysqlStore, err := mysql.NewMysqlStore(ctx, connString)
+			mysqlStore, err := mysql.NewMysqlStore(ctx, connString, metrics, skipMigrations)
 			if err != nil {
 				return nil, fmt.Errorf("failed to create mysql store: %w", err)
 			}
 
+			metrics.AddGormCallbacks(mysqlStore.DB())
+
 			return mysqlStore, nil
 		}
 
-		mysqlStore, err := mysql.NewMysqlStore(ctx, path)
+		mysqlStore, err := mysql.NewMysqlStore(ctx, path, metrics, skipMigrations)
 		if err != nil {
 			return nil, fmt.Errorf("failed to create mysql store: %w", err)
 		}
