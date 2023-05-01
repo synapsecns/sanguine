@@ -2,6 +2,7 @@
 pragma solidity 0.8.17;
 
 import {SNAPSHOT_MAX_STATES, SNAPSHOT_SALT, SNAPSHOT_TREE_HEIGHT, STATE_LENGTH} from "./Constants.sol";
+import {GasDataLib, ChainGas} from "./GasData.sol";
 import {MerkleMath} from "./MerkleMath.sol";
 import {State, StateLib} from "./State.sol";
 import {MemView, MemViewLib} from "./MemView.sol";
@@ -119,6 +120,16 @@ library SnapshotLib {
     function statesAmount(Snapshot snapshot) internal pure returns (uint256) {
         // Each state occupies exactly `STATE_LENGTH` bytes
         return snapshot.unwrap().len() / STATE_LENGTH;
+    }
+
+    /// @notice Extracts the list of ChainGas structs from the snapshot.
+    function chainGasData(Snapshot snapshot) internal pure returns (ChainGas[] memory chainGasData_) {
+        uint256 statesAmount_ = snapshot.statesAmount();
+        chainGasData_ = new ChainGas[](statesAmount_);
+        for (uint256 i = 0; i < statesAmount_; ++i) {
+            State state_ = snapshot.state(i);
+            chainGasData_[i] = GasDataLib.encodeChainGas(state_.gasData(), state_.origin());
+        }
     }
 
     // ═════════════════════════════════════════ SNAPSHOT ROOT CALCULATION ═════════════════════════════════════════════

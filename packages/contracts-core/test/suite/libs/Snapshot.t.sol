@@ -3,6 +3,7 @@ pragma solidity 0.8.17;
 
 import {State, StateLib, STATE_LENGTH} from "../../../contracts/libs/State.sol";
 import {SNAPSHOT_TREE_HEIGHT} from "../../../contracts/libs/Constants.sol";
+import {ChainGas, GasData} from "../../../contracts/libs/GasData.sol";
 import {MerkleMath} from "../../../contracts/libs/MerkleMath.sol";
 import {SynapseLibraryTest, MemViewLib} from "../../utils/SynapseLibraryTest.t.sol";
 import {SnapshotHarness} from "../../harnesses/libs/SnapshotHarness.t.sol";
@@ -47,8 +48,13 @@ contract SnapshotLibraryTest is SynapseLibraryTest {
         checkCastToSnapshot({payload: payload, isSnapshot: true});
         // Test getters
         assertEq(libHarness.statesAmount(payload), statesAmount, "!statesAmount");
+        ChainGas[] memory chainGasData = libHarness.chainGasData(payload);
         for (uint256 i = 0; i < statesAmount; ++i) {
             assertEq(libHarness.state(payload, i), statePayloads[i], "!state");
+            assertEq(chainGasData[i].domain(), states[i].origin, "!chainGasData.domain");
+            assertEq(
+                GasData.unwrap(chainGasData[i].gasData()), states[i].gasData.encodeGasData(), "!chainGasData.gasData"
+            );
         }
         // Test hashing
         assertEq(libHarness.hash(payload), hashedSnapshot, "!hash");
