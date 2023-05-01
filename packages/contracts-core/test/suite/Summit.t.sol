@@ -216,7 +216,6 @@ contract SummitTest is AgentSecuredTest {
             vm.roll(ra.blockNumber);
             vm.warp(ra.timestamp);
 
-            bytes[] memory rawStates = new bytes[](STATES);
             RawSnapshot memory rs;
             rs.states = new RawState[](STATES);
             for (uint256 j = 0; j < STATES; ++j) {
@@ -224,12 +223,11 @@ contract SummitTest is AgentSecuredTest {
                 // To ensure that all Notary snapshots are different pick Guard
                 // with the same index as Notary for the first state
                 uint256 guardIndex = j == 0 ? i : random.nextUint256() % DOMAIN_AGENTS;
-                rawStates[j] = guardStates[guardIndex][j].formatState();
                 rs.states[j] = guardStates[guardIndex][j];
             }
 
             // Calculate root and height using AttestationProofGenerator
-            acceptSnapshot(rawStates);
+            acceptSnapshot(rs);
             ra.snapRoot = getSnapshotRoot();
             ra.agentRoot = getAgentRoot();
             ra.gasDataHash = rs.chainGasDataHash();
@@ -276,7 +274,11 @@ contract SummitTest is AgentSecuredTest {
 
             // Check latest Notary States
             for (uint32 j = 0; j < STATES; ++j) {
-                assertEq(ISnapshotHub(summit).getLatestAgentState(j + 1, notary), rawStates[j], "!latestState: notary");
+                assertEq(
+                    ISnapshotHub(summit).getLatestAgentState(j + 1, notary),
+                    rs.states[j].formatState(),
+                    "!latestState: notary"
+                );
             }
         }
 

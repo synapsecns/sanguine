@@ -295,7 +295,7 @@ contract OriginTest is AgentSecuredTest {
         // Use random metadata
         ra = random.nextAttestation(rawSnap, random.nextUint32());
         // Save snapshot for Snapshot Proof generation
-        acceptSnapshot(rawSnap.formatStates());
+        acceptSnapshot(rawSnap);
     }
 
     function _verifyAttestation(Random memory random, RawState memory rawState, bool isValid) internal {
