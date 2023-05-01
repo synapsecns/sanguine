@@ -3,20 +3,28 @@ package base
 import (
 	"context"
 	"fmt"
+	"github.com/synapsecns/sanguine/core/dbcommon"
 	"gorm.io/gorm/clause"
 )
 
 // StoreBlockTime stores a block time for a chain.
 func (s Store) StoreBlockTime(ctx context.Context, chainID uint32, blockNumber, timestamp uint64) error {
-	dbTx := s.DB().WithContext(ctx).
-		Clauses(clause.Insert{
-			Modifier: "IGNORE",
-		}).
-		Create(&BlockTime{
-			ChainID:     chainID,
-			BlockNumber: blockNumber,
-			Timestamp:   timestamp,
+	dbTx := s.DB().WithContext(ctx)
+	if s.db.Dialector.Name() == dbcommon.Sqlite.String() {
+		dbTx = dbTx.Clauses(clause.OnConflict{
+			Columns:   []clause.Column{{Name: ChainIDFieldName}, {Name: BlockNumberFieldName}},
+			DoNothing: true,
 		})
+	} else {
+		dbTx.Clauses(clause.Insert{
+			Modifier: "IGNORE",
+		})
+	}
+	dbTx = dbTx.Create(&BlockTime{
+		ChainID:     chainID,
+		BlockNumber: blockNumber,
+		Timestamp:   timestamp,
+	})
 	if dbTx.Error != nil {
 		return fmt.Errorf("could not store block time: %w", dbTx.Error)
 	}
