@@ -4,7 +4,7 @@ env:
   VERCEL_TOKEN: '${{ secrets.VERCEL_TOKEN }}'
   VERCEL_ORG_ID: '${{ secrets.VERCEL_ORG_ID }}'
   VERCEL_PROJECT_ID: '${{ secrets.DOCS_VERCEL_PROJECT_ID }}'
-  WORKING_DIRECTORY: 'packages/explorer-ui'
+  WORKING_DIRECTORY: 'packages/docs'
   NODE_ENV: 'production'
 on:
   push:
