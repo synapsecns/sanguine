@@ -244,7 +244,7 @@ const BridgeCard = ({
   })
 
   const settingsSpring = useSpring({
-    top: displayType === DisplayType.SETTINGS ? '0%' : '-100%',
+    top: displayType === DisplayType.SETTINGS ? '0%' : '100%',
     from: { y: 0 },
     config: { mass: 0.5, tension: 175, friction: 20 },
   })
@@ -297,10 +297,7 @@ const BridgeCard = ({
           >
             <animated.div
               style={fromSpring}
-              className={`
-                fixed z-50 w-full h-full
-                bg-gray-900 bg-opacity-50
-                `}
+              className="fixed z-50 w-full h-full bg-opacity-50"
             >
               <TokenSlideOver key="fromBlock" {...fromArgs} />{' '}
             </animated.div>
@@ -312,10 +309,7 @@ const BridgeCard = ({
           >
             <animated.div
               style={toSpring}
-              className={`
-                fixed z-50 w-full h-full
-                bg-gray-900 bg-opacity-50
-                `}
+              className="fixed z-50 w-full h-full bg-opacity-50"
             >
               <TokenSlideOver key="toBlock" {...toArgs} />
             </animated.div>
@@ -327,10 +321,7 @@ const BridgeCard = ({
           >
             <animated.div
               style={fromChainSpring}
-              className={`
-                fixed z-50 w-full h-full
-                bg-gray-900 bg-opacity-50
-                `}
+              className="fixed z-50 w-full h-full bg-opacity-50"
             >
               <ChainSlideOver key="fromChainBlock" {...fromArgs} />
             </animated.div>
@@ -342,7 +333,7 @@ const BridgeCard = ({
           >
             <animated.div
               style={toChainSpring}
-              className="fixed z-50 w-full h-full bg-gray-900 bg-opacity-50"
+              className="fixed z-50 w-full h-full bg-opacity-50"
             >
               <ChainSlideOver key="toChainBlock" {...toArgs} />
             </animated.div>
@@ -354,7 +345,7 @@ const BridgeCard = ({
           >
             <animated.div
               style={settingsSpring}
-              className="fixed z-50 w-full h-full bg-gray-900 bg-opacity-50"
+              className="fixed z-50 w-full h-full bg-opacity-50"
             >
               <SettingsSlideOver key="settings" {...settingsArgs} />
             </animated.div>

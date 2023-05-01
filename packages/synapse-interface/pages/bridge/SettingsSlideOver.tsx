@@ -47,7 +47,7 @@ const SettingsSlideOver = ({
           space-y-4
         `}
       >
-        <div className="pt-8">
+        <div className="pt-2">
           <div className="flex items-center mb-4 text-sm font-light text-white">
             Deadline
             <Tooltip content="Enter deadline in minutes">
