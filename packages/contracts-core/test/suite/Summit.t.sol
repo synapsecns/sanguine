@@ -35,8 +35,9 @@ contract SummitTest is AgentSecuredTest {
 
     function setUp() public virtual override {
         notaryAttestations[0] = RawAttestation({
-            snapRoot: bytes32(0),
-            agentRoot: bytes32(0),
+            snapRoot: 0,
+            agentRoot: 0,
+            gasDataHash: 0,
             nonce: 0,
             blockNumber: uint40(block.number),
             timestamp: uint40(block.timestamp)
