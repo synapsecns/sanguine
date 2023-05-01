@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react'
+import React, { useEffect, useState, useRef } from 'react'
 import { useSettings } from '@hooks/useSettings'
 import { SettingsIcon } from '@icons/SettingsIcon'
 import { Transition } from '@headlessui/react'
@@ -85,7 +85,7 @@ const BridgeCard = ({
   )
   const [deadlineMinutes, setDeadlineMinutes] = useState('')
   const [fromTokenBalance, setFromTokenBalance] = useState<BigNumber>(Zero)
-
+  const bridgeDisplayRef = useRef(null)
   /*
   useEffect Trigger: fromToken, fromTokens
   - When either the from token or list of from tokens are mutated, the selected token's balance is set in state
@@ -220,6 +220,7 @@ const BridgeCard = ({
   )
 
   const springClass = 'fixed z-50 w-full h-full bg-opacity-50'
+
   const fromChainSpring = useSpring({
     top: displayType === DisplayType.FROM_CHAIN ? '0%' : '-100%',
     from: { y: 0 },
@@ -249,6 +250,15 @@ const BridgeCard = ({
     from: { y: 0 },
     config: { mass: 0.5, tension: 175, friction: 20 },
   })
+
+  useEffect(() => {
+    const node = bridgeDisplayRef.current
+    const top = node.offsetTop + 100
+    window.scrollTo({
+      top: top,
+      behavior: 'smooth',
+    })
+  }, [displayType])
 
   return (
     <>
@@ -291,7 +301,7 @@ const BridgeCard = ({
           bg-bgBase md:px-6 lg:px-6
         `}
       >
-        <div>
+        <div ref={bridgeDisplayRef}>
           <Transition
             show={displayType === DisplayType.FROM}
             {...TRANSITION_PROPS}

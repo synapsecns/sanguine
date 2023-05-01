@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef, useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 import Fuse from 'fuse.js'
 import { useKeyPress } from '@hooks/useKeyPress'
 import * as CHAINS from '@constants/chains/master'
@@ -21,7 +21,6 @@ export const ChainSlideOver = ({
   onChangeChain: (chainId: number, flip: boolean, type: 'from' | 'to') => void
   setDisplayType: (v: DisplayType) => void
 }) => {
-  const componentRef = useRef(null)
   const { chain } = useNetwork()
   const [currentIdx, setCurrentIdx] = useState(-1)
   const [searchStr, setSearchStr] = useState('')
@@ -104,20 +103,8 @@ export const ChainSlideOver = ({
   useEffect(arrowUpFunc, [arrowUp])
   useEffect(enterPressedFunc, [enterPressed])
 
-  // useEffect(() => {
-  //   const node = componentRef.current
-  //   const top = node.offsetTop + 100
-  //   window.scrollTo({
-  //     top: top,
-  //     behavior: 'smooth',
-  //   })
-  // }, [])
-
   return (
-    <div
-      ref={componentRef}
-      className="max-h-full pb-4 -mt-3 overflow-auto scrollbar-hide rounded-3xl"
-    >
+    <div className="max-h-full pb-4 -mt-3 overflow-auto scrollbar-hide rounded-3xl">
       <div className="absolute z-10 w-full px-6 pt-3 bg-bgLight rounded-t-xl">
         <div className="flex items-center float-right mb-2 font-medium sm:float-none">
           <SlideSearchBox
