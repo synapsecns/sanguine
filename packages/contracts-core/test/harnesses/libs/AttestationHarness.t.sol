@@ -31,6 +31,10 @@ contract AttestationHarness {
         return payload.castToAttestation().agentRoot();
     }
 
+    function gasDataHash(bytes memory payload) public pure returns (bytes32) {
+        return payload.castToAttestation().gasDataHash();
+    }
+
     function nonce(bytes memory payload) public pure returns (uint32) {
         return payload.castToAttestation().nonce();
     }
@@ -52,11 +56,12 @@ contract AttestationHarness {
     function formatAttestation(
         bytes32 snapRoot_,
         bytes32 agentRoot_,
+        bytes32 gasDataHash_,
         uint32 nonce_,
         uint40 blockNumber_,
         uint40 timestamp_
     ) public pure returns (bytes memory) {
-        return AttestationLib.formatAttestation(snapRoot_, agentRoot_, nonce_, blockNumber_, timestamp_);
+        return AttestationLib.formatAttestation(snapRoot_, agentRoot_, gasDataHash_, nonce_, blockNumber_, timestamp_);
     }
 
     function isAttestation(bytes memory payload) public pure returns (bool) {
