@@ -7,11 +7,11 @@ replace (
 	// later versions give errors on uint64 being too high.
 	github.com/brianvoe/gofakeit/v6 => github.com/brianvoe/gofakeit/v6 v6.9.0
 	github.com/gogo/protobuf => github.com/regen-network/protobuf v1.3.3-alpha.regen.1
-	gopkg.in/DataDog/dd-trace-go.v1 v1.50.0 => gopkg.in/DataDog/dd-trace-go.v1 v1.39.0-alpha.1.0.20230428193534-5deb295b7662
 	github.com/synapsecns/sanguine/core => ./../../core
 	github.com/synapsecns/sanguine/ethergo => ./../../ethergo
 	github.com/synapsecns/sanguine/services/omnirpc => ../omnirpc
 	github.com/synapsecns/sanguine/services/scribe => ../scribe
+	gopkg.in/DataDog/dd-trace-go.v1 v1.50.0 => gopkg.in/DataDog/dd-trace-go.v1 v1.39.0-alpha.1.0.20230428193534-5deb295b7662
 )
 
 require (
@@ -44,7 +44,7 @@ require (
 	golang.org/x/sync v0.1.0
 	gopkg.in/yaml.v2 v2.4.0
 	gorm.io/driver/clickhouse v0.4.2
-	gorm.io/gorm v1.24.6
+	gorm.io/gorm v1.24.7-0.20230306060331-85eaf9eeda11
 	k8s.io/apimachinery v0.25.5
 )
 
