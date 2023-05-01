@@ -5,7 +5,6 @@ import (
 	"database/sql"
 	"errors"
 	"fmt"
-	"github.com/synapsecns/sanguine/core/dbcommon"
 
 	"github.com/synapsecns/sanguine/services/scribe/db"
 
@@ -57,19 +56,19 @@ func (s Store) StoreLogs(ctx context.Context, chainID uint32, logs ...types.Log)
 			Confirmed:       false,
 		})
 	}
-
-	dbTx := s.DB().WithContext(ctx)
-	if s.db.Dialector.Name() == dbcommon.Sqlite.String() {
-		dbTx = dbTx.Clauses(clause.OnConflict{
+	dbTxPrefix := s.DB().WithContext(ctx).
+		Clauses(clause.OnConflict{
 			Columns: []clause.Column{
 				{Name: ContractAddressFieldName}, {Name: ChainIDFieldName}, {Name: TxHashFieldName}, {Name: BlockIndexFieldName},
 			},
 			DoNothing: true,
-		}).CreateInBatches(&storeLogs, 10)
+		})
+
+	var dbTx *gorm.DB
+	if s.db.Dialector.Name() == "sqlite" {
+		dbTx = dbTxPrefix.CreateInBatches(&storeLogs, 10)
 	} else {
-		dbTx = dbTx.Clauses(clause.Insert{
-			Modifier: "IGNORE",
-		}).Create(&storeLogs)
+		dbTx = dbTxPrefix.Create(&storeLogs)
 	}
 
 	if dbTx.Error != nil {

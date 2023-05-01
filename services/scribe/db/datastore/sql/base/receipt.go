@@ -4,7 +4,6 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"github.com/synapsecns/sanguine/core/dbcommon"
 	"math/big"
 
 	"github.com/synapsecns/sanguine/services/scribe/db"
@@ -17,32 +16,26 @@ import (
 
 // StoreReceipt stores a receipt.
 func (s Store) StoreReceipt(ctx context.Context, chainID uint32, receipt types.Receipt) error {
-	dbTx := s.DB().WithContext(ctx)
-	if s.DB().Dialector.Name() == dbcommon.Sqlite.String() {
-		dbTx = dbTx.Clauses(clause.OnConflict{
+	dbTx := s.DB().WithContext(ctx).
+		Clauses(clause.OnConflict{
 			Columns:   []clause.Column{{Name: TxHashFieldName}, {Name: ChainIDFieldName}},
 			DoNothing: true,
+		}).
+		Create(&Receipt{
+			ChainID:           chainID,
+			Type:              receipt.Type,
+			PostState:         receipt.PostState,
+			Status:            receipt.Status,
+			CumulativeGasUsed: receipt.CumulativeGasUsed,
+			Bloom:             receipt.Bloom.Bytes(),
+			TxHash:            receipt.TxHash.String(),
+			ContractAddress:   receipt.ContractAddress.String(),
+			GasUsed:           receipt.GasUsed,
+			BlockHash:         receipt.BlockHash.String(),
+			BlockNumber:       receipt.BlockNumber.Uint64(),
+			TransactionIndex:  uint64(receipt.TransactionIndex),
+			Confirmed:         false,
 		})
-	} else {
-		dbTx = dbTx.Clauses(clause.Insert{
-			Modifier: "IGNORE",
-		})
-	}
-	dbTx = dbTx.Create(&Receipt{
-		ChainID:           chainID,
-		Type:              receipt.Type,
-		PostState:         receipt.PostState,
-		Status:            receipt.Status,
-		CumulativeGasUsed: receipt.CumulativeGasUsed,
-		Bloom:             receipt.Bloom.Bytes(),
-		TxHash:            receipt.TxHash.String(),
-		ContractAddress:   receipt.ContractAddress.String(),
-		GasUsed:           receipt.GasUsed,
-		BlockHash:         receipt.BlockHash.String(),
-		BlockNumber:       receipt.BlockNumber.Uint64(),
-		TransactionIndex:  uint64(receipt.TransactionIndex),
-		Confirmed:         false,
-	})
 
 	if dbTx.Error != nil {
 		return fmt.Errorf("could not store receipt: %w", dbTx.Error)
