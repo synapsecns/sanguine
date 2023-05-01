@@ -21,6 +21,9 @@ type Store struct {
 // MaxIdleConns is exported here for testing. Tests execute too slowly with a reconnect each time.
 var MaxIdleConns = 10
 
+// MaxOpenConns is exported here for testing. Tests execute too slowly with a reconnect each time.
+var MaxOpenConns = 200
+
 // NamingStrategy is exported here for testing.
 var NamingStrategy = schema.NamingStrategy{
 	TablePrefix: "v3_",
@@ -55,6 +58,8 @@ func NewMysqlStore(parentCtx context.Context, dbURL string, handler metrics.Hand
 	// fixes a timeout issue https://stackoverflow.com/a/42146536
 	sqlDB.SetMaxIdleConns(MaxIdleConns)
 	sqlDB.SetConnMaxLifetime(time.Hour)
+	sqlDB.SetConnMaxLifetime(time.Hour)
+	sqlDB.SetMaxOpenConns(MaxOpenConns)
 
 	handler.AddGormCallbacks(gdb)
 
