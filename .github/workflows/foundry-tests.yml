@@ -34,14 +34,6 @@ jobs:
         working-directory: ./packages/contracts-core
         run: forge coverage -vvv --report=lcov
 
-      - uses: codecov/codecov-action@v3
-        name: Send Coverage (Codecov)
-        with:
-          token: ${{ secrets.CODECOV }}
-          fail_ci_if_error: true # optional (default = false)
-          verbose: true # optional (default = false)
-          working-directory: ./packages/contracts-core/
-          flags: solidity
       - name: Send Coverage (Codecov)
         uses: Wandalen/wretry.action@v1.0.36
         with:
