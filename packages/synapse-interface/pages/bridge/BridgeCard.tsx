@@ -264,13 +264,22 @@ const BridgeCard = ({
         `}
       >
         <div>
-          <Transition show={displayType === 'from'} {...TRANSITION_PROPS}>
+          <Transition
+            show={displayType === DisplayType.FROM}
+            {...TRANSITION_PROPS}
+          >
             <TokenSlideOver key="fromBlock" {...fromArgs} />{' '}
           </Transition>
-          <Transition show={displayType === 'to'} {...TRANSITION_PROPS}>
+          <Transition
+            show={displayType === DisplayType.TO}
+            {...TRANSITION_PROPS}
+          >
             <TokenSlideOver key="toBlock" {...toArgs} />
           </Transition>
-          <Transition show={displayType === 'fromChain'} {...TRANSITION_PROPS}>
+          <Transition
+            show={displayType === DisplayType.FROM_CHAIN}
+            {...TRANSITION_PROPS}
+          >
             <animated.div
               style={spring}
               className="fixed z-50 w-full h-full bg-gray-900 bg-opacity-50"
@@ -278,7 +287,10 @@ const BridgeCard = ({
               <ChainSlideOver key="fromChainBlock" {...fromArgs} />
             </animated.div>
           </Transition>
-          <Transition show={displayType === 'toChain'} {...TRANSITION_PROPS}>
+          <Transition
+            show={displayType === DisplayType.TO_CHAIN}
+            {...TRANSITION_PROPS}
+          >
             <animated.div
               style={spring}
               className="fixed z-50 w-full h-full bg-gray-900 bg-opacity-50"
@@ -286,7 +298,10 @@ const BridgeCard = ({
               <ChainSlideOver key="fromChainBlock" {...toArgs} />
             </animated.div>
           </Transition>
-          <Transition show={displayType === 'settings'} {...TRANSITION_PROPS}>
+          <Transition
+            show={displayType === DisplayType.SETTINGS}
+            {...TRANSITION_PROPS}
+          >
             <SettingsSlideOver key="settings" {...settingsArgs} />
           </Transition>
           <Grid cols={{ xs: 1 }} gap={10} className="py-1 place-content-center">

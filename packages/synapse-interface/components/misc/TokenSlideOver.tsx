@@ -7,7 +7,6 @@ import SlideSearchBox from '@pages/bridge/SlideSearchBox'
 import { DrawerButton } from '@components/buttons/DrawerButton'
 
 import { Token } from '@/utils/types'
-import { useMouseClickNavigation } from '@/utils/useMouseClickNavigation'
 
 export const TokenSlideOver = ({
   isOrigin,
