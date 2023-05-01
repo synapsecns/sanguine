@@ -17,10 +17,10 @@ export interface TransitionClassesProps extends TransitionClasses {
 export const COIN_SLIDE_OVER_PROPS: TransitionClassesProps = {
   appear: true,
   unmount: false,
-  enter: 'duration-400 transition-opacity ease-out',
+  enter: 'duration-425 transition-opacity ease-out',
   enterFrom: 'transform-gpu transform opacity-0',
   enterTo: 'transform-gpu transform opacity-100',
-  leave: 'duration-300 transition-opacity ease-out',
+  leave: 'duration-350 transition-opacity ease-out',
   leaveFrom: 'transform-gpu transform opacity-100',
   leaveTo: 'transform-gpu transform opacity-0',
 }

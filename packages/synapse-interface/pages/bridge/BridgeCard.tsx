@@ -34,6 +34,7 @@ export enum DisplayType {
   TO_CHAIN = 'toChain',
   SETTINGS = 'settings',
   DEFAULT = '',
+  LOADING = 'loading',
 }
 
 const BridgeCard = ({
@@ -81,7 +82,7 @@ const BridgeCard = ({
 }) => {
   const [settings, setSettings] = useSettings()
   const [displayType, setDisplayType] = useState<DisplayType>(
-    DisplayType.DEFAULT
+    DisplayType.LOADING
   )
   const [deadlineMinutes, setDeadlineMinutes] = useState('')
   const [fromTokenBalance, setFromTokenBalance] = useState<BigNumber>(Zero)
@@ -226,7 +227,7 @@ const BridgeCard = ({
   window object will smoothly reposition to where the bridge ui is located for convenience
   */
   useEffect(() => {
-    if (displayType !== DisplayType.DEFAULT) {
+    if (displayType !== DisplayType.LOADING) {
       const node = bridgeDisplayRef.current
       const top = node.offsetTop + 100
       window.scrollTo({
@@ -266,7 +267,7 @@ const BridgeCard = ({
   })
 
   const settingsSpring = useSpring({
-    top: displayType === DisplayType.SETTINGS ? '0%' : '100%',
+    top: displayType === DisplayType.SETTINGS ? '0%' : '-100%',
     from: { y: 0 },
     config: { mass: 0.5, tension: 175, friction: 20 },
   })
