@@ -219,8 +219,32 @@ const BridgeCard = ({
     />
   )
 
-  const spring = useSpring({
-    top: displayType === 'fromChain' ? '0%' : '-100%',
+  const fromChainSpring = useSpring({
+    top: displayType === DisplayType.FROM_CHAIN ? '0%' : '-100%',
+    from: { y: 0 },
+    config: { mass: 0.5, tension: 175, friction: 20 },
+  })
+
+  const toChainSpring = useSpring({
+    top: displayType === DisplayType.TO_CHAIN ? '0%' : '-100%',
+    from: { y: 0 },
+    config: { mass: 0.5, tension: 175, friction: 20 },
+  })
+
+  const fromSpring = useSpring({
+    top: displayType === DisplayType.FROM ? '0%' : '-100%',
+    from: { y: 0 },
+    config: { mass: 0.5, tension: 175, friction: 20 },
+  })
+
+  const toSpring = useSpring({
+    top: displayType === DisplayType.TO ? '0%' : '-100%',
+    from: { y: 0 },
+    config: { mass: 0.5, tension: 175, friction: 20 },
+  })
+
+  const settingsSpring = useSpring({
+    top: displayType === DisplayType.SETTINGS ? '0%' : '-100%',
     from: { y: 0 },
     config: { mass: 0.5, tension: 175, friction: 20 },
   })
@@ -271,42 +295,71 @@ const BridgeCard = ({
             show={displayType === DisplayType.FROM}
             {...TRANSITION_PROPS}
           >
-            <TokenSlideOver key="fromBlock" {...fromArgs} />{' '}
+            <animated.div
+              style={fromSpring}
+              className={`
+                fixed z-50 w-full h-full
+                bg-gray-900 bg-opacity-50
+                `}
+            >
+              <TokenSlideOver key="fromBlock" {...fromArgs} />{' '}
+            </animated.div>
           </Transition>
+
           <Transition
             show={displayType === DisplayType.TO}
             {...TRANSITION_PROPS}
           >
-            <TokenSlideOver key="toBlock" {...toArgs} />
+            <animated.div
+              style={toSpring}
+              className={`
+                fixed z-50 w-full h-full
+                bg-gray-900 bg-opacity-50
+                `}
+            >
+              <TokenSlideOver key="toBlock" {...toArgs} />
+            </animated.div>
           </Transition>
+
           <Transition
             show={displayType === DisplayType.FROM_CHAIN}
             {...TRANSITION_PROPS}
           >
             <animated.div
-              style={spring}
-              className="fixed z-50 w-full h-full bg-gray-900 bg-opacity-50"
+              style={fromChainSpring}
+              className={`
+                fixed z-50 w-full h-full
+                bg-gray-900 bg-opacity-50
+                `}
             >
               <ChainSlideOver key="fromChainBlock" {...fromArgs} />
             </animated.div>
           </Transition>
+
           <Transition
             show={displayType === DisplayType.TO_CHAIN}
             {...TRANSITION_PROPS}
           >
             <animated.div
-              style={spring}
+              style={toChainSpring}
               className="fixed z-50 w-full h-full bg-gray-900 bg-opacity-50"
             >
-              <ChainSlideOver key="fromChainBlock" {...toArgs} />
+              <ChainSlideOver key="toChainBlock" {...toArgs} />
             </animated.div>
           </Transition>
+
           <Transition
             show={displayType === DisplayType.SETTINGS}
             {...TRANSITION_PROPS}
           >
-            <SettingsSlideOver key="settings" {...settingsArgs} />
+            <animated.div
+              style={settingsSpring}
+              className="fixed z-50 w-full h-full bg-gray-900 bg-opacity-50"
+            >
+              <SettingsSlideOver key="settings" {...settingsArgs} />
+            </animated.div>
           </Transition>
+
           <Grid cols={{ xs: 1 }} gap={10} className="py-1 place-content-center">
             <div className="mt-2">
               <BridgeInputContainer {...fromArgs} />
