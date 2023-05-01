@@ -18,6 +18,7 @@ func Start(args []string, buildInfo config.BuildInfo) {
 	app.Usage = fmt.Sprintf("%s --help", buildInfo.Name())
 	app.EnableBashCompletion = true
 	app.Before = func(c *cli.Context) error {
+		// nolint: wrapcheck
 		return metrics.Setup(c.Context, buildInfo)
 	}
 
