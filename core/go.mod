@@ -67,7 +67,7 @@ require (
 	golang.org/x/sync v0.1.0
 	gopkg.in/DataDog/dd-trace-go.v1 v1.50.0
 	gorm.io/driver/sqlite v1.4.3
-	gorm.io/gorm v1.24.7-0.20230306060331-85eaf9eeda11
+	gorm.io/gorm v1.24.6
 	k8s.io/apimachinery v0.25.5
 )
 
