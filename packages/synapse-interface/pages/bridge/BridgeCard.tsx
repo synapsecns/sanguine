@@ -211,7 +211,7 @@ const BridgeCard = ({
   const spring = useSpring({
     top: displayType === 'fromChain' ? '0%' : '-100%',
     from: { y: 0 },
-    config: { mass: 1, tension: 240, friction: 30 },
+    config: { mass: 0.5, tension: 175, friction: 20 },
   })
 
   return (
@@ -249,7 +249,11 @@ const BridgeCard = ({
       </div>
       <Card
         divider={false}
-        className="max-w-lg px-1 pb-0 mb-3 transition-all duration-100 transform rounded-xl bg-bgBase md:px-6 lg:px-6"
+        className={`
+          max-w-lg px-1 pb-0 mb-3 overflow-hidden
+          transition-all duration-100 transform rounded-xl
+          bg-bgBase md:px-6 lg:px-6
+        `}
       >
         <div>
           <Transition show={displayType === 'from'} {...TRANSITION_PROPS}>
