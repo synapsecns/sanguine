@@ -56,7 +56,7 @@ func NewMysqlStore(parentCtx context.Context, dbURL string, handler metrics.Hand
 	// fixes a timeout issue https://stackoverflow.com/a/42146536
 	sqlDB.SetMaxIdleConns(MaxIdleConns)
 	sqlDB.SetConnMaxLifetime(time.Hour)
-	sqlDB.SetMaxOpenConns(MaxOpenConns)
+	//sqlDB.SetMaxOpenConns(MaxOpenConns)
 
 	handler.AddGormCallbacks(gdb)
 
