@@ -146,6 +146,7 @@ struct RawState {
     uint32 nonce;
     uint40 blockNumber;
     uint40 timestamp;
+    RawGasData gasData;
 }
 
 using CastLib for RawState global;
@@ -416,12 +417,29 @@ library CastLib {
             origin_: rs.origin,
             nonce_: rs.nonce,
             blockNumber_: rs.blockNumber,
-            timestamp_: rs.timestamp
+            timestamp_: rs.timestamp,
+            gasData_: rs.gasData.castToGasData()
         });
     }
 
     function castToState(RawState memory rs) internal pure returns (State ptr) {
         ptr = rs.formatState().castToState();
+    }
+
+    function modifyState(RawState memory rs, uint256 mask) internal pure returns (RawState memory mrs) {
+        // Make sure at least one value is modified, valid mask values are [1 .. 2047]
+        mask = 1 + (mask % 2047);
+        mrs.root = rs.root ^ bytes32(mask & 1);
+        mrs.origin = rs.origin ^ uint32(mask & 2);
+        mrs.nonce = rs.nonce ^ uint32(mask & 4);
+        mrs.blockNumber = rs.blockNumber ^ uint32(mask & 8);
+        mrs.timestamp = rs.timestamp ^ uint32(mask & 16);
+        mrs.gasData.gasPrice.number = rs.gasData.gasPrice.number ^ uint16(mask & 32);
+        mrs.gasData.dataPrice.number = rs.gasData.dataPrice.number ^ uint16(mask & 64);
+        mrs.gasData.execBuffer.number = rs.gasData.execBuffer.number ^ uint16(mask & 128);
+        mrs.gasData.amortAttCost.number = rs.gasData.amortAttCost.number ^ uint16(mask & 256);
+        mrs.gasData.etherPrice.number = rs.gasData.etherPrice.number ^ uint16(mask & 512);
+        mrs.gasData.markup.number = rs.gasData.markup.number ^ uint16(mask & 1024);
     }
 
     function formatStateReport(RawStateReport memory rawSR) internal pure returns (bytes memory stateReport) {

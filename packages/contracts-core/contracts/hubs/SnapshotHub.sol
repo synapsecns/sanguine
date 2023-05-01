@@ -3,6 +3,7 @@ pragma solidity 0.8.17;
 
 // ══════════════════════════════ LIBRARY IMPORTS ══════════════════════════════
 import {Attestation, AttestationLib} from "../libs/Attestation.sol";
+import {GasData} from "../libs/GasData.sol";
 import {MerkleMath} from "../libs/MerkleMath.sol";
 import {Snapshot, SnapshotLib} from "../libs/Snapshot.sol";
 import {State, StateLib} from "../libs/State.sol";
@@ -28,10 +29,11 @@ abstract contract SnapshotHub is AgentSecured, SnapshotHubEvents, ISnapshotHub {
         uint32 nonce;
         uint40 blockNumber;
         uint40 timestamp;
+        GasData gasData;
         uint32 guardIndex;
         uint32 notaryIndex;
     }
-    // 112 bits left for tight packing
+    // TODO: revisit packing
 
     struct SummitSnapshot {
         // TODO: compress this - indexes might as well be uint32/uint64
@@ -343,7 +345,8 @@ abstract contract SnapshotHub is AgentSecured, SnapshotHubEvents, ISnapshotHub {
             origin_: summitState.origin,
             nonce_: summitState.nonce,
             blockNumber_: summitState.blockNumber,
-            timestamp_: summitState.timestamp
+            timestamp_: summitState.timestamp,
+            gasData_: summitState.gasData
         });
     }
 
@@ -354,6 +357,7 @@ abstract contract SnapshotHub is AgentSecured, SnapshotHubEvents, ISnapshotHub {
         summitState.nonce = state.nonce();
         summitState.blockNumber = state.blockNumber();
         summitState.timestamp = state.timestamp();
+        summitState.gasData = state.gasData();
         summitState.guardIndex = guardIndex;
         // summitState.notaryIndex is left as ZERO
     }
