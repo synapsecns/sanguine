@@ -39,7 +39,7 @@ func NewBackfillSuite(tb testing.TB) *BackfillSuite {
 func (b *BackfillSuite) SetupTest() {
 	b.TestSuite.SetupTest()
 	b.SetTestTimeout(time.Minute * 3)
-	sqliteStore, err := sqlite.NewSqliteStore(b.GetTestContext(), filet.TmpDir(b.T(), ""), b.metrics)
+	sqliteStore, err := sqlite.NewSqliteStore(b.GetTestContext(), filet.TmpDir(b.T(), ""), b.metrics, false)
 	Nil(b.T(), err)
 	b.testDB = sqliteStore
 	b.manager = testutil.NewDeployManager(b.T())
