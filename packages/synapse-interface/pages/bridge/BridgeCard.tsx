@@ -86,6 +86,7 @@ const BridgeCard = ({
   const [deadlineMinutes, setDeadlineMinutes] = useState('')
   const [fromTokenBalance, setFromTokenBalance] = useState<BigNumber>(Zero)
   const bridgeDisplayRef = useRef(null)
+
   /*
   useEffect Trigger: fromToken, fromTokens
   - When either the from token or list of from tokens are mutated, the selected token's balance is set in state
@@ -252,12 +253,14 @@ const BridgeCard = ({
   })
 
   useEffect(() => {
-    const node = bridgeDisplayRef.current
-    const top = node.offsetTop + 100
-    window.scrollTo({
-      top: top,
-      behavior: 'smooth',
-    })
+    if (displayType !== DisplayType.DEFAULT) {
+      const node = bridgeDisplayRef.current
+      const top = node.offsetTop + 100
+      window.scrollTo({
+        top: top,
+        behavior: 'smooth',
+      })
+    }
   }, [displayType])
 
   return (
