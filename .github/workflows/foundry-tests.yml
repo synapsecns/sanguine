@@ -36,13 +36,13 @@ jobs:
 
       - name: Send Coverage (Codecov)
         uses: Wandalen/wretry.action@v1.0.36
+        current_path: ./packages/contracts-core/
         with:
           action: codecov/codecov-action@v3
           with: |
             token: ${{ secrets.CODECOV }}
             fail_ci_if_error: true # optional (default = false)
             verbose: true # optional (default = false)
-            working-directory: ./packages/contracts-core/
             flags: solidity
           attempt_limit: 5
           attempt_delay: 30000
