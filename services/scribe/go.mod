@@ -60,9 +60,9 @@ require (
 	google.golang.org/grpc v1.53.0
 	google.golang.org/protobuf v1.28.1
 	gopkg.in/yaml.v2 v2.4.0
-	gorm.io/driver/mysql v1.3.6
+	gorm.io/driver/mysql v1.5.0
 	gorm.io/driver/sqlite v1.4.3
-	gorm.io/gorm v1.24.6
+	gorm.io/gorm v1.25.0
 	k8s.io/apimachinery v0.25.5
 )
 
@@ -149,7 +149,7 @@ require (
 	github.com/go-playground/universal-translator v0.18.1 // indirect
 	github.com/go-playground/validator/v10 v10.11.1 // indirect
 	github.com/go-resty/resty/v2 v2.7.0 // indirect
-	github.com/go-sql-driver/mysql v1.6.0 // indirect
+	github.com/go-sql-driver/mysql v1.7.0 // indirect
 	github.com/go-stack/stack v1.8.1 // indirect
 	github.com/goccy/go-json v0.10.0 // indirect
 	github.com/gogo/protobuf v1.3.3 // indirect

@@ -43,7 +43,7 @@ require (
 	golang.org/x/sync v0.1.0
 	gopkg.in/yaml.v2 v2.4.0
 	gorm.io/driver/clickhouse v0.4.2
-	gorm.io/gorm v1.24.6
+	gorm.io/gorm v1.25.0
 	k8s.io/apimachinery v0.25.5
 )
 
@@ -127,7 +127,7 @@ require (
 	github.com/go-playground/locales v0.14.1 // indirect
 	github.com/go-playground/universal-translator v0.18.1 // indirect
 	github.com/go-playground/validator/v10 v10.11.1 // indirect
-	github.com/go-sql-driver/mysql v1.6.0 // indirect
+	github.com/go-sql-driver/mysql v1.7.0 // indirect
 	github.com/go-stack/stack v1.8.1 // indirect
 	github.com/goccy/go-json v0.10.0 // indirect
 	github.com/gogo/protobuf v1.3.3 // indirect
@@ -297,7 +297,7 @@ require (
 	gopkg.in/natefinch/npipe.v2 v2.0.0-20160621034901-c1b8fa8bdcce // indirect
 	gopkg.in/warnings.v0 v0.1.2 // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect
-	gorm.io/driver/mysql v1.3.6 // indirect
+	gorm.io/driver/mysql v1.5.0 // indirect
 	gorm.io/driver/sqlite v1.4.3 // indirect
 	inet.af/netaddr v0.0.0-20220811202034-502d2d690317 // indirect
 	k8s.io/klog/v2 v2.80.1 // indirect
