@@ -122,6 +122,17 @@ struct RawGasData {
 
 using CastLib for RawGasData global;
 
+struct RawGasData256 {
+    uint256 gasPrice;
+    uint256 dataPrice;
+    uint256 execBuffer;
+    uint256 amortAttCost;
+    uint256 etherPrice;
+    uint256 markup;
+}
+
+using CastLib for RawGasData256 global;
+
 struct RawChainGas {
     uint32 domain;
     RawGasData gasData;
@@ -350,6 +361,28 @@ library CastLib {
 
     function encodeNumber(RawNumber memory rn) internal pure returns (Number) {
         return Number.wrap(rn.number);
+    }
+
+    function round(uint256 num) internal pure returns (uint256) {
+        return NumberLib.decompress(NumberLib.compress(num));
+    }
+
+    function round(RawGasData256 memory rgd256) internal pure {
+        rgd256.gasPrice = round(rgd256.gasPrice);
+        rgd256.dataPrice = round(rgd256.dataPrice);
+        rgd256.execBuffer = round(rgd256.execBuffer);
+        rgd256.amortAttCost = round(rgd256.amortAttCost);
+        rgd256.etherPrice = round(rgd256.etherPrice);
+        rgd256.markup = round(rgd256.markup);
+    }
+
+    function compress(RawGasData256 memory rdg256) internal pure returns (RawGasData memory rgd) {
+        rgd.gasPrice.number = Number.unwrap(NumberLib.compress(rdg256.gasPrice));
+        rgd.dataPrice.number = Number.unwrap(NumberLib.compress(rdg256.dataPrice));
+        rgd.execBuffer.number = Number.unwrap(NumberLib.compress(rdg256.execBuffer));
+        rgd.amortAttCost.number = Number.unwrap(NumberLib.compress(rdg256.amortAttCost));
+        rgd.etherPrice.number = Number.unwrap(NumberLib.compress(rdg256.etherPrice));
+        rgd.markup.number = Number.unwrap(NumberLib.compress(rdg256.markup));
     }
 
     function encodeGasData(RawGasData memory rgd) internal pure returns (uint96 encodedGasData) {
