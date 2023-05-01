@@ -480,8 +480,7 @@ library CastLib {
         Snapshot snapshot = rawSnap.castToSnapshot();
         ra.snapRoot = snapshot.calculateRoot();
         ra.agentRoot = agentRoot;
-        // TODO: gasDataHash
-        ra.gasDataHash = 0;
+        ra.gasDataHash = rawSnap.chainGasDataHash();
         ra.nonce = nonce;
         ra.blockNumber = blockNumber;
         ra.timestamp = timestamp;
@@ -497,6 +496,10 @@ library CastLib {
 
     function castToSnapshot(RawSnapshot memory rawSnap) internal view returns (Snapshot ptr) {
         ptr = rawSnap.formatSnapshot().castToSnapshot();
+    }
+
+    function chainGasDataHash(RawSnapshot memory rawSnap) internal view returns (bytes32 gasDataHash) {
+        return GasDataLib.chainGasDataHash(rawSnap.castToSnapshot().chainGasData());
     }
 
     // ════════════════════════════════════════════════ ATTESTATION ════════════════════════════════════════════════════

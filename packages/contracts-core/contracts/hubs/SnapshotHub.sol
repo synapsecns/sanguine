@@ -3,7 +3,7 @@ pragma solidity 0.8.17;
 
 // ══════════════════════════════ LIBRARY IMPORTS ══════════════════════════════
 import {Attestation, AttestationLib} from "../libs/Attestation.sol";
-import {GasData} from "../libs/GasData.sol";
+import {GasData, GasDataLib} from "../libs/GasData.sol";
 import {MerkleMath} from "../libs/MerkleMath.sol";
 import {Snapshot, SnapshotLib} from "../libs/Snapshot.sol";
 import {State, StateLib} from "../libs/State.sol";
@@ -241,8 +241,8 @@ abstract contract SnapshotHub is AgentSecured, SnapshotHubEvents, ISnapshotHub {
     ) internal returns (bytes memory attPayload) {
         // Attestation nonce is its index in `_attestations` array
         uint32 attNonce = uint32(_attestations.length);
-        // TODO: calculate and save gas data hash
-        SummitAttestation memory summitAtt = _toSummitAttestation(snapshot.calculateRoot(), agentRoot, 0);
+        bytes32 gasDataHash = GasDataLib.chainGasDataHash(snapshot.chainGasData());
+        SummitAttestation memory summitAtt = _toSummitAttestation(snapshot.calculateRoot(), agentRoot, gasDataHash);
         attPayload = _formatSummitAttestation(summitAtt, attNonce);
         _latestAttNonce[notaryIndex] = attNonce;
         /// @dev Add a single element to both `_attestations` and `_notarySnapshots`,
