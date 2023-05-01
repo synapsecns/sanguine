@@ -82,7 +82,7 @@ app.get('/swap', async (req, res) => {
 
   // Get Token Decimals
   const fromTokenDecimals = tokens[fromTokenSymbol]?.decimals?.[chainId]
-  const toTokenDecimals = tokens[fromTokenSymbol]?.decimals?.[chainId]
+  const toTokenDecimals = tokens[toTokenSymbol]?.decimals?.[chainId]
 
   // Handle invalid params (either token symbols or chainIDs)
   // TODO: add error handling for missing params
@@ -113,7 +113,8 @@ app.get('/swap', async (req, res) => {
     const adjustedDecimals = resp.maxAmountOut.gt(amount.mul(TEN.pow(6))) ? 18 : toTokenDecimals
 
     // Add response field with adjusted maxAmountOutStr (to account for decimals)
-    resp.maxAmountOutStr = formatBNToString(resp.maxAmountOut, adjustedDecimals, 10)
+    // resp.maxAmountOutStr = formatBNToString(resp.maxAmountOut, adjustedDecimals, 10)
+    resp.maxAmountOutStr = parseInt(resp.maxAmountOut / TEN.pow(toTokenDecimals))
     res.json(resp)
   }).catch((err) => {
     // TODO: do a better return here
@@ -122,7 +123,7 @@ app.get('/swap', async (req, res) => {
       <h1>Invalid Request</h1>
       <code>${err}</code>
       <hr/>
-      <b>Ensure that your request matches the following format: /swap?chain=1&fromToken=USDC&toToken=DAI&amount=100</b>
+      <b>Ensure that your request matches the following format: /swap?chain=1&fromToken=UƒSDC&toToken=DAI&amount=100</b>
       <h2>Available Tokens (symbols to use)</h2>
       ${tokenHtml}`)
   })
@@ -149,7 +150,7 @@ app.get(
 
     // Get Token Decimals
     const fromTokenDecimals = tokens[fromTokenSymbol]?.decimals?.[fromChain]
-    const toTokenDecimals = tokens[fromTokenSymbol]?.decimals?.[toChain]
+    const toTokenDecimals = tokens[toTokenSymbol]?.decimals?.[toChain]
 
     // Handle invalid params (either token symbols or chainIDs)
     // TODO: add error handling for missing params
@@ -182,7 +183,8 @@ app.get(
       const adjustedDecimals = resp.maxAmountOut.gt(amount.mul(TEN.pow(6))) ? 18 : toTokenDecimals
 
       // Add response field with adjusted maxAmountOutStr (to account for decimals)
-      resp.maxAmountOutStr = formatBNToString(resp.maxAmountOut, adjustedDecimals, 10)
+      // resp.maxAmountOutStr = formatBNToString(resp.maxAmountOut, adjustedDecimals, 10)
+      resp.maxAmountOutStr = parseInt(resp.maxAmountOut / TEN.pow(toTokenDecimals))
 
       res.json(resp)
     }).catch((err) => {
