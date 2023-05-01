@@ -63,7 +63,7 @@ contract OriginTest is AgentSecuredTest {
         uint32 domain = random.nextUint32();
         address caller = random.nextAddress();
         address agentManager = random.nextAddress();
-        address gasOracle_ = random.nextAddress();
+        address gasOracle_ = address(new GasOracleMock());
         Origin cleanContract = new Origin(domain, agentManager, gasOracle_);
         vm.prank(caller);
         cleanContract.initialize();
@@ -137,13 +137,13 @@ contract OriginTest is AgentSecuredTest {
         // Expect Origin Events
         for (uint32 i = 0; i < MESSAGES; ++i) {
             // 1 block is skipped after each sent message
-            RawState memory rs = RawState({
-                root: roots[i],
-                origin: DOMAIN_LOCAL,
-                nonce: i + 1,
-                blockNumber: uint40(block.number + i),
-                timestamp: uint40(block.timestamp + i * BLOCK_TIME)
-            });
+            RawState memory rs;
+            rs.root = roots[i];
+            rs.origin = DOMAIN_LOCAL;
+            rs.nonce = i + 1;
+            rs.blockNumber = uint40(block.number + i);
+            rs.timestamp = uint40(block.timestamp + i * BLOCK_TIME);
+            // rs.gasData is left as Zero for now
             bytes memory state = rs.formatState();
             vm.expectEmit(true, true, true, true);
             emit StateSaved(state);
@@ -168,13 +168,10 @@ contract OriginTest is AgentSecuredTest {
         // Check initial States
         assertEq(hub.statesAmount(), 1, "!initial statesAmount");
         // Initial state was saved "1 block ago"
-        RawState memory rs = RawState({
-            root: bytes32(0),
-            origin: DOMAIN_LOCAL,
-            nonce: 0,
-            blockNumber: uint40(block.number - 1),
-            timestamp: uint40(block.timestamp - BLOCK_TIME)
-        });
+        RawState memory rs;
+        rs.origin = DOMAIN_LOCAL;
+        rs.blockNumber = uint40(block.number - 1);
+        rs.timestamp = uint40(block.timestamp - BLOCK_TIME);
         bytes memory state = rs.formatState();
         assertEq(hub.suggestState(0), state, "!state: 0");
         assertEq(hub.suggestState(0), hub.suggestLatestState(), "!latest state: 0");
@@ -260,16 +257,11 @@ contract OriginTest is AgentSecuredTest {
         isValid = mask & 7 == 0;
         // Restrict nonce to existing ones
         nonce = uint32(bound(nonce, 0, MESSAGES));
-        rs = RawState({
-            root: getRoot(nonce),
-            origin: DOMAIN_LOCAL,
-            nonce: nonce,
-            blockNumber: initialBN + nonce,
-            timestamp: uint40(initialTS + nonce * BLOCK_TIME)
-        });
-        rs.root = rs.root ^ bytes32(mask & 1);
-        rs.blockNumber = rs.blockNumber ^ uint40(mask & 2);
-        rs.timestamp = rs.timestamp ^ uint40(mask & 4);
+        rs.origin = DOMAIN_LOCAL;
+        rs.nonce = nonce;
+        rs.root = getRoot(nonce) ^ bytes32(mask & 1);
+        rs.blockNumber = (initialBN + nonce) ^ uint40(mask & 2);
+        rs.timestamp = uint40(initialTS + nonce * BLOCK_TIME) ^ uint40(mask & 4);
     }
 
     function _prepareAttestation(Random memory random, RawState memory rawState)

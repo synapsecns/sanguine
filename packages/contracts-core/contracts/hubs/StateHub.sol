@@ -2,6 +2,7 @@
 pragma solidity 0.8.17;
 
 // ══════════════════════════════ LIBRARY IMPORTS ══════════════════════════════
+import {GasData, GasDataLib} from "../libs/GasData.sol";
 import {HistoricalTree} from "../libs/MerkleTree.sol";
 import {State, StateLib} from "../libs/State.sol";
 // ═════════════════════════════ INTERNAL IMPORTS ══════════════════════════════
@@ -22,8 +23,9 @@ abstract contract StateHub is AgentSecured, StateHubEvents, IStateHub {
     struct OriginState {
         uint40 blockNumber;
         uint40 timestamp;
+        GasData gasData;
     }
-    // 176 bits left for tight packing
+    // Bits left for tight packing: 80
 
     // ══════════════════════════════════════════════════ STORAGE ══════════════════════════════════════════════════════
 
@@ -124,15 +126,19 @@ abstract contract StateHub is AgentSecured, StateHubEvents, IStateHub {
             origin_: origin,
             nonce_: nonce,
             blockNumber_: originState.blockNumber,
-            timestamp_: originState.timestamp
+            timestamp_: originState.timestamp,
+            gasData_: originState.gasData
         });
     }
 
-    /// @dev Returns a OriginState struct to save in the contract.
     // solhint-disable-next-line ordering
+    function _fetchGasData() internal view virtual returns (GasData);
+
+    /// @dev Returns a OriginState struct to save in the contract.
     function _toOriginState() internal view returns (OriginState memory originState) {
         originState.blockNumber = uint40(block.number);
         originState.timestamp = uint40(block.timestamp);
+        originState.gasData = _fetchGasData();
     }
 
     /// @dev Checks that a state and its Origin representation are equal.
