@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"github.com/synapsecns/sanguine/core/commandline"
 	"github.com/synapsecns/sanguine/core/config"
+	"github.com/synapsecns/sanguine/core/metrics"
 	"github.com/urfave/cli/v2"
 )
 
@@ -16,6 +17,9 @@ func Start(args []string, buildInfo config.BuildInfo) {
 	app.Description = buildInfo.VersionString() + "scribe is used to run a generic event indexer"
 	app.Usage = fmt.Sprintf("%s --help", buildInfo.Name())
 	app.EnableBashCompletion = true
+	app.Before = func(c *cli.Context) error {
+		return metrics.Setup(c.Context, buildInfo)
+	}
 
 	// commands
 	app.Commands = cli.Commands{infoCommand, scribeCommand, backfillCommand, serverCommand, generateCommand}

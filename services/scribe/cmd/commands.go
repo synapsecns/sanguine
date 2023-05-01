@@ -1,11 +1,7 @@
 package cmd
 
 import (
-	"context"
 	"github.com/synapsecns/sanguine/core/metrics"
-	"github.com/synapsecns/sanguine/services/scribe/metadata"
-	"time"
-
 	// used to embed markdown.
 	_ "embed"
 	"fmt"
@@ -87,40 +83,6 @@ func createScribeParameters(c *cli.Context) (eventDB db.EventDB, clients map[uin
 	}
 
 	return eventDB, clients, scribeConfig, nil
-}
-
-var backfillCommand = &cli.Command{
-	Name:        "backfill",
-	Description: "backfills up to a block and then halts",
-	Flags:       []cli.Flag{configFlag, dbFlag, pathFlag, skipMigrationFlag},
-	Action: func(c *cli.Context) error {
-		db, clients, decodeConfig, err := createScribeParameters(c)
-		if err != nil {
-			return err
-		}
-
-		// TODO delete once livefilling done
-		ctx, cancel := context.WithTimeout(c.Context, time.Minute*5)
-		cancelVar := cancel
-		handler, err := metrics.NewFromEnv(c.Context, metadata.BuildInfo())
-		if err != nil {
-			return fmt.Errorf("could not create metrics handler: %w", err)
-		}
-
-		for {
-			scribeBackfiller, err := backfill.NewScribeBackfiller(db, clients, decodeConfig, handler)
-			if err != nil {
-				return fmt.Errorf("could not create scribe backfiller: %w", err)
-			}
-
-			err = scribeBackfiller.Backfill(ctx)
-			if err != nil {
-				cancelVar()
-				ctx, cancel = context.WithTimeout(c.Context, time.Minute*5)
-				cancelVar = cancel
-			}
-		}
-	},
 }
 
 var scribeCommand = &cli.Command{
