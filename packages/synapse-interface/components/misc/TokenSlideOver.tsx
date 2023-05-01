@@ -7,6 +7,7 @@ import SlideSearchBox from '@pages/bridge/SlideSearchBox'
 import { DrawerButton } from '@components/buttons/DrawerButton'
 
 import { Token } from '@/utils/types'
+import { DisplayType } from '@/pages/bridge/BridgeCard'
 
 export const TokenSlideOver = ({
   isOrigin,
@@ -20,7 +21,7 @@ export const TokenSlideOver = ({
   tokens: any[]
   chainId: number
   selectedToken: Token
-  setDisplayType: (v: string) => void
+  setDisplayType: (v: DisplayType) => void
   handleTokenChange: (token: Token, type: 'from' | 'to') => void
 }) => {
   const componentRef = useRef(null)
@@ -58,7 +59,7 @@ export const TokenSlideOver = ({
 
   function onClose() {
     setCurrentIdx(-1)
-    setDisplayType('')
+    setDisplayType(DisplayType.DEFAULT)
   }
 
   function onMenuItemClick(coin: any) {

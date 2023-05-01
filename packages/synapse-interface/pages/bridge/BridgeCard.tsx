@@ -33,6 +33,7 @@ export enum DisplayType {
   FROM_CHAIN = 'fromChain',
   TO_CHAIN = 'toChain',
   SETTINGS = 'settings',
+  DEFAULT = '',
 }
 
 const BridgeCard = ({
@@ -79,7 +80,9 @@ const BridgeCard = ({
   setTime: (time: number) => void
 }) => {
   const [settings, setSettings] = useSettings()
-  const [displayType, setDisplayType] = useState('')
+  const [displayType, setDisplayType] = useState<DisplayType>(
+    DisplayType.DEFAULT
+  )
   const [deadlineMinutes, setDeadlineMinutes] = useState('')
   const [fromTokenBalance, setFromTokenBalance] = useState<BigNumber>(Zero)
 
@@ -225,7 +228,7 @@ const BridgeCard = ({
   return (
     <>
       <div className="flex items-center justify-between mb-5 ml-5 mr-5 space-x-2">
-        {displayType !== 'settings' ? (
+        {displayType !== DisplayType.SETTINGS ? (
           <PageHeader
             title="Bridge"
             subtitle="Send your assets across chains."
@@ -237,10 +240,10 @@ const BridgeCard = ({
           <Button
             className="flex items-center p-3 text-opacity-75 bg-bgLight hover:bg-bgLighter text-secondaryTextColor hover:text-white"
             onClick={() => {
-              if (displayType !== 'settings') {
-                setDisplayType('settings')
+              if (displayType !== DisplayType.SETTINGS) {
+                setDisplayType(DisplayType.SETTINGS)
               } else {
-                setDisplayType('')
+                setDisplayType(DisplayType.DEFAULT)
               }
             }}
           >
@@ -338,7 +341,9 @@ const BridgeCard = ({
           <div className="px-2 py-2 -mt-2 md:px-0 md:py-4">{actionBtn}</div>
           <Transition
             show={
-              ['fromChain', 'toChain'].includes(displayType)
+              [DisplayType.FROM_CHAIN, DisplayType.TO_CHAIN].includes(
+                displayType
+              )
               // && feeConfig. .eq(Zero)
             }
             {...COIN_SLIDE_OVER_PROPS}

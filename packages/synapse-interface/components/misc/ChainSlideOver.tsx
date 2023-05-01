@@ -6,7 +6,7 @@ import { SelectSpecificNetworkButton } from '@components/buttons/SelectSpecificN
 import SlideSearchBox from '@pages/bridge/SlideSearchBox'
 import { DrawerButton } from '@components/buttons/DrawerButton'
 import { useNetwork } from 'wagmi'
-import { useMouseClickNavigation } from '@/utils/useMouseClickNavigation'
+import { DisplayType } from '@/pages/bridge/BridgeCard'
 
 export const ChainSlideOver = ({
   isOrigin,
@@ -19,7 +19,7 @@ export const ChainSlideOver = ({
   chains: string[]
   chainId: number
   onChangeChain: (chainId: number, flip: boolean, type: 'from' | 'to') => void
-  setDisplayType: (v: string) => void
+  setDisplayType: (v: DisplayType) => void
 }) => {
   const componentRef = useRef(null)
   const { chain } = useNetwork()
@@ -65,7 +65,7 @@ export const ChainSlideOver = ({
 
   const onClose = useCallback(() => {
     setCurrentIdx(-1)
-    setDisplayType('')
+    setDisplayType(DisplayType.DEFAULT)
   }, [setDisplayType])
 
   const escFunc = () => {
