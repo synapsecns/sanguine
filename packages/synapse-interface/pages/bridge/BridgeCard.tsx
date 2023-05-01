@@ -220,8 +220,27 @@ const BridgeCard = ({
     />
   )
 
+  /*
+  useEffect Trigger: displayType
+  - when displayType state is updated (meaning user has clicked a menu dropdown action),
+  window object will smoothly reposition to where the bridge ui is located for convenience
+  */
+  useEffect(() => {
+    if (displayType !== DisplayType.DEFAULT) {
+      const node = bridgeDisplayRef.current
+      const top = node.offsetTop + 100
+      window.scrollTo({
+        top: top,
+        behavior: 'smooth',
+      })
+    }
+  }, [displayType])
+
   const springClass = 'fixed z-50 w-full h-full bg-opacity-50'
 
+  /*
+  - useSpring objects created to specify react spring animations for network/token dropdowns
+   */
   const fromChainSpring = useSpring({
     top: displayType === DisplayType.FROM_CHAIN ? '0%' : '-100%',
     from: { y: 0 },
@@ -251,17 +270,6 @@ const BridgeCard = ({
     from: { y: 0 },
     config: { mass: 0.5, tension: 175, friction: 20 },
   })
-
-  useEffect(() => {
-    if (displayType !== DisplayType.DEFAULT) {
-      const node = bridgeDisplayRef.current
-      const top = node.offsetTop + 100
-      window.scrollTo({
-        top: top,
-        behavior: 'smooth',
-      })
-    }
-  }, [displayType])
 
   return (
     <>
