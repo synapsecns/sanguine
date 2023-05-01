@@ -26,7 +26,7 @@ func (s Store) GetTimestampForMessage(ctx context.Context, chainID, destination,
 
 	dbTx := s.DB().WithContext(ctx).
 		Raw(fmt.Sprintf(
-			`SELECT %s FROM %s WHERE %s = ? AND %s = (
+			`SELECT %s FROM %s WHERE %s = (
 					SELECT MIN(%s) FROM (
 						(SELECT * FROM %s WHERE %s = ? AND %s >= ?) AS stateTable
 						INNER JOIN
