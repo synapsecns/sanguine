@@ -219,6 +219,7 @@ const BridgeCard = ({
     />
   )
 
+  const springClass = 'fixed z-50 w-full h-full bg-opacity-50'
   const fromChainSpring = useSpring({
     top: displayType === DisplayType.FROM_CHAIN ? '0%' : '-100%',
     from: { y: 0 },
@@ -295,10 +296,7 @@ const BridgeCard = ({
             show={displayType === DisplayType.FROM}
             {...TRANSITION_PROPS}
           >
-            <animated.div
-              style={fromSpring}
-              className="fixed z-50 w-full h-full bg-opacity-50"
-            >
+            <animated.div style={fromSpring} className={springClass}>
               <TokenSlideOver key="fromBlock" {...fromArgs} />{' '}
             </animated.div>
           </Transition>
@@ -307,10 +305,7 @@ const BridgeCard = ({
             show={displayType === DisplayType.TO}
             {...TRANSITION_PROPS}
           >
-            <animated.div
-              style={toSpring}
-              className="fixed z-50 w-full h-full bg-opacity-50"
-            >
+            <animated.div style={toSpring} className={springClass}>
               <TokenSlideOver key="toBlock" {...toArgs} />
             </animated.div>
           </Transition>
@@ -319,10 +314,7 @@ const BridgeCard = ({
             show={displayType === DisplayType.FROM_CHAIN}
             {...TRANSITION_PROPS}
           >
-            <animated.div
-              style={fromChainSpring}
-              className="fixed z-50 w-full h-full bg-opacity-50"
-            >
+            <animated.div style={fromChainSpring} className={springClass}>
               <ChainSlideOver key="fromChainBlock" {...fromArgs} />
             </animated.div>
           </Transition>
@@ -331,10 +323,7 @@ const BridgeCard = ({
             show={displayType === DisplayType.TO_CHAIN}
             {...TRANSITION_PROPS}
           >
-            <animated.div
-              style={toChainSpring}
-              className="fixed z-50 w-full h-full bg-opacity-50"
-            >
+            <animated.div style={toChainSpring} className={springClass}>
               <ChainSlideOver key="toChainBlock" {...toArgs} />
             </animated.div>
           </Transition>
@@ -343,10 +332,7 @@ const BridgeCard = ({
             show={displayType === DisplayType.SETTINGS}
             {...TRANSITION_PROPS}
           >
-            <animated.div
-              style={settingsSpring}
-              className="fixed z-50 w-full h-full bg-opacity-50"
-            >
+            <animated.div style={settingsSpring} className={springClass}>
               <SettingsSlideOver key="settings" {...settingsArgs} />
             </animated.div>
           </Transition>
