@@ -26,6 +26,10 @@ M-synapse-interface:
 M-charts:
   - any: ['charts/**/*']
 
+# reviewers should be more cautious w/ dependency changes
+Dep-Changes:
+  - any: ['**/yarn.lock', '**/Chart.lock', '**/package.json', '**/go.mod', '**/go.sum']
+
 C-Protocol-Critical:
   - 'packages/contracts-core/**/*.sol'
 
