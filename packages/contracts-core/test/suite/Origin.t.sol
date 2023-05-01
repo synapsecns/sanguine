@@ -12,7 +12,7 @@ import {InterfaceOrigin} from "../../contracts/Origin.sol";
 import {Versioned} from "../../contracts/base/Version.sol";
 
 import {RevertingApp} from "../harnesses/client/RevertingApp.t.sol";
-import {BaseMock, GasOracleMock} from "../mocks/GasOracleMock.t.sol";
+import {GasOracleMock} from "../mocks/GasOracleMock.t.sol";
 
 import {fakeState, fakeSnapshot} from "../utils/libs/FakeIt.t.sol";
 import {Random} from "../utils/libs/Random.t.sol";
@@ -21,6 +21,7 @@ import {
     StateFlag,
     RawAttestation,
     RawBaseMessage,
+    RawGasData,
     RawHeader,
     RawMessage,
     RawRequest,
@@ -82,7 +83,7 @@ contract OriginTest is AgentSecuredTest {
         minTips.boundTips(1 ** 32);
         minTips.floorTips(1);
         msgValue = msgValue % minTips.castToTips().value();
-        GasOracleMock(gasOracle).setMockReturnValue(minTips.encodeTips());
+        GasOracleMock(gasOracle).setMockedMinimumTips(minTips.encodeTips());
         deal(sender, msgValue);
         vm.expectRevert("Tips value too low");
         vm.prank(sender);
@@ -98,7 +99,7 @@ contract OriginTest is AgentSecuredTest {
         RawTips memory minTips
     ) public {
         minTips.boundTips(1 ** 32);
-        GasOracleMock(gasOracle).setMockReturnValue(minTips.encodeTips());
+        GasOracleMock(gasOracle).setMockedMinimumTips(minTips.encodeTips());
         vm.expectCall(
             address(gasOracle),
             abi.encodeWithSelector(
@@ -112,7 +113,8 @@ contract OriginTest is AgentSecuredTest {
         );
     }
 
-    function test_sendMessages() public {
+    function test_sendMessages(RawGasData memory rgd) public {
+        GasOracleMock(gasOracle).setMockedGasData(rgd.encodeGasData());
         uint160 encodedRequest = request.encodeRequest();
         bytes memory content = "test content";
         bytes memory body = RawBaseMessage({
@@ -143,7 +145,7 @@ contract OriginTest is AgentSecuredTest {
             rs.nonce = i + 1;
             rs.blockNumber = uint40(block.number + i);
             rs.timestamp = uint40(block.timestamp + i * BLOCK_TIME);
-            // rs.gasData is left as Zero for now
+            rs.gasData = rgd;
             bytes memory state = rs.formatState();
             vm.expectEmit(true, true, true, true);
             emit StateSaved(state);
@@ -163,7 +165,7 @@ contract OriginTest is AgentSecuredTest {
         }
     }
 
-    function test_states() public {
+    function test_states(RawGasData memory rgd) public {
         IStateHub hub = IStateHub(origin);
         // Check initial States
         assertEq(hub.statesAmount(), 1, "!initial statesAmount");
@@ -176,7 +178,7 @@ contract OriginTest is AgentSecuredTest {
         assertEq(hub.suggestState(0), state, "!state: 0");
         assertEq(hub.suggestState(0), hub.suggestLatestState(), "!latest state: 0");
         // Send some messages
-        test_sendMessages();
+        test_sendMessages(rgd);
         // Check saved States
         assertEq(hub.statesAmount(), MESSAGES + 1, "!statesAmount");
         assertEq(hub.suggestState(0), state, "!suggestState: 0");
@@ -185,22 +187,25 @@ contract OriginTest is AgentSecuredTest {
             rs.root = getRoot(rs.nonce);
             rs.blockNumber += 1;
             rs.timestamp += uint40(BLOCK_TIME);
+            rs.gasData = rgd;
             state = rs.formatState();
             assertEq(hub.suggestState(i + 1), state, "!suggestState");
         }
         assertEq(hub.suggestLatestState(), state, "!suggestLatestState");
     }
 
-    function test_verifySnapshot_valid(uint32 nonce, RawStateIndex memory rsi) public {
+    function test_verifySnapshot_valid(uint32 nonce, RawGasData memory rgd, RawStateIndex memory rsi) public {
         // Use empty mutation mask
-        test_verifySnapshot_existingNonce(nonce, 0, rsi);
+        test_verifySnapshot_existingNonce(nonce, 0, rgd, rsi);
     }
 
-    function test_verifySnapshot_existingNonce(uint32 nonce, uint256 mask, RawStateIndex memory rsi)
-        public
-        boundIndex(rsi)
-    {
-        (bool isValid, RawState memory rs) = _prepareExistingState(nonce, mask);
+    function test_verifySnapshot_existingNonce(
+        uint32 nonce,
+        uint256 mask,
+        RawGasData memory rgd,
+        RawStateIndex memory rsi
+    ) public boundIndex(rsi) {
+        (bool isValid, RawState memory rs) = _prepareExistingState(rgd, nonce, mask);
         _verifySnapshot(rs, isValid, rsi);
     }
 
@@ -217,7 +222,7 @@ contract OriginTest is AgentSecuredTest {
     }
 
     function test_verifyAttestation_existingNonce(Random memory random, uint32 nonce, uint256 mask) public {
-        (bool isValid, RawState memory rs) = _prepareExistingState(nonce, mask);
+        (bool isValid, RawState memory rs) = _prepareExistingState(random.nextGasData(), nonce, mask);
         _verifyAttestation(random, rs, isValid);
     }
 
@@ -235,7 +240,7 @@ contract OriginTest is AgentSecuredTest {
     }
 
     function test_verifyAttestationWithProof_existingNonce(Random memory random, uint32 nonce, uint256 mask) public {
-        (bool isValid, RawState memory rs) = _prepareExistingState(nonce, mask);
+        (bool isValid, RawState memory rs) = _prepareExistingState(random.nextGasData(), nonce, mask);
         _verifyAttestationWithProof(random, rs, isValid);
     }
 
@@ -249,10 +254,13 @@ contract OriginTest is AgentSecuredTest {
 
     // ══════════════════════════════════════════════════ HELPERS ══════════════════════════════════════════════════════
 
-    function _prepareExistingState(uint32 nonce, uint256 mask) internal returns (bool isValid, RawState memory rs) {
+    function _prepareExistingState(RawGasData memory rgd, uint32 nonce, uint256 mask)
+        internal
+        returns (bool isValid, RawState memory rs)
+    {
         uint40 initialBN = uint40(block.number - 1);
         uint40 initialTS = uint40(block.timestamp - BLOCK_TIME);
-        test_sendMessages();
+        test_sendMessages(rgd);
         // State is valid if and only if all three fields match
         isValid = mask & 7 == 0;
         // Restrict nonce to existing ones
