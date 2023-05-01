@@ -1,10 +1,12 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.17;
 
+import {SNAPSHOT_MAX_STATES} from "../../../contracts/libs/Constants.sol";
 import {SynapseLibraryTest} from "../../utils/SynapseLibraryTest.t.sol";
 
-import {ChainGas, GasData, GasDataHarness, Number} from "../../harnesses/libs/GasDataHarness.t.sol";
+import {ChainGas, GasData, GasDataLib, GasDataHarness, Number} from "../../harnesses/libs/GasDataHarness.t.sol";
 
+import {Random} from "../../utils/libs/Random.t.sol";
 import {RawChainGas, RawGasData} from "../../utils/libs/SynapseStructs.t.sol";
 
 // solhint-disable func-name-mixedcase
@@ -44,5 +46,17 @@ contract GasDataLibraryTest is SynapseLibraryTest {
         assertEq(ChainGas.unwrap(libHarness.wrapChainGas(expected)), expected, "!wrapChainGas");
         assertEq(libHarness.domain(cd), rcg.domain, "!domain");
         assertEq(GasData.unwrap(libHarness.gasData(cd)), rcg.gasData.encodeGasData(), "!gasData");
+    }
+
+    function test_chainGasDataHash(Random memory random, uint256 amount) public {
+        // Should be in [1 .. MAX_STATES] range
+        amount = bound(amount, 1, SNAPSHOT_MAX_STATES);
+        ChainGas[] memory chainGasData = new ChainGas[](amount);
+        bytes memory payload = "";
+        for (uint256 i = 0; i < amount; i++) {
+            chainGasData[i] = GasDataLib.wrapChainGas(random.nextUint256());
+            payload = bytes.concat(payload, abi.encode(chainGasData[i]));
+        }
+        assertEq(libHarness.chainGasDataHash(chainGasData), keccak256(payload), "!chainGasDataHash");
     }
 }

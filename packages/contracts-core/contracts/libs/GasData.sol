@@ -151,4 +151,9 @@ library GasDataLib {
         // Casting to uint32 will truncate the highest bits, which is the behavior we want
         return uint32(ChainGas.unwrap(data));
     }
+
+    /// @notice Returns the hash for the list of ChainGas structs.
+    function chainGasDataHash(ChainGas[] memory chainGasData) internal pure returns (bytes32) {
+        return keccak256(abi.encodePacked(chainGasData));
+    }
 }
