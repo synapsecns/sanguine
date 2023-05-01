@@ -44,7 +44,7 @@ require (
 	golang.org/x/sync v0.1.0
 	gopkg.in/yaml.v2 v2.4.0
 	gorm.io/driver/clickhouse v0.4.2
-	gorm.io/gorm v1.25.0
+	gorm.io/gorm v1.24.6
 	k8s.io/apimachinery v0.25.5
 )
 

@@ -9,9 +9,8 @@ import (
 // StoreBlockTime stores a block time for a chain.
 func (s Store) StoreBlockTime(ctx context.Context, chainID uint32, blockNumber, timestamp uint64) error {
 	dbTx := s.DB().WithContext(ctx).
-		Clauses(clause.OnConflict{
-			Columns:   []clause.Column{{Name: ChainIDFieldName}, {Name: BlockNumberFieldName}},
-			DoNothing: true,
+		Clauses(clause.Insert{
+			Modifier: "IGNORE",
 		}).
 		Create(&BlockTime{
 			ChainID:     chainID,

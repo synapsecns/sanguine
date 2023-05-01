@@ -57,11 +57,8 @@ func (s Store) StoreLogs(ctx context.Context, chainID uint32, logs ...types.Log)
 		})
 	}
 	dbTxPrefix := s.DB().WithContext(ctx).
-		Clauses(clause.OnConflict{
-			Columns: []clause.Column{
-				{Name: ContractAddressFieldName}, {Name: ChainIDFieldName}, {Name: TxHashFieldName}, {Name: BlockIndexFieldName},
-			},
-			DoNothing: true,
+		Clauses(clause.Insert{
+			Modifier: "IGNORE",
 		})
 
 	var dbTx *gorm.DB

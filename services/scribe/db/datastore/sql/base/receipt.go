@@ -17,9 +17,8 @@ import (
 // StoreReceipt stores a receipt.
 func (s Store) StoreReceipt(ctx context.Context, chainID uint32, receipt types.Receipt) error {
 	dbTx := s.DB().WithContext(ctx).
-		Clauses(clause.OnConflict{
-			Columns:   []clause.Column{{Name: TxHashFieldName}, {Name: ChainIDFieldName}},
-			DoNothing: true,
+		Clauses(clause.Insert{
+			Modifier: "IGNORE",
 		}).
 		Create(&Receipt{
 			ChainID:           chainID,
