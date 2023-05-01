@@ -82,9 +82,7 @@ contract OriginTest is AgentSecuredTest {
         minTips.boundTips(1 ** 32);
         minTips.floorTips(1);
         msgValue = msgValue % minTips.castToTips().value();
-        GasOracleMock oracle = new GasOracleMock();
-        updateOrigin(localDomain(), localAgentManager(), address(oracle));
-        oracle.setMockReturnValue(minTips.encodeTips());
+        GasOracleMock(gasOracle).setMockReturnValue(minTips.encodeTips());
         deal(sender, msgValue);
         vm.expectRevert("Tips value too low");
         vm.prank(sender);
@@ -100,11 +98,9 @@ contract OriginTest is AgentSecuredTest {
         RawTips memory minTips
     ) public {
         minTips.boundTips(1 ** 32);
-        GasOracleMock oracle = new GasOracleMock();
-        updateOrigin(localDomain(), localAgentManager(), address(oracle));
-        oracle.setMockReturnValue(minTips.encodeTips());
+        GasOracleMock(gasOracle).setMockReturnValue(minTips.encodeTips());
         vm.expectCall(
-            address(oracle),
+            address(gasOracle),
             abi.encodeWithSelector(
                 InterfaceGasOracle.getMinimumTips.selector, destination_, paddedRequest, contentLength
             )

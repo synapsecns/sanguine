@@ -4,7 +4,9 @@ pragma solidity 0.8.17;
 import {ByteString, CallData, MemView, MemViewLib} from "../../../contracts/libs/ByteString.sol";
 
 import {BaseMessage, BaseMessageLib, Tips, TipsLib} from "../../../contracts/libs/BaseMessage.sol";
+import {ChainGas, GasData, GasDataLib} from "../../../contracts/libs/GasData.sol";
 import {Header, HeaderLib, Message, MessageFlag, MessageLib} from "../../../contracts/libs/Message.sol";
+import {Number, NumberLib} from "../../../contracts/libs/Number.sol";
 import {Receipt, ReceiptBody, ReceiptLib} from "../../../contracts/libs/Receipt.sol";
 import {ReceiptFlag, ReceiptReport, ReceiptReportLib} from "../../../contracts/libs/ReceiptReport.sol";
 import {Request, RequestLib} from "../../../contracts/libs/Request.sol";
@@ -102,6 +104,41 @@ struct RawMessage {
 }
 
 using CastLib for RawMessage global;
+
+struct RawNumber {
+    uint16 number;
+}
+
+using CastLib for RawNumber global;
+
+struct RawGasData {
+    RawNumber gasPrice;
+    RawNumber dataPrice;
+    RawNumber execBuffer;
+    RawNumber amortAttCost;
+    RawNumber etherPrice;
+    RawNumber markup;
+}
+
+using CastLib for RawGasData global;
+
+struct RawGasData256 {
+    uint256 gasPrice;
+    uint256 dataPrice;
+    uint256 execBuffer;
+    uint256 amortAttCost;
+    uint256 etherPrice;
+    uint256 markup;
+}
+
+using CastLib for RawGasData256 global;
+
+struct RawChainGas {
+    uint32 domain;
+    RawGasData gasData;
+}
+
+using CastLib for RawChainGas global;
 
 struct RawState {
     bytes32 root;
@@ -318,6 +355,57 @@ library CastLib {
 
     function castToReceiptReport(RawReceiptReport memory rawRR) internal pure returns (ReceiptReport) {
         return rawRR.formatReceiptReport().castToReceiptReport();
+    }
+
+    // ═════════════════════════════════════════════════ GAS DATA ══════════════════════════════════════════════════════
+
+    function encodeNumber(RawNumber memory rn) internal pure returns (Number) {
+        return Number.wrap(rn.number);
+    }
+
+    function round(uint256 num) internal pure returns (uint256) {
+        return NumberLib.decompress(NumberLib.compress(num));
+    }
+
+    function round(RawGasData256 memory rgd256) internal pure {
+        rgd256.gasPrice = round(rgd256.gasPrice);
+        rgd256.dataPrice = round(rgd256.dataPrice);
+        rgd256.execBuffer = round(rgd256.execBuffer);
+        rgd256.amortAttCost = round(rgd256.amortAttCost);
+        rgd256.etherPrice = round(rgd256.etherPrice);
+        rgd256.markup = round(rgd256.markup);
+    }
+
+    function compress(RawGasData256 memory rdg256) internal pure returns (RawGasData memory rgd) {
+        rgd.gasPrice.number = Number.unwrap(NumberLib.compress(rdg256.gasPrice));
+        rgd.dataPrice.number = Number.unwrap(NumberLib.compress(rdg256.dataPrice));
+        rgd.execBuffer.number = Number.unwrap(NumberLib.compress(rdg256.execBuffer));
+        rgd.amortAttCost.number = Number.unwrap(NumberLib.compress(rdg256.amortAttCost));
+        rgd.etherPrice.number = Number.unwrap(NumberLib.compress(rdg256.etherPrice));
+        rgd.markup.number = Number.unwrap(NumberLib.compress(rdg256.markup));
+    }
+
+    function encodeGasData(RawGasData memory rgd) internal pure returns (uint96 encodedGasData) {
+        return GasData.unwrap(rgd.castToGasData());
+    }
+
+    function castToGasData(RawGasData memory rgd) internal pure returns (GasData) {
+        return GasDataLib.encodeGasData({
+            gasPrice_: rgd.gasPrice.encodeNumber(),
+            dataPrice_: rgd.dataPrice.encodeNumber(),
+            execBuffer_: rgd.execBuffer.encodeNumber(),
+            amortAttCost_: rgd.amortAttCost.encodeNumber(),
+            etherPrice_: rgd.etherPrice.encodeNumber(),
+            markup_: rgd.markup.encodeNumber()
+        });
+    }
+
+    function encodeChainGas(RawChainGas memory rcg) internal pure returns (uint128 encodedChainGas) {
+        return ChainGas.unwrap(rcg.castToChainGas());
+    }
+
+    function castToChainGas(RawChainGas memory rcg) internal pure returns (ChainGas) {
+        return GasDataLib.encodeChainGas({domain_: rcg.domain, gasData_: rcg.gasData.castToGasData()});
     }
 
     // ═══════════════════════════════════════════════════ STATE ═══════════════════════════════════════════════════════
