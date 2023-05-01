@@ -29,6 +29,7 @@ jobs:
           # also add to the get-project-id step
           filters: |
             explorer-ui: 'packages/explorer-ui/**'
+            synapse-interface: 'packages/synapse-interface/**'
             docs: 'packages/docs/**'
       - id: length
         run: |
