@@ -8,8 +8,8 @@ import {GasOracle, SynapseTest} from "../utils/SynapseTest.t.sol";
 // solhint-disable no-empty-blocks
 // solhint-disable ordering
 contract GasOracleTest is MessagingBaseTest {
-    // Deploy mocks for every contract
-    constructor() SynapseTest(0) {}
+    // Deploy Production version of GasOracle and mocks for everything else
+    constructor() SynapseTest(DEPLOY_PROD_GAS_ORACLE) {}
 
     function test_cleanSetup(Random memory random) public override {
         uint32 domain = random.nextUint32();
