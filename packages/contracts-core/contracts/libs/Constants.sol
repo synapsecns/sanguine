@@ -17,13 +17,15 @@ uint256 constant ATTESTATION_LENGTH = 78;
 uint256 constant RECEIPT_BODY_LENGTH = 133;
 /// @dev See Receipt.sol: body + tips
 uint256 constant RECEIPT_LENGTH = RECEIPT_BODY_LENGTH + TIPS_LENGTH;
-/// @dev See State.sol: (bytes32,uint32,uint32,uint40,uint40): 32+4+4+5+5
-uint256 constant STATE_LENGTH = 50;
+/// @dev See State.sol: (bytes32,uint32,uint32,uint40,uint40,GasData): 32+4+4+5+5+len(GasData)
+uint256 constant STATE_LENGTH = 50 + GAS_DATA_LENGTH;
 /// @dev Maximum amount of states in a single snapshot. Each state produces two leafs in the tree
 uint256 constant SNAPSHOT_MAX_STATES = 1 << (SNAPSHOT_TREE_HEIGHT - 1);
 // ══════════════════════════════════ MESSAGE ══════════════════════════════════
 /// @dev See Header.sol: (uint32,uint32,uint32,uint32): 4+4+4+4
 uint256 constant HEADER_LENGTH = 16;
+/// @dev See GasData.sol: (uint16,uint16,uint16,uint16,uint16,uint16): 2+2+2+2+2+2
+uint256 constant GAS_DATA_LENGTH = 12;
 /// @dev See Request.sol: (uint64,uint96): 8+12
 uint256 constant REQUEST_LENGTH = 20;
 /// @dev See Tips.sol: (uint64,uint64,uint64,uint64): 8+8+8+8

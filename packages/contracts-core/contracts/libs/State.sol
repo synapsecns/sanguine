@@ -1,7 +1,8 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.17;
 
-import {STATE_LENGTH} from "./Constants.sol";
+import {GAS_DATA_LENGTH, STATE_LENGTH} from "./Constants.sol";
+import {GasData, GasDataLib} from "./GasData.sol";
 import {MemView, MemViewLib} from "./MemView.sol";
 
 /// State is a memory view over a formatted state payload.
@@ -30,6 +31,7 @@ using StateLib for State global;
 /// | [036..040) | nonce       | uint32  | 4     | Amount of sent messages        |
 /// | [040..045) | blockNumber | uint40  | 5     | Block of last sent message     |
 /// | [045..050) | timestamp   | uint40  | 5     | Time of last sent message      |
+/// | [050..062) | gasData     | uint96  | 12    | Gas data for the chain         |
 ///
 /// @dev State could be used to form a Snapshot to be signed by a Guard or a Notary.
 library StateLib {
@@ -41,6 +43,7 @@ library StateLib {
     uint256 private constant OFFSET_NONCE = 36;
     uint256 private constant OFFSET_BLOCK_NUMBER = 40;
     uint256 private constant OFFSET_TIMESTAMP = 45;
+    uint256 private constant OFFSET_GAS_DATA = 50;
 
     // ═══════════════════════════════════════════════════ STATE ═══════════════════════════════════════════════════════
 
@@ -51,14 +54,18 @@ library StateLib {
      * @param nonce_        Nonce of the merkle root
      * @param blockNumber_  Block number when root was saved in Origin
      * @param timestamp_    Block timestamp when root was saved in Origin
+     * @param gasData_      Gas data for the chain
      * @return Formatted state
      */
-    function formatState(bytes32 root_, uint32 origin_, uint32 nonce_, uint40 blockNumber_, uint40 timestamp_)
-        internal
-        pure
-        returns (bytes memory)
-    {
-        return abi.encodePacked(root_, origin_, nonce_, blockNumber_, timestamp_);
+    function formatState(
+        bytes32 root_,
+        uint32 origin_,
+        uint32 nonce_,
+        uint40 blockNumber_,
+        uint40 timestamp_,
+        GasData gasData_
+    ) internal pure returns (bytes memory) {
+        return abi.encodePacked(root_, origin_, nonce_, blockNumber_, timestamp_, gasData_);
     }
 
     /**
@@ -123,9 +130,13 @@ library StateLib {
     }
 
     /// @notice Returns the right "sub-leaf" of the State.
-    function rightLeaf(uint32 nonce_, uint40 blockNumber_, uint40 timestamp_) internal pure returns (bytes32) {
+    function rightLeaf(uint32 nonce_, uint40 blockNumber_, uint40 timestamp_, GasData gasData_)
+        internal
+        pure
+        returns (bytes32)
+    {
         // We use encodePacked here to simulate the State memory layout
-        return keccak256(abi.encodePacked(nonce_, blockNumber_, timestamp_));
+        return keccak256(abi.encodePacked(nonce_, blockNumber_, timestamp_, gasData_));
     }
 
     // ═══════════════════════════════════════════════ STATE SLICING ═══════════════════════════════════════════════════
@@ -154,5 +165,10 @@ library StateLib {
     /// @dev This is the timestamp according to the origin chain.
     function timestamp(State state) internal pure returns (uint40) {
         return uint40(state.unwrap().indexUint({index_: OFFSET_TIMESTAMP, bytes_: 5}));
+    }
+
+    /// @notice Returns gas data for the chain.
+    function gasData(State state) internal pure returns (GasData) {
+        return GasDataLib.wrapGasData(state.unwrap().indexUint({index_: OFFSET_GAS_DATA, bytes_: GAS_DATA_LENGTH}));
     }
 }

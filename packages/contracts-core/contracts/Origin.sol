@@ -4,6 +4,7 @@ pragma solidity 0.8.17;
 // ══════════════════════════════ LIBRARY IMPORTS ══════════════════════════════
 import {BaseMessageLib} from "./libs/BaseMessage.sol";
 import {MAX_CONTENT_BYTES} from "./libs/Constants.sol";
+import {GasData, GasDataLib} from "./libs/GasData.sol";
 import {MemView, MemViewLib} from "./libs/MemView.sol";
 import {Header, HeaderLib, MessageFlag} from "./libs/Message.sol";
 import {Request, RequestLib} from "./libs/Request.sol";
@@ -132,5 +133,10 @@ contract Origin is StateHub, OriginEvents, InterfaceOrigin {
     {
         return
             TipsLib.wrapPadded(InterfaceGasOracle(gasOracle).getMinimumTips(destination, paddedRequest, contentLength));
+    }
+
+    /// @dev Gets the current gas data from the gas oracle to be saved as part of the Origin State.
+    function _fetchGasData() internal view override returns (GasData) {
+        return GasDataLib.wrapGasData(InterfaceGasOracle(gasOracle).getGasData());
     }
 }

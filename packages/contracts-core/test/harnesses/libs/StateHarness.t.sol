@@ -2,7 +2,7 @@
 
 pragma solidity 0.8.17;
 
-import {State, StateLib, MemView, MemViewLib} from "../../../contracts/libs/State.sol";
+import {GasData, State, StateLib, MemView, MemViewLib} from "../../../contracts/libs/State.sol";
 
 // solhint-disable ordering
 /// @notice Exposes State methods for testing against golang.
@@ -39,8 +39,12 @@ contract StateHarness {
         return StateLib.leftLeaf(root_, origin_);
     }
 
-    function rightLeaf(uint32 nonce_, uint40 blockNumber_, uint40 timestamp_) public pure returns (bytes32) {
-        return StateLib.rightLeaf(nonce_, blockNumber_, timestamp_);
+    function rightLeaf(uint32 nonce_, uint40 blockNumber_, uint40 timestamp_, GasData gasData_)
+        public
+        pure
+        returns (bytes32)
+    {
+        return StateLib.rightLeaf(nonce_, blockNumber_, timestamp_, gasData_);
     }
 
     function root(bytes memory payload) public pure returns (bytes32) {
@@ -63,14 +67,21 @@ contract StateHarness {
         return payload.castToState().timestamp();
     }
 
+    function gasData(bytes memory payload) public pure returns (GasData) {
+        return payload.castToState().gasData();
+    }
+
     // ════════════════════════════════════════════════ FORMATTERS ═════════════════════════════════════════════════════
 
-    function formatState(bytes32 root_, uint32 origin_, uint32 nonce_, uint40 blockNumber_, uint40 timestamp_)
-        public
-        pure
-        returns (bytes memory)
-    {
-        return StateLib.formatState(root_, origin_, nonce_, blockNumber_, timestamp_);
+    function formatState(
+        bytes32 root_,
+        uint32 origin_,
+        uint32 nonce_,
+        uint40 blockNumber_,
+        uint40 timestamp_,
+        GasData gasData_
+    ) public pure returns (bytes memory) {
+        return StateLib.formatState(root_, origin_, nonce_, blockNumber_, timestamp_, gasData_);
     }
 
     function isState(bytes memory payload) public pure returns (bool) {
