@@ -70,7 +70,7 @@ func createScribeParameters(c *cli.Context) (eventDB db.EventDB, clients map[uin
 		return nil, nil, scribeConfig, fmt.Errorf("could not decode config: %w", err)
 	}
 
-	eventDB, err = api.InitDB(c.Context, c.String(dbFlag.Name), c.String(pathFlag.Name), metrics.Get())
+	eventDB, err = api.InitDB(c.Context, c.String(dbFlag.Name), c.String(pathFlag.Name), metrics.Get(), c.Bool(skipMigrationFlag.Name))
 	if err != nil {
 		return nil, nil, scribeConfig, fmt.Errorf("could not initialize database: %w", err)
 	}
@@ -92,7 +92,7 @@ func createScribeParameters(c *cli.Context) (eventDB db.EventDB, clients map[uin
 var backfillCommand = &cli.Command{
 	Name:        "backfill",
 	Description: "backfills up to a block and then halts",
-	Flags:       []cli.Flag{configFlag, dbFlag, pathFlag},
+	Flags:       []cli.Flag{configFlag, dbFlag, pathFlag, skipMigrationFlag},
 	Action: func(c *cli.Context) error {
 		db, clients, decodeConfig, err := createScribeParameters(c)
 		if err != nil {
@@ -147,13 +147,14 @@ var scribeCommand = &cli.Command{
 var serverCommand = &cli.Command{
 	Name:        "server",
 	Description: "starts a graphql server",
-	Flags:       []cli.Flag{portFlag, dbFlag, pathFlag, omniRPCFlag},
+	Flags:       []cli.Flag{portFlag, dbFlag, pathFlag, omniRPCFlag, skipMigrationServerFlag},
 	Action: func(c *cli.Context) error {
 		err := api.Start(c.Context, api.Config{
-			Port:       uint16(c.Uint(portFlag.Name)),
-			Database:   c.String(dbFlag.Name),
-			Path:       c.String(pathFlag.Name),
-			OmniRPCURL: c.String(omniRPCFlag.Name),
+			Port:           uint16(c.Uint(portFlag.Name)),
+			Database:       c.String(dbFlag.Name),
+			Path:           c.String(pathFlag.Name),
+			OmniRPCURL:     c.String(omniRPCFlag.Name),
+			SkipMigrations: c.Bool(skipMigrationServerFlag.Name),
 		}, metrics.Get())
 		if err != nil {
 			return fmt.Errorf("could not start server: %w", err)
@@ -167,6 +168,19 @@ var omniRPCFlag = &cli.StringFlag{
 	Name:     "omnirpc",
 	Usage:    "--omnirpc https://omnirpc.url",
 	Required: true,
+}
+
+var skipMigrationFlag = &cli.BoolFlag{
+	Name:  "skip-migrations",
+	Usage: "--skip-migrations",
+	Value: false,
+}
+
+var skipMigrationServerFlag = &cli.BoolFlag{
+	Name:     skipMigrationFlag.Name,
+	Usage:    skipMigrationFlag.Usage,
+	Required: skipMigrationFlag.Required,
+	Value:    true,
 }
 
 var deploymentsPath = &cli.StringFlag{
