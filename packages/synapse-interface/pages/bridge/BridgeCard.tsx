@@ -27,6 +27,14 @@ import { useSpring, animated } from 'react-spring'
 import { Token } from '@/utils/types'
 import { BridgeQuote } from '@/utils/types'
 
+export enum DisplayType {
+  FROM = 'from',
+  TO = 'to',
+  FROM_CHAIN = 'fromChain',
+  TO_CHAIN = 'toChain',
+  SETTINGS = 'settings',
+}
+
 const BridgeCard = ({
   error,
   address,
@@ -271,7 +279,12 @@ const BridgeCard = ({
             </animated.div>
           </Transition>
           <Transition show={displayType === 'toChain'} {...TRANSITION_PROPS}>
-            <ChainSlideOver key="fromChainBlock" {...toArgs} />
+            <animated.div
+              style={spring}
+              className="fixed z-50 w-full h-full bg-gray-900 bg-opacity-50"
+            >
+              <ChainSlideOver key="fromChainBlock" {...toArgs} />
+            </animated.div>
           </Transition>
           <Transition show={displayType === 'settings'} {...TRANSITION_PROPS}>
             <SettingsSlideOver key="settings" {...settingsArgs} />
