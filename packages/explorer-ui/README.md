@@ -4,6 +4,7 @@
  - add readme describing explorer ui
  - add integration tests
  - convert to typescript
+ - add eslint
 
 # Getting Started with Create React App
 
