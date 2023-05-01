@@ -44,7 +44,7 @@ func (t *DBSuite) SetupTest() {
 
 	t.logIndex.Store(0)
 
-	sqliteStore, err := sqlite.NewSqliteStore(t.GetTestContext(), filet.TmpDir(t.T(), ""), t.scribeMetrics)
+	sqliteStore, err := sqlite.NewSqliteStore(t.GetTestContext(), filet.TmpDir(t.T(), ""), t.scribeMetrics, false)
 	Nil(t.T(), err)
 
 	t.dbs = []db.EventDB{sqliteStore}
@@ -91,7 +91,7 @@ func (t *DBSuite) setupMysqlDB() {
 	mysql.MaxIdleConns = 10
 
 	// create the sql store
-	mysqlStore, err := mysql.NewMysqlStore(t.GetTestContext(), connString, t.scribeMetrics)
+	mysqlStore, err := mysql.NewMysqlStore(t.GetTestContext(), connString, t.scribeMetrics, false)
 	Nil(t.T(), err)
 	// add the db
 	t.dbs = append(t.dbs, mysqlStore)
