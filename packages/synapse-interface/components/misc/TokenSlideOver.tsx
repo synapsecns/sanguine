@@ -101,14 +101,14 @@ export const TokenSlideOver = ({
 
   useEffect(enterPressedFunc, [enterPressed])
 
-  useEffect(() => {
-    const node = componentRef.current
-    const top = node.offsetTop + 100
-    window.scrollTo({
-      top: top,
-      behavior: 'smooth',
-    })
-  }, [])
+  // useEffect(() => {
+  //   const node = componentRef.current
+  //   const top = node.offsetTop + 100
+  //   window.scrollTo({
+  //     top: top,
+  //     behavior: 'smooth',
+  //   })
+  // }, [])
 
   function onSearch(str: string) {
     setSearchStr(str)
