@@ -245,6 +245,30 @@ contract DestinationTest is ExecutionHubTest {
         assertEq(dataMaturity, firstSkipTime + secondSkipTime, "!synapseDataMaturity");
     }
 
+    function test_getGasData_localDomain(Random memory random) public {
+        RawSnapshot memory firstSnap;
+        firstSnap.states = new RawState[](2);
+        firstSnap.states[0] = random.nextState({origin: DOMAIN_REMOTE, nonce: random.nextUint32()});
+        firstSnap.states[1] = random.nextState({origin: localDomain(), nonce: random.nextUint32()});
+        RawAttestation memory ra = random.nextAttestation(firstSnap, random.nextUint32());
+        address firstNotary = domains[DOMAIN_LOCAL].agents[0];
+        (bytes memory attPayload, bytes memory attSig) = signAttestation(firstNotary, ra);
+        uint256[] memory firstSnapGas = firstSnap.snapGas();
+        // Submit first attestation
+        lightManager.submitAttestation(attPayload, attSig, firstSnapGas);
+        uint256 firstSkipTime = random.nextUint32();
+        skip(firstSkipTime);
+        // Check getGasData
+        GasData firstRemoteGasData = firstSnap.states[0].castToState().gasData();
+        (GasData gasData, uint256 dataMaturity) = InterfaceDestination(localDestination()).getGasData(DOMAIN_REMOTE);
+        assertEq(GasData.unwrap(gasData), GasData.unwrap(firstRemoteGasData), "!remoteGasData");
+        assertEq(dataMaturity, firstSkipTime, "!remoteDataMaturity");
+        // Should not save data for local domain
+        (gasData, dataMaturity) = InterfaceDestination(localDestination()).getGasData(localDomain());
+        assertEq(GasData.unwrap(gasData), 0, "!localGasData");
+        assertEq(dataMaturity, 0, "!localDataMaturity");
+    }
+
     function test_getGasData_noDataForDomain(Random memory random, uint32 domain) public {
         vm.assume(domain != DOMAIN_REMOTE && domain != DOMAIN_SYNAPSE);
         RawSnapshot memory firstSnap;
