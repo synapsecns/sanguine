@@ -167,7 +167,7 @@ using CastLib for RawSnapshot global;
 struct RawAttestation {
     bytes32 snapRoot;
     bytes32 agentRoot;
-    bytes32 gasDataHash;
+    bytes32 snapGasHash;
     uint32 nonce;
     uint40 blockNumber;
     uint40 timestamp;
@@ -480,7 +480,7 @@ library CastLib {
         Snapshot snapshot = rawSnap.castToSnapshot();
         ra.snapRoot = snapshot.calculateRoot();
         ra.agentRoot = agentRoot;
-        ra.gasDataHash = rawSnap.chainGasDataHash();
+        ra.snapGasHash = rawSnap.snapGasHash();
         ra.nonce = nonce;
         ra.blockNumber = blockNumber;
         ra.timestamp = timestamp;
@@ -498,8 +498,16 @@ library CastLib {
         ptr = rawSnap.formatSnapshot().castToSnapshot();
     }
 
-    function chainGasDataHash(RawSnapshot memory rawSnap) internal view returns (bytes32 gasDataHash) {
-        return GasDataLib.chainGasDataHash(rawSnap.castToSnapshot().chainGasData());
+    function snapGas(RawSnapshot memory rawSnap) internal view returns (uint256[] memory snapGas_) {
+        ChainGas[] memory chainData = rawSnap.castToSnapshot().snapGas();
+        snapGas_ = new uint256[](chainData.length);
+        for (uint256 i = 0; i < snapGas_.length; ++i) {
+            snapGas_[i] = ChainGas.unwrap(chainData[i]);
+        }
+    }
+
+    function snapGasHash(RawSnapshot memory rawSnap) internal view returns (bytes32) {
+        return GasDataLib.snapGasHash(rawSnap.castToSnapshot().snapGas());
     }
 
     // ════════════════════════════════════════════════ ATTESTATION ════════════════════════════════════════════════════
@@ -508,7 +516,7 @@ library CastLib {
         attestation = AttestationLib.formatAttestation({
             snapRoot_: ra.snapRoot,
             agentRoot_: ra.agentRoot,
-            gasDataHash_: ra.gasDataHash,
+            snapGasHash_: ra.snapGasHash,
             nonce_: ra.nonce,
             blockNumber_: ra.blockNumber,
             timestamp_: ra.timestamp
@@ -530,7 +538,7 @@ library CastLib {
         isEqual = mask & 31 == 0;
         mra.snapRoot = ra.snapRoot ^ bytes32(mask & 1);
         mra.agentRoot = ra.agentRoot ^ bytes32(mask & 2);
-        mra.gasDataHash = ra.gasDataHash ^ bytes32(mask & 4);
+        mra.snapGasHash = ra.snapGasHash ^ bytes32(mask & 4);
         mra.blockNumber = ra.blockNumber ^ uint40(mask & 8);
         mra.timestamp = ra.timestamp ^ uint40(mask & 16);
     }

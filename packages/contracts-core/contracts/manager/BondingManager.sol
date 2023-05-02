@@ -5,6 +5,7 @@ pragma solidity 0.8.17;
 import {Attestation, AttestationLib} from "../libs/Attestation.sol";
 import {AttestationReport, AttestationReportLib} from "../libs/AttestationReport.sol";
 import {BONDING_OPTIMISTIC_PERIOD, SYNAPSE_DOMAIN} from "../libs/Constants.sol";
+import {ChainGas} from "../libs/GasData.sol";
 import {DynamicTree, MerkleMath} from "../libs/MerkleTree.sol";
 import {Receipt, ReceiptBody, ReceiptLib} from "../libs/Receipt.sol";
 import {Snapshot, SnapshotLib} from "../libs/Snapshot.sol";
@@ -69,7 +70,7 @@ contract BondingManager is AgentManager, BondingManagerEvents, InterfaceBondingM
     /// @inheritdoc InterfaceBondingManager
     function submitSnapshot(bytes memory snapPayload, bytes memory snapSignature)
         external
-        returns (bytes memory attPayload)
+        returns (bytes memory attPayload, uint256[] memory snapGas)
     {
         // This will revert if payload is not a snapshot
         Snapshot snapshot = snapPayload.castToSnapshot();
@@ -95,8 +96,14 @@ contract BondingManager is AgentManager, BondingManagerEvents, InterfaceBondingM
                 agentRoot: _agentTree.root,
                 snapPayload: snapPayload
             });
+            ChainGas[] memory snapGas_ = snapshot.snapGas();
             // Pass created attestation to Destination to enable executing messages coming to Synapse Chain
-            InterfaceDestination(destination).acceptAttestation(status.index, type(uint256).max, attPayload);
+            InterfaceDestination(destination).acceptAttestation(status.index, type(uint256).max, attPayload, snapGas_);
+            // Use assembly to cast ChainGas[] to uint256[] without copying. Highest bits are left zeroed.
+            // solhint-disable-next-line no-inline-assembly
+            assembly {
+                snapGas := snapGas_
+            }
         }
         emit SnapshotAccepted(status.domain, agent, snapPayload, snapSignature);
     }

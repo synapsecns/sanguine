@@ -3,7 +3,7 @@ pragma solidity 0.8.17;
 
 // ══════════════════════════════ LIBRARY IMPORTS ══════════════════════════════
 import {Attestation, AttestationLib} from "../libs/Attestation.sol";
-import {GasData, GasDataLib} from "../libs/GasData.sol";
+import {ChainGas, GasData, GasDataLib} from "../libs/GasData.sol";
 import {MerkleMath} from "../libs/MerkleMath.sol";
 import {Snapshot, SnapshotLib} from "../libs/Snapshot.sol";
 import {State, StateLib} from "../libs/State.sol";
@@ -44,7 +44,7 @@ abstract contract SnapshotHub is AgentSecured, SnapshotHubEvents, ISnapshotHub {
     struct SummitAttestation {
         bytes32 snapRoot;
         bytes32 agentRoot;
-        bytes32 gasDataHash;
+        bytes32 snapGasHash;
         uint40 blockNumber;
         uint40 timestamp;
     }
@@ -91,9 +91,14 @@ abstract contract SnapshotHub is AgentSecured, SnapshotHubEvents, ISnapshotHub {
     }
 
     /// @inheritdoc ISnapshotHub
-    function getAttestation(uint32 attNonce) external view returns (bytes memory attPayload) {
+    function getAttestation(uint32 attNonce)
+        external
+        view
+        returns (bytes memory attPayload, uint256[] memory snapGas)
+    {
         require(attNonce < _attestations.length, "Nonce out of range");
-        return _formatSummitAttestation(_attestations[attNonce], attNonce);
+        attPayload = _formatSummitAttestation(_attestations[attNonce], attNonce);
+        snapGas = _restoreSnapGas(_notarySnapshots[attNonce]);
     }
 
     /// @inheritdoc ISnapshotHub
@@ -104,10 +109,16 @@ abstract contract SnapshotHub is AgentSecured, SnapshotHubEvents, ISnapshotHub {
     }
 
     /// @inheritdoc ISnapshotHub
-    function getLatestNotaryAttestation(address notary) external view returns (bytes memory attPayload) {
+    function getLatestNotaryAttestation(address notary)
+        external
+        view
+        returns (bytes memory attPayload, uint256[] memory snapGas)
+    {
         uint32 latestAttNonce = _latestAttNonce[_agentStatus(notary).index];
-        if (latestAttNonce == 0) return bytes("");
-        return _formatSummitAttestation(_attestations[latestAttNonce], latestAttNonce);
+        if (latestAttNonce != 0) {
+            attPayload = _formatSummitAttestation(_attestations[latestAttNonce], latestAttNonce);
+            snapGas = _restoreSnapGas(_notarySnapshots[latestAttNonce]);
+        }
     }
 
     /// @inheritdoc ISnapshotHub
@@ -241,8 +252,8 @@ abstract contract SnapshotHub is AgentSecured, SnapshotHubEvents, ISnapshotHub {
     ) internal returns (bytes memory attPayload) {
         // Attestation nonce is its index in `_attestations` array
         uint32 attNonce = uint32(_attestations.length);
-        bytes32 gasDataHash = GasDataLib.chainGasDataHash(snapshot.chainGasData());
-        SummitAttestation memory summitAtt = _toSummitAttestation(snapshot.calculateRoot(), agentRoot, gasDataHash);
+        bytes32 snapGasHash = GasDataLib.snapGasHash(snapshot.snapGas());
+        SummitAttestation memory summitAtt = _toSummitAttestation(snapshot.calculateRoot(), agentRoot, snapGasHash);
         attPayload = _formatSummitAttestation(summitAtt, attNonce);
         _latestAttNonce[notaryIndex] = attNonce;
         /// @dev Add a single element to both `_attestations` and `_notarySnapshots`,
@@ -311,6 +322,25 @@ abstract contract SnapshotHub is AgentSecured, SnapshotHubEvents, ISnapshotHub {
         snapSignature = IAgentManager(agentManager).getStoredSignature(snapshot.sigIndex);
     }
 
+    /// @dev Restores the gas data from the snapshot.
+    function _restoreSnapGas(SummitSnapshot memory snapshot) internal view returns (uint256[] memory snapGas) {
+        uint256 statesAmount = snapshot.statePtrs.length;
+        snapGas = new uint256[](statesAmount);
+        for (uint256 i = 0; i < statesAmount; ++i) {
+            // Get value for "index in _states PLUS 1"
+            uint256 statePtr = snapshot.statePtrs[i];
+            // We are never saving zero values when accepting Guard/Notary snapshots, so this holds
+            assert(statePtr != 0);
+            // Get the state that Agent used for the snapshot
+            snapGas[i] = ChainGas.unwrap(
+                GasDataLib.encodeChainGas({
+                    gasData_: _states[statePtr - 1].gasData,
+                    domain_: _states[statePtr - 1].origin
+                })
+            );
+        }
+    }
+
     /// @dev Returns indexes of agents who provided state data for the Notary snapshot with the given nonce.
     function _stateAgents(uint32 nonce, uint256 stateIndex)
         internal
@@ -373,7 +403,7 @@ abstract contract SnapshotHub is AgentSecured, SnapshotHubEvents, ISnapshotHub {
         return AttestationLib.formatAttestation({
             snapRoot_: summitAtt.snapRoot,
             agentRoot_: summitAtt.agentRoot,
-            gasDataHash_: summitAtt.gasDataHash,
+            snapGasHash_: summitAtt.snapGasHash,
             nonce_: nonce,
             blockNumber_: summitAtt.blockNumber,
             timestamp_: summitAtt.timestamp
@@ -383,14 +413,14 @@ abstract contract SnapshotHub is AgentSecured, SnapshotHubEvents, ISnapshotHub {
     /// @dev Returns an Attestation struct to save in the Summit contract.
     /// Current block number and timestamp are used.
     // solhint-disable-next-line ordering
-    function _toSummitAttestation(bytes32 snapRoot, bytes32 agentRoot, bytes32 gasDataHash)
+    function _toSummitAttestation(bytes32 snapRoot, bytes32 agentRoot, bytes32 snapGasHash)
         internal
         view
         returns (SummitAttestation memory summitAtt)
     {
         summitAtt.snapRoot = snapRoot;
         summitAtt.agentRoot = agentRoot;
-        summitAtt.gasDataHash = gasDataHash;
+        summitAtt.snapGasHash = snapGasHash;
         summitAtt.blockNumber = uint40(block.number);
         summitAtt.timestamp = uint40(block.timestamp);
     }
@@ -401,7 +431,7 @@ abstract contract SnapshotHub is AgentSecured, SnapshotHubEvents, ISnapshotHub {
         return 
             att.snapRoot() == summitAtt.snapRoot &&
             att.agentRoot() == summitAtt.agentRoot &&
-            att.gasDataHash() == summitAtt.gasDataHash &&
+            att.snapGasHash() == summitAtt.snapGasHash &&
             att.blockNumber() == summitAtt.blockNumber &&
             att.timestamp() == summitAtt.timestamp;
     }

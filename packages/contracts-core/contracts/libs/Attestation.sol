@@ -47,7 +47,7 @@ using AttestationLib for Attestation global;
 /// | ---------- | ----------- | ------- | ----- | -------------------------------------------------------------- |
 /// | [000..032) | snapRoot    | bytes32 | 32    | Root for "Snapshot Merkle Tree" created from a Notary snapshot |
 /// | [032..064) | agentRoot   | bytes32 | 32    | Root for "Agent Merkle Tree" tracked by BondingManager         |
-/// | [064..096) | gasDataHash | bytes32 | 32    | Hash of the list with snapshot's chains gas data               |
+/// | [064..096) | snapGasHash | bytes32 | 32    | Hash of the list with snapshot's chains gas data               |
 /// | [096..100) | nonce       | uint32  | 4     | Total amount of all accepted Notary snapshots                  |
 /// | [100..105) | blockNumber | uint40  | 5     | Block when this Notary snapshot was accepted in Summit         |
 /// | [105..110) | timestamp   | uint40  | 5     | Time when this Notary snapshot was accepted in Summit          |
@@ -73,7 +73,7 @@ library AttestationLib {
      * @notice Returns a formatted Attestation payload with provided fields.
      * @param snapRoot_     Snapshot merkle tree's root
      * @param agentRoot_    Agent merkle tree's root
-     * @param gasDataHash_  Hash of the list with snapshot's chains gas data
+     * @param snapGasHash_  Hash of the list with snapshot's chains gas data
      * @param nonce_        Attestation Nonce
      * @param blockNumber_  Block number when attestation was created in Summit
      * @param timestamp_    Block timestamp when attestation was created in Summit
@@ -82,12 +82,12 @@ library AttestationLib {
     function formatAttestation(
         bytes32 snapRoot_,
         bytes32 agentRoot_,
-        bytes32 gasDataHash_,
+        bytes32 snapGasHash_,
         uint32 nonce_,
         uint40 blockNumber_,
         uint40 timestamp_
     ) internal pure returns (bytes memory) {
-        return abi.encodePacked(snapRoot_, agentRoot_, gasDataHash_, nonce_, blockNumber_, timestamp_);
+        return abi.encodePacked(snapRoot_, agentRoot_, snapGasHash_, nonce_, blockNumber_, timestamp_);
     }
 
     /**
@@ -136,7 +136,7 @@ library AttestationLib {
     }
 
     /// @notice Returns hash of the list with snapshot's chains gas data.
-    function gasDataHash(Attestation att) internal pure returns (bytes32) {
+    function snapGasHash(Attestation att) internal pure returns (bytes32) {
         return att.unwrap().index({index_: OFFSET_DATA_HASH, bytes_: 32});
     }
 

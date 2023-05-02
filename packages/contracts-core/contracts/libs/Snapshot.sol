@@ -123,12 +123,12 @@ library SnapshotLib {
     }
 
     /// @notice Extracts the list of ChainGas structs from the snapshot.
-    function chainGasData(Snapshot snapshot) internal pure returns (ChainGas[] memory chainGasData_) {
+    function snapGas(Snapshot snapshot) internal pure returns (ChainGas[] memory snapGas_) {
         uint256 statesAmount_ = snapshot.statesAmount();
-        chainGasData_ = new ChainGas[](statesAmount_);
+        snapGas_ = new ChainGas[](statesAmount_);
         for (uint256 i = 0; i < statesAmount_; ++i) {
             State state_ = snapshot.state(i);
-            chainGasData_[i] = GasDataLib.encodeChainGas(state_.gasData(), state_.origin());
+            snapGas_[i] = GasDataLib.encodeChainGas(state_.gasData(), state_.origin());
         }
     }
 

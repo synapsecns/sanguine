@@ -41,8 +41,8 @@ contract SnapshotHarness {
         return payload.castToSnapshot().statesAmount();
     }
 
-    function chainGasData(bytes memory payload) public pure returns (ChainGas[] memory) {
-        return payload.castToSnapshot().chainGasData();
+    function snapGas(bytes memory payload) public pure returns (ChainGas[] memory) {
+        return payload.castToSnapshot().snapGas();
     }
 
     function calculateRoot(bytes memory payload) public pure returns (bytes32) {

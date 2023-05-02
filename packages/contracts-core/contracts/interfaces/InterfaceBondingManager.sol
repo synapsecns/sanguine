@@ -22,10 +22,12 @@ interface InterfaceBondingManager {
      * @param snapSignature     Agent signature for the snapshot
      * @return attPayload       Raw payload with data for attestation derived from Notary snapshot.
      *                          Empty payload, if a Guard snapshot was submitted.
+     * @return snapGas          Gas data for each chain in the snapshot
+     *                          Empty list, if a Guard snapshot was submitted.
      */
     function submitSnapshot(bytes memory snapPayload, bytes memory snapSignature)
         external
-        returns (bytes memory attPayload);
+        returns (bytes memory attPayload, uint256[] memory snapGas);
 
     /**
      * @notice Accepts a receipt signed by a Notary and passes it to Summit contract to save.
