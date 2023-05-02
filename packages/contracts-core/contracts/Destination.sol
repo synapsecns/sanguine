@@ -6,7 +6,7 @@ import {Attestation, AttestationLib} from "./libs/Attestation.sol";
 import {AttestationReport} from "./libs/AttestationReport.sol";
 import {ByteString} from "./libs/ByteString.sol";
 import {AGENT_ROOT_OPTIMISTIC_PERIOD, SYNAPSE_DOMAIN} from "./libs/Constants.sol";
-import {ChainGas} from "./libs/GasData.sol";
+import {ChainGas, GasData} from "./libs/GasData.sol";
 import {AgentStatus, DestinationStatus, DisputeFlag} from "./libs/Structures.sol";
 // ═════════════════════════════ INTERNAL IMPORTS ══════════════════════════════
 import {AgentSecured} from "./base/AgentSecured.sol";
@@ -138,6 +138,11 @@ contract Destination is ExecutionHub, DestinationEvents, InterfaceDestination {
         if (localDomain != SYNAPSE_DOMAIN) {
             attSignature = IAgentManager(agentManager).getStoredSignature(rootData.sigIndex);
         }
+    }
+
+    /// @inheritdoc InterfaceDestination
+    function getGasData(uint32 domain) external view returns (GasData gasData, uint256 dataMaturity) {
+        // TODO: implement
     }
 
     /// @inheritdoc InterfaceDestination
