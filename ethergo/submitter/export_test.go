@@ -1,9 +1,14 @@
 package submitter
 
 import (
+	"context"
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/core/types"
+	"github.com/synapsecns/sanguine/core/metrics"
+	"github.com/synapsecns/sanguine/ethergo/client"
+	"github.com/synapsecns/sanguine/ethergo/signer/signer"
+	"github.com/synapsecns/sanguine/ethergo/submitter/config"
 	"github.com/synapsecns/sanguine/ethergo/submitter/db"
 	"go.opentelemetry.io/otel/attribute"
 	"math/big"
@@ -61,3 +66,23 @@ const (
 	// GasTipCapAttr exports gasTipCapAttr for testing.
 	GasTipCapAttr = gasTipCapAttr
 )
+
+// NewTestTransactionSubmitter wraps TestTransactionSubmitter in a TransactionSubmitter interface.
+func NewTestTransactionSubmitter(metrics metrics.Handler, signer signer.Signer, fetcher ClientFetcher, config *config.Config) TestTransactionSubmitter {
+	txSubmitter := NewTransactionSubmitter(metrics, signer, fetcher, config)
+	return txSubmitter.(TestTransactionSubmitter)
+}
+
+// TestTransactionSubmitter is a TransactionSubmitter interface for testing.
+type TestTransactionSubmitter interface {
+	TransactionSubmitter
+	// SetGasPrice exports setGasPrice for testing.
+	SetGasPrice(ctx context.Context, client client.EVM,
+		transactor *bind.TransactOpts, bigChainID *big.Int, prevTx *types.Transaction) (err error)
+}
+
+// SetGasPrice exports setGasPrice for testing.
+func (t *txSubmitterImpl) SetGasPrice(ctx context.Context, client client.EVM,
+	transactor *bind.TransactOpts, bigChainID *big.Int, prevTx *types.Transaction) (err error) {
+	return t.setGasPrice(ctx, client, transactor, bigChainID, prevTx)
+}

@@ -58,3 +58,30 @@ func TestEventually(t *testing.T) {
 	testsuite.Eventually(ctx, mockTester, testFunc)
 	True(t, mockTester.Failed())
 }
+
+// foo is a function that is used to test GetFunctionName
+func foo() {
+
+}
+
+// bar is a struct that is used to test GetFunctionName
+type bar struct {
+}
+
+// foo is a method that is used to test GetFunctionName
+func (b *bar) foo() {}
+
+func TestGetFunctionName(t *testing.T) {
+	// Test that GetFunctionName returns the name of a function
+	functionName := testsuite.GetFunctionName(foo)
+	if functionName != "foo" {
+		t.Errorf("Expected GetFunctionName to return %q but got %q", "foo", functionName)
+	}
+
+	// Test that GetFunctionName returns the name of a method
+	b := bar{}
+	functionName = testsuite.GetFunctionName(b.foo)
+	if functionName != "foo" {
+		t.Errorf("Expected GetFunctionName to return %q but got %q", "foo", functionName)
+	}
+}

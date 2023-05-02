@@ -178,10 +178,21 @@ func (c *Config) GetDynamicGasEstimate(chainID int) bool {
 	return c.GlobalConfig.DynamicGasEstimate
 }
 
+// SupportsEIP1559 returns whether or not this chain supports EIP1559.
 func (c *Config) SupportsEIP1559(chainID int) bool {
 	chainConfig, ok := c.Chains[chainID]
 	if ok {
 		return chainConfig.SupportsEIP1559
 	}
 	return c.GlobalConfig.SupportsEIP1559
+}
+
+// SetGlobalMaxGasPrice is a helper function that sets the global gas price.
+func (c *Config) SetGlobalMaxGasPrice(maxPrice *big.Int) {
+	c.GlobalConfig.MaxGasPrice = maxPrice
+}
+
+// SetGlobalEIP1559Support is a helper function that sets the global EIP1559 support.
+func (c *Config) SetGlobalEIP1559Support(supportsEIP1559 bool) {
+	c.GlobalConfig.SupportsEIP1559 = supportsEIP1559
 }

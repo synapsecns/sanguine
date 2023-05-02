@@ -61,7 +61,7 @@ type txSubmitterImpl struct {
 	// callers adding to this channel should not block.
 	retryNow chan bool
 	// config is the config for the transaction submitter.
-	config config.Config
+	config *config.Config
 }
 
 // ClientFetcher is the interface for fetching a chain client.
@@ -70,8 +70,9 @@ type ClientFetcher interface {
 }
 
 // NewTransactionSubmitter creates a new transaction submitter.
-func NewTransactionSubmitter(metrics metrics.Handler, signer signer.Signer, fetcher ClientFetcher, config config.Config) TransactionSubmitter {
+func NewTransactionSubmitter(metrics metrics.Handler, signer signer.Signer, fetcher ClientFetcher, config *config.Config) TransactionSubmitter {
 	return &txSubmitterImpl{
+		config:   config,
 		metrics:  metrics,
 		signer:   signer,
 		fetcher:  fetcher,
@@ -280,13 +281,20 @@ func (t *txSubmitterImpl) SubmitTransaction(parentCtx context.Context, chainID *
 func (t *txSubmitterImpl) setGasPrice(ctx context.Context, client client.EVM,
 	transactor *bind.TransactOpts, bigChainID *big.Int, prevTx *types.Transaction) (err error) {
 	ctx, span := t.metrics.Tracer().Start(ctx, "submitter.setGasPrice")
-	defer func() {
-		metrics.EndSpanWithErr(span, err)
-	}()
 
 	chainID := int(bigChainID.Uint64())
-
 	maxPrice := t.config.GetMaxGasPrice(chainID)
+
+	defer func() {
+		if transactor.GasPrice != nil && maxPrice.Cmp(transactor.GasPrice) < 0 {
+			transactor.GasPrice = maxPrice
+		}
+		if transactor.GasFeeCap != nil && maxPrice.Cmp(transactor.GasFeeCap) < 0 {
+			transactor.GasFeeCap = maxPrice
+		}
+
+		metrics.EndSpanWithErr(span, err)
+	}()
 
 	// TODO: cache both of these values
 	if t.config.SupportsEIP1559(int(bigChainID.Uint64())) {
@@ -320,7 +328,7 @@ func (t *txSubmitterImpl) setGasPrice(ctx context.Context, client client.EVM,
 				transactor.GasFeeCap = core.CopyBigInt(prevTx.GasFeeCap())
 			}
 		}
-		gas.BumpGasFees(transactor, t.config.GetGasBumpPercentage(chainID), maxPrice, gasBlock.BaseFee)
+		gas.BumpGasFees(transactor, t.config.GetGasBumpPercentage(chainID), gasBlock.BaseFee, maxPrice)
 	}
 	return nil
 }
