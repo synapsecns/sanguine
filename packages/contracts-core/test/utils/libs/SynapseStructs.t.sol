@@ -166,8 +166,7 @@ using CastLib for RawSnapshot global;
 
 struct RawAttestation {
     bytes32 snapRoot;
-    bytes32 agentRoot;
-    bytes32 snapGasHash;
+    bytes32 dataHash;
     uint32 nonce;
     uint40 blockNumber;
     uint40 timestamp;
@@ -479,8 +478,7 @@ library CastLib {
     ) internal view returns (RawAttestation memory ra) {
         Snapshot snapshot = rawSnap.castToSnapshot();
         ra.snapRoot = snapshot.calculateRoot();
-        ra.agentRoot = agentRoot;
-        ra.snapGasHash = rawSnap.snapGasHash();
+        ra.setDataHash(agentRoot, rawSnap.snapGasHash());
         ra.nonce = nonce;
         ra.blockNumber = blockNumber;
         ra.timestamp = timestamp;
@@ -515,8 +513,7 @@ library CastLib {
     function formatAttestation(RawAttestation memory ra) internal pure returns (bytes memory attestation) {
         attestation = AttestationLib.formatAttestation({
             snapRoot_: ra.snapRoot,
-            agentRoot_: ra.agentRoot,
-            snapGasHash_: ra.snapGasHash,
+            dataHash_: ra.dataHash,
             nonce_: ra.nonce,
             blockNumber_: ra.blockNumber,
             timestamp_: ra.timestamp
@@ -527,6 +524,10 @@ library CastLib {
         ptr = ra.formatAttestation().castToAttestation();
     }
 
+    function setDataHash(RawAttestation memory ra, bytes32 agentRoot_, bytes32 snapGasHash_) internal pure {
+        ra.dataHash = keccak256(bytes.concat(agentRoot_, snapGasHash_));
+    }
+
     function modifyAttestation(RawAttestation memory ra, uint256 mask)
         internal
         pure
@@ -535,12 +536,11 @@ library CastLib {
         // Don't modify the nonce
         mra.nonce = ra.nonce;
         // Check if at least one value was modified by checking last 4 bits
-        isEqual = mask & 31 == 0;
+        isEqual = mask & 15 == 0;
         mra.snapRoot = ra.snapRoot ^ bytes32(mask & 1);
-        mra.agentRoot = ra.agentRoot ^ bytes32(mask & 2);
-        mra.snapGasHash = ra.snapGasHash ^ bytes32(mask & 4);
-        mra.blockNumber = ra.blockNumber ^ uint40(mask & 8);
-        mra.timestamp = ra.timestamp ^ uint40(mask & 16);
+        mra.dataHash = ra.dataHash ^ bytes32(mask & 2);
+        mra.blockNumber = ra.blockNumber ^ uint40(mask & 4);
+        mra.timestamp = ra.timestamp ^ uint40(mask & 8);
     }
 
     function formatAttestationReport(RawAttestationReport memory rawAR)
