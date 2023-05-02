@@ -132,8 +132,8 @@ library AttestationLib {
     }
 
     /// @notice Returns hash of the Agent Root and SnapGasHash combined into a single hash.
-    function dataHash(bytes32 agentRoot, bytes32 snapGasHash) internal pure returns (bytes32) {
-        return keccak256(bytes.concat(agentRoot, snapGasHash));
+    function dataHash(bytes32 agentRoot_, bytes32 snapGasHash_) internal pure returns (bytes32) {
+        return keccak256(bytes.concat(agentRoot_, snapGasHash_));
     }
 
     /// @notice Returns nonce of Summit contract at the time, when attestation was created.

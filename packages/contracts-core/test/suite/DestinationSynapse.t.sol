@@ -72,7 +72,7 @@ contract DestinationSynapseTest is ExecutionHubTest {
         vm.assume(caller != localAgentManager());
         vm.expectRevert("!agentManager");
         vm.prank(caller);
-        InterfaceDestination(localDestination()).acceptAttestation(0, 0, "", new ChainGas[](0));
+        InterfaceDestination(localDestination()).acceptAttestation(0, 0, "", 0, new ChainGas[](0));
     }
 
     // ═════════════════════════════════════════════════ GAS DATA ══════════════════════════════════════════════════════

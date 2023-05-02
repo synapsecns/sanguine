@@ -148,7 +148,7 @@ contract DestinationTest is ExecutionHubTest {
         vm.assume(caller != localAgentManager());
         vm.expectRevert("!agentManager");
         vm.prank(caller);
-        InterfaceDestination(localDestination()).acceptAttestation(0, 0, "", new ChainGas[](0));
+        InterfaceDestination(localDestination()).acceptAttestation(0, 0, "", 0, new ChainGas[](0));
     }
 
     function test_acceptAttestation_notAccepted_agentRootUpdated(
@@ -161,7 +161,7 @@ contract DestinationTest is ExecutionHubTest {
         skip(AGENT_ROOT_OPTIMISTIC_PERIOD);
         // Mock a call from lightManager, could as well use the empty values as they won't be checked for validity
         vm.prank(address(lightManager));
-        assertFalse(InterfaceDestination(localDestination()).acceptAttestation(0, 0, "", new ChainGas[](0)));
+        assertFalse(InterfaceDestination(localDestination()).acceptAttestation(0, 0, "", 0, new ChainGas[](0)));
         (uint40 snapRootTime, uint40 agentRootTime, uint32 index) =
             InterfaceDestination(localDestination()).destStatus();
         assertEq(snapRootTime, firstRootSubmittedAt);

@@ -31,8 +31,8 @@ contract AttestationHarness {
         return payload.castToAttestation().dataHash();
     }
 
-    function dataHash(bytes32 agentRoot, bytes32 snapGasHash) public pure returns (bytes32) {
-        return AttestationLib.dataHash(agentRoot, snapGasHash);
+    function dataHash(bytes32 agentRoot_, bytes32 snapGasHash_) public pure returns (bytes32) {
+        return AttestationLib.dataHash(agentRoot_, snapGasHash_);
     }
 
     function nonce(bytes memory payload) public pure returns (uint32) {
