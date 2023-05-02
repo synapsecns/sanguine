@@ -402,8 +402,7 @@ abstract contract SnapshotHub is AgentSecured, SnapshotHubEvents, ISnapshotHub {
     {
         return AttestationLib.formatAttestation({
             snapRoot_: summitAtt.snapRoot,
-            agentRoot_: summitAtt.agentRoot,
-            snapGasHash_: summitAtt.snapGasHash,
+            dataHash_: AttestationLib.dataHash(summitAtt.agentRoot, summitAtt.snapGasHash),
             nonce_: nonce,
             blockNumber_: summitAtt.blockNumber,
             timestamp_: summitAtt.timestamp
@@ -430,8 +429,7 @@ abstract contract SnapshotHub is AgentSecured, SnapshotHubEvents, ISnapshotHub {
         // forgefmt: disable-next-item
         return 
             att.snapRoot() == summitAtt.snapRoot &&
-            att.agentRoot() == summitAtt.agentRoot &&
-            att.snapGasHash() == summitAtt.snapGasHash &&
+            att.dataHash() == AttestationLib.dataHash(summitAtt.agentRoot, summitAtt.snapGasHash) &&
             att.blockNumber() == summitAtt.blockNumber &&
             att.timestamp() == summitAtt.timestamp;
     }
