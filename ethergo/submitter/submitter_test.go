@@ -136,4 +136,20 @@ func (s *SubmitterSuite) TestSubmitTransaction() {
 	s.Require().NoError(err)
 
 	s.Require().NotNil(txs[0])
+
+	go func() {
+		// now we'll start a new submitter with a new signer and submit the tx
+		err = ts.Start(s.GetTestContext())
+		s.Require().NoError(err)
+	}()
+
+	// wait for the tx to be submitted
+	s.Eventually(func() bool {
+		currentCounter, err = cntr.GetCount(&bind.CallOpts{
+			Context: s.GetTestContext(),
+		})
+		s.Require().NoError(err)
+
+		return currentCounter.Uint64() > ogCounter.Uint64()
+	})
 }

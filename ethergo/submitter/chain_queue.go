@@ -3,9 +3,11 @@ package submitter
 import (
 	"context"
 	"fmt"
+	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/core/types"
 	"github.com/lmittmann/w3/module/eth"
 	"github.com/lmittmann/w3/w3types"
+	"github.com/synapsecns/sanguine/core"
 	"github.com/synapsecns/sanguine/core/metrics"
 	"github.com/synapsecns/sanguine/ethergo/client"
 	"github.com/synapsecns/sanguine/ethergo/submitter/db"
@@ -58,11 +60,12 @@ func (t *txSubmitterImpl) chainQueue(parentCtx context.Context, chainID *big.Int
 		return fmt.Errorf("could not get nonce: %w", err)
 	}
 
-	g, ctx := errgroup.WithContext(ctx)
+	g, gCtx := errgroup.WithContext(ctx)
 
 	cq := chainQueue{
 		txSubmitterImpl: t,
 		g:               g,
+		chainID:         core.CopyBigInt(chainID),
 		nonce:           currentNonce,
 		client:          chainClient,
 	}
@@ -75,13 +78,13 @@ func (t *txSubmitterImpl) chainQueue(parentCtx context.Context, chainID *big.Int
 	for i := range txes {
 		tx := txes[i]
 
-		if tx.Nonce() <= currentNonce {
+		if tx.Nonce() < currentNonce {
 			cq.txsHaveConfirmed = true
 			continue
 		}
 
-		cq.updateOldTxStatuses(ctx)
-		cq.bumpTX(ctx, tx)
+		cq.updateOldTxStatuses(gCtx)
+		cq.bumpTX(gCtx, tx)
 	}
 
 	err = cq.g.Wait()
@@ -94,8 +97,9 @@ func (t *txSubmitterImpl) chainQueue(parentCtx context.Context, chainID *big.Int
 	})
 
 	calls := make([]w3types.Caller, len(cq.reprocessQueue))
+	txHashes := make([]common.Hash, len(cq.reprocessQueue))
 	for i, tx := range cq.reprocessQueue {
-		calls[i] = eth.SendTx(tx.Transaction).Returns(nil)
+		calls[i] = eth.SendTx(tx.Transaction).Returns(&txHashes[i])
 	}
 
 	err = chainClient.BatchWithContext(ctx, calls...)
