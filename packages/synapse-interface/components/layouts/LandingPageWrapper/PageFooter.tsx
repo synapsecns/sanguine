@@ -17,7 +17,18 @@ import {
 } from '@/constants/urls'
 import { SynapseTitleLogo } from '.'
 
-const functions = [
+enum FooterType {
+  PATH = 'path',
+  URL = 'url',
+}
+
+interface FooterDataProps {
+  text: string
+  type: string | null
+  url: string | null
+}
+
+const functionsList: FooterDataProps[] = [
   {
     text: 'Functions',
     type: null,
@@ -25,27 +36,27 @@ const functions = [
   },
   {
     text: 'Swap',
-    type: 'path',
+    type: FooterType.PATH,
     url: SWAP_PATH,
   },
   {
     text: 'Bridge',
-    type: 'path',
+    type: FooterType.PATH,
     url: BRIDGE_PATH,
   },
   {
     text: 'Pools',
-    type: 'path',
+    type: FooterType.PATH,
     url: POOLS_PATH,
   },
   {
     text: 'Stake',
-    type: 'path',
+    type: FooterType.PATH,
     url: STAKE_PATH,
   },
 ]
 
-const developers = [
+const developersList: FooterDataProps[] = [
   {
     text: 'Developers',
     type: null,
@@ -53,27 +64,27 @@ const developers = [
   },
   {
     text: 'References',
-    type: 'url',
+    type: FooterType.URL,
     url: GITHUB_URL,
   },
   {
     text: 'Documentation',
-    type: 'url',
+    type: FooterType.URL,
     url: DOCS_URL,
   },
   {
     text: 'GitHub',
-    type: 'url',
+    type: FooterType.URL,
     url: GITHUB_URL,
   },
   {
     text: 'Blog',
-    type: 'url',
+    type: FooterType.URL,
     url: MIRROR_URL,
   },
 ]
 
-const support = [
+const supportList: FooterDataProps[] = [
   {
     text: 'Support',
     type: null,
@@ -81,17 +92,17 @@ const support = [
   },
   {
     text: 'Discord',
-    type: 'url',
+    type: FooterType.URL,
     url: DISCORD_URL,
   },
   {
     text: 'Twitter',
-    type: 'url',
+    type: FooterType.URL,
     url: TWITTER_URL,
   },
   {
     text: 'Forum',
-    type: 'url',
+    type: FooterType.URL,
     url: FORUM_URL,
   },
   //   {
@@ -113,13 +124,13 @@ export function PageFooter() {
           <div className="items-center hidden col-span-3 lg:flex">
             <SynapseTitleLogo showText={true} />
           </div>
-          <FooterBlock elements={functions} />
-          <FooterBlock elements={developers} />
-          <FooterBlock elements={support} />
+          <FooterBlock elements={functionsList} />
+          <FooterBlock elements={developersList} />
+          <FooterBlock elements={supportList} />
         </Grid>
       </div>
       <div className="text-white pb-[70px] flex direction-row justify-center align-middle">
-        <div className="text-opacity-50 text-secondaryTextColor mr-2">
+        <div className="mr-2 text-opacity-50 text-secondaryTextColor">
           <a
             className="duration-75 hover:text-white hover:text-opacity-100 transform-gpu hover:transition-all"
             href={TERMS_OF_SERVICE_PATH}
@@ -130,7 +141,7 @@ export function PageFooter() {
           </a>
         </div>
         <p>｜</p>
-        <div className="text-opacity-50 text-secondaryTextColor ml-2">
+        <div className="ml-2 text-opacity-50 text-secondaryTextColor">
           <a
             className="duration-75 hover:text-white hover:text-opacity-100 transform-gpu hover:transition-all"
             href={PRIVACY_POLICY_PATH}
@@ -145,7 +156,7 @@ export function PageFooter() {
   )
 }
 
-function FooterBlock({ elements }: { elements: any[] }) {
+function FooterBlock({ elements }: { elements: FooterDataProps[] }) {
   return (
     <div className="text-base leading-8 text-left text-white md:text-left lg:text-right">
       {elements.map((element, i) => (
@@ -155,10 +166,10 @@ function FooterBlock({ elements }: { elements: any[] }) {
   )
 }
 
-function DisplayText({ element }: { element: any }) {
+function DisplayText({ element }: { element: FooterDataProps }) {
   const { text, url, type } = element
 
-  if (type === 'url') {
+  if (type === FooterType.URL) {
     return (
       <div className="text-opacity-50 text-secondaryTextColor">
         <a
@@ -171,7 +182,7 @@ function DisplayText({ element }: { element: any }) {
         </a>
       </div>
     )
-  } else if (type === 'path') {
+  } else if (type === FooterType.PATH) {
     return (
       <div className="text-opacity-50 text-secondaryTextColor">
         <Link
