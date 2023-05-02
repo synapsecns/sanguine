@@ -230,10 +230,14 @@ describe('SynapseSDK', () => {
       const providers = [arbitrumProvider]
       const Synapse = new SynapseSDK(chainIds, providers)
       const tokenAmount = BigNumber.from('1000000')
+      const tokenAmount2 = BigNumber.from('2000000')
       const amount = await Synapse.calculateAddLiquidity(
         42161,
         '0xa067668661C84476aFcDc6fA5D758C4c01C34352',
-        [tokenAmount, tokenAmount]
+        {
+          '0x3ea9B0ab55F34Fb188824Ee288CeaEfC63cf908e': tokenAmount,
+          '0x82aF49447D8a07e3bd95BD0d56f35241523fBab1': tokenAmount2,
+        }
       )
       console.log(amount?.toString())
       expect(amount?.toString()?.length).toBeGreaterThan(0)
@@ -250,7 +254,7 @@ describe('SynapseSDK', () => {
         '0xa067668661C84476aFcDc6fA5D758C4c01C34352',
         BigNumber.from('1000000')
       )
-      expect(amounts?.length).toBeGreaterThan(0)
+      expect(Object.keys(amounts)?.length).toBeGreaterThan(0)
     })
   })
 })
