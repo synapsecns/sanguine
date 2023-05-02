@@ -159,7 +159,7 @@ const BridgePage = ({ address }: { address: `0x${string}` }) => {
     let isCancelled = false
 
     const handleChange = async () => {
-      await timeout(500)
+      await timeout(1000)
 
       if (!isCancelled) {
         if (
@@ -175,8 +175,11 @@ const BridgePage = ({ address }: { address: `0x${string}` }) => {
         } else {
           setBridgeQuote(EMPTY_BRIDGE_QUOTE)
         }
+      } else {
+        setBridgeQuote(EMPTY_BRIDGE_QUOTE)
       }
     }
+
     handleChange()
 
     return () => {

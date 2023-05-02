@@ -69,6 +69,7 @@ const BridgeCard = ({
   resetRates: () => void
   setTime: (time: number) => void
 }) => {
+  console.log('bridgeQuote: ', bridgeQuote)
   const [settings, setSettings] = useSettings()
   const [displayType, setDisplayType] = useState('')
   const [deadlineMinutes, setDeadlineMinutes] = useState('')
