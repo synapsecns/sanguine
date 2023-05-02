@@ -29,13 +29,13 @@ contract DestinationTest is ExecutionHubTest {
             uint32 domain = allDomains[d];
             for (uint256 i = 0; i < domains[domain].agents.length; ++i) {
                 address agent = domains[domain].agents[i];
-                checkAgentStatus(agent, IAgentSecured(destination).agentStatus(agent), AgentFlag.Active);
+                checkAgentStatus(agent, IAgentSecured(localDestination()).agentStatus(agent), AgentFlag.Active);
             }
         }
         // Check version
-        assertEq(Versioned(destination).version(), LATEST_VERSION, "!version");
+        assertEq(Versioned(localDestination()).version(), LATEST_VERSION, "!version");
         // Check pending Agent Merkle Root
-        (bool rootPassed, bool rootPending) = InterfaceDestination(destination).passAgentRoot();
+        (bool rootPassed, bool rootPending) = InterfaceDestination(localDestination()).passAgentRoot();
         assertFalse(rootPassed);
         assertFalse(rootPending);
     }
@@ -76,7 +76,7 @@ contract DestinationTest is ExecutionHubTest {
         }
         for (uint32 index = 0; index < amount; ++index) {
             (bytes memory attPayload, bytes memory attSignature) =
-                InterfaceDestination(destination).getAttestation(index);
+                InterfaceDestination(localDestination()).getAttestation(index);
             assertEq(attPayload, attPayloads[index], "!payload");
             assertEq(attSignature, attSignatures[index], "!signature");
         }
@@ -92,7 +92,7 @@ contract DestinationTest is ExecutionHubTest {
         vm.expectEmit();
         emit AttestationAccepted(DOMAIN_LOCAL, notary, attPayload, attSig);
         lightManager.submitAttestation(attPayload, attSig, snapGas);
-        (uint48 snapRootTime,,) = InterfaceDestination(destination).destStatus();
+        (uint48 snapRootTime,,) = InterfaceDestination(localDestination()).destStatus();
         assertEq(snapRootTime, rootSubmittedAt);
     }
 
@@ -108,9 +108,9 @@ contract DestinationTest is ExecutionHubTest {
         vm.expectEmit();
         emit AttestationAccepted(DOMAIN_LOCAL, notary, attPayload, attSig);
         lightManager.submitAttestation(attPayload, attSig, snapGas);
-        (, uint40 agentRootTime, uint32 index) = InterfaceDestination(destination).destStatus();
+        (, uint40 agentRootTime, uint32 index) = InterfaceDestination(localDestination()).destStatus();
         // Check that values were assigned
-        assertEq(InterfaceDestination(destination).nextAgentRoot(), ra.agentRoot);
+        assertEq(InterfaceDestination(localDestination()).nextAgentRoot(), ra.agentRoot);
         assertEq(agentRootTime, rootSubmittedAt);
         assertEq(index, agentIndex[notary]);
     }
@@ -137,7 +137,8 @@ contract DestinationTest is ExecutionHubTest {
         vm.expectEmit();
         emit AttestationAccepted(DOMAIN_LOCAL, notaryS, attPayload, attSig);
         assertTrue(lightManager.submitAttestation(attPayload, attSig, snapGas));
-        (uint40 snapRootTime, uint40 agentRootTime, uint32 index) = InterfaceDestination(destination).destStatus();
+        (uint40 snapRootTime, uint40 agentRootTime, uint32 index) =
+            InterfaceDestination(localDestination()).destStatus();
         assertEq(snapRootTime, block.timestamp);
         assertEq(agentRootTime, firstRootSubmittedAt);
         assertEq(index, agentIndex[notaryF]);
@@ -147,7 +148,7 @@ contract DestinationTest is ExecutionHubTest {
         vm.assume(caller != localAgentManager());
         vm.expectRevert("!agentManager");
         vm.prank(caller);
-        InterfaceDestination(destination).acceptAttestation(0, 0, "", new ChainGas[](0));
+        InterfaceDestination(localDestination()).acceptAttestation(0, 0, "", new ChainGas[](0));
     }
 
     function test_acceptAttestation_notAccepted_agentRootUpdated(
@@ -160,8 +161,9 @@ contract DestinationTest is ExecutionHubTest {
         skip(AGENT_ROOT_OPTIMISTIC_PERIOD);
         // Mock a call from lightManager, could as well use the empty values as they won't be checked for validity
         vm.prank(address(lightManager));
-        assertFalse(InterfaceDestination(destination).acceptAttestation(0, 0, "", new ChainGas[](0)));
-        (uint40 snapRootTime, uint40 agentRootTime, uint32 index) = InterfaceDestination(destination).destStatus();
+        assertFalse(InterfaceDestination(localDestination()).acceptAttestation(0, 0, "", new ChainGas[](0)));
+        (uint40 snapRootTime, uint40 agentRootTime, uint32 index) =
+            InterfaceDestination(localDestination()).destStatus();
         assertEq(snapRootTime, firstRootSubmittedAt);
         assertEq(agentRootTime, firstRootSubmittedAt);
         assertEq(index, agentIndex[domains[DOMAIN_LOCAL].agent]);
@@ -180,7 +182,7 @@ contract DestinationTest is ExecutionHubTest {
         test_submitAttestation_updatesAgentRoot(ra, rootSubmittedAt);
         timePassed = timePassed % AGENT_ROOT_OPTIMISTIC_PERIOD;
         skip(timePassed);
-        (bool rootPassed, bool rootPending) = InterfaceDestination(destination).passAgentRoot();
+        (bool rootPassed, bool rootPending) = InterfaceDestination(localDestination()).passAgentRoot();
         assertFalse(rootPassed);
         assertTrue(rootPending);
         assertEq(lightManager.agentRoot(), agentRootLM);
@@ -190,7 +192,7 @@ contract DestinationTest is ExecutionHubTest {
         // Submit attestation that updates `nextAgentRoot`
         test_submitAttestation_updatesAgentRoot(ra, rootSubmittedAt);
         skip(AGENT_ROOT_OPTIMISTIC_PERIOD);
-        (bool rootPassed, bool rootPending) = InterfaceDestination(destination).passAgentRoot();
+        (bool rootPassed, bool rootPending) = InterfaceDestination(localDestination()).passAgentRoot();
         assertTrue(rootPassed);
         assertFalse(rootPending);
         assertEq(lightManager.agentRoot(), ra.agentRoot);
@@ -235,10 +237,10 @@ contract DestinationTest is ExecutionHubTest {
         emit log_named_uint("Remote gasData: first", GasData.unwrap(firstRemoteGasData));
         emit log_named_uint("Remote gasData: second", GasData.unwrap(secondRemoteGasData));
         emit log_named_uint("Synapse gasData: first", GasData.unwrap(firstSynapseGasData));
-        (GasData gasData, uint256 dataMaturity) = InterfaceDestination(destination).getGasData(DOMAIN_REMOTE);
+        (GasData gasData, uint256 dataMaturity) = InterfaceDestination(localDestination()).getGasData(DOMAIN_REMOTE);
         assertEq(GasData.unwrap(gasData), GasData.unwrap(secondRemoteGasData), "!remoteGasData");
         assertEq(dataMaturity, secondSkipTime, "!remoteDataMaturity");
-        (gasData, dataMaturity) = InterfaceDestination(destination).getGasData(DOMAIN_SYNAPSE);
+        (gasData, dataMaturity) = InterfaceDestination(localDestination()).getGasData(DOMAIN_SYNAPSE);
         assertEq(GasData.unwrap(gasData), GasData.unwrap(firstSynapseGasData), "!synapseGasData");
         assertEq(dataMaturity, firstSkipTime + secondSkipTime, "!synapseDataMaturity");
     }
@@ -257,7 +259,7 @@ contract DestinationTest is ExecutionHubTest {
         lightManager.submitAttestation(attPayload, attSig, firstSnapGas);
         skip(random.nextUint32());
         // Check getGasData
-        (GasData gasData, uint256 dataMaturity) = InterfaceDestination(destination).getGasData(domain);
+        (GasData gasData, uint256 dataMaturity) = InterfaceDestination(localDestination()).getGasData(domain);
         assertEq(GasData.unwrap(gasData), 0);
         assertEq(dataMaturity, 0);
     }
@@ -277,10 +279,10 @@ contract DestinationTest is ExecutionHubTest {
         // Open dispute
         openDispute({guard: domains[0].agent, notary: firstNotary});
         // Check getGasData
-        (GasData gasData, uint256 dataMaturity) = InterfaceDestination(destination).getGasData(DOMAIN_REMOTE);
+        (GasData gasData, uint256 dataMaturity) = InterfaceDestination(localDestination()).getGasData(DOMAIN_REMOTE);
         assertEq(GasData.unwrap(gasData), 0);
         assertEq(dataMaturity, 0);
-        (gasData, dataMaturity) = InterfaceDestination(destination).getGasData(DOMAIN_SYNAPSE);
+        (gasData, dataMaturity) = InterfaceDestination(localDestination()).getGasData(DOMAIN_SYNAPSE);
         assertEq(GasData.unwrap(gasData), 0);
         assertEq(dataMaturity, 0);
     }

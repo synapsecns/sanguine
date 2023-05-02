@@ -62,7 +62,7 @@ contract DestinationSynapseTest is ExecutionHubTest {
         }
         for (uint32 index = 0; index < amount; ++index) {
             (bytes memory attPayload, bytes memory attSignature) =
-                InterfaceDestination(destinationSynapse).getAttestation(index);
+                InterfaceDestination(localDestination()).getAttestation(index);
             assertEq(attPayload, attPayloads[index], "!payload");
             assertEq(attSignature, "", "!signature");
         }
@@ -72,7 +72,7 @@ contract DestinationSynapseTest is ExecutionHubTest {
         vm.assume(caller != localAgentManager());
         vm.expectRevert("!agentManager");
         vm.prank(caller);
-        InterfaceDestination(destinationSynapse).acceptAttestation(0, 0, "", new ChainGas[](0));
+        InterfaceDestination(localDestination()).acceptAttestation(0, 0, "", new ChainGas[](0));
     }
 
     // ═════════════════════════════════════════════════ GAS DATA ══════════════════════════════════════════════════════
