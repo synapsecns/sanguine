@@ -3,9 +3,11 @@ package metrics
 import (
 	"context"
 	"github.com/synapsecns/sanguine/core/config"
+	"sync"
 )
 
 var globalHandler Handler
+var globalMux sync.RWMutex
 
 // by default, use the null handler.
 func init() {
@@ -16,6 +18,9 @@ func init() {
 // but because of the ubiquitiy of global variables and the tangential nature
 // of metrics, we allow this.
 func Setup(ctx context.Context, buildInfo config.BuildInfo) error {
+	globalMux.Lock()
+	defer globalMux.Unlock()
+
 	handler, err := NewFromEnv(ctx, buildInfo)
 	if err != nil {
 		return err
@@ -27,5 +32,7 @@ func Setup(ctx context.Context, buildInfo config.BuildInfo) error {
 
 // Get gets the global handler.
 func Get() Handler {
+	globalMux.RLock()
+	defer globalMux.RUnlock()
 	return globalHandler
 }
