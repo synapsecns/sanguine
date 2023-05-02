@@ -22,7 +22,7 @@ contract Destination is ExecutionHub, DestinationEvents, InterfaceDestination {
     // TODO: this could be further optimized in terms of storage
     struct StoredAttData {
         bytes32 agentRoot;
-        bytes32 gasDataHash;
+        bytes32 snapGasHash;
     }
 
     // ══════════════════════════════════════════════════ STORAGE ══════════════════════════════════════════════════════
@@ -74,7 +74,7 @@ contract Destination is ExecutionHub, DestinationEvents, InterfaceDestination {
         // This will revert if snapshot root has been previously submitted
         _saveAttestation(att, notaryIndex, sigIndex);
         bytes32 agentRoot = att.agentRoot();
-        _storedAttestations.push(StoredAttData({agentRoot: agentRoot, gasDataHash: att.gasDataHash()}));
+        _storedAttestations.push(StoredAttData({agentRoot: agentRoot, snapGasHash: att.snapGasHash()}));
         // Save Agent Root if required, and update the Destination's Status
         destStatus = _saveAgentRoot(rootPending, agentRoot, notaryIndex);
         return true;
@@ -126,7 +126,7 @@ contract Destination is ExecutionHub, DestinationEvents, InterfaceDestination {
         attPayload = AttestationLib.formatAttestation({
             snapRoot_: snapRoot,
             agentRoot_: storedAtt.agentRoot,
-            gasDataHash_: storedAtt.gasDataHash,
+            snapGasHash_: storedAtt.snapGasHash,
             nonce_: rootData.attNonce,
             blockNumber_: rootData.attBN,
             timestamp_: rootData.attTS

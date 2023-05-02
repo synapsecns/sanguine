@@ -153,7 +153,7 @@ library GasDataLib {
     }
 
     /// @notice Returns the hash for the list of ChainGas structs.
-    function chainGasDataHash(ChainGas[] memory chainGasData) internal pure returns (bytes32) {
-        return keccak256(abi.encodePacked(chainGasData));
+    function snapGasHash(ChainGas[] memory snapGas) internal pure returns (bytes32) {
+        return keccak256(abi.encodePacked(snapGas));
     }
 }

@@ -37,7 +37,7 @@ contract SummitTest is AgentSecuredTest {
         notaryAttestations[0] = RawAttestation({
             snapRoot: 0,
             agentRoot: 0,
-            gasDataHash: 0,
+            snapGasHash: 0,
             nonce: 0,
             blockNumber: uint40(block.number),
             timestamp: uint40(block.timestamp)
@@ -230,7 +230,7 @@ contract SummitTest is AgentSecuredTest {
             acceptSnapshot(rs);
             ra.snapRoot = getSnapshotRoot();
             ra.agentRoot = getAgentRoot();
-            ra.gasDataHash = rs.chainGasDataHash();
+            ra.snapGasHash = rs.snapGasHash();
             // This is i-th submitted attestation so far, but attestation nonce starts from 1
             ra.nonce = i + 1;
             notaryAttestations[ra.nonce] = ra;

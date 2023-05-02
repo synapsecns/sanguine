@@ -20,19 +20,19 @@ contract AttestationLibraryTest is SynapseLibraryTest {
 
     function test_formatAttestation(RawAttestation memory ra) public {
         bytes memory payload = libHarness.formatAttestation(
-            ra.snapRoot, ra.agentRoot, ra.gasDataHash, ra.nonce, ra.blockNumber, ra.timestamp
+            ra.snapRoot, ra.agentRoot, ra.snapGasHash, ra.nonce, ra.blockNumber, ra.timestamp
         );
         // Test formatting of state
         assertEq(
             payload,
-            abi.encodePacked(ra.snapRoot, ra.agentRoot, ra.gasDataHash, ra.nonce, ra.blockNumber, ra.timestamp),
+            abi.encodePacked(ra.snapRoot, ra.agentRoot, ra.snapGasHash, ra.nonce, ra.blockNumber, ra.timestamp),
             "!formatAttestation"
         );
         checkCastToAttestation({payload: payload, isAttestation: true});
         // Test getters
         assertEq(libHarness.snapRoot(payload), ra.snapRoot, "!snapRoot");
         assertEq(libHarness.agentRoot(payload), ra.agentRoot, "!agentRoot");
-        assertEq(libHarness.gasDataHash(payload), ra.gasDataHash, "!gasDataHash");
+        assertEq(libHarness.snapGasHash(payload), ra.snapGasHash, "!snapGasHash");
         assertEq(libHarness.nonce(payload), ra.nonce, "!nonce");
         assertEq(libHarness.blockNumber(payload), ra.blockNumber, "!blockNumber");
         assertEq(libHarness.timestamp(payload), ra.timestamp, "!timestamp");

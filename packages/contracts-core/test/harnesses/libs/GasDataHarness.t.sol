@@ -65,7 +65,7 @@ contract GasDataHarness {
         return chainData_.gasData();
     }
 
-    function chainGasDataHash(ChainGas[] memory chainGasData) public pure returns (bytes32) {
-        return GasDataLib.chainGasDataHash(chainGasData);
+    function snapGasHash(ChainGas[] memory snapGas) public pure returns (bytes32) {
+        return GasDataLib.snapGasHash(snapGas);
     }
 }
