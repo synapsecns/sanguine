@@ -6,6 +6,7 @@ import {Attestation, AttestationLib} from "./libs/Attestation.sol";
 import {AttestationReport} from "./libs/AttestationReport.sol";
 import {ByteString} from "./libs/ByteString.sol";
 import {AGENT_ROOT_OPTIMISTIC_PERIOD, SYNAPSE_DOMAIN} from "./libs/Constants.sol";
+import {ChainGas} from "./libs/GasData.sol";
 import {AgentStatus, DestinationStatus, DisputeFlag} from "./libs/Structures.sol";
 // ═════════════════════════════ INTERNAL IMPORTS ══════════════════════════════
 import {AgentSecured} from "./base/AgentSecured.sol";
@@ -59,7 +60,7 @@ contract Destination is ExecutionHub, DestinationEvents, InterfaceDestination {
     // ═════════════════════════════════════════════ ACCEPT STATEMENTS ═════════════════════════════════════════════════
 
     /// @inheritdoc InterfaceDestination
-    function acceptAttestation(uint32 notaryIndex, uint256 sigIndex, bytes memory attPayload)
+    function acceptAttestation(uint32 notaryIndex, uint256 sigIndex, bytes memory attPayload, ChainGas[] memory snapGas)
         external
         onlyAgentManager
         returns (bool wasAccepted)
@@ -77,6 +78,8 @@ contract Destination is ExecutionHub, DestinationEvents, InterfaceDestination {
         _storedAttestations.push(StoredAttData({agentRoot: agentRoot, snapGasHash: att.snapGasHash()}));
         // Save Agent Root if required, and update the Destination's Status
         destStatus = _saveAgentRoot(rootPending, agentRoot, notaryIndex);
+        // TODO: save the gas data for every chain
+        snapGas;
         return true;
     }
 

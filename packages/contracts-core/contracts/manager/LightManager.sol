@@ -72,7 +72,7 @@ contract LightManager is AgentManager, InterfaceLightManager {
         require(att.snapGasHash() == GasDataLib.snapGasHash(snapGas), "Invalid snapGas");
         // Store Notary signature for the attestation
         uint256 sigIndex = _saveSignature(attSignature);
-        wasAccepted = InterfaceDestination(destination).acceptAttestation(status.index, sigIndex, attPayload);
+        wasAccepted = InterfaceDestination(destination).acceptAttestation(status.index, sigIndex, attPayload, snapGas);
         if (wasAccepted) {
             emit AttestationAccepted(status.domain, notary, attPayload, attSignature);
         }

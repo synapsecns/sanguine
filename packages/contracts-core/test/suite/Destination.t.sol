@@ -5,7 +5,7 @@ import {SNAPSHOT_MAX_STATES} from "../../contracts/libs/Snapshot.sol";
 import {DisputeFlag} from "../../contracts/libs/Structures.sol";
 import {IAgentSecured} from "../../contracts/interfaces/IAgentSecured.sol";
 
-import {InterfaceDestination} from "../../contracts/Destination.sol";
+import {ChainGas, InterfaceDestination} from "../../contracts/Destination.sol";
 import {Versioned} from "../../contracts/base/Version.sol";
 
 import {fakeSnapshot} from "../utils/libs/FakeIt.t.sol";
@@ -147,7 +147,7 @@ contract DestinationTest is ExecutionHubTest {
         vm.assume(caller != localAgentManager());
         vm.expectRevert("!agentManager");
         vm.prank(caller);
-        InterfaceDestination(destination).acceptAttestation(0, 0, "");
+        InterfaceDestination(destination).acceptAttestation(0, 0, "", new ChainGas[](0));
     }
 
     function test_acceptAttestation_notAccepted_agentRootUpdated(
@@ -160,7 +160,7 @@ contract DestinationTest is ExecutionHubTest {
         skip(AGENT_ROOT_OPTIMISTIC_PERIOD);
         // Mock a call from lightManager, could as well use the empty values as they won't be checked for validity
         vm.prank(address(lightManager));
-        assertFalse(InterfaceDestination(destination).acceptAttestation(0, 0, ""));
+        assertFalse(InterfaceDestination(destination).acceptAttestation(0, 0, "", new ChainGas[](0)));
         (uint40 snapRootTime, uint40 agentRootTime, uint32 index) = InterfaceDestination(destination).destStatus();
         assertEq(snapRootTime, firstRootSubmittedAt);
         assertEq(agentRootTime, firstRootSubmittedAt);

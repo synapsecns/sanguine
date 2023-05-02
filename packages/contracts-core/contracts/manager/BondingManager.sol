@@ -96,7 +96,9 @@ contract BondingManager is AgentManager, BondingManagerEvents, InterfaceBondingM
                 snapPayload: snapPayload
             });
             // Pass created attestation to Destination to enable executing messages coming to Synapse Chain
-            InterfaceDestination(destination).acceptAttestation(status.index, type(uint256).max, attPayload);
+            InterfaceDestination(destination).acceptAttestation(
+                status.index, type(uint256).max, attPayload, snapshot.snapGas()
+            );
         }
         emit SnapshotAccepted(status.domain, agent, snapPayload, snapSignature);
     }

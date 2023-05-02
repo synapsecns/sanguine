@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.17;
 
-import {AgentStatus} from "../libs/Structures.sol";
+import {ChainGas} from "../libs/GasData.sol";
 
 interface InterfaceDestination {
     /**
@@ -28,9 +28,10 @@ interface InterfaceDestination {
      * @param notaryIndex       Index of Attestation Notary in Agent Merkle Tree
      * @param sigIndex          Index of stored Notary signature
      * @param attPayload        Raw payload with Attestation data
+     * @param snapGas           Gas data for each chain in the Attestation's snapshot
      * @return wasAccepted      Whether the Attestation was accepted
      */
-    function acceptAttestation(uint32 notaryIndex, uint256 sigIndex, bytes memory attPayload)
+    function acceptAttestation(uint32 notaryIndex, uint256 sigIndex, bytes memory attPayload, ChainGas[] memory snapGas)
         external
         returns (bool wasAccepted);
 

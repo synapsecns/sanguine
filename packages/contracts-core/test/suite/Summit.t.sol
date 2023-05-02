@@ -245,11 +245,15 @@ contract SummitTest is AgentSecuredTest {
             emit AttestationSaved(attestation);
             vm.expectEmit(true, true, true, true);
             emit SnapshotAccepted(DOMAIN_LOCAL, notary, snapPayloads[i], snapSignatures[i]);
-            // Should pass the resulting attestation to Destination: acceptAttestation(status, sigIndex, attestation)
+            // Should pass the attestation to Destination: acceptAttestation(status, sigIndex, attestation, snapGas)
             vm.expectCall(
                 destinationSynapse,
                 abi.encodeWithSelector(
-                    InterfaceDestination.acceptAttestation.selector, agentIndex[notary], type(uint256).max, attestation
+                    InterfaceDestination.acceptAttestation.selector,
+                    agentIndex[notary],
+                    type(uint256).max,
+                    attestation,
+                    rs.snapGas()
                 )
             );
 
