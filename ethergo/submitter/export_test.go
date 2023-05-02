@@ -68,8 +68,8 @@ const (
 )
 
 // NewTestTransactionSubmitter wraps TestTransactionSubmitter in a TransactionSubmitter interface.
-func NewTestTransactionSubmitter(metrics metrics.Handler, signer signer.Signer, fetcher ClientFetcher, config *config.Config) TestTransactionSubmitter {
-	txSubmitter := NewTransactionSubmitter(metrics, signer, fetcher, config)
+func NewTestTransactionSubmitter(metrics metrics.Handler, signer signer.Signer, fetcher ClientFetcher, db db.Service, config *config.Config) TestTransactionSubmitter {
+	txSubmitter := NewTransactionSubmitter(metrics, signer, fetcher, db, config)
 	return txSubmitter.(TestTransactionSubmitter)
 }
 
@@ -79,10 +79,17 @@ type TestTransactionSubmitter interface {
 	// SetGasPrice exports setGasPrice for testing.
 	SetGasPrice(ctx context.Context, client client.EVM,
 		transactor *bind.TransactOpts, bigChainID *big.Int, prevTx *types.Transaction) (err error)
+	// GetNonce exports getNonce for testing.
+	GetNonce(parentCtx context.Context, chainID *big.Int, address common.Address) (_ uint64, err error)
 }
 
 // SetGasPrice exports setGasPrice for testing.
 func (t *txSubmitterImpl) SetGasPrice(ctx context.Context, client client.EVM,
 	transactor *bind.TransactOpts, bigChainID *big.Int, prevTx *types.Transaction) (err error) {
 	return t.setGasPrice(ctx, client, transactor, bigChainID, prevTx)
+}
+
+// GetNonce exports getNonce for testing.
+func (t *txSubmitterImpl) GetNonce(parentCtx context.Context, chainID *big.Int, address common.Address) (_ uint64, err error) {
+	return t.getNonce(parentCtx, chainID, address)
 }

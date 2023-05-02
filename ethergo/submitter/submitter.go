@@ -2,6 +2,7 @@ package submitter
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/common"
@@ -61,22 +62,27 @@ type txSubmitterImpl struct {
 	// callers adding to this channel should not block.
 	retryNow chan bool
 	// config is the config for the transaction submitter.
-	config *config.Config
+	config config.IConfig
 }
 
 // ClientFetcher is the interface for fetching a chain client.
+//
+//go:generate go run github.com/vektra/mockery/v2 --name ClientFetcher --output ./mocks --case=underscore
 type ClientFetcher interface {
 	GetClient(ctx context.Context, chainID *big.Int) (client.EVM, error)
 }
 
 // NewTransactionSubmitter creates a new transaction submitter.
-func NewTransactionSubmitter(metrics metrics.Handler, signer signer.Signer, fetcher ClientFetcher, config *config.Config) TransactionSubmitter {
+func NewTransactionSubmitter(metrics metrics.Handler, signer signer.Signer, fetcher ClientFetcher, db db.Service, config config.IConfig) TransactionSubmitter {
 	return &txSubmitterImpl{
-		config:   config,
-		metrics:  metrics,
-		signer:   signer,
-		fetcher:  fetcher,
-		retryNow: make(chan bool, 1),
+		db:        db,
+		config:    config,
+		metrics:   metrics,
+		signer:    signer,
+		fetcher:   fetcher,
+		nonceMux:  mapmutex.NewStringerMapMutex(),
+		statusMux: mapmutex.NewStringMapMutex(),
+		retryNow:  make(chan bool, 1),
 	}
 }
 
@@ -133,6 +139,10 @@ func (t *txSubmitterImpl) getNonce(parentCtx context.Context, chainID *big.Int, 
 
 	g.Go(func() error {
 		dbNonce, err = t.db.GetNonceForChainID(ctx, address, chainID)
+		if errors.Is(err, db.ErrNoNonceForChain) {
+			dbNonce = 0
+			return nil
+		}
 		if err != nil {
 			return fmt.Errorf("could not get nonce from db: %w", err)
 		}
@@ -229,6 +239,7 @@ func (t *txSubmitterImpl) SubmitTransaction(parentCtx context.Context, chainID *
 		span.AddEvent("could not set gas price", trace.WithAttributes(attribute.String("error", err.Error())))
 	}
 
+	transactor.GasLimit = t.config.GetGasEstimate(int(chainID.Uint64()))
 	transactor.Signer = func(address common.Address, transaction *types.Transaction) (_ *types.Transaction, err error) {
 		locker = t.nonceMux.Lock(chainID)
 		// it's important that we unlock the nonce if we fail to sign the transaction.

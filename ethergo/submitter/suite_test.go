@@ -18,10 +18,13 @@ import (
 	"github.com/synapsecns/sanguine/ethergo/backends/anvil"
 	"github.com/synapsecns/sanguine/ethergo/backends/simulated"
 	"github.com/synapsecns/sanguine/ethergo/client"
+	"github.com/synapsecns/sanguine/ethergo/example"
+	"github.com/synapsecns/sanguine/ethergo/manager"
 	"github.com/synapsecns/sanguine/ethergo/mocks"
 	"github.com/synapsecns/sanguine/ethergo/signer/nonce"
 	"github.com/synapsecns/sanguine/ethergo/signer/signer"
 	"github.com/synapsecns/sanguine/ethergo/signer/signer/localsigner"
+	"github.com/synapsecns/sanguine/ethergo/signer/wallet"
 	"github.com/synapsecns/sanguine/ethergo/submitter"
 	"github.com/synapsecns/sanguine/ethergo/submitter/db"
 	"github.com/synapsecns/sanguine/ethergo/submitter/db/txdb"
@@ -52,6 +55,10 @@ type SubmitterSuite struct {
 	metrics metrics.Handler
 	// signer is the signer to use for the test
 	signer signer.Signer
+	// store is the store to use for the test
+	store db.Service
+	// registry is the registry to use for the test
+	deployer *manager.DeployerManager
 }
 
 // GetClient returns a client for the given chain id.
@@ -71,6 +78,7 @@ func (s *SubmitterSuite) SetupSuite() {
 
 	testChainIDs := []uint64{1, 3, 4}
 	s.testBackends = make([]backends.SimulatedTestBackend, len(testChainIDs))
+	s.deployer = manager.NewDeployerManager(s.T(), example.NewCounterDeployer)
 
 	var wg sync.WaitGroup
 	// wait for all the backends to be created, add 1 to the wait group for the metrics
@@ -97,6 +105,7 @@ func (s *SubmitterSuite) SetupSuite() {
 			options.SetProcessLogOptions(processlog.WithLogFileName(fmt.Sprintf("chain-%d.log", chainID)), processlog.WithLogDir(logDir))
 
 			s.testBackends[index] = anvil.NewAnvilBackend(s.GetSuiteContext(), s.T(), options)
+			s.deployer.Get(s.GetSuiteContext(), s.testBackends[index], example.CounterType)
 		}(i, chainID)
 	}
 	wg.Wait()
@@ -109,7 +118,15 @@ func (s *SubmitterSuite) SetupTest() {
 	// create the local signer
 	s.signer = localsigner.NewSigner(localAccount.PrivateKey)
 	var wg sync.WaitGroup
-	wg.Add(len(s.testBackends))
+	wg.Add(len(s.testBackends) + 1)
+
+	// setup the db
+	go func() {
+		defer wg.Done()
+		var err error
+		s.store, err = NewSqliteStore(s.GetTestContext(), filet.TmpDir(s.T(), ""), s.metrics)
+		s.Require().NoError(err)
+	}()
 
 	// fund the account on each chain
 	for i := range s.testBackends {
@@ -120,6 +137,14 @@ func (s *SubmitterSuite) SetupTest() {
 		}(i)
 	}
 	wg.Wait()
+}
+
+// TestSubmitter is a utility struct used for testing the submitter.
+type TestSubmitter struct {
+	// wallet is the wallet used for the test
+	wallet wallet.Wallet
+	// signer is the transaction signer
+	signer signer.Signer
 }
 
 var _ submitter.ClientFetcher = &SubmitterSuite{}

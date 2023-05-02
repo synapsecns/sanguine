@@ -14,6 +14,8 @@ import (
 // Service is the interface for the tx queue database.
 // note: the other files in this package (base, sqlite, mysql) provide a suggested implementation.
 // you can implement these yourself. If you plan on importing them, you should wrap in your own service.
+//
+//go:generate go run github.com/vektra/mockery/v2 --name Service --output ./mocks --case=underscore
 type Service interface {
 	// GetNonceForChainID gets the nonce for a given chain id.
 	GetNonceForChainID(ctx context.Context, fromAddress common.Address, chainID *big.Int) (nonce uint64, err error)
@@ -55,7 +57,7 @@ const (
 	Confirmed // Confirmed
 )
 
-var allStatusTypes = []Status{Pending, ReplacedOrConfirmed}
+var allStatusTypes = []Status{Pending, Stored, Submitted, FailedSubmit, ReplacedOrConfirmed, Replaced, Confirmed}
 
 // check to make sure all statuses are included in all status types.
 func _() {
