@@ -84,7 +84,8 @@ contract DestinationTest is ExecutionHubTest {
 
     function test_submitAttestation(RawAttestation memory ra, uint32 rootSubmittedAt) public {
         RawSnapshot memory rs = Random(ra.snapRoot).nextSnapshot();
-        ra.snapGasHash = rs.snapGasHash();
+        ra._snapGasHash = rs.snapGasHash();
+        ra.setDataHash();
         uint256[] memory snapGas = rs.snapGas();
         address notary = domains[DOMAIN_LOCAL].agent;
         (bytes memory attPayload, bytes memory attSig) = signAttestation(notary, ra);
@@ -98,10 +99,11 @@ contract DestinationTest is ExecutionHubTest {
 
     function test_submitAttestation_updatesAgentRoot(RawAttestation memory ra, uint32 rootSubmittedAt) public {
         RawSnapshot memory rs = Random(ra.snapRoot).nextSnapshot();
-        ra.snapGasHash = rs.snapGasHash();
+        ra._snapGasHash = rs.snapGasHash();
+        ra.setDataHash();
         uint256[] memory snapGas = rs.snapGas();
         bytes32 agentRootLM = lightManager.agentRoot();
-        vm.assume(ra.agentRoot != agentRootLM);
+        vm.assume(ra._agentRoot != agentRootLM);
         address notary = domains[DOMAIN_LOCAL].agent;
         (bytes memory attPayload, bytes memory attSig) = signAttestation(notary, ra);
         vm.warp(rootSubmittedAt);
@@ -110,7 +112,7 @@ contract DestinationTest is ExecutionHubTest {
         lightManager.submitAttestation(attPayload, attSig, ra._agentRoot, snapGas);
         (, uint40 agentRootTime, uint32 index) = InterfaceDestination(localDestination()).destStatus();
         // Check that values were assigned
-        assertEq(InterfaceDestination(localDestination()).nextAgentRoot(), ra.agentRoot);
+        assertEq(InterfaceDestination(localDestination()).nextAgentRoot(), ra._agentRoot);
         assertEq(agentRootTime, rootSubmittedAt);
         assertEq(index, agentIndex[notary]);
     }
@@ -122,14 +124,15 @@ contract DestinationTest is ExecutionHubTest {
         uint32 timePassed
     ) public {
         bytes32 agentRootLM = lightManager.agentRoot();
-        vm.assume(firstRA.agentRoot != agentRootLM);
+        vm.assume(firstRA._agentRoot != agentRootLM);
         vm.assume(firstRA.snapRoot != secondRA.snapRoot);
         test_submitAttestation(firstRA, firstRootSubmittedAt);
         timePassed = timePassed % AGENT_ROOT_OPTIMISTIC_PERIOD;
         skip(timePassed);
         // Form a second attestation: Notary 1
         RawSnapshot memory rs = Random(secondRA.snapRoot).nextSnapshot();
-        secondRA.snapGasHash = rs.snapGasHash();
+        secondRA._snapGasHash = rs.snapGasHash();
+        secondRA.setDataHash();
         uint256[] memory snapGas = rs.snapGas();
         address notaryF = domains[DOMAIN_LOCAL].agents[0];
         address notaryS = domains[DOMAIN_LOCAL].agents[1];
@@ -156,7 +159,7 @@ contract DestinationTest is ExecutionHubTest {
         uint32 firstRootSubmittedAt
     ) public {
         bytes32 agentRootLM = lightManager.agentRoot();
-        vm.assume(firstRA.agentRoot != agentRootLM);
+        vm.assume(firstRA._agentRoot != agentRootLM);
         test_submitAttestation(firstRA, firstRootSubmittedAt);
         skip(AGENT_ROOT_OPTIMISTIC_PERIOD);
         // Mock a call from lightManager, could as well use the empty values as they won't be checked for validity
@@ -168,7 +171,7 @@ contract DestinationTest is ExecutionHubTest {
         assertEq(agentRootTime, firstRootSubmittedAt);
         assertEq(index, agentIndex[domains[DOMAIN_LOCAL].agent]);
         // Should update the Agent Merkle Root
-        assertEq(lightManager.agentRoot(), firstRA.agentRoot);
+        assertEq(lightManager.agentRoot(), firstRA._agentRoot);
     }
 
     function test_passAgentRoot_optimisticPeriodNotOver(
@@ -177,7 +180,7 @@ contract DestinationTest is ExecutionHubTest {
         uint32 timePassed
     ) public {
         bytes32 agentRootLM = lightManager.agentRoot();
-        vm.assume(ra.agentRoot != agentRootLM);
+        vm.assume(ra._agentRoot != agentRootLM);
         // Submit attestation that updates `nextAgentRoot`
         test_submitAttestation_updatesAgentRoot(ra, rootSubmittedAt);
         timePassed = timePassed % AGENT_ROOT_OPTIMISTIC_PERIOD;
@@ -195,7 +198,7 @@ contract DestinationTest is ExecutionHubTest {
         (bool rootPassed, bool rootPending) = InterfaceDestination(localDestination()).passAgentRoot();
         assertTrue(rootPassed);
         assertFalse(rootPending);
-        assertEq(lightManager.agentRoot(), ra.agentRoot);
+        assertEq(lightManager.agentRoot(), ra._agentRoot);
     }
 
     // ═════════════════════════════════════════════════ GAS DATA ══════════════════════════════════════════════════════
@@ -207,7 +210,8 @@ contract DestinationTest is ExecutionHubTest {
         firstSnap.states[1] = random.nextState({origin: DOMAIN_SYNAPSE, nonce: random.nextUint32()});
         RawAttestation memory ra = random.nextAttestation(firstSnap, random.nextUint32());
         // Use current agent root in the attestation
-        ra.agentRoot = getAgentRoot();
+        ra._agentRoot = getAgentRoot();
+        ra.setDataHash();
         address firstNotary = domains[DOMAIN_LOCAL].agents[0];
         (bytes memory attPayload, bytes memory attSig) = signAttestation(firstNotary, ra);
         uint256[] memory firstSnapGas = firstSnap.snapGas();
@@ -445,7 +449,7 @@ contract DestinationTest is ExecutionHubTest {
         uint256[] memory snapGas = rs.snapGas();
         snapRoot = ra.snapRoot;
         (bytes memory attPayload, bytes memory attSig) = signAttestation(domains[DOMAIN_LOCAL].agent, ra);
-        lightManager.submitAttestation(attPayload, attSig, snapGas);
+        lightManager.submitAttestation(attPayload, attSig, ra._agentRoot, snapGas);
     }
 
     /// @notice Returns local domain for the tested contract

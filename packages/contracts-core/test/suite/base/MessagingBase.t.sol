@@ -95,7 +95,7 @@ abstract contract MessagingBaseTest is SynapseTest {
         RawSnapshot memory rawSnap = fakeSnapshot(rawState, rsi);
         acceptSnapshot(rawSnap);
         // Reuse existing metadata in RawAttestation
-        return rawSnap.castToRawAttestation(ra.agentRoot, ra.nonce, ra.blockNumber, ra.timestamp);
+        return rawSnap.castToRawAttestation(ra._agentRoot, ra.nonce, ra.blockNumber, ra.timestamp);
     }
 
     function createSnapshotProof(SnapshotMock memory sm)

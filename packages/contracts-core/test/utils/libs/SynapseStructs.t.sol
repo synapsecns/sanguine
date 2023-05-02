@@ -546,7 +546,7 @@ library CastLib {
         mra._agentRoot = ra._agentRoot ^ bytes32(mask & 2);
         mra._snapGasHash = ra._snapGasHash ^ bytes32(mask & 4);
         mra.blockNumber = ra.blockNumber ^ uint40(mask & 8);
-        mra.timestamp = ra.timestamp ^ uint40(mask & 15);
+        mra.timestamp = ra.timestamp ^ uint40(mask & 16);
         mra.setDataHash();
     }
 

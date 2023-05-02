@@ -34,14 +34,17 @@ contract SummitTest is AgentSecuredTest {
     constructor() SynapseTest(DEPLOY_PROD_SUMMIT) {}
 
     function setUp() public virtual override {
-        notaryAttestations[0] = RawAttestation({
+        RawAttestation memory empty = RawAttestation({
             snapRoot: 0,
-            agentRoot: 0,
-            snapGasHash: 0,
+            dataHash: 0,
+            _agentRoot: 0,
+            _snapGasHash: 0,
             nonce: 0,
             blockNumber: uint40(block.number),
             timestamp: uint40(block.timestamp)
         });
+        empty.setDataHash();
+        notaryAttestations[0] = empty;
         super.setUp();
     }
 
@@ -232,8 +235,9 @@ contract SummitTest is AgentSecuredTest {
             // Calculate root and height using AttestationProofGenerator
             acceptSnapshot(rs);
             ra.snapRoot = getSnapshotRoot();
-            ra.agentRoot = getAgentRoot();
-            ra.snapGasHash = rs.snapGasHash();
+            ra._agentRoot = getAgentRoot();
+            ra._snapGasHash = rs.snapGasHash();
+            ra.setDataHash();
             // This is i-th submitted attestation so far, but attestation nonce starts from 1
             ra.nonce = i + 1;
             notaryAttestations[ra.nonce] = ra;
@@ -251,7 +255,7 @@ contract SummitTest is AgentSecuredTest {
             emit AttestationSaved(attestation);
             vm.expectEmit(true, true, true, true);
             emit SnapshotAccepted(DOMAIN_LOCAL, notary, snapPayloads[i], snapSignatures[i]);
-            // Should pass the attestation to Destination: acceptAttestation(status, sigIndex, attestation, snapGas)
+            // Should pass to Destination: acceptAttestation(status, sigIndex, attestation, agentRoot, snapGas)
             vm.expectCall(
                 destinationSynapse,
                 abi.encodeWithSelector(
@@ -259,20 +263,21 @@ contract SummitTest is AgentSecuredTest {
                     agentIndex[notary],
                     type(uint256).max,
                     attestation,
+                    ra._agentRoot,
                     rs.snapGas()
                 )
             );
 
             (attPayload, snapGas) = bondingManager.submitSnapshot(snapPayloads[i], snapSignatures[i]);
             assertEq(attPayload, attestation, "Notary: incorrect attestation");
-            assertEq(keccak256(abi.encodePacked(snapGas)), ra.snapGasHash, "Notary: incorrect snap gas hash");
+            assertEq(keccak256(abi.encodePacked(snapGas)), ra._snapGasHash, "Notary: incorrect snap gas hash");
             // Check attestation getter
             (attPayload, snapGas) = ISnapshotHub(summit).getAttestation(ra.nonce);
             assertEq(attPayload, attestation, "!getAttestation");
-            assertEq(keccak256(abi.encodePacked(snapGas)), ra.snapGasHash, "!getAttestation: gas hash");
+            assertEq(keccak256(abi.encodePacked(snapGas)), ra._snapGasHash, "!getAttestation: gas hash");
             (attPayload, snapGas) = ISnapshotHub(summit).getLatestNotaryAttestation(notary);
             assertEq(attPayload, attestation, "!latestAttestation");
-            assertEq(keccak256(abi.encodePacked(snapGas)), ra.snapGasHash, "!latestAttestation: gas hash");
+            assertEq(keccak256(abi.encodePacked(snapGas)), ra._snapGasHash, "!latestAttestation: gas hash");
 
             // Check proofs for every State in the Notary snapshot
             for (uint256 j = 0; j < STATES; ++j) {
