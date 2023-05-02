@@ -5,7 +5,7 @@ import {SNAPSHOT_MAX_STATES} from "../../contracts/libs/Snapshot.sol";
 import {DisputeFlag} from "../../contracts/libs/Structures.sol";
 import {IAgentSecured} from "../../contracts/interfaces/IAgentSecured.sol";
 
-import {ChainGas, InterfaceDestination} from "../../contracts/Destination.sol";
+import {ChainGas, GasData, InterfaceDestination} from "../../contracts/Destination.sol";
 import {Versioned} from "../../contracts/base/Version.sol";
 
 import {fakeSnapshot} from "../utils/libs/FakeIt.t.sol";
@@ -194,6 +194,95 @@ contract DestinationTest is ExecutionHubTest {
         assertTrue(rootPassed);
         assertFalse(rootPending);
         assertEq(lightManager.agentRoot(), ra.agentRoot);
+    }
+
+    // ═════════════════════════════════════════════════ GAS DATA ══════════════════════════════════════════════════════
+
+    function test_getGasData(Random memory random) public {
+        RawSnapshot memory firstSnap;
+        firstSnap.states = new RawState[](2);
+        firstSnap.states[0] = random.nextState({origin: DOMAIN_REMOTE, nonce: random.nextUint32()});
+        firstSnap.states[1] = random.nextState({origin: DOMAIN_SYNAPSE, nonce: random.nextUint32()});
+        RawAttestation memory ra = random.nextAttestation(firstSnap, random.nextUint32());
+        // Use current agent root in the attestation
+        ra.agentRoot = getAgentRoot();
+        address firstNotary = domains[DOMAIN_LOCAL].agents[0];
+        (bytes memory attPayload, bytes memory attSig) = signAttestation(firstNotary, ra);
+        uint256[] memory firstSnapGas = firstSnap.snapGas();
+        // Submit first attestation
+        lightManager.submitAttestation(attPayload, attSig, firstSnapGas);
+        uint256 firstSkipTime = random.nextUint32();
+        skip(firstSkipTime);
+        RawSnapshot memory secondSnap;
+        secondSnap.states = new RawState[](1);
+        secondSnap.states[0] = random.nextState({origin: DOMAIN_REMOTE, nonce: random.nextUint32()});
+        vm.assume(
+            GasData.unwrap(firstSnap.states[0].castToState().gasData())
+                != GasData.unwrap(secondSnap.states[0].castToState().gasData())
+        );
+        RawAttestation memory secondRA = random.nextAttestation(secondSnap, random.nextUint32());
+        address secondNotary = domains[DOMAIN_LOCAL].agents[1];
+        (attPayload, attSig) = signAttestation(secondNotary, secondRA);
+        uint256[] memory secondSnapGas = secondSnap.snapGas();
+        // Submit second attestation
+        lightManager.submitAttestation(attPayload, attSig, secondSnapGas);
+        uint256 secondSkipTime = random.nextUint32();
+        skip(secondSkipTime);
+        // Check getGasData
+        GasData firstRemoteGasData = firstSnap.states[0].castToState().gasData();
+        GasData firstSynapseGasData = firstSnap.states[1].castToState().gasData();
+        GasData secondRemoteGasData = secondSnap.states[0].castToState().gasData();
+        emit log_named_uint("Remote gasData: first", GasData.unwrap(firstRemoteGasData));
+        emit log_named_uint("Remote gasData: second", GasData.unwrap(secondRemoteGasData));
+        emit log_named_uint("Synapse gasData: first", GasData.unwrap(firstSynapseGasData));
+        (GasData gasData, uint256 dataMaturity) = InterfaceDestination(destination).getGasData(DOMAIN_REMOTE);
+        assertEq(GasData.unwrap(gasData), GasData.unwrap(secondRemoteGasData), "!remoteGasData");
+        assertEq(dataMaturity, secondSkipTime, "!remoteDataMaturity");
+        (gasData, dataMaturity) = InterfaceDestination(destination).getGasData(DOMAIN_SYNAPSE);
+        assertEq(GasData.unwrap(gasData), GasData.unwrap(firstSynapseGasData), "!synapseGasData");
+        assertEq(dataMaturity, firstSkipTime + secondSkipTime, "!synapseDataMaturity");
+    }
+
+    function test_getGasData_noDataForDomain(Random memory random, uint32 domain) public {
+        vm.assume(domain != DOMAIN_REMOTE && domain != DOMAIN_SYNAPSE);
+        RawSnapshot memory firstSnap;
+        firstSnap.states = new RawState[](2);
+        firstSnap.states[0] = random.nextState({origin: DOMAIN_REMOTE, nonce: random.nextUint32()});
+        firstSnap.states[1] = random.nextState({origin: DOMAIN_SYNAPSE, nonce: random.nextUint32()});
+        RawAttestation memory ra = random.nextAttestation(firstSnap, random.nextUint32());
+        address firstNotary = domains[DOMAIN_LOCAL].agents[0];
+        (bytes memory attPayload, bytes memory attSig) = signAttestation(firstNotary, ra);
+        uint256[] memory firstSnapGas = firstSnap.snapGas();
+        // Submit first attestation
+        lightManager.submitAttestation(attPayload, attSig, firstSnapGas);
+        skip(random.nextUint32());
+        // Check getGasData
+        (GasData gasData, uint256 dataMaturity) = InterfaceDestination(destination).getGasData(domain);
+        assertEq(GasData.unwrap(gasData), 0);
+        assertEq(dataMaturity, 0);
+    }
+
+    function test_getGasData_notaryInDispute(Random memory random) public {
+        RawSnapshot memory firstSnap;
+        firstSnap.states = new RawState[](2);
+        firstSnap.states[0] = random.nextState({origin: DOMAIN_REMOTE, nonce: random.nextUint32()});
+        firstSnap.states[1] = random.nextState({origin: DOMAIN_SYNAPSE, nonce: random.nextUint32()});
+        RawAttestation memory ra = random.nextAttestation(firstSnap, random.nextUint32());
+        address firstNotary = domains[DOMAIN_LOCAL].agents[0];
+        (bytes memory attPayload, bytes memory attSig) = signAttestation(firstNotary, ra);
+        uint256[] memory firstSnapGas = firstSnap.snapGas();
+        // Submit first attestation
+        lightManager.submitAttestation(attPayload, attSig, firstSnapGas);
+        skip(random.nextUint32());
+        // Open dispute
+        openDispute({guard: domains[0].agent, notary: firstNotary});
+        // Check getGasData
+        (GasData gasData, uint256 dataMaturity) = InterfaceDestination(destination).getGasData(DOMAIN_REMOTE);
+        assertEq(GasData.unwrap(gasData), 0);
+        assertEq(dataMaturity, 0);
+        (gasData, dataMaturity) = InterfaceDestination(destination).getGasData(DOMAIN_SYNAPSE);
+        assertEq(GasData.unwrap(gasData), 0);
+        assertEq(dataMaturity, 0);
     }
 
     // TODO: move to AgentManager test
