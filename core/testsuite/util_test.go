@@ -59,16 +59,16 @@ func TestEventually(t *testing.T) {
 	True(t, mockTester.Failed())
 }
 
-// foo is a function that is used to test GetFunctionName
+// foo is a function that is used to test GetFunctionName.
 func foo() {
 
 }
 
-// bar is a struct that is used to test GetFunctionName
+// bar is a struct that is used to test GetFunctionName.
 type bar struct {
 }
 
-// foo is a method that is used to test GetFunctionName
+// foo is a method that is used to test GetFunctionName.
 func (b *bar) foo() {}
 
 func TestGetFunctionName(t *testing.T) {

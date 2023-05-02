@@ -49,9 +49,8 @@ func Eventually(ctx context.Context, tb testing.TB, willBeTrue func() bool) {
 func GetFunctionName(i interface{}) string {
 	fullName := runtime.FuncForPC(reflect.ValueOf(i).Pointer()).Name()
 	parts := strings.Split(fullName, ".")
-	functionName := parts[len(parts)-1]
 	functionNameWithSuffix := parts[len(parts)-1]
-	functionName = strings.TrimSuffix(functionNameWithSuffix, "-fm")
+	functionName := strings.TrimSuffix(functionNameWithSuffix, "-fm")
 
 	return functionName
 }
