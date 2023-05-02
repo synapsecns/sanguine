@@ -2,19 +2,22 @@ import _ from 'lodash'
 
 import { WETH } from '@constants/tokens/swapMaster'
 import { AVWETH, ETH, WETHE } from '@constants/tokens/master'
-
+import { stringToBigNum } from '@/utils/stringToBigNum'
+import { getAddress } from '@ethersproject/address'
 import { approveAndDeposit } from '@utils/actions/approveAndDeposit'
 import TokenInput from '@components/TokenInput'
 import PriceImpactDisplay from './PriceImpactDisplay'
 import { TransactionResponse } from '@ethersproject/providers'
-import { useRouter } from 'next/router'
-
+import { useSynapseContext } from '@/utils/providers/SynapseProvider'
+import { formatBNToString } from '@utils/bignumber/format'
+import { calculatePriceImpact } from '@utils/priceImpact'
 import { TransactionButton } from '@components/buttons/SubmitTxButton'
-import { Zero } from '@ethersproject/constants'
+import { Zero, One } from '@ethersproject/constants'
 import { Token } from '@types'
 import { useState, useEffect } from 'react'
 import { BigNumber } from '@ethersproject/bignumber'
-
+import { calculateExchangeRate } from '@utils/calculateExchangeRate'
+import { getTokenAllowance } from '@/utils/actions/getTokenAllowance'
 const PoolManagementDeposit = ({
   pool,
   chainId,
@@ -29,15 +32,31 @@ const PoolManagementDeposit = ({
   poolUserData: any
 }) => {
   // todo store sum in here?
-  const [inputValue, setInputValue] = useState<Record<string, BigNumber>>({})
-  const router = useRouter()
+  const [inputValue, setInputValue] = useState<{
+    bn: Record<string, BigNumber>
+    str: Record<string, string>
+  }>({ bn: {}, str: {} })
+  const [depositQuote, setDepositQuote] = useState<{
+    priceImpact: BigNumber
+    allowances: Record<string, BigNumber>
+    routerAddress: string
+  }>({ priceImpact: undefined, allowances: {}, routerAddress: '' })
+
+  const SynapseSDK = useSynapseContext()
 
   // TODO move this to utils
   const sumBigNumbersFromState = () => {
     let sum = Zero
-    for (let key in inputValue) {
-      sum = sum.add(inputValue[key])
-    }
+    pool.poolTokens.map((token) => {
+      if (inputValue.bn[getAddress(token.addresses[chainId])]) {
+        sum = sum.add(
+          inputValue.bn[getAddress(token.addresses[chainId])].mul(
+            BigNumber.from(10).pow(18 - token.decimals[chainId])
+          )
+        )
+      }
+    })
+    console.log('sumBigNumbersFromState', sum.toString())
     return sum
   }
 
@@ -47,37 +66,82 @@ const PoolManagementDeposit = ({
     }
 
     let inputSum = sumBigNumbersFromState()
-    let depositLPTokenAmount
-    if (poolData.totalLocked.gt(0) && inputSum.gt(0)) {
-      depositLPTokenAmount = await swapContract.calculateTokenAmount(
-        // account,
-        poolTokens.map((i) =>
-          parseUnits(sanitizedInputState[i.symbol], i.decimals[chainId])
-        ),
-        true // deposit boolean
-      )
-    } else {
-      // when pool is empty, estimate the lptokens by just summing the input instead of calling contract
-      depositLPTokenAmount = tokenInputSum
-    }
-    const calcedPriceImpact = calculatePriceImpact(
-      tokenInputSum,
-      depositLPTokenAmount,
-      poolData.virtualPrice
+    console.log(
+      poolData,
+      poolData.totalLocked,
+      inputSum.toString(),
+      poolData.totalLocked.toString()
     )
+    if (poolData.totalLocked.gt(0) && inputSum.gt(0)) {
+      console.log(
+        'iii',
+        chainId,
+        pool.swapAddresses[chainId],
+        inputValue.bn,
+        Object.values(inputValue.bn).map((v) => v.toString())
+      )
+      const { amount, routerAddress } = await SynapseSDK.calculateAddLiquidity(
+        chainId,
+        pool.swapAddresses[chainId],
+        inputValue.bn
+      )
 
-    setDepositAmount(depositLPTokenAmount)
-    setPriceImpact(calcedPriceImpact)
+      let allowances: Record<string, BigNumber> = {}
+      for (const [key, value] of Object.entries(inputValue.bn)) {
+        allowances[key] = await getTokenAllowance(
+          routerAddress,
+          key,
+          address,
+          chainId
+        )
+      }
+
+      const priceImpact = calculateExchangeRate(
+        inputSum,
+        18,
+        inputSum.sub(amount),
+        18
+      )
+      // TODO: DOUBLE CHECK THIS
+      setDepositQuote({
+        priceImpact,
+        allowances,
+        routerAddress: pool.swapAddresses[chainId],
+      })
+    }
   }
 
-  const onChangeTokenInputValue = (tokenSymbol: string, value: BigNumber) => {
-    setInputValue({ ...inputValue, [tokenSymbol]: value })
-  }
   useEffect(() => {
-    if (poolUserData) {
-      let initInputValue = {}
+    calculateMaxDeposits()
+  }, [inputValue])
+
+  const onChangeTokenInputValue = (token: Token, value: string) => {
+    const bigNum = stringToBigNum(value, token.decimals[chainId]) ?? Zero
+    if (chainId && token) {
+      console.log
+      setInputValue({
+        bn: {
+          ...inputValue.bn,
+          [getAddress(token.addresses[chainId])]: bigNum,
+        },
+        str: {
+          ...inputValue.str,
+          [getAddress(token.addresses[chainId])]: value,
+        },
+      })
+    }
+  }
+
+  useEffect(() => {
+    if (poolData && poolUserData) {
+      let initInputValue: {
+        bn: Record<string, BigNumber>
+        str: Record<string, string>
+      } = { bn: {}, str: {} }
       poolUserData.tokens.map((tokenObj, i) => {
-        initInputValue[tokenObj.token.symbol] = undefined
+        initInputValue.bn[getAddress(tokenObj.token.addresses[chainId])] = Zero
+        initInputValue.str[getAddress(tokenObj.token.addresses[chainId])] =
+          undefined
       })
       setInputValue(initInputValue)
     }
@@ -93,7 +157,6 @@ const PoolManagementDeposit = ({
   //   depositAmount,
   // } = useSwapPoolDeposit(poolName)
   const clearInputs = ''
-  const priceImpact = Zero
   const poolTokens = []
   const inputState = {}
   const tokenInputSum = Zero
@@ -118,7 +181,7 @@ const PoolManagementDeposit = ({
                 balanceStr={String(tokenObj.balanceStr)}
                 inputValue={inputValue}
                 onChange={(value) =>
-                  onChangeTokenInputValue(tokenObj.token.symbol, value)
+                  onChangeTokenInputValue(balanceToken, value)
                 }
                 chainId={chainId}
                 address={address}
@@ -145,7 +208,7 @@ const PoolManagementDeposit = ({
         // }}
         onClick={placeholder}
       />
-      <PriceImpactDisplay priceImpact={priceImpact} />
+      <PriceImpactDisplay priceImpact={depositQuote.priceImpact} />
     </div>
   )
 }

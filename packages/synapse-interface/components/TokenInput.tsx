@@ -39,7 +39,7 @@ const TokenInput = ({
           isConnected={address !== undefined}
           balanceStr={balanceStr}
           onClickBalance={onClickMax}
-          value={inputValue[symbol]}
+          value={inputValue.str[token.addresses[chainId]]}
           placeholder={'0.0000'}
           onChange={(e) => onChange(cleanNumberInput(e.target.value))}
           disabled={inputValue == ''}

@@ -4,9 +4,12 @@ import { BigNumber } from '@ethersproject/bignumber'
 const PriceImpactDisplay = ({ priceImpact }: { priceImpact: BigNumber }) => {
   let colorClassName
   let labelText
+  // TODO: Check this
   let priceImpactBP = Number(
-    formatBNToString(priceImpact.mul(BigNumber.from(100)), 18, 2)
+    formatBNToString(priceImpact.mul(BigNumber.from(-100)), 18, 2)
   )
+
+  console.log('priceImpactBP', priceImpactBP, priceImpact.toString())
   if (priceImpactBP > 0) {
     colorClassName = 'text-green-500'
     labelText = 'Bonus'

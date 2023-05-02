@@ -111,6 +111,7 @@ const PoolBody = memo(
                 pool={pool}
                 address={address}
                 chainId={connectedChainId}
+                poolData={poolData}
                 poolUserData={poolUserData}
                 // poolStakingLink={STAKE_PATH}
                 // poolStakingLinkText="Stake" // check this

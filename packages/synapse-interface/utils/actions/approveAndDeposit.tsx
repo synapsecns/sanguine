@@ -3,8 +3,6 @@ import _ from 'lodash'
 import { parseUnits } from '@ethersproject/units'
 import toast from 'react-hot-toast'
 
-import { useActiveWeb3React } from '@hooks/wallet/useActiveWeb3React'
-import { useBlockNumber } from '@hooks/useBlockNumber'
 import { useSwapDepositContract } from '@hooks/contracts/useContract'
 import { useAllContracts } from '@hooks/contracts/useAllContracts'
 import { usePool } from '@hooks/pools/usePools'
@@ -18,16 +16,25 @@ import { sanitizeValue } from '@utils/sanitizeValue'
 import { txErrorHandler } from '@utils/txErrorHandler'
 import { AVWETH, WETH, WETHE } from '@constants/tokens/basic'
 
+import {Token} from '@types'
+export const approveAndDeposit = (pool: Token, address: string, chainId: number) => {
+  const swapContract = useSwapDepositContract(pool, chainId)
+
+
+
+
+}
 /**
  * @param {string} poolName
  */
-export const approveAndDeposit = (poolName) => {
+export const approveAndDeposiwt = (pool, address, chainId) => {
+  // Approve token
+  const tokenTx = await approveToken(address, chainId, pool.)
+
   const swapContract = useSwapDepositContract(poolName) //? DIFF
 
   const tokenContracts = useAllContracts()
-  const { account, chainId } = useActiveWeb3React()
-  const poolTokens = usePool(poolName)
-  const [blockNumber, setBlockNumber] = useBlockNumber(chainId)
+  const poolTokens = pool.poolTokens
 
   if (!poolTokens)
     throw new Error('useApproveAndDeposit requires a valid pool name')
@@ -61,7 +68,7 @@ export const approveAndDeposit = (poolName) => {
         await checkAndApproveTokenForTrade(
           tokenContract,
           swapContract.address,
-          account,
+          address,
           spendingValue,
           infiniteApproval,
           {
@@ -124,11 +131,54 @@ export const approveAndDeposit = (poolName) => {
       )
 
       toast.success(toastContent)
-      setBlockNumber(tx.blockNumber)
 
       return tx
     } catch (err) {
       txErrorHandler(err)
     }
   }
+}
+
+
+export async function checkAndApproveTokenForTrade(
+  srcTokenContract,
+  swapAddress,
+  spenderAddress,
+  spendingValue, // max is MaxUint256
+  infiniteApproval = false,
+  callbacks={}
+) {
+  if (srcTokenContract == null) return
+  if (spendingValue.eq(0)) return
+
+  const [tokenName, existingAllowance] = await Promise.all([
+    srcTokenContract.name(),
+    srcTokenContract.allowance(spenderAddress, swapAddress)
+  ])
+
+  console.debug(
+    `Existing ${tokenName} Allowance: ${existingAllowance.toString()}`,
+  )
+  if (existingAllowance.gte(spendingValue)) return
+  async function approve(amount) {
+    try {
+      const cleanupOnStart = callbacks.onTransactionStart?.()
+      const approvalTransaction = await srcTokenContract.approve(
+        swapAddress,
+        amount,
+      )
+      const confirmedTransaction = await approvalTransaction.wait()
+      cleanupOnStart?.()
+      callbacks.onTransactionSuccess?.(confirmedTransaction)
+    } catch (error) {
+      callbacks.onTransactionError?.(error)
+      throw error
+    }
+  }
+  if (existingAllowance.gt('0')) {
+    // Reset to 0 before updating approval
+    await approve(Zero)
+  }
+  await approve(infiniteApproval ? MaxUint256 : spendingValue)
+  console.debug(`Approving ${tokenName} spend of ${spendingValue.toString()}`)
 }

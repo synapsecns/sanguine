@@ -3,19 +3,17 @@ import { fetchSigner } from '@wagmi/core'
 import { Contract } from 'ethers'
 import { MaxInt256 } from '@ethersproject/constants'
 
-export const approveToken = async (address, chainId, fromTokenAddress) => {
+export const approveToken = async (
+  address: string,
+  chainId: number,
+  tokenAddress: string
+) => {
   // TODO store this erc20 and signer retrieval in a state in a parent component
   const wallet = await fetchSigner({
     chainId,
   })
 
-  console.log(
-    'address, chainId, fromTokenAddress',
-    address,
-    chainId,
-    fromTokenAddress
-  )
-  const erc20 = new Contract(fromTokenAddress, erc20ABI, wallet)
+  const erc20 = new Contract(tokenAddress, erc20ABI, wallet)
   const approveTx = await erc20.approve(address, MaxInt256)
 
   try {
