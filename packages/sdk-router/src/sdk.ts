@@ -294,21 +294,30 @@ class SynapseSDK {
     chainId: number,
     poolAddress: string,
     amounts: Record<string, BigNumber>
-  ): Promise<BigNumber> {
+  ): Promise<{ amount: BigNumber; routerAddress: string }> {
     const router: SynapseRouter = this.synapseRouters[chainId]
     const poolTokens = await router.routerContract.poolTokens(poolAddress)
     const amountArr: BigNumber[] = []
     poolTokens.map((token) => {
       amountArr.push(amounts[token.token] ?? Zero)
     })
-    return router.routerContract.calculateAddLiquidity(poolAddress, amountArr)
+    if (amountArr.filter((amount) => !amount.isZero()).length === 0) {
+      return { amount: Zero, routerAddress: router.routerContract.address }
+    }
+    return {
+      amount: await router.routerContract.calculateAddLiquidity(
+        poolAddress,
+        amountArr
+      ),
+      routerAddress: router.routerContract.address,
+    }
   }
 
   public async calculateRemoveLiquidity(
     chainId: number,
     poolAddress: string,
     amount: BigNumber
-  ): Promise<Record<string, BigNumber>> {
+  ): Promise<{ amounts: Record<string, BigNumber>; routerAddress: string }> {
     const router: SynapseRouter = this.synapseRouters[chainId]
     const amounts = await router.routerContract.calculateRemoveLiquidity(
       poolAddress,
@@ -319,7 +328,10 @@ class SynapseSDK {
     poolTokens.map((token, index) => {
       amountRecord[token.token] = amounts[index]
     })
-    return amountRecord
+    return {
+      amounts: amountRecord,
+      routerAddress: router.routerContract.address,
+    }
   }
 }
 
