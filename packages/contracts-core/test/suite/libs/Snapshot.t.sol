@@ -3,9 +3,13 @@ pragma solidity 0.8.17;
 
 import {State, StateLib, STATE_LENGTH} from "../../../contracts/libs/State.sol";
 import {SNAPSHOT_TREE_HEIGHT} from "../../../contracts/libs/Constants.sol";
+import {ChainGas, GasData} from "../../../contracts/libs/GasData.sol";
 import {MerkleMath} from "../../../contracts/libs/MerkleMath.sol";
 import {SynapseLibraryTest, MemViewLib} from "../../utils/SynapseLibraryTest.t.sol";
 import {SnapshotHarness} from "../../harnesses/libs/SnapshotHarness.t.sol";
+
+import {Random} from "../../utils/libs/Random.t.sol";
+import {RawState} from "../../utils/libs/SynapseStructs.t.sol";
 
 // solhint-disable func-name-mixedcase
 contract SnapshotLibraryTest is SynapseLibraryTest {
@@ -20,22 +24,20 @@ contract SnapshotLibraryTest is SynapseLibraryTest {
         libHarness = new SnapshotHarness();
     }
 
-    function test_formatSnapshot(uint256 statesAmount) public {
+    function test_formatSnapshot(Random memory random, uint256 statesAmount) public {
         // Should be in [1 .. MAX_STATES] range
         statesAmount = bound(statesAmount, 1, MAX_STATES);
-        bytes memory payload = new bytes(statesAmount * STATE_LENGTH);
+        RawState[] memory states = new RawState[](statesAmount);
         bytes[] memory statePayloads = new bytes[](statesAmount);
         bytes32[] memory stateHashes = new bytes32[](statesAmount);
         // Construct fake states having different byte representation
+        bytes memory payload = "";
         for (uint256 i = 0; i < statesAmount; ++i) {
-            statePayloads[i] = new bytes(STATE_LENGTH);
-            for (uint256 j = 0; j < STATE_LENGTH; ++j) {
-                bytes1 b = bytes1(uint8(i + 1));
-                statePayloads[i][j] = b;
-                payload[i * STATE_LENGTH + j] = b;
-            }
+            states[i] = random.nextState();
+            statePayloads[i] = states[i].formatState();
+            payload = bytes.concat(payload, statePayloads[i]);
             // State library is covered in a separate uint test, we assume it is working fine
-            (bytes32 leftLeaf, bytes32 rightLeaf) = statePayloads[i].castToState().subLeafs();
+            (bytes32 leftLeaf, bytes32 rightLeaf) = states[i].castToState().subLeafs();
             // For Snapshot Merkle Tree we use the hash of two sub-leafs as "leaf"
             stateHashes[i] = keccak256(bytes.concat(leftLeaf, rightLeaf));
         }
@@ -46,8 +48,13 @@ contract SnapshotLibraryTest is SynapseLibraryTest {
         checkCastToSnapshot({payload: payload, isSnapshot: true});
         // Test getters
         assertEq(libHarness.statesAmount(payload), statesAmount, "!statesAmount");
+        ChainGas[] memory chainGasData = libHarness.chainGasData(payload);
         for (uint256 i = 0; i < statesAmount; ++i) {
             assertEq(libHarness.state(payload, i), statePayloads[i], "!state");
+            assertEq(chainGasData[i].domain(), states[i].origin, "!chainGasData.domain");
+            assertEq(
+                GasData.unwrap(chainGasData[i].gasData()), states[i].gasData.encodeGasData(), "!chainGasData.gasData"
+            );
         }
         // Test hashing
         assertEq(libHarness.hash(payload), hashedSnapshot, "!hash");

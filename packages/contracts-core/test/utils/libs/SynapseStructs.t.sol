@@ -167,6 +167,7 @@ using CastLib for RawSnapshot global;
 struct RawAttestation {
     bytes32 snapRoot;
     bytes32 agentRoot;
+    bytes32 gasDataHash;
     uint32 nonce;
     uint40 blockNumber;
     uint40 timestamp;
@@ -479,6 +480,7 @@ library CastLib {
         Snapshot snapshot = rawSnap.castToSnapshot();
         ra.snapRoot = snapshot.calculateRoot();
         ra.agentRoot = agentRoot;
+        ra.gasDataHash = rawSnap.chainGasDataHash();
         ra.nonce = nonce;
         ra.blockNumber = blockNumber;
         ra.timestamp = timestamp;
@@ -496,12 +498,17 @@ library CastLib {
         ptr = rawSnap.formatSnapshot().castToSnapshot();
     }
 
+    function chainGasDataHash(RawSnapshot memory rawSnap) internal view returns (bytes32 gasDataHash) {
+        return GasDataLib.chainGasDataHash(rawSnap.castToSnapshot().chainGasData());
+    }
+
     // ════════════════════════════════════════════════ ATTESTATION ════════════════════════════════════════════════════
 
     function formatAttestation(RawAttestation memory ra) internal pure returns (bytes memory attestation) {
         attestation = AttestationLib.formatAttestation({
             snapRoot_: ra.snapRoot,
             agentRoot_: ra.agentRoot,
+            gasDataHash_: ra.gasDataHash,
             nonce_: ra.nonce,
             blockNumber_: ra.blockNumber,
             timestamp_: ra.timestamp
@@ -520,11 +527,12 @@ library CastLib {
         // Don't modify the nonce
         mra.nonce = ra.nonce;
         // Check if at least one value was modified by checking last 4 bits
-        isEqual = mask & 15 == 0;
+        isEqual = mask & 31 == 0;
         mra.snapRoot = ra.snapRoot ^ bytes32(mask & 1);
         mra.agentRoot = ra.agentRoot ^ bytes32(mask & 2);
-        mra.blockNumber = ra.blockNumber ^ uint40(mask & 4);
-        mra.timestamp = ra.timestamp ^ uint40(mask & 8);
+        mra.gasDataHash = ra.gasDataHash ^ bytes32(mask & 4);
+        mra.blockNumber = ra.blockNumber ^ uint40(mask & 8);
+        mra.timestamp = ra.timestamp ^ uint40(mask & 16);
     }
 
     function formatAttestationReport(RawAttestationReport memory rawAR)

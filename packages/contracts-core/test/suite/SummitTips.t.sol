@@ -88,9 +88,9 @@ contract SummitTipsTest is AgentSecuredTest {
         submitSnapshot(snapNotary0, snapshot0);
         submitSnapshot(snapNotary1, snapshot1);
         // Extract snapshot roots
-        acceptSnapshot(snapshot0.formatStates());
+        acceptSnapshot(snapshot0);
         snapRoot0 = getSnapshotRoot();
-        acceptSnapshot(snapshot1.formatStates());
+        acceptSnapshot(snapshot1);
         snapRoot1 = getSnapshotRoot();
         // Deploy Summit implementation with Cheats
         summitCheats = address(new SummitCheats(DOMAIN_SYNAPSE, address(bondingManager)));

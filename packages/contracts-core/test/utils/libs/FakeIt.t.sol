@@ -15,6 +15,12 @@ function fakeState(uint256 fakeValue) pure returns (RawState memory state) {
     state.nonce = uint32(fakeValue);
     state.blockNumber = uint40(fakeValue);
     state.timestamp = uint40(fakeValue);
+    state.gasData.gasPrice.number = uint16(fakeValue);
+    state.gasData.dataPrice.number = uint16(fakeValue);
+    state.gasData.execBuffer.number = uint16(fakeValue);
+    state.gasData.amortAttCost.number = uint16(fakeValue);
+    state.gasData.etherPrice.number = uint16(fakeValue);
+    state.gasData.markup.number = uint16(fakeValue);
 }
 
 /// @notice Returns RawSnapshot struct with given state on given position,

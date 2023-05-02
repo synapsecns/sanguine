@@ -11,7 +11,7 @@ import {InterfaceSummit} from "../../contracts/Summit.sol";
 import {Versioned} from "../../contracts/base/Version.sol";
 
 import {AgentFlag, AgentStatus, Summit, SynapseTest} from "../utils/SynapseTest.t.sol";
-import {State, RawAttestation, RawState, RawStateIndex} from "../utils/libs/SynapseStructs.t.sol";
+import {State, RawAttestation, RawSnapshot, RawState, RawStateIndex} from "../utils/libs/SynapseStructs.t.sol";
 import {Random} from "../utils/libs/Random.t.sol";
 import {AgentSecuredTest} from "./hubs/ExecutionHub.t.sol";
 
@@ -35,8 +35,9 @@ contract SummitTest is AgentSecuredTest {
 
     function setUp() public virtual override {
         notaryAttestations[0] = RawAttestation({
-            snapRoot: bytes32(0),
-            agentRoot: bytes32(0),
+            snapRoot: 0,
+            agentRoot: 0,
+            gasDataHash: 0,
             nonce: 0,
             blockNumber: uint40(block.number),
             timestamp: uint40(block.timestamp)
@@ -215,28 +216,28 @@ contract SummitTest is AgentSecuredTest {
             vm.roll(ra.blockNumber);
             vm.warp(ra.timestamp);
 
-            bytes[] memory rawStates = new bytes[](STATES);
-            State[] memory states = new State[](STATES);
+            RawSnapshot memory rs;
+            rs.states = new RawState[](STATES);
             for (uint256 j = 0; j < STATES; ++j) {
                 // Pick a random Guard to choose their state for domain (J+1)
                 // To ensure that all Notary snapshots are different pick Guard
                 // with the same index as Notary for the first state
                 uint256 guardIndex = j == 0 ? i : random.nextUint256() % DOMAIN_AGENTS;
-                rawStates[j] = guardStates[guardIndex][j].formatState();
-                states[j] = guardStates[guardIndex][j].castToState();
+                rs.states[j] = guardStates[guardIndex][j];
             }
 
             // Calculate root and height using AttestationProofGenerator
-            acceptSnapshot(rawStates);
+            acceptSnapshot(rs);
             ra.snapRoot = getSnapshotRoot();
             ra.agentRoot = getAgentRoot();
+            ra.gasDataHash = rs.chainGasDataHash();
             // This is i-th submitted attestation so far, but attestation nonce starts from 1
             ra.nonce = i + 1;
             notaryAttestations[ra.nonce] = ra;
             bytes memory attestation = ra.formatAttestation();
 
             address notary = domains[DOMAIN_LOCAL].agents[i];
-            (snapPayloads[i], snapSignatures[i]) = signSnapshot(notary, states);
+            (snapPayloads[i], snapSignatures[i]) = signSnapshot(notary, rs);
             // Nothing should be saved before Notary submitted their first snapshot
             assertEq(ISnapshotHub(summit).getLatestNotaryAttestation(notary), "");
 
@@ -264,7 +265,7 @@ contract SummitTest is AgentSecuredTest {
             for (uint256 j = 0; j < STATES; ++j) {
                 bytes32[] memory snapProof = ISnapshotHub(summit).getSnapshotProof(ra.nonce, j);
                 // Item to prove is State's "left sub-leaf"
-                (bytes32 item,) = states[j].subLeafs();
+                (bytes32 item,) = rs.states[j].castToState().subLeafs();
                 // Item index is twice the state index (since it's a left child)
                 assertEq(
                     MerkleMath.proofRoot(2 * j, item, snapProof, SNAPSHOT_TREE_HEIGHT), ra.snapRoot, "!getSnapshotProof"
@@ -273,7 +274,11 @@ contract SummitTest is AgentSecuredTest {
 
             // Check latest Notary States
             for (uint32 j = 0; j < STATES; ++j) {
-                assertEq(ISnapshotHub(summit).getLatestAgentState(j + 1, notary), rawStates[j], "!latestState: notary");
+                assertEq(
+                    ISnapshotHub(summit).getLatestAgentState(j + 1, notary),
+                    rs.states[j].formatState(),
+                    "!latestState: notary"
+                );
             }
         }
 
