@@ -55,6 +55,8 @@ interface InterfaceDestination {
 
     /**
      * @notice Returns the gas data for a given chain from the latest accepted attestation with that chain.
+     * @dev Will return empty values if there is no data for the domain,
+     * or if the notary who provided the data is in dispute.
      * @param domain            Domain for the chain
      * @return gasData          Gas data for the chain
      * @return dataMaturity     Gas data age in seconds
