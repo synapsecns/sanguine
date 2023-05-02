@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.17;
 
-import {ChainGas, InterfaceDestination} from "../../contracts/interfaces/InterfaceDestination.sol";
+import {ChainGas, GasData, InterfaceDestination} from "../../contracts/interfaces/InterfaceDestination.sol";
 import {ExecutionHubMock} from "./hubs/ExecutionHubMock.t.sol";
 import {AgentSecuredMock} from "./base/AgentSecuredMock.t.sol";
 
@@ -20,6 +20,8 @@ contract DestinationMock is ExecutionHubMock, AgentSecuredMock, InterfaceDestina
     function attestationsAmount() external view returns (uint256) {}
 
     function getAttestation(uint256 index) external view returns (bytes memory attPayload, bytes memory attSignature) {}
+
+    function getGasData(uint32 domain) external view returns (GasData gasData, uint256 dataMaturity) {}
 
     function destStatus() external view returns (uint40 snapRootTime, uint40 agentRootTime, uint32 notaryIndex) {}
 

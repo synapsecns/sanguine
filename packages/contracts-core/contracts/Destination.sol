@@ -6,7 +6,7 @@ import {Attestation, AttestationLib} from "./libs/Attestation.sol";
 import {AttestationReport} from "./libs/AttestationReport.sol";
 import {ByteString} from "./libs/ByteString.sol";
 import {AGENT_ROOT_OPTIMISTIC_PERIOD, SYNAPSE_DOMAIN} from "./libs/Constants.sol";
-import {ChainGas} from "./libs/GasData.sol";
+import {ChainGas, GasData} from "./libs/GasData.sol";
 import {AgentStatus, DestinationStatus, DisputeFlag} from "./libs/Structures.sol";
 // ═════════════════════════════ INTERNAL IMPORTS ══════════════════════════════
 import {AgentSecured} from "./base/AgentSecured.sol";
@@ -26,6 +26,12 @@ contract Destination is ExecutionHub, DestinationEvents, InterfaceDestination {
         bytes32 snapGasHash;
     }
 
+    struct StoredGasData {
+        GasData gasData;
+        uint32 notaryIndex;
+        uint40 submittedAt;
+    }
+
     // ══════════════════════════════════════════════════ STORAGE ══════════════════════════════════════════════════════
 
     /// @dev Invariant: this is either current LightManager root,
@@ -37,6 +43,9 @@ contract Destination is ExecutionHub, DestinationEvents, InterfaceDestination {
 
     /// @dev Stored lookup data for all accepted Notary Attestations
     StoredAttData[] internal _storedAttestations;
+
+    /// @dev Remote domains GasData submitted by Notaries
+    mapping(uint32 => StoredGasData) internal _storedGasData;
 
     // ═════════════════════════════════════════ CONSTRUCTOR & INITIALIZER ═════════════════════════════════════════════
 
@@ -78,8 +87,7 @@ contract Destination is ExecutionHub, DestinationEvents, InterfaceDestination {
         _storedAttestations.push(StoredAttData({agentRoot: agentRoot, snapGasHash: att.snapGasHash()}));
         // Save Agent Root if required, and update the Destination's Status
         destStatus = _saveAgentRoot(rootPending, agentRoot, notaryIndex);
-        // TODO: save the gas data for every chain
-        snapGas;
+        _saveGasData(snapGas, notaryIndex);
         return true;
     }
 
@@ -141,6 +149,16 @@ contract Destination is ExecutionHub, DestinationEvents, InterfaceDestination {
     }
 
     /// @inheritdoc InterfaceDestination
+    function getGasData(uint32 domain) external view returns (GasData gasData, uint256 dataMaturity) {
+        StoredGasData memory storedGasData = _storedGasData[domain];
+        if (storedGasData.submittedAt != 0 && _disputes[storedGasData.notaryIndex] == DisputeFlag.None) {
+            gasData = storedGasData.gasData;
+            dataMaturity = block.timestamp - storedGasData.submittedAt;
+        }
+        // Return empty values if there is no data for the domain, or if the notary who provided the data is in dispute
+    }
+
+    /// @inheritdoc InterfaceDestination
     function nextAgentRoot() external view returns (bytes32) {
         // Return current agent root on Synapse Chain for consistency
         return localDomain == SYNAPSE_DOMAIN ? IAgentManager(agentManager).agentRoot() : _nextAgentRoot;
@@ -166,6 +184,24 @@ contract Destination is ExecutionHub, DestinationEvents, InterfaceDestination {
             status.notaryIndex = notaryIndex;
             _nextAgentRoot = agentRoot;
             emit AgentRootAccepted(agentRoot);
+        }
+    }
+
+    /// @dev Saves updated values from the snapshot's gas data list.
+    function _saveGasData(ChainGas[] memory snapGas, uint32 notaryIndex) internal {
+        uint256 statesAmount = snapGas.length;
+        for (uint256 i = 0; i < statesAmount; i++) {
+            ChainGas chainGas = snapGas[i];
+            uint32 domain = chainGas.domain();
+            // Don't save gas data for the local domain
+            if (domain == localDomain) continue;
+            StoredGasData memory storedGasData = _storedGasData[domain];
+            // Check that the gas data is not already saved
+            GasData gasData = chainGas.gasData();
+            if (GasData.unwrap(gasData) == GasData.unwrap(storedGasData.gasData)) continue;
+            // Save the gas data
+            _storedGasData[domain] =
+                StoredGasData({gasData: gasData, notaryIndex: notaryIndex, submittedAt: uint40(block.timestamp)});
         }
     }
 }

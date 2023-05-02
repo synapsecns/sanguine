@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.17;
 
-import {ChainGas} from "../libs/GasData.sol";
+import {ChainGas, GasData} from "../libs/GasData.sol";
 
 interface InterfaceDestination {
     /**
@@ -52,6 +52,16 @@ interface InterfaceDestination {
      * @return attSignature     Notary signature for the reported attestation
      */
     function getAttestation(uint256 index) external view returns (bytes memory attPayload, bytes memory attSignature);
+
+    /**
+     * @notice Returns the gas data for a given chain from the latest accepted attestation with that chain.
+     * @dev Will return empty values if there is no data for the domain,
+     * or if the notary who provided the data is in dispute.
+     * @param domain            Domain for the chain
+     * @return gasData          Gas data for the chain
+     * @return dataMaturity     Gas data age in seconds
+     */
+    function getGasData(uint32 domain) external view returns (GasData gasData, uint256 dataMaturity);
 
     /**
      * Returns status of Destination contract as far as snapshot/agent roots are concerned
