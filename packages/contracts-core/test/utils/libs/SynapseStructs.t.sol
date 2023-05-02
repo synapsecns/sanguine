@@ -498,7 +498,15 @@ library CastLib {
         ptr = rawSnap.formatSnapshot().castToSnapshot();
     }
 
-    function snapGasHash(RawSnapshot memory rawSnap) internal view returns (bytes32 snapGasHash) {
+    function snapGas(RawSnapshot memory rawSnap) internal view returns (uint256[] memory snapGas_) {
+        ChainGas[] memory chainData = rawSnap.castToSnapshot().snapGas();
+        snapGas_ = new uint256[](chainData.length);
+        for (uint256 i = 0; i < snapGas_.length; ++i) {
+            snapGas_[i] = ChainGas.unwrap(chainData[i]);
+        }
+    }
+
+    function snapGasHash(RawSnapshot memory rawSnap) internal view returns (bytes32) {
         return GasDataLib.snapGasHash(rawSnap.castToSnapshot().snapGas());
     }
 
