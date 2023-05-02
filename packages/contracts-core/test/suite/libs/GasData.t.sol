@@ -48,15 +48,15 @@ contract GasDataLibraryTest is SynapseLibraryTest {
         assertEq(GasData.unwrap(libHarness.gasData(cd)), rcg.gasData.encodeGasData(), "!gasData");
     }
 
-    function test_chainGasDataHash(Random memory random, uint256 amount) public {
+    function test_snapGasHash(Random memory random, uint256 amount) public {
         // Should be in [1 .. MAX_STATES] range
         amount = bound(amount, 1, SNAPSHOT_MAX_STATES);
-        ChainGas[] memory chainGasData = new ChainGas[](amount);
+        ChainGas[] memory snapGas = new ChainGas[](amount);
         bytes memory payload = "";
         for (uint256 i = 0; i < amount; i++) {
-            chainGasData[i] = GasDataLib.wrapChainGas(random.nextUint256());
-            payload = bytes.concat(payload, abi.encode(chainGasData[i]));
+            snapGas[i] = GasDataLib.wrapChainGas(random.nextUint256());
+            payload = bytes.concat(payload, abi.encode(snapGas[i]));
         }
-        assertEq(libHarness.chainGasDataHash(chainGasData), keccak256(payload), "!chainGasDataHash");
+        assertEq(libHarness.snapGasHash(snapGas), keccak256(payload), "!snapGasHash");
     }
 }

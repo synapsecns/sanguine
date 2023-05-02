@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.17;
 
-import {InterfaceDestination} from "../../contracts/interfaces/InterfaceDestination.sol";
+import {ChainGas, InterfaceDestination} from "../../contracts/interfaces/InterfaceDestination.sol";
 
 import {Random} from "../utils/libs/Random.t.sol";
 import {RawAttestation, RawSnapshot, RawState} from "../utils/libs/SynapseStructs.t.sol";
@@ -72,7 +72,7 @@ contract DestinationSynapseTest is ExecutionHubTest {
         vm.assume(caller != localAgentManager());
         vm.expectRevert("!agentManager");
         vm.prank(caller);
-        InterfaceDestination(destinationSynapse).acceptAttestation(0, 0, "");
+        InterfaceDestination(destinationSynapse).acceptAttestation(0, 0, "", new ChainGas[](0));
     }
 
     // ══════════════════════════════════════════════════ HELPERS ══════════════════════════════════════════════════════

@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.17;
 
+import {SNAPSHOT_MAX_STATES} from "../../../contracts/libs/Constants.sol";
 import {RawAttestation, RawGasData, RawState, RawStateIndex, RawSnapshot} from "./SynapseStructs.t.sol";
 
 struct Random {
@@ -88,6 +89,20 @@ library RandomLib {
     // @notice Returns next "random" address value and updates the Random's seed.
     function nextAddress(Random memory r) internal pure returns (address value) {
         return address(r.nextUint160());
+    }
+
+    function nextSnapshot(Random memory r) internal pure returns (RawSnapshot memory rs) {
+        uint32 statesAmount = r.nextUint32();
+        // Should be in range [1, SNAPSHOT_MAX_STATES]
+        statesAmount = uint32(1 + statesAmount % (SNAPSHOT_MAX_STATES - 1));
+        return r.nextSnapshot(statesAmount);
+    }
+
+    function nextSnapshot(Random memory r, uint32 statesAmount) internal pure returns (RawSnapshot memory rs) {
+        rs.states = new RawState[](statesAmount);
+        for (uint32 i = 0; i < statesAmount; ++i) {
+            rs.states[i] = r.nextState();
+        }
     }
 
     function nextState(Random memory r, uint32 origin, uint32 nonce) internal pure returns (RawState memory state) {

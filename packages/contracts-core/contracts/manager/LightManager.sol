@@ -5,6 +5,7 @@ pragma solidity 0.8.17;
 import {Attestation, AttestationLib} from "../libs/Attestation.sol";
 import {AttestationReport, AttestationReportLib} from "../libs/AttestationReport.sol";
 import {AGENT_TREE_HEIGHT, BONDING_OPTIMISTIC_PERIOD, SYNAPSE_DOMAIN} from "../libs/Constants.sol";
+import {ChainGas, GasDataLib} from "../libs/GasData.sol";
 import {MerkleMath} from "../libs/MerkleMath.sol";
 import {AgentFlag, AgentStatus, DisputeFlag} from "../libs/Structures.sol";
 // ═════════════════════════════ INTERNAL IMPORTS ══════════════════════════════
@@ -45,7 +46,7 @@ contract LightManager is AgentManager, InterfaceLightManager {
     // ══════════════════════════════════════════ SUBMIT AGENT STATEMENTS ══════════════════════════════════════════════
 
     /// @inheritdoc InterfaceLightManager
-    function submitAttestation(bytes memory attPayload, bytes memory attSignature)
+    function submitAttestation(bytes memory attPayload, bytes memory attSignature, uint256[] memory snapGas_)
         external
         returns (bool wasAccepted)
     {
@@ -59,9 +60,19 @@ contract LightManager is AgentManager, InterfaceLightManager {
         require(status.domain == localDomain, "Wrong Notary domain");
         // Notary needs to be not in dispute
         require(_disputes[notary].flag == DisputeFlag.None, "Notary is in dispute");
+        // Cast uint256[] to ChainGas[] using assembly. This prevents us from doing unnecessary copies.
+        // Note that this does not clear the highest bits, but it's ok as the highest bits are ignored
+        // for ChainGas operations, including abi-encoding `snapGas`
+        ChainGas[] memory snapGas;
+        // solhint-disable-next-line no-inline-assembly
+        assembly {
+            snapGas := snapGas_
+        }
+        // Check that hash of snapGas matches the attestations's
+        require(att.snapGasHash() == GasDataLib.snapGasHash(snapGas), "Invalid snapGas");
         // Store Notary signature for the attestation
         uint256 sigIndex = _saveSignature(attSignature);
-        wasAccepted = InterfaceDestination(destination).acceptAttestation(status.index, sigIndex, attPayload);
+        wasAccepted = InterfaceDestination(destination).acceptAttestation(status.index, sigIndex, attPayload, snapGas);
         if (wasAccepted) {
             emit AttestationAccepted(status.domain, notary, attPayload, attSignature);
         }
