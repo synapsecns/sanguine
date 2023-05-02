@@ -1,6 +1,6 @@
 import { BigNumber } from '@ethersproject/bignumber'
 import { Zero, One, AddressZero } from '@ethersproject/constants'
-import { formatBNToPercentString } from '@bignumber/format'
+import { formatBNToPercentString, formatBNToString } from '@bignumber/format'
 import { PoolTokenObject } from '@types'
 
 export const MAX_BN_POW = BigNumber.from(10).pow(18)
@@ -54,6 +54,7 @@ export const getPoolTokenInfoArr = ({
   tokenBalancesSum,
 }: {
   tokenBalances: PoolTokenObject[]
+  chainId: number
   lpTokenBalance: BigNumber
   tokenBalancesSum: BigNumber
 }) => {
@@ -68,6 +69,7 @@ export const getPoolTokenInfoArr = ({
           5
         ),
     balance: poolToken.balance,
+    balanceStr: formatBNToString(poolToken.balance, 18, 4),
     token: poolToken.token,
     isLp: poolToken.isLP,
   }))

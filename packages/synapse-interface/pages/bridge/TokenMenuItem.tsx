@@ -1,5 +1,3 @@
-import { commify } from '@ethersproject/units'
-import { formatBNToString } from '@bignumber/format'
 import { BigNumber } from '@ethersproject/bignumber'
 import { Zero } from '@ethersproject/constants'
 import { CHAINS_BY_ID } from '@constants/chains'
@@ -10,7 +8,7 @@ import {
   getMenuItemStyleForCoinCombined,
 } from '@styles/tokens'
 import { Token } from '@/utils/types'
-
+import TokenBalance from '@components/TokenBalance'
 const TokenMenuItem = ({
   token,
   active,
@@ -113,34 +111,4 @@ const CoinOnChain = ({ token, chainId }: { token: Token; chainId: number }) => {
   ) : null
 }
 
-const TokenBalance = ({
-  token,
-  chainId,
-  tokenBalance,
-}: {
-  token: Token
-  chainId: number
-  tokenBalance: BigNumber
-}) => {
-  const formattedBalance = commify(
-    formatBNToString(
-      tokenBalance,
-      token?.decimals?.[chainId as keyof Token['decimals']],
-      2
-    )
-  )
-  return (
-    <div className="ml-auto mr-5 text-lg text-white">
-      {!tokenBalance.eq(0) && (
-        <p>
-          {formattedBalance}
-          <span className="text-sm opacity-80">
-            {' '}
-            {token ? displaySymbol(chainId, token) : ''}
-          </span>
-        </p>
-      )}
-    </div>
-  )
-}
 export default TokenMenuItem

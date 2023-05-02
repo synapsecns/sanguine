@@ -8,11 +8,13 @@ const PoolManagement = ({
   pool,
   address,
   chainId,
+  poolData,
   poolUserData,
 }: {
   pool: Token
   address: string
   chainId: number
+  poolData: any
   poolUserData: any
 }) => {
   // const [cardNav, setCardNav] = useState(getLiquidityMode(location.hash)) // 'addLiquidity'
@@ -34,6 +36,7 @@ const PoolManagement = ({
               pool={pool}
               address={address}
               chainId={chainId}
+              poolData={poolData}
               poolUserData={poolUserData}
             />
           )}

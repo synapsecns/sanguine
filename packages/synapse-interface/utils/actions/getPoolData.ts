@@ -124,20 +124,16 @@ export const getPoolData = async (
       lpTokenBalance,
       tokenBalancesSum,
     },
+    chainId,
   })
   if (user) {
-    console.log('her2')
-
     const userShare = lpTokenBalance
       .mul(MAX_BN_POW)
       .div(calcIfZero(lpTokenBalance))
-    console.log('her1')
     const userPoolTokenBalances = tokenBalances.map((token) =>
       userShare.mul(token.balance).div(MAX_BN_POW)
     )
-    console.log('her2')
     const userPoolTokenBalancesSum = calcBnSum(userPoolTokenBalances)
-    console.log('he3')
 
     return {
       name: pool.name,
