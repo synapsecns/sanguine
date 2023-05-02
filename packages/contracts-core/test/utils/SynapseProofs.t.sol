@@ -7,6 +7,8 @@ import {AttestationProofGenerator} from "./proof/AttestationProofGenerator.t.sol
 import {DynamicProofGenerator} from "./proof/DynamicProofGenerator.t.sol";
 import {HistoricalProofGenerator} from "./proof/HistoricalProofGenerator.t.sol";
 
+import {RawSnapshot} from "./libs/SynapseStructs.t.sol";
+
 // solhint-disable no-empty-blocks
 // solhint-disable ordering
 abstract contract SynapseProofs {
@@ -57,8 +59,8 @@ abstract contract SynapseProofs {
 
     // ══════════════════════════════════════════════ SNAPSHOT PROOFS ══════════════════════════════════════════════════
 
-    function acceptSnapshot(bytes[] memory snapshotStates) public {
-        summitGen.acceptSnapshot(snapshotStates);
+    function acceptSnapshot(RawSnapshot memory rs) public {
+        summitGen.acceptSnapshot(rs.formatStates());
     }
 
     function genSnapshotProof(uint256 index) public view returns (bytes32[] memory) {

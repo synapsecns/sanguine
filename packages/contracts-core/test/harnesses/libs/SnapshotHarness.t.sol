@@ -2,7 +2,9 @@
 
 pragma solidity 0.8.17;
 
-import {Snapshot, SnapshotLib, State, StateLib, MemView, MemViewLib} from "../../../contracts/libs/Snapshot.sol";
+import {
+    ChainGas, Snapshot, SnapshotLib, State, StateLib, MemView, MemViewLib
+} from "../../../contracts/libs/Snapshot.sol";
 
 // solhint-disable ordering
 
@@ -37,6 +39,10 @@ contract SnapshotHarness {
 
     function statesAmount(bytes memory payload) public pure returns (uint256) {
         return payload.castToSnapshot().statesAmount();
+    }
+
+    function chainGasData(bytes memory payload) public pure returns (ChainGas[] memory) {
+        return payload.castToSnapshot().chainGasData();
     }
 
     function calculateRoot(bytes memory payload) public pure returns (bytes32) {

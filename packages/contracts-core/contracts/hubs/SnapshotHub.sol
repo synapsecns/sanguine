@@ -3,7 +3,7 @@ pragma solidity 0.8.17;
 
 // ══════════════════════════════ LIBRARY IMPORTS ══════════════════════════════
 import {Attestation, AttestationLib} from "../libs/Attestation.sol";
-import {GasData} from "../libs/GasData.sol";
+import {GasData, GasDataLib} from "../libs/GasData.sol";
 import {MerkleMath} from "../libs/MerkleMath.sol";
 import {Snapshot, SnapshotLib} from "../libs/Snapshot.sol";
 import {State, StateLib} from "../libs/State.sol";
@@ -44,6 +44,7 @@ abstract contract SnapshotHub is AgentSecured, SnapshotHubEvents, ISnapshotHub {
     struct SummitAttestation {
         bytes32 snapRoot;
         bytes32 agentRoot;
+        bytes32 gasDataHash;
         uint40 blockNumber;
         uint40 timestamp;
     }
@@ -220,7 +221,7 @@ abstract contract SnapshotHub is AgentSecured, SnapshotHubEvents, ISnapshotHub {
         // This should only be called once, when the contract is initialized
         assert(_attestations.length == 0);
         // Insert empty non-meaningful values, that can't be used to prove anything
-        _attestations.push(_toSummitAttestation(bytes32(0), bytes32(0)));
+        _attestations.push(_toSummitAttestation(0, 0, 0));
         _notarySnapshots.push(SummitSnapshot(new uint256[](0), 0));
     }
 
@@ -240,7 +241,8 @@ abstract contract SnapshotHub is AgentSecured, SnapshotHubEvents, ISnapshotHub {
     ) internal returns (bytes memory attPayload) {
         // Attestation nonce is its index in `_attestations` array
         uint32 attNonce = uint32(_attestations.length);
-        SummitAttestation memory summitAtt = _toSummitAttestation(snapshot.calculateRoot(), agentRoot);
+        bytes32 gasDataHash = GasDataLib.chainGasDataHash(snapshot.chainGasData());
+        SummitAttestation memory summitAtt = _toSummitAttestation(snapshot.calculateRoot(), agentRoot, gasDataHash);
         attPayload = _formatSummitAttestation(summitAtt, attNonce);
         _latestAttNonce[notaryIndex] = attNonce;
         /// @dev Add a single element to both `_attestations` and `_notarySnapshots`,
@@ -371,6 +373,7 @@ abstract contract SnapshotHub is AgentSecured, SnapshotHubEvents, ISnapshotHub {
         return AttestationLib.formatAttestation({
             snapRoot_: summitAtt.snapRoot,
             agentRoot_: summitAtt.agentRoot,
+            gasDataHash_: summitAtt.gasDataHash,
             nonce_: nonce,
             blockNumber_: summitAtt.blockNumber,
             timestamp_: summitAtt.timestamp
@@ -380,20 +383,26 @@ abstract contract SnapshotHub is AgentSecured, SnapshotHubEvents, ISnapshotHub {
     /// @dev Returns an Attestation struct to save in the Summit contract.
     /// Current block number and timestamp are used.
     // solhint-disable-next-line ordering
-    function _toSummitAttestation(bytes32 snapRoot, bytes32 agentRoot)
+    function _toSummitAttestation(bytes32 snapRoot, bytes32 agentRoot, bytes32 gasDataHash)
         internal
         view
         returns (SummitAttestation memory summitAtt)
     {
         summitAtt.snapRoot = snapRoot;
         summitAtt.agentRoot = agentRoot;
+        summitAtt.gasDataHash = gasDataHash;
         summitAtt.blockNumber = uint40(block.number);
         summitAtt.timestamp = uint40(block.timestamp);
     }
 
     /// @dev Checks that an Attestation and its Summit representation are equal.
     function _areEqual(Attestation att, SummitAttestation memory summitAtt) internal pure returns (bool) {
-        return att.snapRoot() == summitAtt.snapRoot && att.agentRoot() == summitAtt.agentRoot
-            && att.blockNumber() == summitAtt.blockNumber && att.timestamp() == summitAtt.timestamp;
+        // forgefmt: disable-next-item
+        return 
+            att.snapRoot() == summitAtt.snapRoot &&
+            att.agentRoot() == summitAtt.agentRoot &&
+            att.gasDataHash() == summitAtt.gasDataHash &&
+            att.blockNumber() == summitAtt.blockNumber &&
+            att.timestamp() == summitAtt.timestamp;
     }
 }
