@@ -18,7 +18,7 @@ func init() {
 	}
 
 	ExecutedTopic = parsedDestination.Events["Executed"].ID
-	
+
 	if ExecutedTopic == (common.Hash{}) {
 		panic("ExecutedTopic is nil")
 	}
