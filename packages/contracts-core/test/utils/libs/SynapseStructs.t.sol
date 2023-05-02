@@ -170,6 +170,9 @@ struct RawAttestation {
     uint32 nonce;
     uint40 blockNumber;
     uint40 timestamp;
+    // Merged into dataHash
+    bytes32 _agentRoot;
+    bytes32 _snapGasHash;
 }
 
 using CastLib for RawAttestation global;
@@ -478,7 +481,9 @@ library CastLib {
     ) internal view returns (RawAttestation memory ra) {
         Snapshot snapshot = rawSnap.castToSnapshot();
         ra.snapRoot = snapshot.calculateRoot();
-        ra.setDataHash(agentRoot, rawSnap.snapGasHash());
+        ra._agentRoot = agentRoot;
+        ra._snapGasHash = rawSnap.snapGasHash();
+        ra.setDataHash();
         ra.nonce = nonce;
         ra.blockNumber = blockNumber;
         ra.timestamp = timestamp;
@@ -524,8 +529,8 @@ library CastLib {
         ptr = ra.formatAttestation().castToAttestation();
     }
 
-    function setDataHash(RawAttestation memory ra, bytes32 agentRoot_, bytes32 snapGasHash_) internal pure {
-        ra.dataHash = keccak256(bytes.concat(agentRoot_, snapGasHash_));
+    function setDataHash(RawAttestation memory ra) internal pure {
+        ra.dataHash = keccak256(bytes.concat(ra._agentRoot, ra._snapGasHash));
     }
 
     function modifyAttestation(RawAttestation memory ra, uint256 mask)
@@ -535,12 +540,14 @@ library CastLib {
     {
         // Don't modify the nonce
         mra.nonce = ra.nonce;
-        // Check if at least one value was modified by checking last 4 bits
-        isEqual = mask & 15 == 0;
+        // Check if at least one value was modified by checking last 5 bits
+        isEqual = mask & 31 == 0;
         mra.snapRoot = ra.snapRoot ^ bytes32(mask & 1);
-        mra.dataHash = ra.dataHash ^ bytes32(mask & 2);
-        mra.blockNumber = ra.blockNumber ^ uint40(mask & 4);
-        mra.timestamp = ra.timestamp ^ uint40(mask & 8);
+        mra._agentRoot = ra._agentRoot ^ bytes32(mask & 2);
+        mra._snapGasHash = ra._snapGasHash ^ bytes32(mask & 4);
+        mra.blockNumber = ra.blockNumber ^ uint40(mask & 8);
+        mra.timestamp = ra.timestamp ^ uint40(mask & 15);
+        mra.setDataHash();
     }
 
     function formatAttestationReport(RawAttestationReport memory rawAR)

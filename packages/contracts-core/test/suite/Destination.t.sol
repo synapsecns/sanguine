@@ -72,7 +72,7 @@ contract DestinationTest is ExecutionHubTest {
             RawAttestation memory ra = random.nextAttestation(rs, index + 1);
             uint256[] memory snapGas = rs.snapGas();
             (attPayloads[index], attSignatures[index]) = signAttestation(notary, ra);
-            lightManager.submitAttestation(attPayloads[index], attSignatures[index], snapGas);
+            lightManager.submitAttestation(attPayloads[index], attSignatures[index], ra._agentRoot, snapGas);
         }
         for (uint32 index = 0; index < amount; ++index) {
             (bytes memory attPayload, bytes memory attSignature) =
@@ -91,7 +91,7 @@ contract DestinationTest is ExecutionHubTest {
         vm.warp(rootSubmittedAt);
         vm.expectEmit();
         emit AttestationAccepted(DOMAIN_LOCAL, notary, attPayload, attSig);
-        lightManager.submitAttestation(attPayload, attSig, snapGas);
+        lightManager.submitAttestation(attPayload, attSig, ra._agentRoot, snapGas);
         (uint48 snapRootTime,,) = InterfaceDestination(localDestination()).destStatus();
         assertEq(snapRootTime, rootSubmittedAt);
     }
@@ -107,7 +107,7 @@ contract DestinationTest is ExecutionHubTest {
         vm.warp(rootSubmittedAt);
         vm.expectEmit();
         emit AttestationAccepted(DOMAIN_LOCAL, notary, attPayload, attSig);
-        lightManager.submitAttestation(attPayload, attSig, snapGas);
+        lightManager.submitAttestation(attPayload, attSig, ra._agentRoot, snapGas);
         (, uint40 agentRootTime, uint32 index) = InterfaceDestination(localDestination()).destStatus();
         // Check that values were assigned
         assertEq(InterfaceDestination(localDestination()).nextAgentRoot(), ra.agentRoot);
@@ -136,7 +136,7 @@ contract DestinationTest is ExecutionHubTest {
         (bytes memory attPayload, bytes memory attSig) = signAttestation(notaryS, secondRA);
         vm.expectEmit();
         emit AttestationAccepted(DOMAIN_LOCAL, notaryS, attPayload, attSig);
-        assertTrue(lightManager.submitAttestation(attPayload, attSig, snapGas));
+        assertTrue(lightManager.submitAttestation(attPayload, attSig, secondRA._agentRoot, snapGas));
         (uint40 snapRootTime, uint40 agentRootTime, uint32 index) =
             InterfaceDestination(localDestination()).destStatus();
         assertEq(snapRootTime, block.timestamp);
@@ -212,7 +212,7 @@ contract DestinationTest is ExecutionHubTest {
         (bytes memory attPayload, bytes memory attSig) = signAttestation(firstNotary, ra);
         uint256[] memory firstSnapGas = firstSnap.snapGas();
         // Submit first attestation
-        lightManager.submitAttestation(attPayload, attSig, firstSnapGas);
+        lightManager.submitAttestation(attPayload, attSig, ra._agentRoot, firstSnapGas);
         uint256 firstSkipTime = random.nextUint32();
         skip(firstSkipTime);
         RawSnapshot memory secondSnap;
@@ -227,7 +227,7 @@ contract DestinationTest is ExecutionHubTest {
         (attPayload, attSig) = signAttestation(secondNotary, secondRA);
         uint256[] memory secondSnapGas = secondSnap.snapGas();
         // Submit second attestation
-        lightManager.submitAttestation(attPayload, attSig, secondSnapGas);
+        lightManager.submitAttestation(attPayload, attSig, secondRA._agentRoot, secondSnapGas);
         uint256 secondSkipTime = random.nextUint32();
         skip(secondSkipTime);
         // Check getGasData
@@ -255,7 +255,7 @@ contract DestinationTest is ExecutionHubTest {
         (bytes memory attPayload, bytes memory attSig) = signAttestation(firstNotary, ra);
         uint256[] memory firstSnapGas = firstSnap.snapGas();
         // Submit first attestation
-        lightManager.submitAttestation(attPayload, attSig, firstSnapGas);
+        lightManager.submitAttestation(attPayload, attSig, ra._agentRoot, firstSnapGas);
         uint256 firstSkipTime = random.nextUint32();
         skip(firstSkipTime);
         // Check getGasData
@@ -280,7 +280,7 @@ contract DestinationTest is ExecutionHubTest {
         (bytes memory attPayload, bytes memory attSig) = signAttestation(firstNotary, ra);
         uint256[] memory firstSnapGas = firstSnap.snapGas();
         // Submit first attestation
-        lightManager.submitAttestation(attPayload, attSig, firstSnapGas);
+        lightManager.submitAttestation(attPayload, attSig, ra._agentRoot, firstSnapGas);
         skip(random.nextUint32());
         // Check getGasData
         (GasData gasData, uint256 dataMaturity) = InterfaceDestination(localDestination()).getGasData(domain);
@@ -298,7 +298,7 @@ contract DestinationTest is ExecutionHubTest {
         (bytes memory attPayload, bytes memory attSig) = signAttestation(firstNotary, ra);
         uint256[] memory firstSnapGas = firstSnap.snapGas();
         // Submit first attestation
-        lightManager.submitAttestation(attPayload, attSig, firstSnapGas);
+        lightManager.submitAttestation(attPayload, attSig, ra._agentRoot, firstSnapGas);
         skip(random.nextUint32());
         // Open dispute
         openDispute({guard: domains[0].agent, notary: firstNotary});
