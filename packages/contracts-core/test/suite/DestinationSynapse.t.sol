@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.17;
 
-import {ChainGas, InterfaceDestination} from "../../contracts/interfaces/InterfaceDestination.sol";
+import {ChainGas, GasData, InterfaceDestination} from "../../contracts/interfaces/InterfaceDestination.sol";
 
 import {Random} from "../utils/libs/Random.t.sol";
 import {RawAttestation, RawSnapshot, RawState} from "../utils/libs/SynapseStructs.t.sol";
@@ -62,7 +62,7 @@ contract DestinationSynapseTest is ExecutionHubTest {
         }
         for (uint32 index = 0; index < amount; ++index) {
             (bytes memory attPayload, bytes memory attSignature) =
-                InterfaceDestination(destinationSynapse).getAttestation(index);
+                InterfaceDestination(localDestination()).getAttestation(index);
             assertEq(attPayload, attPayloads[index], "!payload");
             assertEq(attSignature, "", "!signature");
         }
@@ -72,7 +72,115 @@ contract DestinationSynapseTest is ExecutionHubTest {
         vm.assume(caller != localAgentManager());
         vm.expectRevert("!agentManager");
         vm.prank(caller);
-        InterfaceDestination(destinationSynapse).acceptAttestation(0, 0, "", new ChainGas[](0));
+        InterfaceDestination(localDestination()).acceptAttestation(0, 0, "", new ChainGas[](0));
+    }
+
+    // ═════════════════════════════════════════════════ GAS DATA ══════════════════════════════════════════════════════
+
+    function test_getGasData(Random memory random) public {
+        RawSnapshot memory firstSnap;
+        firstSnap.states = new RawState[](2);
+        firstSnap.states[0] = random.nextState({origin: DOMAIN_REMOTE, nonce: 1});
+        firstSnap.states[1] = random.nextState({origin: DOMAIN_LOCAL, nonce: 1});
+        address firstNotary = domains[DOMAIN_LOCAL].agents[0];
+        (bytes memory firstSnapPayload, bytes memory firstNotarySignature) = signSnapshot(firstNotary, firstSnap);
+        (, bytes memory firstGuardSignature) = signSnapshot(domains[0].agent, firstSnap);
+        bondingManager.submitSnapshot(firstSnapPayload, firstGuardSignature);
+        bondingManager.submitSnapshot(firstSnapPayload, firstNotarySignature);
+        uint256 firstSkipTime = random.nextUint32();
+        skip(firstSkipTime);
+        RawSnapshot memory secondSnap;
+        secondSnap.states = new RawState[](1);
+        secondSnap.states[0] = random.nextState({origin: DOMAIN_REMOTE, nonce: 2});
+        vm.assume(
+            GasData.unwrap(firstSnap.states[0].castToState().gasData())
+                != GasData.unwrap(secondSnap.states[0].castToState().gasData())
+        );
+        address secondNotary = domains[DOMAIN_REMOTE].agents[0];
+        (bytes memory secondSnapPayload, bytes memory secondNotarySignature) = signSnapshot(secondNotary, secondSnap);
+        (, bytes memory secondGuardSignature) = signSnapshot(domains[0].agent, secondSnap);
+        bondingManager.submitSnapshot(secondSnapPayload, secondGuardSignature);
+        bondingManager.submitSnapshot(secondSnapPayload, secondNotarySignature);
+        uint256 secondSkipTime = random.nextUint32();
+        skip(secondSkipTime);
+        // Check getGasData
+        GasData firstRemoteGasData = firstSnap.states[0].castToState().gasData();
+        GasData firstLocalGasData = firstSnap.states[1].castToState().gasData();
+        GasData secondRemoteGasData = secondSnap.states[0].castToState().gasData();
+        emit log_named_uint("Remote gasData: first", GasData.unwrap(firstRemoteGasData));
+        emit log_named_uint("Remote gasData: second", GasData.unwrap(secondRemoteGasData));
+        emit log_named_uint("Local gasData: first", GasData.unwrap(firstLocalGasData));
+        (GasData gasData, uint256 dataMaturity) = InterfaceDestination(localDestination()).getGasData(DOMAIN_REMOTE);
+        assertEq(GasData.unwrap(gasData), GasData.unwrap(secondRemoteGasData), "!remoteGasData");
+        assertEq(dataMaturity, secondSkipTime, "!remoteDataMaturity");
+        (gasData, dataMaturity) = InterfaceDestination(localDestination()).getGasData(DOMAIN_LOCAL);
+        assertEq(GasData.unwrap(gasData), GasData.unwrap(firstLocalGasData), "!localGasData");
+        assertEq(dataMaturity, firstSkipTime + secondSkipTime, "!localDataMaturity");
+    }
+
+    function test_getGasData_localDomain(Random memory random) public {
+        RawSnapshot memory firstSnap;
+        firstSnap.states = new RawState[](2);
+        firstSnap.states[0] = random.nextState({origin: DOMAIN_REMOTE, nonce: 1});
+        firstSnap.states[1] = random.nextState({origin: localDomain(), nonce: 1});
+        address firstNotary = domains[DOMAIN_LOCAL].agents[0];
+        (bytes memory firstSnapPayload, bytes memory firstNotarySignature) = signSnapshot(firstNotary, firstSnap);
+        (, bytes memory firstGuardSignature) = signSnapshot(domains[0].agent, firstSnap);
+        bondingManager.submitSnapshot(firstSnapPayload, firstGuardSignature);
+        bondingManager.submitSnapshot(firstSnapPayload, firstNotarySignature);
+        uint256 firstSkipTime = random.nextUint32();
+        skip(firstSkipTime);
+        // Check getGasData
+        GasData firstRemoteGasData = firstSnap.states[0].castToState().gasData();
+        (GasData gasData, uint256 dataMaturity) = InterfaceDestination(localDestination()).getGasData(DOMAIN_REMOTE);
+        assertEq(GasData.unwrap(gasData), GasData.unwrap(firstRemoteGasData), "!remoteGasData");
+        assertEq(dataMaturity, firstSkipTime, "!remoteDataMaturity");
+        // Should not save data for local domain
+        (gasData, dataMaturity) = InterfaceDestination(localDestination()).getGasData(localDomain());
+        assertEq(GasData.unwrap(gasData), 0, "!localGasData");
+        assertEq(dataMaturity, 0, "!localDataMaturity");
+    }
+
+    function test_getGasData_noDataForDomain(Random memory random, uint32 domain) public {
+        vm.assume(domain != DOMAIN_REMOTE && domain != DOMAIN_LOCAL);
+        RawSnapshot memory firstSnap;
+        firstSnap.states = new RawState[](2);
+        firstSnap.states[0] = random.nextState({origin: DOMAIN_REMOTE, nonce: 1});
+        firstSnap.states[1] = random.nextState({origin: DOMAIN_LOCAL, nonce: 1});
+        address firstNotary = domains[DOMAIN_LOCAL].agents[0];
+        (bytes memory firstSnapPayload, bytes memory firstNotarySignature) = signSnapshot(firstNotary, firstSnap);
+        (, bytes memory firstGuardSignature) = signSnapshot(domains[0].agent, firstSnap);
+        bondingManager.submitSnapshot(firstSnapPayload, firstGuardSignature);
+        bondingManager.submitSnapshot(firstSnapPayload, firstNotarySignature);
+        uint256 firstSkipTime = random.nextUint32();
+        skip(firstSkipTime);
+        // Check getGasData
+        (GasData gasData, uint256 dataMaturity) = InterfaceDestination(localDestination()).getGasData(domain);
+        assertEq(GasData.unwrap(gasData), 0);
+        assertEq(dataMaturity, 0);
+    }
+
+    function test_getGasData_notaryInDispute(Random memory random) public {
+        RawSnapshot memory firstSnap;
+        firstSnap.states = new RawState[](2);
+        firstSnap.states[0] = random.nextState({origin: DOMAIN_REMOTE, nonce: 1});
+        firstSnap.states[1] = random.nextState({origin: DOMAIN_LOCAL, nonce: 1});
+        address firstNotary = domains[DOMAIN_LOCAL].agents[0];
+        (bytes memory firstSnapPayload, bytes memory firstNotarySignature) = signSnapshot(firstNotary, firstSnap);
+        (, bytes memory firstGuardSignature) = signSnapshot(domains[0].agent, firstSnap);
+        bondingManager.submitSnapshot(firstSnapPayload, firstGuardSignature);
+        bondingManager.submitSnapshot(firstSnapPayload, firstNotarySignature);
+        uint256 firstSkipTime = random.nextUint32();
+        skip(firstSkipTime);
+        // Open dispute
+        openDispute({guard: domains[0].agent, notary: firstNotary});
+        // Check getGasData
+        (GasData gasData, uint256 dataMaturity) = InterfaceDestination(localDestination()).getGasData(DOMAIN_REMOTE);
+        assertEq(GasData.unwrap(gasData), 0);
+        assertEq(dataMaturity, 0);
+        (gasData, dataMaturity) = InterfaceDestination(localDestination()).getGasData(DOMAIN_LOCAL);
+        assertEq(GasData.unwrap(gasData), 0);
+        assertEq(dataMaturity, 0);
     }
 
     // ══════════════════════════════════════════════════ HELPERS ══════════════════════════════════════════════════════
