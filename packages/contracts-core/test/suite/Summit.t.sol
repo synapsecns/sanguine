@@ -177,9 +177,10 @@ contract SummitTest is AgentSecuredTest {
             }
             vm.expectEmit(true, true, true, true);
             emit SnapshotAccepted(0, domains[0].agents[i], guardSnapshots[i].snapshot, guardSnapshots[i].signature);
-            bytes memory attPayload =
+            (bytes memory attPayload, uint256[] memory snapGas) =
                 bondingManager.submitSnapshot(guardSnapshots[i].snapshot, guardSnapshots[i].signature);
             assertEq(attPayload, "", "Guard: non-empty attestation");
+            assertEq(snapGas.length, 0, "Guard: non-empty snap gas data");
             // Check latest Guard States
             for (uint32 j = 0; j < STATES; ++j) {
                 assertEq(
@@ -257,8 +258,10 @@ contract SummitTest is AgentSecuredTest {
                 )
             );
 
-            bytes memory attPayload = bondingManager.submitSnapshot(snapPayloads[i], snapSignatures[i]);
+            (bytes memory attPayload, uint256[] memory snapGas) =
+                bondingManager.submitSnapshot(snapPayloads[i], snapSignatures[i]);
             assertEq(attPayload, attestation, "Notary: incorrect attestation");
+            assertEq(keccak256(abi.encodePacked(snapGas)), ra.snapGasHash, "Notary: incorrect snap gas hash");
             // Check attestation getter
             assertEq(ISnapshotHub(summit).getAttestation(ra.nonce), attestation, "!getAttestation");
             assertEq(
