@@ -193,7 +193,6 @@ describe('SynapseSDK', () => {
       const Synapse = new SynapseSDK(chainIds, providers)
       const pools = await Synapse.getAllPools(42161)
       expect(pools?.length).toBeGreaterThan(0)
-      console.log(pools?.[0]?.tokens?.[0])
       expect(pools?.[0]?.tokens?.[0]?.token?.length).toBeGreaterThan(0)
     })
   })
@@ -239,8 +238,8 @@ describe('SynapseSDK', () => {
           '0x82aF49447D8a07e3bd95BD0d56f35241523fBab1': tokenAmount2,
         }
       )
-      console.log(amount?.toString())
-      expect(amount?.toString()?.length).toBeGreaterThan(0)
+      expect(amount?.amount.toString()?.length).toBeGreaterThan(0)
+      expect(amount?.routerAddress.length).toBeGreaterThan(0)
     })
   })
 
@@ -254,7 +253,8 @@ describe('SynapseSDK', () => {
         '0xa067668661C84476aFcDc6fA5D758C4c01C34352',
         BigNumber.from('1000000')
       )
-      expect(Object.keys(amounts)?.length).toBeGreaterThan(0)
+      expect(Object.keys(amounts.amounts)?.length).toBeGreaterThan(0)
+      expect(amounts?.routerAddress.length).toBeGreaterThan(0)
     })
   })
 })
