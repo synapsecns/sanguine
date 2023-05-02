@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import Fuse from 'fuse.js'
-import {Zero} from '@ethersproject/constants'
+import { Zero } from '@ethersproject/constants'
 import { useKeyPress } from '@hooks/useKeyPress'
 import TokenMenuItem from '@pages/bridge/TokenMenuItem'
 import SlideSearchBox from '@pages/bridge/SlideSearchBox'
@@ -23,6 +23,8 @@ export const TokenSlideOver = ({
   setDisplayType: (v: string) => void
   handleTokenChange: (token: Token, type: 'from' | 'to') => void
 }) => {
+  console.log('isOrigin: ', isOrigin)
+  console.log('tokens: ', tokens)
   const [currentIdx, setCurrentIdx] = useState(-1)
   const [searchStr, setSearchStr] = useState('')
   let tokenList: any[] = []

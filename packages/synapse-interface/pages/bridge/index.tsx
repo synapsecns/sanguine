@@ -144,22 +144,43 @@ const BridgePage = ({ address }: { address: `0x${string}` }) => {
   }, [connectedChain?.id])
 
   /*
+  Helper Function: timeout
+  - setTimeout function to debounce bridge quote call
+  */
+  function timeout(ms) {
+    return new Promise((resolve) => setTimeout(resolve, ms))
+  }
+
+  /*
   useEffect Triggers: toToken, fromInput, toChainId, time
   - Gets a quote when the polling function is executed or any of the bridge attributes are altered.
   */
   useEffect(() => {
-    if (
-      fromChainId &&
-      toChainId &&
-      String(fromToken.addresses[fromChainId]) &&
-      String(toToken.addresses[toChainId]) &&
-      fromInput &&
-      fromInput.bigNum.gt(Zero)
-    ) {
-      // TODO this needs to be debounced or throttled somehow to prevent spam and lag in the ui
-      getQuote()
-    } else {
-      setBridgeQuote(EMPTY_BRIDGE_QUOTE)
+    let isCancelled = false
+
+    const handleChange = async () => {
+      await timeout(500)
+
+      if (!isCancelled) {
+        if (
+          fromChainId &&
+          toChainId &&
+          String(fromToken.addresses[fromChainId]) &&
+          String(toToken.addresses[toChainId]) &&
+          fromInput &&
+          fromInput.bigNum.gt(Zero)
+        ) {
+          // TODO this needs to be debounced or throttled somehow to prevent spam and lag in the ui
+          getQuote()
+        } else {
+          setBridgeQuote(EMPTY_BRIDGE_QUOTE)
+        }
+      }
+    }
+    handleChange()
+
+    return () => {
+      isCancelled = true
     }
   }, [toToken, fromInput, toChainId, time])
 
