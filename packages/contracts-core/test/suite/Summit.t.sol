@@ -58,7 +58,9 @@ contract SummitTest is AgentSecuredTest {
         // Check version
         assertEq(Versioned(summit).version(), LATEST_VERSION, "!version");
         // Check attestation getter for zero nonce
-        assertEq(ISnapshotHub(summit).getAttestation(0), notaryAttestations[0].formatAttestation(), "!getAttestation");
+        (bytes memory attPayload, uint256[] memory snapGas) = ISnapshotHub(summit).getAttestation(0);
+        assertEq(attPayload, notaryAttestations[0].formatAttestation(), "!attPayload");
+        assertEq(snapGas.length, 0, "!snapGas");
     }
 
     function test_cleanSetup(Random memory random) public override {
@@ -240,7 +242,10 @@ contract SummitTest is AgentSecuredTest {
             address notary = domains[DOMAIN_LOCAL].agents[i];
             (snapPayloads[i], snapSignatures[i]) = signSnapshot(notary, rs);
             // Nothing should be saved before Notary submitted their first snapshot
-            assertEq(ISnapshotHub(summit).getLatestNotaryAttestation(notary), "");
+            (bytes memory attPayload, uint256[] memory snapGas) =
+                ISnapshotHub(summit).getLatestNotaryAttestation(notary);
+            assertEq(attPayload, "");
+            assertEq(snapGas.length, 0);
 
             vm.expectEmit(true, true, true, true);
             emit AttestationSaved(attestation);
@@ -258,15 +263,16 @@ contract SummitTest is AgentSecuredTest {
                 )
             );
 
-            (bytes memory attPayload, uint256[] memory snapGas) =
-                bondingManager.submitSnapshot(snapPayloads[i], snapSignatures[i]);
+            (attPayload, snapGas) = bondingManager.submitSnapshot(snapPayloads[i], snapSignatures[i]);
             assertEq(attPayload, attestation, "Notary: incorrect attestation");
             assertEq(keccak256(abi.encodePacked(snapGas)), ra.snapGasHash, "Notary: incorrect snap gas hash");
             // Check attestation getter
-            assertEq(ISnapshotHub(summit).getAttestation(ra.nonce), attestation, "!getAttestation");
-            assertEq(
-                ISnapshotHub(summit).getLatestNotaryAttestation(notary), attestation, "!getLatestNotaryAttestation"
-            );
+            (attPayload, snapGas) = ISnapshotHub(summit).getAttestation(ra.nonce);
+            assertEq(attPayload, attestation, "!getAttestation");
+            assertEq(keccak256(abi.encodePacked(snapGas)), ra.snapGasHash, "!getAttestation: gas hash");
+            (attPayload, snapGas) = ISnapshotHub(summit).getLatestNotaryAttestation(notary);
+            assertEq(attPayload, attestation, "!latestAttestation");
+            assertEq(keccak256(abi.encodePacked(snapGas)), ra.snapGasHash, "!latestAttestation: gas hash");
 
             // Check proofs for every State in the Notary snapshot
             for (uint256 j = 0; j < STATES; ++j) {
@@ -298,7 +304,9 @@ contract SummitTest is AgentSecuredTest {
         for (uint32 i = 0; i < DOMAIN_AGENTS; ++i) {
             address guard = domains[0].agents[i];
             // No Attestations should be saved for Guards
-            assertEq(ISnapshotHub(summit).getLatestNotaryAttestation(guard), "");
+            (bytes memory attPayload, uint256[] memory snapGas) = ISnapshotHub(summit).getLatestNotaryAttestation(guard);
+            assertEq(attPayload, "");
+            assertEq(snapGas.length, 0);
         }
 
         // Check global latest state

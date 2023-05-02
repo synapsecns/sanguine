@@ -13,11 +13,19 @@ contract SnapshotHubMock is BaseMock, ISnapshotHub {
         return getReturnValueBool();
     }
 
-    function getAttestation(uint32 attNonce) external view returns (bytes memory attPayload) {}
+    function getAttestation(uint32 attNonce)
+        external
+        view
+        returns (bytes memory attPayload, uint256[] memory snapGas)
+    {}
 
     function getLatestAgentState(uint32 origin, address agent) external view returns (bytes memory statePayload) {}
 
-    function getLatestNotaryAttestation(address notary) external view returns (bytes memory attPayload) {}
+    function getLatestNotaryAttestation(address notary)
+        external
+        view
+        returns (bytes memory attPayload, uint256[] memory snapGas)
+    {}
 
     function getGuardSnapshot(uint256 index)
         external

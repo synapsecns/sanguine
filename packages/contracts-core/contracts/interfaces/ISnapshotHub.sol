@@ -18,7 +18,10 @@ interface ISnapshotHub {
      * @param attNonce      Nonce for the attestation
      * @return attPayload   Raw payload with formatted Attestation data
      */
-    function getAttestation(uint32 attNonce) external view returns (bytes memory attPayload);
+    function getAttestation(uint32 attNonce)
+        external
+        view
+        returns (bytes memory attPayload, uint256[] memory snapGas);
 
     /**
      * @notice Returns the state with the highest known nonce submitted by a given Agent.
@@ -33,7 +36,10 @@ interface ISnapshotHub {
      * @param notary        Notary address
      * @return attPayload   Raw payload with formatted Attestation data
      */
-    function getLatestNotaryAttestation(address notary) external view returns (bytes memory attPayload);
+    function getLatestNotaryAttestation(address notary)
+        external
+        view
+        returns (bytes memory attPayload, uint256[] memory snapGas);
 
     /**
      * @notice Returns Guard snapshot from the list of all accepted Guard snapshots.

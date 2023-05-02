@@ -3,7 +3,7 @@ pragma solidity 0.8.17;
 
 // ══════════════════════════════ LIBRARY IMPORTS ══════════════════════════════
 import {Attestation, AttestationLib} from "../libs/Attestation.sol";
-import {GasData, GasDataLib} from "../libs/GasData.sol";
+import {ChainGas, GasData, GasDataLib} from "../libs/GasData.sol";
 import {MerkleMath} from "../libs/MerkleMath.sol";
 import {Snapshot, SnapshotLib} from "../libs/Snapshot.sol";
 import {State, StateLib} from "../libs/State.sol";
@@ -91,9 +91,14 @@ abstract contract SnapshotHub is AgentSecured, SnapshotHubEvents, ISnapshotHub {
     }
 
     /// @inheritdoc ISnapshotHub
-    function getAttestation(uint32 attNonce) external view returns (bytes memory attPayload) {
+    function getAttestation(uint32 attNonce)
+        external
+        view
+        returns (bytes memory attPayload, uint256[] memory snapGas)
+    {
         require(attNonce < _attestations.length, "Nonce out of range");
-        return _formatSummitAttestation(_attestations[attNonce], attNonce);
+        attPayload = _formatSummitAttestation(_attestations[attNonce], attNonce);
+        snapGas = _restoreSnapGas(_notarySnapshots[attNonce]);
     }
 
     /// @inheritdoc ISnapshotHub
@@ -104,10 +109,16 @@ abstract contract SnapshotHub is AgentSecured, SnapshotHubEvents, ISnapshotHub {
     }
 
     /// @inheritdoc ISnapshotHub
-    function getLatestNotaryAttestation(address notary) external view returns (bytes memory attPayload) {
+    function getLatestNotaryAttestation(address notary)
+        external
+        view
+        returns (bytes memory attPayload, uint256[] memory snapGas)
+    {
         uint32 latestAttNonce = _latestAttNonce[_agentStatus(notary).index];
-        if (latestAttNonce == 0) return bytes("");
-        return _formatSummitAttestation(_attestations[latestAttNonce], latestAttNonce);
+        if (latestAttNonce != 0) {
+            attPayload = _formatSummitAttestation(_attestations[latestAttNonce], latestAttNonce);
+            snapGas = _restoreSnapGas(_notarySnapshots[latestAttNonce]);
+        }
     }
 
     /// @inheritdoc ISnapshotHub
@@ -309,6 +320,25 @@ abstract contract SnapshotHub is AgentSecured, SnapshotHubEvents, ISnapshotHub {
         }
         snapPayload = SnapshotLib.formatSnapshot(states);
         snapSignature = IAgentManager(agentManager).getStoredSignature(snapshot.sigIndex);
+    }
+
+    /// @dev Restores the gas data from the snapshot.
+    function _restoreSnapGas(SummitSnapshot memory snapshot) internal view returns (uint256[] memory snapGas) {
+        uint256 statesAmount = snapshot.statePtrs.length;
+        snapGas = new uint256[](statesAmount);
+        for (uint256 i = 0; i < statesAmount; ++i) {
+            // Get value for "index in _states PLUS 1"
+            uint256 statePtr = snapshot.statePtrs[i];
+            // We are never saving zero values when accepting Guard/Notary snapshots, so this holds
+            assert(statePtr != 0);
+            // Get the state that Agent used for the snapshot
+            snapGas[i] = ChainGas.unwrap(
+                GasDataLib.encodeChainGas({
+                    gasData_: _states[statePtr - 1].gasData,
+                    domain_: _states[statePtr - 1].origin
+                })
+            );
+        }
     }
 
     /// @dev Returns indexes of agents who provided state data for the Notary snapshot with the given nonce.
