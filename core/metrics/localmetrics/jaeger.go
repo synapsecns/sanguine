@@ -19,7 +19,12 @@ import (
 func (j *testJaeger) StartJaegerServer(ctx context.Context) *uiResource {
 	if core.HasEnv(internal.JaegerEndpoint) && !core.HasEnv(internal.JaegerUIEndpoint) {
 		j.tb.Fatalf("%s is set but %s is not, please remove %s or set %s", internal.JaegerEndpoint, internal.JaegerUIEndpoint, internal.JaegerEndpoint, internal.JaegerUIEndpoint)
-		return nil
+		// while this code may appear unreachable, Fatalf depends on the implementation of testing.TB
+		// therefore, we return this anyway to avoid panics in the case a mock testing.TB is passed in.
+		return &uiResource{
+			Resource: nil,
+			uiURL:    "none",
+		}
 	}
 
 	if core.HasEnv(internal.JaegerEndpoint) {
@@ -88,7 +93,9 @@ func (j *testJaeger) StartJaegerServer(ctx context.Context) *uiResource {
 
 // StartJaegerPyroscopeUI starts a new jaeger pyroscope ui instance.
 func (j *testJaeger) StartJaegerPyroscopeUI(ctx context.Context) *uiResource {
-	if core.HasEnv(internal.JaegerUIEndpoint) {
+	// can't enable if pyroscope is disabled
+	// TODO: add a warning here.
+	if core.HasEnv(internal.JaegerUIEndpoint) || !j.cfg.enablePyroscope {
 		return &uiResource{
 			uiURL: os.Getenv(internal.JaegerUIEndpoint),
 		}
