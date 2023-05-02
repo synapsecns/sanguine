@@ -26,6 +26,8 @@ export const COIN_SLIDE_OVER_PROPS: TransitionClassesProps = {
 }
 
 export const SECTION_TRANSITION_PROPS: TransitionClassesProps = {
+  appear: true,
+  unmount: true,
   enter: 'transition duration-75 ease-out',
   enterFrom: 'transform-gpu scale-y-0 ',
   enterTo: 'transform-gpu scale-y-100 opacity-100',
