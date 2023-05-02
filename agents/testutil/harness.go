@@ -266,10 +266,16 @@ func NewDestinationHarnessDeployer(registry deployer.GetOnlyContractRegistry, ba
 // Deploy deploys the destination harness.
 // nolint:dupl,dupword
 func (d DestinationHarnessDeployer) Deploy(ctx context.Context) (contracts.DeployedContract, error) {
-	lightManagerHarnessContract := d.Registry().Get(ctx, LightManagerHarnessType)
-	lightManagerAddress := lightManagerHarnessContract.Address()
+	var agentManagerAddress common.Address
+	if d.Backend().GetChainID() == 10 {
+		bondingManagerHarnessContract := d.Registry().Get(ctx, BondingManagerHarnessType)
+		agentManagerAddress = bondingManagerHarnessContract.Address()
+	} else {
+		lightManagerHarnessContract := d.Registry().Get(ctx, LightManagerHarnessType)
+		agentManagerAddress = lightManagerHarnessContract.Address()
+	}
 	return d.DeploySimpleContract(ctx, func(transactOps *bind.TransactOpts, backend bind.ContractBackend) (common.Address, *types.Transaction, interface{}, error) {
-		address, tx, rawHandle, err := destinationharness.DeployDestinationHarness(transactOps, backend, uint32(d.Backend().GetChainID()), lightManagerAddress)
+		address, tx, rawHandle, err := destinationharness.DeployDestinationHarness(transactOps, backend, uint32(d.Backend().GetChainID()), agentManagerAddress)
 		if err != nil {
 			return common.Address{}, nil, nil, fmt.Errorf("could not deploy %s: %w", d.ContractType().ContractName(), err)
 		}

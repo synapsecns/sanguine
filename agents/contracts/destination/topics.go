@@ -17,13 +17,8 @@ func init() {
 		panic(err)
 	}
 
-	AttestationAcceptedTopic = parsedDestination.Events["AttestationAccepted"].ID
 	ExecutedTopic = parsedDestination.Events["Executed"].ID
-
-	if AttestationAcceptedTopic == (common.Hash{}) {
-		panic("AttestationAcceptedTopic is nil")
-	}
-
+	
 	if ExecutedTopic == (common.Hash{}) {
 		panic("ExecutedTopic is nil")
 	}

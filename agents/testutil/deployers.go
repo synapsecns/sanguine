@@ -122,11 +122,11 @@ func NewOriginDeployer(registry deployer.GetOnlyContractRegistry, backend backen
 func (d OriginDeployer) Deploy(ctx context.Context) (contracts.DeployedContract, error) {
 	var agentAddress common.Address
 	if d.Backend().GetChainID() == 10 {
-		bondingManagerHarnessContract := d.Registry().Get(ctx, BondingManagerType)
-		agentAddress = bondingManagerHarnessContract.Address()
+		bondingManagerContract := d.Registry().Get(ctx, BondingManagerType)
+		agentAddress = bondingManagerContract.Address()
 	} else {
-		lightManagerHarnessContract := d.Registry().Get(ctx, LightManagerType)
-		agentAddress = lightManagerHarnessContract.Address()
+		lightManagerContract := d.Registry().Get(ctx, LightManagerType)
+		agentAddress = lightManagerContract.Address()
 	}
 	return d.DeploySimpleContract(ctx, func(transactOps *bind.TransactOpts, backend bind.ContractBackend) (address common.Address, tx *types.Transaction, data interface{}, err error) {
 		// deploy the origin contract
@@ -204,10 +204,16 @@ func NewDestinationDeployer(registry deployer.GetOnlyContractRegistry, backend b
 //
 //nolint:dupl,dupword
 func (d DestinationDeployer) Deploy(ctx context.Context) (contracts.DeployedContract, error) {
-	lightManagerHarnessContract := d.Registry().Get(ctx, LightManagerHarnessType)
-	lightManagerAddress := lightManagerHarnessContract.Address()
+	var agentManagerAddress common.Address
+	if d.Backend().GetChainID() == 10 {
+		bondingManagerContract := d.Registry().Get(ctx, BondingManagerType)
+		agentManagerAddress = bondingManagerContract.Address()
+	} else {
+		lightManagerContract := d.Registry().Get(ctx, LightManagerType)
+		agentManagerAddress = lightManagerContract.Address()
+	}
 	return d.DeploySimpleContract(ctx, func(transactOps *bind.TransactOpts, backend bind.ContractBackend) (common.Address, *types.Transaction, interface{}, error) {
-		destinationAddress, destinationTx, destination, err := destination.DeployDestination(transactOps, backend, uint32(d.Backend().GetChainID()), lightManagerAddress)
+		destinationAddress, destinationTx, destination, err := destination.DeployDestination(transactOps, backend, uint32(d.Backend().GetChainID()), agentManagerAddress)
 		if err != nil {
 			return common.Address{}, nil, nil, fmt.Errorf("could not deploy destination: %w", err)
 		}
