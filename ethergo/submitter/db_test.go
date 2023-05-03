@@ -18,7 +18,7 @@ func (t *TXSubmitterDBSuite) TestGetNonceForChainID() {
 
 			for _, mockAccount := range t.mockAccounts {
 				// make sure first nonce errors
-				nonce, err := testDB.GetNonceForChainID(t.GetTestContext(), mockAccount.Address, backend.GetBigChainID())
+				_, err := testDB.GetNonceForChainID(t.GetTestContext(), mockAccount.Address, backend.GetBigChainID())
 				t.Require().True(errors.Is(err, db.ErrNoNonceForChain))
 
 				for i := 0; i < 4; i++ {
@@ -36,7 +36,7 @@ func (t *TXSubmitterDBSuite) TestGetNonceForChainID() {
 					})
 					t.Require().NoError(err)
 
-					nonce, err = testDB.GetNonceForChainID(t.GetTestContext(), mockAccount.Address, backend.GetBigChainID())
+					nonce, err := testDB.GetNonceForChainID(t.GetTestContext(), mockAccount.Address, backend.GetBigChainID())
 					t.Require().NoError(err)
 					t.Require().Equal(nonce, tx.Nonce())
 				}

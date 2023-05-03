@@ -32,18 +32,20 @@ type Store struct {
 }
 
 // DBTransaction is a function that can be used to execute a transaction on the database.
-func (s *Store) DBTransaction(parentCtx context.Context, f db.DBTransactionFunc) (err error) {
+func (s *Store) DBTransaction(parentCtx context.Context, f db.TransactionFunc) (err error) {
 	ctx, span := s.metrics.Tracer().Start(parentCtx, "db_transaction")
 	defer func() {
 		metrics.EndSpanWithErr(span, err)
 	}()
 
+	//nolint: wrapcheck
 	return s.db.Transaction(func(tx *gorm.DB) error {
 		txDB := NewTXStore(tx, s.metrics)
 		return f(ctx, txDB)
 	})
 }
 
+// MarkAllBeforeOrAtNonceReplacedOrConfirmed marks all transactions before or at the given nonce as replaced or confirmed.
 func (s *Store) MarkAllBeforeOrAtNonceReplacedOrConfirmed(ctx context.Context, signer common.Address, chainID *big.Int, nonce uint64) error {
 	dbTX := s.db.WithContext(ctx).Model(&ETHTX{}).
 		Where(fmt.Sprintf("%s = ?", chainIDFieldName), chainID).
@@ -97,7 +99,7 @@ func (s *Store) GetTXS(ctx context.Context, fromAddress common.Address, chainID 
 		Limit(MaxResultsPerChain)
 
 	joinQuery, err := interpol.WithMap(
-		"INNER JOIN (?) as subquery on {table}.{txHash} = subquery.{txHash} AND {table}.{chainID} = subquery.{chainID}", map[string]string{
+		"INNER JOIN (?) as subquery on `{table}`.`{txHash}` = `subquery`.`{txHash}` AND `{table}`.`{chainID}` = `subquery`.`{chainID}`", map[string]string{
 			"table":   tableName,
 			"txHash":  txHashFieldName,
 			"chainID": chainIDFieldName,

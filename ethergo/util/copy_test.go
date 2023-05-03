@@ -12,6 +12,7 @@ import (
 	"testing"
 )
 
+// nolint: cyclop, gocognit
 func (u *UtilSuite) TestCopyTX() {
 	mockDynamicTXS := mocks.GetMockTxes(u.GetTestContext(), u.T(), 100, types.DynamicFeeTxType)
 	mockLegacyTXes := mocks.GetMockTxes(u.GetTestContext(), u.T(), 100, types.LegacyTxType)
@@ -93,7 +94,10 @@ func (u *UtilSuite) TestCopyTX() {
 	}
 }
 
+// nolint: gocognit, cyclop
 func makeFuzzData(tb testing.TB, tx *types.Transaction) fuzzData {
+	tb.Helper()
+
 	txType := tx.Type()
 	nonce := tx.Nonce()
 	if gofakeit.Bool() {

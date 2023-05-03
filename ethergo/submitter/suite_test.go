@@ -24,7 +24,6 @@ import (
 	"github.com/synapsecns/sanguine/ethergo/signer/nonce"
 	"github.com/synapsecns/sanguine/ethergo/signer/signer"
 	"github.com/synapsecns/sanguine/ethergo/signer/signer/localsigner"
-	"github.com/synapsecns/sanguine/ethergo/signer/wallet"
 	"github.com/synapsecns/sanguine/ethergo/submitter"
 	"github.com/synapsecns/sanguine/ethergo/submitter/db"
 	"github.com/synapsecns/sanguine/ethergo/submitter/db/txdb"
@@ -137,14 +136,6 @@ func (s *SubmitterSuite) SetupTest() {
 		}(i)
 	}
 	wg.Wait()
-}
-
-// TestSubmitter is a utility struct used for testing the submitter.
-type TestSubmitter struct {
-	// wallet is the wallet used for the test
-	wallet wallet.Wallet
-	// signer is the transaction signer
-	signer signer.Signer
 }
 
 var _ submitter.ClientFetcher = &SubmitterSuite{}
@@ -354,11 +345,16 @@ func NewSqliteStore(parentCtx context.Context, dbPath string, handler metrics.Ha
 
 	logger.Warnf("database is at %s/synapse.db", dbPath)
 
+	namingStrategy := schema.NamingStrategy{
+		TablePrefix: fmt.Sprintf("test%d_%d_", gofakeit.Int64(), time.Now().Unix()),
+	}
+
 	gdb, err := gorm.Open(sqlite.Open(fmt.Sprintf("%s/%s", dbPath, "synapse.db")), &gorm.Config{
 		DisableForeignKeyConstraintWhenMigrating: true,
 		Logger:                                   common_base.GetGormLogger(logger),
 		FullSaveAssociations:                     true,
 		SkipDefaultTransaction:                   true,
+		NamingStrategy:                           namingStrategy,
 	})
 	if err != nil {
 		return nil, fmt.Errorf("could not connect to db %s: %w", dbPath, err)

@@ -70,6 +70,7 @@ const (
 // NewTestTransactionSubmitter wraps TestTransactionSubmitter in a TransactionSubmitter interface.
 func NewTestTransactionSubmitter(metrics metrics.Handler, signer signer.Signer, fetcher ClientFetcher, db db.Service, config *config.Config) TestTransactionSubmitter {
 	txSubmitter := NewTransactionSubmitter(metrics, signer, fetcher, db, config)
+	//nolint: forcetypeassert
 	return txSubmitter.(TestTransactionSubmitter)
 }
 

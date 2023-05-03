@@ -28,10 +28,11 @@ type Service interface {
 	MarkAllBeforeOrAtNonceReplacedOrConfirmed(ctx context.Context, signer common.Address, chainID *big.Int, nonce uint64) error
 	// DBTransaction executes a transaction on the database.
 	// the function passed in will be passed a new service that is scoped to the transaction.
-	DBTransaction(ctx context.Context, f DBTransactionFunc) error
+	DBTransaction(ctx context.Context, f TransactionFunc) error
 }
 
-type DBTransactionFunc func(ctx context.Context, svc Service) error
+// TransactionFunc is a function that can be passed to DBTransaction.
+type TransactionFunc func(ctx context.Context, svc Service) error
 
 // Status is the status of a tx.
 //

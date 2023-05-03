@@ -11,6 +11,7 @@ import (
 // CopyTX copies a transaction and sets the nonce to the given value.
 // Note: when copying from a dynamic tx to a legacy tx, the chain id cannot be copied over since it's embedded in the signature
 // rather than the rlp envelope. Resigning will fix this.
+// nolint: cyclop
 func CopyTX(unsignedTx *types.Transaction, options ...CopyOption) (*types.Transaction, error) {
 	// tx is immutable except within the confines of type. Here we manually copy over the inner values
 
@@ -46,7 +47,7 @@ func CopyTX(unsignedTx *types.Transaction, options ...CopyOption) (*types.Transa
 			var parityBit int
 
 			if v.Uint64() == 28 {
-				parityBit += 1
+				parityBit++
 			}
 
 			mulChainID := new(big.Int).Mul(unsignedTx.ChainId(), big.NewInt(2))

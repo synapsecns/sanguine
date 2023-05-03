@@ -21,6 +21,7 @@ type Config struct {
 	Chains map[int]ChainConfig `yaml:"chains"`
 }
 
+// ChainConfig contains configuration for a specific chain.
 type ChainConfig struct {
 	// MaxBatchSize is the maximum number of transactions to send in a batch
 	// if this is zero, the default will be used. This field is ignored if batching is disabled.

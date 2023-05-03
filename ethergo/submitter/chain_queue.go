@@ -110,6 +110,7 @@ func (t *txSubmitterImpl) chainQueue(parentCtx context.Context, chainID *big.Int
 	return nil
 }
 
+// nolint: cyclop
 func (c *chainQueue) bumpTX(parentCtx context.Context, ogTx db.TX) {
 	c.g.Go(func() (err error) {
 		if !c.isBumpIntervalElapsed(ogTx) {
@@ -125,7 +126,7 @@ func (c *chainQueue) bumpTX(parentCtx context.Context, ogTx db.TX) {
 
 		newGasEstimate := tx.Gas()
 
-		if c.config.GetDynamicGasEstimate(c.chainIDInt()) && c.config.GetDynamicGasEstimate(c.chainIDInt()) {
+		if c.config.GetDynamicGasEstimate(c.chainIDInt()) {
 			newGasEstimate, err = c.getGasEstimate(ctx, c.client, c.chainIDInt(), tx)
 			if err != nil {
 				return fmt.Errorf("could not get gas estimate: %w", err)
@@ -196,7 +197,7 @@ func (c *chainQueue) addToReprocessQueue(tx db.TX) {
 // TODO: test this mehtod.
 func (c *chainQueue) isBumpIntervalElapsed(tx db.TX) bool {
 	bumpInterval := c.config.GetBumpInterval(c.chainIDInt())
-	elapsedSeconds := time.Now().Sub(tx.CreationTime().Add(bumpInterval)).Seconds()
+	elapsedSeconds := time.Since(tx.CreationTime().Add(bumpInterval)).Seconds()
 
 	return elapsedSeconds >= 0
 }

@@ -288,6 +288,7 @@ func (t *txSubmitterImpl) SubmitTransaction(parentCtx context.Context, chainID *
 
 // setGasPrice sets the gas price for the transaction.
 // it bumps if prevtx is set
+// nolint: cyclop
 // TODO: use options.
 func (t *txSubmitterImpl) setGasPrice(ctx context.Context, client client.EVM,
 	transactor *bind.TransactOpts, bigChainID *big.Int, prevTx *types.Transaction) (err error) {
@@ -322,6 +323,7 @@ func (t *txSubmitterImpl) setGasPrice(ctx context.Context, client client.EVM,
 		}
 	}
 
+	//nolint: nestif
 	if prevTx != nil {
 		// TODO: cache
 		gasBlock, err := t.getGasBlock(ctx, client)

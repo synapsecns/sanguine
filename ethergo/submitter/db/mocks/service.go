@@ -19,11 +19,11 @@ type Service struct {
 }
 
 // DBTransaction provides a mock function with given fields: ctx, f
-func (_m *Service) DBTransaction(ctx context.Context, f db.DBTransactionFunc) error {
+func (_m *Service) DBTransaction(ctx context.Context, f db.TransactionFunc) error {
 	ret := _m.Called(ctx, f)
 
 	var r0 error
-	if rf, ok := ret.Get(0).(func(context.Context, db.DBTransactionFunc) error); ok {
+	if rf, ok := ret.Get(0).(func(context.Context, db.TransactionFunc) error); ok {
 		r0 = rf(ctx, f)
 	} else {
 		r0 = ret.Error(0)
