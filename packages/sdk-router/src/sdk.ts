@@ -294,32 +294,78 @@ class SynapseSDK {
     chainId: number,
     poolAddress: string,
     amounts: Record<string, BigNumber>
-  ): Promise<BigNumber> {
+  ): Promise<{ amount: BigNumber; routerAddress: string }> {
     const router: SynapseRouter = this.synapseRouters[chainId]
     const poolTokens = await router.routerContract.poolTokens(poolAddress)
     const amountArr: BigNumber[] = []
     poolTokens.map((token) => {
       amountArr.push(amounts[token.token] ?? Zero)
     })
-    return router.routerContract.calculateAddLiquidity(poolAddress, amountArr)
+    if (amountArr.filter((amount) => !amount.isZero()).length === 0) {
+      return { amount: Zero, routerAddress: router.routerContract.address }
+    }
+    return {
+      amount: await router.routerContract.calculateAddLiquidity(
+        poolAddress,
+        amountArr
+      ),
+      routerAddress: router.routerContract.address,
+    }
   }
 
   public async calculateRemoveLiquidity(
     chainId: number,
     poolAddress: string,
     amount: BigNumber
-  ): Promise<Record<string, BigNumber>> {
+  ): Promise<{
+    amounts: Record<string, { value: BigNumber; index: number }>
+    routerAddress: string
+  }> {
     const router: SynapseRouter = this.synapseRouters[chainId]
     const amounts = await router.routerContract.calculateRemoveLiquidity(
       poolAddress,
       amount
     )
     const poolTokens = await router.routerContract.poolTokens(poolAddress)
-    const amountRecord: Record<string, BigNumber> = {}
+    const amountsOut: Record<string, { value: BigNumber; index: number }> = {}
     poolTokens.map((token, index) => {
-      amountRecord[token.token] = amounts[index]
+      amountsOut[token.token] = { value: amounts[index], index }
     })
-    return amountRecord
+    return {
+      amounts: amountsOut,
+      routerAddress: router.routerContract.address,
+    }
+  }
+
+  public async calculateRemoveLiquidityOne(
+    chainId: number,
+    poolAddress: string,
+    amount: BigNumber,
+    token: string
+  ): Promise<{
+    amount: { value: BigNumber; index: number }
+    routerAddress: string
+  }> {
+    const router: SynapseRouter = this.synapseRouters[chainId]
+
+    let poolIndex = 0
+    const poolTokens = await router.routerContract.poolTokens(poolAddress)
+    poolTokens.map((poolToken, index) => {
+      if (poolToken.token === token) {
+        poolIndex = index
+      }
+    })
+
+    const outAmount = await router.routerContract.calculateWithdrawOneToken(
+      poolAddress,
+      amount,
+      poolIndex
+    )
+
+    return {
+      amount: { value: outAmount, index: poolIndex },
+      routerAddress: router.routerContract.address,
+    }
   }
 }
 

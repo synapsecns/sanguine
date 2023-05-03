@@ -39,6 +39,7 @@ func EnumValue(enum EnumInter) (driver.Value, error) {
 
 // EnumScan converts the enum to a value.
 // the returned uint 8 should be used. Note this should only be used for a non-nullable enum.
+// TODO: consider using generics to make this more type safe.
 func EnumScan(src interface{}) (uint8, error) {
 	res := sql.NullInt32{}
 	err := res.Scan(src)
