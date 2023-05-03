@@ -1,6 +1,6 @@
 import { mock } from '@depay/web3-mock'
 
-const BRIDGE_CONSTANTS = 'bridge.json'
+export const BRIDGE_CONSTANTS = 'bridge.json'
 
 describe('Bridge without wallet connected', () => {
   beforeEach(() => cy.visit('/'))

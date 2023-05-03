@@ -23,7 +23,6 @@ const PoolBody = memo(
     poolChainId: number
     connectedChainId: number
   }) => {
-    const SynapseSDK = useSynapseContext()
     const [poolData, setPoolData] = useState(undefined)
     const [poolUserData, setPoolUserData] = useState(undefined)
     const [poolAPYData, setPoolAPYData] = useState(undefined)
@@ -67,16 +66,17 @@ const PoolBody = memo(
             <div className="mb-5">
               <div className="inline-flex items-center mt-2">
                 <div className="items-center hidden mr-4 md:flex lg:flex">
-                  {pool.poolTokens.map((token) => (
-                    <img
-                      key={token.symbol}
-                      className="relative inline-block w-8 -mr-2 text-white shadow-solid"
-                      src={token.icon.src}
-                    />
-                  ))}
+                  {pool?.poolTokens &&
+                    pool.poolTokens.map((token) => (
+                      <img
+                        key={token.symbol}
+                        className="relative inline-block w-8 -mr-2 text-white shadow-solid"
+                        src={token.icon.src}
+                      />
+                    ))}
                 </div>
                 <h3 className="ml-2 mr-2 text-lg font-medium text-white md:ml-0 md:text-2xl">
-                  {pool.name}
+                  {pool?.name}
                 </h3>
               </div>
             </div>
