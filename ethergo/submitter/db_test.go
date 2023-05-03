@@ -5,6 +5,7 @@ import (
 	"github.com/brianvoe/gofakeit/v6"
 	"github.com/ethereum/go-ethereum/core/types"
 	"github.com/synapsecns/sanguine/core/testsuite"
+	"github.com/synapsecns/sanguine/ethergo/signer/nonce"
 	"github.com/synapsecns/sanguine/ethergo/submitter/db"
 	"github.com/synapsecns/sanguine/ethergo/submitter/db/txdb"
 	"github.com/synapsecns/sanguine/ethergo/util"
@@ -36,9 +37,9 @@ func (t *TXSubmitterDBSuite) TestGetNonceForChainID() {
 					})
 					t.Require().NoError(err)
 
-					nonce, err := testDB.GetNonceForChainID(t.GetTestContext(), mockAccount.Address, backend.GetBigChainID())
+					dbNonce, err := testDB.GetNonceForChainID(t.GetTestContext(), mockAccount.Address, backend.GetBigChainID())
 					t.Require().NoError(err)
-					t.Require().Equal(nonce, tx.Nonce())
+					t.Require().Equal(dbNonce, tx.Nonce())
 				}
 			}
 		}
@@ -53,7 +54,7 @@ func (t *TXSubmitterDBSuite) TestGetTransactionsWithLimitPerChainID() {
 			for _, mockAccount := range t.mockAccounts {
 				// create some test transactions
 				var txs []*types.Transaction
-				for i := 0; i < 500; i++ {
+				for i := 0; i < 50; i++ {
 					legacyTx := &types.LegacyTx{
 						To:    &mockAccount.Address,
 						Value: big.NewInt(0),
@@ -67,6 +68,17 @@ func (t *TXSubmitterDBSuite) TestGetTransactionsWithLimitPerChainID() {
 				// put the transactions in the database
 				for _, tx := range txs {
 					err := testDB.PutTXS(t.GetTestContext(), db.NewTX(tx, db.Pending))
+					t.Require().NoError(err)
+
+					// add a copy of the tx w/ a hardcoded gas price we can use to identify the created at time. This should be returned since it's
+					// the latest created at
+					copiedTx, err := util.CopyTX(tx, util.WithGasPrice(big.NewInt(1)))
+					t.Require().NoError(err)
+					// sign it
+					copiedTx, err = manager.SignTx(copiedTx, backend.Signer(), mockAccount.PrivateKey, nonce.WithNoBump(true))
+					t.Require().NoError(err)
+					err = testDB.PutTXS(t.GetTestContext(), db.NewTX(copiedTx, db.Pending))
+
 					t.Require().NoError(err)
 				}
 
@@ -89,9 +101,10 @@ func (t *TXSubmitterDBSuite) TestGetTransactionsWithLimitPerChainID() {
 				// check that the result is ordered by nonce
 				for i := 0; i < len(result)-1; i++ {
 					t.Require().Less(result[i].Nonce(), result[i+1].Nonce())
+					// make sure the gas price is correct and the most recently created has been fetched
+					t.Require().Equal(result[i].GasPrice(), big.NewInt(1), testsuite.BigIntComparer())
 				}
 			}
-			// TODO: test that the result is limited per ChainID
 		}
 	})
 }

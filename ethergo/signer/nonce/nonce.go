@@ -22,7 +22,7 @@ import (
 // transactor. This solves that by wrapping the transactor in a nonce manager.
 type Manager interface {
 	// SignTx signs a legacy tx
-	SignTx(ogTx *types.Transaction, signer types.Signer, prv *ecdsa.PrivateKey) (*types.Transaction, error)
+	SignTx(ogTx *types.Transaction, signer types.Signer, prv *ecdsa.PrivateKey, options ...Option) (*types.Transaction, error)
 	// NewKeyedTransactor wraps keyed transactor in a nonce manager.
 	// right now, this only works if all txes are sent out (a safe assumption in test mode)
 	// this can be obviated by signing at send time or loop + retrying on failure
@@ -168,18 +168,29 @@ func (n *nonceManagerImp) NewKeyedTransactor(realSigner *bind.TransactOpts) (*bi
 }
 
 // SignTx signs a legacy tx.
-func (n *nonceManagerImp) SignTx(ogTx *types.Transaction, signer types.Signer, prv *ecdsa.PrivateKey) (*types.Transaction, error) {
+func (n *nonceManagerImp) SignTx(ogTx *types.Transaction, signer types.Signer, prv *ecdsa.PrivateKey, options ...Option) (*types.Transaction, error) {
+	cfg := &signTXConfig{}
+
+	for _, opt := range options {
+		opt(cfg)
+	}
+
 	address := crypto.PubkeyToAddress(prv.PublicKey)
 
 	addressLock := n.accountMutex.Lock(address)
 	defer addressLock.Unlock()
 
-	nonce, err := n.GetNextNonce(address)
-	if err != nil {
-		return nil, fmt.Errorf("could not get nonce: %w", err)
+	var copyOpts []util.CopyOption
+	if !cfg.skipNonceBump {
+		nonce, err := n.GetNextNonce(address)
+		if err != nil {
+			return nil, fmt.Errorf("could not get nonce: %w", err)
+		}
+
+		copyOpts = append(copyOpts, util.WithNonce(nonce.Uint64()))
 	}
 
-	tx, err := util.CopyTX(ogTx, util.WithNonce(nonce.Uint64()))
+	tx, err := util.CopyTX(ogTx, copyOpts...)
 	if err != nil {
 		return nil, fmt.Errorf("could not copy tx: %w", err)
 	}
@@ -189,10 +200,27 @@ func (n *nonceManagerImp) SignTx(ogTx *types.Transaction, signer types.Signer, p
 		return nil, fmt.Errorf("could not sign tx: %w", err)
 	}
 
-	err = n.incrementNonce(address)
-	if err != nil {
-		return nil, fmt.Errorf("could not increment nonce: %w", err)
+	if !cfg.skipNonceBump {
+		err = n.incrementNonce(address)
+		if err != nil {
+			return nil, fmt.Errorf("could not increment nonce: %w", err)
+		}
 	}
 
 	return tx, nil
+}
+
+// Option is a functional option for SignTX method.
+type Option func(*signTXConfig)
+
+// signTXConfig is the config for SignTX.
+type signTXConfig struct {
+	skipNonceBump bool
+}
+
+// WithNoBump sets the skipNonceBump flag.
+func WithNoBump(noBump bool) Option {
+	return func(config *signTXConfig) {
+		config.skipNonceBump = noBump
+	}
 }
