@@ -1,6 +1,6 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  reactStrictMode: false, //RESET TO TRUE LATER, doing tests and dont want the double render
+  reactStrictMode: true,
   webpack: (config, { isServer }) => {
     config.resolve.extensions = ['.js', '.jsx', '.ts', '.tsx', '.json']
     return config

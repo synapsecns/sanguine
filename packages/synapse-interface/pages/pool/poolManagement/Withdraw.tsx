@@ -195,7 +195,6 @@ const Withdraw = ({
       withdrawQuote.outputs
     )
   let postButtonAction = () => {
-    console.log('JHK')
     resetInput()
   }
 

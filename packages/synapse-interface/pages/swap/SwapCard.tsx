@@ -138,7 +138,6 @@ const SwapCard = ({
     }
     handleChainChange(connectedChainId, undefined, undefined)
 
-    console.log('connectedChain', connectedChainId)
     sortByTokenBalance(
       SWAPABLE_TOKENS[connectedChainId],
       connectedChainId,
@@ -304,7 +303,6 @@ const SwapCard = ({
     let swapableTokens: Token[] = sortByVisibilityRank(
       BRIDGE_SWAPABLE_TOKENS_BY_TYPE[fromChainId][String(token.swapableType)]
     ).filter((toToken) => toToken !== token)
-    console.log('filter', token, swapableTokens)
     if (swapExceptionsArr?.length > 0) {
       swapableTokens = swapableTokens.filter(
         (toToken) => toToken.symbol === token.symbol
@@ -347,7 +345,6 @@ const SwapCard = ({
       return
     }
     if (!SWAPABLE_TOKENS[desiredChainId]) {
-      console.log('sadhkasjhdkjas', desiredChainId)
       return
     }
     setValidChainId(true)
@@ -360,7 +357,6 @@ const SwapCard = ({
     if (swapableFromTokens?.length > 0) {
       tempFromToken = getMostCommonSwapableType(chainId)
     }
-    console.log('tempFromToken', tempFromToken, swapableFromTokens)
     const { swapableToken, swapableTokens } = handleNewFromToken(
       tempFromToken,
       toToken.symbol,

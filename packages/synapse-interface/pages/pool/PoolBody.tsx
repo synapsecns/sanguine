@@ -32,7 +32,6 @@ const PoolBody = memo(
         // TODO - separate the apy and tvl so they load async.
         getPoolData(poolChainId, pool, address, false)
           .then((res) => {
-            console.log('POOL BODY', '\nres:', res)
             setPoolData(res)
           })
           .catch((err) => {
@@ -40,7 +39,6 @@ const PoolBody = memo(
           })
         getPoolData(poolChainId, pool, address, true)
           .then((res) => {
-            console.log('POOL BODY', '\nres:', res)
             setPoolUserData(res)
           })
           .catch((err) => {
@@ -48,7 +46,6 @@ const PoolBody = memo(
           })
         getPoolApyData(poolChainId, pool)
           .then((res) => {
-            console.log('POOL BODY', '\nres:', res)
             setPoolAPYData(res)
           })
           .catch((err) => {

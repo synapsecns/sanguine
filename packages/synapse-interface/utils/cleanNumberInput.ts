@@ -4,9 +4,7 @@
  * swaps back `x` for `.`
  */
 export const cleanNumberInput = (value: string): string => {
-  console.log('cleanNumberInput', value)
-  const jo =
-    value === '' ? '' : value.replace(/[^0-9.]/g, '').replace(/(\..*)\./g, '$1')
-  console.log(jo)
-  return jo ?? ''
+  return value === ''
+    ? ''
+    : value.replace(/[^0-9.]/g, '').replace(/(\..*)\./g, '$1') ?? ''
 }

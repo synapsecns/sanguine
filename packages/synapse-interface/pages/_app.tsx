@@ -97,7 +97,6 @@ const App = ({ Component, pageProps }: AppProps) => {
     rpc['projectId'] = chain.id
     synapseProviders.push(rpc)
   })
-  console.log('ROOT RENDER')
   return (
     <WagmiConfig client={wagmiClient}>
       <RainbowKitProvider chains={chains} theme={darkTheme()}>

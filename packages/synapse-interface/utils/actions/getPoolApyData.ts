@@ -12,7 +12,6 @@ export const getPoolApyData = async (
   poolToken: Token,
   prices?: any
 ) => {
-  console.log('APY DATA', chainId, poolToken.symbol)
   if (!MINICHEF_ADDRESSES?.[chainId]) {
     console.log('no minichef address found for chainId', chainId)
     return {
@@ -48,7 +47,6 @@ export const getPoolApyData = async (
       },
     ],
   })
-  console.log('APY APY', poolToken.symbol, data)
   const synapsePerSecondResult: any = data[0]
   const totalAllocPointsResult: any = data[1]
   const poolInfoResult: any = data[2] ?? []

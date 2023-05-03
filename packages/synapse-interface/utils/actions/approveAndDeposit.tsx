@@ -24,7 +24,6 @@ export const approve = async (
 
   for (let token of pool.poolTokens) {
     const tokenAddr = getAddress(token.addresses[chainId])
-    console.log('tokenAddr', tokenAddr, inputValue, inputValue?.[tokenAddr])
     if (
       inputValue[tokenAddr].isZero() ||
       inputValue[tokenAddr].lt(depositQuote.allowances[tokenAddr])

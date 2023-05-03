@@ -358,12 +358,9 @@ const BridgePage = ({ address }: { address: `0x${string}` }) => {
     if (address === undefined) {
       return alert('Please connect your wallet')
     }
-    console.log(flip, type, chainId)
     if (flip || type === 'from') {
       const positedToChain = flip ? fromChainId : undefined
       const desiredChainId = flip ? Number(toChainId) : Number(chainId)
-      console.log('desired  ChainId: ', desiredChainId)
-      console.log('positedToChain: ', positedToChain)
 
       const res = switchNetwork({ chainId: desiredChainId })
         .then((res) => {

@@ -24,7 +24,6 @@ const getids = () => {
   return outObj
 }
 const getChainsByID = (): ChainsByChainID => {
-  console.log('hi-----------')
   const outObj: ChainsByChainID = {}
   CHAINS_ARR.map((chain) => {
     outObj[chain.id] = chain

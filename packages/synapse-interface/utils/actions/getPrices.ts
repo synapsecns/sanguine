@@ -60,8 +60,7 @@ export const getSynPrices = async () => {
         )}`,
       })
     )?.value ?? Zero
-  console.log('sushiSynBalance', sushiSynBalance)
-  console.log('sushiEthBalance', sushiEthBalance)
+
   const ethBalanceNumber = Number(formatUnits(sushiEthBalance, 'ether'))
   const synBalanceNumber = Number(formatUnits(sushiSynBalance, 'ether'))
 

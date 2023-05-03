@@ -156,7 +156,6 @@ const Deposit = ({
   let buttonAction = () =>
     deposit(pool, 'ONE_TENTH', null, inputValue.bn, chainId)
   let postButtonAction = () => {
-    console.log('JHK')
     resetInputs()
   }
 

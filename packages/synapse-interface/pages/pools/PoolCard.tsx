@@ -28,14 +28,11 @@ const PoolsListCard = memo(
     const [poolData, setPoolData] = useState(undefined)
     const [poolApyData, setPoolApyData] = useState(undefined)
 
-    console.log('PoolsListCard RERENDER')
     useEffect(() => {
       if (connectedChainId && chainId && address && pool) {
         // TODO - separate the apy and tvl so they load async.
         getPoolData(chainId, pool, address, false, prices)
           .then((res) => {
-            console.log('res getPoolData', res)
-
             setPoolData(res)
           })
           .catch((err) => {
@@ -43,7 +40,6 @@ const PoolsListCard = memo(
           })
         getPoolApyData(chainId, pool, prices)
           .then((res) => {
-            console.log('res', res)
             setPoolApyData(res)
           })
           .catch((err) => {

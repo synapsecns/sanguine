@@ -9,7 +9,6 @@ const PriceImpactDisplay = ({ priceImpact }: { priceImpact: BigNumber }) => {
     formatBNToString(priceImpact.mul(BigNumber.from(-100)), 18, 2)
   )
 
-  console.log('priceImpactBP', priceImpactBP, priceImpact.toString())
   if (priceImpactBP > 0) {
     colorClassName = 'text-green-500'
     labelText = 'Bonus'

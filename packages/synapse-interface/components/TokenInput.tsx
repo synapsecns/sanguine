@@ -30,7 +30,6 @@ const TokenInput = ({
       onChange(maxStr)
     }
   }
-  console.log('tokeninpu---t', inputValueStr ?? '', token)
   return (
     <div className="items-center">
       <div className="w-full">
