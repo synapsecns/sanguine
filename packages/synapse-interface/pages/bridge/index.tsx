@@ -157,7 +157,7 @@ const BridgePage = ({ address }: { address: `0x${string}` }) => {
   - regex function to determine if user input is only zeroes
   */
   function checkStringIfOnlyZeroes(str: string): boolean {
-    const regex = /^0*\.*$|^$/
+    const regex = /^0*\.?0*$|^$/
     return regex.test(str)
   }
 
@@ -184,8 +184,9 @@ const BridgePage = ({ address }: { address: `0x${string}` }) => {
         } else {
           setBridgeQuote(EMPTY_BRIDGE_QUOTE)
         }
-      } else {
-        setBridgeQuote(EMPTY_BRIDGE_QUOTE)
+        // } else {
+        //   setBridgeQuote(EMPTY_BRIDGE_QUOTE)
+        // }
       }
     }
     handleChange()
@@ -198,6 +199,8 @@ const BridgePage = ({ address }: { address: `0x${string}` }) => {
   useEffect(() => {
     const { string, bigNum } = fromInput
     const isInvalid = checkStringIfOnlyZeroes(string)
+    console.log('string: ', string)
+    console.log('isInvalid: ', isInvalid)
     isInvalid ? () => null : setIsQuoteLoading(true)
 
     return () => {
