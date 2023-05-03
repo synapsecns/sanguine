@@ -2,7 +2,7 @@
 pragma solidity 0.8.17;
 
 import {SynapseLibraryTest, MemViewLib} from "../../utils/SynapseLibraryTest.t.sol";
-import {TipsHarness} from "../../harnesses/libs/TipsHarness.t.sol";
+import {Tips, TipsHarness} from "../../harnesses/libs/TipsHarness.t.sol";
 
 import {TIPS_MULTIPLIER, TIPS_LENGTH} from "../../../contracts/libs/Constants.sol";
 
@@ -33,6 +33,38 @@ contract TipsLibraryTest is SynapseLibraryTest {
         assertEq(libHarness.executionTip(encodedTips), rt.executionTip, "!executionTip");
         assertEq(libHarness.deliveryTip(encodedTips), rt.deliveryTip, "!deliveryTip");
         assertEq(libHarness.value(encodedTips), totalTips * TIPS_MULTIPLIER, "!totalTips");
+    }
+
+    function test_matchTips(RawTips memory rt, uint256 newValue) public {
+        uint256 totalTips = uint256(rt.summitTip) + rt.attestationTip + rt.executionTip + rt.deliveryTip;
+        vm.assume(totalTips <= type(uint64).max);
+        uint256 maxNewTotalTips = uint256(rt.summitTip) + rt.attestationTip + rt.executionTip + type(uint64).max;
+        newValue = bound(newValue, totalTips * TIPS_MULTIPLIER, maxNewTotalTips * TIPS_MULTIPLIER);
+        Tips newTips = libHarness.matchValue(rt.castToTips(), newValue);
+        // Should not exceed newValue
+        assertLe(newTips.value(), newValue);
+        // Increasing the delivery tip by one should exceed newValue
+        if (newTips.deliveryTip() < type(uint64).max) {
+            newTips = Tips.wrap(Tips.unwrap(newTips) + 1);
+            assertGt(newTips.value(), newValue);
+        }
+    }
+
+    function test_matchTips_revert_newValueTooLow(RawTips memory rt, uint256 newValue) public {
+        uint256 totalTips = uint256(rt.summitTip) + rt.attestationTip + rt.executionTip + rt.deliveryTip;
+        vm.assume(totalTips != 0 && totalTips <= type(uint64).max);
+        newValue = bound(newValue, 0, totalTips * TIPS_MULTIPLIER - 1);
+        vm.expectRevert("Tips value too low");
+        libHarness.matchValue(rt.castToTips(), newValue);
+    }
+
+    function test_matchTips_revert_tipsOverflow(RawTips memory rt, uint256 newValue) public {
+        uint256 totalTips = uint256(rt.summitTip) + rt.attestationTip + rt.executionTip + rt.deliveryTip;
+        vm.assume(totalTips <= type(uint64).max);
+        uint256 overflowTotalTips = uint256(rt.summitTip) + rt.attestationTip + rt.executionTip + 1 << 64;
+        newValue = bound(newValue, overflowTotalTips * TIPS_MULTIPLIER, type(uint256).max);
+        vm.expectRevert("Tips overflow");
+        libHarness.matchValue(rt.castToTips(), newValue);
     }
 
     function test_emptyTips() public {

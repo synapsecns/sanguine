@@ -114,10 +114,26 @@ library TipsLib {
         return uint64(Tips.unwrap(tips));
     }
 
+    // ════════════════════════════════════════════════ TIPS VALUE ═════════════════════════════════════════════════════
+
     /// @notice Returns total value of the tips payload.
     /// This is the sum of the encoded values, scaled up by TIPS_MULTIPLIER
     function value(Tips tips) internal pure returns (uint256 value_) {
-        value_ = tips.summitTip() + tips.attestationTip() + tips.executionTip() + tips.deliveryTip();
+        value_ = uint256(tips.summitTip()) + tips.attestationTip() + tips.executionTip() + tips.deliveryTip();
         value_ <<= TIPS_GRANULARITY;
+    }
+
+    /// @notice Increases the delivery tip to match the new value.
+    function matchValue(Tips tips, uint256 newValue) internal pure returns (Tips newTips) {
+        uint256 oldValue = tips.value();
+        require(newValue >= oldValue, "Tips value too low");
+        // We want to increase the delivery tip, while keeping the other tips the same
+        unchecked {
+            uint256 delta = (newValue - oldValue) >> TIPS_GRANULARITY;
+            // delta fits into uint224, as TIPS_GRANULARITY is 32, so this never overflows
+            require(delta + tips.deliveryTip() <= type(uint64).max, "Tips overflow");
+            // Delivery tips is last 8 bytes, so we can just add delta to the tips value
+            newTips = Tips.wrap(Tips.unwrap(tips) + delta);
+        }
     }
 }

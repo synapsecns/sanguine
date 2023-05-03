@@ -10,7 +10,6 @@ interface InterfaceOrigin {
      * @param destination           Domain of destination chain
      * @param recipient             Address of recipient on destination chain as bytes32
      * @param optimisticPeriod      Optimistic period for message execution on destination chain
-     * @param paddedTips            Padded encoded paid tips information
      * @param paddedRequest         Padded encoded message execution request on destination chain
      * @param content               Raw bytes content of message
      * @return messageNonce         Nonce of the sent message
@@ -20,7 +19,6 @@ interface InterfaceOrigin {
         uint32 destination,
         bytes32 recipient,
         uint32 optimisticPeriod,
-        uint256 paddedTips,
         uint256 paddedRequest,
         bytes memory content
     ) external payable returns (uint32 messageNonce, bytes32 messageHash);
@@ -48,4 +46,20 @@ interface InterfaceOrigin {
      * @param amount        Tips value to withdraw
      */
     function withdrawTips(address recipient, uint256 amount) external;
+
+    // ═══════════════════════════════════════════════════ VIEWS ═══════════════════════════════════════════════════════
+
+    /**
+     * @notice Returns the minimum tips value for sending a message to a given destination.
+     * @dev Using at least `tipsValue` as `msg.value` for `sendBaseMessage()`
+     * will guarantee that the message will be accepted.
+     * @param destination       Domain of destination chain
+     * @param paddedRequest     Padded encoded message execution request on destination chain
+     * @param contentLength     The length of the message content
+     * @return tipsValue        Minimum tips value for a message to be accepted
+     */
+    function getMinimumTipsValue(uint32 destination, uint256 paddedRequest, uint256 contentLength)
+        external
+        view
+        returns (uint256 tipsValue);
 }

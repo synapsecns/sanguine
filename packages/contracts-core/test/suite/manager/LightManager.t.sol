@@ -4,12 +4,21 @@ pragma solidity 0.8.17;
 import {AgentFlag, AgentStatus, SystemEntity} from "../../../contracts/libs/Structures.sol";
 import {InterfaceDestination} from "../../../contracts/interfaces/InterfaceDestination.sol";
 import {InterfaceOrigin} from "../../../contracts/interfaces/InterfaceOrigin.sol";
+import {GAS_DATA_LENGTH} from "../../../contracts/libs/Constants.sol";
+import {ChainGas, GasDataLib} from "../../../contracts/libs/GasData.sol";
 
 import {AgentManagerTest} from "./AgentManager.t.sol";
 
-import {AgentFlag, AgentStatus, LightManagerHarness, IAgentSecured, SynapseTest} from "../../utils/SynapseTest.t.sol";
-
-import {RawAttestation} from "../../utils/libs/SynapseStructs.t.sol";
+import {
+    AgentFlag,
+    AgentStatus,
+    LightManager,
+    LightManagerHarness,
+    IAgentSecured,
+    SynapseTest
+} from "../../utils/SynapseTest.t.sol";
+import {Random} from "../../utils/libs/Random.t.sol";
+import {RawAttestation, RawSnapshot} from "../../utils/libs/SynapseStructs.t.sol";
 
 // solhint-disable func-name-mixedcase
 // solhint-disable no-empty-blocks
@@ -18,13 +27,23 @@ contract LightManagerTest is AgentManagerTest {
     // Deploy mocks for every messaging contract
     constructor() SynapseTest(0) {}
 
-    function test_initializer(address caller, address origin_, address destination_) public {
-        lightManager = new LightManagerHarness(DOMAIN_LOCAL);
+    function test_cleanSetup(Random memory random) public override {
+        uint32 domain = random.nextUint32();
+        vm.assume(domain != DOMAIN_SYNAPSE);
+        address caller = random.nextAddress();
+        address origin_ = random.nextAddress();
+        address destination_ = random.nextAddress();
+        LightManager cleanContract = new LightManager(domain);
         vm.prank(caller);
-        lightManager.initialize(origin_, destination_);
-        assertEq(lightManager.owner(), caller);
-        assertEq(address(lightManager.origin()), origin_);
-        assertEq(address(lightManager.destination()), destination_);
+        cleanContract.initialize(origin_, destination_);
+        assertEq(cleanContract.localDomain(), domain);
+        assertEq(cleanContract.owner(), caller);
+        assertEq(cleanContract.origin(), origin_);
+        assertEq(cleanContract.destination(), destination_);
+    }
+
+    function initializeLocalContract() public override {
+        LightManager(localContract()).initialize(address(0), address(0));
     }
 
     // ═══════════════════════════════════════════════ TESTS: SETUP ════════════════════════════════════════════════════
@@ -114,38 +133,106 @@ contract LightManagerTest is AgentManagerTest {
 
     // ══════════════════════════════════════════ TEST: SUBMIT STATEMENTS ══════════════════════════════════════════════
 
-    function test_submitAttestation(RawAttestation memory ra) public {
+    function test_submitAttestation(Random memory random) public {
+        RawSnapshot memory rs = random.nextSnapshot();
+        RawAttestation memory ra = random.nextAttestation(rs, random.nextUint32());
+        uint256[] memory snapGas = rs.snapGas();
         address notary = domains[localDomain()].agent;
         (bytes memory attPayload, bytes memory attSignature) = signAttestation(notary, ra);
+        // Should pass to Destination: acceptAttestation(status, sigIndex, attestation, agentRoot, snapGas)
         vm.expectCall(
             destination,
             abi.encodeWithSelector(
-                InterfaceDestination.acceptAttestation.selector, agentIndex[notary], nextSignatureIndex(), attPayload
+                InterfaceDestination.acceptAttestation.selector,
+                agentIndex[notary],
+                nextSignatureIndex(),
+                attPayload,
+                ra._agentRoot,
+                snapGas
             )
         );
-        lightManager.submitAttestation(attPayload, attSignature);
+        lightManager.submitAttestation(attPayload, attSignature, ra._agentRoot, snapGas);
     }
 
-    function test_submitAttestation_revert_signedByGuard(RawAttestation memory ra) public {
+    function test_submitAttestation_success_snapGasHighBitsMalformed(Random memory random) public {
+        RawSnapshot memory rs = random.nextSnapshot();
+        RawAttestation memory ra = random.nextAttestation(rs, random.nextUint32());
+        uint256[] memory snapGas = rs.snapGas();
+        uint256[] memory snapGasMalformed = new uint256[](snapGas.length);
+        uint256 chainGasBits = 8 * (4 + GAS_DATA_LENGTH);
+        for (uint256 i = 0; i < snapGas.length; i++) {
+            // This will not revert as the malformed bit is outside of ChainGas struct: (domain, gasData)
+            uint256 malformedBit = chainGasBits + random.nextUint8() % (256 - chainGasBits);
+            ChainGas cg0 = GasDataLib.wrapChainGas(snapGas[i]);
+            snapGasMalformed[i] = snapGas[i] ^ (1 << malformedBit);
+            ChainGas cg1 = GasDataLib.wrapChainGas(snapGas[i]);
+            // Malformed bit should not affect ChainGas
+            assert(ChainGas.unwrap(cg0) == ChainGas.unwrap(cg1));
+        }
+        address notary = domains[localDomain()].agent;
+        (bytes memory attPayload, bytes memory attSignature) = signAttestation(notary, ra);
+        // Should pass to Destination: acceptAttestation(status, sigIndex, attestation, agentRoot, snapGas)
+        // Note: the malformed highest bits are ignored, so will be passing `snapGas` instead of `snapGasMalformed`
+        vm.expectCall(
+            destination,
+            abi.encodeWithSelector(
+                InterfaceDestination.acceptAttestation.selector,
+                agentIndex[notary],
+                nextSignatureIndex(),
+                attPayload,
+                ra._agentRoot,
+                snapGas
+            )
+        );
+        // Try to feed the gas data with malformed highest bits
+        lightManager.submitAttestation(attPayload, attSignature, ra._agentRoot, snapGasMalformed);
+    }
+
+    function test_submitAttestation_revert_snapGasMismatch(Random memory random) public {
+        RawSnapshot memory rs = random.nextSnapshot();
+        RawAttestation memory ra = random.nextAttestation(rs, random.nextUint32());
+        uint256[] memory snapGas = rs.snapGas();
+        // This should revert only if the malformed bit is within ChainGas struct: (domain, gasData)
+        uint256 chainGasBits = 8 * (4 + GAS_DATA_LENGTH);
+        uint256 malformedBit = random.nextUint8() % chainGasBits;
+        uint256 malformedIndex = random.nextUint256() % snapGas.length;
+        snapGas[malformedIndex] ^= 1 << malformedBit;
+        address notary = domains[localDomain()].agent;
+        (bytes memory attPayload, bytes memory attSignature) = signAttestation(notary, ra);
+        vm.expectRevert("Invalid snapGas");
+        // Try to feed the gas data with malformed lowest bits
+        lightManager.submitAttestation(attPayload, attSignature, ra._agentRoot, snapGas);
+    }
+
+    function test_submitAttestation_revert_signedByGuard(Random memory random) public {
+        RawSnapshot memory rs = random.nextSnapshot();
+        RawAttestation memory ra = random.nextAttestation(rs, random.nextUint32());
+        uint256[] memory snapGas = rs.snapGas();
         address guard = domains[0].agent;
         (bytes memory attPayload, bytes memory attSignature) = signAttestation(guard, ra);
         vm.expectRevert("Signer is not a Notary");
-        lightManager.submitAttestation(attPayload, attSignature);
+        lightManager.submitAttestation(attPayload, attSignature, ra._agentRoot, snapGas);
     }
 
-    function test_submitAttestation_revert_signedByRemoteNotary(RawAttestation memory ra) public {
+    function test_submitAttestation_revert_signedByRemoteNotary(Random memory random) public {
+        RawSnapshot memory rs = random.nextSnapshot();
+        RawAttestation memory ra = random.nextAttestation(rs, random.nextUint32());
+        uint256[] memory snapGas = rs.snapGas();
         address notary = domains[DOMAIN_REMOTE].agent;
         (bytes memory attPayload, bytes memory attSignature) = signAttestation(notary, ra);
         vm.expectRevert("Wrong Notary domain");
-        lightManager.submitAttestation(attPayload, attSignature);
+        lightManager.submitAttestation(attPayload, attSignature, ra._agentRoot, snapGas);
     }
 
-    function test_submitAttestation_revert_notaryInDispute(RawAttestation memory ra) public {
+    function test_submitAttestation_revert_notaryInDispute(Random memory random) public {
+        RawSnapshot memory rs = random.nextSnapshot();
+        RawAttestation memory ra = random.nextAttestation(rs, random.nextUint32());
+        uint256[] memory snapGas = rs.snapGas();
         address notary = domains[localDomain()].agent;
         (bytes memory attPayload, bytes memory attSignature) = signAttestation(notary, ra);
         openDispute({guard: domains[0].agent, notary: notary});
         vm.expectRevert("Notary is in dispute");
-        lightManager.submitAttestation(attPayload, attSignature);
+        lightManager.submitAttestation(attPayload, attSignature, ra._agentRoot, snapGas);
     }
 
     // ════════════════════════════════════════════ TEST: WITHDRAW TIPS ════════════════════════════════════════════════
@@ -185,7 +272,7 @@ contract LightManagerTest is AgentManagerTest {
 
     // ══════════════════════════════════════════════════ HELPERS ══════════════════════════════════════════════════════
 
-    /// @notice Returns local domain for the tested system contract
+    /// @notice Returns local domain for the tested contract
     function localDomain() public pure override returns (uint32) {
         return DOMAIN_LOCAL;
     }

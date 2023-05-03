@@ -17,30 +17,40 @@ abstract contract SynapseTestConstants {
 
     // ═════════════════════════════════════ MASKS FOR TEST SUITE DEPLOYMENTS ══════════════════════════════════════════
 
-    uint256 internal constant DEPLOY_MASK_DESTINATION = 0xF;
+    uint256 internal constant DEPLOY_MASK_DESTINATION = 0x0F;
     // Default option for deploying Destination
-    uint256 internal constant DEPLOY_MOCK_DESTINATION = 0x0;
-    uint256 internal constant DEPLOY_PROD_DESTINATION = 0x1;
+    uint256 internal constant DEPLOY_MOCK_DESTINATION = 0x00;
+    uint256 internal constant DEPLOY_PROD_DESTINATION = 0x01;
 
     uint256 internal constant DEPLOY_MASK_ORIGIN = 0xF0;
     // Default option for deploying Origin
     uint256 internal constant DEPLOY_MOCK_ORIGIN = 0x00;
     uint256 internal constant DEPLOY_PROD_ORIGIN = 0x10;
 
-    uint256 internal constant DEPLOY_MASK_DESTINATION_SYNAPSE = 0xF00;
+    uint256 internal constant DEPLOY_MASK_DESTINATION_SYNAPSE = 0x0F_00;
     // Default option for deploying Synapse Chain Destination
-    uint256 internal constant DEPLOY_MOCK_DESTINATION_SYNAPSE = 0x000;
-    uint256 internal constant DEPLOY_PROD_DESTINATION_SYNAPSE = 0x100;
+    uint256 internal constant DEPLOY_MOCK_DESTINATION_SYNAPSE = 0x00_00;
+    uint256 internal constant DEPLOY_PROD_DESTINATION_SYNAPSE = 0x01_00;
 
-    uint256 internal constant DEPLOY_MASK_ORIGIN_SYNAPSE = 0xF000;
+    uint256 internal constant DEPLOY_MASK_ORIGIN_SYNAPSE = 0xF0_00;
     // Default option for deploying Synapse Chain Origin
-    uint256 internal constant DEPLOY_MOCK_ORIGIN_SYNAPSE = 0x0000;
-    uint256 internal constant DEPLOY_PROD_ORIGIN_SYNAPSE = 0x1000;
+    uint256 internal constant DEPLOY_MOCK_ORIGIN_SYNAPSE = 0x00_00;
+    uint256 internal constant DEPLOY_PROD_ORIGIN_SYNAPSE = 0x10_00;
 
-    uint256 internal constant DEPLOY_MASK_SUMMIT = 0xF0000;
+    uint256 internal constant DEPLOY_MASK_SUMMIT = 0x0F_00_00;
     // Default option for deploying Summit (Synapse Chain)
-    uint256 internal constant DEPLOY_MOCK_SUMMIT = 0x00000;
-    uint256 internal constant DEPLOY_PROD_SUMMIT = 0x10000;
+    uint256 internal constant DEPLOY_MOCK_SUMMIT = 0x00_00_00;
+    uint256 internal constant DEPLOY_PROD_SUMMIT = 0x01_00_00;
+
+    uint256 internal constant DEPLOY_MASK_GAS_ORACLE = 0xF0_00_00;
+    // Default option for deploying Gas Oracle
+    uint256 internal constant DEPLOY_MOCK_GAS_ORACLE = 0x00_00_00;
+    uint256 internal constant DEPLOY_PROD_GAS_ORACLE = 0x10_00_00;
+
+    uint256 internal constant DEPLOY_MASK_GAS_ORACLE_SYNAPSE = 0x0F_00_00_00;
+    // Default option for deploying Gas Oracle (Synapse Chain)
+    uint256 internal constant DEPLOY_MOCK_GAS_ORACLE_SYNAPSE = 0x00_00_00_00;
+    uint256 internal constant DEPLOY_PROD_GAS_ORACLE_SYNAPSE = 0x01_00_00_00;
 
     // ══════════════════════════════════════════════ ENCODING TESTS ═══════════════════════════════════════════════════
 

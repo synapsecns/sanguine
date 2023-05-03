@@ -4,15 +4,9 @@ pragma solidity 0.8.17;
 import {STATE_LENGTH} from "../../../contracts/libs/Constants.sol";
 
 import {SynapseLibraryTest, MemViewLib} from "../../utils/SynapseLibraryTest.t.sol";
-import {StateHarness} from "../../harnesses/libs/StateHarness.t.sol";
+import {GasData, StateHarness} from "../../harnesses/libs/StateHarness.t.sol";
 
-struct RawState {
-    bytes32 root;
-    uint32 origin;
-    uint32 nonce;
-    uint40 blockNumber;
-    uint40 timestamp;
-}
+import {RawState} from "../../utils/libs/SynapseStructs.t.sol";
 
 // solhint-disable func-name-mixedcase
 contract StateLibraryTest is SynapseLibraryTest {
@@ -25,9 +19,15 @@ contract StateLibraryTest is SynapseLibraryTest {
     }
 
     function test_formatState(RawState memory rs) public {
-        bytes memory payload = libHarness.formatState(rs.root, rs.origin, rs.nonce, rs.blockNumber, rs.timestamp);
+        GasData gasData = rs.gasData.castToGasData();
+        bytes memory payload =
+            libHarness.formatState(rs.root, rs.origin, rs.nonce, rs.blockNumber, rs.timestamp, gasData);
         // Test formatting of state
-        assertEq(payload, abi.encodePacked(rs.root, rs.origin, rs.nonce, rs.blockNumber, rs.timestamp), "!formatState");
+        assertEq(
+            payload,
+            abi.encodePacked(rs.root, rs.origin, rs.nonce, rs.blockNumber, rs.timestamp, rs.gasData.encodeGasData()),
+            "!formatState"
+        );
         checkCastToState({payload: payload, isState: true});
         // Test getters
         assertEq(libHarness.root(payload), rs.root, "!root");
@@ -35,27 +35,29 @@ contract StateLibraryTest is SynapseLibraryTest {
         assertEq(libHarness.nonce(payload), rs.nonce, "!nonce");
         assertEq(libHarness.blockNumber(payload), rs.blockNumber, "!blockNumber");
         assertEq(libHarness.timestamp(payload), rs.timestamp, "!timestamp");
+        assertEq(GasData.unwrap(libHarness.gasData(payload)), rs.gasData.encodeGasData(), "!gasData");
         // Test creating a leaf
         bytes32 leftChild = keccak256(abi.encodePacked(rs.root, rs.origin));
-        bytes32 rightChild = keccak256(abi.encodePacked(rs.nonce, rs.blockNumber, rs.timestamp));
+        bytes32 rightChild =
+            keccak256(abi.encodePacked(rs.nonce, rs.blockNumber, rs.timestamp, rs.gasData.encodeGasData()));
         (bytes32 leftLeaf, bytes32 rightLeaf) = libHarness.subLeafs(payload);
         assertEq(libHarness.leftLeaf(rs.root, rs.origin), leftChild, "!leftLeaf");
         assertEq(leftLeaf, leftChild, "!subLeafs: left");
-        assertEq(libHarness.rightLeaf(rs.nonce, rs.blockNumber, rs.timestamp), rightChild, "!rightLeaf");
+        assertEq(libHarness.rightLeaf(rs.nonce, rs.blockNumber, rs.timestamp, gasData), rightChild, "!rightLeaf");
         assertEq(rightLeaf, rightChild, "!subLeafs: right");
         assertEq(libHarness.leaf(payload), keccak256(abi.encodePacked(leftChild, rightChild)), "!leaf");
     }
 
-    function test_equals(RawState memory a, uint256 mask) public {
-        RawState memory b;
-        b.root = a.root ^ bytes32(mask & 1);
-        b.origin = a.origin ^ uint32(mask & 2);
-        b.nonce = a.nonce ^ uint32(mask & 4);
-        b.blockNumber = a.blockNumber ^ uint40(mask & 8);
-        b.timestamp = a.timestamp ^ uint40(mask & 16);
-        bytes memory aa = abi.encodePacked(a.root, a.origin, a.nonce, a.blockNumber, a.timestamp);
-        bytes memory bb = abi.encodePacked(b.root, b.origin, b.nonce, b.blockNumber, b.timestamp);
-        assertEq(libHarness.equals(aa, bb), keccak256(aa) == keccak256(bb));
+    function test_equals_identical(RawState memory a) public {
+        bytes memory aa = a.formatState();
+        assertTrue(libHarness.equals(aa, aa), "!equals: identical");
+    }
+
+    function test_equals_different(RawState memory a, uint256 mask) public {
+        RawState memory b = a.modifyState(mask);
+        bytes memory aa = a.formatState();
+        bytes memory bb = b.formatState();
+        assertFalse(libHarness.equals(aa, bb), "!equals: different");
     }
 
     function test_isState(uint8 length) public {
@@ -74,9 +76,5 @@ contract StateLibraryTest is SynapseLibraryTest {
             vm.expectRevert("Not a state");
             libHarness.castToState(payload);
         }
-    }
-
-    function createTestPayload() public view returns (bytes memory) {
-        return libHarness.formatState(bytes32(0), 0, 0, 0, 0);
     }
 }

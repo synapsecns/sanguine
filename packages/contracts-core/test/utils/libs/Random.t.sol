@@ -1,7 +1,8 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.17;
 
-import {RawAttestation, RawState, RawStateIndex, RawSnapshot} from "./SynapseStructs.t.sol";
+import {SNAPSHOT_MAX_STATES} from "../../../contracts/libs/Constants.sol";
+import {RawAttestation, RawGasData, RawState, RawStateIndex, RawSnapshot} from "./SynapseStructs.t.sol";
 
 struct Random {
     bytes32 seed;
@@ -75,6 +76,11 @@ library RandomLib {
         return uint32(r.nextUint256());
     }
 
+    // @notice Returns next "random" uint16 value and updates the Random's seed.
+    function nextUint16(Random memory r) internal pure returns (uint16 value) {
+        return uint16(r.nextUint256());
+    }
+
     // @notice Returns next "random" uint8 value and updates the Random's seed.
     function nextUint8(Random memory r) internal pure returns (uint8 value) {
         return uint8(r.nextUint256());
@@ -85,20 +91,40 @@ library RandomLib {
         return address(r.nextUint160());
     }
 
+    function nextSnapshot(Random memory r) internal pure returns (RawSnapshot memory rs) {
+        uint32 statesAmount = r.nextUint32();
+        // Should be in range [1, SNAPSHOT_MAX_STATES]
+        statesAmount = uint32(1 + statesAmount % (SNAPSHOT_MAX_STATES - 1));
+        return r.nextSnapshot(statesAmount);
+    }
+
+    function nextSnapshot(Random memory r, uint32 statesAmount) internal pure returns (RawSnapshot memory rs) {
+        rs.states = new RawState[](statesAmount);
+        for (uint32 i = 0; i < statesAmount; ++i) {
+            rs.states[i] = r.nextState();
+        }
+    }
+
     function nextState(Random memory r, uint32 origin, uint32 nonce) internal pure returns (RawState memory state) {
         state.root = r.next();
         state.origin = origin;
         state.nonce = nonce;
         state.blockNumber = r.nextUint40();
         state.timestamp = r.nextUint40();
+        state.gasData = r.nextGasData();
     }
 
     function nextState(Random memory r) internal pure returns (RawState memory state) {
-        state.root = r.next();
-        state.origin = r.nextUint32();
-        state.nonce = r.nextUint32();
-        state.blockNumber = r.nextUint40();
-        state.timestamp = r.nextUint40();
+        return r.nextState(r.nextUint32(), r.nextUint32());
+    }
+
+    function nextGasData(Random memory r) internal pure returns (RawGasData memory rgd) {
+        rgd.gasPrice.number = r.nextUint16();
+        rgd.dataPrice.number = r.nextUint16();
+        rgd.execBuffer.number = r.nextUint16();
+        rgd.amortAttCost.number = r.nextUint16();
+        rgd.etherPrice.number = r.nextUint16();
+        rgd.markup.number = r.nextUint16();
     }
 
     function nextStateIndex(Random memory r) internal pure returns (RawStateIndex memory rsi) {
@@ -109,7 +135,7 @@ library RandomLib {
 
     function nextAttestation(Random memory r, uint32 nonce) internal pure returns (RawAttestation memory ra) {
         ra.snapRoot = r.next();
-        ra.agentRoot = r.next();
+        ra._agentRoot = r.next();
         ra.nonce = nonce;
         ra.blockNumber = r.nextUint40();
         ra.timestamp = r.nextUint40();

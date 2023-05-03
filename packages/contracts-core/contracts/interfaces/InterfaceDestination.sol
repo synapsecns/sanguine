@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.17;
 
-import {AgentStatus} from "../libs/Structures.sol";
+import {ChainGas, GasData} from "../libs/GasData.sol";
 
 interface InterfaceDestination {
     /**
@@ -25,14 +25,21 @@ interface InterfaceDestination {
      * > - Attestation payload is not properly formatted.
      * > - Attestation signer is in Dispute.
      * > - Attestation's snapshot root has been previously submitted.
+     * Note: agentRoot and snapGas have been verified by the local `AgentManager`.
      * @param notaryIndex       Index of Attestation Notary in Agent Merkle Tree
      * @param sigIndex          Index of stored Notary signature
      * @param attPayload        Raw payload with Attestation data
+     * @param agentRoot         Agent Merkle Root from the Attestation
+     * @param snapGas           Gas data for each chain in the Attestation's snapshot
      * @return wasAccepted      Whether the Attestation was accepted
      */
-    function acceptAttestation(uint32 notaryIndex, uint256 sigIndex, bytes memory attPayload)
-        external
-        returns (bool wasAccepted);
+    function acceptAttestation(
+        uint32 notaryIndex,
+        uint256 sigIndex,
+        bytes memory attPayload,
+        bytes32 agentRoot,
+        ChainGas[] memory snapGas
+    ) external returns (bool wasAccepted);
 
     // ═══════════════════════════════════════════════════ VIEWS ═══════════════════════════════════════════════════════
 
@@ -51,6 +58,16 @@ interface InterfaceDestination {
      * @return attSignature     Notary signature for the reported attestation
      */
     function getAttestation(uint256 index) external view returns (bytes memory attPayload, bytes memory attSignature);
+
+    /**
+     * @notice Returns the gas data for a given chain from the latest accepted attestation with that chain.
+     * @dev Will return empty values if there is no data for the domain,
+     * or if the notary who provided the data is in dispute.
+     * @param domain            Domain for the chain
+     * @return gasData          Gas data for the chain
+     * @return dataMaturity     Gas data age in seconds
+     */
+    function getGasData(uint32 domain) external view returns (GasData gasData, uint256 dataMaturity);
 
     /**
      * Returns status of Destination contract as far as snapshot/agent roots are concerned

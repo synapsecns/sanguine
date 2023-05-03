@@ -529,13 +529,13 @@ abstract contract ExecutionHubTest is AgentSecuredTest {
         sm.rsi.boundStateIndex();
     }
 
-    /// @notice Returns address of the tested system contract
-    function systemContract() public view override returns (address) {
+    /// @notice Returns address of the tested contract
+    function localContract() public view override returns (address) {
         return localDestination();
     }
 
-    /// @notice Returns tested system contract as IExecutionHub
+    /// @notice Returns tested contract as IExecutionHub
     function testedEH() public view returns (IExecutionHub) {
-        return IExecutionHub(systemContract());
+        return IExecutionHub(localContract());
     }
 }

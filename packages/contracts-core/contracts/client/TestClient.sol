@@ -3,7 +3,6 @@ pragma solidity 0.8.17;
 
 // ══════════════════════════════ LIBRARY IMPORTS ══════════════════════════════
 import {Request, RequestLib} from "../libs/Request.sol";
-import {Tips, TipsLib} from "../libs/Tips.sol";
 import {TypeCasts} from "../libs/TypeCasts.sol";
 // ═════════════════════════════ INTERNAL IMPORTS ══════════════════════════════
 import {IMessageRecipient} from "../interfaces/IMessageRecipient.sol";
@@ -41,11 +40,10 @@ contract TestClient is IMessageRecipient {
         external
     {
         bytes32 recipient = TypeCasts.addressToBytes32(recipientAddress);
-        Tips tips = TipsLib.emptyTips();
         // TODO: figure out the logic for a message test
         Request request = RequestLib.encodeRequest(0, 0);
         (uint32 nonce,) = InterfaceOrigin(origin).sendBaseMessage(
-            destination_, recipient, optimisticSeconds, Tips.unwrap(tips), Request.unwrap(request), content
+            destination_, recipient, optimisticSeconds, Request.unwrap(request), content
         );
         emit MessageSent(destination_, nonce, TypeCasts.addressToBytes32(address(this)), recipient, content);
     }

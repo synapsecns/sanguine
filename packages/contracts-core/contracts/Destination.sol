@@ -6,6 +6,7 @@ import {Attestation, AttestationLib} from "./libs/Attestation.sol";
 import {AttestationReport} from "./libs/AttestationReport.sol";
 import {ByteString} from "./libs/ByteString.sol";
 import {AGENT_ROOT_OPTIMISTIC_PERIOD, SYNAPSE_DOMAIN} from "./libs/Constants.sol";
+import {ChainGas, GasData} from "./libs/GasData.sol";
 import {AgentStatus, DestinationStatus, DisputeFlag} from "./libs/Structures.sol";
 // ═════════════════════════════ INTERNAL IMPORTS ══════════════════════════════
 import {AgentSecured} from "./base/AgentSecured.sol";
@@ -22,6 +23,13 @@ contract Destination is ExecutionHub, DestinationEvents, InterfaceDestination {
     // TODO: this could be further optimized in terms of storage
     struct StoredAttData {
         bytes32 agentRoot;
+        bytes32 dataHash;
+    }
+
+    struct StoredGasData {
+        GasData gasData;
+        uint32 notaryIndex;
+        uint40 submittedAt;
     }
 
     // ══════════════════════════════════════════════════ STORAGE ══════════════════════════════════════════════════════
@@ -36,6 +44,9 @@ contract Destination is ExecutionHub, DestinationEvents, InterfaceDestination {
     /// @dev Stored lookup data for all accepted Notary Attestations
     StoredAttData[] internal _storedAttestations;
 
+    /// @dev Remote domains GasData submitted by Notaries
+    mapping(uint32 => StoredGasData) internal _storedGasData;
+
     // ═════════════════════════════════════════ CONSTRUCTOR & INITIALIZER ═════════════════════════════════════════════
 
     // solhint-disable-next-line no-empty-blocks
@@ -47,19 +58,24 @@ contract Destination is ExecutionHub, DestinationEvents, InterfaceDestination {
         // Initialize Ownable: msg.sender is set as "owner"
         __Ownable_init();
         // Set Agent Merkle Root in Light Manager
-        _nextAgentRoot = agentRoot;
-        InterfaceLightManager(address(agentManager)).setAgentRoot(agentRoot);
-        destStatus.agentRootTime = uint40(block.timestamp);
+        if (localDomain != SYNAPSE_DOMAIN) {
+            _nextAgentRoot = agentRoot;
+            InterfaceLightManager(address(agentManager)).setAgentRoot(agentRoot);
+            destStatus.agentRootTime = uint40(block.timestamp);
+        }
+        // No need to do anything on Synapse Chain, as the agent root is set in BondingManager
     }
 
     // ═════════════════════════════════════════════ ACCEPT STATEMENTS ═════════════════════════════════════════════════
 
     /// @inheritdoc InterfaceDestination
-    function acceptAttestation(uint32 notaryIndex, uint256 sigIndex, bytes memory attPayload)
-        external
-        onlyAgentManager
-        returns (bool wasAccepted)
-    {
+    function acceptAttestation(
+        uint32 notaryIndex,
+        uint256 sigIndex,
+        bytes memory attPayload,
+        bytes32 agentRoot,
+        ChainGas[] memory snapGas
+    ) external onlyAgentManager returns (bool wasAccepted) {
         // First, try passing current agent merkle root
         (bool rootPassed, bool rootPending) = passAgentRoot();
         // Don't accept attestation, if the agent root was updated in LightManager,
@@ -69,10 +85,10 @@ contract Destination is ExecutionHub, DestinationEvents, InterfaceDestination {
         Attestation att = attPayload.castToAttestation();
         // This will revert if snapshot root has been previously submitted
         _saveAttestation(att, notaryIndex, sigIndex);
-        bytes32 agentRoot = att.agentRoot();
-        _storedAttestations.push(StoredAttData(agentRoot));
+        _storedAttestations.push(StoredAttData({agentRoot: agentRoot, dataHash: att.dataHash()}));
         // Save Agent Root if required, and update the Destination's Status
         destStatus = _saveAgentRoot(rootPending, agentRoot, notaryIndex);
+        _saveGasData(snapGas, notaryIndex);
         return true;
     }
 
@@ -121,7 +137,7 @@ contract Destination is ExecutionHub, DestinationEvents, InterfaceDestination {
         StoredAttData memory storedAtt = _storedAttestations[index];
         attPayload = AttestationLib.formatAttestation({
             snapRoot_: snapRoot,
-            agentRoot_: storedAtt.agentRoot,
+            dataHash_: storedAtt.dataHash,
             nonce_: rootData.attNonce,
             blockNumber_: rootData.attBN,
             timestamp_: rootData.attTS
@@ -130,6 +146,16 @@ contract Destination is ExecutionHub, DestinationEvents, InterfaceDestination {
         if (localDomain != SYNAPSE_DOMAIN) {
             attSignature = IAgentManager(agentManager).getStoredSignature(rootData.sigIndex);
         }
+    }
+
+    /// @inheritdoc InterfaceDestination
+    function getGasData(uint32 domain) external view returns (GasData gasData, uint256 dataMaturity) {
+        StoredGasData memory storedGasData = _storedGasData[domain];
+        if (storedGasData.submittedAt != 0 && _disputes[storedGasData.notaryIndex] == DisputeFlag.None) {
+            gasData = storedGasData.gasData;
+            dataMaturity = block.timestamp - storedGasData.submittedAt;
+        }
+        // Return empty values if there is no data for the domain, or if the notary who provided the data is in dispute
     }
 
     /// @inheritdoc InterfaceDestination
@@ -158,6 +184,24 @@ contract Destination is ExecutionHub, DestinationEvents, InterfaceDestination {
             status.notaryIndex = notaryIndex;
             _nextAgentRoot = agentRoot;
             emit AgentRootAccepted(agentRoot);
+        }
+    }
+
+    /// @dev Saves updated values from the snapshot's gas data list.
+    function _saveGasData(ChainGas[] memory snapGas, uint32 notaryIndex) internal {
+        uint256 statesAmount = snapGas.length;
+        for (uint256 i = 0; i < statesAmount; i++) {
+            ChainGas chainGas = snapGas[i];
+            uint32 domain = chainGas.domain();
+            // Don't save gas data for the local domain
+            if (domain == localDomain) continue;
+            StoredGasData memory storedGasData = _storedGasData[domain];
+            // Check that the gas data is not already saved
+            GasData gasData = chainGas.gasData();
+            if (GasData.unwrap(gasData) == GasData.unwrap(storedGasData.gasData)) continue;
+            // Save the gas data
+            _storedGasData[domain] =
+                StoredGasData({gasData: gasData, notaryIndex: notaryIndex, submittedAt: uint40(block.timestamp)});
         }
     }
 }

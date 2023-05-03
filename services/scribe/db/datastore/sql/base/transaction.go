@@ -5,11 +5,12 @@ import (
 	"errors"
 	"fmt"
 	"github.com/ethereum/go-ethereum/common"
+	"github.com/synapsecns/sanguine/core/dbcommon"
+	"gorm.io/gorm/clause"
 
 	"github.com/ethereum/go-ethereum/core/types"
 	"github.com/synapsecns/sanguine/services/scribe/db"
 	"gorm.io/gorm"
-	"gorm.io/gorm/clause"
 )
 
 // StoreEthTx stores a processed text.
@@ -18,22 +19,29 @@ func (s Store) StoreEthTx(ctx context.Context, tx *types.Transaction, chainID ui
 	if err != nil {
 		return fmt.Errorf("could not marshall tx to binary: %w", err)
 	}
-	dbTx := s.DB().WithContext(ctx).
-		Clauses(clause.OnConflict{
+	dbTx := s.DB().WithContext(ctx)
+	if s.DB().Dialector.Name() == dbcommon.Sqlite.String() {
+		dbTx = dbTx.Clauses(clause.OnConflict{
 			Columns:   []clause.Column{{Name: TxHashFieldName}, {Name: ChainIDFieldName}},
 			DoNothing: true,
-		}).
-		Create(&EthTx{
-			TxHash:           tx.Hash().String(),
-			ChainID:          chainID,
-			BlockHash:        blockHash.String(),
-			BlockNumber:      blockNumber,
-			RawTx:            marshalledTx,
-			GasFeeCap:        tx.GasFeeCap().Uint64(),
-			GasTipCap:        tx.GasTipCap().Uint64(),
-			Confirmed:        false,
-			TransactionIndex: transactionIndex,
 		})
+	} else {
+		dbTx = dbTx.Clauses(clause.Insert{
+			Modifier: "IGNORE",
+		})
+	}
+
+	dbTx = dbTx.Create(&EthTx{
+		TxHash:           tx.Hash().String(),
+		ChainID:          chainID,
+		BlockHash:        blockHash.String(),
+		BlockNumber:      blockNumber,
+		RawTx:            marshalledTx,
+		GasFeeCap:        tx.GasFeeCap().Uint64(),
+		GasTipCap:        tx.GasTipCap().Uint64(),
+		Confirmed:        false,
+		TransactionIndex: transactionIndex,
+	})
 
 	if dbTx.Error != nil {
 		return fmt.Errorf("could not create raw tx: %w", dbTx.Error)

@@ -9,8 +9,11 @@ import {AgentFlag, AgentStatus} from "../../../contracts/libs/Structures.sol";
 import {AgentManagerTest} from "./AgentManager.t.sol";
 
 import {BaseMock} from "../../mocks/base/BaseMock.t.sol";
-import {BondingManagerHarness, IAgentSecured, Summit, SynapseTest} from "../../utils/SynapseTest.t.sol";
+import {
+    BondingManager, BondingManagerHarness, IAgentSecured, Summit, SynapseTest
+} from "../../utils/SynapseTest.t.sol";
 
+import {Random} from "../../utils/libs/Random.t.sol";
 import {RawExecReceipt, RawState, RawStateIndex} from "../../utils/libs/SynapseStructs.t.sol";
 
 // solhint-disable func-name-mixedcase
@@ -26,15 +29,25 @@ contract BondingManagerTest is AgentManagerTest {
 
     // ═══════════════════════════════════════════════ TESTS: SETUP ════════════════════════════════════════════════════
 
-    function test_initializer(address caller, address origin_, address destination_, address summit_) public {
-        bondingManager = new BondingManagerHarness(DOMAIN_SYNAPSE);
+    function test_cleanSetup(Random memory random) public override {
+        uint32 domain = DOMAIN_SYNAPSE;
+        address caller = random.nextAddress();
+        address origin_ = random.nextAddress();
+        address destination_ = random.nextAddress();
+        address summit_ = random.nextAddress();
+        BondingManager cleanContract = new BondingManager(domain);
         vm.prank(caller);
-        bondingManager.initialize(origin_, destination_, summit_);
-        assertEq(bondingManager.owner(), caller);
-        assertEq(bondingManager.origin(), origin_);
-        assertEq(bondingManager.destination(), destination_);
-        assertEq(bondingManager.summit(), summit_);
-        assertEq(bondingManager.leafsAmount(), 1);
+        cleanContract.initialize(origin_, destination_, summit_);
+        assertEq(cleanContract.localDomain(), domain);
+        assertEq(cleanContract.owner(), caller);
+        assertEq(cleanContract.origin(), origin_);
+        assertEq(cleanContract.destination(), destination_);
+        assertEq(cleanContract.summit(), summit_);
+        assertEq(cleanContract.leafsAmount(), 1);
+    }
+
+    function initializeLocalContract() public override {
+        BondingManager(localContract()).initialize(address(0), address(0), address(0));
     }
 
     function test_setup() public override {
@@ -446,7 +459,7 @@ contract BondingManagerTest is AgentManagerTest {
 
     // ══════════════════════════════════════════════════ HELPERS ══════════════════════════════════════════════════════
 
-    /// @notice Returns local domain for the tested system contract
+    /// @notice Returns local domain for the tested contract
     function localDomain() public pure override returns (uint32) {
         return DOMAIN_SYNAPSE;
     }
