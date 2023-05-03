@@ -115,7 +115,7 @@ const BridgeInputContainer = ({
           />
 
           {isQuoteLoading ? (
-            <Spinner />
+            <Spinner className="ml-4" />
           ) : (
             <input
               pattern="[0-9.]+"
