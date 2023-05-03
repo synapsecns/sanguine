@@ -101,7 +101,7 @@ var NotaryRunCommand = &cli.Command{
 
 			switch c.String(scribeTypeFlag.Name) {
 			case "embedded":
-				eventDB, err := scribeAPI.InitDB(c.Context, "mysql", "root:MysqlPassword@tcp(agents-mysql:3306)/notaryscribe?parseTime=true", metrics.Get())
+				eventDB, err := scribeAPI.InitDB(c.Context, "mysql", "root:MysqlPassword@tcp(agents-mysql:3306)/notaryscribe?parseTime=true", metrics.Get(), false)
 				if err != nil {
 					return fmt.Errorf("failed to initialize database: %w", err)
 				}

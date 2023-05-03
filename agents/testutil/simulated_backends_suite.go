@@ -319,7 +319,7 @@ func (a *SimulatedBackendsTestSuite) SetupTest() {
 	}
 
 	a.DBPath = filet.TmpDir(a.T(), "")
-	scribeSqliteStore, err := scribesqlite.NewSqliteStore(a.GetTestContext(), a.DBPath, a.ScribeMetrics)
+	scribeSqliteStore, err := scribesqlite.NewSqliteStore(a.GetTestContext(), a.DBPath, a.ScribeMetrics, false)
 	if err != nil {
 		a.T().Fatal(err)
 	}

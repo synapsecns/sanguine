@@ -3,7 +3,7 @@ import invariant from 'tiny-invariant'
 import { BigNumber } from '@ethersproject/bignumber'
 import { BytesLike } from '@ethersproject/bytes'
 import { PopulatedTransaction } from 'ethers'
-import { AddressZero } from '@ethersproject/constants'
+import { AddressZero, Zero } from '@ethersproject/constants'
 import { Interface } from '@ethersproject/abi'
 import { Contract } from '@ethersproject/contracts'
 
@@ -293,19 +293,45 @@ class SynapseSDK {
   public async calculateAddLiquidity(
     chainId: number,
     poolAddress: string,
-    amounts: BigNumber[]
-  ): Promise<BigNumber> {
+    amounts: Record<string, BigNumber>
+  ): Promise<{ amount: BigNumber; routerAddress: string }> {
     const router: SynapseRouter = this.synapseRouters[chainId]
-    return router.routerContract.calculateAddLiquidity(poolAddress, amounts)
+    const poolTokens = await router.routerContract.poolTokens(poolAddress)
+    const amountArr: BigNumber[] = []
+    poolTokens.map((token) => {
+      amountArr.push(amounts[token.token] ?? Zero)
+    })
+    if (amountArr.filter((amount) => !amount.isZero()).length === 0) {
+      return { amount: Zero, routerAddress: router.routerContract.address }
+    }
+    return {
+      amount: await router.routerContract.calculateAddLiquidity(
+        poolAddress,
+        amountArr
+      ),
+      routerAddress: router.routerContract.address,
+    }
   }
 
   public async calculateRemoveLiquidity(
     chainId: number,
     poolAddress: string,
     amount: BigNumber
-  ): Promise<BigNumber[]> {
+  ): Promise<{ amounts: Record<string, BigNumber>; routerAddress: string }> {
     const router: SynapseRouter = this.synapseRouters[chainId]
-    return router.routerContract.calculateRemoveLiquidity(poolAddress, amount)
+    const amounts = await router.routerContract.calculateRemoveLiquidity(
+      poolAddress,
+      amount
+    )
+    const poolTokens = await router.routerContract.poolTokens(poolAddress)
+    const amountRecord: Record<string, BigNumber> = {}
+    poolTokens.map((token, index) => {
+      amountRecord[token.token] = amounts[index]
+    })
+    return {
+      amounts: amountRecord,
+      routerAddress: router.routerContract.address,
+    }
   }
 }
 
