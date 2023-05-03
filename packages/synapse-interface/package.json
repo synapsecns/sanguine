@@ -7,7 +7,7 @@
   },
   "scripts": {
     "dev": "next dev",
-    "build": "yarn install && next build",
+    "build": "./build-local.sh && next build",
     "start": "next start",
     "lint": "next lint",
     "cypress:run": "start-server-and-test dev http://localhost:3000 \"cypress run --e2e\"",
