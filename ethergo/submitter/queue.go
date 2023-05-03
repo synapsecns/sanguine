@@ -156,8 +156,11 @@ func (t *txSubmitterImpl) checkAndSetConfirmation(ctx context.Context, chainClie
 	foundSuccessfulTX := false
 
 	if err != nil {
+		// there's no way around this type inference
+		//nolint: errorlint
 		callErr, ok := err.(w3.CallErrors)
 		if !ok {
+			//nolint: errorlint
 			return fmt.Errorf("unexpected error type: %T", err)
 		}
 
@@ -169,12 +172,11 @@ func (t *txSubmitterImpl) checkAndSetConfirmation(ctx context.Context, chainClie
 				txes[i].Status = db.Confirmed
 			}
 		}
-	} else {
+	} else if receipts[0].TxHash != txes[0].Hash() {
 		// there must be only one tx, so we can just check the first one
 		// TODO: handle the case where there is more than one
-		if receipts[0].TxHash != txes[0].Hash() {
-			txes[0].Status = db.Confirmed
-		}
+		txes[0].Status = db.Confirmed
+		foundSuccessfulTX = true
 	}
 
 	if foundSuccessfulTX {
