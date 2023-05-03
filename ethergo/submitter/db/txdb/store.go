@@ -92,17 +92,17 @@ func (s *Store) GetTXS(ctx context.Context, fromAddress common.Address, chainID 
 	}
 
 	subQuery := s.DB().Model(&ETHTX{}).
-		Select(fmt.Sprintf("%s, %s, %s, MAX(%s)", txHashFieldName, nonceFieldName, chainIDFieldName, createdAtFieldName)).
+		Select(fmt.Sprintf("MAX(%s) as %s, %s, %s", idFieldName, idFieldName, nonceFieldName, chainIDFieldName)).
 		Where(query).
 		Where(fmt.Sprintf("%s IN ?", statusFieldName), inArgs).
 		Group(fmt.Sprintf("%s, %s", nonceFieldName, chainIDFieldName)).
-		Order(fmt.Sprintf("%s asc, %s desc", nonceFieldName, statusFieldName)).
+		Order(fmt.Sprintf("%s asc", nonceFieldName)).
 		Limit(MaxResultsPerChain)
 
 	joinQuery, err := interpol.WithMap(
-		"INNER JOIN (?) as subquery on `{table}`.`{txhash}` = `subquery`.`{txhash}` AND `{table}`.`{chainID}` = `subquery`.`{chainID}`", map[string]string{
+		"INNER JOIN (?) as subquery on `{table}`.`{id}` = `subquery`.`{id}` AND `{table}`.`{chainID}` = `subquery`.`{chainID}`", map[string]string{
 			"table":   tableName,
-			"txhash":  txHashFieldName,
+			"id":      idFieldName,
 			"nonce":   nonceFieldName,
 			"chainID": chainIDFieldName,
 		},

@@ -17,6 +17,7 @@ func init() {
 	statusFieldName = namer.GetConsistentName("Status")
 	createdAtFieldName = namer.GetConsistentName("CreatedAt")
 	fromFieldName = namer.GetConsistentName("From")
+	idFieldName = namer.GetConsistentName("ID")
 }
 
 var (
@@ -32,16 +33,19 @@ var (
 	createdAtFieldName string
 	// fromFieldName is the field name of the from address.
 	fromFieldName string
+	// idFieldName is the field name of the id.
+	idFieldName string
 )
 
 // ETHTX contains a raw evm transaction that is unsigned.
 type ETHTX struct {
+	ID uint64 `gorm:"column:id;primaryKey;autoIncrement:true"`
 	// CreatedAt is the time the transaction was created
 	CreatedAt time.Time
 	// TXHash is the hash of the transaction
-	TXHash string `gorm:"column:tx_hash;primaryKey"`
+	TXHash string `gorm:"column:tx_hash;uniqueIndex;size:256"`
 	// From is the sender of the transaction
-	From string `gorm:"from;index"`
+	From string `gorm:"column:from;index"`
 	// ChainID is the chain id the transaction hash will be sent on
 	ChainID uint64 `gorm:"column:chain_id;index"`
 	// Nonce is the nonce of the raw evm tx
