@@ -42,6 +42,11 @@ func SortTxes(txs []db.TX) map[uint64][]db.TX {
 	return sortTxes(txs)
 }
 
+// GroupTxesByNonce exports groupTxesByNonce for testing.
+func GroupTxesByNonce(txs []db.TX) map[uint64][]db.TX {
+	return groupTxesByNonce(txs)
+}
+
 const (
 	// HashAttr exports hashAttr for testing.
 	HashAttr = hashAttr
@@ -82,6 +87,8 @@ type TestTransactionSubmitter interface {
 		transactor *bind.TransactOpts, bigChainID *big.Int, prevTx *types.Transaction) (err error)
 	// GetNonce exports getNonce for testing.
 	GetNonce(parentCtx context.Context, chainID *big.Int, address common.Address) (_ uint64, err error)
+	// CheckAndSetConfirmation exports checkAndSetConfirmation for testing.
+	CheckAndSetConfirmation(ctx context.Context, chainClient client.EVM, txes []db.TX) error
 }
 
 // SetGasPrice exports setGasPrice for testing.
@@ -93,4 +100,9 @@ func (t *txSubmitterImpl) SetGasPrice(ctx context.Context, client client.EVM,
 // GetNonce exports getNonce for testing.
 func (t *txSubmitterImpl) GetNonce(parentCtx context.Context, chainID *big.Int, address common.Address) (_ uint64, err error) {
 	return t.getNonce(parentCtx, chainID, address)
+}
+
+// CheckAndSetConfirmation exports checkAndSetConfirmation for testing.
+func (t *txSubmitterImpl) CheckAndSetConfirmation(ctx context.Context, chainClient client.EVM, txes []db.TX) error {
+	return t.checkAndSetConfirmation(ctx, chainClient, txes)
 }

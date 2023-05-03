@@ -19,6 +19,7 @@ import (
 	"github.com/synapsecns/sanguine/ethergo/submitter/db"
 	dbMocks "github.com/synapsecns/sanguine/ethergo/submitter/db/mocks"
 	submitterMocks "github.com/synapsecns/sanguine/ethergo/submitter/mocks"
+	"github.com/synapsecns/sanguine/ethergo/util"
 	"math/big"
 )
 
@@ -152,4 +153,57 @@ func (s *SubmitterSuite) TestSubmitTransaction() {
 
 		return currentCounter.Uint64() > ogCounter.Uint64()
 	})
+}
+
+func (s *SubmitterSuite) TestCheckAndSetConfirmation() {
+	cfg := &config.Config{}
+	ts := submitter.NewTestTransactionSubmitter(s.metrics, s.signer, s, s.store, cfg)
+
+	tb := s.testBackends[0]
+	confirmedTx := ethMocks.MockTx(s.GetTestContext(), s.T(), tb, s.localAccount, types.LegacyTxType)
+	allTxes := []db.TX{{
+		Transaction: confirmedTx,
+		Status:      db.Pending,
+	}}
+
+	chainClient, err := s.GetClient(s.GetTestContext(), tb.GetBigChainID())
+	s.Require().NoError(err)
+
+	const duplicateCount = 15
+	for i := 0; i < duplicateCount; i++ {
+		copiedTX, err := util.CopyTX(confirmedTx, util.WithGasPrice(big.NewInt(int64(i))))
+		s.Require().NoError(err)
+
+		transactor, err := s.signer.GetTransactor(s.GetTestContext(), tb.GetBigChainID())
+		s.Require().NoError(err)
+
+		copiedTX, err = transactor.Signer(s.signer.Address(), copiedTX)
+		s.Require().NoError(err)
+
+		allTxes = append(allTxes, db.TX{
+			Transaction: copiedTX,
+			Status:      db.ReplacedOrConfirmed,
+		})
+	}
+
+	err = ts.CheckAndSetConfirmation(s.GetTestContext(), chainClient, allTxes)
+	s.Require().NoError(err)
+
+	txs, err := s.store.GetAllTXAttemptByStatus(s.GetTestContext(), s.signer.Address(), tb.GetBigChainID(), db.ReplacedOrConfirmed, db.Confirmed, db.Replaced)
+	s.Require().NoError(err)
+
+	var replacedCount int
+	for _, tx := range txs {
+		//nolint: exhaustive
+		switch tx.Status {
+		case db.Replaced:
+			replacedCount++
+		case db.Confirmed:
+			s.Require().Equal(tx.Hash(), confirmedTx.Hash())
+		default:
+			s.Failf("unexpected status: %s", tx.Status.String())
+		}
+	}
+
+	s.Require().Equal(duplicateCount, replacedCount)
 }

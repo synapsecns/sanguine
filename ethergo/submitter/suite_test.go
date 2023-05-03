@@ -58,6 +58,8 @@ type SubmitterSuite struct {
 	store db.Service
 	// registry is the registry to use for the test
 	deployer *manager.DeployerManager
+	// localAccount is the local account to use for the test
+	localAccount *keystore.Key
 }
 
 // GetClient returns a client for the given chain id.
@@ -113,9 +115,9 @@ func (s *SubmitterSuite) SetupSuite() {
 // SetupTest sets up the signer and funds the account with 10 eth on each backend.
 func (s *SubmitterSuite) SetupTest() {
 	s.TestSuite.SetupTest()
-	localAccount := mocks.MockAccount(s.T())
+	s.localAccount = mocks.MockAccount(s.T())
 	// create the local signer
-	s.signer = localsigner.NewSigner(localAccount.PrivateKey)
+	s.signer = localsigner.NewSigner(s.localAccount.PrivateKey)
 	var wg sync.WaitGroup
 	wg.Add(len(s.testBackends) + 1)
 

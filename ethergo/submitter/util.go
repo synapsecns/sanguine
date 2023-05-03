@@ -127,3 +127,14 @@ func sortTxes(txs []db.TX) map[uint64][]db.TX {
 
 	return txesByChainID
 }
+
+// groupTxesByNonce groups a slice of transactions by nonce.
+// this will not differentiate between transactions with different chain ids.
+func groupTxesByNonce(txs []db.TX) map[uint64][]db.TX {
+	txesByNonce := make(map[uint64][]db.TX)
+	for _, t := range txs {
+		txesByNonce[t.Nonce()] = append(txesByNonce[t.Nonce()], t)
+	}
+
+	return txesByNonce
+}

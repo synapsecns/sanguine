@@ -2,6 +2,7 @@ package submitter_test
 
 import (
 	"context"
+	"fmt"
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/accounts/keystore"
 	"github.com/ethereum/go-ethereum/common"
@@ -12,6 +13,7 @@ import (
 	"github.com/synapsecns/sanguine/ethergo/mocks"
 	"github.com/synapsecns/sanguine/ethergo/submitter"
 	"github.com/synapsecns/sanguine/ethergo/submitter/db"
+	"github.com/synapsecns/sanguine/ethergo/util"
 	"go.opentelemetry.io/otel/attribute"
 	"gotest.tools/assert"
 	"math/big"
@@ -238,6 +240,36 @@ func (s *SubmitterSuite) TestSortTxes() {
 	for chainID, txes := range expected {
 		for i := range txes {
 			assert.Equal(s.T(), sorted[chainID][i].Hash(), txes[i].Hash())
+		}
+	}
+}
+
+func (s *SubmitterSuite) TestGroupTxesByNonce() {
+	ogTx := mocks.GetMockTxes(s.GetTestContext(), s.T(), 1, types.LegacyTxType)[0]
+	var txes []db.TX
+	// generate 1,000 txes with 100 different nonces
+	for nonce := 0; nonce < 100; nonce++ {
+		copiedTX, err := util.CopyTX(ogTx, util.WithNonce(uint64(nonce)))
+		s.Require().NoError(err)
+
+		for i := 0; i < 10; i++ {
+			newTX, err := util.CopyTX(copiedTX, util.WithGasPrice(big.NewInt(int64(i))))
+			s.Require().NoError(err)
+
+			txes = append(txes, db.TX{
+				Transaction: newTX,
+				Status:      db.Pending,
+			})
+		}
+	}
+
+	nonceMap := submitter.GroupTxesByNonce(txes)
+	for i := 0; i < 100; i++ {
+		txList := nonceMap[uint64(i)]
+		for _, tx := range txList {
+			if tx.Nonce() != uint64(i) {
+				s.Require().NoError(fmt.Errorf("expected nonce %d, got %d", i, tx.Nonce()))
+			}
 		}
 	}
 }

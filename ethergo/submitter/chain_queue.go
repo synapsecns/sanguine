@@ -43,7 +43,7 @@ func (c *chainQueue) chainIDInt() int {
 	return int(c.chainID.Int64())
 }
 
-func (t *txSubmitterImpl) chainQueue(parentCtx context.Context, chainID *big.Int, txes []db.TX) (err error) {
+func (t *txSubmitterImpl) chainPendingQueue(parentCtx context.Context, chainID *big.Int, txes []db.TX) (err error) {
 	ctx, span := t.metrics.Tracer().Start(parentCtx, "submitter.ChainQueue")
 	defer func() {
 		metrics.EndSpanWithErr(span, err)
@@ -89,7 +89,7 @@ func (t *txSubmitterImpl) chainQueue(parentCtx context.Context, chainID *big.Int
 
 	err = cq.g.Wait()
 	if err != nil {
-		return fmt.Errorf("error in chainQueue: %w", err)
+		return fmt.Errorf("error in chainPendingQueue: %w", err)
 	}
 
 	sort.Slice(cq.reprocessQueue, func(i, j int) bool {
@@ -151,7 +151,7 @@ func (c *chainQueue) bumpTX(parentCtx context.Context, ogTx db.TX) {
 		}
 		tx := ogTx.Transaction
 
-		ctx, span := c.metrics.Tracer().Start(parentCtx, "chainQueue.bumpTX", trace.WithAttributes(attribute.Stringer(metrics.TxHash, tx.Hash())))
+		ctx, span := c.metrics.Tracer().Start(parentCtx, "chainPendingQueue.bumpTX", trace.WithAttributes(attribute.Stringer(metrics.TxHash, tx.Hash())))
 		defer func() {
 			metrics.EndSpanWithErr(span, err)
 		}()
@@ -242,7 +242,7 @@ func (c *chainQueue) updateOldTxStatuses(parentCtx context.Context) {
 		return
 	}
 
-	ctx, span := c.metrics.Tracer().Start(parentCtx, "chainQueue.updateOldTxStatuses")
+	ctx, span := c.metrics.Tracer().Start(parentCtx, "chainPendingQueue.updateOldTxStatuses")
 
 	// start a new goroutine to mark the txes as replaced or confirmed in parallel
 	c.g.Go(func() (err error) {
