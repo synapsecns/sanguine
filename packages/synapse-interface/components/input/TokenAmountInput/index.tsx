@@ -2,6 +2,7 @@ import { formatBNToString } from '@bignumber/format'
 import React from 'react'
 import SwitchButton from '@components/buttons/SwitchButton'
 import MiniMaxButton from '@components/buttons/MiniMaxButton'
+import Spinner from '@/components/icons/Spinner'
 import { BigNumber } from '@ethersproject/bignumber'
 import { cleanNumberInput } from '@utils/cleanNumberInput'
 
@@ -113,28 +114,32 @@ const BridgeInputContainer = ({
             }}
           />
 
-          <input
-            pattern="[0-9.]+"
-            disabled={!isOrigin} // may cause issues idk goal is to prevent to result from being selectable
-            className={`
-              ml-4
-              ${isOrigin && isConnected ? '-mt-0 md:-mt-4' : '-mt-0'}
-              focus:outline-none
-              bg-transparent
-              pr-4
-              w-2/3
-             placeholder:text-[#88818C]
-             text-white text-opacity-80 text-lg md:text-2xl lg:text-2xl font-medium
-            `}
-            placeholder="0.0000"
-            onChange={
-              isOrigin
-                ? (e) => onChangeAmount(cleanNumberInput(e.target.value))
-                : () => null
-            }
-            value={inputString}
-            name="inputRow"
-          />
+          {isQuoteLoading ? (
+            <Spinner />
+          ) : (
+            <input
+              pattern="[0-9.]+"
+              disabled={!isOrigin} // may cause issues idk goal is to prevent to result from being selectable
+              className={`
+                ml-4
+                ${isOrigin && isConnected ? '-mt-0 md:-mt-4' : '-mt-0'}
+                focus:outline-none
+                bg-transparent
+                pr-4
+                w-2/3
+               placeholder:text-[#88818C]
+               text-white text-opacity-80 text-lg md:text-2xl lg:text-2xl font-medium
+              `}
+              placeholder="0.0000"
+              onChange={
+                isOrigin
+                  ? (e) => onChangeAmount(cleanNumberInput(e.target.value))
+                  : () => null
+              }
+              value={inputString}
+              name="inputRow"
+            />
+          )}
           {isOrigin && isConnected && (
             <label
               htmlFor="inputRow"

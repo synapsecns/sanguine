@@ -159,9 +159,10 @@ const BridgePage = ({ address }: { address: `0x${string}` }) => {
   useEffect(() => {
     let isCancelled = false
 
+    // console.log(toToken, fromInput, toChainId, time)
+    // setIsQuoteLoading(true)
     const handleChange = async () => {
       await timeout(1000)
-
       if (!isCancelled) {
         if (
           fromChainId &&
@@ -180,7 +181,6 @@ const BridgePage = ({ address }: { address: `0x${string}` }) => {
         setBridgeQuote(EMPTY_BRIDGE_QUOTE)
       }
     }
-
     handleChange()
 
     return () => {
@@ -188,6 +188,16 @@ const BridgePage = ({ address }: { address: `0x${string}` }) => {
     }
   }, [toToken, fromInput, toChainId, time])
 
+  useEffect(() => {
+    if (fromInput.string === '') {
+      return
+    }
+    setIsQuoteLoading(true)
+
+    return () => {
+      setIsQuoteLoading(false)
+    }
+  }, [fromInput])
   /*
   Helper Function: resetTokenPermutation
   - Handles when theres a new from token/chain and all other parts of the bridge arrangement needs to be updated
