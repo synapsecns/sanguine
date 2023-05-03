@@ -113,7 +113,7 @@ type EthTx struct {
 	// ChainID is the chain id of the transaction
 	ChainID uint32 `gorm:"column:chain_id;primaryKey"`
 	// BlockHash is the hash of the block in which the transaction was included
-	BlockHash string `gorm:"block_hash"`
+	BlockHash string `gorm:"column:block_hash;index:idx_tx_block_hash,priority:1,sort:desc"`
 	// BlockNumber is the block in which the transaction was included
 	BlockNumber uint64 `gorm:"column:block_number;index:idx_block_number_tx,priority:1,sort:desc"`
 	// RawTx is the raw serialized transaction

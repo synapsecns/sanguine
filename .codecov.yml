@@ -92,3 +92,4 @@ ignore:
   - 'packages/contracts-core/script/**.sol'
   - 'packages/contracts-core/test/**.sol'
   - 'services/scribe/grpc/client/*'
+  - '**/mocks/**.go'
