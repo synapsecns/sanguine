@@ -1,7 +1,11 @@
 import { Zero, One } from '@ethersproject/constants'
 import { calculateExchangeRate } from '@utils/calculateExchangeRate'
 import { getEthPrice, getAvaxPrice } from '@utils/actions/getPrices'
-import { commifyBnToString, commifyBnWithDefault } from '@bignumber/format'
+import {
+  commifyBnToString,
+  commifyBnWithDefault,
+  formatBNToString,
+} from '@bignumber/format'
 import {
   calcBnSum,
   calcIfZero,
@@ -27,25 +31,25 @@ const getBalanceData = async ({
   const tokenBalances: PoolTokenObject[] = []
   let poolTokenSum = Zero
   let lpTokenBalance = One
+  const lpTotalSupply =
+    (
+      await fetchToken({
+        address: `0x${lpTokenAddress.slice(2)}`,
+        chainId,
+      })
+    )?.totalSupply?.value ?? Zero
+
   const tokens: Token[] = [...pool.poolTokens, pool]
   for (const token of tokens) {
     const isLP = token.addresses[chainId] === lpTokenAddress
 
-    const rawBalance =
-      (!isLP
-        ? (
-            await fetchBalance({
-              address: `0x${address.slice(2)}`,
-              chainId,
-              token: `0x${token.addresses[chainId].slice(2)}`,
-            })
-          )?.value
-        : (
-            await fetchToken({
-              address: `0x${token.addresses[chainId].slice(2)}`,
-              chainId,
-            })
-          )?.totalSupply?.value) ?? Zero
+    const rawBalance = (
+      await fetchBalance({
+        address: `0x${address.slice(2)}`,
+        chainId,
+        token: `0x${token.addresses[chainId].slice(2)}`,
+      })
+    )?.value
 
     const balance = rawBalance.mul(
       BigNumber.from(10).pow(18 - token.decimals[chainId])
@@ -73,6 +77,7 @@ const getBalanceData = async ({
     tokenBalances,
     poolTokenSum,
     lpTokenBalance,
+    lpTotalSupply,
   }
 }
 export const getPoolData = async (
@@ -94,16 +99,17 @@ export const getPoolData = async (
 
   const lpTokenAddress = pool?.addresses[chainId]
 
-  const { tokenBalances, poolTokenSum, lpTokenBalance } = await getBalanceData({
-    pool,
-    chainId,
-    address: user ? address : poolAddress,
-    lpTokenAddress,
-  })
+  const { tokenBalances, poolTokenSum, lpTokenBalance, lpTotalSupply } =
+    await getBalanceData({
+      pool,
+      chainId,
+      address: user ? address : poolAddress,
+      lpTokenAddress,
+    })
 
-  const virtualPrice = lpTokenBalance.isZero()
+  const virtualPrice = lpTotalSupply.isZero()
     ? MAX_BN_POW
-    : calculateExchangeRate(lpTokenBalance, 18, poolTokenSum, 18)
+    : calculateExchangeRate(lpTotalSupply, 18, poolTokenSum, 18)
 
   const ethPrice = prices?.ethPrice ?? (await getEthPrice())
   const avaxPrice = prices?.avaxPrice ?? (await getAvaxPrice())
@@ -116,12 +122,10 @@ export const getPoolData = async (
     },
     poolType: pool?.poolType,
   })
-  console.log('her01', lpTokenBalance.toString(), tokenBalancesSum.toString())
-
   const poolTokensMatured = getPoolTokenInfoArr({
     tokenBalances: tokenBalances.filter((t) => !t.isLP),
     ...{
-      lpTokenBalance,
+      lpTotalSupply,
       tokenBalancesSum,
     },
     chainId,
@@ -141,6 +145,7 @@ export const getPoolData = async (
       value: userPoolTokenBalancesSum,
       tokens: poolTokensMatured,
       lpTokenBalance,
+      lpTokenBalanceStr: formatBNToString(lpTokenBalance, 18, 4),
     }
   }
 

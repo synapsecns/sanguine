@@ -50,12 +50,12 @@ export const getTokenBalanceInfo = ({ tokenBalances, poolType, prices }) => {
 
 export const getPoolTokenInfoArr = ({
   tokenBalances,
-  lpTokenBalance,
+  lpTotalSupply,
   tokenBalancesSum,
 }: {
   tokenBalances: PoolTokenObject[]
   chainId: number
-  lpTokenBalance: BigNumber
+  lpTotalSupply: BigNumber
   tokenBalancesSum: BigNumber
 }) => {
   return tokenBalances.map((poolToken) => ({
@@ -65,7 +65,7 @@ export const getPoolTokenInfoArr = ({
       : formatBNToPercentString(
           poolToken.balance
             .mul(10 ** 5)
-            .div(lpTokenBalance.isZero() ? One : tokenBalancesSum),
+            .div(lpTotalSupply.isZero() ? One : tokenBalancesSum),
           5
         ),
     balance: poolToken.balance,

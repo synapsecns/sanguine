@@ -9,14 +9,14 @@ import { cleanNumberInput } from '@utils/cleanNumberInput'
 const TokenInput = ({
   token,
   balanceStr,
-  inputValue,
+  inputValueStr,
   onChange,
   chainId,
   address,
 }: {
   token: Token
   balanceStr: string
-  inputValue: any
+  inputValueStr: string
   onChange: (v: string) => void
   chainId: number
   address: string
@@ -30,7 +30,7 @@ const TokenInput = ({
       onChange(maxStr)
     }
   }
-
+  console.log('tokeninpu---t', inputValueStr ?? '', token)
   return (
     <div className="items-center">
       <div className="w-full">
@@ -39,10 +39,11 @@ const TokenInput = ({
           isConnected={address !== undefined}
           balanceStr={balanceStr}
           onClickBalance={onClickMax}
-          value={inputValue.str[token.addresses[chainId]]}
+          value={inputValueStr}
           placeholder={'0.0000'}
           onChange={(e) => onChange(cleanNumberInput(e.target.value))}
-          disabled={inputValue == ''}
+          // disabled={inputValueStr == ''}
+          disabled={false}
           showButton={false}
           icon={token.icon.src}
           token={token}

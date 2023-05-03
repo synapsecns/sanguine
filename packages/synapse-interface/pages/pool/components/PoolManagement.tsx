@@ -45,6 +45,7 @@ const PoolManagement = ({
               pool={pool}
               chainId={chainId}
               address={address}
+              poolData={poolData}
               poolUserData={poolUserData}
             />
           )}

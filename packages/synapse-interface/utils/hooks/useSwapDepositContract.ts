@@ -1,25 +1,26 @@
-import { useMemo } from 'react'
 import { Token } from '@types'
 import SWAP_ABI from '@abis/swap.json'
 import AV_SWAP_WRAPPER_ABI from '@abis/avSwapWrapper.json'
 import SWAP_ETH_WRAPPER_ABI from '@abis/swapEthWrapper.json'
 import { Contract } from '@ethersproject/contracts'
+import { fetchSigner } from '@wagmi/core'
 
-export const useSwapDepositContract = (pool: Token, chainId: number) => {
-  let address
+export const useSwapDepositContract = async (pool: Token, chainId: number) => {
+  let poolAddress
   let abi
   if (pool?.swapEthAddresses?.[chainId]) {
-    address = pool.swapAddresses[chainId]
+    poolAddress = pool.swapAddresses[chainId]
     abi = SWAP_ETH_WRAPPER_ABI
   } else if (pool?.swapWrapperAddresses?.[chainId]) {
-    address = pool.swapWrapperAddresses[chainId]
+    poolAddress = pool.swapWrapperAddresses[chainId]
     abi = AV_SWAP_WRAPPER_ABI
   } else {
-    address = pool.swapAddresses[chainId]
+    poolAddress = pool.swapAddresses[chainId]
     abi = SWAP_ABI
   }
+  const signer = await fetchSigner({ chainId })
 
-  const swapContract = new Contract(address, abi)
+  const swapContract = new Contract(poolAddress, abi, signer)
 
-  return useMemo(() => swapContract, [pool])
+  return swapContract
 }

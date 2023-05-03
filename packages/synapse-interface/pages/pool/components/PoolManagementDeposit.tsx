@@ -4,10 +4,8 @@ import { WETH } from '@constants/tokens/swapMaster'
 import { AVWETH, ETH, WETHE } from '@constants/tokens/master'
 import { stringToBigNum } from '@/utils/stringToBigNum'
 import { getAddress } from '@ethersproject/address'
-import { approveAndDeposit } from '@utils/actions/approveAndDeposit'
 import TokenInput from '@components/TokenInput'
 import PriceImpactDisplay from './PriceImpactDisplay'
-import { TransactionResponse } from '@ethersproject/providers'
 import { useSynapseContext } from '@/utils/providers/SynapseProvider'
 import { formatBNToString } from '@utils/bignumber/format'
 import { calculatePriceImpact } from '@utils/priceImpact'
@@ -18,6 +16,10 @@ import { useState, useEffect } from 'react'
 import { BigNumber } from '@ethersproject/bignumber'
 import { calculateExchangeRate } from '@utils/calculateExchangeRate'
 import { getTokenAllowance } from '@/utils/actions/getTokenAllowance'
+import { approve, deposit } from '@/utils/actions/approveAndDeposit'
+import { QUOTE_POLLING_INTERVAL } from '@/constants/bridge' // TODO CHANGE
+import { useSwapDepositContract } from '@hooks/useSwapDepositContract'
+
 const PoolManagementDeposit = ({
   pool,
   chainId,
@@ -41,6 +43,7 @@ const PoolManagementDeposit = ({
     allowances: Record<string, BigNumber>
     routerAddress: string
   }>({ priceImpact: undefined, allowances: {}, routerAddress: '' })
+  const [time, setTime] = useState(Date.now())
 
   const SynapseSDK = useSynapseContext()
 
@@ -56,7 +59,6 @@ const PoolManagementDeposit = ({
         )
       }
     })
-    console.log('sumBigNumbersFromState', sum.toString())
     return sum
   }
 
@@ -64,32 +66,19 @@ const PoolManagementDeposit = ({
     if (poolUserData == null || address == null) {
       return
     }
-
     let inputSum = sumBigNumbersFromState()
-    console.log(
-      poolData,
-      poolData.totalLocked,
-      inputSum.toString(),
-      poolData.totalLocked.toString()
-    )
     if (poolData.totalLocked.gt(0) && inputSum.gt(0)) {
-      console.log(
-        'iii',
-        chainId,
-        pool.swapAddresses[chainId],
-        inputValue.bn,
-        Object.values(inputValue.bn).map((v) => v.toString())
-      )
-      const { amount, routerAddress } = await SynapseSDK.calculateAddLiquidity(
+      const { amount } = await SynapseSDK.calculateAddLiquidity(
         chainId,
         pool.swapAddresses[chainId],
         inputValue.bn
       )
+      const poolContract = await useSwapDepositContract(pool, chainId)
 
       let allowances: Record<string, BigNumber> = {}
       for (const [key, value] of Object.entries(inputValue.bn)) {
         allowances[key] = await getTokenAllowance(
-          routerAddress,
+          poolContract.address,
           key,
           address,
           chainId
@@ -110,15 +99,23 @@ const PoolManagementDeposit = ({
       })
     }
   }
+  useEffect(() => {
+    const interval = setInterval(
+      () => setTime(Date.now()),
+      QUOTE_POLLING_INTERVAL
+    )
+    return () => {
+      clearInterval(interval)
+    }
+  }, [])
 
   useEffect(() => {
     calculateMaxDeposits()
-  }, [inputValue])
+  }, [inputValue, time])
 
-  const onChangeTokenInputValue = (token: Token, value: string) => {
+  const onChangeInputValue = (token: Token, value: string) => {
     const bigNum = stringToBigNum(value, token.decimals[chainId]) ?? Zero
     if (chainId && token) {
-      console.log
       setInputValue({
         bn: {
           ...inputValue.bn,
@@ -133,40 +130,76 @@ const PoolManagementDeposit = ({
   }
 
   useEffect(() => {
-    if (poolData && poolUserData) {
-      let initInputValue: {
-        bn: Record<string, BigNumber>
-        str: Record<string, string>
-      } = { bn: {}, str: {} }
-      poolUserData.tokens.map((tokenObj, i) => {
-        initInputValue.bn[getAddress(tokenObj.token.addresses[chainId])] = Zero
-        initInputValue.str[getAddress(tokenObj.token.addresses[chainId])] =
-          undefined
-      })
-      setInputValue(initInputValue)
+    if (poolData && poolUserData && pool && chainId && address) {
+      resetInputs()
     }
   }, [poolUserData])
 
-  // const {
-  //   onChangeTokenInputValue,
-  //   clearInputs,
-  //   priceImpact,
-  //   poolTokens,
-  //   inputState,
-  //   tokenInputSum,
-  //   depositAmount,
-  // } = useSwapPoolDeposit(poolName)
-  const clearInputs = ''
-  const poolTokens = []
-  const inputState = {}
-  const tokenInputSum = Zero
-  const depositAmount = ''
-  console.log('poolpoolpool', pool)
-  const placeholder = async (): Promise<TransactionResponse> => {
-    console.log('placeholder')
-    return
+  const resetInputs = () => {
+    let initInputValue: {
+      bn: Record<string, BigNumber>
+      str: Record<string, string>
+    } = { bn: {}, str: {} }
+    poolUserData.tokens.map((tokenObj, i) => {
+      initInputValue.bn[tokenObj.token.addresses[chainId]] = Zero
+      initInputValue.str[tokenObj.token.addresses[chainId]] = ''
+    })
+    setInputValue(initInputValue)
   }
-  console.log('poolUserData', poolUserData)
+
+  const tokenInputSum = Zero
+
+  // some messy button gen stuff (will re-write)
+  let isFromBalanceEnough = true
+  let isAllowanceEnough = true
+  let btnLabel = 'Deposit'
+  let pendingLabel = 'Depositing funds...'
+  let btnClassName = ''
+  let buttonAction = () =>
+    deposit(pool, 'ONE_TENTH', null, inputValue.bn, chainId)
+  let postButtonAction = () => {
+    console.log('JHK')
+    resetInputs()
+  }
+
+  for (const [tokenAddr, amount] of Object.entries(inputValue.bn)) {
+    if (
+      Object.keys(depositQuote.allowances).length > 0 &&
+      !amount.isZero() &&
+      amount.gt(depositQuote.allowances[tokenAddr])
+    ) {
+      isAllowanceEnough = false
+    }
+    poolUserData.tokens.map((tokenObj, i) => {
+      if (
+        tokenObj.token.addresses[chainId] === tokenAddr &&
+        amount.gt(tokenObj.balance)
+      ) {
+        isFromBalanceEnough = false
+      }
+    })
+  }
+
+  if (!isFromBalanceEnough) {
+    btnLabel = `Insufficient Balance`
+  } else if (!isAllowanceEnough) {
+    buttonAction = () => approve(pool, depositQuote, inputValue.bn, chainId)
+    btnLabel = `Approve Token(s)`
+    pendingLabel = `Approving Token(s)`
+    btnClassName = 'from-[#feba06] to-[#FEC737]'
+    postButtonAction = () => setTime(0)
+  }
+  const actionBtn = (
+    <TransactionButton
+      className={btnClassName}
+      disabled={tokenInputSum.eq(0)}
+      onClick={() => buttonAction()}
+      onSuccess={() => postButtonAction()}
+      label={btnLabel}
+      pendingLabel={pendingLabel}
+    />
+  )
+
   return (
     <div className="flex-col">
       <div className="px-2 pt-1 pb-4 bg-bgLight rounded-xl">
@@ -179,36 +212,18 @@ const PoolManagementDeposit = ({
                 token={balanceToken}
                 key={balanceToken.symbol}
                 balanceStr={String(tokenObj.balanceStr)}
-                inputValue={inputValue}
-                onChange={(value) =>
-                  onChangeTokenInputValue(balanceToken, value)
-                }
+                inputValueStr={inputValue.str[balanceToken.addresses[chainId]]}
+                onChange={(value) => onChangeInputValue(balanceToken, value)}
                 chainId={chainId}
                 address={address}
               />
             )
           })}
       </div>
-      <TransactionButton
-        label="Add Liquidity"
-        pendingLabel="Adding Liquidity"
-        disabled={tokenInputSum.eq(0)}
-        className="items-center w-full px-6 py-3 mt-6 text-md rounded-xl"
-        // FIX
-        // onClick={async () => {
-        //   const appAndDeposit = await approveAndDeposit({
-        //     slippageCustom: null,
-        //     slippageSelected: 'ONE_TENTH',
-        //     infiniteApproval: true,
-        //     inputState,
-        //     depositAmount,
-        //   })
-        //   // Clear input after deposit
-        //   clearInputs()
-        // }}
-        onClick={placeholder}
-      />
-      <PriceImpactDisplay priceImpact={depositQuote.priceImpact} />
+      {actionBtn}
+      {depositQuote.priceImpact && depositQuote.priceImpact?.gt(Zero) && (
+        <PriceImpactDisplay priceImpact={depositQuote.priceImpact} />
+      )}
     </div>
   )
 }

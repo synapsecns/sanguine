@@ -1,5 +1,7 @@
 import { BigNumber } from '@ethersproject/bignumber'
 import * as CHAINS from '@constants/chains/master'
+import { getAddress } from '@ethersproject/address'
+
 export type Chain = {
   id: number
   chainSymbol: string
@@ -196,7 +198,7 @@ export class Token {
     priceUnits?: string
   }) {
     const isMetaVar = Boolean(swapDepositAddresses || forceMeta)
-    this.addresses = addresses
+    this.addresses = validateAddresses(addresses)
     this.wrapperAddresses = wrapperAddresses
     // this.decimals             = decimals
     this.decimals = makeMultiChainObj(decimals)
@@ -244,4 +246,16 @@ const makeMultiChainObj = (valOrObj) => {
     }
     return obj
   }
+}
+
+const validateAddresses = (addresses: {
+  [x: number]: string
+}): { [x: number]: string } => {
+  const reformatted: { [x: number]: string } = {}
+  for (const chainId in addresses) {
+    reformatted[chainId] = addresses[chainId]
+      ? getAddress(addresses[chainId])
+      : ''
+  }
+  return reformatted
 }

@@ -4,22 +4,26 @@ import { commify } from '@ethersproject/units'
 import { cleanNumberInput } from '@utils/cleanNumberInput'
 import { Token } from '@types'
 const RecievedTokenSection = ({
-  inputState,
+  withdrawQuote,
   poolTokens,
-  label,
+  chainId,
 }: {
-  inputState: any
+  withdrawQuote: any
   poolTokens: Token[]
-  label?: string
+  chainId: number
 }) => {
   return (
     <div className="text-center sm:text-left">
       <p className="text-sm font-medium bg-opacity-70 pb-0.5 text-secondaryTextColor text-opacity-50 mb-2">
-        {label ?? 'You will receive '}
+        You will receive
       </p>
       {poolTokens
         .filter(
-          (token) => Number(cleanNumberInput(inputState[token.symbol])) > 0
+          (token) =>
+            withdrawQuote.outputs[token.addresses[chainId]] &&
+            Number(
+              cleanNumberInput(withdrawQuote.outputs[token.addresses[chainId]])
+            ) > 0
         )
         .map((token) => {
           return (
@@ -30,7 +34,9 @@ const RecievedTokenSection = ({
                 src={token.icon}
               ></img>
               <span className="text-sm text-white">
-                {commify(_.round(inputState[token.symbol], 2))}
+                {commify(
+                  _.round(withdrawQuote.outputs[token.addresses[chainId]], 2)
+                )}
               </span>
               <span className="text-sm px-1 font-medium text-secondaryTextColor text-opacity-50">
                 {token.symbol}
