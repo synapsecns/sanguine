@@ -157,9 +157,10 @@ const BridgePage = ({ address }: { address: `0x${string}` }) => {
   - regex function to determine if user input is only zeroes
   */
   function checkStringIfOnlyZeroes(str: string): boolean {
-    const pattern = /^0*\.*$/
-    return pattern.test(str)
+    const regex = /^0*\.*$|^$/
+    return regex.test(str)
   }
+
   /*
   useEffect Triggers: toToken, fromInput, toChainId, time
   - Gets a quote when the polling function is executed or any of the bridge attributes are altered.
@@ -167,8 +168,6 @@ const BridgePage = ({ address }: { address: `0x${string}` }) => {
   useEffect(() => {
     let isCancelled = false
 
-    // console.log(toToken, fromInput, toChainId, time)
-    // setIsQuoteLoading(true)
     const handleChange = async () => {
       await timeout(1000)
       if (!isCancelled) {
@@ -197,16 +196,15 @@ const BridgePage = ({ address }: { address: `0x${string}` }) => {
   }, [toToken, fromInput, toChainId, time])
 
   useEffect(() => {
-    console.log('fromInput: ', fromInput)
-    if (fromInput.string === '' || fromInput.string === '0.0') {
-      return
-    }
-    setIsQuoteLoading(true)
+    const { string, bigNum } = fromInput
+    const isInvalid = checkStringIfOnlyZeroes(string)
+    isInvalid ? () => null : setIsQuoteLoading(true)
 
     return () => {
       setIsQuoteLoading(false)
     }
   }, [fromInput])
+
   /*
   Helper Function: resetTokenPermutation
   - Handles when theres a new from token/chain and all other parts of the bridge arrangement needs to be updated
