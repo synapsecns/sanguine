@@ -7,8 +7,7 @@
   },
   "scripts": {
     "dev": "next dev",
-    "build": "./build-local.sh && next build",
-    "vercel-build": "./build-local.sh && next build",
+    "build": "yarn add @synapsecns/sdk-router && next build",
     "start": "next start",
     "lint": "next lint",
     "cypress:run": "start-server-and-test dev http://localhost:3000 \"cypress run --e2e\"",
