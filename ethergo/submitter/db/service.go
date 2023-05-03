@@ -29,6 +29,8 @@ type Service interface {
 	// DBTransaction executes a transaction on the database.
 	// the function passed in will be passed a new service that is scoped to the transaction.
 	DBTransaction(ctx context.Context, f TransactionFunc) error
+	// GetAllTXAttemptByStatus gets all txs for a given address and chain id with a given status.
+	GetAllTXAttemptByStatus(ctx context.Context, fromAddress common.Address, chainID *big.Int, matchStatuses ...Status) (txs []TX, err error)
 }
 
 // TransactionFunc is a function that can be passed to DBTransaction.

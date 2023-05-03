@@ -32,6 +32,36 @@ func (_m *Service) DBTransaction(ctx context.Context, f db.TransactionFunc) erro
 	return r0
 }
 
+// GetAllTXAttemptByStatus provides a mock function with given fields: ctx, fromAddress, chainID, matchStatuses
+func (_m *Service) GetAllTXAttemptByStatus(ctx context.Context, fromAddress common.Address, chainID *big.Int, matchStatuses ...db.Status) ([]db.TX, error) {
+	_va := make([]interface{}, len(matchStatuses))
+	for _i := range matchStatuses {
+		_va[_i] = matchStatuses[_i]
+	}
+	var _ca []interface{}
+	_ca = append(_ca, ctx, fromAddress, chainID)
+	_ca = append(_ca, _va...)
+	ret := _m.Called(_ca...)
+
+	var r0 []db.TX
+	if rf, ok := ret.Get(0).(func(context.Context, common.Address, *big.Int, ...db.Status) []db.TX); ok {
+		r0 = rf(ctx, fromAddress, chainID, matchStatuses...)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).([]db.TX)
+		}
+	}
+
+	var r1 error
+	if rf, ok := ret.Get(1).(func(context.Context, common.Address, *big.Int, ...db.Status) error); ok {
+		r1 = rf(ctx, fromAddress, chainID, matchStatuses...)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
 // GetNonceForChainID provides a mock function with given fields: ctx, fromAddress, chainID
 func (_m *Service) GetNonceForChainID(ctx context.Context, fromAddress common.Address, chainID *big.Int) (uint64, error) {
 	ret := _m.Called(ctx, fromAddress, chainID)

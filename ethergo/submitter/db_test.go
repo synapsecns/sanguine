@@ -104,6 +104,12 @@ func (t *TXSubmitterDBSuite) TestGetTransactionsWithLimitPerChainID() {
 					// make sure the gas price is correct and the most recently created has been fetched
 					t.Require().Equal(result[i].GasPrice(), big.NewInt(1), testsuite.BigIntComparer())
 				}
+
+				// make sure this returns double the number of results, 2 per tx
+				// TODO: check nonces
+				result, err = testDB.GetAllTXAttemptByStatus(t.GetTestContext(), mockAccount.Address, backend.GetBigChainID(), db.Pending)
+				t.Require().NoError(err)
+				t.Require().Equal(txdb.MaxResultsPerChain*2, len(result))
 			}
 		}
 	})
