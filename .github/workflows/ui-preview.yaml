@@ -30,6 +30,7 @@ jobs:
           filters: |
             explorer-ui: 'packages/explorer-ui/**'
             docs: 'packages/docs/**'
+            synapse-interface: 'packages/synapse-interface/**'
       - id: length
         run: |
           export FILTER_LENGTH=$(echo $FILTERED_PATHS | jq '. | length')
