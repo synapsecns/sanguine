@@ -255,9 +255,9 @@ func (e Executor) Run(ctx context.Context) error {
 			return e.setMinimumTime(ctx, chain.ChainID)
 		})
 
-		//g.Go(func() error {
-		//	return e.executeExecutable(ctx, chain.ChainID)
-		//})
+		g.Go(func() error {
+			return e.executeExecutable(ctx, chain.ChainID)
+		})
 	}
 
 	if err := g.Wait(); err != nil {
