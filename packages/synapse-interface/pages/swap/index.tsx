@@ -7,37 +7,51 @@ import { SWAPABLE_TOKENS } from '@constants/tokens'
 import { DEFAULT_FROM_CHAIN } from '@/constants/swap'
 import NoSwapCard from './NoSwapCard'
 import { useEffect, useState, useMemo } from 'react'
+import StandardPageContainer from '@layouts/StandardPageContainer'
 
 const SwapPage = () => {
-  const { address } = useAccount()
+  const { address: currentAddress } = useAccount()
   const { chain } = useNetwork()
-  const [connectedChain, setConnectedChain] = useState(0)
+  const [connectedChainId, setConnectedChainId] = useState(0)
+  const [address, setAddress] = useState(undefined)
+
   useEffect(() => {
-    setConnectedChain(chain?.id ?? DEFAULT_FROM_CHAIN)
+    setConnectedChainId(chain?.id ?? DEFAULT_FROM_CHAIN)
   }, [chain])
+  useEffect(() => {
+    setAddress(currentAddress)
+  }, [currentAddress])
   return (
     <LandingPageWrapper>
-      <div>
-        <Grid
-          cols={{ xs: 1 }}
-          gap={6}
-          className="justify-center px-2 py-16 sm:px-6 md:px-8"
-        >
-          <div className="pb-3 place-self-center">
-            <div className="flex justify-between mb-5 ml-5 mr-5">
-              <PageHeader
-                title="Swap"
-                subtitle="Exchange stablecoins on-chain."
-              />
+      <StandardPageContainer
+        connectedChainId={connectedChainId}
+        address={address}
+      >
+        <div>
+          <Grid
+            cols={{ xs: 1 }}
+            gap={6}
+            className="justify-center px-2 py-16 sm:px-6 md:px-8"
+          >
+            <div className="pb-3 place-self-center">
+              <div className="flex justify-between mb-5 ml-5 mr-5">
+                <PageHeader
+                  title="Swap"
+                  subtitle="Exchange stablecoins on-chain."
+                />
+              </div>
+              {SWAPABLE_TOKENS[connectedChainId]?.length > 0 ? (
+                <SwapCard
+                  address={address}
+                  connectedChainId={connectedChainId}
+                />
+              ) : (
+                <NoSwapCard chainId={connectedChainId} />
+              )}
             </div>
-            {SWAPABLE_TOKENS[connectedChain]?.length > 0 ? (
-              <SwapCard address={address} connectedChainId={connectedChain} />
-            ) : (
-              <NoSwapCard chainId={connectedChain} />
-            )}
-          </div>
-        </Grid>
-      </div>
+          </Grid>
+        </div>
+      </StandardPageContainer>
     </LandingPageWrapper>
   )
 }

@@ -37,7 +37,7 @@ export const TransactionButton = ({
       }`}
       onClick={async () => {
         const tx = await pendingTxWrapFunc(onClick())
-        if (tx?.hash) {
+        if (tx?.hash || tx?.transactionHash || tx?.status === 1) {
           onSuccess?.()
         }
       }}
