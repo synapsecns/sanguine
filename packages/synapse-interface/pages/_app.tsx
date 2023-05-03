@@ -104,11 +104,7 @@ const App = ({ Component, pageProps }: AppProps) => {
           chainIds={chains.map((chain) => chain.id)}
           providers={synapseProviders}
         >
-          {process.env.NEXT_PUBLIC_ALCHEMY_KEY ? (
-            <Component {...pageProps} />
-          ) : (
-            <div>Alchemy key not set{process.env.NEXT_PUBLIC_ALCHEMY_KEY}</div>
-          )}
+          <Component {...pageProps} />
           <CustomToaster />
         </SynapseProvider>
       </RainbowKitProvider>
