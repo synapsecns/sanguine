@@ -50,7 +50,7 @@ type IBondingManagerTransactor interface {
 	SubmitReceipt(opts *bind.TransactOpts, rcptPayload []byte, rcptSignature []byte) (*types.Transaction, error)
 	// SubmitSnapshot is a paid mutator transaction binding the contract method 0x4bb73ea5.
 	//
-	// Solidity: function submitSnapshot(bytes snapPayload, bytes snapSignature) returns(bytes attPayload)
+	// Solidity: function submitSnapshot(bytes snapPayload, bytes snapSignature) returns(bytes attPayload, bytes32 agentRoot_, uint256[] snapGas)
 	SubmitSnapshot(opts *bind.TransactOpts, snapPayload []byte, snapSignature []byte) (*types.Transaction, error)
 	// SubmitStateReportWithAttestation is a paid mutator transaction binding the contract method 0x235d51b1.
 	//

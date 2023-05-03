@@ -30,11 +30,12 @@ var (
 
 // AttestationHarnessMetaData contains all meta data concerning the AttestationHarness contract.
 var AttestationHarnessMetaData = &bind.MetaData{
-	ABI: "[{\"inputs\":[],\"name\":\"IndexedTooMuch\",\"type\":\"error\"},{\"inputs\":[],\"name\":\"OccupiedMemory\",\"type\":\"error\"},{\"inputs\":[],\"name\":\"PrecompileOutOfGas\",\"type\":\"error\"},{\"inputs\":[],\"name\":\"UnallocatedMemory\",\"type\":\"error\"},{\"inputs\":[],\"name\":\"ViewOverrun\",\"type\":\"error\"},{\"inputs\":[{\"internalType\":\"bytes\",\"name\":\"payload\",\"type\":\"bytes\"}],\"name\":\"agentRoot\",\"outputs\":[{\"internalType\":\"bytes32\",\"name\":\"\",\"type\":\"bytes32\"}],\"stateMutability\":\"pure\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"bytes\",\"name\":\"payload\",\"type\":\"bytes\"}],\"name\":\"blockNumber\",\"outputs\":[{\"internalType\":\"uint40\",\"name\":\"\",\"type\":\"uint40\"}],\"stateMutability\":\"pure\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"bytes\",\"name\":\"payload\",\"type\":\"bytes\"}],\"name\":\"castToAttestation\",\"outputs\":[{\"internalType\":\"bytes\",\"name\":\"\",\"type\":\"bytes\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"bytes32\",\"name\":\"snapRoot_\",\"type\":\"bytes32\"},{\"internalType\":\"bytes32\",\"name\":\"agentRoot_\",\"type\":\"bytes32\"},{\"internalType\":\"uint32\",\"name\":\"nonce_\",\"type\":\"uint32\"},{\"internalType\":\"uint40\",\"name\":\"blockNumber_\",\"type\":\"uint40\"},{\"internalType\":\"uint40\",\"name\":\"timestamp_\",\"type\":\"uint40\"}],\"name\":\"formatAttestation\",\"outputs\":[{\"internalType\":\"bytes\",\"name\":\"\",\"type\":\"bytes\"}],\"stateMutability\":\"pure\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"bytes\",\"name\":\"payload\",\"type\":\"bytes\"}],\"name\":\"hash\",\"outputs\":[{\"internalType\":\"bytes32\",\"name\":\"\",\"type\":\"bytes32\"}],\"stateMutability\":\"pure\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"bytes\",\"name\":\"payload\",\"type\":\"bytes\"}],\"name\":\"isAttestation\",\"outputs\":[{\"internalType\":\"bool\",\"name\":\"\",\"type\":\"bool\"}],\"stateMutability\":\"pure\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"bytes\",\"name\":\"payload\",\"type\":\"bytes\"}],\"name\":\"nonce\",\"outputs\":[{\"internalType\":\"uint32\",\"name\":\"\",\"type\":\"uint32\"}],\"stateMutability\":\"pure\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"bytes\",\"name\":\"payload\",\"type\":\"bytes\"}],\"name\":\"snapRoot\",\"outputs\":[{\"internalType\":\"bytes32\",\"name\":\"\",\"type\":\"bytes32\"}],\"stateMutability\":\"pure\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"bytes\",\"name\":\"payload\",\"type\":\"bytes\"}],\"name\":\"timestamp\",\"outputs\":[{\"internalType\":\"uint40\",\"name\":\"\",\"type\":\"uint40\"}],\"stateMutability\":\"pure\",\"type\":\"function\"}]",
+	ABI: "[{\"inputs\":[],\"name\":\"IndexedTooMuch\",\"type\":\"error\"},{\"inputs\":[],\"name\":\"OccupiedMemory\",\"type\":\"error\"},{\"inputs\":[],\"name\":\"PrecompileOutOfGas\",\"type\":\"error\"},{\"inputs\":[],\"name\":\"UnallocatedMemory\",\"type\":\"error\"},{\"inputs\":[],\"name\":\"ViewOverrun\",\"type\":\"error\"},{\"inputs\":[{\"internalType\":\"bytes\",\"name\":\"payload\",\"type\":\"bytes\"}],\"name\":\"blockNumber\",\"outputs\":[{\"internalType\":\"uint40\",\"name\":\"\",\"type\":\"uint40\"}],\"stateMutability\":\"pure\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"bytes\",\"name\":\"payload\",\"type\":\"bytes\"}],\"name\":\"castToAttestation\",\"outputs\":[{\"internalType\":\"bytes\",\"name\":\"\",\"type\":\"bytes\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"bytes32\",\"name\":\"agentRoot_\",\"type\":\"bytes32\"},{\"internalType\":\"bytes32\",\"name\":\"snapGasHash_\",\"type\":\"bytes32\"}],\"name\":\"dataHash\",\"outputs\":[{\"internalType\":\"bytes32\",\"name\":\"\",\"type\":\"bytes32\"}],\"stateMutability\":\"pure\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"bytes\",\"name\":\"payload\",\"type\":\"bytes\"}],\"name\":\"dataHash\",\"outputs\":[{\"internalType\":\"bytes32\",\"name\":\"\",\"type\":\"bytes32\"}],\"stateMutability\":\"pure\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"bytes32\",\"name\":\"snapRoot_\",\"type\":\"bytes32\"},{\"internalType\":\"bytes32\",\"name\":\"dataHash_\",\"type\":\"bytes32\"},{\"internalType\":\"uint32\",\"name\":\"nonce_\",\"type\":\"uint32\"},{\"internalType\":\"uint40\",\"name\":\"blockNumber_\",\"type\":\"uint40\"},{\"internalType\":\"uint40\",\"name\":\"timestamp_\",\"type\":\"uint40\"}],\"name\":\"formatAttestation\",\"outputs\":[{\"internalType\":\"bytes\",\"name\":\"\",\"type\":\"bytes\"}],\"stateMutability\":\"pure\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"bytes\",\"name\":\"payload\",\"type\":\"bytes\"}],\"name\":\"hash\",\"outputs\":[{\"internalType\":\"bytes32\",\"name\":\"\",\"type\":\"bytes32\"}],\"stateMutability\":\"pure\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"bytes\",\"name\":\"payload\",\"type\":\"bytes\"}],\"name\":\"isAttestation\",\"outputs\":[{\"internalType\":\"bool\",\"name\":\"\",\"type\":\"bool\"}],\"stateMutability\":\"pure\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"bytes\",\"name\":\"payload\",\"type\":\"bytes\"}],\"name\":\"nonce\",\"outputs\":[{\"internalType\":\"uint32\",\"name\":\"\",\"type\":\"uint32\"}],\"stateMutability\":\"pure\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"bytes\",\"name\":\"payload\",\"type\":\"bytes\"}],\"name\":\"snapRoot\",\"outputs\":[{\"internalType\":\"bytes32\",\"name\":\"\",\"type\":\"bytes32\"}],\"stateMutability\":\"pure\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"bytes\",\"name\":\"payload\",\"type\":\"bytes\"}],\"name\":\"timestamp\",\"outputs\":[{\"internalType\":\"uint40\",\"name\":\"\",\"type\":\"uint40\"}],\"stateMutability\":\"pure\",\"type\":\"function\"}]",
 	Sigs: map[string]string{
-		"3c4d0a2d": "agentRoot(bytes)",
 		"e948e600": "blockNumber(bytes)",
 		"11f6389c": "castToAttestation(bytes)",
+		"c4e1fa9c": "dataHash(bytes)",
+		"717b6ca9": "dataHash(bytes32,bytes32)",
 		"86bf2253": "formatAttestation(bytes32,bytes32,uint32,uint40,uint40)",
 		"aa1e84de": "hash(bytes)",
 		"3ae7034d": "isAttestation(bytes)",
@@ -42,7 +43,7 @@ var AttestationHarnessMetaData = &bind.MetaData{
 		"91bacf60": "snapRoot(bytes)",
 		"1c9aa222": "timestamp(bytes)",
 	},
-	Bin: "0x608060405234801561001057600080fd5b5061097b806100206000396000f3fe608060405234801561001057600080fd5b50600436106100a35760003560e01c80634e7650041161007657806391bacf601161005b57806391bacf60146101ff578063aa1e84de14610212578063e948e6001461022557600080fd5b80634e7650041461013e57806386bf22531461016657600080fd5b806311f6389c146100a85780631c9aa222146100d15780633ae7034d146100fa5780633c4d0a2d1461011d575b600080fd5b6100bb6100b6366004610754565b610238565b6040516100c89190610823565b60405180910390f35b6100e46100df366004610754565b610257565b60405164ffffffffff90911681526020016100c8565b61010d610108366004610754565b610270565b60405190151581526020016100c8565b61013061012b366004610754565b610296565b6040519081526020016100c8565b61015161014c366004610754565b6102a9565b60405163ffffffff90911681526020016100c8565b6100bb6101743660046108a9565b6040805160208101969096528581019490945260e09290921b7fffffffff0000000000000000000000000000000000000000000000000000000016606085015260d890811b7fffffffffff000000000000000000000000000000000000000000000000000000908116606486015291901b1660698301528051604e818403018152606e909201905290565b61013061020d366004610754565b6102bc565b610130610220366004610754565b6102cf565b6100e4610233366004610754565b6102e2565b60606000610245836102f5565b905061025081610308565b9392505050565b600061026a610265836102f5565b610365565b92915050565b600061026a61027e83610377565b6fffffffffffffffffffffffffffffffff16604e1490565b600061026a6102a4836102f5565b610392565b600061026a6102b7836102f5565b6103a3565b600061026a6102ca836102f5565b6103b2565b600061026a6102dd836102f5565b6103c0565b600061026a6102f0836102f5565b6103ec565b600061026a61030383610377565b6103fb565b604051806103198360208301610481565b506fffffffffffffffffffffffffffffffff83166000601f82017fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffe0168301602001604052509052919050565b600061026a60496005845b9190610530565b80516000906020830161038a8183610551565b949350505050565b600061026a602080845b91906105b4565b600061026a6040600484610370565b600061026a8160208461039c565b600061026a827f569efb4f951664b562fe9283d8f1a49928bec7335bab838210b64c85e11be59e6106be565b600061026a6044600584610370565b6000604e6fffffffffffffffffffffffffffffffff83161461047d576040517f08c379a000000000000000000000000000000000000000000000000000000000815260206004820152601260248201527f4e6f7420616e206174746573746174696f6e0000000000000000000000000000604482015260640160405180910390fd5b5090565b6040516000906fffffffffffffffffffffffffffffffff841690608085901c90808510156104db576040517f4b2a158c00000000000000000000000000000000000000000000000000000000815260040160405180910390fd5b60008386858560045afa90508061051e576040517f7c7d772f00000000000000000000000000000000000000000000000000000000815260040160405180910390fd5b608086901b8417979650505050505050565b60008061053e8585856105b4565b602084900360031b1c9150509392505050565b60008061055e838561090b565b905060405181111561056e575060005b806000036105a8576040517f10bef38600000000000000000000000000000000000000000000000000000000815260040160405180910390fd5b608084901b831761038a565b6000816000036105c657506000610250565b6020821115610601576040517f31d784a800000000000000000000000000000000000000000000000000000000815260040160405180910390fd5b6fffffffffffffffffffffffffffffffff841661061e838561090b565b1115610656576040517fa3b99ded00000000000000000000000000000000000000000000000000000000815260040160405180910390fd5b600382901b60006106678660801c90565b909401517f80000000000000000000000000000000000000000000000000000000000000007fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff929092019190911d16949350505050565b6000816106ca846106fa565b60408051602081019390935282015260600160405160208183030381529060405280519060200120905092915050565b6000806107078360801c90565b6fffffffffffffffffffffffffffffffff9390931690922092915050565b7f4e487b7100000000000000000000000000000000000000000000000000000000600052604160045260246000fd5b60006020828403121561076657600080fd5b813567ffffffffffffffff8082111561077e57600080fd5b818401915084601f83011261079257600080fd5b8135818111156107a4576107a4610725565b604051601f82017fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffe0908116603f011681019083821181831017156107ea576107ea610725565b8160405282815287602084870101111561080357600080fd5b826020860160208301376000928101602001929092525095945050505050565b600060208083528351808285015260005b8181101561085057858101830151858201604001528201610834565b5060006040828601015260407fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffe0601f8301168501019250505092915050565b803564ffffffffff811681146108a457600080fd5b919050565b600080600080600060a086880312156108c157600080fd5b8535945060208601359350604086013563ffffffff811681146108e357600080fd5b92506108f16060870161088f565b91506108ff6080870161088f565b90509295509295909350565b8082018082111561026a577f4e487b7100000000000000000000000000000000000000000000000000000000600052601160045260246000fdfea2646970667358221220e5c97bd6511730db952179881d170c7e0c6145078fb62cd3a669538c098bf86d64736f6c63430008110033",
+	Bin: "0x608060405234801561001057600080fd5b506109f4806100206000396000f3fe608060405234801561001057600080fd5b50600436106100be5760003560e01c806386bf225311610076578063aa1e84de1161005b578063aa1e84de1461022d578063c4e1fa9c14610240578063e948e6001461025357600080fd5b806386bf22531461018157806391bacf601461021a57600080fd5b80633ae7034d116100a75780633ae7034d146101155780634e76500414610138578063717b6ca91461016057600080fd5b806311f6389c146100c35780631c9aa222146100ec575b600080fd5b6100d66100d13660046107ab565b610266565b6040516100e3919061087a565b60405180910390f35b6100ff6100fa3660046107ab565b610285565b60405164ffffffffff90911681526020016100e3565b6101286101233660046107ab565b61029e565b60405190151581526020016100e3565b61014b6101463660046107ab565b6102c4565b60405163ffffffff90911681526020016100e3565b61017361016e3660046108e6565b6102d7565b6040519081526020016100e3565b6100d661018f366004610922565b6040805160208101969096528581019490945260e09290921b7fffffffff0000000000000000000000000000000000000000000000000000000016606085015260d890811b7fffffffffff000000000000000000000000000000000000000000000000000000908116606486015291901b1660698301528051604e818403018152606e909201905290565b6101736102283660046107ab565b6102e3565b61017361023b3660046107ab565b6102f6565b61017361024e3660046107ab565b610309565b6100ff6102613660046107ab565b61031c565b606060006102738361032f565b905061027e81610342565b9392505050565b60006102986102938361032f565b61039f565b92915050565b60006102986102ac836103b1565b6fffffffffffffffffffffffffffffffff16604e1490565b60006102986102d28361032f565b6103cc565b600061027e83836103db565b60006102986102f18361032f565b610411565b60006102986103048361032f565b610422565b60006102986103178361032f565b61044e565b600061029861032a8361032f565b61045c565b600061029861033d836103b1565b61046b565b6040518061035383602083016104f1565b506fffffffffffffffffffffffffffffffff83166000601f82017fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffe0168301602001604052509052919050565b600061029860496005845b91906105a0565b8051600090602083016103c481836105c1565b949350505050565b600061029860406004846103aa565b60408051602081018490529081018290526000906060015b60405160208183030381529060405280519060200120905092915050565b6000610298816020845b9190610624565b6000610298827f569efb4f951664b562fe9283d8f1a49928bec7335bab838210b64c85e11be59e61072e565b60006102986020808461041b565b600061029860446005846103aa565b6000604e6fffffffffffffffffffffffffffffffff8316146104ed576040517f08c379a000000000000000000000000000000000000000000000000000000000815260206004820152601260248201527f4e6f7420616e206174746573746174696f6e0000000000000000000000000000604482015260640160405180910390fd5b5090565b6040516000906fffffffffffffffffffffffffffffffff841690608085901c908085101561054b576040517f4b2a158c00000000000000000000000000000000000000000000000000000000815260040160405180910390fd5b60008386858560045afa90508061058e576040517f7c7d772f00000000000000000000000000000000000000000000000000000000815260040160405180910390fd5b608086901b8417979650505050505050565b6000806105ae858585610624565b602084900360031b1c9150509392505050565b6000806105ce8385610984565b90506040518111156105de575060005b80600003610618576040517f10bef38600000000000000000000000000000000000000000000000000000000815260040160405180910390fd5b608084901b83176103c4565b6000816000036106365750600061027e565b6020821115610671576040517f31d784a800000000000000000000000000000000000000000000000000000000815260040160405180910390fd5b6fffffffffffffffffffffffffffffffff841661068e8385610984565b11156106c6576040517fa3b99ded00000000000000000000000000000000000000000000000000000000815260040160405180910390fd5b600382901b60006106d78660801c90565b909401517f80000000000000000000000000000000000000000000000000000000000000007fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff929092019190911d16949350505050565b60008161073a84610751565b6040805160208101939093528201526060016103f3565b60008061075e8360801c90565b6fffffffffffffffffffffffffffffffff9390931690922092915050565b7f4e487b7100000000000000000000000000000000000000000000000000000000600052604160045260246000fd5b6000602082840312156107bd57600080fd5b813567ffffffffffffffff808211156107d557600080fd5b818401915084601f8301126107e957600080fd5b8135818111156107fb576107fb61077c565b604051601f82017fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffe0908116603f011681019083821181831017156108415761084161077c565b8160405282815287602084870101111561085a57600080fd5b826020860160208301376000928101602001929092525095945050505050565b600060208083528351808285015260005b818110156108a75785810183015185820160400152820161088b565b5060006040828601015260407fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffe0601f8301168501019250505092915050565b600080604083850312156108f957600080fd5b50508035926020909101359150565b803564ffffffffff8116811461091d57600080fd5b919050565b600080600080600060a0868803121561093a57600080fd5b8535945060208601359350604086013563ffffffff8116811461095c57600080fd5b925061096a60608701610908565b915061097860808701610908565b90509295509295909350565b80820180821115610298577f4e487b7100000000000000000000000000000000000000000000000000000000600052601160045260246000fdfea26469706673582212204a30918ccb2f4c3981fc75a18dc933d7f9651a3249162d1bb85dd08252071fb864736f6c63430008110033",
 }
 
 // AttestationHarnessABI is the input ABI used to generate the binding from.
@@ -216,37 +217,6 @@ func (_AttestationHarness *AttestationHarnessTransactorRaw) Transact(opts *bind.
 	return _AttestationHarness.Contract.contract.Transact(opts, method, params...)
 }
 
-// AgentRoot is a free data retrieval call binding the contract method 0x3c4d0a2d.
-//
-// Solidity: function agentRoot(bytes payload) pure returns(bytes32)
-func (_AttestationHarness *AttestationHarnessCaller) AgentRoot(opts *bind.CallOpts, payload []byte) ([32]byte, error) {
-	var out []interface{}
-	err := _AttestationHarness.contract.Call(opts, &out, "agentRoot", payload)
-
-	if err != nil {
-		return *new([32]byte), err
-	}
-
-	out0 := *abi.ConvertType(out[0], new([32]byte)).(*[32]byte)
-
-	return out0, err
-
-}
-
-// AgentRoot is a free data retrieval call binding the contract method 0x3c4d0a2d.
-//
-// Solidity: function agentRoot(bytes payload) pure returns(bytes32)
-func (_AttestationHarness *AttestationHarnessSession) AgentRoot(payload []byte) ([32]byte, error) {
-	return _AttestationHarness.Contract.AgentRoot(&_AttestationHarness.CallOpts, payload)
-}
-
-// AgentRoot is a free data retrieval call binding the contract method 0x3c4d0a2d.
-//
-// Solidity: function agentRoot(bytes payload) pure returns(bytes32)
-func (_AttestationHarness *AttestationHarnessCallerSession) AgentRoot(payload []byte) ([32]byte, error) {
-	return _AttestationHarness.Contract.AgentRoot(&_AttestationHarness.CallOpts, payload)
-}
-
 // BlockNumber is a free data retrieval call binding the contract method 0xe948e600.
 //
 // Solidity: function blockNumber(bytes payload) pure returns(uint40)
@@ -309,12 +279,74 @@ func (_AttestationHarness *AttestationHarnessCallerSession) CastToAttestation(pa
 	return _AttestationHarness.Contract.CastToAttestation(&_AttestationHarness.CallOpts, payload)
 }
 
+// DataHash is a free data retrieval call binding the contract method 0x717b6ca9.
+//
+// Solidity: function dataHash(bytes32 agentRoot_, bytes32 snapGasHash_) pure returns(bytes32)
+func (_AttestationHarness *AttestationHarnessCaller) DataHash(opts *bind.CallOpts, agentRoot_ [32]byte, snapGasHash_ [32]byte) ([32]byte, error) {
+	var out []interface{}
+	err := _AttestationHarness.contract.Call(opts, &out, "dataHash", agentRoot_, snapGasHash_)
+
+	if err != nil {
+		return *new([32]byte), err
+	}
+
+	out0 := *abi.ConvertType(out[0], new([32]byte)).(*[32]byte)
+
+	return out0, err
+
+}
+
+// DataHash is a free data retrieval call binding the contract method 0x717b6ca9.
+//
+// Solidity: function dataHash(bytes32 agentRoot_, bytes32 snapGasHash_) pure returns(bytes32)
+func (_AttestationHarness *AttestationHarnessSession) DataHash(agentRoot_ [32]byte, snapGasHash_ [32]byte) ([32]byte, error) {
+	return _AttestationHarness.Contract.DataHash(&_AttestationHarness.CallOpts, agentRoot_, snapGasHash_)
+}
+
+// DataHash is a free data retrieval call binding the contract method 0x717b6ca9.
+//
+// Solidity: function dataHash(bytes32 agentRoot_, bytes32 snapGasHash_) pure returns(bytes32)
+func (_AttestationHarness *AttestationHarnessCallerSession) DataHash(agentRoot_ [32]byte, snapGasHash_ [32]byte) ([32]byte, error) {
+	return _AttestationHarness.Contract.DataHash(&_AttestationHarness.CallOpts, agentRoot_, snapGasHash_)
+}
+
+// DataHash0 is a free data retrieval call binding the contract method 0xc4e1fa9c.
+//
+// Solidity: function dataHash(bytes payload) pure returns(bytes32)
+func (_AttestationHarness *AttestationHarnessCaller) DataHash0(opts *bind.CallOpts, payload []byte) ([32]byte, error) {
+	var out []interface{}
+	err := _AttestationHarness.contract.Call(opts, &out, "dataHash0", payload)
+
+	if err != nil {
+		return *new([32]byte), err
+	}
+
+	out0 := *abi.ConvertType(out[0], new([32]byte)).(*[32]byte)
+
+	return out0, err
+
+}
+
+// DataHash0 is a free data retrieval call binding the contract method 0xc4e1fa9c.
+//
+// Solidity: function dataHash(bytes payload) pure returns(bytes32)
+func (_AttestationHarness *AttestationHarnessSession) DataHash0(payload []byte) ([32]byte, error) {
+	return _AttestationHarness.Contract.DataHash0(&_AttestationHarness.CallOpts, payload)
+}
+
+// DataHash0 is a free data retrieval call binding the contract method 0xc4e1fa9c.
+//
+// Solidity: function dataHash(bytes payload) pure returns(bytes32)
+func (_AttestationHarness *AttestationHarnessCallerSession) DataHash0(payload []byte) ([32]byte, error) {
+	return _AttestationHarness.Contract.DataHash0(&_AttestationHarness.CallOpts, payload)
+}
+
 // FormatAttestation is a free data retrieval call binding the contract method 0x86bf2253.
 //
-// Solidity: function formatAttestation(bytes32 snapRoot_, bytes32 agentRoot_, uint32 nonce_, uint40 blockNumber_, uint40 timestamp_) pure returns(bytes)
-func (_AttestationHarness *AttestationHarnessCaller) FormatAttestation(opts *bind.CallOpts, snapRoot_ [32]byte, agentRoot_ [32]byte, nonce_ uint32, blockNumber_ *big.Int, timestamp_ *big.Int) ([]byte, error) {
+// Solidity: function formatAttestation(bytes32 snapRoot_, bytes32 dataHash_, uint32 nonce_, uint40 blockNumber_, uint40 timestamp_) pure returns(bytes)
+func (_AttestationHarness *AttestationHarnessCaller) FormatAttestation(opts *bind.CallOpts, snapRoot_ [32]byte, dataHash_ [32]byte, nonce_ uint32, blockNumber_ *big.Int, timestamp_ *big.Int) ([]byte, error) {
 	var out []interface{}
-	err := _AttestationHarness.contract.Call(opts, &out, "formatAttestation", snapRoot_, agentRoot_, nonce_, blockNumber_, timestamp_)
+	err := _AttestationHarness.contract.Call(opts, &out, "formatAttestation", snapRoot_, dataHash_, nonce_, blockNumber_, timestamp_)
 
 	if err != nil {
 		return *new([]byte), err
@@ -328,16 +360,16 @@ func (_AttestationHarness *AttestationHarnessCaller) FormatAttestation(opts *bin
 
 // FormatAttestation is a free data retrieval call binding the contract method 0x86bf2253.
 //
-// Solidity: function formatAttestation(bytes32 snapRoot_, bytes32 agentRoot_, uint32 nonce_, uint40 blockNumber_, uint40 timestamp_) pure returns(bytes)
-func (_AttestationHarness *AttestationHarnessSession) FormatAttestation(snapRoot_ [32]byte, agentRoot_ [32]byte, nonce_ uint32, blockNumber_ *big.Int, timestamp_ *big.Int) ([]byte, error) {
-	return _AttestationHarness.Contract.FormatAttestation(&_AttestationHarness.CallOpts, snapRoot_, agentRoot_, nonce_, blockNumber_, timestamp_)
+// Solidity: function formatAttestation(bytes32 snapRoot_, bytes32 dataHash_, uint32 nonce_, uint40 blockNumber_, uint40 timestamp_) pure returns(bytes)
+func (_AttestationHarness *AttestationHarnessSession) FormatAttestation(snapRoot_ [32]byte, dataHash_ [32]byte, nonce_ uint32, blockNumber_ *big.Int, timestamp_ *big.Int) ([]byte, error) {
+	return _AttestationHarness.Contract.FormatAttestation(&_AttestationHarness.CallOpts, snapRoot_, dataHash_, nonce_, blockNumber_, timestamp_)
 }
 
 // FormatAttestation is a free data retrieval call binding the contract method 0x86bf2253.
 //
-// Solidity: function formatAttestation(bytes32 snapRoot_, bytes32 agentRoot_, uint32 nonce_, uint40 blockNumber_, uint40 timestamp_) pure returns(bytes)
-func (_AttestationHarness *AttestationHarnessCallerSession) FormatAttestation(snapRoot_ [32]byte, agentRoot_ [32]byte, nonce_ uint32, blockNumber_ *big.Int, timestamp_ *big.Int) ([]byte, error) {
-	return _AttestationHarness.Contract.FormatAttestation(&_AttestationHarness.CallOpts, snapRoot_, agentRoot_, nonce_, blockNumber_, timestamp_)
+// Solidity: function formatAttestation(bytes32 snapRoot_, bytes32 dataHash_, uint32 nonce_, uint40 blockNumber_, uint40 timestamp_) pure returns(bytes)
+func (_AttestationHarness *AttestationHarnessCallerSession) FormatAttestation(snapRoot_ [32]byte, dataHash_ [32]byte, nonce_ uint32, blockNumber_ *big.Int, timestamp_ *big.Int) ([]byte, error) {
+	return _AttestationHarness.Contract.FormatAttestation(&_AttestationHarness.CallOpts, snapRoot_, dataHash_, nonce_, blockNumber_, timestamp_)
 }
 
 // Hash is a free data retrieval call binding the contract method 0xaa1e84de.
@@ -498,7 +530,7 @@ func (_AttestationHarness *AttestationHarnessCallerSession) Timestamp(payload []
 // AttestationLibMetaData contains all meta data concerning the AttestationLib contract.
 var AttestationLibMetaData = &bind.MetaData{
 	ABI: "[]",
-	Bin: "0x60566037600b82828239805160001a607314602a57634e487b7160e01b600052600060045260246000fd5b30600052607381538281f3fe73000000000000000000000000000000000000000030146080604052600080fdfea2646970667358221220650429d7b25e28032f0c2a6673edf57cb78274603df1df4f4a8b66f2a8e3f15364736f6c63430008110033",
+	Bin: "0x60566037600b82828239805160001a607314602a57634e487b7160e01b600052600060045260246000fd5b30600052607381538281f3fe73000000000000000000000000000000000000000030146080604052600080fdfea2646970667358221220d0849c864920fe25fde35af4c94d3e3457ec96c601c811b89ed3e2c5069a135064736f6c63430008110033",
 }
 
 // AttestationLibABI is the input ABI used to generate the binding from.
@@ -671,7 +703,7 @@ func (_AttestationLib *AttestationLibTransactorRaw) Transact(opts *bind.Transact
 // MemViewLibMetaData contains all meta data concerning the MemViewLib contract.
 var MemViewLibMetaData = &bind.MetaData{
 	ABI: "[{\"inputs\":[],\"name\":\"IndexedTooMuch\",\"type\":\"error\"},{\"inputs\":[],\"name\":\"OccupiedMemory\",\"type\":\"error\"},{\"inputs\":[],\"name\":\"PrecompileOutOfGas\",\"type\":\"error\"},{\"inputs\":[],\"name\":\"UnallocatedMemory\",\"type\":\"error\"},{\"inputs\":[],\"name\":\"ViewOverrun\",\"type\":\"error\"}]",
-	Bin: "0x60566037600b82828239805160001a607314602a57634e487b7160e01b600052600060045260246000fd5b30600052607381538281f3fe73000000000000000000000000000000000000000030146080604052600080fdfea2646970667358221220924ee11c073440d88fbd0c7a33625f20dca0c1c0f06d1db58e10c7094946150e64736f6c63430008110033",
+	Bin: "0x60566037600b82828239805160001a607314602a57634e487b7160e01b600052600060045260246000fd5b30600052607381538281f3fe73000000000000000000000000000000000000000030146080604052600080fdfea2646970667358221220b31517091067ff85ad5158900bf8c8805999baa869303d1303eb5f7fa21e9f0b64736f6c63430008110033",
 }
 
 // MemViewLibABI is the input ABI used to generate the binding from.

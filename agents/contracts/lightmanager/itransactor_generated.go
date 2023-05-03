@@ -28,10 +28,10 @@ type ILightManagerTransactor interface {
 	//
 	// Solidity: function setAgentRoot(bytes32 agentRoot_) returns()
 	SetAgentRoot(opts *bind.TransactOpts, agentRoot_ [32]byte) (*types.Transaction, error)
-	// SubmitAttestation is a paid mutator transaction binding the contract method 0xf210b2d8.
+	// SubmitAttestation is a paid mutator transaction binding the contract method 0x6c38f723.
 	//
-	// Solidity: function submitAttestation(bytes attPayload, bytes attSignature) returns(bool wasAccepted)
-	SubmitAttestation(opts *bind.TransactOpts, attPayload []byte, attSignature []byte) (*types.Transaction, error)
+	// Solidity: function submitAttestation(bytes attPayload, bytes attSignature, bytes32 agentRoot_, uint256[] snapGas_) returns(bool wasAccepted)
+	SubmitAttestation(opts *bind.TransactOpts, attPayload []byte, attSignature []byte, agentRoot_ [32]byte, snapGas_ []*big.Int) (*types.Transaction, error)
 	// SubmitAttestationReport is a paid mutator transaction binding the contract method 0x77ec5c10.
 	//
 	// Solidity: function submitAttestationReport(bytes arPayload, bytes arSignature, bytes attSignature) returns(bool wasAccepted)

@@ -801,13 +801,13 @@ func (_m *ILightManager) SetAgentRoot(opts *bind.TransactOpts, agentRoot_ [32]by
 	return r0, r1
 }
 
-// SubmitAttestation provides a mock function with given fields: opts, attPayload, attSignature
-func (_m *ILightManager) SubmitAttestation(opts *bind.TransactOpts, attPayload []byte, attSignature []byte) (*types.Transaction, error) {
-	ret := _m.Called(opts, attPayload, attSignature)
+// SubmitAttestation provides a mock function with given fields: opts, attPayload, attSignature, agentRoot_, snapGas_
+func (_m *ILightManager) SubmitAttestation(opts *bind.TransactOpts, attPayload []byte, attSignature []byte, agentRoot_ [32]byte, snapGas_ []*big.Int) (*types.Transaction, error) {
+	ret := _m.Called(opts, attPayload, attSignature, agentRoot_, snapGas_)
 
 	var r0 *types.Transaction
-	if rf, ok := ret.Get(0).(func(*bind.TransactOpts, []byte, []byte) *types.Transaction); ok {
-		r0 = rf(opts, attPayload, attSignature)
+	if rf, ok := ret.Get(0).(func(*bind.TransactOpts, []byte, []byte, [32]byte, []*big.Int) *types.Transaction); ok {
+		r0 = rf(opts, attPayload, attSignature, agentRoot_, snapGas_)
 	} else {
 		if ret.Get(0) != nil {
 			r0 = ret.Get(0).(*types.Transaction)
@@ -815,8 +815,8 @@ func (_m *ILightManager) SubmitAttestation(opts *bind.TransactOpts, attPayload [
 	}
 
 	var r1 error
-	if rf, ok := ret.Get(1).(func(*bind.TransactOpts, []byte, []byte) error); ok {
-		r1 = rf(opts, attPayload, attSignature)
+	if rf, ok := ret.Get(1).(func(*bind.TransactOpts, []byte, []byte, [32]byte, []*big.Int) error); ok {
+		r1 = rf(opts, attPayload, attSignature, agentRoot_, snapGas_)
 	} else {
 		r1 = ret.Error(1)
 	}

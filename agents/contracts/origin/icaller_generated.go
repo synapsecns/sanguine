@@ -19,6 +19,10 @@ type IOriginCaller interface {
 	//
 	// Solidity: function agentStatus(address agent) view returns((uint8,uint32,uint32))
 	AgentStatus(opts *bind.CallOpts, agent common.Address) (AgentStatus, error)
+	// GasOracle is a free data retrieval call binding the contract method 0x5d62a8dd.
+	//
+	// Solidity: function gasOracle() view returns(address)
+	GasOracle(opts *bind.CallOpts) (common.Address, error)
 	// GetAgent is a free data retrieval call binding the contract method 0x2de5aaf7.
 	//
 	// Solidity: function getAgent(uint256 index) view returns(address agent, (uint8,uint32,uint32) status)
@@ -26,6 +30,10 @@ type IOriginCaller interface {
 		Agent  common.Address
 		Status AgentStatus
 	}, error)
+	// GetMinimumTipsValue is a free data retrieval call binding the contract method 0x4fc6ad85.
+	//
+	// Solidity: function getMinimumTipsValue(uint32 destination, uint256 paddedRequest, uint256 contentLength) view returns(uint256 tipsValue)
+	GetMinimumTipsValue(opts *bind.CallOpts, destination uint32, paddedRequest *big.Int, contentLength *big.Int) (*big.Int, error)
 	// IsValidState is a free data retrieval call binding the contract method 0xa9dcf22d.
 	//
 	// Solidity: function isValidState(bytes statePayload) view returns(bool isValid)

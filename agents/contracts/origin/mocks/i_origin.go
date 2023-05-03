@@ -197,6 +197,29 @@ func (_m *IOrigin) FilterStateSaved(opts *bind.FilterOpts) (*origin.OriginStateS
 	return r0, r1
 }
 
+// GasOracle provides a mock function with given fields: opts
+func (_m *IOrigin) GasOracle(opts *bind.CallOpts) (common.Address, error) {
+	ret := _m.Called(opts)
+
+	var r0 common.Address
+	if rf, ok := ret.Get(0).(func(*bind.CallOpts) common.Address); ok {
+		r0 = rf(opts)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).(common.Address)
+		}
+	}
+
+	var r1 error
+	if rf, ok := ret.Get(1).(func(*bind.CallOpts) error); ok {
+		r1 = rf(opts)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
 // GetAgent provides a mock function with given fields: opts, index
 func (_m *IOrigin) GetAgent(opts *bind.CallOpts, index *big.Int) (struct {
 	Agent  common.Address
@@ -223,6 +246,29 @@ func (_m *IOrigin) GetAgent(opts *bind.CallOpts, index *big.Int) (struct {
 	var r1 error
 	if rf, ok := ret.Get(1).(func(*bind.CallOpts, *big.Int) error); ok {
 		r1 = rf(opts, index)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
+// GetMinimumTipsValue provides a mock function with given fields: opts, destination, paddedRequest, contentLength
+func (_m *IOrigin) GetMinimumTipsValue(opts *bind.CallOpts, destination uint32, paddedRequest *big.Int, contentLength *big.Int) (*big.Int, error) {
+	ret := _m.Called(opts, destination, paddedRequest, contentLength)
+
+	var r0 *big.Int
+	if rf, ok := ret.Get(0).(func(*bind.CallOpts, uint32, *big.Int, *big.Int) *big.Int); ok {
+		r0 = rf(opts, destination, paddedRequest, contentLength)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).(*big.Int)
+		}
+	}
+
+	var r1 error
+	if rf, ok := ret.Get(1).(func(*bind.CallOpts, uint32, *big.Int, *big.Int) error); ok {
+		r1 = rf(opts, destination, paddedRequest, contentLength)
 	} else {
 		r1 = ret.Error(1)
 	}
@@ -518,13 +564,13 @@ func (_m *IOrigin) ResolveDispute(opts *bind.TransactOpts, slashedIndex uint32, 
 	return r0, r1
 }
 
-// SendBaseMessage provides a mock function with given fields: opts, destination, recipient, optimisticPeriod, paddedTips, paddedRequest, content
-func (_m *IOrigin) SendBaseMessage(opts *bind.TransactOpts, destination uint32, recipient [32]byte, optimisticPeriod uint32, paddedTips *big.Int, paddedRequest *big.Int, content []byte) (*types.Transaction, error) {
-	ret := _m.Called(opts, destination, recipient, optimisticPeriod, paddedTips, paddedRequest, content)
+// SendBaseMessage provides a mock function with given fields: opts, destination, recipient, optimisticPeriod, paddedRequest, content
+func (_m *IOrigin) SendBaseMessage(opts *bind.TransactOpts, destination uint32, recipient [32]byte, optimisticPeriod uint32, paddedRequest *big.Int, content []byte) (*types.Transaction, error) {
+	ret := _m.Called(opts, destination, recipient, optimisticPeriod, paddedRequest, content)
 
 	var r0 *types.Transaction
-	if rf, ok := ret.Get(0).(func(*bind.TransactOpts, uint32, [32]byte, uint32, *big.Int, *big.Int, []byte) *types.Transaction); ok {
-		r0 = rf(opts, destination, recipient, optimisticPeriod, paddedTips, paddedRequest, content)
+	if rf, ok := ret.Get(0).(func(*bind.TransactOpts, uint32, [32]byte, uint32, *big.Int, []byte) *types.Transaction); ok {
+		r0 = rf(opts, destination, recipient, optimisticPeriod, paddedRequest, content)
 	} else {
 		if ret.Get(0) != nil {
 			r0 = ret.Get(0).(*types.Transaction)
@@ -532,8 +578,8 @@ func (_m *IOrigin) SendBaseMessage(opts *bind.TransactOpts, destination uint32, 
 	}
 
 	var r1 error
-	if rf, ok := ret.Get(1).(func(*bind.TransactOpts, uint32, [32]byte, uint32, *big.Int, *big.Int, []byte) error); ok {
-		r1 = rf(opts, destination, recipient, optimisticPeriod, paddedTips, paddedRequest, content)
+	if rf, ok := ret.Get(1).(func(*bind.TransactOpts, uint32, [32]byte, uint32, *big.Int, []byte) error); ok {
+		r1 = rf(opts, destination, recipient, optimisticPeriod, paddedRequest, content)
 	} else {
 		r1 = ret.Error(1)
 	}

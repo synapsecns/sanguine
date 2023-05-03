@@ -28,10 +28,10 @@ type IOriginTransactor interface {
 	//
 	// Solidity: function resolveDispute(uint32 slashedIndex, uint32 honestIndex) returns()
 	ResolveDispute(opts *bind.TransactOpts, slashedIndex uint32, honestIndex uint32) (*types.Transaction, error)
-	// SendBaseMessage is a paid mutator transaction binding the contract method 0xf71c4347.
+	// SendBaseMessage is a paid mutator transaction binding the contract method 0x873661bd.
 	//
-	// Solidity: function sendBaseMessage(uint32 destination, bytes32 recipient, uint32 optimisticPeriod, uint256 paddedTips, uint256 paddedRequest, bytes content) payable returns(uint32 messageNonce, bytes32 messageHash)
-	SendBaseMessage(opts *bind.TransactOpts, destination uint32, recipient [32]byte, optimisticPeriod uint32, paddedTips *big.Int, paddedRequest *big.Int, content []byte) (*types.Transaction, error)
+	// Solidity: function sendBaseMessage(uint32 destination, bytes32 recipient, uint32 optimisticPeriod, uint256 paddedRequest, bytes content) payable returns(uint32 messageNonce, bytes32 messageHash)
+	SendBaseMessage(opts *bind.TransactOpts, destination uint32, recipient [32]byte, optimisticPeriod uint32, paddedRequest *big.Int, content []byte) (*types.Transaction, error)
 	// SendManagerMessage is a paid mutator transaction binding the contract method 0xa1c702a7.
 	//
 	// Solidity: function sendManagerMessage(uint32 destination, uint32 optimisticPeriod, bytes payload) returns(uint32 messageNonce, bytes32 messageHash)
