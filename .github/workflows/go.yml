@@ -165,24 +165,6 @@ jobs:
           PYROSCOPE_PATH: '${{ steps.pyroscope-path.outputs.PYROSCOPE_PATH }}'
           APPLICATION_NAME: ${{ steps.coverage.outputs.flag }}
 
-      - name: Setup upterm session
-        uses: lhotari/action-upterm@v1
-        env:
-          PYROSCOPE_PATH: '${{ steps.pyroscope-path.outputs.PYROSCOPE_PATH }}'
-          ENABLE_MYSQL_TEST: true
-          MYSQL_HOST: 0.0.0.0
-          MYSQL_USER: user
-          MYSQL_PASSWORD: password
-          MYSQL_DATABASE: test
-          MYSQL_ROOT_PASSWORD: password
-          MYSQL_PORT: ${{ job.services.mariadb.ports[3306] }}
-          GOMAXPROCS: 18
-          GANACHE_KEYS: /tmp/keys/rinkeby
-          GANACHE_RPC_URL: http://0.0.0.0:8045
-          GOMEMLIMIT: 6GiB
-          GOGC: -1
-          ETHEREUM_RPC_URI: ${{ secrets.ETHEREUM_RPC_URI }}
-
       - name: Test
         uses: nick-fields/retry@v2
         with:
