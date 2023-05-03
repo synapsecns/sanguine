@@ -64,7 +64,7 @@ func (s *Store) MarkAllBeforeOrAtNonceReplacedOrConfirmed(ctx context.Context, s
 
 // MaxResultsPerChain is the maximum number of transactions to return per chain id.
 // it is exported for testing.
-// TODO: this should be an option.
+// TODO: this should be an option passed to the GetTXs function.
 const MaxResultsPerChain = 50
 
 // GetTXS returns all transactions for a given address on a given (or any) chain id that match a given status.
