@@ -71,7 +71,6 @@ const BridgeCard = ({
   resetRates: () => void
   setTime: (time: number) => void
 }) => {
-  console.log('isQuoteLoading: ', isQuoteLoading)
   const [settings, setSettings] = useSettings()
   const [displayType, setDisplayType] = useState('')
   const [deadlineMinutes, setDeadlineMinutes] = useState('')
@@ -126,6 +125,7 @@ const BridgeCard = ({
     setDisplayType,
     handleTokenChange,
     onChangeChain: handleChainChange,
+    isQuoteLoading,
   }
 
   // TODO move this away and into the actual component

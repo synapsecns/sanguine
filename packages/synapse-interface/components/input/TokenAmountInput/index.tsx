@@ -22,6 +22,7 @@ const BridgeInputContainer = ({
   onChangeAmount,
   setDisplayType,
   fromTokenBalance,
+  isQuoteLoading = false,
 }: {
   address: `0x${string}`
   isOrigin: boolean
@@ -35,6 +36,7 @@ const BridgeInputContainer = ({
   onChangeAmount?: (v: string) => void
   onChangeChain: (chainId: number, flip: boolean, type: 'from' | 'to') => void
   fromTokenBalance?: BigNumber
+  isQuoteLoading?: boolean
 }) => {
   let formattedBalance = ''
   if (fromTokenBalance) {
