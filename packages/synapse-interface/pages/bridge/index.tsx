@@ -153,6 +153,14 @@ const BridgePage = ({ address }: { address: `0x${string}` }) => {
   }
 
   /*
+  Helper Function: checkStringIfOnlyZeroes
+  - regex function to determine if user input is only zeroes
+  */
+  function checkStringIfOnlyZeroes(str: string): boolean {
+    const pattern = /^0*\.*$/
+    return pattern.test(str)
+  }
+  /*
   useEffect Triggers: toToken, fromInput, toChainId, time
   - Gets a quote when the polling function is executed or any of the bridge attributes are altered.
   */
@@ -189,7 +197,8 @@ const BridgePage = ({ address }: { address: `0x${string}` }) => {
   }, [toToken, fromInput, toChainId, time])
 
   useEffect(() => {
-    if (fromInput.string === '') {
+    console.log('fromInput: ', fromInput)
+    if (fromInput.string === '' || fromInput.string === '0.0') {
       return
     }
     setIsQuoteLoading(true)
