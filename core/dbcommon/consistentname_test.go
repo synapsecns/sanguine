@@ -148,3 +148,36 @@ type testReplacer struct{}
 func (t testReplacer) Replace(name string) string {
 	return strings.NewReplacer("model", "mod").Replace(name)
 }
+
+// NonConsistentModelName tests a model with a non-consistent name.
+type NonConsistentModelName struct {
+	gorm.Model
+	TestField uint64 `gorm:"column:test_field" ,json:"not_test_field"`
+}
+
+type OtherNonConsistentModelName struct {
+	gorm.Model
+	TestField uint64 `gorm:"column:test_field_with_different_name" ,json:"not_test_field"`
+}
+
+func TestNonConsistentName(t *testing.T) {
+	namer := dbcommon.NewNamer(getNonConsistentModels())
+	Panics(t, func() {
+		namer.GetConsistentName("TestField")
+	})
+}
+
+func TestConsistentName(t *testing.T) {
+	namer := dbcommon.NewNamer(getTestModels())
+	testFieldName := namer.GetConsistentName("CreatedAt")
+	Equal(t, testFieldName, "created_at")
+}
+
+// GetAllModels gets all models to migrate
+// see: https://medium.com/@SaifAbid/slice-interfaces-8c78f8b6345d for an explanation of why we can't do this at initialization time
+func getNonConsistentModels() (allModels []interface{}) {
+	allModels = append(allModels,
+		&NonConsistentModelName{}, &OtherNonConsistentModelName{},
+	)
+	return allModels
+}
