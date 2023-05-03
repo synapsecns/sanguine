@@ -9,5 +9,6 @@ import (
 )
 
 func main() {
-	cmd.Start(os.Args, metadata.BuildInfo())
+	buildInfo := metadata.BuildInfo()
+	cmd.Start(os.Args, buildInfo)
 }

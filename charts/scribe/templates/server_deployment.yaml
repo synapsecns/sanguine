@@ -21,6 +21,7 @@ spec:
       {{- end }}
       labels:
         {{- include "scribe.selectorLabels" . | nindent 8 }}
+        {{- include "scribe.commonLabels" . | nindent 8 }}
         scribe-type: server
     spec:
       {{- with .Values.imagePullSecrets }}

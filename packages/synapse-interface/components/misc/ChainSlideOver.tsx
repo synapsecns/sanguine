@@ -29,7 +29,7 @@ export const ChainSlideOver = ({
     threshold: 0.0,
     keys: [
       {
-        name: 'chainName',
+        name: 'name',
         weight: 2,
       },
       'chainShortName',

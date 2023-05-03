@@ -18,7 +18,7 @@ type Store struct {
 }
 
 // NewSqliteStore creates a new sqlite data store.
-func NewSqliteStore(parentCtx context.Context, dbPath string, handler metrics.Handler) (_ *Store, err error) {
+func NewSqliteStore(parentCtx context.Context, dbPath string, handler metrics.Handler, skipMigrations bool) (_ *Store, err error) {
 	logger.Debugf("creating sqlite store at %s", dbPath)
 
 	ctx, span := handler.Tracer().Start(parentCtx, "start-sqlite")
@@ -46,9 +46,11 @@ func NewSqliteStore(parentCtx context.Context, dbPath string, handler metrics.Ha
 
 	handler.AddGormCallbacks(gdb)
 
-	err = gdb.WithContext(ctx).AutoMigrate(base.GetAllModels()...)
-	if err != nil {
-		return nil, fmt.Errorf("could not migrate models: %w", err)
+	if !skipMigrations {
+		err = gdb.WithContext(ctx).AutoMigrate(base.GetAllModels()...)
+		if err != nil {
+			return nil, fmt.Errorf("could not migrate models: %w", err)
+		}
 	}
 	return &Store{base.NewStore(gdb, handler)}, nil
 }

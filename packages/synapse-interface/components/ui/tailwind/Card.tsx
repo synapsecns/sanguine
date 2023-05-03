@@ -15,13 +15,15 @@ export default function Card({
   children,
   titleClassName,
   divider = true,
+  image = null,
   ...props
 }: {
-  title?: string
+  title?: any
   className?: string
   children: any
   titleClassName?: string
   divider: boolean
+  image?: string
 }) {
   const mergedClassName = twMerge(`${baseClassname} ${className}`)
   const mergedTitleClassname = twMerge(
@@ -40,6 +42,7 @@ export default function Card({
 
   return (
     <div className={mergedClassName} {...props}>
+      {image && <div className="flex justify-start mb-2">{image}</div>}
       {titleContent}
       {children}
     </div>

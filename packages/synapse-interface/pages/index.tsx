@@ -1,6 +1,5 @@
 import Head from 'next/head'
 import { useAccount } from 'wagmi'
-
 import BridgePage from './bridge'
 
 const Home = () => {

@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"github.com/synapsecns/sanguine/core/metrics"
+	"go.opentelemetry.io/contrib/instrumentation/google.golang.org/grpc/otelgrpc"
 	"go.opentelemetry.io/otel/attribute"
 	"go.opentelemetry.io/otel/trace"
 	"io"
@@ -48,7 +49,7 @@ type Notary struct {
 // NewNotary creates a new notary.
 //
 //nolint:cyclop
-func NewNotary(ctx context.Context, cfg config.AgentConfig, handler metrics.Handler) (_ Notary, err error) {
+func NewNotary(ctx context.Context, cfg config.AgentConfig, scribeClient client.ScribeClient, handler metrics.Handler) (_ Notary, err error) {
 	notary := Notary{
 		refreshInterval: time.Second * time.Duration(cfg.RefreshIntervalSeconds),
 	}
@@ -87,13 +88,12 @@ func NewNotary(ctx context.Context, cfg config.AgentConfig, handler metrics.Hand
 		return Notary{}, fmt.Errorf("could not create summit parser: %w", err)
 	}
 
-	scribeClient := client.ScribeClient{
-		Port: uint16(cfg.ScribePort),
-		URL:  cfg.ScribeURL,
-	}
-
 	// Scribe gRPC setup.
-	conn, err := grpc.DialContext(ctx, fmt.Sprintf("%s:%d", scribeClient.URL, scribeClient.Port), grpc.WithTransportCredentials(insecure.NewCredentials()))
+	conn, err := grpc.DialContext(ctx, fmt.Sprintf("%s:%d", scribeClient.URL, scribeClient.Port),
+		grpc.WithTransportCredentials(insecure.NewCredentials()),
+		grpc.WithUnaryInterceptor(otelgrpc.UnaryClientInterceptor(otelgrpc.WithTracerProvider(handler.GetTracerProvider()))),
+		grpc.WithStreamInterceptor(otelgrpc.StreamClientInterceptor(otelgrpc.WithTracerProvider(handler.GetTracerProvider()))),
+	)
 	if err != nil {
 		return Notary{}, fmt.Errorf("could not dial grpc: %w", err)
 	}
@@ -194,7 +194,7 @@ func (n Notary) logToAttestation(log ethTypes.Log) (*types.Attestation, error) {
 func (n Notary) loadSummitMyLatestStates(parentCtx context.Context) {
 	for _, domain := range n.domains {
 		ctx, span := n.handler.Tracer().Start(parentCtx, "loadSummitMyLatestStates", trace.WithAttributes(
-			attribute.Int("domainID", int(domain.Config().DomainID)),
+			attribute.Int(metrics.ChainID, int(domain.Config().DomainID)),
 		))
 
 		originID := domain.Config().DomainID
@@ -217,7 +217,7 @@ func (n Notary) loadSummitMyLatestStates(parentCtx context.Context) {
 func (n Notary) loadSummitGuardLatestStates(parentCtx context.Context) {
 	for _, domain := range n.domains {
 		ctx, span := n.handler.Tracer().Start(parentCtx, "loadSummitGuardLatestStates", trace.WithAttributes(
-			attribute.Int("domainID", int(domain.Config().DomainID)),
+			attribute.Int(metrics.ChainID, int(domain.Config().DomainID)),
 		))
 
 		originID := domain.Config().DomainID
@@ -245,8 +245,8 @@ func (n Notary) isValidOnOrigin(parentCtx context.Context, state types.State, do
 
 	stateRoot := state.Root()
 	ctx, span := n.handler.Tracer().Start(parentCtx, "isValidOnOrigin", trace.WithAttributes(
-		attribute.Int("domainID", int(domain.Config().DomainID)),
-		attribute.Int("stateNonce", int(state.Nonce())),
+		attribute.Int(metrics.ChainID, int(domain.Config().DomainID)),
+		attribute.Int(metrics.Nonce, int(state.Nonce())),
 		attribute.String("stateRoot", common.Bytes2Hex(stateRoot[:])),
 	))
 
@@ -331,7 +331,7 @@ func (n Notary) getLatestSnapshot(parentCtx context.Context) (types.Snapshot, ma
 	statesToSubmit := make(map[uint32]types.State, len(n.domains))
 	for _, domain := range n.domains {
 		ctx, span := n.handler.Tracer().Start(parentCtx, "getLatestSnapshot", trace.WithAttributes(
-			attribute.Int("domainID", int(domain.Config().DomainID)),
+			attribute.Int(metrics.ChainID, int(domain.Config().DomainID)),
 		))
 
 		originID := domain.Config().DomainID
@@ -442,7 +442,13 @@ func (n Notary) Start(ctx context.Context) error {
 	if err != nil {
 		return fmt.Errorf("could not get latest block number from Summit: %w", err)
 	}
+	// Try starting from previous day
 	n.lastSummitBlock = uint64(latestBlockNUmber)
+	if n.lastSummitBlock > 3000 {
+		n.lastSummitBlock = uint64(latestBlockNUmber) - uint64(3000)
+	} else {
+		n.lastSummitBlock = uint64(0)
+	}
 
 	// Ensure that gRPC is up and running.
 	logger.Info("Notary: ensure that gRPC is up and running.")
