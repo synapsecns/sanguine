@@ -3,6 +3,7 @@ package client
 // rpcOptions is a struct that holds the options for the RPC client.
 type rpcOptions struct {
 	confirmations int
+	captureReqRes bool
 }
 
 // OptionsArgsOption is an option passed into the client.
@@ -12,6 +13,13 @@ type OptionsArgsOption func(options *rpcOptions)
 func WithDefaultConfirmations(confirmations int) OptionsArgsOption {
 	return func(options *rpcOptions) {
 		options.confirmations = confirmations
+	}
+}
+
+// WithCaptureReqRes captures requests and responses.
+func WithCaptureReqRes() OptionsArgsOption {
+	return func(options *rpcOptions) {
+		options.captureReqRes = true
 	}
 }
 

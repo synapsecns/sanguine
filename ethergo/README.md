@@ -47,6 +47,7 @@ root
 │     ├── <a href="./signer/signer/gcpsigner">gcpsigner</a>: Use GCP Cloud KMS to sign transactions
 │     ├── <a href="./signer/signer/localsigner">localsigner</a>: Use a local signer to sign transactions
 │   ├── <a href="./signer/wallet">wallet</a>: Wallet contains a wallet interface. It is capable of importing keys from seed phrases, private keys, and mnemonics.
+├── <a href="./submitter">submitter</a>: Generic tx submitter, currently not stable enough for general use.
 ├── <a href="./util">util</a>: various utilities used throughout the library
 </pre>
 

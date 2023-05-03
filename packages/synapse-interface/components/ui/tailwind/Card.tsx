@@ -18,7 +18,7 @@ export default function Card({
   image = null,
   ...props
 }: {
-  title?: string
+  title?: any
   className?: string
   children: any
   titleClassName?: string

@@ -3,6 +3,7 @@ package metrics
 import (
 	"context"
 	"github.com/gin-gonic/gin"
+	"go.opentelemetry.io/contrib/instrumentation/net/http/otelhttp"
 	"go.opentelemetry.io/otel/propagation"
 	"go.opentelemetry.io/otel/trace"
 	"gorm.io/gorm"
@@ -14,6 +15,10 @@ import (
 type nullHandler struct {
 	tracer     trace.Tracer
 	propagator nullPropogator
+}
+
+func (n nullHandler) Type() HandlerType {
+	return Null
 }
 
 func (n nullHandler) Propagator() propagation.TextMapPropagator {
@@ -32,7 +37,7 @@ func (n nullHandler) AddGormCallbacks(db *gorm.DB) {
 	// Do nothing
 }
 
-func (n nullHandler) ConfigureHTTPClient(client *http.Client) {
+func (n nullHandler) ConfigureHTTPClient(client *http.Client, opts ...otelhttp.Option) {
 	// Do nothing
 }
 

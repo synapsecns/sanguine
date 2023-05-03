@@ -21,13 +21,16 @@ type Store struct {
 // MaxIdleConns is exported here for testing. Tests execute too slowly with a reconnect each time.
 var MaxIdleConns = 10
 
+// MaxOpenConns is exported here for testing. Tests execute too slowly with a reconnect each time.
+var MaxOpenConns = 200
+
 // NamingStrategy is exported here for testing.
 var NamingStrategy = schema.NamingStrategy{
 	TablePrefix: "v3_",
 }
 
 // NewMysqlStore creates a new mysql store for a given data store.
-func NewMysqlStore(parentCtx context.Context, dbURL string, handler metrics.Handler) (_ *Store, err error) {
+func NewMysqlStore(parentCtx context.Context, dbURL string, handler metrics.Handler, skipMigrations bool) (_ *Store, err error) {
 	logger.Debug("creating mysql store")
 
 	ctx, span := handler.Tracer().Start(parentCtx, "start-mysql")
@@ -55,14 +58,18 @@ func NewMysqlStore(parentCtx context.Context, dbURL string, handler metrics.Hand
 	// fixes a timeout issue https://stackoverflow.com/a/42146536
 	sqlDB.SetMaxIdleConns(MaxIdleConns)
 	sqlDB.SetConnMaxLifetime(time.Hour)
+	sqlDB.SetConnMaxLifetime(time.Hour)
+	sqlDB.SetMaxOpenConns(MaxOpenConns)
 
 	handler.AddGormCallbacks(gdb)
 
-	// migrate in a transaction since we skip this by default
-	err = gdb.Transaction(func(tx *gorm.DB) error {
-		//nolint: wrapcheck
-		return gdb.WithContext(ctx).AutoMigrate(base.GetAllModels()...)
-	})
+	if !skipMigrations {
+		// migrate in a transaction since we skip this by default
+		err = gdb.Transaction(func(tx *gorm.DB) error {
+			//nolint: wrapcheck
+			return gdb.WithContext(ctx).AutoMigrate(base.GetAllModels()...)
+		})
+	}
 
 	if err != nil {
 		return nil, fmt.Errorf("could not migrate on mysql: %w", err)

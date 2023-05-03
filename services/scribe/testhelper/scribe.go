@@ -36,7 +36,7 @@ func NewTestScribe(ctx context.Context, tb testing.TB, deployedContracts map[uin
 	metricsProvider, err := metrics.NewByType(ctx, metadata.BuildInfo(), metrics.Jaeger)
 	assert.Nil(tb, err)
 
-	eventDB, err := scribeAPI.InitDB(ctx, "sqlite", dbPath, metricsProvider)
+	eventDB, err := scribeAPI.InitDB(ctx, "sqlite", dbPath, metricsProvider, false)
 	assert.Nil(tb, err)
 
 	scribeClients := make(map[uint32][]backfill.ScribeBackend)
