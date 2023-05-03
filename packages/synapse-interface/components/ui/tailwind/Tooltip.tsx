@@ -9,7 +9,7 @@ const Tooltip = ({
 }: {
   children: any
   title?: string
-  content: string
+  content: any
   className?: string
 }) => {
   const [tooltipShow, setTooltipShow] = useState(false)
