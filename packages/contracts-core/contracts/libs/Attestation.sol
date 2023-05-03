@@ -46,11 +46,10 @@ using AttestationLib for Attestation global;
 /// | Position   | Field       | Type    | Bytes | Description                                                    |
 /// | ---------- | ----------- | ------- | ----- | -------------------------------------------------------------- |
 /// | [000..032) | snapRoot    | bytes32 | 32    | Root for "Snapshot Merkle Tree" created from a Notary snapshot |
-/// | [032..064) | agentRoot   | bytes32 | 32    | Root for "Agent Merkle Tree" tracked by BondingManager         |
-/// | [064..096) | snapGasHash | bytes32 | 32    | Hash of the list with snapshot's chains gas data               |
-/// | [096..100) | nonce       | uint32  | 4     | Total amount of all accepted Notary snapshots                  |
-/// | [100..105) | blockNumber | uint40  | 5     | Block when this Notary snapshot was accepted in Summit         |
-/// | [105..110) | timestamp   | uint40  | 5     | Time when this Notary snapshot was accepted in Summit          |
+/// | [032..064) | dataHash    | bytes32 | 32    | Agent Root and SnapGasHash combined into a single hash         |
+/// | [064..068) | nonce       | uint32  | 4     | Total amount of all accepted Notary snapshots                  |
+/// | [068..073) | blockNumber | uint40  | 5     | Block when this Notary snapshot was accepted in Summit         |
+/// | [073..078) | timestamp   | uint40  | 5     | Time when this Notary snapshot was accepted in Summit          |
 ///
 /// @dev Attestation could be signed by a Notary and submitted to `Destination` in order to use if for proving
 /// messages coming from origin chains that the initial snapshot refers to.
@@ -61,19 +60,17 @@ library AttestationLib {
 
     /// @dev The variables below are not supposed to be used outside of the library directly.
     uint256 private constant OFFSET_SNAP_ROOT = 0;
-    uint256 private constant OFFSET_AGENT_ROOT = 32;
-    uint256 private constant OFFSET_DATA_HASH = 64;
-    uint256 private constant OFFSET_NONCE = 96;
-    uint256 private constant OFFSET_BLOCK_NUMBER = 100;
-    uint256 private constant OFFSET_TIMESTAMP = 105;
+    uint256 private constant OFFSET_DATA_HASH = 32;
+    uint256 private constant OFFSET_NONCE = 64;
+    uint256 private constant OFFSET_BLOCK_NUMBER = 68;
+    uint256 private constant OFFSET_TIMESTAMP = 73;
 
     // ════════════════════════════════════════════════ ATTESTATION ════════════════════════════════════════════════════
 
     /**
      * @notice Returns a formatted Attestation payload with provided fields.
      * @param snapRoot_     Snapshot merkle tree's root
-     * @param agentRoot_    Agent merkle tree's root
-     * @param snapGasHash_  Hash of the list with snapshot's chains gas data
+     * @param dataHash_     Agent Root and SnapGasHash combined into a single hash
      * @param nonce_        Attestation Nonce
      * @param blockNumber_  Block number when attestation was created in Summit
      * @param timestamp_    Block timestamp when attestation was created in Summit
@@ -81,13 +78,12 @@ library AttestationLib {
      */
     function formatAttestation(
         bytes32 snapRoot_,
-        bytes32 agentRoot_,
-        bytes32 snapGasHash_,
+        bytes32 dataHash_,
         uint32 nonce_,
         uint40 blockNumber_,
         uint40 timestamp_
     ) internal pure returns (bytes memory) {
-        return abi.encodePacked(snapRoot_, agentRoot_, snapGasHash_, nonce_, blockNumber_, timestamp_);
+        return abi.encodePacked(snapRoot_, dataHash_, nonce_, blockNumber_, timestamp_);
     }
 
     /**
@@ -130,14 +126,14 @@ library AttestationLib {
         return att.unwrap().index({index_: OFFSET_SNAP_ROOT, bytes_: 32});
     }
 
-    /// @notice Returns root of the Agent merkle tree tracked by BondingManager.
-    function agentRoot(Attestation att) internal pure returns (bytes32) {
-        return att.unwrap().index({index_: OFFSET_AGENT_ROOT, bytes_: 32});
+    /// @notice Returns hash of the Agent Root and SnapGasHash combined into a single hash.
+    function dataHash(Attestation att) internal pure returns (bytes32) {
+        return att.unwrap().index({index_: OFFSET_DATA_HASH, bytes_: 32});
     }
 
-    /// @notice Returns hash of the list with snapshot's chains gas data.
-    function snapGasHash(Attestation att) internal pure returns (bytes32) {
-        return att.unwrap().index({index_: OFFSET_DATA_HASH, bytes_: 32});
+    /// @notice Returns hash of the Agent Root and SnapGasHash combined into a single hash.
+    function dataHash(bytes32 agentRoot_, bytes32 snapGasHash_) internal pure returns (bytes32) {
+        return keccak256(bytes.concat(agentRoot_, snapGasHash_));
     }
 
     /// @notice Returns nonce of Summit contract at the time, when attestation was created.

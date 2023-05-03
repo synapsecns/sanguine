@@ -11,8 +11,8 @@ uint256 constant ORIGIN_TREE_HEIGHT = 32;
 /// @dev Height of the Snapshot Merkle Tree. Allows up to 64 leafs, e.g. up to 32 states
 uint256 constant SNAPSHOT_TREE_HEIGHT = 6;
 // ══════════════════════════════════ STRUCTS ══════════════════════════════════
-/// @dev See Attestation.sol: (bytes32,bytes32,bytes32,uint32,uint40,uint40): 32+32+32+4+5+5
-uint256 constant ATTESTATION_LENGTH = 110;
+/// @dev See Attestation.sol: (bytes32,bytes32,uint32,uint40,uint40): 32+32+4+5+5
+uint256 constant ATTESTATION_LENGTH = 78;
 /// @dev See Receipt.sol: (uint32,uint32,bytes32,bytes32,uint8,address,address,address,tips): 4+4+32+32+1+20+20+20
 uint256 constant GAS_DATA_LENGTH = 12;
 /// @dev See Request.sol: (uint64,uint96): 8+12

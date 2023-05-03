@@ -25,15 +25,21 @@ interface InterfaceDestination {
      * > - Attestation payload is not properly formatted.
      * > - Attestation signer is in Dispute.
      * > - Attestation's snapshot root has been previously submitted.
+     * Note: agentRoot and snapGas have been verified by the local `AgentManager`.
      * @param notaryIndex       Index of Attestation Notary in Agent Merkle Tree
      * @param sigIndex          Index of stored Notary signature
      * @param attPayload        Raw payload with Attestation data
+     * @param agentRoot         Agent Merkle Root from the Attestation
      * @param snapGas           Gas data for each chain in the Attestation's snapshot
      * @return wasAccepted      Whether the Attestation was accepted
      */
-    function acceptAttestation(uint32 notaryIndex, uint256 sigIndex, bytes memory attPayload, ChainGas[] memory snapGas)
-        external
-        returns (bool wasAccepted);
+    function acceptAttestation(
+        uint32 notaryIndex,
+        uint256 sigIndex,
+        bytes memory attPayload,
+        bytes32 agentRoot,
+        ChainGas[] memory snapGas
+    ) external returns (bool wasAccepted);
 
     // ═══════════════════════════════════════════════════ VIEWS ═══════════════════════════════════════════════════════
 

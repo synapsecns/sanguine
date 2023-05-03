@@ -70,7 +70,7 @@ contract BondingManager is AgentManager, BondingManagerEvents, InterfaceBondingM
     /// @inheritdoc InterfaceBondingManager
     function submitSnapshot(bytes memory snapPayload, bytes memory snapSignature)
         external
-        returns (bytes memory attPayload, uint256[] memory snapGas)
+        returns (bytes memory attPayload, bytes32 agentRoot_, uint256[] memory snapGas)
     {
         // This will revert if payload is not a snapshot
         Snapshot snapshot = snapPayload.castToSnapshot();
@@ -90,15 +90,18 @@ contract BondingManager is AgentManager, BondingManagerEvents, InterfaceBondingM
         } else {
             // Check that Notary is not in dispute
             require(_disputes[agent].flag == DisputeFlag.None, "Notary is in dispute");
+            agentRoot_ = _agentTree.root;
             attPayload = InterfaceSummit(summit).acceptNotarySnapshot({
                 notaryIndex: status.index,
                 sigIndex: sigIndex,
-                agentRoot: _agentTree.root,
+                agentRoot: agentRoot_,
                 snapPayload: snapPayload
             });
             ChainGas[] memory snapGas_ = snapshot.snapGas();
             // Pass created attestation to Destination to enable executing messages coming to Synapse Chain
-            InterfaceDestination(destination).acceptAttestation(status.index, type(uint256).max, attPayload, snapGas_);
+            InterfaceDestination(destination).acceptAttestation(
+                status.index, type(uint256).max, attPayload, agentRoot_, snapGas_
+            );
             // Use assembly to cast ChainGas[] to uint256[] without copying. Highest bits are left zeroed.
             // solhint-disable-next-line no-inline-assembly
             assembly {

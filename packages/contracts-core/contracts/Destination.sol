@@ -23,7 +23,7 @@ contract Destination is ExecutionHub, DestinationEvents, InterfaceDestination {
     // TODO: this could be further optimized in terms of storage
     struct StoredAttData {
         bytes32 agentRoot;
-        bytes32 snapGasHash;
+        bytes32 dataHash;
     }
 
     struct StoredGasData {
@@ -69,11 +69,13 @@ contract Destination is ExecutionHub, DestinationEvents, InterfaceDestination {
     // ═════════════════════════════════════════════ ACCEPT STATEMENTS ═════════════════════════════════════════════════
 
     /// @inheritdoc InterfaceDestination
-    function acceptAttestation(uint32 notaryIndex, uint256 sigIndex, bytes memory attPayload, ChainGas[] memory snapGas)
-        external
-        onlyAgentManager
-        returns (bool wasAccepted)
-    {
+    function acceptAttestation(
+        uint32 notaryIndex,
+        uint256 sigIndex,
+        bytes memory attPayload,
+        bytes32 agentRoot,
+        ChainGas[] memory snapGas
+    ) external onlyAgentManager returns (bool wasAccepted) {
         // First, try passing current agent merkle root
         (bool rootPassed, bool rootPending) = passAgentRoot();
         // Don't accept attestation, if the agent root was updated in LightManager,
@@ -83,8 +85,7 @@ contract Destination is ExecutionHub, DestinationEvents, InterfaceDestination {
         Attestation att = attPayload.castToAttestation();
         // This will revert if snapshot root has been previously submitted
         _saveAttestation(att, notaryIndex, sigIndex);
-        bytes32 agentRoot = att.agentRoot();
-        _storedAttestations.push(StoredAttData({agentRoot: agentRoot, snapGasHash: att.snapGasHash()}));
+        _storedAttestations.push(StoredAttData({agentRoot: agentRoot, dataHash: att.dataHash()}));
         // Save Agent Root if required, and update the Destination's Status
         destStatus = _saveAgentRoot(rootPending, agentRoot, notaryIndex);
         _saveGasData(snapGas, notaryIndex);
@@ -136,8 +137,7 @@ contract Destination is ExecutionHub, DestinationEvents, InterfaceDestination {
         StoredAttData memory storedAtt = _storedAttestations[index];
         attPayload = AttestationLib.formatAttestation({
             snapRoot_: snapRoot,
-            agentRoot_: storedAtt.agentRoot,
-            snapGasHash_: storedAtt.snapGasHash,
+            dataHash_: storedAtt.dataHash,
             nonce_: rootData.attNonce,
             blockNumber_: rootData.attBN,
             timestamp_: rootData.attTS

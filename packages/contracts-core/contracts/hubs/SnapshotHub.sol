@@ -94,10 +94,12 @@ abstract contract SnapshotHub is AgentSecured, SnapshotHubEvents, ISnapshotHub {
     function getAttestation(uint32 attNonce)
         external
         view
-        returns (bytes memory attPayload, uint256[] memory snapGas)
+        returns (bytes memory attPayload, bytes32 agentRoot, uint256[] memory snapGas)
     {
         require(attNonce < _attestations.length, "Nonce out of range");
-        attPayload = _formatSummitAttestation(_attestations[attNonce], attNonce);
+        SummitAttestation memory summitAtt = _attestations[attNonce];
+        attPayload = _formatSummitAttestation(summitAtt, attNonce);
+        agentRoot = summitAtt.agentRoot;
         snapGas = _restoreSnapGas(_notarySnapshots[attNonce]);
     }
 
@@ -112,11 +114,13 @@ abstract contract SnapshotHub is AgentSecured, SnapshotHubEvents, ISnapshotHub {
     function getLatestNotaryAttestation(address notary)
         external
         view
-        returns (bytes memory attPayload, uint256[] memory snapGas)
+        returns (bytes memory attPayload, bytes32 agentRoot, uint256[] memory snapGas)
     {
         uint32 latestAttNonce = _latestAttNonce[_agentStatus(notary).index];
         if (latestAttNonce != 0) {
-            attPayload = _formatSummitAttestation(_attestations[latestAttNonce], latestAttNonce);
+            SummitAttestation memory summitAtt = _attestations[latestAttNonce];
+            attPayload = _formatSummitAttestation(summitAtt, latestAttNonce);
+            agentRoot = summitAtt.agentRoot;
             snapGas = _restoreSnapGas(_notarySnapshots[latestAttNonce]);
         }
     }
@@ -402,8 +406,7 @@ abstract contract SnapshotHub is AgentSecured, SnapshotHubEvents, ISnapshotHub {
     {
         return AttestationLib.formatAttestation({
             snapRoot_: summitAtt.snapRoot,
-            agentRoot_: summitAtt.agentRoot,
-            snapGasHash_: summitAtt.snapGasHash,
+            dataHash_: AttestationLib.dataHash(summitAtt.agentRoot, summitAtt.snapGasHash),
             nonce_: nonce,
             blockNumber_: summitAtt.blockNumber,
             timestamp_: summitAtt.timestamp
@@ -430,8 +433,7 @@ abstract contract SnapshotHub is AgentSecured, SnapshotHubEvents, ISnapshotHub {
         // forgefmt: disable-next-item
         return 
             att.snapRoot() == summitAtt.snapRoot &&
-            att.agentRoot() == summitAtt.agentRoot &&
-            att.snapGasHash() == summitAtt.snapGasHash &&
+            att.dataHash() == AttestationLib.dataHash(summitAtt.agentRoot, summitAtt.snapGasHash) &&
             att.blockNumber() == summitAtt.blockNumber &&
             att.timestamp() == summitAtt.timestamp;
     }
