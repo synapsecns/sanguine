@@ -52,6 +52,7 @@ const BridgePage = ({ address }: { address: `0x${string}` }) => {
   const [fromInput, setFromInput] = useState({ string: '', bigNum: Zero })
   const [toChainId, setToChainId] = useState(DEFAULT_TO_CHAIN)
   const [toToken, setToToken] = useState(DEFAULT_TO_TOKEN)
+  const [isQuoteLoading, setIsQuoteLoading] = useState<boolean>(false)
   const [error, setError] = useState('')
   const [destinationAddress, setDestinationAddress] = useState('')
   const [toOptions, setToOptions] = useState({
@@ -492,6 +493,7 @@ const BridgePage = ({ address }: { address: `0x${string}` }) => {
   - Calculates slippage by subtracting fee from input amount (checks to ensure proper num of decimals are in use - ask someone about stable swaps if you want to learn more)
   */
   const getQuote = async () => {
+    setIsQuoteLoading(true)
     const { feeAmount, routerAddress, maxAmountOut, originQuery, destQuery } =
       await SynapseSDK.bridgeQuote(
         fromChainId,
@@ -502,6 +504,7 @@ const BridgePage = ({ address }: { address: `0x${string}` }) => {
       )
     if (!(originQuery && maxAmountOut && destQuery && feeAmount)) {
       setBridgeQuote(EMPTY_BRIDGE_QUOTE_ZERO)
+      setIsQuoteLoading(false)
       return
     }
     const toValueBigNum = maxAmountOut ?? Zero
@@ -533,7 +536,7 @@ const BridgePage = ({ address }: { address: `0x${string}` }) => {
         destQuery,
       },
     })
-    return
+    return setIsQuoteLoading(false)
   }
 
   /*
@@ -591,6 +594,7 @@ const BridgePage = ({ address }: { address: `0x${string}` }) => {
                     toToken={toToken}
                     toChainId={toChainId}
                     toOptions={toOptions}
+                    isQuoteLoading={isQuoteLoading}
                     destinationAddress={destinationAddress}
                     handleChainChange={handleChainChange}
                     handleTokenChange={handleTokenChange}

@@ -37,6 +37,7 @@ const BridgeCard = ({
   toToken,
   toChainId,
   toOptions,
+  isQuoteLoading,
   destinationAddress,
   handleChainChange,
   handleTokenChange,
@@ -56,6 +57,7 @@ const BridgeCard = ({
   toToken: Token
   toChainId: number
   toOptions: { tokens: Token[]; chains: string[] }
+  isQuoteLoading: boolean
   destinationAddress: string
   handleChainChange: (
     chainId: number,
@@ -69,7 +71,7 @@ const BridgeCard = ({
   resetRates: () => void
   setTime: (time: number) => void
 }) => {
-  console.log('bridgeQuote: ', bridgeQuote)
+  console.log('isQuoteLoading: ', isQuoteLoading)
   const [settings, setSettings] = useSettings()
   const [displayType, setDisplayType] = useState('')
   const [deadlineMinutes, setDeadlineMinutes] = useState('')
