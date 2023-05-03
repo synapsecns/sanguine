@@ -192,11 +192,14 @@ const BridgePage = ({ address }: { address: `0x${string}` }) => {
     }
   }, [toToken, fromInput, toChainId, time])
 
+  /*
+  useEffect Triggers: fromInput
+  - Checks that user input is not zero. When input changes,
+  - isQuoteLoading state is set to true for loading state interactions
+  */
   useEffect(() => {
     const { string, bigNum } = fromInput
     const isInvalid = checkStringIfOnlyZeroes(string)
-    console.log('string: ', string)
-    console.log('isInvalid: ', isInvalid)
     isInvalid ? () => null : setIsQuoteLoading(true)
 
     return () => {
