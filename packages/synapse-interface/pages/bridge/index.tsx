@@ -169,7 +169,7 @@ const BridgePage = ({ address }: { address: `0x${string}` }) => {
     let isCancelled = false
 
     const handleChange = async () => {
-      await timeout(1000)
+      await timeout(1000) // debounce by 1000ms or 1s
       if (!isCancelled) {
         if (
           fromChainId &&
@@ -179,14 +179,10 @@ const BridgePage = ({ address }: { address: `0x${string}` }) => {
           fromInput &&
           fromInput.bigNum.gt(Zero)
         ) {
-          // TODO this needs to be debounced or throttled somehow to prevent spam and lag in the ui
           getQuote()
         } else {
           setBridgeQuote(EMPTY_BRIDGE_QUOTE)
         }
-        // } else {
-        //   setBridgeQuote(EMPTY_BRIDGE_QUOTE)
-        // }
       }
     }
     handleChange()
