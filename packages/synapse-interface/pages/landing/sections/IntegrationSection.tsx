@@ -51,7 +51,7 @@ export default function IntegrationSection() {
         {OrderedSupportedNetworks.map((network: Chain) => (
           <NetworkCard
             chainId={network.id}
-            chainName={network.chainName}
+            chainName={network.name}
             chainImg={network.chainImg.src}
             layer={network.layer}
           />
