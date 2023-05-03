@@ -10,7 +10,7 @@ replace (
 )
 
 require (
-	github.com/ImVexed/fasturl v0.0.0-20200730185836-b0c0fbead04e
+	github.com/ImVexed/fasturl v0.0.0-20230304231329-4e41488060f3
 	github.com/Soft/iter v0.1.0
 	github.com/brianvoe/gofakeit/v6 v6.20.1
 	github.com/buger/jsonparser v1.1.1

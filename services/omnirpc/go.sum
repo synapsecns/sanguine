@@ -93,8 +93,8 @@ github.com/DataDog/sketches-go v1.2.1/go.mod h1:1xYmPLY1So10AwxV6MJV0J53XVH+WL9A
 github.com/DataDog/zstd v1.3.6-0.20190409195224-796139022798/go.mod h1:1jcaCB/ufaK+sKp1NBhlGmpz41jOoPQ35bpF36t7BBo=
 github.com/Flaque/filet v0.0.0-20201012163910-45f684403088 h1:PnnQln5IGbhLeJOi6hVs+lCeF+B1dRfFKPGXUAez0Ww=
 github.com/Flaque/filet v0.0.0-20201012163910-45f684403088/go.mod h1:TK+jB3mBs+8ZMWhU5BqZKnZWJ1MrLo8etNVg51ueTBo=
-github.com/ImVexed/fasturl v0.0.0-20200730185836-b0c0fbead04e h1:oTGPtLDJBqVtsWy1p7XdW8qGYVg1ekeOax1fN6S81+g=
-github.com/ImVexed/fasturl v0.0.0-20200730185836-b0c0fbead04e/go.mod h1:we0YA5CsBbH5+/NUzC/AlMmxaDtWlXeNsqrwXjTzmzA=
+github.com/ImVexed/fasturl v0.0.0-20230304231329-4e41488060f3 h1:ClzzXMDDuUbWfNNZqGeYq4PnYOlwlOVIvSyNaIy0ykg=
+github.com/ImVexed/fasturl v0.0.0-20230304231329-4e41488060f3/go.mod h1:we0YA5CsBbH5+/NUzC/AlMmxaDtWlXeNsqrwXjTzmzA=
 github.com/LK4D4/trylock v0.0.0-20191027065348-ff7e133a5c54 h1:sg9CWNOhr58hMGmJ0q7x7jQ/B1RK/GyHNmeaYCJos9M=
 github.com/LK4d4/trylock v0.0.0-20191027065348-ff7e133a5c54 h1:mD+/7fgGmTO9w3g8xYfovo7GBSkyjkmQiacVj9VPx+0=
 github.com/LK4d4/trylock v0.0.0-20191027065348-ff7e133a5c54/go.mod h1:sAFuaugbNEiH1k50YhFNuD2+Gwga8oetKMT2RSFpglU=
