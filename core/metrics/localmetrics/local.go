@@ -72,11 +72,6 @@ func startServer(parentCtx context.Context, tb testing.TB, options ...Option) *t
 	go func() {
 		defer wg.Done()
 		tj.jaegerResource = tj.StartJaegerServer(ctx)
-		// if pyroscope jaeger is enabled, we'll use that ui otherwise we'll use this one
-		if !tj.cfg.enablePyroscopeJaeger {
-			err = os.Setenv(internal.JaegerUIEndpoint, tj.jaegerResource.uiURL)
-			assert.Nil(tb, err)
-		}
 	}()
 
 	go func() {
