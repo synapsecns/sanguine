@@ -149,3 +149,19 @@ func (a destinationContract) SubmitAttestation(ctx context.Context, signer signe
 
 	return nil
 }
+
+func (a destinationContract) MessageStatus(ctx context.Context, message types.Message) (bool, error) {
+	messageLeaf, err := message.ToLeaf()
+	if err != nil {
+		return false, fmt.Errorf("could not get message leaf: %w", err)
+	}
+
+	status, err := a.contract.MessageStatus(&bind.CallOpts{Context: ctx}, messageLeaf)
+	if err != nil {
+		return false, fmt.Errorf("could not get message status: %w", err)
+	}
+
+	statusNone := [32]byte{}
+	
+	return status != statusNone, nil
+}

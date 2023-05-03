@@ -585,6 +585,55 @@ func newTreeFromDB(ctx context.Context, chainID uint32, executorDB db.ExecutorDB
 	return merkleTree, nil
 }
 
+// checkIfExecuted checks if a message has been executed.
+func (e Executor) checkIfExecuted(parentCtx context.Context, message types.Message) (_ bool, err error) {
+	ctx, span := e.handler.Tracer().Start(parentCtx, "checkIfExecuted", trace.WithAttributes(
+		attribute.Int(metrics.Origin, int(message.OriginDomain())),
+		attribute.Int(metrics.Destination, int(message.DestinationDomain())),
+		attribute.Int(metrics.Nonce, int(message.Nonce())),
+	))
+
+	defer func() {
+		metrics.EndSpanWithErr(span, err)
+	}()
+
+	b := &backoff.Backoff{
+		Factor: 2,
+		Jitter: true,
+		Min:    30 * time.Millisecond,
+		Max:    3 * time.Second,
+	}
+
+	timeout := time.Duration(0)
+
+	for {
+		select {
+		case <-ctx.Done():
+			return false, fmt.Errorf("context cancelled: %w", ctx.Err())
+		case <-time.After(timeout):
+			if b.Attempt() == 5 {
+				return false, fmt.Errorf("could not get executed status: %w", ctx.Err())
+			}
+
+			executed, err := e.chainExecutors[message.DestinationDomain()].boundDestination.MessageStatus(ctx, message)
+			if err != nil {
+				timeout = b.Duration()
+				span.AddEvent("could not get executed status",
+					trace.WithAttributes(attribute.String("error", err.Error())),
+					trace.WithAttributes(attribute.String("timeout", timeout.String())),
+				)
+				continue
+			}
+
+			if executed {
+				return true, nil
+			}
+
+			return false, nil
+		}
+	}
+}
+
 // markAsExecuted marks a message as executed via the `executed` mapping.
 func (e Executor) markAsExecuted(ctx context.Context, chain config.ChainConfig) error {
 	latestHeader, err := e.chainExecutors[chain.ChainID].rpcClient.HeaderByNumber(ctx, nil)
@@ -852,35 +901,46 @@ func (e Executor) executeExecutable(parentCtx context.Context, chainID uint32) (
 				))
 
 				for _, message := range messages {
-					leaf, err := message.ToLeaf()
+					//leaf, err := message.ToLeaf()
+					//if err != nil {
+					//	return fmt.Errorf("could not convert message to leaf: %w", err)
+					//}
+
+					messageExecuted, err := e.checkIfExecuted(ctx, message)
 					if err != nil {
-						return fmt.Errorf("could not convert message to leaf: %w", err)
+						return fmt.Errorf("could not check if message was executed: %w", err)
 					}
 
-					destinationDomain := message.DestinationDomain()
+					span.AddEvent("checked if message was executed", trace.WithAttributes(
+						attribute.Int(metrics.ChainID, int(chainID)),
+						attribute.Int(metrics.Nonce, int(message.Nonce())),
+						attribute.Bool("message_executed", messageExecuted),
+					))
 
-					if !e.chainExecutors[destinationDomain].executed[leaf] {
-						executed, err := e.Execute(ctx, message)
-						if err != nil {
-							logger.Errorf("could not execute message, retrying: %s", err)
-							continue
-						}
+					//destinationDomain := message.DestinationDomain()
 
-						if !executed {
-							continue
-						}
-					}
+					//if !e.chainExecutors[destinationDomain].executed[leaf] {
+					//	executed, err := e.Execute(ctx, message)
+					//	if err != nil {
+					//		logger.Errorf("could not execute message, retrying: %s", err)
+					//		continue
+					//	}
+					//
+					//	if !executed {
+					//		continue
+					//	}
+					//}
 
-					nonce := message.Nonce()
-					executedMessageMask := execTypes.DBMessage{
-						ChainID:     &chainID,
-						Destination: &destinationDomain,
-						Nonce:       &nonce,
-					}
-					err = e.executorDB.ExecuteMessage(ctx, executedMessageMask)
-					if err != nil {
-						return fmt.Errorf("could not execute message: %w", err)
-					}
+					//nonce := message.Nonce()
+					//executedMessageMask := execTypes.DBMessage{
+					//	ChainID:     &chainID,
+					//	Destination: &destinationDomain,
+					//	Nonce:       &nonce,
+					//}
+					//err = e.executorDB.ExecuteMessage(ctx, executedMessageMask)
+					//if err != nil {
+					//	return fmt.Errorf("could not execute message: %w", err)
+					//}
 				}
 
 				metrics.EndSpanWithErr(span, err)
