@@ -102,12 +102,44 @@ func (t *txSubmitterImpl) chainQueue(parentCtx context.Context, chainID *big.Int
 		calls[i] = eth.SendTx(tx.Transaction).Returns(&txHashes[i])
 	}
 
-	err = chainClient.BatchWithContext(ctx, calls...)
-	if err != nil {
-		return fmt.Errorf("error in chainQueue: %w", err)
-	}
+	cq.storeAndSubmit(ctx, calls, span)
 
 	return nil
+}
+
+// storeAndSubmit stores the txes in the database and submits them to the chain.
+func (c *chainQueue) storeAndSubmit(ctx context.Context, calls []w3types.Caller, span trace.Span) {
+	var wg sync.WaitGroup
+	wg.Add(2)
+
+	storeCtx, cancelStore := context.WithCancel(ctx)
+
+	go func() {
+		defer wg.Done()
+		err := c.db.PutTXS(storeCtx, c.reprocessQueue...)
+		if err != nil {
+			span.AddEvent("could not store txes", trace.WithAttributes(attribute.String("error", err.Error())))
+		}
+	}()
+
+	go func() {
+		defer wg.Done()
+		err := c.client.BatchWithContext(ctx, calls...)
+		cancelStore()
+		for i := range c.reprocessQueue {
+			if err != nil {
+				c.reprocessQueue[i].Status = db.FailedSubmit
+			} else {
+				c.reprocessQueue[i].Status = db.Submitted
+			}
+		}
+
+		err = c.db.PutTXS(ctx, c.reprocessQueue...)
+		if err != nil {
+			span.AddEvent("could not store txes", trace.WithAttributes(attribute.String("error", err.Error())))
+		}
+	}()
+	wg.Wait()
 }
 
 // nolint: cyclop

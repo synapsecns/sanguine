@@ -31,8 +31,9 @@ func (t *txSubmitterImpl) runSelector(parentCtx context.Context, i int) (shouldE
 }
 
 // processQueue processes the queue of transactions.
+// TODO: add a way to process a confirmation queue.
 func (t *txSubmitterImpl) processQueue(parentCtx context.Context) (err error) {
-	// TODO: this might be too short of a deadline depending on the number of transactions in the queue
+	// TODO: this might be too short of a deadline depending on the number of pendingTxes in the queue
 	deadlineCtx, cancel := context.WithTimeout(parentCtx, time.Second*60)
 	defer cancel()
 
@@ -41,17 +42,18 @@ func (t *txSubmitterImpl) processQueue(parentCtx context.Context) (err error) {
 		metrics.EndSpanWithErr(span, err)
 	}()
 
-	// get all the transactions in the queue
-	transactions, err := t.db.GetTXS(ctx, t.signer.Address(), nil, db.Stored, db.Pending, db.ReplacedOrConfirmed)
+	// TODO: parallelize resubmission by chainid, maybe w/ a locker per chain
+	var wg sync.WaitGroup
+
+	// get all the pendingTxes in the queue
+	pendingTxes, err := t.db.GetTXS(ctx, t.signer.Address(), nil, db.Stored, db.Pending, db.FailedSubmit, db.Submitted)
 	if err != nil {
-		return fmt.Errorf("could not get transactions: %w", err)
+		return fmt.Errorf("could not get pendingTxes: %w", err)
 	}
 
 	// fetch txes into a map by chainid.
-	sortedTXesByChainID := sortTxes(transactions)
+	sortedTXesByChainID := sortTxes(pendingTxes)
 
-	// TODO: parallelize resubmission by chainid, maybe w/ a locker per chain
-	var wg sync.WaitGroup
 	wg.Add(len(sortedTXesByChainID))
 
 	for chainID := range sortedTXesByChainID {

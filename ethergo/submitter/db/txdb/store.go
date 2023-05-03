@@ -204,12 +204,14 @@ func (s Store) PutTXS(ctx context.Context, txs ...db.TX) error {
 		})
 	}
 
-	dbTX := s.DB().WithContext(ctx).Create(toInsert).Clauses(clause.OnConflict{
-		Columns: []clause.Column{{Name: txHashFieldName}},
-		DoUpdates: clause.AssignmentColumns([]string{
-			statusFieldName,
-		}),
-	})
+	dbTX := s.DB().WithContext(ctx).
+		Clauses(clause.OnConflict{
+			Columns: []clause.Column{{Name: txHashFieldName}},
+			DoUpdates: clause.AssignmentColumns([]string{
+				statusFieldName,
+			}),
+		}).
+		Create(toInsert)
 
 	if dbTX.Error != nil {
 		return fmt.Errorf("could not store tx: %w", dbTX.Error)
