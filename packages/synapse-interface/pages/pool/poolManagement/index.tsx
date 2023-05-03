@@ -1,8 +1,8 @@
 import { useState } from 'react'
 
-import LiquidityManagementTabs from './LiquidityManagementTabs'
-import PoolManagementDeposit from './PoolManagementDeposit'
-import PoolManagementWithdraw from './PoolManagementWithdraw'
+import LiquidityManagementTabs from '../components/LiquidityManagementTabs'
+import Deposit from './Deposit'
+import Withdraw from './Withdraw'
 import { Token } from '@types'
 const PoolManagement = ({
   pool,
@@ -32,7 +32,7 @@ const PoolManagement = ({
         />
         <div className="mt-4">
           {cardNav === 'addLiquidity' && (
-            <PoolManagementDeposit
+            <Deposit
               pool={pool}
               address={address}
               chainId={chainId}
@@ -41,7 +41,7 @@ const PoolManagement = ({
             />
           )}
           {cardNav === 'removeLiquidity' && (
-            <PoolManagementWithdraw
+            <Withdraw
               pool={pool}
               chainId={chainId}
               address={address}

@@ -5,7 +5,7 @@ import { AVWETH, ETH, WETHE } from '@constants/tokens/master'
 import { stringToBigNum } from '@/utils/stringToBigNum'
 import { getAddress } from '@ethersproject/address'
 import TokenInput from '@components/TokenInput'
-import PriceImpactDisplay from './PriceImpactDisplay'
+import PriceImpactDisplay from '../components/PriceImpactDisplay'
 import { useSynapseContext } from '@/utils/providers/SynapseProvider'
 import { formatBNToString } from '@utils/bignumber/format'
 import { calculatePriceImpact } from '@utils/priceImpact'
@@ -20,7 +20,7 @@ import { approve, deposit } from '@/utils/actions/approveAndDeposit'
 import { QUOTE_POLLING_INTERVAL } from '@/constants/bridge' // TODO CHANGE
 import { useSwapDepositContract } from '@hooks/useSwapDepositContract'
 
-const PoolManagementDeposit = ({
+const Deposit = ({
   pool,
   chainId,
   address,
@@ -240,4 +240,4 @@ const correctToken = (token: Token) => {
   return balanceToken
 }
 
-export default PoolManagementDeposit
+export default Deposit

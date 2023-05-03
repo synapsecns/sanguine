@@ -5,10 +5,12 @@ import { stringToBigNum } from '@/utils/stringToBigNum'
 
 import { BigNumber } from '@ethersproject/bignumber'
 import { formatUnits } from '@ethersproject/units'
+import { useSynapseContext } from '@/utils/providers/SynapseProvider'
 
 import { Transition } from '@headlessui/react'
 
 import { getCoinTextColorCombined } from '@styles/tokens'
+import { calculateExchangeRate } from '@utils/calculateExchangeRate'
 
 import { ETH } from '@constants/tokens/master'
 import { WETH } from '@constants/tokens/swapMaster'
@@ -25,18 +27,21 @@ import Grid from '@tw/Grid'
 import TokenInput from '@components/TokenInput'
 import RadioButton from '@components/buttons/RadioButton'
 import ButtonLoadingSpinner from '@components/buttons/ButtonLoadingSpinner'
-import RecievedTokenSection from './RecievedTokenSection'
-import PriceImpactDisplay from './PriceImpactDisplay'
+import RecievedTokenSection from '../components/RecievedTokenSection'
+import PriceImpactDisplay from '../components/PriceImpactDisplay'
 
 import { TransactionButton } from '@components/buttons/SubmitTxButton'
 import { Zero } from '@ethersproject/constants'
 // need to add pending for deposit func
 import { TransactionResponse } from '@ethersproject/providers'
 import { useSwapDepositContract } from '@hooks/useSwapDepositContract'
-
+import { calculatePriceImpactWithdraw } from '@utils/priceImpact'
 import { OPTIMISM_ETH_SWAP_TOKEN } from '@constants/tokens/poolMaster'
-import { Token } from '@synapsecns/sdk-router'
-const PoolManagementWithdraw = ({
+import { Token } from '@types'
+import { approve, withdraw } from '@/utils/actions/approveAndWithdraw'
+import { getTokenAllowance } from '@/utils/actions/getTokenAllowance'
+
+const Withdraw = ({
   pool,
   chainId,
   address,
@@ -69,73 +74,86 @@ const PoolManagementWithdraw = ({
   const [percentage, setPercentage] = useState(100)
 
   const clearInputs = () => {}
+  const SynapseSDK = useSynapseContext()
 
   const lpTokenValue = ''
   const lpTokenAmount = Zero
   const debouncedPoolData = useDebounce(poolData, 500)
 
   const lpTokenBalance = Zero
-  // const checkPoolNameChange = poolData?.name === debouncedPoolData?.name
   const placeholder = async (): Promise<TransactionResponse> => {
     console.log('placeholder')
     return
   }
 
-  const [lastChangeField, setLastChangeField] = useState(undefined)
-
-  // useEffect(() => {
-  //   if (withdrawType === ALL && lastChangeField == 'PERCENT') {
-  //     const numericalOut = formatUnits(
-  //       lpTokenBalance.mul(Number(percentage)).div(100),
-  //       pool.decimals[chainId]
-  //     )
-
-  //     setLpTokenValue(`${numericalOut}`)
-  //   }
-  // }, [
-  //   withdrawType,
-  //   percentage,
-  //   checkPoolNameChange,
-  //   lastChangeField, // the pool data displayer here is essential to update on initial load
-  // ])
-
+  const sumBigNumbers = (pool: Token, bigNumMap: any) => {
+    let sum = Zero
+    pool.poolTokens.map((token) => {
+      if (bigNumMap[token.addresses[chainId]]) {
+        sum = sum.add(
+          bigNumMap[token.addresses[chainId]].mul(
+            BigNumber.from(10).pow(18 - token.decimals[chainId])
+          )
+        )
+      }
+    })
+    return sum
+  }
   const calculateMaxWithdraw = async () => {
     if (poolUserData == null || address == null) {
       return
     }
     const swapContract = await useSwapDepositContract(pool, chainId)
-    const newInputState = {}
+    const outputs = {}
     const depositTokens = pool.poolTokens
     if (withdrawType == ALL) {
-      const results = await swapContract.calculateRemoveLiquidity(inputValue.bn)
-      console.log('results', results)
-      //  for (const [token, amount] of _.zip(depositTokens, results) ) {
-      //    newInputState[token.symbol] = formatUnits(amount, token.decimals[chainId])
-      //  }
-    } else {
-      for (const token of pool.poolTokens) {
-        newInputState[token.symbol] = ''
+      const { amounts } = await SynapseSDK.calculateRemoveLiquidity(
+        chainId,
+        pool.swapAddresses[chainId],
+        inputValue.bn
+      )
+      // const results = await swapContract.calculateRemoveLiquidity(inputValue.bn)
+      console.log('results', amounts)
+      for (const tokenAddr in amounts) {
+        outputs[tokenAddr] = amounts[tokenAddr]
       }
+    } else {
       const tokenIndex = await swapContract.getTokenIndex(withdrawType)
+      console.log('tokenIndex', tokenIndex)
       const amount = await swapContract.calculateRemoveLiquidityOneToken(
         inputValue.bn,
         tokenIndex
       )
-      console.log('resultsamount', amount)
+      outputs[withdrawType] = amount
 
       // newInputState[token.symbol] = formatUnits(amount, token.decimals[chainId])
     }
-    // TODO: DOUBLE CHECK THIS
-    // setWithdrawQuote({
-    //   priceImpact,
-    //   allowance,
-    //   outputs,
-    //   routerAddress: pool.swapAddresses[chainId],
-    // })
+    console.log('newWithdrawQuotenewWithdrawQuote', withdrawType, outputs)
+    const tokenSum = sumBigNumbers(pool, outputs)
+    const priceImpact = calculateExchangeRate(
+      inputValue.bn,
+      18,
+      inputValue.bn.sub(tokenSum),
+      18
+    )
+    const allowance = await getTokenAllowance(
+      pool.swapAddresses[chainId],
+      pool.addresses[chainId],
+      address,
+      chainId
+    )
+    setWithdrawQuote({
+      priceImpact,
+      allowance,
+      outputs,
+      routerAddress: pool.swapAddresses[chainId],
+    })
   }
 
   useEffect(() => {
-    calculateMaxWithdraw()
+    if (poolUserData && poolData && address && pool && inputValue.bn.gt(Zero)) {
+      calculateMaxWithdraw()
+    }
   }, [inputValue])
 
   const onPercentChange = (percent: number) => {
@@ -163,6 +181,56 @@ const PoolManagementWithdraw = ({
     }
   }
 
+  // some messy button gen stuff (will re-write)
+  let isFromBalanceEnough = true
+  let isAllowanceEnough = true
+  let btnLabel = 'Withdraw'
+  let pendingLabel = 'Withdrawing funds...'
+  let btnClassName = ''
+  let buttonAction = () =>
+    withdraw(pool, 'ONE_TENTH', null, inputValue.bn, chainId)
+  let postButtonAction = () => {
+    console.log('JHK')
+    resetInputs()
+  }
+
+  for (const [tokenAddr, amount] of Object.entries(inputValue.bn)) {
+    if (
+      withdrawQuote.allowance &&
+      !amount.isZero() &&
+      amount.gt(withdrawQuote.allowance)
+    ) {
+      isAllowanceEnough = false
+    }
+    poolUserData.tokens.map((tokenObj, i) => {
+      if (
+        tokenObj.token.addresses[chainId] === tokenAddr &&
+        amount.gt(tokenObj.balance)
+      ) {
+        isFromBalanceEnough = false
+      }
+    })
+  }
+
+  if (!isFromBalanceEnough) {
+    btnLabel = `Insufficient Balance`
+  } else if (!isAllowanceEnough) {
+    buttonAction = () => approve(pool, withdrawQuote, inputValue.bn, chainId)
+    btnLabel = `Approve Token(s)`
+    pendingLabel = `Approving Token(s)`
+    btnClassName = 'from-[#feba06] to-[#FEC737]'
+    postButtonAction = () => setTime(0)
+  }
+  const actionBtn = (
+    <TransactionButton
+      className={btnClassName}
+      disabled={inputValue.bn.eq(0)}
+      onClick={() => buttonAction()}
+      onSuccess={() => postButtonAction()}
+      label={btnLabel}
+      pendingLabel={pendingLabel}
+    />
+  )
   return (
     <div>
       <div className="percentage">
@@ -221,7 +289,6 @@ const PoolManagementWithdraw = ({
         />
         {pool.poolTokens.map((token) => {
           const checked = withdrawType === token.addresses[chainId]
-
           return (
             <RadioButton
               radioClassName={getCoinTextColorCombined(token.color)}
@@ -266,6 +333,8 @@ const PoolManagementWithdraw = ({
         // }}
         onClick={placeholder}
       />
+      {/*
+      TODO FIX THIS TRANSITION
       <Transition
         appear={true}
         unmount={false}
@@ -277,26 +346,26 @@ const PoolManagementWithdraw = ({
         leaveFrom="transform-gpu scale-y-100 opacity-100"
         leaveTo="transform-gpu scale-y-0 "
         className="-mx-6 origin-top "
+      > */}
+      <div
+        className={`py-3.5 pr-6 pl-6 mt-2 rounded-b-2xl bg-bgBase transition-all`}
       >
-        <div
-          className={`py-3.5 pr-6 pl-6 mt-2 rounded-b-2xl bg-bgBase transition-all`}
-        >
-          <Grid cols={{ xs: 2 }}>
-            <div>
-              <RecievedTokenSection
-                poolTokens={pool.poolTokens}
-                withdrawQuote={withdrawQuote}
-                chainId={chainId}
-              />
-            </div>
-            <div>
-              <PriceImpactDisplay priceImpact={withdrawQuote.priceImpact} />
-            </div>
-          </Grid>
-        </div>
-      </Transition>
+        <Grid cols={{ xs: 2 }}>
+          <div>
+            <RecievedTokenSection
+              poolTokens={pool.poolTokens}
+              withdrawQuote={withdrawQuote}
+              chainId={chainId}
+            />
+          </div>
+          <div>
+            <PriceImpactDisplay priceImpact={withdrawQuote.priceImpact} />
+          </div>
+        </Grid>
+      </div>
+      {/* </Transition> */}
     </div>
   )
 }
 
-export default PoolManagementWithdraw
+export default Withdraw

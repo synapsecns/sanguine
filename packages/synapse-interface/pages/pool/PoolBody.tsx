@@ -9,7 +9,7 @@ import { getPoolApyData } from '@utils/actions/getPoolApyData'
 import Button from '@tw/Button'
 import Card from '@tw/Card'
 import Grid from '@tw/Grid'
-import PoolManagement from './components/PoolManagement'
+import PoolManagement from './poolManagement'
 import PoolInfoSection from './PoolInfoSection'
 const PoolBody = memo(
   ({

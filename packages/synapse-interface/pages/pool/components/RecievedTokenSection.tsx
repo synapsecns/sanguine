@@ -1,7 +1,5 @@
 import _ from 'lodash'
-
-import { commify } from '@ethersproject/units'
-import { cleanNumberInput } from '@utils/cleanNumberInput'
+import { formatBNToString } from '@utils/bignumber/format'
 import { Token } from '@types'
 const RecievedTokenSection = ({
   withdrawQuote,
@@ -18,24 +16,31 @@ const RecievedTokenSection = ({
         You will receive
       </p>
       {poolTokens
-        .filter(
-          (token) =>
-            withdrawQuote.outputs[token.addresses[chainId]] &&
-            Number(
-              cleanNumberInput(withdrawQuote.outputs[token.addresses[chainId]])
-            ) > 0
-        )
+        .filter((token) => withdrawQuote.outputs[token.addresses[chainId]])
         .map((token) => {
+          console.log(
+            'withdrawQuote.outputs',
+            token.name,
+            withdrawQuote.outputs[token.addresses[chainId]],
+            formatBNToString(
+              withdrawQuote.outputs[token.addresses[chainId]],
+              token.decimals[chainId],
+              2
+            )
+          )
+
           return (
             <div className="flex items-center">
               <img
                 alt=""
                 className="inline-block -mt-0.5 w-4 mr-1"
-                src={token.icon}
+                src={token.icon.src}
               ></img>
               <span className="text-sm text-white">
-                {commify(
-                  _.round(withdrawQuote.outputs[token.addresses[chainId]], 2)
+                {formatBNToString(
+                  withdrawQuote.outputs[token.addresses[chainId]],
+                  token.decimals[chainId],
+                  2
                 )}
               </span>
               <span className="text-sm px-1 font-medium text-secondaryTextColor text-opacity-50">
