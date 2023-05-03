@@ -7,6 +7,7 @@ import Tooltip from '@tw/Tooltip'
 import Button from '@tw/Button'
 
 import { DeadlineInput } from '@components/input/DeadlineInput'
+import { DisplayType } from './BridgeCard'
 
 const SettingsSlideOver = ({
   settings,
@@ -18,7 +19,7 @@ const SettingsSlideOver = ({
 }: {
   settings: any
   setSettings: (v: any) => void
-  setDisplayType: (v: string) => void
+  setDisplayType: (v: DisplayType) => void
   setDestinationAddress: (v: string) => void
   deadlineMinutes: string
   setDeadlineMinutes: (v: string) => void
@@ -26,7 +27,7 @@ const SettingsSlideOver = ({
   const escPressed = useKeyPress('Escape')
 
   function onClose() {
-    setDisplayType('')
+    setDisplayType(DisplayType.DEFAULT)
   }
 
   function escFunc() {
@@ -46,7 +47,7 @@ const SettingsSlideOver = ({
           space-y-4
         `}
       >
-        <div className="pt-8">
+        <div className="pt-2">
           <div className="flex items-center mb-4 text-sm font-light text-white">
             Deadline
             <Tooltip content="Enter deadline in minutes">
