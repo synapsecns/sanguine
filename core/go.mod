@@ -10,7 +10,7 @@ replace (
 require (
 	github.com/BurntSushi/toml v1.2.0
 	github.com/Flaque/filet v0.0.0-20201012163910-45f684403088
-	github.com/ImVexed/fasturl v0.0.0-20200730185836-b0c0fbead04e
+	github.com/ImVexed/fasturl v0.0.0-20230304231329-4e41488060f3
 	github.com/LK4d4/trylock v0.0.0-20191027065348-ff7e133a5c54
 	github.com/Soft/iter v0.1.0
 	github.com/asaskevich/govalidator v0.0.0-20210307081110-f21760c49a8d
