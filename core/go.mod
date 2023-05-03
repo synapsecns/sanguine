@@ -2,7 +2,10 @@ module github.com/synapsecns/sanguine/core
 
 go 1.19
 
-replace github.com/gogo/protobuf => github.com/regen-network/protobuf v1.3.3-alpha.regen.1
+replace (
+	github.com/gogo/protobuf => github.com/regen-network/protobuf v1.3.3-alpha.regen.1
+	gopkg.in/DataDog/dd-trace-go.v1 v1.50.0 => gopkg.in/DataDog/dd-trace-go.v1 v1.39.0-alpha.1.0.20230428193534-5deb295b7662
+)
 
 require (
 	github.com/BurntSushi/toml v1.2.0
@@ -62,7 +65,7 @@ require (
 	golang.org/x/crypto v0.7.0
 	golang.org/x/exp v0.0.0-20230127193734-31bee513bff7
 	golang.org/x/sync v0.1.0
-	gopkg.in/DataDog/dd-trace-go.v1 v1.50.0-rc.2
+	gopkg.in/DataDog/dd-trace-go.v1 v1.50.0
 	gorm.io/driver/sqlite v1.4.3
 	gorm.io/gorm v1.24.6
 	k8s.io/apimachinery v0.25.5
@@ -71,7 +74,7 @@ require (
 require (
 	github.com/Azure/go-ansiterm v0.0.0-20210617225240-d185dfc1b5a1 // indirect
 	github.com/DataDog/appsec-internal-go v1.0.0 // indirect
-	github.com/DataDog/datadog-agent/pkg/obfuscate v0.43.1 // indirect
+	github.com/DataDog/datadog-agent/pkg/obfuscate v0.45.0-rc.1 // indirect
 	github.com/DataDog/datadog-agent/pkg/remoteconfig/state v0.45.0-rc.1 // indirect
 	github.com/DataDog/datadog-go/v5 v5.1.1 // indirect
 	github.com/DataDog/go-libddwaf v1.1.0 // indirect
@@ -112,6 +115,7 @@ require (
 	github.com/go-playground/locales v0.14.1 // indirect
 	github.com/go-playground/universal-translator v0.18.1 // indirect
 	github.com/go-playground/validator/v10 v10.11.1 // indirect
+	github.com/go-sql-driver/mysql v1.7.0 // indirect
 	github.com/go-stack/stack v1.8.1 // indirect
 	github.com/goccy/go-json v0.10.0 // indirect
 	github.com/gogo/protobuf v1.3.3 // indirect

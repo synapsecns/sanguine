@@ -36,6 +36,8 @@ type Config struct {
 	Path string
 	// OmniRPCURL is the url of the omnirpc service.
 	OmniRPCURL string
+	// SkipMigrations skips the database migrations.
+	SkipMigrations bool
 }
 
 var logger = log.Logger("scribe-api")
@@ -44,7 +46,7 @@ var logger = log.Logger("scribe-api")
 func Start(ctx context.Context, cfg Config, handler metrics.Handler) error {
 	router := ginhelper.New(logger)
 
-	eventDB, err := InitDB(ctx, cfg.Database, cfg.Path, handler)
+	eventDB, err := InitDB(ctx, cfg.Database, cfg.Path, handler, cfg.SkipMigrations)
 	if err != nil {
 		return fmt.Errorf("could not initialize database: %w", err)
 	}
@@ -116,10 +118,10 @@ func Start(ctx context.Context, cfg Config, handler metrics.Handler) error {
 
 // InitDB initializes a database given a database type and path.
 // TODO: use enum for database type.
-func InitDB(ctx context.Context, databaseType string, path string, metrics metrics.Handler) (db.EventDB, error) {
+func InitDB(ctx context.Context, databaseType string, path string, metrics metrics.Handler, skipMigrations bool) (db.EventDB, error) {
 	switch {
 	case databaseType == "sqlite":
-		sqliteStore, err := sqlite.NewSqliteStore(ctx, path, metrics)
+		sqliteStore, err := sqlite.NewSqliteStore(ctx, path, metrics, skipMigrations)
 		if err != nil {
 			return nil, fmt.Errorf("failed to create sqlite store: %w", err)
 		}
@@ -131,7 +133,7 @@ func InitDB(ctx context.Context, databaseType string, path string, metrics metri
 		if os.Getenv("OVERRIDE_MYSQL") != "" {
 			dbname := os.Getenv("MYSQL_DATABASE")
 			connString := fmt.Sprintf("%s:%s@tcp(%s:%d)/%s?parseTime=true", core.GetEnv("MYSQL_USER", "root"), os.Getenv("MYSQL_PASSWORD"), core.GetEnv("MYSQL_HOST", "127.0.0.1"), core.GetEnvInt("MYSQL_PORT", 3306), dbname)
-			mysqlStore, err := mysql.NewMysqlStore(ctx, connString, metrics)
+			mysqlStore, err := mysql.NewMysqlStore(ctx, connString, metrics, skipMigrations)
 			if err != nil {
 				return nil, fmt.Errorf("failed to create mysql store: %w", err)
 			}
@@ -141,7 +143,7 @@ func InitDB(ctx context.Context, databaseType string, path string, metrics metri
 			return mysqlStore, nil
 		}
 
-		mysqlStore, err := mysql.NewMysqlStore(ctx, path, metrics)
+		mysqlStore, err := mysql.NewMysqlStore(ctx, path, metrics, skipMigrations)
 		if err != nil {
 			return nil, fmt.Errorf("failed to create mysql store: %w", err)
 		}

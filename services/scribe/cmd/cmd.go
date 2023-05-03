@@ -17,15 +17,13 @@ func Start(args []string, buildInfo config.BuildInfo) {
 	app.Description = buildInfo.VersionString() + "scribe is used to run a generic event indexer"
 	app.Usage = fmt.Sprintf("%s --help", buildInfo.Name())
 	app.EnableBashCompletion = true
-
-	// TODO: should we really halt boot on because of metrics?
 	app.Before = func(c *cli.Context) error {
-		// nolint:wrapcheck
+		// nolint: wrapcheck
 		return metrics.Setup(c.Context, buildInfo)
 	}
 
 	// commands
-	app.Commands = cli.Commands{infoCommand, scribeCommand, backfillCommand, serverCommand, generateCommand}
+	app.Commands = cli.Commands{infoCommand, scribeCommand, serverCommand, generateCommand}
 	shellCommand := commandline.GenerateShellCommand(app.Commands)
 	app.Commands = append(app.Commands, shellCommand)
 	app.Action = shellCommand.Action
