@@ -6,6 +6,7 @@ import (
 	"github.com/ImVexed/fasturl"
 	"github.com/ethereum/go-ethereum/accounts"
 	"github.com/ory/dockertest/v3/docker"
+	"github.com/synapsecns/sanguine/core/processlog"
 	"github.com/tyler-smith/go-bip39"
 	"golang.org/x/exp/slices"
 	"reflect"
@@ -104,7 +105,8 @@ type serverOptions struct {
 	Host         string `anvil:"host"`
 }
 
-// nonAnvilOptions: it's important that these do not include the anvil annotation.
+// nonAnvilOptions options are options that are not part of the anvil spec, but are used by the anvil backend.
+// it's important that these do not include the anvil annotation.
 type nonAnvilOptions struct {
 	// maxWait is the maximum time to wait for the server to start
 	maxWait time.Duration
@@ -115,6 +117,8 @@ type nonAnvilOptions struct {
 	autoremove bool
 	// restartPolicy restarts a policy
 	restartPolicy *docker.RestartPolicy
+	// processOptions are options for the process logger
+	processOptions []processlog.StdStreamLogArgsOption
 }
 
 // OptionBuilder is a builder for anvil options.
@@ -342,6 +346,11 @@ func (o *OptionBuilder) SetMaxWaitTime(maxWait time.Duration) {
 // SetExpirySeconds sets the expiry seconds for the docker image to be removed.
 func (o *OptionBuilder) SetExpirySeconds(expirySeconds uint) {
 	o.expirySeconds = expirySeconds
+}
+
+// SetProcessLogOptions sets the process log options for the docker container.
+func (o *OptionBuilder) SetProcessLogOptions(customOpts ...processlog.StdStreamLogArgsOption) {
+	o.processOptions = customOpts
 }
 
 // SetRestartPolicy sets the restart policy for the docker container.

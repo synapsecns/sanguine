@@ -3,11 +3,8 @@
  * swaps first `.` for an `x`, removes rest of decimals
  * swaps back `x` for `.`
  */
-export const cleanNumberInput = (value: string) => {
-  if (value === '') {
-    return ''
-  } else {
-    const val = value.replace(/[^\d.]/g, '')
-    return val.replace(/\./, 'x').replace(/\./g, '').replace(/x/, '.')
-  }
+export const cleanNumberInput = (value: string): string => {
+  return value === ''
+    ? ''
+    : value.replace(/[^0-9.]/g, '').replace(/(\..*)\./g, '$1') ?? ''
 }

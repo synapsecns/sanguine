@@ -7,6 +7,7 @@ import (
 	"github.com/ethereum/go-ethereum/core/vm"
 	"github.com/ethereum/go-ethereum/eth/filters"
 	"github.com/ethereum/go-ethereum/params"
+	util "github.com/synapsecns/sanguine/core"
 	"math/big"
 )
 
@@ -15,26 +16,26 @@ import (
 // we need to do this because params are global.
 func NewConfigWithChainID(chainID *big.Int) *params.ChainConfig {
 	return &params.ChainConfig{
-		ChainID:                       chainID,
-		HomesteadBlock:                params.AllEthashProtocolChanges.HomesteadBlock,
-		DAOForkBlock:                  params.AllEthashProtocolChanges.DAOForkBlock,
+		ChainID:                       util.CopyBigInt(chainID),
+		HomesteadBlock:                util.CopyBigInt(params.AllEthashProtocolChanges.HomesteadBlock),
+		DAOForkBlock:                  util.CopyBigInt(params.AllEthashProtocolChanges.DAOForkBlock),
 		DAOForkSupport:                params.AllEthashProtocolChanges.DAOForkSupport,
-		EIP150Block:                   params.AllEthashProtocolChanges.EIP150Block,
+		EIP150Block:                   util.CopyBigInt(params.AllEthashProtocolChanges.EIP150Block),
 		EIP150Hash:                    params.AllEthashProtocolChanges.EIP150Hash,
-		EIP155Block:                   params.AllEthashProtocolChanges.EIP155Block,
-		EIP158Block:                   params.AllEthashProtocolChanges.EIP158Block,
-		ByzantiumBlock:                params.AllEthashProtocolChanges.ByzantiumBlock,
-		ConstantinopleBlock:           params.AllEthashProtocolChanges.ConstantinopleBlock,
-		PetersburgBlock:               params.AllEthashProtocolChanges.PetersburgBlock,
-		IstanbulBlock:                 params.AllEthashProtocolChanges.IstanbulBlock,
-		MuirGlacierBlock:              params.AllEthashProtocolChanges.MuirGlacierBlock,
-		BerlinBlock:                   params.AllEthashProtocolChanges.BerlinBlock,
-		LondonBlock:                   params.AllEthashProtocolChanges.LondonBlock,
-		ArrowGlacierBlock:             params.AllEthashProtocolChanges.ArrowGlacierBlock,
-		GrayGlacierBlock:              params.AllEthashProtocolChanges.GrayGlacierBlock,
-		MergeNetsplitBlock:            params.AllEthashProtocolChanges.MergeNetsplitBlock,
-		ShanghaiBlock:                 params.AllEthashProtocolChanges.ShanghaiBlock,
-		CancunBlock:                   params.AllEthashProtocolChanges.CancunBlock,
+		EIP155Block:                   util.CopyBigInt(params.AllEthashProtocolChanges.EIP155Block),
+		EIP158Block:                   util.CopyBigInt(params.AllEthashProtocolChanges.EIP158Block),
+		ByzantiumBlock:                util.CopyBigInt(params.AllEthashProtocolChanges.ByzantiumBlock),
+		ConstantinopleBlock:           util.CopyBigInt(params.AllEthashProtocolChanges.ConstantinopleBlock),
+		PetersburgBlock:               util.CopyBigInt(params.AllEthashProtocolChanges.PetersburgBlock),
+		IstanbulBlock:                 util.CopyBigInt(params.AllEthashProtocolChanges.IstanbulBlock),
+		MuirGlacierBlock:              util.CopyBigInt(params.AllEthashProtocolChanges.MuirGlacierBlock),
+		BerlinBlock:                   util.CopyBigInt(params.AllEthashProtocolChanges.BerlinBlock),
+		LondonBlock:                   util.CopyBigInt(params.AllEthashProtocolChanges.LondonBlock),
+		ArrowGlacierBlock:             util.CopyBigInt(params.AllEthashProtocolChanges.ArrowGlacierBlock),
+		GrayGlacierBlock:              util.CopyBigInt(params.AllEthashProtocolChanges.GrayGlacierBlock),
+		MergeNetsplitBlock:            util.CopyBigInt(params.AllEthashProtocolChanges.MergeNetsplitBlock),
+		ShanghaiBlock:                 util.CopyBigInt(params.AllEthashProtocolChanges.ShanghaiBlock),
+		CancunBlock:                   util.CopyBigInt(params.AllEthashProtocolChanges.CancunBlock),
 		TerminalTotalDifficulty:       params.AllEthashProtocolChanges.TerminalTotalDifficulty,
 		TerminalTotalDifficultyPassed: params.AllEthashProtocolChanges.TerminalTotalDifficultyPassed,
 		Ethash:                        params.AllEthashProtocolChanges.Ethash,

@@ -2,6 +2,7 @@ package dbcommon
 
 import (
 	"fmt"
+	"gorm.io/gorm"
 	"reflect"
 
 	"github.com/fatih/structtag"
@@ -106,4 +107,19 @@ func (n Namer) GetConsistentName(fieldName string) string {
 	}
 
 	return getGormFieldName(lastFoundModel, fieldName)
+}
+
+// GetModelName returns the name of the model.
+func GetModelName(db *gorm.DB, model interface{}) (string, error) {
+	if reflect.ValueOf(model).Kind() != reflect.Ptr {
+		return "", fmt.Errorf("model must be a pointer, type is %T", model)
+	}
+
+	tableNameStmt := db.Model(model).Statement
+	err := tableNameStmt.Parse(model)
+	if err != nil {
+		return "", fmt.Errorf("failed to parse model: %w", err)
+	}
+
+	return tableNameStmt.Schema.Table, nil
 }

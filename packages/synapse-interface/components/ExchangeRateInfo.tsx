@@ -136,7 +136,7 @@ const ChainInfoLabel = ({ chainId }: { chainId: number }) => {
         className="w-4 h-4 rounded-full"
       />
       <span className="text-white">
-        {chain.chainName.length > 10 ? chain.chainSymbol : chain.chainName}
+        {chain.name.length > 10 ? chain.chainSymbol : chain.name}
       </span>
     </span>
   ) : null

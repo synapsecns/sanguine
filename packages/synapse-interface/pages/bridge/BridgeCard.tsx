@@ -1,9 +1,8 @@
-import React, { useEffect, useState } from 'react'
+import React, { useEffect, useState, useRef } from 'react'
 import { useSettings } from '@hooks/useSettings'
 import { SettingsIcon } from '@icons/SettingsIcon'
 import { Transition } from '@headlessui/react'
 import { validateAndParseAddress } from '@utils/validateAndParseAddress'
-// import { TRANSITIONS_PROPS } from '@constants/bridge'
 import { COIN_SLIDE_OVER_PROPS } from '@styles/transitions'
 import { ORDERED_CHAINS_BY_ID } from '@constants/chains'
 import Grid from '@tw/Grid'
@@ -17,15 +16,27 @@ import { ChainSlideOver } from '@/components/misc/ChainSlideOver'
 import { BigNumber } from '@ethersproject/bignumber'
 import { Zero, MaxInt256 } from '@ethersproject/constants'
 import { formatBNToString } from '@bignumber/format'
-import { SECTION_TRANSITION_PROPS } from '@styles/transitions'
+import { SECTION_TRANSITION_PROPS, TRANSITION_PROPS } from '@styles/transitions'
 import { approveToken } from '@/utils/approveToken'
 import SettingsSlideOver from './SettingsSlideOver'
 import { DestinationAddressInput } from '../../components/input/DestinationAddressInput'
 import BridgeInputContainer from '../../components/input/TokenAmountInput'
 import { TransactionResponse } from '@ethersproject/providers'
+import { useSpring, animated } from 'react-spring'
 
 import { Token } from '@/utils/types'
 import { BridgeQuote } from '@/utils/types'
+
+export enum DisplayType {
+  FROM = 'from',
+  TO = 'to',
+  FROM_CHAIN = 'fromChain',
+  TO_CHAIN = 'toChain',
+  SETTINGS = 'settings',
+  DEFAULT = '',
+  LOADING = 'loading',
+}
+
 const BridgeCard = ({
   error,
   address,
@@ -72,9 +83,12 @@ const BridgeCard = ({
   setTime: (time: number) => void
 }) => {
   const [settings, setSettings] = useSettings()
-  const [displayType, setDisplayType] = useState('')
+  const [displayType, setDisplayType] = useState<DisplayType>(
+    DisplayType.LOADING
+  )
   const [deadlineMinutes, setDeadlineMinutes] = useState('')
   const [fromTokenBalance, setFromTokenBalance] = useState<BigNumber>(Zero)
+  const bridgeDisplayRef = useRef(null)
 
   /*
   useEffect Trigger: fromToken, fromTokens
@@ -209,23 +223,62 @@ const BridgeCard = ({
       pendingLabel={pendingLabel}
     />
   )
-  const TRANSITION_PROPS = {
-    ...COIN_SLIDE_OVER_PROPS,
-    className: `
-      origin-bottom absolute
-      w-full h-full
-      md:w-[95%] md:h-[95%]
-      -ml-0 md:-ml-3
-      md:mt-3
-      bg-bgBase
-      z-20 rounded-3xl
-    `,
-  }
+
+  /*
+  useEffect Trigger: displayType
+  - when displayType state is updated (meaning user has clicked a menu dropdown action),
+  window object will smoothly reposition to where the bridge ui is located for convenience
+  */
+  useEffect(() => {
+    if (displayType !== DisplayType.LOADING) {
+      const node = bridgeDisplayRef.current
+      const top = node.offsetTop + 100
+      window.scrollTo({
+        top: top,
+        behavior: 'smooth',
+      })
+    }
+  }, [displayType])
+
+  const springClass = 'fixed z-50 w-full h-full bg-opacity-50'
+
+  /*
+  - useSpring objects created to specify react spring animations for network/token dropdowns
+   */
+  const fromChainSpring = useSpring({
+    top: displayType === DisplayType.FROM_CHAIN ? '0%' : '-100%',
+    from: { y: 0 },
+    config: { mass: 0.5, tension: 175, friction: 20 },
+  })
+
+  const toChainSpring = useSpring({
+    top: displayType === DisplayType.TO_CHAIN ? '0%' : '-100%',
+    from: { y: 0 },
+    config: { mass: 0.5, tension: 175, friction: 20 },
+  })
+
+  const fromSpring = useSpring({
+    top: displayType === DisplayType.FROM ? '0%' : '-100%',
+    from: { y: 0 },
+    config: { mass: 0.5, tension: 175, friction: 20 },
+  })
+
+  const toSpring = useSpring({
+    top: displayType === DisplayType.TO ? '0%' : '-100%',
+    from: { y: 0 },
+    config: { mass: 0.5, tension: 175, friction: 20 },
+  })
+
+  const settingsSpring = useSpring({
+    top: displayType === DisplayType.SETTINGS ? '0%' : '-100%',
+    from: { y: 0 },
+    config: { mass: 0.5, tension: 175, friction: 20 },
+  })
 
   return (
     <>
       <div className="flex items-center justify-between mb-5 ml-5 mr-5 space-x-2">
-        {displayType !== 'settings' ? (
+        {displayType !== DisplayType.SETTINGS ? (
           <PageHeader
             title="Bridge"
             subtitle="Send your assets across chains."
@@ -237,10 +290,10 @@ const BridgeCard = ({
           <Button
             className="flex items-center p-3 text-opacity-75 bg-bgLight hover:bg-bgLighter text-secondaryTextColor hover:text-white"
             onClick={() => {
-              if (displayType !== 'settings') {
-                setDisplayType('settings')
+              if (displayType !== DisplayType.SETTINGS) {
+                setDisplayType(DisplayType.SETTINGS)
               } else {
-                setDisplayType('')
+                setDisplayType(DisplayType.DEFAULT)
               }
             }}
           >
@@ -257,24 +310,58 @@ const BridgeCard = ({
       </div>
       <Card
         divider={false}
-        className="max-w-lg px-1 pb-0 mb-3 transition-all duration-100 transform rounded-xl bg-bgBase md:px-6 lg:px-6"
+        className={`
+          max-w-lg px-1 pb-0 mb-3 overflow-hidden
+          transition-all duration-100 transform rounded-xl
+          bg-bgBase md:px-6 lg:px-6
+        `}
       >
-        <div>
-          <Transition show={displayType === 'from'} {...TRANSITION_PROPS}>
-            <TokenSlideOver key="fromBlock" {...fromArgs} />{' '}
+        <div ref={bridgeDisplayRef}>
+          <Transition
+            show={displayType === DisplayType.FROM}
+            {...TRANSITION_PROPS}
+          >
+            <animated.div style={fromSpring} className={springClass}>
+              <TokenSlideOver key="fromBlock" {...fromArgs} />{' '}
+            </animated.div>
           </Transition>
-          <Transition show={displayType === 'to'} {...TRANSITION_PROPS}>
-            <TokenSlideOver key="toBlock" {...toArgs} />
+
+          <Transition
+            show={displayType === DisplayType.TO}
+            {...TRANSITION_PROPS}
+          >
+            <animated.div style={toSpring} className={springClass}>
+              <TokenSlideOver key="toBlock" {...toArgs} />
+            </animated.div>
           </Transition>
-          <Transition show={displayType === 'fromChain'} {...TRANSITION_PROPS}>
-            <ChainSlideOver key="fromChainBlock" {...fromArgs} />
+
+          <Transition
+            show={displayType === DisplayType.FROM_CHAIN}
+            {...TRANSITION_PROPS}
+          >
+            <animated.div style={fromChainSpring} className={springClass}>
+              <ChainSlideOver key="fromChainBlock" {...fromArgs} />
+            </animated.div>
           </Transition>
-          <Transition show={displayType === 'toChain'} {...TRANSITION_PROPS}>
-            <ChainSlideOver key="fromChainBlock" {...toArgs} />
+
+          <Transition
+            show={displayType === DisplayType.TO_CHAIN}
+            {...TRANSITION_PROPS}
+          >
+            <animated.div style={toChainSpring} className={springClass}>
+              <ChainSlideOver key="toChainBlock" {...toArgs} />
+            </animated.div>
           </Transition>
-          <Transition show={displayType === 'settings'} {...TRANSITION_PROPS}>
-            <SettingsSlideOver key="settings" {...settingsArgs} />
+
+          <Transition
+            show={displayType === DisplayType.SETTINGS}
+            {...TRANSITION_PROPS}
+          >
+            <animated.div style={settingsSpring} className={springClass}>
+              <SettingsSlideOver key="settings" {...settingsArgs} />
+            </animated.div>
           </Transition>
+
           <Grid cols={{ xs: 1 }} gap={10} className="py-1 place-content-center">
             <div className="mt-2">
               <BridgeInputContainer {...fromArgs} />
@@ -309,7 +396,9 @@ const BridgeCard = ({
           <div className="px-2 py-2 -mt-2 md:px-0 md:py-4">{actionBtn}</div>
           <Transition
             show={
-              ['fromChain', 'toChain'].includes(displayType)
+              [DisplayType.FROM_CHAIN, DisplayType.TO_CHAIN].includes(
+                displayType
+              )
               // && feeConfig. .eq(Zero)
             }
             {...COIN_SLIDE_OVER_PROPS}
