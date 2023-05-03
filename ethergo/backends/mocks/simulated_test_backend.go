@@ -27,6 +27,8 @@ import (
 
 	mock "github.com/stretchr/testify/mock"
 
+	nonce "github.com/synapsecns/sanguine/ethergo/signer/nonce"
+
 	params "github.com/ethereum/go-ethereum/params"
 
 	prometheus "github.com/prometheus/client_golang/prometheus"
@@ -925,13 +927,20 @@ func (_m *SimulatedTestBackend) SetT(t *testing.T) {
 	_m.Called(t)
 }
 
-// SignTx provides a mock function with given fields: ogTx, signer, prv
-func (_m *SimulatedTestBackend) SignTx(ogTx *types.Transaction, signer types.Signer, prv *ecdsa.PrivateKey) (*types.Transaction, error) {
-	ret := _m.Called(ogTx, signer, prv)
+// SignTx provides a mock function with given fields: ogTx, signer, prv, options
+func (_m *SimulatedTestBackend) SignTx(ogTx *types.Transaction, signer types.Signer, prv *ecdsa.PrivateKey, options ...nonce.Option) (*types.Transaction, error) {
+	_va := make([]interface{}, len(options))
+	for _i := range options {
+		_va[_i] = options[_i]
+	}
+	var _ca []interface{}
+	_ca = append(_ca, ogTx, signer, prv)
+	_ca = append(_ca, _va...)
+	ret := _m.Called(_ca...)
 
 	var r0 *types.Transaction
-	if rf, ok := ret.Get(0).(func(*types.Transaction, types.Signer, *ecdsa.PrivateKey) *types.Transaction); ok {
-		r0 = rf(ogTx, signer, prv)
+	if rf, ok := ret.Get(0).(func(*types.Transaction, types.Signer, *ecdsa.PrivateKey, ...nonce.Option) *types.Transaction); ok {
+		r0 = rf(ogTx, signer, prv, options...)
 	} else {
 		if ret.Get(0) != nil {
 			r0 = ret.Get(0).(*types.Transaction)
@@ -939,8 +948,8 @@ func (_m *SimulatedTestBackend) SignTx(ogTx *types.Transaction, signer types.Sig
 	}
 
 	var r1 error
-	if rf, ok := ret.Get(1).(func(*types.Transaction, types.Signer, *ecdsa.PrivateKey) error); ok {
-		r1 = rf(ogTx, signer, prv)
+	if rf, ok := ret.Get(1).(func(*types.Transaction, types.Signer, *ecdsa.PrivateKey, ...nonce.Option) error); ok {
+		r1 = rf(ogTx, signer, prv, options...)
 	} else {
 		r1 = ret.Error(1)
 	}

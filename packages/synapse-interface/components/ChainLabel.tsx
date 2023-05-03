@@ -94,11 +94,11 @@ const PossibleChain = ({
       tabIndex={0}
       onClick={() => onChangeChain(chainId, false, isOrigin ? 'from' : 'to')}
     >
-      <Tooltip content={chain.chainName}>
+      <Tooltip content={chain.name}>
         <Image
           src={chain.chainImg}
           className="duration-300 rounded-full hover:scale-125"
-          alt={chain.chainName}
+          alt={chain.name}
         />
       </Tooltip>
     </button>
@@ -125,7 +125,7 @@ const SelectedChain = ({ chainId }: { chainId: number }) => {
       />
       <div className="hidden md:inline-block lg:inline-block">
         <div className="mr-2 text-sm text-white">
-          {chain.chainName === 'Boba Network' ? 'Boba' : chain.chainName}
+          {chain.name === 'Boba Network' ? 'Boba' : chain.name}
         </div>
       </div>
     </div>

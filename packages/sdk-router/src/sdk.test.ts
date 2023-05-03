@@ -273,6 +273,25 @@ describe('SynapseSDK', () => {
         BigNumber.from('1000000')
       )
       expect(Object.keys(amounts.amounts)?.length).toBeGreaterThan(0)
+      expect(
+        amounts.amounts[Object.keys(amounts.amounts)[0]].value.toNumber()
+      ).toBeGreaterThan(0)
+      expect(amounts?.routerAddress.length).toBeGreaterThan(0)
+    })
+  })
+  describe('calculate remove liquidity one', () => {
+    it('test', async () => {
+      const chainIds = [42161]
+      const providers = [arbitrumProvider]
+      const Synapse = new SynapseSDK(chainIds, providers)
+      const amounts = await Synapse.calculateRemoveLiquidityOne(
+        42161,
+        '0xa067668661C84476aFcDc6fA5D758C4c01C34352',
+        BigNumber.from('1000000'),
+        '0x6b175474e89094c44da98b954eedeac495271d0f'
+      )
+      expect(Object.keys(amounts.amount)?.length).toBeGreaterThan(0)
+      expect(amounts.amount.value.toNumber()).toBeGreaterThan(0)
       expect(amounts?.routerAddress.length).toBeGreaterThan(0)
     })
   })
