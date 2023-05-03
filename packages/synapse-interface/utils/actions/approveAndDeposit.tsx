@@ -1,6 +1,5 @@
 import _ from 'lodash'
 
-import { parseUnits } from '@ethersproject/units'
 import toast from 'react-hot-toast'
 
 import { useSwapDepositContract } from '@hooks/useSwapDepositContract'
@@ -54,15 +53,12 @@ export const deposit = async (
 ) => {
   const poolContract = await useSwapDepositContract(pool, chainId)
   try {
-    console.log('inputAmounts', inputAmounts, poolContract)
+    // get this from quote?
     let minToMint = await poolContract.calculateTokenAmount(
       Object.values(inputAmounts),
       true
     )
-    console.log('333', minToMint.toString())
-
     minToMint = subtractSlippage(minToMint, slippageSelected, slippageCustom)
-    console.log('44', minToMint.toString())
 
     toast('Starting your deposit...')
 
@@ -72,7 +68,6 @@ export const deposit = async (
       Math.round(new Date().getTime() / 1000 + 60 * 10),
     ]
 
-    console.log('Sdhkjsahdkjashdksa', spendTransactionArgs)
     const spendTransaction = await poolContract.addLiquidity(
       ...spendTransactionArgs
     )

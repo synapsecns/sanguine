@@ -60,7 +60,13 @@ const Withdraw = ({
   }>({ bn: Zero, str: '' })
   const [withdrawQuote, setWithdrawQuote] = useState<{
     priceImpact: BigNumber
-    outputs: Record<string, BigNumber>
+    outputs: Record<
+      string,
+      {
+        value: BigNumber
+        index: number
+      }
+    >
     allowance: BigNumber
     routerAddress: string
   }>({
@@ -72,26 +78,19 @@ const Withdraw = ({
 
   const [withdrawType, setWithdrawType] = useState(ALL)
   const [percentage, setPercentage] = useState(100)
+  const [time, setTime] = useState(Date.now())
 
-  const clearInputs = () => {}
-  const SynapseSDK = useSynapseContext()
-
-  const lpTokenValue = ''
-  const lpTokenAmount = Zero
-  const debouncedPoolData = useDebounce(poolData, 500)
-
-  const lpTokenBalance = Zero
-  const placeholder = async (): Promise<TransactionResponse> => {
-    console.log('placeholder')
-    return
+  const resetInput = () => {
+    setInputValue({ bn: Zero, str: '' })
   }
+  const SynapseSDK = useSynapseContext()
 
   const sumBigNumbers = (pool: Token, bigNumMap: any) => {
     let sum = Zero
     pool.poolTokens.map((token) => {
       if (bigNumMap[token.addresses[chainId]]) {
         sum = sum.add(
-          bigNumMap[token.addresses[chainId]].mul(
+          bigNumMap[token.addresses[chainId]].value.mul(
             BigNumber.from(10).pow(18 - token.decimals[chainId])
           )
         )
@@ -103,32 +102,31 @@ const Withdraw = ({
     if (poolUserData == null || address == null) {
       return
     }
-    const swapContract = await useSwapDepositContract(pool, chainId)
-    const outputs = {}
-    const depositTokens = pool.poolTokens
+    const outputs: Record<
+      string,
+      {
+        value: BigNumber
+        index: number
+      }
+    > = {}
     if (withdrawType == ALL) {
       const { amounts } = await SynapseSDK.calculateRemoveLiquidity(
         chainId,
         pool.swapAddresses[chainId],
         inputValue.bn
       )
-      // const results = await swapContract.calculateRemoveLiquidity(inputValue.bn)
-      console.log('results', amounts)
       for (const tokenAddr in amounts) {
         outputs[tokenAddr] = amounts[tokenAddr]
       }
     } else {
-      const tokenIndex = await swapContract.getTokenIndex(withdrawType)
-      console.log('tokenIndex', tokenIndex)
-      const amount = await swapContract.calculateRemoveLiquidityOneToken(
+      const { amount } = await SynapseSDK.calculateRemoveLiquidityOne(
+        chainId,
+        pool.swapAddresses[chainId],
         inputValue.bn,
-        tokenIndex
+        withdrawType
       )
       outputs[withdrawType] = amount
-
-      // newInputState[token.symbol] = formatUnits(amount, token.decimals[chainId])
     }
-    console.log('newWithdrawQuotenewWithdrawQuote', withdrawType, outputs)
     const tokenSum = sumBigNumbers(pool, outputs)
     const priceImpact = calculateExchangeRate(
       inputValue.bn,
@@ -154,7 +152,7 @@ const Withdraw = ({
     if (poolUserData && poolData && address && pool && inputValue.bn.gt(Zero)) {
       calculateMaxWithdraw()
     }
-  }, [inputValue])
+  }, [inputValue, time])
 
   const onPercentChange = (percent: number) => {
     if (percent > 100) {
@@ -172,7 +170,6 @@ const Withdraw = ({
     const bigNum = stringToBigNum(value, token.decimals[chainId]) ?? Zero
     setInputValue({ bn: bigNum, str: value })
     const pn = bigNum.mul(100).div(poolUserData.lpTokenBalance).toNumber()
-    console.log('poolUserData.lpTokenBalance', pn)
 
     if (pn > 100) {
       setPercentage(100)
@@ -188,28 +185,32 @@ const Withdraw = ({
   let pendingLabel = 'Withdrawing funds...'
   let btnClassName = ''
   let buttonAction = () =>
-    withdraw(pool, 'ONE_TENTH', null, inputValue.bn, chainId)
+    withdraw(
+      pool,
+      'ONE_TENTH',
+      null,
+      inputValue.bn,
+      chainId,
+      withdrawType,
+      withdrawQuote.outputs
+    )
   let postButtonAction = () => {
     console.log('JHK')
-    resetInputs()
+    resetInput()
   }
 
-  for (const [tokenAddr, amount] of Object.entries(inputValue.bn)) {
-    if (
-      withdrawQuote.allowance &&
-      !amount.isZero() &&
-      amount.gt(withdrawQuote.allowance)
-    ) {
-      isAllowanceEnough = false
-    }
-    poolUserData.tokens.map((tokenObj, i) => {
-      if (
-        tokenObj.token.addresses[chainId] === tokenAddr &&
-        amount.gt(tokenObj.balance)
-      ) {
-        isFromBalanceEnough = false
-      }
-    })
+  if (
+    withdrawQuote.allowance &&
+    !inputValue.bn.isZero() &&
+    inputValue.bn.gt(withdrawQuote.allowance)
+  ) {
+    isAllowanceEnough = false
+  }
+  if (
+    !inputValue.bn.isZero() &&
+    inputValue.bn.gt(poolUserData.lpTokenBalance)
+  ) {
+    isFromBalanceEnough = false
   }
 
   if (!isFromBalanceEnough) {
@@ -256,7 +257,7 @@ const Withdraw = ({
             xstep={10}
             xmin={0}
             xmax={100}
-            x={percentage ?? '100'}
+            x={percentage ?? 100}
             onChange={(i) => {
               onPercentChange(i.x)
             }}
@@ -314,25 +315,7 @@ const Withdraw = ({
         chainId={chainId}
         address={address}
       />
-      <TransactionButton
-        label="Withdraw"
-        pendingLabel="Withdrawing"
-        // OH GOD
-        // onClick={async () => {
-        //   await pendingTxWrapFunc(
-        //     approveAndWithdraw({
-        //       poolTokens: depositTokens,
-        //       inputState,
-        //       withdrawType,
-        //       infiniteApproval: false,
-        //       lpTokenAmountToSpend: lpTokenAmount,
-        //     })
-        //   )
-        //   clearInputs()
-        //   setLpTokenValue('')
-        // }}
-        onClick={placeholder}
-      />
+      {actionBtn}
       {/*
       TODO FIX THIS TRANSITION
       <Transition

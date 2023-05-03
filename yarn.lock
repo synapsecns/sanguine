@@ -6343,10 +6343,10 @@
     ts-jest "^29.0.5"
     yargs "^17.6.2"
 
-"@synapsecns/sdk-router@0.1.20":
-  version "0.1.20"
-  resolved "https://registry.yarnpkg.com/@synapsecns/sdk-router/-/sdk-router-0.1.20.tgz#ff880a8495c0683f175a2f1b79db6a369643eb6d"
-  integrity sha512-bDm0GK9ubzJvB4goxaSERqa1ubjzQnXss2toeK7N7vxrFf/HJwWfS8Cqm4RPo2PYZmlvdGsTr2lwt7wdH5S/0g==
+"@synapsecns/sdk-router@0.1.21":
+  version "0.1.21"
+  resolved "https://registry.yarnpkg.com/@synapsecns/sdk-router/-/sdk-router-0.1.21.tgz#aac9431d1135309bd666bf9a694114ceb4eae196"
+  integrity sha512-hCkqhHajVSuZogGRhxRkyIVrZJpLMa/++MAq7RYGNSU33G3It/i1d42OTIwwNblEbZtof3Ka0TmVRMjzLNj0Zg==
   dependencies:
     "@babel/core" "^7.20.12"
     "@ethersproject/abi" "^5.7.0"

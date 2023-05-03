@@ -18,17 +18,6 @@ const RecievedTokenSection = ({
       {poolTokens
         .filter((token) => withdrawQuote.outputs[token.addresses[chainId]])
         .map((token) => {
-          console.log(
-            'withdrawQuote.outputs',
-            token.name,
-            withdrawQuote.outputs[token.addresses[chainId]],
-            formatBNToString(
-              withdrawQuote.outputs[token.addresses[chainId]],
-              token.decimals[chainId],
-              2
-            )
-          )
-
           return (
             <div className="flex items-center">
               <img
@@ -38,7 +27,7 @@ const RecievedTokenSection = ({
               ></img>
               <span className="text-sm text-white">
                 {formatBNToString(
-                  withdrawQuote.outputs[token.addresses[chainId]],
+                  withdrawQuote.outputs[token.addresses[chainId]].value,
                   token.decimals[chainId],
                   2
                 )}

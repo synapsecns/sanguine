@@ -1,22 +1,13 @@
-import { parseUnits } from '@ethersproject/units'
-
 import { ALL } from '@constants/withdrawTypes'
-
-import { useActiveWeb3React } from '@hooks/wallet/useActiveWeb3React'
-import { useBlockNumber } from '@hooks/useBlockNumber'
-import {
-  useLPTokenContract,
-  useSwapDepositContract,
-} from '@hooks/contracts/useContract'
-
-import { useGetTxArgs } from '@hooks/useGetTxArgs'
-
+import { useSwapDepositContract } from '@hooks/useSwapDepositContract'
+import ExplorerToastLink from '@components/ExplorerToastLink'
 import { addSlippage, subtractSlippage, Slippages } from '@utils/slippage'
-import { checkAndApproveTokenForTrade } from '@utils/checkAndApproveTokenForTrade'
-import { ChainId } from '@constants/networks'
+import { txErrorHandler } from '@utils/txErrorHandler'
 import { approveToken } from '@utils/approveToken'
 import { Token } from '@types'
 import { BigNumber } from 'ethers'
+import { Zero } from '@ethersproject/constants'
+import toast from 'react-hot-toast'
 
 export const approve = async (
   pool: Token,
@@ -35,92 +26,65 @@ export const approve = async (
   )
 }
 
-export function useApproveAndWithdraw(poolName) {
-  const { account, chainId } = useActiveWeb3React()
-
-  const lpTokenContract = useLPTokenContract(poolName)
-  const swapContract = useSwapDepositContract(poolName)
-
-  const [blockNumber, setBlockNumber] = useBlockNumber(chainId)
-  const getTxArgs = useGetTxArgs()
-
-  return async function approveAndWithdraw({
-    withdrawType,
-    lpTokenAmountToSpend,
-    inputState,
-    poolTokens,
-  }) {
-    try {
-      if (!account) throw new Error('Wallet must be connected')
-      if (!swapContract) throw new Error('Swap contract is not loaded')
-      if (lpTokenAmountToSpend.isZero()) return
-      if (lpTokenContract == null) return
-
-      let poolTokenObj = {}
-      for (const poolToken of poolTokens) {
-        poolTokenObj[poolToken.symbol] = poolToken
-      }
-
-      const {
-        slippageCustom,
-        slippageSelected,
-        infiniteApproval,
-        transactionDeadline,
-      } = getTxArgs()
-
-      let allowanceAmount = lpTokenAmountToSpend
-
-      await checkAndApproveTokenForTrade(
-        lpTokenContract,
-        swapContract.address,
-        account,
-        allowanceAmount,
-        infiniteApproval,
-        {
-          onTransactionStart: () => {},
-          onTransactionSuccess: () => {},
-          onTransactionError: () => {
-            throw new Error('Your transaction could not be completed')
-          },
-        }
-      )
-
-      let spendTransaction
-      if (withdrawType === ALL) {
-        spendTransaction = await swapContract.removeLiquidity(
-          lpTokenAmountToSpend,
-          poolTokens.map((t) =>
-            subtractSlippage(
-              parseUnits(inputState[t.symbol], t.decimals[chainId]),
-              slippageSelected,
-              slippageCustom
-            )
-          ),
-          transactionDeadline
-        )
-      } else {
-        const poolTokenIndex = poolTokens.findIndex(
-          (i) => i.symbol === withdrawType
-        )
-        const token = poolTokens[poolTokenIndex]
-        spendTransaction = await swapContract.removeLiquidityOneToken(
-          lpTokenAmountToSpend,
-          poolTokenIndex,
-          subtractSlippage(
-            parseUnits(inputState[token.symbol], token.decimals[chainId]),
-            slippageSelected,
-            slippageCustom
-          ),
-          transactionDeadline
-        )
-      }
-
-      const tx = await spendTransaction.wait()
-      setBlockNumber(tx.blockNumber)
-      return tx
-    } catch (e) {
-      console.error(e)
-      //   clearToasts()
+export const withdraw = async (
+  pool: Token,
+  slippageSelected: any,
+  slippageCustom: any,
+  inputAmount: BigNumber,
+  chainId: number,
+  withdrawType: string,
+  outputs: Record<
+    string,
+    {
+      value: BigNumber
+      index: number
     }
+  >
+) => {
+  const poolContract = await useSwapDepositContract(pool, chainId)
+  try {
+    toast('Starting your withdraw...')
+    let spendTransaction
+
+    if (withdrawType === ALL) {
+      const outputMinArr = pool.poolTokens.map(() => Zero)
+      for (let poolToken of pool.poolTokens) {
+        const outputAmount = outputs[poolToken.addresses[chainId]]
+        outputMinArr[outputAmount.index] = subtractSlippage(
+          outputAmount.value,
+          slippageSelected,
+          slippageCustom
+        )
+      }
+      spendTransaction = await poolContract.removeLiquidity(
+        inputAmount,
+        outputMinArr,
+        Math.round(new Date().getTime() / 1000 + 60 * 10)
+      )
+    } else {
+      const outputAmount = Object.values(outputs)[0]
+      const poolTokenIndex = outputAmount.index
+      spendTransaction = await poolContract.removeLiquidityOneToken(
+        inputAmount,
+        poolTokenIndex,
+        subtractSlippage(outputAmount.value, slippageSelected, slippageCustom),
+        Math.round(new Date().getTime() / 1000 + 60 * 10)
+      )
+    }
+
+    const tx = await spendTransaction.wait()
+
+    const toastContent = (
+      <div>
+        <div>Liquidity added!</div>
+        <ExplorerToastLink {...tx} chainId={chainId} />
+      </div>
+    )
+
+    toast.success(toastContent)
+
+    return tx
+  } catch (err) {
+    txErrorHandler(err)
   }
 }

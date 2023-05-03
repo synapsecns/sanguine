@@ -2,7 +2,7 @@ import { Token } from '@types'
 import SWAP_ABI from '@abis/swap.json'
 import AV_SWAP_WRAPPER_ABI from '@abis/avSwapWrapper.json'
 import SWAP_ETH_WRAPPER_ABI from '@abis/swapEthWrapper.json'
-import { Contract } from '@ethersproject/contracts'
+import { Contract } from 'ethers'
 import { fetchSigner } from '@wagmi/core'
 
 export const useSwapDepositContract = async (pool: Token, chainId: number) => {
