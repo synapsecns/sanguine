@@ -17,11 +17,13 @@ interface ISnapshotHub {
      * @dev Reverts if attestation with given nonce hasn't been created yet.
      * @param attNonce      Nonce for the attestation
      * @return attPayload   Raw payload with formatted Attestation data
+     * @return agentRoot    Agent root hash used for the attestation
+     * @return snapGas      Snapshot gas data used for the attestation
      */
     function getAttestation(uint32 attNonce)
         external
         view
-        returns (bytes memory attPayload, uint256[] memory snapGas);
+        returns (bytes memory attPayload, bytes32 agentRoot, uint256[] memory snapGas);
 
     /**
      * @notice Returns the state with the highest known nonce submitted by a given Agent.
@@ -35,11 +37,13 @@ interface ISnapshotHub {
      * @notice Returns latest saved attestation for a Notary.
      * @param notary        Notary address
      * @return attPayload   Raw payload with formatted Attestation data
+     * @return agentRoot    Agent root hash used for the attestation
+     * @return snapGas      Snapshot gas data used for the attestation
      */
     function getLatestNotaryAttestation(address notary)
         external
         view
-        returns (bytes memory attPayload, uint256[] memory snapGas);
+        returns (bytes memory attPayload, bytes32 agentRoot, uint256[] memory snapGas);
 
     /**
      * @notice Returns Guard snapshot from the list of all accepted Guard snapshots.

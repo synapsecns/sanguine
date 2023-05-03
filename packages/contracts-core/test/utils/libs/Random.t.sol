@@ -135,7 +135,7 @@ library RandomLib {
 
     function nextAttestation(Random memory r, uint32 nonce) internal pure returns (RawAttestation memory ra) {
         ra.snapRoot = r.next();
-        ra.agentRoot = r.next();
+        ra._agentRoot = r.next();
         ra.nonce = nonce;
         ra.blockNumber = r.nextUint40();
         ra.timestamp = r.nextUint40();

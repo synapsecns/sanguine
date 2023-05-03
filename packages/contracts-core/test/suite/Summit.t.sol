@@ -34,14 +34,17 @@ contract SummitTest is AgentSecuredTest {
     constructor() SynapseTest(DEPLOY_PROD_SUMMIT) {}
 
     function setUp() public virtual override {
-        notaryAttestations[0] = RawAttestation({
+        RawAttestation memory empty = RawAttestation({
             snapRoot: 0,
-            agentRoot: 0,
-            snapGasHash: 0,
+            dataHash: 0,
+            _agentRoot: 0,
+            _snapGasHash: 0,
             nonce: 0,
             blockNumber: uint40(block.number),
             timestamp: uint40(block.timestamp)
         });
+        empty.setDataHash();
+        notaryAttestations[0] = empty;
         super.setUp();
     }
 
@@ -58,8 +61,9 @@ contract SummitTest is AgentSecuredTest {
         // Check version
         assertEq(Versioned(summit).version(), LATEST_VERSION, "!version");
         // Check attestation getter for zero nonce
-        (bytes memory attPayload, uint256[] memory snapGas) = ISnapshotHub(summit).getAttestation(0);
+        (bytes memory attPayload, bytes32 agentRoot, uint256[] memory snapGas) = ISnapshotHub(summit).getAttestation(0);
         assertEq(attPayload, notaryAttestations[0].formatAttestation(), "!attPayload");
+        assertEq(agentRoot, 0, "!agentRoot");
         assertEq(snapGas.length, 0, "!snapGas");
     }
 
@@ -179,9 +183,10 @@ contract SummitTest is AgentSecuredTest {
             }
             vm.expectEmit(true, true, true, true);
             emit SnapshotAccepted(0, domains[0].agents[i], guardSnapshots[i].snapshot, guardSnapshots[i].signature);
-            (bytes memory attPayload, uint256[] memory snapGas) =
+            (bytes memory attPayload, bytes32 agentRoot, uint256[] memory snapGas) =
                 bondingManager.submitSnapshot(guardSnapshots[i].snapshot, guardSnapshots[i].signature);
             assertEq(attPayload, "", "Guard: non-empty attestation");
+            assertEq(agentRoot, bytes32(0), "Guard: non-empty agent root");
             assertEq(snapGas.length, 0, "Guard: non-empty snap gas data");
             // Check latest Guard States
             for (uint32 j = 0; j < STATES; ++j) {
@@ -232,8 +237,9 @@ contract SummitTest is AgentSecuredTest {
             // Calculate root and height using AttestationProofGenerator
             acceptSnapshot(rs);
             ra.snapRoot = getSnapshotRoot();
-            ra.agentRoot = getAgentRoot();
-            ra.snapGasHash = rs.snapGasHash();
+            ra._agentRoot = getAgentRoot();
+            ra._snapGasHash = rs.snapGasHash();
+            ra.setDataHash();
             // This is i-th submitted attestation so far, but attestation nonce starts from 1
             ra.nonce = i + 1;
             notaryAttestations[ra.nonce] = ra;
@@ -242,16 +248,17 @@ contract SummitTest is AgentSecuredTest {
             address notary = domains[DOMAIN_LOCAL].agents[i];
             (snapPayloads[i], snapSignatures[i]) = signSnapshot(notary, rs);
             // Nothing should be saved before Notary submitted their first snapshot
-            (bytes memory attPayload, uint256[] memory snapGas) =
+            (bytes memory attPayload, bytes32 agentRoot, uint256[] memory snapGas) =
                 ISnapshotHub(summit).getLatestNotaryAttestation(notary);
             assertEq(attPayload, "");
+            assertEq(agentRoot, bytes32(0));
             assertEq(snapGas.length, 0);
 
             vm.expectEmit(true, true, true, true);
             emit AttestationSaved(attestation);
             vm.expectEmit(true, true, true, true);
             emit SnapshotAccepted(DOMAIN_LOCAL, notary, snapPayloads[i], snapSignatures[i]);
-            // Should pass the attestation to Destination: acceptAttestation(status, sigIndex, attestation, snapGas)
+            // Should pass to Destination: acceptAttestation(status, sigIndex, attestation, agentRoot, snapGas)
             vm.expectCall(
                 destinationSynapse,
                 abi.encodeWithSelector(
@@ -259,20 +266,24 @@ contract SummitTest is AgentSecuredTest {
                     agentIndex[notary],
                     type(uint256).max,
                     attestation,
+                    ra._agentRoot,
                     rs.snapGas()
                 )
             );
 
-            (attPayload, snapGas) = bondingManager.submitSnapshot(snapPayloads[i], snapSignatures[i]);
+            (attPayload, agentRoot, snapGas) = bondingManager.submitSnapshot(snapPayloads[i], snapSignatures[i]);
             assertEq(attPayload, attestation, "Notary: incorrect attestation");
-            assertEq(keccak256(abi.encodePacked(snapGas)), ra.snapGasHash, "Notary: incorrect snap gas hash");
+            assertEq(agentRoot, ra._agentRoot, "Notary: incorrect agent root");
+            assertEq(keccak256(abi.encodePacked(snapGas)), ra._snapGasHash, "Notary: incorrect snap gas hash");
             // Check attestation getter
-            (attPayload, snapGas) = ISnapshotHub(summit).getAttestation(ra.nonce);
+            (attPayload, agentRoot, snapGas) = ISnapshotHub(summit).getAttestation(ra.nonce);
             assertEq(attPayload, attestation, "!getAttestation");
-            assertEq(keccak256(abi.encodePacked(snapGas)), ra.snapGasHash, "!getAttestation: gas hash");
-            (attPayload, snapGas) = ISnapshotHub(summit).getLatestNotaryAttestation(notary);
+            assertEq(agentRoot, ra._agentRoot, "!getAttestation: agent root");
+            assertEq(keccak256(abi.encodePacked(snapGas)), ra._snapGasHash, "!getAttestation: gas hash");
+            (attPayload, agentRoot, snapGas) = ISnapshotHub(summit).getLatestNotaryAttestation(notary);
             assertEq(attPayload, attestation, "!latestAttestation");
-            assertEq(keccak256(abi.encodePacked(snapGas)), ra.snapGasHash, "!latestAttestation: gas hash");
+            assertEq(agentRoot, ra._agentRoot, "!latestAttestation: agent root");
+            assertEq(keccak256(abi.encodePacked(snapGas)), ra._snapGasHash, "!latestAttestation: gas hash");
 
             // Check proofs for every State in the Notary snapshot
             for (uint256 j = 0; j < STATES; ++j) {
@@ -304,8 +315,10 @@ contract SummitTest is AgentSecuredTest {
         for (uint32 i = 0; i < DOMAIN_AGENTS; ++i) {
             address guard = domains[0].agents[i];
             // No Attestations should be saved for Guards
-            (bytes memory attPayload, uint256[] memory snapGas) = ISnapshotHub(summit).getLatestNotaryAttestation(guard);
+            (bytes memory attPayload, bytes32 agentRoot, uint256[] memory snapGas) =
+                ISnapshotHub(summit).getLatestNotaryAttestation(guard);
             assertEq(attPayload, "");
+            assertEq(agentRoot, bytes32(0));
             assertEq(snapGas.length, 0);
         }
 

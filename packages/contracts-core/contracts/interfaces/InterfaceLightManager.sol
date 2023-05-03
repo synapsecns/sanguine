@@ -17,15 +17,19 @@ interface InterfaceLightManager {
      * > - Attestation signer is not an active Notary for local domain.
      * > - Attestation signer is in Dispute.
      * > - Attestation's snapshot root has been previously submitted.
-     * > - Attestation's snapshot gas data hash doesn't match the hash of provided snapshot gas data.
+     * > - Attestation's data hash doesn't match the hash of provided agentRoot and snapshot gas data.
      * @param attPayload        Raw payload with Attestation data
      * @param attSignature      Notary signature for the attestation
+     * @param agentRoot         Agent Merkle Root from the Attestation
      * @param snapGas           Gas data for each chain in the snapshot
      * @return wasAccepted      Whether the Attestation was accepted
      */
-    function submitAttestation(bytes memory attPayload, bytes memory attSignature, uint256[] memory snapGas)
-        external
-        returns (bool wasAccepted);
+    function submitAttestation(
+        bytes memory attPayload,
+        bytes memory attSignature,
+        bytes32 agentRoot,
+        uint256[] memory snapGas
+    ) external returns (bool wasAccepted);
 
     /**
      * @notice Accepts an attestation report signed by a Guard, as well as Notary signature

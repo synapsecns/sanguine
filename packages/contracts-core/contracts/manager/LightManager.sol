@@ -46,10 +46,12 @@ contract LightManager is AgentManager, InterfaceLightManager {
     // ══════════════════════════════════════════ SUBMIT AGENT STATEMENTS ══════════════════════════════════════════════
 
     /// @inheritdoc InterfaceLightManager
-    function submitAttestation(bytes memory attPayload, bytes memory attSignature, uint256[] memory snapGas_)
-        external
-        returns (bool wasAccepted)
-    {
+    function submitAttestation(
+        bytes memory attPayload,
+        bytes memory attSignature,
+        bytes32 agentRoot_,
+        uint256[] memory snapGas_
+    ) external returns (bool wasAccepted) {
         // This will revert if payload is not an attestation
         Attestation att = attPayload.castToAttestation();
         // This will revert if signer is not an known Notary
@@ -69,10 +71,20 @@ contract LightManager is AgentManager, InterfaceLightManager {
             snapGas := snapGas_
         }
         // Check that hash of snapGas matches the attestations's
-        require(att.snapGasHash() == GasDataLib.snapGasHash(snapGas), "Invalid snapGas");
+        require(
+            att.dataHash()
+                == AttestationLib.dataHash({agentRoot_: agentRoot_, snapGasHash_: GasDataLib.snapGasHash(snapGas)}),
+            "Invalid snapGas"
+        );
         // Store Notary signature for the attestation
         uint256 sigIndex = _saveSignature(attSignature);
-        wasAccepted = InterfaceDestination(destination).acceptAttestation(status.index, sigIndex, attPayload, snapGas);
+        wasAccepted = InterfaceDestination(destination).acceptAttestation({
+            notaryIndex: status.index,
+            sigIndex: sigIndex,
+            attPayload: attPayload,
+            agentRoot: agentRoot_,
+            snapGas: snapGas
+        });
         if (wasAccepted) {
             emit AttestationAccepted(status.domain, notary, attPayload, attSignature);
         }
