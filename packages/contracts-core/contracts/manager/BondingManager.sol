@@ -70,7 +70,7 @@ contract BondingManager is AgentManager, BondingManagerEvents, InterfaceBondingM
     /// @inheritdoc InterfaceBondingManager
     function submitSnapshot(bytes memory snapPayload, bytes memory snapSignature)
         external
-        returns (bytes memory attPayload, uint256[] memory snapGas)
+        returns (bytes memory attPayload, bytes32 agentRoot_, uint256[] memory snapGas)
     {
         // This will revert if payload is not a snapshot
         Snapshot snapshot = snapPayload.castToSnapshot();
@@ -90,7 +90,7 @@ contract BondingManager is AgentManager, BondingManagerEvents, InterfaceBondingM
         } else {
             // Check that Notary is not in dispute
             require(_disputes[agent].flag == DisputeFlag.None, "Notary is in dispute");
-            bytes32 agentRoot_ = _agentTree.root;
+            agentRoot_ = _agentTree.root;
             attPayload = InterfaceSummit(summit).acceptNotarySnapshot({
                 notaryIndex: status.index,
                 sigIndex: sigIndex,
