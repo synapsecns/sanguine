@@ -149,7 +149,7 @@ contract DestinationTest is ExecutionHubTest {
 
     function test_acceptAttestation_revert_notAgentManager(address caller) public {
         vm.assume(caller != localAgentManager());
-        vm.expectRevert("!agentManager");
+        expectNotAgentManagerRevert();
         vm.prank(caller);
         InterfaceDestination(localDestination()).acceptAttestation(0, 0, "", 0, new ChainGas[](0));
     }
@@ -314,126 +314,6 @@ contract DestinationTest is ExecutionHubTest {
         assertEq(GasData.unwrap(gasData), 0);
         assertEq(dataMaturity, 0);
     }
-
-    // TODO: move to AgentManager test
-    /*
-    function test_submitAttestationReport(RawAttestation memory ra) public {
-        address prover = makeAddr("Prover");
-        // Create Notary signature for the attestation
-        address notary = domains[DOMAIN_LOCAL].agent;
-        (, bytes memory attSig) = signAttestation(notary, ra);
-        // Create Guard signature for the report
-        address guard = domains[0].agent;
-        (bytes memory arPayload, bytes memory arSig) = createSignedAttestationReport(guard, ra);
-        vm.expectEmit(true, true, true, true);
-        emit Dispute(guard, DOMAIN_LOCAL, notary);
-        vm.prank(prover);
-        lightManager.submitAttestationReport(arPayload, arSig, attSig);
-        checkDisputeOpened(destination, guard, notary);
-    }
-
-    function test_submitStateReport(RawState memory rs, RawStateIndex memory rsi) public boundIndex(rsi) {
-        check_submitStateReportWithSnapshot(destination, DOMAIN_LOCAL, rs, rsi);
-    }
-
-    function test_submitStateReportWithProof(RawState memory rs, RawAttestation memory ra, RawStateIndex memory rsi)
-        public
-        boundIndex(rsi)
-    {
-        check_submitStateReportWithSnapshotProof(destination, DOMAIN_LOCAL, rs, ra, rsi);
-    }
-
-    // ════════════════════════════════════════════ DISPUTE RESOLUTION ═════════════════════════════════════════════════
-
-    function test_managerSlash(uint256 domainId, uint256 agentId, address prover) public {
-        // no counterpart in this test
-        (uint32 domain, address agent) = getAgent(domainId, agentId);
-        bool isRemoteNotary = !(domain == 0 || domain == DOMAIN_LOCAL);
-        if (!isRemoteNotary) {
-            vm.expectEmit();
-            emit DisputeResolved(address(0), domain, agent);
-        }
-        vm.expectEmit();
-        emit AgentSlashed(domain, agent, prover);
-        vm.recordLogs();
-        vm.prank(address(lightManager));
-        IAgentSecured(destination).managerSlash(domain, agent, prover);
-        if (isRemoteNotary) {
-            // Should only emit AgentSlashed for remote Notaries
-            assertEq(vm.getRecordedLogs().length, 1);
-            assertEq(uint8(IDisputeHub(destination).disputeStatus(agent).flag), uint8(DisputeFlag.None));
-        } else {
-            assertEq(vm.getRecordedLogs().length, 2);
-            checkDisputeResolved({hub: destination, honest: address(0), slashed: agent});
-        }
-    }
-
-    function test_managerSlash_honestGuard(RawAttestation memory ra) public {
-        address guard = domains[0].agent;
-        address notary = domains[DOMAIN_LOCAL].agent;
-        // Put Notary 0 and Guard 0 in dispute
-        test_submitAttestationReport(ra);
-        // Slash the Notary
-        vm.prank(address(lightManager));
-        IAgentSecured(destination).managerSlash(DOMAIN_LOCAL, notary, address(0));
-        checkDisputeResolved({hub: destination, honest: guard, slashed: notary});
-    }
-
-    function test_managerSlash_honestNotary(RawAttestation memory ra) public {
-        address guard = domains[0].agent;
-        address notary = domains[DOMAIN_LOCAL].agent;
-        // Put Notary 0 and Guard 0 in dispute
-        test_submitAttestationReport(ra);
-        // Slash the Guard
-        vm.prank(address(lightManager));
-        IAgentSecured(destination).managerSlash(0, guard, address(0));
-        checkDisputeResolved({hub: destination, honest: notary, slashed: guard});
-    }
-
-    // ══════════════════════════════════════════ TESTS: WHILE IN DISPUTE ══════════════════════════════════════════════
-
-    function test_submitAttestation_revert_notaryInDispute(
-        RawAttestation memory firstRA,
-        RawAttestation memory secondRA
-    ) public {
-        address notary = domains[DOMAIN_LOCAL].agent;
-        // Put Notary 0 and Guard 0 in dispute
-        test_submitAttestationReport(firstRA);
-        (bytes memory attPayload, bytes memory attSig) = signAttestation(notary, secondRA);
-        vm.expectRevert("Notary is in dispute");
-        lightManager.submitAttestation(attPayload, attSig);
-    }
-
-    function test_submitAttestationReport_revert_guardInDispute(
-        RawAttestation memory firstRA,
-        RawAttestation memory secondRA
-    ) public {
-        // Put Notary 0 and Guard 0 in dispute
-        test_submitAttestationReport(firstRA);
-        // Try to initiate a dispute between Guard 0 and Notary 1
-        address guard = domains[0].agent;
-        (bytes memory arPayload, bytes memory arSig) = createSignedAttestationReport(guard, secondRA);
-        address notary = domains[DOMAIN_LOCAL].agents[1];
-        (, bytes memory attSig) = signAttestation(notary, secondRA);
-        vm.expectRevert("Guard already in dispute");
-        lightManager.submitAttestationReport(arPayload, arSig, attSig);
-    }
-
-    function test_submitAttestationReport_revert_notaryInDispute(
-        RawAttestation memory firstRA,
-        RawAttestation memory secondRA
-    ) public {
-        // Put Notary 0 and Guard 0 in dispute
-        test_submitAttestationReport(firstRA);
-        // Try to initiate a dispute between Guard 1 and Notary 0
-        address guard = domains[0].agents[1];
-        (bytes memory arPayload, bytes memory arSig) = createSignedAttestationReport(guard, secondRA);
-        address notary = domains[DOMAIN_LOCAL].agent;
-        (, bytes memory attSig) = signAttestation(notary, secondRA);
-        vm.expectRevert("Notary already in dispute");
-        lightManager.submitAttestationReport(arPayload, arSig, attSig);
-    }
-    */
 
     // ══════════════════════════════════════════════════ HELPERS ══════════════════════════════════════════════════════
 

@@ -10,6 +10,7 @@ abstract contract SynapseTestConstants {
 
     uint32 internal constant DOMAIN_LOCAL = 1000;
     uint32 internal constant DOMAIN_REMOTE = 1500;
+    uint32 internal constant DOMAIN_OTHER = 2000;
     // TODO: replace placeholder value
     uint32 internal constant DOMAIN_SYNAPSE = 10;
 

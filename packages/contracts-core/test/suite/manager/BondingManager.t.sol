@@ -98,6 +98,8 @@ contract BondingManagerTest is AgentManagerTest {
     }
 
     function test_addAgent_new(uint32 domain, address agent) public {
+        // Notaries on Syn Chain could nto be added
+        vm.assume(domain != DOMAIN_SYNAPSE);
         // Should not be an already added agent
         vm.assume(bondingManager.agentStatus(agent).flag == AgentFlag.Unknown);
         vm.assume(agent != address(0));
@@ -109,6 +111,12 @@ contract BondingManagerTest is AgentManagerTest {
         bondingManager.addAgent(domain, agent, proof);
         checkAgentStatus(agent, bondingManager.agentStatus(agent), AgentFlag.Active);
         assertEq(bondingManager.agentRoot(), newRoot, "!agentRoot");
+    }
+
+    function test_addAgent_revert_synapseDomain(address agent) public {
+        bytes32[] memory proof = getZeroProof();
+        vm.expectRevert("No Notaries for Synapse Chain");
+        bondingManager.addAgent(DOMAIN_SYNAPSE, agent, proof);
     }
 
     function test_addAgent_resting(uint256 domainId, uint256 agentId) public {

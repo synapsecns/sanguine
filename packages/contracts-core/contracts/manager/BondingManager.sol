@@ -74,8 +74,9 @@ contract BondingManager is AgentManager, BondingManagerEvents, InterfaceBondingM
     {
         // This will revert if payload is not a snapshot
         Snapshot snapshot = snapPayload.castToSnapshot();
-        // This will revert if the signer is not a known Agent
-        (AgentStatus memory status, address agent) = _verifySnapshot(snapshot, snapSignature);
+        // This will revert if the signer is not a known Guard/Notary
+        (AgentStatus memory status, address agent) =
+            _verifySnapshot({snapshot: snapshot, snapSignature: snapSignature, verifyNotary: false});
         // Check that Agent is active
         status.verifyActive();
         // Store Agent signature for the Snapshot
@@ -203,6 +204,7 @@ contract BondingManager is AgentManager, BondingManagerEvents, InterfaceBondingM
 
     /// @inheritdoc InterfaceBondingManager
     function addAgent(uint32 domain, address agent, bytes32[] memory proof) external onlyOwner {
+        require(domain != SYNAPSE_DOMAIN, "No Notaries for Synapse Chain");
         // Check the STORED status of the added agent in the merkle tree
         AgentStatus memory status = _storedAgentStatus(agent);
         // Agent index in `_agents`
@@ -445,5 +447,12 @@ contract BondingManager is AgentManager, BondingManagerEvents, InterfaceBondingM
             return _getLeaf(_agents[index]);
         }
         // Return empty leaf for a zero index
+    }
+
+    /// @dev Verifies that Notary signature is active on local domain
+    // solhint-disable-next-line no-empty-blocks
+    function _verifyNotaryDomain(uint32 notaryDomain) internal pure override {
+        // Every Notary is active on Synapse Chain.
+        // No-op, as we have previously checked that `notaryDomain` is not zero.
     }
 }
