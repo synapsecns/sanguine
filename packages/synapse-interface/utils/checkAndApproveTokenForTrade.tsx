@@ -1,5 +1,15 @@
-import { BigNumber } from '@ethersproject/bignumber'
+import { BigNumber, BigNumberish } from '@ethersproject/bignumber'
 import { MaxUint256, Zero } from '@ethersproject/constants'
+import { Contract } from 'ethers'
+
+interface checkAndApproveTokenForTradeProps {
+  srcTokenContract: Contract
+  swapAddress: string
+  spenderAddress: string
+  spendingValue: BigNumber
+  infiniteApproval: boolean
+  callbacks: TransactionCallbackFunctions
+}
 
 type TransactionCallbackFunctions = {
   onTransactionStart?: () => any
@@ -23,14 +33,14 @@ type TransactionCallbackFunctions = {
  * }} callbacks
  */
 
-export async function checkAndApproveTokenForTrade(
+export async function checkAndApproveTokenForTrade({
   srcTokenContract,
   swapAddress,
   spenderAddress,
   spendingValue, // max is MaxUint256
   infiniteApproval = false,
-  callbacks: TransactionCallbackFunctions = {}
-) {
+  callbacks = {},
+}: checkAndApproveTokenForTradeProps) {
   if (srcTokenContract == null) return
   if (spendingValue.eq(0)) return
 
