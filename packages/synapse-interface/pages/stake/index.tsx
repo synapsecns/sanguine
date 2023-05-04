@@ -1,4 +1,4 @@
-import { useMemo } from 'react'
+import { useMemo, useEffect, useState } from 'react'
 import { LandingPageWrapper } from '@/components/layouts/LandingPageWrapper'
 import { useNetwork } from 'wagmi'
 import { Token } from '@/utils/types'
@@ -17,6 +17,7 @@ import StakeCard from './StakeCard'
 import NoStakeCard from './NoStakeCard'
 
 const StakePage = () => {
+  const [isClient, setIsClient] = useState<boolean>(false)
   const { chain: connectedChain } = useNetwork()
 
   const connectedChainId: number | undefined = connectedChain
@@ -37,6 +38,10 @@ const StakePage = () => {
 
   const gridColumns: number = availableStakingTokens.length > 1 ? 2 : 1
 
+  useEffect(() => {
+    setIsClient(true)
+  }, [])
+
   return (
     <LandingPageWrapper>
       <main
@@ -48,7 +53,7 @@ const StakePage = () => {
       >
         <PageHeader title="Stake" subtitle="Stake your LP Tokens." />
         <Grid cols={{ xs: 1, sm: 1, md: gridColumns }} gap={6} className="mt-8">
-          {availableStakingTokens.length > 0 ? (
+          {isClient && availableStakingTokens.length > 0 ? (
             availableStakingTokens.map((token, key) => (
               <StakeCard key={key} chainId={connectedChainId} token={token} />
             ))

@@ -11,12 +11,14 @@ import { useApproveAndStake } from '@/utils/actions/useApproveAndStake'
 import { useWithdrawStake } from '@/utils/actions/useWithdrawStake'
 import { useAccount } from 'wagmi'
 import { commifyBnToString } from '@/utils/bignumber/format'
+import { useTokenBalance } from '@/utils/hooks/useTokenBalance'
 import Button from '@/components/ui/tailwind/Button'
 import ButtonLoadingSpinner from '@/components/buttons/ButtonLoadingSpinner'
 import InteractiveInputRow from '@/components/InteractiveInputRow'
 import { cleanNumberInput } from '@/utils/cleanNumberInput'
 import { smartParseUnits } from '@/utils/bignumber'
 import { formatUnits } from '@ethersproject/units'
+import { Zero } from '@ethersproject/constants'
 
 interface StakeCardProps {
   chainId: number
@@ -24,11 +26,13 @@ interface StakeCardProps {
 }
 
 const StakeCard = ({ chainId, token }: StakeCardProps) => {
-  console.log('token: ', token)
   const tokenInfo = getTokenOnChain(chainId, token)
   const stakingPoolLabel: string = tokenInfo?.poolName
   const stakingPoolTokens: Token[] = tokenInfo?.poolTokens
   const stakingPoolId: number = tokenInfo?.poolId
+
+  const { data } = useTokenBalance(token)
+  const lpTokenBalance = data?.value ?? Zero
 
   const { address } = useAccount()
   const { amount, reward } = useStakedBalance({ poolId: stakingPoolId })
@@ -138,7 +142,7 @@ const StakeCard = ({ chainId, token }: StakeCardProps) => {
             buttonWidth="w-full"
             loadingLabel="Staking"
             isConnected={Boolean(address)}
-            balanceStr={commifyBnToString(lpTokenBalance, tokenInfo, 2)}
+            balanceStr={commifyBnToString(lpTokenBalance, 2)}
             onClickBalance={() => {
               setDeposit(formatUnits(lpTokenBalance, 18))
             }}
@@ -173,7 +177,7 @@ const StakeCard = ({ chainId, token }: StakeCardProps) => {
             buttonWidth="w-full"
             loadingLabel="Unstaking"
             isConnected={Boolean(address)}
-            balanceStr={commifyBnToString(amount, tokenInfo, 4)}
+            balanceStr={commifyBnToString(amount, 4)}
             onClickBalance={() => {
               setWithdraw(formatUnits(amount, 18))
             }}

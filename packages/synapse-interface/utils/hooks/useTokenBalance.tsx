@@ -1,7 +1,7 @@
 import { useBalance, useNetwork, useAccount, Address } from 'wagmi'
 import { Token } from '../types'
 
-export const useTokenBalance = ({ token }: { token: Token }) => {
+export const useTokenBalance = (token: Token) => {
   const { chain } = useNetwork()
   const { address } = useAccount()
 
