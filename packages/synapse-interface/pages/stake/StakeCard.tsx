@@ -9,7 +9,7 @@ import { useStakedBalance } from '@/utils/hooks/useStakedBalance'
 import { useClaimStake } from '@/utils/actions/useClaimStake'
 import { useApproveAndStake } from '@/utils/actions/useApproveAndStake'
 import { useWithdrawStake } from '@/utils/actions/useWithdrawStake'
-import { useAccount } from 'wagmi'
+import { useAccount, useNetwork } from 'wagmi'
 import { commifyBnToString } from '@/utils/bignumber/format'
 import { useTokenBalance } from '@/utils/hooks/useTokenBalance'
 import Button from '@/components/ui/tailwind/Button'
@@ -26,7 +26,6 @@ interface StakeCardProps {
 }
 
 const StakeCard = ({ chainId, token }: StakeCardProps) => {
-  console.log('token: ', token)
   const tokenInfo = getTokenOnChain(chainId, token)
   const stakingPoolLabel: string = tokenInfo?.poolName
   const stakingPoolTokens: Token[] = tokenInfo?.poolTokens
@@ -34,11 +33,9 @@ const StakeCard = ({ chainId, token }: StakeCardProps) => {
 
   const { data } = useTokenBalance(token)
   const lpTokenBalance = data?.value ?? Zero
-
+  const { chain } = useNetwork()
   const { address } = useAccount()
   const { amount, reward } = useStakedBalance({ poolId: stakingPoolId })
-  console.log('amount: ', amount)
-  console.log('reward: ', reward)
   const claimStake = useClaimStake()
   const approveAndStake = useApproveAndStake(token)
   const withdrawStake = useWithdrawStake()
@@ -53,6 +50,8 @@ const StakeCard = ({ chainId, token }: StakeCardProps) => {
   return (
     <div className="flex-wrap space-y-2">
       <StakeCardTitle
+        address={address}
+        connectedChainId={chain.id}
         token={token}
         poolTokens={stakingPoolTokens}
         poolLabel={stakingPoolLabel}
@@ -69,7 +68,7 @@ const StakeCard = ({ chainId, token }: StakeCardProps) => {
             <div className="flex items-center justify-between my-2 text-sm font-medium text-white">
               <div>Unstaked</div>
               <div>
-                {/* {commifyBnToString(lpTokenBalance, tokenInfo, 2)}{' '} */}
+                {commifyBnToString(lpTokenBalance, 2)}{' '}
                 <span className="text-[#88818C]">LP</span>
               </div>
             </div>
@@ -78,7 +77,7 @@ const StakeCard = ({ chainId, token }: StakeCardProps) => {
             <div className="flex items-center justify-between my-2 text-sm font-medium text-white">
               <div>Staked</div>
               <div>
-                {/* {commifyBnToString(amount, 2)}{' '} */}
+                {commifyBnToString(amount, 2)}{' '}
                 <span className="text-[#88818C]">LP</span>
               </div>
             </div>
@@ -87,7 +86,7 @@ const StakeCard = ({ chainId, token }: StakeCardProps) => {
             <div className="flex items-center justify-between my-2 text-sm font-medium text-white">
               <div>SYN Earned</div>
               <div className="text-green-400">
-                {/* {commifyBnToString(reward, 2)}{' '} */}
+                {commifyBnToString(reward, 2)}{' '}
                 <span className="text-[#88818C]">SYN</span>
               </div>
             </div>

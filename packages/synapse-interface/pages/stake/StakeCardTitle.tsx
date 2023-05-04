@@ -1,4 +1,12 @@
+import { useEffect, useState } from 'react'
 import { Token } from '@/utils/types'
+import { getPoolApyData } from '@/utils/actions/getPoolApyData'
+import {
+  getSynPrices,
+  getEthPrice,
+  getAvaxPrice,
+} from '@/utils/actions/getPrices'
+import ApyTooltip
 
 const StakingPoolTokens = ({ poolTokens }: { poolTokens: Token[] }) => {
   if (poolTokens)
@@ -16,16 +24,60 @@ const StakingPoolTokens = ({ poolTokens }: { poolTokens: Token[] }) => {
 }
 
 interface StakeCardTitleProps {
+  address: string
+  connectedChainId: number
   token: Token
   poolTokens: Token[]
   poolLabel: string
 }
 
 const StakeCardTitle = ({
+  address,
+  connectedChainId,
   token,
   poolTokens,
   poolLabel,
 }: StakeCardTitleProps) => {
+  const [synPrices, setSynPrices] = useState(undefined)
+  const [ethPrice, setEthPrice] = useState(undefined)
+  const [avaxPrice, setAvaxPrice] = useState(undefined)
+  const [poolApyData, setPoolApyData] = useState<any>()
+
+  // Prices to reduce number of calls
+  useEffect(() => {
+    getSynPrices()
+      .then((res) => {
+        setSynPrices(res)
+      })
+      .catch((err) => console.log('Could not get syn prices', err))
+    getEthPrice()
+      .then((res) => {
+        setEthPrice(res)
+      })
+      .catch((err) => console.log('Could not get eth prices', err))
+    getAvaxPrice()
+      .then((res) => {
+        setAvaxPrice(res)
+      })
+      .catch((err) => console.log('Could not get avax prices', err))
+  }, [])
+
+  useEffect(() => {
+    if (connectedChainId && address && synPrices && ethPrice && avaxPrice) {
+      getPoolApyData(connectedChainId, token, {
+        synPrices,
+        ethPrice,
+        avaxPrice,
+      })
+        .then((res) => {
+          setPoolApyData(res)
+        })
+        .catch((err) => {
+          console.log('Could not get pool data', err)
+        })
+    }
+  }, [])
+
   return (
     <div className="px-2 mb-5">
       <div className="inline-flex items-center mt-2">
