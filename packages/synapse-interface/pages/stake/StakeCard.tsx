@@ -26,6 +26,7 @@ interface StakeCardProps {
 }
 
 const StakeCard = ({ chainId, token }: StakeCardProps) => {
+  console.log('token: ', token)
   const tokenInfo = getTokenOnChain(chainId, token)
   const stakingPoolLabel: string = tokenInfo?.poolName
   const stakingPoolTokens: Token[] = tokenInfo?.poolTokens
@@ -36,6 +37,8 @@ const StakeCard = ({ chainId, token }: StakeCardProps) => {
 
   const { address } = useAccount()
   const { amount, reward } = useStakedBalance({ poolId: stakingPoolId })
+  console.log('amount: ', amount)
+  console.log('reward: ', reward)
   const claimStake = useClaimStake()
   const approveAndStake = useApproveAndStake(token)
   const withdrawStake = useWithdrawStake()
@@ -167,7 +170,7 @@ const StakeCard = ({ chainId, token }: StakeCardProps) => {
               }
             }}
             token={token}
-            icon={token.icon}
+            icon={token.icon.src}
           />
         ) : (
           <InteractiveInputRow
@@ -202,7 +205,7 @@ const StakeCard = ({ chainId, token }: StakeCardProps) => {
               }
             }}
             token={token}
-            icon={token.icon}
+            icon={token.icon.src}
           />
         )}
       </Card>
