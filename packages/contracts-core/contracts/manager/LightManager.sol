@@ -63,8 +63,8 @@ contract LightManager is AgentManager, InterfaceLightManager {
         // Notary needs to be not in dispute
         require(_disputes[notary].flag == DisputeFlag.None, "Notary is in dispute");
         // Cast uint256[] to ChainGas[] using assembly. This prevents us from doing unnecessary copies.
-        // Note that this does not clear the highest bits, but it's ok as the highest bits are ignored
-        // for ChainGas operations, including abi-encoding `snapGas`
+        // Note that this does NOT clear the highest bits, but it's ok as the dirty highest bits
+        // will lead to hash mismatch in snapGasHash() and thus to attestation rejection.
         ChainGas[] memory snapGas;
         // solhint-disable-next-line no-inline-assembly
         assembly {

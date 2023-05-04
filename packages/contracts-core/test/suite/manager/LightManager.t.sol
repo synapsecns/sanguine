@@ -154,53 +154,29 @@ contract LightManagerTest is AgentManagerTest {
         lightManager.submitAttestation(attPayload, attSignature, ra._agentRoot, snapGas);
     }
 
-    function test_submitAttestation_success_snapGasHighBitsMalformed(Random memory random) public {
+    function test_submitAttestation_revert_agentRootMismatch(Random memory random) public {
         RawSnapshot memory rs = random.nextSnapshot();
         RawAttestation memory ra = random.nextAttestation(rs, random.nextUint32());
         uint256[] memory snapGas = rs.snapGas();
-        uint256[] memory snapGasMalformed = new uint256[](snapGas.length);
-        uint256 chainGasBits = 8 * (4 + GAS_DATA_LENGTH);
-        for (uint256 i = 0; i < snapGas.length; i++) {
-            // This will not revert as the malformed bit is outside of ChainGas struct: (domain, gasData)
-            uint256 malformedBit = chainGasBits + random.nextUint8() % (256 - chainGasBits);
-            ChainGas cg0 = GasDataLib.wrapChainGas(snapGas[i]);
-            snapGasMalformed[i] = snapGas[i] ^ (1 << malformedBit);
-            ChainGas cg1 = GasDataLib.wrapChainGas(snapGas[i]);
-            // Malformed bit should not affect ChainGas
-            assert(ChainGas.unwrap(cg0) == ChainGas.unwrap(cg1));
-        }
+        uint256 malformedBit = random.nextUint8();
         address notary = domains[localDomain()].agent;
         (bytes memory attPayload, bytes memory attSignature) = signAttestation(notary, ra);
-        // Should pass to Destination: acceptAttestation(status, sigIndex, attestation, agentRoot, snapGas)
-        // Note: the malformed highest bits are ignored, so will be passing `snapGas` instead of `snapGasMalformed`
-        vm.expectCall(
-            destination,
-            abi.encodeWithSelector(
-                InterfaceDestination.acceptAttestation.selector,
-                agentIndex[notary],
-                nextSignatureIndex(),
-                attPayload,
-                ra._agentRoot,
-                snapGas
-            )
-        );
-        // Try to feed the gas data with malformed highest bits
-        lightManager.submitAttestation(attPayload, attSignature, ra._agentRoot, snapGasMalformed);
+        vm.expectRevert("Invalid dataHash");
+        // Try to feed the agent root with a single malformed bit
+        lightManager.submitAttestation(attPayload, attSignature, ra._agentRoot ^ bytes32(1 << malformedBit), snapGas);
     }
 
     function test_submitAttestation_revert_snapGasMismatch(Random memory random) public {
         RawSnapshot memory rs = random.nextSnapshot();
         RawAttestation memory ra = random.nextAttestation(rs, random.nextUint32());
         uint256[] memory snapGas = rs.snapGas();
-        // This should revert only if the malformed bit is within ChainGas struct: (domain, gasData)
-        uint256 chainGasBits = 8 * (4 + GAS_DATA_LENGTH);
-        uint256 malformedBit = random.nextUint8() % chainGasBits;
+        uint256 malformedBit = random.nextUint8();
         uint256 malformedIndex = random.nextUint256() % snapGas.length;
         snapGas[malformedIndex] ^= 1 << malformedBit;
         address notary = domains[localDomain()].agent;
         (bytes memory attPayload, bytes memory attSignature) = signAttestation(notary, ra);
         vm.expectRevert("Invalid dataHash");
-        // Try to feed the gas data with malformed lowest bits
+        // Try to feed the gas data with a single malformed bit
         lightManager.submitAttestation(attPayload, attSignature, ra._agentRoot, snapGas);
     }
 
