@@ -1,6 +1,7 @@
 import toast from 'react-hot-toast'
 
 import { useMiniChefContract } from '../contracts/useMiniChefContract'
+import { useTokenContract } from '../contracts/useContracts'
 import { Contract } from 'ethers'
 import { Address, useAccount } from 'wagmi'
 
