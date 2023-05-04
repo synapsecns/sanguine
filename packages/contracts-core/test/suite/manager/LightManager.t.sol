@@ -199,7 +199,7 @@ contract LightManagerTest is AgentManagerTest {
         snapGas[malformedIndex] ^= 1 << malformedBit;
         address notary = domains[localDomain()].agent;
         (bytes memory attPayload, bytes memory attSignature) = signAttestation(notary, ra);
-        vm.expectRevert("Invalid snapGas");
+        vm.expectRevert("Invalid dataHash");
         // Try to feed the gas data with malformed lowest bits
         lightManager.submitAttestation(attPayload, attSignature, ra._agentRoot, snapGas);
     }

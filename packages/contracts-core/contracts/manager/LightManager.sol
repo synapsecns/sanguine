@@ -70,11 +70,11 @@ contract LightManager is AgentManager, InterfaceLightManager {
         assembly {
             snapGas := snapGas_
         }
-        // Check that hash of snapGas matches the attestations's
+        // Check that hash of provided data matches the attestation's dataHash
         require(
             att.dataHash()
                 == AttestationLib.dataHash({agentRoot_: agentRoot_, snapGasHash_: GasDataLib.snapGasHash(snapGas)}),
-            "Invalid snapGas"
+            "Invalid dataHash"
         );
         // Store Notary signature for the attestation
         uint256 sigIndex = _saveSignature(attSignature);
