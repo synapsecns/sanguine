@@ -16,7 +16,7 @@ import { calculateExchangeRate } from '@utils/calculateExchangeRate'
 import { getTokenAllowance } from '@/utils/actions/getTokenAllowance'
 import { approve, deposit } from '@/utils/actions/approveAndDeposit'
 import { QUOTE_POLLING_INTERVAL } from '@/constants/bridge' // TODO CHANGE
-import { useSwapDepositContract } from '@hooks/useSwapDepositContract'
+import { PoolData, PoolUserData } from '@types'
 
 const Deposit = ({
   pool,
@@ -28,8 +28,8 @@ const Deposit = ({
   pool: Token
   chainId: number
   address: string
-  poolData: any
-  poolUserData: any
+  poolData: PoolData
+  poolUserData: PoolUserData
 }) => {
   // todo store sum in here?
   const [inputValue, setInputValue] = useState<{
@@ -71,12 +71,11 @@ const Deposit = ({
         pool.swapAddresses[chainId],
         inputValue.bn
       )
-      const poolContract = await useSwapDepositContract(pool, chainId)
 
       let allowances: Record<string, BigNumber> = {}
       for (const [key, value] of Object.entries(inputValue.bn)) {
         allowances[key] = await getTokenAllowance(
-          poolContract.address,
+          pool.addresses[chainId],
           key,
           address,
           chainId

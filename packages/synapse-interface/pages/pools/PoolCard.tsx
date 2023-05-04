@@ -10,7 +10,7 @@ import Grid from '@tw/Grid'
 import { memo } from 'react'
 import { CHAINS_BY_ID } from '@constants/chains'
 import LoadingSpinner from '@tw/LoadingSpinner'
-
+import { PoolData } from '@types'
 const PoolsListCard = memo(
   ({
     pool,
@@ -79,7 +79,7 @@ const PoolsListCard = memo(
             title={
               <PoolsCardTitle
                 chainImg={chain?.chainImg?.src}
-                poolName={pool.poolName}
+                poolName={pool?.poolName}
                 chainName={chain?.name}
               />
             }
@@ -97,7 +97,7 @@ const PoolsListCard = memo(
                 <h3 className="text-sm text-opacity-50 text-secondaryTextColor">
                   Assets
                 </h3>
-                {pool.poolTokens && (
+                {pool?.poolTokens && (
                   <CoinLabels coins={pool.poolTokens} /> // change coin to token
                 )}
               </div>

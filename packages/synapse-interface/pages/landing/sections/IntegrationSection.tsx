@@ -1,10 +1,10 @@
 import Link from 'next/link'
 import Grid from '@/components/ui/tailwind/Grid'
 import Card from '@/components/ui/tailwind/Card'
-import { SectionContainer } from '../shared'
+import { SectionContainer } from '../../../components/landing/shared'
 import { ORDERED_CHAINS_BY_ID, ChainId, CHAINS_BY_ID } from '@/constants/chains'
 import { Chain } from '@/utils/types'
-import { getNetworkButtonBorderHover } from '@/utils/styles/networks'
+import { getNetworkButtonBorderHover } from '@/styles/chains'
 
 export default function IntegrationSection() {
   const OrderedSupportedNetworks: Chain[] = ORDERED_CHAINS_BY_ID.filter(
@@ -108,6 +108,7 @@ function NetworkCard({
   chainImg,
 }: NetworkCardProps) {
   const href = generateNetworkCardHref(chainId)
+  const chain = CHAINS_BY_ID[chainId]
   return (
     <Link href={href}>
       <Card
@@ -118,7 +119,7 @@ function NetworkCard({
           px-0
           py-3 md:py-5
           transform-gpu hover:transition-all duration-75
-          ${getNetworkButtonBorderHover(chainId)}
+          ${getNetworkButtonBorderHover(chain?.color)}
         `}
         divider={false}
       >
