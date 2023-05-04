@@ -203,6 +203,7 @@ contract BondingManager is AgentManager, BondingManagerEvents, InterfaceBondingM
 
     /// @inheritdoc InterfaceBondingManager
     function addAgent(uint32 domain, address agent, bytes32[] memory proof) external onlyOwner {
+        require(domain != SYNAPSE_DOMAIN, "No Notaries for Synapse Chain");
         // Check the STORED status of the added agent in the merkle tree
         AgentStatus memory status = _storedAgentStatus(agent);
         // Agent index in `_agents`
