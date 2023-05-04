@@ -74,8 +74,9 @@ contract BondingManager is AgentManager, BondingManagerEvents, InterfaceBondingM
     {
         // This will revert if payload is not a snapshot
         Snapshot snapshot = snapPayload.castToSnapshot();
-        // This will revert if the signer is not a known Agent
-        (AgentStatus memory status, address agent) = _verifySnapshot(snapshot, snapSignature);
+        // This will revert if the signer is not a known Guard/Notary
+        (AgentStatus memory status, address agent) =
+            _verifySnapshot({snapshot: snapshot, snapSignature: snapSignature, verifyNotary: false});
         // Check that Agent is active
         status.verifyActive();
         // Store Agent signature for the Snapshot
@@ -449,8 +450,9 @@ contract BondingManager is AgentManager, BondingManagerEvents, InterfaceBondingM
     }
 
     /// @dev Verifies that Notary signature is active on local domain
+    // solhint-disable-next-line no-empty-blocks
     function _verifyNotaryDomain(uint32 notaryDomain) internal pure override {
-        // Every Notary is active on Synapse Chain
-        require(notaryDomain != 0, "Not a Notary");
+        // Every Notary is active on Synapse Chain.
+        // No-op, as we have previously checked that `notaryDomain` is not zero.
     }
 }

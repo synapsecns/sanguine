@@ -126,19 +126,24 @@ abstract contract VerificationManager {
      * @dev Internal function to verify the signed snapshot payload.
      * Reverts if any of these is true:
      *  - Snapshot signer is not a known Agent.
+     *  - Snapshot signer is not a Notary (if verifyNotary is true).
      * @param snapshot          Typed memory view over snapshot payload
      * @param snapSignature     Agent signature for the snapshot
+     * @param verifyNotary      If true, snapshot signer needs to be a Notary, not a Guard
      * @return status           Struct representing agent status, see {_recoverAgent}
      * @return agent            Agent that signed the snapshot
      */
-    function _verifySnapshot(Snapshot snapshot, bytes memory snapSignature)
+    function _verifySnapshot(Snapshot snapshot, bytes memory snapSignature, bool verifyNotary)
         internal
         view
         returns (AgentStatus memory status, address agent)
     {
         // This will revert if signer is not a known agent
         (status, agent) = _recoverAgent(snapshot.hash(), snapSignature);
-        // Guards and Notaries for all domains could sign Snapshots, no further checks are needed.
+        // If requested, snapshot signer needs to be a Notary, not a Guard
+        if (verifyNotary) {
+            require(status.domain != 0, "Signer is not a Notary");
+        }
     }
 
     // ═══════════════════════════════════════════ MERKLE RELATED CHECKS ═══════════════════════════════════════════════

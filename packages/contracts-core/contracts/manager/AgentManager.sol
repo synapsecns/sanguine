@@ -68,8 +68,9 @@ abstract contract AgentManager is MessagingBase, VerificationManager, AgentManag
         guardStatus.verifyActive();
         // This will revert if payload is not a snapshot
         Snapshot snapshot = snapPayload.castToSnapshot();
-        // This will revert if the snapshot signer is not a known Agent
-        (AgentStatus memory notaryStatus, address notary) = _verifySnapshot(snapshot, snapSignature);
+        // This will revert if the snapshot signer is not a known Notary
+        (AgentStatus memory notaryStatus, address notary) =
+            _verifySnapshot({snapshot: snapshot, snapSignature: snapSignature, verifyNotary: true});
         // Notary needs to be Active/Unstaking
         notaryStatus.verifyActiveUnstaking();
         // Check if Notary is active on this chain
@@ -232,8 +233,9 @@ abstract contract AgentManager is MessagingBase, VerificationManager, AgentManag
     {
         // This will revert if payload is not a snapshot
         Snapshot snapshot = snapPayload.castToSnapshot();
-        // This will revert if the snapshot signer is not a known Agent
-        (AgentStatus memory status, address agent) = _verifySnapshot(snapshot, snapSignature);
+        // This will revert if the snapshot signer is not a known Guard/Notary
+        (AgentStatus memory status, address agent) =
+            _verifySnapshot({snapshot: snapshot, snapSignature: snapSignature, verifyNotary: false});
         // Agent needs to be Active/Unstaking
         status.verifyActiveUnstaking();
         // This will revert if state does not refer to this chain
