@@ -2,8 +2,8 @@ export function SynapseLogoSvg() {
   return (
     <svg
       width="39"
-      height="39"
-      viewBox="0 0 39 39"
+      height="36"
+      viewBox="0 0 39 36"
       fill="none"
       xmlns="http://www.w3.org/2000/svg"
     >
