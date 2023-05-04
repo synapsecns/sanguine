@@ -14,6 +14,9 @@ import {AgentFlag, AgentStatus} from "../libs/Structures.sol";
 /// @notice VerificationManager is a stateless contract responsible for verifying agent signatures,
 /// as well as some common basic checks for the agent statements or the agent statuses.
 abstract contract VerificationManager {
+    error AgentNotGuard();
+    error AgentNotNotary();
+
     /// @dev gap for upgrade safety
     uint256[50] private __GAP; // solhint-disable-line var-name-mixedcase
 
@@ -55,7 +58,7 @@ abstract contract VerificationManager {
         // This will revert if signer is not a known agent
         (status, notary) = _recoverAgent(att.hash(), attSignature);
         // Attestation signer needs to be a Notary, not a Guard
-        require(status.domain != 0, "Signer is not a Notary");
+        if (status.domain == 0) revert AgentNotNotary();
     }
 
     /**
@@ -75,7 +78,7 @@ abstract contract VerificationManager {
         // This will revert if signer is not a known agent
         (status, guard) = _recoverAgent(report.hash(), arSignature);
         // Report signer needs to be a Guard, not a Notary
-        require(status.domain == 0, "Signer is not a Guard");
+        if (status.domain != 0) revert AgentNotGuard();
     }
 
     // ══════════════════════════════════════════ RECEIPT RELATED CHECKS ═══════════════════════════════════════════════
@@ -97,7 +100,7 @@ abstract contract VerificationManager {
         // This will revert if signer is not a known agent
         (status, notary) = _recoverAgent(rcpt.hash(), rcptSignature);
         // Receipt signer needs to be a Notary, not a Guard
-        require(status.domain != 0, "Signer is not a Notary");
+        if (status.domain == 0) revert AgentNotNotary();
     }
 
     // ═══════════════════════════════════════ STATE/SNAPSHOT RELATED CHECKS ═══════════════════════════════════════════
@@ -119,7 +122,7 @@ abstract contract VerificationManager {
         // This will revert if signer is not a known agent
         (status, guard) = _recoverAgent(report.hash(), srSignature);
         // Report signer needs to be a Guard, not a Notary
-        require(status.domain == 0, "Signer is not a Guard");
+        if (status.domain != 0) revert AgentNotGuard();
     }
 
     /**
@@ -141,9 +144,7 @@ abstract contract VerificationManager {
         // This will revert if signer is not a known agent
         (status, agent) = _recoverAgent(snapshot.hash(), snapSignature);
         // If requested, snapshot signer needs to be a Notary, not a Guard
-        if (verifyNotary) {
-            require(status.domain != 0, "Signer is not a Notary");
-        }
+        if (verifyNotary && status.domain == 0) revert AgentNotNotary();
     }
 
     // ═══════════════════════════════════════════ MERKLE RELATED CHECKS ═══════════════════════════════════════════════

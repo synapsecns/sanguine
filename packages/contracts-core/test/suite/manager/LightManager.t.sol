@@ -186,7 +186,7 @@ contract LightManagerTest is AgentManagerTest {
         uint256[] memory snapGas = rs.snapGas();
         address guard = domains[0].agent;
         (bytes memory attPayload, bytes memory attSignature) = signAttestation(guard, ra);
-        vm.expectRevert("Signer is not a Notary");
+        expectNotNotaryRevert();
         lightManager.submitAttestation(attPayload, attSignature, ra._agentRoot, snapGas);
     }
 

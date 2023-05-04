@@ -153,7 +153,7 @@ contract SummitTipsTest is AgentSecuredTest {
         RawExecReceipt memory re = mockReceipt("First");
         prepareReceipt(re, false, 0, false);
         (bytes memory rcptPayload, bytes memory rcptSignature) = signReceipt(guard0, re);
-        vm.expectRevert("Signer is not a Notary");
+        expectNotNotaryRevert();
         bondingManager.submitReceipt(rcptPayload, rcptSignature);
     }
 
