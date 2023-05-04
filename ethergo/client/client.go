@@ -18,6 +18,8 @@ import (
 )
 
 // EVM is the set of functions that the scribe needs from a client.
+//
+//go:generate go run github.com/vektra/mockery/v2 --name=EVM --output=mocks --case=underscore
 type EVM interface {
 	// ContractBackend defines the methods needed to work with contracts on a read-write basis.
 	// this is used for deploying an interacting with contracts

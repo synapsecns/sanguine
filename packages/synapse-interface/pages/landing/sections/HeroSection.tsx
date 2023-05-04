@@ -1,7 +1,7 @@
 import Link from 'next/link'
 import Button from '@/components/ui/tailwind/Button'
 import { DOCS_URL, BRIDGE_PATH } from '@/constants/urls'
-import { SectionContainer } from '../shared'
+import { SectionContainer } from '../../../components/landing/shared'
 
 export default function HeroSection() {
   return (

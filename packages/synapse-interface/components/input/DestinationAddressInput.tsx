@@ -10,7 +10,7 @@ export const DestinationAddressInput = ({
   setDestinationAddress: (val: string) => void
 }) => {
   const chain = CHAINS_BY_ID[toChainId]
-  const chainName = chain?.chainName || 'nulls'
+  const chainName = chain?.name || 'nulls'
   let placeholder
   placeholder = `Enter ${chainName} address...`
 
