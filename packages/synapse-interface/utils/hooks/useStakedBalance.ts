@@ -8,7 +8,6 @@ import { Zero } from '@ethersproject/constants'
 import { useMiniChefContract } from '../contracts/useMiniChefContract'
 
 export const useStakedBalance = ({ poolId }: { poolId: number }) => {
-  console.log('poolId: ', poolId)
   const [balance, setBalance] = useState<[any, any]>([undefined, undefined])
   const blockNumber = useBlockNumber()
   const { address } = useAccount()
