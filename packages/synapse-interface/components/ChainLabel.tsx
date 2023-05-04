@@ -6,6 +6,7 @@ import { getOrderedChains } from '@utils/getOrderedChains'
 import Image from 'next/image'
 import Tooltip from '@tw/Tooltip'
 import { useEffect, useState } from 'react'
+import { DisplayType } from '@/pages/bridge/BridgeCard'
 
 export const ChainLabel = ({
   isOrigin,
@@ -27,7 +28,7 @@ export const ChainLabel = ({
   setDisplayType: (v: string) => void
 }) => {
   const labelClassName = 'text-sm'
-  const displayType = isOrigin ? 'fromChain' : 'toChain'
+  const displayType = isOrigin ? DisplayType.FROM_CHAIN : DisplayType.TO_CHAIN
   const dataId = isOrigin ? 'bridge-origin-chain' : 'bridge-destination-chain'
   const title = titleText ?? (isOrigin ? 'Origin' : 'Dest.')
   const [orderedChains, setOrderedChains] = useState<number[]>([])

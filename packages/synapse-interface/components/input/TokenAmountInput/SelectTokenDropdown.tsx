@@ -59,7 +59,12 @@ const SelectTokenDropdown = ({
           <div className="text-left cursor-pointer">
             <h4 className="text-lg font-medium text-white">
               <span data-test-id={dataId}>{symbol}</span>
-              <ChevronDownIcon className="inline w-4 ml-2 -mt-1 transition-all transform focus:rotate-180" />
+              <ChevronDownIcon
+                className={`
+                inline w-4 ml-2 -mt-1 transition-all ease-in
+                transform-gpu duration-75 focus:rotate-180
+                `}
+              />
             </h4>
           </div>
         </div>
