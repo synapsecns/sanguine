@@ -9,8 +9,14 @@ import {MessagingBaseTest} from "../base/MessagingBase.t.sol";
 import {AgentManagerHarness} from "../../harnesses/manager/AgentManagerHarness.t.sol";
 
 import {fakeSnapshot} from "../../utils/libs/FakeIt.t.sol";
+import {Random} from "../../utils/libs/Random.t.sol";
 import {
-    RawAttestation, RawCallData, RawManagerCall, RawState, RawStateIndex
+    RawAttestation,
+    RawCallData,
+    RawManagerCall,
+    RawSnapshot,
+    RawState,
+    RawStateIndex
 } from "../../utils/libs/SynapseStructs.t.sol";
 
 import {Address} from "@openzeppelin/contracts/utils/Address.sol";
@@ -62,6 +68,21 @@ abstract contract AgentManagerTest is MessagingBaseTest {
         );
     }
 
+    function test_submitStateReportWithSnapshot_revert_signedByNotary(Random memory random) public {
+        RawState memory rs = random.nextState();
+        RawStateIndex memory rsi = random.nextStateIndex();
+        // Create Notary signature for the snapshot
+        address notary = domains[DOMAIN_LOCAL].agent;
+        (bytes memory snapPayload, bytes memory snapSig) = createSignedSnapshot(notary, rs, rsi);
+        // Force a random Notary to sign the report
+        address reportSigner = getNotary(random.nextUint256(), random.nextUint256());
+        (bytes memory srPayload, bytes memory srSig) = createSignedStateReport(reportSigner, rs);
+        expectNotGuardRevert();
+        IAgentManager(localAgentManager()).submitStateReportWithSnapshot(
+            rsi.stateIndex, srPayload, srSig, snapPayload, snapSig
+        );
+    }
+
     function test_submitStateReportWithAttestation(
         RawState memory rs,
         RawAttestation memory ra,
@@ -78,6 +99,24 @@ abstract contract AgentManagerTest is MessagingBaseTest {
         (bytes memory srPayload, bytes memory srSig) = createSignedStateReport(guard, rs);
         expectDisputeOpened(guard, notary);
         vm.prank(prover);
+        IAgentManager(localAgentManager()).submitStateReportWithAttestation(
+            rsi.stateIndex, srPayload, srSig, snapPayload, attPayload, attSig
+        );
+    }
+
+    function test_submitStateReportWithAttestation_revert_signedByNotary(Random memory random) public {
+        RawState memory rs = random.nextState();
+        RawStateIndex memory rsi = random.nextStateIndex();
+        RawSnapshot memory rawSnap = fakeSnapshot(rs, rsi);
+        bytes memory snapPayload = rawSnap.formatSnapshot();
+        RawAttestation memory ra = random.nextAttestation(rawSnap, random.nextUint32());
+        // Create Notary signature for the attestation
+        address notary = domains[DOMAIN_LOCAL].agent;
+        (bytes memory attPayload, bytes memory attSig) = signAttestation(notary, ra);
+        // Force a random Notary to sign the report
+        address reportSigner = getNotary(random.nextUint256(), random.nextUint256());
+        (bytes memory srPayload, bytes memory srSig) = createSignedStateReport(reportSigner, rs);
+        expectNotGuardRevert();
         IAgentManager(localAgentManager()).submitStateReportWithAttestation(
             rsi.stateIndex, srPayload, srSig, snapPayload, attPayload, attSig
         );
@@ -100,6 +139,26 @@ abstract contract AgentManagerTest is MessagingBaseTest {
         bytes32[] memory snapProof = genSnapshotProof(rsi.stateIndex);
         expectDisputeOpened(guard, notary);
         vm.prank(prover);
+        IAgentManager(localAgentManager()).submitStateReportWithSnapshotProof(
+            rsi.stateIndex, srPayload, srSig, snapProof, attPayload, attSig
+        );
+    }
+
+    function test_submitStateReportWithSnapshotProof_revert_signedByNotary(Random memory random) public {
+        RawState memory rs = random.nextState();
+        RawStateIndex memory rsi = random.nextStateIndex();
+        RawSnapshot memory rawSnap = fakeSnapshot(rs, rsi);
+        RawAttestation memory ra = random.nextAttestation(rawSnap, random.nextUint32());
+        // Create Notary signature for the attestation
+        address notary = domains[DOMAIN_LOCAL].agent;
+        (bytes memory attPayload, bytes memory attSig) = signAttestation(notary, ra);
+        // Force a random Notary to sign the report
+        address reportSigner = getNotary(random.nextUint256(), random.nextUint256());
+        (bytes memory srPayload, bytes memory srSig) = createSignedStateReport(reportSigner, rs);
+        // Generate Snapshot Proof
+        acceptSnapshot(rawSnap);
+        bytes32[] memory snapProof = genSnapshotProof(rsi.stateIndex);
+        expectNotGuardRevert();
         IAgentManager(localAgentManager()).submitStateReportWithSnapshotProof(
             rsi.stateIndex, srPayload, srSig, snapProof, attPayload, attSig
         );
