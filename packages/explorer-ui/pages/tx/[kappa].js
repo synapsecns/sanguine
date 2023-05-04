@@ -121,7 +121,7 @@ export default function BridgeTransaction({ queryResult }) {
                   rel="noreferrer" className="text-white break-all text-sm underline" href={CHAIN_EXPLORER_URLS[fromInfo.chainID] + "/tx/" + fromInfo.hash}>{fromInfo.hash}
                 </a>
               </div>
-              <div className="flex gap-x-[1.8rem] py-1">
+              <div className="flex gap-x-[1.7rem] py-1">
                 <p className="text-white text-opacity-60">Contract</p>
                 <a target="_blank"
                   rel="noreferrer" className="text-white break-all text-sm underline" href={CHAIN_EXPLORER_URLS[fromInfo.chainID] + "/address/" + BRIDGE_CONTRACTS[fromInfo.chainID]}>Origin Bridge Contract
@@ -170,7 +170,7 @@ export default function BridgeTransaction({ queryResult }) {
                   <a target="_blank"
                     rel="noreferrer" className="text-white break-all text-sm underline" href={CHAIN_EXPLORER_URLS[toInfo.chainID] + "/tx/" + toInfo.hash}>{toInfo.hash}</a> : <p className="text-white break-all text-sm ">{pendingContent}</p>}
               </div>
-              <div className="flex gap-x-[1.8rem] py-1">
+              <div className="flex gap-x-[1.6rem] py-1">
                 <p className="text-white text-opacity-60">Contract</p>
                 <a target="_blank"
                   rel="noreferrer" className="text-white break-all text-sm underline" href={CHAIN_EXPLORER_URLS[toInfo.chainID] + "/address/" + BRIDGE_CONTRACTS[toInfo.chainID]}>Destination Bridge Contract
