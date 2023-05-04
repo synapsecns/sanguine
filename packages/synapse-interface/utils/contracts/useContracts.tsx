@@ -7,8 +7,6 @@ import { Token } from '../types'
 export function useTokenContract({ token }: { token: Token }) {
   const { chain } = useNetwork()
 
-  console.log('token: ', token)
-
   const contract = useContract({
     address: token ? token.addresses[chain.id] : '',
     abi: erc20ABI,

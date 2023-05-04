@@ -19,10 +19,12 @@ import NoStakeCard from './NoStakeCard'
 const StakePage = () => {
   const [isClient, setIsClient] = useState<boolean>(false)
   const { chain: connectedChain } = useNetwork()
+  const [columns, setColumns] = useState<number>(1)
+  const [connectedChainId, setConnectedChainId] = useState<number>()
 
-  const connectedChainId: number | undefined = connectedChain
-    ? Number(connectedChain.id)
-    : undefined
+  // const connectedChainId: number | undefined = connectedChain
+  //   ? Number(connectedChain.id)
+  //   : undefined
 
   const connectedChainInfo: Chain | undefined = useMemo(() => {
     if (connectedChainId) {
@@ -36,12 +38,14 @@ const StakePage = () => {
   const availableStakingTokens: Token[] | [] =
     STAKABLE_TOKENS[connectedChainId] ?? []
 
-  console.log('STAKABLE_TOKENS: ', STAKABLE_TOKENS)
-  console.log('STAKING_MAP_TOKENS: ', STAKING_MAP_TOKENS)
-
-  const gridColumns: number = useMemo(() => {
-    return availableStakingTokens.length > 1 ? 2 : 1
+  useEffect(() => {
+    const isSingle = availableStakingTokens.length < 2
+    setColumns(isSingle ? 1 : 2)
   }, [availableStakingTokens])
+
+  useEffect(() => {
+    setConnectedChainId(connectedChain.id)
+  }, [connectedChain])
 
   useEffect(() => {
     setIsClient(true)
@@ -57,7 +61,8 @@ const StakePage = () => {
         `}
       >
         <PageHeader title="Stake" subtitle="Stake your LP Tokens." />
-        <Grid cols={{ xs: 1, sm: 1, md: gridColumns }} gap={6} className="mt-8">
+
+        <Grid cols={{ xs: 1, sm: 1, md: columns }} gap={6} className="mt-8">
           {isClient && availableStakingTokens.length > 0 ? (
             availableStakingTokens.map((token, key) => (
               <StakeCard key={key} chainId={connectedChainId} token={token} />
