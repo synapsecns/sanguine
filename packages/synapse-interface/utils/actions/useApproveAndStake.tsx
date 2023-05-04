@@ -4,8 +4,9 @@ import { useMiniChefContract } from '../contracts/useMiniChefContract'
 import { useTokenContract } from '../contracts/useContracts'
 import { Contract } from 'ethers'
 import { Address, useAccount } from 'wagmi'
+import { Token } from '../types'
 
-import { checkAndApproveTokenForTrade } from '@utils/checkAndApproveTokenForTrade'
+import { checkAndApproveTokenForTrade } from '../checkAndApproveTokenForTrade'
 
 import ExplorerToastLink from '@components/ExplorerToastLink'
 
