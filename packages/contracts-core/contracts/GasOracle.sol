@@ -27,18 +27,9 @@ import {InterfaceGasOracle} from "./interfaces/InterfaceGasOracle.sol";
  * > Executors to be protected against that.
  */
 contract GasOracle is MessagingBase, InterfaceGasOracle {
-    struct StoredGasData {
-        Number gasPrice;
-        Number dataPrice;
-        Number execBuffer;
-        Number amortAttCost;
-        Number etherPrice;
-        Number markup;
-    }
-
     // ══════════════════════════════════════════════════ STORAGE ══════════════════════════════════════════════════════
 
-    mapping(uint32 => StoredGasData) public _gasData;
+    mapping(uint32 => GasData) internal _gasData;
 
     // ═════════════════════════════════════════ CONSTRUCTOR & INITIALIZER ═════════════════════════════════════════════
 
@@ -62,29 +53,19 @@ contract GasOracle is MessagingBase, InterfaceGasOracle {
         uint256 etherPrice,
         uint256 markup
     ) external onlyOwner {
-        _gasData[domain] = StoredGasData({
-            gasPrice: NumberLib.compress(gasPrice),
-            dataPrice: NumberLib.compress(dataPrice),
-            execBuffer: NumberLib.compress(execBuffer),
-            amortAttCost: NumberLib.compress(amortAttCost),
-            etherPrice: NumberLib.compress(etherPrice),
-            markup: NumberLib.compress(markup)
+        _gasData[domain] = GasDataLib.encodeGasData({
+            gasPrice_: NumberLib.compress(gasPrice),
+            dataPrice_: NumberLib.compress(dataPrice),
+            execBuffer_: NumberLib.compress(execBuffer),
+            amortAttCost_: NumberLib.compress(amortAttCost),
+            etherPrice_: NumberLib.compress(etherPrice),
+            markup_: NumberLib.compress(markup)
         });
     }
 
     /// @inheritdoc InterfaceGasOracle
     function getGasData() external view returns (uint256 paddedGasData) {
-        StoredGasData memory gasData = _gasData[localDomain];
-        return GasData.unwrap(
-            GasDataLib.encodeGasData({
-                gasPrice_: gasData.gasPrice,
-                dataPrice_: gasData.dataPrice,
-                execBuffer_: gasData.execBuffer,
-                amortAttCost_: gasData.amortAttCost,
-                etherPrice_: gasData.etherPrice,
-                markup_: gasData.markup
-            })
-        );
+        return GasData.unwrap(_gasData[localDomain]);
     }
 
     /// @inheritdoc InterfaceGasOracle
