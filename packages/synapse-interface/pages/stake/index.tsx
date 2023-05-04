@@ -34,9 +34,14 @@ const StakePage = () => {
   }, [connectedChainId])
 
   const availableStakingTokens: Token[] | [] =
-    POOLS_BY_CHAIN[connectedChainId] ?? []
+    STAKABLE_TOKENS[connectedChainId] ?? []
 
-  const gridColumns: number = availableStakingTokens.length > 1 ? 2 : 1
+  console.log('STAKABLE_TOKENS: ', STAKABLE_TOKENS)
+  console.log('STAKING_MAP_TOKENS: ', STAKING_MAP_TOKENS)
+
+  const gridColumns: number = useMemo(() => {
+    return availableStakingTokens.length > 1 ? 2 : 1
+  }, [availableStakingTokens])
 
   useEffect(() => {
     setIsClient(true)
