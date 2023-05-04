@@ -1,3 +1,4 @@
+import { useState, useEffect, useMemo } from 'react'
 import { BigNumber } from '@ethersproject/bignumber'
 import { Zero } from '@ethersproject/constants'
 import { SYN } from '@constants/tokens/master'
@@ -11,6 +12,42 @@ import {
 } from '@constants/chainlink'
 import { readContract, fetchBalance } from '@wagmi/core'
 import { SYN_ETH_SUSHI_TOKEN } from '@constants/tokens/sushiMaster'
+
+export const usePrices = (connectedChainId: number) => {
+  const [synPrices, setSynPrices] = useState<any>(undefined)
+  const [ethPrice, setEthPrice] = useState<BigNumber>(undefined)
+  const [avaxPrice, setAvaxPrice] = useState<BigNumber>(undefined)
+
+  useEffect(() => {
+    ;(async () => {
+      try {
+        const data = await getSynPrices()
+        setSynPrices(data)
+      } catch (err) {
+        console.log('Could not get syn prices', err)
+      }
+
+      try {
+        const data = await getEthPrice()
+        setEthPrice(data)
+      } catch (err) {
+        console.log('Could not get eth prices', err)
+      }
+
+      try {
+        const data = await getAvaxPrice()
+        setAvaxPrice(data)
+      } catch (err) {
+        console.log('Could not get avax prices', err)
+      }
+    })()
+  }, [connectedChainId])
+
+  return useMemo(() => {
+    const prices = { synPrices, ethPrice, avaxPrice }
+    return prices
+  }, [synPrices, ethPrice, avaxPrice])
+}
 
 export const getEthPrice = async (): Promise<BigNumber> => {
   // the price result returned by latestAnswer is 8 decimals

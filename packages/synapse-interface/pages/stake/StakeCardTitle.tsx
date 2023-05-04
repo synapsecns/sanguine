@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useMemo } from 'react'
 import { Token } from '@/utils/types'
 import { getPoolApyData } from '@/utils/actions/getPoolApyData'
 import {
@@ -62,7 +62,7 @@ const StakeCardTitle = ({
         setAvaxPrice(res)
       })
       .catch((err) => console.log('Could not get avax prices', err))
-  }, [])
+  }, [connectedChainId])
 
   useEffect(() => {
     if (connectedChainId && address && synPrices && ethPrice && avaxPrice) {
@@ -78,17 +78,24 @@ const StakeCardTitle = ({
           console.log('Could not get pool data', err)
         })
     }
-  }, [])
+  }, [connectedChainId, address])
 
-  let fullyCompoundedApyLabel
-  if (poolApyData && _.isFinite(poolApyData.fullCompoundedAPY)) {
-    fullyCompoundedApyLabel = _.round(
-      poolApyData.fullCompoundedAPY + (baseApyData?.yearlyCompoundedApy ?? 0),
-      2
-    ).toFixed(2)
-  } else {
-    fullyCompoundedApyLabel = <i className="opacity-50"> - </i>
-  }
+  const fullyCompoundedApyLabel = useMemo(() => {
+    console.log('poolApyData:', poolApyData)
+    if (poolApyData && _.isFinite(poolApyData.fullCompoundedAPY)) {
+      return _.round(
+        poolApyData.fullCompoundedAPY + (baseApyData?.yearlyCompoundedApy ?? 0),
+        2
+      ).toFixed(2)
+    } else {
+      return <i className="opacity-50"> - </i>
+    }
+  }, [poolApyData, synPrices, ethPrice, avaxPrice])
+
+  console.log('fullyCompoundedApyLabel:', fullyCompoundedApyLabel)
+  // useEffect(() => {
+  //   console.log('poolApyData: ', poolApyData)
+  // }, [poolApyData])
 
   return (
     <div className="px-2 mb-5">
@@ -98,7 +105,9 @@ const StakeCardTitle = ({
       </div>
 
       <div className="text-lg font-normal text-white text-opacity-70">
-        <span className="text-green-400">{fullyCompoundedApyLabel}% </span>
+        <span className="text-green-400">
+          {poolApyData ? `${String(poolApyData.fullCompoundedAPYStr)}%` : '-'}
+        </span>
         APY
         <ApyTooltip
           apyData={poolApyData}

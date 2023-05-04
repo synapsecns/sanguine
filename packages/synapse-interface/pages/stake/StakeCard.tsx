@@ -34,7 +34,7 @@ const StakeCard = ({ chainId, token }: StakeCardProps) => {
   const { data } = useTokenBalance(token)
   const lpTokenBalance = data?.value ?? Zero
 
-  console.log('lpTokenBalance: ', lpTokenBalance)
+  // console.log('lpTokenBalance: ', lpTokenBalance)
   const { chain } = useNetwork()
   const { address } = useAccount()
   const { amount, reward } = useStakedBalance({ poolId: stakingPoolId })

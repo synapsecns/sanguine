@@ -15,12 +15,39 @@ import Grid from '@/components/ui/tailwind/Grid'
 import Card from '@/components/ui/tailwind/Card'
 import StakeCard from './StakeCard'
 import NoStakeCard from './NoStakeCard'
-
+import {
+  getSynPrices,
+  getEthPrice,
+  getAvaxPrice,
+} from '@/utils/actions/getPrices'
 const StakePage = () => {
   const [isClient, setIsClient] = useState<boolean>(false)
   const { chain: connectedChain } = useNetwork()
   const [columns, setColumns] = useState<number>(1)
   const [connectedChainId, setConnectedChainId] = useState<number>()
+
+  const [synPrices, setSynPrices] = useState(undefined)
+  const [ethPrice, setEthPrice] = useState(undefined)
+  const [avaxPrice, setAvaxPrice] = useState(undefined)
+
+  // Prices to reduce number of calls
+  useEffect(() => {
+    getSynPrices()
+      .then((res) => {
+        setSynPrices(res)
+      })
+      .catch((err) => console.log('Could not get syn prices', err))
+    getEthPrice()
+      .then((res) => {
+        setEthPrice(res)
+      })
+      .catch((err) => console.log('Could not get eth prices', err))
+    getAvaxPrice()
+      .then((res) => {
+        setAvaxPrice(res)
+      })
+      .catch((err) => console.log('Could not get avax prices', err))
+  }, [connectedChainId])
 
   const connectedChainInfo: Chain | undefined = useMemo(() => {
     if (connectedChainId) {
