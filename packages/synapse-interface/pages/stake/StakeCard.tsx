@@ -7,6 +7,9 @@ import InfoSection from '../pool/PoolInfoSection/InfoSection'
 import StakeCardTitle from './StakeCardTitle'
 import { useStakedBalance } from '@/utils/hooks/useStakedBalance'
 import { commifyBnToString } from '@/utils/bignumber/format'
+import Button from '@/components/ui/tailwind/Button'
+import ButtonLoadingSpinner from '@/components/buttons/ButtonLoadingSpinner'
+
 interface StakeCardProps {
   chainId: number
   token: Token
@@ -17,9 +20,7 @@ const StakeCard = ({ chainId, token }: StakeCardProps) => {
   const stakingPoolLabel: string = tokenInfo?.poolName
   const stakingPoolTokens: Token[] = tokenInfo?.poolTokens
   const stakingPoolId: number = tokenInfo?.poolId
-  const { amount, reward, rawAmount } = useStakedBalance({
-    poolId: stakingPoolId,
-  })
+  const { amount, reward } = useStakedBalance({ poolId: stakingPoolId })
 
   const [deposit, setDeposit] = useState('')
   const [withdraw, setWithdraw] = useState('')
@@ -72,6 +73,30 @@ const StakeCard = ({ chainId, token }: StakeCardProps) => {
           </div>
         </InfoSection>
       </Card>
+      {reward.eq(0) ? null : (
+        <Button
+          disabled={reward.eq(0)}
+          className={`
+          w-full  my-2 px-4 py-3 tracking-wide
+          hover:opacity-80 disabled:opacity-100
+          disabled:from-bgLight disabled:to-bgLight
+          bg-gradient-to-r from-[#CF52FE] to-[#AC8FFF]
+          ${isPending && 'from-[#622e71] to-[#564071]'}
+        `}
+          onClick={async () => {
+            pendingTxWrapFunc(claimStake({ stakingPoolId }))
+          }}
+        >
+          {isPending ? (
+            <>
+              <ButtonLoadingSpinner className="mr-2" />
+              <span className="animate-pulse">Claiming SYN</span>{' '}
+            </>
+          ) : (
+            <>Claim SYN</>
+          )}
+        </Button>
+      )}
     </div>
   )
 }
