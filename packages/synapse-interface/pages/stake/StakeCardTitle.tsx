@@ -30,6 +30,7 @@ interface StakeCardTitleProps {
   token: Token
   poolTokens: Token[]
   poolLabel: string
+  prices: any
 }
 
 const StakeCardTitle = ({
@@ -38,39 +39,15 @@ const StakeCardTitle = ({
   token,
   poolTokens,
   poolLabel,
+  prices,
 }: StakeCardTitleProps) => {
-  const [synPrices, setSynPrices] = useState(undefined)
-  const [ethPrice, setEthPrice] = useState(undefined)
-  const [avaxPrice, setAvaxPrice] = useState(undefined)
+  console.log('prices: ', prices)
   const [poolApyData, setPoolApyData] = useState<any>()
   const [baseApyData, setBaseApyData] = useState<any>(null)
 
-  // Prices to reduce number of calls
   useEffect(() => {
-    getSynPrices()
-      .then((res) => {
-        setSynPrices(res)
-      })
-      .catch((err) => console.log('Could not get syn prices', err))
-    getEthPrice()
-      .then((res) => {
-        setEthPrice(res)
-      })
-      .catch((err) => console.log('Could not get eth prices', err))
-    getAvaxPrice()
-      .then((res) => {
-        setAvaxPrice(res)
-      })
-      .catch((err) => console.log('Could not get avax prices', err))
-  }, [connectedChainId])
-
-  useEffect(() => {
-    if (connectedChainId && address && synPrices && ethPrice && avaxPrice) {
-      getPoolApyData(connectedChainId, token, {
-        synPrices,
-        ethPrice,
-        avaxPrice,
-      })
+    if (connectedChainId && address && prices) {
+      getPoolApyData(connectedChainId, token, prices)
         .then((res) => {
           setPoolApyData(res)
         })
@@ -78,7 +55,7 @@ const StakeCardTitle = ({
           console.log('Could not get pool data', err)
         })
     }
-  }, [connectedChainId, address])
+  }, [connectedChainId, address, prices])
 
   const fullyCompoundedApyLabel = useMemo(() => {
     console.log('poolApyData:', poolApyData)
@@ -90,12 +67,7 @@ const StakeCardTitle = ({
     } else {
       return <i className="opacity-50"> - </i>
     }
-  }, [poolApyData, synPrices, ethPrice, avaxPrice])
-
-  console.log('fullyCompoundedApyLabel:', fullyCompoundedApyLabel)
-  // useEffect(() => {
-  //   console.log('poolApyData: ', poolApyData)
-  // }, [poolApyData])
+  }, [poolApyData, prices])
 
   return (
     <div className="px-2 mb-5">

@@ -19,6 +19,7 @@ import { cleanNumberInput } from '@/utils/cleanNumberInput'
 import { smartParseUnits } from '@/utils/bignumber'
 import { formatUnits } from '@ethersproject/units'
 import { Zero } from '@ethersproject/constants'
+import { usePrices } from '@/utils/actions/getPrices'
 
 interface StakeCardProps {
   chainId: number
@@ -34,13 +35,13 @@ const StakeCard = ({ chainId, token }: StakeCardProps) => {
   const { data } = useTokenBalance(token)
   const lpTokenBalance = data?.value ?? Zero
 
-  // console.log('lpTokenBalance: ', lpTokenBalance)
   const { chain } = useNetwork()
   const { address } = useAccount()
   const { amount, reward } = useStakedBalance({ poolId: stakingPoolId })
   const claimStake = useClaimStake()
   const approveAndStake = useApproveAndStake(token)
   const withdrawStake = useWithdrawStake()
+  const prices = usePrices(chain.id)
 
   const [deposit, setDeposit] = useState('')
   const [withdraw, setWithdraw] = useState('')
@@ -57,6 +58,7 @@ const StakeCard = ({ chainId, token }: StakeCardProps) => {
         token={token}
         poolTokens={stakingPoolTokens}
         poolLabel={stakingPoolLabel}
+        prices={prices}
       />
       <Card
         title="Your balances"
