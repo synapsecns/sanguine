@@ -6,6 +6,7 @@ import {Number, NumberLib} from "./libs/Number.sol";
 import {Tips, TipsLib} from "./libs/Tips.sol";
 // ═════════════════════════════ INTERNAL IMPORTS ══════════════════════════════
 import {MessagingBase} from "./base/MessagingBase.sol";
+import {GasOracleEvents} from "./events/GasOracleEvents.sol";
 import {InterfaceDestination} from "./interfaces/InterfaceDestination.sol";
 import {InterfaceGasOracle} from "./interfaces/InterfaceGasOracle.sol";
 
@@ -27,7 +28,7 @@ import {InterfaceGasOracle} from "./interfaces/InterfaceGasOracle.sol";
  * > Reason for that is that the decrease of the gas price leads to lower execution/delivery tips, and we want the
  * > Executors to be protected against that.
  */
-contract GasOracle is MessagingBase, InterfaceGasOracle {
+contract GasOracle is MessagingBase, GasOracleEvents, InterfaceGasOracle {
     // ══════════════════════════════════════════ IMMUTABLES & CONSTANTS ═══════════════════════════════════════════════
 
     address public immutable destination;
@@ -120,12 +121,16 @@ contract GasOracle is MessagingBase, InterfaceGasOracle {
 
     // ══════════════════════════════════════════════ INTERNAL LOGIC ═══════════════════════════════════════════════════
 
+    /// @dev Sets the gas data for the given domain, and emits a corresponding event.
     function _setGasData(uint32 domain, GasData updatedGasData) internal {
         _gasData[domain] = updatedGasData;
+        emit GasDataUpdated(domain, GasData.unwrap(updatedGasData));
     }
 
     // ══════════════════════════════════════════════ INTERNAL VIEWS ═══════════════════════════════════════════════════
 
+    /// @dev Returns the updated gas data for the given domain by
+    /// optimistically consuming the data from the `Destination` contract.
     function _fetchGasData(uint32 domain) internal view returns (bool wasUpdated, GasData updatedGasData) {
         GasData current = _gasData[domain];
         (GasData incoming, uint256 dataMaturity) = InterfaceDestination(destination).getGasData(domain);
