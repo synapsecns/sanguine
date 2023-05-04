@@ -19,6 +19,87 @@ type ConsumerDB struct {
 	mock.Mock
 }
 
+// GetAddressChainRanking provides a mock function with given fields: ctx, query
+func (_m *ConsumerDB) GetAddressChainRanking(ctx context.Context, query string) ([]*model.AddressChainRanking, error) {
+	ret := _m.Called(ctx, query)
+
+	var r0 []*model.AddressChainRanking
+	if rf, ok := ret.Get(0).(func(context.Context, string) []*model.AddressChainRanking); ok {
+		r0 = rf(ctx, query)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).([]*model.AddressChainRanking)
+		}
+	}
+
+	var r1 error
+	if rf, ok := ret.Get(1).(func(context.Context, string) error); ok {
+		r1 = rf(ctx, query)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
+// GetAddressDailyData provides a mock function with given fields: ctx, query
+func (_m *ConsumerDB) GetAddressDailyData(ctx context.Context, query string) ([]*model.AddressDailyCount, error) {
+	ret := _m.Called(ctx, query)
+
+	var r0 []*model.AddressDailyCount
+	if rf, ok := ret.Get(0).(func(context.Context, string) []*model.AddressDailyCount); ok {
+		r0 = rf(ctx, query)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).([]*model.AddressDailyCount)
+		}
+	}
+
+	var r1 error
+	if rf, ok := ret.Get(1).(func(context.Context, string) error); ok {
+		r1 = rf(ctx, query)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
+// GetAddressData provides a mock function with given fields: ctx, query
+func (_m *ConsumerDB) GetAddressData(ctx context.Context, query string) (float64, float64, int, error) {
+	ret := _m.Called(ctx, query)
+
+	var r0 float64
+	if rf, ok := ret.Get(0).(func(context.Context, string) float64); ok {
+		r0 = rf(ctx, query)
+	} else {
+		r0 = ret.Get(0).(float64)
+	}
+
+	var r1 float64
+	if rf, ok := ret.Get(1).(func(context.Context, string) float64); ok {
+		r1 = rf(ctx, query)
+	} else {
+		r1 = ret.Get(1).(float64)
+	}
+
+	var r2 int
+	if rf, ok := ret.Get(2).(func(context.Context, string) int); ok {
+		r2 = rf(ctx, query)
+	} else {
+		r2 = ret.Get(2).(int)
+	}
+
+	var r3 error
+	if rf, ok := ret.Get(3).(func(context.Context, string) error); ok {
+		r3 = rf(ctx, query)
+	} else {
+		r3 = ret.Error(3)
+	}
+
+	return r0, r1, r2, r3
+}
+
 // GetAddressRanking provides a mock function with given fields: ctx, query
 func (_m *ConsumerDB) GetAddressRanking(ctx context.Context, query string) ([]*model.AddressRanking, error) {
 	ret := _m.Called(ctx, query)

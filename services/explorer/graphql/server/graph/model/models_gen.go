@@ -12,6 +12,29 @@ type MessageType interface {
 	IsMessageType()
 }
 
+type AddressChainRanking struct {
+	ChainID *int `json:"chain_id"`
+	Count   *int `json:"count"`
+}
+
+type AddressDailyCount struct {
+	Date  *string `json:"date"`
+	Count *int    `json:"count"`
+}
+
+type AddressData struct {
+	BridgeVolume *float64               `json:"bridgeVolume"`
+	BridgeFees   *float64               `json:"bridgeFees"`
+	BridgeTxs    *int                   `json:"bridgeTxs"`
+	SwapVolume   *float64               `json:"swapVolume"`
+	SwapFees     *float64               `json:"swapFees"`
+	SwapTxs      *int                   `json:"swapTxs"`
+	Rank         *int                   `json:"rank"`
+	EarliestTx   *int                   `json:"earliestTx"`
+	ChainRanking []*AddressChainRanking `json:"chainRanking"`
+	DailyData    []*AddressDailyCount   `json:"dailyData"`
+}
+
 // AddressRanking gives the amount of transactions that occurred for a specific address across all chains.
 type AddressRanking struct {
 	Address *string `json:"address"`

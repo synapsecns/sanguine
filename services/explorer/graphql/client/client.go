@@ -27,6 +27,7 @@ type Query struct {
 	AmountStatistic        *model.ValueResult              "json:\"amountStatistic\" graphql:\"amountStatistic\""
 	DailyStatisticsByChain []*model.DateResultByChain      "json:\"dailyStatisticsByChain\" graphql:\"dailyStatisticsByChain\""
 	RankedChainIDsByVolume []*model.VolumeByChainID        "json:\"rankedChainIDsByVolume\" graphql:\"rankedChainIDsByVolume\""
+	AddressData            *model.AddressData              "json:\"addressData\" graphql:\"addressData\""
 }
 type GetBridgeTransactions struct {
 	Response []*struct {
@@ -143,6 +144,26 @@ type GetMessageBusTransactions struct {
 		} "json:\"toInfo\" graphql:\"toInfo\""
 		MessageID *string "json:\"messageID\" graphql:\"messageID\""
 		Pending   *bool   "json:\"pending\" graphql:\"pending\""
+	} "json:\"response\" graphql:\"response\""
+}
+type GetAddressData struct {
+	Response *struct {
+		BridgeVolume *float64 "json:\"bridgeVolume\" graphql:\"bridgeVolume\""
+		BridgeFees   *float64 "json:\"bridgeFees\" graphql:\"bridgeFees\""
+		BridgeTxs    *int     "json:\"bridgeTxs\" graphql:\"bridgeTxs\""
+		SwapVolume   *float64 "json:\"swapVolume\" graphql:\"swapVolume\""
+		SwapFees     *float64 "json:\"swapFees\" graphql:\"swapFees\""
+		SwapTxs      *int     "json:\"swapTxs\" graphql:\"swapTxs\""
+		Rank         *int     "json:\"rank\" graphql:\"rank\""
+		EarliestTx   *int     "json:\"earliestTx\" graphql:\"earliestTx\""
+		ChainRanking []*struct {
+			ChainID *int "json:\"chain_id\" graphql:\"chain_id\""
+			Count   *int "json:\"count\" graphql:\"count\""
+		} "json:\"chainRanking\" graphql:\"chainRanking\""
+		DailyData []*struct {
+			Date  *string "json:\"date\" graphql:\"date\""
+			Count *int    "json:\"count\" graphql:\"count\""
+		} "json:\"dailyData\" graphql:\"dailyData\""
 	} "json:\"response\" graphql:\"response\""
 }
 
@@ -417,6 +438,41 @@ func (c *Client) GetMessageBusTransactions(ctx context.Context, chainID []*int, 
 
 	var res GetMessageBusTransactions
 	if err := c.Client.Post(ctx, "GetMessageBusTransactions", GetMessageBusTransactionsDocument, &res, vars, httpRequestOptions...); err != nil {
+		return nil, err
+	}
+
+	return &res, nil
+}
+
+const GetAddressDataDocument = `query GetAddressData ($address: String!) {
+	response: addressData(address: $address) {
+		bridgeVolume
+		bridgeFees
+		bridgeTxs
+		swapVolume
+		swapFees
+		swapTxs
+		rank
+		earliestTx
+		chainRanking {
+			chain_id
+			count
+		}
+		dailyData {
+			date
+			count
+		}
+	}
+}
+`
+
+func (c *Client) GetAddressData(ctx context.Context, address string, httpRequestOptions ...client.HTTPRequestOption) (*GetAddressData, error) {
+	vars := map[string]interface{}{
+		"address": address,
+	}
+
+	var res GetAddressData
+	if err := c.Client.Post(ctx, "GetAddressData", GetAddressDataDocument, &res, vars, httpRequestOptions...); err != nil {
 		return nil, err
 	}
 

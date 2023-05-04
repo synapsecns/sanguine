@@ -144,6 +144,44 @@ func (s *Store) GetDateResults(ctx context.Context, query string) ([]*model.Date
 	return res, nil
 }
 
+func (s *Store) GetAddressData(ctx context.Context, query string) (float64, float64, int, error) {
+	type addressData struct {
+		VolumeTotal float64 `gorm:"column:volumeTotal"`
+		FeeTotal    float64 `gorm:"column:feeTotal"`
+		TxTotal     int     `gorm:"column:txTotal"`
+	}
+	var res addressData
+	//var test map[string]interface{}
+	dbTx := s.db.WithContext(ctx).Raw(query).Scan(&res)
+	fmt.Println(res)
+	if dbTx.Error != nil {
+		return 0, 0, 0, fmt.Errorf("failed to get address data: %w", dbTx.Error)
+	}
+
+	return res.VolumeTotal, res.FeeTotal, res.TxTotal, nil
+}
+
+func (s *Store) GetAddressChainRanking(ctx context.Context, query string) ([]*model.AddressChainRanking, error) {
+	var res []*model.AddressChainRanking
+	dbTx := s.db.WithContext(ctx).Raw(query).Scan(&res)
+	fmt.Println(res)
+	if dbTx.Error != nil {
+		return nil, fmt.Errorf("failed to get address chain ranking: %w", dbTx.Error)
+	}
+
+	return res, nil
+}
+
+func (s *Store) GetAddressDailyData(ctx context.Context, query string) ([]*model.AddressDailyCount, error) {
+	var res []*model.AddressDailyCount
+	dbTx := s.db.WithContext(ctx).Raw(query).Scan(&res)
+	if dbTx.Error != nil {
+		return nil, fmt.Errorf("failed to get address daily data: %w", dbTx.Error)
+	}
+
+	return res, nil
+}
+
 // GetAddressRanking gets AddressRanking for a given query.
 func (s *Store) GetAddressRanking(ctx context.Context, query string) ([]*model.AddressRanking, error) {
 	var res []*model.AddressRanking

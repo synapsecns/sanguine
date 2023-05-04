@@ -55,6 +55,12 @@ type ConsumerDBReader interface {
 	GetDailyTotals(ctx context.Context, query string) ([]*model.DateResultByChain, error)
 	// GetRankedChainsByVolume gets the volume for each chain
 	GetRankedChainsByVolume(ctx context.Context, query string) ([]*model.VolumeByChainID, error)
+	// GetAddressData gets data for an address
+	GetAddressData(ctx context.Context, query string) (float64, float64, int, error)
+	// GetAddressDailyData gets daily data for a given address
+	GetAddressDailyData(ctx context.Context, query string) ([]*model.AddressDailyCount, error)
+	// GetAddressChainRanking gets ranking of an address's  chain activity
+	GetAddressChainRanking(ctx context.Context, query string) ([]*model.AddressChainRanking, error)
 }
 
 // ConsumerDB is the interface for the ConsumerDB.

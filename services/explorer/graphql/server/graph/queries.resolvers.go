@@ -285,6 +285,97 @@ func (r *queryResolver) RankedChainIDsByVolume(ctx context.Context, duration *mo
 	return res, nil
 }
 
+// AddressData is the resolver for the addressData field.
+func (r *queryResolver) AddressData(ctx context.Context, address string) (*model.AddressData, error) {
+	bridgeQuery := fmt.Sprintf("SELECT toFloat64(sumKahan(famount_usd)) AS volumeTotal, toFloat64(sumKahan(tfee_amount_usd)) AS feeTotal, toInt64(uniq(fchain_id, ftx_hash)) AS txTotal FROM (SELECT * FROM mv_bridge_events where fsender = '%s' LIMIT 1 BY fchain_id,fcontract_address, fevent_type, fblock_number, fevent_index, ftx_hash)", address)
+	fmt.Println(bridgeQuery)
+	swapQuery := fmt.Sprintf("SELECT toFloat64(sumKahan(multiIf(event_type = 0, amount_usd[sold_id], event_type = 1, arraySum(mapValues(amount_usd)), event_type = 9, arraySum(mapValues(amount_usd)), event_type = 10, amount_usd[sold_id],0))) AS volumeTotal, toFloat64(sumKahan(arraySum(mapValues(fee_usd)))) AS feeTotal,  toInt64(uniq(chain_id, tx_hash)) AS txTotal FROM (SELECT * FROM swap_events where sender = '%s' LIMIT 1 BY chain_id, contract_address, event_type, block_number, event_index, tx_hash)", address)
+	rankingQuery := fmt.Sprintf("select rowNumber from (select sender, row_number() over (order by sumTotal desc ) as rowNumber from (select fsender as sender, sumKahan(famount_usd) as sumTotal from (SELECT * FROM mv_bridge_events where fsender != '' LIMIT 1 BY fchain_id, fcontract_address, fevent_type, fblock_number, fevent_index, ftx_hash) where fsender != '' group by fsender)) where sender = '%s'", address)
+	firstTx := fmt.Sprintf("SELECT min(ftimestamp) AS earliestTime FROM (SELECT * FROM mv_bridge_events where fsender = '%s' LIMIT 1 BY fchain_id,fcontract_address, fevent_type, fblock_number, fevent_index, ftx_hash)", address)
+	dailyDataQuery := fmt.Sprintf("SELECT coalesce(toString(date), toString(s.date)) AS date, toFloat64(coalesce(sumTotal, 0)) + toFloat64(coalesce(s.sumTotal, 0)) as count FROM (SELECT * FROM (SELECT %s, uniq(fchain_id, ftx_hash) AS sumTotal FROM (SELECT * FROM mv_bridge_events where fsender = '%s' LIMIT 1 BY fchain_id, fcontract_address, fevent_type, fblock_number, fevent_index, ftx_hash) group by date order by date) b FULL OUTER JOIN (SELECT %s, uniq(chain_id, tx_hash) AS sumTotal FROM (SELECT * FROM swap_events WHERE sender = '%s' LIMIT 1 BY chain_id, contract_address, event_type, block_number, event_index, tx_hash) group by date) s ON b.date = s.date) SETTINGS join_use_nulls=1", toDateSelectMv, address, toDateSelect, address)
+	fmt.Printf(dailyDataQuery)
+	var bridgeVolume float64
+	var bridgeFees float64
+	var bridgeTxs int
+	var swapVolume float64
+	var swapFees float64
+	var swapTxs int
+	var rank int
+	var earliestTxTimestamp int
+	var addressChainRanking []*model.AddressChainRanking
+
+	var addressDailyData []*model.AddressDailyCount
+
+	g, groupCtx := errgroup.WithContext(ctx)
+	g.Go(func() error {
+		var err error
+		bridgeVolume, bridgeFees, bridgeTxs, err = r.DB.GetAddressData(groupCtx, bridgeQuery)
+		if err != nil {
+			return fmt.Errorf("failed to get bridge data for address %s: %w", address, err)
+		}
+		return nil
+	})
+	g.Go(func() error {
+		var err error
+		swapVolume, swapFees, swapTxs, err = r.DB.GetAddressData(groupCtx, swapQuery)
+		if err != nil {
+			return fmt.Errorf("failed to get swap data for address %s: %w", address, err)
+		}
+		return nil
+	})
+	g.Go(func() error {
+		res, err := r.DB.GetUint64(groupCtx, rankingQuery)
+		if err != nil {
+			return fmt.Errorf("failed to get ranking for address %s: %w", address, err)
+		}
+		rank = int(res)
+		return nil
+	})
+	g.Go(func() error {
+		res, err := r.DB.GetUint64(groupCtx, firstTx)
+		if err != nil {
+			return fmt.Errorf("failed to get first timestamp for address %s: %w", address, err)
+		}
+		earliestTxTimestamp = int(res)
+		return nil
+	})
+	g.Go(func() error {
+		var err error
+		addressDailyData, err = r.DB.GetAddressDailyData(groupCtx, dailyDataQuery)
+		if err != nil {
+			return fmt.Errorf("failed to get first daily data for address %s: %w", address, err)
+		}
+		return nil
+	})
+
+	g.Go(func() error {
+		var err error
+		addressChainRanking, err = r.DB.GetAddressChainRanking(groupCtx, rankingQuery)
+		if err != nil {
+			return fmt.Errorf("failed to get ranking for address %s: %w", address, err)
+		}
+		return nil
+	})
+
+	err := g.Wait()
+	if err != nil {
+		return nil, fmt.Errorf("could not get address data, %w", err)
+	}
+	res := &model.AddressData{
+		BridgeVolume: &bridgeVolume,
+		BridgeFees:   &bridgeFees,
+		BridgeTxs:    &bridgeTxs,
+		SwapVolume:   &swapVolume,
+		SwapFees:     &swapFees,
+		SwapTxs:      &swapTxs,
+		Rank:         &rank,
+		EarliestTx:   &earliestTxTimestamp,
+		ChainRanking: addressChainRanking,
+		DailyData:    addressDailyData,
+	}
+	return res, nil
+}
+
 // Query returns resolvers.QueryResolver implementation.
 func (r *Resolver) Query() resolvers.QueryResolver { return &queryResolver{r} }
 

@@ -166,3 +166,23 @@ type VolumeByChainID {
   chainID:  Int
   total:    Float
 }
+type AddressDailyCount{
+  date: String
+  count: Int
+}
+type AddressChainRanking{
+  chain_id: Int
+  count: Int
+}
+type AddressData {
+  bridgeVolume:  Float
+  bridgeFees:    Float
+  bridgeTxs:    Int
+  swapVolume:  Float
+  swapFees:    Float
+  swapTxs:    Int
+  rank:    Int
+  earliestTx: Int
+  chainRanking: [AddressChainRanking]
+  dailyData: [AddressDailyCount]
+}

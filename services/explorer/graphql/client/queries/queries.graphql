@@ -164,6 +164,7 @@ query GetMessageBusTransactions($chainID: [Int], $contractAddress: String, $star
       contractAddress
       txnHash
       message
+      messageType
       blockNumber
       time
       formattedTime
@@ -175,6 +176,7 @@ query GetMessageBusTransactions($chainID: [Int], $contractAddress: String, $star
       contractAddress
       txnHash
       message
+      messageType
       blockNumber
       time
       formattedTime
@@ -182,5 +184,29 @@ query GetMessageBusTransactions($chainID: [Int], $contractAddress: String, $star
     }
     messageID
     pending
+  }
+}
+
+
+query GetAddressData($address: String!) {
+  response: addressData(
+    address: $address
+  ) {
+    bridgeVolume
+    bridgeFees
+    bridgeTxs
+    swapVolume
+    swapFees
+    swapTxs
+    rank
+    earliestTx
+    chainRanking {
+      chain_id
+      count
+    }
+    dailyData{
+      date
+      count
+    }
   }
 }
