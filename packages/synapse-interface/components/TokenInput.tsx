@@ -44,7 +44,7 @@ const TokenInput = ({
           // disabled={inputValueStr == ''}
           disabled={false}
           showButton={false}
-          icon={token.icon.src}
+          icon={token?.icon?.src}
           token={token}
           isPending={false}
           onClickEnter={() => {}}

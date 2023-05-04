@@ -1,7 +1,7 @@
 import dayjs from 'dayjs'
 
-const BRIDGE_CONSTANTS = 'bridge.json'
-const WINDOW_CONSTANTS = 'window.json'
+export const BRIDGE_CONSTANTS = 'bridge.json'
+export const WINDOW_CONSTANTS = 'window.json'
 
 describe('Landing (/)', () => {
   beforeEach(() => cy.visit('/'))

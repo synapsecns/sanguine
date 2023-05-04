@@ -7,39 +7,21 @@ import { BigNumber } from '@ethersproject/bignumber'
 import { formatUnits } from '@ethersproject/units'
 import { useSynapseContext } from '@/utils/providers/SynapseProvider'
 
-import { Transition } from '@headlessui/react'
-
 import { getCoinTextColorCombined } from '@styles/tokens'
 import { calculateExchangeRate } from '@utils/calculateExchangeRate'
-
-import { ETH } from '@constants/tokens/master'
-import { WETH } from '@constants/tokens/swapMaster'
 import { ALL } from '@constants/withdrawTypes'
-
-import { useDebounce } from '@hooks/useDebounce'
-import { usePendingTxWrapper } from '@hooks/usePendingTxWrapper'
-// import { useApproveAndWithdraw } from '@hooks/actions/useApproveAndWithdraw'
-// import { usePoolToken } from '@hooks/pools/usePools'
-// import { useTokenBalance } from '@hooks/tokens/useTokenBalances'
-
 import Grid from '@tw/Grid'
-
 import TokenInput from '@components/TokenInput'
 import RadioButton from '@components/buttons/RadioButton'
-import ButtonLoadingSpinner from '@components/buttons/ButtonLoadingSpinner'
 import RecievedTokenSection from '../components/RecievedTokenSection'
 import PriceImpactDisplay from '../components/PriceImpactDisplay'
 
 import { TransactionButton } from '@components/buttons/SubmitTxButton'
 import { Zero } from '@ethersproject/constants'
-// need to add pending for deposit func
-import { TransactionResponse } from '@ethersproject/providers'
-import { useSwapDepositContract } from '@hooks/useSwapDepositContract'
-import { calculatePriceImpactWithdraw } from '@utils/priceImpact'
-import { OPTIMISM_ETH_SWAP_TOKEN } from '@constants/tokens/poolMaster'
 import { Token } from '@types'
 import { approve, withdraw } from '@/utils/actions/approveAndWithdraw'
 import { getTokenAllowance } from '@/utils/actions/getTokenAllowance'
+import { PoolData, PoolUserData } from '@types'
 
 const Withdraw = ({
   pool,
@@ -51,8 +33,8 @@ const Withdraw = ({
   pool: any
   chainId: number
   address: string
-  poolData: any
-  poolUserData: any
+  poolData: PoolData
+  poolUserData: PoolUserData
 }) => {
   const [inputValue, setInputValue] = useState<{
     bn: BigNumber
@@ -87,15 +69,16 @@ const Withdraw = ({
 
   const sumBigNumbers = (pool: Token, bigNumMap: any) => {
     let sum = Zero
-    pool.poolTokens.map((token) => {
-      if (bigNumMap[token.addresses[chainId]]) {
-        sum = sum.add(
-          bigNumMap[token.addresses[chainId]].value.mul(
-            BigNumber.from(10).pow(18 - token.decimals[chainId])
+    pool?.poolTokens &&
+      pool.poolTokens.map((token) => {
+        if (bigNumMap[token.addresses[chainId]]) {
+          sum = sum.add(
+            bigNumMap[token.addresses[chainId]].value.mul(
+              BigNumber.from(10).pow(18 - token.decimals[chainId])
+            )
           )
-        )
-      }
-    })
+        }
+      })
     return sum
   }
   const calculateMaxWithdraw = async () => {
@@ -159,10 +142,12 @@ const Withdraw = ({
       percent = 100
     }
     setPercentage(percent)
-    const numericalOut = formatUnits(
-      poolUserData.lpTokenBalance.mul(Number(percent)).div(100),
-      pool.decimals[chainId]
-    )
+    const numericalOut = poolUserData.lpTokenBalance
+      ? formatUnits(
+          poolUserData.lpTokenBalance.mul(Number(percent)).div(100),
+          pool.decimals[chainId]
+        )
+      : ''
     onChangeInputValue(pool, numericalOut)
   }
 
@@ -287,29 +272,31 @@ const Withdraw = ({
           label="Combo"
           labelClassName={withdrawType === ALL && 'text-indigo-500'}
         />
-        {pool.poolTokens.map((token) => {
-          const checked = withdrawType === token.addresses[chainId]
-          return (
-            <RadioButton
-              radioClassName={getCoinTextColorCombined(token.color)}
-              key={token.symbol}
-              checked={checked}
-              onChange={() => {
-                setWithdrawType(token.addresses[chainId])
-              }}
-              labelClassName={
-                checked && `${getCoinTextColorCombined(token.color)} opacity-90`
-              }
-              label={token.name}
-            />
-          )
-        })}
+        {pool?.poolTokens &&
+          pool.poolTokens.map((token) => {
+            const checked = withdrawType === token.addresses[chainId]
+            return (
+              <RadioButton
+                radioClassName={getCoinTextColorCombined(token.color)}
+                key={token?.symbol}
+                checked={checked}
+                onChange={() => {
+                  setWithdrawType(token.addresses[chainId])
+                }}
+                labelClassName={
+                  checked &&
+                  `${getCoinTextColorCombined(token.color)} opacity-90`
+                }
+                label={token.name}
+              />
+            )
+          })}
       </Grid>
       <TokenInput
         token={pool}
-        key={pool.symbol}
+        key={pool?.symbol}
         inputValueStr={inputValue.str}
-        balanceStr={poolUserData.lpTokenBalanceStr}
+        balanceStr={poolUserData?.lpTokenBalanceStr ?? '0.0000'}
         onChange={(value) => onChangeInputValue(pool, value)}
         chainId={chainId}
         address={address}
@@ -335,13 +322,16 @@ const Withdraw = ({
         <Grid cols={{ xs: 2 }}>
           <div>
             <RecievedTokenSection
-              poolTokens={pool.poolTokens}
+              poolTokens={pool?.poolTokens ?? []}
               withdrawQuote={withdrawQuote}
               chainId={chainId}
             />
           </div>
           <div>
-            <PriceImpactDisplay priceImpact={withdrawQuote.priceImpact} />
+            {withdrawQuote.priceImpact &&
+              withdrawQuote.priceImpact?.gt(Zero) && (
+                <PriceImpactDisplay priceImpact={withdrawQuote.priceImpact} />
+              )}
           </div>
         </Grid>
       </div>

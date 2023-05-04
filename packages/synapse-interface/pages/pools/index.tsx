@@ -39,7 +39,6 @@ const PoolsPage = () => {
             {
               index: 0,
               label: 'All',
-              textLabel: '',
               poolsByChain: DISPLAY_POOLS_BY_CHAIN,
             },
             {

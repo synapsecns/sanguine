@@ -1,10 +1,10 @@
 import Card from '@/components/ui/tailwind/Card'
 
-export function LandingPageContainer({
+export const LandingPageContainer = ({
   children,
 }: {
   children: React.ReactNode
-}) {
+}) => {
   return (
     <div data-test-id="landing-page" className="relative px-4 md:px-24">
       {children}
@@ -12,7 +12,7 @@ export function LandingPageContainer({
   )
 }
 
-export function SectionContainer({
+export const SectionContainer = ({
   children,
   styles,
   dataTestId,
@@ -20,7 +20,7 @@ export function SectionContainer({
   children: React.ReactNode
   styles?: string
   dataTestId?: string
-}) {
+}) => {
   return (
     <div
       className={`
@@ -34,7 +34,7 @@ export function SectionContainer({
   )
 }
 
-export function SupportCard({
+export const SupportCard = ({
   header,
   children,
   image,
@@ -42,7 +42,7 @@ export function SupportCard({
   header: string
   children: React.ReactNode
   image?: any
-}) {
+}) => {
   return (
     <Card
       title={header}
