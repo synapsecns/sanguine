@@ -153,7 +153,22 @@ library GasDataLib {
     }
 
     /// @notice Returns the hash for the list of ChainGas structs.
-    function snapGasHash(ChainGas[] memory snapGas) internal pure returns (bytes32) {
-        return keccak256(abi.encodePacked(snapGas));
+    function snapGasHash(ChainGas[] memory snapGas) internal pure returns (bytes32 snapGasHash_) {
+        // Use assembly to calculate the hash of the array without copying it
+        // ChainGas takes a single word of storage, thus ChainGas[] is stored in the following way:
+        // 0x00: length of the array, in words
+        // 0x20: first ChainGas struct
+        // 0x40: second ChainGas struct
+        // And so on...
+        // solhint-disable-next-line no-inline-assembly
+        assembly {
+            // Find the location where the array data starts, we add 0x20 to skip the length field
+            let loc := add(snapGas, 0x20)
+            // Load the length of the array (in words).
+            // Shifting left 5 bits is equivalent to multiplying by 32: this converts from words to bytes.
+            let len := shl(5, mload(snapGas))
+            // Calculate the hash of the array
+            snapGasHash_ := keccak256(loc, len)
+        }
     }
 }
