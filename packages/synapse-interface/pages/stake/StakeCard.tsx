@@ -8,6 +8,7 @@ import StakeCardTitle from './StakeCardTitle'
 import { useStakedBalance } from '@/utils/hooks/useStakedBalance'
 import { useClaimStake } from '@/utils/actions/useClaimStake'
 import { useApproveAndStake } from '@/utils/actions/useApproveAndStake'
+import { useWithdrawStake } from '@/utils/actions/useWithdrawStake'
 import { useAccount } from 'wagmi'
 import { commifyBnToString } from '@/utils/bignumber/format'
 import Button from '@/components/ui/tailwind/Button'
@@ -23,6 +24,7 @@ interface StakeCardProps {
 }
 
 const StakeCard = ({ chainId, token }: StakeCardProps) => {
+  console.log('token: ', token)
   const tokenInfo = getTokenOnChain(chainId, token)
   const stakingPoolLabel: string = tokenInfo?.poolName
   const stakingPoolTokens: Token[] = tokenInfo?.poolTokens
@@ -32,6 +34,7 @@ const StakeCard = ({ chainId, token }: StakeCardProps) => {
   const { amount, reward } = useStakedBalance({ poolId: stakingPoolId })
   const claimStake = useClaimStake()
   const approveAndStake = useApproveAndStake(token)
+  const withdrawStake = useWithdrawStake()
 
   const [deposit, setDeposit] = useState('')
   const [withdraw, setWithdraw] = useState('')
@@ -186,8 +189,8 @@ const StakeCard = ({ chainId, token }: StakeCardProps) => {
               const tx = await pendingUnstakeTxWrapFunc(
                 withdrawStake({
                   poolId: stakingPoolId,
-                  toStakeTokenSymbol: token.symbol,
                   amount: smartParseUnits(withdraw, 18),
+                  account: address,
                 })
               )
               if (tx?.status === 1) {
