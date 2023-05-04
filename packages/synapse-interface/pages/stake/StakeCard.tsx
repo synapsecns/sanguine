@@ -17,7 +17,6 @@ const StakeCard = ({ chainId, token }: StakeCardProps) => {
   const stakingPoolLabel: string = tokenInfo?.poolName
   const stakingPoolTokens: Token[] = tokenInfo?.poolTokens
   const stakingPoolId = tokenInfo?.poolId
-
   const stakedBalance = useStakedBalance(stakingPoolId)
 
   const [deposit, setDeposit] = useState('')
