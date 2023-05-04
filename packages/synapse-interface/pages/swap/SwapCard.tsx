@@ -458,7 +458,7 @@ const SwapCard = ({
       connectedChainId,
       address,
       fromToken.addresses[connectedChainId as keyof Token['addresses']],
-      fromInput.bigNum.mul(1000).div(999), // TODO Get rid of harcoded slippage
+      fromInput.bigNum.mul(1000).div(999), // TODO Get rid of hardcoded slippage
       swapQuote.quote
     )
     const tx = await wallet.sendTransaction(data)
