@@ -93,7 +93,7 @@ export default function address() {
 
   return (
     <StandardPageContainer title={"Address"}>
-<CopyTitle title={walletAddress} />
+      <CopyTitle title={walletAddress} />
 
       {walletAddress != "" ?
         <HolisticStats

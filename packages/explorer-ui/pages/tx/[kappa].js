@@ -5,7 +5,7 @@ import { Error } from '@components/Error'
 import { StandardPageContainer } from '@components/layouts/StandardPageContainer'
 import { useRouter } from 'next/router'
 import { useSearchParams } from 'next/navigation'
-import { CHAIN_EXPLORER_URLS } from '@constants/networks'
+import { CHAIN_EXPLORER_URLS, BRIDGE_CONTRACTS } from '@constants/networks'
 import { GET_BRIDGE_TRANSACTIONS_QUERY, } from '@graphql/queries'
 import { API_URL } from '@graphql'
 import { HorizontalDivider } from "@components/misc/HorizontalDivider";
@@ -37,7 +37,7 @@ export default function BridgeTransaction({ queryResult }) {
   const chainId = Number(search.get('chainIdFrom'))
   const handlePending = (date) => {
     let now = new Date().getTime()
-    let timeDiff = now - date *1000
+    let timeDiff = now - date * 1000
     if (timeDiff > 86400000) {
       return "Indexing"
     } else {
@@ -91,7 +91,7 @@ export default function BridgeTransaction({ queryResult }) {
         </div>
         <div className="flex gap-x-[1.1rem] py-1">
           <p className="text-white text-opacity-60">Total Time</p>
-          <p className="text-white ">{toInfo ? getTimeDifference(fromInfo.time, toInfo.time) + " seconds" :pendingContent} </p>
+          <p className="text-white ">{toInfo ? getTimeDifference(fromInfo.time, toInfo.time) + " seconds" : pendingContent} </p>
         </div>
         <br />
 
@@ -119,6 +119,12 @@ export default function BridgeTransaction({ queryResult }) {
                 <p className="text-white text-opacity-60">TX Hash</p>
                 <a target="_blank"
                   rel="noreferrer" className="text-white break-all text-sm underline" href={CHAIN_EXPLORER_URLS[fromInfo.chainID] + "/tx/" + fromInfo.hash}>{fromInfo.hash}
+                </a>
+              </div>
+              <div className="flex gap-x-[1.7rem] py-1">
+                <p className="text-white text-opacity-60">Contract</p>
+                <a target="_blank"
+                  rel="noreferrer" className="text-white break-all text-sm underline" href={CHAIN_EXPLORER_URLS[fromInfo.chainID] + "/address/" + BRIDGE_CONTRACTS[fromInfo.chainID]}>Origin Bridge Contract
                 </a>
               </div>
               <div className="flex gap-x-11 mt-3">
@@ -154,7 +160,7 @@ export default function BridgeTransaction({ queryResult }) {
               <div className="flex gap-x-[4.5rem] py-1">
                 <p className="text-white text-opacity-60">To</p>
                 <a target="_blank"
-                  rel="noreferrer" className="text-white break-all text-sm underline" href={toInfo ? ACCOUNTS_PATH + "/" + toInfo.address: ""}>{toInfo ? toInfo.address : pendingContent}
+                  rel="noreferrer" className="text-white break-all text-sm underline" href={toInfo ? ACCOUNTS_PATH + "/" + toInfo.address : ""}>{toInfo ? toInfo.address : pendingContent}
                 </a>
               </div>
 
@@ -164,10 +170,17 @@ export default function BridgeTransaction({ queryResult }) {
                   <a target="_blank"
                     rel="noreferrer" className="text-white break-all text-sm underline" href={CHAIN_EXPLORER_URLS[toInfo.chainID] + "/tx/" + toInfo.hash}>{toInfo.hash}</a> : <p className="text-white break-all text-sm ">{pendingContent}</p>}
               </div>
+              <div className="flex gap-x-[1.6rem] py-1">
+                <p className="text-white text-opacity-60">Contract</p>
+                <a target="_blank"
+                  rel="noreferrer" className="text-white break-all text-sm underline" href={CHAIN_EXPLORER_URLS[toInfo.chainID] + "/address/" + BRIDGE_CONTRACTS[toInfo.chainID]}>Destination Bridge Contract
+                </a>
+              </div>
               <div className="flex gap-x-8 mt-3">
                 <h1 className="text-white text-2xl text-opacity-60">
                   Received
                 </h1>
+
                 {toInfo ?
                   <IconAndAmount
                     formattedValue={toInfo.formattedValue}

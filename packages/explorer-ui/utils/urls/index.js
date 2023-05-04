@@ -24,11 +24,13 @@ export const MEDIUM_URL = 'https://synapseprotocol.medium.com/'
 export const CAREERS_URL =
   'https://synapseprotocol.notion.site/synapseprotocol/Synapse-Job-Board-3851178379bf45b2b47c6ec8bf9d6753'
 
-export const TERMS_OF_SERVICE_URL = 'https://docs.google.com/document/d/1X5XjH23amj7ZbOLk0DICiHPQ7yyoZCWF/edit?usp=sharing&ouid=113997473479243481559&rtpof=true&sd=true'
-export const PRIVACY_POLICY_URL = 'https://docs.google.com/document/d/1X5XjH23amj7ZbOLk0DICiHPQ7yyoZCWF/edit?usp=sharing&ouid=113997473479243481559&rtpof=true&sd=true'
+export const TERMS_OF_SERVICE_URL =
+  'https://docs.google.com/document/d/1X5XjH23amj7ZbOLk0DICiHPQ7yyoZCWF/edit?usp=sharing&ouid=113997473479243481559&rtpof=true&sd=true'
+export const PRIVACY_POLICY_URL =
+  'https://docs.google.com/document/d/1X5XjH23amj7ZbOLk0DICiHPQ7yyoZCWF/edit?usp=sharing&ouid=113997473479243481559&rtpof=true&sd=true'
 
 export const TERMS_OF_SERVICE_PATH = '/terms'
-export const PRIVACY_POLICY_PATH  = '/privacy'
+export const PRIVACY_POLICY_PATH = '/privacy'
 
 export const ACCOUNTS_PATH = '/address'
 export const TRANSACTIONS_PATH = '/txs'
@@ -90,7 +92,7 @@ export function getAddressesUrl({ address, chainIdFrom, chainIdTo }) {
 }
 
 export function getExplorerTxUrl({ hash, data, chainId, type = 'tx' }) {
-  let baseUrl = CHAIN_EXPLORER_URLS[chainId]
+  const baseUrl = CHAIN_EXPLORER_URLS[chainId]
 
   return `${baseUrl}/${type}/${hash ?? data}`
 }
@@ -101,7 +103,7 @@ export function getExplorerAddressUrl({
   chainId,
   type = 'address',
 }) {
-  let baseUrl = CHAIN_EXPLORER_URLS[chainId]
+  const baseUrl = CHAIN_EXPLORER_URLS[chainId]
 
   return `${baseUrl}/${type}/${address ?? data}`
 }

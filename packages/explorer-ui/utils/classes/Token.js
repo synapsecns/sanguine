@@ -1,6 +1,5 @@
 import _ from 'lodash'
-
-import {ChainId} from '@constants/networks'
+import { ChainId } from '@constants/networks'
 
 /**
  * Represents an ERC20-like token with a unique address, chainId, and some metadata.
@@ -87,6 +86,7 @@ export class Token {
   }
   /**
    * Returns true if the two tokens are equivalent, i.e. have the same chainId and address.
+   *
    * @param other other token to compare
    */
   // equals(otherToken) {
