@@ -41,7 +41,6 @@ const StakeCardTitle = ({
   poolLabel,
   prices,
 }: StakeCardTitleProps) => {
-  console.log('prices: ', prices)
   const [poolApyData, setPoolApyData] = useState<any>()
   const [baseApyData, setBaseApyData] = useState<any>(null)
 
@@ -56,18 +55,6 @@ const StakeCardTitle = ({
         })
     }
   }, [connectedChainId, address, prices])
-
-  const fullyCompoundedApyLabel = useMemo(() => {
-    console.log('poolApyData:', poolApyData)
-    if (poolApyData && _.isFinite(poolApyData.fullCompoundedAPY)) {
-      return _.round(
-        poolApyData.fullCompoundedAPY + (baseApyData?.yearlyCompoundedApy ?? 0),
-        2
-      ).toFixed(2)
-    } else {
-      return <i className="opacity-50"> - </i>
-    }
-  }, [poolApyData, prices])
 
   return (
     <div className="px-2 mb-5">
