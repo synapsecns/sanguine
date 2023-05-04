@@ -180,7 +180,7 @@ contract SummitTipsTest is AgentSecuredTest {
 
     function test_acceptReceipt_revert_notAgentManager(address caller) public {
         vm.assume(caller != localAgentManager());
-        vm.expectRevert("!agentManager");
+        expectNotAgentManagerRevert();
         vm.prank(caller);
         InterfaceSummit(summit).acceptReceipt(0, 0, 0, 0, 0, "");
     }

@@ -149,7 +149,7 @@ contract DestinationTest is ExecutionHubTest {
 
     function test_acceptAttestation_revert_notAgentManager(address caller) public {
         vm.assume(caller != localAgentManager());
-        vm.expectRevert("!agentManager");
+        expectNotAgentManagerRevert();
         vm.prank(caller);
         InterfaceDestination(localDestination()).acceptAttestation(0, 0, "", 0, new ChainGas[](0));
     }

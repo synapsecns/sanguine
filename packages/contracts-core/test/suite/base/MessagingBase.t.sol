@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.17;
 
+import {MessagingBase} from "../../../contracts/base/MessagingBase.sol";
 import {AgentFlag, Dispute, DisputeFlag} from "../../../contracts/libs/Structures.sol";
 import {IAgentSecured} from "../../../contracts/interfaces/IAgentSecured.sol";
 import {AgentManagerHarness} from "../../harnesses/manager/AgentManagerHarness.t.sol";
@@ -48,6 +49,10 @@ abstract contract MessagingBaseTest is SynapseTest {
     function initializeLocalContract() public virtual;
 
     // ═══════════════════════════════════════════════ EXPECTATIONS ════════════════════════════════════════════════════
+
+    function expectNotAgentManagerRevert() public {
+        vm.expectRevert(MessagingBase.CallerNotAgentManager.selector);
+    }
 
     function expectStatusUpdated(AgentFlag flag, uint32 domain, address agent) public {
         vm.expectEmit();
