@@ -6,7 +6,8 @@ import {
   getEthPrice,
   getAvaxPrice,
 } from '@/utils/actions/getPrices'
-import ApyTooltip
+import ApyTooltip from '@/components/ApyTooltip'
+import _ from 'lodash'
 
 const StakingPoolTokens = ({ poolTokens }: { poolTokens: Token[] }) => {
   if (poolTokens)
@@ -42,6 +43,7 @@ const StakeCardTitle = ({
   const [ethPrice, setEthPrice] = useState(undefined)
   const [avaxPrice, setAvaxPrice] = useState(undefined)
   const [poolApyData, setPoolApyData] = useState<any>()
+  const [baseApyData, setBaseApyData] = useState<any>(null)
 
   // Prices to reduce number of calls
   useEffect(() => {
@@ -78,6 +80,16 @@ const StakeCardTitle = ({
     }
   }, [])
 
+  let fullyCompoundedApyLabel
+  if (poolApyData && _.isFinite(poolApyData.fullCompoundedAPY)) {
+    fullyCompoundedApyLabel = _.round(
+      poolApyData.fullCompoundedAPY + (baseApyData?.yearlyCompoundedApy ?? 0),
+      2
+    ).toFixed(2)
+  } else {
+    fullyCompoundedApyLabel = <i className="opacity-50"> - </i>
+  }
+
   return (
     <div className="px-2 mb-5">
       <div className="inline-flex items-center mt-2">
@@ -86,15 +98,13 @@ const StakeCardTitle = ({
       </div>
 
       <div className="text-lg font-normal text-white text-opacity-70">
-        <span className="text-green-400">
-          {/* {fullyCompoundedApyLabel}%  */}- %
-        </span>
+        <span className="text-green-400">{fullyCompoundedApyLabel}% </span>
         APY
-        {/* <ApyTooltip
-          apyData={apyData}
-          baseApyData={baseApyData}
+        <ApyTooltip
+          apyData={poolApyData}
+          // baseApyData={baseApyData ??}
           className="ml-1"
-        /> */}
+        />
       </div>
     </div>
   )

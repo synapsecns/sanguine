@@ -27,10 +27,10 @@ export default function ApyTooltip({
   baseApyData?: BaseApyData
   className?: string
 }) {
-  const compoundedApy = apyData.fullCompoundedAPY
-  const weeklyApr = apyData.weeklyAPR
-  const dailyApr = weeklyApr / 7
-  const yearlyApr = weeklyApr * 52
+  const compoundedApy = apyData && apyData.fullCompoundedAPY
+  const weeklyApr = apyData && apyData.weeklyAPR
+  const dailyApr = weeklyApr && weeklyApr / 7
+  const yearlyApr = weeklyApr && weeklyApr * 52
 
   const baseCompoundedApy = baseApyData.yearlyCompoundedApy ?? 0
   const baseWeeklyApr = (baseApyData.dailyApr ?? 0) * 7
