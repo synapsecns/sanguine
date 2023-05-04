@@ -6,9 +6,13 @@ import Card from '@/components/ui/tailwind/Card'
 import InfoSection from '../pool/PoolInfoSection/InfoSection'
 import StakeCardTitle from './StakeCardTitle'
 import { useStakedBalance } from '@/utils/hooks/useStakedBalance'
+import { useClaimStake } from '@/utils/actions/useClaimStake'
+import { useAccount } from 'wagmi'
 import { commifyBnToString } from '@/utils/bignumber/format'
 import Button from '@/components/ui/tailwind/Button'
 import ButtonLoadingSpinner from '@/components/buttons/ButtonLoadingSpinner'
+import InteractiveInputRow from '@/components/InteractiveInputRow'
+import { cleanNumberInput } from '@/utils/cleanNumberInput'
 
 interface StakeCardProps {
   chainId: number
@@ -20,7 +24,10 @@ const StakeCard = ({ chainId, token }: StakeCardProps) => {
   const stakingPoolLabel: string = tokenInfo?.poolName
   const stakingPoolTokens: Token[] = tokenInfo?.poolTokens
   const stakingPoolId: number = tokenInfo?.poolId
+
+  const { address } = useAccount()
   const { amount, reward } = useStakedBalance({ poolId: stakingPoolId })
+  const claimStake = useClaimStake()
 
   const [deposit, setDeposit] = useState('')
   const [withdraw, setWithdraw] = useState('')
@@ -84,7 +91,7 @@ const StakeCard = ({ chainId, token }: StakeCardProps) => {
           ${isPending && 'from-[#622e71] to-[#564071]'}
         `}
           onClick={async () => {
-            pendingTxWrapFunc(claimStake({ stakingPoolId }))
+            pendingTxWrapFunc(claimStake({ poolId: stakingPoolId }))
           }}
         >
           {isPending ? (
@@ -97,6 +104,97 @@ const StakeCard = ({ chainId, token }: StakeCardProps) => {
           )}
         </Button>
       )}
+      <Card className="bg-bgBase rounded-xl" divider={false}>
+        <div className="flex justify-center space-x-4">
+          <Button
+            className={`${
+              showStake ? 'bg-[#111111]' : 'bg-bgLight hover:bg-opacity-70'
+            }  w-full rounded-lg h-[48px] text-white text-xl`}
+            onClick={() => setShowStake(true)}
+          >
+            Stake
+          </Button>
+          <Button
+            className={`${
+              !showStake ? 'bg-[#111111]' : 'bg-bgLight hover:bg-opacity-70'
+            }  w-full rounded-lg h-[48px] text-white text-xl`}
+            onClick={() => setShowStake(false)}
+          >
+            Unstake
+          </Button>
+        </div>
+        {showStake ? (
+          <InteractiveInputRow
+            showButton={true}
+            title={token.symbol}
+            buttonLabel="Stake"
+            buttonWidth="w-full"
+            loadingLabel="Staking"
+            isConnected={Boolean(address)}
+            balanceStr={commifyBnToString(lpTokenBalance, tokenInfo, 2)}
+            onClickBalance={() => {
+              setDeposit(formatUnits(lpTokenBalance, 18))
+            }}
+            value={deposit}
+            placeholder={'0.0'}
+            onChange={(e) => {
+              let val = cleanNumberInput(e.target.value)
+              setDeposit(val)
+            }}
+            disabled={lpTokenBalance.eq(0) || deposit == ''}
+            isPending={isPendingStake}
+            onClickEnter={async (e) => {
+              const tx = await pendingStakeTxWrapFunc(
+                approveAndStake({
+                  poolId: poolId,
+                  infiniteApproval: true,
+                  amount: smartParseUnits(deposit, 18),
+                })
+              )
+              if (tx?.status === 1) {
+                setDeposit('')
+              }
+            }}
+            token={token}
+            icon={token.icon}
+          />
+        ) : (
+          <InteractiveInputRow
+            showButton={true}
+            title={token.symbol}
+            buttonLabel="Unstake"
+            buttonWidth="w-full"
+            loadingLabel="Unstaking"
+            isConnected={Boolean(address)}
+            balanceStr={formatCommifyBn(amount, tokenInfo, 4)}
+            onClickBalance={() => {
+              setWithdraw(formatUnits(amount, 18))
+            }}
+            value={withdraw}
+            placeholder={'0.0'}
+            onChange={(e) => {
+              let val = cleanNumberInput(e.target.value)
+              setWithdraw(val)
+            }}
+            disabled={amount.eq(0) || withdraw == ''}
+            isPending={isPendingUnstake}
+            onClickEnter={async () => {
+              const tx = await pendingUnstakeTxWrapFunc(
+                withdrawStake({
+                  poolId: stakingPoolId,
+                  toStakeTokenSymbol: token.symbol,
+                  amount: smartParseUnits(withdraw, 18),
+                })
+              )
+              if (tx?.status === 1) {
+                setWithdraw('')
+              }
+            }}
+            token={token}
+            icon={token.icon}
+          />
+        )}
+      </Card>
     </div>
   )
 }
