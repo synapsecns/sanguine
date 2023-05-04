@@ -64,6 +64,28 @@ contract GasOracle is MessagingBase, InterfaceGasOracle {
     }
 
     /// @inheritdoc InterfaceGasOracle
+    function getDecodedGasData(uint32 domain)
+        external
+        view
+        returns (
+            uint256 gasPrice,
+            uint256 dataPrice,
+            uint256 execBuffer,
+            uint256 amortAttCost,
+            uint256 etherPrice,
+            uint256 markup
+        )
+    {
+        GasData gasData = _gasData[domain];
+        gasPrice = NumberLib.decompress(gasData.gasPrice());
+        dataPrice = NumberLib.decompress(gasData.dataPrice());
+        execBuffer = NumberLib.decompress(gasData.execBuffer());
+        amortAttCost = NumberLib.decompress(gasData.amortAttCost());
+        etherPrice = NumberLib.decompress(gasData.etherPrice());
+        markup = NumberLib.decompress(gasData.markup());
+    }
+
+    /// @inheritdoc InterfaceGasOracle
     function getGasData() external view returns (uint256 paddedGasData) {
         return GasData.unwrap(_gasData[localDomain]);
     }

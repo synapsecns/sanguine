@@ -48,6 +48,33 @@ contract GasOracleTest is MessagingBaseTest {
         assertEq(GasOracle(gasOracle).getGasData(), rgd.encodeGasData());
     }
 
+    function test_getDecodedData(uint32 domain, RawGasData256 memory rgd256) public {
+        GasOracle(gasOracle).setGasData({
+            domain: domain,
+            gasPrice: rgd256.gasPrice,
+            dataPrice: rgd256.dataPrice,
+            execBuffer: rgd256.execBuffer,
+            amortAttCost: rgd256.amortAttCost,
+            etherPrice: rgd256.etherPrice,
+            markup: rgd256.markup
+        });
+        RawGasData256 memory expected = rgd256.compress().decompress();
+        (
+            uint256 gasPrice,
+            uint256 dataPrice,
+            uint256 execBuffer,
+            uint256 amortAttCost,
+            uint256 etherPrice,
+            uint256 markup
+        ) = GasOracle(gasOracle).getDecodedGasData(domain);
+        assertEq(gasPrice, expected.gasPrice, "!gasPrice");
+        assertEq(dataPrice, expected.dataPrice, "!dataPrice");
+        assertEq(execBuffer, expected.execBuffer, "!execBuffer");
+        assertEq(amortAttCost, expected.amortAttCost, "!amortAttCost");
+        assertEq(etherPrice, expected.etherPrice, "!etherPrice");
+        assertEq(markup, expected.markup, "!markup");
+    }
+
     // ══════════════════════════════════════════════════ HELPERS ══════════════════════════════════════════════════════
 
     /// @notice Returns local domain for the tested contract
