@@ -3,7 +3,7 @@ import { getNetworkTextColor } from '@/styles/chains'
 import { Chain } from '@/utils/types'
 
 const NoStakeCard = ({ chain }: { chain?: Chain }) => {
-  const chainName = chain?.chainName ?? 'current network'
+  const chainName = chain?.name ?? 'current network'
   const networkColor = chain?.color
   return (
     <Card
