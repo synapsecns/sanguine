@@ -17,7 +17,7 @@
   {
     "id": 43114,
     "name": "Avalanche",
-    "rpc": "https://api.avax.Chain/ext/bc/C/rpc"
+    "rpc": "https://avalanche.public-rpc.com"
   },
   {
     "id": 7700,
