@@ -211,6 +211,66 @@ contract LightManagerTest is AgentManagerTest {
         lightManager.submitAttestation(attPayload, attSignature, ra._agentRoot, snapGas);
     }
 
+    // ════════════════════════════════════════════ TEST: OPEN DISPUTES ════════════════════════════════════════════════
+
+    function test_submitAttestationReport(Random memory random) public {
+        address prover = makeAddr("Prover");
+        RawSnapshot memory rs = random.nextSnapshot();
+        RawAttestation memory ra = random.nextAttestation(rs, random.nextUint32());
+        // Create Notary signature for the attestation
+        address notary = domains[DOMAIN_LOCAL].agent;
+        (, bytes memory attSignature) = signAttestation(notary, ra);
+        // Create Guard signature for the report
+        address guard = domains[0].agent;
+        (bytes memory arPayload, bytes memory arSignature) = createSignedAttestationReport(guard, ra);
+        expectDisputeOpened(guard, notary);
+        vm.prank(prover);
+        lightManager.submitAttestationReport(arPayload, arSignature, attSignature);
+    }
+
+    function test_submitAttestationReport_revert_signedByNotary(Random memory random) public {
+        RawSnapshot memory rs = random.nextSnapshot();
+        RawAttestation memory ra = random.nextAttestation(rs, random.nextUint32());
+        // Create Notary signature for the attestation
+        address notary = domains[DOMAIN_LOCAL].agent;
+        (, bytes memory attSignature) = signAttestation(notary, ra);
+        // Force a random Notary to sign the report
+        address reportSigner = getNotary(random.nextUint256(), random.nextUint256());
+        (bytes memory arPayload, bytes memory arSignature) = createSignedAttestationReport(reportSigner, ra);
+        expectNotGuardRevert();
+        lightManager.submitAttestationReport(arPayload, arSignature, attSignature);
+    }
+
+    function test_submitAttestationReport_revert_guardInDispute(Random memory random) public {
+        RawSnapshot memory rs = random.nextSnapshot();
+        RawAttestation memory ra = random.nextAttestation(rs, random.nextUint32());
+        // Create Notary signature for the attestation
+        address notary = domains[DOMAIN_LOCAL].agents[0];
+        (, bytes memory attSignature) = signAttestation(notary, ra);
+        // Create Guard signature for the report
+        address guard = domains[0].agent;
+        (bytes memory arPayload, bytes memory arSignature) = createSignedAttestationReport(guard, ra);
+        // Put the Guard in Dispute with another Notary
+        openDispute({guard: guard, notary: domains[DOMAIN_LOCAL].agents[1]});
+        vm.expectRevert("Guard already in dispute");
+        lightManager.submitAttestationReport(arPayload, arSignature, attSignature);
+    }
+
+    function test_submitAttestationReport_revert_notaryInDispute(Random memory random) public {
+        RawSnapshot memory rs = random.nextSnapshot();
+        RawAttestation memory ra = random.nextAttestation(rs, random.nextUint32());
+        // Create Notary signature for the attestation
+        address notary = domains[DOMAIN_LOCAL].agents[0];
+        (, bytes memory attSignature) = signAttestation(notary, ra);
+        // Create Guard signature for the report
+        address guard = domains[0].agents[0];
+        (bytes memory arPayload, bytes memory arSignature) = createSignedAttestationReport(guard, ra);
+        // Put the Notary in Dispute with another Guard
+        openDispute({guard: domains[0].agents[1], notary: notary});
+        vm.expectRevert("Notary already in dispute");
+        lightManager.submitAttestationReport(arPayload, arSignature, attSignature);
+    }
+
     // ════════════════════════════════════════════ TEST: WITHDRAW TIPS ════════════════════════════════════════════════
 
     function test_remoteWithdrawTips(address actor, uint256 amount, uint32 proofMaturity) public {
