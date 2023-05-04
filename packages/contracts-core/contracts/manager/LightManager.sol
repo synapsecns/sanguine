@@ -58,8 +58,8 @@ contract LightManager is AgentManager, InterfaceLightManager {
         (AgentStatus memory status, address notary) = _verifyAttestation(att, attSignature);
         // Check that Notary is active
         status.verifyActive();
-        // Check that Notary domain is local domain
-        require(status.domain == localDomain, "Wrong Notary domain");
+        // Check if Notary is active on this chain
+        _verifyNotaryDomain(status.domain);
         // Notary needs to be not in dispute
         require(_disputes[notary].flag == DisputeFlag.None, "Notary is in dispute");
         // Cast uint256[] to ChainGas[] using assembly. This prevents us from doing unnecessary copies.
@@ -105,6 +105,8 @@ contract LightManager is AgentManager, InterfaceLightManager {
         (AgentStatus memory notaryStatus, address notary) = _verifyAttestation(report.attestation(), attSignature);
         // Notary needs to be Active/Unstaking
         notaryStatus.verifyActiveUnstaking();
+        // Check if Notary is active on this chain
+        _verifyNotaryDomain(notaryStatus.domain);
         // This will revert if either actor is already in dispute
         _openDispute(guard, guardStatus.index, notary, notaryStatus.index);
         return true;
@@ -200,5 +202,10 @@ contract LightManager is AgentManager, InterfaceLightManager {
     /// @dev Returns agent address for the given index. Returns zero for non existing indexes.
     function _getAgent(uint256 index) internal view override returns (address agent) {
         return _agents[index];
+    }
+
+    /// @dev Verifies that Notary signature is active on local domain
+    function _verifyNotaryDomain(uint32 notaryDomain) internal view override {
+        require(notaryDomain == localDomain, "Not a local Notary");
     }
 }

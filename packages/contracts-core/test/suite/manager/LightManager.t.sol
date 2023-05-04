@@ -220,7 +220,7 @@ contract LightManagerTest is AgentManagerTest {
         uint256[] memory snapGas = rs.snapGas();
         address notary = domains[DOMAIN_REMOTE].agent;
         (bytes memory attPayload, bytes memory attSignature) = signAttestation(notary, ra);
-        vm.expectRevert("Wrong Notary domain");
+        vm.expectRevert("Not a local Notary");
         lightManager.submitAttestation(attPayload, attSignature, ra._agentRoot, snapGas);
     }
 

@@ -446,4 +446,10 @@ contract BondingManager is AgentManager, BondingManagerEvents, InterfaceBondingM
         }
         // Return empty leaf for a zero index
     }
+
+    /// @dev Verifies that Notary signature is active on local domain
+    function _verifyNotaryDomain(uint32 notaryDomain) internal pure override {
+        // Every Notary is active on Synapse Chain
+        require(notaryDomain != 0, "Not a Notary");
+    }
 }
