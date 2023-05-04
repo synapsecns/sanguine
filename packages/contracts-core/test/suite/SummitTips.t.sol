@@ -153,7 +153,7 @@ contract SummitTipsTest is AgentSecuredTest {
         RawExecReceipt memory re = mockReceipt("First");
         prepareReceipt(re, false, 0, false);
         (bytes memory rcptPayload, bytes memory rcptSignature) = signReceipt(guard0, re);
-        vm.expectRevert("Signer is not a Notary");
+        expectNotNotaryRevert();
         bondingManager.submitReceipt(rcptPayload, rcptSignature);
     }
 
@@ -180,7 +180,7 @@ contract SummitTipsTest is AgentSecuredTest {
 
     function test_acceptReceipt_revert_notAgentManager(address caller) public {
         vm.assume(caller != localAgentManager());
-        vm.expectRevert("!agentManager");
+        expectNotAgentManagerRevert();
         vm.prank(caller);
         InterfaceSummit(summit).acceptReceipt(0, 0, 0, 0, 0, "");
     }

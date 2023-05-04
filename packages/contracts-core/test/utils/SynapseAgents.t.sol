@@ -47,7 +47,7 @@ abstract contract SynapseAgents is SynapseUtilities {
         setupDomain(0, "Guards");
         setupDomain(DOMAIN_LOCAL, "Local");
         setupDomain(DOMAIN_REMOTE, "Remote");
-        setupDomain(DOMAIN_SYNAPSE, "Synapse");
+        setupDomain(DOMAIN_OTHER, "Other");
     }
 
     // ═══════════════════════════════════════════════════ SETUP ═══════════════════════════════════════════════════════

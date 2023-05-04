@@ -30,7 +30,7 @@ abstract contract AgentSecured is MessagingBase, IAgentSecured {
     uint256[49] private __GAP; // solhint-disable-line var-name-mixedcase
 
     modifier onlyAgentManager() {
-        require(msg.sender == agentManager, "!agentManager");
+        if (msg.sender != agentManager) revert CallerNotAgentManager();
         _;
     }
 

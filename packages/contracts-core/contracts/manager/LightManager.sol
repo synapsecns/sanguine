@@ -58,23 +58,23 @@ contract LightManager is AgentManager, InterfaceLightManager {
         (AgentStatus memory status, address notary) = _verifyAttestation(att, attSignature);
         // Check that Notary is active
         status.verifyActive();
-        // Check that Notary domain is local domain
-        require(status.domain == localDomain, "Wrong Notary domain");
+        // Check if Notary is active on this chain
+        _verifyNotaryDomain(status.domain);
         // Notary needs to be not in dispute
         require(_disputes[notary].flag == DisputeFlag.None, "Notary is in dispute");
         // Cast uint256[] to ChainGas[] using assembly. This prevents us from doing unnecessary copies.
-        // Note that this does not clear the highest bits, but it's ok as the highest bits are ignored
-        // for ChainGas operations, including abi-encoding `snapGas`
+        // Note that this does NOT clear the highest bits, but it's ok as the dirty highest bits
+        // will lead to hash mismatch in snapGasHash() and thus to attestation rejection.
         ChainGas[] memory snapGas;
         // solhint-disable-next-line no-inline-assembly
         assembly {
             snapGas := snapGas_
         }
-        // Check that hash of snapGas matches the attestations's
+        // Check that hash of provided data matches the attestation's dataHash
         require(
             att.dataHash()
                 == AttestationLib.dataHash({agentRoot_: agentRoot_, snapGasHash_: GasDataLib.snapGasHash(snapGas)}),
-            "Invalid snapGas"
+            "Invalid dataHash"
         );
         // Store Notary signature for the attestation
         uint256 sigIndex = _saveSignature(attSignature);
@@ -105,6 +105,8 @@ contract LightManager is AgentManager, InterfaceLightManager {
         (AgentStatus memory notaryStatus, address notary) = _verifyAttestation(report.attestation(), attSignature);
         // Notary needs to be Active/Unstaking
         notaryStatus.verifyActiveUnstaking();
+        // Check if Notary is active on this chain
+        _verifyNotaryDomain(notaryStatus.domain);
         // This will revert if either actor is already in dispute
         _openDispute(guard, guardStatus.index, notary, notaryStatus.index);
         return true;
@@ -200,5 +202,10 @@ contract LightManager is AgentManager, InterfaceLightManager {
     /// @dev Returns agent address for the given index. Returns zero for non existing indexes.
     function _getAgent(uint256 index) internal view override returns (address agent) {
         return _agents[index];
+    }
+
+    /// @dev Verifies that Notary signature is active on local domain
+    function _verifyNotaryDomain(uint32 notaryDomain) internal view override {
+        require(notaryDomain == localDomain, "Not a local Notary");
     }
 }

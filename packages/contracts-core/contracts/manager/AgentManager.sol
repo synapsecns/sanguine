@@ -68,12 +68,13 @@ abstract contract AgentManager is MessagingBase, VerificationManager, AgentManag
         guardStatus.verifyActive();
         // This will revert if payload is not a snapshot
         Snapshot snapshot = snapPayload.castToSnapshot();
-        // This will revert if the snapshot signer is not a known Agent
-        (AgentStatus memory notaryStatus, address notary) = _verifySnapshot(snapshot, snapSignature);
-        // Snapshot signer needs to be a Notary, not a Guard
-        require(notaryStatus.domain != 0, "Snapshot signer is not a Notary");
+        // This will revert if the snapshot signer is not a known Notary
+        (AgentStatus memory notaryStatus, address notary) =
+            _verifySnapshot({snapshot: snapshot, snapSignature: snapSignature, verifyNotary: true});
         // Notary needs to be Active/Unstaking
         notaryStatus.verifyActiveUnstaking();
+        // Check if Notary is active on this chain
+        _verifyNotaryDomain(notaryStatus.domain);
         // Snapshot state and reported state need to be the same
         // This will revert if state index is out of range
         require(snapshot.state(stateIndex).equals(report.state()), "States don't match");
@@ -108,6 +109,8 @@ abstract contract AgentManager is MessagingBase, VerificationManager, AgentManag
         (AgentStatus memory notaryStatus, address notary) = _verifyAttestation(att, attSignature);
         // Notary needs to be Active/Unstaking
         notaryStatus.verifyActiveUnstaking();
+        // Check if Notary is active on this chain
+        _verifyNotaryDomain(notaryStatus.domain);
         require(snapshot.calculateRoot() == att.snapRoot(), "Attestation not matches snapshot");
         // This will revert if either actor is already in dispute
         _openDispute(guard, guardStatus.index, notary, notaryStatus.index);
@@ -135,6 +138,8 @@ abstract contract AgentManager is MessagingBase, VerificationManager, AgentManag
         (AgentStatus memory notaryStatus, address notary) = _verifyAttestation(att, attSignature);
         // Notary needs to be Active/Unstaking
         notaryStatus.verifyActiveUnstaking();
+        // Check if Notary is active on this chain
+        _verifyNotaryDomain(notaryStatus.domain);
         // This will revert if any of these is true:
         //  - Attestation root is not equal to Merkle Root derived from State and Snapshot Proof.
         //  - Snapshot Proof's first element does not match the State metadata.
@@ -228,8 +233,9 @@ abstract contract AgentManager is MessagingBase, VerificationManager, AgentManag
     {
         // This will revert if payload is not a snapshot
         Snapshot snapshot = snapPayload.castToSnapshot();
-        // This will revert if the snapshot signer is not a known Agent
-        (AgentStatus memory status, address agent) = _verifySnapshot(snapshot, snapSignature);
+        // This will revert if the snapshot signer is not a known Guard/Notary
+        (AgentStatus memory status, address agent) =
+            _verifySnapshot({snapshot: snapshot, snapSignature: snapSignature, verifyNotary: false});
         // Agent needs to be Active/Unstaking
         status.verifyActiveUnstaking();
         // This will revert if state does not refer to this chain
@@ -380,4 +386,7 @@ abstract contract AgentManager is MessagingBase, VerificationManager, AgentManag
         // Further flag checks are supposed to be performed in a caller function.
         require(status.flag != AgentFlag.Unknown, "Unknown agent");
     }
+
+    /// @dev Verifies that Notary signature is active on local domain
+    function _verifyNotaryDomain(uint32 notaryDomain) internal view virtual;
 }

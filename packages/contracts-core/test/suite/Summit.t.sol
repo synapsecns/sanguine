@@ -85,14 +85,14 @@ contract SummitTest is AgentSecuredTest {
 
     function test_acceptGuardSnapshot_revert_notAgentManager(address caller) public {
         vm.assume(caller != localAgentManager());
-        vm.expectRevert("!agentManager");
+        expectNotAgentManagerRevert();
         vm.prank(caller);
         InterfaceSummit(summit).acceptGuardSnapshot(0, 0, "");
     }
 
     function test_acceptNotarySnapshot_revert_notAgentManager(address caller) public {
         vm.assume(caller != localAgentManager());
-        vm.expectRevert("!agentManager");
+        expectNotAgentManagerRevert();
         vm.prank(caller);
         InterfaceSummit(summit).acceptNotarySnapshot(0, 0, 0, "");
     }
