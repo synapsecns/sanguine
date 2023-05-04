@@ -3,11 +3,13 @@ import { readContracts, Address } from '@wagmi/core'
 import { useBlockNumber, useAccount } from 'wagmi'
 import { Contract } from 'ethers'
 import MINICHEF_ABI from '@abis/miniChef.json'
+import { Zero } from '@ethersproject/constants'
 
 import { useMiniChefContract } from '../contracts/useMiniChefContract'
 
 export const useStakedBalance = ({ poolId }: { poolId: number }) => {
-  const [balance, setBalance] = useState<any>()
+  console.log('poolId: ', poolId)
+  const [balance, setBalance] = useState<[any, any]>([undefined, undefined])
   const blockNumber = useBlockNumber()
   const { address } = useAccount()
 
@@ -43,7 +45,7 @@ export const useStakedBalance = ({ poolId }: { poolId: number }) => {
         console.error('Error from useStakedBalance: ', error)
       }
     })()
-  }, [])
+  }, [address])
 
-  return balance
+  return { amount: balance[0] ?? Zero, reward: balance[1] ?? Zero }
 }

@@ -6,7 +6,7 @@ import Card from '@/components/ui/tailwind/Card'
 import InfoSection from '../pool/PoolInfoSection/InfoSection'
 import StakeCardTitle from './StakeCardTitle'
 import { useStakedBalance } from '@/utils/hooks/useStakedBalance'
-
+import { commifyBnToString } from '@/utils/bignumber/format'
 interface StakeCardProps {
   chainId: number
   token: Token
@@ -16,8 +16,8 @@ const StakeCard = ({ chainId, token }: StakeCardProps) => {
   const tokenInfo = getTokenOnChain(chainId, token)
   const stakingPoolLabel: string = tokenInfo?.poolName
   const stakingPoolTokens: Token[] = tokenInfo?.poolTokens
-  const stakingPoolId = tokenInfo?.poolId
-  const stakedBalance = useStakedBalance(stakingPoolId)
+  const stakingPoolId: number = tokenInfo?.poolId
+  const { amount, reward } = useStakedBalance({ poolId: stakingPoolId })
 
   const [deposit, setDeposit] = useState('')
   const [withdraw, setWithdraw] = useState('')
@@ -45,7 +45,7 @@ const StakeCard = ({ chainId, token }: StakeCardProps) => {
             <div className="flex items-center justify-between my-2 text-sm font-medium text-white">
               <div>Unstaked</div>
               <div>
-                {/* {formatCommifyBn(lpTokenBalance, tokenInfo, 2)}{' '} */}
+                {/* {commifyBnToString(lpTokenBalance, tokenInfo, 2)}{' '} */}
                 <span className="text-[#88818C]">LP</span>
               </div>
             </div>
@@ -54,7 +54,7 @@ const StakeCard = ({ chainId, token }: StakeCardProps) => {
             <div className="flex items-center justify-between my-2 text-sm font-medium text-white">
               <div>Staked</div>
               <div>
-                {/* {formatCommifyBn(stakedBalance.amount, tokenInfo, 4)}{' '} */}
+                {/* {commifyBnToString(amount, 2)}{' '} */}
                 <span className="text-[#88818C]">LP</span>
               </div>
             </div>
@@ -63,7 +63,7 @@ const StakeCard = ({ chainId, token }: StakeCardProps) => {
             <div className="flex items-center justify-between my-2 text-sm font-medium text-white">
               <div>SYN Earned</div>
               <div className="text-green-400">
-                {/* {formatBnMagic(stakedBalance.reward, tokenInfo, 6)}{' '} */}
+                {/* {commifyBnToString(reward, 2)}{' '} */}
                 <span className="text-[#88818C]">SYN</span>
               </div>
             </div>
