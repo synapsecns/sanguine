@@ -43,6 +43,7 @@ const InteractiveInputRow = ({
     width = 'w-48'
   }
 
+  console.log('disabled: ', disabled)
   return (
     <div className="mt-4">
       <div className="border-none rounded-xl">

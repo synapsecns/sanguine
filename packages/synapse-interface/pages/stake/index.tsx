@@ -22,10 +22,6 @@ const StakePage = () => {
   const [columns, setColumns] = useState<number>(1)
   const [connectedChainId, setConnectedChainId] = useState<number>()
 
-  // const connectedChainId: number | undefined = connectedChain
-  //   ? Number(connectedChain.id)
-  //   : undefined
-
   const connectedChainInfo: Chain | undefined = useMemo(() => {
     if (connectedChainId) {
       const chainMapping: ChainsByChainID = CHAINS_BY_ID
