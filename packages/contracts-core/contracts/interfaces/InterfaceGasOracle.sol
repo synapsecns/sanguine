@@ -3,6 +3,13 @@ pragma solidity 0.8.17;
 
 interface InterfaceGasOracle {
     /**
+     * @notice Fetches the latest gas data for the chain from `Destination` contract,
+     * and uses it to update the oracle values for the requested chain.
+     * @param domain    Domain to update the gas data for
+     */
+    function updateGasData(uint32 domain) external;
+
+    /**
      * @notice Returns the gas data for the local chain.
      */
     function getGasData() external view returns (uint256 paddedGasData);
