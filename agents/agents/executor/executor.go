@@ -63,8 +63,6 @@ type chainExecutor struct {
 	rpcClient Backend
 	// boundDestination is a bound destination contract.
 	boundDestination domains.DestinationContract
-	// executed is a map from hash(origin chain ID, destination chain ID, nonce) -> bool.
-	executed map[[32]byte]bool
 }
 
 // Executor is the executor agent.
@@ -187,7 +185,6 @@ func NewExecutor(ctx context.Context, config config.Config, executorDB db.Execut
 			merkleTree:        tree,
 			rpcClient:         clients[chain.ChainID],
 			boundDestination:  boundDestination,
-			executed:          make(map[[32]byte]bool),
 		}
 	}
 
@@ -784,34 +781,23 @@ func (e Executor) processLog(parentCtx context.Context, log ethTypes.Log, chainI
 			return fmt.Errorf("could not store message: %w", err)
 		}
 	case destinationContract:
-		//nolint:exhaustive
-		switch contractEvent.eventType {
-		case attestationAcceptedEvent:
-			attestation, err := e.logToAttestation(log, chainID)
-			if err != nil {
-				return fmt.Errorf("could not convert log to attestation: %w", err)
-			}
+		attestation, err := e.logToAttestation(log, chainID)
+		if err != nil {
+			return fmt.Errorf("could not convert log to attestation: %w", err)
+		}
 
-			if attestation == nil {
-				return nil
-			}
+		if attestation == nil {
+			return nil
+		}
 
-			logHeader, err := e.chainExecutors[chainID].rpcClient.HeaderByNumber(ctx, big.NewInt(int64(log.BlockNumber)))
-			if err != nil {
-				return fmt.Errorf("could not get log header: %w", err)
-			}
+		logHeader, err := e.chainExecutors[chainID].rpcClient.HeaderByNumber(ctx, big.NewInt(int64(log.BlockNumber)))
+		if err != nil {
+			return fmt.Errorf("could not get log header: %w", err)
+		}
 
-			err = e.executorDB.StoreAttestation(ctx, *attestation, chainID, log.BlockNumber, logHeader.Time)
-			if err != nil {
-				return fmt.Errorf("could not store attestation: %w", err)
-			}
-		case executedEvent:
-			originDomain, messageLeaf, ok := e.chainExecutors[chainID].destinationParser.ParseExecuted(log)
-			if !ok || originDomain == nil || messageLeaf == nil {
-				return fmt.Errorf("could not parse executed event")
-			}
-
-			e.chainExecutors[chainID].executed[*messageLeaf] = true
+		err = e.executorDB.StoreAttestation(ctx, *attestation, chainID, log.BlockNumber, logHeader.Time)
+		if err != nil {
+			return fmt.Errorf("could not store attestation: %w", err)
 		}
 	case summitContract:
 		//nolint:gocritic,exhaustive
@@ -916,6 +902,30 @@ func (e Executor) executeExecutable(parentCtx context.Context, chainID uint32) (
 						attribute.Int(metrics.Nonce, int(message.Nonce())),
 						attribute.Bool("message_executed", messageExecuted),
 					))
+
+					if !messageExecuted {
+						executed, err := e.Execute(ctx, message)
+						if err != nil {
+							logger.Errorf("could not execute message, retrying: %s", err)
+							continue
+						}
+
+						if !executed {
+							continue
+						}
+					}
+
+					destinationDomain := message.DestinationDomain()
+					nonce := message.Nonce()
+					executedMessageMask := execTypes.DBMessage{
+						ChainID:     &chainID,
+						Destination: &destinationDomain,
+						Nonce:       &nonce,
+					}
+					err = e.executorDB.ExecuteMessage(ctx, executedMessageMask)
+					if err != nil {
+						return fmt.Errorf("could not execute message: %w", err)
+					}
 
 					//destinationDomain := message.DestinationDomain()
 

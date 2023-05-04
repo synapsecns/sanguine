@@ -70,13 +70,9 @@ func (e Executor) logType(log ethTypes.Log, chainID uint32) contractEventType {
 	if originEvent, ok := e.chainExecutors[chainID].originParser.EventType(log); ok && originEvent == origin.DispatchedEvent {
 		contractEvent.contractType = originContract
 		contractEvent.eventType = dispatchedEvent
-	} else if destinationEvent, ok := e.chainExecutors[chainID].destinationParser.EventType(log); ok {
+	} else if destinationEvent, ok := e.chainExecutors[chainID].destinationParser.EventType(log); ok && destinationEvent == destination.AttestationAcceptedEvent {
 		contractEvent.contractType = destinationContract
-		if destinationEvent == destination.AttestationAcceptedEvent {
-			contractEvent.eventType = attestationAcceptedEvent
-		} else if destinationEvent == destination.ExecutedEvent {
-			contractEvent.eventType = executedEvent
-		}
+		contractEvent.eventType = attestationAcceptedEvent
 	}
 
 	return contractEvent
