@@ -8,6 +8,7 @@ import (
 	"github.com/synapsecns/sanguine/agents/contracts/bondingmanager"
 	"github.com/synapsecns/sanguine/agents/contracts/lightmanager"
 	"github.com/synapsecns/sanguine/agents/contracts/test/bondingmanagerharness"
+	gasdataharness "github.com/synapsecns/sanguine/agents/contracts/test/gasdata"
 	"github.com/synapsecns/sanguine/agents/contracts/test/lightmanagerharness"
 	"github.com/synapsecns/sanguine/ethergo/manager"
 
@@ -88,6 +89,14 @@ func (d *DeployManager) GetOriginHarness(ctx context.Context, backend backends.S
 	d.T().Helper()
 
 	return manager.GetContract[*originharness.OriginHarnessRef](ctx, d.T(), d, backend, OriginHarnessType)
+}
+
+// GetGasDataHarness gets the gasData harness.
+// nolint:dupl
+func (d *DeployManager) GetGasDataHarness(ctx context.Context, backend backends.SimulatedTestBackend) (contract contracts.DeployedContract, handle *gasdataharness.GasDataHarnessRef) {
+	d.T().Helper()
+
+	return manager.GetContract[*gasdataharness.GasDataHarnessRef](ctx, d.T(), d, backend, GasDataHarnessType)
 }
 
 // GetStateHarness gets the state harness.

@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"github.com/synapsecns/sanguine/agents/contracts/bondingmanager"
+	"github.com/synapsecns/sanguine/agents/contracts/gasoracle"
 	"github.com/synapsecns/sanguine/agents/contracts/lightmanager"
 
 	"github.com/synapsecns/sanguine/ethergo/contracts"
@@ -107,6 +108,50 @@ func (d BondingManagerDeployer) Dependencies() []contracts.ContractType {
 	return []contracts.ContractType{}
 }
 
+// GasOracleDeployer deploys the gas oracle contract.
+type GasOracleDeployer struct {
+	*deployer.BaseDeployer
+}
+
+// NewGasOracleDeployer deploys the gas oracle contract.
+func NewGasOracleDeployer(registry deployer.GetOnlyContractRegistry, backend backends.SimulatedTestBackend) deployer.ContractDeployer {
+	return GasOracleDeployer{deployer.NewSimpleDeployer(registry, backend, GasOracleType)}
+}
+
+// Deploy deploys the gas oracle contract.
+// nolint:dupl,cyclop,dupword
+func (d GasOracleDeployer) Deploy(ctx context.Context) (contracts.DeployedContract, error) {
+	/*originContract := d.Registry().Get(ctx, OriginType)
+	destinationContract := d.Registry().Get(ctx, DestinationType)
+	originAddress := originContract.Address()
+	destinationAddress := destinationContract.Address()*/
+	return d.DeploySimpleContract(ctx, func(transactOps *bind.TransactOpts, backend bind.ContractBackend) (address common.Address, tx *types.Transaction, data interface{}, err error) {
+		// deploy the bonding manager contract
+		var rawHandle *gasoracle.GasOracle
+		address, tx, rawHandle, err = gasoracle.DeployGasOracle(transactOps, backend, uint32(d.Backend().GetChainID()))
+		if err != nil {
+			return common.Address{}, nil, nil, fmt.Errorf("could not deploy %s: %w", d.ContractType().ContractName(), err)
+		}
+		d.Backend().WaitForConfirmation(ctx, tx)
+
+		// initialize the origin contract
+		/*initializationTx, err := rawHandle.Initialize(transactOps, originAddress, destinationAddress)
+		if err != nil {
+			return common.Address{}, nil, nil, fmt.Errorf("could not initialize contract: %w", err)
+		}
+		d.Backend().WaitForConfirmation(ctx, initializationTx)*/
+
+		return address, tx, rawHandle, err
+	}, func(address common.Address, backend bind.ContractBackend) (interface{}, error) {
+		return gasoracle.NewGasOracleRef(address, backend)
+	})
+}
+
+// Dependencies gets a list of dependencies used to deploy the gas oracle contract.
+func (d GasOracleDeployer) Dependencies() []contracts.ContractType {
+	return []contracts.ContractType{}
+}
+
 // OriginDeployer deploys the origin contract.
 type OriginDeployer struct {
 	*deployer.BaseDeployer
@@ -128,10 +173,12 @@ func (d OriginDeployer) Deploy(ctx context.Context) (contracts.DeployedContract,
 		lightManagerContract := d.Registry().Get(ctx, LightManagerType)
 		agentAddress = lightManagerContract.Address()
 	}
+	gasOracleContract := d.Registry().Get(ctx, GasOracleType)
+	gasOracleAddress := gasOracleContract.Address()
 	return d.DeploySimpleContract(ctx, func(transactOps *bind.TransactOpts, backend bind.ContractBackend) (address common.Address, tx *types.Transaction, data interface{}, err error) {
 		// deploy the origin contract
 		var rawHandle *origin.Origin
-		address, tx, rawHandle, err = origin.DeployOrigin(transactOps, backend, uint32(d.Backend().GetChainID()), agentAddress)
+		address, tx, rawHandle, err = origin.DeployOrigin(transactOps, backend, uint32(d.Backend().GetChainID()), agentAddress, gasOracleAddress)
 		if err != nil {
 			return common.Address{}, nil, nil, fmt.Errorf("could not deploy %s: %w", d.ContractType().ContractName(), err)
 		}

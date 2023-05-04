@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"github.com/synapsecns/sanguine/agents/contracts/test/attestationharness"
 	"github.com/synapsecns/sanguine/agents/contracts/test/bondingmanagerharness"
+	gasdataharness "github.com/synapsecns/sanguine/agents/contracts/test/gasdata"
 	"github.com/synapsecns/sanguine/agents/contracts/test/lightmanagerharness"
 	"github.com/synapsecns/sanguine/agents/contracts/test/originharness"
 	"github.com/synapsecns/sanguine/agents/contracts/test/snapshotharness"
@@ -151,9 +152,10 @@ func (o OriginHarnessDeployer) Deploy(ctx context.Context) (contracts.DeployedCo
 		lightManagerHarnessContract := o.Registry().Get(ctx, LightManagerHarnessType)
 		agentAddress = lightManagerHarnessContract.Address()
 	}
-
+	gasOracleContract := o.Registry().Get(ctx, GasOracleType)
+	gasOracleAddress := gasOracleContract.Address()
 	return o.DeploySimpleContract(ctx, func(transactOps *bind.TransactOpts, backend bind.ContractBackend) (common.Address, *types.Transaction, interface{}, error) {
-		address, tx, rawHandle, err := originharness.DeployOriginHarness(transactOps, backend, uint32(o.Backend().GetChainID()), agentAddress)
+		address, tx, rawHandle, err := originharness.DeployOriginHarness(transactOps, backend, uint32(o.Backend().GetChainID()), agentAddress, gasOracleAddress)
 		if err != nil {
 			return common.Address{}, nil, nil, fmt.Errorf("could not deploy %s: %w", o.ContractType().ContractName(), err)
 		}
@@ -175,6 +177,25 @@ func (o OriginHarnessDeployer) Deploy(ctx context.Context) (contracts.DeployedCo
 // Dependencies gets a list of dependencies used to deploy the origin contract.
 func (o OriginHarnessDeployer) Dependencies() []contracts.ContractType {
 	return []contracts.ContractType{}
+}
+
+// GasDataHarnessDeployer deploys the gasData harness.
+type GasDataHarnessDeployer struct {
+	*deployer.BaseDeployer
+}
+
+// NewGasDataHarnessDeployer creates a new deployer for the gasData harness.
+func NewGasDataHarnessDeployer(registry deployer.GetOnlyContractRegistry, backend backends.SimulatedTestBackend) deployer.ContractDeployer {
+	return GasDataHarnessDeployer{deployer.NewSimpleDeployer(registry, backend, GasDataHarnessType)}
+}
+
+// Deploy deploys the gasData harness.
+func (a GasDataHarnessDeployer) Deploy(ctx context.Context) (contracts.DeployedContract, error) {
+	return a.DeploySimpleContract(ctx, func(transactOps *bind.TransactOpts, backend bind.ContractBackend) (common.Address, *types.Transaction, interface{}, error) {
+		return gasdataharness.DeployGasDataHarness(transactOps, backend)
+	}, func(address common.Address, backend bind.ContractBackend) (interface{}, error) {
+		return gasdataharness.NewGasDataHarnessRef(address, backend)
+	})
 }
 
 // StateHarnessDeployer deploys the state harness.

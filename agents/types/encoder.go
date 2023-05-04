@@ -15,9 +15,53 @@ import (
 )
 
 const (
+	uint16Len = 2
 	uint32Len = 4
 	uint40Len = 5
 )
+
+// EncodeGasData encodes a gasdata.
+func EncodeGasData(gasData GasData) ([]byte, error) {
+	b := make([]byte, 0)
+	markupBytes := make([]byte, uint16Len)
+	etherPriceBytes := make([]byte, uint16Len)
+	amortAttCostBytes := make([]byte, uint16Len)
+	execBufferBytes := make([]byte, uint16Len)
+	dataPriceBytes := make([]byte, uint16Len)
+	gasPriceBytes := make([]byte, uint16Len)
+
+	binary.BigEndian.PutUint16(markupBytes, gasData.Markup())
+	binary.BigEndian.PutUint16(etherPriceBytes, gasData.EtherPrice())
+	binary.BigEndian.PutUint16(amortAttCostBytes, gasData.AmortAttCost())
+	binary.BigEndian.PutUint16(execBufferBytes, gasData.ExecBuffer())
+	binary.BigEndian.PutUint16(dataPriceBytes, gasData.DataPrice())
+	binary.BigEndian.PutUint16(gasPriceBytes, gasData.GasPrice())
+
+	return b, nil
+}
+
+// DecodeGasData decodes a gasData.
+func DecodeGasData(toDecode []byte) (GasData, error) {
+	if len(toDecode) != gasDataSize {
+		return nil, fmt.Errorf("invalid gasData length, expected %d, got %d", gasDataSize, len(toDecode))
+	}
+
+	markup := binary.BigEndian.Uint16(toDecode[gasDataOffsetMarkup:gasDataOffsetEtherPrice])
+	etherPrice := binary.BigEndian.Uint16(toDecode[gasDataOffsetEtherPrice:gasDataOffsetAmortAttCost])
+	amortAttCost := binary.BigEndian.Uint16(toDecode[gasDataOffsetAmortAttCost:gasDataOffsetExecBuffer])
+	execBuffer := binary.BigEndian.Uint16(toDecode[gasDataOffsetExecBuffer:gasDataOffsetDataPrice])
+	dataPrice := binary.BigEndian.Uint16(toDecode[gasDataOffsetDataPrice:gasDataOffsetGasPrice])
+	gasPrice := binary.BigEndian.Uint16(toDecode[gasDataOffsetGasPrice:gasDataSize])
+
+	return gasData{
+		markup:       markup,
+		etherPrice:   etherPrice,
+		amortAttCost: amortAttCost,
+		execBuffer:   execBuffer,
+		dataPrice:    dataPrice,
+		gasPrice:     gasPrice,
+	}, nil
+}
 
 // EncodeState encodes a state.
 func EncodeState(state State) ([]byte, error) {
@@ -35,6 +79,12 @@ func EncodeState(state State) ([]byte, error) {
 	b = append(b, math.PaddedBigBytes(state.BlockNumber(), uint40Len)...)
 	b = append(b, math.PaddedBigBytes(state.Timestamp(), uint40Len)...)
 
+	gasDataEncoded, err := EncodeGasData(state.GasData())
+	if err != nil {
+		return nil, fmt.Errorf("failed to encode gas data for state %w", err)
+	}
+	b = append(b, gasDataEncoded[:]...)
+
 	return b, nil
 }
 
@@ -48,7 +98,13 @@ func DecodeState(toDecode []byte) (State, error) {
 	origin := binary.BigEndian.Uint32(toDecode[stateOffsetOrigin:stateOffsetNonce])
 	nonce := binary.BigEndian.Uint32(toDecode[stateOffsetNonce:stateOffsetBlockNumber])
 	blockNumber := new(big.Int).SetBytes(toDecode[stateOffsetBlockNumber:stateOffsetTimestamp])
-	timestamp := new(big.Int).SetBytes(toDecode[stateOffsetTimestamp:stateSize])
+	timestamp := new(big.Int).SetBytes(toDecode[stateOffsetTimestamp:stateOffsetGasData])
+
+	gasDataToDecode := toDecode[stateOffsetGasData:stateSize]
+	gasData, err := DecodeGasData(gasDataToDecode)
+	if err != nil {
+		return nil, fmt.Errorf("failed to decode gas data for state %w", err)
+	}
 
 	var rootB32 [32]byte
 	copy(rootB32[:], root)
@@ -59,6 +115,7 @@ func DecodeState(toDecode []byte) (State, error) {
 		nonce:       nonce,
 		blockNumber: blockNumber,
 		timestamp:   timestamp,
+		gasData:     gasData,
 	}, nil
 }
 

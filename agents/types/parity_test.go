@@ -82,6 +82,39 @@ func randomUint64BigInt(tb testing.TB) *big.Int {
 	return n
 }
 
+func TestEncodeGasDataParity(t *testing.T) {
+	ctx, cancel := context.WithTimeout(context.Background(), time.Second*10)
+	defer cancel()
+
+	testBackend := simulated.NewSimulatedBackend(ctx, t)
+	deployManager := testutil.NewDeployManager(t)
+
+	gasPrice := gofakeit.Uint16()
+	dataPrice := gofakeit.Uint16()
+	execBuffer := gofakeit.Uint16()
+	amortAttCost := gofakeit.Uint16()
+	etherPrice := gofakeit.Uint16()
+	markup := gofakeit.Uint16()
+
+	_, gasDataContract := deployManager.GetGasDataHarness(ctx, testBackend)
+
+	contractData, err := gasDataContract.EncodeGasData(&bind.CallOpts{Context: ctx}, gasPrice, dataPrice, execBuffer, amortAttCost, etherPrice, markup)
+	Nil(t, err)
+
+	goFormattedData, err := types.EncodeGasData(types.NewGasData(gasPrice, dataPrice, execBuffer, amortAttCost, etherPrice, markup))
+	Nil(t, err)
+	Equal(t, contractData.Bytes(), goFormattedData)
+
+	gasDataFromBytes, err := types.DecodeGasData(goFormattedData)
+	Nil(t, err)
+	Equal(t, gasPrice, gasDataFromBytes.GasPrice())
+	Equal(t, dataPrice, gasDataFromBytes.DataPrice())
+	Equal(t, execBuffer, gasDataFromBytes.ExecBuffer())
+	Equal(t, amortAttCost, gasDataFromBytes.AmortAttCost())
+	Equal(t, etherPrice, gasDataFromBytes.EtherPrice())
+	Equal(t, markup, gasDataFromBytes.Markup())
+}
+
 func TestEncodeStateParity(t *testing.T) {
 	ctx, cancel := context.WithTimeout(context.Background(), time.Second*10)
 	defer cancel()
@@ -100,11 +133,23 @@ func TestEncodeStateParity(t *testing.T) {
 	timestamp := randomUint40BigInt(t)
 
 	_, stateContract := deployManager.GetStateHarness(ctx, testBackend)
+	_, gasDataContract := deployManager.GetGasDataHarness(ctx, testBackend)
 
-	contractData, err := stateContract.FormatState(&bind.CallOpts{Context: ctx}, rootB32, origin, nonce, blockNumber, timestamp)
+	gasPrice := gofakeit.Uint16()
+	dataPrice := gofakeit.Uint16()
+	execBuffer := gofakeit.Uint16()
+	amortAttCost := gofakeit.Uint16()
+	etherPrice := gofakeit.Uint16()
+	markup := gofakeit.Uint16()
+	gasContractData, err := gasDataContract.EncodeGasData(&bind.CallOpts{Context: ctx}, gasPrice, dataPrice, execBuffer, amortAttCost, etherPrice, markup)
 	Nil(t, err)
 
-	goFormattedData, err := types.EncodeState(types.NewState(rootB32, origin, nonce, blockNumber, timestamp))
+	contractData, err := stateContract.FormatState(&bind.CallOpts{Context: ctx}, rootB32, origin, nonce, blockNumber, timestamp, gasContractData)
+	Nil(t, err)
+
+	gasData := types.NewGasData(gasPrice, dataPrice, execBuffer, amortAttCost, etherPrice, markup)
+
+	goFormattedData, err := types.EncodeState(types.NewState(rootB32, origin, nonce, blockNumber, timestamp, gasData))
 	Nil(t, err)
 	Equal(t, contractData, goFormattedData)
 
@@ -115,6 +160,12 @@ func TestEncodeStateParity(t *testing.T) {
 	Equal(t, nonce, stateFromBytes.Nonce())
 	Equal(t, blockNumber, stateFromBytes.BlockNumber())
 	Equal(t, timestamp, stateFromBytes.Timestamp())
+	Equal(t, gasPrice, stateFromBytes.GasData().GasPrice())
+	Equal(t, dataPrice, stateFromBytes.GasData().DataPrice())
+	Equal(t, execBuffer, stateFromBytes.GasData().ExecBuffer())
+	Equal(t, amortAttCost, stateFromBytes.GasData().AmortAttCost())
+	Equal(t, etherPrice, stateFromBytes.GasData().EtherPrice())
+	Equal(t, markup, stateFromBytes.GasData().Markup())
 }
 
 func TestEncodeSnapshotParity(t *testing.T) {
@@ -137,8 +188,24 @@ func TestEncodeSnapshotParity(t *testing.T) {
 	timestampA := randomUint40BigInt(t)
 	timestampB := randomUint40BigInt(t)
 
-	stateA := types.NewState(rootA, originA, nonceA, blockNumberA, timestampA)
-	stateB := types.NewState(rootB, originB, nonceB, blockNumberB, timestampB)
+	gasPriceA := gofakeit.Uint16()
+	dataPriceA := gofakeit.Uint16()
+	execBufferA := gofakeit.Uint16()
+	amortAttCostA := gofakeit.Uint16()
+	etherPriceA := gofakeit.Uint16()
+	markupA := gofakeit.Uint16()
+	gasDataA := types.NewGasData(gasPriceA, dataPriceA, execBufferA, amortAttCostA, etherPriceA, markupA)
+
+	gasPriceB := gofakeit.Uint16()
+	dataPriceB := gofakeit.Uint16()
+	execBufferB := gofakeit.Uint16()
+	amortAttCostB := gofakeit.Uint16()
+	etherPriceB := gofakeit.Uint16()
+	markupB := gofakeit.Uint16()
+	gasDataB := types.NewGasData(gasPriceB, dataPriceB, execBufferB, amortAttCostB, etherPriceB, markupB)
+
+	stateA := types.NewState(rootA, originA, nonceA, blockNumberA, timestampA, gasDataA)
+	stateB := types.NewState(rootB, originB, nonceB, blockNumberB, timestampB, gasDataB)
 
 	var statesAB [][]byte
 	stateABytes, err := types.EncodeState(stateA)
@@ -163,12 +230,24 @@ func TestEncodeSnapshotParity(t *testing.T) {
 	Equal(t, stateA.Nonce(), snapshotFromBytes.States()[0].Nonce())
 	Equal(t, stateA.BlockNumber(), snapshotFromBytes.States()[0].BlockNumber())
 	Equal(t, stateA.Timestamp(), snapshotFromBytes.States()[0].Timestamp())
+	Equal(t, stateA.GasData().GasPrice(), snapshotFromBytes.States()[0].GasData().GasPrice())
+	Equal(t, stateA.GasData().DataPrice(), snapshotFromBytes.States()[0].GasData().DataPrice())
+	Equal(t, stateA.GasData().ExecBuffer(), snapshotFromBytes.States()[0].GasData().ExecBuffer())
+	Equal(t, stateA.GasData().AmortAttCost(), snapshotFromBytes.States()[0].GasData().AmortAttCost())
+	Equal(t, stateA.GasData().EtherPrice(), snapshotFromBytes.States()[0].GasData().EtherPrice())
+	Equal(t, stateA.GasData().Markup(), snapshotFromBytes.States()[0].GasData().Markup())
 
 	Equal(t, stateB.Root(), snapshotFromBytes.States()[1].Root())
 	Equal(t, stateB.Origin(), snapshotFromBytes.States()[1].Origin())
 	Equal(t, stateB.Nonce(), snapshotFromBytes.States()[1].Nonce())
 	Equal(t, stateB.BlockNumber(), snapshotFromBytes.States()[1].BlockNumber())
 	Equal(t, stateB.Timestamp(), snapshotFromBytes.States()[1].Timestamp())
+	Equal(t, stateB.GasData().GasPrice(), snapshotFromBytes.States()[1].GasData().GasPrice())
+	Equal(t, stateB.GasData().DataPrice(), snapshotFromBytes.States()[1].GasData().DataPrice())
+	Equal(t, stateB.GasData().ExecBuffer(), snapshotFromBytes.States()[1].GasData().ExecBuffer())
+	Equal(t, stateB.GasData().AmortAttCost(), snapshotFromBytes.States()[1].GasData().AmortAttCost())
+	Equal(t, stateB.GasData().EtherPrice(), snapshotFromBytes.States()[1].GasData().EtherPrice())
+	Equal(t, stateB.GasData().Markup(), snapshotFromBytes.States()[1].GasData().Markup())
 
 	testWallet, err := wallet.FromRandom()
 	Nil(t, err)

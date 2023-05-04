@@ -11,7 +11,8 @@ const (
 	stateOffsetNonce       = 36
 	stateOffsetBlockNumber = 40
 	stateOffsetTimestamp   = 45
-	stateSize              = 50
+	stateOffsetGasData     = 50
+	stateSize              = 62
 )
 
 // State is the state interface.
@@ -26,6 +27,8 @@ type State interface {
 	BlockNumber() *big.Int
 	// Timestamp is the unix time of the last sent message.
 	Timestamp() *big.Int
+	// GasData is the gas data from the chain's gas oracle.
+	GasData() GasData
 
 	// Hash returns the hash of the state.
 	Hash() ([32]byte, error)
@@ -39,16 +42,18 @@ type state struct {
 	nonce       uint32
 	blockNumber *big.Int
 	timestamp   *big.Int
+	gasData     GasData
 }
 
 // NewState creates a new state.
-func NewState(root [32]byte, origin uint32, nonce uint32, blockNumber *big.Int, timestamp *big.Int) State {
+func NewState(root [32]byte, origin uint32, nonce uint32, blockNumber *big.Int, timestamp *big.Int, gasData GasData) State {
 	return &state{
 		root:        root,
 		origin:      origin,
 		nonce:       nonce,
 		blockNumber: blockNumber,
 		timestamp:   timestamp,
+		gasData:     gasData,
 	}
 }
 
@@ -70,6 +75,10 @@ func (s state) BlockNumber() *big.Int {
 
 func (s state) Timestamp() *big.Int {
 	return s.timestamp
+}
+
+func (s state) GasData() GasData {
+	return s.gasData
 }
 
 func (s state) Hash() ([32]byte, error) {

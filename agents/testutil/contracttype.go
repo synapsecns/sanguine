@@ -4,12 +4,14 @@ import (
 	"github.com/ethereum/go-ethereum/common/compiler"
 	"github.com/synapsecns/sanguine/agents/contracts/bondingmanager"
 	"github.com/synapsecns/sanguine/agents/contracts/destination"
+	"github.com/synapsecns/sanguine/agents/contracts/gasoracle"
 	"github.com/synapsecns/sanguine/agents/contracts/lightmanager"
 	"github.com/synapsecns/sanguine/agents/contracts/origin"
 	"github.com/synapsecns/sanguine/agents/contracts/summit"
 	"github.com/synapsecns/sanguine/agents/contracts/test/attestationharness"
 	"github.com/synapsecns/sanguine/agents/contracts/test/bondingmanagerharness"
 	"github.com/synapsecns/sanguine/agents/contracts/test/destinationharness"
+	gasdataharness "github.com/synapsecns/sanguine/agents/contracts/test/gasdata"
 	"github.com/synapsecns/sanguine/agents/contracts/test/headerharness"
 	"github.com/synapsecns/sanguine/agents/contracts/test/lightmanagerharness"
 	"github.com/synapsecns/sanguine/agents/contracts/test/messageharness"
@@ -95,6 +97,10 @@ const (
 	LightManagerType // LightManager
 	// BondingManagerType is the bonding manager type.
 	BondingManagerType // BondingManager
+	// GasDataHarnessType is the gasData harness type.
+	GasDataHarnessType
+	// GasOracleType is the gas oracle type.
+	GasOracleType // GasOracle
 )
 
 // ID gets the contract type as an id.
@@ -155,6 +161,10 @@ func (c contractTypeImpl) ContractInfo() *compiler.Contract {
 		return lightmanager.Contracts["solidity/LightManager.sol:LightManager"]
 	case BondingManagerType:
 		return bondingmanager.Contracts["solidity/BondingManager.sol:BondingManager"]
+	case GasDataHarnessType:
+		return gasdataharness.Contracts["solidity/GasDataHarness.t.sol:GasDataHarness"]
+	case GasOracleType:
+		return gasoracle.Contracts["solidity/GasOracle.sol:GasOracle"]
 	default:
 		panic("not yet implemented")
 	}

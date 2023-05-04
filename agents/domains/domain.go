@@ -76,7 +76,13 @@ type DestinationContract interface {
 // LightManagerContract contains the interface for the light manager.
 type LightManagerContract interface {
 	// SubmitAttestation submits an attestation to the destination chain (via the light manager contract)
-	SubmitAttestation(ctx context.Context, signer signer.Signer, attPayload []byte, signature signer.Signature) error
+	SubmitAttestation(
+		ctx context.Context,
+		signer signer.Signer,
+		attPayload []byte,
+		signature signer.Signature,
+		agentRoot [32]byte,
+		snapGas []*big.Int) error
 	// GetAgentStatus returns the current agent status for the given agent.
 	GetAgentStatus(ctx context.Context, signer signer.Signer) (types.AgentStatus, error)
 }

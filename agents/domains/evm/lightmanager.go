@@ -11,6 +11,7 @@ import (
 	"github.com/synapsecns/sanguine/ethergo/chain"
 	"github.com/synapsecns/sanguine/ethergo/signer/nonce"
 	"github.com/synapsecns/sanguine/ethergo/signer/signer"
+	"math/big"
 )
 
 // NewLightManagerContract returns a bound light manager contract.
@@ -56,7 +57,13 @@ func (a lightManagerContract) transactOptsSetup(ctx context.Context, signer sign
 	return transactOpts, nil
 }
 
-func (a lightManagerContract) SubmitAttestation(ctx context.Context, signer signer.Signer, attPayload []byte, signature signer.Signature) error {
+func (a lightManagerContract) SubmitAttestation(
+	ctx context.Context,
+	signer signer.Signer,
+	attPayload []byte,
+	signature signer.Signature,
+	agentRoot [32]byte,
+	snapGas []*big.Int) error {
 	transactOpts, err := a.transactOptsSetup(ctx, signer)
 	if err != nil {
 		return fmt.Errorf("could not setup transact opts: %w", err)
@@ -67,7 +74,7 @@ func (a lightManagerContract) SubmitAttestation(ctx context.Context, signer sign
 		return fmt.Errorf("could not encode signature: %w", err)
 	}
 
-	_, err = a.contract.SubmitAttestation(transactOpts, attPayload, rawSig)
+	_, err = a.contract.SubmitAttestation(transactOpts, attPayload, rawSig, agentRoot, snapGas)
 	if err != nil {
 		return fmt.Errorf("could not submit attestation: %w", err)
 	}
