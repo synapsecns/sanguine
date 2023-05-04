@@ -173,7 +173,7 @@ export default function BridgeTransaction({ queryResult }) {
               <div className="flex gap-x-[1.6rem] py-1">
                 <p className="text-white text-opacity-60">Contract</p>
                 <a target="_blank"
-                  rel="noreferrer" className="text-white break-all text-sm underline" href={CHAIN_EXPLORER_URLS[toInfo.chainID] + "/address/" + BRIDGE_CONTRACTS[toInfo.chainID]}>Destination Bridge Contract
+                  rel="noreferrer" className="text-white break-all text-sm underline" href={CHAIN_EXPLORER_URLS[toInfo?.chainID ? toInfo.chainID : fromInfo.destinationChainID] + "/address/" + BRIDGE_CONTRACTS[toInfo?.chainID ? toInfo.chainID : fromInfo.destinationChainID]}>Destination Bridge Contract
                 </a>
               </div>
               <div className="flex gap-x-8 mt-3">
