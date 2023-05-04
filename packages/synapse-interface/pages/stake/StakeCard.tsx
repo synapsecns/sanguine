@@ -7,12 +7,15 @@ import InfoSection from '../pool/PoolInfoSection/InfoSection'
 import StakeCardTitle from './StakeCardTitle'
 import { useStakedBalance } from '@/utils/hooks/useStakedBalance'
 import { useClaimStake } from '@/utils/actions/useClaimStake'
+import { useApproveAndStake } from '@/utils/actions/useApproveAndStake'
 import { useAccount } from 'wagmi'
 import { commifyBnToString } from '@/utils/bignumber/format'
 import Button from '@/components/ui/tailwind/Button'
 import ButtonLoadingSpinner from '@/components/buttons/ButtonLoadingSpinner'
 import InteractiveInputRow from '@/components/InteractiveInputRow'
 import { cleanNumberInput } from '@/utils/cleanNumberInput'
+import { smartParseUnits } from '@/utils/bignumber'
+import { formatUnits } from '@ethersproject/units'
 
 interface StakeCardProps {
   chainId: number
@@ -28,6 +31,7 @@ const StakeCard = ({ chainId, token }: StakeCardProps) => {
   const { address } = useAccount()
   const { amount, reward } = useStakedBalance({ poolId: stakingPoolId })
   const claimStake = useClaimStake()
+  const approveAndStake = useApproveAndStake(token)
 
   const [deposit, setDeposit] = useState('')
   const [withdraw, setWithdraw] = useState('')
@@ -146,7 +150,7 @@ const StakeCard = ({ chainId, token }: StakeCardProps) => {
             onClickEnter={async (e) => {
               const tx = await pendingStakeTxWrapFunc(
                 approveAndStake({
-                  poolId: poolId,
+                  poolId: stakingPoolId,
                   infiniteApproval: true,
                   amount: smartParseUnits(deposit, 18),
                 })
@@ -166,7 +170,7 @@ const StakeCard = ({ chainId, token }: StakeCardProps) => {
             buttonWidth="w-full"
             loadingLabel="Unstaking"
             isConnected={Boolean(address)}
-            balanceStr={formatCommifyBn(amount, tokenInfo, 4)}
+            balanceStr={commifyBnToString(amount, tokenInfo, 4)}
             onClickBalance={() => {
               setWithdraw(formatUnits(amount, 18))
             }}
