@@ -155,9 +155,7 @@ export default function BridgeTransaction({ queryResult }) {
                     chainId={fromInfo.destinationChainID}
                     noLink={true}
                     imgClassName="w-6 h-6 rounded-full"
-                  />}<a target="_blank"
-                    rel="noreferrer" className="text-white break-all text-sm underline" href={CHAIN_EXPLORER_URLS[fromInfo.chainID] + "/address/" + BRIDGE_CONTRACTS[fromInfo.chainID]}> Bridge Contract
-                </a>
+                  />}
               </div>
               <div className="flex gap-x-[4.5rem] py-1">
                 <p className="text-white text-opacity-60">To</p>
