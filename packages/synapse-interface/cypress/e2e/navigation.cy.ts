@@ -1,5 +1,5 @@
-const WINDOW_CONSTANTS = 'window.json'
-const NAVIGATION_CONSTANTS = 'navigation.json'
+export const WINDOW_CONSTANTS = 'window.json'
+export const NAVIGATION_CONSTANTS = 'navigation.json'
 
 describe('Navbar', () => {
   beforeEach(() => cy.visit('/'))

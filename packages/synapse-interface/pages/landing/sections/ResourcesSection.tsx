@@ -2,7 +2,7 @@ import Link from 'next/link'
 import Grid from '@/components/ui/tailwind/Grid'
 import Card from '@/components/ui/tailwind/Card'
 import Button from '@/components/ui/tailwind/Button'
-import { SectionContainer } from '../shared'
+import { SectionContainer } from '../../../components/landing/shared'
 import { GITHUB_URL, DOCS_URL, MEDIUM_URL } from '@/constants/urls'
 
 export default function ResourcesSection() {

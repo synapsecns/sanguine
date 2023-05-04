@@ -1,9 +1,11 @@
 import { BigNumber } from '@ethersproject/bignumber'
 import * as CHAINS from '@constants/chains/master'
+import { getAddress } from '@ethersproject/address'
+
 export type Chain = {
   id: number
   chainSymbol: string
-  chainName: string
+  name: string
   altName?: string
   codeName: string
   chainLogo?: any
@@ -17,6 +19,32 @@ export type Chain = {
   visibilityRank?: number
   color?: string
 }
+export type PoolToken = {
+  symbol: string
+  percent: string
+  balance: BigNumber
+  balanceStr: string
+  token: Token
+  isLp: boolean
+}
+export type PoolUserData = {
+  name: string
+  share: BigNumber
+  value: BigNumber
+  tokens: PoolToken[]
+  lpTokenBalance: BigNumber
+  lpTokenBalanceStr: string
+}
+export type PoolData = {
+  name: string
+  tokens: PoolToken[]
+  totalLocked: BigNumber
+  totalLockedStr: string
+  totalLockedUSD: BigNumber
+  totalLockedUSDStr: string
+  virtualPrice: BigNumber
+  virtualPriceStr: string
+}
 
 export type BridgeQuote = {
   outputAmount: BigNumber
@@ -28,7 +56,14 @@ export type BridgeQuote = {
   delta: BigNumber
   quotes: { originQuery: any; destQuery: any }
 }
-
+interface TokensByChain {
+  [cID: string]: Token[]
+}
+export type PoolCardInfo = {
+  index: number
+  label: string
+  poolsByChain: TokensByChain
+}
 export enum WalletId {
   MetaMask = 'metaMask',
   WalletConnect = 'walletConnect',
@@ -37,6 +72,15 @@ export enum WalletId {
 export interface IconProps {
   walletId?: string
   className?: string
+}
+export type PoolTokenObj = {
+  [x: string]: { token: Token; balance: BigNumber; rawBalance: BigNumber }
+}
+export type PoolTokenObject = {
+  token: Token
+  balance: BigNumber
+  rawBalance: BigNumber
+  isLP: boolean
 }
 
 export type SwapQuote = {
@@ -105,7 +149,7 @@ export class Token {
     | 'indigo'
     | 'cyan'
     | 'red'
-
+  priceUnits?: string
   constructor({
     addresses,
     wrapperAddresses,
@@ -139,6 +183,7 @@ export class Token {
     legacy,
     priorityPool,
     color,
+    priceUnits,
   }: {
     addresses: { [x: number]: string }
     wrapperAddresses?: Record<number, string>
@@ -183,9 +228,10 @@ export class Token {
       | 'indigo'
       | 'cyan'
       | 'red'
+    priceUnits?: string
   }) {
     const isMetaVar = Boolean(swapDepositAddresses || forceMeta)
-    this.addresses = addresses
+    this.addresses = validateAddresses(addresses)
     this.wrapperAddresses = wrapperAddresses
     // this.decimals             = decimals
     this.decimals = makeMultiChainObj(decimals)
@@ -219,6 +265,7 @@ export class Token {
     this.legacy = legacy ?? false
     this.priorityPool = priorityPool ?? false
     this.color = color ?? 'gray'
+    this.priceUnits = priceUnits ?? 'USD'
   }
 }
 
@@ -232,4 +279,16 @@ const makeMultiChainObj = (valOrObj) => {
     }
     return obj
   }
+}
+
+const validateAddresses = (addresses: {
+  [x: number]: string
+}): { [x: number]: string } => {
+  const reformatted: { [x: number]: string } = {}
+  for (const chainId in addresses) {
+    reformatted[chainId] = addresses[chainId]
+      ? getAddress(addresses[chainId])
+      : ''
+  }
+  return reformatted
 }

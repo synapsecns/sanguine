@@ -2,7 +2,7 @@ import Link from 'next/link'
 import Grid from '@/components/ui/tailwind/Grid'
 import Button from '@/components/ui/tailwind/Button'
 import Card from '@/components/ui/tailwind/Card'
-import { SectionContainer } from '../shared'
+import { SectionContainer } from '../../../components/landing/shared'
 import { ANALYTICS_PATH } from '@/constants/urls'
 import {
   getTotalBridgeVolume,
