@@ -1,5 +1,5 @@
 import { LandingPageWrapper } from '@/components/layouts/LandingPageWrapper'
-import { LandingPageContainer } from './shared'
+import { LandingPageContainer } from '../../components/landing/shared'
 
 import HeroSection from './sections/HeroSection'
 import SecuritySection from './sections/SecuritySection'

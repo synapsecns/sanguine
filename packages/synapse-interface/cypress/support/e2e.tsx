@@ -1,1 +1,2 @@
 // required for cypress
+export {}

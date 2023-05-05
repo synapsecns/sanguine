@@ -14,7 +14,7 @@ import {
   MAX_BN_POW,
 } from '@utils/poolDataFuncs'
 import { fetchBalance, fetchToken } from '@wagmi/core'
-import { PoolTokenObject, Token } from '@types'
+import { PoolTokenObject, Token, PoolUserData, PoolData } from '@types'
 import { BigNumber } from 'ethers'
 
 const getBalanceData = async ({
@@ -86,7 +86,7 @@ export const getPoolData = async (
   address: string,
   user: boolean,
   prices?: any
-) => {
+): Promise<PoolData | PoolUserData> => {
   const poolAddress = pool?.swapAddresses[chainId]
   if (!poolAddress || !pool || (!address && user)) {
     return null

@@ -6,14 +6,14 @@ import { useSearchParams } from 'next/navigation'
 
 import { HorizontalDivider } from '@components/misc/HorizontalDivider'
 import { formatUSD } from '@utils/formatUSD'
-import { ChainInfo } from "@components/misc/ChainInfo";
+import { ChainInfo } from '@components/misc/ChainInfo'
 
 import { StandardPageContainer } from '@components/layouts/StandardPageContainer'
 import { BridgeTransactionTable } from '@components/BridgeTransaction/BridgeTransactionTable'
 import { useLazyQuery, useQuery } from '@apollo/client'
-import { SynapseLogoSvg } from "@components/layouts/MainLayout/SynapseLogoSvg";
+import { SynapseLogoSvg } from '@components/layouts/MainLayout/SynapseLogoSvg'
 import { CHAIN_ID_NAMES_REVERSE } from '@constants/networks'
-import { useRouter } from "next/router";
+import { useRouter } from 'next/router'
 import CopyTitle from '@components/misc/CopyTitle'
 import { checksumAddress } from '@utils/checksum'
 
@@ -46,14 +46,13 @@ export default function chainId() {
   const search = useSearchParams()
   const chainId = Number(search.get('chainId')) || 1
 
-
   const [currentTooltipIndex, setCurrentTooltipIndex] = useState(0)
-  const [platform, setPlatform] = useState("ALL");
+  const [platform, setPlatform] = useState('ALL')
   const [transactionsArr, setTransactionsArr] = useState([])
   const [tokenChainID, setTokenChainID] = useState([])
   const [variables, setVariables] = useState({ page: 1 })
   const [completed, setCompleted] = useState(false)
-  const [address, setAddress] = useState("")
+  const [address, setAddress] = useState('')
 
   const [dailyStatisticDuration, SetDailyStatisticDuration] =
     useState('PAST_MONTH')
@@ -83,7 +82,6 @@ export default function chainId() {
         ['desc']
       )
       setTransactionsArr(bridgeTransactionsTable)
-
     },
   })
 
@@ -102,29 +100,36 @@ export default function chainId() {
   useEffect(() => {
     setAddress(checksumAddress(tokenAddress))
     setTokenChainID(chainId)
-    setVariables({ page: 1, tokenAddressFrom: [checksumAddress(tokenAddress)], chainIDFrom: chainId, useMv: true })
+    setVariables({
+      page: 1,
+      tokenAddressFrom: [checksumAddress(tokenAddress)],
+      chainIDFrom: chainId,
+      useMv: true,
+    })
   }, [chainId, tokenAddress])
 
   return (
     <StandardPageContainer title={''}>
       <a href={getChainUrl({ chainId: tokenChainID })}>
-        <div className='rounded-md py-1 px-2 bg-gray-800/50 mb-2 w-fit hover:bg-gray-500/50'>
+        <div className="rounded-md py-1 px-2 bg-gray-800/50 mb-2 w-fit hover:bg-gray-500/50">
           <ChainInfo
             chainId={tokenChainID}
             imgClassName="w-6 h-6 rounded-full"
             noLink={true}
-          /></div></a>
+          />
+        </div>
+      </a>
       <div className="flex items-center mb-2">
         <AssetImage
           tokenAddress={address}
           chainId={tokenChainID}
           className={`w-9 h-9 inline mr-3 rounded-lg`}
         />
-        <h3 className="text-white text-5xl font-semibold">{TOKEN_HASH_MAP[tokenChainID]?.[address?.toLowerCase()]?.symbol
-        } </h3></div>
-
-<CopyTitle title={address} />
-
+        <h3 className="text-white text-5xl font-semibold">
+          {TOKEN_HASH_MAP[tokenChainID]?.[address?.toLowerCase()]?.symbol}{' '}
+        </h3>
+      </div>
+      <CopyTitle title={address} />
       <HolisticStats
         noMessaging={true}
         platform={platform}
@@ -134,23 +139,28 @@ export default function chainId() {
         setPlatform={setPlatform}
         baseVariables={{
           platform: platform,
-          duration: "ALL_TIME",
+          duration: 'ALL_TIME',
           useCache: false,
           chainID: tokenChainID,
           tokenAddress: address,
-          useMv: true
+          useMv: true,
         }}
       />
       <br />
       <HorizontalDivider />
-
       <HorizontalDivider />
       <br /> <br />
       <p className="text-white text-2xl font-bold">Recent Transactions</p>
       <div className="h-full flex items-center mt-4">
         <button
-          onClick={() => setVariables({ page: 1, tokenAddressFrom: [address], chainIDFrom: tokenChainID, useMv: true })}
-
+          onClick={() =>
+            setVariables({
+              page: 1,
+              tokenAddressFrom: [address],
+              chainIDFrom: tokenChainID,
+              useMv: true,
+            })
+          }
           className={
             'font-medium rounded-l-md px-4 py-2 border  h-fit  ' +
             (variables?.tokenAddressFrom ? selectStyle : unSelectStyle) +
@@ -160,9 +170,14 @@ export default function chainId() {
           Outgoing
         </button>
         <button
-          onClick={() => setVariables({ page: 1, tokenAddressTo: [address], chainIDTo: tokenChainID, useMv: true })
+          onClick={() =>
+            setVariables({
+              page: 1,
+              tokenAddressTo: [address],
+              chainIDTo: tokenChainID,
+              useMv: true,
+            })
           }
-
           className={
             'font-medium rounded-r-md px-4 py-2 border  h-fit ' +
             (variables?.tokenAddressTo ? selectStyle : unSelectStyle) +
@@ -172,13 +187,18 @@ export default function chainId() {
           Incoming
         </button>
       </div>
-      {loading ? <div className="flex justify-center align-center w-full my-[100px] animate-spin"><SynapseLogoSvg /></div> : <BridgeTransactionTable queryResult={transactionsArr} />}
-
-
+      {loading ? (
+        <div className="flex justify-center align-center w-full my-[100px]">
+          <div className="w-[39px] animate-spin">
+            <SynapseLogoSvg />
+          </div>
+        </div>
+      ) : (
+        <BridgeTransactionTable queryResult={transactionsArr} />
+      )}
       <br />
       <div className="text-center text-white my-6 ">
         <div className="mt-2 mb-14 ">
-
           <a
             className="text-white rounded-md px-5 py-3 text-opacity-100 transition-all ease-in hover:bg-synapse-radial border-l-0 border-gray-700 border-opacity-30 bg-gray-700 bg-opacity-30 hover:border-[#BE78FF] cursor-pointer"
             href={TRANSACTIONS_PATH}
