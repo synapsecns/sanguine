@@ -3,6 +3,9 @@ import { fetchSigner } from '@wagmi/core'
 import { Contract } from 'ethers'
 import { MaxInt256 } from '@ethersproject/constants'
 import { BigNumber } from '@ethersproject/bignumber'
+import toast from 'react-hot-toast'
+import ExplorerToastLink from '@components/ExplorerToastLink'
+
 export const approveToken = async (
   address: string,
   chainId: number,
@@ -20,6 +23,14 @@ export const approveToken = async (
   try {
     await approveTx.wait()
     console.log(`Transaction mined successfully: ${approveTx.hash}`)
+    const toastContent = (
+      <div>
+        <div>Token Approved!</div>
+        <ExplorerToastLink {...approveTx} chainId={chainId} />
+      </div>
+    )
+
+    toast.success(toastContent)
     return approveTx
   } catch (error) {
     console.log(`Transaction failed with error: ${error}`)

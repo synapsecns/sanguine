@@ -1,6 +1,8 @@
 import Grid from '@tw/Grid'
 import { Tab } from '@headlessui/react'
 import _ from 'lodash'
+import LoadingPoolCard from '@components/loading/LoadingPoolCard'
+
 import PoolsListCard from './PoolCard'
 import { PageHeader } from '@components/PageHeader'
 import { memo, useEffect, useState } from 'react'
@@ -83,10 +85,7 @@ const PoolCards = memo(
           </Grid>
         </div>
         <Tab.Panels className="flex justify-center">
-          {synPrices &&
-            ethPrice &&
-            avaxPrice &&
-            arr &&
+          {synPrices && ethPrice && avaxPrice && arr ? (
             arr.map(({ poolsByChain }, index) => {
               // DOUBLE CHECK HERE
               return (
@@ -96,6 +95,7 @@ const PoolCards = memo(
                     {poolsByChain[connectedChainId] &&
                       poolsByChain[connectedChainId]?.length > 0 &&
                       poolsByChain[connectedChainId].map((pool) => {
+                        console.log('sdajhk')
                         return (
                           <PoolsListCard
                             key={pool?.poolName}
@@ -137,7 +137,18 @@ const PoolCards = memo(
                   </Grid>
                 </Tab.Panel>
               )
-            })}
+            })
+          ) : (
+            <Grid
+              cols={{ xs: 1, sm: 1, md: 2, lg: 3 }}
+              gap={4}
+              className="w-[90%]"
+            >
+              <LoadingPoolCard />
+              <LoadingPoolCard />
+              <LoadingPoolCard />
+            </Grid>
+          )}
         </Tab.Panels>
       </Tab.Group>
     )

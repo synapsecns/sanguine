@@ -20,10 +20,8 @@ export const approve = async (
   inputValue: any,
   chainId: number
 ) => {
-  const poolContract = await useSwapDepositContract(pool, chainId)
-
   for (let token of pool.poolTokens) {
-    const tokenAddr = getAddress(token.addresses[chainId])
+    const tokenAddr = token.addresses[chainId]
     if (
       inputValue[tokenAddr].isZero() ||
       inputValue[tokenAddr].lt(depositQuote.allowances[tokenAddr])
@@ -32,7 +30,7 @@ export const approve = async (
 
     if (token.symbol != WETH.symbol) {
       await approveToken(
-        poolContract.address,
+        pool.addresses[chainId],
         chainId,
         token.symbol === AVWETH.symbol
           ? WETHE.addresses[chainId]
