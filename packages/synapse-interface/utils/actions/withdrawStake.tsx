@@ -26,11 +26,7 @@ export const withdrawStake = async (
     if (!address) throw new Error('Wallet must be connected')
     if (!miniChefContract) throw new Error('MMind contract is not loaded')
     const withdrawTransactionArgs = [poolId, inputValue, address]
-    console.log(
-      'withdrawTransactionArgs',
-      withdrawTransactionArgs,
-      miniChefContract
-    )
+
     const stakeTransaction = await miniChefContract.withdraw(
       ...withdrawTransactionArgs
     )

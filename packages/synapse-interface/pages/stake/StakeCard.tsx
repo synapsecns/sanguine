@@ -241,7 +241,6 @@ const StakeCard = ({ address, chainId, pool }: StakeCardProps) => {
             disabled={userStakeData.amount.eq(0) || withdraw == ''}
             isPending={isPendingUnstake}
             onClickEnter={async () => {
-              console.log('IM HERE2')
               const tx = await pendingUnstakeTxWrapFunc(
                 withdrawStake(
                   `0x${address.slice(2)}`,

@@ -35,7 +35,6 @@ export const stake = async (
   const signer = await fetchSigner({
     chainId,
   })
-  console.log('signer', address, poolId, inputValue)
   const miniChefContract = new Contract(
     MINICHEF_ADDRESSES[chainId],
     MINI_CHEF_ABI,
