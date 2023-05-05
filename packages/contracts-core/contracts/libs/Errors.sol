@@ -10,6 +10,9 @@ error CallerNotAgentManager();
 error AgentNotGuard();
 error AgentNotNotary();
 
+error MustBeSynapseDomain();
+error SynapseDomainForbidden();
+
 // ════════════════════════════════ MEMORY VIEW ════════════════════════════════
 
 error IndexedTooMuch();

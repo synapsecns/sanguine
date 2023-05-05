@@ -5,6 +5,7 @@ pragma solidity 0.8.17;
 import {Attestation, AttestationLib} from "../libs/Attestation.sol";
 import {AttestationReport, AttestationReportLib} from "../libs/AttestationReport.sol";
 import {BONDING_OPTIMISTIC_PERIOD, SYNAPSE_DOMAIN} from "../libs/Constants.sol";
+import {MustBeSynapseDomain, SynapseDomainForbidden} from "../libs/Errors.sol";
 import {ChainGas} from "../libs/GasData.sol";
 import {DynamicTree, MerkleMath} from "../libs/MerkleTree.sol";
 import {Receipt, ReceiptBody, ReceiptLib} from "../libs/Receipt.sol";
@@ -53,7 +54,7 @@ contract BondingManager is AgentManager, BondingManagerEvents, InterfaceBondingM
     // ═════════════════════════════════════════ CONSTRUCTOR & INITIALIZER ═════════════════════════════════════════════
 
     constructor(uint32 domain) MessagingBase("0.0.3", domain) {
-        require(domain == SYNAPSE_DOMAIN, "Only deployed on SynChain");
+        if (domain != SYNAPSE_DOMAIN) revert MustBeSynapseDomain();
     }
 
     function initialize(address origin_, address destination_, address summit_) external initializer {
@@ -204,7 +205,7 @@ contract BondingManager is AgentManager, BondingManagerEvents, InterfaceBondingM
 
     /// @inheritdoc InterfaceBondingManager
     function addAgent(uint32 domain, address agent, bytes32[] memory proof) external onlyOwner {
-        require(domain != SYNAPSE_DOMAIN, "No Notaries for Synapse Chain");
+        if (domain == SYNAPSE_DOMAIN) revert SynapseDomainForbidden();
         // Check the STORED status of the added agent in the merkle tree
         AgentStatus memory status = _storedAgentStatus(agent);
         // Agent index in `_agents`

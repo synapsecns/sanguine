@@ -1,7 +1,12 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.17;
 
-import {AgentNotGuard, AgentNotNotary} from "../../../contracts/libs/Errors.sol";
+import {
+    AgentNotGuard,
+    AgentNotNotary,
+    MustBeSynapseDomain,
+    SynapseDomainForbidden
+} from "../../../contracts/libs/Errors.sol";
 import {AgentFlag, AgentStatus, SystemEntity} from "../../../contracts/libs/Structures.sol";
 import {InterfaceDestination} from "../../../contracts/interfaces/InterfaceDestination.sol";
 import {InterfaceOrigin} from "../../../contracts/interfaces/InterfaceOrigin.sol";
@@ -51,7 +56,7 @@ contract LightManagerTest is AgentManagerTest {
 
     function test_constructor_revert_onSynapseChain() public {
         // Should not be able to deploy on Synapse Chain
-        vm.expectRevert("Can't be deployed on SynChain");
+        vm.expectRevert(SynapseDomainForbidden.selector);
         new LightManagerHarness(DOMAIN_SYNAPSE);
     }
 
@@ -295,7 +300,7 @@ contract LightManagerTest is AgentManagerTest {
         vm.assume(msgOrigin != DOMAIN_SYNAPSE);
         skip(BONDING_OPTIMISTIC_PERIOD);
         bytes memory msgPayload = managerMsgPayload(msgOrigin, remoteWithdrawTipsCalldata(address(0), 0));
-        vm.expectRevert("!synapseDomain");
+        vm.expectRevert(MustBeSynapseDomain.selector);
         managerMsgPrank(msgPayload);
     }
 

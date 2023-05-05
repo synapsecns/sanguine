@@ -4,6 +4,7 @@ pragma solidity 0.8.17;
 import {InterfaceOrigin} from "../../../contracts/interfaces/InterfaceOrigin.sol";
 import {InterfaceSummit} from "../../../contracts/interfaces/InterfaceSummit.sol";
 import {AGENT_TREE_HEIGHT} from "../../../contracts/libs/Constants.sol";
+import {MustBeSynapseDomain, SynapseDomainForbidden} from "../../../contracts/libs/Errors.sol";
 import {MerkleMath} from "../../../contracts/libs/MerkleMath.sol";
 import {AgentFlag, AgentStatus} from "../../../contracts/libs/Structures.sol";
 import {AgentManagerTest} from "./AgentManager.t.sol";
@@ -48,6 +49,12 @@ contract BondingManagerTest is AgentManagerTest {
 
     function initializeLocalContract() public override {
         BondingManager(localContract()).initialize(address(0), address(0), address(0));
+    }
+
+    function test_constructor_revert_notOnSynapseChain(uint32 domain) public {
+        vm.assume(domain != DOMAIN_SYNAPSE);
+        vm.expectRevert(MustBeSynapseDomain.selector);
+        new BondingManager(domain);
     }
 
     function test_setup() public override {
@@ -115,7 +122,7 @@ contract BondingManagerTest is AgentManagerTest {
 
     function test_addAgent_revert_synapseDomain(address agent) public {
         bytes32[] memory proof = getZeroProof();
-        vm.expectRevert("No Notaries for Synapse Chain");
+        vm.expectRevert(SynapseDomainForbidden.selector);
         bondingManager.addAgent(DOMAIN_SYNAPSE, agent, proof);
     }
 

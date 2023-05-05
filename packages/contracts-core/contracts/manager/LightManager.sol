@@ -5,6 +5,7 @@ pragma solidity 0.8.17;
 import {Attestation, AttestationLib} from "../libs/Attestation.sol";
 import {AttestationReport, AttestationReportLib} from "../libs/AttestationReport.sol";
 import {AGENT_TREE_HEIGHT, BONDING_OPTIMISTIC_PERIOD, SYNAPSE_DOMAIN} from "../libs/Constants.sol";
+import {MustBeSynapseDomain, SynapseDomainForbidden} from "../libs/Errors.sol";
 import {ChainGas, GasDataLib} from "../libs/GasData.sol";
 import {MerkleMath} from "../libs/MerkleMath.sol";
 import {AgentFlag, AgentStatus, DisputeFlag} from "../libs/Structures.sol";
@@ -35,7 +36,7 @@ contract LightManager is AgentManager, InterfaceLightManager {
     // ═════════════════════════════════════════ CONSTRUCTOR & INITIALIZER ═════════════════════════════════════════════
 
     constructor(uint32 domain) MessagingBase("0.0.3", domain) {
-        require(domain != SYNAPSE_DOMAIN, "Can't be deployed on SynChain");
+        if (domain == SYNAPSE_DOMAIN) revert SynapseDomainForbidden();
     }
 
     function initialize(address origin_, address destination_) external initializer {
@@ -151,7 +152,7 @@ contract LightManager is AgentManager, InterfaceLightManager {
         // Only destination can pass Manager Messages
         require(msg.sender == destination, "!destination");
         // Only AgentManager on Synapse Chain can give instructions to withdraw tips
-        require(msgOrigin == SYNAPSE_DOMAIN, "!synapseDomain");
+        if (msgOrigin != SYNAPSE_DOMAIN) revert MustBeSynapseDomain();
         // Check that merkle proof is mature enough
         require(proofMaturity >= BONDING_OPTIMISTIC_PERIOD, "!optimisticPeriod");
         InterfaceOrigin(origin).withdrawTips(recipient, amount);
