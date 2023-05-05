@@ -72,3 +72,11 @@ func (g gasData) Markup() uint16 {
 }
 
 var _ GasData = gasData{}
+
+// GasDataFromSnapGas takes the raw snapGas and returns a map keyed by domain id to the gas data of that chain
+//func GasDataFromSnapGas(snapGas []*big.Int) (map[uint32]GasData, error) {
+//	for _, rawGasAsBigInt := range snapGas {
+//		rawGasAsBytes := rawGasAsBigInt.Bytes()
+//
+//	}
+//}

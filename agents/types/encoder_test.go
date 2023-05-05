@@ -77,3 +77,32 @@ func TestHeaderEncodeDecode(t *testing.T) {
 	Equal(t, decodedHeader.DestinationDomain(), destination)
 	Equal(t, decodedHeader.OptimisticSeconds(), optimisticSeconds)
 }
+
+func TestChainGasEncodeDecode(t *testing.T) {
+	domain := gofakeit.Uint32()
+
+	gasPrice := gofakeit.Uint16()
+	dataPrice := gofakeit.Uint16()
+	execBuffer := gofakeit.Uint16()
+	amortAttCost := gofakeit.Uint16()
+	etherPrice := gofakeit.Uint16()
+	markup := gofakeit.Uint16()
+
+	gasData := types.NewGasData(gasPrice, dataPrice, execBuffer, amortAttCost, etherPrice, markup)
+
+	chainGas := types.NewChainGas(gasData, domain)
+
+	encodedChainGas, err := types.EncodeChainGas(chainGas)
+	Nil(t, err)
+
+	decodedChainGas, err := types.DecodeChainGas(encodedChainGas)
+
+	Equal(t, chainGas.Domain(), decodedChainGas.Domain())
+	Equal(t, chainGas.GasData().GasPrice(), decodedChainGas.GasData().GasPrice())
+	Equal(t, chainGas.GasData().DataPrice(), decodedChainGas.GasData().DataPrice())
+	Equal(t, chainGas.GasData().DataPrice(), decodedChainGas.GasData().DataPrice())
+	Equal(t, chainGas.GasData().ExecBuffer(), decodedChainGas.GasData().ExecBuffer())
+	Equal(t, chainGas.GasData().AmortAttCost(), decodedChainGas.GasData().AmortAttCost())
+	Equal(t, chainGas.GasData().EtherPrice(), decodedChainGas.GasData().EtherPrice())
+	Equal(t, chainGas.GasData().Markup(), decodedChainGas.GasData().Markup())
+}

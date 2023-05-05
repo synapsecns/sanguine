@@ -12,7 +12,7 @@ import (
 
 const (
 	attestationOffsetRoot        = 0
-	attestationOffsetAgentRoot   = 32
+	attestationOffsetDataHash    = 32
 	attestationOffsetNonce       = 64
 	attestationOffsetBlockNumber = 68
 	attestationOffsetTimestamp   = 73
@@ -23,8 +23,8 @@ const (
 type Attestation interface {
 	// SnapshotRoot is the root of the Snapshot Merkle Tree.
 	SnapshotRoot() [32]byte
-	// AgentRoot is the root of the Agent Merkle Tree.
-	AgentRoot() [32]byte
+	// DataHash is the agent root and SnapGasHash combined into a single hash.
+	DataHash() [32]byte
 	// Nonce is the attestation nonce.
 	Nonce() uint32
 	// BlockNumber is the block number when the attestation was created in Summit.
@@ -37,17 +37,17 @@ type Attestation interface {
 
 type attestation struct {
 	snapshotRoot [32]byte
-	agentRoot    [32]byte
+	dataHash     [32]byte
 	nonce        uint32
 	blockNumber  *big.Int
 	timestamp    *big.Int
 }
 
 // NewAttestation creates a new attestation.
-func NewAttestation(snapshotRoot [32]byte, agentRoot [32]byte, nonce uint32, blockNumber *big.Int, timestamp *big.Int) Attestation {
+func NewAttestation(snapshotRoot [32]byte, dataHash [32]byte, nonce uint32, blockNumber *big.Int, timestamp *big.Int) Attestation {
 	return &attestation{
 		snapshotRoot: snapshotRoot,
-		agentRoot:    agentRoot,
+		dataHash:     dataHash,
 		nonce:        nonce,
 		blockNumber:  blockNumber,
 		timestamp:    timestamp,
@@ -58,8 +58,8 @@ func (a attestation) SnapshotRoot() [32]byte {
 	return a.snapshotRoot
 }
 
-func (a attestation) AgentRoot() [32]byte {
-	return a.agentRoot
+func (a attestation) DataHash() [32]byte {
+	return a.dataHash
 }
 
 func (a attestation) Nonce() uint32 {

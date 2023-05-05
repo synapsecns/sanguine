@@ -53,6 +53,8 @@ type SummitContract interface {
 	GetLatestState(ctx context.Context, origin uint32) (types.State, error)
 	// GetLatestAgentState gets the latest state signed by the bonded signer for the given origin
 	GetLatestAgentState(ctx context.Context, origin uint32, bondedAgentSigner signer.Signer) (types.State, error)
+	// GetLatestNotaryAttestation gets the latest notary attestation signed by the notary and posted on Summit.
+	GetLatestNotaryAttestation(ctx context.Context, notarySigner signer.Signer) (types.NotaryAttestation, error)
 	// WatchAttestationSaved looks for attesation saved events
 	WatchAttestationSaved(ctx context.Context, sink chan<- *summit.SummitAttestationSaved) (event.Subscription, error)
 }
@@ -71,6 +73,8 @@ type DestinationContract interface {
 	Execute(ctx context.Context, signer signer.Signer, message types.Message, originProof [32][32]byte, snapshotProof [][32]byte, index *big.Int, gasLimit uint64) error
 	// AttestationsAmount retrieves the number of attestations submitted to the destination.
 	AttestationsAmount(ctx context.Context) (uint64, error)
+	// GetAttestationNonce gets the nonce of the attestation by snap root
+	GetAttestationNonce(ctx context.Context, snapRoot [32]byte) (uint32, error)
 }
 
 // LightManagerContract contains the interface for the light manager.

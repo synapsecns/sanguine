@@ -69,6 +69,24 @@ func (a summitContract) GetLatestAgentState(ctx context.Context, origin uint32, 
 	return state, nil
 }
 
+func (a summitContract) GetLatestNotaryAttestation(ctx context.Context, notarySigner signer.Signer) (types.NotaryAttestation, error) {
+	lastNotaryAttestation, err := a.contract.GetLatestNotaryAttestation(&bind.CallOpts{Context: ctx}, notarySigner.Address())
+	if err != nil {
+		return nil, fmt.Errorf("could not retrieve latest notary attestation: %w", err)
+	}
+
+	if len(lastNotaryAttestation.AttPayload) == 0 {
+		return nil, nil
+	}
+
+	notaryAttestation, err := types.NewNotaryAttestation(lastNotaryAttestation.AttPayload, lastNotaryAttestation.AgentRoot, lastNotaryAttestation.SnapGas)
+	if err != nil {
+		return nil, fmt.Errorf("could not decode notary attestation: %w", err)
+	}
+
+	return notaryAttestation, nil
+}
+
 func (a summitContract) WatchAttestationSaved(ctx context.Context, sink chan<- *summit.SummitAttestationSaved) (event.Subscription, error) {
 	sub, err := a.contract.WatchAttestationSaved(&bind.WatchOpts{Context: ctx}, sink)
 	if err != nil {

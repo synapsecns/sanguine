@@ -37,6 +37,13 @@ func EncodeGasData(gasData GasData) ([]byte, error) {
 	binary.BigEndian.PutUint16(dataPriceBytes, gasData.DataPrice())
 	binary.BigEndian.PutUint16(gasPriceBytes, gasData.GasPrice())
 
+	b = append(b, markupBytes[:]...)
+	b = append(b, etherPriceBytes[:]...)
+	b = append(b, amortAttCostBytes[:]...)
+	b = append(b, execBufferBytes[:]...)
+	b = append(b, dataPriceBytes[:]...)
+	b = append(b, gasPriceBytes[:]...)
+
 	return b, nil
 }
 
@@ -60,6 +67,41 @@ func DecodeGasData(toDecode []byte) (GasData, error) {
 		execBuffer:   execBuffer,
 		dataPrice:    dataPrice,
 		gasPrice:     gasPrice,
+	}, nil
+}
+
+// EncodeChainGas encodes a chaingas.
+func EncodeChainGas(chainGas ChainGas) ([]byte, error) {
+	b := make([]byte, 0)
+	domainBytes := make([]byte, uint32Len)
+	binary.BigEndian.PutUint32(domainBytes, chainGas.Domain())
+	b = append(b, domainBytes[:]...)
+
+	gasDataEncoded, err := EncodeGasData(chainGas.GasData())
+	if err != nil {
+		return nil, fmt.Errorf("failed to encode gas data for chain gas %w", err)
+	}
+
+	b = append(b, gasDataEncoded[:]...)
+
+	return b, nil
+}
+
+// DecodeChainGas decodes a chainGas.
+func DecodeChainGas(toDecode []byte) (ChainGas, error) {
+	if len(toDecode) != chainGasSize {
+		return nil, fmt.Errorf("invalid chainGas length, expected %d, got %d", chainGasSize, len(toDecode))
+	}
+
+	domain := binary.BigEndian.Uint32(toDecode[chainGasOffsetDomain:chainGasOffsetGasData])
+	gasData, err := DecodeGasData(toDecode[chainGasOffsetGasData:chainGasSize])
+	if err != nil {
+		return nil, fmt.Errorf("failed to decode gas data for chain gas %w", err)
+	}
+
+	return chainGas{
+		gasData: gasData,
+		domain:  domain,
 	}, nil
 }
 

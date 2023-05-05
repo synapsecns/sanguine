@@ -110,3 +110,12 @@ func (a destinationContract) AttestationsAmount(ctx context.Context) (uint64, er
 
 	return attestationsAmountBigInt.Uint64(), nil
 }
+
+func (a destinationContract) GetAttestationNonce(ctx context.Context, snapRoot [32]byte) (uint32, error) {
+	attNonce, err := a.contract.GetAttestationNonce(&bind.CallOpts{Context: ctx}, snapRoot)
+	if err != nil {
+		return uint32(0), fmt.Errorf("could not get attNonce for snapRoot: %w", err)
+	}
+
+	return attNonce, nil
+}
