@@ -49,18 +49,18 @@ abstract contract SynapseTest is ProductionEvents, SuiteEvents, SynapseAgents, S
         // Setup domains and create agents for them
         super.setUp();
         // Deploy a single set of messaging contracts for synapse chain
-        deployGasOracleSynapse();
         deployBondingManager();
         deploySummit();
         deployDestinationSynapse();
+        deployGasOracleSynapse();
         deployOriginSynapse();
         // Setup agents in BondingManager
         initBondingManager();
         setupAgentsBM();
         // Deploy a single set of messaging contracts for local chain
-        deployGasOracle();
         deployLightManager();
         deployDestination();
+        deployGasOracle();
         deployOrigin();
         // Setup agents in LightManager
         initLightManager();
@@ -123,7 +123,7 @@ abstract contract SynapseTest is ProductionEvents, SuiteEvents, SynapseAgents, S
         if (option == DEPLOY_MOCK_GAS_ORACLE) {
             gasOracle = address(new GasOracleMock());
         } else if (option == DEPLOY_PROD_GAS_ORACLE) {
-            gasOracle = address(new GasOracle(DOMAIN_LOCAL));
+            gasOracle = address(new GasOracle(DOMAIN_LOCAL, destination));
             GasOracle(gasOracle).initialize();
         } else {
             revert("Unknown option: GasOracle");
@@ -162,7 +162,7 @@ abstract contract SynapseTest is ProductionEvents, SuiteEvents, SynapseAgents, S
         if (option == DEPLOY_MOCK_GAS_ORACLE_SYNAPSE) {
             gasOracleSynapse = address(new GasOracleMock());
         } else if (option == DEPLOY_PROD_GAS_ORACLE_SYNAPSE) {
-            gasOracleSynapse = address(new GasOracle(DOMAIN_SYNAPSE));
+            gasOracleSynapse = address(new GasOracle(DOMAIN_SYNAPSE, destinationSynapse));
             GasOracle(gasOracleSynapse).initialize();
         } else {
             revert("Unknown option: GasOracle");

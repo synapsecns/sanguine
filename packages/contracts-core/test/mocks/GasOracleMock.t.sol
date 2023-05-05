@@ -15,6 +15,21 @@ contract GasOracleMock is InterfaceGasOracle {
         mockedMinimumTips = paddedTips;
     }
 
+    function updateGasData(uint32 domain) external {}
+
+    function getDecodedGasData(uint32 domain)
+        external
+        view
+        returns (
+            uint256 gasPrice,
+            uint256 dataPrice,
+            uint256 execBuffer,
+            uint256 amortAttCost,
+            uint256 etherPrice,
+            uint256 markup
+        )
+    {}
+
     function getGasData() external view returns (uint256 paddedGasData) {
         return mockedGasData;
     }

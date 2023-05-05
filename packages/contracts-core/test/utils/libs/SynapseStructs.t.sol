@@ -389,6 +389,15 @@ library CastLib {
         rgd.markup.number = Number.unwrap(NumberLib.compress(rdg256.markup));
     }
 
+    function decompress(RawGasData memory rgd) internal pure returns (RawGasData256 memory rdg256) {
+        rdg256.gasPrice = Number.wrap(rgd.gasPrice.number).decompress();
+        rdg256.dataPrice = Number.wrap(rgd.dataPrice.number).decompress();
+        rdg256.execBuffer = Number.wrap(rgd.execBuffer.number).decompress();
+        rdg256.amortAttCost = Number.wrap(rgd.amortAttCost.number).decompress();
+        rdg256.etherPrice = Number.wrap(rgd.etherPrice.number).decompress();
+        rdg256.markup = Number.wrap(rgd.markup.number).decompress();
+    }
+
     function encodeGasData(RawGasData memory rgd) internal pure returns (uint96 encodedGasData) {
         return GasData.unwrap(rgd.castToGasData());
     }

@@ -6,6 +6,8 @@ import {Number, NumberLib} from "./libs/Number.sol";
 import {Tips, TipsLib} from "./libs/Tips.sol";
 // ═════════════════════════════ INTERNAL IMPORTS ══════════════════════════════
 import {MessagingBase} from "./base/MessagingBase.sol";
+import {GasOracleEvents} from "./events/GasOracleEvents.sol";
+import {InterfaceDestination} from "./interfaces/InterfaceDestination.sol";
 import {InterfaceGasOracle} from "./interfaces/InterfaceGasOracle.sol";
 
 /**
@@ -26,24 +28,24 @@ import {InterfaceGasOracle} from "./interfaces/InterfaceGasOracle.sol";
  * > Reason for that is that the decrease of the gas price leads to lower execution/delivery tips, and we want the
  * > Executors to be protected against that.
  */
-contract GasOracle is MessagingBase, InterfaceGasOracle {
-    struct StoredGasData {
-        Number gasPrice;
-        Number dataPrice;
-        Number execBuffer;
-        Number amortAttCost;
-        Number etherPrice;
-        Number markup;
-    }
+contract GasOracle is MessagingBase, GasOracleEvents, InterfaceGasOracle {
+    // ══════════════════════════════════════════ IMMUTABLES & CONSTANTS ═══════════════════════════════════════════════
+
+    address public immutable destination;
+
+    // TODO: come up with refined values for the optimistic periods
+    uint256 public constant GAS_DATA_INCREASED_OPTIMISTIC_PERIOD = 5 minutes;
+    uint256 public constant GAS_DATA_DECREASED_OPTIMISTIC_PERIOD = 1 hours;
 
     // ══════════════════════════════════════════════════ STORAGE ══════════════════════════════════════════════════════
 
-    mapping(uint32 => StoredGasData) public _gasData;
+    mapping(uint32 => GasData) internal _gasData;
 
     // ═════════════════════════════════════════ CONSTRUCTOR & INITIALIZER ═════════════════════════════════════════════
 
-    // solhint-disable-next-line no-empty-blocks
-    constructor(uint32 domain) MessagingBase("0.0.3", domain) {}
+    constructor(uint32 domain, address destination_) MessagingBase("0.0.3", domain) {
+        destination = destination_;
+    }
 
     /// @notice Initializes GasOracle contract:
     /// - msg.sender is set as contract owner
@@ -62,35 +64,105 @@ contract GasOracle is MessagingBase, InterfaceGasOracle {
         uint256 etherPrice,
         uint256 markup
     ) external onlyOwner {
-        _gasData[domain] = StoredGasData({
-            gasPrice: NumberLib.compress(gasPrice),
-            dataPrice: NumberLib.compress(dataPrice),
-            execBuffer: NumberLib.compress(execBuffer),
-            amortAttCost: NumberLib.compress(amortAttCost),
-            etherPrice: NumberLib.compress(etherPrice),
-            markup: NumberLib.compress(markup)
+        GasData updatedGasData = GasDataLib.encodeGasData({
+            gasPrice_: NumberLib.compress(gasPrice),
+            dataPrice_: NumberLib.compress(dataPrice),
+            execBuffer_: NumberLib.compress(execBuffer),
+            amortAttCost_: NumberLib.compress(amortAttCost),
+            etherPrice_: NumberLib.compress(etherPrice),
+            markup_: NumberLib.compress(markup)
         });
+        if (GasData.unwrap(updatedGasData) != GasData.unwrap(_gasData[domain])) {
+            _setGasData(domain, updatedGasData);
+        }
+    }
+
+    /// @inheritdoc InterfaceGasOracle
+    function updateGasData(uint32 domain) external {
+        (bool wasUpdated, GasData updatedGasData) = _fetchGasData(domain);
+        if (wasUpdated) {
+            _setGasData(domain, updatedGasData);
+        }
+    }
+
+    /// @inheritdoc InterfaceGasOracle
+    function getDecodedGasData(uint32 domain)
+        external
+        view
+        returns (
+            uint256 gasPrice,
+            uint256 dataPrice,
+            uint256 execBuffer,
+            uint256 amortAttCost,
+            uint256 etherPrice,
+            uint256 markup
+        )
+    {
+        GasData gasData = _gasData[domain];
+        gasPrice = NumberLib.decompress(gasData.gasPrice());
+        dataPrice = NumberLib.decompress(gasData.dataPrice());
+        execBuffer = NumberLib.decompress(gasData.execBuffer());
+        amortAttCost = NumberLib.decompress(gasData.amortAttCost());
+        etherPrice = NumberLib.decompress(gasData.etherPrice());
+        markup = NumberLib.decompress(gasData.markup());
     }
 
     /// @inheritdoc InterfaceGasOracle
     function getGasData() external view returns (uint256 paddedGasData) {
-        StoredGasData memory gasData = _gasData[localDomain];
-        return GasData.unwrap(
-            GasDataLib.encodeGasData({
-                gasPrice_: gasData.gasPrice,
-                dataPrice_: gasData.dataPrice,
-                execBuffer_: gasData.execBuffer,
-                amortAttCost_: gasData.amortAttCost,
-                etherPrice_: gasData.etherPrice,
-                markup_: gasData.markup
-            })
-        );
+        return GasData.unwrap(_gasData[localDomain]);
     }
 
     /// @inheritdoc InterfaceGasOracle
-    function getMinimumTips(uint32 destination, uint256 paddedRequest, uint256 contentLength)
+    function getMinimumTips(uint32 destination_, uint256 paddedRequest, uint256 contentLength)
         external
         view
         returns (uint256 paddedTips)
     {}
+
+    // ══════════════════════════════════════════════ INTERNAL LOGIC ═══════════════════════════════════════════════════
+
+    /// @dev Sets the gas data for the given domain, and emits a corresponding event.
+    function _setGasData(uint32 domain, GasData updatedGasData) internal {
+        _gasData[domain] = updatedGasData;
+        emit GasDataUpdated(domain, GasData.unwrap(updatedGasData));
+    }
+
+    // ══════════════════════════════════════════════ INTERNAL VIEWS ═══════════════════════════════════════════════════
+
+    /// @dev Returns the updated gas data for the given domain by
+    /// optimistically consuming the data from the `Destination` contract.
+    function _fetchGasData(uint32 domain) internal view returns (bool wasUpdated, GasData updatedGasData) {
+        GasData current = _gasData[domain];
+        // Destination only has the gas data for the remote domains.
+        if (domain == localDomain) return (false, current);
+        (GasData incoming, uint256 dataMaturity) = InterfaceDestination(destination).getGasData(domain);
+        // Zero maturity means that either there is no data for the domain, or it was just updated.
+        // In both cases, we don't want to update the local data.
+        if (dataMaturity == 0) return (false, current);
+        // Update each gas parameter separately.
+        updatedGasData = GasDataLib.encodeGasData({
+            gasPrice_: _updateGasParameter(current.gasPrice(), incoming.gasPrice(), dataMaturity),
+            dataPrice_: _updateGasParameter(current.dataPrice(), incoming.dataPrice(), dataMaturity),
+            execBuffer_: _updateGasParameter(current.execBuffer(), incoming.execBuffer(), dataMaturity),
+            amortAttCost_: _updateGasParameter(current.amortAttCost(), incoming.amortAttCost(), dataMaturity),
+            etherPrice_: _updateGasParameter(current.etherPrice(), incoming.etherPrice(), dataMaturity),
+            markup_: _updateGasParameter(current.markup(), incoming.markup(), dataMaturity)
+        });
+        wasUpdated = GasData.unwrap(updatedGasData) != GasData.unwrap(current);
+    }
+
+    /// @dev Returns the updated value for the gas parameter, given the maturity of the incoming data.
+    function _updateGasParameter(Number current, Number incoming, uint256 dataMaturity)
+        internal
+        pure
+        returns (Number updatedParameter)
+    {
+        // We apply the incoming value only if its optimistic period has passed.
+        // The optimistic period is smaller when the the value is increasing, and bigger when it is decreasing.
+        if (incoming.decompress() > current.decompress()) {
+            return dataMaturity < GAS_DATA_INCREASED_OPTIMISTIC_PERIOD ? current : incoming;
+        } else {
+            return dataMaturity < GAS_DATA_DECREASED_OPTIMISTIC_PERIOD ? current : incoming;
+        }
+    }
 }
