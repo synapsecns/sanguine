@@ -1,14 +1,14 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { usePendingTxWrapper } from '@/utils/hooks/usePendingTxWrapper'
 import { getTokenOnChain } from '@/utils/hooks/useTokenInfo'
 import { Token } from '@/utils/types'
 import Card from '@/components/ui/tailwind/Card'
 import InfoSection from '../pool/PoolInfoSection/InfoSection'
 import StakeCardTitle from './StakeCardTitle'
-import { useStakedBalance } from '@/utils/hooks/useStakedBalance'
-import { useClaimStake } from '@/utils/actions/useClaimStake'
-import { useApproveAndStake } from '@/utils/actions/useApproveAndStake'
-import { useWithdrawStake } from '@/utils/actions/useWithdrawStake'
+import { getStakedBalance } from '@/utils/actions/getStakedBalance'
+import { claimStake } from '@/utils/actions/claimStake'
+import { approve, stake } from '@/utils/actions/approveAndStake'
+import { withdrawStake } from '@/utils/actions/withdrawStake'
 import { useAccount, useNetwork } from 'wagmi'
 import { commifyBnToString } from '@/utils/bignumber/format'
 import { useTokenBalance } from '@/utils/hooks/useTokenBalance'
@@ -20,42 +20,58 @@ import { smartParseUnits } from '@/utils/bignumber'
 import { formatUnits } from '@ethersproject/units'
 import { Zero } from '@ethersproject/constants'
 import { usePrices } from '@/utils/actions/getPrices'
+import { getTokenAllowance } from '@/utils/actions/getTokenAllowance'
+import { MINICHEF_ADDRESSES } from '@/constants/minichef'
 
 interface StakeCardProps {
+  address: string
   chainId: number
-  token: Token
+  pool: Token
 }
 
-const StakeCard = ({ chainId, token }: StakeCardProps) => {
-  const tokenInfo = getTokenOnChain(chainId, token)
+const StakeCard = ({ address, chainId, pool }: StakeCardProps) => {
+  const tokenInfo = getTokenOnChain(chainId, pool)
   const stakingPoolLabel: string = tokenInfo?.poolName
   const stakingPoolTokens: Token[] = tokenInfo?.poolTokens
   const stakingPoolId: number = tokenInfo?.poolId
 
-  const { data } = useTokenBalance(token)
+  // TODO get rid of this hook
+  const { data } = useTokenBalance(pool)
   const lpTokenBalance = data?.value ?? Zero
 
-  const { chain } = useNetwork()
-  const { address } = useAccount()
-  const { amount, reward } = useStakedBalance({ poolId: stakingPoolId })
-  const claimStake = useClaimStake()
-  const approveAndStake = useApproveAndStake(token)
-  const withdrawStake = useWithdrawStake()
-  const prices = usePrices(chain.id)
-
-  const [deposit, setDeposit] = useState('')
+  const prices = usePrices(chainId)
+  const [deposit, setDeposit] = useState({ str: '', bn: Zero })
   const [withdraw, setWithdraw] = useState('')
+  const [showStake, setShowStake] = useState(true)
+  const [allowance, setAllowance] = useState(Zero)
   const [isPending, pendingTxWrapFunc] = usePendingTxWrapper()
   const [isPendingStake, pendingStakeTxWrapFunc] = usePendingTxWrapper()
   const [isPendingUnstake, pendingUnstakeTxWrapFunc] = usePendingTxWrapper()
-  const [showStake, setShowStake] = useState(true)
+  const [isPendingApprove, pendingApproveTxWrapFunc] = usePendingTxWrapper()
+  const [userStakeData, setUserStakeData] = useState({
+    amount: Zero,
+    reward: Zero,
+  })
 
+  useEffect(() => {
+    if (!address || !chainId || !stakingPoolId) return
+    getStakedBalance(`0x${address.slice(2)}`, chainId, stakingPoolId)
+      .then((data) => {
+        console.log('data', data)
+        setUserStakeData(data)
+      })
+      .catch((err) => {
+        console.log(err)
+      })
+  }, [address, chainId, stakingPoolId])
+
+  const handleInput = (value: string, isDeposit: boolean) => {}
   return (
     <div className="flex-wrap space-y-2">
       <StakeCardTitle
         address={address}
-        connectedChainId={chain.id}
-        token={token}
+        connectedChainId={chainId}
+        token={pool}
         poolTokens={stakingPoolTokens}
         poolLabel={stakingPoolLabel}
         prices={prices}
@@ -81,7 +97,7 @@ const StakeCard = ({ chainId, token }: StakeCardProps) => {
             <div className="flex items-center justify-between my-2 text-sm font-medium text-white">
               <div>Staked</div>
               <div>
-                {commifyBnToString(amount, 2)}{' '}
+                {commifyBnToString(userStakeData.amount, 4)}{' '}
                 <span className="text-[#88818C]">LP</span>
               </div>
             </div>
@@ -90,16 +106,16 @@ const StakeCard = ({ chainId, token }: StakeCardProps) => {
             <div className="flex items-center justify-between my-2 text-sm font-medium text-white">
               <div>SYN Earned</div>
               <div className="text-green-400">
-                {commifyBnToString(reward, 2)}{' '}
+                {commifyBnToString(userStakeData.reward, 6)}{' '}
                 <span className="text-[#88818C]">SYN</span>
               </div>
             </div>
           </div>
         </InfoSection>
       </Card>
-      {reward.eq(0) ? null : (
+      {userStakeData.reward.eq(0) ? null : (
         <Button
-          disabled={reward.eq(0)}
+          disabled={userStakeData.reward.eq(0)}
           className={`
           w-full  my-2 px-4 py-3 tracking-wide
           hover:opacity-80 disabled:opacity-100
@@ -107,9 +123,9 @@ const StakeCard = ({ chainId, token }: StakeCardProps) => {
           bg-gradient-to-r from-[#CF52FE] to-[#AC8FFF]
           ${isPending && 'from-[#622e71] to-[#564071]'}
         `}
-          onClick={async () => {
-            pendingTxWrapFunc(claimStake({ poolId: stakingPoolId }))
-          }}
+          onClick={() =>
+            pendingTxWrapFunc(claimStake(chainId, address, stakingPoolId))
+          }
         >
           {isPending ? (
             <>
@@ -143,49 +159,78 @@ const StakeCard = ({ chainId, token }: StakeCardProps) => {
         {showStake ? (
           <InteractiveInputRow
             showButton={true}
-            title={token.symbol}
-            buttonLabel="Stake"
+            title={pool.symbol}
+            buttonLabel={
+              lpTokenBalance.eq(0)
+                ? 'Insufficient Balance'
+                : allowance.lt(deposit.bn)
+                ? `Approve ${pool.symbol}`
+                : 'Stake'
+            }
             buttonWidth="w-full"
-            loadingLabel="Staking"
+            loadingLabel={isPendingApprove ? 'Approving' : 'Staking'}
             isConnected={Boolean(address)}
             balanceStr={commifyBnToString(lpTokenBalance, 2)}
             onClickBalance={() => {
-              setDeposit(formatUnits(lpTokenBalance, 18))
+              setDeposit({
+                str: formatUnits(lpTokenBalance, 18),
+                bn: lpTokenBalance,
+              })
             }}
-            value={deposit}
+            value={deposit.str}
             placeholder={'0.0'}
-            onChange={(e) => {
+            onChange={async (e) => {
               let val = cleanNumberInput(e.target.value)
-              setDeposit(val)
-            }}
-            disabled={lpTokenBalance.eq(0) || deposit == ''}
-            isPending={isPendingStake}
-            onClickEnter={async (e) => {
-              const tx = await pendingStakeTxWrapFunc(
-                approveAndStake({
-                  poolId: stakingPoolId,
-                  infiniteApproval: true,
-                  amount: smartParseUnits(deposit, 18),
-                })
+              const tkAllowance = await getTokenAllowance(
+                MINICHEF_ADDRESSES[chainId],
+                pool.addresses[chainId],
+                address,
+                chainId
               )
-              if (tx?.status === 1) {
-                setDeposit('')
-              }
+              setAllowance(tkAllowance)
+              setDeposit({
+                str: val,
+                bn: smartParseUnits(val, pool.decimals[chainId]),
+              })
             }}
-            token={token}
-            icon={token.icon.src}
+            disabled={lpTokenBalance.eq(0) || deposit.str == ''}
+            isPending={isPendingStake || isPendingApprove}
+            onClickEnter={
+              allowance.lt(deposit.bn)
+                ? async (e) => {
+                    await pendingApproveTxWrapFunc(
+                      approve(pool, deposit.bn, chainId)
+                    )
+                  }
+                : async (e) => {
+                    const tx = await pendingStakeTxWrapFunc(
+                      stake(
+                        `0x${address.slice(2)}`,
+                        chainId,
+                        stakingPoolId,
+                        deposit.bn
+                      )
+                    )
+
+                    if (tx?.status === 1) {
+                      setDeposit({ bn: Zero, str: '' })
+                    }
+                  }
+            }
+            token={pool}
+            icon={pool.icon.src}
           />
         ) : (
           <InteractiveInputRow
             showButton={true}
-            title={token.symbol}
+            title={pool.symbol}
             buttonLabel="Unstake"
             buttonWidth="w-full"
             loadingLabel="Unstaking"
             isConnected={Boolean(address)}
-            balanceStr={commifyBnToString(amount, 4)}
+            balanceStr={commifyBnToString(userStakeData.amount, 4)}
             onClickBalance={() => {
-              setWithdraw(formatUnits(amount, 18))
+              setWithdraw(formatUnits(userStakeData.amount, 18))
             }}
             value={withdraw}
             placeholder={'0.0'}
@@ -193,22 +238,24 @@ const StakeCard = ({ chainId, token }: StakeCardProps) => {
               let val = cleanNumberInput(e.target.value)
               setWithdraw(val)
             }}
-            disabled={amount.eq(0) || withdraw == ''}
+            disabled={userStakeData.amount.eq(0) || withdraw == ''}
             isPending={isPendingUnstake}
             onClickEnter={async () => {
+              console.log('IM HERE2')
               const tx = await pendingUnstakeTxWrapFunc(
-                withdrawStake({
-                  poolId: stakingPoolId,
-                  amount: smartParseUnits(withdraw, 18),
-                  account: address,
-                })
+                withdrawStake(
+                  `0x${address.slice(2)}`,
+                  chainId,
+                  stakingPoolId,
+                  smartParseUnits(withdraw, 18)
+                )
               )
               if (tx?.status === 1) {
                 setWithdraw('')
               }
             }}
-            token={token}
-            icon={token.icon.src}
+            token={pool}
+            icon={pool.icon.src}
           />
         )}
       </Card>

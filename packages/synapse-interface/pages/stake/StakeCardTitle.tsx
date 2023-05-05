@@ -1,11 +1,6 @@
 import { useEffect, useState, useMemo } from 'react'
 import { Token } from '@/utils/types'
 import { getPoolApyData } from '@/utils/actions/getPoolApyData'
-import {
-  getSynPrices,
-  getEthPrice,
-  getAvaxPrice,
-} from '@/utils/actions/getPrices'
 import ApyTooltip from '@/components/ApyTooltip'
 import _ from 'lodash'
 

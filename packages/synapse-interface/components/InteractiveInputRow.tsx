@@ -110,7 +110,9 @@ const InteractiveInputRow = ({
                 `}
                 value={value}
                 placeholder={placeholder}
-                onChange={() => onChange}
+                onChange={(e) => {
+                  onChange(e)
+                }}
                 name="inputRow"
               />
               {isConnected && (

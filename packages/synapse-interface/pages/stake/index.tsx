@@ -1,6 +1,6 @@
 import { useMemo, useEffect, useState } from 'react'
 import { LandingPageWrapper } from '@/components/layouts/LandingPageWrapper'
-import { useNetwork } from 'wagmi'
+import { useNetwork, useAccount } from 'wagmi'
 import { Token } from '@/utils/types'
 import { Chain } from '@/utils/types'
 import { getNetworkTextColor } from '@/styles/chains'
@@ -16,6 +16,8 @@ const StakePage = () => {
   const { chain: connectedChain } = useNetwork()
   const [columns, setColumns] = useState<number>(1)
   const [connectedChainId, setConnectedChainId] = useState<number>(undefined)
+  const { address: currentAddress } = useAccount()
+  const [address, setAddress] = useState(undefined)
 
   const connectedChainInfo: Chain | undefined = useMemo(() => {
     if (connectedChainId) {
@@ -28,7 +30,9 @@ const StakePage = () => {
 
   const availableStakingTokens: Token[] | [] =
     STAKABLE_TOKENS[connectedChainId] ?? []
-
+  useEffect(() => {
+    setAddress(currentAddress)
+  }, [currentAddress])
   useEffect(() => {
     const isSingle = availableStakingTokens.length < 2
     setColumns(isSingle ? 1 : 2)
@@ -56,7 +60,12 @@ const StakePage = () => {
         <Grid cols={{ xs: 1, sm: 1, md: columns }} gap={6} className="mt-8">
           {isClient && availableStakingTokens.length > 0 ? (
             availableStakingTokens.map((token, key) => (
-              <StakeCard key={key} chainId={connectedChainId} token={token} />
+              <StakeCard
+                key={key}
+                address={currentAddress}
+                chainId={connectedChainId}
+                pool={token}
+              />
             ))
           ) : (
             <NoStakeCard chain={connectedChainInfo} />
