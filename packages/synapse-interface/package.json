@@ -1,6 +1,6 @@
 {
   "name": "@synapsecns/synapse-interface",
-  "version": "0.1.7",
+  "version": "0.1.8",
   "private": true,
   "engines": {
     "node": ">=16.0.0"
@@ -55,8 +55,8 @@
     "react": "18.2.0",
     "react-dom": "18.2.0",
     "react-hot-toast": "^2.4.0",
-    "react-spring": "^9.7.1",
     "react-input-slider": "^6.0.1",
+    "react-spring": "^9.7.1",
     "start-server-and-test": "^2.0.0",
     "swr": "1.3.0",
     "tailwind-merge": "^1.10.0",
