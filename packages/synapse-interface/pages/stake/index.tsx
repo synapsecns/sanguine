@@ -15,7 +15,7 @@ const StakePage = () => {
   const [isClient, setIsClient] = useState<boolean>(false)
   const { chain: connectedChain } = useNetwork()
   const [columns, setColumns] = useState<number>(1)
-  const [connectedChainId, setConnectedChainId] = useState<number>()
+  const [connectedChainId, setConnectedChainId] = useState<number>(undefined)
 
   const connectedChainInfo: Chain | undefined = useMemo(() => {
     if (connectedChainId) {
@@ -35,7 +35,7 @@ const StakePage = () => {
   }, [availableStakingTokens])
 
   useEffect(() => {
-    setConnectedChainId(connectedChain.id)
+    setConnectedChainId(connectedChain && connectedChain.id)
   }, [connectedChain])
 
   useEffect(() => {

@@ -56,6 +56,13 @@ const StakeCardTitle = ({
     }
   }, [connectedChainId, address, prices])
 
+  const displayPoolApyData = useMemo(() => {
+    if (!poolApyData) return '- '
+    return poolApyData.fullCompoundedAPYStr
+      ? `${String(poolApyData.fullCompoundedAPYStr)}% `
+      : '- '
+  }, [connectedChainId, prices, poolApyData])
+
   return (
     <div className="px-2 mb-5">
       <div className="inline-flex items-center mt-2">
@@ -64,9 +71,7 @@ const StakeCardTitle = ({
       </div>
 
       <div className="text-lg font-normal text-white text-opacity-70">
-        <span className="text-green-400">
-          {poolApyData ? `${String(poolApyData.fullCompoundedAPYStr)}% ` : '- '}
-        </span>
+        <span className="text-green-400">{displayPoolApyData}</span>
         APY
         <ApyTooltip
           apyData={poolApyData}
