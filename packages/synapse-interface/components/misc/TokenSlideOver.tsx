@@ -24,7 +24,6 @@ export const TokenSlideOver = ({
   setDisplayType: (v: DisplayType) => void
   handleTokenChange: (token: Token, type: 'from' | 'to') => void
 }) => {
-  console.log('tokens: ', tokens, 'isOrigin: ', isOrigin)
   const [currentIdx, setCurrentIdx] = useState(-1)
   const [searchStr, setSearchStr] = useState('')
   let tokenList: any[] = []

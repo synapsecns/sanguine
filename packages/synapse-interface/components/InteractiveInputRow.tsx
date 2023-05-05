@@ -41,7 +41,7 @@ const InteractiveInputRow = ({
 }) => {
   let width = 'w-40'
 
-  if (title.length > 6) {
+  if (title && title.length > 6) {
     width = 'w-48'
   }
 
