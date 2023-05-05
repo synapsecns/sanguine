@@ -2,6 +2,7 @@
 pragma solidity 0.8.17;
 
 // ═════════════════════════════ INTERNAL IMPORTS ══════════════════════════════
+import {MultiCallable} from "./MultiCallable.sol";
 import {Versioned} from "./Version.sol";
 // ═════════════════════════════ EXTERNAL IMPORTS ══════════════════════════════
 import {OwnableUpgradeable} from "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol";
@@ -12,7 +13,7 @@ import {OwnableUpgradeable} from "@openzeppelin/contracts-upgradeable/access/Own
  * - Provides ownership functionality.
  * - Will be providing pausing functionality when it is implemented.
  */
-abstract contract MessagingBase is Versioned, OwnableUpgradeable {
+abstract contract MessagingBase is MultiCallable, Versioned, OwnableUpgradeable {
     error CallerNotAgentManager();
 
     // ════════════════════════════════════════════════ IMMUTABLES ═════════════════════════════════════════════════════
