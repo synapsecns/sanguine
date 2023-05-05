@@ -58,6 +58,7 @@ const StakeCardTitle = ({
 
   useEffect(() => {
     setPoolApyData(null)
+    setBaseApyData(null)
   }, [connectedChainId])
 
   const displayPoolApyData = useMemo(() => {
