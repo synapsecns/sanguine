@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useRef } from 'react'
+import React, { useEffect, useState, useRef, useMemo } from 'react'
 import { useSettings } from '@hooks/useSettings'
 import { SettingsIcon } from '@icons/SettingsIcon'
 import { Transition } from '@headlessui/react'
@@ -205,23 +205,26 @@ const BridgeCard = ({
     }
   }
 
-  const actionBtn = (
-    <TransactionButton
-      className={btnClassName}
-      disabled={
-        fromChainId === toChainId ||
-        bridgeQuote.outputAmount.eq(0) ||
-        !isFromBalanceEnough ||
-        error != null ||
-        destAddrNotValid
-      }
-      onClick={() => buttonAction()}
-      onSuccess={() => {
-        postButtonAction()
-      }}
-      label={btnLabel}
-      pendingLabel={pendingLabel}
-    />
+  const actionBtn = useMemo(
+    () => (
+      <TransactionButton
+        className={btnClassName}
+        disabled={
+          fromChainId === toChainId ||
+          bridgeQuote.outputAmount.eq(0) ||
+          !isFromBalanceEnough ||
+          error ||
+          destAddrNotValid
+        }
+        onClick={() => buttonAction()}
+        onSuccess={() => {
+          postButtonAction()
+        }}
+        label={btnLabel}
+        pendingLabel={pendingLabel}
+      />
+    ),
+    [buttonAction, postButtonAction, btnLabel, pendingLabel, btnClassName]
   )
 
   /*
