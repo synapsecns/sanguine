@@ -222,7 +222,7 @@ const StakeCard = ({ address, chainId, pool }: StakeCardProps) => {
                   }
             }
             token={pool}
-            icon={pool.icon.src}
+            icon={pool?.icon?.src}
           />
         ) : (
           <InteractiveInputRow
@@ -258,7 +258,7 @@ const StakeCard = ({ address, chainId, pool }: StakeCardProps) => {
               }
             }}
             token={pool}
-            icon={pool.icon.src}
+            icon={pool?.icon?.src}
           />
         )}
       </Card>
