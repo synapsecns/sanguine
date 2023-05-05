@@ -1,5 +1,8 @@
 import Grid from '@/components/ui/tailwind/Grid'
-import { SectionContainer, SupportCard } from '../shared'
+import {
+  SectionContainer,
+  SupportCard,
+} from '../../../components/landing/shared'
 import {
   BridgeImage,
   BridgeImageSmall,

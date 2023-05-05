@@ -1,7 +1,9 @@
+import React from 'react'
 import Button from '@tw/Button'
 import ButtonLoadingSpinner from '@components/buttons/ButtonLoadingSpinner'
 import { getMenuItemBgForCoin } from '@styles/tokens'
 import { Token } from '@types'
+
 const InteractiveInputRow = ({
   title,
   isConnected,
@@ -39,7 +41,7 @@ const InteractiveInputRow = ({
 }) => {
   let width = 'w-40'
 
-  if (title.length > 6) {
+  if (title && title.length > 6) {
     width = 'w-48'
   }
 
@@ -108,7 +110,9 @@ const InteractiveInputRow = ({
                 `}
                 value={value}
                 placeholder={placeholder}
-                onChange={onChange}
+                onChange={(e) => {
+                  onChange(e)
+                }}
                 name="inputRow"
               />
               {isConnected && (
@@ -142,7 +146,9 @@ const InteractiveInputRow = ({
               ${isPending && 'from-[#622e71] to-[#564071]'}
             `}
             disabled={disabled}
-            onClick={onClickEnter}
+            onClick={(e) => {
+              onClickEnter(e)
+            }}
           >
             {isPending ? (
               <>

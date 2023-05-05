@@ -18,12 +18,13 @@ export default function Button({
   children: any
   disabled?: boolean
   className?: string
-  onClick: () => void
+  style?: any
+  onClick?: (e: any | undefined) => void
 }) {
   const mergedClassName = twMerge(`${baseClassname} ${className}`)
 
   return (
-    <button className={mergedClassName} {...props}>
+    <button className={mergedClassName} {...props} disabled={disabled}>
       {children}
     </button>
   )

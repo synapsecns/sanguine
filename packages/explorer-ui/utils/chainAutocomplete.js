@@ -1,8 +1,8 @@
-import {CHAIN_INFO_MAP} from '@constants/networks'
+import { CHAIN_INFO_MAP } from '@constants/networks'
 
 const nameToChainIds = {}
 Object.keys(CHAIN_INFO_MAP).forEach((chainId) => {
-  let name = CHAIN_INFO_MAP[chainId].chainName
+  const name = CHAIN_INFO_MAP[chainId].chainName
   return (nameToChainIds[name] = Number(chainId))
 })
 

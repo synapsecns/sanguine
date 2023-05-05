@@ -11,7 +11,7 @@ import { DisplayType } from '@/pages/bridge/BridgeCard'
 
 export const TokenSlideOver = ({
   isOrigin,
-  tokens,
+  tokens = [],
   chainId,
   selectedToken,
   setDisplayType,

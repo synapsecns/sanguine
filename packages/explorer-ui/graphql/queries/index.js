@@ -76,16 +76,8 @@ export const GET_BRIDGE_TRANSACTIONS_QUERY = gql`
   ${BRIDGE_TRANSACTION_INFO_FRAGMENT}
 `
 export const COUNT_BY_CHAIN_ID = gql`
-  query CountByChainId(
-    $chainID:   Int
-    $direction: Direction
-    $hours:     Int
-  ) {
-    countByChainId(
-      chainID:    $chainID
-      direction:  $direction
-      hours:      $hours
-    ) {
+  query CountByChainId($chainID: Int, $direction: Direction, $hours: Int) {
+    countByChainId(chainID: $chainID, direction: $direction, hours: $hours) {
       chainID
       count
     }
@@ -94,16 +86,16 @@ export const COUNT_BY_CHAIN_ID = gql`
 
 export const COUNT_BY_TOKEN_ADDRESS = gql`
   query CountByTokenAddress(
-    $chainID:   Int
+    $chainID: Int
     $direction: Direction
-    $hours:     Int
-    $address:   String
+    $hours: Int
+    $address: String
   ) {
     countByTokenAddress(
-      chainID:    $chainID
-      direction:  $direction
-      hours:      $hours
-      address:    $address
+      chainID: $chainID
+      direction: $direction
+      hours: $hours
+      address: $address
     ) {
       tokenAddress
       chainID
@@ -121,8 +113,6 @@ export const ADDRESS_RANKING = gql`
   }
 `
 
-
-
 export const GET_CSV = gql`
   query GetCsv($address: String!) {
     getCsv(address: $address) {
@@ -132,15 +122,12 @@ export const GET_CSV = gql`
   }
 `
 
-
-
-
 export const GET_DAILY_STATS = gql`
   query DailyStatistics(
     $chainID: Int
-    $type: DailyStatisticType!,
-    $platform: Platform,
-     $days: Int
+    $type: DailyStatisticType!
+    $platform: Platform
+    $days: Int
   ) {
     dailyStatistics(
       chainID: $chainID
@@ -157,16 +144,15 @@ export const GET_DAILY_STATS = gql`
   }
 `
 
-
 export const AMOUNT_STATISTIC = gql`
   query AmountStatistic(
-    $type:          StatisticType!
-    $duration:      Duration!
-    $platform:      Platform
-    $chainID:       Int
-    $address:       String
-    $tokenAddress:  String
-    $useCache:  Boolean
+    $type: StatisticType!
+    $duration: Duration!
+    $platform: Platform
+    $chainID: Int
+    $address: String
+    $tokenAddress: String
+    $useCache: Boolean
     $useMv: Boolean
   ) {
     amountStatistic(
@@ -186,11 +172,11 @@ export const AMOUNT_STATISTIC = gql`
 
 export const DAILY_STATISTICS_BY_CHAIN = gql`
   query DailyStatisticsByChain(
-    $chainID:   Int
-    $type:      DailyStatisticType
-    $duration:  Duration
-    $useCache:  Boolean
-    $platform:  Platform
+    $chainID: Int
+    $type: DailyStatisticType
+    $duration: Duration
+    $useCache: Boolean
+    $platform: Platform
     $useMv: Boolean
   ) {
     dailyStatisticsByChain(
@@ -226,12 +212,10 @@ export const DAILY_STATISTICS_BY_CHAIN = gql`
 `
 
 export const RANKED_CHAINIDS_BY_VOLUME = gql`
-query RankedChainIDsByVolume($duration: Duration) {
-  rankedChainIDsByVolume(
-    duration: $duration
-  ) {
-    chainID
-    total
+  query RankedChainIDsByVolume($duration: Duration) {
+    rankedChainIDsByVolume(duration: $duration) {
+      chainID
+      total
+    }
   }
-}
 `
