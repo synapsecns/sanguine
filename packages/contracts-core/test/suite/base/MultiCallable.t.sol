@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.17;
 
+import {MulticallFailed} from "../../../contracts/libs/Errors.sol";
 import {MultiCallable, MultiCallableHarness} from "../../harnesses/base/MultiCallableHarness.t.sol";
 
 import {Test} from "forge-std/Test.sol";
@@ -35,7 +36,7 @@ contract MultiCallableTest is Test {
                 ++successfulCalls;
             }
         }
-        if (!success) vm.expectRevert(MultiCallable.MulticallFailed.selector);
+        if (!success) vm.expectRevert(MulticallFailed.selector);
         MultiCallable.Result[] memory results = mcHarness.multicall(calls);
         if (success) {
             require(results.length == AMOUNT, "results.length != AMOUNT");

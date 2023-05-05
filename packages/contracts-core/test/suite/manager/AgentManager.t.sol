@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.17;
 
+import {AgentNotGuard} from "../../../contracts/libs/Errors.sol";
 import {IAgentManager} from "../../../contracts/interfaces/IAgentManager.sol";
 import {IAgentSecured} from "../../../contracts/interfaces/IAgentSecured.sol";
 import {AgentFlag, AgentStatus, SystemEntity} from "../../../contracts/libs/Structures.sol";
@@ -77,7 +78,7 @@ abstract contract AgentManagerTest is MessagingBaseTest {
         // Force a random Notary to sign the report
         address reportSigner = getNotary(random.nextUint256(), random.nextUint256());
         (bytes memory srPayload, bytes memory srSig) = createSignedStateReport(reportSigner, rs);
-        expectNotGuardRevert();
+        vm.expectRevert(AgentNotGuard.selector);
         IAgentManager(localAgentManager()).submitStateReportWithSnapshot(
             rsi.stateIndex, srPayload, srSig, snapPayload, snapSig
         );
@@ -116,7 +117,7 @@ abstract contract AgentManagerTest is MessagingBaseTest {
         // Force a random Notary to sign the report
         address reportSigner = getNotary(random.nextUint256(), random.nextUint256());
         (bytes memory srPayload, bytes memory srSig) = createSignedStateReport(reportSigner, rs);
-        expectNotGuardRevert();
+        vm.expectRevert(AgentNotGuard.selector);
         IAgentManager(localAgentManager()).submitStateReportWithAttestation(
             rsi.stateIndex, srPayload, srSig, snapPayload, attPayload, attSig
         );
@@ -158,7 +159,7 @@ abstract contract AgentManagerTest is MessagingBaseTest {
         // Generate Snapshot Proof
         acceptSnapshot(rawSnap);
         bytes32[] memory snapProof = genSnapshotProof(rsi.stateIndex);
-        expectNotGuardRevert();
+        vm.expectRevert(AgentNotGuard.selector);
         IAgentManager(localAgentManager()).submitStateReportWithSnapshotProof(
             rsi.stateIndex, srPayload, srSig, snapProof, attPayload, attSig
         );

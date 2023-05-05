@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.17;
 
+import {CallerNotAgentManager} from "../../contracts/libs/Errors.sol";
 import {SNAPSHOT_MAX_STATES} from "../../contracts/libs/Snapshot.sol";
 import {DisputeFlag} from "../../contracts/libs/Structures.sol";
 import {IAgentSecured} from "../../contracts/interfaces/IAgentSecured.sol";
@@ -149,7 +150,7 @@ contract DestinationTest is ExecutionHubTest {
 
     function test_acceptAttestation_revert_notAgentManager(address caller) public {
         vm.assume(caller != localAgentManager());
-        expectNotAgentManagerRevert();
+        vm.expectRevert(CallerNotAgentManager.selector);
         vm.prank(caller);
         InterfaceDestination(localDestination()).acceptAttestation(0, 0, "", 0, new ChainGas[](0));
     }

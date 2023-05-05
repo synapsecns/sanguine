@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.17;
 
+import {AgentNotGuard, AgentNotNotary} from "../../../contracts/libs/Errors.sol";
 import {AgentFlag, AgentStatus, SystemEntity} from "../../../contracts/libs/Structures.sol";
 import {InterfaceDestination} from "../../../contracts/interfaces/InterfaceDestination.sol";
 import {InterfaceOrigin} from "../../../contracts/interfaces/InterfaceOrigin.sol";
@@ -186,7 +187,7 @@ contract LightManagerTest is AgentManagerTest {
         uint256[] memory snapGas = rs.snapGas();
         address guard = domains[0].agent;
         (bytes memory attPayload, bytes memory attSignature) = signAttestation(guard, ra);
-        expectNotNotaryRevert();
+        vm.expectRevert(AgentNotNotary.selector);
         lightManager.submitAttestation(attPayload, attSignature, ra._agentRoot, snapGas);
     }
 
@@ -237,7 +238,7 @@ contract LightManagerTest is AgentManagerTest {
         // Force a random Notary to sign the report
         address reportSigner = getNotary(random.nextUint256(), random.nextUint256());
         (bytes memory arPayload, bytes memory arSignature) = createSignedAttestationReport(reportSigner, ra);
-        expectNotGuardRevert();
+        vm.expectRevert(AgentNotGuard.selector);
         lightManager.submitAttestationReport(arPayload, arSignature, attSignature);
     }
 

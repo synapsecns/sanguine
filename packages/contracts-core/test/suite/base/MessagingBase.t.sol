@@ -52,18 +52,6 @@ abstract contract MessagingBaseTest is SynapseTest {
 
     // ═══════════════════════════════════════════════ EXPECTATIONS ════════════════════════════════════════════════════
 
-    function expectNotAgentManagerRevert() public {
-        vm.expectRevert(MessagingBase.CallerNotAgentManager.selector);
-    }
-
-    function expectNotGuardRevert() public {
-        vm.expectRevert(VerificationManager.AgentNotGuard.selector);
-    }
-
-    function expectNotNotaryRevert() public {
-        vm.expectRevert(VerificationManager.AgentNotNotary.selector);
-    }
-
     function expectStatusUpdated(AgentFlag flag, uint32 domain, address agent) public {
         vm.expectEmit();
         emit StatusUpdated(flag, domain, agent);

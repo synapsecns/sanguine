@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.17;
 
+import {CallerNotAgentManager} from "../../contracts/libs/Errors.sol";
 import {IAgentSecured} from "../../contracts/interfaces/IAgentSecured.sol";
 import {InterfaceDestination} from "../../contracts/interfaces/InterfaceDestination.sol";
 import {ISnapshotHub} from "../../contracts/interfaces/ISnapshotHub.sol";
@@ -85,14 +86,14 @@ contract SummitTest is AgentSecuredTest {
 
     function test_acceptGuardSnapshot_revert_notAgentManager(address caller) public {
         vm.assume(caller != localAgentManager());
-        expectNotAgentManagerRevert();
+        vm.expectRevert(CallerNotAgentManager.selector);
         vm.prank(caller);
         InterfaceSummit(summit).acceptGuardSnapshot(0, 0, "");
     }
 
     function test_acceptNotarySnapshot_revert_notAgentManager(address caller) public {
         vm.assume(caller != localAgentManager());
-        expectNotAgentManagerRevert();
+        vm.expectRevert(CallerNotAgentManager.selector);
         vm.prank(caller);
         InterfaceSummit(summit).acceptNotarySnapshot(0, 0, 0, "");
     }

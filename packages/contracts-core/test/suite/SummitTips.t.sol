@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.17;
 
+import {AgentNotNotary, CallerNotAgentManager} from "../../contracts/libs/Errors.sol";
 import {IAgentManager, InterfaceSummit} from "../../contracts/Summit.sol";
 
 import {AgentFlag, AgentStatus, Summit, SynapseTest} from "../utils/SynapseTest.t.sol";
@@ -153,7 +154,7 @@ contract SummitTipsTest is AgentSecuredTest {
         RawExecReceipt memory re = mockReceipt("First");
         prepareReceipt(re, false, 0, false);
         (bytes memory rcptPayload, bytes memory rcptSignature) = signReceipt(guard0, re);
-        expectNotNotaryRevert();
+        vm.expectRevert(AgentNotNotary.selector);
         bondingManager.submitReceipt(rcptPayload, rcptSignature);
     }
 
@@ -180,7 +181,7 @@ contract SummitTipsTest is AgentSecuredTest {
 
     function test_acceptReceipt_revert_notAgentManager(address caller) public {
         vm.assume(caller != localAgentManager());
-        expectNotAgentManagerRevert();
+        vm.expectRevert(CallerNotAgentManager.selector);
         vm.prank(caller);
         InterfaceSummit(summit).acceptReceipt(0, 0, 0, 0, 0, "");
     }
