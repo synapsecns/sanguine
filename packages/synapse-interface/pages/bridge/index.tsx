@@ -408,12 +408,14 @@ const BridgePage = ({
       }
 
       const bridgeableFromTokens: Token[] = sortByVisibilityRank(
-        BRIDGE_SWAPABLE_TOKENS_BY_TYPE[chainId][String(fromToken.swapableType)]
+        BRIDGE_SWAPABLE_TOKENS_BY_TYPE[desiredChainId][
+          String(fromToken.swapableType)
+        ]
       )
       let tempFromToken: Token = fromToken
 
       if (bridgeableFromTokens?.length > 0) {
-        tempFromToken = getMostCommonSwapableType(chainId)
+        tempFromToken = getMostCommonSwapableType(desiredChainId)
       }
       const {
         bridgeableToken,
