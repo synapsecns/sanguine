@@ -1,11 +1,6 @@
 import { useEffect, useState, useMemo } from 'react'
 import { Token } from '@/utils/types'
 import { getPoolApyData } from '@/utils/actions/getPoolApyData'
-import {
-  getSynPrices,
-  getEthPrice,
-  getAvaxPrice,
-} from '@/utils/actions/getPrices'
 import ApyTooltip from '@/components/ApyTooltip'
 import _ from 'lodash'
 
@@ -41,7 +36,7 @@ const StakeCardTitle = ({
   poolLabel,
   prices,
 }: StakeCardTitleProps) => {
-  const [poolApyData, setPoolApyData] = useState<any>()
+  const [poolApyData, setPoolApyData] = useState<any>(null)
   const [baseApyData, setBaseApyData] = useState<any>(null)
 
   useEffect(() => {
@@ -56,6 +51,18 @@ const StakeCardTitle = ({
     }
   }, [connectedChainId, address, prices])
 
+  useEffect(() => {
+    setPoolApyData(null)
+    setBaseApyData(null)
+  }, [connectedChainId])
+
+  const displayPoolApyData = useMemo(() => {
+    if (!poolApyData) return '- '
+    return poolApyData.fullCompoundedAPYStr
+      ? `${String(poolApyData.fullCompoundedAPYStr)}% `
+      : '- '
+  }, [connectedChainId, prices, poolApyData])
+
   return (
     <div className="px-2 mb-5">
       <div className="inline-flex items-center mt-2">
@@ -64,9 +71,7 @@ const StakeCardTitle = ({
       </div>
 
       <div className="text-lg font-normal text-white text-opacity-70">
-        <span className="text-green-400">
-          {poolApyData ? `${String(poolApyData.fullCompoundedAPYStr)}% ` : '- '}
-        </span>
+        <span className="text-green-400">{displayPoolApyData}</span>
         APY
         <ApyTooltip
           apyData={poolApyData}
