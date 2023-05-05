@@ -48,6 +48,7 @@ const BridgeCard = ({
   toToken,
   toChainId,
   toOptions,
+  isQuoteLoading,
   destinationAddress,
   handleChainChange,
   handleTokenChange,
@@ -67,6 +68,7 @@ const BridgeCard = ({
   toToken: Token
   toChainId: number
   toOptions: { tokens: Token[]; chains: string[] }
+  isQuoteLoading: boolean
   destinationAddress: string
   handleChainChange: (
     chainId: number,
@@ -137,6 +139,7 @@ const BridgeCard = ({
     setDisplayType,
     handleTokenChange,
     onChangeChain: handleChainChange,
+    isQuoteLoading,
   }
 
   // TODO move this away and into the actual component

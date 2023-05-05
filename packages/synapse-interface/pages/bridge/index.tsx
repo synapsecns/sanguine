@@ -52,6 +52,7 @@ const BridgePage = ({ address }: { address: `0x${string}` }) => {
   const [fromInput, setFromInput] = useState({ string: '', bigNum: Zero })
   const [toChainId, setToChainId] = useState(DEFAULT_TO_CHAIN)
   const [toToken, setToToken] = useState(DEFAULT_TO_TOKEN)
+  const [isQuoteLoading, setIsQuoteLoading] = useState<boolean>(false)
   const [error, setError] = useState('')
   const [destinationAddress, setDestinationAddress] = useState('')
   const [toOptions, setToOptions] = useState({
@@ -144,24 +145,67 @@ const BridgePage = ({ address }: { address: `0x${string}` }) => {
   }, [connectedChain?.id])
 
   /*
+  Helper Function: timeout
+  - setTimeout function to debounce bridge quote call
+  */
+  function timeout(ms) {
+    return new Promise((resolve) => setTimeout(resolve, ms))
+  }
+
+  /*
+  Helper Function: checkStringIfOnlyZeroes
+  - regex function to determine if user input is only zeroes
+  */
+  function checkStringIfOnlyZeroes(str: string): boolean {
+    const regex = /^0*\.?0*$|^$/
+    return regex.test(str)
+  }
+
+  /*
   useEffect Triggers: toToken, fromInput, toChainId, time
   - Gets a quote when the polling function is executed or any of the bridge attributes are altered.
   */
   useEffect(() => {
-    if (
-      fromChainId &&
-      toChainId &&
-      String(fromToken.addresses[fromChainId]) &&
-      String(toToken.addresses[toChainId]) &&
-      fromInput &&
-      fromInput.bigNum.gt(Zero)
-    ) {
-      // TODO this needs to be debounced or throttled somehow to prevent spam and lag in the ui
-      getQuote()
-    } else {
-      setBridgeQuote(EMPTY_BRIDGE_QUOTE)
+    let isCancelled = false
+
+    const handleChange = async () => {
+      await timeout(1000) // debounce by 1000ms or 1s
+      if (!isCancelled) {
+        if (
+          fromChainId &&
+          toChainId &&
+          String(fromToken.addresses[fromChainId]) &&
+          String(toToken.addresses[toChainId]) &&
+          fromInput &&
+          fromInput.bigNum.gt(Zero)
+        ) {
+          getQuote()
+        } else {
+          setBridgeQuote(EMPTY_BRIDGE_QUOTE)
+        }
+      }
+    }
+    handleChange()
+
+    return () => {
+      isCancelled = true
     }
   }, [toToken, fromInput, toChainId, time])
+
+  /*
+  useEffect Triggers: fromInput
+  - Checks that user input is not zero. When input changes,
+  - isQuoteLoading state is set to true for loading state interactions
+  */
+  useEffect(() => {
+    const { string, bigNum } = fromInput
+    const isInvalid = checkStringIfOnlyZeroes(string)
+    isInvalid ? () => null : setIsQuoteLoading(true)
+
+    return () => {
+      setIsQuoteLoading(false)
+    }
+  }, [fromInput])
 
   /*
   Helper Function: resetTokenPermutation
@@ -465,6 +509,7 @@ const BridgePage = ({ address }: { address: `0x${string}` }) => {
   - Calculates slippage by subtracting fee from input amount (checks to ensure proper num of decimals are in use - ask someone about stable swaps if you want to learn more)
   */
   const getQuote = async () => {
+    setIsQuoteLoading(true)
     const { feeAmount, routerAddress, maxAmountOut, originQuery, destQuery } =
       await SynapseSDK.bridgeQuote(
         fromChainId,
@@ -475,6 +520,7 @@ const BridgePage = ({ address }: { address: `0x${string}` }) => {
       )
     if (!(originQuery && maxAmountOut && destQuery && feeAmount)) {
       setBridgeQuote(EMPTY_BRIDGE_QUOTE_ZERO)
+      setIsQuoteLoading(false)
       return
     }
     const toValueBigNum = maxAmountOut ?? Zero
@@ -506,7 +552,7 @@ const BridgePage = ({ address }: { address: `0x${string}` }) => {
         destQuery,
       },
     })
-    return
+    return setIsQuoteLoading(false)
   }
 
   /*
@@ -564,6 +610,7 @@ const BridgePage = ({ address }: { address: `0x${string}` }) => {
                     toToken={toToken}
                     toChainId={toChainId}
                     toOptions={toOptions}
+                    isQuoteLoading={isQuoteLoading}
                     destinationAddress={destinationAddress}
                     handleChainChange={handleChainChange}
                     handleTokenChange={handleTokenChange}
