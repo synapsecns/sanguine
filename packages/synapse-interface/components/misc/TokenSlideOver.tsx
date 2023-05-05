@@ -29,14 +29,13 @@ export const TokenSlideOver = ({
   const [currentIdx, setCurrentIdx] = useState(-1)
   const [searchStr, setSearchStr] = useState('')
   let tokenList: any[] = []
-  if (!isOrigin) {
+  if (!isOrigin && tokens?.length > 0) {
     tokens.map((token) => {
       tokenList.push({ token, balance: Zero })
     })
   } else {
     tokenList = tokens
   }
-
   const fuse = new Fuse(tokenList, {
     includeScore: true,
     threshold: 0.0,

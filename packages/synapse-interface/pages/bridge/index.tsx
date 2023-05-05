@@ -1,4 +1,3 @@
-import debounce from 'lodash.debounce'
 import Grid from '@tw/Grid'
 import { LandingPageWrapper } from '@components/layouts/LandingPageWrapper'
 import { useRouter } from 'next/router'
@@ -20,7 +19,7 @@ import { formatBNToString } from '@utils/bignumber/format'
 import { commify } from '@ethersproject/units'
 import { erc20ABI } from 'wagmi'
 import { Contract } from 'ethers'
-
+import BridgeWatcher from './BridgeWatcher'
 import { BridgeQuote } from '@/utils/types'
 import { Token } from '@/utils/types'
 import { BRIDGE_PATH, HOW_TO_BRIDGE_URL } from '@/constants/urls'
@@ -41,12 +40,16 @@ import {
   - look into getting rid of fromChainId state and just using wagmi hook (ran into problems when trying this but forgot why)
 */
 
-const BridgePage = ({ address }: { address: `0x${string}` }) => {
+const BridgePage = ({
+  address,
+  fromChainId,
+}: {
+  address: `0x${string}`
+  fromChainId: number
+}) => {
   const router = useRouter()
   const SynapseSDK = useSynapseContext()
-  const { chain: connectedChain } = useNetwork()
   const [time, setTime] = useState(Date.now())
-  const [fromChainId, setFromChainId] = useState(DEFAULT_FROM_CHAIN)
   const [fromToken, setFromToken] = useState(DEFAULT_FROM_TOKEN)
   const [fromTokens, setFromTokens] = useState([])
   const [fromInput, setFromInput] = useState({ string: '', bigNum: Zero })
@@ -70,8 +73,13 @@ const BridgePage = ({ address }: { address: `0x${string}` }) => {
   - Initializes polling (setInterval) func to re-retrieve quotes.
   */
   useEffect(() => {
-    const { chain: fromChainIdRaw } = getNetwork()
-    setFromChainId(fromChainIdRaw ? fromChainIdRaw?.id : DEFAULT_FROM_CHAIN)
+    sortByTokenBalance(
+      BRIDGABLE_TOKENS[fromChainId],
+      fromChainId,
+      address
+    ).then((tokens) => {
+      setFromTokens(tokens)
+    })
     const interval = setInterval(
       () => setTime(Date.now()),
       QUOTE_POLLING_INTERVAL
@@ -106,6 +114,7 @@ const BridgePage = ({ address }: { address: `0x${string}` }) => {
         toTokenSymbolUrl ? String(toTokenSymbolUrl) : undefined,
         fromChainId
       )
+    console.log('bridgeableToken', bridgeableToken, newToChain)
     resetTokenPermutation(
       tempFromToken,
       newToChain,
@@ -121,45 +130,6 @@ const BridgePage = ({ address }: { address: `0x${string}` }) => {
       outputCurrency: bridgeableToken.symbol,
     })
   }, [router.isReady])
-
-  /*
-  useEffect Trigger: connectedChain
-  - when the connected chain changes (wagmi hook), update the state
-  */
-  useEffect(() => {
-    if (connectedChain?.id) {
-      if (address === undefined) {
-        return
-      }
-      setFromChainId(connectedChain?.id)
-      handleChainChange(connectedChain?.id, false, 'from')
-      sortByTokenBalance(
-        BRIDGABLE_TOKENS[connectedChain?.id],
-        connectedChain?.id,
-        address
-      ).then((tokens) => {
-        setFromTokens(tokens)
-      })
-      return
-    }
-  }, [connectedChain?.id])
-
-  /*
-  Helper Function: timeout
-  - setTimeout function to debounce bridge quote call
-  */
-  function timeout(ms) {
-    return new Promise((resolve) => setTimeout(resolve, ms))
-  }
-
-  /*
-  Helper Function: checkStringIfOnlyZeroes
-  - regex function to determine if user input is only zeroes
-  */
-  function checkStringIfOnlyZeroes(str: string): boolean {
-    const regex = /^0*\.?0*$|^$/
-    return regex.test(str)
-  }
 
   /*
   useEffect Triggers: toToken, fromInput, toChainId, time
@@ -190,8 +160,23 @@ const BridgePage = ({ address }: { address: `0x${string}` }) => {
     return () => {
       isCancelled = true
     }
-  }, [toToken, fromInput, toChainId, time])
+  }, [toToken, fromInput, time])
+  /*
+  Helper Function: timeout
+  - setTimeout function to debounce bridge quote call
+  */
+  function timeout(ms) {
+    return new Promise((resolve) => setTimeout(resolve, ms))
+  }
 
+  /*
+  Helper Function: checkStringIfOnlyZeroes
+  - regex function to determine if user input is only zeroes
+  */
+  function checkStringIfOnlyZeroes(str: string): boolean {
+    const regex = /^0*\.?0*$|^$/
+    return regex.test(str)
+  }
   /*
   useEffect Triggers: fromInput
   - Checks that user input is not zero. When input changes,
@@ -256,6 +241,8 @@ const BridgePage = ({ address }: { address: `0x${string}` }) => {
     ) {
       let bigNum =
         stringToBigNum(value, fromToken.decimals[fromChainId]) ?? Zero
+      console.log('sudyaivalue1', value, bigNum.toString())
+
       setFromInput({
         string: value,
         bigNum: bigNum,
@@ -268,6 +255,7 @@ const BridgePage = ({ address }: { address: `0x${string}` }) => {
   - Returns the default token to display when switching chains. Usually returns stables or eth/wrapped eth.
   */
   const getMostCommonSwapableType = (chainId: number) => {
+    console.log('sudyaichainid', chainId)
     const fromChainTokensByType = Object.values(
       BRIDGE_SWAPABLE_TOKENS_BY_TYPE[chainId]
     )
@@ -346,6 +334,7 @@ const BridgePage = ({ address }: { address: `0x${string}` }) => {
       positedToChain && positedToChain !== fromChainId
         ? Number(positedToChain)
         : DEFAULT_TO_CHAIN
+    console.log('newToChain', newToChain)
     let bridgeableChains = BRIDGE_CHAINS_BY_TYPE[
       String(token.swapableType)
     ].filter((chainId) => Number(chainId) !== fromChainId)
@@ -446,6 +435,13 @@ const BridgePage = ({ address }: { address: `0x${string}` }) => {
         tempFromToken.symbol,
         bridgeableToken.symbol
       )
+      sortByTokenBalance(
+        BRIDGABLE_TOKENS[desiredChainId],
+        desiredChainId,
+        address
+      ).then((tokens) => {
+        setFromTokens(tokens)
+      })
       return
     } else if (type === 'to') {
       const {
@@ -623,7 +619,14 @@ const BridgePage = ({ address }: { address: `0x${string}` }) => {
                   <ActionCardFooter link={HOW_TO_BRIDGE_URL} />
                 </div>
               </div>
-              <div>{/* <BridgeWatcher /> */}</div>
+              <div>
+                <BridgeWatcher
+                  fromChainId={fromChainId}
+                  toChainId={toChainId}
+                  address={address}
+                  destinationAddress={destinationAddress}
+                />
+              </div>
             </Grid>
           </div>
         </div>
