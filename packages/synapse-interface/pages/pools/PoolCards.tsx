@@ -9,13 +9,14 @@ import {
   getEthPrice,
   getAvaxPrice,
 } from '@/utils/actions/getPrices'
+import { PoolCardInfo } from '@types'
 const PoolCards = memo(
   ({
     arr,
     connectedChainId,
     address,
   }: {
-    arr: any
+    arr: PoolCardInfo[]
     connectedChainId: number
     address: string
   }) => {
@@ -50,12 +51,16 @@ const PoolCards = memo(
             className="justify-center mt-3 mb-5 md:float-right place-items-center"
           >
             <Tab.List className="flex min-w-[360px] p-1.5 space-x-2">
-              {arr.map(({ label, val }, index) => {
-                return (
-                  <Tab
-                    key={index}
-                    className={({ selected }) => {
-                      return `
+              {synPrices &&
+                ethPrice &&
+                avaxPrice &&
+                arr &&
+                arr.map(({ label }, index) => {
+                  return (
+                    <Tab
+                      key={index}
+                      className={({ selected }) => {
+                        return `
                     bg-bgLight
                     px-4 py-2 rounded-lg
                     text-sm text-white
@@ -68,12 +73,12 @@ const PoolCards = memo(
                         : 'bg:bg-bgLight'
                     }
                   `
-                    }}
-                  >
-                    {label}
-                  </Tab>
-                )
-              })}
+                      }}
+                    >
+                      {label}
+                    </Tab>
+                  )
+                })}
             </Tab.List>
           </Grid>
         </div>
@@ -81,7 +86,8 @@ const PoolCards = memo(
           {synPrices &&
             ethPrice &&
             avaxPrice &&
-            arr.map(({ poolsByChain, textLabel, label }, index) => {
+            arr &&
+            arr.map(({ poolsByChain }, index) => {
               // DOUBLE CHECK HERE
               return (
                 <Tab.Panel key={index}>
@@ -92,7 +98,7 @@ const PoolCards = memo(
                       poolsByChain[connectedChainId].map((pool) => {
                         return (
                           <PoolsListCard
-                            key={pool.poolName}
+                            key={pool?.poolName}
                             pool={pool}
                             chainId={connectedChainId}
                             connectedChainId={connectedChainId}
@@ -118,7 +124,7 @@ const PoolCards = memo(
                             poolsByChain[otherChainId].map((pool) => {
                               return (
                                 <PoolsListCard
-                                  key={pool.poolName}
+                                  key={pool?.poolName}
                                   pool={pool}
                                   chainId={Number(otherChainId)}
                                   connectedChainId={connectedChainId}

@@ -32,14 +32,14 @@ export const PRIVACY_POLICY_PATH =
 export const SYNAPSE_PFP_PATH = '/returntomonke'
 
 export const getPoolUrl = (token: Token) => {
-  if (token.symbol === SYN_ETH_SUSHI_TOKEN.symbol) {
+  if (token?.symbol && token.symbol === SYN_ETH_SUSHI_TOKEN.symbol) {
     return getSushiSwapUrl({
       fromCoin: ETH,
       toCoin: SYN,
       chainId: CHAINS.ETH.id,
     })
   } else {
-    return `${POOL_PATH}/${token.routerIndex}`
+    return `${POOL_PATH}/${token?.routerIndex}`
   }
 }
 
@@ -172,5 +172,4 @@ export const BLAZE_API_URL = 'https://synapse.dorime.org/api/v1/analytics'
 /** Thanks @0xngmi for building defillama as a whole, it may be a thankless job but we appreciate it */
 export const LLAMA_API_URL = 'https://api.llama.fi/protocol/synapse'
 
-export const BRIDGESYN_ANALYTICS_API =
-  'https://explorer.interoperability.institute/graphql'
+export const BRIDGESYN_ANALYTICS_API = 'https://explorer.omnirpc.io/graphql'

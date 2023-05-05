@@ -3,7 +3,7 @@ import { ChainInfo } from '@components/misc/ChainInfo'
 import { OverviewChart } from '@components/ChainChart'
 import { CHAIN_ID_NAMES_REVERSE } from '@constants/networks'
 import { useEffect } from 'react'
-import {formatDate} from '@utils/formatDate'
+import { formatDate } from '@utils/formatDate'
 
 
 export function ChartFull(loading,
@@ -71,7 +71,7 @@ export function ChartFull(loading,
     </div>
     <div className="col-span-3 ">
       {/* { loadingDailyData ?  <div className={"flex justify-center align-center w-full animate-spin mt-[" + (Object.values(CHAIN_ID_NAMES_REVERSE).length * 10).toString() + "px]"}><SynapseLogoSvg /></div> : */}
-      {loadingDailyData ? <div className="flex justify-center align-center w-full my-[240px]"><div className='animate-spin'><SynapseLogoSvg /></div></div> :
+      {loadingDailyData ? <div className="flex justify-center align-center w-full my-[240px]"><div className='animate-spin w-[39px]'><SynapseLogoSvg /></div></div> :
 
         <OverviewChart
           currentTooltipIndex={currentTooltipIndex}

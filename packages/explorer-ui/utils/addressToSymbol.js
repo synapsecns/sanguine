@@ -1,4 +1,4 @@
-import {TOKEN_HASH_MAP} from '@constants/tokens/basic'
+import { TOKEN_HASH_MAP } from '@constants/tokens/basic'
 
 export function addressToSymbol({ tokenAddress, chainId }) {
   const symbol =
