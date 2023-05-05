@@ -159,12 +159,12 @@ const StakeCard = ({ address, chainId, pool }: StakeCardProps) => {
         {showStake ? (
           <InteractiveInputRow
             showButton={true}
-            title={pool.symbol}
+            title={pool?.symbol}
             buttonLabel={
               lpTokenBalance.eq(0)
                 ? 'Insufficient Balance'
                 : allowance.lt(deposit.bn)
-                ? `Approve ${pool.symbol}`
+                ? `Approve ${pool?.symbol}`
                 : 'Stake'
             }
             buttonWidth="w-full"
@@ -223,7 +223,7 @@ const StakeCard = ({ address, chainId, pool }: StakeCardProps) => {
         ) : (
           <InteractiveInputRow
             showButton={true}
-            title={pool.symbol}
+            title={pool?.symbol}
             buttonLabel="Unstake"
             buttonWidth="w-full"
             loadingLabel="Unstaking"
