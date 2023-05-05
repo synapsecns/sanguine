@@ -1,4 +1,3 @@
-import debounce from 'lodash.debounce'
 import Grid from '@tw/Grid'
 import { LandingPageWrapper } from '@components/layouts/LandingPageWrapper'
 import { useRouter } from 'next/router'
@@ -20,7 +19,7 @@ import { formatBNToString } from '@utils/bignumber/format'
 import { commify } from '@ethersproject/units'
 import { erc20ABI } from 'wagmi'
 import { Contract } from 'ethers'
-
+import BridgeWatcher from './BridgeWatcher'
 import { BridgeQuote } from '@/utils/types'
 import { Token } from '@/utils/types'
 import { BRIDGE_PATH, HOW_TO_BRIDGE_URL } from '@/constants/urls'
@@ -576,7 +575,9 @@ const BridgePage = ({ address }: { address: `0x${string}` }) => {
                   <ActionCardFooter link={HOW_TO_BRIDGE_URL} />
                 </div>
               </div>
-              <div>{/* <BridgeWatcher /> */}</div>
+              <div>
+                <BridgeWatcher />
+              </div>
             </Grid>
           </div>
         </div>
