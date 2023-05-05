@@ -3,6 +3,7 @@ pragma solidity 0.8.17;
 
 // ══════════════════════════════ LIBRARY IMPORTS ══════════════════════════════
 import {Attestation, AttestationLib} from "../libs/Attestation.sol";
+import {SnapshotRootMismatch, StateMismatch} from "../libs/Errors.sol";
 import {Receipt, ReceiptLib} from "../libs/Receipt.sol";
 import {Snapshot, SnapshotLib} from "../libs/Snapshot.sol";
 import {State, StateLib} from "../libs/State.sol";
@@ -77,7 +78,7 @@ abstract contract AgentManager is MessagingBase, VerificationManager, AgentManag
         _verifyNotaryDomain(notaryStatus.domain);
         // Snapshot state and reported state need to be the same
         // This will revert if state index is out of range
-        require(snapshot.state(stateIndex).equals(report.state()), "States don't match");
+        if (!snapshot.state(stateIndex).equals(report.state())) revert StateMismatch();
         // This will revert if either actor is already in dispute
         _openDispute(guard, guardStatus.index, notary, notaryStatus.index);
         return true;
@@ -100,7 +101,7 @@ abstract contract AgentManager is MessagingBase, VerificationManager, AgentManag
         Snapshot snapshot = snapPayload.castToSnapshot();
         // Snapshot state and reported state need to be the same
         // This will revert if state index is out of range
-        require(snapshot.state(stateIndex).equals(report.state()), "States don't match");
+        if (!snapshot.state(stateIndex).equals(report.state())) revert StateMismatch();
         // Check that Guard is active
         guardStatus.verifyActive();
         // This will revert if payload is not an attestation
@@ -111,7 +112,7 @@ abstract contract AgentManager is MessagingBase, VerificationManager, AgentManag
         notaryStatus.verifyActiveUnstaking();
         // Check if Notary is active on this chain
         _verifyNotaryDomain(notaryStatus.domain);
-        require(snapshot.calculateRoot() == att.snapRoot(), "Attestation not matches snapshot");
+        if (snapshot.calculateRoot() != att.snapRoot()) revert SnapshotRootMismatch();
         // This will revert if either actor is already in dispute
         _openDispute(guard, guardStatus.index, notary, notaryStatus.index);
         return true;
@@ -186,7 +187,7 @@ abstract contract AgentManager is MessagingBase, VerificationManager, AgentManag
         status.verifyActiveUnstaking();
         // This will revert if payload is not a snapshot
         Snapshot snapshot = snapPayload.castToSnapshot();
-        require(snapshot.calculateRoot() == att.snapRoot(), "Attestation not matches snapshot");
+        if (snapshot.calculateRoot() != att.snapRoot()) revert SnapshotRootMismatch();
         // This will revert if state does not refer to this chain
         bytes memory statePayload = snapshot.state(stateIndex).unwrap().clone();
         isValidState = IStateHub(origin).isValidState(statePayload);

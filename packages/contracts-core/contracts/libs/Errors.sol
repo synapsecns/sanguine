@@ -13,6 +13,9 @@ error AgentNotNotary();
 error MustBeSynapseDomain();
 error SynapseDomainForbidden();
 
+error SnapshotRootMismatch();
+error StateMismatch();
+
 // ════════════════════════════════ MEMORY VIEW ════════════════════════════════
 
 error IndexedTooMuch();
