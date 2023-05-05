@@ -6,10 +6,12 @@ export function TopBarNavLink({
   labelText,
   to,
   className,
+  match,
 }: {
   labelText: string
   to: string
   className?: string
+  match?: string
 }) {
   const router = useRouter()
 
@@ -26,7 +28,9 @@ export function TopBarNavLink({
     group items-center px-2 my-2 font-normal tracking-wide
     transform-gpu transition-all duration-75
     text-white ${
-      router.asPath.includes(to) ? 'text-opacity-100' : 'text-opacity-30'
+      match && router.asPath.includes(match)
+        ? 'text-opacity-100'
+        : 'text-opacity-30'
     }
     hover:text-opacity-100
   `
