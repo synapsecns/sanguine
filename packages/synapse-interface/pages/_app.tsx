@@ -72,7 +72,7 @@ const App = ({ Component, pageProps }: AppProps) => {
   }
   const { chains, provider } = configureChains(chainsWithIcons, [
     alchemyProvider({ apiKey: process.env.NEXT_PUBLIC_ALCHEMY_KEY }),
-    publicProvider(),
+    publicProvider({ stallTimeout: 1_000 }),
   ])
 
   const { connectors } = getDefaultWallets({
