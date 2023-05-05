@@ -2,7 +2,7 @@
 pragma solidity 0.8.17;
 
 import {SNAPSHOT_MAX_STATES} from "../../../contracts/libs/Constants.sol";
-import {RawAttestation, RawGasData, RawState, RawStateIndex, RawSnapshot} from "./SynapseStructs.t.sol";
+import {RawAttestation, RawGasData, RawGasData256, RawState, RawStateIndex, RawSnapshot} from "./SynapseStructs.t.sol";
 
 struct Random {
     bytes32 seed;
@@ -118,13 +118,17 @@ library RandomLib {
         return r.nextState(r.nextUint32(), r.nextUint32());
     }
 
+    function nextGasData256(Random memory r) internal pure returns (RawGasData256 memory rgd256) {
+        rgd256.gasPrice = r.nextUint256();
+        rgd256.dataPrice = r.nextUint256();
+        rgd256.execBuffer = r.nextUint256();
+        rgd256.amortAttCost = r.nextUint256();
+        rgd256.etherPrice = r.nextUint256();
+        rgd256.markup = r.nextUint256();
+    }
+
     function nextGasData(Random memory r) internal pure returns (RawGasData memory rgd) {
-        rgd.gasPrice.number = r.nextUint16();
-        rgd.dataPrice.number = r.nextUint16();
-        rgd.execBuffer.number = r.nextUint16();
-        rgd.amortAttCost.number = r.nextUint16();
-        rgd.etherPrice.number = r.nextUint16();
-        rgd.markup.number = r.nextUint16();
+        return r.nextGasData256().compress();
     }
 
     function nextStateIndex(Random memory r) internal pure returns (RawStateIndex memory rsi) {
