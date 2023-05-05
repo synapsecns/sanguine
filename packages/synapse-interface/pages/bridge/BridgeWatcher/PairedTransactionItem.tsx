@@ -5,7 +5,7 @@ import * as CHAINS from '@constants/chains/master'
 
 import { formatTimestampToDate } from '@utils/time'
 
-import { SubTransactionItem } from './TransactionItems'
+import { SubTransactionItem } from '../../../components/TransactionItems'
 import { readContract } from '@wagmi/core'
 import SYNAPSE_BRIDGE_ABI from '@abis/synapseBridge.json'
 import { useState } from 'react'
@@ -21,7 +21,7 @@ const PairedTransactionItem = ({
   const kekTxSig = id(inputTx?.identifier ?? inputTx?.transactionHash ?? '')
 
   readContract({
-    address: synapseContract.from.address,
+    address: synapseContract?.from?.address,
     abi: SYNAPSE_BRIDGE_ABI,
     functionName: 'kappaExists',
     args: [kekTxSig],

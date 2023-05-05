@@ -10,7 +10,7 @@ import { formatBNToString } from '@bignumber/format'
 import { getCoinTextColorCombined } from '@styles/tokens'
 import { getNetworkLinkTextColor } from '@styles/chains'
 import { AddToWalletMiniButton } from '@components/buttons/AddToWalletButton'
-import ExplorerLink from './ExplorerLink'
+import ExplorerLink from '../pages/bridge/BridgeWatcher/ExplorerLink'
 import { commify } from '@ethersproject/units'
 
 export function CheckingConfPlaceholder({ chainId }) {
@@ -182,15 +182,17 @@ export function SubTransactionItem({
       <div className="flex-grow">
         <div>
           <div className="w-full text-sm">
-            <ExplorerLink
-              overrideExistingClassname={true}
-              className={`
+            {transactionHash && (
+              <ExplorerLink
+                overrideExistingClassname={true}
+                className={`
                 ${getNetworkLinkTextColor(chainId)}
                 opacity-70 hover:opacity-100
               `}
-              chainId={chainId}
-              transactionHash={transactionHash}
-            />
+                chainId={chainId}
+                transactionHash={transactionHash}
+              />
+            )}
           </div>
         </div>
         <div className="w-full">

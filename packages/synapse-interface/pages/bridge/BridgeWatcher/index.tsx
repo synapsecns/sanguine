@@ -221,13 +221,15 @@ const BridgeWatcher = ({
           <Grid cols={{ xs: 1 }} gap={2}>
             {pairTxKappa(transactions).map(([inputTx, outputTx]) => {
               return (
-                <PairedTransactionItem
-                  key={`${inputTx?.transactionHash}-${outputTx?.transactionHash}`}
-                  inputTx={inputTx}
-                  outputTx={outputTx}
-                  chainId={fromChainId}
-                  synapseContract={synapseContract}
-                />
+                synapseContract.from && (
+                  <PairedTransactionItem
+                    key={`${inputTx?.transactionHash}-${outputTx?.transactionHash}`}
+                    inputTx={inputTx}
+                    outputTx={outputTx}
+                    chainId={fromChainId}
+                    synapseContract={synapseContract}
+                  />
+                )
               )
             })}
           </Grid>

@@ -572,7 +572,7 @@ const SwapCard = ({
           <TokenSlideOver
             key="fromBlock"
             isOrigin={true}
-            tokens={fromTokens ?? SWAPABLE_TOKENS[connectedChainId]}
+            tokens={fromTokens ?? SWAPABLE_TOKENS[connectedChainId] ?? []}
             chainId={connectedChainId}
             selectedToken={fromToken}
             setDisplayType={setDisplayType}
@@ -583,7 +583,7 @@ const SwapCard = ({
           <TokenSlideOver
             key="toBlock"
             isOrigin={false}
-            tokens={toTokens ?? SWAPABLE_TOKENS[connectedChainId]}
+            tokens={toTokens ?? SWAPABLE_TOKENS[connectedChainId] ?? []}
             chainId={connectedChainId}
             selectedToken={toToken}
             setDisplayType={setDisplayType}

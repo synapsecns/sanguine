@@ -16,7 +16,7 @@ import {
   CheckingConfPlaceholder,
   PendingCreditTransactionItem,
   CreditedTransactionItem,
-} from './TransactionItems'
+} from '../../../components/TransactionItems'
 import _ from 'lodash'
 export default function BlockCountdown({
   inputTx,
