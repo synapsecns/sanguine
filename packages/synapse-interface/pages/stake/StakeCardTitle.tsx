@@ -41,7 +41,7 @@ const StakeCardTitle = ({
   poolLabel,
   prices,
 }: StakeCardTitleProps) => {
-  const [poolApyData, setPoolApyData] = useState<any>()
+  const [poolApyData, setPoolApyData] = useState<any>(null)
   const [baseApyData, setBaseApyData] = useState<any>(null)
 
   useEffect(() => {
@@ -55,6 +55,10 @@ const StakeCardTitle = ({
         })
     }
   }, [connectedChainId, address, prices])
+
+  useEffect(() => {
+    setPoolApyData(null)
+  }, [connectedChainId])
 
   const displayPoolApyData = useMemo(() => {
     if (!poolApyData) return '- '
