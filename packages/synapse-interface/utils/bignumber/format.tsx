@@ -43,3 +43,7 @@ export const commifyBnWithDefault = (bn: BigNumber, decimals: number) => {
 export const bnPercentFormat = (bn: BigNumber) => {
   return bn ? formatBNToPercentString(bn, POOL_FEE_PRECISION) : null
 }
+
+export function fixNumberToPercentageString(num, numDecimals = 2) {
+  return `${num?.toFixed(numDecimals)}%`
+}
