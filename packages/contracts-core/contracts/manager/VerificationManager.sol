@@ -4,6 +4,7 @@ pragma solidity 0.8.17;
 // ══════════════════════════════ LIBRARY IMPORTS ══════════════════════════════
 import {Attestation} from "../libs/Attestation.sol";
 import {AttestationReport} from "../libs/AttestationReport.sol";
+import {AgentNotGuard, AgentNotNotary} from "../libs/Errors.sol";
 import {MerkleMath} from "../libs/MerkleMath.sol";
 import {Receipt} from "../libs/Receipt.sol";
 import {Snapshot, SnapshotLib, SNAPSHOT_TREE_HEIGHT} from "../libs/Snapshot.sol";
@@ -14,9 +15,6 @@ import {AgentFlag, AgentStatus} from "../libs/Structures.sol";
 /// @notice VerificationManager is a stateless contract responsible for verifying agent signatures,
 /// as well as some common basic checks for the agent statements or the agent statuses.
 abstract contract VerificationManager {
-    error AgentNotGuard();
-    error AgentNotNotary();
-
     /// @dev gap for upgrade safety
     uint256[50] private __GAP; // solhint-disable-line var-name-mixedcase
 

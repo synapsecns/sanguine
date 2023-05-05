@@ -1,6 +1,8 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.17;
 
+import {MulticallFailed} from "../libs/Errors.sol";
+
 /// @notice Collection of Multicall utilities. Fork of Multicall3:
 /// https://github.com/mds1/multicall/blob/master/src/Multicall3.sol
 abstract contract MultiCallable {
@@ -13,8 +15,6 @@ abstract contract MultiCallable {
         bool success;
         bytes returnData;
     }
-
-    error MulticallFailed();
 
     /// @notice Aggregates a few calls to this contract into one multicall without modifying `msg.sender`.
     function multicall(Call[] calldata calls) external returns (Result[] memory callResults) {
