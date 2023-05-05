@@ -4,7 +4,7 @@ pragma solidity 0.8.17;
 import {InterfaceOrigin} from "../../../contracts/interfaces/InterfaceOrigin.sol";
 import {InterfaceSummit} from "../../../contracts/interfaces/InterfaceSummit.sol";
 import {AGENT_TREE_HEIGHT} from "../../../contracts/libs/Constants.sol";
-import {MustBeSynapseDomain, SynapseDomainForbidden} from "../../../contracts/libs/Errors.sol";
+import {MustBeSynapseDomain, NotaryInDispute, SynapseDomainForbidden} from "../../../contracts/libs/Errors.sol";
 import {MerkleMath} from "../../../contracts/libs/MerkleMath.sol";
 import {AgentFlag, AgentStatus} from "../../../contracts/libs/Structures.sol";
 import {AgentManagerTest} from "./AgentManager.t.sol";
@@ -306,7 +306,7 @@ contract BondingManagerTest is AgentManagerTest {
         address notary = domains[DOMAIN_REMOTE].agent;
         openDispute({guard: domains[0].agent, notary: notary});
         (bytes memory snapPayload, bytes memory snapSig) = createSignedSnapshot(notary, rs, rsi);
-        vm.expectRevert("Notary is in dispute");
+        vm.expectRevert(NotaryInDispute.selector);
         bondingManager.submitSnapshot(snapPayload, snapSig);
     }
 
@@ -347,7 +347,7 @@ contract BondingManagerTest is AgentManagerTest {
         (bytes memory receiptPayload, bytes memory receiptSig) = signReceipt(rcptNotary, re);
         // Set value for getAttestationNonce call
         BaseMock(localDestination()).setMockReturnValue(1);
-        vm.expectRevert("Notary is in dispute");
+        vm.expectRevert(NotaryInDispute.selector);
         bondingManager.submitReceipt(receiptPayload, receiptSig);
     }
 

@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.17;
 
-import {AgentNotNotary, CallerNotAgentManager} from "../../contracts/libs/Errors.sol";
+import {AgentNotNotary, CallerNotAgentManager, NotaryInDispute} from "../../contracts/libs/Errors.sol";
 import {IAgentManager, InterfaceSummit} from "../../contracts/Summit.sol";
 
 import {AgentFlag, AgentStatus, Summit, SynapseTest} from "../utils/SynapseTest.t.sol";
@@ -165,7 +165,7 @@ contract SummitTipsTest is AgentSecuredTest {
         address notary = domains[DOMAIN_REMOTE].agent;
         openDispute({guard: domains[0].agent, notary: notary});
         (bytes memory rcptPayload, bytes memory rcptSignature) = signReceipt(notary, re);
-        vm.expectRevert("Notary is in dispute");
+        vm.expectRevert(NotaryInDispute.selector);
         bondingManager.submitReceipt(rcptPayload, rcptSignature);
     }
 

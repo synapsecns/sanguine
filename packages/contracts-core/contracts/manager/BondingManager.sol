@@ -5,7 +5,7 @@ pragma solidity 0.8.17;
 import {Attestation, AttestationLib} from "../libs/Attestation.sol";
 import {AttestationReport, AttestationReportLib} from "../libs/AttestationReport.sol";
 import {BONDING_OPTIMISTIC_PERIOD, SYNAPSE_DOMAIN} from "../libs/Constants.sol";
-import {MustBeSynapseDomain, SynapseDomainForbidden} from "../libs/Errors.sol";
+import {MustBeSynapseDomain, NotaryInDispute, SynapseDomainForbidden} from "../libs/Errors.sol";
 import {ChainGas} from "../libs/GasData.sol";
 import {DynamicTree, MerkleMath} from "../libs/MerkleTree.sol";
 import {Receipt, ReceiptBody, ReceiptLib} from "../libs/Receipt.sol";
@@ -91,7 +91,7 @@ contract BondingManager is AgentManager, BondingManagerEvents, InterfaceBondingM
             });
         } else {
             // Check that Notary is not in dispute
-            require(_disputes[agent].flag == DisputeFlag.None, "Notary is in dispute");
+            if (_disputes[agent].flag != DisputeFlag.None) revert NotaryInDispute();
             agentRoot_ = _agentTree.root;
             attPayload = InterfaceSummit(summit).acceptNotarySnapshot({
                 notaryIndex: status.index,
@@ -121,7 +121,7 @@ contract BondingManager is AgentManager, BondingManagerEvents, InterfaceBondingM
         (AgentStatus memory rcptNotaryStatus, address notary) = _verifyReceipt(rcpt, rcptSignature);
         // Receipt Notary needs to be Active and not in dispute
         rcptNotaryStatus.verifyActive();
-        require(_disputes[notary].flag == DisputeFlag.None, "Notary is in dispute");
+        if (_disputes[notary].flag != DisputeFlag.None) revert NotaryInDispute();
         // Check that receipt's snapshot root exists in Summit
         ReceiptBody rcptBody = rcpt.body();
         uint32 attNonce = IExecutionHub(destination).getAttestationNonce(rcptBody.snapshotRoot());

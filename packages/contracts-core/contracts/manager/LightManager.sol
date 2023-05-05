@@ -5,7 +5,7 @@ pragma solidity 0.8.17;
 import {Attestation, AttestationLib} from "../libs/Attestation.sol";
 import {AttestationReport, AttestationReportLib} from "../libs/AttestationReport.sol";
 import {AGENT_TREE_HEIGHT, BONDING_OPTIMISTIC_PERIOD, SYNAPSE_DOMAIN} from "../libs/Constants.sol";
-import {MustBeSynapseDomain, SynapseDomainForbidden} from "../libs/Errors.sol";
+import {MustBeSynapseDomain, NotaryInDispute, SynapseDomainForbidden} from "../libs/Errors.sol";
 import {ChainGas, GasDataLib} from "../libs/GasData.sol";
 import {MerkleMath} from "../libs/MerkleMath.sol";
 import {AgentFlag, AgentStatus, DisputeFlag} from "../libs/Structures.sol";
@@ -62,7 +62,7 @@ contract LightManager is AgentManager, InterfaceLightManager {
         // Check if Notary is active on this chain
         _verifyNotaryDomain(status.domain);
         // Notary needs to be not in dispute
-        require(_disputes[notary].flag == DisputeFlag.None, "Notary is in dispute");
+        if (_disputes[notary].flag != DisputeFlag.None) revert NotaryInDispute();
         // Cast uint256[] to ChainGas[] using assembly. This prevents us from doing unnecessary copies.
         // Note that this does NOT clear the highest bits, but it's ok as the dirty highest bits
         // will lead to hash mismatch in snapGasHash() and thus to attestation rejection.

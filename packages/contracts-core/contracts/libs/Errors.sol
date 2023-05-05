@@ -10,6 +10,10 @@ error CallerNotAgentManager();
 error AgentNotGuard();
 error AgentNotNotary();
 
+error DisputeAlreadyResolved();
+error GuardInDispute();
+error NotaryInDispute();
+
 error MustBeSynapseDomain();
 error SynapseDomainForbidden();
 

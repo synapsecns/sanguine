@@ -6,6 +6,7 @@ import {Attestation} from "../libs/Attestation.sol";
 import {BaseMessage, BaseMessageLib, MemView} from "../libs/BaseMessage.sol";
 import {ByteString, CallData} from "../libs/ByteString.sol";
 import {ORIGIN_TREE_HEIGHT, SNAPSHOT_TREE_HEIGHT, SYNAPSE_DOMAIN} from "../libs/Constants.sol";
+import {NotaryInDispute} from "../libs/Errors.sol";
 import {MerkleMath} from "../libs/MerkleMath.sol";
 import {Header, Message, MessageFlag, MessageLib} from "../libs/Message.sol";
 import {Receipt, ReceiptBody, ReceiptLib} from "../libs/Receipt.sol";
@@ -334,7 +335,7 @@ abstract contract ExecutionHub is AgentSecured, ExecutionHubEvents, IExecutionHu
         // Check if snapshot root has been submitted
         require(rootData.submittedAt != 0, "Invalid snapshot root");
         // Check that Notary who submitted the attestation is not in dispute
-        require(_disputes[rootData.notaryIndex] == DisputeFlag.None, "Notary is in dispute");
+        if (_disputes[rootData.notaryIndex] != DisputeFlag.None) revert NotaryInDispute();
     }
 
     function _receiptBody(bytes32 messageHash, ReceiptData memory rcptData)

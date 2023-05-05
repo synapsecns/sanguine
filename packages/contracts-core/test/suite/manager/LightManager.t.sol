@@ -4,6 +4,8 @@ pragma solidity 0.8.17;
 import {
     AgentNotGuard,
     AgentNotNotary,
+    GuardInDispute,
+    NotaryInDispute,
     MustBeSynapseDomain,
     SynapseDomainForbidden
 } from "../../../contracts/libs/Errors.sol";
@@ -213,7 +215,7 @@ contract LightManagerTest is AgentManagerTest {
         address notary = domains[localDomain()].agent;
         (bytes memory attPayload, bytes memory attSignature) = signAttestation(notary, ra);
         openDispute({guard: domains[0].agent, notary: notary});
-        vm.expectRevert("Notary is in dispute");
+        vm.expectRevert(NotaryInDispute.selector);
         lightManager.submitAttestation(attPayload, attSignature, ra._agentRoot, snapGas);
     }
 
@@ -258,7 +260,7 @@ contract LightManagerTest is AgentManagerTest {
         (bytes memory arPayload, bytes memory arSignature) = createSignedAttestationReport(guard, ra);
         // Put the Guard in Dispute with another Notary
         openDispute({guard: guard, notary: domains[DOMAIN_LOCAL].agents[1]});
-        vm.expectRevert("Guard already in dispute");
+        vm.expectRevert(GuardInDispute.selector);
         lightManager.submitAttestationReport(arPayload, arSignature, attSignature);
     }
 
@@ -273,7 +275,7 @@ contract LightManagerTest is AgentManagerTest {
         (bytes memory arPayload, bytes memory arSignature) = createSignedAttestationReport(guard, ra);
         // Put the Notary in Dispute with another Guard
         openDispute({guard: domains[0].agents[1], notary: notary});
-        vm.expectRevert("Notary already in dispute");
+        vm.expectRevert(NotaryInDispute.selector);
         lightManager.submitAttestationReport(arPayload, arSignature, attSignature);
     }
 

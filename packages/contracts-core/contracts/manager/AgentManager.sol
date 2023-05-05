@@ -3,7 +3,13 @@ pragma solidity 0.8.17;
 
 // ══════════════════════════════ LIBRARY IMPORTS ══════════════════════════════
 import {Attestation, AttestationLib} from "../libs/Attestation.sol";
-import {SnapshotRootMismatch, StateMismatch} from "../libs/Errors.sol";
+import {
+    DisputeAlreadyResolved,
+    GuardInDispute,
+    NotaryInDispute,
+    SnapshotRootMismatch,
+    StateMismatch
+} from "../libs/Errors.sol";
 import {Receipt, ReceiptLib} from "../libs/Receipt.sol";
 import {Snapshot, SnapshotLib} from "../libs/Snapshot.sol";
 import {State, StateLib} from "../libs/State.sol";
@@ -310,8 +316,8 @@ abstract contract AgentManager is MessagingBase, VerificationManager, AgentManag
     /// @dev Opens a Dispute between a Guard and a Notary, if they are both not in Dispute already.
     function _openDispute(address guard, uint32 guardIndex, address notary, uint32 notaryIndex) internal {
         // Check that both agents are not in Dispute yet
-        require(_disputes[guard].flag == DisputeFlag.None, "Guard already in dispute");
-        require(_disputes[notary].flag == DisputeFlag.None, "Notary already in dispute");
+        if (_disputes[guard].flag != DisputeFlag.None) revert GuardInDispute();
+        if (_disputes[notary].flag != DisputeFlag.None) revert NotaryInDispute();
         _updateDispute(guard, Dispute(DisputeFlag.Pending, notaryIndex, address(0)));
         _updateDispute(notary, Dispute(DisputeFlag.Pending, guardIndex, address(0)));
         _notifyDisputeOpened(guardIndex, notaryIndex);
@@ -337,7 +343,7 @@ abstract contract AgentManager is MessagingBase, VerificationManager, AgentManag
     /// @dev Resolves a Dispute between a slashed Agent and their Rival (if there was one).
     function _resolveDispute(address slashedAgent, uint32 slashedIndex, address prover) internal {
         Dispute memory dispute = _disputes[slashedAgent];
-        require(dispute.flag != DisputeFlag.Slashed, "Dispute already resolved");
+        if (dispute.flag == DisputeFlag.Slashed) revert DisputeAlreadyResolved();
         (dispute.flag, dispute.fraudProver) = (DisputeFlag.Slashed, prover);
         _updateDispute(slashedAgent, dispute);
         // Clear Dispute status for the Rival
