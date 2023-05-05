@@ -161,7 +161,22 @@ const BridgePage = ({
       isCancelled = true
     }
   }, [toToken, fromInput, time])
+  /*
+  Helper Function: timeout
+  - setTimeout function to debounce bridge quote call
+  */
+  function timeout(ms) {
+    return new Promise((resolve) => setTimeout(resolve, ms))
+  }
 
+  /*
+  Helper Function: checkStringIfOnlyZeroes
+  - regex function to determine if user input is only zeroes
+  */
+  function checkStringIfOnlyZeroes(str: string): boolean {
+    const regex = /^0*\.?0*$|^$/
+    return regex.test(str)
+  }
   /*
   useEffect Triggers: fromInput
   - Checks that user input is not zero. When input changes,
