@@ -461,7 +461,7 @@ const SwapCard = ({
       connectedChainId,
       address,
       fromToken.addresses[connectedChainId as keyof Token['addresses']],
-      fromInput.bigNum.mul(1000).div(999), // TODO Get rid of harcoded slippage
+      fromInput.bigNum.mul(1000).div(999), // TODO Get rid of hardcoded slippage
       swapQuote.quote
     )
     const tx = await wallet.sendTransaction(data)
@@ -575,7 +575,7 @@ const SwapCard = ({
           <TokenSlideOver
             key="fromBlock"
             isOrigin={true}
-            tokens={fromTokens}
+            tokens={fromTokens ?? SWAPABLE_TOKENS[connectedChainId] ?? []}
             chainId={connectedChainId}
             selectedToken={fromToken}
             setDisplayType={setDisplayType}
@@ -586,7 +586,7 @@ const SwapCard = ({
           <TokenSlideOver
             key="toBlock"
             isOrigin={false}
-            tokens={toTokens}
+            tokens={toTokens ?? SWAPABLE_TOKENS[connectedChainId] ?? []}
             chainId={connectedChainId}
             selectedToken={toToken}
             setDisplayType={setDisplayType}

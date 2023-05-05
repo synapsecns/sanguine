@@ -18,9 +18,9 @@ export const approveToken = async (
   })
 
   const erc20 = new Contract(tokenAddress, erc20ABI, signer)
-  const approveTx = await erc20.approve(address, amount ?? MaxInt256)
-
   try {
+    const approveTx = await erc20.approve(address, amount ?? MaxInt256)
+
     await approveTx.wait()
     console.log(`Transaction mined successfully: ${approveTx.hash}`)
     const toastContent = (

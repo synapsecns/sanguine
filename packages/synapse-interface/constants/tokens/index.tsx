@@ -1,10 +1,8 @@
 import * as CHAINS from '@constants/chains/master'
-
 import * as all from './master'
 import * as allPool from './poolMaster'
 import { SYN_ETH_SUSHI_TOKEN } from './sushiMaster'
 import { Token } from '@/utils/types'
-
 // TODO change this to token by key
 interface TokensByChain {
   [cID: string]: Token[]
