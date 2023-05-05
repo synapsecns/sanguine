@@ -120,6 +120,27 @@ contract GasOracleTest is MessagingBaseTest {
         checkGasData(domain, updated.decompress());
     }
 
+    function test_updateGasData_localDomain(Random memory random, uint256 timePassed) public {
+        uint32 domain = localDomain();
+        timePassed = timePassed % (2 * GasOracle(gasOracle).GAS_DATA_DECREASED_OPTIMISTIC_PERIOD());
+        RawGasData memory current = random.nextGasData();
+        setGasData(domain, current.decompress());
+        RawGasData memory updated = random.nextGasData();
+        // Force getGasData(domain) to return (updated, timePassed). Note that the current Destination
+        // implementation will always return zero values for local domain, but it's good to have the
+        // extra check in gas oracle as well.
+        vm.mockCall(
+            destination,
+            abi.encodeWithSelector(InterfaceDestination.getGasData.selector, domain),
+            abi.encode(updated.castToGasData(), timePassed)
+        );
+        address caller = random.nextAddress();
+        vm.prank(caller);
+        GasOracle(gasOracle).updateGasData(domain);
+        // Should always return current values
+        checkGasData(domain, current.decompress());
+    }
+
     function setGasData(uint32 domain, RawGasData256 memory rgd256) public {
         GasOracle(gasOracle).setGasData({
             domain: domain,
