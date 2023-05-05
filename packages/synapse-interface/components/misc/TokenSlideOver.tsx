@@ -11,7 +11,7 @@ import { DisplayType } from '@/pages/bridge/BridgeCard'
 
 export const TokenSlideOver = ({
   isOrigin,
-  tokens,
+  tokens = [],
   chainId,
   selectedToken,
   setDisplayType,
@@ -24,6 +24,8 @@ export const TokenSlideOver = ({
   setDisplayType: (v: DisplayType) => void
   handleTokenChange: (token: Token, type: 'from' | 'to') => void
 }) => {
+  console.log('isOrigin: ', isOrigin)
+  console.log('tokens: ', tokens)
   const [currentIdx, setCurrentIdx] = useState(-1)
   const [searchStr, setSearchStr] = useState('')
   let tokenList: any[] = []

@@ -53,7 +53,7 @@ const SwapCard = ({
   const [fromTokens, setFromTokens] = useState([])
   const [fromInput, setFromInput] = useState({ string: '', bigNum: Zero })
   const [toToken, setToToken] = useState(DEFAULT_TO_TOKEN)
-  const [toTokens, setToTokens] = useState<Token[]>() //add default
+  const [toTokens, setToTokens] = useState<Token[]>([]) //add default
   const [error, setError] = useState('')
   const [destinationAddress, setDestinationAddress] = useState('')
   const [swapQuote, setSwapQuote] = useState<SwapQuote>(EMPTY_SWAP_QUOTE)
@@ -128,6 +128,9 @@ const SwapCard = ({
     })
   }, [router.isReady])
 
+  useEffect(() => {
+    console.log('fromTokens: ', fromTokens)
+  }, [fromTokens])
   /*
   useEffect Trigger: connectedChain
   - when the connected chain changes (wagmi hook), update the state

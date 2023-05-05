@@ -1,6 +1,6 @@
 {
   "name": "@synapsecns/synapse-interface",
-  "version": "0.1.7",
+  "version": "0.1.9",
   "private": true,
   "engines": {
     "node": ">=16.0.0"
@@ -51,6 +51,7 @@
     "fuse.js": "^6.6.2",
     "keccak": "^3.0.3",
     "lodash": "^4.17.21",
+    "lodash.debounce": "^4.0.8",
     "next": "13.3.0",
     "numeral": "^2.0.6",
     "postcss": "^8.4.21",

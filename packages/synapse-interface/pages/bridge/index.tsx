@@ -55,6 +55,7 @@ const BridgePage = ({
   const [fromInput, setFromInput] = useState({ string: '', bigNum: Zero })
   const [toChainId, setToChainId] = useState(DEFAULT_TO_CHAIN)
   const [toToken, setToToken] = useState(DEFAULT_TO_TOKEN)
+  const [isQuoteLoading, setIsQuoteLoading] = useState<boolean>(false)
   const [error, setError] = useState('')
   const [destinationAddress, setDestinationAddress] = useState('')
   const [toOptions, setToOptions] = useState({
@@ -135,21 +136,46 @@ const BridgePage = ({
   - Gets a quote when the polling function is executed or any of the bridge attributes are altered.
   */
   useEffect(() => {
-    if (
-      fromChainId &&
-      toChainId &&
-      String(fromToken.addresses[fromChainId]) &&
-      String(toToken.addresses[toChainId]) &&
-      fromInput &&
-      fromInput.bigNum.gt(Zero)
-    ) {
-      console.log('sudyai', fromInput.bigNum.toString())
-      // TODO this needs to be debounced or throttled somehow to prevent spam and lag in the ui
-      getQuote()
-    } else {
-      setBridgeQuote(EMPTY_BRIDGE_QUOTE)
+    let isCancelled = false
+
+    const handleChange = async () => {
+      await timeout(1000) // debounce by 1000ms or 1s
+      if (!isCancelled) {
+        if (
+          fromChainId &&
+          toChainId &&
+          String(fromToken.addresses[fromChainId]) &&
+          String(toToken.addresses[toChainId]) &&
+          fromInput &&
+          fromInput.bigNum.gt(Zero)
+        ) {
+          getQuote()
+        } else {
+          setBridgeQuote(EMPTY_BRIDGE_QUOTE)
+        }
+      }
+    }
+    handleChange()
+
+    return () => {
+      isCancelled = true
     }
   }, [toToken, fromInput, time])
+
+  /*
+  useEffect Triggers: fromInput
+  - Checks that user input is not zero. When input changes,
+  - isQuoteLoading state is set to true for loading state interactions
+  */
+  useEffect(() => {
+    const { string, bigNum } = fromInput
+    const isInvalid = checkStringIfOnlyZeroes(string)
+    isInvalid ? () => null : setIsQuoteLoading(true)
+
+    return () => {
+      setIsQuoteLoading(false)
+    }
+  }, [fromInput])
 
   /*
   Helper Function: resetTokenPermutation
@@ -464,57 +490,50 @@ const BridgePage = ({
   - Calculates slippage by subtracting fee from input amount (checks to ensure proper num of decimals are in use - ask someone about stable swaps if you want to learn more)
   */
   const getQuote = async () => {
-    try {
-      console.log('sudyaivalue2', fromInput.string, fromInput.bigNum.toString())
-
-      const { feeAmount, routerAddress, maxAmountOut, originQuery, destQuery } =
-        await SynapseSDK.bridgeQuote(
-          fromChainId,
-          toChainId,
-          fromToken.addresses[fromChainId],
-          toToken.addresses[toChainId],
-          fromInput.bigNum
-        )
-      if (!(originQuery && maxAmountOut && destQuery && feeAmount)) {
-        setBridgeQuote(EMPTY_BRIDGE_QUOTE_ZERO)
-        return
-      }
-      const toValueBigNum = maxAmountOut ?? Zero
-      const adjustedFeeAmount = feeAmount.lt(fromInput.bigNum)
-        ? feeAmount
-        : feeAmount.div(
-            BigNumber.from(10).pow(18 - toToken.decimals[toChainId])
-          )
-
-      const allowance =
-        fromToken.addresses[fromChainId] === AddressZero
-          ? Zero
-          : await getCurrentTokenAllowance(routerAddress)
-      // console.log('allowance: ', allowance, adjustedFeeAmount.toString())
-      setBridgeQuote({
-        outputAmount: toValueBigNum,
-        outputAmountString: commify(
-          formatBNToString(toValueBigNum, toToken.decimals[toChainId], 8)
-        ),
-        routerAddress,
-        allowance,
-        exchangeRate: calculateExchangeRate(
-          fromInput.bigNum.sub(adjustedFeeAmount),
-          fromToken.decimals[fromChainId],
-          toValueBigNum,
-          toToken.decimals[toChainId]
-        ),
-        feeAmount,
-        delta: maxAmountOut,
-        quotes: {
-          originQuery,
-          destQuery,
-        },
-      })
-    } catch (e) {
-      console.log('error getting quote: ', e)
+    setIsQuoteLoading(true)
+    const { feeAmount, routerAddress, maxAmountOut, originQuery, destQuery } =
+      await SynapseSDK.bridgeQuote(
+        fromChainId,
+        toChainId,
+        fromToken.addresses[fromChainId],
+        toToken.addresses[toChainId],
+        fromInput.bigNum
+      )
+    if (!(originQuery && maxAmountOut && destQuery && feeAmount)) {
+      setBridgeQuote(EMPTY_BRIDGE_QUOTE_ZERO)
+      setIsQuoteLoading(false)
+      return
     }
-    return
+    const toValueBigNum = maxAmountOut ?? Zero
+    const adjustedFeeAmount = feeAmount.lt(fromInput.bigNum)
+      ? feeAmount
+      : feeAmount.div(BigNumber.from(10).pow(18 - toToken.decimals[toChainId]))
+
+    const allowance =
+      fromToken.addresses[fromChainId] === AddressZero
+        ? Zero
+        : await getCurrentTokenAllowance(routerAddress)
+    setBridgeQuote({
+      outputAmount: toValueBigNum,
+      outputAmountString: commify(
+        formatBNToString(toValueBigNum, toToken.decimals[toChainId], 8)
+      ),
+      routerAddress,
+      allowance,
+      exchangeRate: calculateExchangeRate(
+        fromInput.bigNum.sub(adjustedFeeAmount),
+        fromToken.decimals[fromChainId],
+        toValueBigNum,
+        toToken.decimals[toChainId]
+      ),
+      feeAmount,
+      delta: maxAmountOut,
+      quotes: {
+        originQuery,
+        destQuery,
+      },
+    })
+    return setIsQuoteLoading(false)
   }
 
   /*
@@ -572,6 +591,7 @@ const BridgePage = ({
                     toToken={toToken}
                     toChainId={toChainId}
                     toOptions={toOptions}
+                    isQuoteLoading={isQuoteLoading}
                     destinationAddress={destinationAddress}
                     handleChainChange={handleChainChange}
                     handleTokenChange={handleTokenChange}
