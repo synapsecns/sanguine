@@ -391,7 +391,7 @@ abstract contract AgentManager is MessagingBase, VerificationManager, AgentManag
         status = agentStatus(agent);
         // Discard signature of unknown agents.
         // Further flag checks are supposed to be performed in a caller function.
-        require(status.flag != AgentFlag.Unknown, "Unknown agent");
+        status.verifyKnown();
     }
 
     /// @dev Verifies that Notary signature is active on local domain

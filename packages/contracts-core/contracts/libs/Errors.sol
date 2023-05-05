@@ -10,6 +10,10 @@ error CallerNotAgentManager();
 error AgentNotGuard();
 error AgentNotNotary();
 
+error AgentNotActive();
+error AgentNotActiveNorUnstaking();
+error AgentUnknown();
+
 error DisputeAlreadyResolved();
 error GuardInDispute();
 error NotaryInDispute();
