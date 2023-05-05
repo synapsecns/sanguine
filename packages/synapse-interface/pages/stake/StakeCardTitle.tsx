@@ -65,7 +65,7 @@ const StakeCardTitle = ({
 
       <div className="text-lg font-normal text-white text-opacity-70">
         <span className="text-green-400">
-          {poolApyData ? `${String(poolApyData.fullCompoundedAPYStr)}%` : '-'}
+          {poolApyData ? `${String(poolApyData.fullCompoundedAPYStr)}% ` : '- '}
         </span>
         APY
         <ApyTooltip
