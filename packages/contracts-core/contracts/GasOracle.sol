@@ -133,6 +133,8 @@ contract GasOracle is MessagingBase, GasOracleEvents, InterfaceGasOracle {
     /// optimistically consuming the data from the `Destination` contract.
     function _fetchGasData(uint32 domain) internal view returns (bool wasUpdated, GasData updatedGasData) {
         GasData current = _gasData[domain];
+        // Destination only has the gas data for the remote domains.
+        if (domain == localDomain) return (false, current);
         (GasData incoming, uint256 dataMaturity) = InterfaceDestination(destination).getGasData(domain);
         // Zero maturity means that either there is no data for the domain, or it was just updated.
         // In both cases, we don't want to update the local data.
