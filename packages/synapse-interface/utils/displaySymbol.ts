@@ -15,6 +15,9 @@ import { Token } from '@/utils/types'
  */
 
 export const displaySymbol = (chainId: number, token: Token) => {
+  if (!token?.symbol) {
+    return ''
+  }
   if (token.symbol === SYNJEWEL.symbol) {
     return 'synJEWEL'
   } else if (chainId === CHAINS.AVALANCHE.id) {

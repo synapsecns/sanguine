@@ -90,7 +90,7 @@ const BridgeCard = ({
 
   /*
   useEffect Trigger: fromToken, fromTokens
-  - When either the from token or list of from tokens are mutated, the selected token's balance is set in state
+  - When either the from token or list of from tokens are mutated, the selected token's balance is set in the state
   this is for checking max bridge possible as well as for producing the option to select max bridge
   */
   useEffect(() => {

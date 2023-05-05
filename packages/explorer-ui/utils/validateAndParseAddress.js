@@ -1,5 +1,5 @@
 import warning from 'tiny-warning'
-import {getAddress} from '@ethersproject/address'
+import { getAddress } from '@ethersproject/address'
 
 /**
  * warns if addresses are not checksummed

@@ -19,6 +19,32 @@ export type Chain = {
   visibilityRank?: number
   color?: string
 }
+export type PoolToken = {
+  symbol: string
+  percent: string
+  balance: BigNumber
+  balanceStr: string
+  token: Token
+  isLp: boolean
+}
+export type PoolUserData = {
+  name: string
+  share: BigNumber
+  value: BigNumber
+  tokens: PoolToken[]
+  lpTokenBalance: BigNumber
+  lpTokenBalanceStr: string
+}
+export type PoolData = {
+  name: string
+  tokens: PoolToken[]
+  totalLocked: BigNumber
+  totalLockedStr: string
+  totalLockedUSD: BigNumber
+  totalLockedUSDStr: string
+  virtualPrice: BigNumber
+  virtualPriceStr: string
+}
 
 export type BridgeQuote = {
   outputAmount: BigNumber
@@ -30,7 +56,14 @@ export type BridgeQuote = {
   delta: BigNumber
   quotes: { originQuery: any; destQuery: any }
 }
-
+interface TokensByChain {
+  [cID: string]: Token[]
+}
+export type PoolCardInfo = {
+  index: number
+  label: string
+  poolsByChain: TokensByChain
+}
 export enum WalletId {
   MetaMask = 'metaMask',
   WalletConnect = 'walletConnect',
