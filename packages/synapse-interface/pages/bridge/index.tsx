@@ -40,12 +40,16 @@ import {
   - look into getting rid of fromChainId state and just using wagmi hook (ran into problems when trying this but forgot why)
 */
 
-const BridgePage = ({ address }: { address: `0x${string}` }) => {
+const BridgePage = ({
+  address,
+  fromChainId,
+}: {
+  address: `0x${string}`
+  fromChainId: number
+}) => {
   const router = useRouter()
   const SynapseSDK = useSynapseContext()
-  const { chain: connectedChain } = useNetwork()
   const [time, setTime] = useState(Date.now())
-  const [fromChainId, setFromChainId] = useState(DEFAULT_FROM_CHAIN)
   const [fromToken, setFromToken] = useState(DEFAULT_FROM_TOKEN)
   const [fromTokens, setFromTokens] = useState([])
   const [fromInput, setFromInput] = useState({ string: '', bigNum: Zero })
@@ -68,8 +72,13 @@ const BridgePage = ({ address }: { address: `0x${string}` }) => {
   - Initializes polling (setInterval) func to re-retrieve quotes.
   */
   useEffect(() => {
-    const { chain: fromChainIdRaw } = getNetwork()
-    setFromChainId(fromChainIdRaw ? fromChainIdRaw?.id : DEFAULT_FROM_CHAIN)
+    sortByTokenBalance(
+      BRIDGABLE_TOKENS[fromChainId],
+      fromChainId,
+      address
+    ).then((tokens) => {
+      setFromTokens(tokens)
+    })
     const interval = setInterval(
       () => setTime(Date.now()),
       QUOTE_POLLING_INTERVAL
@@ -104,6 +113,7 @@ const BridgePage = ({ address }: { address: `0x${string}` }) => {
         toTokenSymbolUrl ? String(toTokenSymbolUrl) : undefined,
         fromChainId
       )
+    console.log('bridgeableToken', bridgeableToken, newToChain)
     resetTokenPermutation(
       tempFromToken,
       newToChain,
@@ -121,28 +131,6 @@ const BridgePage = ({ address }: { address: `0x${string}` }) => {
   }, [router.isReady])
 
   /*
-  useEffect Trigger: connectedChain
-  - when the connected chain changes (wagmi hook), update the state
-  */
-  useEffect(() => {
-    if (connectedChain?.id) {
-      if (address === undefined) {
-        return
-      }
-      setFromChainId(connectedChain?.id)
-      handleChainChange(connectedChain?.id, false, 'from')
-      sortByTokenBalance(
-        BRIDGABLE_TOKENS[connectedChain?.id],
-        connectedChain?.id,
-        address
-      ).then((tokens) => {
-        setFromTokens(tokens)
-      })
-      return
-    }
-  }, [connectedChain?.id])
-
-  /*
   useEffect Triggers: toToken, fromInput, toChainId, time
   - Gets a quote when the polling function is executed or any of the bridge attributes are altered.
   */
@@ -155,12 +143,13 @@ const BridgePage = ({ address }: { address: `0x${string}` }) => {
       fromInput &&
       fromInput.bigNum.gt(Zero)
     ) {
+      console.log('sudyai', fromInput.bigNum.toString())
       // TODO this needs to be debounced or throttled somehow to prevent spam and lag in the ui
       getQuote()
     } else {
       setBridgeQuote(EMPTY_BRIDGE_QUOTE)
     }
-  }, [toToken, fromInput, toChainId, time])
+  }, [toToken, fromInput, time])
 
   /*
   Helper Function: resetTokenPermutation
@@ -211,6 +200,8 @@ const BridgePage = ({ address }: { address: `0x${string}` }) => {
     ) {
       let bigNum =
         stringToBigNum(value, fromToken.decimals[fromChainId]) ?? Zero
+      console.log('sudyaivalue1', value, bigNum.toString())
+
       setFromInput({
         string: value,
         bigNum: bigNum,
@@ -223,6 +214,7 @@ const BridgePage = ({ address }: { address: `0x${string}` }) => {
   - Returns the default token to display when switching chains. Usually returns stables or eth/wrapped eth.
   */
   const getMostCommonSwapableType = (chainId: number) => {
+    console.log('sudyaichainid', chainId)
     const fromChainTokensByType = Object.values(
       BRIDGE_SWAPABLE_TOKENS_BY_TYPE[chainId]
     )
@@ -301,6 +293,7 @@ const BridgePage = ({ address }: { address: `0x${string}` }) => {
       positedToChain && positedToChain !== fromChainId
         ? Number(positedToChain)
         : DEFAULT_TO_CHAIN
+    console.log('newToChain', newToChain)
     let bridgeableChains = BRIDGE_CHAINS_BY_TYPE[
       String(token.swapableType)
     ].filter((chainId) => Number(chainId) !== fromChainId)
@@ -401,6 +394,13 @@ const BridgePage = ({ address }: { address: `0x${string}` }) => {
         tempFromToken.symbol,
         bridgeableToken.symbol
       )
+      sortByTokenBalance(
+        BRIDGABLE_TOKENS[desiredChainId],
+        desiredChainId,
+        address
+      ).then((tokens) => {
+        setFromTokens(tokens)
+      })
       return
     } else if (type === 'to') {
       const {
@@ -464,47 +464,56 @@ const BridgePage = ({ address }: { address: `0x${string}` }) => {
   - Calculates slippage by subtracting fee from input amount (checks to ensure proper num of decimals are in use - ask someone about stable swaps if you want to learn more)
   */
   const getQuote = async () => {
-    const { feeAmount, routerAddress, maxAmountOut, originQuery, destQuery } =
-      await SynapseSDK.bridgeQuote(
-        fromChainId,
-        toChainId,
-        fromToken.addresses[fromChainId],
-        toToken.addresses[toChainId],
-        fromInput.bigNum
-      )
-    if (!(originQuery && maxAmountOut && destQuery && feeAmount)) {
-      setBridgeQuote(EMPTY_BRIDGE_QUOTE_ZERO)
-      return
-    }
-    const toValueBigNum = maxAmountOut ?? Zero
-    const adjustedFeeAmount = feeAmount.lt(fromInput.bigNum)
-      ? feeAmount
-      : feeAmount.div(BigNumber.from(10).pow(18 - toToken.decimals[toChainId]))
+    try {
+      console.log('sudyaivalue2', fromInput.string, fromInput.bigNum.toString())
 
-    const allowance =
-      fromToken.addresses[fromChainId] === AddressZero
-        ? Zero
-        : await getCurrentTokenAllowance(routerAddress)
-    setBridgeQuote({
-      outputAmount: toValueBigNum,
-      outputAmountString: commify(
-        formatBNToString(toValueBigNum, toToken.decimals[toChainId], 8)
-      ),
-      routerAddress,
-      allowance,
-      exchangeRate: calculateExchangeRate(
-        fromInput.bigNum.sub(adjustedFeeAmount),
-        fromToken.decimals[fromChainId],
-        toValueBigNum,
-        toToken.decimals[toChainId]
-      ),
-      feeAmount,
-      delta: maxAmountOut,
-      quotes: {
-        originQuery,
-        destQuery,
-      },
-    })
+      const { feeAmount, routerAddress, maxAmountOut, originQuery, destQuery } =
+        await SynapseSDK.bridgeQuote(
+          fromChainId,
+          toChainId,
+          fromToken.addresses[fromChainId],
+          toToken.addresses[toChainId],
+          fromInput.bigNum
+        )
+      if (!(originQuery && maxAmountOut && destQuery && feeAmount)) {
+        setBridgeQuote(EMPTY_BRIDGE_QUOTE_ZERO)
+        return
+      }
+      const toValueBigNum = maxAmountOut ?? Zero
+      const adjustedFeeAmount = feeAmount.lt(fromInput.bigNum)
+        ? feeAmount
+        : feeAmount.div(
+            BigNumber.from(10).pow(18 - toToken.decimals[toChainId])
+          )
+
+      const allowance =
+        fromToken.addresses[fromChainId] === AddressZero
+          ? Zero
+          : await getCurrentTokenAllowance(routerAddress)
+      // console.log('allowance: ', allowance, adjustedFeeAmount.toString())
+      setBridgeQuote({
+        outputAmount: toValueBigNum,
+        outputAmountString: commify(
+          formatBNToString(toValueBigNum, toToken.decimals[toChainId], 8)
+        ),
+        routerAddress,
+        allowance,
+        exchangeRate: calculateExchangeRate(
+          fromInput.bigNum.sub(adjustedFeeAmount),
+          fromToken.decimals[fromChainId],
+          toValueBigNum,
+          toToken.decimals[toChainId]
+        ),
+        feeAmount,
+        delta: maxAmountOut,
+        quotes: {
+          originQuery,
+          destQuery,
+        },
+      })
+    } catch (e) {
+      console.log('error getting quote: ', e)
+    }
     return
   }
 
@@ -576,7 +585,12 @@ const BridgePage = ({ address }: { address: `0x${string}` }) => {
                 </div>
               </div>
               <div>
-                <BridgeWatcher />
+                <BridgeWatcher
+                  fromChainId={fromChainId}
+                  toChainId={toChainId}
+                  address={address}
+                  destinationAddress={destinationAddress}
+                />
               </div>
             </Grid>
           </div>

@@ -1,20 +1,20 @@
 import { BigNumber } from '@ethersproject/bignumber'
 
-import { WETH, ETH } from '@constants/tokens/basic'
-import { CHAIN_INFO_MAP } from '@constants/networks'
+import { WETH } from '@constants/tokens/swapMaster'
+import { ETH } from '@constants/tokens/master'
+
+import { CHAINS_BY_ID } from '@constants/chains'
 
 import { formatBNToString } from '@bignumber/format'
 
-import { getCoinTextColorCombined } from '@styles/coins'
-import { getNetworkLinkTextColor } from '@styles/networks'
-
-import ExplorerLink from '@components/ExplorerLink'
-import { useActiveWeb3React } from '@hooks/wallet/useActiveWeb3React'
+import { getCoinTextColorCombined } from '@styles/tokens'
+import { getNetworkLinkTextColor } from '@styles/chains'
 import { AddToWalletMiniButton } from '@components/buttons/AddToWalletButton'
+import ExplorerLink from './ExplorerLink'
 import { commify } from '@ethersproject/units'
 
 export function CheckingConfPlaceholder({ chainId }) {
-  const { chainName, chainImg } = CHAIN_INFO_MAP[chainId]
+  const { name, chainImg } = CHAINS_BY_ID[chainId]
 
   return (
     <div className="flex items-center p-1 max-w-[50%] rounded-lg ">
@@ -27,7 +27,7 @@ export function CheckingConfPlaceholder({ chainId }) {
                 opacity-70 pr-2
               `}
             >
-              Confirmations left on {chainName}
+              Confirmations left on {name}
             </div>
           </div>
         </div>
@@ -38,14 +38,14 @@ export function CheckingConfPlaceholder({ chainId }) {
 }
 
 export function PendingCreditTransactionItem({ chainId }) {
-  const { chainName, chainImg } = CHAIN_INFO_MAP[chainId]
+  const { name, chainImg } = CHAINS_BY_ID[chainId]
 
   return (
     <div className="flex items-center p-1 rounded-lg ">
       <div className="flex-shrink-0">
         <img
           className="inline w-4 h-4 ml-1 mr-2 -mt-1 rounded"
-          src={chainImg}
+          src={chainImg.src}
         />
       </div>
       <div>
@@ -59,7 +59,7 @@ export function PendingCreditTransactionItem({ chainId }) {
             >
               Waiting to be credited on
               <br />
-              {chainName}
+              {name}
             </div>
           </div>
         </div>
@@ -70,14 +70,14 @@ export function PendingCreditTransactionItem({ chainId }) {
 }
 
 export function EmptySubTransactionItem({ chainId }) {
-  const { chainName, chainImg } = CHAIN_INFO_MAP[chainId]
+  const { chainImg } = CHAINS_BY_ID[chainId]
 
   return (
     <div className="flex items-center p-1 rounded-lg ">
       <div className="flex-shrink-0">
         <img
           className="inline w-4 h-4 ml-1 mr-2 -mt-1 rounded"
-          src={chainImg}
+          src={chainImg.src}
         />
       </div>
     </div>
@@ -85,7 +85,7 @@ export function EmptySubTransactionItem({ chainId }) {
 }
 
 export function CreditedTransactionItem({ chainId }) {
-  const { chainName, chainImg } = CHAIN_INFO_MAP[chainId]
+  const { name, chainImg } = CHAINS_BY_ID[chainId]
   return (
     <div className="flex items-center p-1 border border-gray-700 rounded-lg">
       <div className="flex-shrink-0">
@@ -105,7 +105,7 @@ export function CreditedTransactionItem({ chainId }) {
             >
               Bridging Completed on
               <br />
-              {chainName}
+              {name}
             </div>
           </div>
         </div>
@@ -117,6 +117,7 @@ export function CreditedTransactionItem({ chainId }) {
 
 export function SubTransactionItem({
   transactionHash,
+  currentChainId,
   blockNumber,
   chainId,
   timestamp,
@@ -127,11 +128,10 @@ export function SubTransactionItem({
   ...rest
 }) {
   // console.log({ event, args, token, tokenAmount })
-  const { chainId: currentChainId } = useActiveWeb3React()
   const isCurrentChain = chainId == currentChainId
 
   const { to } = args ?? {}
-  const { chainName, chainImg } = CHAIN_INFO_MAP[chainId]
+  const { name, chainImg } = CHAINS_BY_ID[chainId]
 
   if (token?.symbol == WETH.symbol) {
     token = ETH
@@ -176,7 +176,7 @@ export function SubTransactionItem({
       <div className="flex-shrink-0">
         <img
           className="inline w-4 h-4 ml-1 mr-2 -mt-1 rounded"
-          src={chainImg}
+          src={chainImg.src}
         />
       </div>
       <div className="flex-grow">
@@ -209,7 +209,7 @@ export function SubTransactionItem({
                   {token.symbol}{' '}
                 </span>
                 <img
-                  src={token.icon}
+                  src={token.icon.src}
                   className="w-4 h-4 inline -mt-0.5 rounded-sm"
                 />
               </>
@@ -221,7 +221,8 @@ export function SubTransactionItem({
         {isCurrentChain && showAddBtn && (
           <AddToWalletMiniButton
             token={token}
-            icon={token?.icon}
+            icon={token?.icon?.src}
+            chainId={chainId}
             className={`float-right inline-block `}
           />
         )}

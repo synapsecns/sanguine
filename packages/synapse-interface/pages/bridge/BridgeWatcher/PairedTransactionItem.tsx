@@ -1,39 +1,34 @@
 import { BigNumber } from '@ethersproject/bignumber'
 import { id } from '@ethersproject/hash'
 
-import { ChainId } from '@constants/networks'
+import * as CHAINS from '@constants/chains/master'
 
-import { formatTimestampToDate } from '@utils/datetime'
-
-import { useActiveWeb3React } from '@hooks/wallet/useActiveWeb3React'
-import { useGenericSynapseContract } from '@hooks/contracts/useSynapseContract'
-import { useSingleCallResult } from '@hooks/multicall'
+import { formatTimestampToDate } from '@utils/time'
 
 import { SubTransactionItem } from './TransactionItems'
-
+import { readContract } from '@wagmi/core'
+import SYNAPSE_BRIDGE_ABI from '@abis/synapseBridge.json'
+import { useState } from 'react'
 import BlockCountdown from './BlockCountdown'
-import { useTerraKappaCheck } from '@hooks/terra/useTerraKappaCheck'
-
-export default function PairedTransactionItem({ inputTx, outputTx }) {
-  const { chainId } = useActiveWeb3React()
-  const targetChainId = inputTx?.args?.chainId ?? ChainId.ETH
-  const synapseContract = useGenericSynapseContract(targetChainId)
+const PairedTransactionItem = ({
+  inputTx,
+  outputTx,
+  chainId,
+  synapseContract,
+}) => {
+  const [outputExists, setOutputExists] = useState(false)
+  const targetChainId = outputTx?.args?.chainId ?? CHAINS.ETH.id
   const kekTxSig = id(inputTx?.identifier ?? inputTx?.transactionHash ?? '')
-  const kappaExistsResult = useSingleCallResult(
-    targetChainId,
-    synapseContract,
-    'kappaExists',
-    [kekTxSig],
-    { resultOnly: true }
-  )
 
-  const terraKappaExists = useTerraKappaCheck({
-    kekTxSig,
-    isTerra: targetChainId == ChainId.TERRA,
+  readContract({
+    address: synapseContract.from.address,
+    abi: SYNAPSE_BRIDGE_ABI,
+    functionName: 'kappaExists',
+    args: [kekTxSig],
+    chainId,
+  }).then((kappaExistsResult) => {
+    setOutputExists(kappaExistsResult?.[0] ?? false)
   })
-
-  const outputExists = kappaExistsResult?.[0] ?? terraKappaExists ?? false
-
   const inAmount = inputTx?.inputTokenAmount
   let outAmount = outputTx?.args?.amount
 
@@ -80,7 +75,7 @@ export default function PairedTransactionItem({ inputTx, outputTx }) {
           <BlockCountdown
             inputTx={inputTx}
             outputTx={outputTx}
-            inToken={inToken}
+            // inToken={inToken}
             outToken={outToken}
             outputExists={outputExists}
             outAmount={outAmount}
@@ -91,6 +86,8 @@ export default function PairedTransactionItem({ inputTx, outputTx }) {
       </div>
     )
   } catch (e) {
-    return ''
+    return null
   }
 }
+
+export default PairedTransactionItem

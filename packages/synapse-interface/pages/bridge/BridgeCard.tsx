@@ -23,6 +23,7 @@ import { DestinationAddressInput } from '../../components/input/DestinationAddre
 import BridgeInputContainer from '../../components/input/TokenAmountInput'
 import { TransactionResponse } from '@ethersproject/providers'
 import { useSpring, animated } from 'react-spring'
+import { BRIDGABLE_TOKENS } from '@constants/tokens'
 
 import { Token } from '@/utils/types'
 import { BridgeQuote } from '@/utils/types'
@@ -113,7 +114,7 @@ const BridgeCard = ({
     isOrigin: true,
     isSwap: false,
     chains: ORDERED_CHAINS_BY_ID.filter((id) => id !== String(fromChainId)),
-    tokens: fromTokens,
+    tokens: fromTokens ?? BRIDGABLE_TOKENS[fromChainId],
     chainId: fromChainId,
     inputString: fromInput?.string,
     selectedToken: fromToken,
@@ -129,7 +130,7 @@ const BridgeCard = ({
     isOrigin: false,
     isSwap: false,
     chains: toOptions?.chains,
-    tokens: toOptions?.tokens,
+    tokens: toOptions?.tokens ?? BRIDGABLE_TOKENS[toChainId],
     chainId: toChainId,
     inputString: bridgeQuote?.outputAmountString,
     selectedToken: toToken,

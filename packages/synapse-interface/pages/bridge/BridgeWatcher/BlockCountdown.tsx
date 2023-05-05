@@ -1,4 +1,3 @@
-import { BigNumber } from '@ethersproject/bignumber'
 import {
   ChevronRightIcon,
   ChevronDoubleRightIcon,
@@ -6,11 +5,10 @@ import {
 import { Arc } from '@visx/shape'
 import { Chord } from '@visx/chord'
 
-import { getNetworkTextColor } from '@styles/networks'
+import { getNetworkTextColor } from '@styles/chains'
 import { BRIDGE_REQUIRED_CONFIRMATIONS } from '@constants/bridge'
-import { useBlockHeight } from '@hooks/useBlockHeight'
-
-import { getCoinTextColorCombined } from '@styles/coins'
+import { useBlockNumber } from 'wagmi'
+import { getCoinTextColorCombined } from '@styles/tokens'
 
 import {
   SubTransactionItem,
@@ -19,7 +17,7 @@ import {
   PendingCreditTransactionItem,
   CreditedTransactionItem,
 } from './TransactionItems'
-
+import _ from 'lodash'
 export default function BlockCountdown({
   inputTx,
   outputTx,
@@ -29,35 +27,25 @@ export default function BlockCountdown({
   outputExists,
   outAmount,
 }) {
-  const fromBlockHeight = useBlockHeight(fromChainId)
-
+  const { data, isError, isLoading } = useBlockNumber({ chainId: fromChainId })
   const fromChainConfirmations = BRIDGE_REQUIRED_CONFIRMATIONS[fromChainId]
   let blockNumberDiff
   if (inputTx?.blockNumber > 0) {
-    blockNumberDiff = fromBlockHeight - (inputTx.blockNumber ?? 0)
+    blockNumberDiff = data - (inputTx.blockNumber ?? 0)
   } else {
     blockNumberDiff = fromChainConfirmations
   }
-
   const blocksFromConfirmation = fromChainConfirmations - blockNumberDiff
 
   const clampedDiff = _.clamp(blocksFromConfirmation, 0, fromChainConfirmations)
 
   const fromNetworkColorClassName = getNetworkTextColor(fromChainId)
 
-  const bcd = (
-    <BlockCountdownCircle
-      clampedDiff={clampedDiff}
-      fromChainConfirmations={fromChainConfirmations}
-      fromNetworkColorClassName={fromNetworkColorClassName}
-    />
-  )
-
   return (
     <>
       <div className="flex-1">
         <div className={`flex items-center p-2 align-middle`}>
-          {!outputExists && clampedDiff != 0 && (
+          {clampedDiff && !outputExists && clampedDiff != 0 && (
             <>
               <ChevronRightIcon
                 className={`
@@ -67,7 +55,13 @@ export default function BlockCountdown({
                   text-opacity-50
                 `}
               />
-              {bcd}
+              {
+                <BlockCountdownCircle
+                  clampedDiff={clampedDiff}
+                  fromChainConfirmations={fromChainConfirmations}
+                  fromNetworkColorClassName={fromNetworkColorClassName}
+                />
+              }
               <CheckingConfPlaceholder chainId={fromChainId} />
               <ChevronRightIcon
                 className={`
@@ -85,10 +79,11 @@ export default function BlockCountdown({
                 className={`
                 w-5 h-5
                 place-self-center
-                ${outToken
+                ${
+                  outToken
                     ? getCoinTextColorCombined(outToken)
                     : 'text-gray-500'
-                  }
+                }
                 text-opacity-50
               `}
               />
@@ -102,17 +97,17 @@ export default function BlockCountdown({
               {outputExists && <CreditedTransactionItem chainId={toChainId} />}
             </div>
           )}
-          {outputTx && (to
-            < div className="flex-1 ml-2">
-          <SubTransactionItem
-            {...outputTx}
-            token={outToken}
-            tokenAmount={outAmount}
-          />
-        </div>
+          {outputTx && (
+            <div className="flex-1 ml-2">
+              <SubTransactionItem
+                {...outputTx}
+                token={outToken}
+                tokenAmount={outAmount}
+              />
+            </div>
           )}
+        </div>
       </div>
-    </div >
     </>
   )
 }
@@ -126,6 +121,7 @@ function BlockCountdownCircle({
     [fromChainConfirmations - clampedDiff, 0, 0, 0],
     [clampedDiff, 0, 0, 0],
   ]
+  console.log('clampedDiff', clampedDiff)
   return (
     <svg
       viewBox="0 0 200 200"
@@ -159,10 +155,11 @@ function BlockCountdownCircle({
                     innerRadius={72}
                     outerRadius={74}
                     className={`
-                              ${i == 0
-                        ? `fill-current ${fromNetworkColorClassName}`
-                        : undefined
-                      }
+                              ${
+                                i == 0
+                                  ? `fill-current ${fromNetworkColorClassName}`
+                                  : undefined
+                              }
                               transform-gpu transition-all
                             `}
                   />
