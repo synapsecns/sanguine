@@ -561,8 +561,6 @@ func (e *ExecutorSuite) TestExecutor() {
 	}()
 
 	tips := types.NewTips(big.NewInt(int64(0)), big.NewInt(int64(0)), big.NewInt(int64(0)), big.NewInt(int64(0)))
-	encodedTips, err := types.EncodeTips(tips)
-	e.Nil(err)
 
 	optimisticSeconds := uint32(10)
 
@@ -573,10 +571,15 @@ func (e *ExecutorSuite) TestExecutor() {
 	txContextOrigin := e.TestBackendOrigin.GetTxContext(e.GetTestContext(), e.OriginContractMetadata.OwnerPtr())
 	txContextOrigin.Value = types.TotalTips(tips)
 
-	paddedTips := new(big.Int).SetBytes(encodedTips)
 	paddedRequest := big.NewInt(0)
 	// txContextOrigin.TransactOpts.Value = big.NewInt(0)
-	tx, err := e.OriginContract.SendBaseMessage(txContextOrigin.TransactOpts, uint32(e.TestBackendDestination.GetChainID()), recipient, optimisticSeconds, paddedTips, paddedRequest, body)
+	tx, err := e.OriginContract.SendBaseMessage(
+		txContextOrigin.TransactOpts,
+		uint32(e.TestBackendDestination.GetChainID()),
+		recipient,
+		optimisticSeconds,
+		paddedRequest,
+		body)
 	e.Nil(err)
 	e.TestBackendOrigin.WaitForConfirmation(e.GetTestContext(), tx)
 
@@ -595,8 +598,10 @@ func (e *ExecutorSuite) TestExecutor() {
 	var rootB32 [32]byte
 	copy(rootB32[:], root)
 
-	originState := types.NewState(rootB32, chainID, nonce, big.NewInt(1), big.NewInt(1))
-	randomState := types.NewState(common.BigToHash(big.NewInt(gofakeit.Int64())), chainID+1, gofakeit.Uint32(), big.NewInt(gofakeit.Int64()), big.NewInt(gofakeit.Int64()))
+	gasData := types.NewGasData(uint16(1), uint16(1), uint16(1), uint16(1), uint16(1), uint16(1))
+	originState := types.NewState(rootB32, chainID, nonce, big.NewInt(1), big.NewInt(1), gasData)
+	randomGasData := types.NewGasData(gofakeit.Uint16(), gofakeit.Uint16(), gofakeit.Uint16(), gofakeit.Uint16(), gofakeit.Uint16(), gofakeit.Uint16())
+	randomState := types.NewState(common.BigToHash(big.NewInt(gofakeit.Int64())), chainID+1, gofakeit.Uint32(), big.NewInt(gofakeit.Int64()), big.NewInt(gofakeit.Int64()), randomGasData)
 	originSnapshot := types.NewSnapshot([]types.State{originState, randomState})
 
 	snapshotRoot, proofs, err := originSnapshot.SnapshotRootAndProofs()

@@ -80,8 +80,8 @@ type Attestation struct {
 	Destination uint32 `gorm:"column:destination;primaryKey"`
 	// SnapshotRoot is the snapshot root.
 	SnapshotRoot string `gorm:"column:snapshot_root;primaryKey"`
-	// AgentRoot is the agent root.
-	AgentRoot string `gorm:"column:agent_root"`
+	// DataHash is the agent root and SnapGasHash combined into a single hash.
+	DataHash string `gorm:"column:data_hash"`
 	// AttestationNonce is the nonce of the attestation.
 	AttestationNonce uint32 `gorm:"column:attestation_nonce;primaryKey"`
 	// SummitBlockNumber is the block number when the attestation was created in Summit.
