@@ -2,6 +2,7 @@
 pragma solidity 0.8.17;
 
 // ══════════════════════════════ LIBRARY IMPORTS ══════════════════════════════
+import {CallerNotDestination} from "../libs/Errors.sol";
 import {Request} from "../libs/Request.sol";
 // ═════════════════════════════ INTERNAL IMPORTS ══════════════════════════════
 import {IMessageRecipient} from "../interfaces/IMessageRecipient.sol";
@@ -39,7 +40,7 @@ abstract contract BaseClient is IMessageRecipient {
         uint256 proofMaturity,
         bytes memory content
     ) external payable {
-        require(msg.sender == destination, "BaseClient: !destination");
+        if (msg.sender != destination) revert CallerNotDestination();
         require(sender == trustedSender(origin_) && sender != bytes32(0), "BaseClient: !trustedSender");
         require(proofMaturity >= optimisticPeriod(), "BaseClient: !optimisticPeriod");
         // All security checks are passed, handle the message content

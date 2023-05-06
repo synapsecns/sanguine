@@ -8,6 +8,8 @@ import {
     AgentCantBeAdded,
     AgentNotActive,
     AgentNotUnstaking,
+    CallerNotDestination,
+    CallerNotSummit,
     MustBeSynapseDomain,
     NotaryInDispute,
     SynapseDomainForbidden
@@ -356,7 +358,7 @@ contract BondingManagerTest is AgentManagerTest {
 
     function test_passReceipt_revert_notDestination(address caller) public {
         vm.assume(caller != localDestination());
-        vm.expectRevert("Only Destination passes receipts");
+        vm.expectRevert(CallerNotDestination.selector);
         vm.prank(caller);
         bondingManager.passReceipt(0, 0, 0, "");
     }
@@ -385,7 +387,7 @@ contract BondingManagerTest is AgentManagerTest {
 
     function test_withdrawTips_revert_notSummit(address caller) public {
         vm.assume(caller != summit);
-        vm.expectRevert("Only Summit withdraws tips");
+        vm.expectRevert(CallerNotSummit.selector);
         vm.prank(caller);
         bondingManager.withdrawTips(address(0), 0, 0);
     }

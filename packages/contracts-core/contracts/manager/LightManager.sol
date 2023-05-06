@@ -5,7 +5,13 @@ pragma solidity 0.8.17;
 import {Attestation, AttestationLib} from "../libs/Attestation.sol";
 import {AttestationReport, AttestationReportLib} from "../libs/AttestationReport.sol";
 import {AGENT_TREE_HEIGHT, BONDING_OPTIMISTIC_PERIOD, SYNAPSE_DOMAIN} from "../libs/Constants.sol";
-import {AgentDomainIncorrect, MustBeSynapseDomain, NotaryInDispute, SynapseDomainForbidden} from "../libs/Errors.sol";
+import {
+    AgentDomainIncorrect,
+    CallerNotDestination,
+    MustBeSynapseDomain,
+    NotaryInDispute,
+    SynapseDomainForbidden
+} from "../libs/Errors.sol";
 import {ChainGas, GasDataLib} from "../libs/GasData.sol";
 import {MerkleMath} from "../libs/MerkleMath.sol";
 import {AgentFlag, AgentStatus, DisputeFlag} from "../libs/Structures.sol";
@@ -138,7 +144,8 @@ contract LightManager is AgentManager, InterfaceLightManager {
 
     /// @inheritdoc InterfaceLightManager
     function setAgentRoot(bytes32 agentRoot_) external {
-        require(msg.sender == destination, "Only Destination sets agent root");
+        // Only destination can pass AgentRoot to be set
+        if (msg.sender != destination) revert CallerNotDestination();
         _setAgentRoot(agentRoot_);
     }
 
@@ -150,7 +157,7 @@ contract LightManager is AgentManager, InterfaceLightManager {
         returns (bytes4 magicValue)
     {
         // Only destination can pass Manager Messages
-        require(msg.sender == destination, "!destination");
+        if (msg.sender != destination) revert CallerNotDestination();
         // Only AgentManager on Synapse Chain can give instructions to withdraw tips
         if (msgOrigin != SYNAPSE_DOMAIN) revert MustBeSynapseDomain();
         // Check that merkle proof is mature enough

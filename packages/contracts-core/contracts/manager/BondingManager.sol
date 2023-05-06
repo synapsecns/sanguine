@@ -8,6 +8,8 @@ import {BONDING_OPTIMISTIC_PERIOD, SYNAPSE_DOMAIN} from "../libs/Constants.sol";
 import {
     AgentCantBeAdded,
     AgentDomainIncorrect,
+    CallerNotDestination,
+    CallerNotSummit,
     MustBeSynapseDomain,
     NotaryInDispute,
     SynapseDomainForbidden
@@ -155,7 +157,8 @@ contract BondingManager is AgentManager, BondingManagerEvents, InterfaceBondingM
         external
         returns (bool wasAccepted)
     {
-        require(msg.sender == destination, "Only Destination passes receipts");
+        // Only Destination can pass receipts
+        if (msg.sender != destination) revert CallerNotDestination();
         return InterfaceSummit(summit).acceptReceipt({
             rcptNotaryIndex: attNotaryIndex,
             attNotaryIndex: attNotaryIndex,
@@ -300,7 +303,7 @@ contract BondingManager is AgentManager, BondingManagerEvents, InterfaceBondingM
         returns (bytes4 magicValue)
     {
         // Only destination can pass Manager Messages
-        require(msg.sender == destination, "!destination");
+        if (msg.sender != destination) revert CallerNotDestination();
         // Check that merkle proof is mature enough
         require(proofMaturity >= BONDING_OPTIMISTIC_PERIOD, "!optimisticPeriod");
         // TODO: do we need to save this?
@@ -315,7 +318,8 @@ contract BondingManager is AgentManager, BondingManagerEvents, InterfaceBondingM
 
     /// @inheritdoc InterfaceBondingManager
     function withdrawTips(address recipient, uint32 origin_, uint256 amount) external {
-        require(msg.sender == summit, "Only Summit withdraws tips");
+        // Only Summit can withdraw tips
+        if (msg.sender != summit) revert CallerNotSummit();
         if (origin_ == localDomain) {
             // Call local Origin to withdraw tips
             InterfaceOrigin(address(origin)).withdrawTips(recipient, amount);

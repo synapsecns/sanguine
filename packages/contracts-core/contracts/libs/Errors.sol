@@ -4,6 +4,8 @@ pragma solidity 0.8.17;
 // ══════════════════════════════ INVALID CALLER ═══════════════════════════════
 
 error CallerNotAgentManager();
+error CallerNotDestination();
+error CallerNotSummit();
 
 // ═══════════════════════════════ AGENT MANAGER ═══════════════════════════════
 

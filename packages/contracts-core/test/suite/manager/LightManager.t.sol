@@ -5,6 +5,7 @@ import {
     AgentDomainIncorrect,
     AgentNotGuard,
     AgentNotNotary,
+    CallerNotDestination,
     GuardInDispute,
     NotaryInDispute,
     MustBeSynapseDomain,
@@ -72,7 +73,7 @@ contract LightManagerTest is AgentManagerTest {
 
     function test_setAgentRoot_revert_notDestination(address caller) public {
         vm.assume(caller != destination);
-        vm.expectRevert("Only Destination sets agent root");
+        vm.expectRevert(CallerNotDestination.selector);
         vm.prank(caller);
         lightManager.setAgentRoot(bytes32(uint256(1)));
     }
@@ -294,7 +295,7 @@ contract LightManagerTest is AgentManagerTest {
     function test_remoteWithdrawTips_revert_notDestination(address caller) public {
         vm.assume(caller != destination);
         skip(BONDING_OPTIMISTIC_PERIOD);
-        vm.expectRevert("!destination");
+        vm.expectRevert(CallerNotDestination.selector);
         vm.prank(caller);
         lightManager.remoteWithdrawTips(DOMAIN_SYNAPSE, BONDING_OPTIMISTIC_PERIOD, address(0), 0);
     }

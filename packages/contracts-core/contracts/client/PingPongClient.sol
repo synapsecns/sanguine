@@ -2,6 +2,7 @@
 pragma solidity 0.8.17;
 
 // ══════════════════════════════ LIBRARY IMPORTS ══════════════════════════════
+import {CallerNotDestination} from "../libs/Errors.sol";
 import {Request, RequestLib} from "../libs/Request.sol";
 import {TypeCasts} from "../libs/TypeCasts.sol";
 // ═════════════════════════════ INTERNAL IMPORTS ══════════════════════════════
@@ -74,7 +75,7 @@ contract PingPongClient is IMessageRecipient {
         external
         payable
     {
-        require(msg.sender == destination, "PingPongClient: !destination");
+        if (msg.sender != destination) revert CallerNotDestination();
         PingPongMessage memory message = abi.decode(content, (PingPongMessage));
         if (message.isPing) {
             // Ping is received
