@@ -92,10 +92,12 @@ error ContentLengthTooBig();
 error EthTransferFailed();
 error InsufficientEthBalance();
 
-// ══════════════════════════════════ SUMMIT ═══════════════════════════════════
+// ═══════════════════════════════════ TIPS ════════════════════════════════════
 
 error TipsClaimMoreThanEarned();
 error TipsClaimZero();
+error TipsOverflow();
+error TipsValueTooLow();
 
 // ════════════════════════════════ MEMORY VIEW ════════════════════════════════
 

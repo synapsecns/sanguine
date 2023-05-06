@@ -4,7 +4,7 @@ pragma solidity 0.8.17;
 import {IAgentSecured} from "../../contracts/interfaces/IAgentSecured.sol";
 import {InterfaceGasOracle} from "../../contracts/interfaces/InterfaceGasOracle.sol";
 import {IStateHub} from "../../contracts/interfaces/IStateHub.sol";
-import {EthTransferFailed, InsufficientEthBalance} from "../../contracts/libs/Errors.sol";
+import {EthTransferFailed, InsufficientEthBalance, TipsValueTooLow} from "../../contracts/libs/Errors.sol";
 import {SNAPSHOT_MAX_STATES} from "../../contracts/libs/Constants.sol";
 import {SystemEntity} from "../../contracts/libs/Structures.sol";
 import {TipsLib} from "../../contracts/libs/Tips.sol";
@@ -86,7 +86,7 @@ contract OriginTest is AgentSecuredTest {
         msgValue = msgValue % minTips.castToTips().value();
         GasOracleMock(gasOracle).setMockedMinimumTips(minTips.encodeTips());
         deal(sender, msgValue);
-        vm.expectRevert("Tips value too low");
+        vm.expectRevert(TipsValueTooLow.selector);
         vm.prank(sender);
         InterfaceOrigin(origin).sendBaseMessage{value: msgValue}(
             DOMAIN_REMOTE, addressToBytes32(recipient), period, request.encodeRequest(), "test content"
