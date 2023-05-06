@@ -12,6 +12,7 @@ import {
     IncorrectAgentDomain,
     IncorrectSnapshotRoot,
     IndexOutOfRange,
+    MerkleTreeFull,
     MustBeSynapseDomain,
     NotaryInDispute,
     SlashAgentOptimisticPeriod,
@@ -226,8 +227,8 @@ contract BondingManager is AgentManager, BondingManagerEvents, InterfaceBondingM
         bytes32 oldValue;
         if (status.flag == AgentFlag.Unknown) {
             // Unknown address could be added to any domain
-            // New agent will need to be added to `_agents` list
-            require(_agents.length < type(uint32).max, "Agents list if full");
+            // New agent will need to be added to `_agents` list: could not have more than 2**32 agents
+            if (_agents.length >= type(uint32).max) revert MerkleTreeFull();
             index = uint32(_agents.length);
             // Current leaf for index is bytes32(0), which is already assigned to `leaf`
             _agents.push(agent);

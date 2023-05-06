@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.17;
 
-import {IncorrectProofLength, IncorrectTreeHeight} from "./Errors.sol";
+import {TreeHeightTooLow} from "./Errors.sol";
 
 library MerkleMath {
     // ═════════════════════════════════════════ BASIC MERKLE CALCULATIONS ═════════════════════════════════════════════
@@ -22,7 +22,7 @@ library MerkleMath {
     {
         // Proof length could not exceed the tree height
         uint256 proofLen = proof.length;
-        if (proofLen > height) revert IncorrectProofLength();
+        if (proofLen > height) revert TreeHeightTooLow();
         root_ = leaf;
         /// @dev Apply unchecked to all ++h operations
         unchecked {
@@ -93,7 +93,8 @@ library MerkleMath {
      */
     function calculateRoot(bytes32[] memory hashes, uint256 height) internal pure {
         uint256 levelLength = hashes.length;
-        if (levelLength > (1 << height)) revert IncorrectTreeHeight();
+        // Amount of hashes could not exceed amount of leafs in tree with the given height
+        if (levelLength > (1 << height)) revert TreeHeightTooLow();
         /// @dev h, leftIndex, rightIndex and levelLength never overflow
         unchecked {
             // Iterate `height` levels up from the leaf level

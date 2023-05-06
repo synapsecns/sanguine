@@ -15,15 +15,11 @@ error IncorrectAgentIndex();
 error IncorrectAgentProof();
 error IncorrectDataHash();
 error IncorrectDestinationDomain();
-error IncorrectMerkleProof();
 error IncorrectOriginDomain();
-error IncorrectProofLength();
 error IncorrectSnapshotProof();
 error IncorrectSnapshotRoot();
 error IncorrectState();
 error IncorrectStatesAmount();
-error IncorrectTreeCount();
-error IncorrectTreeHeight();
 error IncorrectVersionLength();
 
 error IncorrectSender();
@@ -47,6 +43,13 @@ error UnformattedSignature();
 error UnformattedSnapshot();
 error UnformattedState();
 error UnformattedStateReport();
+
+// ═══════════════════════════════ MERKLE TREES ════════════════════════════════
+
+error LeafNotProven();
+error MerkleTreeFull();
+error NotEnoughLeafs();
+error TreeHeightTooLow();
 
 // ═════════════════════════════ OPTIMISTIC PERIOD ═════════════════════════════
 
