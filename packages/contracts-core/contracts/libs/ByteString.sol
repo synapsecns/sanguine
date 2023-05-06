@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.17;
 
-import {UnformattedCallData, UnformattedSignature} from "./Errors.sol";
+import {UnformattedCallData, UnformattedCallDataPrefix, UnformattedSignature} from "./Errors.sol";
 import {MemView, MemViewLib} from "./MemView.sol";
 
 /// @dev CallData is a memory view over the payload to be used for an external call, i.e.
@@ -119,7 +119,7 @@ library ByteString {
      */
     function addPrefix(CallData callData, bytes memory prefix) internal view returns (bytes memory) {
         // Prefix should occupy a whole amount of words in memory
-        require(_fullWords(prefix.length), "Incorrect prefix");
+        if (!_fullWords(prefix.length)) revert UnformattedCallDataPrefix();
         MemView[] memory views = new MemView[](3);
         // Use payload's function selector
         views[0] = abi.encodePacked(callData.callSelector()).ref();

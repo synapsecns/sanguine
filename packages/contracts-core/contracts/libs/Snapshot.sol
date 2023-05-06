@@ -2,7 +2,7 @@
 pragma solidity 0.8.17;
 
 import {SNAPSHOT_MAX_STATES, SNAPSHOT_SALT, SNAPSHOT_TREE_HEIGHT, STATE_LENGTH} from "./Constants.sol";
-import {IndexOutOfRange, UnformattedSnapshot} from "./Errors.sol";
+import {IncorrectStatesAmount, IndexOutOfRange, UnformattedSnapshot} from "./Errors.sol";
 import {GasDataLib, ChainGas} from "./GasData.sol";
 import {MerkleMath} from "./MerkleMath.sol";
 import {State, StateLib} from "./State.sol";
@@ -57,7 +57,7 @@ library SnapshotLib {
      * @return Formatted snapshot
      */
     function formatSnapshot(State[] memory states) internal view returns (bytes memory) {
-        require(_isValidAmount(states.length), "Invalid states amount");
+        if (!_isValidAmount(states.length)) revert IncorrectStatesAmount();
         // First we unwrap State-typed views into untyped memory views
         uint256 length = states.length;
         MemView[] memory views = new MemView[](length);

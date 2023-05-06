@@ -9,15 +9,22 @@ error CallerNotSummit();
 
 // ══════════════════════════════ INCORRECT DATA ═══════════════════════════════
 
+error IncorrectAttestation();
 error IncorrectAgentDomain();
 error IncorrectAgentIndex();
 error IncorrectAgentProof();
 error IncorrectDataHash();
 error IncorrectDestinationDomain();
+error IncorrectMerkleProof();
 error IncorrectOriginDomain();
+error IncorrectProofLength();
 error IncorrectSnapshotProof();
 error IncorrectSnapshotRoot();
 error IncorrectState();
+error IncorrectStatesAmount();
+error IncorrectTreeCount();
+error IncorrectTreeHeight();
+error IncorrectVersionLength();
 
 error IncorrectSender();
 error IncorrectRecipient();
@@ -31,6 +38,7 @@ error UnformattedAttestation();
 error UnformattedAttestationReport();
 error UnformattedBaseMessage();
 error UnformattedCallData();
+error UnformattedCallDataPrefix();
 error UnformattedMessage();
 error UnformattedReceipt();
 error UnformattedReceiptBody();

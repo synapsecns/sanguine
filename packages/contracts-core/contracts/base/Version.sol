@@ -1,6 +1,8 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.17;
 
+import {IncorrectVersionLength} from "../libs/Errors.sol";
+
 /**
  * @title Versioned
  * @notice Version getter for contracts. Doesn't use any storage slots, meaning
@@ -27,7 +29,7 @@ abstract contract Versioned {
 
     constructor(string memory version_) {
         _length = bytes(version_).length;
-        require(_length <= 32, "String length over 32");
+        if (_length > 32) revert IncorrectVersionLength();
         // bytes32 is left-aligned => this will store the byte representation of the string
         // with the trailing zeroes to complete the 32-byte word
         _data = bytes32(bytes(version_));

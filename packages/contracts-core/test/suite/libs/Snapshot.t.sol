@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.17;
 
-import {UnformattedSnapshot} from "../../../contracts/libs/Errors.sol";
+import {IncorrectStatesAmount, UnformattedSnapshot} from "../../../contracts/libs/Errors.sol";
 import {State, StateLib, STATE_LENGTH} from "../../../contracts/libs/State.sol";
 import {SNAPSHOT_TREE_HEIGHT} from "../../../contracts/libs/Constants.sol";
 import {ChainGas, GasData} from "../../../contracts/libs/GasData.sol";
@@ -83,12 +83,12 @@ contract SnapshotLibraryTest is SynapseLibraryTest {
         for (uint256 i = 0; i < stateAmounts; ++i) {
             statePayloads[i] = new bytes(STATE_LENGTH);
         }
-        vm.expectRevert("Invalid states amount");
+        vm.expectRevert(IncorrectStatesAmount.selector);
         libHarness.formatSnapshot(statePayloads);
     }
 
     function test_formatSnapshot_noStates() public {
-        vm.expectRevert("Invalid states amount");
+        vm.expectRevert(IncorrectStatesAmount.selector);
         libHarness.formatSnapshot(new bytes[](0));
     }
 

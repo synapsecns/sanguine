@@ -3,7 +3,9 @@ pragma solidity 0.8.17;
 
 // ══════════════════════════════ LIBRARY IMPORTS ══════════════════════════════
 import {Attestation, AttestationLib} from "../libs/Attestation.sol";
-import {IncorrectState, IndexOutOfRange, NonceOutOfRange, OutdatedNonce} from "../libs/Errors.sol";
+import {
+    IncorrectAttestation, IncorrectState, IndexOutOfRange, NonceOutOfRange, OutdatedNonce
+} from "../libs/Errors.sol";
 import {ChainGas, GasData, GasDataLib} from "../libs/GasData.sol";
 import {MerkleMath} from "../libs/MerkleMath.sol";
 import {Snapshot, SnapshotLib} from "../libs/Snapshot.sol";
@@ -156,7 +158,7 @@ abstract contract SnapshotHub is AgentSecured, SnapshotHubEvents, ISnapshotHub {
     {
         // This will revert if payload is not a formatted attestation
         Attestation attestation = attPayload.castToAttestation();
-        require(_isValidAttestation(attestation), "Invalid attestation");
+        if (!_isValidAttestation(attestation)) revert IncorrectAttestation();
         // Attestation is valid => _attestations[nonce] exists
         // _notarySnapshots.length == _attestations.length => _notarySnapshots[nonce] exists
         return _restoreSnapshot(_notarySnapshots[attestation.nonce()]);
