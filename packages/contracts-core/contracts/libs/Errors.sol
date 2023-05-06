@@ -22,6 +22,9 @@ error IncorrectState();
 error IncorrectSender();
 error IncorrectRecipient();
 
+error IndexOutOfRange();
+error NonceOutOfRange();
+
 error OutdatedNonce();
 
 error UnformattedAttestation();

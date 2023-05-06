@@ -11,6 +11,7 @@ import {
     CallerNotSummit,
     IncorrectAgentDomain,
     IncorrectSnapshotRoot,
+    IndexOutOfRange,
     MustBeSynapseDomain,
     NotaryInDispute,
     SlashAgentOptimisticPeriod,
@@ -392,7 +393,7 @@ contract BondingManager is AgentManager, BondingManagerEvents, InterfaceBondingM
     /// @inheritdoc InterfaceBondingManager
     function getLeafs(uint256 indexFrom, uint256 amount) public view returns (bytes32[] memory leafs) {
         uint256 amountTotal = _agents.length;
-        require(indexFrom < amountTotal, "Out of range");
+        if (indexFrom >= amountTotal) revert IndexOutOfRange();
         if (indexFrom + amount > amountTotal) {
             amount = amountTotal - indexFrom;
         }

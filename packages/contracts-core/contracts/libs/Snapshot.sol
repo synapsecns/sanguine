@@ -2,7 +2,7 @@
 pragma solidity 0.8.17;
 
 import {SNAPSHOT_MAX_STATES, SNAPSHOT_SALT, SNAPSHOT_TREE_HEIGHT, STATE_LENGTH} from "./Constants.sol";
-import {UnformattedSnapshot} from "./Errors.sol";
+import {IndexOutOfRange, UnformattedSnapshot} from "./Errors.sol";
 import {GasDataLib, ChainGas} from "./GasData.sol";
 import {MerkleMath} from "./MerkleMath.sol";
 import {State, StateLib} from "./State.sol";
@@ -113,7 +113,7 @@ library SnapshotLib {
     function state(Snapshot snapshot, uint256 stateIndex) internal pure returns (State) {
         MemView memView = snapshot.unwrap();
         uint256 indexFrom = stateIndex * STATE_LENGTH;
-        require(indexFrom < memView.len(), "State index out of range");
+        if (indexFrom >= memView.len()) revert IndexOutOfRange();
         return memView.slice({index_: indexFrom, len_: STATE_LENGTH}).castToState();
     }
 
@@ -168,7 +168,7 @@ library SnapshotLib {
         // Index of "leftLeaf" is twice the state position in the snapshot
         uint256 leftLeafIndex = stateIndex << 1;
         // Check that "leftLeaf" index fits into Snapshot Merkle Tree
-        require(leftLeafIndex < (1 << SNAPSHOT_TREE_HEIGHT), "State index out of range");
+        if (leftLeafIndex >= (1 << SNAPSHOT_TREE_HEIGHT)) revert IndexOutOfRange();
         // Reconstruct left sub-leaf of the Origin State: (originRoot, originDomain)
         bytes32 leftLeaf = StateLib.leftLeaf(originRoot, domain);
         // Reconstruct snapshot root using proof of inclusion

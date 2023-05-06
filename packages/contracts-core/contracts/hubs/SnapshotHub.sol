@@ -3,7 +3,7 @@ pragma solidity 0.8.17;
 
 // ══════════════════════════════ LIBRARY IMPORTS ══════════════════════════════
 import {Attestation, AttestationLib} from "../libs/Attestation.sol";
-import {IncorrectState, OutdatedNonce} from "../libs/Errors.sol";
+import {IncorrectState, IndexOutOfRange, NonceOutOfRange, OutdatedNonce} from "../libs/Errors.sol";
 import {ChainGas, GasData, GasDataLib} from "../libs/GasData.sol";
 import {MerkleMath} from "../libs/MerkleMath.sol";
 import {Snapshot, SnapshotLib} from "../libs/Snapshot.sol";
@@ -97,7 +97,7 @@ abstract contract SnapshotHub is AgentSecured, SnapshotHubEvents, ISnapshotHub {
         view
         returns (bytes memory attPayload, bytes32 agentRoot, uint256[] memory snapGas)
     {
-        require(attNonce < _attestations.length, "Nonce out of range");
+        if (attNonce >= _attestations.length) revert NonceOutOfRange();
         SummitAttestation memory summitAtt = _attestations[attNonce];
         attPayload = _formatSummitAttestation(summitAtt, attNonce);
         agentRoot = summitAtt.agentRoot;
@@ -132,7 +132,7 @@ abstract contract SnapshotHub is AgentSecured, SnapshotHubEvents, ISnapshotHub {
         view
         returns (bytes memory snapPayload, bytes memory snapSignature)
     {
-        require(index < _guardSnapshots.length, "Index out of range");
+        if (index >= _guardSnapshots.length) revert IndexOutOfRange();
         return _restoreSnapshot(_guardSnapshots[index]);
     }
 
@@ -143,7 +143,7 @@ abstract contract SnapshotHub is AgentSecured, SnapshotHubEvents, ISnapshotHub {
         returns (bytes memory snapPayload, bytes memory snapSignature)
     {
         uint256 nonce = index + 1;
-        require(nonce < _notarySnapshots.length, "Nonce out of range");
+        if (nonce >= _notarySnapshots.length) revert IndexOutOfRange();
         return _restoreSnapshot(_notarySnapshots[nonce]);
     }
 
@@ -164,10 +164,10 @@ abstract contract SnapshotHub is AgentSecured, SnapshotHubEvents, ISnapshotHub {
 
     /// @inheritdoc ISnapshotHub
     function getSnapshotProof(uint32 attNonce, uint256 stateIndex) external view returns (bytes32[] memory snapProof) {
-        require(attNonce != 0 && attNonce < _notarySnapshots.length, "Nonce out of range");
+        if (attNonce == 0 || attNonce >= _notarySnapshots.length) revert NonceOutOfRange();
         SummitSnapshot memory snap = _notarySnapshots[attNonce];
         uint256 statesAmount = snap.statePtrs.length;
-        require(stateIndex < statesAmount, "Index out of range");
+        if (stateIndex >= statesAmount) revert IndexOutOfRange();
         // Reconstruct the leafs of Snapshot Merkle Tree: two for each state
         bytes32[] memory hashes = new bytes32[](2 * statesAmount);
         for (uint256 i = 0; i < statesAmount; ++i) {
