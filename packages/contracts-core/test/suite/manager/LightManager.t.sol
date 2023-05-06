@@ -1,6 +1,19 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.17;
 
+import {
+    AgentNotGuard,
+    AgentNotNotary,
+    CallerNotDestination,
+    IncorrectAgentDomain,
+    IncorrectAgentProof,
+    IncorrectDataHash,
+    GuardInDispute,
+    NotaryInDispute,
+    MustBeSynapseDomain,
+    SynapseDomainForbidden,
+    WithdrawTipsOptimisticPeriod
+} from "../../../contracts/libs/Errors.sol";
 import {AgentFlag, AgentStatus, SystemEntity} from "../../../contracts/libs/Structures.sol";
 import {InterfaceDestination} from "../../../contracts/interfaces/InterfaceDestination.sol";
 import {InterfaceOrigin} from "../../../contracts/interfaces/InterfaceOrigin.sol";
@@ -50,7 +63,7 @@ contract LightManagerTest is AgentManagerTest {
 
     function test_constructor_revert_onSynapseChain() public {
         // Should not be able to deploy on Synapse Chain
-        vm.expectRevert("Can't be deployed on SynChain");
+        vm.expectRevert(SynapseDomainForbidden.selector);
         new LightManagerHarness(DOMAIN_SYNAPSE);
     }
 
@@ -63,7 +76,7 @@ contract LightManagerTest is AgentManagerTest {
 
     function test_setAgentRoot_revert_notDestination(address caller) public {
         vm.assume(caller != destination);
-        vm.expectRevert("Only Destination sets agent root");
+        vm.expectRevert(CallerNotDestination.selector);
         vm.prank(caller);
         lightManager.setAgentRoot(bytes32(uint256(1)));
     }
@@ -127,7 +140,7 @@ contract LightManagerTest is AgentManagerTest {
         // Change agent root, so old proofs are no longer valid
         test_setAgentRoot(bytes32(0));
         assertEq(uint8(lightManager.agentStatus(agent).flag), uint8(AgentFlag.Unknown));
-        vm.expectRevert("Invalid proof");
+        vm.expectRevert(IncorrectAgentProof.selector);
         lightManager.updateAgentStatus(agent, status, proof);
     }
 
@@ -161,7 +174,7 @@ contract LightManagerTest is AgentManagerTest {
         uint256 malformedBit = random.nextUint8();
         address notary = domains[localDomain()].agent;
         (bytes memory attPayload, bytes memory attSignature) = signAttestation(notary, ra);
-        vm.expectRevert("Invalid dataHash");
+        vm.expectRevert(IncorrectDataHash.selector);
         // Try to feed the agent root with a single malformed bit
         lightManager.submitAttestation(attPayload, attSignature, ra._agentRoot ^ bytes32(1 << malformedBit), snapGas);
     }
@@ -175,7 +188,7 @@ contract LightManagerTest is AgentManagerTest {
         snapGas[malformedIndex] ^= 1 << malformedBit;
         address notary = domains[localDomain()].agent;
         (bytes memory attPayload, bytes memory attSignature) = signAttestation(notary, ra);
-        vm.expectRevert("Invalid dataHash");
+        vm.expectRevert(IncorrectDataHash.selector);
         // Try to feed the gas data with a single malformed bit
         lightManager.submitAttestation(attPayload, attSignature, ra._agentRoot, snapGas);
     }
@@ -186,7 +199,7 @@ contract LightManagerTest is AgentManagerTest {
         uint256[] memory snapGas = rs.snapGas();
         address guard = domains[0].agent;
         (bytes memory attPayload, bytes memory attSignature) = signAttestation(guard, ra);
-        expectNotNotaryRevert();
+        vm.expectRevert(AgentNotNotary.selector);
         lightManager.submitAttestation(attPayload, attSignature, ra._agentRoot, snapGas);
     }
 
@@ -196,7 +209,7 @@ contract LightManagerTest is AgentManagerTest {
         uint256[] memory snapGas = rs.snapGas();
         address notary = domains[DOMAIN_REMOTE].agent;
         (bytes memory attPayload, bytes memory attSignature) = signAttestation(notary, ra);
-        vm.expectRevert("Not a local Notary");
+        vm.expectRevert(IncorrectAgentDomain.selector);
         lightManager.submitAttestation(attPayload, attSignature, ra._agentRoot, snapGas);
     }
 
@@ -207,7 +220,7 @@ contract LightManagerTest is AgentManagerTest {
         address notary = domains[localDomain()].agent;
         (bytes memory attPayload, bytes memory attSignature) = signAttestation(notary, ra);
         openDispute({guard: domains[0].agent, notary: notary});
-        vm.expectRevert("Notary is in dispute");
+        vm.expectRevert(NotaryInDispute.selector);
         lightManager.submitAttestation(attPayload, attSignature, ra._agentRoot, snapGas);
     }
 
@@ -237,7 +250,7 @@ contract LightManagerTest is AgentManagerTest {
         // Force a random Notary to sign the report
         address reportSigner = getNotary(random.nextUint256(), random.nextUint256());
         (bytes memory arPayload, bytes memory arSignature) = createSignedAttestationReport(reportSigner, ra);
-        expectNotGuardRevert();
+        vm.expectRevert(AgentNotGuard.selector);
         lightManager.submitAttestationReport(arPayload, arSignature, attSignature);
     }
 
@@ -252,7 +265,7 @@ contract LightManagerTest is AgentManagerTest {
         (bytes memory arPayload, bytes memory arSignature) = createSignedAttestationReport(guard, ra);
         // Put the Guard in Dispute with another Notary
         openDispute({guard: guard, notary: domains[DOMAIN_LOCAL].agents[1]});
-        vm.expectRevert("Guard already in dispute");
+        vm.expectRevert(GuardInDispute.selector);
         lightManager.submitAttestationReport(arPayload, arSignature, attSignature);
     }
 
@@ -267,7 +280,7 @@ contract LightManagerTest is AgentManagerTest {
         (bytes memory arPayload, bytes memory arSignature) = createSignedAttestationReport(guard, ra);
         // Put the Notary in Dispute with another Guard
         openDispute({guard: domains[0].agents[1], notary: notary});
-        vm.expectRevert("Notary already in dispute");
+        vm.expectRevert(NotaryInDispute.selector);
         lightManager.submitAttestationReport(arPayload, arSignature, attSignature);
     }
 
@@ -285,7 +298,7 @@ contract LightManagerTest is AgentManagerTest {
     function test_remoteWithdrawTips_revert_notDestination(address caller) public {
         vm.assume(caller != destination);
         skip(BONDING_OPTIMISTIC_PERIOD);
-        vm.expectRevert("!destination");
+        vm.expectRevert(CallerNotDestination.selector);
         vm.prank(caller);
         lightManager.remoteWithdrawTips(DOMAIN_SYNAPSE, BONDING_OPTIMISTIC_PERIOD, address(0), 0);
     }
@@ -294,7 +307,7 @@ contract LightManagerTest is AgentManagerTest {
         vm.assume(msgOrigin != DOMAIN_SYNAPSE);
         skip(BONDING_OPTIMISTIC_PERIOD);
         bytes memory msgPayload = managerMsgPayload(msgOrigin, remoteWithdrawTipsCalldata(address(0), 0));
-        vm.expectRevert("!synapseDomain");
+        vm.expectRevert(MustBeSynapseDomain.selector);
         managerMsgPrank(msgPayload);
     }
 
@@ -302,7 +315,7 @@ contract LightManagerTest is AgentManagerTest {
         proofMaturity = proofMaturity % BONDING_OPTIMISTIC_PERIOD;
         skip(proofMaturity);
         bytes memory msgPayload = managerMsgPayload(DOMAIN_SYNAPSE, remoteWithdrawTipsCalldata(address(0), 0));
-        vm.expectRevert("!optimisticPeriod");
+        vm.expectRevert(WithdrawTipsOptimisticPeriod.selector);
         managerMsgPrank(msgPayload);
     }
 

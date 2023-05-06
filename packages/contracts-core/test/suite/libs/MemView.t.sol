@@ -1,6 +1,13 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.17;
 
+import {
+    IndexedTooMuch,
+    OccupiedMemory,
+    PrecompileOutOfGas,
+    UnallocatedMemory,
+    ViewOverrun
+} from "../../../contracts/libs/Errors.sol";
 import {SynapseLibraryTest} from "../../utils/SynapseLibraryTest.t.sol";
 
 import {MemView, MemViewLib, MemViewHarness} from "../../harnesses/libs/MemViewHarness.t.sol";
@@ -172,14 +179,14 @@ contract MemViewLibraryTest is SynapseLibraryTest {
         // Should pass with zero offset
         libHarness.buildUnallocated(0, words);
         // Non-zero offset will point to unallocated memory
-        vm.expectRevert(MemViewLib.UnallocatedMemory.selector);
+        vm.expectRevert(UnallocatedMemory.selector);
         libHarness.buildUnallocated(offset, words);
     }
 
     function test_index_revert_indexOutOfRange(bytes memory arr, uint256 index, uint256 bytes_) public {
         index = bound(index, arr.length, type(uint128).max);
         bytes_ = bound(bytes_, 1, 32);
-        vm.expectRevert(MemViewLib.ViewOverrun.selector);
+        vm.expectRevert(ViewOverrun.selector);
         libHarness.index(arr, index, bytes_);
     }
 
@@ -187,7 +194,7 @@ contract MemViewLibraryTest is SynapseLibraryTest {
         vm.assume(arr.length != 0);
         index = bound(index, arr.length >= 31 ? arr.length - 31 : 0, arr.length - 1);
         bytes_ = bound(bytes_, arr.length - index + 1, 32);
-        vm.expectRevert(MemViewLib.ViewOverrun.selector);
+        vm.expectRevert(ViewOverrun.selector);
         libHarness.index(arr, index, bytes_);
     }
 
@@ -195,14 +202,14 @@ contract MemViewLibraryTest is SynapseLibraryTest {
         vm.assume(arr.length != 0);
         index = bound(index, 0, arr.length - 1);
         bytes_ = bound(bytes_, 33, type(uint256).max);
-        vm.expectRevert(MemViewLib.IndexedTooMuch.selector);
+        vm.expectRevert(IndexedTooMuch.selector);
         libHarness.index(arr, index, bytes_);
     }
 
     function test_indexUint_indexOutOfRange(bytes memory arr, uint256 index, uint256 bytes_) public {
         index = bound(index, arr.length, type(uint128).max);
         bytes_ = bound(bytes_, 1, 32);
-        vm.expectRevert(MemViewLib.ViewOverrun.selector);
+        vm.expectRevert(ViewOverrun.selector);
         libHarness.indexUint(arr, index, bytes_);
     }
 
@@ -210,20 +217,20 @@ contract MemViewLibraryTest is SynapseLibraryTest {
         vm.assume(arr.length != 0);
         index = bound(index, arr.length >= 31 ? arr.length - 31 : 0, arr.length - 1);
         bytes_ = bound(bytes_, arr.length - index + 1, 32);
-        vm.expectRevert(MemViewLib.ViewOverrun.selector);
+        vm.expectRevert(ViewOverrun.selector);
         libHarness.indexUint(arr, index, bytes_);
     }
 
     function test_indexAddress_indexOutOfRange(bytes memory arr, uint256 index) public {
         index = bound(index, arr.length, type(uint128).max);
-        vm.expectRevert(MemViewLib.ViewOverrun.selector);
+        vm.expectRevert(ViewOverrun.selector);
         libHarness.indexAddress(arr, index);
     }
 
     function test_slice_revert_indexOutOfRange(bytes memory arr, uint256 index, uint256 len) public {
         index = bound(index, arr.length, type(uint128).max);
         len = bound(len, 1, type(uint128).max);
-        vm.expectRevert(MemViewLib.ViewOverrun.selector);
+        vm.expectRevert(ViewOverrun.selector);
         libHarness.slice(arr, index, len);
     }
 
@@ -231,25 +238,25 @@ contract MemViewLibraryTest is SynapseLibraryTest {
         vm.assume(arr.length != 0);
         index = bound(index, 0, arr.length - 1);
         len = bound(len, arr.length - index + 1, type(uint128).max);
-        vm.expectRevert(MemViewLib.ViewOverrun.selector);
+        vm.expectRevert(ViewOverrun.selector);
         libHarness.slice(arr, index, len);
     }
 
     function test_sliceFrom_revert_indexOutOfRange(bytes memory arr, uint256 index) public {
         index = bound(index, arr.length + 1, type(uint128).max);
-        vm.expectRevert(MemViewLib.ViewOverrun.selector);
+        vm.expectRevert(ViewOverrun.selector);
         libHarness.sliceFrom(arr, index);
     }
 
     function test_prefix_revert_lengthOutOfRange(bytes memory arr, uint256 len) public {
         len = bound(len, arr.length + 1, type(uint128).max);
-        vm.expectRevert(MemViewLib.ViewOverrun.selector);
+        vm.expectRevert(ViewOverrun.selector);
         libHarness.prefix(arr, len);
     }
 
     function test_postfix_revert_lengthOutOfRange(bytes memory arr, uint256 len) public {
         len = bound(len, arr.length + 1, type(uint128).max);
-        vm.expectRevert(MemViewLib.ViewOverrun.selector);
+        vm.expectRevert(ViewOverrun.selector);
         libHarness.postfix(arr, len);
     }
 }

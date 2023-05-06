@@ -1,6 +1,12 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.17;
 
+import {
+    BaseClientOptimisticPeriod,
+    CallerNotDestination,
+    IncorrectSender,
+    IncorrectRecipient
+} from "../../../contracts/libs/Errors.sol";
 import {BaseClientHarness} from "../../harnesses/client/BaseClientHarness.t.sol";
 import {SynapseTest} from "../../utils/SynapseTest.t.sol";
 import {InterfaceOrigin} from "../../mocks/OriginMock.t.sol";
@@ -54,7 +60,7 @@ contract BaseClientTest is SynapseTest {
         tipsValue = tipsValue % (2 ** 32);
         uint160 encodedRequest = rr.encodeRequest();
         vm.deal(user, tipsValue);
-        vm.expectRevert("BaseClient: !recipient");
+        vm.expectRevert(IncorrectRecipient.selector);
         vm.prank(user);
         client.sendBaseMessage{value: tipsValue}(destination_, encodedRequest, "");
     }
@@ -91,7 +97,7 @@ contract BaseClientTest is SynapseTest {
         // Set some sensible restrictions for timestamps
         rootSubmittedAt = bound(rootSubmittedAt, 1, 1e10);
         vm.warp(rootSubmittedAt + optimisticPeriod);
-        vm.expectRevert("BaseClient: !destination");
+        vm.expectRevert(CallerNotDestination.selector);
         vm.prank(caller);
         client.receiveBaseMessage(rh.origin, rh.nonce, sender, optimisticPeriod, "");
     }
@@ -108,7 +114,7 @@ contract BaseClientTest is SynapseTest {
         // Set some sensible restrictions for timestamps
         rootSubmittedAt = bound(rootSubmittedAt, 1, 1e10);
         vm.warp(rootSubmittedAt + optimisticPeriod);
-        vm.expectRevert("BaseClient: !trustedSender");
+        vm.expectRevert(IncorrectSender.selector);
         vm.prank(destination);
         client.receiveBaseMessage(rh.origin, rh.nonce, sender, optimisticPeriod, "");
     }
@@ -126,7 +132,7 @@ contract BaseClientTest is SynapseTest {
         rootSubmittedAt = bound(rootSubmittedAt, 1, 1e10);
         secondsPassed = bound(secondsPassed, 0, optimisticPeriod - 1);
         vm.warp(rootSubmittedAt + secondsPassed);
-        vm.expectRevert("BaseClient: !optimisticPeriod");
+        vm.expectRevert(BaseClientOptimisticPeriod.selector);
         vm.prank(destination);
         client.receiveBaseMessage(rh.origin, rh.nonce, sender, secondsPassed, "");
     }

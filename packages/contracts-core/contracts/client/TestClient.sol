@@ -2,6 +2,7 @@
 pragma solidity 0.8.17;
 
 // ══════════════════════════════ LIBRARY IMPORTS ══════════════════════════════
+import {CallerNotDestination} from "../libs/Errors.sol";
 import {Request, RequestLib} from "../libs/Request.sol";
 import {TypeCasts} from "../libs/TypeCasts.sol";
 // ═════════════════════════════ INTERNAL IMPORTS ══════════════════════════════
@@ -32,7 +33,7 @@ contract TestClient is IMessageRecipient {
         uint256 proofMaturity,
         bytes memory content
     ) external payable {
-        require(msg.sender == destination, "TestClient: !destination");
+        if (msg.sender != destination) revert CallerNotDestination();
         emit MessageReceived(origin_, nonce, sender, proofMaturity, content);
     }
 

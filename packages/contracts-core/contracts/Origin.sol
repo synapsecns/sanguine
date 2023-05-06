@@ -4,6 +4,7 @@ pragma solidity 0.8.17;
 // ══════════════════════════════ LIBRARY IMPORTS ══════════════════════════════
 import {BaseMessageLib} from "./libs/BaseMessage.sol";
 import {MAX_CONTENT_BYTES} from "./libs/Constants.sol";
+import {ContentLengthTooBig, EthTransferFailed, InsufficientEthBalance} from "./libs/Errors.sol";
 import {GasData, GasDataLib} from "./libs/GasData.sol";
 import {MemView, MemViewLib} from "./libs/MemView.sol";
 import {Header, HeaderLib, MessageFlag} from "./libs/Message.sol";
@@ -56,7 +57,7 @@ contract Origin is StateHub, OriginEvents, InterfaceOrigin {
         bytes memory content
     ) external payable returns (uint32 messageNonce, bytes32 messageHash) {
         // Check that content is not too large
-        require(content.length <= MAX_CONTENT_BYTES, "content too long");
+        if (content.length > MAX_CONTENT_BYTES) revert ContentLengthTooBig();
         // This will revert if msg.value is lower than value of minimum tips
         Tips tips = _getMinimumTips(destination, paddedRequest, content.length).matchValue(msg.value);
         Request request = RequestLib.wrapPadded(paddedRequest);
@@ -84,9 +85,9 @@ contract Origin is StateHub, OriginEvents, InterfaceOrigin {
 
     /// @inheritdoc InterfaceOrigin
     function withdrawTips(address recipient, uint256 amount) external onlyAgentManager {
-        require(address(this).balance >= amount, "Insufficient balance");
+        if (address(this).balance < amount) revert InsufficientEthBalance();
         (bool success,) = recipient.call{value: amount}("");
-        require(success, "Recipient reverted");
+        if (!success) revert EthTransferFailed();
     }
 
     // ═══════════════════════════════════════════════════ VIEWS ═══════════════════════════════════════════════════════

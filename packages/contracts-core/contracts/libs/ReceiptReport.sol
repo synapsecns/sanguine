@@ -2,6 +2,7 @@
 pragma solidity 0.8.17;
 
 import {RECEIPT_REPORT_SALT} from "./Constants.sol";
+import {UnformattedReceiptReport} from "./Errors.sol";
 import {ReceiptBody, ReceiptLib} from "./Receipt.sol";
 import {MemView, MemViewLib} from "./MemView.sol";
 
@@ -58,7 +59,7 @@ library ReceiptReportLib {
     /// @notice Casts a memory view to a ReceiptReport view.
     /// @dev Will revert if if the memory view is not over a ReceiptReport payload.
     function castToReceiptReport(MemView memView) internal pure returns (ReceiptReport) {
-        require(isReceiptReport(memView), "Not a receipt report");
+        if (!isReceiptReport(memView)) revert UnformattedReceiptReport();
         return ReceiptReport.wrap(MemView.unwrap(memView));
     }
 

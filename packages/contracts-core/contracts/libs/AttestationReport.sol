@@ -3,6 +3,7 @@ pragma solidity 0.8.17;
 
 import {Attestation, AttestationLib} from "./Attestation.sol";
 import {ATTESTATION_REPORT_SALT} from "./Constants.sol";
+import {UnformattedAttestationReport} from "./Errors.sol";
 import {MemView, MemViewLib} from "./MemView.sol";
 
 /// AttestationReport is a memory view over a formatted Guard report for invalid Attestation
@@ -59,7 +60,7 @@ library AttestationReportLib {
     /// @notice Casts a memory view to an AttestationReport view.
     /// @dev Will revert if if the memory view is not over an AttestationReport payload.
     function castToAttestationReport(MemView memView) internal pure returns (AttestationReport) {
-        require(isAttestationReport(memView), "Not an attestation report");
+        if (!isAttestationReport(memView)) revert UnformattedAttestationReport();
         return AttestationReport.wrap(MemView.unwrap(memView));
     }
 

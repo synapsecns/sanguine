@@ -1,6 +1,14 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.17;
 
+import {
+    AgentNotActive,
+    AgentNotFraudulent,
+    AgentNotUnstaking,
+    AgentNotActiveNorUnstaking,
+    AgentUnknown
+} from "../libs/Errors.sol";
+
 // Here we define common enums and structures to enable their easier reusing later.
 
 // ══════════════════════════════ SYSTEM CONTRACT ══════════════════════════════
@@ -96,27 +104,36 @@ enum MessageStatus {
 library StructureUtils {
     /// @notice Checks that Agent is Active
     function verifyActive(AgentStatus memory status) internal pure {
-        require(status.flag == AgentFlag.Active, status.domain == 0 ? "Not an active guard" : "Not an active notary");
+        if (status.flag != AgentFlag.Active) {
+            revert AgentNotActive();
+        }
+    }
+
+    /// @notice Checks that Agent is Unstaking
+    function verifyUnstaking(AgentStatus memory status) internal pure {
+        if (status.flag != AgentFlag.Unstaking) {
+            revert AgentNotUnstaking();
+        }
     }
 
     /// @notice Checks that Agent is Active or Unstaking
     function verifyActiveUnstaking(AgentStatus memory status) internal pure {
-        require(
-            (status.flag == AgentFlag.Active || status.flag == AgentFlag.Unstaking),
-            status.domain == 0 ? "Not an active guard" : "Not an active notary"
-        );
+        if (status.flag != AgentFlag.Active && status.flag != AgentFlag.Unstaking) {
+            revert AgentNotActiveNorUnstaking();
+        }
+    }
+
+    /// @notice Checks that Agent is Fraudulent
+    function verifyFraudulent(AgentStatus memory status) internal pure {
+        if (status.flag != AgentFlag.Fraudulent) {
+            revert AgentNotFraudulent();
+        }
     }
 
     /// @notice Checks that Agent is not Unknown
     function verifyKnown(AgentStatus memory status) internal pure {
-        require(status.flag != AgentFlag.Unknown, status.domain == 0 ? "Not a known guard" : "Not a known notary");
-    }
-
-    /// @notice Checks that Agent is not Fraudulent/Slashed
-    function verifyNotSlashed(AgentStatus memory status) internal pure {
-        require(
-            status.flag != AgentFlag.Fraudulent && status.flag != AgentFlag.Slashed,
-            status.domain == 0 ? "Slashed guard" : "Slashed notary"
-        );
+        if (status.flag == AgentFlag.Unknown) {
+            revert AgentUnknown();
+        }
     }
 }

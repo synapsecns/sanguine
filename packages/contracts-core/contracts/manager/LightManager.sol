@@ -5,6 +5,17 @@ pragma solidity 0.8.17;
 import {Attestation, AttestationLib} from "../libs/Attestation.sol";
 import {AttestationReport, AttestationReportLib} from "../libs/AttestationReport.sol";
 import {AGENT_TREE_HEIGHT, BONDING_OPTIMISTIC_PERIOD, SYNAPSE_DOMAIN} from "../libs/Constants.sol";
+import {
+    IncorrectAgentDomain,
+    IncorrectAgentIndex,
+    IncorrectAgentProof,
+    IncorrectDataHash,
+    CallerNotDestination,
+    MustBeSynapseDomain,
+    NotaryInDispute,
+    SynapseDomainForbidden,
+    WithdrawTipsOptimisticPeriod
+} from "../libs/Errors.sol";
 import {ChainGas, GasDataLib} from "../libs/GasData.sol";
 import {MerkleMath} from "../libs/MerkleMath.sol";
 import {AgentFlag, AgentStatus, DisputeFlag} from "../libs/Structures.sol";
@@ -35,7 +46,7 @@ contract LightManager is AgentManager, InterfaceLightManager {
     // ═════════════════════════════════════════ CONSTRUCTOR & INITIALIZER ═════════════════════════════════════════════
 
     constructor(uint32 domain) MessagingBase("0.0.3", domain) {
-        require(domain != SYNAPSE_DOMAIN, "Can't be deployed on SynChain");
+        if (domain == SYNAPSE_DOMAIN) revert SynapseDomainForbidden();
     }
 
     function initialize(address origin_, address destination_) external initializer {
@@ -61,7 +72,7 @@ contract LightManager is AgentManager, InterfaceLightManager {
         // Check if Notary is active on this chain
         _verifyNotaryDomain(status.domain);
         // Notary needs to be not in dispute
-        require(_disputes[notary].flag == DisputeFlag.None, "Notary is in dispute");
+        if (_disputes[notary].flag != DisputeFlag.None) revert NotaryInDispute();
         // Cast uint256[] to ChainGas[] using assembly. This prevents us from doing unnecessary copies.
         // Note that this does NOT clear the highest bits, but it's ok as the dirty highest bits
         // will lead to hash mismatch in snapGasHash() and thus to attestation rejection.
@@ -71,11 +82,12 @@ contract LightManager is AgentManager, InterfaceLightManager {
             snapGas := snapGas_
         }
         // Check that hash of provided data matches the attestation's dataHash
-        require(
+        if (
             att.dataHash()
-                == AttestationLib.dataHash({agentRoot_: agentRoot_, snapGasHash_: GasDataLib.snapGasHash(snapGas)}),
-            "Invalid dataHash"
-        );
+                != AttestationLib.dataHash({agentRoot_: agentRoot_, snapGasHash_: GasDataLib.snapGasHash(snapGas)})
+        ) {
+            revert IncorrectDataHash();
+        }
         // Store Notary signature for the attestation
         uint256 sigIndex = _saveSignature(attSignature);
         wasAccepted = InterfaceDestination(destination).acceptAttestation({
@@ -117,12 +129,12 @@ contract LightManager is AgentManager, InterfaceLightManager {
     /// @inheritdoc InterfaceLightManager
     function updateAgentStatus(address agent, AgentStatus memory status, bytes32[] memory proof) external {
         address storedAgent = _agents[status.index];
-        require(storedAgent == address(0) || storedAgent == agent, "Invalid agent index");
+        if (storedAgent != address(0) && storedAgent != agent) revert IncorrectAgentIndex();
         // Reconstruct the agent leaf: flag should be Active
         bytes32 leaf = _agentLeaf(status.flag, status.domain, agent);
         bytes32 root = agentRoot;
         // Check that proof matches the latest merkle root
-        require(MerkleMath.proofRoot(status.index, leaf, proof, AGENT_TREE_HEIGHT) == root, "Invalid proof");
+        if (MerkleMath.proofRoot(status.index, leaf, proof, AGENT_TREE_HEIGHT) != root) revert IncorrectAgentProof();
         // Save index => agent in the map
         if (storedAgent == address(0)) _agents[status.index] = agent;
         // Update the agent status against this root
@@ -137,7 +149,8 @@ contract LightManager is AgentManager, InterfaceLightManager {
 
     /// @inheritdoc InterfaceLightManager
     function setAgentRoot(bytes32 agentRoot_) external {
-        require(msg.sender == destination, "Only Destination sets agent root");
+        // Only destination can pass AgentRoot to be set
+        if (msg.sender != destination) revert CallerNotDestination();
         _setAgentRoot(agentRoot_);
     }
 
@@ -149,11 +162,12 @@ contract LightManager is AgentManager, InterfaceLightManager {
         returns (bytes4 magicValue)
     {
         // Only destination can pass Manager Messages
-        require(msg.sender == destination, "!destination");
+        if (msg.sender != destination) revert CallerNotDestination();
         // Only AgentManager on Synapse Chain can give instructions to withdraw tips
-        require(msgOrigin == SYNAPSE_DOMAIN, "!synapseDomain");
+        if (msgOrigin != SYNAPSE_DOMAIN) revert MustBeSynapseDomain();
         // Check that merkle proof is mature enough
-        require(proofMaturity >= BONDING_OPTIMISTIC_PERIOD, "!optimisticPeriod");
+        // TODO: separate constant for withdrawing tips optimistic period
+        if (proofMaturity < BONDING_OPTIMISTIC_PERIOD) revert WithdrawTipsOptimisticPeriod();
         InterfaceOrigin(origin).withdrawTips(recipient, amount);
         // Magic value to return is selector of the called function
         return this.remoteWithdrawTips.selector;
@@ -206,6 +220,6 @@ contract LightManager is AgentManager, InterfaceLightManager {
 
     /// @dev Verifies that Notary signature is active on local domain
     function _verifyNotaryDomain(uint32 notaryDomain) internal view override {
-        require(notaryDomain == localDomain, "Not a local Notary");
+        if (notaryDomain != localDomain) revert IncorrectAgentDomain();
     }
 }

@@ -2,6 +2,7 @@
 pragma solidity 0.8.17;
 
 import {AGENT_TREE_HEIGHT, ORIGIN_TREE_HEIGHT} from "./Constants.sol";
+import {NotEnoughLeafs, MerkleTreeFull, LeafNotProven} from "./Errors.sol";
 import {MerkleMath} from "./MerkleMath.sol";
 
 /// `BaseTree` is a struct representing incremental merkle tree.
@@ -87,7 +88,7 @@ library MerkleTree {
      * @param node      Element to insert into tree
      */
     function insertBase(BaseTree storage tree, uint256 newCount, bytes32 node) internal {
-        require(newCount <= MAX_LEAVES, "merkle tree full");
+        if (newCount > MAX_LEAVES) revert MerkleTreeFull();
         // We go up the tree following the branch from the empty leaf AFTER the just inserted one.
         // We stop when we find the first "right child" node.
         // Its sibling is now the rightmost "left child" node that has two non-empty children.
@@ -174,7 +175,7 @@ library MerkleTree {
     /// @param count            Amount of leafs in the tree at some point of time
     /// @return historicalRoot  Merkle root after `count` leafs were inserted
     function root(HistoricalTree storage tree, uint256 count) internal view returns (bytes32 historicalRoot) {
-        require(count < tree.roots.length, "Not enough leafs inserted");
+        if (count >= tree.roots.length) revert NotEnoughLeafs();
         return tree.roots[count];
     }
 
@@ -198,7 +199,9 @@ library MerkleTree {
         bytes32 newValue
     ) internal returns (bytes32 newRoot) {
         // Check that the old value + proof result in a correct root
-        require(MerkleMath.proofRoot(index, oldValue, branch, AGENT_TREE_HEIGHT) == tree.root, "Incorrect proof");
+        if (MerkleMath.proofRoot(index, oldValue, branch, AGENT_TREE_HEIGHT) != tree.root) {
+            revert LeafNotProven();
+        }
         // New root is new value + the same proof (values for sibling nodes are not updated)
         newRoot = MerkleMath.proofRoot(index, newValue, branch, AGENT_TREE_HEIGHT);
         // Write the new root
