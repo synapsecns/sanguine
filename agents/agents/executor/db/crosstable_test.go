@@ -19,7 +19,16 @@ func (t *DBSuite) TestGetTimestampForMessage() {
 		rootA := common.BigToHash(big.NewInt(gofakeit.Int64()))
 		blockNumberA := big.NewInt(int64(gofakeit.Uint32()))
 		timestampA := big.NewInt(int64(gofakeit.Uint32()))
-		stateA := agentstypes.NewState(rootA, origin, nonceA, blockNumberA, timestampA)
+
+		gasPriceA := gofakeit.Uint16()
+		dataPriceA := gofakeit.Uint16()
+		execBufferA := gofakeit.Uint16()
+		amortAttCostA := gofakeit.Uint16()
+		etherPriceA := gofakeit.Uint16()
+		markupA := gofakeit.Uint16()
+		gasDataA := agentstypes.NewGasData(gasPriceA, dataPriceA, execBufferA, amortAttCostA, etherPriceA, markupA)
+
+		stateA := agentstypes.NewState(rootA, origin, nonceA, blockNumberA, timestampA, gasDataA)
 
 		snapshotRootA := common.BigToHash(big.NewInt(gofakeit.Int64()))
 		agentRootA := common.BigToHash(big.NewInt(gofakeit.Int64()))
@@ -28,7 +37,16 @@ func (t *DBSuite) TestGetTimestampForMessage() {
 		rootB := common.BigToHash(big.NewInt(gofakeit.Int64()))
 		blockNumberB := big.NewInt(int64(gofakeit.Uint32()))
 		timestampB := big.NewInt(int64(gofakeit.Uint32()))
-		stateB := agentstypes.NewState(rootB, origin, nonceB, blockNumberB, timestampB)
+
+		gasPriceB := gofakeit.Uint16()
+		dataPriceB := gofakeit.Uint16()
+		execBufferB := gofakeit.Uint16()
+		amortAttCostB := gofakeit.Uint16()
+		etherPriceB := gofakeit.Uint16()
+		markupB := gofakeit.Uint16()
+		gasDataB := agentstypes.NewGasData(gasPriceB, dataPriceB, execBufferB, amortAttCostB, etherPriceB, markupB)
+
+		stateB := agentstypes.NewState(rootB, origin, nonceB, blockNumberB, timestampB, gasDataB)
 
 		snapshotRootB := common.BigToHash(big.NewInt(gofakeit.Int64()))
 		agentRootB := common.BigToHash(big.NewInt(gofakeit.Int64()))
@@ -37,7 +55,16 @@ func (t *DBSuite) TestGetTimestampForMessage() {
 		rootC := common.BigToHash(big.NewInt(gofakeit.Int64()))
 		blockNumberC := big.NewInt(int64(gofakeit.Uint32()))
 		timestampC := big.NewInt(int64(gofakeit.Uint32()))
-		stateC := agentstypes.NewState(rootC, origin, nonceC, blockNumberC, timestampC)
+
+		gasPriceC := gofakeit.Uint16()
+		dataPriceC := gofakeit.Uint16()
+		execBufferC := gofakeit.Uint16()
+		amortAttCostC := gofakeit.Uint16()
+		etherPriceC := gofakeit.Uint16()
+		markupC := gofakeit.Uint16()
+		gasDataC := agentstypes.NewGasData(gasPriceC, dataPriceC, execBufferC, amortAttCostC, etherPriceC, markupC)
+
+		stateC := agentstypes.NewState(rootC, origin, nonceC, blockNumberC, timestampC, gasDataC)
 
 		snapshotRootC := common.BigToHash(big.NewInt(gofakeit.Int64()))
 		agentRootC := common.BigToHash(big.NewInt(gofakeit.Int64()))
@@ -83,7 +110,16 @@ func (t *DBSuite) TestGetEarliestStateInRange() {
 			root := common.BigToHash(big.NewInt(gofakeit.Int64()))
 			blockNumber := big.NewInt(int64(gofakeit.Uint32()))
 			timestamp := big.NewInt(int64(gofakeit.Uint32()))
-			state := agentstypes.NewState(root, origin, i, blockNumber, timestamp)
+
+			gasPrice := gofakeit.Uint16()
+			dataPrice := gofakeit.Uint16()
+			execBuffer := gofakeit.Uint16()
+			amortAttCost := gofakeit.Uint16()
+			etherPrice := gofakeit.Uint16()
+			markup := gofakeit.Uint16()
+			gasData := agentstypes.NewGasData(gasPrice, dataPrice, execBuffer, amortAttCost, etherPrice, markup)
+
+			state := agentstypes.NewState(root, origin, i, blockNumber, timestamp, gasData)
 
 			snapshotRoots = append(snapshotRoots, common.BigToHash(big.NewInt(gofakeit.Int64())))
 			agentRoots = append(agentRoots, common.BigToHash(big.NewInt(gofakeit.Int64())))

@@ -18,7 +18,16 @@ func (t *DBSuite) TestStoreRetrieveState() {
 		nonceA := gofakeit.Uint32()
 		blockNumberA := big.NewInt(int64(gofakeit.Uint32()))
 		timestampA := big.NewInt(int64(gofakeit.Uint32()))
-		stateA := agentstypes.NewState(rootA, originA, nonceA, blockNumberA, timestampA)
+
+		gasPriceA := gofakeit.Uint16()
+		dataPriceA := gofakeit.Uint16()
+		execBufferA := gofakeit.Uint16()
+		amortAttCostA := gofakeit.Uint16()
+		etherPriceA := gofakeit.Uint16()
+		markupA := gofakeit.Uint16()
+		gasDataA := agentstypes.NewGasData(gasPriceA, dataPriceA, execBufferA, amortAttCostA, etherPriceA, markupA)
+
+		stateA := agentstypes.NewState(rootA, originA, nonceA, blockNumberA, timestampA, gasDataA)
 
 		snapshotRootA := common.BigToHash(big.NewInt(gofakeit.Int64()))
 		proofA := [][]byte{[]byte(gofakeit.Word()), []byte(gofakeit.Word())}
@@ -31,7 +40,16 @@ func (t *DBSuite) TestStoreRetrieveState() {
 		nonceB := gofakeit.Uint32()
 		blockNumberB := big.NewInt(int64(gofakeit.Uint32()))
 		timestampB := big.NewInt(int64(gofakeit.Uint32()))
-		stateB := agentstypes.NewState(rootB, originB, nonceB, blockNumberB, timestampB)
+
+		gasPriceB := gofakeit.Uint16()
+		dataPriceB := gofakeit.Uint16()
+		execBufferB := gofakeit.Uint16()
+		amortAttCostB := gofakeit.Uint16()
+		etherPriceB := gofakeit.Uint16()
+		markupB := gofakeit.Uint16()
+		gasDataB := agentstypes.NewGasData(gasPriceB, dataPriceB, execBufferB, amortAttCostB, etherPriceB, markupB)
+
+		stateB := agentstypes.NewState(rootB, originB, nonceB, blockNumberB, timestampB, gasDataB)
 
 		snapshotRootB := common.BigToHash(big.NewInt(gofakeit.Int64()))
 		proofB := [][]byte{[]byte(gofakeit.Word()), []byte(gofakeit.Word())}
@@ -74,7 +92,16 @@ func (t *DBSuite) TestStoreRetrieveState() {
 		nonceC := gofakeit.Uint32()
 		blockNumberC := big.NewInt(int64(gofakeit.Uint32()))
 		timestampC := big.NewInt(int64(gofakeit.Uint32()))
-		stateC := agentstypes.NewState(rootC, originC, nonceC, blockNumberC, timestampC)
+
+		gasPriceC := gofakeit.Uint16()
+		dataPriceC := gofakeit.Uint16()
+		execBufferC := gofakeit.Uint16()
+		amortAttCostC := gofakeit.Uint16()
+		etherPriceC := gofakeit.Uint16()
+		markupC := gofakeit.Uint16()
+		gasDataC := agentstypes.NewGasData(gasPriceC, dataPriceC, execBufferC, amortAttCostC, etherPriceC, markupC)
+
+		stateC := agentstypes.NewState(rootC, originC, nonceC, blockNumberC, timestampC, gasDataC)
 
 		proofC := [][]byte{[]byte(gofakeit.Word()), []byte(gofakeit.Word())}
 
@@ -83,7 +110,16 @@ func (t *DBSuite) TestStoreRetrieveState() {
 		nonceD := gofakeit.Uint32()
 		blockNumberD := big.NewInt(int64(gofakeit.Uint32()))
 		timestampD := big.NewInt(int64(gofakeit.Uint32()))
-		stateD := agentstypes.NewState(rootD, originD, nonceD, blockNumberD, timestampD)
+
+		gasPriceD := gofakeit.Uint16()
+		dataPriceD := gofakeit.Uint16()
+		execBufferD := gofakeit.Uint16()
+		amortAttCostD := gofakeit.Uint16()
+		etherPriceD := gofakeit.Uint16()
+		markupD := gofakeit.Uint16()
+		gasDataD := agentstypes.NewGasData(gasPriceD, dataPriceD, execBufferD, amortAttCostD, etherPriceD, markupD)
+
+		stateD := agentstypes.NewState(rootD, originD, nonceD, blockNumberD, timestampD, gasDataD)
 
 		proofD := [][]byte{[]byte(gofakeit.Word()), []byte(gofakeit.Word())}
 
@@ -132,7 +168,16 @@ func (t *DBSuite) TestGetStateMetadata() {
 		nonceA := gofakeit.Uint32()
 		blockNumberA := big.NewInt(int64(gofakeit.Uint32()))
 		timestampA := big.NewInt(int64(gofakeit.Uint32()))
-		stateA := agentstypes.NewState(rootA, originA, nonceA, blockNumberA, timestampA)
+
+		gasPriceA := gofakeit.Uint16()
+		dataPriceA := gofakeit.Uint16()
+		execBufferA := gofakeit.Uint16()
+		amortAttCostA := gofakeit.Uint16()
+		etherPriceA := gofakeit.Uint16()
+		markupA := gofakeit.Uint16()
+		gasDataA := agentstypes.NewGasData(gasPriceA, dataPriceA, execBufferA, amortAttCostA, etherPriceA, markupA)
+
+		stateA := agentstypes.NewState(rootA, originA, nonceA, blockNumberA, timestampA, gasDataA)
 
 		snapshotRootA := common.BigToHash(big.NewInt(gofakeit.Int64()))
 		proofA := [][]byte{[]byte(gofakeit.Word()), []byte(gofakeit.Word())}
@@ -170,7 +215,16 @@ func (t *DBSuite) TestGetPotentialSnapshotRoots() {
 		rootA := common.BigToHash(big.NewInt(gofakeit.Int64()))
 		blockNumberA := big.NewInt(int64(gofakeit.Uint32()))
 		timestampA := big.NewInt(int64(gofakeit.Uint32()))
-		stateA := agentstypes.NewState(rootA, origin, nonceA, blockNumberA, timestampA)
+
+		gasPriceA := gofakeit.Uint16()
+		dataPriceA := gofakeit.Uint16()
+		execBufferA := gofakeit.Uint16()
+		amortAttCostA := gofakeit.Uint16()
+		etherPriceA := gofakeit.Uint16()
+		markupA := gofakeit.Uint16()
+		gasDataA := agentstypes.NewGasData(gasPriceA, dataPriceA, execBufferA, amortAttCostA, etherPriceA, markupA)
+
+		stateA := agentstypes.NewState(rootA, origin, nonceA, blockNumberA, timestampA, gasDataA)
 
 		snapshotRootA := common.BigToHash(big.NewInt(gofakeit.Int64()))
 		proofA := [][]byte{[]byte(gofakeit.Word()), []byte(gofakeit.Word())}
@@ -178,7 +232,16 @@ func (t *DBSuite) TestGetPotentialSnapshotRoots() {
 		rootB := common.BigToHash(big.NewInt(gofakeit.Int64()))
 		blockNumberB := big.NewInt(int64(gofakeit.Uint32()))
 		timestampB := big.NewInt(int64(gofakeit.Uint32()))
-		stateB := agentstypes.NewState(rootB, origin, nonceB, blockNumberB, timestampB)
+
+		gasPriceB := gofakeit.Uint16()
+		dataPriceB := gofakeit.Uint16()
+		execBufferB := gofakeit.Uint16()
+		amortAttCostB := gofakeit.Uint16()
+		etherPriceB := gofakeit.Uint16()
+		markupB := gofakeit.Uint16()
+		gasDataB := agentstypes.NewGasData(gasPriceB, dataPriceB, execBufferB, amortAttCostB, etherPriceB, markupB)
+
+		stateB := agentstypes.NewState(rootB, origin, nonceB, blockNumberB, timestampB, gasDataB)
 
 		snapshotRootB := common.BigToHash(big.NewInt(gofakeit.Int64()))
 		proofB := [][]byte{[]byte(gofakeit.Word()), []byte(gofakeit.Word())}
@@ -186,7 +249,16 @@ func (t *DBSuite) TestGetPotentialSnapshotRoots() {
 		rootC := common.BigToHash(big.NewInt(gofakeit.Int64()))
 		blockNumberC := big.NewInt(int64(gofakeit.Uint32()))
 		timestampC := big.NewInt(int64(gofakeit.Uint32()))
-		stateC := agentstypes.NewState(rootC, origin, nonceC, blockNumberC, timestampC)
+
+		gasPriceC := gofakeit.Uint16()
+		dataPriceC := gofakeit.Uint16()
+		execBufferC := gofakeit.Uint16()
+		amortAttCostC := gofakeit.Uint16()
+		etherPriceC := gofakeit.Uint16()
+		markupC := gofakeit.Uint16()
+		gasDataC := agentstypes.NewGasData(gasPriceC, dataPriceC, execBufferC, amortAttCostC, etherPriceC, markupC)
+
+		stateC := agentstypes.NewState(rootC, origin, nonceC, blockNumberC, timestampC, gasDataC)
 
 		snapshotRootC := common.BigToHash(big.NewInt(gofakeit.Int64()))
 		proofC := [][]byte{[]byte(gofakeit.Word()), []byte(gofakeit.Word())}
@@ -219,7 +291,16 @@ func (t *DBSuite) TestGetSnapshotRootsInNonceRange() {
 		rootA := common.BigToHash(big.NewInt(gofakeit.Int64()))
 		blockNumberA := big.NewInt(int64(gofakeit.Uint32()))
 		timestampA := big.NewInt(int64(gofakeit.Uint32()))
-		stateA := agentstypes.NewState(rootA, origin, nonceA, blockNumberA, timestampA)
+
+		gasPriceA := gofakeit.Uint16()
+		dataPriceA := gofakeit.Uint16()
+		execBufferA := gofakeit.Uint16()
+		amortAttCostA := gofakeit.Uint16()
+		etherPriceA := gofakeit.Uint16()
+		markupA := gofakeit.Uint16()
+		gasDataA := agentstypes.NewGasData(gasPriceA, dataPriceA, execBufferA, amortAttCostA, etherPriceA, markupA)
+
+		stateA := agentstypes.NewState(rootA, origin, nonceA, blockNumberA, timestampA, gasDataA)
 
 		snapshotRootA := common.BigToHash(big.NewInt(gofakeit.Int64()))
 		proofA := [][]byte{[]byte(gofakeit.Word()), []byte(gofakeit.Word())}
@@ -227,7 +308,16 @@ func (t *DBSuite) TestGetSnapshotRootsInNonceRange() {
 		rootB := common.BigToHash(big.NewInt(gofakeit.Int64()))
 		blockNumberB := big.NewInt(int64(gofakeit.Uint32()))
 		timestampB := big.NewInt(int64(gofakeit.Uint32()))
-		stateB := agentstypes.NewState(rootB, origin, nonceB, blockNumberB, timestampB)
+
+		gasPriceB := gofakeit.Uint16()
+		dataPriceB := gofakeit.Uint16()
+		execBufferB := gofakeit.Uint16()
+		amortAttCostB := gofakeit.Uint16()
+		etherPriceB := gofakeit.Uint16()
+		markupB := gofakeit.Uint16()
+		gasDataB := agentstypes.NewGasData(gasPriceB, dataPriceB, execBufferB, amortAttCostB, etherPriceB, markupB)
+
+		stateB := agentstypes.NewState(rootB, origin, nonceB, blockNumberB, timestampB, gasDataB)
 
 		snapshotRootB := common.BigToHash(big.NewInt(gofakeit.Int64()))
 		proofB := [][]byte{[]byte(gofakeit.Word()), []byte(gofakeit.Word())}
@@ -235,7 +325,16 @@ func (t *DBSuite) TestGetSnapshotRootsInNonceRange() {
 		rootC := common.BigToHash(big.NewInt(gofakeit.Int64()))
 		blockNumberC := big.NewInt(int64(gofakeit.Uint32()))
 		timestampC := big.NewInt(int64(gofakeit.Uint32()))
-		stateC := agentstypes.NewState(rootC, origin, nonceC, blockNumberC, timestampC)
+
+		gasPriceC := gofakeit.Uint16()
+		dataPriceC := gofakeit.Uint16()
+		execBufferC := gofakeit.Uint16()
+		amortAttCostC := gofakeit.Uint16()
+		etherPriceC := gofakeit.Uint16()
+		markupC := gofakeit.Uint16()
+		gasDataC := agentstypes.NewGasData(gasPriceC, dataPriceC, execBufferC, amortAttCostC, etherPriceC, markupC)
+
+		stateC := agentstypes.NewState(rootC, origin, nonceC, blockNumberC, timestampC, gasDataC)
 
 		snapshotRootC := common.BigToHash(big.NewInt(gofakeit.Int64()))
 		proofC := [][]byte{[]byte(gofakeit.Word()), []byte(gofakeit.Word())}
@@ -243,7 +342,16 @@ func (t *DBSuite) TestGetSnapshotRootsInNonceRange() {
 		rootD := common.BigToHash(big.NewInt(gofakeit.Int64()))
 		blockNumberD := big.NewInt(int64(gofakeit.Uint32()))
 		timestampD := big.NewInt(int64(gofakeit.Uint32()))
-		stateD := agentstypes.NewState(rootD, origin, nonceD, blockNumberD, timestampD)
+
+		gasPriceD := gofakeit.Uint16()
+		dataPriceD := gofakeit.Uint16()
+		execBufferD := gofakeit.Uint16()
+		amortAttCostD := gofakeit.Uint16()
+		etherPriceD := gofakeit.Uint16()
+		markupD := gofakeit.Uint16()
+		gasDataD := agentstypes.NewGasData(gasPriceD, dataPriceD, execBufferD, amortAttCostD, etherPriceD, markupD)
+
+		stateD := agentstypes.NewState(rootD, origin, nonceD, blockNumberD, timestampD, gasDataD)
 
 		snapshotRootD := common.BigToHash(big.NewInt(gofakeit.Int64()))
 		proofD := [][]byte{[]byte(gofakeit.Word()), []byte(gofakeit.Word())}

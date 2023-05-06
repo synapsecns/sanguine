@@ -20,4 +20,16 @@ type DBState struct {
 	Proof *json.RawMessage
 	// StateIndex is the index of the state in the Snapshot.
 	StateIndex *uint32
+	// GDGasPrice is the gas price from the gas data.
+	GDGasPrice *uint16
+	// GDDataPrice is the data price from the gas data.
+	GDDataPrice *uint16
+	// GDExecBuffer is the exec buffer from the gas data.
+	GDExecBuffer *uint16
+	// GDAmortAttCost is the amortAttCost from the gas data.
+	GDAmortAttCost *uint16
+	// GDEtherPrice is the etherPrice from the gas data.
+	GDEtherPrice *uint16
+	// GDMarkup is the markup from the gas data.
+	GDMarkup *uint16
 }

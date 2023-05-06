@@ -96,12 +96,21 @@ func (s Store) GetEarliestStateInRange(ctx context.Context, chainID, destination
 		return nil, nil
 	}
 
+	gasData := agentsTypes.NewGasData(
+		state.GDGasPrice,
+		state.GDDataPrice,
+		state.GDExecBuffer,
+		state.GDAmortAttCost,
+		state.GDEtherPrice,
+		state.GDMarkup)
+
 	receivedState := agentsTypes.NewState(
 		common.HexToHash(state.Root),
 		state.ChainID,
 		state.Nonce,
 		big.NewInt(int64(state.OriginBlockNumber)),
 		big.NewInt(int64(state.OriginTimestamp)),
+		gasData,
 	)
 
 	return &receivedState, nil
