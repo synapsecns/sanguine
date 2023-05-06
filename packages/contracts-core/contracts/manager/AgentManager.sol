@@ -4,6 +4,7 @@ pragma solidity 0.8.17;
 // ══════════════════════════════ LIBRARY IMPORTS ══════════════════════════════
 import {Attestation, AttestationLib} from "../libs/Attestation.sol";
 import {
+    AgentDomainIncorrect,
     DisputeAlreadyResolved,
     GuardInDispute,
     NotaryInDispute,
@@ -328,10 +329,8 @@ abstract contract AgentManager is MessagingBase, VerificationManager, AgentManag
     function _slashAgent(uint32 domain, address agent, address prover) internal {
         // Check that agent is Active/Unstaking and that the domains match
         AgentStatus memory status = _storedAgentStatus(agent);
-        require(
-            (status.flag == AgentFlag.Active || status.flag == AgentFlag.Unstaking) && status.domain == domain,
-            "Slashing could not be initiated"
-        );
+        status.verifyActiveUnstaking();
+        if (status.domain != domain) revert AgentDomainIncorrect();
         // The "stored" agent status is not updated yet, however agentStatus() will return AgentFlag.Fraudulent
         emit StatusUpdated(AgentFlag.Fraudulent, domain, agent);
         // This will revert if the agent has been slashed earlier

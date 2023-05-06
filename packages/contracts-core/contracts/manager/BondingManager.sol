@@ -5,7 +5,13 @@ pragma solidity 0.8.17;
 import {Attestation, AttestationLib} from "../libs/Attestation.sol";
 import {AttestationReport, AttestationReportLib} from "../libs/AttestationReport.sol";
 import {BONDING_OPTIMISTIC_PERIOD, SYNAPSE_DOMAIN} from "../libs/Constants.sol";
-import {MustBeSynapseDomain, NotaryInDispute, SynapseDomainForbidden} from "../libs/Errors.sol";
+import {
+    AgentCantBeAdded,
+    AgentDomainIncorrect,
+    MustBeSynapseDomain,
+    NotaryInDispute,
+    SynapseDomainForbidden
+} from "../libs/Errors.sol";
 import {ChainGas} from "../libs/GasData.sol";
 import {DynamicTree, MerkleMath} from "../libs/MerkleTree.sol";
 import {Receipt, ReceiptBody, ReceiptLib} from "../libs/Receipt.sol";
@@ -128,7 +134,7 @@ contract BondingManager is AgentManager, BondingManagerEvents, InterfaceBondingM
         require(attNonce != 0, "Unknown snapshot root");
         // Attestation Notary domain needs to match the destination domain
         AgentStatus memory attNotaryStatus = agentStatus(rcptBody.attNotary());
-        require(attNotaryStatus.domain == rcptBody.destination(), "Wrong attestation Notary domain");
+        if (attNotaryStatus.domain != rcptBody.destination()) revert AgentDomainIncorrect();
         // Store Notary signature for the Receipt
         uint256 sigIndex = _saveSignature(rcptSignature);
         wasAccepted = InterfaceSummit(summit).acceptReceipt({
@@ -231,7 +237,7 @@ contract BondingManager is AgentManager, BondingManagerEvents, InterfaceBondingM
             oldValue = _agentLeaf(AgentFlag.Resting, domain, agent);
         } else {
             // Any other flag indicates that agent could not be added
-            revert("Agent could not be added");
+            revert AgentCantBeAdded();
         }
         // This will revert if the proof for the old value is incorrect
         _updateLeaf(oldValue, proof, AgentStatus(AgentFlag.Active, domain, index), agent);
@@ -242,7 +248,8 @@ contract BondingManager is AgentManager, BondingManagerEvents, InterfaceBondingM
         // Check the CURRENT status of the unstaking agent
         AgentStatus memory status = agentStatus(agent);
         // Could only initiate the unstaking for the active agent for the domain
-        require(status.flag == AgentFlag.Active && status.domain == domain, "Unstaking could not be initiated");
+        status.verifyActive();
+        if (status.domain != domain) revert AgentDomainIncorrect();
         // Leaf representing currently saved agent information in the tree.
         // oldValue includes the domain information, so we didn't had to check it above.
         // However, we are still doing this check to have a more appropriate revert string,
@@ -258,7 +265,8 @@ contract BondingManager is AgentManager, BondingManagerEvents, InterfaceBondingM
         AgentStatus memory status = agentStatus(agent);
         // Could only complete the unstaking, if it was previously initiated
         // TODO: add more checks (time-based, possibly collecting info from other chains)
-        require(status.flag == AgentFlag.Unstaking && status.domain == domain, "Unstaking could not be completed");
+        status.verifyUnstaking();
+        if (status.domain != domain) revert AgentDomainIncorrect();
         // Leaf representing currently saved agent information in the tree
         // oldValue includes the domain information, so we didn't had to check it above.
         // However, we are still doing this check to have a more appropriate revert string,
@@ -272,19 +280,16 @@ contract BondingManager is AgentManager, BondingManagerEvents, InterfaceBondingM
 
     /// @inheritdoc InterfaceBondingManager
     function completeSlashing(uint32 domain, address agent, bytes32[] memory proof) external {
-        // Check that slashing was previously initiated in AgentManager
-        require(_disputes[agent].flag == DisputeFlag.Slashed, "Slashing not initiated");
-        // Check that the STORED status is Active/Unstaking in the merkle tree and that the domains match
-        AgentStatus memory status = _storedAgentStatus(agent);
-        require(
-            (status.flag == AgentFlag.Active || status.flag == AgentFlag.Unstaking) && status.domain == domain,
-            "Slashing could not be completed"
-        );
+        // Check the CURRENT status of the unstaking agent
+        AgentStatus memory status = agentStatus(agent);
+        // Could only complete the slashing, if it was previously initiated
+        status.verifyFraudulent();
+        if (status.domain != domain) revert AgentDomainIncorrect();
         // Leaf representing currently saved agent information in the tree
         // oldValue includes the domain information, so we didn't had to check it above.
         // However, we are still doing this check to have a more appropriate revert string,
         // if anyone is completing the slashing, but specifies incorrect domain.
-        bytes32 oldValue = _agentLeaf(status.flag, domain, agent);
+        bytes32 oldValue = _getLeaf(agent);
         // This will revert if the proof for the old value is incorrect
         _updateLeaf(oldValue, proof, AgentStatus(AgentFlag.Slashed, domain, status.index), agent);
     }

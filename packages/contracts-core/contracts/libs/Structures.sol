@@ -1,7 +1,13 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.17;
 
-import {AgentNotActive, AgentNotActiveNorUnstaking, AgentUnknown} from "../libs/Errors.sol";
+import {
+    AgentNotActive,
+    AgentNotFraudulent,
+    AgentNotUnstaking,
+    AgentNotActiveNorUnstaking,
+    AgentUnknown
+} from "../libs/Errors.sol";
 
 // Here we define common enums and structures to enable their easier reusing later.
 
@@ -103,10 +109,24 @@ library StructureUtils {
         }
     }
 
+    /// @notice Checks that Agent is Unstaking
+    function verifyUnstaking(AgentStatus memory status) internal pure {
+        if (status.flag != AgentFlag.Unstaking) {
+            revert AgentNotUnstaking();
+        }
+    }
+
     /// @notice Checks that Agent is Active or Unstaking
     function verifyActiveUnstaking(AgentStatus memory status) internal pure {
         if (status.flag != AgentFlag.Active && status.flag != AgentFlag.Unstaking) {
             revert AgentNotActiveNorUnstaking();
+        }
+    }
+
+    /// @notice Checks that Agent is Fraudulent
+    function verifyFraudulent(AgentStatus memory status) internal pure {
+        if (status.flag != AgentFlag.Fraudulent) {
+            revert AgentNotFraudulent();
         }
     }
 

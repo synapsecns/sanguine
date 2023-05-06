@@ -2,6 +2,7 @@
 pragma solidity 0.8.17;
 
 import {
+    AgentDomainIncorrect,
     AgentNotGuard,
     AgentNotNotary,
     GuardInDispute,
@@ -204,7 +205,7 @@ contract LightManagerTest is AgentManagerTest {
         uint256[] memory snapGas = rs.snapGas();
         address notary = domains[DOMAIN_REMOTE].agent;
         (bytes memory attPayload, bytes memory attSignature) = signAttestation(notary, ra);
-        vm.expectRevert("Not a local Notary");
+        vm.expectRevert(AgentDomainIncorrect.selector);
         lightManager.submitAttestation(attPayload, attSignature, ra._agentRoot, snapGas);
     }
 

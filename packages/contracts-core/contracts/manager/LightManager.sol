@@ -5,7 +5,7 @@ pragma solidity 0.8.17;
 import {Attestation, AttestationLib} from "../libs/Attestation.sol";
 import {AttestationReport, AttestationReportLib} from "../libs/AttestationReport.sol";
 import {AGENT_TREE_HEIGHT, BONDING_OPTIMISTIC_PERIOD, SYNAPSE_DOMAIN} from "../libs/Constants.sol";
-import {MustBeSynapseDomain, NotaryInDispute, SynapseDomainForbidden} from "../libs/Errors.sol";
+import {AgentDomainIncorrect, MustBeSynapseDomain, NotaryInDispute, SynapseDomainForbidden} from "../libs/Errors.sol";
 import {ChainGas, GasDataLib} from "../libs/GasData.sol";
 import {MerkleMath} from "../libs/MerkleMath.sol";
 import {AgentFlag, AgentStatus, DisputeFlag} from "../libs/Structures.sol";
@@ -207,6 +207,6 @@ contract LightManager is AgentManager, InterfaceLightManager {
 
     /// @dev Verifies that Notary signature is active on local domain
     function _verifyNotaryDomain(uint32 notaryDomain) internal view override {
-        require(notaryDomain == localDomain, "Not a local Notary");
+        if (notaryDomain != localDomain) revert AgentDomainIncorrect();
     }
 }

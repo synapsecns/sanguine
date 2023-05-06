@@ -10,8 +10,12 @@ error CallerNotAgentManager();
 error AgentNotGuard();
 error AgentNotNotary();
 
+error AgentCantBeAdded();
+error AgentDomainIncorrect();
 error AgentNotActive();
 error AgentNotActiveNorUnstaking();
+error AgentNotFraudulent();
+error AgentNotUnstaking();
 error AgentUnknown();
 
 error DisputeAlreadyResolved();
