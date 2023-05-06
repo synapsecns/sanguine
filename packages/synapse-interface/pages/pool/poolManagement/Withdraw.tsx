@@ -135,7 +135,7 @@ const Withdraw = ({
     if (poolUserData && poolData && address && pool && inputValue.bn.gt(Zero)) {
       calculateMaxWithdraw()
     }
-  }, [inputValue, time])
+  }, [inputValue, time, withdrawType])
 
   const onPercentChange = (percent: number) => {
     if (percent > 100) {
@@ -152,9 +152,17 @@ const Withdraw = ({
   }
 
   const onChangeInputValue = (token: Token, value: string) => {
-    const bigNum = stringToBigNum(value, token.decimals[chainId]) ?? Zero
+    const bigNum = stringToBigNum(value, token.decimals[chainId])
+    if (poolUserData.lpTokenBalance.isZero()) {
+      setInputValue({ bn: bigNum, str: value })
+
+      setPercentage(100)
+      return
+    }
+    const pn = bigNum
+      ? bigNum.mul(100).div(poolUserData.lpTokenBalance).toNumber()
+      : 0
     setInputValue({ bn: bigNum, str: value })
-    const pn = bigNum.mul(100).div(poolUserData.lpTokenBalance).toNumber()
 
     if (pn > 100) {
       setPercentage(100)
@@ -209,7 +217,8 @@ const Withdraw = ({
   const actionBtn = (
     <TransactionButton
       className={btnClassName}
-      disabled={inputValue.bn.eq(0)}
+      disabled={false}
+      // disabled={inputValue.bn.eq(0)}
       onClick={() => buttonAction()}
       onSuccess={() => postButtonAction()}
       label={btnLabel}

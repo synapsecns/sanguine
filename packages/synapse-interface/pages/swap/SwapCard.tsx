@@ -54,7 +54,7 @@ const SwapCard = ({
   const [fromInput, setFromInput] = useState({ string: '', bigNum: Zero })
   const [toToken, setToToken] = useState(DEFAULT_TO_TOKEN)
   const [toTokens, setToTokens] = useState<Token[]>([]) //add default
-  const [error, setError] = useState('')
+  const [error, setError] = useState(undefined)
   const [destinationAddress, setDestinationAddress] = useState('')
   const [swapQuote, setSwapQuote] = useState<SwapQuote>(EMPTY_SWAP_QUOTE)
   const [displayType, setDisplayType] = useState(undefined)
@@ -370,7 +370,7 @@ const SwapCard = ({
       swapableToken,
       swapableTokens,
       tempFromToken.symbol,
-      swapableToken.symbol
+      swapableToken?.symbol
     )
     return
   }
@@ -553,6 +553,7 @@ const SwapCard = ({
         onSuccess={() => {
           postButtonAction()
         }}
+        chainId={connectedChainId}
         label={btnLabel}
         pendingLabel={pendingLabel}
       />

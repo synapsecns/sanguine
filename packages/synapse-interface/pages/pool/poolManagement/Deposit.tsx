@@ -17,7 +17,7 @@ import { getTokenAllowance } from '@/utils/actions/getTokenAllowance'
 import { approve, deposit } from '@/utils/actions/approveAndDeposit'
 import { QUOTE_POLLING_INTERVAL } from '@/constants/bridge' // TODO CHANGE
 import { PoolData, PoolUserData } from '@types'
-
+import LoadingTokenInput from '@components/loading/LoadingTokenInput'
 const Deposit = ({
   pool,
   chainId,
@@ -48,15 +48,16 @@ const Deposit = ({
   // TODO move this to utils
   const sumBigNumbersFromState = () => {
     let sum = Zero
-    pool.poolTokens.map((token) => {
-      if (inputValue.bn[getAddress(token.addresses[chainId])]) {
-        sum = sum.add(
-          inputValue.bn[getAddress(token.addresses[chainId])].mul(
-            BigNumber.from(10).pow(18 - token.decimals[chainId])
+    pool?.poolTokens &&
+      pool.poolTokens.map((token) => {
+        if (inputValue.bn[getAddress(token.addresses[chainId])]) {
+          sum = sum.add(
+            inputValue.bn[getAddress(token.addresses[chainId])].mul(
+              BigNumber.from(10).pow(18 - token.decimals[chainId])
+            )
           )
-        )
-      }
-    })
+        }
+      })
     return sum
   }
 
@@ -144,8 +145,6 @@ const Deposit = ({
     setInputValue(initInputValue)
   }
 
-  const tokenInputSum = Zero
-
   // some messy button gen stuff (will re-write)
   let isFromBalanceEnough = true
   let isAllowanceEnough = true
@@ -188,7 +187,7 @@ const Deposit = ({
   const actionBtn = (
     <TransactionButton
       className={btnClassName}
-      disabled={tokenInputSum.eq(0)}
+      disabled={sumBigNumbersFromState().eq(0)}
       onClick={() => buttonAction()}
       onSuccess={() => postButtonAction()}
       label={btnLabel}
@@ -199,8 +198,7 @@ const Deposit = ({
   return (
     <div className="flex-col">
       <div className="px-2 pt-1 pb-4 bg-bgLight rounded-xl">
-        {pool &&
-          poolUserData &&
+        {pool && poolUserData ? (
           poolUserData.tokens.map((tokenObj, i) => {
             const balanceToken = correctToken(tokenObj.token)
             return (
@@ -214,7 +212,14 @@ const Deposit = ({
                 address={address}
               />
             )
-          })}
+          })
+        ) : (
+          <>
+            <LoadingTokenInput />
+            <LoadingTokenInput />
+            <LoadingTokenInput />
+          </>
+        )}
       </div>
       {actionBtn}
       {depositQuote.priceImpact && depositQuote.priceImpact?.gt(Zero) && (
