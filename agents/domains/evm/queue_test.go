@@ -8,7 +8,6 @@ import (
 	"github.com/stretchr/testify/mock"
 	dbMocks "github.com/synapsecns/sanguine/agents/db/mocks"
 	"github.com/synapsecns/sanguine/agents/domains/evm"
-	"github.com/synapsecns/sanguine/agents/types"
 	chainMocks "github.com/synapsecns/sanguine/ethergo/chain/mocks"
 	signerMocks "github.com/synapsecns/sanguine/ethergo/signer/signer/mocks"
 )
@@ -33,15 +32,11 @@ func (t *TxQueueSuite) TestGetNonce() {
 
 func (t *TxQueueSuite) TestGetTransactor() {
 	destinationDomain := uint32(t.TestBackendDestination.GetChainID())
-
-	encodedTips, err := types.EncodeTips(types.NewTips(big.NewInt(0), big.NewInt(0), big.NewInt(0), big.NewInt(0)))
-	Nil(t.T(), err)
-
+	
 	auth := t.TestBackendOrigin.GetTxContext(t.GetTestContext(), nil)
 
-	paddedTips := new(big.Int).SetBytes(encodedTips)
 	paddedRequest := big.NewInt(0)
-	tx, err := t.OriginContract.SendBaseMessage(auth.TransactOpts, destinationDomain, [32]byte{}, 1, paddedTips, paddedRequest, []byte("hello world"))
+	tx, err := t.OriginContract.SendBaseMessage(auth.TransactOpts, destinationDomain, [32]byte{}, 1, paddedRequest, []byte("hello world"))
 	Nil(t.T(), err)
 
 	t.TestBackendOrigin.WaitForConfirmation(t.GetTestContext(), tx)

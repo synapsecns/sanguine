@@ -36,8 +36,25 @@ func TestSnapshotRootAndProofs(t *testing.T) {
 	timestampA := randomUint40BigInt(t)
 	timestampB := randomUint40BigInt(t)
 
-	stateA := types.NewState(rootA, originA, nonceA, blockNumberA, timestampA)
-	stateB := types.NewState(rootB, originB, nonceB, blockNumberB, timestampB)
+	gasPriceA := gofakeit.Uint16()
+	dataPriceA := gofakeit.Uint16()
+	execBufferA := gofakeit.Uint16()
+	amortAttCostA := gofakeit.Uint16()
+	etherPriceA := gofakeit.Uint16()
+	markupA := gofakeit.Uint16()
+	gasDataA := types.NewGasData(gasPriceA, dataPriceA, execBufferA, amortAttCostA, etherPriceA, markupA)
+
+	stateA := types.NewState(rootA, originA, nonceA, blockNumberA, timestampA, gasDataA)
+
+	gasPriceB := gofakeit.Uint16()
+	dataPriceB := gofakeit.Uint16()
+	execBufferB := gofakeit.Uint16()
+	amortAttCostB := gofakeit.Uint16()
+	etherPriceB := gofakeit.Uint16()
+	markupB := gofakeit.Uint16()
+	gasDataB := types.NewGasData(gasPriceB, dataPriceB, execBufferB, amortAttCostB, etherPriceB, markupB)
+
+	stateB := types.NewState(rootB, originB, nonceB, blockNumberB, timestampB, gasDataB)
 	snapshot := types.NewSnapshot([]types.State{stateA, stateB})
 
 	snapshotRoot, _, err := snapshot.SnapshotRootAndProofs()

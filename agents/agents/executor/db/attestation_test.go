@@ -39,11 +39,11 @@ func (t *DBSuite) TestStoreRetrieveAttestation() {
 		Nil(t.T(), err)
 
 		snapshotRootAString := snapshotRootA.String()
-		agentRootAString := agentsRootA.String()
+		dataHashAString := agentsRootA.String()
 		attestationMaskA := types.DBAttestation{
 			Destination:      &destinationA,
 			SnapshotRoot:     &snapshotRootAString,
-			AgentRoot:        &agentRootAString,
+			DataHash:         &dataHashAString,
 			AttestationNonce: &nonceA,
 		}
 

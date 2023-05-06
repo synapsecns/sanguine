@@ -8,7 +8,6 @@ import (
 	"github.com/ethereum/go-ethereum/common"
 	. "github.com/stretchr/testify/assert"
 	"github.com/synapsecns/sanguine/agents/domains/evm"
-	"github.com/synapsecns/sanguine/agents/types"
 	"github.com/synapsecns/sanguine/ethergo/mocks"
 )
 
@@ -37,12 +36,8 @@ func NewTestSent(destinationID uint32) TestSent {
 func (d TestSent) Call(i ContractSuite) (blockNumber uint32) {
 	auth := i.TestBackendOrigin.GetTxContext(i.GetTestContext(), nil)
 
-	encodedTips, err := types.EncodeTips(types.NewTips(big.NewInt(0), big.NewInt(0), big.NewInt(0), big.NewInt(0)))
-	Nil(i.T(), err)
-
-	paddedTips := new(big.Int).SetBytes(encodedTips)
 	paddedRequest := big.NewInt(0)
-	tx, err := i.OriginContract.SendBaseMessage(auth.TransactOpts, d.domain, d.recipientAddress, d.optimisticSeconds, paddedTips, paddedRequest, d.message)
+	tx, err := i.OriginContract.SendBaseMessage(auth.TransactOpts, d.domain, d.recipientAddress, d.optimisticSeconds, paddedRequest, d.message)
 	Nil(i.T(), err)
 	i.TestBackendOrigin.WaitForConfirmation(i.GetTestContext(), tx)
 
