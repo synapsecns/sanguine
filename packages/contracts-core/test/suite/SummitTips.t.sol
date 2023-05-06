@@ -5,7 +5,9 @@ import {
     AgentNotNotary,
     CallerNotAgentManager,
     IncorrectSnapshotRoot,
-    NotaryInDispute
+    NotaryInDispute,
+    TipsClaimMoreThanEarned,
+    TipsClaimZero
 } from "../../contracts/libs/Errors.sol";
 import {IAgentManager, InterfaceSummit} from "../../contracts/Summit.sol";
 
@@ -416,7 +418,7 @@ contract SummitTipsTest is AgentSecuredTest {
     }
 
     function test_withdrawTips_revert_zeroAmount(address actor, uint32 domain) public {
-        vm.expectRevert("Amount is zero");
+        vm.expectRevert(TipsClaimZero.selector);
         vm.prank(actor);
         InterfaceSummit(summit).withdrawTips(domain, 0);
     }
@@ -432,7 +434,7 @@ contract SummitTipsTest is AgentSecuredTest {
         claimed = claimed % earned;
         amount = uint128(bound(amount, 1, earned - claimed));
         amount = uint128(bound(amount, earned - claimed + 1, type(uint128).max));
-        vm.expectRevert("Tips balance too low");
+        vm.expectRevert(TipsClaimMoreThanEarned.selector);
         vm.prank(actor);
         InterfaceSummit(summit).withdrawTips(domain, amount);
     }

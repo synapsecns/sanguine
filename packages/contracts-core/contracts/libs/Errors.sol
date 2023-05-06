@@ -75,6 +75,17 @@ error IncorrectMagicValue();
 error GasLimitTooLow();
 error GasSuppliedTooLow();
 
+// ══════════════════════════════════ ORIGIN ═══════════════════════════════════
+
+error ContentLengthTooBig();
+error EthTransferFailed();
+error InsufficientEthBalance();
+
+// ══════════════════════════════════ SUMMIT ═══════════════════════════════════
+
+error TipsClaimMoreThanEarned();
+error TipsClaimZero();
+
 // ════════════════════════════════ MEMORY VIEW ════════════════════════════════
 
 error IndexedTooMuch();
