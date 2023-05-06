@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.17;
 
+import {UnformattedCallData, UnformattedSignature} from "./Errors.sol";
 import {MemView, MemViewLib} from "./MemView.sol";
 
 /// @dev CallData is a memory view over the payload to be used for an external call, i.e.
@@ -70,7 +71,7 @@ library ByteString {
      * @dev Will revert if the memory view is not over a signature.
      */
     function castToSignature(MemView memView) internal pure returns (Signature) {
-        require(isSignature(memView), "Not a signature");
+        if (!isSignature(memView)) revert UnformattedSignature();
         return Signature.wrap(MemView.unwrap(memView));
     }
 
@@ -142,7 +143,7 @@ library ByteString {
      * @dev Will revert if the memory view is not over a calldata.
      */
     function castToCallData(MemView memView) internal pure returns (CallData) {
-        require(isCallData(memView), "Not a calldata");
+        if (!isCallData(memView)) revert UnformattedCallData();
         return CallData.wrap(MemView.unwrap(memView));
     }
 

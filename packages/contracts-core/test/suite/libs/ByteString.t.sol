@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.17;
 
+import {UnformattedCallData, UnformattedSignature} from "../../../contracts/libs/Errors.sol";
 import {SynapseLibraryTest} from "../../utils/SynapseLibraryTest.t.sol";
 import {ByteStringHarness} from "../../harnesses/libs/ByteStringHarness.t.sol";
 
@@ -117,7 +118,7 @@ contract ByteStringLibraryTest is SynapseLibraryTest {
             assertEq(libHarness.castToSignature(payload), payload, "!castToSignature: when valid");
         } else {
             assertFalse(libHarness.isSignature(payload), "!isSignature: when valid");
-            vm.expectRevert("Not a signature");
+            vm.expectRevert(UnformattedSignature.selector);
             libHarness.castToSignature(payload);
         }
     }
@@ -131,7 +132,7 @@ contract ByteStringLibraryTest is SynapseLibraryTest {
             assertEq(libHarness.castToCallData(payload), payload, "!castToCallData: when valid");
         } else {
             assertFalse(libHarness.isCallData(payload), revertMessage);
-            vm.expectRevert("Not a calldata");
+            vm.expectRevert(UnformattedCallData.selector);
             libHarness.castToCallData(payload);
         }
     }

@@ -2,6 +2,7 @@
 pragma solidity 0.8.17;
 
 import {SNAPSHOT_MAX_STATES, SNAPSHOT_SALT, SNAPSHOT_TREE_HEIGHT, STATE_LENGTH} from "./Constants.sol";
+import {UnformattedSnapshot} from "./Errors.sol";
 import {GasDataLib, ChainGas} from "./GasData.sol";
 import {MerkleMath} from "./MerkleMath.sol";
 import {State, StateLib} from "./State.sol";
@@ -80,7 +81,7 @@ library SnapshotLib {
      * @dev Will revert if the memory view is not over a snapshot payload.
      */
     function castToSnapshot(MemView memView) internal pure returns (Snapshot) {
-        require(isSnapshot(memView), "Not a snapshot");
+        if (!isSnapshot(memView)) revert UnformattedSnapshot();
         return Snapshot.wrap(MemView.unwrap(memView));
     }
 

@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.17;
 
+import {UnformattedState} from "../../../contracts/libs/Errors.sol";
 import {STATE_LENGTH} from "../../../contracts/libs/Constants.sol";
 
 import {SynapseLibraryTest, MemViewLib} from "../../utils/SynapseLibraryTest.t.sol";
@@ -73,7 +74,7 @@ contract StateLibraryTest is SynapseLibraryTest {
             assertEq(libHarness.castToState(payload), payload, "!castToState: when valid");
         } else {
             assertFalse(libHarness.isState(payload), "!isState: when valid");
-            vm.expectRevert("Not a state");
+            vm.expectRevert(UnformattedState.selector);
             libHarness.castToState(payload);
         }
     }

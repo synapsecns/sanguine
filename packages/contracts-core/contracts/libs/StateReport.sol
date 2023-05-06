@@ -2,6 +2,7 @@
 pragma solidity 0.8.17;
 
 import {STATE_REPORT_SALT} from "./Constants.sol";
+import {UnformattedStateReport} from "./Errors.sol";
 import {State, StateLib} from "./State.sol";
 import {MemView, MemViewLib} from "./MemView.sol";
 
@@ -57,7 +58,7 @@ library StateReportLib {
     /// @notice Casts a memory view to a StateReport view.
     /// @dev Will revert if if the memory view is not over a StateReport payload.
     function castToStateReport(MemView memView) internal pure returns (StateReport) {
-        require(isStateReport(memView), "Not a state report");
+        if (!isStateReport(memView)) revert UnformattedStateReport();
         return StateReport.wrap(MemView.unwrap(memView));
     }
 

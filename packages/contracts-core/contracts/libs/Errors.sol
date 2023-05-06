@@ -24,6 +24,19 @@ error IncorrectRecipient();
 
 error OutdatedNonce();
 
+error UnformattedAttestation();
+error UnformattedAttestationReport();
+error UnformattedBaseMessage();
+error UnformattedCallData();
+error UnformattedMessage();
+error UnformattedReceipt();
+error UnformattedReceiptBody();
+error UnformattedReceiptReport();
+error UnformattedSignature();
+error UnformattedSnapshot();
+error UnformattedState();
+error UnformattedStateReport();
+
 // ═══════════════════════════════ AGENT MANAGER ═══════════════════════════════
 
 error AgentNotGuard();

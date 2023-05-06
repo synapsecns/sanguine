@@ -2,6 +2,7 @@
 pragma solidity 0.8.17;
 
 import {GAS_DATA_LENGTH, STATE_LENGTH} from "./Constants.sol";
+import {UnformattedState} from "./Errors.sol";
 import {GasData, GasDataLib} from "./GasData.sol";
 import {MemView, MemViewLib} from "./MemView.sol";
 
@@ -81,7 +82,7 @@ library StateLib {
      * @dev Will revert if the memory view is not over a state.
      */
     function castToState(MemView memView) internal pure returns (State) {
-        require(isState(memView), "Not a state");
+        if (!isState(memView)) revert UnformattedState();
         return State.wrap(MemView.unwrap(memView));
     }
 

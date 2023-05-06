@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.17;
 
+import {UnformattedSnapshot} from "../../../contracts/libs/Errors.sol";
 import {State, StateLib, STATE_LENGTH} from "../../../contracts/libs/State.sol";
 import {SNAPSHOT_TREE_HEIGHT} from "../../../contracts/libs/Constants.sol";
 import {ChainGas, GasData} from "../../../contracts/libs/GasData.sol";
@@ -97,7 +98,7 @@ contract SnapshotLibraryTest is SynapseLibraryTest {
             assertEq(libHarness.castToSnapshot(payload), payload, "!castToState: when valid");
         } else {
             assertFalse(libHarness.isSnapshot(payload), "!isSnapshot: when valid");
-            vm.expectRevert("Not a snapshot");
+            vm.expectRevert(UnformattedSnapshot.selector);
             libHarness.castToSnapshot(payload);
         }
     }

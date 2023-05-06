@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.17;
 
+import {UnformattedReceipt, UnformattedReceiptBody} from "../../../contracts/libs/Errors.sol";
 import {RECEIPT_BODY_LENGTH, RECEIPT_LENGTH} from "../../../contracts/libs/Constants.sol";
 
 import {SynapseLibraryTest, MemViewLib} from "../../utils/SynapseLibraryTest.t.sol";
@@ -100,7 +101,7 @@ contract ReceiptLibraryTest is SynapseLibraryTest {
             assertEq(libHarness.castToReceiptBody(payload), payload, "!castToReceiptBody: when valid");
         } else {
             assertFalse(libHarness.isReceiptBody(payload), "!isReceiptBody: when valid");
-            vm.expectRevert("Not a receipt body");
+            vm.expectRevert(UnformattedReceiptBody.selector);
             libHarness.castToReceiptBody(payload);
         }
     }
@@ -111,7 +112,7 @@ contract ReceiptLibraryTest is SynapseLibraryTest {
             assertEq(libHarness.castToReceipt(payload), payload, "!castToReceipt: when valid");
         } else {
             assertFalse(libHarness.isReceipt(payload), "!isReceipt: when valid");
-            vm.expectRevert("Not a receipt");
+            vm.expectRevert(UnformattedReceipt.selector);
             libHarness.castToReceipt(payload);
         }
     }

@@ -4,6 +4,7 @@ pragma solidity 0.8.17;
 import {BaseMessageLib} from "./BaseMessage.sol";
 import {ByteString} from "./ByteString.sol";
 import {HEADER_LENGTH} from "./Constants.sol";
+import {UnformattedMessage} from "./Errors.sol";
 import {Header, HeaderLib} from "./Header.sol";
 import {MemView, MemViewLib} from "./MemView.sol";
 
@@ -72,7 +73,7 @@ library MessageLib {
      * @dev Will revert if the memory view is not over a message payload.
      */
     function castToMessage(MemView memView) internal pure returns (Message) {
-        require(isMessage(memView), "Not a message payload");
+        if (!isMessage(memView)) revert UnformattedMessage();
         return Message.wrap(MemView.unwrap(memView));
     }
 
