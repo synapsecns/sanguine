@@ -4,6 +4,17 @@ pragma solidity 0.8.17;
 import {InterfaceOrigin} from "../../../contracts/interfaces/InterfaceOrigin.sol";
 import {InterfaceSummit} from "../../../contracts/interfaces/InterfaceSummit.sol";
 import {AGENT_TREE_HEIGHT} from "../../../contracts/libs/Constants.sol";
+import {
+    AgentCantBeAdded,
+    AgentNotActive,
+    AgentNotUnstaking,
+    CallerNotDestination,
+    CallerNotSummit,
+    MustBeSynapseDomain,
+    NotaryInDispute,
+    SlashAgentOptimisticPeriod,
+    SynapseDomainForbidden
+} from "../../../contracts/libs/Errors.sol";
 import {MerkleMath} from "../../../contracts/libs/MerkleMath.sol";
 import {AgentFlag, AgentStatus} from "../../../contracts/libs/Structures.sol";
 import {AgentManagerTest} from "./AgentManager.t.sol";
@@ -20,10 +31,6 @@ import {RawExecReceipt, RawState, RawStateIndex} from "../../utils/libs/SynapseS
 // solhint-disable no-empty-blocks
 // solhint-disable ordering
 contract BondingManagerTest is AgentManagerTest {
-    bytes internal constant CANT_ADD = "Agent could not be added";
-    bytes internal constant CANT_INITIATE = "Unstaking could not be initiated";
-    bytes internal constant CANT_COMPLETE = "Unstaking could not be completed";
-
     // Deploy mocks for everything except BondingManager
     constructor() SynapseTest(0) {}
 
@@ -48,6 +55,12 @@ contract BondingManagerTest is AgentManagerTest {
 
     function initializeLocalContract() public override {
         BondingManager(localContract()).initialize(address(0), address(0), address(0));
+    }
+
+    function test_constructor_revert_notOnSynapseChain(uint32 domain) public {
+        vm.assume(domain != DOMAIN_SYNAPSE);
+        vm.expectRevert(MustBeSynapseDomain.selector);
+        new BondingManager(domain);
     }
 
     function test_setup() public override {
@@ -115,7 +128,7 @@ contract BondingManagerTest is AgentManagerTest {
 
     function test_addAgent_revert_synapseDomain(address agent) public {
         bytes32[] memory proof = getZeroProof();
-        vm.expectRevert("No Notaries for Synapse Chain");
+        vm.expectRevert(SynapseDomainForbidden.selector);
         bondingManager.addAgent(DOMAIN_SYNAPSE, agent, proof);
     }
 
@@ -171,43 +184,43 @@ contract BondingManagerTest is AgentManagerTest {
 
     function test_addAgent_revert_active(uint256 domainId, uint256 agentId) public {
         (uint32 domain, address agent) = getAgent(domainId, agentId);
-        updateStatusWithRevert(AgentFlag.Active, domain, agent, CANT_ADD);
+        updateStatusWithRevert(AgentFlag.Active, domain, agent, AgentCantBeAdded.selector);
     }
 
     function test_addAgent_revert_unstaking(uint256 domainId, uint256 agentId) public {
         (uint32 domain, address agent) = getAgent(domainId, agentId);
         updateStatus(AgentFlag.Unstaking, domain, agent);
-        updateStatusWithRevert(AgentFlag.Active, domain, agent, CANT_ADD);
+        updateStatusWithRevert(AgentFlag.Active, domain, agent, AgentCantBeAdded.selector);
     }
 
     function test_initiateUnstaking_revert_unstaking(uint256 domainId, uint256 agentId) public {
         (uint32 domain, address agent) = getAgent(domainId, agentId);
         updateStatus(AgentFlag.Unstaking, domain, agent);
-        updateStatusWithRevert(AgentFlag.Unstaking, domain, agent, CANT_INITIATE);
+        updateStatusWithRevert(AgentFlag.Unstaking, domain, agent, AgentNotActive.selector);
     }
 
     function test_initiateUnstaking_revert_resting(uint256 domainId, uint256 agentId) public {
         (uint32 domain, address agent) = getAgent(domainId, agentId);
         updateStatus(AgentFlag.Unstaking, domain, agent);
         updateStatus(AgentFlag.Resting, domain, agent);
-        updateStatusWithRevert(AgentFlag.Unstaking, domain, agent, CANT_INITIATE);
+        updateStatusWithRevert(AgentFlag.Unstaking, domain, agent, AgentNotActive.selector);
     }
 
     function test_completeUnstaking_revert_active(uint256 domainId, uint256 agentId) public {
         (uint32 domain, address agent) = getAgent(domainId, agentId);
-        updateStatusWithRevert(AgentFlag.Resting, domain, agent, CANT_COMPLETE);
+        updateStatusWithRevert(AgentFlag.Resting, domain, agent, AgentNotUnstaking.selector);
     }
 
     function test_completeUnstaking_revert_resting(uint256 domainId, uint256 agentId) public {
         (uint32 domain, address agent) = getAgent(domainId, agentId);
         updateStatus(AgentFlag.Unstaking, domain, agent);
         updateStatus(AgentFlag.Resting, domain, agent);
-        updateStatusWithRevert(AgentFlag.Resting, domain, agent, CANT_COMPLETE);
+        updateStatusWithRevert(AgentFlag.Resting, domain, agent, AgentNotUnstaking.selector);
     }
 
-    function updateStatusWithRevert(AgentFlag flag, uint32 domain, address agent, bytes memory revertMsg) public {
+    function updateStatusWithRevert(AgentFlag flag, uint32 domain, address agent, bytes4 err) public {
         bytes32[] memory proof = getAgentProof(agent);
-        vm.expectRevert(revertMsg);
+        vm.expectRevert(err);
         updateStatusWithProof(flag, domain, agent, proof);
     }
 
@@ -228,6 +241,14 @@ contract BondingManagerTest is AgentManagerTest {
         // (bool isSlashed, address prover_) = bondingManager.slashStatus(agent);
         // assertTrue(isSlashed);
         // assertEq(prover_, prover);
+    }
+
+    function test_remoteSlashAgent_revert_optimisticPeriodNotOver(uint32 proofMaturity) public {
+        proofMaturity = proofMaturity % BONDING_OPTIMISTIC_PERIOD;
+        skip(proofMaturity);
+        bytes memory msgPayload = managerMsgPayload(DOMAIN_REMOTE, remoteSlashAgentCalldata(0, address(0), address(0)));
+        vm.expectRevert(SlashAgentOptimisticPeriod.selector);
+        managerMsgPrank(msgPayload);
     }
 
     function test_completeSlashing_active(uint256 domainId, uint256 agentId, address slasher) public {
@@ -299,7 +320,7 @@ contract BondingManagerTest is AgentManagerTest {
         address notary = domains[DOMAIN_REMOTE].agent;
         openDispute({guard: domains[0].agent, notary: notary});
         (bytes memory snapPayload, bytes memory snapSig) = createSignedSnapshot(notary, rs, rsi);
-        vm.expectRevert("Notary is in dispute");
+        vm.expectRevert(NotaryInDispute.selector);
         bondingManager.submitSnapshot(snapPayload, snapSig);
     }
 
@@ -340,13 +361,13 @@ contract BondingManagerTest is AgentManagerTest {
         (bytes memory receiptPayload, bytes memory receiptSig) = signReceipt(rcptNotary, re);
         // Set value for getAttestationNonce call
         BaseMock(localDestination()).setMockReturnValue(1);
-        vm.expectRevert("Notary is in dispute");
+        vm.expectRevert(NotaryInDispute.selector);
         bondingManager.submitReceipt(receiptPayload, receiptSig);
     }
 
     function test_passReceipt_revert_notDestination(address caller) public {
         vm.assume(caller != localDestination());
-        vm.expectRevert("Only Destination passes receipts");
+        vm.expectRevert(CallerNotDestination.selector);
         vm.prank(caller);
         bondingManager.passReceipt(0, 0, 0, "");
     }
@@ -375,7 +396,7 @@ contract BondingManagerTest is AgentManagerTest {
 
     function test_withdrawTips_revert_notSummit(address caller) public {
         vm.assume(caller != summit);
-        vm.expectRevert("Only Summit withdraws tips");
+        vm.expectRevert(CallerNotSummit.selector);
         vm.prank(caller);
         bondingManager.withdrawTips(address(0), 0, 0);
     }

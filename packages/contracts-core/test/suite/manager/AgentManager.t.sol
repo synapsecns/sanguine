@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.17;
 
+import {AgentNotGuard, GuardInDispute, NotaryInDispute} from "../../../contracts/libs/Errors.sol";
 import {IAgentManager} from "../../../contracts/interfaces/IAgentManager.sol";
 import {IAgentSecured} from "../../../contracts/interfaces/IAgentSecured.sol";
 import {AgentFlag, AgentStatus, SystemEntity} from "../../../contracts/libs/Structures.sol";
@@ -77,7 +78,7 @@ abstract contract AgentManagerTest is MessagingBaseTest {
         // Force a random Notary to sign the report
         address reportSigner = getNotary(random.nextUint256(), random.nextUint256());
         (bytes memory srPayload, bytes memory srSig) = createSignedStateReport(reportSigner, rs);
-        expectNotGuardRevert();
+        vm.expectRevert(AgentNotGuard.selector);
         IAgentManager(localAgentManager()).submitStateReportWithSnapshot(
             rsi.stateIndex, srPayload, srSig, snapPayload, snapSig
         );
@@ -116,7 +117,7 @@ abstract contract AgentManagerTest is MessagingBaseTest {
         // Force a random Notary to sign the report
         address reportSigner = getNotary(random.nextUint256(), random.nextUint256());
         (bytes memory srPayload, bytes memory srSig) = createSignedStateReport(reportSigner, rs);
-        expectNotGuardRevert();
+        vm.expectRevert(AgentNotGuard.selector);
         IAgentManager(localAgentManager()).submitStateReportWithAttestation(
             rsi.stateIndex, srPayload, srSig, snapPayload, attPayload, attSig
         );
@@ -158,7 +159,7 @@ abstract contract AgentManagerTest is MessagingBaseTest {
         // Generate Snapshot Proof
         acceptSnapshot(rawSnap);
         bytes32[] memory snapProof = genSnapshotProof(rsi.stateIndex);
-        expectNotGuardRevert();
+        vm.expectRevert(AgentNotGuard.selector);
         IAgentManager(localAgentManager()).submitStateReportWithSnapshotProof(
             rsi.stateIndex, srPayload, srSig, snapProof, attPayload, attSig
         );
@@ -178,7 +179,7 @@ abstract contract AgentManagerTest is MessagingBaseTest {
         address guard = domains[0].agent;
         (bytes memory srPayload, bytes memory srSig) = createSignedStateReport(guard, rs);
         openDispute(guard, domains[DOMAIN_LOCAL].agents[1]);
-        vm.expectRevert("Guard already in dispute");
+        vm.expectRevert(GuardInDispute.selector);
         vm.prank(prover);
         IAgentManager(localAgentManager()).submitStateReportWithSnapshot(
             rsi.stateIndex, srPayload, srSig, snapPayload, snapSig
@@ -197,7 +198,7 @@ abstract contract AgentManagerTest is MessagingBaseTest {
         address guard = domains[0].agent;
         (bytes memory srPayload, bytes memory srSig) = createSignedStateReport(guard, rs);
         openDispute(domains[0].agents[1], notary);
-        vm.expectRevert("Notary already in dispute");
+        vm.expectRevert(NotaryInDispute.selector);
         vm.prank(prover);
         IAgentManager(localAgentManager()).submitStateReportWithSnapshot(
             rsi.stateIndex, srPayload, srSig, snapPayload, snapSig
@@ -219,7 +220,7 @@ abstract contract AgentManagerTest is MessagingBaseTest {
         address guard = domains[0].agent;
         (bytes memory srPayload, bytes memory srSig) = createSignedStateReport(guard, rs);
         openDispute(guard, domains[DOMAIN_LOCAL].agents[1]);
-        vm.expectRevert("Guard already in dispute");
+        vm.expectRevert(GuardInDispute.selector);
         vm.prank(prover);
         IAgentManager(localAgentManager()).submitStateReportWithAttestation(
             rsi.stateIndex, srPayload, srSig, snapPayload, attPayload, attSig
@@ -241,7 +242,7 @@ abstract contract AgentManagerTest is MessagingBaseTest {
         address guard = domains[0].agent;
         (bytes memory srPayload, bytes memory srSig) = createSignedStateReport(guard, rs);
         openDispute(domains[0].agents[1], notary);
-        vm.expectRevert("Notary already in dispute");
+        vm.expectRevert(NotaryInDispute.selector);
         vm.prank(prover);
         IAgentManager(localAgentManager()).submitStateReportWithAttestation(
             rsi.stateIndex, srPayload, srSig, snapPayload, attPayload, attSig
@@ -264,7 +265,7 @@ abstract contract AgentManagerTest is MessagingBaseTest {
         // Generate Snapshot Proof
         bytes32[] memory snapProof = genSnapshotProof(rsi.stateIndex);
         openDispute(guard, domains[DOMAIN_LOCAL].agents[1]);
-        vm.expectRevert("Guard already in dispute");
+        vm.expectRevert(GuardInDispute.selector);
         vm.prank(prover);
         IAgentManager(localAgentManager()).submitStateReportWithSnapshotProof(
             rsi.stateIndex, srPayload, srSig, snapProof, attPayload, attSig
@@ -287,7 +288,7 @@ abstract contract AgentManagerTest is MessagingBaseTest {
         // Generate Snapshot Proof
         bytes32[] memory snapProof = genSnapshotProof(rsi.stateIndex);
         openDispute(domains[0].agents[1], notary);
-        vm.expectRevert("Notary already in dispute");
+        vm.expectRevert(NotaryInDispute.selector);
         vm.prank(prover);
         IAgentManager(localAgentManager()).submitStateReportWithSnapshotProof(
             rsi.stateIndex, srPayload, srSig, snapProof, attPayload, attSig

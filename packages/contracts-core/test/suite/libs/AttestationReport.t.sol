@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.17;
 
+import {UnformattedAttestationReport} from "../../../contracts/libs/Errors.sol";
 import {ATTESTATION_LENGTH} from "../../../contracts/libs/Constants.sol";
 
 import {SynapseLibraryTest, MemViewLib} from "../../utils/SynapseLibraryTest.t.sol";
@@ -46,7 +47,7 @@ contract AttestationReportLibraryTest is SynapseLibraryTest {
             assertEq(libHarness.castToAttestationReport(payload), payload, "!castToAttestation: when valid");
         } else {
             assertFalse(libHarness.isAttestationReport(payload), "!isAttestationReport: when valid");
-            vm.expectRevert("Not an attestation report");
+            vm.expectRevert(UnformattedAttestationReport.selector);
             libHarness.castToAttestationReport(payload);
         }
     }

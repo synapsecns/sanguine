@@ -5,6 +5,7 @@ pragma solidity 0.8.17;
 import {AttestationLib} from "./libs/Attestation.sol";
 import {ByteString} from "./libs/ByteString.sol";
 import {BONDING_OPTIMISTIC_PERIOD, SYNAPSE_DOMAIN} from "./libs/Constants.sol";
+import {MustBeSynapseDomain, TipsClaimMoreThanEarned, TipsClaimZero} from "./libs/Errors.sol";
 import {Receipt, ReceiptBody, ReceiptLib} from "./libs/Receipt.sol";
 import {Snapshot, SnapshotLib} from "./libs/Snapshot.sol";
 import {AgentFlag, AgentStatus, DisputeFlag, MessageStatus} from "./libs/Structures.sol";
@@ -77,7 +78,7 @@ contract Summit is SnapshotHub, SummitEvents, InterfaceSummit {
     // ═════════════════════════════════════════ CONSTRUCTOR & INITIALIZER ═════════════════════════════════════════════
 
     constructor(uint32 domain, address agentManager_) AgentSecured("0.0.3", domain, agentManager_) {
-        require(domain == SYNAPSE_DOMAIN, "Only deployed on SynChain");
+        if (domain != SYNAPSE_DOMAIN) revert MustBeSynapseDomain();
     }
 
     function initialize() external initializer {
@@ -157,9 +158,9 @@ contract Summit is SnapshotHub, SummitEvents, InterfaceSummit {
     /// @inheritdoc InterfaceSummit
     // solhint-disable-next-line ordering
     function withdrawTips(uint32 origin, uint256 amount) external {
-        require(amount != 0, "Amount is zero");
+        if (amount == 0) revert TipsClaimZero();
         ActorTips memory tips = actorTips[msg.sender][origin];
-        require(tips.earned >= amount + tips.claimed, "Tips balance too low");
+        if (tips.earned < amount + tips.claimed) revert TipsClaimMoreThanEarned();
         // Guaranteed to fit into uint128, as the sum is lower than `earned`
         actorTips[msg.sender][origin].claimed = uint128(tips.claimed + amount);
         InterfaceBondingManager(address(agentManager)).withdrawTips(msg.sender, origin, amount);

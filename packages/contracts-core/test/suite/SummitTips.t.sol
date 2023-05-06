@@ -1,6 +1,14 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.17;
 
+import {
+    AgentNotNotary,
+    CallerNotAgentManager,
+    IncorrectSnapshotRoot,
+    NotaryInDispute,
+    TipsClaimMoreThanEarned,
+    TipsClaimZero
+} from "../../contracts/libs/Errors.sol";
 import {IAgentManager, InterfaceSummit} from "../../contracts/Summit.sol";
 
 import {AgentFlag, AgentStatus, Summit, SynapseTest} from "../utils/SynapseTest.t.sol";
@@ -153,7 +161,7 @@ contract SummitTipsTest is AgentSecuredTest {
         RawExecReceipt memory re = mockReceipt("First");
         prepareReceipt(re, false, 0, false);
         (bytes memory rcptPayload, bytes memory rcptSignature) = signReceipt(guard0, re);
-        expectNotNotaryRevert();
+        vm.expectRevert(AgentNotNotary.selector);
         bondingManager.submitReceipt(rcptPayload, rcptSignature);
     }
 
@@ -164,7 +172,7 @@ contract SummitTipsTest is AgentSecuredTest {
         address notary = domains[DOMAIN_REMOTE].agent;
         openDispute({guard: domains[0].agent, notary: notary});
         (bytes memory rcptPayload, bytes memory rcptSignature) = signReceipt(notary, re);
-        vm.expectRevert("Notary is in dispute");
+        vm.expectRevert(NotaryInDispute.selector);
         bondingManager.submitReceipt(rcptPayload, rcptSignature);
     }
 
@@ -174,13 +182,13 @@ contract SummitTipsTest is AgentSecuredTest {
         re.body.snapshotRoot = "Some fake snapshot root";
         address notary = domains[DOMAIN_REMOTE].agent;
         (bytes memory rcptPayload, bytes memory rcptSignature) = signReceipt(notary, re);
-        vm.expectRevert("Unknown snapshot root");
+        vm.expectRevert(IncorrectSnapshotRoot.selector);
         bondingManager.submitReceipt(rcptPayload, rcptSignature);
     }
 
     function test_acceptReceipt_revert_notAgentManager(address caller) public {
         vm.assume(caller != localAgentManager());
-        expectNotAgentManagerRevert();
+        vm.expectRevert(CallerNotAgentManager.selector);
         vm.prank(caller);
         InterfaceSummit(summit).acceptReceipt(0, 0, 0, 0, 0, "");
     }
@@ -410,7 +418,7 @@ contract SummitTipsTest is AgentSecuredTest {
     }
 
     function test_withdrawTips_revert_zeroAmount(address actor, uint32 domain) public {
-        vm.expectRevert("Amount is zero");
+        vm.expectRevert(TipsClaimZero.selector);
         vm.prank(actor);
         InterfaceSummit(summit).withdrawTips(domain, 0);
     }
@@ -426,7 +434,7 @@ contract SummitTipsTest is AgentSecuredTest {
         claimed = claimed % earned;
         amount = uint128(bound(amount, 1, earned - claimed));
         amount = uint128(bound(amount, earned - claimed + 1, type(uint128).max));
-        vm.expectRevert("Tips balance too low");
+        vm.expectRevert(TipsClaimMoreThanEarned.selector);
         vm.prank(actor);
         InterfaceSummit(summit).withdrawTips(domain, amount);
     }

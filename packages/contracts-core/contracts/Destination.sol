@@ -6,6 +6,7 @@ import {Attestation, AttestationLib} from "./libs/Attestation.sol";
 import {AttestationReport} from "./libs/AttestationReport.sol";
 import {ByteString} from "./libs/ByteString.sol";
 import {AGENT_ROOT_OPTIMISTIC_PERIOD, SYNAPSE_DOMAIN} from "./libs/Constants.sol";
+import {IndexOutOfRange} from "./libs/Errors.sol";
 import {ChainGas, GasData} from "./libs/GasData.sol";
 import {AgentStatus, DestinationStatus, DisputeFlag} from "./libs/Structures.sol";
 // ═════════════════════════════ INTERNAL IMPORTS ══════════════════════════════
@@ -131,7 +132,7 @@ contract Destination is ExecutionHub, DestinationEvents, InterfaceDestination {
 
     /// @inheritdoc InterfaceDestination
     function getAttestation(uint256 index) external view returns (bytes memory attPayload, bytes memory attSignature) {
-        require(index < _roots.length, "Index out of range");
+        if (index >= _roots.length) revert IndexOutOfRange();
         bytes32 snapRoot = _roots[index];
         SnapRootData memory rootData = _rootData[snapRoot];
         StoredAttData memory storedAtt = _storedAttestations[index];

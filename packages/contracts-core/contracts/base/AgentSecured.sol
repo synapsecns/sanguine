@@ -1,6 +1,8 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.17;
 
+// ══════════════════════════════ LIBRARY IMPORTS ══════════════════════════════
+import {CallerNotAgentManager} from "../libs/Errors.sol";
 // ═════════════════════════════ INTERNAL IMPORTS ══════════════════════════════
 import {IAgentManager} from "../interfaces/IAgentManager.sol";
 import {AgentStatus, DisputeFlag, IAgentSecured} from "../interfaces/IAgentSecured.sol";

@@ -2,6 +2,7 @@
 pragma solidity 0.8.17;
 
 import {SNAPSHOT_MAX_STATES, SNAPSHOT_SALT, SNAPSHOT_TREE_HEIGHT, STATE_LENGTH} from "./Constants.sol";
+import {IncorrectStatesAmount, IndexOutOfRange, UnformattedSnapshot} from "./Errors.sol";
 import {GasDataLib, ChainGas} from "./GasData.sol";
 import {MerkleMath} from "./MerkleMath.sol";
 import {State, StateLib} from "./State.sol";
@@ -56,7 +57,7 @@ library SnapshotLib {
      * @return Formatted snapshot
      */
     function formatSnapshot(State[] memory states) internal view returns (bytes memory) {
-        require(_isValidAmount(states.length), "Invalid states amount");
+        if (!_isValidAmount(states.length)) revert IncorrectStatesAmount();
         // First we unwrap State-typed views into untyped memory views
         uint256 length = states.length;
         MemView[] memory views = new MemView[](length);
@@ -80,7 +81,7 @@ library SnapshotLib {
      * @dev Will revert if the memory view is not over a snapshot payload.
      */
     function castToSnapshot(MemView memView) internal pure returns (Snapshot) {
-        require(isSnapshot(memView), "Not a snapshot");
+        if (!isSnapshot(memView)) revert UnformattedSnapshot();
         return Snapshot.wrap(MemView.unwrap(memView));
     }
 
@@ -112,7 +113,7 @@ library SnapshotLib {
     function state(Snapshot snapshot, uint256 stateIndex) internal pure returns (State) {
         MemView memView = snapshot.unwrap();
         uint256 indexFrom = stateIndex * STATE_LENGTH;
-        require(indexFrom < memView.len(), "State index out of range");
+        if (indexFrom >= memView.len()) revert IndexOutOfRange();
         return memView.slice({index_: indexFrom, len_: STATE_LENGTH}).castToState();
     }
 
@@ -167,7 +168,7 @@ library SnapshotLib {
         // Index of "leftLeaf" is twice the state position in the snapshot
         uint256 leftLeafIndex = stateIndex << 1;
         // Check that "leftLeaf" index fits into Snapshot Merkle Tree
-        require(leftLeafIndex < (1 << SNAPSHOT_TREE_HEIGHT), "State index out of range");
+        if (leftLeafIndex >= (1 << SNAPSHOT_TREE_HEIGHT)) revert IndexOutOfRange();
         // Reconstruct left sub-leaf of the Origin State: (originRoot, originDomain)
         bytes32 leftLeaf = StateLib.leftLeaf(originRoot, domain);
         // Reconstruct snapshot root using proof of inclusion

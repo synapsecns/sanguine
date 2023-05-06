@@ -2,6 +2,7 @@
 pragma solidity 0.8.17;
 
 import {TIPS_GRANULARITY} from "./Constants.sol";
+import {TipsOverflow, TipsValueTooLow} from "./Errors.sol";
 
 /// Tips is encoded data with "tips paid for sending a base message".
 /// Note: even though uint256 is also an underlying type for MemView, Tips is stored ON STACK.
@@ -126,13 +127,15 @@ library TipsLib {
     /// @notice Increases the delivery tip to match the new value.
     function matchValue(Tips tips, uint256 newValue) internal pure returns (Tips newTips) {
         uint256 oldValue = tips.value();
-        require(newValue >= oldValue, "Tips value too low");
+        if (newValue < oldValue) revert TipsValueTooLow();
         // We want to increase the delivery tip, while keeping the other tips the same
         unchecked {
             uint256 delta = (newValue - oldValue) >> TIPS_GRANULARITY;
-            // delta fits into uint224, as TIPS_GRANULARITY is 32, so this never overflows
-            require(delta + tips.deliveryTip() <= type(uint64).max, "Tips overflow");
-            // Delivery tips is last 8 bytes, so we can just add delta to the tips value
+            // `delta` fits into uint224, as TIPS_GRANULARITY is 32, so this never overflows uint256.
+            // In practice, this will never overflow uint64 as well, but we still check it just in case.
+            if (delta + tips.deliveryTip() > type(uint64).max) revert TipsOverflow();
+            // Delivery tips occupy lowest 8 bytes, so we can just add delta to the tips value
+            // to effectively increase the delivery tip (knowing that delta fits into uint64).
             newTips = Tips.wrap(Tips.unwrap(tips) + delta);
         }
     }

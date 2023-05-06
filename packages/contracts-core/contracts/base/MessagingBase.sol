@@ -14,8 +14,6 @@ import {OwnableUpgradeable} from "@openzeppelin/contracts-upgradeable/access/Own
  * - Will be providing pausing functionality when it is implemented.
  */
 abstract contract MessagingBase is MultiCallable, Versioned, OwnableUpgradeable {
-    error CallerNotAgentManager();
-
     // ════════════════════════════════════════════════ IMMUTABLES ═════════════════════════════════════════════════════
 
     /// @notice Domain of the local chain, set once upon contract creation

@@ -2,6 +2,7 @@
 pragma solidity 0.8.17;
 
 // ══════════════════════════════ LIBRARY IMPORTS ══════════════════════════════
+import {IncorrectOriginDomain} from "../libs/Errors.sol";
 import {GasData, GasDataLib} from "../libs/GasData.sol";
 import {HistoricalTree} from "../libs/MerkleTree.sol";
 import {State, StateLib} from "../libs/State.sol";
@@ -103,7 +104,7 @@ abstract contract StateHub is AgentSecured, StateHubEvents, IStateHub {
     /// Reverts, if state refers to another Origin contract.
     function _isValidState(State state) internal view returns (bool) {
         // Check if state refers to this contract
-        require(state.origin() == localDomain, "Wrong origin");
+        if (state.origin() != localDomain) revert IncorrectOriginDomain();
         // Check if nonce exists
         uint32 nonce = state.nonce();
         if (nonce >= _originStates.length) return false;

@@ -2,6 +2,7 @@
 pragma solidity 0.8.17;
 
 import {ATTESTATION_LENGTH, ATTESTATION_SALT} from "./Constants.sol";
+import {UnformattedAttestation} from "./Errors.sol";
 import {MemView, MemViewLib} from "./MemView.sol";
 
 /// Attestation is a memory view over a formatted attestation payload.
@@ -99,7 +100,7 @@ library AttestationLib {
      * @dev Will revert if the memory view is not over an attestation.
      */
     function castToAttestation(MemView memView) internal pure returns (Attestation) {
-        require(isAttestation(memView), "Not an attestation");
+        if (!isAttestation(memView)) revert UnformattedAttestation();
         return Attestation.wrap(MemView.unwrap(memView));
     }
 

@@ -3,6 +3,14 @@ pragma solidity 0.8.17;
 
 // ══════════════════════════════ LIBRARY IMPORTS ══════════════════════════════
 import {Attestation, AttestationLib} from "../libs/Attestation.sol";
+import {
+    IncorrectAgentDomain,
+    DisputeAlreadyResolved,
+    GuardInDispute,
+    NotaryInDispute,
+    IncorrectSnapshotRoot,
+    IncorrectState
+} from "../libs/Errors.sol";
 import {Receipt, ReceiptLib} from "../libs/Receipt.sol";
 import {Snapshot, SnapshotLib} from "../libs/Snapshot.sol";
 import {State, StateLib} from "../libs/State.sol";
@@ -77,7 +85,7 @@ abstract contract AgentManager is MessagingBase, VerificationManager, AgentManag
         _verifyNotaryDomain(notaryStatus.domain);
         // Snapshot state and reported state need to be the same
         // This will revert if state index is out of range
-        require(snapshot.state(stateIndex).equals(report.state()), "States don't match");
+        if (!snapshot.state(stateIndex).equals(report.state())) revert IncorrectState();
         // This will revert if either actor is already in dispute
         _openDispute(guard, guardStatus.index, notary, notaryStatus.index);
         return true;
@@ -100,7 +108,7 @@ abstract contract AgentManager is MessagingBase, VerificationManager, AgentManag
         Snapshot snapshot = snapPayload.castToSnapshot();
         // Snapshot state and reported state need to be the same
         // This will revert if state index is out of range
-        require(snapshot.state(stateIndex).equals(report.state()), "States don't match");
+        if (!snapshot.state(stateIndex).equals(report.state())) revert IncorrectState();
         // Check that Guard is active
         guardStatus.verifyActive();
         // This will revert if payload is not an attestation
@@ -111,7 +119,7 @@ abstract contract AgentManager is MessagingBase, VerificationManager, AgentManag
         notaryStatus.verifyActiveUnstaking();
         // Check if Notary is active on this chain
         _verifyNotaryDomain(notaryStatus.domain);
-        require(snapshot.calculateRoot() == att.snapRoot(), "Attestation not matches snapshot");
+        if (snapshot.calculateRoot() != att.snapRoot()) revert IncorrectSnapshotRoot();
         // This will revert if either actor is already in dispute
         _openDispute(guard, guardStatus.index, notary, notaryStatus.index);
         return true;
@@ -186,7 +194,7 @@ abstract contract AgentManager is MessagingBase, VerificationManager, AgentManag
         status.verifyActiveUnstaking();
         // This will revert if payload is not a snapshot
         Snapshot snapshot = snapPayload.castToSnapshot();
-        require(snapshot.calculateRoot() == att.snapRoot(), "Attestation not matches snapshot");
+        if (snapshot.calculateRoot() != att.snapRoot()) revert IncorrectSnapshotRoot();
         // This will revert if state does not refer to this chain
         bytes memory statePayload = snapshot.state(stateIndex).unwrap().clone();
         isValidState = IStateHub(origin).isValidState(statePayload);
@@ -309,8 +317,8 @@ abstract contract AgentManager is MessagingBase, VerificationManager, AgentManag
     /// @dev Opens a Dispute between a Guard and a Notary, if they are both not in Dispute already.
     function _openDispute(address guard, uint32 guardIndex, address notary, uint32 notaryIndex) internal {
         // Check that both agents are not in Dispute yet
-        require(_disputes[guard].flag == DisputeFlag.None, "Guard already in dispute");
-        require(_disputes[notary].flag == DisputeFlag.None, "Notary already in dispute");
+        if (_disputes[guard].flag != DisputeFlag.None) revert GuardInDispute();
+        if (_disputes[notary].flag != DisputeFlag.None) revert NotaryInDispute();
         _updateDispute(guard, Dispute(DisputeFlag.Pending, notaryIndex, address(0)));
         _updateDispute(notary, Dispute(DisputeFlag.Pending, guardIndex, address(0)));
         _notifyDisputeOpened(guardIndex, notaryIndex);
@@ -321,10 +329,8 @@ abstract contract AgentManager is MessagingBase, VerificationManager, AgentManag
     function _slashAgent(uint32 domain, address agent, address prover) internal {
         // Check that agent is Active/Unstaking and that the domains match
         AgentStatus memory status = _storedAgentStatus(agent);
-        require(
-            (status.flag == AgentFlag.Active || status.flag == AgentFlag.Unstaking) && status.domain == domain,
-            "Slashing could not be initiated"
-        );
+        status.verifyActiveUnstaking();
+        if (status.domain != domain) revert IncorrectAgentDomain();
         // The "stored" agent status is not updated yet, however agentStatus() will return AgentFlag.Fraudulent
         emit StatusUpdated(AgentFlag.Fraudulent, domain, agent);
         // This will revert if the agent has been slashed earlier
@@ -336,7 +342,7 @@ abstract contract AgentManager is MessagingBase, VerificationManager, AgentManag
     /// @dev Resolves a Dispute between a slashed Agent and their Rival (if there was one).
     function _resolveDispute(address slashedAgent, uint32 slashedIndex, address prover) internal {
         Dispute memory dispute = _disputes[slashedAgent];
-        require(dispute.flag != DisputeFlag.Slashed, "Dispute already resolved");
+        if (dispute.flag == DisputeFlag.Slashed) revert DisputeAlreadyResolved();
         (dispute.flag, dispute.fraudProver) = (DisputeFlag.Slashed, prover);
         _updateDispute(slashedAgent, dispute);
         // Clear Dispute status for the Rival
@@ -384,7 +390,7 @@ abstract contract AgentManager is MessagingBase, VerificationManager, AgentManag
         status = agentStatus(agent);
         // Discard signature of unknown agents.
         // Further flag checks are supposed to be performed in a caller function.
-        require(status.flag != AgentFlag.Unknown, "Unknown agent");
+        status.verifyKnown();
     }
 
     /// @dev Verifies that Notary signature is active on local domain

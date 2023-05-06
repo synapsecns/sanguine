@@ -4,6 +4,7 @@ pragma solidity 0.8.17;
 import {IAgentSecured} from "../../contracts/interfaces/IAgentSecured.sol";
 import {InterfaceGasOracle} from "../../contracts/interfaces/InterfaceGasOracle.sol";
 import {IStateHub} from "../../contracts/interfaces/IStateHub.sol";
+import {EthTransferFailed, InsufficientEthBalance, TipsValueTooLow} from "../../contracts/libs/Errors.sol";
 import {SNAPSHOT_MAX_STATES} from "../../contracts/libs/Constants.sol";
 import {SystemEntity} from "../../contracts/libs/Structures.sol";
 import {TipsLib} from "../../contracts/libs/Tips.sol";
@@ -85,7 +86,7 @@ contract OriginTest is AgentSecuredTest {
         msgValue = msgValue % minTips.castToTips().value();
         GasOracleMock(gasOracle).setMockedMinimumTips(minTips.encodeTips());
         deal(sender, msgValue);
-        vm.expectRevert("Tips value too low");
+        vm.expectRevert(TipsValueTooLow.selector);
         vm.prank(sender);
         InterfaceOrigin(origin).sendBaseMessage{value: msgValue}(
             DOMAIN_REMOTE, addressToBytes32(recipient), period, request.encodeRequest(), "test content"
@@ -401,7 +402,7 @@ contract OriginTest is AgentSecuredTest {
         amount = bound(amount, 1, type(uint256).max);
         balance = balance % amount;
         vm.deal(origin, balance);
-        vm.expectRevert("Insufficient balance");
+        vm.expectRevert(InsufficientEthBalance.selector);
         vm.prank(address(lightManager));
         InterfaceOrigin(origin).withdrawTips(recipient, amount);
     }
@@ -409,7 +410,7 @@ contract OriginTest is AgentSecuredTest {
     function test_withdrawTips_revert_recipientReverted(uint256 amount) public {
         address revertingRecipient = address(new RevertingApp());
         vm.deal(origin, amount);
-        vm.expectRevert("Recipient reverted");
+        vm.expectRevert(EthTransferFailed.selector);
         vm.prank(address(lightManager));
         InterfaceOrigin(origin).withdrawTips(revertingRecipient, amount);
     }

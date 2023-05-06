@@ -1,6 +1,17 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.17;
 
+import {
+    AlreadyExecuted,
+    AlreadyFailed,
+    GasLimitTooLow,
+    GasSuppliedTooLow,
+    IncorrectDestinationDomain,
+    IncorrectMagicValue,
+    IncorrectSnapshotRoot,
+    MessageOptimisticPeriod,
+    NotaryInDispute
+} from "../../../contracts/libs/Errors.sol";
 import {AgentFlag} from "../../../contracts/libs/Structures.sol";
 import {IExecutionHub} from "../../../contracts/interfaces/IExecutionHub.sol";
 import {IAgentManager} from "../../../contracts/interfaces/IAgentManager.sol";
@@ -148,7 +159,7 @@ abstract contract ExecutionHubTest is AgentSecuredTest {
         );
         verify_receipt_valid(receiptBodyFirst, rbm.tips);
         // Retry the same failed message
-        vm.expectRevert("Retried execution failed");
+        vm.expectRevert(AlreadyFailed.selector);
         vm.prank(executorNew);
         testedEH().execute(msgPayload, originProof, snapProof, sm.rsi.stateIndex, rbm.request.gasLimit);
     }
@@ -167,7 +178,7 @@ abstract contract ExecutionHubTest is AgentSecuredTest {
         timePassed = uint32(bound(timePassed, rh.optimisticPeriod, rh.optimisticPeriod + 1 days));
         skip(timePassed);
         testedEH().execute(msgPayload, originProof, snapProof, sm.rsi.stateIndex, rbm.request.gasLimit);
-        vm.expectRevert("Already executed");
+        vm.expectRevert(AlreadyExecuted.selector);
         vm.prank(executor);
         testedEH().execute(msgPayload, originProof, snapProof, sm.rsi.stateIndex, rbm.request.gasLimit);
     }
@@ -187,7 +198,7 @@ abstract contract ExecutionHubTest is AgentSecuredTest {
         uint32 timePassed = random.nextUint32();
         timePassed = uint32(bound(timePassed, rh.optimisticPeriod, rh.optimisticPeriod + 1 days));
         skip(timePassed);
-        vm.expectRevert("Notary is in dispute");
+        vm.expectRevert(NotaryInDispute.selector);
         vm.prank(executor);
         testedEH().execute(msgPayload, originProof, snapProof, sm.rsi.stateIndex, rbm.request.gasLimit);
         verify_messageStatusNone(keccak256(msgPayload));
@@ -206,7 +217,7 @@ abstract contract ExecutionHubTest is AgentSecuredTest {
         uint32 timePassed = random.nextUint32();
         timePassed = uint32(bound(timePassed, rh.optimisticPeriod, rh.optimisticPeriod + 1 days));
         skip(timePassed);
-        vm.expectRevert("Invalid snapshot root");
+        vm.expectRevert(IncorrectSnapshotRoot.selector);
         vm.prank(executor);
         testedEH().execute(msgPayload, originProof, snapProof, sm.rsi.stateIndex, rbm.request.gasLimit);
         verify_messageStatusNone(keccak256(msgPayload));
@@ -225,7 +236,7 @@ abstract contract ExecutionHubTest is AgentSecuredTest {
         // Make sure that optimistic period is NOT over
         uint32 timePassed = random.nextUint32() % rh.optimisticPeriod;
         skip(timePassed);
-        vm.expectRevert("!optimisticPeriod");
+        vm.expectRevert(MessageOptimisticPeriod.selector);
         vm.prank(executor);
         testedEH().execute(msgPayload, originProof, snapProof, sm.rsi.stateIndex, rbm.request.gasLimit);
         verify_messageStatusNone(keccak256(msgPayload));
@@ -246,7 +257,7 @@ abstract contract ExecutionHubTest is AgentSecuredTest {
         skip(timePassed);
         // Make sure gas limit is lower than requested
         uint64 gasLimit = random.nextUint64() % rbm.request.gasLimit;
-        vm.expectRevert("Gas limit too low");
+        vm.expectRevert(GasLimitTooLow.selector);
         vm.prank(executor);
         testedEH().execute(msgPayload, originProof, snapProof, sm.rsi.stateIndex, gasLimit);
         verify_messageStatusNone(keccak256(msgPayload));
@@ -265,7 +276,7 @@ abstract contract ExecutionHubTest is AgentSecuredTest {
         uint32 timePassed = random.nextUint32();
         timePassed = uint32(bound(timePassed, rh.optimisticPeriod, rh.optimisticPeriod + 1 days));
         skip(timePassed);
-        vm.expectRevert("Not enough gas supplied");
+        vm.expectRevert(GasSuppliedTooLow.selector);
         vm.prank(executor);
         // Limit amount of gas for the whole call
         testedEH().execute{gas: rbm.request.gasLimit + 20_000}(
@@ -288,7 +299,7 @@ abstract contract ExecutionHubTest is AgentSecuredTest {
         uint32 timePassed = random.nextUint32();
         timePassed = uint32(bound(timePassed, rh.optimisticPeriod, rh.optimisticPeriod + 1 days));
         skip(timePassed);
-        vm.expectRevert("!destination");
+        vm.expectRevert(IncorrectDestinationDomain.selector);
         vm.prank(executor);
         testedEH().execute(msgPayload, originProof, snapProof, sm.rsi.stateIndex, rbm.request.gasLimit);
         verify_messageStatusNone(keccak256(msgPayload));
@@ -333,7 +344,7 @@ abstract contract ExecutionHubTest is AgentSecuredTest {
         // Create snapshot proof
         adjustSnapshot(sm);
         (, bytes32[] memory snapProof) = prepareExecution(sm);
-        vm.expectRevert("!magicValue");
+        vm.expectRevert(IncorrectMagicValue.selector);
         testedEH().execute(msgPayload, originProof, snapProof, sm.rsi.stateIndex, 0);
     }
 
@@ -347,7 +358,7 @@ abstract contract ExecutionHubTest is AgentSecuredTest {
         // Create snapshot proof
         adjustSnapshot(sm);
         (, bytes32[] memory snapProof) = prepareExecution(sm);
-        vm.expectRevert("!magicValue");
+        vm.expectRevert(IncorrectMagicValue.selector);
         testedEH().execute(msgPayload, originProof, snapProof, sm.rsi.stateIndex, 0);
     }
 
@@ -362,7 +373,7 @@ abstract contract ExecutionHubTest is AgentSecuredTest {
         // Create snapshot proof
         adjustSnapshot(sm);
         (, bytes32[] memory snapProof) = prepareExecution(sm);
-        vm.expectRevert("!magicValue");
+        vm.expectRevert(IncorrectMagicValue.selector);
         testedEH().execute(msgPayload, originProof, snapProof, sm.rsi.stateIndex, 0);
     }
 
