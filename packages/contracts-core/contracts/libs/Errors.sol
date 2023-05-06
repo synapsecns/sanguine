@@ -66,6 +66,15 @@ error NotaryInDispute();
 error MustBeSynapseDomain();
 error SynapseDomainForbidden();
 
+// ════════════════════════════════ DESTINATION ════════════════════════════════
+
+error AlreadyExecuted();
+error AlreadyFailed();
+error DuplicatedSnapshotRoot();
+error IncorrectMagicValue();
+error GasLimitTooLow();
+error GasSuppliedTooLow();
+
 // ════════════════════════════════ MEMORY VIEW ════════════════════════════════
 
 error IndexedTooMuch();
