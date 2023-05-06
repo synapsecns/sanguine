@@ -1,7 +1,12 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.17;
 
-import {AgentNotNotary, CallerNotAgentManager, NotaryInDispute} from "../../contracts/libs/Errors.sol";
+import {
+    AgentNotNotary,
+    CallerNotAgentManager,
+    IncorrectSnapshotRoot,
+    NotaryInDispute
+} from "../../contracts/libs/Errors.sol";
 import {IAgentManager, InterfaceSummit} from "../../contracts/Summit.sol";
 
 import {AgentFlag, AgentStatus, Summit, SynapseTest} from "../utils/SynapseTest.t.sol";
@@ -175,7 +180,7 @@ contract SummitTipsTest is AgentSecuredTest {
         re.body.snapshotRoot = "Some fake snapshot root";
         address notary = domains[DOMAIN_REMOTE].agent;
         (bytes memory rcptPayload, bytes memory rcptSignature) = signReceipt(notary, re);
-        vm.expectRevert("Unknown snapshot root");
+        vm.expectRevert(IncorrectSnapshotRoot.selector);
         bondingManager.submitReceipt(rcptPayload, rcptSignature);
     }
 

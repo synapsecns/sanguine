@@ -7,13 +7,29 @@ error CallerNotAgentManager();
 error CallerNotDestination();
 error CallerNotSummit();
 
+// ══════════════════════════════ INCORRECT DATA ═══════════════════════════════
+
+error IncorrectAgentDomain();
+error IncorrectAgentIndex();
+error IncorrectAgentProof();
+error IncorrectDataHash();
+error IncorrectDestinationDomain();
+error IncorrectOriginDomain();
+error IncorrectSnapshotProof();
+error IncorrectSnapshotRoot();
+error IncorrectState();
+
+error IncorrectSender();
+error IncorrectRecipient();
+
+error OutdatedNonce();
+
 // ═══════════════════════════════ AGENT MANAGER ═══════════════════════════════
 
 error AgentNotGuard();
 error AgentNotNotary();
 
 error AgentCantBeAdded();
-error AgentDomainIncorrect();
 error AgentNotActive();
 error AgentNotActiveNorUnstaking();
 error AgentNotFraudulent();
@@ -26,9 +42,6 @@ error NotaryInDispute();
 
 error MustBeSynapseDomain();
 error SynapseDomainForbidden();
-
-error SnapshotRootMismatch();
-error StateMismatch();
 
 // ════════════════════════════════ MEMORY VIEW ════════════════════════════════
 

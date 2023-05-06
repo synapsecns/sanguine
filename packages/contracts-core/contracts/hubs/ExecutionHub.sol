@@ -6,7 +6,7 @@ import {Attestation} from "../libs/Attestation.sol";
 import {BaseMessage, BaseMessageLib, MemView} from "../libs/BaseMessage.sol";
 import {ByteString, CallData} from "../libs/ByteString.sol";
 import {ORIGIN_TREE_HEIGHT, SNAPSHOT_TREE_HEIGHT, SYNAPSE_DOMAIN} from "../libs/Constants.sol";
-import {NotaryInDispute} from "../libs/Errors.sol";
+import {IncorrectDestinationDomain, IncorrectSnapshotRoot, NotaryInDispute} from "../libs/Errors.sol";
 import {MerkleMath} from "../libs/MerkleMath.sol";
 import {Header, Message, MessageFlag, MessageLib} from "../libs/Message.sol";
 import {Receipt, ReceiptBody, ReceiptLib} from "../libs/Receipt.sol";
@@ -108,7 +108,7 @@ abstract contract ExecutionHub is AgentSecured, ExecutionHubEvents, IExecutionHu
         Header header = message.header();
         bytes32 msgLeaf = message.leaf();
         // Ensure message was meant for this domain
-        require(header.destination() == localDomain, "!destination");
+        if (header.destination() != localDomain) revert IncorrectDestinationDomain();
         // Check that message has not been executed before
         ReceiptData memory rcptData = _receiptData[msgLeaf];
         require(rcptData.executor == address(0), "Already executed");
@@ -273,8 +273,8 @@ abstract contract ExecutionHub is AgentSecured, ExecutionHubEvents, IExecutionHu
     /// @dev Checks if receipt body matches the saved data for the referenced message.
     /// Reverts if destination domain doesn't match the local domain.
     function _isValidReceipt(ReceiptBody rcptBody) internal view returns (bool) {
-        // Check if receipt refers to this contract
-        require(rcptBody.destination() == localDomain, "Wrong destination");
+        // Check if receipt refers to this chain
+        if (rcptBody.destination() != localDomain) revert IncorrectDestinationDomain();
         bytes32 messageHash = rcptBody.messageHash();
         ReceiptData memory rcptData = _receiptData[messageHash];
         // Check if there has been a single attempt to execute the message
@@ -333,7 +333,7 @@ abstract contract ExecutionHub is AgentSecured, ExecutionHubEvents, IExecutionHu
         // Fetch the attestation data for the snapshot root
         rootData = _rootData[snapshotRoot];
         // Check if snapshot root has been submitted
-        require(rootData.submittedAt != 0, "Invalid snapshot root");
+        if (rootData.submittedAt == 0) revert IncorrectSnapshotRoot();
         // Check that Notary who submitted the attestation is not in dispute
         if (_disputes[rootData.notaryIndex] != DisputeFlag.None) revert NotaryInDispute();
     }

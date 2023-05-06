@@ -2,7 +2,7 @@
 pragma solidity 0.8.17;
 
 // ══════════════════════════════ LIBRARY IMPORTS ══════════════════════════════
-import {CallerNotDestination} from "../libs/Errors.sol";
+import {CallerNotDestination, IncorrectSender, IncorrectRecipient} from "../libs/Errors.sol";
 import {Request} from "../libs/Request.sol";
 // ═════════════════════════════ INTERNAL IMPORTS ══════════════════════════════
 import {IMessageRecipient} from "../interfaces/IMessageRecipient.sol";
@@ -41,7 +41,7 @@ abstract contract BaseClient is IMessageRecipient {
         bytes memory content
     ) external payable {
         if (msg.sender != destination) revert CallerNotDestination();
-        require(sender == trustedSender(origin_) && sender != bytes32(0), "BaseClient: !trustedSender");
+        if (sender != trustedSender(origin_) || sender == 0) revert IncorrectSender();
         require(proofMaturity >= optimisticPeriod(), "BaseClient: !optimisticPeriod");
         // All security checks are passed, handle the message content
         _receiveBaseMessage(origin_, nonce, content);
@@ -82,7 +82,7 @@ abstract contract BaseClient is IMessageRecipient {
      */
     function _sendBaseMessage(uint32 destination_, Request request, bytes memory content) internal {
         bytes32 recipient = trustedSender(destination_);
-        require(recipient != bytes32(0), "BaseClient: !recipient");
+        if (recipient == 0) revert IncorrectRecipient();
         InterfaceOrigin(origin).sendBaseMessage{value: msg.value}(
             destination_, recipient, optimisticPeriod(), Request.unwrap(request), content
         );

@@ -6,7 +6,10 @@ import {Attestation, AttestationLib} from "../libs/Attestation.sol";
 import {AttestationReport, AttestationReportLib} from "../libs/AttestationReport.sol";
 import {AGENT_TREE_HEIGHT, BONDING_OPTIMISTIC_PERIOD, SYNAPSE_DOMAIN} from "../libs/Constants.sol";
 import {
-    AgentDomainIncorrect,
+    IncorrectAgentDomain,
+    IncorrectAgentIndex,
+    IncorrectAgentProof,
+    IncorrectDataHash,
     CallerNotDestination,
     MustBeSynapseDomain,
     NotaryInDispute,
@@ -78,11 +81,12 @@ contract LightManager is AgentManager, InterfaceLightManager {
             snapGas := snapGas_
         }
         // Check that hash of provided data matches the attestation's dataHash
-        require(
+        if (
             att.dataHash()
-                == AttestationLib.dataHash({agentRoot_: agentRoot_, snapGasHash_: GasDataLib.snapGasHash(snapGas)}),
-            "Invalid dataHash"
-        );
+                != AttestationLib.dataHash({agentRoot_: agentRoot_, snapGasHash_: GasDataLib.snapGasHash(snapGas)})
+        ) {
+            revert IncorrectDataHash();
+        }
         // Store Notary signature for the attestation
         uint256 sigIndex = _saveSignature(attSignature);
         wasAccepted = InterfaceDestination(destination).acceptAttestation({
@@ -124,12 +128,12 @@ contract LightManager is AgentManager, InterfaceLightManager {
     /// @inheritdoc InterfaceLightManager
     function updateAgentStatus(address agent, AgentStatus memory status, bytes32[] memory proof) external {
         address storedAgent = _agents[status.index];
-        require(storedAgent == address(0) || storedAgent == agent, "Invalid agent index");
+        if (storedAgent != address(0) && storedAgent != agent) revert IncorrectAgentIndex();
         // Reconstruct the agent leaf: flag should be Active
         bytes32 leaf = _agentLeaf(status.flag, status.domain, agent);
         bytes32 root = agentRoot;
         // Check that proof matches the latest merkle root
-        require(MerkleMath.proofRoot(status.index, leaf, proof, AGENT_TREE_HEIGHT) == root, "Invalid proof");
+        if (MerkleMath.proofRoot(status.index, leaf, proof, AGENT_TREE_HEIGHT) != root) revert IncorrectAgentProof();
         // Save index => agent in the map
         if (storedAgent == address(0)) _agents[status.index] = agent;
         // Update the agent status against this root
@@ -214,6 +218,6 @@ contract LightManager is AgentManager, InterfaceLightManager {
 
     /// @dev Verifies that Notary signature is active on local domain
     function _verifyNotaryDomain(uint32 notaryDomain) internal view override {
-        if (notaryDomain != localDomain) revert AgentDomainIncorrect();
+        if (notaryDomain != localDomain) revert IncorrectAgentDomain();
     }
 }

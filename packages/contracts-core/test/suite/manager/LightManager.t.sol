@@ -2,10 +2,12 @@
 pragma solidity 0.8.17;
 
 import {
-    AgentDomainIncorrect,
     AgentNotGuard,
     AgentNotNotary,
     CallerNotDestination,
+    IncorrectAgentDomain,
+    IncorrectAgentProof,
+    IncorrectDataHash,
     GuardInDispute,
     NotaryInDispute,
     MustBeSynapseDomain,
@@ -137,7 +139,7 @@ contract LightManagerTest is AgentManagerTest {
         // Change agent root, so old proofs are no longer valid
         test_setAgentRoot(bytes32(0));
         assertEq(uint8(lightManager.agentStatus(agent).flag), uint8(AgentFlag.Unknown));
-        vm.expectRevert("Invalid proof");
+        vm.expectRevert(IncorrectAgentProof.selector);
         lightManager.updateAgentStatus(agent, status, proof);
     }
 
@@ -171,7 +173,7 @@ contract LightManagerTest is AgentManagerTest {
         uint256 malformedBit = random.nextUint8();
         address notary = domains[localDomain()].agent;
         (bytes memory attPayload, bytes memory attSignature) = signAttestation(notary, ra);
-        vm.expectRevert("Invalid dataHash");
+        vm.expectRevert(IncorrectDataHash.selector);
         // Try to feed the agent root with a single malformed bit
         lightManager.submitAttestation(attPayload, attSignature, ra._agentRoot ^ bytes32(1 << malformedBit), snapGas);
     }
@@ -185,7 +187,7 @@ contract LightManagerTest is AgentManagerTest {
         snapGas[malformedIndex] ^= 1 << malformedBit;
         address notary = domains[localDomain()].agent;
         (bytes memory attPayload, bytes memory attSignature) = signAttestation(notary, ra);
-        vm.expectRevert("Invalid dataHash");
+        vm.expectRevert(IncorrectDataHash.selector);
         // Try to feed the gas data with a single malformed bit
         lightManager.submitAttestation(attPayload, attSignature, ra._agentRoot, snapGas);
     }
@@ -206,7 +208,7 @@ contract LightManagerTest is AgentManagerTest {
         uint256[] memory snapGas = rs.snapGas();
         address notary = domains[DOMAIN_REMOTE].agent;
         (bytes memory attPayload, bytes memory attSignature) = signAttestation(notary, ra);
-        vm.expectRevert(AgentDomainIncorrect.selector);
+        vm.expectRevert(IncorrectAgentDomain.selector);
         lightManager.submitAttestation(attPayload, attSignature, ra._agentRoot, snapGas);
     }
 

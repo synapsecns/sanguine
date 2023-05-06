@@ -4,12 +4,12 @@ pragma solidity 0.8.17;
 // ══════════════════════════════ LIBRARY IMPORTS ══════════════════════════════
 import {Attestation, AttestationLib} from "../libs/Attestation.sol";
 import {
-    AgentDomainIncorrect,
+    IncorrectAgentDomain,
     DisputeAlreadyResolved,
     GuardInDispute,
     NotaryInDispute,
-    SnapshotRootMismatch,
-    StateMismatch
+    IncorrectSnapshotRoot,
+    IncorrectState
 } from "../libs/Errors.sol";
 import {Receipt, ReceiptLib} from "../libs/Receipt.sol";
 import {Snapshot, SnapshotLib} from "../libs/Snapshot.sol";
@@ -85,7 +85,7 @@ abstract contract AgentManager is MessagingBase, VerificationManager, AgentManag
         _verifyNotaryDomain(notaryStatus.domain);
         // Snapshot state and reported state need to be the same
         // This will revert if state index is out of range
-        if (!snapshot.state(stateIndex).equals(report.state())) revert StateMismatch();
+        if (!snapshot.state(stateIndex).equals(report.state())) revert IncorrectState();
         // This will revert if either actor is already in dispute
         _openDispute(guard, guardStatus.index, notary, notaryStatus.index);
         return true;
@@ -108,7 +108,7 @@ abstract contract AgentManager is MessagingBase, VerificationManager, AgentManag
         Snapshot snapshot = snapPayload.castToSnapshot();
         // Snapshot state and reported state need to be the same
         // This will revert if state index is out of range
-        if (!snapshot.state(stateIndex).equals(report.state())) revert StateMismatch();
+        if (!snapshot.state(stateIndex).equals(report.state())) revert IncorrectState();
         // Check that Guard is active
         guardStatus.verifyActive();
         // This will revert if payload is not an attestation
@@ -119,7 +119,7 @@ abstract contract AgentManager is MessagingBase, VerificationManager, AgentManag
         notaryStatus.verifyActiveUnstaking();
         // Check if Notary is active on this chain
         _verifyNotaryDomain(notaryStatus.domain);
-        if (snapshot.calculateRoot() != att.snapRoot()) revert SnapshotRootMismatch();
+        if (snapshot.calculateRoot() != att.snapRoot()) revert IncorrectSnapshotRoot();
         // This will revert if either actor is already in dispute
         _openDispute(guard, guardStatus.index, notary, notaryStatus.index);
         return true;
@@ -194,7 +194,7 @@ abstract contract AgentManager is MessagingBase, VerificationManager, AgentManag
         status.verifyActiveUnstaking();
         // This will revert if payload is not a snapshot
         Snapshot snapshot = snapPayload.castToSnapshot();
-        if (snapshot.calculateRoot() != att.snapRoot()) revert SnapshotRootMismatch();
+        if (snapshot.calculateRoot() != att.snapRoot()) revert IncorrectSnapshotRoot();
         // This will revert if state does not refer to this chain
         bytes memory statePayload = snapshot.state(stateIndex).unwrap().clone();
         isValidState = IStateHub(origin).isValidState(statePayload);
@@ -330,7 +330,7 @@ abstract contract AgentManager is MessagingBase, VerificationManager, AgentManag
         // Check that agent is Active/Unstaking and that the domains match
         AgentStatus memory status = _storedAgentStatus(agent);
         status.verifyActiveUnstaking();
-        if (status.domain != domain) revert AgentDomainIncorrect();
+        if (status.domain != domain) revert IncorrectAgentDomain();
         // The "stored" agent status is not updated yet, however agentStatus() will return AgentFlag.Fraudulent
         emit StatusUpdated(AgentFlag.Fraudulent, domain, agent);
         // This will revert if the agent has been slashed earlier

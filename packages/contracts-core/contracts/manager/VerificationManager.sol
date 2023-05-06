@@ -4,7 +4,7 @@ pragma solidity 0.8.17;
 // ══════════════════════════════ LIBRARY IMPORTS ══════════════════════════════
 import {Attestation} from "../libs/Attestation.sol";
 import {AttestationReport} from "../libs/AttestationReport.sol";
-import {AgentNotGuard, AgentNotNotary} from "../libs/Errors.sol";
+import {AgentNotGuard, AgentNotNotary, IncorrectSnapshotProof, IncorrectSnapshotRoot} from "../libs/Errors.sol";
 import {MerkleMath} from "../libs/MerkleMath.sol";
 import {Receipt} from "../libs/Receipt.sol";
 import {Snapshot, SnapshotLib, SNAPSHOT_TREE_HEIGHT} from "../libs/Snapshot.sol";
@@ -165,13 +165,13 @@ abstract contract VerificationManager {
     {
         // Snapshot proof first element should match State metadata (aka "right sub-leaf")
         (, bytes32 rightSubLeaf) = state.subLeafs();
-        require(snapProof[0] == rightSubLeaf, "Incorrect proof[0]");
+        if (snapProof[0] != rightSubLeaf) revert IncorrectSnapshotProof();
         // Reconstruct Snapshot Merkle Root using the snapshot proof
         // This will revert if:
         //  - State index is out of range.
         //  - Snapshot Proof length exceeds Snapshot tree Height.
         bytes32 snapshotRoot = SnapshotLib.proofSnapRoot(state.root(), state.origin(), snapProof, stateIndex);
         // Snapshot root should match the attestation root
-        require(att.snapRoot() == snapshotRoot, "Incorrect snapshot root");
+        if (att.snapRoot() != snapshotRoot) revert IncorrectSnapshotRoot();
     }
 }

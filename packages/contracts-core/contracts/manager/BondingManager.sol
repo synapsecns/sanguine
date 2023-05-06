@@ -7,9 +7,10 @@ import {AttestationReport, AttestationReportLib} from "../libs/AttestationReport
 import {BONDING_OPTIMISTIC_PERIOD, SYNAPSE_DOMAIN} from "../libs/Constants.sol";
 import {
     AgentCantBeAdded,
-    AgentDomainIncorrect,
     CallerNotDestination,
     CallerNotSummit,
+    IncorrectAgentDomain,
+    IncorrectSnapshotRoot,
     MustBeSynapseDomain,
     NotaryInDispute,
     SynapseDomainForbidden
@@ -133,10 +134,10 @@ contract BondingManager is AgentManager, BondingManagerEvents, InterfaceBondingM
         // Check that receipt's snapshot root exists in Summit
         ReceiptBody rcptBody = rcpt.body();
         uint32 attNonce = IExecutionHub(destination).getAttestationNonce(rcptBody.snapshotRoot());
-        require(attNonce != 0, "Unknown snapshot root");
+        if (attNonce == 0) revert IncorrectSnapshotRoot();
         // Attestation Notary domain needs to match the destination domain
         AgentStatus memory attNotaryStatus = agentStatus(rcptBody.attNotary());
-        if (attNotaryStatus.domain != rcptBody.destination()) revert AgentDomainIncorrect();
+        if (attNotaryStatus.domain != rcptBody.destination()) revert IncorrectAgentDomain();
         // Store Notary signature for the Receipt
         uint256 sigIndex = _saveSignature(rcptSignature);
         wasAccepted = InterfaceSummit(summit).acceptReceipt({
@@ -252,7 +253,7 @@ contract BondingManager is AgentManager, BondingManagerEvents, InterfaceBondingM
         AgentStatus memory status = agentStatus(agent);
         // Could only initiate the unstaking for the active agent for the domain
         status.verifyActive();
-        if (status.domain != domain) revert AgentDomainIncorrect();
+        if (status.domain != domain) revert IncorrectAgentDomain();
         // Leaf representing currently saved agent information in the tree.
         // oldValue includes the domain information, so we didn't had to check it above.
         // However, we are still doing this check to have a more appropriate revert string,
@@ -269,7 +270,7 @@ contract BondingManager is AgentManager, BondingManagerEvents, InterfaceBondingM
         // Could only complete the unstaking, if it was previously initiated
         // TODO: add more checks (time-based, possibly collecting info from other chains)
         status.verifyUnstaking();
-        if (status.domain != domain) revert AgentDomainIncorrect();
+        if (status.domain != domain) revert IncorrectAgentDomain();
         // Leaf representing currently saved agent information in the tree
         // oldValue includes the domain information, so we didn't had to check it above.
         // However, we are still doing this check to have a more appropriate revert string,
@@ -287,7 +288,7 @@ contract BondingManager is AgentManager, BondingManagerEvents, InterfaceBondingM
         AgentStatus memory status = agentStatus(agent);
         // Could only complete the slashing, if it was previously initiated
         status.verifyFraudulent();
-        if (status.domain != domain) revert AgentDomainIncorrect();
+        if (status.domain != domain) revert IncorrectAgentDomain();
         // Leaf representing currently saved agent information in the tree
         // oldValue includes the domain information, so we didn't had to check it above.
         // However, we are still doing this check to have a more appropriate revert string,

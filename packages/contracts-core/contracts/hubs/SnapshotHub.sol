@@ -3,6 +3,7 @@ pragma solidity 0.8.17;
 
 // ══════════════════════════════ LIBRARY IMPORTS ══════════════════════════════
 import {Attestation, AttestationLib} from "../libs/Attestation.sol";
+import {IncorrectState, OutdatedNonce} from "../libs/Errors.sol";
 import {ChainGas, GasData, GasDataLib} from "../libs/GasData.sol";
 import {MerkleMath} from "../libs/MerkleMath.sol";
 import {Snapshot, SnapshotLib} from "../libs/Snapshot.sol";
@@ -214,11 +215,11 @@ abstract contract SnapshotHub is AgentSecured, SnapshotHubEvents, ISnapshotHub {
             State state = snapshot.state(i);
             uint256 statePtr = _statePtr(state);
             // Notary can only used states previously submitted by any fo the Guards
-            require(statePtr != 0, "State doesn't exist");
+            if (statePtr == 0) revert IncorrectState();
             statePtrs[i] = statePtr;
             // Check that Notary hasn't used a fresher state for this origin before
             uint32 origin = state.origin();
-            require(state.nonce() > _latestState(origin, notaryIndex).nonce, "Outdated nonce");
+            if (state.nonce() <= _latestState(origin, notaryIndex).nonce) revert OutdatedNonce();
             // Save Notary if they are the first to use this state
             if (_states[statePtr - 1].notaryIndex == 0) _states[statePtr - 1].notaryIndex = notaryIndex;
             // Update Notary latest state for origin
@@ -272,7 +273,7 @@ abstract contract SnapshotHub is AgentSecured, SnapshotHubEvents, ISnapshotHub {
     function _saveState(State state, uint32 guardIndex) internal returns (uint256 statePtr) {
         uint32 origin = state.origin();
         // Check that Guard hasn't submitted a fresher State before
-        require(state.nonce() > _latestState(origin, guardIndex).nonce, "Outdated nonce");
+        if (state.nonce() <= _latestState(origin, guardIndex).nonce) revert OutdatedNonce();
         bytes32 stateHash = state.leaf();
         statePtr = _leafPtr[origin][stateHash];
         // Save state only if it wasn't previously submitted

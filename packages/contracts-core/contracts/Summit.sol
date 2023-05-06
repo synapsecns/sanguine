@@ -5,6 +5,7 @@ pragma solidity 0.8.17;
 import {AttestationLib} from "./libs/Attestation.sol";
 import {ByteString} from "./libs/ByteString.sol";
 import {BONDING_OPTIMISTIC_PERIOD, SYNAPSE_DOMAIN} from "./libs/Constants.sol";
+import {MustBeSynapseDomain} from "./libs/Errors.sol";
 import {Receipt, ReceiptBody, ReceiptLib} from "./libs/Receipt.sol";
 import {Snapshot, SnapshotLib} from "./libs/Snapshot.sol";
 import {AgentFlag, AgentStatus, DisputeFlag, MessageStatus} from "./libs/Structures.sol";
@@ -77,7 +78,7 @@ contract Summit is SnapshotHub, SummitEvents, InterfaceSummit {
     // ═════════════════════════════════════════ CONSTRUCTOR & INITIALIZER ═════════════════════════════════════════════
 
     constructor(uint32 domain, address agentManager_) AgentSecured("0.0.3", domain, agentManager_) {
-        require(domain == SYNAPSE_DOMAIN, "Only deployed on SynChain");
+        if (domain != SYNAPSE_DOMAIN) revert MustBeSynapseDomain();
     }
 
     function initialize() external initializer {
