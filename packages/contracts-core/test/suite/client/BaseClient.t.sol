@@ -1,7 +1,12 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.17;
 
-import {CallerNotDestination, IncorrectSender, IncorrectRecipient} from "../../../contracts/libs/Errors.sol";
+import {
+    BaseClientOptimisticPeriod,
+    CallerNotDestination,
+    IncorrectSender,
+    IncorrectRecipient
+} from "../../../contracts/libs/Errors.sol";
 import {BaseClientHarness} from "../../harnesses/client/BaseClientHarness.t.sol";
 import {SynapseTest} from "../../utils/SynapseTest.t.sol";
 import {InterfaceOrigin} from "../../mocks/OriginMock.t.sol";
@@ -127,7 +132,7 @@ contract BaseClientTest is SynapseTest {
         rootSubmittedAt = bound(rootSubmittedAt, 1, 1e10);
         secondsPassed = bound(secondsPassed, 0, optimisticPeriod - 1);
         vm.warp(rootSubmittedAt + secondsPassed);
-        vm.expectRevert("BaseClient: !optimisticPeriod");
+        vm.expectRevert(BaseClientOptimisticPeriod.selector);
         vm.prank(destination);
         client.receiveBaseMessage(rh.origin, rh.nonce, sender, secondsPassed, "");
     }

@@ -13,6 +13,7 @@ import {
     IncorrectSnapshotRoot,
     MustBeSynapseDomain,
     NotaryInDispute,
+    SlashAgentOptimisticPeriod,
     SynapseDomainForbidden
 } from "../libs/Errors.sol";
 import {ChainGas} from "../libs/GasData.sol";
@@ -306,7 +307,8 @@ contract BondingManager is AgentManager, BondingManagerEvents, InterfaceBondingM
         // Only destination can pass Manager Messages
         if (msg.sender != destination) revert CallerNotDestination();
         // Check that merkle proof is mature enough
-        require(proofMaturity >= BONDING_OPTIMISTIC_PERIOD, "!optimisticPeriod");
+        // TODO: separate constant for slashing optimistic period
+        if (proofMaturity < BONDING_OPTIMISTIC_PERIOD) revert SlashAgentOptimisticPeriod();
         // TODO: do we need to save this?
         msgOrigin;
         // Slash agent and notify local AgentSecured contracts

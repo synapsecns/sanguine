@@ -37,6 +37,13 @@ error UnformattedSnapshot();
 error UnformattedState();
 error UnformattedStateReport();
 
+// ═════════════════════════════ OPTIMISTIC PERIOD ═════════════════════════════
+
+error BaseClientOptimisticPeriod();
+error MessageOptimisticPeriod();
+error SlashAgentOptimisticPeriod();
+error WithdrawTipsOptimisticPeriod();
+
 // ═══════════════════════════════ AGENT MANAGER ═══════════════════════════════
 
 error AgentNotGuard();

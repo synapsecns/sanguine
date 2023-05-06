@@ -1,7 +1,12 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.17;
 
-import {IncorrectDestinationDomain, IncorrectSnapshotRoot, NotaryInDispute} from "../../../contracts/libs/Errors.sol";
+import {
+    IncorrectDestinationDomain,
+    IncorrectSnapshotRoot,
+    MessageOptimisticPeriod,
+    NotaryInDispute
+} from "../../../contracts/libs/Errors.sol";
 import {AgentFlag} from "../../../contracts/libs/Structures.sol";
 import {IExecutionHub} from "../../../contracts/interfaces/IExecutionHub.sol";
 import {IAgentManager} from "../../../contracts/interfaces/IAgentManager.sol";
@@ -226,7 +231,7 @@ abstract contract ExecutionHubTest is AgentSecuredTest {
         // Make sure that optimistic period is NOT over
         uint32 timePassed = random.nextUint32() % rh.optimisticPeriod;
         skip(timePassed);
-        vm.expectRevert("!optimisticPeriod");
+        vm.expectRevert(MessageOptimisticPeriod.selector);
         vm.prank(executor);
         testedEH().execute(msgPayload, originProof, snapProof, sm.rsi.stateIndex, rbm.request.gasLimit);
         verify_messageStatusNone(keccak256(msgPayload));

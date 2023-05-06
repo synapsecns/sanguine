@@ -6,7 +6,12 @@ import {Attestation} from "../libs/Attestation.sol";
 import {BaseMessage, BaseMessageLib, MemView} from "../libs/BaseMessage.sol";
 import {ByteString, CallData} from "../libs/ByteString.sol";
 import {ORIGIN_TREE_HEIGHT, SNAPSHOT_TREE_HEIGHT, SYNAPSE_DOMAIN} from "../libs/Constants.sol";
-import {IncorrectDestinationDomain, IncorrectSnapshotRoot, NotaryInDispute} from "../libs/Errors.sol";
+import {
+    IncorrectDestinationDomain,
+    IncorrectSnapshotRoot,
+    MessageOptimisticPeriod,
+    NotaryInDispute
+} from "../libs/Errors.sol";
 import {MerkleMath} from "../libs/MerkleMath.sol";
 import {Header, Message, MessageFlag, MessageLib} from "../libs/Message.sol";
 import {Receipt, ReceiptBody, ReceiptLib} from "../libs/Receipt.sol";
@@ -116,7 +121,7 @@ abstract contract ExecutionHub is AgentSecured, ExecutionHubEvents, IExecutionHu
         SnapRootData memory rootData = _proveAttestation(header, msgLeaf, originProof, snapProof, stateIndex);
         // Check if optimistic period has passed
         uint256 proofMaturity = block.timestamp - rootData.submittedAt;
-        require(proofMaturity >= header.optimisticPeriod(), "!optimisticPeriod");
+        if (proofMaturity < header.optimisticPeriod()) revert MessageOptimisticPeriod();
         uint256 paddedTips;
         bool success;
         // Only Base/Manager message flags exist

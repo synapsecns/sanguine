@@ -11,7 +11,8 @@ import {
     GuardInDispute,
     NotaryInDispute,
     MustBeSynapseDomain,
-    SynapseDomainForbidden
+    SynapseDomainForbidden,
+    WithdrawTipsOptimisticPeriod
 } from "../../../contracts/libs/Errors.sol";
 import {AgentFlag, AgentStatus, SystemEntity} from "../../../contracts/libs/Structures.sol";
 import {InterfaceDestination} from "../../../contracts/interfaces/InterfaceDestination.sol";
@@ -314,7 +315,7 @@ contract LightManagerTest is AgentManagerTest {
         proofMaturity = proofMaturity % BONDING_OPTIMISTIC_PERIOD;
         skip(proofMaturity);
         bytes memory msgPayload = managerMsgPayload(DOMAIN_SYNAPSE, remoteWithdrawTipsCalldata(address(0), 0));
-        vm.expectRevert("!optimisticPeriod");
+        vm.expectRevert(WithdrawTipsOptimisticPeriod.selector);
         managerMsgPrank(msgPayload);
     }
 

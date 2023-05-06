@@ -12,6 +12,7 @@ import {
     CallerNotSummit,
     MustBeSynapseDomain,
     NotaryInDispute,
+    SlashAgentOptimisticPeriod,
     SynapseDomainForbidden
 } from "../../../contracts/libs/Errors.sol";
 import {MerkleMath} from "../../../contracts/libs/MerkleMath.sol";
@@ -240,6 +241,14 @@ contract BondingManagerTest is AgentManagerTest {
         // (bool isSlashed, address prover_) = bondingManager.slashStatus(agent);
         // assertTrue(isSlashed);
         // assertEq(prover_, prover);
+    }
+
+    function test_remoteSlashAgent_revert_optimisticPeriodNotOver(uint32 proofMaturity) public {
+        proofMaturity = proofMaturity % BONDING_OPTIMISTIC_PERIOD;
+        skip(proofMaturity);
+        bytes memory msgPayload = managerMsgPayload(DOMAIN_REMOTE, remoteSlashAgentCalldata(0, address(0), address(0)));
+        vm.expectRevert(SlashAgentOptimisticPeriod.selector);
+        managerMsgPrank(msgPayload);
     }
 
     function test_completeSlashing_active(uint256 domainId, uint256 agentId, address slasher) public {

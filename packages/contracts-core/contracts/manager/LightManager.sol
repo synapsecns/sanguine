@@ -13,7 +13,8 @@ import {
     CallerNotDestination,
     MustBeSynapseDomain,
     NotaryInDispute,
-    SynapseDomainForbidden
+    SynapseDomainForbidden,
+    WithdrawTipsOptimisticPeriod
 } from "../libs/Errors.sol";
 import {ChainGas, GasDataLib} from "../libs/GasData.sol";
 import {MerkleMath} from "../libs/MerkleMath.sol";
@@ -165,7 +166,8 @@ contract LightManager is AgentManager, InterfaceLightManager {
         // Only AgentManager on Synapse Chain can give instructions to withdraw tips
         if (msgOrigin != SYNAPSE_DOMAIN) revert MustBeSynapseDomain();
         // Check that merkle proof is mature enough
-        require(proofMaturity >= BONDING_OPTIMISTIC_PERIOD, "!optimisticPeriod");
+        // TODO: separate constant for withdrawing tips optimistic period
+        if (proofMaturity < BONDING_OPTIMISTIC_PERIOD) revert WithdrawTipsOptimisticPeriod();
         InterfaceOrigin(origin).withdrawTips(recipient, amount);
         // Magic value to return is selector of the called function
         return this.remoteWithdrawTips.selector;
