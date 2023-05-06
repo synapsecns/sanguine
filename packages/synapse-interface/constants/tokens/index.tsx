@@ -1,6 +1,8 @@
 import * as CHAINS from '@constants/chains/master'
 import * as all from './master'
 import * as allPool from './poolMaster'
+import * as allSwap from './swapMaster'
+
 import { SYN_ETH_SUSHI_TOKEN } from './sushiMaster'
 import { Token } from '@/utils/types'
 // TODO change this to token by key
@@ -131,9 +133,10 @@ export const tokenSymbolToToken = (chainId: number, symbol: string) => {
 }
 
 // SWAPS
+const allTokensWithSwap = [...Object.values(all), ...Object.values(allSwap)]
 const getSwapableTokens = (): TokensByChain => {
   const swapTokens: TokensByChain = {}
-  Object.values(all).map((token) => {
+  allTokensWithSwap.map((token) => {
     if (!(token?.swapableOn?.length > 0)) return
     for (const cID of token.swapableOn) {
       if (!swapTokens[cID]) {
@@ -147,7 +150,7 @@ const getSwapableTokens = (): TokensByChain => {
 }
 const getSwapableTokensByType = (): SwapableTokensByType => {
   const swapTokens: SwapableTokensByType = {}
-  Object.values(all).map((token) => {
+  allTokensWithSwap.map((token) => {
     if (!(token?.swapableOn?.length > 0)) return
     for (const cID of token.swapableOn) {
       if (!swapTokens[cID]) {
@@ -166,7 +169,7 @@ const getSwapableTokensByType = (): SwapableTokensByType => {
 }
 const getSwapPriorityRanking = () => {
   const swapPriorityRanking = {}
-  Object.values(allPool).map((token) => {
+  allTokensWithSwap.map((token) => {
     if (!token.priorityPool) return
     for (const cID of Object.keys(token.addresses)) {
       if (!swapPriorityRanking[cID]) {

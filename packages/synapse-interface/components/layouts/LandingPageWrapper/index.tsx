@@ -202,27 +202,33 @@ function TopBarButtons() {
       <TopBarNavLink
         to={NAVIGATION.About.path}
         labelText={NAVIGATION.About.text}
+        match={NAVIGATION.About.match}
       />
       <TopBarNavLink
         to={NAVIGATION.Bridge.path}
         labelText={NAVIGATION.Bridge.text}
+        match={NAVIGATION.Bridge.match}
       />
       <TopBarNavLink
         to={NAVIGATION.Swap.path}
         labelText={NAVIGATION.Swap.text}
+        match={NAVIGATION.Swap.match}
       />
       <TopBarNavLink
         to={NAVIGATION.Pools.path}
         labelText={NAVIGATION.Pools.text}
+        match={NAVIGATION.Pools.match}
       />
       <TopBarNavLink
         to={NAVIGATION.Stake.path}
         labelText={NAVIGATION.Stake.text}
+        match={NAVIGATION.Stake.match}
       />
       <TopBarNavLink
         className="hidden mdl:block"
         to={NAVIGATION.Analytics.path}
         labelText={NAVIGATION.Analytics.text}
+        match={NAVIGATION.Analytics.match}
       />
     </>
   )

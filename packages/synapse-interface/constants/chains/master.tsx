@@ -109,7 +109,7 @@ export const CANTO: Chain = {
   blockTime: 50000,
   rpc: 'https://mainnode.plexnode.org:8545',
   nativeCurrency: { name: 'Canto', symbol: 'CANTO', decimals: 18 },
-  explorerUrl: 'https://evm.explorer.canto.io/',
+  explorerUrl: 'https://evm.explorer.canto.io',
   color: 'teal',
 }
 
@@ -155,7 +155,7 @@ export const DFK: Chain = {
   blockTime: 10000,
   rpc: 'https://subnets.avax.Chain/defi-kingdoms/dfk-chain/rpc',
   nativeCurrency: { name: 'Jewel', symbol: 'JEWEL', decimals: 18 },
-  explorerUrl: 'https://subnets.avax.Chain/defi-kingdoms/',
+  explorerUrl: 'https://subnets.avax.Chain/defi-kingdoms',
   color: 'lime',
 }
 
@@ -200,7 +200,7 @@ export const CRONOS: Chain = {
   blockTime: 10000,
   rpc: 'https://evm-cronos.crypto.org',
   nativeCurrency: { name: 'Cronos', symbol: 'CRO', decimals: 18 },
-  explorerUrl: 'https://cronoscan.com/',
+  explorerUrl: 'https://cronoscan.com',
   color: 'blue',
 }
 export const BOBA: Chain = {
@@ -231,7 +231,7 @@ export const METIS: Chain = {
   blockTime: 10000,
   rpc: 'https://andromeda.metis.io/?owner=1088',
   nativeCurrency: { name: 'Metis', symbol: 'METIS', decimals: 18 },
-  explorerUrl: 'https://andromeda-explorer.metis.io/',
+  explorerUrl: 'https://andromeda-explorer.metis.io',
   color: 'teal',
 }
 

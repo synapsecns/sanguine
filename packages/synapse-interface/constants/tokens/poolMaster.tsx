@@ -6,7 +6,6 @@ import {
   USDC,
   USDT,
   DAI,
-  MIM,
   NUSD,
   KLAYTN_oUSDT,
   NOTE,
@@ -22,7 +21,7 @@ import {
   SYNJEWEL,
 } from '@constants/tokens/master'
 import { SYNAVAX, MULTIAVAX } from '@constants/tokens/master'
-import { WETH } from '@constants/tokens/swapMaster'
+import { WETH, MIM } from '@constants/tokens/swapMaster'
 
 import { Token } from '@/utils/types'
 

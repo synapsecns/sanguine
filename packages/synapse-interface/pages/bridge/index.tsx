@@ -2,7 +2,7 @@ import Grid from '@tw/Grid'
 import { LandingPageWrapper } from '@components/layouts/LandingPageWrapper'
 import { useRouter } from 'next/router'
 import { useNetwork } from 'wagmi'
-import { useEffect, useState, useMemo } from 'react'
+import { useEffect, useState, useCallback } from 'react'
 import { AddressZero, Zero } from '@ethersproject/constants'
 import { BigNumber } from '@ethersproject/bignumber'
 import { ActionCardFooter } from '@components/ActionCardFooter'
@@ -408,12 +408,14 @@ const BridgePage = ({
       }
 
       const bridgeableFromTokens: Token[] = sortByVisibilityRank(
-        BRIDGE_SWAPABLE_TOKENS_BY_TYPE[chainId][String(fromToken.swapableType)]
+        BRIDGE_SWAPABLE_TOKENS_BY_TYPE[desiredChainId][
+          String(fromToken.swapableType)
+        ]
       )
       let tempFromToken: Token = fromToken
 
       if (bridgeableFromTokens?.length > 0) {
-        tempFromToken = getMostCommonSwapableType(chainId)
+        tempFromToken = getMostCommonSwapableType(desiredChainId)
       }
       const {
         bridgeableToken,
