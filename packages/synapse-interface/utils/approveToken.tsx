@@ -22,15 +22,6 @@ export const approveToken = async (
     const approveTx = await erc20.approve(address, amount ?? MaxInt256)
 
     await approveTx.wait()
-    console.log(`Transaction mined successfully: ${approveTx.hash}`)
-    const toastContent = (
-      <div>
-        <div>Token Approved!</div>
-        <ExplorerToastLink {...approveTx} chainId={chainId} />
-      </div>
-    )
-
-    toast.success(toastContent)
     return approveTx
   } catch (error) {
     console.log(`Transaction failed with error: ${error}`)

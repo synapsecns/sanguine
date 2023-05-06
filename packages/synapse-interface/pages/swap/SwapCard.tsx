@@ -370,7 +370,7 @@ const SwapCard = ({
       swapableToken,
       swapableTokens,
       tempFromToken.symbol,
-      swapableToken.symbol
+      swapableToken?.symbol
     )
     return
   }
@@ -553,6 +553,7 @@ const SwapCard = ({
         onSuccess={() => {
           postButtonAction()
         }}
+        chainId={connectedChainId}
         label={btnLabel}
         pendingLabel={pendingLabel}
       />

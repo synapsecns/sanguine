@@ -12,7 +12,6 @@ import { AVWETH, WETHE } from '@constants/tokens/master'
 import { WETH } from '@constants/tokens/swapMaster'
 import { approveToken } from '@utils/approveToken'
 import { Token } from '@types'
-import { getAddress } from '@ethersproject/address'
 
 export const approve = async (
   pool: Token,

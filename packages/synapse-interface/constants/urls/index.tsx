@@ -46,7 +46,7 @@ export const getPoolUrl = (token: Token) => {
 export const getExplorerTxUrl = ({
   hash,
   data,
-  chainId = 56,
+  chainId = 1,
   type = 'tx',
 }: {
   hash?: string

@@ -217,6 +217,7 @@ const BridgeCard = ({
           error ||
           destAddrNotValid
         }
+        chainId={toChainId}
         onClick={() => buttonAction()}
         onSuccess={() => {
           postButtonAction()
