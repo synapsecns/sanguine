@@ -15,6 +15,7 @@ import {DestinationEvents} from "./events/DestinationEvents.sol";
 import {IAgentManager} from "./interfaces/IAgentManager.sol";
 import {InterfaceDestination} from "./interfaces/InterfaceDestination.sol";
 import {InterfaceLightManager} from "./interfaces/InterfaceLightManager.sol";
+import {IStatementInbox} from "./interfaces/IStatementInbox.sol";
 import {ExecutionHub} from "./hubs/ExecutionHub.sol";
 
 contract Destination is ExecutionHub, DestinationEvents, InterfaceDestination {
@@ -147,7 +148,7 @@ contract Destination is ExecutionHub, DestinationEvents, InterfaceDestination {
         });
         // Attestation signatures are not required on Synapse Chain, as the attestations could be accessed via Summit.
         if (localDomain != SYNAPSE_DOMAIN) {
-            attSignature = IAgentManager(agentManager).getStoredSignature(rootData.sigIndex);
+            attSignature = IStatementInbox(inbox).getStoredSignature(rootData.sigIndex);
         }
     }
 
