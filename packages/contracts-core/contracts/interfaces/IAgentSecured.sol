@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.17;
 
-import {AgentStatus, DisputeFlag} from "../libs/Structures.sol";
+import {AgentStatus} from "../libs/Structures.sol";
 
 interface IAgentSecured {
     /**

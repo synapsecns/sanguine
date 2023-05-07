@@ -6,9 +6,9 @@ import {Attestation, AttestationLib} from "./libs/Attestation.sol";
 import {AttestationReport} from "./libs/AttestationReport.sol";
 import {ByteString} from "./libs/ByteString.sol";
 import {AGENT_ROOT_OPTIMISTIC_PERIOD, SYNAPSE_DOMAIN} from "./libs/Constants.sol";
-import {IndexOutOfRange} from "./libs/Errors.sol";
+import {IndexOutOfRange, NotaryInDispute} from "./libs/Errors.sol";
 import {ChainGas, GasData} from "./libs/GasData.sol";
-import {AgentStatus, DestinationStatus, DisputeFlag} from "./libs/Structures.sol";
+import {AgentStatus, DestinationStatus} from "./libs/Structures.sol";
 // ═════════════════════════════ INTERNAL IMPORTS ══════════════════════════════
 import {AgentSecured} from "./base/AgentSecured.sol";
 import {DestinationEvents} from "./events/DestinationEvents.sol";
@@ -78,6 +78,7 @@ contract Destination is ExecutionHub, DestinationEvents, InterfaceDestination {
         bytes32 agentRoot,
         ChainGas[] memory snapGas
     ) external onlyInbox returns (bool wasAccepted) {
+        if (_isInDispute(notaryIndex)) revert NotaryInDispute();
         // First, try passing current agent merkle root
         (bool rootPassed, bool rootPending) = passAgentRoot();
         // Don't accept attestation, if the agent root was updated in LightManager,
@@ -107,7 +108,7 @@ contract Destination is ExecutionHub, DestinationEvents, InterfaceDestination {
         DestinationStatus memory status = destStatus;
         // Invariant: Notary who supplied `newRoot` was registered as active against `oldRoot`
         // So we just need to check the Dispute status of the Notary
-        if (_disputes[status.notaryIndex] != DisputeFlag.None) {
+        if (_isInDispute(status.notaryIndex)) {
             // Remove the pending agent merkle root, as its signer is in dispute
             _nextAgentRoot = oldRoot;
             return (false, false);
@@ -153,7 +154,8 @@ contract Destination is ExecutionHub, DestinationEvents, InterfaceDestination {
     /// @inheritdoc InterfaceDestination
     function getGasData(uint32 domain) external view returns (GasData gasData, uint256 dataMaturity) {
         StoredGasData memory storedGasData = _storedGasData[domain];
-        if (storedGasData.submittedAt != 0 && _disputes[storedGasData.notaryIndex] == DisputeFlag.None) {
+        // Check if there is a stored gas data for the domain, and if the notary who provided the data is not in dispute
+        if (storedGasData.submittedAt != 0 && !_isInDispute(storedGasData.notaryIndex)) {
             gasData = storedGasData.gasData;
             dataMaturity = block.timestamp - storedGasData.submittedAt;
         }

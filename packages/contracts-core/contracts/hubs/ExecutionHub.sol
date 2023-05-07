@@ -26,7 +26,7 @@ import {AgentFlag, AgentStatus, MessageStatus} from "../libs/Structures.sol";
 import {Tips} from "../libs/Tips.sol";
 import {TypeCasts} from "../libs/TypeCasts.sol";
 // ═════════════════════════════ INTERNAL IMPORTS ══════════════════════════════
-import {AgentSecured, DisputeFlag} from "../base/AgentSecured.sol";
+import {AgentSecured} from "../base/AgentSecured.sol";
 import {ExecutionHubEvents} from "../events/ExecutionHubEvents.sol";
 import {InterfaceInbox} from "../interfaces/InterfaceInbox.sol";
 import {IExecutionHub} from "../interfaces/IExecutionHub.sol";
@@ -346,7 +346,7 @@ abstract contract ExecutionHub is AgentSecured, ExecutionHubEvents, IExecutionHu
         // Check if snapshot root has been submitted
         if (rootData.submittedAt == 0) revert IncorrectSnapshotRoot();
         // Check that Notary who submitted the attestation is not in dispute
-        if (_disputes[rootData.notaryIndex] != DisputeFlag.None) revert NotaryInDispute();
+        if (_isInDispute(rootData.notaryIndex)) revert NotaryInDispute();
     }
 
     function _receiptBody(bytes32 messageHash, ReceiptData memory rcptData)

@@ -5,7 +5,7 @@ pragma solidity 0.8.17;
 import {AttestationLib} from "./libs/Attestation.sol";
 import {ByteString} from "./libs/ByteString.sol";
 import {BONDING_OPTIMISTIC_PERIOD, SYNAPSE_DOMAIN} from "./libs/Constants.sol";
-import {MustBeSynapseDomain, TipsClaimMoreThanEarned, TipsClaimZero} from "./libs/Errors.sol";
+import {MustBeSynapseDomain, NotaryInDispute, TipsClaimMoreThanEarned, TipsClaimZero} from "./libs/Errors.sol";
 import {Receipt, ReceiptBody, ReceiptLib} from "./libs/Receipt.sol";
 import {Snapshot, SnapshotLib} from "./libs/Snapshot.sol";
 import {AgentFlag, AgentStatus, DisputeFlag, MessageStatus} from "./libs/Structures.sol";
@@ -100,6 +100,7 @@ contract Summit is SnapshotHub, SummitEvents, InterfaceSummit {
         uint256 paddedTips,
         bytes memory rcptBodyPayload
     ) external onlyInbox returns (bool wasAccepted) {
+        if (_isInDispute(rcptNotaryIndex)) revert NotaryInDispute();
         // This will revert if payload is not a receipt body
         return _saveReceipt({
             rcptBody: rcptBodyPayload.castToReceiptBody(),
@@ -113,6 +114,8 @@ contract Summit is SnapshotHub, SummitEvents, InterfaceSummit {
 
     /// @inheritdoc InterfaceSummit
     function acceptGuardSnapshot(uint32 guardIndex, uint256 sigIndex, bytes memory snapPayload) external onlyInbox {
+        // Note: we don't check if Guard is in Dispute,
+        // as the Guards could continue to submit snapshots after submitting a report.
         // This will revert if payload is not a snapshot
         _acceptGuardSnapshot(snapPayload.castToSnapshot(), guardIndex, sigIndex);
     }
@@ -123,6 +126,7 @@ contract Summit is SnapshotHub, SummitEvents, InterfaceSummit {
         onlyInbox
         returns (bytes memory attPayload)
     {
+        if (_isInDispute(notaryIndex)) revert NotaryInDispute();
         // This will revert if payload is not a snapshot
         return _acceptNotarySnapshot(snapPayload.castToSnapshot(), agentRoot, notaryIndex, sigIndex);
     }

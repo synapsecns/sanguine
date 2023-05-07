@@ -3,9 +3,10 @@ pragma solidity 0.8.17;
 
 // ══════════════════════════════ LIBRARY IMPORTS ══════════════════════════════
 import {CallerNotAgentManager, CallerNotInbox} from "../libs/Errors.sol";
+import {AgentStatus, DisputeFlag} from "../libs/Structures.sol";
 // ═════════════════════════════ INTERNAL IMPORTS ══════════════════════════════
 import {IAgentManager} from "../interfaces/IAgentManager.sol";
-import {AgentStatus, DisputeFlag, IAgentSecured} from "../interfaces/IAgentSecured.sol";
+import {IAgentSecured} from "../interfaces/IAgentSecured.sol";
 import {MessagingBase} from "./MessagingBase.sol";
 
 /**
@@ -87,5 +88,10 @@ abstract contract AgentSecured is MessagingBase, IAgentSecured {
     /// @dev Returns agent and their status for a given agent index. Returns zero values for non existing indexes.
     function _getAgent(uint256 index) internal view returns (address agent, AgentStatus memory status) {
         return IAgentManager(agentManager).getAgent(index);
+    }
+
+    /// @dev Checks if the agent with the given index is in a dispute.
+    function _isInDispute(uint32 agentIndex) internal view returns (bool) {
+        return _disputes[agentIndex] != DisputeFlag.None;
     }
 }
