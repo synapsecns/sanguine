@@ -50,8 +50,9 @@ contract Destination is ExecutionHub, DestinationEvents, InterfaceDestination {
 
     // ═════════════════════════════════════════ CONSTRUCTOR & INITIALIZER ═════════════════════════════════════════════
 
-    // solhint-disable-next-line no-empty-blocks
-    constructor(uint32 domain, address agentManager_) AgentSecured("0.0.3", domain, agentManager_) {}
+    constructor(uint32 domain, address agentManager_, address inbox_)
+        AgentSecured("0.0.3", domain, agentManager_, inbox_)
+    {} // solhint-disable-line no-empty-blocks
 
     /// @notice Initializes Destination contract:
     /// - msg.sender is set as contract owner
@@ -76,7 +77,7 @@ contract Destination is ExecutionHub, DestinationEvents, InterfaceDestination {
         bytes memory attPayload,
         bytes32 agentRoot,
         ChainGas[] memory snapGas
-    ) external onlyAgentManager returns (bool wasAccepted) {
+    ) external onlyInbox returns (bool wasAccepted) {
         // First, try passing current agent merkle root
         (bool rootPassed, bool rootPending) = passAgentRoot();
         // Don't accept attestation, if the agent root was updated in LightManager,

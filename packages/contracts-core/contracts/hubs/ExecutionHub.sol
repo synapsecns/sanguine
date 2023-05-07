@@ -28,7 +28,7 @@ import {TypeCasts} from "../libs/TypeCasts.sol";
 // ═════════════════════════════ INTERNAL IMPORTS ══════════════════════════════
 import {AgentSecured, DisputeFlag} from "../base/AgentSecured.sol";
 import {ExecutionHubEvents} from "../events/ExecutionHubEvents.sol";
-import {InterfaceBondingManager} from "../interfaces/InterfaceBondingManager.sol";
+import {InterfaceInbox} from "../interfaces/InterfaceInbox.sol";
 import {IExecutionHub} from "../interfaces/IExecutionHub.sol";
 import {IMessageRecipient} from "../interfaces/IMessageRecipient.sol";
 // ═════════════════════════════ EXTERNAL IMPORTS ══════════════════════════════
@@ -254,7 +254,7 @@ abstract contract ExecutionHub is AgentSecured, ExecutionHubEvents, IExecutionHu
         if (localDomain != SYNAPSE_DOMAIN) return false;
         // Do nothing for messages with no tips (TODO: introduce incentives for manager messages?)
         if (paddedTips == 0) return false;
-        return InterfaceBondingManager(agentManager).passReceipt({
+        return InterfaceInbox(inbox).passReceipt({
             attNotaryIndex: attNotaryIndex,
             attNonce: attNonce,
             paddedTips: paddedTips,

@@ -2,7 +2,7 @@
 pragma solidity 0.8.17;
 
 // ══════════════════════════════ LIBRARY IMPORTS ══════════════════════════════
-import {CallerNotAgentManager} from "../libs/Errors.sol";
+import {CallerNotAgentManager, CallerNotInbox} from "../libs/Errors.sol";
 // ═════════════════════════════ INTERNAL IMPORTS ══════════════════════════════
 import {IAgentManager} from "../interfaces/IAgentManager.sol";
 import {AgentStatus, DisputeFlag, IAgentSecured} from "../interfaces/IAgentSecured.sol";
@@ -23,6 +23,9 @@ abstract contract AgentSecured is MessagingBase, IAgentSecured {
     /// @inheritdoc IAgentSecured
     address public immutable agentManager;
 
+    /// @inheritdoc IAgentSecured
+    address public immutable inbox;
+
     // ══════════════════════════════════════════════════ STORAGE ══════════════════════════════════════════════════════
 
     // (agent index => their dispute flag: None/Pending/Slashed)
@@ -36,10 +39,16 @@ abstract contract AgentSecured is MessagingBase, IAgentSecured {
         _;
     }
 
-    constructor(string memory version_, uint32 localDomain_, address agentManager_)
+    modifier onlyInbox() {
+        if (msg.sender != inbox) revert CallerNotInbox();
+        _;
+    }
+
+    constructor(string memory version_, uint32 localDomain_, address agentManager_, address inbox_)
         MessagingBase(version_, localDomain_)
     {
         agentManager = agentManager_;
+        inbox = inbox_;
     }
 
     // ════════════════════════════════════════════ ONLY AGENT MANAGER ═════════════════════════════════════════════════

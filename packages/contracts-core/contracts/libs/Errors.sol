@@ -5,6 +5,7 @@ pragma solidity 0.8.17;
 
 error CallerNotAgentManager();
 error CallerNotDestination();
+error CallerNotInbox();
 error CallerNotSummit();
 
 // ══════════════════════════════ INCORRECT DATA ═══════════════════════════════
