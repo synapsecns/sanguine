@@ -23,6 +23,7 @@ type EventLog interface {
 	GetEventType() EventType
 	// GetEventIndex returns the index of the log.
 	GetEventIndex() uint64
+
 	// GetRecipient returns the recipient of the event.
 	GetRecipient() *common.Address
 	// GetDestinationChainID returns the chain id of the token deposit.

@@ -556,3 +556,33 @@ type HybridMessageBusEvent struct {
 	// TimeStamp is the timestamp in which the record was inserted.
 	TTimeStamp *uint64 `gorm:"column:t.timestamp"`
 }
+
+// OriginEvent is the struct that represents an event on the origin chain.
+type OriginEvent struct {
+	// InsertTime is the time the event was inserted into the database
+	InsertTime uint64 `gorm:"column:insert_time"`
+	// ContractAddress is the address of the contract that generated the event
+	ContractAddress string `gorm:"column:contract_address"`
+	// ChainID is the chain id of the contract that generated the event
+	ChainID uint32 `gorm:"column:chain_id"`
+	// BlockNumber is the block number of the event
+	BlockNumber uint64 `gorm:"column:block_number"`
+	// TxHash is the transaction hash of the event
+	TxHash string `gorm:"column:tx_hash"`
+	// EventType is the type of the event
+	EventType uint8 `gorm:"column:event_type"`
+	// EventIndex is the index of the log
+	EventIndex uint64 `gorm:"column:event_index"`
+	// Sender is the address of the sender
+	Sender string `gorm:"column:sender"`
+	// MessageHash is the hash of the message
+	MessageHash [32]byte `gorm:"column:message_hash"`
+	// Nonce is the nonce of the message.
+	Nonce uint32 `gorm:"column:nonce"`
+	// Destination is the destination of the message.
+	Destination uint32 `gorm:"column:destination"`
+	// Message is the content of the message.
+	Message []byte `gorm:"column:message"`
+	// TimeStamp is the timestamp of the block in which the event occurred.
+	TimeStamp *uint64 `gorm:"column:timestamp"`
+}
