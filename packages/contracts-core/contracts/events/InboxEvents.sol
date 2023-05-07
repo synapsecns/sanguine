@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.17;
 
-abstract contract BondingManagerEvents {
+abstract contract InboxEvents {
     /**
      * @notice Emitted when a snapshot is accepted by the Summit contract.
      * @param domain        Domain where the signed Agent is active (ZERO for Guards)
