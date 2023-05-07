@@ -159,8 +159,7 @@ contract Inbox is StatementInbox, InboxEvents, InterfaceInbox {
         isValidAttestation = ISnapshotHub(summit).isValidAttestation(attPayload);
         if (!isValidAttestation) {
             emit InvalidAttestation(attPayload, attSignature);
-            // TODO: uncomment this
-            // IAgentManager(agentManager).slashAgent(status.domain, notary, msg.sender);
+            IAgentManager(agentManager).slashAgent(status.domain, notary, msg.sender);
         }
     }
 
@@ -179,8 +178,7 @@ contract Inbox is StatementInbox, InboxEvents, InterfaceInbox {
         isValidReport = !ISnapshotHub(summit).isValidAttestation(report.attestation().unwrap().clone());
         if (!isValidReport) {
             emit InvalidAttestationReport(arPayload, arSignature);
-            // TODO: uncomment this
-            // IAgentManager(agentManager).slashAgent(status.domain, guard, msg.sender);
+            IAgentManager(agentManager).slashAgent(status.domain, guard, msg.sender);
         }
     }
 }

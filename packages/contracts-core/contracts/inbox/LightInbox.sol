@@ -11,6 +11,7 @@ import {AgentStatus} from "../libs/Structures.sol";
 // ═════════════════════════════ INTERNAL IMPORTS ══════════════════════════════
 import {StatementInbox} from "./StatementInbox.sol";
 import {MessagingBase} from "../base/MessagingBase.sol";
+import {IAgentManager} from "../interfaces/IAgentManager.sol";
 import {InterfaceDestination} from "../interfaces/InterfaceDestination.sol";
 import {InterfaceLightInbox} from "../interfaces/InterfaceLightInbox.sol";
 
@@ -84,18 +85,17 @@ contract LightInbox is StatementInbox, InterfaceLightInbox {
         // This will revert if payload is not an attestation report
         AttestationReport report = arPayload.castToAttestationReport();
         // This will revert if the report signer is not a known Guard
-        (AgentStatus memory guardStatus, address guard) = _verifyAttestationReport(report, arSignature);
+        (AgentStatus memory guardStatus,) = _verifyAttestationReport(report, arSignature);
         // Check that Guard is active
         guardStatus.verifyActive();
         // This will revert if attestation signer is not a known Notary
-        (AgentStatus memory notaryStatus, address notary) = _verifyAttestation(report.attestation(), attSignature);
+        (AgentStatus memory notaryStatus,) = _verifyAttestation(report.attestation(), attSignature);
         // Notary needs to be Active/Unstaking
         notaryStatus.verifyActiveUnstaking();
         // Check if Notary is active on this chain
         _verifyNotaryDomain(notaryStatus.domain);
         // This will revert if either actor is already in dispute
-        // TODO: uncomment this
-        // IAgentManager(agentManager).openDispute(guard, guardStatus.index, notary, notaryStatus.index);
+        IAgentManager(agentManager).openDispute(guardStatus.index, notaryStatus.index);
         return true;
     }
 }

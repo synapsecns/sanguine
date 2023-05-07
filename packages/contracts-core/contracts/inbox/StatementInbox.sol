@@ -75,13 +75,13 @@ abstract contract StatementInbox is MessagingBase, StatementInboxEvents, IStatem
         // This will revert if payload is not a state report
         StateReport report = srPayload.castToStateReport();
         // This will revert if the report signer is not an known Guard
-        (AgentStatus memory guardStatus, address guard) = _verifyStateReport(report, srSignature);
+        (AgentStatus memory guardStatus,) = _verifyStateReport(report, srSignature);
         // Check that Guard is active
         guardStatus.verifyActive();
         // This will revert if payload is not a snapshot
         Snapshot snapshot = snapPayload.castToSnapshot();
         // This will revert if the snapshot signer is not a known Notary
-        (AgentStatus memory notaryStatus, address notary) =
+        (AgentStatus memory notaryStatus,) =
             _verifySnapshot({snapshot: snapshot, snapSignature: snapSignature, verifyNotary: true});
         // Notary needs to be Active/Unstaking
         notaryStatus.verifyActiveUnstaking();
@@ -91,8 +91,7 @@ abstract contract StatementInbox is MessagingBase, StatementInboxEvents, IStatem
         // This will revert if state index is out of range
         if (!snapshot.state(stateIndex).equals(report.state())) revert IncorrectState();
         // This will revert if either actor is already in dispute
-        // TODO: uncomment this
-        // IAgentManager(agentManager).openDispute(guard, guardStatus.index, notary, notaryStatus.index);
+        IAgentManager(agentManager).openDispute(guardStatus.index, notaryStatus.index);
         return true;
     }
 
@@ -108,7 +107,7 @@ abstract contract StatementInbox is MessagingBase, StatementInboxEvents, IStatem
         // This will revert if payload is not a state report
         StateReport report = srPayload.castToStateReport();
         // This will revert if the report signer is not an known Guard
-        (AgentStatus memory guardStatus, address guard) = _verifyStateReport(report, srSignature);
+        (AgentStatus memory guardStatus,) = _verifyStateReport(report, srSignature);
         // This will revert if payload is not a snapshot
         Snapshot snapshot = snapPayload.castToSnapshot();
         // Snapshot state and reported state need to be the same
@@ -119,15 +118,14 @@ abstract contract StatementInbox is MessagingBase, StatementInboxEvents, IStatem
         // This will revert if payload is not an attestation
         Attestation att = attPayload.castToAttestation();
         // This will revert if signer is not an known Notary
-        (AgentStatus memory notaryStatus, address notary) = _verifyAttestation(att, attSignature);
+        (AgentStatus memory notaryStatus,) = _verifyAttestation(att, attSignature);
         // Notary needs to be Active/Unstaking
         notaryStatus.verifyActiveUnstaking();
         // Check if Notary is active on this chain
         _verifyNotaryDomain(notaryStatus.domain);
         if (snapshot.calculateRoot() != att.snapRoot()) revert IncorrectSnapshotRoot();
         // This will revert if either actor is already in dispute
-        // TODO: uncomment this
-        // IAgentManager(agentManager).openDispute(guard, guardStatus.index, notary, notaryStatus.index);
+        IAgentManager(agentManager).openDispute(guardStatus.index, notaryStatus.index);
         return true;
     }
 
@@ -143,13 +141,13 @@ abstract contract StatementInbox is MessagingBase, StatementInboxEvents, IStatem
         // This will revert if payload is not a state report
         StateReport report = srPayload.castToStateReport();
         // This will revert if the report signer is not an known Guard
-        (AgentStatus memory guardStatus, address guard) = _verifyStateReport(report, srSignature);
+        (AgentStatus memory guardStatus,) = _verifyStateReport(report, srSignature);
         // Check that Guard is active
         guardStatus.verifyActive();
         // This will revert if payload is not an attestation
         Attestation att = attPayload.castToAttestation();
         // This will revert if signer is not a known Notary
-        (AgentStatus memory notaryStatus, address notary) = _verifyAttestation(att, attSignature);
+        (AgentStatus memory notaryStatus,) = _verifyAttestation(att, attSignature);
         // Notary needs to be Active/Unstaking
         notaryStatus.verifyActiveUnstaking();
         // Check if Notary is active on this chain
@@ -161,8 +159,7 @@ abstract contract StatementInbox is MessagingBase, StatementInboxEvents, IStatem
         //  - State index is out of range.
         _verifySnapshotMerkle(att, stateIndex, report.state(), snapProof);
         // This will revert if either actor is already in dispute
-        // TODO: uncomment this
-        // IAgentManager(agentManager).openDispute(guard, guardStatus.index, notary, notaryStatus.index);
+        IAgentManager(agentManager).openDispute(guardStatus.index, notaryStatus.index);
         return true;
     }
 
@@ -182,8 +179,7 @@ abstract contract StatementInbox is MessagingBase, StatementInboxEvents, IStatem
         isValidReceipt = IExecutionHub(destination).isValidReceipt(rcptPayload);
         if (!isValidReceipt) {
             emit InvalidReceipt(rcptPayload, rcptSignature);
-            // TODO: uncomment this
-            // IAgentManager(agentManager).slashAgent(status.domain, notary, msg.sender);
+            IAgentManager(agentManager).slashAgent(status.domain, notary, msg.sender);
         }
     }
 
@@ -208,8 +204,7 @@ abstract contract StatementInbox is MessagingBase, StatementInboxEvents, IStatem
         isValidState = IStateHub(origin).isValidState(statePayload);
         if (!isValidState) {
             emit InvalidStateWithAttestation(stateIndex, statePayload, attPayload, attSignature);
-            // TODO: uncomment this
-            // IAgentManager(agentManager).slashAgent(status.domain, notary, msg.sender);
+            IAgentManager(agentManager).slashAgent(status.domain, notary, msg.sender);
         }
     }
 
@@ -239,8 +234,7 @@ abstract contract StatementInbox is MessagingBase, StatementInboxEvents, IStatem
         isValidState = IStateHub(origin).isValidState(statePayload);
         if (!isValidState) {
             emit InvalidStateWithAttestation(stateIndex, statePayload, attPayload, attSignature);
-            // TODO: uncomment this
-            // IAgentManager(agentManager).slashAgent(status.domain, notary, msg.sender);
+            IAgentManager(agentManager).slashAgent(status.domain, notary, msg.sender);
         }
     }
 
@@ -260,8 +254,7 @@ abstract contract StatementInbox is MessagingBase, StatementInboxEvents, IStatem
         isValidState = IStateHub(origin).isValidState(snapshot.state(stateIndex).unwrap().clone());
         if (!isValidState) {
             emit InvalidStateWithSnapshot(stateIndex, snapPayload, snapSignature);
-            // TODO: uncomment this
-            // IAgentManager(agentManager).slashAgent(status.domain, agent, msg.sender);
+            IAgentManager(agentManager).slashAgent(status.domain, agent, msg.sender);
         }
     }
 
@@ -281,8 +274,7 @@ abstract contract StatementInbox is MessagingBase, StatementInboxEvents, IStatem
         isValidReport = !IStateHub(origin).isValidState(report.state().unwrap().clone());
         if (!isValidReport) {
             emit InvalidStateReport(srPayload, srSignature);
-            // TODO: uncomment this
-            // IAgentManager(agentManager).slashAgent(status.domain, guard, msg.sender);
+            IAgentManager(agentManager).slashAgent(status.domain, guard, msg.sender);
         }
     }
 
