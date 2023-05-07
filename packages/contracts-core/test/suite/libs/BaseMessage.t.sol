@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.17;
 
+import {UnformattedBaseMessage} from "../../../contracts/libs/Errors.sol";
 import {SynapseLibraryTest, MemViewLib} from "../../utils/SynapseLibraryTest.t.sol";
 import {BaseMessageHarness} from "../../harnesses/libs/BaseMessageHarness.t.sol";
 
@@ -53,7 +54,7 @@ contract BaseMessageLibraryTest is SynapseLibraryTest {
             assertEq(libHarness.castToBaseMessage(payload), payload, "!castToBaseMessage: when valid");
         } else {
             assertFalse(libHarness.isBaseMessage(payload), "!isBaseMessage: when valid");
-            vm.expectRevert("Not a base message");
+            vm.expectRevert(UnformattedBaseMessage.selector);
             libHarness.castToBaseMessage(payload);
         }
     }

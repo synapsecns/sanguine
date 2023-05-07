@@ -14,3 +14,7 @@ func ParseCalls(calls []w3types.Caller) attribute.KeyValue {
 func (c *clientImpl) GetMetrics() metrics.Handler {
 	return c.tracing
 }
+
+// RequestSpanName exports requestSpanName for testing.
+const RequestSpanName = requestSpanName
+const RequestBodyEventName = requestEventName

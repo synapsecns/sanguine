@@ -1,5 +1,5 @@
 import { ETH, SYN } from '@constants/tokens/master'
-
+import { Token } from '@types'
 import * as CHAINS from '@constants/chains/master'
 import { SYN_ETH_SUSHI_TOKEN } from '@constants/tokens/sushiMaster'
 // Hardcoding this shit for now until actual plan around routing
@@ -19,6 +19,7 @@ export const AIRDROP_PATH = '/claim'
 export const SWAP_PATH = '/swap'
 export const STAKE_PATH = '/stake'
 export const POOLS_PATH = '/pools'
+export const POOL_PATH = '/pool'
 export const BRIDGE_PATH = '/'
 export const CONTRACTS_PATH = '/contracts'
 export const PORTFOLIO_PATH = '/portfolio'
@@ -30,26 +31,16 @@ export const PRIVACY_POLICY_PATH =
   'https://explorer.synapseprotocol.com/privacy'
 export const SYNAPSE_PFP_PATH = '/returntomonke'
 
-export const getPoolUrl = ({
-  token,
-  poolRouterIndex,
-}: {
-  token?: any
-  poolRouterIndex?: number
-}) => {
-  if (token) {
-    if (token.symbol === SYN_ETH_SUSHI_TOKEN.symbol) {
-      return getSushiSwapUrl({
-        fromCoin: ETH,
-        toCoin: SYN,
-        chainId: CHAINS.ETH.id,
-      })
-    } else {
-      return `${POOLS_PATH}/${token.routerIndex}`
-    }
+export const getPoolUrl = (token: Token) => {
+  if (token?.symbol && token.symbol === SYN_ETH_SUSHI_TOKEN.symbol) {
+    return getSushiSwapUrl({
+      fromCoin: ETH,
+      toCoin: SYN,
+      chainId: CHAINS.ETH.id,
+    })
+  } else {
+    return `${POOL_PATH}/${token?.routerIndex}`
   }
-
-  return `${POOLS_PATH}/${poolRouterIndex}`
 }
 
 export const getExplorerTxUrl = ({
@@ -181,5 +172,4 @@ export const BLAZE_API_URL = 'https://synapse.dorime.org/api/v1/analytics'
 /** Thanks @0xngmi for building defillama as a whole, it may be a thankless job but we appreciate it */
 export const LLAMA_API_URL = 'https://api.llama.fi/protocol/synapse'
 
-export const BRIDGESYN_ANALYTICS_API =
-  'https://analytics-api.bridgesyn.com/api/v1/analytics'
+export const BRIDGESYN_ANALYTICS_API = 'https://explorer.omnirpc.io/graphql'

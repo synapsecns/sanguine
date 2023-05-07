@@ -18,14 +18,20 @@ interface InterfaceBondingManager {
      * > - Agent snapshot contains a state with a nonce smaller or equal then they have previously submitted.
      * > - Notary snapshot contains a state that hasn't been previously submitted by any of the Guards.
      * > - Note: Agent will NOT be slashed for submitting such a snapshot.
+     * @dev Notary will need to provide both `agentRoot` and `snapGas` when submitting an attestation on
+     * the remote chain (the attestation contains only their merged hash). These are returned by this function,
+     * and could be also obtained by calling `getAttestation(nonce)` or `getLatestNotaryAttestation(notary)`.
      * @param snapPayload       Raw payload with snapshot data
      * @param snapSignature     Agent signature for the snapshot
      * @return attPayload       Raw payload with data for attestation derived from Notary snapshot.
      *                          Empty payload, if a Guard snapshot was submitted.
+     * @return agentRoot        Current root of the Agent Merkle Tree (zero, if a Guard snapshot was submitted)
+     * @return snapGas          Gas data for each chain in the snapshot
+     *                          Empty list, if a Guard snapshot was submitted.
      */
     function submitSnapshot(bytes memory snapPayload, bytes memory snapSignature)
         external
-        returns (bytes memory attPayload);
+        returns (bytes memory attPayload, bytes32 agentRoot, uint256[] memory snapGas);
 
     /**
      * @notice Accepts a receipt signed by a Notary and passes it to Summit contract to save.
@@ -41,6 +47,21 @@ interface InterfaceBondingManager {
      * @return wasAccepted      Whether the receipt was accepted
      */
     function submitReceipt(bytes memory rcptPayload, bytes memory rcptSignature) external returns (bool wasAccepted);
+
+    /**
+     * @notice Passes the message execution receipt from Destination to the Summit contract to save.
+     * > Will revert if any of these is true:
+     * > - Called by anyone other than Destination.
+     * @dev If a receipt is not accepted, any of the Notaries can submit it later using `submitReceipt`.
+     * @param attNotaryIndex    Index of the Notary who signed the attestation
+     * @param attNonce          Nonce of the attestation used for proving the executed message
+     * @param paddedTips        Tips for the message execution
+     * @param rcptBodyPayload   Raw payload with receipt body
+     * @return wasAccepted      Whether the receipt was accepted
+     */
+    function passReceipt(uint32 attNotaryIndex, uint32 attNonce, uint256 paddedTips, bytes memory rcptBodyPayload)
+        external
+        returns (bool wasAccepted);
 
     // ══════════════════════════════════════════ VERIFY AGENT STATEMENTS ══════════════════════════════════════════════
 

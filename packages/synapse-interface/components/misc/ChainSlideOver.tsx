@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef, useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 import Fuse from 'fuse.js'
 import { useKeyPress } from '@hooks/useKeyPress'
 import * as CHAINS from '@constants/chains/master'
@@ -6,6 +6,7 @@ import { SelectSpecificNetworkButton } from '@components/buttons/SelectSpecificN
 import SlideSearchBox from '@pages/bridge/SlideSearchBox'
 import { DrawerButton } from '@components/buttons/DrawerButton'
 import { useNetwork } from 'wagmi'
+import { DisplayType } from '@/pages/bridge/BridgeCard'
 
 export const ChainSlideOver = ({
   isOrigin,
@@ -18,7 +19,7 @@ export const ChainSlideOver = ({
   chains: string[]
   chainId: number
   onChangeChain: (chainId: number, flip: boolean, type: 'from' | 'to') => void
-  setDisplayType: (v: string) => void
+  setDisplayType: (v: DisplayType) => void
 }) => {
   const { chain } = useNetwork()
   const [currentIdx, setCurrentIdx] = useState(-1)
@@ -29,7 +30,7 @@ export const ChainSlideOver = ({
     threshold: 0.0,
     keys: [
       {
-        name: 'chainName',
+        name: 'name',
         weight: 2,
       },
       'chainShortName',
@@ -63,7 +64,7 @@ export const ChainSlideOver = ({
 
   const onClose = useCallback(() => {
     setCurrentIdx(-1)
-    setDisplayType('')
+    setDisplayType(DisplayType.DEFAULT)
   }, [setDisplayType])
 
   const escFunc = () => {
@@ -101,7 +102,6 @@ export const ChainSlideOver = ({
   useEffect(escFunc, [escPressed])
   useEffect(arrowUpFunc, [arrowUp])
   useEffect(enterPressedFunc, [enterPressed])
-  useEffect(() => window.scrollTo(0, 0), [])
 
   return (
     <div className="max-h-full pb-4 -mt-3 overflow-auto scrollbar-hide rounded-3xl">

@@ -1,6 +1,8 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.17;
 
+import {IndexedTooMuch, OccupiedMemory, PrecompileOutOfGas, UnallocatedMemory, ViewOverrun} from "../libs/Errors.sol";
+
 /// @dev MemView is an untyped view over a portion of memory to be used instead of `bytes memory`
 type MemView is uint256;
 
@@ -20,12 +22,6 @@ using MemViewLib for MemView global;
 /// - Library functions unused by the rest of the codebase are removed
 //  - Very pretty code separators are added :)
 library MemViewLib {
-    error IndexedTooMuch();
-    error ViewOverrun();
-    error OccupiedMemory();
-    error UnallocatedMemory();
-    error PrecompileOutOfGas();
-
     /// @notice Stack layout for uint256 (from highest bits to lowest)
     /// (32 .. 16]      loc     16 bytes    Memory address of underlying bytes
     /// (16 .. 00]      len     16 bytes    Length of underlying bytes

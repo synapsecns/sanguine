@@ -12,7 +12,7 @@ on:
 jobs:
   check:
     name: Foundry Coverage
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-latest-16-cores
     steps:
       - uses: actions/checkout@v3
         with:
@@ -34,14 +34,18 @@ jobs:
         working-directory: ./packages/contracts-core
         run: forge coverage -vvv --report=lcov
 
-      - uses: codecov/codecov-action@v3
-        name: Send Coverage (Codecov)
+      - name: Send Coverage (Codecov)
+        uses: Wandalen/wretry.action@v1.0.36
         with:
-          token: ${{ secrets.CODECOV }}
-          fail_ci_if_error: true # optional (default = false)
-          verbose: true # optional (default = false)
-          working-directory: ./packages/contracts-core/
-          flags: solidity
+          action: codecov/codecov-action@v3
+          current_path: ./packages/contracts-core/
+          with: |
+            token: ${{ secrets.CODECOV }}
+            fail_ci_if_error: true # optional (default = false)
+            verbose: true # optional (default = false)
+            flags: solidity
+          attempt_limit: 5
+          attempt_delay: 30000
 
       - name: Run snapshot
         working-directory: ./packages/contracts-core

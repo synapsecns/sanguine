@@ -3,8 +3,9 @@ pragma solidity 0.8.17;
 
 import {AgentFlag, BondingManager} from "../../contracts/manager/BondingManager.sol";
 import {AgentStatus, LightManager} from "../../contracts/manager/LightManager.sol";
-import {ISystemRegistry} from "../../contracts/interfaces/ISystemRegistry.sol";
+import {IAgentSecured} from "../../contracts/interfaces/IAgentSecured.sol";
 import {Destination} from "../../contracts/Destination.sol";
+import {GasOracle} from "../../contracts/GasOracle.sol";
 import {Origin} from "../../contracts/Origin.sol";
 import {Summit} from "../../contracts/Summit.sol";
 
@@ -12,6 +13,7 @@ import {BondingManagerHarness} from "../harnesses/manager/BondingManagerHarness.
 import {LightManagerHarness} from "../harnesses/manager/LightManagerHarness.t.sol";
 
 import {DestinationMock} from "../mocks/DestinationMock.t.sol";
+import {GasOracleMock} from "../mocks/GasOracleMock.t.sol";
 import {OriginMock} from "../mocks/OriginMock.t.sol";
 import {SummitMock} from "../mocks/SummitMock.t.sol";
 
@@ -25,10 +27,13 @@ import {SynapseProofs} from "./SynapseProofs.t.sol";
 abstract contract SynapseTest is ProductionEvents, SuiteEvents, SynapseAgents, SynapseProofs {
     uint256 private immutable deployMask;
 
+    address internal gasOracleSynapse;
     address internal originSynapse;
-    address internal summit; // Summit is Synapse Chain's Destination
+    address internal destinationSynapse;
+    address internal summit;
     BondingManagerHarness internal bondingManager;
 
+    address internal gasOracle;
     address internal destination;
     address internal origin;
     LightManagerHarness internal lightManager;
@@ -46,6 +51,8 @@ abstract contract SynapseTest is ProductionEvents, SuiteEvents, SynapseAgents, S
         // Deploy a single set of messaging contracts for synapse chain
         deployBondingManager();
         deploySummit();
+        deployDestinationSynapse();
+        deployGasOracleSynapse();
         deployOriginSynapse();
         // Setup agents in BondingManager
         initBondingManager();
@@ -53,6 +60,7 @@ abstract contract SynapseTest is ProductionEvents, SuiteEvents, SynapseAgents, S
         // Deploy a single set of messaging contracts for local chain
         deployLightManager();
         deployDestination();
+        deployGasOracle();
         deployOrigin();
         // Setup agents in LightManager
         initLightManager();
@@ -107,7 +115,20 @@ abstract contract SynapseTest is ProductionEvents, SuiteEvents, SynapseAgents, S
     }
 
     function initBondingManager() public virtual {
-        bondingManager.initialize(originSynapse, summit);
+        bondingManager.initialize(originSynapse, destinationSynapse, summit);
+    }
+
+    function deployGasOracle() public virtual {
+        uint256 option = deployMask & DEPLOY_MASK_GAS_ORACLE;
+        if (option == DEPLOY_MOCK_GAS_ORACLE) {
+            gasOracle = address(new GasOracleMock());
+        } else if (option == DEPLOY_PROD_GAS_ORACLE) {
+            gasOracle = address(new GasOracle(DOMAIN_LOCAL, destination));
+            GasOracle(gasOracle).initialize();
+        } else {
+            revert("Unknown option: GasOracle");
+        }
+        vm.label(gasOracle, "GasOracle Local");
     }
 
     function deployDestination() public virtual {
@@ -115,7 +136,8 @@ abstract contract SynapseTest is ProductionEvents, SuiteEvents, SynapseAgents, S
         if (option == DEPLOY_MOCK_DESTINATION) {
             destination = address(new DestinationMock());
         } else if (option == DEPLOY_PROD_DESTINATION) {
-            destination = address(new Destination(DOMAIN_LOCAL, lightManager));
+            destination = address(new Destination(DOMAIN_LOCAL, address(lightManager)));
+            // Destination will be initialized once agents are setup
         } else {
             revert("Unknown option: Destination");
         }
@@ -127,7 +149,7 @@ abstract contract SynapseTest is ProductionEvents, SuiteEvents, SynapseAgents, S
         if (option == DEPLOY_MOCK_ORIGIN) {
             origin = address(new OriginMock());
         } else if (option == DEPLOY_PROD_ORIGIN) {
-            origin = address(new Origin(DOMAIN_LOCAL, lightManager));
+            origin = address(new Origin(DOMAIN_LOCAL, address(lightManager), gasOracle));
             Origin(origin).initialize();
         } else {
             revert("Unknown option: Origin");
@@ -135,12 +157,38 @@ abstract contract SynapseTest is ProductionEvents, SuiteEvents, SynapseAgents, S
         vm.label(origin, "Origin Local");
     }
 
+    function deployGasOracleSynapse() public virtual {
+        uint256 option = deployMask & DEPLOY_MASK_GAS_ORACLE_SYNAPSE;
+        if (option == DEPLOY_MOCK_GAS_ORACLE_SYNAPSE) {
+            gasOracleSynapse = address(new GasOracleMock());
+        } else if (option == DEPLOY_PROD_GAS_ORACLE_SYNAPSE) {
+            gasOracleSynapse = address(new GasOracle(DOMAIN_SYNAPSE, destinationSynapse));
+            GasOracle(gasOracleSynapse).initialize();
+        } else {
+            revert("Unknown option: GasOracle");
+        }
+        vm.label(gasOracleSynapse, "GasOracle Synapse");
+    }
+
+    function deployDestinationSynapse() public virtual {
+        uint256 option = deployMask & DEPLOY_MASK_DESTINATION_SYNAPSE;
+        if (option == DEPLOY_MOCK_DESTINATION_SYNAPSE) {
+            destinationSynapse = address(new DestinationMock());
+        } else if (option == DEPLOY_PROD_DESTINATION_SYNAPSE) {
+            destinationSynapse = address(new Destination(DOMAIN_SYNAPSE, address(bondingManager)));
+            Destination(destinationSynapse).initialize(0);
+        } else {
+            revert("Unknown option: Destination");
+        }
+        vm.label(destinationSynapse, "Destination Synapse");
+    }
+
     function deployOriginSynapse() public virtual {
         uint256 option = deployMask & DEPLOY_MASK_ORIGIN_SYNAPSE;
         if (option == DEPLOY_MOCK_ORIGIN_SYNAPSE) {
             originSynapse = address(new OriginMock());
         } else if (option == DEPLOY_PROD_ORIGIN_SYNAPSE) {
-            originSynapse = address(new Origin(DOMAIN_LOCAL, bondingManager));
+            originSynapse = address(new Origin(DOMAIN_SYNAPSE, address(bondingManager), gasOracleSynapse));
             Origin(originSynapse).initialize();
         } else {
             revert("Unknown option: Origin");
@@ -153,7 +201,7 @@ abstract contract SynapseTest is ProductionEvents, SuiteEvents, SynapseAgents, S
         if (option == DEPLOY_MOCK_SUMMIT) {
             summit = address(new SummitMock());
         } else if (option == DEPLOY_PROD_SUMMIT) {
-            summit = address(new Summit(DOMAIN_SYNAPSE, bondingManager));
+            summit = address(new Summit(DOMAIN_SYNAPSE, address(bondingManager)));
             Summit(summit).initialize();
         } else {
             revert("Unknown option: Summit");

@@ -47,7 +47,7 @@ abstract contract SynapseAgents is SynapseUtilities {
         setupDomain(0, "Guards");
         setupDomain(DOMAIN_LOCAL, "Local");
         setupDomain(DOMAIN_REMOTE, "Remote");
-        setupDomain(DOMAIN_SYNAPSE, "Synapse");
+        setupDomain(DOMAIN_OTHER, "Other");
     }
 
     // ═══════════════════════════════════════════════════ SETUP ═══════════════════════════════════════════════════════
@@ -74,6 +74,15 @@ abstract contract SynapseAgents is SynapseUtilities {
     function getAgent(uint256 domainId, uint256 agentId) public view returns (uint32 domain, address agent) {
         domain = allDomains[domainId % allDomains.length];
         agent = domains[domain].agents[agentId % DOMAIN_AGENTS];
+    }
+
+    function getGuard(uint256 agentId) public view returns (address guard) {
+        guard = domains[0].agents[agentId % DOMAIN_AGENTS];
+    }
+
+    function getNotary(uint256 domainId, uint256 agentId) public view returns (address notary) {
+        uint32 domain = allDomains[1 + (domainId % (allDomains.length - 1))];
+        notary = domains[domain].agents[agentId % DOMAIN_AGENTS];
     }
 
     /// @dev Private to enforce using salt-specific signing

@@ -58,6 +58,12 @@ dockers:
       - 'ghcr.io/synapsecns/sanguine/release-copier-action:latest'
       - 'ghcr.io/synapsecns/sanguine/release-copier-action:{{ .FullCommit }}'
       - 'ghcr.io/synapsecns/sanguine/release-copier-action:{{ .Tag }}'
+    build_flag_templates:
+      - '--label=org.opencontainers.image.created={{.Date}}'
+      - '--label=org.opencontainers.image.name={{.ProjectName}}'
+      - '--label=org.opencontainers.image.revision={{.FullCommit}}'
+      - '--label=org.opencontainers.image.version={{.Version}}'
+      - '--label=org.opencontainers.image.source={{.GitURL}}'
     dockerfile: ../../docker/release-copier-action.Dockerfile
     ids:
       - release-copier-action

@@ -4,7 +4,9 @@ pragma solidity 0.8.17;
 import {ByteString, CallData, MemView, MemViewLib} from "../../../contracts/libs/ByteString.sol";
 
 import {BaseMessage, BaseMessageLib, Tips, TipsLib} from "../../../contracts/libs/BaseMessage.sol";
+import {ChainGas, GasData, GasDataLib} from "../../../contracts/libs/GasData.sol";
 import {Header, HeaderLib, Message, MessageFlag, MessageLib} from "../../../contracts/libs/Message.sol";
+import {Number, NumberLib} from "../../../contracts/libs/Number.sol";
 import {Receipt, ReceiptBody, ReceiptLib} from "../../../contracts/libs/Receipt.sol";
 import {ReceiptFlag, ReceiptReport, ReceiptReportLib} from "../../../contracts/libs/ReceiptReport.sol";
 import {Request, RequestLib} from "../../../contracts/libs/Request.sol";
@@ -103,12 +105,48 @@ struct RawMessage {
 
 using CastLib for RawMessage global;
 
+struct RawNumber {
+    uint16 number;
+}
+
+using CastLib for RawNumber global;
+
+struct RawGasData {
+    RawNumber gasPrice;
+    RawNumber dataPrice;
+    RawNumber execBuffer;
+    RawNumber amortAttCost;
+    RawNumber etherPrice;
+    RawNumber markup;
+}
+
+using CastLib for RawGasData global;
+
+struct RawGasData256 {
+    uint256 gasPrice;
+    uint256 dataPrice;
+    uint256 execBuffer;
+    uint256 amortAttCost;
+    uint256 etherPrice;
+    uint256 markup;
+}
+
+using CastLib for RawGasData256 global;
+
+struct RawChainGas {
+    uint32 domain;
+    RawGasData gasData;
+}
+
+using CastLib for RawChainGas global;
+
 struct RawState {
     bytes32 root;
     uint32 origin;
     uint32 nonce;
     uint40 blockNumber;
     uint40 timestamp;
+    RawGasData gasData;
 }
 
 using CastLib for RawState global;
@@ -128,10 +166,13 @@ using CastLib for RawSnapshot global;
 
 struct RawAttestation {
     bytes32 snapRoot;
-    bytes32 agentRoot;
+    bytes32 dataHash;
     uint32 nonce;
     uint40 blockNumber;
     uint40 timestamp;
+    // Merged into dataHash
+    bytes32 _agentRoot;
+    bytes32 _snapGasHash;
 }
 
 using CastLib for RawAttestation global;
@@ -320,6 +361,66 @@ library CastLib {
         return rawRR.formatReceiptReport().castToReceiptReport();
     }
 
+    // ═════════════════════════════════════════════════ GAS DATA ══════════════════════════════════════════════════════
+
+    function encodeNumber(RawNumber memory rn) internal pure returns (Number) {
+        return Number.wrap(rn.number);
+    }
+
+    function round(uint256 num) internal pure returns (uint256) {
+        return NumberLib.decompress(NumberLib.compress(num));
+    }
+
+    function round(RawGasData256 memory rgd256) internal pure {
+        rgd256.gasPrice = round(rgd256.gasPrice);
+        rgd256.dataPrice = round(rgd256.dataPrice);
+        rgd256.execBuffer = round(rgd256.execBuffer);
+        rgd256.amortAttCost = round(rgd256.amortAttCost);
+        rgd256.etherPrice = round(rgd256.etherPrice);
+        rgd256.markup = round(rgd256.markup);
+    }
+
+    function compress(RawGasData256 memory rdg256) internal pure returns (RawGasData memory rgd) {
+        rgd.gasPrice.number = Number.unwrap(NumberLib.compress(rdg256.gasPrice));
+        rgd.dataPrice.number = Number.unwrap(NumberLib.compress(rdg256.dataPrice));
+        rgd.execBuffer.number = Number.unwrap(NumberLib.compress(rdg256.execBuffer));
+        rgd.amortAttCost.number = Number.unwrap(NumberLib.compress(rdg256.amortAttCost));
+        rgd.etherPrice.number = Number.unwrap(NumberLib.compress(rdg256.etherPrice));
+        rgd.markup.number = Number.unwrap(NumberLib.compress(rdg256.markup));
+    }
+
+    function decompress(RawGasData memory rgd) internal pure returns (RawGasData256 memory rdg256) {
+        rdg256.gasPrice = Number.wrap(rgd.gasPrice.number).decompress();
+        rdg256.dataPrice = Number.wrap(rgd.dataPrice.number).decompress();
+        rdg256.execBuffer = Number.wrap(rgd.execBuffer.number).decompress();
+        rdg256.amortAttCost = Number.wrap(rgd.amortAttCost.number).decompress();
+        rdg256.etherPrice = Number.wrap(rgd.etherPrice.number).decompress();
+        rdg256.markup = Number.wrap(rgd.markup.number).decompress();
+    }
+
+    function encodeGasData(RawGasData memory rgd) internal pure returns (uint96 encodedGasData) {
+        return GasData.unwrap(rgd.castToGasData());
+    }
+
+    function castToGasData(RawGasData memory rgd) internal pure returns (GasData) {
+        return GasDataLib.encodeGasData({
+            gasPrice_: rgd.gasPrice.encodeNumber(),
+            dataPrice_: rgd.dataPrice.encodeNumber(),
+            execBuffer_: rgd.execBuffer.encodeNumber(),
+            amortAttCost_: rgd.amortAttCost.encodeNumber(),
+            etherPrice_: rgd.etherPrice.encodeNumber(),
+            markup_: rgd.markup.encodeNumber()
+        });
+    }
+
+    function encodeChainGas(RawChainGas memory rcg) internal pure returns (uint128 encodedChainGas) {
+        return ChainGas.unwrap(rcg.castToChainGas());
+    }
+
+    function castToChainGas(RawChainGas memory rcg) internal pure returns (ChainGas) {
+        return GasDataLib.encodeChainGas({domain_: rcg.domain, gasData_: rcg.gasData.castToGasData()});
+    }
+
     // ═══════════════════════════════════════════════════ STATE ═══════════════════════════════════════════════════════
 
     function formatState(RawState memory rs) internal pure returns (bytes memory state) {
@@ -328,12 +429,29 @@ library CastLib {
             origin_: rs.origin,
             nonce_: rs.nonce,
             blockNumber_: rs.blockNumber,
-            timestamp_: rs.timestamp
+            timestamp_: rs.timestamp,
+            gasData_: rs.gasData.castToGasData()
         });
     }
 
     function castToState(RawState memory rs) internal pure returns (State ptr) {
         ptr = rs.formatState().castToState();
+    }
+
+    function modifyState(RawState memory rs, uint256 mask) internal pure returns (RawState memory mrs) {
+        // Make sure at least one value is modified, valid mask values are [1 .. 2047]
+        mask = 1 + (mask % 2047);
+        mrs.root = rs.root ^ bytes32(mask & 1);
+        mrs.origin = rs.origin ^ uint32(mask & 2);
+        mrs.nonce = rs.nonce ^ uint32(mask & 4);
+        mrs.blockNumber = rs.blockNumber ^ uint32(mask & 8);
+        mrs.timestamp = rs.timestamp ^ uint32(mask & 16);
+        mrs.gasData.gasPrice.number = rs.gasData.gasPrice.number ^ uint16(mask & 32);
+        mrs.gasData.dataPrice.number = rs.gasData.dataPrice.number ^ uint16(mask & 64);
+        mrs.gasData.execBuffer.number = rs.gasData.execBuffer.number ^ uint16(mask & 128);
+        mrs.gasData.amortAttCost.number = rs.gasData.amortAttCost.number ^ uint16(mask & 256);
+        mrs.gasData.etherPrice.number = rs.gasData.etherPrice.number ^ uint16(mask & 512);
+        mrs.gasData.markup.number = rs.gasData.markup.number ^ uint16(mask & 1024);
     }
 
     function formatStateReport(RawStateReport memory rawSR) internal pure returns (bytes memory stateReport) {
@@ -372,7 +490,9 @@ library CastLib {
     ) internal view returns (RawAttestation memory ra) {
         Snapshot snapshot = rawSnap.castToSnapshot();
         ra.snapRoot = snapshot.calculateRoot();
-        ra.agentRoot = agentRoot;
+        ra._agentRoot = agentRoot;
+        ra._snapGasHash = rawSnap.snapGasHash();
+        ra.setDataHash();
         ra.nonce = nonce;
         ra.blockNumber = blockNumber;
         ra.timestamp = timestamp;
@@ -390,12 +510,24 @@ library CastLib {
         ptr = rawSnap.formatSnapshot().castToSnapshot();
     }
 
+    function snapGas(RawSnapshot memory rawSnap) internal view returns (uint256[] memory snapGas_) {
+        ChainGas[] memory chainData = rawSnap.castToSnapshot().snapGas();
+        snapGas_ = new uint256[](chainData.length);
+        for (uint256 i = 0; i < snapGas_.length; ++i) {
+            snapGas_[i] = ChainGas.unwrap(chainData[i]);
+        }
+    }
+
+    function snapGasHash(RawSnapshot memory rawSnap) internal view returns (bytes32) {
+        return GasDataLib.snapGasHash(rawSnap.castToSnapshot().snapGas());
+    }
+
     // ════════════════════════════════════════════════ ATTESTATION ════════════════════════════════════════════════════
 
     function formatAttestation(RawAttestation memory ra) internal pure returns (bytes memory attestation) {
         attestation = AttestationLib.formatAttestation({
             snapRoot_: ra.snapRoot,
-            agentRoot_: ra.agentRoot,
+            dataHash_: ra.dataHash,
             nonce_: ra.nonce,
             blockNumber_: ra.blockNumber,
             timestamp_: ra.timestamp
@@ -406,6 +538,10 @@ library CastLib {
         ptr = ra.formatAttestation().castToAttestation();
     }
 
+    function setDataHash(RawAttestation memory ra) internal pure {
+        ra.dataHash = keccak256(bytes.concat(ra._agentRoot, ra._snapGasHash));
+    }
+
     function modifyAttestation(RawAttestation memory ra, uint256 mask)
         internal
         pure
@@ -413,12 +549,14 @@ library CastLib {
     {
         // Don't modify the nonce
         mra.nonce = ra.nonce;
-        // Check if at least one value was modified by checking last 4 bits
-        isEqual = mask & 15 == 0;
+        // Check if at least one value was modified by checking last 5 bits
+        isEqual = mask & 31 == 0;
         mra.snapRoot = ra.snapRoot ^ bytes32(mask & 1);
-        mra.agentRoot = ra.agentRoot ^ bytes32(mask & 2);
-        mra.blockNumber = ra.blockNumber ^ uint40(mask & 4);
-        mra.timestamp = ra.timestamp ^ uint40(mask & 8);
+        mra._agentRoot = ra._agentRoot ^ bytes32(mask & 2);
+        mra._snapGasHash = ra._snapGasHash ^ bytes32(mask & 4);
+        mra.blockNumber = ra.blockNumber ^ uint40(mask & 8);
+        mra.timestamp = ra.timestamp ^ uint40(mask & 16);
+        mra.setDataHash();
     }
 
     function formatAttestationReport(RawAttestationReport memory rawAR)

@@ -2,6 +2,7 @@
 pragma solidity 0.8.17;
 
 import {REQUEST_LENGTH, TIPS_LENGTH} from "./Constants.sol";
+import {UnformattedBaseMessage} from "./Errors.sol";
 import {Request, RequestLib} from "./Request.sol";
 import {Tips, TipsLib} from "./Tips.sol";
 import {MemView, MemViewLib} from "./MemView.sol";
@@ -69,7 +70,7 @@ library BaseMessageLib {
      * @dev Will revert if the memory view is not over a base message payload.
      */
     function castToBaseMessage(MemView memView) internal pure returns (BaseMessage) {
-        require(isBaseMessage(memView), "Not a base message");
+        if (!isBaseMessage(memView)) revert UnformattedBaseMessage();
         return BaseMessage.wrap(MemView.unwrap(memView));
     }
 

@@ -4,6 +4,7 @@ import (
 	"context"
 	"crypto/ecdsa"
 	"fmt"
+	"github.com/synapsecns/sanguine/ethergo/util"
 	"math/big"
 	"sync"
 
@@ -11,7 +12,6 @@ import (
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/core/types"
 	"github.com/ethereum/go-ethereum/crypto"
-	"github.com/pkg/errors"
 	"github.com/synapsecns/sanguine/core"
 	"github.com/synapsecns/sanguine/core/mapmutex"
 )
@@ -22,7 +22,7 @@ import (
 // transactor. This solves that by wrapping the transactor in a nonce manager.
 type Manager interface {
 	// SignTx signs a legacy tx
-	SignTx(ogTx *types.Transaction, signer types.Signer, prv *ecdsa.PrivateKey) (*types.Transaction, error)
+	SignTx(ogTx *types.Transaction, signer types.Signer, prv *ecdsa.PrivateKey, options ...Option) (*types.Transaction, error)
 	// NewKeyedTransactor wraps keyed transactor in a nonce manager.
 	// right now, this only works if all txes are sent out (a safe assumption in test mode)
 	// this can be obviated by signing at send time or loop + retrying on failure
@@ -148,7 +148,7 @@ func (n *nonceManagerImp) NewKeyedTransactor(realSigner *bind.TransactOpts) (*bi
 				return nil, fmt.Errorf("could not get next nonce: %w", err)
 			}
 
-			copiedTx, err := n.copyTxWithNonce(transaction, nonce.Uint64())
+			copiedTx, err := util.CopyTX(transaction, util.WithNonce(nonce.Uint64()))
 			if err != nil {
 				return nil, fmt.Errorf("could not copy tx: %w", err)
 			}
@@ -167,60 +167,30 @@ func (n *nonceManagerImp) NewKeyedTransactor(realSigner *bind.TransactOpts) (*bi
 	}, nil
 }
 
-// copyTxWithNonce copies a transaction but changes the nonce.
-func (n *nonceManagerImp) copyTxWithNonce(unsignedTx *types.Transaction, nonce uint64) (*types.Transaction, error) {
-	// tx is immutable except within the confines of type. Here we manually copy over the inner values
-
-	// these are overwritten, but copied over anyway for parity
-	v, r, s := unsignedTx.RawSignatureValues()
-
-	switch unsignedTx.Type() {
-	case types.LegacyTxType:
-		return types.NewTx(&types.LegacyTx{
-			Nonce:    nonce,
-			GasPrice: unsignedTx.GasPrice(),
-			Gas:      unsignedTx.Gas(),
-			To:       unsignedTx.To(),
-			Value:    unsignedTx.Value(),
-			Data:     unsignedTx.Data(),
-			V:        v,
-			R:        r,
-			S:        s,
-		}), nil
-	case types.AccessListTxType:
-		return nil, fmt.Errorf("unsupported tx type %d", types.AccessListTxType)
-	case types.DynamicFeeTxType:
-		return types.NewTx(&types.DynamicFeeTx{
-			ChainID:    unsignedTx.ChainId(),
-			Nonce:      nonce,
-			GasTipCap:  unsignedTx.GasTipCap(),
-			GasFeeCap:  unsignedTx.GasFeeCap(),
-			Gas:        unsignedTx.Gas(),
-			To:         unsignedTx.To(),
-			Value:      unsignedTx.Value(),
-			Data:       unsignedTx.Data(),
-			AccessList: unsignedTx.AccessList(),
-			V:          v,
-			R:          r,
-			S:          s,
-		}), nil
-	}
-	return nil, errors.New("an unexpected error occurred")
-}
-
 // SignTx signs a legacy tx.
-func (n *nonceManagerImp) SignTx(ogTx *types.Transaction, signer types.Signer, prv *ecdsa.PrivateKey) (*types.Transaction, error) {
+func (n *nonceManagerImp) SignTx(ogTx *types.Transaction, signer types.Signer, prv *ecdsa.PrivateKey, options ...Option) (*types.Transaction, error) {
+	cfg := &signTXConfig{}
+
+	for _, opt := range options {
+		opt(cfg)
+	}
+
 	address := crypto.PubkeyToAddress(prv.PublicKey)
 
 	addressLock := n.accountMutex.Lock(address)
 	defer addressLock.Unlock()
 
-	nonce, err := n.GetNextNonce(address)
-	if err != nil {
-		return nil, fmt.Errorf("could not get nonce: %w", err)
+	var copyOpts []util.CopyOption
+	if !cfg.skipNonceBump {
+		nonce, err := n.GetNextNonce(address)
+		if err != nil {
+			return nil, fmt.Errorf("could not get nonce: %w", err)
+		}
+
+		copyOpts = append(copyOpts, util.WithNonce(nonce.Uint64()))
 	}
 
-	tx, err := n.copyTxWithNonce(ogTx, nonce.Uint64())
+	tx, err := util.CopyTX(ogTx, copyOpts...)
 	if err != nil {
 		return nil, fmt.Errorf("could not copy tx: %w", err)
 	}
@@ -230,10 +200,27 @@ func (n *nonceManagerImp) SignTx(ogTx *types.Transaction, signer types.Signer, p
 		return nil, fmt.Errorf("could not sign tx: %w", err)
 	}
 
-	err = n.incrementNonce(address)
-	if err != nil {
-		return nil, fmt.Errorf("could not increment nonce: %w", err)
+	if !cfg.skipNonceBump {
+		err = n.incrementNonce(address)
+		if err != nil {
+			return nil, fmt.Errorf("could not increment nonce: %w", err)
+		}
 	}
 
 	return tx, nil
+}
+
+// Option is a functional option for SignTX method.
+type Option func(*signTXConfig)
+
+// signTXConfig is the config for SignTX.
+type signTXConfig struct {
+	skipNonceBump bool
+}
+
+// WithNoBump sets the skipNonceBump flag.
+func WithNoBump(noBump bool) Option {
+	return func(config *signTXConfig) {
+		config.skipNonceBump = noBump
+	}
 }

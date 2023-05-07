@@ -1,16 +1,19 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.17;
 
-import {ISystemRegistry} from "../../contracts/interfaces/ISystemRegistry.sol";
+import {IAgentSecured} from "../../contracts/interfaces/IAgentSecured.sol";
+import {InterfaceGasOracle} from "../../contracts/interfaces/InterfaceGasOracle.sol";
 import {IStateHub} from "../../contracts/interfaces/IStateHub.sol";
+import {EthTransferFailed, InsufficientEthBalance, TipsValueTooLow} from "../../contracts/libs/Errors.sol";
 import {SNAPSHOT_MAX_STATES} from "../../contracts/libs/Constants.sol";
 import {SystemEntity} from "../../contracts/libs/Structures.sol";
 import {TipsLib} from "../../contracts/libs/Tips.sol";
 
 import {InterfaceOrigin} from "../../contracts/Origin.sol";
-import {Versioned} from "../../contracts/Version.sol";
+import {Versioned} from "../../contracts/base/Version.sol";
 
 import {RevertingApp} from "../harnesses/client/RevertingApp.t.sol";
+import {GasOracleMock} from "../mocks/GasOracleMock.t.sol";
 
 import {fakeState, fakeSnapshot} from "../utils/libs/FakeIt.t.sol";
 import {Random} from "../utils/libs/Random.t.sol";
@@ -19,6 +22,7 @@ import {
     StateFlag,
     RawAttestation,
     RawBaseMessage,
+    RawGasData,
     RawHeader,
     RawMessage,
     RawRequest,
@@ -28,13 +32,13 @@ import {
     RawStateReport,
     RawTips
 } from "../utils/libs/SynapseStructs.t.sol";
-import {AgentFlag, SynapseTest} from "../utils/SynapseTest.t.sol";
-import {SystemRegistryTest} from "./system/SystemRegistry.t.sol";
+import {AgentFlag, Origin, SynapseTest} from "../utils/SynapseTest.t.sol";
+import {AgentSecuredTest} from "./base/AgentSecured.t.sol";
 
 // solhint-disable func-name-mixedcase
 // solhint-disable no-empty-blocks
 // solhint-disable ordering
-contract OriginTest is SystemRegistryTest {
+contract OriginTest is AgentSecuredTest {
     address public sender = makeAddr("Sender");
     address public recipient = makeAddr("Recipient");
     uint32 public period = 1 minutes;
@@ -50,15 +54,68 @@ contract OriginTest is SystemRegistryTest {
             uint32 domain = allDomains[d];
             for (uint256 i = 0; i < domains[domain].agents.length; ++i) {
                 address agent = domains[domain].agents[i];
-                checkAgentStatus(agent, ISystemRegistry(origin).agentStatus(agent), AgentFlag.Active);
+                checkAgentStatus(agent, IAgentSecured(origin).agentStatus(agent), AgentFlag.Active);
             }
         }
         // Check version
         assertEq(Versioned(origin).version(), LATEST_VERSION, "!version");
     }
 
-    function test_sendMessages() public {
-        uint256 encodedTips = tips.encodeTips();
+    function test_cleanSetup(Random memory random) public override {
+        uint32 domain = random.nextUint32();
+        address caller = random.nextAddress();
+        address agentManager = random.nextAddress();
+        address gasOracle_ = address(new GasOracleMock());
+        Origin cleanContract = new Origin(domain, agentManager, gasOracle_);
+        vm.prank(caller);
+        cleanContract.initialize();
+        assertEq(cleanContract.owner(), caller, "!owner");
+        assertEq(cleanContract.localDomain(), domain, "!localDomain");
+        assertEq(cleanContract.agentManager(), agentManager, "!agentManager");
+        assertEq(cleanContract.gasOracle(), gasOracle_, "!gasOracle");
+        assertEq(cleanContract.statesAmount(), 1, "!statesAmount");
+    }
+
+    function initializeLocalContract() public override {
+        Origin(localContract()).initialize();
+    }
+
+    function test_sendBaseMessage_revert_tipsTooLow(RawTips memory minTips, uint256 msgValue) public {
+        minTips.boundTips(1 ** 32);
+        minTips.floorTips(1);
+        msgValue = msgValue % minTips.castToTips().value();
+        GasOracleMock(gasOracle).setMockedMinimumTips(minTips.encodeTips());
+        deal(sender, msgValue);
+        vm.expectRevert(TipsValueTooLow.selector);
+        vm.prank(sender);
+        InterfaceOrigin(origin).sendBaseMessage{value: msgValue}(
+            DOMAIN_REMOTE, addressToBytes32(recipient), period, request.encodeRequest(), "test content"
+        );
+    }
+
+    function test_getMinimumTipsValue(
+        uint32 destination_,
+        uint256 paddedRequest,
+        uint256 contentLength,
+        RawTips memory minTips
+    ) public {
+        minTips.boundTips(1 ** 32);
+        GasOracleMock(gasOracle).setMockedMinimumTips(minTips.encodeTips());
+        vm.expectCall(
+            address(gasOracle),
+            abi.encodeWithSelector(
+                InterfaceGasOracle.getMinimumTips.selector, destination_, paddedRequest, contentLength
+            )
+        );
+        assertEq(
+            InterfaceOrigin(origin).getMinimumTipsValue(destination_, paddedRequest, contentLength),
+            minTips.castToTips().value(),
+            "!getMinimumTipsValue"
+        );
+    }
+
+    function test_sendMessages(RawGasData memory rgd) public {
+        GasOracleMock(gasOracle).setMockedGasData(rgd.encodeGasData());
         uint160 encodedRequest = request.encodeRequest();
         bytes memory content = "test content";
         bytes memory body = RawBaseMessage({
@@ -83,13 +140,13 @@ contract OriginTest is SystemRegistryTest {
         // Expect Origin Events
         for (uint32 i = 0; i < MESSAGES; ++i) {
             // 1 block is skipped after each sent message
-            RawState memory rs = RawState({
-                root: roots[i],
-                origin: DOMAIN_LOCAL,
-                nonce: i + 1,
-                blockNumber: uint40(block.number + i),
-                timestamp: uint40(block.timestamp + i * BLOCK_TIME)
-            });
+            RawState memory rs;
+            rs.root = roots[i];
+            rs.origin = DOMAIN_LOCAL;
+            rs.nonce = i + 1;
+            rs.blockNumber = uint40(block.number + i);
+            rs.timestamp = uint40(block.timestamp + i * BLOCK_TIME);
+            rs.gasData = rgd;
             bytes memory state = rs.formatState();
             vm.expectEmit(true, true, true, true);
             emit StateSaved(state);
@@ -100,7 +157,7 @@ contract OriginTest is SystemRegistryTest {
         for (uint32 i = 0; i < MESSAGES; ++i) {
             vm.prank(sender);
             (uint32 messageNonce, bytes32 messageHash) = InterfaceOrigin(origin).sendBaseMessage(
-                DOMAIN_REMOTE, addressToBytes32(recipient), period, encodedTips, encodedRequest, content
+                DOMAIN_REMOTE, addressToBytes32(recipient), period, encodedRequest, content
             );
             // Check return values
             assertEq(messageNonce, i + 1, "!messageNonce");
@@ -109,23 +166,20 @@ contract OriginTest is SystemRegistryTest {
         }
     }
 
-    function test_states() public {
+    function test_states(RawGasData memory rgd) public {
         IStateHub hub = IStateHub(origin);
         // Check initial States
         assertEq(hub.statesAmount(), 1, "!initial statesAmount");
         // Initial state was saved "1 block ago"
-        RawState memory rs = RawState({
-            root: bytes32(0),
-            origin: DOMAIN_LOCAL,
-            nonce: 0,
-            blockNumber: uint40(block.number - 1),
-            timestamp: uint40(block.timestamp - BLOCK_TIME)
-        });
+        RawState memory rs;
+        rs.origin = DOMAIN_LOCAL;
+        rs.blockNumber = uint40(block.number - 1);
+        rs.timestamp = uint40(block.timestamp - BLOCK_TIME);
         bytes memory state = rs.formatState();
         assertEq(hub.suggestState(0), state, "!state: 0");
         assertEq(hub.suggestState(0), hub.suggestLatestState(), "!latest state: 0");
         // Send some messages
-        test_sendMessages();
+        test_sendMessages(rgd);
         // Check saved States
         assertEq(hub.statesAmount(), MESSAGES + 1, "!statesAmount");
         assertEq(hub.suggestState(0), state, "!suggestState: 0");
@@ -134,22 +188,25 @@ contract OriginTest is SystemRegistryTest {
             rs.root = getRoot(rs.nonce);
             rs.blockNumber += 1;
             rs.timestamp += uint40(BLOCK_TIME);
+            rs.gasData = rgd;
             state = rs.formatState();
             assertEq(hub.suggestState(i + 1), state, "!suggestState");
         }
         assertEq(hub.suggestLatestState(), state, "!suggestLatestState");
     }
 
-    function test_verifySnapshot_valid(uint32 nonce, RawStateIndex memory rsi) public {
+    function test_verifySnapshot_valid(uint32 nonce, RawGasData memory rgd, RawStateIndex memory rsi) public {
         // Use empty mutation mask
-        test_verifySnapshot_existingNonce(nonce, 0, rsi);
+        test_verifySnapshot_existingNonce(nonce, 0, rgd, rsi);
     }
 
-    function test_verifySnapshot_existingNonce(uint32 nonce, uint256 mask, RawStateIndex memory rsi)
-        public
-        boundIndex(rsi)
-    {
-        (bool isValid, RawState memory rs) = _prepareExistingState(nonce, mask);
+    function test_verifySnapshot_existingNonce(
+        uint32 nonce,
+        uint256 mask,
+        RawGasData memory rgd,
+        RawStateIndex memory rsi
+    ) public boundIndex(rsi) {
+        (bool isValid, RawState memory rs) = _prepareExistingState(rgd, nonce, mask);
         _verifySnapshot(rs, isValid, rsi);
     }
 
@@ -166,7 +223,7 @@ contract OriginTest is SystemRegistryTest {
     }
 
     function test_verifyAttestation_existingNonce(Random memory random, uint32 nonce, uint256 mask) public {
-        (bool isValid, RawState memory rs) = _prepareExistingState(nonce, mask);
+        (bool isValid, RawState memory rs) = _prepareExistingState(random.nextGasData(), nonce, mask);
         _verifyAttestation(random, rs, isValid);
     }
 
@@ -184,7 +241,7 @@ contract OriginTest is SystemRegistryTest {
     }
 
     function test_verifyAttestationWithProof_existingNonce(Random memory random, uint32 nonce, uint256 mask) public {
-        (bool isValid, RawState memory rs) = _prepareExistingState(nonce, mask);
+        (bool isValid, RawState memory rs) = _prepareExistingState(random.nextGasData(), nonce, mask);
         _verifyAttestationWithProof(random, rs, isValid);
     }
 
@@ -198,24 +255,22 @@ contract OriginTest is SystemRegistryTest {
 
     // ══════════════════════════════════════════════════ HELPERS ══════════════════════════════════════════════════════
 
-    function _prepareExistingState(uint32 nonce, uint256 mask) internal returns (bool isValid, RawState memory rs) {
+    function _prepareExistingState(RawGasData memory rgd, uint32 nonce, uint256 mask)
+        internal
+        returns (bool isValid, RawState memory rs)
+    {
         uint40 initialBN = uint40(block.number - 1);
         uint40 initialTS = uint40(block.timestamp - BLOCK_TIME);
-        test_sendMessages();
+        test_sendMessages(rgd);
         // State is valid if and only if all three fields match
         isValid = mask & 7 == 0;
         // Restrict nonce to existing ones
         nonce = uint32(bound(nonce, 0, MESSAGES));
-        rs = RawState({
-            root: getRoot(nonce),
-            origin: DOMAIN_LOCAL,
-            nonce: nonce,
-            blockNumber: initialBN + nonce,
-            timestamp: uint40(initialTS + nonce * BLOCK_TIME)
-        });
-        rs.root = rs.root ^ bytes32(mask & 1);
-        rs.blockNumber = rs.blockNumber ^ uint40(mask & 2);
-        rs.timestamp = rs.timestamp ^ uint40(mask & 4);
+        rs.origin = DOMAIN_LOCAL;
+        rs.nonce = nonce;
+        rs.root = getRoot(nonce) ^ bytes32(mask & 1);
+        rs.blockNumber = (initialBN + nonce) ^ uint40(mask & 2);
+        rs.timestamp = uint40(initialTS + nonce * BLOCK_TIME) ^ uint40(mask & 4);
     }
 
     function _prepareAttestation(Random memory random, RawState memory rawState)
@@ -241,7 +296,7 @@ contract OriginTest is SystemRegistryTest {
         // Use random metadata
         ra = random.nextAttestation(rawSnap, random.nextUint32());
         // Save snapshot for Snapshot Proof generation
-        acceptSnapshot(rawSnap.formatStates());
+        acceptSnapshot(rawSnap);
     }
 
     function _verifyAttestation(Random memory random, RawState memory rawState, bool isValid) internal {
@@ -254,7 +309,8 @@ contract OriginTest is SystemRegistryTest {
             vm.expectEmit(true, true, true, true);
             emit InvalidStateWithAttestation(rsi.stateIndex, state, attPayload, attSig);
             // TODO: check that anyone could make the call
-            expectAgentSlashed(domain, notary, address(this));
+            expectStatusUpdated(AgentFlag.Fraudulent, domain, notary);
+            expectDisputeResolved(notary, address(0), address(this));
         }
         vm.recordLogs();
         assertEq(
@@ -278,7 +334,8 @@ contract OriginTest is SystemRegistryTest {
             vm.expectEmit(true, true, true, true);
             emit InvalidStateWithAttestation(rsi.stateIndex, state, attPayload, attSig);
             // TODO: check that anyone could make the call
-            expectAgentSlashed(domain, notary, address(this));
+            expectStatusUpdated(AgentFlag.Fraudulent, domain, notary);
+            expectDisputeResolved(notary, address(0), address(this));
         }
         vm.recordLogs();
         assertEq(
@@ -301,7 +358,8 @@ contract OriginTest is SystemRegistryTest {
             vm.expectEmit(true, true, true, true);
             emit InvalidStateWithSnapshot(rsi.stateIndex, snapPayload, snapSig);
             // TODO: check that anyone could make the call
-            expectAgentSlashed(DOMAIN_REMOTE, notary, address(this));
+            expectStatusUpdated(AgentFlag.Fraudulent, DOMAIN_REMOTE, notary);
+            expectDisputeResolved(notary, address(0), address(this));
         }
         assertEq(lightManager.verifyStateWithSnapshot(rsi.stateIndex, snapPayload, snapSig), isValid, "!returnValue");
         if (isValid) {
@@ -321,7 +379,8 @@ contract OriginTest is SystemRegistryTest {
             vm.expectEmit(true, true, true, true);
             emit InvalidStateReport(srPayload, srSig);
             // TODO: check that anyone could make the call
-            expectAgentSlashed(0, guard, address(this));
+            expectStatusUpdated(AgentFlag.Fraudulent, 0, guard);
+            expectDisputeResolved(guard, address(0), address(this));
         }
         vm.recordLogs();
         assertEq(lightManager.verifyStateReport(srPayload, srSig), isValid, "!returnValue");
@@ -343,7 +402,7 @@ contract OriginTest is SystemRegistryTest {
         amount = bound(amount, 1, type(uint256).max);
         balance = balance % amount;
         vm.deal(origin, balance);
-        vm.expectRevert("Insufficient balance");
+        vm.expectRevert(InsufficientEthBalance.selector);
         vm.prank(address(lightManager));
         InterfaceOrigin(origin).withdrawTips(recipient, amount);
     }
@@ -351,20 +410,20 @@ contract OriginTest is SystemRegistryTest {
     function test_withdrawTips_revert_recipientReverted(uint256 amount) public {
         address revertingRecipient = address(new RevertingApp());
         vm.deal(origin, amount);
-        vm.expectRevert("Recipient reverted");
+        vm.expectRevert(EthTransferFailed.selector);
         vm.prank(address(lightManager));
         InterfaceOrigin(origin).withdrawTips(revertingRecipient, amount);
     }
 
     // ═════════════════════════════════════════════════ OVERRIDES ═════════════════════════════════════════════════════
 
-    /// @notice Returns local domain for the tested system contract
+    /// @notice Returns local domain for the tested contract
     function localDomain() public pure override returns (uint32) {
         return DOMAIN_LOCAL;
     }
 
-    /// @notice Returns address of the tested system contract
-    function systemContract() public view override returns (address) {
+    /// @notice Returns address of the tested contract
+    function localContract() public view override returns (address) {
         return localOrigin();
     }
 }

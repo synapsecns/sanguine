@@ -1,12 +1,21 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.17;
 
+import {
+    AgentNotNotary,
+    CallerNotAgentManager,
+    IncorrectSnapshotRoot,
+    NotaryInDispute,
+    TipsClaimMoreThanEarned,
+    TipsClaimZero
+} from "../../contracts/libs/Errors.sol";
 import {IAgentManager, InterfaceSummit} from "../../contracts/Summit.sol";
 
-import {AgentFlag, Summit, SynapseTest} from "../utils/SynapseTest.t.sol";
-import {IDisputeHub, DisputeHubTest} from "./hubs/DisputeHub.t.sol";
+import {AgentFlag, AgentStatus, Summit, SynapseTest} from "../utils/SynapseTest.t.sol";
+import {AgentSecuredTest} from "./hubs/ExecutionHub.t.sol";
 
 import {fakeState} from "../utils/libs/FakeIt.t.sol";
+import {Random} from "../utils/libs/Random.t.sol";
 import {
     RawReceiptBody,
     RawExecReceipt,
@@ -19,7 +28,7 @@ import {
 import {stdStorage, StdStorage} from "forge-std/Test.sol";
 
 contract SummitCheats is Summit {
-    constructor(uint32 domain, IAgentManager agentManager_) Summit(domain, agentManager_) {}
+    constructor(uint32 domain, address agentManager_) Summit(domain, agentManager_) {}
 
     function setActorTips(address actor, uint32 origin, uint128 earned, uint128 claimed) external {
         actorTips[actor][origin].earned = earned;
@@ -31,7 +40,7 @@ contract SummitCheats is Summit {
 // solhint-disable func-name-mixedcase
 // solhint-disable no-empty-blocks
 // solhint-disable ordering
-contract SummitTipsTest is DisputeHubTest {
+contract SummitTipsTest is AgentSecuredTest {
     using stdStorage for StdStorage;
 
     RawState internal state0;
@@ -58,8 +67,8 @@ contract SummitTipsTest is DisputeHubTest {
 
     address internal summitCheats;
 
-    // Deploy Production version of Summit and mocks for everything else
-    constructor() SynapseTest(DEPLOY_PROD_SUMMIT) {}
+    // Deploy Production version of Destination and Summit and mocks for everything else
+    constructor() SynapseTest(DEPLOY_PROD_DESTINATION_SYNAPSE | DEPLOY_PROD_SUMMIT) {}
 
     modifier checkQueueLength(int256 diff) {
         uint256 len = InterfaceSummit(summit).receiptQueueLength();
@@ -87,12 +96,28 @@ contract SummitTipsTest is DisputeHubTest {
         submitSnapshot(snapNotary0, snapshot0);
         submitSnapshot(snapNotary1, snapshot1);
         // Extract snapshot roots
-        acceptSnapshot(snapshot0.formatStates());
+        acceptSnapshot(snapshot0);
         snapRoot0 = getSnapshotRoot();
-        acceptSnapshot(snapshot1.formatStates());
+        acceptSnapshot(snapshot1);
         snapRoot1 = getSnapshotRoot();
         // Deploy Summit implementation with Cheats
-        summitCheats = address(new SummitCheats(DOMAIN_SYNAPSE, bondingManager));
+        summitCheats = address(new SummitCheats(DOMAIN_SYNAPSE, address(bondingManager)));
+    }
+
+    function test_cleanSetup(Random memory random) public override {
+        uint32 domain = DOMAIN_SYNAPSE;
+        address agentManager = random.nextAddress();
+        address caller = random.nextAddress();
+        Summit cleanContract = new Summit(domain, agentManager);
+        vm.prank(caller);
+        cleanContract.initialize();
+        assertEq(cleanContract.owner(), caller, "!owner");
+        assertEq(cleanContract.agentManager(), agentManager, "!agentManager");
+        assertEq(cleanContract.localDomain(), domain, "!localDomain");
+    }
+
+    function initializeLocalContract() public override {
+        Summit(localContract()).initialize();
     }
 
     // ══════════════════════════════════════════ TESTS: SUBMIT RECEIPTS ═══════════════════════════════════════════════
@@ -136,17 +161,7 @@ contract SummitTipsTest is DisputeHubTest {
         RawExecReceipt memory re = mockReceipt("First");
         prepareReceipt(re, false, 0, false);
         (bytes memory rcptPayload, bytes memory rcptSignature) = signReceipt(guard0, re);
-        vm.expectRevert("Signer is not a Notary");
-        bondingManager.submitReceipt(rcptPayload, rcptSignature);
-    }
-
-    function test_submitReceipt_revert_wrongNotaryDomain() public {
-        // TODO: remove when Notary restrictions are revisited
-        RawExecReceipt memory re = mockReceipt("First");
-        prepareReceipt(re, false, 0, false);
-        address notary = domains[DOMAIN_LOCAL].agent;
-        (bytes memory rcptPayload, bytes memory rcptSignature) = signReceipt(notary, re);
-        vm.expectRevert("Wrong Notary domain");
+        vm.expectRevert(AgentNotNotary.selector);
         bondingManager.submitReceipt(rcptPayload, rcptSignature);
     }
 
@@ -154,10 +169,10 @@ contract SummitTipsTest is DisputeHubTest {
         RawExecReceipt memory re = mockReceipt("First");
         prepareReceipt(re, false, 0, false);
         // Put DOMAIN_REMOTE notary in Dispute
-        check_submitStateReportWithSnapshot(summit, DOMAIN_REMOTE, state0, RawStateIndex(0, 1));
         address notary = domains[DOMAIN_REMOTE].agent;
+        openDispute({guard: domains[0].agent, notary: notary});
         (bytes memory rcptPayload, bytes memory rcptSignature) = signReceipt(notary, re);
-        vm.expectRevert("Notary is in dispute");
+        vm.expectRevert(NotaryInDispute.selector);
         bondingManager.submitReceipt(rcptPayload, rcptSignature);
     }
 
@@ -167,8 +182,15 @@ contract SummitTipsTest is DisputeHubTest {
         re.body.snapshotRoot = "Some fake snapshot root";
         address notary = domains[DOMAIN_REMOTE].agent;
         (bytes memory rcptPayload, bytes memory rcptSignature) = signReceipt(notary, re);
-        vm.expectRevert("Unknown snapshot root");
+        vm.expectRevert(IncorrectSnapshotRoot.selector);
         bondingManager.submitReceipt(rcptPayload, rcptSignature);
+    }
+
+    function test_acceptReceipt_revert_notAgentManager(address caller) public {
+        vm.assume(caller != localAgentManager());
+        vm.expectRevert(CallerNotAgentManager.selector);
+        vm.prank(caller);
+        InterfaceSummit(summit).acceptReceipt(0, 0, 0, 0, 0, "");
     }
 
     // ═══════════════════════════════════════════ TESTS: TIPS AWARDING ════════════════════════════════════════════════
@@ -238,7 +260,7 @@ contract SummitTipsTest is DisputeHubTest {
         prepareTwoReceiptTest(1, 0);
         skip(BONDING_OPTIMISTIC_PERIOD);
         // Put DOMAIN_REMOTE agents[0] in Dispute
-        check_submitStateReportWithSnapshot(summit, DOMAIN_REMOTE, state0, RawStateIndex(0, 1));
+        openDispute({guard: domains[0].agent, notary: domains[DOMAIN_REMOTE].agents[0]});
         assertTrue(InterfaceSummit(summit).distributeTips());
     }
 
@@ -268,7 +290,7 @@ contract SummitTipsTest is DisputeHubTest {
         prepareTwoReceiptTest(0, 1);
         skip(BONDING_OPTIMISTIC_PERIOD);
         // Put DOMAIN_REMOTE agents[0] in Dispute
-        check_submitStateReportWithSnapshot(summit, DOMAIN_REMOTE, state0, RawStateIndex(0, 1));
+        openDispute({guard: domains[0].agent, notary: domains[DOMAIN_REMOTE].agents[0]});
         assertTrue(InterfaceSummit(summit).distributeTips());
     }
 
@@ -396,7 +418,7 @@ contract SummitTipsTest is DisputeHubTest {
     }
 
     function test_withdrawTips_revert_zeroAmount(address actor, uint32 domain) public {
-        vm.expectRevert("Amount is zero");
+        vm.expectRevert(TipsClaimZero.selector);
         vm.prank(actor);
         InterfaceSummit(summit).withdrawTips(domain, 0);
     }
@@ -412,7 +434,7 @@ contract SummitTipsTest is DisputeHubTest {
         claimed = claimed % earned;
         amount = uint128(bound(amount, 1, earned - claimed));
         amount = uint128(bound(amount, earned - claimed + 1, type(uint128).max));
-        vm.expectRevert("Tips balance too low");
+        vm.expectRevert(TipsClaimMoreThanEarned.selector);
         vm.prank(actor);
         InterfaceSummit(summit).withdrawTips(domain, amount);
     }
@@ -470,7 +492,11 @@ contract SummitTipsTest is DisputeHubTest {
 
     // ═════════════════════════════════════════════════ OVERRIDES ═════════════════════════════════════════════════════
 
-    /// @notice Returns local domain for the tested system contract
+    function localContract() public view override returns (address) {
+        return summit;
+    }
+
+    /// @notice Returns local domain for the tested contract
     function localDomain() public pure override returns (uint32) {
         return DOMAIN_SYNAPSE;
     }

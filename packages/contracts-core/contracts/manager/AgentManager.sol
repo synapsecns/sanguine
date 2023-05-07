@@ -3,24 +3,31 @@ pragma solidity 0.8.17;
 
 // ══════════════════════════════ LIBRARY IMPORTS ══════════════════════════════
 import {Attestation, AttestationLib} from "../libs/Attestation.sol";
+import {
+    IncorrectAgentDomain,
+    DisputeAlreadyResolved,
+    GuardInDispute,
+    NotaryInDispute,
+    IncorrectSnapshotRoot,
+    IncorrectState
+} from "../libs/Errors.sol";
 import {Receipt, ReceiptLib} from "../libs/Receipt.sol";
 import {Snapshot, SnapshotLib} from "../libs/Snapshot.sol";
 import {State, StateLib} from "../libs/State.sol";
 import {StateReport, StateReportLib} from "../libs/StateReport.sol";
-import {AgentFlag, AgentStatus, SlashStatus} from "../libs/Structures.sol";
+import {AgentFlag, AgentStatus, Dispute, DisputeFlag} from "../libs/Structures.sol";
 // ═════════════════════════════ INTERNAL IMPORTS ══════════════════════════════
+import {MessagingBase} from "../base/MessagingBase.sol";
 import {AgentManagerEvents} from "../events/AgentManagerEvents.sol";
 import {IAgentManager} from "../interfaces/IAgentManager.sol";
-import {IDisputeHub} from "../interfaces/IDisputeHub.sol";
 import {IExecutionHub} from "../interfaces/IExecutionHub.sol";
 import {IStateHub} from "../interfaces/IStateHub.sol";
-import {ISystemRegistry} from "../interfaces/ISystemRegistry.sol";
-import {SystemBase} from "../system/SystemBase.sol";
+import {IAgentSecured} from "../interfaces/IAgentSecured.sol";
 import {VerificationManager} from "./VerificationManager.sol";
 // ═════════════════════════════ EXTERNAL IMPORTS ══════════════════════════════
 import {ECDSA} from "@openzeppelin/contracts/utils/cryptography/ECDSA.sol";
 
-abstract contract AgentManager is SystemBase, VerificationManager, AgentManagerEvents, IAgentManager {
+abstract contract AgentManager is MessagingBase, VerificationManager, AgentManagerEvents, IAgentManager {
     using AttestationLib for bytes;
     using ReceiptLib for bytes;
     using StateLib for bytes;
@@ -33,11 +40,14 @@ abstract contract AgentManager is SystemBase, VerificationManager, AgentManagerE
 
     address public destination;
 
-    // agent => (bool isSlashed, address prover)
-    mapping(address => SlashStatus) public slashStatus;
+    // (agent => their dispute status)
+    mapping(address => Dispute) internal _disputes;
+
+    // TODO: optimize this
+    bytes[] internal _storedSignatures;
 
     /// @dev gap for upgrade safety
-    uint256[47] private __GAP; // solhint-disable-line var-name-mixedcase
+    uint256[46] private __GAP; // solhint-disable-line var-name-mixedcase
 
     // ════════════════════════════════════════════════ INITIALIZER ════════════════════════════════════════════════════
 
@@ -66,17 +76,18 @@ abstract contract AgentManager is SystemBase, VerificationManager, AgentManagerE
         guardStatus.verifyActive();
         // This will revert if payload is not a snapshot
         Snapshot snapshot = snapPayload.castToSnapshot();
-        // This will revert if the snapshot signer is not a known Agent
-        (AgentStatus memory notaryStatus, address notary) = _verifySnapshot(snapshot, snapSignature);
-        // Snapshot signer needs to be a Notary, not a Guard
-        require(notaryStatus.domain != 0, "Snapshot signer is not a Notary");
+        // This will revert if the snapshot signer is not a known Notary
+        (AgentStatus memory notaryStatus, address notary) =
+            _verifySnapshot({snapshot: snapshot, snapSignature: snapSignature, verifyNotary: true});
         // Notary needs to be Active/Unstaking
         notaryStatus.verifyActiveUnstaking();
+        // Check if Notary is active on this chain
+        _verifyNotaryDomain(notaryStatus.domain);
         // Snapshot state and reported state need to be the same
         // This will revert if state index is out of range
-        require(snapshot.state(stateIndex).equals(report.state()), "States don't match");
+        if (!snapshot.state(stateIndex).equals(report.state())) revert IncorrectState();
         // This will revert if either actor is already in dispute
-        IDisputeHub(destination).openDispute(guard, notaryStatus.domain, notary);
+        _openDispute(guard, guardStatus.index, notary, notaryStatus.index);
         return true;
     }
 
@@ -97,7 +108,7 @@ abstract contract AgentManager is SystemBase, VerificationManager, AgentManagerE
         Snapshot snapshot = snapPayload.castToSnapshot();
         // Snapshot state and reported state need to be the same
         // This will revert if state index is out of range
-        require(snapshot.state(stateIndex).equals(report.state()), "States don't match");
+        if (!snapshot.state(stateIndex).equals(report.state())) revert IncorrectState();
         // Check that Guard is active
         guardStatus.verifyActive();
         // This will revert if payload is not an attestation
@@ -106,9 +117,11 @@ abstract contract AgentManager is SystemBase, VerificationManager, AgentManagerE
         (AgentStatus memory notaryStatus, address notary) = _verifyAttestation(att, attSignature);
         // Notary needs to be Active/Unstaking
         notaryStatus.verifyActiveUnstaking();
-        require(snapshot.calculateRoot() == att.snapRoot(), "Attestation not matches snapshot");
+        // Check if Notary is active on this chain
+        _verifyNotaryDomain(notaryStatus.domain);
+        if (snapshot.calculateRoot() != att.snapRoot()) revert IncorrectSnapshotRoot();
         // This will revert if either actor is already in dispute
-        IDisputeHub(destination).openDispute(guard, notaryStatus.domain, notary);
+        _openDispute(guard, guardStatus.index, notary, notaryStatus.index);
         return true;
     }
 
@@ -133,6 +146,8 @@ abstract contract AgentManager is SystemBase, VerificationManager, AgentManagerE
         (AgentStatus memory notaryStatus, address notary) = _verifyAttestation(att, attSignature);
         // Notary needs to be Active/Unstaking
         notaryStatus.verifyActiveUnstaking();
+        // Check if Notary is active on this chain
+        _verifyNotaryDomain(notaryStatus.domain);
         // This will revert if any of these is true:
         //  - Attestation root is not equal to Merkle Root derived from State and Snapshot Proof.
         //  - Snapshot Proof's first element does not match the State metadata.
@@ -140,7 +155,7 @@ abstract contract AgentManager is SystemBase, VerificationManager, AgentManagerE
         //  - State index is out of range.
         _verifySnapshotMerkle(att, stateIndex, report.state(), snapProof);
         // This will revert if either actor is already in dispute
-        IDisputeHub(destination).openDispute(guard, notaryStatus.domain, notary);
+        _openDispute(guard, guardStatus.index, notary, notaryStatus.index);
         return true;
     }
 
@@ -151,7 +166,7 @@ abstract contract AgentManager is SystemBase, VerificationManager, AgentManagerE
         external
         returns (bool isValidReceipt)
     {
-        // This will revert if payload is not an receipt
+        // This will revert if payload is not a receipt
         Receipt rcpt = rcptPayload.castToReceipt();
         // This will revert if the attestation signer is not a known Notary
         (AgentStatus memory status, address notary) = _verifyReceipt(rcpt, rcptSignature);
@@ -179,7 +194,7 @@ abstract contract AgentManager is SystemBase, VerificationManager, AgentManagerE
         status.verifyActiveUnstaking();
         // This will revert if payload is not a snapshot
         Snapshot snapshot = snapPayload.castToSnapshot();
-        require(snapshot.calculateRoot() == att.snapRoot(), "Attestation not matches snapshot");
+        if (snapshot.calculateRoot() != att.snapRoot()) revert IncorrectSnapshotRoot();
         // This will revert if state does not refer to this chain
         bytes memory statePayload = snapshot.state(stateIndex).unwrap().clone();
         isValidState = IStateHub(origin).isValidState(statePayload);
@@ -226,8 +241,9 @@ abstract contract AgentManager is SystemBase, VerificationManager, AgentManagerE
     {
         // This will revert if payload is not a snapshot
         Snapshot snapshot = snapPayload.castToSnapshot();
-        // This will revert if the snapshot signer is not a known Agent
-        (AgentStatus memory status, address agent) = _verifySnapshot(snapshot, snapSignature);
+        // This will revert if the snapshot signer is not a known Guard/Notary
+        (AgentStatus memory status, address agent) =
+            _verifySnapshot({snapshot: snapshot, snapSignature: snapSignature, verifyNotary: false});
         // Agent needs to be Active/Unstaking
         status.verifyActiveUnstaking();
         // This will revert if state does not refer to this chain
@@ -271,39 +287,81 @@ abstract contract AgentManager is SystemBase, VerificationManager, AgentManagerE
         status = _storedAgentStatus(agent);
         // If agent was proven to commit fraud, but their slashing wasn't completed,
         // return the Fraudulent flag instead
-        if (slashStatus[agent].isSlashed && status.flag != AgentFlag.Slashed) {
+        if (_disputes[agent].flag == DisputeFlag.Slashed && status.flag != AgentFlag.Slashed) {
             status.flag = AgentFlag.Fraudulent;
         }
     }
 
+    /// @inheritdoc IAgentManager
+    function disputeStatus(address agent) external view returns (Dispute memory) {
+        return _disputes[agent];
+    }
+
+    /// @inheritdoc IAgentManager
+    function getStoredSignature(uint256 index) external view returns (bytes memory) {
+        return _storedSignatures[index];
+    }
+
     // ══════════════════════════════════════════════ INTERNAL LOGIC ═══════════════════════════════════════════════════
 
-    /// @dev Hook that is called after agent was slashed on one of the Registries,
-    /// and the remaining Registries were notified.
+    /// @dev Hook that is called after agent was slashed in AgentManager and AgentSecured contracts were notified.
     // solhint-disable-next-line no-empty-blocks
     function _afterAgentSlashed(uint32 domain, address agent, address prover) internal virtual {}
 
-    /// @dev Notifies the local registries about the slashed agent.
-    function _notifyRegistriesAgentSlashed(uint32 domain, address agent, address prover) internal {
-        ISystemRegistry(destination).managerSlash(domain, agent, prover);
-        ISystemRegistry(origin).managerSlash(domain, agent, prover);
+    /// @dev Child contract should implement the logic for notifying AgentSecured contracts about the opened dispute.
+    function _notifyDisputeOpened(uint32 guardIndex, uint32 notaryIndex) internal virtual;
+
+    /// @dev Child contract should implement the logic for notifying AgentSecured contracts about the resolved dispute.
+    function _notifyDisputeResolved(uint32 slashedIndex, uint32 rivalIndex) internal virtual;
+
+    /// @dev Opens a Dispute between a Guard and a Notary, if they are both not in Dispute already.
+    function _openDispute(address guard, uint32 guardIndex, address notary, uint32 notaryIndex) internal {
+        // Check that both agents are not in Dispute yet
+        if (_disputes[guard].flag != DisputeFlag.None) revert GuardInDispute();
+        if (_disputes[notary].flag != DisputeFlag.None) revert NotaryInDispute();
+        _updateDispute(guard, Dispute(DisputeFlag.Pending, notaryIndex, address(0)));
+        _updateDispute(notary, Dispute(DisputeFlag.Pending, guardIndex, address(0)));
+        _notifyDisputeOpened(guardIndex, notaryIndex);
     }
 
     /// @dev Slashes the Agent and notifies the local Destination and Origin contracts about the slashed agent.
     /// Should be called when the agent fraud was confirmed.
     function _slashAgent(uint32 domain, address agent, address prover) internal {
         // Check that agent is Active/Unstaking and that the domains match
-        AgentStatus memory status = agentStatus(agent);
-        // Note: status would be Fraudulent/Slashed if slashing has been initiated before
-        require(
-            (status.flag == AgentFlag.Active || status.flag == AgentFlag.Unstaking) && status.domain == domain,
-            "Slashing could not be initiated"
-        );
-        slashStatus[agent] = SlashStatus({isSlashed: true, prover: prover});
+        AgentStatus memory status = _storedAgentStatus(agent);
+        status.verifyActiveUnstaking();
+        if (status.domain != domain) revert IncorrectAgentDomain();
+        // The "stored" agent status is not updated yet, however agentStatus() will return AgentFlag.Fraudulent
         emit StatusUpdated(AgentFlag.Fraudulent, domain, agent);
-        _notifyRegistriesAgentSlashed(domain, agent, prover);
+        // This will revert if the agent has been slashed earlier
+        _resolveDispute(agent, status.index, prover);
         // Call "after slash" hook - this allows Bonding/Light Manager to add custom "after slash" logic
         _afterAgentSlashed(domain, agent, prover);
+    }
+
+    /// @dev Resolves a Dispute between a slashed Agent and their Rival (if there was one).
+    function _resolveDispute(address slashedAgent, uint32 slashedIndex, address prover) internal {
+        Dispute memory dispute = _disputes[slashedAgent];
+        if (dispute.flag == DisputeFlag.Slashed) revert DisputeAlreadyResolved();
+        (dispute.flag, dispute.fraudProver) = (DisputeFlag.Slashed, prover);
+        _updateDispute(slashedAgent, dispute);
+        // Clear Dispute status for the Rival
+        if (dispute.rivalIndex != 0) {
+            _updateDispute(_getAgent(dispute.rivalIndex), Dispute(DisputeFlag.None, 0, address(0)));
+        }
+        _notifyDisputeResolved(slashedIndex, dispute.rivalIndex);
+    }
+
+    /// @dev Updates a dispute status for the agent and emits an event.
+    function _updateDispute(address agent, Dispute memory dispute) internal {
+        _disputes[agent] = dispute;
+        emit DisputeUpdated(agent, dispute);
+    }
+
+    /// @dev Saves the signature and returns its index.
+    function _saveSignature(bytes memory signature) internal returns (uint256 sigIndex) {
+        sigIndex = _storedSignatures.length;
+        _storedSignatures.push(signature);
     }
 
     // ══════════════════════════════════════════════ INTERNAL VIEWS ═══════════════════════════════════════════════════
@@ -332,6 +390,9 @@ abstract contract AgentManager is SystemBase, VerificationManager, AgentManagerE
         status = agentStatus(agent);
         // Discard signature of unknown agents.
         // Further flag checks are supposed to be performed in a caller function.
-        require(status.flag != AgentFlag.Unknown, "Unknown agent");
+        status.verifyKnown();
     }
+
+    /// @dev Verifies that Notary signature is active on local domain
+    function _verifyNotaryDomain(uint32 notaryDomain) internal view virtual;
 }

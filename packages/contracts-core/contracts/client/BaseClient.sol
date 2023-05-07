@@ -2,8 +2,10 @@
 pragma solidity 0.8.17;
 
 // ══════════════════════════════ LIBRARY IMPORTS ══════════════════════════════
+import {
+    BaseClientOptimisticPeriod, CallerNotDestination, IncorrectSender, IncorrectRecipient
+} from "../libs/Errors.sol";
 import {Request} from "../libs/Request.sol";
-import {Tips} from "../libs/Tips.sol";
 // ═════════════════════════════ INTERNAL IMPORTS ══════════════════════════════
 import {IMessageRecipient} from "../interfaces/IMessageRecipient.sol";
 import {InterfaceOrigin} from "../interfaces/InterfaceOrigin.sol";
@@ -40,9 +42,9 @@ abstract contract BaseClient is IMessageRecipient {
         uint256 proofMaturity,
         bytes memory content
     ) external payable {
-        require(msg.sender == destination, "BaseClient: !destination");
-        require(sender == trustedSender(origin_) && sender != bytes32(0), "BaseClient: !trustedSender");
-        require(proofMaturity >= optimisticPeriod(), "BaseClient: !optimisticPeriod");
+        if (msg.sender != destination) revert CallerNotDestination();
+        if (sender != trustedSender(origin_) || sender == 0) revert IncorrectSender();
+        if (proofMaturity < optimisticPeriod()) revert BaseClientOptimisticPeriod();
         // All security checks are passed, handle the message content
         _receiveBaseMessage(origin_, nonce, content);
     }
@@ -77,15 +79,14 @@ abstract contract BaseClient is IMessageRecipient {
     /**
      * @dev Sends a message to given destination chain.
      * @param destination_          Domain of the destination chain
-     * @param tips                  Encoded information about paid tips
      * @param request               Encoded message execution request on destination chain
      * @param content               The message content
      */
-    function _sendBaseMessage(uint32 destination_, Tips tips, Request request, bytes memory content) internal {
+    function _sendBaseMessage(uint32 destination_, Request request, bytes memory content) internal {
         bytes32 recipient = trustedSender(destination_);
-        require(recipient != bytes32(0), "BaseClient: !recipient");
+        if (recipient == 0) revert IncorrectRecipient();
         InterfaceOrigin(origin).sendBaseMessage{value: msg.value}(
-            destination_, recipient, optimisticPeriod(), Tips.unwrap(tips), Request.unwrap(request), content
+            destination_, recipient, optimisticPeriod(), Request.unwrap(request), content
         );
     }
 }

@@ -15,9 +15,8 @@ func (l *LocalServerSuite) TestJaegerEndpointEmpty() {
 	mockTester := mocktesting.NewMockTester("")
 	jaegerTest := localmetrics.NewTestJaeger(mockTester)
 
-	resource := jaegerTest.StartJaegerServer(l.GetTestContext())
+	jaegerTest.StartJaegerServer(l.GetTestContext())
 
-	l.Require().Nil(resource, "jaeger should have errored")
 	l.Require().True(mockTester.Failed(), "jaeger should have failed to start")
 
 	l.Require().False(l.hasContainerWithRunID(jaegerTest.GetRunID()), "jaeger should not have started")

@@ -62,7 +62,7 @@ func (s *TestClientSuite) SetupTest() {
 	s.TestSuite.SetupTest()
 
 	s.endpoint = s.getHostURL(testhelper.NewOmnirpcServer(s.GetTestContext(), s.T(), s.testBackends...))
-	s.client = client.NewOmnirpcClient(s.endpoint, s.metrics)
+	s.client = client.NewOmnirpcClient(s.endpoint, s.metrics, client.WithCaptureReqRes())
 }
 
 func (s *TestClientSuite) SetupJaeger() {

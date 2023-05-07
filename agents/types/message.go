@@ -2,7 +2,6 @@ package types
 
 import (
 	"bytes"
-	"encoding/binary"
 	"encoding/gob"
 	"fmt"
 
@@ -10,29 +9,41 @@ import (
 	"github.com/ethereum/go-ethereum/crypto"
 )
 
+const (
+	// MessageFlagSize if the size in bytes of a message flag.
+	MessageFlagSize = 1
+	// MessageBodyOffset is the message body offset.
+	MessageBodyOffset = MessageFlagSize + MessageHeaderSize
+)
+
+// MessageFlag indicates if the message is normal "Base" message or "Manager" message.
+// MessageFlag indicates if the message is normal "Base" message or "Manager" message.
+type MessageFlag uint8
+
+const (
+	// MessageFlagBase is the normal message that has tips.
+	MessageFlagBase MessageFlag = iota
+	// MessageFlagManager is manager message and will not have tips.
+	MessageFlagManager
+)
+
 // Message is an interface that contains metadata.
 //
 //nolint:interfacebloat
 type Message interface {
-	// Version gets the version of the message
-	Version() uint16
+	// Flag is the message flag
+	Flag() MessageFlag
 	// Header gets the message header
 	Header() Header
-	// Tips gets the tips
-	Tips() Tips
 	// Body gets the message body
 	Body() []byte
 
 	// OriginDomain returns the Slip-44 ID
 	OriginDomain() uint32
-	// Sender is the address of the sender
-	Sender() common.Hash
 	// Nonce is the count of all previous messages to the destination
 	Nonce() uint32
 	// DestinationDomain is the slip-44 id of the destination
 	DestinationDomain() uint32
-	// Recipient is the address of the recipient
-	Recipient() common.Hash
 	// ToLeaf converts a leaf to a keccac256
 	ToLeaf() (leaf [32]byte, err error)
 	// OptimisticSeconds gets the optimistic seconds count
@@ -41,23 +52,19 @@ type Message interface {
 
 // messageImpl implements a message. It is used for testutils. Real messages are emitted by the contract.
 type messageImpl struct {
-	version uint16
-	header  Header
-	tips    Tips
-	body    []byte
+	flag   MessageFlag
+	header Header
+	body   []byte
 }
 
-const messageVersion uint16 = 1
-
-const headerOffset uint16 = 6
+const headerOffset uint16 = 0
 
 // NewMessage creates a new message from fields passed in.
-func NewMessage(header Header, tips Tips, body []byte) Message {
+func NewMessage(flag MessageFlag, header Header, body []byte) Message {
 	return &messageImpl{
-		header:  header,
-		tips:    tips,
-		version: messageVersion,
-		body:    body,
+		flag:   flag,
+		header: header,
+		body:   body,
 	}
 }
 
@@ -65,63 +72,33 @@ func (m messageImpl) Header() Header {
 	return m.header
 }
 
-func (m messageImpl) Tips() Tips {
-	return m.tips
+func (m messageImpl) Flag() MessageFlag {
+	return m.flag
 }
 
 // DecodeMessage decodes a message from a byte slice.
 func DecodeMessage(message []byte) (Message, error) {
-	reader := bytes.NewReader(message)
-
-	var encoded messageEncoder
-
-	err := binary.Read(reader, binary.BigEndian, &encoded)
-	if err != nil {
-		return nil, fmt.Errorf("could not parse encoded: %w", err)
-	}
-
-	rawHeader := message[headerOffset : encoded.HeaderLength+headerOffset]
+	flag := message[0]
+	rawHeader := message[MessageFlagSize:MessageBodyOffset]
 
 	header, err := DecodeHeader(rawHeader)
 	if err != nil {
 		return nil, fmt.Errorf("could not decode header: %w", err)
 	}
 
-	rawTips := message[headerOffset+encoded.HeaderLength : headerOffset+encoded.HeaderLength+encoded.TipsLength]
-	unmarshalledTips, err := DecodeTips(rawTips)
-	if err != nil {
-		return nil, fmt.Errorf("could not decode unmarshalledTips: %w", err)
-	}
-
-	dataSize := binary.Size(encoded)
-
-	// make sure we can get the body of the message
-	if dataSize > len(message) {
-		return nil, fmt.Errorf("message too small, expected at least %d, got %d", dataSize, len(message))
-	}
-
-	rawBody := message[headerOffset+encoded.HeaderLength+encoded.TipsLength:]
+	rawBody := message[MessageBodyOffset:]
 
 	decoded := messageImpl{
-		version: encoded.Version,
-		body:    rawBody,
-		header:  header,
-		tips:    unmarshalledTips,
+		flag:   MessageFlag(flag),
+		header: header,
+		body:   rawBody,
 	}
 
 	return decoded, nil
 }
 
-func (m messageImpl) Version() uint16 {
-	return m.version
-}
-
 func (m messageImpl) OriginDomain() uint32 {
 	return m.Header().OriginDomain()
-}
-
-func (m messageImpl) Sender() common.Hash {
-	return m.Header().Sender()
 }
 
 func (m messageImpl) Nonce() uint32 {
@@ -130,10 +107,6 @@ func (m messageImpl) Nonce() uint32 {
 
 func (m messageImpl) DestinationDomain() uint32 {
 	return m.Header().DestinationDomain()
-}
-
-func (m messageImpl) Recipient() common.Hash {
-	return m.Header().Recipient()
 }
 
 func (m messageImpl) OptimisticSeconds() uint32 {

@@ -211,12 +211,9 @@ func (e *ExecutorSuite) TestMerkleInsert() {
 	e.Nil(err)
 	e.TestBackendOrigin.WaitForConfirmation(e.GetTestContext(), tx)
 
-	sender, err := e.TestBackendOrigin.Signer().Sender(tx)
-	e.Nil(err)
+	header := types.NewHeader(chainID, 1, destination, optimisticSeconds[0])
 
-	header := types.NewHeader(chainID, sender.Hash(), 1, destination, recipients[0], optimisticSeconds[0])
-
-	message := types.NewMessage(header, tips[0], messageBytes)
+	message := types.NewMessage(types.MessageFlagBase, header, messageBytes)
 	e.Nil(err)
 
 	leafA, err := message.ToLeaf()
@@ -265,9 +262,9 @@ func (e *ExecutorSuite) TestMerkleInsert() {
 	e.Nil(err)
 	e.TestBackendOrigin.WaitForConfirmation(e.GetTestContext(), tx)
 
-	header = types.NewHeader(chainID, sender.Hash(), 2, destination, recipients[1], optimisticSeconds[1])
+	header = types.NewHeader(chainID, 2, destination, optimisticSeconds[1])
 
-	message = types.NewMessage(header, tips[1], messageBytes)
+	message = types.NewMessage(types.MessageFlagBase, header, messageBytes)
 	e.Nil(err)
 
 	leafB, err := message.ToLeaf()
@@ -335,7 +332,7 @@ func (e *ExecutorSuite) TestMerkleInsert() {
 
 func (e *ExecutorSuite) TestVerifyMessageMerkleProof() {
 	// TODO (joe and lex): FIX ME
-	e.T().Skip()
+	// e.T().Skip()
 	chainID := uint32(e.TestBackendOrigin.GetChainID())
 	destination := uint32(e.TestBackendDestination.GetChainID())
 
@@ -376,55 +373,25 @@ func (e *ExecutorSuite) TestVerifyMessageMerkleProof() {
 
 	nonces := []uint32{1, 2, 3, 4}
 	blockNumbers := []uint64{10, 20, 30, 40}
-	recipients := [][32]byte{
-		{byte(gofakeit.Uint32())}, {byte(gofakeit.Uint32())},
-		{byte(gofakeit.Uint32())}, {byte(gofakeit.Uint32())},
-	}
-	senders := [][32]byte{
-		{byte(gofakeit.Uint32())}, {byte(gofakeit.Uint32())},
-		{byte(gofakeit.Uint32())}, {byte(gofakeit.Uint32())},
-	}
 	optimisticSeconds := []uint32{
 		gofakeit.Uint32(), gofakeit.Uint32(),
 		gofakeit.Uint32(), gofakeit.Uint32(),
-	}
-	notaryTips := []*big.Int{
-		big.NewInt(int64(int(gofakeit.Uint32()))), big.NewInt(int64(int(gofakeit.Uint32()))),
-		big.NewInt(int64(int(gofakeit.Uint32()))), big.NewInt(int64(int(gofakeit.Uint32()))),
-	}
-	broadcasterTips := []*big.Int{
-		big.NewInt(int64(int(gofakeit.Uint32()))), big.NewInt(int64(int(gofakeit.Uint32()))),
-		big.NewInt(int64(int(gofakeit.Uint32()))), big.NewInt(int64(int(gofakeit.Uint32()))),
-	}
-	proverTips := []*big.Int{
-		big.NewInt(int64(int(gofakeit.Uint32()))), big.NewInt(int64(int(gofakeit.Uint32()))),
-		big.NewInt(int64(int(gofakeit.Uint32()))), big.NewInt(int64(int(gofakeit.Uint32()))),
-	}
-	executorTips := []*big.Int{
-		big.NewInt(int64(int(gofakeit.Uint32()))), big.NewInt(int64(int(gofakeit.Uint32()))),
-		big.NewInt(int64(int(gofakeit.Uint32()))), big.NewInt(int64(int(gofakeit.Uint32()))),
-	}
-	tips := []types.Tips{
-		types.NewTips(notaryTips[0], broadcasterTips[0], proverTips[0], executorTips[0]),
-		types.NewTips(notaryTips[1], broadcasterTips[1], proverTips[1], executorTips[1]),
-		types.NewTips(notaryTips[2], broadcasterTips[2], proverTips[2], executorTips[2]),
-		types.NewTips(notaryTips[3], broadcasterTips[3], proverTips[3], executorTips[3]),
 	}
 	messageBytes := [][]byte{
 		{byte(gofakeit.Uint32())}, {byte(gofakeit.Uint32())},
 		{byte(gofakeit.Uint32())}, {byte(gofakeit.Uint32())},
 	}
 
-	header0 := types.NewHeader(chainID, senders[0], nonces[0], destination, recipients[0], optimisticSeconds[0])
-	header1 := types.NewHeader(chainID, senders[1], nonces[1], destination, recipients[1], optimisticSeconds[1])
-	header2 := types.NewHeader(chainID, senders[2], nonces[2], destination, recipients[2], optimisticSeconds[2])
-	header3 := types.NewHeader(chainID, senders[3], nonces[3], destination, recipients[3], optimisticSeconds[3])
+	header0 := types.NewHeader(chainID, nonces[0], destination, optimisticSeconds[0])
+	header1 := types.NewHeader(chainID, nonces[1], destination, optimisticSeconds[1])
+	header2 := types.NewHeader(chainID, nonces[2], destination, optimisticSeconds[2])
+	header3 := types.NewHeader(chainID, nonces[3], destination, optimisticSeconds[3])
 
-	message0 := types.NewMessage(header0, tips[0], messageBytes[0])
-	message1 := types.NewMessage(header1, tips[1], messageBytes[1])
-	message2 := types.NewMessage(header2, tips[2], messageBytes[2])
-	message3 := types.NewMessage(header3, tips[3], messageBytes[3])
-	failMessage := types.NewMessage(header1, tips[3], messageBytes[3])
+	message0 := types.NewMessage(types.MessageFlagBase, header0, messageBytes[0])
+	message1 := types.NewMessage(types.MessageFlagBase, header1, messageBytes[1])
+	message2 := types.NewMessage(types.MessageFlagBase, header2, messageBytes[2])
+	message3 := types.NewMessage(types.MessageFlagBase, header3, messageBytes[3])
+	failMessage := types.NewMessage(types.MessageFlagBase, header1, messageBytes[3])
 
 	// Insert messages into the database.
 	err = e.ExecutorTestDB.StoreMessage(e.GetTestContext(), message0, blockNumbers[0], false, 0)
@@ -470,7 +437,7 @@ func (e *ExecutorSuite) TestVerifyMessageMerkleProof() {
 
 func (e *ExecutorSuite) TestExecutor() {
 	// TODO (joe and lex): FIX ME
-	e.T().Skip()
+	// e.T().Skip()
 	testDone := false
 	defer func() {
 		testDone = true
@@ -593,7 +560,7 @@ func (e *ExecutorSuite) TestExecutor() {
 		}
 	}()
 
-	tips := types.NewTips(big.NewInt(int64(gofakeit.Uint32())), big.NewInt(int64(gofakeit.Uint32())), big.NewInt(int64(gofakeit.Uint32())), big.NewInt(int64(gofakeit.Uint32())))
+	tips := types.NewTips(big.NewInt(int64(0)), big.NewInt(int64(0)), big.NewInt(int64(0)), big.NewInt(int64(0)))
 	encodedTips, err := types.EncodeTips(tips)
 	e.Nil(err)
 
@@ -608,17 +575,15 @@ func (e *ExecutorSuite) TestExecutor() {
 
 	paddedTips := new(big.Int).SetBytes(encodedTips)
 	paddedRequest := big.NewInt(0)
+	// txContextOrigin.TransactOpts.Value = big.NewInt(0)
 	tx, err := e.OriginContract.SendBaseMessage(txContextOrigin.TransactOpts, uint32(e.TestBackendDestination.GetChainID()), recipient, optimisticSeconds, paddedTips, paddedRequest, body)
 	e.Nil(err)
 	e.TestBackendOrigin.WaitForConfirmation(e.GetTestContext(), tx)
 
 	tree := merkle.NewTree(merkle.MessageTreeHeight)
 
-	sender, err := e.TestBackendOrigin.Signer().Sender(tx)
-	e.Nil(err)
-
-	header := types.NewHeader(uint32(e.TestBackendOrigin.GetChainID()), sender.Hash(), nonce, uint32(e.TestBackendDestination.GetChainID()), recipient, optimisticSeconds)
-	message := types.NewMessage(header, tips, body)
+	header := types.NewHeader(uint32(e.TestBackendOrigin.GetChainID()), nonce, uint32(e.TestBackendDestination.GetChainID()), optimisticSeconds)
+	message := types.NewMessage(types.MessageFlagBase, header, body)
 	leaf, err := message.ToLeaf()
 	e.Nil(err)
 
@@ -667,7 +632,7 @@ func (e *ExecutorSuite) TestExecutor() {
 
 func (e *ExecutorSuite) TestSetMinimumTime() {
 	// TODO (joe and lex): FIX ME
-	e.T().Skip()
+	// e.T().Skip()
 	testDone := false
 	defer func() {
 		testDone = true
@@ -677,14 +642,11 @@ func (e *ExecutorSuite) TestSetMinimumTime() {
 
 	// Store 5 messages in the database.
 	for i := 1; i <= 5; i++ {
-		sender := common.BigToAddress(big.NewInt(gofakeit.Int64()))
 		nonce := uint32(i)
-		recipient := common.BigToAddress(big.NewInt(gofakeit.Int64()))
 		optimisticSeconds := i
-		tips := types.NewTips(big.NewInt(int64(gofakeit.Uint32())), big.NewInt(int64(gofakeit.Uint32())), big.NewInt(int64(gofakeit.Uint32())), big.NewInt(int64(gofakeit.Uint32())))
 		body := []byte{byte(gofakeit.Uint32())}
 
-		message := types.NewMessage(types.NewHeader(chainID, sender.Hash(), nonce, destination, recipient.Hash(), uint32(optimisticSeconds)), tips, body)
+		message := types.NewMessage(types.MessageFlagBase, types.NewHeader(chainID, nonce, destination, uint32(optimisticSeconds)), body)
 
 		err := e.ExecutorTestDB.StoreMessage(e.GetTestContext(), message, uint64(i), false, 0)
 		e.Nil(err)

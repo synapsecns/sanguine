@@ -11,18 +11,6 @@ import (
 
 // IOriginFilterer ...
 type IOriginFilterer interface {
-	// FilterAgentSlashed is a free log retrieval operation binding the contract event 0xdcc65a772766327a774eeb4d83cf7add70cfae65e4ba1a083d7c57cd47a3c7b1.
-	//
-	// Solidity: event AgentSlashed(uint32 indexed domain, address indexed agent, address prover)
-	FilterAgentSlashed(opts *bind.FilterOpts, domain []uint32, agent []common.Address) (*OriginAgentSlashedIterator, error)
-	// WatchAgentSlashed is a free log subscription operation binding the contract event 0xdcc65a772766327a774eeb4d83cf7add70cfae65e4ba1a083d7c57cd47a3c7b1.
-	//
-	// Solidity: event AgentSlashed(uint32 indexed domain, address indexed agent, address prover)
-	WatchAgentSlashed(opts *bind.WatchOpts, sink chan<- *OriginAgentSlashed, domain []uint32, agent []common.Address) (event.Subscription, error)
-	// ParseAgentSlashed is a log parse operation binding the contract event 0xdcc65a772766327a774eeb4d83cf7add70cfae65e4ba1a083d7c57cd47a3c7b1.
-	//
-	// Solidity: event AgentSlashed(uint32 indexed domain, address indexed agent, address prover)
-	ParseAgentSlashed(log types.Log) (*OriginAgentSlashed, error)
 	// FilterDispatched is a free log retrieval operation binding the contract event 0x7627271451db6318f9bd8c5c92729cc075f1f32825474f9b5826e0a7b42434a7.
 	//
 	// Solidity: event Dispatched(bytes32 indexed messageHash, uint32 indexed nonce, uint32 indexed destination, bytes message)

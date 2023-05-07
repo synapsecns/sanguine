@@ -132,6 +132,8 @@ func (f *Fruit) Value() (driver.Value, error) {
 	return dbcommon.EnumValue(f)
 }
 
+var _ dbcommon.EnumInter = (*Fruit)(nil)
+
 type testEnum uint8
 
 func (t testEnum) Int() uint8 {

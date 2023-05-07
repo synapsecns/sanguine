@@ -2,6 +2,7 @@
 pragma solidity 0.8.17;
 
 import {RECEIPT_SALT, RECEIPT_BODY_LENGTH, RECEIPT_LENGTH, TIPS_LENGTH} from "./Constants.sol";
+import {UnformattedReceipt, UnformattedReceiptBody} from "./Errors.sol";
 import {Tips, TipsLib} from "./Tips.sol";
 import {MemView, MemViewLib} from "./MemView.sol";
 
@@ -100,7 +101,7 @@ library ReceiptLib {
      * @dev Will revert if the memory view is not over a receipt body.
      */
     function castToReceiptBody(MemView memView) internal pure returns (ReceiptBody) {
-        require(isReceiptBody(memView), "Not a receipt body");
+        if (!isReceiptBody(memView)) revert UnformattedReceiptBody();
         return ReceiptBody.wrap(MemView.unwrap(memView));
     }
 
@@ -146,7 +147,7 @@ library ReceiptLib {
      * @dev Will revert if the memory view is not over a receipt.
      */
     function castToReceipt(MemView memView) internal pure returns (Receipt) {
-        require(isReceipt(memView), "Not a receipt");
+        if (!isReceipt(memView)) revert UnformattedReceipt();
         return Receipt.wrap(MemView.unwrap(memView));
     }
 

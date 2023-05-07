@@ -5,16 +5,17 @@ pragma solidity 0.8.17;
 import {Attestation, AttestationLib} from "./libs/Attestation.sol";
 import {AttestationReport} from "./libs/AttestationReport.sol";
 import {ByteString} from "./libs/ByteString.sol";
-import {AGENT_ROOT_OPTIMISTIC_PERIOD} from "./libs/Constants.sol";
-import {AgentStatus, DestinationStatus} from "./libs/Structures.sol";
+import {AGENT_ROOT_OPTIMISTIC_PERIOD, SYNAPSE_DOMAIN} from "./libs/Constants.sol";
+import {IndexOutOfRange} from "./libs/Errors.sol";
+import {ChainGas, GasData} from "./libs/GasData.sol";
+import {AgentStatus, DestinationStatus, DisputeFlag} from "./libs/Structures.sol";
 // ═════════════════════════════ INTERNAL IMPORTS ══════════════════════════════
+import {AgentSecured} from "./base/AgentSecured.sol";
 import {DestinationEvents} from "./events/DestinationEvents.sol";
 import {IAgentManager} from "./interfaces/IAgentManager.sol";
 import {InterfaceDestination} from "./interfaces/InterfaceDestination.sol";
 import {InterfaceLightManager} from "./interfaces/InterfaceLightManager.sol";
-import {DisputeHub, ExecutionHub} from "./hubs/ExecutionHub.sol";
-import {SystemBase, Versioned} from "./system/SystemBase.sol";
-import {SystemRegistry} from "./system/SystemRegistry.sol";
+import {ExecutionHub} from "./hubs/ExecutionHub.sol";
 
 contract Destination is ExecutionHub, DestinationEvents, InterfaceDestination {
     using AttestationLib for bytes;
@@ -23,16 +24,20 @@ contract Destination is ExecutionHub, DestinationEvents, InterfaceDestination {
     // TODO: this could be further optimized in terms of storage
     struct StoredAttData {
         bytes32 agentRoot;
-        bytes32 r;
-        bytes32 s;
+        bytes32 dataHash;
+    }
+
+    struct StoredGasData {
+        GasData gasData;
+        uint32 notaryIndex;
+        uint40 submittedAt;
     }
 
     // ══════════════════════════════════════════════════ STORAGE ══════════════════════════════════════════════════════
 
-    /// @inheritdoc InterfaceDestination
     /// @dev Invariant: this is either current LightManager root,
     /// or the pending root to be passed to LightManager once its optimistic period is over.
-    bytes32 public nextAgentRoot;
+    bytes32 internal _nextAgentRoot;
 
     /// @inheritdoc InterfaceDestination
     DestinationStatus public destStatus;
@@ -40,13 +45,13 @@ contract Destination is ExecutionHub, DestinationEvents, InterfaceDestination {
     /// @dev Stored lookup data for all accepted Notary Attestations
     StoredAttData[] internal _storedAttestations;
 
+    /// @dev Remote domains GasData submitted by Notaries
+    mapping(uint32 => StoredGasData) internal _storedGasData;
+
     // ═════════════════════════════════════════ CONSTRUCTOR & INITIALIZER ═════════════════════════════════════════════
 
-    constructor(uint32 domain, IAgentManager agentManager_)
-        SystemBase(domain)
-        SystemRegistry(agentManager_)
-        Versioned("0.0.3")
-    {} // solhint-disable-line no-empty-blocks
+    // solhint-disable-next-line no-empty-blocks
+    constructor(uint32 domain, address agentManager_) AgentSecured("0.0.3", domain, agentManager_) {}
 
     /// @notice Initializes Destination contract:
     /// - msg.sender is set as contract owner
@@ -54,20 +59,24 @@ contract Destination is ExecutionHub, DestinationEvents, InterfaceDestination {
         // Initialize Ownable: msg.sender is set as "owner"
         __Ownable_init();
         // Set Agent Merkle Root in Light Manager
-        nextAgentRoot = agentRoot;
-        InterfaceLightManager(address(agentManager)).setAgentRoot(agentRoot);
-        destStatus.agentRootTime = uint48(block.timestamp);
+        if (localDomain != SYNAPSE_DOMAIN) {
+            _nextAgentRoot = agentRoot;
+            InterfaceLightManager(address(agentManager)).setAgentRoot(agentRoot);
+            destStatus.agentRootTime = uint40(block.timestamp);
+        }
+        // No need to do anything on Synapse Chain, as the agent root is set in BondingManager
     }
 
     // ═════════════════════════════════════════════ ACCEPT STATEMENTS ═════════════════════════════════════════════════
 
     /// @inheritdoc InterfaceDestination
     function acceptAttestation(
-        address notary,
-        AgentStatus memory status,
+        uint32 notaryIndex,
+        uint256 sigIndex,
         bytes memory attPayload,
-        bytes memory attSignature
-    ) external returns (bool wasAccepted) {
+        bytes32 agentRoot,
+        ChainGas[] memory snapGas
+    ) external onlyAgentManager returns (bool wasAccepted) {
         // First, try passing current agent merkle root
         (bool rootPassed, bool rootPending) = passAgentRoot();
         // Don't accept attestation, if the agent root was updated in LightManager,
@@ -75,16 +84,12 @@ contract Destination is ExecutionHub, DestinationEvents, InterfaceDestination {
         if (rootPassed) return false;
         // This will revert if payload is not an attestation
         Attestation att = attPayload.castToAttestation();
-        // Check that Notary who submitted the attestation is not in dispute
-        require(!_inDispute(notary), "Notary is in dispute");
-        (bytes32 r, bytes32 s, uint8 v) = attSignature.castToSignature().toRSV();
         // This will revert if snapshot root has been previously submitted
-        _saveAttestation(att, status.index, v);
-        bytes32 agentRoot = att.agentRoot();
-        _storedAttestations.push(StoredAttData(agentRoot, r, s));
+        _saveAttestation(att, notaryIndex, sigIndex);
+        _storedAttestations.push(StoredAttData({agentRoot: agentRoot, dataHash: att.dataHash()}));
         // Save Agent Root if required, and update the Destination's Status
-        destStatus = _saveAgentRoot(rootPending, agentRoot, notary);
-        emit AttestationAccepted(status.domain, notary, attPayload, attSignature);
+        destStatus = _saveAgentRoot(rootPending, agentRoot, notaryIndex);
+        _saveGasData(snapGas, notaryIndex);
         return true;
     }
 
@@ -92,16 +97,18 @@ contract Destination is ExecutionHub, DestinationEvents, InterfaceDestination {
 
     /// @inheritdoc InterfaceDestination
     function passAgentRoot() public returns (bool rootPassed, bool rootPending) {
-        bytes32 oldRoot = agentManager.agentRoot();
-        bytes32 newRoot = nextAgentRoot;
+        // Agent root is not passed on Synapse Chain, as it could be accessed via BondingManager
+        if (localDomain == SYNAPSE_DOMAIN) return (false, false);
+        bytes32 oldRoot = IAgentManager(agentManager).agentRoot();
+        bytes32 newRoot = _nextAgentRoot;
         // Check if agent root differs from the current one in LightManager
         if (oldRoot == newRoot) return (false, false);
         DestinationStatus memory status = destStatus;
         // Invariant: Notary who supplied `newRoot` was registered as active against `oldRoot`
         // So we just need to check the Dispute status of the Notary
-        if (_inDispute(status.notary)) {
+        if (_disputes[status.notaryIndex] != DisputeFlag.None) {
             // Remove the pending agent merkle root, as its signer is in dispute
-            nextAgentRoot = oldRoot;
+            _nextAgentRoot = oldRoot;
             return (false, false);
         }
         // Check if agent root optimistic period is over
@@ -124,61 +131,78 @@ contract Destination is ExecutionHub, DestinationEvents, InterfaceDestination {
     }
 
     /// @inheritdoc InterfaceDestination
-    function getSignedAttestation(uint256 index)
-        external
-        view
-        returns (bytes memory attPayload, bytes memory attSignature)
-    {
-        require(index < _roots.length, "Index out of range");
+    function getAttestation(uint256 index) external view returns (bytes memory attPayload, bytes memory attSignature) {
+        if (index >= _roots.length) revert IndexOutOfRange();
         bytes32 snapRoot = _roots[index];
         SnapRootData memory rootData = _rootData[snapRoot];
         StoredAttData memory storedAtt = _storedAttestations[index];
         attPayload = AttestationLib.formatAttestation({
             snapRoot_: snapRoot,
-            agentRoot_: storedAtt.agentRoot,
+            dataHash_: storedAtt.dataHash,
             nonce_: rootData.attNonce,
             blockNumber_: rootData.attBN,
             timestamp_: rootData.attTS
         });
-        attSignature = ByteString.formatSignature({r: storedAtt.r, s: storedAtt.s, v: rootData.notaryV});
+        // Attestation signatures are not required on Synapse Chain, as the attestations could be accessed via Summit.
+        if (localDomain != SYNAPSE_DOMAIN) {
+            attSignature = IAgentManager(agentManager).getStoredSignature(rootData.sigIndex);
+        }
+    }
+
+    /// @inheritdoc InterfaceDestination
+    function getGasData(uint32 domain) external view returns (GasData gasData, uint256 dataMaturity) {
+        StoredGasData memory storedGasData = _storedGasData[domain];
+        if (storedGasData.submittedAt != 0 && _disputes[storedGasData.notaryIndex] == DisputeFlag.None) {
+            gasData = storedGasData.gasData;
+            dataMaturity = block.timestamp - storedGasData.submittedAt;
+        }
+        // Return empty values if there is no data for the domain, or if the notary who provided the data is in dispute
+    }
+
+    /// @inheritdoc InterfaceDestination
+    function nextAgentRoot() external view returns (bytes32) {
+        // Return current agent root on Synapse Chain for consistency
+        return localDomain == SYNAPSE_DOMAIN ? IAgentManager(agentManager).agentRoot() : _nextAgentRoot;
     }
 
     // ══════════════════════════════════════════════ INTERNAL LOGIC ═══════════════════════════════════════════════════
 
-    /// @dev Opens a Dispute between a Guard and a Notary.
-    /// This is overridden to allow disputes only between a Guard and a LOCAL Notary.
-    function _openDispute(address guard, uint32 domain, address notary) internal override {
-        // Only disputes for local Notaries could be initiated in Destination
-        require(domain == localDomain, "Not a local Notary");
-        super._openDispute(guard, domain, notary);
-    }
-
-    /// @dev Resolves a Dispute for a slashed agent, if it hasn't been done already.
-    /// This is overridden to resolve disputes only between a Guard and a LOCAL Notary.
-    function _resolveDispute(uint32 domain, address slashedAgent) internal virtual override {
-        // Disputes could be only opened between a Guard and a local Notary
-        if (domain == 0 || domain == localDomain) {
-            super._resolveDispute(domain, slashedAgent);
-        }
-    }
-
     /// @dev Saves Agent Merkle Root from the accepted attestation, if there is
     /// no pending root to be passed to LightManager.
     /// Returns the updated "last snapshot root / last agent root" status struct.
-    function _saveAgentRoot(bool rootPending, bytes32 agentRoot, address notary)
+    function _saveAgentRoot(bool rootPending, bytes32 agentRoot, uint32 notaryIndex)
         internal
         returns (DestinationStatus memory status)
     {
         status = destStatus;
         // Update the timestamp for the latest snapshot root
-        status.snapRootTime = uint48(block.timestamp);
+        status.snapRootTime = uint40(block.timestamp);
+        // No need to save agent roots on Synapse Chain, as they could be accessed via BondingManager
         // Don't update agent root, if there is already a pending one
         // Update the data for latest agent root only if it differs from the saved one
-        if (!rootPending && nextAgentRoot != agentRoot) {
-            status.agentRootTime = uint48(block.timestamp);
-            status.notary = notary;
-            nextAgentRoot = agentRoot;
+        if (localDomain != SYNAPSE_DOMAIN && !rootPending && _nextAgentRoot != agentRoot) {
+            status.agentRootTime = uint40(block.timestamp);
+            status.notaryIndex = notaryIndex;
+            _nextAgentRoot = agentRoot;
             emit AgentRootAccepted(agentRoot);
+        }
+    }
+
+    /// @dev Saves updated values from the snapshot's gas data list.
+    function _saveGasData(ChainGas[] memory snapGas, uint32 notaryIndex) internal {
+        uint256 statesAmount = snapGas.length;
+        for (uint256 i = 0; i < statesAmount; i++) {
+            ChainGas chainGas = snapGas[i];
+            uint32 domain = chainGas.domain();
+            // Don't save gas data for the local domain
+            if (domain == localDomain) continue;
+            StoredGasData memory storedGasData = _storedGasData[domain];
+            // Check that the gas data is not already saved
+            GasData gasData = chainGas.gasData();
+            if (GasData.unwrap(gasData) == GasData.unwrap(storedGasData.gasData)) continue;
+            // Save the gas data
+            _storedGasData[domain] =
+                StoredGasData({gasData: gasData, notaryIndex: notaryIndex, submittedAt: uint40(block.timestamp)});
         }
     }
 }

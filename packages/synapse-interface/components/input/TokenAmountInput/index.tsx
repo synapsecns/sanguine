@@ -7,6 +7,7 @@ import { cleanNumberInput } from '@utils/cleanNumberInput'
 
 import { Token } from '@/utils/types'
 import { ChainLabel } from '@components/ChainLabel'
+import { DisplayType } from '@/pages/bridge/BridgeCard'
 import SelectTokenDropdown from './SelectTokenDropdown'
 
 const BridgeInputContainer = ({
@@ -31,7 +32,7 @@ const BridgeInputContainer = ({
   inputString: string
   selectedToken: Token
   connectedChainId: number
-  setDisplayType: (v: string) => void
+  setDisplayType: (v: DisplayType) => void
   onChangeAmount?: (v: string) => void
   onChangeChain: (chainId: number, flip: boolean, type: 'from' | 'to') => void
   fromTokenBalance?: BigNumber
@@ -107,7 +108,7 @@ const BridgeInputContainer = ({
             selectedToken={selectedToken}
             isOrigin={isOrigin}
             onClick={() => {
-              setDisplayType(isOrigin ? 'from' : 'to')
+              setDisplayType(isOrigin ? DisplayType.FROM : DisplayType.TO)
             }}
           />
 

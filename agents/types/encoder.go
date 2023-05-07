@@ -171,59 +171,46 @@ func HashRawBytes(rawBytes []byte) (common.Hash, error) {
 }
 
 const (
-	//nolint: staticcheck
-	tipsVersion       uint16 = 1
-	offsetNotary             = 2
-	offsetBroadcaster        = 14
-	offsetProver             = 26
-	offsetExecutor           = 38
-	uint96Len                = 12
+	uint64Len = 8
 )
 
 // EncodeTips encodes a list of tips.
 //
 //nolint:makezero
 func EncodeTips(tips Tips) ([]byte, error) {
-	b := make([]byte, offsetNotary)
-	binary.BigEndian.PutUint16(b, tipsVersion)
+	b := make([]byte, 0)
 
-	b = append(b, math.PaddedBigBytes(tips.NotaryTip(), uint96Len)...)
-	b = append(b, math.PaddedBigBytes(tips.BroadcasterTip(), uint96Len)...)
-	b = append(b, math.PaddedBigBytes(tips.ProverTip(), uint96Len)...)
-	b = append(b, math.PaddedBigBytes(tips.ExecutorTip(), uint96Len)...)
+	b = append(b, math.PaddedBigBytes(tips.SummitTip(), uint64Len)...)
+	b = append(b, math.PaddedBigBytes(tips.AttestationTip(), uint64Len)...)
+	b = append(b, math.PaddedBigBytes(tips.ExecutionTip(), uint64Len)...)
+	b = append(b, math.PaddedBigBytes(tips.DeliveryTip(), uint64Len)...)
 
 	return b, nil
 }
 
 // DecodeTips decodes a tips typed mem view.
 func DecodeTips(toDecode []byte) (Tips, error) {
-	notaryTip := new(big.Int).SetBytes(toDecode[offsetNotary:offsetBroadcaster])
-	broadcasterTip := new(big.Int).SetBytes(toDecode[offsetBroadcaster:offsetProver])
-	proverTip := new(big.Int).SetBytes(toDecode[offsetProver:offsetExecutor])
-	executorTip := new(big.Int).SetBytes(toDecode[offsetExecutor:])
+	summitTip := new(big.Int).SetBytes(toDecode[0:8])
+	attestationTip := new(big.Int).SetBytes(toDecode[8:16])
+	executionTip := new(big.Int).SetBytes(toDecode[16:24])
+	deliveryTip := new(big.Int).SetBytes(toDecode[24:])
 
-	return NewTips(notaryTip, broadcasterTip, proverTip, executorTip), nil
+	return NewTips(summitTip, attestationTip, executionTip, deliveryTip), nil
 }
 
 type headerEncoder struct {
-	Version           uint16
 	OriginDomain      uint32
-	Sender            [32]byte
 	Nonce             uint32
 	DestinationDomain uint32
-	Recipient         [32]byte
 	OptimisticSeconds uint32
 }
 
 // EncodeHeader encodes a message header.
 func EncodeHeader(header Header) ([]byte, error) {
 	newHeader := headerEncoder{
-		Version:           header.Version(),
 		OriginDomain:      header.OriginDomain(),
-		Sender:            header.Sender(),
 		Nonce:             header.Nonce(),
 		DestinationDomain: header.DestinationDomain(),
-		Recipient:         header.Recipient(),
 		OptimisticSeconds: header.OptimisticSeconds(),
 	}
 
@@ -237,13 +224,6 @@ func EncodeHeader(header Header) ([]byte, error) {
 	return buf.Bytes(), nil
 }
 
-// messageEncoder contains the binary structore of the message.
-type messageEncoder struct {
-	Version      uint16
-	HeaderLength uint16
-	TipsLength   uint16
-}
-
 // EncodeMessage encodes a message.
 func EncodeMessage(m Message) ([]byte, error) {
 	encodedHeader, err := EncodeHeader(m.Header())
@@ -251,26 +231,10 @@ func EncodeMessage(m Message) ([]byte, error) {
 		return []byte{}, fmt.Errorf("could not encode header: %w", err)
 	}
 
-	encodedTips, err := EncodeTips(m.Tips())
-	if err != nil {
-		return []byte{}, fmt.Errorf("could not encode tips: %w", err)
-	}
-
-	newMessage := messageEncoder{
-		Version:      m.Version(),
-		HeaderLength: uint16(len(encodedHeader)),
-		TipsLength:   uint16(len(encodedTips)),
-	}
-
 	buf := new(bytes.Buffer)
 
-	err = binary.Write(buf, binary.BigEndian, newMessage)
-	if err != nil {
-		return nil, fmt.Errorf("could not write binary: %w", err)
-	}
-
+	buf.Write([]byte{uint8(m.Flag())})
 	buf.Write(encodedHeader)
-	buf.Write(encodedTips)
 	buf.Write(m.Body())
 
 	return buf.Bytes(), nil

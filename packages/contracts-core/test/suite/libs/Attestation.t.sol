@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.17;
 
+import {UnformattedAttestation} from "../../../contracts/libs/Errors.sol";
 import {ATTESTATION_LENGTH} from "../../../contracts/libs/Constants.sol";
 
 import {SynapseLibraryTest, MemViewLib} from "../../utils/SynapseLibraryTest.t.sol";
@@ -20,17 +21,17 @@ contract AttestationLibraryTest is SynapseLibraryTest {
 
     function test_formatAttestation(RawAttestation memory ra) public {
         bytes memory payload =
-            libHarness.formatAttestation(ra.snapRoot, ra.agentRoot, ra.nonce, ra.blockNumber, ra.timestamp);
+            libHarness.formatAttestation(ra.snapRoot, ra.dataHash, ra.nonce, ra.blockNumber, ra.timestamp);
         // Test formatting of state
         assertEq(
             payload,
-            abi.encodePacked(ra.snapRoot, ra.agentRoot, ra.nonce, ra.blockNumber, ra.timestamp),
+            abi.encodePacked(ra.snapRoot, ra.dataHash, ra.nonce, ra.blockNumber, ra.timestamp),
             "!formatAttestation"
         );
         checkCastToAttestation({payload: payload, isAttestation: true});
         // Test getters
         assertEq(libHarness.snapRoot(payload), ra.snapRoot, "!snapRoot");
-        assertEq(libHarness.agentRoot(payload), ra.agentRoot, "!agentRoot");
+        assertEq(libHarness.dataHash(payload), ra.dataHash, "!dataHash");
         assertEq(libHarness.nonce(payload), ra.nonce, "!nonce");
         assertEq(libHarness.blockNumber(payload), ra.blockNumber, "!blockNumber");
         assertEq(libHarness.timestamp(payload), ra.timestamp, "!timestamp");
@@ -38,6 +39,12 @@ contract AttestationLibraryTest is SynapseLibraryTest {
         bytes32 attestationSalt = keccak256("ATTESTATION_SALT");
         bytes32 hashedAttestation = keccak256(abi.encodePacked(attestationSalt, keccak256(payload)));
         assertEq(libHarness.hash(payload), hashedAttestation, "!hash");
+    }
+
+    function test_dataHash(bytes32 agentRoot, bytes32 snapGasHash) public {
+        bytes32 dataHash = libHarness.dataHash(agentRoot, snapGasHash);
+        bytes32 expected = keccak256(abi.encodePacked(agentRoot, snapGasHash));
+        assertEq(dataHash, expected, "!dataHash");
     }
 
     function test_isAttestation(uint8 length) public {
@@ -53,7 +60,7 @@ contract AttestationLibraryTest is SynapseLibraryTest {
             assertEq(libHarness.castToAttestation(payload), payload, "!castToAttestation: when valid");
         } else {
             assertFalse(libHarness.isAttestation(payload), "!isAttestation: when valid");
-            vm.expectRevert("Not an attestation");
+            vm.expectRevert(UnformattedAttestation.selector);
             libHarness.castToAttestation(payload);
         }
     }

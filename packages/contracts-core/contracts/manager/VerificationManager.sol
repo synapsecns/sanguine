@@ -4,6 +4,7 @@ pragma solidity 0.8.17;
 // ══════════════════════════════ LIBRARY IMPORTS ══════════════════════════════
 import {Attestation} from "../libs/Attestation.sol";
 import {AttestationReport} from "../libs/AttestationReport.sol";
+import {AgentNotGuard, AgentNotNotary, IncorrectSnapshotProof, IncorrectSnapshotRoot} from "../libs/Errors.sol";
 import {MerkleMath} from "../libs/MerkleMath.sol";
 import {Receipt} from "../libs/Receipt.sol";
 import {Snapshot, SnapshotLib, SNAPSHOT_TREE_HEIGHT} from "../libs/Snapshot.sol";
@@ -55,7 +56,7 @@ abstract contract VerificationManager {
         // This will revert if signer is not a known agent
         (status, notary) = _recoverAgent(att.hash(), attSignature);
         // Attestation signer needs to be a Notary, not a Guard
-        require(status.domain != 0, "Signer is not a Notary");
+        if (status.domain == 0) revert AgentNotNotary();
     }
 
     /**
@@ -75,7 +76,7 @@ abstract contract VerificationManager {
         // This will revert if signer is not a known agent
         (status, guard) = _recoverAgent(report.hash(), arSignature);
         // Report signer needs to be a Guard, not a Notary
-        require(status.domain == 0, "Signer is not a Guard");
+        if (status.domain != 0) revert AgentNotGuard();
     }
 
     // ══════════════════════════════════════════ RECEIPT RELATED CHECKS ═══════════════════════════════════════════════
@@ -97,7 +98,7 @@ abstract contract VerificationManager {
         // This will revert if signer is not a known agent
         (status, notary) = _recoverAgent(rcpt.hash(), rcptSignature);
         // Receipt signer needs to be a Notary, not a Guard
-        require(status.domain != 0, "Signer is not a Notary");
+        if (status.domain == 0) revert AgentNotNotary();
     }
 
     // ═══════════════════════════════════════ STATE/SNAPSHOT RELATED CHECKS ═══════════════════════════════════════════
@@ -119,26 +120,29 @@ abstract contract VerificationManager {
         // This will revert if signer is not a known agent
         (status, guard) = _recoverAgent(report.hash(), srSignature);
         // Report signer needs to be a Guard, not a Notary
-        require(status.domain == 0, "Signer is not a Guard");
+        if (status.domain != 0) revert AgentNotGuard();
     }
 
     /**
      * @dev Internal function to verify the signed snapshot payload.
      * Reverts if any of these is true:
      *  - Snapshot signer is not a known Agent.
+     *  - Snapshot signer is not a Notary (if verifyNotary is true).
      * @param snapshot          Typed memory view over snapshot payload
      * @param snapSignature     Agent signature for the snapshot
+     * @param verifyNotary      If true, snapshot signer needs to be a Notary, not a Guard
      * @return status           Struct representing agent status, see {_recoverAgent}
      * @return agent            Agent that signed the snapshot
      */
-    function _verifySnapshot(Snapshot snapshot, bytes memory snapSignature)
+    function _verifySnapshot(Snapshot snapshot, bytes memory snapSignature, bool verifyNotary)
         internal
         view
         returns (AgentStatus memory status, address agent)
     {
         // This will revert if signer is not a known agent
         (status, agent) = _recoverAgent(snapshot.hash(), snapSignature);
-        // Guards and Notaries for all domains could sign Snapshots, no further checks are needed.
+        // If requested, snapshot signer needs to be a Notary, not a Guard
+        if (verifyNotary && status.domain == 0) revert AgentNotNotary();
     }
 
     // ═══════════════════════════════════════════ MERKLE RELATED CHECKS ═══════════════════════════════════════════════
@@ -161,13 +165,13 @@ abstract contract VerificationManager {
     {
         // Snapshot proof first element should match State metadata (aka "right sub-leaf")
         (, bytes32 rightSubLeaf) = state.subLeafs();
-        require(snapProof[0] == rightSubLeaf, "Incorrect proof[0]");
+        if (snapProof[0] != rightSubLeaf) revert IncorrectSnapshotProof();
         // Reconstruct Snapshot Merkle Root using the snapshot proof
         // This will revert if:
         //  - State index is out of range.
         //  - Snapshot Proof length exceeds Snapshot tree Height.
         bytes32 snapshotRoot = SnapshotLib.proofSnapRoot(state.root(), state.origin(), snapProof, stateIndex);
         // Snapshot root should match the attestation root
-        require(att.snapRoot() == snapshotRoot, "Incorrect snapshot root");
+        if (att.snapRoot() != snapshotRoot) revert IncorrectSnapshotRoot();
     }
 }

@@ -12,7 +12,7 @@ func init() {
 	// set topics
 	var err error
 
-	parsedSummit, err := abi.JSON(strings.NewReader(SummitABI))
+	parsedSummit, err := abi.JSON(strings.NewReader(SummitMetaData.ABI))
 	if err != nil {
 		panic(err)
 	}

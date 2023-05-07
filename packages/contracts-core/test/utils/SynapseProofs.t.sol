@@ -7,6 +7,8 @@ import {AttestationProofGenerator} from "./proof/AttestationProofGenerator.t.sol
 import {DynamicProofGenerator} from "./proof/DynamicProofGenerator.t.sol";
 import {HistoricalProofGenerator} from "./proof/HistoricalProofGenerator.t.sol";
 
+import {RawSnapshot} from "./libs/SynapseStructs.t.sol";
+
 // solhint-disable no-empty-blocks
 // solhint-disable ordering
 abstract contract SynapseProofs {
@@ -14,10 +16,10 @@ abstract contract SynapseProofs {
     AttestationProofGenerator internal summitGen;
     DynamicProofGenerator internal agentGen;
 
-    mapping(address => uint256) internal agentIndex;
+    mapping(address => uint32) internal agentIndex;
     mapping(address => uint32) internal agentDomain;
     mapping(address => AgentFlag) internal agentFlag;
-    uint256 internal totalAgents;
+    uint32 internal totalAgents;
 
     constructor() {
         clear();
@@ -57,8 +59,8 @@ abstract contract SynapseProofs {
 
     // ══════════════════════════════════════════════ SNAPSHOT PROOFS ══════════════════════════════════════════════════
 
-    function acceptSnapshot(bytes[] memory snapshotStates) public {
-        summitGen.acceptSnapshot(snapshotStates);
+    function acceptSnapshot(RawSnapshot memory rs) public {
+        summitGen.acceptSnapshot(rs.formatStates());
     }
 
     function genSnapshotProof(uint256 index) public view returns (bytes32[] memory) {
@@ -73,7 +75,7 @@ abstract contract SynapseProofs {
 
     function addNewAgent(uint32 domain, address agent) public returns (bytes32 newRoot) {
         require(agentIndex[agent] == 0, "Already added");
-        uint256 index = ++totalAgents;
+        uint32 index = ++totalAgents;
         agentIndex[agent] = index;
         agentDomain[agent] = domain;
         agentFlag[agent] = AgentFlag.Active;
@@ -82,7 +84,7 @@ abstract contract SynapseProofs {
     }
 
     function updateAgent(AgentFlag flag, address agent) public returns (bytes32 newRoot) {
-        uint256 index = agentIndex[agent];
+        uint32 index = agentIndex[agent];
         require(index != 0, "Unknown agent");
         agentFlag[agent] = flag;
         agentGen.update(index, getAgentLeaf(flag, agentDomain[agent], agent));
@@ -94,9 +96,8 @@ abstract contract SynapseProofs {
     }
 
     function getAgentProof(address agent) public view returns (bytes32[] memory) {
-        uint256 index = agentIndex[agent];
-        require(index != 0, "Unknown agent");
-        return agentGen.getProof(index);
+        require(agentIndex[agent] != 0, "Unknown agent");
+        return agentGen.getProof(agentIndex[agent]);
     }
 
     function getZeroProof() public view returns (bytes32[] memory) {
@@ -105,9 +106,8 @@ abstract contract SynapseProofs {
     }
 
     function getAgentStatus(address agent) public view returns (AgentStatus memory) {
-        uint32 index = uint32(agentIndex[agent]);
-        require(index != 0, "Unknown agent");
-        return AgentStatus({flag: agentFlag[agent], domain: agentDomain[agent], index: index});
+        require(agentIndex[agent] != 0, "Unknown agent");
+        return AgentStatus({flag: agentFlag[agent], domain: agentDomain[agent], index: agentIndex[agent]});
     }
 
     function getAgentLeaf(uint256 index) public view returns (bytes32) {

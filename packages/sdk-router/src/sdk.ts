@@ -3,7 +3,7 @@ import invariant from 'tiny-invariant'
 import { BigNumber } from '@ethersproject/bignumber'
 import { BytesLike } from '@ethersproject/bytes'
 import { PopulatedTransaction } from 'ethers'
-import { AddressZero } from '@ethersproject/constants'
+import { AddressZero, Zero } from '@ethersproject/constants'
 import { Interface } from '@ethersproject/abi'
 import { Contract } from '@ethersproject/contracts'
 
@@ -14,9 +14,6 @@ import {
 import { BigintIsh } from './constants'
 import { SynapseRouter } from './synapseRouter'
 import bridgeAbi from './abi/SynapseBridge.json'
-
-// import SynapseBridge
-// import { SynapseSwapQuoter, LimitedTokenStructType } from './synapseSwapQuoter'
 
 type SynapseRouters = {
   [key: number]: SynapseRouter
@@ -35,6 +32,8 @@ type FeeConfig = [number, BigNumber, BigNumber] & {
   minFee: BigNumber
   maxFee: BigNumber
 }
+
+type PoolToken = { isWeth: boolean | undefined; token: string }
 
 class SynapseSDK {
   public synapseRouters: SynapseRouters
@@ -248,6 +247,125 @@ class SynapseSDK {
       this.providers[chainId]
     )
     return bridgeContract.chainGasAmount()
+  }
+
+  public async getPoolTokens(
+    chainId: number,
+    poolAddress: string
+  ): Promise<PoolToken[]> {
+    const router: SynapseRouter = this.synapseRouters[chainId]
+    const poolTokens = await router.routerContract.poolTokens(poolAddress)
+    return poolTokens.map((token) => {
+      return { token: token.token, isWeth: token?.isWeth }
+    })
+  }
+
+  public async getPoolInfo(
+    chainId: number,
+    poolAddress: string
+  ): Promise<{ tokens: BigNumber | undefined; lpToken: string | undefined }> {
+    const router: SynapseRouter = this.synapseRouters[chainId]
+    const poolInfo = await router.routerContract.poolInfo(poolAddress)
+    return { tokens: poolInfo?.[0], lpToken: poolInfo?.[1] }
+  }
+
+  public async getAllPools(chainId: number): Promise<
+    {
+      poolAddress: string | undefined
+      tokens: PoolToken[] | undefined
+      lpToken: string | undefined
+    }[]
+  > {
+    const router: SynapseRouter = this.synapseRouters[chainId]
+    const pools = await router.routerContract.allPools()
+    const res = pools.map((pool) => {
+      return {
+        poolAddress: pool?.pool,
+        tokens: pool?.tokens.map((token) => {
+          return { token: token.token, isWeth: token?.isWeth }
+        }),
+        lpToken: pool?.lpToken,
+      }
+    })
+    return res
+  }
+
+  public async calculateAddLiquidity(
+    chainId: number,
+    poolAddress: string,
+    amounts: Record<string, BigNumber>
+  ): Promise<{ amount: BigNumber; routerAddress: string }> {
+    const router: SynapseRouter = this.synapseRouters[chainId]
+    const poolTokens = await router.routerContract.poolTokens(poolAddress)
+    const amountArr: BigNumber[] = []
+    poolTokens.map((token) => {
+      amountArr.push(amounts[token.token] ?? Zero)
+    })
+    if (amountArr.filter((amount) => !amount.isZero()).length === 0) {
+      return { amount: Zero, routerAddress: router.routerContract.address }
+    }
+    return {
+      amount: await router.routerContract.calculateAddLiquidity(
+        poolAddress,
+        amountArr
+      ),
+      routerAddress: router.routerContract.address,
+    }
+  }
+
+  public async calculateRemoveLiquidity(
+    chainId: number,
+    poolAddress: string,
+    amount: BigNumber
+  ): Promise<{
+    amounts: Record<string, { value: BigNumber; index: number }>
+    routerAddress: string
+  }> {
+    const router: SynapseRouter = this.synapseRouters[chainId]
+    const amounts = await router.routerContract.calculateRemoveLiquidity(
+      poolAddress,
+      amount
+    )
+    const poolTokens = await router.routerContract.poolTokens(poolAddress)
+    const amountsOut: Record<string, { value: BigNumber; index: number }> = {}
+    poolTokens.map((token, index) => {
+      amountsOut[token.token] = { value: amounts[index], index }
+    })
+    return {
+      amounts: amountsOut,
+      routerAddress: router.routerContract.address,
+    }
+  }
+
+  public async calculateRemoveLiquidityOne(
+    chainId: number,
+    poolAddress: string,
+    amount: BigNumber,
+    token: string
+  ): Promise<{
+    amount: { value: BigNumber; index: number }
+    routerAddress: string
+  }> {
+    const router: SynapseRouter = this.synapseRouters[chainId]
+
+    let poolIndex = 0
+    const poolTokens = await router.routerContract.poolTokens(poolAddress)
+    poolTokens.map((poolToken, index) => {
+      if (poolToken.token === token) {
+        poolIndex = index
+      }
+    })
+
+    const outAmount = await router.routerContract.calculateWithdrawOneToken(
+      poolAddress,
+      amount,
+      poolIndex
+    )
+
+    return {
+      amount: { value: outAmount, index: poolIndex },
+      routerAddress: router.routerContract.address,
+    }
   }
 }
 

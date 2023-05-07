@@ -37,6 +37,11 @@ contract TipsHarness {
         return TipsLib.wrapPadded(paddedTips).value();
     }
 
+    /// @notice Increases the delivery tip to match the new value.
+    function matchValue(Tips tips, uint256 newValue) public pure returns (Tips newTips) {
+        return tips.matchValue(newValue);
+    }
+
     // ════════════════════════════════════════════════ FORMATTERS ═════════════════════════════════════════════════════
 
     function encodeTips(uint64 summitTip_, uint64 attestationTip_, uint64 executionTip_, uint64 deliveryTip_)

@@ -1,9 +1,22 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.17;
 
-import {AgentFlag} from "../libs/Structures.sol";
+import {AgentFlag, Dispute} from "../libs/Structures.sol";
 
 abstract contract AgentManagerEvents {
+    // ════════════════════════════════════════════ STATEMENT ACCEPTED ═════════════════════════════════════════════════
+
+    /**
+     * @notice Emitted when a snapshot is accepted by the Destination contract.
+     * @param domain        Domain where the signed Notary is active
+     * @param notary        Notary who signed the attestation
+     * @param attPayload    Raw payload with attestation data
+     * @param attSignature  Notary signature for the attestation
+     */
+    event AttestationAccepted(uint32 domain, address notary, bytes attPayload, bytes attSignature);
+
+    // ═════════════════════════════════════════ INVALID STATEMENT PROVED ══════════════════════════════════════════════
+
     /**
      * @notice Emitted when a proof of invalid receipt statement is submitted.
      * @param rcptPayload   Raw payload with the receipt statement
@@ -35,6 +48,8 @@ abstract contract AgentManagerEvents {
      */
     event InvalidStateReport(bytes srPayload, bytes srSignature);
 
+    // ═══════════════════════════════════════════════ DATA UPDATED ════════════════════════════════════════════════════
+
     /**
      * @notice Emitted whenever the root of the Agent Merkle Tree is updated.
      * @param newRoot   New agent merkle root
@@ -55,4 +70,12 @@ abstract contract AgentManagerEvents {
      * @param agent     Agent address
      */
     event StatusUpdated(AgentFlag flag, uint32 indexed domain, address indexed agent);
+
+    /**
+     * @notice Emitted whenever a Dispute status of an the agent is updated.
+     * See Structures.sol for details.
+     * @param agent     Agent address
+     * @param dispute   Dispute status: (flag, rivalIndex, fraudProver)
+     */
+    event DisputeUpdated(address agent, Dispute dispute);
 }

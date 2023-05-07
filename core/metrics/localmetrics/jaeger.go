@@ -16,10 +16,10 @@ import (
 )
 
 // StartJaegerServer starts a new jaeger instance.
+// nolint: cyclop
 func (j *testJaeger) StartJaegerServer(ctx context.Context) *uiResource {
 	if core.HasEnv(internal.JaegerEndpoint) && !core.HasEnv(internal.JaegerUIEndpoint) {
 		j.tb.Fatalf("%s is set but %s is not, please remove %s or set %s", internal.JaegerEndpoint, internal.JaegerUIEndpoint, internal.JaegerEndpoint, internal.JaegerUIEndpoint)
-		return nil
 	}
 
 	if core.HasEnv(internal.JaegerEndpoint) {
@@ -82,13 +82,21 @@ func (j *testJaeger) StartJaegerServer(ctx context.Context) *uiResource {
 	case <-ctx.Done():
 		return nil
 	case logResource := <-logResourceChan:
+		// if pyroscope jaeger is enabled, we'll use that ui otherwise we'll use this one
+		if !j.cfg.enablePyroscopeJaeger {
+			err = os.Setenv(internal.JaegerUIEndpoint, logResource.uiURL)
+			assert.Nil(j.tb, err)
+		}
+
 		return logResource
 	}
 }
 
 // StartJaegerPyroscopeUI starts a new jaeger pyroscope ui instance.
 func (j *testJaeger) StartJaegerPyroscopeUI(ctx context.Context) *uiResource {
-	if core.HasEnv(internal.JaegerUIEndpoint) {
+	// can't enable if pyroscope is disabled
+	// TODO: add a warning here.
+	if core.HasEnv(internal.JaegerUIEndpoint) || !j.cfg.enablePyroscope {
 		return &uiResource{
 			uiURL: os.Getenv(internal.JaegerUIEndpoint),
 		}

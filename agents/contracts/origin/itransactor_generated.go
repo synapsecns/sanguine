@@ -16,14 +16,18 @@ type IOriginTransactor interface {
 	//
 	// Solidity: function initialize() returns()
 	Initialize(opts *bind.TransactOpts) (*types.Transaction, error)
-	// ManagerSlash is a paid mutator transaction binding the contract method 0x5f7bd144.
+	// OpenDispute is a paid mutator transaction binding the contract method 0xa2155c34.
 	//
-	// Solidity: function managerSlash(uint32 domain, address agent, address prover) returns()
-	ManagerSlash(opts *bind.TransactOpts, domain uint32, agent common.Address, prover common.Address) (*types.Transaction, error)
+	// Solidity: function openDispute(uint32 guardIndex, uint32 notaryIndex) returns()
+	OpenDispute(opts *bind.TransactOpts, guardIndex uint32, notaryIndex uint32) (*types.Transaction, error)
 	// RenounceOwnership is a paid mutator transaction binding the contract method 0x715018a6.
 	//
 	// Solidity: function renounceOwnership() returns()
 	RenounceOwnership(opts *bind.TransactOpts) (*types.Transaction, error)
+	// ResolveDispute is a paid mutator transaction binding the contract method 0x61169218.
+	//
+	// Solidity: function resolveDispute(uint32 slashedIndex, uint32 honestIndex) returns()
+	ResolveDispute(opts *bind.TransactOpts, slashedIndex uint32, honestIndex uint32) (*types.Transaction, error)
 	// SendBaseMessage is a paid mutator transaction binding the contract method 0xf71c4347.
 	//
 	// Solidity: function sendBaseMessage(uint32 destination, bytes32 recipient, uint32 optimisticPeriod, uint256 paddedTips, uint256 paddedRequest, bytes content) payable returns(uint32 messageNonce, bytes32 messageHash)

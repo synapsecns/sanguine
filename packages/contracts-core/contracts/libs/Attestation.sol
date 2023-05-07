@@ -2,6 +2,7 @@
 pragma solidity 0.8.17;
 
 import {ATTESTATION_LENGTH, ATTESTATION_SALT} from "./Constants.sol";
+import {UnformattedAttestation} from "./Errors.sol";
 import {MemView, MemViewLib} from "./MemView.sol";
 
 /// Attestation is a memory view over a formatted attestation payload.
@@ -46,7 +47,7 @@ using AttestationLib for Attestation global;
 /// | Position   | Field       | Type    | Bytes | Description                                                    |
 /// | ---------- | ----------- | ------- | ----- | -------------------------------------------------------------- |
 /// | [000..032) | snapRoot    | bytes32 | 32    | Root for "Snapshot Merkle Tree" created from a Notary snapshot |
-/// | [032..064) | agentRoot   | bytes32 | 32    | Root for "Agent Merkle Tree" tracked by BondingManager         |
+/// | [032..064) | dataHash    | bytes32 | 32    | Agent Root and SnapGasHash combined into a single hash         |
 /// | [064..068) | nonce       | uint32  | 4     | Total amount of all accepted Notary snapshots                  |
 /// | [068..073) | blockNumber | uint40  | 5     | Block when this Notary snapshot was accepted in Summit         |
 /// | [073..078) | timestamp   | uint40  | 5     | Time when this Notary snapshot was accepted in Summit          |
@@ -56,9 +57,11 @@ using AttestationLib for Attestation global;
 library AttestationLib {
     using MemViewLib for bytes;
 
+    // TODO: compress three hashes into one?
+
     /// @dev The variables below are not supposed to be used outside of the library directly.
     uint256 private constant OFFSET_SNAP_ROOT = 0;
-    uint256 private constant OFFSET_AGENT_ROOT = 32;
+    uint256 private constant OFFSET_DATA_HASH = 32;
     uint256 private constant OFFSET_NONCE = 64;
     uint256 private constant OFFSET_BLOCK_NUMBER = 68;
     uint256 private constant OFFSET_TIMESTAMP = 73;
@@ -68,7 +71,7 @@ library AttestationLib {
     /**
      * @notice Returns a formatted Attestation payload with provided fields.
      * @param snapRoot_     Snapshot merkle tree's root
-     * @param agentRoot_    Agent merkle tree's root
+     * @param dataHash_     Agent Root and SnapGasHash combined into a single hash
      * @param nonce_        Attestation Nonce
      * @param blockNumber_  Block number when attestation was created in Summit
      * @param timestamp_    Block timestamp when attestation was created in Summit
@@ -76,12 +79,12 @@ library AttestationLib {
      */
     function formatAttestation(
         bytes32 snapRoot_,
-        bytes32 agentRoot_,
+        bytes32 dataHash_,
         uint32 nonce_,
         uint40 blockNumber_,
         uint40 timestamp_
     ) internal pure returns (bytes memory) {
-        return abi.encodePacked(snapRoot_, agentRoot_, nonce_, blockNumber_, timestamp_);
+        return abi.encodePacked(snapRoot_, dataHash_, nonce_, blockNumber_, timestamp_);
     }
 
     /**
@@ -97,7 +100,7 @@ library AttestationLib {
      * @dev Will revert if the memory view is not over an attestation.
      */
     function castToAttestation(MemView memView) internal pure returns (Attestation) {
-        require(isAttestation(memView), "Not an attestation");
+        if (!isAttestation(memView)) revert UnformattedAttestation();
         return Attestation.wrap(MemView.unwrap(memView));
     }
 
@@ -124,9 +127,14 @@ library AttestationLib {
         return att.unwrap().index({index_: OFFSET_SNAP_ROOT, bytes_: 32});
     }
 
-    /// @notice Returns root of the Agent merkle tree tracked by BondingManager.
-    function agentRoot(Attestation att) internal pure returns (bytes32) {
-        return att.unwrap().index({index_: OFFSET_AGENT_ROOT, bytes_: 32});
+    /// @notice Returns hash of the Agent Root and SnapGasHash combined into a single hash.
+    function dataHash(Attestation att) internal pure returns (bytes32) {
+        return att.unwrap().index({index_: OFFSET_DATA_HASH, bytes_: 32});
+    }
+
+    /// @notice Returns hash of the Agent Root and SnapGasHash combined into a single hash.
+    function dataHash(bytes32 agentRoot_, bytes32 snapGasHash_) internal pure returns (bytes32) {
+        return keccak256(bytes.concat(agentRoot_, snapGasHash_));
     }
 
     /// @notice Returns nonce of Summit contract at the time, when attestation was created.

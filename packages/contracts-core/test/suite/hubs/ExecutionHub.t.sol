@@ -1,6 +1,18 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.17;
 
+import {
+    AlreadyExecuted,
+    AlreadyFailed,
+    GasLimitTooLow,
+    GasSuppliedTooLow,
+    IncorrectDestinationDomain,
+    IncorrectMagicValue,
+    IncorrectSnapshotRoot,
+    MessageOptimisticPeriod,
+    NotaryInDispute
+} from "../../../contracts/libs/Errors.sol";
+import {AgentFlag} from "../../../contracts/libs/Structures.sol";
 import {IExecutionHub} from "../../../contracts/interfaces/IExecutionHub.sol";
 import {IAgentManager} from "../../../contracts/interfaces/IAgentManager.sol";
 import {SNAPSHOT_MAX_STATES} from "../../../contracts/libs/Snapshot.sol";
@@ -9,32 +21,33 @@ import {MessageStatus} from "../../../contracts/libs/Structures.sol";
 import {RevertingApp} from "../../harnesses/client/RevertingApp.t.sol";
 import {MessageRecipientMock} from "../../mocks/client/MessageRecipientMock.t.sol";
 
+import {fakeSnapshot} from "../../utils/libs/FakeIt.t.sol";
 import {Random} from "../../utils/libs/Random.t.sol";
 import {
     ReceiptLib,
     MessageFlag,
+    AttestationFlag,
     RawAttestation,
+    RawAttestationReport,
     RawBaseMessage,
     RawCallData,
     RawReceiptBody,
     RawExecReceipt,
     RawHeader,
     RawMessage,
+    RawSnapshot,
+    StateFlag,
     RawState,
     RawStateIndex,
+    RawStateReport,
     RawTips
 } from "../../utils/libs/SynapseStructs.t.sol";
-import {DisputeHubTest, IDisputeHub} from "./DisputeHub.t.sol";
+import {AgentSecuredTest} from "../base/AgentSecured.t.sol";
 
 // solhint-disable func-name-mixedcase
 // solhint-disable no-empty-blocks
 // solhint-disable ordering
-abstract contract ExecutionHubTest is DisputeHubTest {
-    struct SnapshotMock {
-        RawState rs;
-        RawStateIndex rsi;
-    }
-
+abstract contract ExecutionHubTest is AgentSecuredTest {
     address internal recipient;
     address internal executor;
     address internal executorNew;
@@ -77,7 +90,7 @@ abstract contract ExecutionHubTest is DisputeHubTest {
         // expectCall(address callee, uint256 msgValue, uint64 gas, bytes calldata data)
         vm.expectCall(recipient, 0, gasLimit, expectedCall);
         vm.expectEmit();
-        emit Executed(rh.origin, keccak256(msgPayload));
+        emit Executed(rh.origin, keccak256(msgPayload), true);
         vm.prank(executor);
         testedEH().execute(msgPayload, originProof, snapProof, sm.rsi.stateIndex, gasLimit);
         bytes memory receiptBody = verify_messageStatus(
@@ -86,7 +99,7 @@ abstract contract ExecutionHubTest is DisputeHubTest {
         verify_receipt_valid(receiptBody, rbm.tips);
     }
 
-    function test_execute_base_recipientReverted(Random memory random) public {
+    function test_execute_base_recipientReverted_thenSuccess(Random memory random) public {
         recipient = address(new RevertingApp());
         // Create some simple data
         (RawBaseMessage memory rbm, RawHeader memory rh, SnapshotMock memory sm) = createDataRevertTest(random);
@@ -101,7 +114,7 @@ abstract contract ExecutionHubTest is DisputeHubTest {
         timePassed = uint32(bound(timePassed, rh.optimisticPeriod, rh.optimisticPeriod + 1 days));
         skip(timePassed);
         vm.expectEmit();
-        emit Executed(rh.origin, keccak256(msgPayload));
+        emit Executed(rh.origin, keccak256(msgPayload), false);
         vm.prank(executor);
         testedEH().execute(msgPayload, originProof, snapProof, sm.rsi.stateIndex, rbm.request.gasLimit);
         bytes memory receiptBodyFirst = verify_messageStatus(
@@ -110,6 +123,8 @@ abstract contract ExecutionHubTest is DisputeHubTest {
         verify_receipt_valid(receiptBodyFirst, rbm.tips);
         // Retry the same failed message
         RevertingApp(payable(recipient)).toggleRevert(false);
+        vm.expectEmit();
+        emit Executed(rh.origin, keccak256(msgPayload), true);
         vm.prank(executorNew);
         testedEH().execute(msgPayload, originProof, snapProof, sm.rsi.stateIndex, rbm.request.gasLimit);
         bytes memory receiptBodySecond = verify_messageStatus(
@@ -119,6 +134,34 @@ abstract contract ExecutionHubTest is DisputeHubTest {
         verify_receipt_valid(receiptBodyFirst, rbm.tips);
         verify_receipt_valid(receiptBodySecond, rbm.tips);
         cachedStateIndex = uint8(sm.rsi.stateIndex);
+    }
+
+    function test_execute_base_recipientReverted_twice(Random memory random) public {
+        recipient = address(new RevertingApp());
+        // Create some simple data
+        (RawBaseMessage memory rbm, RawHeader memory rh, SnapshotMock memory sm) = createDataRevertTest(random);
+        // Create messages and get origin proof
+        bytes memory msgPayload = createBaseMessages(rbm, rh, localDomain());
+        bytes32[] memory originProof = getLatestProof(rh.nonce - 1);
+        // Create snapshot proof
+        adjustSnapshot(sm);
+        (bytes32 snapRoot, bytes32[] memory snapProof) = prepareExecution(sm);
+        // Make sure that optimistic period is over
+        uint32 timePassed = random.nextUint32();
+        timePassed = uint32(bound(timePassed, rh.optimisticPeriod, rh.optimisticPeriod + 1 days));
+        skip(timePassed);
+        vm.expectEmit();
+        emit Executed(rh.origin, keccak256(msgPayload), false);
+        vm.prank(executor);
+        testedEH().execute(msgPayload, originProof, snapProof, sm.rsi.stateIndex, rbm.request.gasLimit);
+        bytes memory receiptBodyFirst = verify_messageStatus(
+            keccak256(msgPayload), snapRoot, sm.rsi.stateIndex, MessageStatus.Failed, executor, address(0)
+        );
+        verify_receipt_valid(receiptBodyFirst, rbm.tips);
+        // Retry the same failed message
+        vm.expectRevert(AlreadyFailed.selector);
+        vm.prank(executorNew);
+        testedEH().execute(msgPayload, originProof, snapProof, sm.rsi.stateIndex, rbm.request.gasLimit);
     }
 
     function test_execute_base_revert_alreadyExecuted(Random memory random) public {
@@ -135,7 +178,7 @@ abstract contract ExecutionHubTest is DisputeHubTest {
         timePassed = uint32(bound(timePassed, rh.optimisticPeriod, rh.optimisticPeriod + 1 days));
         skip(timePassed);
         testedEH().execute(msgPayload, originProof, snapProof, sm.rsi.stateIndex, rbm.request.gasLimit);
-        vm.expectRevert("Already executed");
+        vm.expectRevert(AlreadyExecuted.selector);
         vm.prank(executor);
         testedEH().execute(msgPayload, originProof, snapProof, sm.rsi.stateIndex, rbm.request.gasLimit);
     }
@@ -150,12 +193,12 @@ abstract contract ExecutionHubTest is DisputeHubTest {
         adjustSnapshot(sm);
         (, bytes32[] memory snapProof) = prepareExecution(sm);
         // initiate dispute
-        check_submitStateReportWithSnapshot(systemContract(), localDomain(), sm.rs, sm.rsi);
+        openDispute({guard: domains[0].agent, notary: domains[DOMAIN_LOCAL].agent});
         // Make sure that optimistic period is over
         uint32 timePassed = random.nextUint32();
         timePassed = uint32(bound(timePassed, rh.optimisticPeriod, rh.optimisticPeriod + 1 days));
         skip(timePassed);
-        vm.expectRevert("Notary is in dispute");
+        vm.expectRevert(NotaryInDispute.selector);
         vm.prank(executor);
         testedEH().execute(msgPayload, originProof, snapProof, sm.rsi.stateIndex, rbm.request.gasLimit);
         verify_messageStatusNone(keccak256(msgPayload));
@@ -174,7 +217,7 @@ abstract contract ExecutionHubTest is DisputeHubTest {
         uint32 timePassed = random.nextUint32();
         timePassed = uint32(bound(timePassed, rh.optimisticPeriod, rh.optimisticPeriod + 1 days));
         skip(timePassed);
-        vm.expectRevert("Invalid snapshot root");
+        vm.expectRevert(IncorrectSnapshotRoot.selector);
         vm.prank(executor);
         testedEH().execute(msgPayload, originProof, snapProof, sm.rsi.stateIndex, rbm.request.gasLimit);
         verify_messageStatusNone(keccak256(msgPayload));
@@ -193,7 +236,7 @@ abstract contract ExecutionHubTest is DisputeHubTest {
         // Make sure that optimistic period is NOT over
         uint32 timePassed = random.nextUint32() % rh.optimisticPeriod;
         skip(timePassed);
-        vm.expectRevert("!optimisticPeriod");
+        vm.expectRevert(MessageOptimisticPeriod.selector);
         vm.prank(executor);
         testedEH().execute(msgPayload, originProof, snapProof, sm.rsi.stateIndex, rbm.request.gasLimit);
         verify_messageStatusNone(keccak256(msgPayload));
@@ -214,7 +257,7 @@ abstract contract ExecutionHubTest is DisputeHubTest {
         skip(timePassed);
         // Make sure gas limit is lower than requested
         uint64 gasLimit = random.nextUint64() % rbm.request.gasLimit;
-        vm.expectRevert("Gas limit too low");
+        vm.expectRevert(GasLimitTooLow.selector);
         vm.prank(executor);
         testedEH().execute(msgPayload, originProof, snapProof, sm.rsi.stateIndex, gasLimit);
         verify_messageStatusNone(keccak256(msgPayload));
@@ -233,7 +276,7 @@ abstract contract ExecutionHubTest is DisputeHubTest {
         uint32 timePassed = random.nextUint32();
         timePassed = uint32(bound(timePassed, rh.optimisticPeriod, rh.optimisticPeriod + 1 days));
         skip(timePassed);
-        vm.expectRevert("Not enough gas supplied");
+        vm.expectRevert(GasSuppliedTooLow.selector);
         vm.prank(executor);
         // Limit amount of gas for the whole call
         testedEH().execute{gas: rbm.request.gasLimit + 20_000}(
@@ -256,7 +299,7 @@ abstract contract ExecutionHubTest is DisputeHubTest {
         uint32 timePassed = random.nextUint32();
         timePassed = uint32(bound(timePassed, rh.optimisticPeriod, rh.optimisticPeriod + 1 days));
         skip(timePassed);
-        vm.expectRevert("!destination");
+        vm.expectRevert(IncorrectDestinationDomain.selector);
         vm.prank(executor);
         testedEH().execute(msgPayload, originProof, snapProof, sm.rsi.stateIndex, rbm.request.gasLimit);
         verify_messageStatusNone(keccak256(msgPayload));
@@ -283,7 +326,7 @@ abstract contract ExecutionHubTest is DisputeHubTest {
             abi.encodeWithSelector(bondingManager.remoteMockFunc.selector, rh.origin, timePassed, rh.nonce)
         );
         vm.expectEmit();
-        emit Executed(rh.origin, keccak256(msgPayload));
+        emit Executed(rh.origin, keccak256(msgPayload), true);
         vm.prank(executor);
         testedEH().execute(msgPayload, originProof, snapProof, sm.rsi.stateIndex, gasLimit);
         verify_messageStatus(
@@ -301,7 +344,7 @@ abstract contract ExecutionHubTest is DisputeHubTest {
         // Create snapshot proof
         adjustSnapshot(sm);
         (, bytes32[] memory snapProof) = prepareExecution(sm);
-        vm.expectRevert("!magicValue");
+        vm.expectRevert(IncorrectMagicValue.selector);
         testedEH().execute(msgPayload, originProof, snapProof, sm.rsi.stateIndex, 0);
     }
 
@@ -315,7 +358,7 @@ abstract contract ExecutionHubTest is DisputeHubTest {
         // Create snapshot proof
         adjustSnapshot(sm);
         (, bytes32[] memory snapProof) = prepareExecution(sm);
-        vm.expectRevert("!magicValue");
+        vm.expectRevert(IncorrectMagicValue.selector);
         testedEH().execute(msgPayload, originProof, snapProof, sm.rsi.stateIndex, 0);
     }
 
@@ -330,7 +373,7 @@ abstract contract ExecutionHubTest is DisputeHubTest {
         // Create snapshot proof
         adjustSnapshot(sm);
         (, bytes32[] memory snapProof) = prepareExecution(sm);
-        vm.expectRevert("!magicValue");
+        vm.expectRevert(IncorrectMagicValue.selector);
         testedEH().execute(msgPayload, originProof, snapProof, sm.rsi.stateIndex, 0);
     }
 
@@ -344,14 +387,14 @@ abstract contract ExecutionHubTest is DisputeHubTest {
     }
 
     function test_verifyReceipt_invalid_msgStatusSuccess(uint256 mask) public {
-        test_execute_base_recipientReverted(Random(bytes32(mask)));
+        test_execute_base_recipientReverted_thenSuccess(Random(bytes32(mask)));
         RawReceiptBody memory rrb = RawReceiptBody({
             origin: DOMAIN_REMOTE,
             destination: localDomain(),
             messageHash: getLeaf(0),
             snapshotRoot: getSnapshotRoot(),
             stateIndex: cachedStateIndex,
-            attNotary: domains[localDomain()].agent,
+            attNotary: domains[DOMAIN_LOCAL].agent,
             firstExecutor: executor,
             finalExecutor: executorNew
         });
@@ -383,7 +426,7 @@ abstract contract ExecutionHubTest is DisputeHubTest {
         if (flag == MessageStatus.None) {
             assertEq(receiptBody.length, 0, "!receiptBody: empty");
         } else {
-            address notary = domains[localDomain()].agent;
+            address attNotary = domains[DOMAIN_LOCAL].agent;
             assertEq(
                 receiptBody,
                 ReceiptLib.formatReceiptBody(
@@ -392,7 +435,7 @@ abstract contract ExecutionHubTest is DisputeHubTest {
                     messageHash,
                     snapRoot,
                     uint8(stateIndex),
-                    notary,
+                    attNotary,
                     firstExecutor,
                     finalExecutor
                 )
@@ -403,7 +446,7 @@ abstract contract ExecutionHubTest is DisputeHubTest {
     function verify_receipt_valid(bytes memory receiptBody, RawTips memory rt) public {
         bytes memory rcptPayload = abi.encodePacked(receiptBody, rt.encodeTips());
         assertTrue(testedEH().isValidReceipt(rcptPayload));
-        address notary = domains[localDomain()].agent;
+        address notary = domains[DOMAIN_LOCAL].agent;
         bytes memory rcptSignature = signReceipt(notary, rcptPayload);
         vm.recordLogs();
         assertTrue(IAgentManager(localAgentManager()).verifyReceipt(rcptPayload, rcptSignature));
@@ -413,10 +456,12 @@ abstract contract ExecutionHubTest is DisputeHubTest {
     function verify_receipt_invalid(RawExecReceipt memory re) public {
         bytes memory rcptPayload = re.formatReceipt();
         assertFalse(testedEH().isValidReceipt(rcptPayload));
-        address notary = domains[localDomain()].agent;
+        address notary = domains[DOMAIN_LOCAL].agent;
         bytes memory rcptSignature = signReceipt(notary, rcptPayload);
         // TODO: check that anyone could make the call
-        expectAgentSlashed(localDomain(), notary, address(this));
+        expectStatusUpdated(AgentFlag.Fraudulent, DOMAIN_LOCAL, notary);
+        expectDisputeResolved(notary, address(0), address(this));
+        // expectAgentSlashed(localDomain(), notary, address(this));
         assertFalse(IAgentManager(localAgentManager()).verifyReceipt(rcptPayload, rcptSignature));
     }
 
@@ -469,19 +514,11 @@ abstract contract ExecutionHubTest is DisputeHubTest {
     {
         rbm.sender = random.next();
         rbm.content = "Test content";
+        rbm.tips = RawTips(1, 1, 1, 1);
         rh.nonce = 1;
         rh.optimisticPeriod = random.nextUint32();
         sm = SnapshotMock(random.nextState(), RawStateIndex(random.nextUint256(), random.nextUint256()));
         sm.rsi.boundStateIndex();
-    }
-
-    function createSnapshotProof(SnapshotMock memory sm)
-        public
-        returns (RawAttestation memory ra, bytes32[] memory snapProof)
-    {
-        ra = Random(sm.rs.root).nextAttestation(1);
-        ra = createAttestation(sm.rs, ra, sm.rsi);
-        snapProof = genSnapshotProof(sm.rsi.stateIndex);
     }
 
     /// @notice Sets realistic values for the message header
@@ -503,8 +540,13 @@ abstract contract ExecutionHubTest is DisputeHubTest {
         sm.rsi.boundStateIndex();
     }
 
-    /// @notice Returns tested system contract as IExecutionHub
+    /// @notice Returns address of the tested contract
+    function localContract() public view override returns (address) {
+        return localDestination();
+    }
+
+    /// @notice Returns tested contract as IExecutionHub
     function testedEH() public view returns (IExecutionHub) {
-        return IExecutionHub(systemContract());
+        return IExecutionHub(localContract());
     }
 }

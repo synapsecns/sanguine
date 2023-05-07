@@ -2,10 +2,12 @@
 pragma solidity 0.8.17;
 
 // ══════════════════════════════ LIBRARY IMPORTS ══════════════════════════════
+import {IncorrectOriginDomain} from "../libs/Errors.sol";
+import {GasData, GasDataLib} from "../libs/GasData.sol";
 import {HistoricalTree} from "../libs/MerkleTree.sol";
 import {State, StateLib} from "../libs/State.sol";
 // ═════════════════════════════ INTERNAL IMPORTS ══════════════════════════════
-import {SystemBase} from "../system/SystemBase.sol";
+import {AgentSecured} from "../base/AgentSecured.sol";
 import {StateHubEvents} from "../events/StateHubEvents.sol";
 import {IStateHub} from "../interfaces/IStateHub.sol";
 
@@ -16,14 +18,15 @@ import {IStateHub} from "../interfaces/IStateHub.sol";
  * - How "state" getters work
  * - How to compare "states" to one another
  */
-abstract contract StateHub is SystemBase, StateHubEvents, IStateHub {
+abstract contract StateHub is AgentSecured, StateHubEvents, IStateHub {
     using StateLib for bytes;
 
     struct OriginState {
         uint40 blockNumber;
         uint40 timestamp;
+        GasData gasData;
     }
-    // 176 bits left for tight packing
+    // Bits left for tight packing: 80
 
     // ══════════════════════════════════════════════════ STORAGE ══════════════════════════════════════════════════════
 
@@ -101,7 +104,7 @@ abstract contract StateHub is SystemBase, StateHubEvents, IStateHub {
     /// Reverts, if state refers to another Origin contract.
     function _isValidState(State state) internal view returns (bool) {
         // Check if state refers to this contract
-        require(state.origin() == localDomain, "Wrong origin");
+        if (state.origin() != localDomain) revert IncorrectOriginDomain();
         // Check if nonce exists
         uint32 nonce = state.nonce();
         if (nonce >= _originStates.length) return false;
@@ -124,15 +127,19 @@ abstract contract StateHub is SystemBase, StateHubEvents, IStateHub {
             origin_: origin,
             nonce_: nonce,
             blockNumber_: originState.blockNumber,
-            timestamp_: originState.timestamp
+            timestamp_: originState.timestamp,
+            gasData_: originState.gasData
         });
     }
 
-    /// @dev Returns a OriginState struct to save in the contract.
     // solhint-disable-next-line ordering
+    function _fetchGasData() internal view virtual returns (GasData);
+
+    /// @dev Returns a OriginState struct to save in the contract.
     function _toOriginState() internal view returns (OriginState memory originState) {
         originState.blockNumber = uint40(block.number);
         originState.timestamp = uint40(block.timestamp);
+        originState.gasData = _fetchGasData();
     }
 
     /// @dev Checks that a state and its Origin representation are equal.
