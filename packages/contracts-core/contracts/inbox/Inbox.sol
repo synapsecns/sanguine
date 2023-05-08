@@ -41,13 +41,15 @@ contract Inbox is StatementInbox, InboxEvents, InterfaceInbox {
         if (domain != SYNAPSE_DOMAIN) revert MustBeSynapseDomain();
     }
 
+    /// @notice Initializes `Inbox` contract:
+    /// - Sets `msg.sender` as the owner of the contract
+    /// - Sets `agentManager`, `origin`, `destination` and `summit` addresses
     function initialize(address agentManager_, address origin_, address destination_, address summit_)
         external
         initializer
     {
         __StatementInbox_init(agentManager_, origin_, destination_);
         summit = summit_;
-        __Ownable_init();
     }
 
     // ══════════════════════════════════════════ SUBMIT AGENT STATEMENTS ══════════════════════════════════════════════

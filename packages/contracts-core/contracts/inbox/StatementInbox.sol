@@ -51,6 +51,9 @@ abstract contract StatementInbox is MessagingBase, StatementInboxEvents, IStatem
 
     // ════════════════════════════════════════════════ INITIALIZER ════════════════════════════════════════════════════
 
+    /// @dev Initializes the contract:
+    /// - Sets up `msg.sender` as the owner of the contract.
+    /// - Sets up `agentManager`, `origin`, and `destination`.
     // solhint-disable-next-line func-name-mixedcase
     function __StatementInbox_init(address agentManager_, address origin_, address destination_)
         internal
@@ -59,6 +62,7 @@ abstract contract StatementInbox is MessagingBase, StatementInboxEvents, IStatem
         agentManager = agentManager_;
         origin = origin_;
         destination = destination_;
+        __Ownable_init();
     }
 
     // ══════════════════════════════════════════ SUBMIT AGENT STATEMENTS ══════════════════════════════════════════════

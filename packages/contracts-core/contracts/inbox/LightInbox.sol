@@ -25,9 +25,11 @@ contract LightInbox is StatementInbox, InterfaceLightInbox {
         if (domain == SYNAPSE_DOMAIN) revert SynapseDomainForbidden();
     }
 
+    /// @notice Initializes `LightInbox` contract:
+    /// - Sets `msg.sender` as the owner of the contract
+    /// - Sets `agentManager`, `origin` and `destination` addresses
     function initialize(address agentManager_, address origin_, address destination_) external initializer {
         __StatementInbox_init(agentManager_, origin_, destination_);
-        __Ownable_init();
     }
 
     // ══════════════════════════════════════════ SUBMIT AGENT STATEMENTS ══════════════════════════════════════════════
