@@ -74,7 +74,7 @@ func (s Store) GetEarliestStateInRange(ctx context.Context, chainID, destination
 						SELECT MIN(%s) FROM (
 							(SELECT %s FROM %s WHERE %s >= ? AND %s <= ? AND %s = ?) AS stateTable
 							INNER JOIN
-							(SELECT %s, %s FROM %s) as attestationTable
+							(SELECT %s, %s FROM %s WHERE %s = ?) as attestationTable
 							ON stateTable.%s = attestationTable.%s
 						)
 					)
@@ -83,9 +83,9 @@ func (s Store) GetEarliestStateInRange(ctx context.Context, chainID, destination
 			SnapshotRootFieldName, attestationsTableName, DestinationFieldName, DestinationBlockNumberFieldName,
 			DestinationBlockNumberFieldName,
 			SnapshotRootFieldName, statesTableName, NonceFieldName, NonceFieldName, ChainIDFieldName,
-			SnapshotRootFieldName, DestinationBlockNumberFieldName, attestationsTableName,
+			SnapshotRootFieldName, DestinationBlockNumberFieldName, attestationsTableName, DestinationFieldName,
 			SnapshotRootFieldName, SnapshotRootFieldName,
-		), chainID, destination, startNonce, endNonce, chainID).
+		), chainID, destination, startNonce, endNonce, chainID, destination).
 		Scan(&state)
 	if dbTx.Error != nil {
 		return nil, fmt.Errorf("failed to get earliest state in range: %w", dbTx.Error)
