@@ -91,7 +91,10 @@ type logOrderInfo struct {
 	blockIndex  uint
 }
 
-const logChanSize = 1000
+const (
+	logChanSize = 1000
+	rpcRetry    = 7
+)
 
 // NewExecutor creates a new executor agent.
 //
@@ -203,19 +206,6 @@ func NewExecutor(ctx context.Context, config config.Config, executorDB db.Execut
 // Run starts the executor agent. It calls `Start` and `Listen`.
 func (e Executor) Run(ctx context.Context) error {
 	g, _ := errgroup.WithContext(ctx)
-
-	//// Backfill executed messages.
-	//for _, chain := range e.config.Chains {
-	//	chain := chain
-	//
-	//	g.Go(func() error {
-	//		return e.markAsExecuted(ctx, chain)
-	//	})
-	//}
-	//
-	//if err := g.Wait(); err != nil {
-	//	return fmt.Errorf("could not backfill executed messages: %w", err)
-	//}
 
 	// Listen for snapshotAcceptedEvents on summit.
 	g.Go(func() error {
@@ -381,7 +371,7 @@ func (e Executor) Execute(parentCtx context.Context, message types.Message) (_ b
 		case <-ctx.Done():
 			return false, fmt.Errorf("context canceled: %w", ctx.Err())
 		case <-time.After(timeout):
-			if b.Attempt() >= 5 {
+			if b.Attempt() >= rpcRetry {
 				return false, fmt.Errorf("could not execute message after %f attempts", b.Attempt())
 			}
 
@@ -417,8 +407,6 @@ const (
 	dispatchedEvent eventType = iota
 	// Destination's AttestationAccepted event.
 	attestationAcceptedEvent
-	// Destination's AttestationExecuted event.
-	executedEvent
 	// Summit's SnapshotAccepted event.
 	snapshotAcceptedEvent
 	otherEvent
@@ -530,12 +518,40 @@ func (e Executor) verifyMessageOptimisticPeriod(parentCtx context.Context, messa
 		return nil, nil
 	}
 
-	latestHeader, err := e.chainExecutors[destinationDomain].rpcClient.HeaderByNumber(ctx, nil)
-	if err != nil {
-		return nil, fmt.Errorf("could not get latest header: %w", err)
+	b := &backoff.Backoff{
+		Factor: 2,
+		Jitter: true,
+		Min:    30 * time.Millisecond,
+		Max:    3 * time.Second,
 	}
 
-	currentTime := latestHeader.Time
+	timeout := time.Duration(0)
+
+	var currentTime uint64
+
+retryLoop:
+	for {
+		select {
+		case <-ctx.Done():
+			return nil, fmt.Errorf("context canceled: %w", ctx.Err())
+		case <-time.After(timeout):
+			if b.Attempt() >= rpcRetry {
+				return nil, fmt.Errorf("could not get latest header: %w", err)
+			}
+
+			latestHeader, err := e.chainExecutors[destinationDomain].rpcClient.HeaderByNumber(ctx, nil)
+			if err != nil {
+				timeout = b.Duration()
+
+				continue
+			}
+
+			currentTime = latestHeader.Time
+
+			break retryLoop
+		}
+	}
+
 	if *messageMinimumTime > currentTime {
 		//nolint:nilnil
 		return nil, nil
@@ -631,21 +647,6 @@ func (e Executor) checkIfExecuted(parentCtx context.Context, message types.Messa
 	}
 }
 
-// markAsExecuted marks a message as executed via the `executed` mapping.
-func (e Executor) markAsExecuted(ctx context.Context, chain config.ChainConfig) error {
-	latestHeader, err := e.chainExecutors[chain.ChainID].rpcClient.HeaderByNumber(ctx, nil)
-	if err != nil {
-		return fmt.Errorf("could not get latest header: %w", err)
-	}
-
-	blockNumber := latestHeader.Number.Uint64()
-
-	return e.streamLogs(ctx, e.grpcClient, e.grpcConn, chain.ChainID, chain.DestinationAddress, &blockNumber, contractEventType{
-		contractType: destinationContract,
-		eventType:    executedEvent,
-	})
-}
-
 // streamLogs uses gRPC to stream logs into a channel.
 //
 //nolint:cyclop
@@ -711,13 +712,6 @@ func (e Executor) streamLogs(ctx context.Context, grpcClient pbscribe.ScribeServ
 				attribute.String(metrics.TxHash, log.TxHash.String()),
 			))
 
-			// If we are filtering for `executed` events, we do not need to `verifyAfter`
-			// since we are backfilling.
-			if contractEvent.eventType == executedEvent {
-				e.chainExecutors[chainID].logChan <- log
-
-				continue
-			}
 			//if contractEvent.eventType == dispatchedEvent && !e.chainExecutors[chainID].lastLog.verifyAfter(*log) {
 			//	logger.Errorf("log is not in chronological order. last log blockNumber: %d, blockIndex: %d. this log blockNumber: %d, blockIndex: %d, txHash: %s", e.chainExecutors[chainID].lastLog.blockNumber, e.chainExecutors[chainID].lastLog.blockIndex, log.BlockNumber, log.Index, log.TxHash.String())
 			//
@@ -790,9 +784,35 @@ func (e Executor) processLog(parentCtx context.Context, log ethTypes.Log, chainI
 			return nil
 		}
 
-		logHeader, err := e.chainExecutors[chainID].rpcClient.HeaderByNumber(ctx, big.NewInt(int64(log.BlockNumber)))
-		if err != nil {
-			return fmt.Errorf("could not get log header: %w", err)
+		b := &backoff.Backoff{
+			Factor: 2,
+			Jitter: true,
+			Min:    30 * time.Millisecond,
+			Max:    3 * time.Second,
+		}
+
+		timeout := time.Duration(0)
+
+		var logHeader *ethTypes.Header
+
+	retryLoop:
+		for {
+			select {
+			case <-ctx.Done():
+				return fmt.Errorf("context canceled: %w", ctx.Err())
+			case <-time.After(timeout):
+				if b.Attempt() >= rpcRetry {
+					return fmt.Errorf("could not get log header: %w", err)
+				}
+				logHeader, err = e.chainExecutors[chainID].rpcClient.HeaderByNumber(ctx, big.NewInt(int64(log.BlockNumber)))
+				if err != nil {
+					timeout = b.Duration()
+
+					continue
+				}
+
+				break retryLoop
+			}
 		}
 
 		err = e.executorDB.StoreAttestation(ctx, *attestation, chainID, log.BlockNumber, logHeader.Time)
@@ -887,11 +907,6 @@ func (e Executor) executeExecutable(parentCtx context.Context, chainID uint32) (
 				))
 
 				for _, message := range messages {
-					//leaf, err := message.ToLeaf()
-					//if err != nil {
-					//	return fmt.Errorf("could not convert message to leaf: %w", err)
-					//}
-
 					messageExecuted, err := e.checkIfExecuted(ctx, message)
 					if err != nil {
 						return fmt.Errorf("could not check if message was executed: %w", err)
@@ -926,31 +941,6 @@ func (e Executor) executeExecutable(parentCtx context.Context, chainID uint32) (
 					if err != nil {
 						return fmt.Errorf("could not execute message: %w", err)
 					}
-
-					//destinationDomain := message.DestinationDomain()
-
-					//if !e.chainExecutors[destinationDomain].executed[leaf] {
-					//	executed, err := e.Execute(ctx, message)
-					//	if err != nil {
-					//		logger.Errorf("could not execute message, retrying: %s", err)
-					//		continue
-					//	}
-					//
-					//	if !executed {
-					//		continue
-					//	}
-					//}
-
-					//nonce := message.Nonce()
-					//executedMessageMask := execTypes.DBMessage{
-					//	ChainID:     &chainID,
-					//	Destination: &destinationDomain,
-					//	Nonce:       &nonce,
-					//}
-					//err = e.executorDB.ExecuteMessage(ctx, executedMessageMask)
-					//if err != nil {
-					//	return fmt.Errorf("could not execute message: %w", err)
-					//}
 				}
 
 				metrics.EndSpanWithErr(span, err)
