@@ -4,7 +4,6 @@ pragma solidity 0.8.17;
 import {MessagingBase} from "../../../contracts/base/MessagingBase.sol";
 import {AgentFlag, Dispute, DisputeFlag} from "../../../contracts/libs/Structures.sol";
 import {IAgentSecured} from "../../../contracts/interfaces/IAgentSecured.sol";
-import {VerificationManager} from "../../../contracts/manager/VerificationManager.sol";
 
 import {AgentManagerHarness} from "../../harnesses/manager/AgentManagerHarness.t.sol";
 import {SynapseTest} from "../../utils/SynapseTest.t.sol";
@@ -84,7 +83,10 @@ abstract contract MessagingBaseTest is SynapseTest {
     // ══════════════════════════════════════════════ DISPUTE CHEATS ═══════════════════════════════════════════════════
 
     function openDispute(address guard, address notary) public {
-        AgentManagerHarness(localAgentManager()).openDisputeExposed(guard, notary);
+        require(agentIndex[guard] != 0, "Invalid Guard");
+        require(agentIndex[notary] != 0, "Invalid Notary");
+        vm.prank(localInbox());
+        AgentManagerHarness(localAgentManager()).openDispute(agentIndex[guard], agentIndex[notary]);
     }
 
     // ═══════════════════════════════════════════════ DATA CREATION ═══════════════════════════════════════════════════
@@ -148,6 +150,11 @@ abstract contract MessagingBaseTest is SynapseTest {
     /// @notice Returns address of Agent Manager on the tested domain
     function localAgentManager() public view virtual onlySupportedDomain returns (address) {
         return localDomain() == DOMAIN_LOCAL ? address(lightManager) : address(bondingManager);
+    }
+
+    /// @notice Returns address of Inbox on the tested domain
+    function localInbox() public view virtual onlySupportedDomain returns (address) {
+        return localDomain() == DOMAIN_LOCAL ? address(lightInbox) : address(inbox);
     }
 
     /// @notice Returns address of Destination on the tested domain

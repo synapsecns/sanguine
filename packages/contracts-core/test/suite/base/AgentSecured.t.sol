@@ -8,9 +8,9 @@ abstract contract AgentSecuredTest is MessagingBaseTest {
     // TODO: unit tests for AgentSecured
     // ═══════════════════════════════════════════ UPDATE IMPLEMENTATION ═══════════════════════════════════════════════
 
-    function updateOrigin(uint32 domain, address agentManager, address gasOracle_) public {
+    function updateOrigin(uint32 domain, address agentManager, address inbox_, address gasOracle_) public {
         // Deploy new implementation with a different set of immutables
-        Origin impl = new Origin(domain, agentManager, gasOracle_);
+        Origin impl = new Origin(domain, agentManager, inbox_, gasOracle_);
         // Etch the implementation code to effectively update the values of immutables
         vm.etch(localOrigin(), address(impl).code);
     }
