@@ -74,6 +74,8 @@ contract Inbox is StatementInbox, InboxEvents, InterfaceInbox {
                 snapPayload: snapPayload
             });
         } else {
+            // Get current agentRoot from AgentManager
+            agentRoot_ = IAgentManager(agentManager).agentRoot();
             // This will revert if Notary is in Dispute
             attPayload = InterfaceSummit(summit).acceptNotarySnapshot({
                 notaryIndex: status.index,
