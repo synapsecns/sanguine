@@ -142,6 +142,10 @@ contract LightInboxTest is StatementInboxTest {
         expectDisputeOpened(guard, notary);
         vm.prank(prover);
         lightInbox.submitAttestationReport(arPayload, arSignature, attSignature);
+        assertEq(lightInbox.getReportsAmount(), 1, "!reportsAmount");
+        (bytes memory reportPayload, bytes memory reportSignature) = lightInbox.getGuardReport(0);
+        assertEq(reportPayload, arPayload, "!reportPayload");
+        assertEq(reportSignature, arSignature, "!reportSig");
     }
 
     function test_submitAttestationReport_revert_signedByNotary(Random memory random) public {

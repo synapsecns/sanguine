@@ -36,6 +36,10 @@ abstract contract StatementInboxTest is MessagingBaseTest {
         expectDisputeOpened(guard, notary);
         vm.prank(prover);
         testedInbox().submitStateReportWithSnapshot(rsi.stateIndex, srPayload, srSig, snapPayload, snapSig);
+        assertEq(testedInbox().getReportsAmount(), 1, "!reportsAmount");
+        (bytes memory reportPayload, bytes memory reportSignature) = testedInbox().getGuardReport(0);
+        assertEq(reportPayload, srPayload, "!reportPayload");
+        assertEq(reportSignature, srSig, "!reportSignature");
     }
 
     function test_submitStateReportWithSnapshot_revert_signedByNotary(Random memory random) public {
@@ -70,6 +74,10 @@ abstract contract StatementInboxTest is MessagingBaseTest {
         testedInbox().submitStateReportWithAttestation(
             rsi.stateIndex, srPayload, srSig, snapPayload, attPayload, attSig
         );
+        assertEq(testedInbox().getReportsAmount(), 1, "!reportsAmount");
+        (bytes memory reportPayload, bytes memory reportSignature) = testedInbox().getGuardReport(0);
+        assertEq(reportPayload, srPayload, "!reportPayload");
+        assertEq(reportSignature, srSig, "!reportSignature");
     }
 
     function test_submitStateReportWithAttestation_revert_signedByNotary(Random memory random) public {
@@ -110,6 +118,10 @@ abstract contract StatementInboxTest is MessagingBaseTest {
         testedInbox().submitStateReportWithSnapshotProof(
             rsi.stateIndex, srPayload, srSig, snapProof, attPayload, attSig
         );
+        assertEq(testedInbox().getReportsAmount(), 1, "!reportsAmount");
+        (bytes memory reportPayload, bytes memory reportSignature) = testedInbox().getGuardReport(0);
+        assertEq(reportPayload, srPayload, "!reportPayload");
+        assertEq(reportSignature, srSig, "!reportSignature");
     }
 
     function test_submitStateReportWithSnapshotProof_revert_signedByNotary(Random memory random) public {
