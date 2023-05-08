@@ -84,7 +84,7 @@ func NewNotary(ctx context.Context, cfg config.AgentConfig, handler metrics.Hand
 	return notary, nil
 }
 
-func (n Notary) logToAttestation(log ethTypes.Log) (*types.Attestation, error) {
+func (n *Notary) logToAttestation(log ethTypes.Log) (*types.Attestation, error) {
 	attestationEvent, ok := n.summitParser.ParseAttestationSaved(log)
 	if !ok {
 		return nil, fmt.Errorf("could not parse attestation")
@@ -99,7 +99,7 @@ func (n Notary) logToAttestation(log ethTypes.Log) (*types.Attestation, error) {
 }
 
 //nolint:cyclop
-func (n Notary) loadSummitMyLatestStates(parentCtx context.Context) {
+func (n *Notary) loadSummitMyLatestStates(parentCtx context.Context) {
 	for _, domain := range n.domains {
 		ctx, span := n.handler.Tracer().Start(parentCtx, "loadSummitMyLatestStates", trace.WithAttributes(
 			attribute.Int(metrics.ChainID, int(domain.Config().DomainID)),
@@ -122,7 +122,7 @@ func (n Notary) loadSummitMyLatestStates(parentCtx context.Context) {
 }
 
 //nolint:cyclop
-func (n Notary) loadSummitGuardLatestStates(parentCtx context.Context) {
+func (n *Notary) loadSummitGuardLatestStates(parentCtx context.Context) {
 	for _, domain := range n.domains {
 		ctx, span := n.handler.Tracer().Start(parentCtx, "loadSummitGuardLatestStates", trace.WithAttributes(
 			attribute.Int(metrics.ChainID, int(domain.Config().DomainID)),
@@ -146,7 +146,7 @@ func (n Notary) loadSummitGuardLatestStates(parentCtx context.Context) {
 }
 
 //nolint:cyclop
-func (n Notary) loadNotaryLatestAttestation(parentCtx context.Context) {
+func (n *Notary) loadNotaryLatestAttestation(parentCtx context.Context) {
 	ctx, span := n.handler.Tracer().Start(parentCtx, "loadNotaryLatestAttestation", trace.WithAttributes(
 		attribute.Int(metrics.ChainID, int(n.destinationDomain.Config().DomainID)),
 	))
@@ -167,7 +167,7 @@ func (n Notary) loadNotaryLatestAttestation(parentCtx context.Context) {
 	}
 }
 
-func (n Notary) checkDidSubmitNotaryLatestAttestation(parentCtx context.Context) {
+func (n *Notary) checkDidSubmitNotaryLatestAttestation(parentCtx context.Context) {
 	ctx, span := n.handler.Tracer().Start(parentCtx, "checkDidSubmitNotaryLatestAttestation", trace.WithAttributes(
 		attribute.Int(metrics.ChainID, int(n.destinationDomain.Config().DomainID)),
 	))
@@ -194,7 +194,7 @@ func (n Notary) checkDidSubmitNotaryLatestAttestation(parentCtx context.Context)
 }
 
 //nolint:cyclop
-func (n Notary) isValidOnOrigin(parentCtx context.Context, state types.State, domain domains.DomainClient) bool {
+func (n *Notary) isValidOnOrigin(parentCtx context.Context, state types.State, domain domains.DomainClient) bool {
 	if state == nil {
 		return false
 	}
@@ -283,7 +283,7 @@ func (n Notary) isValidOnOrigin(parentCtx context.Context, state types.State, do
 }
 
 //nolint:cyclop
-func (n Notary) getLatestSnapshot(parentCtx context.Context) (types.Snapshot, map[uint32]types.State) {
+func (n *Notary) getLatestSnapshot(parentCtx context.Context) (types.Snapshot, map[uint32]types.State) {
 	statesToSubmit := make(map[uint32]types.State, len(n.domains))
 	for _, domain := range n.domains {
 		ctx, span := n.handler.Tracer().Start(parentCtx, "getLatestSnapshot", trace.WithAttributes(
@@ -329,7 +329,7 @@ func (n Notary) getLatestSnapshot(parentCtx context.Context) (types.Snapshot, ma
 }
 
 //nolint:cyclop
-func (n Notary) submitLatestSnapshot(parentCtx context.Context) {
+func (n *Notary) submitLatestSnapshot(parentCtx context.Context) {
 	ctx, span := n.handler.Tracer().Start(parentCtx, "submitLatestSnapshot")
 	defer span.End()
 
@@ -359,7 +359,7 @@ func (n Notary) submitLatestSnapshot(parentCtx context.Context) {
 }
 
 //nolint:cyclop,unused
-func (n Notary) submitMyLatestAttestation(parentCtx context.Context) {
+func (n *Notary) submitMyLatestAttestation(parentCtx context.Context) {
 	ctx, span := n.handler.Tracer().Start(parentCtx, "submitMyLatestAttestation")
 	defer span.End()
 
@@ -396,7 +396,7 @@ func (n Notary) submitMyLatestAttestation(parentCtx context.Context) {
 // Start starts the notary.
 //
 //nolint:cyclop
-func (n Notary) Start(ctx context.Context) error {
+func (n *Notary) Start(ctx context.Context) error {
 	g, ctx := errgroup.WithContext(ctx)
 
 	logger.Info("Starting the notary")
@@ -413,7 +413,7 @@ func (n Notary) Start(ctx context.Context) error {
 	} else {
 		n.lastSummitBlock = uint64(0)
 	}
-	
+
 	logger.Infof("Notary loadSummitMyLatestStates")
 	n.loadSummitMyLatestStates(ctx)
 
