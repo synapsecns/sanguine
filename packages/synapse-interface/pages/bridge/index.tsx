@@ -27,6 +27,7 @@ import { stringToBigNum } from '@/utils/stringToBigNum'
 import BridgeCard from './BridgeCard'
 import { useSynapseContext } from '@/utils/providers/SynapseProvider'
 import { checkStringIfOnlyZeroes } from '@/utils/regex'
+import { timeout } from '@/utils/timeout'
 import {
   DEFAULT_FROM_CHAIN,
   DEFAULT_FROM_TOKEN,
@@ -162,13 +163,6 @@ const BridgePage = ({
       isCancelled = true
     }
   }, [toToken, fromInput, time])
-  /*
-  Helper Function: timeout
-  - setTimeout function to debounce bridge quote call
-  */
-  function timeout(ms) {
-    return new Promise((resolve) => setTimeout(resolve, ms))
-  }
 
   /*
   useEffect Triggers: fromInput
