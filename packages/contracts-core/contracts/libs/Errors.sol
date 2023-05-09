@@ -72,6 +72,7 @@ error AgentNotUnstaking();
 error AgentUnknown();
 
 error DisputeAlreadyResolved();
+error DisputeNotOpened();
 error GuardInDispute();
 error NotaryInDispute();
 
