@@ -5,7 +5,7 @@ import (
 	"github.com/Flaque/filet"
 	"github.com/brianvoe/gofakeit/v6"
 	. "github.com/stretchr/testify/assert"
-	"github.com/synapsecns/sanguine/agents/config"
+	"github.com/synapsecns/sanguine/ethergo/signer/config"
 	"github.com/synapsecns/sanguine/ethergo/signer/wallet"
 	"os"
 	"path/filepath"

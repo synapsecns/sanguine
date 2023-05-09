@@ -2,6 +2,7 @@ package notary_test
 
 import (
 	"context"
+	signerConfig "github.com/synapsecns/sanguine/ethergo/signer/config"
 	"math/big"
 	"os"
 	"testing"
@@ -115,12 +116,12 @@ func (u *NotarySuite) TestNotaryE2E() {
 		},
 		DomainID:       uint32(0),
 		SummitDomainID: u.SummitDomainClient.Config().DomainID,
-		BondedSigner: config.SignerConfig{
-			Type: config.FileType.String(),
+		BondedSigner: signerConfig.SignerConfig{
+			Type: signerConfig.FileType.String(),
 			File: filet.TmpFile(u.T(), "", u.GuardBondedWallet.PrivateKeyHex()).Name(),
 		},
-		UnbondedSigner: config.SignerConfig{
-			Type: config.FileType.String(),
+		UnbondedSigner: signerConfig.SignerConfig{
+			Type: signerConfig.FileType.String(),
 			File: filet.TmpFile(u.T(), "", u.GuardUnbondedWallet.PrivateKeyHex()).Name(),
 		},
 		RefreshIntervalSeconds: 5,
@@ -133,12 +134,12 @@ func (u *NotarySuite) TestNotaryE2E() {
 		},
 		DomainID:       u.DestinationDomainClient.Config().DomainID,
 		SummitDomainID: u.SummitDomainClient.Config().DomainID,
-		BondedSigner: config.SignerConfig{
-			Type: config.FileType.String(),
+		BondedSigner: signerConfig.SignerConfig{
+			Type: signerConfig.FileType.String(),
 			File: filet.TmpFile(u.T(), "", u.NotaryBondedWallet.PrivateKeyHex()).Name(),
 		},
-		UnbondedSigner: config.SignerConfig{
-			Type: config.FileType.String(),
+		UnbondedSigner: signerConfig.SignerConfig{
+			Type: signerConfig.FileType.String(),
 			File: filet.TmpFile(u.T(), "", u.NotaryUnbondedWallet.PrivateKeyHex()).Name(),
 		},
 		RefreshIntervalSeconds: 5,
