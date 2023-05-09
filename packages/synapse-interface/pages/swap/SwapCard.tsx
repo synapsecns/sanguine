@@ -21,6 +21,8 @@ import { Token } from '@/utils/types'
 import { SWAP_PATH } from '@/constants/urls'
 import { stringToBigNum } from '@/utils/stringToBigNum'
 import { useSynapseContext } from '@/utils/providers/SynapseProvider'
+import { checkStringIfOnlyZeroes } from '@/utils/regex'
+import { timeout } from '@/utils/timeout'
 import { Transition } from '@headlessui/react'
 import { COIN_SLIDE_OVER_PROPS } from '@styles/transitions'
 import Card from '@tw/Card'
@@ -157,16 +159,26 @@ const SwapCard = ({
   - Gets a quote when the polling function is executed or any of the bridge attributes are altered.
   */
   useEffect(() => {
-    if (
-      connectedChainId &&
-      String(fromToken.addresses[connectedChainId]) &&
-      fromInput &&
-      fromInput.bigNum.gt(Zero)
-    ) {
-      // TODO this needs to be debounced or throttled somehow to prevent spam and lag in the ui
-      getQuote()
-    } else {
-      setSwapQuote(EMPTY_SWAP_QUOTE)
+    let isCancelled = false
+
+    const handleChange = async () => {
+      await timeout(1000)
+      if (
+        connectedChainId &&
+        String(fromToken.addresses[connectedChainId]) &&
+        fromInput &&
+        fromInput.bigNum.gt(Zero)
+      ) {
+        // TODO this needs to be debounced or throttled somehow to prevent spam and lag in the ui
+        getQuote()
+      } else {
+        setSwapQuote(EMPTY_SWAP_QUOTE)
+      }
+    }
+    handleChange()
+
+    return () => {
+      isCancelled = true
     }
   }, [toToken, fromInput, time])
 
@@ -568,6 +580,21 @@ const SwapCard = ({
     //   pendingLabel={`Approving ${displaySymbol(chainId, fromCoin)}  `}
     // />
   }, [fromInput, time, swapQuote, error])
+
+  /*
+  useEffect Triggers: fromInput
+  - Checks that user input is not zero. When input changes,
+  - isQuoteLoading state is set to true for loading state interactions
+  */
+  useEffect(() => {
+    const { string, bigNum } = fromInput
+    const isInvalid = checkStringIfOnlyZeroes(string)
+    isInvalid ? () => null : setIsQuoteLoading(true)
+
+    return () => {
+      setIsQuoteLoading(false)
+    }
+  }, [fromInput])
 
   return (
     <Card
