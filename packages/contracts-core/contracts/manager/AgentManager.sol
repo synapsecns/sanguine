@@ -9,13 +9,26 @@ import {
     GuardInDispute,
     NotaryInDispute
 } from "../libs/Errors.sol";
-import {AgentFlag, AgentStatus, Dispute, DisputeFlag} from "../libs/Structures.sol";
+import {AgentFlag, AgentStatus, DisputeFlag} from "../libs/Structures.sol";
 // ═════════════════════════════ INTERNAL IMPORTS ══════════════════════════════
 import {MessagingBase} from "../base/MessagingBase.sol";
 import {AgentManagerEvents} from "../events/AgentManagerEvents.sol";
 import {IAgentManager} from "../interfaces/IAgentManager.sol";
 
 abstract contract AgentManager is MessagingBase, AgentManagerEvents, IAgentManager {
+    // TODO: do we want to store the dispute timestamp?
+    struct AgentDispute {
+        DisputeFlag flag;
+        uint248 disputePtr;
+    }
+
+    struct OpenedDispute {
+        uint32 guardIndex;
+        uint32 notaryIndex;
+        uint32 slashedIndex;
+        address fraudProver;
+    }
+
     // ══════════════════════════════════════════════════ STORAGE ══════════════════════════════════════════════════════
 
     address public origin;
@@ -25,10 +38,13 @@ abstract contract AgentManager is MessagingBase, AgentManagerEvents, IAgentManag
     address public inbox;
 
     // (agent index => their dispute status)
-    mapping(uint256 => Dispute) internal _disputes;
+    mapping(uint256 => AgentDispute) internal _agentDispute;
+
+    // All disputes ever opened
+    OpenedDispute[] internal _disputes;
 
     /// @dev gap for upgrade safety
-    uint256[46] private __GAP; // solhint-disable-line var-name-mixedcase
+    uint256[45] private __GAP; // solhint-disable-line var-name-mixedcase
 
     modifier onlyInbox() {
         if (msg.sender != inbox) revert CallerNotInbox();
@@ -49,11 +65,16 @@ abstract contract AgentManager is MessagingBase, AgentManagerEvents, IAgentManag
     /// @inheritdoc IAgentManager
     // solhint-disable-next-line ordering
     function openDispute(uint32 guardIndex, uint32 notaryIndex) external onlyInbox {
-        // Check that both agents are not in Dispute yet
-        if (_disputes[guardIndex].flag != DisputeFlag.None) revert GuardInDispute();
-        if (_disputes[notaryIndex].flag != DisputeFlag.None) revert NotaryInDispute();
-        _updateDispute(guardIndex, Dispute(DisputeFlag.Pending, notaryIndex, address(0)));
-        _updateDispute(notaryIndex, Dispute(DisputeFlag.Pending, guardIndex, address(0)));
+        // Check that both agents are not in Dispute yet.
+        if (_agentDispute[guardIndex].flag != DisputeFlag.None) revert GuardInDispute();
+        if (_agentDispute[notaryIndex].flag != DisputeFlag.None) revert NotaryInDispute();
+        _disputes.push(OpenedDispute(guardIndex, notaryIndex, 0, address(0)));
+        // Dispute is stored at length - 1, but we store the index + 1 to distinguish from "not in dispute".
+        uint256 disputePtr = _disputes.length;
+        _agentDispute[guardIndex] = AgentDispute(DisputeFlag.Pending, uint248(disputePtr));
+        _agentDispute[notaryIndex] = AgentDispute(DisputeFlag.Pending, uint248(disputePtr));
+        // Dispute index is length - 1. Note: report that initiated the dispute has the same index in `Inbox`.
+        emit DisputeOpened({disputeIndex: disputePtr - 1, guardIndex: guardIndex, notaryIndex: notaryIndex});
         _notifyDisputeOpened(guardIndex, notaryIndex);
     }
 
@@ -74,14 +95,26 @@ abstract contract AgentManager is MessagingBase, AgentManagerEvents, IAgentManag
     function agentStatus(address agent) public view returns (AgentStatus memory status) {
         status = _storedAgentStatus(agent);
         // If agent was proven to commit fraud, but their slashing wasn't completed, return the Fraudulent flag.
-        if (_disputes[_getIndex(agent)].flag == DisputeFlag.Slashed && status.flag != AgentFlag.Slashed) {
+        if (_agentDispute[_getIndex(agent)].flag == DisputeFlag.Slashed && status.flag != AgentFlag.Slashed) {
             status.flag = AgentFlag.Fraudulent;
         }
     }
 
     /// @inheritdoc IAgentManager
-    function disputeStatus(address agent) external view returns (Dispute memory) {
-        return _disputes[_getIndex(agent)];
+    function disputeStatus(address agent)
+        external
+        view
+        returns (DisputeFlag flag, address rival, address fraudProver, uint256 disputePtr)
+    {
+        uint256 agentIndex = _getIndex(agent);
+        AgentDispute memory agentDispute = _agentDispute[agentIndex];
+        flag = agentDispute.flag;
+        disputePtr = agentDispute.disputePtr;
+        if (disputePtr > 0) {
+            OpenedDispute memory dispute = _disputes[disputePtr - 1];
+            rival = _getAgent(dispute.guardIndex == agentIndex ? dispute.notaryIndex : dispute.guardIndex);
+            fraudProver = dispute.fraudProver;
+        }
     }
 
     // ══════════════════════════════════════════════ INTERNAL LOGIC ═══════════════════════════════════════════════════
@@ -113,21 +146,22 @@ abstract contract AgentManager is MessagingBase, AgentManagerEvents, IAgentManag
 
     /// @dev Resolves a Dispute between a slashed Agent and their Rival (if there was one).
     function _resolveDispute(uint32 slashedIndex, address prover) internal {
-        Dispute memory dispute = _disputes[slashedIndex];
-        if (dispute.flag == DisputeFlag.Slashed) revert DisputeAlreadyResolved();
-        (dispute.flag, dispute.fraudProver) = (DisputeFlag.Slashed, prover);
-        _updateDispute(slashedIndex, dispute);
-        // Clear Dispute status for the Rival
-        if (dispute.rivalIndex != 0) {
-            _updateDispute(dispute.rivalIndex, Dispute(DisputeFlag.None, 0, address(0)));
+        AgentDispute memory agentDispute = _agentDispute[slashedIndex];
+        if (agentDispute.flag == DisputeFlag.Slashed) revert DisputeAlreadyResolved();
+        _agentDispute[slashedIndex].flag = DisputeFlag.Slashed;
+        // Check if there was a opened dispute with the slashed agent
+        uint32 rivalIndex = 0;
+        if (agentDispute.disputePtr != 0) {
+            uint256 disputeIndex = agentDispute.disputePtr - 1;
+            OpenedDispute memory dispute = _disputes[disputeIndex];
+            (dispute.slashedIndex, dispute.fraudProver) = (slashedIndex, prover);
+            _disputes[disputeIndex] = dispute;
+            // Clear the dispute status for the rival
+            rivalIndex = dispute.notaryIndex == slashedIndex ? dispute.guardIndex : dispute.notaryIndex;
+            delete _agentDispute[rivalIndex];
+            emit DisputeResolved(disputeIndex, slashedIndex, rivalIndex, prover);
         }
-        _notifyDisputeResolved(slashedIndex, dispute.rivalIndex);
-    }
-
-    /// @dev Updates a dispute status for the agent and emits an event.
-    function _updateDispute(uint256 agentIndex, Dispute memory dispute) internal {
-        _disputes[agentIndex] = dispute;
-        emit DisputeUpdated(_getAgent(agentIndex), dispute);
+        _notifyDisputeResolved(slashedIndex, rivalIndex);
     }
 
     // ══════════════════════════════════════════════ INTERNAL VIEWS ═══════════════════════════════════════════════════
