@@ -156,7 +156,7 @@ const BridgeInputContainer = ({
           )}
           {isOrigin && isConnected && (
             <div className="hidden mr-2 sm:inline-block">
-              <MiniMaxButton onClickBalance={onClickBalance} />
+              <MiniMaxButton disabled={true} onClickBalance={onClickBalance} />
             </div>
           )}
         </div>
