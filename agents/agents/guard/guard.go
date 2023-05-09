@@ -212,3 +212,57 @@ func (g Guard) Start(ctx context.Context) error {
 		}
 	}
 }
+
+// Fraud items
+
+// helper function to get all attestations
+func (g Guard) getDestinationAttestations(parentCtx context.Context) (map[uint32][]string, error) {
+	ctx, span := g.handler.Tracer().Start(parentCtx, "getDestinationAttestations", trace.WithAttributes(
+		attribute.Int("domain", int(g.summitDomain.Config().DomainID)),
+	))
+	attestations := make(map[uint32][]string, len(g.domains))
+	for _, domain := range g.domains {
+		destinationContract := domain.Destination()
+		attestationCount, err := destinationContract.AttestationsAmount(ctx)
+		if err != nil {
+			logger.Errorf("Failed calling AttestationsAmount for destinationID %d on the Destination contract: %v", domain.Config().DomainID, err)
+			span.AddEvent("Failed calling AttestationsAmount for destinationID on the Destination contract", trace.WithAttributes(
+				attribute.String("err", err.Error()),
+			))
+		}
+		// TODO: Update with proper type
+		domainAttestations := make([]string, 0, attestationCount)
+		for i := uint64(0); i < attestationCount; i++ {
+			// TODO: Update with proper contract call
+			//domain.getAttestation()
+			domainAttestations = append(domainAttestations, "attestation")
+		}
+		attestations[domain.Config().DomainID] = domainAttestations
+	}
+	return attestations, nil
+}
+
+// check for fraud
+func (g Guard) detectFraudulentAttestations(parentCtx context.Context) {
+	ctx, span := g.handler.Tracer().Start(parentCtx, "detectFraudulentAttestations", trace.WithAttributes(
+		attribute.Int("domain", int(g.summitDomain.Config().DomainID)),
+	))
+	attestations, err := g.getDestinationAttestations(ctx)
+	if err != nil {
+		logger.Errorf("Failed to detect fraudulent attestations: %v", err)
+		span.AddEvent("Failed to detect fraudulent attestations", trace.WithAttributes(
+			attribute.String("err", err.Error()),
+		))
+	}
+	for _, domain := range g.domains {
+		//summitContract := domain.Summit()
+		for i := 0; i < len(attestations[(domain.Config().DomainID)]); i++ {
+			// TODO: Update with proper contract call
+			//summitContract.validateAttestation()
+			// TODO: Update with proper action
+			//state, err := summitContract.GetLatestState(ctx, domain.Config().DomainID)
+			// check ro0ts
+		}
+	}
+	return
+}
