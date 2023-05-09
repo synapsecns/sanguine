@@ -65,13 +65,15 @@ contract OriginTest is AgentSecuredTest {
         uint32 domain = random.nextUint32();
         address caller = random.nextAddress();
         address agentManager = random.nextAddress();
+        address inbox_ = random.nextAddress();
         address gasOracle_ = address(new GasOracleMock());
-        Origin cleanContract = new Origin(domain, agentManager, gasOracle_);
+        Origin cleanContract = new Origin(domain, agentManager, inbox_, gasOracle_);
         vm.prank(caller);
         cleanContract.initialize();
         assertEq(cleanContract.owner(), caller, "!owner");
         assertEq(cleanContract.localDomain(), domain, "!localDomain");
         assertEq(cleanContract.agentManager(), agentManager, "!agentManager");
+        assertEq(cleanContract.inbox(), inbox_, "!inbox");
         assertEq(cleanContract.gasOracle(), gasOracle_, "!gasOracle");
         assertEq(cleanContract.statesAmount(), 1, "!statesAmount");
     }
@@ -314,9 +316,7 @@ contract OriginTest is AgentSecuredTest {
         }
         vm.recordLogs();
         assertEq(
-            lightManager.verifyStateWithAttestation(rsi.stateIndex, snapshot, attPayload, attSig),
-            isValid,
-            "!returnValue"
+            lightInbox.verifyStateWithAttestation(rsi.stateIndex, snapshot, attPayload, attSig), isValid, "!returnValue"
         );
         if (isValid) {
             assertEq(vm.getRecordedLogs().length, 0, "Emitted logs when shouldn't");
@@ -339,7 +339,7 @@ contract OriginTest is AgentSecuredTest {
         }
         vm.recordLogs();
         assertEq(
-            lightManager.verifyStateWithSnapshotProof(rsi.stateIndex, state, snapProof, attPayload, attSig),
+            lightInbox.verifyStateWithSnapshotProof(rsi.stateIndex, state, snapProof, attPayload, attSig),
             isValid,
             "!returnValue"
         );
@@ -361,7 +361,7 @@ contract OriginTest is AgentSecuredTest {
             expectStatusUpdated(AgentFlag.Fraudulent, DOMAIN_REMOTE, notary);
             expectDisputeResolved(notary, address(0), address(this));
         }
-        assertEq(lightManager.verifyStateWithSnapshot(rsi.stateIndex, snapPayload, snapSig), isValid, "!returnValue");
+        assertEq(lightInbox.verifyStateWithSnapshot(rsi.stateIndex, snapPayload, snapSig), isValid, "!returnValue");
         if (isValid) {
             assertEq(vm.getRecordedLogs().length, 0, "Emitted logs when shouldn't");
         }
@@ -383,7 +383,7 @@ contract OriginTest is AgentSecuredTest {
             expectDisputeResolved(guard, address(0), address(this));
         }
         vm.recordLogs();
-        assertEq(lightManager.verifyStateReport(srPayload, srSig), isValid, "!returnValue");
+        assertEq(lightInbox.verifyStateReport(srPayload, srSig), isValid, "!returnValue");
         if (isValid) {
             assertEq(vm.getRecordedLogs().length, 0, "Emitted logs when shouldn't");
         }

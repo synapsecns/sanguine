@@ -8,7 +8,7 @@ import {Summit, SYNAPSE_DOMAIN} from "../../contracts/Summit.sol";
 contract SummitHarness is Summit {
     /// @dev Summit could only be deployed on Synapse Domain
     // solhint-disable-next-line no-empty-blocks
-    constructor(address agentManager_) Summit(SYNAPSE_DOMAIN, agentManager_) {}
+    constructor(address agentManager_, address inbox_) Summit(SYNAPSE_DOMAIN, agentManager_, inbox_) {}
 
     // TODO: add / remove Agents in standalone Go tests
 }

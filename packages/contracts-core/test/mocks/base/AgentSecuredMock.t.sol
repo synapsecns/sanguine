@@ -13,6 +13,8 @@ contract AgentSecuredMock is IAgentSecured {
 
     function agentManager() external view returns (address) {}
 
+    function inbox() external view returns (address) {}
+
     function agentStatus(address agent) external view returns (AgentStatus memory) {}
 
     function getAgent(uint256 index) external view returns (address agent, AgentStatus memory status) {}

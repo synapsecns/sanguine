@@ -13,8 +13,8 @@ import {State, StateLib} from "../libs/State.sol";
 // ═════════════════════════════ INTERNAL IMPORTS ══════════════════════════════
 import {AgentSecured} from "../base/AgentSecured.sol";
 import {SnapshotHubEvents} from "../events/SnapshotHubEvents.sol";
-import {IAgentManager} from "../interfaces/IAgentManager.sol";
 import {ISnapshotHub} from "../interfaces/ISnapshotHub.sol";
+import {IStatementInbox} from "../interfaces/IStatementInbox.sol";
 
 /**
  * @notice Hub to accept and save snapshots, as well as verify _attestations.
@@ -326,7 +326,7 @@ abstract contract SnapshotHub is AgentSecured, SnapshotHubEvents, ISnapshotHub {
             states[i] = _formatSummitState(_states[statePtr - 1]).castToState();
         }
         snapPayload = SnapshotLib.formatSnapshot(states);
-        snapSignature = IAgentManager(agentManager).getStoredSignature(snapshot.sigIndex);
+        snapSignature = IStatementInbox(inbox).getStoredSignature(snapshot.sigIndex);
     }
 
     /// @dev Restores the gas data from the snapshot.

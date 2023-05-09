@@ -30,8 +30,8 @@ contract Origin is StateHub, OriginEvents, InterfaceOrigin {
     // ═════════════════════════════════════════ CONSTRUCTOR & INITIALIZER ═════════════════════════════════════════════
 
     // solhint-disable-next-line no-empty-blocks
-    constructor(uint32 domain, address agentManager_, address gasOracle_)
-        AgentSecured("0.0.3", domain, agentManager_)
+    constructor(uint32 domain, address agentManager_, address inbox_, address gasOracle_)
+        AgentSecured("0.0.3", domain, agentManager_, inbox_)
     {
         gasOracle = gasOracle_;
     }
