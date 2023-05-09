@@ -157,6 +157,7 @@ const SwapCard = ({
   /*
   useEffect Triggers: toToken, fromInput, toChainId, time
   - Gets a quote when the polling function is executed or any of the bridge attributes are altered.
+    - Debounce quote call by calling quote price AFTER user has stopped typing for 1s or 1000ms
   */
   useEffect(() => {
     let isCancelled = false
