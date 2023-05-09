@@ -6,6 +6,7 @@ import (
 	"errors"
 	"fmt"
 	"github.com/synapsecns/sanguine/core/metrics"
+	agentsConfig "github.com/synapsecns/sanguine/ethergo/signer/config"
 	"go.opentelemetry.io/contrib/instrumentation/google.golang.org/grpc/otelgrpc"
 	"go.opentelemetry.io/otel/attribute"
 	"go.opentelemetry.io/otel/trace"
@@ -17,7 +18,6 @@ import (
 	"github.com/jpillora/backoff"
 	"github.com/synapsecns/sanguine/agents/contracts/summit"
 
-	agentsConfig "github.com/synapsecns/sanguine/agents/config"
 	"github.com/synapsecns/sanguine/agents/domains/evm"
 	"github.com/synapsecns/sanguine/ethergo/signer/signer"
 
