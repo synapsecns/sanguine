@@ -49,6 +49,7 @@ func (t *txSubmitterImpl) processQueue(parentCtx context.Context) (err error) {
 
 	// TODO: parallelize resubmission by chainid, maybe w/ a locker per chain
 	var wg sync.WaitGroup
+	wg.Add(1)
 
 	go func() {
 		defer wg.Done()
@@ -66,7 +67,7 @@ func (t *txSubmitterImpl) processQueue(parentCtx context.Context) (err error) {
 	}
 
 	// fetch txes into a map by chainid.
-	sortedTXsByChainID := sortTxes(pendingTxes)
+	sortedTXsByChainID := sortTxesByChainID(pendingTxes)
 
 	wg.Add(len(sortedTXsByChainID) + 1)
 
@@ -96,7 +97,7 @@ func (t *txSubmitterImpl) processConfirmedQueue(parentCtx context.Context) (err 
 		return fmt.Errorf("could not get txs: %w", err)
 	}
 
-	sortedTXsByChainID := sortTxes(txs)
+	sortedTXsByChainID := sortTxesByChainID(txs)
 
 	var wg sync.WaitGroup
 	wg.Add(len(sortedTXsByChainID))
