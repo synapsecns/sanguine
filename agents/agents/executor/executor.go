@@ -268,9 +268,16 @@ func (e Executor) Execute(parentCtx context.Context, message types.Message) (_ b
 	originDomain := message.OriginDomain()
 	destinationDomain := message.DestinationDomain()
 
+	testLeaf, err := message.ToLeaf()
+	if err != nil {
+		return false, fmt.Errorf("could not get test leaf: %w", err)
+	}
+
 	ctx, span := e.handler.Tracer().Start(parentCtx, "Execute", trace.WithAttributes(
 		attribute.Int(metrics.Origin, int(originDomain)),
-		attribute.Int(metrics.Destination, int(destinationDomain)),
+		attribute.String("leaf", common.Bytes2Hex(testLeaf[:])),
+		attribute.Int(metrics.Nonce, int(message.Nonce())),
+		attribute.Int(metrics.Destination, int(message.DestinationDomain())),
 	))
 
 	defer func() {
@@ -639,9 +646,11 @@ func (e Executor) checkIfExecuted(parentCtx context.Context, message types.Messa
 			}
 
 			if executed {
+				span.AddEvent("message executed")
 				return true, nil
 			}
 
+			span.AddEvent("message not executed")
 			return false, nil
 		}
 	}
