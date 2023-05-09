@@ -3,7 +3,7 @@ pragma solidity 0.8.17;
 
 import {
     AgentNotNotary,
-    CallerNotAgentManager,
+    CallerNotInbox,
     IncorrectSnapshotRoot,
     NotaryInDispute,
     TipsClaimMoreThanEarned,
@@ -28,7 +28,7 @@ import {
 import {stdStorage, StdStorage} from "forge-std/Test.sol";
 
 contract SummitCheats is Summit {
-    constructor(uint32 domain, address agentManager_) Summit(domain, agentManager_) {}
+    constructor(uint32 domain, address agentManager_, address inbox_) Summit(domain, agentManager_, inbox_) {}
 
     function setActorTips(address actor, uint32 origin, uint128 earned, uint128 claimed) external {
         actorTips[actor][origin].earned = earned;
@@ -101,18 +101,20 @@ contract SummitTipsTest is AgentSecuredTest {
         acceptSnapshot(snapshot1);
         snapRoot1 = getSnapshotRoot();
         // Deploy Summit implementation with Cheats
-        summitCheats = address(new SummitCheats(DOMAIN_SYNAPSE, address(bondingManager)));
+        summitCheats = address(new SummitCheats(DOMAIN_SYNAPSE, address(bondingManager), address(inbox)));
     }
 
     function test_cleanSetup(Random memory random) public override {
         uint32 domain = DOMAIN_SYNAPSE;
         address agentManager = random.nextAddress();
+        address inbox_ = random.nextAddress();
         address caller = random.nextAddress();
-        Summit cleanContract = new Summit(domain, agentManager);
+        Summit cleanContract = new Summit(domain, agentManager, inbox_);
         vm.prank(caller);
         cleanContract.initialize();
         assertEq(cleanContract.owner(), caller, "!owner");
         assertEq(cleanContract.agentManager(), agentManager, "!agentManager");
+        assertEq(cleanContract.inbox(), inbox_, "!inbox");
         assertEq(cleanContract.localDomain(), domain, "!localDomain");
     }
 
@@ -134,7 +136,7 @@ contract SummitTipsTest is AgentSecuredTest {
         (bytes memory rcptPayload, bytes memory rcptSignature) = signReceipt(rcptNotary, re);
         vm.expectEmit();
         emit ReceiptAccepted(DOMAIN_REMOTE, rcptNotary, rcptPayload, rcptSignature);
-        bondingManager.submitReceipt(rcptPayload, rcptSignature);
+        inbox.submitReceipt(rcptPayload, rcptSignature);
     }
 
     function test_submitReceipt_notAccepted_pending() public checkQueueLength(1) {
@@ -143,7 +145,7 @@ contract SummitTipsTest is AgentSecuredTest {
         re.body.finalExecutor = createExecutorEOA(re.body.finalExecutor, "Final Executor");
         (bytes memory rcptPayload, bytes memory rcptSignature) = signReceipt(rcptNotary, re);
         vm.recordLogs();
-        bondingManager.submitReceipt(rcptPayload, rcptSignature);
+        inbox.submitReceipt(rcptPayload, rcptSignature);
         assertEq(vm.getRecordedLogs().length, 0);
     }
 
@@ -153,7 +155,7 @@ contract SummitTipsTest is AgentSecuredTest {
         re.body.finalExecutor = address(0);
         (bytes memory rcptPayload, bytes memory rcptSignature) = signReceipt(rcptNotary, re);
         vm.recordLogs();
-        bondingManager.submitReceipt(rcptPayload, rcptSignature);
+        inbox.submitReceipt(rcptPayload, rcptSignature);
         assertEq(vm.getRecordedLogs().length, 0);
     }
 
@@ -162,7 +164,7 @@ contract SummitTipsTest is AgentSecuredTest {
         prepareReceipt(re, false, 0, false);
         (bytes memory rcptPayload, bytes memory rcptSignature) = signReceipt(guard0, re);
         vm.expectRevert(AgentNotNotary.selector);
-        bondingManager.submitReceipt(rcptPayload, rcptSignature);
+        inbox.submitReceipt(rcptPayload, rcptSignature);
     }
 
     function test_submitReceipt_revert_notaryInDispute() public {
@@ -173,7 +175,7 @@ contract SummitTipsTest is AgentSecuredTest {
         openDispute({guard: domains[0].agent, notary: notary});
         (bytes memory rcptPayload, bytes memory rcptSignature) = signReceipt(notary, re);
         vm.expectRevert(NotaryInDispute.selector);
-        bondingManager.submitReceipt(rcptPayload, rcptSignature);
+        inbox.submitReceipt(rcptPayload, rcptSignature);
     }
 
     function test_submitReceipt_revert_unknownSnapRoot() public {
@@ -183,12 +185,12 @@ contract SummitTipsTest is AgentSecuredTest {
         address notary = domains[DOMAIN_REMOTE].agent;
         (bytes memory rcptPayload, bytes memory rcptSignature) = signReceipt(notary, re);
         vm.expectRevert(IncorrectSnapshotRoot.selector);
-        bondingManager.submitReceipt(rcptPayload, rcptSignature);
+        inbox.submitReceipt(rcptPayload, rcptSignature);
     }
 
-    function test_acceptReceipt_revert_notAgentManager(address caller) public {
-        vm.assume(caller != localAgentManager());
-        vm.expectRevert(CallerNotAgentManager.selector);
+    function test_acceptReceipt_revert_notInbox(address caller) public {
+        vm.assume(caller != localInbox());
+        vm.expectRevert(CallerNotInbox.selector);
         vm.prank(caller);
         InterfaceSummit(summit).acceptReceipt(0, 0, 0, 0, 0, "");
     }
@@ -235,7 +237,7 @@ contract SummitTipsTest is AgentSecuredTest {
         emit log_named_address("Receipt Notary", rcptNotaryFinal);
         emit log_named_address("Attestation Notary", re.body.attNotary);
         (bytes memory rcptPayload, bytes memory rcptSignature) = signReceipt(rcptNotaryFinal, re);
-        bondingManager.submitReceipt(rcptPayload, rcptSignature);
+        inbox.submitReceipt(rcptPayload, rcptSignature);
         skip(BONDING_OPTIMISTIC_PERIOD);
         assertTrue(InterfaceSummit(summit).distributeTips());
         checkAwardedTips(re, true);
@@ -487,7 +489,7 @@ contract SummitTipsTest is AgentSecuredTest {
 
     function submitSnapshot(address agent, RawSnapshot memory rawSnap) public {
         (bytes memory snapPayload, bytes memory snapSignature) = signSnapshot(agent, rawSnap);
-        bondingManager.submitSnapshot(snapPayload, snapSignature);
+        inbox.submitSnapshot(snapPayload, snapSignature);
     }
 
     // ═════════════════════════════════════════════════ OVERRIDES ═════════════════════════════════════════════════════

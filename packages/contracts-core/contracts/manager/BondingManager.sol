@@ -2,48 +2,31 @@
 pragma solidity 0.8.17;
 
 // ══════════════════════════════ LIBRARY IMPORTS ══════════════════════════════
-import {Attestation, AttestationLib} from "../libs/Attestation.sol";
-import {AttestationReport, AttestationReportLib} from "../libs/AttestationReport.sol";
 import {BONDING_OPTIMISTIC_PERIOD, SYNAPSE_DOMAIN} from "../libs/Constants.sol";
 import {
     AgentCantBeAdded,
     CallerNotDestination,
     CallerNotSummit,
     IncorrectAgentDomain,
-    IncorrectSnapshotRoot,
     IndexOutOfRange,
     MerkleTreeFull,
     MustBeSynapseDomain,
-    NotaryInDispute,
     SlashAgentOptimisticPeriod,
     SynapseDomainForbidden
 } from "../libs/Errors.sol";
-import {ChainGas} from "../libs/GasData.sol";
 import {DynamicTree, MerkleMath} from "../libs/MerkleTree.sol";
-import {Receipt, ReceiptBody, ReceiptLib} from "../libs/Receipt.sol";
-import {Snapshot, SnapshotLib} from "../libs/Snapshot.sol";
-import {AgentFlag, AgentStatus, DisputeFlag} from "../libs/Structures.sol";
-import {Tips} from "../libs/Tips.sol";
+import {AgentFlag, AgentStatus} from "../libs/Structures.sol";
 // ═════════════════════════════ INTERNAL IMPORTS ══════════════════════════════
-import {AgentManager, IAgentManager, IAgentSecured} from "./AgentManager.sol";
+import {AgentManager, IAgentManager} from "./AgentManager.sol";
 import {MessagingBase} from "../base/MessagingBase.sol";
-import {BondingManagerEvents} from "../events/BondingManagerEvents.sol";
+import {IAgentSecured} from "../interfaces/IAgentSecured.sol";
 import {InterfaceBondingManager} from "../interfaces/InterfaceBondingManager.sol";
-import {InterfaceDestination} from "../interfaces/InterfaceDestination.sol";
-import {IExecutionHub} from "../interfaces/IExecutionHub.sol";
 import {InterfaceLightManager} from "../interfaces/InterfaceLightManager.sol";
 import {InterfaceOrigin} from "../interfaces/InterfaceOrigin.sol";
-import {ISnapshotHub} from "../interfaces/ISnapshotHub.sol";
-import {InterfaceSummit} from "../interfaces/InterfaceSummit.sol";
 
 /// @notice BondingManager keeps track of all existing _agents.
 /// Used on the Synapse Chain, serves as the "source of truth" for LightManagers on remote chains.
-contract BondingManager is AgentManager, BondingManagerEvents, InterfaceBondingManager {
-    using AttestationLib for bytes;
-    using AttestationReportLib for bytes;
-    using ReceiptLib for bytes;
-    using SnapshotLib for bytes;
-
+contract BondingManager is AgentManager, InterfaceBondingManager {
     // ══════════════════════════════════════════════════ STORAGE ══════════════════════════════════════════════════════
 
     // The address of the Summit contract.
@@ -69,147 +52,13 @@ contract BondingManager is AgentManager, BondingManagerEvents, InterfaceBondingM
         if (domain != SYNAPSE_DOMAIN) revert MustBeSynapseDomain();
     }
 
-    function initialize(address origin_, address destination_, address summit_) external initializer {
-        __AgentManager_init(origin_, destination_);
+    function initialize(address origin_, address destination_, address inbox_, address summit_) external initializer {
+        __AgentManager_init(origin_, destination_, inbox_);
         summit = summit_;
         __Ownable_init();
         // Insert a zero address to make indexes for Agents start from 1.
         // Zeroed index is supposed to be used as a sentinel value meaning "no agent".
         _agents.push(address(0));
-    }
-
-    // ══════════════════════════════════════════ SUBMIT AGENT STATEMENTS ══════════════════════════════════════════════
-
-    /// @inheritdoc InterfaceBondingManager
-    function submitSnapshot(bytes memory snapPayload, bytes memory snapSignature)
-        external
-        returns (bytes memory attPayload, bytes32 agentRoot_, uint256[] memory snapGas)
-    {
-        // This will revert if payload is not a snapshot
-        Snapshot snapshot = snapPayload.castToSnapshot();
-        // This will revert if the signer is not a known Guard/Notary
-        (AgentStatus memory status, address agent) =
-            _verifySnapshot({snapshot: snapshot, snapSignature: snapSignature, verifyNotary: false});
-        // Check that Agent is active
-        status.verifyActive();
-        // Store Agent signature for the Snapshot
-        uint256 sigIndex = _saveSignature(snapSignature);
-        if (status.domain == 0) {
-            // Guard that is in Dispute could still submit new snapshots, so we don't check that
-            InterfaceSummit(summit).acceptGuardSnapshot({
-                guardIndex: status.index,
-                sigIndex: sigIndex,
-                snapPayload: snapPayload
-            });
-        } else {
-            // Check that Notary is not in dispute
-            if (_disputes[agent].flag != DisputeFlag.None) revert NotaryInDispute();
-            agentRoot_ = _agentTree.root;
-            attPayload = InterfaceSummit(summit).acceptNotarySnapshot({
-                notaryIndex: status.index,
-                sigIndex: sigIndex,
-                agentRoot: agentRoot_,
-                snapPayload: snapPayload
-            });
-            ChainGas[] memory snapGas_ = snapshot.snapGas();
-            // Pass created attestation to Destination to enable executing messages coming to Synapse Chain
-            InterfaceDestination(destination).acceptAttestation(
-                status.index, type(uint256).max, attPayload, agentRoot_, snapGas_
-            );
-            // Use assembly to cast ChainGas[] to uint256[] without copying. Highest bits are left zeroed.
-            // solhint-disable-next-line no-inline-assembly
-            assembly {
-                snapGas := snapGas_
-            }
-        }
-        emit SnapshotAccepted(status.domain, agent, snapPayload, snapSignature);
-    }
-
-    /// @inheritdoc InterfaceBondingManager
-    function submitReceipt(bytes memory rcptPayload, bytes memory rcptSignature) external returns (bool wasAccepted) {
-        // This will revert if payload is not a receipt
-        Receipt rcpt = rcptPayload.castToReceipt();
-        // This will revert if the receipt signer is not a known Notary
-        (AgentStatus memory rcptNotaryStatus, address notary) = _verifyReceipt(rcpt, rcptSignature);
-        // Receipt Notary needs to be Active and not in dispute
-        rcptNotaryStatus.verifyActive();
-        if (_disputes[notary].flag != DisputeFlag.None) revert NotaryInDispute();
-        // Check that receipt's snapshot root exists in Summit
-        ReceiptBody rcptBody = rcpt.body();
-        uint32 attNonce = IExecutionHub(destination).getAttestationNonce(rcptBody.snapshotRoot());
-        if (attNonce == 0) revert IncorrectSnapshotRoot();
-        // Attestation Notary domain needs to match the destination domain
-        AgentStatus memory attNotaryStatus = agentStatus(rcptBody.attNotary());
-        if (attNotaryStatus.domain != rcptBody.destination()) revert IncorrectAgentDomain();
-        // Store Notary signature for the Receipt
-        uint256 sigIndex = _saveSignature(rcptSignature);
-        wasAccepted = InterfaceSummit(summit).acceptReceipt({
-            rcptNotaryIndex: rcptNotaryStatus.index,
-            attNotaryIndex: attNotaryStatus.index,
-            sigIndex: sigIndex,
-            attNonce: attNonce,
-            paddedTips: Tips.unwrap(rcpt.tips()),
-            rcptBodyPayload: rcptBody.unwrap().clone()
-        });
-        if (wasAccepted) {
-            emit ReceiptAccepted(rcptNotaryStatus.domain, notary, rcptPayload, rcptSignature);
-        }
-    }
-
-    /// @inheritdoc InterfaceBondingManager
-    function passReceipt(uint32 attNotaryIndex, uint32 attNonce, uint256 paddedTips, bytes memory rcptBodyPayload)
-        external
-        returns (bool wasAccepted)
-    {
-        // Only Destination can pass receipts
-        if (msg.sender != destination) revert CallerNotDestination();
-        return InterfaceSummit(summit).acceptReceipt({
-            rcptNotaryIndex: attNotaryIndex,
-            attNotaryIndex: attNotaryIndex,
-            sigIndex: type(uint256).max,
-            attNonce: attNonce,
-            paddedTips: paddedTips,
-            rcptBodyPayload: rcptBodyPayload
-        });
-    }
-
-    // ══════════════════════════════════════════ VERIFY AGENT STATEMENTS ══════════════════════════════════════════════
-
-    /// @inheritdoc InterfaceBondingManager
-    function verifyAttestation(bytes memory attPayload, bytes memory attSignature)
-        external
-        returns (bool isValidAttestation)
-    {
-        // This will revert if payload is not an attestation
-        Attestation att = attPayload.castToAttestation();
-        // This will revert if the attestation signer is not a known Notary
-        (AgentStatus memory status, address notary) = _verifyAttestation(att, attSignature);
-        // Notary needs to be Active/Unstaking
-        status.verifyActiveUnstaking();
-        isValidAttestation = ISnapshotHub(summit).isValidAttestation(attPayload);
-        if (!isValidAttestation) {
-            emit InvalidAttestation(attPayload, attSignature);
-            _slashAgent(status.domain, notary, msg.sender);
-        }
-    }
-
-    /// @inheritdoc InterfaceBondingManager
-    function verifyAttestationReport(bytes memory arPayload, bytes memory arSignature)
-        external
-        returns (bool isValidReport)
-    {
-        // This will revert if payload is not an attestation report
-        AttestationReport report = arPayload.castToAttestationReport();
-        // This will revert if the report signer is not a known Guard
-        (AgentStatus memory status, address guard) = _verifyAttestationReport(report, arSignature);
-        // Guard needs to be Active/Unstaking
-        status.verifyActiveUnstaking();
-        // Report is valid IF AND ONLY IF the reported attestation in invalid
-        isValidReport = !ISnapshotHub(summit).isValidAttestation(report.attestation().unwrap().clone());
-        if (!isValidReport) {
-            emit InvalidAttestationReport(arPayload, arSignature);
-            _slashAgent(status.domain, guard, msg.sender);
-        }
     }
 
     // ════════════════════════════════════════════ AGENTS LOGIC (MVP) ═════════════════════════════════════════════════
@@ -446,6 +295,11 @@ contract BondingManager is AgentManager, BondingManagerEvents, InterfaceBondingM
         }
     }
 
+    /// @dev Returns the index of the agent in the Agent Merkle Tree. Returns zero for non existing agents.
+    function _getIndex(address agent) internal view override returns (uint256 index) {
+        return _agentMap[agent].index;
+    }
+
     /// @dev Returns the current leaf representing agent in the Agent Merkle Tree.
     function _getLeaf(address agent) internal view returns (bytes32 leaf) {
         // Get the agent status STORED in the merkle tree
@@ -462,12 +316,5 @@ contract BondingManager is AgentManager, BondingManagerEvents, InterfaceBondingM
             return _getLeaf(_agents[index]);
         }
         // Return empty leaf for a zero index
-    }
-
-    /// @dev Verifies that Notary signature is active on local domain
-    // solhint-disable-next-line no-empty-blocks
-    function _verifyNotaryDomain(uint32 notaryDomain) internal pure override {
-        // Every Notary is active on Synapse Chain.
-        // No-op, as we have previously checked that `notaryDomain` is not zero.
     }
 }

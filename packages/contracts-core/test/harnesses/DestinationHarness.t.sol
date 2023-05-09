@@ -7,7 +7,7 @@ import {Destination} from "../../contracts/Destination.sol";
 /// Do not use for tests requiring interactions between messaging contracts.
 contract DestinationHarness is Destination {
     // solhint-disable-next-line no-empty-blocks
-    constructor(uint32 domain, address agentManager_) Destination(domain, agentManager_) {}
+    constructor(uint32 domain, address agentManager_, address inbox_) Destination(domain, agentManager_, inbox_) {}
 
     // TODO: add / remove Agents in standalone Go tests
 }

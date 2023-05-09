@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.17;
 
-import {CallerNotAgentManager} from "../../contracts/libs/Errors.sol";
+import {CallerNotInbox, NotaryInDispute} from "../../contracts/libs/Errors.sol";
 import {ChainGas, GasData, InterfaceDestination} from "../../contracts/interfaces/InterfaceDestination.sol";
 
 import {Random} from "../utils/libs/Random.t.sol";
@@ -16,19 +16,42 @@ contract DestinationSynapseTest is ExecutionHubTest {
     // Deploy Production version of Destination and Summit and mocks for everything else
     constructor() SynapseTest(DEPLOY_PROD_DESTINATION_SYNAPSE | DEPLOY_PROD_SUMMIT) {}
 
+    function test_setupCorrectly() public {
+        Destination dst = Destination(localDestination());
+        // Check Agents: all Agents are known in BondingManager
+        for (uint256 d = 0; d < allDomains.length; ++d) {
+            uint32 domain = allDomains[d];
+            for (uint256 i = 0; i < domains[domain].agents.length; ++i) {
+                address agent = domains[domain].agents[i];
+                checkAgentStatus(agent, dst.agentStatus(agent), AgentFlag.Active);
+            }
+        }
+        // Check AgentManager and Inbox
+        assertEq(dst.agentManager(), localAgentManager(), "!agentManager");
+        assertEq(dst.inbox(), localInbox(), "!inbox");
+        // Check version
+        assertEq(dst.version(), LATEST_VERSION, "!version");
+        // Check pending Agent Merkle Root
+        (bool rootPassed, bool rootPending) = dst.passAgentRoot();
+        assertFalse(rootPassed);
+        assertFalse(rootPending);
+    }
+
     function test_cleanSetup(Random memory random) public override {
         uint32 domain = DOMAIN_SYNAPSE;
         address caller = random.nextAddress();
         BondingManager manager = new BondingManager(domain);
+        address inbox_ = random.nextAddress();
         bytes32 agentRoot = random.next();
-        Destination cleanContract = new Destination(domain, address(manager));
-        manager.initialize(address(0), address(cleanContract), address(0));
+        Destination cleanContract = new Destination(domain, address(manager), inbox_);
+        manager.initialize(address(0), address(cleanContract), inbox_, address(0));
         // agentRoot should be ignored on Synapse Chain
         vm.prank(caller);
         cleanContract.initialize(agentRoot);
         assertEq(cleanContract.owner(), caller, "!owner");
         assertEq(cleanContract.localDomain(), domain, "!localDomain");
         assertEq(cleanContract.agentManager(), address(manager), "!agentManager");
+        assertEq(cleanContract.inbox(), inbox_, "!inbox");
         assertEq(cleanContract.nextAgentRoot(), 0, "!nextAgentRoot");
     }
 
@@ -57,8 +80,8 @@ contract DestinationSynapseTest is ExecutionHubTest {
             address notary = domains[DOMAIN_LOCAL].agents[index % DOMAIN_AGENTS];
             (bytes memory snapPayload, bytes memory guardSignature) = signSnapshot(guard, rs);
             (, bytes memory notarySignature) = signSnapshot(notary, rs);
-            bondingManager.submitSnapshot(snapPayload, guardSignature);
-            bondingManager.submitSnapshot(snapPayload, notarySignature);
+            inbox.submitSnapshot(snapPayload, guardSignature);
+            inbox.submitSnapshot(snapPayload, notarySignature);
             skipBlock();
         }
         for (uint32 index = 0; index < amount; ++index) {
@@ -69,11 +92,19 @@ contract DestinationSynapseTest is ExecutionHubTest {
         }
     }
 
-    function test_acceptAttestation_revert_notAgentManager(address caller) public {
-        vm.assume(caller != localAgentManager());
-        vm.expectRevert(CallerNotAgentManager.selector);
+    function test_acceptAttestation_revert_notInbox(address caller) public {
+        vm.assume(caller != localInbox());
+        vm.expectRevert(CallerNotInbox.selector);
         vm.prank(caller);
         InterfaceDestination(localDestination()).acceptAttestation(0, 0, "", 0, new ChainGas[](0));
+    }
+
+    function test_acceptAttestation_revert_notaryInDispute(uint256 domainId, uint256 notaryId) public {
+        address notary = getNotary(domainId, notaryId);
+        openDispute({guard: domains[0].agent, notary: notary});
+        vm.prank(address(inbox));
+        vm.expectRevert(NotaryInDispute.selector);
+        InterfaceDestination(localDestination()).acceptAttestation(agentIndex[notary], 0, "", 0, new ChainGas[](0));
     }
 
     // ═════════════════════════════════════════════════ GAS DATA ══════════════════════════════════════════════════════
@@ -86,8 +117,8 @@ contract DestinationSynapseTest is ExecutionHubTest {
         address firstNotary = domains[DOMAIN_LOCAL].agents[0];
         (bytes memory firstSnapPayload, bytes memory firstNotarySignature) = signSnapshot(firstNotary, firstSnap);
         (, bytes memory firstGuardSignature) = signSnapshot(domains[0].agent, firstSnap);
-        bondingManager.submitSnapshot(firstSnapPayload, firstGuardSignature);
-        bondingManager.submitSnapshot(firstSnapPayload, firstNotarySignature);
+        inbox.submitSnapshot(firstSnapPayload, firstGuardSignature);
+        inbox.submitSnapshot(firstSnapPayload, firstNotarySignature);
         uint256 firstSkipTime = random.nextUint32();
         skip(firstSkipTime);
         RawSnapshot memory secondSnap;
@@ -100,8 +131,8 @@ contract DestinationSynapseTest is ExecutionHubTest {
         address secondNotary = domains[DOMAIN_REMOTE].agents[0];
         (bytes memory secondSnapPayload, bytes memory secondNotarySignature) = signSnapshot(secondNotary, secondSnap);
         (, bytes memory secondGuardSignature) = signSnapshot(domains[0].agent, secondSnap);
-        bondingManager.submitSnapshot(secondSnapPayload, secondGuardSignature);
-        bondingManager.submitSnapshot(secondSnapPayload, secondNotarySignature);
+        inbox.submitSnapshot(secondSnapPayload, secondGuardSignature);
+        inbox.submitSnapshot(secondSnapPayload, secondNotarySignature);
         uint256 secondSkipTime = random.nextUint32();
         skip(secondSkipTime);
         // Check getGasData
@@ -127,8 +158,8 @@ contract DestinationSynapseTest is ExecutionHubTest {
         address firstNotary = domains[DOMAIN_LOCAL].agents[0];
         (bytes memory firstSnapPayload, bytes memory firstNotarySignature) = signSnapshot(firstNotary, firstSnap);
         (, bytes memory firstGuardSignature) = signSnapshot(domains[0].agent, firstSnap);
-        bondingManager.submitSnapshot(firstSnapPayload, firstGuardSignature);
-        bondingManager.submitSnapshot(firstSnapPayload, firstNotarySignature);
+        inbox.submitSnapshot(firstSnapPayload, firstGuardSignature);
+        inbox.submitSnapshot(firstSnapPayload, firstNotarySignature);
         uint256 firstSkipTime = random.nextUint32();
         skip(firstSkipTime);
         // Check getGasData
@@ -151,8 +182,8 @@ contract DestinationSynapseTest is ExecutionHubTest {
         address firstNotary = domains[DOMAIN_LOCAL].agents[0];
         (bytes memory firstSnapPayload, bytes memory firstNotarySignature) = signSnapshot(firstNotary, firstSnap);
         (, bytes memory firstGuardSignature) = signSnapshot(domains[0].agent, firstSnap);
-        bondingManager.submitSnapshot(firstSnapPayload, firstGuardSignature);
-        bondingManager.submitSnapshot(firstSnapPayload, firstNotarySignature);
+        inbox.submitSnapshot(firstSnapPayload, firstGuardSignature);
+        inbox.submitSnapshot(firstSnapPayload, firstNotarySignature);
         uint256 firstSkipTime = random.nextUint32();
         skip(firstSkipTime);
         // Check getGasData
@@ -169,8 +200,8 @@ contract DestinationSynapseTest is ExecutionHubTest {
         address firstNotary = domains[DOMAIN_LOCAL].agents[0];
         (bytes memory firstSnapPayload, bytes memory firstNotarySignature) = signSnapshot(firstNotary, firstSnap);
         (, bytes memory firstGuardSignature) = signSnapshot(domains[0].agent, firstSnap);
-        bondingManager.submitSnapshot(firstSnapPayload, firstGuardSignature);
-        bondingManager.submitSnapshot(firstSnapPayload, firstNotarySignature);
+        inbox.submitSnapshot(firstSnapPayload, firstGuardSignature);
+        inbox.submitSnapshot(firstSnapPayload, firstNotarySignature);
         uint256 firstSkipTime = random.nextUint32();
         skip(firstSkipTime);
         // Open dispute
@@ -197,8 +228,8 @@ contract DestinationSynapseTest is ExecutionHubTest {
         snapRoot = ra.snapRoot;
         (bytes memory snapPayload, bytes memory guardSignature) = createSignedSnapshot(domains[0].agent, sm.rs, sm.rsi);
         (, bytes memory notarySignature) = createSignedSnapshot(domains[DOMAIN_LOCAL].agent, sm.rs, sm.rsi);
-        bondingManager.submitSnapshot(snapPayload, guardSignature);
-        bondingManager.submitSnapshot(snapPayload, notarySignature);
+        inbox.submitSnapshot(snapPayload, guardSignature);
+        inbox.submitSnapshot(snapPayload, notarySignature);
     }
 
     /// @notice Returns local domain for the tested contract
