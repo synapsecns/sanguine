@@ -26,6 +26,7 @@ import { BRIDGE_PATH, HOW_TO_BRIDGE_URL } from '@/constants/urls'
 import { stringToBigNum } from '@/utils/stringToBigNum'
 import BridgeCard from './BridgeCard'
 import { useSynapseContext } from '@/utils/providers/SynapseProvider'
+import { checkStringIfOnlyZeroes } from '@/utils/regex'
 import {
   DEFAULT_FROM_CHAIN,
   DEFAULT_FROM_TOKEN,
@@ -169,14 +170,6 @@ const BridgePage = ({
     return new Promise((resolve) => setTimeout(resolve, ms))
   }
 
-  /*
-  Helper Function: checkStringIfOnlyZeroes
-  - regex function to determine if user input is only zeroes
-  */
-  function checkStringIfOnlyZeroes(str: string): boolean {
-    const regex = /^0*\.?0*$|^$/
-    return regex.test(str)
-  }
   /*
   useEffect Triggers: fromInput
   - Checks that user input is not zero. When input changes,
