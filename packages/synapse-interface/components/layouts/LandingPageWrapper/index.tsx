@@ -249,7 +249,7 @@ function MoreInfoButtons() {
         description="View contract related information such as contract addresses"
       />
       <MoreInfoItem
-        to={NAVIGATION.Portoflio.path}
+        to={NAVIGATION.Portfolio.path}
         labelText={NAVIGATION.Portfolio.text}
         description="View your portfolio of related assets on this chain"
       />
