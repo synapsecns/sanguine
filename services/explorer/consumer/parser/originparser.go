@@ -86,7 +86,7 @@ func (p *OriginParser) Parse(ctx context.Context, log ethTypes.Log, chainID uint
 		case origin.Topic(originTypes.SentEvent):
 			iFace, err := p.Filterer.ParseSent(log)
 			if err != nil {
-				return nil, fmt.Errorf("could not parse sent event: %w", err)
+				return nil, fmt.Errorf("could not parse SentEvent: %w", err)
 			}
 
 			return iFace, nil

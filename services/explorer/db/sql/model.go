@@ -608,7 +608,7 @@ type SummitEvent struct {
 	// Domain is the domain where the agent is active
 	Domain *uint32 `gorm:"column:domain"`
 	// Agent is the address of the agent
-	Agent *string `gorm:"column:agent"`
+	Agent sql.NullString `gorm:"column:agent"`
 	// RcptPayload is the raw payload with receipt data.
 	RcptPayload []byte `gorm:"column:receipt_payload"`
 	// RcptSignature is the raw bytes of the message.
@@ -619,6 +619,8 @@ type SummitEvent struct {
 	SnapSignature []byte `gorm:"column:snapshot_signature"`
 	// Tip is the tip amount from the TipAwarded event.
 	Tip *big.Int `gorm:"column:tip;type:UInt256"`
+	// TimeStamp is the timestamp of the block in which the event occurred.
+	TimeStamp *uint64 `gorm:"column:timestamp"`
 }
 
 // DestinationEvent is the struct that represents an event on the destination.
@@ -642,11 +644,13 @@ type DestinationEvent struct {
 	// Domain is the domain where the agent is active
 	Domain *uint32 `gorm:"column:domain"`
 	// Agent is the address of the agent
-	Agent *string `gorm:"column:agent"`
+	Agent sql.NullString `gorm:"column:agent"`
 	// Attestation is the raw payload with attestation data
 	Attestation []byte `gorm:"column:attestation"`
 	// AttSignature is the notary signature for the attestation
 	AttSignature []byte `gorm:"column:attestation_signature"`
 	// AgentRoot is agent root
 	AgentRoot *[32]byte `gorm:"column:agent_root"`
+	// TimeStamp is the timestamp of the block in which the event occurred.
+	TimeStamp *uint64 `gorm:"column:timestamp"`
 }

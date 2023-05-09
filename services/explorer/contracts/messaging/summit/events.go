@@ -173,12 +173,12 @@ func (s SummitTipAwarded) GetContractAddress() common.Address {
 
 // GetDomain gets the domain of where the signed Notary/agent is active
 func (s SummitTipAwarded) GetDomain() *uint32 {
-	return &(s.Domain)
+	return &(s.Origin)
 }
 
 // GetAgent is the notary who signed the attestation
 func (s SummitTipAwarded) GetAgent() *common.Address {
-	return &(s.Agent)
+	return &(s.Actor)
 }
 
 // GetRcptPayload gets the raw payload with receipt data
@@ -193,12 +193,12 @@ func (s SummitTipAwarded) GetRcptSignature() []byte {
 
 // GetSnapshot gets raw payload with snapshot data
 func (s SummitTipAwarded) GetSnapshot() []byte {
-	return s.Snapshot
+	return nil
 }
 
 // GetSnapSignature gets the agent signature for the snapshot
 func (s SummitTipAwarded) GetSnapSignature() []byte {
-	return s.SnapSignature
+	return nil
 }
 
 // GetTip gets the tip amount from the TipAwarded event.
