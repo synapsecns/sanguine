@@ -26,6 +26,8 @@ import { BRIDGE_PATH, HOW_TO_BRIDGE_URL } from '@/constants/urls'
 import { stringToBigNum } from '@/utils/stringToBigNum'
 import BridgeCard from './BridgeCard'
 import { useSynapseContext } from '@/utils/providers/SynapseProvider'
+import { checkStringIfOnlyZeroes } from '@/utils/regex'
+import { timeout } from '@/utils/timeout'
 import {
   DEFAULT_FROM_CHAIN,
   DEFAULT_FROM_TOKEN,
@@ -134,6 +136,7 @@ const BridgePage = ({
   /*
   useEffect Triggers: toToken, fromInput, toChainId, time
   - Gets a quote when the polling function is executed or any of the bridge attributes are altered.
+  - Debounce quote call by calling quote price AFTER user has stopped typing for 1s or 1000ms
   */
   useEffect(() => {
     let isCancelled = false
@@ -161,22 +164,7 @@ const BridgePage = ({
       isCancelled = true
     }
   }, [toToken, fromInput, time])
-  /*
-  Helper Function: timeout
-  - setTimeout function to debounce bridge quote call
-  */
-  function timeout(ms) {
-    return new Promise((resolve) => setTimeout(resolve, ms))
-  }
 
-  /*
-  Helper Function: checkStringIfOnlyZeroes
-  - regex function to determine if user input is only zeroes
-  */
-  function checkStringIfOnlyZeroes(str: string): boolean {
-    const regex = /^0*\.?0*$|^$/
-    return regex.test(str)
-  }
   /*
   useEffect Triggers: fromInput
   - Checks that user input is not zero. When input changes,
