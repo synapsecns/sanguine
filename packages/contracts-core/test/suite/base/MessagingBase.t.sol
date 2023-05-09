@@ -94,6 +94,28 @@ abstract contract MessagingBaseTest is SynapseTest {
         );
     }
 
+    // ═══════════════════════════════════════════════ AGENT GETTERS ═══════════════════════════════════════════════════
+
+    function randomAgent(Random memory random) public view returns (address agent) {
+        // Pick a random Agent
+        (, agent) = getAgent(random.nextUint256(), random.nextUint256());
+    }
+
+    function randomGuard(Random memory random) public view returns (address guard) {
+        // Pick a random Guard
+        guard = getGuard(random.nextUint256());
+    }
+
+    function randomNotary(Random memory random) public view returns (address notary) {
+        if (localDomain() != DOMAIN_SYNAPSE) {
+            // Pick a random Notary from local domain
+            notary = getDomainAgent(localDomain(), random.nextUint256());
+        } else {
+            // Pick a random Notary from any domain
+            notary = getNotary(random.nextUint256(), random.nextUint256());
+        }
+    }
+
     // ═══════════════════════════════════════════════ DATA CREATION ═══════════════════════════════════════════════════
 
     /// @notice Creates attestation for snapshot having given rawState at given index,
