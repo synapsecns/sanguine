@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.17;
 
-import {AgentStatus, DisputeFlag} from "../libs/Structures.sol";
+import {AgentStatus} from "../libs/Structures.sol";
 
 interface IAgentSecured {
     /**
@@ -28,6 +28,13 @@ interface IAgentSecured {
      * the "source of truth" for agent statuses.
      */
     function agentManager() external view returns (address);
+
+    /**
+     * @notice Returns the address of the local Inbox contract, which is treated as
+     * the "source of truth" for agent-signed statements.
+     * @dev Inbox passes verified agent statements to `IAgentSecured` contract.
+     */
+    function inbox() external view returns (address);
 
     /**
      * @notice Returns (flag, domain, index) for a given agent. See Structures.sol for details.

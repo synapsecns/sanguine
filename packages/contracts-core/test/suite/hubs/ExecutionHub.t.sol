@@ -14,7 +14,7 @@ import {
 } from "../../../contracts/libs/Errors.sol";
 import {AgentFlag} from "../../../contracts/libs/Structures.sol";
 import {IExecutionHub} from "../../../contracts/interfaces/IExecutionHub.sol";
-import {IAgentManager} from "../../../contracts/interfaces/IAgentManager.sol";
+import {IStatementInbox} from "../../../contracts/interfaces/IStatementInbox.sol";
 import {SNAPSHOT_MAX_STATES} from "../../../contracts/libs/Snapshot.sol";
 import {MessageStatus} from "../../../contracts/libs/Structures.sol";
 
@@ -449,7 +449,7 @@ abstract contract ExecutionHubTest is AgentSecuredTest {
         address notary = domains[DOMAIN_LOCAL].agent;
         bytes memory rcptSignature = signReceipt(notary, rcptPayload);
         vm.recordLogs();
-        assertTrue(IAgentManager(localAgentManager()).verifyReceipt(rcptPayload, rcptSignature));
+        assertTrue(IStatementInbox(localInbox()).verifyReceipt(rcptPayload, rcptSignature));
         assertEq(vm.getRecordedLogs().length, 0);
     }
 
@@ -462,7 +462,7 @@ abstract contract ExecutionHubTest is AgentSecuredTest {
         expectStatusUpdated(AgentFlag.Fraudulent, DOMAIN_LOCAL, notary);
         expectDisputeResolved(notary, address(0), address(this));
         // expectAgentSlashed(localDomain(), notary, address(this));
-        assertFalse(IAgentManager(localAgentManager()).verifyReceipt(rcptPayload, rcptSignature));
+        assertFalse(IStatementInbox(localInbox()).verifyReceipt(rcptPayload, rcptSignature));
     }
 
     // ══════════════════════════════════════════════════ HELPERS ══════════════════════════════════════════════════════

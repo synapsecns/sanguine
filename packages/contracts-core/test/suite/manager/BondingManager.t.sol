@@ -2,36 +2,29 @@
 pragma solidity 0.8.17;
 
 import {InterfaceOrigin} from "../../../contracts/interfaces/InterfaceOrigin.sol";
-import {InterfaceSummit} from "../../../contracts/interfaces/InterfaceSummit.sol";
 import {AGENT_TREE_HEIGHT} from "../../../contracts/libs/Constants.sol";
 import {
     AgentCantBeAdded,
     AgentNotActive,
     AgentNotUnstaking,
-    CallerNotDestination,
     CallerNotSummit,
     MustBeSynapseDomain,
-    NotaryInDispute,
     SlashAgentOptimisticPeriod,
     SynapseDomainForbidden
 } from "../../../contracts/libs/Errors.sol";
 import {MerkleMath} from "../../../contracts/libs/MerkleMath.sol";
-import {AgentFlag, AgentStatus} from "../../../contracts/libs/Structures.sol";
+import {AgentFlag} from "../../../contracts/libs/Structures.sol";
 import {AgentManagerTest} from "./AgentManager.t.sol";
 
-import {BaseMock} from "../../mocks/base/BaseMock.t.sol";
-import {
-    BondingManager, BondingManagerHarness, IAgentSecured, Summit, SynapseTest
-} from "../../utils/SynapseTest.t.sol";
+import {BondingManager, BondingManagerHarness, SynapseTest} from "../../utils/SynapseTest.t.sol";
 
 import {Random} from "../../utils/libs/Random.t.sol";
-import {RawExecReceipt, RawState, RawStateIndex} from "../../utils/libs/SynapseStructs.t.sol";
 
 // solhint-disable func-name-mixedcase
 // solhint-disable no-empty-blocks
 // solhint-disable ordering
 contract BondingManagerTest is AgentManagerTest {
-    // Deploy mocks for everything except BondingManager
+    // Deploy mocks for everything except BondingManager and Inbox
     constructor() SynapseTest(0) {}
 
     // ═══════════════════════════════════════════════ TESTS: SETUP ════════════════════════════════════════════════════
@@ -42,19 +35,21 @@ contract BondingManagerTest is AgentManagerTest {
         address origin_ = random.nextAddress();
         address destination_ = random.nextAddress();
         address summit_ = random.nextAddress();
+        address inbox_ = random.nextAddress();
         BondingManager cleanContract = new BondingManager(domain);
         vm.prank(caller);
-        cleanContract.initialize(origin_, destination_, summit_);
+        cleanContract.initialize(origin_, destination_, inbox_, summit_);
         assertEq(cleanContract.localDomain(), domain);
         assertEq(cleanContract.owner(), caller);
         assertEq(cleanContract.origin(), origin_);
         assertEq(cleanContract.destination(), destination_);
+        assertEq(cleanContract.inbox(), inbox_);
         assertEq(cleanContract.summit(), summit_);
         assertEq(cleanContract.leafsAmount(), 1);
     }
 
     function initializeLocalContract() public override {
-        BondingManager(localContract()).initialize(address(0), address(0), address(0));
+        BondingManager(localContract()).initialize(address(0), address(0), address(0), address(0));
     }
 
     function test_constructor_revert_notOnSynapseChain(uint32 domain) public {
@@ -97,7 +92,7 @@ contract BondingManagerTest is AgentManagerTest {
     function test_addAgent_fromScratch() public {
         // Deploy fresh instance of BondingManager
         bondingManager = new BondingManagerHarness(DOMAIN_SYNAPSE);
-        bondingManager.initialize(originSynapse, destinationSynapse, summit);
+        bondingManager.initialize(originSynapse, destinationSynapse, address(inbox), summit);
         // Try to add all agents one by one
         for (uint256 d = 0; d < allDomains.length; ++d) {
             uint32 domain = allDomains[d];
@@ -266,110 +261,6 @@ contract BondingManagerTest is AgentManagerTest {
         test_remoteSlashAgent(DOMAIN_REMOTE, domainId, agentId, address(1));
         updateStatus(slasher, AgentFlag.Slashed, domain, agent);
         checkAgentStatus(agent, bondingManager.agentStatus(agent), AgentFlag.Slashed);
-    }
-
-    // ══════════════════════════════════════════ TEST: SUBMIT STATEMENTS ══════════════════════════════════════════════
-
-    function test_submitSnapshot_guard(uint256 agentId, RawState memory rs, RawStateIndex memory rsi)
-        public
-        boundIndex(rsi)
-    {
-        address guard = getGuard(agentId);
-        (bytes memory snapPayload, bytes memory snapSig) = createSignedSnapshot(guard, rs, rsi);
-        vm.expectCall(
-            summit,
-            abi.encodeWithSelector(
-                InterfaceSummit.acceptGuardSnapshot.selector, agentIndex[guard], nextSignatureIndex(), snapPayload
-            )
-        );
-        bondingManager.submitSnapshot(snapPayload, snapSig);
-    }
-
-    function test_submitSnapshot_guard_passesInDispute(RawState memory rs, RawStateIndex memory rsi)
-        public
-        boundIndex(rsi)
-    {
-        address guard = getGuard(0);
-        openDispute({guard: guard, notary: domains[DOMAIN_REMOTE].agent});
-        test_submitSnapshot_guard(0, rs, rsi);
-    }
-
-    function test_submitSnapshot_notary(uint256 domainId, uint256 agentId, RawState memory rs, RawStateIndex memory rsi)
-        public
-        boundIndex(rsi)
-    {
-        address notary = getNotary(domainId, agentId);
-        (bytes memory snapPayload, bytes memory snapSig) = createSignedSnapshot(notary, rs, rsi);
-        vm.expectCall(
-            summit,
-            abi.encodeWithSelector(
-                InterfaceSummit.acceptNotarySnapshot.selector,
-                agentIndex[notary],
-                nextSignatureIndex(),
-                getAgentRoot(),
-                snapPayload
-            )
-        );
-        bondingManager.submitSnapshot(snapPayload, snapSig);
-    }
-
-    function test_submitSnapshot_revert_notaryInDispute(RawState memory rs, RawStateIndex memory rsi)
-        public
-        boundIndex(rsi)
-    {
-        address notary = domains[DOMAIN_REMOTE].agent;
-        openDispute({guard: domains[0].agent, notary: notary});
-        (bytes memory snapPayload, bytes memory snapSig) = createSignedSnapshot(notary, rs, rsi);
-        vm.expectRevert(NotaryInDispute.selector);
-        bondingManager.submitSnapshot(snapPayload, snapSig);
-    }
-
-    function test_submitReceipt(
-        uint256 domainId,
-        uint256 agentId,
-        uint256 attNotaryId,
-        RawExecReceipt memory re,
-        uint256 attNonce
-    ) public {
-        address rcptNotary = getNotary(domainId, agentId);
-        re.body.destination = DOMAIN_REMOTE;
-        re.body.attNotary = domains[DOMAIN_REMOTE].agents[attNotaryId % DOMAIN_AGENTS];
-        (bytes memory receiptPayload, bytes memory receiptSig) = signReceipt(rcptNotary, re);
-        // Set value for getAttestationNonce call
-        attNonce = bound(attNonce, 1, type(uint32).max);
-        BaseMock(localDestination()).setMockReturnValue(attNonce);
-        vm.expectCall(
-            summit,
-            abi.encodeWithSelector(
-                InterfaceSummit.acceptReceipt.selector,
-                agentIndex[rcptNotary],
-                agentIndex[re.body.attNotary],
-                nextSignatureIndex(),
-                attNonce,
-                re.tips.encodeTips(),
-                re.body.formatReceiptBody()
-            )
-        );
-        bondingManager.submitReceipt(receiptPayload, receiptSig);
-    }
-
-    function test_submitReceipt_revert_notaryInDispute(RawExecReceipt memory re) public {
-        address rcptNotary = domains[DOMAIN_LOCAL].agent;
-        re.body.destination = DOMAIN_REMOTE;
-        re.body.attNotary = domains[DOMAIN_REMOTE].agent;
-        openDispute({guard: domains[0].agent, notary: rcptNotary});
-        (bytes memory receiptPayload, bytes memory receiptSig) = signReceipt(rcptNotary, re);
-        // Set value for getAttestationNonce call
-        BaseMock(localDestination()).setMockReturnValue(1);
-        vm.expectRevert(NotaryInDispute.selector);
-        bondingManager.submitReceipt(receiptPayload, receiptSig);
-    }
-
-    function test_passReceipt_revert_notDestination(address caller) public {
-        vm.assume(caller != localDestination());
-        vm.expectRevert(CallerNotDestination.selector);
-        vm.prank(caller);
-        bondingManager.passReceipt(0, 0, 0, "");
     }
 
     // ════════════════════════════════════════════ TEST: WITHDRAW TIPS ════════════════════════════════════════════════

@@ -26,9 +26,9 @@ import {AgentFlag, AgentStatus, MessageStatus} from "../libs/Structures.sol";
 import {Tips} from "../libs/Tips.sol";
 import {TypeCasts} from "../libs/TypeCasts.sol";
 // ═════════════════════════════ INTERNAL IMPORTS ══════════════════════════════
-import {AgentSecured, DisputeFlag} from "../base/AgentSecured.sol";
+import {AgentSecured} from "../base/AgentSecured.sol";
 import {ExecutionHubEvents} from "../events/ExecutionHubEvents.sol";
-import {InterfaceBondingManager} from "../interfaces/InterfaceBondingManager.sol";
+import {InterfaceInbox} from "../interfaces/InterfaceInbox.sol";
 import {IExecutionHub} from "../interfaces/IExecutionHub.sol";
 import {IMessageRecipient} from "../interfaces/IMessageRecipient.sol";
 // ═════════════════════════════ EXTERNAL IMPORTS ══════════════════════════════
@@ -254,7 +254,7 @@ abstract contract ExecutionHub is AgentSecured, ExecutionHubEvents, IExecutionHu
         if (localDomain != SYNAPSE_DOMAIN) return false;
         // Do nothing for messages with no tips (TODO: introduce incentives for manager messages?)
         if (paddedTips == 0) return false;
-        return InterfaceBondingManager(agentManager).passReceipt({
+        return InterfaceInbox(inbox).passReceipt({
             attNotaryIndex: attNotaryIndex,
             attNonce: attNonce,
             paddedTips: paddedTips,
@@ -346,7 +346,7 @@ abstract contract ExecutionHub is AgentSecured, ExecutionHubEvents, IExecutionHu
         // Check if snapshot root has been submitted
         if (rootData.submittedAt == 0) revert IncorrectSnapshotRoot();
         // Check that Notary who submitted the attestation is not in dispute
-        if (_disputes[rootData.notaryIndex] != DisputeFlag.None) revert NotaryInDispute();
+        if (_isInDispute(rootData.notaryIndex)) revert NotaryInDispute();
     }
 
     function _receiptBody(bytes32 messageHash, ReceiptData memory rcptData)

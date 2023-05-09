@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.17;
 
-import {CallerNotAgentManager} from "../../contracts/libs/Errors.sol";
+import {CallerNotInbox, NotaryInDispute} from "../../contracts/libs/Errors.sol";
 import {IAgentSecured} from "../../contracts/interfaces/IAgentSecured.sol";
 import {InterfaceDestination} from "../../contracts/interfaces/InterfaceDestination.sol";
 import {ISnapshotHub} from "../../contracts/interfaces/ISnapshotHub.sol";
@@ -71,12 +71,14 @@ contract SummitTest is AgentSecuredTest {
     function test_cleanSetup(Random memory random) public override {
         uint32 domain = DOMAIN_SYNAPSE;
         address agentManager = random.nextAddress();
+        address inbox_ = random.nextAddress();
         address caller = random.nextAddress();
-        Summit cleanContract = new Summit(domain, agentManager);
+        Summit cleanContract = new Summit(domain, agentManager, inbox_);
         vm.prank(caller);
         cleanContract.initialize();
         assertEq(cleanContract.owner(), caller, "!owner");
         assertEq(cleanContract.agentManager(), agentManager, "!agentManager");
+        assertEq(cleanContract.inbox(), inbox_, "!inbox");
         assertEq(cleanContract.localDomain(), domain, "!localDomain");
     }
 
@@ -84,16 +86,16 @@ contract SummitTest is AgentSecuredTest {
         Summit(localContract()).initialize();
     }
 
-    function test_acceptGuardSnapshot_revert_notAgentManager(address caller) public {
+    function test_acceptGuardSnapshot_revert_notInbox(address caller) public {
         vm.assume(caller != localAgentManager());
-        vm.expectRevert(CallerNotAgentManager.selector);
+        vm.expectRevert(CallerNotInbox.selector);
         vm.prank(caller);
         InterfaceSummit(summit).acceptGuardSnapshot(0, 0, "");
     }
 
-    function test_acceptNotarySnapshot_revert_notAgentManager(address caller) public {
-        vm.assume(caller != localAgentManager());
-        vm.expectRevert(CallerNotAgentManager.selector);
+    function test_acceptNotarySnapshot_revert_notInbox(address caller) public {
+        vm.assume(caller != localInbox());
+        vm.expectRevert(CallerNotInbox.selector);
         vm.prank(caller);
         InterfaceSummit(summit).acceptNotarySnapshot(0, 0, 0, "");
     }
@@ -131,7 +133,7 @@ contract SummitTest is AgentSecuredTest {
             expectDisputeResolved(notary, address(0), address(this));
         }
         vm.recordLogs();
-        assertEq(bondingManager.verifyAttestation(attPayload, attSig), isValid, "!returnValue");
+        assertEq(inbox.verifyAttestation(attPayload, attSig), isValid, "!returnValue");
         if (isValid) {
             assertEq(vm.getRecordedLogs().length, 0, "Emitted logs when shouldn't");
         }
@@ -155,7 +157,7 @@ contract SummitTest is AgentSecuredTest {
             expectDisputeResolved(guard, address(0), address(this));
         }
         vm.recordLogs();
-        assertEq(bondingManager.verifyAttestationReport(arPayload, arSig), isValid, "!returnValue");
+        assertEq(inbox.verifyAttestationReport(arPayload, arSig), isValid, "!returnValue");
         if (isValid) {
             assertEq(vm.getRecordedLogs().length, 0, "Emitted logs when shouldn't");
         }
@@ -185,7 +187,7 @@ contract SummitTest is AgentSecuredTest {
             vm.expectEmit(true, true, true, true);
             emit SnapshotAccepted(0, domains[0].agents[i], guardSnapshots[i].snapshot, guardSnapshots[i].signature);
             (bytes memory attPayload, bytes32 agentRoot, uint256[] memory snapGas) =
-                bondingManager.submitSnapshot(guardSnapshots[i].snapshot, guardSnapshots[i].signature);
+                inbox.submitSnapshot(guardSnapshots[i].snapshot, guardSnapshots[i].signature);
             assertEq(attPayload, "", "Guard: non-empty attestation");
             assertEq(agentRoot, bytes32(0), "Guard: non-empty agent root");
             assertEq(snapGas.length, 0, "Guard: non-empty snap gas data");
@@ -272,7 +274,7 @@ contract SummitTest is AgentSecuredTest {
                 )
             );
 
-            (attPayload, agentRoot, snapGas) = bondingManager.submitSnapshot(snapPayloads[i], snapSignatures[i]);
+            (attPayload, agentRoot, snapGas) = inbox.submitSnapshot(snapPayloads[i], snapSignatures[i]);
             assertEq(attPayload, attestation, "Notary: incorrect attestation");
             assertEq(agentRoot, ra._agentRoot, "Notary: incorrect agent root");
             assertEq(keccak256(abi.encodePacked(snapGas)), ra._snapGasHash, "Notary: incorrect snap gas hash");
@@ -344,178 +346,42 @@ contract SummitTest is AgentSecuredTest {
         }
     }
 
-    // ══════════════════════════════════════════════ DISPUTE OPENING ══════════════════════════════════════════════════
-    // TODO: move to AgentManager test
-    /*
-    function test_submitStateReport(uint256 domainId, RawState memory rs, RawStateIndex memory rsi)
-        public
-        boundIndex(rsi)
-    {
-        // Restrict to non-zero existing domains
-        domainId = bound(domainId, 1, allDomains.length - 1);
-        check_submitStateReportWithSnapshot(summit, allDomains[domainId], rs, rsi);
-    }
-
-    function test_submitStateReportWithProof(
-        uint256 domainId,
-        RawState memory rs,
-        RawAttestation memory ra,
-        RawStateIndex memory rsi
-    ) public boundIndex(rsi) {
-        // Restrict to non-zero existing domains
-        domainId = bound(domainId, 1, allDomains.length - 1);
-        check_submitStateReportWithSnapshotProof(summit, allDomains[domainId], rs, ra, rsi);
-    }
-
-    // ════════════════════════════════════════════ DISPUTE RESOLUTION ═════════════════════════════════════════════════
-
-    function test_managerSlash(uint256 domainId, uint256 agentId, address prover) public {
-        // no counterpart in this test
-        (uint32 domain, address agent) = getAgent(domainId, agentId);
-        vm.expectEmit();
-        emit DisputeResolved(address(0), domain, agent);
-        vm.expectEmit();
-        emit AgentSlashed(domain, agent, prover);
-        vm.recordLogs();
-        vm.prank(address(bondingManager));
-        IAgentSecured(summit).managerSlash(domain, agent, prover);
-        assertEq(vm.getRecordedLogs().length, 2);
-        checkDisputeResolved({hub: summit, honest: address(0), slashed: agent});
-    }
-
-    function test_managerSlash_honestGuard(RawState memory rs) public {
-        (uint256 domainId, RawStateIndex memory rsi) = (1, RawStateIndex(0, 1));
-        uint32 domain = allDomains[domainId];
-        // Put Notary 0 and Guard 0 in dispute; rsi.statesAmount is set to 1
-        test_submitStateReport(domainId, rs, rsi);
-        (address guard, address notary) = (domains[0].agents[0], domains[domain].agents[0]);
-        // Slash the Notary
-        vm.prank(address(bondingManager));
-        IAgentSecured(summit).managerSlash(domain, notary, address(0));
-        checkDisputeResolved({hub: summit, honest: guard, slashed: notary});
-    }
-
-    function test_managerSlash_honestNotary(RawState memory rs) public {
-        (uint256 domainId, RawStateIndex memory rsi) = (1, RawStateIndex(0, 1));
-        uint32 domain = allDomains[domainId];
-        // Put Notary 0 and Guard 0 in dispute; rsi.statesAmount is set to 1
-        test_submitStateReport(domainId, rs, rsi);
-        (address guard, address notary) = (domains[0].agents[0], domains[domain].agents[0]);
-        // Slash the Guard
-        vm.prank(address(bondingManager));
-        IAgentSecured(summit).managerSlash(0, guard, address(0));
-        checkDisputeResolved({hub: summit, honest: notary, slashed: guard});
-    }
-
     // ══════════════════════════════════════════ TESTS: WHILE IN DISPUTE ══════════════════════════════════════════════
 
-    function test_submitStateReport_revert_notaryInDispute(RawState memory firstRS, RawState memory secondRS) public {
-        (uint256 domainId, RawStateIndex memory rsi) = (1, RawStateIndex(0, 0));
+    function test_submitSnapshot_revert_notaryInDispute(RawState memory rs) public {
+        (uint256 domainId, RawStateIndex memory rsi) = (1, RawStateIndex(0, 1));
         uint32 domain = allDomains[domainId];
-        // Put Notary 0 and Guard 0 in dispute; rsi.statesAmount is set to 1
-        test_submitStateReport(domainId, firstRS, rsi);
-        // Create Notary 0 snapshot
-        (address guard, address notary) = (domains[0].agents[1], domains[domain].agents[0]);
-        (bytes memory snapPayload, bytes memory snapSig) = createSignedSnapshot(notary, secondRS, rsi);
-        // Create report by Guard 1
-        (bytes memory srPayload, bytes memory srSig) = createSignedStateReport(guard, secondRS);
-        vm.expectRevert("Notary already in dispute");
-        bondingManager.submitStateReportWithSnapshot(0, srPayload, srSig, snapPayload, snapSig);
-    }
-
-    function test_submitStateReport_revert_guardInDispute(RawState memory firstRS, RawState memory secondRS) public {
-        (uint256 domainId, RawStateIndex memory rsi) = (1, RawStateIndex(0, 0));
-        uint32 domain = allDomains[domainId];
-        // Put Notary 0 and Guard 0 in dispute; rsi.statesAmount is set to 1
-        test_submitStateReport(domainId, firstRS, rsi);
-        // Create Notary 1 snapshot
-        (address guard, address notary) = (domains[0].agents[0], domains[domain].agents[1]);
-        (bytes memory snapPayload, bytes memory snapSig) = createSignedSnapshot(notary, secondRS, rsi);
-        // Create report by Guard 0
-        (bytes memory srPayload, bytes memory srSig) = createSignedStateReport(guard, secondRS);
-        vm.expectRevert("Guard already in dispute");
-        bondingManager.submitStateReportWithSnapshot(0, srPayload, srSig, snapPayload, snapSig);
-    }
-
-    function test_submitStateReportWithProof_revert_notaryInDispute(
-        RawState memory firstRS,
-        RawState memory secondRS,
-        RawAttestation memory ra
-    ) public {
-        (uint256 domainId, RawStateIndex memory rsi) = (1, RawStateIndex(0, 0));
-        uint32 domain = allDomains[domainId];
-        // Put Notary 0 and Guard 0 in dispute; rsi.statesAmount is set to 1
-        test_submitStateReport(domainId, firstRS, rsi);
-        // Create Notary 0 attestation
-        (address guard, address notary) = (domains[0].agents[1], domains[domain].agents[0]);
-        ra = createAttestation(secondRS, ra, rsi);
-        (bytes memory attPayload, bytes memory attSig) = signAttestation(notary, ra);
-        // Create Guard 1 signature for the report
-        (bytes memory srPayload, bytes memory srSig) = createSignedStateReport(guard, secondRS);
-        // Generate Snapshot Proof
-        bytes32[] memory snapProof = genSnapshotProof(rsi.stateIndex);
-        vm.expectRevert("Notary already in dispute");
-        bondingManager.submitStateReportWithSnapshotProof(
-            rsi.stateIndex, srPayload, srSig, snapProof, attPayload, attSig
-        );
-    }
-
-    function test_submitStateReportWithProof_revert_guardInDispute(
-        RawState memory firstRS,
-        RawState memory secondRS,
-        RawAttestation memory ra
-    ) public {
-        (uint256 domainId, RawStateIndex memory rsi) = (1, RawStateIndex(0, 0));
-        uint32 domain = allDomains[domainId];
-        // Put Notary 0 and Guard 0 in dispute; rsi.statesAmount is set to 1
-        test_submitStateReport(domainId, firstRS, rsi);
-        // Create Notary 1 attestation
-        (address guard, address notary) = (domains[0].agents[0], domains[domain].agents[1]);
-        ra = createAttestation(secondRS, ra, rsi);
-        (bytes memory attPayload, bytes memory attSig) = signAttestation(notary, ra);
-        // Create Guard 0 signature for the report
-        (bytes memory srPayload, bytes memory srSig) = createSignedStateReport(guard, secondRS);
-        // Generate Snapshot Proof
-        bytes32[] memory snapProof = genSnapshotProof(rsi.stateIndex);
-        vm.expectRevert("Guard already in dispute");
-        bondingManager.submitStateReportWithSnapshotProof(
-            rsi.stateIndex, srPayload, srSig, snapProof, attPayload, attSig
-        );
-    }
-
-    function test_submitSnapshot_revert_notaryInDispute(RawState memory firstRS, RawState memory secondRS) public {
-        (uint256 domainId, RawStateIndex memory rsi) = (1, RawStateIndex(0, 0));
-        uint32 domain = allDomains[domainId];
-        // Put Notary 0 and Guard 0 in dispute; rsi.statesAmount is set to 1
-        test_submitStateReport(domainId, firstRS, rsi);
+        (address guard0, address guard1, address notary) =
+            (domains[0].agents[0], domains[0].agents[1], domains[domain].agents[0]);
+        // Put Notary 0 and Guard 0 in dispute
+        openDispute({guard: guard0, notary: notary});
         // Make sure state nonce is non-zero
-        if (secondRS.nonce == 0) secondRS.nonce = 1;
+        if (rs.nonce == 0) rs.nonce = 1;
         // Create Guard 1 snapshot
-        (address guard, address notary) = (domains[0].agents[1], domains[domain].agents[0]);
-        (bytes memory snapPayload, bytes memory guardSig) = createSignedSnapshot(guard, secondRS, rsi);
+        (bytes memory snapPayload, bytes memory guardSig) = createSignedSnapshot(guard1, rs, rsi);
         // Guard 1 submits snapshot
-        bondingManager.submitSnapshot(snapPayload, guardSig);
+        inbox.submitSnapshot(snapPayload, guardSig);
         // Notary 0 signs the same snapshot
         bytes memory notarySig = signSnapshot(notary, snapPayload);
-        vm.expectRevert("Notary is in dispute");
-        bondingManager.submitSnapshot(snapPayload, notarySig);
+        vm.expectRevert(NotaryInDispute.selector);
+        inbox.submitSnapshot(snapPayload, notarySig);
     }
 
-    function test_submitSnapshot_success_guardInDispute(RawState memory firstRS, RawState memory secondRS) public {
-        (uint256 domainId, RawStateIndex memory rsi) = (1, RawStateIndex(0, 0));
-        // Put Notary 0 and Guard 0 in dispute; rsi.statesAmount is set to 1
-        test_submitStateReport(domainId, firstRS, rsi);
+    function test_submitSnapshot_success_guardInDispute(RawState memory rs) public {
+        (uint256 domainId, RawStateIndex memory rsi) = (1, RawStateIndex(0, 1));
+        uint32 domain = allDomains[domainId];
+        (address guard, address notary) = (domains[0].agents[0], domains[domain].agents[0]);
+        // Put Notary 0 and Guard 0 in dispute
+        openDispute({guard: guard, notary: notary});
         // Make sure state nonce is non-zero
-        if (secondRS.nonce == 0) secondRS.nonce = 1;
-        // Create Guard 1 snapshot
-        address guard = domains[0].agents[0];
-        (bytes memory snapPayload, bytes memory guardSig) = createSignedSnapshot(guard, secondRS, rsi);
+        if (rs.nonce == 0) rs.nonce = 1;
+        (bytes memory snapPayload, bytes memory guardSig) = createSignedSnapshot(guard, rs, rsi);
         // Guard 0 submits snapshot - being in dispute does not interfere with future snapshots
         vm.expectEmit();
         emit SnapshotAccepted(0, guard, snapPayload, guardSig);
-        bondingManager.submitSnapshot(snapPayload, guardSig);
+        inbox.submitSnapshot(snapPayload, guardSig);
     }
-    */
+
     // ═════════════════════════════════════════════════ OVERRIDES ═════════════════════════════════════════════════════
 
     function localContract() public view override returns (address) {
