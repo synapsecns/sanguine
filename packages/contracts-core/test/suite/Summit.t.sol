@@ -130,7 +130,7 @@ contract SummitTest is AgentSecuredTest {
             emit InvalidAttestation(attPayload, attSig);
             // TODO: check that anyone could make the call
             expectStatusUpdated(AgentFlag.Fraudulent, domain, notary);
-            expectDisputeResolved(notary, address(0), address(this));
+            expectDisputeResolved(0, notary, address(0), address(this));
         }
         vm.recordLogs();
         assertEq(inbox.verifyAttestation(attPayload, attSig), isValid, "!returnValue");
@@ -154,7 +154,7 @@ contract SummitTest is AgentSecuredTest {
             emit InvalidAttestationReport(arPayload, arSig);
             // TODO: check that anyone could make the call
             expectStatusUpdated(AgentFlag.Fraudulent, 0, guard);
-            expectDisputeResolved(guard, address(0), address(this));
+            expectDisputeResolved(0, guard, address(0), address(this));
         }
         vm.recordLogs();
         assertEq(inbox.verifyAttestationReport(arPayload, arSig), isValid, "!returnValue");

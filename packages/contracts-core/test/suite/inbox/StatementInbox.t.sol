@@ -33,7 +33,7 @@ abstract contract StatementInboxTest is MessagingBaseTest {
         // Create Guard signature for the report
         address guard = domains[0].agent;
         (bytes memory srPayload, bytes memory srSig) = createSignedStateReport(guard, rs);
-        expectDisputeOpened(guard, notary);
+        expectDisputeOpened(0, guard, notary);
         vm.prank(prover);
         testedInbox().submitStateReportWithSnapshot(rsi.stateIndex, srPayload, srSig, snapPayload, snapSig);
         assertEq(testedInbox().getReportsAmount(), 1, "!reportsAmount");
@@ -69,7 +69,7 @@ abstract contract StatementInboxTest is MessagingBaseTest {
         // Create Guard signature for the report
         address guard = domains[0].agent;
         (bytes memory srPayload, bytes memory srSig) = createSignedStateReport(guard, rs);
-        expectDisputeOpened(guard, notary);
+        expectDisputeOpened(0, guard, notary);
         vm.prank(prover);
         testedInbox().submitStateReportWithAttestation(
             rsi.stateIndex, srPayload, srSig, snapPayload, attPayload, attSig
@@ -113,7 +113,7 @@ abstract contract StatementInboxTest is MessagingBaseTest {
         (bytes memory srPayload, bytes memory srSig) = createSignedStateReport(guard, rs);
         // Generate Snapshot Proof
         bytes32[] memory snapProof = genSnapshotProof(rsi.stateIndex);
-        expectDisputeOpened(guard, notary);
+        expectDisputeOpened(0, guard, notary);
         vm.prank(prover);
         testedInbox().submitStateReportWithSnapshotProof(
             rsi.stateIndex, srPayload, srSig, snapProof, attPayload, attSig

@@ -460,7 +460,7 @@ abstract contract ExecutionHubTest is AgentSecuredTest {
         bytes memory rcptSignature = signReceipt(notary, rcptPayload);
         // TODO: check that anyone could make the call
         expectStatusUpdated(AgentFlag.Fraudulent, DOMAIN_LOCAL, notary);
-        expectDisputeResolved(notary, address(0), address(this));
+        expectDisputeResolved(0, notary, address(0), address(this));
         // expectAgentSlashed(localDomain(), notary, address(this));
         assertFalse(IStatementInbox(localInbox()).verifyReceipt(rcptPayload, rcptSignature));
     }
