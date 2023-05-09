@@ -18,17 +18,17 @@ import {IAgentManager} from "../interfaces/IAgentManager.sol";
 import {IStatementInbox} from "../interfaces/IStatementInbox.sol";
 
 abstract contract AgentManager is MessagingBase, AgentManagerEvents, IAgentManager {
-    // TODO: do we want to store the dispute timestamp?
     struct AgentDispute {
         DisputeFlag flag;
-        uint248 disputePtr;
+        uint88 disputePtr;
+        address fraudProver;
     }
 
+    // TODO: do we want to store the dispute timestamp?
     struct OpenedDispute {
         uint32 guardIndex;
         uint32 notaryIndex;
         uint32 slashedIndex;
-        address fraudProver;
     }
 
     // ══════════════════════════════════════════════════ STORAGE ══════════════════════════════════════════════════════
@@ -70,11 +70,11 @@ abstract contract AgentManager is MessagingBase, AgentManagerEvents, IAgentManag
         // Check that both agents are not in Dispute yet.
         if (_agentDispute[guardIndex].flag != DisputeFlag.None) revert GuardInDispute();
         if (_agentDispute[notaryIndex].flag != DisputeFlag.None) revert NotaryInDispute();
-        _disputes.push(OpenedDispute(guardIndex, notaryIndex, 0, address(0)));
+        _disputes.push(OpenedDispute(guardIndex, notaryIndex, 0));
         // Dispute is stored at length - 1, but we store the index + 1 to distinguish from "not in dispute".
         uint256 disputePtr = _disputes.length;
-        _agentDispute[guardIndex] = AgentDispute(DisputeFlag.Pending, uint248(disputePtr));
-        _agentDispute[notaryIndex] = AgentDispute(DisputeFlag.Pending, uint248(disputePtr));
+        _agentDispute[guardIndex] = AgentDispute(DisputeFlag.Pending, uint88(disputePtr), address(0));
+        _agentDispute[notaryIndex] = AgentDispute(DisputeFlag.Pending, uint88(disputePtr), address(0));
         // Dispute index is length - 1. Note: report that initiated the dispute has the same index in `Inbox`.
         emit DisputeOpened({disputeIndex: disputePtr - 1, guardIndex: guardIndex, notaryIndex: notaryIndex});
         _notifyDisputeOpened(guardIndex, notaryIndex);
@@ -124,8 +124,10 @@ abstract contract AgentManager is MessagingBase, AgentManagerEvents, IAgentManag
         OpenedDispute memory dispute = _disputes[index];
         guard = _getAgent(dispute.guardIndex);
         notary = _getAgent(dispute.notaryIndex);
-        slashedAgent = _getAgent(dispute.slashedIndex);
-        fraudProver = dispute.fraudProver;
+        if (dispute.slashedIndex > 0) {
+            slashedAgent = _getAgent(dispute.slashedIndex);
+            fraudProver = _agentDispute[dispute.slashedIndex].fraudProver;
+        }
         (reportPayload, reportSignature) = IStatementInbox(inbox).getGuardReport(index);
     }
 
@@ -138,11 +140,11 @@ abstract contract AgentManager is MessagingBase, AgentManagerEvents, IAgentManag
         uint256 agentIndex = _getIndex(agent);
         AgentDispute memory agentDispute = _agentDispute[agentIndex];
         flag = agentDispute.flag;
+        fraudProver = agentDispute.fraudProver;
         disputePtr = agentDispute.disputePtr;
         if (disputePtr > 0) {
             OpenedDispute memory dispute = _disputes[disputePtr - 1];
             rival = _getAgent(dispute.guardIndex == agentIndex ? dispute.notaryIndex : dispute.guardIndex);
-            fraudProver = dispute.fraudProver;
         }
     }
 
@@ -177,14 +179,15 @@ abstract contract AgentManager is MessagingBase, AgentManagerEvents, IAgentManag
     function _resolveDispute(uint32 slashedIndex, address prover) internal {
         AgentDispute memory agentDispute = _agentDispute[slashedIndex];
         if (agentDispute.flag == DisputeFlag.Slashed) revert DisputeAlreadyResolved();
-        _agentDispute[slashedIndex].flag = DisputeFlag.Slashed;
+        agentDispute.flag = DisputeFlag.Slashed;
+        agentDispute.fraudProver = prover;
+        _agentDispute[slashedIndex] = agentDispute;
         // Check if there was a opened dispute with the slashed agent
         uint32 rivalIndex = 0;
         if (agentDispute.disputePtr != 0) {
             uint256 disputeIndex = agentDispute.disputePtr - 1;
             OpenedDispute memory dispute = _disputes[disputeIndex];
-            (dispute.slashedIndex, dispute.fraudProver) = (slashedIndex, prover);
-            _disputes[disputeIndex] = dispute;
+            _disputes[disputeIndex].slashedIndex = slashedIndex;
             // Clear the dispute status for the rival
             rivalIndex = dispute.notaryIndex == slashedIndex ? dispute.guardIndex : dispute.notaryIndex;
             delete _agentDispute[rivalIndex];
