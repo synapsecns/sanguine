@@ -663,6 +663,7 @@ const SwapCard = ({
             onChangeChain={handleChainChange}
             onChangeAmount={onChangeFromAmount}
             setDisplayType={setDisplayType}
+            isQuoteLoading={isQuoteLoading}
           />
         </Grid>
 
