@@ -51,6 +51,35 @@ interface IAgentManager {
     function getAgent(uint256 index) external view returns (address agent, AgentStatus memory status);
 
     /**
+     * @notice Returns the number of opened Disputes.
+     * @dev This includes the Disputes that have been resolved already.
+     */
+    function getDisputesAmount() external view returns (uint256);
+
+    /**
+     * @notice Returns information about the dispute with the given index.
+     * @dev Will revert if dispute with given index hasn't been opened yet.
+     * @param index             Dispute index
+     * @return guard            Address of the Guard in the Dispute
+     * @return notary           Address of the Notary in the Dispute
+     * @return slashedAgent     Address of the Agent who was slashed when Dispute was resolved
+     * @return fraudProver      Address who provided fraud proof to resolve the Dispute
+     * @return reportPayload    Raw payload with report data that led to the Dispute
+     * @return reportSignature  Guard signature for the report payload
+     */
+    function getDispute(uint256 index)
+        external
+        view
+        returns (
+            address guard,
+            address notary,
+            address slashedAgent,
+            address fraudProver,
+            bytes memory reportPayload,
+            bytes memory reportSignature
+        );
+
+    /**
      * @notice Returns the current Dispute status of a given agent. See Structures.sol for details.
      * @dev Every returned value will be set to zero if agent was not slashed and is not in Dispute.
      * `rival` and `disputePtr` will be set to zero if the agent was slashed without being in Dispute.

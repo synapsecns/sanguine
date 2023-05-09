@@ -4,8 +4,9 @@ pragma solidity 0.8.17;
 // ══════════════════════════════ LIBRARY IMPORTS ══════════════════════════════
 import {
     CallerNotInbox,
-    IncorrectAgentDomain,
     DisputeAlreadyResolved,
+    IncorrectAgentDomain,
+    IndexOutOfRange,
     GuardInDispute,
     NotaryInDispute
 } from "../libs/Errors.sol";
@@ -14,6 +15,7 @@ import {AgentFlag, AgentStatus, DisputeFlag} from "../libs/Structures.sol";
 import {MessagingBase} from "../base/MessagingBase.sol";
 import {AgentManagerEvents} from "../events/AgentManagerEvents.sol";
 import {IAgentManager} from "../interfaces/IAgentManager.sol";
+import {IStatementInbox} from "../interfaces/IStatementInbox.sol";
 
 abstract contract AgentManager is MessagingBase, AgentManagerEvents, IAgentManager {
     // TODO: do we want to store the dispute timestamp?
@@ -98,6 +100,33 @@ abstract contract AgentManager is MessagingBase, AgentManagerEvents, IAgentManag
         if (_agentDispute[_getIndex(agent)].flag == DisputeFlag.Slashed && status.flag != AgentFlag.Slashed) {
             status.flag = AgentFlag.Fraudulent;
         }
+    }
+
+    /// @inheritdoc IAgentManager
+    function getDisputesAmount() external view returns (uint256) {
+        return _disputes.length;
+    }
+
+    /// @inheritdoc IAgentManager
+    function getDispute(uint256 index)
+        external
+        view
+        returns (
+            address guard,
+            address notary,
+            address slashedAgent,
+            address fraudProver,
+            bytes memory reportPayload,
+            bytes memory reportSignature
+        )
+    {
+        if (index >= _disputes.length) revert IndexOutOfRange();
+        OpenedDispute memory dispute = _disputes[index];
+        guard = _getAgent(dispute.guardIndex);
+        notary = _getAgent(dispute.notaryIndex);
+        slashedAgent = _getAgent(dispute.slashedIndex);
+        fraudProver = dispute.fraudProver;
+        (reportPayload, reportSignature) = IStatementInbox(inbox).getGuardReport(index);
     }
 
     /// @inheritdoc IAgentManager
