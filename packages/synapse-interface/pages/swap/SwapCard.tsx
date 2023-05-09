@@ -21,6 +21,8 @@ import { Token } from '@/utils/types'
 import { SWAP_PATH } from '@/constants/urls'
 import { stringToBigNum } from '@/utils/stringToBigNum'
 import { useSynapseContext } from '@/utils/providers/SynapseProvider'
+import { checkStringIfOnlyZeroes } from '@/utils/regex'
+import { timeout } from '@/utils/timeout'
 import { Transition } from '@headlessui/react'
 import { COIN_SLIDE_OVER_PROPS } from '@styles/transitions'
 import Card from '@tw/Card'
@@ -54,6 +56,7 @@ const SwapCard = ({
   const [fromInput, setFromInput] = useState({ string: '', bigNum: Zero })
   const [toToken, setToToken] = useState(DEFAULT_TO_TOKEN)
   const [toTokens, setToTokens] = useState<Token[]>([]) //add default
+  const [isQuoteLoading, setIsQuoteLoading] = useState<boolean>(false)
   const [error, setError] = useState(undefined)
   const [destinationAddress, setDestinationAddress] = useState('')
   const [swapQuote, setSwapQuote] = useState<SwapQuote>(EMPTY_SWAP_QUOTE)
@@ -154,18 +157,29 @@ const SwapCard = ({
   /*
   useEffect Triggers: toToken, fromInput, toChainId, time
   - Gets a quote when the polling function is executed or any of the bridge attributes are altered.
+    - Debounce quote call by calling quote price AFTER user has stopped typing for 1s or 1000ms
   */
   useEffect(() => {
-    if (
-      connectedChainId &&
-      String(fromToken.addresses[connectedChainId]) &&
-      fromInput &&
-      fromInput.bigNum.gt(Zero)
-    ) {
-      // TODO this needs to be debounced or throttled somehow to prevent spam and lag in the ui
-      getQuote()
-    } else {
-      setSwapQuote(EMPTY_SWAP_QUOTE)
+    let isCancelled = false
+
+    const handleChange = async () => {
+      await timeout(1000)
+      if (
+        connectedChainId &&
+        String(fromToken.addresses[connectedChainId]) &&
+        fromInput &&
+        fromInput.bigNum.gt(Zero)
+      ) {
+        // TODO this needs to be debounced or throttled somehow to prevent spam and lag in the ui
+        getQuote()
+      } else {
+        setSwapQuote(EMPTY_SWAP_QUOTE)
+      }
+    }
+    handleChange()
+
+    return () => {
+      isCancelled = true
     }
   }, [toToken, fromInput, time])
 
@@ -411,6 +425,7 @@ const SwapCard = ({
   - Calculates slippage by subtracting fee from input amount (checks to ensure proper num of decimals are in use - ask someone about stable swaps if you want to learn more)
   */
   const getQuote = async () => {
+    setIsQuoteLoading(true)
     const { routerAddress, maxAmountOut, query } = await SynapseSDK.swapQuote(
       connectedChainId,
       fromToken.addresses[connectedChainId],
@@ -419,6 +434,7 @@ const SwapCard = ({
     )
     if (!(query && maxAmountOut)) {
       setSwapQuote(EMPTY_SWAP_QUOTE_ZERO)
+      setIsQuoteLoading(false)
       return
     }
     const toValueBigNum = maxAmountOut ?? Zero
@@ -444,7 +460,7 @@ const SwapCard = ({
       delta: maxAmountOut,
       quote: query,
     })
-    return
+    return setIsQuoteLoading(false)
   }
 
   /*
@@ -566,6 +582,21 @@ const SwapCard = ({
     // />
   }, [fromInput, time, swapQuote, error])
 
+  /*
+  useEffect Triggers: fromInput
+  - Checks that user input is not zero. When input changes,
+  - isQuoteLoading state is set to true for loading state interactions
+  */
+  useEffect(() => {
+    const { string, bigNum } = fromInput
+    const isInvalid = checkStringIfOnlyZeroes(string)
+    isInvalid ? () => null : setIsQuoteLoading(true)
+
+    return () => {
+      setIsQuoteLoading(false)
+    }
+  }, [fromInput])
+
   return (
     <Card
       divider={false}
@@ -632,6 +663,7 @@ const SwapCard = ({
             onChangeChain={handleChainChange}
             onChangeAmount={onChangeFromAmount}
             setDisplayType={setDisplayType}
+            isQuoteLoading={isQuoteLoading}
           />
         </Grid>
 
