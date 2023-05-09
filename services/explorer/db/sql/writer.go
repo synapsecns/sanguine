@@ -3,7 +3,6 @@ package sql
 import (
 	"context"
 	"fmt"
-	"gorm.io/gorm"
 )
 
 // StoreEvent stores a generic event that has the proper fields set by `eventToBridgeEvent`.
@@ -98,22 +97,13 @@ func (s *Store) StoreLastBlock(ctx context.Context, chainID uint32, blockNumber 
 		Order("block_number DESC").
 		Limit(1).
 		Find(&lastBlock)
-
-	if dbTx.Error == gorm.ErrRecordNotFound {
+	if dbTx.Error == nil && blockNumber > lastBlock.BlockNumber {
 		lastBlock.ChainID = chainID
 		lastBlock.BlockNumber = blockNumber
 		lastBlock.ContractAddress = contractAddress
 		dbTx = s.db.WithContext(ctx).Create(&lastBlock)
 		if dbTx.Error != nil {
 			return fmt.Errorf("could not store last block: %w", dbTx.Error)
-		}
-	} else if dbTx.Error != nil {
-		return fmt.Errorf("could not retrieve last block: %w", dbTx.Error)
-	} else if blockNumber > lastBlock.BlockNumber {
-		lastBlock.BlockNumber = blockNumber
-		dbTx = s.db.WithContext(ctx).Save(&lastBlock)
-		if dbTx.Error != nil {
-			return fmt.Errorf("could not update last block: %w", dbTx.Error)
 		}
 	}
 

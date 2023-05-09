@@ -61,12 +61,9 @@ RETRY:
 // FetchLastIndexed fetches the last indexed block per contract.
 func (s ScribeFetcher) FetchLastIndexed(ctx context.Context, chainID uint32, contractAddress string) (uint64, error) {
 	lastIndexed, err := s.FetchClient.GetLastIndexed(ctx, int(chainID), contractAddress)
-	fmt.Println("YYYY", lastIndexed, lastIndexed.Response, fmt.Sprintf("%v", err))
 	if err != nil || lastIndexed == nil || lastIndexed.Response == nil {
-		fmt.Println("lastIndexed.Response", lastIndexed.Response)
 		return 0, fmt.Errorf("could not get last indexed for contract %s: %w", contractAddress, err)
 	}
-	fmt.Println("UNRWPA", *lastIndexed.Response)
 	return uint64(*lastIndexed.Response), nil
 }
 

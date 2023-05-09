@@ -4,11 +4,12 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"github.com/jpillora/backoff"
 	"math/rand"
 	"net/http"
 	"strconv"
 	"time"
+
+	"github.com/jpillora/backoff"
 )
 
 // PriceService --output=mocks --case=underscore.
@@ -111,7 +112,6 @@ RETRY:
 		}
 		if retries >= tokenMetadataMaxRetry {
 			logger.Errorf("Max retries reached, could not get token metadata for %s", coinGeckoID)
-			fmt.Println("Max retries reached, could not get token metadata for", coinGeckoID)
 			return nil
 		}
 		var granularityStr string

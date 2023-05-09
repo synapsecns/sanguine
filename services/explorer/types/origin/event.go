@@ -4,7 +4,7 @@ import (
 	"github.com/ethereum/go-ethereum/common"
 )
 
-// EventLog is the interface for all message events.
+// EventLog is the interface for all origin events.
 //
 //nolint:interfacebloat
 type EventLog interface {
