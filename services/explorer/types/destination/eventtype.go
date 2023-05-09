@@ -6,15 +6,15 @@ package destination
 type EventType uint8
 
 const (
-	// AttestationAccepted when a snapshot is accepted by the Destination contract.
-	AttestationAccepted EventType = iota
-	// AgentRootAccepted agent root accepted.
-	AgentRootAccepted
+	// AttestationAcceptedEvent when a snapshot is accepted by the Destination contract.
+	AttestationAcceptedEvent EventType = iota
+	// AgentRootAcceptedEvent agent root accepted.
+	AgentRootAcceptedEvent
 )
 
 // AllEventTypes is a list of the event types.
 func AllEventTypes() []EventType {
-	return []EventType{AttestationAccepted, AgentRootAccepted}
+	return []EventType{AttestationAcceptedEvent, AgentRootAcceptedEvent}
 }
 
 // Int gets the int value of the event type.

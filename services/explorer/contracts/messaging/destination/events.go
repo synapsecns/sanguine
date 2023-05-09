@@ -3,57 +3,119 @@ package destination
 import (
 	"github.com/ethereum/go-ethereum/common"
 	ethTypes "github.com/ethereum/go-ethereum/core/types"
-	"github.com/synapsecns/sanguine/services/explorer/types/origin"
+	"github.com/synapsecns/sanguine/services/explorer/types/destination"
 )
 
 // GetEventType gets the execute event type.
-func (o OriginSent) GetEventType() origin.EventType {
-	return origin.SentEvent
+func (d DestinationAttestationAccepted) GetEventType() destination.EventType {
+	return destination.AttestationAcceptedEvent
 }
 
 // GetRaw gets the raw logs.
-func (o OriginSent) GetRaw() ethTypes.Log {
-	return o.Raw
+func (d DestinationAttestationAccepted) GetRaw() ethTypes.Log {
+	return d.Raw
 }
 
 // GetTxHash gets the unique identifier (txhash) for the event.
-func (o OriginSent) GetTxHash() common.Hash {
-	return o.Raw.TxHash
+func (d DestinationAttestationAccepted) GetTxHash() common.Hash {
+	return d.Raw.TxHash
 }
 
 // GetEventIndex gets the event index.
-func (o OriginSent) GetEventIndex() uint64 {
-	return uint64(o.Raw.Index)
+func (d DestinationAttestationAccepted) GetEventIndex() uint64 {
+	return uint64(d.Raw.Index)
 }
 
 // GetBlockNumber gets the block number for the event.
-func (o OriginSent) GetBlockNumber() uint64 {
-	return o.Raw.BlockNumber
+func (d DestinationAttestationAccepted) GetBlockNumber() uint64 {
+	return d.Raw.BlockNumber
 }
 
 // GetContractAddress gets the contract address the event occurred on.
-func (o OriginSent) GetContractAddress() common.Address {
-	return o.Raw.Address
+func (d DestinationAttestationAccepted) GetContractAddress() common.Address {
+	return d.Raw.Address
 }
 
-// GetMessageHash gets the message hash.
-func (o OriginSent) GetMessageHash() [32]byte {
-	return o.MessageHash
+// GetDomain gets domain where the agent is active
+func (d DestinationAttestationAccepted) GetDomain() *uint32 {
+	return &(d.Domain)
 }
 
-// GetDestination gets the destination.
-func (o OriginSent) GetDestination() uint32 {
-	return o.Destination
+// GetAgent gets the address of the agent
+func (d DestinationAttestationAccepted) GetAgent() *common.Address {
+	return &(d.Notary)
 }
 
-// GetMessage gets the Message.
-func (o OriginSent) GetMessage() []byte {
-	return o.Message
+// GetAttestation gets raw payload with attestation data
+func (d DestinationAttestationAccepted) GetAttestation() []byte {
+	return d.Attestation
 }
 
-// GetNonce gets the Nonce.
-func (o OriginSent) GetNonce() uint32 {
-	return o.Nonce
+// GetAttSignature gets the notary signature for the attestation
+func (d DestinationAttestationAccepted) GetAttSignature() []byte {
+	return d.AttSignature
 }
 
-var _ origin.EventLog = &OriginSent{}
+// GetAgentRoot gets the root
+func (d DestinationAttestationAccepted) GetAgentRoot() *[32]byte {
+	return nil
+}
+
+var _ destination.EventLog = &DestinationAttestationAccepted{}
+
+// GetEventType gets the execute event type.
+func (d DestinationAgentRootAccepted) GetEventType() destination.EventType {
+	return destination.AgentRootAcceptedEvent
+}
+
+// GetRaw gets the raw logs.
+func (d DestinationAgentRootAccepted) GetRaw() ethTypes.Log {
+	return d.Raw
+}
+
+// GetTxHash gets the unique identifier (txhash) for the event.
+func (d DestinationAgentRootAccepted) GetTxHash() common.Hash {
+	return d.Raw.TxHash
+}
+
+// GetEventIndex gets the event index.
+func (d DestinationAgentRootAccepted) GetEventIndex() uint64 {
+	return uint64(d.Raw.Index)
+}
+
+// GetBlockNumber gets the block number for the event.
+func (d DestinationAgentRootAccepted) GetBlockNumber() uint64 {
+	return d.Raw.BlockNumber
+}
+
+// GetContractAddress gets the contract address the event occurred on.
+func (d DestinationAgentRootAccepted) GetContractAddress() common.Address {
+	return d.Raw.Address
+}
+
+// GetDomain gets domain where the agent is active
+func (d DestinationAgentRootAccepted) GetDomain() *uint32 {
+	return nil
+}
+
+// GetAgent gets the address of the agent
+func (d DestinationAgentRootAccepted) GetAgent() *common.Address {
+	return nil
+}
+
+// GetAttestation gets raw payload with attestation data
+func (d DestinationAgentRootAccepted) GetAttestation() []byte {
+	return nil
+}
+
+// GetAttSignature gets the notary signature for the attestation
+func (d DestinationAgentRootAccepted) GetAttSignature() []byte {
+	return nil
+}
+
+// GetAgentRoot gets the root
+func (d DestinationAgentRootAccepted) GetAgentRoot() *[32]byte {
+	return &(d.AgentRoot)
+}
+
+var _ destination.EventLog = &DestinationAgentRootAccepted{}

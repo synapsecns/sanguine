@@ -6,19 +6,19 @@ package summit
 type EventType uint8
 
 const (
-	// ReceiptAccepted when a new message is sent.
-	ReceiptAccepted EventType = iota
-	// SnapshotAccepted when a snapshot is accepted.
-	SnapshotAccepted
-	// ReceiptConfirmed when a message is confirmed.
-	ReceiptConfirmed
-	// TipAwarded when a tip is awarded.
-	TipAwarded
+	// ReceiptAcceptedEvent when a new message is sent.
+	ReceiptAcceptedEvent EventType = iota
+	// SnapshotAcceptedEvent when a snapshot is accepted.
+	SnapshotAcceptedEvent
+	// ReceiptConfirmedEvent when a message is confirmed.
+	ReceiptConfirmedEvent
+	// TipAwardedEvent when a tip is awarded.
+	TipAwardedEvent
 )
 
 // AllEventTypes is a list of the event types.
 func AllEventTypes() []EventType {
-	return []EventType{ReceiptAccepted, SnapshotAccepted, ReceiptConfirmed, TipAwarded}
+	return []EventType{ReceiptAcceptedEvent, SnapshotAcceptedEvent, ReceiptConfirmedEvent, TipAwardedEvent}
 }
 
 // Int gets the int value of the event type.

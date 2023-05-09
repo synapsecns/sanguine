@@ -586,3 +586,67 @@ type OriginEvent struct {
 	// TimeStamp is the timestamp of the block in which the event occurred.
 	TimeStamp *uint64 `gorm:"column:timestamp"`
 }
+
+// SummitEvent is the struct that represents an event on the summit.
+type SummitEvent struct {
+	// InsertTime is the time the event was inserted into the database
+	InsertTime uint64 `gorm:"column:insert_time"`
+	// ContractAddress is the address of the contract that generated the event
+	ContractAddress string `gorm:"column:contract_address"`
+	// ChainID is the chain id of the contract that generated the event
+	ChainID uint32 `gorm:"column:chain_id"`
+	// BlockNumber is the block number of the event
+	BlockNumber uint64 `gorm:"column:block_number"`
+	// TxHash is the transaction hash of the event
+	TxHash string `gorm:"column:tx_hash"`
+	// EventType is the type of the event
+	EventType uint8 `gorm:"column:event_type"`
+	// EventIndex is the index of the log
+	EventIndex uint64 `gorm:"column:event_index"`
+	// Sender is the address of the sender
+	Sender string `gorm:"column:sender"`
+	// Domain is the domain where the agent is active
+	Domain *uint32 `gorm:"column:domain"`
+	// Agent is the address of the agent
+	Agent *string `gorm:"column:agent"`
+	// RcptPayload is the raw payload with receipt data.
+	RcptPayload []byte `gorm:"column:receipt_payload"`
+	// RcptSignature is the raw bytes of the message.
+	RcptSignature []byte `gorm:"column:receipt_signature"`
+	// Snapshot is the raw payload with snapshot data
+	Snapshot []byte `gorm:"column:snapshot"`
+	// SnapSignature is the agent signature for the snapshot
+	SnapSignature []byte `gorm:"column:snapshot_signature"`
+	// Tip is the tip amount from the TipAwarded event.
+	Tip *big.Int `gorm:"column:tip;type:UInt256"`
+}
+
+// DestinationEvent is the struct that represents an event on the destination.
+type DestinationEvent struct {
+	// InsertTime is the time the event was inserted into the database
+	InsertTime uint64 `gorm:"column:insert_time"`
+	// ContractAddress is the address of the contract that generated the event
+	ContractAddress string `gorm:"column:contract_address"`
+	// ChainID is the chain id of the contract that generated the event
+	ChainID uint32 `gorm:"column:chain_id"`
+	// BlockNumber is the block number of the event
+	BlockNumber uint64 `gorm:"column:block_number"`
+	// TxHash is the transaction hash of the event
+	TxHash string `gorm:"column:tx_hash"`
+	// EventType is the type of the event
+	EventType uint8 `gorm:"column:event_type"`
+	// EventIndex is the index of the log
+	EventIndex uint64 `gorm:"column:event_index"`
+	// Sender is the address of the sender
+	Sender string `gorm:"column:sender"`
+	// Domain is the domain where the agent is active
+	Domain *uint32 `gorm:"column:domain"`
+	// Agent is the address of the agent
+	Agent *string `gorm:"column:agent"`
+	// Attestation is the raw payload with attestation data
+	Attestation []byte `gorm:"column:attestation"`
+	// AttSignature is the notary signature for the attestation
+	AttSignature []byte `gorm:"column:attestation_signature"`
+	// AgentRoot is agent root
+	AgentRoot *[32]byte `gorm:"column:agent_root"`
+}

@@ -8,15 +8,15 @@ func _() {
 	// An "invalid array index" compiler error signifies that the constant values have changed.
 	// Re-run the stringer command to generate them again.
 	var x [1]struct{}
-	_ = x[ReceiptAccepted-0]
-	_ = x[SnapshotAccepted-1]
-	_ = x[ReceiptConfirmed-2]
-	_ = x[TipAwarded-3]
+	_ = x[ReceiptAcceptedEvent-0]
+	_ = x[SnapshotAcceptedEvent-1]
+	_ = x[ReceiptConfirmedEvent-2]
+	_ = x[TipAwardedEvent-3]
 }
 
-const _EventType_name = "ReceiptAcceptedSnapshotAcceptedReceiptConfirmedTipAwarded"
+const _EventType_name = "ReceiptAcceptedEventSnapshotAcceptedEventReceiptConfirmedEventTipAwardedEvent"
 
-var _EventType_index = [...]uint8{0, 15, 31, 47, 57}
+var _EventType_index = [...]uint8{0, 20, 41, 62, 77}
 
 func (i EventType) String() string {
 	if i >= EventType(len(_EventType_index)-1) {

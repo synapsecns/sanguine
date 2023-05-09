@@ -28,5 +28,5 @@ type EventLog interface {
 	// GetAttSignature gets the notary signature for the attestation
 	GetAttSignature() []byte
 	// GetAgentRoot gets the root
-	GetAgentRoot() [32]byte
+	GetAgentRoot() *[32]byte
 }

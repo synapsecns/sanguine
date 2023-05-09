@@ -32,6 +32,6 @@ type EventLog interface {
 	GetSnapshot() []byte
 	// GetSnapSignature gets the agent signature for the snapshot
 	GetSnapSignature() []byte
-	// GetTip gets the tip amount for the TipAwarded event.
+	// GetTip gets the tip amount from the TipAwarded event.
 	GetTip() *big.Int
 }
