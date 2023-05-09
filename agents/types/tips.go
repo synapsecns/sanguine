@@ -5,6 +5,11 @@ import (
 	"math/big"
 )
 
+const (
+	// TipsSize is the size of the tips in bytes.
+	TipsSize = 8 * 4
+)
+
 // Tips contain tips used for scientizing different agents.
 type Tips interface {
 	// SummitTip gets the tips for the agent work on summit

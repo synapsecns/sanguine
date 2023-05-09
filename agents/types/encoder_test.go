@@ -8,6 +8,20 @@ import (
 	"github.com/synapsecns/sanguine/agents/types"
 )
 
+func TestRequestEncodeDecode(t *testing.T) {
+	gasLimit := gofakeit.Uint64()
+	gasDrop := randomUint64BigInt(t)
+
+	ogRequest, err := types.EncodeRequest(types.NewRequest(gasLimit, gasDrop))
+	Nil(t, err)
+
+	decodedRequest, err := types.DecodeRequest(ogRequest)
+	Nil(t, err)
+
+	Equal(t, decodedRequest.GasLimit(), gasLimit)
+	Equal(t, decodedRequest.GasDrop(), gasDrop)
+}
+
 func TestEncodeDecodeTips(t *testing.T) {
 	// we want to make sure we can deal w/ overflows
 	summitTip := randomUint64BigInt(t)
@@ -25,6 +39,46 @@ func TestEncodeDecodeTips(t *testing.T) {
 	Equal(t, decodedTips.AttestationTip(), attestationTip)
 	Equal(t, decodedTips.ExecutionTip(), executionTip)
 	Equal(t, decodedTips.DeliveryTip(), deliveryTip)
+}
+
+func TestEncodeDecodeBaseMessage(t *testing.T) {
+	senderBytes := randomUint64BigInt(t).Bytes()
+	var sender [32]byte
+	copy(sender[:], senderBytes)
+
+	recipientBytes := randomUint64BigInt(t).Bytes()
+	var recipient [32]byte
+	copy(recipient[:], recipientBytes)
+
+	summitTip := randomUint64BigInt(t)
+	attestationTip := randomUint64BigInt(t)
+	executionTip := randomUint64BigInt(t)
+	deliveryTip := randomUint64BigInt(t)
+
+	tips := types.NewTips(summitTip, attestationTip, executionTip, deliveryTip)
+
+	gasLimit := gofakeit.Uint64()
+	gasDrop := randomUint64BigInt(t)
+
+	request := types.NewRequest(gasLimit, gasDrop)
+
+	content := randomUint64BigInt(t).Bytes()
+
+	encodedBaseMessage, err := types.EncodeBaseMessage(types.NewBaseMessage(sender, recipient, tips, request, content))
+	Nil(t, err)
+
+	decodedBaseMessage, err := types.DecodeBaseMessage(encodedBaseMessage)
+	Nil(t, err)
+
+	Equal(t, decodedBaseMessage.Sender(), sender)
+	Equal(t, decodedBaseMessage.Recipient(), recipient)
+	Equal(t, decodedBaseMessage.Tips().SummitTip().Uint64(), tips.SummitTip().Uint64())
+	Equal(t, decodedBaseMessage.Tips().AttestationTip().Uint64(), tips.AttestationTip().Uint64())
+	Equal(t, decodedBaseMessage.Tips().DeliveryTip().Uint64(), tips.DeliveryTip().Uint64())
+	Equal(t, decodedBaseMessage.Tips().ExecutionTip().Uint64(), tips.ExecutionTip().Uint64())
+	Equal(t, decodedBaseMessage.Request().GasLimit(), request.GasLimit())
+	Equal(t, decodedBaseMessage.Request().GasDrop().Uint64(), request.GasDrop().Uint64())
+	Equal(t, decodedBaseMessage.Content(), content)
 }
 
 func TestNewMessageEncodeDecode(t *testing.T) {

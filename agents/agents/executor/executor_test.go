@@ -118,7 +118,7 @@ func (e *ExecutorSuite) TestVerifyState() {
 
 func (e *ExecutorSuite) TestMerkleInsert() {
 	// TODO (joe and lex): FIX ME
-	e.T().Skip()
+	// e.T().Skip()
 	testDone := false
 	defer func() {
 		testDone = true

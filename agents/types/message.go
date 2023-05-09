@@ -4,7 +4,6 @@ import (
 	"bytes"
 	"encoding/gob"
 	"fmt"
-
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/crypto"
 )
@@ -27,7 +26,7 @@ const (
 	MessageFlagManager
 )
 
-// Message is an interface that contains metadata.
+// Message is an interface that contains the message.
 //
 //nolint:interfacebloat
 type Message interface {
@@ -88,10 +87,21 @@ func DecodeMessage(message []byte) (Message, error) {
 
 	rawBody := message[MessageBodyOffset:]
 
+	var content []byte
+	if MessageFlag(flag) == MessageFlagBase {
+		messageBase, err := DecodeBaseMessage(rawBody)
+		if err != nil {
+			return nil, fmt.Errorf("could not decode base message: %w", err)
+		}
+		content = messageBase.Content()
+	} else {
+		content = rawBody
+	}
+
 	decoded := messageImpl{
 		flag:   MessageFlag(flag),
 		header: header,
-		body:   rawBody,
+		body:   content,
 	}
 
 	return decoded, nil
