@@ -15,9 +15,9 @@ export default function MiniMaxButton({
             pt-1 pb-1 pl-2 pr-2 mr-2
             rounded-md
             text-sm font-medium
-            bg-bgLighter opacity-30
-            hover:outline-red-500
-            active:outline-red-500
+            bg-bgLighter
+            opacity-30
+            cursor-not-allowed
           `}
         >
           Max
