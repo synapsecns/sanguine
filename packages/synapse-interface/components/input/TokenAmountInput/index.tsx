@@ -49,6 +49,7 @@ const BridgeInputContainer = ({
     )
   }
   const isConnected = address !== null
+  const isMaxDisabled = formattedBalance === '0.0'
 
   const onClickBalance = () => {
     onChangeAmount(
@@ -156,7 +157,10 @@ const BridgeInputContainer = ({
           )}
           {isOrigin && isConnected && (
             <div className="hidden mr-2 sm:inline-block">
-              <MiniMaxButton disabled={true} onClickBalance={onClickBalance} />
+              <MiniMaxButton
+                disabled={isMaxDisabled}
+                onClickBalance={onClickBalance}
+              />
             </div>
           )}
         </div>
