@@ -54,6 +54,7 @@ const SwapCard = ({
   const [fromInput, setFromInput] = useState({ string: '', bigNum: Zero })
   const [toToken, setToToken] = useState(DEFAULT_TO_TOKEN)
   const [toTokens, setToTokens] = useState<Token[]>([]) //add default
+  const [isQuoteLoading, setIsQuoteLoading] = useState<boolean>(false)
   const [error, setError] = useState(undefined)
   const [destinationAddress, setDestinationAddress] = useState('')
   const [swapQuote, setSwapQuote] = useState<SwapQuote>(EMPTY_SWAP_QUOTE)
@@ -411,6 +412,7 @@ const SwapCard = ({
   - Calculates slippage by subtracting fee from input amount (checks to ensure proper num of decimals are in use - ask someone about stable swaps if you want to learn more)
   */
   const getQuote = async () => {
+    setIsQuoteLoading(true)
     const { routerAddress, maxAmountOut, query } = await SynapseSDK.swapQuote(
       connectedChainId,
       fromToken.addresses[connectedChainId],
@@ -419,6 +421,7 @@ const SwapCard = ({
     )
     if (!(query && maxAmountOut)) {
       setSwapQuote(EMPTY_SWAP_QUOTE_ZERO)
+      setIsQuoteLoading(false)
       return
     }
     const toValueBigNum = maxAmountOut ?? Zero
@@ -444,7 +447,7 @@ const SwapCard = ({
       delta: maxAmountOut,
       quote: query,
     })
-    return
+    return setIsQuoteLoading(false)
   }
 
   /*
