@@ -10,15 +10,13 @@ const (
 	ReceiptAcceptedEvent EventType = iota
 	// SnapshotAcceptedEvent when a snapshot is accepted.
 	SnapshotAcceptedEvent
-	// ReceiptConfirmedEvent when a message is confirmed.
-	ReceiptConfirmedEvent
 	// TipAwardedEvent when a tip is awarded.
 	TipAwardedEvent
 )
 
 // AllEventTypes is a list of the event types.
 func AllEventTypes() []EventType {
-	return []EventType{ReceiptAcceptedEvent, SnapshotAcceptedEvent, ReceiptConfirmedEvent, TipAwardedEvent}
+	return []EventType{ReceiptAcceptedEvent, SnapshotAcceptedEvent, TipAwardedEvent}
 }
 
 // Int gets the int value of the event type.

@@ -142,68 +142,68 @@ func (s SummitSnapshotAccepted) GetTip() *big.Int {
 var _ summit.EventLog = &SummitSnapshotAccepted{}
 
 // GetEventType gets the execute event type.
-func (s SummitReceiptConfirmed) GetEventType() summit.EventType {
-	return summit.ReceiptConfirmedEvent
+func (s SummitTipAwarded) GetEventType() summit.EventType {
+	return summit.TipAwardedEvent
 }
 
 // GetRaw gets the raw logs.
-func (s SummitReceiptConfirmed) GetRaw() ethTypes.Log {
+func (s SummitTipAwarded) GetRaw() ethTypes.Log {
 	return s.Raw
 }
 
 // GetTxHash gets the unique identifier (txhash) for the event.
-func (s SummitReceiptConfirmed) GetTxHash() common.Hash {
+func (s SummitTipAwarded) GetTxHash() common.Hash {
 	return s.Raw.TxHash
 }
 
 // GetEventIndex gets the event index.
-func (s SummitReceiptConfirmed) GetEventIndex() uint64 {
+func (s SummitTipAwarded) GetEventIndex() uint64 {
 	return uint64(s.Raw.Index)
 }
 
 // GetBlockNumber gets the block number for the event.
-func (s SummitReceiptConfirmed) GetBlockNumber() uint64 {
+func (s SummitTipAwarded) GetBlockNumber() uint64 {
 	return s.Raw.BlockNumber
 }
 
 // GetContractAddress gets the contract address the event occurred on.
-func (s SummitReceiptConfirmed) GetContractAddress() common.Address {
+func (s SummitTipAwarded) GetContractAddress() common.Address {
 	return s.Raw.Address
 }
 
 // GetDomain gets the domain of where the signed Notary/agent is active
-func (s SummitReceiptConfirmed) GetDomain() *uint32 {
+func (s SummitTipAwarded) GetDomain() *uint32 {
 	return &(s.Domain)
 }
 
 // GetAgent is the notary who signed the attestation
-func (s SummitSnapshotAccepted) GetAgent() *common.Address {
+func (s SummitTipAwarded) GetAgent() *common.Address {
 	return &(s.Agent)
 }
 
 // GetRcptPayload gets the raw payload with receipt data
-func (s SummitSnapshotAccepted) GetRcptPayload() []byte {
+func (s SummitTipAwarded) GetRcptPayload() []byte {
 	return nil
 }
 
 // GetRcptSignature gets raw bytes of the message
-func (s SummitSnapshotAccepted) GetRcptSignature() []byte {
+func (s SummitTipAwarded) GetRcptSignature() []byte {
 	return nil
 }
 
 // GetSnapshot gets raw payload with snapshot data
-func (s SummitSnapshotAccepted) GetSnapshot() []byte {
+func (s SummitTipAwarded) GetSnapshot() []byte {
 	return s.Snapshot
 }
 
 // GetSnapSignature gets the agent signature for the snapshot
-func (s SummitSnapshotAccepted) GetSnapSignature() []byte {
+func (s SummitTipAwarded) GetSnapSignature() []byte {
 	return s.SnapSignature
 }
 
 // GetTip gets the tip amount from the TipAwarded event.
-func (s SummitSnapshotAccepted) GetTip() *big.Int {
-	return nil
+func (s SummitTipAwarded) GetTip() *big.Int {
+	return s.Tip
 }
 
-var _ summit.EventLog = &SummitReceiptConfirmed{}
+var _ summit.EventLog = &SummitTipAwarded{}

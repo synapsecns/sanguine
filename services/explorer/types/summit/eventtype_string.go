@@ -10,13 +10,12 @@ func _() {
 	var x [1]struct{}
 	_ = x[ReceiptAcceptedEvent-0]
 	_ = x[SnapshotAcceptedEvent-1]
-	_ = x[ReceiptConfirmedEvent-2]
-	_ = x[TipAwardedEvent-3]
+	_ = x[TipAwardedEvent-2]
 }
 
-const _EventType_name = "ReceiptAcceptedEventSnapshotAcceptedEventReceiptConfirmedEventTipAwardedEvent"
+const _EventType_name = "ReceiptAcceptedEventSnapshotAcceptedEventTipAwardedEvent"
 
-var _EventType_index = [...]uint8{0, 20, 41, 62, 77}
+var _EventType_index = [...]uint8{0, 20, 41, 56}
 
 func (i EventType) String() string {
 	if i >= EventType(len(_EventType_index)-1) {
