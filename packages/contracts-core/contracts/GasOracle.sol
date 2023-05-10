@@ -128,6 +128,7 @@ contract GasOracle is MessagingBase, GasOracleEvents, InterfaceGasOracle {
         uint256 remoteEtherPrice = remoteGasData.etherPrice().decompress();
         if (remoteEtherPrice == 0) revert RemoteGasDataNotSet();
         Request request = RequestLib.wrapPadded(paddedRequest);
+        // TODO: figure out unchecked math
         // To convert the cost from remote Ether to local Ether, we need to multiply by the ratio of the Ether prices.
         uint256 attestationTip = remoteGasData.amortAttCost().decompress() * remoteEtherPrice / localEtherPrice;
         // Total cost for Executor to execute a message on the remote chain has three components:
@@ -141,13 +142,19 @@ contract GasOracle is MessagingBase, GasOracleEvents, InterfaceGasOracle {
             remoteGasData.dataPrice().decompress() * contentLength +
             remoteGasData.execBuffer().decompress()
         ) * remoteEtherPrice / localEtherPrice;
+        // Markup for executionTip is assigned to the Delivery tip. Markup is denominated in BWAD units.
+        // Execution tip is already denominated in local Ether units.
+        uint256 deliveryTip = (executionTip * remoteGasData.markup().decompress()) >> NumberLib.BWAD_SHIFT;
+        // The price of the gas airdrop is also included in the Delivery tip.
+        // TODO: enable when gasDrop is implemented
+        // deliveryTip += request.gasDrop() * remoteEtherPrice / localEtherPrice;
         // Use calculated values to encode the tips.
         return Tips.unwrap(
             TipsLib.encodeTips256({
                 summitTip_: 0,
                 attestationTip_: attestationTip,
                 executionTip_: executionTip,
-                deliveryTip_: 0
+                deliveryTip_: deliveryTip
             })
         );
     }
