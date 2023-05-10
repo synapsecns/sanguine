@@ -1,7 +1,9 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.17;
 
-import {InterfaceOrigin, PingPongClient, Request, RequestLib} from "../../../contracts/client/PingPongClient.sol";
+import {PingPongClient} from "../../../contracts/client/PingPongClient.sol";
+import {Request, RequestLib} from "../../../contracts/libs/Request.sol";
+import {InterfaceOrigin} from "../../../contracts/interfaces/InterfaceOrigin.sol";
 
 import {OriginMock} from "../../mocks/OriginMock.t.sol";
 
@@ -29,6 +31,7 @@ contract PingPongTest is Test {
     }
 
     function test_ping(uint32 destination, address recipient, uint16 counter) public {
+        vm.assume(recipient != address(0));
         uint256 pingId = client.pingsSent();
         uint32 nextPeriod = client.nextOptimisticPeriod();
         // Should call Origin
@@ -45,6 +48,7 @@ contract PingPongTest is Test {
     }
 
     function test_pings(uint8 pingCount, uint32 destination, address recipient, uint16 counter) public {
+        vm.assume(recipient != address(0));
         uint256 pingId = client.pingsSent();
         uint256 random = client.random();
         uint32[] memory periods = new uint32[](pingCount);
@@ -68,6 +72,7 @@ contract PingPongTest is Test {
     }
 
     function test_receivePing(uint32 origin, address sender, uint256 pingId, uint16 counter) public {
+        vm.assume(sender != address(0));
         uint32 nextPeriod = client.nextOptimisticPeriod();
         // Should emit PingReceived
         vm.expectEmit(true, true, true, true);
@@ -76,7 +81,7 @@ contract PingPongTest is Test {
         emit PongSent(pingId);
         _expectOriginCall(origin, sender, nextPeriod, pingId, false, counter);
         vm.prank(destinationMock);
-        client.receiveBaseMessage(origin, 0, bytes32(uint256(uint160(sender))), 0, 0, _content(pingId, true, counter));
+        client.receiveBaseMessage(origin, 1, bytes32(uint256(uint160(sender))), 1, 0, _content(pingId, true, counter));
         // Pings sent: 0
         assertEq(client.pingsSent(), 0);
         // Received pings: 1, pongs: 0
@@ -85,6 +90,7 @@ contract PingPongTest is Test {
     }
 
     function test_receivePong(uint32 origin, address sender, uint256 pingId, uint16 counter) public {
+        vm.assume(sender != address(0));
         uint256 localPingId = client.pingsSent();
         uint32 nextPeriod = client.nextOptimisticPeriod();
         // Should emit PongReceived
@@ -97,7 +103,7 @@ contract PingPongTest is Test {
             _expectOriginCall(origin, sender, nextPeriod, localPingId, true, counter - 1);
         }
         vm.prank(destinationMock);
-        client.receiveBaseMessage(origin, 0, bytes32(uint256(uint160(sender))), 0, 0, _content(pingId, false, counter));
+        client.receiveBaseMessage(origin, 1, bytes32(uint256(uint160(sender))), 1, 0, _content(pingId, false, counter));
         // Pings sent: 0/1 (based on counter being zero / non-zero)
         assertEq(client.pingsSent(), counter == 0 ? 0 : 1);
         // Received pings: 0, pongs: 1
