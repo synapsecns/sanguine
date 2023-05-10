@@ -37,6 +37,9 @@ export const Wallet = () => {
   const { chain: currentChain } = useNetwork()
   const walletId = activeConnector?.id
 
+  // console.log('connectedAddress in Wallet: ', connectedAddress)
+  // console.log('currentChain in Wallet: ', currentChain)
+
   return useMemo(() => {
     return (
       <ConnectButton.Custom>
