@@ -3,8 +3,6 @@ package cmd
 import (
 	"context"
 	markdown "github.com/MichaelMure/go-term-markdown"
-	"github.com/ethereum/go-ethereum/ethclient"
-	"github.com/ethereum/go-ethereum/rpc"
 	"github.com/jftuga/termsize"
 	"github.com/phayes/freeport"
 	"github.com/synapsecns/sanguine/agents/agents/executor"
@@ -13,6 +11,7 @@ import (
 	"github.com/synapsecns/sanguine/agents/agents/executor/db/datastore/sql/sqlite"
 	"github.com/synapsecns/sanguine/agents/agents/executor/metadata"
 	"github.com/synapsecns/sanguine/core/metrics"
+	client2 "github.com/synapsecns/sanguine/ethergo/client"
 	scribeAPI "github.com/synapsecns/sanguine/services/scribe/api"
 	"github.com/synapsecns/sanguine/services/scribe/backfill"
 	"github.com/synapsecns/sanguine/services/scribe/client"
@@ -22,6 +21,7 @@ import (
 	"go.opentelemetry.io/otel/trace"
 	"golang.org/x/sync/errgroup"
 	"gorm.io/gorm/schema"
+	"math/big"
 
 	// used to embed markdown.
 	_ "embed"
@@ -130,12 +130,10 @@ func createExecutorParameters(c *cli.Context, metrics metrics.Handler) (executor
 		clients[execClient.ChainID] = ethClient
 	} */
 	for _, execClient := range executorConfig.Chains {
-		rpcDial, err := rpc.DialContext(c.Context, execClient.TempRPC)
+		ethClient, err := client2.DialBackendChainID(c.Context, big.NewInt(int64(execClient.ChainID)), execClient.TempRPC, metrics, client2.Capture(true))
 		if err != nil {
 			return executorConfig, nil, nil, fmt.Errorf("failed to dial rpc: %w", err)
 		}
-
-		ethClient := ethclient.NewClient(rpcDial)
 		clients[execClient.ChainID] = ethClient
 	}
 
