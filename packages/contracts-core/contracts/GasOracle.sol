@@ -4,6 +4,7 @@ pragma solidity 0.8.17;
 import {IncorrectDestinationDomain, LocalGasDataNotSet, RemoteGasDataNotSet} from "./libs/Errors.sol";
 import {GasData, GasDataLib} from "./libs/stack/GasData.sol";
 import {Number, NumberLib} from "./libs/stack/Number.sol";
+import {Request, RequestLib} from "./libs/stack/Request.sol";
 import {Tips, TipsLib} from "./libs/stack/Tips.sol";
 // ═════════════════════════════ INTERNAL IMPORTS ══════════════════════════════
 import {MessagingBase} from "./base/MessagingBase.sol";
@@ -126,10 +127,28 @@ contract GasOracle is MessagingBase, GasOracleEvents, InterfaceGasOracle {
         GasData remoteGasData = _gasData[destination_];
         uint256 remoteEtherPrice = remoteGasData.etherPrice().decompress();
         if (remoteEtherPrice == 0) revert RemoteGasDataNotSet();
+        Request request = RequestLib.wrapPadded(paddedRequest);
         // To convert the cost from remote Ether to local Ether, we need to multiply by the ratio of the Ether prices.
         uint256 attestationTip = remoteGasData.amortAttCost().decompress() * remoteEtherPrice / localEtherPrice;
+        // Total cost for Executor to execute a message on the remote chain has three components:
+        // - Execution: gas price * requested gas limit
+        // - Calldata: data price * content length
+        // - Buffer: additional fee to account for computations before and after the actual execution
+        // Same logic for converting the cost from remote Ether to local Ether applies here.
+        // forgefmt: disable-next-item
+        uint256 executionTip = (
+            remoteGasData.gasPrice().decompress() * request.gasLimit() + 
+            remoteGasData.dataPrice().decompress() * contentLength +
+            remoteGasData.execBuffer().decompress()
+        ) * remoteEtherPrice / localEtherPrice;
+        // Use calculated values to encode the tips.
         return Tips.unwrap(
-            TipsLib.encodeTips256({summitTip_: 0, attestationTip_: attestationTip, executionTip_: 0, deliveryTip_: 0})
+            TipsLib.encodeTips256({
+                summitTip_: 0,
+                attestationTip_: attestationTip,
+                executionTip_: executionTip,
+                deliveryTip_: 0
+            })
         );
     }
 
