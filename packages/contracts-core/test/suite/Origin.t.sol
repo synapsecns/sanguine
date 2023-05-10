@@ -312,7 +312,7 @@ contract OriginTest is AgentSecuredTest {
             emit InvalidStateWithAttestation(rsi.stateIndex, state, attPayload, attSig);
             // TODO: check that anyone could make the call
             expectStatusUpdated(AgentFlag.Fraudulent, domain, notary);
-            expectDisputeResolved(notary, address(0), address(this));
+            expectDisputeResolved(0, notary, address(0), address(this));
         }
         vm.recordLogs();
         assertEq(
@@ -335,7 +335,7 @@ contract OriginTest is AgentSecuredTest {
             emit InvalidStateWithAttestation(rsi.stateIndex, state, attPayload, attSig);
             // TODO: check that anyone could make the call
             expectStatusUpdated(AgentFlag.Fraudulent, domain, notary);
-            expectDisputeResolved(notary, address(0), address(this));
+            expectDisputeResolved(0, notary, address(0), address(this));
         }
         vm.recordLogs();
         assertEq(
@@ -359,7 +359,7 @@ contract OriginTest is AgentSecuredTest {
             emit InvalidStateWithSnapshot(rsi.stateIndex, snapPayload, snapSig);
             // TODO: check that anyone could make the call
             expectStatusUpdated(AgentFlag.Fraudulent, DOMAIN_REMOTE, notary);
-            expectDisputeResolved(notary, address(0), address(this));
+            expectDisputeResolved(0, notary, address(0), address(this));
         }
         assertEq(lightInbox.verifyStateWithSnapshot(rsi.stateIndex, snapPayload, snapSig), isValid, "!returnValue");
         if (isValid) {
@@ -380,7 +380,7 @@ contract OriginTest is AgentSecuredTest {
             emit InvalidStateReport(srPayload, srSig);
             // TODO: check that anyone could make the call
             expectStatusUpdated(AgentFlag.Fraudulent, 0, guard);
-            expectDisputeResolved(guard, address(0), address(this));
+            expectDisputeResolved(0, guard, address(0), address(this));
         }
         vm.recordLogs();
         assertEq(lightInbox.verifyStateReport(srPayload, srSig), isValid, "!returnValue");

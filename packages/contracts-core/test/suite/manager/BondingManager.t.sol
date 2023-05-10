@@ -230,7 +230,7 @@ contract BondingManagerTest is AgentManagerTest {
         skipBondingOptimisticPeriod();
         bytes memory msgPayload = managerMsgPayload(msgOrigin, remoteSlashAgentCalldata(domain, agent, prover));
         expectStatusUpdated(AgentFlag.Fraudulent, domain, agent);
-        expectDisputeResolved(agent, address(0), prover);
+        expectDisputeResolved(0, agent, address(0), prover);
         managerMsgPrank(msgPayload);
         assertEq(uint8(bondingManager.agentStatus(agent).flag), uint8(AgentFlag.Fraudulent));
         // (bool isSlashed, address prover_) = bondingManager.slashStatus(agent);

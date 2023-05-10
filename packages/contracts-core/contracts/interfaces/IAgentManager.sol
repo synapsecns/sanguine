@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.17;
 
-import {AgentStatus, Dispute} from "../libs/Structures.sol";
+import {AgentStatus, DisputeFlag} from "../libs/Structures.sol";
 
 interface IAgentManager {
     /**
@@ -51,9 +51,46 @@ interface IAgentManager {
     function getAgent(uint256 index) external view returns (address agent, AgentStatus memory status);
 
     /**
-     * @notice Returns the current Dispute status of a given agent. See Structures.sol for details.
-     * @param agent     Agent address
-     * @return          Status for the given agent: (flag, rivalIndex, fraudProver).
+     * @notice Returns the number of opened Disputes.
+     * @dev This includes the Disputes that have been resolved already.
      */
-    function disputeStatus(address agent) external view returns (Dispute memory);
+    function getDisputesAmount() external view returns (uint256);
+
+    /**
+     * @notice Returns information about the dispute with the given index.
+     * @dev Will revert if dispute with given index hasn't been opened yet.
+     * @param index             Dispute index
+     * @return guard            Address of the Guard in the Dispute
+     * @return notary           Address of the Notary in the Dispute
+     * @return slashedAgent     Address of the Agent who was slashed when Dispute was resolved
+     * @return fraudProver      Address who provided fraud proof to resolve the Dispute
+     * @return reportPayload    Raw payload with report data that led to the Dispute
+     * @return reportSignature  Guard signature for the report payload
+     */
+    function getDispute(uint256 index)
+        external
+        view
+        returns (
+            address guard,
+            address notary,
+            address slashedAgent,
+            address fraudProver,
+            bytes memory reportPayload,
+            bytes memory reportSignature
+        );
+
+    /**
+     * @notice Returns the current Dispute status of a given agent. See Structures.sol for details.
+     * @dev Every returned value will be set to zero if agent was not slashed and is not in Dispute.
+     * `rival` and `disputePtr` will be set to zero if the agent was slashed without being in Dispute.
+     * @param agent         Agent address
+     * @return flag         Flag describing the current Dispute status for the agent: None/Pending/Slashed
+     * @return rival        Address of the rival agent in the Dispute
+     * @return fraudProver  Address who provided fraud proof to resolve the Dispute
+     * @return disputePtr   Index of the opened Dispute PLUS ONE. Zero if agent is not in Dispute.
+     */
+    function disputeStatus(address agent)
+        external
+        view
+        returns (DisputeFlag flag, address rival, address fraudProver, uint256 disputePtr);
 }
