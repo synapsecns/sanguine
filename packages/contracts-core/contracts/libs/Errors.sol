@@ -23,6 +23,7 @@ error IncorrectState();
 error IncorrectStatesAmount();
 error IncorrectVersionLength();
 
+error IncorrectNonce();
 error IncorrectSender();
 error IncorrectRecipient();
 
@@ -58,6 +59,7 @@ error BaseClientOptimisticPeriod();
 error MessageOptimisticPeriod();
 error SlashAgentOptimisticPeriod();
 error WithdrawTipsOptimisticPeriod();
+error ZeroProofMaturity();
 
 // ═══════════════════════════════ AGENT MANAGER ═══════════════════════════════
 
