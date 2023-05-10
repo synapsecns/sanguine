@@ -1,5 +1,6 @@
+import { useMemo } from 'react'
 import { ConnectButton } from '@rainbow-me/rainbowkit'
-import { useAccount } from 'wagmi'
+import { useAccount, useNetwork } from 'wagmi'
 import { MetamaskIcon } from '@icons/WalletIcons/Metamask'
 import { CoinbaseWalletIcon } from '@icons/WalletIcons/CoinbaseWalletIcon'
 import { WalletConnectIcon } from '@icons/WalletIcons/WalletConnectIcon'
@@ -32,8 +33,11 @@ export const WalletIcon = ({
 }
 
 export const Wallet = () => {
-  const { connector: activeConnector } = useAccount()
+  const { connector: activeConnector, address: connectedAddress } = useAccount()
+  const { chain } = useNetwork()
   const walletId = activeConnector?.id
+
+  return useMemo(() => {}, [connectedAddress, chain])
 
   return (
     <ConnectButton.Custom>
