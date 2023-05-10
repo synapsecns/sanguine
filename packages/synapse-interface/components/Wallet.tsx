@@ -5,6 +5,7 @@ import { MetamaskIcon } from '@icons/WalletIcons/Metamask'
 import { CoinbaseWalletIcon } from '@icons/WalletIcons/CoinbaseWalletIcon'
 import { WalletConnectIcon } from '@icons/WalletIcons/WalletConnectIcon'
 import { IconProps, WalletId } from '@utils/types'
+import Spinner from './icons/Spinner'
 
 const WALLETS = [
   {
@@ -37,9 +38,6 @@ export const Wallet = () => {
   const { chain: currentChain } = useNetwork()
   const walletId = activeConnector?.id
 
-  // console.log('connectedAddress in Wallet: ', connectedAddress)
-  // console.log('currentChain in Wallet: ', currentChain)
-
   return useMemo(() => {
     return (
       <ConnectButton.Custom>
@@ -60,6 +58,7 @@ export const Wallet = () => {
             account &&
             chain &&
             (!authenticationStatus || authenticationStatus === 'authenticated')
+
           return (
             <div
               {...(!ready && {
@@ -67,7 +66,7 @@ export const Wallet = () => {
               })}
             >
               {(() => {
-                if (!connectedAddress || !connected) {
+                if (!connectedAddress) {
                   return (
                     <button
                       onClick={openConnectModal}
@@ -93,8 +92,12 @@ export const Wallet = () => {
                       type="button"
                       className="text-white transition-all duration-100th w-fit cursor-pointer rounded-lg py-2 pl-2.5 pr-2.5 border border-bgLight active:bg-bgLightest/10 hover:bg-bgLightest/10"
                     >
-                      {account.displayBalance ? account.displayBalance : 0}
-                      {chain.hasIcon && (
+                      {account?.displayBalance ? (
+                        account.displayBalance
+                      ) : (
+                        <Spinner />
+                      )}
+                      {chain && chain.hasIcon && (
                         <div
                           style={{
                             backgroundImage: chain.iconBackground,
@@ -122,7 +125,7 @@ export const Wallet = () => {
                       type="button"
                       className="flex items-center cursor-pointer text-white transition-all duration-100 w-fit rounded-lg py-2 pl-2.5 pr-2.5  bg-bgLight hover:bg-opacity-70 hover:bg-bgLightest active:bg-bgLightest text-sm"
                     >
-                      {account.displayName}
+                      {account ? account.displayName : <Spinner />}
                     </button>
                   </div>
                 )
