@@ -16,9 +16,9 @@ make/ @trajan0x
 packages/contracts-core/ @ChiTimesChi @trajan0x
 contrib/ @trajan0x
 
-services/explorer @CryptoMaxPlanck @simonmahns @trajan0x
+services/explorer @CryptoMaxPlanck @nautsimon @trajan0x
 services/omnirpc @trajan0x
-services/scribe @trajan0x @simonmahns
+services/scribe @trajan0x @nautsimon
 tools/ @trajan0x
 
 # config files
