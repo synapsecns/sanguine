@@ -2,7 +2,7 @@
 pragma solidity 0.8.17;
 
 /// Request is encoded data with "message execution request".
-type Request is uint160;
+type Request is uint192;
 
 using RequestLib for Request global;
 
@@ -15,18 +15,22 @@ using RequestLib for Request global;
 ///
 /// | Position   | Field    | Type   | Bytes | Description                                          |
 /// | ---------- | -------- | ------ | ----- | ---------------------------------------------------- |
-/// | (020..008] | gasDrop  | uint96 | 12    | Minimum amount of gas token to drop to the recipient |
-/// | (008..000] | gasLimit | uint64 | 8     | Minimum amount of gas units to supply for execution  |
+/// | (024..012] | gasDrop  | uint96 | 12    | Minimum amount of gas token to drop to the recipient |
+/// | (012..004] | gasLimit | uint64 | 8     | Minimum amount of gas units to supply for execution  |
+/// | (004..000] | version  | uint32 | 4     | Base message version to pass to the recipient        |
 
 library RequestLib {
     /// @dev Amount of bits to shift to gasDrop field
-    uint160 private constant SHIFT_GAS_DROP = 8 * 8;
+    uint192 private constant SHIFT_GAS_DROP = 12 * 8;
+    /// @dev Amount of bits to shift to gasLimit field
+    uint192 private constant SHIFT_GAS_LIMIT = 4 * 8;
 
     /// @notice Returns an encoded request with the given fields
     /// @param gasDrop_     Minimum amount of gas token to drop to the recipient (ignored at the moment)
     /// @param gasLimit_    Minimum amount of gas units to supply for execution
-    function encodeRequest(uint96 gasDrop_, uint64 gasLimit_) internal pure returns (Request) {
-        return Request.wrap(uint160(gasDrop_) << SHIFT_GAS_DROP | gasLimit_);
+    /// @param version_     Base message version to pass to the recipient
+    function encodeRequest(uint96 gasDrop_, uint64 gasLimit_, uint32 version_) internal pure returns (Request) {
+        return Request.wrap(uint192(gasDrop_) << SHIFT_GAS_DROP | uint192(gasLimit_) << SHIFT_GAS_LIMIT | version_);
     }
 
     /// @notice Wraps the padded encoded request into a Request-typed value.
@@ -35,18 +39,24 @@ library RequestLib {
     /// The highest bits are discarded, so that the contracts dealing with encoded requests
     /// don't need to be updated, if a new field is added.
     function wrapPadded(uint256 paddedRequest) internal pure returns (Request) {
-        return Request.wrap(uint160(paddedRequest));
-    }
-
-    /// @notice Returns the requested minimum amount of gas units to supply for execution.
-    function gasLimit(Request request) internal pure returns (uint64) {
-        // Casting to uint64 will truncate the highest bits, which is the behavior we want
-        return uint64(Request.unwrap(request));
+        return Request.wrap(uint192(paddedRequest));
     }
 
     /// @notice Returns the requested of gas token to drop to the recipient.
     function gasDrop(Request request) internal pure returns (uint96) {
         // Casting to uint96 will truncate the highest bits, which is the behavior we want
         return uint96(Request.unwrap(request) >> SHIFT_GAS_DROP);
+    }
+
+    /// @notice Returns the requested minimum amount of gas units to supply for execution.
+    function gasLimit(Request request) internal pure returns (uint64) {
+        // Casting to uint64 will truncate the highest bits, which is the behavior we want
+        return uint64(Request.unwrap(request) >> SHIFT_GAS_LIMIT);
+    }
+
+    /// @notice Returns the requested base message version to pass to the recipient.
+    function version(Request request) internal pure returns (uint32) {
+        // Casting to uint32 will truncate the highest bits, which is the behavior we want
+        return uint32(Request.unwrap(request));
     }
 }
