@@ -6,6 +6,7 @@ import (
 	"errors"
 	"fmt"
 	"github.com/synapsecns/sanguine/core/metrics"
+	evmClient "github.com/synapsecns/sanguine/ethergo/client"
 	"go.opentelemetry.io/contrib/instrumentation/google.golang.org/grpc/otelgrpc"
 	"go.opentelemetry.io/otel/attribute"
 	"go.opentelemetry.io/otel/trace"
@@ -31,7 +32,6 @@ import (
 	"github.com/synapsecns/sanguine/agents/domains"
 	"github.com/synapsecns/sanguine/agents/types"
 	"github.com/synapsecns/sanguine/core/merkle"
-	ethergoChain "github.com/synapsecns/sanguine/ethergo/chain"
 	"github.com/synapsecns/sanguine/services/scribe/client"
 	pbscribe "github.com/synapsecns/sanguine/services/scribe/grpc/types/types/v1"
 	"golang.org/x/sync/errgroup"
@@ -158,7 +158,7 @@ func NewExecutor(ctx context.Context, config config.Config, executorDB db.Execut
 
 		// chainRPCURL := fmt.Sprintf("%s/1/rpc/%d", config.BaseOmnirpcURL, chain.ChainID)
 
-		underlyingClient, err := ethergoChain.NewFromURL(ctx, chain.TempRPC)
+		underlyingClient, err := evmClient.DialBackendChainID(ctx, big.NewInt(int64(chain.ChainID)), chain.TempRPC, handler, evmClient.Capture(true))
 		if err != nil {
 			return nil, fmt.Errorf("could not get evm: %w", err)
 		}

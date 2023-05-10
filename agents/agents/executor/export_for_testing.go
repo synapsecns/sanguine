@@ -15,12 +15,13 @@ import (
 	"github.com/synapsecns/sanguine/agents/types"
 	"github.com/synapsecns/sanguine/core/merkle"
 	"github.com/synapsecns/sanguine/core/metrics"
-	ethergoChain "github.com/synapsecns/sanguine/ethergo/chain"
+	client2 "github.com/synapsecns/sanguine/ethergo/client"
 	"github.com/synapsecns/sanguine/services/scribe/client"
 	pbscribe "github.com/synapsecns/sanguine/services/scribe/grpc/types/types/v1"
 	"golang.org/x/sync/errgroup"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
+	"math/big"
 )
 
 // -------- [ UTILS ] -------- \\
@@ -81,7 +82,7 @@ func NewExecutorInjectedBackend(ctx context.Context, config config.Config, execu
 			summitParserRef = &summitParser
 		}
 
-		underlyingClient, err := ethergoChain.NewFromURL(ctx, urls[chain.ChainID])
+		underlyingClient, err := client2.DialBackendChainID(ctx, big.NewInt(int64(chain.ChainID)), urls[chain.ChainID], handler)
 		if err != nil {
 			return nil, fmt.Errorf("could not get evm: %w", err)
 		}
