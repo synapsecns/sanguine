@@ -31,6 +31,7 @@ using CastLib for RawHeader global;
 struct RawRequest {
     uint96 gasDrop;
     uint64 gasLimit;
+    uint32 version;
 }
 
 using CastLib for RawRequest global;
@@ -233,12 +234,12 @@ library CastLib {
         });
     }
 
-    function encodeRequest(RawRequest memory rr) internal pure returns (uint160 encodedReq) {
+    function encodeRequest(RawRequest memory rr) internal pure returns (uint192 encodedReq) {
         encodedReq = Request.unwrap(rr.castToRequest());
     }
 
     function castToRequest(RawRequest memory rr) internal pure returns (Request request) {
-        request = RequestLib.encodeRequest({gasDrop_: rr.gasDrop, gasLimit_: rr.gasLimit});
+        request = RequestLib.encodeRequest({gasDrop_: rr.gasDrop, gasLimit_: rr.gasLimit, version_: rr.version});
     }
 
     function encodeTips(RawTips memory rt) internal pure returns (uint256 encodedTips) {

@@ -16,7 +16,9 @@ contract TestClient is IMessageRecipient {
     /// @notice Local chain Destination: used for receiving messages
     address public immutable destination;
 
-    event MessageReceived(uint32 origin, uint32 nonce, bytes32 sender, uint256 proofMaturity, bytes content);
+    event MessageReceived(
+        uint32 origin, uint32 nonce, bytes32 sender, uint256 proofMaturity, uint32 version, bytes content
+    );
 
     event MessageSent(uint32 destination, uint32 nonce, bytes32 sender, bytes32 recipient, bytes content);
 
@@ -31,18 +33,24 @@ contract TestClient is IMessageRecipient {
         uint32 nonce,
         bytes32 sender,
         uint256 proofMaturity,
+        uint32 version,
         bytes memory content
     ) external payable {
         if (msg.sender != destination) revert CallerNotDestination();
-        emit MessageReceived(origin_, nonce, sender, proofMaturity, content);
+        emit MessageReceived(origin_, nonce, sender, proofMaturity, version, content);
     }
 
-    function sendMessage(uint32 destination_, address recipientAddress, uint32 optimisticSeconds, bytes memory content)
-        external
-    {
+    function sendMessage(
+        uint32 destination_,
+        address recipientAddress,
+        uint32 optimisticSeconds,
+        uint64 gasLimit,
+        uint32 version,
+        bytes memory content
+    ) external {
         bytes32 recipient = TypeCasts.addressToBytes32(recipientAddress);
         // TODO: figure out the logic for a message test
-        Request request = RequestLib.encodeRequest(0, 0);
+        Request request = RequestLib.encodeRequest(0, gasLimit, version);
         (uint32 nonce,) = InterfaceOrigin(origin).sendBaseMessage(
             destination_, recipient, optimisticSeconds, Request.unwrap(request), content
         );

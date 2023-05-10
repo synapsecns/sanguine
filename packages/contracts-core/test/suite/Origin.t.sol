@@ -43,7 +43,7 @@ contract OriginTest is AgentSecuredTest {
     address public recipient = makeAddr("Recipient");
     uint32 public period = 1 minutes;
     RawTips public tips = RawTips(0, 0, 0, 0);
-    RawRequest public request = RawRequest({gasLimit: 100_000, gasDrop: 0});
+    RawRequest public request = RawRequest({gasLimit: 100_000, gasDrop: 0, version: 0});
 
     // Deploy Production version of Origin and mocks for everything else
     constructor() SynapseTest(DEPLOY_PROD_ORIGIN) {}
@@ -118,7 +118,7 @@ contract OriginTest is AgentSecuredTest {
 
     function test_sendMessages(RawGasData memory rgd) public {
         GasOracleMock(gasOracle).setMockedGasData(rgd.encodeGasData());
-        uint160 encodedRequest = request.encodeRequest();
+        uint192 encodedRequest = request.encodeRequest();
         bytes memory content = "test content";
         bytes memory body = RawBaseMessage({
             sender: addressToBytes32(sender),

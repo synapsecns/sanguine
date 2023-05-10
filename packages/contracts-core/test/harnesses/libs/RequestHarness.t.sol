@@ -8,14 +8,14 @@ contract RequestHarness {
     // Note: we don't add an empty test() function here, as it currently leads
     // to zero coverage on the corresponding library.
 
-    function encodeRequest(uint96 gasDrop_, uint64 gasLimit_) public pure returns (uint160) {
+    function encodeRequest(uint96 gasDrop_, uint64 gasLimit_, uint32 version_) public pure returns (uint192) {
         // Walkaround to get the forge coverage working on libraries, see
         // https://github.com/foundry-rs/foundry/pull/3128#issuecomment-1241245086
-        Request request = RequestLib.encodeRequest(gasDrop_, gasLimit_);
+        Request request = RequestLib.encodeRequest(gasDrop_, gasLimit_, version_);
         return Request.unwrap(request);
     }
 
-    function wrapPadded(uint256 paddedRequest) public pure returns (uint160) {
+    function wrapPadded(uint256 paddedRequest) public pure returns (uint192) {
         return Request.unwrap(RequestLib.wrapPadded(paddedRequest));
     }
 
@@ -25,5 +25,9 @@ contract RequestHarness {
 
     function gasDrop(uint256 paddedRequest) public pure returns (uint96) {
         return RequestLib.wrapPadded(paddedRequest).gasDrop();
+    }
+
+    function version(uint256 paddedRequest) public pure returns (uint32) {
+        return RequestLib.wrapPadded(paddedRequest).version();
     }
 }

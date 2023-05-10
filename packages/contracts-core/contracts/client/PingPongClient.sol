@@ -71,7 +71,7 @@ contract PingPongClient is IMessageRecipient {
     // ═══════════════════════════════════════════════ MESSAGE LOGIC ═══════════════════════════════════════════════════
 
     /// @inheritdoc IMessageRecipient
-    function receiveBaseMessage(uint32 origin_, uint32, bytes32 sender, uint256, bytes memory content)
+    function receiveBaseMessage(uint32 origin_, uint32, bytes32 sender, uint256, uint32, bytes memory content)
         external
         payable
     {
@@ -135,7 +135,7 @@ contract PingPongClient is IMessageRecipient {
      */
     function _sendMessage(uint32 destination_, bytes32 recipient, PingPongMessage memory message) internal {
         // TODO: figure out the logic for a ping-pong test
-        Request request = RequestLib.encodeRequest(0, 0);
+        Request request = RequestLib.encodeRequest(0, 0, 0);
         bytes memory content = abi.encode(message);
         InterfaceOrigin(origin).sendBaseMessage(
             destination_, recipient, optimisticPeriod(), Request.unwrap(request), content
