@@ -37,12 +37,12 @@ func EncodeGasData(gasData GasData) ([]byte, error) {
 	binary.BigEndian.PutUint16(dataPriceBytes, gasData.DataPrice())
 	binary.BigEndian.PutUint16(gasPriceBytes, gasData.GasPrice())
 
-	b = append(b, markupBytes[:]...)
-	b = append(b, etherPriceBytes[:]...)
-	b = append(b, amortAttCostBytes[:]...)
-	b = append(b, execBufferBytes[:]...)
-	b = append(b, dataPriceBytes[:]...)
 	b = append(b, gasPriceBytes[:]...)
+	b = append(b, dataPriceBytes[:]...)
+	b = append(b, execBufferBytes[:]...)
+	b = append(b, amortAttCostBytes[:]...)
+	b = append(b, etherPriceBytes[:]...)
+	b = append(b, markupBytes[:]...)
 
 	return b, nil
 }
@@ -53,12 +53,12 @@ func DecodeGasData(toDecode []byte) (GasData, error) {
 		return nil, fmt.Errorf("invalid gasData length, expected %d, got %d", gasDataSize, len(toDecode))
 	}
 
-	markup := binary.BigEndian.Uint16(toDecode[gasDataOffsetMarkup:gasDataOffsetEtherPrice])
-	etherPrice := binary.BigEndian.Uint16(toDecode[gasDataOffsetEtherPrice:gasDataOffsetAmortAttCost])
-	amortAttCost := binary.BigEndian.Uint16(toDecode[gasDataOffsetAmortAttCost:gasDataOffsetExecBuffer])
-	execBuffer := binary.BigEndian.Uint16(toDecode[gasDataOffsetExecBuffer:gasDataOffsetDataPrice])
-	dataPrice := binary.BigEndian.Uint16(toDecode[gasDataOffsetDataPrice:gasDataOffsetGasPrice])
-	gasPrice := binary.BigEndian.Uint16(toDecode[gasDataOffsetGasPrice:gasDataSize])
+	gasPrice := binary.BigEndian.Uint16(toDecode[gasDataOffsetGasPrice:gasDataOffsetDataPrice])
+	dataPrice := binary.BigEndian.Uint16(toDecode[gasDataOffsetDataPrice:gasDataOffsetExecBuffer])
+	execBuffer := binary.BigEndian.Uint16(toDecode[gasDataOffsetExecBuffer:gasDataOffsetAmortAttCost])
+	amortAttCost := binary.BigEndian.Uint16(toDecode[gasDataOffsetAmortAttCost:gasDataOffsetEtherPrice])
+	etherPrice := binary.BigEndian.Uint16(toDecode[gasDataOffsetEtherPrice:gasDataOffsetMarkup])
+	markup := binary.BigEndian.Uint16(toDecode[gasDataOffsetMarkup:gasDataSize])
 
 	return gasData{
 		markup:       markup,
@@ -74,7 +74,8 @@ func DecodeGasData(toDecode []byte) (GasData, error) {
 func EncodeChainGas(chainGas ChainGas) ([]byte, error) {
 	b := make([]byte, 0)
 	domainBytes := make([]byte, uint32Len)
-	binary.BigEndian.PutUint32(domainBytes, chainGas.Domain())
+	domain := chainGas.Domain()
+	binary.BigEndian.PutUint32(domainBytes, domain)
 	b = append(b, domainBytes[:]...)
 
 	gasDataEncoded, err := EncodeGasData(chainGas.GasData())

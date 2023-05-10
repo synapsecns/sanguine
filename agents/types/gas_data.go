@@ -1,12 +1,12 @@
 package types
 
 const (
-	gasDataOffsetMarkup       = 0
-	gasDataOffsetEtherPrice   = 2
-	gasDataOffsetAmortAttCost = 4
-	gasDataOffsetExecBuffer   = 6
-	gasDataOffsetDataPrice    = 8
-	gasDataOffsetGasPrice     = 10
+	gasDataOffsetGasPrice     = 0
+	gasDataOffsetDataPrice    = 2
+	gasDataOffsetExecBuffer   = 4
+	gasDataOffsetAmortAttCost = 6
+	gasDataOffsetEtherPrice   = 8
+	gasDataOffsetMarkup       = 8
 	gasDataSize               = 12
 )
 

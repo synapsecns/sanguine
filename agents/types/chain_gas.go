@@ -28,11 +28,11 @@ func NewChainGas(gasData GasData, domain uint32) ChainGas {
 }
 
 func (g chainGas) GasData() GasData {
-	return g.GasData()
+	return g.gasData
 }
 
 func (g chainGas) Domain() uint32 {
-	return g.Domain()
+	return g.domain
 }
 
 var _ ChainGas = chainGas{}
