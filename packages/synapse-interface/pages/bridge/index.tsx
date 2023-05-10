@@ -7,7 +7,11 @@ import { AddressZero, Zero } from '@ethersproject/constants'
 import { BigNumber } from '@ethersproject/bignumber'
 import { ActionCardFooter } from '@components/ActionCardFooter'
 import { fetchSigner, getNetwork, switchNetwork } from '@wagmi/core'
-import { sortByTokenBalance, sortByVisibilityRank } from '@utils/sortTokens'
+import {
+  sortByTokenBalance,
+  _sortByTokenBalance,
+  sortByVisibilityRank,
+} from '@utils/sortTokens'
 import { calculateExchangeRate } from '@utils/calculateExchangeRate'
 import {
   BRIDGABLE_TOKENS,
@@ -76,6 +80,9 @@ const BridgePage = ({
   const [bridgeQuote, setBridgeQuote] =
     useState<BridgeQuote>(EMPTY_BRIDGE_QUOTE)
 
+  useEffect(() => {
+    _sortByTokenBalance(BRIDGABLE_TOKENS[fromChainId], fromChainId, address)
+  }, [])
   /*
   useEffect Trigger: onMount
   - Gets current network connected and sets it as the state.
@@ -94,6 +101,7 @@ const BridgePage = ({
       () => setTime(Date.now()),
       QUOTE_POLLING_INTERVAL
     )
+
     return () => {
       clearInterval(interval)
     }

@@ -1,6 +1,7 @@
-import { fetchBalance, erc20ABI } from '@wagmi/core'
+import { fetchBalance, multicall } from '@wagmi/core'
 import { Zero, AddressZero } from '@ethersproject/constants'
 
+import erc20ABI from '../constants/abis/erc20.json'
 import { Token } from '@/utils/types'
 
 export const sortByVisibilityRank = (tokens: Token[]) => {
@@ -70,16 +71,16 @@ export const sortByTokenBalance = async (
   return zeroTokensWithBalances.concat(tokensWithBalances)
 }
 
-export const _sortTokenByBalance = async (
+export const _sortByTokenBalance = async (
   tokens: Token[],
   chainId: number,
   address: any
 ) => {
-  const i = 0
   const tokensWithBalances: any[] = []
   const zeroTokensWithBalances: any[] = []
 
   const multicallInputs = []
+  let multicallData
 
   if (chainId === undefined || !address) {
     tokens.map((token) => {
@@ -91,14 +92,25 @@ export const _sortTokenByBalance = async (
   } else {
     tokens.map((token) => {
       const tokenAddress = token.addresses[chainId as keyof Token['addresses']]
-      const abi = erc20ABI
+      const tokenAbi = erc20ABI
       const functionName = 'balanceOf'
 
       multicallInputs.push({
         address: tokenAddress,
-        abi,
+        abi: tokenAbi,
         functionName,
+        chainId,
+        args: [address],
       })
     })
+  }
+
+  if (multicallInputs.length > 0) {
+    console.log('multicallInputs: ', multicallInputs)
+    multicallData = await multicall({
+      contracts: multicallInputs,
+    })
+
+    console.log('multicallData: ', multicallData)
   }
 }
