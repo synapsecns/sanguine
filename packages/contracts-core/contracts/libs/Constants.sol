@@ -46,6 +46,8 @@ bytes32 constant STATE_REPORT_SALT = keccak256("STATE_REPORT_SALT");
 /// @dev Optimistic period for new agent roots in LightManager
 uint32 constant AGENT_ROOT_OPTIMISTIC_PERIOD = 1 days;
 uint32 constant BONDING_OPTIMISTIC_PERIOD = 1 days;
+/// @dev Amount of time without fresh data from Notaries before contract owner can resolve stuck disputes manually
+uint256 constant FRESH_DATA_TIMEOUT = 4 hours;
 /// @dev Maximum bytes per message = 2 KiB (somewhat arbitrarily set to begin)
 uint256 constant MAX_CONTENT_BYTES = 2 * 2 ** 10;
 /// @dev Domain of the Synapse Chain
