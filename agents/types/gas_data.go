@@ -6,7 +6,7 @@ const (
 	gasDataOffsetExecBuffer   = 4
 	gasDataOffsetAmortAttCost = 6
 	gasDataOffsetEtherPrice   = 8
-	gasDataOffsetMarkup       = 8
+	gasDataOffsetMarkup       = 10
 	gasDataSize               = 12
 )
 
