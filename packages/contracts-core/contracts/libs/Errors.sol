@@ -98,6 +98,11 @@ error ContentLengthTooBig();
 error EthTransferFailed();
 error InsufficientEthBalance();
 
+// ════════════════════════════════ GAS ORACLE ═════════════════════════════════
+
+error LocalGasDataNotSet();
+error RemoteGasDataNotSet();
+
 // ═══════════════════════════════════ TIPS ════════════════════════════════════
 
 error TipsClaimMoreThanEarned();

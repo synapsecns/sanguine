@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.17;
 
+import {IncorrectDestinationDomain, LocalGasDataNotSet, RemoteGasDataNotSet} from "./libs/Errors.sol";
 import {GasData, GasDataLib} from "./libs/stack/GasData.sol";
 import {Number, NumberLib} from "./libs/stack/Number.sol";
 import {Tips, TipsLib} from "./libs/stack/Tips.sol";
@@ -117,7 +118,18 @@ contract GasOracle is MessagingBase, GasOracleEvents, InterfaceGasOracle {
         external
         view
         returns (uint256 paddedTips)
-    {}
+    {
+        if (destination_ == localDomain) revert IncorrectDestinationDomain();
+        GasData localGasData = _gasData[localDomain];
+        uint256 localEtherPrice = localGasData.etherPrice().decompress();
+        if (localEtherPrice == 0) revert LocalGasDataNotSet();
+        GasData remoteGasData = _gasData[destination_];
+        uint256 remoteEtherPrice = remoteGasData.etherPrice().decompress();
+        if (remoteEtherPrice == 0) revert RemoteGasDataNotSet();
+        // TODO: Implement
+        return
+            Tips.unwrap(TipsLib.encodeTips256({summitTip_: 0, attestationTip_: 0, executionTip_: 0, deliveryTip_: 0}));
+    }
 
     // ══════════════════════════════════════════════ INTERNAL LOGIC ═══════════════════════════════════════════════════
 
