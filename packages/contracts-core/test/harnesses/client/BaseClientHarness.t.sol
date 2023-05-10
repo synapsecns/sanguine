@@ -19,6 +19,15 @@ contract BaseClientHarness is BaseClient, BaseClientHarnessEvents {
         return _sendBaseMessage(destination_, request, content);
     }
 
+    /// @notice Exposes _getMinimumTipsValue for testing
+    function getMinimumTipsValue(uint32 destination_, MessageRequest memory request, uint256 contentLength)
+        external
+        view
+        returns (uint256)
+    {
+        return _getMinimumTipsValue(destination_, request, contentLength);
+    }
+
     /// @inheritdoc BaseClient
     function optimisticPeriod() public pure override returns (uint32) {
         return OPTIMISTIC_PERIOD;

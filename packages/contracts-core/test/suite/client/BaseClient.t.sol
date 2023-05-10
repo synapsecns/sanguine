@@ -80,6 +80,25 @@ contract BaseClientTest is SynapseTest {
         client.sendBaseMessage{value: tipsValue}(destination_, request, "");
     }
 
+    function test_getMinimumTipsValue(
+        uint32 destination_,
+        RawRequest memory rr,
+        uint256 contentLength,
+        uint256 expectedResult
+    ) public {
+        uint192 encodedRequest = rr.encodeRequest();
+        MessageRecipient.MessageRequest memory request =
+            MessageRecipient.MessageRequest({gasDrop: rr.gasDrop, gasLimit: rr.gasLimit, version: rr.version});
+        // (destination, paddedRequest, contentLength)
+        bytes memory expectedCall = abi.encodeWithSelector(
+            InterfaceOrigin.getMinimumTipsValue.selector, destination_, encodedRequest, contentLength
+        );
+        vm.mockCall(origin, expectedCall, abi.encode(expectedResult));
+        vm.expectCall(origin, expectedCall);
+        uint256 result = client.getMinimumTipsValue(destination_, request, contentLength);
+        assertEq(result, expectedResult);
+    }
+
     function test_receiveBaseMessage(
         RawHeader memory rh,
         uint256 rootSubmittedAt,
