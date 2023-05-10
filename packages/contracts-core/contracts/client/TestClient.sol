@@ -42,7 +42,7 @@ contract TestClient is IMessageRecipient {
     {
         bytes32 recipient = TypeCasts.addressToBytes32(recipientAddress);
         // TODO: figure out the logic for a message test
-        Request request = RequestLib.encodeRequest(0, 0);
+        Request request = RequestLib.encodeRequest(0, 0, 0);
         (uint32 nonce,) = InterfaceOrigin(origin).sendBaseMessage(
             destination_, recipient, optimisticSeconds, Request.unwrap(request), content
         );

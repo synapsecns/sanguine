@@ -113,7 +113,7 @@ contract PingPongTest is Test {
         bool isPing,
         uint16 counter
     ) internal {
-        Request request = RequestLib.encodeRequest(0, 0);
+        Request request = RequestLib.encodeRequest(0, 0, 0);
         bytes memory content = _content(pingId, isPing, counter);
         vm.expectCall(
             originMock,

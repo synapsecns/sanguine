@@ -37,7 +37,7 @@ contract BaseClientTest is SynapseTest {
         vm.label(user, "User");
         // Set some sensible limit for fuzzed tips values
         tipsValue = tipsValue % (2 ** 32);
-        uint160 encodedRequest = rr.encodeRequest();
+        uint192 encodedRequest = rr.encodeRequest();
         vm.deal(user, tipsValue);
         // Get expected values for sending a message
         bytes32 recipient = client.trustedSender(destination_);
@@ -58,7 +58,7 @@ contract BaseClientTest is SynapseTest {
         vm.label(user, "User");
         // Set some sensible limit for fuzzed tips values
         tipsValue = tipsValue % (2 ** 32);
-        uint160 encodedRequest = rr.encodeRequest();
+        uint192 encodedRequest = rr.encodeRequest();
         vm.deal(user, tipsValue);
         vm.expectRevert(IncorrectRecipient.selector);
         vm.prank(user);

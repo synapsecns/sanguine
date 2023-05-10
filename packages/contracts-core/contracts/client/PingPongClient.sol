@@ -135,7 +135,7 @@ contract PingPongClient is IMessageRecipient {
      */
     function _sendMessage(uint32 destination_, bytes32 recipient, PingPongMessage memory message) internal {
         // TODO: figure out the logic for a ping-pong test
-        Request request = RequestLib.encodeRequest(0, 0);
+        Request request = RequestLib.encodeRequest(0, 0, 0);
         bytes memory content = abi.encode(message);
         InterfaceOrigin(origin).sendBaseMessage(
             destination_, recipient, optimisticPeriod(), Request.unwrap(request), content
