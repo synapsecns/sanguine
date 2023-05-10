@@ -373,6 +373,9 @@ func EncodeBaseMessage(m BaseMessage) ([]byte, error) {
 
 // DecodeBaseMessage decodes a base message typed mem view.
 func DecodeBaseMessage(toDecode []byte) (BaseMessage, error) {
+	if len(toDecode) < BaseMessageContentOffset {
+		return nil, fmt.Errorf("invalid attestation length, expected at least %d, got %d", BaseMessageContentOffset, len(toDecode))
+	}
 	senderBytes := toDecode[BaseMessageSenderOffset:BaseMessageRecipientOffset]
 	recipientBytes := toDecode[BaseMessageRecipientOffset:BaseMessageTipsOffset]
 	var sender [32]byte
@@ -408,9 +411,55 @@ func EncodeMessage(m Message) ([]byte, error) {
 
 	buf.Write([]byte{uint8(m.Flag())})
 	buf.Write(encodedHeader)
-	buf.Write(m.Body())
+
+	if m.Flag() == MessageFlagBase {
+		encodedBaseMessage, err := EncodeBaseMessage(m.BaseMessage())
+		if err != nil {
+			return []byte{}, fmt.Errorf("could not encode header: %w", err)
+		}
+		buf.Write(encodedBaseMessage)
+	} else {
+		buf.Write(m.Body())
+	}
 
 	return buf.Bytes(), nil
+}
+
+// DecodeMessage decodes a message from a byte slice.
+func DecodeMessage(message []byte) (Message, error) {
+	flag := message[0]
+	rawHeader := message[MessageFlagSize:MessageBodyOffset]
+
+	header, err := DecodeHeader(rawHeader)
+	if err != nil {
+		return nil, fmt.Errorf("could not decode header: %w", err)
+	}
+
+	rawBody := message[MessageBodyOffset:]
+
+	var decoded Message
+
+	var content []byte
+	if MessageFlag(flag) == MessageFlagBase {
+		baseMessage, err := DecodeBaseMessage(rawBody)
+		if err != nil {
+			return nil, fmt.Errorf("could not decode base message: %w", err)
+		}
+		decoded = messageImpl{
+			flag:        MessageFlag(flag),
+			header:      header,
+			baseMessage: baseMessage,
+		}
+	} else {
+		content = rawBody
+		decoded = messageImpl{
+			flag:   MessageFlag(flag),
+			header: header,
+			body:   content,
+		}
+	}
+
+	return decoded, nil
 }
 
 // EncodeAgentStatus encodes a agent status.

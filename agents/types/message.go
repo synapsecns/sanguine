@@ -34,6 +34,8 @@ type Message interface {
 	Flag() MessageFlag
 	// Header gets the message header
 	Header() Header
+	// BaseMessage is the base message if the flag indicates the type is a base message
+	BaseMessage() BaseMessage
 	// Body gets the message body
 	Body() []byte
 
@@ -51,19 +53,21 @@ type Message interface {
 
 // messageImpl implements a message. It is used for testutils. Real messages are emitted by the contract.
 type messageImpl struct {
-	flag   MessageFlag
-	header Header
-	body   []byte
+	flag        MessageFlag
+	header      Header
+	baseMessage BaseMessage
+	body        []byte
 }
 
 const headerOffset uint16 = 0
 
 // NewMessage creates a new message from fields passed in.
-func NewMessage(flag MessageFlag, header Header, body []byte) Message {
+func NewMessage(flag MessageFlag, header Header, baseMessage BaseMessage, body []byte) Message {
 	return &messageImpl{
-		flag:   flag,
-		header: header,
-		body:   body,
+		flag:        flag,
+		header:      header,
+		baseMessage: baseMessage,
+		body:        body,
 	}
 }
 
@@ -73,38 +77,6 @@ func (m messageImpl) Header() Header {
 
 func (m messageImpl) Flag() MessageFlag {
 	return m.flag
-}
-
-// DecodeMessage decodes a message from a byte slice.
-func DecodeMessage(message []byte) (Message, error) {
-	flag := message[0]
-	rawHeader := message[MessageFlagSize:MessageBodyOffset]
-
-	header, err := DecodeHeader(rawHeader)
-	if err != nil {
-		return nil, fmt.Errorf("could not decode header: %w", err)
-	}
-
-	rawBody := message[MessageBodyOffset:]
-
-	var content []byte
-	if MessageFlag(flag) == MessageFlagBase {
-		messageBase, err := DecodeBaseMessage(rawBody)
-		if err != nil {
-			return nil, fmt.Errorf("could not decode base message: %w", err)
-		}
-		content = messageBase.Content()
-	} else {
-		content = rawBody
-	}
-
-	decoded := messageImpl{
-		flag:   MessageFlag(flag),
-		header: header,
-		body:   content,
-	}
-
-	return decoded, nil
 }
 
 func (m messageImpl) OriginDomain() uint32 {
@@ -123,18 +95,28 @@ func (m messageImpl) OptimisticSeconds() uint32 {
 	return m.Header().OptimisticSeconds()
 }
 
+func (m messageImpl) BaseMessage() BaseMessage {
+	return m.baseMessage
+}
+
 func (m messageImpl) Body() []byte {
 	return m.body
 }
 
 // ToLeaf converts a message to an encoded leaf.
 func (m messageImpl) ToLeaf() (leaf [32]byte, err error) {
-	encodedMessage, err := EncodeMessage(m)
-	if err != nil {
-		return common.Hash{}, fmt.Errorf("could not encode message: %w", err)
+	var toHash []byte
+	if m.flag == MessageFlagBase {
+		toHash = m.baseMessage.Content()
+	} else {
+		encodedMessage, err := EncodeMessage(m)
+		if err != nil {
+			return common.Hash{}, fmt.Errorf("could not encode message: %w", err)
+		}
+		toHash = encodedMessage
 	}
 
-	rawLeaf := crypto.Keccak256(encodedMessage)
+	rawLeaf := crypto.Keccak256(toHash)
 	copy(leaf[:], rawLeaf)
 	return leaf, nil
 }
