@@ -40,13 +40,14 @@ abstract contract BaseClient is IMessageRecipient {
         uint32 nonce,
         bytes32 sender,
         uint256 proofMaturity,
+        uint32 version,
         bytes memory content
     ) external payable {
         if (msg.sender != destination) revert CallerNotDestination();
         if (sender != trustedSender(origin_) || sender == 0) revert IncorrectSender();
         if (proofMaturity < optimisticPeriod()) revert BaseClientOptimisticPeriod();
         // All security checks are passed, handle the message content
-        _receiveBaseMessage(origin_, nonce, content);
+        _receiveBaseMessage(origin_, nonce, version, content);
     }
 
     // ═══════════════════════════════════════════════════ VIEWS ═══════════════════════════════════════════════════════
@@ -74,7 +75,7 @@ abstract contract BaseClient is IMessageRecipient {
      *  - Message sender on origin chain is a trusted sender
      *  - Optimistic period for the message have passed
      */
-    function _receiveBaseMessage(uint32 origin_, uint32 nonce, bytes memory content) internal virtual;
+    function _receiveBaseMessage(uint32 origin_, uint32 nonce, uint32 version, bytes memory content) internal virtual;
 
     /**
      * @dev Sends a message to given destination chain.

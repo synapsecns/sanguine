@@ -83,9 +83,15 @@ abstract contract ExecutionHubTest is AgentSecuredTest {
         timePassed = uint32(bound(timePassed, rh.optimisticPeriod, rh.optimisticPeriod + 1 days));
         skip(timePassed);
         gasLimit = uint64(bound(gasLimit, rbm.request.gasLimit, 2_000_000));
-        // receiveBaseMessage(origin, nonce, sender, proofMaturity, message)
+        // receiveBaseMessage(origin, nonce, sender, proofMaturity, version, message)
         bytes memory expectedCall = abi.encodeWithSelector(
-            MessageRecipientMock.receiveBaseMessage.selector, rh.origin, rh.nonce, rbm.sender, timePassed, rbm.content
+            MessageRecipientMock.receiveBaseMessage.selector,
+            rh.origin,
+            rh.nonce,
+            rbm.sender,
+            timePassed,
+            rbm.request.version,
+            rbm.content
         );
         // expectCall(address callee, uint256 msgValue, uint64 gas, bytes calldata data)
         vm.expectCall(recipient, 0, gasLimit, expectedCall);

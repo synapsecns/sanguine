@@ -43,7 +43,7 @@ contract BaseMessageHarness {
     }
 
     /// @notice Returns baseMessage's request field
-    function request(bytes memory payload) public pure returns (uint160) {
+    function request(bytes memory payload) public pure returns (uint192) {
         return Request.unwrap(payload.castToBaseMessage().request());
     }
 

@@ -23,7 +23,7 @@ contract BaseMessageLibraryTest is SynapseLibraryTest {
         Tips tips = rbm.tips.castToTips();
         uint256 encodedTips = rbm.tips.encodeTips();
         Request request = rbm.request.castToRequest();
-        uint160 encodedRequest = rbm.request.encodeRequest();
+        uint192 encodedRequest = rbm.request.encodeRequest();
         // Test formatting
         bytes memory payload = libHarness.formatBaseMessage(rbm.sender, rbm.recipient, tips, request, rbm.content);
         assertEq(

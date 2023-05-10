@@ -14,6 +14,7 @@ interface IMessageRecipient {
      * @param nonce             Message nonce on the origin domain
      * @param sender            Sender address on origin chain
      * @param proofMaturity     Message's merkle proof age in seconds
+     * @param version           Message version specified by sender
      * @param content           Raw bytes content of message
      */
     function receiveBaseMessage(
@@ -21,6 +22,7 @@ interface IMessageRecipient {
         uint32 nonce,
         bytes32 sender,
         uint256 proofMaturity,
+        uint32 version,
         bytes memory content
     ) external payable;
 }
