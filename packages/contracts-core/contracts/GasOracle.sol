@@ -126,9 +126,11 @@ contract GasOracle is MessagingBase, GasOracleEvents, InterfaceGasOracle {
         GasData remoteGasData = _gasData[destination_];
         uint256 remoteEtherPrice = remoteGasData.etherPrice().decompress();
         if (remoteEtherPrice == 0) revert RemoteGasDataNotSet();
-        // TODO: Implement
-        return
-            Tips.unwrap(TipsLib.encodeTips256({summitTip_: 0, attestationTip_: 0, executionTip_: 0, deliveryTip_: 0}));
+        // To convert the cost from remote Ether to local Ether, we need to multiply by the ratio of the Ether prices.
+        uint256 attestationTip = remoteGasData.amortAttCost().decompress() * remoteEtherPrice / localEtherPrice;
+        return Tips.unwrap(
+            TipsLib.encodeTips256({summitTip_: 0, attestationTip_: attestationTip, executionTip_: 0, deliveryTip_: 0})
+        );
     }
 
     // ══════════════════════════════════════════════ INTERNAL LOGIC ═══════════════════════════════════════════════════
