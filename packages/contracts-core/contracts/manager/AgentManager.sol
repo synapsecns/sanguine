@@ -2,10 +2,12 @@
 pragma solidity 0.8.17;
 
 // ══════════════════════════════ LIBRARY IMPORTS ══════════════════════════════
+import {FRESH_DATA_TIMEOUT} from "../libs/Constants.sol";
 import {
     CallerNotInbox,
     DisputeAlreadyResolved,
     DisputeNotOpened,
+    DisputeNotStuck,
     IncorrectAgentDomain,
     IndexOutOfRange,
     GuardInDispute,
@@ -16,6 +18,7 @@ import {AgentFlag, AgentStatus, DisputeFlag} from "../libs/Structures.sol";
 import {MessagingBase} from "../base/MessagingBase.sol";
 import {AgentManagerEvents} from "../events/AgentManagerEvents.sol";
 import {IAgentManager} from "../interfaces/IAgentManager.sol";
+import {InterfaceDestination} from "../interfaces/InterfaceDestination.sol";
 import {IStatementInbox} from "../interfaces/IStatementInbox.sol";
 
 abstract contract AgentManager is MessagingBase, AgentManagerEvents, IAgentManager {
@@ -71,7 +74,9 @@ abstract contract AgentManager is MessagingBase, AgentManagerEvents, IAgentManag
         AgentDispute memory slashedDispute = _agentDispute[_getIndex(slashedAgent)];
         if (slashedDispute.flag == DisputeFlag.None) revert DisputeNotOpened();
         if (slashedDispute.flag == DisputeFlag.Slashed) revert DisputeAlreadyResolved();
-        // TODO: check the fresh data timeout
+        // Check if there has been no fresh data from the Notaries for a while.
+        (uint40 snapRootTime,,) = InterfaceDestination(destination).destStatus();
+        if (block.timestamp < FRESH_DATA_TIMEOUT + snapRootTime) revert DisputeNotStuck();
         // This will revert if domain doesn't match the agent's domain.
         _slashAgent({domain: domain, agent: slashedAgent, prover: address(0)});
     }
