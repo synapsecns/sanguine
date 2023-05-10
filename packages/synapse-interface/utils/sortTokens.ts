@@ -1,4 +1,4 @@
-import { fetchBalance } from '@wagmi/core'
+import { fetchBalance, erc20ABI } from '@wagmi/core'
 import { Zero, AddressZero } from '@ethersproject/constants'
 
 import { Token } from '@/utils/types'
@@ -68,4 +68,37 @@ export const sortByTokenBalance = async (
   }
 
   return zeroTokensWithBalances.concat(tokensWithBalances)
+}
+
+export const _sortTokenByBalance = async (
+  tokens: Token[],
+  chainId: number,
+  address: any
+) => {
+  const i = 0
+  const tokensWithBalances: any[] = []
+  const zeroTokensWithBalances: any[] = []
+
+  const multicallInputs = []
+
+  if (chainId === undefined || !address) {
+    tokens.map((token) => {
+      tokensWithBalances.push({
+        token,
+        balance: Zero,
+      })
+    })
+  } else {
+    tokens.map((token) => {
+      const tokenAddress = token.addresses[chainId as keyof Token['addresses']]
+      const abi = erc20ABI
+      const functionName = 'balanceOf'
+
+      multicallInputs.push({
+        address: tokenAddress,
+        abi,
+        functionName,
+      })
+    })
+  }
 }

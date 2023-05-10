@@ -87,6 +87,7 @@ const BridgePage = ({
       fromChainId,
       address
     ).then((tokens) => {
+      console.log('tokens: ', tokens)
       setFromTokens(tokens)
     })
     const interval = setInterval(
