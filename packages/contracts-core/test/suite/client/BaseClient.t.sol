@@ -35,6 +35,8 @@ contract BaseClientTest is SynapseTest {
         uint32 destination_,
         uint256 tipsValue,
         RawRequest memory rr,
+        uint32 nonce,
+        bytes32 msgHash,
         bytes memory content
     ) public {
         vm.assume(destination_ != 0 && destination_ != DOMAIN_LOCAL);
@@ -51,9 +53,15 @@ contract BaseClientTest is SynapseTest {
         );
         MessageRecipient.MessageRequest memory request =
             MessageRecipient.MessageRequest({gasDrop: rr.gasDrop, gasLimit: rr.gasLimit, version: rr.version});
+        // Mock returned values for sendBaseMessage call
+        vm.mockCall(
+            origin, abi.encodeWithSelector(InterfaceOrigin.sendBaseMessage.selector), abi.encode(nonce, msgHash)
+        );
         vm.expectCall(origin, tipsValue, expectedCall);
         vm.prank(user);
-        client.sendBaseMessage{value: tipsValue}(destination_, request, content);
+        (uint32 nonce_, bytes32 msgHash_) = client.sendBaseMessage{value: tipsValue}(destination_, request, content);
+        assertEq(nonce_, nonce);
+        assertEq(msgHash_, msgHash);
     }
 
     function test_sendBaseMessage_revert_recipientNotSet(

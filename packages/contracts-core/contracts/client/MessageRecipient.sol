@@ -82,9 +82,9 @@ abstract contract MessageRecipient is IMessageRecipient {
         uint32 optimisticPeriod,
         MessageRequest memory request,
         bytes memory content
-    ) internal {
+    ) internal returns (uint32 messageNonce, bytes32 messageHash) {
         if (recipient == 0) revert IncorrectRecipient();
-        InterfaceOrigin(origin).sendBaseMessage{value: msg.value}(
+        return InterfaceOrigin(origin).sendBaseMessage{value: msg.value}(
             destination_, recipient, optimisticPeriod, _encodeRequest(request), content
         );
     }

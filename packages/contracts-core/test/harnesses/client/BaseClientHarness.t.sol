@@ -14,8 +14,9 @@ contract BaseClientHarness is BaseClient, BaseClientHarnessEvents {
     function sendBaseMessage(uint32 destination_, MessageRequest memory request, bytes memory content)
         external
         payable
+        returns (uint32 messageNonce, bytes32 messageHash)
     {
-        _sendBaseMessage(destination_, request, content);
+        return _sendBaseMessage(destination_, request, content);
     }
 
     /// @inheritdoc BaseClient

@@ -78,9 +78,12 @@ abstract contract BaseClient is MessageRecipient {
      * @param request               Encoded message execution request on destination chain
      * @param content               The message content
      */
-    function _sendBaseMessage(uint32 destination_, MessageRequest memory request, bytes memory content) internal {
+    function _sendBaseMessage(uint32 destination_, MessageRequest memory request, bytes memory content)
+        internal
+        returns (uint32 messageNonce, bytes32 messageHash)
+    {
         // Send message to the trusted sender on destination chain with the defined optimistic period.
         // Note: this will revert if the trusted sender is not set for the destination domain.
-        _sendBaseMessage(destination_, trustedSender(destination_), optimisticPeriod(), request, content);
+        return _sendBaseMessage(destination_, trustedSender(destination_), optimisticPeriod(), request, content);
     }
 }
