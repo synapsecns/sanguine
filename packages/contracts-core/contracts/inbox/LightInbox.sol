@@ -96,6 +96,7 @@ contract LightInbox is StatementInbox, InterfaceLightInbox {
         notaryStatus.verifyActiveUnstaking();
         // Check if Notary is active on this chain
         _verifyNotaryDomain(notaryStatus.domain);
+        _saveReport(arPayload, arSignature);
         // This will revert if either actor is already in dispute
         IAgentManager(agentManager).openDispute(guardStatus.index, notaryStatus.index);
         return true;

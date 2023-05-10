@@ -89,7 +89,7 @@ contract LightManagerTest is AgentManagerTest {
         test_setAgentRoot(root);
         bytes32[] memory proof = getAgentProof(agent);
         expectStatusUpdated(AgentFlag.Slashed, domain, agent);
-        expectDisputeResolved(agent, address(0), caller);
+        expectDisputeResolved(0, agent, address(0), caller);
         vm.prank(caller);
         lightManager.updateAgentStatus(agent, getAgentStatus(agent), proof);
         checkAgentStatus(agent, lightManager.agentStatus(agent), AgentFlag.Slashed);

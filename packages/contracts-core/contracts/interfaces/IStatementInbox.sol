@@ -214,7 +214,26 @@ interface IStatementInbox {
     // ═══════════════════════════════════════════════════ VIEWS ═══════════════════════════════════════════════════════
 
     /**
-     * @notice Returns the signature with the given index stored in AgentManager.
+     * @notice Returns the amount of Guard Reports stored in StatementInbox.
+     * > Only reports that led to opening a Dispute are stored.
+     */
+    function getReportsAmount() external view returns (uint256);
+
+    /**
+     * @notice Returns the Guard report with the given index stored in StatementInbox.
+     * > Only reports that led to opening a Dispute are stored.
+     * @dev Will revert if report with given index doesn't exist.
+     * @param index             Report index
+     * @return reportPayload    Raw payload with Report data
+     * @return reportSignature  Guard signature for the report
+     */
+    function getGuardReport(uint256 index)
+        external
+        view
+        returns (bytes memory reportPayload, bytes memory reportSignature);
+
+    /**
+     * @notice Returns the signature with the given index stored in StatementInbox.
      * @dev Will revert if signature with given index doesn't exist.
      * @param index     Signature index
      * @return          Raw payload with signature

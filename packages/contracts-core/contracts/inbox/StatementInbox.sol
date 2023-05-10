@@ -11,7 +11,8 @@ import {
     IncorrectAgentDomain,
     IncorrectSnapshotProof,
     IncorrectSnapshotRoot,
-    IncorrectState
+    IncorrectState,
+    IndexOutOfRange
 } from "../libs/Errors.sol";
 import {Receipt, ReceiptLib} from "../libs/Receipt.sol";
 import {Snapshot, SnapshotLib} from "../libs/Snapshot.sol";
@@ -35,19 +36,23 @@ abstract contract StatementInbox is MessagingBase, StatementInboxEvents, IStatem
     using StateReportLib for bytes;
     using SnapshotLib for bytes;
 
+    struct StoredReport {
+        uint256 sigIndex;
+        bytes reportPayload;
+    }
+
     // ══════════════════════════════════════════════════ STORAGE ══════════════════════════════════════════════════════
 
     address public agentManager;
-
     address public origin;
-
     address public destination;
 
     // TODO: optimize this
     bytes[] internal _storedSignatures;
+    StoredReport[] internal _storedReports;
 
     /// @dev gap for upgrade safety
-    uint256[46] private __GAP; // solhint-disable-line var-name-mixedcase
+    uint256[45] private __GAP; // solhint-disable-line var-name-mixedcase
 
     // ════════════════════════════════════════════════ INITIALIZER ════════════════════════════════════════════════════
 
@@ -94,6 +99,7 @@ abstract contract StatementInbox is MessagingBase, StatementInboxEvents, IStatem
         // Snapshot state and reported state need to be the same
         // This will revert if state index is out of range
         if (!snapshot.state(stateIndex).equals(report.state())) revert IncorrectState();
+        _saveReport(srPayload, srSignature);
         // This will revert if either actor is already in dispute
         IAgentManager(agentManager).openDispute(guardStatus.index, notaryStatus.index);
         return true;
@@ -128,6 +134,7 @@ abstract contract StatementInbox is MessagingBase, StatementInboxEvents, IStatem
         // Check if Notary is active on this chain
         _verifyNotaryDomain(notaryStatus.domain);
         if (snapshot.calculateRoot() != att.snapRoot()) revert IncorrectSnapshotRoot();
+        _saveReport(srPayload, srSignature);
         // This will revert if either actor is already in dispute
         IAgentManager(agentManager).openDispute(guardStatus.index, notaryStatus.index);
         return true;
@@ -162,6 +169,7 @@ abstract contract StatementInbox is MessagingBase, StatementInboxEvents, IStatem
         //  - Snapshot Proof length exceeds Snapshot tree Height.
         //  - State index is out of range.
         _verifySnapshotMerkle(att, stateIndex, report.state(), snapProof);
+        _saveReport(srPayload, srSignature);
         // This will revert if either actor is already in dispute
         IAgentManager(agentManager).openDispute(guardStatus.index, notaryStatus.index);
         return true;
@@ -285,11 +293,34 @@ abstract contract StatementInbox is MessagingBase, StatementInboxEvents, IStatem
     // ═══════════════════════════════════════════════════ VIEWS ═══════════════════════════════════════════════════════
 
     /// @inheritdoc IStatementInbox
+    function getReportsAmount() external view returns (uint256) {
+        return _storedReports.length;
+    }
+
+    /// @inheritdoc IStatementInbox
+    function getGuardReport(uint256 index)
+        external
+        view
+        returns (bytes memory reportPayload, bytes memory reportSignature)
+    {
+        if (index >= _storedReports.length) revert IndexOutOfRange();
+        StoredReport memory storedReport = _storedReports[index];
+        reportPayload = storedReport.reportPayload;
+        reportSignature = _storedSignatures[storedReport.sigIndex];
+    }
+
+    /// @inheritdoc IStatementInbox
     function getStoredSignature(uint256 index) external view returns (bytes memory) {
         return _storedSignatures[index];
     }
 
     // ══════════════════════════════════════════════ INTERNAL LOGIC ═══════════════════════════════════════════════════
+
+    /// @dev Saves the Guard Report and the signature for it.
+    function _saveReport(bytes memory reportPayload, bytes memory reportSignature) internal {
+        uint256 sigIndex = _saveSignature(reportSignature);
+        _storedReports.push(StoredReport(sigIndex, reportPayload));
+    }
 
     /// @dev Saves the signature and returns its index.
     function _saveSignature(bytes memory signature) internal returns (uint256 sigIndex) {

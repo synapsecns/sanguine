@@ -1,9 +1,28 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.17;
 
-import {AgentFlag, Dispute} from "../libs/Structures.sol";
+import {AgentFlag} from "../libs/Structures.sol";
 
 abstract contract AgentManagerEvents {
+    /**
+     * @notice Emitted whenever a Dispute is opened between two agents. This happens when a Guard submits
+     * their report for the Notary-signed statement to `StatementInbox`.
+     * @param disputeIndex  Index of the dispute in the global list of all opened disputes
+     * @param guardIndex    Index of the Guard in the Agent Merkle Tree
+     * @param notaryIndex   Index of the Notary in the Agent Merkle Tree
+     */
+    event DisputeOpened(uint256 disputeIndex, uint32 guardIndex, uint32 notaryIndex);
+
+    /**
+     * @notice Emitted whenever a Dispute is resolved. This happens when an Agent who was in Dispute is slashed.
+     * Note: this won't be emitted, if an Agent was slashed without being in Dispute.
+     * @param disputeIndex  Index of the dispute in the global list of all opened disputes
+     * @param slashedIndex  Index of the slashed agent in the Agent Merkle Tree
+     * @param rivalIndex    Index of the rival agent in the Agent Merkle Tree
+     * @param fraudProver   Address who provided fraud proof to resolve the Dispute
+     */
+    event DisputeResolved(uint256 disputeIndex, uint32 slashedIndex, uint32 rivalIndex, address fraudProver);
+
     // ═══════════════════════════════════════════════ DATA UPDATED ════════════════════════════════════════════════════
 
     /**
@@ -26,12 +45,4 @@ abstract contract AgentManagerEvents {
      * @param agent     Agent address
      */
     event StatusUpdated(AgentFlag flag, uint32 indexed domain, address indexed agent);
-
-    /**
-     * @notice Emitted whenever a Dispute status of an the agent is updated.
-     * See Structures.sol for details.
-     * @param agent     Agent address
-     * @param dispute   Dispute status: (flag, rivalIndex, fraudProver)
-     */
-    event DisputeUpdated(address agent, Dispute dispute);
 }

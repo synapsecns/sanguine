@@ -63,19 +63,6 @@ enum DisputeFlag {
     Slashed
 }
 
-/// @notice Struct representing information about an agent in dispute.
-/// - Rival for Guard is the Notary they reported.
-/// - Rival for Notary is the Guard that reported them.
-/// @param flag         Dispute status
-/// @param rivalIndex   Index of the rival who the agent is in dispute with
-/// @param fraudProver  Actor who provided fraud proof that resolved the dispute
-struct Dispute {
-    DisputeFlag flag;
-    uint32 rivalIndex;
-    address fraudProver;
-}
-// 56 bits available for tight packing
-
 // ════════════════════════════════ DESTINATION ════════════════════════════════
 
 /// @notice Struct representing the status of Destination contract.
