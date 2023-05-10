@@ -91,9 +91,9 @@ func TestNewMessageEncodeDecode(t *testing.T) {
 	header := types.NewHeader(
 		origin, nonce, destination, optimisticSeconds)
 
-	flag := types.MessageFlagBase
+	flag := types.MessageFlagManager
 
-	newMessage := types.NewMessage(flag, header, body)
+	newMessage := types.NewMessage(flag, header, nil, body)
 
 	Equal(t, newMessage.Flag(), flag)
 	Equal(t, newMessage.OriginDomain(), origin)

@@ -12,6 +12,7 @@ import (
 
 func TestCommittedMessageAccessors(t *testing.T) {
 	cm := base.CommittedMessage{
+		CMFlag:              1,
 		CMDomainID:          gofakeit.Uint32(),
 		CMMessage:           []byte(gofakeit.Paragraph(4, 1, 4, " ")),
 		CMLeaf:              common.BytesToHash([]byte(gofakeit.Paragraph(4, 1, 4, " "))).Bytes(),

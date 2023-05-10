@@ -183,8 +183,24 @@ func (c CommittedMessage) OptimisticSeconds() uint32 {
 	return c.CMOptimisticSeconds
 }
 
+// BaseMessage gets the base message if it exists.
+func (c CommittedMessage) BaseMessage() types.BaseMessage {
+	if types.MessageFlag(c.CMFlag) == types.MessageFlagManager {
+		return nil
+	}
+	baseMessage, err := types.DecodeBaseMessage(c.CMMessage)
+	if err != nil {
+		return nil
+	}
+
+	return baseMessage
+}
+
 // Message gets the message.
 func (c CommittedMessage) Message() []byte {
+	if types.MessageFlag(c.CMFlag) == types.MessageFlagBase {
+		return []byte{}
+	}
 	return c.CMMessage
 }
 
