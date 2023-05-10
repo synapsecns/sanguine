@@ -69,6 +69,7 @@ contract BaseClientTest is SynapseTest {
         RawHeader memory rh,
         uint256 rootSubmittedAt,
         uint256 secondsPassed,
+        uint32 version,
         bytes memory content
     ) public {
         vm.assume(rh.origin != 0 && rh.origin != DOMAIN_LOCAL);
@@ -81,9 +82,9 @@ contract BaseClientTest is SynapseTest {
         vm.warp(rootSubmittedAt + secondsPassed);
         vm.expectEmit();
         // msg.value should be zero
-        emit BaseMessageReceived(0, rh.origin, rh.nonce, content);
+        emit BaseMessageReceived(0, rh.origin, rh.nonce, version, content);
         vm.prank(destination);
-        client.receiveBaseMessage(rh.origin, rh.nonce, sender, secondsPassed, content);
+        client.receiveBaseMessage(rh.origin, rh.nonce, sender, secondsPassed, version, content);
     }
 
     function test_receiveBaseMessage_revert_notDestination(RawHeader memory rh, uint256 rootSubmittedAt, address caller)
@@ -99,7 +100,7 @@ contract BaseClientTest is SynapseTest {
         vm.warp(rootSubmittedAt + optimisticPeriod);
         vm.expectRevert(CallerNotDestination.selector);
         vm.prank(caller);
-        client.receiveBaseMessage(rh.origin, rh.nonce, sender, optimisticPeriod, "");
+        client.receiveBaseMessage(rh.origin, rh.nonce, sender, optimisticPeriod, 0, "");
     }
 
     function test_receiveBaseMessage_revert_notTrustedSender(
@@ -116,7 +117,7 @@ contract BaseClientTest is SynapseTest {
         vm.warp(rootSubmittedAt + optimisticPeriod);
         vm.expectRevert(IncorrectSender.selector);
         vm.prank(destination);
-        client.receiveBaseMessage(rh.origin, rh.nonce, sender, optimisticPeriod, "");
+        client.receiveBaseMessage(rh.origin, rh.nonce, sender, optimisticPeriod, 0, "");
     }
 
     function test_receiveBaseMessage_revert_optimisticPeriodNotOver(
@@ -134,6 +135,6 @@ contract BaseClientTest is SynapseTest {
         vm.warp(rootSubmittedAt + secondsPassed);
         vm.expectRevert(BaseClientOptimisticPeriod.selector);
         vm.prank(destination);
-        client.receiveBaseMessage(rh.origin, rh.nonce, sender, secondsPassed, "");
+        client.receiveBaseMessage(rh.origin, rh.nonce, sender, secondsPassed, 0, "");
     }
 }

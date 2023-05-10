@@ -71,7 +71,7 @@ contract PingPongClient is IMessageRecipient {
     // ═══════════════════════════════════════════════ MESSAGE LOGIC ═══════════════════════════════════════════════════
 
     /// @inheritdoc IMessageRecipient
-    function receiveBaseMessage(uint32 origin_, uint32, bytes32 sender, uint256, bytes memory content)
+    function receiveBaseMessage(uint32 origin_, uint32, bytes32 sender, uint256, uint32, bytes memory content)
         external
         payable
     {

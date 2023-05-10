@@ -29,7 +29,10 @@ contract BaseClientHarness is BaseClient, BaseClientHarnessEvents {
     }
 
     /// @inheritdoc BaseClient
-    function _receiveBaseMessage(uint32 origin_, uint32 nonce, bytes memory content) internal override {
-        emit BaseMessageReceived(msg.value, origin_, nonce, content);
+    function _receiveBaseMessage(uint32 origin_, uint32 nonce, uint32 version, bytes memory content)
+        internal
+        override
+    {
+        emit BaseMessageReceived(msg.value, origin_, nonce, version, content);
     }
 }
