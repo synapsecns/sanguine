@@ -69,7 +69,10 @@ abstract contract MessageRecipient is IMessageRecipient {
     ) internal virtual;
 
     /**
-     * @dev Sends a message to given destination chain.
+     * @dev Sends a message to given destination chain. Full `msg.value` is used to pay for the message tips.
+     * `_getMinimumTipsValue()` could be used to calculate the minimum required tips value, and should be also
+     * exposed as a public view function to estimate the tips value before sending a message off-chain.
+     * This function is not exposed in MessageRecipient, as the message encoding is implemented by the child contract.
      * @param destination_          Domain of the destination chain
      * @param recipient             Address of the recipient on destination chain
      * @param optimisticPeriod      Optimistic period for the message
