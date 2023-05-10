@@ -21,6 +21,7 @@ import {
 import {MerkleMath} from "../libs/MerkleMath.sol";
 import {Header, Message, MessageFlag, MessageLib} from "../libs/Message.sol";
 import {Receipt, ReceiptBody, ReceiptLib} from "../libs/Receipt.sol";
+import {Request} from "../libs/Request.sol";
 import {SnapshotLib} from "../libs/Snapshot.sol";
 import {AgentFlag, AgentStatus, MessageStatus} from "../libs/Structures.sol";
 import {Tips} from "../libs/Tips.sol";
@@ -213,14 +214,20 @@ abstract contract ExecutionHub is AgentSecured, ExecutionHubEvents, IExecutionHu
         // Check that gas limit covers the one requested by the sender.
         // We let the executor specify gas limit higher than requested to guarantee the execution of
         // messages with gas limit set too low.
-        if (gasLimit < baseMessage.request().gasLimit()) revert GasLimitTooLow();
+        Request request = baseMessage.request();
+        if (gasLimit < request.gasLimit()) revert GasLimitTooLow();
         // TODO: check that the discarded bits are empty
         address recipient = baseMessage.recipient().bytes32ToAddress();
         // Forward message content to the recipient, and limit the amount of forwarded gas
         if (gasleft() <= gasLimit) revert GasSuppliedTooLow();
-        try IMessageRecipient(recipient).receiveBaseMessage{gas: gasLimit}(
-            header.origin(), header.nonce(), baseMessage.sender(), proofMaturity, baseMessage.content().clone()
-        ) {
+        try IMessageRecipient(recipient).receiveBaseMessage{gas: gasLimit}({
+            origin: header.origin(),
+            nonce: header.nonce(),
+            sender: baseMessage.sender(),
+            proofMaturity: proofMaturity,
+            version: request.version(),
+            content: baseMessage.content().clone()
+        }) {
             return true;
         } catch {
             return false;
