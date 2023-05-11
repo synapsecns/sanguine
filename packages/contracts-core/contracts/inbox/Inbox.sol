@@ -168,20 +168,20 @@ contract Inbox is StatementInbox, InboxEvents, InterfaceInbox {
     }
 
     /// @inheritdoc InterfaceInbox
-    function verifyAttestationReport(bytes memory arPayload, bytes memory arSignature)
+    function verifyAttestationReport(bytes memory attPayload, bytes memory arSignature)
         external
         returns (bool isValidReport)
     {
-        // This will revert if payload is not an attestation report
-        AttestationReport report = arPayload.castToAttestationReport();
+        // This will revert if payload is not an attestation
+        Attestation att = attPayload.castToAttestation();
         // This will revert if the report signer is not a known Guard
-        (AgentStatus memory status, address guard) = _verifyAttestationReport(report, arSignature);
+        (AgentStatus memory status, address guard) = _verifyAttestationReport(att, arSignature);
         // Guard needs to be Active/Unstaking
         status.verifyActiveUnstaking();
         // Report is valid IF AND ONLY IF the reported attestation in invalid
-        isValidReport = !ISnapshotHub(summit).isValidAttestation(report.attestation().unwrap().clone());
+        isValidReport = !ISnapshotHub(summit).isValidAttestation(attPayload);
         if (!isValidReport) {
-            emit InvalidAttestationReport(arPayload, arSignature);
+            emit InvalidAttestationReport(attPayload, arSignature);
             IAgentManager(agentManager).slashAgent(status.domain, guard, msg.sender);
         }
     }
