@@ -138,13 +138,13 @@ contract LightInboxTest is StatementInboxTest {
         (, bytes memory attSignature) = signAttestation(notary, ra);
         // Create Guard signature for the report
         address guard = domains[0].agent;
-        (bytes memory arPayload, bytes memory arSignature) = createSignedAttestationReport(guard, ra);
+        (bytes memory attPayload, bytes memory arSignature) = signAttestationReport(guard, ra);
         expectDisputeOpened(0, guard, notary);
         vm.prank(prover);
-        lightInbox.submitAttestationReport(arPayload, arSignature, attSignature);
+        lightInbox.submitAttestationReport(attPayload, arSignature, attSignature);
         assertEq(lightInbox.getReportsAmount(), 1, "!reportsAmount");
         (bytes memory reportPayload, bytes memory reportSignature) = lightInbox.getGuardReport(0);
-        assertEq(reportPayload, arPayload, "!reportPayload");
+        assertEq(reportPayload, attPayload, "!reportPayload");
         assertEq(reportSignature, arSignature, "!reportSig");
     }
 
@@ -156,9 +156,9 @@ contract LightInboxTest is StatementInboxTest {
         (, bytes memory attSignature) = signAttestation(notary, ra);
         // Force a random Notary to sign the report
         address reportSigner = getNotary(random.nextUint256(), random.nextUint256());
-        (bytes memory arPayload, bytes memory arSignature) = createSignedAttestationReport(reportSigner, ra);
+        (bytes memory attPayload, bytes memory arSignature) = signAttestationReport(reportSigner, ra);
         vm.expectRevert(AgentNotGuard.selector);
-        lightInbox.submitAttestationReport(arPayload, arSignature, attSignature);
+        lightInbox.submitAttestationReport(attPayload, arSignature, attSignature);
     }
 
     function test_submitAttestationReport_revert_guardInDispute(Random memory random) public {
@@ -169,11 +169,11 @@ contract LightInboxTest is StatementInboxTest {
         (, bytes memory attSignature) = signAttestation(notary, ra);
         // Create Guard signature for the report
         address guard = domains[0].agent;
-        (bytes memory arPayload, bytes memory arSignature) = createSignedAttestationReport(guard, ra);
+        (bytes memory attPayload, bytes memory arSignature) = signAttestationReport(guard, ra);
         // Put the Guard in Dispute with another Notary
         openDispute({guard: guard, notary: domains[DOMAIN_LOCAL].agents[1]});
         vm.expectRevert(GuardInDispute.selector);
-        lightInbox.submitAttestationReport(arPayload, arSignature, attSignature);
+        lightInbox.submitAttestationReport(attPayload, arSignature, attSignature);
     }
 
     function test_submitAttestationReport_revert_notaryInDispute(Random memory random) public {
@@ -184,11 +184,11 @@ contract LightInboxTest is StatementInboxTest {
         (, bytes memory attSignature) = signAttestation(notary, ra);
         // Create Guard signature for the report
         address guard = domains[0].agents[0];
-        (bytes memory arPayload, bytes memory arSignature) = createSignedAttestationReport(guard, ra);
+        (bytes memory attPayload, bytes memory arSignature) = signAttestationReport(guard, ra);
         // Put the Notary in Dispute with another Guard
         openDispute({guard: domains[0].agents[1], notary: notary});
         vm.expectRevert(NotaryInDispute.selector);
-        lightInbox.submitAttestationReport(arPayload, arSignature, attSignature);
+        lightInbox.submitAttestationReport(attPayload, arSignature, attSignature);
     }
 
     // ══════════════════════════════════════════════════ HELPERS ══════════════════════════════════════════════════════

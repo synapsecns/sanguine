@@ -19,7 +19,6 @@ import {fakeState, fakeSnapshot} from "../utils/libs/FakeIt.t.sol";
 import {Random} from "../utils/libs/Random.t.sol";
 import {
     MessageFlag,
-    StateFlag,
     RawAttestation,
     RawBaseMessage,
     RawGasData,
@@ -29,7 +28,6 @@ import {
     RawSnapshot,
     RawState,
     RawStateIndex,
-    RawStateReport,
     RawTips
 } from "../utils/libs/SynapseStructs.t.sol";
 import {AgentFlag, Origin, SynapseTest} from "../utils/SynapseTest.t.sol";
@@ -371,19 +369,18 @@ contract OriginTest is AgentSecuredTest {
     function _verifyStateReport(RawState memory rawState, bool isStateValid) internal {
         // Report is valid only if reported state is invalid
         bool isValid = !isStateValid;
-        RawStateReport memory rawSR = RawStateReport(uint8(StateFlag.Invalid), rawState);
         address guard = domains[0].agent;
-        (bytes memory srPayload, bytes memory srSig) = signStateReport(guard, rawSR);
+        (bytes memory statePayload, bytes memory srSig) = signStateReport(guard, rawState);
         if (!isValid) {
             // Expect Events to be emitted
             vm.expectEmit(true, true, true, true);
-            emit InvalidStateReport(srPayload, srSig);
+            emit InvalidStateReport(statePayload, srSig);
             // TODO: check that anyone could make the call
             expectStatusUpdated(AgentFlag.Fraudulent, 0, guard);
             expectDisputeResolved(0, guard, address(0), address(this));
         }
         vm.recordLogs();
-        assertEq(lightInbox.verifyStateReport(srPayload, srSig), isValid, "!returnValue");
+        assertEq(lightInbox.verifyStateReport(statePayload, srSig), isValid, "!returnValue");
         if (isValid) {
             assertEq(vm.getRecordedLogs().length, 0, "Emitted logs when shouldn't");
         }

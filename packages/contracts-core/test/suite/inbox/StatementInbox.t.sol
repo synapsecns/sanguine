@@ -32,13 +32,13 @@ abstract contract StatementInboxTest is MessagingBaseTest {
         (bytes memory snapPayload, bytes memory snapSig) = createSignedSnapshot(notary, rs, rsi);
         // Create Guard signature for the report
         address guard = domains[0].agent;
-        (bytes memory srPayload, bytes memory srSig) = createSignedStateReport(guard, rs);
+        (bytes memory statePayload, bytes memory srSig) = signStateReport(guard, rs);
         expectDisputeOpened(0, guard, notary);
         vm.prank(prover);
-        testedInbox().submitStateReportWithSnapshot(rsi.stateIndex, srPayload, srSig, snapPayload, snapSig);
+        testedInbox().submitStateReportWithSnapshot(rsi.stateIndex, srSig, snapPayload, snapSig);
         assertEq(testedInbox().getReportsAmount(), 1, "!reportsAmount");
         (bytes memory reportPayload, bytes memory reportSignature) = testedInbox().getGuardReport(0);
-        assertEq(reportPayload, srPayload, "!reportPayload");
+        assertEq(reportPayload, statePayload, "!reportPayload");
         assertEq(reportSignature, srSig, "!reportSignature");
     }
 
@@ -50,9 +50,9 @@ abstract contract StatementInboxTest is MessagingBaseTest {
         (bytes memory snapPayload, bytes memory snapSig) = createSignedSnapshot(notary, rs, rsi);
         // Force a random Notary to sign the report
         address reportSigner = getNotary(random.nextUint256(), random.nextUint256());
-        (bytes memory srPayload, bytes memory srSig) = createSignedStateReport(reportSigner, rs);
+        (, bytes memory srSig) = signStateReport(reportSigner, rs);
         vm.expectRevert(AgentNotGuard.selector);
-        testedInbox().submitStateReportWithSnapshot(rsi.stateIndex, srPayload, srSig, snapPayload, snapSig);
+        testedInbox().submitStateReportWithSnapshot(rsi.stateIndex, srSig, snapPayload, snapSig);
     }
 
     function test_submitStateReportWithAttestation(
@@ -68,15 +68,13 @@ abstract contract StatementInboxTest is MessagingBaseTest {
         (bytes memory attPayload, bytes memory attSig) = signAttestation(notary, ra);
         // Create Guard signature for the report
         address guard = domains[0].agent;
-        (bytes memory srPayload, bytes memory srSig) = createSignedStateReport(guard, rs);
+        (bytes memory statePayload, bytes memory srSig) = signStateReport(guard, rs);
         expectDisputeOpened(0, guard, notary);
         vm.prank(prover);
-        testedInbox().submitStateReportWithAttestation(
-            rsi.stateIndex, srPayload, srSig, snapPayload, attPayload, attSig
-        );
+        testedInbox().submitStateReportWithAttestation(rsi.stateIndex, srSig, snapPayload, attPayload, attSig);
         assertEq(testedInbox().getReportsAmount(), 1, "!reportsAmount");
         (bytes memory reportPayload, bytes memory reportSignature) = testedInbox().getGuardReport(0);
-        assertEq(reportPayload, srPayload, "!reportPayload");
+        assertEq(reportPayload, statePayload, "!reportPayload");
         assertEq(reportSignature, srSig, "!reportSignature");
     }
 
@@ -91,11 +89,9 @@ abstract contract StatementInboxTest is MessagingBaseTest {
         (bytes memory attPayload, bytes memory attSig) = signAttestation(notary, ra);
         // Force a random Notary to sign the report
         address reportSigner = getNotary(random.nextUint256(), random.nextUint256());
-        (bytes memory srPayload, bytes memory srSig) = createSignedStateReport(reportSigner, rs);
+        (, bytes memory srSig) = signStateReport(reportSigner, rs);
         vm.expectRevert(AgentNotGuard.selector);
-        testedInbox().submitStateReportWithAttestation(
-            rsi.stateIndex, srPayload, srSig, snapPayload, attPayload, attSig
-        );
+        testedInbox().submitStateReportWithAttestation(rsi.stateIndex, srSig, snapPayload, attPayload, attSig);
     }
 
     function test_submitStateReportWithSnapshotProof(
@@ -110,17 +106,17 @@ abstract contract StatementInboxTest is MessagingBaseTest {
         (bytes memory attPayload, bytes memory attSig) = signAttestation(notary, ra);
         // Create Guard signature for the report
         address guard = domains[0].agent;
-        (bytes memory srPayload, bytes memory srSig) = createSignedStateReport(guard, rs);
+        (bytes memory statePayload, bytes memory srSig) = signStateReport(guard, rs);
         // Generate Snapshot Proof
         bytes32[] memory snapProof = genSnapshotProof(rsi.stateIndex);
         expectDisputeOpened(0, guard, notary);
         vm.prank(prover);
         testedInbox().submitStateReportWithSnapshotProof(
-            rsi.stateIndex, srPayload, srSig, snapProof, attPayload, attSig
+            rsi.stateIndex, statePayload, srSig, snapProof, attPayload, attSig
         );
         assertEq(testedInbox().getReportsAmount(), 1, "!reportsAmount");
         (bytes memory reportPayload, bytes memory reportSignature) = testedInbox().getGuardReport(0);
-        assertEq(reportPayload, srPayload, "!reportPayload");
+        assertEq(reportPayload, statePayload, "!reportPayload");
         assertEq(reportSignature, srSig, "!reportSignature");
     }
 
@@ -134,13 +130,13 @@ abstract contract StatementInboxTest is MessagingBaseTest {
         (bytes memory attPayload, bytes memory attSig) = signAttestation(notary, ra);
         // Force a random Notary to sign the report
         address reportSigner = getNotary(random.nextUint256(), random.nextUint256());
-        (bytes memory srPayload, bytes memory srSig) = createSignedStateReport(reportSigner, rs);
+        (bytes memory statePayload, bytes memory srSig) = signStateReport(reportSigner, rs);
         // Generate Snapshot Proof
         acceptSnapshot(rawSnap);
         bytes32[] memory snapProof = genSnapshotProof(rsi.stateIndex);
         vm.expectRevert(AgentNotGuard.selector);
         testedInbox().submitStateReportWithSnapshotProof(
-            rsi.stateIndex, srPayload, srSig, snapProof, attPayload, attSig
+            rsi.stateIndex, statePayload, srSig, snapProof, attPayload, attSig
         );
     }
 
@@ -156,11 +152,11 @@ abstract contract StatementInboxTest is MessagingBaseTest {
         (bytes memory snapPayload, bytes memory snapSig) = createSignedSnapshot(notary, rs, rsi);
         // Create Guard signature for the report
         address guard = domains[0].agent;
-        (bytes memory srPayload, bytes memory srSig) = createSignedStateReport(guard, rs);
+        (, bytes memory srSig) = signStateReport(guard, rs);
         openDispute(guard, domains[DOMAIN_LOCAL].agents[1]);
         vm.expectRevert(GuardInDispute.selector);
         vm.prank(prover);
-        testedInbox().submitStateReportWithSnapshot(rsi.stateIndex, srPayload, srSig, snapPayload, snapSig);
+        testedInbox().submitStateReportWithSnapshot(rsi.stateIndex, srSig, snapPayload, snapSig);
     }
 
     function test_submitStateReportWithSnapshot_revert_notaryInDispute(RawState memory rs, RawStateIndex memory rsi)
@@ -173,11 +169,11 @@ abstract contract StatementInboxTest is MessagingBaseTest {
         (bytes memory snapPayload, bytes memory snapSig) = createSignedSnapshot(notary, rs, rsi);
         // Create Guard signature for the report
         address guard = domains[0].agent;
-        (bytes memory srPayload, bytes memory srSig) = createSignedStateReport(guard, rs);
+        (, bytes memory srSig) = signStateReport(guard, rs);
         openDispute(domains[0].agents[1], notary);
         vm.expectRevert(NotaryInDispute.selector);
         vm.prank(prover);
-        testedInbox().submitStateReportWithSnapshot(rsi.stateIndex, srPayload, srSig, snapPayload, snapSig);
+        testedInbox().submitStateReportWithSnapshot(rsi.stateIndex, srSig, snapPayload, snapSig);
     }
 
     function test_submitStateReportWithAttestation_revert_guardInDispute(
@@ -193,13 +189,11 @@ abstract contract StatementInboxTest is MessagingBaseTest {
         (bytes memory attPayload, bytes memory attSig) = signAttestation(notary, ra);
         // Create Guard signature for the report
         address guard = domains[0].agent;
-        (bytes memory srPayload, bytes memory srSig) = createSignedStateReport(guard, rs);
+        (, bytes memory srSig) = signStateReport(guard, rs);
         openDispute(guard, domains[DOMAIN_LOCAL].agents[1]);
         vm.expectRevert(GuardInDispute.selector);
         vm.prank(prover);
-        testedInbox().submitStateReportWithAttestation(
-            rsi.stateIndex, srPayload, srSig, snapPayload, attPayload, attSig
-        );
+        testedInbox().submitStateReportWithAttestation(rsi.stateIndex, srSig, snapPayload, attPayload, attSig);
     }
 
     function test_submitStateReportWithAttestation_revert_notaryInDispute(
@@ -215,13 +209,11 @@ abstract contract StatementInboxTest is MessagingBaseTest {
         (bytes memory attPayload, bytes memory attSig) = signAttestation(notary, ra);
         // Create Guard signature for the report
         address guard = domains[0].agent;
-        (bytes memory srPayload, bytes memory srSig) = createSignedStateReport(guard, rs);
+        (, bytes memory srSig) = signStateReport(guard, rs);
         openDispute(domains[0].agents[1], notary);
         vm.expectRevert(NotaryInDispute.selector);
         vm.prank(prover);
-        testedInbox().submitStateReportWithAttestation(
-            rsi.stateIndex, srPayload, srSig, snapPayload, attPayload, attSig
-        );
+        testedInbox().submitStateReportWithAttestation(rsi.stateIndex, srSig, snapPayload, attPayload, attSig);
     }
 
     function test_submitStateReportWithSnapshotProof_revert_guardInDispute(
@@ -236,14 +228,14 @@ abstract contract StatementInboxTest is MessagingBaseTest {
         (bytes memory attPayload, bytes memory attSig) = signAttestation(notary, ra);
         // Create Guard signature for the report
         address guard = domains[0].agent;
-        (bytes memory srPayload, bytes memory srSig) = createSignedStateReport(guard, rs);
+        (bytes memory statePayload, bytes memory srSig) = signStateReport(guard, rs);
         // Generate Snapshot Proof
         bytes32[] memory snapProof = genSnapshotProof(rsi.stateIndex);
         openDispute(guard, domains[DOMAIN_LOCAL].agents[1]);
         vm.expectRevert(GuardInDispute.selector);
         vm.prank(prover);
         testedInbox().submitStateReportWithSnapshotProof(
-            rsi.stateIndex, srPayload, srSig, snapProof, attPayload, attSig
+            rsi.stateIndex, statePayload, srSig, snapProof, attPayload, attSig
         );
     }
 
@@ -259,14 +251,14 @@ abstract contract StatementInboxTest is MessagingBaseTest {
         (bytes memory attPayload, bytes memory attSig) = signAttestation(notary, ra);
         // Create Guard signature for the report
         address guard = domains[0].agent;
-        (bytes memory srPayload, bytes memory srSig) = createSignedStateReport(guard, rs);
+        (bytes memory statePayload, bytes memory srSig) = signStateReport(guard, rs);
         // Generate Snapshot Proof
         bytes32[] memory snapProof = genSnapshotProof(rsi.stateIndex);
         openDispute(domains[0].agents[1], notary);
         vm.expectRevert(NotaryInDispute.selector);
         vm.prank(prover);
         testedInbox().submitStateReportWithSnapshotProof(
-            rsi.stateIndex, srPayload, srSig, snapProof, attPayload, attSig
+            rsi.stateIndex, statePayload, srSig, snapProof, attPayload, attSig
         );
     }
 
