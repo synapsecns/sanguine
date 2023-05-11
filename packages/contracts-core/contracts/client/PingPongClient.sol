@@ -2,14 +2,11 @@
 pragma solidity 0.8.17;
 
 // ══════════════════════════════ LIBRARY IMPORTS ══════════════════════════════
-import {CallerNotDestination} from "../libs/Errors.sol";
-import {Request, RequestLib} from "../libs/Request.sol";
 import {TypeCasts} from "../libs/TypeCasts.sol";
 // ═════════════════════════════ INTERNAL IMPORTS ══════════════════════════════
-import {IMessageRecipient} from "../interfaces/IMessageRecipient.sol";
-import {InterfaceOrigin} from "../interfaces/InterfaceOrigin.sol";
+import {MessageRecipient} from "./MessageRecipient.sol";
 
-contract PingPongClient is IMessageRecipient {
+contract PingPongClient is MessageRecipient {
     using TypeCasts for address;
 
     struct PingPongMessage {
@@ -17,14 +14,6 @@ contract PingPongClient is IMessageRecipient {
         bool isPing;
         uint16 counter;
     }
-
-    // ════════════════════════════════════════════════ IMMUTABLES ═════════════════════════════════════════════════════
-
-    /// @notice Local chain Origin: used for sending messages
-    address public immutable origin;
-
-    /// @notice Local chain Destination: used for receiving messages
-    address public immutable destination;
 
     // ══════════════════════════════════════════════════ STORAGE ══════════════════════════════════════════════════════
 
@@ -61,38 +50,12 @@ contract PingPongClient is IMessageRecipient {
 
     // ════════════════════════════════════════════════ CONSTRUCTOR ════════════════════════════════════════════════════
 
-    constructor(address origin_, address destination_) {
-        origin = origin_;
-        destination = destination_;
+    constructor(address origin_, address destination_) MessageRecipient(origin_, destination_) {
         // Initiate "random" value
         random = uint256(keccak256(abi.encode(block.number)));
     }
 
     // ═══════════════════════════════════════════════ MESSAGE LOGIC ═══════════════════════════════════════════════════
-
-    /// @inheritdoc IMessageRecipient
-    function receiveBaseMessage(uint32 origin_, uint32, bytes32 sender, uint256, uint32, bytes memory content)
-        external
-        payable
-    {
-        if (msg.sender != destination) revert CallerNotDestination();
-        PingPongMessage memory message = abi.decode(content, (PingPongMessage));
-        if (message.isPing) {
-            // Ping is received
-            ++pingsReceived;
-            emit PingReceived(message.pingId);
-            // Send Pong back
-            _pong(origin_, sender, message);
-        } else {
-            // Pong is received
-            ++pongsReceived;
-            emit PongReceived(message.pingId);
-            // Send extra ping, if initially requested
-            if (message.counter != 0) {
-                _ping(origin_, sender, message.counter - 1);
-            }
-        }
-    }
 
     function doPings(uint16 pingCount, uint32 destination_, address recipient, uint16 counter) external {
         for (uint256 i = 0; i < pingCount; ++i) {
@@ -117,10 +80,35 @@ contract PingPongClient is IMessageRecipient {
         return uint32(random % 1 minutes);
     }
 
-    // ══════════════════════════════════════════════ INTERNAL LOGIC ═══════════════════════════════════════════════════
+    // ═════════════════════════════════════ INTERNAL LOGIC: RECEIVE MESSAGES ══════════════════════════════════════════
+
+    /// @inheritdoc MessageRecipient
+    function _receiveBaseMessageUnsafe(uint32 origin_, uint32, bytes32 sender, uint256, uint32, bytes memory content)
+        internal
+        override
+    {
+        PingPongMessage memory message = abi.decode(content, (PingPongMessage));
+        if (message.isPing) {
+            // Ping is received
+            ++pingsReceived;
+            emit PingReceived(message.pingId);
+            // Send Pong back
+            _pong(origin_, sender, message);
+        } else {
+            // Pong is received
+            ++pongsReceived;
+            emit PongReceived(message.pingId);
+            // Send extra ping, if initially requested
+            if (message.counter != 0) {
+                _ping(origin_, sender, message.counter - 1);
+            }
+        }
+    }
+
+    // ═══════════════════════════════════════ INTERNAL LOGIC: SEND MESSAGES ═══════════════════════════════════════════
 
     /// @dev Returns a random optimistic period value from 0 to 59 seconds.
-    function optimisticPeriod() internal returns (uint32 period) {
+    function _optimisticPeriod() internal returns (uint32 period) {
         // Use random optimistic period up to one minute
         period = nextOptimisticPeriod();
         // Adjust "random" value
@@ -135,11 +123,9 @@ contract PingPongClient is IMessageRecipient {
      */
     function _sendMessage(uint32 destination_, bytes32 recipient, PingPongMessage memory message) internal {
         // TODO: figure out the logic for a ping-pong test
-        Request request = RequestLib.encodeRequest(0, 0, 0);
+        MessageRequest memory request;
         bytes memory content = abi.encode(message);
-        InterfaceOrigin(origin).sendBaseMessage(
-            destination_, recipient, optimisticPeriod(), Request.unwrap(request), content
-        );
+        _sendBaseMessage(destination_, recipient, _optimisticPeriod(), request, content);
     }
 
     /// @dev Initiate a new Ping-Pong round.
