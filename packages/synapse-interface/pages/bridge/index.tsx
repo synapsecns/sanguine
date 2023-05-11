@@ -80,28 +80,17 @@ const BridgePage = ({
   const [bridgeQuote, setBridgeQuote] =
     useState<BridgeQuote>(EMPTY_BRIDGE_QUOTE)
 
-  // useEffect(() => {
-  //   _sortByTokenBalance(
-  //     BRIDGABLE_TOKENS[fromChainId],
-  //     fromChainId,
-  //     address
-  //   ).then((tokens) => {
-  //     console.log('tokens from _sortByTokenBalance: ', tokens)
-  //   })
-  // }, [])
-
   /*
   useEffect Trigger: onMount
   - Gets current network connected and sets it as the state.
   - Initializes polling (setInterval) func to re-retrieve quotes.
   */
   useEffect(() => {
-    _sortByTokenBalance(
+    sortByTokenBalance(
       BRIDGABLE_TOKENS[fromChainId],
       fromChainId,
       address
     ).then((tokens) => {
-      console.log('tokens: ', tokens)
       setFromTokens(tokens)
     })
     const interval = setInterval(
