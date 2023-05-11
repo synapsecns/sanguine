@@ -3,8 +3,14 @@
 pragma solidity 0.8.17;
 
 import {
-    ChainGas, Snapshot, SnapshotLib, State, StateLib, MemView, MemViewLib
-} from "../../../contracts/libs/Snapshot.sol";
+    ChainGas,
+    Snapshot,
+    SnapshotLib,
+    State,
+    StateLib,
+    MemView,
+    MemViewLib
+} from "../../../contracts/libs/memory/Snapshot.sol";
 
 // solhint-disable ordering
 

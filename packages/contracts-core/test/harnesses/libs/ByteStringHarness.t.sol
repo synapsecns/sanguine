@@ -2,7 +2,7 @@
 
 pragma solidity 0.8.17;
 
-import {ByteString, CallData, Signature, MemView, MemViewLib} from "../../../contracts/libs/ByteString.sol";
+import {ByteString, CallData, Signature, MemView, MemViewLib} from "../../../contracts/libs/memory/ByteString.sol";
 
 // solhint-disable ordering
 /**

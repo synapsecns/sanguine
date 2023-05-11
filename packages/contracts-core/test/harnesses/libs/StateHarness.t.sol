@@ -2,7 +2,7 @@
 
 pragma solidity 0.8.17;
 
-import {GasData, State, StateLib, MemView, MemViewLib} from "../../../contracts/libs/State.sol";
+import {GasData, State, StateLib, MemView, MemViewLib} from "../../../contracts/libs/memory/State.sol";
 
 // solhint-disable ordering
 /// @notice Exposes State methods for testing against golang.

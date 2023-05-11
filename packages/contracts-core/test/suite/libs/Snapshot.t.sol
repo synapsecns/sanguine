@@ -2,10 +2,10 @@
 pragma solidity 0.8.17;
 
 import {IncorrectStatesAmount, UnformattedSnapshot} from "../../../contracts/libs/Errors.sol";
-import {State, StateLib, STATE_LENGTH} from "../../../contracts/libs/State.sol";
+import {State, StateLib, STATE_LENGTH} from "../../../contracts/libs/memory/State.sol";
 import {SNAPSHOT_TREE_HEIGHT} from "../../../contracts/libs/Constants.sol";
-import {ChainGas, GasData} from "../../../contracts/libs/GasData.sol";
-import {MerkleMath} from "../../../contracts/libs/MerkleMath.sol";
+import {ChainGas, GasData} from "../../../contracts/libs/stack/GasData.sol";
+import {MerkleMath} from "../../../contracts/libs/merkle/MerkleMath.sol";
 import {SynapseLibraryTest, MemViewLib} from "../../utils/SynapseLibraryTest.t.sol";
 import {SnapshotHarness} from "../../harnesses/libs/SnapshotHarness.t.sol";
 

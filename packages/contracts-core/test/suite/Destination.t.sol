@@ -2,7 +2,7 @@
 pragma solidity 0.8.17;
 
 import {CallerNotInbox, NotaryInDispute} from "../../contracts/libs/Errors.sol";
-import {SNAPSHOT_MAX_STATES} from "../../contracts/libs/Snapshot.sol";
+import {SNAPSHOT_MAX_STATES} from "../../contracts/libs/memory/Snapshot.sol";
 import {DisputeFlag} from "../../contracts/libs/Structures.sol";
 import {IAgentSecured} from "../../contracts/interfaces/IAgentSecured.sol";
 

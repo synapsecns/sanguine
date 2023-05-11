@@ -2,7 +2,9 @@
 
 pragma solidity 0.8.17;
 
-import {Header, Message, MessageFlag, MessageLib, MemView, MemViewLib} from "../../../contracts/libs/Message.sol";
+import {
+    Header, Message, MessageFlag, MessageLib, MemView, MemViewLib
+} from "../../../contracts/libs/memory/Message.sol";
 
 // solhint-disable ordering
 /**

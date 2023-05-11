@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.17;
 
-import {AGENT_TREE_HEIGHT, ORIGIN_TREE_HEIGHT} from "../../../contracts/libs/MerkleTree.sol";
+import {AGENT_TREE_HEIGHT, ORIGIN_TREE_HEIGHT} from "../../../contracts/libs/merkle/MerkleTree.sol";
 
 import {MerkleMathHarness} from "../../harnesses/libs/MerkleMathHarness.t.sol";
 import {MerkleTreeHarness} from "../../harnesses/libs/MerkleTreeHarness.t.sol";

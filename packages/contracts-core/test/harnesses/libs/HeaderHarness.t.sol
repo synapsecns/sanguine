@@ -2,7 +2,7 @@
 
 pragma solidity 0.8.17;
 
-import {Header, HeaderLib} from "../../../contracts/libs/Header.sol";
+import {Header, HeaderLib} from "../../../contracts/libs/stack/Header.sol";
 
 /**
  * @notice Exposes Header methods for testing against golang.

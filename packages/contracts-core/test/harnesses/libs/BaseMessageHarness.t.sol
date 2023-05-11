@@ -3,8 +3,13 @@
 pragma solidity 0.8.17;
 
 import {
-    BaseMessage, BaseMessageLib, MemView, MemViewLib, Request, Tips
-} from "../../../contracts/libs/BaseMessage.sol";
+    BaseMessage,
+    BaseMessageLib,
+    MemView,
+    MemViewLib,
+    Request,
+    Tips
+} from "../../../contracts/libs/memory/BaseMessage.sol";
 
 // solhint-disable ordering
 /**

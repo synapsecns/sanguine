@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.17;
 
-import {BaseTree, HistoricalTree, DynamicTree, MerkleTree} from "../../../contracts/libs/MerkleTree.sol";
+import {BaseTree, HistoricalTree, DynamicTree, MerkleTree} from "../../../contracts/libs/merkle/MerkleTree.sol";
 
 // solhint-disable ordering
 contract MerkleTreeHarness {

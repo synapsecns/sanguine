@@ -2,7 +2,7 @@
 
 pragma solidity 0.8.17;
 
-import {Attestation, AttestationLib, MemView, MemViewLib} from "../../../contracts/libs/Attestation.sol";
+import {Attestation, AttestationLib, MemView, MemViewLib} from "../../../contracts/libs/memory/Attestation.sol";
 
 // solhint-disable ordering
 /// @notice Exposes Attestation methods for testing against golang.

@@ -2,7 +2,7 @@
 
 pragma solidity 0.8.17;
 
-import {MerkleMath} from "../../../contracts/libs/MerkleMath.sol";
+import {MerkleMath} from "../../../contracts/libs/merkle/MerkleMath.sol";
 
 contract MerkleMathHarness {
     // Note: we don't add an empty test() function here, as it currently leads

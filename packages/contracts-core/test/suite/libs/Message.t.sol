@@ -6,9 +6,9 @@ import {SynapseLibraryTest, MemViewLib} from "../../utils/SynapseLibraryTest.t.s
 import {MessageHarness} from "../../harnesses/libs/MessageHarness.t.sol";
 
 import {HEADER_LENGTH} from "../../../contracts/libs/Constants.sol";
-import {Header} from "../../../contracts/libs/Header.sol";
-import {MessageLib} from "../../../contracts/libs/Message.sol";
-import {TipsLib} from "../../../contracts/libs/Tips.sol";
+import {Header} from "../../../contracts/libs/stack/Header.sol";
+import {MessageLib} from "../../../contracts/libs/memory/Message.sol";
+import {TipsLib} from "../../../contracts/libs/stack/Tips.sol";
 
 import {MessageFlag, RawHeader, RawBaseMessage, RawMessage} from "../../utils/libs/SynapseStructs.t.sol";
 import {BaseMessageLibraryTest} from "./BaseMessage.t.sol";

@@ -2,7 +2,7 @@
 pragma solidity 0.8.17;
 
 // ══════════════════════════════ LIBRARY IMPORTS ══════════════════════════════
-import {Attestation, AttestationLib} from "../libs/Attestation.sol";
+import {Attestation, AttestationLib} from "../libs/memory/Attestation.sol";
 import {SYNAPSE_DOMAIN} from "../libs/Constants.sol";
 import {
     AgentNotGuard,
@@ -13,9 +13,9 @@ import {
     IncorrectState,
     IndexOutOfRange
 } from "../libs/Errors.sol";
-import {Receipt, ReceiptLib} from "../libs/Receipt.sol";
-import {Snapshot, SnapshotLib} from "../libs/Snapshot.sol";
-import {State, StateLib} from "../libs/State.sol";
+import {Receipt, ReceiptLib} from "../libs/memory/Receipt.sol";
+import {Snapshot, SnapshotLib} from "../libs/memory/Snapshot.sol";
+import {State, StateLib} from "../libs/memory/State.sol";
 import {AgentStatus} from "../libs/Structures.sol";
 // ═════════════════════════════ INTERNAL IMPORTS ══════════════════════════════
 import {MessagingBase} from "../base/MessagingBase.sol";

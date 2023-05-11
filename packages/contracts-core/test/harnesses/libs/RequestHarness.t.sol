@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.17;
 
-import {Request, RequestLib} from "../../../contracts/libs/Request.sol";
+import {Request, RequestLib} from "../../../contracts/libs/stack/Request.sol";
 
 // solhint-disable ordering
 contract RequestHarness {

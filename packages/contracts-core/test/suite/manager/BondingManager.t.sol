@@ -12,7 +12,7 @@ import {
     SlashAgentOptimisticPeriod,
     SynapseDomainForbidden
 } from "../../../contracts/libs/Errors.sol";
-import {MerkleMath} from "../../../contracts/libs/MerkleMath.sol";
+import {MerkleMath} from "../../../contracts/libs/merkle/MerkleMath.sol";
 import {AgentFlag} from "../../../contracts/libs/Structures.sol";
 import {AgentManagerTest} from "./AgentManager.t.sol";
 

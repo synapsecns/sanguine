@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.17;
 
-import {MerkleMath, AGENT_TREE_HEIGHT} from "../../../contracts/libs/MerkleTree.sol";
+import {MerkleMath, AGENT_TREE_HEIGHT} from "../../../contracts/libs/merkle/MerkleTree.sol";
 
 import {ProofCutter} from "./ProofCutter.t.sol";
 

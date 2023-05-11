@@ -2,9 +2,9 @@
 pragma solidity 0.8.17;
 
 // ══════════════════════════════ LIBRARY IMPORTS ══════════════════════════════
-import {Attestation} from "../libs/Attestation.sol";
-import {BaseMessage, BaseMessageLib, MemView} from "../libs/BaseMessage.sol";
-import {ByteString, CallData} from "../libs/ByteString.sol";
+import {Attestation} from "../libs/memory/Attestation.sol";
+import {BaseMessage, BaseMessageLib, MemView} from "../libs/memory/BaseMessage.sol";
+import {ByteString, CallData} from "../libs/memory/ByteString.sol";
 import {ORIGIN_TREE_HEIGHT, SNAPSHOT_TREE_HEIGHT, SYNAPSE_DOMAIN} from "../libs/Constants.sol";
 import {
     AlreadyExecuted,
@@ -18,13 +18,13 @@ import {
     MessageOptimisticPeriod,
     NotaryInDispute
 } from "../libs/Errors.sol";
-import {MerkleMath} from "../libs/MerkleMath.sol";
-import {Header, Message, MessageFlag, MessageLib} from "../libs/Message.sol";
-import {Receipt, ReceiptBody, ReceiptLib} from "../libs/Receipt.sol";
-import {Request} from "../libs/Request.sol";
-import {SnapshotLib} from "../libs/Snapshot.sol";
+import {MerkleMath} from "../libs/merkle/MerkleMath.sol";
+import {Header, Message, MessageFlag, MessageLib} from "../libs/memory/Message.sol";
+import {Receipt, ReceiptBody, ReceiptLib} from "../libs/memory/Receipt.sol";
+import {Request} from "../libs/stack/Request.sol";
+import {SnapshotLib} from "../libs/memory/Snapshot.sol";
 import {AgentFlag, AgentStatus, MessageStatus} from "../libs/Structures.sol";
-import {Tips} from "../libs/Tips.sol";
+import {Tips} from "../libs/stack/Tips.sol";
 import {TypeCasts} from "../libs/TypeCasts.sol";
 // ═════════════════════════════ INTERNAL IMPORTS ══════════════════════════════
 import {AgentSecured} from "../base/AgentSecured.sol";

@@ -2,10 +2,10 @@
 pragma solidity 0.8.17;
 
 // ══════════════════════════════ LIBRARY IMPORTS ══════════════════════════════
-import {Attestation, AttestationLib} from "../libs/Attestation.sol";
+import {Attestation, AttestationLib} from "../libs/memory/Attestation.sol";
 import {SYNAPSE_DOMAIN} from "../libs/Constants.sol";
 import {IncorrectDataHash, SynapseDomainForbidden} from "../libs/Errors.sol";
-import {ChainGas, GasDataLib} from "../libs/GasData.sol";
+import {ChainGas, GasDataLib} from "../libs/stack/GasData.sol";
 import {AgentStatus} from "../libs/Structures.sol";
 // ═════════════════════════════ INTERNAL IMPORTS ══════════════════════════════
 import {StatementInbox} from "./StatementInbox.sol";

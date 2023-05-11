@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.17;
 
-import {GasData, ChainGas, GasDataLib, Number} from "../../../contracts/libs/GasData.sol";
+import {GasData, ChainGas, GasDataLib, Number} from "../../../contracts/libs/stack/GasData.sol";
 
 contract GasDataHarness {
     // Note: we don't add an empty test() function here, as it currently leads

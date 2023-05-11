@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.17;
 
-import {MerkleMath} from "../../../contracts/libs/MerkleMath.sol";
+import {MerkleMath} from "../../../contracts/libs/merkle/MerkleMath.sol";
 
 import {SynapseLibraryTest} from "../../utils/SynapseLibraryTest.t.sol";
 import {MerkleMathHarness} from "../../harnesses/libs/MerkleMathHarness.t.sol";

@@ -9,7 +9,7 @@ import {
     IncorrectRecipient,
     ZeroProofMaturity
 } from "../libs/Errors.sol";
-import {Request, RequestLib} from "../libs/Request.sol";
+import {Request, RequestLib} from "../libs/stack/Request.sol";
 // ═════════════════════════════ INTERNAL IMPORTS ══════════════════════════════
 import {InterfaceOrigin} from "../interfaces/InterfaceOrigin.sol";
 import {IMessageRecipient} from "../interfaces/IMessageRecipient.sol";

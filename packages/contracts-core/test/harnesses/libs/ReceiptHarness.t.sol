@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.17;
 
-import {Receipt, ReceiptBody, ReceiptLib, Tips, MemView, MemViewLib} from "../../../contracts/libs/Receipt.sol";
+import {Receipt, ReceiptBody, ReceiptLib, Tips, MemView, MemViewLib} from "../../../contracts/libs/memory/Receipt.sol";
 
 // solhint-disable ordering
 contract ReceiptHarness {

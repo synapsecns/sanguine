@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.17;
 
-import {Number, NumberLib} from "../../../contracts/libs/Number.sol";
+import {Number, NumberLib} from "../../../contracts/libs/stack/Number.sol";
 
 /**
  * @notice Exposes NumberLib methods for testing against golang.
