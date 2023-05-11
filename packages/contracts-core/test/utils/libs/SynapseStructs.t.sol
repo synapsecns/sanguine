@@ -8,16 +8,11 @@ import {ChainGas, GasData, GasDataLib} from "../../../contracts/libs/GasData.sol
 import {Header, HeaderLib, Message, MessageFlag, MessageLib} from "../../../contracts/libs/Message.sol";
 import {Number, NumberLib} from "../../../contracts/libs/Number.sol";
 import {Receipt, ReceiptBody, ReceiptLib} from "../../../contracts/libs/Receipt.sol";
-import {ReceiptFlag, ReceiptReport, ReceiptReportLib} from "../../../contracts/libs/ReceiptReport.sol";
 import {Request, RequestLib} from "../../../contracts/libs/Request.sol";
 
 import {Snapshot, SnapshotLib, SNAPSHOT_MAX_STATES, State, StateLib} from "../../../contracts/libs/Snapshot.sol";
 
 import {Attestation, AttestationLib} from "../../../contracts/libs/Attestation.sol";
-
-import {AttestationFlag, AttestationReport, AttestationReportLib} from "../../../contracts/libs/AttestationReport.sol";
-
-import {StateFlag, StateReport, StateReportLib} from "../../../contracts/libs/StateReport.sol";
 
 struct RawHeader {
     uint32 origin;
@@ -65,13 +60,6 @@ struct RawExecReceipt {
 }
 
 using CastLib for RawExecReceipt global;
-
-struct RawReceiptReport {
-    uint8 flag;
-    RawReceiptBody body;
-}
-
-using CastLib for RawReceiptReport global;
 
 struct RawCallData {
     bytes4 selector;
@@ -178,33 +166,16 @@ struct RawAttestation {
 
 using CastLib for RawAttestation global;
 
-struct RawAttestationReport {
-    uint8 flag;
-    RawAttestation attestation;
-}
-
-using CastLib for RawAttestationReport global;
-
-struct RawStateReport {
-    uint8 flag;
-    RawState state;
-}
-
-using CastLib for RawStateReport global;
-
 // solhint-disable no-empty-blocks
 // solhint-disable ordering
 library CastLib {
     using AttestationLib for bytes;
-    using AttestationReportLib for bytes;
     using ByteString for bytes;
     using BaseMessageLib for bytes;
     using MessageLib for bytes;
     using ReceiptLib for bytes;
-    using ReceiptReportLib for bytes;
     using SnapshotLib for bytes;
     using StateLib for bytes;
-    using StateReportLib for bytes;
 
     /// @notice Prevents this contract from being included in the coverage report
     function testCastLib() external {}
@@ -352,16 +323,6 @@ library CastLib {
         mrb.finalExecutor = address(uint160(rrb.finalExecutor) ^ uint160(mask & 32));
     }
 
-    function formatReceiptReport(RawReceiptReport memory rawRR) internal pure returns (bytes memory) {
-        // Explicit revert when flag out of range
-        require(rawRR.flag <= uint8(type(ReceiptFlag).max), "Flag out of range");
-        return ReceiptFlag(rawRR.flag).formatReceiptReport(rawRR.body.formatReceiptBody());
-    }
-
-    function castToReceiptReport(RawReceiptReport memory rawRR) internal pure returns (ReceiptReport) {
-        return rawRR.formatReceiptReport().castToReceiptReport();
-    }
-
     // ═════════════════════════════════════════════════ GAS DATA ══════════════════════════════════════════════════════
 
     function encodeNumber(RawNumber memory rn) internal pure returns (Number) {
@@ -453,17 +414,6 @@ library CastLib {
         mrs.gasData.amortAttCost.number = rs.gasData.amortAttCost.number ^ uint16(mask & 256);
         mrs.gasData.etherPrice.number = rs.gasData.etherPrice.number ^ uint16(mask & 512);
         mrs.gasData.markup.number = rs.gasData.markup.number ^ uint16(mask & 1024);
-    }
-
-    function formatStateReport(RawStateReport memory rawSR) internal pure returns (bytes memory stateReport) {
-        // Explicit revert when flag out of range
-        require(rawSR.flag <= uint8(type(StateFlag).max), "Flag out of range");
-        bytes memory state = rawSR.state.formatState();
-        stateReport = StateFlag(rawSR.flag).formatStateReport(state);
-    }
-
-    function castToStateReport(RawStateReport memory rawSR) internal pure returns (StateReport ptr) {
-        ptr = rawSR.formatStateReport().castToStateReport();
     }
 
     function boundStateIndex(RawStateIndex memory rsi) internal pure {
@@ -558,20 +508,5 @@ library CastLib {
         mra.blockNumber = ra.blockNumber ^ uint40(mask & 8);
         mra.timestamp = ra.timestamp ^ uint40(mask & 16);
         mra.setDataHash();
-    }
-
-    function formatAttestationReport(RawAttestationReport memory rawAR)
-        internal
-        pure
-        returns (bytes memory attestationReport)
-    {
-        // Explicit revert when out of range
-        require(rawAR.flag <= uint8(type(AttestationFlag).max), "Flag out of range");
-        bytes memory attestation = rawAR.attestation.formatAttestation();
-        attestationReport = AttestationFlag(rawAR.flag).formatAttestationReport(attestation);
-    }
-
-    function castToAttestationReport(RawAttestationReport memory rawAR) internal pure returns (AttestationReport ptr) {
-        ptr = rawAR.formatAttestationReport().castToAttestationReport();
     }
 }

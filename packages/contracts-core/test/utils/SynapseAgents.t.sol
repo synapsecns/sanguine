@@ -10,16 +10,7 @@ import {
     STATE_REPORT_SALT
 } from "../../contracts/libs/Constants.sol";
 
-import {
-    SnapshotLib,
-    State,
-    RawAttestation,
-    RawAttestationReport,
-    RawExecReceipt,
-    RawReceiptReport,
-    RawSnapshot,
-    RawStateReport
-} from "./libs/SynapseStructs.t.sol";
+import {SnapshotLib, State, RawAttestation, RawExecReceipt, RawSnapshot, RawState} from "./libs/SynapseStructs.t.sol";
 
 import {SynapseUtilities} from "./SynapseUtilities.t.sol";
 
@@ -125,21 +116,21 @@ abstract contract SynapseAgents is SynapseUtilities {
         signature = signAttestation(agent, attestation);
     }
 
-    function signAttestationReport(address agent, bytes memory arPayload)
+    function signAttestationReport(address agent, bytes memory attPayload)
         public
         view
         returns (bytes memory signature)
     {
-        return signMessage(agent, ATTESTATION_REPORT_SALT, arPayload);
+        return signMessage(agent, ATTESTATION_REPORT_SALT, attPayload);
     }
 
-    function signAttestationReport(address agent, RawAttestationReport memory rawAR)
+    function signAttestationReport(address agent, RawAttestation memory ra)
         public
         view
-        returns (bytes memory attestationReport, bytes memory signature)
+        returns (bytes memory attPayload, bytes memory arSignature)
     {
-        attestationReport = rawAR.formatAttestationReport();
-        signature = signAttestationReport(agent, attestationReport);
+        attPayload = ra.formatAttestation();
+        arSignature = signAttestationReport(agent, attPayload);
     }
 
     function signReceipt(address agent, bytes memory receipt) public view returns (bytes memory signature) {
@@ -155,17 +146,17 @@ abstract contract SynapseAgents is SynapseUtilities {
         signature = signReceipt(agent, receipt);
     }
 
-    function signReceiptReport(address agent, bytes memory rrPayload) public view returns (bytes memory signature) {
-        return signMessage(agent, RECEIPT_REPORT_SALT, rrPayload);
+    function signReceiptReport(address agent, bytes memory rcptPayload) public view returns (bytes memory signature) {
+        return signMessage(agent, RECEIPT_REPORT_SALT, rcptPayload);
     }
 
-    function signReceiptReport(address agent, RawReceiptReport memory rawRR)
+    function signReceiptReport(address agent, RawExecReceipt memory re)
         public
         view
-        returns (bytes memory rrPayload, bytes memory signature)
+        returns (bytes memory rcptPayload, bytes memory rrSignature)
     {
-        rrPayload = rawRR.formatReceiptReport();
-        signature = signReceiptReport(agent, rrPayload);
+        rcptPayload = re.formatReceipt();
+        rrSignature = signReceiptReport(agent, rcptPayload);
     }
 
     function signSnapshot(address agent, bytes memory snapshot) public view returns (bytes memory signature) {
@@ -190,16 +181,16 @@ abstract contract SynapseAgents is SynapseUtilities {
         signature = signSnapshot(agent, snapshot);
     }
 
-    function signStateReport(address agent, bytes memory srPayload) public view returns (bytes memory signature) {
-        return signMessage(agent, STATE_REPORT_SALT, srPayload);
+    function signStateReport(address agent, bytes memory statePayload) public view returns (bytes memory signature) {
+        return signMessage(agent, STATE_REPORT_SALT, statePayload);
     }
 
-    function signStateReport(address agent, RawStateReport memory rawSR)
+    function signStateReport(address agent, RawState memory rs)
         public
         view
-        returns (bytes memory stateReport, bytes memory signature)
+        returns (bytes memory statePayload, bytes memory srSignature)
     {
-        stateReport = rawSR.formatStateReport();
-        signature = signStateReport(agent, stateReport);
+        statePayload = rs.formatState();
+        srSignature = signStateReport(agent, statePayload);
     }
 }
