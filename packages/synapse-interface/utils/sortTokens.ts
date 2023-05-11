@@ -73,6 +73,21 @@ export const sortByTokenBalance = async (
   return zeroTokensWithBalances.concat(tokensWithBalances)
 }
 
+const sortArrayByBalance = (array) => {
+  return array.sort((a, b) => {
+    const balanceA = BigInt(a.balance)
+    const balanceB = BigInt(b.balance)
+
+    if (balanceA < balanceB) {
+      return 1
+    } else if (balanceA > balanceB) {
+      return -1
+    } else {
+      return 0
+    }
+  })
+}
+
 export const _sortByTokenBalance = async (
   tokens: Token[],
   chainId: number,
@@ -122,10 +137,12 @@ export const _sortByTokenBalance = async (
       contracts: multicallInputs,
     })
 
-    return multicallData.map((tokenBalance: BigNumber | undefined, index) => ({
-      token: tokens[index],
-      balance: tokenBalance,
-    }))
+    return sortArrayByBalance(
+      multicallData.map((tokenBalance: BigNumber | undefined, index) => ({
+        token: tokens[index],
+        balance: tokenBalance,
+      }))
+    )
   }
 
   return tokensWithBalances
