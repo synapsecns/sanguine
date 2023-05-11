@@ -80,23 +80,23 @@ contract LightInbox is StatementInbox, InterfaceLightInbox {
     }
 
     /// @inheritdoc InterfaceLightInbox
-    function submitAttestationReport(bytes memory arPayload, bytes memory arSignature, bytes memory attSignature)
+    function submitAttestationReport(bytes memory attPayload, bytes memory arSignature, bytes memory attSignature)
         external
         returns (bool wasAccepted)
     {
-        // This will revert if payload is not an attestation report
-        AttestationReport report = arPayload.castToAttestationReport();
+        // This will revert if payload is not an attestation
+        Attestation att = attPayload.castToAttestation();
         // This will revert if the report signer is not a known Guard
-        (AgentStatus memory guardStatus,) = _verifyAttestationReport(report, arSignature);
+        (AgentStatus memory guardStatus,) = _verifyAttestationReport(att, arSignature);
         // Check that Guard is active
         guardStatus.verifyActive();
         // This will revert if attestation signer is not a known Notary
-        (AgentStatus memory notaryStatus,) = _verifyAttestation(report.attestation(), attSignature);
+        (AgentStatus memory notaryStatus,) = _verifyAttestation(att, attSignature);
         // Notary needs to be Active/Unstaking
         notaryStatus.verifyActiveUnstaking();
         // Check if Notary is active on this chain
         _verifyNotaryDomain(notaryStatus.domain);
-        _saveReport(arPayload, arSignature);
+        _saveReport(attPayload, arSignature);
         // This will revert if either actor is already in dispute
         IAgentManager(agentManager).openDispute(guardStatus.index, notaryStatus.index);
         return true;
