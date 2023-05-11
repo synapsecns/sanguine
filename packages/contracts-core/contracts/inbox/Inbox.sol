@@ -3,7 +3,6 @@ pragma solidity 0.8.17;
 
 // ══════════════════════════════ LIBRARY IMPORTS ══════════════════════════════
 import {Attestation, AttestationLib} from "../libs/Attestation.sol";
-import {AttestationReport, AttestationReportLib} from "../libs/AttestationReport.sol";
 import {
     CallerNotDestination, IncorrectAgentDomain, IncorrectSnapshotRoot, MustBeSynapseDomain
 } from "../libs/Errors.sol";
@@ -26,7 +25,6 @@ import {InterfaceSummit} from "../interfaces/InterfaceSummit.sol";
 
 contract Inbox is StatementInbox, InboxEvents, InterfaceInbox {
     using AttestationLib for bytes;
-    using AttestationReportLib for bytes;
     using ReceiptLib for bytes;
     using SnapshotLib for bytes;
 

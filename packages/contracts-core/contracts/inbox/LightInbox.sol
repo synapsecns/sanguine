@@ -3,7 +3,6 @@ pragma solidity 0.8.17;
 
 // ══════════════════════════════ LIBRARY IMPORTS ══════════════════════════════
 import {Attestation, AttestationLib} from "../libs/Attestation.sol";
-import {AttestationReport, AttestationReportLib} from "../libs/AttestationReport.sol";
 import {SYNAPSE_DOMAIN} from "../libs/Constants.sol";
 import {IncorrectDataHash, SynapseDomainForbidden} from "../libs/Errors.sol";
 import {ChainGas, GasDataLib} from "../libs/GasData.sol";
@@ -17,7 +16,6 @@ import {InterfaceLightInbox} from "../interfaces/InterfaceLightInbox.sol";
 
 contract LightInbox is StatementInbox, InterfaceLightInbox {
     using AttestationLib for bytes;
-    using AttestationReportLib for bytes;
 
     // ═════════════════════════════════════════ CONSTRUCTOR & INITIALIZER ═════════════════════════════════════════════
 

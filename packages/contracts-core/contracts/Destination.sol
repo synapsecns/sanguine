@@ -3,7 +3,6 @@ pragma solidity 0.8.17;
 
 // ══════════════════════════════ LIBRARY IMPORTS ══════════════════════════════
 import {Attestation, AttestationLib} from "./libs/Attestation.sol";
-import {AttestationReport} from "./libs/AttestationReport.sol";
 import {ByteString} from "./libs/ByteString.sol";
 import {AGENT_ROOT_OPTIMISTIC_PERIOD, SYNAPSE_DOMAIN} from "./libs/Constants.sol";
 import {IndexOutOfRange, NotaryInDispute} from "./libs/Errors.sol";
