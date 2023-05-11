@@ -1,3 +1,4 @@
+import { BigNumber } from 'ethers'
 import { fetchBalance, multicall } from '@wagmi/core'
 import { Zero, AddressZero } from '@ethersproject/constants'
 
@@ -78,7 +79,6 @@ export const _sortByTokenBalance = async (
   address: any
 ) => {
   const tokensWithBalances: any[] = []
-  const zeroTokensWithBalances: any[] = []
 
   const multicallInputs = []
   let multicallData
@@ -118,11 +118,15 @@ export const _sortByTokenBalance = async (
   }
 
   if (multicallInputs.length > 0) {
-    console.log('multicallInputs: ', multicallInputs)
     multicallData = await multicall({
       contracts: multicallInputs,
     })
 
-    console.log('multicallData: ', multicallData)
+    return multicallData.map((tokenBalance: BigNumber | undefined, index) => ({
+      token: tokens[index],
+      balance: tokenBalance,
+    }))
   }
+
+  return tokensWithBalances
 }

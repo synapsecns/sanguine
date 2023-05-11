@@ -81,7 +81,13 @@ const BridgePage = ({
     useState<BridgeQuote>(EMPTY_BRIDGE_QUOTE)
 
   useEffect(() => {
-    _sortByTokenBalance(BRIDGABLE_TOKENS[fromChainId], fromChainId, address)
+    _sortByTokenBalance(
+      BRIDGABLE_TOKENS[fromChainId],
+      fromChainId,
+      address
+    ).then((tokens) => {
+      console.log('tokens from _sortByTokenBalance: ', tokens)
+    })
   }, [])
   /*
   useEffect Trigger: onMount
