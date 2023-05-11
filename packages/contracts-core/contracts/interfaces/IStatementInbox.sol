@@ -5,22 +5,19 @@ interface IStatementInbox {
     // ══════════════════════════════════════════ SUBMIT AGENT STATEMENTS ══════════════════════════════════════════════
 
     /**
-     * @notice Accepts a state report signed by a Guard, a Snapshot containing the reported State,
+     * @notice Accepts a Guard's state report signature, a Snapshot containing the reported State,
      * as well as Notary signature for the Snapshot.
      * > StateReport is a Guard statement saying "Reported state is invalid".
      * - This results in an opened Dispute between the Guard and the Notary.
      * - Note: Guard could (but doesn't have to) form a StateReport and use other values from
      * `verifyStateWithSnapshot()` successful call that led to Notary being slashed in remote Origin.
      * > Will revert if any of these is true:
-     * > - Report payload is not properly formatted.
-     * > - Report signer is not an active Guard.
+     * > - State Report signer is not an active Guard.
      * > - Snapshot payload is not properly formatted.
      * > - Snapshot signer is not an active Notary.
      * > - State index is out of range.
-     * > - Snapshot's state and reported state don't match.
      * > - The Guard or the Notary are already in a Dispute
      * @param stateIndex        Index of the reported State in the Snapshot
-     * @param srPayload         Raw payload with StateReport data
      * @param srSignature       Guard signature for the report
      * @param snapPayload       Raw payload with Snapshot data
      * @param snapSignature     Notary signature for the Snapshot
@@ -28,31 +25,27 @@ interface IStatementInbox {
      */
     function submitStateReportWithSnapshot(
         uint256 stateIndex,
-        bytes memory srPayload,
         bytes memory srSignature,
         bytes memory snapPayload,
         bytes memory snapSignature
     ) external returns (bool wasAccepted);
 
     /**
-     * @notice Accepts a state report signed by a Guard, a Snapshot containing the reported State,
+     * @notice Accepts a Guard's state report signature, a Snapshot containing the reported State,
      * as well as Notary signature for the Attestation created from this Snapshot.
      * > StateReport is a Guard statement saying "Reported state is invalid".
      * - This results in an opened Dispute between the Guard and the Notary.
      * - Note: Guard could (but doesn't have to) form a StateReport and use other values from
      * `verifyStateWithAttestation()` successful call that led to Notary being slashed in remote Origin.
      * > Will revert if any of these is true:
-     * > - Report payload is not properly formatted.
-     * > - Report signer is not an active Guard.
+     * > - State Report signer is not an active Guard.
      * > - Snapshot payload is not properly formatted.
      * > - State index is out of range.
-     * > - Snapshot's state and reported state don't match.
      * > - Attestation payload is not properly formatted.
      * > - Attestation signer is not an active Notary.
      * > - Attestation's snapshot root is not equal to Merkle Root derived from the Snapshot.
      * > - The Guard or the Notary are already in a Dispute
      * @param stateIndex        Index of the reported State in the Snapshot
-     * @param srPayload         Raw payload with StateReport data
      * @param srSignature       Guard signature for the report
      * @param snapPayload       Raw payload with Snapshot data
      * @param attPayload        Raw payload with Attestation data
@@ -61,7 +54,6 @@ interface IStatementInbox {
      */
     function submitStateReportWithAttestation(
         uint256 stateIndex,
-        bytes memory srPayload,
         bytes memory srSignature,
         bytes memory snapPayload,
         bytes memory attPayload,
@@ -69,15 +61,15 @@ interface IStatementInbox {
     ) external returns (bool wasAccepted);
 
     /**
-     * @notice Accepts a state report signed by a Guard, a proof of inclusion of the reported State in an Attestation,
+     * @notice Accepts a Guard's state report signature, a proof of inclusion of the reported State in an Attestation,
      * as well as Notary signature for the Attestation.
      * > StateReport is a Guard statement saying "Reported state is invalid".
      * - This results in an opened Dispute between the Guard and the Notary.
      * - Note: Guard could (but doesn't have to) form a StateReport and use other values from
      * `verifyStateWithSnapshotProof()` successful call that led to Notary being slashed in remote Origin.
      * > Will revert if any of these is true:
-     * > - Report payload is not properly formatted.
-     * > - Report signer is not an active Guard.
+     * > - State payload is not properly formatted.
+     * > - State Report signer is not an active Guard.
      * > - Attestation payload is not properly formatted.
      * > - Attestation signer is not an active Notary.
      * > - Attestation's snapshot root is not equal to Merkle Root derived from State and Snapshot Proof.
@@ -86,7 +78,7 @@ interface IStatementInbox {
      * > - State index is out of range.
      * > - The Guard or the Notary are already in a Dispute
      * @param stateIndex        Index of the reported State in the Snapshot
-     * @param srPayload         Raw payload with StateReport data
+     * @param statePayload      Raw payload with State data that Guard reports as invalid
      * @param srSignature       Guard signature for the report
      * @param snapProof         Proof of inclusion of reported State's Left Leaf into Snapshot Merkle Tree
      * @param attPayload        Raw payload with Attestation data
@@ -95,7 +87,7 @@ interface IStatementInbox {
      */
     function submitStateReportWithSnapshotProof(
         uint256 stateIndex,
-        bytes memory srPayload,
+        bytes memory statePayload,
         bytes memory srSignature,
         bytes32[] memory snapProof,
         bytes memory attPayload,
@@ -195,19 +187,19 @@ interface IStatementInbox {
         returns (bool isValidState);
 
     /**
-     * @notice Verifies a state report signed by a Guard.
+     * @notice Verifies a Guard's state report signature.
      *  - Does nothing, if the report is valid (if the reported state is invalid).
      *  - Slashes the Guard, if the report is invalid (if the reported state is valid).
      * > Will revert if any of these is true:
-     * > - Report payload is not properly formatted.
-     * > - Report signer is not an active Guard.
+     * > - State payload is not properly formatted.
+     * > - State Report signer is not an active Guard.
      * > - Reported State does not refer to this chain.
-     * @param srPayload         Raw payload with StateReport data
+     * @param statePayload      Raw payload with State data that Guard reports as invalid
      * @param srSignature       Guard signature for the report
      * @return isValidReport    Whether the provided report is valid.
      *                          Guard is slashed, if return value is FALSE.
      */
-    function verifyStateReport(bytes memory srPayload, bytes memory srSignature)
+    function verifyStateReport(bytes memory statePayload, bytes memory srSignature)
         external
         returns (bool isValidReport);
 
@@ -224,13 +216,13 @@ interface IStatementInbox {
      * > Only reports that led to opening a Dispute are stored.
      * @dev Will revert if report with given index doesn't exist.
      * @param index             Report index
-     * @return reportPayload    Raw payload with Report data
+     * @return statementPayload Raw payload with statement that Guard reported as invalid
      * @return reportSignature  Guard signature for the report
      */
     function getGuardReport(uint256 index)
         external
         view
-        returns (bytes memory reportPayload, bytes memory reportSignature);
+        returns (bytes memory statementPayload, bytes memory reportSignature);
 
     /**
      * @notice Returns the signature with the given index stored in StatementInbox.

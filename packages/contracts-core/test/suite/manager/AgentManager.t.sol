@@ -123,12 +123,10 @@ abstract contract AgentManagerTest is MessagingBaseTest {
         rawSnap.states = new RawState[](1);
         rawSnap.states[0] = rs;
         (bytes memory snapPayload, bytes memory snapSignature) = signSnapshot(notary, rawSnap);
-        (bytes memory srPayload, bytes memory srSignature) = createSignedStateReport(guard, rs);
+        (bytes memory statePayload, bytes memory srSignature) = signStateReport(guard, rs);
         assertEq(testedAM().getDisputesAmount(), 0);
         expectDisputeOpened(0, guard, notary);
-        IStatementInbox(localInbox()).submitStateReportWithSnapshot(
-            0, srPayload, srSignature, snapPayload, snapSignature
-        );
+        IStatementInbox(localInbox()).submitStateReportWithSnapshot(0, srSignature, snapPayload, snapSignature);
         assertEq(testedAM().getDisputesAmount(), 1);
         // Scope to get around stack too deep error
         {
@@ -144,7 +142,7 @@ abstract contract AgentManagerTest is MessagingBaseTest {
             assertEq(notary_, notary);
             assertEq(slashedAgent, address(0));
             assertEq(fraudProver, address(0));
-            assertEq(reportPayload, srPayload);
+            assertEq(reportPayload, statePayload);
             assertEq(reportSignature, srSignature);
         }
         checkDisputeStatus(guard, DisputeFlag.Pending, notary, address(0), 1);

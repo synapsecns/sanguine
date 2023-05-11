@@ -42,8 +42,6 @@ contract SnapshotLibraryTest is SynapseLibraryTest {
             // For Snapshot Merkle Tree we use the hash of two sub-leafs as "leaf"
             stateHashes[i] = keccak256(bytes.concat(leftLeaf, rightLeaf));
         }
-        bytes32 snapshotSalt = keccak256("SNAPSHOT_SALT");
-        bytes32 hashedSnapshot = keccak256(abi.encodePacked(snapshotSalt, keccak256(payload)));
         // Test formatting of snapshot
         assertEq(libHarness.formatSnapshot(statePayloads), payload, "!formatSnapshot");
         checkCastToSnapshot({payload: payload, isSnapshot: true});
@@ -55,8 +53,10 @@ contract SnapshotLibraryTest is SynapseLibraryTest {
             assertEq(snapGas[i].domain(), states[i].origin, "!snapGas.domain");
             assertEq(GasData.unwrap(snapGas[i].gasData()), states[i].gasData.encodeGasData(), "!snapGas.gasData");
         }
-        // Test hashing
-        assertEq(libHarness.hash(payload), hashedSnapshot, "!hash");
+        // Test hashing of "valid snapshot"
+        bytes32 snapshotSalt = keccak256("SNAPSHOT_VALID_SALT");
+        bytes32 hashedSnapshot = keccak256(abi.encodePacked(snapshotSalt, keccak256(payload)));
+        assertEq(libHarness.hashValid(payload), hashedSnapshot, "!hashValid");
         // Test root
         // MerkleMath library is covered in a separate uint test, we assume it is working fine
         MerkleMath.calculateRoot(stateHashes, SNAPSHOT_TREE_HEIGHT - 1);

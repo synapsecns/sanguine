@@ -1,7 +1,9 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.17;
 
-import {RECEIPT_SALT, RECEIPT_BODY_LENGTH, RECEIPT_LENGTH, TIPS_LENGTH} from "./Constants.sol";
+import {
+    RECEIPT_VALID_SALT, RECEIPT_BODY_LENGTH, RECEIPT_LENGTH, RECEIPT_INVALID_SALT, TIPS_LENGTH
+} from "./Constants.sol";
 import {UnformattedReceipt, UnformattedReceiptBody} from "./Errors.sol";
 import {Tips, TipsLib} from "./Tips.sol";
 import {MemView, MemViewLib} from "./MemView.sol";
@@ -111,6 +113,13 @@ library ReceiptLib {
         return memView.len() == RECEIPT_BODY_LENGTH;
     }
 
+    /// @notice Returns the hash of a ReceiptBody, that could be later signed by a Guard to signal
+    /// that the receipt body is invalid.
+    function hashInvalid(ReceiptBody receiptBody) internal pure returns (bytes32) {
+        // The final hash to sign is keccak(receiptBodyInvalidSalt, keccak(receiptBody))
+        return receiptBody.unwrap().keccakSalted(RECEIPT_INVALID_SALT);
+    }
+
     /// @notice Convenience shortcut for unwrapping a view.
     function unwrap(ReceiptBody receiptBody) internal pure returns (MemView) {
         return MemView.wrap(ReceiptBody.unwrap(receiptBody));
@@ -159,10 +168,11 @@ library ReceiptLib {
         return isReceiptBody(_body(memView));
     }
 
-    /// @notice Returns the hash of an Receipt, that could be later signed by a Notary.
-    function hash(Receipt receipt) internal pure returns (bytes32) {
+    /// @notice Returns the hash of an Receipt, that could be later signed by a Notary to signal
+    /// that the receipt is valid.
+    function hashValid(Receipt receipt) internal pure returns (bytes32) {
         // The final hash to sign is keccak(receiptSalt, keccak(receipt))
-        return receipt.unwrap().keccakSalted(RECEIPT_SALT);
+        return receipt.unwrap().keccakSalted(RECEIPT_VALID_SALT);
     }
 
     /// @notice Convenience shortcut for unwrapping a view.

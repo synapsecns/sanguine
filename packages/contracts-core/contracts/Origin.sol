@@ -9,8 +9,6 @@ import {GasData, GasDataLib} from "./libs/GasData.sol";
 import {MemView, MemViewLib} from "./libs/MemView.sol";
 import {Header, HeaderLib, MessageFlag} from "./libs/Message.sol";
 import {Request, RequestLib} from "./libs/Request.sol";
-import {StateReport} from "./libs/StateReport.sol";
-import {State} from "./libs/State.sol";
 import {Tips, TipsLib} from "./libs/Tips.sol";
 import {TypeCasts} from "./libs/TypeCasts.sol";
 // ═════════════════════════════ INTERNAL IMPORTS ══════════════════════════════

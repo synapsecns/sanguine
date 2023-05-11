@@ -147,17 +147,17 @@ contract SummitTest is AgentSecuredTest {
         // Pick random Guard
         uint256 guardIndex = bound(random.nextUint256(), 0, DOMAIN_AGENTS - 1);
         address guard = domains[0].agents[guardIndex];
-        (bytes memory arPayload, bytes memory arSig) = createSignedAttestationReport(guard, ra);
+        (bytes memory attPayload, bytes memory arSig) = signAttestationReport(guard, ra);
         if (!isValid) {
             // Expect Events to be emitted
             vm.expectEmit(true, true, true, true);
-            emit InvalidAttestationReport(arPayload, arSig);
+            emit InvalidAttestationReport(attPayload, arSig);
             // TODO: check that anyone could make the call
             expectStatusUpdated(AgentFlag.Fraudulent, 0, guard);
             expectDisputeResolved(0, guard, address(0), address(this));
         }
         vm.recordLogs();
-        assertEq(inbox.verifyAttestationReport(arPayload, arSig), isValid, "!returnValue");
+        assertEq(inbox.verifyAttestationReport(attPayload, arSig), isValid, "!returnValue");
         if (isValid) {
             assertEq(vm.getRecordedLogs().length, 0, "Emitted logs when shouldn't");
         }

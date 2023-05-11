@@ -11,16 +11,7 @@ import {SynapseTest} from "../../utils/SynapseTest.t.sol";
 
 import {fakeSnapshot} from "../../utils/libs/FakeIt.t.sol";
 import {Random} from "../../utils/libs/Random.t.sol";
-import {
-    AttestationFlag,
-    StateFlag,
-    RawAttestation,
-    RawAttestationReport,
-    RawSnapshot,
-    RawState,
-    RawStateIndex,
-    RawStateReport
-} from "../../utils/libs/SynapseStructs.t.sol";
+import {RawAttestation, RawSnapshot, RawState, RawStateIndex} from "../../utils/libs/SynapseStructs.t.sol";
 
 // solhint-disable func-name-mixedcase
 abstract contract MessagingBaseTest is SynapseTest {
@@ -88,10 +79,8 @@ abstract contract MessagingBaseTest is SynapseTest {
         require(agentIndex[notary] != 0 && agentDomain[notary] != 0, "Invalid Notary");
         RawSnapshot memory rs = fakeSnapshot({statesAmount: 1});
         (bytes memory snapPayload, bytes memory snapSignature) = signSnapshot(notary, rs);
-        (bytes memory srPayload, bytes memory srSignature) = createSignedStateReport(guard, rs.states[0]);
-        IStatementInbox(localInbox()).submitStateReportWithSnapshot(
-            0, srPayload, srSignature, snapPayload, snapSignature
-        );
+        (, bytes memory srSignature) = signStateReport(guard, rs.states[0]);
+        IStatementInbox(localInbox()).submitStateReportWithSnapshot(0, srSignature, snapPayload, snapSignature);
     }
 
     // ═══════════════════════════════════════════════ AGENT GETTERS ═══════════════════════════════════════════════════
@@ -146,24 +135,6 @@ abstract contract MessagingBaseTest is SynapseTest {
     {
         RawSnapshot memory rawSnap = fakeSnapshot(rs, rsi);
         return signSnapshot(notary, rawSnap);
-    }
-
-    function createSignedAttestationReport(address guard, RawAttestation memory ra)
-        public
-        view
-        returns (bytes memory arPayload, bytes memory arSig)
-    {
-        RawAttestationReport memory rawAR = RawAttestationReport(uint8(AttestationFlag.Invalid), ra);
-        return signAttestationReport(guard, rawAR);
-    }
-
-    function createSignedStateReport(address guard, RawState memory rs)
-        public
-        view
-        returns (bytes memory srPayload, bytes memory srSig)
-    {
-        RawStateReport memory rawSR = RawStateReport(uint8(StateFlag.Invalid), rs);
-        return signStateReport(guard, rawSR);
     }
 
     // ══════════════════════════════════════════════════ HELPERS ══════════════════════════════════════════════════════

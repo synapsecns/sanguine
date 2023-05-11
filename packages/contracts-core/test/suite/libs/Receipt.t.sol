@@ -58,6 +58,10 @@ contract ReceiptLibraryTest is SynapseLibraryTest {
         assertEq(libHarness.attNotary(payload), rrb.attNotary, "!attNotary");
         assertEq(libHarness.firstExecutor(payload), rrb.firstExecutor, "!firstExecutor");
         assertEq(libHarness.finalExecutor(payload), rrb.finalExecutor, "!finalExecutor");
+        // Test hashing of "invalid receipt body"
+        bytes32 receiptBodyInvalidSalt = keccak256("RECEIPT_INVALID_SALT");
+        bytes32 hashedReceiptBody = keccak256(abi.encodePacked(receiptBodyInvalidSalt, keccak256(payload)));
+        assertEq(libHarness.hashInvalid(payload), hashedReceiptBody, "!hashInvalid");
     }
 
     function test_formatReceipt(RawExecReceipt memory re) public {
@@ -72,6 +76,10 @@ contract ReceiptLibraryTest is SynapseLibraryTest {
         // Test getters
         assertEq(libHarness.body(payload), bodyPayload, "!bodyPayload");
         assertEq(libHarness.tips(payload), encodedTips, "!tips");
+        // Test hashing of "valid receipt"
+        bytes32 receiptSalt = keccak256("RECEIPT_VALID_SALT");
+        bytes32 hashedReceipt = keccak256(abi.encodePacked(receiptSalt, keccak256(payload)));
+        assertEq(libHarness.hashValid(payload), hashedReceipt, "!hashValid");
     }
 
     function test_isReceiptBody(uint8 length) public {

@@ -82,18 +82,18 @@ interface InterfaceInbox {
         returns (bool isValidAttestation);
 
     /**
-     * @notice Verifies an attestation report signed by a Guard.
+     * @notice Verifies a Guard's attestation report signature.
      *  - Does nothing, if the report is valid (if the reported attestation is invalid).
      *  - Slashes the Guard, if the report is invalid (if the reported attestation is valid).
      * > Will revert if any of these is true:
-     * > - Report payload is not properly formatted.
-     * > - Report signer is not an active Guard.
-     * @param arPayload         Raw payload with AttestationReport data
+     * > - Attestation payload is not properly formatted.
+     * > - Attestation Report signer is not an active Guard.
+     * @param attPayload        Raw payload with Attestation data that Guard reports as invalid
      * @param arSignature       Guard signature for the report
      * @return isValidReport    Whether the provided report is valid.
      *                          Guard is slashed, if return value is FALSE.
      */
-    function verifyAttestationReport(bytes memory arPayload, bytes memory arSignature)
+    function verifyAttestationReport(bytes memory attPayload, bytes memory arSignature)
         external
         returns (bool isValidReport);
 }

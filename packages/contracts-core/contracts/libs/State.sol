@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.17;
 
-import {GAS_DATA_LENGTH, STATE_LENGTH} from "./Constants.sol";
+import {GAS_DATA_LENGTH, STATE_LENGTH, STATE_INVALID_SALT} from "./Constants.sol";
 import {UnformattedState} from "./Errors.sol";
 import {GasData, GasDataLib} from "./GasData.sol";
 import {MemView, MemViewLib} from "./MemView.sol";
@@ -89,6 +89,13 @@ library StateLib {
     /// @notice Checks that a payload is a formatted State.
     function isState(MemView memView) internal pure returns (bool) {
         return memView.len() == STATE_LENGTH;
+    }
+
+    /// @notice Returns the hash of a State, that could be later signed by a Guard to signal
+    /// that the state is invalid.
+    function hashInvalid(State state) internal pure returns (bytes32) {
+        // The final hash to sign is keccak(stateInvalidSalt, keccak(state))
+        return state.unwrap().keccakSalted(STATE_INVALID_SALT);
     }
 
     /// @notice Convenience shortcut for unwrapping a view.

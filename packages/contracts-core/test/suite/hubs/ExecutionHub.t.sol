@@ -26,9 +26,7 @@ import {Random} from "../../utils/libs/Random.t.sol";
 import {
     ReceiptLib,
     MessageFlag,
-    AttestationFlag,
     RawAttestation,
-    RawAttestationReport,
     RawBaseMessage,
     RawCallData,
     RawReceiptBody,
@@ -36,10 +34,8 @@ import {
     RawHeader,
     RawMessage,
     RawSnapshot,
-    StateFlag,
     RawState,
     RawStateIndex,
-    RawStateReport,
     RawTips
 } from "../../utils/libs/SynapseStructs.t.sol";
 import {AgentSecuredTest} from "../base/AgentSecured.t.sol";

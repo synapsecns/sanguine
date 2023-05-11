@@ -65,6 +65,10 @@ contract ReceiptHarness {
         return payload.ref().isReceiptBody();
     }
 
+    function hashInvalid(bytes memory payload) public pure returns (bytes32) {
+        return payload.ref().castToReceiptBody().hashInvalid();
+    }
+
     function equals(bytes memory a, bytes memory b) public pure returns (bool) {
         return a.ref().castToReceiptBody().equals(b.ref().castToReceiptBody());
     }
@@ -90,6 +94,10 @@ contract ReceiptHarness {
 
     function isReceipt(bytes memory payload) public pure returns (bool) {
         return payload.ref().isReceipt();
+    }
+
+    function hashValid(bytes memory payload) public pure returns (bytes32) {
+        return payload.ref().castToReceipt().hashValid();
     }
 
     // ════════════════════════════════════════════════ FORMATTERS ═════════════════════════════════════════════════════

@@ -27,6 +27,10 @@ contract StateHarness {
         return a.castToState().equals(b.castToState());
     }
 
+    function hashInvalid(bytes memory payload) public pure returns (bytes32) {
+        return payload.castToState().hashInvalid();
+    }
+
     function leaf(bytes memory payload) public pure returns (bytes32) {
         return payload.castToState().leaf();
     }
