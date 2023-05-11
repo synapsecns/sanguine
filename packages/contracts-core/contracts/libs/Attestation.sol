@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.17;
 
-import {ATTESTATION_LENGTH, ATTESTATION_SALT} from "./Constants.sol";
+import {ATTESTATION_LENGTH, ATTESTATION_SALT, ATTESTATION_REPORT_SALT} from "./Constants.sol";
 import {UnformattedAttestation} from "./Errors.sol";
 import {MemView, MemViewLib} from "./MemView.sol";
 
@@ -109,10 +109,18 @@ library AttestationLib {
         return memView.len() == ATTESTATION_LENGTH;
     }
 
-    /// @notice Returns the hash of an Attestation, that could be later signed by a Notary.
+    /// @notice Returns the hash of an Attestation, that could be later signed by a Notary to signal
+    /// that the attestation is valid.
     function hash(Attestation att) internal pure returns (bytes32) {
         // The final hash to sign is keccak(attestationSalt, keccak(attestation))
         return att.unwrap().keccakSalted(ATTESTATION_SALT);
+    }
+
+    /// @notice Returns the hash of an Attestation, that could be later signed by a Guard to signal
+    /// that the attestation is invalid.
+    function hashInvalid(Attestation att) internal pure returns (bytes32) {
+        // The final hash to sign is keccak(attestationInvalidSalt, keccak(attestation))
+        return att.unwrap().keccakSalted(ATTESTATION_REPORT_SALT);
     }
 
     /// @notice Convenience shortcut for unwrapping a view.

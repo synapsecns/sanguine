@@ -51,6 +51,10 @@ contract AttestationHarness {
         return payload.castToAttestation().hash();
     }
 
+    function hashInvalid(bytes memory payload) public pure returns (bytes32) {
+        return payload.castToAttestation().hashInvalid();
+    }
+
     // ════════════════════════════════════════════════ FORMATTERS ═════════════════════════════════════════════════════
 
     function formatAttestation(

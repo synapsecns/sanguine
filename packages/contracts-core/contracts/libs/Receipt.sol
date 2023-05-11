@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.17;
 
-import {RECEIPT_SALT, RECEIPT_BODY_LENGTH, RECEIPT_LENGTH, TIPS_LENGTH} from "./Constants.sol";
+import {RECEIPT_SALT, RECEIPT_BODY_LENGTH, RECEIPT_LENGTH, RECEIPT_REPORT_SALT, TIPS_LENGTH} from "./Constants.sol";
 import {UnformattedReceipt, UnformattedReceiptBody} from "./Errors.sol";
 import {Tips, TipsLib} from "./Tips.sol";
 import {MemView, MemViewLib} from "./MemView.sol";
@@ -109,6 +109,13 @@ library ReceiptLib {
     function isReceiptBody(MemView memView) internal pure returns (bool) {
         // Check payload length
         return memView.len() == RECEIPT_BODY_LENGTH;
+    }
+
+    /// @notice Returns the hash of a ReceiptBody, that could be later signed by a Guard to signal
+    /// that the receipt body is invalid.
+    function hashInvalid(ReceiptBody receiptBody) internal pure returns (bytes32) {
+        // The final hash to sign is keccak(receiptBodyInvalidSalt, keccak(receiptBody))
+        return receiptBody.unwrap().keccakSalted(RECEIPT_REPORT_SALT);
     }
 
     /// @notice Convenience shortcut for unwrapping a view.
