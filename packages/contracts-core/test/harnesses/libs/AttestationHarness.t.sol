@@ -47,8 +47,8 @@ contract AttestationHarness {
         return payload.castToAttestation().timestamp();
     }
 
-    function hash(bytes memory payload) public pure returns (bytes32) {
-        return payload.castToAttestation().hash();
+    function hashValid(bytes memory payload) public pure returns (bytes32) {
+        return payload.castToAttestation().hashValid();
     }
 
     function hashInvalid(bytes memory payload) public pure returns (bytes32) {

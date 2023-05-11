@@ -29,8 +29,8 @@ contract SnapshotHarness {
         return snapshot.unwrap().clone();
     }
 
-    function hash(bytes memory payload) public pure returns (bytes32) {
-        return payload.castToSnapshot().hash();
+    function hashValid(bytes memory payload) public pure returns (bytes32) {
+        return payload.castToSnapshot().hashValid();
     }
 
     function state(bytes memory payload, uint256 stateIndex) public view returns (bytes memory) {

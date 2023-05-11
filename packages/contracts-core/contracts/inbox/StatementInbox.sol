@@ -369,7 +369,7 @@ abstract contract StatementInbox is MessagingBase, StatementInboxEvents, IStatem
         returns (AgentStatus memory status, address notary)
     {
         // This will revert if signer is not a known agent
-        (status, notary) = _recoverAgent(att.hash(), attSignature);
+        (status, notary) = _recoverAgent(att.hashValid(), attSignature);
         // Attestation signer needs to be a Notary, not a Guard
         if (status.domain == 0) revert AgentNotNotary();
     }
@@ -411,7 +411,7 @@ abstract contract StatementInbox is MessagingBase, StatementInboxEvents, IStatem
         returns (AgentStatus memory status, address notary)
     {
         // This will revert if signer is not a known agent
-        (status, notary) = _recoverAgent(rcpt.hash(), rcptSignature);
+        (status, notary) = _recoverAgent(rcpt.hashValid(), rcptSignature);
         // Receipt signer needs to be a Notary, not a Guard
         if (status.domain == 0) revert AgentNotNotary();
     }
@@ -455,7 +455,7 @@ abstract contract StatementInbox is MessagingBase, StatementInboxEvents, IStatem
         returns (AgentStatus memory status, address agent)
     {
         // This will revert if signer is not a known agent
-        (status, agent) = _recoverAgent(snapshot.hash(), snapSignature);
+        (status, agent) = _recoverAgent(snapshot.hashValid(), snapSignature);
         // If requested, snapshot signer needs to be a Notary, not a Guard
         if (verifyNotary && status.domain == 0) revert AgentNotNotary();
     }

@@ -2,11 +2,11 @@
 pragma solidity 0.8.17;
 
 import {
-    ATTESTATION_SALT,
+    ATTESTATION_VALID_SALT,
     ATTESTATION_INVALID_SALT,
-    RECEIPT_SALT,
+    RECEIPT_VALID_SALT,
     RECEIPT_INVALID_SALT,
-    SNAPSHOT_SALT,
+    SNAPSHOT_VALID_SALT,
     STATE_INVALID_SALT
 } from "../../contracts/libs/Constants.sol";
 
@@ -104,7 +104,7 @@ abstract contract SynapseAgents is SynapseUtilities {
     // ════════════════════════════════════════════ SIGNING STATEMENTS ═════════════════════════════════════════════════
 
     function signAttestation(address agent, bytes memory attestation) public view returns (bytes memory signature) {
-        return signMessage(agent, ATTESTATION_SALT, attestation);
+        return signMessage(agent, ATTESTATION_VALID_SALT, attestation);
     }
 
     function signAttestation(address agent, RawAttestation memory ra)
@@ -134,7 +134,7 @@ abstract contract SynapseAgents is SynapseUtilities {
     }
 
     function signReceipt(address agent, bytes memory receipt) public view returns (bytes memory signature) {
-        return signMessage(agent, RECEIPT_SALT, receipt);
+        return signMessage(agent, RECEIPT_VALID_SALT, receipt);
     }
 
     function signReceipt(address agent, RawExecReceipt memory re)
@@ -160,7 +160,7 @@ abstract contract SynapseAgents is SynapseUtilities {
     }
 
     function signSnapshot(address agent, bytes memory snapshot) public view returns (bytes memory signature) {
-        return signMessage(agent, SNAPSHOT_SALT, snapshot);
+        return signMessage(agent, SNAPSHOT_VALID_SALT, snapshot);
     }
 
     function signSnapshot(address agent, RawSnapshot memory rawSnap)

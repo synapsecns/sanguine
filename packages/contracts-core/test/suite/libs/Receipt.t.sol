@@ -77,9 +77,9 @@ contract ReceiptLibraryTest is SynapseLibraryTest {
         assertEq(libHarness.body(payload), bodyPayload, "!bodyPayload");
         assertEq(libHarness.tips(payload), encodedTips, "!tips");
         // Test hashing of "valid receipt"
-        bytes32 receiptSalt = keccak256("RECEIPT_SALT");
+        bytes32 receiptSalt = keccak256("RECEIPT_VALID_SALT");
         bytes32 hashedReceipt = keccak256(abi.encodePacked(receiptSalt, keccak256(payload)));
-        assertEq(libHarness.hash(payload), hashedReceipt, "!hash");
+        assertEq(libHarness.hashValid(payload), hashedReceipt, "!hashValid");
     }
 
     function test_isReceiptBody(uint8 length) public {

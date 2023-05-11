@@ -96,8 +96,8 @@ contract ReceiptHarness {
         return payload.ref().isReceipt();
     }
 
-    function hash(bytes memory payload) public pure returns (bytes32) {
-        return payload.ref().castToReceipt().hash();
+    function hashValid(bytes memory payload) public pure returns (bytes32) {
+        return payload.ref().castToReceipt().hashValid();
     }
 
     // ════════════════════════════════════════════════ FORMATTERS ═════════════════════════════════════════════════════

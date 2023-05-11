@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.17;
 
-import {SNAPSHOT_MAX_STATES, SNAPSHOT_SALT, SNAPSHOT_TREE_HEIGHT, STATE_LENGTH} from "./Constants.sol";
+import {SNAPSHOT_MAX_STATES, SNAPSHOT_VALID_SALT, SNAPSHOT_TREE_HEIGHT, STATE_LENGTH} from "./Constants.sol";
 import {IncorrectStatesAmount, IndexOutOfRange, UnformattedSnapshot} from "./Errors.sol";
 import {GasDataLib, ChainGas} from "./GasData.sol";
 import {MerkleMath} from "./MerkleMath.sol";
@@ -96,10 +96,11 @@ library SnapshotLib {
         return statesAmount_ * STATE_LENGTH == length && _isValidAmount(statesAmount_);
     }
 
-    /// @notice Returns the hash of a Snapshot, that could be later signed by an Agent.
-    function hash(Snapshot snapshot) internal pure returns (bytes32 hashedSnapshot) {
+    /// @notice Returns the hash of a Snapshot, that could be later signed by an Agent  to signal
+    /// that the snapshot is valid.
+    function hashValid(Snapshot snapshot) internal pure returns (bytes32 hashedSnapshot) {
         // The final hash to sign is keccak(snapshotSalt, keccak(snapshot))
-        return snapshot.unwrap().keccakSalted(SNAPSHOT_SALT);
+        return snapshot.unwrap().keccakSalted(SNAPSHOT_VALID_SALT);
     }
 
     /// @notice Convenience shortcut for unwrapping a view.
