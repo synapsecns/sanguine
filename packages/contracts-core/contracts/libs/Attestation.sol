@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.17;
 
-import {ATTESTATION_LENGTH, ATTESTATION_SALT, ATTESTATION_REPORT_SALT} from "./Constants.sol";
+import {ATTESTATION_LENGTH, ATTESTATION_SALT, ATTESTATION_INVALID_SALT} from "./Constants.sol";
 import {UnformattedAttestation} from "./Errors.sol";
 import {MemView, MemViewLib} from "./MemView.sol";
 
@@ -120,7 +120,7 @@ library AttestationLib {
     /// that the attestation is invalid.
     function hashInvalid(Attestation att) internal pure returns (bytes32) {
         // The final hash to sign is keccak(attestationInvalidSalt, keccak(attestation))
-        return att.unwrap().keccakSalted(ATTESTATION_REPORT_SALT);
+        return att.unwrap().keccakSalted(ATTESTATION_INVALID_SALT);
     }
 
     /// @notice Convenience shortcut for unwrapping a view.

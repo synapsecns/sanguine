@@ -3,11 +3,11 @@ pragma solidity 0.8.17;
 
 import {
     ATTESTATION_SALT,
-    ATTESTATION_REPORT_SALT,
+    ATTESTATION_INVALID_SALT,
     RECEIPT_SALT,
-    RECEIPT_REPORT_SALT,
+    RECEIPT_INVALID_SALT,
     SNAPSHOT_SALT,
-    STATE_REPORT_SALT
+    STATE_INVALID_SALT
 } from "../../contracts/libs/Constants.sol";
 
 import {SnapshotLib, State, RawAttestation, RawExecReceipt, RawSnapshot, RawState} from "./libs/SynapseStructs.t.sol";
@@ -121,7 +121,7 @@ abstract contract SynapseAgents is SynapseUtilities {
         view
         returns (bytes memory signature)
     {
-        return signMessage(agent, ATTESTATION_REPORT_SALT, attPayload);
+        return signMessage(agent, ATTESTATION_INVALID_SALT, attPayload);
     }
 
     function signAttestationReport(address agent, RawAttestation memory ra)
@@ -147,7 +147,7 @@ abstract contract SynapseAgents is SynapseUtilities {
     }
 
     function signReceiptReport(address agent, bytes memory rcptPayload) public view returns (bytes memory signature) {
-        return signMessage(agent, RECEIPT_REPORT_SALT, rcptPayload);
+        return signMessage(agent, RECEIPT_INVALID_SALT, rcptPayload);
     }
 
     function signReceiptReport(address agent, RawExecReceipt memory re)
@@ -182,7 +182,7 @@ abstract contract SynapseAgents is SynapseUtilities {
     }
 
     function signStateReport(address agent, bytes memory statePayload) public view returns (bytes memory signature) {
-        return signMessage(agent, STATE_REPORT_SALT, statePayload);
+        return signMessage(agent, STATE_INVALID_SALT, statePayload);
     }
 
     function signStateReport(address agent, RawState memory rs)

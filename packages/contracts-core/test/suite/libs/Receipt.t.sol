@@ -59,7 +59,7 @@ contract ReceiptLibraryTest is SynapseLibraryTest {
         assertEq(libHarness.firstExecutor(payload), rrb.firstExecutor, "!firstExecutor");
         assertEq(libHarness.finalExecutor(payload), rrb.finalExecutor, "!finalExecutor");
         // Test hashing of "invalid receipt body"
-        bytes32 receiptBodyInvalidSalt = keccak256("RECEIPT_REPORT_SALT");
+        bytes32 receiptBodyInvalidSalt = keccak256("RECEIPT_INVALID_SALT");
         bytes32 hashedReceiptBody = keccak256(abi.encodePacked(receiptBodyInvalidSalt, keccak256(payload)));
         assertEq(libHarness.hashInvalid(payload), hashedReceiptBody, "!hashInvalid");
     }

@@ -40,7 +40,7 @@ contract AttestationLibraryTest is SynapseLibraryTest {
         bytes32 hashedAttestation = keccak256(abi.encodePacked(attestationSalt, keccak256(payload)));
         assertEq(libHarness.hash(payload), hashedAttestation, "!hash");
         // Test hashing of "invalid attestation"
-        bytes32 attestationInvalidSalt = keccak256("ATTESTATION_REPORT_SALT");
+        bytes32 attestationInvalidSalt = keccak256("ATTESTATION_INVALID_SALT");
         hashedAttestation = keccak256(abi.encodePacked(attestationInvalidSalt, keccak256(payload)));
         assertEq(libHarness.hashInvalid(payload), hashedAttestation, "!hashInvalid");
     }
