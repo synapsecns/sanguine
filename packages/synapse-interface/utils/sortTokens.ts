@@ -1,5 +1,5 @@
 import { BigNumber } from 'ethers'
-import { fetchBalance, multicall } from '@wagmi/core'
+import { multicall } from '@wagmi/core'
 import { Zero, AddressZero } from '@ethersproject/constants'
 
 import multicallABI from '../constants/abis/multicall.json'
