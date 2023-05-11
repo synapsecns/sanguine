@@ -36,12 +36,12 @@ uint256 constant TIPS_GRANULARITY = 32;
 uint256 constant TIPS_MULTIPLIER = 1 << TIPS_GRANULARITY;
 // ══════════════════════════════ STATEMENT SALTS ══════════════════════════════
 /// @dev Salts for signing various statements
-bytes32 constant ATTESTATION_SALT = keccak256("ATTESTATION_SALT");
-bytes32 constant ATTESTATION_REPORT_SALT = keccak256("ATTESTATION_REPORT_SALT");
-bytes32 constant RECEIPT_SALT = keccak256("RECEIPT_SALT");
-bytes32 constant RECEIPT_REPORT_SALT = keccak256("RECEIPT_REPORT_SALT");
-bytes32 constant SNAPSHOT_SALT = keccak256("SNAPSHOT_SALT");
-bytes32 constant STATE_REPORT_SALT = keccak256("STATE_REPORT_SALT");
+bytes32 constant ATTESTATION_VALID_SALT = keccak256("ATTESTATION_VALID_SALT");
+bytes32 constant ATTESTATION_INVALID_SALT = keccak256("ATTESTATION_INVALID_SALT");
+bytes32 constant RECEIPT_VALID_SALT = keccak256("RECEIPT_VALID_SALT");
+bytes32 constant RECEIPT_INVALID_SALT = keccak256("RECEIPT_INVALID_SALT");
+bytes32 constant SNAPSHOT_VALID_SALT = keccak256("SNAPSHOT_VALID_SALT");
+bytes32 constant STATE_INVALID_SALT = keccak256("STATE_INVALID_SALT");
 // ═════════════════════════════════ PROTOCOL ══════════════════════════════════
 /// @dev Optimistic period for new agent roots in LightManager
 uint32 constant AGENT_ROOT_OPTIMISTIC_PERIOD = 1 days;

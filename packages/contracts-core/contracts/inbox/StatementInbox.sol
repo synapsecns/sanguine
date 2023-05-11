@@ -3,7 +3,6 @@ pragma solidity 0.8.17;
 
 // ══════════════════════════════ LIBRARY IMPORTS ══════════════════════════════
 import {Attestation, AttestationLib} from "../libs/Attestation.sol";
-import {AttestationReport} from "../libs/AttestationReport.sol";
 import {SYNAPSE_DOMAIN} from "../libs/Constants.sol";
 import {
     AgentNotGuard,
@@ -17,7 +16,6 @@ import {
 import {Receipt, ReceiptLib} from "../libs/Receipt.sol";
 import {Snapshot, SnapshotLib} from "../libs/Snapshot.sol";
 import {State, StateLib} from "../libs/State.sol";
-import {StateReport, StateReportLib} from "../libs/StateReport.sol";
 import {AgentStatus} from "../libs/Structures.sol";
 // ═════════════════════════════ INTERNAL IMPORTS ══════════════════════════════
 import {MessagingBase} from "../base/MessagingBase.sol";
@@ -33,12 +31,11 @@ abstract contract StatementInbox is MessagingBase, StatementInboxEvents, IStatem
     using AttestationLib for bytes;
     using ReceiptLib for bytes;
     using StateLib for bytes;
-    using StateReportLib for bytes;
     using SnapshotLib for bytes;
 
     struct StoredReport {
         uint256 sigIndex;
-        bytes reportPayload;
+        bytes statementPayload;
     }
 
     // ══════════════════════════════════════════════════ STORAGE ══════════════════════════════════════════════════════
@@ -76,17 +73,10 @@ abstract contract StatementInbox is MessagingBase, StatementInboxEvents, IStatem
     // solhint-disable-next-line ordering
     function submitStateReportWithSnapshot(
         uint256 stateIndex,
-        bytes memory srPayload,
         bytes memory srSignature,
         bytes memory snapPayload,
         bytes memory snapSignature
     ) external returns (bool wasAccepted) {
-        // This will revert if payload is not a state report
-        StateReport report = srPayload.castToStateReport();
-        // This will revert if the report signer is not an known Guard
-        (AgentStatus memory guardStatus,) = _verifyStateReport(report, srSignature);
-        // Check that Guard is active
-        guardStatus.verifyActive();
         // This will revert if payload is not a snapshot
         Snapshot snapshot = snapPayload.castToSnapshot();
         // This will revert if the snapshot signer is not a known Notary
@@ -96,10 +86,13 @@ abstract contract StatementInbox is MessagingBase, StatementInboxEvents, IStatem
         notaryStatus.verifyActiveUnstaking();
         // Check if Notary is active on this chain
         _verifyNotaryDomain(notaryStatus.domain);
-        // Snapshot state and reported state need to be the same
         // This will revert if state index is out of range
-        if (!snapshot.state(stateIndex).equals(report.state())) revert IncorrectState();
-        _saveReport(srPayload, srSignature);
+        State state = snapshot.state(stateIndex);
+        // This will revert if the report signer is not an known Guard
+        (AgentStatus memory guardStatus,) = _verifyStateReport(state, srSignature);
+        // Check that Guard is active
+        guardStatus.verifyActive();
+        _saveReport(state.unwrap().clone(), srSignature);
         // This will revert if either actor is already in dispute
         IAgentManager(agentManager).openDispute(guardStatus.index, notaryStatus.index);
         return true;
@@ -108,21 +101,17 @@ abstract contract StatementInbox is MessagingBase, StatementInboxEvents, IStatem
     /// @inheritdoc IStatementInbox
     function submitStateReportWithAttestation(
         uint256 stateIndex,
-        bytes memory srPayload,
         bytes memory srSignature,
         bytes memory snapPayload,
         bytes memory attPayload,
         bytes memory attSignature
     ) external returns (bool wasAccepted) {
-        // This will revert if payload is not a state report
-        StateReport report = srPayload.castToStateReport();
-        // This will revert if the report signer is not an known Guard
-        (AgentStatus memory guardStatus,) = _verifyStateReport(report, srSignature);
         // This will revert if payload is not a snapshot
         Snapshot snapshot = snapPayload.castToSnapshot();
-        // Snapshot state and reported state need to be the same
         // This will revert if state index is out of range
-        if (!snapshot.state(stateIndex).equals(report.state())) revert IncorrectState();
+        State state = snapshot.state(stateIndex);
+        // This will revert if the report signer is not an known Guard
+        (AgentStatus memory guardStatus,) = _verifyStateReport(state, srSignature);
         // Check that Guard is active
         guardStatus.verifyActive();
         // This will revert if payload is not an attestation
@@ -134,7 +123,7 @@ abstract contract StatementInbox is MessagingBase, StatementInboxEvents, IStatem
         // Check if Notary is active on this chain
         _verifyNotaryDomain(notaryStatus.domain);
         if (snapshot.calculateRoot() != att.snapRoot()) revert IncorrectSnapshotRoot();
-        _saveReport(srPayload, srSignature);
+        _saveReport(state.unwrap().clone(), srSignature);
         // This will revert if either actor is already in dispute
         IAgentManager(agentManager).openDispute(guardStatus.index, notaryStatus.index);
         return true;
@@ -143,16 +132,16 @@ abstract contract StatementInbox is MessagingBase, StatementInboxEvents, IStatem
     /// @inheritdoc IStatementInbox
     function submitStateReportWithSnapshotProof(
         uint256 stateIndex,
-        bytes memory srPayload,
+        bytes memory statePayload,
         bytes memory srSignature,
         bytes32[] memory snapProof,
         bytes memory attPayload,
         bytes memory attSignature
     ) external returns (bool wasAccepted) {
-        // This will revert if payload is not a state report
-        StateReport report = srPayload.castToStateReport();
+        // This will revert if payload is not a state
+        State state = statePayload.castToState();
         // This will revert if the report signer is not an known Guard
-        (AgentStatus memory guardStatus,) = _verifyStateReport(report, srSignature);
+        (AgentStatus memory guardStatus,) = _verifyStateReport(state, srSignature);
         // Check that Guard is active
         guardStatus.verifyActive();
         // This will revert if payload is not an attestation
@@ -168,8 +157,8 @@ abstract contract StatementInbox is MessagingBase, StatementInboxEvents, IStatem
         //  - Snapshot Proof's first element does not match the State metadata.
         //  - Snapshot Proof length exceeds Snapshot tree Height.
         //  - State index is out of range.
-        _verifySnapshotMerkle(att, stateIndex, report.state(), snapProof);
-        _saveReport(srPayload, srSignature);
+        _verifySnapshotMerkle(att, stateIndex, state, snapProof);
+        _saveReport(statePayload, srSignature);
         // This will revert if either actor is already in dispute
         IAgentManager(agentManager).openDispute(guardStatus.index, notaryStatus.index);
         return true;
@@ -271,21 +260,21 @@ abstract contract StatementInbox is MessagingBase, StatementInboxEvents, IStatem
     }
 
     /// @inheritdoc IStatementInbox
-    function verifyStateReport(bytes memory srPayload, bytes memory srSignature)
+    function verifyStateReport(bytes memory statePayload, bytes memory srSignature)
         external
         returns (bool isValidReport)
     {
-        // This will revert if payload is not a snapshot report
-        StateReport report = srPayload.castToStateReport();
+        // This will revert if payload is not a state
+        State state = statePayload.castToState();
         // This will revert if the report signer is not a known Guard
-        (AgentStatus memory status, address guard) = _verifyStateReport(report, srSignature);
+        (AgentStatus memory status, address guard) = _verifyStateReport(state, srSignature);
         // Guard needs to be Active/Unstaking
         status.verifyActiveUnstaking();
         // Report is valid IF AND ONLY IF the reported state in invalid
         // This will revert if the reported state does not refer to this chain
-        isValidReport = !IStateHub(origin).isValidState(report.state().unwrap().clone());
+        isValidReport = !IStateHub(origin).isValidState(statePayload);
         if (!isValidReport) {
-            emit InvalidStateReport(srPayload, srSignature);
+            emit InvalidStateReport(statePayload, srSignature);
             IAgentManager(agentManager).slashAgent(status.domain, guard, msg.sender);
         }
     }
@@ -301,11 +290,11 @@ abstract contract StatementInbox is MessagingBase, StatementInboxEvents, IStatem
     function getGuardReport(uint256 index)
         external
         view
-        returns (bytes memory reportPayload, bytes memory reportSignature)
+        returns (bytes memory statementPayload, bytes memory reportSignature)
     {
         if (index >= _storedReports.length) revert IndexOutOfRange();
         StoredReport memory storedReport = _storedReports[index];
-        reportPayload = storedReport.reportPayload;
+        statementPayload = storedReport.statementPayload;
         reportSignature = _storedSignatures[storedReport.sigIndex];
     }
 
@@ -316,10 +305,10 @@ abstract contract StatementInbox is MessagingBase, StatementInboxEvents, IStatem
 
     // ══════════════════════════════════════════════ INTERNAL LOGIC ═══════════════════════════════════════════════════
 
-    /// @dev Saves the Guard Report and the signature for it.
-    function _saveReport(bytes memory reportPayload, bytes memory reportSignature) internal {
+    /// @dev Saves the statement reported by Guard as invalid and the Guard Report signature.
+    function _saveReport(bytes memory statementPayload, bytes memory reportSignature) internal {
         uint256 sigIndex = _saveSignature(reportSignature);
-        _storedReports.push(StoredReport(sigIndex, reportPayload));
+        _storedReports.push(StoredReport(sigIndex, statementPayload));
     }
 
     /// @dev Saves the signature and returns its index.
@@ -380,7 +369,7 @@ abstract contract StatementInbox is MessagingBase, StatementInboxEvents, IStatem
         returns (AgentStatus memory status, address notary)
     {
         // This will revert if signer is not a known agent
-        (status, notary) = _recoverAgent(att.hash(), attSignature);
+        (status, notary) = _recoverAgent(att.hashValid(), attSignature);
         // Attestation signer needs to be a Notary, not a Guard
         if (status.domain == 0) revert AgentNotNotary();
     }
@@ -389,18 +378,18 @@ abstract contract StatementInbox is MessagingBase, StatementInboxEvents, IStatem
      * @dev Internal function to verify the signed attestation report payload.
      * Reverts if any of these is true:
      *  - Report signer is not a known Guard.
-     * @param report            Typed memory view over report payload
-     * @param arSignature       Guard signature for the report
+     * @param att               Typed memory view over attestation payload that Guard reports as invalid
+     * @param arSignature       Guard signature for the "invalid attestation" report
      * @return status           Struct representing guard status, see {_recoverAgent}
      * @return guard            Guard that signed the report
      */
-    function _verifyAttestationReport(AttestationReport report, bytes memory arSignature)
+    function _verifyAttestationReport(Attestation att, bytes memory arSignature)
         internal
         view
         returns (AgentStatus memory status, address guard)
     {
         // This will revert if signer is not a known agent
-        (status, guard) = _recoverAgent(report.hash(), arSignature);
+        (status, guard) = _recoverAgent(att.hashInvalid(), arSignature);
         // Report signer needs to be a Guard, not a Notary
         if (status.domain != 0) revert AgentNotGuard();
     }
@@ -422,7 +411,7 @@ abstract contract StatementInbox is MessagingBase, StatementInboxEvents, IStatem
         returns (AgentStatus memory status, address notary)
     {
         // This will revert if signer is not a known agent
-        (status, notary) = _recoverAgent(rcpt.hash(), rcptSignature);
+        (status, notary) = _recoverAgent(rcpt.hashValid(), rcptSignature);
         // Receipt signer needs to be a Notary, not a Guard
         if (status.domain == 0) revert AgentNotNotary();
     }
@@ -433,18 +422,18 @@ abstract contract StatementInbox is MessagingBase, StatementInboxEvents, IStatem
      * @dev Internal function to verify the signed snapshot report payload.
      * Reverts if any of these is true:
      *  - Report signer is not a known Guard.
-     * @param report            Typed memory view over report payload
+     * @param state             Typed memory view over state payload that Guard reports as invalid
      * @param srSignature       Guard signature for the report
      * @return status           Struct representing guard status, see {_recoverAgent}
      * @return guard            Guard that signed the report
      */
-    function _verifyStateReport(StateReport report, bytes memory srSignature)
+    function _verifyStateReport(State state, bytes memory srSignature)
         internal
         view
         returns (AgentStatus memory status, address guard)
     {
         // This will revert if signer is not a known agent
-        (status, guard) = _recoverAgent(report.hash(), srSignature);
+        (status, guard) = _recoverAgent(state.hashInvalid(), srSignature);
         // Report signer needs to be a Guard, not a Notary
         if (status.domain != 0) revert AgentNotGuard();
     }
@@ -466,7 +455,7 @@ abstract contract StatementInbox is MessagingBase, StatementInboxEvents, IStatem
         returns (AgentStatus memory status, address agent)
     {
         // This will revert if signer is not a known agent
-        (status, agent) = _recoverAgent(snapshot.hash(), snapSignature);
+        (status, agent) = _recoverAgent(snapshot.hashValid(), snapSignature);
         // If requested, snapshot signer needs to be a Notary, not a Guard
         if (verifyNotary && status.domain == 0) revert AgentNotNotary();
     }

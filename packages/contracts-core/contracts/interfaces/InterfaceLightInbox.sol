@@ -30,22 +30,22 @@ interface InterfaceLightInbox {
     ) external returns (bool wasAccepted);
 
     /**
-     * @notice Accepts an attestation report signed by a Guard, as well as Notary signature
+     * @notice Accepts a Guard's attestation report signature, as well as Notary signature
      * for the reported Attestation.
      * > AttestationReport is a Guard statement saying "Reported attestation is invalid".
      * - This results in an opened Dispute between the Guard and the Notary.
      * - Note: Guard could (but doesn't have to) form a AttestationReport and use attestation signature from
      * `verifyAttestation()` successful call that led to Notary being slashed in Summit on Synapse Chain.
      * > Will revert if any of these is true:
-     * > - Report payload is not properly formatted.
-     * > - Report signer is not an active Guard.
+     * > - Attestation payload is not properly formatted.
+     * > - Attestation Report signer is not an active Guard.
      * > - Attestation signer is not an active Notary for local domain.
-     * @param arPayload         Raw payload with AttestationReport data
+     * @param attPayload        Raw payload with Attestation data that Guard reports as invalid
      * @param arSignature       Guard signature for the report
      * @param attSignature      Notary signature for the reported attestation
      * @return wasAccepted      Whether the Report was accepted (resulting in Dispute between the agents)
      */
-    function submitAttestationReport(bytes memory arPayload, bytes memory arSignature, bytes memory attSignature)
+    function submitAttestationReport(bytes memory attPayload, bytes memory arSignature, bytes memory attSignature)
         external
         returns (bool wasAccepted);
 }

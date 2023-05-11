@@ -47,6 +47,10 @@ contract StateLibraryTest is SynapseLibraryTest {
         assertEq(libHarness.rightLeaf(rs.nonce, rs.blockNumber, rs.timestamp, gasData), rightChild, "!rightLeaf");
         assertEq(rightLeaf, rightChild, "!subLeafs: right");
         assertEq(libHarness.leaf(payload), keccak256(abi.encodePacked(leftChild, rightChild)), "!leaf");
+        // Test hashing of "invalid state"
+        bytes32 stateInvalidSalt = keccak256("STATE_INVALID_SALT");
+        bytes32 hashedState = keccak256(abi.encodePacked(stateInvalidSalt, keccak256(payload)));
+        assertEq(libHarness.hashInvalid(payload), hashedState, "!hashInvalid");
     }
 
     function test_equals_identical(RawState memory a) public {
