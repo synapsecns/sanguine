@@ -1,11 +1,11 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.17;
 
-import {REQUEST_LENGTH, TIPS_LENGTH} from "./Constants.sol";
-import {UnformattedBaseMessage} from "./Errors.sol";
-import {Request, RequestLib} from "./Request.sol";
-import {Tips, TipsLib} from "./Tips.sol";
 import {MemView, MemViewLib} from "./MemView.sol";
+import {REQUEST_LENGTH, TIPS_LENGTH} from "../Constants.sol";
+import {UnformattedBaseMessage} from "../Errors.sol";
+import {Request, RequestLib} from "../stack/Request.sol";
+import {Tips, TipsLib} from "../stack/Tips.sol";
 
 /// BaseMessage is a memory view over the base message supported by Origin-Destination
 type BaseMessage is uint256;

@@ -1,12 +1,12 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.17;
 
-import {SNAPSHOT_MAX_STATES, SNAPSHOT_VALID_SALT, SNAPSHOT_TREE_HEIGHT, STATE_LENGTH} from "./Constants.sol";
-import {IncorrectStatesAmount, IndexOutOfRange, UnformattedSnapshot} from "./Errors.sol";
-import {GasDataLib, ChainGas} from "./GasData.sol";
-import {MerkleMath} from "./MerkleMath.sol";
 import {State, StateLib} from "./State.sol";
 import {MemView, MemViewLib} from "./MemView.sol";
+import {SNAPSHOT_MAX_STATES, SNAPSHOT_VALID_SALT, SNAPSHOT_TREE_HEIGHT, STATE_LENGTH} from "../Constants.sol";
+import {IncorrectStatesAmount, IndexOutOfRange, UnformattedSnapshot} from "../Errors.sol";
+import {MerkleMath} from "../merkle/MerkleMath.sol";
+import {GasDataLib, ChainGas} from "../stack/GasData.sol";
 
 /// Snapshot is a memory view over a formatted snapshot payload: a list of states.
 type Snapshot is uint256;

@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.17;
 
-import {TreeHeightTooLow} from "./Errors.sol";
+import {TreeHeightTooLow} from "../Errors.sol";
 
 library MerkleMath {
     // ═════════════════════════════════════════ BASIC MERKLE CALCULATIONS ═════════════════════════════════════════════

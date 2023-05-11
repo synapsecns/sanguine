@@ -1,12 +1,16 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.17;
 
-import {
-    RECEIPT_VALID_SALT, RECEIPT_BODY_LENGTH, RECEIPT_LENGTH, RECEIPT_INVALID_SALT, TIPS_LENGTH
-} from "./Constants.sol";
-import {UnformattedReceipt, UnformattedReceiptBody} from "./Errors.sol";
-import {Tips, TipsLib} from "./Tips.sol";
 import {MemView, MemViewLib} from "./MemView.sol";
+import {
+    RECEIPT_VALID_SALT,
+    RECEIPT_BODY_LENGTH,
+    RECEIPT_LENGTH,
+    RECEIPT_INVALID_SALT,
+    TIPS_LENGTH
+} from "../Constants.sol";
+import {UnformattedReceipt, UnformattedReceiptBody} from "../Errors.sol";
+import {Tips, TipsLib} from "../stack/Tips.sol";
 
 /// Receipt is a memory view over a formatted "full receipt" payload.
 type Receipt is uint256;

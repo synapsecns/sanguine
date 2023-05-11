@@ -1,9 +1,9 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.17;
 
-import {AGENT_TREE_HEIGHT, ORIGIN_TREE_HEIGHT} from "./Constants.sol";
-import {NotEnoughLeafs, MerkleTreeFull, LeafNotProven} from "./Errors.sol";
 import {MerkleMath} from "./MerkleMath.sol";
+import {AGENT_TREE_HEIGHT, ORIGIN_TREE_HEIGHT} from "../Constants.sol";
+import {NotEnoughLeafs, MerkleTreeFull, LeafNotProven} from "../Errors.sol";
 
 /// `BaseTree` is a struct representing incremental merkle tree.
 /// - Contains only the current branch.

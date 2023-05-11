@@ -1,9 +1,9 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.17;
 
-import {ATTESTATION_LENGTH, ATTESTATION_VALID_SALT, ATTESTATION_INVALID_SALT} from "./Constants.sol";
-import {UnformattedAttestation} from "./Errors.sol";
 import {MemView, MemViewLib} from "./MemView.sol";
+import {ATTESTATION_LENGTH, ATTESTATION_VALID_SALT, ATTESTATION_INVALID_SALT} from "../Constants.sol";
+import {UnformattedAttestation} from "../Errors.sol";
 
 /// Attestation is a memory view over a formatted attestation payload.
 type Attestation is uint256;

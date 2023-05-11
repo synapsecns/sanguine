@@ -1,10 +1,10 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.17;
 
-import {GAS_DATA_LENGTH, STATE_LENGTH, STATE_INVALID_SALT} from "./Constants.sol";
-import {UnformattedState} from "./Errors.sol";
-import {GasData, GasDataLib} from "./GasData.sol";
 import {MemView, MemViewLib} from "./MemView.sol";
+import {GAS_DATA_LENGTH, STATE_LENGTH, STATE_INVALID_SALT} from "../Constants.sol";
+import {UnformattedState} from "../Errors.sol";
+import {GasData, GasDataLib} from "../stack/GasData.sol";
 
 /// State is a memory view over a formatted state payload.
 type State is uint256;

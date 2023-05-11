@@ -3,10 +3,10 @@ pragma solidity 0.8.17;
 
 import {BaseMessageLib} from "./BaseMessage.sol";
 import {ByteString} from "./ByteString.sol";
-import {HEADER_LENGTH} from "./Constants.sol";
-import {UnformattedMessage} from "./Errors.sol";
-import {Header, HeaderLib} from "./Header.sol";
+import {HEADER_LENGTH} from "../Constants.sol";
 import {MemView, MemViewLib} from "./MemView.sol";
+import {UnformattedMessage} from "../Errors.sol";
+import {Header, HeaderLib} from "../stack/Header.sol";
 
 /// Message is a memory over over a formatted message payload.
 type Message is uint256;

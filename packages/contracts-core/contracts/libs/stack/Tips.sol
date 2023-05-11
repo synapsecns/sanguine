@@ -1,8 +1,8 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.17;
 
-import {TIPS_GRANULARITY} from "./Constants.sol";
-import {TipsOverflow, TipsValueTooLow} from "./Errors.sol";
+import {TIPS_GRANULARITY} from "../Constants.sol";
+import {TipsOverflow, TipsValueTooLow} from "../Errors.sol";
 
 /// Tips is encoded data with "tips paid for sending a base message".
 /// Note: even though uint256 is also an underlying type for MemView, Tips is stored ON STACK.
