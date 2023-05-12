@@ -7,7 +7,7 @@ import {MAX_CONTENT_BYTES} from "./libs/Constants.sol";
 import {ContentLengthTooBig, EthTransferFailed, InsufficientEthBalance} from "./libs/Errors.sol";
 import {GasData, GasDataLib} from "./libs/stack/GasData.sol";
 import {MemView, MemViewLib} from "./libs/memory/MemView.sol";
-import {Header, HeaderLib, MessageFlag} from "./libs/memory/Message.sol";
+import {Header, MessageLib, MessageFlag} from "./libs/memory/Message.sol";
 import {Request, RequestLib} from "./libs/stack/Request.sol";
 import {Tips, TipsLib} from "./libs/stack/Tips.sol";
 import {TypeCasts} from "./libs/TypeCasts.sol";
@@ -109,14 +109,14 @@ contract Origin is StateHub, OriginEvents, InterfaceOrigin {
     {
         // Format the message header
         messageNonce = _nextNonce();
-        Header header = HeaderLib.encodeHeader({
+        Header header = flag.encodeHeader({
             origin_: localDomain,
             nonce_: messageNonce,
             destination_: destination,
             optimisticPeriod_: optimisticPeriod
         });
         // Format the full message payload
-        bytes memory msgPayload = flag.formatMessage(header, body);
+        bytes memory msgPayload = MessageLib.formatMessage(header, body);
         // Insert new leaf into the Origin Merkle Tree and save the updated state
         messageHash = keccak256(msgPayload);
         _insertAndSave(messageHash);

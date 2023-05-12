@@ -484,7 +484,8 @@ abstract contract ExecutionHubTest is AgentSecuredTest {
         // Set sensible limitations for tips/request
         rbm.tips.boundTips(2 ** 32);
         rbm.request.gasLimit = uint64(bound(rbm.request.gasLimit, 50_000, 200_000));
-        msgPayload = RawMessage(uint8(MessageFlag.Base), rh, rbm.formatBaseMessage()).formatMessage();
+        rh.flag = uint8(MessageFlag.Base);
+        msgPayload = RawMessage(rh, rbm.formatBaseMessage()).formatMessage();
         createMessages(rh.nonce, msgPayload);
     }
 
@@ -494,7 +495,8 @@ abstract contract ExecutionHubTest is AgentSecuredTest {
     {
         adjustHeader(rh, destination_);
         RawCallData memory rcd = RawCallData({selector: selector, args: abi.encode(rh.nonce)});
-        msgPayload = RawMessage(uint8(MessageFlag.Manager), rh, rcd.formatCallData()).formatMessage();
+        rh.flag = uint8(MessageFlag.Manager);
+        msgPayload = RawMessage(rh, rcd.formatCallData()).formatMessage();
         createMessages(rh.nonce, msgPayload);
     }
 

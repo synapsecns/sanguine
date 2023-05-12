@@ -129,8 +129,13 @@ contract OriginTest is AgentSecuredTest {
         bytes32[] memory roots = new bytes32[](MESSAGES);
         for (uint32 i = 0; i < MESSAGES; ++i) {
             messages[i] = RawMessage(
-                uint8(MessageFlag.Base),
-                RawHeader({origin: DOMAIN_LOCAL, nonce: i + 1, destination: DOMAIN_REMOTE, optimisticPeriod: period}),
+                RawHeader({
+                    flag: uint8(MessageFlag.Base),
+                    origin: DOMAIN_LOCAL,
+                    nonce: i + 1,
+                    destination: DOMAIN_REMOTE,
+                    optimisticPeriod: period
+                }),
                 body
             ).formatMessage();
             insertMessage(messages[i]);
