@@ -2,7 +2,7 @@
 
 pragma solidity 0.8.17;
 
-import {Header, HeaderLib} from "../../../../contracts/libs/stack/Header.sol";
+import {Header, HeaderLib, MessageFlag} from "../../../../contracts/libs/stack/Header.sol";
 
 /**
  * @notice Exposes Header methods for testing against golang.
@@ -12,6 +12,11 @@ contract HeaderHarness {
     // to zero coverage on the corresponding library.
 
     // ══════════════════════════════════════════════════ GETTERS ══════════════════════════════════════════════════════
+
+    /// @notice Returns header's flag field
+    function flag(uint256 paddedHeader) public pure returns (MessageFlag) {
+        return HeaderLib.wrapPadded(paddedHeader).flag();
+    }
 
     /// @notice Returns header's origin field
     function origin(uint256 paddedHeader) public pure returns (uint32) {
@@ -35,17 +40,25 @@ contract HeaderHarness {
 
     // ════════════════════════════════════════════════ FORMATTERS ═════════════════════════════════════════════════════
 
-    function encodeHeader(uint32 origin_, uint32 nonce_, uint32 destination_, uint32 optimisticPeriod_)
+    function encodeHeader(uint8 flag_, uint32 origin_, uint32 nonce_, uint32 destination_, uint32 optimisticPeriod_)
         public
         pure
-        returns (uint128)
+        returns (uint136)
     {
-        Header header = HeaderLib.encodeHeader(origin_, nonce_, destination_, optimisticPeriod_);
+        Header header = HeaderLib.encodeHeader(MessageFlag(flag_), origin_, nonce_, destination_, optimisticPeriod_);
         return Header.unwrap(header);
     }
 
-    function wrapPadded(uint256 paddedHeader) public pure returns (uint128) {
+    function isHeader(uint256 paddedHeader) public pure returns (bool) {
+        return HeaderLib.isHeader(paddedHeader);
+    }
+
+    function wrapPadded(uint256 paddedHeader) public pure returns (uint136) {
         Header header = HeaderLib.wrapPadded(paddedHeader);
         return Header.unwrap(header);
+    }
+
+    function leaf(uint256 paddedHeader) public pure returns (bytes32) {
+        return HeaderLib.wrapPadded(paddedHeader).leaf();
     }
 }

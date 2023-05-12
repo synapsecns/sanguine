@@ -32,12 +32,8 @@ contract MessageHarness {
         return message.unwrap().clone();
     }
 
-    function flag(bytes memory payload) public pure returns (MessageFlag) {
-        return payload.castToMessage().flag();
-    }
-
-    function header(bytes memory payload) public pure returns (uint128) {
-        return Header.unwrap(payload.castToMessage().header());
+    function header(bytes memory payload) public pure returns (Header) {
+        return payload.castToMessage().header();
     }
 
     function body(bytes memory payload) public view returns (bytes memory) {
@@ -54,7 +50,7 @@ contract MessageHarness {
 
     // ════════════════════════════════════════════════ FORMATTERS ═════════════════════════════════════════════════════
 
-    function formatMessage(MessageFlag flag_, Header header_, bytes memory body_) public pure returns (bytes memory) {
-        return MessageLib.formatMessage(flag_, header_, body_);
+    function formatMessage(Header header_, bytes memory body_) public pure returns (bytes memory) {
+        return MessageLib.formatMessage(header_, body_);
     }
 }

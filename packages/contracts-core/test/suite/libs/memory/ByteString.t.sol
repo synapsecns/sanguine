@@ -37,6 +37,8 @@ contract ByteStringLibraryTest is SynapseLibraryTest {
         assertEq(libHarness.argumentWords(callData), words, "!argumentWords");
         assertEq(libHarness.callSelector(callData), selector, "!callSelector");
         assertEq(libHarness.arguments(callData), arguments, "!arguments");
+        // Test hashing
+        assertEq(libHarness.leaf(callData), keccak256(callData), "!leaf");
     }
 
     function test_formattedCorrectly_callData_added(bytes4 selector, uint256 wordsPrefix, uint256 wordsFollowing)

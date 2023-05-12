@@ -50,6 +50,10 @@ contract ByteStringHarness {
         return payload.ref().isCallData();
     }
 
+    function leaf(bytes memory payload) public pure returns (bytes32) {
+        return payload.castToCallData().leaf();
+    }
+
     function arguments(bytes memory payload) public view returns (bytes memory) {
         return payload.castToCallData().arguments().clone();
     }

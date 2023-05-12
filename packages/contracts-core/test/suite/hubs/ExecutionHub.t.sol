@@ -50,6 +50,9 @@ abstract contract ExecutionHubTest is AgentSecuredTest {
 
     uint8 internal cachedStateIndex;
 
+    bytes internal msgPayload;
+    bytes32 internal msgLeaf;
+
     function setUp() public virtual override {
         super.setUp();
         recipient = address(new MessageRecipientMock());
@@ -70,7 +73,9 @@ abstract contract ExecutionHubTest is AgentSecuredTest {
         uint64 gasLimit
     ) public {
         // Create messages and get origin proof
-        bytes memory msgPayload = createBaseMessages(rbm, rh, localDomain());
+        RawMessage memory rm = createBaseMessages(rbm, rh, localDomain());
+        msgPayload = rm.formatMessage();
+        msgLeaf = rm.castToMessage().leaf();
         bytes32[] memory originProof = getLatestProof(rh.nonce - 1);
         // Create snapshot proof
         adjustSnapshot(sm);
@@ -92,12 +97,12 @@ abstract contract ExecutionHubTest is AgentSecuredTest {
         // expectCall(address callee, uint256 msgValue, uint64 gas, bytes calldata data)
         vm.expectCall(recipient, 0, gasLimit, expectedCall);
         vm.expectEmit();
-        emit Executed(rh.origin, keccak256(msgPayload), true);
+        emit Executed(rh.origin, msgLeaf, true);
         vm.prank(executor);
+        msgLeaf = rm.castToMessage().leaf();
         testedEH().execute(msgPayload, originProof, snapProof, sm.rsi.stateIndex, gasLimit);
-        bytes memory receiptBody = verify_messageStatus(
-            keccak256(msgPayload), snapRoot, sm.rsi.stateIndex, MessageStatus.Success, executor, executor
-        );
+        bytes memory receiptBody =
+            verify_messageStatus(msgLeaf, snapRoot, sm.rsi.stateIndex, MessageStatus.Success, executor, executor);
         verify_receipt_valid(receiptBody, rbm.tips);
     }
 
@@ -106,7 +111,9 @@ abstract contract ExecutionHubTest is AgentSecuredTest {
         // Create some simple data
         (RawBaseMessage memory rbm, RawHeader memory rh, SnapshotMock memory sm) = createDataRevertTest(random);
         // Create messages and get origin proof
-        bytes memory msgPayload = createBaseMessages(rbm, rh, localDomain());
+        RawMessage memory rm = createBaseMessages(rbm, rh, localDomain());
+        msgPayload = rm.formatMessage();
+        msgLeaf = rm.castToMessage().leaf();
         bytes32[] memory originProof = getLatestProof(rh.nonce - 1);
         // Create snapshot proof
         adjustSnapshot(sm);
@@ -116,22 +123,20 @@ abstract contract ExecutionHubTest is AgentSecuredTest {
         timePassed = uint32(bound(timePassed, rh.optimisticPeriod, rh.optimisticPeriod + 1 days));
         skip(timePassed);
         vm.expectEmit();
-        emit Executed(rh.origin, keccak256(msgPayload), false);
+        emit Executed(rh.origin, msgLeaf, false);
         vm.prank(executor);
         testedEH().execute(msgPayload, originProof, snapProof, sm.rsi.stateIndex, rbm.request.gasLimit);
-        bytes memory receiptBodyFirst = verify_messageStatus(
-            keccak256(msgPayload), snapRoot, sm.rsi.stateIndex, MessageStatus.Failed, executor, address(0)
-        );
+        bytes memory receiptBodyFirst =
+            verify_messageStatus(msgLeaf, snapRoot, sm.rsi.stateIndex, MessageStatus.Failed, executor, address(0));
         verify_receipt_valid(receiptBodyFirst, rbm.tips);
         // Retry the same failed message
         RevertingApp(payable(recipient)).toggleRevert(false);
         vm.expectEmit();
-        emit Executed(rh.origin, keccak256(msgPayload), true);
+        emit Executed(rh.origin, msgLeaf, true);
         vm.prank(executorNew);
         testedEH().execute(msgPayload, originProof, snapProof, sm.rsi.stateIndex, rbm.request.gasLimit);
-        bytes memory receiptBodySecond = verify_messageStatus(
-            keccak256(msgPayload), snapRoot, sm.rsi.stateIndex, MessageStatus.Success, executor, executorNew
-        );
+        bytes memory receiptBodySecond =
+            verify_messageStatus(msgLeaf, snapRoot, sm.rsi.stateIndex, MessageStatus.Success, executor, executorNew);
         // Both receipts (historical and current) should be valid
         verify_receipt_valid(receiptBodyFirst, rbm.tips);
         verify_receipt_valid(receiptBodySecond, rbm.tips);
@@ -143,7 +148,9 @@ abstract contract ExecutionHubTest is AgentSecuredTest {
         // Create some simple data
         (RawBaseMessage memory rbm, RawHeader memory rh, SnapshotMock memory sm) = createDataRevertTest(random);
         // Create messages and get origin proof
-        bytes memory msgPayload = createBaseMessages(rbm, rh, localDomain());
+        RawMessage memory rm = createBaseMessages(rbm, rh, localDomain());
+        msgPayload = rm.formatMessage();
+        msgLeaf = rm.castToMessage().leaf();
         bytes32[] memory originProof = getLatestProof(rh.nonce - 1);
         // Create snapshot proof
         adjustSnapshot(sm);
@@ -153,12 +160,11 @@ abstract contract ExecutionHubTest is AgentSecuredTest {
         timePassed = uint32(bound(timePassed, rh.optimisticPeriod, rh.optimisticPeriod + 1 days));
         skip(timePassed);
         vm.expectEmit();
-        emit Executed(rh.origin, keccak256(msgPayload), false);
+        emit Executed(rh.origin, msgLeaf, false);
         vm.prank(executor);
         testedEH().execute(msgPayload, originProof, snapProof, sm.rsi.stateIndex, rbm.request.gasLimit);
-        bytes memory receiptBodyFirst = verify_messageStatus(
-            keccak256(msgPayload), snapRoot, sm.rsi.stateIndex, MessageStatus.Failed, executor, address(0)
-        );
+        bytes memory receiptBodyFirst =
+            verify_messageStatus(msgLeaf, snapRoot, sm.rsi.stateIndex, MessageStatus.Failed, executor, address(0));
         verify_receipt_valid(receiptBodyFirst, rbm.tips);
         // Retry the same failed message
         vm.expectRevert(AlreadyFailed.selector);
@@ -170,7 +176,8 @@ abstract contract ExecutionHubTest is AgentSecuredTest {
         // Create some simple data
         (RawBaseMessage memory rbm, RawHeader memory rh, SnapshotMock memory sm) = createDataRevertTest(random);
         // Create messages and get origin proof
-        bytes memory msgPayload = createBaseMessages(rbm, rh, localDomain());
+        RawMessage memory rm = createBaseMessages(rbm, rh, localDomain());
+        msgPayload = rm.formatMessage();
         bytes32[] memory originProof = getLatestProof(rh.nonce - 1);
         // Create snapshot proof
         adjustSnapshot(sm);
@@ -189,7 +196,9 @@ abstract contract ExecutionHubTest is AgentSecuredTest {
         // Create some simple data
         (RawBaseMessage memory rbm, RawHeader memory rh, SnapshotMock memory sm) = createDataRevertTest(random);
         // Create messages and get origin proof
-        bytes memory msgPayload = createBaseMessages(rbm, rh, localDomain());
+        RawMessage memory rm = createBaseMessages(rbm, rh, localDomain());
+        msgPayload = rm.formatMessage();
+        msgLeaf = rm.castToMessage().leaf();
         bytes32[] memory originProof = getLatestProof(rh.nonce - 1);
         // Create snapshot proof
         adjustSnapshot(sm);
@@ -203,14 +212,16 @@ abstract contract ExecutionHubTest is AgentSecuredTest {
         vm.expectRevert(NotaryInDispute.selector);
         vm.prank(executor);
         testedEH().execute(msgPayload, originProof, snapProof, sm.rsi.stateIndex, rbm.request.gasLimit);
-        verify_messageStatusNone(keccak256(msgPayload));
+        verify_messageStatusNone(msgLeaf);
     }
 
     function test_execute_base_revert_snapRootUnknown(Random memory random) public {
         // Create some simple data
         (RawBaseMessage memory rbm, RawHeader memory rh, SnapshotMock memory sm) = createDataRevertTest(random);
         // Create messages and get origin proof
-        bytes memory msgPayload = createBaseMessages(rbm, rh, localDomain());
+        RawMessage memory rm = createBaseMessages(rbm, rh, localDomain());
+        msgPayload = rm.formatMessage();
+        msgLeaf = rm.castToMessage().leaf();
         bytes32[] memory originProof = getLatestProof(rh.nonce - 1);
         // Create snapshot proof
         adjustSnapshot(sm);
@@ -222,14 +233,16 @@ abstract contract ExecutionHubTest is AgentSecuredTest {
         vm.expectRevert(IncorrectSnapshotRoot.selector);
         vm.prank(executor);
         testedEH().execute(msgPayload, originProof, snapProof, sm.rsi.stateIndex, rbm.request.gasLimit);
-        verify_messageStatusNone(keccak256(msgPayload));
+        verify_messageStatusNone(msgLeaf);
     }
 
     function test_execute_base_revert_optimisticPeriodNotOver(Random memory random) public {
         // Create some simple data
         (RawBaseMessage memory rbm, RawHeader memory rh, SnapshotMock memory sm) = createDataRevertTest(random);
         // Create messages and get origin proof
-        bytes memory msgPayload = createBaseMessages(rbm, rh, localDomain());
+        RawMessage memory rm = createBaseMessages(rbm, rh, localDomain());
+        msgPayload = rm.formatMessage();
+        msgLeaf = rm.castToMessage().leaf();
         vm.assume(rh.optimisticPeriod != 0);
         bytes32[] memory originProof = getLatestProof(rh.nonce - 1);
         // Create snapshot proof
@@ -241,14 +254,16 @@ abstract contract ExecutionHubTest is AgentSecuredTest {
         vm.expectRevert(MessageOptimisticPeriod.selector);
         vm.prank(executor);
         testedEH().execute(msgPayload, originProof, snapProof, sm.rsi.stateIndex, rbm.request.gasLimit);
-        verify_messageStatusNone(keccak256(msgPayload));
+        verify_messageStatusNone(msgLeaf);
     }
 
     function test_execute_base_revert_gasLimitTooLow(Random memory random) public {
         // Create some simple data
         (RawBaseMessage memory rbm, RawHeader memory rh, SnapshotMock memory sm) = createDataRevertTest(random);
         // Create messages and get origin proof
-        bytes memory msgPayload = createBaseMessages(rbm, rh, localDomain());
+        RawMessage memory rm = createBaseMessages(rbm, rh, localDomain());
+        msgPayload = rm.formatMessage();
+        msgLeaf = rm.castToMessage().leaf();
         bytes32[] memory originProof = getLatestProof(rh.nonce - 1);
         // Create snapshot proof
         adjustSnapshot(sm);
@@ -262,14 +277,16 @@ abstract contract ExecutionHubTest is AgentSecuredTest {
         vm.expectRevert(GasLimitTooLow.selector);
         vm.prank(executor);
         testedEH().execute(msgPayload, originProof, snapProof, sm.rsi.stateIndex, gasLimit);
-        verify_messageStatusNone(keccak256(msgPayload));
+        verify_messageStatusNone(msgLeaf);
     }
 
     function test_execute_base_revert_gasSuppliedTooLow(Random memory random) public {
         // Create some simple data
         (RawBaseMessage memory rbm, RawHeader memory rh, SnapshotMock memory sm) = createDataRevertTest(random);
         // Create messages and get origin proof
-        bytes memory msgPayload = createBaseMessages(rbm, rh, localDomain());
+        RawMessage memory rm = createBaseMessages(rbm, rh, localDomain());
+        msgPayload = rm.formatMessage();
+        msgLeaf = rm.castToMessage().leaf();
         bytes32[] memory originProof = getLatestProof(rh.nonce - 1);
         // Create snapshot proof
         adjustSnapshot(sm);
@@ -284,7 +301,7 @@ abstract contract ExecutionHubTest is AgentSecuredTest {
         testedEH().execute{gas: rbm.request.gasLimit + 20_000}(
             msgPayload, originProof, snapProof, sm.rsi.stateIndex, rbm.request.gasLimit
         );
-        verify_messageStatusNone(keccak256(msgPayload));
+        verify_messageStatusNone(msgLeaf);
     }
 
     function test_execute_base_revert_wrongDestination(Random memory random, uint32 destination_) public {
@@ -292,7 +309,9 @@ abstract contract ExecutionHubTest is AgentSecuredTest {
         // Create some simple data
         (RawBaseMessage memory rbm, RawHeader memory rh, SnapshotMock memory sm) = createDataRevertTest(random);
         // Create messages and get origin proof
-        bytes memory msgPayload = createBaseMessages(rbm, rh, destination_);
+        RawMessage memory rm = createBaseMessages(rbm, rh, destination_);
+        msgPayload = rm.formatMessage();
+        msgLeaf = rm.castToMessage().leaf();
         bytes32[] memory originProof = getLatestProof(rh.nonce - 1);
         // Create snapshot proof
         adjustSnapshot(sm);
@@ -304,7 +323,7 @@ abstract contract ExecutionHubTest is AgentSecuredTest {
         vm.expectRevert(IncorrectDestinationDomain.selector);
         vm.prank(executor);
         testedEH().execute(msgPayload, originProof, snapProof, sm.rsi.stateIndex, rbm.request.gasLimit);
-        verify_messageStatusNone(keccak256(msgPayload));
+        verify_messageStatusNone(msgLeaf);
     }
 
     // ══════════════════════════════════════ TESTS: EXECUTE MANAGER MESSAGES ══════════════════════════════════════════
@@ -313,7 +332,9 @@ abstract contract ExecutionHubTest is AgentSecuredTest {
         public
     {
         // Create messages and get origin proof
-        bytes memory msgPayload = createManagerMessages(lightManager.remoteMockFunc.selector, rh, localDomain());
+        RawMessage memory rm = createManagerMessages(lightManager.remoteMockFunc.selector, rh, localDomain());
+        msgPayload = rm.formatMessage();
+        msgLeaf = rm.castToMessage().leaf();
         bytes32[] memory originProof = getLatestProof(rh.nonce - 1);
         // Create snapshot proof
         adjustSnapshot(sm);
@@ -328,12 +349,10 @@ abstract contract ExecutionHubTest is AgentSecuredTest {
             abi.encodeWithSelector(bondingManager.remoteMockFunc.selector, rh.origin, timePassed, rh.nonce)
         );
         vm.expectEmit();
-        emit Executed(rh.origin, keccak256(msgPayload), true);
+        emit Executed(rh.origin, msgLeaf, true);
         vm.prank(executor);
         testedEH().execute(msgPayload, originProof, snapProof, sm.rsi.stateIndex, gasLimit);
-        verify_messageStatus(
-            keccak256(msgPayload), snapRoot, sm.rsi.stateIndex, MessageStatus.Success, executor, executor
-        );
+        verify_messageStatus(msgLeaf, snapRoot, sm.rsi.stateIndex, MessageStatus.Success, executor, executor);
     }
 
     function test_execute_manager_revert_incorrectMagicValue() public {
@@ -341,7 +360,8 @@ abstract contract ExecutionHubTest is AgentSecuredTest {
         RawHeader memory rh;
         SnapshotMock memory sm;
         // Create messages and get origin proof
-        bytes memory msgPayload = createManagerMessages(lightManager.sensitiveMockFunc.selector, rh, localDomain());
+        RawMessage memory rm = createManagerMessages(lightManager.sensitiveMockFunc.selector, rh, localDomain());
+        msgPayload = rm.formatMessage();
         bytes32[] memory originProof = getLatestProof(rh.nonce - 1);
         // Create snapshot proof
         adjustSnapshot(sm);
@@ -355,7 +375,8 @@ abstract contract ExecutionHubTest is AgentSecuredTest {
         RawHeader memory rh;
         SnapshotMock memory sm;
         // Create messages and get origin proof
-        bytes memory msgPayload = createManagerMessages(lightManager.sensitiveMockFuncVoid.selector, rh, localDomain());
+        RawMessage memory rm = createManagerMessages(lightManager.sensitiveMockFuncVoid.selector, rh, localDomain());
+        msgPayload = rm.formatMessage();
         bytes32[] memory originProof = getLatestProof(rh.nonce - 1);
         // Create snapshot proof
         adjustSnapshot(sm);
@@ -369,8 +390,9 @@ abstract contract ExecutionHubTest is AgentSecuredTest {
         RawHeader memory rh;
         SnapshotMock memory sm;
         // Create messages and get origin proof
-        bytes memory msgPayload =
+        RawMessage memory rm =
             createManagerMessages(lightManager.sensitiveMockFuncOver32Bytes.selector, rh, localDomain());
+        msgPayload = rm.formatMessage();
         bytes32[] memory originProof = getLatestProof(rh.nonce - 1);
         // Create snapshot proof
         adjustSnapshot(sm);
@@ -477,33 +499,35 @@ abstract contract ExecutionHubTest is AgentSecuredTest {
 
     function createBaseMessages(RawBaseMessage memory rbm, RawHeader memory rh, uint32 destination_)
         public
-        returns (bytes memory msgPayload)
+        returns (RawMessage memory rm)
     {
         adjustHeader(rh, destination_);
         rbm.recipient = addressToBytes32(recipient);
         // Set sensible limitations for tips/request
         rbm.tips.boundTips(2 ** 32);
         rbm.request.gasLimit = uint64(bound(rbm.request.gasLimit, 50_000, 200_000));
-        msgPayload = RawMessage(uint8(MessageFlag.Base), rh, rbm.formatBaseMessage()).formatMessage();
-        createMessages(rh.nonce, msgPayload);
+        rh.flag = uint8(MessageFlag.Base);
+        rm = RawMessage(rh, rbm.formatBaseMessage());
+        createMessages(rh.nonce, rm);
     }
 
     function createManagerMessages(bytes4 selector, RawHeader memory rh, uint32 destination_)
         public
-        returns (bytes memory msgPayload)
+        returns (RawMessage memory rm)
     {
         adjustHeader(rh, destination_);
         RawCallData memory rcd = RawCallData({selector: selector, args: abi.encode(rh.nonce)});
-        msgPayload = RawMessage(uint8(MessageFlag.Manager), rh, rcd.formatCallData()).formatMessage();
-        createMessages(rh.nonce, msgPayload);
+        rh.flag = uint8(MessageFlag.Manager);
+        rm = RawMessage(rh, rcd.formatCallData());
+        createMessages(rh.nonce, rm);
     }
 
-    function createMessages(uint32 msgNonce, bytes memory msgPayload) public {
+    function createMessages(uint32 msgNonce, RawMessage memory rm) public {
         for (uint32 nonce = 1; nonce <= MESSAGES; ++nonce) {
             if (nonce == msgNonce) {
-                insertMessage(msgPayload);
+                insertMessage(rm.castToMessage().leaf());
             } else {
-                insertMessage(abi.encode("Mocked payload", nonce));
+                insertMessage(keccak256(abi.encode("Mocked payload", nonce)));
             }
         }
     }

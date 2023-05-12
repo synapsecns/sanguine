@@ -24,8 +24,8 @@ uint256 constant STATE_LENGTH = 50 + GAS_DATA_LENGTH;
 /// @dev Maximum amount of states in a single snapshot. Each state produces two leafs in the tree
 uint256 constant SNAPSHOT_MAX_STATES = 1 << (SNAPSHOT_TREE_HEIGHT - 1);
 // ══════════════════════════════════ MESSAGE ══════════════════════════════════
-/// @dev See Header.sol: (uint32,uint32,uint32,uint32): 4+4+4+4
-uint256 constant HEADER_LENGTH = 16;
+/// @dev See Header.sol: (uint8,uint32,uint32,uint32,uint32): 1+4+4+4+4
+uint256 constant HEADER_LENGTH = 17;
 /// @dev See Request.sol: (uint96,uint64,uint32): 12+8+4
 uint256 constant REQUEST_LENGTH = 24;
 /// @dev See Tips.sol: (uint64,uint64,uint64,uint64): 8+8+8+8
