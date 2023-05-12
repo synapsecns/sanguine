@@ -5,7 +5,7 @@
   "private": "true",
   "scripts": {
     "build": "yarn build:contracts && yarn build:typescript && yarn build:go",
-    "build:go": "script/sh/flatten.sh contracts/*.sol contracts/manager/BondingManager.sol contracts/manager/LightManager.sol test/harnesses/*.sol test/harnesses/manager/*.sol test/harnesses/libs/*.sol contracts/client/*.sol",
+    "build:go": "script/sh/flatten.sh contracts/*.sol contracts/manager/*.sol test/harnesses/*.sol test/harnesses/manager/*.sol test/harnesses/libs/**/*.sol contracts/client/*.sol",
     "build:contracts": "forge build",
     "build:slither": "forge build --out=out --build-info --force",
     "test:coverage": "echo 'Please use foundry'",

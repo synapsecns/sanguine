@@ -6,6 +6,7 @@ import { getOrderedChains } from '@utils/getOrderedChains'
 import Image from 'next/image'
 import Tooltip from '@tw/Tooltip'
 import { useEffect, useState } from 'react'
+import { DisplayType } from '@/pages/bridge/BridgeCard'
 
 export const ChainLabel = ({
   isOrigin,
@@ -27,7 +28,7 @@ export const ChainLabel = ({
   setDisplayType: (v: string) => void
 }) => {
   const labelClassName = 'text-sm'
-  const displayType = isOrigin ? 'fromChain' : 'toChain'
+  const displayType = isOrigin ? DisplayType.FROM_CHAIN : DisplayType.TO_CHAIN
   const dataId = isOrigin ? 'bridge-origin-chain' : 'bridge-destination-chain'
   const title = titleText ?? (isOrigin ? 'Origin' : 'Dest.')
   const [orderedChains, setOrderedChains] = useState<number[]>([])
@@ -93,11 +94,11 @@ const PossibleChain = ({
       tabIndex={0}
       onClick={() => onChangeChain(chainId, false, isOrigin ? 'from' : 'to')}
     >
-      <Tooltip content={chain.chainName}>
+      <Tooltip content={chain.name}>
         <Image
           src={chain.chainImg}
           className="duration-300 rounded-full hover:scale-125"
-          alt={chain.chainName}
+          alt={chain.name}
         />
       </Tooltip>
     </button>
@@ -124,7 +125,7 @@ const SelectedChain = ({ chainId }: { chainId: number }) => {
       />
       <div className="hidden md:inline-block lg:inline-block">
         <div className="mr-2 text-sm text-white">
-          {chain.chainName === 'Boba Network' ? 'Boba' : chain.chainName}
+          {chain.name === 'Boba Network' ? 'Boba' : chain.name}
         </div>
       </div>
     </div>

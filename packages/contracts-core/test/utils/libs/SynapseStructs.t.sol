@@ -1,25 +1,24 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.17;
 
-import {ByteString, CallData, MemView, MemViewLib} from "../../../contracts/libs/ByteString.sol";
+import {ByteString, CallData, MemView, MemViewLib} from "../../../contracts/libs/memory/ByteString.sol";
 
-import {BaseMessage, BaseMessageLib, Tips, TipsLib} from "../../../contracts/libs/BaseMessage.sol";
-import {ChainGas, GasData, GasDataLib} from "../../../contracts/libs/GasData.sol";
-import {Header, HeaderLib, Message, MessageFlag, MessageLib} from "../../../contracts/libs/Message.sol";
-import {Number, NumberLib} from "../../../contracts/libs/Number.sol";
-import {Receipt, ReceiptBody, ReceiptLib} from "../../../contracts/libs/Receipt.sol";
-import {ReceiptFlag, ReceiptReport, ReceiptReportLib} from "../../../contracts/libs/ReceiptReport.sol";
-import {Request, RequestLib} from "../../../contracts/libs/Request.sol";
+import {BaseMessage, BaseMessageLib, Tips, TipsLib} from "../../../contracts/libs/memory/BaseMessage.sol";
+import {ChainGas, GasData, GasDataLib} from "../../../contracts/libs/stack/GasData.sol";
+import {Header, HeaderLib, MessageFlag} from "../../../contracts/libs/stack/Header.sol";
+import {Message, MessageLib} from "../../../contracts/libs/memory/Message.sol";
+import {Number, NumberLib} from "../../../contracts/libs/stack/Number.sol";
+import {Receipt, ReceiptBody, ReceiptLib} from "../../../contracts/libs/memory/Receipt.sol";
+import {Request, RequestLib} from "../../../contracts/libs/stack/Request.sol";
 
-import {Snapshot, SnapshotLib, SNAPSHOT_MAX_STATES, State, StateLib} from "../../../contracts/libs/Snapshot.sol";
+import {
+    Snapshot, SnapshotLib, SNAPSHOT_MAX_STATES, State, StateLib
+} from "../../../contracts/libs/memory/Snapshot.sol";
 
-import {Attestation, AttestationLib} from "../../../contracts/libs/Attestation.sol";
-
-import {AttestationFlag, AttestationReport, AttestationReportLib} from "../../../contracts/libs/AttestationReport.sol";
-
-import {StateFlag, StateReport, StateReportLib} from "../../../contracts/libs/StateReport.sol";
+import {Attestation, AttestationLib} from "../../../contracts/libs/memory/Attestation.sol";
 
 struct RawHeader {
+    uint8 flag;
     uint32 origin;
     uint32 nonce;
     uint32 destination;
@@ -31,6 +30,7 @@ using CastLib for RawHeader global;
 struct RawRequest {
     uint96 gasDrop;
     uint64 gasLimit;
+    uint32 version;
 }
 
 using CastLib for RawRequest global;
@@ -65,13 +65,6 @@ struct RawExecReceipt {
 
 using CastLib for RawExecReceipt global;
 
-struct RawReceiptReport {
-    uint8 flag;
-    RawReceiptBody body;
-}
-
-using CastLib for RawReceiptReport global;
-
 struct RawCallData {
     bytes4 selector;
     bytes args;
@@ -88,9 +81,9 @@ struct RawManagerCall {
 using CastLib for RawManagerCall global;
 
 struct RawBaseMessage {
+    RawTips tips;
     bytes32 sender;
     bytes32 recipient;
-    RawTips tips;
     RawRequest request;
     bytes content;
 }
@@ -98,7 +91,6 @@ struct RawBaseMessage {
 using CastLib for RawBaseMessage global;
 
 struct RawMessage {
-    uint8 flag;
     RawHeader header;
     bytes body;
 }
@@ -177,33 +169,16 @@ struct RawAttestation {
 
 using CastLib for RawAttestation global;
 
-struct RawAttestationReport {
-    uint8 flag;
-    RawAttestation attestation;
-}
-
-using CastLib for RawAttestationReport global;
-
-struct RawStateReport {
-    uint8 flag;
-    RawState state;
-}
-
-using CastLib for RawStateReport global;
-
 // solhint-disable no-empty-blocks
 // solhint-disable ordering
 library CastLib {
     using AttestationLib for bytes;
-    using AttestationReportLib for bytes;
     using ByteString for bytes;
     using BaseMessageLib for bytes;
     using MessageLib for bytes;
     using ReceiptLib for bytes;
-    using ReceiptReportLib for bytes;
     using SnapshotLib for bytes;
     using StateLib for bytes;
-    using StateReportLib for bytes;
 
     /// @notice Prevents this contract from being included in the coverage report
     function testCastLib() external {}
@@ -211,21 +186,22 @@ library CastLib {
     // ══════════════════════════════════════════════════ MESSAGE ══════════════════════════════════════════════════════
 
     function formatMessage(RawMessage memory rm) internal pure returns (bytes memory msgPayload) {
-        // Explicit revert when out of range
-        require(rm.flag <= uint8(type(MessageFlag).max), "Flag out of range");
-        return MessageLib.formatMessage(MessageFlag(rm.flag), rm.header.castToHeader(), rm.body);
+        return MessageLib.formatMessage(rm.header.castToHeader(), rm.body);
     }
 
     function castToMessage(RawMessage memory rm) internal pure returns (Message ptr) {
         ptr = rm.formatMessage().castToMessage();
     }
 
-    function encodeHeader(RawHeader memory rh) internal pure returns (uint128 encodedHeader) {
+    function encodeHeader(RawHeader memory rh) internal pure returns (uint136 encodedHeader) {
         encodedHeader = Header.unwrap(rh.castToHeader());
     }
 
     function castToHeader(RawHeader memory rh) internal pure returns (Header header) {
+        // Explicit revert when out of range
+        require(rh.flag <= uint8(type(MessageFlag).max), "Flag out of range");
         header = HeaderLib.encodeHeader({
+            flag_: MessageFlag(rh.flag),
             origin_: rh.origin,
             nonce_: rh.nonce,
             destination_: rh.destination,
@@ -233,12 +209,16 @@ library CastLib {
         });
     }
 
-    function encodeRequest(RawRequest memory rr) internal pure returns (uint160 encodedReq) {
+    function boundFlag(RawHeader memory rh) internal pure {
+        rh.flag = rh.flag % (uint8(type(MessageFlag).max) + 1);
+    }
+
+    function encodeRequest(RawRequest memory rr) internal pure returns (uint192 encodedReq) {
         encodedReq = Request.unwrap(rr.castToRequest());
     }
 
     function castToRequest(RawRequest memory rr) internal pure returns (Request request) {
-        request = RequestLib.encodeRequest({gasDrop_: rr.gasDrop, gasLimit_: rr.gasLimit});
+        request = RequestLib.encodeRequest({gasDrop_: rr.gasDrop, gasLimit_: rr.gasLimit, version_: rr.version});
     }
 
     function encodeTips(RawTips memory rt) internal pure returns (uint256 encodedTips) {
@@ -277,9 +257,9 @@ library CastLib {
 
     function formatBaseMessage(RawBaseMessage memory rbm) internal pure returns (bytes memory bmPayload) {
         bmPayload = BaseMessageLib.formatBaseMessage({
+            tips_: rbm.tips.castToTips(),
             sender_: rbm.sender,
             recipient_: rbm.recipient,
-            tips_: rbm.tips.castToTips(),
             request_: rbm.request.castToRequest(),
             content_: rbm.content
         });
@@ -351,16 +331,6 @@ library CastLib {
         mrb.finalExecutor = address(uint160(rrb.finalExecutor) ^ uint160(mask & 32));
     }
 
-    function formatReceiptReport(RawReceiptReport memory rawRR) internal pure returns (bytes memory) {
-        // Explicit revert when flag out of range
-        require(rawRR.flag <= uint8(type(ReceiptFlag).max), "Flag out of range");
-        return ReceiptFlag(rawRR.flag).formatReceiptReport(rawRR.body.formatReceiptBody());
-    }
-
-    function castToReceiptReport(RawReceiptReport memory rawRR) internal pure returns (ReceiptReport) {
-        return rawRR.formatReceiptReport().castToReceiptReport();
-    }
-
     // ═════════════════════════════════════════════════ GAS DATA ══════════════════════════════════════════════════════
 
     function encodeNumber(RawNumber memory rn) internal pure returns (Number) {
@@ -387,6 +357,15 @@ library CastLib {
         rgd.amortAttCost.number = Number.unwrap(NumberLib.compress(rdg256.amortAttCost));
         rgd.etherPrice.number = Number.unwrap(NumberLib.compress(rdg256.etherPrice));
         rgd.markup.number = Number.unwrap(NumberLib.compress(rdg256.markup));
+    }
+
+    function decompress(RawGasData memory rgd) internal pure returns (RawGasData256 memory rdg256) {
+        rdg256.gasPrice = Number.wrap(rgd.gasPrice.number).decompress();
+        rdg256.dataPrice = Number.wrap(rgd.dataPrice.number).decompress();
+        rdg256.execBuffer = Number.wrap(rgd.execBuffer.number).decompress();
+        rdg256.amortAttCost = Number.wrap(rgd.amortAttCost.number).decompress();
+        rdg256.etherPrice = Number.wrap(rgd.etherPrice.number).decompress();
+        rdg256.markup = Number.wrap(rgd.markup.number).decompress();
     }
 
     function encodeGasData(RawGasData memory rgd) internal pure returns (uint96 encodedGasData) {
@@ -443,17 +422,6 @@ library CastLib {
         mrs.gasData.amortAttCost.number = rs.gasData.amortAttCost.number ^ uint16(mask & 256);
         mrs.gasData.etherPrice.number = rs.gasData.etherPrice.number ^ uint16(mask & 512);
         mrs.gasData.markup.number = rs.gasData.markup.number ^ uint16(mask & 1024);
-    }
-
-    function formatStateReport(RawStateReport memory rawSR) internal pure returns (bytes memory stateReport) {
-        // Explicit revert when flag out of range
-        require(rawSR.flag <= uint8(type(StateFlag).max), "Flag out of range");
-        bytes memory state = rawSR.state.formatState();
-        stateReport = StateFlag(rawSR.flag).formatStateReport(state);
-    }
-
-    function castToStateReport(RawStateReport memory rawSR) internal pure returns (StateReport ptr) {
-        ptr = rawSR.formatStateReport().castToStateReport();
     }
 
     function boundStateIndex(RawStateIndex memory rsi) internal pure {
@@ -548,20 +516,5 @@ library CastLib {
         mra.blockNumber = ra.blockNumber ^ uint40(mask & 8);
         mra.timestamp = ra.timestamp ^ uint40(mask & 16);
         mra.setDataHash();
-    }
-
-    function formatAttestationReport(RawAttestationReport memory rawAR)
-        internal
-        pure
-        returns (bytes memory attestationReport)
-    {
-        // Explicit revert when out of range
-        require(rawAR.flag <= uint8(type(AttestationFlag).max), "Flag out of range");
-        bytes memory attestation = rawAR.attestation.formatAttestation();
-        attestationReport = AttestationFlag(rawAR.flag).formatAttestationReport(attestation);
-    }
-
-    function castToAttestationReport(RawAttestationReport memory rawAR) internal pure returns (AttestationReport ptr) {
-        ptr = rawAR.formatAttestationReport().castToAttestationReport();
     }
 }

@@ -16,7 +16,7 @@ contract RevertingApp is IMessageRecipient {
         willRevert = willRevert_;
     }
 
-    function receiveBaseMessage(uint32, uint32, bytes32, uint256, bytes memory) external payable {
+    function receiveBaseMessage(uint32, uint32, bytes32, uint256, uint32, bytes memory) external payable {
         if (willRevert) {
             revert("GM");
         }

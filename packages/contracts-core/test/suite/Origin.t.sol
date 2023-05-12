@@ -4,9 +4,10 @@ pragma solidity 0.8.17;
 import {IAgentSecured} from "../../contracts/interfaces/IAgentSecured.sol";
 import {InterfaceGasOracle} from "../../contracts/interfaces/InterfaceGasOracle.sol";
 import {IStateHub} from "../../contracts/interfaces/IStateHub.sol";
+import {EthTransferFailed, InsufficientEthBalance, TipsValueTooLow} from "../../contracts/libs/Errors.sol";
 import {SNAPSHOT_MAX_STATES} from "../../contracts/libs/Constants.sol";
 import {SystemEntity} from "../../contracts/libs/Structures.sol";
-import {TipsLib} from "../../contracts/libs/Tips.sol";
+import {TipsLib} from "../../contracts/libs/stack/Tips.sol";
 
 import {InterfaceOrigin} from "../../contracts/Origin.sol";
 import {Versioned} from "../../contracts/base/Version.sol";
@@ -18,7 +19,6 @@ import {fakeState, fakeSnapshot} from "../utils/libs/FakeIt.t.sol";
 import {Random} from "../utils/libs/Random.t.sol";
 import {
     MessageFlag,
-    StateFlag,
     RawAttestation,
     RawBaseMessage,
     RawGasData,
@@ -28,7 +28,6 @@ import {
     RawSnapshot,
     RawState,
     RawStateIndex,
-    RawStateReport,
     RawTips
 } from "../utils/libs/SynapseStructs.t.sol";
 import {AgentFlag, Origin, SynapseTest} from "../utils/SynapseTest.t.sol";
@@ -42,7 +41,7 @@ contract OriginTest is AgentSecuredTest {
     address public recipient = makeAddr("Recipient");
     uint32 public period = 1 minutes;
     RawTips public tips = RawTips(0, 0, 0, 0);
-    RawRequest public request = RawRequest({gasLimit: 100_000, gasDrop: 0});
+    RawRequest public request = RawRequest({gasLimit: 100_000, gasDrop: 0, version: 0});
 
     // Deploy Production version of Origin and mocks for everything else
     constructor() SynapseTest(DEPLOY_PROD_ORIGIN) {}
@@ -64,13 +63,15 @@ contract OriginTest is AgentSecuredTest {
         uint32 domain = random.nextUint32();
         address caller = random.nextAddress();
         address agentManager = random.nextAddress();
+        address inbox_ = random.nextAddress();
         address gasOracle_ = address(new GasOracleMock());
-        Origin cleanContract = new Origin(domain, agentManager, gasOracle_);
+        Origin cleanContract = new Origin(domain, agentManager, inbox_, gasOracle_);
         vm.prank(caller);
         cleanContract.initialize();
         assertEq(cleanContract.owner(), caller, "!owner");
         assertEq(cleanContract.localDomain(), domain, "!localDomain");
         assertEq(cleanContract.agentManager(), agentManager, "!agentManager");
+        assertEq(cleanContract.inbox(), inbox_, "!inbox");
         assertEq(cleanContract.gasOracle(), gasOracle_, "!gasOracle");
         assertEq(cleanContract.statesAmount(), 1, "!statesAmount");
     }
@@ -85,7 +86,7 @@ contract OriginTest is AgentSecuredTest {
         msgValue = msgValue % minTips.castToTips().value();
         GasOracleMock(gasOracle).setMockedMinimumTips(minTips.encodeTips());
         deal(sender, msgValue);
-        vm.expectRevert("Tips value too low");
+        vm.expectRevert(TipsValueTooLow.selector);
         vm.prank(sender);
         InterfaceOrigin(origin).sendBaseMessage{value: msgValue}(
             DOMAIN_REMOTE, addressToBytes32(recipient), period, request.encodeRequest(), "test content"
@@ -115,24 +116,32 @@ contract OriginTest is AgentSecuredTest {
 
     function test_sendMessages(RawGasData memory rgd) public {
         GasOracleMock(gasOracle).setMockedGasData(rgd.encodeGasData());
-        uint160 encodedRequest = request.encodeRequest();
+        uint192 encodedRequest = request.encodeRequest();
         bytes memory content = "test content";
         bytes memory body = RawBaseMessage({
+            tips: tips,
             sender: addressToBytes32(sender),
             recipient: addressToBytes32(recipient),
-            tips: tips,
             request: request,
             content: content
         }).formatBaseMessage();
         bytes[] memory messages = new bytes[](MESSAGES);
+        bytes32[] memory leafs = new bytes32[](MESSAGES);
         bytes32[] memory roots = new bytes32[](MESSAGES);
         for (uint32 i = 0; i < MESSAGES; ++i) {
-            messages[i] = RawMessage(
-                uint8(MessageFlag.Base),
-                RawHeader({origin: DOMAIN_LOCAL, nonce: i + 1, destination: DOMAIN_REMOTE, optimisticPeriod: period}),
+            RawMessage memory rm = RawMessage(
+                RawHeader({
+                    flag: uint8(MessageFlag.Base),
+                    origin: DOMAIN_LOCAL,
+                    nonce: i + 1,
+                    destination: DOMAIN_REMOTE,
+                    optimisticPeriod: period
+                }),
                 body
-            ).formatMessage();
-            insertMessage(messages[i]);
+            );
+            messages[i] = rm.formatMessage();
+            leafs[i] = rm.castToMessage().leaf();
+            insertMessage(leafs[i]);
             roots[i] = getRoot(i + 1);
         }
 
@@ -150,7 +159,7 @@ contract OriginTest is AgentSecuredTest {
             vm.expectEmit(true, true, true, true);
             emit StateSaved(state);
             vm.expectEmit(true, true, true, true);
-            emit Sent(keccak256(messages[i]), i + 1, DOMAIN_REMOTE, messages[i]);
+            emit Sent(leafs[i], i + 1, DOMAIN_REMOTE, messages[i]);
         }
 
         for (uint32 i = 0; i < MESSAGES; ++i) {
@@ -160,7 +169,7 @@ contract OriginTest is AgentSecuredTest {
             );
             // Check return values
             assertEq(messageNonce, i + 1, "!messageNonce");
-            assertEq(messageHash, keccak256(messages[i]), "!messageHash");
+            assertEq(messageHash, leafs[i], "!messageHash");
             skipBlock();
         }
     }
@@ -309,13 +318,11 @@ contract OriginTest is AgentSecuredTest {
             emit InvalidStateWithAttestation(rsi.stateIndex, state, attPayload, attSig);
             // TODO: check that anyone could make the call
             expectStatusUpdated(AgentFlag.Fraudulent, domain, notary);
-            expectDisputeResolved(notary, address(0), address(this));
+            expectDisputeResolved(0, notary, address(0), address(this));
         }
         vm.recordLogs();
         assertEq(
-            lightManager.verifyStateWithAttestation(rsi.stateIndex, snapshot, attPayload, attSig),
-            isValid,
-            "!returnValue"
+            lightInbox.verifyStateWithAttestation(rsi.stateIndex, snapshot, attPayload, attSig), isValid, "!returnValue"
         );
         if (isValid) {
             assertEq(vm.getRecordedLogs().length, 0, "Emitted logs when shouldn't");
@@ -334,11 +341,11 @@ contract OriginTest is AgentSecuredTest {
             emit InvalidStateWithAttestation(rsi.stateIndex, state, attPayload, attSig);
             // TODO: check that anyone could make the call
             expectStatusUpdated(AgentFlag.Fraudulent, domain, notary);
-            expectDisputeResolved(notary, address(0), address(this));
+            expectDisputeResolved(0, notary, address(0), address(this));
         }
         vm.recordLogs();
         assertEq(
-            lightManager.verifyStateWithSnapshotProof(rsi.stateIndex, state, snapProof, attPayload, attSig),
+            lightInbox.verifyStateWithSnapshotProof(rsi.stateIndex, state, snapProof, attPayload, attSig),
             isValid,
             "!returnValue"
         );
@@ -358,9 +365,9 @@ contract OriginTest is AgentSecuredTest {
             emit InvalidStateWithSnapshot(rsi.stateIndex, snapPayload, snapSig);
             // TODO: check that anyone could make the call
             expectStatusUpdated(AgentFlag.Fraudulent, DOMAIN_REMOTE, notary);
-            expectDisputeResolved(notary, address(0), address(this));
+            expectDisputeResolved(0, notary, address(0), address(this));
         }
-        assertEq(lightManager.verifyStateWithSnapshot(rsi.stateIndex, snapPayload, snapSig), isValid, "!returnValue");
+        assertEq(lightInbox.verifyStateWithSnapshot(rsi.stateIndex, snapPayload, snapSig), isValid, "!returnValue");
         if (isValid) {
             assertEq(vm.getRecordedLogs().length, 0, "Emitted logs when shouldn't");
         }
@@ -370,19 +377,18 @@ contract OriginTest is AgentSecuredTest {
     function _verifyStateReport(RawState memory rawState, bool isStateValid) internal {
         // Report is valid only if reported state is invalid
         bool isValid = !isStateValid;
-        RawStateReport memory rawSR = RawStateReport(uint8(StateFlag.Invalid), rawState);
         address guard = domains[0].agent;
-        (bytes memory srPayload, bytes memory srSig) = signStateReport(guard, rawSR);
+        (bytes memory statePayload, bytes memory srSig) = signStateReport(guard, rawState);
         if (!isValid) {
             // Expect Events to be emitted
             vm.expectEmit(true, true, true, true);
-            emit InvalidStateReport(srPayload, srSig);
+            emit InvalidStateReport(statePayload, srSig);
             // TODO: check that anyone could make the call
             expectStatusUpdated(AgentFlag.Fraudulent, 0, guard);
-            expectDisputeResolved(guard, address(0), address(this));
+            expectDisputeResolved(0, guard, address(0), address(this));
         }
         vm.recordLogs();
-        assertEq(lightManager.verifyStateReport(srPayload, srSig), isValid, "!returnValue");
+        assertEq(lightInbox.verifyStateReport(statePayload, srSig), isValid, "!returnValue");
         if (isValid) {
             assertEq(vm.getRecordedLogs().length, 0, "Emitted logs when shouldn't");
         }
@@ -401,7 +407,7 @@ contract OriginTest is AgentSecuredTest {
         amount = bound(amount, 1, type(uint256).max);
         balance = balance % amount;
         vm.deal(origin, balance);
-        vm.expectRevert("Insufficient balance");
+        vm.expectRevert(InsufficientEthBalance.selector);
         vm.prank(address(lightManager));
         InterfaceOrigin(origin).withdrawTips(recipient, amount);
     }
@@ -409,7 +415,7 @@ contract OriginTest is AgentSecuredTest {
     function test_withdrawTips_revert_recipientReverted(uint256 amount) public {
         address revertingRecipient = address(new RevertingApp());
         vm.deal(origin, amount);
-        vm.expectRevert("Recipient reverted");
+        vm.expectRevert(EthTransferFailed.selector);
         vm.prank(address(lightManager));
         InterfaceOrigin(origin).withdrawTips(revertingRecipient, amount);
     }

@@ -1,23 +1,17 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.17;
 
-import {AgentFlag, Dispute, DisputeFlag} from "../../../contracts/libs/Structures.sol";
+import {MessagingBase} from "../../../contracts/base/MessagingBase.sol";
+import {AgentFlag, DisputeFlag} from "../../../contracts/libs/Structures.sol";
 import {IAgentSecured} from "../../../contracts/interfaces/IAgentSecured.sol";
+import {IStatementInbox} from "../../../contracts/interfaces/IStatementInbox.sol";
+
 import {AgentManagerHarness} from "../../harnesses/manager/AgentManagerHarness.t.sol";
 import {SynapseTest} from "../../utils/SynapseTest.t.sol";
 
 import {fakeSnapshot} from "../../utils/libs/FakeIt.t.sol";
 import {Random} from "../../utils/libs/Random.t.sol";
-import {
-    AttestationFlag,
-    StateFlag,
-    RawAttestation,
-    RawAttestationReport,
-    RawSnapshot,
-    RawState,
-    RawStateIndex,
-    RawStateReport
-} from "../../utils/libs/SynapseStructs.t.sol";
+import {RawAttestation, RawSnapshot, RawState, RawStateIndex} from "../../utils/libs/SynapseStructs.t.sol";
 
 // solhint-disable func-name-mixedcase
 abstract contract MessagingBaseTest is SynapseTest {
@@ -54,34 +48,61 @@ abstract contract MessagingBaseTest is SynapseTest {
         emit StatusUpdated(flag, domain, agent);
     }
 
-    function expectDisputeOpened(address guard, address notary) public {
+    function expectDisputeOpened(uint256 disputeIndex, address guard, address notary) public {
         vm.expectEmit();
-        emit DisputeUpdated(guard, Dispute(DisputeFlag.Pending, agentIndex[notary], address(0)));
-        vm.expectEmit();
-        emit DisputeUpdated(notary, Dispute(DisputeFlag.Pending, agentIndex[guard], address(0)));
-        // TODO: check if Summit is called, when separated
+        emit DisputeOpened(disputeIndex, agentIndex[guard], agentIndex[notary]);
         bytes memory expectedCall =
             abi.encodeWithSelector(IAgentSecured.openDispute.selector, agentIndex[guard], agentIndex[notary]);
         vm.expectCall(localDestination(), expectedCall);
+        if (localSummit() != address(0)) {
+            vm.expectCall(localSummit(), expectedCall);
+        }
     }
 
-    function expectDisputeResolved(address slashed, address honest, address prover) public {
-        vm.expectEmit();
-        emit DisputeUpdated(slashed, Dispute(DisputeFlag.Slashed, agentIndex[honest], prover));
-        if (honest != address(0)) {
+    function expectDisputeResolved(uint256 disputePtr, address slashed, address honest, address prover) public {
+        if (disputePtr != 0) {
             vm.expectEmit();
-            emit DisputeUpdated(honest, Dispute(DisputeFlag.None, 0, address(0)));
+            emit DisputeResolved(disputePtr - 1, agentIndex[slashed], agentIndex[honest], prover);
         }
-        // TODO: check if Summit is called, when separated
         bytes memory expectedCall =
             abi.encodeWithSelector(IAgentSecured.resolveDispute.selector, agentIndex[slashed], agentIndex[honest]);
         vm.expectCall(localDestination(), expectedCall);
+        if (localSummit() != address(0)) {
+            vm.expectCall(localSummit(), expectedCall);
+        }
     }
 
     // ══════════════════════════════════════════════ DISPUTE CHEATS ═══════════════════════════════════════════════════
 
     function openDispute(address guard, address notary) public {
-        AgentManagerHarness(localAgentManager()).openDisputeExposed(guard, notary);
+        require(agentIndex[guard] != 0 && agentDomain[guard] == 0, "Invalid Guard");
+        require(agentIndex[notary] != 0 && agentDomain[notary] != 0, "Invalid Notary");
+        RawSnapshot memory rs = fakeSnapshot({statesAmount: 1});
+        (bytes memory snapPayload, bytes memory snapSignature) = signSnapshot(notary, rs);
+        (, bytes memory srSignature) = signStateReport(guard, rs.states[0]);
+        IStatementInbox(localInbox()).submitStateReportWithSnapshot(0, srSignature, snapPayload, snapSignature);
+    }
+
+    // ═══════════════════════════════════════════════ AGENT GETTERS ═══════════════════════════════════════════════════
+
+    function randomAgent(Random memory random) public view returns (address agent) {
+        // Pick a random Agent
+        (, agent) = getAgent(random.nextUint256(), random.nextUint256());
+    }
+
+    function randomGuard(Random memory random) public view returns (address guard) {
+        // Pick a random Guard
+        guard = getGuard(random.nextUint256());
+    }
+
+    function randomNotary(Random memory random) public view returns (address notary) {
+        if (localDomain() != DOMAIN_SYNAPSE) {
+            // Pick a random Notary from local domain
+            notary = getDomainAgent(localDomain(), random.nextUint256());
+        } else {
+            // Pick a random Notary from any domain
+            notary = getNotary(random.nextUint256(), random.nextUint256());
+        }
     }
 
     // ═══════════════════════════════════════════════ DATA CREATION ═══════════════════════════════════════════════════
@@ -116,24 +137,6 @@ abstract contract MessagingBaseTest is SynapseTest {
         return signSnapshot(notary, rawSnap);
     }
 
-    function createSignedAttestationReport(address guard, RawAttestation memory ra)
-        public
-        view
-        returns (bytes memory arPayload, bytes memory arSig)
-    {
-        RawAttestationReport memory rawAR = RawAttestationReport(uint8(AttestationFlag.Invalid), ra);
-        return signAttestationReport(guard, rawAR);
-    }
-
-    function createSignedStateReport(address guard, RawState memory rs)
-        public
-        view
-        returns (bytes memory srPayload, bytes memory srSig)
-    {
-        RawStateReport memory rawSR = RawStateReport(uint8(StateFlag.Invalid), rs);
-        return signStateReport(guard, rawSR);
-    }
-
     // ══════════════════════════════════════════════════ HELPERS ══════════════════════════════════════════════════════
 
     /// @notice Returns local domain for the tested contract
@@ -145,6 +148,11 @@ abstract contract MessagingBaseTest is SynapseTest {
     /// @notice Returns address of Agent Manager on the tested domain
     function localAgentManager() public view virtual onlySupportedDomain returns (address) {
         return localDomain() == DOMAIN_LOCAL ? address(lightManager) : address(bondingManager);
+    }
+
+    /// @notice Returns address of Inbox on the tested domain
+    function localInbox() public view virtual onlySupportedDomain returns (address) {
+        return localDomain() == DOMAIN_LOCAL ? address(lightInbox) : address(inbox);
     }
 
     /// @notice Returns address of Destination on the tested domain

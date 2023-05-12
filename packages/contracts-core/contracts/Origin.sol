@@ -2,15 +2,14 @@
 pragma solidity 0.8.17;
 
 // ══════════════════════════════ LIBRARY IMPORTS ══════════════════════════════
-import {BaseMessageLib} from "./libs/BaseMessage.sol";
+import {BaseMessageLib} from "./libs/memory/BaseMessage.sol";
 import {MAX_CONTENT_BYTES} from "./libs/Constants.sol";
-import {GasData, GasDataLib} from "./libs/GasData.sol";
-import {MemView, MemViewLib} from "./libs/MemView.sol";
-import {Header, HeaderLib, MessageFlag} from "./libs/Message.sol";
-import {Request, RequestLib} from "./libs/Request.sol";
-import {StateReport} from "./libs/StateReport.sol";
-import {State} from "./libs/State.sol";
-import {Tips, TipsLib} from "./libs/Tips.sol";
+import {ContentLengthTooBig, EthTransferFailed, InsufficientEthBalance} from "./libs/Errors.sol";
+import {GasData, GasDataLib} from "./libs/stack/GasData.sol";
+import {MemView, MemViewLib} from "./libs/memory/MemView.sol";
+import {Header, MessageLib, MessageFlag} from "./libs/memory/Message.sol";
+import {Request, RequestLib} from "./libs/stack/Request.sol";
+import {Tips, TipsLib} from "./libs/stack/Tips.sol";
 import {TypeCasts} from "./libs/TypeCasts.sol";
 // ═════════════════════════════ INTERNAL IMPORTS ══════════════════════════════
 import {AgentSecured} from "./base/AgentSecured.sol";
@@ -21,6 +20,7 @@ import {StateHub} from "./hubs/StateHub.sol";
 
 contract Origin is StateHub, OriginEvents, InterfaceOrigin {
     using MemViewLib for bytes;
+    using MessageLib for bytes;
     using TipsLib for bytes;
     using TypeCasts for address;
 
@@ -29,8 +29,8 @@ contract Origin is StateHub, OriginEvents, InterfaceOrigin {
     // ═════════════════════════════════════════ CONSTRUCTOR & INITIALIZER ═════════════════════════════════════════════
 
     // solhint-disable-next-line no-empty-blocks
-    constructor(uint32 domain, address agentManager_, address gasOracle_)
-        AgentSecured("0.0.3", domain, agentManager_)
+    constructor(uint32 domain, address agentManager_, address inbox_, address gasOracle_)
+        AgentSecured("0.0.3", domain, agentManager_, inbox_)
     {
         gasOracle = gasOracle_;
     }
@@ -56,7 +56,7 @@ contract Origin is StateHub, OriginEvents, InterfaceOrigin {
         bytes memory content
     ) external payable returns (uint32 messageNonce, bytes32 messageHash) {
         // Check that content is not too large
-        require(content.length <= MAX_CONTENT_BYTES, "content too long");
+        if (content.length > MAX_CONTENT_BYTES) revert ContentLengthTooBig();
         // This will revert if msg.value is lower than value of minimum tips
         Tips tips = _getMinimumTips(destination, paddedRequest, content.length).matchValue(msg.value);
         Request request = RequestLib.wrapPadded(paddedRequest);
@@ -84,9 +84,9 @@ contract Origin is StateHub, OriginEvents, InterfaceOrigin {
 
     /// @inheritdoc InterfaceOrigin
     function withdrawTips(address recipient, uint256 amount) external onlyAgentManager {
-        require(address(this).balance >= amount, "Insufficient balance");
+        if (address(this).balance < amount) revert InsufficientEthBalance();
         (bool success,) = recipient.call{value: amount}("");
-        require(success, "Recipient reverted");
+        if (!success) revert EthTransferFailed();
     }
 
     // ═══════════════════════════════════════════════════ VIEWS ═══════════════════════════════════════════════════════
@@ -110,16 +110,16 @@ contract Origin is StateHub, OriginEvents, InterfaceOrigin {
     {
         // Format the message header
         messageNonce = _nextNonce();
-        Header header = HeaderLib.encodeHeader({
+        Header header = flag.encodeHeader({
             origin_: localDomain,
             nonce_: messageNonce,
             destination_: destination,
             optimisticPeriod_: optimisticPeriod
         });
         // Format the full message payload
-        bytes memory msgPayload = flag.formatMessage(header, body);
+        bytes memory msgPayload = MessageLib.formatMessage(header, body);
         // Insert new leaf into the Origin Merkle Tree and save the updated state
-        messageHash = keccak256(msgPayload);
+        messageHash = msgPayload.castToMessage().leaf();
         _insertAndSave(messageHash);
         // Emit event with message information
         emit Sent(messageHash, messageNonce, destination, msgPayload);

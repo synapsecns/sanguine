@@ -5,6 +5,9 @@ import (
 	"encoding/json"
 	"github.com/stretchr/testify/assert"
 	"k8s.io/apimachinery/pkg/util/wait"
+	"reflect"
+	"runtime"
+	"strings"
 	"testing"
 	"time"
 )
@@ -39,4 +42,15 @@ func Eventually(ctx context.Context, tb testing.TB, willBeTrue func() bool) {
 	if !isTrue {
 		tb.Errorf("expected %T to be true before test context timed out", willBeTrue)
 	}
+}
+
+// GetFunctionName returns the name of the function passed in.
+// this is useful for getting the name of the test function that is running.
+func GetFunctionName(i interface{}) string {
+	fullName := runtime.FuncForPC(reflect.ValueOf(i).Pointer()).Name()
+	parts := strings.Split(fullName, ".")
+	functionNameWithSuffix := parts[len(parts)-1]
+	functionName := strings.TrimSuffix(functionNameWithSuffix, "-fm")
+
+	return functionName
 }

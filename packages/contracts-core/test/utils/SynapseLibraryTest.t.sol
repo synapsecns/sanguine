@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.17;
 
-import {MemViewLib} from "../../contracts/libs/MemView.sol";
+import {MemViewLib} from "../../contracts/libs/memory/MemView.sol";
 import {SynapseUtilities} from "./SynapseUtilities.t.sol";
 
 // solhint-disable no-empty-blocks

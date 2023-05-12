@@ -16,7 +16,7 @@ interface IExecutionHub {
      *  - Provided gas limit is lower than the one requested in the message
      *  - Recipient doesn't implement a `handle` method (refer to IMessageRecipient.sol)
      *  - Recipient reverted upon receiving a message
-     * Note: refer to libs/State.sol for details about Origin State's sub-leafs.
+     * Note: refer to libs/memory/State.sol for details about Origin State's sub-leafs.
      * @param msgPayload    Raw payload with a formatted message to execute
      * @param originProof   Proof of inclusion of message in the Origin Merkle Tree
      * @param snapProof     Proof of inclusion of Origin State's Left Leaf into Snapshot Merkle Tree

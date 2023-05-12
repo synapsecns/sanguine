@@ -2,29 +2,38 @@
 pragma solidity 0.8.17;
 
 // ══════════════════════════════ LIBRARY IMPORTS ══════════════════════════════
-import {Attestation, AttestationLib} from "../libs/Attestation.sol";
-import {Receipt, ReceiptLib} from "../libs/Receipt.sol";
-import {Snapshot, SnapshotLib} from "../libs/Snapshot.sol";
-import {State, StateLib} from "../libs/State.sol";
-import {StateReport, StateReportLib} from "../libs/StateReport.sol";
-import {AgentFlag, AgentStatus, Dispute, DisputeFlag} from "../libs/Structures.sol";
+import {FRESH_DATA_TIMEOUT} from "../libs/Constants.sol";
+import {
+    CallerNotInbox,
+    DisputeAlreadyResolved,
+    DisputeNotOpened,
+    DisputeNotStuck,
+    IncorrectAgentDomain,
+    IndexOutOfRange,
+    GuardInDispute,
+    NotaryInDispute
+} from "../libs/Errors.sol";
+import {AgentFlag, AgentStatus, DisputeFlag} from "../libs/Structures.sol";
 // ═════════════════════════════ INTERNAL IMPORTS ══════════════════════════════
 import {MessagingBase} from "../base/MessagingBase.sol";
 import {AgentManagerEvents} from "../events/AgentManagerEvents.sol";
 import {IAgentManager} from "../interfaces/IAgentManager.sol";
-import {IExecutionHub} from "../interfaces/IExecutionHub.sol";
-import {IStateHub} from "../interfaces/IStateHub.sol";
-import {IAgentSecured} from "../interfaces/IAgentSecured.sol";
-import {VerificationManager} from "./VerificationManager.sol";
-// ═════════════════════════════ EXTERNAL IMPORTS ══════════════════════════════
-import {ECDSA} from "@openzeppelin/contracts/utils/cryptography/ECDSA.sol";
+import {InterfaceDestination} from "../interfaces/InterfaceDestination.sol";
+import {IStatementInbox} from "../interfaces/IStatementInbox.sol";
 
-abstract contract AgentManager is MessagingBase, VerificationManager, AgentManagerEvents, IAgentManager {
-    using AttestationLib for bytes;
-    using ReceiptLib for bytes;
-    using StateLib for bytes;
-    using StateReportLib for bytes;
-    using SnapshotLib for bytes;
+abstract contract AgentManager is MessagingBase, AgentManagerEvents, IAgentManager {
+    struct AgentDispute {
+        DisputeFlag flag;
+        uint88 disputePtr;
+        address fraudProver;
+    }
+
+    // TODO: do we want to store the dispute timestamp?
+    struct OpenedDispute {
+        uint32 guardIndex;
+        uint32 notaryIndex;
+        uint32 slashedIndex;
+    }
 
     // ══════════════════════════════════════════════════ STORAGE ══════════════════════════════════════════════════════
 
@@ -32,232 +41,66 @@ abstract contract AgentManager is MessagingBase, VerificationManager, AgentManag
 
     address public destination;
 
-    // (agent => their dispute status)
-    mapping(address => Dispute) internal _disputes;
+    address public inbox;
 
-    // TODO: optimize this
-    bytes[] internal _storedSignatures;
+    // (agent index => their dispute status)
+    mapping(uint256 => AgentDispute) internal _agentDispute;
+
+    // All disputes ever opened
+    OpenedDispute[] internal _disputes;
 
     /// @dev gap for upgrade safety
-    uint256[46] private __GAP; // solhint-disable-line var-name-mixedcase
+    uint256[45] private __GAP; // solhint-disable-line var-name-mixedcase
+
+    modifier onlyInbox() {
+        if (msg.sender != inbox) revert CallerNotInbox();
+        _;
+    }
 
     // ════════════════════════════════════════════════ INITIALIZER ════════════════════════════════════════════════════
 
     // solhint-disable-next-line func-name-mixedcase
-    function __AgentManager_init(address origin_, address destination_) internal onlyInitializing {
+    function __AgentManager_init(address origin_, address destination_, address inbox_) internal onlyInitializing {
         origin = origin_;
         destination = destination_;
+        inbox = inbox_;
     }
 
-    // ══════════════════════════════════════════ SUBMIT AGENT STATEMENTS ══════════════════════════════════════════════
+    // ════════════════════════════════════════════════ ONLY OWNER ═════════════════════════════════════════════════════
 
     /// @inheritdoc IAgentManager
     // solhint-disable-next-line ordering
-    function submitStateReportWithSnapshot(
-        uint256 stateIndex,
-        bytes memory srPayload,
-        bytes memory srSignature,
-        bytes memory snapPayload,
-        bytes memory snapSignature
-    ) external returns (bool wasAccepted) {
-        // This will revert if payload is not a state report
-        StateReport report = srPayload.castToStateReport();
-        // This will revert if the report signer is not an known Guard
-        (AgentStatus memory guardStatus, address guard) = _verifyStateReport(report, srSignature);
-        // Check that Guard is active
-        guardStatus.verifyActive();
-        // This will revert if payload is not a snapshot
-        Snapshot snapshot = snapPayload.castToSnapshot();
-        // This will revert if the snapshot signer is not a known Agent
-        (AgentStatus memory notaryStatus, address notary) = _verifySnapshot(snapshot, snapSignature);
-        // Snapshot signer needs to be a Notary, not a Guard
-        require(notaryStatus.domain != 0, "Snapshot signer is not a Notary");
-        // Notary needs to be Active/Unstaking
-        notaryStatus.verifyActiveUnstaking();
-        // Snapshot state and reported state need to be the same
-        // This will revert if state index is out of range
-        require(snapshot.state(stateIndex).equals(report.state()), "States don't match");
-        // This will revert if either actor is already in dispute
-        _openDispute(guard, guardStatus.index, notary, notaryStatus.index);
-        return true;
+    function resolveStuckDispute(uint32 domain, address slashedAgent) external onlyOwner {
+        AgentDispute memory slashedDispute = _agentDispute[_getIndex(slashedAgent)];
+        if (slashedDispute.flag == DisputeFlag.None) revert DisputeNotOpened();
+        if (slashedDispute.flag == DisputeFlag.Slashed) revert DisputeAlreadyResolved();
+        // Check if there has been no fresh data from the Notaries for a while.
+        (uint40 snapRootTime,,) = InterfaceDestination(destination).destStatus();
+        if (block.timestamp < FRESH_DATA_TIMEOUT + snapRootTime) revert DisputeNotStuck();
+        // This will revert if domain doesn't match the agent's domain.
+        _slashAgent({domain: domain, agent: slashedAgent, prover: address(0)});
+    }
+
+    // ════════════════════════════════════════════════ ONLY INBOX ═════════════════════════════════════════════════════
+
+    /// @inheritdoc IAgentManager
+    function openDispute(uint32 guardIndex, uint32 notaryIndex) external onlyInbox {
+        // Check that both agents are not in Dispute yet.
+        if (_agentDispute[guardIndex].flag != DisputeFlag.None) revert GuardInDispute();
+        if (_agentDispute[notaryIndex].flag != DisputeFlag.None) revert NotaryInDispute();
+        _disputes.push(OpenedDispute(guardIndex, notaryIndex, 0));
+        // Dispute is stored at length - 1, but we store the index + 1 to distinguish from "not in dispute".
+        uint256 disputePtr = _disputes.length;
+        _agentDispute[guardIndex] = AgentDispute(DisputeFlag.Pending, uint88(disputePtr), address(0));
+        _agentDispute[notaryIndex] = AgentDispute(DisputeFlag.Pending, uint88(disputePtr), address(0));
+        // Dispute index is length - 1. Note: report that initiated the dispute has the same index in `Inbox`.
+        emit DisputeOpened({disputeIndex: disputePtr - 1, guardIndex: guardIndex, notaryIndex: notaryIndex});
+        _notifyDisputeOpened(guardIndex, notaryIndex);
     }
 
     /// @inheritdoc IAgentManager
-    function submitStateReportWithAttestation(
-        uint256 stateIndex,
-        bytes memory srPayload,
-        bytes memory srSignature,
-        bytes memory snapPayload,
-        bytes memory attPayload,
-        bytes memory attSignature
-    ) external returns (bool wasAccepted) {
-        // This will revert if payload is not a state report
-        StateReport report = srPayload.castToStateReport();
-        // This will revert if the report signer is not an known Guard
-        (AgentStatus memory guardStatus, address guard) = _verifyStateReport(report, srSignature);
-        // This will revert if payload is not a snapshot
-        Snapshot snapshot = snapPayload.castToSnapshot();
-        // Snapshot state and reported state need to be the same
-        // This will revert if state index is out of range
-        require(snapshot.state(stateIndex).equals(report.state()), "States don't match");
-        // Check that Guard is active
-        guardStatus.verifyActive();
-        // This will revert if payload is not an attestation
-        Attestation att = attPayload.castToAttestation();
-        // This will revert if signer is not an known Notary
-        (AgentStatus memory notaryStatus, address notary) = _verifyAttestation(att, attSignature);
-        // Notary needs to be Active/Unstaking
-        notaryStatus.verifyActiveUnstaking();
-        require(snapshot.calculateRoot() == att.snapRoot(), "Attestation not matches snapshot");
-        // This will revert if either actor is already in dispute
-        _openDispute(guard, guardStatus.index, notary, notaryStatus.index);
-        return true;
-    }
-
-    /// @inheritdoc IAgentManager
-    function submitStateReportWithSnapshotProof(
-        uint256 stateIndex,
-        bytes memory srPayload,
-        bytes memory srSignature,
-        bytes32[] memory snapProof,
-        bytes memory attPayload,
-        bytes memory attSignature
-    ) external returns (bool wasAccepted) {
-        // This will revert if payload is not a state report
-        StateReport report = srPayload.castToStateReport();
-        // This will revert if the report signer is not an known Guard
-        (AgentStatus memory guardStatus, address guard) = _verifyStateReport(report, srSignature);
-        // Check that Guard is active
-        guardStatus.verifyActive();
-        // This will revert if payload is not an attestation
-        Attestation att = attPayload.castToAttestation();
-        // This will revert if signer is not a known Notary
-        (AgentStatus memory notaryStatus, address notary) = _verifyAttestation(att, attSignature);
-        // Notary needs to be Active/Unstaking
-        notaryStatus.verifyActiveUnstaking();
-        // This will revert if any of these is true:
-        //  - Attestation root is not equal to Merkle Root derived from State and Snapshot Proof.
-        //  - Snapshot Proof's first element does not match the State metadata.
-        //  - Snapshot Proof length exceeds Snapshot tree Height.
-        //  - State index is out of range.
-        _verifySnapshotMerkle(att, stateIndex, report.state(), snapProof);
-        // This will revert if either actor is already in dispute
-        _openDispute(guard, guardStatus.index, notary, notaryStatus.index);
-        return true;
-    }
-
-    // ══════════════════════════════════════════ VERIFY AGENT STATEMENTS ══════════════════════════════════════════════
-
-    /// @inheritdoc IAgentManager
-    function verifyReceipt(bytes memory rcptPayload, bytes memory rcptSignature)
-        external
-        returns (bool isValidReceipt)
-    {
-        // This will revert if payload is not a receipt
-        Receipt rcpt = rcptPayload.castToReceipt();
-        // This will revert if the attestation signer is not a known Notary
-        (AgentStatus memory status, address notary) = _verifyReceipt(rcpt, rcptSignature);
-        // Notary needs to be Active/Unstaking
-        status.verifyActiveUnstaking();
-        isValidReceipt = IExecutionHub(destination).isValidReceipt(rcptPayload);
-        if (!isValidReceipt) {
-            emit InvalidReceipt(rcptPayload, rcptSignature);
-            _slashAgent(status.domain, notary, msg.sender);
-        }
-    }
-
-    /// @inheritdoc IAgentManager
-    function verifyStateWithAttestation(
-        uint256 stateIndex,
-        bytes memory snapPayload,
-        bytes memory attPayload,
-        bytes memory attSignature
-    ) external returns (bool isValidState) {
-        // This will revert if payload is not an attestation
-        Attestation att = attPayload.castToAttestation();
-        // This will revert if the attestation signer is not a known Notary
-        (AgentStatus memory status, address notary) = _verifyAttestation(att, attSignature);
-        // Notary needs to be Active/Unstaking
-        status.verifyActiveUnstaking();
-        // This will revert if payload is not a snapshot
-        Snapshot snapshot = snapPayload.castToSnapshot();
-        require(snapshot.calculateRoot() == att.snapRoot(), "Attestation not matches snapshot");
-        // This will revert if state does not refer to this chain
-        bytes memory statePayload = snapshot.state(stateIndex).unwrap().clone();
-        isValidState = IStateHub(origin).isValidState(statePayload);
-        if (!isValidState) {
-            emit InvalidStateWithAttestation(stateIndex, statePayload, attPayload, attSignature);
-            _slashAgent(status.domain, notary, msg.sender);
-        }
-    }
-
-    /// @inheritdoc IAgentManager
-    function verifyStateWithSnapshotProof(
-        uint256 stateIndex,
-        bytes memory statePayload,
-        bytes32[] memory snapProof,
-        bytes memory attPayload,
-        bytes memory attSignature
-    ) external returns (bool isValidState) {
-        // This will revert if payload is not an attestation
-        Attestation att = attPayload.castToAttestation();
-        // This will revert if the attestation signer is not a known Notary
-        (AgentStatus memory status, address notary) = _verifyAttestation(att, attSignature);
-        // Notary needs to be Active/Unstaking
-        status.verifyActiveUnstaking();
-        // This will revert if payload is not a state
-        State state = statePayload.castToState();
-        // This will revert if any of these is true:
-        //  - Attestation root is not equal to Merkle Root derived from State and Snapshot Proof.
-        //  - Snapshot Proof's first element does not match the State metadata.
-        //  - Snapshot Proof length exceeds Snapshot tree Height.
-        //  - State index is out of range.
-        _verifySnapshotMerkle(att, stateIndex, state, snapProof);
-        // This will revert if state does not refer to this chain
-        isValidState = IStateHub(origin).isValidState(statePayload);
-        if (!isValidState) {
-            emit InvalidStateWithAttestation(stateIndex, statePayload, attPayload, attSignature);
-            _slashAgent(status.domain, notary, msg.sender);
-        }
-    }
-
-    /// @inheritdoc IAgentManager
-    function verifyStateWithSnapshot(uint256 stateIndex, bytes memory snapPayload, bytes memory snapSignature)
-        external
-        returns (bool isValidState)
-    {
-        // This will revert if payload is not a snapshot
-        Snapshot snapshot = snapPayload.castToSnapshot();
-        // This will revert if the snapshot signer is not a known Agent
-        (AgentStatus memory status, address agent) = _verifySnapshot(snapshot, snapSignature);
-        // Agent needs to be Active/Unstaking
-        status.verifyActiveUnstaking();
-        // This will revert if state does not refer to this chain
-        isValidState = IStateHub(origin).isValidState(snapshot.state(stateIndex).unwrap().clone());
-        if (!isValidState) {
-            emit InvalidStateWithSnapshot(stateIndex, snapPayload, snapSignature);
-            _slashAgent(status.domain, agent, msg.sender);
-        }
-    }
-
-    /// @inheritdoc IAgentManager
-    function verifyStateReport(bytes memory srPayload, bytes memory srSignature)
-        external
-        returns (bool isValidReport)
-    {
-        // This will revert if payload is not a snapshot report
-        StateReport report = srPayload.castToStateReport();
-        // This will revert if the report signer is not a known Guard
-        (AgentStatus memory status, address guard) = _verifyStateReport(report, srSignature);
-        // Guard needs to be Active/Unstaking
-        status.verifyActiveUnstaking();
-        // Report is valid IF AND ONLY IF the reported state in invalid
-        // This will revert if the reported state does not refer to this chain
-        isValidReport = !IStateHub(origin).isValidState(report.state().unwrap().clone());
-        if (!isValidReport) {
-            emit InvalidStateReport(srPayload, srSignature);
-            _slashAgent(status.domain, guard, msg.sender);
-        }
+    function slashAgent(uint32 domain, address agent, address prover) external onlyInbox {
+        _slashAgent(domain, agent, prover);
     }
 
     // ═══════════════════════════════════════════════════ VIEWS ═══════════════════════════════════════════════════════
@@ -271,21 +114,56 @@ abstract contract AgentManager is MessagingBase, VerificationManager, AgentManag
     /// @inheritdoc IAgentManager
     function agentStatus(address agent) public view returns (AgentStatus memory status) {
         status = _storedAgentStatus(agent);
-        // If agent was proven to commit fraud, but their slashing wasn't completed,
-        // return the Fraudulent flag instead
-        if (_disputes[agent].flag == DisputeFlag.Slashed && status.flag != AgentFlag.Slashed) {
+        // If agent was proven to commit fraud, but their slashing wasn't completed, return the Fraudulent flag.
+        if (_agentDispute[_getIndex(agent)].flag == DisputeFlag.Slashed && status.flag != AgentFlag.Slashed) {
             status.flag = AgentFlag.Fraudulent;
         }
     }
 
     /// @inheritdoc IAgentManager
-    function disputeStatus(address agent) external view returns (Dispute memory) {
-        return _disputes[agent];
+    function getDisputesAmount() external view returns (uint256) {
+        return _disputes.length;
     }
 
     /// @inheritdoc IAgentManager
-    function getStoredSignature(uint256 index) external view returns (bytes memory) {
-        return _storedSignatures[index];
+    function getDispute(uint256 index)
+        external
+        view
+        returns (
+            address guard,
+            address notary,
+            address slashedAgent,
+            address fraudProver,
+            bytes memory reportPayload,
+            bytes memory reportSignature
+        )
+    {
+        if (index >= _disputes.length) revert IndexOutOfRange();
+        OpenedDispute memory dispute = _disputes[index];
+        guard = _getAgent(dispute.guardIndex);
+        notary = _getAgent(dispute.notaryIndex);
+        if (dispute.slashedIndex > 0) {
+            slashedAgent = _getAgent(dispute.slashedIndex);
+            fraudProver = _agentDispute[dispute.slashedIndex].fraudProver;
+        }
+        (reportPayload, reportSignature) = IStatementInbox(inbox).getGuardReport(index);
+    }
+
+    /// @inheritdoc IAgentManager
+    function disputeStatus(address agent)
+        external
+        view
+        returns (DisputeFlag flag, address rival, address fraudProver, uint256 disputePtr)
+    {
+        uint256 agentIndex = _getIndex(agent);
+        AgentDispute memory agentDispute = _agentDispute[agentIndex];
+        flag = agentDispute.flag;
+        fraudProver = agentDispute.fraudProver;
+        disputePtr = agentDispute.disputePtr;
+        if (disputePtr > 0) {
+            OpenedDispute memory dispute = _disputes[disputePtr - 1];
+            rival = _getAgent(dispute.guardIndex == agentIndex ? dispute.notaryIndex : dispute.guardIndex);
+        }
     }
 
     // ══════════════════════════════════════════════ INTERNAL LOGIC ═══════════════════════════════════════════════════
@@ -300,56 +178,40 @@ abstract contract AgentManager is MessagingBase, VerificationManager, AgentManag
     /// @dev Child contract should implement the logic for notifying AgentSecured contracts about the resolved dispute.
     function _notifyDisputeResolved(uint32 slashedIndex, uint32 rivalIndex) internal virtual;
 
-    /// @dev Opens a Dispute between a Guard and a Notary, if they are both not in Dispute already.
-    function _openDispute(address guard, uint32 guardIndex, address notary, uint32 notaryIndex) internal {
-        // Check that both agents are not in Dispute yet
-        require(_disputes[guard].flag == DisputeFlag.None, "Guard already in dispute");
-        require(_disputes[notary].flag == DisputeFlag.None, "Notary already in dispute");
-        _updateDispute(guard, Dispute(DisputeFlag.Pending, notaryIndex, address(0)));
-        _updateDispute(notary, Dispute(DisputeFlag.Pending, guardIndex, address(0)));
-        _notifyDisputeOpened(guardIndex, notaryIndex);
-    }
-
     /// @dev Slashes the Agent and notifies the local Destination and Origin contracts about the slashed agent.
     /// Should be called when the agent fraud was confirmed.
     function _slashAgent(uint32 domain, address agent, address prover) internal {
         // Check that agent is Active/Unstaking and that the domains match
         AgentStatus memory status = _storedAgentStatus(agent);
-        require(
-            (status.flag == AgentFlag.Active || status.flag == AgentFlag.Unstaking) && status.domain == domain,
-            "Slashing could not be initiated"
-        );
+        status.verifyActiveUnstaking();
+        if (status.domain != domain) revert IncorrectAgentDomain();
         // The "stored" agent status is not updated yet, however agentStatus() will return AgentFlag.Fraudulent
         emit StatusUpdated(AgentFlag.Fraudulent, domain, agent);
         // This will revert if the agent has been slashed earlier
-        _resolveDispute(agent, status.index, prover);
+        _resolveDispute(status.index, prover);
         // Call "after slash" hook - this allows Bonding/Light Manager to add custom "after slash" logic
         _afterAgentSlashed(domain, agent, prover);
     }
 
     /// @dev Resolves a Dispute between a slashed Agent and their Rival (if there was one).
-    function _resolveDispute(address slashedAgent, uint32 slashedIndex, address prover) internal {
-        Dispute memory dispute = _disputes[slashedAgent];
-        require(dispute.flag != DisputeFlag.Slashed, "Dispute already resolved");
-        (dispute.flag, dispute.fraudProver) = (DisputeFlag.Slashed, prover);
-        _updateDispute(slashedAgent, dispute);
-        // Clear Dispute status for the Rival
-        if (dispute.rivalIndex != 0) {
-            _updateDispute(_getAgent(dispute.rivalIndex), Dispute(DisputeFlag.None, 0, address(0)));
+    function _resolveDispute(uint32 slashedIndex, address prover) internal {
+        AgentDispute memory agentDispute = _agentDispute[slashedIndex];
+        if (agentDispute.flag == DisputeFlag.Slashed) revert DisputeAlreadyResolved();
+        agentDispute.flag = DisputeFlag.Slashed;
+        agentDispute.fraudProver = prover;
+        _agentDispute[slashedIndex] = agentDispute;
+        // Check if there was a opened dispute with the slashed agent
+        uint32 rivalIndex = 0;
+        if (agentDispute.disputePtr != 0) {
+            uint256 disputeIndex = agentDispute.disputePtr - 1;
+            OpenedDispute memory dispute = _disputes[disputeIndex];
+            _disputes[disputeIndex].slashedIndex = slashedIndex;
+            // Clear the dispute status for the rival
+            rivalIndex = dispute.notaryIndex == slashedIndex ? dispute.guardIndex : dispute.notaryIndex;
+            delete _agentDispute[rivalIndex];
+            emit DisputeResolved(disputeIndex, slashedIndex, rivalIndex, prover);
         }
-        _notifyDisputeResolved(slashedIndex, dispute.rivalIndex);
-    }
-
-    /// @dev Updates a dispute status for the agent and emits an event.
-    function _updateDispute(address agent, Dispute memory dispute) internal {
-        _disputes[agent] = dispute;
-        emit DisputeUpdated(agent, dispute);
-    }
-
-    /// @dev Saves the signature and returns its index.
-    function _saveSignature(bytes memory signature) internal returns (uint256 sigIndex) {
-        sigIndex = _storedSignatures.length;
-        _storedSignatures.push(signature);
+        _notifyDisputeResolved(slashedIndex, rivalIndex);
     }
 
     // ══════════════════════════════════════════════ INTERNAL VIEWS ═══════════════════════════════════════════════════
@@ -366,18 +228,6 @@ abstract contract AgentManager is MessagingBase, VerificationManager, AgentManag
     /// @dev Returns agent address for the given index. Returns zero for non existing indexes.
     function _getAgent(uint256 index) internal view virtual returns (address);
 
-    /// @inheritdoc VerificationManager
-    function _recoverAgent(bytes32 hashedStatement, bytes memory signature)
-        internal
-        view
-        override
-        returns (AgentStatus memory status, address agent)
-    {
-        bytes32 ethSignedMsg = ECDSA.toEthSignedMessageHash(hashedStatement);
-        agent = ECDSA.recover(ethSignedMsg, signature);
-        status = agentStatus(agent);
-        // Discard signature of unknown agents.
-        // Further flag checks are supposed to be performed in a caller function.
-        require(status.flag != AgentFlag.Unknown, "Unknown agent");
-    }
+    /// @dev Returns the index of the agent in the Agent Merkle Tree. Returns zero for non existing agents.
+    function _getIndex(address agent) internal view virtual returns (uint256);
 }

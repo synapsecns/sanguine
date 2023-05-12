@@ -2,18 +2,19 @@
 pragma solidity 0.8.17;
 
 // ══════════════════════════════ LIBRARY IMPORTS ══════════════════════════════
-import {Attestation, AttestationLib} from "./libs/Attestation.sol";
-import {AttestationReport} from "./libs/AttestationReport.sol";
-import {ByteString} from "./libs/ByteString.sol";
+import {Attestation, AttestationLib} from "./libs/memory/Attestation.sol";
+import {ByteString} from "./libs/memory/ByteString.sol";
 import {AGENT_ROOT_OPTIMISTIC_PERIOD, SYNAPSE_DOMAIN} from "./libs/Constants.sol";
-import {ChainGas, GasData} from "./libs/GasData.sol";
-import {AgentStatus, DestinationStatus, DisputeFlag} from "./libs/Structures.sol";
+import {IndexOutOfRange, NotaryInDispute} from "./libs/Errors.sol";
+import {ChainGas, GasData} from "./libs/stack/GasData.sol";
+import {AgentStatus, DestinationStatus} from "./libs/Structures.sol";
 // ═════════════════════════════ INTERNAL IMPORTS ══════════════════════════════
 import {AgentSecured} from "./base/AgentSecured.sol";
 import {DestinationEvents} from "./events/DestinationEvents.sol";
 import {IAgentManager} from "./interfaces/IAgentManager.sol";
 import {InterfaceDestination} from "./interfaces/InterfaceDestination.sol";
 import {InterfaceLightManager} from "./interfaces/InterfaceLightManager.sol";
+import {IStatementInbox} from "./interfaces/IStatementInbox.sol";
 import {ExecutionHub} from "./hubs/ExecutionHub.sol";
 
 contract Destination is ExecutionHub, DestinationEvents, InterfaceDestination {
@@ -49,8 +50,9 @@ contract Destination is ExecutionHub, DestinationEvents, InterfaceDestination {
 
     // ═════════════════════════════════════════ CONSTRUCTOR & INITIALIZER ═════════════════════════════════════════════
 
-    // solhint-disable-next-line no-empty-blocks
-    constructor(uint32 domain, address agentManager_) AgentSecured("0.0.3", domain, agentManager_) {}
+    constructor(uint32 domain, address agentManager_, address inbox_)
+        AgentSecured("0.0.3", domain, agentManager_, inbox_)
+    {} // solhint-disable-line no-empty-blocks
 
     /// @notice Initializes Destination contract:
     /// - msg.sender is set as contract owner
@@ -75,7 +77,8 @@ contract Destination is ExecutionHub, DestinationEvents, InterfaceDestination {
         bytes memory attPayload,
         bytes32 agentRoot,
         ChainGas[] memory snapGas
-    ) external onlyAgentManager returns (bool wasAccepted) {
+    ) external onlyInbox returns (bool wasAccepted) {
+        if (_isInDispute(notaryIndex)) revert NotaryInDispute();
         // First, try passing current agent merkle root
         (bool rootPassed, bool rootPending) = passAgentRoot();
         // Don't accept attestation, if the agent root was updated in LightManager,
@@ -105,7 +108,7 @@ contract Destination is ExecutionHub, DestinationEvents, InterfaceDestination {
         DestinationStatus memory status = destStatus;
         // Invariant: Notary who supplied `newRoot` was registered as active against `oldRoot`
         // So we just need to check the Dispute status of the Notary
-        if (_disputes[status.notaryIndex] != DisputeFlag.None) {
+        if (_isInDispute(status.notaryIndex)) {
             // Remove the pending agent merkle root, as its signer is in dispute
             _nextAgentRoot = oldRoot;
             return (false, false);
@@ -131,7 +134,7 @@ contract Destination is ExecutionHub, DestinationEvents, InterfaceDestination {
 
     /// @inheritdoc InterfaceDestination
     function getAttestation(uint256 index) external view returns (bytes memory attPayload, bytes memory attSignature) {
-        require(index < _roots.length, "Index out of range");
+        if (index >= _roots.length) revert IndexOutOfRange();
         bytes32 snapRoot = _roots[index];
         SnapRootData memory rootData = _rootData[snapRoot];
         StoredAttData memory storedAtt = _storedAttestations[index];
@@ -144,14 +147,15 @@ contract Destination is ExecutionHub, DestinationEvents, InterfaceDestination {
         });
         // Attestation signatures are not required on Synapse Chain, as the attestations could be accessed via Summit.
         if (localDomain != SYNAPSE_DOMAIN) {
-            attSignature = IAgentManager(agentManager).getStoredSignature(rootData.sigIndex);
+            attSignature = IStatementInbox(inbox).getStoredSignature(rootData.sigIndex);
         }
     }
 
     /// @inheritdoc InterfaceDestination
     function getGasData(uint32 domain) external view returns (GasData gasData, uint256 dataMaturity) {
         StoredGasData memory storedGasData = _storedGasData[domain];
-        if (storedGasData.submittedAt != 0 && _disputes[storedGasData.notaryIndex] == DisputeFlag.None) {
+        // Check if there is a stored gas data for the domain, and if the notary who provided the data is not in dispute
+        if (storedGasData.submittedAt != 0 && !_isInDispute(storedGasData.notaryIndex)) {
             gasData = storedGasData.gasData;
             dataMaturity = block.timestamp - storedGasData.submittedAt;
         }

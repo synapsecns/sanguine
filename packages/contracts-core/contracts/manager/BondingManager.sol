@@ -2,35 +2,31 @@
 pragma solidity 0.8.17;
 
 // ══════════════════════════════ LIBRARY IMPORTS ══════════════════════════════
-import {Attestation, AttestationLib} from "../libs/Attestation.sol";
-import {AttestationReport, AttestationReportLib} from "../libs/AttestationReport.sol";
 import {BONDING_OPTIMISTIC_PERIOD, SYNAPSE_DOMAIN} from "../libs/Constants.sol";
-import {ChainGas} from "../libs/GasData.sol";
-import {DynamicTree, MerkleMath} from "../libs/MerkleTree.sol";
-import {Receipt, ReceiptBody, ReceiptLib} from "../libs/Receipt.sol";
-import {Snapshot, SnapshotLib} from "../libs/Snapshot.sol";
-import {AgentFlag, AgentStatus, DisputeFlag} from "../libs/Structures.sol";
-import {Tips} from "../libs/Tips.sol";
+import {
+    AgentCantBeAdded,
+    CallerNotDestination,
+    CallerNotSummit,
+    IncorrectAgentDomain,
+    IndexOutOfRange,
+    MerkleTreeFull,
+    MustBeSynapseDomain,
+    SlashAgentOptimisticPeriod,
+    SynapseDomainForbidden
+} from "../libs/Errors.sol";
+import {DynamicTree, MerkleMath} from "../libs/merkle/MerkleTree.sol";
+import {AgentFlag, AgentStatus} from "../libs/Structures.sol";
 // ═════════════════════════════ INTERNAL IMPORTS ══════════════════════════════
-import {AgentManager, IAgentManager, IAgentSecured} from "./AgentManager.sol";
+import {AgentManager, IAgentManager} from "./AgentManager.sol";
 import {MessagingBase} from "../base/MessagingBase.sol";
-import {BondingManagerEvents} from "../events/BondingManagerEvents.sol";
+import {IAgentSecured} from "../interfaces/IAgentSecured.sol";
 import {InterfaceBondingManager} from "../interfaces/InterfaceBondingManager.sol";
-import {InterfaceDestination} from "../interfaces/InterfaceDestination.sol";
-import {IExecutionHub} from "../interfaces/IExecutionHub.sol";
 import {InterfaceLightManager} from "../interfaces/InterfaceLightManager.sol";
 import {InterfaceOrigin} from "../interfaces/InterfaceOrigin.sol";
-import {ISnapshotHub} from "../interfaces/ISnapshotHub.sol";
-import {InterfaceSummit} from "../interfaces/InterfaceSummit.sol";
 
 /// @notice BondingManager keeps track of all existing _agents.
 /// Used on the Synapse Chain, serves as the "source of truth" for LightManagers on remote chains.
-contract BondingManager is AgentManager, BondingManagerEvents, InterfaceBondingManager {
-    using AttestationLib for bytes;
-    using AttestationReportLib for bytes;
-    using ReceiptLib for bytes;
-    using SnapshotLib for bytes;
-
+contract BondingManager is AgentManager, InterfaceBondingManager {
     // ══════════════════════════════════════════════════ STORAGE ══════════════════════════════════════════════════════
 
     // The address of the Summit contract.
@@ -53,148 +49,16 @@ contract BondingManager is AgentManager, BondingManagerEvents, InterfaceBondingM
     // ═════════════════════════════════════════ CONSTRUCTOR & INITIALIZER ═════════════════════════════════════════════
 
     constructor(uint32 domain) MessagingBase("0.0.3", domain) {
-        require(domain == SYNAPSE_DOMAIN, "Only deployed on SynChain");
+        if (domain != SYNAPSE_DOMAIN) revert MustBeSynapseDomain();
     }
 
-    function initialize(address origin_, address destination_, address summit_) external initializer {
-        __AgentManager_init(origin_, destination_);
+    function initialize(address origin_, address destination_, address inbox_, address summit_) external initializer {
+        __AgentManager_init(origin_, destination_, inbox_);
         summit = summit_;
         __Ownable_init();
         // Insert a zero address to make indexes for Agents start from 1.
         // Zeroed index is supposed to be used as a sentinel value meaning "no agent".
         _agents.push(address(0));
-    }
-
-    // ══════════════════════════════════════════ SUBMIT AGENT STATEMENTS ══════════════════════════════════════════════
-
-    /// @inheritdoc InterfaceBondingManager
-    function submitSnapshot(bytes memory snapPayload, bytes memory snapSignature)
-        external
-        returns (bytes memory attPayload, bytes32 agentRoot_, uint256[] memory snapGas)
-    {
-        // This will revert if payload is not a snapshot
-        Snapshot snapshot = snapPayload.castToSnapshot();
-        // This will revert if the signer is not a known Agent
-        (AgentStatus memory status, address agent) = _verifySnapshot(snapshot, snapSignature);
-        // Check that Agent is active
-        status.verifyActive();
-        // Store Agent signature for the Snapshot
-        uint256 sigIndex = _saveSignature(snapSignature);
-        if (status.domain == 0) {
-            // Guard that is in Dispute could still submit new snapshots, so we don't check that
-            InterfaceSummit(summit).acceptGuardSnapshot({
-                guardIndex: status.index,
-                sigIndex: sigIndex,
-                snapPayload: snapPayload
-            });
-        } else {
-            // Check that Notary is not in dispute
-            require(_disputes[agent].flag == DisputeFlag.None, "Notary is in dispute");
-            agentRoot_ = _agentTree.root;
-            attPayload = InterfaceSummit(summit).acceptNotarySnapshot({
-                notaryIndex: status.index,
-                sigIndex: sigIndex,
-                agentRoot: agentRoot_,
-                snapPayload: snapPayload
-            });
-            ChainGas[] memory snapGas_ = snapshot.snapGas();
-            // Pass created attestation to Destination to enable executing messages coming to Synapse Chain
-            InterfaceDestination(destination).acceptAttestation(
-                status.index, type(uint256).max, attPayload, agentRoot_, snapGas_
-            );
-            // Use assembly to cast ChainGas[] to uint256[] without copying. Highest bits are left zeroed.
-            // solhint-disable-next-line no-inline-assembly
-            assembly {
-                snapGas := snapGas_
-            }
-        }
-        emit SnapshotAccepted(status.domain, agent, snapPayload, snapSignature);
-    }
-
-    /// @inheritdoc InterfaceBondingManager
-    function submitReceipt(bytes memory rcptPayload, bytes memory rcptSignature) external returns (bool wasAccepted) {
-        // This will revert if payload is not a receipt
-        Receipt rcpt = rcptPayload.castToReceipt();
-        // This will revert if the receipt signer is not a known Notary
-        (AgentStatus memory rcptNotaryStatus, address notary) = _verifyReceipt(rcpt, rcptSignature);
-        // Receipt Notary needs to be Active and not in dispute
-        rcptNotaryStatus.verifyActive();
-        require(_disputes[notary].flag == DisputeFlag.None, "Notary is in dispute");
-        // Check that receipt's snapshot root exists in Summit
-        ReceiptBody rcptBody = rcpt.body();
-        uint32 attNonce = IExecutionHub(destination).getAttestationNonce(rcptBody.snapshotRoot());
-        require(attNonce != 0, "Unknown snapshot root");
-        // Attestation Notary domain needs to match the destination domain
-        AgentStatus memory attNotaryStatus = agentStatus(rcptBody.attNotary());
-        require(attNotaryStatus.domain == rcptBody.destination(), "Wrong attestation Notary domain");
-        // Store Notary signature for the Receipt
-        uint256 sigIndex = _saveSignature(rcptSignature);
-        wasAccepted = InterfaceSummit(summit).acceptReceipt({
-            rcptNotaryIndex: rcptNotaryStatus.index,
-            attNotaryIndex: attNotaryStatus.index,
-            sigIndex: sigIndex,
-            attNonce: attNonce,
-            paddedTips: Tips.unwrap(rcpt.tips()),
-            rcptBodyPayload: rcptBody.unwrap().clone()
-        });
-        if (wasAccepted) {
-            emit ReceiptAccepted(rcptNotaryStatus.domain, notary, rcptPayload, rcptSignature);
-        }
-    }
-
-    /// @inheritdoc InterfaceBondingManager
-    function passReceipt(uint32 attNotaryIndex, uint32 attNonce, uint256 paddedTips, bytes memory rcptBodyPayload)
-        external
-        returns (bool wasAccepted)
-    {
-        require(msg.sender == destination, "Only Destination passes receipts");
-        return InterfaceSummit(summit).acceptReceipt({
-            rcptNotaryIndex: attNotaryIndex,
-            attNotaryIndex: attNotaryIndex,
-            sigIndex: type(uint256).max,
-            attNonce: attNonce,
-            paddedTips: paddedTips,
-            rcptBodyPayload: rcptBodyPayload
-        });
-    }
-
-    // ══════════════════════════════════════════ VERIFY AGENT STATEMENTS ══════════════════════════════════════════════
-
-    /// @inheritdoc InterfaceBondingManager
-    function verifyAttestation(bytes memory attPayload, bytes memory attSignature)
-        external
-        returns (bool isValidAttestation)
-    {
-        // This will revert if payload is not an attestation
-        Attestation att = attPayload.castToAttestation();
-        // This will revert if the attestation signer is not a known Notary
-        (AgentStatus memory status, address notary) = _verifyAttestation(att, attSignature);
-        // Notary needs to be Active/Unstaking
-        status.verifyActiveUnstaking();
-        isValidAttestation = ISnapshotHub(summit).isValidAttestation(attPayload);
-        if (!isValidAttestation) {
-            emit InvalidAttestation(attPayload, attSignature);
-            _slashAgent(status.domain, notary, msg.sender);
-        }
-    }
-
-    /// @inheritdoc InterfaceBondingManager
-    function verifyAttestationReport(bytes memory arPayload, bytes memory arSignature)
-        external
-        returns (bool isValidReport)
-    {
-        // This will revert if payload is not an attestation report
-        AttestationReport report = arPayload.castToAttestationReport();
-        // This will revert if the report signer is not a known Guard
-        (AgentStatus memory status, address guard) = _verifyAttestationReport(report, arSignature);
-        // Guard needs to be Active/Unstaking
-        status.verifyActiveUnstaking();
-        // Report is valid IF AND ONLY IF the reported attestation in invalid
-        isValidReport = !ISnapshotHub(summit).isValidAttestation(report.attestation().unwrap().clone());
-        if (!isValidReport) {
-            emit InvalidAttestationReport(arPayload, arSignature);
-            _slashAgent(status.domain, guard, msg.sender);
-        }
     }
 
     // ════════════════════════════════════════════ AGENTS LOGIC (MVP) ═════════════════════════════════════════════════
@@ -203,6 +67,7 @@ contract BondingManager is AgentManager, BondingManagerEvents, InterfaceBondingM
 
     /// @inheritdoc InterfaceBondingManager
     function addAgent(uint32 domain, address agent, bytes32[] memory proof) external onlyOwner {
+        if (domain == SYNAPSE_DOMAIN) revert SynapseDomainForbidden();
         // Check the STORED status of the added agent in the merkle tree
         AgentStatus memory status = _storedAgentStatus(agent);
         // Agent index in `_agents`
@@ -211,8 +76,8 @@ contract BondingManager is AgentManager, BondingManagerEvents, InterfaceBondingM
         bytes32 oldValue;
         if (status.flag == AgentFlag.Unknown) {
             // Unknown address could be added to any domain
-            // New agent will need to be added to `_agents` list
-            require(_agents.length < type(uint32).max, "Agents list if full");
+            // New agent will need to be added to `_agents` list: could not have more than 2**32 agents
+            if (_agents.length >= type(uint32).max) revert MerkleTreeFull();
             index = uint32(_agents.length);
             // Current leaf for index is bytes32(0), which is already assigned to `leaf`
             _agents.push(agent);
@@ -228,7 +93,7 @@ contract BondingManager is AgentManager, BondingManagerEvents, InterfaceBondingM
             oldValue = _agentLeaf(AgentFlag.Resting, domain, agent);
         } else {
             // Any other flag indicates that agent could not be added
-            revert("Agent could not be added");
+            revert AgentCantBeAdded();
         }
         // This will revert if the proof for the old value is incorrect
         _updateLeaf(oldValue, proof, AgentStatus(AgentFlag.Active, domain, index), agent);
@@ -239,7 +104,8 @@ contract BondingManager is AgentManager, BondingManagerEvents, InterfaceBondingM
         // Check the CURRENT status of the unstaking agent
         AgentStatus memory status = agentStatus(agent);
         // Could only initiate the unstaking for the active agent for the domain
-        require(status.flag == AgentFlag.Active && status.domain == domain, "Unstaking could not be initiated");
+        status.verifyActive();
+        if (status.domain != domain) revert IncorrectAgentDomain();
         // Leaf representing currently saved agent information in the tree.
         // oldValue includes the domain information, so we didn't had to check it above.
         // However, we are still doing this check to have a more appropriate revert string,
@@ -255,7 +121,8 @@ contract BondingManager is AgentManager, BondingManagerEvents, InterfaceBondingM
         AgentStatus memory status = agentStatus(agent);
         // Could only complete the unstaking, if it was previously initiated
         // TODO: add more checks (time-based, possibly collecting info from other chains)
-        require(status.flag == AgentFlag.Unstaking && status.domain == domain, "Unstaking could not be completed");
+        status.verifyUnstaking();
+        if (status.domain != domain) revert IncorrectAgentDomain();
         // Leaf representing currently saved agent information in the tree
         // oldValue includes the domain information, so we didn't had to check it above.
         // However, we are still doing this check to have a more appropriate revert string,
@@ -269,19 +136,16 @@ contract BondingManager is AgentManager, BondingManagerEvents, InterfaceBondingM
 
     /// @inheritdoc InterfaceBondingManager
     function completeSlashing(uint32 domain, address agent, bytes32[] memory proof) external {
-        // Check that slashing was previously initiated in AgentManager
-        require(_disputes[agent].flag == DisputeFlag.Slashed, "Slashing not initiated");
-        // Check that the STORED status is Active/Unstaking in the merkle tree and that the domains match
-        AgentStatus memory status = _storedAgentStatus(agent);
-        require(
-            (status.flag == AgentFlag.Active || status.flag == AgentFlag.Unstaking) && status.domain == domain,
-            "Slashing could not be completed"
-        );
+        // Check the CURRENT status of the unstaking agent
+        AgentStatus memory status = agentStatus(agent);
+        // Could only complete the slashing, if it was previously initiated
+        status.verifyFraudulent();
+        if (status.domain != domain) revert IncorrectAgentDomain();
         // Leaf representing currently saved agent information in the tree
         // oldValue includes the domain information, so we didn't had to check it above.
         // However, we are still doing this check to have a more appropriate revert string,
         // if anyone is completing the slashing, but specifies incorrect domain.
-        bytes32 oldValue = _agentLeaf(status.flag, domain, agent);
+        bytes32 oldValue = _getLeaf(agent);
         // This will revert if the proof for the old value is incorrect
         _updateLeaf(oldValue, proof, AgentStatus(AgentFlag.Slashed, domain, status.index), agent);
     }
@@ -292,9 +156,10 @@ contract BondingManager is AgentManager, BondingManagerEvents, InterfaceBondingM
         returns (bytes4 magicValue)
     {
         // Only destination can pass Manager Messages
-        require(msg.sender == destination, "!destination");
+        if (msg.sender != destination) revert CallerNotDestination();
         // Check that merkle proof is mature enough
-        require(proofMaturity >= BONDING_OPTIMISTIC_PERIOD, "!optimisticPeriod");
+        // TODO: separate constant for slashing optimistic period
+        if (proofMaturity < BONDING_OPTIMISTIC_PERIOD) revert SlashAgentOptimisticPeriod();
         // TODO: do we need to save this?
         msgOrigin;
         // Slash agent and notify local AgentSecured contracts
@@ -307,7 +172,8 @@ contract BondingManager is AgentManager, BondingManagerEvents, InterfaceBondingM
 
     /// @inheritdoc InterfaceBondingManager
     function withdrawTips(address recipient, uint32 origin_, uint256 amount) external {
-        require(msg.sender == summit, "Only Summit withdraws tips");
+        // Only Summit can withdraw tips
+        if (msg.sender != summit) revert CallerNotSummit();
         if (origin_ == localDomain) {
             // Call local Origin to withdraw tips
             InterfaceOrigin(address(origin)).withdrawTips(recipient, amount);
@@ -377,7 +243,7 @@ contract BondingManager is AgentManager, BondingManagerEvents, InterfaceBondingM
     /// @inheritdoc InterfaceBondingManager
     function getLeafs(uint256 indexFrom, uint256 amount) public view returns (bytes32[] memory leafs) {
         uint256 amountTotal = _agents.length;
-        require(indexFrom < amountTotal, "Out of range");
+        if (indexFrom >= amountTotal) revert IndexOutOfRange();
         if (indexFrom + amount > amountTotal) {
             amount = amountTotal - indexFrom;
         }
@@ -427,6 +293,11 @@ contract BondingManager is AgentManager, BondingManagerEvents, InterfaceBondingM
         if (index < _agents.length) {
             agent = _agents[index];
         }
+    }
+
+    /// @dev Returns the index of the agent in the Agent Merkle Tree. Returns zero for non existing agents.
+    function _getIndex(address agent) internal view override returns (uint256 index) {
+        return _agentMap[agent].index;
     }
 
     /// @dev Returns the current leaf representing agent in the Agent Merkle Tree.

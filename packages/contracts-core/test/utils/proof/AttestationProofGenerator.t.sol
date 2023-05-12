@@ -2,8 +2,8 @@
 pragma solidity 0.8.17;
 
 import {SNAPSHOT_TREE_HEIGHT} from "../../../contracts/libs/Constants.sol";
-import {MerkleMath} from "../../../contracts/libs/MerkleMath.sol";
-import {StateLib} from "../../../contracts/libs/State.sol";
+import {MerkleMath} from "../../../contracts/libs/merkle/MerkleMath.sol";
+import {StateLib} from "../../../contracts/libs/memory/State.sol";
 
 import {ProofCutter} from "./ProofCutter.t.sol";
 

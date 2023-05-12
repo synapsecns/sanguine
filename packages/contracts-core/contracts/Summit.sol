@@ -2,13 +2,14 @@
 pragma solidity 0.8.17;
 
 // ══════════════════════════════ LIBRARY IMPORTS ══════════════════════════════
-import {AttestationLib} from "./libs/Attestation.sol";
-import {ByteString} from "./libs/ByteString.sol";
+import {AttestationLib} from "./libs/memory/Attestation.sol";
+import {ByteString} from "./libs/memory/ByteString.sol";
 import {BONDING_OPTIMISTIC_PERIOD, SYNAPSE_DOMAIN} from "./libs/Constants.sol";
-import {Receipt, ReceiptBody, ReceiptLib} from "./libs/Receipt.sol";
-import {Snapshot, SnapshotLib} from "./libs/Snapshot.sol";
+import {MustBeSynapseDomain, NotaryInDispute, TipsClaimMoreThanEarned, TipsClaimZero} from "./libs/Errors.sol";
+import {Receipt, ReceiptBody, ReceiptLib} from "./libs/memory/Receipt.sol";
+import {Snapshot, SnapshotLib} from "./libs/memory/Snapshot.sol";
 import {AgentFlag, AgentStatus, DisputeFlag, MessageStatus} from "./libs/Structures.sol";
-import {Tips, TipsLib} from "./libs/Tips.sol";
+import {Tips, TipsLib} from "./libs/stack/Tips.sol";
 // ═════════════════════════════ INTERNAL IMPORTS ══════════════════════════════
 import {AgentSecured} from "./base/AgentSecured.sol";
 import {SummitEvents} from "./events/SummitEvents.sol";
@@ -76,8 +77,10 @@ contract Summit is SnapshotHub, SummitEvents, InterfaceSummit {
 
     // ═════════════════════════════════════════ CONSTRUCTOR & INITIALIZER ═════════════════════════════════════════════
 
-    constructor(uint32 domain, address agentManager_) AgentSecured("0.0.3", domain, agentManager_) {
-        require(domain == SYNAPSE_DOMAIN, "Only deployed on SynChain");
+    constructor(uint32 domain, address agentManager_, address inbox_)
+        AgentSecured("0.0.3", domain, agentManager_, inbox_)
+    {
+        if (domain != SYNAPSE_DOMAIN) revert MustBeSynapseDomain();
     }
 
     function initialize() external initializer {
@@ -96,7 +99,8 @@ contract Summit is SnapshotHub, SummitEvents, InterfaceSummit {
         uint32 attNonce,
         uint256 paddedTips,
         bytes memory rcptBodyPayload
-    ) external onlyAgentManager returns (bool wasAccepted) {
+    ) external onlyInbox returns (bool wasAccepted) {
+        if (_isInDispute(rcptNotaryIndex)) revert NotaryInDispute();
         // This will revert if payload is not a receipt body
         return _saveReceipt({
             rcptBody: rcptBodyPayload.castToReceiptBody(),
@@ -109,10 +113,9 @@ contract Summit is SnapshotHub, SummitEvents, InterfaceSummit {
     }
 
     /// @inheritdoc InterfaceSummit
-    function acceptGuardSnapshot(uint32 guardIndex, uint256 sigIndex, bytes memory snapPayload)
-        external
-        onlyAgentManager
-    {
+    function acceptGuardSnapshot(uint32 guardIndex, uint256 sigIndex, bytes memory snapPayload) external onlyInbox {
+        // Note: we don't check if Guard is in Dispute,
+        // as the Guards could continue to submit snapshots after submitting a report.
         // This will revert if payload is not a snapshot
         _acceptGuardSnapshot(snapPayload.castToSnapshot(), guardIndex, sigIndex);
     }
@@ -120,9 +123,10 @@ contract Summit is SnapshotHub, SummitEvents, InterfaceSummit {
     /// @inheritdoc InterfaceSummit
     function acceptNotarySnapshot(uint32 notaryIndex, uint256 sigIndex, bytes32 agentRoot, bytes memory snapPayload)
         external
-        onlyAgentManager
+        onlyInbox
         returns (bytes memory attPayload)
     {
+        if (_isInDispute(notaryIndex)) revert NotaryInDispute();
         // This will revert if payload is not a snapshot
         return _acceptNotarySnapshot(snapPayload.castToSnapshot(), agentRoot, notaryIndex, sigIndex);
     }
@@ -157,9 +161,9 @@ contract Summit is SnapshotHub, SummitEvents, InterfaceSummit {
     /// @inheritdoc InterfaceSummit
     // solhint-disable-next-line ordering
     function withdrawTips(uint32 origin, uint256 amount) external {
-        require(amount != 0, "Amount is zero");
+        if (amount == 0) revert TipsClaimZero();
         ActorTips memory tips = actorTips[msg.sender][origin];
-        require(tips.earned >= amount + tips.claimed, "Tips balance too low");
+        if (tips.earned < amount + tips.claimed) revert TipsClaimMoreThanEarned();
         // Guaranteed to fit into uint128, as the sum is lower than `earned`
         actorTips[msg.sender][origin].claimed = uint128(tips.claimed + amount);
         InterfaceBondingManager(address(agentManager)).withdrawTips(msg.sender, origin, amount);
