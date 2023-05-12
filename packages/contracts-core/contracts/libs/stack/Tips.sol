@@ -89,6 +89,17 @@ library TipsLib {
         return Tips.wrap(0);
     }
 
+    /// @notice Returns tips's hash: a leaf to be inserted in the "Message mini-Merkle tree".
+    function leaf(Tips tips) internal pure returns (bytes32 hashedTips) {
+        // solhint-disable-next-line no-inline-assembly
+        assembly {
+            // Store tips in scratch space
+            mstore(0, tips)
+            // Compute hash of tips padded to 32 bytes
+            hashedTips := keccak256(0, 32)
+        }
+    }
+
     // ═══════════════════════════════════════════════ TIPS SLICING ════════════════════════════════════════════════════
 
     /// @notice Returns summitTip field
