@@ -1,14 +1,14 @@
 import { Address } from 'wagmi'
 import { useSynapseContext } from '../providers/SynapseProvider'
 import { useEffect, useState } from 'react'
-import { BigintIsh } from '@/../sdk-router/dist/constants'
+import { BigNumberish } from 'ethers'
 
 interface useBridgeQuoteProps {
   fromChainId: number
   toChainId: number
   fromTokenAddress: string | Address
   toTokenAddress: string | Address
-  inputValue: BigintIsh
+  inputValue: BigNumberish
 }
 
 /*
