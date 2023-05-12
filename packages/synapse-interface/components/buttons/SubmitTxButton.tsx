@@ -9,7 +9,7 @@ import { AddressZero } from '@ethersproject/constants'
 const BASE_PROPERTIES = `
     w-full rounded-lg my-2 px-4 py-3
     text-white text-opacity-100 transition-all
-    hover:opacity-80 disabled:opacity-100 disabled:text-[#88818C]
+    hover:opacity-80 disabled:opacity-50 disabled:text-[#88818C]
     disabled:from-bgLight disabled:to-bgLight
     bg-gradient-to-r from-[#CF52FE] to-[#AC8FFF]
   `
