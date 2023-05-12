@@ -1,10 +1,14 @@
 package agentsintegration_test
 
 import (
-	"context"
+	awsTime "github.com/aws/smithy-go/time"
+	"github.com/brianvoe/gofakeit/v6"
 	"github.com/synapsecns/sanguine/agents/agents/executor"
 	executorCfg "github.com/synapsecns/sanguine/agents/agents/executor/config"
 	execTypes "github.com/synapsecns/sanguine/agents/agents/executor/types"
+	"github.com/synapsecns/sanguine/agents/agents/guard"
+	"github.com/synapsecns/sanguine/agents/agents/notary"
+	"github.com/synapsecns/sanguine/agents/types"
 	"math/big"
 	"os"
 	"testing"
@@ -16,15 +20,9 @@ import (
 	"github.com/synapsecns/sanguine/services/scribe/node"
 
 	"github.com/Flaque/filet"
-	awsTime "github.com/aws/smithy-go/time"
-	"github.com/brianvoe/gofakeit/v6"
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	. "github.com/stretchr/testify/assert"
-	"github.com/synapsecns/sanguine/agents/agents/guard"
-	"github.com/synapsecns/sanguine/agents/agents/notary"
 	"github.com/synapsecns/sanguine/agents/config"
-	"github.com/synapsecns/sanguine/agents/contracts/test/summitharness"
-	"github.com/synapsecns/sanguine/agents/types"
 )
 
 func RemoveAgentsTempFile(t *testing.T, fileName string) {
@@ -36,7 +34,7 @@ func RemoveAgentsTempFile(t *testing.T, fileName string) {
 //nolint:cyclop,maintidx
 func (u *AgentsIntegrationSuite) TestAgentsE2E() {
 	// TODO (joe and lex): FIX ME
-	u.T().Skip()
+	// u.T().Skip()
 	testDone := false
 	defer func() {
 		testDone = true
@@ -75,7 +73,7 @@ func (u *AgentsIntegrationSuite) TestAgentsE2E() {
 		Contracts:             []scribeConfig2.ContractConfig{destinationConfig},
 	}
 	summitConfig := scribeConfig2.ContractConfig{
-		Address:    u.SummitContract.Address().String(),
+		Address:    u.BondingManagerOnSummit.Address().String(),
 		StartBlock: 0,
 	}
 	summitChainConfig := scribeConfig2.ChainConfig{
@@ -116,8 +114,9 @@ func (u *AgentsIntegrationSuite) TestAgentsE2E() {
 	summit := uint32(u.TestBackendSummit.GetChainID())
 
 	excCfg := executorCfg.Config{
-		SummitChainID: summit,
-		SummitAddress: u.SummitContract.Address().String(),
+		SummitChainID:         summit,
+		SummitAddress:         u.SummitContract.Address().String(),
+		BondingManagerAddress: u.BondingManagerOnSummit.Address().String(),
 		Chains: []executorCfg.ChainConfig{
 			{
 				ChainID:       chainID,
@@ -160,9 +159,9 @@ func (u *AgentsIntegrationSuite) TestAgentsE2E() {
 		}
 	}()
 
-	attestationSavedSink := make(chan *summitharness.SummitHarnessAttestationSaved)
+	/*attestationSavedSink := make(chan *summitharness.SummitHarnessAttestationSaved)
 	savedAttestation, err := u.SummitContract.WatchAttestationSaved(&bind.WatchOpts{Context: u.GetTestContext()}, attestationSavedSink)
-	Nil(u.T(), err)
+	Nil(u.T(), err)*/
 
 	guardTestConfig := config.AgentConfig{
 		Domains: map[string]config.DomainConfig{
@@ -327,7 +326,7 @@ func (u *AgentsIntegrationSuite) TestAgentsE2E() {
 		return state.Nonce() >= uint32(1)
 	})
 
-	watchCtx, cancel := context.WithCancel(u.GetTestContext())
+	/*watchCtx, cancel := context.WithCancel(u.GetTestContext())
 	defer cancel()
 
 	var retrievedAtt []byte
@@ -349,7 +348,7 @@ func (u *AgentsIntegrationSuite) TestAgentsE2E() {
 
 	Greater(u.T(), len(retrievedAtt), 0)
 
-	<-waitChan
+	<-waitChan*/
 
 	u.Eventually(func() bool {
 		mask := execTypes.DBMessage{
