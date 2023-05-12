@@ -28,10 +28,22 @@ var (
 	_ = event.NewSubscription
 )
 
+// MultiCallableCall is an auto generated low-level Go binding around an user-defined struct.
+type MultiCallableCall struct {
+	AllowFailure bool
+	CallData     []byte
+}
+
+// MultiCallableResult is an auto generated low-level Go binding around an user-defined struct.
+type MultiCallableResult struct {
+	Success    bool
+	ReturnData []byte
+}
+
 // AddressUpgradeableMetaData contains all meta data concerning the AddressUpgradeable contract.
 var AddressUpgradeableMetaData = &bind.MetaData{
 	ABI: "[]",
-	Bin: "0x60566037600b82828239805160001a607314602a57634e487b7160e01b600052600060045260246000fd5b30600052607381538281f3fe73000000000000000000000000000000000000000030146080604052600080fdfea2646970667358221220e5a3b7349c99b9abd12080ae5cd782de0e81fd5ecab6c61f4d84b7c4d373550964736f6c63430008110033",
+	Bin: "0x60566037600b82828239805160001a607314602a57634e487b7160e01b600052600060045260246000fd5b30600052607381538281f3fe73000000000000000000000000000000000000000030146080604052600080fdfea26469706673582212207f450b6ec1b700d8555df53f89f2a88b711a23c7bf18f91b13784381a8db7e3764736f6c63430008110033",
 }
 
 // AddressUpgradeableABI is the input ABI used to generate the binding from.
@@ -489,7 +501,7 @@ func (_ContextUpgradeable *ContextUpgradeableFilterer) ParseInitialized(log type
 // GasDataLibMetaData contains all meta data concerning the GasDataLib contract.
 var GasDataLibMetaData = &bind.MetaData{
 	ABI: "[]",
-	Bin: "0x60566037600b82828239805160001a607314602a57634e487b7160e01b600052600060045260246000fd5b30600052607381538281f3fe73000000000000000000000000000000000000000030146080604052600080fdfea26469706673582212209f09322558f9315dd9496cd0559f2cbb1814fd21ccde70ca4860db9ff8649e7164736f6c63430008110033",
+	Bin: "0x60566037600b82828239805160001a607314602a57634e487b7160e01b600052600060045260246000fd5b30600052607381538281f3fe73000000000000000000000000000000000000000030146080604052600080fdfea2646970667358221220f3cf95b41cfbc234d4b2cfed45c995bc0c9ca5e3d366b8e3a7f2d76baef7433264736f6c63430008110033",
 }
 
 // GasDataLibABI is the input ABI used to generate the binding from.
@@ -661,20 +673,25 @@ func (_GasDataLib *GasDataLibTransactorRaw) Transact(opts *bind.TransactOpts, me
 
 // GasOracleMetaData contains all meta data concerning the GasOracle contract.
 var GasOracleMetaData = &bind.MetaData{
-	ABI: "[{\"inputs\":[{\"internalType\":\"uint32\",\"name\":\"domain\",\"type\":\"uint32\"}],\"stateMutability\":\"nonpayable\",\"type\":\"constructor\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":false,\"internalType\":\"uint8\",\"name\":\"version\",\"type\":\"uint8\"}],\"name\":\"Initialized\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"address\",\"name\":\"previousOwner\",\"type\":\"address\"},{\"indexed\":true,\"internalType\":\"address\",\"name\":\"newOwner\",\"type\":\"address\"}],\"name\":\"OwnershipTransferred\",\"type\":\"event\"},{\"inputs\":[{\"internalType\":\"uint32\",\"name\":\"\",\"type\":\"uint32\"}],\"name\":\"_gasData\",\"outputs\":[{\"internalType\":\"Number\",\"name\":\"gasPrice\",\"type\":\"uint16\"},{\"internalType\":\"Number\",\"name\":\"dataPrice\",\"type\":\"uint16\"},{\"internalType\":\"Number\",\"name\":\"execBuffer\",\"type\":\"uint16\"},{\"internalType\":\"Number\",\"name\":\"amortAttCost\",\"type\":\"uint16\"},{\"internalType\":\"Number\",\"name\":\"etherPrice\",\"type\":\"uint16\"},{\"internalType\":\"Number\",\"name\":\"markup\",\"type\":\"uint16\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"getGasData\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"paddedGasData\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint32\",\"name\":\"destination\",\"type\":\"uint32\"},{\"internalType\":\"uint256\",\"name\":\"paddedRequest\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"contentLength\",\"type\":\"uint256\"}],\"name\":\"getMinimumTips\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"paddedTips\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"initialize\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"localDomain\",\"outputs\":[{\"internalType\":\"uint32\",\"name\":\"\",\"type\":\"uint32\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"owner\",\"outputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"renounceOwnership\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint32\",\"name\":\"domain\",\"type\":\"uint32\"},{\"internalType\":\"uint256\",\"name\":\"gasPrice\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"dataPrice\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"execBuffer\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"amortAttCost\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"etherPrice\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"markup\",\"type\":\"uint256\"}],\"name\":\"setGasData\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"newOwner\",\"type\":\"address\"}],\"name\":\"transferOwnership\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"version\",\"outputs\":[{\"internalType\":\"string\",\"name\":\"versionString\",\"type\":\"string\"}],\"stateMutability\":\"view\",\"type\":\"function\"}]",
+	ABI: "[{\"inputs\":[{\"internalType\":\"uint32\",\"name\":\"domain\",\"type\":\"uint32\"},{\"internalType\":\"address\",\"name\":\"destination_\",\"type\":\"address\"}],\"stateMutability\":\"nonpayable\",\"type\":\"constructor\"},{\"inputs\":[],\"name\":\"IncorrectVersionLength\",\"type\":\"error\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":false,\"internalType\":\"uint32\",\"name\":\"domain\",\"type\":\"uint32\"},{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"paddedGasData\",\"type\":\"uint256\"}],\"name\":\"GasDataUpdated\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":false,\"internalType\":\"uint8\",\"name\":\"version\",\"type\":\"uint8\"}],\"name\":\"Initialized\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"address\",\"name\":\"previousOwner\",\"type\":\"address\"},{\"indexed\":true,\"internalType\":\"address\",\"name\":\"newOwner\",\"type\":\"address\"}],\"name\":\"OwnershipTransferred\",\"type\":\"event\"},{\"inputs\":[],\"name\":\"GAS_DATA_DECREASED_OPTIMISTIC_PERIOD\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"GAS_DATA_INCREASED_OPTIMISTIC_PERIOD\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"destination\",\"outputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint32\",\"name\":\"domain\",\"type\":\"uint32\"}],\"name\":\"getDecodedGasData\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"gasPrice\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"dataPrice\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"execBuffer\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"amortAttCost\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"etherPrice\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"markup\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"getGasData\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"paddedGasData\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint32\",\"name\":\"destination_\",\"type\":\"uint32\"},{\"internalType\":\"uint256\",\"name\":\"paddedRequest\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"contentLength\",\"type\":\"uint256\"}],\"name\":\"getMinimumTips\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"paddedTips\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"initialize\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"localDomain\",\"outputs\":[{\"internalType\":\"uint32\",\"name\":\"\",\"type\":\"uint32\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"components\":[{\"internalType\":\"bool\",\"name\":\"allowFailure\",\"type\":\"bool\"},{\"internalType\":\"bytes\",\"name\":\"callData\",\"type\":\"bytes\"}],\"internalType\":\"structMultiCallable.Call[]\",\"name\":\"calls\",\"type\":\"tuple[]\"}],\"name\":\"multicall\",\"outputs\":[{\"components\":[{\"internalType\":\"bool\",\"name\":\"success\",\"type\":\"bool\"},{\"internalType\":\"bytes\",\"name\":\"returnData\",\"type\":\"bytes\"}],\"internalType\":\"structMultiCallable.Result[]\",\"name\":\"callResults\",\"type\":\"tuple[]\"}],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"owner\",\"outputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"renounceOwnership\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint32\",\"name\":\"domain\",\"type\":\"uint32\"},{\"internalType\":\"uint256\",\"name\":\"gasPrice\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"dataPrice\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"execBuffer\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"amortAttCost\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"etherPrice\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"markup\",\"type\":\"uint256\"}],\"name\":\"setGasData\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"newOwner\",\"type\":\"address\"}],\"name\":\"transferOwnership\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint32\",\"name\":\"domain\",\"type\":\"uint32\"}],\"name\":\"updateGasData\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"version\",\"outputs\":[{\"internalType\":\"string\",\"name\":\"versionString\",\"type\":\"string\"}],\"stateMutability\":\"view\",\"type\":\"function\"}]",
 	Sigs: map[string]string{
-		"b3fa4d32": "_gasData(uint32)",
+		"621b58de": "GAS_DATA_DECREASED_OPTIMISTIC_PERIOD()",
+		"33ae7bb7": "GAS_DATA_INCREASED_OPTIMISTIC_PERIOD()",
+		"b269681d": "destination()",
+		"556517b7": "getDecodedGasData(uint32)",
 		"34926b29": "getGasData()",
 		"72010a93": "getMinimumTips(uint32,uint256,uint256)",
 		"8129fc1c": "initialize()",
 		"8d3638f4": "localDomain()",
+		"60fc8466": "multicall((bool,bytes)[])",
 		"8da5cb5b": "owner()",
 		"715018a6": "renounceOwnership()",
 		"64619d66": "setGasData(uint32,uint256,uint256,uint256,uint256,uint256,uint256)",
 		"f2fde38b": "transferOwnership(address)",
+		"867baea5": "updateGasData(uint32)",
 		"54fd4d50": "version()",
 	},
-	Bin: "0x60e060405234801561001057600080fd5b50604051610e9b380380610e9b83398101604081905261002f9161006f565b60408051808201909152600580825264302e302e3360d81b6020830152608052818161005a8161009c565b60a0525063ffffffff1660c052506100c39050565b60006020828403121561008157600080fd5b815163ffffffff8116811461009557600080fd5b9392505050565b805160208083015191908110156100bd576000198160200360031b1b821691505b50919050565b60805160a05160c051610da36100f86000396000818160c8015261028d0152600061021c015260006101f90152610da36000f3fe608060405234801561001057600080fd5b50600436106100be5760003560e01c80638129fc1c116100765780638da5cb5b1161005b5780638da5cb5b146102c4578063b3fa4d32146102ec578063f2fde38b1461038f57600080fd5b80638129fc1c146102805780638d3638f41461028857600080fd5b806364619d66116100a757806364619d661461024c578063715018a61461026157806372010a931461026957600080fd5b806334926b29146100c357806354fd4d50146101ee575b600080fd5b6101db7f000000000000000000000000000000000000000000000000000000000000000063ffffffff166000908152609760209081526040808320815160c081018352905461ffff80821683526201000082048082168487015264010000000083048083168587015266010000000000008404808416606087015268010000000000000000850480851660808801526a0100000000000000000000860490941660a08701819052959760109490941b63ffff000016931b65ffff000000001660309190911b67ffff000000000000169190951b69ffff00000000000000001660509390931b6bffff000000000000000000001692909217919091179290921791909117176bffffffffffffffffffffffff1691505090565b6040519081526020015b60405180910390f35b6040805180820182527f000000000000000000000000000000000000000000000000000000000000000081527f0000000000000000000000000000000000000000000000000000000000000000602082015290516101e59190610c16565b61025f61025a366004610c96565b6103a2565b005b61025f61059a565b6101db610277366004610ce9565b60009392505050565b61025f61061d565b6102af7f000000000000000000000000000000000000000000000000000000000000000081565b60405163ffffffff90911681526020016101e5565b60335460405173ffffffffffffffffffffffffffffffffffffffff90911681526020016101e5565b6103526102fa366004610d1c565b60976020526000908152604090205461ffff808216916201000081048216916401000000008204811691660100000000000081048216916801000000000000000082048116916a010000000000000000000090041686565b6040805161ffff978816815295871660208701529386169385019390935290841660608401528316608083015290911660a082015260c0016101e5565b61025f61039d366004610d37565b6106cc565b60335473ffffffffffffffffffffffffffffffffffffffff163314610428576040517f08c379a000000000000000000000000000000000000000000000000000000000815260206004820181905260248201527f4f776e61626c653a2063616c6c6572206973206e6f7420746865206f776e657260448201526064015b60405180910390fd5b6040518060c0016040528061043c886107f9565b61ffff16815260200161044e876107f9565b61ffff168152602001610460866107f9565b61ffff168152602001610472856107f9565b61ffff168152602001610484846107f9565b61ffff168152602001610496836107f9565b61ffff16815250609760008963ffffffff1663ffffffff16815260200190815260200160002060008201518160000160006101000a81548161ffff021916908361ffff16021790555060208201518160000160026101000a81548161ffff021916908361ffff16021790555060408201518160000160046101000a81548161ffff021916908361ffff16021790555060608201518160000160066101000a81548161ffff021916908361ffff16021790555060808201518160000160086101000a81548161ffff021916908361ffff16021790555060a082015181600001600a6101000a81548161ffff021916908361ffff16021790555090505050505050505050565b60335473ffffffffffffffffffffffffffffffffffffffff16331461061b576040517f08c379a000000000000000000000000000000000000000000000000000000000815260206004820181905260248201527f4f776e61626c653a2063616c6c6572206973206e6f7420746865206f776e6572604482015260640161041f565b565b600061062960016108d5565b9050801561065e57600080547fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff00ff166101001790555b610666610a60565b80156106c957600080547fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff00ff169055604051600181527f7f26b83ff96e1f2b6a682f133852f6798a09c465da95921460cefb38474024989060200160405180910390a15b50565b60335473ffffffffffffffffffffffffffffffffffffffff16331461074d576040517f08c379a000000000000000000000000000000000000000000000000000000000815260206004820181905260248201527f4f776e61626c653a2063616c6c6572206973206e6f7420746865206f776e6572604482015260640161041f565b73ffffffffffffffffffffffffffffffffffffffff81166107f0576040517f08c379a000000000000000000000000000000000000000000000000000000000815260206004820152602660248201527f4f776e61626c653a206e6577206f776e657220697320746865207a65726f206160448201527f6464726573730000000000000000000000000000000000000000000000000000606482015260840161041f565b6106c981610aff565b60008061087c8360016fffffffffffffffffffffffffffffffff821160071b91821c67ffffffffffffffff811160061b90811c63ffffffff811160051b90811c61ffff811160041b90811c60ff8111600390811b91821c600f811160021b90811c918211871b91821c969096119490961792909217171791909117919091171790565b9050600881101561089b5761ff00600884901b1660ff175b9392505050565b7ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff8810161ff0084821c60081b1660ff821617949350505050565b60008054610100900460ff161561098c578160ff1660011480156108f85750303b155b610984576040517f08c379a000000000000000000000000000000000000000000000000000000000815260206004820152602e60248201527f496e697469616c697a61626c653a20636f6e747261637420697320616c72656160448201527f647920696e697469616c697a6564000000000000000000000000000000000000606482015260840161041f565b506000919050565b60005460ff808416911610610a23576040517f08c379a000000000000000000000000000000000000000000000000000000000815260206004820152602e60248201527f496e697469616c697a61626c653a20636f6e747261637420697320616c72656160448201527f647920696e697469616c697a6564000000000000000000000000000000000000606482015260840161041f565b50600080547fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff001660ff92909216919091179055600190565b919050565b600054610100900460ff16610af7576040517f08c379a000000000000000000000000000000000000000000000000000000000815260206004820152602b60248201527f496e697469616c697a61626c653a20636f6e7472616374206973206e6f74206960448201527f6e697469616c697a696e67000000000000000000000000000000000000000000606482015260840161041f565b61061b610b76565b6033805473ffffffffffffffffffffffffffffffffffffffff8381167fffffffffffffffffffffffff0000000000000000000000000000000000000000831681179093556040519116919082907f8be0079c531659141344cd1fd0a4f28419497f9722a3daafe3b4186f6b6457e090600090a35050565b600054610100900460ff16610c0d576040517f08c379a000000000000000000000000000000000000000000000000000000000815260206004820152602b60248201527f496e697469616c697a61626c653a20636f6e7472616374206973206e6f74206960448201527f6e697469616c697a696e67000000000000000000000000000000000000000000606482015260840161041f565b61061b33610aff565b600060208083528351808285015260005b81811015610c4357858101830151858201604001528201610c27565b5060006040828601015260407fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffe0601f8301168501019250505092915050565b803563ffffffff81168114610a5b57600080fd5b600080600080600080600060e0888a031215610cb157600080fd5b610cba88610c82565b9960208901359950604089013598606081013598506080810135975060a0810135965060c00135945092505050565b600080600060608486031215610cfe57600080fd5b610d0784610c82565b95602085013595506040909401359392505050565b600060208284031215610d2e57600080fd5b61089482610c82565b600060208284031215610d4957600080fd5b813573ffffffffffffffffffffffffffffffffffffffff8116811461089457600080fdfea2646970667358221220aeb5dd25d678be11cc8c81da0a6bd2c796a778d93f97594f56660b20b41c383e64736f6c63430008110033",
+	Bin: "0x61010060405234801561001157600080fd5b506040516115da3803806115da8339810160408190526100309161007b565b60408051808201909152600580825264302e302e3360d81b6020830152608052828161005b816100ca565b60a0525063ffffffff1660c052506001600160a01b031660e052506100f1565b6000806040838503121561008e57600080fd5b825163ffffffff811681146100a257600080fd5b60208401519092506001600160a01b03811681146100bf57600080fd5b809150509250929050565b805160208083015191908110156100eb576000198160200360031b1b821691505b50919050565b60805160a05160c05160e05161149b61013f600039600081816102f50152610dba0152600081816101180152818161027a0152610d390152600061018d0152600061016a015261149b6000f3fe608060405234801561001057600080fd5b50600436106100f55760003560e01c8063715018a6116100975780638d3638f4116100665780638d3638f4146102755780638da5cb5b146102b1578063b269681d146102f0578063f2fde38b1461031757600080fd5b8063715018a61461023b57806372010a93146102435780638129fc1c1461025a578063867baea51461026257600080fd5b8063556517b7116100d3578063556517b7146101bd57806360fc8466146101fd578063621b58de1461021d57806364619d661461022657600080fd5b806333ae7bb7146100fa57806334926b291461011657806354fd4d501461015f575b600080fd5b61010361012c81565b6040519081526020015b60405180910390f35b7f000000000000000000000000000000000000000000000000000000000000000063ffffffff166000908152609760205260409020546bffffffffffffffffffffffff16610103565b6040805180820182527f000000000000000000000000000000000000000000000000000000000000000081527f00000000000000000000000000000000000000000000000000000000000000006020820152905161010d9190611107565b6101d06101cb36600461112e565b61032a565b604080519687526020870195909552938501929092526060840152608083015260a082015260c00161010d565b61021061020b366004611149565b6103ef565b60405161010d91906111be565b610103610e1081565b610239610234366004611252565b610567565b005b6102396106cb565b6101036102513660046112a5565b60009392505050565b61023961074e565b61023961027036600461112e565b6107fd565b61029c7f000000000000000000000000000000000000000000000000000000000000000081565b60405163ffffffff909116815260200161010d565b60335473ffffffffffffffffffffffffffffffffffffffff165b60405173ffffffffffffffffffffffffffffffffffffffff909116815260200161010d565b6102cb7f000000000000000000000000000000000000000000000000000000000000000081565b6102396103253660046112d8565b610822565b63ffffffff8116600090815260976020526040812054819081908190819081906bffffffffffffffffffffffff81169061036a9060501c61ffff1661094f565b965061037f604082901c63ffffffff1661094f565b9550610396603082901c65ffffffffffff1661094f565b94506103af602082901c67ffffffffffffffff1661094f565b93506103ca601082901c69ffffffffffffffffffff1661094f565b92506103e36bffffffffffffffffffffffff821661094f565b91505091939550919395565b6060818067ffffffffffffffff81111561040b5761040b61130e565b60405190808252806020026020018201604052801561045157816020015b6040805180820190915260008152606060208201528152602001906001900390816104295790505b5091503660005b8281101561055e578585828181106104725761047261133d565b9050602002810190610484919061136c565b9150600084828151811061049a5761049a61133d565b602002602001015190503073ffffffffffffffffffffffffffffffffffffffff168380602001906104cb91906113aa565b6040516104d9929190611416565b600060405180830381855af49150503d8060008114610514576040519150601f19603f3d011682016040523d82523d6000602084013e610519565b606091505b5060208301521515808252833517610555577f4d6a23280000000000000000000000000000000000000000000000000000000060005260046000fd5b50600101610458565b50505092915050565b60335473ffffffffffffffffffffffffffffffffffffffff1633146105ed576040517f08c379a000000000000000000000000000000000000000000000000000000000815260206004820181905260248201527f4f776e61626c653a2063616c6c6572206973206e6f7420746865206f776e657260448201526064015b60405180910390fd5b60006106876105fb8861097b565b6106048861097b565b61060d8861097b565b6106168861097b565b61061f8861097b565b6106288861097b565b6bffff00000000000000000000605087901b1669ffff0000000000000000604087901b161767ffff000000000000603086901b161765ffff00000000602085901b161763ffff0000601084901b161761ffff8216179695505050505050565b63ffffffff89166000908152609760205260409020549091506bffffffffffffffffffffffff8083169116146106c1576106c18882610a57565b5050505050505050565b60335473ffffffffffffffffffffffffffffffffffffffff16331461074c576040517f08c379a000000000000000000000000000000000000000000000000000000000815260206004820181905260248201527f4f776e61626c653a2063616c6c6572206973206e6f7420746865206f776e657260448201526064016105e4565b565b600061075a6001610ae1565b9050801561078f57600080547fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff00ff166101001790555b610797610c6c565b80156107fa57600080547fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff00ff169055604051600181527f7f26b83ff96e1f2b6a682f133852f6798a09c465da95921460cefb38474024989060200160405180910390a15b50565b60008061080983610d0b565b91509150811561081d5761081d8382610a57565b505050565b60335473ffffffffffffffffffffffffffffffffffffffff1633146108a3576040517f08c379a000000000000000000000000000000000000000000000000000000000815260206004820181905260248201527f4f776e61626c653a2063616c6c6572206973206e6f7420746865206f776e657260448201526064016105e4565b73ffffffffffffffffffffffffffffffffffffffff8116610946576040517f08c379a000000000000000000000000000000000000000000000000000000000815260206004820152602660248201527f4f776e61626c653a206e6577206f776e657220697320746865207a65726f206160448201527f646472657373000000000000000000000000000000000000000000000000000060648201526084016105e4565b6107fa81610f43565b600060ff600883901c8116908084169081900361096d575092915050565b610100909101901b92915050565b6000806109fe8360016fffffffffffffffffffffffffffffffff821160071b91821c67ffffffffffffffff811160061b90811c63ffffffff811160051b90811c61ffff811160041b90811c60ff8111600390811b91821c600f811160021b90811c918211871b91821c969096119490961792909217171791909117919091171790565b90506008811015610a1d5761ff00600884901b1660ff175b9392505050565b7ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff8810161ff0084821c60081b1660ff821617949350505050565b63ffffffff821660008181526097602090815260409182902080547fffffffffffffffffffffffffffffffffffffffff000000000000000000000000166bffffffffffffffffffffffff86169081179091558251938452908301527fae7a6216b3de7722222303567564b3f11777a9665d278ef3762110de410e12b3910160405180910390a15050565b60008054610100900460ff1615610b98578160ff166001148015610b045750303b155b610b90576040517f08c379a000000000000000000000000000000000000000000000000000000000815260206004820152602e60248201527f496e697469616c697a61626c653a20636f6e747261637420697320616c72656160448201527f647920696e697469616c697a656400000000000000000000000000000000000060648201526084016105e4565b506000919050565b60005460ff808416911610610c2f576040517f08c379a000000000000000000000000000000000000000000000000000000000815260206004820152602e60248201527f496e697469616c697a61626c653a20636f6e747261637420697320616c72656160448201527f647920696e697469616c697a656400000000000000000000000000000000000060648201526084016105e4565b50600080547fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff001660ff92909216919091179055600190565b919050565b600054610100900460ff16610d03576040517f08c379a000000000000000000000000000000000000000000000000000000000815260206004820152602b60248201527f496e697469616c697a61626c653a20636f6e7472616374206973206e6f74206960448201527f6e697469616c697a696e6700000000000000000000000000000000000000000060648201526084016105e4565b61074c610fba565b63ffffffff808216600081815260976020526040812054909283926bffffffffffffffffffffffff909216917f00000000000000000000000000000000000000000000000000000000000000009091169003610d6c57600094909350915050565b6040517fd0dd067500000000000000000000000000000000000000000000000000000000815263ffffffff85166004820152600090819073ffffffffffffffffffffffffffffffffffffffff7f0000000000000000000000000000000000000000000000000000000000000000169063d0dd0675906024016040805180830381865afa158015610e00573d6000803e3d6000fd5b505050506040513d601f19601f82011682018060405250810190610e249190611426565b9150915080600003610e3e57506000959194509092505050565b610f17610e5c605085901c61ffff16605085901c61ffff168461105a565b610e7b604086901c63ffffffff16604086901c63ffffffff168561105a565b610e9e603087901c65ffffffffffff16603087901c65ffffffffffff168661105a565b610ec5602088901c67ffffffffffffffff16602088901c67ffffffffffffffff168761105a565b610ef0601089901c69ffffffffffffffffffff16601089901c69ffffffffffffffffffff168861105a565b6106286bffffffffffffffffffffffff8a166bffffffffffffffffffffffff8a168961105a565b9350826bffffffffffffffffffffffff16846bffffffffffffffffffffffff1614159450505050915091565b6033805473ffffffffffffffffffffffffffffffffffffffff8381167fffffffffffffffffffffffff0000000000000000000000000000000000000000831681179093556040519116919082907f8be0079c531659141344cd1fd0a4f28419497f9722a3daafe3b4186f6b6457e090600090a35050565b600054610100900460ff16611051576040517f08c379a000000000000000000000000000000000000000000000000000000000815260206004820152602b60248201527f496e697469616c697a61626c653a20636f6e7472616374206973206e6f74206960448201527f6e697469616c697a696e6700000000000000000000000000000000000000000060648201526084016105e4565b61074c33610f43565b60006110698461ffff1661094f565b6110768461ffff1661094f565b11156110945761012c821061108b578261108d565b835b9050610a16565b610e10821061108b578261108d565b6000815180845260005b818110156110c9576020818501810151868301820152016110ad565b5060006020828601015260207fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffe0601f83011685010191505092915050565b602081526000610a1660208301846110a3565b803563ffffffff81168114610c6757600080fd5b60006020828403121561114057600080fd5b610a168261111a565b6000806020838503121561115c57600080fd5b823567ffffffffffffffff8082111561117457600080fd5b818501915085601f83011261118857600080fd5b81358181111561119757600080fd5b8660208260051b85010111156111ac57600080fd5b60209290920196919550909350505050565b60006020808301818452808551808352604092508286019150828160051b87010184880160005b83811015611244578883037fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffc00185528151805115158452870151878401879052611231878501826110a3565b95880195935050908601906001016111e5565b509098975050505050505050565b600080600080600080600060e0888a03121561126d57600080fd5b6112768861111a565b9960208901359950604089013598606081013598506080810135975060a0810135965060c00135945092505050565b6000806000606084860312156112ba57600080fd5b6112c38461111a565b95602085013595506040909401359392505050565b6000602082840312156112ea57600080fd5b813573ffffffffffffffffffffffffffffffffffffffff81168114610a1657600080fd5b7f4e487b7100000000000000000000000000000000000000000000000000000000600052604160045260246000fd5b7f4e487b7100000000000000000000000000000000000000000000000000000000600052603260045260246000fd5b600082357fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffc18336030181126113a057600080fd5b9190910192915050565b60008083357fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffe18436030181126113df57600080fd5b83018035915067ffffffffffffffff8211156113fa57600080fd5b60200191503681900382131561140f57600080fd5b9250929050565b8183823760009101908152919050565b6000806040838503121561143957600080fd5b82516bffffffffffffffffffffffff8116811461145557600080fd5b602093909301519294929350505056fea2646970667358221220b1458f4c2caff530c014a79642fbdf7c924217b3ba0fa86db14f87c470a6ddaa64736f6c63430008110033",
 }
 
 // GasOracleABI is the input ABI used to generate the binding from.
@@ -690,7 +707,7 @@ var GasOracleFuncSigs = GasOracleMetaData.Sigs
 var GasOracleBin = GasOracleMetaData.Bin
 
 // DeployGasOracle deploys a new Ethereum contract, binding an instance of GasOracle to it.
-func DeployGasOracle(auth *bind.TransactOpts, backend bind.ContractBackend, domain uint32) (common.Address, *types.Transaction, *GasOracle, error) {
+func DeployGasOracle(auth *bind.TransactOpts, backend bind.ContractBackend, domain uint32, destination_ common.Address) (common.Address, *types.Transaction, *GasOracle, error) {
 	parsed, err := GasOracleMetaData.GetAbi()
 	if err != nil {
 		return common.Address{}, nil, nil, err
@@ -699,7 +716,7 @@ func DeployGasOracle(auth *bind.TransactOpts, backend bind.ContractBackend, doma
 		return common.Address{}, nil, nil, errors.New("GetABI returned nil")
 	}
 
-	address, tx, contract, err := bind.DeployContract(auth, *parsed, common.FromHex(GasOracleBin), backend, domain)
+	address, tx, contract, err := bind.DeployContract(auth, *parsed, common.FromHex(GasOracleBin), backend, domain, destination_)
 	if err != nil {
 		return common.Address{}, nil, nil, err
 	}
@@ -848,69 +865,162 @@ func (_GasOracle *GasOracleTransactorRaw) Transact(opts *bind.TransactOpts, meth
 	return _GasOracle.Contract.contract.Transact(opts, method, params...)
 }
 
-// GasData is a free data retrieval call binding the contract method 0xb3fa4d32.
+// GASDATADECREASEDOPTIMISTICPERIOD is a free data retrieval call binding the contract method 0x621b58de.
 //
-// Solidity: function _gasData(uint32 ) view returns(uint16 gasPrice, uint16 dataPrice, uint16 execBuffer, uint16 amortAttCost, uint16 etherPrice, uint16 markup)
-func (_GasOracle *GasOracleCaller) GasData(opts *bind.CallOpts, arg0 uint32) (struct {
-	GasPrice     uint16
-	DataPrice    uint16
-	ExecBuffer   uint16
-	AmortAttCost uint16
-	EtherPrice   uint16
-	Markup       uint16
+// Solidity: function GAS_DATA_DECREASED_OPTIMISTIC_PERIOD() view returns(uint256)
+func (_GasOracle *GasOracleCaller) GASDATADECREASEDOPTIMISTICPERIOD(opts *bind.CallOpts) (*big.Int, error) {
+	var out []interface{}
+	err := _GasOracle.contract.Call(opts, &out, "GAS_DATA_DECREASED_OPTIMISTIC_PERIOD")
+
+	if err != nil {
+		return *new(*big.Int), err
+	}
+
+	out0 := *abi.ConvertType(out[0], new(*big.Int)).(**big.Int)
+
+	return out0, err
+
+}
+
+// GASDATADECREASEDOPTIMISTICPERIOD is a free data retrieval call binding the contract method 0x621b58de.
+//
+// Solidity: function GAS_DATA_DECREASED_OPTIMISTIC_PERIOD() view returns(uint256)
+func (_GasOracle *GasOracleSession) GASDATADECREASEDOPTIMISTICPERIOD() (*big.Int, error) {
+	return _GasOracle.Contract.GASDATADECREASEDOPTIMISTICPERIOD(&_GasOracle.CallOpts)
+}
+
+// GASDATADECREASEDOPTIMISTICPERIOD is a free data retrieval call binding the contract method 0x621b58de.
+//
+// Solidity: function GAS_DATA_DECREASED_OPTIMISTIC_PERIOD() view returns(uint256)
+func (_GasOracle *GasOracleCallerSession) GASDATADECREASEDOPTIMISTICPERIOD() (*big.Int, error) {
+	return _GasOracle.Contract.GASDATADECREASEDOPTIMISTICPERIOD(&_GasOracle.CallOpts)
+}
+
+// GASDATAINCREASEDOPTIMISTICPERIOD is a free data retrieval call binding the contract method 0x33ae7bb7.
+//
+// Solidity: function GAS_DATA_INCREASED_OPTIMISTIC_PERIOD() view returns(uint256)
+func (_GasOracle *GasOracleCaller) GASDATAINCREASEDOPTIMISTICPERIOD(opts *bind.CallOpts) (*big.Int, error) {
+	var out []interface{}
+	err := _GasOracle.contract.Call(opts, &out, "GAS_DATA_INCREASED_OPTIMISTIC_PERIOD")
+
+	if err != nil {
+		return *new(*big.Int), err
+	}
+
+	out0 := *abi.ConvertType(out[0], new(*big.Int)).(**big.Int)
+
+	return out0, err
+
+}
+
+// GASDATAINCREASEDOPTIMISTICPERIOD is a free data retrieval call binding the contract method 0x33ae7bb7.
+//
+// Solidity: function GAS_DATA_INCREASED_OPTIMISTIC_PERIOD() view returns(uint256)
+func (_GasOracle *GasOracleSession) GASDATAINCREASEDOPTIMISTICPERIOD() (*big.Int, error) {
+	return _GasOracle.Contract.GASDATAINCREASEDOPTIMISTICPERIOD(&_GasOracle.CallOpts)
+}
+
+// GASDATAINCREASEDOPTIMISTICPERIOD is a free data retrieval call binding the contract method 0x33ae7bb7.
+//
+// Solidity: function GAS_DATA_INCREASED_OPTIMISTIC_PERIOD() view returns(uint256)
+func (_GasOracle *GasOracleCallerSession) GASDATAINCREASEDOPTIMISTICPERIOD() (*big.Int, error) {
+	return _GasOracle.Contract.GASDATAINCREASEDOPTIMISTICPERIOD(&_GasOracle.CallOpts)
+}
+
+// Destination is a free data retrieval call binding the contract method 0xb269681d.
+//
+// Solidity: function destination() view returns(address)
+func (_GasOracle *GasOracleCaller) Destination(opts *bind.CallOpts) (common.Address, error) {
+	var out []interface{}
+	err := _GasOracle.contract.Call(opts, &out, "destination")
+
+	if err != nil {
+		return *new(common.Address), err
+	}
+
+	out0 := *abi.ConvertType(out[0], new(common.Address)).(*common.Address)
+
+	return out0, err
+
+}
+
+// Destination is a free data retrieval call binding the contract method 0xb269681d.
+//
+// Solidity: function destination() view returns(address)
+func (_GasOracle *GasOracleSession) Destination() (common.Address, error) {
+	return _GasOracle.Contract.Destination(&_GasOracle.CallOpts)
+}
+
+// Destination is a free data retrieval call binding the contract method 0xb269681d.
+//
+// Solidity: function destination() view returns(address)
+func (_GasOracle *GasOracleCallerSession) Destination() (common.Address, error) {
+	return _GasOracle.Contract.Destination(&_GasOracle.CallOpts)
+}
+
+// GetDecodedGasData is a free data retrieval call binding the contract method 0x556517b7.
+//
+// Solidity: function getDecodedGasData(uint32 domain) view returns(uint256 gasPrice, uint256 dataPrice, uint256 execBuffer, uint256 amortAttCost, uint256 etherPrice, uint256 markup)
+func (_GasOracle *GasOracleCaller) GetDecodedGasData(opts *bind.CallOpts, domain uint32) (struct {
+	GasPrice     *big.Int
+	DataPrice    *big.Int
+	ExecBuffer   *big.Int
+	AmortAttCost *big.Int
+	EtherPrice   *big.Int
+	Markup       *big.Int
 }, error) {
 	var out []interface{}
-	err := _GasOracle.contract.Call(opts, &out, "_gasData", arg0)
+	err := _GasOracle.contract.Call(opts, &out, "getDecodedGasData", domain)
 
 	outstruct := new(struct {
-		GasPrice     uint16
-		DataPrice    uint16
-		ExecBuffer   uint16
-		AmortAttCost uint16
-		EtherPrice   uint16
-		Markup       uint16
+		GasPrice     *big.Int
+		DataPrice    *big.Int
+		ExecBuffer   *big.Int
+		AmortAttCost *big.Int
+		EtherPrice   *big.Int
+		Markup       *big.Int
 	})
 	if err != nil {
 		return *outstruct, err
 	}
 
-	outstruct.GasPrice = *abi.ConvertType(out[0], new(uint16)).(*uint16)
-	outstruct.DataPrice = *abi.ConvertType(out[1], new(uint16)).(*uint16)
-	outstruct.ExecBuffer = *abi.ConvertType(out[2], new(uint16)).(*uint16)
-	outstruct.AmortAttCost = *abi.ConvertType(out[3], new(uint16)).(*uint16)
-	outstruct.EtherPrice = *abi.ConvertType(out[4], new(uint16)).(*uint16)
-	outstruct.Markup = *abi.ConvertType(out[5], new(uint16)).(*uint16)
+	outstruct.GasPrice = *abi.ConvertType(out[0], new(*big.Int)).(**big.Int)
+	outstruct.DataPrice = *abi.ConvertType(out[1], new(*big.Int)).(**big.Int)
+	outstruct.ExecBuffer = *abi.ConvertType(out[2], new(*big.Int)).(**big.Int)
+	outstruct.AmortAttCost = *abi.ConvertType(out[3], new(*big.Int)).(**big.Int)
+	outstruct.EtherPrice = *abi.ConvertType(out[4], new(*big.Int)).(**big.Int)
+	outstruct.Markup = *abi.ConvertType(out[5], new(*big.Int)).(**big.Int)
 
 	return *outstruct, err
 
 }
 
-// GasData is a free data retrieval call binding the contract method 0xb3fa4d32.
+// GetDecodedGasData is a free data retrieval call binding the contract method 0x556517b7.
 //
-// Solidity: function _gasData(uint32 ) view returns(uint16 gasPrice, uint16 dataPrice, uint16 execBuffer, uint16 amortAttCost, uint16 etherPrice, uint16 markup)
-func (_GasOracle *GasOracleSession) GasData(arg0 uint32) (struct {
-	GasPrice     uint16
-	DataPrice    uint16
-	ExecBuffer   uint16
-	AmortAttCost uint16
-	EtherPrice   uint16
-	Markup       uint16
+// Solidity: function getDecodedGasData(uint32 domain) view returns(uint256 gasPrice, uint256 dataPrice, uint256 execBuffer, uint256 amortAttCost, uint256 etherPrice, uint256 markup)
+func (_GasOracle *GasOracleSession) GetDecodedGasData(domain uint32) (struct {
+	GasPrice     *big.Int
+	DataPrice    *big.Int
+	ExecBuffer   *big.Int
+	AmortAttCost *big.Int
+	EtherPrice   *big.Int
+	Markup       *big.Int
 }, error) {
-	return _GasOracle.Contract.GasData(&_GasOracle.CallOpts, arg0)
+	return _GasOracle.Contract.GetDecodedGasData(&_GasOracle.CallOpts, domain)
 }
 
-// GasData is a free data retrieval call binding the contract method 0xb3fa4d32.
+// GetDecodedGasData is a free data retrieval call binding the contract method 0x556517b7.
 //
-// Solidity: function _gasData(uint32 ) view returns(uint16 gasPrice, uint16 dataPrice, uint16 execBuffer, uint16 amortAttCost, uint16 etherPrice, uint16 markup)
-func (_GasOracle *GasOracleCallerSession) GasData(arg0 uint32) (struct {
-	GasPrice     uint16
-	DataPrice    uint16
-	ExecBuffer   uint16
-	AmortAttCost uint16
-	EtherPrice   uint16
-	Markup       uint16
+// Solidity: function getDecodedGasData(uint32 domain) view returns(uint256 gasPrice, uint256 dataPrice, uint256 execBuffer, uint256 amortAttCost, uint256 etherPrice, uint256 markup)
+func (_GasOracle *GasOracleCallerSession) GetDecodedGasData(domain uint32) (struct {
+	GasPrice     *big.Int
+	DataPrice    *big.Int
+	ExecBuffer   *big.Int
+	AmortAttCost *big.Int
+	EtherPrice   *big.Int
+	Markup       *big.Int
 }, error) {
-	return _GasOracle.Contract.GasData(&_GasOracle.CallOpts, arg0)
+	return _GasOracle.Contract.GetDecodedGasData(&_GasOracle.CallOpts, domain)
 }
 
 // GetGasData is a free data retrieval call binding the contract method 0x34926b29.
@@ -946,10 +1056,10 @@ func (_GasOracle *GasOracleCallerSession) GetGasData() (*big.Int, error) {
 
 // GetMinimumTips is a free data retrieval call binding the contract method 0x72010a93.
 //
-// Solidity: function getMinimumTips(uint32 destination, uint256 paddedRequest, uint256 contentLength) view returns(uint256 paddedTips)
-func (_GasOracle *GasOracleCaller) GetMinimumTips(opts *bind.CallOpts, destination uint32, paddedRequest *big.Int, contentLength *big.Int) (*big.Int, error) {
+// Solidity: function getMinimumTips(uint32 destination_, uint256 paddedRequest, uint256 contentLength) view returns(uint256 paddedTips)
+func (_GasOracle *GasOracleCaller) GetMinimumTips(opts *bind.CallOpts, destination_ uint32, paddedRequest *big.Int, contentLength *big.Int) (*big.Int, error) {
 	var out []interface{}
-	err := _GasOracle.contract.Call(opts, &out, "getMinimumTips", destination, paddedRequest, contentLength)
+	err := _GasOracle.contract.Call(opts, &out, "getMinimumTips", destination_, paddedRequest, contentLength)
 
 	if err != nil {
 		return *new(*big.Int), err
@@ -963,16 +1073,16 @@ func (_GasOracle *GasOracleCaller) GetMinimumTips(opts *bind.CallOpts, destinati
 
 // GetMinimumTips is a free data retrieval call binding the contract method 0x72010a93.
 //
-// Solidity: function getMinimumTips(uint32 destination, uint256 paddedRequest, uint256 contentLength) view returns(uint256 paddedTips)
-func (_GasOracle *GasOracleSession) GetMinimumTips(destination uint32, paddedRequest *big.Int, contentLength *big.Int) (*big.Int, error) {
-	return _GasOracle.Contract.GetMinimumTips(&_GasOracle.CallOpts, destination, paddedRequest, contentLength)
+// Solidity: function getMinimumTips(uint32 destination_, uint256 paddedRequest, uint256 contentLength) view returns(uint256 paddedTips)
+func (_GasOracle *GasOracleSession) GetMinimumTips(destination_ uint32, paddedRequest *big.Int, contentLength *big.Int) (*big.Int, error) {
+	return _GasOracle.Contract.GetMinimumTips(&_GasOracle.CallOpts, destination_, paddedRequest, contentLength)
 }
 
 // GetMinimumTips is a free data retrieval call binding the contract method 0x72010a93.
 //
-// Solidity: function getMinimumTips(uint32 destination, uint256 paddedRequest, uint256 contentLength) view returns(uint256 paddedTips)
-func (_GasOracle *GasOracleCallerSession) GetMinimumTips(destination uint32, paddedRequest *big.Int, contentLength *big.Int) (*big.Int, error) {
-	return _GasOracle.Contract.GetMinimumTips(&_GasOracle.CallOpts, destination, paddedRequest, contentLength)
+// Solidity: function getMinimumTips(uint32 destination_, uint256 paddedRequest, uint256 contentLength) view returns(uint256 paddedTips)
+func (_GasOracle *GasOracleCallerSession) GetMinimumTips(destination_ uint32, paddedRequest *big.Int, contentLength *big.Int) (*big.Int, error) {
+	return _GasOracle.Contract.GetMinimumTips(&_GasOracle.CallOpts, destination_, paddedRequest, contentLength)
 }
 
 // LocalDomain is a free data retrieval call binding the contract method 0x8d3638f4.
@@ -1089,6 +1199,27 @@ func (_GasOracle *GasOracleTransactorSession) Initialize() (*types.Transaction, 
 	return _GasOracle.Contract.Initialize(&_GasOracle.TransactOpts)
 }
 
+// Multicall is a paid mutator transaction binding the contract method 0x60fc8466.
+//
+// Solidity: function multicall((bool,bytes)[] calls) returns((bool,bytes)[] callResults)
+func (_GasOracle *GasOracleTransactor) Multicall(opts *bind.TransactOpts, calls []MultiCallableCall) (*types.Transaction, error) {
+	return _GasOracle.contract.Transact(opts, "multicall", calls)
+}
+
+// Multicall is a paid mutator transaction binding the contract method 0x60fc8466.
+//
+// Solidity: function multicall((bool,bytes)[] calls) returns((bool,bytes)[] callResults)
+func (_GasOracle *GasOracleSession) Multicall(calls []MultiCallableCall) (*types.Transaction, error) {
+	return _GasOracle.Contract.Multicall(&_GasOracle.TransactOpts, calls)
+}
+
+// Multicall is a paid mutator transaction binding the contract method 0x60fc8466.
+//
+// Solidity: function multicall((bool,bytes)[] calls) returns((bool,bytes)[] callResults)
+func (_GasOracle *GasOracleTransactorSession) Multicall(calls []MultiCallableCall) (*types.Transaction, error) {
+	return _GasOracle.Contract.Multicall(&_GasOracle.TransactOpts, calls)
+}
+
 // RenounceOwnership is a paid mutator transaction binding the contract method 0x715018a6.
 //
 // Solidity: function renounceOwnership() returns()
@@ -1150,6 +1281,162 @@ func (_GasOracle *GasOracleSession) TransferOwnership(newOwner common.Address) (
 // Solidity: function transferOwnership(address newOwner) returns()
 func (_GasOracle *GasOracleTransactorSession) TransferOwnership(newOwner common.Address) (*types.Transaction, error) {
 	return _GasOracle.Contract.TransferOwnership(&_GasOracle.TransactOpts, newOwner)
+}
+
+// UpdateGasData is a paid mutator transaction binding the contract method 0x867baea5.
+//
+// Solidity: function updateGasData(uint32 domain) returns()
+func (_GasOracle *GasOracleTransactor) UpdateGasData(opts *bind.TransactOpts, domain uint32) (*types.Transaction, error) {
+	return _GasOracle.contract.Transact(opts, "updateGasData", domain)
+}
+
+// UpdateGasData is a paid mutator transaction binding the contract method 0x867baea5.
+//
+// Solidity: function updateGasData(uint32 domain) returns()
+func (_GasOracle *GasOracleSession) UpdateGasData(domain uint32) (*types.Transaction, error) {
+	return _GasOracle.Contract.UpdateGasData(&_GasOracle.TransactOpts, domain)
+}
+
+// UpdateGasData is a paid mutator transaction binding the contract method 0x867baea5.
+//
+// Solidity: function updateGasData(uint32 domain) returns()
+func (_GasOracle *GasOracleTransactorSession) UpdateGasData(domain uint32) (*types.Transaction, error) {
+	return _GasOracle.Contract.UpdateGasData(&_GasOracle.TransactOpts, domain)
+}
+
+// GasOracleGasDataUpdatedIterator is returned from FilterGasDataUpdated and is used to iterate over the raw logs and unpacked data for GasDataUpdated events raised by the GasOracle contract.
+type GasOracleGasDataUpdatedIterator struct {
+	Event *GasOracleGasDataUpdated // Event containing the contract specifics and raw log
+
+	contract *bind.BoundContract // Generic contract to use for unpacking event data
+	event    string              // Event name to use for unpacking event data
+
+	logs chan types.Log        // Log channel receiving the found contract events
+	sub  ethereum.Subscription // Subscription for errors, completion and termination
+	done bool                  // Whether the subscription completed delivering logs
+	fail error                 // Occurred error to stop iteration
+}
+
+// Next advances the iterator to the subsequent event, returning whether there
+// are any more events found. In case of a retrieval or parsing error, false is
+// returned and Error() can be queried for the exact failure.
+func (it *GasOracleGasDataUpdatedIterator) Next() bool {
+	// If the iterator failed, stop iterating
+	if it.fail != nil {
+		return false
+	}
+	// If the iterator completed, deliver directly whatever's available
+	if it.done {
+		select {
+		case log := <-it.logs:
+			it.Event = new(GasOracleGasDataUpdated)
+			if err := it.contract.UnpackLog(it.Event, it.event, log); err != nil {
+				it.fail = err
+				return false
+			}
+			it.Event.Raw = log
+			return true
+
+		default:
+			return false
+		}
+	}
+	// Iterator still in progress, wait for either a data or an error event
+	select {
+	case log := <-it.logs:
+		it.Event = new(GasOracleGasDataUpdated)
+		if err := it.contract.UnpackLog(it.Event, it.event, log); err != nil {
+			it.fail = err
+			return false
+		}
+		it.Event.Raw = log
+		return true
+
+	case err := <-it.sub.Err():
+		it.done = true
+		it.fail = err
+		return it.Next()
+	}
+}
+
+// Error returns any retrieval or parsing error occurred during filtering.
+func (it *GasOracleGasDataUpdatedIterator) Error() error {
+	return it.fail
+}
+
+// Close terminates the iteration process, releasing any pending underlying
+// resources.
+func (it *GasOracleGasDataUpdatedIterator) Close() error {
+	it.sub.Unsubscribe()
+	return nil
+}
+
+// GasOracleGasDataUpdated represents a GasDataUpdated event raised by the GasOracle contract.
+type GasOracleGasDataUpdated struct {
+	Domain        uint32
+	PaddedGasData *big.Int
+	Raw           types.Log // Blockchain specific contextual infos
+}
+
+// FilterGasDataUpdated is a free log retrieval operation binding the contract event 0xae7a6216b3de7722222303567564b3f11777a9665d278ef3762110de410e12b3.
+//
+// Solidity: event GasDataUpdated(uint32 domain, uint256 paddedGasData)
+func (_GasOracle *GasOracleFilterer) FilterGasDataUpdated(opts *bind.FilterOpts) (*GasOracleGasDataUpdatedIterator, error) {
+
+	logs, sub, err := _GasOracle.contract.FilterLogs(opts, "GasDataUpdated")
+	if err != nil {
+		return nil, err
+	}
+	return &GasOracleGasDataUpdatedIterator{contract: _GasOracle.contract, event: "GasDataUpdated", logs: logs, sub: sub}, nil
+}
+
+// WatchGasDataUpdated is a free log subscription operation binding the contract event 0xae7a6216b3de7722222303567564b3f11777a9665d278ef3762110de410e12b3.
+//
+// Solidity: event GasDataUpdated(uint32 domain, uint256 paddedGasData)
+func (_GasOracle *GasOracleFilterer) WatchGasDataUpdated(opts *bind.WatchOpts, sink chan<- *GasOracleGasDataUpdated) (event.Subscription, error) {
+
+	logs, sub, err := _GasOracle.contract.WatchLogs(opts, "GasDataUpdated")
+	if err != nil {
+		return nil, err
+	}
+	return event.NewSubscription(func(quit <-chan struct{}) error {
+		defer sub.Unsubscribe()
+		for {
+			select {
+			case log := <-logs:
+				// New log arrived, parse the event and forward to the user
+				event := new(GasOracleGasDataUpdated)
+				if err := _GasOracle.contract.UnpackLog(event, "GasDataUpdated", log); err != nil {
+					return err
+				}
+				event.Raw = log
+
+				select {
+				case sink <- event:
+				case err := <-sub.Err():
+					return err
+				case <-quit:
+					return nil
+				}
+			case err := <-sub.Err():
+				return err
+			case <-quit:
+				return nil
+			}
+		}
+	}), nil
+}
+
+// ParseGasDataUpdated is a log parse operation binding the contract event 0xae7a6216b3de7722222303567564b3f11777a9665d278ef3762110de410e12b3.
+//
+// Solidity: event GasDataUpdated(uint32 domain, uint256 paddedGasData)
+func (_GasOracle *GasOracleFilterer) ParseGasDataUpdated(log types.Log) (*GasOracleGasDataUpdated, error) {
+	event := new(GasOracleGasDataUpdated)
+	if err := _GasOracle.contract.UnpackLog(event, "GasDataUpdated", log); err != nil {
+		return nil, err
+	}
+	event.Raw = log
+	return event, nil
 }
 
 // GasOracleInitializedIterator is returned from FilterInitialized and is used to iterate over the raw logs and unpacked data for Initialized events raised by the GasOracle contract.
@@ -1433,6 +1720,292 @@ func (_GasOracle *GasOracleFilterer) WatchOwnershipTransferred(opts *bind.WatchO
 func (_GasOracle *GasOracleFilterer) ParseOwnershipTransferred(log types.Log) (*GasOracleOwnershipTransferred, error) {
 	event := new(GasOracleOwnershipTransferred)
 	if err := _GasOracle.contract.UnpackLog(event, "OwnershipTransferred", log); err != nil {
+		return nil, err
+	}
+	event.Raw = log
+	return event, nil
+}
+
+// GasOracleEventsMetaData contains all meta data concerning the GasOracleEvents contract.
+var GasOracleEventsMetaData = &bind.MetaData{
+	ABI: "[{\"anonymous\":false,\"inputs\":[{\"indexed\":false,\"internalType\":\"uint32\",\"name\":\"domain\",\"type\":\"uint32\"},{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"paddedGasData\",\"type\":\"uint256\"}],\"name\":\"GasDataUpdated\",\"type\":\"event\"}]",
+}
+
+// GasOracleEventsABI is the input ABI used to generate the binding from.
+// Deprecated: Use GasOracleEventsMetaData.ABI instead.
+var GasOracleEventsABI = GasOracleEventsMetaData.ABI
+
+// GasOracleEvents is an auto generated Go binding around an Ethereum contract.
+type GasOracleEvents struct {
+	GasOracleEventsCaller     // Read-only binding to the contract
+	GasOracleEventsTransactor // Write-only binding to the contract
+	GasOracleEventsFilterer   // Log filterer for contract events
+}
+
+// GasOracleEventsCaller is an auto generated read-only Go binding around an Ethereum contract.
+type GasOracleEventsCaller struct {
+	contract *bind.BoundContract // Generic contract wrapper for the low level calls
+}
+
+// GasOracleEventsTransactor is an auto generated write-only Go binding around an Ethereum contract.
+type GasOracleEventsTransactor struct {
+	contract *bind.BoundContract // Generic contract wrapper for the low level calls
+}
+
+// GasOracleEventsFilterer is an auto generated log filtering Go binding around an Ethereum contract events.
+type GasOracleEventsFilterer struct {
+	contract *bind.BoundContract // Generic contract wrapper for the low level calls
+}
+
+// GasOracleEventsSession is an auto generated Go binding around an Ethereum contract,
+// with pre-set call and transact options.
+type GasOracleEventsSession struct {
+	Contract     *GasOracleEvents  // Generic contract binding to set the session for
+	CallOpts     bind.CallOpts     // Call options to use throughout this session
+	TransactOpts bind.TransactOpts // Transaction auth options to use throughout this session
+}
+
+// GasOracleEventsCallerSession is an auto generated read-only Go binding around an Ethereum contract,
+// with pre-set call options.
+type GasOracleEventsCallerSession struct {
+	Contract *GasOracleEventsCaller // Generic contract caller binding to set the session for
+	CallOpts bind.CallOpts          // Call options to use throughout this session
+}
+
+// GasOracleEventsTransactorSession is an auto generated write-only Go binding around an Ethereum contract,
+// with pre-set transact options.
+type GasOracleEventsTransactorSession struct {
+	Contract     *GasOracleEventsTransactor // Generic contract transactor binding to set the session for
+	TransactOpts bind.TransactOpts          // Transaction auth options to use throughout this session
+}
+
+// GasOracleEventsRaw is an auto generated low-level Go binding around an Ethereum contract.
+type GasOracleEventsRaw struct {
+	Contract *GasOracleEvents // Generic contract binding to access the raw methods on
+}
+
+// GasOracleEventsCallerRaw is an auto generated low-level read-only Go binding around an Ethereum contract.
+type GasOracleEventsCallerRaw struct {
+	Contract *GasOracleEventsCaller // Generic read-only contract binding to access the raw methods on
+}
+
+// GasOracleEventsTransactorRaw is an auto generated low-level write-only Go binding around an Ethereum contract.
+type GasOracleEventsTransactorRaw struct {
+	Contract *GasOracleEventsTransactor // Generic write-only contract binding to access the raw methods on
+}
+
+// NewGasOracleEvents creates a new instance of GasOracleEvents, bound to a specific deployed contract.
+func NewGasOracleEvents(address common.Address, backend bind.ContractBackend) (*GasOracleEvents, error) {
+	contract, err := bindGasOracleEvents(address, backend, backend, backend)
+	if err != nil {
+		return nil, err
+	}
+	return &GasOracleEvents{GasOracleEventsCaller: GasOracleEventsCaller{contract: contract}, GasOracleEventsTransactor: GasOracleEventsTransactor{contract: contract}, GasOracleEventsFilterer: GasOracleEventsFilterer{contract: contract}}, nil
+}
+
+// NewGasOracleEventsCaller creates a new read-only instance of GasOracleEvents, bound to a specific deployed contract.
+func NewGasOracleEventsCaller(address common.Address, caller bind.ContractCaller) (*GasOracleEventsCaller, error) {
+	contract, err := bindGasOracleEvents(address, caller, nil, nil)
+	if err != nil {
+		return nil, err
+	}
+	return &GasOracleEventsCaller{contract: contract}, nil
+}
+
+// NewGasOracleEventsTransactor creates a new write-only instance of GasOracleEvents, bound to a specific deployed contract.
+func NewGasOracleEventsTransactor(address common.Address, transactor bind.ContractTransactor) (*GasOracleEventsTransactor, error) {
+	contract, err := bindGasOracleEvents(address, nil, transactor, nil)
+	if err != nil {
+		return nil, err
+	}
+	return &GasOracleEventsTransactor{contract: contract}, nil
+}
+
+// NewGasOracleEventsFilterer creates a new log filterer instance of GasOracleEvents, bound to a specific deployed contract.
+func NewGasOracleEventsFilterer(address common.Address, filterer bind.ContractFilterer) (*GasOracleEventsFilterer, error) {
+	contract, err := bindGasOracleEvents(address, nil, nil, filterer)
+	if err != nil {
+		return nil, err
+	}
+	return &GasOracleEventsFilterer{contract: contract}, nil
+}
+
+// bindGasOracleEvents binds a generic wrapper to an already deployed contract.
+func bindGasOracleEvents(address common.Address, caller bind.ContractCaller, transactor bind.ContractTransactor, filterer bind.ContractFilterer) (*bind.BoundContract, error) {
+	parsed, err := abi.JSON(strings.NewReader(GasOracleEventsABI))
+	if err != nil {
+		return nil, err
+	}
+	return bind.NewBoundContract(address, parsed, caller, transactor, filterer), nil
+}
+
+// Call invokes the (constant) contract method with params as input values and
+// sets the output to result. The result type might be a single field for simple
+// returns, a slice of interfaces for anonymous returns and a struct for named
+// returns.
+func (_GasOracleEvents *GasOracleEventsRaw) Call(opts *bind.CallOpts, result *[]interface{}, method string, params ...interface{}) error {
+	return _GasOracleEvents.Contract.GasOracleEventsCaller.contract.Call(opts, result, method, params...)
+}
+
+// Transfer initiates a plain transaction to move funds to the contract, calling
+// its default method if one is available.
+func (_GasOracleEvents *GasOracleEventsRaw) Transfer(opts *bind.TransactOpts) (*types.Transaction, error) {
+	return _GasOracleEvents.Contract.GasOracleEventsTransactor.contract.Transfer(opts)
+}
+
+// Transact invokes the (paid) contract method with params as input values.
+func (_GasOracleEvents *GasOracleEventsRaw) Transact(opts *bind.TransactOpts, method string, params ...interface{}) (*types.Transaction, error) {
+	return _GasOracleEvents.Contract.GasOracleEventsTransactor.contract.Transact(opts, method, params...)
+}
+
+// Call invokes the (constant) contract method with params as input values and
+// sets the output to result. The result type might be a single field for simple
+// returns, a slice of interfaces for anonymous returns and a struct for named
+// returns.
+func (_GasOracleEvents *GasOracleEventsCallerRaw) Call(opts *bind.CallOpts, result *[]interface{}, method string, params ...interface{}) error {
+	return _GasOracleEvents.Contract.contract.Call(opts, result, method, params...)
+}
+
+// Transfer initiates a plain transaction to move funds to the contract, calling
+// its default method if one is available.
+func (_GasOracleEvents *GasOracleEventsTransactorRaw) Transfer(opts *bind.TransactOpts) (*types.Transaction, error) {
+	return _GasOracleEvents.Contract.contract.Transfer(opts)
+}
+
+// Transact invokes the (paid) contract method with params as input values.
+func (_GasOracleEvents *GasOracleEventsTransactorRaw) Transact(opts *bind.TransactOpts, method string, params ...interface{}) (*types.Transaction, error) {
+	return _GasOracleEvents.Contract.contract.Transact(opts, method, params...)
+}
+
+// GasOracleEventsGasDataUpdatedIterator is returned from FilterGasDataUpdated and is used to iterate over the raw logs and unpacked data for GasDataUpdated events raised by the GasOracleEvents contract.
+type GasOracleEventsGasDataUpdatedIterator struct {
+	Event *GasOracleEventsGasDataUpdated // Event containing the contract specifics and raw log
+
+	contract *bind.BoundContract // Generic contract to use for unpacking event data
+	event    string              // Event name to use for unpacking event data
+
+	logs chan types.Log        // Log channel receiving the found contract events
+	sub  ethereum.Subscription // Subscription for errors, completion and termination
+	done bool                  // Whether the subscription completed delivering logs
+	fail error                 // Occurred error to stop iteration
+}
+
+// Next advances the iterator to the subsequent event, returning whether there
+// are any more events found. In case of a retrieval or parsing error, false is
+// returned and Error() can be queried for the exact failure.
+func (it *GasOracleEventsGasDataUpdatedIterator) Next() bool {
+	// If the iterator failed, stop iterating
+	if it.fail != nil {
+		return false
+	}
+	// If the iterator completed, deliver directly whatever's available
+	if it.done {
+		select {
+		case log := <-it.logs:
+			it.Event = new(GasOracleEventsGasDataUpdated)
+			if err := it.contract.UnpackLog(it.Event, it.event, log); err != nil {
+				it.fail = err
+				return false
+			}
+			it.Event.Raw = log
+			return true
+
+		default:
+			return false
+		}
+	}
+	// Iterator still in progress, wait for either a data or an error event
+	select {
+	case log := <-it.logs:
+		it.Event = new(GasOracleEventsGasDataUpdated)
+		if err := it.contract.UnpackLog(it.Event, it.event, log); err != nil {
+			it.fail = err
+			return false
+		}
+		it.Event.Raw = log
+		return true
+
+	case err := <-it.sub.Err():
+		it.done = true
+		it.fail = err
+		return it.Next()
+	}
+}
+
+// Error returns any retrieval or parsing error occurred during filtering.
+func (it *GasOracleEventsGasDataUpdatedIterator) Error() error {
+	return it.fail
+}
+
+// Close terminates the iteration process, releasing any pending underlying
+// resources.
+func (it *GasOracleEventsGasDataUpdatedIterator) Close() error {
+	it.sub.Unsubscribe()
+	return nil
+}
+
+// GasOracleEventsGasDataUpdated represents a GasDataUpdated event raised by the GasOracleEvents contract.
+type GasOracleEventsGasDataUpdated struct {
+	Domain        uint32
+	PaddedGasData *big.Int
+	Raw           types.Log // Blockchain specific contextual infos
+}
+
+// FilterGasDataUpdated is a free log retrieval operation binding the contract event 0xae7a6216b3de7722222303567564b3f11777a9665d278ef3762110de410e12b3.
+//
+// Solidity: event GasDataUpdated(uint32 domain, uint256 paddedGasData)
+func (_GasOracleEvents *GasOracleEventsFilterer) FilterGasDataUpdated(opts *bind.FilterOpts) (*GasOracleEventsGasDataUpdatedIterator, error) {
+
+	logs, sub, err := _GasOracleEvents.contract.FilterLogs(opts, "GasDataUpdated")
+	if err != nil {
+		return nil, err
+	}
+	return &GasOracleEventsGasDataUpdatedIterator{contract: _GasOracleEvents.contract, event: "GasDataUpdated", logs: logs, sub: sub}, nil
+}
+
+// WatchGasDataUpdated is a free log subscription operation binding the contract event 0xae7a6216b3de7722222303567564b3f11777a9665d278ef3762110de410e12b3.
+//
+// Solidity: event GasDataUpdated(uint32 domain, uint256 paddedGasData)
+func (_GasOracleEvents *GasOracleEventsFilterer) WatchGasDataUpdated(opts *bind.WatchOpts, sink chan<- *GasOracleEventsGasDataUpdated) (event.Subscription, error) {
+
+	logs, sub, err := _GasOracleEvents.contract.WatchLogs(opts, "GasDataUpdated")
+	if err != nil {
+		return nil, err
+	}
+	return event.NewSubscription(func(quit <-chan struct{}) error {
+		defer sub.Unsubscribe()
+		for {
+			select {
+			case log := <-logs:
+				// New log arrived, parse the event and forward to the user
+				event := new(GasOracleEventsGasDataUpdated)
+				if err := _GasOracleEvents.contract.UnpackLog(event, "GasDataUpdated", log); err != nil {
+					return err
+				}
+				event.Raw = log
+
+				select {
+				case sink <- event:
+				case err := <-sub.Err():
+					return err
+				case <-quit:
+					return nil
+				}
+			case err := <-sub.Err():
+				return err
+			case <-quit:
+				return nil
+			}
+		}
+	}), nil
+}
+
+// ParseGasDataUpdated is a log parse operation binding the contract event 0xae7a6216b3de7722222303567564b3f11777a9665d278ef3762110de410e12b3.
+//
+// Solidity: event GasDataUpdated(uint32 domain, uint256 paddedGasData)
+func (_GasOracleEvents *GasOracleEventsFilterer) ParseGasDataUpdated(log types.Log) (*GasOracleEventsGasDataUpdated, error) {
+	event := new(GasOracleEventsGasDataUpdated)
+	if err := _GasOracleEvents.contract.UnpackLog(event, "GasDataUpdated", log); err != nil {
 		return nil, err
 	}
 	event.Raw = log
@@ -1724,12 +2297,422 @@ func (_Initializable *InitializableFilterer) ParseInitialized(log types.Log) (*I
 	return event, nil
 }
 
+// InterfaceDestinationMetaData contains all meta data concerning the InterfaceDestination contract.
+var InterfaceDestinationMetaData = &bind.MetaData{
+	ABI: "[{\"inputs\":[{\"internalType\":\"uint32\",\"name\":\"notaryIndex\",\"type\":\"uint32\"},{\"internalType\":\"uint256\",\"name\":\"sigIndex\",\"type\":\"uint256\"},{\"internalType\":\"bytes\",\"name\":\"attPayload\",\"type\":\"bytes\"},{\"internalType\":\"bytes32\",\"name\":\"agentRoot\",\"type\":\"bytes32\"},{\"internalType\":\"ChainGas[]\",\"name\":\"snapGas\",\"type\":\"uint128[]\"}],\"name\":\"acceptAttestation\",\"outputs\":[{\"internalType\":\"bool\",\"name\":\"wasAccepted\",\"type\":\"bool\"}],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"attestationsAmount\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"destStatus\",\"outputs\":[{\"internalType\":\"uint40\",\"name\":\"snapRootTime\",\"type\":\"uint40\"},{\"internalType\":\"uint40\",\"name\":\"agentRootTime\",\"type\":\"uint40\"},{\"internalType\":\"uint32\",\"name\":\"notaryIndex\",\"type\":\"uint32\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"index\",\"type\":\"uint256\"}],\"name\":\"getAttestation\",\"outputs\":[{\"internalType\":\"bytes\",\"name\":\"attPayload\",\"type\":\"bytes\"},{\"internalType\":\"bytes\",\"name\":\"attSignature\",\"type\":\"bytes\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint32\",\"name\":\"domain\",\"type\":\"uint32\"}],\"name\":\"getGasData\",\"outputs\":[{\"internalType\":\"GasData\",\"name\":\"gasData\",\"type\":\"uint96\"},{\"internalType\":\"uint256\",\"name\":\"dataMaturity\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"nextAgentRoot\",\"outputs\":[{\"internalType\":\"bytes32\",\"name\":\"\",\"type\":\"bytes32\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"passAgentRoot\",\"outputs\":[{\"internalType\":\"bool\",\"name\":\"rootPassed\",\"type\":\"bool\"},{\"internalType\":\"bool\",\"name\":\"rootPending\",\"type\":\"bool\"}],\"stateMutability\":\"nonpayable\",\"type\":\"function\"}]",
+	Sigs: map[string]string{
+		"39fe2736": "acceptAttestation(uint32,uint256,bytes,bytes32,uint128[])",
+		"3cf7b120": "attestationsAmount()",
+		"40989152": "destStatus()",
+		"29be4db2": "getAttestation(uint256)",
+		"d0dd0675": "getGasData(uint32)",
+		"55252dd1": "nextAgentRoot()",
+		"a554d1e3": "passAgentRoot()",
+	},
+}
+
+// InterfaceDestinationABI is the input ABI used to generate the binding from.
+// Deprecated: Use InterfaceDestinationMetaData.ABI instead.
+var InterfaceDestinationABI = InterfaceDestinationMetaData.ABI
+
+// Deprecated: Use InterfaceDestinationMetaData.Sigs instead.
+// InterfaceDestinationFuncSigs maps the 4-byte function signature to its string representation.
+var InterfaceDestinationFuncSigs = InterfaceDestinationMetaData.Sigs
+
+// InterfaceDestination is an auto generated Go binding around an Ethereum contract.
+type InterfaceDestination struct {
+	InterfaceDestinationCaller     // Read-only binding to the contract
+	InterfaceDestinationTransactor // Write-only binding to the contract
+	InterfaceDestinationFilterer   // Log filterer for contract events
+}
+
+// InterfaceDestinationCaller is an auto generated read-only Go binding around an Ethereum contract.
+type InterfaceDestinationCaller struct {
+	contract *bind.BoundContract // Generic contract wrapper for the low level calls
+}
+
+// InterfaceDestinationTransactor is an auto generated write-only Go binding around an Ethereum contract.
+type InterfaceDestinationTransactor struct {
+	contract *bind.BoundContract // Generic contract wrapper for the low level calls
+}
+
+// InterfaceDestinationFilterer is an auto generated log filtering Go binding around an Ethereum contract events.
+type InterfaceDestinationFilterer struct {
+	contract *bind.BoundContract // Generic contract wrapper for the low level calls
+}
+
+// InterfaceDestinationSession is an auto generated Go binding around an Ethereum contract,
+// with pre-set call and transact options.
+type InterfaceDestinationSession struct {
+	Contract     *InterfaceDestination // Generic contract binding to set the session for
+	CallOpts     bind.CallOpts         // Call options to use throughout this session
+	TransactOpts bind.TransactOpts     // Transaction auth options to use throughout this session
+}
+
+// InterfaceDestinationCallerSession is an auto generated read-only Go binding around an Ethereum contract,
+// with pre-set call options.
+type InterfaceDestinationCallerSession struct {
+	Contract *InterfaceDestinationCaller // Generic contract caller binding to set the session for
+	CallOpts bind.CallOpts               // Call options to use throughout this session
+}
+
+// InterfaceDestinationTransactorSession is an auto generated write-only Go binding around an Ethereum contract,
+// with pre-set transact options.
+type InterfaceDestinationTransactorSession struct {
+	Contract     *InterfaceDestinationTransactor // Generic contract transactor binding to set the session for
+	TransactOpts bind.TransactOpts               // Transaction auth options to use throughout this session
+}
+
+// InterfaceDestinationRaw is an auto generated low-level Go binding around an Ethereum contract.
+type InterfaceDestinationRaw struct {
+	Contract *InterfaceDestination // Generic contract binding to access the raw methods on
+}
+
+// InterfaceDestinationCallerRaw is an auto generated low-level read-only Go binding around an Ethereum contract.
+type InterfaceDestinationCallerRaw struct {
+	Contract *InterfaceDestinationCaller // Generic read-only contract binding to access the raw methods on
+}
+
+// InterfaceDestinationTransactorRaw is an auto generated low-level write-only Go binding around an Ethereum contract.
+type InterfaceDestinationTransactorRaw struct {
+	Contract *InterfaceDestinationTransactor // Generic write-only contract binding to access the raw methods on
+}
+
+// NewInterfaceDestination creates a new instance of InterfaceDestination, bound to a specific deployed contract.
+func NewInterfaceDestination(address common.Address, backend bind.ContractBackend) (*InterfaceDestination, error) {
+	contract, err := bindInterfaceDestination(address, backend, backend, backend)
+	if err != nil {
+		return nil, err
+	}
+	return &InterfaceDestination{InterfaceDestinationCaller: InterfaceDestinationCaller{contract: contract}, InterfaceDestinationTransactor: InterfaceDestinationTransactor{contract: contract}, InterfaceDestinationFilterer: InterfaceDestinationFilterer{contract: contract}}, nil
+}
+
+// NewInterfaceDestinationCaller creates a new read-only instance of InterfaceDestination, bound to a specific deployed contract.
+func NewInterfaceDestinationCaller(address common.Address, caller bind.ContractCaller) (*InterfaceDestinationCaller, error) {
+	contract, err := bindInterfaceDestination(address, caller, nil, nil)
+	if err != nil {
+		return nil, err
+	}
+	return &InterfaceDestinationCaller{contract: contract}, nil
+}
+
+// NewInterfaceDestinationTransactor creates a new write-only instance of InterfaceDestination, bound to a specific deployed contract.
+func NewInterfaceDestinationTransactor(address common.Address, transactor bind.ContractTransactor) (*InterfaceDestinationTransactor, error) {
+	contract, err := bindInterfaceDestination(address, nil, transactor, nil)
+	if err != nil {
+		return nil, err
+	}
+	return &InterfaceDestinationTransactor{contract: contract}, nil
+}
+
+// NewInterfaceDestinationFilterer creates a new log filterer instance of InterfaceDestination, bound to a specific deployed contract.
+func NewInterfaceDestinationFilterer(address common.Address, filterer bind.ContractFilterer) (*InterfaceDestinationFilterer, error) {
+	contract, err := bindInterfaceDestination(address, nil, nil, filterer)
+	if err != nil {
+		return nil, err
+	}
+	return &InterfaceDestinationFilterer{contract: contract}, nil
+}
+
+// bindInterfaceDestination binds a generic wrapper to an already deployed contract.
+func bindInterfaceDestination(address common.Address, caller bind.ContractCaller, transactor bind.ContractTransactor, filterer bind.ContractFilterer) (*bind.BoundContract, error) {
+	parsed, err := abi.JSON(strings.NewReader(InterfaceDestinationABI))
+	if err != nil {
+		return nil, err
+	}
+	return bind.NewBoundContract(address, parsed, caller, transactor, filterer), nil
+}
+
+// Call invokes the (constant) contract method with params as input values and
+// sets the output to result. The result type might be a single field for simple
+// returns, a slice of interfaces for anonymous returns and a struct for named
+// returns.
+func (_InterfaceDestination *InterfaceDestinationRaw) Call(opts *bind.CallOpts, result *[]interface{}, method string, params ...interface{}) error {
+	return _InterfaceDestination.Contract.InterfaceDestinationCaller.contract.Call(opts, result, method, params...)
+}
+
+// Transfer initiates a plain transaction to move funds to the contract, calling
+// its default method if one is available.
+func (_InterfaceDestination *InterfaceDestinationRaw) Transfer(opts *bind.TransactOpts) (*types.Transaction, error) {
+	return _InterfaceDestination.Contract.InterfaceDestinationTransactor.contract.Transfer(opts)
+}
+
+// Transact invokes the (paid) contract method with params as input values.
+func (_InterfaceDestination *InterfaceDestinationRaw) Transact(opts *bind.TransactOpts, method string, params ...interface{}) (*types.Transaction, error) {
+	return _InterfaceDestination.Contract.InterfaceDestinationTransactor.contract.Transact(opts, method, params...)
+}
+
+// Call invokes the (constant) contract method with params as input values and
+// sets the output to result. The result type might be a single field for simple
+// returns, a slice of interfaces for anonymous returns and a struct for named
+// returns.
+func (_InterfaceDestination *InterfaceDestinationCallerRaw) Call(opts *bind.CallOpts, result *[]interface{}, method string, params ...interface{}) error {
+	return _InterfaceDestination.Contract.contract.Call(opts, result, method, params...)
+}
+
+// Transfer initiates a plain transaction to move funds to the contract, calling
+// its default method if one is available.
+func (_InterfaceDestination *InterfaceDestinationTransactorRaw) Transfer(opts *bind.TransactOpts) (*types.Transaction, error) {
+	return _InterfaceDestination.Contract.contract.Transfer(opts)
+}
+
+// Transact invokes the (paid) contract method with params as input values.
+func (_InterfaceDestination *InterfaceDestinationTransactorRaw) Transact(opts *bind.TransactOpts, method string, params ...interface{}) (*types.Transaction, error) {
+	return _InterfaceDestination.Contract.contract.Transact(opts, method, params...)
+}
+
+// AttestationsAmount is a free data retrieval call binding the contract method 0x3cf7b120.
+//
+// Solidity: function attestationsAmount() view returns(uint256)
+func (_InterfaceDestination *InterfaceDestinationCaller) AttestationsAmount(opts *bind.CallOpts) (*big.Int, error) {
+	var out []interface{}
+	err := _InterfaceDestination.contract.Call(opts, &out, "attestationsAmount")
+
+	if err != nil {
+		return *new(*big.Int), err
+	}
+
+	out0 := *abi.ConvertType(out[0], new(*big.Int)).(**big.Int)
+
+	return out0, err
+
+}
+
+// AttestationsAmount is a free data retrieval call binding the contract method 0x3cf7b120.
+//
+// Solidity: function attestationsAmount() view returns(uint256)
+func (_InterfaceDestination *InterfaceDestinationSession) AttestationsAmount() (*big.Int, error) {
+	return _InterfaceDestination.Contract.AttestationsAmount(&_InterfaceDestination.CallOpts)
+}
+
+// AttestationsAmount is a free data retrieval call binding the contract method 0x3cf7b120.
+//
+// Solidity: function attestationsAmount() view returns(uint256)
+func (_InterfaceDestination *InterfaceDestinationCallerSession) AttestationsAmount() (*big.Int, error) {
+	return _InterfaceDestination.Contract.AttestationsAmount(&_InterfaceDestination.CallOpts)
+}
+
+// DestStatus is a free data retrieval call binding the contract method 0x40989152.
+//
+// Solidity: function destStatus() view returns(uint40 snapRootTime, uint40 agentRootTime, uint32 notaryIndex)
+func (_InterfaceDestination *InterfaceDestinationCaller) DestStatus(opts *bind.CallOpts) (struct {
+	SnapRootTime  *big.Int
+	AgentRootTime *big.Int
+	NotaryIndex   uint32
+}, error) {
+	var out []interface{}
+	err := _InterfaceDestination.contract.Call(opts, &out, "destStatus")
+
+	outstruct := new(struct {
+		SnapRootTime  *big.Int
+		AgentRootTime *big.Int
+		NotaryIndex   uint32
+	})
+	if err != nil {
+		return *outstruct, err
+	}
+
+	outstruct.SnapRootTime = *abi.ConvertType(out[0], new(*big.Int)).(**big.Int)
+	outstruct.AgentRootTime = *abi.ConvertType(out[1], new(*big.Int)).(**big.Int)
+	outstruct.NotaryIndex = *abi.ConvertType(out[2], new(uint32)).(*uint32)
+
+	return *outstruct, err
+
+}
+
+// DestStatus is a free data retrieval call binding the contract method 0x40989152.
+//
+// Solidity: function destStatus() view returns(uint40 snapRootTime, uint40 agentRootTime, uint32 notaryIndex)
+func (_InterfaceDestination *InterfaceDestinationSession) DestStatus() (struct {
+	SnapRootTime  *big.Int
+	AgentRootTime *big.Int
+	NotaryIndex   uint32
+}, error) {
+	return _InterfaceDestination.Contract.DestStatus(&_InterfaceDestination.CallOpts)
+}
+
+// DestStatus is a free data retrieval call binding the contract method 0x40989152.
+//
+// Solidity: function destStatus() view returns(uint40 snapRootTime, uint40 agentRootTime, uint32 notaryIndex)
+func (_InterfaceDestination *InterfaceDestinationCallerSession) DestStatus() (struct {
+	SnapRootTime  *big.Int
+	AgentRootTime *big.Int
+	NotaryIndex   uint32
+}, error) {
+	return _InterfaceDestination.Contract.DestStatus(&_InterfaceDestination.CallOpts)
+}
+
+// GetAttestation is a free data retrieval call binding the contract method 0x29be4db2.
+//
+// Solidity: function getAttestation(uint256 index) view returns(bytes attPayload, bytes attSignature)
+func (_InterfaceDestination *InterfaceDestinationCaller) GetAttestation(opts *bind.CallOpts, index *big.Int) (struct {
+	AttPayload   []byte
+	AttSignature []byte
+}, error) {
+	var out []interface{}
+	err := _InterfaceDestination.contract.Call(opts, &out, "getAttestation", index)
+
+	outstruct := new(struct {
+		AttPayload   []byte
+		AttSignature []byte
+	})
+	if err != nil {
+		return *outstruct, err
+	}
+
+	outstruct.AttPayload = *abi.ConvertType(out[0], new([]byte)).(*[]byte)
+	outstruct.AttSignature = *abi.ConvertType(out[1], new([]byte)).(*[]byte)
+
+	return *outstruct, err
+
+}
+
+// GetAttestation is a free data retrieval call binding the contract method 0x29be4db2.
+//
+// Solidity: function getAttestation(uint256 index) view returns(bytes attPayload, bytes attSignature)
+func (_InterfaceDestination *InterfaceDestinationSession) GetAttestation(index *big.Int) (struct {
+	AttPayload   []byte
+	AttSignature []byte
+}, error) {
+	return _InterfaceDestination.Contract.GetAttestation(&_InterfaceDestination.CallOpts, index)
+}
+
+// GetAttestation is a free data retrieval call binding the contract method 0x29be4db2.
+//
+// Solidity: function getAttestation(uint256 index) view returns(bytes attPayload, bytes attSignature)
+func (_InterfaceDestination *InterfaceDestinationCallerSession) GetAttestation(index *big.Int) (struct {
+	AttPayload   []byte
+	AttSignature []byte
+}, error) {
+	return _InterfaceDestination.Contract.GetAttestation(&_InterfaceDestination.CallOpts, index)
+}
+
+// GetGasData is a free data retrieval call binding the contract method 0xd0dd0675.
+//
+// Solidity: function getGasData(uint32 domain) view returns(uint96 gasData, uint256 dataMaturity)
+func (_InterfaceDestination *InterfaceDestinationCaller) GetGasData(opts *bind.CallOpts, domain uint32) (struct {
+	GasData      *big.Int
+	DataMaturity *big.Int
+}, error) {
+	var out []interface{}
+	err := _InterfaceDestination.contract.Call(opts, &out, "getGasData", domain)
+
+	outstruct := new(struct {
+		GasData      *big.Int
+		DataMaturity *big.Int
+	})
+	if err != nil {
+		return *outstruct, err
+	}
+
+	outstruct.GasData = *abi.ConvertType(out[0], new(*big.Int)).(**big.Int)
+	outstruct.DataMaturity = *abi.ConvertType(out[1], new(*big.Int)).(**big.Int)
+
+	return *outstruct, err
+
+}
+
+// GetGasData is a free data retrieval call binding the contract method 0xd0dd0675.
+//
+// Solidity: function getGasData(uint32 domain) view returns(uint96 gasData, uint256 dataMaturity)
+func (_InterfaceDestination *InterfaceDestinationSession) GetGasData(domain uint32) (struct {
+	GasData      *big.Int
+	DataMaturity *big.Int
+}, error) {
+	return _InterfaceDestination.Contract.GetGasData(&_InterfaceDestination.CallOpts, domain)
+}
+
+// GetGasData is a free data retrieval call binding the contract method 0xd0dd0675.
+//
+// Solidity: function getGasData(uint32 domain) view returns(uint96 gasData, uint256 dataMaturity)
+func (_InterfaceDestination *InterfaceDestinationCallerSession) GetGasData(domain uint32) (struct {
+	GasData      *big.Int
+	DataMaturity *big.Int
+}, error) {
+	return _InterfaceDestination.Contract.GetGasData(&_InterfaceDestination.CallOpts, domain)
+}
+
+// NextAgentRoot is a free data retrieval call binding the contract method 0x55252dd1.
+//
+// Solidity: function nextAgentRoot() view returns(bytes32)
+func (_InterfaceDestination *InterfaceDestinationCaller) NextAgentRoot(opts *bind.CallOpts) ([32]byte, error) {
+	var out []interface{}
+	err := _InterfaceDestination.contract.Call(opts, &out, "nextAgentRoot")
+
+	if err != nil {
+		return *new([32]byte), err
+	}
+
+	out0 := *abi.ConvertType(out[0], new([32]byte)).(*[32]byte)
+
+	return out0, err
+
+}
+
+// NextAgentRoot is a free data retrieval call binding the contract method 0x55252dd1.
+//
+// Solidity: function nextAgentRoot() view returns(bytes32)
+func (_InterfaceDestination *InterfaceDestinationSession) NextAgentRoot() ([32]byte, error) {
+	return _InterfaceDestination.Contract.NextAgentRoot(&_InterfaceDestination.CallOpts)
+}
+
+// NextAgentRoot is a free data retrieval call binding the contract method 0x55252dd1.
+//
+// Solidity: function nextAgentRoot() view returns(bytes32)
+func (_InterfaceDestination *InterfaceDestinationCallerSession) NextAgentRoot() ([32]byte, error) {
+	return _InterfaceDestination.Contract.NextAgentRoot(&_InterfaceDestination.CallOpts)
+}
+
+// AcceptAttestation is a paid mutator transaction binding the contract method 0x39fe2736.
+//
+// Solidity: function acceptAttestation(uint32 notaryIndex, uint256 sigIndex, bytes attPayload, bytes32 agentRoot, uint128[] snapGas) returns(bool wasAccepted)
+func (_InterfaceDestination *InterfaceDestinationTransactor) AcceptAttestation(opts *bind.TransactOpts, notaryIndex uint32, sigIndex *big.Int, attPayload []byte, agentRoot [32]byte, snapGas []*big.Int) (*types.Transaction, error) {
+	return _InterfaceDestination.contract.Transact(opts, "acceptAttestation", notaryIndex, sigIndex, attPayload, agentRoot, snapGas)
+}
+
+// AcceptAttestation is a paid mutator transaction binding the contract method 0x39fe2736.
+//
+// Solidity: function acceptAttestation(uint32 notaryIndex, uint256 sigIndex, bytes attPayload, bytes32 agentRoot, uint128[] snapGas) returns(bool wasAccepted)
+func (_InterfaceDestination *InterfaceDestinationSession) AcceptAttestation(notaryIndex uint32, sigIndex *big.Int, attPayload []byte, agentRoot [32]byte, snapGas []*big.Int) (*types.Transaction, error) {
+	return _InterfaceDestination.Contract.AcceptAttestation(&_InterfaceDestination.TransactOpts, notaryIndex, sigIndex, attPayload, agentRoot, snapGas)
+}
+
+// AcceptAttestation is a paid mutator transaction binding the contract method 0x39fe2736.
+//
+// Solidity: function acceptAttestation(uint32 notaryIndex, uint256 sigIndex, bytes attPayload, bytes32 agentRoot, uint128[] snapGas) returns(bool wasAccepted)
+func (_InterfaceDestination *InterfaceDestinationTransactorSession) AcceptAttestation(notaryIndex uint32, sigIndex *big.Int, attPayload []byte, agentRoot [32]byte, snapGas []*big.Int) (*types.Transaction, error) {
+	return _InterfaceDestination.Contract.AcceptAttestation(&_InterfaceDestination.TransactOpts, notaryIndex, sigIndex, attPayload, agentRoot, snapGas)
+}
+
+// PassAgentRoot is a paid mutator transaction binding the contract method 0xa554d1e3.
+//
+// Solidity: function passAgentRoot() returns(bool rootPassed, bool rootPending)
+func (_InterfaceDestination *InterfaceDestinationTransactor) PassAgentRoot(opts *bind.TransactOpts) (*types.Transaction, error) {
+	return _InterfaceDestination.contract.Transact(opts, "passAgentRoot")
+}
+
+// PassAgentRoot is a paid mutator transaction binding the contract method 0xa554d1e3.
+//
+// Solidity: function passAgentRoot() returns(bool rootPassed, bool rootPending)
+func (_InterfaceDestination *InterfaceDestinationSession) PassAgentRoot() (*types.Transaction, error) {
+	return _InterfaceDestination.Contract.PassAgentRoot(&_InterfaceDestination.TransactOpts)
+}
+
+// PassAgentRoot is a paid mutator transaction binding the contract method 0xa554d1e3.
+//
+// Solidity: function passAgentRoot() returns(bool rootPassed, bool rootPending)
+func (_InterfaceDestination *InterfaceDestinationTransactorSession) PassAgentRoot() (*types.Transaction, error) {
+	return _InterfaceDestination.Contract.PassAgentRoot(&_InterfaceDestination.TransactOpts)
+}
+
 // InterfaceGasOracleMetaData contains all meta data concerning the InterfaceGasOracle contract.
 var InterfaceGasOracleMetaData = &bind.MetaData{
-	ABI: "[{\"inputs\":[],\"name\":\"getGasData\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"paddedGasData\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint32\",\"name\":\"destination\",\"type\":\"uint32\"},{\"internalType\":\"uint256\",\"name\":\"paddedRequest\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"contentLength\",\"type\":\"uint256\"}],\"name\":\"getMinimumTips\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"paddedTips\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"}]",
+	ABI: "[{\"inputs\":[{\"internalType\":\"uint32\",\"name\":\"domain\",\"type\":\"uint32\"}],\"name\":\"getDecodedGasData\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"gasPrice\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"dataPrice\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"execBuffer\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"amortAttCost\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"etherPrice\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"markup\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"getGasData\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"paddedGasData\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint32\",\"name\":\"destination\",\"type\":\"uint32\"},{\"internalType\":\"uint256\",\"name\":\"paddedRequest\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"contentLength\",\"type\":\"uint256\"}],\"name\":\"getMinimumTips\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"paddedTips\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint32\",\"name\":\"domain\",\"type\":\"uint32\"}],\"name\":\"updateGasData\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"}]",
 	Sigs: map[string]string{
+		"556517b7": "getDecodedGasData(uint32)",
 		"34926b29": "getGasData()",
 		"72010a93": "getMinimumTips(uint32,uint256,uint256)",
+		"867baea5": "updateGasData(uint32)",
 	},
 }
 
@@ -1883,6 +2866,71 @@ func (_InterfaceGasOracle *InterfaceGasOracleTransactorRaw) Transact(opts *bind.
 	return _InterfaceGasOracle.Contract.contract.Transact(opts, method, params...)
 }
 
+// GetDecodedGasData is a free data retrieval call binding the contract method 0x556517b7.
+//
+// Solidity: function getDecodedGasData(uint32 domain) view returns(uint256 gasPrice, uint256 dataPrice, uint256 execBuffer, uint256 amortAttCost, uint256 etherPrice, uint256 markup)
+func (_InterfaceGasOracle *InterfaceGasOracleCaller) GetDecodedGasData(opts *bind.CallOpts, domain uint32) (struct {
+	GasPrice     *big.Int
+	DataPrice    *big.Int
+	ExecBuffer   *big.Int
+	AmortAttCost *big.Int
+	EtherPrice   *big.Int
+	Markup       *big.Int
+}, error) {
+	var out []interface{}
+	err := _InterfaceGasOracle.contract.Call(opts, &out, "getDecodedGasData", domain)
+
+	outstruct := new(struct {
+		GasPrice     *big.Int
+		DataPrice    *big.Int
+		ExecBuffer   *big.Int
+		AmortAttCost *big.Int
+		EtherPrice   *big.Int
+		Markup       *big.Int
+	})
+	if err != nil {
+		return *outstruct, err
+	}
+
+	outstruct.GasPrice = *abi.ConvertType(out[0], new(*big.Int)).(**big.Int)
+	outstruct.DataPrice = *abi.ConvertType(out[1], new(*big.Int)).(**big.Int)
+	outstruct.ExecBuffer = *abi.ConvertType(out[2], new(*big.Int)).(**big.Int)
+	outstruct.AmortAttCost = *abi.ConvertType(out[3], new(*big.Int)).(**big.Int)
+	outstruct.EtherPrice = *abi.ConvertType(out[4], new(*big.Int)).(**big.Int)
+	outstruct.Markup = *abi.ConvertType(out[5], new(*big.Int)).(**big.Int)
+
+	return *outstruct, err
+
+}
+
+// GetDecodedGasData is a free data retrieval call binding the contract method 0x556517b7.
+//
+// Solidity: function getDecodedGasData(uint32 domain) view returns(uint256 gasPrice, uint256 dataPrice, uint256 execBuffer, uint256 amortAttCost, uint256 etherPrice, uint256 markup)
+func (_InterfaceGasOracle *InterfaceGasOracleSession) GetDecodedGasData(domain uint32) (struct {
+	GasPrice     *big.Int
+	DataPrice    *big.Int
+	ExecBuffer   *big.Int
+	AmortAttCost *big.Int
+	EtherPrice   *big.Int
+	Markup       *big.Int
+}, error) {
+	return _InterfaceGasOracle.Contract.GetDecodedGasData(&_InterfaceGasOracle.CallOpts, domain)
+}
+
+// GetDecodedGasData is a free data retrieval call binding the contract method 0x556517b7.
+//
+// Solidity: function getDecodedGasData(uint32 domain) view returns(uint256 gasPrice, uint256 dataPrice, uint256 execBuffer, uint256 amortAttCost, uint256 etherPrice, uint256 markup)
+func (_InterfaceGasOracle *InterfaceGasOracleCallerSession) GetDecodedGasData(domain uint32) (struct {
+	GasPrice     *big.Int
+	DataPrice    *big.Int
+	ExecBuffer   *big.Int
+	AmortAttCost *big.Int
+	EtherPrice   *big.Int
+	Markup       *big.Int
+}, error) {
+	return _InterfaceGasOracle.Contract.GetDecodedGasData(&_InterfaceGasOracle.CallOpts, domain)
+}
+
 // GetGasData is a free data retrieval call binding the contract method 0x34926b29.
 //
 // Solidity: function getGasData() view returns(uint256 paddedGasData)
@@ -1945,11 +2993,33 @@ func (_InterfaceGasOracle *InterfaceGasOracleCallerSession) GetMinimumTips(desti
 	return _InterfaceGasOracle.Contract.GetMinimumTips(&_InterfaceGasOracle.CallOpts, destination, paddedRequest, contentLength)
 }
 
+// UpdateGasData is a paid mutator transaction binding the contract method 0x867baea5.
+//
+// Solidity: function updateGasData(uint32 domain) returns()
+func (_InterfaceGasOracle *InterfaceGasOracleTransactor) UpdateGasData(opts *bind.TransactOpts, domain uint32) (*types.Transaction, error) {
+	return _InterfaceGasOracle.contract.Transact(opts, "updateGasData", domain)
+}
+
+// UpdateGasData is a paid mutator transaction binding the contract method 0x867baea5.
+//
+// Solidity: function updateGasData(uint32 domain) returns()
+func (_InterfaceGasOracle *InterfaceGasOracleSession) UpdateGasData(domain uint32) (*types.Transaction, error) {
+	return _InterfaceGasOracle.Contract.UpdateGasData(&_InterfaceGasOracle.TransactOpts, domain)
+}
+
+// UpdateGasData is a paid mutator transaction binding the contract method 0x867baea5.
+//
+// Solidity: function updateGasData(uint32 domain) returns()
+func (_InterfaceGasOracle *InterfaceGasOracleTransactorSession) UpdateGasData(domain uint32) (*types.Transaction, error) {
+	return _InterfaceGasOracle.Contract.UpdateGasData(&_InterfaceGasOracle.TransactOpts, domain)
+}
+
 // MessagingBaseMetaData contains all meta data concerning the MessagingBase contract.
 var MessagingBaseMetaData = &bind.MetaData{
-	ABI: "[{\"anonymous\":false,\"inputs\":[{\"indexed\":false,\"internalType\":\"uint8\",\"name\":\"version\",\"type\":\"uint8\"}],\"name\":\"Initialized\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"address\",\"name\":\"previousOwner\",\"type\":\"address\"},{\"indexed\":true,\"internalType\":\"address\",\"name\":\"newOwner\",\"type\":\"address\"}],\"name\":\"OwnershipTransferred\",\"type\":\"event\"},{\"inputs\":[],\"name\":\"localDomain\",\"outputs\":[{\"internalType\":\"uint32\",\"name\":\"\",\"type\":\"uint32\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"owner\",\"outputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"renounceOwnership\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"newOwner\",\"type\":\"address\"}],\"name\":\"transferOwnership\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"version\",\"outputs\":[{\"internalType\":\"string\",\"name\":\"versionString\",\"type\":\"string\"}],\"stateMutability\":\"view\",\"type\":\"function\"}]",
+	ABI: "[{\"inputs\":[],\"name\":\"IncorrectVersionLength\",\"type\":\"error\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":false,\"internalType\":\"uint8\",\"name\":\"version\",\"type\":\"uint8\"}],\"name\":\"Initialized\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"address\",\"name\":\"previousOwner\",\"type\":\"address\"},{\"indexed\":true,\"internalType\":\"address\",\"name\":\"newOwner\",\"type\":\"address\"}],\"name\":\"OwnershipTransferred\",\"type\":\"event\"},{\"inputs\":[],\"name\":\"localDomain\",\"outputs\":[{\"internalType\":\"uint32\",\"name\":\"\",\"type\":\"uint32\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"components\":[{\"internalType\":\"bool\",\"name\":\"allowFailure\",\"type\":\"bool\"},{\"internalType\":\"bytes\",\"name\":\"callData\",\"type\":\"bytes\"}],\"internalType\":\"structMultiCallable.Call[]\",\"name\":\"calls\",\"type\":\"tuple[]\"}],\"name\":\"multicall\",\"outputs\":[{\"components\":[{\"internalType\":\"bool\",\"name\":\"success\",\"type\":\"bool\"},{\"internalType\":\"bytes\",\"name\":\"returnData\",\"type\":\"bytes\"}],\"internalType\":\"structMultiCallable.Result[]\",\"name\":\"callResults\",\"type\":\"tuple[]\"}],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"owner\",\"outputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"renounceOwnership\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"newOwner\",\"type\":\"address\"}],\"name\":\"transferOwnership\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"version\",\"outputs\":[{\"internalType\":\"string\",\"name\":\"versionString\",\"type\":\"string\"}],\"stateMutability\":\"view\",\"type\":\"function\"}]",
 	Sigs: map[string]string{
 		"8d3638f4": "localDomain()",
+		"60fc8466": "multicall((bool,bytes)[])",
 		"8da5cb5b": "owner()",
 		"715018a6": "renounceOwnership()",
 		"f2fde38b": "transferOwnership(address)",
@@ -2198,6 +3268,27 @@ func (_MessagingBase *MessagingBaseSession) Version() (string, error) {
 // Solidity: function version() view returns(string versionString)
 func (_MessagingBase *MessagingBaseCallerSession) Version() (string, error) {
 	return _MessagingBase.Contract.Version(&_MessagingBase.CallOpts)
+}
+
+// Multicall is a paid mutator transaction binding the contract method 0x60fc8466.
+//
+// Solidity: function multicall((bool,bytes)[] calls) returns((bool,bytes)[] callResults)
+func (_MessagingBase *MessagingBaseTransactor) Multicall(opts *bind.TransactOpts, calls []MultiCallableCall) (*types.Transaction, error) {
+	return _MessagingBase.contract.Transact(opts, "multicall", calls)
+}
+
+// Multicall is a paid mutator transaction binding the contract method 0x60fc8466.
+//
+// Solidity: function multicall((bool,bytes)[] calls) returns((bool,bytes)[] callResults)
+func (_MessagingBase *MessagingBaseSession) Multicall(calls []MultiCallableCall) (*types.Transaction, error) {
+	return _MessagingBase.Contract.Multicall(&_MessagingBase.TransactOpts, calls)
+}
+
+// Multicall is a paid mutator transaction binding the contract method 0x60fc8466.
+//
+// Solidity: function multicall((bool,bytes)[] calls) returns((bool,bytes)[] callResults)
+func (_MessagingBase *MessagingBaseTransactorSession) Multicall(calls []MultiCallableCall) (*types.Transaction, error) {
+	return _MessagingBase.Contract.Multicall(&_MessagingBase.TransactOpts, calls)
 }
 
 // RenounceOwnership is a paid mutator transaction binding the contract method 0x715018a6.
@@ -2529,10 +3620,189 @@ func (_MessagingBase *MessagingBaseFilterer) ParseOwnershipTransferred(log types
 	return event, nil
 }
 
+// MultiCallableMetaData contains all meta data concerning the MultiCallable contract.
+var MultiCallableMetaData = &bind.MetaData{
+	ABI: "[{\"inputs\":[{\"components\":[{\"internalType\":\"bool\",\"name\":\"allowFailure\",\"type\":\"bool\"},{\"internalType\":\"bytes\",\"name\":\"callData\",\"type\":\"bytes\"}],\"internalType\":\"structMultiCallable.Call[]\",\"name\":\"calls\",\"type\":\"tuple[]\"}],\"name\":\"multicall\",\"outputs\":[{\"components\":[{\"internalType\":\"bool\",\"name\":\"success\",\"type\":\"bool\"},{\"internalType\":\"bytes\",\"name\":\"returnData\",\"type\":\"bytes\"}],\"internalType\":\"structMultiCallable.Result[]\",\"name\":\"callResults\",\"type\":\"tuple[]\"}],\"stateMutability\":\"nonpayable\",\"type\":\"function\"}]",
+	Sigs: map[string]string{
+		"60fc8466": "multicall((bool,bytes)[])",
+	},
+}
+
+// MultiCallableABI is the input ABI used to generate the binding from.
+// Deprecated: Use MultiCallableMetaData.ABI instead.
+var MultiCallableABI = MultiCallableMetaData.ABI
+
+// Deprecated: Use MultiCallableMetaData.Sigs instead.
+// MultiCallableFuncSigs maps the 4-byte function signature to its string representation.
+var MultiCallableFuncSigs = MultiCallableMetaData.Sigs
+
+// MultiCallable is an auto generated Go binding around an Ethereum contract.
+type MultiCallable struct {
+	MultiCallableCaller     // Read-only binding to the contract
+	MultiCallableTransactor // Write-only binding to the contract
+	MultiCallableFilterer   // Log filterer for contract events
+}
+
+// MultiCallableCaller is an auto generated read-only Go binding around an Ethereum contract.
+type MultiCallableCaller struct {
+	contract *bind.BoundContract // Generic contract wrapper for the low level calls
+}
+
+// MultiCallableTransactor is an auto generated write-only Go binding around an Ethereum contract.
+type MultiCallableTransactor struct {
+	contract *bind.BoundContract // Generic contract wrapper for the low level calls
+}
+
+// MultiCallableFilterer is an auto generated log filtering Go binding around an Ethereum contract events.
+type MultiCallableFilterer struct {
+	contract *bind.BoundContract // Generic contract wrapper for the low level calls
+}
+
+// MultiCallableSession is an auto generated Go binding around an Ethereum contract,
+// with pre-set call and transact options.
+type MultiCallableSession struct {
+	Contract     *MultiCallable    // Generic contract binding to set the session for
+	CallOpts     bind.CallOpts     // Call options to use throughout this session
+	TransactOpts bind.TransactOpts // Transaction auth options to use throughout this session
+}
+
+// MultiCallableCallerSession is an auto generated read-only Go binding around an Ethereum contract,
+// with pre-set call options.
+type MultiCallableCallerSession struct {
+	Contract *MultiCallableCaller // Generic contract caller binding to set the session for
+	CallOpts bind.CallOpts        // Call options to use throughout this session
+}
+
+// MultiCallableTransactorSession is an auto generated write-only Go binding around an Ethereum contract,
+// with pre-set transact options.
+type MultiCallableTransactorSession struct {
+	Contract     *MultiCallableTransactor // Generic contract transactor binding to set the session for
+	TransactOpts bind.TransactOpts        // Transaction auth options to use throughout this session
+}
+
+// MultiCallableRaw is an auto generated low-level Go binding around an Ethereum contract.
+type MultiCallableRaw struct {
+	Contract *MultiCallable // Generic contract binding to access the raw methods on
+}
+
+// MultiCallableCallerRaw is an auto generated low-level read-only Go binding around an Ethereum contract.
+type MultiCallableCallerRaw struct {
+	Contract *MultiCallableCaller // Generic read-only contract binding to access the raw methods on
+}
+
+// MultiCallableTransactorRaw is an auto generated low-level write-only Go binding around an Ethereum contract.
+type MultiCallableTransactorRaw struct {
+	Contract *MultiCallableTransactor // Generic write-only contract binding to access the raw methods on
+}
+
+// NewMultiCallable creates a new instance of MultiCallable, bound to a specific deployed contract.
+func NewMultiCallable(address common.Address, backend bind.ContractBackend) (*MultiCallable, error) {
+	contract, err := bindMultiCallable(address, backend, backend, backend)
+	if err != nil {
+		return nil, err
+	}
+	return &MultiCallable{MultiCallableCaller: MultiCallableCaller{contract: contract}, MultiCallableTransactor: MultiCallableTransactor{contract: contract}, MultiCallableFilterer: MultiCallableFilterer{contract: contract}}, nil
+}
+
+// NewMultiCallableCaller creates a new read-only instance of MultiCallable, bound to a specific deployed contract.
+func NewMultiCallableCaller(address common.Address, caller bind.ContractCaller) (*MultiCallableCaller, error) {
+	contract, err := bindMultiCallable(address, caller, nil, nil)
+	if err != nil {
+		return nil, err
+	}
+	return &MultiCallableCaller{contract: contract}, nil
+}
+
+// NewMultiCallableTransactor creates a new write-only instance of MultiCallable, bound to a specific deployed contract.
+func NewMultiCallableTransactor(address common.Address, transactor bind.ContractTransactor) (*MultiCallableTransactor, error) {
+	contract, err := bindMultiCallable(address, nil, transactor, nil)
+	if err != nil {
+		return nil, err
+	}
+	return &MultiCallableTransactor{contract: contract}, nil
+}
+
+// NewMultiCallableFilterer creates a new log filterer instance of MultiCallable, bound to a specific deployed contract.
+func NewMultiCallableFilterer(address common.Address, filterer bind.ContractFilterer) (*MultiCallableFilterer, error) {
+	contract, err := bindMultiCallable(address, nil, nil, filterer)
+	if err != nil {
+		return nil, err
+	}
+	return &MultiCallableFilterer{contract: contract}, nil
+}
+
+// bindMultiCallable binds a generic wrapper to an already deployed contract.
+func bindMultiCallable(address common.Address, caller bind.ContractCaller, transactor bind.ContractTransactor, filterer bind.ContractFilterer) (*bind.BoundContract, error) {
+	parsed, err := abi.JSON(strings.NewReader(MultiCallableABI))
+	if err != nil {
+		return nil, err
+	}
+	return bind.NewBoundContract(address, parsed, caller, transactor, filterer), nil
+}
+
+// Call invokes the (constant) contract method with params as input values and
+// sets the output to result. The result type might be a single field for simple
+// returns, a slice of interfaces for anonymous returns and a struct for named
+// returns.
+func (_MultiCallable *MultiCallableRaw) Call(opts *bind.CallOpts, result *[]interface{}, method string, params ...interface{}) error {
+	return _MultiCallable.Contract.MultiCallableCaller.contract.Call(opts, result, method, params...)
+}
+
+// Transfer initiates a plain transaction to move funds to the contract, calling
+// its default method if one is available.
+func (_MultiCallable *MultiCallableRaw) Transfer(opts *bind.TransactOpts) (*types.Transaction, error) {
+	return _MultiCallable.Contract.MultiCallableTransactor.contract.Transfer(opts)
+}
+
+// Transact invokes the (paid) contract method with params as input values.
+func (_MultiCallable *MultiCallableRaw) Transact(opts *bind.TransactOpts, method string, params ...interface{}) (*types.Transaction, error) {
+	return _MultiCallable.Contract.MultiCallableTransactor.contract.Transact(opts, method, params...)
+}
+
+// Call invokes the (constant) contract method with params as input values and
+// sets the output to result. The result type might be a single field for simple
+// returns, a slice of interfaces for anonymous returns and a struct for named
+// returns.
+func (_MultiCallable *MultiCallableCallerRaw) Call(opts *bind.CallOpts, result *[]interface{}, method string, params ...interface{}) error {
+	return _MultiCallable.Contract.contract.Call(opts, result, method, params...)
+}
+
+// Transfer initiates a plain transaction to move funds to the contract, calling
+// its default method if one is available.
+func (_MultiCallable *MultiCallableTransactorRaw) Transfer(opts *bind.TransactOpts) (*types.Transaction, error) {
+	return _MultiCallable.Contract.contract.Transfer(opts)
+}
+
+// Transact invokes the (paid) contract method with params as input values.
+func (_MultiCallable *MultiCallableTransactorRaw) Transact(opts *bind.TransactOpts, method string, params ...interface{}) (*types.Transaction, error) {
+	return _MultiCallable.Contract.contract.Transact(opts, method, params...)
+}
+
+// Multicall is a paid mutator transaction binding the contract method 0x60fc8466.
+//
+// Solidity: function multicall((bool,bytes)[] calls) returns((bool,bytes)[] callResults)
+func (_MultiCallable *MultiCallableTransactor) Multicall(opts *bind.TransactOpts, calls []MultiCallableCall) (*types.Transaction, error) {
+	return _MultiCallable.contract.Transact(opts, "multicall", calls)
+}
+
+// Multicall is a paid mutator transaction binding the contract method 0x60fc8466.
+//
+// Solidity: function multicall((bool,bytes)[] calls) returns((bool,bytes)[] callResults)
+func (_MultiCallable *MultiCallableSession) Multicall(calls []MultiCallableCall) (*types.Transaction, error) {
+	return _MultiCallable.Contract.Multicall(&_MultiCallable.TransactOpts, calls)
+}
+
+// Multicall is a paid mutator transaction binding the contract method 0x60fc8466.
+//
+// Solidity: function multicall((bool,bytes)[] calls) returns((bool,bytes)[] callResults)
+func (_MultiCallable *MultiCallableTransactorSession) Multicall(calls []MultiCallableCall) (*types.Transaction, error) {
+	return _MultiCallable.Contract.Multicall(&_MultiCallable.TransactOpts, calls)
+}
+
 // NumberLibMetaData contains all meta data concerning the NumberLib contract.
 var NumberLibMetaData = &bind.MetaData{
 	ABI: "[]",
-	Bin: "0x60566037600b82828239805160001a607314602a57634e487b7160e01b600052600060045260246000fd5b30600052607381538281f3fe73000000000000000000000000000000000000000030146080604052600080fdfea2646970667358221220a04fb4497499c86ce22a2faa313640cbe6a1e971b83b8974cb1352ff2969586964736f6c63430008110033",
+	Bin: "0x60566037600b82828239805160001a607314602a57634e487b7160e01b600052600060045260246000fd5b30600052607381538281f3fe73000000000000000000000000000000000000000030146080604052600080fdfea2646970667358221220113a6fee0a9a09f4e29542b42d3a7b732c4bdbd8e24813f13cf5fc6fd97b32f364736f6c63430008110033",
 }
 
 // NumberLibABI is the input ABI used to generate the binding from.
@@ -3225,7 +4495,7 @@ func (_OwnableUpgradeable *OwnableUpgradeableFilterer) ParseOwnershipTransferred
 // TipsLibMetaData contains all meta data concerning the TipsLib contract.
 var TipsLibMetaData = &bind.MetaData{
 	ABI: "[]",
-	Bin: "0x60566037600b82828239805160001a607314602a57634e487b7160e01b600052600060045260246000fd5b30600052607381538281f3fe73000000000000000000000000000000000000000030146080604052600080fdfea26469706673582212205aadf91a94a5d4c9e7ab556e1601b4e39776cadca6620094dabcd3b3cd4b473264736f6c63430008110033",
+	Bin: "0x60566037600b82828239805160001a607314602a57634e487b7160e01b600052600060045260246000fd5b30600052607381538281f3fe73000000000000000000000000000000000000000030146080604052600080fdfea26469706673582212208e693468e031cc34ad856be60516bad2738bc4ed301ab8e7dbe5dd9509a2627c64736f6c63430008110033",
 }
 
 // TipsLibABI is the input ABI used to generate the binding from.
@@ -3397,7 +4667,7 @@ func (_TipsLib *TipsLibTransactorRaw) Transact(opts *bind.TransactOpts, method s
 
 // VersionedMetaData contains all meta data concerning the Versioned contract.
 var VersionedMetaData = &bind.MetaData{
-	ABI: "[{\"inputs\":[],\"name\":\"version\",\"outputs\":[{\"internalType\":\"string\",\"name\":\"versionString\",\"type\":\"string\"}],\"stateMutability\":\"view\",\"type\":\"function\"}]",
+	ABI: "[{\"inputs\":[],\"name\":\"IncorrectVersionLength\",\"type\":\"error\"},{\"inputs\":[],\"name\":\"version\",\"outputs\":[{\"internalType\":\"string\",\"name\":\"versionString\",\"type\":\"string\"}],\"stateMutability\":\"view\",\"type\":\"function\"}]",
 	Sigs: map[string]string{
 		"54fd4d50": "version()",
 	},

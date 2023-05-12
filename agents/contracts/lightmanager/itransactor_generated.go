@@ -12,10 +12,18 @@ import (
 
 // ILightManagerTransactor ...
 type ILightManagerTransactor interface {
-	// Initialize is a paid mutator transaction binding the contract method 0x485cc955.
+	// Initialize is a paid mutator transaction binding the contract method 0xc0c53b8b.
 	//
-	// Solidity: function initialize(address origin_, address destination_) returns()
-	Initialize(opts *bind.TransactOpts, origin_ common.Address, destination_ common.Address) (*types.Transaction, error)
+	// Solidity: function initialize(address origin_, address destination_, address inbox_) returns()
+	Initialize(opts *bind.TransactOpts, origin_ common.Address, destination_ common.Address, inbox_ common.Address) (*types.Transaction, error)
+	// Multicall is a paid mutator transaction binding the contract method 0x60fc8466.
+	//
+	// Solidity: function multicall((bool,bytes)[] calls) returns((bool,bytes)[] callResults)
+	Multicall(opts *bind.TransactOpts, calls []MultiCallableCall) (*types.Transaction, error)
+	// OpenDispute is a paid mutator transaction binding the contract method 0xa2155c34.
+	//
+	// Solidity: function openDispute(uint32 guardIndex, uint32 notaryIndex) returns()
+	OpenDispute(opts *bind.TransactOpts, guardIndex uint32, notaryIndex uint32) (*types.Transaction, error)
 	// RemoteWithdrawTips is a paid mutator transaction binding the contract method 0x1fa07138.
 	//
 	// Solidity: function remoteWithdrawTips(uint32 msgOrigin, uint256 proofMaturity, address recipient, uint256 amount) returns(bytes4 magicValue)
@@ -24,30 +32,18 @@ type ILightManagerTransactor interface {
 	//
 	// Solidity: function renounceOwnership() returns()
 	RenounceOwnership(opts *bind.TransactOpts) (*types.Transaction, error)
+	// ResolveStuckDispute is a paid mutator transaction binding the contract method 0x89791e17.
+	//
+	// Solidity: function resolveStuckDispute(uint32 domain, address slashedAgent) returns()
+	ResolveStuckDispute(opts *bind.TransactOpts, domain uint32, slashedAgent common.Address) (*types.Transaction, error)
 	// SetAgentRoot is a paid mutator transaction binding the contract method 0x58668176.
 	//
 	// Solidity: function setAgentRoot(bytes32 agentRoot_) returns()
 	SetAgentRoot(opts *bind.TransactOpts, agentRoot_ [32]byte) (*types.Transaction, error)
-	// SubmitAttestation is a paid mutator transaction binding the contract method 0x6c38f723.
+	// SlashAgent is a paid mutator transaction binding the contract method 0x2853a0e6.
 	//
-	// Solidity: function submitAttestation(bytes attPayload, bytes attSignature, bytes32 agentRoot_, uint256[] snapGas_) returns(bool wasAccepted)
-	SubmitAttestation(opts *bind.TransactOpts, attPayload []byte, attSignature []byte, agentRoot_ [32]byte, snapGas_ []*big.Int) (*types.Transaction, error)
-	// SubmitAttestationReport is a paid mutator transaction binding the contract method 0x77ec5c10.
-	//
-	// Solidity: function submitAttestationReport(bytes arPayload, bytes arSignature, bytes attSignature) returns(bool wasAccepted)
-	SubmitAttestationReport(opts *bind.TransactOpts, arPayload []byte, arSignature []byte, attSignature []byte) (*types.Transaction, error)
-	// SubmitStateReportWithAttestation is a paid mutator transaction binding the contract method 0x235d51b1.
-	//
-	// Solidity: function submitStateReportWithAttestation(uint256 stateIndex, bytes srPayload, bytes srSignature, bytes snapPayload, bytes attPayload, bytes attSignature) returns(bool wasAccepted)
-	SubmitStateReportWithAttestation(opts *bind.TransactOpts, stateIndex *big.Int, srPayload []byte, srSignature []byte, snapPayload []byte, attPayload []byte, attSignature []byte) (*types.Transaction, error)
-	// SubmitStateReportWithSnapshot is a paid mutator transaction binding the contract method 0x708cdc82.
-	//
-	// Solidity: function submitStateReportWithSnapshot(uint256 stateIndex, bytes srPayload, bytes srSignature, bytes snapPayload, bytes snapSignature) returns(bool wasAccepted)
-	SubmitStateReportWithSnapshot(opts *bind.TransactOpts, stateIndex *big.Int, srPayload []byte, srSignature []byte, snapPayload []byte, snapSignature []byte) (*types.Transaction, error)
-	// SubmitStateReportWithSnapshotProof is a paid mutator transaction binding the contract method 0x0db27e77.
-	//
-	// Solidity: function submitStateReportWithSnapshotProof(uint256 stateIndex, bytes srPayload, bytes srSignature, bytes32[] snapProof, bytes attPayload, bytes attSignature) returns(bool wasAccepted)
-	SubmitStateReportWithSnapshotProof(opts *bind.TransactOpts, stateIndex *big.Int, srPayload []byte, srSignature []byte, snapProof [][32]byte, attPayload []byte, attSignature []byte) (*types.Transaction, error)
+	// Solidity: function slashAgent(uint32 domain, address agent, address prover) returns()
+	SlashAgent(opts *bind.TransactOpts, domain uint32, agent common.Address, prover common.Address) (*types.Transaction, error)
 	// TransferOwnership is a paid mutator transaction binding the contract method 0xf2fde38b.
 	//
 	// Solidity: function transferOwnership(address newOwner) returns()
@@ -56,24 +52,4 @@ type ILightManagerTransactor interface {
 	//
 	// Solidity: function updateAgentStatus(address agent, (uint8,uint32,uint32) status, bytes32[] proof) returns()
 	UpdateAgentStatus(opts *bind.TransactOpts, agent common.Address, status AgentStatus, proof [][32]byte) (*types.Transaction, error)
-	// VerifyReceipt is a paid mutator transaction binding the contract method 0xc25aa585.
-	//
-	// Solidity: function verifyReceipt(bytes rcptPayload, bytes rcptSignature) returns(bool isValidReceipt)
-	VerifyReceipt(opts *bind.TransactOpts, rcptPayload []byte, rcptSignature []byte) (*types.Transaction, error)
-	// VerifyStateReport is a paid mutator transaction binding the contract method 0xdfe39675.
-	//
-	// Solidity: function verifyStateReport(bytes srPayload, bytes srSignature) returns(bool isValidReport)
-	VerifyStateReport(opts *bind.TransactOpts, srPayload []byte, srSignature []byte) (*types.Transaction, error)
-	// VerifyStateWithAttestation is a paid mutator transaction binding the contract method 0x200f6b66.
-	//
-	// Solidity: function verifyStateWithAttestation(uint256 stateIndex, bytes snapPayload, bytes attPayload, bytes attSignature) returns(bool isValidState)
-	VerifyStateWithAttestation(opts *bind.TransactOpts, stateIndex *big.Int, snapPayload []byte, attPayload []byte, attSignature []byte) (*types.Transaction, error)
-	// VerifyStateWithSnapshot is a paid mutator transaction binding the contract method 0x213a6ddb.
-	//
-	// Solidity: function verifyStateWithSnapshot(uint256 stateIndex, bytes snapPayload, bytes snapSignature) returns(bool isValidState)
-	VerifyStateWithSnapshot(opts *bind.TransactOpts, stateIndex *big.Int, snapPayload []byte, snapSignature []byte) (*types.Transaction, error)
-	// VerifyStateWithSnapshotProof is a paid mutator transaction binding the contract method 0x7be8e738.
-	//
-	// Solidity: function verifyStateWithSnapshotProof(uint256 stateIndex, bytes statePayload, bytes32[] snapProof, bytes attPayload, bytes attSignature) returns(bool isValidState)
-	VerifyStateWithSnapshotProof(opts *bind.TransactOpts, stateIndex *big.Int, statePayload []byte, snapProof [][32]byte, attPayload []byte, attSignature []byte) (*types.Transaction, error)
 }

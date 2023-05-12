@@ -276,6 +276,29 @@ func (_m *IOrigin) GetMinimumTipsValue(opts *bind.CallOpts, destination uint32, 
 	return r0, r1
 }
 
+// Inbox provides a mock function with given fields: opts
+func (_m *IOrigin) Inbox(opts *bind.CallOpts) (common.Address, error) {
+	ret := _m.Called(opts)
+
+	var r0 common.Address
+	if rf, ok := ret.Get(0).(func(*bind.CallOpts) common.Address); ok {
+		r0 = rf(opts)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).(common.Address)
+		}
+	}
+
+	var r1 error
+	if rf, ok := ret.Get(1).(func(*bind.CallOpts) error); ok {
+		r1 = rf(opts)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
 // Initialize provides a mock function with given fields: opts
 func (_m *IOrigin) Initialize(opts *bind.TransactOpts) (*types.Transaction, error) {
 	ret := _m.Called(opts)
@@ -334,6 +357,29 @@ func (_m *IOrigin) LocalDomain(opts *bind.CallOpts) (uint32, error) {
 	var r1 error
 	if rf, ok := ret.Get(1).(func(*bind.CallOpts) error); ok {
 		r1 = rf(opts)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
+// Multicall provides a mock function with given fields: opts, calls
+func (_m *IOrigin) Multicall(opts *bind.TransactOpts, calls []origin.MultiCallableCall) (*types.Transaction, error) {
+	ret := _m.Called(opts, calls)
+
+	var r0 *types.Transaction
+	if rf, ok := ret.Get(0).(func(*bind.TransactOpts, []origin.MultiCallableCall) *types.Transaction); ok {
+		r0 = rf(opts, calls)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).(*types.Transaction)
+		}
+	}
+
+	var r1 error
+	if rf, ok := ret.Get(1).(func(*bind.TransactOpts, []origin.MultiCallableCall) error); ok {
+		r1 = rf(opts, calls)
 	} else {
 		r1 = ret.Error(1)
 	}

@@ -16,6 +16,10 @@ type IGasOracleTransactor interface {
 	//
 	// Solidity: function initialize() returns()
 	Initialize(opts *bind.TransactOpts) (*types.Transaction, error)
+	// Multicall is a paid mutator transaction binding the contract method 0x60fc8466.
+	//
+	// Solidity: function multicall((bool,bytes)[] calls) returns((bool,bytes)[] callResults)
+	Multicall(opts *bind.TransactOpts, calls []MultiCallableCall) (*types.Transaction, error)
 	// RenounceOwnership is a paid mutator transaction binding the contract method 0x715018a6.
 	//
 	// Solidity: function renounceOwnership() returns()
@@ -28,4 +32,8 @@ type IGasOracleTransactor interface {
 	//
 	// Solidity: function transferOwnership(address newOwner) returns()
 	TransferOwnership(opts *bind.TransactOpts, newOwner common.Address) (*types.Transaction, error)
+	// UpdateGasData is a paid mutator transaction binding the contract method 0x867baea5.
+	//
+	// Solidity: function updateGasData(uint32 domain) returns()
+	UpdateGasData(opts *bind.TransactOpts, domain uint32) (*types.Transaction, error)
 }

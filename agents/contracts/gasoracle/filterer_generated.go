@@ -11,6 +11,18 @@ import (
 
 // IGasOracleFilterer ...
 type IGasOracleFilterer interface {
+	// FilterGasDataUpdated is a free log retrieval operation binding the contract event 0xae7a6216b3de7722222303567564b3f11777a9665d278ef3762110de410e12b3.
+	//
+	// Solidity: event GasDataUpdated(uint32 domain, uint256 paddedGasData)
+	FilterGasDataUpdated(opts *bind.FilterOpts) (*GasOracleGasDataUpdatedIterator, error)
+	// WatchGasDataUpdated is a free log subscription operation binding the contract event 0xae7a6216b3de7722222303567564b3f11777a9665d278ef3762110de410e12b3.
+	//
+	// Solidity: event GasDataUpdated(uint32 domain, uint256 paddedGasData)
+	WatchGasDataUpdated(opts *bind.WatchOpts, sink chan<- *GasOracleGasDataUpdated) (event.Subscription, error)
+	// ParseGasDataUpdated is a log parse operation binding the contract event 0xae7a6216b3de7722222303567564b3f11777a9665d278ef3762110de410e12b3.
+	//
+	// Solidity: event GasDataUpdated(uint32 domain, uint256 paddedGasData)
+	ParseGasDataUpdated(log types.Log) (*GasOracleGasDataUpdated, error)
 	// FilterInitialized is a free log retrieval operation binding the contract event 0x7f26b83ff96e1f2b6a682f133852f6798a09c465da95921460cefb3847402498.
 	//
 	// Solidity: event Initialized(uint8 version)

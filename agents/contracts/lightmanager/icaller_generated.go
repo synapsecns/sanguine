@@ -25,8 +25,13 @@ type ILightManagerCaller interface {
 	Destination(opts *bind.CallOpts) (common.Address, error)
 	// DisputeStatus is a free data retrieval call binding the contract method 0x3463d1b1.
 	//
-	// Solidity: function disputeStatus(address agent) view returns((uint8,uint32,address))
-	DisputeStatus(opts *bind.CallOpts, agent common.Address) (Dispute, error)
+	// Solidity: function disputeStatus(address agent) view returns(uint8 flag, address rival, address fraudProver, uint256 disputePtr)
+	DisputeStatus(opts *bind.CallOpts, agent common.Address) (struct {
+		Flag        uint8
+		Rival       common.Address
+		FraudProver common.Address
+		DisputePtr  *big.Int
+	}, error)
 	// GetAgent is a free data retrieval call binding the contract method 0x2de5aaf7.
 	//
 	// Solidity: function getAgent(uint256 index) view returns(address agent, (uint8,uint32,uint32) status)
@@ -34,10 +39,25 @@ type ILightManagerCaller interface {
 		Agent  common.Address
 		Status AgentStatus
 	}, error)
-	// GetStoredSignature is a free data retrieval call binding the contract method 0xddeffa66.
+	// GetDispute is a free data retrieval call binding the contract method 0xe3a96cbd.
 	//
-	// Solidity: function getStoredSignature(uint256 index) view returns(bytes)
-	GetStoredSignature(opts *bind.CallOpts, index *big.Int) ([]byte, error)
+	// Solidity: function getDispute(uint256 index) view returns(address guard, address notary, address slashedAgent, address fraudProver, bytes reportPayload, bytes reportSignature)
+	GetDispute(opts *bind.CallOpts, index *big.Int) (struct {
+		Guard           common.Address
+		Notary          common.Address
+		SlashedAgent    common.Address
+		FraudProver     common.Address
+		ReportPayload   []byte
+		ReportSignature []byte
+	}, error)
+	// GetDisputesAmount is a free data retrieval call binding the contract method 0x3aaeccc6.
+	//
+	// Solidity: function getDisputesAmount() view returns(uint256)
+	GetDisputesAmount(opts *bind.CallOpts) (*big.Int, error)
+	// Inbox is a free data retrieval call binding the contract method 0xfb0e722b.
+	//
+	// Solidity: function inbox() view returns(address)
+	Inbox(opts *bind.CallOpts) (common.Address, error)
 	// LocalDomain is a free data retrieval call binding the contract method 0x8d3638f4.
 	//
 	// Solidity: function localDomain() view returns(uint32)

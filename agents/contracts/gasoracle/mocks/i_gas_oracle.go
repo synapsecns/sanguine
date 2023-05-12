@@ -38,6 +38,52 @@ func (_m *IGasOracle) Address() common.Address {
 	return r0
 }
 
+// Destination provides a mock function with given fields: opts
+func (_m *IGasOracle) Destination(opts *bind.CallOpts) (common.Address, error) {
+	ret := _m.Called(opts)
+
+	var r0 common.Address
+	if rf, ok := ret.Get(0).(func(*bind.CallOpts) common.Address); ok {
+		r0 = rf(opts)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).(common.Address)
+		}
+	}
+
+	var r1 error
+	if rf, ok := ret.Get(1).(func(*bind.CallOpts) error); ok {
+		r1 = rf(opts)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
+// FilterGasDataUpdated provides a mock function with given fields: opts
+func (_m *IGasOracle) FilterGasDataUpdated(opts *bind.FilterOpts) (*gasoracle.GasOracleGasDataUpdatedIterator, error) {
+	ret := _m.Called(opts)
+
+	var r0 *gasoracle.GasOracleGasDataUpdatedIterator
+	if rf, ok := ret.Get(0).(func(*bind.FilterOpts) *gasoracle.GasOracleGasDataUpdatedIterator); ok {
+		r0 = rf(opts)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).(*gasoracle.GasOracleGasDataUpdatedIterator)
+		}
+	}
+
+	var r1 error
+	if rf, ok := ret.Get(1).(func(*bind.FilterOpts) error); ok {
+		r1 = rf(opts)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
 // FilterInitialized provides a mock function with given fields: opts
 func (_m *IGasOracle) FilterInitialized(opts *bind.FilterOpts) (*gasoracle.GasOracleInitializedIterator, error) {
 	ret := _m.Called(opts)
@@ -84,48 +130,94 @@ func (_m *IGasOracle) FilterOwnershipTransferred(opts *bind.FilterOpts, previous
 	return r0, r1
 }
 
-// GasData provides a mock function with given fields: opts, arg0
-func (_m *IGasOracle) GasData(opts *bind.CallOpts, arg0 uint32) (struct {
-	GasPrice     uint16
-	DataPrice    uint16
-	ExecBuffer   uint16
-	AmortAttCost uint16
-	EtherPrice   uint16
-	Markup       uint16
+// GASDATADECREASEDOPTIMISTICPERIOD provides a mock function with given fields: opts
+func (_m *IGasOracle) GASDATADECREASEDOPTIMISTICPERIOD(opts *bind.CallOpts) (*big.Int, error) {
+	ret := _m.Called(opts)
+
+	var r0 *big.Int
+	if rf, ok := ret.Get(0).(func(*bind.CallOpts) *big.Int); ok {
+		r0 = rf(opts)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).(*big.Int)
+		}
+	}
+
+	var r1 error
+	if rf, ok := ret.Get(1).(func(*bind.CallOpts) error); ok {
+		r1 = rf(opts)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
+// GASDATAINCREASEDOPTIMISTICPERIOD provides a mock function with given fields: opts
+func (_m *IGasOracle) GASDATAINCREASEDOPTIMISTICPERIOD(opts *bind.CallOpts) (*big.Int, error) {
+	ret := _m.Called(opts)
+
+	var r0 *big.Int
+	if rf, ok := ret.Get(0).(func(*bind.CallOpts) *big.Int); ok {
+		r0 = rf(opts)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).(*big.Int)
+		}
+	}
+
+	var r1 error
+	if rf, ok := ret.Get(1).(func(*bind.CallOpts) error); ok {
+		r1 = rf(opts)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
+// GetDecodedGasData provides a mock function with given fields: opts, domain
+func (_m *IGasOracle) GetDecodedGasData(opts *bind.CallOpts, domain uint32) (struct {
+	GasPrice     *big.Int
+	DataPrice    *big.Int
+	ExecBuffer   *big.Int
+	AmortAttCost *big.Int
+	EtherPrice   *big.Int
+	Markup       *big.Int
 }, error) {
-	ret := _m.Called(opts, arg0)
+	ret := _m.Called(opts, domain)
 
 	var r0 struct {
-		GasPrice     uint16
-		DataPrice    uint16
-		ExecBuffer   uint16
-		AmortAttCost uint16
-		EtherPrice   uint16
-		Markup       uint16
+		GasPrice     *big.Int
+		DataPrice    *big.Int
+		ExecBuffer   *big.Int
+		AmortAttCost *big.Int
+		EtherPrice   *big.Int
+		Markup       *big.Int
 	}
 	if rf, ok := ret.Get(0).(func(*bind.CallOpts, uint32) struct {
-		GasPrice     uint16
-		DataPrice    uint16
-		ExecBuffer   uint16
-		AmortAttCost uint16
-		EtherPrice   uint16
-		Markup       uint16
+		GasPrice     *big.Int
+		DataPrice    *big.Int
+		ExecBuffer   *big.Int
+		AmortAttCost *big.Int
+		EtherPrice   *big.Int
+		Markup       *big.Int
 	}); ok {
-		r0 = rf(opts, arg0)
+		r0 = rf(opts, domain)
 	} else {
 		r0 = ret.Get(0).(struct {
-			GasPrice     uint16
-			DataPrice    uint16
-			ExecBuffer   uint16
-			AmortAttCost uint16
-			EtherPrice   uint16
-			Markup       uint16
+			GasPrice     *big.Int
+			DataPrice    *big.Int
+			ExecBuffer   *big.Int
+			AmortAttCost *big.Int
+			EtherPrice   *big.Int
+			Markup       *big.Int
 		})
 	}
 
 	var r1 error
 	if rf, ok := ret.Get(1).(func(*bind.CallOpts, uint32) error); ok {
-		r1 = rf(opts, arg0)
+		r1 = rf(opts, domain)
 	} else {
 		r1 = ret.Error(1)
 	}
@@ -156,13 +248,13 @@ func (_m *IGasOracle) GetGasData(opts *bind.CallOpts) (*big.Int, error) {
 	return r0, r1
 }
 
-// GetMinimumTips provides a mock function with given fields: opts, destination, paddedRequest, contentLength
-func (_m *IGasOracle) GetMinimumTips(opts *bind.CallOpts, destination uint32, paddedRequest *big.Int, contentLength *big.Int) (*big.Int, error) {
-	ret := _m.Called(opts, destination, paddedRequest, contentLength)
+// GetMinimumTips provides a mock function with given fields: opts, destination_, paddedRequest, contentLength
+func (_m *IGasOracle) GetMinimumTips(opts *bind.CallOpts, destination_ uint32, paddedRequest *big.Int, contentLength *big.Int) (*big.Int, error) {
+	ret := _m.Called(opts, destination_, paddedRequest, contentLength)
 
 	var r0 *big.Int
 	if rf, ok := ret.Get(0).(func(*bind.CallOpts, uint32, *big.Int, *big.Int) *big.Int); ok {
-		r0 = rf(opts, destination, paddedRequest, contentLength)
+		r0 = rf(opts, destination_, paddedRequest, contentLength)
 	} else {
 		if ret.Get(0) != nil {
 			r0 = ret.Get(0).(*big.Int)
@@ -171,7 +263,7 @@ func (_m *IGasOracle) GetMinimumTips(opts *bind.CallOpts, destination uint32, pa
 
 	var r1 error
 	if rf, ok := ret.Get(1).(func(*bind.CallOpts, uint32, *big.Int, *big.Int) error); ok {
-		r1 = rf(opts, destination, paddedRequest, contentLength)
+		r1 = rf(opts, destination_, paddedRequest, contentLength)
 	} else {
 		r1 = ret.Error(1)
 	}
@@ -223,6 +315,29 @@ func (_m *IGasOracle) LocalDomain(opts *bind.CallOpts) (uint32, error) {
 	return r0, r1
 }
 
+// Multicall provides a mock function with given fields: opts, calls
+func (_m *IGasOracle) Multicall(opts *bind.TransactOpts, calls []gasoracle.MultiCallableCall) (*types.Transaction, error) {
+	ret := _m.Called(opts, calls)
+
+	var r0 *types.Transaction
+	if rf, ok := ret.Get(0).(func(*bind.TransactOpts, []gasoracle.MultiCallableCall) *types.Transaction); ok {
+		r0 = rf(opts, calls)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).(*types.Transaction)
+		}
+	}
+
+	var r1 error
+	if rf, ok := ret.Get(1).(func(*bind.TransactOpts, []gasoracle.MultiCallableCall) error); ok {
+		r1 = rf(opts, calls)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
 // Owner provides a mock function with given fields: opts
 func (_m *IGasOracle) Owner(opts *bind.CallOpts) (common.Address, error) {
 	ret := _m.Called(opts)
@@ -239,6 +354,29 @@ func (_m *IGasOracle) Owner(opts *bind.CallOpts) (common.Address, error) {
 	var r1 error
 	if rf, ok := ret.Get(1).(func(*bind.CallOpts) error); ok {
 		r1 = rf(opts)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
+// ParseGasDataUpdated provides a mock function with given fields: log
+func (_m *IGasOracle) ParseGasDataUpdated(log types.Log) (*gasoracle.GasOracleGasDataUpdated, error) {
+	ret := _m.Called(log)
+
+	var r0 *gasoracle.GasOracleGasDataUpdated
+	if rf, ok := ret.Get(0).(func(types.Log) *gasoracle.GasOracleGasDataUpdated); ok {
+		r0 = rf(log)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).(*gasoracle.GasOracleGasDataUpdated)
+		}
+	}
+
+	var r1 error
+	if rf, ok := ret.Get(1).(func(types.Log) error); ok {
+		r1 = rf(log)
 	} else {
 		r1 = ret.Error(1)
 	}
@@ -361,6 +499,29 @@ func (_m *IGasOracle) TransferOwnership(opts *bind.TransactOpts, newOwner common
 	return r0, r1
 }
 
+// UpdateGasData provides a mock function with given fields: opts, domain
+func (_m *IGasOracle) UpdateGasData(opts *bind.TransactOpts, domain uint32) (*types.Transaction, error) {
+	ret := _m.Called(opts, domain)
+
+	var r0 *types.Transaction
+	if rf, ok := ret.Get(0).(func(*bind.TransactOpts, uint32) *types.Transaction); ok {
+		r0 = rf(opts, domain)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).(*types.Transaction)
+		}
+	}
+
+	var r1 error
+	if rf, ok := ret.Get(1).(func(*bind.TransactOpts, uint32) error); ok {
+		r1 = rf(opts, domain)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
 // Version provides a mock function with given fields: opts
 func (_m *IGasOracle) Version(opts *bind.CallOpts) (string, error) {
 	ret := _m.Called(opts)
@@ -375,6 +536,29 @@ func (_m *IGasOracle) Version(opts *bind.CallOpts) (string, error) {
 	var r1 error
 	if rf, ok := ret.Get(1).(func(*bind.CallOpts) error); ok {
 		r1 = rf(opts)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
+// WatchGasDataUpdated provides a mock function with given fields: opts, sink
+func (_m *IGasOracle) WatchGasDataUpdated(opts *bind.WatchOpts, sink chan<- *gasoracle.GasOracleGasDataUpdated) (event.Subscription, error) {
+	ret := _m.Called(opts, sink)
+
+	var r0 event.Subscription
+	if rf, ok := ret.Get(0).(func(*bind.WatchOpts, chan<- *gasoracle.GasOracleGasDataUpdated) event.Subscription); ok {
+		r0 = rf(opts, sink)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).(event.Subscription)
+		}
+	}
+
+	var r1 error
+	if rf, ok := ret.Get(1).(func(*bind.WatchOpts, chan<- *gasoracle.GasOracleGasDataUpdated) error); ok {
+		r1 = rf(opts, sink)
 	} else {
 		r1 = ret.Error(1)
 	}

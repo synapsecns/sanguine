@@ -30,9 +30,9 @@ var (
 
 // IMessageRecipientMetaData contains all meta data concerning the IMessageRecipient contract.
 var IMessageRecipientMetaData = &bind.MetaData{
-	ABI: "[{\"inputs\":[{\"internalType\":\"uint32\",\"name\":\"origin\",\"type\":\"uint32\"},{\"internalType\":\"uint32\",\"name\":\"nonce\",\"type\":\"uint32\"},{\"internalType\":\"bytes32\",\"name\":\"sender\",\"type\":\"bytes32\"},{\"internalType\":\"uint256\",\"name\":\"proofMaturity\",\"type\":\"uint256\"},{\"internalType\":\"bytes\",\"name\":\"content\",\"type\":\"bytes\"}],\"name\":\"receiveBaseMessage\",\"outputs\":[],\"stateMutability\":\"payable\",\"type\":\"function\"}]",
+	ABI: "[{\"inputs\":[{\"internalType\":\"uint32\",\"name\":\"origin\",\"type\":\"uint32\"},{\"internalType\":\"uint32\",\"name\":\"nonce\",\"type\":\"uint32\"},{\"internalType\":\"bytes32\",\"name\":\"sender\",\"type\":\"bytes32\"},{\"internalType\":\"uint256\",\"name\":\"proofMaturity\",\"type\":\"uint256\"},{\"internalType\":\"uint32\",\"name\":\"version\",\"type\":\"uint32\"},{\"internalType\":\"bytes\",\"name\":\"content\",\"type\":\"bytes\"}],\"name\":\"receiveBaseMessage\",\"outputs\":[],\"stateMutability\":\"payable\",\"type\":\"function\"}]",
 	Sigs: map[string]string{
-		"8d3ea9e7": "receiveBaseMessage(uint32,uint32,bytes32,uint256,bytes)",
+		"032f287e": "receiveBaseMessage(uint32,uint32,bytes32,uint256,uint32,bytes)",
 	},
 }
 
@@ -186,25 +186,25 @@ func (_IMessageRecipient *IMessageRecipientTransactorRaw) Transact(opts *bind.Tr
 	return _IMessageRecipient.Contract.contract.Transact(opts, method, params...)
 }
 
-// ReceiveBaseMessage is a paid mutator transaction binding the contract method 0x8d3ea9e7.
+// ReceiveBaseMessage is a paid mutator transaction binding the contract method 0x032f287e.
 //
-// Solidity: function receiveBaseMessage(uint32 origin, uint32 nonce, bytes32 sender, uint256 proofMaturity, bytes content) payable returns()
-func (_IMessageRecipient *IMessageRecipientTransactor) ReceiveBaseMessage(opts *bind.TransactOpts, origin uint32, nonce uint32, sender [32]byte, proofMaturity *big.Int, content []byte) (*types.Transaction, error) {
-	return _IMessageRecipient.contract.Transact(opts, "receiveBaseMessage", origin, nonce, sender, proofMaturity, content)
+// Solidity: function receiveBaseMessage(uint32 origin, uint32 nonce, bytes32 sender, uint256 proofMaturity, uint32 version, bytes content) payable returns()
+func (_IMessageRecipient *IMessageRecipientTransactor) ReceiveBaseMessage(opts *bind.TransactOpts, origin uint32, nonce uint32, sender [32]byte, proofMaturity *big.Int, version uint32, content []byte) (*types.Transaction, error) {
+	return _IMessageRecipient.contract.Transact(opts, "receiveBaseMessage", origin, nonce, sender, proofMaturity, version, content)
 }
 
-// ReceiveBaseMessage is a paid mutator transaction binding the contract method 0x8d3ea9e7.
+// ReceiveBaseMessage is a paid mutator transaction binding the contract method 0x032f287e.
 //
-// Solidity: function receiveBaseMessage(uint32 origin, uint32 nonce, bytes32 sender, uint256 proofMaturity, bytes content) payable returns()
-func (_IMessageRecipient *IMessageRecipientSession) ReceiveBaseMessage(origin uint32, nonce uint32, sender [32]byte, proofMaturity *big.Int, content []byte) (*types.Transaction, error) {
-	return _IMessageRecipient.Contract.ReceiveBaseMessage(&_IMessageRecipient.TransactOpts, origin, nonce, sender, proofMaturity, content)
+// Solidity: function receiveBaseMessage(uint32 origin, uint32 nonce, bytes32 sender, uint256 proofMaturity, uint32 version, bytes content) payable returns()
+func (_IMessageRecipient *IMessageRecipientSession) ReceiveBaseMessage(origin uint32, nonce uint32, sender [32]byte, proofMaturity *big.Int, version uint32, content []byte) (*types.Transaction, error) {
+	return _IMessageRecipient.Contract.ReceiveBaseMessage(&_IMessageRecipient.TransactOpts, origin, nonce, sender, proofMaturity, version, content)
 }
 
-// ReceiveBaseMessage is a paid mutator transaction binding the contract method 0x8d3ea9e7.
+// ReceiveBaseMessage is a paid mutator transaction binding the contract method 0x032f287e.
 //
-// Solidity: function receiveBaseMessage(uint32 origin, uint32 nonce, bytes32 sender, uint256 proofMaturity, bytes content) payable returns()
-func (_IMessageRecipient *IMessageRecipientTransactorSession) ReceiveBaseMessage(origin uint32, nonce uint32, sender [32]byte, proofMaturity *big.Int, content []byte) (*types.Transaction, error) {
-	return _IMessageRecipient.Contract.ReceiveBaseMessage(&_IMessageRecipient.TransactOpts, origin, nonce, sender, proofMaturity, content)
+// Solidity: function receiveBaseMessage(uint32 origin, uint32 nonce, bytes32 sender, uint256 proofMaturity, uint32 version, bytes content) payable returns()
+func (_IMessageRecipient *IMessageRecipientTransactorSession) ReceiveBaseMessage(origin uint32, nonce uint32, sender [32]byte, proofMaturity *big.Int, version uint32, content []byte) (*types.Transaction, error) {
+	return _IMessageRecipient.Contract.ReceiveBaseMessage(&_IMessageRecipient.TransactOpts, origin, nonce, sender, proofMaturity, version, content)
 }
 
 // InterfaceOriginMetaData contains all meta data concerning the InterfaceOrigin contract.
@@ -462,9 +462,252 @@ func (_InterfaceOrigin *InterfaceOriginTransactorSession) WithdrawTips(recipient
 	return _InterfaceOrigin.Contract.WithdrawTips(&_InterfaceOrigin.TransactOpts, recipient, amount)
 }
 
+// MessageRecipientMetaData contains all meta data concerning the MessageRecipient contract.
+var MessageRecipientMetaData = &bind.MetaData{
+	ABI: "[{\"inputs\":[],\"name\":\"CallerNotDestination\",\"type\":\"error\"},{\"inputs\":[],\"name\":\"IncorrectNonce\",\"type\":\"error\"},{\"inputs\":[],\"name\":\"IncorrectSender\",\"type\":\"error\"},{\"inputs\":[],\"name\":\"ZeroProofMaturity\",\"type\":\"error\"},{\"inputs\":[],\"name\":\"destination\",\"outputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"origin\",\"outputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint32\",\"name\":\"origin_\",\"type\":\"uint32\"},{\"internalType\":\"uint32\",\"name\":\"nonce\",\"type\":\"uint32\"},{\"internalType\":\"bytes32\",\"name\":\"sender\",\"type\":\"bytes32\"},{\"internalType\":\"uint256\",\"name\":\"proofMaturity\",\"type\":\"uint256\"},{\"internalType\":\"uint32\",\"name\":\"version\",\"type\":\"uint32\"},{\"internalType\":\"bytes\",\"name\":\"content\",\"type\":\"bytes\"}],\"name\":\"receiveBaseMessage\",\"outputs\":[],\"stateMutability\":\"payable\",\"type\":\"function\"}]",
+	Sigs: map[string]string{
+		"b269681d": "destination()",
+		"938b5f32": "origin()",
+		"032f287e": "receiveBaseMessage(uint32,uint32,bytes32,uint256,uint32,bytes)",
+	},
+}
+
+// MessageRecipientABI is the input ABI used to generate the binding from.
+// Deprecated: Use MessageRecipientMetaData.ABI instead.
+var MessageRecipientABI = MessageRecipientMetaData.ABI
+
+// Deprecated: Use MessageRecipientMetaData.Sigs instead.
+// MessageRecipientFuncSigs maps the 4-byte function signature to its string representation.
+var MessageRecipientFuncSigs = MessageRecipientMetaData.Sigs
+
+// MessageRecipient is an auto generated Go binding around an Ethereum contract.
+type MessageRecipient struct {
+	MessageRecipientCaller     // Read-only binding to the contract
+	MessageRecipientTransactor // Write-only binding to the contract
+	MessageRecipientFilterer   // Log filterer for contract events
+}
+
+// MessageRecipientCaller is an auto generated read-only Go binding around an Ethereum contract.
+type MessageRecipientCaller struct {
+	contract *bind.BoundContract // Generic contract wrapper for the low level calls
+}
+
+// MessageRecipientTransactor is an auto generated write-only Go binding around an Ethereum contract.
+type MessageRecipientTransactor struct {
+	contract *bind.BoundContract // Generic contract wrapper for the low level calls
+}
+
+// MessageRecipientFilterer is an auto generated log filtering Go binding around an Ethereum contract events.
+type MessageRecipientFilterer struct {
+	contract *bind.BoundContract // Generic contract wrapper for the low level calls
+}
+
+// MessageRecipientSession is an auto generated Go binding around an Ethereum contract,
+// with pre-set call and transact options.
+type MessageRecipientSession struct {
+	Contract     *MessageRecipient // Generic contract binding to set the session for
+	CallOpts     bind.CallOpts     // Call options to use throughout this session
+	TransactOpts bind.TransactOpts // Transaction auth options to use throughout this session
+}
+
+// MessageRecipientCallerSession is an auto generated read-only Go binding around an Ethereum contract,
+// with pre-set call options.
+type MessageRecipientCallerSession struct {
+	Contract *MessageRecipientCaller // Generic contract caller binding to set the session for
+	CallOpts bind.CallOpts           // Call options to use throughout this session
+}
+
+// MessageRecipientTransactorSession is an auto generated write-only Go binding around an Ethereum contract,
+// with pre-set transact options.
+type MessageRecipientTransactorSession struct {
+	Contract     *MessageRecipientTransactor // Generic contract transactor binding to set the session for
+	TransactOpts bind.TransactOpts           // Transaction auth options to use throughout this session
+}
+
+// MessageRecipientRaw is an auto generated low-level Go binding around an Ethereum contract.
+type MessageRecipientRaw struct {
+	Contract *MessageRecipient // Generic contract binding to access the raw methods on
+}
+
+// MessageRecipientCallerRaw is an auto generated low-level read-only Go binding around an Ethereum contract.
+type MessageRecipientCallerRaw struct {
+	Contract *MessageRecipientCaller // Generic read-only contract binding to access the raw methods on
+}
+
+// MessageRecipientTransactorRaw is an auto generated low-level write-only Go binding around an Ethereum contract.
+type MessageRecipientTransactorRaw struct {
+	Contract *MessageRecipientTransactor // Generic write-only contract binding to access the raw methods on
+}
+
+// NewMessageRecipient creates a new instance of MessageRecipient, bound to a specific deployed contract.
+func NewMessageRecipient(address common.Address, backend bind.ContractBackend) (*MessageRecipient, error) {
+	contract, err := bindMessageRecipient(address, backend, backend, backend)
+	if err != nil {
+		return nil, err
+	}
+	return &MessageRecipient{MessageRecipientCaller: MessageRecipientCaller{contract: contract}, MessageRecipientTransactor: MessageRecipientTransactor{contract: contract}, MessageRecipientFilterer: MessageRecipientFilterer{contract: contract}}, nil
+}
+
+// NewMessageRecipientCaller creates a new read-only instance of MessageRecipient, bound to a specific deployed contract.
+func NewMessageRecipientCaller(address common.Address, caller bind.ContractCaller) (*MessageRecipientCaller, error) {
+	contract, err := bindMessageRecipient(address, caller, nil, nil)
+	if err != nil {
+		return nil, err
+	}
+	return &MessageRecipientCaller{contract: contract}, nil
+}
+
+// NewMessageRecipientTransactor creates a new write-only instance of MessageRecipient, bound to a specific deployed contract.
+func NewMessageRecipientTransactor(address common.Address, transactor bind.ContractTransactor) (*MessageRecipientTransactor, error) {
+	contract, err := bindMessageRecipient(address, nil, transactor, nil)
+	if err != nil {
+		return nil, err
+	}
+	return &MessageRecipientTransactor{contract: contract}, nil
+}
+
+// NewMessageRecipientFilterer creates a new log filterer instance of MessageRecipient, bound to a specific deployed contract.
+func NewMessageRecipientFilterer(address common.Address, filterer bind.ContractFilterer) (*MessageRecipientFilterer, error) {
+	contract, err := bindMessageRecipient(address, nil, nil, filterer)
+	if err != nil {
+		return nil, err
+	}
+	return &MessageRecipientFilterer{contract: contract}, nil
+}
+
+// bindMessageRecipient binds a generic wrapper to an already deployed contract.
+func bindMessageRecipient(address common.Address, caller bind.ContractCaller, transactor bind.ContractTransactor, filterer bind.ContractFilterer) (*bind.BoundContract, error) {
+	parsed, err := abi.JSON(strings.NewReader(MessageRecipientABI))
+	if err != nil {
+		return nil, err
+	}
+	return bind.NewBoundContract(address, parsed, caller, transactor, filterer), nil
+}
+
+// Call invokes the (constant) contract method with params as input values and
+// sets the output to result. The result type might be a single field for simple
+// returns, a slice of interfaces for anonymous returns and a struct for named
+// returns.
+func (_MessageRecipient *MessageRecipientRaw) Call(opts *bind.CallOpts, result *[]interface{}, method string, params ...interface{}) error {
+	return _MessageRecipient.Contract.MessageRecipientCaller.contract.Call(opts, result, method, params...)
+}
+
+// Transfer initiates a plain transaction to move funds to the contract, calling
+// its default method if one is available.
+func (_MessageRecipient *MessageRecipientRaw) Transfer(opts *bind.TransactOpts) (*types.Transaction, error) {
+	return _MessageRecipient.Contract.MessageRecipientTransactor.contract.Transfer(opts)
+}
+
+// Transact invokes the (paid) contract method with params as input values.
+func (_MessageRecipient *MessageRecipientRaw) Transact(opts *bind.TransactOpts, method string, params ...interface{}) (*types.Transaction, error) {
+	return _MessageRecipient.Contract.MessageRecipientTransactor.contract.Transact(opts, method, params...)
+}
+
+// Call invokes the (constant) contract method with params as input values and
+// sets the output to result. The result type might be a single field for simple
+// returns, a slice of interfaces for anonymous returns and a struct for named
+// returns.
+func (_MessageRecipient *MessageRecipientCallerRaw) Call(opts *bind.CallOpts, result *[]interface{}, method string, params ...interface{}) error {
+	return _MessageRecipient.Contract.contract.Call(opts, result, method, params...)
+}
+
+// Transfer initiates a plain transaction to move funds to the contract, calling
+// its default method if one is available.
+func (_MessageRecipient *MessageRecipientTransactorRaw) Transfer(opts *bind.TransactOpts) (*types.Transaction, error) {
+	return _MessageRecipient.Contract.contract.Transfer(opts)
+}
+
+// Transact invokes the (paid) contract method with params as input values.
+func (_MessageRecipient *MessageRecipientTransactorRaw) Transact(opts *bind.TransactOpts, method string, params ...interface{}) (*types.Transaction, error) {
+	return _MessageRecipient.Contract.contract.Transact(opts, method, params...)
+}
+
+// Destination is a free data retrieval call binding the contract method 0xb269681d.
+//
+// Solidity: function destination() view returns(address)
+func (_MessageRecipient *MessageRecipientCaller) Destination(opts *bind.CallOpts) (common.Address, error) {
+	var out []interface{}
+	err := _MessageRecipient.contract.Call(opts, &out, "destination")
+
+	if err != nil {
+		return *new(common.Address), err
+	}
+
+	out0 := *abi.ConvertType(out[0], new(common.Address)).(*common.Address)
+
+	return out0, err
+
+}
+
+// Destination is a free data retrieval call binding the contract method 0xb269681d.
+//
+// Solidity: function destination() view returns(address)
+func (_MessageRecipient *MessageRecipientSession) Destination() (common.Address, error) {
+	return _MessageRecipient.Contract.Destination(&_MessageRecipient.CallOpts)
+}
+
+// Destination is a free data retrieval call binding the contract method 0xb269681d.
+//
+// Solidity: function destination() view returns(address)
+func (_MessageRecipient *MessageRecipientCallerSession) Destination() (common.Address, error) {
+	return _MessageRecipient.Contract.Destination(&_MessageRecipient.CallOpts)
+}
+
+// Origin is a free data retrieval call binding the contract method 0x938b5f32.
+//
+// Solidity: function origin() view returns(address)
+func (_MessageRecipient *MessageRecipientCaller) Origin(opts *bind.CallOpts) (common.Address, error) {
+	var out []interface{}
+	err := _MessageRecipient.contract.Call(opts, &out, "origin")
+
+	if err != nil {
+		return *new(common.Address), err
+	}
+
+	out0 := *abi.ConvertType(out[0], new(common.Address)).(*common.Address)
+
+	return out0, err
+
+}
+
+// Origin is a free data retrieval call binding the contract method 0x938b5f32.
+//
+// Solidity: function origin() view returns(address)
+func (_MessageRecipient *MessageRecipientSession) Origin() (common.Address, error) {
+	return _MessageRecipient.Contract.Origin(&_MessageRecipient.CallOpts)
+}
+
+// Origin is a free data retrieval call binding the contract method 0x938b5f32.
+//
+// Solidity: function origin() view returns(address)
+func (_MessageRecipient *MessageRecipientCallerSession) Origin() (common.Address, error) {
+	return _MessageRecipient.Contract.Origin(&_MessageRecipient.CallOpts)
+}
+
+// ReceiveBaseMessage is a paid mutator transaction binding the contract method 0x032f287e.
+//
+// Solidity: function receiveBaseMessage(uint32 origin_, uint32 nonce, bytes32 sender, uint256 proofMaturity, uint32 version, bytes content) payable returns()
+func (_MessageRecipient *MessageRecipientTransactor) ReceiveBaseMessage(opts *bind.TransactOpts, origin_ uint32, nonce uint32, sender [32]byte, proofMaturity *big.Int, version uint32, content []byte) (*types.Transaction, error) {
+	return _MessageRecipient.contract.Transact(opts, "receiveBaseMessage", origin_, nonce, sender, proofMaturity, version, content)
+}
+
+// ReceiveBaseMessage is a paid mutator transaction binding the contract method 0x032f287e.
+//
+// Solidity: function receiveBaseMessage(uint32 origin_, uint32 nonce, bytes32 sender, uint256 proofMaturity, uint32 version, bytes content) payable returns()
+func (_MessageRecipient *MessageRecipientSession) ReceiveBaseMessage(origin_ uint32, nonce uint32, sender [32]byte, proofMaturity *big.Int, version uint32, content []byte) (*types.Transaction, error) {
+	return _MessageRecipient.Contract.ReceiveBaseMessage(&_MessageRecipient.TransactOpts, origin_, nonce, sender, proofMaturity, version, content)
+}
+
+// ReceiveBaseMessage is a paid mutator transaction binding the contract method 0x032f287e.
+//
+// Solidity: function receiveBaseMessage(uint32 origin_, uint32 nonce, bytes32 sender, uint256 proofMaturity, uint32 version, bytes content) payable returns()
+func (_MessageRecipient *MessageRecipientTransactorSession) ReceiveBaseMessage(origin_ uint32, nonce uint32, sender [32]byte, proofMaturity *big.Int, version uint32, content []byte) (*types.Transaction, error) {
+	return _MessageRecipient.Contract.ReceiveBaseMessage(&_MessageRecipient.TransactOpts, origin_, nonce, sender, proofMaturity, version, content)
+}
+
 // PingPongClientMetaData contains all meta data concerning the PingPongClient contract.
 var PingPongClientMetaData = &bind.MetaData{
-	ABI: "[{\"inputs\":[{\"internalType\":\"address\",\"name\":\"origin_\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"destination_\",\"type\":\"address\"}],\"stateMutability\":\"nonpayable\",\"type\":\"constructor\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"pingId\",\"type\":\"uint256\"}],\"name\":\"PingReceived\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"pingId\",\"type\":\"uint256\"}],\"name\":\"PingSent\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"pingId\",\"type\":\"uint256\"}],\"name\":\"PongReceived\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"pingId\",\"type\":\"uint256\"}],\"name\":\"PongSent\",\"type\":\"event\"},{\"inputs\":[],\"name\":\"destination\",\"outputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint32\",\"name\":\"destination_\",\"type\":\"uint32\"},{\"internalType\":\"address\",\"name\":\"recipient\",\"type\":\"address\"},{\"internalType\":\"uint16\",\"name\":\"counter\",\"type\":\"uint16\"}],\"name\":\"doPing\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint16\",\"name\":\"pingCount\",\"type\":\"uint16\"},{\"internalType\":\"uint32\",\"name\":\"destination_\",\"type\":\"uint32\"},{\"internalType\":\"address\",\"name\":\"recipient\",\"type\":\"address\"},{\"internalType\":\"uint16\",\"name\":\"counter\",\"type\":\"uint16\"}],\"name\":\"doPings\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"nextOptimisticPeriod\",\"outputs\":[{\"internalType\":\"uint32\",\"name\":\"period\",\"type\":\"uint32\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"origin\",\"outputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"pingsReceived\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"pingsSent\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"pongsReceived\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"random\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint32\",\"name\":\"origin_\",\"type\":\"uint32\"},{\"internalType\":\"uint32\",\"name\":\"\",\"type\":\"uint32\"},{\"internalType\":\"bytes32\",\"name\":\"sender\",\"type\":\"bytes32\"},{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"},{\"internalType\":\"bytes\",\"name\":\"content\",\"type\":\"bytes\"}],\"name\":\"receiveBaseMessage\",\"outputs\":[],\"stateMutability\":\"payable\",\"type\":\"function\"}]",
+	ABI: "[{\"inputs\":[{\"internalType\":\"address\",\"name\":\"origin_\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"destination_\",\"type\":\"address\"}],\"stateMutability\":\"nonpayable\",\"type\":\"constructor\"},{\"inputs\":[],\"name\":\"CallerNotDestination\",\"type\":\"error\"},{\"inputs\":[],\"name\":\"IncorrectNonce\",\"type\":\"error\"},{\"inputs\":[],\"name\":\"IncorrectRecipient\",\"type\":\"error\"},{\"inputs\":[],\"name\":\"IncorrectSender\",\"type\":\"error\"},{\"inputs\":[],\"name\":\"ZeroProofMaturity\",\"type\":\"error\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"pingId\",\"type\":\"uint256\"}],\"name\":\"PingReceived\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"pingId\",\"type\":\"uint256\"}],\"name\":\"PingSent\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"pingId\",\"type\":\"uint256\"}],\"name\":\"PongReceived\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"pingId\",\"type\":\"uint256\"}],\"name\":\"PongSent\",\"type\":\"event\"},{\"inputs\":[],\"name\":\"destination\",\"outputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint32\",\"name\":\"destination_\",\"type\":\"uint32\"},{\"internalType\":\"address\",\"name\":\"recipient\",\"type\":\"address\"},{\"internalType\":\"uint16\",\"name\":\"counter\",\"type\":\"uint16\"}],\"name\":\"doPing\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint16\",\"name\":\"pingCount\",\"type\":\"uint16\"},{\"internalType\":\"uint32\",\"name\":\"destination_\",\"type\":\"uint32\"},{\"internalType\":\"address\",\"name\":\"recipient\",\"type\":\"address\"},{\"internalType\":\"uint16\",\"name\":\"counter\",\"type\":\"uint16\"}],\"name\":\"doPings\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"nextOptimisticPeriod\",\"outputs\":[{\"internalType\":\"uint32\",\"name\":\"period\",\"type\":\"uint32\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"origin\",\"outputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"pingsReceived\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"pingsSent\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"pongsReceived\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"random\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint32\",\"name\":\"origin_\",\"type\":\"uint32\"},{\"internalType\":\"uint32\",\"name\":\"nonce\",\"type\":\"uint32\"},{\"internalType\":\"bytes32\",\"name\":\"sender\",\"type\":\"bytes32\"},{\"internalType\":\"uint256\",\"name\":\"proofMaturity\",\"type\":\"uint256\"},{\"internalType\":\"uint32\",\"name\":\"version\",\"type\":\"uint32\"},{\"internalType\":\"bytes\",\"name\":\"content\",\"type\":\"bytes\"}],\"name\":\"receiveBaseMessage\",\"outputs\":[],\"stateMutability\":\"payable\",\"type\":\"function\"}]",
 	Sigs: map[string]string{
 		"b269681d": "destination()",
 		"08fe5e4e": "doPing(uint32,address,uint16)",
@@ -475,9 +718,9 @@ var PingPongClientMetaData = &bind.MetaData{
 		"b475cba3": "pingsSent()",
 		"45a8b8ed": "pongsReceived()",
 		"5ec01e4d": "random()",
-		"8d3ea9e7": "receiveBaseMessage(uint32,uint32,bytes32,uint256,bytes)",
+		"032f287e": "receiveBaseMessage(uint32,uint32,bytes32,uint256,uint32,bytes)",
 	},
-	Bin: "0x60c060405234801561001057600080fd5b50604051610c0a380380610c0a83398101604081905261002f91610087565b6001600160a01b039182166080521660a052604080514360208083019190915282518083038201815291830190925280519101206000556100ba565b80516001600160a01b038116811461008257600080fd5b919050565b6000806040838503121561009a57600080fd5b6100a38361006b565b91506100b16020840161006b565b90509250929050565b60805160a051610b1d6100ed600039600081816101df015261028101526000818161016601526105740152610b1d6000f3fe6080604052600436106100b15760003560e01c8063938b5f3211610069578063b269681d1161004e578063b269681d146101cd578063b475cba314610201578063e3ac3ca01461021757600080fd5b8063938b5f3214610154578063aa402039146101ad57600080fd5b806345a8b8ed1161009a57806345a8b8ed146101075780635ec01e4d1461012b5780638d3ea9e71461014157600080fd5b806308fe5e4e146100b65780632bd56025146100d8575b600080fd5b3480156100c257600080fd5b506100d66100d13660046106d0565b61022d565b005b3480156100e457600080fd5b506100ed610253565b60405163ffffffff90911681526020015b60405180910390f35b34801561011357600080fd5b5061011d60035481565b6040519081526020016100fe565b34801561013757600080fd5b5061011d60005481565b6100d661014f366004610797565b610269565b34801561016057600080fd5b506101887f000000000000000000000000000000000000000000000000000000000000000081565b60405173ffffffffffffffffffffffffffffffffffffffff90911681526020016100fe565b3480156101b957600080fd5b506100d66101c8366004610883565b6103ff565b3480156101d957600080fd5b506101887f000000000000000000000000000000000000000000000000000000000000000081565b34801561020d57600080fd5b5061011d60015481565b34801561022357600080fd5b5061011d60025481565b61024e8373ffffffffffffffffffffffffffffffffffffffff841683610446565b505050565b6000603c60005461026491906108dd565b905090565b3373ffffffffffffffffffffffffffffffffffffffff7f0000000000000000000000000000000000000000000000000000000000000000161461030c576040517f08c379a000000000000000000000000000000000000000000000000000000000815260206004820152601c60248201527f50696e67506f6e67436c69656e743a202164657374696e6174696f6e00000000604482015260640160405180910390fd5b6000818060200190518101906103229190610918565b90508060200151156103865760026000815461033d906109b5565b9091555080516040519081527f51c4f05cea43f3d4604f77fd5a656743088090aa726deb5e3a9f670d8da75d659060200160405180910390a16103818685836104c2565b6103f7565b600360008154610395906109b5565b9091555080516040519081527f08d46b5262cb13a84b9421fef5cfd01017e1cb48c879e3fc89acaadf34f2106e9060200160405180910390a1604081015161ffff16156103f7576103f78685600184604001516103f291906109ed565b610446565b505050505050565b60005b8461ffff1681101561043f5761042f8473ffffffffffffffffffffffffffffffffffffffff851684610446565b610438816109b5565b9050610402565b5050505050565b6001805460009182610457836109b5565b919050559050610489848460405180606001604052808581526020016001151581526020018661ffff16815250610530565b6040518181527f14089a5f67ef0667796ead5223612a15d24422be4bdaa19abc32fb26d4c8b3db9060200160405180910390a150505050565b6104f68383604051806060016040528085600001518152602001600015158152602001856040015161ffff16815250610530565b80516040519081527f0a72872b9cfe43d6c13b13553f28d4879e427f3b456545649fd0761fdcbe03119060200160405180910390a1505050565b6000806040805184516020808301919091528501511515818301529084015161ffff16606082015290915060009060800160405160208183030381529060405290507f000000000000000000000000000000000000000000000000000000000000000073ffffffffffffffffffffffffffffffffffffffff1663873661bd86866105b8610625565b86866040518663ffffffff1660e01b81526004016105da959493929190610a0f565b60408051808303816000875af11580156105f8573d6000803e3d6000fd5b505050506040513d601f19601f8201168201806040525081019061061c9190610ab9565b50505050505050565b600061062f610253565b905060005460405160200161064691815260200190565b604080517fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffe0818403018152919052805160209091012060005590565b63ffffffff8116811461069457600080fd5b50565b803573ffffffffffffffffffffffffffffffffffffffff811681146106bb57600080fd5b919050565b61ffff8116811461069457600080fd5b6000806000606084860312156106e557600080fd5b83356106f081610682565b92506106fe60208501610697565b9150604084013561070e816106c0565b809150509250925092565b7f4e487b7100000000000000000000000000000000000000000000000000000000600052604160045260246000fd5b604051601f82017fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffe016810167ffffffffffffffff8111828210171561078f5761078f610719565b604052919050565b600080600080600060a086880312156107af57600080fd5b85356107ba81610682565b94506020868101356107cb81610682565b94506040870135935060608701359250608087013567ffffffffffffffff808211156107f657600080fd5b818901915089601f83011261080a57600080fd5b81358181111561081c5761081c610719565b61084c847fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffe0601f84011601610748565b91508082528a8482850101111561086257600080fd5b80848401858401376000848284010152508093505050509295509295909350565b6000806000806080858703121561089957600080fd5b84356108a4816106c0565b935060208501356108b481610682565b92506108c260408601610697565b915060608501356108d2816106c0565b939692955090935050565b600082610913577f4e487b7100000000000000000000000000000000000000000000000000000000600052601260045260246000fd5b500690565b60006060828403121561092a57600080fd5b6040516060810181811067ffffffffffffffff8211171561094d5761094d610719565b604052825181526020830151801515811461096757600080fd5b6020820152604083015161097a816106c0565b60408201529392505050565b7f4e487b7100000000000000000000000000000000000000000000000000000000600052601160045260246000fd5b60007fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff82036109e6576109e6610986565b5060010190565b61ffff828116828216039080821115610a0857610a08610986565b5092915050565b600063ffffffff808816835260208781850152818716604085015273ffffffffffffffffffffffffffffffffffffffff8616606085015260a06080850152845191508160a085015260005b82811015610a765785810182015185820160c001528101610a5a565b5050600060c0828501015260c07fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffe0601f8301168401019150509695505050505050565b60008060408385031215610acc57600080fd5b8251610ad781610682565b602093909301519294929350505056fea2646970667358221220629d423ed60650c31bbd897d4a311158aa3135784adc75eaff66a7625b9fd14a64736f6c63430008110033",
+	Bin: "0x60c060405234801561001057600080fd5b50604051610d43380380610d4383398101604081905261002f91610087565b6001600160a01b039182166080521660a052604080514360208083019190915282518083038201815291830190925280519101206000556100ba565b80516001600160a01b038116811461008257600080fd5b919050565b6000806040838503121561009a57600080fd5b6100a38361006b565b91506100b16020840161006b565b90509250929050565b60805160a051610c566100ed600039600081816101df015261024501526000818161016601526106c50152610c566000f3fe6080604052600436106100b15760003560e01c8063938b5f3211610069578063b269681d1161004e578063b269681d146101cd578063b475cba314610201578063e3ac3ca01461021757600080fd5b8063938b5f3214610154578063aa402039146101ad57600080fd5b80632bd560251161009a5780632bd56025146100eb57806345a8b8ed1461011a5780635ec01e4d1461013e57600080fd5b8063032f287e146100b657806308fe5e4e146100cb575b600080fd5b6100c96100c4366004610837565b61022d565b005b3480156100d757600080fd5b506100c96100e6366004610989565b610367565b3480156100f757600080fd5b5061010061038d565b60405163ffffffff90911681526020015b60405180910390f35b34801561012657600080fd5b5061013060035481565b604051908152602001610111565b34801561014a57600080fd5b5061013060005481565b34801561016057600080fd5b506101887f000000000000000000000000000000000000000000000000000000000000000081565b60405173ffffffffffffffffffffffffffffffffffffffff9091168152602001610111565b3480156101b957600080fd5b506100c96101c83660046109d2565b6103a3565b3480156101d957600080fd5b506101887f000000000000000000000000000000000000000000000000000000000000000081565b34801561020d57600080fd5b5061013060015481565b34801561022357600080fd5b5061013060025481565b3373ffffffffffffffffffffffffffffffffffffffff7f0000000000000000000000000000000000000000000000000000000000000000161461029c576040517f6efcc49f00000000000000000000000000000000000000000000000000000000815260040160405180910390fd5b8463ffffffff166000036102dc576040517f674d8d8800000000000000000000000000000000000000000000000000000000815260040160405180910390fd5b6000849003610317576040517f7d1c29f300000000000000000000000000000000000000000000000000000000815260040160405180910390fd5b82600003610351576040517fdce28ace00000000000000000000000000000000000000000000000000000000815260040160405180910390fd5b61035f8686868686866103ea565b505050505050565b6103888373ffffffffffffffffffffffffffffffffffffffff8416836104de565b505050565b6000603c60005461039e9190610a2c565b905090565b60005b8461ffff168110156103e3576103d38473ffffffffffffffffffffffffffffffffffffffff8516846104de565b6103dc81610a96565b90506103a6565b5050505050565b6000818060200190518101906104009190610ace565b90508060200151156104645760026000815461041b90610a96565b9091555080516040519081527f51c4f05cea43f3d4604f77fd5a656743088090aa726deb5e3a9f670d8da75d659060200160405180910390a161045f87868361055a565b6104d5565b60036000815461047390610a96565b9091555080516040519081527f08d46b5262cb13a84b9421fef5cfd01017e1cb48c879e3fc89acaadf34f2106e9060200160405180910390a1604081015161ffff16156104d5576104d58786600184604001516104d09190610b3c565b6104de565b50505050505050565b60018054600091826104ef83610a96565b919050559050610521848460405180606001604052808581526020016001151581526020018661ffff168152506105c8565b6040518181527f14089a5f67ef0667796ead5223612a15d24422be4bdaa19abc32fb26d4c8b3db9060200160405180910390a150505050565b61058e8383604051806060016040528085600001518152602001600015158152602001856040015161ffff168152506105c8565b80516040519081527f0a72872b9cfe43d6c13b13553f28d4879e427f3b456545649fd0761fdcbe03119060200160405180910390a1505050565b604080516060808201835260008083526020808401829052838501919091528351855181830152908501511515818501528484015161ffff168183015283518082039092018252608001909252906104d5858561062361062a565b8585610687565b600061063461038d565b905060005460405160200161064b91815260200190565b604080517fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffe0818403018152919052805160209091012060005590565b6000808581036106c3576040517f519bdea700000000000000000000000000000000000000000000000000000000815260040160405180910390fd5b7f000000000000000000000000000000000000000000000000000000000000000073ffffffffffffffffffffffffffffffffffffffff1663873661bd3489898961070c8a61077d565b896040518763ffffffff1660e01b815260040161072d959493929190610b5e565b604080518083038185885af115801561074a573d6000803e3d6000fd5b50505050506040513d601f19601f8201168201806040525081019061076f9190610bf2565b915091509550959350505050565b60006107d382600001518360200151846040015177ffffffffffffffffffffffff000000000000000000000000606084901b166bffffffffffffffff00000000602084901b161763ffffffff8216179392505050565b77ffffffffffffffffffffffffffffffffffffffffffffffff1692915050565b63ffffffff8116811461080557600080fd5b50565b7f4e487b7100000000000000000000000000000000000000000000000000000000600052604160045260246000fd5b60008060008060008060c0878903121561085057600080fd5b863561085b816107f3565b9550602087013561086b816107f3565b945060408701359350606087013592506080870135610889816107f3565b915060a087013567ffffffffffffffff808211156108a657600080fd5b818901915089601f8301126108ba57600080fd5b8135818111156108cc576108cc610808565b604051601f82017fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffe0908116603f0116810190838211818310171561091257610912610808565b816040528281528c602084870101111561092b57600080fd5b8260208601602083013760006020848301015280955050505050509295509295509295565b803573ffffffffffffffffffffffffffffffffffffffff8116811461097457600080fd5b919050565b61ffff8116811461080557600080fd5b60008060006060848603121561099e57600080fd5b83356109a9816107f3565b92506109b760208501610950565b915060408401356109c781610979565b809150509250925092565b600080600080608085870312156109e857600080fd5b84356109f381610979565b93506020850135610a03816107f3565b9250610a1160408601610950565b91506060850135610a2181610979565b939692955090935050565b600082610a62577f4e487b7100000000000000000000000000000000000000000000000000000000600052601260045260246000fd5b500690565b7f4e487b7100000000000000000000000000000000000000000000000000000000600052601160045260246000fd5b60007fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff8203610ac757610ac7610a67565b5060010190565b600060608284031215610ae057600080fd5b6040516060810181811067ffffffffffffffff82111715610b0357610b03610808565b6040528251815260208301518015158114610b1d57600080fd5b60208201526040830151610b3081610979565b60408201529392505050565b61ffff828116828216039080821115610b5757610b57610a67565b5092915050565b600063ffffffff808816835260208781850152818716604085015285606085015260a06080850152845191508160a085015260005b82811015610baf5785810182015185820160c001528101610b93565b5050600060c0828501015260c07fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffe0601f8301168401019150509695505050505050565b60008060408385031215610c0557600080fd5b8251610c10816107f3565b602093909301519294929350505056fea26469706673582212201adbfb4465071843a3fc15cc2d21ce2ca8321e7e49f59844f8a58836441668cd64736f6c63430008110033",
 }
 
 // PingPongClientABI is the input ABI used to generate the binding from.
@@ -910,25 +1153,25 @@ func (_PingPongClient *PingPongClientTransactorSession) DoPings(pingCount uint16
 	return _PingPongClient.Contract.DoPings(&_PingPongClient.TransactOpts, pingCount, destination_, recipient, counter)
 }
 
-// ReceiveBaseMessage is a paid mutator transaction binding the contract method 0x8d3ea9e7.
+// ReceiveBaseMessage is a paid mutator transaction binding the contract method 0x032f287e.
 //
-// Solidity: function receiveBaseMessage(uint32 origin_, uint32 , bytes32 sender, uint256 , bytes content) payable returns()
-func (_PingPongClient *PingPongClientTransactor) ReceiveBaseMessage(opts *bind.TransactOpts, origin_ uint32, arg1 uint32, sender [32]byte, arg3 *big.Int, content []byte) (*types.Transaction, error) {
-	return _PingPongClient.contract.Transact(opts, "receiveBaseMessage", origin_, arg1, sender, arg3, content)
+// Solidity: function receiveBaseMessage(uint32 origin_, uint32 nonce, bytes32 sender, uint256 proofMaturity, uint32 version, bytes content) payable returns()
+func (_PingPongClient *PingPongClientTransactor) ReceiveBaseMessage(opts *bind.TransactOpts, origin_ uint32, nonce uint32, sender [32]byte, proofMaturity *big.Int, version uint32, content []byte) (*types.Transaction, error) {
+	return _PingPongClient.contract.Transact(opts, "receiveBaseMessage", origin_, nonce, sender, proofMaturity, version, content)
 }
 
-// ReceiveBaseMessage is a paid mutator transaction binding the contract method 0x8d3ea9e7.
+// ReceiveBaseMessage is a paid mutator transaction binding the contract method 0x032f287e.
 //
-// Solidity: function receiveBaseMessage(uint32 origin_, uint32 , bytes32 sender, uint256 , bytes content) payable returns()
-func (_PingPongClient *PingPongClientSession) ReceiveBaseMessage(origin_ uint32, arg1 uint32, sender [32]byte, arg3 *big.Int, content []byte) (*types.Transaction, error) {
-	return _PingPongClient.Contract.ReceiveBaseMessage(&_PingPongClient.TransactOpts, origin_, arg1, sender, arg3, content)
+// Solidity: function receiveBaseMessage(uint32 origin_, uint32 nonce, bytes32 sender, uint256 proofMaturity, uint32 version, bytes content) payable returns()
+func (_PingPongClient *PingPongClientSession) ReceiveBaseMessage(origin_ uint32, nonce uint32, sender [32]byte, proofMaturity *big.Int, version uint32, content []byte) (*types.Transaction, error) {
+	return _PingPongClient.Contract.ReceiveBaseMessage(&_PingPongClient.TransactOpts, origin_, nonce, sender, proofMaturity, version, content)
 }
 
-// ReceiveBaseMessage is a paid mutator transaction binding the contract method 0x8d3ea9e7.
+// ReceiveBaseMessage is a paid mutator transaction binding the contract method 0x032f287e.
 //
-// Solidity: function receiveBaseMessage(uint32 origin_, uint32 , bytes32 sender, uint256 , bytes content) payable returns()
-func (_PingPongClient *PingPongClientTransactorSession) ReceiveBaseMessage(origin_ uint32, arg1 uint32, sender [32]byte, arg3 *big.Int, content []byte) (*types.Transaction, error) {
-	return _PingPongClient.Contract.ReceiveBaseMessage(&_PingPongClient.TransactOpts, origin_, arg1, sender, arg3, content)
+// Solidity: function receiveBaseMessage(uint32 origin_, uint32 nonce, bytes32 sender, uint256 proofMaturity, uint32 version, bytes content) payable returns()
+func (_PingPongClient *PingPongClientTransactorSession) ReceiveBaseMessage(origin_ uint32, nonce uint32, sender [32]byte, proofMaturity *big.Int, version uint32, content []byte) (*types.Transaction, error) {
+	return _PingPongClient.Contract.ReceiveBaseMessage(&_PingPongClient.TransactOpts, origin_, nonce, sender, proofMaturity, version, content)
 }
 
 // PingPongClientPingReceivedIterator is returned from FilterPingReceived and is used to iterate over the raw logs and unpacked data for PingReceived events raised by the PingPongClient contract.
@@ -1470,7 +1713,7 @@ func (_PingPongClient *PingPongClientFilterer) ParsePongSent(log types.Log) (*Pi
 // RequestLibMetaData contains all meta data concerning the RequestLib contract.
 var RequestLibMetaData = &bind.MetaData{
 	ABI: "[]",
-	Bin: "0x60566037600b82828239805160001a607314602a57634e487b7160e01b600052600060045260246000fd5b30600052607381538281f3fe73000000000000000000000000000000000000000030146080604052600080fdfea2646970667358221220513910bfa8e4733d0643508015f3c3a63709737ac4f2b641ac0000ec20ea614d64736f6c63430008110033",
+	Bin: "0x60566037600b82828239805160001a607314602a57634e487b7160e01b600052600060045260246000fd5b30600052607381538281f3fe73000000000000000000000000000000000000000030146080604052600080fdfea26469706673582212209ffface8163cafa78a7d231f74f2cc226c437ddbbf09f83876456fdc6967897164736f6c63430008110033",
 }
 
 // RequestLibABI is the input ABI used to generate the binding from.
@@ -1643,7 +1886,7 @@ func (_RequestLib *RequestLibTransactorRaw) Transact(opts *bind.TransactOpts, me
 // TypeCastsMetaData contains all meta data concerning the TypeCasts contract.
 var TypeCastsMetaData = &bind.MetaData{
 	ABI: "[]",
-	Bin: "0x60566037600b82828239805160001a607314602a57634e487b7160e01b600052600060045260246000fd5b30600052607381538281f3fe73000000000000000000000000000000000000000030146080604052600080fdfea2646970667358221220734d8dc5cfddbe3c1ec50734457d38640b3b4274227e3d861a9fb3d7219d39b064736f6c63430008110033",
+	Bin: "0x60566037600b82828239805160001a607314602a57634e487b7160e01b600052600060045260246000fd5b30600052607381538281f3fe73000000000000000000000000000000000000000030146080604052600080fdfea2646970667358221220fe6669cef281813a7c0899e5cbaaf35ba9f80c8a10a67d2b02afca38e66aac6464736f6c63430008110033",
 }
 
 // TypeCastsABI is the input ABI used to generate the binding from.

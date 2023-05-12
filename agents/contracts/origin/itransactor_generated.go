@@ -16,6 +16,10 @@ type IOriginTransactor interface {
 	//
 	// Solidity: function initialize() returns()
 	Initialize(opts *bind.TransactOpts) (*types.Transaction, error)
+	// Multicall is a paid mutator transaction binding the contract method 0x60fc8466.
+	//
+	// Solidity: function multicall((bool,bytes)[] calls) returns((bool,bytes)[] callResults)
+	Multicall(opts *bind.TransactOpts, calls []MultiCallableCall) (*types.Transaction, error)
 	// OpenDispute is a paid mutator transaction binding the contract method 0xa2155c34.
 	//
 	// Solidity: function openDispute(uint32 guardIndex, uint32 notaryIndex) returns()
