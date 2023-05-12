@@ -91,7 +91,6 @@ struct RawBaseMessage {
 using CastLib for RawBaseMessage global;
 
 struct RawMessage {
-    uint8 flag;
     RawHeader header;
     bytes body;
 }
@@ -187,9 +186,7 @@ library CastLib {
     // ══════════════════════════════════════════════════ MESSAGE ══════════════════════════════════════════════════════
 
     function formatMessage(RawMessage memory rm) internal pure returns (bytes memory msgPayload) {
-        // Explicit revert when out of range
-        require(rm.flag <= uint8(type(MessageFlag).max), "Flag out of range");
-        return MessageLib.formatMessage(MessageFlag(rm.flag), rm.header.castToHeader(), rm.body);
+        return MessageLib.formatMessage(rm.header.castToHeader(), rm.body);
     }
 
     function castToMessage(RawMessage memory rm) internal pure returns (Message ptr) {
