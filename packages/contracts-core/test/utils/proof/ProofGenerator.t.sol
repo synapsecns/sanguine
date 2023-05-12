@@ -2,7 +2,7 @@
 pragma solidity 0.8.17;
 
 import {ORIGIN_TREE_HEIGHT} from "../../../contracts/libs/Constants.sol";
-import {MerkleTree} from "../../../contracts/libs/MerkleTree.sol";
+import {MerkleTree} from "../../../contracts/libs/merkle/MerkleTree.sol";
 
 import {ProofCutter} from "./ProofCutter.t.sol";
 

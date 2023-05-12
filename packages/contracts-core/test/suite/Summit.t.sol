@@ -6,7 +6,7 @@ import {IAgentSecured} from "../../contracts/interfaces/IAgentSecured.sol";
 import {InterfaceDestination} from "../../contracts/interfaces/InterfaceDestination.sol";
 import {ISnapshotHub} from "../../contracts/interfaces/ISnapshotHub.sol";
 import {SNAPSHOT_TREE_HEIGHT} from "../../contracts/libs/Constants.sol";
-import {MerkleMath} from "../../contracts/libs/MerkleMath.sol";
+import {MerkleMath} from "../../contracts/libs/merkle/MerkleMath.sol";
 
 import {InterfaceSummit} from "../../contracts/Summit.sol";
 import {Versioned} from "../../contracts/base/Version.sol";

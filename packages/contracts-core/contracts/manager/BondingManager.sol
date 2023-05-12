@@ -14,7 +14,7 @@ import {
     SlashAgentOptimisticPeriod,
     SynapseDomainForbidden
 } from "../libs/Errors.sol";
-import {DynamicTree, MerkleMath} from "../libs/MerkleTree.sol";
+import {DynamicTree, MerkleMath} from "../libs/merkle/MerkleTree.sol";
 import {AgentFlag, AgentStatus} from "../libs/Structures.sol";
 // ═════════════════════════════ INTERNAL IMPORTS ══════════════════════════════
 import {AgentManager, IAgentManager} from "./AgentManager.sol";

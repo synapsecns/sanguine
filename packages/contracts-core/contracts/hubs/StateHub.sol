@@ -3,9 +3,9 @@ pragma solidity 0.8.17;
 
 // ══════════════════════════════ LIBRARY IMPORTS ══════════════════════════════
 import {IncorrectOriginDomain} from "../libs/Errors.sol";
-import {GasData, GasDataLib} from "../libs/GasData.sol";
-import {HistoricalTree} from "../libs/MerkleTree.sol";
-import {State, StateLib} from "../libs/State.sol";
+import {GasData, GasDataLib} from "../libs/stack/GasData.sol";
+import {HistoricalTree} from "../libs/merkle/MerkleTree.sol";
+import {State, StateLib} from "../libs/memory/State.sol";
 // ═════════════════════════════ INTERNAL IMPORTS ══════════════════════════════
 import {AgentSecured} from "../base/AgentSecured.sol";
 import {StateHubEvents} from "../events/StateHubEvents.sol";

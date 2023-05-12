@@ -15,7 +15,7 @@ import {
 import {AgentFlag} from "../../../contracts/libs/Structures.sol";
 import {IExecutionHub} from "../../../contracts/interfaces/IExecutionHub.sol";
 import {IStatementInbox} from "../../../contracts/interfaces/IStatementInbox.sol";
-import {SNAPSHOT_MAX_STATES} from "../../../contracts/libs/Snapshot.sol";
+import {SNAPSHOT_MAX_STATES} from "../../../contracts/libs/memory/Snapshot.sol";
 import {MessageStatus} from "../../../contracts/libs/Structures.sol";
 
 import {RevertingApp} from "../../harnesses/client/RevertingApp.t.sol";

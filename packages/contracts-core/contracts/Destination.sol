@@ -2,11 +2,11 @@
 pragma solidity 0.8.17;
 
 // ══════════════════════════════ LIBRARY IMPORTS ══════════════════════════════
-import {Attestation, AttestationLib} from "./libs/Attestation.sol";
-import {ByteString} from "./libs/ByteString.sol";
+import {Attestation, AttestationLib} from "./libs/memory/Attestation.sol";
+import {ByteString} from "./libs/memory/ByteString.sol";
 import {AGENT_ROOT_OPTIMISTIC_PERIOD, SYNAPSE_DOMAIN} from "./libs/Constants.sol";
 import {IndexOutOfRange, NotaryInDispute} from "./libs/Errors.sol";
-import {ChainGas, GasData} from "./libs/GasData.sol";
+import {ChainGas, GasData} from "./libs/stack/GasData.sol";
 import {AgentStatus, DestinationStatus} from "./libs/Structures.sol";
 // ═════════════════════════════ INTERNAL IMPORTS ══════════════════════════════
 import {AgentSecured} from "./base/AgentSecured.sol";

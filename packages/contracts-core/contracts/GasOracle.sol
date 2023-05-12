@@ -1,9 +1,9 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.17;
 
-import {GasData, GasDataLib} from "./libs/GasData.sol";
-import {Number, NumberLib} from "./libs/Number.sol";
-import {Tips, TipsLib} from "./libs/Tips.sol";
+import {GasData, GasDataLib} from "./libs/stack/GasData.sol";
+import {Number, NumberLib} from "./libs/stack/Number.sol";
+import {Tips, TipsLib} from "./libs/stack/Tips.sol";
 // ═════════════════════════════ INTERNAL IMPORTS ══════════════════════════════
 import {MessagingBase} from "./base/MessagingBase.sol";
 import {GasOracleEvents} from "./events/GasOracleEvents.sol";

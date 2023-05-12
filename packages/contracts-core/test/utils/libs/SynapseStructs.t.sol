@@ -1,18 +1,20 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.17;
 
-import {ByteString, CallData, MemView, MemViewLib} from "../../../contracts/libs/ByteString.sol";
+import {ByteString, CallData, MemView, MemViewLib} from "../../../contracts/libs/memory/ByteString.sol";
 
-import {BaseMessage, BaseMessageLib, Tips, TipsLib} from "../../../contracts/libs/BaseMessage.sol";
-import {ChainGas, GasData, GasDataLib} from "../../../contracts/libs/GasData.sol";
-import {Header, HeaderLib, Message, MessageFlag, MessageLib} from "../../../contracts/libs/Message.sol";
-import {Number, NumberLib} from "../../../contracts/libs/Number.sol";
-import {Receipt, ReceiptBody, ReceiptLib} from "../../../contracts/libs/Receipt.sol";
-import {Request, RequestLib} from "../../../contracts/libs/Request.sol";
+import {BaseMessage, BaseMessageLib, Tips, TipsLib} from "../../../contracts/libs/memory/BaseMessage.sol";
+import {ChainGas, GasData, GasDataLib} from "../../../contracts/libs/stack/GasData.sol";
+import {Header, HeaderLib, Message, MessageFlag, MessageLib} from "../../../contracts/libs/memory/Message.sol";
+import {Number, NumberLib} from "../../../contracts/libs/stack/Number.sol";
+import {Receipt, ReceiptBody, ReceiptLib} from "../../../contracts/libs/memory/Receipt.sol";
+import {Request, RequestLib} from "../../../contracts/libs/stack/Request.sol";
 
-import {Snapshot, SnapshotLib, SNAPSHOT_MAX_STATES, State, StateLib} from "../../../contracts/libs/Snapshot.sol";
+import {
+    Snapshot, SnapshotLib, SNAPSHOT_MAX_STATES, State, StateLib
+} from "../../../contracts/libs/memory/Snapshot.sol";
 
-import {Attestation, AttestationLib} from "../../../contracts/libs/Attestation.sol";
+import {Attestation, AttestationLib} from "../../../contracts/libs/memory/Attestation.sol";
 
 struct RawHeader {
     uint32 origin;
