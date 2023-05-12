@@ -126,9 +126,10 @@ contract OriginTest is AgentSecuredTest {
             content: content
         }).formatBaseMessage();
         bytes[] memory messages = new bytes[](MESSAGES);
+        bytes32[] memory leafs = new bytes32[](MESSAGES);
         bytes32[] memory roots = new bytes32[](MESSAGES);
         for (uint32 i = 0; i < MESSAGES; ++i) {
-            messages[i] = RawMessage(
+            RawMessage memory rm = RawMessage(
                 RawHeader({
                     flag: uint8(MessageFlag.Base),
                     origin: DOMAIN_LOCAL,
@@ -137,8 +138,10 @@ contract OriginTest is AgentSecuredTest {
                     optimisticPeriod: period
                 }),
                 body
-            ).formatMessage();
-            insertMessage(messages[i]);
+            );
+            messages[i] = rm.formatMessage();
+            leafs[i] = rm.castToMessage().leaf();
+            insertMessage(leafs[i]);
             roots[i] = getRoot(i + 1);
         }
 
@@ -156,7 +159,7 @@ contract OriginTest is AgentSecuredTest {
             vm.expectEmit(true, true, true, true);
             emit StateSaved(state);
             vm.expectEmit(true, true, true, true);
-            emit Sent(keccak256(messages[i]), i + 1, DOMAIN_REMOTE, messages[i]);
+            emit Sent(leafs[i], i + 1, DOMAIN_REMOTE, messages[i]);
         }
 
         for (uint32 i = 0; i < MESSAGES; ++i) {
@@ -166,7 +169,7 @@ contract OriginTest is AgentSecuredTest {
             );
             // Check return values
             assertEq(messageNonce, i + 1, "!messageNonce");
-            assertEq(messageHash, keccak256(messages[i]), "!messageHash");
+            assertEq(messageHash, leafs[i], "!messageHash");
             skipBlock();
         }
     }
