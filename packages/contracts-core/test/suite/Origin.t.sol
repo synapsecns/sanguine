@@ -119,9 +119,9 @@ contract OriginTest is AgentSecuredTest {
         uint192 encodedRequest = request.encodeRequest();
         bytes memory content = "test content";
         bytes memory body = RawBaseMessage({
+            tips: tips,
             sender: addressToBytes32(sender),
             recipient: addressToBytes32(recipient),
-            tips: tips,
             request: request,
             content: content
         }).formatBaseMessage();

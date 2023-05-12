@@ -81,9 +81,9 @@ struct RawManagerCall {
 using CastLib for RawManagerCall global;
 
 struct RawBaseMessage {
+    RawTips tips;
     bytes32 sender;
     bytes32 recipient;
-    RawTips tips;
     RawRequest request;
     bytes content;
 }
@@ -257,9 +257,9 @@ library CastLib {
 
     function formatBaseMessage(RawBaseMessage memory rbm) internal pure returns (bytes memory bmPayload) {
         bmPayload = BaseMessageLib.formatBaseMessage({
+            tips_: rbm.tips.castToTips(),
             sender_: rbm.sender,
             recipient_: rbm.recipient,
-            tips_: rbm.tips.castToTips(),
             request_: rbm.request.castToRequest(),
             content_: rbm.content
         });
