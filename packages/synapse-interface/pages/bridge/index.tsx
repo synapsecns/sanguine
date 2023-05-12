@@ -54,12 +54,6 @@ const BridgePage = ({
   fromChainId: number
 }) => {
   const { address: currentAddress, isDisconnected } = useAccount()
-
-  useEffect(() => {
-    // console.log('isDisconnected in useEffect: ', isDisconnected)
-    // console.log('currentAddress in Bridge: ', currentAddress)
-  }, [isDisconnected, currentAddress])
-
   const router = useRouter()
   const SynapseSDK = useSynapseContext()
   const [time, setTime] = useState(Date.now())
@@ -257,14 +251,6 @@ const BridgePage = ({
   const getMostCommonSwapableType = useCallback(
     (chainId: number) => {
       console.log('sudyaichainid', chainId)
-
-      console.log('currentAddress in callback: ', currentAddress)
-      console.log('isDisconnected in callback: ', isDisconnected)
-
-      if (currentAddress === undefined || isDisconnected) {
-        return alert('Working')
-      }
-
       const fromChainTokensByType = Object.values(
         BRIDGE_SWAPABLE_TOKENS_BY_TYPE[chainId]
       )
@@ -396,11 +382,6 @@ const BridgePage = ({
   */
   const handleChainChange = useCallback(
     async (chainId: number, flip: boolean, type: 'from' | 'to') => {
-      // console.log('fromChainId in handle: ', fromChainId)
-      // console.log('currentAddress in handle:', currentAddress)
-      // console.log('isDisconnected in handle:', isDisconnected)
-      // console.log('switchNetwork in handle: ', switchNetwork)
-
       if (currentAddress === undefined || isDisconnected) {
         return alert('Please connect your wallet')
       }
