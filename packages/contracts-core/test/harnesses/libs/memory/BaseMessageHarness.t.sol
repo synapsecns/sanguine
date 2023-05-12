@@ -70,4 +70,8 @@ contract BaseMessageHarness {
     {
         return BaseMessageLib.formatBaseMessage(tips_, sender_, recipient_, request_, content_);
     }
+
+    function leaf(bytes memory payload) public pure returns (bytes32) {
+        return payload.castToBaseMessage().leaf();
+    }
 }

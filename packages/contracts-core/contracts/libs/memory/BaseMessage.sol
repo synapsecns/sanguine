@@ -4,6 +4,7 @@ pragma solidity 0.8.17;
 import {MemView, MemViewLib} from "./MemView.sol";
 import {REQUEST_LENGTH, TIPS_LENGTH} from "../Constants.sol";
 import {UnformattedBaseMessage} from "../Errors.sol";
+import {MerkleMath} from "../merkle/MerkleMath.sol";
 import {Request, RequestLib} from "../stack/Request.sol";
 import {Tips, TipsLib} from "../stack/Tips.sol";
 
@@ -84,6 +85,14 @@ library BaseMessageLib {
     /// @notice Convenience shortcut for unwrapping a view.
     function unwrap(BaseMessage baseMessage) internal pure returns (MemView) {
         return MemView.wrap(BaseMessage.unwrap(baseMessage));
+    }
+
+    /// @notice Returns baseMessage's hash: a leaf to be inserted in the "Message mini-Merkle tree".
+    function leaf(BaseMessage baseMessage) internal pure returns (bytes32) {
+        // We hash "tips" and "everything but tips" to make tips proofs easier to verify
+        return MerkleMath.getParent(
+            baseMessage.tips().leaf(), baseMessage.unwrap().sliceFrom({index_: OFFSET_SENDER}).keccak()
+        );
     }
 
     // ═══════════════════════════════════════════ BASE MESSAGE SLICING ════════════════════════════════════════════════

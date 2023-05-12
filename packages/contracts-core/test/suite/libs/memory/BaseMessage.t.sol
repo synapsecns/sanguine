@@ -39,6 +39,10 @@ contract BaseMessageLibraryTest is SynapseLibraryTest {
         assertEq(libHarness.tips(payload), encodedTips, "!tips");
         assertEq(libHarness.request(payload), encodedRequest, "!request");
         assertEq(libHarness.content(payload), rbm.content, "!content");
+        // Test hashing
+        bytes32 leftChild = keccak256(abi.encodePacked(encodedTips));
+        bytes32 rightChild = keccak256(abi.encodePacked(rbm.sender, rbm.recipient, encodedRequest, rbm.content));
+        assertEq(libHarness.leaf(payload), keccak256(abi.encodePacked(leftChild, rightChild)), "!leaf");
     }
 
     function test_isBaseMessage(uint8 length) public {
