@@ -169,7 +169,7 @@ const BridgePage = ({
     return () => {
       isCancelled = true
     }
-  }, [toToken, fromInput, time])
+  }, [toToken, fromInput, time, fromChainId])
 
   /*
   useEffect Triggers: fromInput
@@ -204,7 +204,7 @@ const BridgePage = ({
     setToChainId(newToChain)
     setToToken(newToToken)
     setToOptions({ tokens: newBridgeableTokens, chains: newBridgeableChains })
-    resetRates()
+    // resetRates()
     updateUrlParams({
       outputChain: newToChain,
       inputCurrency: newFromTokenSymbol,

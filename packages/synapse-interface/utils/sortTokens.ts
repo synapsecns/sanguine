@@ -110,7 +110,7 @@ export const sortByTokenBalance = async (
       const tokenAddress = token.addresses[chainId as keyof Token['addresses']]
       const tokenAbi = erc20ABI
       // deterministic multicall3 address on all eth chains
-      const multicallAddress = '0xcA11bde05977b3631167028862bE2a173976CA11'
+      const multicallAddress = `0xcA11bde05977b3631167028862bE2a173976CA11`
 
       if (tokenAddress === AddressZero) {
         multicallInputs.push({
@@ -121,8 +121,9 @@ export const sortByTokenBalance = async (
           args: [address],
         })
       } else {
+        const formattedTokenAddress = `0x${tokenAddress.slice(2)}`
         multicallInputs.push({
-          address: tokenAddress,
+          address: formattedTokenAddress,
           abi: tokenAbi,
           functionName: 'balanceOf',
           chainId,
