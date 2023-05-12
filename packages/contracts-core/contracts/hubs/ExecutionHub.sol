@@ -132,7 +132,7 @@ abstract contract ExecutionHub is AgentSecured, ExecutionHubEvents, IExecutionHu
         uint256 paddedTips;
         bool success;
         // Only Base/Manager message flags exist
-        if (message.flag() == MessageFlag.Base) {
+        if (header.flag() == MessageFlag.Base) {
             // This will revert if message body is not a formatted BaseMessage payload
             BaseMessage baseMessage = message.body().castToBaseMessage();
             success = _executeBaseMessage(header, proofMaturity, gasLimit, baseMessage);

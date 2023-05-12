@@ -27,6 +27,7 @@ error IncorrectNonce();
 error IncorrectSender();
 error IncorrectRecipient();
 
+error FlagOutOfRange();
 error IndexOutOfRange();
 error NonceOutOfRange();
 

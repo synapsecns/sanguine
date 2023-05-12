@@ -4,6 +4,7 @@ pragma solidity 0.8.17;
 import {MemView, MemViewLib} from "./MemView.sol";
 import {REQUEST_LENGTH, TIPS_LENGTH} from "../Constants.sol";
 import {UnformattedBaseMessage} from "../Errors.sol";
+import {MerkleMath} from "../merkle/MerkleMath.sol";
 import {Request, RequestLib} from "../stack/Request.sol";
 import {Tips, TipsLib} from "../stack/Tips.sol";
 
@@ -23,38 +24,38 @@ using BaseMessageLib for BaseMessage global;
 ///
 /// | Position   | Field     | Type    | Bytes | Description                            |
 /// | ---------- | --------- | ------- | ----- | -------------------------------------- |
-/// | [000..032) | sender    | bytes32 | 32    | Sender address on origin chain         |
-/// | [032..064) | recipient | bytes32 | 32    | Recipient address on destination chain |
-/// | [064..096) | tips      | uint256 | 32    | Encoded tips paid on origin chain      |
+/// | [000..032) | tips      | uint256 | 32    | Encoded tips paid on origin chain      |
+/// | [032..064) | sender    | bytes32 | 32    | Sender address on origin chain         |
+/// | [064..096) | recipient | bytes32 | 32    | Recipient address on destination chain |
 /// | [096..116) | request   | uint160 | 20    | Encoded request for message execution  |
 /// | [104..AAA) | content   | bytes   | ??    | Content to be passed to recipient      |
 library BaseMessageLib {
     using MemViewLib for bytes;
 
     /// @dev The variables below are not supposed to be used outside of the library directly.
-    uint256 private constant OFFSET_SENDER = 0;
-    uint256 private constant OFFSET_RECIPIENT = 32;
-    uint256 private constant OFFSET_TIPS = 64;
-    uint256 private constant OFFSET_REQUEST = OFFSET_TIPS + TIPS_LENGTH;
+    uint256 private constant OFFSET_TIPS = 0;
+    uint256 private constant OFFSET_SENDER = 32;
+    uint256 private constant OFFSET_RECIPIENT = 64;
+    uint256 private constant OFFSET_REQUEST = OFFSET_RECIPIENT + TIPS_LENGTH;
     uint256 private constant OFFSET_CONTENT = OFFSET_REQUEST + REQUEST_LENGTH;
 
     // ═══════════════════════════════════════════════ BASE MESSAGE ════════════════════════════════════════════════════
 
     /**
      * @notice Returns a formatted BaseMessage payload with provided fields.
+     * @param tips_         Encoded tips information
      * @param sender_       Sender address on origin chain
      * @param recipient_    Recipient address on destination chain
-     * @param tips_         Encoded tips information
      * @param request_      Encoded request for message execution
      * @param content_      Raw content to be passed to recipient on destination chain
      * @return Formatted base message
      */
-    function formatBaseMessage(bytes32 sender_, bytes32 recipient_, Tips tips_, Request request_, bytes memory content_)
+    function formatBaseMessage(Tips tips_, bytes32 sender_, bytes32 recipient_, Request request_, bytes memory content_)
         internal
         pure
         returns (bytes memory)
     {
-        return abi.encodePacked(sender_, recipient_, tips_, request_, content_);
+        return abi.encodePacked(tips_, sender_, recipient_, request_, content_);
     }
 
     /**
@@ -86,7 +87,20 @@ library BaseMessageLib {
         return MemView.wrap(BaseMessage.unwrap(baseMessage));
     }
 
+    /// @notice Returns baseMessage's hash: a leaf to be inserted in the "Message mini-Merkle tree".
+    function leaf(BaseMessage baseMessage) internal pure returns (bytes32) {
+        // We hash "tips" and "everything but tips" to make tips proofs easier to verify
+        return MerkleMath.getParent(
+            baseMessage.tips().leaf(), baseMessage.unwrap().sliceFrom({index_: OFFSET_SENDER}).keccak()
+        );
+    }
+
     // ═══════════════════════════════════════════ BASE MESSAGE SLICING ════════════════════════════════════════════════
+
+    /// @notice Returns encoded tips paid on origin chain.
+    function tips(BaseMessage baseMessage) internal pure returns (Tips) {
+        return TipsLib.wrapPadded((baseMessage.unwrap().indexUint({index_: OFFSET_TIPS, bytes_: TIPS_LENGTH})));
+    }
 
     /// @notice Returns sender address on origin chain.
     function sender(BaseMessage baseMessage) internal pure returns (bytes32) {
@@ -96,11 +110,6 @@ library BaseMessageLib {
     /// @notice Returns recipient address on destination chain.
     function recipient(BaseMessage baseMessage) internal pure returns (bytes32) {
         return baseMessage.unwrap().index({index_: OFFSET_RECIPIENT, bytes_: 32});
-    }
-
-    /// @notice Returns encoded tips paid on origin chain.
-    function tips(BaseMessage baseMessage) internal pure returns (Tips) {
-        return TipsLib.wrapPadded((baseMessage.unwrap().indexUint({index_: OFFSET_TIPS, bytes_: TIPS_LENGTH})));
     }
 
     /// @notice Returns an encoded request for message execution on destination chain.

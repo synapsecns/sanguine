@@ -6,22 +6,13 @@ import {ByteString} from "./ByteString.sol";
 import {HEADER_LENGTH} from "../Constants.sol";
 import {MemView, MemViewLib} from "./MemView.sol";
 import {UnformattedMessage} from "../Errors.sol";
-import {Header, HeaderLib} from "../stack/Header.sol";
+import {MerkleMath} from "../merkle/MerkleMath.sol";
+import {Header, HeaderLib, MessageFlag} from "../stack/Header.sol";
 
 /// Message is a memory over over a formatted message payload.
 type Message is uint256;
 
 using MessageLib for Message global;
-
-/// Types of messages supported by Origin-Destination
-/// - Base: message sent by protocol user, contains tips
-/// - Manager: message sent between AgentManager contracts located on different chains, no tips
-enum MessageFlag {
-    Base,
-    Manager
-}
-
-using MessageLib for MessageFlag global;
 
 /// Library for formatting the various messages supported by Origin and Destination.
 ///
@@ -29,8 +20,7 @@ using MessageLib for MessageFlag global;
 ///
 /// | Position   | Field  | Type    | Bytes | Description                                             |
 /// | ---------- | ------ | ------- | ----- | ------------------------------------------------------- |
-/// | [000..001) | flag   | uint8   | 1     | Flag specifying the type of message                     |
-/// | [001..017) | header | uint128 | 16    | Encoded general routing information for the message     |
+/// | [000..017) | header | uint136 | 17    | Encoded general routing information for the message     |
 /// | [017..AAA) | body   | bytes   | ??    | Formatted payload (according to flag) with message body |
 library MessageLib {
     using BaseMessageLib for MemView;
@@ -39,25 +29,19 @@ library MessageLib {
     using HeaderLib for MemView;
 
     /// @dev The variables below are not supposed to be used outside of the library directly.
-    uint256 private constant OFFSET_FLAG = 0;
-    uint256 private constant OFFSET_HEADER = 1;
+    uint256 private constant OFFSET_HEADER = 0;
     uint256 private constant OFFSET_BODY = OFFSET_HEADER + HEADER_LENGTH;
 
     // ══════════════════════════════════════════════════ MESSAGE ══════════════════════════════════════════════════════
 
     /**
      * @notice Returns formatted message with provided fields.
-     * @param flag_     Flag specifying the type of message
      * @param header_   Encoded general routing information for the message
      * @param body_     Formatted payload (according to flag) with message body
      * @return Formatted message
      */
-    function formatMessage(MessageFlag flag_, Header header_, bytes memory body_)
-        internal
-        pure
-        returns (bytes memory)
-    {
-        return abi.encodePacked(flag_, header_, body_);
+    function formatMessage(Header header_, bytes memory body_) internal pure returns (bytes memory) {
+        return abi.encodePacked(header_, body_);
     }
 
     /**
@@ -82,14 +66,14 @@ library MessageLib {
      */
     function isMessage(MemView memView) internal pure returns (bool) {
         uint256 length = memView.len();
-        // Check if flag and header exist in the payload
+        // Check if headers exist in the payload
         if (length < OFFSET_BODY) return false;
-        uint8 flag_ = _flag(memView);
-        // Check that Flag fits into MessageFlag enum
-        if (flag_ > uint8(type(MessageFlag).max)) return false;
+        // Check that Header is valid
+        uint256 paddedHeader = _header(memView);
+        if (!HeaderLib.isHeader(paddedHeader)) return false;
         // Check that body is formatted according to the flag
         // Only Base/Manager message flags exist
-        if (flag_ == uint8(MessageFlag.Base)) {
+        if (HeaderLib.wrapPadded(paddedHeader).flag() == MessageFlag.Base) {
             // Check if body is a formatted base message
             return _body(memView).isBaseMessage();
         } else {
@@ -105,19 +89,17 @@ library MessageLib {
 
     /// @notice Returns message's hash: a leaf to be inserted in the Merkle tree.
     function leaf(Message message) internal pure returns (bytes32) {
-        MemView memView = message.unwrap();
-        return memView.keccak();
+        // We hash header and body separately to make message proofs easier to verify
+        Header header_ = message.header();
+        // Only Base/Manager message flags exist
+        if (header_.flag() == MessageFlag.Base) {
+            return MerkleMath.getParent(header_.leaf(), message.body().castToBaseMessage().leaf());
+        } else {
+            return MerkleMath.getParent(header_.leaf(), message.body().castToCallData().leaf());
+        }
     }
 
     // ══════════════════════════════════════════════ MESSAGE SLICING ══════════════════════════════════════════════════
-
-    /// @notice Returns message's flag.
-    function flag(Message message) internal pure returns (MessageFlag) {
-        MemView memView = message.unwrap();
-        // We check that flag fits into enum, when payload is wrapped
-        // into Message, so this never reverts
-        return MessageFlag(_flag(memView));
-    }
 
     /// @notice Returns message's encoded header field.
     function header(Message message) internal pure returns (Header) {
@@ -132,9 +114,9 @@ library MessageLib {
 
     // ══════════════════════════════════════════════ PRIVATE HELPERS ══════════════════════════════════════════════════
 
-    /// @dev Returns message's flag without checking that it fits into MessageFlag enum.
-    function _flag(MemView memView) private pure returns (uint8) {
-        return uint8(memView.indexUint({index_: OFFSET_FLAG, bytes_: 1}));
+    /// @dev Returns message's padded header without checking that it is a valid header.
+    function _header(MemView memView) private pure returns (uint256) {
+        return memView.indexUint({index_: OFFSET_HEADER, bytes_: HEADER_LENGTH});
     }
 
     /// @dev Returns an untyped memory view over the body field without checking

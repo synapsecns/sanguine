@@ -59,6 +59,10 @@ contract TipsHarness {
         return Tips.unwrap(TipsLib.wrapPadded(paddedTips));
     }
 
+    function leaf(uint256 paddedTips) public pure returns (bytes32) {
+        return TipsLib.wrapPadded(paddedTips).leaf();
+    }
+
     function emptyTips() public pure returns (uint256) {
         // TODO: figure out why this leaves `TipsLib.emptyTips()` uncovered
         Tips tips = TipsLib.emptyTips();

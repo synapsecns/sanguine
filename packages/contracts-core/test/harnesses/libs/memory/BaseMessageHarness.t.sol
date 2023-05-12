@@ -63,11 +63,15 @@ contract BaseMessageHarness {
 
     // ════════════════════════════════════════════════ FORMATTERS ═════════════════════════════════════════════════════
 
-    function formatBaseMessage(bytes32 sender_, bytes32 recipient_, Tips tips_, Request request_, bytes memory content_)
+    function formatBaseMessage(Tips tips_, bytes32 sender_, bytes32 recipient_, Request request_, bytes memory content_)
         public
         pure
         returns (bytes memory)
     {
-        return BaseMessageLib.formatBaseMessage(sender_, recipient_, tips_, request_, content_);
+        return BaseMessageLib.formatBaseMessage(tips_, sender_, recipient_, request_, content_);
+    }
+
+    function leaf(bytes memory payload) public pure returns (bytes32) {
+        return payload.castToBaseMessage().leaf();
     }
 }

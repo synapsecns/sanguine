@@ -37,8 +37,8 @@ abstract contract SynapseProofs {
 
     // ══════════════════════════════════════════════ MESSAGE PROOFS ═══════════════════════════════════════════════════
 
-    function insertMessage(bytes memory msgPayload) public {
-        originGen.insert(keccak256(msgPayload));
+    function insertMessage(bytes32 msgHash) public {
+        originGen.insert(msgHash);
     }
 
     function getLatestProof(uint256 index) public view returns (bytes32[] memory proof) {

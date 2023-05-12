@@ -25,33 +25,32 @@ contract MessageLibraryTest is SynapseLibraryTest {
 
     function test_formatMessage_base(RawHeader memory rh, RawBaseMessage memory rbm) public {
         // Construct message parts: this has been tested in the dedicated unit tests
-        MessageFlag flag = MessageFlag.Base;
+        rh.flag = uint8(MessageFlag.Base);
         bytes memory body = rbm.formatBaseMessage();
-        check_formatMessage(flag, rh, body);
+        check_formatMessage(rh, body, rbm.castToBaseMessage().leaf());
     }
 
-    function check_formatMessage(MessageFlag flag, RawHeader memory rh, bytes memory body) public {
+    function check_formatMessage(RawHeader memory rh, bytes memory body, bytes32 bodyLeaf) public {
         Header header = rh.castToHeader();
-        uint128 encodedHeader = rh.encodeHeader();
+        uint136 encodedHeader = rh.encodeHeader();
         // Prepare message
-        bytes memory message = libHarness.formatMessage(flag, header, body);
+        bytes memory message = libHarness.formatMessage(header, body);
         // Test formatter
-        assertEq(message, abi.encodePacked(flag, header, body), "!formatMessage");
+        assertEq(message, abi.encodePacked(header, body), "!formatMessage");
         // Test formatting checker
         checkCastToMessage({payload: message, isMessage: true});
         // Test getters
-        assertEq(uint8(libHarness.flag(message)), uint8(flag), "!flag");
-        assertEq(libHarness.header(message), encodedHeader, "!header");
+        assertEq(Header.unwrap(libHarness.header(message)), encodedHeader, "!header");
         assertEq(libHarness.body(message), body, "!body");
         // Test hashing
-        assertEq(libHarness.leaf(message), keccak256(message), "!leaf");
+        assertEq(libHarness.leaf(message), keccak256(bytes.concat(header.leaf(), bodyLeaf)), "!leaf");
     }
 
-    function test_isMessage_flagOutOfRange(uint8 flag, RawHeader memory rh) public {
+    function test_isMessage_flagOutOfRange(uint8 flag, uint128 remainder) public {
         // Make sure flag does NOT fit into MessageFlag enum
         flag = uint8(bound(flag, uint8(type(MessageFlag).max) + 1, type(uint8).max));
         // Use incorrect flag and empty body
-        bytes memory payload = abi.encodePacked(flag, rh.encodeHeader());
+        bytes memory payload = abi.encodePacked(flag, remainder);
         checkCastToMessage({payload: payload, isMessage: false});
     }
 
@@ -63,7 +62,7 @@ contract MessageLibraryTest is SynapseLibraryTest {
     }
 
     function test_isMessage_base(RawMessage memory rm, uint8 lengthBM) public {
-        rm.flag = uint8(MessageFlag.Base);
+        rm.header.flag = uint8(MessageFlag.Base);
         rm.body = new bytes(lengthBM);
         bytes memory payload = rm.formatMessage();
         checkCastToMessage({payload: payload, isMessage: lengthBM >= MIN_BASE_MESSAGE_LENGTH});

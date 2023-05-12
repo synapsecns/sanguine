@@ -164,6 +164,11 @@ library ByteString {
         return MemView.wrap(CallData.unwrap(callData));
     }
 
+    /// @notice Returns callData's hash: a leaf to be inserted in the "Message mini-Merkle tree".
+    function leaf(CallData callData) internal pure returns (bytes32) {
+        return callData.unwrap().keccak();
+    }
+
     // ═════════════════════════════════════════════ CALLDATA SLICING ══════════════════════════════════════════════════
 
     /**

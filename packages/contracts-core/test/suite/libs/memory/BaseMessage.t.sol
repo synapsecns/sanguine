@@ -25,10 +25,10 @@ contract BaseMessageLibraryTest is SynapseLibraryTest {
         Request request = rbm.request.castToRequest();
         uint192 encodedRequest = rbm.request.encodeRequest();
         // Test formatting
-        bytes memory payload = libHarness.formatBaseMessage(rbm.sender, rbm.recipient, tips, request, rbm.content);
+        bytes memory payload = libHarness.formatBaseMessage(tips, rbm.sender, rbm.recipient, request, rbm.content);
         assertEq(
             payload,
-            abi.encodePacked(rbm.sender, rbm.recipient, encodedTips, encodedRequest, rbm.content),
+            abi.encodePacked(encodedTips, rbm.sender, rbm.recipient, encodedRequest, rbm.content),
             "!formatBaseMessage"
         );
         // Test formatting checker
@@ -39,6 +39,10 @@ contract BaseMessageLibraryTest is SynapseLibraryTest {
         assertEq(libHarness.tips(payload), encodedTips, "!tips");
         assertEq(libHarness.request(payload), encodedRequest, "!request");
         assertEq(libHarness.content(payload), rbm.content, "!content");
+        // Test hashing
+        bytes32 leftChild = keccak256(abi.encodePacked(encodedTips));
+        bytes32 rightChild = keccak256(abi.encodePacked(rbm.sender, rbm.recipient, encodedRequest, rbm.content));
+        assertEq(libHarness.leaf(payload), keccak256(abi.encodePacked(leftChild, rightChild)), "!leaf");
     }
 
     function test_isBaseMessage(uint8 length) public {
