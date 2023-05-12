@@ -7,11 +7,7 @@ import { AddressZero, Zero } from '@ethersproject/constants'
 import { BigNumber } from '@ethersproject/bignumber'
 import { ActionCardFooter } from '@components/ActionCardFooter'
 import { fetchSigner, getNetwork, switchNetwork } from '@wagmi/core'
-import {
-  sortByTokenBalance,
-  _sortByTokenBalance,
-  sortByVisibilityRank,
-} from '@utils/sortTokens'
+import { sortByTokenBalance, sortByVisibilityRank } from '@utils/sortTokens'
 import { calculateExchangeRate } from '@utils/calculateExchangeRate'
 import {
   BRIDGABLE_TOKENS,
@@ -159,6 +155,10 @@ const BridgePage = ({
           fromInput.bigNum.gt(Zero)
         ) {
           getQuote()
+            .then((response) =>
+              console.log('response from getQuote: ', response)
+            )
+            .catch((error) => console.log('error from getQuote: ', error))
         } else {
           setBridgeQuote(EMPTY_BRIDGE_QUOTE)
         }

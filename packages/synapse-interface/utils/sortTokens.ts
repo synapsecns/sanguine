@@ -1,5 +1,5 @@
 import { BigNumber } from 'ethers'
-import { multicall } from '@wagmi/core'
+import { multicall, Address } from '@wagmi/core'
 import { Zero, AddressZero } from '@ethersproject/constants'
 
 import multicallABI from '../constants/abis/multicall.json'
@@ -121,7 +121,7 @@ export const sortByTokenBalance = async (
           args: [address],
         })
       } else {
-        const formattedTokenAddress = `0x${tokenAddress.slice(2)}`
+        const formattedTokenAddress: Address = `0x${tokenAddress.slice(2)}`
         multicallInputs.push({
           address: formattedTokenAddress,
           abi: tokenAbi,
