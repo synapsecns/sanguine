@@ -20,6 +20,7 @@ import {StateHub} from "./hubs/StateHub.sol";
 
 contract Origin is StateHub, OriginEvents, InterfaceOrigin {
     using MemViewLib for bytes;
+    using MessageLib for bytes;
     using TipsLib for bytes;
     using TypeCasts for address;
 
@@ -118,7 +119,7 @@ contract Origin is StateHub, OriginEvents, InterfaceOrigin {
         // Format the full message payload
         bytes memory msgPayload = MessageLib.formatMessage(header, body);
         // Insert new leaf into the Origin Merkle Tree and save the updated state
-        messageHash = keccak256(msgPayload);
+        messageHash = msgPayload.castToMessage().leaf();
         _insertAndSave(messageHash);
         // Emit event with message information
         emit Sent(messageHash, messageNonce, destination, msgPayload);

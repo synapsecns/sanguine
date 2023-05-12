@@ -27,10 +27,10 @@ contract MessageLibraryTest is SynapseLibraryTest {
         // Construct message parts: this has been tested in the dedicated unit tests
         rh.flag = uint8(MessageFlag.Base);
         bytes memory body = rbm.formatBaseMessage();
-        check_formatMessage(rh, body);
+        check_formatMessage(rh, body, rbm.castToBaseMessage().leaf());
     }
 
-    function check_formatMessage(RawHeader memory rh, bytes memory body) public {
+    function check_formatMessage(RawHeader memory rh, bytes memory body, bytes32 bodyLeaf) public {
         Header header = rh.castToHeader();
         uint136 encodedHeader = rh.encodeHeader();
         // Prepare message
@@ -43,7 +43,7 @@ contract MessageLibraryTest is SynapseLibraryTest {
         assertEq(Header.unwrap(libHarness.header(message)), encodedHeader, "!header");
         assertEq(libHarness.body(message), body, "!body");
         // Test hashing
-        assertEq(libHarness.leaf(message), keccak256(message), "!leaf");
+        assertEq(libHarness.leaf(message), keccak256(bytes.concat(header.leaf(), bodyLeaf)), "!leaf");
     }
 
     function test_isMessage_flagOutOfRange(uint8 flag, uint128 remainder) public {

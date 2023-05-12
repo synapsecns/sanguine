@@ -6,6 +6,7 @@ import {ByteString} from "./ByteString.sol";
 import {HEADER_LENGTH} from "../Constants.sol";
 import {MemView, MemViewLib} from "./MemView.sol";
 import {UnformattedMessage} from "../Errors.sol";
+import {MerkleMath} from "../merkle/MerkleMath.sol";
 import {Header, HeaderLib, MessageFlag} from "../stack/Header.sol";
 
 /// Message is a memory over over a formatted message payload.
@@ -88,8 +89,14 @@ library MessageLib {
 
     /// @notice Returns message's hash: a leaf to be inserted in the Merkle tree.
     function leaf(Message message) internal pure returns (bytes32) {
-        MemView memView = message.unwrap();
-        return memView.keccak();
+        // We hash header and body separately to make message proofs easier to verify
+        Header header_ = message.header();
+        // Only Base/Manager message flags exist
+        if (header_.flag() == MessageFlag.Base) {
+            return MerkleMath.getParent(header_.leaf(), message.body().castToBaseMessage().leaf());
+        } else {
+            return MerkleMath.getParent(header_.leaf(), message.body().castToCallData().leaf());
+        }
     }
 
     // ══════════════════════════════════════════════ MESSAGE SLICING ══════════════════════════════════════════════════
