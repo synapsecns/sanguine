@@ -75,8 +75,8 @@ export const sortByVisibilityRank = (tokens: Token[]) => {
 
 const sortArrayByBalance = (array) => {
   return array.sort((a, b) => {
-    const balanceA = BigInt(a.balance)
-    const balanceB = BigInt(b.balance)
+    const balanceA = BigInt(a.balance || '')
+    const balanceB = BigInt(b.balance || '')
 
     if (balanceA < balanceB) {
       return 1
