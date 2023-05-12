@@ -118,7 +118,6 @@ const BridgePage = ({
         toTokenSymbolUrl ? String(toTokenSymbolUrl) : undefined,
         fromChainId
       )
-    console.log('bridgeableToken', bridgeableToken, newToChain)
     resetTokenPermutation(
       tempFromToken,
       newToChain,
@@ -155,10 +154,8 @@ const BridgePage = ({
           fromInput.bigNum.gt(Zero)
         ) {
           getQuote()
-            .then((response) =>
-              console.log('response from getQuote: ', response)
-            )
-            .catch((error) => console.log('error from getQuote: ', error))
+            .then()
+            .catch((error) => console.error('getQuote error: ', error))
         } else {
           setBridgeQuote(EMPTY_BRIDGE_QUOTE)
         }
@@ -204,7 +201,6 @@ const BridgePage = ({
     setToChainId(newToChain)
     setToToken(newToToken)
     setToOptions({ tokens: newBridgeableTokens, chains: newBridgeableChains })
-    // resetRates()
     updateUrlParams({
       outputChain: newToChain,
       inputCurrency: newFromTokenSymbol,
