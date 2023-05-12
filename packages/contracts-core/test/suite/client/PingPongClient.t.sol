@@ -2,7 +2,7 @@
 pragma solidity 0.8.17;
 
 import {PingPongClient} from "../../../contracts/client/PingPongClient.sol";
-import {Request, RequestLib} from "../../../contracts/libs/Request.sol";
+import {Request, RequestLib} from "../../../contracts/libs/stack/Request.sol";
 import {InterfaceOrigin} from "../../../contracts/interfaces/InterfaceOrigin.sol";
 
 import {OriginMock} from "../../mocks/OriginMock.t.sol";

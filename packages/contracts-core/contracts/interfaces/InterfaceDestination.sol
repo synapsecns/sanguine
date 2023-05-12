@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.17;
 
-import {ChainGas, GasData} from "../libs/GasData.sol";
+import {ChainGas, GasData} from "../libs/stack/GasData.sol";
 
 interface InterfaceDestination {
     /**

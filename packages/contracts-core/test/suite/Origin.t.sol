@@ -7,7 +7,7 @@ import {IStateHub} from "../../contracts/interfaces/IStateHub.sol";
 import {EthTransferFailed, InsufficientEthBalance, TipsValueTooLow} from "../../contracts/libs/Errors.sol";
 import {SNAPSHOT_MAX_STATES} from "../../contracts/libs/Constants.sol";
 import {SystemEntity} from "../../contracts/libs/Structures.sol";
-import {TipsLib} from "../../contracts/libs/Tips.sol";
+import {TipsLib} from "../../contracts/libs/stack/Tips.sol";
 
 import {InterfaceOrigin} from "../../contracts/Origin.sol";
 import {Versioned} from "../../contracts/base/Version.sol";

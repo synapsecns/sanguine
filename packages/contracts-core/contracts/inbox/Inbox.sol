@@ -2,16 +2,16 @@
 pragma solidity 0.8.17;
 
 // ══════════════════════════════ LIBRARY IMPORTS ══════════════════════════════
-import {Attestation, AttestationLib} from "../libs/Attestation.sol";
+import {Attestation, AttestationLib} from "../libs/memory/Attestation.sol";
 import {
     CallerNotDestination, IncorrectAgentDomain, IncorrectSnapshotRoot, MustBeSynapseDomain
 } from "../libs/Errors.sol";
 import {SYNAPSE_DOMAIN} from "../libs/Constants.sol";
-import {ChainGas} from "../libs/GasData.sol";
-import {Receipt, ReceiptBody, ReceiptLib} from "../libs/Receipt.sol";
-import {Snapshot, SnapshotLib} from "../libs/Snapshot.sol";
+import {ChainGas} from "../libs/stack/GasData.sol";
+import {Receipt, ReceiptBody, ReceiptLib} from "../libs/memory/Receipt.sol";
+import {Snapshot, SnapshotLib} from "../libs/memory/Snapshot.sol";
 import {AgentStatus} from "../libs/Structures.sol";
-import {Tips} from "../libs/Tips.sol";
+import {Tips} from "../libs/stack/Tips.sol";
 // ═════════════════════════════ INTERNAL IMPORTS ══════════════════════════════
 import {StatementInbox} from "./StatementInbox.sol";
 import {MessagingBase} from "../base/MessagingBase.sol";

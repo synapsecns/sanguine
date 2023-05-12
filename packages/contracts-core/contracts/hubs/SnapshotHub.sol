@@ -2,14 +2,14 @@
 pragma solidity 0.8.17;
 
 // ══════════════════════════════ LIBRARY IMPORTS ══════════════════════════════
-import {Attestation, AttestationLib} from "../libs/Attestation.sol";
+import {Attestation, AttestationLib} from "../libs/memory/Attestation.sol";
 import {
     IncorrectAttestation, IncorrectState, IndexOutOfRange, NonceOutOfRange, OutdatedNonce
 } from "../libs/Errors.sol";
-import {ChainGas, GasData, GasDataLib} from "../libs/GasData.sol";
-import {MerkleMath} from "../libs/MerkleMath.sol";
-import {Snapshot, SnapshotLib} from "../libs/Snapshot.sol";
-import {State, StateLib} from "../libs/State.sol";
+import {ChainGas, GasData, GasDataLib} from "../libs/stack/GasData.sol";
+import {MerkleMath} from "../libs/merkle/MerkleMath.sol";
+import {Snapshot, SnapshotLib} from "../libs/memory/Snapshot.sol";
+import {State, StateLib} from "../libs/memory/State.sol";
 // ═════════════════════════════ INTERNAL IMPORTS ══════════════════════════════
 import {AgentSecured} from "../base/AgentSecured.sol";
 import {SnapshotHubEvents} from "../events/SnapshotHubEvents.sol";

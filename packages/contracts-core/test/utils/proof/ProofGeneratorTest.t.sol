@@ -3,7 +3,7 @@ pragma solidity 0.8.17;
 
 import {Test} from "forge-std/Test.sol";
 
-import {BaseTree, MerkleMath} from "../../../contracts/libs/MerkleTree.sol";
+import {BaseTree, MerkleMath} from "../../../contracts/libs/merkle/MerkleTree.sol";
 import {ORIGIN_TREE_HEIGHT, ProofGenerator} from "./ProofGenerator.t.sol";
 
 // solhint-disable func-name-mixedcase

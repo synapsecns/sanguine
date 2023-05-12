@@ -2,14 +2,14 @@
 pragma solidity 0.8.17;
 
 // ══════════════════════════════ LIBRARY IMPORTS ══════════════════════════════
-import {BaseMessageLib} from "./libs/BaseMessage.sol";
+import {BaseMessageLib} from "./libs/memory/BaseMessage.sol";
 import {MAX_CONTENT_BYTES} from "./libs/Constants.sol";
 import {ContentLengthTooBig, EthTransferFailed, InsufficientEthBalance} from "./libs/Errors.sol";
-import {GasData, GasDataLib} from "./libs/GasData.sol";
-import {MemView, MemViewLib} from "./libs/MemView.sol";
-import {Header, HeaderLib, MessageFlag} from "./libs/Message.sol";
-import {Request, RequestLib} from "./libs/Request.sol";
-import {Tips, TipsLib} from "./libs/Tips.sol";
+import {GasData, GasDataLib} from "./libs/stack/GasData.sol";
+import {MemView, MemViewLib} from "./libs/memory/MemView.sol";
+import {Header, HeaderLib, MessageFlag} from "./libs/memory/Message.sol";
+import {Request, RequestLib} from "./libs/stack/Request.sol";
+import {Tips, TipsLib} from "./libs/stack/Tips.sol";
 import {TypeCasts} from "./libs/TypeCasts.sol";
 // ═════════════════════════════ INTERNAL IMPORTS ══════════════════════════════
 import {AgentSecured} from "./base/AgentSecured.sol";

@@ -3,7 +3,7 @@ pragma solidity 0.8.17;
 
 import {Test} from "forge-std/Test.sol";
 
-import {BaseTree, MerkleMath, AGENT_TREE_HEIGHT} from "../../../contracts/libs/MerkleTree.sol";
+import {BaseTree, MerkleMath, AGENT_TREE_HEIGHT} from "../../../contracts/libs/merkle/MerkleTree.sol";
 import {DynamicProofGenerator} from "./DynamicProofGenerator.t.sol";
 
 import {Random} from "../libs/Random.t.sol";

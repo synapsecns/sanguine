@@ -11,7 +11,7 @@ import {
     SynapseDomainForbidden,
     WithdrawTipsOptimisticPeriod
 } from "../libs/Errors.sol";
-import {MerkleMath} from "../libs/MerkleMath.sol";
+import {MerkleMath} from "../libs/merkle/MerkleMath.sol";
 import {AgentFlag, AgentStatus} from "../libs/Structures.sol";
 // ═════════════════════════════ INTERNAL IMPORTS ══════════════════════════════
 import {AgentManager, IAgentManager} from "./AgentManager.sol";
