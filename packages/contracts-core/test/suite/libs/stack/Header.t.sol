@@ -33,6 +33,8 @@ contract HeaderLibraryTest is SynapseLibraryTest {
         assertEq(libHarness.nonce(encoded), rh.nonce, "!nonce");
         assertEq(libHarness.destination(encoded), rh.destination, "!destination");
         assertEq(libHarness.optimisticPeriod(encoded), rh.optimisticPeriod, "!optimisticPeriod");
+        // Test hashing
+        assertEq(libHarness.leaf(encoded), keccak256(abi.encode(expected)), "!leaf");
     }
 
     function test_headerLength(RawHeader memory rh) public {

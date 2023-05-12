@@ -80,6 +80,17 @@ library HeaderLib {
         return Header.wrap(uint136(paddedHeader));
     }
 
+    /// @notice Returns header's hash: a leaf to be inserted in the "Message mini-Merkle tree".
+    function leaf(Header header) internal pure returns (bytes32 hashedHeader) {
+        // solhint-disable-next-line no-inline-assembly
+        assembly {
+            // Store header in scratch space
+            mstore(0, header)
+            // Compute hash of header padded to 32 bytes
+            hashedHeader := keccak256(0, 32)
+        }
+    }
+
     // ══════════════════════════════════════════════ HEADER SLICING ═══════════════════════════════════════════════════
 
     /// @notice Returns header's flag field

@@ -57,4 +57,8 @@ contract HeaderHarness {
         Header header = HeaderLib.wrapPadded(paddedHeader);
         return Header.unwrap(header);
     }
+
+    function leaf(uint256 paddedHeader) public pure returns (bytes32) {
+        return HeaderLib.wrapPadded(paddedHeader).leaf();
+    }
 }
