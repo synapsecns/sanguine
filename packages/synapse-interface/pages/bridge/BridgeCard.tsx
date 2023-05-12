@@ -14,7 +14,7 @@ import { PageHeader } from '@components/PageHeader'
 import { TokenSlideOver } from '@/components/misc/TokenSlideOver'
 import { ChainSlideOver } from '@/components/misc/ChainSlideOver'
 import { BigNumber } from '@ethersproject/bignumber'
-import { Zero, MaxInt256 } from '@ethersproject/constants'
+import { Zero, AddressZero } from '@ethersproject/constants'
 import { formatBNToString } from '@bignumber/format'
 import { SECTION_TRANSITION_PROPS, TRANSITION_PROPS } from '@styles/transitions'
 import { approveToken } from '@/utils/approveToken'
@@ -169,6 +169,8 @@ const BridgeCard = ({
   } else if (bridgeQuote.feeAmount.eq(0) && !fromInput?.bigNum?.eq(0)) {
     btnLabel = `Amount must be greater than fee`
   } else if (
+    fromToken.addresses[fromChainId] !== '' &&
+    fromToken.addresses[fromChainId] !== AddressZero &&
     bridgeQuote?.allowance &&
     bridgeQuote?.allowance?.lt(fromInput?.bigNum)
   ) {

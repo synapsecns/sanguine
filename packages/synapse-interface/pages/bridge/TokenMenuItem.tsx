@@ -7,6 +7,7 @@ import {
   getBorderStyleForCoinHover,
   getMenuItemStyleForCoinCombined,
 } from '@styles/tokens'
+import { memo } from 'react'
 import { Token } from '@/utils/types'
 import TokenBalance from '@components/TokenBalance'
 const TokenMenuItem = ({
@@ -63,31 +64,34 @@ const TokenMenuItem = ({
   )
 }
 
-const ButtonContent = ({
-  token,
-  chainId,
-  tokenBalance,
-}: {
-  token: Token
-  chainId: number
-  tokenBalance: BigNumber
-}) => {
-  return (
-    <div className="flex items-center w-full">
-      <Image
-        alt="token image"
-        className="w-10 h-10 ml-2 mr-4 rounded-full"
-        src={token?.icon}
-      />
-      <CoinOnChain token={token} chainId={chainId} />
-      <TokenBalance
-        token={token}
-        chainId={chainId}
-        tokenBalance={tokenBalance}
-      />
-    </div>
-  )
-}
+const ButtonContent = memo(
+  ({
+    token,
+    chainId,
+    tokenBalance,
+  }: {
+    token: Token
+    chainId: number
+    tokenBalance: BigNumber
+  }) => {
+    console.log('rendering button content')
+    return (
+      <div className="flex items-center w-full">
+        <img
+          alt="token image"
+          className="w-10 h-10 ml-2 mr-4 rounded-full"
+          src={token?.icon?.src}
+        />
+        <CoinOnChain token={token} chainId={chainId} />
+        <TokenBalance
+          token={token}
+          chainId={chainId}
+          tokenBalance={tokenBalance}
+        />
+      </div>
+    )
+  }
+)
 
 const CoinOnChain = ({ token, chainId }: { token: Token; chainId: number }) => {
   const chain = CHAINS_BY_ID?.[chainId]

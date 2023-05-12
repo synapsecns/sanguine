@@ -9,6 +9,8 @@ import { ActionCardFooter } from '@components/ActionCardFooter'
 import { fetchSigner, getNetwork, switchNetwork } from '@wagmi/core'
 import { sortByTokenBalance, sortByVisibilityRank } from '@utils/sortTokens'
 import { calculateExchangeRate } from '@utils/calculateExchangeRate'
+import { subtractSlippage } from '@utils/slippage'
+
 import {
   BRIDGABLE_TOKENS,
   BRIDGE_CHAINS_BY_TYPE,
@@ -50,7 +52,7 @@ const BridgePage = ({
   fromChainId: number
 }) => {
   const router = useRouter()
-  const SynapseSDK = useSynapseContext()
+  const { synapseSDK } = useSynapseContext()
   const [time, setTime] = useState(Date.now())
   const [fromToken, setFromToken] = useState(DEFAULT_FROM_TOKEN)
   const [fromTokens, setFromTokens] = useState([])
@@ -497,7 +499,7 @@ const BridgePage = ({
   const getQuote = async () => {
     setIsQuoteLoading(true)
     const { feeAmount, routerAddress, maxAmountOut, originQuery, destQuery } =
-      await SynapseSDK.bridgeQuote(
+      await synapseSDK.bridgeQuote(
         fromChainId,
         toChainId,
         fromToken.addresses[fromChainId],
@@ -550,8 +552,8 @@ const BridgePage = ({
     const wallet = await fetchSigner({
       chainId: fromChainId,
     })
-
-    const data = await SynapseSDK.bridge(
+    const adjustedFrom = subtractSlippage(fromInput.bigNum, 'ONE_TENTH', null)
+    const data = await synapseSDK.bridge(
       address,
       fromChainId,
       toChainId,
