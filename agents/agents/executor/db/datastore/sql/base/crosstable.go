@@ -76,7 +76,7 @@ func (s Store) GetEarliestStateInRange(ctx context.Context, chainID, destination
 							INNER JOIN
 							(SELECT %s, %s FROM %s WHERE %s = ?) as attestationTable
 							ON stateTable.%s = attestationTable.%s
-						)
+						) LIMIT 1
 					)
 				)`,
 			statesTableName, ChainIDFieldName, SnapshotRootFieldName,
