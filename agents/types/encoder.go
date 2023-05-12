@@ -37,12 +37,12 @@ func EncodeGasData(gasData GasData) ([]byte, error) {
 	binary.BigEndian.PutUint16(dataPriceBytes, gasData.DataPrice())
 	binary.BigEndian.PutUint16(gasPriceBytes, gasData.GasPrice())
 
-	b = append(b, gasPriceBytes[:]...)
-	b = append(b, dataPriceBytes[:]...)
-	b = append(b, execBufferBytes[:]...)
-	b = append(b, amortAttCostBytes[:]...)
-	b = append(b, etherPriceBytes[:]...)
-	b = append(b, markupBytes[:]...)
+	b = append(b, gasPriceBytes...)
+	b = append(b, dataPriceBytes...)
+	b = append(b, execBufferBytes...)
+	b = append(b, amortAttCostBytes...)
+	b = append(b, etherPriceBytes...)
+	b = append(b, markupBytes...)
 
 	return b, nil
 }
@@ -76,14 +76,14 @@ func EncodeChainGas(chainGas ChainGas) ([]byte, error) {
 	domainBytes := make([]byte, uint32Len)
 	domain := chainGas.Domain()
 	binary.BigEndian.PutUint32(domainBytes, domain)
-	b = append(b, domainBytes[:]...)
+	b = append(b, domainBytes...)
 
 	gasDataEncoded, err := EncodeGasData(chainGas.GasData())
 	if err != nil {
 		return nil, fmt.Errorf("failed to encode gas data for chain gas %w", err)
 	}
 
-	b = append(b, gasDataEncoded[:]...)
+	b = append(b, gasDataEncoded...)
 
 	return b, nil
 }
@@ -126,7 +126,7 @@ func EncodeState(state State) ([]byte, error) {
 	if err != nil {
 		return nil, fmt.Errorf("failed to encode gas data for state %w", err)
 	}
-	b = append(b, gasDataEncoded[:]...)
+	b = append(b, gasDataEncoded...)
 
 	return b, nil
 }
@@ -381,8 +381,8 @@ func DecodeBaseMessage(toDecode []byte) (BaseMessage, error) {
 	recipientBytes := toDecode[BaseMessageRecipientOffset:BaseMessageTipsOffset]
 	var sender [32]byte
 	var recipient [32]byte
-	copy(sender[:], senderBytes[:])
-	copy(recipient[:], recipientBytes[:])
+	copy(sender[:], senderBytes)
+	copy(recipient[:], recipientBytes)
 
 	encodedTips := toDecode[BaseMessageTipsOffset:BaseMessageRequestOffset]
 	tips, err := DecodeTips(encodedTips)

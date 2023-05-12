@@ -9,7 +9,7 @@ const (
 	GasLimitOffset = 0
 	// GasDropOffset is the gas drop offset.
 	GasDropOffset = 8
-	// RequestSize
+	// RequestSize is the size of the request.
 	RequestSize = 20
 )
 

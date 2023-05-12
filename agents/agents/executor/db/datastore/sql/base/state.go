@@ -162,6 +162,7 @@ func (s Store) GetSnapshotRootsInNonceRange(ctx context.Context, chainID uint32,
 }
 
 // DBStateToState converts a DBState to a State.
+// nolint:cyclop
 func DBStateToState(dbState types.DBState) State {
 	var state State
 

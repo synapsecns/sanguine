@@ -218,7 +218,7 @@ func (e *ExecutorSuite) TestMerkleInsert() {
 	header := types.NewHeader(chainID, 1, destination, optimisticSeconds[0])
 
 	var msgSender [32]byte
-	copy(msgSender[:], transactOpts.TransactOpts.From.Bytes()[:])
+	copy(msgSender[:], transactOpts.TransactOpts.From.Bytes())
 	msgTips := types.NewTips(big.NewInt(0), big.NewInt(0), big.NewInt(0), big.NewInt(0))
 	msgRequest := types.NewRequest(uint64(0), big.NewInt(0))
 	baseMessage := types.NewBaseMessage(msgSender, recipients[0], msgTips, msgRequest, messageBytes)
@@ -270,7 +270,7 @@ func (e *ExecutorSuite) TestMerkleInsert() {
 
 	header = types.NewHeader(chainID, 2, destination, optimisticSeconds[1])
 
-	copy(msgSender[:], transactOpts.TransactOpts.From.Bytes()[:])
+	copy(msgSender[:], transactOpts.TransactOpts.From.Bytes())
 	msgTips = types.NewTips(big.NewInt(0), big.NewInt(0), big.NewInt(0), big.NewInt(0))
 	msgRequest = types.NewRequest(uint64(0), big.NewInt(0))
 	baseMessage = types.NewBaseMessage(msgSender, recipients[1], msgTips, msgRequest, messageBytes)
@@ -598,7 +598,7 @@ func (e *ExecutorSuite) TestExecutor() {
 	header := types.NewHeader(uint32(e.TestBackendOrigin.GetChainID()), nonce, uint32(e.TestBackendDestination.GetChainID()), optimisticSeconds)
 
 	var msgSender [32]byte
-	copy(msgSender[:], txContextOrigin.TransactOpts.From.Bytes()[:])
+	copy(msgSender[:], txContextOrigin.TransactOpts.From.Bytes())
 	msgTips := types.NewTips(big.NewInt(0), big.NewInt(0), big.NewInt(0), big.NewInt(0))
 	msgRequest := types.NewRequest(uint64(0), big.NewInt(0))
 	baseMessage := types.NewBaseMessage(msgSender, recipient, msgTips, msgRequest, body)

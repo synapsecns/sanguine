@@ -150,6 +150,7 @@ func TestChainGasEncodeDecode(t *testing.T) {
 	Nil(t, err)
 
 	decodedChainGas, err := types.DecodeChainGas(encodedChainGas)
+	Nil(t, err)
 
 	Equal(t, chainGas.Domain(), decodedChainGas.Domain())
 	Equal(t, chainGas.GasData().GasPrice(), decodedChainGas.GasData().GasPrice())

@@ -32,7 +32,7 @@ func (t *TxQueueSuite) TestGetNonce() {
 
 func (t *TxQueueSuite) TestGetTransactor() {
 	destinationDomain := uint32(t.TestBackendDestination.GetChainID())
-	
+
 	auth := t.TestBackendOrigin.GetTxContext(t.GetTestContext(), nil)
 
 	paddedRequest := big.NewInt(0)

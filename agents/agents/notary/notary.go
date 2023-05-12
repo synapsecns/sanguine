@@ -9,7 +9,6 @@ import (
 	"time"
 
 	"github.com/ethereum/go-ethereum/common"
-	ethTypes "github.com/ethereum/go-ethereum/core/types"
 	"github.com/synapsecns/sanguine/agents/config"
 	"github.com/synapsecns/sanguine/agents/contracts/summit"
 	"github.com/synapsecns/sanguine/agents/domains"
@@ -82,20 +81,6 @@ func NewNotary(ctx context.Context, cfg config.AgentConfig, handler metrics.Hand
 	notary.handler = handler
 
 	return notary, nil
-}
-
-func (n *Notary) logToAttestation(log ethTypes.Log) (*types.Attestation, error) {
-	attestationEvent, ok := n.summitParser.ParseAttestationSaved(log)
-	if !ok {
-		return nil, fmt.Errorf("could not parse attestation")
-	}
-
-	attestation, err := types.DecodeAttestation(attestationEvent)
-	if err != nil {
-		return nil, fmt.Errorf("could not decode attestation: %w", err)
-	}
-
-	return &attestation, nil
 }
 
 //nolint:cyclop
@@ -178,7 +163,7 @@ func (n *Notary) checkDidSubmitNotaryLatestAttestation(parentCtx context.Context
 		return
 	}
 
-	if n.didSubmitMyLatestNotaryAttestation == true {
+	if n.didSubmitMyLatestNotaryAttestation {
 		return
 	}
 
@@ -367,7 +352,7 @@ func (n *Notary) submitMyLatestAttestation(parentCtx context.Context) {
 		return
 	}
 
-	if n.didSubmitMyLatestNotaryAttestation == true {
+	if n.didSubmitMyLatestNotaryAttestation {
 		return
 	}
 

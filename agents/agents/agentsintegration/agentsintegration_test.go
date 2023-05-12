@@ -309,7 +309,7 @@ func (u *AgentsIntegrationSuite) TestAgentsE2E() {
 		return state.Nonce() >= uint32(1)
 	})
 
-	//waitChan := make(chan bool, 1)
+	// waitChan := make(chan bool, 1)
 	// Make sure there is one executable message in the database.
 	u.Eventually(func() bool {
 		mask := execTypes.DBMessage{
@@ -318,13 +318,9 @@ func (u *AgentsIntegrationSuite) TestAgentsE2E() {
 		}
 		executableMessages, err := u.ExecutorTestDB.GetUnsetMinimumTimeMessages(u.GetTestContext(), mask, 1)
 		u.Nil(err)
-		if len(executableMessages) == 1 {
-			//waitChan <- true
-			return true
-		}
-		return false
+		return len(executableMessages) == 1
 	})
-	//<-waitChan
+	// <-waitChan
 
 	/*watchCtx, cancel := context.WithCancel(u.GetTestContext())
 	defer cancel()
