@@ -41,7 +41,6 @@ const BridgeWatcher = ({
     const iface = new Interface(SYNAPSE_BRIDGE_ABI)
     let allFromEvents = []
     for (let i = 0; i < GETLOGS_REQUEST_COUNT; i++) {
-      console.log('LOOP', i)
       const fromEvents = await getLogs(
         currentFromBlock - GETLOGS_SIZE * i,
         provider,
@@ -60,7 +59,6 @@ const BridgeWatcher = ({
         }
       })
       .filter((log) => checkTxIn(log))
-    console.log('ALL', parsedLogs)
 
     const [inputTimestamps, transactionReceipts] = await Promise.all([
       Promise.all(parsedLogs.map((log) => getBlock(log.blockNumber, provider))),
@@ -100,7 +98,6 @@ const BridgeWatcher = ({
   }, [fromChainId, fromSigner])
   useEffect(() => {
     if (fromSynapseContract) {
-      console.log('GETTING FROM BRIDGE EVENTS', fromSynapseContract)
       getFromBridgeEvents().then((txs) => {
         setFromTransactions(txs)
       })

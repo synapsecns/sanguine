@@ -80,13 +80,11 @@ const DestinationTx = memo((fromEvent: BridgeWatcherTx) => {
         transactionReceipt
       )
     }
-    console.log('PARSED LOGS', parsedLog)
 
     return null
   }
 
   useEffect(() => {
-    console.log(toSigner, fromEvent)
     if (toSigner && fromEvent) {
       const toSynapseContract = new Contract(
         BRIDGE_CONTRACTS[fromEvent.toChainId],
@@ -98,7 +96,6 @@ const DestinationTx = memo((fromEvent: BridgeWatcherTx) => {
   }, [fromEvent, toSigner])
   useEffect(() => {
     if (toSynapseContract) {
-      console.log('GETTING FROM BRIDGE EVENTS', toSynapseContract)
       getToBridgeEvent().then((tx) => {
         setToEvent(tx)
       })
