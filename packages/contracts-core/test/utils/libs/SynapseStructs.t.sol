@@ -5,7 +5,8 @@ import {ByteString, CallData, MemView, MemViewLib} from "../../../contracts/libs
 
 import {BaseMessage, BaseMessageLib, Tips, TipsLib} from "../../../contracts/libs/memory/BaseMessage.sol";
 import {ChainGas, GasData, GasDataLib} from "../../../contracts/libs/stack/GasData.sol";
-import {Header, HeaderLib, Message, MessageFlag, MessageLib} from "../../../contracts/libs/memory/Message.sol";
+import {Header, HeaderLib, MessageFlag} from "../../../contracts/libs/stack/Header.sol";
+import {Message, MessageLib} from "../../../contracts/libs/memory/Message.sol";
 import {Number, NumberLib} from "../../../contracts/libs/stack/Number.sol";
 import {Receipt, ReceiptBody, ReceiptLib} from "../../../contracts/libs/memory/Receipt.sol";
 import {Request, RequestLib} from "../../../contracts/libs/stack/Request.sol";
@@ -17,6 +18,7 @@ import {
 import {Attestation, AttestationLib} from "../../../contracts/libs/memory/Attestation.sol";
 
 struct RawHeader {
+    uint8 flag;
     uint32 origin;
     uint32 nonce;
     uint32 destination;
@@ -194,17 +196,24 @@ library CastLib {
         ptr = rm.formatMessage().castToMessage();
     }
 
-    function encodeHeader(RawHeader memory rh) internal pure returns (uint128 encodedHeader) {
+    function encodeHeader(RawHeader memory rh) internal pure returns (uint136 encodedHeader) {
         encodedHeader = Header.unwrap(rh.castToHeader());
     }
 
     function castToHeader(RawHeader memory rh) internal pure returns (Header header) {
+        // Explicit revert when out of range
+        require(rh.flag <= uint8(type(MessageFlag).max), "Flag out of range");
         header = HeaderLib.encodeHeader({
+            flag_: MessageFlag(rh.flag),
             origin_: rh.origin,
             nonce_: rh.nonce,
             destination_: rh.destination,
             optimisticPeriod_: rh.optimisticPeriod
         });
+    }
+
+    function boundFlag(RawHeader memory rh) internal pure {
+        rh.flag = rh.flag % (uint8(type(MessageFlag).max) + 1);
     }
 
     function encodeRequest(RawRequest memory rr) internal pure returns (uint192 encodedReq) {
