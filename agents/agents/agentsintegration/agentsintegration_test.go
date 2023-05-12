@@ -291,23 +291,6 @@ func (u *AgentsIntegrationSuite) TestAgentsE2E() {
 		_ = notary.Start(u.GetTestContext())
 	}()
 
-	waitChan := make(chan bool, 1)
-
-	// Make sure there is one executable message in the database.
-	u.Eventually(func() bool {
-		mask := execTypes.DBMessage{
-			ChainID:     &chainID,
-			Destination: &destination,
-		}
-		executableMessages, err := u.ExecutorTestDB.GetExecutableMessages(u.GetTestContext(), mask, uint64(time.Now().Unix()), 1)
-		u.Nil(err)
-		if len(executableMessages) == 1 {
-			waitChan <- true
-			return true
-		}
-		return false
-	})
-
 	u.Eventually(func() bool {
 		_ = awsTime.SleepWithContext(u.GetTestContext(), time.Second*5)
 
@@ -325,6 +308,23 @@ func (u *AgentsIntegrationSuite) TestAgentsE2E() {
 		Nil(u.T(), err)
 		return state.Nonce() >= uint32(1)
 	})
+
+	//waitChan := make(chan bool, 1)
+	// Make sure there is one executable message in the database.
+	u.Eventually(func() bool {
+		mask := execTypes.DBMessage{
+			ChainID:     &chainID,
+			Destination: &destination,
+		}
+		executableMessages, err := u.ExecutorTestDB.GetUnsetMinimumTimeMessages(u.GetTestContext(), mask, 1)
+		u.Nil(err)
+		if len(executableMessages) == 1 {
+			//waitChan <- true
+			return true
+		}
+		return false
+	})
+	//<-waitChan
 
 	/*watchCtx, cancel := context.WithCancel(u.GetTestContext())
 	defer cancel()
