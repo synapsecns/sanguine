@@ -5,6 +5,7 @@ import {
     AgentNotNotary,
     CallerNotInbox,
     IncorrectSnapshotRoot,
+    IncorrectTipsProof,
     NotaryInDispute,
     TipsClaimMoreThanEarned,
     TipsClaimZero
@@ -188,6 +189,32 @@ contract SummitTipsTest is AgentSecuredTest {
         (bytes memory rcptPayload, bytes memory rcptSignature) = signReceipt(notary, re);
         vm.expectRevert(IncorrectSnapshotRoot.selector);
         inbox.submitReceipt(rcptPayload, rcptSignature, tips.encodeTips(), rtp.headerHash, rtp.bodyHash);
+    }
+
+    function test_submitReceipt_revert_incorrectTipsProof(uint256 corruptedId, uint256 corruptedBit) public {
+        (RawExecReceipt memory re, RawTips memory tips, RawTipsProof memory rtp) = mockReceipt("First");
+        prepareReceipt(re, tips, rtp, false, 0, false);
+        uint256 encodedTips = tips.encodeTips();
+        corruptedBit = corruptedBit % 256;
+        corruptedId = corruptedId % 4;
+        // Corrupt a single bit in either of those
+        if (corruptedId == 0) {
+            // Corrupt message hash
+            re.messageHash ^= bytes32(1 << corruptedBit);
+        } else if (corruptedId == 1) {
+            // Corrupt tips
+            encodedTips ^= 1 << corruptedBit;
+        } else if (corruptedId == 2) {
+            // Corrupt header hash
+            rtp.headerHash ^= bytes32(1 << corruptedBit);
+        } else {
+            // Corrupt body hash
+            rtp.bodyHash ^= bytes32(1 << corruptedBit);
+        }
+        address notary = domains[DOMAIN_REMOTE].agent;
+        (bytes memory rcptPayload, bytes memory rcptSignature) = signReceipt(notary, re);
+        vm.expectRevert(IncorrectTipsProof.selector);
+        inbox.submitReceipt(rcptPayload, rcptSignature, encodedTips, rtp.headerHash, rtp.bodyHash);
     }
 
     function test_acceptReceipt_revert_notInbox(address caller) public {
