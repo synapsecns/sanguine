@@ -40,7 +40,6 @@ error UnformattedCallData();
 error UnformattedCallDataPrefix();
 error UnformattedMessage();
 error UnformattedReceipt();
-error UnformattedReceiptBody();
 error UnformattedReceiptReport();
 error UnformattedSignature();
 error UnformattedSnapshot();
