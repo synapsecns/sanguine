@@ -1,5 +1,5 @@
 import { formatBNToString } from '@bignumber/format'
-import React from 'react'
+import React, { useMemo } from 'react'
 import SwitchButton from '@components/buttons/SwitchButton'
 import MiniMaxButton from '@components/buttons/MiniMaxButton'
 import Spinner from '@/components/icons/Spinner'
@@ -40,14 +40,15 @@ const BridgeInputContainer = ({
   fromTokenBalance?: BigNumber
   isQuoteLoading?: boolean
 }) => {
-  let formattedBalance = ''
-  if (fromTokenBalance) {
-    formattedBalance = formatBNToString(
+  const formattedBalance = useMemo(() => {
+    if (!fromTokenBalance) return '0.0'
+    return formatBNToString(
       fromTokenBalance,
       selectedToken?.decimals[chainId as keyof Token['decimals']],
       3
     )
-  }
+  }, [fromTokenBalance])
+
   const isConnected = address !== null
   const isMaxDisabled = formattedBalance === '0.0'
 

@@ -5,13 +5,16 @@ import { TransactionResponse } from '@ethersproject/providers'
 import ExplorerToastLink from '@components/ExplorerToastLink'
 import toast from 'react-hot-toast'
 import { AddressZero } from '@ethersproject/constants'
+
 const BASE_PROPERTIES = `
     w-full rounded-lg my-2 px-4 py-3
     text-white text-opacity-100 transition-all
-    hover:opacity-80 disabled:opacity-100 disabled:text-[#88818C]
+    hover:opacity-80 disabled:opacity-50 disabled:text-[#88818C]
     disabled:from-bgLight disabled:to-bgLight
     bg-gradient-to-r from-[#CF52FE] to-[#AC8FFF]
   `
+
+const disabledClass = `opacity-30 cursor-default`
 
 export const TransactionButton = ({
   className,
@@ -37,9 +40,12 @@ export const TransactionButton = ({
     <Button
       {...props}
       disabled={disabled}
-      className={`${BASE_PROPERTIES} ${className} ${
-        isPending && 'from-[#622e71] to-[#564071]'
-      }`}
+      className={`
+        ${className}
+        ${BASE_PROPERTIES}
+        ${disabled && disabledClass}
+        ${isPending && 'from-[#622e71] to-[#564071]'}
+      `}
       onClick={async () => {
         const tx = await pendingTxWrapFunc(onClick())
         if (tx?.hash || tx?.transactionHash || tx?.status === 1) {

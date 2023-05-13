@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useMemo } from 'react'
 import { BigNumber } from '@ethersproject/bignumber'
 import { formatBNToPercentString, formatBNToString } from '@bignumber/format'
 import { CHAINS_BY_ID } from '@constants/chains'
@@ -39,6 +39,10 @@ const ExchangeRateInfo = ({
 
   const isGasDropped = safeExchangeRate.gt(0)
 
+  const expectedToChain = useMemo(() => {
+    return toChainId && <ChainInfoLabel chainId={toChainId} />
+  }, [toChainId])
+
   return (
     <div className="py-3.5 px-1 space-y-2 text-xs md:text-base lg:text-base">
       <div
@@ -57,7 +61,7 @@ const ExchangeRateInfo = ({
       <div className="flex justify-between">
         <div className="flex space-x-2 text-[#88818C]">
           <p>Expected Price on</p>
-          {toChainId && <ChainInfoLabel chainId={toChainId} />}
+          {expectedToChain}
         </div>
         <span className="text-[#88818C]">
           {!safeFromAmount.eq(0) ? (
