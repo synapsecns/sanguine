@@ -28,6 +28,14 @@ contract Inbox is StatementInbox, InboxEvents, InterfaceInbox {
     using ReceiptLib for bytes;
     using SnapshotLib for bytes;
 
+    // Struct to get around stack too deep error. TODO: revisit this
+    struct ReceiptInfo {
+        AgentStatus rcptNotaryStatus;
+        address notary;
+        uint32 attNonce;
+        AgentStatus attNotaryStatus;
+    }
+
     // ══════════════════════════════════════════════════ STORAGE ══════════════════════════════════════════════════════
 
     // The address of the Summit contract.
@@ -105,31 +113,33 @@ contract Inbox is StatementInbox, InboxEvents, InterfaceInbox {
         bytes32 headerHash,
         bytes32 bodyHash
     ) external returns (bool wasAccepted) {
+        // Struct to get around stack too deep error.
+        ReceiptInfo memory info;
         // This will revert if payload is not a receipt
         Receipt rcpt = rcptPayload.castToReceipt();
         // This will revert if the receipt signer is not a known Notary
-        (AgentStatus memory rcptNotaryStatus, address notary) = _verifyReceipt(rcpt, rcptSignature);
+        (info.rcptNotaryStatus, info.notary) = _verifyReceipt(rcpt, rcptSignature);
         // Receipt Notary needs to be Active
-        rcptNotaryStatus.verifyActive();
-        uint32 attNonce = IExecutionHub(destination).getAttestationNonce(rcpt.snapshotRoot());
-        if (attNonce == 0) revert IncorrectSnapshotRoot();
+        info.rcptNotaryStatus.verifyActive();
+        info.attNonce = IExecutionHub(destination).getAttestationNonce(rcpt.snapshotRoot());
+        if (info.attNonce == 0) revert IncorrectSnapshotRoot();
         // Attestation Notary domain needs to match the destination domain
-        AgentStatus memory attNotaryStatus = IAgentManager(agentManager).agentStatus(rcpt.attNotary());
-        if (attNotaryStatus.domain != rcpt.destination()) revert IncorrectAgentDomain();
+        info.attNotaryStatus = IAgentManager(agentManager).agentStatus(rcpt.attNotary());
+        if (info.attNotaryStatus.domain != rcpt.destination()) revert IncorrectAgentDomain();
         // TODO: check tips proof (headerHash, bodyHash)
         // Store Notary signature for the Receipt
         uint256 sigIndex = _saveSignature(rcptSignature);
         // This will revert if Receipt Notary is in Dispute
         wasAccepted = InterfaceSummit(summit).acceptReceipt({
-            rcptNotaryIndex: rcptNotaryStatus.index,
-            attNotaryIndex: attNotaryStatus.index,
+            rcptNotaryIndex: info.rcptNotaryStatus.index,
+            attNotaryIndex: info.attNotaryStatus.index,
             sigIndex: sigIndex,
-            attNonce: attNonce,
+            attNonce: info.attNonce,
             paddedTips: paddedTips,
             rcptPayload: rcptPayload
         });
         if (wasAccepted) {
-            emit ReceiptAccepted(rcptNotaryStatus.domain, notary, rcptPayload, rcptSignature);
+            emit ReceiptAccepted(info.rcptNotaryStatus.domain, info.notary, rcptPayload, rcptSignature);
         }
     }
 
