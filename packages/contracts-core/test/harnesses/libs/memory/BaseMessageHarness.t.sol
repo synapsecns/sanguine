@@ -74,4 +74,8 @@ contract BaseMessageHarness {
     function leaf(bytes memory payload) public pure returns (bytes32) {
         return payload.castToBaseMessage().leaf();
     }
+
+    function bodyLeaf(bytes memory payload) public pure returns (bytes32) {
+        return payload.castToBaseMessage().bodyLeaf();
+    }
 }

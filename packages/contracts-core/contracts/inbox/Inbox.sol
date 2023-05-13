@@ -4,14 +4,19 @@ pragma solidity 0.8.17;
 // ══════════════════════════════ LIBRARY IMPORTS ══════════════════════════════
 import {Attestation, AttestationLib} from "../libs/memory/Attestation.sol";
 import {
-    CallerNotDestination, IncorrectAgentDomain, IncorrectSnapshotRoot, MustBeSynapseDomain
+    CallerNotDestination,
+    IncorrectAgentDomain,
+    IncorrectSnapshotRoot,
+    IncorrectTipsProof,
+    MustBeSynapseDomain
 } from "../libs/Errors.sol";
 import {SYNAPSE_DOMAIN} from "../libs/Constants.sol";
 import {ChainGas} from "../libs/stack/GasData.sol";
-import {Receipt, ReceiptBody, ReceiptLib} from "../libs/memory/Receipt.sol";
+import {MerkleMath} from "../libs/merkle/MerkleMath.sol";
+import {Receipt, ReceiptLib} from "../libs/memory/Receipt.sol";
 import {Snapshot, SnapshotLib} from "../libs/memory/Snapshot.sol";
 import {AgentStatus} from "../libs/Structures.sol";
-import {Tips} from "../libs/stack/Tips.sol";
+import {Tips, TipsLib} from "../libs/stack/Tips.sol";
 // ═════════════════════════════ INTERNAL IMPORTS ══════════════════════════════
 import {StatementInbox} from "./StatementInbox.sol";
 import {MessagingBase} from "../base/MessagingBase.sol";
@@ -27,6 +32,14 @@ contract Inbox is StatementInbox, InboxEvents, InterfaceInbox {
     using AttestationLib for bytes;
     using ReceiptLib for bytes;
     using SnapshotLib for bytes;
+
+    // Struct to get around stack too deep error. TODO: revisit this
+    struct ReceiptInfo {
+        AgentStatus rcptNotaryStatus;
+        address notary;
+        uint32 attNonce;
+        AgentStatus attNotaryStatus;
+    }
 
     // ══════════════════════════════════════════════════ STORAGE ══════════════════════════════════════════════════════
 
@@ -98,38 +111,46 @@ contract Inbox is StatementInbox, InboxEvents, InterfaceInbox {
     }
 
     /// @inheritdoc InterfaceInbox
-    function submitReceipt(bytes memory rcptPayload, bytes memory rcptSignature) external returns (bool wasAccepted) {
+    function submitReceipt(
+        bytes memory rcptPayload,
+        bytes memory rcptSignature,
+        uint256 paddedTips,
+        bytes32 headerHash,
+        bytes32 bodyHash
+    ) external returns (bool wasAccepted) {
+        // Struct to get around stack too deep error.
+        ReceiptInfo memory info;
         // This will revert if payload is not a receipt
         Receipt rcpt = rcptPayload.castToReceipt();
         // This will revert if the receipt signer is not a known Notary
-        (AgentStatus memory rcptNotaryStatus, address notary) = _verifyReceipt(rcpt, rcptSignature);
+        (info.rcptNotaryStatus, info.notary) = _verifyReceipt(rcpt, rcptSignature);
         // Receipt Notary needs to be Active
-        rcptNotaryStatus.verifyActive();
-        // Check that receipt's snapshot root exists in Summit
-        ReceiptBody rcptBody = rcpt.body();
-        uint32 attNonce = IExecutionHub(destination).getAttestationNonce(rcptBody.snapshotRoot());
-        if (attNonce == 0) revert IncorrectSnapshotRoot();
+        info.rcptNotaryStatus.verifyActive();
+        info.attNonce = IExecutionHub(destination).getAttestationNonce(rcpt.snapshotRoot());
+        if (info.attNonce == 0) revert IncorrectSnapshotRoot();
         // Attestation Notary domain needs to match the destination domain
-        AgentStatus memory attNotaryStatus = IAgentManager(agentManager).agentStatus(rcptBody.attNotary());
-        if (attNotaryStatus.domain != rcptBody.destination()) revert IncorrectAgentDomain();
+        info.attNotaryStatus = IAgentManager(agentManager).agentStatus(rcpt.attNotary());
+        if (info.attNotaryStatus.domain != rcpt.destination()) revert IncorrectAgentDomain();
+        // Check that the correct tip values for the message were provided
+        _verifyReceiptTips(rcpt.messageHash(), paddedTips, headerHash, bodyHash);
         // Store Notary signature for the Receipt
         uint256 sigIndex = _saveSignature(rcptSignature);
         // This will revert if Receipt Notary is in Dispute
         wasAccepted = InterfaceSummit(summit).acceptReceipt({
-            rcptNotaryIndex: rcptNotaryStatus.index,
-            attNotaryIndex: attNotaryStatus.index,
+            rcptNotaryIndex: info.rcptNotaryStatus.index,
+            attNotaryIndex: info.attNotaryStatus.index,
             sigIndex: sigIndex,
-            attNonce: attNonce,
-            paddedTips: Tips.unwrap(rcpt.tips()),
-            rcptBodyPayload: rcptBody.unwrap().clone()
+            attNonce: info.attNonce,
+            paddedTips: paddedTips,
+            rcptPayload: rcptPayload
         });
         if (wasAccepted) {
-            emit ReceiptAccepted(rcptNotaryStatus.domain, notary, rcptPayload, rcptSignature);
+            emit ReceiptAccepted(info.rcptNotaryStatus.domain, info.notary, rcptPayload, rcptSignature);
         }
     }
 
     /// @inheritdoc InterfaceInbox
-    function passReceipt(uint32 attNotaryIndex, uint32 attNonce, uint256 paddedTips, bytes memory rcptBodyPayload)
+    function passReceipt(uint32 attNotaryIndex, uint32 attNonce, uint256 paddedTips, bytes memory rcptPayload)
         external
         returns (bool wasAccepted)
     {
@@ -141,7 +162,7 @@ contract Inbox is StatementInbox, InboxEvents, InterfaceInbox {
             sigIndex: type(uint256).max,
             attNonce: attNonce,
             paddedTips: paddedTips,
-            rcptBodyPayload: rcptBodyPayload
+            rcptPayload: rcptPayload
         });
     }
 
@@ -181,6 +202,20 @@ contract Inbox is StatementInbox, InboxEvents, InterfaceInbox {
         if (!isValidReport) {
             emit InvalidAttestationReport(attPayload, arSignature);
             IAgentManager(agentManager).slashAgent(status.domain, guard, msg.sender);
+        }
+    }
+
+    // ══════════════════════════════════════════════ INTERNAL VIEWS ═══════════════════════════════════════════════════
+
+    /// @dev Verifies that tips proof matches the message hash.
+    function _verifyReceiptTips(bytes32 msgHash, uint256 paddedTips, bytes32 headerHash, bytes32 bodyHash)
+        internal
+        pure
+    {
+        Tips tips = TipsLib.wrapPadded(paddedTips);
+        // full message leaf is (header, baseMessage), while base message leaf is (tips, remainingBody).
+        if (MerkleMath.getParent(headerHash, MerkleMath.getParent(tips.leaf(), bodyHash)) != msgHash) {
+            revert IncorrectTipsProof();
         }
     }
 }

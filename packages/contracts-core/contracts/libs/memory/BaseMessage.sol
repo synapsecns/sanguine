@@ -90,9 +90,12 @@ library BaseMessageLib {
     /// @notice Returns baseMessage's hash: a leaf to be inserted in the "Message mini-Merkle tree".
     function leaf(BaseMessage baseMessage) internal pure returns (bytes32) {
         // We hash "tips" and "everything but tips" to make tips proofs easier to verify
-        return MerkleMath.getParent(
-            baseMessage.tips().leaf(), baseMessage.unwrap().sliceFrom({index_: OFFSET_SENDER}).keccak()
-        );
+        return MerkleMath.getParent(baseMessage.tips().leaf(), baseMessage.bodyLeaf());
+    }
+
+    /// @notice Returns hash for the "everything but tips" part of the base message.
+    function bodyLeaf(BaseMessage baseMessage) internal pure returns (bytes32) {
+        return baseMessage.unwrap().sliceFrom({index_: OFFSET_SENDER}).keccak();
     }
 
     // ═══════════════════════════════════════════ BASE MESSAGE SLICING ════════════════════════════════════════════════

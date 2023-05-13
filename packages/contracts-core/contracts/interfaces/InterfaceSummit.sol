@@ -22,7 +22,7 @@ interface InterfaceSummit {
      * @param sigIndex          Index of stored Notary signature
      * @param attNonce          Nonce of the attestation used for proving the executed message
      * @param paddedTips        Padded encoded paid tips information
-     * @param rcptBodyPayload   Raw payload with receipt body
+     * @param rcptPayload       Raw payload with message execution receipt
      * @return wasAccepted      Whether the receipt was accepted
      */
     function acceptReceipt(
@@ -31,7 +31,7 @@ interface InterfaceSummit {
         uint256 sigIndex,
         uint32 attNonce,
         uint256 paddedTips,
-        bytes memory rcptBodyPayload
+        bytes memory rcptPayload
     ) external returns (bool wasAccepted);
 
     /**
