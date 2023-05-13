@@ -29,67 +29,67 @@ import {
   darkTheme,
   getDefaultWallets,
 } from '@rainbow-me/rainbowkit'
-import { alchemyProvider } from 'wagmi/providers/alchemy'
-import { publicProvider } from 'wagmi/providers/public'
+import { JsonRpcProvider } from '@ethersproject/providers'
 import { jsonRpcProvider } from 'wagmi/providers/jsonRpc'
 import * as CHAINS from '@constants/chains/master'
 import { SynapseProvider } from '@/utils/providers/SynapseProvider'
 import CustomToaster from '@/components/toast'
-const App = ({ Component, pageProps }: AppProps) => {
-  const rawChains = [
-    mainnet,
-    arbitrum,
-    aurora,
-    avalanche,
-    bsc,
-    canto,
-    fantom,
-    harmonyOne,
-    metis,
-    moonbeam,
-    moonriver,
-    optimism,
-    polygon,
-    klaytn,
-    cronos,
-    dfk,
-    dogechain,
-    boba,
-  ]
 
-  // Add custom icons
-  const chainsWithIcons = []
-  for (const chain of rawChains) {
-    const configChain = Object.values(CHAINS).filter(
-      (chainObj) => chainObj.id === chain.id
-    )[0]
+const rawChains = [
+  mainnet,
+  arbitrum,
+  aurora,
+  avalanche,
+  bsc,
+  canto,
+  fantom,
+  harmonyOne,
+  metis,
+  moonbeam,
+  moonriver,
+  optimism,
+  polygon,
+  klaytn,
+  cronos,
+  dfk,
+  dogechain,
+  boba,
+]
 
-    chainsWithIcons.push({
-      ...chain,
-      iconUrl: configChain.chainImg.src,
-      configRpc: configChain.rpc,
-    })
-  }
+// Add custom icons
+const chainsMatured = []
+for (const chain of rawChains) {
+  const configChain = Object.values(CHAINS).filter(
+    (chainObj) => chainObj.id === chain.id
+  )[0]
 
-  const { chains, provider } = configureChains(chainsWithIcons, [
-    jsonRpcProvider({
-      rpc: (chain) => ({
-        http: chain['configRpc'],
-      }),
+  chainsMatured.push({
+    ...chain,
+    iconUrl: configChain.chainImg.src,
+    configRpc: configChain.rpc,
+  })
+}
+
+const { chains, provider } = configureChains(chainsMatured, [
+  jsonRpcProvider({
+    rpc: (chain) => ({
+      http: chain['configRpc'],
     }),
-  ])
+  }),
+])
 
-  const { connectors } = getDefaultWallets({
-    appName: 'Synapse',
-    chains,
-  })
+const { connectors } = getDefaultWallets({
+  appName: 'Synapse',
+  chains,
+})
 
-  const wagmiClient = createClient({
-    autoConnect: true,
-    connectors,
-    provider,
-  })
+export const wagmiClient = createClient({
+  autoConnect: true,
+  connectors,
+  provider,
+})
 
+const App = ({ Component, pageProps }: AppProps) => {
   return (
     <WagmiConfig client={wagmiClient}>
       <RainbowKitProvider chains={chains} theme={darkTheme()}>

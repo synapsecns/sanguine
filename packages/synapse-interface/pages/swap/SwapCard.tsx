@@ -131,9 +131,6 @@ const SwapCard = ({
     })
   }, [router.isReady])
 
-  useEffect(() => {
-    console.log('fromTokens: ', fromTokens)
-  }, [fromTokens])
   /*
   useEffect Trigger: connectedChain
   - when the connected chain changes (wagmi hook), update the state
@@ -181,7 +178,7 @@ const SwapCard = ({
     return () => {
       isCancelled = true
     }
-  }, [toToken, fromInput, time])
+  }, [toToken, fromInput, time, connectedChainId])
 
   /*
   Helper Function: resetTokenPermutation
@@ -198,7 +195,7 @@ const SwapCard = ({
     setFromToken(newFromToken)
     setToToken(newToToken)
     setToTokens(newSwapableTokens)
-    resetRates()
+    // resetRates()
     updateUrlParams({
       inputCurrency: newFromTokenSymbol,
       outputCurrency: newSwapableTokenSymbol,

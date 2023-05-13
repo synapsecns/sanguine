@@ -29,7 +29,6 @@ export const getStakedBalance = async (
         },
       ],
     })
-    console.log('data: ', data)
 
     return { amount: data[0]?.amount ?? Zero, reward: data[1] ?? Zero }
   } catch (error) {

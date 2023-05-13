@@ -1,8 +1,8 @@
 import Grid from '@tw/Grid'
 import { LandingPageWrapper } from '@components/layouts/LandingPageWrapper'
 import { useRouter } from 'next/router'
-import { useNetwork } from 'wagmi'
-import { useEffect, useState, useCallback } from 'react'
+import { useNetwork, useAccount } from 'wagmi'
+import { useEffect, useState, useCallback, useMemo } from 'react'
 import { AddressZero, Zero } from '@ethersproject/constants'
 import { BigNumber } from '@ethersproject/bignumber'
 import { ActionCardFooter } from '@components/ActionCardFooter'
@@ -51,6 +51,7 @@ const BridgePage = ({
   address: `0x${string}`
   fromChainId: number
 }) => {
+  const { address: currentAddress, isDisconnected } = useAccount()
   const router = useRouter()
   const { synapseSDK } = useSynapseContext()
   const [time, setTime] = useState(Date.now())
@@ -88,6 +89,7 @@ const BridgePage = ({
       () => setTime(Date.now()),
       QUOTE_POLLING_INTERVAL
     )
+
     return () => {
       clearInterval(interval)
     }
@@ -118,7 +120,6 @@ const BridgePage = ({
         toTokenSymbolUrl ? String(toTokenSymbolUrl) : undefined,
         fromChainId
       )
-    console.log('bridgeableToken', bridgeableToken, newToChain)
     resetTokenPermutation(
       tempFromToken,
       newToChain,
@@ -155,6 +156,8 @@ const BridgePage = ({
           fromInput.bigNum.gt(Zero)
         ) {
           getQuote()
+            .then()
+            .catch((error) => console.error('getQuote error: ', error))
         } else {
           setBridgeQuote(EMPTY_BRIDGE_QUOTE)
         }
@@ -165,7 +168,7 @@ const BridgePage = ({
     return () => {
       isCancelled = true
     }
-  }, [toToken, fromInput, time])
+  }, [toToken, fromInput, time, fromChainId, toChainId])
 
   /*
   useEffect Triggers: fromInput
@@ -200,7 +203,6 @@ const BridgePage = ({
     setToChainId(newToChain)
     setToToken(newToToken)
     setToOptions({ tokens: newBridgeableTokens, chains: newBridgeableChains })
-    resetRates()
     updateUrlParams({
       outputChain: newToChain,
       inputCurrency: newFromTokenSymbol,
@@ -244,22 +246,25 @@ const BridgePage = ({
   Helper Function: getMostCommonSwapableType
   - Returns the default token to display when switching chains. Usually returns stables or eth/wrapped eth.
   */
-  const getMostCommonSwapableType = (chainId: number) => {
-    console.log('sudyaichainid', chainId)
-    const fromChainTokensByType = Object.values(
-      BRIDGE_SWAPABLE_TOKENS_BY_TYPE[chainId]
-    )
-    let maxTokenLength = 0
-    let mostCommonSwapableType: Token[] = fromChainTokensByType[0]
-    fromChainTokensByType.map((tokenArr, i) => {
-      if (tokenArr.length > maxTokenLength) {
-        maxTokenLength = tokenArr.length
-        mostCommonSwapableType = tokenArr
-      }
-    })
+  const getMostCommonSwapableType = useCallback(
+    (chainId: number) => {
+      console.log('sudyaichainid', chainId)
+      const fromChainTokensByType = Object.values(
+        BRIDGE_SWAPABLE_TOKENS_BY_TYPE[chainId]
+      )
+      let maxTokenLength = 0
+      let mostCommonSwapableType: Token[] = fromChainTokensByType[0]
+      fromChainTokensByType.map((tokenArr, i) => {
+        if (tokenArr.length > maxTokenLength) {
+          maxTokenLength = tokenArr.length
+          mostCommonSwapableType = tokenArr
+        }
+      })
 
-    return sortByVisibilityRank(mostCommonSwapableType)[0]
-  }
+      return sortByVisibilityRank(mostCommonSwapableType)[0]
+    },
+    [currentAddress, isDisconnected]
+  )
 
   /*
   Helper Function: updateUrlParams
@@ -373,88 +378,98 @@ const BridgePage = ({
   - Handles flipping to and from chains if flag is set to true
   - Handles altering the chain state for origin or destination depending on the type specified.
   */
-  const handleChainChange = async (
-    chainId: number,
-    flip: boolean,
-    type: 'from' | 'to'
-  ) => {
-    if (address === undefined) {
-      return alert('Please connect your wallet')
-    }
-    if (flip || type === 'from') {
-      const positedToChain = flip ? fromChainId : undefined
-      const desiredChainId = flip ? Number(toChainId) : Number(chainId)
+  const handleChainChange = useCallback(
+    async (chainId: number, flip: boolean, type: 'from' | 'to') => {
+      if (currentAddress === undefined || isDisconnected) {
+        return alert('Please connect your wallet')
+      }
 
-      const res = switchNetwork({ chainId: desiredChainId })
-        .then((res) => {
-          return res
+      if (flip || type === 'from') {
+        const positedToChain = flip ? fromChainId : undefined
+        const desiredChainId = flip ? Number(toChainId) : Number(chainId)
+
+        const res = switchNetwork({ chainId: desiredChainId })
+          .then((res) => {
+            return res
+          })
+          .catch(() => {
+            return undefined
+          })
+        if (res === undefined) {
+          console.log("can't switch chain, chainId: ", chainId)
+          return
+        }
+
+        const bridgeableFromTokens: Token[] = sortByVisibilityRank(
+          BRIDGE_SWAPABLE_TOKENS_BY_TYPE[desiredChainId][
+            String(fromToken.swapableType)
+          ]
+        )
+        let tempFromToken: Token = fromToken
+
+        if (bridgeableFromTokens?.length > 0) {
+          tempFromToken = getMostCommonSwapableType(desiredChainId)
+        }
+        const {
+          bridgeableToken,
+          newToChain,
+          bridgeableTokens,
+          bridgeableChains,
+        } = handleNewFromToken(
+          tempFromToken,
+          positedToChain,
+          toToken.symbol,
+          desiredChainId
+        )
+        resetTokenPermutation(
+          tempFromToken,
+          newToChain,
+          bridgeableToken,
+          bridgeableChains,
+          bridgeableTokens,
+          tempFromToken.symbol,
+          bridgeableToken.symbol
+        )
+        console.log('bridgeableToken', desiredChainId)
+        sortByTokenBalance(
+          BRIDGABLE_TOKENS[desiredChainId],
+          desiredChainId,
+          address
+        ).then((tokens) => {
+          setFromTokens(tokens)
         })
-        .catch(() => {
-          return undefined
-        })
-      if (res === undefined) {
-        console.log("can't switch chain, chainId: ", chainId)
+        return
+      } else if (type === 'to') {
+        const {
+          bridgeableToken: toBridgeableToken,
+          newToChain: toNewToChain,
+          bridgeableTokens: toBridgeableTokens,
+          bridgeableChains: toBridgeableChains,
+        } = handleNewFromToken(fromToken, chainId, toToken.symbol, fromChainId)
+        resetTokenPermutation(
+          fromToken,
+          toNewToChain,
+          toBridgeableToken,
+          toBridgeableChains,
+          toBridgeableTokens,
+          fromToken.symbol,
+          toBridgeableToken.symbol
+        )
+
         return
       }
-
-      const bridgeableFromTokens: Token[] = sortByVisibilityRank(
-        BRIDGE_SWAPABLE_TOKENS_BY_TYPE[desiredChainId][
-          String(fromToken.swapableType)
-        ]
-      )
-      let tempFromToken: Token = fromToken
-
-      if (bridgeableFromTokens?.length > 0) {
-        tempFromToken = getMostCommonSwapableType(desiredChainId)
-      }
-      const {
-        bridgeableToken,
-        newToChain,
-        bridgeableTokens,
-        bridgeableChains,
-      } = handleNewFromToken(
-        tempFromToken,
-        positedToChain,
-        toToken.symbol,
-        desiredChainId
-      )
-      resetTokenPermutation(
-        tempFromToken,
-        newToChain,
-        bridgeableToken,
-        bridgeableChains,
-        bridgeableTokens,
-        tempFromToken.symbol,
-        bridgeableToken.symbol
-      )
-      sortByTokenBalance(
-        BRIDGABLE_TOKENS[desiredChainId],
-        desiredChainId,
-        address
-      ).then((tokens) => {
-        setFromTokens(tokens)
-      })
-      return
-    } else if (type === 'to') {
-      const {
-        bridgeableToken: toBridgeableToken,
-        newToChain: toNewToChain,
-        bridgeableTokens: toBridgeableTokens,
-        bridgeableChains: toBridgeableChains,
-      } = handleNewFromToken(fromToken, chainId, toToken.symbol, fromChainId)
-      resetTokenPermutation(
-        fromToken,
-        toNewToChain,
-        toBridgeableToken,
-        toBridgeableChains,
-        toBridgeableTokens,
-        fromToken.symbol,
-        toBridgeableToken.symbol
-      )
-
-      return
-    }
-  }
+    },
+    [
+      currentAddress,
+      isDisconnected,
+      fromToken,
+      fromChainId,
+      toToken,
+      toChainId,
+      handleNewFromToken,
+      switchNetwork,
+    ]
+  )
 
   /*
     Function:handleTokenChange

@@ -7,7 +7,7 @@ export default function MiniMaxButton({
   onClickBalance: () => void
   disabled: boolean
 }) {
-  const disabledClass = `opacity-30 cursor-not-allowed`
+  const disabledClass = `opacity-30 cursor-default`
   return (
     <>
       {disabled ? (
