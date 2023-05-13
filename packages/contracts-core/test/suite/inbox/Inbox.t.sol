@@ -8,7 +8,14 @@ import {StatementInboxTest} from "./StatementInbox.t.sol";
 
 import {BaseMock} from "../../mocks/base/BaseMock.t.sol";
 import {Random} from "../../utils/libs/Random.t.sol";
-import {RawExecReceipt, RawState, RawStateIndex} from "../../utils/libs/SynapseStructs.t.sol";
+import {
+    RawExecReceipt,
+    RawTips,
+    RawTipsProof,
+    RawReceiptTips,
+    RawState,
+    RawStateIndex
+} from "../../utils/libs/SynapseStructs.t.sol";
 
 import {Inbox, SynapseTest} from "../../utils/SynapseTest.t.sol";
 
@@ -95,13 +102,14 @@ contract InboxTest is StatementInboxTest {
         uint256 domainId,
         uint256 agentId,
         uint256 attNotaryId,
-        RawExecReceipt memory re,
+        RawReceiptTips memory receipt,
         uint256 attNonce
     ) public {
         address rcptNotary = getNotary(domainId, agentId);
-        re.body.destination = DOMAIN_REMOTE;
-        re.body.attNotary = domains[DOMAIN_REMOTE].agents[attNotaryId % DOMAIN_AGENTS];
-        (bytes memory receiptPayload, bytes memory receiptSig) = signReceipt(rcptNotary, re);
+        receipt.re.destination = DOMAIN_REMOTE;
+        receipt.re.attNotary = domains[DOMAIN_REMOTE].agents[attNotaryId % DOMAIN_AGENTS];
+        receipt.re.messageHash = receipt.tips.getMessageHash(receipt.rtp);
+        (bytes memory receiptPayload, bytes memory receiptSig) = signReceipt(rcptNotary, receipt.re);
         // Set value for getAttestationNonce call
         attNonce = bound(attNonce, 1, type(uint32).max);
         BaseMock(localDestination()).setMockReturnValue(attNonce);
@@ -110,14 +118,16 @@ contract InboxTest is StatementInboxTest {
             abi.encodeWithSelector(
                 InterfaceSummit.acceptReceipt.selector,
                 agentIndex[rcptNotary],
-                agentIndex[re.body.attNotary],
+                agentIndex[receipt.re.attNotary],
                 nextSignatureIndex(),
                 attNonce,
-                re.tips.encodeTips(),
-                re.body.formatReceiptBody()
+                receipt.tips.encodeTips(),
+                receipt.re.formatReceipt()
             )
         );
-        inbox.submitReceipt(receiptPayload, receiptSig);
+        inbox.submitReceipt(
+            receiptPayload, receiptSig, receipt.tips.encodeTips(), receipt.rtp.headerHash, receipt.rtp.bodyHash
+        );
     }
 
     function test_passReceipt_revert_notDestination(address caller) public {

@@ -27,5 +27,5 @@ contract ExecutionHubMock is BaseMock, IExecutionHub {
 
     function messageStatus(bytes32 messageHash) external view returns (MessageStatus status) {}
 
-    function receiptBody(bytes32 messageHash) external view returns (bytes memory data) {}
+    function messageReceipt(bytes32 messageHash) external view returns (bytes memory data) {}
 }

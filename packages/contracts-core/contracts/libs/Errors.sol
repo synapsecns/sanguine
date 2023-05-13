@@ -21,6 +21,7 @@ error IncorrectSnapshotProof();
 error IncorrectSnapshotRoot();
 error IncorrectState();
 error IncorrectStatesAmount();
+error IncorrectTipsProof();
 error IncorrectVersionLength();
 
 error IncorrectNonce();
@@ -40,7 +41,6 @@ error UnformattedCallData();
 error UnformattedCallDataPrefix();
 error UnformattedMessage();
 error UnformattedReceipt();
-error UnformattedReceiptBody();
 error UnformattedReceiptReport();
 error UnformattedSignature();
 error UnformattedSnapshot();

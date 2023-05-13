@@ -8,7 +8,7 @@ import {ChainGas, GasData, GasDataLib} from "../../../contracts/libs/stack/GasDa
 import {Header, HeaderLib, MessageFlag} from "../../../contracts/libs/stack/Header.sol";
 import {Message, MessageLib} from "../../../contracts/libs/memory/Message.sol";
 import {Number, NumberLib} from "../../../contracts/libs/stack/Number.sol";
-import {Receipt, ReceiptBody, ReceiptLib} from "../../../contracts/libs/memory/Receipt.sol";
+import {Receipt, ReceiptLib} from "../../../contracts/libs/memory/Receipt.sol";
 import {Request, RequestLib} from "../../../contracts/libs/stack/Request.sol";
 
 import {
@@ -44,7 +44,15 @@ struct RawTips {
 
 using CastLib for RawTips global;
 
-struct RawReceiptBody {
+struct RawTipsProof {
+    bytes32 headerHash;
+    bytes32 bodyHash;
+}
+
+using CastLib for RawTips global;
+
+// RawReceipt name is already taken in forge-std
+struct RawExecReceipt {
     uint32 origin;
     uint32 destination;
     bytes32 messageHash;
@@ -55,12 +63,10 @@ struct RawReceiptBody {
     address finalExecutor;
 }
 
-using CastLib for RawReceiptBody global;
-
-// RawReceipt name is already taken in forge-std
-struct RawExecReceipt {
-    RawReceiptBody body;
+struct RawReceiptTips {
+    RawExecReceipt re;
     RawTips tips;
+    RawTipsProof rtp;
 }
 
 using CastLib for RawExecReceipt global;
@@ -255,6 +261,11 @@ library CastLib {
         });
     }
 
+    function getMessageHash(RawTips memory rt, RawTipsProof memory rtp) internal pure returns (bytes32) {
+        bytes32 baseMessageLeaf = keccak256(bytes.concat(rt.castToTips().leaf(), rtp.bodyHash));
+        return keccak256(bytes.concat(rtp.headerHash, baseMessageLeaf));
+    }
+
     function formatBaseMessage(RawBaseMessage memory rbm) internal pure returns (bytes memory bmPayload) {
         bmPayload = BaseMessageLib.formatBaseMessage({
             tips_: rbm.tips.castToTips(),
@@ -267,6 +278,15 @@ library CastLib {
 
     function castToBaseMessage(RawBaseMessage memory rbm) internal pure returns (BaseMessage ptr) {
         ptr = rbm.formatBaseMessage().castToBaseMessage();
+    }
+
+    function getTipsProof(RawHeader memory rh, RawBaseMessage memory rbm)
+        internal
+        pure
+        returns (RawTipsProof memory rtp)
+    {
+        rtp.headerHash = rh.castToHeader().leaf();
+        rtp.bodyHash = rbm.castToBaseMessage().bodyLeaf();
     }
 
     // ══════════════════════════════════════════════ MANAGER MESSAGE ══════════════════════════════════════════════════
@@ -288,47 +308,35 @@ library CastLib {
 
     // ═════════════════════════════════════════════════ RECEIPT ═════════════════════════════════════════════════════
 
-    function formatReceiptBody(RawReceiptBody memory rrb) internal pure returns (bytes memory) {
-        return ReceiptLib.formatReceiptBody(
-            rrb.origin,
-            rrb.destination,
-            rrb.messageHash,
-            rrb.snapshotRoot,
-            rrb.stateIndex,
-            rrb.attNotary,
-            rrb.firstExecutor,
-            rrb.finalExecutor
-        );
-    }
-
-    function castToReceiptBody(RawReceiptBody memory rrb) internal pure returns (ReceiptBody) {
-        return rrb.formatReceiptBody().castToReceiptBody();
-    }
-
     function formatReceipt(RawExecReceipt memory re) internal pure returns (bytes memory) {
-        return ReceiptLib.formatReceipt(re.body.formatReceiptBody(), re.tips.castToTips());
+        return ReceiptLib.formatReceipt(
+            re.origin,
+            re.destination,
+            re.messageHash,
+            re.snapshotRoot,
+            re.stateIndex,
+            re.attNotary,
+            re.firstExecutor,
+            re.finalExecutor
+        );
     }
 
     function castToReceipt(RawExecReceipt memory re) internal pure returns (Receipt) {
         return re.formatReceipt().castToReceipt();
     }
 
-    function modifyReceiptBody(RawReceiptBody memory rrb, uint256 mask)
-        internal
-        pure
-        returns (RawReceiptBody memory mrb)
-    {
+    function modifyReceipt(RawExecReceipt memory re, uint256 mask) internal pure returns (RawExecReceipt memory mrb) {
         // Don't modify the destination, message hash
-        mrb.destination = rrb.destination;
-        mrb.messageHash = rrb.messageHash;
+        mrb.destination = re.destination;
+        mrb.messageHash = re.messageHash;
         // Make sure at least one value is modified, valid mask values are [1 .. 63]
         mask = 1 + (mask % 63);
-        mrb.origin = rrb.origin ^ uint32(mask & 1);
-        mrb.snapshotRoot = rrb.snapshotRoot ^ bytes32(mask & 2);
-        mrb.stateIndex = rrb.stateIndex ^ uint8(mask & 4);
-        mrb.attNotary = address(uint160(rrb.attNotary) ^ uint160(mask & 8));
-        mrb.firstExecutor = address(uint160(rrb.firstExecutor) ^ uint160(mask & 16));
-        mrb.finalExecutor = address(uint160(rrb.finalExecutor) ^ uint160(mask & 32));
+        mrb.origin = re.origin ^ uint32(mask & 1);
+        mrb.snapshotRoot = re.snapshotRoot ^ bytes32(mask & 2);
+        mrb.stateIndex = re.stateIndex ^ uint8(mask & 4);
+        mrb.attNotary = address(uint160(re.attNotary) ^ uint160(mask & 8));
+        mrb.firstExecutor = address(uint160(re.firstExecutor) ^ uint160(mask & 16));
+        mrb.finalExecutor = address(uint160(re.finalExecutor) ^ uint160(mask & 32));
     }
 
     // ═════════════════════════════════════════════════ GAS DATA ══════════════════════════════════════════════════════

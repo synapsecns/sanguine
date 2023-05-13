@@ -42,6 +42,7 @@ contract BaseMessageLibraryTest is SynapseLibraryTest {
         // Test hashing
         bytes32 leftChild = keccak256(abi.encodePacked(encodedTips));
         bytes32 rightChild = keccak256(abi.encodePacked(rbm.sender, rbm.recipient, encodedRequest, rbm.content));
+        assertEq(libHarness.bodyLeaf(payload), rightChild, "!bodyLeaf");
         assertEq(libHarness.leaf(payload), keccak256(abi.encodePacked(leftChild, rightChild)), "!leaf");
     }
 
