@@ -44,6 +44,13 @@ struct RawTips {
 
 using CastLib for RawTips global;
 
+struct RawTipsProof {
+    bytes32 headerHash;
+    bytes32 bodyHash;
+}
+
+using CastLib for RawTips global;
+
 // RawReceipt name is already taken in forge-std
 struct RawExecReceipt {
     uint32 origin;
@@ -54,6 +61,12 @@ struct RawExecReceipt {
     address attNotary;
     address firstExecutor;
     address finalExecutor;
+}
+
+struct RawReceiptTips {
+    RawExecReceipt re;
+    RawTips tips;
+    RawTipsProof rtp;
 }
 
 using CastLib for RawExecReceipt global;
@@ -248,6 +261,11 @@ library CastLib {
         });
     }
 
+    function getMessageHash(RawTips memory rt, RawTipsProof memory rtp) internal pure returns (bytes32) {
+        bytes32 baseMessageLeaf = keccak256(bytes.concat(rt.castToTips().leaf(), rtp.bodyHash));
+        return keccak256(bytes.concat(rtp.headerHash, baseMessageLeaf));
+    }
+
     function formatBaseMessage(RawBaseMessage memory rbm) internal pure returns (bytes memory bmPayload) {
         bmPayload = BaseMessageLib.formatBaseMessage({
             tips_: rbm.tips.castToTips(),
@@ -260,6 +278,15 @@ library CastLib {
 
     function castToBaseMessage(RawBaseMessage memory rbm) internal pure returns (BaseMessage ptr) {
         ptr = rbm.formatBaseMessage().castToBaseMessage();
+    }
+
+    function getTipsProof(RawHeader memory rh, RawBaseMessage memory rbm)
+        internal
+        pure
+        returns (RawTipsProof memory rtp)
+    {
+        rtp.headerHash = rh.castToHeader().leaf();
+        rtp.bodyHash = rbm.castToBaseMessage().bodyLeaf();
     }
 
     // ══════════════════════════════════════════════ MANAGER MESSAGE ══════════════════════════════════════════════════
