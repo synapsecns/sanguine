@@ -4,14 +4,19 @@ pragma solidity 0.8.17;
 // ══════════════════════════════ LIBRARY IMPORTS ══════════════════════════════
 import {Attestation, AttestationLib} from "../libs/memory/Attestation.sol";
 import {
-    CallerNotDestination, IncorrectAgentDomain, IncorrectSnapshotRoot, MustBeSynapseDomain
+    CallerNotDestination,
+    IncorrectAgentDomain,
+    IncorrectSnapshotRoot,
+    IncorrectTipsProof,
+    MustBeSynapseDomain
 } from "../libs/Errors.sol";
 import {SYNAPSE_DOMAIN} from "../libs/Constants.sol";
 import {ChainGas} from "../libs/stack/GasData.sol";
+import {MerkleMath} from "../libs/merkle/MerkleMath.sol";
 import {Receipt, ReceiptLib} from "../libs/memory/Receipt.sol";
 import {Snapshot, SnapshotLib} from "../libs/memory/Snapshot.sol";
 import {AgentStatus} from "../libs/Structures.sol";
-import {Tips} from "../libs/stack/Tips.sol";
+import {Tips, TipsLib} from "../libs/stack/Tips.sol";
 // ═════════════════════════════ INTERNAL IMPORTS ══════════════════════════════
 import {StatementInbox} from "./StatementInbox.sol";
 import {MessagingBase} from "../base/MessagingBase.sol";
@@ -126,7 +131,8 @@ contract Inbox is StatementInbox, InboxEvents, InterfaceInbox {
         // Attestation Notary domain needs to match the destination domain
         info.attNotaryStatus = IAgentManager(agentManager).agentStatus(rcpt.attNotary());
         if (info.attNotaryStatus.domain != rcpt.destination()) revert IncorrectAgentDomain();
-        // TODO: check tips proof (headerHash, bodyHash)
+        // Check that the correct tip values for the message were provided
+        _verifyReceiptTips(rcpt.messageHash(), paddedTips, headerHash, bodyHash);
         // Store Notary signature for the Receipt
         uint256 sigIndex = _saveSignature(rcptSignature);
         // This will revert if Receipt Notary is in Dispute
@@ -196,6 +202,20 @@ contract Inbox is StatementInbox, InboxEvents, InterfaceInbox {
         if (!isValidReport) {
             emit InvalidAttestationReport(attPayload, arSignature);
             IAgentManager(agentManager).slashAgent(status.domain, guard, msg.sender);
+        }
+    }
+
+    // ══════════════════════════════════════════════ INTERNAL VIEWS ═══════════════════════════════════════════════════
+
+    /// @dev Verifies that tips proof matches the message hash.
+    function _verifyReceiptTips(bytes32 msgHash, uint256 paddedTips, bytes32 headerHash, bytes32 bodyHash)
+        internal
+        pure
+    {
+        Tips tips = TipsLib.wrapPadded(paddedTips);
+        // full message leaf is (header, baseMessage), while base message leaf is (tips, remainingBody).
+        if (MerkleMath.getParent(headerHash, MerkleMath.getParent(tips.leaf(), bodyHash)) != msgHash) {
+            revert IncorrectTipsProof();
         }
     }
 }

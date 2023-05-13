@@ -21,6 +21,7 @@ error IncorrectSnapshotProof();
 error IncorrectSnapshotRoot();
 error IncorrectState();
 error IncorrectStatesAmount();
+error IncorrectTipsProof();
 error IncorrectVersionLength();
 
 error IncorrectNonce();
