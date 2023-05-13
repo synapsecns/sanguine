@@ -6,7 +6,7 @@ import {AttestationLib} from "./libs/memory/Attestation.sol";
 import {ByteString} from "./libs/memory/ByteString.sol";
 import {BONDING_OPTIMISTIC_PERIOD, SYNAPSE_DOMAIN} from "./libs/Constants.sol";
 import {MustBeSynapseDomain, NotaryInDispute, TipsClaimMoreThanEarned, TipsClaimZero} from "./libs/Errors.sol";
-import {Receipt, ReceiptBody, ReceiptLib} from "./libs/memory/Receipt.sol";
+import {Receipt, ReceiptLib} from "./libs/memory/Receipt.sol";
 import {Snapshot, SnapshotLib} from "./libs/memory/Snapshot.sol";
 import {AgentFlag, AgentStatus, DisputeFlag, MessageStatus} from "./libs/Structures.sol";
 import {Tips, TipsLib} from "./libs/stack/Tips.sol";
@@ -98,12 +98,12 @@ contract Summit is SnapshotHub, SummitEvents, InterfaceSummit {
         uint256 sigIndex,
         uint32 attNonce,
         uint256 paddedTips,
-        bytes memory rcptBodyPayload
+        bytes memory rcptPayload
     ) external onlyInbox returns (bool wasAccepted) {
         if (_isInDispute(rcptNotaryIndex)) revert NotaryInDispute();
         // This will revert if payload is not a receipt body
         return _saveReceipt({
-            rcptBody: rcptBodyPayload.castToReceiptBody(),
+            rcpt: rcptPayload.castToReceipt(),
             tips: TipsLib.wrapPadded(paddedTips),
             rcptNotaryIndex: rcptNotaryIndex,
             attNotaryIndex: attNotaryIndex,
@@ -229,7 +229,7 @@ contract Summit is SnapshotHub, SummitEvents, InterfaceSummit {
     /// @dev Saves the message from the receipt into the "quarantine queue". Once message leaves the queue,
     /// tips associated with the message are distributed across off-chain actors.
     function _saveReceipt(
-        ReceiptBody rcptBody,
+        Receipt rcpt,
         Tips tips,
         uint32 rcptNotaryIndex,
         uint32 attNotaryIndex,
@@ -240,23 +240,23 @@ contract Summit is SnapshotHub, SummitEvents, InterfaceSummit {
         // Check if tip values are non-zero
         if (tips.value() == 0) return false;
         // Check if there already exists receipt for the message
-        bytes32 messageHash = rcptBody.messageHash();
+        bytes32 messageHash = rcpt.messageHash();
         ReceiptStatus memory savedRcpt = _receiptStatus[messageHash];
         // Don't save if receipt is already in the queue
         if (savedRcpt.pending) return false;
         // Get the status from the provided receipt
-        MessageStatus msgStatus = rcptBody.finalExecutor() == address(0) ? MessageStatus.Failed : MessageStatus.Success;
+        MessageStatus msgStatus = rcpt.finalExecutor() == address(0) ? MessageStatus.Failed : MessageStatus.Success;
         // Don't save if we already have the receipt with at least this status
         if (savedRcpt.status >= msgStatus) return false;
         // Save information from the receipt
         _receipts[messageHash] = SummitReceipt({
-            origin: rcptBody.origin(),
-            destination: rcptBody.destination(),
+            origin: rcpt.origin(),
+            destination: rcpt.destination(),
             attNonce: attNonce,
-            stateIndex: rcptBody.stateIndex(),
+            stateIndex: rcpt.stateIndex(),
             attNotaryIndex: attNotaryIndex,
-            firstExecutor: rcptBody.firstExecutor(),
-            finalExecutor: rcptBody.finalExecutor()
+            firstExecutor: rcpt.firstExecutor(),
+            finalExecutor: rcpt.finalExecutor()
         });
         // Save receipt status: transfer tipsAwarded field (whether we paid tips for Failed Receipt before)
         _receiptStatus[messageHash] = ReceiptStatus({
