@@ -58,11 +58,11 @@ interface IExecutionHub {
     function messageStatus(bytes32 messageHash) external view returns (MessageStatus status);
 
     /**
-     * @notice Returns a formatted payload with the message receipt body.
-     * @dev Notaries could append the tips payload to the receipt body returned by this function,
-     * sign the resulting receipt statement and submit it to Summit in order to distribute message tips.
+     * @notice Returns a formatted payload with the message receipt.
+     * @dev Notaries could derive the tips, and the tips proof using the message payload, and submit
+     * the signed receipt with the proof of tips to `Summit` in order to initiate tips distribution.
      * @param messageHash       Hash of the message payload
-     * @return data             Data for Execution statement, without the tips payload.
+     * @return data             Formatted payload with the message execution receipt
      */
-    function receiptBody(bytes32 messageHash) external view returns (bytes memory data);
+    function messageReceipt(bytes32 messageHash) external view returns (bytes memory data);
 }
