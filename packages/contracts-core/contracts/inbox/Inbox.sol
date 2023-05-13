@@ -8,7 +8,7 @@ import {
 } from "../libs/Errors.sol";
 import {SYNAPSE_DOMAIN} from "../libs/Constants.sol";
 import {ChainGas} from "../libs/stack/GasData.sol";
-import {Receipt, ReceiptBody, ReceiptLib} from "../libs/memory/Receipt.sol";
+import {Receipt, ReceiptLib} from "../libs/memory/Receipt.sol";
 import {Snapshot, SnapshotLib} from "../libs/memory/Snapshot.sol";
 import {AgentStatus} from "../libs/Structures.sol";
 import {Tips} from "../libs/stack/Tips.sol";
@@ -98,20 +98,25 @@ contract Inbox is StatementInbox, InboxEvents, InterfaceInbox {
     }
 
     /// @inheritdoc InterfaceInbox
-    function submitReceipt(bytes memory rcptPayload, bytes memory rcptSignature) external returns (bool wasAccepted) {
+    function submitReceipt(
+        bytes memory rcptPayload,
+        bytes memory rcptSignature,
+        uint256 paddedTips,
+        bytes32 headerHash,
+        bytes32 bodyHash
+    ) external returns (bool wasAccepted) {
         // This will revert if payload is not a receipt
         Receipt rcpt = rcptPayload.castToReceipt();
         // This will revert if the receipt signer is not a known Notary
         (AgentStatus memory rcptNotaryStatus, address notary) = _verifyReceipt(rcpt, rcptSignature);
         // Receipt Notary needs to be Active
         rcptNotaryStatus.verifyActive();
-        // Check that receipt's snapshot root exists in Summit
-        ReceiptBody rcptBody = rcpt.body();
-        uint32 attNonce = IExecutionHub(destination).getAttestationNonce(rcptBody.snapshotRoot());
+        uint32 attNonce = IExecutionHub(destination).getAttestationNonce(rcpt.snapshotRoot());
         if (attNonce == 0) revert IncorrectSnapshotRoot();
         // Attestation Notary domain needs to match the destination domain
-        AgentStatus memory attNotaryStatus = IAgentManager(agentManager).agentStatus(rcptBody.attNotary());
-        if (attNotaryStatus.domain != rcptBody.destination()) revert IncorrectAgentDomain();
+        AgentStatus memory attNotaryStatus = IAgentManager(agentManager).agentStatus(rcpt.attNotary());
+        if (attNotaryStatus.domain != rcpt.destination()) revert IncorrectAgentDomain();
+        // TODO: check tips proof (headerHash, bodyHash)
         // Store Notary signature for the Receipt
         uint256 sigIndex = _saveSignature(rcptSignature);
         // This will revert if Receipt Notary is in Dispute
@@ -120,8 +125,8 @@ contract Inbox is StatementInbox, InboxEvents, InterfaceInbox {
             attNotaryIndex: attNotaryStatus.index,
             sigIndex: sigIndex,
             attNonce: attNonce,
-            paddedTips: Tips.unwrap(rcpt.tips()),
-            rcptBodyPayload: rcptBody.unwrap().clone()
+            paddedTips: paddedTips,
+            rcptPayload: rcptPayload
         });
         if (wasAccepted) {
             emit ReceiptAccepted(rcptNotaryStatus.domain, notary, rcptPayload, rcptSignature);
@@ -129,7 +134,7 @@ contract Inbox is StatementInbox, InboxEvents, InterfaceInbox {
     }
 
     /// @inheritdoc InterfaceInbox
-    function passReceipt(uint32 attNotaryIndex, uint32 attNonce, uint256 paddedTips, bytes memory rcptBodyPayload)
+    function passReceipt(uint32 attNotaryIndex, uint32 attNonce, uint256 paddedTips, bytes memory rcptPayload)
         external
         returns (bool wasAccepted)
     {
@@ -141,7 +146,7 @@ contract Inbox is StatementInbox, InboxEvents, InterfaceInbox {
             sigIndex: type(uint256).max,
             attNonce: attNonce,
             paddedTips: paddedTips,
-            rcptBodyPayload: rcptBodyPayload
+            rcptPayload: rcptPayload
         });
     }
 
