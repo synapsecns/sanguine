@@ -4,6 +4,20 @@ const SHARED_OPACITY_OVERRIDE = `
   dark:active:bg-opacity-20
   `
 
+enum ColorOptions {
+  'gray',
+  'yellow',
+  'green',
+  'lime',
+  'sky',
+  'blue',
+  'orange',
+  'purple',
+  'indigo',
+  'cyan',
+  'red',
+}
+
 export const getButtonStyleForCoin = (tokenColor: string): string =>
   `shadow-${tokenColor}-xl border-${tokenColor}-100 dark:border-opacity-50 dark:border-${tokenColor}-700`
 
@@ -68,4 +82,4 @@ export const getSwapCardShadowStyleForCoin = (tokenColor: string): string =>
   `shadow-${tokenColor}-xl hover:shadow-${tokenColor}-2xl`
 
 export const getBorderStyleForCoinHover = (tokenColor: string): string =>
-  `hover:border-${tokenColor}-300`
+  `hover:!border-${tokenColor}-300`

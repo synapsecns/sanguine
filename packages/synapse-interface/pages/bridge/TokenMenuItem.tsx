@@ -1,3 +1,4 @@
+import { useMemo } from 'react'
 import { BigNumber } from '@ethersproject/bignumber'
 import { Zero } from '@ethersproject/constants'
 import { CHAINS_BY_ID } from '@constants/chains'
@@ -27,6 +28,7 @@ const TokenMenuItem = ({
   const isCurrentlySelected = selectedToken?.symbol === token?.symbol
 
   let bgClassName
+
   if (isCurrentlySelected) {
     bgClassName = `bg-bgLight hover:bg-bgLight active:bg-bgLight`
   } else {
@@ -39,16 +41,17 @@ const TokenMenuItem = ({
       tabIndex={active ? 1 : 0}
       onClick={onClick}
       className={`
-        flex items-center
-        transition-all duration-75
-        w-full rounded-xl
-        px-2 py-3
-        cursor-pointer
-        border border-transparent
-        ${getBorderStyleForCoinHover(token?.color)}
-        ${getMenuItemStyleForCoinCombined(token?.color)}
-        ${bgClassName}
-      `}
+      flex items-center
+      transition-all duration-75
+      w-full rounded-xl
+      px-2 py-3
+      cursor-pointer
+      border border-transparent
+      hover:bg-[#F18227]
+      ${bgClassName}
+      ${getBorderStyleForCoinHover(token?.color)}
+      ${getMenuItemStyleForCoinCombined(token?.color)}
+        `}
     >
       <ButtonContent
         token={token}
