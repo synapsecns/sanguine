@@ -137,13 +137,13 @@ const BridgePage = ({
   /*
   useEffect Triggers: toToken, fromInput, toChainId, time
   - Gets a quote when the polling function is executed or any of the bridge attributes are altered.
-  - Debounce quote call by calling quote price AFTER user has stopped typing for 1s or 1000ms
+  - Debounce quote call by calling quote price AFTER user has stopped typing for 500ms
   */
   useEffect(() => {
     let isCancelled = false
 
     const handleChange = async () => {
-      await timeout(1000) // debounce by 1000ms or 1s
+      await timeout(500) // debounce by 500ms
       if (!isCancelled) {
         if (
           fromChainId &&
@@ -507,7 +507,10 @@ const BridgePage = ({
   - Calculates slippage by subtracting fee from input amount (checks to ensure proper num of decimals are in use - ask someone about stable swaps if you want to learn more)
   */
   const getQuote = async () => {
-    setIsQuoteLoading(true)
+    // setIsQuoteLoading(true)
+    if (bridgeQuote === EMPTY_BRIDGE_QUOTE) {
+      setIsQuoteLoading(true)
+    }
     const { feeAmount, routerAddress, maxAmountOut, originQuery, destQuery } =
       await SynapseSDK.bridgeQuote(
         fromChainId,
@@ -550,7 +553,8 @@ const BridgePage = ({
         destQuery,
       },
     })
-    return setIsQuoteLoading(false)
+    setIsQuoteLoading(false)
+    return
   }
 
   /*
