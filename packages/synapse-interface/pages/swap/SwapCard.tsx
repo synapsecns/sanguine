@@ -349,6 +349,7 @@ const SwapCard = ({
     const desiredChainId = Number(chainId)
     const res = switchNetwork({ chainId: desiredChainId })
       .then((res) => {
+        setIsQuoteLoading(true)
         return res
       })
       .catch(() => {
@@ -404,9 +405,10 @@ const SwapCard = ({
           token.symbol,
           swapableToken.symbol
         )
+        setIsQuoteLoading(true)
         return
       case 'to':
-        resetRates()
+        setIsQuoteLoading(true)
         setToToken(token)
         updateUrlParams({
           inputCurrency: fromToken.symbol,
@@ -422,7 +424,9 @@ const SwapCard = ({
   - Calculates slippage by subtracting fee from input amount (checks to ensure proper num of decimals are in use - ask someone about stable swaps if you want to learn more)
   */
   const getQuote = async () => {
-    setIsQuoteLoading(true)
+    if (swapQuote === EMPTY_SWAP_QUOTE) {
+      setIsQuoteLoading(true)
+    }
     const { routerAddress, maxAmountOut, query } = await SynapseSDK.swapQuote(
       connectedChainId,
       fromToken.addresses[connectedChainId],
@@ -457,7 +461,8 @@ const SwapCard = ({
       delta: maxAmountOut,
       quote: query,
     })
-    return setIsQuoteLoading(false)
+    setIsQuoteLoading(false)
+    return
   }
 
   /*
