@@ -4,22 +4,53 @@ const SHARED_OPACITY_OVERRIDE = `
   dark:active:bg-opacity-20
   `
 
-enum ColorOptions {
-  'gray',
-  'yellow',
-  'green',
-  'lime',
-  'sky',
-  'blue',
-  'orange',
-  'purple',
-  'indigo',
-  'cyan',
-  'red',
+const ColorOptions = {
+  gray: 'gray',
+  yellow: 'yellow',
+  green: 'green',
+  lime: 'lime',
+  sky: 'sky',
+  blue: 'blue',
+  orange: 'orange',
+  purple: 'purple',
+  indigo: 'indigo',
+  cyan: 'cyan',
+  red: 'red',
 }
 
-export const getButtonStyleForCoin = (tokenColor: string): string =>
-  `shadow-${tokenColor}-xl border-${tokenColor}-100 dark:border-opacity-50 dark:border-${tokenColor}-700`
+// export const getButtonStyleForCoin = (tokenColor: string): string => {
+//   `shadow-${tokenColor}-xl border-${tokenColor}-100 dark:border-opacity-50 dark:border-${tokenColor}-700`
+
+// }
+
+export const getButtonStyleForCoin = (tokenColor: ColorOptions) => {
+  switch (tokenColor) {
+    case ColorOptions.gray:
+      return `hover:border-gray-100 dark:hover:border-opacity-50 dark:hover:!border-gray-700`
+    case ColorOptions.yellow:
+      return `hover:border-yellow-100 dark:hover:border-opacity-50 dark:hover:!border-yellow-700`
+    case ColorOptions.green:
+      return `hover:border-green-100 dark:hover:border-opacity-50 dark:hover:!border-green-700`
+    case ColorOptions.lime:
+      return `hover:border-lime-100 dark:hover:border-opacity-50 dark:hover:!border-lime-700`
+    case ColorOptions.sky:
+      return `hover:border-sky-100 dark:hover:border-opacity-50 dark:hover:!border-sky-700`
+    case ColorOptions.blue:
+      return `hover:border-blue-100 dark:hover:border-opacity-50 dark:hover:!border-blue-700`
+    case ColorOptions.orange:
+      return `hover:border-orange-100 dark:hover:border-opacity-50 dark:hover:!border-orange-700`
+    case ColorOptions.purple:
+      return `hover:border-purple-100 dark:hover:border-opacity-50 dark:hover:!border-purple-700`
+    case ColorOptions.indigo:
+      return `hover:border-indigo-100 dark:hover:border-opacity-50 dark:hover:!border-indigo-700`
+    case ColorOptions.cyan:
+      return `hover:border-cyan-100 dark:hover:border-opacity-50 dark:hover:!border-cyan-700`
+    case ColorOptions.red:
+      return `hover:border-red-100 dark:hover:border-opacity-50 dark:hover:!border-red-700`
+    default:
+      return ''
+  }
+}
 
 export const getMenuItemStyleForCoin = (tokenColor: string): string =>
   `hover:bg-${tokenColor}-50 focus:bg-${tokenColor}-50 active:bg-${tokenColor}-50`
@@ -81,5 +112,65 @@ export const getToStyleForCoin = (tokenColor: string): string =>
 export const getSwapCardShadowStyleForCoin = (tokenColor: string): string =>
   `shadow-${tokenColor}-xl hover:shadow-${tokenColor}-2xl`
 
-export const getBorderStyleForCoinHover = (tokenColor: string): string =>
-  `hover:!border-${tokenColor}-300`
+// export const getBorderStyleForCoinHover = (tokenColor: string): string =>
+//   `hover:!border-${tokenColor}-300`
+
+// export const getBorderStyleForCoinHover = (tokenColor: string) => {
+//   switch (tokenColor) {
+//     case ColorOptions.gray:
+//       return 'hover:!border-gray-300'
+//     case ColorOptions.yellow:
+//       return 'hover:!border-yellow-300'
+//     case ColorOptions.green:
+//       return 'hover:!border-green-300'
+//     case ColorOptions.lime:
+//       return 'hover:!border-lime-300'
+//     case ColorOptions.sky:
+//       return 'hover:!border-sky-300'
+//     case ColorOptions.blue:
+//       return 'hover:!border-blue-300'
+//     case ColorOptions.orange:
+//       return 'hover:!border-orange-300'
+//     case ColorOptions.purple:
+//       return 'hover:!border-purple-300'
+//     case ColorOptions.indigo:
+//       return 'hover:!border-indigo-300'
+//     case ColorOptions.cyan:
+//       return 'hover:!border-cyan-300'
+//     case ColorOptions.red:
+//       return 'hover:!border-red-300'
+//     default:
+//       return ''
+//   }
+// }
+
+/* eslint-disable */
+/**
+ * @param {Token} coin
+ */
+export function getBorderStyleForCoinHover(color: string) {
+  switch (color) {
+    case 'yellow':
+      return 'hover:!border-yellow-300'
+    case 'green':
+      return 'hover:!border-green-300'
+    case 'lime':
+      return 'hover:!border-lime-300'
+    case 'sky':
+      return 'hover:!border-sky-300'
+    case 'blue':
+      return 'hover:!border-blue-300'
+    case 'orange':
+      return 'hover:!border-orange-300'
+    case 'purple':
+      return 'hover:!border-purple-300'
+    case 'indigo':
+      return 'hover:!border-indigo-300'
+    case 'cyan':
+      return 'hover:!border-cyan-300'
+    case 'red':
+      return 'hover:!border-red-300'
+    default:
+      return 'hover:!border-gray-200'
+  }
+}

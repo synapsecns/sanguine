@@ -35,6 +35,19 @@ const TokenMenuItem = ({
     bgClassName = `bg-[#58535B] hover:bg-[#58535B] active:bg-[#58535B]`
   }
 
+  // ${bgClassName}
+  // ${getMenuItemStyleForCoinCombined(token?.color)}
+
+  console.log(
+    'getBorderStyleForCoinHover(token?.color): ',
+    getBorderStyleForCoinHover(token?.color)
+  )
+
+  const classNameForBorderStyle = getBorderStyleForCoinHover(token?.color)
+  const classNameForMenuItemStyle = getMenuItemStyleForCoinCombined(
+    token?.color
+  )
+
   return (
     <div
       // ref={ref}
@@ -47,10 +60,10 @@ const TokenMenuItem = ({
       px-2 py-3
       cursor-pointer
       border border-transparent
-      hover:bg-[#F18227]
+      hover:border-gray-200
       ${bgClassName}
-      ${getBorderStyleForCoinHover(token?.color)}
-      ${getMenuItemStyleForCoinCombined(token?.color)}
+      ${classNameForBorderStyle}
+      ${classNameForMenuItemStyle}
         `}
     >
       <ButtonContent
