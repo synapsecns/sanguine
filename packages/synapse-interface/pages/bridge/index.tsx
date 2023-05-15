@@ -507,7 +507,6 @@ const BridgePage = ({
   - Calculates slippage by subtracting fee from input amount (checks to ensure proper num of decimals are in use - ask someone about stable swaps if you want to learn more)
   */
   const getQuote = async () => {
-    // setIsQuoteLoading(true)
     if (bridgeQuote === EMPTY_BRIDGE_QUOTE) {
       setIsQuoteLoading(true)
     }
@@ -613,6 +612,7 @@ const BridgePage = ({
                     toChainId={toChainId}
                     toOptions={toOptions}
                     isQuoteLoading={isQuoteLoading}
+                    setIsQuoteLoading={setIsQuoteLoading}
                     destinationAddress={destinationAddress}
                     handleChainChange={handleChainChange}
                     handleTokenChange={handleTokenChange}
