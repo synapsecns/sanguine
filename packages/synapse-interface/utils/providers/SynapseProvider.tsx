@@ -2,7 +2,7 @@
 import { SynapseSDK } from '@synapsecns/sdk-router'
 import { Provider } from '@ethersproject/abstract-provider'
 import { createContext, useContext, memo, useMemo } from 'react'
-import { JsonRpcProvider } from '@ethersproject/providers'
+import { StaticJsonRpcProvider } from '@ethersproject/providers'
 import { Provider as EthersProvider } from '@ethersproject/abstract-provider'
 
 export const SynapseContext = createContext(null)
@@ -11,7 +11,7 @@ export const SynapseProvider = memo(
   ({ children, chains }: { children: React.ReactNode; chains: any[] }) => {
     const synapseProviders = useMemo(() => {
       return chains.map(
-        (chain) => new JsonRpcProvider(chain.configRpc, chain.id)
+        (chain) => new StaticJsonRpcProvider(chain.configRpc, chain.id)
       )
     }, [chains])
 
