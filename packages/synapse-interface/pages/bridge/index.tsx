@@ -154,8 +154,6 @@ const BridgePage = ({
           fromInput.bigNum.gt(Zero)
         ) {
           getQuote()
-            .then()
-            .catch((error) => console.error('getQuote error: ', error))
         } else {
           setBridgeQuote(EMPTY_BRIDGE_QUOTE)
         }
