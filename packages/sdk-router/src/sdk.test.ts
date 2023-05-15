@@ -96,6 +96,35 @@ describe('SynapseSDK', () => {
     })
   })
 
+  // test avax usdc.e > bsc usdc
+  describe('test custom deadline', () => {
+    it('test', async () => {
+      const chainIds = [43114, 56]
+      const providers = [avalancheProvider, bscProvider]
+      const Synapse = new SynapseSDK(chainIds, providers)
+      const { destQuery, originQuery } = await Synapse.bridgeQuote(
+        43114,
+        56,
+        '0xA7D7079b0FEaD91F3e65f86E8915Cb59c1a4C664',
+        '0x8AC76a51cc950d9822D68b83fE1Ad97B32Cd580d',
+        BigNumber.from('100000000'),
+        BigNumber.from('100000000')
+      )
+
+      expect(originQuery?.deadline).toStrictEqual(BigNumber.from('100000000'))
+      const { data, to } = await Synapse.bridge(
+        '0x0AF91FA049A7e1894F480bFE5bBa20142C6c29a9',
+        43114,
+        56,
+        '0x8AC76a51cc950d9822D68b83fE1Ad97B32Cd580d',
+        BigNumber.from('100000000'),
+        originQuery!,
+        destQuery!
+      )
+      expect(data?.length).toBeGreaterThan(0)
+      expect(to?.length).toBeGreaterThan(0)
+    })
+  })
   // test gohn arb > gohn avax
   describe('bridge', () => {
     it('test', async () => {

@@ -61,7 +61,8 @@ class SynapseSDK {
     destChainId: number,
     tokenIn: string,
     tokenOut: string,
-    amountIn: BigintIsh
+    amountIn: BigintIsh,
+    deadline?: BigNumber
   ): Promise<{
     feeAmount?: BigNumber | undefined
     feeConfig?: FeeConfig | undefined
@@ -76,6 +77,13 @@ class SynapseSDK {
     let destQuery
     const originRouter: SynapseRouter = this.synapseRouters[originChainId]
     const destRouter: SynapseRouter = this.synapseRouters[destChainId]
+
+    // Set deadline
+    if (!deadline) {
+      const currentTimestamp = Math.floor(Date.now() / 1000)
+      const futureTimestamp = currentTimestamp + 10 * 60
+      deadline = BigNumber.from(futureTimestamp)
+    }
 
     // Step 0: find connected bridge tokens on destination
     const bridgeTokens =
@@ -135,6 +143,15 @@ class SynapseSDK {
         originQuery.minAmountOut
       )
       feeConfig = await destRouter.routerContract.fee(destInToken)
+    }
+
+    if (originQuery && destQuery) {
+      originQuery = [...originQuery] as Query
+      originQuery[3] = deadline
+      originQuery.deadline = deadline
+      destQuery = [...destQuery] as Query
+      destQuery[3] = deadline
+      destQuery.deadline = deadline
     }
 
     // Router address so allowance handling be set by client
