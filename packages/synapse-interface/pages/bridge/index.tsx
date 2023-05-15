@@ -433,6 +433,7 @@ const BridgePage = ({
         ).then((tokens) => {
           setFromTokens(tokens)
         })
+        setIsQuoteLoading(true)
         return
       } else if (type === 'to') {
         const {
@@ -450,7 +451,7 @@ const BridgePage = ({
           fromToken.symbol,
           toBridgeableToken.symbol
         )
-
+        setIsQuoteLoading(true)
         return
       }
     },
