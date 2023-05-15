@@ -427,7 +427,7 @@ const SwapCard = ({
       connectedChainId,
       fromToken.addresses[connectedChainId],
       toToken.addresses[connectedChainId],
-      fromInput.bigNum
+      fromInput.bigNum.mul(999).div(1000)
     )
     if (!(query && maxAmountOut)) {
       setSwapQuote(EMPTY_SWAP_QUOTE_ZERO)
@@ -469,12 +469,17 @@ const SwapCard = ({
     const wallet = await fetchSigner({
       chainId: connectedChainId,
     })
-
+    console.log(
+      'waromInput.bigNum.mul(1000).div(995)llet',
+      fromInput.bigNum.toString(),
+      fromInput.bigNum.mul(999).div(1000).toString(),
+      swapQuote.quote.minAmountOut.toString()
+    )
     const data = await SynapseSDK.swap(
       connectedChainId,
       address,
       fromToken.addresses[connectedChainId as keyof Token['addresses']],
-      fromInput.bigNum.mul(1000).div(999), // TODO Get rid of hardcoded slippage
+      fromInput.bigNum.mul(999).div(1000), // TODO Get rid of hardcoded slippage
       swapQuote.quote
     )
     const tx = await wallet.sendTransaction(data)
@@ -665,7 +670,7 @@ const SwapCard = ({
         </Grid>
 
         <ExchangeRateInfo
-          fromAmount={fromInput.bigNum}
+          fromAmount={fromInput.bigNum.mul(999).div(1000)}
           toToken={toToken}
           exchangeRate={swapQuote.exchangeRate}
           toChainId={connectedChainId}
