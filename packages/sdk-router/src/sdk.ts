@@ -204,7 +204,8 @@ class SynapseSDK {
     chainId: number,
     tokenIn: string,
     tokenOut: string,
-    amountIn: BigintIsh
+    amountIn: BigintIsh,
+    deadline?: BigNumber
   ): Promise<{
     routerAddress?: string | undefined
     maxAmountOut?: BigNumber | undefined
@@ -212,11 +213,15 @@ class SynapseSDK {
   }> {
     tokenOut = handleNativeToken(tokenOut)
     tokenIn = handleNativeToken(tokenIn)
-
+    // Set deadline
+    if (!deadline) {
+      const defaultDeadline = Math.floor(Date.now() / 1000) + 10 * 60
+      deadline = BigNumber.from(defaultDeadline)
+    }
     const router: SynapseRouter = this.synapseRouters[chainId]
 
     // Step 0: get the swap quote
-    const query = await router.routerContract.getAmountOut(
+    let query = await router.routerContract.getAmountOut(
       tokenIn,
       tokenOut,
       amountIn
@@ -225,6 +230,12 @@ class SynapseSDK {
     // Router address so allowance handling be set by client
     const routerAddress = router.routerContract.address
     const maxAmountOut = query.minAmountOut
+
+    if (query) {
+      query = [...query] as Query
+      query[3] = deadline
+      query.deadline = deadline
+    }
     return {
       routerAddress,
       maxAmountOut,
