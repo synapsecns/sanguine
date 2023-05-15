@@ -35,9 +35,6 @@ const TokenMenuItem = ({
     bgClassName = `bg-[#58535B] hover:bg-[#58535B] active:bg-[#58535B]`
   }
 
-  // ${bgClassName}
-  // ${getMenuItemStyleForCoinCombined(token?.color)}
-
   const classNameForBorderStyle = getBorderStyleForCoinHover(token?.color)
   const classNameForMenuItemStyle = getMenuItemStyleForCoinCombined(
     token?.color
@@ -55,9 +52,9 @@ const TokenMenuItem = ({
       px-2 py-3
       cursor-pointer
       border border-transparent
+      ${bgClassName}
       ${classNameForBorderStyle}
       ${classNameForMenuItemStyle}
-      ${bgClassName}
         `}
     >
       <ButtonContent
