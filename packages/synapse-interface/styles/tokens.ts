@@ -12,8 +12,8 @@ const ColorOptions = {
   red: 'red',
 }
 
-export const getButtonStyleForCoin = (color: string) => {
-  switch (color) {
+export const getButtonStyleForCoin = (tokenColor: string) => {
+  switch (tokenColor) {
     case ColorOptions.gray:
       return `hover:border-gray-100 dark:hover:border-opacity-50 dark:hover:!border-gray-700`
     case ColorOptions.yellow:
@@ -41,12 +41,12 @@ export const getButtonStyleForCoin = (color: string) => {
   }
 }
 
-export const getMenuItemStyleForCoin = (color: string): string => {
-  switch (color) {
+export const getMenuItemStyleForCoin = (tokenColor: string): string => {
+  switch (tokenColor) {
     case ColorOptions.gray:
-      return `hover:bg-opacity-50 hover:!bg-gray-500 focus:bg-gray-50 active:bg-gray-50`
+      return `hover:bg-opacity-20 hover:!bg-gray-500 focus:bg-gray-50 active:bg-gray-50`
     case ColorOptions.yellow:
-      return `hover:bg-opacity-30 hover:bg-yellow-500 focus:bg-yellow-50 active:bg-yellow-50`
+      return `hover:bg-opacity-20 hover:bg-yellow-500 focus:bg-yellow-50 active:bg-yellow-50`
     case ColorOptions.green:
       return `hover:bg-opacity-20 hover:!bg-green-500 focus:bg-green-50 active:bg-green-50`
     case ColorOptions.lime:
@@ -165,27 +165,27 @@ export const getMenuItemBgForCoin = (tokenColor: string): string => {
 export const getMenuItemHoverBgForCoin = (tokenColor: string): string => {
   switch (tokenColor) {
     case ColorOptions.gray:
-      return `hover:bg-gray-100 dark:hover:bg-opacity-20 dark:hover:bg-gray-700`
+      return `hover:bg-opacity-20 hover:bg-gray-500 dark:hover:bg-opacity-20 dark:hover:bg-gray-700`
     case ColorOptions.yellow:
-      return `hover:bg-yellow-100 dark:hover:bg-opacity-20 dark:hover:bg-yellow-700`
+      return `hover:bg-opacity-20 hover:bg-yellow-500 dark:hover:bg-opacity-20 dark:hover:bg-yellow-700`
     case ColorOptions.green:
-      return `hover:bg-green-100 dark:hover:bg-opacity-20 dark:hover:bg-green-700`
+      return `hover:bg-opacity-20 hover:bg-green-500 dark:hover:bg-opacity-20 dark:hover:bg-green-700`
     case ColorOptions.lime:
-      return `hover:bg-lime-100 dark:hover:bg-opacity-20 dark:hover:bg-lime-700`
+      return `hover:bg-opacity-20 hover:bg-lime-500 dark:hover:bg-opacity-20 dark:hover:bg-lime-700`
     case ColorOptions.sky:
-      return `hover:bg-sky-100 dark:hover:bg-opacity-20 dark:hover:bg-sky-700`
+      return `hover:bg-opacity-20 hover:bg-sky-500 dark:hover:bg-opacity-20 dark:hover:bg-sky-700`
     case ColorOptions.blue:
-      return `hover:bg-blue-100 dark:hover:bg-opacity-20 dark:hover:bg-blue-700`
+      return `hover:bg-opacity-20 hover:bg-blue-500 dark:hover:bg-opacity-20 dark:hover:bg-blue-700`
     case ColorOptions.orange:
-      return `hover:bg-orange-100 dark:hover:bg-opacity-20 dark:hover:bg-orange-700`
+      return `hover:bg-opacity-20 hover:bg-orange-500 dark:hover:bg-opacity-20 dark:hover:bg-orange-700`
     case ColorOptions.purple:
-      return `hover:bg-purple-100 dark:hover:bg-opacity-20 dark:hover:bg-purple-700`
+      return `hover:bg-opacity-20 hover:bg-purple-500 dark:hover:bg-opacity-20 dark:hover:bg-purple-700`
     case ColorOptions.indigo:
-      return `hover:bg-indigo-100 dark:hover:bg-opacity-20 dark:hover:bg-indigo-700`
+      return `hover:bg-opacity-20 hover:bg-indigo-500 dark:hover:bg-opacity-20 dark:hover:bg-indigo-700`
     case ColorOptions.cyan:
-      return `hover:bg-cyan-100 dark:hover:bg-opacity-20 dark:hover:bg-cyan-700`
+      return `hover:bg-opacity-20 hover:bg-cyan-500 dark:hover:bg-opacity-20 dark:hover:bg-cyan-700`
     case ColorOptions.red:
-      return `hover:bg-red-100 dark:hover:bg-opacity-20 dark:hover:bg-red-700`
+      return `hover:bg-opacity-20hover:bg-red-500 dark:hover:bg-opacity-20 dark:hover:bg-red-700`
     default:
       return ''
   }
@@ -514,8 +514,8 @@ export const getSwapCardShadowStyleForCoin = (tokenColor: string): string => {
   }
 }
 
-export const getBorderStyleForCoinHover = (color: string) => {
-  switch (color) {
+export const getBorderStyleForCoinHover = (tokenColor: string) => {
+  switch (tokenColor) {
     case ColorOptions.yellow:
       return 'hover:border-yellow-300'
     case ColorOptions.green:
