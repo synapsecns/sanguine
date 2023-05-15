@@ -4,7 +4,7 @@ import { BigNumber } from '@ethersproject/bignumber'
 
 import { SynapseSDK } from './sdk'
 jest.setTimeout(30000)
-// TODO add more tests checking parity of to and from values
+// TODO add more tests checking parity of to/from values
 // as well as more token/chain combinations
 describe('SynapseSDK', () => {
   const ethProvider: Provider = new etherProvider.JsonRpcProvider(
