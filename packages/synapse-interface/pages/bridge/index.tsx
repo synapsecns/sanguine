@@ -488,10 +488,11 @@ const BridgePage = ({
           token.symbol,
           bridgeableToken.symbol
         )
+        setIsQuoteLoading(true)
         return
       case 'to':
         setToToken(token)
-        resetRates()
+        setIsQuoteLoading(true)
         updateUrlParams({
           outputChain: toChainId,
           inputCurrency: fromToken.symbol,
