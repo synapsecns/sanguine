@@ -66,9 +66,10 @@ const config = {
         items: [
           {
             type: 'doc',
-            docId: 'intro',
+            docId: 'sdk/index',
             position: 'left',
             label: 'Tutorial',
+            items: ['sdk/usage', 'sdk/examples'],
           },
           {
             href: 'https://github.com/facebook/docusaurus',
