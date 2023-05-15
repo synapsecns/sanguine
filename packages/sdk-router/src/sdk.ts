@@ -80,9 +80,8 @@ class SynapseSDK {
 
     // Set deadline
     if (!deadline) {
-      const currentTimestamp = Math.floor(Date.now() / 1000)
-      const futureTimestamp = currentTimestamp + 10 * 60
-      deadline = BigNumber.from(futureTimestamp)
+      const defaultDeadline = Math.floor(Date.now() / 1000) + 10 * 60
+      deadline = BigNumber.from(defaultDeadline)
     }
 
     // Step 0: find connected bridge tokens on destination
