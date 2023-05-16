@@ -1,9 +1,12 @@
-const CUSTOM_YELLOW = '[#ecae0b]'
-const CUSTOM_YELLOW_DARK = '[#3c3c44]'
-const ETH_BASE = '[#5170ad]'
-const ETH_DARK = '[#3f4f8c]'
-const ETH_EXTRA_DARK = '[#314367]'
-const ETH_LIGHT = '[#78a5ff]'
+/* eslint-disable */
+const CustomColors = {
+  CUSTOM_YELLOW: '[#ecae0b]',
+  CUSTOM_YELLOW_DARK: '[#3c3c44]',
+  ETH_BASE: '[#5170ad]',
+  ETH_DARK: '[#3f4f8c]',
+  ETH_EXTRA_DARK: '[#314367]',
+  ETH_LIGHT: '[#78a5ff]',
+}
 
 const ColorOptions = {
   GRAY: 'gray',
@@ -60,15 +63,6 @@ const ColorOptions = {
 //   }
 // }
 
-// export const getNetworkCurrencyColor = (chain: Chain): string => {
-//   if (chain.color === 'yellow') {
-//     return `text-[#ecae0b] dark:text-[#ecae0b]`
-//   } else if (chain.nativeCurrency.symbol === 'ETH') {
-//     return `text-[#5170ad] dark:text-[#78a5ff]`
-//   }
-//   return `text-${chain.color}-500 dark:text-${chain.color}-500`
-// }
-
 export const getNetworkButtonBgClassName = (chainColor: string): string => {
   switch (chainColor) {
     case ColorOptions.YELLOW:
@@ -99,15 +93,6 @@ export const getNetworkButtonBgClassName = (chainColor: string): string => {
       return `bg-gray-500 hover:bg-gray-600 active:bg-gray-700`
   }
 }
-
-// export const getNetworkButtonBgClassName = (chainColor: string): string => {
-//   if (chainColor === 'yellow') {
-//     return `bg-stone-800 hover:bg-stone-900 active:bg-[#3c3c44]`
-//   } else if (chainColor === 'eth') {
-//     return `bg-[#5170ad] hover:bg-[#3f4f8c] active:bg-[#314367]`
-//   }
-//   return `bg-${chainColor}-500 hover:bg-${chainColor}-600 active:bg-${chainColor}-700`
-// }
 
 export const getNetworkButtonBgClassNameActive = (
   chainColor: string
@@ -142,17 +127,6 @@ export const getNetworkButtonBgClassNameActive = (
   }
 }
 
-// export const getNetworkButtonBgClassNameActive = (
-//   chainColor: string
-// ): string => {
-//   if (chainColor === 'yellow') {
-//     return `dark:active:bg-[#3c3c44]`
-//   } else if (chainColor === 'eth') {
-//     return `dark:active:bg-[#314367]`
-//   }
-//   return `dark:active:bg-${chainColor}-500`
-// }
-
 export const getNetworkButtonBorderHover = (chainColor: string): string => {
   switch (chainColor) {
     case ColorOptions.YELLOW:
@@ -183,15 +157,6 @@ export const getNetworkButtonBorderHover = (chainColor: string): string => {
       return `hover:border-gray-500`
   }
 }
-
-// export const getNetworkButtonBorderHover = (chainColor: string): string => {
-//   if (chainColor === 'yellow') {
-//     return `hover:border-[#ecae0b]`
-//   } else if (chainColor === 'eth') {
-//     return `hover:border-[#5170ad]`
-//   }
-//   return `hover:border-${chainColor}-500'`
-// }
 
 export const getNetworkButtonBorderActive = (chainColor: string): string => {
   switch (chainColor) {
@@ -224,15 +189,6 @@ export const getNetworkButtonBorderActive = (chainColor: string): string => {
   }
 }
 
-// export const getNetworkButtonBorderActive = (chainColor: string): string => {
-//   if (chainColor === 'yellow') {
-//     return `focus:border-[#ecae0b] active:border-[#ecae0b]`
-//   } else if (chainColor === 'eth') {
-//     return `focus:border-[#5170ad] active:border-[#5170ad]`
-//   }
-//   return `focus:border-${chainColor}-500 active:border-${chainColor}-500`
-// }
-
 export const getNetworkButtonBorder = (chainColor: string): string => {
   switch (chainColor) {
     case ColorOptions.YELLOW:
@@ -263,15 +219,6 @@ export const getNetworkButtonBorder = (chainColor: string): string => {
       return `border-gray-500 dark:border-gray-500`
   }
 }
-
-// export const getNetworkButtonBorder = (chainColor: string): string => {
-//   if (chainColor === 'yellow') {
-//     return `border-[#ecae0b] dark:border-[#ecae0b]`
-//   } else if (chainColor === 'eth') {
-//     return `border-[#5170ad] dark:border-[#5170ad]`
-//   }
-//   return `border-${chainColor}-500 dark:border-${chainColor}-500`
-// }
 
 export const getNetworkButtonBorderImportant = (chainColor: string): string => {
   switch (chainColor) {
@@ -304,15 +251,6 @@ export const getNetworkButtonBorderImportant = (chainColor: string): string => {
   }
 }
 
-// export const getNetworkButtonBorderImportant = (chainColor: string): string => {
-//   if (chainColor === 'yellow') {
-//     return `border-[#ecae0b] dark:border-[#ecae0b]`
-//   } else if (chainColor === 'eth') {
-//     return `border-[#5170ad] dark:border-[#5170ad]`
-//   }
-//   return `border-${chainColor}-500 dark:border-${chainColor}-500`
-// }
-
 export const getNetworkTextColor = (chainColor: string): string => {
   switch (chainColor) {
     case ColorOptions.YELLOW:
@@ -343,15 +281,6 @@ export const getNetworkTextColor = (chainColor: string): string => {
       return `text-gray-500 dark:text-gray-500`
   }
 }
-
-// export const getNetworkTextColor = (chainColor: string): string => {
-//   if (chainColor === 'yellow') {
-//     return `text-[#ecae0b] dark:text-[#ecae0b]`
-//   } else if (chainColor === 'eth') {
-//     return `text-[#5170ad] dark:text-[#78a5ff]`
-//   }
-//   return `text-${chainColor}-500 dark:text-${chainColor}-500`
-// }
 
 export const getNetworkLinkTextColor = (chainColor: string): string => {
   switch (chainColor) {
@@ -384,22 +313,6 @@ export const getNetworkLinkTextColor = (chainColor: string): string => {
   }
 }
 
-// export const getNetworkLinkTextColor = (chainColor: string): string => {
-//   if (chainColor === 'yellow') {
-//     return `text-gray-800 hover:text-[#ecae0b] dark:text-[#ecae0b] dark:hover:text-[#ecae0b]`
-//   } else if (chainColor === 'eth') {
-//     return `text-[#5170ad] hover:text-[#78a5ff] dark:hover:text-[#78a5ff]`
-//   }
-//   return `text-${chainColor}-500 hover:text-${chainColor}-600 dark:hover:text-${chainColor}-500`
-// }
-
-// export const getNetworkTextColorContrast = (chainColor: string): string => {
-//   if (chainColor === 'yellow') {
-//     return `text-[#ecae0b]`
-//   }
-//   return 'text-white'
-// }
-
 export const getNetworkTextColorContrast = (chainColor: string): string => {
   switch (chainColor) {
     case ColorOptions.YELLOW:
@@ -421,15 +334,6 @@ export const getNetworkTextColorContrast = (chainColor: string): string => {
       return 'text-white'
   }
 }
-
-// export const getNetworkTextColorContrastHover = (
-//   chainColor: string
-// ): string => {
-//   if (chainColor === 'yellow') {
-//     return `group-hover:text-[#ecae0b]`
-//   }
-//   return 'group-hover:text-white'
-// }
 
 export const getNetworkTextColorContrastHover = (
   chainColor: string
@@ -486,15 +390,6 @@ export const getNetworkBgClassName = (chainColor: string): string => {
   }
 }
 
-// export const getNetworkBgClassName = (chainColor: string): string => {
-//   if (chainColor === 'yellow') {
-//     return 'bg-stone-800'
-//   } else if (chainColor === 'eth') {
-//     return `bg-[#5170ad]`
-//   }
-//   return `bg-${chainColor}-500`
-// }
-
 export const getNetworkBgClassNameLightDark = (chainColor: string): string => {
   switch (chainColor) {
     case ColorOptions.YELLOW:
@@ -526,15 +421,6 @@ export const getNetworkBgClassNameLightDark = (chainColor: string): string => {
   }
 }
 
-// export const getNetworkBgClassNameLightDark = (chainColor: string): string => {
-//   if (chainColor === 'yellow') {
-//     return `bg-[#ecae0b]`
-//   } else if (chainColor === 'eth') {
-//     return `bg-[#5170ad]`
-//   }
-//   return `bg-${chainColor}-500`
-// }
-
 export const getNetworkShadow = (chainColor: string): string => {
   switch (chainColor) {
     case ColorOptions.ETH:
@@ -565,22 +451,6 @@ export const getNetworkShadow = (chainColor: string): string => {
       return `shadow-gray-xl hover:shadow-gray-2xl`
   }
 }
-
-// export const getNetworkShadow = (chainColor: string): string => {
-//   if (chainColor === 'eth') {
-//     return `shadow-blue-xl hover:shadow-blue-2xl`
-//   }
-//   return `shadow-${chainColor}-xl hover:shadow-${chainColor}-2xl`
-// }
-
-// export const getNetworkHover = (chainColor: string): string => {
-//   if (chainColor === 'yellow') {
-//     return `hover:bg-[#ecae0b] hover:bg-opacity-20`
-//   } else if (chainColor === 'eth') {
-//     return `hover:bg-[#5170ad] hover:bg-opacity-20`
-//   }
-//   return `hover:bg-${chainColor}-500 hover:bg-${chainColor}-20`
-// }
 
 export const getNetworkHover = (chainColor: string): string => {
   switch (chainColor) {
