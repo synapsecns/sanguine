@@ -8,7 +8,6 @@ import { id } from '@ethersproject/hash'
 import { TOKEN_HASH_MAP } from '@constants/tokens'
 import { getAddress } from '@ethersproject/address'
 import * as CHAINS from '@constants/chains/master'
-import { BigNumber } from '@ethersproject/bignumber'
 import { WETH } from '@constants/tokens/swapMaster'
 import {
   SYN,
