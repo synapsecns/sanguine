@@ -7,6 +7,20 @@ const ETH_DARK = '[#3f4f8c]'
 const ETH_EXTRA_DARK = '[#314367]'
 const ETH_LIGHT = '[#78a5ff]'
 
+const ColorOptions = {
+  GRAY: 'gray',
+  YELLOW: 'yellow',
+  GREEN: 'green',
+  LIME: 'lime',
+  SKY: 'sky',
+  BLUE: 'blue',
+  ORANGE: 'orange',
+  PURPLE: 'purple',
+  INDIGO: 'indigo',
+  CYAN: 'cyan',
+  RED: 'red',
+}
+
 // TODO obviously this can be cleaned up
 // 1. define custom yellow/eth with tailwind
 // 2. remove all the if/else
@@ -136,11 +150,42 @@ export const getNetworkShadow = (chainColor: string): string => {
   return `!shadow-${chainColor}-xl hover:!shadow-${chainColor}-2xl`
 }
 
+// export const getNetworkHover = (chainColor: string): string => {
+//   if (chainColor === 'yellow') {
+//     return `hover:!bg-${CUSTOM_YELLOW} hover:!bg-opacity-20`
+//   } else if (chainColor === 'eth') {
+//     return `hover:!bg-${ETH_BASE} hover:!bg-opacity-20`
+//   }
+//   return `hover:!bg-${chainColor}-500 hover:!bg-${chainColor}-20`
+// }
+
 export const getNetworkHover = (chainColor: string): string => {
-  if (chainColor === 'yellow') {
-    return `hover:!bg-${CUSTOM_YELLOW} hover:!bg-opacity-20`
-  } else if (chainColor === 'eth') {
-    return `hover:!bg-${ETH_BASE} hover:!bg-opacity-20`
+  switch (chainColor) {
+    case 'eth':
+      return `hover:!bg-${ETH_BASE} hover:bg-opacity-20`
+    case ColorOptions.YELLOW:
+      return `hover:!bg-[#ecae0b] hover:bg-opacity-20`
+    case ColorOptions.GRAY:
+      return `hover:!bg-gray-500 hover:bg-opacity-20`
+    case ColorOptions.GREEN:
+      return `hover:!bg-green-500 hover:bg-opacity-20`
+    case ColorOptions.LIME:
+      return `hover:!bg-lime-500 hover:bg-opacity-20`
+    case ColorOptions.SKY:
+      return `hover:!bg-sky-500 hover:bg-opacity-20`
+    case ColorOptions.BLUE:
+      return `hover:!bg-blue-500 hover:bg-opacity-20`
+    case ColorOptions.ORANGE:
+      return `hover:!bg-orange-500 hover:bg-opacity-20`
+    case ColorOptions.PURPLE:
+      return `hover:!bg-purple-500 hover:bg-opacity-20`
+    case ColorOptions.INDIGO:
+      return `hover:!bg-indigo-500 hover:bg-opacity-20`
+    case ColorOptions.CYAN:
+      return `hover:!bg-cyan-500 hover:bg-opacity-20`
+    case ColorOptions.RED:
+      return `hover:!bg-red-500 hover:bg-opacity-20`
+    default:
+      return `hover:!bg-gray-500 hover:bg-opacity-20`
   }
-  return `hover:!bg-${chainColor}-500 hover:!bg-${chainColor}-20`
 }
