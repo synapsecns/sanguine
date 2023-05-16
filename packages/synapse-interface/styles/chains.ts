@@ -57,40 +57,166 @@ export const getNetworkButtonBgClassNameActive = (
   }
   return `dark:active:!bg-${chainColor}-500`
 }
+
 export const getNetworkButtonBorderHover = (chainColor: string): string => {
-  if (chainColor === 'yellow') {
-    return `hover:!border-${CUSTOM_YELLOW}`
-  } else if (chainColor === 'eth') {
-    return `hover:!border-${ETH_BASE}`
+  switch (chainColor) {
+    case ColorOptions.YELLOW:
+      return `hover:!border-${CUSTOM_YELLOW}`
+    case ColorOptions.ETH:
+      return `hover:!border-${ETH_BASE}`
+    case ColorOptions.GRAY:
+      return `hover:!border-gray-500`
+    case ColorOptions.GREEN:
+      return `hover:!border-green-500`
+    case ColorOptions.LIME:
+      return `hover:!border-lime-500`
+    case ColorOptions.SKY:
+      return `hover:!border-sky-500`
+    case ColorOptions.BLUE:
+      return `hover:!border-blue-500`
+    case ColorOptions.ORANGE:
+      return `hover:!border-orange-500`
+    case ColorOptions.PURPLE:
+      return `hover:!border-purple-500`
+    case ColorOptions.INDIGO:
+      return `hover:!border-indigo-500`
+    case ColorOptions.CYAN:
+      return `hover:!border-cyan-500`
+    case ColorOptions.RED:
+      return `hover:!border-red-500`
+    default:
+      return `hover:!border-gray-500`
   }
-  return `hover:!border-${chainColor}-500'`
 }
+
+// export const getNetworkButtonBorderHover = (chainColor: string): string => {
+//   if (chainColor === 'yellow') {
+//     return `hover:!border-${CUSTOM_YELLOW}`
+//   } else if (chainColor === 'eth') {
+//     return `hover:!border-${ETH_BASE}`
+//   }
+//   return `hover:!border-${chainColor}-500'`
+// }
+
 export const getNetworkButtonBorderActive = (chainColor: string): string => {
-  if (chainColor === 'yellow') {
-    return `focus:!border-${CUSTOM_YELLOW} active:!border-${CUSTOM_YELLOW}`
-  } else if (chainColor === 'eth') {
-    return `focus:!border-${ETH_BASE} active:!border-${ETH_BASE}`
+  switch (chainColor) {
+    case ColorOptions.YELLOW:
+      return `focus:!border-${CUSTOM_YELLOW} active:!border-${CUSTOM_YELLOW}`
+    case ColorOptions.ETH:
+      return `focus:!border-${ETH_BASE} active:!border-${ETH_BASE}`
+    case ColorOptions.GRAY:
+      return `focus:!border-gray-500 active:!border-gray-500`
+    case ColorOptions.GREEN:
+      return `focus:!border-green-500 active:!border-green-500`
+    case ColorOptions.LIME:
+      return `focus:!border-lime-500 active:!border-lime-500`
+    case ColorOptions.SKY:
+      return `focus:!border-sky-500 active:!border-sky-500`
+    case ColorOptions.BLUE:
+      return `focus:!border-blue-500 active:!border-blue-500`
+    case ColorOptions.ORANGE:
+      return `focus:!border-orange-500 active:!border-orange-500`
+    case ColorOptions.PURPLE:
+      return `focus:!border-purple-500 active:!border-purple-500`
+    case ColorOptions.INDIGO:
+      return `focus:!border-indigo-500 active:!border-indigo-500`
+    case ColorOptions.CYAN:
+      return `focus:!border-cyan-500 active:!border-cyan-500`
+    case ColorOptions.RED:
+      return `focus:!border-red-500 active:!border-red-500`
+    default:
+      return `focus:!border-gray-500 active:!border-gray-500`
   }
-  return `focus:!border-${chainColor}-500 active:!border-${chainColor}-500`
 }
+
+// export const getNetworkButtonBorderActive = (chainColor: string): string => {
+//   if (chainColor === 'yellow') {
+//     return `focus:!border-${CUSTOM_YELLOW} active:!border-${CUSTOM_YELLOW}`
+//   } else if (chainColor === 'eth') {
+//     return `focus:!border-${ETH_BASE} active:!border-${ETH_BASE}`
+//   }
+//   return `focus:!border-${chainColor}-500 active:!border-${chainColor}-500`
+// }
 
 export const getNetworkButtonBorder = (chainColor: string): string => {
-  if (chainColor === 'yellow') {
-    return `border-${CUSTOM_YELLOW} dark:border-${CUSTOM_YELLOW}`
-  } else if (chainColor === 'eth') {
-    return `border-${ETH_BASE} dark:border-${ETH_BASE}`
+  switch (chainColor) {
+    case ColorOptions.YELLOW:
+      return `border-${CUSTOM_YELLOW} dark:border-${CUSTOM_YELLOW}`
+    case ColorOptions.ETH:
+      return `border-${ETH_BASE} dark:border-${ETH_BASE}`
+    case ColorOptions.GRAY:
+      return `border-gray-500 dark:border-gray-500`
+    case ColorOptions.GREEN:
+      return `border-green-500 dark:border-green-500`
+    case ColorOptions.LIME:
+      return `border-lime-500 dark:border-lime-500`
+    case ColorOptions.SKY:
+      return `border-sky-500 dark:border-sky-500`
+    case ColorOptions.BLUE:
+      return `border-blue-500 dark:border-blue-500`
+    case ColorOptions.ORANGE:
+      return `border-orange-500 dark:border-orange-500`
+    case ColorOptions.PURPLE:
+      return `border-purple-500 dark:border-purple-500`
+    case ColorOptions.INDIGO:
+      return `border-indigo-500 dark:border-indigo-500`
+    case ColorOptions.CYAN:
+      return `border-cyan-500 dark:border-cyan-500`
+    case ColorOptions.RED:
+      return `border-red-500 dark:border-red-500`
+    default:
+      return `border-gray-500 dark:border-gray-500`
   }
-  return `border-${chainColor}-500 dark:border-${chainColor}-500`
 }
 
+// export const getNetworkButtonBorder = (chainColor: string): string => {
+//   if (chainColor === 'yellow') {
+//     return `border-${CUSTOM_YELLOW} dark:border-${CUSTOM_YELLOW}`
+//   } else if (chainColor === 'eth') {
+//     return `border-${ETH_BASE} dark:border-${ETH_BASE}`
+//   }
+//   return `border-${chainColor}-500 dark:border-${chainColor}-500`
+// }
+
 export const getNetworkButtonBorderImportant = (chainColor: string): string => {
-  if (chainColor === 'yellow') {
-    return `!border-${CUSTOM_YELLOW} dark:!border-${CUSTOM_YELLOW}`
-  } else if (chainColor === 'eth') {
-    return `!border-${ETH_BASE} dark:!border-${ETH_BASE}`
+  switch (chainColor) {
+    case ColorOptions.YELLOW:
+      return `!border-${CUSTOM_YELLOW} dark:!border-${CUSTOM_YELLOW}`
+    case ColorOptions.ETH:
+      return `!border-${ETH_BASE} dark:!border-${ETH_BASE}`
+    case ColorOptions.GRAY:
+      return `!border-gray-500 dark:!border-gray-500`
+    case ColorOptions.GREEN:
+      return `!border-green-500 dark:!border-green-500`
+    case ColorOptions.LIME:
+      return `!border-lime-500 dark:!border-lime-500`
+    case ColorOptions.SKY:
+      return `!border-sky-500 dark:!border-sky-500`
+    case ColorOptions.BLUE:
+      return `!border-blue-500 dark:!border-blue-500`
+    case ColorOptions.ORANGE:
+      return `!border-orange-500 dark:!border-orange-500`
+    case ColorOptions.PURPLE:
+      return `!border-purple-500 dark:!border-purple-500`
+    case ColorOptions.INDIGO:
+      return `!border-indigo-500 dark:!border-indigo-500`
+    case ColorOptions.CYAN:
+      return `!border-cyan-500 dark:!border-cyan-500`
+    case ColorOptions.RED:
+      return `!border-red-500 dark:!border-red-500`
+    default:
+      return `!border-gray-500 dark:!border-gray-500`
   }
-  return `!border-${chainColor}-500 dark:!border-${chainColor}-500`
 }
+
+// export const getNetworkButtonBorderImportant = (chainColor: string): string => {
+//   if (chainColor === 'yellow') {
+//     return `!border-${CUSTOM_YELLOW} dark:!border-${CUSTOM_YELLOW}`
+//   } else if (chainColor === 'eth') {
+//     return `!border-${ETH_BASE} dark:!border-${ETH_BASE}`
+//   }
+//   return `!border-${chainColor}-500 dark:!border-${chainColor}-500`
+// }
 
 export const getNetworkTextColor = (chainColor: string): string => {
   switch (chainColor) {
