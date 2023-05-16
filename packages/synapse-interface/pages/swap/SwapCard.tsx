@@ -427,7 +427,7 @@ const SwapCard = ({
       connectedChainId,
       fromToken.addresses[connectedChainId],
       toToken.addresses[connectedChainId],
-      fromInput.bigNum.mul(999).div(1000)
+      fromInput.bigNum
     )
     if (!(query && maxAmountOut)) {
       setSwapQuote(EMPTY_SWAP_QUOTE_ZERO)
@@ -473,7 +473,7 @@ const SwapCard = ({
       connectedChainId,
       address,
       fromToken.addresses[connectedChainId as keyof Token['addresses']],
-      fromInput.bigNum, // TODO Get rid of hardcoded slippage
+      fromInput.bigNum,
       swapQuote.quote
     )
     const tx = await wallet.sendTransaction(data)
