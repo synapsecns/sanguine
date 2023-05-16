@@ -42,7 +42,6 @@ const TokenMenuItem = ({
 
   return (
     <div
-      // ref={ref}
       tabIndex={active ? 1 : 0}
       onClick={onClick}
       className={`
