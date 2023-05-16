@@ -433,7 +433,9 @@ const BridgePage = ({
         ).then((tokens) => {
           setFromTokens(tokens)
         })
-        setIsQuoteLoading(true)
+        if (fromInput.string !== '') {
+          setIsQuoteLoading(true)
+        }
         return
       } else if (type === 'to') {
         const {
@@ -451,7 +453,9 @@ const BridgePage = ({
           fromToken.symbol,
           toBridgeableToken.symbol
         )
-        setIsQuoteLoading(true)
+        if (fromInput.string !== '') {
+          setIsQuoteLoading(true)
+        }
         return
       }
     },
@@ -489,11 +493,15 @@ const BridgePage = ({
           token.symbol,
           bridgeableToken.symbol
         )
-        setIsQuoteLoading(true)
+        if (fromInput.string !== '') {
+          setIsQuoteLoading(true)
+        }
         return
       case 'to':
         setToToken(token)
-        setIsQuoteLoading(true)
+        if (fromInput.string !== '') {
+          setIsQuoteLoading(true)
+        }
         updateUrlParams({
           outputChain: toChainId,
           inputCurrency: fromToken.symbol,
