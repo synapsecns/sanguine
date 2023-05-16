@@ -23,7 +23,7 @@ describe('SynapseSDK', () => {
     'https://endpoints.omniatech.io/v1/bsc/mainnet/public'
   )
   // test constructor
-  describe('#constructor', () => {
+  describe('Test Constructor', () => {
     it('fails with unequal amount of chains to providers', () => {
       const chainIds = [42161, 43114, 10]
       const providers = [arbitrumProvider]
