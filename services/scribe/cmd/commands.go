@@ -7,6 +7,7 @@ import (
 	"fmt"
 	markdown "github.com/MichaelMure/go-term-markdown"
 	"github.com/hashicorp/consul/sdk/freeport"
+	"github.com/ipfs/go-log"
 	"github.com/jftuga/termsize"
 	"github.com/synapsecns/sanguine/core"
 	"github.com/synapsecns/sanguine/services/scribe/api"
@@ -90,14 +91,23 @@ var scribeCommand = &cli.Command{
 	Description: "scribe runs the scribe, livefilling across all specified chains",
 	Flags:       []cli.Flag{configFlag, dbFlag, pathFlag},
 	Action: func(c *cli.Context) error {
+		fmt.Println("Initing scribe...")
+		var logger = log.Logger("scribe-debug")
+
+		logger.Infof("testing info")
+		logger.Warnf("testing warn")
+		logger.Errorf("testing err")
 		db, clients, decodeConfig, err := createScribeParameters(c)
 		if err != nil {
 			return err
 		}
+		fmt.Println("Created Scribe Parameters...")
 		scribe, err := node.NewScribe(db, clients, decodeConfig, metrics.Get())
 		if err != nil {
 			return fmt.Errorf("could not create scribe: %w", err)
 		}
+		fmt.Println("Starting Scribe...")
+
 		err = scribe.Start(c.Context)
 		if err != nil {
 			return fmt.Errorf("could not start scribe: %w", err)
