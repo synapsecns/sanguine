@@ -389,6 +389,9 @@ const BridgePage = ({
 
         const res = switchNetwork({ chainId: desiredChainId })
           .then((res) => {
+            if (fromInput.string !== '') {
+              setIsQuoteLoading(true)
+            }
             return res
           })
           .catch(() => {
@@ -436,9 +439,6 @@ const BridgePage = ({
         ).then((tokens) => {
           setFromTokens(tokens)
         })
-        if (fromInput.string !== '') {
-          setIsQuoteLoading(true)
-        }
         return
       } else if (type === 'to') {
         const {
