@@ -114,31 +114,31 @@ export const getNetworkButtonBgClassNameActive = (
 ): string => {
   switch (chainColor) {
     case ColorOptions.YELLOW:
-      return `dark:active:!bg-${CUSTOM_YELLOW_DARK}`
+      return `dark:active:bg-${CUSTOM_YELLOW_DARK}`
     case ColorOptions.ETH:
-      return `dark:active:!bg-${ETH_EXTRA_DARK}`
+      return `dark:active:bg-${ETH_EXTRA_DARK}`
     case ColorOptions.GRAY:
-      return `dark:active:!bg-gray-500`
+      return `dark:active:bg-gray-500`
     case ColorOptions.GREEN:
-      return `dark:active:!bg-green-500`
+      return `dark:active:bg-green-500`
     case ColorOptions.LIME:
-      return `dark:active:!bg-lime-500`
+      return `dark:active:bg-lime-500`
     case ColorOptions.SKY:
-      return `dark:active:!bg-sky-500`
+      return `dark:active:bg-sky-500`
     case ColorOptions.BLUE:
-      return `dark:active:!bg-blue-500`
+      return `dark:active:bg-blue-500`
     case ColorOptions.ORANGE:
-      return `dark:active:!bg-orange-500`
+      return `dark:active:bg-orange-500`
     case ColorOptions.PURPLE:
-      return `dark:active:!bg-purple-500`
+      return `dark:active:bg-purple-500`
     case ColorOptions.INDIGO:
-      return `dark:active:!bg-indigo-500`
+      return `dark:active:bg-indigo-500`
     case ColorOptions.CYAN:
-      return `dark:active:!bg-cyan-500`
+      return `dark:active:bg-cyan-500`
     case ColorOptions.RED:
-      return `dark:active:!bg-red-500`
+      return `dark:active:bg-red-500`
     default:
-      return `dark:active:!bg-gray-500`
+      return `dark:active:bg-gray-500`
   }
 }
 
@@ -146,91 +146,91 @@ export const getNetworkButtonBgClassNameActive = (
 //   chainColor: string
 // ): string => {
 //   if (chainColor === 'yellow') {
-//     return `dark:active:!bg-${CUSTOM_YELLOW_DARK}`
+//     return `dark:active:bg-${CUSTOM_YELLOW_DARK}`
 //   } else if (chainColor === 'eth') {
-//     return `dark:active:!bg-${ETH_EXTRA_DARK}`
+//     return `dark:active:bg-${ETH_EXTRA_DARK}`
 //   }
-//   return `dark:active:!bg-${chainColor}-500`
+//   return `dark:active:bg-${chainColor}-500`
 // }
 
 export const getNetworkButtonBorderHover = (chainColor: string): string => {
   switch (chainColor) {
     case ColorOptions.YELLOW:
-      return `hover:!border-${CUSTOM_YELLOW}`
+      return `hover:border-${CUSTOM_YELLOW}`
     case ColorOptions.ETH:
-      return `hover:!border-${ETH_BASE}`
+      return `hover:border-${ETH_BASE}`
     case ColorOptions.GRAY:
-      return `hover:!border-gray-500`
+      return `hover:border-gray-500`
     case ColorOptions.GREEN:
-      return `hover:!border-green-500`
+      return `hover:border-green-500`
     case ColorOptions.LIME:
-      return `hover:!border-lime-500`
+      return `hover:border-lime-500`
     case ColorOptions.SKY:
-      return `hover:!border-sky-500`
+      return `hover:border-sky-500`
     case ColorOptions.BLUE:
-      return `hover:!border-blue-500`
+      return `hover:border-blue-500`
     case ColorOptions.ORANGE:
-      return `hover:!border-orange-500`
+      return `hover:border-orange-500`
     case ColorOptions.PURPLE:
-      return `hover:!border-purple-500`
+      return `hover:border-purple-500`
     case ColorOptions.INDIGO:
-      return `hover:!border-indigo-500`
+      return `hover:border-indigo-500`
     case ColorOptions.CYAN:
-      return `hover:!border-cyan-500`
+      return `hover:border-cyan-500`
     case ColorOptions.RED:
-      return `hover:!border-red-500`
+      return `hover:border-red-500`
     default:
-      return `hover:!border-gray-500`
+      return `hover:border-gray-500`
   }
 }
 
 // export const getNetworkButtonBorderHover = (chainColor: string): string => {
 //   if (chainColor === 'yellow') {
-//     return `hover:!border-${CUSTOM_YELLOW}`
+//     return `hover:border-${CUSTOM_YELLOW}`
 //   } else if (chainColor === 'eth') {
-//     return `hover:!border-${ETH_BASE}`
+//     return `hover:border-${ETH_BASE}`
 //   }
-//   return `hover:!border-${chainColor}-500'`
+//   return `hover:border-${chainColor}-500'`
 // }
 
 export const getNetworkButtonBorderActive = (chainColor: string): string => {
   switch (chainColor) {
     case ColorOptions.YELLOW:
-      return `focus:!border-${CUSTOM_YELLOW} active:!border-${CUSTOM_YELLOW}`
+      return `focus:border-${CUSTOM_YELLOW} active:border-${CUSTOM_YELLOW}`
     case ColorOptions.ETH:
-      return `focus:!border-${ETH_BASE} active:!border-${ETH_BASE}`
+      return `focus:border-${ETH_BASE} active:border-${ETH_BASE}`
     case ColorOptions.GRAY:
-      return `focus:!border-gray-500 active:!border-gray-500`
+      return `focus:border-gray-500 active:border-gray-500`
     case ColorOptions.GREEN:
-      return `focus:!border-green-500 active:!border-green-500`
+      return `focus:border-green-500 active:border-green-500`
     case ColorOptions.LIME:
-      return `focus:!border-lime-500 active:!border-lime-500`
+      return `focus:border-lime-500 active:border-lime-500`
     case ColorOptions.SKY:
-      return `focus:!border-sky-500 active:!border-sky-500`
+      return `focus:border-sky-500 active:border-sky-500`
     case ColorOptions.BLUE:
-      return `focus:!border-blue-500 active:!border-blue-500`
+      return `focus:border-blue-500 active:border-blue-500`
     case ColorOptions.ORANGE:
-      return `focus:!border-orange-500 active:!border-orange-500`
+      return `focus:border-orange-500 active:border-orange-500`
     case ColorOptions.PURPLE:
-      return `focus:!border-purple-500 active:!border-purple-500`
+      return `focus:border-purple-500 active:border-purple-500`
     case ColorOptions.INDIGO:
-      return `focus:!border-indigo-500 active:!border-indigo-500`
+      return `focus:border-indigo-500 active:border-indigo-500`
     case ColorOptions.CYAN:
-      return `focus:!border-cyan-500 active:!border-cyan-500`
+      return `focus:border-cyan-500 active:border-cyan-500`
     case ColorOptions.RED:
-      return `focus:!border-red-500 active:!border-red-500`
+      return `focus:border-red-500 active:border-red-500`
     default:
-      return `focus:!border-gray-500 active:!border-gray-500`
+      return `focus:border-gray-500 active:border-gray-500`
   }
 }
 
 // export const getNetworkButtonBorderActive = (chainColor: string): string => {
 //   if (chainColor === 'yellow') {
-//     return `focus:!border-${CUSTOM_YELLOW} active:!border-${CUSTOM_YELLOW}`
+//     return `focus:border-${CUSTOM_YELLOW} active:border-${CUSTOM_YELLOW}`
 //   } else if (chainColor === 'eth') {
-//     return `focus:!border-${ETH_BASE} active:!border-${ETH_BASE}`
+//     return `focus:border-${ETH_BASE} active:border-${ETH_BASE}`
 //   }
-//   return `focus:!border-${chainColor}-500 active:!border-${chainColor}-500`
+//   return `focus:border-${chainColor}-500 active:border-${chainColor}-500`
 // }
 
 export const getNetworkButtonBorder = (chainColor: string): string => {
@@ -276,41 +276,41 @@ export const getNetworkButtonBorder = (chainColor: string): string => {
 export const getNetworkButtonBorderImportant = (chainColor: string): string => {
   switch (chainColor) {
     case ColorOptions.YELLOW:
-      return `!border-${CUSTOM_YELLOW} dark:!border-${CUSTOM_YELLOW}`
+      return `border-${CUSTOM_YELLOW} dark:border-${CUSTOM_YELLOW}`
     case ColorOptions.ETH:
-      return `!border-${ETH_BASE} dark:!border-${ETH_BASE}`
+      return `border-${ETH_BASE} dark:border-${ETH_BASE}`
     case ColorOptions.GRAY:
-      return `!border-gray-500 dark:!border-gray-500`
+      return `border-gray-500 dark:border-gray-500`
     case ColorOptions.GREEN:
-      return `!border-green-500 dark:!border-green-500`
+      return `border-green-500 dark:border-green-500`
     case ColorOptions.LIME:
-      return `!border-lime-500 dark:!border-lime-500`
+      return `border-lime-500 dark:border-lime-500`
     case ColorOptions.SKY:
-      return `!border-sky-500 dark:!border-sky-500`
+      return `border-sky-500 dark:border-sky-500`
     case ColorOptions.BLUE:
-      return `!border-blue-500 dark:!border-blue-500`
+      return `border-blue-500 dark:border-blue-500`
     case ColorOptions.ORANGE:
-      return `!border-orange-500 dark:!border-orange-500`
+      return `border-orange-500 dark:border-orange-500`
     case ColorOptions.PURPLE:
-      return `!border-purple-500 dark:!border-purple-500`
+      return `border-purple-500 dark:border-purple-500`
     case ColorOptions.INDIGO:
-      return `!border-indigo-500 dark:!border-indigo-500`
+      return `border-indigo-500 dark:border-indigo-500`
     case ColorOptions.CYAN:
-      return `!border-cyan-500 dark:!border-cyan-500`
+      return `border-cyan-500 dark:border-cyan-500`
     case ColorOptions.RED:
-      return `!border-red-500 dark:!border-red-500`
+      return `border-red-500 dark:border-red-500`
     default:
-      return `!border-gray-500 dark:!border-gray-500`
+      return `border-gray-500 dark:border-gray-500`
   }
 }
 
 // export const getNetworkButtonBorderImportant = (chainColor: string): string => {
 //   if (chainColor === 'yellow') {
-//     return `!border-${CUSTOM_YELLOW} dark:!border-${CUSTOM_YELLOW}`
+//     return `border-${CUSTOM_YELLOW} dark:border-${CUSTOM_YELLOW}`
 //   } else if (chainColor === 'eth') {
-//     return `!border-${ETH_BASE} dark:!border-${ETH_BASE}`
+//     return `border-${ETH_BASE} dark:border-${ETH_BASE}`
 //   }
-//   return `!border-${chainColor}-500 dark:!border-${chainColor}-500`
+//   return `border-${chainColor}-500 dark:border-${chainColor}-500`
 // }
 
 export const getNetworkTextColor = (chainColor: string): string => {
@@ -318,7 +318,7 @@ export const getNetworkTextColor = (chainColor: string): string => {
     case ColorOptions.YELLOW:
       return `text-${CUSTOM_YELLOW} dark:text-${CUSTOM_YELLOW}`
     case ColorOptions.ETH:
-      return `!text-${ETH_BASE} dark:text-${ETH_LIGHT}`
+      return `text-${ETH_BASE} dark:text-${ETH_LIGHT}`
     case ColorOptions.GRAY:
       return `text-gray-500 dark:text-gray-500`
     case ColorOptions.GREEN:
@@ -356,41 +356,41 @@ export const getNetworkTextColor = (chainColor: string): string => {
 export const getNetworkLinkTextColor = (chainColor: string): string => {
   switch (chainColor) {
     case ColorOptions.YELLOW:
-      return `!text-gray-800 hover:!text-${CUSTOM_YELLOW}} dark:!text-${CUSTOM_YELLOW} dark:hover:!text-${CUSTOM_YELLOW}`
+      return `text-gray-800 hover:text-${CUSTOM_YELLOW}} dark:text-${CUSTOM_YELLOW} dark:hover:text-${CUSTOM_YELLOW}`
     case ColorOptions.ETH:
-      return `!text-${ETH_BASE} hover:!text-${ETH_LIGHT}`
+      return `text-${ETH_BASE} hover:text-${ETH_LIGHT}`
     case ColorOptions.GRAY:
-      return `!text-gray-500 hover:!text-gray-600 dark:hover:!text-gray-500`
+      return `text-gray-500 hover:text-gray-600 dark:hover:text-gray-500`
     case ColorOptions.GREEN:
-      return `!text-green-500 hover:!text-green-600 dark:hover:!text-green-500`
+      return `text-green-500 hover:text-green-600 dark:hover:text-green-500`
     case ColorOptions.LIME:
-      return `!text-lime-500 hover:!text-lime-600 dark:hover:!text-lime-500`
+      return `text-lime-500 hover:text-lime-600 dark:hover:text-lime-500`
     case ColorOptions.SKY:
-      return `!text-sky-500 hover:!text-sky-600 dark:hover:!text-sky-500`
+      return `text-sky-500 hover:text-sky-600 dark:hover:text-sky-500`
     case ColorOptions.BLUE:
-      return `!text-blue-500 hover:!text-blue-600 dark:hover:!text-blue-500`
+      return `text-blue-500 hover:text-blue-600 dark:hover:text-blue-500`
     case ColorOptions.ORANGE:
-      return `!text-orange-500 hover:!text-orange-600 dark:hover:!text-orange-500`
+      return `text-orange-500 hover:text-orange-600 dark:hover:text-orange-500`
     case ColorOptions.PURPLE:
-      return `!text-purple-500 hover:!text-purple-600 dark:hover:!text-purple-500`
+      return `text-purple-500 hover:text-purple-600 dark:hover:text-purple-500`
     case ColorOptions.INDIGO:
-      return `!text-indigo-500 hover:!text-indigo-600 dark:hover:!text-indigo-500`
+      return `text-indigo-500 hover:text-indigo-600 dark:hover:text-indigo-500`
     case ColorOptions.CYAN:
-      return `!text-cyan-500 hover:!text-cyan-600 dark:hover:!text-cyan-500`
+      return `text-cyan-500 hover:text-cyan-600 dark:hover:text-cyan-500`
     case ColorOptions.RED:
-      return `!text-red-500 hover:!text-red-600 dark:hover:!text-red-500`
+      return `text-red-500 hover:text-red-600 dark:hover:text-red-500`
     default:
-      return `!text-gray-500 hover:!text-gray-600 dark:hover:!text-gray-500`
+      return `text-gray-500 hover:text-gray-600 dark:hover:text-gray-500`
   }
 }
 
 // export const getNetworkLinkTextColor = (chainColor: string): string => {
 //   if (chainColor === 'yellow') {
-//     return `!text-gray-800 hover:!text-${CUSTOM_YELLOW} dark:!text-${CUSTOM_YELLOW} dark:hover:!text-${CUSTOM_YELLOW}`
+//     return `text-gray-800 hover:text-${CUSTOM_YELLOW} dark:text-${CUSTOM_YELLOW} dark:hover:text-${CUSTOM_YELLOW}`
 //   } else if (chainColor === 'eth') {
-//     return `!text-${ETH_BASE} hover:!text-${ETH_LIGHT} dark:hover:!text-${ETH_LIGHT}`
+//     return `text-${ETH_BASE} hover:text-${ETH_LIGHT} dark:hover:text-${ETH_LIGHT}`
 //   }
-//   return `!text-${chainColor}-500 hover:!text-${chainColor}-600 dark:hover:!text-${chainColor}-500`
+//   return `text-${chainColor}-500 hover:text-${chainColor}-600 dark:hover:text-${chainColor}-500`
 // }
 
 // export const getNetworkTextColorContrast = (chainColor: string): string => {
@@ -403,9 +403,9 @@ export const getNetworkLinkTextColor = (chainColor: string): string => {
 export const getNetworkTextColorContrast = (chainColor: string): string => {
   switch (chainColor) {
     case ColorOptions.YELLOW:
-      return `!text-${CUSTOM_YELLOW}`
+      return `text-${CUSTOM_YELLOW}`
     case ColorOptions.ETH:
-      return `!text-${ETH_BASE}`
+      return `text-${ETH_BASE}`
     case ColorOptions.GRAY:
     case ColorOptions.GREEN:
     case ColorOptions.LIME:
@@ -538,77 +538,77 @@ export const getNetworkBgClassNameLightDark = (chainColor: string): string => {
 export const getNetworkShadow = (chainColor: string): string => {
   switch (chainColor) {
     case ColorOptions.ETH:
-      return `!shadow-blue-xl hover:!shadow-blue-2xl`
+      return `shadow-blue-xl hover:shadow-blue-2xl`
     case ColorOptions.YELLOW:
-      return `!shadow-${CUSTOM_YELLOW} hover:!shadow-${CUSTOM_YELLOW}`
+      return `shadow-${CUSTOM_YELLOW} hover:shadow-${CUSTOM_YELLOW}`
     case ColorOptions.GRAY:
-      return `!shadow-gray-xl hover:!shadow-gray-2xl`
+      return `shadow-gray-xl hover:shadow-gray-2xl`
     case ColorOptions.GREEN:
-      return `!shadow-green-xl hover:!shadow-green-2xl`
+      return `shadow-green-xl hover:shadow-green-2xl`
     case ColorOptions.LIME:
-      return `!shadow-lime-xl hover:!shadow-lime-2xl`
+      return `shadow-lime-xl hover:shadow-lime-2xl`
     case ColorOptions.SKY:
-      return `!shadow-sky-xl hover:!shadow-sky-2xl`
+      return `shadow-sky-xl hover:shadow-sky-2xl`
     case ColorOptions.BLUE:
-      return `!shadow-blue-xl hover:!shadow-blue-2xl`
+      return `shadow-blue-xl hover:shadow-blue-2xl`
     case ColorOptions.ORANGE:
-      return `!shadow-orange-xl hover:!shadow-orange-2xl`
+      return `shadow-orange-xl hover:shadow-orange-2xl`
     case ColorOptions.PURPLE:
-      return `!shadow-purple-xl hover:!shadow-purple-2xl`
+      return `shadow-purple-xl hover:shadow-purple-2xl`
     case ColorOptions.INDIGO:
-      return `!shadow-indigo-xl hover:!shadow-indigo-2xl`
+      return `shadow-indigo-xl hover:shadow-indigo-2xl`
     case ColorOptions.CYAN:
-      return `!shadow-cyan-xl hover:!shadow-cyan-2xl`
+      return `shadow-cyan-xl hover:shadow-cyan-2xl`
     case ColorOptions.RED:
-      return `!shadow-red-xl hover:!shadow-red-2xl`
+      return `shadow-red-xl hover:shadow-red-2xl`
     default:
-      return `!shadow-gray-xl hover:!shadow-gray-2xl`
+      return `shadow-gray-xl hover:shadow-gray-2xl`
   }
 }
 
 // export const getNetworkShadow = (chainColor: string): string => {
 //   if (chainColor === 'eth') {
-//     return `!shadow-blue-xl hover:!shadow-blue-2xl`
+//     return `shadow-blue-xl hover:shadow-blue-2xl`
 //   }
-//   return `!shadow-${chainColor}-xl hover:!shadow-${chainColor}-2xl`
+//   return `shadow-${chainColor}-xl hover:shadow-${chainColor}-2xl`
 // }
 
 // export const getNetworkHover = (chainColor: string): string => {
 //   if (chainColor === 'yellow') {
-//     return `hover:!bg-${CUSTOM_YELLOW} hover:!bg-opacity-20`
+//     return `hover:bg-${CUSTOM_YELLOW} hover:bg-opacity-20`
 //   } else if (chainColor === 'eth') {
-//     return `hover:!bg-${ETH_BASE} hover:!bg-opacity-20`
+//     return `hover:bg-${ETH_BASE} hover:bg-opacity-20`
 //   }
-//   return `hover:!bg-${chainColor}-500 hover:!bg-${chainColor}-20`
+//   return `hover:bg-${chainColor}-500 hover:bg-${chainColor}-20`
 // }
 
 export const getNetworkHover = (chainColor: string): string => {
   switch (chainColor) {
     case ColorOptions.ETH:
-      return `hover:!bg-${ETH_BASE} hover:bg-opacity-20`
+      return `hover:!bg-${ETH_BASE} hover:bg-opacity-20 dark:hover:bg-${ETH_BASE}`
     case ColorOptions.YELLOW:
-      return `hover:!bg-${CUSTOM_YELLOW} hover:bg-opacity-20`
+      return `hover:bg-${CUSTOM_YELLOW} hover:bg-opacity-20 dark:hover:bg-${CUSTOM_YELLOW}`
     case ColorOptions.GRAY:
-      return `hover:!bg-gray-500 hover:bg-opacity-20`
+      return `hover:bg-gray-500 hover:bg-opacity-20 dark:hover:bg-gray-500`
     case ColorOptions.GREEN:
-      return `hover:!bg-green-500 hover:bg-opacity-20`
+      return `hover:bg-green-500 hover:bg-opacity-20 dark:hover:bg-green-500`
     case ColorOptions.LIME:
-      return `hover:!bg-lime-500 hover:bg-opacity-20`
+      return `hover:bg-lime-500 hover:bg-opacity-20 dark:hover:bg-lime-500`
     case ColorOptions.SKY:
-      return `hover:!bg-sky-500 hover:bg-opacity-20`
+      return `hover:bg-sky-500 hover:bg-opacity-20 dark:hover:bg-sky-500`
     case ColorOptions.BLUE:
-      return `hover:!bg-blue-500 hover:bg-opacity-20`
+      return `hover:bg-blue-500 hover:bg-opacity-20 dark:hover:bg-blue-500`
     case ColorOptions.ORANGE:
-      return `hover:!bg-orange-500 hover:bg-opacity-20`
+      return `hover:bg-orange-500 hover:bg-opacity-20 dark:hover:bg-orange-500`
     case ColorOptions.PURPLE:
-      return `hover:!bg-purple-500 hover:bg-opacity-20`
+      return `hover:bg-purple-500 hover:bg-opacity-20 dark:hover:bg-purple-500`
     case ColorOptions.INDIGO:
-      return `hover:!bg-indigo-500 hover:bg-opacity-20`
+      return `hover:bg-indigo-500 hover:bg-opacity-20 dark:hover:bg-indigo-500`
     case ColorOptions.CYAN:
-      return `hover:!bg-cyan-500 hover:bg-opacity-20`
+      return `hover:bg-cyan-500 hover:bg-opacity-20 dark:hover:bg-cyan-500`
     case ColorOptions.RED:
-      return `hover:!bg-red-500 hover:bg-opacity-20`
+      return `hover:bg-red-500 hover:bg-opacity-20 dark:hover:bg-red-500`
     default:
-      return `hover:!bg-gray-500 hover:bg-opacity-20`
+      return `hover:bg-gray-500 hover:bg-opacity-20 dark:hover:bg-gray-500`
   }
 }
