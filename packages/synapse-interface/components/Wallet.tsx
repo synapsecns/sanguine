@@ -1,4 +1,4 @@
-import { useMemo } from 'react'
+import { useMemo, useState, useEffect } from 'react'
 import { ConnectButton } from '@rainbow-me/rainbowkit'
 import { useAccount, useNetwork } from 'wagmi'
 import { MetamaskIcon } from '@icons/WalletIcons/Metamask'
@@ -37,8 +37,13 @@ export const Wallet = () => {
   const { connector: activeConnector, address: connectedAddress } = useAccount()
   const { chain: currentChain } = useNetwork()
   const walletId = activeConnector?.id
+  const [mounted, setMounted] = useState(false)
 
-  return useMemo(() => {
+  useEffect(() => {
+    setMounted(true)
+  }, [])
+
+  const render = useMemo(() => {
     return (
       <ConnectButton.Custom>
         {({
@@ -50,15 +55,7 @@ export const Wallet = () => {
           authenticationStatus,
           mounted,
         }) => {
-          // Note: If your app doesn't use authentication, you
-          // can remove all 'authenticationStatus' checks
           const ready = mounted && authenticationStatus !== 'loading'
-          const connected =
-            ready &&
-            account &&
-            chain &&
-            (!authenticationStatus || authenticationStatus === 'authenticated')
-
           return (
             <div
               {...(!ready && {
@@ -136,18 +133,7 @@ export const Wallet = () => {
       </ConnectButton.Custom>
     )
   }, [connectedAddress, currentChain, walletId])
-
-  // <>
-  //   <div className='flex items-center'>
-  //     <WalletConnectButton
-  //       setShowWalletModal={setShowWalletModal}
-
-  //     />
-  //   </div>
-  //   <Modal isOpen={showWalletModal} onClose={handleClose}>
-  //     <ConnectWallet onClose={handleClose} />
-  //   </Modal>
-  // </>
+  return mounted && render
 }
 
 function FormattedDisplayName(displayName: string) {
