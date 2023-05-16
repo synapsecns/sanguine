@@ -349,7 +349,9 @@ const SwapCard = ({
     const desiredChainId = Number(chainId)
     const res = switchNetwork({ chainId: desiredChainId })
       .then((res) => {
-        setIsQuoteLoading(true)
+        if (fromInput.string !== '') {
+          setIsQuoteLoading(true)
+        }
         return res
       })
       .catch(() => {
@@ -405,11 +407,15 @@ const SwapCard = ({
           token.symbol,
           swapableToken.symbol
         )
-        setIsQuoteLoading(true)
+        if (fromInput.string !== '') {
+          setIsQuoteLoading(true)
+        }
         return
       case 'to':
-        setIsQuoteLoading(true)
         setToToken(token)
+        if (fromInput.string !== '') {
+          setIsQuoteLoading(true)
+        }
         updateUrlParams({
           inputCurrency: fromToken.symbol,
           outputCurrency: token.symbol,
