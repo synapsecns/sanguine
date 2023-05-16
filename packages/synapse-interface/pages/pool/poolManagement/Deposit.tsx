@@ -187,7 +187,7 @@ const Deposit = ({
   const actionBtn = (
     <TransactionButton
       className={btnClassName}
-      disabled={sumBigNumbersFromState().eq(0)}
+      disabled={sumBigNumbersFromState().eq(0) || !isFromBalanceEnough}
       onClick={() => buttonAction()}
       onSuccess={() => postButtonAction()}
       label={btnLabel}
