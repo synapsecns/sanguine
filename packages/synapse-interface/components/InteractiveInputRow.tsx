@@ -68,7 +68,7 @@ const InteractiveInputRow = ({
               `}
               >
                 <div
-                  className={`flex justify-center md:justify-start bg-white bg-opacity-10 items-center rounded-lg py-1.5 px-2 ${width}`}
+                  className={`flex justify-center md:justify-start items-center rounded-lg py-1.5 px-2 ${width}`}
                 >
                   <div className="self-center flex-shrink-0 hidden mr-2 sm:block">
                     <div
