@@ -66,7 +66,7 @@ const ColorOptions = {
 export const getNetworkButtonBgClassName = (chainColor: string): string => {
   switch (chainColor) {
     case ColorOptions.YELLOW:
-      return `bg-[#ecae0b]-800 hover:bg-[#ecae0b]-900 active:bg-[#ecae0b]`
+      return `bg-[#ecae0b] hover:bg-[#ecae0b] active:bg-[#ecae0b]`
     case ColorOptions.ETH:
       return `bg-[#5170ad] hover:bg-[#3f4f8c] active:bg-[#314367]`
     case ColorOptions.GRAY:
@@ -135,27 +135,27 @@ export const getNetworkButtonBorderHover = (chainColor: string): string => {
     case ColorOptions.ETH:
       return `hover:border-[#5170ad]`
     case ColorOptions.GRAY:
-      return `hover:border-gray-500`
+      return `hover:border-gray-300`
     case ColorOptions.GREEN:
-      return `hover:border-green-500`
+      return `hover:border-green-300`
     case ColorOptions.LIME:
-      return `hover:border-lime-500`
+      return `hover:border-lime-300`
     case ColorOptions.SKY:
-      return `hover:border-sky-500`
+      return `hover:border-sky-300`
     case ColorOptions.BLUE:
-      return `hover:border-blue-500`
+      return `hover:border-blue-300`
     case ColorOptions.ORANGE:
-      return `hover:border-orange-500`
+      return `hover:border-orange-300`
     case ColorOptions.PURPLE:
-      return `hover:border-purple-500`
+      return `hover:border-purple-300`
     case ColorOptions.INDIGO:
-      return `hover:border-indigo-500`
+      return `hover:border-indigo-300`
     case ColorOptions.CYAN:
-      return `hover:border-cyan-500`
+      return `hover:border-cyan-300`
     case ColorOptions.RED:
-      return `hover:border-red-500`
+      return `hover:border-red-300`
     default:
-      return `hover:border-gray-500`
+      return `hover:border-gray-300`
   }
 }
 
