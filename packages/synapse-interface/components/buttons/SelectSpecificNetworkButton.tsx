@@ -2,10 +2,12 @@ import { useEffect, useRef } from 'react'
 import { CHAINS_BY_ID } from '@constants/chains'
 import Image from 'next/image'
 import {
-  getNetworkButtonBgClassName,
+  getNetworkHover,
   getNetworkButtonBorder,
   getNetworkButtonBorderHover,
-  getNetworkHover,
+  getNetworkButtonBgClassName,
+  getNetworkButtonBgClassNameActive,
+  getNetworkButtonBorderActive,
 } from '@/styles/chains'
 
 // TODO could probably use a re-write
@@ -43,9 +45,6 @@ export const SelectSpecificNetworkButton = ({
     bgClassName = 'bg-[#58535B] hover:bg-[#58535B] active:bg-[#58535B]'
   }
 
-  const networkButtonHoverClass = getNetworkButtonBorderHover(chain.color)
-  const networkHoverClass = getNetworkHover(chain.color)
-
   return (
     <button
       ref={ref}
@@ -58,8 +57,10 @@ export const SelectSpecificNetworkButton = ({
         cursor-pointer
         border border-transparent
         ${bgClassName}
-        ${networkHoverClass}
-        ${networkButtonHoverClass}
+        ${getNetworkButtonBorderHover(chain.color)}
+        ${getNetworkHover(chain.color)}
+        ${getNetworkButtonBgClassNameActive(chain.color)}
+        ${getNetworkButtonBorderActive(chain.color)}
       `}
       onClick={onClick}
       data-test-id={`${dataId}-item`}
