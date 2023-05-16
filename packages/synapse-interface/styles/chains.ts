@@ -99,31 +99,31 @@ export const getNetworkButtonBgClassNameActive = (
 ): string => {
   switch (chainColor) {
     case ColorOptions.YELLOW:
-      return `dark:active:bg-[#ecae0b] active:bg-[#ecae0b] active:bg-opacity-75`;
+      return `dark:active:bg-[#ecae0b] active:bg-[#ecae0b] `;
     case ColorOptions.ETH:
-      return `dark:active:bg-[#314367] active:bg-[#314367] active:bg-opacity-75`;
+      return `dark:active:bg-[#314367] active:bg-[#314367] `;
     case ColorOptions.GRAY:
-      return `dark:active:bg-gray-500 active:bg-gray-500 active:bg-opacity-75`;
+      return `dark:active:bg-gray-500 active:bg-gray-500 `;
     case ColorOptions.GREEN:
-      return `dark:active:bg-green-500 active:bg-green-500 active:bg-opacity-75`;
+      return `dark:active:bg-green-500 active:bg-green-500 `;
     case ColorOptions.LIME:
-      return `dark:active:bg-lime-500 active:bg-lime-500 active:bg-opacity-75`;
+      return `dark:active:bg-lime-500 active:bg-lime-500 `;
     case ColorOptions.SKY:
-      return `dark:active:bg-sky-500 active:bg-sky-500 active:bg-opacity-75`;
+      return `dark:active:bg-sky-500 active:bg-sky-500 `;
     case ColorOptions.BLUE:
-      return `dark:active:bg-blue-500 active:bg-blue-500 active:bg-opacity-75`;
+      return `dark:active:bg-blue-500 active:bg-blue-500 `;
     case ColorOptions.ORANGE:
-      return `dark:active:bg-orange-500 active:bg-orange-500 active:bg-opacity-75`;
+      return `dark:active:bg-orange-500 active:bg-orange-500 `;
     case ColorOptions.PURPLE:
-      return `dark:active:bg-purple-500 active:bg-purple-500 active:bg-opacity-75`;
+      return `dark:active:bg-purple-500 active:bg-purple-500 `;
     case ColorOptions.INDIGO:
-      return `dark:active:bg-indigo-500 active:bg-indigo-500 active:bg-opacity-75`;
+      return `dark:active:bg-indigo-500 active:bg-indigo-500 `;
     case ColorOptions.CYAN:
-      return `dark:active:bg-cyan-500 active:bg-cyan-500 active:bg-opacity-75`;
+      return `dark:active:bg-cyan-500 active:bg-cyan-500 `;
     case ColorOptions.RED:
-      return `dark:active:bg-red-500 active:bg-red-500 active:bg-opacity-75`;
+      return `dark:active:bg-red-500 active:bg-red-500 `;
     default:
-      return `dark:active:bg-gray-500 active:bg-gray-500 active:bg-opacity-75`;
+      return `dark:active:bg-gray-500 active:bg-gray-500 `;
   }
 };
 
