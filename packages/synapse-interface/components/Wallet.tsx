@@ -55,13 +55,7 @@ export const Wallet = () => {
           authenticationStatus,
           mounted,
         }) => {
-          const ready = mounted && authenticationStatus !== 'loading' && account
-          const connected =
-            ready &&
-            account &&
-            chain &&
-            (!authenticationStatus || authenticationStatus === 'authenticated')
-          console.log('ACCOUNT', account)
+          const ready = mounted && authenticationStatus !== 'loading'
           return (
             <div
               {...(!ready && {
