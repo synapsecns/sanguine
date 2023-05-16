@@ -1,9 +1,7 @@
-import { formatTimestampToDate } from '@utils/time'
 import EventCard from './EventCard'
 import DestinationTx from './DestinationTx'
 import { BridgeWatcherTx } from '@types'
 import Link from 'next/link'
-import Button from '@tw/Button'
 import { ANALYTICS_KAPPA } from '@urls'
 
 const BridgeEvent = (fromEvent: BridgeWatcherTx) => {

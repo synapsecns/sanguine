@@ -1,21 +1,7 @@
-import { BigNumber } from '@ethersproject/bignumber'
-
-import { WETH } from '@constants/tokens/swapMaster'
-import { ETH } from '@constants/tokens/master'
-
 import { CHAINS_BY_ID } from '@constants/chains'
-
-import { formatBNToString } from '@bignumber/format'
-
-import { getCoinTextColorCombined } from '@styles/tokens'
 import { getNetworkLinkTextColor } from '@styles/chains'
-import { AddToWalletMiniButton } from '@components/buttons/AddToWalletButton'
-import ExplorerLink from '../pages/bridge/BridgeWatcher/ExplorerLink'
-import { commify } from '@ethersproject/units'
-import { BridgeWatcherTx } from '@types'
-export function CheckingConfPlaceholder({ chainId }) {
-  const { name, chainImg } = CHAINS_BY_ID[chainId]
-
+import { Chain } from '@types'
+export const CheckingConfPlaceholder = ({ chain }: { chain: Chain }) => {
   return (
     <div className="flex items-center p-1 max-w-[50%] rounded-lg ">
       <div>
@@ -23,11 +9,11 @@ export function CheckingConfPlaceholder({ chainId }) {
           <div className="w-full text-sm">
             <div
               className={`
-                ${getNetworkLinkTextColor(chainId)}
+                ${getNetworkLinkTextColor(chain?.color)}
                 opacity-70 pr-2
               `}
             >
-              Confirmations left on {name}
+              Confirmations left on {chain?.name}
             </div>
           </div>
         </div>
@@ -37,15 +23,19 @@ export function CheckingConfPlaceholder({ chainId }) {
   )
 }
 
-export function PendingCreditTransactionItem({ chainId }) {
-  const { name, chainImg } = CHAINS_BY_ID[chainId]
+export const PendingCreditTransactionItem = ({
+  chainId,
+}: {
+  chainId: number
+}) => {
+  const chain = CHAINS_BY_ID[chainId]
 
   return (
     <div className="flex items-center p-1 rounded-lg ">
       <div className="flex-shrink-0">
         <img
           className="inline w-4 h-4 ml-1 mr-2 -mt-1 rounded"
-          src={chainImg.src}
+          src={chain?.chainImg?.src}
         />
       </div>
       <div>
@@ -53,13 +43,13 @@ export function PendingCreditTransactionItem({ chainId }) {
           <div className="w-full text-sm">
             <div
               className={`
-                ${getNetworkLinkTextColor(chainId)}
+                ${getNetworkLinkTextColor(chain?.color)}
                 opacity-70 pr-2
               `}
             >
               Waiting to be credited on
               <br />
-              {name}
+              {chain?.name}
             </div>
           </div>
         </div>
@@ -69,29 +59,28 @@ export function PendingCreditTransactionItem({ chainId }) {
   )
 }
 
-export function EmptySubTransactionItem({ chainId }) {
-  const { chainImg } = CHAINS_BY_ID[chainId]
-
+export const EmptySubTransactionItem = ({ chainId }: { chainId: number }) => {
+  const chain = CHAINS_BY_ID[chainId]
   return (
     <div className="flex items-center p-1 rounded-lg ">
       <div className="flex-shrink-0">
         <img
           className="inline w-4 h-4 ml-1 mr-2 -mt-1 rounded"
-          src={chainImg.src}
+          src={chain?.chainImg.src}
         />
       </div>
     </div>
   )
 }
 
-export function CreditedTransactionItem({ chainId }) {
-  const { name, chainImg } = CHAINS_BY_ID[chainId]
+export const CreditedTransactionItem = ({ chainId }: { chainId: number }) => {
+  const chain = CHAINS_BY_ID[chainId]
   return (
     <div className="flex items-center p-1 border border-gray-700 rounded-lg">
       <div className="flex-shrink-0">
         <img
           className="inline w-4 h-4 ml-1 mr-2 -mt-1 rounded"
-          src={chainImg}
+          src={chain?.chainImg.src}
         />
       </div>
       <div>
@@ -99,13 +88,13 @@ export function CreditedTransactionItem({ chainId }) {
           <div className="w-full text-sm">
             <div
               className={`
-                ${getNetworkLinkTextColor(chainId)}
+                ${getNetworkLinkTextColor(chain?.color)}
                 opacity-70 pr-2
               `}
             >
               Bridging Completed on
               <br />
-              {name}
+              {chain?.name}
             </div>
           </div>
         </div>

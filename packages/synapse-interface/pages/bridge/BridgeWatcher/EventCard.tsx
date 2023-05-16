@@ -20,25 +20,19 @@ const EventCard = memo((event: BridgeWatcherTx) => {
     showAddBtn = true
   }
 
-  const formattedTokenAmount = commify(
-    formatBNToString(
-      event.amount.mul(
-        BigNumber.from(10).pow(
-          18 - (event.token?.decimals[event.chainId] ?? 18)
+  const formattedTokenAmount = event.amount
+    ? commify(
+        formatBNToString(
+          event.amount.mul(
+            BigNumber.from(10).pow(
+              18 - (event.token?.decimals[event.chainId] ?? 18)
+            )
+          ),
+          18,
+          3
         )
-      ),
-      18,
-      3
-    )
-  )
-  console.log(
-    'event',
-    formattedTokenAmount,
-    event.amount.toString(),
-    event.chainId,
-    event.token?.decimals[event.chainId],
-    event.token
-  )
+      )
+    : '0'
   return (
     <>
       <div className="pb-1 text-sm text-gray-500">
@@ -48,7 +42,7 @@ const EventCard = memo((event: BridgeWatcherTx) => {
         <div className="flex-shrink-0">
           <img
             className="inline w-4 h-4 ml-1 mr-2 -mt-1 rounded"
-            src={chain.chainImg.src}
+            src={chain?.chainImg?.src}
           />
         </div>
         <div className="flex-grow">
@@ -58,7 +52,7 @@ const EventCard = memo((event: BridgeWatcherTx) => {
                 <ExplorerLink
                   overrideExistingClassname={true}
                   className={`
-                ${getNetworkLinkTextColor(chain.color)}
+                ${getNetworkLinkTextColor(chain?.color)}
                 opacity-70 hover:opacity-100
               `}
                   chainId={event.chainId}
