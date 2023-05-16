@@ -24,7 +24,6 @@ export const SelectSpecificNetworkButton = ({
 }) => {
   const ref = useRef<any>(null)
   const chain = CHAINS_BY_ID[itemChainId]
-  console.log("CHAINS_BY_ID:", CHAINS_BY_ID)
 
   useEffect(() => {
     if (active) {
