@@ -7,6 +7,11 @@ const ETH_DARK = '[#3f4f8c]'
 const ETH_EXTRA_DARK = '[#314367]'
 const ETH_LIGHT = '[#78a5ff]'
 
+const CustomClasses = {
+  CUSTOM_YELLOW_BG: `bg-${CUSTOM_YELLOW}`,
+  HOVER_CUSTOM_YELLOW_BG: `hover:!bg-${CUSTOM_YELLOW}`,
+}
+
 const ColorOptions = {
   GRAY: 'gray',
   YELLOW: 'yellow',
@@ -110,35 +115,112 @@ export const getNetworkLinkTextColor = (chainColor: string): string => {
   return `!text-${chainColor}-500 hover:!text-${chainColor}-600 dark:hover:!text-${chainColor}-500`
 }
 
+// export const getNetworkTextColorContrast = (chainColor: string): string => {
+//   if (chainColor === 'yellow') {
+//     return `text-${CUSTOM_YELLOW}`
+//   }
+//   return 'text-white'
+// }
+
 export const getNetworkTextColorContrast = (chainColor: string): string => {
-  if (chainColor === 'yellow') {
-    return `text-${CUSTOM_YELLOW}`
+  switch (chainColor) {
+    case ColorOptions.YELLOW:
+      return `text-${CUSTOM_YELLOW}`
+    case ColorOptions.ETH:
+      return `text-[#5170ad]`
+    case ColorOptions.GRAY:
+    case ColorOptions.GREEN:
+    case ColorOptions.LIME:
+    case ColorOptions.SKY:
+    case ColorOptions.BLUE:
+    case ColorOptions.ORANGE:
+    case ColorOptions.PURPLE:
+    case ColorOptions.INDIGO:
+    case ColorOptions.CYAN:
+    case ColorOptions.RED:
+      return 'text-white'
+    default:
+      return 'text-white'
   }
-  return 'text-white'
 }
+
+// export const getNetworkTextColorContrastHover = (
+//   chainColor: string
+// ): string => {
+//   if (chainColor === 'yellow') {
+//     return `group-hover:text-${CUSTOM_YELLOW}`
+//   }
+//   return 'group-hover:text-white'
+// }
 
 export const getNetworkTextColorContrastHover = (
   chainColor: string
 ): string => {
-  if (chainColor === 'yellow') {
-    return `group-hover:text-${CUSTOM_YELLOW}`
+  switch (chainColor) {
+    case ColorOptions.YELLOW:
+      return `group-hover:text-${CUSTOM_YELLOW}`
+    case ColorOptions.ETH:
+      return `group-hover:text-[#5170ad]`
+    case ColorOptions.GRAY:
+    case ColorOptions.GREEN:
+    case ColorOptions.LIME:
+    case ColorOptions.SKY:
+    case ColorOptions.BLUE:
+    case ColorOptions.ORANGE:
+    case ColorOptions.PURPLE:
+    case ColorOptions.INDIGO:
+    case ColorOptions.CYAN:
+    case ColorOptions.RED:
+      return 'group-hover:text-white'
+    default:
+      return 'group-hover:text-white'
   }
-  return 'group-hover:text-white'
 }
 
 export const getNetworkBgClassName = (chainColor: string): string => {
-  if (chainColor === 'yellow') {
-    return 'bg-stone-800'
-  } else if (chainColor === 'eth') {
-    return `bg-${ETH_BASE}`
+  switch (chainColor) {
+    case ColorOptions.YELLOW:
+      return 'bg-stone-800'
+    case ColorOptions.ETH:
+      return `bg-${ETH_BASE}`
+    case ColorOptions.GRAY:
+      return `bg-gray-500`
+    case ColorOptions.GREEN:
+      return `bg-green-500`
+    case ColorOptions.LIME:
+      return `bg-lime-500`
+    case ColorOptions.SKY:
+      return `bg-sky-500`
+    case ColorOptions.BLUE:
+      return `bg-blue-500`
+    case ColorOptions.ORANGE:
+      return `bg-orange-500`
+    case ColorOptions.PURPLE:
+      return `bg-purple-500`
+    case ColorOptions.INDIGO:
+      return `bg-indigo-500`
+    case ColorOptions.CYAN:
+      return `bg-cyan-500`
+    case ColorOptions.RED:
+      return `bg-red-500`
+    default:
+      return `bg-gray-500`
   }
-  return `bg-${chainColor}-500`
 }
+
+// export const getNetworkBgClassName = (chainColor: string): string => {
+//   if (chainColor === 'yellow') {
+//     return 'bg-stone-800'
+//   } else if (chainColor === 'eth') {
+//     return `bg-${ETH_BASE}`
+//   }
+//   return `bg-${chainColor}-500`
+// }
 
 export const getNetworkBgClassNameLightDark = (chainColor: string): string => {
   switch (chainColor) {
     case ColorOptions.YELLOW:
-      return `bg-${CUSTOM_YELLOW}`
+      return `${CustomClasses.CUSTOM_YELLOW_BG}`
     case ColorOptions.ETH:
       return `bg-${ETH_BASE}`
     case ColorOptions.GRAY:
@@ -227,7 +309,7 @@ export const getNetworkHover = (chainColor: string): string => {
     case ColorOptions.ETH:
       return `hover:!bg-[#5170ad] hover:bg-opacity-20`
     case ColorOptions.YELLOW:
-      return `hover:!bg-[#ecae0b] hover:bg-opacity-20`
+      return `${CustomClasses.HOVER_CUSTOM_YELLOW_BG} hover:bg-opacity-20`
     case ColorOptions.GRAY:
       return `hover:!bg-gray-500 hover:bg-opacity-20`
     case ColorOptions.GREEN:
