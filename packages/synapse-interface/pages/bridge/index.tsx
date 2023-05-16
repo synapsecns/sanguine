@@ -315,58 +315,61 @@ const BridgePage = ({
   - Handles all the changes that occur when selecting a new "from token", such as generating lists of potential chains/tokens
    to bridge to and handling if the current "to chain/token" are incompatible.
   */
-  const handleNewFromToken = (
-    token: Token,
-    positedToChain: number | undefined,
-    positedToSymbol: string | undefined,
-    fromChainId: number
-  ) => {
-    let newToChain =
-      positedToChain && positedToChain !== fromChainId
-        ? Number(positedToChain)
-        : DEFAULT_TO_CHAIN
-    console.log('newToChain', newToChain)
-    let bridgeableChains = BRIDGE_CHAINS_BY_TYPE[
-      String(token.swapableType)
-    ].filter((chainId) => Number(chainId) !== fromChainId)
-    const swapExceptionsArr: number[] =
-      token?.swapExceptions?.[fromChainId as keyof Token['swapExceptions']]
-    if (swapExceptionsArr?.length > 0) {
-      bridgeableChains = swapExceptionsArr.map((chainId) => String(chainId))
-    }
+  const handleNewFromToken = useCallback(
+    (
+      token: Token,
+      positedToChain: number | undefined,
+      positedToSymbol: string | undefined,
+      fromChainId: number
+    ) => {
+      let newToChain =
+        positedToChain && positedToChain !== fromChainId
+          ? Number(positedToChain)
+          : DEFAULT_TO_CHAIN
+      console.log('newToChain', newToChain)
+      let bridgeableChains = BRIDGE_CHAINS_BY_TYPE[
+        String(token.swapableType)
+      ].filter((chainId) => Number(chainId) !== fromChainId)
+      const swapExceptionsArr: number[] =
+        token?.swapExceptions?.[fromChainId as keyof Token['swapExceptions']]
+      if (swapExceptionsArr?.length > 0) {
+        bridgeableChains = swapExceptionsArr.map((chainId) => String(chainId))
+      }
 
-    if (!bridgeableChains.includes(String(newToChain))) {
-      newToChain =
-        Number(bridgeableChains[0]) === fromChainId
-          ? Number(bridgeableChains[1])
-          : Number(bridgeableChains[0])
-    }
+      if (!bridgeableChains.includes(String(newToChain))) {
+        newToChain =
+          Number(bridgeableChains[0]) === fromChainId
+            ? Number(bridgeableChains[1])
+            : Number(bridgeableChains[0])
+      }
 
-    const positedToToken = positedToSymbol
-      ? tokenSymbolToToken(newToChain, positedToSymbol)
-      : tokenSymbolToToken(newToChain, token.symbol)
+      const positedToToken = positedToSymbol
+        ? tokenSymbolToToken(newToChain, positedToSymbol)
+        : tokenSymbolToToken(newToChain, token.symbol)
 
-    let bridgeableTokens: Token[] = sortByVisibilityRank(
-      BRIDGE_SWAPABLE_TOKENS_BY_TYPE[newToChain][String(token.swapableType)]
-    )
-
-    if (swapExceptionsArr?.length > 0) {
-      bridgeableTokens = bridgeableTokens.filter(
-        (toToken) => toToken.symbol === token.symbol
+      let bridgeableTokens: Token[] = sortByVisibilityRank(
+        BRIDGE_SWAPABLE_TOKENS_BY_TYPE[newToChain][String(token.swapableType)]
       )
-    }
-    let bridgeableToken: Token = positedToToken
-    if (!bridgeableTokens.includes(positedToToken)) {
-      bridgeableToken = bridgeableTokens[0]
-    }
 
-    return {
-      bridgeableToken,
-      newToChain,
-      bridgeableTokens,
-      bridgeableChains,
-    }
-  }
+      if (swapExceptionsArr?.length > 0) {
+        bridgeableTokens = bridgeableTokens.filter(
+          (toToken) => toToken.symbol === token.symbol
+        )
+      }
+      let bridgeableToken: Token = positedToToken
+      if (!bridgeableTokens.includes(positedToToken)) {
+        bridgeableToken = bridgeableTokens[0]
+      }
+
+      return {
+        bridgeableToken,
+        newToChain,
+        bridgeableTokens,
+        bridgeableChains,
+      }
+    },
+    [fromToken, fromChainId, toToken, toChainId]
+  )
 
   /*
   Function: handleChainChange
