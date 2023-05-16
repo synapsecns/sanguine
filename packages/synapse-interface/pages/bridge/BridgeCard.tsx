@@ -50,6 +50,7 @@ const BridgeCard = ({
   toChainId,
   toOptions,
   isQuoteLoading,
+  setIsQuoteLoading,
   destinationAddress,
   handleChainChange,
   handleTokenChange,
@@ -70,6 +71,7 @@ const BridgeCard = ({
   toChainId: number
   toOptions: { tokens: Token[]; chains: string[] }
   isQuoteLoading: boolean
+  setIsQuoteLoading: (bool: boolean) => void
   destinationAddress: string
   handleChainChange: (
     chainId: number,

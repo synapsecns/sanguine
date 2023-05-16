@@ -332,6 +332,7 @@ const SwapCard = ({
       swapableTokens,
     }
   }
+
   /*
   Function: handleChainChange
   - Produces and alert if chain not connected (upgrade to toaster)
@@ -349,6 +350,9 @@ const SwapCard = ({
     const desiredChainId = Number(chainId)
     const res = switchNetwork({ chainId: desiredChainId })
       .then((res) => {
+        if (fromInput.string !== '') {
+          setIsQuoteLoading(true)
+        }
         return res
       })
       .catch(() => {
@@ -385,6 +389,7 @@ const SwapCard = ({
     )
     return
   }
+
   /*
     Function:handleTokenChange
   - Handles when the user selects a new token from either the origin or destination
@@ -404,10 +409,15 @@ const SwapCard = ({
           token.symbol,
           swapableToken.symbol
         )
+        if (fromInput.string !== '') {
+          setIsQuoteLoading(true)
+        }
         return
       case 'to':
-        resetRates()
         setToToken(token)
+        if (fromInput.string !== '') {
+          setIsQuoteLoading(true)
+        }
         updateUrlParams({
           inputCurrency: fromToken.symbol,
           outputCurrency: token.symbol,
@@ -422,7 +432,9 @@ const SwapCard = ({
   - Calculates slippage by subtracting fee from input amount (checks to ensure proper num of decimals are in use - ask someone about stable swaps if you want to learn more)
   */
   const getQuote = async () => {
-    setIsQuoteLoading(true)
+    if (swapQuote === EMPTY_SWAP_QUOTE) {
+      setIsQuoteLoading(true)
+    }
     const { routerAddress, maxAmountOut, query } = await SynapseSDK.swapQuote(
       connectedChainId,
       fromToken.addresses[connectedChainId],
@@ -463,7 +475,8 @@ const SwapCard = ({
       delta: maxAmountOut,
       quote: query,
     })
-    return setIsQuoteLoading(false)
+    setIsQuoteLoading(false)
+    return
   }
 
   /*
