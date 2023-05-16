@@ -10,6 +10,8 @@ const ETH_LIGHT = '[#78a5ff]'
 const CustomClasses = {
   CUSTOM_YELLOW_BG: `bg-${CUSTOM_YELLOW}`,
   HOVER_CUSTOM_YELLOW_BG: `hover:!bg-${CUSTOM_YELLOW}`,
+  ETH_BASE_BG: `bg-${ETH_BASE}`,
+  HOVER_ETH_BASE: `hover:!bg-${ETH_BASE}`,
 }
 
 const ColorOptions = {
@@ -307,7 +309,7 @@ export const getNetworkShadow = (chainColor: string): string => {
 export const getNetworkHover = (chainColor: string): string => {
   switch (chainColor) {
     case ColorOptions.ETH:
-      return `hover:!bg-[#5170ad] hover:bg-opacity-20`
+      return `${CustomClasses.HOVER_ETH_BASE} hover:bg-opacity-20`
     case ColorOptions.YELLOW:
       return `${CustomClasses.HOVER_CUSTOM_YELLOW_BG} hover:bg-opacity-20`
     case ColorOptions.GRAY:
