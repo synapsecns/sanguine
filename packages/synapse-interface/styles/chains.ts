@@ -8,8 +8,10 @@ const ETH_EXTRA_DARK = '[#314367]'
 const ETH_LIGHT = '[#78a5ff]'
 
 const CustomClasses = {
-  TEXT_CUSTOM_YELLOW: `!text-${CUSTOM_YELLOW} dark:!text-${CUSTOM_YELLOW}`,
-  HOVER_TEXT_CUSTOM_YELLOW: `hover:!text-${CUSTOM_YELLOW} dark:hover:!text-${CUSTOM_YELLOW}`,
+  TEXT_CUSTOM_YELLOW: `!text-${CUSTOM_YELLOW}`,
+  DARK_TEXT_CUSTOM_YELLOW: `dark:!text-${CUSTOM_YELLOW}`,
+  HOVER_TEXT_CUSTOM_YELLOW: `hover:!text-${CUSTOM_YELLOW}`,
+  DARK_HOVER_TEXT_CUSTOM_YELLOW: `dark:hover:!text-${CUSTOM_YELLOW}`,
   CUSTOM_YELLOW_BG: `bg-${CUSTOM_YELLOW}`,
   SHADOW_CUSTOM_YELLOW: `!shadow-${CUSTOM_YELLOW}`,
   SHADOW_HOVER_CUSTOM_YELLOW: `hover:!shadow-${CUSTOM_YELLOW}`,
@@ -19,7 +21,8 @@ const CustomClasses = {
   ETH_BASE_BG: `bg-${ETH_BASE}`,
   HOVER_ETH_BASE: `hover:!bg-${ETH_BASE}`,
   GROUP_HOVER_ETH_BASE: `group-hover:text-${ETH_BASE}`,
-  HOVER_TEXT_ETH_LIGHT: `hover:!text-${ETH_LIGHT} dark:hover:!text-${ETH_LIGHT}`,
+  HOVER_TEXT_ETH_LIGHT: `hover:!text-${ETH_LIGHT}`,
+  DARK_HOVER_TEXT_ETH_LIGHT: `dark:hover:!text-${ETH_LIGHT}`,
 }
 
 const ColorOptions = {
@@ -108,18 +111,49 @@ export const getNetworkButtonBorderImportant = (chainColor: string): string => {
 }
 
 export const getNetworkTextColor = (chainColor: string): string => {
-  if (chainColor === 'yellow') {
-    return `text-${CUSTOM_YELLOW} dark:text-${CUSTOM_YELLOW}`
-  } else if (chainColor === 'eth') {
-    return `text-${ETH_BASE} dark:text-${ETH_LIGHT}`
+  switch (chainColor) {
+    case ColorOptions.YELLOW:
+      return `text-${CUSTOM_YELLOW} dark:text-${CUSTOM_YELLOW}`
+    case ColorOptions.ETH:
+      return `${CustomClasses.TEXT_ETH} dark:text-${ETH_LIGHT}`
+    case ColorOptions.GRAY:
+      return `text-gray-500 dark:text-gray-500`
+    case ColorOptions.GREEN:
+      return `text-green-500 dark:text-green-500`
+    case ColorOptions.LIME:
+      return `text-lime-500 dark:text-lime-500`
+    case ColorOptions.SKY:
+      return `text-sky-500 dark:text-sky-500`
+    case ColorOptions.BLUE:
+      return `text-blue-500 dark:text-blue-500`
+    case ColorOptions.ORANGE:
+      return `text-orange-500 dark:text-orange-500`
+    case ColorOptions.PURPLE:
+      return `text-purple-500 dark:text-purple-500`
+    case ColorOptions.INDIGO:
+      return `text-indigo-500 dark:text-indigo-500`
+    case ColorOptions.CYAN:
+      return `text-cyan-500 dark:text-cyan-500`
+    case ColorOptions.RED:
+      return `text-red-500 dark:text-red-500`
+    default:
+      return `text-gray-500 dark:text-gray-500`
   }
-  return `text-${chainColor}-500 dark:text-${chainColor}-500`
 }
+
+// export const getNetworkTextColor = (chainColor: string): string => {
+//   if (chainColor === 'yellow') {
+//     return `text-${CUSTOM_YELLOW} dark:text-${CUSTOM_YELLOW}`
+//   } else if (chainColor === 'eth') {
+//     return `text-${ETH_BASE} dark:text-${ETH_LIGHT}`
+//   }
+//   return `text-${chainColor}-500 dark:text-${chainColor}-500`
+// }
 
 export const getNetworkLinkTextColor = (chainColor: string): string => {
   switch (chainColor) {
     case ColorOptions.YELLOW:
-      return `!text-gray-800 ${CustomClasses.HOVER_TEXT_CUSTOM_YELLOW}`
+      return `!text-gray-800 ${CustomClasses.HOVER_TEXT_CUSTOM_YELLOW} ${CustomClasses.DARK_TEXT_CUSTOM_YELLOW} ${CustomClasses.DARK_HOVER_TEXT_CUSTOM_YELLOW}`
     case ColorOptions.ETH:
       return `${CustomClasses.TEXT_ETH} ${CustomClasses.HOVER_TEXT_ETH_LIGHT}`
     case ColorOptions.GRAY:
