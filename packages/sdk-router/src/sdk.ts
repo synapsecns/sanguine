@@ -137,11 +137,11 @@ class SynapseSDK {
     let feeConfig
 
     if (originQuery && destInToken) {
-      feeAmount = await destRouter.routerContract.calculateBridgeFee(
+      feeAmount = destRouter.routerContract.calculateBridgeFee(
         destInToken,
         originQuery.minAmountOut
       )
-      feeConfig = await destRouter.routerContract.fee(destInToken)
+      feeConfig = destRouter.routerContract.fee(destInToken)
     }
 
     if (originQuery && destQuery) {
@@ -157,8 +157,8 @@ class SynapseSDK {
     const routerAddress = originRouter.routerContract.address
 
     return {
-      feeAmount,
-      feeConfig,
+      feeAmount: await feeAmount,
+      feeConfig: await feeConfig,
       routerAddress,
       maxAmountOut,
       originQuery,
