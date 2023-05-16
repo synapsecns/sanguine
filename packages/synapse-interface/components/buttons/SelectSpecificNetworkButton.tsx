@@ -43,6 +43,9 @@ export const SelectSpecificNetworkButton = ({
     bgClassName = 'bg-[#58535B] hover:bg-[#58535B] active:bg-[#58535B]'
   }
 
+  const networkButtonHoverClass = getNetworkButtonBorderHover(chain.color)
+  const networkHoverClass = getNetworkHover(chain.color)
+
   return (
     <button
       ref={ref}
@@ -54,9 +57,9 @@ export const SelectSpecificNetworkButton = ({
         px-2 py-3
         cursor-pointer
         border border-transparent
-        ${getNetworkHover(chain.color)}
-        ${getNetworkButtonBorderHover(chain.color)}
         ${bgClassName}
+        ${networkHoverClass}
+        ${networkButtonHoverClass}
       `}
       onClick={onClick}
       data-test-id={`${dataId}-item`}
