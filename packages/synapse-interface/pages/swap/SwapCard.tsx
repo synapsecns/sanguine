@@ -332,6 +332,7 @@ const SwapCard = ({
       swapableTokens,
     }
   }
+
   /*
   Function: handleChainChange
   - Produces and alert if chain not connected (upgrade to toaster)
@@ -388,6 +389,7 @@ const SwapCard = ({
     )
     return
   }
+
   /*
     Function:handleTokenChange
   - Handles when the user selects a new token from either the origin or destination
