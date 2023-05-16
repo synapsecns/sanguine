@@ -1,13 +1,13 @@
 {
   "name": "@synapsecns/synapse-interface",
-  "version": "0.1.14",
+  "version": "0.1.13",
   "private": true,
   "engines": {
     "node": ">=16.0.0"
   },
   "scripts": {
     "dev": "next dev",
-    "build": "next build",
+    "build": "yarn add @synapsecns/sdk-router && next build",
     "start": "next start",
     "lint": "next lint",
     "cypress:run": "start-server-and-test dev http://localhost:3000 \"cypress run --e2e\"",
