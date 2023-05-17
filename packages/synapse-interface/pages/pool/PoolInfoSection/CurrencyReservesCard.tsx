@@ -16,7 +16,7 @@ const CurrencyReservesCard = ({
 }) => {
   return (
     <InfoSectionCard title={title}>
-      {/* {poolData &&
+      {poolData ? (
         poolData.tokens.map((tokenObj, idx) => {
           return (
             <div key={idx}>
@@ -29,9 +29,13 @@ const CurrencyReservesCard = ({
               />
             </div>
           )
-        })} */}
-      <LoadingRow />
-      <LoadingRow />
+        })
+      ) : (
+        <>
+          <LoadingRow />
+          <LoadingRow />
+        </>
+      )}
     </InfoSectionCard>
   )
 }

@@ -10,7 +10,7 @@ const LoadingRow = () => {
             animate-pulse hover:border-opacity-30
           `}
       >
-        <div className="flex-grow py-2 m-1 rounded bg-slate-700"></div>
+        <div className="flex-grow py-2 my-1.5 rounded bg-slate-700"></div>
       </div>
     </div>
   )
