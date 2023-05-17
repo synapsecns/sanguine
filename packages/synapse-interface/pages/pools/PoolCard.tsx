@@ -10,7 +10,6 @@ import Grid from '@tw/Grid'
 import { memo } from 'react'
 import { CHAINS_BY_ID } from '@constants/chains'
 import LoadingSpinner from '@tw/LoadingSpinner'
-import { PoolData } from '@types'
 import { AddressZero } from '@ethersproject/constants'
 const PoolsListCard = memo(
   ({
