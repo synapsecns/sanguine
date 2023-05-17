@@ -63,18 +63,18 @@ const PoolCards = memo(
                       key={index}
                       className={({ selected }) => {
                         return `
-                    bg-bgLight
-                    px-4 py-2 rounded-lg
-                    text-sm text-white
-                    transform-gpu transition-all duration-75
-                    hover:bg-bgLighter
-                    border-transparent
-                    ${
-                      selected
-                        ? 'border-gradient-br-magenta-melrose-bgDarker border-solid border'
-                        : 'bg:bg-bgLight'
-                    }
-                  `
+                        bg-bgLight
+                          px-4 py-2 rounded-lg
+                          text-sm text-white
+                          transform-gpu transition-all duration-75
+                          hover:bg-bgLighter
+                          border-transparent
+                          ${
+                            selected
+                              ? 'border-gradient-br-magenta-melrose-bgDarker border-solid border'
+                              : 'bg:bg-bgLight'
+                          }
+                        `
                       }}
                     >
                       {label}
