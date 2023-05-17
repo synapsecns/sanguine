@@ -62,8 +62,13 @@ export const getLogs = async (
     fromBlock: toHexStr(currentBlock - GETLOGS_SIZE),
     toBlock: toHexStr(currentBlock),
   }
-  const logs = await provider.send('eth_getLogs', [filter])
-  return logs
+  try {
+    const logs = await provider.send('eth_getLogs', [filter])
+    return logs
+  } catch (e) {
+    console.log(e)
+    return []
+  }
 }
 export const checkTxIn = (tx) => {
   return tx?.chainId ? true : false
@@ -75,7 +80,8 @@ export const generateBridgeTx = (
   chainId,
   parsedLog,
   timestampObj,
-  txReceipt
+  txReceipt,
+  destinationAddress
 ): BridgeWatcherTx => {
   const swapTokenAddr = getAddress(parsedLog.token)
 
@@ -159,6 +165,6 @@ export const generateBridgeTx = (
     token,
     kappa: id(parsedLog.transactionHash),
     toChainId: isFrom ? Number(parsedLog.chainId.toString()) : chainId,
-    toAddress: isFrom ? parsedLog.to : address,
+    toAddress: isFrom ? parsedLog.to : destinationAddress,
   }
 }
