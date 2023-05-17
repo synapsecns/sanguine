@@ -94,17 +94,6 @@ export const addTokenToWallet = async ({ token, chainId, icon }) => {
           },
         },
       })
-
-      if (wasAdded) {
-        // console.log(`
-        //   One thing I don't know why
-        //   It doesn't even matter how hard you try
-        //   Keep that in mind, ${token.symbol} designed this line
-        //   To explain in due time
-        // `)
-      } else {
-        // console.log(`You can't change the world without getting your hands dirty.`)
-      }
     } catch (error) {
       console.log(error)
     }

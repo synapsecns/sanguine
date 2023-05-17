@@ -50,7 +50,7 @@ const PoolCards = memo(
           <PageHeader title="Pools" subtitle="Provide liquidity." />
           <Grid
             cols={{ xs: 1, sm: 1, md: 1, lg: 1 }}
-            className="justify-center mt-3 mb-5 md:float-right place-items-center"
+            className="justify-center md:float-right place-items-center"
           >
             <Tab.List className="flex min-w-[360px] p-1.5 space-x-2">
               {synPrices &&
@@ -63,18 +63,18 @@ const PoolCards = memo(
                       key={index}
                       className={({ selected }) => {
                         return `
-                    bg-bgLight
-                    px-4 py-2 rounded-lg
-                    text-sm text-white
-                    transform-gpu transition-all duration-75
-                    hover:bg-bgLighter
-                    border-transparent
-                    ${
-                      selected
-                        ? 'border-gradient-br-magenta-melrose-bgDarker border-solid border'
-                        : 'bg:bg-bgLight'
-                    }
-                  `
+                        bg-bgLight
+                          px-4 py-2 rounded-lg
+                          text-sm text-white
+                          transform-gpu transition-all duration-75
+                          hover:bg-bgLighter
+                          border-transparent
+                          ${
+                            selected
+                              ? 'border-gradient-br-magenta-melrose-bgDarker border-solid border'
+                              : 'bg:bg-bgLight'
+                          }
+                        `
                       }}
                     >
                       {label}
@@ -95,7 +95,6 @@ const PoolCards = memo(
                     {poolsByChain[connectedChainId] &&
                       poolsByChain[connectedChainId]?.length > 0 &&
                       poolsByChain[connectedChainId].map((pool) => {
-                        console.log('sdajhk')
                         return (
                           <PoolsListCard
                             key={pool?.poolName}

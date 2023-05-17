@@ -109,7 +109,6 @@ function BlockCountdownCircle({
     [fromChainConfirmations - clampedDiff, 0, 0, 0],
     [clampedDiff, 0, 0, 0],
   ]
-  console.log('clampedDiff', clampedDiff)
   return (
     <svg
       viewBox="0 0 200 200"
