@@ -2,7 +2,6 @@ import Link from 'next/link'
 import { STAKE_PATH, POOLS_PATH, POOL_PATH } from '@urls'
 import { ChevronLeftIcon } from '@heroicons/react/outline'
 import { useEffect, useState, memo } from 'react'
-import { useSynapseContext } from '@/utils/providers/SynapseProvider'
 import { Token } from '@types'
 import { getPoolData } from '@utils/actions/getPoolData'
 import { getPoolApyData } from '@utils/actions/getPoolApyData'
@@ -11,6 +10,8 @@ import Card from '@tw/Card'
 import Grid from '@tw/Grid'
 import PoolManagement from './poolManagement'
 import PoolInfoSection from './PoolInfoSection'
+import { AddressZero } from '@ethersproject/constants'
+
 const PoolBody = memo(
   ({
     pool,
@@ -27,22 +28,24 @@ const PoolBody = memo(
     const [poolUserData, setPoolUserData] = useState(undefined)
     const [poolAPYData, setPoolAPYData] = useState(undefined)
     useEffect(() => {
-      if (connectedChainId && pool && address && poolChainId) {
+      if (connectedChainId && pool && poolChainId) {
         // TODO - separate the apy and tvl so they load async.
-        getPoolData(poolChainId, pool, address, false)
+        getPoolData(poolChainId, pool, address ?? AddressZero, false)
           .then((res) => {
             setPoolData(res)
           })
           .catch((err) => {
             console.log('Could not get pool data', err)
           })
-        getPoolData(poolChainId, pool, address, true)
-          .then((res) => {
-            setPoolUserData(res)
-          })
-          .catch((err) => {
-            console.log('Could not get pool data', err)
-          })
+        if (address) {
+          getPoolData(poolChainId, pool, address, true)
+            .then((res) => {
+              setPoolUserData(res)
+            })
+            .catch((err) => {
+              console.log('Could not get pool data', err)
+            })
+        }
         getPoolApyData(poolChainId, pool)
           .then((res) => {
             setPoolAPYData(res)
@@ -106,7 +109,7 @@ const PoolBody = memo(
             <Card className="bg-bgBase rounded-3xl" divider={false}>
               <PoolManagement
                 pool={pool}
-                address={address}
+                address={address ?? AddressZero}
                 chainId={connectedChainId}
                 poolData={poolData}
                 poolUserData={poolUserData}

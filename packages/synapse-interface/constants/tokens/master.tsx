@@ -544,6 +544,7 @@ export const USDT = new Token({
   symbol: 'USDT',
   name: 'USD Tether',
   logo: usdtLogo,
+  color: 'lime',
   description: `
     USDT mirrors the price of the U.S. dollar, issued by a Hong Kong-based company Tether.
     The token’s peg to the USD is achieved via maintaining a sum of dollars in reserves equal

@@ -14,7 +14,7 @@ import { PageHeader } from '@components/PageHeader'
 import { TokenSlideOver } from '@/components/misc/TokenSlideOver'
 import { ChainSlideOver } from '@/components/misc/ChainSlideOver'
 import { BigNumber } from '@ethersproject/bignumber'
-import { Zero, MaxInt256 } from '@ethersproject/constants'
+import { Zero, AddressZero } from '@ethersproject/constants'
 import { formatBNToString } from '@bignumber/format'
 import { SECTION_TRANSITION_PROPS, TRANSITION_PROPS } from '@styles/transitions'
 import { approveToken } from '@/utils/approveToken'
@@ -24,7 +24,8 @@ import BridgeInputContainer from '../../components/input/TokenAmountInput'
 import { TransactionResponse } from '@ethersproject/providers'
 import { useSpring, animated } from 'react-spring'
 import { BRIDGABLE_TOKENS } from '@constants/tokens'
-
+import { IMPAIRED_CHAINS } from '@/constants/impairedChains'
+import { CHAINS_BY_ID } from '@constants/chains'
 import { Token } from '@/utils/types'
 import { BridgeQuote } from '@/utils/types'
 
@@ -172,9 +173,15 @@ const BridgeCard = ({
     btnLabel = error
   } else if (!isFromBalanceEnough) {
     btnLabel = `Insufficient ${fromToken?.symbol} Balance`
+  } else if (IMPAIRED_CHAINS[fromChainId]?.disabled) {
+    btnLabel = `${CHAINS_BY_ID[fromChainId]?.name} is currently paused`
+  } else if (IMPAIRED_CHAINS[toChainId]?.disabled) {
+    btnLabel = `${CHAINS_BY_ID[toChainId]?.name} is currently paused`
   } else if (bridgeQuote.feeAmount.eq(0) && !fromInput?.bigNum?.eq(0)) {
     btnLabel = `Amount must be greater than fee`
   } else if (
+    fromToken.addresses[fromChainId] !== '' &&
+    fromToken.addresses[fromChainId] !== AddressZero &&
     bridgeQuote?.allowance &&
     bridgeQuote?.allowance?.lt(fromInput?.bigNum)
   ) {
@@ -221,7 +228,9 @@ const BridgeCard = ({
           bridgeQuote.outputAmount.eq(0) ||
           !isFromBalanceEnough ||
           error ||
-          destAddrNotValid
+          destAddrNotValid ||
+          IMPAIRED_CHAINS[fromChainId]?.disabled ||
+          IMPAIRED_CHAINS[toChainId]?.disabled
         }
         chainId={toChainId}
         onClick={() => buttonAction()}
