@@ -76,7 +76,6 @@ const ButtonContent = memo(
     chainId: number
     tokenBalance: BigNumber
   }) => {
-    console.log('rendering button content')
     return (
       <div className="flex items-center w-full">
         <img

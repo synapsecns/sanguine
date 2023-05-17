@@ -7,7 +7,6 @@ const ExplorerLink = ({
   overrideExistingClassname = false,
   showIcon = false,
 }) => {
-  console.log('ExplorerLink', transactionHash, chainId)
   const explorerTxUrl = getExplorerTxUrl({ hash: transactionHash, chainId })
   const len = transactionHash?.length
 

@@ -452,12 +452,6 @@ const SwapCard = ({
       fromToken.addresses[connectedChainId] === AddressZero
         ? Zero
         : await getCurrentTokenAllowance(routerAddress)
-    console.log(
-      'from',
-      fromInput.string,
-      'minamount',
-      query.minAmountOut.toString()
-    )
 
     setSwapQuote({
       outputAmount: toValueBigNum,

@@ -5,7 +5,7 @@ import { POOL_FEE_PRECISION } from '@constants/fees'
 export const formatBNToString = (
   bn: BigNumber,
   nativePrecison: number,
-  decimalPlaces: number
+  decimalPlaces?: number
 ) => {
   const fullPrecision = formatUnits(bn, nativePrecison)
   const decimalIdx = fullPrecision.indexOf('.')

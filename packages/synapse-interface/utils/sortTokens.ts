@@ -36,7 +36,6 @@ export const sortByTokenBalance = async (
   chainId: number,
   address: any
 ) => {
-  console.log('sortByTokenBalance', tokens, chainId, address)
   const tokensWithBalances: any[] = []
 
   const multicallInputs = []
