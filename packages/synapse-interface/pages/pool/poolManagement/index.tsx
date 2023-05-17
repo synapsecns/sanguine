@@ -21,6 +21,7 @@ const PoolManagement = ({
   // const [cardNav, setCardNav] = useState(getLiquidityMode(location.hash)) // 'addLiquidity'
 
   const [cardNav, setCardNav] = useState(getLiquidityMode('#addLiquidity')) // 'addLiquidity'
+  console.log('')
   return (
     <div>
       <div className="rounded-lg text-default">
@@ -32,8 +33,9 @@ const PoolManagement = ({
           }}
         />
         <div className="mt-4">
-          {cardNav === 'addLiquidity' &&
-            (pool && poolUserData && poolData && address ? (
+          {
+            cardNav === 'addLiquidity' && (
+              // (pool && poolUserData && poolData && address ? (
               <Deposit
                 pool={pool}
                 address={address}
@@ -41,11 +43,13 @@ const PoolManagement = ({
                 poolData={poolData}
                 poolUserData={poolUserData}
               />
-            ) : (
-              <div className="w-full text-center mt-[80px] text-sm text-white">
-                <p>connect wallet</p>
-              </div>
-            ))}
+            )
+            // ) : (
+            //   <div className="w-full text-center mt-[80px] text-sm text-white">
+            //     <p>connect wallet</p>
+            //   </div>
+            // ))
+          }
           {cardNav === 'removeLiquidity' &&
             (pool && poolUserData && poolData && address ? (
               <Withdraw
