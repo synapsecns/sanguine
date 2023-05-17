@@ -10,6 +10,7 @@ import { fetchSigner, getNetwork, switchNetwork } from '@wagmi/core'
 import { sortByTokenBalance, sortByVisibilityRank } from '@utils/sortTokens'
 import { calculateExchangeRate } from '@utils/calculateExchangeRate'
 import { subtractSlippage } from '@utils/slippage'
+import Popup from '@components/Popup'
 
 import {
   BRIDGABLE_TOKENS,
@@ -531,6 +532,7 @@ const BridgePage = ({
         toToken.addresses[toChainId],
         fromInput.bigNum
       )
+
     if (!(originQuery && maxAmountOut && destQuery && feeAmount)) {
       setBridgeQuote(EMPTY_BRIDGE_QUOTE_ZERO)
       setIsQuoteLoading(false)
@@ -611,6 +613,7 @@ const BridgePage = ({
               gap={6}
               className="justify-center px-2 py-16 sm:px-6 md:px-8"
             >
+              <Popup chainId={fromChainId} />
               <div className="flex justify-center">
                 <div className="pb-3 place-self-center">
                   <BridgeCard

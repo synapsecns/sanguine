@@ -27,6 +27,9 @@ import { Transition } from '@headlessui/react'
 import { COIN_SLIDE_OVER_PROPS } from '@styles/transitions'
 import Card from '@tw/Card'
 import { SwapQuote } from '@types'
+import { IMPAIRED_CHAINS } from '@/constants/impairedChains'
+import { CHAINS_BY_ID } from '@constants/chains'
+
 import {
   DEFAULT_FROM_TOKEN,
   DEFAULT_TO_TOKEN,
@@ -527,6 +530,8 @@ const SwapCard = ({
       btnLabel = error
     } else if (!isFromBalanceEnough) {
       btnLabel = `Insufficient ${fromToken.symbol} Balance`
+    } else if (IMPAIRED_CHAINS[connectedChainId]?.disabled) {
+      btnLabel = `${CHAINS_BY_ID[connectedChainId]?.name} is currently paused`
     } else if (fromInput.bigNum.eq(0)) {
       btnLabel = `Amount must be greater than fee`
     } else if (
@@ -574,7 +579,8 @@ const SwapCard = ({
           swapQuote.outputAmount.eq(0) ||
           !isFromBalanceEnough ||
           error != null ||
-          destAddrNotValid
+          destAddrNotValid ||
+          IMPAIRED_CHAINS[connectedChainId]?.disabled
         }
         onClick={() => buttonAction()}
         onSuccess={() => {

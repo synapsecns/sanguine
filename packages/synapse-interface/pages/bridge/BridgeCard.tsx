@@ -24,7 +24,8 @@ import BridgeInputContainer from '../../components/input/TokenAmountInput'
 import { TransactionResponse } from '@ethersproject/providers'
 import { useSpring, animated } from 'react-spring'
 import { BRIDGABLE_TOKENS } from '@constants/tokens'
-
+import { IMPAIRED_CHAINS } from '@/constants/impairedChains'
+import { CHAINS_BY_ID } from '@constants/chains'
 import { Token } from '@/utils/types'
 import { BridgeQuote } from '@/utils/types'
 
@@ -168,6 +169,10 @@ const BridgeCard = ({
     btnLabel = error
   } else if (!isFromBalanceEnough) {
     btnLabel = `Insufficient ${fromToken?.symbol} Balance`
+  } else if (IMPAIRED_CHAINS[fromChainId]?.disabled) {
+    btnLabel = `${CHAINS_BY_ID[fromChainId]?.name} is currently paused`
+  } else if (IMPAIRED_CHAINS[toChainId]?.disabled) {
+    btnLabel = `${CHAINS_BY_ID[toChainId]?.name} is currently paused`
   } else if (bridgeQuote.feeAmount.eq(0) && !fromInput?.bigNum?.eq(0)) {
     btnLabel = `Amount must be greater than fee`
   } else if (
@@ -219,7 +224,9 @@ const BridgeCard = ({
           bridgeQuote.outputAmount.eq(0) ||
           !isFromBalanceEnough ||
           error ||
-          destAddrNotValid
+          destAddrNotValid ||
+          IMPAIRED_CHAINS[fromChainId]?.disabled ||
+          IMPAIRED_CHAINS[toChainId]?.disabled
         }
         chainId={toChainId}
         onClick={() => buttonAction()}

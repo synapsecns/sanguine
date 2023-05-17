@@ -62,8 +62,13 @@ export const getLogs = async (
     fromBlock: toHexStr(currentBlock - GETLOGS_SIZE),
     toBlock: toHexStr(currentBlock),
   }
-  const logs = await provider.send('eth_getLogs', [filter])
-  return logs
+  try {
+    const logs = await provider.send('eth_getLogs', [filter])
+    return logs
+  } catch (e) {
+    console.log(e)
+    return []
+  }
 }
 export const checkTxIn = (tx) => {
   return tx?.chainId ? true : false
