@@ -22,6 +22,8 @@ func (s *Store) UNSAFE_DB() *gorm.DB {
 }
 
 // OpenGormClickhouse opens a gorm connection to clickhouse.
+//
+//nolint:cyclop
 func OpenGormClickhouse(ctx context.Context, address string, readOnly bool) (*Store, error) {
 	clickhouseDB, err := gorm.Open(gormClickhouse.New(gormClickhouse.Config{
 		DSN: address,
@@ -34,6 +36,7 @@ func OpenGormClickhouse(ctx context.Context, address string, readOnly bool) (*St
 		return nil, fmt.Errorf("failed to open gorm clickhouse: %w", err)
 	}
 
+	// nolint:unparam
 	if !readOnly {
 		// load all models, check if table exists before doing so
 		if (!clickhouseDB.WithContext(ctx).Migrator().HasTable(&TokenIndex{})) {
