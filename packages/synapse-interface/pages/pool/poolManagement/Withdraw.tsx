@@ -85,50 +85,54 @@ const Withdraw = ({
     if (poolUserData == null || address == null) {
       return
     }
-    const outputs: Record<
-      string,
-      {
-        value: BigNumber
-        index: number
+    try {
+      const outputs: Record<
+        string,
+        {
+          value: BigNumber
+          index: number
+        }
+      > = {}
+      if (withdrawType == ALL) {
+        const { amounts } = await synapseSDK.calculateRemoveLiquidity(
+          chainId,
+          pool.swapAddresses[chainId],
+          inputValue.bn
+        )
+        for (const tokenAddr in amounts) {
+          outputs[tokenAddr] = amounts[tokenAddr]
+        }
+      } else {
+        const { amount } = await synapseSDK.calculateRemoveLiquidityOne(
+          chainId,
+          pool.swapAddresses[chainId],
+          inputValue.bn,
+          withdrawType
+        )
+        outputs[withdrawType] = amount
       }
-    > = {}
-    if (withdrawType == ALL) {
-      const { amounts } = await synapseSDK.calculateRemoveLiquidity(
-        chainId,
-        pool.swapAddresses[chainId],
-        inputValue.bn
-      )
-      for (const tokenAddr in amounts) {
-        outputs[tokenAddr] = amounts[tokenAddr]
-      }
-    } else {
-      const { amount } = await synapseSDK.calculateRemoveLiquidityOne(
-        chainId,
-        pool.swapAddresses[chainId],
+      const tokenSum = sumBigNumbers(pool, outputs)
+      const priceImpact = calculateExchangeRate(
         inputValue.bn,
-        withdrawType
+        18,
+        inputValue.bn.sub(tokenSum),
+        18
       )
-      outputs[withdrawType] = amount
+      const allowance = await getTokenAllowance(
+        pool.swapAddresses[chainId],
+        pool.addresses[chainId],
+        address,
+        chainId
+      )
+      setWithdrawQuote({
+        priceImpact,
+        allowance,
+        outputs,
+        routerAddress: pool.swapAddresses[chainId],
+      })
+    } catch (e) {
+      console.log(e)
     }
-    const tokenSum = sumBigNumbers(pool, outputs)
-    const priceImpact = calculateExchangeRate(
-      inputValue.bn,
-      18,
-      inputValue.bn.sub(tokenSum),
-      18
-    )
-    const allowance = await getTokenAllowance(
-      pool.swapAddresses[chainId],
-      pool.addresses[chainId],
-      address,
-      chainId
-    )
-    setWithdrawQuote({
-      priceImpact,
-      allowance,
-      outputs,
-      routerAddress: pool.swapAddresses[chainId],
-    })
   }
 
   useEffect(() => {
