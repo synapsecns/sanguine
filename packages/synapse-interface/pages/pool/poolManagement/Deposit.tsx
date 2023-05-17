@@ -31,12 +31,6 @@ const Deposit = ({
   poolData: PoolData
   poolUserData: PoolUserData
 }) => {
-  console.log('pool:', pool)
-  console.log('chainId:', chainId)
-  console.log('address:', address)
-  console.log('poolData:', poolData)
-  console.log('poolUserData:', poolUserData)
-
   // todo store sum in here?
   const [inputValue, setInputValue] = useState<{
     bn: Record<string, BigNumber>
@@ -208,7 +202,7 @@ const Deposit = ({
   return (
     <div className="flex-col">
       <div className="px-2 pt-1 pb-4 bg-bgLight rounded-xl">
-        {/* {pool && poolUserData && poolData ? (
+        {pool && poolUserData && poolData ? (
           poolUserData.tokens.map((tokenObj, i) => {
             const balanceToken = correctToken(tokenObj.token)
             return (
@@ -223,13 +217,12 @@ const Deposit = ({
               />
             )
           })
-        ) : ( */}
-        <>
-          <LoadingTokenInput />
-          <LoadingTokenInput />
-          <LoadingTokenInput />
-        </>
-        {/* )} */}
+        ) : (
+          <>
+            <LoadingTokenInput />
+            <LoadingTokenInput />
+          </>
+        )}
       </div>
       {actionBtn}
       {depositQuote.priceImpact && depositQuote.priceImpact?.gt(Zero) && (
