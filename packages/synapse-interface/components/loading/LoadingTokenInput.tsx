@@ -6,17 +6,16 @@ const LoadingTokenInput = () => {
           <div
             className={`
             flex flex-grow items-center
-            pl-3 sm:pl-4
+            px-3 sm:px-4
             w-full h-20
             rounded-lg
             border border-white border-opacity-20
             transform-gpu transition-all duration-75
-            hover:border-opacity-30
-            bg-white
+            animate-pulse hover:border-opacity-30
           `}
           >
-            <div className="h-4 my-2 mt-9 bg-slate-700 rounded w-[90%]"></div>
-            <div className="h-4 my-2 bg-slate-700 rounded w-[90%]"></div>
+            <div className="w-40 h-12 px-2 py-1.5 m-2 rounded bg-slate-700"></div>
+            <div className="flex-grow h-12 px-2 py-1.5 m-2 rounded bg-slate-700"></div>
           </div>{' '}
         </div>{' '}
       </div>{' '}

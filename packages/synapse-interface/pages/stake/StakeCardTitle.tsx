@@ -2,6 +2,7 @@ import { useEffect, useState, useMemo } from 'react'
 import { Token } from '@/utils/types'
 import { getPoolApyData } from '@/utils/actions/getPoolApyData'
 import ApyTooltip from '@/components/ApyTooltip'
+import LoadingText from '@/components/loading/LoadingText'
 import _ from 'lodash'
 
 const StakingPoolTokens = ({ poolTokens }: { poolTokens: Token[] }) => {
@@ -57,10 +58,11 @@ const StakeCardTitle = ({
   }, [connectedChainId])
 
   const displayPoolApyData = useMemo(() => {
-    if (!poolApyData) return '- '
+    if (!poolApyData) return null
+
     return poolApyData.fullCompoundedAPYStr
       ? `${String(poolApyData.fullCompoundedAPYStr)}% `
-      : '- '
+      : `-% `
   }, [connectedChainId, prices, poolApyData])
 
   return (
@@ -70,13 +72,17 @@ const StakeCardTitle = ({
         <h3 className="mr-2 text-xl font-medium text-white">{poolLabel}</h3>
       </div>
 
-      <div className="text-lg font-normal text-white text-opacity-70">
-        <span className="text-green-400">{displayPoolApyData}</span>
+      <div className="flex flex-row text-lg font-normal text-white text-opacity-70">
+        {displayPoolApyData ? (
+          <span className="mr-1 text-green-400">{displayPoolApyData}</span>
+        ) : (
+          <LoadingText />
+        )}
         APY
         <ApyTooltip
           apyData={poolApyData}
           // baseApyData={baseApyData ??}
-          className="ml-1"
+          className="flex items-center ml-1"
         />
       </div>
     </div>

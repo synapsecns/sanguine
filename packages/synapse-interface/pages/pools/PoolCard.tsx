@@ -83,16 +83,17 @@ const PoolsListCard = memo(
                 chainName={chain?.name}
               />
             }
-            titleClassName="text-white font-light text-xl"
+            titleClassName="text-white font-light text-xl lg:min-w-[333px]"
             className={`
             bg-bgBase transition-all rounded-xl items-center
             hover:bg-bgLight
-            py-6 mt-4 pr-2
-            border border-transparent
-          `}
+              py-6 mt-4 pr-2
+              border border-transparent
+              whitespace-wrap
+            `}
             divider={false}
           >
-            <Grid gap={3} cols={{ xs: 3 }} className="mt-8">
+            <Grid gap={3} cols={{ xs: 3 }} className="pt-8">
               <div>
                 <h3 className="text-sm text-opacity-50 text-secondaryTextColor">
                   Assets
@@ -109,7 +110,7 @@ const PoolsListCard = memo(
                   {poolData?.totalLockedUSDStr ? (
                     '$' + poolData?.totalLockedUSDStr
                   ) : (
-                    // <div className="animate-pulse rounded bg-slate-700 h-6 w-12" />
+                    // <div className="w-12 h-6 rounded animate-pulse bg-slate-700" />
                     <LoadingSpinner />
                   )}
                 </div>

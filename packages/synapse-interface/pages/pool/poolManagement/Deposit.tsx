@@ -191,7 +191,7 @@ const Deposit = ({
   const actionBtn = (
     <TransactionButton
       className={btnClassName}
-      disabled={sumBigNumbersFromState().eq(0)}
+      disabled={sumBigNumbersFromState().eq(0) || !isFromBalanceEnough}
       onClick={() => buttonAction()}
       onSuccess={() => postButtonAction()}
       label={btnLabel}
@@ -202,7 +202,7 @@ const Deposit = ({
   return (
     <div className="flex-col">
       <div className="px-2 pt-1 pb-4 bg-bgLight rounded-xl">
-        {pool && poolUserData ? (
+        {pool && poolUserData && poolData ? (
           poolUserData.tokens.map((tokenObj, i) => {
             const balanceToken = correctToken(tokenObj.token)
             return (
@@ -219,7 +219,6 @@ const Deposit = ({
           })
         ) : (
           <>
-            <LoadingTokenInput />
             <LoadingTokenInput />
             <LoadingTokenInput />
           </>
