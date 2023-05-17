@@ -23,11 +23,14 @@ const BridgeWatcher = ({
   fromChainId,
   toChainId,
   address,
+  destinationAddress,
+  bridgeTxHash,
 }: {
   fromChainId: number
   toChainId: number
   address: string
   destinationAddress: string
+  bridgeTxHash: string
 }) => {
   const [fromTransactions, setFromTransactions] = useState([])
   const [fromSynapseContract, setFromSynapseContract] = useState<Contract>()
@@ -78,7 +81,8 @@ const BridgeWatcher = ({
         fromChainId,
         parsedLog,
         timestampObj,
-        txReceipt
+        txReceipt,
+        destinationAddress
       )
     })
     return txObjects
@@ -100,7 +104,7 @@ const BridgeWatcher = ({
         setFromTransactions(txs)
       })
     }
-  }, [fromSynapseContract])
+  }, [fromSynapseContract, bridgeTxHash])
   useEffect(() => {
     setFromSigner(fromSignerRaw)
   }, [fromSignerRaw])

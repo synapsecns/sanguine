@@ -76,7 +76,8 @@ const DestinationTx = memo((fromEvent: BridgeWatcherTx) => {
         fromEvent.toChainId,
         parsedLog,
         inputTimestamp,
-        transactionReceipt
+        transactionReceipt,
+        fromEvent.toAddress
       )
     }
 

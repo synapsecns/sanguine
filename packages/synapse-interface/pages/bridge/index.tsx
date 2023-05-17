@@ -63,6 +63,7 @@ const BridgePage = ({
   const [toToken, setToToken] = useState(DEFAULT_TO_TOKEN)
   const [isQuoteLoading, setIsQuoteLoading] = useState<boolean>(false)
   const [error, setError] = useState('')
+  const [bridgeTxHash, setBridgeTxHash] = useState('')
   const [destinationAddress, setDestinationAddress] = useState('')
   const [toOptions, setToOptions] = useState({
     tokens: BRIDGABLE_TOKENS[DEFAULT_TO_CHAIN],
@@ -605,6 +606,7 @@ const BridgePage = ({
       try {
         await tx.wait()
         console.log(`Transaction mined successfully: ${tx.hash}`)
+        setBridgeTxHash(tx.hash)
         return tx
       } catch (error) {
         console.log(`Transaction failed with error: ${error}`)
@@ -662,6 +664,7 @@ const BridgePage = ({
                   toChainId={toChainId}
                   address={address}
                   destinationAddress={destinationAddress}
+                  bridgeTxHash={bridgeTxHash}
                 />
               </div>
             </Grid>
