@@ -1,3 +1,4 @@
+import { useCallback, MouseEvent } from 'react'
 import InteractiveInputRow from './InteractiveInputRow'
 import { formatBNToString } from '@bignumber/format'
 import { formatUnits } from '@ethersproject/units'
@@ -5,6 +6,8 @@ import { displaySymbol } from '@utils/displaySymbol'
 import { Token } from '@types'
 import { BigNumber } from 'ethers'
 import { cleanNumberInput } from '@utils/cleanNumberInput'
+
+const DEFAULT_VALUE = '0.0'
 
 const TokenInput = ({
   token,
@@ -23,13 +26,20 @@ const TokenInput = ({
 }) => {
   const symbol = displaySymbol(chainId, token)
 
-  const onClickMax = (e) => {
-    e.preventDefault()
-    const maxStr = formatUnits(balanceStr, token.decimals[chainId])
-    if (maxStr != 'undefined') {
-      onChange(maxStr)
-    }
-  }
+  const onClickMax = useCallback(
+    (e: MouseEvent<HTMLButtonElement>) => {
+      e.preventDefault()
+      if (balanceStr === DEFAULT_VALUE) {
+        onChange(DEFAULT_VALUE)
+        return
+      } else {
+        const maxStr = formatUnits(balanceStr, token.decimals[chainId])
+        maxStr != 'undefined' ? onChange(maxStr) : null
+      }
+    },
+    [onChange, balanceStr, token]
+  )
+
   return (
     <div className="items-center">
       <div className="w-full">
