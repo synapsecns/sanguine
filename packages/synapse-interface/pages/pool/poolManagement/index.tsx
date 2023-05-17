@@ -21,7 +21,6 @@ const PoolManagement = ({
   // const [cardNav, setCardNav] = useState(getLiquidityMode(location.hash)) // 'addLiquidity'
 
   const [cardNav, setCardNav] = useState(getLiquidityMode('#addLiquidity')) // 'addLiquidity'
-  console.log('')
   return (
     <div>
       <div className="rounded-lg text-default">

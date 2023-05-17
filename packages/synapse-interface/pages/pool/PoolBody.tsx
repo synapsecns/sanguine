@@ -58,7 +58,6 @@ const PoolBody = memo(
       }
     }, [])
 
-    console.log('poolAPYData: ', poolAPYData)
     return (
       <>
         <div className="px-0 md:px-32">

@@ -233,7 +233,6 @@ const BridgePage = ({
     ) {
       let bigNum =
         stringToBigNum(value, fromToken.decimals[fromChainId]) ?? Zero
-      console.log('sudyaivalue1', value, bigNum.toString())
 
       setFromInput({
         string: value,
@@ -248,7 +247,6 @@ const BridgePage = ({
   */
   const getMostCommonSwapableType = useCallback(
     (chainId: number) => {
-      console.log('sudyaichainid', chainId)
       const fromChainTokensByType = Object.values(
         BRIDGE_SWAPABLE_TOKENS_BY_TYPE[chainId]
       )
@@ -330,7 +328,6 @@ const BridgePage = ({
         positedToChain && positedToChain !== fromChainId
           ? Number(positedToChain)
           : DEFAULT_TO_CHAIN
-      console.log('newToChain', newToChain)
       let bridgeableChains = BRIDGE_CHAINS_BY_TYPE[
         String(token.swapableType)
       ].filter((chainId) => Number(chainId) !== fromChainId)
@@ -436,7 +433,6 @@ const BridgePage = ({
           tempFromToken.symbol,
           bridgeableToken.symbol
         )
-        console.log('bridgeableToken', desiredChainId)
         sortByTokenBalance(
           BRIDGABLE_TOKENS[desiredChainId],
           desiredChainId,
