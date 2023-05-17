@@ -11,6 +11,7 @@ import { memo } from 'react'
 import { CHAINS_BY_ID } from '@constants/chains'
 import LoadingSpinner from '@tw/LoadingSpinner'
 import { PoolData } from '@types'
+import { AddressZero } from '@ethersproject/constants'
 const PoolsListCard = memo(
   ({
     pool,
@@ -29,9 +30,9 @@ const PoolsListCard = memo(
     const [poolApyData, setPoolApyData] = useState(undefined)
 
     useEffect(() => {
-      if (connectedChainId && chainId && address && pool) {
+      if (connectedChainId && chainId && pool) {
         // TODO - separate the apy and tvl so they load async.
-        getPoolData(chainId, pool, address, false, prices)
+        getPoolData(chainId, pool, address ?? AddressZero, false, prices)
           .then((res) => {
             setPoolData(res)
           })
