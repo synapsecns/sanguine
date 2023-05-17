@@ -542,7 +542,7 @@ const BridgePage = ({
       : feeAmount.div(BigNumber.from(10).pow(18 - toToken.decimals[toChainId]))
 
     const allowance =
-      fromToken.addresses[fromChainId] === AddressZero
+      fromToken.addresses[fromChainId] === AddressZero || address === undefined
         ? Zero
         : await getCurrentTokenAllowance(routerAddress)
     setBridgeQuote({
