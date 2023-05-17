@@ -37,11 +37,10 @@ func OpenGormClickhouse(ctx context.Context, address string, readOnly bool) (*St
 	if !readOnly {
 		// load all models
 		err = clickhouseDB.WithContext(ctx).Set("gorm:table_options", "ENGINE=ReplacingMergeTree(insert_time) ORDER BY (event_index, block_number, event_type, tx_hash, chain_id, contract_address)").AutoMigrate(&SwapEvent{}, &BridgeEvent{}, MessageBusEvent{})
-
 		if err != nil {
 			return nil, fmt.Errorf("could not migrate on clickhouse: %w", err)
 		}
-		err = clickhouseDB.WithContext(ctx).Set("gorm:table_options", "ENGINE=ReplacingMergeTree(block_number) ORDER BY (chain_id, contract_address)").AutoMigrate(&LastBlock{})
+		err = clickhouseDB.WithContext(ctx).Set("gorm:table_options", "ENGINE=MergeTree ORDER BY (chain_id, contract_address)").AutoMigrate(&LastBlock{})
 		if err != nil {
 			return nil, fmt.Errorf("could not migrate last block number on clickhouse: %w", err)
 		}
