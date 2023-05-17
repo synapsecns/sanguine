@@ -11,7 +11,7 @@ const LoadingTokenInput = () => {
             rounded-lg
             border border-white border-opacity-20
             transform-gpu transition-all duration-75
-            hover:border-opacity-30
+            animate-pulse hover:border-opacity-30
           `}
           >
             <div className="w-40 h-12 px-2 py-1.5 m-2 rounded bg-slate-700"></div>
