@@ -134,7 +134,6 @@ export const getSwapHoverStyleForCoin = (tokenColor: string): string => {
 }
 
 export const getMenuItemBgForCoin = (tokenColor: string): string => {
-  console.log('tokenColor', tokenColor)
   switch (tokenColor) {
     case ColorOptions.GRAY:
       return `bg-opacity-20 bg-gray-700`
