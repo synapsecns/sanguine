@@ -201,6 +201,27 @@ func (_m *ConsumerDB) GetFloat64(ctx context.Context, query string) (float64, er
 	return r0, r1
 }
 
+// GetLastStoredBlock provides a mock function with given fields: ctx, chainID, contractAddress
+func (_m *ConsumerDB) GetLastStoredBlock(ctx context.Context, chainID uint32, contractAddress string) (uint64, error) {
+	ret := _m.Called(ctx, chainID, contractAddress)
+
+	var r0 uint64
+	if rf, ok := ret.Get(0).(func(context.Context, uint32, string) uint64); ok {
+		r0 = rf(ctx, chainID, contractAddress)
+	} else {
+		r0 = ret.Get(0).(uint64)
+	}
+
+	var r1 error
+	if rf, ok := ret.Get(1).(func(context.Context, uint32, string) error); ok {
+		r1 = rf(ctx, chainID, contractAddress)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
 // GetRankedChainsByVolume provides a mock function with given fields: ctx, query
 func (_m *ConsumerDB) GetRankedChainsByVolume(ctx context.Context, query string) ([]*model.VolumeByChainID, error) {
 	ret := _m.Called(ctx, query)
