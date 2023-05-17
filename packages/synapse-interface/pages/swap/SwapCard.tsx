@@ -49,7 +49,7 @@ const SwapCard = ({
   connectedChainId: number
 }) => {
   const router = useRouter()
-  const SynapseSDK = useSynapseContext()
+  const { synapseSDK } = useSynapseContext()
   const [time, setTime] = useState(Date.now())
   const [fromToken, setFromToken] = useState(DEFAULT_FROM_TOKEN)
   const [fromTokens, setFromTokens] = useState([])
@@ -435,7 +435,7 @@ const SwapCard = ({
     if (swapQuote === EMPTY_SWAP_QUOTE) {
       setIsQuoteLoading(true)
     }
-    const { routerAddress, maxAmountOut, query } = await SynapseSDK.swapQuote(
+    const { routerAddress, maxAmountOut, query } = await synapseSDK.swapQuote(
       connectedChainId,
       fromToken.addresses[connectedChainId],
       toToken.addresses[connectedChainId],
@@ -482,7 +482,8 @@ const SwapCard = ({
     const wallet = await fetchSigner({
       chainId: connectedChainId,
     })
-    const data = await SynapseSDK.swap(
+
+    const data = await synapseSDK.swap(
       connectedChainId,
       address,
       fromToken.addresses[connectedChainId as keyof Token['addresses']],

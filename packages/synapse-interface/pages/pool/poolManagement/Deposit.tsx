@@ -43,7 +43,7 @@ const Deposit = ({
   }>({ priceImpact: undefined, allowances: {}, routerAddress: '' })
   const [time, setTime] = useState(Date.now())
 
-  const SynapseSDK = useSynapseContext()
+  const { synapseSDK } = useSynapseContext()
 
   // TODO move this to utils
   const sumBigNumbersFromState = () => {
@@ -67,7 +67,7 @@ const Deposit = ({
     }
     let inputSum = sumBigNumbersFromState()
     if (poolData.totalLocked.gt(0) && inputSum.gt(0)) {
-      const { amount } = await SynapseSDK.calculateAddLiquidity(
+      const { amount } = await synapseSDK.calculateAddLiquidity(
         chainId,
         pool.swapAddresses[chainId],
         inputValue.bn

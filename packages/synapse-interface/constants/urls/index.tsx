@@ -13,7 +13,7 @@ if (process?.env?.NODE_ENV === 'development') {
 export { SYNAPSE_BASE_URL }
 
 export const BASE_PATH = '/'
-
+export const ANALYTICS_KAPPA = 'https://explorer.synapseprotocol.com/tx/'
 export const ANALYTICS_PATH = 'https://explorer.synapseprotocol.com/'
 export const AIRDROP_PATH = '/claim'
 export const SWAP_PATH = '/swap'

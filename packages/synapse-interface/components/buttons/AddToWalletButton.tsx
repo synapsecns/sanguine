@@ -36,6 +36,8 @@ export function AddToWalletMiniButton({
   iconFirst = false,
   chainId,
 }) {
+  console.log('METAMASK_ICON', METAMASK_ICON)
+
   return (
     <Button
       onClick={() => addTokenToWallet({ token, icon, chainId })}
@@ -65,7 +67,7 @@ export function AddToWalletMiniButton({
       {!iconFirst && (
         <img
           alt="metamask icon"
-          src={METAMASK_ICON}
+          src={METAMASK_ICON?.src}
           className="inline w-5 h-5 transition-all duration-200 ease-in-out opacity-50 group-hover:opacity-95"
         />
       )}
