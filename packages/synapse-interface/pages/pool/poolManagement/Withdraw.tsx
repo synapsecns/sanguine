@@ -65,7 +65,7 @@ const Withdraw = ({
   const resetInput = () => {
     setInputValue({ bn: Zero, str: '' })
   }
-  const SynapseSDK = useSynapseContext()
+  const { synapseSDK } = useSynapseContext()
 
   const sumBigNumbers = (pool: Token, bigNumMap: any) => {
     let sum = Zero
@@ -93,7 +93,7 @@ const Withdraw = ({
       }
     > = {}
     if (withdrawType == ALL) {
-      const { amounts } = await SynapseSDK.calculateRemoveLiquidity(
+      const { amounts } = await synapseSDK.calculateRemoveLiquidity(
         chainId,
         pool.swapAddresses[chainId],
         inputValue.bn
@@ -102,7 +102,7 @@ const Withdraw = ({
         outputs[tokenAddr] = amounts[tokenAddr]
       }
     } else {
-      const { amount } = await SynapseSDK.calculateRemoveLiquidityOne(
+      const { amount } = await synapseSDK.calculateRemoveLiquidityOne(
         chainId,
         pool.swapAddresses[chainId],
         inputValue.bn,

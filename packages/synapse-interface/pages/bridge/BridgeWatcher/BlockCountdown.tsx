@@ -4,48 +4,55 @@ import {
 } from '@heroicons/react/outline'
 import { Arc } from '@visx/shape'
 import { Chord } from '@visx/chord'
-
+import { CHAINS_BY_ID } from '@/constants/chains'
+import { useEffect, useState } from 'react'
 import { getNetworkTextColor } from '@styles/chains'
+import { fetchBlockNumber } from '@wagmi/core'
+import { BridgeWatcherTx } from '@types'
 import { BRIDGE_REQUIRED_CONFIRMATIONS } from '@constants/bridge'
-import { useBlockNumber } from 'wagmi'
-import { getCoinTextColorCombined } from '@styles/tokens'
-
 import {
-  SubTransactionItem,
   EmptySubTransactionItem,
   CheckingConfPlaceholder,
-  PendingCreditTransactionItem,
-  CreditedTransactionItem,
 } from '../../../components/TransactionItems'
 import _ from 'lodash'
 export default function BlockCountdown({
-  inputTx,
-  outputTx,
-  outToken,
-  fromChainId,
-  toChainId,
-  outputExists,
-  outAmount,
+  fromEvent,
+  toEvent,
+}: {
+  fromEvent: BridgeWatcherTx
+  toEvent?: BridgeWatcherTx
 }) {
-  const { data, isError, isLoading } = useBlockNumber({ chainId: fromChainId })
-  const fromChainConfirmations = BRIDGE_REQUIRED_CONFIRMATIONS[fromChainId]
-  let blockNumberDiff
-  if (inputTx?.blockNumber > 0) {
-    blockNumberDiff = data - (inputTx.blockNumber ?? 0)
-  } else {
-    blockNumberDiff = fromChainConfirmations
-  }
-  const blocksFromConfirmation = fromChainConfirmations - blockNumberDiff
+  const [time, setTime] = useState(Date.now())
+  const chain = fromEvent?.toChainId ? CHAINS_BY_ID[fromEvent.toChainId] : null
+  const [confirmationDelta, setConfirmationDelta] = useState(0)
 
-  const clampedDiff = _.clamp(blocksFromConfirmation, 0, fromChainConfirmations)
+  useEffect(() => {
+    const interval = setInterval(() => {
+      if (toEvent?.kappa) {
+        setTime(Date.now())
+      }
+    }, 10000)
+    return () => {
+      clearInterval(interval)
+    }
+  }, [])
 
-  const fromNetworkColorClassName = getNetworkTextColor(fromChainId)
+  useEffect(() => {
+    fetchBlockNumber({
+      chainId: fromEvent?.toChainId,
+    }).then((newestBlockNumber) => {
+      const delta = (newestBlockNumber ?? 0) - fromEvent.blockNumber
+      setConfirmationDelta(delta > 0 ? delta : 0)
+    })
+  }, [time])
+
+  const fromNetworkColorClassName = getNetworkTextColor(chain?.color)
 
   return (
     <>
       <div className="flex-1">
         <div className={`flex items-center p-2 align-middle`}>
-          {clampedDiff && !outputExists && clampedDiff != 0 && (
+          {fromEvent?.toChainId && !toEvent && confirmationDelta != 0 && (
             <>
               <ChevronRightIcon
                 className={`
@@ -55,14 +62,16 @@ export default function BlockCountdown({
                   text-opacity-50
                 `}
               />
-              {
-                <BlockCountdownCircle
-                  clampedDiff={clampedDiff}
-                  fromChainConfirmations={fromChainConfirmations}
-                  fromNetworkColorClassName={fromNetworkColorClassName}
-                />
-              }
-              <CheckingConfPlaceholder chainId={fromChainId} />
+
+              <BlockCountdownCircle
+                clampedDiff={confirmationDelta}
+                fromChainConfirmations={
+                  BRIDGE_REQUIRED_CONFIRMATIONS[fromEvent?.toChainId]
+                }
+                fromNetworkColorClassName={fromNetworkColorClassName}
+              />
+
+              <CheckingConfPlaceholder chain={chain} />
               <ChevronRightIcon
                 className={`
                   w-5 h-5 animate-pulse
@@ -70,39 +79,18 @@ export default function BlockCountdown({
                   text-gray-500
                 `}
               />
-              <EmptySubTransactionItem chainId={toChainId} />
+              <EmptySubTransactionItem chainId={fromEvent?.toChainId} />
             </>
           )}
-          {clampedDiff == 0 && (
+          {confirmationDelta == 0 && (
             <div className="items-center flex-shrink-0 align-middle">
               <ChevronDoubleRightIcon
                 className={`
                 w-5 h-5
                 place-self-center
-                ${
-                  outToken
-                    ? getCoinTextColorCombined(outToken)
-                    : 'text-gray-500'
-                }
+                text-gray-500'
                 text-opacity-50
               `}
-              />
-            </div>
-          )}
-          {!outputTx && clampedDiff == 0 && (
-            <div className="flex-1 ml-2">
-              {!outputExists && (
-                <PendingCreditTransactionItem chainId={toChainId} />
-              )}
-              {outputExists && <CreditedTransactionItem chainId={toChainId} />}
-            </div>
-          )}
-          {outputTx && (
-            <div className="flex-1 ml-2">
-              <SubTransactionItem
-                {...outputTx}
-                token={outToken}
-                tokenAmount={outAmount}
               />
             </div>
           )}
@@ -158,7 +146,7 @@ function BlockCountdownCircle({
                               ${
                                 i == 0
                                   ? `fill-current ${fromNetworkColorClassName}`
-                                  : undefined
+                                  : null
                               }
                               transform-gpu transition-all
                             `}
