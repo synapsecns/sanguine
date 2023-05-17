@@ -18,6 +18,7 @@ import jewelLogo from '@assets/icons/jewel.png'
 import wbtcLogo from '@assets/icons/wbtc.svg'
 import noteLogo from '@assets/icons/note.svg'
 import klaytnLogo from '@assets/networks/klaytn.jpeg'
+import pepeLogo from '@assets/icons/pepe.webp'
 import { ChainId } from '@constants/networks'
 import { Token } from '@utils/classes/Token'
 import {
@@ -760,6 +761,19 @@ export const DEPRECATED_WKLAY = new Token({
   swapableType: 'KLAY',
 })
 
+export const PEPE = new Token({
+  addresses: {
+    [ChainId.ETH]: '0x6982508145454ce325ddbe47a25d4ec3d2311933',
+    [ChainId.ARBITRUM]: '0xA54B8e178A49F8e5405A4d44Bb31F496e5564A05',
+    [ChainId.BSC]: '0xd2b6F20aa2611e8a7a18e5EeC58ca8369f5D356b',
+  },
+  decimals: 18,
+  symbol: 'PEPE',
+  name: 'Pepe',
+  logo: pepeLogo,
+  description: 'PEPE',
+  swapableType: "PEPE",
+})
 export const BASIC_TOKENS_BY_CHAIN = {
   [ChainId.ETH]: [
     USDC,
@@ -785,6 +799,7 @@ export const BASIC_TOKENS_BY_CHAIN = {
     KLAYTN_USDT,
     KLAYTN_DAI,
     LINK,
+    PEPE,
   ],
   [ChainId.BSC]: [
     BUSD,
@@ -800,6 +815,7 @@ export const BASIC_TOKENS_BY_CHAIN = {
     H2O,
     USDB,
     DOGECHAIN_BUSD,
+    PEPE,
   ],
   [ChainId.POLYGON]: [
     USDC,
@@ -859,7 +875,7 @@ export const BASIC_TOKENS_BY_CHAIN = {
     SDT,
     L2DAO,
     PLS,
-    AGEUR,
+    AGEUR, PEPE,
   ],
   [ChainId.AVALANCHE]: [
     USDC,
