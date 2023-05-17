@@ -521,54 +521,64 @@ const BridgePage = ({
   - Calculates slippage by subtracting fee from input amount (checks to ensure proper num of decimals are in use - ask someone about stable swaps if you want to learn more)
   */
   const getQuote = async () => {
-    if (bridgeQuote === EMPTY_BRIDGE_QUOTE) {
-      setIsQuoteLoading(true)
-    }
-    const { feeAmount, routerAddress, maxAmountOut, originQuery, destQuery } =
-      await synapseSDK.bridgeQuote(
-        fromChainId,
-        toChainId,
-        fromToken.addresses[fromChainId],
-        toToken.addresses[toChainId],
-        fromInput.bigNum
-      )
+    try {
+      if (bridgeQuote === EMPTY_BRIDGE_QUOTE) {
+        setIsQuoteLoading(true)
+      }
+      const { feeAmount, routerAddress, maxAmountOut, originQuery, destQuery } =
+        await synapseSDK.bridgeQuote(
+          fromChainId,
+          toChainId,
+          fromToken.addresses[fromChainId],
+          toToken.addresses[toChainId],
+          fromInput.bigNum
+        )
 
-    if (!(originQuery && maxAmountOut && destQuery && feeAmount)) {
+      if (!(originQuery && maxAmountOut && destQuery && feeAmount)) {
+        setBridgeQuote(EMPTY_BRIDGE_QUOTE_ZERO)
+        setIsQuoteLoading(false)
+        return
+      }
+      const toValueBigNum = maxAmountOut ?? Zero
+      const adjustedFeeAmount = feeAmount.lt(fromInput.bigNum)
+        ? feeAmount
+        : feeAmount.div(
+            BigNumber.from(10).pow(18 - toToken.decimals[toChainId])
+          )
+
+      const allowance =
+        fromToken.addresses[fromChainId] === AddressZero ||
+        address === undefined
+          ? Zero
+          : await getCurrentTokenAllowance(routerAddress)
+      setBridgeQuote({
+        outputAmount: toValueBigNum,
+        outputAmountString: commify(
+          formatBNToString(toValueBigNum, toToken.decimals[toChainId], 8)
+        ),
+        routerAddress,
+        allowance,
+        exchangeRate: calculateExchangeRate(
+          fromInput.bigNum.sub(adjustedFeeAmount),
+          fromToken.decimals[fromChainId],
+          toValueBigNum,
+          toToken.decimals[toChainId]
+        ),
+        feeAmount,
+        delta: maxAmountOut,
+        quotes: {
+          originQuery,
+          destQuery,
+        },
+      })
+      setIsQuoteLoading(false)
+      return
+    } catch (error) {
+      console.log(error)
       setBridgeQuote(EMPTY_BRIDGE_QUOTE_ZERO)
       setIsQuoteLoading(false)
       return
     }
-    const toValueBigNum = maxAmountOut ?? Zero
-    const adjustedFeeAmount = feeAmount.lt(fromInput.bigNum)
-      ? feeAmount
-      : feeAmount.div(BigNumber.from(10).pow(18 - toToken.decimals[toChainId]))
-
-    const allowance =
-      fromToken.addresses[fromChainId] === AddressZero || address === undefined
-        ? Zero
-        : await getCurrentTokenAllowance(routerAddress)
-    setBridgeQuote({
-      outputAmount: toValueBigNum,
-      outputAmountString: commify(
-        formatBNToString(toValueBigNum, toToken.decimals[toChainId], 8)
-      ),
-      routerAddress,
-      allowance,
-      exchangeRate: calculateExchangeRate(
-        fromInput.bigNum.sub(adjustedFeeAmount),
-        fromToken.decimals[fromChainId],
-        toValueBigNum,
-        toToken.decimals[toChainId]
-      ),
-      feeAmount,
-      delta: maxAmountOut,
-      quotes: {
-        originQuery,
-        destQuery,
-      },
-    })
-    setIsQuoteLoading(false)
-    return
   }
 
   /*
@@ -577,26 +587,31 @@ const BridgePage = ({
   - Only executes if token has already been approved.
    */
   const executeBridge = async () => {
-    const wallet = await fetchSigner({
-      chainId: fromChainId,
-    })
-    // const adjustedFrom = subtractSlippage(fromInput.bigNum, 'ONE_TENTH', null)
-    const data = await synapseSDK.bridge(
-      address,
-      fromChainId,
-      toChainId,
-      fromToken.addresses[fromChainId as keyof Token['addresses']],
-      fromInput.bigNum,
-      bridgeQuote.quotes.originQuery,
-      bridgeQuote.quotes.destQuery
-    )
-    const tx = await wallet.sendTransaction(data)
     try {
-      await tx.wait()
-      console.log(`Transaction mined successfully: ${tx.hash}`)
-      return tx
+      const wallet = await fetchSigner({
+        chainId: fromChainId,
+      })
+      // const adjustedFrom = subtractSlippage(fromInput.bigNum, 'ONE_TENTH', null)
+      const data = await synapseSDK.bridge(
+        address,
+        fromChainId,
+        toChainId,
+        fromToken.addresses[fromChainId as keyof Token['addresses']],
+        fromInput.bigNum,
+        bridgeQuote.quotes.originQuery,
+        bridgeQuote.quotes.destQuery
+      )
+      const tx = await wallet.sendTransaction(data)
+      try {
+        await tx.wait()
+        console.log(`Transaction mined successfully: ${tx.hash}`)
+        return tx
+      } catch (error) {
+        console.log(`Transaction failed with error: ${error}`)
+      }
     } catch (error) {
-      console.log(`Transaction failed with error: ${error}`)
+      console.log('Error executing bridge', error)
+      return
     }
   }
 

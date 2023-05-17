@@ -435,46 +435,50 @@ const SwapCard = ({
   - Calculates slippage by subtracting fee from input amount (checks to ensure proper num of decimals are in use - ask someone about stable swaps if you want to learn more)
   */
   const getQuote = async () => {
-    if (swapQuote === EMPTY_SWAP_QUOTE) {
-      setIsQuoteLoading(true)
-    }
-    const { routerAddress, maxAmountOut, query } = await synapseSDK.swapQuote(
-      connectedChainId,
-      fromToken.addresses[connectedChainId],
-      toToken.addresses[connectedChainId],
-      fromInput.bigNum
-    )
-    if (!(query && maxAmountOut)) {
-      setSwapQuote(EMPTY_SWAP_QUOTE_ZERO)
+    try {
+      if (swapQuote === EMPTY_SWAP_QUOTE) {
+        setIsQuoteLoading(true)
+      }
+      const { routerAddress, maxAmountOut, query } = await synapseSDK.swapQuote(
+        connectedChainId,
+        fromToken.addresses[connectedChainId],
+        toToken.addresses[connectedChainId],
+        fromInput.bigNum
+      )
+      if (!(query && maxAmountOut)) {
+        setSwapQuote(EMPTY_SWAP_QUOTE_ZERO)
+        setIsQuoteLoading(false)
+        return
+      }
+      const toValueBigNum = maxAmountOut ?? Zero
+
+      const allowance =
+        fromToken.addresses[connectedChainId] === AddressZero ||
+        address === undefined
+          ? Zero
+          : await getCurrentTokenAllowance(routerAddress)
+
+      setSwapQuote({
+        outputAmount: toValueBigNum,
+        outputAmountString: commify(
+          formatBNToString(toValueBigNum, toToken.decimals[connectedChainId], 8)
+        ),
+        routerAddress,
+        allowance,
+        exchangeRate: calculateExchangeRate(
+          fromInput.bigNum.sub(Zero), // this needs to be changed once we can get fee data from router.
+          fromToken.decimals[connectedChainId],
+          toValueBigNum,
+          toToken.decimals[connectedChainId]
+        ),
+        delta: maxAmountOut,
+        quote: query,
+      })
       setIsQuoteLoading(false)
       return
+    } catch (error) {
+      console.log(`Quote failed with error: ${error}`)
     }
-    const toValueBigNum = maxAmountOut ?? Zero
-
-    const allowance =
-      fromToken.addresses[connectedChainId] === AddressZero ||
-      address === undefined
-        ? Zero
-        : await getCurrentTokenAllowance(routerAddress)
-
-    setSwapQuote({
-      outputAmount: toValueBigNum,
-      outputAmountString: commify(
-        formatBNToString(toValueBigNum, toToken.decimals[connectedChainId], 8)
-      ),
-      routerAddress,
-      allowance,
-      exchangeRate: calculateExchangeRate(
-        fromInput.bigNum.sub(Zero), // this needs to be changed once we can get fee data from router.
-        fromToken.decimals[connectedChainId],
-        toValueBigNum,
-        toToken.decimals[connectedChainId]
-      ),
-      delta: maxAmountOut,
-      quote: query,
-    })
-    setIsQuoteLoading(false)
-    return
   }
 
   /*
@@ -483,24 +487,28 @@ const SwapCard = ({
   - Only executes if token has already been approved.
    */
   const executeSwap = async () => {
-    const wallet = await fetchSigner({
-      chainId: connectedChainId,
-    })
-
-    const data = await synapseSDK.swap(
-      connectedChainId,
-      address,
-      fromToken.addresses[connectedChainId as keyof Token['addresses']],
-      fromInput.bigNum,
-      swapQuote.quote
-    )
-    const tx = await wallet.sendTransaction(data)
     try {
-      await tx.wait()
-      console.log(`Transaction mined successfully: ${tx.hash}`)
-      return tx
+      const wallet = await fetchSigner({
+        chainId: connectedChainId,
+      })
+
+      const data = await synapseSDK.swap(
+        connectedChainId,
+        address,
+        fromToken.addresses[connectedChainId as keyof Token['addresses']],
+        fromInput.bigNum,
+        swapQuote.quote
+      )
+      const tx = await wallet.sendTransaction(data)
+      try {
+        await tx.wait()
+        console.log(`Transaction mined successfully: ${tx.hash}`)
+        return tx
+      } catch (error) {
+        console.log(`Transaction failed with error: ${error}`)
+      }
     } catch (error) {
-      console.log(`Transaction failed with error: ${error}`)
+      console.log(`Swap Execution failed with error: ${error}`)
     }
   }
 

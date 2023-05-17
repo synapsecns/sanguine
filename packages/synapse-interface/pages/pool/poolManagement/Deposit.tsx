@@ -62,39 +62,43 @@ const Deposit = ({
   }
 
   const calculateMaxDeposits = async () => {
-    if (poolUserData == null || address == null) {
-      return
-    }
-    let inputSum = sumBigNumbersFromState()
-    if (poolData.totalLocked.gt(0) && inputSum.gt(0)) {
-      const { amount } = await synapseSDK.calculateAddLiquidity(
-        chainId,
-        pool.swapAddresses[chainId],
-        inputValue.bn
-      )
-
-      let allowances: Record<string, BigNumber> = {}
-      for (const [key, value] of Object.entries(inputValue.bn)) {
-        allowances[key] = await getTokenAllowance(
-          pool.addresses[chainId],
-          key,
-          address,
-          chainId
-        )
+    try {
+      if (poolUserData == null || address == null) {
+        return
       }
+      let inputSum = sumBigNumbersFromState()
+      if (poolData.totalLocked.gt(0) && inputSum.gt(0)) {
+        const { amount } = await synapseSDK.calculateAddLiquidity(
+          chainId,
+          pool.swapAddresses[chainId],
+          inputValue.bn
+        )
 
-      const priceImpact = calculateExchangeRate(
-        inputSum,
-        18,
-        inputSum.sub(amount),
-        18
-      )
-      // TODO: DOUBLE CHECK THIS
-      setDepositQuote({
-        priceImpact,
-        allowances,
-        routerAddress: pool.swapAddresses[chainId],
-      })
+        let allowances: Record<string, BigNumber> = {}
+        for (const [key, value] of Object.entries(inputValue.bn)) {
+          allowances[key] = await getTokenAllowance(
+            pool.addresses[chainId],
+            key,
+            address,
+            chainId
+          )
+        }
+
+        const priceImpact = calculateExchangeRate(
+          inputSum,
+          18,
+          inputSum.sub(amount),
+          18
+        )
+        // TODO: DOUBLE CHECK THIS
+        setDepositQuote({
+          priceImpact,
+          allowances,
+          routerAddress: pool.swapAddresses[chainId],
+        })
+      }
+    } catch (e) {
+      console.log(e)
     }
   }
   useEffect(() => {
