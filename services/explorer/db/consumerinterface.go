@@ -55,6 +55,8 @@ type ConsumerDBReader interface {
 	GetDailyTotals(ctx context.Context, query string) ([]*model.DateResultByChain, error)
 	// GetRankedChainsByVolume gets the volume for each chain
 	GetRankedChainsByVolume(ctx context.Context, query string) ([]*model.VolumeByChainID, error)
+	// GetLastStoredBlock gets the last stored block for a given chain.
+	GetLastStoredBlock(ctx context.Context, chainID uint32, contractAddress string) (uint64, error)
 }
 
 // ConsumerDB is the interface for the ConsumerDB.
