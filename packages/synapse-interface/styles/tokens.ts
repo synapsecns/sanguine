@@ -136,27 +136,27 @@ export const getSwapHoverStyleForCoin = (tokenColor: string): string => {
 export const getMenuItemBgForCoin = (tokenColor: string): string => {
   switch (tokenColor) {
     case ColorOptions.GRAY:
-      return `bg-gray-50 dark:bg-opacity-20 dark:bg-gray-700`
+      return `bg-opacity-20 bg-gray-700`
     case ColorOptions.YELLOW:
-      return `bg-yellow-50 dark:bg-opacity-20 dark:bg-yellow-700`
+      return `bg-opacity-20 bg-yellow-700`
     case ColorOptions.GREEN:
-      return `bg-green-50 dark:bg-opacity-20 dark:bg-green-700`
+      return `bg-opacity-20 bg-green-700`
     case ColorOptions.LIME:
-      return `bg-lime-50 dark:bg-opacity-20 dark:bg-lime-700`
+      return `bg-opacity-20 bg-lime-700`
     case ColorOptions.SKY:
-      return `bg-sky-50 dark:bg-opacity-20 dark:bg-sky-700`
+      return `bg-opacity-20 bg-sky-700`
     case ColorOptions.BLUE:
-      return `bg-blue-50 dark:bg-opacity-20 dark:bg-blue-700`
+      return `bg-opacity-20 bg-blue-700`
     case ColorOptions.ORANGE:
-      return `bg-orange-50 dark:bg-opacity-20 dark:bg-orange-700`
+      return `bg-opacity-20 bg-orange-700`
     case ColorOptions.PURPLE:
-      return `bg-purple-50 dark:bg-opacity-20 dark:bg-purple-700`
+      return `bg-opacity-20 bg-purple-700`
     case ColorOptions.INDIGO:
-      return `bg-indigo-50 dark:bg-opacity-20 dark:bg-indigo-700`
+      return `bbg-opacity-20 bg-indigo-700`
     case ColorOptions.CYAN:
-      return `bg-cyan-50 dark:bg-opacity-20 dark:bg-cyan-700`
+      return `bg-opacity-20 bg-cyan-700`
     case ColorOptions.RED:
-      return `bg-red-50 dark:bg-opacity-20 dark:bg-red-700`
+      return `bg-opacity-20 bg-red-700`
     default:
       return ''
   }

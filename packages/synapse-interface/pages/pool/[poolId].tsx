@@ -8,6 +8,7 @@ import { useAccount, useNetwork } from 'wagmi'
 import { LandingPageWrapper } from '@layouts/LandingPageWrapper'
 import { useEffect, useState, useMemo } from 'react'
 import { POOL_BY_ROUTER_INDEX, POOL_CHAINS_BY_NAME } from '@constants/tokens'
+
 const PoolPage = () => {
   const router = useRouter()
   const { poolId } = router.query

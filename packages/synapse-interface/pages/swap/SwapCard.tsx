@@ -449,7 +449,8 @@ const SwapCard = ({
     const toValueBigNum = maxAmountOut ?? Zero
 
     const allowance =
-      fromToken.addresses[connectedChainId] === AddressZero
+      fromToken.addresses[connectedChainId] === AddressZero ||
+      address === undefined
         ? Zero
         : await getCurrentTokenAllowance(routerAddress)
 
@@ -584,12 +585,6 @@ const SwapCard = ({
         pendingLabel={pendingLabel}
       />
     )
-
-    //   <TransactionButton
-    //   onClick={approveToken}
-    //   label={`Approve ${displaySymbol(chainId, fromCoin)}`}
-    //   pendingLabel={`Approving ${displaySymbol(chainId, fromCoin)}  `}
-    // />
   }, [fromInput, time, swapQuote, error])
 
   /*
