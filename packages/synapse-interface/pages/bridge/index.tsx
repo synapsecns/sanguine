@@ -578,7 +578,7 @@ const BridgePage = ({
     const wallet = await fetchSigner({
       chainId: fromChainId,
     })
-    const adjustedFrom = subtractSlippage(fromInput.bigNum, 'ONE_TENTH', null)
+    // const adjustedFrom = subtractSlippage(fromInput.bigNum, 'ONE_TENTH', null)
     const data = await synapseSDK.bridge(
       address,
       fromChainId,

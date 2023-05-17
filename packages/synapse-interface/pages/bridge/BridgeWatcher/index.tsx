@@ -85,7 +85,6 @@ const BridgeWatcher = ({
   }
 
   useEffect(() => {
-    console.log(fromSigner, fromChainId, toChainId, address)
     if (fromSigner && fromChainId && toChainId && address) {
       const fromSynapseContract = new Contract(
         BRIDGE_CONTRACTS[fromChainId],
