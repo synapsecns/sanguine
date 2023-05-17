@@ -36,7 +36,7 @@ func OpenGormClickhouse(ctx context.Context, address string, readOnly bool) (*St
 		return nil, fmt.Errorf("failed to open gorm clickhouse: %w", err)
 	}
 
-	// nolint:unparam
+	// nolint
 	if !readOnly {
 		// load all models, check if table exists before doing so
 		if (!clickhouseDB.WithContext(ctx).Migrator().HasTable(&TokenIndex{})) {
