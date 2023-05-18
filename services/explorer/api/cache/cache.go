@@ -33,7 +33,6 @@ func NewAPICacheService() (Service, error) {
 	}, nil
 }
 
-
 func (t *apiCacheServiceImpl) CacheResponse(callID string, data any) error {
 	t.responseCache.Add(callID, data)
 	fmt.Println("added cache data", callID)

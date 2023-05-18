@@ -145,6 +145,7 @@ func (s *Store) GetDateResults(ctx context.Context, query string) ([]*model.Date
 	return res, nil
 }
 
+// GetAddressData returns the address data.
 func (s *Store) GetAddressData(ctx context.Context, query string) (float64, float64, int, error) {
 	type addressData struct {
 		VolumeTotal float64 `gorm:"column:volumeTotal"`
@@ -152,7 +153,7 @@ func (s *Store) GetAddressData(ctx context.Context, query string) (float64, floa
 		TxTotal     int     `gorm:"column:txTotal"`
 	}
 	var res addressData
-	//var test map[string]interface{}
+	// var test map[string]interface{}
 	dbTx := s.db.WithContext(ctx).Raw(query).Scan(&res)
 	if dbTx.Error != nil {
 		return 0, 0, 0, fmt.Errorf("failed to get address data: %w", dbTx.Error)
@@ -161,6 +162,7 @@ func (s *Store) GetAddressData(ctx context.Context, query string) (float64, floa
 	return res.VolumeTotal, res.FeeTotal, res.TxTotal, nil
 }
 
+// GetAddressChainRanking ranks chains by volume for a given address.
 func (s *Store) GetAddressChainRanking(ctx context.Context, query string) ([]*model.AddressChainRanking, error) {
 	var res []*model.AddressChainRanking
 	dbTx := s.db.WithContext(ctx).Raw(query).Scan(&res)
@@ -171,6 +173,7 @@ func (s *Store) GetAddressChainRanking(ctx context.Context, query string) ([]*mo
 	return res, nil
 }
 
+// GetAddressDailyData gets daily data (number of txs_ for a given address.
 func (s *Store) GetAddressDailyData(ctx context.Context, query string) ([]*model.AddressDailyCount, error) {
 	var res []*model.AddressDailyCount
 	dbTx := s.db.WithContext(ctx).Raw(query).Scan(&res)
