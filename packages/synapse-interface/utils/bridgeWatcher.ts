@@ -10,7 +10,6 @@ import { getAddress } from '@ethersproject/address'
 import * as CHAINS from '@constants/chains/master'
 import { WETH } from '@constants/tokens/swapMaster'
 import {
-  ETH,
   SYN,
   NUSD,
   NETH,
