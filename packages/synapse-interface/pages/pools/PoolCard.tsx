@@ -83,7 +83,7 @@ const PoolsListCard = memo(
                 chainName={chain?.name}
               />
             }
-            titleClassName="text-white font-light text-xl lg:min-w-[333px]"
+            titleClassName="text-white font-light text-xl lg:min-w-[350px]"
             className={`
             bg-bgBase transition-all rounded-xl items-center
             hover:bg-bgLight

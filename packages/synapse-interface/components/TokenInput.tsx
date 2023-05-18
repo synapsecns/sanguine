@@ -1,13 +1,8 @@
 import { useCallback, MouseEvent } from 'react'
 import InteractiveInputRow from './InteractiveInputRow'
-import { formatBNToString } from '@bignumber/format'
-import { formatUnits } from '@ethersproject/units'
 import { displaySymbol } from '@utils/displaySymbol'
 import { Token } from '@types'
-import { BigNumber } from 'ethers'
 import { cleanNumberInput } from '@utils/cleanNumberInput'
-
-const DEFAULT_VALUE = '0.0'
 
 const TokenInput = ({
   token,

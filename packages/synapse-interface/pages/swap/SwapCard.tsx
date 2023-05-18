@@ -297,6 +297,7 @@ const SwapCard = ({
       wallet
     )
     const allowance = await erc20.allowance(address, routerAddress)
+    console.log('allowance from getCurrentTokenAllowance: ', allowance)
     return allowance
   }
 
@@ -458,6 +459,8 @@ const SwapCard = ({
           ? Zero
           : await getCurrentTokenAllowance(routerAddress)
 
+      console.log('Allowance:', allowance)
+
       setSwapQuote({
         outputAmount: toValueBigNum,
         outputAmountString: commify(
@@ -524,6 +527,9 @@ const SwapCard = ({
       z-20 rounded-3xl
     `,
   }
+
+  console.log('swapQuote?.allowance: ', swapQuote?.allowance)
+
   // TODO make this a function
   const ActionButton = useMemo(() => {
     let destAddrNotValid

@@ -58,6 +58,7 @@ export const deposit = async (
 
     toast('Starting your deposit...')
 
+    console.log('inputAmounts:', inputAmounts)
     let spendTransactionArgs = [
       Object.values(inputAmounts),
       minToMint,
