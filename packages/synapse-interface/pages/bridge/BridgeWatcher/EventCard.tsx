@@ -20,19 +20,6 @@ const EventCard = memo((event: BridgeWatcherTx) => {
     showAddBtn = true
   }
 
-  const formattedTokenAmount = event.amount
-    ? commify(
-        formatBNToString(
-          event.amount.mul(
-            BigNumber.from(10).pow(
-              18 - (event.token?.decimals[event.chainId] ?? 18)
-            )
-          ),
-          18,
-          3
-        )
-      )
-    : '0'
   return (
     <>
       <div className="pb-1 text-sm text-gray-500">
@@ -63,11 +50,18 @@ const EventCard = memo((event: BridgeWatcherTx) => {
           </div>
           <div className="w-full">
             <div className="w-full text-sm">
-              {formattedTokenAmount && (
-                <span className="font-medium text-gray-400">
-                  {formattedTokenAmount}
-                </span>
-              )}
+              <span className="font-medium text-gray-400">
+                {event?.amount
+                  ? commify(
+                      formatBNToString(
+                        event.amount,
+                        event.token?.decimals[event.chainId] ?? 18,
+                        8
+                      )
+                    )
+                  : '0'}
+              </span>
+
               {event.token && (
                 <>
                   <span
