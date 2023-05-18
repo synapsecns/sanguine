@@ -50,6 +50,7 @@ const Deposit = ({
     let sum = Zero
     pool?.poolTokens &&
       pool.poolTokens.map((token) => {
+        if (!token.addresses[chainId]) return
         const tokenAddress = getAddress(token.addresses[chainId])
         if (inputValue.bn[tokenAddress]) {
           sum = sum.add(
@@ -114,7 +115,7 @@ const Deposit = ({
 
   useEffect(() => {
     calculateMaxDeposits()
-  }, [inputValue, time])
+  }, [inputValue, time, pool, chainId, address])
 
   const onChangeInputValue = (token: Token, value: string) => {
     const bigNum = stringToBigNum(value, token.decimals[chainId]) ?? Zero
