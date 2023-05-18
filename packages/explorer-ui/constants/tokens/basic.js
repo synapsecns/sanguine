@@ -40,7 +40,7 @@ import {
   AGEUR,
   PLS,
   LINK,
-  UNIDX,
+  UNIDX
 } from '@constants/tokens/mintable'
 
 export const BUSD = new Token({
@@ -172,6 +172,8 @@ export const KLAYTN_DAI = new Token({
   swapableType: 'KLAYTN_DAI',
 })
 
+
+
 export const DOGECHAIN_BUSD = new Token({
   addresses: {
     [ChainId.BSC]: '0xe9e7cea3dedca5984780bafc599bd69add087d56',
@@ -201,7 +203,7 @@ export const USDT = new Token({
     [ChainId.BOBA]: '0x5DE1677344D3Cb0D7D465c10b72A8f60699C062d',
     [ChainId.AURORA]: '0x4988a896b1227218e4A686fdE5EabdcAbd91571f',
     [ChainId.KLAYTN]: '0xd6dAb4CfF47dF175349e6e7eE2BF7c40Bb8C05A3',
-    [ChainId.CANTO]: '0xd567B3d7B8FE3C79a1AD8dA978812cfC4Fa05e75',
+    [ChainId.CANTO]: '0xd567B3d7B8FE3C79a1AD8dA978812cfC4Fa05e75'
   },
   decimals: {
     [ChainId.BSC]: 18,
@@ -214,7 +216,7 @@ export const USDT = new Token({
     [ChainId.BOBA]: 6,
     [ChainId.AURORA]: 6,
     [ChainId.CRONOS]: 6,
-    [ChainId.CANTO]: 6,
+    [ChainId.CANTO]: 6
   },
   symbol: 'USDT',
   name: 'USD Tether',
@@ -398,6 +400,7 @@ export const CANTOETH = new Token({
   swapableType: 'ETH',
 })
 
+
 export const METISETH = new Token({
   addresses: {
     [ChainId.METIS]: '0x420000000000000000000000000000000000000A',
@@ -427,7 +430,7 @@ export const SYN = new Token({
     [ChainId.CRONOS]: '0xFD0F80899983b8D46152aa1717D76cba71a31616',
     [ChainId.AURORA]: '0xd80d8688b02B3FD3afb81cDb124F188BB5aD0445',
     [ChainId.DOGECHAIN]: '0xDfA53EeBA61D69E1D2b56b36d78449368F0265c1',
-    [ChainId.CANTO]: '0x555982d2E211745b96736665e19D9308B615F78e',
+    [ChainId.CANTO]: '0x555982d2E211745b96736665e19D9308B615F78e'
   },
   decimals: 18,
   symbol: 'SYN',
@@ -485,7 +488,7 @@ export const NUSD = new Token({
     [ChainId.AURORA]: '0x07379565cD8B0CaE7c60Dc78e7f601b34AF2A21c',
     [ChainId.METIS]: '0x961318Fc85475E125B99Cc9215f62679aE5200aB',
     [ChainId.DFK]: '0x3AD9DFE640E1A9Cc1D9B0948620820D975c3803a',
-    [ChainId.CANTO]: '0xD8836aF2e565D3Befce7D906Af63ee45a57E8f80',
+    [ChainId.CANTO]: '0xD8836aF2e565D3Befce7D906Af63ee45a57E8f80'
   },
   decimals: 18,
   symbol: 'nUSD',
@@ -497,7 +500,7 @@ export const NUSD = new Token({
 
 export const NOTE = new Token({
   addresses: {
-    [ChainId.CANTO]: '0x4e71a2e537b7f9d9413d3991d37958c0b5e1e503',
+    [ChainId.CANTO]: '0x4e71a2e537b7f9d9413d3991d37958c0b5e1e503'
   },
   decimals: 18,
   symbol: 'NOTE',
@@ -536,7 +539,7 @@ export const NETH = new Token({
     [ChainId.METIS]: '0x931B8f17764362A3325D30681009f0eDd6211231',
     [ChainId.KLAYTN]: '0xCD6f29dC9Ca217d0973d3D21bF58eDd3CA871a86',
     [ChainId.DOGECHAIN]: '0x9F4614E4Ea4A0D7c4B1F946057eC030beE416cbB',
-    [ChainId.CANTO]: '0x09fEC30669d63A13c666d2129230dD5588E2e240',
+    [ChainId.CANTO]: '0x09fEC30669d63A13c666d2129230dD5588E2e240'
   },
   decimals: 18,
   symbol: 'nETH',
@@ -796,13 +799,13 @@ export const WBNB = new Token({
 
 export const DEPRECATED_WKLAY = new Token({
   addresses: {
-    [ChainId.KLAYTN]: '0x5819b6af194a78511c79c85ea68d2377a7e9335f',
+    [ChainId.KLAYTN]: '0x5819b6af194a78511c79c85ea68d2377a7e9335f'
   },
   decimals: 18,
   symbol: 'WKLAY',
   name: 'Deprecated Wrapped Klay',
   description: 'ERC-20 Wrapped form of KLAY',
-  swapableType: 'KLAY',
+  swapableType: 'KLAY'
 })
 
 export const PEPE = new Token({
@@ -816,7 +819,7 @@ export const PEPE = new Token({
   name: 'Pepe',
   logo: pepeLogo,
   description: 'PEPE',
-  swapableType: 'PEPE',
+  swapableType: "PEPE",
 })
 export const BASIC_TOKENS_BY_CHAIN = {
   [ChainId.ETH]: [
@@ -845,7 +848,7 @@ export const BASIC_TOKENS_BY_CHAIN = {
     KLAYTN_DAI,
     LINK,
     PEPE,
-    UNIDX,
+    UNIDX
   ],
   [ChainId.BSC]: [
     BUSD,
@@ -949,7 +952,7 @@ export const BASIC_TOKENS_BY_CHAIN = {
     PLS,
     AGEUR,
     UNIDX,
-    PEPE,
+    PEPE
   ],
   [ChainId.AVALANCHE]: [
     USDC,
@@ -1048,9 +1051,17 @@ export const BASIC_TOKENS_BY_CHAIN = {
     KLAYTN_WETH,
     WBTC,
     DOGECHAIN_BUSD,
-    NFD,
+    NFD
   ],
-  [ChainId.CANTO]: [SYN, NUSD, CANTOETH, NETH, NOTE, USDC, USDT],
+  [ChainId.CANTO]: [
+    SYN,
+    NUSD,
+    CANTOETH,
+    NETH,
+    NOTE,
+    USDC,
+    USDT
+  ]
 }
 
 const TOKEN_HASH_MAP = {}
