@@ -83,11 +83,11 @@ const PoolsListCard = memo(
                 chainName={chain?.name}
               />
             }
-            titleClassName="text-white font-light text-xl lg:min-w-[350px]"
+            titleClassName="text-white font-light text-xl"
             className={`
             bg-bgBase transition-all rounded-xl items-center
             hover:bg-bgLight
-              py-6 mt-4 pr-2
+              py-6 mt-4
               border border-transparent
               whitespace-wrap
             `}
@@ -110,7 +110,6 @@ const PoolsListCard = memo(
                   {poolData?.totalLockedUSDStr ? (
                     '$' + poolData?.totalLockedUSDStr
                   ) : (
-                    // <div className="w-12 h-6 rounded animate-pulse bg-slate-700" />
                     <LoadingSpinner />
                   )}
                 </div>
@@ -148,7 +147,7 @@ const PoolsCardTitle = ({
   let displayPoolName = poolName?.replace(chainName, `${chainName}`)
 
   return (
-    <div className="flex items-center ">
+    <div className="flex items-center">
       <img src={chainImg} className="w-6 h-6 mr-2 rounded-full" />
       <div className="font-semibold">{displayPoolName}</div>
     </div>
