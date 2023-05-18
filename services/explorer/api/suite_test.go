@@ -14,6 +14,7 @@ import (
 	scribedb "github.com/synapsecns/sanguine/services/scribe/db"
 	gqlServer "github.com/synapsecns/sanguine/services/scribe/graphql/server"
 	"github.com/synapsecns/sanguine/services/scribe/metadata"
+	"gorm.io/gorm"
 	"net/http"
 	"testing"
 
@@ -61,6 +62,12 @@ func (g *APISuite) SetupSuite() {
 	g.Require().Nil(err)
 }
 
+// MVBridge is a scope for the bridge events table
+func MVBridge() func(tx *gorm.DB) *gorm.DB {
+	return func(tx *gorm.DB) *gorm.DB {
+		return tx.Table("mv_bridge_events")
+	}
+}
 func (g *APISuite) SetupTest() {
 	g.TestSuite.SetupTest()
 
@@ -79,6 +86,9 @@ func (g *APISuite) SetupTest() {
 	address := "clickhouse://clickhouse_test:clickhouse_test@localhost:" + fmt.Sprintf("%d", *port) + "/clickhouse_test"
 	g.db, err = sql.OpenGormClickhouse(g.GetTestContext(), address, false)
 	Nil(g.T(), err)
+	err = g.db.UNSAFE_DB().WithContext(g.GetTestContext()).Set("gorm:table_options", "ENGINE=ReplacingMergeTree(finsert_time) ORDER BY (fevent_index, fblock_number, fevent_type, ftx_hash, fchain_id, fcontract_address)").Scopes(MVBridge()).AutoMigrate(&sql.HybridBridgeEvent{})
+	Nil(g.T(), err)
+
 	g.chainIDs = []uint32{1, 10, 25, 56, 137}
 	go func() {
 		Nil(g.T(), api.Start(g.GetSuiteContext(), api.Config{

@@ -381,7 +381,7 @@ func (r *queryResolver) Leaderboard(ctx context.Context, duration *model.Duratio
 		return nil, fmt.Errorf("the leaderboard query does not support non mv based queries")
 	}
 	firstFilter := false
-	timestampSpecifier := GetDurationFilter(duration, &firstFilter, "")
+	timestampSpecifier := GetDurationFilter(duration, &firstFilter, "f")
 	chainIDSpecifier := generateSingleSpecifierI32SQL(chainID, sql.ChainIDFieldName, &firstFilter, "")
 	pageValue := sql.PageSize
 	pageOffset := (*page - 1) * sql.PageSize
