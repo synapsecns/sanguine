@@ -13,98 +13,112 @@ import { BRIDGE_REQUIRED_CONFIRMATIONS } from '@constants/bridge'
 import {
   EmptySubTransactionItem,
   CheckingConfPlaceholder,
-} from '../../../components/TransactionItems'
+} from '@components/TransactionItems'
+import { memo } from 'react'
 import _ from 'lodash'
-export default function BlockCountdown({
-  fromEvent,
-  toEvent,
-}: {
-  fromEvent: BridgeWatcherTx
-  toEvent?: BridgeWatcherTx
-}) {
-  const [time, setTime] = useState(Date.now())
-  const chain = fromEvent?.toChainId ? CHAINS_BY_ID[fromEvent.toChainId] : null
-  const [confirmationDelta, setConfirmationDelta] = useState(0)
+const BlockCountdown = memo(
+  ({
+    fromEvent,
+    toEvent,
+    setCompletedConf,
+  }: {
+    fromEvent: BridgeWatcherTx
+    toEvent?: BridgeWatcherTx
+    setCompletedConf: (bool: boolean) => void
+  }) => {
+    const chain = fromEvent?.toChainId
+      ? CHAINS_BY_ID[fromEvent.toChainId]
+      : null
+    const [confirmationDelta, setConfirmationDelta] = useState(-1)
+    const [time, setTime] = useState(Date.now())
 
-  useEffect(() => {
-    const interval = setInterval(() => {
-      if (toEvent?.kappa) {
+    useEffect(() => {
+      const interval = setInterval(() => {
         setTime(Date.now())
+      }, 5000)
+
+      return () => {
+        clearInterval(interval)
       }
-    }, 10000)
-    return () => {
-      clearInterval(interval)
-    }
-  }, [])
+    }, [])
 
-  useEffect(() => {
-    fetchBlockNumber({
-      chainId: fromEvent?.toChainId,
-    }).then((newestBlockNumber) => {
-      const delta = (newestBlockNumber ?? 0) - fromEvent.blockNumber
-      setConfirmationDelta(delta > 0 ? delta : 0)
-    })
-  }, [time])
+    useEffect(() => {
+      if (confirmationDelta === 0 || toEvent) {
+        return
+      }
+      console.log('toEventtoEvent', toEvent)
+      fetchBlockNumber({
+        chainId: fromEvent?.chainId,
+      }).then((newestBlockNumber) => {
+        const delta =
+          BRIDGE_REQUIRED_CONFIRMATIONS[fromEvent?.chainId] +
+          (fromEvent.blockNumber - (newestBlockNumber ?? 0))
+        setConfirmationDelta(delta > 0 ? delta : 0)
+        if (delta <= 0) {
+          console.log('setCompletedConf to true')
+          setCompletedConf(true)
+        }
+      })
+    }, [time])
 
-  const fromNetworkColorClassName = getNetworkTextColor(chain?.color)
-
-  return (
-    <>
-      <div className="flex-1">
-        <div className={`flex items-center p-2 align-middle`}>
-          {fromEvent?.toChainId && !toEvent && confirmationDelta != 0 && (
-            <>
-              <ChevronRightIcon
-                className={`
+    return (
+      <>
+        <div className="flex-1">
+          <div className={`flex items-center p-2 align-middle`}>
+            {fromEvent?.toChainId && !toEvent && confirmationDelta != 0 && (
+              <>
+                <ChevronRightIcon
+                  className={`
                   w-5 h-5
                   place-self-center
-                  ${fromNetworkColorClassName}
+                  ${getNetworkTextColor(chain?.color)}
                   text-opacity-50
                 `}
-              />
+                />
 
-              <BlockCountdownCircle
-                clampedDiff={confirmationDelta}
-                fromChainConfirmations={
-                  BRIDGE_REQUIRED_CONFIRMATIONS[fromEvent?.toChainId]
-                }
-                fromNetworkColorClassName={fromNetworkColorClassName}
-              />
+                <BlockCountdownCircle
+                  clampedDiff={confirmationDelta}
+                  fromChainConfirmations={
+                    BRIDGE_REQUIRED_CONFIRMATIONS[fromEvent?.chainId]
+                  }
+                  coloring={getNetworkTextColor(chain?.color)}
+                />
 
-              <CheckingConfPlaceholder chain={chain} />
-              <ChevronRightIcon
-                className={`
+                <CheckingConfPlaceholder chain={chain} />
+                <ChevronRightIcon
+                  className={`
                   w-5 h-5 animate-pulse
                   place-self-center
                   text-gray-500
                 `}
-              />
-              <EmptySubTransactionItem chainId={fromEvent?.toChainId} />
-            </>
-          )}
-          {confirmationDelta == 0 && (
-            <div className="items-center flex-shrink-0 align-middle">
-              <ChevronDoubleRightIcon
-                className={`
+                />
+                <EmptySubTransactionItem chainId={fromEvent?.toChainId} />
+              </>
+            )}
+            {confirmationDelta == 0 && (
+              <div className="items-center flex-shrink-0 align-middle">
+                <ChevronDoubleRightIcon
+                  className={`
                 w-5 h-5
                 place-self-center
                 text-gray-500'
                 text-opacity-50
               `}
-              />
-            </div>
-          )}
+                />
+              </div>
+            )}
+          </div>
         </div>
-      </div>
-    </>
-  )
-}
+      </>
+    )
+  }
+)
 
-function BlockCountdownCircle({
+const BlockCountdownCircle = ({
   clampedDiff,
   fromChainConfirmations,
-  fromNetworkColorClassName,
-}) {
+  coloring,
+}) => {
   const dataMatrix = [
     [fromChainConfirmations - clampedDiff, 0, 0, 0],
     [clampedDiff, 0, 0, 0],
@@ -142,11 +156,7 @@ function BlockCountdownCircle({
                     innerRadius={72}
                     outerRadius={74}
                     className={`
-                              ${
-                                i == 0
-                                  ? `fill-current ${fromNetworkColorClassName}`
-                                  : null
-                              }
+                              ${i == 0 ? `fill-current ${coloring}` : null}
                               transform-gpu transition-all
                             `}
                   />
@@ -158,3 +168,5 @@ function BlockCountdownCircle({
     </svg>
   )
 }
+
+export default BlockCountdown
