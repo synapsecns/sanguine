@@ -10,6 +10,7 @@ import { getAddress } from '@ethersproject/address'
 import * as CHAINS from '@constants/chains/master'
 import { WETH } from '@constants/tokens/swapMaster'
 import {
+  ETH,
   SYN,
   NUSD,
   NETH,
@@ -152,6 +153,7 @@ export const generateBridgeTx = (
   }
 
   const token = TOKEN_HASH_MAP[chainId][tokenAddr]
+
   let inputTokenAmount
   if (
     getAddress(txReceipt.logs[0]?.address) ===
