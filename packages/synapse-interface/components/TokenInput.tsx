@@ -29,13 +29,7 @@ const TokenInput = ({
   const onClickMax = useCallback(
     (e: MouseEvent<HTMLButtonElement>) => {
       e.preventDefault()
-      if (balanceStr === DEFAULT_VALUE) {
-        onChange(DEFAULT_VALUE)
-        return
-      } else {
-        const maxStr = formatUnits(balanceStr, token.decimals[chainId])
-        maxStr != 'undefined' ? onChange(maxStr) : null
-      }
+      onChange(balanceStr)
     },
     [onChange, balanceStr, token]
   )

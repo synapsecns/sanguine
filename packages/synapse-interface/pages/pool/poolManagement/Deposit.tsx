@@ -232,7 +232,7 @@ const Deposit = ({
   )
 }
 const correctToken = (token: Token) => {
-  let balanceToken
+  let balanceToken: Token | undefined
   if (token.symbol == WETH.symbol) {
     balanceToken = ETH
   } else if (token.symbol == AVWETH.symbol) {
