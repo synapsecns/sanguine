@@ -59,11 +59,17 @@ export const deposit = async (
     toast('Starting your deposit...')
 
     console.log('inputAmounts:', inputAmounts)
+
+    const result = Array.from(Object.values(inputAmounts), (value) => value)
+
+    console.log('result: ', result)
     let spendTransactionArgs = [
-      Object.values(inputAmounts),
+      result,
       minToMint,
       Math.round(new Date().getTime() / 1000 + 60 * 10),
     ]
+
+    console.log('spendTransactionArgs: ', spendTransactionArgs)
 
     const spendTransaction = await poolContract.addLiquidity(
       ...spendTransactionArgs

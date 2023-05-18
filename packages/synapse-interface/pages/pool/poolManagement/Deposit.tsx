@@ -50,7 +50,10 @@ const Deposit = ({
     let sum = Zero
     pool?.poolTokens &&
       pool.poolTokens.map((token) => {
-        if (inputValue.bn[getAddress(token.addresses[chainId])]) {
+        if (
+          token.addresses[chainId] &&
+          inputValue.bn[getAddress(token.addresses[chainId])]
+        ) {
           sum = sum.add(
             inputValue.bn[getAddress(token.addresses[chainId])].mul(
               BigNumber.from(10).pow(18 - token.decimals[chainId])
