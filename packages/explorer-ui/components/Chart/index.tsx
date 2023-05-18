@@ -1,6 +1,6 @@
 import numeral from 'numeral'
 
-export function Chart({ data }) {
+export const Chart = ({ data }) => {
   if (data) {
     const numbers = normalize(data)
     return (
@@ -19,7 +19,7 @@ export function Chart({ data }) {
     )
   }
 }
-function BarMaker({ value, height, date }) {
+const BarMaker = ({ value, height, date }) => {
   const h = `h-[${height}px]`
   const showValue = numeral(value).format('0,0')
 
@@ -38,7 +38,7 @@ function BarMaker({ value, height, date }) {
   )
 }
 
-export function ChartLoading() {
+export const ChartLoading = () => {
   return (
     <div className="flex flex-col items-center w-full pb-6 rounded-lg shadow-xl sm:p-8">
       <div className="flex items-end flex-grow w-full mt-2 content-between">
