@@ -62,7 +62,7 @@ func (g *APISuite) SetupSuite() {
 	g.Require().Nil(err)
 }
 
-// MVBridge is a scope for the bridge events table
+// MVBridge is a scope for the bridge events table.
 func MVBridge() func(tx *gorm.DB) *gorm.DB {
 	return func(tx *gorm.DB) *gorm.DB {
 		return tx.Table("mv_bridge_events")
