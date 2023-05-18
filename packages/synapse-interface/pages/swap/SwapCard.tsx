@@ -445,6 +445,7 @@ const SwapCard = ({
         toToken.addresses[connectedChainId],
         fromInput.bigNum
       )
+      console.log('query: ', query.minAmountOut.toString())
       if (!(query && maxAmountOut)) {
         setSwapQuote(EMPTY_SWAP_QUOTE_ZERO)
         setIsQuoteLoading(false)
@@ -499,7 +500,13 @@ const SwapCard = ({
         fromInput.bigNum,
         swapQuote.quote
       )
-      const tx = await wallet.sendTransaction(data)
+      const payload =
+        fromToken.addresses[connectedChainId as keyof Token['addresses']] ===
+          AddressZero ||
+        fromToken.addresses[connectedChainId as keyof Token['addresses']] === ''
+          ? { data: data.data, to: data.to, value: fromInput.bigNum }
+          : data
+      const tx = await wallet.sendTransaction(payload)
       try {
         await tx.wait()
         console.log(`Transaction mined successfully: ${tx.hash}`)
