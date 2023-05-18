@@ -145,13 +145,12 @@ const PoolsCardTitle = ({
   poolName: string
   chainImg: string
 }) => {
-  let displayPoolName = poolName?.replace(chainName, `<b>${chainName}</b>`)
+  let displayPoolName = poolName?.replace(chainName, `${chainName}`)
 
   return (
-    <div className="flex items-center">
+    <div className="flex items-center ">
       <img src={chainImg} className="w-6 h-6 mr-2 rounded-full" />
-      {/* TODO: A better way to do this? */}
-      <div dangerouslySetInnerHTML={{ __html: displayPoolName }} />
+      <div className="font-semibold">{displayPoolName}</div>
     </div>
   )
 }
