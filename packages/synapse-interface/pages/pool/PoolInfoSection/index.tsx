@@ -11,6 +11,8 @@ import { Token } from '@types'
 import InfoSectionCard from './InfoSectionCard'
 import CurrencyReservesCard from './CurrencyReservesCard'
 import LoadingSpinner from '@tw/LoadingSpinner'
+import { useEffect, useState } from 'react'
+import { getPoolFee } from '@utils/actions/getPoolFee'
 const PoolInfoSection = ({
   pool,
   poolData,
@@ -21,8 +23,15 @@ const PoolInfoSection = ({
   chainId: number
 }) => {
   // const swapFee = bnPercentFormat('0.02')
-  // this needs to be fixed, need admin fee
-
+  // this needs to  be fixed, need admin fee
+  const [swapFee, setSwapFee] = useState('')
+  useEffect(() => {
+    if (pool && chainId) {
+      getPoolFee(pool.swapAddresses[chainId], chainId).then((res) => {
+        setSwapFee(res?.swapFee)
+      })
+    }
+  }, [pool, chainId])
   return (
     <div className="space-y-4">
       {/* <UserPoolInfoCard data={userData} /> */}
@@ -34,7 +43,7 @@ const PoolInfoSection = ({
       <InfoSectionCard title="Pool Info">
         <InfoListItem
           labelText="Trading Fee"
-          content={true ? '0.02%' : <LoadingSpinner />}
+          content={swapFee?.length > 0 ? swapFee : <LoadingSpinner />}
         />
         <InfoListItem
           labelText="Virtual Price"
