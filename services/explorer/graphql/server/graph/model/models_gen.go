@@ -13,8 +13,9 @@ type MessageType interface {
 }
 
 type AddressChainRanking struct {
-	ChainID *int `json:"chain_id"`
-	Count   *int `json:"count"`
+	ChainID   *int     `json:"chainID"`
+	VolumeUsd *float64 `json:"volumeUsd"`
+	Rank      *int     `json:"rank"`
 }
 
 type AddressDailyCount struct {

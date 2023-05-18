@@ -3,6 +3,7 @@ package sql
 import (
 	"context"
 	"fmt"
+
 	"github.com/synapsecns/sanguine/services/explorer/graphql/server/graph/model"
 )
 
@@ -153,7 +154,6 @@ func (s *Store) GetAddressData(ctx context.Context, query string) (float64, floa
 	var res addressData
 	//var test map[string]interface{}
 	dbTx := s.db.WithContext(ctx).Raw(query).Scan(&res)
-	fmt.Println(res)
 	if dbTx.Error != nil {
 		return 0, 0, 0, fmt.Errorf("failed to get address data: %w", dbTx.Error)
 	}
@@ -164,7 +164,6 @@ func (s *Store) GetAddressData(ctx context.Context, query string) (float64, floa
 func (s *Store) GetAddressChainRanking(ctx context.Context, query string) ([]*model.AddressChainRanking, error) {
 	var res []*model.AddressChainRanking
 	dbTx := s.db.WithContext(ctx).Raw(query).Scan(&res)
-	fmt.Println(res)
 	if dbTx.Error != nil {
 		return nil, fmt.Errorf("failed to get address chain ranking: %w", dbTx.Error)
 	}

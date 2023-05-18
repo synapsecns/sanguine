@@ -235,8 +235,9 @@ query GetAddressData($address: String!) {
     rank
     earliestTx
     chainRanking {
-      chain_id
-      count
+      chainID
+      volumeUsd
+      rank
     }
     dailyData{
       date

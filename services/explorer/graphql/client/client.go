@@ -194,8 +194,9 @@ type GetAddressData struct {
 		Rank         *int     "json:\"rank\" graphql:\"rank\""
 		EarliestTx   *int     "json:\"earliestTx\" graphql:\"earliestTx\""
 		ChainRanking []*struct {
-			ChainID *int "json:\"chain_id\" graphql:\"chain_id\""
-			Count   *int "json:\"count\" graphql:\"count\""
+			ChainID   *int     "json:\"chainID\" graphql:\"chainID\""
+			VolumeUsd *float64 "json:\"volumeUsd\" graphql:\"volumeUsd\""
+			Rank      *int     "json:\"rank\" graphql:\"rank\""
 		} "json:\"chainRanking\" graphql:\"chainRanking\""
 		DailyData []*struct {
 			Date  *string "json:\"date\" graphql:\"date\""
@@ -538,8 +539,9 @@ const GetAddressDataDocument = `query GetAddressData ($address: String!) {
 		rank
 		earliestTx
 		chainRanking {
-			chain_id
-			count
+			chainID
+			volumeUsd
+			rank
 		}
 		dailyData {
 			date

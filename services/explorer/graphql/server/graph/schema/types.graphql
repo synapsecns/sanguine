@@ -171,8 +171,9 @@ type AddressDailyCount{
   count: Int
 }
 type AddressChainRanking{
-  chain_id: Int
-  count: Int
+  chainID: Int
+  volumeUsd: Float
+  rank: Int
 }
 type AddressData {
   bridgeVolume:  Float

@@ -116,7 +116,7 @@ Ranked chainIDs by volume
   leaderboard(
     duration:     Duration = ALL_TIME
     chainID:      Int
-    useMv: Boolean = false
+    useMv: Boolean = true
     page:           Int = 1
   ): [Leaderboard]
 

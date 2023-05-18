@@ -2,12 +2,12 @@ package api_test
 
 import (
 	gosql "database/sql"
-	"fmt"
-	"github.com/ethereum/go-ethereum/crypto"
-	"github.com/synapsecns/sanguine/services/explorer/graphql/server/graph/model"
 	"math"
 	"math/big"
 	"time"
+
+	"github.com/ethereum/go-ethereum/crypto"
+	"github.com/synapsecns/sanguine/services/explorer/graphql/server/graph/model"
 
 	"github.com/brianvoe/gofakeit/v6"
 	"github.com/ethereum/go-ethereum/common"
@@ -352,7 +352,6 @@ func (g APISuite) TestDailyStatisticsByChain() {
 		}
 		price := float64(gofakeit.Number(1, 300))
 		cumulativePrice = append(cumulativePrice, price)
-		fmt.Println("|||||||||||", blockNumber, chainID, price)
 		txHash := common.BigToHash(big.NewInt(gofakeit.Int64()))
 
 		timestamp := uint64(nowTime) - (10*blockNumber)*86400
@@ -377,7 +376,6 @@ func (g APISuite) TestDailyStatisticsByChain() {
 			TokenIndex:   1,
 		})
 		// Set all times after current time, so we can get the events.
-		fmt.Println(chainID)
 		err := g.eventDB.StoreBlockTime(g.GetTestContext(), chainID, blockNumber, uint64(time.Now().Unix())*blockNumber)
 		Nil(g.T(), err)
 		err = g.eventDB.StoreBlockTime(g.GetTestContext(), destinationChainIDA, blockNumber, uint64(time.Now().Unix())*blockNumber)
@@ -393,7 +391,6 @@ func (g APISuite) TestDailyStatisticsByChain() {
 	days := model.DurationAllTime
 	typeArg := model.DailyStatisticTypeVolume
 	result, err := g.client.GetDailyStatisticsByChain(g.GetTestContext(), nil, &typeArg, &days, &platform, nil)
-	fmt.Println(*result.Response[0].Ethereum, *result.Response[0].Optimism, *result.Response[0].Cronos, *result.Response[0].Bsc, *result.Response[0].Polygon)
 	Nil(g.T(), err)
 	NotNil(g.T(), result)
 	Equal(g.T(), cumulativePrice[len(cumulativePrice)-1], *result.Response[0].Total)

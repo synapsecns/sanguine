@@ -43,8 +43,9 @@ type DirectiveRoot struct {
 
 type ComplexityRoot struct {
 	AddressChainRanking struct {
-		ChainID func(childComplexity int) int
-		Count   func(childComplexity int) int
+		ChainID   func(childComplexity int) int
+		Rank      func(childComplexity int) int
+		VolumeUsd func(childComplexity int) int
 	}
 
 	AddressDailyCount struct {
@@ -240,19 +241,26 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 	_ = ec
 	switch typeName + "." + field {
 
-	case "AddressChainRanking.chain_id":
+	case "AddressChainRanking.chainID":
 		if e.complexity.AddressChainRanking.ChainID == nil {
 			break
 		}
 
 		return e.complexity.AddressChainRanking.ChainID(childComplexity), true
 
-	case "AddressChainRanking.count":
-		if e.complexity.AddressChainRanking.Count == nil {
+	case "AddressChainRanking.rank":
+		if e.complexity.AddressChainRanking.Rank == nil {
 			break
 		}
 
-		return e.complexity.AddressChainRanking.Count(childComplexity), true
+		return e.complexity.AddressChainRanking.Rank(childComplexity), true
+
+	case "AddressChainRanking.volumeUsd":
+		if e.complexity.AddressChainRanking.VolumeUsd == nil {
+			break
+		}
+
+		return e.complexity.AddressChainRanking.VolumeUsd(childComplexity), true
 
 	case "AddressDailyCount.count":
 		if e.complexity.AddressDailyCount.Count == nil {
@@ -1234,7 +1242,7 @@ Ranked chainIDs by volume
   leaderboard(
     duration:     Duration = ALL_TIME
     chainID:      Int
-    useMv: Boolean = false
+    useMv: Boolean = true
     page:           Int = 1
   ): [Leaderboard]
 
@@ -1415,8 +1423,9 @@ type AddressDailyCount{
   count: Int
 }
 type AddressChainRanking{
-  chain_id: Int
-  count: Int
+  chainID: Int
+  volumeUsd: Float
+  rank: Int
 }
 type AddressData {
   bridgeVolume:  Float
@@ -2064,8 +2073,8 @@ func (ec *executionContext) field___Type_fields_args(ctx context.Context, rawArg
 
 // region    **************************** field.gotpl *****************************
 
-func (ec *executionContext) _AddressChainRanking_chain_id(ctx context.Context, field graphql.CollectedField, obj *model.AddressChainRanking) (ret graphql.Marshaler) {
-	fc, err := ec.fieldContext_AddressChainRanking_chain_id(ctx, field)
+func (ec *executionContext) _AddressChainRanking_chainID(ctx context.Context, field graphql.CollectedField, obj *model.AddressChainRanking) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_AddressChainRanking_chainID(ctx, field)
 	if err != nil {
 		return graphql.Null
 	}
@@ -2092,7 +2101,7 @@ func (ec *executionContext) _AddressChainRanking_chain_id(ctx context.Context, f
 	return ec.marshalOInt2ᚖint(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) fieldContext_AddressChainRanking_chain_id(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+func (ec *executionContext) fieldContext_AddressChainRanking_chainID(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
 	fc = &graphql.FieldContext{
 		Object:     "AddressChainRanking",
 		Field:      field,
@@ -2105,8 +2114,8 @@ func (ec *executionContext) fieldContext_AddressChainRanking_chain_id(ctx contex
 	return fc, nil
 }
 
-func (ec *executionContext) _AddressChainRanking_count(ctx context.Context, field graphql.CollectedField, obj *model.AddressChainRanking) (ret graphql.Marshaler) {
-	fc, err := ec.fieldContext_AddressChainRanking_count(ctx, field)
+func (ec *executionContext) _AddressChainRanking_volumeUsd(ctx context.Context, field graphql.CollectedField, obj *model.AddressChainRanking) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_AddressChainRanking_volumeUsd(ctx, field)
 	if err != nil {
 		return graphql.Null
 	}
@@ -2119,7 +2128,48 @@ func (ec *executionContext) _AddressChainRanking_count(ctx context.Context, fiel
 	}()
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
 		ctx = rctx // use context from middleware stack in children
-		return obj.Count, nil
+		return obj.VolumeUsd, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*float64)
+	fc.Result = res
+	return ec.marshalOFloat2ᚖfloat64(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_AddressChainRanking_volumeUsd(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "AddressChainRanking",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type Float does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _AddressChainRanking_rank(ctx context.Context, field graphql.CollectedField, obj *model.AddressChainRanking) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_AddressChainRanking_rank(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Rank, nil
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -2133,7 +2183,7 @@ func (ec *executionContext) _AddressChainRanking_count(ctx context.Context, fiel
 	return ec.marshalOInt2ᚖint(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) fieldContext_AddressChainRanking_count(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+func (ec *executionContext) fieldContext_AddressChainRanking_rank(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
 	fc = &graphql.FieldContext{
 		Object:     "AddressChainRanking",
 		Field:      field,
@@ -2592,10 +2642,12 @@ func (ec *executionContext) fieldContext_AddressData_chainRanking(ctx context.Co
 		IsResolver: false,
 		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
 			switch field.Name {
-			case "chain_id":
-				return ec.fieldContext_AddressChainRanking_chain_id(ctx, field)
-			case "count":
-				return ec.fieldContext_AddressChainRanking_count(ctx, field)
+			case "chainID":
+				return ec.fieldContext_AddressChainRanking_chainID(ctx, field)
+			case "volumeUsd":
+				return ec.fieldContext_AddressChainRanking_volumeUsd(ctx, field)
+			case "rank":
+				return ec.fieldContext_AddressChainRanking_rank(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type AddressChainRanking", field.Name)
 		},
@@ -8753,13 +8805,17 @@ func (ec *executionContext) _AddressChainRanking(ctx context.Context, sel ast.Se
 		switch field.Name {
 		case "__typename":
 			out.Values[i] = graphql.MarshalString("AddressChainRanking")
-		case "chain_id":
+		case "chainID":
 
-			out.Values[i] = ec._AddressChainRanking_chain_id(ctx, field, obj)
+			out.Values[i] = ec._AddressChainRanking_chainID(ctx, field, obj)
 
-		case "count":
+		case "volumeUsd":
 
-			out.Values[i] = ec._AddressChainRanking_count(ctx, field, obj)
+			out.Values[i] = ec._AddressChainRanking_volumeUsd(ctx, field, obj)
+
+		case "rank":
+
+			out.Values[i] = ec._AddressChainRanking_rank(ctx, field, obj)
 
 		default:
 			panic("unknown field " + strconv.Quote(field.Name))
