@@ -1,0 +1,91 @@
+import numeral from 'numeral'
+
+export function Chart({ data }) {
+  if (data) {
+    const numbers = normalize(data)
+    return (
+      // @ts-expect-error TS(2304): Cannot find name 'div'.
+      <div className="flex flex-col items-center w-full pb-6 rounded-lg shadow-xl sm:p-8">
+        // @ts-expect-error TS(2304): Cannot find name 'div'.
+        <div className="flex items-end flex-grow w-full mt-2 content-between">
+          {numbers.map(({ value, normalizedValue, date }, i) => (
+            // @ts-expect-error TS(2749): 'BarMaker' refers to a value, but is being used as... Remove this comment to see the full error message
+            <BarMaker value={value} height={normalizedValue} date={date} key={i} />
+          ))}
+        </div>
+      </div>
+    )
+  }
+}
+function BarMaker({ value, height, date }) {
+  let h = `h-[${height}px]`
+  let showValue = numeral(value).format('0,0')
+
+  return (
+    // @ts-expect-error TS(2304): Cannot find name 'div'.
+    <div className="relative flex flex-col items-center flex-grow pb-5 ml-1 mr-1 group">
+      // @ts-expect-error TS(2304): Cannot find name 'span'.
+      <span className="absolute top-0 z-10 hidden -mt-6 text-xs text-white group-hover:block">
+        {showValue}
+      </span>
+      // @ts-expect-error TS(2304): Cannot find name 'div'.
+      <div
+        // @ts-expect-error TS(2304): Cannot find name 'className'.
+        className={`relative flex justify-center w-full ${h} bg-gradient-to-b from-[#FF00FF] to-[#AC8FFF] hover:opacity-50`}
+      ></div>
+            // @ts-expect-error TS(2304): Cannot find name 'span'.
+            <span className='-rotate-45 text-white text-[5px] mt-3 l-0 pr-0'>{date}</span>
+
+    </div>
+  )
+}
+
+export function ChartLoading() {
+  return (
+    // @ts-expect-error TS(2304): Cannot find name 'div'.
+    <div className="flex flex-col items-center w-full pb-6 rounded-lg shadow-xl sm:p-8">
+      // @ts-expect-error TS(2304): Cannot find name 'div'.
+      <div className="flex items-end flex-grow w-full mt-2 content-between">
+        {[...Array(30).keys()].map((i) => (
+          // @ts-expect-error TS(2749): 'BarMakerLoading' refers to a value, but is being ... Remove this comment to see the full error message
+          <BarMakerLoading key={i} />
+        ))}
+      </div>
+    </div>
+  )
+}
+
+function BarMakerLoading() {
+  return (
+    // @ts-expect-error TS(2304): Cannot find name 'div'.
+    <div className="relative flex flex-col items-center flex-grow pb-5 ml-1 mr-1 group">
+      // @ts-expect-error TS(2304): Cannot find name 'div'.
+      <div
+        // @ts-expect-error TS(2304): Cannot find name 'className'.
+        className={`relative flex justify-center w-full h-[200px] animate-pulse bg-gradient-to-b from-slate-700 to-slate-500 hover:opacity-50`}
+      // @ts-expect-error TS(2365): Operator '<' cannot be applied to types 'boolean' ... Remove this comment to see the full error message
+      ></div>
+    </div>
+  )
+}
+
+function normalize(data) {
+  let maxHeight = 300
+
+  let max = 0
+  data.map((entry) => (entry.total > max)? max = entry.total : null)
+
+  let newList = data.map((day) => {
+    let date = new Date(day.date)
+    let formattedDate = (date.getUTCMonth() + 1)  + '/' + (date.getUTCDate())
+    let n = (day.total / max) * maxHeight
+    return {
+      value: day.total,
+      date: formattedDate,
+      normalizedValue: Math.trunc(n),
+    }
+  })
+
+  return newList
+}
+
