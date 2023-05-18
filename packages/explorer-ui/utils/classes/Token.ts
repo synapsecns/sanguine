@@ -5,6 +5,29 @@ import { ChainId } from '@constants/networks'
  * Represents an ERC20-like token with a unique address, chainId, and some metadata.
  */
 export class Token {
+  addresses: any;
+  decimals: any;
+  depositTokens: any;
+  description: any;
+  docUrl: any;
+  icon: any;
+  isEthSwap: any;
+  isMeta: any;
+  isNative: any;
+  name: any;
+  nativeTokens: any;
+  poolId: any;
+  poolName: any;
+  poolTokens: any;
+  poolType: any;
+  routerIndex: any;
+  swapAddresses: any;
+  swapDepositAddresses: any;
+  swapEthAddresses: any;
+  swapWrapperAddresses: any;
+  swapableType: any;
+  symbol: any;
+  wrapperAddresses: any;
   /**
    * @param {Object} obj - An object.
    * @param {Object.<number,string>} obj.addresses - addresses of the actual token
