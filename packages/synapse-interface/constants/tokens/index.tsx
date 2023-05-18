@@ -129,7 +129,6 @@ const getTokenHashMap = () => {
   tokenHashMap[CHAINS.AVALANCHE.id][GMX.wrapperAddresses[CHAINS.AVALANCHE.id]] =
     GMX
   Object.keys(WETH.addresses).map((chain) => {
-    console.log('CHAIN', chain)
     tokenHashMap[chain][WETH.addresses[chain]] = ETH
   })
   return tokenHashMap

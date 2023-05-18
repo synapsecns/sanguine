@@ -29,8 +29,6 @@ const DestinationTx = memo((fromEvent: BridgeWatcherTx) => {
   const { providerMap } = useSynapseContext()
 
   const getToBridgeEvent = async (): Promise<BridgeWatcherTx> => {
-    console.log('getting logs')
-
     const currentFromBlock = await fetchBlockNumber({
       chainId: fromEvent.toChainId,
     })
@@ -111,8 +109,7 @@ const DestinationTx = memo((fromEvent: BridgeWatcherTx) => {
       toEvent === undefined &&
       attempted
     ) {
-      console.log('SJDHKSJHD')
-      getToBridgeEvent().then((tx) => {
+=      getToBridgeEvent().then((tx) => {
         setToEvent(tx)
       })
     }
