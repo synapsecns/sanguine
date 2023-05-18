@@ -10,7 +10,7 @@ import { useSynapseContext } from '@/utils/providers/SynapseProvider'
 import { TransactionButton } from '@components/buttons/SubmitTxButton'
 import { Zero } from '@ethersproject/constants'
 import { Token } from '@types'
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { BigNumber } from '@ethersproject/bignumber'
 import { calculateExchangeRate } from '@utils/calculateExchangeRate'
 import { getTokenAllowance } from '@/utils/actions/getTokenAllowance'
@@ -46,14 +46,12 @@ const Deposit = ({
   const { synapseSDK } = useSynapseContext()
 
   // TODO move this to utils
-  const sumBigNumbersFromState = () => {
+  const sumBigNumbersFromState = useCallback(() => {
     let sum = Zero
     pool?.poolTokens &&
       pool.poolTokens.map((token) => {
-        if (
-          token.addresses[chainId] &&
-          inputValue.bn[getAddress(token.addresses[chainId])]
-        ) {
+        const tokenAddress = getAddress(token.addresses[chainId])
+        if (inputValue.bn[tokenAddress]) {
           sum = sum.add(
             inputValue.bn[getAddress(token.addresses[chainId])].mul(
               BigNumber.from(10).pow(18 - token.decimals[chainId])
@@ -62,7 +60,7 @@ const Deposit = ({
         }
       })
     return sum
-  }
+  }, [pool, chainId, address])
 
   const calculateMaxDeposits = async () => {
     try {
