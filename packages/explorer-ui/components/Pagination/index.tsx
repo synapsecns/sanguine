@@ -10,6 +10,7 @@ import Link from 'next/link'
 export function Pagination({}) {
   const router = useRouter()
   let { p } = router.query
+  // @ts-ignore
   p = p ?? 1
 
   return (
@@ -20,6 +21,7 @@ export function Pagination({}) {
           query: { ...router.query, p: 1 },
         }}
         scroll={false}
+        // @ts-ignore
         className={p === 1 ? `pointer-events-none opacity-50` : ''}
       >
         <ChevronDoubleLeftIcon className="w-5 h-5" strokeWidth={1} />
@@ -27,9 +29,11 @@ export function Pagination({}) {
       <Link
         href={{
           pathname: router.basePath,
+          // @ts-ignore
           query: { ...router.query, p: p - 1 },
         }}
         scroll={false}
+        // @ts-ignore
         className={p === 1 ? `pointer-events-none opacity-50` : ''}
       >
         <ChevronLeftIcon className="w-5 h-5" strokeWidth={1} />

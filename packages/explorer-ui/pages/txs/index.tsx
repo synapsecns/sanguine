@@ -95,7 +95,7 @@ export default function Txs() {
     }
     return query
   }
-  const executeSearch = (p, txOrKappaHash) => {
+  const executeSearch = (p?: any, txOrKappaHash?: any) => {
     const queryPage = p ? p : page
     const queryKappa = txOrKappaHash ? txOrKappaHash : kappa
     if (queryKappa && queryKappa != '' && queryKappa.length < 64) {
@@ -203,7 +203,7 @@ export default function Txs() {
           setToTx={setToTx}
           toTx={toTx}
           setFromTx={setFromTx}
-          FromTx={fromTx}
+          fromTx={fromTx}
           setKappa={setKappa}
           kappa={kappa}
           executeSearch={executeSearch}

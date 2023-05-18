@@ -1,7 +1,7 @@
 import React, { ReactNode } from 'react';
 
 interface StandardPageContainerProps {
-  title: string;
+  title?: string;
   subtitle?: string;
   children: ReactNode;
   rightContent?: ReactNode;

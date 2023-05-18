@@ -354,35 +354,7 @@ export function getCoinTextColorAlt(coin) {
 export function getCoinTextColorCombined(coin) {
   return `${getCoinTextColor(coin)} ${getCoinTextColorDark(coin)}`
 }
-/**
- * @param {string} poolName
- */
-export function getCardStyleByPool(poolName) {
-  switch (SWAP_COIN_COLORS[poolName]) {
-    case 'gray':
-      return 'shadow-lg hover:shadow-2xl'
-    case 'green':
-      return 'shadow-green-lg hover:shadow-green-2xl'
-    case 'lime':
-      return 'shadow-lime-lg hover:shadow-lime-2xl'
-    case 'sky':
-      return 'shadow-sky-lg hover:shadow-sky-2xl'
-    case 'blue':
-      return 'shadow-blue-lg hover:shadow-blue-2xl'
-    case 'orange':
-      return 'shadow-orange-lg hover:shadow-orange-2xl'
-    case 'purple':
-      return 'shadow-purple-lg hover:shadow-purple-2xl'
-    case 'indigo':
-      return 'shadow-indigo-lg hover:shadow-indigo-2xl'
-    case 'cyan':
-      return 'shadow-cyan-lg hover:shadow-cyan-2xl'
-    case 'red':
-      return 'shadow-red-lg hover:shadow-red-2xl'
-    default:
-      return 'shadow-lg hover:shadow-2xl'
-  }
-}
+
 /**
  * @param {Token} coin
  */

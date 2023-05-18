@@ -5,36 +5,36 @@ import { ChainId } from '@constants/networks'
  * Represents an ERC20-like token with a unique address, chainId, and some metadata.
  */
 export class Token {
-  addresses: any;
-  decimals: any;
-  depositTokens: any;
-  description: any;
-  docUrl: any;
-  icon: any;
-  isEthSwap: any;
-  isMeta: any;
-  isNative: any;
-  name: any;
-  nativeTokens: any;
-  poolId: any;
-  poolName: any;
-  poolTokens: any;
-  poolType: any;
-  routerIndex: any;
-  swapAddresses: any;
-  swapDepositAddresses: any;
-  swapEthAddresses: any;
-  swapWrapperAddresses: any;
-  swapableType: any;
-  symbol: any;
-  wrapperAddresses: any;
+  addresses?: any;
+  decimals?: any;
+  depositTokens?: any;
+  description?: any;
+  docUrl?: any;
+  icon?: any;
+  isEthSwap?: any;
+  isMeta?: any;
+  isNative?: any;
+  name?: any;
+  nativeTokens?: any;
+  poolId?: any;
+  poolName?: any;
+  poolTokens?: any;
+  poolType?: any;
+  routerIndex?: any;
+  swapAddresses?: any;
+  swapDepositAddresses?: any;
+  swapEthAddresses?: any;
+  swapWrapperAddresses?: any;
+  swapableType?: any;
+  symbol?: any;
+  wrapperAddresses?: any;
   /**
    * @param {Object} obj - An object.
-   * @param {Object.<number,string>} obj.addresses - addresses of the actual token
-   * @param {Object.<number,string>} obj.addresses - addresses of the wrapper token in cases like gmx
-   * @param {(number|Object.<number,number>)} obj.decimals - decimals of the currency
-   * @param {string} obj.symbol - symbol of the currency
-   * @param {string} obj.name - human readable name of the currency
+   * @param {Object.<number,string>} [obj.addresses] - addresses of the actual token
+   * @param {Object.<number,string>} [obj.wrapperAddresses] - addresses of the wrapper token in cases like gmx
+   * @param {(number|Object.<number,number>)} [obj.decimals] - decimals of the currency
+   * @param {string} [obj.symbol] - symbol of the currency
+   * @param {string} [obj.name] - human readable name of the currency
    * @param {string} [obj.logo] - logo path
    * @param {string} [obj.poolName] - poolName for pool
    * @param {Object.<number,string>} [obj.swapAddresses] - standard
@@ -46,32 +46,56 @@ export class Token {
    * @param {string} [obj.description] - description of the token
    * @param {string} [obj.docUrl] - url link to the documentation
    * @param {boolean} [obj.forceMeta] - force the token to be treated as a
+   * @param {boolean} [obj.isNative] - whether the token is a native token
    * @param {string} [obj.swapableType] - the type of swap a la `SYN`, `ETH`, etc
    *  metaswap even if swapDepositAddresses isnt present
    */
   constructor({
-    addresses,
-    wrapperAddresses,
-    decimals,
-    symbol,
-    name,
-    logo,
-    poolName,
-    swapAddresses,
-    swapWrapperAddresses,
-    swapDepositAddresses,
-    swapEthAddresses,
-    routerIndex,
-    poolId,
-    poolType,
-    poolTokens,
-    depositTokens,
-    nativeTokens,
-    description,
-    docUrl,
-    forceMeta,
-    isNative,
-    swapableType,
+                addresses,
+                wrapperAddresses,
+                decimals,
+                symbol,
+                name,
+                logo,
+                poolName,
+                swapAddresses,
+                swapWrapperAddresses,
+                swapDepositAddresses,
+                swapEthAddresses,
+                routerIndex,
+                poolId,
+                poolType,
+                poolTokens,
+                depositTokens,
+                nativeTokens,
+                description,
+                docUrl,
+                forceMeta,
+                isNative,
+                swapableType,
+              }: {
+    addresses?: any,
+    wrapperAddresses?: any,
+    decimals?: any,
+    symbol?: any,
+    name?: any,
+    logo?: any,
+    poolName?: any,
+    swapAddresses?: any,
+    swapWrapperAddresses?: any,
+    swapDepositAddresses?: any,
+    swapEthAddresses?: any,
+    routerIndex?: any,
+    poolId?: any,
+    poolType?: any,
+    poolTokens?: any,
+    depositTokens?: any,
+    nativeTokens?: any,
+    description?: any,
+    docUrl?: any,
+    forceMeta?: any,
+    isNative?: any,
+    swapableType?: any,
   }) {
     let isMeta
     if (swapDepositAddresses || forceMeta) {

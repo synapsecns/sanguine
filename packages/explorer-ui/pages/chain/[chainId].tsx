@@ -35,6 +35,12 @@ const formatCurrency = new Intl.NumberFormat('en-US', {
   currency: 'USD',
 })
 
+interface variablesType {
+  chainIDFrom?: any,
+  chainIDTo?: any,
+  useMv?: boolean,
+}
+
 export default function chainId() {
   const router = useRouter()
   const { chainId: chainIdRouter } = router.query
@@ -42,8 +48,8 @@ export default function chainId() {
   const [platform, setPlatform] = useState('ALL')
   const [transactionsArr, setTransactionsArr] = useState([])
   const [dailyDataArr, setDailyDataArr] = useState([])
-  const [variables, setVariables] = useState({})
-  const [chainId, setChainId] = useState(0)
+  const [variables, setVariables] = useState<variablesType>({})
+  const [chainId, setChainId] = useState<any>(0)
   const [completed, setCompleted] = useState(false)
   const [dailyStatisticType, setDailyStatisticType] = useState('VOLUME')
   const [dailyStatisticDuration, SetDailyStatisticDuration] =
@@ -147,16 +153,6 @@ export default function chainId() {
     }
   }, [stopPolling, startPolling, completed])
 
-  const totalChainVolume = () => {
-    if (dailyStatisticCumulative) {
-      return chartData[chartData.length - 1]['total']
-    }
-    let totalRankedChainVolume = 0
-    for (let i = 0; i < chartData.length; i++) {
-      totalRankedChainVolume += chartData[i]['total']
-    }
-    return totalRankedChainVolume
-  }
 
   return (
     <StandardPageContainer title={''}>
@@ -313,7 +309,6 @@ export default function chainId() {
             loading={loadingDailyData}
             height={Object.keys(CHAIN_ID_NAMES_REVERSE).length * 31}
             chartData={dailyDataArr}
-            isCumulativeData={dailyStatisticCumulative}
             dailyStatisticType={dailyStatisticType}
             isUSD={
               dailyStatisticType === 'TRANSACTIONS' ||
@@ -322,7 +317,6 @@ export default function chainId() {
                 : true
             }
             showAggregated={false}
-            monthlyData={false}
             platform={platform}
             noTooltipLink={true}
           />

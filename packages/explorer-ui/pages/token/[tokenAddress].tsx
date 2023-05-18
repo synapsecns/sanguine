@@ -37,6 +37,18 @@ const formatCurrency = new Intl.NumberFormat('en-US', {
   currency: 'USD',
 })
 
+interface variableTypes {
+  page: number
+  addressFrom?: string,
+  useMv?: boolean,
+  addressTo?: string,
+  tokenAddressFrom?: string | string[],
+  tokenAddressTo?: string[]
+  chainIDFrom?: any,
+  chainIDTo?: any,
+  chainId?: any
+}
+
 export default function chainId() {
   const router = useRouter()
   const { tokenAddress } = router.query
@@ -46,8 +58,8 @@ export default function chainId() {
   const [currentTooltipIndex, setCurrentTooltipIndex] = useState(0)
   const [platform, setPlatform] = useState('ALL')
   const [transactionsArr, setTransactionsArr] = useState([])
-  const [tokenChainID, setTokenChainID] = useState([])
-  const [variables, setVariables] = useState({ page: 1 })
+  const [tokenChainID, setTokenChainID] = useState<any>([])
+  const [variables, setVariables] = useState<variableTypes>({ page: 1 })
   const [completed, setCompleted] = useState(false)
   const [address, setAddress] = useState('')
 
@@ -131,7 +143,7 @@ export default function chainId() {
         noMessaging={true}
         platform={platform}
         chainID={variables?.chainId}
-        tokenAddress={address}
+        // tokenAddress={address}
         loading={false}
         setPlatform={setPlatform}
         baseVariables={{

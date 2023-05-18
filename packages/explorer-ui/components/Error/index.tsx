@@ -3,7 +3,7 @@ import { ExclamationIcon } from '@heroicons/react/outline';
 
 interface ErrorProps {
   text: string;
-  param: string;
+  param: string | string[];
   subtitle?: string;
 }
 

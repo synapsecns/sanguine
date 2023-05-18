@@ -22,11 +22,7 @@ const link = new HttpLink({
 
 const client = new ApolloClient({
   link,
-  cache: new InMemoryCache(),
-  fetchPolicy: 'no-cache',
-  fetchOptions: {
-    mode: 'no-cors',
-  },
+  cache: new InMemoryCache()
 })
 
 export default function BridgeTransaction({ queryResult }) {

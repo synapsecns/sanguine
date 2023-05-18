@@ -32,6 +32,13 @@ const formatCurrency = new Intl.NumberFormat('en-US', {
   currency: 'USD',
 })
 
+interface variableTypes {
+  page: number
+  addressFrom?: string,
+  useMv?: boolean,
+  addressTo?: string,
+}
+
 export default function address() {
   const router = useRouter()
   const { address } = router.query
@@ -40,7 +47,7 @@ export default function address() {
   const [platform, setPlatform] = useState('ALL')
   const [transactionsArr, setTransactionsArr] = useState([])
   const [tokenChainID, setTokenChainID] = useState([])
-  const [variables, setVariables] = useState({ page: 1 })
+  const [variables, setVariables] = useState<variableTypes>({ page: 1 })
   const [completed, setCompleted] = useState(false)
   const [walletAddress, setWalletAddress] = useState('')
   const unSelectStyle =

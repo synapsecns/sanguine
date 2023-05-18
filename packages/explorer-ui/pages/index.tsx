@@ -16,10 +16,6 @@ const client = new ApolloClient({
   link,
   ssrMode: true,
   cache: new InMemoryCache(),
-  fetchPolicy: 'cache-and-network',
-  fetchOptions: {
-    mode: 'no-cors',
-  },
 })
 
 function Index() {

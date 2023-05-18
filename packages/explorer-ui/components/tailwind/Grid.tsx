@@ -255,7 +255,7 @@ export default function Grid({
 
   if (gap ?? false) {
     if (Number.isInteger(gap)) {
-      novelClassName += GAP_LOOKUP[gap];
+      novelClassName += GAP_LOOKUP[String(gap)];
     } else {
       for (const [screenSize, gapSize] of (gap as Array<number>).entries()) {
         novelClassName += SIZE_GAP_LOOKUP[screenSize][gapSize];
