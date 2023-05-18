@@ -20,7 +20,6 @@ import unidexLogo from "@assets/icons/unidex.png"
 import { Token } from '@utils/classes/Token'
 
 
-
 export const GOHM = new Token({
   addresses: {
     [ChainId.ETH]: '0x0ab87046fBb341D058F17CBC4c1133F25a20a52f',
