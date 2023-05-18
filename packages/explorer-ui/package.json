@@ -47,7 +47,9 @@
     "build:go": " ",
     "build:slither": " ",
     "storybook": "start-storybook -p 6006",
-    "build-storybook": "build-storybook"
+    "build-storybook": "build-storybook",
+    "lint:fix": "npm run lint -- --fix",
+    "lint:check": "eslint . --max-warnings=0"
   },
   "browserslist": {
     "production": [

@@ -1,8 +1,7 @@
-import {useQuery} from '@apollo/client'
+import { useQuery } from '@apollo/client'
+import { ADDRESS_RANKING } from '@graphql/queries'
 
-import {ADDRESS_RANKING} from '@graphql/queries'
-
-import {LeaderCard} from './LeaderCard'
+import { LeaderCard } from './LeaderCard'
 
 const NUM_TO_SHOW = 10
 

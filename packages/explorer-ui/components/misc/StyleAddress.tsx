@@ -1,5 +1,5 @@
-import {ellipsizeString} from '@utils/ellipsizeString'
-import {getAddressesUrl} from '@urls'
+import { ellipsizeString } from '@utils/ellipsizeString'
+import { getAddressesUrl } from '@urls'
 export function StyleAddress({ sourceInfo, limiter = 4 }) {
   if (sourceInfo.address) {
     return (
@@ -11,7 +11,11 @@ export function StyleAddress({ sourceInfo, limiter = 4 }) {
         })}
         onClick={(e) => e.stopPropagation()}
       >
-        {ellipsizeString({ string: sourceInfo.address, limiter, isZeroX: true })}
+        {ellipsizeString({
+          string: sourceInfo.address,
+          limiter,
+          isZeroX: true,
+        })}
       </a>
     )
   } else {

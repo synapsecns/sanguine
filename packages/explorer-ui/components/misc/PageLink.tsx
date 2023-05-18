@@ -15,7 +15,10 @@ export function PageLink({ text, url, external = false }) {
   } else {
     return (
       <div className="mt-2 mb-14 ">
-        <a href={url} className="text-white text-opacity-100 hover:text-opacity-90 hover:underline">
+        <a
+          href={url}
+          className="text-white text-opacity-100 hover:text-opacity-90 hover:underline"
+        >
           {text}
         </a>
       </div>

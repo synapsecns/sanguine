@@ -1,8 +1,6 @@
 import { TRANSACTIONS_PATH } from '@urls'
 import { useState, useEffect } from 'react'
-
 import { HorizontalDivider } from '@components/misc/HorizontalDivider'
-
 import { StandardPageContainer } from '@components/layouts/StandardPageContainer'
 import { BridgeTransactionTable } from '@components/BridgeTransaction/BridgeTransactionTable'
 import { useQuery } from '@apollo/client'
@@ -11,7 +9,6 @@ import { CHAIN_ID_NAMES_REVERSE } from '@constants/networks'
 import { useRouter } from 'next/router'
 import { checksumAddress } from '@utils/checksum'
 import CopyTitle from '@components/misc/CopyTitle'
-
 import {
   GET_BRIDGE_TRANSACTIONS_QUERY,
   DAILY_STATISTICS_BY_CHAIN,
@@ -58,7 +55,7 @@ export default function address() {
     startPolling,
   } = useQuery(GET_BRIDGE_TRANSACTIONS_QUERY, {
     pollInterval: 5000,
-    variables: variables,
+    variables,
     fetchPolicy: 'network-only',
     onCompleted: (data) => {
       let bridgeTransactionsTable = data.bridgeTransactions
@@ -101,7 +98,7 @@ export default function address() {
           loading={false}
           setPlatform={setPlatform}
           baseVariables={{
-            platform: platform,
+            platform,
             duration: 'ALL_TIME',
             useCache: false,
             address: walletAddress,

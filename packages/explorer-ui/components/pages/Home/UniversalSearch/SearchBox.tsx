@@ -11,7 +11,8 @@ export function SearchBox({
         <input
           type="text"
           id="simple-search"
-          className={`
+          className={
+            `
             bg-white bg-opacity-5
             rounded-md
             border border-white border-opacity-20
@@ -20,7 +21,8 @@ export function SearchBox({
             text-white
             placeholder:text-white placeholder:text-opacity-60
 
-          ` +extraStyling}
+          ` + extraStyling
+          }
           placeholder={placeholder}
           onChange={(e) => {
             setSearchField(e.target.value)

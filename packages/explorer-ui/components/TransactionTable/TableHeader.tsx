@@ -1,5 +1,5 @@
-export function TableHeader({headers}) {
-  return(
+export function TableHeader({ headers }) {
+  return (
     <thead className="">
       <tr>
         {headers.map((header) => (

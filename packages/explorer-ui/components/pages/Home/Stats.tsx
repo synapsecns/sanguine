@@ -1,6 +1,5 @@
-import {useState} from 'react'
+import { useState } from 'react'
 import numeral from 'numeral'
-
 import Card from '@components/tailwind/Card'
 import Grid from '@components/tailwind/Grid'
 

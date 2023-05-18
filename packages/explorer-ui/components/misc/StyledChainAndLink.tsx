@@ -1,6 +1,6 @@
-import {ChainInfo} from '@components/misc/ChainInfo'
-import {getChainUrl} from '@urls'
-import {getNetworkTextHoverColor} from '@utils/styles/networks'
+import { ChainInfo } from '@components/misc/ChainInfo'
+import { getChainUrl } from '@urls'
+import { getNetworkTextHoverColor } from '@utils/styles/networks'
 
 export function StyledChainAndLink({ chainId }) {
   return (

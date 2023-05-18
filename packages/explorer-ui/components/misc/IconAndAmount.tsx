@@ -18,14 +18,15 @@ export function IconAndAmount({
 
   let styledCoinClass
   if (styledCoin === true) {
-    styledCoinClass = 'bg-gray-700 rounded-xl text-[10px] pl-[5px] pr-[5px] pt-[2px] pb-[2px] text-white  items-center  h-fit ml-2'
+    styledCoinClass =
+      'bg-gray-700 rounded-xl text-[10px] pl-[5px] pr-[5px] pt-[2px] pb-[2px] text-white  items-center  h-fit ml-2'
   } else {
     styledCoinClass = t && `${getCoinTextColor(t)} ${textSize}`
   }
 
   let showToken
   if (tokenSymbol) {
-    let displaySymbol = addressToSymbol({ tokenAddress, chainId })
+    const displaySymbol = addressToSymbol({ tokenAddress, chainId })
     showToken = <div className={styledCoinClass}>{displaySymbol}</div>
   } else {
     showToken = <span className={`${textSize} text-slate-400`}>--</span>

@@ -3,18 +3,15 @@ import { useState, useEffect } from 'react'
 import { TableHeader } from '@components/TransactionTable/TableHeader'
 import { ChainInfo } from '@components/misc/ChainInfo'
 import { OverviewChart } from '@components/ChainChart'
-
 import { HorizontalDivider } from '@components/misc/HorizontalDivider'
 import { formatUSD } from '@utils/formatUSD'
 import { formatDate } from '@utils/formatDate'
-
 import { StandardPageContainer } from '@components/layouts/StandardPageContainer'
 import { BridgeTransactionTable } from '@components/BridgeTransaction/BridgeTransactionTable'
 import { useLazyQuery, useQuery } from '@apollo/client'
 import { SynapseLogoSvg } from '@components/layouts/MainLayout/SynapseLogoSvg'
 import { CHAIN_ID_NAMES_REVERSE } from '@constants/networks'
 import { useRouter } from 'next/router'
-
 import {
   GET_BRIDGE_TRANSACTIONS_QUERY,
   DAILY_STATISTICS_BY_CHAIN,
@@ -64,7 +61,7 @@ export default function chainId() {
     startPolling,
   } = useQuery(GET_BRIDGE_TRANSACTIONS_QUERY, {
     pollInterval: 5000,
-    variables: variables,
+    variables,
     fetchPolicy: 'network-only',
     onCompleted: (data) => {
       let bridgeTransactionsTable = data.bridgeTransactions
@@ -87,7 +84,7 @@ export default function chainId() {
       if (dailyStatisticCumulative) {
         chartData = JSON.parse(JSON.stringify(data.dailyStatisticsByChain))
         for (let i = 1; i < chartData.length; i++) {
-          for (let key in data.dailyStatisticsByChain[i]) {
+          for (const key in data.dailyStatisticsByChain[i]) {
             if (key !== 'date' && key !== '__typename') {
               chartData[i][key] += chartData[i - 1]?.[key]
                 ? chartData[i - 1][key]
@@ -109,9 +106,9 @@ export default function chainId() {
     }
     getDailyStatisticsByChain({
       variables: {
-        type: type,
+        type,
         duration: dailyStatisticDuration,
-        platform: platform,
+        platform,
         useCache: false,
         chainID: chainId,
         useMv: true,
@@ -179,7 +176,7 @@ export default function chainId() {
         loading={false}
         setPlatform={setPlatform}
         baseVariables={{
-          platform: platform,
+          platform,
           duration: 'ALL_TIME',
           useCache: false,
           chainID: chainId,
@@ -320,7 +317,7 @@ export default function chainId() {
             dailyStatisticType={dailyStatisticType}
             isUSD={
               dailyStatisticType === 'TRANSACTIONS' ||
-                dailyStatisticType === 'ADDRESSES'
+              dailyStatisticType === 'ADDRESSES'
                 ? false
                 : true
             }

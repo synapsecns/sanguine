@@ -1,25 +1,23 @@
 import _ from 'lodash'
-
 import { Table } from '@components/TransactionTable/Table'
-import { StyleAddress } from "@components/misc/StyleAddress";
-import { IconAndAmount } from "@components/misc/IconAndAmount";
-import { ChainInfo } from "@components/misc/ChainInfo";
-import { timeAgo } from "@utils/timeAgo";
-import { getBridgeTransactionUrl } from "@urls";
-import { ellipsizeString } from "@utils/ellipsizeString";
+import { StyleAddress } from '@components/misc/StyleAddress'
+import { IconAndAmount } from '@components/misc/IconAndAmount'
+import { ChainInfo } from '@components/misc/ChainInfo'
+import { timeAgo } from '@utils/timeAgo'
+import { getBridgeTransactionUrl } from '@urls'
+import { ellipsizeString } from '@utils/ellipsizeString'
 
 export function BridgeTransactionTable({ queryResult }) {
   const handlePending = (date) => {
-    let now = new Date().getTime()
-    let timeDiff = now - date *1000
+    const now = new Date().getTime()
+    const timeDiff = now - date * 1000
     if (timeDiff > 86400000) {
       return <p>Indexing</p>
     } else {
       return <p>Pending</p>
     }
-
   }
-  let headers = [
+  const headers = [
     'Initial',
     'Final',
     'Origin',
@@ -27,26 +25,26 @@ export function BridgeTransactionTable({ queryResult }) {
     'From',
     'To',
     'Age',
-    'TXID'
+    'TXID',
   ]
 
-
-  let tableRows = []
+  const tableRows = []
   queryResult?.map((txn) => {
     const { kappa, pending, fromInfo, toInfo } = txn
 
-      let items = [
-
-        <IconAndAmount
-          formattedValue={fromInfo.formattedValue}
-          tokenAddress={fromInfo.tokenAddress}
-          chainId={fromInfo.chainID}
-          tokenSymbol={fromInfo.tokenSymbol}
-          iconSize="w-4 h-4"
-          textSize="text-sm"
-          styledCoin={true}
-        />,
-        pending ? handlePending(fromInfo.time) :
+    const items = [
+      <IconAndAmount
+        formattedValue={fromInfo.formattedValue}
+        tokenAddress={fromInfo.tokenAddress}
+        chainId={fromInfo.chainID}
+        tokenSymbol={fromInfo.tokenSymbol}
+        iconSize="w-4 h-4"
+        textSize="text-sm"
+        styledCoin={true}
+      />,
+      pending ? (
+        handlePending(fromInfo.time)
+      ) : (
         <IconAndAmount
           formattedValue={toInfo.formattedValue}
           tokenAddress={toInfo.tokenAddress}
@@ -55,53 +53,55 @@ export function BridgeTransactionTable({ queryResult }) {
           iconSize="w-4 h-4"
           textSize="text-sm"
           styledCoin={true}
-        />,
-        <ChainInfo
-          chainId={fromInfo.chainID}
-          imgClassName="w-6 h-6 rounded-full"
-          txHash={fromInfo.hash}
-          useExplorerLink={false}
-
-        />,
-        pending ?  <ChainInfo
-        chainId={fromInfo.destinationChainID}
+        />
+      ),
+      <ChainInfo
+        chainId={fromInfo.chainID}
         imgClassName="w-6 h-6 rounded-full"
-        txHash={""}
+        txHash={fromInfo.hash}
         useExplorerLink={false}
-
-      /> :
+      />,
+      pending ? (
+        <ChainInfo
+          chainId={fromInfo.destinationChainID}
+          imgClassName="w-6 h-6 rounded-full"
+          txHash={''}
+          useExplorerLink={false}
+        />
+      ) : (
         <ChainInfo
           chainId={toInfo.chainID}
           imgClassName="w-6 h-6 rounded-full"
           txHash={toInfo.hash}
           useExplorerLink={false}
+        />
+      ),
+      <StyleAddress sourceInfo={fromInfo} />,
+      pending ? (
+        handlePending(fromInfo.time)
+      ) : (
+        <StyleAddress sourceInfo={toInfo} />
+      ),
+      fromInfo.time
+        ? timeAgo({ timestamp: fromInfo.time })
+        : timeAgo({ timestamp: toInfo?.time }),
+      <a
+        className="underline transition ease-out hover:text-[#8FEBFF]"
+        href={getBridgeTransactionUrl({
+          hash: txn.kappa,
+          chainIdFrom: txn.fromInfo.chainID,
+          chainIdTo: txn.toInfo?.chainID,
+        })}
+      >
+        {ellipsizeString({ string: txn.kappa, limiter: 4 })}
+      </a>,
+    ]
 
-        />,
-        <StyleAddress sourceInfo={fromInfo} />,
-        pending ? handlePending(fromInfo.time) :
-        <StyleAddress sourceInfo={toInfo} />,
-        fromInfo.time
-          ? timeAgo({ timestamp: fromInfo.time })
-          : timeAgo({ timestamp: toInfo?.time }),
-        <a
-          className="underline transition ease-out hover:text-[#8FEBFF]"
-          href={getBridgeTransactionUrl({
-            hash: txn.kappa,
-            chainIdFrom: txn.fromInfo.chainID,
-            chainIdTo: txn.toInfo?.chainID,
-          })}
-        >
-          {ellipsizeString({ string: txn.kappa, limiter: 4 })}
-        </a>
-      ]
-
-    let row = {
+    const row = {
       items,
-      key: kappa
+      key: kappa,
     }
-    tableRows.push(row);
+    tableRows.push(row)
   })
-  return (
-    <Table header={headers} body={tableRows} />
-  )
+  return <Table header={headers} body={tableRows} />
 }

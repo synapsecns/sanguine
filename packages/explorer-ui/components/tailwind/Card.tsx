@@ -1,4 +1,4 @@
-import {twMerge} from 'tailwind-merge'
+import { twMerge } from 'tailwind-merge'
 
 export default function Card({
   title,
@@ -8,7 +8,7 @@ export default function Card({
   divider = true,
   ...props
 }) {
-  let mergedClassName = twMerge(`
+  const mergedClassName = twMerge(`
     bg-gray-800 shadow-lg pt-3 px-6 pb-6 rounded-lg ${className ?? ''}
   `)
   let titleContent = ''

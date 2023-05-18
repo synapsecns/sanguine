@@ -5,7 +5,6 @@ import { StandardPageContainer } from '@components/layouts/StandardPageContainer
 import { GET_BRIDGE_TRANSACTIONS_QUERY } from '@graphql/queries'
 import { CHAIN_ID_NAMES_REVERSE } from '@constants/networks'
 import { useSearchParams } from 'next/navigation'
-
 import { API_URL } from '@graphql'
 import { useState, useEffect } from 'react'
 import { ApolloClient, HttpLink, InMemoryCache } from '@apollo/client'
@@ -38,7 +37,7 @@ export default function Txs() {
 
   useEffect(() => {
     setPage(p)
-    let hash = hashSearch === 'null' ? '' : hashSearch
+    const hash = hashSearch === 'null' ? '' : hashSearch
     setKappa(hash)
     executeSearch(p, hash)
   }, [p, hashSearch])
@@ -60,7 +59,7 @@ export default function Txs() {
   useEffect(() => {
     getBridgeTransactions({
       variables: {
-        pending: pending,
+        pending,
         page: 1,
         useMv: true,
       },
@@ -80,12 +79,12 @@ export default function Txs() {
   const createQueryField = (field, value, query) => {
     if (value && value !== '') {
       if (field === 'endTime' || field === 'startTime') {
-        let timestamp = parseInt(
+        const timestamp = parseInt(
           (new Date(value.$d).getTime() / 1000).toFixed(0)
         )
         query[field] = timestamp
       } else if (field === 'chainIDTo' || field === 'chainIDFrom') {
-        let chainIDs = []
+        const chainIDs = []
         for (let i = 0; i < value.length; i++) {
           chainIDs.push(parseInt(CHAIN_ID_NAMES_REVERSE[value[i]]))
         }
@@ -97,8 +96,8 @@ export default function Txs() {
     return query
   }
   const executeSearch = (p, txOrKappaHash) => {
-    let queryPage = p ? p : page
-    let queryKappa = txOrKappaHash ? txOrKappaHash : kappa
+    const queryPage = p ? p : page
+    const queryKappa = txOrKappaHash ? txOrKappaHash : kappa
     if (queryKappa && queryKappa != '' && queryKappa.length < 64) {
       alert('Invalid hash entered')
       return
@@ -109,7 +108,7 @@ export default function Txs() {
     }
     let variables = {
       page: queryPage === 0 ? 1 : queryPage,
-      pending: pending,
+      pending,
       useMv: true,
     }
     if (chains.length > 0) {
@@ -172,7 +171,7 @@ export default function Txs() {
     }
     variables = createQueryField('pending', pending, variables)
     getBridgeTransactions({
-      variables: variables,
+      variables,
     })
   }
 

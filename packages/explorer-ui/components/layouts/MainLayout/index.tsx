@@ -1,8 +1,6 @@
-import {Fragment} from 'react'
-
-import {Popover, Transition} from '@headlessui/react'
-
-import {DocumentTextIcon, MenuIcon, XIcon} from '@heroicons/react/outline'
+import { Fragment } from 'react'
+import { Popover, Transition } from '@headlessui/react'
+import { DocumentTextIcon, MenuIcon, XIcon } from '@heroicons/react/outline'
 
 // import { useActiveWeb3React } from '@hooks/wallet/useActiveWeb3React'
 import {
@@ -20,19 +18,17 @@ import {
   TELEGRAM_URL,
   TWITTER_URL,
 } from '@urls'
-
 import Grid from '@components/tailwind/Grid'
-
 import ForumIcon from '@components/icons/ForumIcon'
 import TwitterIcon from '@components/icons/TwitterIcon'
 import DiscordIcon from '@components/icons/DiscordIcon'
 import TelegramIcon from '@components/icons/TelegramIcon'
 
-import {SynapseLogoSvg} from './SynapseLogoSvg'
+import { SynapseLogoSvg } from './SynapseLogoSvg'
 import TopBarNavLink from './TopBarNavLink'
 import WalletNetworkSection from './WalletNetworkSection'
 import MoreButton from './MoreButton'
-import {PageFooter} from './PageFooter'
+import { PageFooter } from './PageFooter'
 
 export function PageWrapper({ children }) {
   return (

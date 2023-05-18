@@ -4,7 +4,6 @@ import { SynapseLogoSvg } from '@components/layouts/MainLayout/SynapseLogoSvg'
 import { formatDate } from '@utils/formatDate'
 import { formatUSD } from '@utils/formatUSD'
 import ReactDOM from 'react-dom'
-
 import {
   Bar,
   BarChart,
@@ -49,16 +48,20 @@ export const OverviewChart = ({
     )
   }
   const initialData = (getNames) => {
-    if (chartData.length === 0) return []
-    let payload = chartData[chartData.length - 1]
-    var items = Object.keys(payload).map((key) => {
+    if (chartData.length === 0) {
+      return []
+    }
+    const payload = chartData[chartData.length - 1]
+    const items = Object.keys(payload).map((key) => {
       if (payload[key] > 0 && key !== 'total') {
         return [key, payload[key]]
       } else {
         return [key, 0]
       }
     })
-    if (items.length === 0) return []
+    if (items.length === 0) {
+      return []
+    }
 
     // Sort the array based on the second element
     items.sort(function (first, second) {
@@ -66,10 +69,10 @@ export const OverviewChart = ({
     })
 
     if (getNames) {
-      let names = items.map((items) => items[0])
+      const names = items.map((items) => items[0])
       return names
     }
-    let values = items.map((items) => items[1])
+    const values = items.map((items) => items[1])
     return values
   }
 

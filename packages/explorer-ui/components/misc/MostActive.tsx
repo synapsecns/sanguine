@@ -1,16 +1,13 @@
 import _ from 'lodash'
-
-import {CHAIN_INFO_MAP} from '@constants/networks'
-import {TOKEN_HASH_MAP} from '@constants/tokens/basic'
-
-import {getCoinTextColor} from '@utils/styles/coins'
-import {getNetworkTextColor} from '@utils/styles/networks'
-
+import { CHAIN_INFO_MAP } from '@constants/networks'
+import { TOKEN_HASH_MAP } from '@constants/tokens/basic'
+import { getCoinTextColor } from '@utils/styles/coins'
+import { getNetworkTextColor } from '@utils/styles/networks'
 import Grid from '@components/tailwind/Grid'
 import Tooltip from '@components/tailwind/Tooltip'
 
-import {AssetImage} from './AssetImage'
-import {ChainImage} from './ChainImage'
+import { AssetImage } from './AssetImage'
+import { ChainImage } from './ChainImage'
 
 export function MostActive({ data }) {
   return (

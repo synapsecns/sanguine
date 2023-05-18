@@ -13,6 +13,6 @@ const Template = (args) => <Table {...args} />
 
 export const Default = Template.bind({})
 Default.args = {
-  header: (<TableHeader {...TableHeader.args} />),
-  body: (<TableBody {...TableBody.args} />)
+  header: <TableHeader {...TableHeader.args} />,
+  body: <TableBody {...TableBody.args} />,
 }

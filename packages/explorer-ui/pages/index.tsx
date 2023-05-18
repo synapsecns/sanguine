@@ -13,7 +13,7 @@ const link = new HttpLink({
 })
 
 const client = new ApolloClient({
-  link: link,
+  link,
   ssrMode: true,
   cache: new InMemoryCache(),
   fetchPolicy: 'cache-and-network',
@@ -23,9 +23,7 @@ const client = new ApolloClient({
 })
 
 function Index() {
-  return (
-    <Home/>
-  )
+  return <Home />
 }
 
 export default Index

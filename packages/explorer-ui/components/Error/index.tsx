@@ -1,5 +1,5 @@
-import {ContainerCard} from '@components/ContainerCard'
-import {ExclamationIcon} from '@heroicons/react/outline'
+import { ContainerCard } from '@components/ContainerCard'
+import { ExclamationIcon } from '@heroicons/react/outline'
 
 export const Error = ({ text, param, subtitle }) => {
   return (

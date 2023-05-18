@@ -11,8 +11,8 @@ import {
   SWAP_PATH,
   TWITTER_URL,
 } from '@urls'
-
 import Grid from '@components/tailwind/Grid'
+
 import { SynapseTitleLogo } from '.'
 
 const functions = [
@@ -86,10 +86,9 @@ const support = [
     text: 'Twitter',
     type: 'url',
     url: TWITTER_URL,
-  }
+  },
 ]
 const admin = [
-
   {
     text: 'Terms of Use',
     type: 'path',
@@ -99,9 +98,8 @@ const admin = [
     text: 'Privacy Policy',
     type: 'path',
     url: PRIVACY_POLICY_PATH,
-  }
+  },
 ]
-
 
 export function PageFooter() {
   return (
@@ -120,8 +118,15 @@ export function PageFooter() {
           <FooterBlock elements={support} />
         </Grid>
       </div>
-      <div className='text-white pb-[70px] flex direction-row justify-center align-middle'>
-        <div className='mr-2'> <DisplayText element={admin[0]} /> </div>   <p>｜</p>  <div className='ml-2'><DisplayText element={admin[1]} />  </div>
+      <div className="text-white pb-[70px] flex direction-row justify-center align-middle">
+        <div className="mr-2">
+          {' '}
+          <DisplayText element={admin[0]} />{' '}
+        </div>{' '}
+        <p>｜</p>{' '}
+        <div className="ml-2">
+          <DisplayText element={admin[1]} />{' '}
+        </div>
       </div>
     </footer>
   )

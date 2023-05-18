@@ -1,20 +1,19 @@
-import React from 'react';
+import React from 'react'
 
-import {TableBody} from './TableBody';
-
+import { TableBody } from './TableBody'
 
 export default {
   component: TableBody,
-  title: 'TableBody'
+  title: 'TableBody',
 }
 
-const Template = args => <TableBody {...args} />;
+const Template = (args) => <TableBody {...args} />
 
-export const Default = Template.bind({});
+export const Default = Template.bind({})
 Default.args = {
   rows: [
-      {
-        items: [
+    {
+      items: [
         '0x1e79...7ebd',
         '0x1e79...7ebd',
         '1.070 JEWEL',
@@ -23,9 +22,9 @@ Default.args = {
         'Klaytn',
         'about 1 hour ago',
         '1d854d...b2d5',
-        ],
-        key: '1d854d...b2d5'
-      },
+      ],
+      key: '1d854d...b2d5',
+    },
     {
       items: [
         '0x2023...9163',
@@ -37,8 +36,7 @@ Default.args = {
         'about 1 hour ago',
         '83bcbd...0d44',
       ],
-      key: '83bcbd...0d44'
-    }
-    ]
-  };
-
+      key: '83bcbd...0d44',
+    },
+  ],
+}

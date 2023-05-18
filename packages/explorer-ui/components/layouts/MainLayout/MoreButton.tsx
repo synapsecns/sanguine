@@ -1,5 +1,5 @@
 import Button from '@components/tailwind/Button'
-import {DotsHorizontalIcon} from '@heroicons/react/outline'
+import { DotsHorizontalIcon } from '@heroicons/react/outline'
 
 export default function MoreButton({ open, onClick, className, ...props }) {
   return (

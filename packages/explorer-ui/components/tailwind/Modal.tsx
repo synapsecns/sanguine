@@ -1,5 +1,5 @@
-import {useEffect} from 'react'
-import {useKeyPress} from '@hooks/useKeyPress'
+import { useEffect } from 'react'
+import { useKeyPress } from '@hooks/useKeyPress'
 
 export default function Modal({ isOpen, onClose, children }) {
   const escPressed = useKeyPress('Escape')

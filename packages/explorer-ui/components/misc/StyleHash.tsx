@@ -1,5 +1,5 @@
-import {getExplorerTxUrl} from '@urls'
-import {getNetworkTextHoverColor} from '@utils/styles/networks'
+import { getExplorerTxUrl } from '@urls'
+import { getNetworkTextHoverColor } from '@utils/styles/networks'
 
 export function StyleHash({ sourceInfo, limiter = 6 }) {
   if (sourceInfo.hash) {

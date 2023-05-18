@@ -8,10 +8,10 @@ export default function StakeIcon({ className }) {
       aria-hidden="true"
     >
       <path
-        strokeLinecap='round'
-        strokeLinejoin='round'
+        strokeLinecap="round"
+        strokeLinejoin="round"
         strokeWidth={2}
-        d='M13 10V3L4 14h7v7l9-11h-7z'
+        d="M13 10V3L4 14h7v7l9-11h-7z"
       />
     </svg>
   )

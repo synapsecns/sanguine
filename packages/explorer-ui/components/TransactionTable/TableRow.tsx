@@ -1,17 +1,11 @@
-
 export function TableRow({ items, key }) {
-
   return (
-
     <tr key={key} className="transition ease-out">
-
-      {items.map((item) =>
-
+      {items.map((item) => (
         <td className="whitespace-nowrap px-2 py-2 text-sm  text-white">
           {item}
         </td>
-      )
-      }
+      ))}
     </tr>
   )
 }
@@ -53,7 +47,6 @@ export function TableRow({ items, key }) {
 //         ...transitionStyles[state]
 //       }}>
 //         {rowItems}
-
 
 //       </tr>)}
 

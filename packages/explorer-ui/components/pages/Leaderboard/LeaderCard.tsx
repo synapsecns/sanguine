@@ -1,15 +1,16 @@
 import Grid from '@components/tailwind/Grid'
-
-import {getAddressesUrl} from '@urls'
-import {ContainerCard} from '@components/ContainerCard'
-import {CurrencyDollarIcon, FireIcon, LightningBoltIcon,} from '@heroicons/react/outline'
-import {infoBlockIconClassName} from '@constants'
-
-import {GetMostCommonTokens} from '@pages/Address/GetMostCommonTokens'
-
-import {StatisticBlock} from '@pages/Address/StatisticBlock'
-import {InfoBlock} from '@components/misc/InfoBlock'
-import {ellipsizeString} from '@utils/ellipsizeString'
+import { getAddressesUrl } from '@urls'
+import { ContainerCard } from '@components/ContainerCard'
+import {
+  CurrencyDollarIcon,
+  FireIcon,
+  LightningBoltIcon,
+} from '@heroicons/react/outline'
+import { infoBlockIconClassName } from '@constants'
+import { GetMostCommonTokens } from '@pages/Address/GetMostCommonTokens'
+import { StatisticBlock } from '@pages/Address/StatisticBlock'
+import { InfoBlock } from '@components/misc/InfoBlock'
+import { ellipsizeString } from '@utils/ellipsizeString'
 
 export function LeaderCard({ rank, address, count }) {
   const hoverColors = {

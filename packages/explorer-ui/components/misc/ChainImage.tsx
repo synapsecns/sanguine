@@ -1,6 +1,5 @@
-import {QuestionMarkCircleIcon} from '@heroicons/react/outline'
-
-import {CHAIN_INFO_MAP} from '@constants/networks'
+import { QuestionMarkCircleIcon } from '@heroicons/react/outline'
+import { CHAIN_INFO_MAP } from '@constants/networks'
 import Image from 'next/image'
 
 export function ChainImage({ chainId, imgSize = 'w-4 h-4', className }) {

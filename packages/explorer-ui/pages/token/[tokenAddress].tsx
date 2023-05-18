@@ -3,11 +3,9 @@ import { useState, useEffect } from 'react'
 import { TOKEN_HASH_MAP } from '@constants/tokens/basic'
 import { AssetImage } from '@components/misc/AssetImage'
 import { useSearchParams } from 'next/navigation'
-
 import { HorizontalDivider } from '@components/misc/HorizontalDivider'
 import { formatUSD } from '@utils/formatUSD'
 import { ChainInfo } from '@components/misc/ChainInfo'
-
 import { StandardPageContainer } from '@components/layouts/StandardPageContainer'
 import { BridgeTransactionTable } from '@components/BridgeTransaction/BridgeTransactionTable'
 import { useLazyQuery, useQuery } from '@apollo/client'
@@ -16,7 +14,6 @@ import { CHAIN_ID_NAMES_REVERSE } from '@constants/networks'
 import { useRouter } from 'next/router'
 import CopyTitle from '@components/misc/CopyTitle'
 import { checksumAddress } from '@utils/checksum'
-
 import {
   GET_BRIDGE_TRANSACTIONS_QUERY,
   DAILY_STATISTICS_BY_CHAIN,
@@ -71,7 +68,7 @@ export default function chainId() {
     startPolling,
   } = useQuery(GET_BRIDGE_TRANSACTIONS_QUERY, {
     pollInterval: 5000,
-    variables: variables,
+    variables,
     fetchPolicy: 'network-only',
     onCompleted: (data) => {
       let bridgeTransactionsTable = data.bridgeTransactions
@@ -138,7 +135,7 @@ export default function chainId() {
         loading={false}
         setPlatform={setPlatform}
         baseVariables={{
-          platform: platform,
+          platform,
           duration: 'ALL_TIME',
           useCache: false,
           chainID: tokenChainID,

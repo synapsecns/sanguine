@@ -1,11 +1,11 @@
-import {BeakerIcon, FireIcon} from '@heroicons/react/outline'
+import { BeakerIcon, FireIcon } from '@heroicons/react/outline'
 import Grid from '@components/tailwind/Grid'
+import { ContainerCard } from '@components/ContainerCard'
+import { StandardPageContainer } from '@components/layouts/StandardPageContainer'
 
-import {ContainerCard} from '@components/ContainerCard'
-import {StandardPageContainer} from '@components/layouts/StandardPageContainer'
-import {TopChains} from './TopChains'
-import {TopTokens} from './TopTokens'
-import {AddressRanking} from './AddressRanking'
+import { TopChains } from './TopChains'
+import { TopTokens } from './TopTokens'
+import { AddressRanking } from './AddressRanking'
 
 export function Leaderboard() {
   return (

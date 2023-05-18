@@ -1,7 +1,7 @@
-import { TableHeader} from "./TableHeader";
-import { TableBody} from "./TableBody";
+import { TableHeader } from './TableHeader'
+import { TableBody } from './TableBody'
 
-export function Table({header, body}) {
+export function Table({ header, body }) {
   return (
     <div className="pb-2 px-4 sm:px-6 lg:px-8">
       <div className="mt-8 flex flex-col">
@@ -18,5 +18,4 @@ export function Table({header, body}) {
       </div>
     </div>
   )
-
 }
