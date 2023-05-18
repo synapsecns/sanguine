@@ -110,7 +110,7 @@ const PoolsListCard = memo(
                   {poolData?.totalLockedUSDStr ? (
                     '$' + poolData?.totalLockedUSDStr
                   ) : (
-                    <LoadingSpinner />
+                    <LoadingSpinner shift={true} />
                   )}
                 </div>
               </div>
