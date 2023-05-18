@@ -459,8 +459,6 @@ const SwapCard = ({
           ? Zero
           : await getCurrentTokenAllowance(routerAddress)
 
-      console.log('Allowance:', allowance)
-
       setSwapQuote({
         outputAmount: toValueBigNum,
         outputAmountString: commify(

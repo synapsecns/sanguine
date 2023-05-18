@@ -100,6 +100,7 @@ const DestinationTx = memo((fromEvent: BridgeWatcherTx) => {
         setToEvent(tx)
       })
     }
+    return
   }, [toSynapseContract])
   useEffect(() => {
     setToSigner(toSignerRaw)
