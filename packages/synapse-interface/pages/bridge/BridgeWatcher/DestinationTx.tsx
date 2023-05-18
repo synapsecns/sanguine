@@ -99,6 +99,7 @@ const DestinationTx = memo((fromEvent: BridgeWatcherTx) => {
     if (toSynapseContract) {
       getToBridgeEvent().then((tx) => {
         setToEvent(tx)
+        return
       })
     }
     return
