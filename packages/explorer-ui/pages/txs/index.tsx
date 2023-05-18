@@ -14,7 +14,7 @@ import { useLazyQuery } from '@apollo/client'
 import { SynapseLogoSvg } from '@components/layouts/MainLayout/SynapseLogoSvg'
 import { checksumAddress, checkAddressChecksum } from '@utils/checksum'
 
-export default () => {
+export default function Txs() {
   const search = useSearchParams()
   const p = Number(search.get('p'))
   const hashSearch = String(search.get('hash'))

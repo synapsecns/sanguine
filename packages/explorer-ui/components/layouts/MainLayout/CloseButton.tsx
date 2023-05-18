@@ -1,9 +1,10 @@
 import CloseIcon from '@components/icons/CloseIcon'
 
-export default ({ onClick }) => (
-  <button
-    onClick={onClick}
-    className={`
+export default function CloseButton({ onClick }) {
+  return (
+    <button
+      onClick={onClick}
+      className={`
         group ml-1 flex items-center justify-center
         h-10 w-10 rounded-full
         focus:outline-none bg-white
@@ -18,8 +19,9 @@ export default ({ onClick }) => (
         dark:hover:text-purple-700
         dark:hover:bg-gray-700 dark:active:bg-gray-700
         `}
-  >
-    <span className="sr-only">Close sidebar</span>
-    <CloseIcon className="w-6 h-6 " />
-  </button>
-)
+    >
+      <span className="sr-only">Close sidebar</span>
+      <CloseIcon className="w-6 h-6 " />
+    </button>
+  )
+}

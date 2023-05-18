@@ -2,7 +2,7 @@ import Image from 'next/image'
 import copyImg from '@assets/icons/copy.png'
 import { useState, useEffect } from 'react'
 
-export default ({ title }) => {
+export default function CopyTitle({ title }) {
   const [copy, setCopy] = useState(false)
 
   useEffect(() => {

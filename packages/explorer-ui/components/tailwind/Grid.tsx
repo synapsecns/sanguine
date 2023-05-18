@@ -198,16 +198,16 @@ const GAP_Y_LOOKUP = {
   24: 'gap-y-24 ',
 }
 
-export default ({
-                  children,
-                  cols,
-                  gap,
-                  gapX,
-                  gapY,
-                  as,
-                  className: providedClassName,
-                  ...props
-                }) => {
+export default function Grid({
+  children,
+  cols,
+  gap,
+  gapX,
+  gapY,
+  as,
+  className: providedClassName,
+  ...props
+}) {
   let novelClassName = 'grid '
 
   const { xs, sm, md, lg, xl } = cols ?? {}

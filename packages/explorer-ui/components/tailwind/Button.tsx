@@ -35,14 +35,14 @@ const outlineClassname = `
   dark:text-gray-500 dark:hover:text-gray-400
   `
 
-export default ({
-                  className,
-                  children,
-                  fancy,
-                  outline,
-                  innerRef,
-                  ...props
-                }) => {
+export default function Button({
+  className,
+  children,
+  fancy,
+  outline,
+  innerRef,
+  ...props
+}) {
   let btnStyleClassname
   if (fancy) {
     btnStyleClassname = fancyBgClassname
