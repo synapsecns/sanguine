@@ -260,7 +260,7 @@ export const HARMONY: Chain = {
   layer: 1,
   codeName: 'harmony',
   blockTime: 10000,
-  rpc: 'https://rpc.ankr.com/harmony',
+  rpc: 'https://api.harmony.one',
   nativeCurrency: { name: 'Harmony One', symbol: 'ONE', decimals: 18 },
   explorerUrl: 'https://explorer.harmony.one',
   color: 'cyan',
