@@ -2,7 +2,8 @@ import * as CHAINS from '@constants/chains/master'
 import * as all from './master'
 import * as allPool from './poolMaster'
 import * as allSwap from './swapMaster'
-import { GMX } from './master'
+import { GMX, ETH } from './master'
+import { WETH } from './swapMaster'
 import { SYN_ETH_SUSHI_TOKEN } from './sushiMaster'
 import { Token } from '@/utils/types'
 import _ from 'lodash'
@@ -127,6 +128,9 @@ const getTokenHashMap = () => {
 
   tokenHashMap[CHAINS.AVALANCHE.id][GMX.wrapperAddresses[CHAINS.AVALANCHE.id]] =
     GMX
+  Object.keys(WETH.addresses).map((chain) => {
+    tokenHashMap[chain][WETH.addresses[chain]] = ETH
+  })
   return tokenHashMap
 }
 export const TOKENS_SORTED_BY_SWAPABLETYPE = Array.from(

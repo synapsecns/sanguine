@@ -11,7 +11,7 @@ import { GETLOGS_SIZE } from '@constants/bridgeWatcher'
 import _ from 'lodash'
 import EventCard from './EventCard'
 import BlockCountdown from './BlockCountdown'
-import { getProvider } from '@utils/getProvider'
+import { useSynapseContext } from '@/utils/providers/SynapseProvider'
 import {
   getLogs,
   getBlock,
@@ -25,12 +25,15 @@ const DestinationTx = memo((fromEvent: BridgeWatcherTx) => {
     useState<Contract>(undefined)
   const [toSigner, setToSigner] = useState<Signer>()
   const { data: toSignerRaw } = useSigner({ chainId: fromEvent.toChainId })
+  const [completedConf, setCompletedConf] = useState(false)
+  const [attempted, setAttempted] = useState(false)
+  const { providerMap } = useSynapseContext()
 
   const getToBridgeEvent = async (): Promise<BridgeWatcherTx> => {
     const currentFromBlock = await fetchBlockNumber({
       chainId: fromEvent.toChainId,
     })
-    const provider = getProvider(fromEvent.toChainId)
+    const provider = providerMap[fromEvent.toChainId]
 
     const iface = new Interface(SYNAPSE_BRIDGE_ABI)
     let allToEvents = []
@@ -52,6 +55,11 @@ const DestinationTx = memo((fromEvent: BridgeWatcherTx) => {
       )
       allToEvents.push(fromEvents)
       i++
+
+      // Break if cannot find tx
+      if (i > 30) {
+        afterOrginTx = false
+      }
     }
     const flattendEvents = _.flatten(allToEvents)
     const parsedLog = flattendEvents
@@ -81,8 +89,8 @@ const DestinationTx = memo((fromEvent: BridgeWatcherTx) => {
         fromEvent.toAddress
       )
     }
-
-    return null
+    setAttempted(true)
+    return
   }
 
   useEffect(() => {
@@ -96,7 +104,19 @@ const DestinationTx = memo((fromEvent: BridgeWatcherTx) => {
     }
   }, [fromEvent, toSigner])
   useEffect(() => {
-    if (toSynapseContract) {
+    if (
+      completedConf &&
+      toSynapseContract &&
+      toEvent === undefined &&
+      attempted
+    ) {
+=      getToBridgeEvent().then((tx) => {
+        setToEvent(tx)
+      })
+    }
+  }, [completedConf])
+  useEffect(() => {
+    if (toSynapseContract && toEvent === undefined && !completedConf) {
       getToBridgeEvent().then((tx) => {
         setToEvent(tx)
         return
@@ -110,14 +130,14 @@ const DestinationTx = memo((fromEvent: BridgeWatcherTx) => {
   return (
     <div className="flex items-center">
       <div className="flex-initial w-auto h-full align-middle mt-[22px]">
-        <BlockCountdown fromEvent={fromEvent} toEvent={toEvent ?? null} />
+        <BlockCountdown
+          fromEvent={fromEvent}
+          toEvent={toEvent ?? null}
+          setCompletedConf={setCompletedConf}
+        />
       </div>
       <div className="flex-initial w-full">
-        {toEvent ? (
-          <EventCard {...toEvent} />
-        ) : (
-          <PendingCreditTransactionItem chainId={fromEvent.toChainId} />
-        )}
+        {toEvent ? <EventCard {...toEvent} /> : null}
       </div>
     </div>
   )

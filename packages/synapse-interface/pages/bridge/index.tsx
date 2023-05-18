@@ -601,7 +601,13 @@ const BridgePage = ({
         bridgeQuote.quotes.originQuery,
         bridgeQuote.quotes.destQuery
       )
-      const tx = await wallet.sendTransaction(data)
+      const payload =
+        fromToken.addresses[fromChainId as keyof Token['addresses']] ===
+          AddressZero ||
+        fromToken.addresses[fromChainId as keyof Token['addresses']] === ''
+          ? { data: data.data, to: data.to, value: fromInput.bigNum }
+          : data
+      const tx = await wallet.sendTransaction(payload)
       try {
         await tx.wait()
         console.log(`Transaction mined successfully: ${tx.hash}`)
