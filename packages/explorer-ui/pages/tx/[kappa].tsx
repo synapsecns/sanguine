@@ -29,7 +29,7 @@ const client = new ApolloClient({
   },
 })
 
-export default function BridgeTransaction({ queryResult }) {
+export default ({ queryResult }) => {
   const router = useRouter()
   const search = useSearchParams()
   const { kappa } = router.query
@@ -293,6 +293,7 @@ export default function BridgeTransaction({ queryResult }) {
 
   return <StandardPageContainer>{content}</StandardPageContainer>
 }
+
 export async function getServerSideProps(context) {
   const { data } = await client.query({
     query: GET_BRIDGE_TRANSACTIONS_QUERY,

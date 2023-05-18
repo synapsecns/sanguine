@@ -93,16 +93,16 @@ const XL_COL_SPAN_LOOKUP = {
   full: 'xl:col-span-full ',
 }
 
-export default function Col({
-  children,
-  xs,
-  sm,
-  md,
-  lg,
-  xl,
-  className: providedClassName,
-  ...props
-}) {
+export default ({
+                  children,
+                  xs,
+                  sm,
+                  md,
+                  lg,
+                  xl,
+                  className: providedClassName,
+                  ...props
+                }) => {
   let novelClassName = ''
 
   if (xs ?? false) {

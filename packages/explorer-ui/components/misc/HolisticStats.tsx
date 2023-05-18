@@ -6,14 +6,14 @@ import Grid from '@components/tailwind/Grid'
 import numeral from 'numeral'
 import { formatUSD } from '@utils/formatUSD'
 
-export default function HolisticStats({
-  platform: parentPlatform,
-  setPlatform: parentSetPlatform,
-  loading,
-  chainID,
-  baseVariables,
-  noMessaging,
-}) {
+export default ({
+                  platform: parentPlatform,
+                  setPlatform: parentSetPlatform,
+                  loading,
+                  chainID,
+                  baseVariables,
+                  noMessaging
+                }) => {
   const [volume, setVolume] = useState('--')
   const [fee, setFee] = useState('--')
   const [addresses, setAddresses] = useState('--')

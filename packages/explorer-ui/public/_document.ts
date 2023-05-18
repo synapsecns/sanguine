@@ -1,6 +1,6 @@
 import {Head, Html} from 'next/document'
 
-export default function Document() {
+export default () => {
   return (
     <Html>
       <Head>

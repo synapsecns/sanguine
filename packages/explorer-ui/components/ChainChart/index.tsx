@@ -64,9 +64,7 @@ export const OverviewChart = ({
     }
 
     // Sort the array based on the second element
-    items.sort(function (first, second) {
-      return second[1] - first[1]
-    })
+    items.sort((first, second) => second[1] - first[1])
 
     if (getNames) {
       const names = items.map((items) => items[0])

@@ -4,7 +4,7 @@
 // import ChainManagement from '@layouts/ChainManagement'
 // import { useTerraWallet } from '@hooks/terra/useTerraWallet'
 
-export default function WalletNetworkSection() {
+export default () => {
   // const { account } = useActiveWeb3React()
   // const { terraAddress } = useTerraWallet()
 

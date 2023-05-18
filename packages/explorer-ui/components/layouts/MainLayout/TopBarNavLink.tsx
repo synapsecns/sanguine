@@ -1,4 +1,4 @@
-export default function TopBarNavLink({ labelText, to, className }) {
+export default ({ labelText, to, className }) => {
   // const location = useLocation()
 
   // const match =
