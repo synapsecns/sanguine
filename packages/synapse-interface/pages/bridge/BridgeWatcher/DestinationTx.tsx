@@ -21,7 +21,8 @@ import {
 } from '@utils/bridgeWatcher'
 const DestinationTx = memo((fromEvent: BridgeWatcherTx) => {
   const [toEvent, setToEvent] = useState<BridgeWatcherTx>()
-  const [toSynapseContract, setToSynapseContract] = useState<Contract>()
+  const [toSynapseContract, setToSynapseContract] =
+    useState<Contract>(undefined)
   const [toSigner, setToSigner] = useState<Signer>()
   const { data: toSignerRaw } = useSigner({ chainId: fromEvent.toChainId })
 
