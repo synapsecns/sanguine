@@ -36,7 +36,7 @@ export const NAVIGATION: RouteObject = {
   Pools: {
     path: POOLS_PATH,
     text: 'Pools',
-    match: '/pools',
+    match: '/pool',
   },
   Stake: {
     path: STAKE_PATH,

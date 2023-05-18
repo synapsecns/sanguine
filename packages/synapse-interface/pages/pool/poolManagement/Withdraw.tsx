@@ -221,8 +221,7 @@ const Withdraw = ({
   const actionBtn = (
     <TransactionButton
       className={btnClassName}
-      disabled={false}
-      // disabled={inputValue.bn.eq(0)}
+      disabled={inputValue.bn.eq(0) || !isFromBalanceEnough}
       onClick={() => buttonAction()}
       onSuccess={() => postButtonAction()}
       label={btnLabel}

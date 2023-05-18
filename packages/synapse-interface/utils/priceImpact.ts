@@ -12,7 +12,6 @@ export const calculatePriceImpact = (
   virtualPrice = BigNumber.from(10).pow(18)
 ) => {
   if (tokenInputAmount.gt(0)) {
-    console.log('V', virtualPrice.toString())
     return virtualPrice
       .mul(tokenOutputAmount)
       .div(tokenInputAmount)

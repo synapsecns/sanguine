@@ -44,27 +44,27 @@ export const getButtonStyleForCoin = (tokenColor: string) => {
 export const getMenuItemStyleForCoin = (tokenColor: string): string => {
   switch (tokenColor) {
     case ColorOptions.GRAY:
-      return `hover:bg-opacity-20 hover:!bg-gray-500 focus:bg-gray-500 active:bg-gray-500`
+      return `hover:bg-opacity-20 hover:bg-gray-500 focus:bg-gray-500 active:bg-gray-500 `
     case ColorOptions.YELLOW:
-      return `hover:bg-opacity-20 hover:bg-yellow-500 focus:bg-yellow-500 active:bg-yellow-500`
+      return `hover:bg-opacity-20 hover:bg-yellow-500 focus:bg-yellow-500 active:bg-yellow-500 `
     case ColorOptions.GREEN:
-      return `hover:bg-opacity-20 hover:!bg-green-500 focus:bg-green-500 active:bg-green-500`
+      return `hover:bg-opacity-20 hover:bg-green-500 focus:bg-green-500 active:bg-green-500 `
     case ColorOptions.LIME:
-      return `hover:bg-opacity-20 hover:!bg-lime-500 focus:bg-lime-500 active:bg-lime-500`
+      return `hover:bg-opacity-20 hover:bg-lime-500 focus:bg-lime-500 active:bg-lime-500 `
     case ColorOptions.SKY:
-      return `hover:bg-opacity-20 hover:bg-sky-500 focus:bg-sky-500 active:bg-sky-500`
+      return `hover:bg-opacity-20 hover:bg-sky-500 focus:bg-sky-500 active:bg-sky-500 `
     case ColorOptions.BLUE:
-      return `hover:bg-opacity-20 hover:bg-blue-500 focus:bg-blue-500 active:bg-blue-500`
+      return `hover:bg-opacity-20 hover:bg-blue-500 focus:bg-blue-500 active:bg-blue-500 `
     case ColorOptions.ORANGE:
-      return `hover:bg-opacity-20 hover:bg-orange-500 focus:bg-orange-500 active:bg-orange-500`
+      return `hover:bg-opacity-20 hover:bg-orange-500 focus:bg-orange-500 active:bg-orange-500 `
     case ColorOptions.PURPLE:
-      return `hover:bg-opacity-20 hover:bg-purple-500 focus:bg-purple-500 active:bg-purple-500`
+      return `hover:bg-opacity-20 hover:bg-purple-500 focus:bg-purple-500 active:bg-purple-500 `
     case ColorOptions.INDIGO:
-      return `hover:bg-opacity-20 hover:bg-indigo-500 focus:bg-indigo-500 active:bg-indigo-500`
+      return `hover:bg-opacity-20 hover:bg-indigo-500 focus:bg-indigo-500 active:bg-indigo-500 `
     case ColorOptions.CYAN:
-      return `hover:bg-opacity-20 hover:bg-cyan-500 focus:bg-cyan-500 active:bg-cyan-500`
+      return `hover:bg-opacity-20 hover:bg-cyan-500 focus:bg-cyan-500 active:bg-cyan-500 `
     case ColorOptions.RED:
-      return `hover:bg-opacity-20 hover:bg-red-500 focus:bg-red-500 active:bg-red-500`
+      return `hover:bg-opacity-20 hover:bg-red-500 focus:bg-red-500 active:bg-red-500 `
     default:
       return ''
   }
@@ -136,27 +136,27 @@ export const getSwapHoverStyleForCoin = (tokenColor: string): string => {
 export const getMenuItemBgForCoin = (tokenColor: string): string => {
   switch (tokenColor) {
     case ColorOptions.GRAY:
-      return `bg-opacity-20 bg-gray-700`
+      return `bg-gray-500 bg-opacity-20 dark:bg-opacity-20 dark:bg-gray-700`
     case ColorOptions.YELLOW:
-      return `bg-opacity-20 bg-yellow-700`
+      return `bg-yellow-500 bg-opacity-20 dark:bg-opacity-20 dark:bg-yellow-700`
     case ColorOptions.GREEN:
-      return `bg-opacity-20 bg-green-700`
+      return `bg-green-500 bg-opacity-20 dark:bg-opacity-20 dark:bg-green-700`
     case ColorOptions.LIME:
-      return `bg-opacity-20 bg-lime-700`
+      return `bg-lime-500 bg-opacity-20 dark:bg-opacity-20 dark:bg-lime-700`
     case ColorOptions.SKY:
-      return `bg-opacity-20 bg-sky-700`
+      return `bg-sky-500 bg-opacity-20 dark:bg-opacity-20 dark:bg-sky-700`
     case ColorOptions.BLUE:
-      return `bg-opacity-20 bg-blue-700`
+      return `bg-blue-500 bg-opacity-20 dark:bg-opacity-20 dark:bg-blue-700`
     case ColorOptions.ORANGE:
-      return `bg-opacity-20 bg-orange-700`
+      return `bg-orange-500 bg-opacity-20 dark:bg-opacity-20 dark:bg-orange-700`
     case ColorOptions.PURPLE:
-      return `bg-opacity-20 bg-purple-700`
+      return `bg-purple-500 bg-opacity-20 dark:bg-opacity-20 dark:bg-purple-700`
     case ColorOptions.INDIGO:
-      return `bbg-opacity-20 bg-indigo-700`
+      return `bg-indigo-500 bg-opacity-20 dark:bg-opacity-20 dark:bg-indigo-700`
     case ColorOptions.CYAN:
-      return `bg-opacity-20 bg-cyan-700`
+      return `bg-cyan-500 bg-opacity-20 dark:bg-opacity-20 dark:bg-cyan-700`
     case ColorOptions.RED:
-      return `bg-opacity-20 bg-red-700`
+      return `bg-red-500 bg-opacity-20 dark:bg-opacity-20 dark:bg-red-700`
     default:
       return ''
   }

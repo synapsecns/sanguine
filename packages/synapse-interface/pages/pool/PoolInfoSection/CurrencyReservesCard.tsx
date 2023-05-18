@@ -3,6 +3,7 @@ import AugmentWithUnits from '../components/AugmentWithUnits'
 import InfoSectionCard from './InfoSectionCard'
 import { displaySymbol } from '@utils/displaySymbol'
 import { PoolTokenObject, Token } from '@types'
+import LoadingRow from '@/components/loading/LoadingRow'
 
 const CurrencyReservesCard = ({
   chainId,
@@ -15,7 +16,7 @@ const CurrencyReservesCard = ({
 }) => {
   return (
     <InfoSectionCard title={title}>
-      {poolData &&
+      {poolData ? (
         poolData.tokens.map((tokenObj, idx) => {
           return (
             <div key={idx}>
@@ -28,7 +29,13 @@ const CurrencyReservesCard = ({
               />
             </div>
           )
-        })}
+        })
+      ) : (
+        <>
+          <LoadingRow />
+          <LoadingRow />
+        </>
+      )}
     </InfoSectionCard>
   )
 }

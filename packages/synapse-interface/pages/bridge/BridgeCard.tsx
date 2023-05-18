@@ -94,6 +94,10 @@ const BridgeCard = ({
   const [fromTokenBalance, setFromTokenBalance] = useState<BigNumber>(Zero)
   const bridgeDisplayRef = useRef(null)
 
+  useEffect(() => {
+    console.log('displayType: ', displayType)
+  }, [displayType])
+
   /*
   useEffect Trigger: fromToken, fromTokens
   - When either the from token or list of from tokens are mutated, the selected token's balance is set in the state

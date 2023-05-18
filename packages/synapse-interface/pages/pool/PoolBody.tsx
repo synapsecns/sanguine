@@ -48,7 +48,9 @@ const PoolBody = memo(
         }
         getPoolApyData(poolChainId, pool)
           .then((res) => {
-            setPoolAPYData(res)
+            if (Object.keys(res).length > 0) {
+              setPoolAPYData(res)
+            }
           })
           .catch((err) => {
             console.log('Could not get pool data', err)

@@ -21,6 +21,7 @@ import { MINICHEF_ADDRESSES } from '@/constants/minichef'
 
 import ButtonLoadingSpinner from '@/components/buttons/ButtonLoadingSpinner'
 import InteractiveInputRow from '@/components/InteractiveInputRow'
+import LoadingText from '@/components/loading/LoadingText'
 import Button from '@/components/ui/tailwind/Button'
 import Card from '@/components/ui/tailwind/Card'
 
@@ -69,7 +70,6 @@ const StakeCard = ({ address, chainId, pool }: StakeCardProps) => {
       })
   }, [address, chainId, stakingPoolId])
 
-  const handleInput = (value: string, isDeposit: boolean) => {}
   return (
     <div className="flex-wrap space-y-2">
       <StakeCardTitle
