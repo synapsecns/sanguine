@@ -2,10 +2,12 @@ import { useEffect, useRef } from 'react'
 import { CHAINS_BY_ID } from '@constants/chains'
 import Image from 'next/image'
 import {
-  getNetworkButtonBgClassName,
+  getNetworkHover,
   getNetworkButtonBorder,
   getNetworkButtonBorderHover,
-  getNetworkHover,
+  getNetworkButtonBgClassName,
+  getNetworkButtonBgClassNameActive,
+  getNetworkButtonBorderActive,
 } from '@/styles/chains'
 
 // TODO could probably use a re-write
@@ -54,9 +56,11 @@ export const SelectSpecificNetworkButton = ({
         px-2 py-3
         cursor-pointer
         border border-transparent
-        ${getNetworkHover(chain.color)}
-        ${getNetworkButtonBorderHover(chain.color)}
         ${bgClassName}
+        ${getNetworkButtonBorderHover(chain.color)}
+        ${getNetworkHover(chain.color)}
+        ${getNetworkButtonBgClassNameActive(chain.color)}
+        ${getNetworkButtonBorderActive(chain.color)}
       `}
       onClick={onClick}
       data-test-id={`${dataId}-item`}

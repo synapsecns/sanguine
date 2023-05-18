@@ -3,6 +3,7 @@ package config
 import (
 	"context"
 	"fmt"
+	"github.com/synapsecns/sanguine/ethergo/signer/config"
 	"os"
 	"path/filepath"
 
@@ -24,9 +25,9 @@ type AgentConfig struct {
 	SummitDomainID uint32 `yaml:"summit_domain_id"`
 	// UnbondedSigner contains the unbonded signer config for agents
 	// (this is signer used to submit transactions)
-	UnbondedSigner SignerConfig `yaml:"unbonded_signer"`
+	UnbondedSigner config.SignerConfig `yaml:"unbonded_signer"`
 	// BondedSigner contains the bonded signer config for agents
-	BondedSigner SignerConfig `yaml:"bonded_signer"`
+	BondedSigner config.SignerConfig `yaml:"bonded_signer"`
 	// RefreshIntervalSeconds is the refresh interval in seconds
 	RefreshIntervalSeconds uint32 `yaml:"refresh_interval_seconds,omitempty"`
 	// EmbeddedScribeConfig is the config for the embedded scribe. This only needs to be

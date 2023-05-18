@@ -56,7 +56,7 @@ export function LandingNav() {
   return (
     <Popover className="relative px-8 pt-6">
       <div className="w-full md:flex-1 md:flex md:items-center md:justify-between">
-        <div className="flex items-center w-full py-4 sm:px-20">
+        <div className="flex items-center w-full py-4 lg:px-20">
           <div className="flex-1">
             <SynapseTitleLogo showText={true} />
           </div>
@@ -80,7 +80,7 @@ export function LandingNav() {
           >
             <TopBarButtons />
           </Popover.Group>
-          <div className="justify-end flex-1 hidden md:ml-4 lg:flex">
+          <div className="justify-end flex-1 hidden lg:flex whitespace-nowrap">
             <div className="flex items-center space-x-2">
               <Wallet />
               <Popover className="relative inline-block">
@@ -202,27 +202,33 @@ function TopBarButtons() {
       <TopBarNavLink
         to={NAVIGATION.About.path}
         labelText={NAVIGATION.About.text}
+        match={NAVIGATION.About.match}
       />
       <TopBarNavLink
         to={NAVIGATION.Bridge.path}
         labelText={NAVIGATION.Bridge.text}
+        match={NAVIGATION.Bridge.match}
       />
       <TopBarNavLink
         to={NAVIGATION.Swap.path}
         labelText={NAVIGATION.Swap.text}
+        match={NAVIGATION.Swap.match}
       />
       <TopBarNavLink
         to={NAVIGATION.Pools.path}
         labelText={NAVIGATION.Pools.text}
+        match={NAVIGATION.Pools.match}
       />
       <TopBarNavLink
         to={NAVIGATION.Stake.path}
         labelText={NAVIGATION.Stake.text}
+        match={NAVIGATION.Stake.match}
       />
       <TopBarNavLink
         className="hidden mdl:block"
         to={NAVIGATION.Analytics.path}
         labelText={NAVIGATION.Analytics.text}
+        match={NAVIGATION.Analytics.match}
       />
     </>
   )
@@ -243,7 +249,7 @@ function MoreInfoButtons() {
         description="View contract related information such as contract addresses"
       />
       <MoreInfoItem
-        to={NAVIGATION.Portoflio.path}
+        to={NAVIGATION.Portfolio.path}
         labelText={NAVIGATION.Portfolio.text}
         description="View your portfolio of related assets on this chain"
       />

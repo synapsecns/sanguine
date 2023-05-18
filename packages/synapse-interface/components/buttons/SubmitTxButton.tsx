@@ -2,13 +2,19 @@ import Button from '@tw/Button'
 import ButtonLoadingSpinner from '@components/buttons/ButtonLoadingSpinner'
 import { usePendingTxWrapper } from '@hooks/usePendingTxWrapper'
 import { TransactionResponse } from '@ethersproject/providers'
+import ExplorerToastLink from '@components/ExplorerToastLink'
+import toast from 'react-hot-toast'
+import { AddressZero } from '@ethersproject/constants'
+
 const BASE_PROPERTIES = `
     w-full rounded-lg my-2 px-4 py-3
     text-white text-opacity-100 transition-all
-    hover:opacity-80 disabled:opacity-100 disabled:text-[#88818C]
+    hover:opacity-80 disabled:opacity-50 disabled:text-[#88818C]
     disabled:from-bgLight disabled:to-bgLight
     bg-gradient-to-r from-[#CF52FE] to-[#AC8FFF]
   `
+
+const disabledClass = `opacity-30 cursor-default`
 
 export const TransactionButton = ({
   className,
@@ -17,6 +23,7 @@ export const TransactionButton = ({
   label,
   onSuccess,
   disabled,
+  chainId,
   ...props
 }: {
   className?: string
@@ -24,20 +31,39 @@ export const TransactionButton = ({
   pendingLabel: string
   label: string
   onSuccess?: () => void
+  chainId?: number
   disabled?: boolean
 }) => {
-  const { isPending, pendingTxWrapFunc } = usePendingTxWrapper()
+  const [isPending, pendingTxWrapFunc] = usePendingTxWrapper()
 
   return (
     <Button
       {...props}
       disabled={disabled}
-      className={`${BASE_PROPERTIES} ${className} ${
-        isPending && 'from-[#622e71] to-[#564071]'
-      }`}
+      className={`
+        ${className}
+        ${BASE_PROPERTIES}
+        ${disabled && disabledClass}
+        ${isPending && 'from-[#622e71] to-[#564071]'}
+      `}
       onClick={async () => {
         const tx = await pendingTxWrapFunc(onClick())
         if (tx?.hash || tx?.transactionHash || tx?.status === 1) {
+          const txHash = tx?.hash ?? tx?.transactionHash
+          if (txHash) {
+            const toastContent = (
+              <div>
+                <div>Tx Completed</div>
+                <ExplorerToastLink
+                  transactionHash={
+                    tx?.hash ?? tx?.transactionHash ?? AddressZero
+                  }
+                  chainId={chainId}
+                />
+              </div>
+            )
+            toast.success(toastContent)
+          }
           onSuccess?.()
         }
       }}

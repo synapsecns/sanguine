@@ -1,4 +1,4 @@
-import {ChainId} from '@constants/networks'
+import { ChainId } from '@constants/networks'
 
 const ETH_CURRENCY_TEXT_CLASSNAME = 'text-[#5170ad] dark:text-[#78a5ff]'
 
@@ -18,7 +18,7 @@ const COLOR_NETWORK_MAP = {
   red: [ChainId.AVALANCHE, ChainId.OPTIMISM],
 }
 
-let NETWORK_COLORS = {}
+const NETWORK_COLORS = {}
 
 for (const [colorName, chainIdArr] of Object.entries(COLOR_NETWORK_MAP)) {
   for (const someChainId of chainIdArr) {

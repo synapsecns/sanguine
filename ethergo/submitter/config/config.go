@@ -199,3 +199,5 @@ func (c *Config) SetGlobalMaxGasPrice(maxPrice *big.Int) {
 func (c *Config) SetGlobalEIP1559Support(supportsEIP1559 bool) {
 	c.GlobalConfig.SupportsEIP1559 = supportsEIP1559
 }
+
+var _ IConfig = &Config{}

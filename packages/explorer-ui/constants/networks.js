@@ -12,7 +12,6 @@ import cronosLogo from '@assets/icons/cronos.svg'
 import metisLogo from '@assets/icons/metis.svg'
 import cantoLogo from '@assets/icons/canto.svg'
 import dogeLogo from '@assets/icons/doge.svg'
-
 import ethImg from '@assets/networks/eth.jpg'
 import bscImg from '@assets/networks/bsc.jpg'
 import polygonImg from '@assets/networks/polygon.jpg'
@@ -31,10 +30,8 @@ import metisImg from '@assets/networks/metis.png'
 import klaytnImg from '@assets/networks/klaytn.jpeg'
 import cantoImg from '@assets/networks/canto.png'
 import dogeImg from '@assets/networks/doge.png'
-
 import terraImg from '@assets/networks/terra.png'
-
-import {toHexStr} from '@utils/toHexStr'
+import { toHexStr } from '@utils/toHexStr'
 
 export const NetworkContextName = 'DEFAULT_NETWORK'
 
@@ -267,11 +264,9 @@ export const CHAIN_RPC = {
   [ChainId.HARMONY]: 'https://harmony-0-rpc.gateway.pokt.network/', // 'https://api.harmony.one',
   [ChainId.CRONOS]: 'https://evm-cronos.crypto.org',
   [ChainId.METIS]: 'https://andromeda.metis.io/?owner=1088',
-  [ChainId.KLAYTN]: 'https://cypress.chain.thebifrost.io/'
-
+  [ChainId.KLAYTN]: 'https://cypress.chain.thebifrost.io/',
 
   // [ChainId.XDAI]: 'https://rpc.xdaichain.com',
-
 }
 
 export const NON_EVM_CHAIN_RPC = {
@@ -555,7 +550,29 @@ export const CHAIN_ENUM_BY_ID = {
   [ChainId.HARMONY]: 'harmony',
   [ChainId.CANTO]: 'canto',
   [ChainId.DOGECHAIN]: 'dogechain',
-
 }
 
-export const CHAIN_ID_NAMES_REVERSE = Object.fromEntries(Object.entries(CHAIN_ENUM_BY_ID).map(([k, v]) => [v, k]))
+export const CHAIN_ID_NAMES_REVERSE = Object.fromEntries(
+  Object.entries(CHAIN_ENUM_BY_ID).map(([k, v]) => [v, k])
+)
+
+export const BRIDGE_CONTRACTS = {
+  [ChainId.ETH]: '0x2796317b0fF8538F253012862c06787Adfb8cEb6',
+  [ChainId.OPTIMISM]: '0xAf41a65F786339e7911F4acDAD6BD49426F2Dc6b',
+  [ChainId.CRONOS]: '0xE27BFf97CE92C3e1Ff7AA9f86781FDd6D48F5eE9',
+  [ChainId.BSC]: '0xd123f70AE324d34A9E76b67a27bf77593bA8749f',
+  [ChainId.POLYGON]: '0x8F5BBB2BB8c2Ee94639E55d5F41de9b4839C1280',
+  [ChainId.FANTOM]: '0xAf41a65F786339e7911F4acDAD6BD49426F2Dc6b',
+  [ChainId.BOBA]: '0x432036208d2717394d2614d6697c46DF3Ed69540',
+  [ChainId.METIS]: '0x06Fea8513FF03a0d3f61324da709D4cf06F42A5c',
+  [ChainId.MOONBEAM]: '0x84A420459cd31C3c34583F67E0f0fB191067D32f',
+  [ChainId.MOONRIVER]: '0xaeD5b25BE1c3163c907a471082640450F928DDFE',
+  [ChainId.KLAYTN]: '0xAf41a65F786339e7911F4acDAD6BD49426F2Dc6b',
+  [ChainId.ARBITRUM]: '0x6F4e8eBa4D337f874Ab57478AcC2Cb5BACdc19c9',
+  [ChainId.AVALANCHE]: '0xC05e61d0E7a63D27546389B7aD62FdFf5A91aACE',
+  [ChainId.DFK]: '0xE05c976d3f045D0E6E7A6f61083d98A15603cF6A',
+  [ChainId.AURORA]: '0xaeD5b25BE1c3163c907a471082640450F928DDFE',
+  [ChainId.HARMONY]: '0xAf41a65F786339e7911F4acDAD6BD49426F2Dc6b',
+  [ChainId.CANTO]: '0xDde5BEC4815E1CeCf336fb973Ca578e8D83606E0',
+  [ChainId.DOGECHAIN]: '0x9508BF380c1e6f751D97604732eF1Bae6673f299',
+}

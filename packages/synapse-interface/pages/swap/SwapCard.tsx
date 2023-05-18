@@ -21,10 +21,15 @@ import { Token } from '@/utils/types'
 import { SWAP_PATH } from '@/constants/urls'
 import { stringToBigNum } from '@/utils/stringToBigNum'
 import { useSynapseContext } from '@/utils/providers/SynapseProvider'
+import { checkStringIfOnlyZeroes } from '@/utils/regex'
+import { timeout } from '@/utils/timeout'
 import { Transition } from '@headlessui/react'
 import { COIN_SLIDE_OVER_PROPS } from '@styles/transitions'
 import Card from '@tw/Card'
 import { SwapQuote } from '@types'
+import { IMPAIRED_CHAINS } from '@/constants/impairedChains'
+import { CHAINS_BY_ID } from '@constants/chains'
+
 import {
   DEFAULT_FROM_TOKEN,
   DEFAULT_TO_TOKEN,
@@ -47,14 +52,15 @@ const SwapCard = ({
   connectedChainId: number
 }) => {
   const router = useRouter()
-  const SynapseSDK = useSynapseContext()
+  const { synapseSDK } = useSynapseContext()
   const [time, setTime] = useState(Date.now())
   const [fromToken, setFromToken] = useState(DEFAULT_FROM_TOKEN)
   const [fromTokens, setFromTokens] = useState([])
   const [fromInput, setFromInput] = useState({ string: '', bigNum: Zero })
   const [toToken, setToToken] = useState(DEFAULT_TO_TOKEN)
-  const [toTokens, setToTokens] = useState<Token[]>() //add default
-  const [error, setError] = useState('')
+  const [toTokens, setToTokens] = useState<Token[]>([]) //add default
+  const [isQuoteLoading, setIsQuoteLoading] = useState<boolean>(false)
+  const [error, setError] = useState(undefined)
   const [destinationAddress, setDestinationAddress] = useState('')
   const [swapQuote, setSwapQuote] = useState<SwapQuote>(EMPTY_SWAP_QUOTE)
   const [displayType, setDisplayType] = useState(undefined)
@@ -151,20 +157,31 @@ const SwapCard = ({
   /*
   useEffect Triggers: toToken, fromInput, toChainId, time
   - Gets a quote when the polling function is executed or any of the bridge attributes are altered.
+    - Debounce quote call by calling quote price AFTER user has stopped typing for 1s or 1000ms
   */
   useEffect(() => {
-    if (
-      connectedChainId &&
-      String(fromToken.addresses[connectedChainId]) &&
-      fromInput &&
-      fromInput.bigNum.gt(Zero)
-    ) {
-      // TODO this needs to be debounced or throttled somehow to prevent spam and lag in the ui
-      getQuote()
-    } else {
-      setSwapQuote(EMPTY_SWAP_QUOTE)
+    let isCancelled = false
+
+    const handleChange = async () => {
+      await timeout(1000)
+      if (
+        connectedChainId &&
+        String(fromToken.addresses[connectedChainId]) &&
+        fromInput &&
+        fromInput.bigNum.gt(Zero)
+      ) {
+        // TODO this needs to be debounced or throttled somehow to prevent spam and lag in the ui
+        getQuote()
+      } else {
+        setSwapQuote(EMPTY_SWAP_QUOTE)
+      }
     }
-  }, [toToken, fromInput, time])
+    handleChange()
+
+    return () => {
+      isCancelled = true
+    }
+  }, [toToken, fromInput, time, connectedChainId])
 
   /*
   Helper Function: resetTokenPermutation
@@ -181,7 +198,7 @@ const SwapCard = ({
     setFromToken(newFromToken)
     setToToken(newToToken)
     setToTokens(newSwapableTokens)
-    resetRates()
+    // resetRates()
     updateUrlParams({
       inputCurrency: newFromTokenSymbol,
       outputCurrency: newSwapableTokenSymbol,
@@ -318,6 +335,7 @@ const SwapCard = ({
       swapableTokens,
     }
   }
+
   /*
   Function: handleChainChange
   - Produces and alert if chain not connected (upgrade to toaster)
@@ -335,6 +353,9 @@ const SwapCard = ({
     const desiredChainId = Number(chainId)
     const res = switchNetwork({ chainId: desiredChainId })
       .then((res) => {
+        if (fromInput.string !== '') {
+          setIsQuoteLoading(true)
+        }
         return res
       })
       .catch(() => {
@@ -367,10 +388,11 @@ const SwapCard = ({
       swapableToken,
       swapableTokens,
       tempFromToken.symbol,
-      swapableToken.symbol
+      swapableToken?.symbol
     )
     return
   }
+
   /*
     Function:handleTokenChange
   - Handles when the user selects a new token from either the origin or destination
@@ -390,10 +412,15 @@ const SwapCard = ({
           token.symbol,
           swapableToken.symbol
         )
+        if (fromInput.string !== '') {
+          setIsQuoteLoading(true)
+        }
         return
       case 'to':
-        resetRates()
         setToToken(token)
+        if (fromInput.string !== '') {
+          setIsQuoteLoading(true)
+        }
         updateUrlParams({
           inputCurrency: fromToken.symbol,
           outputCurrency: token.symbol,
@@ -408,40 +435,50 @@ const SwapCard = ({
   - Calculates slippage by subtracting fee from input amount (checks to ensure proper num of decimals are in use - ask someone about stable swaps if you want to learn more)
   */
   const getQuote = async () => {
-    const { routerAddress, maxAmountOut, query } = await SynapseSDK.swapQuote(
-      connectedChainId,
-      fromToken.addresses[connectedChainId],
-      toToken.addresses[connectedChainId],
-      fromInput.bigNum
-    )
-    if (!(query && maxAmountOut)) {
-      setSwapQuote(EMPTY_SWAP_QUOTE_ZERO)
+    try {
+      if (swapQuote === EMPTY_SWAP_QUOTE) {
+        setIsQuoteLoading(true)
+      }
+      const { routerAddress, maxAmountOut, query } = await synapseSDK.swapQuote(
+        connectedChainId,
+        fromToken.addresses[connectedChainId],
+        toToken.addresses[connectedChainId],
+        fromInput.bigNum
+      )
+      if (!(query && maxAmountOut)) {
+        setSwapQuote(EMPTY_SWAP_QUOTE_ZERO)
+        setIsQuoteLoading(false)
+        return
+      }
+      const toValueBigNum = maxAmountOut ?? Zero
+
+      const allowance =
+        fromToken.addresses[connectedChainId] === AddressZero ||
+        address === undefined
+          ? Zero
+          : await getCurrentTokenAllowance(routerAddress)
+
+      setSwapQuote({
+        outputAmount: toValueBigNum,
+        outputAmountString: commify(
+          formatBNToString(toValueBigNum, toToken.decimals[connectedChainId], 8)
+        ),
+        routerAddress,
+        allowance,
+        exchangeRate: calculateExchangeRate(
+          fromInput.bigNum.sub(Zero), // this needs to be changed once we can get fee data from router.
+          fromToken.decimals[connectedChainId],
+          toValueBigNum,
+          toToken.decimals[connectedChainId]
+        ),
+        delta: maxAmountOut,
+        quote: query,
+      })
+      setIsQuoteLoading(false)
       return
+    } catch (error) {
+      console.log(`Quote failed with error: ${error}`)
     }
-    const toValueBigNum = maxAmountOut ?? Zero
-
-    const allowance =
-      fromToken.addresses[connectedChainId] === AddressZero
-        ? Zero
-        : await getCurrentTokenAllowance(routerAddress)
-
-    setSwapQuote({
-      outputAmount: toValueBigNum,
-      outputAmountString: commify(
-        formatBNToString(toValueBigNum, toToken.decimals[connectedChainId], 8)
-      ),
-      routerAddress,
-      allowance,
-      exchangeRate: calculateExchangeRate(
-        fromInput.bigNum.sub(Zero), // this needs to be changed once we can get fee data from router.
-        fromToken.decimals[connectedChainId],
-        toValueBigNum,
-        toToken.decimals[connectedChainId]
-      ),
-      delta: maxAmountOut,
-      quote: query,
-    })
-    return
   }
 
   /*
@@ -450,24 +487,28 @@ const SwapCard = ({
   - Only executes if token has already been approved.
    */
   const executeSwap = async () => {
-    const wallet = await fetchSigner({
-      chainId: connectedChainId,
-    })
-
-    const data = await SynapseSDK.swap(
-      connectedChainId,
-      address,
-      fromToken.addresses[connectedChainId as keyof Token['addresses']],
-      fromInput.bigNum.mul(1000).div(999), // TODO Get rid of harcoded slippage
-      swapQuote.quote
-    )
-    const tx = await wallet.sendTransaction(data)
     try {
-      await tx.wait()
-      console.log(`Transaction mined successfully: ${tx.hash}`)
-      return tx
+      const wallet = await fetchSigner({
+        chainId: connectedChainId,
+      })
+
+      const data = await synapseSDK.swap(
+        connectedChainId,
+        address,
+        fromToken.addresses[connectedChainId as keyof Token['addresses']],
+        fromInput.bigNum,
+        swapQuote.quote
+      )
+      const tx = await wallet.sendTransaction(data)
+      try {
+        await tx.wait()
+        console.log(`Transaction mined successfully: ${tx.hash}`)
+        return tx
+      } catch (error) {
+        console.log(`Transaction failed with error: ${error}`)
+      }
     } catch (error) {
-      console.log(`Transaction failed with error: ${error}`)
+      console.log(`Swap Execution failed with error: ${error}`)
     }
   }
 
@@ -497,6 +538,8 @@ const SwapCard = ({
       btnLabel = error
     } else if (!isFromBalanceEnough) {
       btnLabel = `Insufficient ${fromToken.symbol} Balance`
+    } else if (IMPAIRED_CHAINS[connectedChainId]?.disabled) {
+      btnLabel = `${CHAINS_BY_ID[connectedChainId]?.name} is currently paused`
     } else if (fromInput.bigNum.eq(0)) {
       btnLabel = `Amount must be greater than fee`
     } else if (
@@ -544,23 +587,34 @@ const SwapCard = ({
           swapQuote.outputAmount.eq(0) ||
           !isFromBalanceEnough ||
           error != null ||
-          destAddrNotValid
+          destAddrNotValid ||
+          IMPAIRED_CHAINS[connectedChainId]?.disabled
         }
         onClick={() => buttonAction()}
         onSuccess={() => {
           postButtonAction()
         }}
+        chainId={connectedChainId}
         label={btnLabel}
         pendingLabel={pendingLabel}
       />
     )
-
-    //   <TransactionButton
-    //   onClick={approveToken}
-    //   label={`Approve ${displaySymbol(chainId, fromCoin)}`}
-    //   pendingLabel={`Approving ${displaySymbol(chainId, fromCoin)}  `}
-    // />
   }, [fromInput, time, swapQuote, error])
+
+  /*
+  useEffect Triggers: fromInput
+  - Checks that user input is not zero. When input changes,
+  - isQuoteLoading state is set to true for loading state interactions
+  */
+  useEffect(() => {
+    const { string, bigNum } = fromInput
+    const isInvalid = checkStringIfOnlyZeroes(string)
+    isInvalid ? () => null : setIsQuoteLoading(true)
+
+    return () => {
+      setIsQuoteLoading(false)
+    }
+  }, [fromInput])
 
   return (
     <Card
@@ -572,7 +626,7 @@ const SwapCard = ({
           <TokenSlideOver
             key="fromBlock"
             isOrigin={true}
-            tokens={fromTokens}
+            tokens={fromTokens ?? SWAPABLE_TOKENS[connectedChainId] ?? []}
             chainId={connectedChainId}
             selectedToken={fromToken}
             setDisplayType={setDisplayType}
@@ -583,7 +637,7 @@ const SwapCard = ({
           <TokenSlideOver
             key="toBlock"
             isOrigin={false}
-            tokens={toTokens}
+            tokens={toTokens ?? SWAPABLE_TOKENS[connectedChainId] ?? []}
             chainId={connectedChainId}
             selectedToken={toToken}
             setDisplayType={setDisplayType}
@@ -628,6 +682,7 @@ const SwapCard = ({
             onChangeChain={handleChainChange}
             onChangeAmount={onChangeFromAmount}
             setDisplayType={setDisplayType}
+            isQuoteLoading={isQuoteLoading}
           />
         </Grid>
 

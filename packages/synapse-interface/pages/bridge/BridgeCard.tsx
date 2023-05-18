@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useRef } from 'react'
+import React, { useEffect, useState, useRef, useMemo } from 'react'
 import { useSettings } from '@hooks/useSettings'
 import { SettingsIcon } from '@icons/SettingsIcon'
 import { Transition } from '@headlessui/react'
@@ -14,7 +14,7 @@ import { PageHeader } from '@components/PageHeader'
 import { TokenSlideOver } from '@/components/misc/TokenSlideOver'
 import { ChainSlideOver } from '@/components/misc/ChainSlideOver'
 import { BigNumber } from '@ethersproject/bignumber'
-import { Zero, MaxInt256 } from '@ethersproject/constants'
+import { Zero, AddressZero } from '@ethersproject/constants'
 import { formatBNToString } from '@bignumber/format'
 import { SECTION_TRANSITION_PROPS, TRANSITION_PROPS } from '@styles/transitions'
 import { approveToken } from '@/utils/approveToken'
@@ -23,7 +23,9 @@ import { DestinationAddressInput } from '../../components/input/DestinationAddre
 import BridgeInputContainer from '../../components/input/TokenAmountInput'
 import { TransactionResponse } from '@ethersproject/providers'
 import { useSpring, animated } from 'react-spring'
-
+import { BRIDGABLE_TOKENS } from '@constants/tokens'
+import { IMPAIRED_CHAINS } from '@/constants/impairedChains'
+import { CHAINS_BY_ID } from '@constants/chains'
 import { Token } from '@/utils/types'
 import { BridgeQuote } from '@/utils/types'
 
@@ -48,6 +50,8 @@ const BridgeCard = ({
   toToken,
   toChainId,
   toOptions,
+  isQuoteLoading,
+  setIsQuoteLoading,
   destinationAddress,
   handleChainChange,
   handleTokenChange,
@@ -67,6 +71,8 @@ const BridgeCard = ({
   toToken: Token
   toChainId: number
   toOptions: { tokens: Token[]; chains: string[] }
+  isQuoteLoading: boolean
+  setIsQuoteLoading: (bool: boolean) => void
   destinationAddress: string
   handleChainChange: (
     chainId: number,
@@ -87,6 +93,10 @@ const BridgeCard = ({
   const [deadlineMinutes, setDeadlineMinutes] = useState('')
   const [fromTokenBalance, setFromTokenBalance] = useState<BigNumber>(Zero)
   const bridgeDisplayRef = useRef(null)
+
+  useEffect(() => {
+    console.log('displayType: ', displayType)
+  }, [displayType])
 
   /*
   useEffect Trigger: fromToken, fromTokens
@@ -113,7 +123,7 @@ const BridgeCard = ({
     isOrigin: true,
     isSwap: false,
     chains: ORDERED_CHAINS_BY_ID.filter((id) => id !== String(fromChainId)),
-    tokens: fromTokens,
+    tokens: fromTokens ?? BRIDGABLE_TOKENS[fromChainId] ?? [],
     chainId: fromChainId,
     inputString: fromInput?.string,
     selectedToken: fromToken,
@@ -129,7 +139,7 @@ const BridgeCard = ({
     isOrigin: false,
     isSwap: false,
     chains: toOptions?.chains,
-    tokens: toOptions?.tokens,
+    tokens: toOptions?.tokens ?? BRIDGABLE_TOKENS[toChainId] ?? [],
     chainId: toChainId,
     inputString: bridgeQuote?.outputAmountString,
     selectedToken: toToken,
@@ -137,6 +147,7 @@ const BridgeCard = ({
     setDisplayType,
     handleTokenChange,
     onChangeChain: handleChainChange,
+    isQuoteLoading,
   }
 
   // TODO move this away and into the actual component
@@ -162,9 +173,15 @@ const BridgeCard = ({
     btnLabel = error
   } else if (!isFromBalanceEnough) {
     btnLabel = `Insufficient ${fromToken?.symbol} Balance`
+  } else if (IMPAIRED_CHAINS[fromChainId]?.disabled) {
+    btnLabel = `${CHAINS_BY_ID[fromChainId]?.name} is currently paused`
+  } else if (IMPAIRED_CHAINS[toChainId]?.disabled) {
+    btnLabel = `${CHAINS_BY_ID[toChainId]?.name} is currently paused`
   } else if (bridgeQuote.feeAmount.eq(0) && !fromInput?.bigNum?.eq(0)) {
     btnLabel = `Amount must be greater than fee`
   } else if (
+    fromToken.addresses[fromChainId] !== '' &&
+    fromToken.addresses[fromChainId] !== AddressZero &&
     bridgeQuote?.allowance &&
     bridgeQuote?.allowance?.lt(fromInput?.bigNum)
   ) {
@@ -202,23 +219,29 @@ const BridgeCard = ({
     }
   }
 
-  const actionBtn = (
-    <TransactionButton
-      className={btnClassName}
-      disabled={
-        fromChainId === toChainId ||
-        bridgeQuote.outputAmount.eq(0) ||
-        !isFromBalanceEnough ||
-        error != null ||
-        destAddrNotValid
-      }
-      onClick={() => buttonAction()}
-      onSuccess={() => {
-        postButtonAction()
-      }}
-      label={btnLabel}
-      pendingLabel={pendingLabel}
-    />
+  const actionBtn = useMemo(
+    () => (
+      <TransactionButton
+        className={btnClassName}
+        disabled={
+          fromChainId === toChainId ||
+          bridgeQuote.outputAmount.eq(0) ||
+          !isFromBalanceEnough ||
+          error ||
+          destAddrNotValid ||
+          IMPAIRED_CHAINS[fromChainId]?.disabled ||
+          IMPAIRED_CHAINS[toChainId]?.disabled
+        }
+        chainId={toChainId}
+        onClick={() => buttonAction()}
+        onSuccess={() => {
+          postButtonAction()
+        }}
+        label={btnLabel}
+        pendingLabel={pendingLabel}
+      />
+    ),
+    [buttonAction, postButtonAction, btnLabel, pendingLabel, btnClassName]
   )
 
   /*

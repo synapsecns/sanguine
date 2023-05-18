@@ -1,7 +1,6 @@
 const keccak = require('keccak')
 
-
-export function checksumAddress (address, chainId = null) {
+export function checksumAddress(address, chainId = null) {
   if (typeof address !== 'string') {
     return ''
   }
@@ -26,8 +25,7 @@ export function checksumAddress (address, chainId = null) {
   return checksumAddress
 }
 
-
-export function checkAddressChecksum (address) {
+export function checkAddressChecksum(address) {
   const stripAddress = stripHexPrefix(address).toLowerCase()
   const prefix = '0x'
   const keccakHash = keccak('keccak256')
@@ -35,7 +33,7 @@ export function checkAddressChecksum (address) {
     .digest('hex')
 
   for (let i = 0; i < stripAddress.length; i++) {
-    let output =
+    const output =
       parseInt(keccakHash[i], 16) >= 8
         ? stripAddress[i].toUpperCase()
         : stripAddress[i]
@@ -46,8 +44,6 @@ export function checkAddressChecksum (address) {
   return true
 }
 
-
-function stripHexPrefix (value) {
+function stripHexPrefix(value) {
   return value.slice(0, 2) === '0x' ? value.slice(2) : value
 }
-

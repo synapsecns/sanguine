@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"github.com/synapsecns/sanguine/core/metrics"
+	config2 "github.com/synapsecns/sanguine/ethergo/signer/config"
 	"go.opentelemetry.io/contrib/instrumentation/google.golang.org/grpc/otelgrpc"
 	"go.opentelemetry.io/otel/attribute"
 	"go.opentelemetry.io/otel/trace"
@@ -55,12 +56,12 @@ func NewNotary(ctx context.Context, cfg config.AgentConfig, scribeClient client.
 	}
 	notary.domains = []domains.DomainClient{}
 
-	notary.bondedSigner, err = config.SignerFromConfig(ctx, cfg.BondedSigner)
+	notary.bondedSigner, err = config2.SignerFromConfig(ctx, cfg.BondedSigner)
 	if err != nil {
 		return Notary{}, fmt.Errorf("error with bondedSigner, could not create notary: %w", err)
 	}
 
-	notary.unbondedSigner, err = config.SignerFromConfig(ctx, cfg.UnbondedSigner)
+	notary.unbondedSigner, err = config2.SignerFromConfig(ctx, cfg.UnbondedSigner)
 	if err != nil {
 		return Notary{}, fmt.Errorf("error with unbondedSigner, could not create notary: %w", err)
 	}

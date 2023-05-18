@@ -3,6 +3,9 @@ import { fetchSigner } from '@wagmi/core'
 import { Contract } from 'ethers'
 import { MaxInt256 } from '@ethersproject/constants'
 import { BigNumber } from '@ethersproject/bignumber'
+import toast from 'react-hot-toast'
+import ExplorerToastLink from '@components/ExplorerToastLink'
+
 export const approveToken = async (
   address: string,
   chainId: number,
@@ -15,11 +18,10 @@ export const approveToken = async (
   })
 
   const erc20 = new Contract(tokenAddress, erc20ABI, signer)
-  const approveTx = await erc20.approve(address, amount ?? MaxInt256)
-
   try {
+    const approveTx = await erc20.approve(address, amount ?? MaxInt256)
+
     await approveTx.wait()
-    console.log(`Transaction mined successfully: ${approveTx.hash}`)
     return approveTx
   } catch (error) {
     console.log(`Transaction failed with error: ${error}`)

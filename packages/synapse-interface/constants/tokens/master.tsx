@@ -32,7 +32,6 @@ import solarbeamLogo from '@assets/icons/solarbeam.png'
 import h2oLogo from '@assets/icons/h2o.svg'
 import gmxLogo from '@assets/icons/gmx.png'
 import ageurLogo from '@assets/icons/ageur.svg'
-import mimLogo from '@assets/icons/mim.svg'
 import { AddressZero } from '@ethersproject/constants'
 
 import { Token } from '@/utils/types'
@@ -545,6 +544,7 @@ export const USDT = new Token({
   symbol: 'USDT',
   name: 'USD Tether',
   logo: usdtLogo,
+  color: 'lime',
   description: `
     USDT mirrors the price of the U.S. dollar, issued by a Hong Kong-based company Tether.
     The token’s peg to the USD is achieved via maintaining a sum of dollars in reserves equal
@@ -1105,17 +1105,4 @@ export const DEPRECATED_WKLAY = new Token({
   name: 'Deprecated Wrapped Klay',
   description: 'ERC-20 Wrapped form of KLAY',
   swapableType: 'KLAY',
-})
-
-export const MIM = new Token({
-  addresses: {
-    [CHAINS.FANTOM.id]: '0x82f0b8b456c1a451378467398982d4834b6829c1',
-    [CHAINS.ARBITRUM.id]: '0xfea7a6a0b346362bf88a9e4a88416b77a57d6c2a',
-  },
-  decimals: 18,
-  symbol: 'MIM',
-  name: 'Magic Internet Money',
-  logo: mimLogo,
-  swapableType: 'USD',
-  color: 'indigo',
 })

@@ -17,7 +17,7 @@ import { getTokenAllowance } from '@/utils/actions/getTokenAllowance'
 import { approve, deposit } from '@/utils/actions/approveAndDeposit'
 import { QUOTE_POLLING_INTERVAL } from '@/constants/bridge' // TODO CHANGE
 import { PoolData, PoolUserData } from '@types'
-
+import LoadingTokenInput from '@components/loading/LoadingTokenInput'
 const Deposit = ({
   pool,
   chainId,
@@ -43,57 +43,62 @@ const Deposit = ({
   }>({ priceImpact: undefined, allowances: {}, routerAddress: '' })
   const [time, setTime] = useState(Date.now())
 
-  const SynapseSDK = useSynapseContext()
+  const { synapseSDK } = useSynapseContext()
 
   // TODO move this to utils
   const sumBigNumbersFromState = () => {
     let sum = Zero
-    pool.poolTokens.map((token) => {
-      if (inputValue.bn[getAddress(token.addresses[chainId])]) {
-        sum = sum.add(
-          inputValue.bn[getAddress(token.addresses[chainId])].mul(
-            BigNumber.from(10).pow(18 - token.decimals[chainId])
+    pool?.poolTokens &&
+      pool.poolTokens.map((token) => {
+        if (inputValue.bn[getAddress(token.addresses[chainId])]) {
+          sum = sum.add(
+            inputValue.bn[getAddress(token.addresses[chainId])].mul(
+              BigNumber.from(10).pow(18 - token.decimals[chainId])
+            )
           )
-        )
-      }
-    })
+        }
+      })
     return sum
   }
 
   const calculateMaxDeposits = async () => {
-    if (poolUserData == null || address == null) {
-      return
-    }
-    let inputSum = sumBigNumbersFromState()
-    if (poolData.totalLocked.gt(0) && inputSum.gt(0)) {
-      const { amount } = await SynapseSDK.calculateAddLiquidity(
-        chainId,
-        pool.swapAddresses[chainId],
-        inputValue.bn
-      )
-
-      let allowances: Record<string, BigNumber> = {}
-      for (const [key, value] of Object.entries(inputValue.bn)) {
-        allowances[key] = await getTokenAllowance(
-          pool.addresses[chainId],
-          key,
-          address,
-          chainId
-        )
+    try {
+      if (poolUserData == null || address == null) {
+        return
       }
+      let inputSum = sumBigNumbersFromState()
+      if (poolData.totalLocked.gt(0) && inputSum.gt(0)) {
+        const { amount } = await synapseSDK.calculateAddLiquidity(
+          chainId,
+          pool.swapAddresses[chainId],
+          inputValue.bn
+        )
 
-      const priceImpact = calculateExchangeRate(
-        inputSum,
-        18,
-        inputSum.sub(amount),
-        18
-      )
-      // TODO: DOUBLE CHECK THIS
-      setDepositQuote({
-        priceImpact,
-        allowances,
-        routerAddress: pool.swapAddresses[chainId],
-      })
+        let allowances: Record<string, BigNumber> = {}
+        for (const [key, value] of Object.entries(inputValue.bn)) {
+          allowances[key] = await getTokenAllowance(
+            pool.addresses[chainId],
+            key,
+            address,
+            chainId
+          )
+        }
+
+        const priceImpact = calculateExchangeRate(
+          inputSum,
+          18,
+          inputSum.sub(amount),
+          18
+        )
+        // TODO: DOUBLE CHECK THIS
+        setDepositQuote({
+          priceImpact,
+          allowances,
+          routerAddress: pool.swapAddresses[chainId],
+        })
+      }
+    } catch (e) {
+      console.log(e)
     }
   }
   useEffect(() => {
@@ -144,8 +149,6 @@ const Deposit = ({
     setInputValue(initInputValue)
   }
 
-  const tokenInputSum = Zero
-
   // some messy button gen stuff (will re-write)
   let isFromBalanceEnough = true
   let isAllowanceEnough = true
@@ -188,7 +191,7 @@ const Deposit = ({
   const actionBtn = (
     <TransactionButton
       className={btnClassName}
-      disabled={tokenInputSum.eq(0)}
+      disabled={sumBigNumbersFromState().eq(0) || !isFromBalanceEnough}
       onClick={() => buttonAction()}
       onSuccess={() => postButtonAction()}
       label={btnLabel}
@@ -199,8 +202,7 @@ const Deposit = ({
   return (
     <div className="flex-col">
       <div className="px-2 pt-1 pb-4 bg-bgLight rounded-xl">
-        {pool &&
-          poolUserData &&
+        {pool && poolUserData && poolData ? (
           poolUserData.tokens.map((tokenObj, i) => {
             const balanceToken = correctToken(tokenObj.token)
             return (
@@ -214,7 +216,13 @@ const Deposit = ({
                 address={address}
               />
             )
-          })}
+          })
+        ) : (
+          <>
+            <LoadingTokenInput />
+            <LoadingTokenInput />
+          </>
+        )}
       </div>
       {actionBtn}
       {depositQuote.priceImpact && depositQuote.priceImpact?.gt(Zero) && (
