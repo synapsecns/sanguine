@@ -22,5 +22,6 @@ export const useSwapDepositContract = async (pool: Token, chainId: number) => {
 
   const swapContract = new Contract(poolAddress, abi, signer)
 
+  console.log('swapContract: ', swapContract)
   return swapContract
 }

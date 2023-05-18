@@ -21,7 +21,8 @@ import {
 } from '@utils/bridgeWatcher'
 const DestinationTx = memo((fromEvent: BridgeWatcherTx) => {
   const [toEvent, setToEvent] = useState<BridgeWatcherTx>()
-  const [toSynapseContract, setToSynapseContract] = useState<Contract>()
+  const [toSynapseContract, setToSynapseContract] =
+    useState<Contract>(undefined)
   const [toSigner, setToSigner] = useState<Signer>()
   const { data: toSignerRaw } = useSigner({ chainId: fromEvent.toChainId })
   const [completedConf, setCompletedConf] = useState(false)
@@ -89,7 +90,7 @@ const DestinationTx = memo((fromEvent: BridgeWatcherTx) => {
       )
     }
     setAttempted(true)
-    return
+    return null
   }
 
   useEffect(() => {
@@ -109,7 +110,7 @@ const DestinationTx = memo((fromEvent: BridgeWatcherTx) => {
       toEvent === undefined &&
       attempted
     ) {
-=      getToBridgeEvent().then((tx) => {
+      getToBridgeEvent().then((tx) => {
         setToEvent(tx)
       })
     }
@@ -118,8 +119,10 @@ const DestinationTx = memo((fromEvent: BridgeWatcherTx) => {
     if (toSynapseContract && toEvent === undefined && !completedConf) {
       getToBridgeEvent().then((tx) => {
         setToEvent(tx)
+        return
       })
     }
+    return
   }, [toSynapseContract])
   useEffect(() => {
     setToSigner(toSignerRaw)
