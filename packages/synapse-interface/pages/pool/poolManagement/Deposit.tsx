@@ -78,7 +78,7 @@ const Deposit = ({
         let allowances: Record<string, BigNumber> = {}
         for (const [key, value] of Object.entries(inputValue.bn)) {
           allowances[key] = await getTokenAllowance(
-            pool.addresses[chainId],
+            pool.swapAddresses[chainId],
             key,
             address,
             chainId
