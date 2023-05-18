@@ -108,6 +108,7 @@ export function UniversalSearch({
     isValid = true
     inputType = 'TRANSACTION'
     // searchLink = '/tx/' + searchField
+    // @ts-ignore
   } else if (_.values(ChainId).includes(searchField)) {
     isValid = true
     inputType = 'CHAIN'
@@ -250,7 +251,7 @@ export function UniversalSearch({
                   />
                   <label
                     className="form-check-label inline-block text-gray-500 "
-                    for="walletFrom"
+                    htmlFor="walletFrom"
                   >
                     From
                   </label>
@@ -268,7 +269,7 @@ export function UniversalSearch({
                   />
                   <label
                     className="form-check-label inline-block text-gray-500  "
-                    for="walletTo"
+                    htmlFor="walletTo"
                   >
                     To
                   </label>
@@ -337,7 +338,7 @@ export function UniversalSearch({
                       />
                       <label
                         className="form-check-label inline-block text-gray-500 "
-                        for="walletFrom"
+                        htmlFor="walletFrom"
                       >
                         From
                       </label>
@@ -355,7 +356,7 @@ export function UniversalSearch({
                       />
                       <label
                         className="form-check-label inline-block text-gray-500  "
-                        for="walletTo"
+                        htmlFor="walletTo"
                       >
                         To
                       </label>

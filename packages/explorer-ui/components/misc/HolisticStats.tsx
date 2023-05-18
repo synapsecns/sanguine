@@ -6,31 +6,42 @@ import Grid from '@components/tailwind/Grid'
 import numeral from 'numeral'
 import { formatUSD } from '@utils/formatUSD'
 
-export default function HolisticStats({
-  platform: parentPlatform,
-  setPlatform: parentSetPlatform,
-  loading,
-  chainID,
-  baseVariables,
-  noMessaging,
-}) {
-  const [volume, setVolume] = useState('--')
-  const [fee, setFee] = useState('--')
-  const [addresses, setAddresses] = useState('--')
-  const [txs, setTxs] = useState('--')
-  const [useCache, setUseCache] = useState(true)
-  const [skip, setSkip] = useState(false)
-  const [variables, setVariables] = useState({})
+interface HolisticStatsProps {
+  platform: string;
+  setPlatform: (platform: string) => void;
+  loading: boolean;
+  chainID?: string;
+  baseVariables?: any;
+  noMessaging?: boolean;
+}
 
-  const [platform, setPlatform] = useState(true)
+export default function HolisticStats({
+                                        platform: parentPlatform,
+                                        setPlatform: parentSetPlatform,
+                                        loading,
+                                        chainID,
+                                        baseVariables,
+                                        noMessaging,
+                                      }: HolisticStatsProps) {
+  const [volume, setVolume] = useState<string>('--')
+  const [fee, setFee] = useState<string>('--')
+  const [addresses, setAddresses] = useState<string>('--')
+  const [txs, setTxs] = useState<string>('--')
+  const [useCache, setUseCache] = useState<boolean>(true)
+  const [skip, setSkip] = useState<boolean>(false)
+  const [variables, setVariables] = useState<any>({})
+
+  const [platform, setPlatform] = useState<any>(true)
 
   useEffect(() => {
     setVariables(baseVariables)
   }, [baseVariables])
+
   const unSelectStyle =
     'transition ease-out border-l-0 border-gray-700 border-opacity-30 text-gray-500 bg-gray-700 bg-opacity-30 hover:bg-opacity-20 hover:text-white'
   const selectStyle = 'text-white border-[#BE78FF] bg-synapse-radial'
-  const handleVariable = (type) => {
+
+  const handleVariable = (type: string) => {
     const queryVariables = JSON.parse(JSON.stringify(variables))
     queryVariables['type'] = type
     return queryVariables
@@ -45,16 +56,17 @@ export default function HolisticStats({
     variables: baseVariables
       ? handleVariable('TOTAL_VOLUME_USD')
       : {
-          platform,
-          duration: 'ALL_TIME',
-          type: 'TOTAL_VOLUME_USD',
-          useCache: true,
-          useMv: true,
-        },
-    onCompleted: (data) => {
+        platform,
+        duration: 'ALL_TIME',
+        type: 'TOTAL_VOLUME_USD',
+        useCache: true,
+        useMv: true,
+      },
+    onCompleted: (data: any) => {
       setVolume(data.amountStatistic.value)
     },
   })
+
   const {
     loading: loadingFee,
     error: errorFee,
@@ -64,15 +76,16 @@ export default function HolisticStats({
     variables: baseVariables
       ? handleVariable('TOTAL_FEE_USD')
       : {
-          platform,
-          duration: 'ALL_TIME',
-          type: 'TOTAL_FEE_USD',
-          useCache: true,
-        },
-    onCompleted: (data) => {
+        platform,
+        duration: 'ALL_TIME',
+        type: 'TOTAL_FEE_USD',
+        useCache: true,
+      },
+    onCompleted: (data: any) => {
       setFee(data.amountStatistic.value)
     },
   })
+
   const {
     loading: loadingAddresses,
     error: errorAddresses,
@@ -82,19 +95,16 @@ export default function HolisticStats({
     variables: baseVariables
       ? handleVariable('COUNT_ADDRESSES')
       : {
-          platform,
-          duration: 'ALL_TIME',
-          type: 'COUNT_ADDRESSES',
-          useCache,
-        },
-    // pollInterval: 5000,
-    onCompleted: (data) => {
-      // if (useCache) {
-      //   setUseCache(true)
-      // }
+        platform,
+        duration: 'ALL_TIME',
+        type: 'COUNT_ADDRESSES',
+        useCache,
+      },
+    onCompleted: (data: any) => {
       setAddresses(data.amountStatistic.value)
     },
   })
+
   const {
     loading: loadingTxs,
     error: errorTxs,
@@ -104,16 +114,12 @@ export default function HolisticStats({
     variables: baseVariables
       ? handleVariable('COUNT_TRANSACTIONS')
       : {
-          platform,
-          duration: 'ALL_TIME',
-          type: 'COUNT_TRANSACTIONS',
-          useCache,
-        },
-    // pollInterval: 5000,
-    onCompleted: (data) => {
-      // if (useCache) {
-      //   setUseCache(true)
-      // }
+        platform,
+        duration: 'ALL_TIME',
+        type: 'COUNT_TRANSACTIONS',
+        useCache,
+      },
+    onCompleted: (data: any) => {
       setTxs(data.amountStatistic.value)
     },
   })
@@ -121,14 +127,6 @@ export default function HolisticStats({
   useEffect(() => {
     setPlatform(parentPlatform)
   }, [parentPlatform])
-
-  // useEffect(() => {
-  //   setVariables({
-  //     platform: platform,
-  //     duration: "ALL_TIME",
-  //     useCache: useCache,
-  //   })
-  // }, [parentPlatform])
 
   useEffect(() => {
     setVolume('--')
@@ -141,11 +139,11 @@ export default function HolisticStats({
     parentPlatform === 'MESSAGE_BUS'
       ? null
       : {
-          title: 'Volume',
-          usd: true,
-          loading: loadingVolume,
-          value: formatUSD(volume),
-        },
+        title: 'Volume',
+        usd: true,
+        loading: loadingVolume,
+        value: formatUSD(volume),
+      },
     {
       title: 'Transactions',
       loading: false,
@@ -155,19 +153,19 @@ export default function HolisticStats({
     parentPlatform === 'MESSAGE_BUS'
       ? null
       : {
-          title: 'Addresses',
-          loading: false,
-          usd: false,
-          value: formatUSD(addresses),
-        },
+        title: 'Addresses',
+        loading: false,
+        usd: false,
+        value: formatUSD(addresses),
+      },
     parentPlatform === 'MESSAGE_BUS'
       ? null
       : {
-          title: 'Fees',
-          loading: loadingFee,
-          usd: true,
-          value: formatUSD(fee),
-        },
+        title: 'Fees',
+        loading: loadingFee,
+        usd: true,
+        value: formatUSD(fee),
+      },
   ]
 
   return (
@@ -221,6 +219,7 @@ export default function HolisticStats({
         {stats.map((stat, i) => {
           return stat && stat.value !== '--' ? (
             <Card
+              key={i}
               className={`px-0 pb-2 space-y-3 text-white bg-transparent mr-[10%] min-w-[10%]`}
             >
               <div className="text-xl opacity-80">{stat.title}</div>
@@ -234,11 +233,11 @@ export default function HolisticStats({
                 )}
               </div>
             </Card>
-          ) : parentPlatform != 'MESSAGE_BUS' ? (
+          ) : parentPlatform !== 'MESSAGE_BUS' ? (
             <Card
+              key={i}
               className={`px-0 pb-2 space-y-3 text-white bg-transparent mr-[10%] min-w-[10%]`}
             >
-              {' '}
               <div className="h-9 w-full mt-4 bg-slate-700 rounded animate-pulse"></div>
             </Card>
           ) : null
@@ -249,50 +248,6 @@ export default function HolisticStats({
           All Time
         </div>
       </div>
-      {/*
-      <Grid cols={{ sm: 1, md: 4, lg: 4 }} gap={4} className="my-4">
-        <AllTimeStatCard
-          title="Volume"
-        >
-
-        </AllTimeStatCard>
-        <AllTimeStatCard
-          title="Fees"
-        >
-          <div className="text-4xl font-bold text-white">
-            {numeral(fee / 1000000).format('$0.0')}M
-          </div>
-        </AllTimeStatCard>
-        <AllTimeStatCard
-          title="Transactions"
-        >
-          <div className="text-4xl font-bold text-white">
-            {numeral(txs).format('0,0')}
-          </div>
-        </AllTimeStatCard>
-        <AllTimeStatCard
-          title="Addresses"
-        >
-          <div className="text-4xl font-bold text-white">
-            {numeral(addresses).format('0,0')}
-          </div>
-        </AllTimeStatCard>
-
-      </Grid>*/}
     </>
-  )
-}
-
-export function AllTimeStatCard({ title, children, duration = 'All Time' }) {
-  return (
-    <Card className={`px-0 pb-2 space-y-3 text-white bg-transparent`}>
-      <div className="text-xl">{title}</div>
-      {children}
-      <div className="flex space-x-2 text-sm font-medium">
-        <div className="text-transparent bg-clip-text bg-gradient-to-r from-purple-500 to-purple-400">
-          {duration}
-        </div>
-      </div>
-    </Card>
   )
 }

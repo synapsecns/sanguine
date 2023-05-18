@@ -42,7 +42,7 @@ export function ChartLoading() {
   return (
     <div className="flex flex-col items-center w-full pb-6 rounded-lg shadow-xl sm:p-8">
       <div className="flex items-end flex-grow w-full mt-2 content-between">
-        {[...Array(30).keys()].map((i) => (
+        {Array.from(Array(30).keys()).map((i) => (
           <BarMakerLoading key={i} />
         ))}
       </div>

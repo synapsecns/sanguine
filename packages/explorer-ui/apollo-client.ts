@@ -9,10 +9,6 @@ const link = new HttpLink({
 const client = new ApolloClient({
   link,
   cache: new InMemoryCache(),
-  fetchPolicy: 'network-only',
-  fetchOptions: {
-    mode: 'no-cors',
-  },
 })
 
 export default client

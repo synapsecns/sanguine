@@ -1,7 +1,13 @@
-import { ContainerCard } from '@components/ContainerCard'
-import { ExclamationIcon } from '@heroicons/react/outline'
+import { ContainerCard } from '@components/ContainerCard';
+import { ExclamationIcon } from '@heroicons/react/outline';
 
-export const Error = ({ text, param, subtitle }) => {
+interface ErrorProps {
+  text: string;
+  param: string;
+  subtitle?: string;
+}
+
+export const Error = ({ text, param, subtitle }: ErrorProps) => {
   return (
     <ContainerCard
       className="px-10 mt-10"
@@ -22,5 +28,5 @@ export const Error = ({ text, param, subtitle }) => {
         </div>
       </div>
     </ContainerCard>
-  )
-}
+  );
+};

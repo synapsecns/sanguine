@@ -1,6 +1,7 @@
 import { Fragment } from 'react'
 import { Popover, Transition } from '@headlessui/react'
 import { DocumentTextIcon, MenuIcon, XIcon } from '@heroicons/react/outline'
+import React from 'react';
 
 // import { useActiveWeb3React } from '@hooks/wallet/useActiveWeb3React'
 import {
@@ -325,7 +326,14 @@ function MobileBarItem({ to, labelText }) {
   )
 }
 
-function MoreInfoItem({ to, labelText, description, className }) {
+interface MoreInfoItemProps {
+  to: string,
+  labelText: string,
+  className?: string
+  description?: string
+}
+
+const MoreInfoItem: React.FC<MoreInfoItemProps> = ({ to, labelText, description, className }) => {
   return (
     <a
       key={labelText}

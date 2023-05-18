@@ -19,6 +19,6 @@ export function StyleAddress({ sourceInfo, limiter = 4 }) {
       </a>
     )
   } else {
-    return '--'
+    return <div>'--'</div>
   }
 }

@@ -1,4 +1,9 @@
-export default function TopBarNavLink({ labelText, to, className }) {
+interface TopBarNavLinkProps {
+  labelText: string
+  to?: string
+  className?: string
+}
+const TopBarNavLink: React.FC<TopBarNavLinkProps> = ({ labelText, to, className }) => {
   // const location = useLocation()
 
   // const match =
@@ -56,3 +61,5 @@ export default function TopBarNavLink({ labelText, to, className }) {
   )
   // }
 }
+
+export default TopBarNavLink;

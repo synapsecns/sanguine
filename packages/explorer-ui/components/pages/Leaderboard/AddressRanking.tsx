@@ -1,5 +1,6 @@
 import { useQuery } from '@apollo/client'
 import { ADDRESS_RANKING } from '@graphql/queries'
+import { Fragment } from 'react'
 
 import { LeaderCard } from './LeaderCard'
 
@@ -40,6 +41,10 @@ export function AddressRanking() {
       </>
     )
   } else {
-    return 'loading'
+    return (
+      <>
+        <Fragment>loading</Fragment>
+      </>
+    )
   }
 }

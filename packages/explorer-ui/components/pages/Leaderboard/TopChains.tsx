@@ -31,9 +31,9 @@ export function TopChains() {
   }, [data])
 
   if (loading) {
-    return 'loading'
+    return <React.Fragment>'loading'</React.Fragment>
   } else if (error) {
-    return 'error'
+    return <React.Fragment>'error'</React.Fragment>
   } else {
     const labels = countByChainId
       .map(({ chainId }) => CHAIN_INFO_MAP[chainId].chainName)

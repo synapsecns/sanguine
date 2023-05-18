@@ -147,17 +147,6 @@ export function Home() {
     }
   }, [stopPolling, startPolling, completed])
 
-  const totalChainVolume = () => {
-    if (dailyStatisticCumulative) {
-      return chartData[chartData.length - 1]['total']
-    }
-    let totalRankedChainVolume = 0
-    for (let i = 0; i < chartData.length; i++) {
-      totalRankedChainVolume += chartData[i]['total']
-    }
-    return totalRankedChainVolume
-  }
-
   return (
     <StandardPageContainer title={'Synapse Analytics'}>
       <HolisticStats
@@ -303,7 +292,6 @@ export function Home() {
             loading={loadingDailyData}
             height={Object.keys(CHAIN_ID_NAMES_REVERSE).length * 31}
             chartData={dailyDataArr}
-            isCumulativeData={dailyStatisticCumulative}
             dailyStatisticType={dailyStatisticType}
             isUSD={
               dailyStatisticType === 'TRANSACTIONS' ||
@@ -312,8 +300,6 @@ export function Home() {
                 : true
             }
             showAggregated={false}
-            monthlyData={false}
-            currency
             platform={platform}
           />
         </div>
