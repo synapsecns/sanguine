@@ -23,6 +23,8 @@ module.exports = {
   ],
   overrides: [
     {
+      // TODO: this isn't actually catching any react components right now since it completely ignores tsx.
+      // also, this file should just extend root
       files: ['**/*.ts'],
       parser: '@typescript-eslint/parser',
       parserOptions: {
