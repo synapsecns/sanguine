@@ -36,8 +36,6 @@ export function AddToWalletMiniButton({
   iconFirst = false,
   chainId,
 }) {
-  console.log('METAMASK_ICON', METAMASK_ICON)
-
   return (
     <Button
       onClick={() => addTokenToWallet({ token, icon, chainId })}

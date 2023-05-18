@@ -22,8 +22,6 @@ const PoolInfoSection = ({
   poolData: any
   chainId: number
 }) => {
-  // const swapFee = bnPercentFormat('0.02')
-  // this needs to  be fixed, need admin fee
   const [swapFee, setSwapFee] = useState('')
   useEffect(() => {
     if (pool && chainId) {
@@ -34,7 +32,6 @@ const PoolInfoSection = ({
   }, [pool, chainId])
   return (
     <div className="space-y-4">
-      {/* <UserPoolInfoCard data={userData} /> */}
       <CurrencyReservesCard
         title="Currency Reserves"
         chainId={chainId}

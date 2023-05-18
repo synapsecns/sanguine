@@ -46,7 +46,6 @@ const BlockCountdown = memo(
       if (confirmationDelta === 0 || toEvent) {
         return
       }
-      console.log('toEventtoEvent', toEvent)
       fetchBlockNumber({
         chainId: fromEvent?.chainId,
       }).then((newestBlockNumber) => {
@@ -55,7 +54,6 @@ const BlockCountdown = memo(
           (fromEvent.blockNumber - (newestBlockNumber ?? 0))
         setConfirmationDelta(delta > 0 ? delta : 0)
         if (delta <= 0) {
-          console.log('setCompletedConf to true')
           setCompletedConf(true)
         }
       })
