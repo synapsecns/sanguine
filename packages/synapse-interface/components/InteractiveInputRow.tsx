@@ -97,6 +97,7 @@ const InteractiveInputRow = ({
             >
               <div className="overflow-x-scroll ">
                 <input
+                  autoComplete="off"
                   className={`
                     ${isConnected ? '-mt-2' : '-mt-0'}
                     focus:outline-none bg-transparent
