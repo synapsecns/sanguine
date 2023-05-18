@@ -186,3 +186,12 @@ type AddressData {
   chainRanking: [AddressChainRanking]
   dailyData: [AddressDailyCount]
 }
+
+type Leaderboard {
+  address: String
+  volumeUSD: Float
+  fees: Float
+  txs: Int
+  rank: Int
+  avgVolumeUSD: Float
+}

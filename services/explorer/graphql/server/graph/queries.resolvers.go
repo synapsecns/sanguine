@@ -376,6 +376,26 @@ func (r *queryResolver) AddressData(ctx context.Context, address string) (*model
 	return res, nil
 }
 
+// Leaderboard is the resolver for the leaderboard field.
+func (r *queryResolver) Leaderboard(ctx context.Context, duration *model.Duration, chainID *int, useMv *bool, page *int) ([]*model.Leaderboard, error) {
+	if !*useMv {
+		return nil, fmt.Errorf("the leaderboard query does not support non mv based queries")
+	}
+	firstFilter := false
+	timestampSpecifier := GetDurationFilter(duration, &firstFilter, "")
+	chainIDSpecifier := generateSingleSpecifierI32SQL(chainID, sql.ChainIDFieldName, &firstFilter, "")
+	pageValue := sql.PageSize
+	pageOffset := (*page - 1) * sql.PageSize
+	filters := timestampSpecifier + chainIDSpecifier
+	leaderboardQuery := fmt.Sprintf("select row_number() over (order by VolumeUsd desc ) as Rank, * from (select fsender as Address, toFloat64(sumKahan(famount_usd)) as VolumeUsd,toFloat64(avg(famount_usd)) as AvgVolumeUsd, count(DISTINCT ftx_hash) as Txs,toFloat64(sumKahan(tfee_amount_usd)) as Fees from (SELECT * FROM mv_bridge_events where fsender != '' LIMIT 1 BY fchain_id, fcontract_address, fevent_type, fblock_number, fevent_index, ftx_hash) where fsender != '' %s group by fsender) LIMIT %d OFFSET %d", filters, pageValue, pageOffset)
+	leaderboardRes, err := r.DB.GetLeaderboard(ctx, leaderboardQuery)
+	if err != nil {
+		return nil, fmt.Errorf("failed to get leaderboard %w", err)
+	}
+
+	return leaderboardRes, nil
+}
+
 // Query returns resolvers.QueryResolver implementation.
 func (r *Resolver) Query() resolvers.QueryResolver { return &queryResolver{r} }
 

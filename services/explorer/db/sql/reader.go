@@ -196,3 +196,17 @@ func (s *Store) GetAddressRanking(ctx context.Context, query string) ([]*model.A
 
 	return res, nil
 }
+
+// GetLeaderboard gets the bridge leaderboard.
+func (s *Store) GetLeaderboard(ctx context.Context, query string) ([]*model.Leaderboard, error) {
+	var res []*model.Leaderboard
+	dbTx := s.db.WithContext(ctx).Raw(query).Scan(&res)
+	if dbTx.Error != nil {
+		return nil, fmt.Errorf("failed to get leaderboard: %w", dbTx.Error)
+	}
+	if len(res) == 0 {
+		return nil, nil
+	}
+
+	return res, nil
+}

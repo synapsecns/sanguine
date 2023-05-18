@@ -61,6 +61,8 @@ type ConsumerDBReader interface {
 	GetAddressDailyData(ctx context.Context, query string) ([]*model.AddressDailyCount, error)
 	// GetAddressChainRanking gets ranking of an address's  chain activity
 	GetAddressChainRanking(ctx context.Context, query string) ([]*model.AddressChainRanking, error)
+	// GetLeaderboard gets the bridge leaderboard.
+	GetLeaderboard(ctx context.Context, query string) ([]*model.Leaderboard, error)
 }
 
 // ConsumerDB is the interface for the ConsumerDB.

@@ -96,6 +96,15 @@ type HistoricalResult struct {
 	Type        *HistoricalResultType `json:"type"`
 }
 
+type Leaderboard struct {
+	Address      *string  `json:"address"`
+	VolumeUsd    *float64 `json:"volumeUSD"`
+	Fees         *float64 `json:"fees"`
+	Txs          *int     `json:"txs"`
+	Rank         *int     `json:"rank"`
+	AvgVolumeUsd *float64 `json:"avgVolumeUSD"`
+}
+
 type MessageBusTransaction struct {
 	FromInfo  *PartialMessageBusInfo `json:"fromInfo"`
 	ToInfo    *PartialMessageBusInfo `json:"toInfo"`
