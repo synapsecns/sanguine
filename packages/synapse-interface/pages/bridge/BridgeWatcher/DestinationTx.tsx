@@ -90,7 +90,7 @@ const DestinationTx = memo((fromEvent: BridgeWatcherTx) => {
       )
     }
     setAttempted(true)
-    return
+    return null
   }
 
   useEffect(() => {
@@ -110,7 +110,7 @@ const DestinationTx = memo((fromEvent: BridgeWatcherTx) => {
       toEvent === undefined &&
       attempted
     ) {
-=      getToBridgeEvent().then((tx) => {
+      getToBridgeEvent().then((tx) => {
         setToEvent(tx)
       })
     }
