@@ -46,7 +46,7 @@ const Deposit = ({
   const { synapseSDK } = useSynapseContext()
 
   // TODO move this to utils
-  const sumBigNumbersFromState = useCallback(() => {
+  const sumBigNumbersFromState = () => {
     let sum = Zero
     pool?.poolTokens &&
       pool.poolTokens.map((token) => {
@@ -60,7 +60,7 @@ const Deposit = ({
         }
       })
     return sum
-  }, [pool, chainId, address])
+  }
 
   const calculateMaxDeposits = async () => {
     try {
