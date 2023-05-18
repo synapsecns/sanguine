@@ -62,7 +62,6 @@ const StakeCard = ({ address, chainId, pool }: StakeCardProps) => {
     if (!address || !chainId || !stakingPoolId) return
     getStakedBalance(`0x${address.slice(2)}`, chainId, stakingPoolId)
       .then((data) => {
-        console.log('data', data)
         setUserStakeData(data)
       })
       .catch((err) => {
