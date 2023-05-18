@@ -7,8 +7,8 @@ import ethLogo from '@assets/icons/eth.svg'
 import wethLogo from '@assets/icons/weth.svg'
 import nethLogo from '@assets/icons/neth.svg'
 import avwethLogo from '@assets/icons/avweth.svg'
-import maticLogo from '@assets/icons/matic.svg'
 import mimLogo from '@assets/icons/mim.svg'
+import ustLogo from '@assets/icons/ust.png'
 import fraxLogo from '@assets/icons/frax.svg'
 import daiLogo from '@assets/icons/dai.png'
 import nusdLogo from '@assets/icons/nusd.svg'
@@ -17,8 +17,6 @@ import movrLogo from '@assets/icons/moonriver.jpeg'
 import jewelLogo from '@assets/icons/jewel.png'
 import wbtcLogo from '@assets/icons/wbtc.svg'
 import noteLogo from '@assets/icons/note.svg'
-import klaytnLogo from '@assets/networks/klaytn.jpeg'
-import pepeLogo from '@assets/icons/pepe.webp'
 import { ChainId } from '@constants/networks'
 import { Token } from '@utils/classes/Token'
 import {
@@ -39,6 +37,7 @@ import {
   AGEUR,
   PLS,
   LINK,
+  UNIDX
 } from '@constants/tokens/mintable'
 
 export const BUSD = new Token({
@@ -170,6 +169,8 @@ export const KLAYTN_DAI = new Token({
   swapableType: 'KLAYTN_DAI',
 })
 
+
+
 export const DOGECHAIN_BUSD = new Token({
   addresses: {
     [ChainId.BSC]: '0xe9e7cea3dedca5984780bafc599bd69add087d56',
@@ -199,7 +200,7 @@ export const USDT = new Token({
     [ChainId.BOBA]: '0x5DE1677344D3Cb0D7D465c10b72A8f60699C062d',
     [ChainId.AURORA]: '0x4988a896b1227218e4A686fdE5EabdcAbd91571f',
     [ChainId.KLAYTN]: '0xd6dAb4CfF47dF175349e6e7eE2BF7c40Bb8C05A3',
-    [ChainId.CANTO]: '0xd567B3d7B8FE3C79a1AD8dA978812cfC4Fa05e75',
+    [ChainId.CANTO]: '0xd567B3d7B8FE3C79a1AD8dA978812cfC4Fa05e75'
   },
   decimals: {
     [ChainId.BSC]: 18,
@@ -212,7 +213,7 @@ export const USDT = new Token({
     [ChainId.BOBA]: 6,
     [ChainId.AURORA]: 6,
     [ChainId.CRONOS]: 6,
-    [ChainId.CANTO]: 6,
+    [ChainId.CANTO]: 6
   },
   symbol: 'USDT',
   name: 'USD Tether',
@@ -261,6 +262,37 @@ export const WBTC = new Token({
   swapableType: 'WBTC',
 })
 
+export const UST = new Token({
+  addresses: {
+    // [ChainId.BSC]:       '0x23396cf899ca06c4472205fc903bdb4de249d6fc',
+    // [ChainId.POLYGON]:   '0xed7a89e2d580bdda005ba4cdd64cf0da3c15a5eb',
+    // [ChainId.AVALANCHE]: '0x195150ab664795128ac542f26b14c1a12e061ecf',
+    // [ChainId.TERRA]:     'uusd',
+    [ChainId.ETH]: '0x0261018Aa50E28133C1aE7a29ebdf9Bd21b878Cb',
+    [ChainId.BSC]: '0xb7A6c5f0cc98d24Cf4B2011842e64316Ff6d042c',
+    [ChainId.POLYGON]: '0x565098CBa693b3325f9fe01D41b7A1cd792Abab1',
+    [ChainId.FANTOM]: '0xa0554607e477cdC9d0EE2A6b087F4b2DC2815C22',
+    [ChainId.ARBITRUM]: '0x13780E6d5696DD91454F6d3BbC2616687fEa43d0',
+    [ChainId.AVALANCHE]: '0xE97097dE8d6A17Be3c39d53AE63347706dCf8f43',
+    [ChainId.HARMONY]: '0xa0554607e477cdC9d0EE2A6b087F4b2DC2815C22',
+    [ChainId.BOBA]: '0x61A269a9506272D128d79ABfE8E8276570967f00',
+    [ChainId.MOONRIVER]: '0xa9D0C0E124F53f4bE1439EBc35A9C73c0e8275fB',
+    [ChainId.MOONBEAM]: '0x5CF84397944B9554A278870B510e86667681ff8D',
+    [ChainId.OPTIMISM]: '0xFB21B70922B9f6e3C6274BcD6CB1aa8A0fe20B80',
+    [ChainId.AURORA]: '0xb1Da21B0531257a7E5aEfa0cd3CbF23AfC674cE1',
+    [ChainId.CRONOS]: '0x7Bb5c7e3bF0B2a28fA26359667110bB974fF9359',
+    [ChainId.METIS]: '0x0b5740c6b4a97f90eF2F0220651Cca420B868FfB',
+    [ChainId.DFK]: '0x360d6DD540E3448371876662FBE7F1aCaf08c5Ab',
+    [ChainId.TERRA]: 'uusd',
+  },
+  decimals: 6,
+  symbol: 'UST',
+  name: 'TerraUSD',
+  logo: ustLogo,
+  description: 'ERC-20 Wrapped form of UST',
+  swapableType: 'UST',
+})
+
 export const MIM = new Token({
   addresses: {
     [ChainId.FANTOM]: '0x82f0b8b456c1a451378467398982d4834b6829c1',
@@ -272,9 +304,10 @@ export const MIM = new Token({
   logo: mimLogo,
   swapableType: 'USD',
 })
+
 export const WETH = new Token({
   addresses: {
-    [ChainId.ETH]: '0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2',
+    [ChainId.ETH]: '0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2',
     [ChainId.ARBITRUM]: '0x82af49447d8a07e3bd95bd0d56f35241523fbab1',
     [ChainId.BOBA]: '0xd203De32170130082896b4111eDF825a4774c18E',
     [ChainId.OPTIMISM]: '0x121ab82b49B2BC4c7901CA46B8277962b4350204',
@@ -290,7 +323,7 @@ export const WETH = new Token({
 
 export const WETHE = new Token({
   addresses: {
-    [ChainId.AVALANCHE]: '0x49D5c2BdFfac6CE2BFdB6640F4F80f226bc10bAB',
+    [ChainId.AVALANCHE]: '0x49d5c2bdffac6ce2bfdb6640f4f80f226bc10bab',
   },
   decimals: 18,
   symbol: 'WETH.e', // SHOULD BE WETH
@@ -318,7 +351,7 @@ export const WETHBEAM = new Token({
 
 export const AVWETH = new Token({
   addresses: {
-    [ChainId.AVALANCHE]: '0x53f7c5869a859F0AeC3D334ee8B4Cf01E3492f21',
+    [ChainId.AVALANCHE]: '0x53f7c5869a859f0aec3d334ee8b4cf01e3492f21',
   },
   decimals: 18,
   symbol: 'AVWETH', // AVALANCHE AAVE WETH
@@ -352,6 +385,19 @@ export const FTMETH = new Token({
   swapableType: 'ETH',
 })
 
+export const CANTOETH = new Token({
+  addresses: {
+    [ChainId.CANTO]: '0x5FD55A1B9FC24967C4dB09C513C3BA0DFa7FF687',
+  },
+  decimals: 18,
+  symbol: 'ETH ',
+  logo: wethLogo,
+  name: 'Wrapped ETH',
+  description: 'Canto Wrapped form of ETH',
+  swapableType: 'ETH',
+})
+
+
 export const METISETH = new Token({
   addresses: {
     [ChainId.METIS]: '0x420000000000000000000000000000000000000A',
@@ -381,7 +427,7 @@ export const SYN = new Token({
     [ChainId.CRONOS]: '0xFD0F80899983b8D46152aa1717D76cba71a31616',
     [ChainId.AURORA]: '0xd80d8688b02B3FD3afb81cDb124F188BB5aD0445',
     [ChainId.DOGECHAIN]: '0xDfA53EeBA61D69E1D2b56b36d78449368F0265c1',
-    [ChainId.CANTO]: '0x555982d2E211745b96736665e19D9308B615F78e',
+    [ChainId.CANTO]: '0x555982d2E211745b96736665e19D9308B615F78e'
   },
   decimals: 18,
   symbol: 'SYN',
@@ -394,9 +440,9 @@ export const SYN = new Token({
 export const FRAX = new Token({
   addresses: {
     [ChainId.ETH]: '0x853d955acef822db058eb8505911ed77f175b99e',
-    [ChainId.MOONRIVER]: '0x1a93b23281cc1cde4c4741353f3064709a16197d',
-    [ChainId.MOONBEAM]: '',
-    [ChainId.HARMONY]: '0xFa7191D292d5633f702B0bd7E3E3BcCC0e633200',
+    [ChainId.MOONRIVER]: '0xE96AC70907ffF3Efee79f502C985A7A21Bce407d',
+    [ChainId.MOONBEAM]: '0xDd47A348AB60c61Ad6B60cA8C31ea5e00eBfAB4F',
+    [ChainId.HARMONY]: '0x1852F70512298d56e9c8FDd905e02581E04ddb2a',
     [ChainId.DOGECHAIN]: '0x10D70831f9C3c11c5fe683b2f1Be334503880DB6',
   },
   decimals: 18,
@@ -439,7 +485,7 @@ export const NUSD = new Token({
     [ChainId.AURORA]: '0x07379565cD8B0CaE7c60Dc78e7f601b34AF2A21c',
     [ChainId.METIS]: '0x961318Fc85475E125B99Cc9215f62679aE5200aB',
     [ChainId.DFK]: '0x3AD9DFE640E1A9Cc1D9B0948620820D975c3803a',
-    [ChainId.CANTO]: '0xD8836aF2e565D3Befce7D906Af63ee45a57E8f80',
+    [ChainId.CANTO]: '0xD8836aF2e565D3Befce7D906Af63ee45a57E8f80'
   },
   decimals: 18,
   symbol: 'nUSD',
@@ -451,7 +497,7 @@ export const NUSD = new Token({
 
 export const NOTE = new Token({
   addresses: {
-    [ChainId.CANTO]: '0x4e71a2e537b7f9d9413d3991d37958c0b5e1e503',
+    [ChainId.CANTO]: '0x4e71a2e537b7f9d9413d3991d37958c0b5e1e503'
   },
   decimals: 18,
   symbol: 'NOTE',
@@ -490,7 +536,7 @@ export const NETH = new Token({
     [ChainId.METIS]: '0x931B8f17764362A3325D30681009f0eDd6211231',
     [ChainId.KLAYTN]: '0xCD6f29dC9Ca217d0973d3D21bF58eDd3CA871a86',
     [ChainId.DOGECHAIN]: '0x9F4614E4Ea4A0D7c4B1F946057eC030beE416cbB',
-    [ChainId.CANTO]: '0x09fec30669d63a13c666d2129230dd5588e2e240',
+    [ChainId.CANTO]: '0x09fEC30669d63A13c666d2129230dD5588E2e240'
   },
   decimals: 18,
   symbol: 'nETH',
@@ -522,7 +568,6 @@ export const ETH = new Token({
     [ChainId.BOBA]: '',
     [ChainId.ARBITRUM]: '',
     [ChainId.OPTIMISM]: '',
-    [ChainId.DFK]: '0xfBDF0E31808d0aa7b9509AA6aBC9754E48C58852',
   },
   decimals: 18,
   symbol: 'ETH',
@@ -578,7 +623,6 @@ export const WAVAX = new Token({
     [ChainId.DFK]: '0xB57B60DeBDB0b8172bb6316a9164bd3C695F133a',
     [ChainId.MOONBEAM]: '0xA1f8890E39b4d8E33efe296D698fe42Fb5e59cC3',
     [ChainId.HARMONY]: '0xD9eAA386cCD65F30b77FF175F6b52115FE454fD6',
-    [ChainId.KLAYTN]: '0xcd8fe44a29db9159db36f96570d7a4d91986f528',
   },
   decimals: 18,
   symbol: 'AVAX', // SHOULD BE WETH
@@ -716,10 +760,10 @@ export const XJEWEL = new Token({
 
 export const WMATIC = new Token({
   addresses: {
-    [ChainId.POLYGON]: '0x0d500B1d8E8eF31E21C99d1Db9A6444d3ADf1270',
+    [ChainId.POLYGON]: '0x9b17bAADf0f21F03e35249e0e59723F34994F806',
   },
   decimals: 18,
-  symbol: 'WMATIC', // SHOULD BE WETH
+  symbol: 'MATIC', // SHOULD BE WETH
   name: 'Wrapped MATIC',
   description: 'ERC-20 Wrapped form of MATIC',
   swapableType: 'MATIC',
@@ -752,13 +796,13 @@ export const WBNB = new Token({
 
 export const DEPRECATED_WKLAY = new Token({
   addresses: {
-    [ChainId.KLAYTN]: '0x5819b6af194a78511c79c85ea68d2377a7e9335f',
+    [ChainId.KLAYTN]: '0x5819b6af194a78511c79c85ea68d2377a7e9335f'
   },
   decimals: 18,
   symbol: 'WKLAY',
   name: 'Deprecated Wrapped Klay',
   description: 'ERC-20 Wrapped form of KLAY',
-  swapableType: 'KLAY',
+  swapableType: 'KLAY'
 })
 
 export const PEPE = new Token({
@@ -787,6 +831,7 @@ export const BASIC_TOKENS_BY_CHAIN = {
     DOG,
     FRAX,
     GOHM,
+    // UST,
     NEWO,
     SDT,
     USDB,
@@ -800,6 +845,7 @@ export const BASIC_TOKENS_BY_CHAIN = {
     KLAYTN_DAI,
     LINK,
     PEPE,
+    UNIDX
   ],
   [ChainId.BSC]: [
     BUSD,
@@ -812,6 +858,7 @@ export const BASIC_TOKENS_BY_CHAIN = {
     DOG,
     JUMP,
     GOHM,
+    // UST,
     H2O,
     USDB,
     DOGECHAIN_BUSD,
@@ -826,6 +873,7 @@ export const BASIC_TOKENS_BY_CHAIN = {
     GOHM,
     DOG,
     NFD,
+    // UST,
     USDB,
     H2O,
     WMATIC,
@@ -842,10 +890,22 @@ export const BASIC_TOKENS_BY_CHAIN = {
     GOHM,
     FTMETH,
     NETH,
+    // UST,
     SDT,
     USDB,
   ],
-  [ChainId.BOBA]: [SYN, NETH, WETH, ETH, USDC, USDT, DAI, NUSD, GOHM],
+  [ChainId.BOBA]: [
+    SYN,
+    NETH,
+    WETH,
+    ETH,
+    USDC,
+    USDT,
+    DAI,
+    NUSD,
+    GOHM,
+    // UST,
+  ],
   [ChainId.MOONBEAM]: [
     // FRAX, #temp
     // WETHBEAM, #temp
@@ -855,8 +915,19 @@ export const BASIC_TOKENS_BY_CHAIN = {
     WAVAX,
     SYN,
     H2O,
+    // UST,
   ],
-  [ChainId.MOONRIVER]: [SYN, FRAX, SOLAR, GOHM, USDB, MOVR, WMOVR, H2O],
+  [ChainId.MOONRIVER]: [
+    SYN,
+    FRAX,
+    SOLAR,
+    GOHM,
+    USDB,
+    MOVR,
+    WMOVR,
+    H2O,
+    // UST,
+  ],
   [ChainId.ARBITRUM]: [
     NETH,
     SYN,
@@ -869,13 +940,16 @@ export const BASIC_TOKENS_BY_CHAIN = {
     NUSD,
     GOHM,
     GMX,
+    UST,
     H2O,
     NEWO,
     VSTA,
     SDT,
     L2DAO,
     PLS,
-    AGEUR, PEPE,
+    AGEUR,
+    UNIDX,
+    PEPE
   ],
   [ChainId.AVALANCHE]: [
     USDC,
@@ -891,15 +965,23 @@ export const BASIC_TOKENS_BY_CHAIN = {
     GMX,
     AVAX,
     WAVAX,
+    // UST,
     H2O,
     NEWO,
     USDB,
     SFI,
     AVWETH,
+
     SYNJEWEL,
   ],
-  [ChainId.DFK]: [JEWEL, WJEWEL, XJEWEL, WAVAX, DFK_USDC, WKLAY, MATIC, ETH],
-  [ChainId.AURORA]: [USDC, USDT, NUSD, SYN],
+  [ChainId.DFK]: [JEWEL, WJEWEL, XJEWEL, WAVAX, DFK_USDC, UST],
+  [ChainId.AURORA]: [
+    USDC,
+    USDT,
+    NUSD,
+    SYN,
+    // UST,
+  ],
   [ChainId.HARMONY]: [
     USDC,
     USDT,
@@ -912,6 +994,7 @@ export const BASIC_TOKENS_BY_CHAIN = {
     GOHM,
     NETH,
     SYN_FRAX,
+    // UST,
 
     WJEWEL,
     SYNJEWEL,
@@ -926,14 +1009,24 @@ export const BASIC_TOKENS_BY_CHAIN = {
     ETH,
     USDC,
     NUSD,
+    UST,
     GOHM,
     H2O,
     L2DAO,
     PLS,
     AGEUR,
   ],
-  [ChainId.CRONOS]: [NUSD, DAI, USDC, USDT, GOHM, SYN],
-  [ChainId.METIS]: [USDC, METISETH, NETH, NUSD, GOHM, JUMP, SYN],
+  [ChainId.TERRA]: [UST],
+  [ChainId.CRONOS]: [
+    NUSD,
+    DAI,
+    USDC,
+    USDT,
+    GOHM,
+    // UST,
+    SYN,
+  ],
+  [ChainId.METIS]: [USDC, METISETH, NETH, NUSD, GOHM, UST, JUMP, SYN],
   [ChainId.KLAYTN]: [
     KLAYTN_USDC,
     KLAYTN_USDT,
@@ -955,9 +1048,17 @@ export const BASIC_TOKENS_BY_CHAIN = {
     KLAYTN_WETH,
     WBTC,
     DOGECHAIN_BUSD,
-    NFD,
+    NFD
   ],
-  [ChainId.CANTO]: [SYN, NUSD, NOTE, USDC, USDT, NETH],
+  [ChainId.CANTO]: [
+    SYN,
+    NUSD,
+    CANTOETH,
+    NETH,
+    NOTE,
+    USDC,
+    USDT
+  ]
 }
 
 const TOKEN_HASH_MAP = {}
