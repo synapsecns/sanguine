@@ -3,11 +3,8 @@ import { PageWrapper } from '@components/layouts//MainLayout'
 
 import client from '../apollo-client'
 import '../styles/global.css'
-import { useAnalyticsReporter } from "@components/analytics";
 
-function App({ Component, pageProps }) {
-  useAnalyticsReporter()
-
+function MyApp({ Component, pageProps }) {
   return (
     <ApolloProvider client={client}>
       <PageWrapper>
@@ -17,4 +14,4 @@ function App({ Component, pageProps }) {
   )
 }
 
-export default App
+export default MyApp
