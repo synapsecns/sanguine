@@ -162,7 +162,7 @@ const BridgeCard = ({
 
   // some messy button gen stuff (will re-write)
   // maybe just put everything in index without the card
-  const isFromBalanceEnough = fromTokenBalance.gt(fromInput?.bigNum ?? Zero)
+  const isFromBalanceEnough = fromTokenBalance.gte(fromInput?.bigNum ?? Zero)
   let destAddrNotValid
   let btnLabel
   let btnClassName = ''
