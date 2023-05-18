@@ -50,7 +50,9 @@ const Deposit = ({
     let sum = Zero
     pool?.poolTokens &&
       pool.poolTokens.map((token) => {
-        if (inputValue.bn[getAddress(token.addresses[chainId])]) {
+        if (!token.addresses[chainId]) return
+        const tokenAddress = getAddress(token.addresses[chainId])
+        if (inputValue.bn[tokenAddress]) {
           sum = sum.add(
             inputValue.bn[getAddress(token.addresses[chainId])].mul(
               BigNumber.from(10).pow(18 - token.decimals[chainId])
@@ -77,7 +79,7 @@ const Deposit = ({
         let allowances: Record<string, BigNumber> = {}
         for (const [key, value] of Object.entries(inputValue.bn)) {
           allowances[key] = await getTokenAllowance(
-            pool.addresses[chainId],
+            pool.swapAddresses[chainId],
             key,
             address,
             chainId
@@ -113,7 +115,7 @@ const Deposit = ({
 
   useEffect(() => {
     calculateMaxDeposits()
-  }, [inputValue, time])
+  }, [inputValue, time, pool, chainId, address])
 
   const onChangeInputValue = (token: Token, value: string) => {
     const bigNum = stringToBigNum(value, token.decimals[chainId]) ?? Zero
@@ -232,7 +234,7 @@ const Deposit = ({
   )
 }
 const correctToken = (token: Token) => {
-  let balanceToken
+  let balanceToken: Token | undefined
   if (token.symbol == WETH.symbol) {
     balanceToken = ETH
   } else if (token.symbol == AVWETH.symbol) {

@@ -140,6 +140,7 @@ const BridgeInputContainer = ({
               }
               value={inputString}
               name="inputRow"
+              autoComplete="off"
             />
           )}
           {isOrigin && isConnected && (
