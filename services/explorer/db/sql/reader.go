@@ -208,8 +208,8 @@ func (s *Store) GetLastStoredBlock(ctx context.Context, chainID uint32, contract
 	}
 
 	return lastBlock, nil
-
 }
+
 // GetLeaderboard gets the bridge leaderboard.
 func (s *Store) GetLeaderboard(ctx context.Context, query string) ([]*model.Leaderboard, error) {
 	var res []*model.Leaderboard
