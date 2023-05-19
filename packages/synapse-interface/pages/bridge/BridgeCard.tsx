@@ -188,12 +188,6 @@ const BridgeCard = ({
       return properties
     }
 
-    if (isQuoteLoading) {
-      properties.label = 'Bridge your funds'
-      properties.disabled = true
-      return properties
-    }
-
     if (!isFromBalanceEnough) {
       properties.label = `Insufficient ${fromToken?.symbol} Balance`
       properties.disabled = true
