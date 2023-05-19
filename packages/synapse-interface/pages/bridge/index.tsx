@@ -582,7 +582,7 @@ const BridgePage = ({
   }
 
   /*
-  Function: approveToken
+  Function: executeBridge
   - Gets raw unsigned tx data from sdk and then execute it with ethers.
   - Only executes if token has already been approved.
    */
