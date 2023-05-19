@@ -27,6 +27,8 @@ type Query struct {
 	AmountStatistic        *model.ValueResult              "json:\"amountStatistic\" graphql:\"amountStatistic\""
 	DailyStatisticsByChain []*model.DateResultByChain      "json:\"dailyStatisticsByChain\" graphql:\"dailyStatisticsByChain\""
 	RankedChainIDsByVolume []*model.VolumeByChainID        "json:\"rankedChainIDsByVolume\" graphql:\"rankedChainIDsByVolume\""
+	AddressData            *model.AddressData              "json:\"addressData\" graphql:\"addressData\""
+	Leaderboard            []*model.Leaderboard            "json:\"leaderboard\" graphql:\"leaderboard\""
 }
 type GetBridgeTransactions struct {
 	Response []*struct {
@@ -126,9 +128,27 @@ type GetMessageBusTransactions struct {
 			ContractAddress      *string "json:\"contractAddress\" graphql:\"contractAddress\""
 			TxnHash              *string "json:\"txnHash\" graphql:\"txnHash\""
 			Message              *string "json:\"message\" graphql:\"message\""
-			BlockNumber          *int    "json:\"blockNumber\" graphql:\"blockNumber\""
-			Time                 *int    "json:\"time\" graphql:\"time\""
-			FormattedTime        *string "json:\"formattedTime\" graphql:\"formattedTime\""
+			MessageType          *struct {
+				TearType struct {
+					Recipient string "json:\"recipient\" graphql:\"recipient\""
+					Amount    string "json:\"amount\" graphql:\"amount\""
+				} "graphql:\"... on TearType\""
+				HeroType struct {
+					Recipient string "json:\"recipient\" graphql:\"recipient\""
+					HeroID    string "json:\"heroID\" graphql:\"heroID\""
+				} "graphql:\"... on HeroType\""
+				PetType struct {
+					Recipient string "json:\"recipient\" graphql:\"recipient\""
+					PetID     string "json:\"petID\" graphql:\"petID\""
+					Name      string "json:\"name\" graphql:\"name\""
+				} "graphql:\"... on PetType\""
+				UnknownType struct {
+					Known bool "json:\"known\" graphql:\"known\""
+				} "graphql:\"... on UnknownType\""
+			} "json:\"messageType\" graphql:\"messageType\""
+			BlockNumber   *int    "json:\"blockNumber\" graphql:\"blockNumber\""
+			Time          *int    "json:\"time\" graphql:\"time\""
+			FormattedTime *string "json:\"formattedTime\" graphql:\"formattedTime\""
 		} "json:\"fromInfo\" graphql:\"fromInfo\""
 		ToInfo *struct {
 			ChainID         *int    "json:\"chainID\" graphql:\"chainID\""
@@ -136,13 +156,62 @@ type GetMessageBusTransactions struct {
 			ContractAddress *string "json:\"contractAddress\" graphql:\"contractAddress\""
 			TxnHash         *string "json:\"txnHash\" graphql:\"txnHash\""
 			Message         *string "json:\"message\" graphql:\"message\""
-			BlockNumber     *int    "json:\"blockNumber\" graphql:\"blockNumber\""
-			Time            *int    "json:\"time\" graphql:\"time\""
-			FormattedTime   *string "json:\"formattedTime\" graphql:\"formattedTime\""
-			RevertedReason  *string "json:\"revertedReason\" graphql:\"revertedReason\""
+			MessageType     *struct {
+				TearType struct {
+					Recipient string "json:\"recipient\" graphql:\"recipient\""
+					Amount    string "json:\"amount\" graphql:\"amount\""
+				} "graphql:\"... on TearType\""
+				HeroType struct {
+					Recipient string "json:\"recipient\" graphql:\"recipient\""
+					HeroID    string "json:\"heroID\" graphql:\"heroID\""
+				} "graphql:\"... on HeroType\""
+				PetType struct {
+					Recipient string "json:\"recipient\" graphql:\"recipient\""
+					PetID     string "json:\"petID\" graphql:\"petID\""
+					Name      string "json:\"name\" graphql:\"name\""
+				} "graphql:\"... on PetType\""
+				UnknownType struct {
+					Known bool "json:\"known\" graphql:\"known\""
+				} "graphql:\"... on UnknownType\""
+			} "json:\"messageType\" graphql:\"messageType\""
+			BlockNumber    *int    "json:\"blockNumber\" graphql:\"blockNumber\""
+			Time           *int    "json:\"time\" graphql:\"time\""
+			FormattedTime  *string "json:\"formattedTime\" graphql:\"formattedTime\""
+			RevertedReason *string "json:\"revertedReason\" graphql:\"revertedReason\""
 		} "json:\"toInfo\" graphql:\"toInfo\""
 		MessageID *string "json:\"messageID\" graphql:\"messageID\""
 		Pending   *bool   "json:\"pending\" graphql:\"pending\""
+	} "json:\"response\" graphql:\"response\""
+}
+type GetAddressData struct {
+	Response *struct {
+		BridgeVolume *float64 "json:\"bridgeVolume\" graphql:\"bridgeVolume\""
+		BridgeFees   *float64 "json:\"bridgeFees\" graphql:\"bridgeFees\""
+		BridgeTxs    *int     "json:\"bridgeTxs\" graphql:\"bridgeTxs\""
+		SwapVolume   *float64 "json:\"swapVolume\" graphql:\"swapVolume\""
+		SwapFees     *float64 "json:\"swapFees\" graphql:\"swapFees\""
+		SwapTxs      *int     "json:\"swapTxs\" graphql:\"swapTxs\""
+		Rank         *int     "json:\"rank\" graphql:\"rank\""
+		EarliestTx   *int     "json:\"earliestTx\" graphql:\"earliestTx\""
+		ChainRanking []*struct {
+			ChainID   *int     "json:\"chainID\" graphql:\"chainID\""
+			VolumeUsd *float64 "json:\"volumeUsd\" graphql:\"volumeUsd\""
+			Rank      *int     "json:\"rank\" graphql:\"rank\""
+		} "json:\"chainRanking\" graphql:\"chainRanking\""
+		DailyData []*struct {
+			Date  *string "json:\"date\" graphql:\"date\""
+			Count *int    "json:\"count\" graphql:\"count\""
+		} "json:\"dailyData\" graphql:\"dailyData\""
+	} "json:\"response\" graphql:\"response\""
+}
+type GetLeaderboard struct {
+	Response []*struct {
+		Address      *string  "json:\"address\" graphql:\"address\""
+		VolumeUsd    *float64 "json:\"volumeUSD\" graphql:\"volumeUSD\""
+		Fees         *float64 "json:\"fees\" graphql:\"fees\""
+		Txs          *int     "json:\"txs\" graphql:\"txs\""
+		Rank         *int     "json:\"rank\" graphql:\"rank\""
+		AvgVolumeUsd *float64 "json:\"avgVolumeUSD\" graphql:\"avgVolumeUSD\""
 	} "json:\"response\" graphql:\"response\""
 }
 
@@ -381,6 +450,24 @@ const GetMessageBusTransactionsDocument = `query GetMessageBusTransactions ($cha
 			contractAddress
 			txnHash
 			message
+			messageType {
+				... on TearType {
+					recipient
+					amount
+				}
+				... on HeroType {
+					recipient
+					heroID
+				}
+				... on PetType {
+					recipient
+					petID
+					name
+				}
+				... on UnknownType {
+					known
+				}
+			}
 			blockNumber
 			time
 			formattedTime
@@ -391,6 +478,24 @@ const GetMessageBusTransactionsDocument = `query GetMessageBusTransactions ($cha
 			contractAddress
 			txnHash
 			message
+			messageType {
+				... on TearType {
+					recipient
+					amount
+				}
+				... on HeroType {
+					recipient
+					heroID
+				}
+				... on PetType {
+					recipient
+					petID
+					name
+				}
+				... on UnknownType {
+					known
+				}
+			}
 			blockNumber
 			time
 			formattedTime
@@ -417,6 +522,70 @@ func (c *Client) GetMessageBusTransactions(ctx context.Context, chainID []*int, 
 
 	var res GetMessageBusTransactions
 	if err := c.Client.Post(ctx, "GetMessageBusTransactions", GetMessageBusTransactionsDocument, &res, vars, httpRequestOptions...); err != nil {
+		return nil, err
+	}
+
+	return &res, nil
+}
+
+const GetAddressDataDocument = `query GetAddressData ($address: String!) {
+	response: addressData(address: $address) {
+		bridgeVolume
+		bridgeFees
+		bridgeTxs
+		swapVolume
+		swapFees
+		swapTxs
+		rank
+		earliestTx
+		chainRanking {
+			chainID
+			volumeUsd
+			rank
+		}
+		dailyData {
+			date
+			count
+		}
+	}
+}
+`
+
+func (c *Client) GetAddressData(ctx context.Context, address string, httpRequestOptions ...client.HTTPRequestOption) (*GetAddressData, error) {
+	vars := map[string]interface{}{
+		"address": address,
+	}
+
+	var res GetAddressData
+	if err := c.Client.Post(ctx, "GetAddressData", GetAddressDataDocument, &res, vars, httpRequestOptions...); err != nil {
+		return nil, err
+	}
+
+	return &res, nil
+}
+
+const GetLeaderboardDocument = `query GetLeaderboard ($duration: Duration, $chainID: Int, $useMv: Boolean, $page: Int) {
+	response: leaderboard(duration: $duration, chainID: $chainID, useMv: $useMv, page: $page) {
+		address
+		volumeUSD
+		fees
+		txs
+		rank
+		avgVolumeUSD
+	}
+}
+`
+
+func (c *Client) GetLeaderboard(ctx context.Context, duration *model.Duration, chainID *int, useMv *bool, page *int, httpRequestOptions ...client.HTTPRequestOption) (*GetLeaderboard, error) {
+	vars := map[string]interface{}{
+		"duration": duration,
+		"chainID":  chainID,
+		"useMv":    useMv,
+		"page":     page,
+	}
+
+	var res GetLeaderboard
+	if err := c.Client.Post(ctx, "GetLeaderboard", GetLeaderboardDocument, &res, vars, httpRequestOptions...); err != nil {
 		return nil, err
 	}
 

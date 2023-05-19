@@ -102,4 +102,24 @@ Ranked chainIDs by volume
     useCache: Boolean = false
   ): [VolumeByChainID]
 
+  """
+  Get wallet information
+  """
+  addressData(
+    address: String!
+  ): AddressData
+
+
+  """
+  Get LeaderBoard
+  """
+  leaderboard(
+    duration:     Duration = ALL_TIME
+    chainID:      Int
+    useMv: Boolean = true
+    page:           Int = 1
+  ): [Leaderboard]
+
 }
+
+
