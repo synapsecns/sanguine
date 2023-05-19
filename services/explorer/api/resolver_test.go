@@ -2,13 +2,13 @@ package api_test
 
 import (
 	gosql "database/sql"
+	"fmt"
+	"github.com/ethereum/go-ethereum/crypto"
+	"github.com/synapsecns/sanguine/services/explorer/graphql/server/graph/model"
 	"math"
 	"math/big"
 	"sort"
 	"time"
-
-	"github.com/ethereum/go-ethereum/crypto"
-	"github.com/synapsecns/sanguine/services/explorer/graphql/server/graph/model"
 
 	"github.com/brianvoe/gofakeit/v6"
 	"github.com/ethereum/go-ethereum/common"
