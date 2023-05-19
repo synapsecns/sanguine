@@ -156,9 +156,90 @@ const BridgeCard = ({
     setDeadlineMinutes,
   }
 
+  const isFromBalanceEnough = fromTokenBalance.gte(fromInput?.bigNum ?? Zero)
+
+  const getButtonProperties = () => {
+    let properties = {
+      destAddrNotValid,
+      label: '',
+      pendingLabel: 'Bridging funds...',
+      className: '',
+      buttonAction: () => executeBridge(),
+      postButtonAction: () => resetRates(),
+    }
+
+    if (error) {
+      properties.label = error
+      return properties
+    }
+
+    if (!isFromBalanceEnough) {
+      properties.label = `Insufficient ${fromToken?.symbol} Balance`
+      return properties
+    }
+
+    if (IMPAIRED_CHAINS[fromChainId]?.disabled) {
+      properties.label = `${CHAINS_BY_ID[fromChainId]?.name} is currently paused`
+      return properties
+    }
+
+    if (IMPAIRED_CHAINS[toChainId]?.disabled) {
+      properties.label = `${CHAINS_BY_ID[toChainId]?.name} is currently paused`
+      return properties
+    }
+
+    if (bridgeQuote?.feeAmount?.eq(0) && !fromInput?.bigNum?.eq(0)) {
+      properties.label = `Amount must be greater than fee`
+      return properties
+    }
+
+    if (
+      fromToken?.addresses[fromChainId] !== '' &&
+      fromToken?.addresses[fromChainId] !== AddressZero &&
+      bridgeQuote?.allowance &&
+      bridgeQuote?.allowance?.lt(fromInput?.bigNum)
+    ) {
+      properties.buttonAction = () =>
+        approveToken(
+          bridgeQuote?.routerAddress,
+          fromChainId,
+          fromToken?.addresses[fromChainId]
+        )
+      properties.label = `Approve ${fromToken?.symbol}`
+      properties.pendingLabel = `Approving ${fromToken?.symbol}`
+      properties.className = 'from-[#feba06] to-[#FEC737]'
+      properties.postButtonAction = () => setTime(0)
+      return properties
+    }
+
+    if (destinationAddress && !validateAndParseAddress(destinationAddress)) {
+      properties.destAddrNotValid = true
+      properties.label = 'Invalid Destination Address'
+      return properties
+    }
+
+    // Default Case
+    properties.label = bridgeQuote?.outputAmount?.eq(0)
+      ? 'Enter amount to bridge'
+      : 'Bridge your funds'
+
+    const numExchangeRate = bridgeQuote?.exchangeRate
+      ? Number(formatBNToString(bridgeQuote.exchangeRate, 18, 4))
+      : 0
+
+    if (
+      !fromInput?.bigNum?.eq(0) &&
+      (numExchangeRate < 0.95 || numExchangeRate > 1.05)
+    ) {
+      properties.className = 'from-[#fe064a] to-[#fe5281]'
+      properties.label = 'Slippage High - Bridge Anyway?'
+    }
+
+    return properties
+  }
+
   // some messy button gen stuff (will re-write)
   // maybe just put everything in index without the card
-  const isFromBalanceEnough = fromTokenBalance.gte(fromInput?.bigNum ?? Zero)
   let destAddrNotValid
   let btnLabel
   let btnClassName = ''
