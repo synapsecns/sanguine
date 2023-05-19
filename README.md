@@ -25,7 +25,11 @@ root
 ├── <a href="./ethergo">ethergo</a>: Go-based ethereum testing + common library
 ├── <a href="./packages">packages</a>
 │   ├── <a href="./packages/contracts-core">contracts-core</a>: Core contracts used for synapse, powered by <a href="https://github.com/foundry-rs/foundry">Foundry</a>
+│   ├── <a href="./packages/coverage-aggregator">coverage-aggregator</a>: Javascript coverage aggregator based on <a href="https://www.npmjs.com/package/nyc">nyc</a>
+│   ├── <a href="./packages/docs">docs</a>: Docasaurus documentation
 │   ├── <a href="./packages/explorer-ui">explorer-ui</a>: Explorer UI
+│   ├── <a href="./packages/sdk-router">sdk-router</a>: SDK router
+│   ├── <a href="./packages/sdk-router">synapse-interface</a>: Synapse frontend code
 ├── <a href="./tools">services</a>
 │   ├── <a href="./services/explorer">explorer</a>: Bridge/messaging explorer backend
 │   ├── <a href="./services/omnirpc">omnirpc</a>: Latency aware RPC Client used across multiple-chains at once
@@ -41,7 +45,7 @@ root
 Clone the repository, open it, and install nodejs packages with `yarn`:
 
 ```bash
-git clone https://github.com/synapsecns/sanguine
+git clone https://github.com/synapsecns/sanguine --recurse-submodules -j10
 cd sanguine
 yarn install
 ```
@@ -66,3 +70,7 @@ yarn build
 Packages compiled when on one branch may not be compatible with packages on a different branch.
 **You should recompile all packages whenever you move from one branch to another.**
 Use the above commands to recompile the packages.
+
+## Dealing with submodules
+
+This repo make use of [multiple](.gitattributes) [submodules](https://git-scm.com/book/en/v2/Git-Tools-Submodules). To avoid issues when checking out different branches, you can use `git submodule update --init --recursive` after switching to a branch or `git checkout feat/branch-name --recurse-submodules` when switching branches.
