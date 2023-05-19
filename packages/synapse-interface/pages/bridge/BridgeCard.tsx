@@ -157,10 +157,10 @@ const BridgeCard = ({
   }
 
   const isFromBalanceEnough = fromTokenBalance.gte(fromInput?.bigNum ?? Zero)
+  let destAddrNotValid
 
   const getButtonProperties = () => {
     let properties = {
-      destAddrNotValid,
       label: '',
       pendingLabel: 'Bridging funds...',
       className: '',
@@ -213,7 +213,7 @@ const BridgeCard = ({
     }
 
     if (destinationAddress && !validateAndParseAddress(destinationAddress)) {
-      properties.destAddrNotValid = true
+      destAddrNotValid = true
       properties.label = 'Invalid Destination Address'
       return properties
     }
@@ -244,7 +244,6 @@ const BridgeCard = ({
     className: btnClassName,
     buttonAction,
     postButtonAction,
-    destAddrNotValid,
   } = useMemo(getButtonProperties, [
     isFromBalanceEnough,
     address,
@@ -338,7 +337,14 @@ const BridgeCard = ({
         pendingLabel={pendingLabel}
       />
     ),
-    [buttonAction, postButtonAction, btnLabel, pendingLabel, btnClassName]
+    [
+      buttonAction,
+      postButtonAction,
+      btnLabel,
+      pendingLabel,
+      btnClassName,
+      destAddrNotValid,
+    ]
   )
 
   /*
