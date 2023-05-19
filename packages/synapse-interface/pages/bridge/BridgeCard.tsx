@@ -162,7 +162,7 @@ const BridgeCard = ({
 
   const getButtonProperties = () => {
     let properties = {
-      label: '',
+      label: `Enter amount to bridge`,
       pendingLabel: 'Bridging funds...',
       className: '',
       disabled: true,
@@ -176,8 +176,15 @@ const BridgeCard = ({
       return properties
     }
 
-    if (fromInput?.bigNum?.eq(0)) {
+    const isInputZero = checkStringIfOnlyZeroes(fromInput?.string)
+    if (isInputZero || fromInput?.bigNum?.eq(0)) {
       properties.label = `Enter amount to bridge`
+      properties.disabled = true
+      return properties
+    }
+
+    if (isQuoteLoading) {
+      properties.label = 'Bridge your funds'
       properties.disabled = true
       return properties
     }
@@ -233,8 +240,6 @@ const BridgeCard = ({
       return properties
     }
 
-    // const isInputZero = checkStringIfOnlyZeroes(fromInput.string)
-
     // Default Case
     properties.label = 'Bridge your funds'
     properties.disabled = false
@@ -260,6 +265,7 @@ const BridgeCard = ({
     className: btnClassName,
     buttonAction,
     postButtonAction,
+    disabled,
   } = useMemo(getButtonProperties, [
     isFromBalanceEnough,
     address,
@@ -336,13 +342,14 @@ const BridgeCard = ({
       <TransactionButton
         className={btnClassName}
         disabled={
-          fromChainId === toChainId ||
-          bridgeQuote?.outputAmount?.eq(0) ||
-          !isFromBalanceEnough ||
-          error ||
-          destAddrNotValid ||
-          IMPAIRED_CHAINS[fromChainId]?.disabled ||
-          IMPAIRED_CHAINS[toChainId]?.disabled
+          // fromChainId === toChainId ||
+          // bridgeQuote?.outputAmount?.eq(0) ||
+          // !isFromBalanceEnough ||
+          // error ||
+          // destAddrNotValid ||
+          // IMPAIRED_CHAINS[fromChainId]?.disabled ||
+          // IMPAIRED_CHAINS[toChainId]?.disabled
+          disabled
         }
         chainId={toChainId}
         onClick={() => buttonAction()}
