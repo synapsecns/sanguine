@@ -240,9 +240,7 @@ func (c *ChainBackfiller) backfillContractLogs(parentCtx context.Context, contra
 			return fmt.Errorf("could not store last block for chain %d: %w", c.chainConfig.ChainID, err)
 		}
 		currentHeight = chunkEnd + 1
-		fmt.Println("DONE WITH CHUNK", contract.Address)
 	}
-	fmt.Println("DONE WITH BACKFILLING", contract.Address)
 	return nil
 }
 
@@ -329,7 +327,6 @@ func (c *ChainBackfiller) retryWithBackoff(ctx context.Context, doFunc retryable
 	for attempts < maxAttempt {
 		select {
 		case <-ctx.Done():
-			fmt.Println("CONEXT CANCELED ", ctx.Err(), attempts)
 			return fmt.Errorf("%w while retrying", ctx.Err())
 		case <-time.After(timeout):
 			err := doFunc(ctx)
