@@ -233,7 +233,6 @@ const BridgePage = ({
     ) {
       let bigNum =
         stringToBigNum(value, fromToken.decimals[fromChainId]) ?? Zero
-      console.log('sudyaivalue1', value, bigNum.toString())
 
       setFromInput({
         string: value,
@@ -248,7 +247,6 @@ const BridgePage = ({
   */
   const getMostCommonSwapableType = useCallback(
     (chainId: number) => {
-      console.log('sudyaichainid', chainId)
       const fromChainTokensByType = Object.values(
         BRIDGE_SWAPABLE_TOKENS_BY_TYPE[chainId]
       )
@@ -319,58 +317,60 @@ const BridgePage = ({
   - Handles all the changes that occur when selecting a new "from token", such as generating lists of potential chains/tokens
    to bridge to and handling if the current "to chain/token" are incompatible.
   */
-  const handleNewFromToken = (
-    token: Token,
-    positedToChain: number | undefined,
-    positedToSymbol: string | undefined,
-    fromChainId: number
-  ) => {
-    let newToChain =
-      positedToChain && positedToChain !== fromChainId
-        ? Number(positedToChain)
-        : DEFAULT_TO_CHAIN
-    console.log('newToChain', newToChain)
-    let bridgeableChains = BRIDGE_CHAINS_BY_TYPE[
-      String(token.swapableType)
-    ].filter((chainId) => Number(chainId) !== fromChainId)
-    const swapExceptionsArr: number[] =
-      token?.swapExceptions?.[fromChainId as keyof Token['swapExceptions']]
-    if (swapExceptionsArr?.length > 0) {
-      bridgeableChains = swapExceptionsArr.map((chainId) => String(chainId))
-    }
+  const handleNewFromToken = useCallback(
+    (
+      token: Token,
+      positedToChain: number | undefined,
+      positedToSymbol: string | undefined,
+      fromChainId: number
+    ) => {
+      let newToChain =
+        positedToChain && positedToChain !== fromChainId
+          ? Number(positedToChain)
+          : DEFAULT_TO_CHAIN
+      let bridgeableChains = BRIDGE_CHAINS_BY_TYPE[
+        String(token.swapableType)
+      ].filter((chainId) => Number(chainId) !== fromChainId)
+      const swapExceptionsArr: number[] =
+        token?.swapExceptions?.[fromChainId as keyof Token['swapExceptions']]
+      if (swapExceptionsArr?.length > 0) {
+        bridgeableChains = swapExceptionsArr.map((chainId) => String(chainId))
+      }
 
-    if (!bridgeableChains.includes(String(newToChain))) {
-      newToChain =
-        Number(bridgeableChains[0]) === fromChainId
-          ? Number(bridgeableChains[1])
-          : Number(bridgeableChains[0])
-    }
+      if (!bridgeableChains.includes(String(newToChain))) {
+        newToChain =
+          Number(bridgeableChains[0]) === fromChainId
+            ? Number(bridgeableChains[1])
+            : Number(bridgeableChains[0])
+      }
 
-    const positedToToken = positedToSymbol
-      ? tokenSymbolToToken(newToChain, positedToSymbol)
-      : tokenSymbolToToken(newToChain, token.symbol)
+      const positedToToken = positedToSymbol
+        ? tokenSymbolToToken(newToChain, positedToSymbol)
+        : tokenSymbolToToken(newToChain, token.symbol)
 
-    let bridgeableTokens: Token[] = sortByVisibilityRank(
-      BRIDGE_SWAPABLE_TOKENS_BY_TYPE[newToChain][String(token.swapableType)]
-    )
-
-    if (swapExceptionsArr?.length > 0) {
-      bridgeableTokens = bridgeableTokens.filter(
-        (toToken) => toToken.symbol === token.symbol
+      let bridgeableTokens: Token[] = sortByVisibilityRank(
+        BRIDGE_SWAPABLE_TOKENS_BY_TYPE[newToChain][String(token.swapableType)]
       )
-    }
-    let bridgeableToken: Token = positedToToken
-    if (!bridgeableTokens.includes(positedToToken)) {
-      bridgeableToken = bridgeableTokens[0]
-    }
 
-    return {
-      bridgeableToken,
-      newToChain,
-      bridgeableTokens,
-      bridgeableChains,
-    }
-  }
+      if (swapExceptionsArr?.length > 0) {
+        bridgeableTokens = bridgeableTokens.filter(
+          (toToken) => toToken.symbol === token.symbol
+        )
+      }
+      let bridgeableToken: Token = positedToToken
+      if (!bridgeableTokens.includes(positedToToken)) {
+        bridgeableToken = bridgeableTokens[0]
+      }
+
+      return {
+        bridgeableToken,
+        newToChain,
+        bridgeableTokens,
+        bridgeableChains,
+      }
+    },
+    [fromToken, fromChainId, toToken, toChainId]
+  )
 
   /*
   Function: handleChainChange
@@ -390,6 +390,9 @@ const BridgePage = ({
 
         const res = switchNetwork({ chainId: desiredChainId })
           .then((res) => {
+            if (fromInput.string !== '') {
+              setIsQuoteLoading(true)
+            }
             return res
           })
           .catch(() => {
@@ -430,7 +433,6 @@ const BridgePage = ({
           tempFromToken.symbol,
           bridgeableToken.symbol
         )
-        console.log('bridgeableToken', desiredChainId)
         sortByTokenBalance(
           BRIDGABLE_TOKENS[desiredChainId],
           desiredChainId,
@@ -438,9 +440,6 @@ const BridgePage = ({
         ).then((tokens) => {
           setFromTokens(tokens)
         })
-        if (fromInput.string !== '') {
-          setIsQuoteLoading(true)
-        }
         return
       } else if (type === 'to') {
         const {
@@ -602,7 +601,13 @@ const BridgePage = ({
         bridgeQuote.quotes.originQuery,
         bridgeQuote.quotes.destQuery
       )
-      const tx = await wallet.sendTransaction(data)
+      const payload =
+        fromToken.addresses[fromChainId as keyof Token['addresses']] ===
+          AddressZero ||
+        fromToken.addresses[fromChainId as keyof Token['addresses']] === ''
+          ? { data: data.data, to: data.to, value: fromInput.bigNum }
+          : data
+      const tx = await wallet.sendTransaction(payload)
       try {
         await tx.wait()
         console.log(`Transaction mined successfully: ${tx.hash}`)

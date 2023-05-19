@@ -87,12 +87,13 @@ const PoolsListCard = memo(
             className={`
             bg-bgBase transition-all rounded-xl items-center
             hover:bg-bgLight
-            py-6 mt-4 pr-2
-            border border-transparent
-          `}
+              py-6 mt-4
+              border border-transparent
+              whitespace-wrap
+            `}
             divider={false}
           >
-            <Grid gap={3} cols={{ xs: 3 }} className="mt-8">
+            <Grid gap={3} cols={{ xs: 3 }} className="pt-8">
               <div>
                 <h3 className="text-sm text-opacity-50 text-secondaryTextColor">
                   Assets
@@ -109,8 +110,7 @@ const PoolsListCard = memo(
                   {poolData?.totalLockedUSDStr ? (
                     '$' + poolData?.totalLockedUSDStr
                   ) : (
-                    // <div className="animate-pulse rounded bg-slate-700 h-6 w-12" />
-                    <LoadingSpinner />
+                    <LoadingSpinner shift={true} />
                   )}
                 </div>
               </div>
@@ -144,13 +144,12 @@ const PoolsCardTitle = ({
   poolName: string
   chainImg: string
 }) => {
-  let displayPoolName = poolName?.replace(chainName, `<b>${chainName}</b>`)
+  let displayPoolName = poolName?.replace(chainName, `${chainName}`)
 
   return (
     <div className="flex items-center">
       <img src={chainImg} className="w-6 h-6 mr-2 rounded-full" />
-      {/* TODO: A better way to do this? */}
-      <div dangerouslySetInnerHTML={{ __html: displayPoolName }} />
+      <div className="font-semibold">{displayPoolName}</div>
     </div>
   )
 }

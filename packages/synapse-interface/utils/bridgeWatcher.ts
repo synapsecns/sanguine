@@ -65,8 +65,7 @@ export const getLogs = async (
   try {
     const logs = await provider.send('eth_getLogs', [filter])
     return logs
-  } catch (e) {
-    console.log(e)
+  } catch {
     return []
   }
 }
@@ -153,9 +152,20 @@ export const generateBridgeTx = (
 
   const token = TOKEN_HASH_MAP[chainId][tokenAddr]
 
+  let inputTokenAmount
+  if (
+    getAddress(txReceipt.logs[0]?.address) ===
+      GMX.addresses[CHAINS.ARBITRUM.id] ||
+    getAddress(txReceipt.logs[1]?.address) ===
+      GMX.addresses[CHAINS.AVALANCHE.id]
+  ) {
+    inputTokenAmount = txReceipt.logs[1].data
+  } else {
+    inputTokenAmount = txReceipt.logs[0].data
+  }
   return {
     isFrom,
-    amount: parsedLog.amount,
+    amount: isFrom ? inputTokenAmount : parsedLog.amount,
     timestamp: timestampObj.timestamp,
     blockNumber: parsedLog.blockNumber,
     chainId,
@@ -167,4 +177,12 @@ export const generateBridgeTx = (
     toChainId: isFrom ? Number(parsedLog.chainId.toString()) : chainId,
     toAddress: isFrom ? parsedLog.to : destinationAddress,
   }
+}
+
+export const getHighestBlock = async (
+  chainId: number,
+  provider: JsonRpcProvider
+) => {
+  const highestBlock = await provider.getBlockNumber()
+  return highestBlock
 }

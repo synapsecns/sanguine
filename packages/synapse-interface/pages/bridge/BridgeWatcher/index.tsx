@@ -10,8 +10,9 @@ import Grid from '@tw/Grid'
 import Card from '@tw/Card'
 import BridgeEvent from './BridgeEvent'
 import { BridgeWatcherTx } from '@types'
-import { getProvider } from '@utils/getProvider'
 import { GETLOGS_SIZE, GETLOGS_REQUEST_COUNT } from '@constants/bridgeWatcher'
+import { useSynapseContext } from '@/utils/providers/SynapseProvider'
+
 import {
   getLogs,
   getBlock,
@@ -36,10 +37,11 @@ const BridgeWatcher = ({
   const [fromSynapseContract, setFromSynapseContract] = useState<Contract>()
   const [fromSigner, setFromSigner] = useState<Signer>()
   const { data: fromSignerRaw } = useSigner({ chainId: fromChainId })
+  const { providerMap } = useSynapseContext()
 
   const getFromBridgeEvents = async (): Promise<BridgeWatcherTx[]> => {
     const currentFromBlock = await fetchBlockNumber({ chainId: fromChainId })
-    const provider = getProvider(fromChainId)
+    const provider = providerMap[fromChainId]
     const iface = new Interface(SYNAPSE_BRIDGE_ABI)
     let allFromEvents = []
     for (let i = 0; i < GETLOGS_REQUEST_COUNT; i++) {
@@ -114,13 +116,8 @@ const BridgeWatcher = ({
       {fromTransactions?.length > 0 && (
         <Card title="Bridge Watcher" divider={false}>
           <Grid cols={{ xs: 1 }} gap={2}>
-            {fromTransactions.map((fromEvent) => {
-              return (
-                <BridgeEvent
-                  key={`${fromEvent?.transactionHash}-${fromEvent?.transactionHash}`}
-                  {...fromEvent}
-                />
-              )
+            {fromTransactions.map((fromEvent, i) => {
+              return <BridgeEvent key={i} {...fromEvent} />
             })}
           </Grid>
         </Card>

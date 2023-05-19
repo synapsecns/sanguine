@@ -94,6 +94,10 @@ const BridgeCard = ({
   const [fromTokenBalance, setFromTokenBalance] = useState<BigNumber>(Zero)
   const bridgeDisplayRef = useRef(null)
 
+  useEffect(() => {
+    console.log('displayType: ', displayType)
+  }, [displayType])
+
   /*
   useEffect Trigger: fromToken, fromTokens
   - When either the from token or list of from tokens are mutated, the selected token's balance is set in the state
@@ -158,7 +162,7 @@ const BridgeCard = ({
 
   // some messy button gen stuff (will re-write)
   // maybe just put everything in index without the card
-  const isFromBalanceEnough = fromTokenBalance.gt(fromInput?.bigNum ?? Zero)
+  const isFromBalanceEnough = fromTokenBalance.gte(fromInput?.bigNum ?? Zero)
   let destAddrNotValid
   let btnLabel
   let btnClassName = ''
@@ -173,11 +177,11 @@ const BridgeCard = ({
     btnLabel = `${CHAINS_BY_ID[fromChainId]?.name} is currently paused`
   } else if (IMPAIRED_CHAINS[toChainId]?.disabled) {
     btnLabel = `${CHAINS_BY_ID[toChainId]?.name} is currently paused`
-  } else if (bridgeQuote.feeAmount.eq(0) && !fromInput?.bigNum?.eq(0)) {
+  } else if (bridgeQuote?.feeAmount?.eq(0) && !fromInput?.bigNum?.eq(0)) {
     btnLabel = `Amount must be greater than fee`
   } else if (
-    fromToken.addresses[fromChainId] !== '' &&
-    fromToken.addresses[fromChainId] !== AddressZero &&
+    fromToken?.addresses[fromChainId] !== '' &&
+    fromToken?.addresses[fromChainId] !== AddressZero &&
     bridgeQuote?.allowance &&
     bridgeQuote?.allowance?.lt(fromInput?.bigNum)
   ) {
@@ -185,7 +189,7 @@ const BridgeCard = ({
       approveToken(
         bridgeQuote?.routerAddress,
         fromChainId,
-        fromToken.addresses[fromChainId]
+        fromToken?.addresses[fromChainId]
       )
     btnLabel = `Approve ${fromToken?.symbol}`
     pendingLabel = `Approving ${fromToken?.symbol}`
@@ -198,13 +202,13 @@ const BridgeCard = ({
     destAddrNotValid = true
     btnLabel = 'Invalid Destination Address'
   } else {
-    btnLabel = bridgeQuote.outputAmount.eq(0)
+    btnLabel = bridgeQuote?.outputAmount?.eq(0)
       ? 'Enter amount to bridge'
       : 'Bridge your funds'
 
-    const numExchangeRate = Number(
-      formatBNToString(bridgeQuote?.exchangeRate, 18, 4)
-    )
+    const numExchangeRate = bridgeQuote?.exchangeRate
+      ? Number(formatBNToString(bridgeQuote.exchangeRate, 18, 4))
+      : 0
 
     if (
       !fromInput?.bigNum?.eq(0) &&
@@ -221,7 +225,7 @@ const BridgeCard = ({
         className={btnClassName}
         disabled={
           fromChainId === toChainId ||
-          bridgeQuote.outputAmount.eq(0) ||
+          bridgeQuote?.outputAmount?.eq(0) ||
           !isFromBalanceEnough ||
           error ||
           destAddrNotValid ||

@@ -29,7 +29,7 @@ export const approve = async (
 
     if (token.symbol != WETH.symbol) {
       await approveToken(
-        pool.addresses[chainId],
+        pool.swapAddresses[chainId],
         chainId,
         token.symbol === AVWETH.symbol
           ? WETHE.addresses[chainId]
@@ -58,8 +58,10 @@ export const deposit = async (
 
     toast('Starting your deposit...')
 
+    const result = Array.from(Object.values(inputAmounts), (value) => value)
+
     let spendTransactionArgs = [
-      Object.values(inputAmounts),
+      result,
       minToMint,
       Math.round(new Date().getTime() / 1000 + 60 * 10),
     ]
@@ -69,6 +71,7 @@ export const deposit = async (
     )
 
     const tx = await spendTransaction.wait()
+
     const toastContent = (
       <div>
         <div>Liquidity added!</div>

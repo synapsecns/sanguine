@@ -12,6 +12,30 @@ type MessageType interface {
 	IsMessageType()
 }
 
+type AddressChainRanking struct {
+	ChainID   *int     `json:"chainID"`
+	VolumeUsd *float64 `json:"volumeUsd"`
+	Rank      *int     `json:"rank"`
+}
+
+type AddressDailyCount struct {
+	Date  *string `json:"date"`
+	Count *int    `json:"count"`
+}
+
+type AddressData struct {
+	BridgeVolume *float64               `json:"bridgeVolume"`
+	BridgeFees   *float64               `json:"bridgeFees"`
+	BridgeTxs    *int                   `json:"bridgeTxs"`
+	SwapVolume   *float64               `json:"swapVolume"`
+	SwapFees     *float64               `json:"swapFees"`
+	SwapTxs      *int                   `json:"swapTxs"`
+	Rank         *int                   `json:"rank"`
+	EarliestTx   *int                   `json:"earliestTx"`
+	ChainRanking []*AddressChainRanking `json:"chainRanking"`
+	DailyData    []*AddressDailyCount   `json:"dailyData"`
+}
+
 // AddressRanking gives the amount of transactions that occurred for a specific address across all chains.
 type AddressRanking struct {
 	Address *string `json:"address"`
@@ -71,6 +95,15 @@ type HistoricalResult struct {
 	Total       *float64              `json:"total"`
 	DateResults []*DateResult         `json:"dateResults"`
 	Type        *HistoricalResultType `json:"type"`
+}
+
+type Leaderboard struct {
+	Address      *string  `json:"address"`
+	VolumeUsd    *float64 `json:"volumeUSD"`
+	Fees         *float64 `json:"fees"`
+	Txs          *int     `json:"txs"`
+	Rank         *int     `json:"rank"`
+	AvgVolumeUsd *float64 `json:"avgVolumeUSD"`
 }
 
 type MessageBusTransaction struct {

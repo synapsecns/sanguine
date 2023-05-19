@@ -55,6 +55,10 @@ export const sortByTokenBalance = async (
       // deterministic multicall3 address on all eth chains
       const multicallAddress: Address = `0xcA11bde05977b3631167028862bE2a173976CA11`
 
+      if (!tokenAddress) {
+        return
+      }
+
       if (tokenAddress === AddressZero) {
         multicallInputs.push({
           address: multicallAddress,

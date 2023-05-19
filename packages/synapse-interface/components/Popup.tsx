@@ -4,7 +4,6 @@ const Popup = ({ chainId }) => {
   const [active, setActive] = useState(false)
 
   useEffect(() => {
-    console.log(IMPAIRED_CHAINS[chainId], chainId)
     if (chainId && IMPAIRED_CHAINS[chainId]) {
       setActive(true)
     } else {
