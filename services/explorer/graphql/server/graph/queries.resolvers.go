@@ -378,7 +378,7 @@ func (r *queryResolver) AddressData(ctx context.Context, address string) (*model
 // Leaderboard is the resolver for the leaderboard field.
 func (r *queryResolver) Leaderboard(ctx context.Context, duration *model.Duration, chainID *int, useMv *bool, page *int) ([]*model.Leaderboard, error) {
 	if !*useMv {
-		return nil, fmt.Errorf("the leaderboard query does not support non mv based queries.")
+		return nil, fmt.Errorf("the leaderboard query does not support non mv based queries")
 	}
 	firstFilter := false
 	timestampSpecifier := GetDurationFilter(duration, &firstFilter, "f")
