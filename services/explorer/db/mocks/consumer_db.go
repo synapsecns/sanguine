@@ -302,6 +302,7 @@ func (_m *ConsumerDB) GetLastStoredBlock(ctx context.Context, chainID uint32, co
 
 	return r0, r1
 }
+
 // GetLeaderboard provides a mock function with given fields: ctx, query
 func (_m *ConsumerDB) GetLeaderboard(ctx context.Context, query string) ([]*model.Leaderboard, error) {
 	ret := _m.Called(ctx, query)
