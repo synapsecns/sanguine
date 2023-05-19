@@ -238,63 +238,83 @@ const BridgeCard = ({
     return properties
   }
 
+  const {
+    label: btnLabel,
+    pendingLabel,
+    className: btnClassName,
+    buttonAction,
+    postButtonAction,
+    destAddrNotValid,
+  } = useMemo(getButtonProperties, [
+    isFromBalanceEnough,
+    address,
+    fromInput,
+    fromToken,
+    fromChainId,
+    toChainId,
+    bridgeQuote,
+    isQuoteLoading,
+    destinationAddress,
+    error,
+  ])
+
   // some messy button gen stuff (will re-write)
   // maybe just put everything in index without the card
-  let destAddrNotValid
-  let btnLabel
-  let btnClassName = ''
-  let pendingLabel = 'Bridging funds...'
-  let buttonAction = () => executeBridge()
-  let postButtonAction = () => resetRates()
-  if (error) {
-    btnLabel = error
-  } else if (!isFromBalanceEnough) {
-    btnLabel = `Insufficient ${fromToken?.symbol} Balance`
-  } else if (IMPAIRED_CHAINS[fromChainId]?.disabled) {
-    btnLabel = `${CHAINS_BY_ID[fromChainId]?.name} is currently paused`
-  } else if (IMPAIRED_CHAINS[toChainId]?.disabled) {
-    btnLabel = `${CHAINS_BY_ID[toChainId]?.name} is currently paused`
-  } else if (bridgeQuote?.feeAmount?.eq(0) && !fromInput?.bigNum?.eq(0)) {
-    btnLabel = `Amount must be greater than fee`
-  } else if (
-    fromToken?.addresses[fromChainId] !== '' &&
-    fromToken?.addresses[fromChainId] !== AddressZero &&
-    bridgeQuote?.allowance &&
-    bridgeQuote?.allowance?.lt(fromInput?.bigNum)
-  ) {
-    buttonAction = () =>
-      approveToken(
-        bridgeQuote?.routerAddress,
-        fromChainId,
-        fromToken?.addresses[fromChainId]
-      )
-    btnLabel = `Approve ${fromToken?.symbol}`
-    pendingLabel = `Approving ${fromToken?.symbol}`
-    btnClassName = 'from-[#feba06] to-[#FEC737]'
-    postButtonAction = () => setTime(0)
-  } else if (
-    destinationAddress &&
-    !validateAndParseAddress(destinationAddress)
-  ) {
-    destAddrNotValid = true
-    btnLabel = 'Invalid Destination Address'
-  } else {
-    btnLabel = bridgeQuote?.outputAmount?.eq(0)
-      ? 'Enter amount to bridge'
-      : 'Bridge your funds'
+  // let destAddrNotValid
+  // let btnLabel
+  // let btnClassName = ''
+  // let pendingLabel = 'Bridging funds...'
+  // let buttonAction = () => executeBridge()
+  // let postButtonAction = () => resetRates()
+  // if (error) {
+  //   btnLabel = error
+  // } else if (!isFromBalanceEnough) {
+  //   btnLabel = `Insufficient ${fromToken?.symbol} Balance`
+  // } else if (IMPAIRED_CHAINS[fromChainId]?.disabled) {
+  //   btnLabel = `${CHAINS_BY_ID[fromChainId]?.name} is currently paused`
+  // } else if (IMPAIRED_CHAINS[toChainId]?.disabled) {
+  //   btnLabel = `${CHAINS_BY_ID[toChainId]?.name} is currently paused`
+  // } else if (bridgeQuote?.feeAmount?.eq(0) && !fromInput?.bigNum?.eq(0)) {
+  //   btnLabel = `Amount must be greater than fee`
+  // } else if (
+  //   fromToken?.addresses[fromChainId] !== '' &&
+  //   fromToken?.addresses[fromChainId] !== AddressZero &&
+  //   bridgeQuote?.allowance &&
+  //   bridgeQuote?.allowance?.lt(fromInput?.bigNum)
+  // ) {
+  //   buttonAction = () =>
+  //     approveToken(
+  //       bridgeQuote?.routerAddress,
+  //       fromChainId,
+  //       fromToken?.addresses[fromChainId]
+  //     )
+  //   btnLabel = `Approve ${fromToken?.symbol}`
+  //   pendingLabel = `Approving ${fromToken?.symbol}`
+  //   btnClassName = 'from-[#feba06] to-[#FEC737]'
+  //   postButtonAction = () => setTime(0)
+  // } else if (
+  //   destinationAddress &&
+  //   !validateAndParseAddress(destinationAddress)
+  // ) {
+  //   destAddrNotValid = true
+  //   btnLabel = 'Invalid Destination Address'
+  // } else {
+  //   btnLabel = bridgeQuote?.outputAmount?.eq(0)
+  //     ? 'Enter amount to bridge'
+  //     : 'Bridge your funds'
 
-    const numExchangeRate = bridgeQuote?.exchangeRate
-      ? Number(formatBNToString(bridgeQuote.exchangeRate, 18, 4))
-      : 0
+  //   const numExchangeRate = bridgeQuote?.exchangeRate
+  //     ? Number(formatBNToString(bridgeQuote.exchangeRate, 18, 4))
+  //     : 0
 
-    if (
-      !fromInput?.bigNum?.eq(0) &&
-      (numExchangeRate < 0.95 || numExchangeRate > 1.05)
-    ) {
-      btnClassName = 'from-[#fe064a] to-[#fe5281]'
-      btnLabel = 'Slippage High - Bridge Anyway?'
-    }
-  }
+  //   if (
+  //     !fromInput?.bigNum?.eq(0) &&
+  //     (numExchangeRate < 0.95 || numExchangeRate > 1.05)
+  //   ) {
+  //     btnClassName = 'from-[#fe064a] to-[#fe5281]'
+  //     btnLabel = 'Slippage High - Bridge Anyway?'
+  //   }
+  // }
 
   const actionBtn = useMemo(
     () => (
