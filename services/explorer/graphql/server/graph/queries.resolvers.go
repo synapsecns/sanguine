@@ -382,7 +382,7 @@ func (r *queryResolver) Leaderboard(ctx context.Context, duration *model.Duratio
 	}
 	firstFilter := false
 	timestampSpecifier := GetDurationFilter(duration, &firstFilter, "f")
-	chainIDSpecifier := generateSingleSpecifierI32SQL(chainID, sql.ChainIDFieldName, &firstFilter, "")
+	chainIDSpecifier := generateSingleSpecifierI32SQL(chainID, sql.ChainIDFieldName, &firstFilter, "f")
 	pageValue := sql.PageSize
 	pageOffset := (*page - 1) * sql.PageSize
 	filters := timestampSpecifier + chainIDSpecifier
