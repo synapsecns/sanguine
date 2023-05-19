@@ -199,6 +199,17 @@ func (s *Store) GetAddressRanking(ctx context.Context, query string) ([]*model.A
 	return res, nil
 }
 
+// GetLastStoredBlock returns the last stored block for a given chainID and contract.
+func (s *Store) GetLastStoredBlock(ctx context.Context, chainID uint32, contract string) (uint64, error) {
+	query := fmt.Sprintf("SELECT %s FROM last_blocks WHERE %s = %d AND %s = '%s' ORDER BY %s DESC LIMIT 1", BlockNumberFieldName, ChainIDFieldName, chainID, ContractAddressFieldName, contract, BlockNumberFieldName)
+	lastBlock, err := s.GetUint64(ctx, query)
+	if err != nil {
+		return 0, fmt.Errorf("failed to get last block: %w", err)
+	}
+
+	return lastBlock, nil
+}
+
 // GetLeaderboard gets the bridge leaderboard.
 func (s *Store) GetLeaderboard(ctx context.Context, query string) ([]*model.Leaderboard, error) {
 	var res []*model.Leaderboard

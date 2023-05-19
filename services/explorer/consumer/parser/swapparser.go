@@ -6,7 +6,6 @@ import (
 	"fmt"
 	"math"
 	"math/big"
-	"os"
 	"time"
 
 	"github.com/synapsecns/sanguine/core"
@@ -362,7 +361,7 @@ func (p *SwapParser) Parse(ctx context.Context, log ethTypes.Log, chainID uint32
 
 	// TODO: need to deploy the test swap contracts with token indexes that match the test token address
 	// nolint:nestif
-	if !core.IsTest() && os.Getenv("CI") != "" {
+	if !core.IsTest() {
 		for i := range totalTokenIndexRange {
 			tokenIndex := i
 			g.Go(func() error {
