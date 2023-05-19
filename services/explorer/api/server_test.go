@@ -64,7 +64,6 @@ func TestHandleJSONDailyStat(t *testing.T) {
 }
 
 func (g APISuite) TestRehydrateCache() {
-
 	responseCache, err := cache.NewAPICacheService()
 	Nil(g.T(), err)
 	chainID := g.chainIDs[0]
