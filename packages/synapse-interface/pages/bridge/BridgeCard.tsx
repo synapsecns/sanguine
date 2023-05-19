@@ -28,6 +28,7 @@ import { IMPAIRED_CHAINS } from '@/constants/impairedChains'
 import { CHAINS_BY_ID } from '@constants/chains'
 import { Token } from '@/utils/types'
 import { BridgeQuote } from '@/utils/types'
+import { checkStringIfOnlyZeroes } from '@/utils/regex'
 
 export enum DisplayType {
   FROM = 'from',
@@ -164,32 +165,44 @@ const BridgeCard = ({
       label: '',
       pendingLabel: 'Bridging funds...',
       className: '',
+      disabled: true,
       buttonAction: () => executeBridge(),
       postButtonAction: () => resetRates(),
     }
 
     if (error) {
       properties.label = error
+      properties.disabled = true
+      return properties
+    }
+
+    if (fromInput?.bigNum?.eq(0)) {
+      properties.label = `Enter amount to bridge`
+      properties.disabled = true
       return properties
     }
 
     if (!isFromBalanceEnough) {
       properties.label = `Insufficient ${fromToken?.symbol} Balance`
+      properties.disabled = true
       return properties
     }
 
     if (IMPAIRED_CHAINS[fromChainId]?.disabled) {
       properties.label = `${CHAINS_BY_ID[fromChainId]?.name} is currently paused`
+      properties.disabled = true
       return properties
     }
 
     if (IMPAIRED_CHAINS[toChainId]?.disabled) {
       properties.label = `${CHAINS_BY_ID[toChainId]?.name} is currently paused`
+      properties.disabled = true
       return properties
     }
 
     if (bridgeQuote?.feeAmount?.eq(0) && !fromInput?.bigNum?.eq(0)) {
       properties.label = `Amount must be greater than fee`
+      properties.disabled = true
       return properties
     }
 
@@ -209,19 +222,22 @@ const BridgeCard = ({
       properties.pendingLabel = `Approving ${fromToken?.symbol}`
       properties.className = 'from-[#feba06] to-[#FEC737]'
       properties.postButtonAction = () => setTime(0)
+      properties.disabled = false
       return properties
     }
 
     if (destinationAddress && !validateAndParseAddress(destinationAddress)) {
       destAddrNotValid = true
       properties.label = 'Invalid Destination Address'
+      properties.disabled = true
       return properties
     }
 
+    // const isInputZero = checkStringIfOnlyZeroes(fromInput.string)
+
     // Default Case
-    properties.label = bridgeQuote?.outputAmount?.eq(0)
-      ? 'Enter amount to bridge'
-      : 'Bridge your funds'
+    properties.label = 'Bridge your funds'
+    properties.disabled = false
 
     const numExchangeRate = bridgeQuote?.exchangeRate
       ? Number(formatBNToString(bridgeQuote.exchangeRate, 18, 4))
