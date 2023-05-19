@@ -446,7 +446,7 @@ const SwapCard = ({
         toToken.addresses[connectedChainId],
         fromInput.bigNum
       )
-      console.log('query: ', query.minAmountOut.toString())
+      // console.log('query: ', query.minAmountOut.toString())
       if (!(query && maxAmountOut)) {
         setSwapQuote(EMPTY_SWAP_QUOTE_ZERO)
         setIsQuoteLoading(false)
@@ -479,6 +479,7 @@ const SwapCard = ({
       setIsQuoteLoading(false)
       return
     } catch (error) {
+      setIsQuoteLoading(false)
       console.log(`Quote failed with error: ${error}`)
     }
   }
