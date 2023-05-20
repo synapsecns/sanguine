@@ -416,6 +416,26 @@ abstract contract StatementInbox is MessagingBase, StatementInboxEvents, IStatem
         if (status.domain == 0) revert AgentNotNotary();
     }
 
+    /**
+     * @dev Internal function to verify the signed receipt report payload.
+     * Reverts if any of these is true:
+     * - Report signer is not a known Guard.
+     * @param rcpt              Typed memory view over receipt payload that Guard reports as invalid
+     * @param rrSignature       Guard signature for the "invalid receipt" report
+     * @return status           Struct representing guard status, see {_recoverAgent}
+     * @return guard            Guard that signed the report
+     */
+    function _verifyReceiptReport(Receipt rcpt, bytes memory rrSignature)
+        internal
+        view
+        returns (AgentStatus memory status, address guard)
+    {
+        // This will revert if signer is not a known agent
+        (status, guard) = _recoverAgent(rcpt.hashInvalid(), rrSignature);
+        // Report signer needs to be a Guard, not a Notary
+        if (status.domain != 0) revert AgentNotGuard();
+    }
+
     // ═══════════════════════════════════════ STATE/SNAPSHOT RELATED CHECKS ═══════════════════════════════════════════
 
     /**
