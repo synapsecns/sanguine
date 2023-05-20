@@ -2,7 +2,15 @@
 pragma solidity 0.8.17;
 
 import {SNAPSHOT_MAX_STATES} from "../../../contracts/libs/Constants.sol";
-import {RawAttestation, RawGasData, RawGasData256, RawState, RawStateIndex, RawSnapshot} from "./SynapseStructs.t.sol";
+import {
+    RawAttestation,
+    RawExecReceipt,
+    RawGasData,
+    RawGasData256,
+    RawState,
+    RawStateIndex,
+    RawSnapshot
+} from "./SynapseStructs.t.sol";
 
 struct Random {
     bytes32 seed;
@@ -151,5 +159,16 @@ library RandomLib {
         returns (RawAttestation memory ra)
     {
         return rawSnap.castToRawAttestation(r.next(), nonce, r.nextUint40(), r.nextUint40());
+    }
+
+    function nextReceipt(Random memory r, uint32 destination) internal pure returns (RawExecReceipt memory re) {
+        re.origin = r.nextUint32();
+        re.destination = destination;
+        re.messageHash = r.next();
+        re.snapshotRoot = r.next();
+        re.stateIndex = r.nextUint8();
+        re.attNotary = r.nextAddress();
+        re.firstExecutor = r.nextAddress();
+        re.finalExecutor = r.nextAddress();
     }
 }
