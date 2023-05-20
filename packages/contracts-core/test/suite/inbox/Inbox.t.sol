@@ -1,7 +1,14 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.17;
 
-import {CallerNotDestination, MustBeSynapseDomain, NotaryInDispute} from "../../../contracts/libs/Errors.sol";
+import {
+    AgentNotGuard,
+    CallerNotDestination,
+    GuardInDispute,
+    NotaryInDispute,
+    MustBeSynapseDomain,
+    NotaryInDispute
+} from "../../../contracts/libs/Errors.sol";
 import {InterfaceSummit} from "../../../contracts/interfaces/InterfaceSummit.sol";
 
 import {StatementInboxTest} from "./StatementInbox.t.sol";
@@ -135,6 +142,66 @@ contract InboxTest is StatementInboxTest {
         vm.expectRevert(CallerNotDestination.selector);
         vm.prank(caller);
         inbox.passReceipt(0, 0, 0, "");
+    }
+
+    // ════════════════════════════════════════════ TEST: OPEN DISPUTES ════════════════════════════════════════════════
+
+    function test_submitReceiptReport(Random memory random) public {
+        address prover = makeAddr("Prover");
+        RawExecReceipt memory re = random.nextReceipt(random.nextUint32());
+        // Create Notary signature for the attestation
+        address notary = domains[DOMAIN_LOCAL].agent;
+        (, bytes memory rcptSignature) = signReceipt(notary, re);
+        // Create Guard signature for the report
+        address guard = domains[0].agent;
+        (bytes memory rcptPayload, bytes memory rrSignature) = signReceiptReport(guard, re);
+        expectDisputeOpened(0, guard, notary);
+        vm.prank(prover);
+        inbox.submitReceiptReport(rcptPayload, rcptSignature, rrSignature);
+        assertEq(inbox.getReportsAmount(), 1, "!reportsAmount");
+        (bytes memory reportPayload, bytes memory reportSignature) = inbox.getGuardReport(0);
+        assertEq(reportPayload, rcptPayload, "!reportPayload");
+        assertEq(reportSignature, rrSignature, "!reportSig");
+    }
+
+    function test_submitReceiptReport_revert_signedByNotary(Random memory random) public {
+        RawExecReceipt memory re = random.nextReceipt(random.nextUint32());
+        // Create Notary signature for the attestation
+        address notary = domains[DOMAIN_LOCAL].agent;
+        (, bytes memory rcptSignature) = signReceipt(notary, re);
+        // Force a random Notary to sign the report
+        address reportSigner = getNotary(random.nextUint256(), random.nextUint256());
+        (bytes memory rcptPayload, bytes memory rrSignature) = signReceiptReport(reportSigner, re);
+        vm.expectRevert(AgentNotGuard.selector);
+        inbox.submitReceiptReport(rcptPayload, rcptSignature, rrSignature);
+    }
+
+    function test_submitReceiptReport_revert_guardInDispute(Random memory random) public {
+        RawExecReceipt memory re = random.nextReceipt(random.nextUint32());
+        // Create Notary signature for the attestation
+        address notary = domains[DOMAIN_LOCAL].agent;
+        (, bytes memory rcptSignature) = signReceipt(notary, re);
+        // Create Guard signature for the report
+        address guard = domains[0].agent;
+        (bytes memory rcptPayload, bytes memory rrSignature) = signReceiptReport(guard, re);
+        // Put the Guard in Dispute with another Notary
+        openDispute({guard: guard, notary: domains[DOMAIN_LOCAL].agents[1]});
+        vm.expectRevert(GuardInDispute.selector);
+        inbox.submitReceiptReport(rcptPayload, rcptSignature, rrSignature);
+    }
+
+    function test_submitReceiptReport_revert_notaryInDispute(Random memory random) public {
+        RawExecReceipt memory re = random.nextReceipt(random.nextUint32());
+        // Create Notary signature for the attestation
+        address notary = domains[DOMAIN_LOCAL].agent;
+        (, bytes memory rcptSignature) = signReceipt(notary, re);
+        // Create Guard signature for the report
+        address guard = domains[0].agent;
+        (bytes memory rcptPayload, bytes memory rrSignature) = signReceiptReport(guard, re);
+        // Put the Notary in Dispute with another Guard
+        openDispute({guard: domains[0].agents[1], notary: notary});
+        vm.expectRevert(NotaryInDispute.selector);
+        inbox.submitReceiptReport(rcptPayload, rcptSignature, rrSignature);
     }
 
     // ══════════════════════════════════════════════════ HELPERS ══════════════════════════════════════════════════════
