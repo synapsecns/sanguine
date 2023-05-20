@@ -213,6 +213,7 @@ const BridgeCard = ({
     }
 
     if (
+      !fromInput?.bigNum?.eq(0) &&
       fromToken?.addresses[fromChainId] !== '' &&
       fromToken?.addresses[fromChainId] !== AddressZero &&
       bridgeQuote?.allowance &&
