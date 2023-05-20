@@ -43,6 +43,9 @@ contract GasOracle is MessagingBase, GasOracleEvents, InterfaceGasOracle {
 
     mapping(uint32 => GasData) internal _gasData;
 
+    // Fixed value for the summit tip, denominated in Ethereum Mainnet Wei.
+    uint256 internal _summitTipWei;
+
     // ═════════════════════════════════════════ CONSTRUCTOR & INITIALIZER ═════════════════════════════════════════════
 
     constructor(uint32 domain, address destination_) MessagingBase("0.0.3", domain) {
@@ -77,6 +80,11 @@ contract GasOracle is MessagingBase, GasOracleEvents, InterfaceGasOracle {
         if (GasData.unwrap(updatedGasData) != GasData.unwrap(_gasData[domain])) {
             _setGasData(domain, updatedGasData);
         }
+    }
+
+    /// @notice MVP function to set the summit tip.
+    function setSummitTip(uint256 summitTipWei) external onlyOwner {
+        _summitTipWei = summitTipWei;
     }
 
     /// @inheritdoc InterfaceGasOracle
@@ -129,6 +137,9 @@ contract GasOracle is MessagingBase, GasOracleEvents, InterfaceGasOracle {
         if (remoteEtherPrice == 0) revert RemoteGasDataNotSet();
         Request request = RequestLib.wrapPadded(paddedRequest);
         // TODO: figure out unchecked math
+        // We store the fixed value of the summit tip in Ethereum Mainnet Wei already.
+        // To convert it to local Ether, we need to divide by the local Ether price (using BWAD math).
+        uint256 summitTip = (_summitTipWei << NumberLib.BWAD_SHIFT) / localEtherPrice;
         // To convert the cost from remote Ether to local Ether, we need to multiply by the ratio of the Ether prices.
         uint256 attestationTip = remoteGasData.amortAttCost().decompress() * remoteEtherPrice / localEtherPrice;
         // Total cost for Executor to execute a message on the remote chain has three components:
@@ -151,7 +162,7 @@ contract GasOracle is MessagingBase, GasOracleEvents, InterfaceGasOracle {
         // Use calculated values to encode the tips.
         return Tips.unwrap(
             TipsLib.encodeTips256({
-                summitTip_: 0,
+                summitTip_: summitTip,
                 attestationTip_: attestationTip,
                 executionTip_: executionTip,
                 deliveryTip_: deliveryTip
