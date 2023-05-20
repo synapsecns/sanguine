@@ -185,6 +185,25 @@ abstract contract StatementInbox is MessagingBase, StatementInboxEvents, IStatem
     }
 
     /// @inheritdoc IStatementInbox
+    function verifyReceiptReport(bytes memory rcptPayload, bytes memory rrSignature)
+        external
+        returns (bool isValidReport)
+    {
+        // This will revert if payload is not a receipt
+        Receipt rcpt = rcptPayload.castToReceipt();
+        // This will revert if the report signer is not a known Guard
+        (AgentStatus memory status, address guard) = _verifyReceiptReport(rcpt, rrSignature);
+        // Guard needs to be Active/Unstaking
+        status.verifyActiveUnstaking();
+        // Report is valid IF AND ONLY IF the reported receipt in invalid
+        isValidReport = !IExecutionHub(destination).isValidReceipt(rcptPayload);
+        if (!isValidReport) {
+            emit InvalidReceiptReport(rcptPayload, rrSignature);
+            IAgentManager(agentManager).slashAgent(status.domain, guard, msg.sender);
+        }
+    }
+
+    /// @inheritdoc IStatementInbox
     function verifyStateWithAttestation(
         uint256 stateIndex,
         bytes memory snapPayload,

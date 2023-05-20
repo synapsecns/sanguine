@@ -114,6 +114,23 @@ interface IStatementInbox {
         returns (bool isValidReceipt);
 
     /**
+     * @notice Verifies a Guard's receipt report signature.
+     * - Does nothing, if the report is valid (if the reported receipt is invalid).
+     * - Slashes the Guard, if the report is invalid (if the reported receipt is valid).
+     * > Will revert if any of these is true:
+     * > - Receipt payload is not properly formatted.
+     * > - Receipt Report signer is not an active Guard.
+     * > - Receipt does not refer to this chain.
+     * @param rcptPayload       Raw payload with Receipt data that Guard reports as invalid
+     * @param rrSignature       Guard signature for the report
+     * @return isValidReport    Whether the provided report is valid.
+     *                          Guard is slashed, if return value is FALSE.
+     */
+    function verifyReceiptReport(bytes memory rcptPayload, bytes memory rrSignature)
+        external
+        returns (bool isValidReport);
+
+    /**
      * @notice Verifies a state from the snapshot, that was used for the Notary-signed attestation.
      * - Does nothing, if the state is valid (matches the historical state of this contract).
      * - Slashes the Notary, if the state is invalid.
