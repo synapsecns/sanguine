@@ -23,6 +23,13 @@ abstract contract StatementInboxEvents {
     event InvalidReceipt(bytes rcptPayload, bytes rcptSignature);
 
     /**
+     * @notice Emitted when a proof of invalid receipt report is submitted.
+     * @param rrPayload     Raw payload with report data
+     * @param rrSignature   Guard signature for the report
+     */
+    event InvalidReceiptReport(bytes rrPayload, bytes rrSignature);
+
+    /**
      * @notice Emitted when a proof of invalid state in the signed attestation is submitted.
      * @param stateIndex    Index of invalid state in the snapshot
      * @param statePayload  Raw payload with state data

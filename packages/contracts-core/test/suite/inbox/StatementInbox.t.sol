@@ -3,12 +3,16 @@ pragma solidity 0.8.17;
 
 import {StatementInbox} from "../../../contracts/inbox/StatementInbox.sol";
 import {AgentNotGuard, GuardInDispute, NotaryInDispute} from "../../../contracts/libs/Errors.sol";
+import {AgentFlag} from "../../../contracts/libs/Structures.sol";
+import {IExecutionHub} from "../../../contracts/interfaces/IExecutionHub.sol";
 
 import {MessagingBaseTest} from "../base/MessagingBase.t.sol";
 
 import {fakeSnapshot} from "../../utils/libs/FakeIt.t.sol";
 import {Random} from "../../utils/libs/Random.t.sol";
-import {RawAttestation, RawSnapshot, RawState, RawStateIndex} from "../../utils/libs/SynapseStructs.t.sol";
+import {
+    RawAttestation, RawExecReceipt, RawSnapshot, RawState, RawStateIndex
+} from "../../utils/libs/SynapseStructs.t.sol";
 
 // solhint-disable func-name-mixedcase
 // solhint-disable ordering
@@ -260,6 +264,44 @@ abstract contract StatementInboxTest is MessagingBaseTest {
         testedInbox().submitStateReportWithSnapshotProof(
             rsi.stateIndex, statePayload, srSig, snapProof, attPayload, attSig
         );
+    }
+
+    // ═════════════════════════════════════════ TESTS: VERIFY STATEMENTS ══════════════════════════════════════════════
+
+    function test_verifyReceiptReport_validReceipt(Random memory random) public {
+        address guard = randomGuard(random);
+        RawExecReceipt memory re = random.nextReceipt(localDomain());
+        bytes memory rcptPayload = re.formatReceipt();
+        bytes memory rrSignature = signReceiptReport(guard, rcptPayload);
+        // Force isValidReceipt(rcptPayload) to return true
+        vm.mockCall(
+            localDestination(),
+            abi.encodeWithSelector(IExecutionHub.isValidReceipt.selector, rcptPayload),
+            abi.encode(true)
+        );
+        vm.expectEmit();
+        emit InvalidReceiptReport(rcptPayload, rrSignature);
+        expectStatusUpdated(AgentFlag.Fraudulent, 0, guard);
+        expectDisputeResolved(0, guard, address(0), address(this));
+        // Should return false, as the report is invalid
+        assertFalse(testedInbox().verifyReceiptReport(rcptPayload, rrSignature));
+    }
+
+    function test_verifyReceiptReport_invalidReceipt(Random memory random) public {
+        address guard = randomGuard(random);
+        RawExecReceipt memory re = random.nextReceipt(localDomain());
+        bytes memory rcptPayload = re.formatReceipt();
+        bytes memory rrSignature = signReceiptReport(guard, rcptPayload);
+        // Force isValidReceipt(rcptPayload) to return false
+        vm.mockCall(
+            localDestination(),
+            abi.encodeWithSelector(IExecutionHub.isValidReceipt.selector, rcptPayload),
+            abi.encode(false)
+        );
+        vm.recordLogs();
+        // Should return true, as the report is valid
+        assertTrue(testedInbox().verifyReceiptReport(rcptPayload, rrSignature));
+        assertEq(vm.getRecordedLogs().length, 0, "Logs should be empty");
     }
 
     // ══════════════════════════════════════════════════ HELPERS ══════════════════════════════════════════════════════
