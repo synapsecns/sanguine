@@ -5,6 +5,8 @@ import (
 	"github.com/synapsecns/sanguine/agents/contracts/bondingmanager"
 	"github.com/synapsecns/sanguine/agents/contracts/destination"
 	"github.com/synapsecns/sanguine/agents/contracts/gasoracle"
+	"github.com/synapsecns/sanguine/agents/contracts/inbox"
+	"github.com/synapsecns/sanguine/agents/contracts/lightinbox"
 	"github.com/synapsecns/sanguine/agents/contracts/lightmanager"
 	"github.com/synapsecns/sanguine/agents/contracts/origin"
 	"github.com/synapsecns/sanguine/agents/contracts/summit"
@@ -101,6 +103,10 @@ const (
 	GasDataHarnessType
 	// GasOracleType is the gas oracle type.
 	GasOracleType // GasOracle
+	// InboxType is the inbox type.
+	InboxType // Inbox
+	// LightInboxType is the light inbox type.
+	LightInboxType // LightInbox
 )
 
 // ID gets the contract type as an id.
@@ -165,6 +171,10 @@ func (c contractTypeImpl) ContractInfo() *compiler.Contract {
 		return gasdataharness.Contracts["solidity/GasDataHarness.t.sol:GasDataHarness"]
 	case GasOracleType:
 		return gasoracle.Contracts["solidity/GasOracle.sol:GasOracle"]
+	case InboxType:
+		return inbox.Contracts["solidity/Inbox.sol:Inbox"]
+	case LightInboxType:
+		return lightinbox.Contracts["solidity/LightInbox.sol:LightInbox"]
 	default:
 		panic("not yet implemented")
 	}

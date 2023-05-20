@@ -29,11 +29,13 @@ func _() {
 	_ = x[BondingManagerType-18]
 	_ = x[GasDataHarnessType-19]
 	_ = x[GasOracleType-20]
+	_ = x[InboxType-21]
+	_ = x[LightInboxType-22]
 }
 
-const _contractTypeImpl_name = "OriginMessageHarnessOriginHarnessStateHarnessTypeSnapshotHarnessTypeAttestationHarnessTypeTipsHarnessTypeHeaderHarnessTypeDestinationHarnessSummitHarnessSummitDestinationAgentsTestContractTestClientPingPongClientLightManagerHarnessBondingManagerHarnessLightManagerBondingManagerGasDataHarnessTypeGasOracle"
+const _contractTypeImpl_name = "OriginMessageHarnessOriginHarnessStateHarnessTypeSnapshotHarnessTypeAttestationHarnessTypeTipsHarnessTypeHeaderHarnessTypeDestinationHarnessSummitHarnessSummitDestinationAgentsTestContractTestClientPingPongClientLightManagerHarnessBondingManagerHarnessLightManagerBondingManagerGasDataHarnessTypeGasOracleInboxLightInbox"
 
-var _contractTypeImpl_index = [...]uint16{0, 6, 20, 33, 49, 68, 90, 105, 122, 140, 153, 159, 170, 188, 198, 212, 231, 252, 264, 278, 296, 305}
+var _contractTypeImpl_index = [...]uint16{0, 6, 20, 33, 49, 68, 90, 105, 122, 140, 153, 159, 170, 188, 198, 212, 231, 252, 264, 278, 296, 305, 310, 320}
 
 func (i contractTypeImpl) String() string {
 	if i < 0 || i >= contractTypeImpl(len(_contractTypeImpl_index)-1) {

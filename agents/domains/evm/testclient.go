@@ -3,7 +3,6 @@ package evm
 import (
 	"context"
 	"fmt"
-
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/synapsecns/sanguine/agents/contracts/test/testclient"
@@ -40,13 +39,13 @@ type testClientContract struct {
 	nonceManager nonce.Manager
 }
 
-func (a testClientContract) SendMessage(ctx context.Context, signer signer.Signer, destination uint32, recipient common.Address, optimisticSeconds uint32, message []byte) error {
+func (a testClientContract) SendMessage(ctx context.Context, signer signer.Signer, destination uint32, recipient common.Address, optimisticSeconds uint32, gasLimit uint64, version uint32, message []byte) error {
 	transactOpts, err := a.transactOptsSetup(ctx, signer)
 	if err != nil {
 		return fmt.Errorf("could not setup transact opts: %w", err)
 	}
 
-	_, err = a.contract.SendMessage(transactOpts, destination, recipient, optimisticSeconds, message)
+	_, err = a.contract.SendMessage(transactOpts, destination, recipient, optimisticSeconds, gasLimit, version, message)
 	if err != nil {
 		return fmt.Errorf("could not send message: %w", err)
 	}
