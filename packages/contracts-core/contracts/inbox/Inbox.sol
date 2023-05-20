@@ -150,6 +150,27 @@ contract Inbox is StatementInbox, InboxEvents, InterfaceInbox {
     }
 
     /// @inheritdoc InterfaceInbox
+    function submitReceiptReport(bytes memory rcptPayload, bytes memory rcptSignature, bytes memory rrSignature)
+        external
+        returns (bool wasAccepted)
+    {
+        // This will revert if payload is not a receipt
+        Receipt rcpt = rcptPayload.castToReceipt();
+        // This will revert if the receipt signer is not a known Guard
+        (AgentStatus memory guardStatus,) = _verifyReceiptReport(rcpt, rrSignature);
+        // Guard needs to be Active
+        guardStatus.verifyActive();
+        // This will revert if report signer is not a known Notary
+        (AgentStatus memory notaryStatus,) = _verifyReceipt(rcpt, rcptSignature);
+        // Notary needs to be Active/Unstaking
+        notaryStatus.verifyActiveUnstaking();
+        _saveReport(rcptPayload, rrSignature);
+        // This will revert if either actor is already in dispute
+        IAgentManager(agentManager).openDispute(guardStatus.index, notaryStatus.index);
+        return true;
+    }
+
+    /// @inheritdoc InterfaceInbox
     function passReceipt(uint32 attNotaryIndex, uint32 attNonce, uint256 paddedTips, bytes memory rcptPayload)
         external
         returns (bool wasAccepted)
