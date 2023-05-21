@@ -55,6 +55,15 @@ contract TipsHarness {
         return Tips.unwrap(tips);
     }
 
+    function encodeTips256(uint256 summitTip_, uint256 attestationTip_, uint256 executionTip_, uint256 deliveryTip_)
+        public
+        pure
+        returns (uint256)
+    {
+        Tips tips = TipsLib.encodeTips256(summitTip_, attestationTip_, executionTip_, deliveryTip_);
+        return Tips.unwrap(tips);
+    }
+
     function wrapPadded(uint256 paddedTips) public pure returns (uint256) {
         return Tips.unwrap(TipsLib.wrapPadded(paddedTips));
     }

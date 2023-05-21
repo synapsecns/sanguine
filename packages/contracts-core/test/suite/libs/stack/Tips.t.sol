@@ -38,6 +38,19 @@ contract TipsLibraryTest is SynapseLibraryTest {
         assertEq(libHarness.leaf(encodedTips), keccak256(abi.encode(expected)), "!leaf");
     }
 
+    function test_encodeTips256(uint96 summitTip, uint96 attestationTip, uint96 executionTip, uint96 deliveryTip)
+        public
+    {
+        uint256 encodedTips256 = libHarness.encodeTips256(summitTip, attestationTip, executionTip, deliveryTip);
+        uint256 encodedTips = libHarness.encodeTips(
+            uint64(summitTip / TIPS_MULTIPLIER),
+            uint64(attestationTip / TIPS_MULTIPLIER),
+            uint64(executionTip / TIPS_MULTIPLIER),
+            uint64(deliveryTip / TIPS_MULTIPLIER)
+        );
+        assertEq(encodedTips256, encodedTips, "!encodeTips256");
+    }
+
     function test_matchTips(RawTips memory rt, uint256 newValue) public {
         uint256 totalTips = uint256(rt.summitTip) + rt.attestationTip + rt.executionTip + rt.deliveryTip;
         vm.assume(totalTips <= type(uint64).max);

@@ -1,8 +1,10 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.17;
 
+import {IncorrectDestinationDomain, LocalGasDataNotSet, RemoteGasDataNotSet} from "./libs/Errors.sol";
 import {GasData, GasDataLib} from "./libs/stack/GasData.sol";
 import {Number, NumberLib} from "./libs/stack/Number.sol";
+import {Request, RequestLib} from "./libs/stack/Request.sol";
 import {Tips, TipsLib} from "./libs/stack/Tips.sol";
 // ═════════════════════════════ INTERNAL IMPORTS ══════════════════════════════
 import {MessagingBase} from "./base/MessagingBase.sol";
@@ -41,6 +43,9 @@ contract GasOracle is MessagingBase, GasOracleEvents, InterfaceGasOracle {
 
     mapping(uint32 => GasData) internal _gasData;
 
+    // Fixed value for the summit tip, denominated in Ethereum Mainnet Wei.
+    uint256 internal _summitTipWei;
+
     // ═════════════════════════════════════════ CONSTRUCTOR & INITIALIZER ═════════════════════════════════════════════
 
     constructor(uint32 domain, address destination_) MessagingBase("0.0.3", domain) {
@@ -75,6 +80,11 @@ contract GasOracle is MessagingBase, GasOracleEvents, InterfaceGasOracle {
         if (GasData.unwrap(updatedGasData) != GasData.unwrap(_gasData[domain])) {
             _setGasData(domain, updatedGasData);
         }
+    }
+
+    /// @notice MVP function to set the summit tip.
+    function setSummitTip(uint256 summitTipWei) external onlyOwner {
+        _summitTipWei = summitTipWei;
     }
 
     /// @inheritdoc InterfaceGasOracle
@@ -117,7 +127,48 @@ contract GasOracle is MessagingBase, GasOracleEvents, InterfaceGasOracle {
         external
         view
         returns (uint256 paddedTips)
-    {}
+    {
+        if (destination_ == localDomain) revert IncorrectDestinationDomain();
+        GasData localGasData = _gasData[localDomain];
+        uint256 localEtherPrice = localGasData.etherPrice().decompress();
+        if (localEtherPrice == 0) revert LocalGasDataNotSet();
+        GasData remoteGasData = _gasData[destination_];
+        uint256 remoteEtherPrice = remoteGasData.etherPrice().decompress();
+        if (remoteEtherPrice == 0) revert RemoteGasDataNotSet();
+        Request request = RequestLib.wrapPadded(paddedRequest);
+        // TODO: figure out unchecked math
+        // We store the fixed value of the summit tip in Ethereum Mainnet Wei already.
+        // To convert it to local Ether, we need to divide by the local Ether price (using BWAD math).
+        uint256 summitTip = (_summitTipWei << NumberLib.BWAD_SHIFT) / localEtherPrice;
+        // To convert the cost from remote Ether to local Ether, we need to multiply by the ratio of the Ether prices.
+        uint256 attestationTip = remoteGasData.amortAttCost().decompress() * remoteEtherPrice / localEtherPrice;
+        // Total cost for Executor to execute a message on the remote chain has three components:
+        // - Execution: gas price * requested gas limit
+        // - Calldata: data price * content length
+        // - Buffer: additional fee to account for computations before and after the actual execution
+        // Same logic for converting the cost from remote Ether to local Ether applies here.
+        // forgefmt: disable-next-item
+        uint256 executionTip = (
+            remoteGasData.gasPrice().decompress() * request.gasLimit() + 
+            remoteGasData.dataPrice().decompress() * contentLength +
+            remoteGasData.execBuffer().decompress()
+        ) * remoteEtherPrice / localEtherPrice;
+        // Markup for executionTip is assigned to the Delivery tip. Markup is denominated in BWAD units.
+        // Execution tip is already denominated in local Ether units.
+        uint256 deliveryTip = (executionTip * remoteGasData.markup().decompress()) >> NumberLib.BWAD_SHIFT;
+        // The price of the gas airdrop is also included in the Delivery tip.
+        // TODO: enable when gasDrop is implemented
+        // deliveryTip += request.gasDrop() * remoteEtherPrice / localEtherPrice;
+        // Use calculated values to encode the tips.
+        return Tips.unwrap(
+            TipsLib.encodeTips256({
+                summitTip_: summitTip,
+                attestationTip_: attestationTip,
+                executionTip_: executionTip,
+                deliveryTip_: deliveryTip
+            })
+        );
+    }
 
     // ══════════════════════════════════════════════ INTERNAL LOGIC ═══════════════════════════════════════════════════
 
