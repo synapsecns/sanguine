@@ -157,24 +157,21 @@ contract OriginTest is AgentSecuredTest {
             roots[i] = getRoot(i + 1);
         }
 
-        // Expect Origin Events
         for (uint32 i = 0; i < MESSAGES; ++i) {
-            // 1 block is skipped after each sent message
-            RawState memory rs;
-            rs.root = roots[i];
-            rs.origin = DOMAIN_LOCAL;
-            rs.nonce = i + 1;
-            rs.blockNumber = uint40(block.number + i);
-            rs.timestamp = uint40(block.timestamp + i * BLOCK_TIME);
-            rs.gasData = rgd;
+            // Expect Origin Events
+            RawState memory rs = RawState({
+                root: roots[i],
+                origin: DOMAIN_LOCAL,
+                nonce: i + 1,
+                blockNumber: uint40(block.number),
+                timestamp: uint40(block.timestamp),
+                gasData: rgd
+            });
             bytes memory state = rs.formatState();
-            vm.expectEmit(true, true, true, true);
+            vm.expectEmit();
             emit StateSaved(state);
-            vm.expectEmit(true, true, true, true);
+            vm.expectEmit();
             emit Sent(leafs[i], i + 1, DOMAIN_REMOTE, messages[i]);
-        }
-
-        for (uint32 i = 0; i < MESSAGES; ++i) {
             vm.prank(sender);
             (uint32 messageNonce, bytes32 messageHash) = InterfaceOrigin(origin).sendBaseMessage(
                 DOMAIN_REMOTE, addressToBytes32(recipient), period, encodedRequest, content
