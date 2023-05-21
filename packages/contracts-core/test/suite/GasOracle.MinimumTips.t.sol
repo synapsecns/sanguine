@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.17;
 
+import {IncorrectDestinationDomain, LocalGasDataNotSet, RemoteGasDataNotSet} from "../../contracts/libs/Errors.sol";
 import {NumberLib} from "../../contracts/libs/stack/Number.sol";
 import {Request, RequestLib} from "../../contracts/libs/stack/Request.sol";
 import {Tips, TipsLib} from "../../contracts/libs/stack/Tips.sol";
@@ -41,6 +42,35 @@ contract GasOracleMinimumTipsTest is GasOracleTest {
             markup: HALF_BWAD
         });
     }
+
+    // ══════════════════════════════════════════════ TESTS: REVERTS ═══════════════════════════════════════════════════
+
+    function test_getMinimumTips_revert_incorrectDestination() public {
+        vm.expectRevert(IncorrectDestinationDomain.selector);
+        testedGO().getMinimumTips(DOMAIN_LOCAL, 0, 0);
+    }
+
+    function test_getMinimumTips_revert_localGasDataNotSet() public {
+        setLocalEtherPrice(0);
+        vm.expectRevert(LocalGasDataNotSet.selector);
+        testedGO().getMinimumTips(DOMAIN_REMOTE, 0, 0);
+    }
+
+    function test_getMinimumTips_revert_remoteGasDataNotSet() public {
+        testedGO().setGasData({
+            domain: DOMAIN_REMOTE,
+            gasPrice: 0,
+            dataPrice: 0,
+            execBuffer: 0,
+            amortAttCost: 0,
+            etherPrice: 0,
+            markup: 0
+        });
+        vm.expectRevert(RemoteGasDataNotSet.selector);
+        testedGO().getMinimumTips(DOMAIN_REMOTE, 0, 0);
+    }
+
+    // ════════════════════════════════════════════ TESTS: MINIMUM TIPS ════════════════════════════════════════════════
 
     function test_getMinimumTips_summitTip(Random memory random) public {
         uint256 summitTip = 1 << 48;
