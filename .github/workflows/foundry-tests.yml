@@ -25,15 +25,14 @@ jobs:
         working-directory: ./packages/contracts-core
         run: yarn install --immutable
 
-      # TODO: make existing tests compatible with 1.0 release
       - name: Install Foundry
         uses: foundry-rs/foundry-toolchain@v1
         with:
-          version: nightly-e15e33a07c0920189fc336391f538c3dad53da73
+          version: nightly
 
       - name: Run Foundry Tests
         working-directory: ./packages/contracts-core
-        run: forge coverage -vvv --report=lcov
+        run: forge coverage -vvv --report lcov --report summary >> $GITHUB_STEP_SUMMARY
 
       - name: Send Coverage (Codecov)
         uses: Wandalen/wretry.action@v1.0.36

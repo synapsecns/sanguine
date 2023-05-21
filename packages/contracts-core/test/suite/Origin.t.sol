@@ -13,7 +13,6 @@ import {InterfaceOrigin} from "../../contracts/Origin.sol";
 import {Versioned} from "../../contracts/base/Version.sol";
 
 import {RevertingApp} from "../harnesses/client/RevertingApp.t.sol";
-import {GasOracleMock} from "../mocks/GasOracleMock.t.sol";
 
 import {fakeState, fakeSnapshot} from "../utils/libs/FakeIt.t.sol";
 import {Random} from "../utils/libs/Random.t.sol";
@@ -30,7 +29,7 @@ import {
     RawStateIndex,
     RawTips
 } from "../utils/libs/SynapseStructs.t.sol";
-import {AgentFlag, Origin, SynapseTest} from "../utils/SynapseTest.t.sol";
+import {AgentFlag, GasOracle, Origin, SynapseTest} from "../utils/SynapseTest.t.sol";
 import {AgentSecuredTest} from "./base/AgentSecured.t.sol";
 
 // solhint-disable func-name-mixedcase
@@ -64,7 +63,7 @@ contract OriginTest is AgentSecuredTest {
         address caller = random.nextAddress();
         address agentManager = random.nextAddress();
         address inbox_ = random.nextAddress();
-        address gasOracle_ = address(new GasOracleMock());
+        address gasOracle_ = address(new GasOracle(localDomain(), random.nextAddress()));
         Origin cleanContract = new Origin(domain, agentManager, inbox_, gasOracle_);
         vm.prank(caller);
         cleanContract.initialize();
@@ -84,7 +83,12 @@ contract OriginTest is AgentSecuredTest {
         minTips.boundTips(1 ** 32);
         minTips.floorTips(1);
         msgValue = msgValue % minTips.castToTips().value();
-        GasOracleMock(gasOracle).setMockedMinimumTips(minTips.encodeTips());
+        // Force gasOracle.getMinimumTips(DOMAIN_REMOTE, *, *) to return minTips
+        vm.mockCall(
+            gasOracle,
+            abi.encodeWithSelector(InterfaceGasOracle.getMinimumTips.selector, DOMAIN_REMOTE),
+            abi.encode(minTips.encodeTips())
+        );
         deal(sender, msgValue);
         vm.expectRevert(TipsValueTooLow.selector);
         vm.prank(sender);
@@ -100,7 +104,12 @@ contract OriginTest is AgentSecuredTest {
         RawTips memory minTips
     ) public {
         minTips.boundTips(1 ** 32);
-        GasOracleMock(gasOracle).setMockedMinimumTips(minTips.encodeTips());
+        // Force gasOracle.getMinimumTips(destination_, *, *) to return minTips
+        vm.mockCall(
+            gasOracle,
+            abi.encodeWithSelector(InterfaceGasOracle.getMinimumTips.selector, destination_),
+            abi.encode(minTips.encodeTips())
+        );
         vm.expectCall(
             address(gasOracle),
             abi.encodeWithSelector(
@@ -115,7 +124,10 @@ contract OriginTest is AgentSecuredTest {
     }
 
     function test_sendMessages(RawGasData memory rgd) public {
-        GasOracleMock(gasOracle).setMockedGasData(rgd.encodeGasData());
+        // Force gasOracle.getGasData() to return rgd
+        vm.mockCall(
+            gasOracle, abi.encodeWithSelector(InterfaceGasOracle.getGasData.selector), abi.encode(rgd.encodeGasData())
+        );
         uint192 encodedRequest = request.encodeRequest();
         bytes memory content = "test content";
         bytes memory body = RawBaseMessage({
@@ -145,24 +157,21 @@ contract OriginTest is AgentSecuredTest {
             roots[i] = getRoot(i + 1);
         }
 
-        // Expect Origin Events
         for (uint32 i = 0; i < MESSAGES; ++i) {
-            // 1 block is skipped after each sent message
-            RawState memory rs;
-            rs.root = roots[i];
-            rs.origin = DOMAIN_LOCAL;
-            rs.nonce = i + 1;
-            rs.blockNumber = uint40(block.number + i);
-            rs.timestamp = uint40(block.timestamp + i * BLOCK_TIME);
-            rs.gasData = rgd;
+            // Expect Origin Events
+            RawState memory rs = RawState({
+                root: roots[i],
+                origin: DOMAIN_LOCAL,
+                nonce: i + 1,
+                blockNumber: uint40(block.number),
+                timestamp: uint40(block.timestamp),
+                gasData: rgd
+            });
             bytes memory state = rs.formatState();
-            vm.expectEmit(true, true, true, true);
+            vm.expectEmit();
             emit StateSaved(state);
-            vm.expectEmit(true, true, true, true);
+            vm.expectEmit();
             emit Sent(leafs[i], i + 1, DOMAIN_REMOTE, messages[i]);
-        }
-
-        for (uint32 i = 0; i < MESSAGES; ++i) {
             vm.prank(sender);
             (uint32 messageNonce, bytes32 messageHash) = InterfaceOrigin(origin).sendBaseMessage(
                 DOMAIN_REMOTE, addressToBytes32(recipient), period, encodedRequest, content
