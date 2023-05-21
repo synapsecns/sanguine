@@ -3,18 +3,8 @@ pragma solidity 0.8.17;
 
 import {InterfaceGasOracle} from "../../contracts/interfaces/InterfaceGasOracle.sol";
 
+// solhint-disable no-empty-blocks
 contract GasOracleMock is InterfaceGasOracle {
-    uint256 public mockedGasData;
-    uint256 public mockedMinimumTips;
-
-    function setMockedGasData(uint256 paddedGasData) external {
-        mockedGasData = paddedGasData;
-    }
-
-    function setMockedMinimumTips(uint256 paddedTips) external {
-        mockedMinimumTips = paddedTips;
-    }
-
     function updateGasData(uint32 domain) external {}
 
     function getDecodedGasData(uint32 domain)
@@ -30,11 +20,7 @@ contract GasOracleMock is InterfaceGasOracle {
         )
     {}
 
-    function getGasData() external view returns (uint256 paddedGasData) {
-        return mockedGasData;
-    }
+    function getGasData() external view returns (uint256 paddedGasData) {}
 
-    function getMinimumTips(uint32, uint256, uint256) external view returns (uint256 paddedTips) {
-        return mockedMinimumTips;
-    }
+    function getMinimumTips(uint32, uint256, uint256) external view returns (uint256 paddedTips) {}
 }
