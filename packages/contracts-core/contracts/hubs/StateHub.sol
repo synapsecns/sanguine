@@ -11,13 +11,9 @@ import {AgentSecured} from "../base/AgentSecured.sol";
 import {StateHubEvents} from "../events/StateHubEvents.sol";
 import {IStateHub} from "../interfaces/IStateHub.sol";
 
-/**
- * @notice Hub to accept, save and verify states for a local contract.
- * The State logic is fully outsourced to the State library, which defines
- * - What a "state" is
- * - How "state" getters work
- * - How to compare "states" to one another
- */
+/// @notice `StateHub` is a parent contract for `Origin`. It is responsible for the following:
+/// - Keeping track of the historical Origin Merkle Tree containing all the message hashes.
+/// - Keeping track of the historical Origin States, as well as verifying their validity.
 abstract contract StateHub is AgentSecured, StateHubEvents, IStateHub {
     using StateLib for bytes;
 
@@ -132,6 +128,8 @@ abstract contract StateHub is AgentSecured, StateHubEvents, IStateHub {
         });
     }
 
+    /// @dev Child contract should implement the logic for getting the current gas data from the gas oracle
+    /// to be saved as part of the Origin State.
     // solhint-disable-next-line ordering
     function _fetchGasData() internal view virtual returns (GasData);
 

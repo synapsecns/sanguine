@@ -21,8 +21,13 @@ import {InterfaceBondingManager} from "../interfaces/InterfaceBondingManager.sol
 import {InterfaceLightManager} from "../interfaces/InterfaceLightManager.sol";
 import {InterfaceOrigin} from "../interfaces/InterfaceOrigin.sol";
 
-/// @notice LightManager keeps track of all agents, staying in sync with the BondingManager.
-/// Used on chains other than Synapse Chain, serves as "light client" for BondingManager.
+/// @notice LightManager keeps track of all agents on chains other than Synapse Chain.
+/// Is uses the Agent Merkle Roots from the Notary-signed attestations to stay in sync with the `BondingManager`.
+/// `LightManager` is responsible for the following:
+/// - Accepting the Agent Merkle Roots (passing the optimistic period check) from the `Destination` contract.
+/// - Using these roots to enable agents to register themselves by proving their status.
+/// - Accepting Manager Message from `BondingManager` on Synapse Chain to withdraw tips.
+/// - Sending Manager Messages to `BondingManager` on Synapse Chain to slash agents, when their fraud is proven.
 contract LightManager is AgentManager, InterfaceLightManager {
     // ══════════════════════════════════════════════════ STORAGE ══════════════════════════════════════════════════════
     /// @inheritdoc IAgentManager

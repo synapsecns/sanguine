@@ -27,6 +27,14 @@ import {IStatementInbox} from "../interfaces/IStatementInbox.sol";
 // ═════════════════════════════ EXTERNAL IMPORTS ══════════════════════════════
 import {ECDSA} from "@openzeppelin/contracts/utils/cryptography/ECDSA.sol";
 
+/// @notice `StatementInbox` is the entry point for all agent-signed statements. It verifies the
+/// agent signatures, and passes the unsigned statements to the contract to consume it via `acceptX` functions. Is is
+/// also used to verify the agent-signed statements and initiate the agent slashing, should the statement be invalid.
+/// `StatementInbox` is responsible for the following:
+/// - Accepting State and Receipt Reports to initiate a dispute between Guard and Notary.
+/// - Storing all the Guard Reports with the Guard signature leading to a dispute.
+/// - Verifying State/State Reports referencing the local chain and slashing the signer if statement is invalid.
+/// - Verifying Receipt/Receipt Reports referencing the local chain and slashing the signer if statement is invalid.
 abstract contract StatementInbox is MessagingBase, StatementInboxEvents, IStatementInbox {
     using AttestationLib for bytes;
     using ReceiptLib for bytes;

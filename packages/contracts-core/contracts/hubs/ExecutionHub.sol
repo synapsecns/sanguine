@@ -36,13 +36,13 @@ import {IMessageRecipient} from "../interfaces/IMessageRecipient.sol";
 import {Address} from "@openzeppelin/contracts/utils/Address.sol";
 import {ReentrancyGuardUpgradeable} from "@openzeppelin/contracts-upgradeable/security/ReentrancyGuardUpgradeable.sol";
 
-/**
- * @notice ExecutionHub is responsible for executing the messages that are
- * proven against the Snapshot Merkle Roots.
- * The Snapshot Merkle Roots themselves are supposed to be dealt with in the child contracts.
- * On the Synapse Chain Notaries are submitting the snapshots that are later used for proving.
- * On the other chains Notaries are submitting the attestations that are later used for proving.
- */
+/// @notice `ExecutionHub` is a parent contract for `Destination`. It is responsible for the following:
+/// - Executing the messages that are proven against the saved Snapshot Merkle Roots.
+/// - Base messages are forwarded to the specified message recipient, ensuring that the original
+///   execution request is fulfilled correctly.
+/// - Manager messages are forwarded to the local `AgentManager` contract.
+/// - Keeping track of the saved Snapshot Merkle Roots (which are accepted in `Destination`).
+/// - Keeping track of message execution Receipts, as well as verify their validity.
 abstract contract ExecutionHub is AgentSecured, ReentrancyGuardUpgradeable, ExecutionHubEvents, IExecutionHub {
     using Address for address;
     using BaseMessageLib for MemView;
@@ -232,6 +232,8 @@ abstract contract ExecutionHub is AgentSecured, ReentrancyGuardUpgradeable, Exec
         }
     }
 
+    /// @dev Uses message body for a call to AgentManager, and checks the returned magic value to ensure that
+    /// only "remoteX" functions could be called this way.
     function _executeManagerMessage(Header header, uint256 proofMaturity, MemView body) internal returns (bool) {
         // TODO: introduce incentives for executing Manager Messages?
         CallData callData = body.castToCallData();
@@ -248,6 +250,9 @@ abstract contract ExecutionHub is AgentSecured, ReentrancyGuardUpgradeable, Exec
         return true;
     }
 
+    /// @dev Passes the message receipt to the Inbox contract, if it is deployed on Synapse Chain.
+    /// This ensures that the message receipts for the messages executed on Synapse Chain are passed to Summit
+    /// without a Notary having to sign them.
     function _passReceipt(
         uint32 attNotaryIndex,
         uint32 attNonce,
@@ -354,6 +359,7 @@ abstract contract ExecutionHub is AgentSecured, ReentrancyGuardUpgradeable, Exec
         if (_isInDispute(rootData.notaryIndex)) revert NotaryInDispute();
     }
 
+    /// @dev Formats the message execution receipt payload for the given hash and receipt data.
     function _messageReceipt(bytes32 messageHash, ReceiptData memory rcptData)
         internal
         view
