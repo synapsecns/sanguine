@@ -34,7 +34,7 @@ jobs:
           name: omnirpc
           repository: synapsecns/sanguine/helm
           # note: this must be manually updated for the workaround
-          tag: 0.2.3
+          tag: 0.2.4
           path: charts/omnirpc # Default charts/{name}
           registry: ghcr.io
           registry_username: ${{ github.actor }}
