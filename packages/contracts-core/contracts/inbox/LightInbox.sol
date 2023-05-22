@@ -14,6 +14,10 @@ import {IAgentManager} from "../interfaces/IAgentManager.sol";
 import {InterfaceDestination} from "../interfaces/InterfaceDestination.sol";
 import {InterfaceLightInbox} from "../interfaces/InterfaceLightInbox.sol";
 
+/// @notice `LightInbox` is the child of `StatementInbox` contract, that is used chains other than the Synapse Chain.
+/// In addition to the functionality of `StatementInbox`, it also:
+/// - Accepts Notary Attestations and passes them to the `Destination` contract.
+/// - Accepts Attestation Reports and initiates a dispute between the Notary and the Guard.
 contract LightInbox is StatementInbox, InterfaceLightInbox {
     using AttestationLib for bytes;
 
