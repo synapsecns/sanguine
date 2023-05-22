@@ -34,6 +34,7 @@ import {IExecutionHub} from "../interfaces/IExecutionHub.sol";
 import {IMessageRecipient} from "../interfaces/IMessageRecipient.sol";
 // ═════════════════════════════ EXTERNAL IMPORTS ══════════════════════════════
 import {Address} from "@openzeppelin/contracts/utils/Address.sol";
+import {ReentrancyGuardUpgradeable} from "@openzeppelin/contracts-upgradeable/security/ReentrancyGuardUpgradeable.sol";
 
 /**
  * @notice ExecutionHub is responsible for executing the messages that are
@@ -42,7 +43,7 @@ import {Address} from "@openzeppelin/contracts/utils/Address.sol";
  * On the Synapse Chain Notaries are submitting the snapshots that are later used for proving.
  * On the other chains Notaries are submitting the attestations that are later used for proving.
  */
-abstract contract ExecutionHub is AgentSecured, ExecutionHubEvents, IExecutionHub {
+abstract contract ExecutionHub is AgentSecured, ReentrancyGuardUpgradeable, ExecutionHubEvents, IExecutionHub {
     using Address for address;
     using BaseMessageLib for MemView;
     using ByteString for MemView;
@@ -113,8 +114,7 @@ abstract contract ExecutionHub is AgentSecured, ExecutionHubEvents, IExecutionHu
         bytes32[] calldata snapProof,
         uint256 stateIndex,
         uint64 gasLimit
-    ) external {
-        // TODO: add reentrancy check
+    ) external nonReentrant {
         // This will revert if payload is not a formatted message payload
         Message message = msgPayload.castToMessage();
         Header header = message.header();
