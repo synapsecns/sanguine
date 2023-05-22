@@ -4,6 +4,6 @@ dependencies:
   version: 9.3.2
 - name: omnirpc
   repository: file://../omnirpc/
-  version: 0.2.4
-digest: sha256:8864ec347baae5df1172fde1acb578ba839ed53a07446424fd34096935435363
-generated: "2023-05-22T15:42:38.746081-04:00"
+  version: 0.2.5
+digest: sha256:cf8daa487315bdc85c95c9b6b3c6bb2760868fe4760dc75a963887603e0a4892
+generated: "2023-05-22T18:32:19.446192-04:00"
