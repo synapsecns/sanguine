@@ -18,6 +18,7 @@ import {IStatementInbox} from "../../../contracts/interfaces/IStatementInbox.sol
 import {SNAPSHOT_MAX_STATES} from "../../../contracts/libs/memory/Snapshot.sol";
 import {MessageStatus} from "../../../contracts/libs/Structures.sol";
 
+import {ReentrantApp} from "../../harnesses/client/ReentrantApp.t.sol";
 import {RevertingApp} from "../../harnesses/client/RevertingApp.t.sol";
 import {MessageRecipientMock} from "../../mocks/client/MessageRecipientMock.t.sol";
 
@@ -323,6 +324,29 @@ abstract contract ExecutionHubTest is AgentSecuredTest {
         vm.prank(executor);
         testedEH().execute(msgPayload, originProof, snapProof, sm.rsi.stateIndex, rbm.request.gasLimit);
         verify_messageStatusNone(msgLeaf);
+    }
+
+    function test_execute_base_revert_reentrancy(Random memory random) public {
+        recipient = address(new ReentrantApp());
+        // Create some simple data
+        (RawBaseMessage memory rbm, RawHeader memory rh, SnapshotMock memory sm) = createDataRevertTest(random);
+        // Create messages and get origin proof
+        RawMessage memory rm = createBaseMessages(rbm, rh, localDomain());
+        msgPayload = rm.formatMessage();
+        msgLeaf = rm.castToMessage().leaf();
+        bytes32[] memory originProof = getLatestProof(rh.nonce - 1);
+        // Create snapshot proof
+        adjustSnapshot(sm);
+        (bytes32 snapRoot, bytes32[] memory snapProof) = prepareExecution(sm);
+        // Make sure that optimistic period is over
+        uint32 timePassed = random.nextUint32();
+        timePassed = uint32(bound(timePassed, rh.optimisticPeriod, rh.optimisticPeriod + 1 days));
+        skip(timePassed);
+        ReentrantApp(recipient).prepare(msgPayload, originProof, snapProof, sm.rsi.stateIndex);
+        vm.prank(executor);
+        testedEH().execute(msgPayload, originProof, snapProof, sm.rsi.stateIndex, rbm.request.gasLimit);
+        // We allow message recipient to revert, which is what supposed to happen if they try to reenter
+        verify_messageStatus(msgLeaf, snapRoot, sm.rsi.stateIndex, MessageStatus.Failed, executor, address(0));
     }
 
     // ══════════════════════════════════════ TESTS: EXECUTE MANAGER MESSAGES ══════════════════════════════════════════
