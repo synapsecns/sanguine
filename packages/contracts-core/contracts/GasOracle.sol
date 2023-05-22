@@ -16,8 +16,9 @@ import {InterfaceGasOracle} from "./interfaces/InterfaceGasOracle.sol";
  * @notice `GasOracle` contract is responsible for tracking the gas data for both local and remote chains.
  * ## Local gas data tracking
  * - `GasOracle` is using the available tools such as `tx.gasprice` to track the time-averaged values
- * for different "gas statistics".
+ * for different "gas statistics" _(to be implemented in the future)_.
  * - These values are cached, so that the reported values are only changed when a big enough change is detected.
+ * - In the MVP version the gas data is set manually by the owner of the contract.
  * - The reported values are included in Origin's State, whenever a new message is sent.
  * > This leads to cached "chain gas data" being included in the Guard and Notary snapshots.
  * ## Remote gas data tracking

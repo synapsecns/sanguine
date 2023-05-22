@@ -17,6 +17,16 @@ import {InterfaceLightManager} from "./interfaces/InterfaceLightManager.sol";
 import {IStatementInbox} from "./interfaces/IStatementInbox.sol";
 import {ExecutionHub} from "./hubs/ExecutionHub.sol";
 
+/// @notice `Destination` contract is used for receiving messages from other chains. It relies on
+/// Notary-signed statements to get the truthful states of the remote chains. These states are then
+/// used to verify the validity of the messages sent from the remote chains.
+/// `Destination` is responsible for the following:
+/// - Accepting the Attestations from the local Inbox contract.
+/// - Using these Attestations to execute the messages (see parent `ExecutionHub`).
+/// - Passing the Agent Merkle Roots from the Attestations to the local LightManager contract,
+///   if deployed on a non-Synapse chain.
+/// - Keeping track of the remote domains GasData submitted by Notaries, that could be later consumed
+///   by the local `GasOracle` contract.
 contract Destination is ExecutionHub, DestinationEvents, InterfaceDestination {
     using AttestationLib for bytes;
     using ByteString for bytes;

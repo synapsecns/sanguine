@@ -20,6 +20,14 @@ import {SnapshotHub} from "./hubs/SnapshotHub.sol";
 // ═════════════════════════════ EXTERNAL IMPORTS ══════════════════════════════
 import {DoubleEndedQueue} from "@openzeppelin/contracts/utils/structs/DoubleEndedQueue.sol";
 
+/// @notice `Summit` contract is the cornerstone of the Synapse messaging protocol. This is where the
+/// states of all the remote chains (provided collectively by the Guards and Notaries) are stored. This is
+/// also the place where the tips are distributed among the off-chain actors.
+/// `Summit` is responsible for the following:
+/// - Accepting Guard and Notary snapshots from the local `Inbox` contract, and storing the states from these
+///   snapshots (see parent contract `SnapshotHub`).
+/// - Accepting Notary Receipts from the local `Inbox` contract, and using them to distribute tips among the
+///   off-chain actors that participated in the message lifecycle.
 contract Summit is SnapshotHub, SummitEvents, InterfaceSummit {
     using AttestationLib for bytes;
     using ByteString for bytes;
