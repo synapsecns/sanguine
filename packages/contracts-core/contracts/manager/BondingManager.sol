@@ -24,8 +24,19 @@ import {InterfaceBondingManager} from "../interfaces/InterfaceBondingManager.sol
 import {InterfaceLightManager} from "../interfaces/InterfaceLightManager.sol";
 import {InterfaceOrigin} from "../interfaces/InterfaceOrigin.sol";
 
-/// @notice BondingManager keeps track of all existing _agents.
-/// Used on the Synapse Chain, serves as the "source of truth" for LightManagers on remote chains.
+/// @notice BondingManager keeps track of all existing agents on the Synapse Chain.
+/// It utilizes a dynamic Merkle Tree to store the agent information. This enables passing only the
+/// latest merkle root of this tree (referenced as the Agent Merkle Root) to the remote chains,
+/// so that the agents could "register" themselves by proving their current status against this root.
+/// `BondingManager` is responsible for the following:
+/// - Keeping track of all existing agents, as well as their statuses. In the MVP version there is no token staking,
+///   which will be added in the future. Nonetheless, the agent statuses are still stored in the Merkle Tree, and
+///   the agent slashing is still possible, though with no reward/penalty for the reporter/reported.
+/// - Marking agents as "ready to be slashed" once their fraud is proven on the local or remote chain. Anyone could
+///   complete the slashing by providing the proof of the current agent status against the current Agent Merkle Root.
+/// - Sending Manager Message to remote `LightManager` to withdraw collected tips from the remote chain.
+/// - Accepting Manager Message from remote `LightManager` to slash agents on the Synapse Chain, when their fraud
+///   is proven on the remote chain.
 contract BondingManager is AgentManager, InterfaceBondingManager {
     // ══════════════════════════════════════════════════ STORAGE ══════════════════════════════════════════════════════
 

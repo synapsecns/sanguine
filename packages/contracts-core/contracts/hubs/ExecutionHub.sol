@@ -38,6 +38,9 @@ import {ReentrancyGuardUpgradeable} from "@openzeppelin/contracts-upgradeable/se
 
 /// @notice `ExecutionHub` is a parent contract for `Destination`. It is responsible for the following:
 /// - Executing the messages that are proven against the saved Snapshot Merkle Roots.
+/// - Base messages are forwarded to the specified message recipient, ensuring that the original
+///   execution request is fulfilled correctly.
+/// - Manager messages are forwarded to the local `AgentManager` contract.
 /// - Keeping track of the saved Snapshot Merkle Roots (which are accepted in `Destination`).
 /// - Keeping track of message execution Receipts, as well as verify their validity.
 abstract contract ExecutionHub is AgentSecured, ReentrancyGuardUpgradeable, ExecutionHubEvents, IExecutionHub {
