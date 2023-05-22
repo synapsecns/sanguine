@@ -21,6 +21,14 @@ import {IAgentManager} from "../interfaces/IAgentManager.sol";
 import {InterfaceDestination} from "../interfaces/InterfaceDestination.sol";
 import {IStatementInbox} from "../interfaces/IStatementInbox.sol";
 
+/// @notice `AgentManager` is used to keep track of all the bonded agents and their statuses.
+/// The exact logic of how the agent statuses are stored and updated is implemented in child contracts,
+/// and depends on whether the contract is used on Synapse Chain or on other chains.
+/// `AgentManager` is responsible for the following:
+/// - Keeping track of all the bonded agents and their statuses.
+/// - Keeping track of all the disputes between agents.
+/// - Notifying `AgentSecured` contracts about the opened and resolved disputes.
+/// - Notifying `AgentSecured` contracts about the slashed agents.
 abstract contract AgentManager is MessagingBase, AgentManagerEvents, IAgentManager {
     struct AgentDispute {
         DisputeFlag flag;

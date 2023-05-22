@@ -16,9 +16,9 @@ import {SnapshotHubEvents} from "../events/SnapshotHubEvents.sol";
 import {ISnapshotHub} from "../interfaces/ISnapshotHub.sol";
 import {IStatementInbox} from "../interfaces/IStatementInbox.sol";
 
-/**
- * @notice Hub to accept and save snapshots, as well as verify _attestations.
- */
+/// @notice `SnapshotHub` is a parent contract for `Summit`. It is responsible for the following:
+/// - Accepting and storing Guard and Notary snapshots to keep track of all the remote `Origin` states.
+/// - Generating and storing Attestations derived from Notary snapshots, as well as verifying their validity.
 abstract contract SnapshotHub is AgentSecured, SnapshotHubEvents, ISnapshotHub {
     using AttestationLib for bytes;
     using StateLib for bytes;

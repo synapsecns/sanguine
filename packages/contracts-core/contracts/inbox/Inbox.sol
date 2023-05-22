@@ -28,6 +28,12 @@ import {InterfaceInbox} from "../interfaces/InterfaceInbox.sol";
 import {ISnapshotHub} from "../interfaces/ISnapshotHub.sol";
 import {InterfaceSummit} from "../interfaces/InterfaceSummit.sol";
 
+/// @notice `Inbox` is the child of `StatementInbox` contract, that is used on Synapse Chain.
+/// In addition to the functionality of `StatementInbox`, it also:
+/// - Accepts Guard and Notary Snapshots and passes them to `Summit` contract.
+/// - Accepts Notary-signed Receipts and passes them to `Summit` contract.
+/// - Accepts Receipt Reports to initiate a dispute between Guard and Notary.
+/// - Verifies Attestations and Attestation Reports, and slashes the signer if they are invalid.
 contract Inbox is StatementInbox, InboxEvents, InterfaceInbox {
     using AttestationLib for bytes;
     using ReceiptLib for bytes;
