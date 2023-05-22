@@ -86,13 +86,13 @@ func (s Scribe) Start(ctx context.Context) error {
 					logger.Warnf("scribe for chain %d shutting down", chainConfig.ChainID)
 					return nil
 				case <-time.After(timeout):
-					err := s.confirmBlocks(groupCtx, chainConfig.ChainID, chainConfig.RequiredConfirmations)
-					if err != nil {
-						timeout = b.Duration()
-						logger.Warnf("could not confirm blocks on chain %d, retrying: %v", chainConfig.ChainID, err)
-
-						continue
-					}
+					//err := s.confirmBlocks(groupCtx, chainConfig.ChainID, chainConfig.RequiredConfirmations)
+					//if err != nil {
+					//	timeout = b.Duration()
+					//	logger.Warnf("could not confirm blocks on chain %d, retrying: %v", chainConfig.ChainID, err)
+					//
+					//	continue
+					//}
 
 					// Set the timeout to the confirmation refresh rate.
 					timeout = confirmationRefreshRateTime
