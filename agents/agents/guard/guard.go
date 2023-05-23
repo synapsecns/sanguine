@@ -187,11 +187,13 @@ func (g Guard) submitLatestSnapshot(parentCtx context.Context) {
 				attribute.String("err", err.Error()),
 			))
 		} else {
+			logger.Errorf("ERROR NOT NIL")
 			for originID, state := range statesToSubmit {
 				g.summitLatestStates[originID] = state
 			}
 		}
 	}
+	logger.Errorf("PAST LOOP")
 }
 
 // Start starts the guard.
