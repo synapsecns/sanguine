@@ -66,7 +66,7 @@ func (s Scribe) Start(ctx context.Context) error {
 		g.Go(func() error {
 			err := s.scribeBackfiller.ChainBackfillers[chainID].Backfill(ctx, nil, true)
 			if err != nil {
-				return fmt.Errorf("could not backfill: %w", err)
+				return fmt.Errorf("could not backfill, error: %w", err)
 			}
 			return nil
 		})
