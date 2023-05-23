@@ -388,16 +388,17 @@ const BridgePage = ({
         const positedToChain = flip ? fromChainId : undefined
         const desiredChainId = flip ? Number(toChainId) : Number(chainId)
 
-        const res = switchNetwork({ chainId: desiredChainId })
+        const res = await switchNetwork({ chainId: desiredChainId })
           .then((res) => {
             if (fromInput.string !== '') {
               setIsQuoteLoading(true)
             }
             return res
           })
-          .catch(() => {
-            return undefined
+          .catch((error) => {
+            return error && undefined
           })
+
         if (res === undefined) {
           console.log("can't switch chain, chainId: ", chainId)
           return
