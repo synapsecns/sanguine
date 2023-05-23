@@ -459,6 +459,7 @@ const BridgePage = ({
           toBridgeableToken.symbol
         )
         if (fromInput.string !== '') {
+          console.log('hello')
           setIsQuoteLoading(true)
         }
         return

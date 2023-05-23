@@ -352,16 +352,18 @@ const SwapCard = ({
       return alert('Please connect your wallet')
     }
     const desiredChainId = Number(chainId)
-    const res = switchNetwork({ chainId: desiredChainId })
+
+    const res = await switchNetwork({ chainId: desiredChainId })
       .then((res) => {
         if (fromInput.string !== '') {
           setIsQuoteLoading(true)
         }
         return res
       })
-      .catch(() => {
-        return undefined
+      .catch((error) => {
+        return error && undefined
       })
+
     if (res === undefined) {
       console.log("can't switch network, chainId: ", chainId)
       return
