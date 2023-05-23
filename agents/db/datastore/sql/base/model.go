@@ -150,7 +150,7 @@ func (c CommittedMessage) Flag() types.MessageFlag {
 
 // Header gets the header.
 func (c CommittedMessage) Header() types.Header {
-	return types.NewHeader(c.OriginDomain(), c.Nonce(), c.DestinationDomain(), c.OptimisticSeconds())
+	return types.NewHeader(c.Flag(), c.OriginDomain(), c.Nonce(), c.DestinationDomain(), c.OptimisticSeconds())
 }
 
 // OriginDomain returns the Slip-44 ID.

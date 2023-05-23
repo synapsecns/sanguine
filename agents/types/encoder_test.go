@@ -88,14 +88,14 @@ func TestNewMessageEncodeDecode(t *testing.T) {
 	body := []byte(gofakeit.Sentence(gofakeit.Number(5, 15)))
 	optimisticSeconds := gofakeit.Uint32()
 
-	header := types.NewHeader(
-		origin, nonce, destination, optimisticSeconds)
-
 	flag := types.MessageFlagManager
 
-	newMessage := types.NewMessage(flag, header, nil, body)
+	header := types.NewHeader(
+		flag, origin, nonce, destination, optimisticSeconds)
 
-	Equal(t, newMessage.Flag(), flag)
+	newMessage := types.NewMessage(header, nil, body)
+
+	Equal(t, newMessage.Header().Flag(), flag)
 	Equal(t, newMessage.OriginDomain(), origin)
 	Equal(t, newMessage.Nonce(), nonce)
 	Equal(t, newMessage.DestinationDomain(), destination)
@@ -120,12 +120,14 @@ func TestHeaderEncodeDecode(t *testing.T) {
 	destination := gofakeit.Uint32()
 	optimisticSeconds := gofakeit.Uint32()
 
-	ogHeader, err := types.EncodeHeader(types.NewHeader(origin, nonce, destination, optimisticSeconds))
+	flag := types.MessageFlagManager
+	ogHeader, err := types.EncodeHeader(types.NewHeader(flag, origin, nonce, destination, optimisticSeconds))
 	Nil(t, err)
 
 	decodedHeader, err := types.DecodeHeader(ogHeader)
 	Nil(t, err)
 
+	Equal(t, decodedHeader.Flag(), flag)
 	Equal(t, decodedHeader.OriginDomain(), origin)
 	Equal(t, decodedHeader.Nonce(), nonce)
 	Equal(t, decodedHeader.DestinationDomain(), destination)
