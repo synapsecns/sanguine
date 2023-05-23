@@ -411,7 +411,7 @@ func EncodeMessage(m Message) ([]byte, error) {
 	}
 
 	buf := new(bytes.Buffer)
-	
+
 	buf.Write(encodedHeader)
 
 	if m.Header().Flag() == MessageFlagBase {
@@ -448,14 +448,12 @@ func DecodeMessage(message []byte) (Message, error) {
 			return nil, fmt.Errorf("could not decode base message: %w", err)
 		}
 		decoded = messageImpl{
-			flag:        MessageFlag(flag),
 			header:      header,
 			baseMessage: baseMessage,
 		}
 	} else {
 		content = rawBody
 		decoded = messageImpl{
-			flag:   MessageFlag(flag),
 			header: header,
 			body:   content,
 		}
