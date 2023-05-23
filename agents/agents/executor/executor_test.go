@@ -215,7 +215,7 @@ func (e *ExecutorSuite) TestMerkleInsert() {
 	e.Nil(err)
 	e.TestBackendOrigin.WaitForConfirmation(e.GetTestContext(), tx)
 
-	header := types.NewHeader(chainID, 1, destination, optimisticSeconds[0])
+	header := types.NewHeader(types.MessageFlagBase, chainID, 1, destination, optimisticSeconds[0])
 
 	var msgSender [32]byte
 	copy(msgSender[:], transactOpts.TransactOpts.From.Bytes())
@@ -223,7 +223,7 @@ func (e *ExecutorSuite) TestMerkleInsert() {
 	msgRequest := types.NewRequest(uint64(0), big.NewInt(0))
 	baseMessage := types.NewBaseMessage(msgSender, recipients[0], msgTips, msgRequest, messageBytes)
 
-	message := types.NewMessage(types.MessageFlagBase, header, baseMessage, []byte{})
+	message := types.NewMessage(header, baseMessage, []byte{})
 	e.Nil(err)
 
 	leafA, err := message.ToLeaf()
@@ -268,13 +268,13 @@ func (e *ExecutorSuite) TestMerkleInsert() {
 	e.Nil(err)
 	e.TestBackendOrigin.WaitForConfirmation(e.GetTestContext(), tx)
 
-	header = types.NewHeader(chainID, 2, destination, optimisticSeconds[1])
+	header = types.NewHeader(types.MessageFlagBase, chainID, 2, destination, optimisticSeconds[1])
 
 	copy(msgSender[:], transactOpts.TransactOpts.From.Bytes())
 	msgTips = types.NewTips(big.NewInt(0), big.NewInt(0), big.NewInt(0), big.NewInt(0))
 	msgRequest = types.NewRequest(uint64(0), big.NewInt(0))
 	baseMessage = types.NewBaseMessage(msgSender, recipients[1], msgTips, msgRequest, messageBytes)
-	message = types.NewMessage(types.MessageFlagBase, header, baseMessage, []byte{})
+	message = types.NewMessage(header, baseMessage, []byte{})
 	e.Nil(err)
 
 	leafB, err := message.ToLeaf()
@@ -392,16 +392,16 @@ func (e *ExecutorSuite) TestVerifyMessageMerkleProof() {
 		{byte(gofakeit.Uint32())}, {byte(gofakeit.Uint32())},
 	}
 
-	header0 := types.NewHeader(chainID, nonces[0], destination, optimisticSeconds[0])
-	header1 := types.NewHeader(chainID, nonces[1], destination, optimisticSeconds[1])
-	header2 := types.NewHeader(chainID, nonces[2], destination, optimisticSeconds[2])
-	header3 := types.NewHeader(chainID, nonces[3], destination, optimisticSeconds[3])
+	header0 := types.NewHeader(types.MessageFlagManager, chainID, nonces[0], destination, optimisticSeconds[0])
+	header1 := types.NewHeader(types.MessageFlagManager, chainID, nonces[1], destination, optimisticSeconds[1])
+	header2 := types.NewHeader(types.MessageFlagManager, chainID, nonces[2], destination, optimisticSeconds[2])
+	header3 := types.NewHeader(types.MessageFlagManager, chainID, nonces[3], destination, optimisticSeconds[3])
 
-	message0 := types.NewMessage(types.MessageFlagManager, header0, nil, messageBytes[0])
-	message1 := types.NewMessage(types.MessageFlagManager, header1, nil, messageBytes[1])
-	message2 := types.NewMessage(types.MessageFlagManager, header2, nil, messageBytes[2])
-	message3 := types.NewMessage(types.MessageFlagManager, header3, nil, messageBytes[3])
-	failMessage := types.NewMessage(types.MessageFlagManager, header1, nil, messageBytes[3])
+	message0 := types.NewMessage(header0, nil, messageBytes[0])
+	message1 := types.NewMessage(header1, nil, messageBytes[1])
+	message2 := types.NewMessage(header2, nil, messageBytes[2])
+	message3 := types.NewMessage(header3, nil, messageBytes[3])
+	failMessage := types.NewMessage(header1, nil, messageBytes[3])
 
 	// Insert messages into the database.
 	err = e.ExecutorTestDB.StoreMessage(e.GetTestContext(), message0, blockNumbers[0], false, 0)
@@ -595,14 +595,14 @@ func (e *ExecutorSuite) TestExecutor() {
 
 	tree := merkle.NewTree(merkle.MessageTreeHeight)
 
-	header := types.NewHeader(uint32(e.TestBackendOrigin.GetChainID()), nonce, uint32(e.TestBackendDestination.GetChainID()), optimisticSeconds)
+	header := types.NewHeader(types.MessageFlagBase, uint32(e.TestBackendOrigin.GetChainID()), nonce, uint32(e.TestBackendDestination.GetChainID()), optimisticSeconds)
 
 	var msgSender [32]byte
 	copy(msgSender[:], txContextOrigin.TransactOpts.From.Bytes())
 	msgTips := types.NewTips(big.NewInt(0), big.NewInt(0), big.NewInt(0), big.NewInt(0))
 	msgRequest := types.NewRequest(uint64(0), big.NewInt(0))
 	baseMessage := types.NewBaseMessage(msgSender, recipient, msgTips, msgRequest, body)
-	message := types.NewMessage(types.MessageFlagBase, header, baseMessage, []byte{})
+	message := types.NewMessage(header, baseMessage, []byte{})
 	leaf, err := message.ToLeaf()
 	e.Nil(err)
 
@@ -667,7 +667,7 @@ func (e *ExecutorSuite) TestSetMinimumTime() {
 		optimisticSeconds := i
 		body := []byte{byte(gofakeit.Uint32())}
 
-		message := types.NewMessage(types.MessageFlagManager, types.NewHeader(chainID, nonce, destination, uint32(optimisticSeconds)), nil, body)
+		message := types.NewMessage(types.NewHeader(types.MessageFlagManager, chainID, nonce, destination, uint32(optimisticSeconds)), nil, body)
 
 		err := e.ExecutorTestDB.StoreMessage(e.GetTestContext(), message, uint64(i), false, 0)
 		e.Nil(err)
