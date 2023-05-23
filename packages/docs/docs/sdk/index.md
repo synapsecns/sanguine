@@ -20,6 +20,8 @@ import InstallSwitch from '@site/src/components/SdkFeatures/InstallSwitch'
 
 <InstallSwitch />
 
+<b>The Router SDK uses ethers v5.7</b>
+
 ### Quickstart
 
 ```typescript
