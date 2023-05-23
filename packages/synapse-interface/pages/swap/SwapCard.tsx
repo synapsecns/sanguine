@@ -544,12 +544,100 @@ const SwapCard = ({
     `,
   }
 
-  console.log('swapQuote?.allowance: ', swapQuote?.allowance)
+  const isFromBalanceEnough = fromTokenBalance?.gte(fromInput.bigNum)
+  let destAddrNotValid
+
+  const getButtonProperties = () => {
+    let properties = {
+      label: `Enter amount to swap`,
+      pendingLabel: 'Swapping funds...',
+      className: '',
+      disabled: true,
+      buttonAction: () => executeSwap(),
+      postButtonAction: () => resetRates(),
+    }
+
+    const isInputZero = checkStringIfOnlyZeroes(fromInput?.string)
+
+    if (error) {
+      properties.label = error
+      properties.disabled = true
+      return properties
+    }
+
+    if (isInputZero || fromInput?.bigNum?.eq(0)) {
+      properties.label = `Enter amount to swap`
+      properties.disabled = true
+      return properties
+    }
+
+    if (!isFromBalanceEnough) {
+      properties.label = `Insufficient ${fromToken.symbol} Balance`
+      properties.disabled = true
+      return properties
+    }
+
+    if (IMPAIRED_CHAINS[connectedChainId]?.disabled) {
+      properties.label = `${CHAINS_BY_ID[connectedChainId]?.name} is currently paused`
+      properties.disabled = true
+      return properties
+    }
+
+    if (fromInput.bigNum.eq(0)) {
+      properties.label = `Amount must be greater than fee`
+      properties.disabled = true
+      return properties
+    }
+
+    if (
+      !fromInput?.bigNum?.eq(0) &&
+      swapQuote?.allowance &&
+      swapQuote?.allowance?.lt(fromInput.bigNum)
+    ) {
+      properties.buttonAction = () =>
+        approveToken(
+          swapQuote.routerAddress,
+          connectedChainId,
+          fromToken.addresses[connectedChainId]
+        )
+      properties.label = `Approve ${fromToken.symbol}`
+      properties.pendingLabel = `Approving ${fromToken.symbol}`
+      properties.className = 'from-[#feba06] to-[#FEC737]'
+      properties.disabled = false
+    }
+
+    if (destinationAddress && !validateAndParseAddress(destinationAddress)) {
+      destAddrNotValid = true
+      properties.label = 'Invalid Destination Address'
+      properties.disabled = true
+      return properties
+    }
+
+    // default case
+    properties.label = swapQuote.outputAmount.eq(0)
+      ? 'Enter amount to swap'
+      : 'Swap your funds'
+    properties.disabled = false
+
+    const numExchangeRate = Number(
+      formatBNToString(swapQuote.exchangeRate, 18, 4)
+    )
+
+    if (
+      !fromInput.bigNum.eq(0) &&
+      (numExchangeRate < 0.95 || numExchangeRate > 1.05)
+    ) {
+      properties.className = 'from-[#fe064a] to-[#fe5281]'
+      properties.label = 'Slippage High - Swap Anyway?'
+    }
+
+    return properties
+  }
 
   // TODO make this a function
   const ActionButton = useMemo(() => {
     let destAddrNotValid
-    let btnLabel = `Enter amount to bridge`
+    let btnLabel = `Enter amount to swap`
     let btnClassName = ''
     let pendingLabel = 'Swapping funds...'
     let buttonAction = () => executeSwap()
@@ -560,7 +648,7 @@ const SwapCard = ({
     if (error) {
       btnLabel = error
     } else if (isInputZero || fromInput?.bigNum?.eq(0)) {
-      btnLabel = `Enter amount to bridge`
+      btnLabel = `Enter amount to swap`
     } else if (!isFromBalanceEnough) {
       btnLabel = `Insufficient ${fromToken.symbol} Balance`
     } else if (IMPAIRED_CHAINS[connectedChainId]?.disabled) {
