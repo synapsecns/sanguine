@@ -263,6 +263,7 @@ func (d OriginDeployer) Deploy(ctx context.Context) (contracts.DeployedContract,
 		agentAddress = bondingManagerContract.Address()
 
 		inboxContract := d.Registry().Get(ctx, InboxType)
+		fmt.Printf("CRONIN InboxType in OriginDeployer")
 		inboxAddress = inboxContract.Address()
 	} else {
 		lightManagerContract := d.Registry().Get(ctx, LightManagerType)
@@ -317,6 +318,7 @@ func (a SummitDeployer) Deploy(ctx context.Context) (contracts.DeployedContract,
 	bondingManagerContract := a.Registry().Get(ctx, BondingManagerType)
 	bondingManagerAddress := bondingManagerContract.Address()
 	inboxContract := a.Registry().Get(ctx, InboxType)
+	fmt.Printf("CRONIN InboxType in SummitDeployer")
 	inboxAddress := inboxContract.Address()
 	return a.DeploySimpleContract(ctx, func(transactOps *bind.TransactOpts, backend bind.ContractBackend) (common.Address, *types.Transaction, interface{}, error) {
 		summitAddress, summitTx, summit, err := summit.DeploySummit(transactOps, backend, uint32(a.Backend().GetChainID()), bondingManagerAddress, inboxAddress)
@@ -358,6 +360,7 @@ func (d DestinationDeployer) Deploy(ctx context.Context) (contracts.DeployedCont
 		agentManagerAddress = bondingManagerContract.Address()
 
 		inboxContract := d.Registry().Get(ctx, InboxType)
+		fmt.Printf("CRONIN InboxType in DestinationDeployer")
 		inboxAddress = inboxContract.Address()
 	} else {
 		lightManagerContract := d.Registry().Get(ctx, LightManagerType)
