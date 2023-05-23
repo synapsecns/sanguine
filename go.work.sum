@@ -800,9 +800,17 @@ github.com/ipfs/go-ipfs-addr v0.0.1 h1:DpDFybnho9v3/a1dzJ5KnWdThWD1HrFLpQ+tWIyBa
 github.com/ipfs/go-ipfs-delay v0.0.0-20181109222059-70721b86a9a8 h1:NAviDvJ0WXgD+yiL2Rj35AmnfgI11+pHXbdciD917U0=
 github.com/ipfs/go-ipfs-util v0.0.2 h1:59Sswnk1MFaiq+VcaknX7aYEyGyGDAA73ilhEK2POp8=
 github.com/j-keck/arping v1.0.2/go.mod h1:aJbELhR92bSk7tp79AWM/ftfc90EfEi2bQJrbBFOsPw=
+github.com/jackc/chunkreader v1.0.0 h1:4s39bBR8ByfqH+DKm8rQA3E1LHZWB9XWcrz8fqaZbe0=
+github.com/jackc/chunkreader/v2 v2.0.1 h1:i+RDz65UE+mmpjTfyz0MoVTnzeYxroil2G82ki7MGG8=
+github.com/jackc/pgconn v1.7.0 h1:pwjzcYyfmz/HQOQlENvG1OcDqauTGaqlVahq934F0/U=
+github.com/jackc/pgio v1.0.0 h1:g12B9UwVnzGhueNavwioyEEpAmqMe1E/BN9ES+8ovkE=
 github.com/jackc/pgmock v0.0.0-20190831213851-13a1b77aafa2 h1:JVX6jT/XfzNqIjye4717ITLaNwV9mWbJx0dLCpcRzdA=
 github.com/jackc/pgmock v0.0.0-20210724152146-4ad1a8207f65 h1:DadwsjnMwFjfWc9y5Wi/+Zz7xoE5ALHsRQlOctkOiHc=
+github.com/jackc/pgproto3 v1.1.0 h1:FYYE4yRw+AgI8wXIinMlNjBbp/UitDJwfj5LqqewP1A=
+github.com/jackc/pgproto3/v2 v2.0.5 h1:NUbEWPmCQZbMmYlTjVoNPhc0CfnYyz2bfUAh6A5ZVJM=
 github.com/jackc/pgservicefile v0.0.0-20221227161230-091c0ba34f0a/go.mod h1:5TJZWKEWniPve33vlWYSoGYefn3gLQRzjfDlhSJ9ZKM=
+github.com/jackc/pgtype v1.5.0 h1:jzBqRk2HFG2CV4AIwgCI2PwTgm6UUoCAK2ofHHRirtc=
+github.com/jackc/pgx/v4 v4.9.0 h1:6STjDqppM2ROy5p1wNDcsC7zJTjSHeuCsguZmXyzx7c=
 github.com/jackc/pgx/v5 v5.2.0/go.mod h1:Ptn7zmohNsWEsdxRawMzk3gaKma2obW+NWTnKa0S4nk=
 github.com/jackc/pgx/v5 v5.3.1/go.mod h1:t3JDKnCBlYIc0ewLF0Q7B8MXmoIaBOZj/ic7iHozM/8=
 github.com/jackc/puddle v1.2.2-0.20220404125616-4e959849469a h1:oH7y/b+q2BEerCnARr/HZc1NxOYbKSJor4MqQXlhh+s=

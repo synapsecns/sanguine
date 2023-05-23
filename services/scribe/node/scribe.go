@@ -125,7 +125,7 @@ func (s Scribe) confirmBlocks(ctx context.Context, chainID uint32, requiredConfi
 
 	// If the last block number is 0 and current block - required confirmations is greater than 0,
 	// then set all blocks up to current block - required confirmations to confirmed.
-	//if lastBlockNumber == 0 && newBlock > uint64(requiredConfirmations) {
+	// if lastBlockNumber == 0 && newBlock > uint64(requiredConfirmations) {
 	//	err := s.confirmToBlockNumber(ctx, newBlock-uint64(requiredConfirmations), chainID)
 	//	if err != nil {
 	//		logger.Errorf("[LIVEFILL] could not confirm to block number %d chain: %d: %v", newBlock-uint64(requiredConfirmations), chainID, err)
@@ -276,7 +276,7 @@ func (s Scribe) confirmBlocks(ctx context.Context, chainID uint32, requiredConfi
 }
 
 //
-//func (s Scribe) confirmToBlockNumber(ctx context.Context, blockNumber uint64, chainID uint32) error {
+// func (s Scribe) confirmToBlockNumber(ctx context.Context, blockNumber uint64, chainID uint32) error {
 //	g, groupCtx := errgroup.WithContext(ctx)
 //
 //	g.Go(func() error {
