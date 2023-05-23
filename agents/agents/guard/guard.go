@@ -179,6 +179,7 @@ func (g Guard) submitLatestSnapshot(parentCtx context.Context) {
 			attribute.String("err", err.Error()),
 		))
 	} else {
+		logger.Errorf("ABOUT TO SUBMIT SNAPSHOT")
 		err := g.summitDomain.Summit().SubmitSnapshot(ctx, g.unbondedSigner, encodedSnapshot, snapshotSignature)
 		if err != nil {
 			logger.Errorf("Failed to submit snapshot to summit: %v", err)
