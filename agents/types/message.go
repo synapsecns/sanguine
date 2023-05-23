@@ -9,29 +9,14 @@ import (
 )
 
 const (
-	// MessageFlagSize if the size in bytes of a message flag.
-	MessageFlagSize = 1
 	// MessageBodyOffset is the message body offset.
-	MessageBodyOffset = MessageFlagSize + MessageHeaderSize
-)
-
-// MessageFlag indicates if the message is normal "Base" message or "Manager" message.
-// MessageFlag indicates if the message is normal "Base" message or "Manager" message.
-type MessageFlag uint8
-
-const (
-	// MessageFlagBase is the normal message that has tips.
-	MessageFlagBase MessageFlag = iota
-	// MessageFlagManager is manager message and will not have tips.
-	MessageFlagManager
+	MessageBodyOffset = MessageHeaderSize
 )
 
 // Message is an interface that contains the message.
 //
 //nolint:interfacebloat
 type Message interface {
-	// Flag is the message flag
-	Flag() MessageFlag
 	// Header gets the message header
 	Header() Header
 	// BaseMessage is the base message if the flag indicates the type is a base message
@@ -53,7 +38,6 @@ type Message interface {
 
 // messageImpl implements a message. It is used for testutils. Real messages are emitted by the contract.
 type messageImpl struct {
-	flag        MessageFlag
 	header      Header
 	baseMessage BaseMessage
 	body        []byte
@@ -62,9 +46,8 @@ type messageImpl struct {
 const headerOffset uint16 = 0
 
 // NewMessage creates a new message from fields passed in.
-func NewMessage(flag MessageFlag, header Header, baseMessage BaseMessage, body []byte) Message {
+func NewMessage(header Header, baseMessage BaseMessage, body []byte) Message {
 	return &messageImpl{
-		flag:        flag,
 		header:      header,
 		baseMessage: baseMessage,
 		body:        body,
@@ -73,10 +56,6 @@ func NewMessage(flag MessageFlag, header Header, baseMessage BaseMessage, body [
 
 func (m messageImpl) Header() Header {
 	return m.header
-}
-
-func (m messageImpl) Flag() MessageFlag {
-	return m.flag
 }
 
 func (m messageImpl) OriginDomain() uint32 {
@@ -106,7 +85,7 @@ func (m messageImpl) Body() []byte {
 // ToLeaf converts a message to an encoded leaf.
 func (m messageImpl) ToLeaf() (leaf [32]byte, err error) {
 	var toHash []byte
-	if m.flag == MessageFlagBase {
+	if m.Header().Flag() == MessageFlagBase {
 		toHash = m.baseMessage.Content()
 	} else {
 		encodedMessage, err := EncodeMessage(m)

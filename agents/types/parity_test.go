@@ -325,24 +325,23 @@ func TestMessageEncodeParity(t *testing.T) {
 	_, headerContract := deployManager.GetHeaderHarness(ctx, testBackend)
 
 	// generate some fake data
+	flag := types.MessageFlagBase
 	origin := gofakeit.Uint32()
 	nonce := gofakeit.Uint32()
 	destination := gofakeit.Uint32()
 	body := []byte(gofakeit.Sentence(gofakeit.Number(5, 15)))
 	optimisticSeconds := gofakeit.Uint32()
 
-	flag := uint8(1)
-
-	formattedHeader, err := headerContract.EncodeHeader(&bind.CallOpts{Context: ctx}, origin, nonce, destination, optimisticSeconds)
+	formattedHeader, err := headerContract.EncodeHeader(&bind.CallOpts{Context: ctx}, uint8(flag), origin, nonce, destination, optimisticSeconds)
 	Nil(t, err)
 
-	goHeader, err := types.EncodeHeader(types.NewHeader(origin, nonce, destination, optimisticSeconds))
+	goHeader, err := types.EncodeHeader(types.NewHeader(flag, origin, nonce, destination, optimisticSeconds))
 	Nil(t, err)
 	formattedHeaderFromGo := new(big.Int).SetBytes(goHeader)
 
 	Equal(t, formattedHeader, formattedHeaderFromGo)
 
-	formattedMessage, err := messageContract.FormatMessage(&bind.CallOpts{Context: ctx}, flag, formattedHeader, body)
+	formattedMessage, err := messageContract.FormatMessage(&bind.CallOpts{Context: ctx}, formattedHeader, body)
 	Nil(t, err)
 
 	decodedMessage, err := types.DecodeMessage(formattedMessage)
@@ -363,12 +362,14 @@ func TestHeaderEncodeParity(t *testing.T) {
 	deployManager := testutil.NewDeployManager(t)
 	_, headerHarnessContract := deployManager.GetHeaderHarness(ctx, testBackend)
 
+	flag := types.MessageFlagBase
 	origin := gofakeit.Uint32()
 	nonce := gofakeit.Uint32()
 	destination := gofakeit.Uint32()
 	optimisticSeconds := gofakeit.Uint32()
 
 	solHeader, err := headerHarnessContract.EncodeHeader(&bind.CallOpts{Context: ctx},
+		uint8(flag),
 		origin,
 		nonce,
 		destination,
@@ -376,7 +377,7 @@ func TestHeaderEncodeParity(t *testing.T) {
 	)
 	Nil(t, err)
 
-	goHeader, err := types.EncodeHeader(types.NewHeader(origin, nonce, destination, optimisticSeconds))
+	goHeader, err := types.EncodeHeader(types.NewHeader(flag, origin, nonce, destination, optimisticSeconds))
 	Nil(t, err)
 
 	Equal(t, goHeader, solHeader.Bytes())

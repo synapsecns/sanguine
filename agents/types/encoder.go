@@ -300,6 +300,7 @@ func DecodeTips(toDecode []byte) (Tips, error) {
 }
 
 type headerEncoder struct {
+	Flag              MessageFlag
 	OriginDomain      uint32
 	Nonce             uint32
 	DestinationDomain uint32
@@ -309,6 +310,7 @@ type headerEncoder struct {
 // EncodeHeader encodes a message header.
 func EncodeHeader(header Header) ([]byte, error) {
 	newHeader := headerEncoder{
+		Flag:              header.Flag(),
 		OriginDomain:      header.OriginDomain(),
 		Nonce:             header.Nonce(),
 		DestinationDomain: header.DestinationDomain(),
@@ -409,11 +411,10 @@ func EncodeMessage(m Message) ([]byte, error) {
 	}
 
 	buf := new(bytes.Buffer)
-
-	buf.Write([]byte{uint8(m.Flag())})
+	
 	buf.Write(encodedHeader)
 
-	if m.Flag() == MessageFlagBase {
+	if m.Header().Flag() == MessageFlagBase {
 		encodedBaseMessage, err := EncodeBaseMessage(m.BaseMessage())
 		if err != nil {
 			return []byte{}, fmt.Errorf("could not encode header: %w", err)
