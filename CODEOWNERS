@@ -13,12 +13,18 @@ charts/ @trajan0x
 docker/ @trajan0x
 ethergo/ @trajan0x
 make/ @trajan0x
+
 packages/contracts-core/ @ChiTimesChi @trajan0x
+packages/docs/ @trajan0x @nautsimon
+packages/sdk-router/ @trajan0x @nautsimon
+packages/explorer-ui/ @trajan0x @nautsimon
+packages/synapse-interface/ @bigboydiamonds @nautsimon
+
 contrib/ @trajan0x
 
-services/explorer @CryptoMaxPlanck @simonmahns @trajan0x
-services/omnirpc @trajan0x
-services/scribe @trajan0x @simonmahns
+services/explorer @trajan0x @nautsimon
+services/omnirpc @trajan0x @nautsimon
+services/scribe @trajan0x @nautsimon @CryptoMaxPlanck
 tools/ @trajan0x
 
 # config files
