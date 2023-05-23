@@ -8,9 +8,9 @@ import (
 	"github.com/synapsecns/sanguine/agents/agents/executor/config"
 	"github.com/synapsecns/sanguine/agents/agents/executor/db"
 	agentsConfig "github.com/synapsecns/sanguine/agents/config"
-	"github.com/synapsecns/sanguine/agents/contracts/bondingmanager"
 	"github.com/synapsecns/sanguine/agents/contracts/destination"
-	"github.com/synapsecns/sanguine/agents/contracts/lightmanager"
+	"github.com/synapsecns/sanguine/agents/contracts/inbox"
+	"github.com/synapsecns/sanguine/agents/contracts/lightinbox"
 	"github.com/synapsecns/sanguine/agents/contracts/origin"
 	"github.com/synapsecns/sanguine/agents/contracts/summit"
 	"github.com/synapsecns/sanguine/agents/domains/evm"
@@ -73,8 +73,8 @@ func NewExecutorInjectedBackend(ctx context.Context, config config.Config, execu
 		}
 
 		var summitParserRef *summit.Parser
-		var bondingManagerParserRef *bondingmanager.Parser
-		var lightManagerParserRef *lightmanager.Parser
+		var inboxParserRef *inbox.Parser
+		var lightInboxParserRef *lightinbox.Parser
 
 		if config.SummitChainID == chain.ChainID {
 			summitParser, err := summit.NewParser(common.HexToAddress(config.SummitAddress))
@@ -84,19 +84,19 @@ func NewExecutorInjectedBackend(ctx context.Context, config config.Config, execu
 
 			summitParserRef = &summitParser
 
-			bondingManagerParser, err := bondingmanager.NewParser(common.HexToAddress(config.BondingManagerAddress))
+			inboxParser, err := inbox.NewParser(common.HexToAddress(config.InboxAddress))
 			if err != nil {
 				return nil, fmt.Errorf("could not create bonding manager parser: %w", err)
 			}
 
-			bondingManagerParserRef = &bondingManagerParser
+			inboxParserRef = &inboxParser
 		} else {
-			lightManagerParser, err := lightmanager.NewParser(common.HexToAddress(chain.LightManagerAddress))
+			lightInboxParser, err := lightinbox.NewParser(common.HexToAddress(chain.LightInboxAddress))
 			if err != nil {
 				return nil, fmt.Errorf("could not create destination parser: %w", err)
 			}
 
-			lightManagerParserRef = &lightManagerParser
+			lightInboxParserRef = &lightInboxParser
 		}
 
 		underlyingClient, err := ethergoChain.NewFromURL(ctx, urls[chain.ChainID])
@@ -120,18 +120,18 @@ func NewExecutorInjectedBackend(ctx context.Context, config config.Config, execu
 				blockNumber: 0,
 				blockIndex:  0,
 			},
-			closeConnection:      make(chan bool, 1),
-			stopListenChan:       make(chan bool, 1),
-			originParser:         originParser,
-			destinationParser:    destinationParser,
-			summitParser:         summitParserRef,
-			lightManagerParser:   lightManagerParserRef,
-			bondingManagerParser: bondingManagerParserRef,
-			logChan:              make(chan *ethTypes.Log, logChanSize),
-			merkleTree:           tree,
-			rpcClient:            clients[chain.ChainID],
-			boundDestination:     boundDestination,
-			executed:             make(map[[32]byte]bool),
+			closeConnection:   make(chan bool, 1),
+			stopListenChan:    make(chan bool, 1),
+			originParser:      originParser,
+			destinationParser: destinationParser,
+			summitParser:      summitParserRef,
+			lightInboxParser:  lightInboxParserRef,
+			inboxParser:       inboxParserRef,
+			logChan:           make(chan *ethTypes.Log, logChanSize),
+			merkleTree:        tree,
+			rpcClient:         clients[chain.ChainID],
+			boundDestination:  boundDestination,
+			executed:          make(map[[32]byte]bool),
 		}
 	}
 

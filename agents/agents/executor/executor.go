@@ -5,8 +5,8 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"github.com/synapsecns/sanguine/agents/contracts/bondingmanager"
-	"github.com/synapsecns/sanguine/agents/contracts/lightmanager"
+	"github.com/synapsecns/sanguine/agents/contracts/inbox"
+	"github.com/synapsecns/sanguine/agents/contracts/lightinbox"
 	"github.com/synapsecns/sanguine/core/metrics"
 	"go.opentelemetry.io/contrib/instrumentation/google.golang.org/grpc/otelgrpc"
 	"go.opentelemetry.io/otel/attribute"
@@ -55,10 +55,10 @@ type chainExecutor struct {
 	originParser origin.Parser
 	// destinationParser is the destination parser.
 	destinationParser destination.Parser
-	// lightManagerParser is the light manager parser.
-	lightManagerParser *lightmanager.Parser
-	// bondingManagerParser is the bonding manager parser.
-	bondingManagerParser *bondingmanager.Parser
+	// lightInboxParser is the light inbox parser.
+	lightInboxParser *lightinbox.Parser
+	// inboxParser is the inbox parser.
+	inboxParser *inbox.Parser
 	// summitParser is the summit parser.
 	summitParser *summit.Parser
 	// logChan is the log channel.
@@ -151,8 +151,8 @@ func NewExecutor(ctx context.Context, config config.Config, executorDB db.Execut
 		}
 
 		var summitParserRef *summit.Parser
-		var bondingManagerParserRef *bondingmanager.Parser
-		var lightManagerParserRef *lightmanager.Parser
+		var inboxParserRef *inbox.Parser
+		var lightInboxParserRef *lightinbox.Parser
 
 		if config.SummitChainID == chain.ChainID {
 			summitParser, err := summit.NewParser(common.HexToAddress(config.SummitAddress))
@@ -162,19 +162,19 @@ func NewExecutor(ctx context.Context, config config.Config, executorDB db.Execut
 
 			summitParserRef = &summitParser
 
-			bondingManagerParser, err := bondingmanager.NewParser(common.HexToAddress(config.BondingManagerAddress))
+			inboxParser, err := inbox.NewParser(common.HexToAddress(config.InboxAddress))
 			if err != nil {
-				return nil, fmt.Errorf("could not create bonding manager parser: %w", err)
+				return nil, fmt.Errorf("could not create inbox parser: %w", err)
 			}
 
-			bondingManagerParserRef = &bondingManagerParser
+			inboxParserRef = &inboxParser
 		} else {
-			lightManagerParser, err := lightmanager.NewParser(common.HexToAddress(chain.LightManagerAddress))
+			lightInboxParser, err := lightinbox.NewParser(common.HexToAddress(chain.LightInboxAddress))
 			if err != nil {
 				return nil, fmt.Errorf("could not create destination parser: %w", err)
 			}
 
-			lightManagerParserRef = &lightManagerParser
+			lightInboxParserRef = &lightInboxParser
 		}
 
 		// chainRPCURL := fmt.Sprintf("%s/1/rpc/%d", config.BaseOmnirpcURL, chain.ChainID)
@@ -200,18 +200,18 @@ func NewExecutor(ctx context.Context, config config.Config, executorDB db.Execut
 				blockNumber: 0,
 				blockIndex:  0,
 			},
-			closeConnection:      make(chan bool, 1),
-			stopListenChan:       make(chan bool, 1),
-			originParser:         originParser,
-			destinationParser:    destinationParser,
-			summitParser:         summitParserRef,
-			lightManagerParser:   lightManagerParserRef,
-			bondingManagerParser: bondingManagerParserRef,
-			logChan:              make(chan *ethTypes.Log, logChanSize),
-			merkleTree:           tree,
-			rpcClient:            clients[chain.ChainID],
-			boundDestination:     boundDestination,
-			executed:             make(map[[32]byte]bool),
+			closeConnection:   make(chan bool, 1),
+			stopListenChan:    make(chan bool, 1),
+			originParser:      originParser,
+			destinationParser: destinationParser,
+			summitParser:      summitParserRef,
+			lightInboxParser:  lightInboxParserRef,
+			inboxParser:       inboxParserRef,
+			logChan:           make(chan *ethTypes.Log, logChanSize),
+			merkleTree:        tree,
+			rpcClient:         clients[chain.ChainID],
+			boundDestination:  boundDestination,
+			executed:          make(map[[32]byte]bool),
 		}
 	}
 
@@ -246,8 +246,8 @@ func (e Executor) Run(ctx context.Context) error {
 
 	// Listen for snapshotAcceptedEvents on bonding manager.
 	g.Go(func() error {
-		return e.streamLogs(ctx, e.grpcClient, e.grpcConn, e.config.SummitChainID, e.config.BondingManagerAddress, nil, contractEventType{
-			contractType: bondingManagerContract,
+		return e.streamLogs(ctx, e.grpcClient, e.grpcConn, e.config.SummitChainID, e.config.InboxAddress, nil, contractEventType{
+			contractType: inboxContract,
 			eventType:    snapshotAcceptedEvent,
 		})
 	})
@@ -436,8 +436,8 @@ type eventType int
 const (
 	originContract contractType = iota
 	destinationContract
-	lightManagerContract
-	bondingManagerContract
+	lightInboxContract
+	inboxContract
 	other
 )
 
@@ -756,7 +756,7 @@ func (e Executor) processLog(parentCtx context.Context, log ethTypes.Log, chainI
 
 			e.chainExecutors[chainID].executed[*messageLeaf] = true
 		}
-	case bondingManagerContract:
+	case inboxContract:
 		if contractEvent.eventType == snapshotAcceptedEvent {
 			snapshot, err := e.logToSnapshot(log, chainID)
 			if err != nil {
@@ -777,7 +777,7 @@ func (e Executor) processLog(parentCtx context.Context, log ethTypes.Log, chainI
 				return fmt.Errorf("could not store states: %w", err)
 			}
 		}
-	case lightManagerContract:
+	case lightInboxContract:
 		if contractEvent.eventType == attestationAcceptedEvent {
 			attestation, err := e.logToAttestation(log, chainID)
 			if err != nil {
