@@ -490,6 +490,7 @@ const SwapCard = ({
     } catch (error) {
       setIsQuoteLoading(false)
       console.log(`Quote failed with error: ${error}`)
+      return
     }
   }
 
@@ -548,15 +549,18 @@ const SwapCard = ({
   // TODO make this a function
   const ActionButton = useMemo(() => {
     let destAddrNotValid
-    let btnLabel
+    let btnLabel = `Enter amount to bridge`
     let btnClassName = ''
     let pendingLabel = 'Swapping funds...'
     let buttonAction = () => executeSwap()
     let postButtonAction = () => resetRates()
     const isFromBalanceEnough = fromTokenBalance?.gte(fromInput.bigNum)
+    const isInputZero = checkStringIfOnlyZeroes(fromInput?.string)
 
     if (error) {
       btnLabel = error
+    } else if (isInputZero || fromInput?.bigNum?.eq(0)) {
+      btnLabel = `Enter amount to bridge`
     } else if (!isFromBalanceEnough) {
       btnLabel = `Insufficient ${fromToken.symbol} Balance`
     } else if (IMPAIRED_CHAINS[connectedChainId]?.disabled) {
