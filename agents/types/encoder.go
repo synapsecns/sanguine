@@ -429,8 +429,7 @@ func EncodeMessage(m Message) ([]byte, error) {
 
 // DecodeMessage decodes a message from a byte slice.
 func DecodeMessage(message []byte) (Message, error) {
-	flag := message[0]
-	rawHeader := message[MessageFlagSize:MessageBodyOffset]
+	rawHeader := message[:MessageBodyOffset]
 
 	header, err := DecodeHeader(rawHeader)
 	if err != nil {
@@ -442,7 +441,7 @@ func DecodeMessage(message []byte) (Message, error) {
 	var decoded Message
 
 	var content []byte
-	if MessageFlag(flag) == MessageFlagBase {
+	if header.Flag() == MessageFlagBase {
 		baseMessage, err := DecodeBaseMessage(rawBody)
 		if err != nil {
 			return nil, fmt.Errorf("could not decode base message: %w", err)
