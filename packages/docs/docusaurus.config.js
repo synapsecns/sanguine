@@ -60,7 +60,7 @@ const config = {
       navbar: {
         title: 'Synapse SDK Docs',
         logo: {
-          alt: 'My Site Logo',
+          alt: 'Syn Logo',
           src: 'img/logo.svg',
         },
         items: [
@@ -72,7 +72,7 @@ const config = {
             items: ['sdk/usage', 'sdk/examples'],
           },
           {
-            href: 'https://github.com/facebook/docusaurus',
+            href: 'https://github.com/synapsecns/sanguine',
             label: 'GitHub',
             position: 'right',
           },
@@ -86,7 +86,7 @@ const config = {
             items: [
               {
                 label: 'Tutorial',
-                to: '/docs/intro',
+                to: '/',
               },
             ],
           },
