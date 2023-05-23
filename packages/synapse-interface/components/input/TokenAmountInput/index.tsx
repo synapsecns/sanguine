@@ -48,6 +48,7 @@ const BridgeInputContainer = ({
       3
     )
   }, [fromTokenBalance])
+  console.log('fromTokenBalance:', fromTokenBalance)
 
   const isConnected = address !== null
   const isMaxDisabled = formattedBalance === '0.0'

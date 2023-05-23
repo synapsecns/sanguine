@@ -661,6 +661,7 @@ const BridgePage = ({
                     executeBridge={executeBridge}
                     resetRates={resetRates}
                     setTime={setTime}
+                    bridgeTxnHash={bridgeTxHash}
                   />
                   <ActionCardFooter link={HOW_TO_BRIDGE_URL} />
                 </div>

@@ -61,6 +61,7 @@ const BridgeCard = ({
   executeBridge,
   resetRates,
   setTime,
+  bridgeTxnHash,
 }: {
   error
   address: `0x${string}` | undefined
@@ -86,6 +87,7 @@ const BridgeCard = ({
   executeBridge: () => Promise<TransactionResponse>
   resetRates: () => void
   setTime: (time: number) => void
+  bridgeTxnHash: string
 }) => {
   const [settings, setSettings] = useSettings()
   const [displayType, setDisplayType] = useState<DisplayType>(
@@ -277,6 +279,7 @@ const BridgeCard = ({
     isQuoteLoading,
     destinationAddress,
     error,
+    bridgeTxnHash,
   ])
 
   const actionBtn = useMemo(
