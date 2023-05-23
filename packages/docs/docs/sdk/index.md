@@ -2,24 +2,32 @@
 sidebar_position: 1
 ---
 
-# SDK Intro
+# Router SDK
 
-The Synapse SDK is a Javascript sdk that wraps Synapse Router. It allows routing from any token to any token as long as a route is supported by a provider.
+The Synapse SDK is the easiest way for any developer to integrate cross-chain token & liquidity transfers into their application. The SDK is built to support full-fledged frontend applications, but is fully isomorphic, able to be used both client & server-side.
 
 <!-- TODO: link to synapse router page -->
 <!-- TODO: link to document providers -->
 
 ## Getting Started
 
-To install the sdk, run `npx install @synapsecns/sdk-router`.
+### Installation
 
-### Usage
+Pre-reqs: Node v16+. The SDK is only fully tested on Node 16+ or greater. Earlier versions may have errors.
+Depending on the package manager of your choice, install the SDK using one of the following
+
+import InstallSwitch from '@site/src/components/SdkFeatures/InstallSwitch'
+
+<InstallSwitch />
+
+<b>The Router SDK uses ethers v5.7</b>
+
+### Quickstart
 
 ```typescript
 import { Provider } from '@ethersproject/abstract-provider'
 import { BigNumber } from '@ethersproject/bignumber'
 import { SynapseSDK } from '@synapsecns/sdk'
-
 
 const arbitrumProvider: Provider = new etherProvider.JsonRpcProvider(
   'https://arb1.arbitrum.io/rpc'
@@ -27,7 +35,6 @@ const arbitrumProvider: Provider = new etherProvider.JsonRpcProvider(
 const avalancheProvider: Provider = new etherProvider.JsonRpcProvider(
   'https://api.avax.network/ext/bc/C/rpc'
 )
-
 
 // get a bridge quote for asset bridge from chain a->b
 // for token 0xf->0xa
@@ -53,5 +60,4 @@ await Synapse.bridge(
   quotes.originQuery,
   quotes.destQuery
 )
-
 ```
