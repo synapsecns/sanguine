@@ -44,7 +44,7 @@ const ExchangeRateInfo = ({
   }, [toChainId])
 
   return (
-    <div className="py-3.5 px-1 space-y-2 text-xs md:text-base lg:text-base lg:px-6">
+    <div className="py-3.5 px-1 space-y-2 text-xs md:text-base lg:text-base md:px-6">
       <div
         className={
           isGasDropped
