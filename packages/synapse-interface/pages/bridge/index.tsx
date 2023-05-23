@@ -384,10 +384,7 @@ const BridgePage = ({
         return alert('Please connect your wallet')
       }
 
-      console.log('flip: ', flip)
-      console.log('type: ', type)
       if (flip || type === 'from') {
-        console.log('hit in the from')
         const positedToChain = flip ? fromChainId : undefined
         const desiredChainId = flip ? Number(toChainId) : Number(chainId)
 
@@ -446,7 +443,6 @@ const BridgePage = ({
         })
         return
       } else if (type === 'to') {
-        console.log('hit in the to')
         const {
           bridgeableToken: toBridgeableToken,
           newToChain: toNewToChain,

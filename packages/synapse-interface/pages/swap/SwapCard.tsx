@@ -1,6 +1,6 @@
 import Grid from '@tw/Grid'
 import { useRouter } from 'next/router'
-import { useEffect, useState, useMemo } from 'react'
+import { useEffect, useState, useMemo, useCallback } from 'react'
 import { AddressZero, Zero } from '@ethersproject/constants'
 import { BigNumber } from '@ethersproject/bignumber'
 import { fetchSigner, switchNetwork } from '@wagmi/core'
@@ -343,58 +343,65 @@ const SwapCard = ({
   - Handles flipping to and from chains if flag is set to true
   - Handles altering the chain state for origin or destination depending on the type specified.
   */
-  const handleChainChange = async (
-    chainId: number,
-    flip: boolean,
-    type: 'from' | 'to'
-  ) => {
-    if (address === undefined) {
-      return alert('Please connect your wallet')
-    }
-    const desiredChainId = Number(chainId)
+  const handleChainChange = useCallback(
+    async (chainId: number, flip: boolean, type: 'from' | 'to') => {
+      if (address === undefined) {
+        return alert('Please connect your wallet')
+      }
+      const desiredChainId = Number(chainId)
 
-    const res = await switchNetwork({ chainId: desiredChainId })
-      .then((res) => {
-        if (fromInput.string !== '') {
-          setIsQuoteLoading(true)
-        }
-        return res
-      })
-      .catch((error) => {
-        return error && undefined
-      })
+      const res = await switchNetwork({ chainId: desiredChainId })
+        .then((res) => {
+          if (fromInput.string !== '') {
+            setIsQuoteLoading(true)
+          }
+          return res
+        })
+        .catch((error) => {
+          return error && undefined
+        })
 
-    if (res === undefined) {
-      console.log("can't switch network, chainId: ", chainId)
+      if (res === undefined) {
+        console.log("can't switch network, chainId: ", chainId)
+        return
+      }
+      if (!SWAPABLE_TOKENS[desiredChainId]) {
+        return
+      }
+      setValidChainId(true)
+
+      const swapableFromTokens: Token[] = sortByVisibilityRank(
+        BRIDGE_SWAPABLE_TOKENS_BY_TYPE[chainId][String(fromToken.swapableType)]
+      )
+      let tempFromToken: Token = fromToken
+
+      if (swapableFromTokens?.length > 0) {
+        tempFromToken = getMostCommonSwapableType(chainId)
+      }
+      const { swapableToken, swapableTokens } = handleNewFromToken(
+        tempFromToken,
+        toToken.symbol,
+        desiredChainId
+      )
+      resetTokenPermutation(
+        tempFromToken,
+        swapableToken,
+        swapableTokens,
+        tempFromToken.symbol,
+        swapableToken?.symbol
+      )
       return
-    }
-    if (!SWAPABLE_TOKENS[desiredChainId]) {
-      return
-    }
-    setValidChainId(true)
-
-    const swapableFromTokens: Token[] = sortByVisibilityRank(
-      BRIDGE_SWAPABLE_TOKENS_BY_TYPE[chainId][String(fromToken.swapableType)]
-    )
-    let tempFromToken: Token = fromToken
-
-    if (swapableFromTokens?.length > 0) {
-      tempFromToken = getMostCommonSwapableType(chainId)
-    }
-    const { swapableToken, swapableTokens } = handleNewFromToken(
-      tempFromToken,
-      toToken.symbol,
-      desiredChainId
-    )
-    resetTokenPermutation(
-      tempFromToken,
-      swapableToken,
-      swapableTokens,
-      tempFromToken.symbol,
-      swapableToken?.symbol
-    )
-    return
-  }
+    },
+    [
+      fromToken,
+      toToken,
+      connectedChainId,
+      address,
+      isQuoteLoading,
+      handleNewFromToken,
+      switchNetwork,
+    ]
+  )
 
   /*
     Function:handleTokenChange
