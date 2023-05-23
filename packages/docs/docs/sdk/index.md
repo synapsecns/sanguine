@@ -16,10 +16,10 @@ The Synapse SDK is the easiest way for any developer to integrate cross-chain to
 Pre-reqs: Node v16+. The SDK is only fully tested on Node 16+ or greater. Earlier versions may have errors.
 Depending on the package manager of your choice, install the SDK using one of the following
 
-import InstallSwitch from '@site/src/components/SdkFeatures/InstallSwitch'
-
-<InstallSwitch />
-
+<b>Yarn: </b><code>yarn add @synapsecns/sdk-router</code>
+<br/>
+<b>NPM: </b><code>npm install @synapsecns/sdk-router</code>
+<br/><br/>
 <b>The Router SDK uses ethers v5.7</b>
 
 ### Quickstart
