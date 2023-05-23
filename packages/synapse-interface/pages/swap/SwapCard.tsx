@@ -619,12 +619,13 @@ const SwapCard = ({
       : 'Swap your funds'
     properties.disabled = false
 
-    const numExchangeRate = Number(
-      formatBNToString(swapQuote.exchangeRate, 18, 4)
-    )
+    const numExchangeRate = swapQuote?.exchangeRate
+      ? Number(formatBNToString(swapQuote.exchangeRate, 18, 4))
+      : 0
 
     if (
       !fromInput.bigNum.eq(0) &&
+      numExchangeRate !== 0 &&
       (numExchangeRate < 0.95 || numExchangeRate > 1.05)
     ) {
       properties.className = 'from-[#fe064a] to-[#fe5281]'
