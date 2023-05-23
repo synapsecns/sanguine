@@ -96,15 +96,17 @@ func (c *ContractBackfiller) Backfill(parentCtx context.Context, givenStart uint
 
 	g, groupCtx := errgroup.WithContext(ctx)
 	startHeight := givenStart
-	lastBlockIndexed, err := c.eventDB.RetrieveLastIndexed(groupCtx, common.HexToAddress(c.contractConfig.Address), c.chainConfig.ChainID)
-	if err != nil {
-		LogEvent(WarnLevel, "Could not get last indexed", LogData{"cid": c.chainConfig.ChainID, "sh": startHeight, "eh": endHeight, "e": err.Error()})
+	if c.chainConfig.ChainID != 53935 {
+		lastBlockIndexed, err := c.eventDB.RetrieveLastIndexed(groupCtx, common.HexToAddress(c.contractConfig.Address), c.chainConfig.ChainID)
+		if err != nil {
+			LogEvent(WarnLevel, "Could not get last indexed", LogData{"cid": c.chainConfig.ChainID, "sh": startHeight, "eh": endHeight, "e": err.Error()})
 
-		return fmt.Errorf("could not get last indexed: %w", err)
-	}
-	if lastBlockIndexed > startHeight {
-		LogEvent(WarnLevel, "Using last indexed block (lastIndexBlock > startHeight)", LogData{"cid": c.chainConfig.ChainID, "sh": startHeight, "eh": endHeight})
-		startHeight = lastBlockIndexed + 1
+			return fmt.Errorf("could not get last indexed: %w", err)
+		}
+		if lastBlockIndexed > startHeight {
+			LogEvent(WarnLevel, "Using last indexed block (lastIndexBlock > startHeight)", LogData{"cid": c.chainConfig.ChainID, "sh": startHeight, "eh": endHeight})
+			startHeight = lastBlockIndexed + 1
+		}
 	}
 	LogEvent(InfoLevel, "Beginning to backfill contract ", LogData{"cid": c.chainConfig.ChainID, "sh": startHeight, "eh": endHeight})
 
