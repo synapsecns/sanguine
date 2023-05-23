@@ -114,9 +114,9 @@ func (u *AgentsIntegrationSuite) TestAgentsE2E() {
 	summit := uint32(u.TestBackendSummit.GetChainID())
 
 	excCfg := executorCfg.Config{
-		SummitChainID:         summit,
-		SummitAddress:         u.SummitContract.Address().String(),
-		BondingManagerAddress: u.BondingManagerOnSummit.Address().String(),
+		SummitChainID: summit,
+		SummitAddress: u.SummitContract.Address().String(),
+		InboxAddress:  u.InboxOnSummit.Address().String(),
 		Chains: []executorCfg.ChainConfig{
 			{
 				ChainID:       chainID,
