@@ -545,7 +545,7 @@ const SwapCard = ({
   }
 
   const isFromBalanceEnough = fromTokenBalance?.gte(fromInput.bigNum)
-  let destAddrNotValid
+  let destAddrNotValid: boolean
 
   const getButtonProperties = () => {
     let properties = {
