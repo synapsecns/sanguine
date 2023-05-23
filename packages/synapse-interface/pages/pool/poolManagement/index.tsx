@@ -32,24 +32,17 @@ const PoolManagement = ({
           }}
         />
         <div className="mt-4">
-          {cardNav === 'addLiquidity' &&
-            pool &&
-            poolUserData &&
-            poolData &&
-            address && (
-              <Deposit
-                pool={pool}
-                address={address}
-                chainId={chainId}
-                poolData={poolData}
-                poolUserData={poolUserData}
-              />
-            )}
+          {cardNav === 'addLiquidity' && (
+            <Deposit
+              pool={pool}
+              address={address}
+              chainId={chainId}
+              poolData={poolData}
+              poolUserData={poolUserData}
+            />
+          )}
           {cardNav === 'removeLiquidity' &&
-            pool &&
-            poolUserData &&
-            poolData &&
-            address && (
+            (pool && poolUserData && poolData && address ? (
               <Withdraw
                 pool={pool}
                 chainId={chainId}
@@ -57,7 +50,11 @@ const PoolManagement = ({
                 poolData={poolData}
                 poolUserData={poolUserData}
               />
-            )}
+            ) : (
+              <div className="w-full text-center mt-[80px] text-sm text-white">
+                <p>connect wallet</p>
+              </div>
+            ))}
         </div>
       </div>
     </div>

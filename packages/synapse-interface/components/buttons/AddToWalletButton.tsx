@@ -65,7 +65,7 @@ export function AddToWalletMiniButton({
       {!iconFirst && (
         <img
           alt="metamask icon"
-          src={METAMASK_ICON}
+          src={METAMASK_ICON?.src}
           className="inline w-5 h-5 transition-all duration-200 ease-in-out opacity-50 group-hover:opacity-95"
         />
       )}
@@ -92,17 +92,6 @@ export const addTokenToWallet = async ({ token, chainId, icon }) => {
           },
         },
       })
-
-      if (wasAdded) {
-        // console.log(`
-        //   One thing I don't know why
-        //   It doesn't even matter how hard you try
-        //   Keep that in mind, ${token.symbol} designed this line
-        //   To explain in due time
-        // `)
-      } else {
-        // console.log(`You can't change the world without getting your hands dirty.`)
-      }
     } catch (error) {
       console.log(error)
     }

@@ -14,7 +14,7 @@ import { PageHeader } from '@components/PageHeader'
 import { TokenSlideOver } from '@/components/misc/TokenSlideOver'
 import { ChainSlideOver } from '@/components/misc/ChainSlideOver'
 import { BigNumber } from '@ethersproject/bignumber'
-import { Zero, MaxInt256 } from '@ethersproject/constants'
+import { Zero, AddressZero } from '@ethersproject/constants'
 import { formatBNToString } from '@bignumber/format'
 import { SECTION_TRANSITION_PROPS, TRANSITION_PROPS } from '@styles/transitions'
 import { approveToken } from '@/utils/approveToken'
@@ -24,7 +24,8 @@ import BridgeInputContainer from '../../components/input/TokenAmountInput'
 import { TransactionResponse } from '@ethersproject/providers'
 import { useSpring, animated } from 'react-spring'
 import { BRIDGABLE_TOKENS } from '@constants/tokens'
-
+import { IMPAIRED_CHAINS } from '@/constants/impairedChains'
+import { CHAINS_BY_ID } from '@constants/chains'
 import { Token } from '@/utils/types'
 import { BridgeQuote } from '@/utils/types'
 
@@ -50,6 +51,7 @@ const BridgeCard = ({
   toChainId,
   toOptions,
   isQuoteLoading,
+  setIsQuoteLoading,
   destinationAddress,
   handleChainChange,
   handleTokenChange,
@@ -70,6 +72,7 @@ const BridgeCard = ({
   toChainId: number
   toOptions: { tokens: Token[]; chains: string[] }
   isQuoteLoading: boolean
+  setIsQuoteLoading: (bool: boolean) => void
   destinationAddress: string
   handleChainChange: (
     chainId: number,
@@ -90,6 +93,10 @@ const BridgeCard = ({
   const [deadlineMinutes, setDeadlineMinutes] = useState('')
   const [fromTokenBalance, setFromTokenBalance] = useState<BigNumber>(Zero)
   const bridgeDisplayRef = useRef(null)
+
+  useEffect(() => {
+    console.log('displayType: ', displayType)
+  }, [displayType])
 
   /*
   useEffect Trigger: fromToken, fromTokens
@@ -155,7 +162,7 @@ const BridgeCard = ({
 
   // some messy button gen stuff (will re-write)
   // maybe just put everything in index without the card
-  const isFromBalanceEnough = fromTokenBalance.gt(fromInput?.bigNum ?? Zero)
+  const isFromBalanceEnough = fromTokenBalance.gte(fromInput?.bigNum ?? Zero)
   let destAddrNotValid
   let btnLabel
   let btnClassName = ''
@@ -166,9 +173,15 @@ const BridgeCard = ({
     btnLabel = error
   } else if (!isFromBalanceEnough) {
     btnLabel = `Insufficient ${fromToken?.symbol} Balance`
-  } else if (bridgeQuote.feeAmount.eq(0) && !fromInput?.bigNum?.eq(0)) {
+  } else if (IMPAIRED_CHAINS[fromChainId]?.disabled) {
+    btnLabel = `${CHAINS_BY_ID[fromChainId]?.name} is currently paused`
+  } else if (IMPAIRED_CHAINS[toChainId]?.disabled) {
+    btnLabel = `${CHAINS_BY_ID[toChainId]?.name} is currently paused`
+  } else if (bridgeQuote?.feeAmount?.eq(0) && !fromInput?.bigNum?.eq(0)) {
     btnLabel = `Amount must be greater than fee`
   } else if (
+    fromToken?.addresses[fromChainId] !== '' &&
+    fromToken?.addresses[fromChainId] !== AddressZero &&
     bridgeQuote?.allowance &&
     bridgeQuote?.allowance?.lt(fromInput?.bigNum)
   ) {
@@ -176,7 +189,7 @@ const BridgeCard = ({
       approveToken(
         bridgeQuote?.routerAddress,
         fromChainId,
-        fromToken.addresses[fromChainId]
+        fromToken?.addresses[fromChainId]
       )
     btnLabel = `Approve ${fromToken?.symbol}`
     pendingLabel = `Approving ${fromToken?.symbol}`
@@ -189,13 +202,13 @@ const BridgeCard = ({
     destAddrNotValid = true
     btnLabel = 'Invalid Destination Address'
   } else {
-    btnLabel = bridgeQuote.outputAmount.eq(0)
+    btnLabel = bridgeQuote?.outputAmount?.eq(0)
       ? 'Enter amount to bridge'
       : 'Bridge your funds'
 
-    const numExchangeRate = Number(
-      formatBNToString(bridgeQuote?.exchangeRate, 18, 4)
-    )
+    const numExchangeRate = bridgeQuote?.exchangeRate
+      ? Number(formatBNToString(bridgeQuote.exchangeRate, 18, 4))
+      : 0
 
     if (
       !fromInput?.bigNum?.eq(0) &&
@@ -212,10 +225,12 @@ const BridgeCard = ({
         className={btnClassName}
         disabled={
           fromChainId === toChainId ||
-          bridgeQuote.outputAmount.eq(0) ||
+          bridgeQuote?.outputAmount?.eq(0) ||
           !isFromBalanceEnough ||
           error ||
-          destAddrNotValid
+          destAddrNotValid ||
+          IMPAIRED_CHAINS[fromChainId]?.disabled ||
+          IMPAIRED_CHAINS[toChainId]?.disabled
         }
         chainId={toChainId}
         onClick={() => buttonAction()}

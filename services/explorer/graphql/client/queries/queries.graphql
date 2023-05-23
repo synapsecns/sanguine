@@ -164,6 +164,24 @@ query GetMessageBusTransactions($chainID: [Int], $contractAddress: String, $star
       contractAddress
       txnHash
       message
+      messageType{
+        ... on TearType {
+          recipient
+          amount
+        }
+        ... on HeroType {
+          recipient
+          heroID
+        }
+        ... on PetType {
+          recipient
+          petID
+          name
+        }
+        ... on UnknownType {
+          known
+        }
+      }
       blockNumber
       time
       formattedTime
@@ -175,6 +193,24 @@ query GetMessageBusTransactions($chainID: [Int], $contractAddress: String, $star
       contractAddress
       txnHash
       message
+      messageType {
+        ... on TearType {
+          recipient
+          amount
+        }
+        ... on HeroType {
+          recipient
+          heroID
+        }
+        ... on PetType {
+          recipient
+          petID
+          name
+        }
+        ... on UnknownType {
+          known
+        }
+      }
       blockNumber
       time
       formattedTime
@@ -182,5 +218,46 @@ query GetMessageBusTransactions($chainID: [Int], $contractAddress: String, $star
     }
     messageID
     pending
+  }
+}
+
+
+query GetAddressData($address: String!) {
+  response: addressData(
+    address: $address
+  ) {
+    bridgeVolume
+    bridgeFees
+    bridgeTxs
+    swapVolume
+    swapFees
+    swapTxs
+    rank
+    earliestTx
+    chainRanking {
+      chainID
+      volumeUsd
+      rank
+    }
+    dailyData{
+      date
+      count
+    }
+  }
+}
+
+query GetLeaderboard($duration: Duration, $chainID: Int, $useMv: Boolean, $page: Int) {
+  response: leaderboard(
+    duration: $duration
+    chainID: $chainID
+    useMv: $useMv
+    page: $page
+  ) {
+    address
+    volumeUSD
+    fees
+    txs
+    rank
+    avgVolumeUSD
   }
 }

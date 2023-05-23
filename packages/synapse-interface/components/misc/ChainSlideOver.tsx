@@ -122,7 +122,7 @@ export const ChainSlideOver = ({
         {networks.map(({ id: mapChainId }, idx) => {
           let onClickSpecificNetwork
           if (chainId === mapChainId) {
-            onClickSpecificNetwork = () => console.log('INCEPTION')
+            onClickSpecificNetwork = () => console.log('INCEPTION') // I think this case is obsolete
           } else {
             onClickSpecificNetwork = () => {
               onChangeChain(mapChainId, false, isOrigin ? 'from' : 'to')

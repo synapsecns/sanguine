@@ -3,8 +3,9 @@ package parser
 import (
 	"context"
 	"fmt"
-	"github.com/synapsecns/sanguine/services/explorer/consumer/fetcher/tokenprice"
 	"time"
+
+	"github.com/synapsecns/sanguine/services/explorer/consumer/fetcher/tokenprice"
 
 	"github.com/ethereum/go-ethereum/common"
 	ethTypes "github.com/ethereum/go-ethereum/core/types"
@@ -178,7 +179,6 @@ func (m *MessageBusParser) Parse(ctx context.Context, log ethTypes.Log, chainID 
 			// pass
 		}
 	}
-	fmt.Println("SSSSSSSSSS,", messageEvent.BlockNumber)
 	return messageEvent, nil
 }
 

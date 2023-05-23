@@ -2,9 +2,11 @@ import * as CHAINS from '@constants/chains/master'
 import * as all from './master'
 import * as allPool from './poolMaster'
 import * as allSwap from './swapMaster'
-
+import { GMX, ETH } from './master'
+import { WETH } from './swapMaster'
 import { SYN_ETH_SUSHI_TOKEN } from './sushiMaster'
 import { Token } from '@/utils/types'
+import _ from 'lodash'
 // TODO change this to token by key
 interface TokensByChain {
   [cID: string]: Token[]
@@ -114,7 +116,23 @@ const getBridgeableTokensByType = (): SwapableTokensByType => {
 
   return bridgeSwapableTokensByType
 }
+const getTokenHashMap = () => {
+  let tokenHashMap = {}
 
+  for (const [chainId, tokensOnChain] of _.toPairs(BRIDGABLE_TOKENS)) {
+    tokenHashMap[chainId] = {}
+    for (const token of tokensOnChain) {
+      tokenHashMap[chainId][token.addresses[chainId]] = token
+    }
+  }
+
+  tokenHashMap[CHAINS.AVALANCHE.id][GMX.wrapperAddresses[CHAINS.AVALANCHE.id]] =
+    GMX
+  Object.keys(WETH.addresses).map((chain) => {
+    tokenHashMap[chain][WETH.addresses[chain]] = ETH
+  })
+  return tokenHashMap
+}
 export const TOKENS_SORTED_BY_SWAPABLETYPE = Array.from(
   new Set(sortedTokens.map((token) => token.swapableType))
 )
@@ -131,8 +149,9 @@ export const tokenSymbolToToken = (chainId: number, symbol: string) => {
   })
   return token
 }
+export const TOKEN_HASH_MAP = getTokenHashMap()
 
-// SWAPS
+export // SWAPS
 const allTokensWithSwap = [...Object.values(all), ...Object.values(allSwap)]
 const getSwapableTokens = (): TokensByChain => {
   const swapTokens: TokensByChain = {}

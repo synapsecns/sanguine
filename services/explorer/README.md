@@ -1,5 +1,7 @@
 # Explorer
 
+<!-- TODO: explain the two parts: indexer and server, etc-->
+
 See [#167](https://github.com/synapsecns/sanguine/issues/167) to learn more.
 
 To access the clickhouse database, you can use the following command from the docker image:

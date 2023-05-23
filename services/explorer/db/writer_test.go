@@ -2,7 +2,6 @@ package db_test
 
 import (
 	"database/sql"
-	"fmt"
 	"math/big"
 
 	"github.com/brianvoe/gofakeit/v6"
@@ -61,7 +60,7 @@ func (t *DBSuite) TestLastBlockWrite() {
 	blockNumber++
 	err = t.db.StoreLastBlock(t.GetTestContext(), chainID, blockNumber, contract)
 	Nil(t.T(), err)
-	storedBlockNum, err := t.db.GetUint64(t.GetTestContext(), fmt.Sprintf("SELECT %s FROM last_blocks WHERE %s = %d AND %s = '%s'", model.BlockNumberFieldName, model.ChainIDFieldName, chainID, model.ContractAddressFieldName, contract))
+	storedBlockNum, err := t.db.GetLastStoredBlock(t.GetTestContext(), chainID, contract)
 	Nil(t.T(), err)
 	Equal(t.T(), blockNumber, storedBlockNum)
 
@@ -72,11 +71,11 @@ func (t *DBSuite) TestLastBlockWrite() {
 	blockNumber2--
 	err = t.db.StoreLastBlock(t.GetTestContext(), chainID2, blockNumber2, contract)
 	Nil(t.T(), err)
-	storedBlockNum2, err := t.db.GetUint64(t.GetTestContext(), fmt.Sprintf("SELECT %s FROM last_blocks WHERE %s = %d AND %s = '%s'", model.BlockNumberFieldName, model.ChainIDFieldName, chainID2, model.ContractAddressFieldName, contract))
+	storedBlockNum2, err := t.db.GetLastStoredBlock(t.GetTestContext(), chainID2, contract)
 	Nil(t.T(), err)
 	Equal(t.T(), blockNumber2+1, storedBlockNum2)
 
-	storedBlockNumOg, err := t.db.GetUint64(t.GetTestContext(), fmt.Sprintf("SELECT %s FROM last_blocks WHERE %s = %d AND %s = '%s'", model.BlockNumberFieldName, model.ChainIDFieldName, chainID, model.ContractAddressFieldName, contract))
+	storedBlockNumOg, err := t.db.GetLastStoredBlock(t.GetTestContext(), chainID, contract)
 	Nil(t.T(), err)
 	Equal(t.T(), blockNumber, storedBlockNumOg)
 }

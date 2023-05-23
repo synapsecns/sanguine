@@ -23,7 +23,7 @@ module.exports = {
   ],
   overrides: [
     {
-      files: ['**/*.ts'],
+      files: ['**/*.ts', '**/*.tsx'],
       parser: '@typescript-eslint/parser',
       parserOptions: {
         project: './packages/**/tsconfig.json',
@@ -163,7 +163,7 @@ module.exports = {
         allowSingleLineBlocks: true,
       },
     ],
-    'prefer-arrow/prefer-arrow-functions': 'error',
+    'prefer-arrow/prefer-arrow-functions': 'warn',
     'prefer-const': 'error',
     'prefer-object-spread': 'error',
     'quote-props': 'off',
