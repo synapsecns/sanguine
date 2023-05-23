@@ -28,14 +28,15 @@ const ExchangeRateInfo = ({
   const formattedPercentSlippage = formatBNToPercentString(slippage, 18)
   const underFee = safeExchangeRate.eq(0) && !safeFromAmount.eq(0)
 
-  let textColor: string
-  if (numExchangeRate >= 1) {
-    textColor = 'text-green-500'
-  } else if (numExchangeRate > 0.975) {
-    textColor = 'text-amber-500'
-  } else {
-    textColor = 'text-red-500'
-  }
+  const textColor: string = useMemo(() => {
+    if (numExchangeRate >= 1) {
+      return 'text-green-500'
+    } else if (numExchangeRate > 0.975) {
+      return 'text-amber-500'
+    } else {
+      return 'text-red-500'
+    }
+  }, [numExchangeRate])
 
   const isGasDropped = safeExchangeRate.gt(0)
 
