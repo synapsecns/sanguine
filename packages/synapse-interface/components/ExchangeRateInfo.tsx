@@ -20,15 +20,15 @@ const ExchangeRateInfo = ({
   exchangeRate: BigNumber
   toChainId: number
 }) => {
-  const safeExchangeRate = exchangeRate ?? Zero // todo clean
-  const safeFromAmount = fromAmount ?? Zero // todo clean
+  const safeExchangeRate = useMemo(() => exchangeRate ?? Zero, [exchangeRate]) // todo clean
+  const safeFromAmount = useMemo(() => fromAmount ?? Zero, [fromAmount]) // todo clean
   const formattedExchangeRate = formatBNToString(safeExchangeRate, 18, 4)
   const numExchangeRate = Number(formattedExchangeRate)
   const slippage = safeExchangeRate.sub(BigNumber.from(10).pow(18))
   const formattedPercentSlippage = formatBNToPercentString(slippage, 18)
   const underFee = safeExchangeRate.eq(0) && !safeFromAmount.eq(0)
 
-  let textColor
+  let textColor: string
   if (numExchangeRate >= 1) {
     textColor = 'text-green-500'
   } else if (numExchangeRate > 0.975) {
