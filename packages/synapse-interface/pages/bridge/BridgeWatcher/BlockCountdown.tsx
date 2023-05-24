@@ -27,9 +27,7 @@ const BlockCountdown = memo(
     toEvent?: BridgeWatcherTx
     setCompletedConf: (bool: boolean) => void
   }) => {
-    const chain = fromEvent?.toChainId
-      ? CHAINS_BY_ID[fromEvent.toChainId]
-      : null
+    const chain = fromEvent?.chainId ? CHAINS_BY_ID[fromEvent.chainId] : null
     const [confirmationDelta, setConfirmationDelta] = useState(-1)
     const [time, setTime] = useState(Date.now())
 

@@ -67,7 +67,7 @@ export const getCompleteUrl = (uriPath: string) => {
 }
 
 export const DOCS_URL = 'https://docs.synapseprotocol.com'
-export const DISCORD_URL = 'https://discord.gg/synapseprotocol'
+export const DISCORD_URL = 'https://discord.gg/4rMzuEnKqe'
 export const TELEGRAM_URL = 'https://t.me/synapseprotocol'
 export const FORUM_URL = 'https://forum.synapseprotocol.com/'
 export const TWITTER_URL = 'https://twitter.com/SynapseProtocol'
