@@ -113,7 +113,7 @@ const DestinationTx = memo((fromEvent: BridgeWatcherTx) => {
         setToEvent(tx)
       })
     }
-  }, [completedConf, toEvent, attempted])
+  }, [completedConf, toEvent, attempted, toSynapseContract])
 
   useEffect(() => {
     if (toSynapseContract && !toEvent && !completedConf) {
@@ -123,7 +123,7 @@ const DestinationTx = memo((fromEvent: BridgeWatcherTx) => {
       })
     }
     return
-  }, [toSynapseContract])
+  }, [completedConf, toEvent, attempted, toSynapseContract])
 
   useEffect(() => {
     setToSigner(toSignerRaw)
