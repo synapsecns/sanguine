@@ -93,7 +93,7 @@ export const AVALANCHE: Chain = {
   layer: 1,
   codeName: 'avalanche',
   blockTime: 5000,
-  rpc: 'https://avalanche-c-chain.publicnode.com',
+  rpc: 'https://api.avax.network/ext/bc/C/rpc',
   nativeCurrency: { name: 'Avax', symbol: 'AVAX', decimals: 18 },
   explorerUrl: 'https://snowtrace.io',
   color: 'red',
