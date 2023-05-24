@@ -21,8 +21,8 @@ import {
 } from '@utils/bridgeWatcher'
 import { remove0xPrefix } from '@/utils/remove0xPrefix'
 
-const DestinationTx = memo((fromEvent: BridgeWatcherTx) => {
-  const [toEvent, setToEvent] = useState<BridgeWatcherTx>()
+const DestinationTx = (fromEvent: BridgeWatcherTx) => {
+  const [toEvent, setToEvent] = useState<BridgeWatcherTx>(undefined)
   const [toSynapseContract, setToSynapseContract] =
     useState<Contract>(undefined)
   const [toSigner, setToSigner] = useState<Signer>()
@@ -143,5 +143,5 @@ const DestinationTx = memo((fromEvent: BridgeWatcherTx) => {
       </div>
     </div>
   )
-})
+}
 export default DestinationTx
