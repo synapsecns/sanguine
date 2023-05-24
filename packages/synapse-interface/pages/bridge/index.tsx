@@ -75,7 +75,7 @@ const BridgePage = ({
   const [bridgeQuote, setBridgeQuote] =
     useState<BridgeQuote>(EMPTY_BRIDGE_QUOTE)
 
-  let popup
+  let popup: string
   /*
   useEffect Trigger: onMount
   - Gets current network connected and sets it as the state.

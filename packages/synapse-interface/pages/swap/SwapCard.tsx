@@ -29,7 +29,7 @@ import Card from '@tw/Card'
 import { SwapQuote } from '@types'
 import { IMPAIRED_CHAINS } from '@/constants/impairedChains'
 import { CHAINS_BY_ID } from '@constants/chains'
-import { toast } from 'react-hot-toast'
+import { toast, Toast } from 'react-hot-toast'
 
 import {
   DEFAULT_FROM_TOKEN,
@@ -67,6 +67,7 @@ const SwapCard = ({
   const [displayType, setDisplayType] = useState(undefined)
   const [fromTokenBalance, setFromTokenBalance] = useState<BigNumber>(Zero)
   const [validChainId, setValidChainId] = useState(true)
+  let popup: string
   /*
   useEffect Trigger: onMount
   - Gets current network connected and sets it as the state.
@@ -339,6 +340,16 @@ const SwapCard = ({
   }
 
   /*
+  useEffect triggers: address, popup
+  - will dismiss toast asking user to connect wallet once wallet has been connected
+  */
+  useEffect(() => {
+    if (address) {
+      toast.dismiss(popup)
+    }
+  }, [address, popup])
+
+  /*
   Function: handleChainChange
   - Produces and alert if chain not connected (upgrade to toaster)
   - Handles flipping to and from chains if flag is set to true
@@ -347,11 +358,11 @@ const SwapCard = ({
   const handleChainChange = useCallback(
     async (chainId: number, flip: boolean, type: 'from' | 'to') => {
       if (address === undefined) {
-        return toast.error(
-          <div>
-            <div className="w-full">{`Please connect your wallet`}</div>
-          </div>
-        )
+        popup = toast.error('Please connect your wallet', {
+          id: 'bridge-connect-wallet',
+          duration: 20000,
+        })
+        return popup
       }
       const desiredChainId = Number(chainId)
 
