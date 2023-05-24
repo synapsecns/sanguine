@@ -107,6 +107,11 @@ func (f *RangeFilter) Start(ctx context.Context) error {
 				return fmt.Errorf("could not filter logs: %w", err)
 			}
 
+			// Log each log's transaction hash and chain ID.
+			for _, log := range logs.logs {
+				LogEvent(InfoLevel, "Contract backfill log", LogData{"ca": f.contractAddress, "tx": log.TxHash, "cid": f.chainID})
+			}
+
 			f.appendToChannel(ctx, logs)
 			LogEvent(InfoLevel, "Contract backfill chunk completed", LogData{"ca": f.contractAddress, "sh": chunk.MinBlock(), "eh": chunk.MaxBlock(), "ts": time.Since(startTime).Seconds()})
 		}
