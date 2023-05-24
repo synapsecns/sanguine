@@ -48,9 +48,11 @@ const BlockCountdown = memo(
       fetchBlockNumber({
         chainId: fromEvent?.chainId,
       }).then((newestBlockNumber) => {
+        const blockDifference = fromEvent.blockNumber - (newestBlockNumber ?? 0)
+        const filterBlockDifference = blockDifference < 0 ? 0 : blockDifference
         const delta =
           BRIDGE_REQUIRED_CONFIRMATIONS[fromEvent?.chainId] +
-          (fromEvent.blockNumber - (newestBlockNumber ?? 0))
+          filterBlockDifference
         setConfirmationDelta(delta > 0 ? delta : 0)
         if (delta <= 0) {
           setCompletedConf(true)
