@@ -16,6 +16,7 @@ import {
 } from '@components/TransactionItems'
 import { memo } from 'react'
 import _ from 'lodash'
+
 const BlockCountdown = memo(
   ({
     fromEvent,
@@ -38,7 +39,6 @@ const BlockCountdown = memo(
       }, 5000)
 
       return () => {
-        console.log('cleared')
         clearInterval(interval)
       }
     }, [])
