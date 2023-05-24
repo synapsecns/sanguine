@@ -95,7 +95,7 @@ const BridgePage = ({
     return () => {
       clearInterval(interval)
     }
-  }, [])
+  }, [bridgeTxHash])
 
   useEffect(() => {
     if (!router.isReady) {
@@ -388,16 +388,17 @@ const BridgePage = ({
         const positedToChain = flip ? fromChainId : undefined
         const desiredChainId = flip ? Number(toChainId) : Number(chainId)
 
-        const res = switchNetwork({ chainId: desiredChainId })
+        const res = await switchNetwork({ chainId: desiredChainId })
           .then((res) => {
             if (fromInput.string !== '') {
               setIsQuoteLoading(true)
             }
             return res
           })
-          .catch(() => {
-            return undefined
+          .catch((error) => {
+            return error && undefined
           })
+
         if (res === undefined) {
           console.log("can't switch chain, chainId: ", chainId)
           return
@@ -470,6 +471,7 @@ const BridgePage = ({
       fromChainId,
       toToken,
       toChainId,
+      isQuoteLoading,
       handleNewFromToken,
       switchNetwork,
     ]
@@ -582,7 +584,7 @@ const BridgePage = ({
   }
 
   /*
-  Function: approveToken
+  Function: executeBridge
   - Gets raw unsigned tx data from sdk and then execute it with ethers.
   - Only executes if token has already been approved.
    */
@@ -659,6 +661,7 @@ const BridgePage = ({
                     executeBridge={executeBridge}
                     resetRates={resetRates}
                     setTime={setTime}
+                    bridgeTxnHash={bridgeTxHash}
                   />
                   <ActionCardFooter link={HOW_TO_BRIDGE_URL} />
                 </div>
