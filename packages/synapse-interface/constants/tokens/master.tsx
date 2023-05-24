@@ -1073,16 +1073,16 @@ export const XJEWEL = new Token({
   color: 'lime',
 })
 
-export const WMATIC = new Token({
-  addresses: {
-    [CHAINS.POLYGON.id]: '0x9b17bAADf0f21F03e35249e0e59723F34994F806',
-  },
-  decimals: 18,
-  symbol: 'MATIC', // SHOULD BE WETH
-  name: 'Wrapped MATIC',
-  description: 'ERC-20 Wrapped form of MATIC',
-  swapableType: 'MATIC',
-})
+// export const WMATIC = new Token({
+//   addresses: {
+//     [CHAINS.POLYGON.id]: '0x9b17bAADf0f21F03e35249e0e59723F34994F806',
+//   },
+//   decimals: 18,
+//   symbol: 'MATIC', // SHOULD BE WETH
+//   name: 'Wrapped MATIC',
+//   description: 'ERC-20 Wrapped form of MATIC',
+//   swapableType: 'MATIC',
+// })
 
 // export const WBNB = new Token({
 //   addresses: {
@@ -1096,13 +1096,13 @@ export const WMATIC = new Token({
 //   swapableType: 'BNB',
 // })
 
-export const DEPRECATED_WKLAY = new Token({
-  addresses: {
-    [CHAINS.KLAYTN.id]: '0x5819b6af194a78511c79c85ea68d2377a7e9335f',
-  },
-  decimals: 18,
-  symbol: 'WKLAY',
-  name: 'Deprecated Wrapped Klay',
-  description: 'ERC-20 Wrapped form of KLAY',
-  swapableType: 'KLAY',
-})
+// export const DEPRECATED_WKLAY = new Token({
+//   addresses: {
+//     [CHAINS.KLAYTN.id]: '0x5819b6af194a78511c79c85ea68d2377a7e9335f',
+//   },
+//   decimals: 18,
+//   symbol: 'WKLAY',
+//   name: 'Deprecated Wrapped Klay',
+//   description: 'ERC-20 Wrapped form of KLAY',
+//   swapableType: 'KLAY',
+// })
