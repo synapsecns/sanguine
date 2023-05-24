@@ -32,6 +32,7 @@ import solarbeamLogo from '@assets/icons/solarbeam.png'
 import h2oLogo from '@assets/icons/h2o.svg'
 import gmxLogo from '@assets/icons/gmx.png'
 import ageurLogo from '@assets/icons/ageur.svg'
+import pepeLogo from '@assets/icons/pepe-token.webp'
 import { AddressZero } from '@ethersproject/constants'
 
 import { Token } from '@/utils/types'
@@ -240,6 +241,18 @@ export const USDB = new Token({
   swapableType: 'USDB',
 })
 
+export const PEPE = new Token({
+  addresses: {
+    [CHAINS.ETH.id]: '0x6982508145454ce325ddbe47a25d4ec3d2311933',
+    [CHAINS.ARBITRUM.id]: '0xA54B8e178A49F8e5405A4d44Bb31F496e5564A05',
+  },
+  decimals: 18,
+  symbol: 'PEPE',
+  name: 'Pepe',
+  logo: pepeLogo,
+  description: 'PEPE',
+  swapableType: 'PEPE',
+})
 export const VSTA = new Token({
   addresses: {
     [CHAINS.ETH.id]: '0xA8d7F5e7C78ed0Fa097Cc5Ec66C1DC3104c9bbeb', // redeem

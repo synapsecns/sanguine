@@ -297,7 +297,6 @@ const SwapCard = ({
       wallet
     )
     const allowance = await erc20.allowance(address, routerAddress)
-    console.log('allowance from getCurrentTokenAllowance: ', allowance)
     return allowance
   }
 
@@ -455,7 +454,6 @@ const SwapCard = ({
         toToken.addresses[connectedChainId],
         fromInput.bigNum
       )
-      // console.log('query: ', query.minAmountOut.toString())
       if (!(query && maxAmountOut)) {
         setSwapQuote(EMPTY_SWAP_QUOTE_ZERO)
         setIsQuoteLoading(false)

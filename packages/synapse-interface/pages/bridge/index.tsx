@@ -324,7 +324,6 @@ const BridgePage = ({
       positedToSymbol: string | undefined,
       fromChainId: number
     ) => {
-      console.log('token', token, positedToChain, positedToSymbol, fromChainId)
       let newToChain =
         positedToChain && positedToChain !== fromChainId
           ? Number(positedToChain)
@@ -344,7 +343,6 @@ const BridgePage = ({
             ? Number(bridgeableChains[1])
             : Number(bridgeableChains[0])
       }
-      console.log('newToChain', newToChain)
       const positedToToken = positedToSymbol
         ? tokenSymbolToToken(newToChain, positedToSymbol)
         : tokenSymbolToToken(newToChain, token.symbol)
