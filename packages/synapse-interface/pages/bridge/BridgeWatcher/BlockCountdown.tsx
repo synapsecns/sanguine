@@ -37,7 +37,6 @@ const BlockCountdown = memo(
       }, 5000)
 
       return () => {
-        console.log('cleared')
         clearInterval(interval)
       }
     }, [])

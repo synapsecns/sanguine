@@ -114,7 +114,7 @@ const BridgeWatcher = ({
   return (
     <div className="space-y-2">
       {fromTransactions?.length > 0 && (
-        <Card title="Bridge Watcher" divider={false}>
+        <Card title="Bridge Watcher" divider={false} className="px-6 py-4">
           <Grid cols={{ xs: 1 }} gap={2}>
             {fromTransactions.map((fromEvent, i) => {
               return <BridgeEvent key={i} {...fromEvent} />
