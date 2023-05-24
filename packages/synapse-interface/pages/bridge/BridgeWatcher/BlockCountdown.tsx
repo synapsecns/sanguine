@@ -50,10 +50,10 @@ const BlockCountdown = memo(
       fetchBlockNumber({
         chainId: fromEvent?.chainId,
       }).then((newestBlockNumber) => {
+        const blockDifference = fromEvent.blockNumber - (newestBlockNumber ?? 0)
+        const parsedDifference = blockDifference < 0 ? 0 : blockDifference
         const delta =
-          BRIDGE_REQUIRED_CONFIRMATIONS[fromEvent?.chainId] +
-          (fromEvent.blockNumber - (newestBlockNumber ?? 0))
-        console.log('delta: ', delta)
+          BRIDGE_REQUIRED_CONFIRMATIONS[fromEvent?.chainId] + parsedDifference
         setConfirmationDelta(delta > 0 ? delta : 0)
         if (delta <= 0) {
           setCompletedConf(true)
@@ -61,9 +61,6 @@ const BlockCountdown = memo(
       })
     }, [time])
 
-    console.log('fromEvent?.toChainId: ', fromEvent?.toChainId)
-    console.log('toEvent: ', toEvent)
-    console.log('confirmationDelta:', confirmationDelta)
     return (
       <>
         <div className="flex-1">
