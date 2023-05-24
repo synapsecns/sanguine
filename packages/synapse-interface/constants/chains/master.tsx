@@ -303,7 +303,7 @@ export const DOGE: Chain = {
   layer: 1,
   codeName: 'dogechain',
   blockTime: 10000,
-  rpc: 'https://rpc.dogechain.dog',
+  rpc: 'https://1rpc.io/avax/c',
   nativeCurrency: { name: 'DOGE', symbol: 'DOGE', decimals: 18 },
   explorerUrl: 'https://explorer.dogechain.dog',
   color: 'purple',
