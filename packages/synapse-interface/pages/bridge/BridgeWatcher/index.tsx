@@ -111,6 +111,7 @@ const BridgeWatcher = ({
     setFromSigner(fromSignerRaw)
   }, [fromSignerRaw])
 
+  console.log('fromTransactions:', fromTransactions)
   return (
     <div className="space-y-2">
       {fromTransactions?.length > 0 && (

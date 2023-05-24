@@ -19,6 +19,8 @@ import {
   generateBridgeTx,
   checkTxIn,
 } from '@utils/bridgeWatcher'
+import { remove0xPrefix } from '@/utils/remove0xPrefix'
+
 const DestinationTx = memo((fromEvent: BridgeWatcherTx) => {
   const [toEvent, setToEvent] = useState<BridgeWatcherTx>()
   const [toSynapseContract, setToSynapseContract] =
@@ -70,9 +72,10 @@ const DestinationTx = memo((fromEvent: BridgeWatcherTx) => {
           blockNumber: Number(log.blockNumber),
         }
       })
-      .filter(
-        (log: any) => !checkTxIn(log) && log.kappa === fromEvent.kappa
-      )?.[0]
+      .filter((log: any) => {
+        const convertedKappa = remove0xPrefix(log.kappa)
+        return !checkTxIn(log) && convertedKappa === fromEvent.kappa
+      })?.[0]
     if (parsedLog) {
       const [inputTimestamp, transactionReceipt] = await Promise.all([
         getBlock(parsedLog.blockNumber, provider),
@@ -103,20 +106,17 @@ const DestinationTx = memo((fromEvent: BridgeWatcherTx) => {
       setToSynapseContract(toSynapseContract)
     }
   }, [fromEvent, toSigner])
+
   useEffect(() => {
-    if (
-      completedConf &&
-      toSynapseContract &&
-      toEvent === undefined &&
-      attempted
-    ) {
+    if (completedConf && toSynapseContract && !toEvent && attempted) {
       getToBridgeEvent().then((tx) => {
         setToEvent(tx)
       })
     }
   }, [completedConf])
+
   useEffect(() => {
-    if (toSynapseContract && toEvent === undefined && !completedConf) {
+    if (toSynapseContract && !toEvent && !completedConf) {
       getToBridgeEvent().then((tx) => {
         setToEvent(tx)
         return
@@ -124,9 +124,11 @@ const DestinationTx = memo((fromEvent: BridgeWatcherTx) => {
     }
     return
   }, [toSynapseContract])
+
   useEffect(() => {
     setToSigner(toSignerRaw)
   }, [toSignerRaw])
+
   return (
     <div className="flex items-center">
       <div className="flex-initial w-auto h-full align-middle mt-[22px]">
