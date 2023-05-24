@@ -53,6 +53,7 @@ const BlockCountdown = memo(
         const delta =
           BRIDGE_REQUIRED_CONFIRMATIONS[fromEvent?.chainId] +
           (fromEvent.blockNumber - (newestBlockNumber ?? 0))
+        console.log('delta: ', delta)
         setConfirmationDelta(delta > 0 ? delta : 0)
         if (delta <= 0) {
           setCompletedConf(true)
@@ -67,7 +68,7 @@ const BlockCountdown = memo(
       <>
         <div className="flex-1">
           <div className={`flex items-center p-2 align-middle`}>
-            {fromEvent?.toChainId && !toEvent && confirmationDelta != 0 && (
+            {fromEvent?.toChainId && !toEvent && confirmationDelta > 0 && (
               <>
                 <ChevronRightIcon
                   className={`
