@@ -58,7 +58,7 @@ const config = {
       // Replace with your project's social card
       image: 'img/docusaurus-social-card.jpg',
       navbar: {
-        title: 'Synapse SDK Docs',
+        title: 'Synapse Docs',
         logo: {
           alt: 'Syn Logo',
           src: 'img/logo.svg',
@@ -66,10 +66,23 @@ const config = {
         items: [
           {
             type: 'doc',
+            docId: 'consensus/index',
+            position: 'left',
+            label: 'Protocol Overview',
+          },
+          {
+            type: 'doc',
             docId: 'sdk/index',
             position: 'left',
-            label: 'Tutorial',
+            label: 'Bridge SDK',
             items: ['sdk/usage', 'sdk/examples'],
+          },
+          {
+            type: 'doc',
+            docId: 'solidity/index',
+            position: 'left',
+            label: 'Sending Messages',
+            items: ['solidity/intro', 'solidity/examples'],
           },
           {
             href: 'https://github.com/synapsecns/sanguine',

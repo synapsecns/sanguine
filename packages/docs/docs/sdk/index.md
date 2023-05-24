@@ -2,7 +2,7 @@
 sidebar_position: 1
 ---
 
-# Router SDK
+# Bridge SDK
 
 The Synapse SDK is the easiest way for any developer to integrate cross-chain token & liquidity transfers into their application. The SDK is built to support full-fledged frontend applications, but is fully isomorphic, able to be used both client & server-side.
 
