@@ -10,6 +10,7 @@ import { fetchSigner, getNetwork, switchNetwork } from '@wagmi/core'
 import { sortByTokenBalance, sortByVisibilityRank } from '@utils/sortTokens'
 import { calculateExchangeRate } from '@utils/calculateExchangeRate'
 import { subtractSlippage } from '@utils/slippage'
+import toast from 'react-hot-toast'
 import Popup from '@components/Popup'
 
 import {
@@ -74,6 +75,7 @@ const BridgePage = ({
   const [bridgeQuote, setBridgeQuote] =
     useState<BridgeQuote>(EMPTY_BRIDGE_QUOTE)
 
+  let popup: string
   /*
   useEffect Trigger: onMount
   - Gets current network connected and sets it as the state.
@@ -373,6 +375,16 @@ const BridgePage = ({
   )
 
   /*
+  useEffect triggers: currentAddress, isDisconnected, popup
+  - will dismiss toast asking user to connect wallet once wallet has been connected
+  */
+  useEffect(() => {
+    if (currentAddress) {
+      toast.dismiss(popup)
+    }
+  }, [currentAddress, isDisconnected, popup])
+
+  /*
   Function: handleChainChange
   - Produces and alert if chain not connected (upgrade to toaster)
   - Handles flipping to and from chains if flag is set to true
@@ -381,7 +393,11 @@ const BridgePage = ({
   const handleChainChange = useCallback(
     async (chainId: number, flip: boolean, type: 'from' | 'to') => {
       if (currentAddress === undefined || isDisconnected) {
-        return alert('Please connect your wallet')
+        popup = toast.error('Please connect your wallet', {
+          id: 'bridge-connect-wallet',
+          duration: 20000,
+        })
+        return popup
       }
 
       if (flip || type === 'from') {
