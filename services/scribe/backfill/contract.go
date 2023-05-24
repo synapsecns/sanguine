@@ -96,7 +96,6 @@ func (c *ContractBackfiller) Backfill(parentCtx context.Context, givenStart uint
 
 	g, groupCtx := errgroup.WithContext(ctx)
 	startHeight := givenStart
-	// use config for last block indexed for dfk and klaytn
 	lastBlockIndexed, err := c.eventDB.RetrieveLastIndexed(groupCtx, common.HexToAddress(c.contractConfig.Address), c.chainConfig.ChainID)
 	if err != nil {
 		LogEvent(WarnLevel, "Could not get last indexed", LogData{"cid": c.chainConfig.ChainID, "sh": startHeight, "eh": endHeight, "e": err.Error()})
