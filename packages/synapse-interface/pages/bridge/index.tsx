@@ -75,6 +75,7 @@ const BridgePage = ({
   const [bridgeQuote, setBridgeQuote] =
     useState<BridgeQuote>(EMPTY_BRIDGE_QUOTE)
 
+  let popup
   /*
   useEffect Trigger: onMount
   - Gets current network connected and sets it as the state.
@@ -374,6 +375,16 @@ const BridgePage = ({
   )
 
   /*
+  useEffect triggers: currentAddress, isDisconnected, popup
+  - will dismiss toast asking user to connect wallet once wallet has been connected
+  */
+  useEffect(() => {
+    if (currentAddress) {
+      toast.dismiss(popup)
+    }
+  }, [currentAddress, isDisconnected, popup])
+
+  /*
   Function: handleChainChange
   - Produces and alert if chain not connected (upgrade to toaster)
   - Handles flipping to and from chains if flag is set to true
@@ -382,11 +393,11 @@ const BridgePage = ({
   const handleChainChange = useCallback(
     async (chainId: number, flip: boolean, type: 'from' | 'to') => {
       if (currentAddress === undefined || isDisconnected) {
-        return toast.error(
-          <div>
-            <div className="w-full">{`Please connect your wallet`}</div>
-          </div>
-        )
+        popup = toast.error('Please connect your wallet', {
+          id: 'bridge-connect-wallet',
+          duration: 20000,
+        })
+        return popup
       }
 
       if (flip || type === 'from') {
