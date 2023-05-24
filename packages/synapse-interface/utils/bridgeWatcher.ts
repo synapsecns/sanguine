@@ -173,7 +173,7 @@ export const generateBridgeTx = (
     txHash: txReceipt.transactionHash,
     txReceipt,
     token,
-    kappa: id(parsedLog.transactionHash),
+    kappa: removePrefix(id(parsedLog.transactionHash)),
     toChainId: isFrom ? Number(parsedLog.chainId.toString()) : chainId,
     toAddress: isFrom ? parsedLog.to : destinationAddress,
   }
@@ -185,4 +185,11 @@ export const getHighestBlock = async (
 ) => {
   const highestBlock = await provider.getBlockNumber()
   return highestBlock
+}
+
+const removePrefix = (str: string): string => {
+  if (str.startsWith('0x')) {
+    return str.substring(2)
+  }
+  return str
 }
