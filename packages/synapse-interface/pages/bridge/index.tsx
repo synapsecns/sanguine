@@ -10,6 +10,7 @@ import { fetchSigner, getNetwork, switchNetwork } from '@wagmi/core'
 import { sortByTokenBalance, sortByVisibilityRank } from '@utils/sortTokens'
 import { calculateExchangeRate } from '@utils/calculateExchangeRate'
 import { subtractSlippage } from '@utils/slippage'
+import toast from 'react-hot-toast'
 import Popup from '@components/Popup'
 
 import {
@@ -381,7 +382,11 @@ const BridgePage = ({
   const handleChainChange = useCallback(
     async (chainId: number, flip: boolean, type: 'from' | 'to') => {
       if (currentAddress === undefined || isDisconnected) {
-        return alert('Please connect your wallet')
+        return toast.error(
+          <div>
+            <div className="w-full">{`Please connect your wallet`}</div>
+          </div>
+        )
       }
 
       if (flip || type === 'from') {

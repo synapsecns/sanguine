@@ -29,6 +29,7 @@ import Card from '@tw/Card'
 import { SwapQuote } from '@types'
 import { IMPAIRED_CHAINS } from '@/constants/impairedChains'
 import { CHAINS_BY_ID } from '@constants/chains'
+import { toast } from 'react-hot-toast'
 
 import {
   DEFAULT_FROM_TOKEN,
@@ -346,7 +347,11 @@ const SwapCard = ({
   const handleChainChange = useCallback(
     async (chainId: number, flip: boolean, type: 'from' | 'to') => {
       if (address === undefined) {
-        return alert('Please connect your wallet')
+        return toast.error(
+          <div>
+            <div className="w-full">{`Please connect your wallet`}</div>
+          </div>
+        )
       }
       const desiredChainId = Number(chainId)
 
