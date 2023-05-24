@@ -122,6 +122,8 @@ func (c *ContractBackfiller) Backfill(parentCtx context.Context, givenStart uint
 
 				return fmt.Errorf("context canceled while storing and retrieving logs: %w", groupCtx.Err())
 			case log := <-logsChan:
+				LogEvent(ErrorLevel, "received log from chan", LogData{"cid": c.chainConfig.ChainID, "bn": log.BlockNumber, "tx": log.TxHash.Hex(), "la": log.Address.String(), "ccc": concurrentCalls, "ca": c.contractConfig.Address})
+
 				concurrentCalls++
 				gS.Go(func() error {
 					// another goroutine is already storing this receipt
