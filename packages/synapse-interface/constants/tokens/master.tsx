@@ -377,7 +377,7 @@ export const USDC = new Token({
     [CHAINS.CRONOS.id]: '0xc21223249ca28397b4b6541dffaecc539bff0c59',
     [CHAINS.OPTIMISM.id]: '0x7f5c764cbc14f9669b88837ca1490cca17c31607',
     [CHAINS.POLYGON.id]: '0x2791bca1f2de4661ed88a30c99a7a9449aa84174',
-    [CHAINS.FANTOM.id]: '0x04068da6c83afcfa0e13ba15a6696662335d5b75',
+    // [CHAINS.FANTOM.id]: '0x04068da6c83afcfa0e13ba15a6696662335d5b75', PAUSED
     [CHAINS.AVALANCHE.id]: '0xA7D7079b0FEaD91F3e65f86E8915Cb59c1a4C664',
     [CHAINS.ARBITRUM.id]: '0xff970a61a04b1ca14834a43f5de4533ebddb5cc8',
     [CHAINS.HARMONY.id]: '0x985458e523db3d53125813ed68c274899e9dfab4',
@@ -529,7 +529,7 @@ export const USDT = new Token({
     [CHAINS.AVALANCHE.id]: '0xc7198437980c041c805a1edcba50c1ce5db95118',
     // [CHAINS.HARDHAT.id]: '0x9A9f2CCfdE556A7E9Ff0848998Aa4a0CFD8863AE',
     [CHAINS.ARBITRUM.id]: '0xfd086bc7cd5c481dcc9c85ebe478a1c0b69fcbb9',
-    [CHAINS.FANTOM.id]: '0x049d68029688eabf473097a2fc38ef61633a3c7a',
+    // [CHAINS.FANTOM.id]: '0x049d68029688eabf473097a2fc38ef61633a3c7a', PAUSED 05/24
     [CHAINS.HARMONY.id]: '0x3c2b8be99c50593081eaa2a724f0b8285f5aba8f',
     [CHAINS.BOBA.id]: '0x5DE1677344D3Cb0D7D465c10b72A8f60699C062d',
     [CHAINS.AURORA.id]: '0x4988a896b1227218e4A686fdE5EabdcAbd91571f',
@@ -698,19 +698,19 @@ export const ONEETH = new Token({
   color: 'sky',
 })
 
-export const FTMETH = new Token({
-  addresses: {
-    [CHAINS.FANTOM.id]: '0x74b23882a30290451A17c44f4F05243b6b58C76d',
-  },
-  decimals: 18,
-  symbol: 'ETH ',
-  name: 'Wrapped ETH',
-  logo: wethLogo,
-  description: 'Fantom Wrapped form of ETH',
-  swapableType: 'ETH',
-  swapableOn: [CHAINS.FANTOM.id],
-  color: 'sky',
-})
+// export const FTMETH = new Token({
+//   addresses: {
+//     // [CHAINS.FANTOM.id]: '0x74b23882a30290451A17c44f4F05243b6b58C76d',  PAUSED 05/24
+//   },
+//   decimals: 18,
+//   symbol: 'ETH ',
+//   name: 'Wrapped ETH',
+//   logo: wethLogo,
+//   description: 'Fantom Wrapped form of ETH',
+//   swapableType: 'ETH',
+//   // swapableOn: [CHAINS.FANTOM.id],
+//   color: 'sky',
+// })
 
 export const CANTOETH = new Token({
   addresses: {
