@@ -345,7 +345,6 @@ const BridgePage = ({
             ? Number(bridgeableChains[1])
             : Number(bridgeableChains[0])
       }
-
       const positedToToken = positedToSymbol
         ? tokenSymbolToToken(newToChain, positedToSymbol)
         : tokenSymbolToToken(newToChain, token.symbol)

@@ -32,6 +32,7 @@ import solarbeamLogo from '@assets/icons/solarbeam.png'
 import h2oLogo from '@assets/icons/h2o.svg'
 import gmxLogo from '@assets/icons/gmx.png'
 import ageurLogo from '@assets/icons/ageur.svg'
+import pepeLogo from '@assets/icons/pepe-token.webp'
 import { AddressZero } from '@ethersproject/constants'
 
 import { Token } from '@/utils/types'
@@ -240,6 +241,18 @@ export const USDB = new Token({
   swapableType: 'USDB',
 })
 
+export const PEPE = new Token({
+  addresses: {
+    [CHAINS.ETH.id]: '0x6982508145454ce325ddbe47a25d4ec3d2311933',
+    [CHAINS.ARBITRUM.id]: '0xA54B8e178A49F8e5405A4d44Bb31F496e5564A05',
+  },
+  decimals: 18,
+  symbol: 'PEPE',
+  name: 'Pepe',
+  logo: pepeLogo,
+  description: 'PEPE',
+  swapableType: 'PEPE',
+})
 export const VSTA = new Token({
   addresses: {
     [CHAINS.ETH.id]: '0xA8d7F5e7C78ed0Fa097Cc5Ec66C1DC3104c9bbeb', // redeem
@@ -1073,16 +1086,16 @@ export const XJEWEL = new Token({
   color: 'lime',
 })
 
-export const WMATIC = new Token({
-  addresses: {
-    [CHAINS.POLYGON.id]: '0x9b17bAADf0f21F03e35249e0e59723F34994F806',
-  },
-  decimals: 18,
-  symbol: 'MATIC', // SHOULD BE WETH
-  name: 'Wrapped MATIC',
-  description: 'ERC-20 Wrapped form of MATIC',
-  swapableType: 'MATIC',
-})
+// export const WMATIC = new Token({
+//   addresses: {
+//     [CHAINS.POLYGON.id]: '0x9b17bAADf0f21F03e35249e0e59723F34994F806',
+//   },
+//   decimals: 18,
+//   symbol: 'MATIC', // SHOULD BE WETH
+//   name: 'Wrapped MATIC',
+//   description: 'ERC-20 Wrapped form of MATIC',
+//   swapableType: 'MATIC',
+// })
 
 // export const WBNB = new Token({
 //   addresses: {
@@ -1096,13 +1109,13 @@ export const WMATIC = new Token({
 //   swapableType: 'BNB',
 // })
 
-export const DEPRECATED_WKLAY = new Token({
-  addresses: {
-    [CHAINS.KLAYTN.id]: '0x5819b6af194a78511c79c85ea68d2377a7e9335f',
-  },
-  decimals: 18,
-  symbol: 'WKLAY',
-  name: 'Deprecated Wrapped Klay',
-  description: 'ERC-20 Wrapped form of KLAY',
-  swapableType: 'KLAY',
-})
+// export const DEPRECATED_WKLAY = new Token({
+//   addresses: {
+//     [CHAINS.KLAYTN.id]: '0x5819b6af194a78511c79c85ea68d2377a7e9335f',
+//   },
+//   decimals: 18,
+//   symbol: 'WKLAY',
+//   name: 'Deprecated Wrapped Klay',
+//   description: 'ERC-20 Wrapped form of KLAY',
+//   swapableType: 'KLAY',
+// })
