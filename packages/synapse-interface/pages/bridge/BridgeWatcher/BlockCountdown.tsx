@@ -63,18 +63,9 @@ const BlockCountdown = memo(
     return (
       <>
         <div className="flex-1">
-          <div className={`flex items-center p-2 align-middle`}>
+          <div className={`flex items-center align-middle`}>
             {fromEvent?.toChainId && !toEvent && confirmationDelta > 0 && (
               <>
-                <ChevronRightIcon
-                  className={`
-                  w-5 h-5
-                  place-self-center
-                  ${getNetworkTextColor(chain?.color)}
-                  text-opacity-50
-                `}
-                />
-
                 <BlockCountdownCircle
                   clampedDiff={confirmationDelta}
                   fromChainConfirmations={
