@@ -185,7 +185,7 @@ const BridgePage = ({
     return () => {
       setIsQuoteLoading(false)
     }
-  }, [fromInput])
+  }, [fromInput, fromChainId])
 
   /*
   Helper Function: resetTokenPermutation
