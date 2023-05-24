@@ -38,6 +38,7 @@ const BlockCountdown = memo(
       }, 5000)
 
       return () => {
+        console.log('cleared')
         clearInterval(interval)
       }
     }, [])
@@ -59,6 +60,9 @@ const BlockCountdown = memo(
       })
     }, [time])
 
+    console.log('fromEvent?.toChainId: ', fromEvent?.toChainId)
+    console.log('toEvent: ', toEvent)
+    console.log('confirmationDelta:', confirmationDelta)
     return (
       <>
         <div className="flex-1">
