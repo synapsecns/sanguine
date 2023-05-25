@@ -571,7 +571,7 @@ export const USDT = new Token({
     CHAINS.POLYGON.id,
     CHAINS.FANTOM.id,
     CHAINS.ARBITRUM.id,
-    CHAINS.AVALANCHE.id,
+    // CHAINS.AVALANCHE.id,
     CHAINS.HARMONY.id,
     CHAINS.AURORA.id,
     CHAINS.BOBA.id,
@@ -1101,6 +1101,7 @@ export const USDCe = new Token({
     is backed up by $1 that is held in reserve
   `,
   swapableType: 'USD',
+  swapableOn: [CHAINS.AVALANCHE.id],
 })
 
 export const USDTe = new Token({
@@ -1117,6 +1118,7 @@ export const USDTe = new Token({
     to the number of USDT in circulation.
   `,
   swapableType: 'USD',
+  swapableOn: [CHAINS.AVALANCHE.id],
 })
 // export const WMATIC = new Token({
 //   addresses: {

@@ -35,7 +35,6 @@ export const MIM = new Token({
   color: 'indigo',
 })
 
-
 export const SwapUSDC = new Token({
   visibilityRank: 1,
   addresses: {
@@ -75,5 +74,4 @@ export const SwapUSDT = new Token({
     to the number of USDT in circulation.
     `,
   swapableType: 'USD',
-
 })
