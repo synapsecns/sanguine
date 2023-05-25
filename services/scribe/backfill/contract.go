@@ -358,8 +358,8 @@ func (c *ContractBackfiller) getLogs(parentCtx context.Context, startHeight, end
 			case <-rangeFilter.Done():
 				LogEvent(ErrorLevel, "[DEBUG] range filter done", LogData{"cid": c.chainConfig.ChainID, "ca": c.contractConfig.Address})
 
-				finLogs, _ := rangeFilter.Drain(ctx)
-				LogEvent(ErrorLevel, "[DEBUG] range filter drained", LogData{"cid": c.chainConfig.ChainID, "ca": c.contractConfig.Address, "len": len(finLogs)})
+				finLogs, err := rangeFilter.Drain(ctx)
+				LogEvent(ErrorLevel, "[DEBUG] range filter drained", LogData{"cid": c.chainConfig.ChainID, "ca": c.contractConfig.Address, "len": len(finLogs), "err": err})
 
 				for _, log := range finLogs {
 					LogEvent(ErrorLevel, "[DEBUG] Log filter done, adding log to chan", LogData{"cid": c.chainConfig.ChainID, "bn": log.BlockNumber, "tx": log.TxHash.Hex(), "la": log.Address.String(), "ca": c.contractConfig.Address})
