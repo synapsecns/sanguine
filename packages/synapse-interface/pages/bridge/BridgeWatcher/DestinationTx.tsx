@@ -50,18 +50,9 @@ const DestinationTx = (fromEvent: BridgeWatcherTx) => {
 
       // Exit loop if destination block was mined before the block for the origin tx
       if (blockTimestamp < fromEvent.timestamp) {
-        console.log(
-          'past timestamp of origin tx, quitting',
-          blockTimestamp,
-          fromEvent.timestamp
-        )
         afterOrginTx = false
       }
-      console.log(
-        'searching for logs on destination with',
-        fromEvent.toAddress,
-        'as address'
-      )
+
       const fromEvents = await getLogs(
         startBlock,
         provider,
@@ -73,11 +64,9 @@ const DestinationTx = (fromEvent: BridgeWatcherTx) => {
 
       // Break if cannot find tx
       if (i > 30) {
-        console.log('could not find tx, quitting')
         afterOrginTx = false
       }
     }
-    console.log('destination events', allToEvents)
     const flattendEvents = _.flatten(allToEvents)
     const parsedLogs = flattendEvents
       .map((log) => {
@@ -91,7 +80,6 @@ const DestinationTx = (fromEvent: BridgeWatcherTx) => {
         const convertedKappa = remove0xPrefix(log.kappa)
         return !checkTxIn(log) && convertedKappa === fromEvent.kappa
       })
-    console.log('destination parsed logs', parsedLogs)
 
     const parsedLog = parsedLogs?.[0]
     if (parsedLog) {
@@ -109,7 +97,6 @@ const DestinationTx = (fromEvent: BridgeWatcherTx) => {
         transactionReceipt,
         fromEvent.toAddress
       )
-      console.log('destination bridge tx', destBridgeTx)
       setAttempted(true)
       return destBridgeTx
     }
@@ -131,10 +118,8 @@ const DestinationTx = (fromEvent: BridgeWatcherTx) => {
 
   // Listens for confirmations to complete and if so, recheck destination chain for logs
   useEffect(() => {
-    console.log('completed conf! ', completedConf, attempted, toEvent)
     if (completedConf && toSynapseContract && !toEvent && attempted) {
       getToBridgeEvent().then((tx) => {
-        console.log('got des bridge event', tx?.txHash)
         setToEvent(tx)
       })
     }
@@ -144,8 +129,6 @@ const DestinationTx = (fromEvent: BridgeWatcherTx) => {
   useEffect(() => {
     if (toSynapseContract && !toEvent) {
       getToBridgeEvent().then((tx) => {
-        console.log('got des bridge event', tx?.txHash)
-
         setToEvent(tx)
         return
       })
@@ -157,12 +140,6 @@ const DestinationTx = (fromEvent: BridgeWatcherTx) => {
     setToSigner(toSignerRaw)
   }, [toSignerRaw])
 
-  console.log(
-    'From Event txhash',
-    fromEvent.txHash,
-    'To Event',
-    toEvent?.txHash
-  )
   return (
     <div className="flex items-center">
       <div className="flex-initial w-auto h-full align-middle mt-[22px]">

@@ -44,12 +44,13 @@ const BridgeWatcher = ({
     const provider = providerMap[fromChainId]
     const iface = new Interface(SYNAPSE_BRIDGE_ABI)
     let allFromEvents = []
+    const adjustedAddress = destinationAddress ? destinationAddress : address
     for (let i = 0; i < GETLOGS_REQUEST_COUNT; i++) {
       const fromEvents = await getLogs(
         currentFromBlock - GETLOGS_SIZE * i,
         provider,
         fromSynapseContract,
-        address
+        adjustedAddress
       )
       allFromEvents.push(fromEvents)
     }
@@ -87,7 +88,6 @@ const BridgeWatcher = ({
         destinationAddress
       )
     })
-    console.log('Origin logs', txObjects)
     return txObjects
   }
 

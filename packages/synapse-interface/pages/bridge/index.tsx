@@ -54,7 +54,7 @@ const BridgePage = ({
   address: `0x${string}`
   fromChainId: number
 }) => {
-  const { address: currentAddress, isDisconnected } = useAccount()
+  const { isDisconnected } = useAccount()
   const router = useRouter()
   const { synapseSDK } = useSynapseContext()
   const [time, setTime] = useState(Date.now())
@@ -264,7 +264,7 @@ const BridgePage = ({
 
       return sortByVisibilityRank(mostCommonSwapableType)[0]
     },
-    [currentAddress, isDisconnected]
+    [address, isDisconnected]
   )
 
   /*
@@ -375,14 +375,14 @@ const BridgePage = ({
   )
 
   /*
-  useEffect triggers: currentAddress, isDisconnected, popup
+  useEffect triggers: address, isDisconnected, popup
   - will dismiss toast asking user to connect wallet once wallet has been connected
   */
   useEffect(() => {
-    if (currentAddress) {
+    if (address) {
       toast.dismiss(popup)
     }
-  }, [currentAddress, isDisconnected, popup])
+  }, [address, isDisconnected, popup])
 
   /*
   Function: handleChainChange
@@ -392,7 +392,7 @@ const BridgePage = ({
   */
   const handleChainChange = useCallback(
     async (chainId: number, flip: boolean, type: 'from' | 'to') => {
-      if (currentAddress === undefined || isDisconnected) {
+      if (address === undefined || isDisconnected) {
         popup = toast.error('Please connect your wallet', {
           id: 'bridge-connect-wallet',
           duration: 20000,
@@ -481,7 +481,7 @@ const BridgePage = ({
       }
     },
     [
-      currentAddress,
+      address,
       isDisconnected,
       fromToken,
       fromChainId,
@@ -613,6 +613,7 @@ const BridgePage = ({
         destinationAddress && isAddress(destinationAddress)
           ? destinationAddress
           : address
+      console.log(newAddress)
       const data = await synapseSDK.bridge(
         newAddress,
         fromChainId,

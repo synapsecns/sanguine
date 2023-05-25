@@ -65,7 +65,8 @@ export const getLogs = async (
   try {
     const logs = await provider.send('eth_getLogs', [filter])
     return logs
-  } catch {
+  } catch (e) {
+    console.log('getLogs error', e)
     return []
   }
 }
