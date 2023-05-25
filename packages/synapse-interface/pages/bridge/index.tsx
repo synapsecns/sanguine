@@ -484,6 +484,7 @@ const BridgePage = ({
     [
       address,
       isDisconnected,
+      fromInput,
       fromToken,
       fromChainId,
       toToken,
