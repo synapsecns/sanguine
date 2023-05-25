@@ -2,12 +2,10 @@ import { JsonRpcProvider } from '@ethersproject/providers'
 import { SynapseSDK } from '@synapsecns/sdk-router'
 import { BigNumber } from '@ethersproject/bignumber'
 import { formatUnits } from '@ethersproject/units'
-
 import express from 'express'
-
-// To run locally you may need to add the "node --experimental-json-modules app.js" flag for the following jsons to be read
 import chains from './config/chains.json' assert { type: 'json' }
 import tokens from './config/tokens.json' assert { type: 'json' }
+// To run locally you may need to add the "node --experimental-json-modules app.js" flag for the following jsons to be read
 
 // Constants
 const TEN = BigNumber.from(10)
@@ -36,9 +34,10 @@ const tokenHtml = Object.keys(tokens)
 // Set up Synapse SDK
 const providers = []
 const chainIds = []
-for (let i = 0; i < chains.length; i++) {
-  providers.push(new JsonRpcProvider(chains[i].rpc))
-  chainIds.push(chains[i].id)
+
+for (const chain of chains) {
+  providers.push(new JsonRpcProvider(chain.rpc))
+  chainIds.push(chain.id)
 }
 const Synapse = new SynapseSDK(chainIds, providers)
 
@@ -121,9 +120,9 @@ app.get('/swap', async (req, res) => {
       // TODO: Router contract v2 should return the amount out with decimals for the out-out token not the out-in token (eg.nusd).
 
       // Add response field with adjusted maxAmountOutStr (to account for decimals)
-      var payload: any = resp
+      let payload: any = resp
       payload.maxAmountOutStr = parseInt(
-        formatBNToString(resp.maxAmountOut, toTokenDecimals)
+        formatBNToString(resp.maxAmountOut, toTokenDecimals), 10
       )
       res.json(payload)
     })
@@ -197,9 +196,9 @@ app.get('/bridge', async (req, res) => {
       // TODO: Router contract v2 should return the amount out with decimals for the out-out token not the out-in token (eg.nusd).
 
       // Add response field with adjusted maxAmountOutStr (to account for decimals)
-      var payload: any = resp
+      let payload: any = resp
       payload.maxAmountOutStr = parseInt(
-        formatBNToString(resp.maxAmountOut, toTokenDecimals)
+        formatBNToString(resp.maxAmountOut, toTokenDecimals), 10
       )
       res.json(payload)
     })
