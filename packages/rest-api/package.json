@@ -1,7 +1,9 @@
 {
   "name": "@synapsecns/rest-api",
   "version": "1.0.1",
-  "main": "app.js",
+  "engines": {
+    "node": ">=16.0.0"
+  },
   "scripts": {
     "test": "echo No tests implemented yet",
     "start": " node app.js",
@@ -12,10 +14,6 @@
     "build:go": " ",
     "build:slither": " "
   },
-  "type": "module",
-  "keywords": [],
-  "author": "Contributor",
-  "license": "ISC",
   "dependencies": {
     "@ethersproject/bignumber": "^5.7.0",
     "@ethersproject/providers": "^5.7.2",
