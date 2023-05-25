@@ -1,5 +1,6 @@
 import { ExternalLinkIcon } from '@heroicons/react/outline'
 import { getExplorerTxUrl } from '@urls'
+
 const ExplorerLink = ({
   transactionHash,
   chainId,
