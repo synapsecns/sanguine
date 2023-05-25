@@ -80,7 +80,7 @@ export function LandingNav() {
           >
             <TopBarButtons />
           </Popover.Group>
-          <div className="justify-end flex-1 hidden lg:flex whitespace-nowrap">
+          <div className="justify-end flex-1 hidden lg:flex">
             <div className="flex items-center space-x-2">
               <Wallet />
               <Popover className="relative inline-block">
