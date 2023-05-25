@@ -117,7 +117,7 @@ export const ChainSlideOver = ({
       </div>
       <div
         data-test-id={dataId}
-        className="px-3 pt-20 pb-8 space-y-4 bg-bgLighter md:px-6 rounded-xl"
+        className="px-3 pt-20 pb-8 space-y-4 bg-bgLighter md:px-6"
       >
         {networks.map(({ id: mapChainId }, idx) => {
           let onClickSpecificNetwork

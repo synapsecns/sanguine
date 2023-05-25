@@ -11,6 +11,9 @@ import { memo } from 'react'
 import { CHAINS_BY_ID } from '@constants/chains'
 import LoadingSpinner from '@tw/LoadingSpinner'
 import { AddressZero } from '@ethersproject/constants'
+import { useAccount } from 'wagmi'
+import { toast } from 'react-hot-toast'
+
 const PoolsListCard = memo(
   ({
     pool,
@@ -27,6 +30,8 @@ const PoolsListCard = memo(
   }) => {
     const [poolData, setPoolData] = useState(undefined)
     const [poolApyData, setPoolApyData] = useState(undefined)
+    const { isDisconnected } = useAccount()
+    let popup: string
 
     useEffect(() => {
       if (connectedChainId && chainId && pool) {
@@ -50,12 +55,26 @@ const PoolsListCard = memo(
     const chain = CHAINS_BY_ID[chainId]
     // const poolRouterIndex = POOL_INVERTED_ROUTER_INDEX[chainId][poolName]
 
+    /*
+  useEffect triggers: address, isDisconnected, popup
+  - will dismiss toast asking user to connect wallet once wallet has been connected
+  */
+    useEffect(() => {
+      if (address && !isDisconnected && popup) {
+        toast.dismiss(popup)
+      }
+    }, [address, isDisconnected, popup])
+
     return (
       <div>
         <Link
           onClick={() => {
-            if (address === undefined) {
-              return alert('Please connect your wallet')
+            if (address === undefined || isDisconnected) {
+              popup = toast.error('Please connect your wallet', {
+                id: 'pools-connect-wallet',
+                duration: 20000,
+              })
+              return popup
             }
             if (chainId != connectedChainId) {
               const res = switchNetwork({ chainId: chainId })
