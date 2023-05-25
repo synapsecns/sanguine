@@ -60,7 +60,7 @@ const PoolsListCard = memo(
   - will dismiss toast asking user to connect wallet once wallet has been connected
   */
     useEffect(() => {
-      if (address && !isDisconnected) {
+      if (address && !isDisconnected && popup) {
         toast.dismiss(popup)
       }
     }, [address, isDisconnected, popup])
