@@ -663,7 +663,7 @@ const BridgePage = ({
 
       pendingPopup = toast(
         `Bridging from ${fromToken.symbol} on ${originChainName} to ${toToken.symbol} on ${destinationChainName}`,
-        { id: 'bridging-in-progress-popup', duration: Infinity }
+        { id: 'bridge-in-progress-popup', duration: Infinity }
       )
 
       try {
@@ -685,7 +685,7 @@ const BridgePage = ({
         )
 
         successPopup = toast.success(successToastContent, {
-          id: 'bridging-in-progress-popup',
+          id: 'bridge-success-popup',
           duration: 10000,
         })
 
