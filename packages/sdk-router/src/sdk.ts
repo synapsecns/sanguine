@@ -396,4 +396,4 @@ class SynapseSDK {
   }
 }
 
-export { SynapseSDK, ETH_NATIVE_TOKEN_ADDRESS }
+export { SynapseSDK, ETH_NATIVE_TOKEN_ADDRESS, Query }
