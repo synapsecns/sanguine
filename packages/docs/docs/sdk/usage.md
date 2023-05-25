@@ -117,7 +117,7 @@ Executes a token swap transaction on the specified chain.
 
 #### Return Value
 
-A Promise PopulatedTransaction object is returned with the following attributes populated.
+A Promise [PopulatedTransaction](https://docs.ethers.org/v5/api/providers/types/#types--transactions) object is returned with the following attributes populated.
 
 - `to` (string): The address the tx is to.
 - `data` (string): The transaction data.
