@@ -37,7 +37,6 @@ export const sortByTokenBalance = async (
   address: any
 ) => {
   const tokensWithBalances: any[] = []
-
   const multicallInputs = []
   let multicallData
 
@@ -55,11 +54,11 @@ export const sortByTokenBalance = async (
       // deterministic multicall3 address on all eth chains
       const multicallAddress: Address = `0xcA11bde05977b3631167028862bE2a173976CA11`
 
-      if (!tokenAddress) {
+      if (tokenAddress === undefined) {
         return
       }
 
-      if (tokenAddress === AddressZero) {
+      if (tokenAddress === AddressZero || tokenAddress === '') {
         multicallInputs.push({
           address: multicallAddress,
           abi: multicallABI,
@@ -84,7 +83,6 @@ export const sortByTokenBalance = async (
     multicallData = await multicall({
       contracts: multicallInputs,
     })
-
     return sortArrayByBalance(
       multicallData.map((tokenBalance: BigNumber | undefined, index) => ({
         token: tokens[index],
