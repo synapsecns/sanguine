@@ -1,0 +1,28 @@
+{
+  "name": "@synapsecns/rest-api",
+  "version": "1.0.1",
+  "main": "app.js",
+  "scripts": {
+    "test": "echo No tests implemented yet",
+    "start": " node app.js",
+    "test:coverage": "echo 'No tests defined.'",
+    "lint:fix": "npm run lint -- --fix",
+    "lint:check": "eslint . --max-warnings=0",
+    "ci:lint": "npm run lint:check",
+    "build:go": " ",
+    "build:slither": " "
+  },
+  "type": "module",
+  "keywords": [],
+  "author": "Contributor",
+  "license": "ISC",
+  "dependencies": {
+    "@ethersproject/bignumber": "^5.7.0",
+    "@ethersproject/providers": "^5.6.1",
+    "@synapsecns/sdk-router": "^0.1.18",
+    "bignumber": "^1.1.0",
+    "ethers": "5.7.2",
+    "express": "^4.18.2"
+  },
+  "description": "A node.js project exposing a rest api for synapse sdk quotes"
+}
