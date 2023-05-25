@@ -1,11 +1,12 @@
+//@ts-ignore
 import { JsonRpcProvider } from '@ethersproject/providers'
 import { SynapseSDK } from '@synapsecns/sdk-router'
 import { BigNumber } from '@ethersproject/bignumber'
 import { formatUnits } from '@ethersproject/units'
 import express from 'express'
 
-import chains from './config/chains.json' assert { type: 'json' }
-import tokens from './config/tokens.json' assert { type: 'json' }
+import chains from './config/chains.json'
+import tokens from './config/tokens.json'
 // To run locally you may need to add the "node --experimental-json-modules app.js" flag for the following jsons to be read
 
 // Constants
@@ -219,7 +220,7 @@ app.get('/bridge', async (req, res) => {
     })
 })
 
-app.listen(port, () => {
+export const server = app.listen(port, () => {
   console.log(`Server listening at ${port}`)
 })
 
