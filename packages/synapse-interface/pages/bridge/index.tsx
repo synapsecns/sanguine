@@ -664,6 +664,7 @@ const BridgePage = ({
     }
   }
 
+  console.log('bridgeTxnHash: ', bridgeTxHash)
   return (
     <LandingPageWrapper>
       <main
