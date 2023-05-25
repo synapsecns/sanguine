@@ -43,18 +43,38 @@ const BlockCountdown = memo(
 
     useEffect(() => {
       if (confirmationDelta === 0 || toEvent) {
+        console.log(' esxcamep', toEvent, confirmationDelta)
+
         return
       }
       fetchBlockNumber({
         chainId: fromEvent?.chainId,
       }).then((newestBlockNumber) => {
-        const blockDifference = fromEvent.blockNumber - (newestBlockNumber ?? 0)
-        const filterBlockDifference = blockDifference < 0 ? 0 : blockDifference
-        const delta =
-          BRIDGE_REQUIRED_CONFIRMATIONS[fromEvent?.chainId] +
-          filterBlockDifference
-        setConfirmationDelta(delta > 0 ? delta : 0)
-        if (delta <= 0) {
+        console.log(' hi')
+        // if error with rpc getting block number, don't run the following code
+        if (!newestBlockNumber) {
+          console.log('error getting block number', newestBlockNumber)
+          return
+        }
+        // get number of blocks since from event blocknumber
+        const blockDifference = newestBlockNumber - fromEvent.blockNumber
+
+        // get number of blocks since event block number - required confirmations
+        const blocksSinceConfirmed =
+          blockDifference - BRIDGE_REQUIRED_CONFIRMATIONS[fromEvent?.chainId]
+        console.log(
+          'newestBlockNumber',
+          blockDifference,
+          fromEvent.blockNumber,
+          newestBlockNumber,
+          blocksSinceConfirmed,
+          blocksSinceConfirmed >= 0 ? 0 : blocksSinceConfirmed * -1
+        )
+        // if blocks since confirmed is less than 0, thats how many blocks left to confirm
+        setConfirmationDelta(
+          blocksSinceConfirmed >= 0 ? 0 : blocksSinceConfirmed * -1
+        )
+        if (blocksSinceConfirmed >= 0) {
           setCompletedConf(true)
         }
       })

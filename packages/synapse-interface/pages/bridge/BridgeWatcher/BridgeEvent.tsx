@@ -4,8 +4,9 @@ import { BridgeWatcherTx } from '@types'
 import Link from 'next/link'
 import { ANALYTICS_KAPPA } from '@urls'
 import { ChevronRightIcon } from '@heroicons/react/outline'
+import { memo } from 'react'
 
-const BridgeEvent = (fromEvent: BridgeWatcherTx) => {
+const BridgeEvent = memo((fromEvent: BridgeWatcherTx) => {
   return (
     <div className="mb-3">
       <div className="flex items-center text-gray-500">
@@ -33,6 +34,5 @@ const BridgeEvent = (fromEvent: BridgeWatcherTx) => {
       </Link>
     </div>
   )
-}
-
+})
 export default BridgeEvent

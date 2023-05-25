@@ -87,6 +87,7 @@ const BridgeWatcher = ({
         destinationAddress
       )
     })
+    console.log('Origin logs', txObjects)
     return txObjects
   }
 

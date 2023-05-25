@@ -32,7 +32,7 @@ const DestinationTx = (fromEvent: BridgeWatcherTx) => {
   const { providerMap } = useSynapseContext()
 
   const getToBridgeEvent = async (): Promise<BridgeWatcherTx> => {
-    const currentFromBlock = await fetchBlockNumber({
+    const headOnDestination = await fetchBlockNumber({
       chainId: fromEvent.toChainId,
     })
     const provider = providerMap[fromEvent.toChainId]
@@ -42,13 +42,26 @@ const DestinationTx = (fromEvent: BridgeWatcherTx) => {
     let i = 0
     let afterOrginTx = true
     while (afterOrginTx) {
-      const startBlock = currentFromBlock - GETLOGS_SIZE * i
-      const blockTimestamp = await (
-        await getBlock(currentFromBlock - GETLOGS_SIZE * i, provider)
-      ).timestamp
+      const startBlock = headOnDestination - GETLOGS_SIZE * i
+
+      // get timestamp from from block
+      const blockRaw = await getBlock(startBlock - (GETLOGS_SIZE + 1), provider)
+      const blockTimestamp = blockRaw?.timestamp
+
+      // Exit loop if destination block was mined before the block for the origin tx
       if (blockTimestamp < fromEvent.timestamp) {
+        console.log(
+          'past timestamp of origin tx, quitting',
+          blockTimestamp,
+          fromEvent.timestamp
+        )
         afterOrginTx = false
       }
+      console.log(
+        'searching for logs on destination with',
+        fromEvent.toAddress,
+        'as address'
+      )
       const fromEvents = await getLogs(
         startBlock,
         provider,
@@ -60,11 +73,13 @@ const DestinationTx = (fromEvent: BridgeWatcherTx) => {
 
       // Break if cannot find tx
       if (i > 30) {
+        console.log('could not find tx, quitting')
         afterOrginTx = false
       }
     }
+    console.log('destination events', allToEvents)
     const flattendEvents = _.flatten(allToEvents)
-    const parsedLog = flattendEvents
+    const parsedLogs = flattendEvents
       .map((log) => {
         return {
           ...iface.parseLog(log).args,
@@ -75,14 +90,17 @@ const DestinationTx = (fromEvent: BridgeWatcherTx) => {
       .filter((log: any) => {
         const convertedKappa = remove0xPrefix(log.kappa)
         return !checkTxIn(log) && convertedKappa === fromEvent.kappa
-      })?.[0]
+      })
+    console.log('destination parsed logs', parsedLogs)
+
+    const parsedLog = parsedLogs?.[0]
     if (parsedLog) {
       const [inputTimestamp, transactionReceipt] = await Promise.all([
         getBlock(parsedLog.blockNumber, provider),
         getTransactionReceipt(parsedLog.transactionHash, provider),
       ])
 
-      return generateBridgeTx(
+      const destBridgeTx = generateBridgeTx(
         false,
         fromEvent.toAddress,
         fromEvent.toChainId,
@@ -91,7 +109,11 @@ const DestinationTx = (fromEvent: BridgeWatcherTx) => {
         transactionReceipt,
         fromEvent.toAddress
       )
+      console.log('destination bridge tx', destBridgeTx)
+      setAttempted(true)
+      return destBridgeTx
     }
+
     setAttempted(true)
     return null
   }
@@ -107,28 +129,40 @@ const DestinationTx = (fromEvent: BridgeWatcherTx) => {
     }
   }, [fromEvent, toSigner])
 
+  // Listens for confirmations to complete and if so, recheck destination chain for logs
   useEffect(() => {
+    console.log('completed conf! ', completedConf, attempted, toEvent)
     if (completedConf && toSynapseContract && !toEvent && attempted) {
       getToBridgeEvent().then((tx) => {
+        console.log('got des bridge event', tx?.txHash)
         setToEvent(tx)
       })
     }
-  }, [completedConf, toEvent, attempted, toSynapseContract])
+  }, [completedConf])
 
+  // Listens for SynapseContract to be set and if so, will check destination chain for logs if there is no toEvent
   useEffect(() => {
-    if (toSynapseContract && !toEvent && !completedConf) {
+    if (toSynapseContract && !toEvent) {
       getToBridgeEvent().then((tx) => {
+        console.log('got des bridge event', tx?.txHash)
+
         setToEvent(tx)
         return
       })
     }
     return
-  }, [completedConf, toEvent, attempted, toSynapseContract])
+  }, [toSynapseContract])
 
   useEffect(() => {
     setToSigner(toSignerRaw)
   }, [toSignerRaw])
 
+  console.log(
+    'From Event txhash',
+    fromEvent.txHash,
+    'To Event',
+    toEvent?.txHash
+  )
   return (
     <div className="flex items-center">
       <div className="flex-initial w-auto h-full align-middle mt-[22px]">

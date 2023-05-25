@@ -21,6 +21,7 @@ import {
 } from '@constants/tokens'
 import { formatBNToString } from '@utils/bignumber/format'
 import { commify } from '@ethersproject/units'
+import { isAddress } from '@ethersproject/address'
 import { erc20ABI } from 'wagmi'
 import { Contract } from 'ethers'
 import BridgeWatcher from './BridgeWatcher'
@@ -608,9 +609,12 @@ const BridgePage = ({
       const wallet = await fetchSigner({
         chainId: fromChainId,
       })
-      // const adjustedFrom = subtractSlippage(fromInput.bigNum, 'ONE_TENTH', null)
+      var newAddress =
+        destinationAddress && isAddress(destinationAddress)
+          ? destinationAddress
+          : address
       const data = await synapseSDK.bridge(
-        address,
+        newAddress,
         fromChainId,
         toChainId,
         fromToken.addresses[fromChainId as keyof Token['addresses']],

@@ -6,7 +6,7 @@ import { toHexStr } from '@utils/toHexStr'
 import { BridgeWatcherTx } from '@types'
 import { id } from '@ethersproject/hash'
 import { TOKEN_HASH_MAP } from '@constants/tokens'
-import { getAddress } from '@ethersproject/address'
+import { getAddress, isAddress } from '@ethersproject/address'
 import * as CHAINS from '@constants/chains/master'
 import { WETH } from '@constants/tokens/swapMaster'
 import {
@@ -163,6 +163,11 @@ export const generateBridgeTx = (
   } else {
     inputTokenAmount = txReceipt.logs[0].data
   }
+  console.log(
+    'generateBridgeTx toAddress',
+    isFrom,
+    isAddress(destinationAddress) ? destinationAddress : address
+  )
   return {
     isFrom,
     amount: isFrom ? inputTokenAmount : parsedLog.amount,
@@ -175,7 +180,7 @@ export const generateBridgeTx = (
     token,
     kappa: removePrefix(id(parsedLog.transactionHash)),
     toChainId: isFrom ? Number(parsedLog.chainId.toString()) : chainId,
-    toAddress: isFrom ? parsedLog.to : destinationAddress,
+    toAddress: isAddress(destinationAddress) ? destinationAddress : address,
   }
 }
 
