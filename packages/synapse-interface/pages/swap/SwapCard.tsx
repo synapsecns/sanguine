@@ -476,11 +476,7 @@ const SwapCard = ({
         setIsQuoteLoading(false)
         return
       }
-      const toValueBigNum = subtractSlippage(
-        maxAmountOut ?? Zero,
-        'ONE_HUNDREDTH',
-        null
-      )
+      const toValueBigNum = maxAmountOut ?? Zero
 
       const allowance =
         fromToken.addresses[connectedChainId] === AddressZero ||
@@ -490,7 +486,7 @@ const SwapCard = ({
 
       const minWithSlippage = subtractSlippage(
         query?.minAmountOut ?? Zero,
-        'ONE_HUNDREDTH',
+        'ONE_TENTH',
         null
       )
       // TODO 1) make dynamic 2) clean up

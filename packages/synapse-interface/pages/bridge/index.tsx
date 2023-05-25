@@ -557,11 +557,7 @@ const BridgePage = ({
         return
       }
       // TODO DYNAMIC SLIPPAGE
-      const toValueBigNum = subtractSlippage(
-        maxAmountOut ?? Zero,
-        'ONE_HUNDREDTH',
-        null
-      )
+      const toValueBigNum = maxAmountOut ?? Zero
       const adjustedFeeAmount = feeAmount.lt(fromInput.bigNum)
         ? feeAmount
         : feeAmount.div(
@@ -578,12 +574,12 @@ const BridgePage = ({
 
       const originMinWithSlippage = subtractSlippage(
         originQuery?.minAmountOut ?? Zero,
-        'ONE_HUNDREDTH',
+        'ONE_TENTH',
         null
       )
       const destMinWithSlippage = subtractSlippage(
         destQuery?.minAmountOut ?? Zero,
-        'ONE_HUNDREDTH',
+        'ONE_TENTH',
         null
       )
       let newOriginQuery = [...originQuery] as Query
@@ -592,7 +588,6 @@ const BridgePage = ({
       let newDestQuery = [...destQuery] as Query
       newDestQuery[3] = destMinWithSlippage
       newDestQuery.minAmountOut = destMinWithSlippage
-      console.log('newFromQuote', newOriginQuery[2], newDestQuery.minAmountOut)
 
       setBridgeQuote({
         outputAmount: toValueBigNum,
