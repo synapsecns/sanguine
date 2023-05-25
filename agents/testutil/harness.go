@@ -151,7 +151,6 @@ func (o OriginHarnessDeployer) Deploy(ctx context.Context) (contracts.DeployedCo
 		agentAddress = bondingManagerHarnessContract.Address()
 
 		inboxContract := o.Registry().Get(ctx, InboxType)
-		fmt.Printf("CRONIN InboxType in OriginHarnessDeployer")
 		inboxAddress = inboxContract.Address()
 	} else {
 		lightManagerHarnessContract := o.Registry().Get(ctx, LightManagerHarnessType)
@@ -302,7 +301,6 @@ func (d DestinationHarnessDeployer) Deploy(ctx context.Context) (contracts.Deplo
 		agentManagerAddress = bondingManagerHarnessContract.Address()
 
 		inboxContract := d.Registry().Get(ctx, InboxType)
-		fmt.Printf("CRONIN InboxType in DestinationHarnessDeployer")
 		inboxAddress = inboxContract.Address()
 	} else {
 		lightManagerHarnessContract := d.Registry().Get(ctx, LightManagerHarnessType)
@@ -347,7 +345,6 @@ func (d SummitHarnessDeployer) Deploy(ctx context.Context) (contracts.DeployedCo
 	bondingManagerHarnessContract := d.Registry().Get(ctx, BondingManagerHarnessType)
 	bondingManagerAddress := bondingManagerHarnessContract.Address()
 	inboxContract := d.Registry().Get(ctx, InboxType)
-	fmt.Printf("CRONIN InboxType in SummitHarnessDeployer")
 	inboxAddress := inboxContract.Address()
 	return d.DeploySimpleContract(ctx, func(transactOps *bind.TransactOpts, backend bind.ContractBackend) (common.Address, *types.Transaction, interface{}, error) {
 		address, tx, rawHandle, err := summitharness.DeploySummitHarness(transactOps, backend, bondingManagerAddress, inboxAddress)

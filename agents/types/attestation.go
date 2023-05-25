@@ -80,7 +80,7 @@ func (a attestation) SignAttestation(ctx context.Context, signer signer.Signer) 
 		return nil, nil, common.Hash{}, fmt.Errorf("could not encode attestation: %w", err)
 	}
 
-	attestationSalt := crypto.Keccak256Hash([]byte("ATTESTATION_SALT"))
+	attestationSalt := crypto.Keccak256Hash([]byte("ATTESTATION_VALID_SALT"))
 
 	hashedEncodedAttestation := crypto.Keccak256Hash(encodedAttestation).Bytes()
 	toSign := append(attestationSalt.Bytes(), hashedEncodedAttestation...)

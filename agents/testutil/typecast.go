@@ -222,9 +222,9 @@ func (d *DeployManager) InitializeBondingManagerHarnessContract(
 	deployedOriginHarness, _ := d.GetOriginHarness(ctx, synChainBackend)
 	deployedDestinationHarness, _ := d.GetDestinationHarness(ctx, synChainBackend)
 	deployedSummitHarness, _ := d.GetSummitHarness(ctx, synChainBackend)
-	deployedInbox, _ := d.GetInbox(ctx, synChainBackend)
+	deployedInbox, inboxContract := d.GetInbox(ctx, synChainBackend)
 
-	_, bondingManagerHarnessContract := d.GetBondingManagerHarness(ctx, synChainBackend)
+	deployedBondingManagerHarness, bondingManagerHarnessContract := d.GetBondingManagerHarness(ctx, synChainBackend)
 	_, summitHarnessContract := d.GetSummitHarness(ctx, synChainBackend)
 	summitHarnessOwnerPtr, err := summitHarnessContract.SummitHarnessCaller.Owner(&bind.CallOpts{Context: ctx})
 	if err != nil {
@@ -242,6 +242,17 @@ func (d *DeployManager) InitializeBondingManagerHarnessContract(
 		return fmt.Errorf("could not initialize bonding manager harness: %w", err)
 	}
 	synChainBackend.WaitForConfirmation(ctx, initializeBondingManagerHarnessTx)
+
+	initializeInboxTx, err := inboxContract.Initialize(
+		summitHarnessOwnerAuth.TransactOpts,
+		deployedBondingManagerHarness.Address(),
+		deployedOriginHarness.Address(),
+		deployedDestinationHarness.Address(),
+		deployedSummitHarness.Address())
+	if err != nil {
+		return fmt.Errorf("could not initialize inbox: %w", err)
+	}
+	synChainBackend.WaitForConfirmation(ctx, initializeInboxTx)
 
 	return nil
 }
@@ -317,9 +328,9 @@ func (d *DeployManager) InitializeBondingManagerContract(
 	deployedOrigin, _ := d.GetOrigin(ctx, synChainBackend)
 	deployedDestination, _ := d.GetDestination(ctx, synChainBackend)
 	deployedSummit, _ := d.GetSummit(ctx, synChainBackend)
-	deployedInbox, _ := d.GetInbox(ctx, synChainBackend)
+	deployedInbox, inboxContract := d.GetInbox(ctx, synChainBackend)
 
-	_, bondingManagerContract := d.GetBondingManager(ctx, synChainBackend)
+	deployedBondingManager, bondingManagerContract := d.GetBondingManager(ctx, synChainBackend)
 	bondingManagerOwnerPtr, err := bondingManagerContract.BondingManagerCaller.Owner(&bind.CallOpts{Context: ctx})
 	if err != nil {
 		return fmt.Errorf("could not get bonding manager: %w", err)
@@ -336,6 +347,17 @@ func (d *DeployManager) InitializeBondingManagerContract(
 		return fmt.Errorf("could not initialize bonding manager: %w", err)
 	}
 	synChainBackend.WaitForConfirmation(ctx, initializeBondingManagerTx)
+
+	initializeInboxTx, err := inboxContract.Initialize(
+		bondingManagerOwnerAuth.TransactOpts,
+		deployedBondingManager.Address(),
+		deployedOrigin.Address(),
+		deployedDestination.Address(),
+		deployedSummit.Address())
+	if err != nil {
+		return fmt.Errorf("could not initialize inbox: %w", err)
+	}
+	synChainBackend.WaitForConfirmation(ctx, initializeInboxTx)
 
 	return nil
 }
@@ -405,12 +427,11 @@ func (d *DeployManager) InitializeRemoteDeployedHarnessContracts(
 	bondingManagerHarnessAgentRoot [32]byte) error {
 	d.T().Helper()
 
-	deployedOriginHarness, _ := d.GetOriginHarness(ctx, backend)
 	deployedDestinationHarness, destinationHarnessContract := d.GetDestinationHarness(ctx, backend)
 
-	_, lightInboxContract := d.GetLightInbox(ctx, backend)
-	_, lightManagerHarnessContract := d.GetLightManagerHarness(ctx, backend)
-	_, originHarnessContract := d.GetOriginHarness(ctx, backend)
+	deployedLightInbox, lightInboxContract := d.GetLightInbox(ctx, backend)
+	deployedLightManagerHarness, lightManagerHarnessContract := d.GetLightManagerHarness(ctx, backend)
+	deployedOriginHarness, originHarnessContract := d.GetOriginHarness(ctx, backend)
 	originHarnessOwnerPtr, err := originHarnessContract.OriginHarnessCaller.Owner(&bind.CallOpts{Context: ctx})
 	if err != nil {
 		return fmt.Errorf("could not get origin harness: %w", err)
@@ -421,7 +442,7 @@ func (d *DeployManager) InitializeRemoteDeployedHarnessContracts(
 		originHarnessOwnerAuth.TransactOpts,
 		deployedOriginHarness.Address(),
 		deployedDestinationHarness.Address(),
-		lightInboxContract.Address())
+		deployedLightInbox.Address())
 	if err != nil {
 		return fmt.Errorf("could not initialize light manager harness: %w", err)
 	}
@@ -438,6 +459,16 @@ func (d *DeployManager) InitializeRemoteDeployedHarnessContracts(
 		return fmt.Errorf("could not initialize destination harness: %w", err)
 	}
 	backend.WaitForConfirmation(ctx, initializeDestinationHarnessTx)
+
+	initializeLightInboxTx, err := lightInboxContract.Initialize(
+		originHarnessOwnerAuth.TransactOpts,
+		deployedLightManagerHarness.Address(),
+		deployedOriginHarness.Address(),
+		deployedDestinationHarness.Address())
+	if err != nil {
+		return fmt.Errorf("could not initialize light inbox: %w", err)
+	}
+	backend.WaitForConfirmation(ctx, initializeLightInboxTx)
 
 	return nil
 }
@@ -496,11 +527,11 @@ func (d *DeployManager) InitializeRemoteDeployedContracts(
 	bondingManagerAgentRoot [32]byte) error {
 	d.T().Helper()
 
-	deployedOrigin, _ := d.GetOrigin(ctx, backend)
+	deployedOrigin, originContract := d.GetOrigin(ctx, backend)
 	deployedDestination, destinationContract := d.GetDestination(ctx, backend)
 
-	_, lightInboxContract := d.GetLightInbox(ctx, backend)
-	_, lightManagerContract := d.GetLightManager(ctx, backend)
+	deployedLightInbox, lightInboxContract := d.GetLightInbox(ctx, backend)
+	deployedLightManager, lightManagerContract := d.GetLightManager(ctx, backend)
 	lightManagerOwnerPtr, err := lightManagerContract.LightManagerCaller.Owner(&bind.CallOpts{Context: ctx})
 	if err != nil {
 		return fmt.Errorf("could not get light manager: %w", err)
@@ -511,23 +542,33 @@ func (d *DeployManager) InitializeRemoteDeployedContracts(
 		lightManagerOwnerAuth.TransactOpts,
 		deployedOrigin.Address(),
 		deployedDestination.Address(),
-		lightInboxContract.Address())
+		deployedLightInbox.Address())
 	if err != nil {
 		return fmt.Errorf("could not initialize light manager: %w", err)
 	}
 	backend.WaitForConfirmation(ctx, initializeLightManagerTx)
 
-	destinationOwnerPtr, err := destinationContract.DestinationCaller.Owner(&bind.CallOpts{Context: ctx})
+	originOwnerPtr, err := originContract.OriginCaller.Owner(&bind.CallOpts{Context: ctx})
 	if err != nil {
-		return fmt.Errorf("could not get destination harness: %w", err)
+		return fmt.Errorf("could not get origin: %w", err)
 	}
-	destinationOwnerAuth := backend.GetTxContext(ctx, &destinationOwnerPtr)
+	originOwnerAuth := backend.GetTxContext(ctx, &originOwnerPtr)
 
-	initializeDestinationTx, err := destinationContract.Initialize(destinationOwnerAuth.TransactOpts, bondingManagerAgentRoot)
+	initializeDestinationTx, err := destinationContract.Initialize(originOwnerAuth.TransactOpts, bondingManagerAgentRoot)
 	if err != nil {
 		return fmt.Errorf("could not initialize destination: %w", err)
 	}
 	backend.WaitForConfirmation(ctx, initializeDestinationTx)
+
+	initializeLightInboxTx, err := lightInboxContract.Initialize(
+		originOwnerAuth.TransactOpts,
+		deployedLightManager.Address(),
+		deployedOrigin.Address(),
+		deployedDestination.Address())
+	if err != nil {
+		return fmt.Errorf("could not initialize light inbox: %w", err)
+	}
+	backend.WaitForConfirmation(ctx, initializeLightInboxTx)
 
 	return nil
 }

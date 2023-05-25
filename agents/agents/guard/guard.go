@@ -181,8 +181,8 @@ func (g Guard) submitLatestSnapshot(parentCtx context.Context) {
 	} else {
 		err = g.summitDomain.Inbox().SubmitSnapshot(ctx, g.unbondedSigner, encodedSnapshot, snapshotSignature)
 		if err != nil {
-			logger.Errorf("Failed to submit snapshot to summit: %v", err)
-			span.AddEvent("Failed to submit snapshot to summit", trace.WithAttributes(
+			logger.Errorf("Failed to submit snapshot to inbox: %v", err)
+			span.AddEvent("Failed to submit snapshot to inbox", trace.WithAttributes(
 				attribute.String("err", err.Error()),
 			))
 		} else {
