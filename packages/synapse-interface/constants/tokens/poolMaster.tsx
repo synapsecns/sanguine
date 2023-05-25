@@ -15,6 +15,8 @@ import {
   WETHE,
   ONEETH,
   // FTMETH,
+  USDCe,
+  USDTe,
   METISETH,
   CANTOETH,
   WJEWEL,
@@ -190,7 +192,7 @@ export const LEGACY_AVALANCHE_POOL_SWAP_TOKEN = new Token({
   swapAddresses: {
     [CHAINS.AVALANCHE.id]: '0xED2a7edd7413021d440b09D654f3b87712abAB66',
   },
-  poolTokens: [NUSD, DAI, USDC, USDT],
+  poolTokens: [NUSD, DAI, USDCe, USDTe],
   description: "Synapse's 4pool stableswap LP token on Avalanche",
 })
 
