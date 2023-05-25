@@ -370,7 +370,7 @@ func (c *ContractBackfiller) getLogs(parentCtx context.Context, startHeight, end
 					return
 				}
 
-				//case <-rangeFilter.Done():
+				// case <-rangeFilter.Done():
 				//	LogEvent(ErrorLevel, "[DEBUG] range filter done", LogData{"cid": c.chainConfig.ChainID, "ca": c.contractConfig.Address})
 				//
 				//	finLogs, err := rangeFilter.Drain(ctx)

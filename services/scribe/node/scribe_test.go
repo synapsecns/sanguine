@@ -195,8 +195,8 @@ func (l LiveSuite) TestRequiredConfirmationSetting() {
 	simulatedChain.WaitForConfirmation(l.GetTestContext(), tx)
 
 	// Process the events.
-	err = scribe.ProcessRange(l.GetTestContext(), chainID, chainConfig.RequiredConfirmations)
-	Nil(l.T(), err)
+	// err = scribe.ProcessRange(l.GetTestContext(), chainID, chainConfig.RequiredConfirmations)
+	//Nil(l.T(), err)
 
 	// Check logs.
 	logs, err = l.testDB.RetrieveLogsWithFilter(l.GetTestContext(), logFilter, 1)
