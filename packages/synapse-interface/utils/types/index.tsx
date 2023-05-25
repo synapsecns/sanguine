@@ -165,6 +165,7 @@ export class Token {
     | 'cyan'
     | 'red'
   priceUnits?: string
+  notStake?: boolean
   constructor({
     addresses,
     wrapperAddresses,
@@ -199,6 +200,7 @@ export class Token {
     priorityPool,
     color,
     priceUnits,
+    notStake,
   }: {
     addresses: { [x: number]: string }
     wrapperAddresses?: Record<number, string>
@@ -244,6 +246,7 @@ export class Token {
       | 'cyan'
       | 'red'
     priceUnits?: string
+    notStake?: boolean
   }) {
     const isMetaVar = Boolean(swapDepositAddresses || forceMeta)
     this.addresses = validateAddresses(addresses)
@@ -281,6 +284,7 @@ export class Token {
     this.priorityPool = priorityPool ?? false
     this.color = color ?? 'gray'
     this.priceUnits = priceUnits ?? 'USD'
+    this.notStake = notStake ?? false
   }
 }
 
