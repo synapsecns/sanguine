@@ -15,6 +15,7 @@ import { formatBNToString } from '@utils/bignumber/format'
 import { commify } from '@ethersproject/units'
 import { erc20ABI } from 'wagmi'
 import { Contract } from 'ethers'
+import { subtractSlippage } from '@utils/slippage'
 import { ChainSlideOver } from '@/components/misc/ChainSlideOver'
 import { TokenSlideOver } from '@/components/misc/TokenSlideOver'
 import { Token } from '@/utils/types'
@@ -26,10 +27,10 @@ import { timeout } from '@/utils/timeout'
 import { Transition } from '@headlessui/react'
 import { COIN_SLIDE_OVER_PROPS } from '@styles/transitions'
 import Card from '@tw/Card'
-import { SwapQuote } from '@types'
+import { SwapQuote, Query } from '@types'
 import { IMPAIRED_CHAINS } from '@/constants/impairedChains'
 import { CHAINS_BY_ID } from '@constants/chains'
-import { toast, Toast } from 'react-hot-toast'
+import { toast } from 'react-hot-toast'
 
 import {
   DEFAULT_FROM_TOKEN,
@@ -483,6 +484,16 @@ const SwapCard = ({
           ? Zero
           : await getCurrentTokenAllowance(routerAddress)
 
+      const minWithSlippage = subtractSlippage(
+        query?.minAmountOut ?? Zero,
+        'ONE_TENTH',
+        null
+      )
+      // TODO 1) make dynamic 2) clean up
+      let newOriginQuery = [...query] as Query
+      newOriginQuery[2] = minWithSlippage
+      newOriginQuery.minAmountOut = minWithSlippage
+
       setSwapQuote({
         outputAmount: toValueBigNum,
         outputAmountString: commify(
@@ -497,7 +508,7 @@ const SwapCard = ({
           toToken.decimals[connectedChainId]
         ),
         delta: maxAmountOut,
-        quote: query,
+        quote: newOriginQuery,
       })
       setIsQuoteLoading(false)
       return
@@ -618,6 +629,7 @@ const SwapCard = ({
       properties.pendingLabel = `Approving ${fromToken.symbol}`
       properties.className = 'from-[#feba06] to-[#FEC737]'
       properties.disabled = false
+      properties.postButtonAction = () => null
     }
 
     if (destinationAddress && !validateAndParseAddress(destinationAddress)) {

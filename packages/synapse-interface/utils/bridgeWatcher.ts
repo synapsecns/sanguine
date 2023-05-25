@@ -164,11 +164,7 @@ export const generateBridgeTx = (
   } else {
     inputTokenAmount = txReceipt.logs[0].data
   }
-  console.log(
-    'generateBridgeTx toAddress',
-    isFrom,
-    isAddress(destinationAddress) ? destinationAddress : address
-  )
+
   return {
     isFrom,
     amount: isFrom ? inputTokenAmount : parsedLog.amount,
