@@ -18,7 +18,7 @@
   "license": "ISC",
   "dependencies": {
     "@ethersproject/bignumber": "^5.7.0",
-    "@ethersproject/providers": "^5.6.1",
+    "@ethersproject/providers": "^5.7.2",
     "@synapsecns/sdk-router": "^0.1.18",
     "bignumber": "^1.1.0",
     "ethers": "5.7.2",
