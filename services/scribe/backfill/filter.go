@@ -203,6 +203,9 @@ func (f *RangeFilter) appendToChannel(ctx context.Context, logs *LogInfo) {
 	case <-ctx.Done():
 		return
 	case f.logs <- logs:
+		for _, log := range logs.logs {
+			LogEvent(ErrorLevel, "appended log to channel", LogData{"ca": f.contractAddress, "tx": log.TxHash, "cid": f.chainID})
+		}
 	}
 }
 
