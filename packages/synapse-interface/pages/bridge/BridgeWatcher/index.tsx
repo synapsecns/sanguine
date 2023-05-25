@@ -44,12 +44,13 @@ const BridgeWatcher = ({
     const provider = providerMap[fromChainId]
     const iface = new Interface(SYNAPSE_BRIDGE_ABI)
     let allFromEvents = []
+    const adjustedAddress = destinationAddress ? destinationAddress : address
     for (let i = 0; i < GETLOGS_REQUEST_COUNT; i++) {
       const fromEvents = await getLogs(
         currentFromBlock - GETLOGS_SIZE * i,
         provider,
         fromSynapseContract,
-        address
+        adjustedAddress
       )
       allFromEvents.push(fromEvents)
     }
@@ -114,7 +115,7 @@ const BridgeWatcher = ({
   return (
     <div className="space-y-2">
       {fromTransactions?.length > 0 && (
-        <Card title="Bridge Watcher" divider={false}>
+        <Card title="Bridge Watcher" divider={false} className="px-6 py-4">
           <Grid cols={{ xs: 1 }} gap={2}>
             {fromTransactions.map((fromEvent, i) => {
               return <BridgeEvent key={i} {...fromEvent} />
