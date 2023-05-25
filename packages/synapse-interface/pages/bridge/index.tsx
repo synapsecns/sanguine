@@ -657,10 +657,12 @@ const BridgePage = ({
 
       const originChainName = CHAINS_BY_ID[fromChainId]?.name
       const destinationChainName = CHAINS_BY_ID[toChainId]?.name
+
       bridgingPopup = toast(
         `Bridging from ${fromToken.symbol} on ${originChainName} to ${toToken.symbol} on ${destinationChainName}`,
         { id: 'bridging-in-progress-popup', duration: Infinity }
       )
+
       try {
         await tx.wait()
         console.log(`Transaction mined successfully: ${tx.hash}`)
