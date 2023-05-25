@@ -12,7 +12,6 @@ import { calculateExchangeRate } from '@utils/calculateExchangeRate'
 import { subtractSlippage } from '@utils/slippage'
 import toast from 'react-hot-toast'
 import Popup from '@components/Popup'
-
 import {
   BRIDGABLE_TOKENS,
   BRIDGE_CHAINS_BY_TYPE,
@@ -26,7 +25,7 @@ import { erc20ABI } from 'wagmi'
 import { Contract } from 'ethers'
 import BridgeWatcher from './BridgeWatcher'
 import { BridgeQuote } from '@/utils/types'
-import { Token } from '@/utils/types'
+import { Token, Query } from '@/utils/types'
 import { BRIDGE_PATH, HOW_TO_BRIDGE_URL } from '@/constants/urls'
 import { stringToBigNum } from '@/utils/stringToBigNum'
 import BridgeCard from './BridgeCard'
@@ -557,7 +556,12 @@ const BridgePage = ({
         setIsQuoteLoading(false)
         return
       }
-      const toValueBigNum = maxAmountOut ?? Zero
+      // TODO DYNAMIC SLIPPAGE
+      const toValueBigNum = subtractSlippage(
+        maxAmountOut ?? Zero,
+        'ONE_HUNDREDTH',
+        null
+      )
       const adjustedFeeAmount = feeAmount.lt(fromInput.bigNum)
         ? feeAmount
         : feeAmount.div(
@@ -569,6 +573,27 @@ const BridgePage = ({
         address === undefined
           ? Zero
           : await getCurrentTokenAllowance(routerAddress)
+
+      // TODO 1) make dynamic, 2) clean this
+
+      const originMinWithSlippage = subtractSlippage(
+        originQuery?.minAmountOut ?? Zero,
+        'ONE_HUNDREDTH',
+        null
+      )
+      const destMinWithSlippage = subtractSlippage(
+        destQuery?.minAmountOut ?? Zero,
+        'ONE_HUNDREDTH',
+        null
+      )
+      let newOriginQuery = [...originQuery] as Query
+      newOriginQuery[2] = originMinWithSlippage
+      newOriginQuery.minAmountOut = originMinWithSlippage
+      let newDestQuery = [...destQuery] as Query
+      newDestQuery[3] = destMinWithSlippage
+      newDestQuery.minAmountOut = destMinWithSlippage
+      console.log('newFromQuote', newOriginQuery[2], newDestQuery.minAmountOut)
+
       setBridgeQuote({
         outputAmount: toValueBigNum,
         outputAmountString: commify(
@@ -585,8 +610,8 @@ const BridgePage = ({
         feeAmount,
         delta: maxAmountOut,
         quotes: {
-          originQuery,
-          destQuery,
+          originQuery: newOriginQuery,
+          destQuery: newDestQuery,
         },
       })
       setIsQuoteLoading(false)
