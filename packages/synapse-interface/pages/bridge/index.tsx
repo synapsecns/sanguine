@@ -475,6 +475,8 @@ const BridgePage = ({
         )
         if (fromInput.string !== '') {
           setIsQuoteLoading(true)
+        } else {
+          setIsQuoteLoading(false)
         }
         return
       }
