@@ -68,7 +68,11 @@ const SwapCard = ({
   const [displayType, setDisplayType] = useState(undefined)
   const [fromTokenBalance, setFromTokenBalance] = useState<BigNumber>(Zero)
   const [validChainId, setValidChainId] = useState(true)
-  let popup: string
+
+  let pendingPopup: any
+  let successPopup: any
+  let errorPopup: string
+
   /*
   useEffect Trigger: onMount
   - Gets current network connected and sets it as the state.
@@ -345,9 +349,9 @@ const SwapCard = ({
   */
   useEffect(() => {
     if (address) {
-      toast.dismiss(popup)
+      toast.dismiss(errorPopup)
     }
-  }, [address, popup])
+  }, [address, errorPopup])
 
   /*
   Function: handleChainChange
@@ -358,11 +362,11 @@ const SwapCard = ({
   const handleChainChange = useCallback(
     async (chainId: number, flip: boolean, type: 'from' | 'to') => {
       if (address === undefined) {
-        popup = toast.error('Please connect your wallet', {
+        errorPopup = toast.error('Please connect your wallet', {
           id: 'bridge-connect-wallet',
           duration: 20000,
         })
-        return popup
+        return errorPopup
       }
       const desiredChainId = Number(chainId)
 
