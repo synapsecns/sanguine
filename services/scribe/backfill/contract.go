@@ -122,7 +122,7 @@ func (c *ContractBackfiller) Backfill(parentCtx context.Context, givenStart uint
 
 				return fmt.Errorf("context canceled while storing and retrieving logs: %w", groupCtx.Err())
 			case log := <-logsChan:
-				LogEvent(ErrorLevel, "received log from chan", LogData{"cid": c.chainConfig.ChainID, "bn": log.BlockNumber, "tx": log.TxHash.Hex(), "la": log.Address.String(), "ccc": concurrentCalls, "ca": c.contractConfig.Address})
+				LogEvent(ErrorLevel, "[DEBUG] received log from chan", LogData{"cid": c.chainConfig.ChainID, "bn": log.BlockNumber, "tx": log.TxHash.Hex(), "la": log.Address.String(), "ccc": concurrentCalls, "ca": c.contractConfig.Address})
 
 				concurrentCalls++
 				gS.Go(func() error {
@@ -144,12 +144,15 @@ func (c *ContractBackfiller) Backfill(parentCtx context.Context, givenStart uint
 
 						return fmt.Errorf("could not store log: %w", err)
 					}
+					LogEvent(ErrorLevel, "[DEBUG] stored log from chan", LogData{"cid": c.chainConfig.ChainID, "bn": log.BlockNumber, "tx": log.TxHash.Hex(), "la": log.Address.String(), "ccc": concurrentCalls, "ca": c.contractConfig.Address})
 
 					return nil
 				})
 
 				// Stop spawning store threads and wait
 				if concurrentCalls >= c.chainConfig.StoreConcurrency || endHeight-log.BlockNumber < c.chainConfig.StoreConcurrencyThreshold {
+					LogEvent(ErrorLevel, "[DEBUG] STOPPING CONCURRENCY", LogData{"cid": c.chainConfig.ChainID, "ccall": concurrentCalls, "endh": endHeight, "dif": endHeight - log.BlockNumber, "bn": log.BlockNumber, "tx": log.TxHash.Hex(), "la": log.Address.String(), "ccc": concurrentCalls, "ca": c.contractConfig.Address})
+
 					if err = gS.Wait(); err != nil {
 						return fmt.Errorf("error waiting for go routines: %w", err)
 					}
@@ -157,6 +160,8 @@ func (c *ContractBackfiller) Backfill(parentCtx context.Context, givenStart uint
 					// Reset context TODO make this better
 					gS, storeCtx = errgroup.WithContext(ctx)
 					concurrentCalls = 0
+					LogEvent(ErrorLevel, "[DEBUG] STORING LAST INDEXED BC OF CONCURRENT CONDITION", LogData{"cid": c.chainConfig.ChainID, "ccall": concurrentCalls, "endh": endHeight, "dif": endHeight - log.BlockNumber, "bn": log.BlockNumber, "tx": log.TxHash.Hex(), "la": log.Address.String(), "ccc": concurrentCalls, "ca": c.contractConfig.Address})
+
 					err = c.eventDB.StoreLastIndexed(ctx, common.HexToAddress(c.contractConfig.Address), c.chainConfig.ChainID, log.BlockNumber)
 					if err != nil {
 						LogEvent(ErrorLevel, "Could not store last indexed block", LogData{"cid": c.chainConfig.ChainID, "bn": log.BlockNumber, "tx": log.TxHash.Hex(), "la": log.Address.String(), "ca": c.contractConfig.Address, "e": err.Error()})
@@ -167,7 +172,7 @@ func (c *ContractBackfiller) Backfill(parentCtx context.Context, givenStart uint
 
 			case doneFlag := <-doneChan:
 				if doneFlag {
-					LogEvent(InfoLevel, "Received doneChan", LogData{"cid": c.chainConfig.ChainID, "ca": c.contractConfig.Address})
+					LogEvent(InfoLevel, "[DEBUG] Received doneChan STORING LAST INDEXED BC OF DONECHAN", LogData{"cid": c.chainConfig.ChainID, "ca": c.contractConfig.Address})
 
 					err = c.eventDB.StoreLastIndexed(ctx, common.HexToAddress(c.contractConfig.Address), c.chainConfig.ChainID, endHeight)
 					if err != nil {
@@ -349,12 +354,15 @@ func (c *ContractBackfiller) getLogs(parentCtx context.Context, startHeight, end
 					LogEvent(ErrorLevel, "Got log", LogData{"cid": c.chainConfig.ChainID, "bn": log.BlockNumber, "tx": log.TxHash.Hex(), "la": log.Address.String(), "ca": c.contractConfig.Address})
 					logsChan <- log
 				}
-
+				// hunch that this never runs
 			case <-rangeFilter.Done():
+				LogEvent(ErrorLevel, "[DEBUG] range filter done", LogData{"cid": c.chainConfig.ChainID, "ca": c.contractConfig.Address})
+
 				finLogs, _ := rangeFilter.Drain(ctx)
+				LogEvent(ErrorLevel, "[DEBUG] range filter drained", LogData{"cid": c.chainConfig.ChainID, "ca": c.contractConfig.Address, "len": len(finLogs)})
 
 				for _, log := range finLogs {
-					LogEvent(ErrorLevel, "Log filter done and got log", LogData{"cid": c.chainConfig.ChainID, "bn": log.BlockNumber, "tx": log.TxHash.Hex(), "la": log.Address.String(), "ca": c.contractConfig.Address})
+					LogEvent(ErrorLevel, "[DEBUG] Log filter done, adding log to chan", LogData{"cid": c.chainConfig.ChainID, "bn": log.BlockNumber, "tx": log.TxHash.Hex(), "la": log.Address.String(), "ca": c.contractConfig.Address})
 					logsChan <- log
 				}
 				doneChan <- true
