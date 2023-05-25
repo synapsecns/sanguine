@@ -1,4 +1,3 @@
-//@ts-ignore
 import request from 'supertest'
 
 import { server } from './app'
