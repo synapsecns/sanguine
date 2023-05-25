@@ -41,7 +41,7 @@ import {
   EMPTY_BRIDGE_QUOTE_ZERO,
   QUOTE_POLLING_INTERVAL,
 } from '@/constants/bridge'
-
+import { CHAINS_BY_ID } from '@/constants/chains'
 /* TODO
   - look into getting rid of fromChainId state and just using wagmi hook (ran into problems when trying this but forgot why)
 */
@@ -75,6 +75,7 @@ const BridgePage = ({
   const [bridgeQuote, setBridgeQuote] =
     useState<BridgeQuote>(EMPTY_BRIDGE_QUOTE)
 
+  let bridgingPopup: any
   let popup: string
   /*
   useEffect Trigger: onMount
@@ -653,13 +654,22 @@ const BridgePage = ({
           ? { data: data.data, to: data.to, value: fromInput.bigNum }
           : data
       const tx = await wallet.sendTransaction(payload)
+
+      const originChainName = CHAINS_BY_ID[fromChainId]?.name
+      const destinationChainName = CHAINS_BY_ID[toChainId]?.name
+      bridgingPopup = toast(
+        `Bridging from ${fromToken.symbol} on ${originChainName} to ${toToken.symbol} on ${destinationChainName}`,
+        { id: 'bridging-in-progress-popup', duration: Infinity }
+      )
       try {
         await tx.wait()
         console.log(`Transaction mined successfully: ${tx.hash}`)
         setBridgeTxHash(tx.hash)
+        toast.dismiss(bridgingPopup)
         return tx
       } catch (error) {
         console.log(`Transaction failed with error: ${error}`)
+        toast.dismiss(bridgingPopup)
       }
     } catch (error) {
       console.log('Error executing bridge', error)
@@ -667,7 +677,8 @@ const BridgePage = ({
     }
   }
 
-  console.log('bridgeTxnHash: ', bridgeTxHash)
+  useEffect(() => {}, [])
+
   return (
     <LandingPageWrapper>
       <main
