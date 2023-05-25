@@ -172,7 +172,7 @@ func (c *ContractBackfiller) Backfill(parentCtx context.Context, givenStart uint
 
 			case doneFlag := <-doneChan:
 				if doneFlag {
-					LogEvent(InfoLevel, "[DEBUG] Received doneChan STORING LAST INDEXED BC OF DONECHAN", LogData{"cid": c.chainConfig.ChainID, "ca": c.contractConfig.Address})
+					LogEvent(ErrorLevel, "[DEBUG] Received doneChan STORING LAST INDEXED BC OF DONECHAN", LogData{"cid": c.chainConfig.ChainID, "ca": c.contractConfig.Address})
 
 					err = c.eventDB.StoreLastIndexed(ctx, common.HexToAddress(c.contractConfig.Address), c.chainConfig.ChainID, endHeight)
 					if err != nil {
@@ -354,19 +354,34 @@ func (c *ContractBackfiller) getLogs(parentCtx context.Context, startHeight, end
 					LogEvent(ErrorLevel, "Got log", LogData{"cid": c.chainConfig.ChainID, "bn": log.BlockNumber, "tx": log.TxHash.Hex(), "la": log.Address.String(), "ca": c.contractConfig.Address})
 					logsChan <- log
 				}
-				// hunch that this never runs
-			case <-rangeFilter.Done():
-				LogEvent(ErrorLevel, "[DEBUG] range filter done", LogData{"cid": c.chainConfig.ChainID, "ca": c.contractConfig.Address})
+			default:
+				if rangeFilter.Done() {
+					LogEvent(ErrorLevel, "[DEBUG] range filter done", LogData{"cid": c.chainConfig.ChainID, "ca": c.contractConfig.Address})
 
-				finLogs, err := rangeFilter.Drain(ctx)
-				LogEvent(ErrorLevel, "[DEBUG] range filter drained", LogData{"cid": c.chainConfig.ChainID, "ca": c.contractConfig.Address, "len": len(finLogs), "err": err})
+					finLogs, err := rangeFilter.Drain(ctx)
+					LogEvent(ErrorLevel, "[DEBUG] range filter drained", LogData{"cid": c.chainConfig.ChainID, "ca": c.contractConfig.Address, "len": len(finLogs), "err": err})
 
-				for _, log := range finLogs {
-					LogEvent(ErrorLevel, "[DEBUG] Log filter done, adding log to chan", LogData{"cid": c.chainConfig.ChainID, "bn": log.BlockNumber, "tx": log.TxHash.Hex(), "la": log.Address.String(), "ca": c.contractConfig.Address})
-					logsChan <- log
+					for _, log := range finLogs {
+						LogEvent(ErrorLevel, "[DEBUG] Log filter done, adding log to chan", LogData{"cid": c.chainConfig.ChainID, "bn": log.BlockNumber, "tx": log.TxHash.Hex(), "la": log.Address.String(), "ca": c.contractConfig.Address})
+
+						logsChan <- log
+					}
+					doneChan <- true
+					return
 				}
-				doneChan <- true
-				return
+
+				//case <-rangeFilter.Done():
+				//	LogEvent(ErrorLevel, "[DEBUG] range filter done", LogData{"cid": c.chainConfig.ChainID, "ca": c.contractConfig.Address})
+				//
+				//	finLogs, err := rangeFilter.Drain(ctx)
+				//	LogEvent(ErrorLevel, "[DEBUG] range filter drained", LogData{"cid": c.chainConfig.ChainID, "ca": c.contractConfig.Address, "len": len(finLogs), "err": err})
+				//
+				//	for _, log := range finLogs {
+				//		LogEvent(ErrorLevel, "[DEBUG] Log filter done, adding log to chan", LogData{"cid": c.chainConfig.ChainID, "bn": log.BlockNumber, "tx": log.TxHash.Hex(), "la": log.Address.String(), "ca": c.contractConfig.Address})
+				//		logsChan <- log
+				//	}
+				//	doneChan <- true
+				//	return
 			}
 		}
 	}()
