@@ -311,16 +311,16 @@ const BridgeCard = ({
   - when displayType state is updated (meaning user has clicked a menu dropdown action),
   window object will smoothly reposition to where the bridge ui is located for convenience
   */
-  useEffect(() => {
-    if (displayType !== DisplayType.LOADING) {
-      const node = bridgeDisplayRef.current
-      const top = node.offsetTop + 100
-      window.scrollTo({
-        top: top,
-        behavior: 'smooth',
-      })
-    }
-  }, [displayType])
+  // useEffect(() => {
+  //   if (displayType !== DisplayType.LOADING) {
+  //     const node = bridgeDisplayRef.current
+  //     const top = node.offsetTop + 100
+  //     window.scrollTo({
+  //       top: top,
+  //       behavior: 'smooth',
+  //     })
+  //   }
+  // }, [displayType])
 
   const springClass = 'fixed z-50 w-full h-full bg-opacity-50'
 
