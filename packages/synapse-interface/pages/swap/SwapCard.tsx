@@ -31,6 +31,7 @@ import { SwapQuote, Query } from '@types'
 import { IMPAIRED_CHAINS } from '@/constants/impairedChains'
 import { CHAINS_BY_ID } from '@constants/chains'
 import { toast } from 'react-hot-toast'
+import ExplorerToastLink from '@/components/ExplorerToastLink'
 
 import {
   DEFAULT_FROM_TOKEN,
@@ -552,13 +553,32 @@ const SwapCard = ({
       const currentChainName = CHAINS_BY_ID[connectedChainId]?.name
       pendingPopup = toast(
         `Initiating swap from ${fromToken.symbol} to ${toToken.symbol} on ${currentChainName}`,
-        { id: 'swapping-in-progress-popup', duration: Infinity }
+        { id: 'swap-in-progress-popup', duration: Infinity }
       )
 
       try {
         await tx.wait()
         toast.dismiss(pendingPopup)
         console.log(`Transaction mined successfully: ${tx.hash}`)
+
+        const successToastContent = (
+          <div>
+            <div>
+              Successfully swapped from {fromToken.symbol} to {toToken.symbol}{' '}
+              on {currentChainName}
+            </div>
+            <ExplorerToastLink
+              transactionHash={tx?.hash ?? AddressZero}
+              chainId={connectedChainId}
+            />
+          </div>
+        )
+
+        successPopup = toast.success(successToastContent, {
+          id: 'swap-successful-popup',
+          duration: 10000,
+        })
+
         return tx
       } catch (error) {
         toast.dismiss(pendingPopup)
