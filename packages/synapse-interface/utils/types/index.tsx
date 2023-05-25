@@ -27,6 +27,13 @@ export type PoolToken = {
   token: Token
   isLp: boolean
 }
+export type Query = [string, string, BigNumber, BigNumber, string] & {
+  swapAdapter: string
+  tokenOut: string
+  minAmountOut: BigNumber
+  deadline: BigNumber
+  rawParams: string
+}
 export type PoolUserData = {
   name: string
   share: BigNumber

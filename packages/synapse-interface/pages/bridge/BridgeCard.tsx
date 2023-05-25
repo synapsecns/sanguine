@@ -306,22 +306,6 @@ const BridgeCard = ({
     ]
   )
 
-  /*
-  useEffect Trigger: displayType
-  - when displayType state is updated (meaning user has clicked a menu dropdown action),
-  window object will smoothly reposition to where the bridge ui is located for convenience
-  */
-  useEffect(() => {
-    if (displayType !== DisplayType.LOADING) {
-      const node = bridgeDisplayRef.current
-      const top = node.offsetTop + 100
-      window.scrollTo({
-        top: top,
-        behavior: 'smooth',
-      })
-    }
-  }, [displayType])
-
   const springClass = 'fixed z-50 w-full h-full bg-opacity-50'
 
   /*
@@ -357,6 +341,7 @@ const BridgeCard = ({
     config: { mass: 0.5, tension: 175, friction: 20 },
   })
 
+  console.log('bridgeQuote:', bridgeQuote)
   return (
     <>
       <div className="flex items-center justify-between mb-5 ml-5 mr-5 space-x-2">

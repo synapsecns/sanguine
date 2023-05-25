@@ -8,6 +8,7 @@ export const Slippages = {
   Quarter: 'QUARTER',
   OnePercent: 'ONE_PERCENT',
   Custom: 'CUSTOM',
+  OneHundredth: 'ONE_HUNDREDTH',
 }
 
 /**
@@ -34,6 +35,9 @@ export const _applySlippage = (
       : denominator.sub(slippageCustom.valueSafe)
   } else if (slippageSelected === Slippages.OneTenth) {
     denominator = 1000
+    numerator = denominator + (add ? 1 : -1)
+  } else if (slippageSelected === Slippages.OneHundredth) {
+    denominator = 10000
     numerator = denominator + (add ? 1 : -1)
   } else if (slippageSelected === Slippages.TwoTenth) {
     denominator = 500
