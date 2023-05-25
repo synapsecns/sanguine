@@ -548,11 +548,20 @@ const SwapCard = ({
           ? { data: data.data, to: data.to, value: fromInput.bigNum }
           : data
       const tx = await wallet.sendTransaction(payload)
+
+      const currentChainName = CHAINS_BY_ID[connectedChainId]?.name
+      pendingPopup = toast(
+        `Initiating swap from ${fromToken.symbol} to ${toToken.symbol} on ${currentChainName}`,
+        { id: 'swapping-in-progress-popup', duration: Infinity }
+      )
+
       try {
         await tx.wait()
+        toast.dismiss(pendingPopup)
         console.log(`Transaction mined successfully: ${tx.hash}`)
         return tx
       } catch (error) {
+        toast.dismiss(pendingPopup)
         console.log(`Transaction failed with error: ${error}`)
       }
     } catch (error) {
