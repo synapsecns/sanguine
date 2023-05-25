@@ -153,7 +153,7 @@ export const tokenSymbolToToken = (chainId: number, symbol: string) => {
 }
 export const TOKEN_HASH_MAP = getTokenHashMap()
 
-export // SWAPS
+// SWAPS
 const allTokensWithSwap = [...Object.values(all), ...Object.values(allSwap)]
 const getSwapableTokens = (): TokensByChain => {
   const swapTokens: TokensByChain = {}
@@ -169,6 +169,7 @@ const getSwapableTokens = (): TokensByChain => {
   })
   return swapTokens
 }
+
 const getSwapableTokensByType = (): SwapableTokensByType => {
   const swapTokens: SwapableTokensByType = {}
   allTokensWithSwap.map((token) => {

@@ -613,7 +613,6 @@ const BridgePage = ({
         destinationAddress && isAddress(destinationAddress)
           ? destinationAddress
           : address
-      console.log(newAddress)
       const data = await synapseSDK.bridge(
         newAddress,
         fromChainId,
