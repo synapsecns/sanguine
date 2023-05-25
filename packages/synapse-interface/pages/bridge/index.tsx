@@ -378,7 +378,7 @@ const BridgePage = ({
   - will dismiss toast asking user to connect wallet once wallet has been connected
   */
   useEffect(() => {
-    if (address) {
+    if (address && !isDisconnected) {
       toast.dismiss(popup)
     }
   }, [address, isDisconnected, popup])
