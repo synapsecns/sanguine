@@ -21,6 +21,7 @@ import {
 } from '@constants/tokens'
 import { formatBNToString } from '@utils/bignumber/format'
 import { commify } from '@ethersproject/units'
+import { isAddress } from '@ethersproject/address'
 import { erc20ABI } from 'wagmi'
 import { Contract } from 'ethers'
 import BridgeWatcher from './BridgeWatcher'
@@ -53,7 +54,7 @@ const BridgePage = ({
   address: `0x${string}`
   fromChainId: number
 }) => {
-  const { address: currentAddress, isDisconnected } = useAccount()
+  const { isDisconnected } = useAccount()
   const router = useRouter()
   const { synapseSDK } = useSynapseContext()
   const [time, setTime] = useState(Date.now())
@@ -97,7 +98,7 @@ const BridgePage = ({
     return () => {
       clearInterval(interval)
     }
-  }, [bridgeTxHash])
+  }, [bridgeTxHash, fromChainId])
 
   useEffect(() => {
     if (!router.isReady) {
@@ -185,7 +186,7 @@ const BridgePage = ({
     return () => {
       setIsQuoteLoading(false)
     }
-  }, [fromInput])
+  }, [fromInput, fromChainId])
 
   /*
   Helper Function: resetTokenPermutation
@@ -263,7 +264,7 @@ const BridgePage = ({
 
       return sortByVisibilityRank(mostCommonSwapableType)[0]
     },
-    [currentAddress, isDisconnected]
+    [address, isDisconnected]
   )
 
   /*
@@ -345,7 +346,6 @@ const BridgePage = ({
             ? Number(bridgeableChains[1])
             : Number(bridgeableChains[0])
       }
-
       const positedToToken = positedToSymbol
         ? tokenSymbolToToken(newToChain, positedToSymbol)
         : tokenSymbolToToken(newToChain, token.symbol)
@@ -375,14 +375,14 @@ const BridgePage = ({
   )
 
   /*
-  useEffect triggers: currentAddress, isDisconnected, popup
+  useEffect triggers: address, isDisconnected, popup
   - will dismiss toast asking user to connect wallet once wallet has been connected
   */
   useEffect(() => {
-    if (currentAddress) {
+    if (address) {
       toast.dismiss(popup)
     }
-  }, [currentAddress, isDisconnected, popup])
+  }, [address, isDisconnected, popup])
 
   /*
   Function: handleChainChange
@@ -392,7 +392,7 @@ const BridgePage = ({
   */
   const handleChainChange = useCallback(
     async (chainId: number, flip: boolean, type: 'from' | 'to') => {
-      if (currentAddress === undefined || isDisconnected) {
+      if (address === undefined || isDisconnected) {
         popup = toast.error('Please connect your wallet', {
           id: 'bridge-connect-wallet',
           duration: 20000,
@@ -481,7 +481,7 @@ const BridgePage = ({
       }
     },
     [
-      currentAddress,
+      address,
       isDisconnected,
       fromToken,
       fromChainId,
@@ -609,9 +609,13 @@ const BridgePage = ({
       const wallet = await fetchSigner({
         chainId: fromChainId,
       })
-      // const adjustedFrom = subtractSlippage(fromInput.bigNum, 'ONE_TENTH', null)
+      var newAddress =
+        destinationAddress && isAddress(destinationAddress)
+          ? destinationAddress
+          : address
+      console.log(newAddress)
       const data = await synapseSDK.bridge(
-        address,
+        newAddress,
         fromChainId,
         toChainId,
         fromToken.addresses[fromChainId as keyof Token['addresses']],

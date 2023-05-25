@@ -6,7 +6,7 @@ import { toHexStr } from '@utils/toHexStr'
 import { BridgeWatcherTx } from '@types'
 import { id } from '@ethersproject/hash'
 import { TOKEN_HASH_MAP } from '@constants/tokens'
-import { getAddress } from '@ethersproject/address'
+import { getAddress, isAddress } from '@ethersproject/address'
 import * as CHAINS from '@constants/chains/master'
 import { WETH } from '@constants/tokens/swapMaster'
 import {
@@ -65,7 +65,8 @@ export const getLogs = async (
   try {
     const logs = await provider.send('eth_getLogs', [filter])
     return logs
-  } catch {
+  } catch (e) {
+    console.log('getLogs error', e)
     return []
   }
 }
@@ -163,6 +164,11 @@ export const generateBridgeTx = (
   } else {
     inputTokenAmount = txReceipt.logs[0].data
   }
+  console.log(
+    'generateBridgeTx toAddress',
+    isFrom,
+    isAddress(destinationAddress) ? destinationAddress : address
+  )
   return {
     isFrom,
     amount: isFrom ? inputTokenAmount : parsedLog.amount,
@@ -173,9 +179,9 @@ export const generateBridgeTx = (
     txHash: txReceipt.transactionHash,
     txReceipt,
     token,
-    kappa: id(parsedLog.transactionHash),
+    kappa: removePrefix(id(parsedLog.transactionHash)),
     toChainId: isFrom ? Number(parsedLog.chainId.toString()) : chainId,
-    toAddress: isFrom ? parsedLog.to : destinationAddress,
+    toAddress: isAddress(destinationAddress) ? destinationAddress : address,
   }
 }
 
@@ -185,4 +191,11 @@ export const getHighestBlock = async (
 ) => {
   const highestBlock = await provider.getBlockNumber()
   return highestBlock
+}
+
+const removePrefix = (str: string): string => {
+  if (str.startsWith('0x')) {
+    return str.substring(2)
+  }
+  return str
 }

@@ -14,7 +14,7 @@ import {
   AVWETH,
   WETHE,
   ONEETH,
-  FTMETH,
+  // FTMETH,
   METISETH,
   CANTOETH,
   WJEWEL,
@@ -154,7 +154,7 @@ export const POLYGON_POOL_SWAP_TOKEN = new Token({
  */
 export const AVALANCHE_POOL_SWAP_TOKEN = new Token({
   addresses: {
-    [CHAINS.AVALANCHE.id]: '0xCA87BF3ec55372D9540437d7a86a7750B42C02f4',
+    [CHAINS.AVALANCHE.id]: '0xa5C7E254b77e9401639Bd5f261dae6D5E4441A8F',
   },
   decimals: 18,
   symbol: 'nUSD-LP',
@@ -162,6 +162,29 @@ export const AVALANCHE_POOL_SWAP_TOKEN = new Token({
   logo: synapseLogo,
   poolName: 'Avalanche Stableswap Pool ', // DONT GET RID OF SPACE AFTER POOL
   routerIndex: 'avalanchenusd',
+  // poolId: 3,
+  // 420 pool id sets pool to not show in staking page
+  poolId: 420,
+  poolType: 'USD',
+  swapAddresses: {
+    [CHAINS.AVALANCHE.id]: '0xA196a03653f6cc5cA0282A8BD7Ec60e93f620afc',
+  },
+  poolTokens: [NUSD, USDC, USDT],
+  description: "Synapse's 3pool stableswap LP token on Avalanche",
+})
+/**
+ * Avalanche Stablecoin Swap
+ */
+export const LEGACY_AVALANCHE_POOL_SWAP_TOKEN = new Token({
+  addresses: {
+    [CHAINS.AVALANCHE.id]: '0xCA87BF3ec55372D9540437d7a86a7750B42C02f4',
+  },
+  decimals: 18,
+  symbol: 'nUSD-LP',
+  name: 'Synapse nUSD LP Token Avalanche',
+  logo: synapseLogo,
+  poolName: 'Legacy Avalanche Stableswap Pool ', // DONT GET RID OF SPACE AFTER POOL
+  routerIndex: 'legacyavalanchenusd',
   poolId: 1,
   poolType: 'USD',
   swapAddresses: {
@@ -169,10 +192,6 @@ export const AVALANCHE_POOL_SWAP_TOKEN = new Token({
   },
   poolTokens: [NUSD, DAI, USDC, USDT],
   description: "Synapse's 4pool stableswap LP token on Avalanche",
-  display: true,
-  priorityPool: true,
-  color: 'purple',
-  priceUnits: 'USD',
 })
 
 /**
@@ -677,7 +696,8 @@ export const FANTOM_WETH_SWAP_TOKEN = new Token({
   swapAddresses: {
     [CHAINS.FANTOM.id]: '0x8D9bA570D6cb60C7e3e0F31343Efe75AB8E65FB1',
   },
-  poolTokens: [NETH, FTMETH],
+  // poolTokens: [NETH, FTMETH], PAUSED
+  poolTokens: [NETH],
   description: "Synapse's ETH swap LP token on Fantom",
   display: true,
   priorityPool: true,

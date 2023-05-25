@@ -3,9 +3,12 @@ import { Zero } from '@ethersproject/constants'
 
 // removes common copy/pasted financial characters
 export const stringToBigNum = (rawVal, rawDecimals) => {
-  const value = rawVal.replace(/[$,]/g, '')
-  if (['.', '0.', ''].includes(value)) {
+  let value = rawVal.replace(/[$,]/g, '')
+  if (['.', '0.', '', '.0'].includes(value)) {
     return Zero
+  }
+  if (value.startsWith('.')) {
+    value = `0${value}`
   }
   const decimals = BigNumber.from(10).pow(rawDecimals)
   const valueSplit = value.split('.')

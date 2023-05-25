@@ -19,8 +19,10 @@ import {
   generateBridgeTx,
   checkTxIn,
 } from '@utils/bridgeWatcher'
-const DestinationTx = memo((fromEvent: BridgeWatcherTx) => {
-  const [toEvent, setToEvent] = useState<BridgeWatcherTx>()
+import { remove0xPrefix } from '@/utils/remove0xPrefix'
+
+const DestinationTx = (fromEvent: BridgeWatcherTx) => {
+  const [toEvent, setToEvent] = useState<BridgeWatcherTx>(undefined)
   const [toSynapseContract, setToSynapseContract] =
     useState<Contract>(undefined)
   const [toSigner, setToSigner] = useState<Signer>()
@@ -30,7 +32,7 @@ const DestinationTx = memo((fromEvent: BridgeWatcherTx) => {
   const { providerMap } = useSynapseContext()
 
   const getToBridgeEvent = async (): Promise<BridgeWatcherTx> => {
-    const currentFromBlock = await fetchBlockNumber({
+    const headOnDestination = await fetchBlockNumber({
       chainId: fromEvent.toChainId,
     })
     const provider = providerMap[fromEvent.toChainId]
@@ -40,13 +42,17 @@ const DestinationTx = memo((fromEvent: BridgeWatcherTx) => {
     let i = 0
     let afterOrginTx = true
     while (afterOrginTx) {
-      const startBlock = currentFromBlock - GETLOGS_SIZE * i
-      const blockTimestamp = await (
-        await getBlock(currentFromBlock - GETLOGS_SIZE * i, provider)
-      ).timestamp
+      const startBlock = headOnDestination - GETLOGS_SIZE * i
+
+      // get timestamp from from block
+      const blockRaw = await getBlock(startBlock - (GETLOGS_SIZE + 1), provider)
+      const blockTimestamp = blockRaw?.timestamp
+
+      // Exit loop if destination block was mined before the block for the origin tx
       if (blockTimestamp < fromEvent.timestamp) {
         afterOrginTx = false
       }
+
       const fromEvents = await getLogs(
         startBlock,
         provider,
@@ -62,7 +68,7 @@ const DestinationTx = memo((fromEvent: BridgeWatcherTx) => {
       }
     }
     const flattendEvents = _.flatten(allToEvents)
-    const parsedLog = flattendEvents
+    const parsedLogs = flattendEvents
       .map((log) => {
         return {
           ...iface.parseLog(log).args,
@@ -70,16 +76,19 @@ const DestinationTx = memo((fromEvent: BridgeWatcherTx) => {
           blockNumber: Number(log.blockNumber),
         }
       })
-      .filter(
-        (log: any) => !checkTxIn(log) && log.kappa === fromEvent.kappa
-      )?.[0]
+      .filter((log: any) => {
+        const convertedKappa = remove0xPrefix(log.kappa)
+        return !checkTxIn(log) && convertedKappa === fromEvent.kappa
+      })
+
+    const parsedLog = parsedLogs?.[0]
     if (parsedLog) {
       const [inputTimestamp, transactionReceipt] = await Promise.all([
         getBlock(parsedLog.blockNumber, provider),
         getTransactionReceipt(parsedLog.transactionHash, provider),
       ])
 
-      return generateBridgeTx(
+      const destBridgeTx = generateBridgeTx(
         false,
         fromEvent.toAddress,
         fromEvent.toChainId,
@@ -88,7 +97,10 @@ const DestinationTx = memo((fromEvent: BridgeWatcherTx) => {
         transactionReceipt,
         fromEvent.toAddress
       )
+      setAttempted(true)
+      return destBridgeTx
     }
+
     setAttempted(true)
     return null
   }
@@ -103,20 +115,19 @@ const DestinationTx = memo((fromEvent: BridgeWatcherTx) => {
       setToSynapseContract(toSynapseContract)
     }
   }, [fromEvent, toSigner])
+
+  // Listens for confirmations to complete and if so, recheck destination chain for logs
   useEffect(() => {
-    if (
-      completedConf &&
-      toSynapseContract &&
-      toEvent === undefined &&
-      attempted
-    ) {
+    if (completedConf && toSynapseContract && !toEvent && attempted) {
       getToBridgeEvent().then((tx) => {
         setToEvent(tx)
       })
     }
   }, [completedConf])
+
+  // Listens for SynapseContract to be set and if so, will check destination chain for logs if there is no toEvent
   useEffect(() => {
-    if (toSynapseContract && toEvent === undefined && !completedConf) {
+    if (toSynapseContract && !toEvent) {
       getToBridgeEvent().then((tx) => {
         setToEvent(tx)
         return
@@ -124,9 +135,11 @@ const DestinationTx = memo((fromEvent: BridgeWatcherTx) => {
     }
     return
   }, [toSynapseContract])
+
   useEffect(() => {
     setToSigner(toSignerRaw)
   }, [toSignerRaw])
+
   return (
     <div className="flex items-center">
       <div className="flex-initial w-auto h-full align-middle mt-[22px]">
@@ -141,5 +154,5 @@ const DestinationTx = memo((fromEvent: BridgeWatcherTx) => {
       </div>
     </div>
   )
-})
+}
 export default DestinationTx

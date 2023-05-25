@@ -48,7 +48,7 @@ export const BRIDGE_REQUIRED_CONFIRMATIONS = {
   [CHAINS.OPTIMISM.id]: 1, // rewrite
   [CHAINS.MOONBEAM.id]: 21,
   [CHAINS.MOONRIVER.id]: 21, // 5,
-  [CHAINS.ARBITRUM.id]: 40,
+  [CHAINS.ARBITRUM.id]: 200,
   [CHAINS.AVALANCHE.id]: 5,
   [CHAINS.DFK.id]: 6,
   [CHAINS.HARMONY.id]: 1, // rewrite

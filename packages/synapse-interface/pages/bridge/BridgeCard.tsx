@@ -290,7 +290,7 @@ const BridgeCard = ({
         className={btnClassName}
         label={btnLabel}
         pendingLabel={pendingLabel}
-        chainId={toChainId}
+        chainId={fromChainId}
         onSuccess={() => {
           postButtonAction()
         }}
