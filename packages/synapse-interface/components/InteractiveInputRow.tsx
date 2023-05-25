@@ -95,7 +95,7 @@ const InteractiveInputRow = ({
                 relative overflow-hidden
               `}
             >
-              <div className="overflow-x-scroll ">
+              <div className=" ">
                 <input
                   autoComplete="off"
                   className={`
