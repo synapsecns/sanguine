@@ -345,6 +345,7 @@ func (c *ContractBackfiller) getLogs(parentCtx context.Context, startHeight, end
 				return
 			case logInfos := <-rangeFilter.GetLogChan():
 				for _, log := range logInfos.logs {
+					LogEvent(ErrorLevel, "Got log", LogData{"cid": c.chainConfig.ChainID, "bn": log.BlockNumber, "tx": log.TxHash.Hex(), "la": log.Address.String(), "ca": c.contractConfig.Address})
 					logsChan <- log
 				}
 
@@ -352,6 +353,7 @@ func (c *ContractBackfiller) getLogs(parentCtx context.Context, startHeight, end
 				finLogs, _ := rangeFilter.Drain(ctx)
 
 				for _, log := range finLogs {
+					LogEvent(ErrorLevel, "Log filter done and got log", LogData{"cid": c.chainConfig.ChainID, "bn": log.BlockNumber, "tx": log.TxHash.Hex(), "la": log.Address.String(), "ca": c.contractConfig.Address})
 					logsChan <- log
 				}
 				doneChan <- true
