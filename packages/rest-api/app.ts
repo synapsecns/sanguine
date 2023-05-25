@@ -3,6 +3,7 @@ import { SynapseSDK } from '@synapsecns/sdk-router'
 import { BigNumber } from '@ethersproject/bignumber'
 import { formatUnits } from '@ethersproject/units'
 import express from 'express'
+
 import chains from './config/chains.json' assert { type: 'json' }
 import tokens from './config/tokens.json' assert { type: 'json' }
 // To run locally you may need to add the "node --experimental-json-modules app.js" flag for the following jsons to be read
@@ -120,9 +121,10 @@ app.get('/swap', async (req, res) => {
       // TODO: Router contract v2 should return the amount out with decimals for the out-out token not the out-in token (eg.nusd).
 
       // Add response field with adjusted maxAmountOutStr (to account for decimals)
-      let payload: any = resp
+      const payload: any = resp
       payload.maxAmountOutStr = parseInt(
-        formatBNToString(resp.maxAmountOut, toTokenDecimals), 10
+        formatBNToString(resp.maxAmountOut, toTokenDecimals),
+        10
       )
       res.json(payload)
     })
@@ -196,9 +198,10 @@ app.get('/bridge', async (req, res) => {
       // TODO: Router contract v2 should return the amount out with decimals for the out-out token not the out-in token (eg.nusd).
 
       // Add response field with adjusted maxAmountOutStr (to account for decimals)
-      let payload: any = resp
+      const payload: any = resp
       payload.maxAmountOutStr = parseInt(
-        formatBNToString(resp.maxAmountOut, toTokenDecimals), 10
+        formatBNToString(resp.maxAmountOut, toTokenDecimals),
+        10
       )
       res.json(payload)
     })
