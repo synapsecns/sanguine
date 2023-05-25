@@ -140,7 +140,7 @@ export const Wallet = () => {
                         transition-all duration-100 w-fit rounded-lg
                         py-2 pl-2.5 pr-2.5  bg-bgLight hover:bg-opacity-70
                         hover:bg-bgLightest active:bg-bgLightest text-sm
-                        whitespace-nowrap
+                        whitespace-nowrap font-bold
                         `}
                     >
                       {account ? account.displayName : <Spinner />}
