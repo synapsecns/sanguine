@@ -239,6 +239,7 @@ OUTER:
 				}
 
 				if errors.Is(err, errNoTx) {
+					LogEvent(ErrorLevel, "Error is tx is not supported by the client", LogData{"cid": c.chainConfig.ChainID, "bn": log.BlockNumber, "tx": log.TxHash.Hex(), "la": log.Address.String(), "ca": c.contractConfig.Address, "e": err.Error()})
 					hasTX = false
 					break OUTER
 				}
