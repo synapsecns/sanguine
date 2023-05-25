@@ -41,21 +41,21 @@ export const BRIDGE_CONFIG_ADDRESSES = {
  */
 export const BRIDGE_REQUIRED_CONFIRMATIONS = {
   [CHAINS.ETH.id]: 33,
-  [CHAINS.BNB.id]: 14,
+  [CHAINS.BNB.id]: 33,
   [CHAINS.POLYGON.id]: 128,
-  [CHAINS.FANTOM.id]: 5,
-  [CHAINS.BOBA.id]: 1, // rewrite
-  [CHAINS.OPTIMISM.id]: 1, // rewrite
-  [CHAINS.MOONBEAM.id]: 21,
-  [CHAINS.MOONRIVER.id]: 21, // 5,
+  [CHAINS.FANTOM.id]: 80,
+  [CHAINS.BOBA.id]: 33,
+  [CHAINS.OPTIMISM.id]: 100,
+  [CHAINS.MOONBEAM.id]: 33,
+  [CHAINS.MOONRIVER.id]: 33,
   [CHAINS.ARBITRUM.id]: 200,
   [CHAINS.AVALANCHE.id]: 80,
-  [CHAINS.DFK.id]: 6,
-  [CHAINS.HARMONY.id]: 1, // rewrite
-  [CHAINS.AURORA.id]: 5,
-  [CHAINS.CRONOS.id]: 6,
-  [CHAINS.METIS.id]: 6,
-  [CHAINS.DOGE.id]: 20,
+  [CHAINS.DFK.id]: 33,
+  [CHAINS.HARMONY.id]: 33,
+  [CHAINS.AURORA.id]: 33,
+  [CHAINS.CRONOS.id]: 33,
+  [CHAINS.METIS.id]: 33,
+  [CHAINS.DOGE.id]: 33,
   [CHAINS.CANTO.id]: 20,
 }
 
