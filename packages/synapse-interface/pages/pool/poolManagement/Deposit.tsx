@@ -18,6 +18,7 @@ import { approve, deposit } from '@/utils/actions/approveAndDeposit'
 import { QUOTE_POLLING_INTERVAL } from '@/constants/bridge' // TODO CHANGE
 import { PoolData, PoolUserData } from '@types'
 import LoadingTokenInput from '@components/loading/LoadingTokenInput'
+
 const Deposit = ({
   pool,
   chainId,

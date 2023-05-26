@@ -40,6 +40,7 @@ const Withdraw = ({
     bn: BigNumber
     str: string
   }>({ bn: Zero, str: '' })
+
   const [withdrawQuote, setWithdrawQuote] = useState<{
     priceImpact: BigNumber
     outputs: Record<

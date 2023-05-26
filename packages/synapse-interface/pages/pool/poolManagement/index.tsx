@@ -5,6 +5,7 @@ import Deposit from './Deposit'
 import Withdraw from './Withdraw'
 import { PoolData, PoolUserData } from '@types'
 import { Token } from '@types'
+
 const PoolManagement = ({
   pool,
   address,
@@ -18,8 +19,6 @@ const PoolManagement = ({
   poolData: PoolData
   poolUserData: PoolUserData
 }) => {
-  // const [cardNav, setCardNav] = useState(getLiquidityMode(location.hash)) // 'addLiquidity'
-  console.log('poolUserData: ', poolUserData)
   const [cardNav, setCardNav] = useState(getLiquidityMode('#addLiquidity')) // 'addLiquidity'
   return (
     <div>
