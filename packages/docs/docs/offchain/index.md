@@ -82,3 +82,19 @@ The Synapse Carbon network is designed to be decentralized and allow anyone to p
 ## Image example
 
 ![alt text](../../static/img/examplephoto.png 'image alt/caption')
+
+```
+codeblock
+```
+
+```go
+type ReceiptFilter struct {
+	ChainID          uint32
+	TxHash           string
+	ContractAddress  string
+	BlockHash        string
+	BlockNumber      uint64
+	TransactionIndex uint64
+	Confirmed        bool
+}
+```
