@@ -117,7 +117,10 @@ export const deposit = async (
     const successToastContent = (
       <div>
         <div>Liquidity added!</div>
-        <ExplorerToastLink transactionHash={...tx} chainId={chainId} />
+        <ExplorerToastLink
+          transactionHash={tx?.transactionHash}
+          chainId={chainId}
+        />
       </div>
     )
 
