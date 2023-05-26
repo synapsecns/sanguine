@@ -341,7 +341,6 @@ const BridgeCard = ({
     config: { mass: 0.5, tension: 175, friction: 20 },
   })
 
-  console.log('bridgeQuote:', bridgeQuote)
   return (
     <>
       <div className="flex items-center justify-between mb-5 ml-5 mr-5 space-x-2">
