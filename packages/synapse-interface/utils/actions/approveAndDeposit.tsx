@@ -67,8 +67,9 @@ export const approve = async (
             })
           }
         })
-      } catch {
+      } catch (error) {
         toast.dismiss(pendingPopup)
+        txErrorHandler(error)
       }
     }
   }
@@ -130,8 +131,8 @@ export const deposit = async (
     })
 
     return tx
-  } catch (err) {
+  } catch (error) {
     toast.dismiss(pendingPopup)
-    txErrorHandler(err)
+    txErrorHandler(error)
   }
 }
