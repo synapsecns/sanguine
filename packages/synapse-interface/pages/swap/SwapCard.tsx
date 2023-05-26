@@ -15,7 +15,7 @@ import { validateAndParseAddress } from '@utils/validateAndParseAddress'
 import { formatBNToString } from '@utils/bignumber/format'
 import { commify } from '@ethersproject/units'
 import { erc20ABI } from 'wagmi'
-import { Contract, Transaction } from 'ethers'
+import { Contract } from 'ethers'
 import { subtractSlippage } from '@utils/slippage'
 import { ChainSlideOver } from '@/components/misc/ChainSlideOver'
 import { TokenSlideOver } from '@/components/misc/TokenSlideOver'
@@ -105,7 +105,7 @@ const SwapCard = ({
           : Zero
       )
     }
-  }, [fromToken, fromTokens, swapTxnHash])
+  }, [fromToken, fromTokens])
 
   useEffect(() => {
     if (!router.isReady || !SWAPABLE_TOKENS[connectedChainId]) {
@@ -163,7 +163,7 @@ const SwapCard = ({
       setFromTokens(tokens)
     })
     return
-  }, [connectedChainId])
+  }, [connectedChainId, swapTxnHash])
 
   /*
   useEffect Triggers: toToken, fromInput, toChainId, time
