@@ -10,6 +10,7 @@ import { fetchSigner, getNetwork, switchNetwork } from '@wagmi/core'
 import { sortByTokenBalance, sortByVisibilityRank } from '@utils/sortTokens'
 import { calculateExchangeRate } from '@utils/calculateExchangeRate'
 import { subtractSlippage } from '@utils/slippage'
+import { txErrorHandler } from '@/utils/txErrorHandler'
 import ExplorerToastLink from '@/components/ExplorerToastLink'
 import toast from 'react-hot-toast'
 import Popup from '@components/Popup'
@@ -697,7 +698,8 @@ const BridgePage = ({
       }
     } catch (error) {
       console.log('Error executing bridge', error)
-      return
+      toast.dismiss(pendingPopup)
+      return txErrorHandler(error)
     }
   }
 
