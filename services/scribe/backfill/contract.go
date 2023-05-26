@@ -234,10 +234,6 @@ OUTER:
 
 			tx, err = c.fetchTx(ctx, log.TxHash, log.BlockNumber)
 			if err != nil {
-				if errors.Is(err, errNoContinue) {
-					return nil
-				}
-
 				if errors.Is(err, errNoTx) {
 					LogEvent(ErrorLevel, "Error is tx is not supported by the client", LogData{"cid": c.chainConfig.ChainID, "bn": log.BlockNumber, "tx": log.TxHash.Hex(), "la": log.Address.String(), "ca": c.contractConfig.Address, "e": err.Error()})
 					hasTX = false
@@ -387,8 +383,6 @@ type txData struct {
 	blockHeader types.Header
 	success     bool
 }
-
-var errNoContinue = errors.New("encountered unreconcilable error, will not attempt to store tx")
 
 // errNoTx indicates a tx cannot be parsed, this is only returned when the tx doesn't match our data model.
 var errNoTx = errors.New("tx is not supported by the client")
