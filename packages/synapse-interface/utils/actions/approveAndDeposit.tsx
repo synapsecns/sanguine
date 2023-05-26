@@ -133,6 +133,7 @@ export const deposit = async (
     return tx
   } catch (error) {
     toast.dismiss(pendingPopup)
+    console.log('error from deposit: ', error)
     txErrorHandler(error)
   }
 }
