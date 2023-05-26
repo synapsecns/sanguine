@@ -31,6 +31,7 @@ import { SwapQuote, Query } from '@types'
 import { IMPAIRED_CHAINS } from '@/constants/impairedChains'
 import { CHAINS_BY_ID } from '@constants/chains'
 import { toast } from 'react-hot-toast'
+import { txErrorHandler } from '@/utils/txErrorHandler'
 import ExplorerToastLink from '@/components/ExplorerToastLink'
 
 import {
@@ -530,6 +531,11 @@ const SwapCard = ({
   - Only executes if token has already been approved.
    */
   const executeSwap = async () => {
+    const currentChainName = CHAINS_BY_ID[connectedChainId]?.name
+    pendingPopup = toast(
+      `Initiating swap from ${fromToken.symbol} to ${toToken.symbol} on ${currentChainName}`,
+      { id: 'swap-in-progress-popup', duration: Infinity }
+    )
     try {
       const wallet = await fetchSigner({
         chainId: connectedChainId,
@@ -549,12 +555,6 @@ const SwapCard = ({
           ? { data: data.data, to: data.to, value: fromInput.bigNum }
           : data
       const tx = await wallet.sendTransaction(payload)
-
-      const currentChainName = CHAINS_BY_ID[connectedChainId]?.name
-      pendingPopup = toast(
-        `Initiating swap from ${fromToken.symbol} to ${toToken.symbol} on ${currentChainName}`,
-        { id: 'swap-in-progress-popup', duration: Infinity }
-      )
 
       try {
         await tx.wait()
@@ -586,6 +586,8 @@ const SwapCard = ({
       }
     } catch (error) {
       console.log(`Swap Execution failed with error: ${error}`)
+      toast.dismiss(pendingPopup)
+      txErrorHandler(error)
     }
   }
 
