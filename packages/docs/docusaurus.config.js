@@ -81,7 +81,7 @@ const config = {
             type: 'doc',
             docId: 'solidity/index',
             position: 'left',
-            label: 'Sending Messages',
+            label: 'Integrating Messages',
             items: ['solidity/intro', 'solidity/examples'],
           },
           {
