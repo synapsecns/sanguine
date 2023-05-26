@@ -69,3 +69,6 @@ At this point, we are ready to look at the specific steps that happen. It is goo
 13. The Executor must first prove that the Sending Chain's state is part of the Merkle Root of States.
 14. After proving that the Origin state was part of that Merkle Root of States, the Executor then needs to prove that the message was part of the State's Merkle Root of Messages.
 15. Assuming the message being submitted has an optimistic period that is less than the time when the attestation happened and the current time, then the Receiving Smart contract can execute the message.
+<br/>
+<br/>
+Next, we can talk about the various kinds of "fraud" that can get the agent's slashed.
