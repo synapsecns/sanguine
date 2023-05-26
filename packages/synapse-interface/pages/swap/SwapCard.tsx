@@ -586,6 +586,7 @@ const SwapCard = ({
           duration: 10000,
         })
 
+        resetRates()
         return tx
       } catch (error) {
         toast.dismiss(pendingPopup)

@@ -689,6 +689,7 @@ const BridgePage = ({
           duration: 10000,
         })
 
+        resetRates()
         return tx
       } catch (error) {
         console.log(`Transaction failed with error: ${error}`)
