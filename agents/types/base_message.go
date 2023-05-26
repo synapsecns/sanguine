@@ -13,14 +13,6 @@ const (
 	BaseMessageContentOffset = BaseMessageRequestOffset + RequestSize
 )
 
-/// | Position   | Field     | Type    | Bytes | Description                            |
-/// | ---------- | --------- | ------- | ----- | -------------------------------------- |
-/// | [000..032) | sender    | bytes32 | 32    | Sender address on origin chain         |
-/// | [032..064) | recipient | bytes32 | 32    | Recipient address on destination chain |
-/// | [064..096) | tips      | uint256 | 32    | Encoded tips paid on origin chain      |
-/// | [096..116) | request   | uint160 | 20    | Encoded request for message execution  |
-/// | [104..AAA) | content   | bytes   | ??    | Content to be passed to recipient      |
-
 // BaseMessage is an interface that contains the base message.
 //
 //nolint:interfacebloat

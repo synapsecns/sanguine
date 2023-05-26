@@ -362,7 +362,7 @@ func TestHeaderEncodeParity(t *testing.T) {
 	deployManager := testutil.NewDeployManager(t)
 	_, headerHarnessContract := deployManager.GetHeaderHarness(ctx, testBackend)
 
-	flag := types.MessageFlagBase
+	flag := types.MessageFlagManager
 	origin := gofakeit.Uint32()
 	nonce := gofakeit.Uint32()
 	destination := gofakeit.Uint32()
