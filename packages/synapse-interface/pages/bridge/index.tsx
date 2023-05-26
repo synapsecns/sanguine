@@ -174,7 +174,7 @@ const BridgePage = ({
     return () => {
       isCancelled = true
     }
-  }, [toToken, fromInput, time, fromChainId, toChainId])
+  }, [toToken, fromInput, time, fromChainId, toChainId, fromToken])
 
   /*
   useEffect Triggers: fromInput
