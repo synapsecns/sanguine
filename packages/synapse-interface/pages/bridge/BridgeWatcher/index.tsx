@@ -20,6 +20,7 @@ import {
   generateBridgeTx,
   checkTxIn,
 } from '@utils/bridgeWatcher'
+
 const BridgeWatcher = ({
   fromChainId,
   toChainId,
@@ -101,6 +102,7 @@ const BridgeWatcher = ({
       setFromSynapseContract(fromSynapseContract)
     }
   }, [fromChainId, fromSigner])
+
   useEffect(() => {
     if (fromSynapseContract) {
       getFromBridgeEvents().then((txs) => {
@@ -108,6 +110,7 @@ const BridgeWatcher = ({
       })
     }
   }, [fromSynapseContract, bridgeTxHash])
+
   useEffect(() => {
     setFromSigner(fromSignerRaw)
   }, [fromSignerRaw])
