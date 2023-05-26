@@ -22,7 +22,7 @@ export default function ToastContent({ toastData, icon, message }) {
     <div
       className={`
         flex rounded items-center
-        min-w-[250px]
+        min-w-[350px]
         px-2 pt-1 pb-2
         bg-bgBase
         text-white

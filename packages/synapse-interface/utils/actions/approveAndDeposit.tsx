@@ -7,6 +7,8 @@ import { subtractSlippage } from '@utils/slippage'
 
 import ExplorerToastLink from '@components/ExplorerToastLink'
 
+import { AddressZero } from '@ethersproject/constants'
+import { CHAINS_BY_ID } from '@/constants/chains'
 import { txErrorHandler } from '@utils/txErrorHandler'
 import { AVWETH, WETHE } from '@constants/tokens/master'
 import { WETH } from '@constants/tokens/swapMaster'
@@ -19,6 +21,15 @@ export const approve = async (
   inputValue: any,
   chainId: number
 ) => {
+  const currentChainName = CHAINS_BY_ID[chainId].name
+  let pendingPopup: any
+  let successPopup: any
+
+  pendingPopup = toast(`Requesting approval on ${currentChainName}`, {
+    id: 'approve-in-progress-popup',
+    duration: Infinity,
+  })
+
   for (let token of pool.poolTokens) {
     const tokenAddr = token.addresses[chainId]
     if (
@@ -28,14 +39,37 @@ export const approve = async (
       continue
 
     if (token.symbol != WETH.symbol) {
-      await approveToken(
-        pool.swapAddresses[chainId],
-        chainId,
-        token.symbol === AVWETH.symbol
-          ? WETHE.addresses[chainId]
-          : token.addresses[chainId],
-        inputValue[tokenAddr]
-      )
+      try {
+        await approveToken(
+          pool.swapAddresses[chainId],
+          chainId,
+          token.symbol === AVWETH.symbol
+            ? WETHE.addresses[chainId]
+            : token.addresses[chainId],
+          inputValue[tokenAddr]
+        ).then((approveTx) => {
+          if (approveTx) {
+            toast.dismiss(pendingPopup)
+
+            const successToastContent = (
+              <div>
+                <div>Successfully approved on {currentChainName}</div>
+                <ExplorerToastLink
+                  transactionHash={approveTx?.hash ?? AddressZero}
+                  chainId={chainId}
+                />
+              </div>
+            )
+
+            successPopup = toast.success(successToastContent, {
+              id: 'approve-success-popup',
+              duration: 10000,
+            })
+          }
+        })
+      } catch {
+        toast.dismiss(pendingPopup)
+      }
     }
   }
 }
