@@ -558,11 +558,12 @@ const BridgePage = ({
       }
       // TODO DYNAMIC SLIPPAGE
       const toValueBigNum = maxAmountOut ?? Zero
+      const originTokenDecimals = fromToken.decimals[fromChainId]
+      // adjusting fee amount from NUSD 18 decimal back down
+      // back down to origin token decimals
       const adjustedFeeAmount = feeAmount.lt(fromInput.bigNum)
         ? feeAmount
-        : feeAmount.div(
-            BigNumber.from(10).pow(18 - toToken.decimals[toChainId])
-          )
+        : feeAmount.div(BigNumber.from(10).pow(18 - originTokenDecimals))
 
       const allowance =
         fromToken.addresses[fromChainId] === AddressZero ||
