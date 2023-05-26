@@ -4,6 +4,7 @@ import { Contract } from 'ethers'
 import { MaxInt256, AddressZero } from '@ethersproject/constants'
 import { BigNumber } from '@ethersproject/bignumber'
 import { CHAINS_BY_ID } from '@/constants/chains'
+import { txErrorHandler } from './txErrorHandler'
 import toast from 'react-hot-toast'
 import ExplorerToastLink from '@components/ExplorerToastLink'
 
@@ -55,5 +56,6 @@ export const approveToken = async (
   } catch (error) {
     toast.dismiss(pendingPopup)
     console.log(`Transaction failed with error: ${error}`)
+    txErrorHandler(error)
   }
 }

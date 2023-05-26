@@ -673,6 +673,7 @@ const SwapCard = ({
       properties.className = 'from-[#feba06] to-[#FEC737]'
       properties.disabled = false
       properties.postButtonAction = () => null
+      return properties
     }
 
     if (destinationAddress && !validateAndParseAddress(destinationAddress)) {
