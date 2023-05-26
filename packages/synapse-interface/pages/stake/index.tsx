@@ -59,14 +59,19 @@ const StakePage = () => {
 
         <Grid cols={{ xs: 1, sm: 1, md: columns }} gap={6} className="mt-8">
           {isClient && availableStakingTokens.length > 0 ? (
-            availableStakingTokens.map((token, key) => (
-              <StakeCard
-                key={key}
-                address={currentAddress}
-                chainId={connectedChainId}
-                pool={token}
-              />
-            ))
+            availableStakingTokens.map((token, key) => {
+              if (token.notStake) {
+                return null
+              }
+              return (
+                <StakeCard
+                  key={key}
+                  address={currentAddress}
+                  chainId={connectedChainId}
+                  pool={token}
+                />
+              )
+            })
           ) : (
             <NoStakeCard chain={connectedChainInfo} />
           )}
