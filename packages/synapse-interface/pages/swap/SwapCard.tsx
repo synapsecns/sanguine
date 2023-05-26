@@ -1,9 +1,10 @@
 import Grid from '@tw/Grid'
-import { useRouter } from 'next/router'
 import { useEffect, useState, useMemo, useCallback } from 'react'
+import { useRouter } from 'next/router'
 import { AddressZero, Zero } from '@ethersproject/constants'
 import { BigNumber } from '@ethersproject/bignumber'
 import { fetchSigner, switchNetwork } from '@wagmi/core'
+import { useWatchPendingTransactions } from 'wagmi'
 import { sortByTokenBalance, sortByVisibilityRank } from '@utils/sortTokens'
 import { calculateExchangeRate } from '@utils/calculateExchangeRate'
 import ExchangeRateInfo from '@components/ExchangeRateInfo'
@@ -14,7 +15,7 @@ import { validateAndParseAddress } from '@utils/validateAndParseAddress'
 import { formatBNToString } from '@utils/bignumber/format'
 import { commify } from '@ethersproject/units'
 import { erc20ABI } from 'wagmi'
-import { Contract } from 'ethers'
+import { Contract, Transaction } from 'ethers'
 import { subtractSlippage } from '@utils/slippage'
 import { ChainSlideOver } from '@/components/misc/ChainSlideOver'
 import { TokenSlideOver } from '@/components/misc/TokenSlideOver'
@@ -70,6 +71,7 @@ const SwapCard = ({
   const [displayType, setDisplayType] = useState(undefined)
   const [fromTokenBalance, setFromTokenBalance] = useState<BigNumber>(Zero)
   const [validChainId, setValidChainId] = useState(true)
+  const [swapTxnHash, setSwapTxnHash] = useState<string>('')
 
   let pendingPopup: any
   let successPopup: any
@@ -103,7 +105,7 @@ const SwapCard = ({
           : Zero
       )
     }
-  }, [fromToken, fromTokens])
+  }, [fromToken, fromTokens, swapTxnHash])
 
   useEffect(() => {
     if (!router.isReady || !SWAPABLE_TOKENS[connectedChainId]) {
@@ -536,6 +538,7 @@ const SwapCard = ({
       `Initiating swap from ${fromToken.symbol} to ${toToken.symbol} on ${currentChainName}`,
       { id: 'swap-in-progress-popup', duration: Infinity }
     )
+
     try {
       const wallet = await fetchSigner({
         chainId: connectedChainId,
@@ -557,8 +560,12 @@ const SwapCard = ({
       const tx = await wallet.sendTransaction(payload)
 
       try {
-        await tx.wait()
+        const successTx = await tx.wait()
+
+        setSwapTxnHash(successTx?.transactionHash)
+
         toast.dismiss(pendingPopup)
+
         console.log(`Transaction mined successfully: ${tx.hash}`)
 
         const successToastContent = (
