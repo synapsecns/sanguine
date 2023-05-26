@@ -33,7 +33,7 @@ export const approve = async (
   for (let token of pool.poolTokens) {
     const tokenAddr = token.addresses[chainId]
     if (
-      inputValue[tokenAddr].isZero() ||
+      (inputValue[tokenAddr] && inputValue[tokenAddr].isZero()) ||
       inputValue[tokenAddr].lt(depositQuote.allowances[tokenAddr])
     )
       continue
