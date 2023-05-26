@@ -19,7 +19,7 @@ const PoolManagement = ({
   poolUserData: PoolUserData
 }) => {
   // const [cardNav, setCardNav] = useState(getLiquidityMode(location.hash)) // 'addLiquidity'
-
+  console.log('poolUserData: ', poolUserData)
   const [cardNav, setCardNav] = useState(getLiquidityMode('#addLiquidity')) // 'addLiquidity'
   return (
     <div>

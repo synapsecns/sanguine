@@ -1,16 +1,16 @@
-import Link from 'next/link'
-import { STAKE_PATH, POOLS_PATH, POOL_PATH } from '@urls'
-import { ChevronLeftIcon } from '@heroicons/react/outline'
 import { useEffect, useState, memo } from 'react'
+import { AddressZero } from '@ethersproject/constants'
+import Link from 'next/link'
 import { Token } from '@types'
+import { ChevronLeftIcon } from '@heroicons/react/outline'
 import { getPoolData } from '@utils/actions/getPoolData'
 import { getPoolApyData } from '@utils/actions/getPoolApyData'
-import Button from '@tw/Button'
+import { STAKE_PATH, POOLS_PATH, POOL_PATH } from '@urls'
 import Card from '@tw/Card'
 import Grid from '@tw/Grid'
-import PoolManagement from './poolManagement'
+import Button from '@tw/Button'
 import PoolInfoSection from './PoolInfoSection'
-import { AddressZero } from '@ethersproject/constants'
+import PoolManagement from './poolManagement'
 
 const PoolBody = memo(
   ({
@@ -27,6 +27,7 @@ const PoolBody = memo(
     const [poolData, setPoolData] = useState(undefined)
     const [poolUserData, setPoolUserData] = useState(undefined)
     const [poolAPYData, setPoolAPYData] = useState(undefined)
+
     useEffect(() => {
       if (connectedChainId && pool && poolChainId) {
         // TODO - separate the apy and tvl so they load async.
@@ -37,6 +38,7 @@ const PoolBody = memo(
           .catch((err) => {
             console.log('Could not get pool data', err)
           })
+
         if (address) {
           getPoolData(poolChainId, pool, address, true)
             .then((res) => {
@@ -46,6 +48,7 @@ const PoolBody = memo(
               console.log('Could not get pool data', err)
             })
         }
+
         getPoolApyData(poolChainId, pool)
           .then((res) => {
             if (Object.keys(res).length > 0) {
@@ -56,7 +59,7 @@ const PoolBody = memo(
             console.log('Could not get pool data', err)
           })
       }
-    }, [])
+    }, [connectedChainId, pool, poolChainId])
 
     return (
       <>
