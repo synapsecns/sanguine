@@ -82,6 +82,14 @@ export const deposit = async (
   chainId: number
 ) => {
   const poolContract = await useSwapDepositContract(pool, chainId)
+  let pendingPopup: any
+  let successPopup: any
+
+  pendingPopup = toast(`Starting your deposit...`, {
+    id: 'deposit-in-progress-popup',
+    duration: Infinity,
+  })
+
   try {
     // get this from quote?
     let minToMint = await poolContract.calculateTokenAmount(
@@ -89,8 +97,6 @@ export const deposit = async (
       true
     )
     minToMint = subtractSlippage(minToMint, slippageSelected, slippageCustom)
-
-    toast('Starting your deposit...')
 
     const result = Array.from(Object.values(inputAmounts), (value) => value)
 
@@ -106,17 +112,23 @@ export const deposit = async (
 
     const tx = await spendTransaction.wait()
 
-    const toastContent = (
+    toast.dismiss(pendingPopup)
+
+    const successToastContent = (
       <div>
         <div>Liquidity added!</div>
-        <ExplorerToastLink {...tx} chainId={chainId} />
+        <ExplorerToastLink transactionHash={...tx} chainId={chainId} />
       </div>
     )
 
-    toast.success(toastContent)
+    successPopup = toast.success(successToastContent, {
+      id: 'deposit-success-popup',
+      duration: 10000,
+    })
 
     return tx
   } catch (err) {
+    toast.dismiss(pendingPopup)
     txErrorHandler(err)
   }
 }
