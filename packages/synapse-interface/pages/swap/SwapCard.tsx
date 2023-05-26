@@ -72,6 +72,7 @@ const SwapCard = ({
   const [fromTokenBalance, setFromTokenBalance] = useState<BigNumber>(Zero)
   const [validChainId, setValidChainId] = useState(true)
   const [swapTxnHash, setSwapTxnHash] = useState<string>('')
+  const [approveTx, setApproveTx] = useState<string>(null)
 
   let pendingPopup: any
   let successPopup: any
@@ -91,6 +92,17 @@ const SwapCard = ({
       clearInterval(interval)
     }
   }, [])
+
+  /*
+  useEffect Trigger: fromInput
+  - Resets approve txn status if user input changes after amount is approved
+  */
+
+  useEffect(() => {
+    if (approveTx) {
+      setApproveTx(null)
+    }
+  }, [fromInput])
 
   /*
   useEffect Trigger: fromToken, fromTokens
@@ -174,7 +186,7 @@ const SwapCard = ({
     let isCancelled = false
 
     const handleChange = async () => {
-      await timeout(1000)
+      // await timeout(1000)
       if (
         connectedChainId &&
         String(fromToken.addresses[connectedChainId]) &&
@@ -659,6 +671,8 @@ const SwapCard = ({
 
     if (
       !fromInput?.bigNum?.eq(0) &&
+      fromToken?.addresses[connectedChainId] !== '' &&
+      fromToken?.addresses[connectedChainId] !== AddressZero &&
       swapQuote?.allowance &&
       swapQuote?.allowance?.lt(fromInput.bigNum)
     ) {
@@ -684,9 +698,7 @@ const SwapCard = ({
     }
 
     // default case
-    properties.label = swapQuote.outputAmount.eq(0)
-      ? 'Enter amount to swap'
-      : 'Swap your funds'
+    properties.label = 'Swap your funds'
     properties.disabled = false
 
     const numExchangeRate = swapQuote?.exchangeRate
@@ -721,6 +733,7 @@ const SwapCard = ({
     isQuoteLoading,
     destinationAddress,
     error,
+    approveTx,
   ])
 
   const ActionButton = useMemo(() => {
@@ -737,7 +750,7 @@ const SwapCard = ({
         }}
       />
     )
-  }, [fromInput, time, swapQuote, error])
+  }, [fromInput, time, swapQuote, error, approveTx])
 
   /*
   useEffect Triggers: fromInput
