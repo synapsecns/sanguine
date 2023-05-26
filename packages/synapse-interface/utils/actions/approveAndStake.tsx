@@ -78,14 +78,14 @@ export const stake = async (
     signer
   )
 
+  pendingPopup = toast(`Starting your deposit...`, {
+    id: 'deposit-in-progress-popup',
+    duration: Infinity,
+  })
+
   try {
     if (!address) throw new Error('Wallet must be connected')
     if (!miniChefContract) throw new Error('MMind contract is not loaded')
-
-    pendingPopup = toast(`Starting your deposit...`, {
-      id: 'deposit-in-progress-popup',
-      duration: Infinity,
-    })
 
     const stakeTransaction = await miniChefContract.deposit(
       poolId,
@@ -99,7 +99,7 @@ export const stake = async (
 
     const successToastContent = (
       <div>
-        <div>Stake Completed!</div>
+        <div>Stake Completed:</div>
         <ExplorerToastLink
           transactionHash={tx?.transactionHash}
           chainId={chainId}
@@ -114,6 +114,7 @@ export const stake = async (
 
     return tx
   } catch (err) {
+    toast.dismiss(pendingPopup)
     txErrorHandler(err)
   }
 }

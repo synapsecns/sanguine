@@ -13,6 +13,9 @@ export const claimStake = async (
   address: string,
   poolId: number
 ) => {
+  let pendingPopup: any
+  let successPopup: any
+
   const wallet = await fetchSigner({
     chainId,
   })
@@ -21,23 +24,39 @@ export const claimStake = async (
     MINI_CHEF_ABI,
     wallet
   )
+
+  pendingPopup = toast(`Starting your claim...`, {
+    id: 'claim-in-progress-popup',
+    duration: Infinity,
+  })
+
   try {
     if (!address) throw new Error('Wallet must be connected')
     if (!miniChefContract) throw new Error('MMind contract is not loaded')
+
     const stakeTransaction = await miniChefContract.harvest(poolId, address)
     const tx = await stakeTransaction.wait()
 
-    const toastContent = (
+    toast.dismiss(pendingPopup)
+
+    const successToastContent = (
       <div>
-        <div>Claim completed:</div>
-        <ExplorerToastLink {...tx} chainId={chainId} />
+        <div>Claim Completed:</div>
+        <ExplorerToastLink
+          transactionHash={tx?.transactionHash}
+          chainId={chainId}
+        />
       </div>
     )
 
-    toast.success(toastContent)
+    successPopup = toast.success(successToastContent, {
+      id: 'claim-success-popup',
+      duration: 10000,
+    })
 
     return tx
   } catch (err) {
+    toast.dismiss(pendingPopup)
     txErrorHandler(err)
   }
 }
