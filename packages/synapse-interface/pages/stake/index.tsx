@@ -1,23 +1,23 @@
 import { useMemo, useEffect, useState } from 'react'
-import { LandingPageWrapper } from '@/components/layouts/LandingPageWrapper'
 import { useNetwork, useAccount } from 'wagmi'
 import { Token } from '@/utils/types'
 import { Chain } from '@/utils/types'
 import { getNetworkTextColor } from '@/styles/chains'
 import { STAKABLE_TOKENS } from '@/constants/tokens'
 import { CHAINS_BY_ID, ChainsByChainID } from '@/constants/chains'
-import { PageHeader } from '@/components/PageHeader'
 import Grid from '@/components/ui/tailwind/Grid'
+import { PageHeader } from '@/components/PageHeader'
+import { LandingPageWrapper } from '@/components/layouts/LandingPageWrapper'
 import StakeCard from './StakeCard'
 import NoStakeCard from './NoStakeCard'
 
 const StakePage = () => {
-  const [isClient, setIsClient] = useState<boolean>(false)
   const { chain: connectedChain } = useNetwork()
-  const [columns, setColumns] = useState<number>(1)
-  const [connectedChainId, setConnectedChainId] = useState<number>(undefined)
   const { address: currentAddress } = useAccount()
+  const [connectedChainId, setConnectedChainId] = useState<number>(undefined)
   const [address, setAddress] = useState(undefined)
+  const [isClient, setIsClient] = useState<boolean>(false)
+  const [columns, setColumns] = useState<number>(1)
 
   const connectedChainInfo: Chain | undefined = useMemo(() => {
     if (connectedChainId) {
@@ -30,9 +30,11 @@ const StakePage = () => {
 
   const availableStakingTokens: Token[] | [] =
     STAKABLE_TOKENS[connectedChainId] ?? []
+
   useEffect(() => {
     setAddress(currentAddress)
   }, [currentAddress])
+
   useEffect(() => {
     const isSingle = availableStakingTokens.length < 2
     setColumns(isSingle ? 1 : 2)
