@@ -60,22 +60,25 @@ const StakePage = () => {
       >
         <PageHeader title="Stake" subtitle="Stake your LP Tokens." />
 
-        <div className="flex justify-center">
-          <Grid cols={{ xs: 1, sm: 1, md: columns }} gap={6} className="mt-8">
-            {isClient && availableStakingTokens.length > 0 ? (
-              availableStakingTokens.map((token, key) => (
+        <Grid cols={{ xs: 1, sm: 1, md: columns }} gap={6} className="mt-8">
+          {isClient && availableStakingTokens.length > 0 ? (
+            availableStakingTokens.map((token, key) => {
+              if (token.notStake) {
+                return null
+              }
+              return (
                 <StakeCard
                   key={key}
                   address={currentAddress}
                   chainId={connectedChainId}
                   pool={token}
                 />
-              ))
-            ) : (
-              <NoStakeCard chain={connectedChainInfo} />
-            )}
-          </Grid>
-        </div>
+              )
+            })
+          ) : (
+            <NoStakeCard chain={connectedChainInfo} />
+          )}
+        </Grid>
       </main>
     </LandingPageWrapper>
   )
