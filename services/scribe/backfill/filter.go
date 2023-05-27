@@ -202,8 +202,8 @@ func (f *RangeFilter) appendToChannel(ctx context.Context, logs *LogInfo) {
 }
 
 // Done returns a bool indicating whether the filtering operation is done.
-func (f *RangeFilter) Done() chan bool {
-	return f.doneChan
+func (f *RangeFilter) Done() bool {
+	return f.done
 }
 
 // GetLogChan returns a log chan with the logs filtered ahead to bufferSize. Iteration oder is only guaranteed with up to one
