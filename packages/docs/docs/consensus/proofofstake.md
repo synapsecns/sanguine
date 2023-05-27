@@ -10,7 +10,7 @@ We mentioned that a Notary posts a LARGE stake and a Guard posts a smaller stake
 This section will explain the details of how the stake is collected and how slashing occurs.
 Additionally, we need to talk about how the list of Notaries and Guards are kept in sync across all the remote chains.
 
-## SYN Chain as Central HUB
+## SYN Chain as Central Hub
 The SYN chain is where each agent must post bond which will be held in Escrow by a special Smart Contract deployed there.
 The name of this smart contract on SYN chain is called the Bonding Manager. Upon posting a bond, the agent will be registered as either a Guard or Notary.
 Each Notary is assigned to a specific chain, while each Guard can service all the chains.
