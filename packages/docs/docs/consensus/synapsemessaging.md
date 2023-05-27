@@ -43,22 +43,4 @@ Agents in the system are doing work (i.e. running servers, paying electricity, e
 
 The Synapse Carbon network is designed to be decentralized and allow anyone to participate as any of the agent types. This means that anyone is able to be a Notary, Guard and/or Executor. However, the network needs to disincentivize fraudulent behavior to maintain integrity.
 
-## Image example
 
-![alt text](../../static/img/examplephoto.png 'image alt/caption')
-
-```
-codeblock
-```
-
-```go
-type ReceiptFilter struct {
-	ChainID          uint32
-	TxHash           string
-	ContractAddress  string
-	BlockHash        string
-	BlockNumber      uint64
-	TransactionIndex uint64
-	Confirmed        bool
-}
-```
