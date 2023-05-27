@@ -25,3 +25,15 @@ The Sender of the message must pay gas, but how does this work in terms of payin
 <br/>
 <br/>
 The next section will discuss how Synapse uses "Gas Oracles" to estimate the amount of Gas needed to perform the work on the other chains so that the gas money plus the extra tips can be collected at the time the message is Sent on the Sending chain.
+
+### Where are rewards paid?
+Note the tips will be given to the agents on the SYN chain. This means that periodically, the gas collected on the Origin chains will be bridged to the SYN chain because the sender pays on the Sending chain.
+<br/>
+<br/>
+When a message is executed on th Destination chain, all the agents who had a hand in delivering that message are elligible to receive a reward that should cover the gas as well as additional rewards to keep them incentivized.
+<br/>
+Upon having the message executed, the Destination chain produces a receipt of the message being executed.
+The Notary will need to take that receipt, sign it and submit on the SYN chain in order for it and the other agents to receive tips.
+<br/>
+Note that this is yet another potential for fraud from the Notary, because the receipt could in theory be fraudulent, but the Notary would be risking a very large stake for a small amount of tips.
+This is another payload that a Guard can potentially look for fraud and report.
