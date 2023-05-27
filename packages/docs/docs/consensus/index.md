@@ -4,7 +4,11 @@ sidebar_position: 1
 
 # Protocol Overview
 
-Protocol overview, sub pages for each component. Should also include a network flow diagram in the ovreview.
+This section introduces the generic problem of sending messages from one blockchain to another and then dives into the specifics how the Synapse Messaging System works.
+
+<br/>
+TODO:
+Diagram of messaging system here
 
 
 
