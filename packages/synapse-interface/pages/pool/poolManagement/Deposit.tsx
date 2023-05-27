@@ -116,7 +116,7 @@ const Deposit = ({
 
   useEffect(() => {
     calculateMaxDeposits()
-  }, [inputValue, time, pool, chainId, address])
+  }, [inputValue, time, pool, chainId, address, successTx])
 
   const onChangeInputValue = (token: Token, value: string) => {
     const bigNum = stringToBigNum(value, token.decimals[chainId]) ?? Zero
@@ -159,7 +159,9 @@ const Deposit = ({
   let pendingLabel = 'Depositing funds...'
   let btnClassName = ''
   let buttonAction = () =>
-    deposit(pool, 'ONE_TENTH', null, inputValue.bn, chainId).then(success)
+    deposit(pool, 'ONE_TENTH', null, inputValue.bn, chainId).then((successTx) =>
+      setSuccessTx(successTx)
+    )
   let postButtonAction = () => {
     resetInputs()
   }
