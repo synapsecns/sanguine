@@ -130,10 +130,11 @@ export const deposit = async (
       duration: 10000,
     })
 
-    return tx
+    return tx?.transactionHash ?? tx
   } catch (error) {
-    toast.dismiss(pendingPopup)
     console.log('error from deposit: ', error)
+    toast.dismiss(pendingPopup)
     txErrorHandler(error)
+    return error
   }
 }
