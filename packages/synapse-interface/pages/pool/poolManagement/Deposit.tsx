@@ -103,6 +103,7 @@ const Deposit = ({
       console.log(e)
     }
   }
+
   useEffect(() => {
     const interval = setInterval(
       () => setTime(Date.now()),

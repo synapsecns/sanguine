@@ -27,7 +27,7 @@ export const TransactionButton = ({
   ...props
 }: {
   className?: string
-  onClick: () => Promise<TransactionResponse>
+  onClick: () => Promise<TransactionResponse | any>
   pendingLabel: string
   label: string
   onSuccess?: () => void
