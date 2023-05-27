@@ -84,7 +84,7 @@ const BridgeCard = ({
   handleTokenChange: (token: Token, type: 'from' | 'to') => void
   onChangeFromAmount: (amount: string) => void
   setDestinationAddress: (address: string) => void
-  executeBridge: () => Promise<TransactionResponse>
+  executeBridge: () => Promise<TransactionResponse | string>
   resetRates: () => void
   setTime: (time: number) => void
   bridgeTxnHash: string

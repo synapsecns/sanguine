@@ -43,7 +43,6 @@ const Deposit = ({
     routerAddress: string
   }>({ priceImpact: undefined, allowances: {}, routerAddress: '' })
   const [time, setTime] = useState(Date.now())
-  const [successTx, setSuccessTx] = useState<string>(null)
   const { synapseSDK } = useSynapseContext()
 
   // TODO move this to utils
@@ -116,7 +115,7 @@ const Deposit = ({
 
   useEffect(() => {
     calculateMaxDeposits()
-  }, [inputValue, time, pool, chainId, address, successTx])
+  }, [inputValue, time, pool, chainId, address])
 
   const onChangeInputValue = (token: Token, value: string) => {
     const bigNum = stringToBigNum(value, token.decimals[chainId]) ?? Zero
@@ -159,9 +158,7 @@ const Deposit = ({
   let pendingLabel = 'Depositing funds...'
   let btnClassName = ''
   let buttonAction = () =>
-    deposit(pool, 'ONE_TENTH', null, inputValue.bn, chainId).then((successTx) =>
-      setSuccessTx(successTx)
-    )
+    deposit(pool, 'ONE_TENTH', null, inputValue.bn, chainId)
   let postButtonAction = () => {
     resetInputs()
   }
