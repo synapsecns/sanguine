@@ -476,6 +476,29 @@ func (_m *IGasOracle) SetGasData(opts *bind.TransactOpts, domain uint32, gasPric
 	return r0, r1
 }
 
+// SetSummitTip provides a mock function with given fields: opts, summitTipWei
+func (_m *IGasOracle) SetSummitTip(opts *bind.TransactOpts, summitTipWei *big.Int) (*types.Transaction, error) {
+	ret := _m.Called(opts, summitTipWei)
+
+	var r0 *types.Transaction
+	if rf, ok := ret.Get(0).(func(*bind.TransactOpts, *big.Int) *types.Transaction); ok {
+		r0 = rf(opts, summitTipWei)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).(*types.Transaction)
+		}
+	}
+
+	var r1 error
+	if rf, ok := ret.Get(1).(func(*bind.TransactOpts, *big.Int) error); ok {
+		r1 = rf(opts, summitTipWei)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
 // TransferOwnership provides a mock function with given fields: opts, newOwner
 func (_m *IGasOracle) TransferOwnership(opts *bind.TransactOpts, newOwner common.Address) (*types.Transaction, error) {
 	ret := _m.Called(opts, newOwner)

@@ -28,6 +28,10 @@ type IGasOracleTransactor interface {
 	//
 	// Solidity: function setGasData(uint32 domain, uint256 gasPrice, uint256 dataPrice, uint256 execBuffer, uint256 amortAttCost, uint256 etherPrice, uint256 markup) returns()
 	SetGasData(opts *bind.TransactOpts, domain uint32, gasPrice *big.Int, dataPrice *big.Int, execBuffer *big.Int, amortAttCost *big.Int, etherPrice *big.Int, markup *big.Int) (*types.Transaction, error)
+	// SetSummitTip is a paid mutator transaction binding the contract method 0x67fb4093.
+	//
+	// Solidity: function setSummitTip(uint256 summitTipWei) returns()
+	SetSummitTip(opts *bind.TransactOpts, summitTipWei *big.Int) (*types.Transaction, error)
 	// TransferOwnership is a paid mutator transaction binding the contract method 0xf2fde38b.
 	//
 	// Solidity: function transferOwnership(address newOwner) returns()

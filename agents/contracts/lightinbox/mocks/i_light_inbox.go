@@ -153,6 +153,29 @@ func (_m *ILightInbox) FilterInvalidReceipt(opts *bind.FilterOpts) (*lightinbox.
 	return r0, r1
 }
 
+// FilterInvalidReceiptReport provides a mock function with given fields: opts
+func (_m *ILightInbox) FilterInvalidReceiptReport(opts *bind.FilterOpts) (*lightinbox.LightInboxInvalidReceiptReportIterator, error) {
+	ret := _m.Called(opts)
+
+	var r0 *lightinbox.LightInboxInvalidReceiptReportIterator
+	if rf, ok := ret.Get(0).(func(*bind.FilterOpts) *lightinbox.LightInboxInvalidReceiptReportIterator); ok {
+		r0 = rf(opts)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).(*lightinbox.LightInboxInvalidReceiptReportIterator)
+		}
+	}
+
+	var r1 error
+	if rf, ok := ret.Get(1).(func(*bind.FilterOpts) error); ok {
+		r1 = rf(opts)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
 // FilterInvalidStateReport provides a mock function with given fields: opts
 func (_m *ILightInbox) FilterInvalidStateReport(opts *bind.FilterOpts) (*lightinbox.LightInboxInvalidStateReportIterator, error) {
 	ret := _m.Called(opts)
@@ -506,6 +529,29 @@ func (_m *ILightInbox) ParseInvalidReceipt(log types.Log) (*lightinbox.LightInbo
 	return r0, r1
 }
 
+// ParseInvalidReceiptReport provides a mock function with given fields: log
+func (_m *ILightInbox) ParseInvalidReceiptReport(log types.Log) (*lightinbox.LightInboxInvalidReceiptReport, error) {
+	ret := _m.Called(log)
+
+	var r0 *lightinbox.LightInboxInvalidReceiptReport
+	if rf, ok := ret.Get(0).(func(types.Log) *lightinbox.LightInboxInvalidReceiptReport); ok {
+		r0 = rf(log)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).(*lightinbox.LightInboxInvalidReceiptReport)
+		}
+	}
+
+	var r1 error
+	if rf, ok := ret.Get(1).(func(types.Log) error); ok {
+		r1 = rf(log)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
 // ParseInvalidStateReport provides a mock function with given fields: log
 func (_m *ILightInbox) ParseInvalidStateReport(log types.Log) (*lightinbox.LightInboxInvalidStateReport, error) {
 	ret := _m.Called(log)
@@ -782,6 +828,29 @@ func (_m *ILightInbox) VerifyReceipt(opts *bind.TransactOpts, rcptPayload []byte
 	return r0, r1
 }
 
+// VerifyReceiptReport provides a mock function with given fields: opts, rcptPayload, rrSignature
+func (_m *ILightInbox) VerifyReceiptReport(opts *bind.TransactOpts, rcptPayload []byte, rrSignature []byte) (*types.Transaction, error) {
+	ret := _m.Called(opts, rcptPayload, rrSignature)
+
+	var r0 *types.Transaction
+	if rf, ok := ret.Get(0).(func(*bind.TransactOpts, []byte, []byte) *types.Transaction); ok {
+		r0 = rf(opts, rcptPayload, rrSignature)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).(*types.Transaction)
+		}
+	}
+
+	var r1 error
+	if rf, ok := ret.Get(1).(func(*bind.TransactOpts, []byte, []byte) error); ok {
+		r1 = rf(opts, rcptPayload, rrSignature)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
 // VerifyStateReport provides a mock function with given fields: opts, statePayload, srSignature
 func (_m *ILightInbox) VerifyStateReport(opts *bind.TransactOpts, statePayload []byte, srSignature []byte) (*types.Transaction, error) {
 	ret := _m.Called(opts, statePayload, srSignature)
@@ -956,6 +1025,29 @@ func (_m *ILightInbox) WatchInvalidReceipt(opts *bind.WatchOpts, sink chan<- *li
 
 	var r1 error
 	if rf, ok := ret.Get(1).(func(*bind.WatchOpts, chan<- *lightinbox.LightInboxInvalidReceipt) error); ok {
+		r1 = rf(opts, sink)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
+// WatchInvalidReceiptReport provides a mock function with given fields: opts, sink
+func (_m *ILightInbox) WatchInvalidReceiptReport(opts *bind.WatchOpts, sink chan<- *lightinbox.LightInboxInvalidReceiptReport) (event.Subscription, error) {
+	ret := _m.Called(opts, sink)
+
+	var r0 event.Subscription
+	if rf, ok := ret.Get(0).(func(*bind.WatchOpts, chan<- *lightinbox.LightInboxInvalidReceiptReport) event.Subscription); ok {
+		r0 = rf(opts, sink)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).(event.Subscription)
+		}
+	}
+
+	var r1 error
+	if rf, ok := ret.Get(1).(func(*bind.WatchOpts, chan<- *lightinbox.LightInboxInvalidReceiptReport) error); ok {
 		r1 = rf(opts, sink)
 	} else {
 		r1 = ret.Error(1)

@@ -47,6 +47,18 @@ type ILightInboxFilterer interface {
 	//
 	// Solidity: event InvalidReceipt(bytes rcptPayload, bytes rcptSignature)
 	ParseInvalidReceipt(log types.Log) (*LightInboxInvalidReceipt, error)
+	// FilterInvalidReceiptReport is a free log retrieval operation binding the contract event 0xa0cb383b7028fbeae86e018eb9fe765c15c869483a584edbb95bf55093446587.
+	//
+	// Solidity: event InvalidReceiptReport(bytes rrPayload, bytes rrSignature)
+	FilterInvalidReceiptReport(opts *bind.FilterOpts) (*LightInboxInvalidReceiptReportIterator, error)
+	// WatchInvalidReceiptReport is a free log subscription operation binding the contract event 0xa0cb383b7028fbeae86e018eb9fe765c15c869483a584edbb95bf55093446587.
+	//
+	// Solidity: event InvalidReceiptReport(bytes rrPayload, bytes rrSignature)
+	WatchInvalidReceiptReport(opts *bind.WatchOpts, sink chan<- *LightInboxInvalidReceiptReport) (event.Subscription, error)
+	// ParseInvalidReceiptReport is a log parse operation binding the contract event 0xa0cb383b7028fbeae86e018eb9fe765c15c869483a584edbb95bf55093446587.
+	//
+	// Solidity: event InvalidReceiptReport(bytes rrPayload, bytes rrSignature)
+	ParseInvalidReceiptReport(log types.Log) (*LightInboxInvalidReceiptReport, error)
 	// FilterInvalidStateReport is a free log retrieval operation binding the contract event 0x9b0db5e74572fe0188dcef5afafe498161864c5706c3003c98ee506ae5c0282d.
 	//
 	// Solidity: event InvalidStateReport(bytes srPayload, bytes srSignature)

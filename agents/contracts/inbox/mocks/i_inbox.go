@@ -199,6 +199,29 @@ func (_m *IInbox) FilterInvalidReceipt(opts *bind.FilterOpts) (*inbox.InboxInval
 	return r0, r1
 }
 
+// FilterInvalidReceiptReport provides a mock function with given fields: opts
+func (_m *IInbox) FilterInvalidReceiptReport(opts *bind.FilterOpts) (*inbox.InboxInvalidReceiptReportIterator, error) {
+	ret := _m.Called(opts)
+
+	var r0 *inbox.InboxInvalidReceiptReportIterator
+	if rf, ok := ret.Get(0).(func(*bind.FilterOpts) *inbox.InboxInvalidReceiptReportIterator); ok {
+		r0 = rf(opts)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).(*inbox.InboxInvalidReceiptReportIterator)
+		}
+	}
+
+	var r1 error
+	if rf, ok := ret.Get(1).(func(*bind.FilterOpts) error); ok {
+		r1 = rf(opts)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
 // FilterInvalidStateReport provides a mock function with given fields: opts
 func (_m *IInbox) FilterInvalidStateReport(opts *bind.FilterOpts) (*inbox.InboxInvalidStateReportIterator, error) {
 	ret := _m.Called(opts)
@@ -644,6 +667,29 @@ func (_m *IInbox) ParseInvalidReceipt(log types.Log) (*inbox.InboxInvalidReceipt
 	return r0, r1
 }
 
+// ParseInvalidReceiptReport provides a mock function with given fields: log
+func (_m *IInbox) ParseInvalidReceiptReport(log types.Log) (*inbox.InboxInvalidReceiptReport, error) {
+	ret := _m.Called(log)
+
+	var r0 *inbox.InboxInvalidReceiptReport
+	if rf, ok := ret.Get(0).(func(types.Log) *inbox.InboxInvalidReceiptReport); ok {
+		r0 = rf(log)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).(*inbox.InboxInvalidReceiptReport)
+		}
+	}
+
+	var r1 error
+	if rf, ok := ret.Get(1).(func(types.Log) error); ok {
+		r1 = rf(log)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
 // ParseInvalidStateReport provides a mock function with given fields: log
 func (_m *IInbox) ParseInvalidStateReport(log types.Log) (*inbox.InboxInvalidStateReport, error) {
 	ret := _m.Called(log)
@@ -782,13 +828,13 @@ func (_m *IInbox) ParseSnapshotAccepted(log types.Log) (*inbox.InboxSnapshotAcce
 	return r0, r1
 }
 
-// PassReceipt provides a mock function with given fields: opts, attNotaryIndex, attNonce, paddedTips, rcptBodyPayload
-func (_m *IInbox) PassReceipt(opts *bind.TransactOpts, attNotaryIndex uint32, attNonce uint32, paddedTips *big.Int, rcptBodyPayload []byte) (*types.Transaction, error) {
-	ret := _m.Called(opts, attNotaryIndex, attNonce, paddedTips, rcptBodyPayload)
+// PassReceipt provides a mock function with given fields: opts, attNotaryIndex, attNonce, paddedTips, rcptPayload
+func (_m *IInbox) PassReceipt(opts *bind.TransactOpts, attNotaryIndex uint32, attNonce uint32, paddedTips *big.Int, rcptPayload []byte) (*types.Transaction, error) {
+	ret := _m.Called(opts, attNotaryIndex, attNonce, paddedTips, rcptPayload)
 
 	var r0 *types.Transaction
 	if rf, ok := ret.Get(0).(func(*bind.TransactOpts, uint32, uint32, *big.Int, []byte) *types.Transaction); ok {
-		r0 = rf(opts, attNotaryIndex, attNonce, paddedTips, rcptBodyPayload)
+		r0 = rf(opts, attNotaryIndex, attNonce, paddedTips, rcptPayload)
 	} else {
 		if ret.Get(0) != nil {
 			r0 = ret.Get(0).(*types.Transaction)
@@ -797,7 +843,7 @@ func (_m *IInbox) PassReceipt(opts *bind.TransactOpts, attNotaryIndex uint32, at
 
 	var r1 error
 	if rf, ok := ret.Get(1).(func(*bind.TransactOpts, uint32, uint32, *big.Int, []byte) error); ok {
-		r1 = rf(opts, attNotaryIndex, attNonce, paddedTips, rcptBodyPayload)
+		r1 = rf(opts, attNotaryIndex, attNonce, paddedTips, rcptPayload)
 	} else {
 		r1 = ret.Error(1)
 	}
@@ -828,13 +874,13 @@ func (_m *IInbox) RenounceOwnership(opts *bind.TransactOpts) (*types.Transaction
 	return r0, r1
 }
 
-// SubmitReceipt provides a mock function with given fields: opts, rcptPayload, rcptSignature
-func (_m *IInbox) SubmitReceipt(opts *bind.TransactOpts, rcptPayload []byte, rcptSignature []byte) (*types.Transaction, error) {
-	ret := _m.Called(opts, rcptPayload, rcptSignature)
+// SubmitReceipt provides a mock function with given fields: opts, rcptPayload, rcptSignature, paddedTips, headerHash, bodyHash
+func (_m *IInbox) SubmitReceipt(opts *bind.TransactOpts, rcptPayload []byte, rcptSignature []byte, paddedTips *big.Int, headerHash [32]byte, bodyHash [32]byte) (*types.Transaction, error) {
+	ret := _m.Called(opts, rcptPayload, rcptSignature, paddedTips, headerHash, bodyHash)
 
 	var r0 *types.Transaction
-	if rf, ok := ret.Get(0).(func(*bind.TransactOpts, []byte, []byte) *types.Transaction); ok {
-		r0 = rf(opts, rcptPayload, rcptSignature)
+	if rf, ok := ret.Get(0).(func(*bind.TransactOpts, []byte, []byte, *big.Int, [32]byte, [32]byte) *types.Transaction); ok {
+		r0 = rf(opts, rcptPayload, rcptSignature, paddedTips, headerHash, bodyHash)
 	} else {
 		if ret.Get(0) != nil {
 			r0 = ret.Get(0).(*types.Transaction)
@@ -842,8 +888,31 @@ func (_m *IInbox) SubmitReceipt(opts *bind.TransactOpts, rcptPayload []byte, rcp
 	}
 
 	var r1 error
-	if rf, ok := ret.Get(1).(func(*bind.TransactOpts, []byte, []byte) error); ok {
-		r1 = rf(opts, rcptPayload, rcptSignature)
+	if rf, ok := ret.Get(1).(func(*bind.TransactOpts, []byte, []byte, *big.Int, [32]byte, [32]byte) error); ok {
+		r1 = rf(opts, rcptPayload, rcptSignature, paddedTips, headerHash, bodyHash)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
+// SubmitReceiptReport provides a mock function with given fields: opts, rcptPayload, rcptSignature, rrSignature
+func (_m *IInbox) SubmitReceiptReport(opts *bind.TransactOpts, rcptPayload []byte, rcptSignature []byte, rrSignature []byte) (*types.Transaction, error) {
+	ret := _m.Called(opts, rcptPayload, rcptSignature, rrSignature)
+
+	var r0 *types.Transaction
+	if rf, ok := ret.Get(0).(func(*bind.TransactOpts, []byte, []byte, []byte) *types.Transaction); ok {
+		r0 = rf(opts, rcptPayload, rcptSignature, rrSignature)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).(*types.Transaction)
+		}
+	}
+
+	var r1 error
+	if rf, ok := ret.Get(1).(func(*bind.TransactOpts, []byte, []byte, []byte) error); ok {
+		r1 = rf(opts, rcptPayload, rcptSignature, rrSignature)
 	} else {
 		r1 = ret.Error(1)
 	}
@@ -1051,6 +1120,29 @@ func (_m *IInbox) VerifyReceipt(opts *bind.TransactOpts, rcptPayload []byte, rcp
 	var r1 error
 	if rf, ok := ret.Get(1).(func(*bind.TransactOpts, []byte, []byte) error); ok {
 		r1 = rf(opts, rcptPayload, rcptSignature)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
+// VerifyReceiptReport provides a mock function with given fields: opts, rcptPayload, rrSignature
+func (_m *IInbox) VerifyReceiptReport(opts *bind.TransactOpts, rcptPayload []byte, rrSignature []byte) (*types.Transaction, error) {
+	ret := _m.Called(opts, rcptPayload, rrSignature)
+
+	var r0 *types.Transaction
+	if rf, ok := ret.Get(0).(func(*bind.TransactOpts, []byte, []byte) *types.Transaction); ok {
+		r0 = rf(opts, rcptPayload, rrSignature)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).(*types.Transaction)
+		}
+	}
+
+	var r1 error
+	if rf, ok := ret.Get(1).(func(*bind.TransactOpts, []byte, []byte) error); ok {
+		r1 = rf(opts, rcptPayload, rrSignature)
 	} else {
 		r1 = ret.Error(1)
 	}
@@ -1278,6 +1370,29 @@ func (_m *IInbox) WatchInvalidReceipt(opts *bind.WatchOpts, sink chan<- *inbox.I
 
 	var r1 error
 	if rf, ok := ret.Get(1).(func(*bind.WatchOpts, chan<- *inbox.InboxInvalidReceipt) error); ok {
+		r1 = rf(opts, sink)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
+// WatchInvalidReceiptReport provides a mock function with given fields: opts, sink
+func (_m *IInbox) WatchInvalidReceiptReport(opts *bind.WatchOpts, sink chan<- *inbox.InboxInvalidReceiptReport) (event.Subscription, error) {
+	ret := _m.Called(opts, sink)
+
+	var r0 event.Subscription
+	if rf, ok := ret.Get(0).(func(*bind.WatchOpts, chan<- *inbox.InboxInvalidReceiptReport) event.Subscription); ok {
+		r0 = rf(opts, sink)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).(event.Subscription)
+		}
+	}
+
+	var r1 error
+	if rf, ok := ret.Get(1).(func(*bind.WatchOpts, chan<- *inbox.InboxInvalidReceiptReport) error); ok {
 		r1 = rf(opts, sink)
 	} else {
 		r1 = ret.Error(1)

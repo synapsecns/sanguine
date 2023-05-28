@@ -22,16 +22,20 @@ type IInboxTransactor interface {
 	Multicall(opts *bind.TransactOpts, calls []MultiCallableCall) (*types.Transaction, error)
 	// PassReceipt is a paid mutator transaction binding the contract method 0x6b47b3bc.
 	//
-	// Solidity: function passReceipt(uint32 attNotaryIndex, uint32 attNonce, uint256 paddedTips, bytes rcptBodyPayload) returns(bool wasAccepted)
-	PassReceipt(opts *bind.TransactOpts, attNotaryIndex uint32, attNonce uint32, paddedTips *big.Int, rcptBodyPayload []byte) (*types.Transaction, error)
+	// Solidity: function passReceipt(uint32 attNotaryIndex, uint32 attNonce, uint256 paddedTips, bytes rcptPayload) returns(bool wasAccepted)
+	PassReceipt(opts *bind.TransactOpts, attNotaryIndex uint32, attNonce uint32, paddedTips *big.Int, rcptPayload []byte) (*types.Transaction, error)
 	// RenounceOwnership is a paid mutator transaction binding the contract method 0x715018a6.
 	//
 	// Solidity: function renounceOwnership() returns()
 	RenounceOwnership(opts *bind.TransactOpts) (*types.Transaction, error)
-	// SubmitReceipt is a paid mutator transaction binding the contract method 0xc2127729.
+	// SubmitReceipt is a paid mutator transaction binding the contract method 0xb2a4b455.
 	//
-	// Solidity: function submitReceipt(bytes rcptPayload, bytes rcptSignature) returns(bool wasAccepted)
-	SubmitReceipt(opts *bind.TransactOpts, rcptPayload []byte, rcptSignature []byte) (*types.Transaction, error)
+	// Solidity: function submitReceipt(bytes rcptPayload, bytes rcptSignature, uint256 paddedTips, bytes32 headerHash, bytes32 bodyHash) returns(bool wasAccepted)
+	SubmitReceipt(opts *bind.TransactOpts, rcptPayload []byte, rcptSignature []byte, paddedTips *big.Int, headerHash [32]byte, bodyHash [32]byte) (*types.Transaction, error)
+	// SubmitReceiptReport is a paid mutator transaction binding the contract method 0x89246503.
+	//
+	// Solidity: function submitReceiptReport(bytes rcptPayload, bytes rcptSignature, bytes rrSignature) returns(bool wasAccepted)
+	SubmitReceiptReport(opts *bind.TransactOpts, rcptPayload []byte, rcptSignature []byte, rrSignature []byte) (*types.Transaction, error)
 	// SubmitSnapshot is a paid mutator transaction binding the contract method 0x4bb73ea5.
 	//
 	// Solidity: function submitSnapshot(bytes snapPayload, bytes snapSignature) returns(bytes attPayload, bytes32 agentRoot_, uint256[] snapGas)
@@ -64,6 +68,10 @@ type IInboxTransactor interface {
 	//
 	// Solidity: function verifyReceipt(bytes rcptPayload, bytes rcptSignature) returns(bool isValidReceipt)
 	VerifyReceipt(opts *bind.TransactOpts, rcptPayload []byte, rcptSignature []byte) (*types.Transaction, error)
+	// VerifyReceiptReport is a paid mutator transaction binding the contract method 0x91af2e5d.
+	//
+	// Solidity: function verifyReceiptReport(bytes rcptPayload, bytes rrSignature) returns(bool isValidReport)
+	VerifyReceiptReport(opts *bind.TransactOpts, rcptPayload []byte, rrSignature []byte) (*types.Transaction, error)
 	// VerifyStateReport is a paid mutator transaction binding the contract method 0xdfe39675.
 	//
 	// Solidity: function verifyStateReport(bytes statePayload, bytes srSignature) returns(bool isValidReport)

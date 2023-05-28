@@ -52,6 +52,10 @@ type ILightInboxTransactor interface {
 	//
 	// Solidity: function verifyReceipt(bytes rcptPayload, bytes rcptSignature) returns(bool isValidReceipt)
 	VerifyReceipt(opts *bind.TransactOpts, rcptPayload []byte, rcptSignature []byte) (*types.Transaction, error)
+	// VerifyReceiptReport is a paid mutator transaction binding the contract method 0x91af2e5d.
+	//
+	// Solidity: function verifyReceiptReport(bytes rcptPayload, bytes rrSignature) returns(bool isValidReport)
+	VerifyReceiptReport(opts *bind.TransactOpts, rcptPayload []byte, rrSignature []byte) (*types.Transaction, error)
 	// VerifyStateReport is a paid mutator transaction binding the contract method 0xdfe39675.
 	//
 	// Solidity: function verifyStateReport(bytes statePayload, bytes srSignature) returns(bool isValidReport)
