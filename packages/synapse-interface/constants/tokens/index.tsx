@@ -28,6 +28,8 @@ interface SwapableTokensByType {
     [swapableType: string]: Token[]
   }
 }
+export const sortTokens = (tokens: Token[]) =>
+  Object.values(tokens).sort((a, b) => b.visibilityRank - a.visibilityRank)
 
 const sortedTokens = Object.values(all).sort(
   (a, b) => b.visibilityRank - a.visibilityRank

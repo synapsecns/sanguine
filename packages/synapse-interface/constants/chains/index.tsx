@@ -4,6 +4,9 @@ import { Chain } from '@/utils/types/index'
 export type ChainsByChainID = {
   [cID: number]: Chain
 }
+export const sortChains = (chains: Chain[]) =>
+  Object.values(chains).sort((a, b) => b.visibilityRank - a.visibilityRank)
+
 export const CHAINS_ARR = Object.values(all).sort(
   (a, b) => b.visibilityRank - a.visibilityRank
 )
