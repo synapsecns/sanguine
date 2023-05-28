@@ -1,7 +1,8 @@
 import { formatBNToString } from '@bignumber/format'
-import React from 'react'
+import React, { useMemo } from 'react'
 import SwitchButton from '@components/buttons/SwitchButton'
 import MiniMaxButton from '@components/buttons/MiniMaxButton'
+import Spinner from '@/components/icons/Spinner'
 import { BigNumber } from '@ethersproject/bignumber'
 import { cleanNumberInput } from '@utils/cleanNumberInput'
 
@@ -23,6 +24,7 @@ const BridgeInputContainer = ({
   onChangeAmount,
   setDisplayType,
   fromTokenBalance,
+  isQuoteLoading = false,
 }: {
   address: `0x${string}`
   isOrigin: boolean
@@ -36,23 +38,25 @@ const BridgeInputContainer = ({
   onChangeAmount?: (v: string) => void
   onChangeChain: (chainId: number, flip: boolean, type: 'from' | 'to') => void
   fromTokenBalance?: BigNumber
+  isQuoteLoading?: boolean
 }) => {
-  let formattedBalance = ''
-  if (fromTokenBalance) {
-    formattedBalance = formatBNToString(
+  const formattedBalance = useMemo(() => {
+    if (!fromTokenBalance) return '0.0'
+    return formatBNToString(
       fromTokenBalance,
       selectedToken?.decimals[chainId as keyof Token['decimals']],
       3
     )
-  }
+  }, [fromTokenBalance])
+
   const isConnected = address !== null
+  const isMaxDisabled = formattedBalance === '0.0'
 
   const onClickBalance = () => {
     onChangeAmount(
       formatBNToString(
         fromTokenBalance,
-        selectedToken?.decimals[chainId as keyof Token['decimals']],
-        4
+        selectedToken?.decimals[chainId as keyof Token['decimals']]
       )
     )
   }
@@ -112,28 +116,33 @@ const BridgeInputContainer = ({
             }}
           />
 
-          <input
-            pattern="[0-9.]+"
-            disabled={!isOrigin} // may cause issues idk goal is to prevent to result from being selectable
-            className={`
-              ml-4
-              ${isOrigin && isConnected ? '-mt-0 md:-mt-4' : '-mt-0'}
-              focus:outline-none
-              bg-transparent
-              pr-4
-              w-2/3
-             placeholder:text-[#88818C]
-             text-white text-opacity-80 text-lg md:text-2xl lg:text-2xl font-medium
-            `}
-            placeholder="0.0000"
-            onChange={
-              isOrigin
-                ? (e) => onChangeAmount(cleanNumberInput(e.target.value))
-                : () => null
-            }
-            value={inputString}
-            name="inputRow"
-          />
+          {isQuoteLoading ? (
+            <Spinner className="ml-4" />
+          ) : (
+            <input
+              pattern="[0-9.]+"
+              disabled={!isOrigin} // may cause issues idk goal is to prevent to result from being selectable
+              className={`
+                ml-4
+                ${isOrigin && isConnected ? '-mt-0 md:-mt-4' : '-mt-0'}
+                focus:outline-none
+                bg-transparent
+                pr-4
+                w-2/3
+               placeholder:text-[#88818C]
+               text-white text-opacity-80 text-lg md:text-2xl lg:text-2xl font-medium
+              `}
+              placeholder="0.0000"
+              onChange={
+                isOrigin
+                  ? (e) => onChangeAmount(cleanNumberInput(e.target.value))
+                  : () => null
+              }
+              value={inputString}
+              name="inputRow"
+              autoComplete="off"
+            />
+          )}
           {isOrigin && isConnected && (
             <label
               htmlFor="inputRow"
@@ -149,7 +158,10 @@ const BridgeInputContainer = ({
           )}
           {isOrigin && isConnected && (
             <div className="hidden mr-2 sm:inline-block">
-              <MiniMaxButton onClickBalance={onClickBalance} />
+              <MiniMaxButton
+                disabled={isMaxDisabled}
+                onClickBalance={onClickBalance}
+              />
             </div>
           )}
         </div>

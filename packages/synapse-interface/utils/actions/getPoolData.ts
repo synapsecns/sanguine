@@ -92,7 +92,7 @@ export const getPoolData = async (
     return null
   }
 
-  // TODO: Check if we even need contract call here since lp token is hardcoded
+  // TODO: Check if we even need sdk call here since lp token is hardcoded
   // const lpTokenAddress =
   //   (await SynapseSDK.getPoolInfo(chainId, poolAddress))?.lpToken ??
   //   pool?.addresses[chainId]

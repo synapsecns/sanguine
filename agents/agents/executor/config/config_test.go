@@ -5,7 +5,7 @@ import (
 	"github.com/brianvoe/gofakeit/v6"
 	. "github.com/stretchr/testify/assert"
 	"github.com/synapsecns/sanguine/agents/agents/executor/config"
-	agentsConfig "github.com/synapsecns/sanguine/agents/config"
+	agentsConfig "github.com/synapsecns/sanguine/ethergo/signer/config"
 	"github.com/synapsecns/sanguine/ethergo/signer/wallet"
 	scribeConfig "github.com/synapsecns/sanguine/services/scribe/config"
 )

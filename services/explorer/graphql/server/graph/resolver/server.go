@@ -42,6 +42,30 @@ type DirectiveRoot struct {
 }
 
 type ComplexityRoot struct {
+	AddressChainRanking struct {
+		ChainID   func(childComplexity int) int
+		Rank      func(childComplexity int) int
+		VolumeUsd func(childComplexity int) int
+	}
+
+	AddressDailyCount struct {
+		Count func(childComplexity int) int
+		Date  func(childComplexity int) int
+	}
+
+	AddressData struct {
+		BridgeFees   func(childComplexity int) int
+		BridgeTxs    func(childComplexity int) int
+		BridgeVolume func(childComplexity int) int
+		ChainRanking func(childComplexity int) int
+		DailyData    func(childComplexity int) int
+		EarliestTx   func(childComplexity int) int
+		Rank         func(childComplexity int) int
+		SwapFees     func(childComplexity int) int
+		SwapTxs      func(childComplexity int) int
+		SwapVolume   func(childComplexity int) int
+	}
+
 	AddressRanking struct {
 		Address func(childComplexity int) int
 		Count   func(childComplexity int) int
@@ -94,6 +118,15 @@ type ComplexityRoot struct {
 		Type        func(childComplexity int) int
 	}
 
+	Leaderboard struct {
+		Address      func(childComplexity int) int
+		AvgVolumeUsd func(childComplexity int) int
+		Fees         func(childComplexity int) int
+		Rank         func(childComplexity int) int
+		Txs          func(childComplexity int) int
+		VolumeUsd    func(childComplexity int) int
+	}
+
 	MessageBusTransaction struct {
 		FromInfo  func(childComplexity int) int
 		MessageID func(childComplexity int) int
@@ -138,12 +171,14 @@ type ComplexityRoot struct {
 	}
 
 	Query struct {
+		AddressData            func(childComplexity int, address string) int
 		AddressRanking         func(childComplexity int, hours *int) int
 		AmountStatistic        func(childComplexity int, typeArg model.StatisticType, duration *model.Duration, platform *model.Platform, chainID *int, address *string, tokenAddress *string, useCache *bool, useMv *bool) int
 		BridgeTransactions     func(childComplexity int, chainIDFrom []*int, chainIDTo []*int, addressFrom *string, addressTo *string, maxAmount *int, minAmount *int, maxAmountUsd *int, minAmountUsd *int, startTime *int, endTime *int, txnHash *string, kappa *string, pending *bool, useMv *bool, page *int, tokenAddressFrom []*string, tokenAddressTo []*string) int
 		CountByChainID         func(childComplexity int, chainID *int, address *string, direction *model.Direction, hours *int) int
 		CountByTokenAddress    func(childComplexity int, chainID *int, address *string, direction *model.Direction, hours *int) int
 		DailyStatisticsByChain func(childComplexity int, chainID *int, typeArg *model.DailyStatisticType, platform *model.Platform, duration *model.Duration, useCache *bool, useMv *bool) int
+		Leaderboard            func(childComplexity int, duration *model.Duration, chainID *int, useMv *bool, page *int) int
 		MessageBusTransactions func(childComplexity int, chainID []*int, contractAddress *string, startTime *int, endTime *int, txnHash *string, messageID *string, pending *bool, reverted *bool, page *int) int
 		RankedChainIDsByVolume func(childComplexity int, duration *model.Duration, useCache *bool) int
 	}
@@ -187,6 +222,8 @@ type QueryResolver interface {
 	AmountStatistic(ctx context.Context, typeArg model.StatisticType, duration *model.Duration, platform *model.Platform, chainID *int, address *string, tokenAddress *string, useCache *bool, useMv *bool) (*model.ValueResult, error)
 	DailyStatisticsByChain(ctx context.Context, chainID *int, typeArg *model.DailyStatisticType, platform *model.Platform, duration *model.Duration, useCache *bool, useMv *bool) ([]*model.DateResultByChain, error)
 	RankedChainIDsByVolume(ctx context.Context, duration *model.Duration, useCache *bool) ([]*model.VolumeByChainID, error)
+	AddressData(ctx context.Context, address string) (*model.AddressData, error)
+	Leaderboard(ctx context.Context, duration *model.Duration, chainID *int, useMv *bool, page *int) ([]*model.Leaderboard, error)
 }
 
 type executableSchema struct {
@@ -203,6 +240,111 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 	ec := executionContext{nil, e}
 	_ = ec
 	switch typeName + "." + field {
+
+	case "AddressChainRanking.chainID":
+		if e.complexity.AddressChainRanking.ChainID == nil {
+			break
+		}
+
+		return e.complexity.AddressChainRanking.ChainID(childComplexity), true
+
+	case "AddressChainRanking.rank":
+		if e.complexity.AddressChainRanking.Rank == nil {
+			break
+		}
+
+		return e.complexity.AddressChainRanking.Rank(childComplexity), true
+
+	case "AddressChainRanking.volumeUsd":
+		if e.complexity.AddressChainRanking.VolumeUsd == nil {
+			break
+		}
+
+		return e.complexity.AddressChainRanking.VolumeUsd(childComplexity), true
+
+	case "AddressDailyCount.count":
+		if e.complexity.AddressDailyCount.Count == nil {
+			break
+		}
+
+		return e.complexity.AddressDailyCount.Count(childComplexity), true
+
+	case "AddressDailyCount.date":
+		if e.complexity.AddressDailyCount.Date == nil {
+			break
+		}
+
+		return e.complexity.AddressDailyCount.Date(childComplexity), true
+
+	case "AddressData.bridgeFees":
+		if e.complexity.AddressData.BridgeFees == nil {
+			break
+		}
+
+		return e.complexity.AddressData.BridgeFees(childComplexity), true
+
+	case "AddressData.bridgeTxs":
+		if e.complexity.AddressData.BridgeTxs == nil {
+			break
+		}
+
+		return e.complexity.AddressData.BridgeTxs(childComplexity), true
+
+	case "AddressData.bridgeVolume":
+		if e.complexity.AddressData.BridgeVolume == nil {
+			break
+		}
+
+		return e.complexity.AddressData.BridgeVolume(childComplexity), true
+
+	case "AddressData.chainRanking":
+		if e.complexity.AddressData.ChainRanking == nil {
+			break
+		}
+
+		return e.complexity.AddressData.ChainRanking(childComplexity), true
+
+	case "AddressData.dailyData":
+		if e.complexity.AddressData.DailyData == nil {
+			break
+		}
+
+		return e.complexity.AddressData.DailyData(childComplexity), true
+
+	case "AddressData.earliestTx":
+		if e.complexity.AddressData.EarliestTx == nil {
+			break
+		}
+
+		return e.complexity.AddressData.EarliestTx(childComplexity), true
+
+	case "AddressData.rank":
+		if e.complexity.AddressData.Rank == nil {
+			break
+		}
+
+		return e.complexity.AddressData.Rank(childComplexity), true
+
+	case "AddressData.swapFees":
+		if e.complexity.AddressData.SwapFees == nil {
+			break
+		}
+
+		return e.complexity.AddressData.SwapFees(childComplexity), true
+
+	case "AddressData.swapTxs":
+		if e.complexity.AddressData.SwapTxs == nil {
+			break
+		}
+
+		return e.complexity.AddressData.SwapTxs(childComplexity), true
+
+	case "AddressData.swapVolume":
+		if e.complexity.AddressData.SwapVolume == nil {
+			break
+		}
+
+		return e.complexity.AddressData.SwapVolume(childComplexity), true
 
 	case "AddressRanking.address":
 		if e.complexity.AddressRanking.Address == nil {
@@ -442,6 +584,48 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.HistoricalResult.Type(childComplexity), true
 
+	case "Leaderboard.address":
+		if e.complexity.Leaderboard.Address == nil {
+			break
+		}
+
+		return e.complexity.Leaderboard.Address(childComplexity), true
+
+	case "Leaderboard.avgVolumeUSD":
+		if e.complexity.Leaderboard.AvgVolumeUsd == nil {
+			break
+		}
+
+		return e.complexity.Leaderboard.AvgVolumeUsd(childComplexity), true
+
+	case "Leaderboard.fees":
+		if e.complexity.Leaderboard.Fees == nil {
+			break
+		}
+
+		return e.complexity.Leaderboard.Fees(childComplexity), true
+
+	case "Leaderboard.rank":
+		if e.complexity.Leaderboard.Rank == nil {
+			break
+		}
+
+		return e.complexity.Leaderboard.Rank(childComplexity), true
+
+	case "Leaderboard.txs":
+		if e.complexity.Leaderboard.Txs == nil {
+			break
+		}
+
+		return e.complexity.Leaderboard.Txs(childComplexity), true
+
+	case "Leaderboard.volumeUSD":
+		if e.complexity.Leaderboard.VolumeUsd == nil {
+			break
+		}
+
+		return e.complexity.Leaderboard.VolumeUsd(childComplexity), true
+
 	case "MessageBusTransaction.fromInfo":
 		if e.complexity.MessageBusTransaction.FromInfo == nil {
 			break
@@ -659,6 +843,18 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.PetType.Recipient(childComplexity), true
 
+	case "Query.addressData":
+		if e.complexity.Query.AddressData == nil {
+			break
+		}
+
+		args, err := ec.field_Query_addressData_args(context.TODO(), rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Query.AddressData(childComplexity, args["address"].(string)), true
+
 	case "Query.addressRanking":
 		if e.complexity.Query.AddressRanking == nil {
 			break
@@ -730,6 +926,18 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.Query.DailyStatisticsByChain(childComplexity, args["chainID"].(*int), args["type"].(*model.DailyStatisticType), args["platform"].(*model.Platform), args["duration"].(*model.Duration), args["useCache"].(*bool), args["useMv"].(*bool)), true
+
+	case "Query.leaderboard":
+		if e.complexity.Query.Leaderboard == nil {
+			break
+		}
+
+		args, err := ec.field_Query_leaderboard_args(context.TODO(), rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Query.Leaderboard(childComplexity, args["duration"].(*model.Duration), args["chainID"].(*int), args["useMv"].(*bool), args["page"].(*int)), true
 
 	case "Query.messageBusTransactions":
 		if e.complexity.Query.MessageBusTransactions == nil {
@@ -1020,7 +1228,27 @@ Ranked chainIDs by volume
     useCache: Boolean = false
   ): [VolumeByChainID]
 
+  """
+  Get wallet information
+  """
+  addressData(
+    address: String!
+  ): AddressData
+
+
+  """
+  Get LeaderBoard
+  """
+  leaderboard(
+    duration:     Duration = ALL_TIME
+    chainID:      Int
+    useMv: Boolean = true
+    page:           Int = 1
+  ): [Leaderboard]
+
 }
+
+
 `, BuiltIn: false},
 	{Name: "../schema/types.graphql", Input: `"""
 BridgeTransaction represents an entire bridge transaction, including both
@@ -1190,6 +1418,36 @@ type VolumeByChainID {
   chainID:  Int
   total:    Float
 }
+type AddressDailyCount{
+  date: String
+  count: Int
+}
+type AddressChainRanking{
+  chainID: Int
+  volumeUsd: Float
+  rank: Int
+}
+type AddressData {
+  bridgeVolume:  Float
+  bridgeFees:    Float
+  bridgeTxs:    Int
+  swapVolume:  Float
+  swapFees:    Float
+  swapTxs:    Int
+  rank:    Int
+  earliestTx: Int
+  chainRanking: [AddressChainRanking]
+  dailyData: [AddressDailyCount]
+}
+
+type Leaderboard {
+  address: String
+  volumeUSD: Float
+  fees: Float
+  txs: Int
+  rank: Int
+  avgVolumeUSD: Float
+}
 `, BuiltIn: false},
 }
 var parsedSchema = gqlparser.MustLoadSchema(sources...)
@@ -1210,6 +1468,21 @@ func (ec *executionContext) field_Query___type_args(ctx context.Context, rawArgs
 		}
 	}
 	args["name"] = arg0
+	return args, nil
+}
+
+func (ec *executionContext) field_Query_addressData_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+	var err error
+	args := map[string]interface{}{}
+	var arg0 string
+	if tmp, ok := rawArgs["address"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("address"))
+		arg0, err = ec.unmarshalNString2string(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["address"] = arg0
 	return args, nil
 }
 
@@ -1609,6 +1882,48 @@ func (ec *executionContext) field_Query_dailyStatisticsByChain_args(ctx context.
 	return args, nil
 }
 
+func (ec *executionContext) field_Query_leaderboard_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+	var err error
+	args := map[string]interface{}{}
+	var arg0 *model.Duration
+	if tmp, ok := rawArgs["duration"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("duration"))
+		arg0, err = ec.unmarshalODuration2ᚖgithubᚗcomᚋsynapsecnsᚋsanguineᚋservicesᚋexplorerᚋgraphqlᚋserverᚋgraphᚋmodelᚐDuration(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["duration"] = arg0
+	var arg1 *int
+	if tmp, ok := rawArgs["chainID"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("chainID"))
+		arg1, err = ec.unmarshalOInt2ᚖint(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["chainID"] = arg1
+	var arg2 *bool
+	if tmp, ok := rawArgs["useMv"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("useMv"))
+		arg2, err = ec.unmarshalOBoolean2ᚖbool(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["useMv"] = arg2
+	var arg3 *int
+	if tmp, ok := rawArgs["page"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("page"))
+		arg3, err = ec.unmarshalOInt2ᚖint(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["page"] = arg3
+	return args, nil
+}
+
 func (ec *executionContext) field_Query_messageBusTransactions_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
 	var err error
 	args := map[string]interface{}{}
@@ -1757,6 +2072,635 @@ func (ec *executionContext) field___Type_fields_args(ctx context.Context, rawArg
 // endregion ************************** directives.gotpl **************************
 
 // region    **************************** field.gotpl *****************************
+
+func (ec *executionContext) _AddressChainRanking_chainID(ctx context.Context, field graphql.CollectedField, obj *model.AddressChainRanking) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_AddressChainRanking_chainID(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.ChainID, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*int)
+	fc.Result = res
+	return ec.marshalOInt2ᚖint(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_AddressChainRanking_chainID(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "AddressChainRanking",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type Int does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _AddressChainRanking_volumeUsd(ctx context.Context, field graphql.CollectedField, obj *model.AddressChainRanking) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_AddressChainRanking_volumeUsd(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.VolumeUsd, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*float64)
+	fc.Result = res
+	return ec.marshalOFloat2ᚖfloat64(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_AddressChainRanking_volumeUsd(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "AddressChainRanking",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type Float does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _AddressChainRanking_rank(ctx context.Context, field graphql.CollectedField, obj *model.AddressChainRanking) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_AddressChainRanking_rank(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Rank, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*int)
+	fc.Result = res
+	return ec.marshalOInt2ᚖint(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_AddressChainRanking_rank(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "AddressChainRanking",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type Int does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _AddressDailyCount_date(ctx context.Context, field graphql.CollectedField, obj *model.AddressDailyCount) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_AddressDailyCount_date(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Date, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*string)
+	fc.Result = res
+	return ec.marshalOString2ᚖstring(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_AddressDailyCount_date(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "AddressDailyCount",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type String does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _AddressDailyCount_count(ctx context.Context, field graphql.CollectedField, obj *model.AddressDailyCount) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_AddressDailyCount_count(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Count, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*int)
+	fc.Result = res
+	return ec.marshalOInt2ᚖint(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_AddressDailyCount_count(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "AddressDailyCount",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type Int does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _AddressData_bridgeVolume(ctx context.Context, field graphql.CollectedField, obj *model.AddressData) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_AddressData_bridgeVolume(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.BridgeVolume, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*float64)
+	fc.Result = res
+	return ec.marshalOFloat2ᚖfloat64(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_AddressData_bridgeVolume(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "AddressData",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type Float does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _AddressData_bridgeFees(ctx context.Context, field graphql.CollectedField, obj *model.AddressData) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_AddressData_bridgeFees(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.BridgeFees, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*float64)
+	fc.Result = res
+	return ec.marshalOFloat2ᚖfloat64(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_AddressData_bridgeFees(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "AddressData",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type Float does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _AddressData_bridgeTxs(ctx context.Context, field graphql.CollectedField, obj *model.AddressData) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_AddressData_bridgeTxs(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.BridgeTxs, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*int)
+	fc.Result = res
+	return ec.marshalOInt2ᚖint(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_AddressData_bridgeTxs(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "AddressData",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type Int does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _AddressData_swapVolume(ctx context.Context, field graphql.CollectedField, obj *model.AddressData) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_AddressData_swapVolume(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.SwapVolume, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*float64)
+	fc.Result = res
+	return ec.marshalOFloat2ᚖfloat64(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_AddressData_swapVolume(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "AddressData",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type Float does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _AddressData_swapFees(ctx context.Context, field graphql.CollectedField, obj *model.AddressData) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_AddressData_swapFees(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.SwapFees, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*float64)
+	fc.Result = res
+	return ec.marshalOFloat2ᚖfloat64(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_AddressData_swapFees(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "AddressData",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type Float does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _AddressData_swapTxs(ctx context.Context, field graphql.CollectedField, obj *model.AddressData) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_AddressData_swapTxs(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.SwapTxs, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*int)
+	fc.Result = res
+	return ec.marshalOInt2ᚖint(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_AddressData_swapTxs(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "AddressData",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type Int does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _AddressData_rank(ctx context.Context, field graphql.CollectedField, obj *model.AddressData) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_AddressData_rank(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Rank, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*int)
+	fc.Result = res
+	return ec.marshalOInt2ᚖint(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_AddressData_rank(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "AddressData",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type Int does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _AddressData_earliestTx(ctx context.Context, field graphql.CollectedField, obj *model.AddressData) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_AddressData_earliestTx(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.EarliestTx, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*int)
+	fc.Result = res
+	return ec.marshalOInt2ᚖint(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_AddressData_earliestTx(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "AddressData",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type Int does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _AddressData_chainRanking(ctx context.Context, field graphql.CollectedField, obj *model.AddressData) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_AddressData_chainRanking(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.ChainRanking, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.([]*model.AddressChainRanking)
+	fc.Result = res
+	return ec.marshalOAddressChainRanking2ᚕᚖgithubᚗcomᚋsynapsecnsᚋsanguineᚋservicesᚋexplorerᚋgraphqlᚋserverᚋgraphᚋmodelᚐAddressChainRanking(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_AddressData_chainRanking(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "AddressData",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			switch field.Name {
+			case "chainID":
+				return ec.fieldContext_AddressChainRanking_chainID(ctx, field)
+			case "volumeUsd":
+				return ec.fieldContext_AddressChainRanking_volumeUsd(ctx, field)
+			case "rank":
+				return ec.fieldContext_AddressChainRanking_rank(ctx, field)
+			}
+			return nil, fmt.Errorf("no field named %q was found under type AddressChainRanking", field.Name)
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _AddressData_dailyData(ctx context.Context, field graphql.CollectedField, obj *model.AddressData) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_AddressData_dailyData(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.DailyData, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.([]*model.AddressDailyCount)
+	fc.Result = res
+	return ec.marshalOAddressDailyCount2ᚕᚖgithubᚗcomᚋsynapsecnsᚋsanguineᚋservicesᚋexplorerᚋgraphqlᚋserverᚋgraphᚋmodelᚐAddressDailyCount(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_AddressData_dailyData(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "AddressData",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			switch field.Name {
+			case "date":
+				return ec.fieldContext_AddressDailyCount_date(ctx, field)
+			case "count":
+				return ec.fieldContext_AddressDailyCount_count(ctx, field)
+			}
+			return nil, fmt.Errorf("no field named %q was found under type AddressDailyCount", field.Name)
+		},
+	}
+	return fc, nil
+}
 
 func (ec *executionContext) _AddressRanking_address(ctx context.Context, field graphql.CollectedField, obj *model.AddressRanking) (ret graphql.Marshaler) {
 	fc, err := ec.fieldContext_AddressRanking_address(ctx, field)
@@ -3211,6 +4155,252 @@ func (ec *executionContext) fieldContext_HistoricalResult_type(ctx context.Conte
 		IsResolver: false,
 		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
 			return nil, errors.New("field of type HistoricalResultType does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Leaderboard_address(ctx context.Context, field graphql.CollectedField, obj *model.Leaderboard) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Leaderboard_address(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Address, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*string)
+	fc.Result = res
+	return ec.marshalOString2ᚖstring(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Leaderboard_address(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Leaderboard",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type String does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Leaderboard_volumeUSD(ctx context.Context, field graphql.CollectedField, obj *model.Leaderboard) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Leaderboard_volumeUSD(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.VolumeUsd, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*float64)
+	fc.Result = res
+	return ec.marshalOFloat2ᚖfloat64(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Leaderboard_volumeUSD(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Leaderboard",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type Float does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Leaderboard_fees(ctx context.Context, field graphql.CollectedField, obj *model.Leaderboard) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Leaderboard_fees(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Fees, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*float64)
+	fc.Result = res
+	return ec.marshalOFloat2ᚖfloat64(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Leaderboard_fees(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Leaderboard",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type Float does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Leaderboard_txs(ctx context.Context, field graphql.CollectedField, obj *model.Leaderboard) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Leaderboard_txs(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Txs, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*int)
+	fc.Result = res
+	return ec.marshalOInt2ᚖint(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Leaderboard_txs(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Leaderboard",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type Int does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Leaderboard_rank(ctx context.Context, field graphql.CollectedField, obj *model.Leaderboard) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Leaderboard_rank(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Rank, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*int)
+	fc.Result = res
+	return ec.marshalOInt2ᚖint(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Leaderboard_rank(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Leaderboard",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type Int does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Leaderboard_avgVolumeUSD(ctx context.Context, field graphql.CollectedField, obj *model.Leaderboard) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Leaderboard_avgVolumeUSD(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.AvgVolumeUsd, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*float64)
+	fc.Result = res
+	return ec.marshalOFloat2ᚖfloat64(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Leaderboard_avgVolumeUSD(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Leaderboard",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type Float does not have child fields")
 		},
 	}
 	return fc, nil
@@ -5052,6 +6242,146 @@ func (ec *executionContext) fieldContext_Query_rankedChainIDsByVolume(ctx contex
 	}()
 	ctx = graphql.WithFieldContext(ctx, fc)
 	if fc.Args, err = ec.field_Query_rankedChainIDsByVolume_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
+		ec.Error(ctx, err)
+		return
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Query_addressData(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Query_addressData(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Query().AddressData(rctx, fc.Args["address"].(string))
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*model.AddressData)
+	fc.Result = res
+	return ec.marshalOAddressData2ᚖgithubᚗcomᚋsynapsecnsᚋsanguineᚋservicesᚋexplorerᚋgraphqlᚋserverᚋgraphᚋmodelᚐAddressData(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Query_addressData(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Query",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			switch field.Name {
+			case "bridgeVolume":
+				return ec.fieldContext_AddressData_bridgeVolume(ctx, field)
+			case "bridgeFees":
+				return ec.fieldContext_AddressData_bridgeFees(ctx, field)
+			case "bridgeTxs":
+				return ec.fieldContext_AddressData_bridgeTxs(ctx, field)
+			case "swapVolume":
+				return ec.fieldContext_AddressData_swapVolume(ctx, field)
+			case "swapFees":
+				return ec.fieldContext_AddressData_swapFees(ctx, field)
+			case "swapTxs":
+				return ec.fieldContext_AddressData_swapTxs(ctx, field)
+			case "rank":
+				return ec.fieldContext_AddressData_rank(ctx, field)
+			case "earliestTx":
+				return ec.fieldContext_AddressData_earliestTx(ctx, field)
+			case "chainRanking":
+				return ec.fieldContext_AddressData_chainRanking(ctx, field)
+			case "dailyData":
+				return ec.fieldContext_AddressData_dailyData(ctx, field)
+			}
+			return nil, fmt.Errorf("no field named %q was found under type AddressData", field.Name)
+		},
+	}
+	defer func() {
+		if r := recover(); r != nil {
+			err = ec.Recover(ctx, r)
+			ec.Error(ctx, err)
+		}
+	}()
+	ctx = graphql.WithFieldContext(ctx, fc)
+	if fc.Args, err = ec.field_Query_addressData_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
+		ec.Error(ctx, err)
+		return
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Query_leaderboard(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Query_leaderboard(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Query().Leaderboard(rctx, fc.Args["duration"].(*model.Duration), fc.Args["chainID"].(*int), fc.Args["useMv"].(*bool), fc.Args["page"].(*int))
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.([]*model.Leaderboard)
+	fc.Result = res
+	return ec.marshalOLeaderboard2ᚕᚖgithubᚗcomᚋsynapsecnsᚋsanguineᚋservicesᚋexplorerᚋgraphqlᚋserverᚋgraphᚋmodelᚐLeaderboard(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Query_leaderboard(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Query",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			switch field.Name {
+			case "address":
+				return ec.fieldContext_Leaderboard_address(ctx, field)
+			case "volumeUSD":
+				return ec.fieldContext_Leaderboard_volumeUSD(ctx, field)
+			case "fees":
+				return ec.fieldContext_Leaderboard_fees(ctx, field)
+			case "txs":
+				return ec.fieldContext_Leaderboard_txs(ctx, field)
+			case "rank":
+				return ec.fieldContext_Leaderboard_rank(ctx, field)
+			case "avgVolumeUSD":
+				return ec.fieldContext_Leaderboard_avgVolumeUSD(ctx, field)
+			}
+			return nil, fmt.Errorf("no field named %q was found under type Leaderboard", field.Name)
+		},
+	}
+	defer func() {
+		if r := recover(); r != nil {
+			err = ec.Recover(ctx, r)
+			ec.Error(ctx, err)
+		}
+	}()
+	ctx = graphql.WithFieldContext(ctx, fc)
+	if fc.Args, err = ec.field_Query_leaderboard_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
 		ec.Error(ctx, err)
 		return
 	}
@@ -7465,6 +8795,129 @@ func (ec *executionContext) _MessageType(ctx context.Context, sel ast.SelectionS
 
 // region    **************************** object.gotpl ****************************
 
+var addressChainRankingImplementors = []string{"AddressChainRanking"}
+
+func (ec *executionContext) _AddressChainRanking(ctx context.Context, sel ast.SelectionSet, obj *model.AddressChainRanking) graphql.Marshaler {
+	fields := graphql.CollectFields(ec.OperationContext, sel, addressChainRankingImplementors)
+	out := graphql.NewFieldSet(fields)
+	var invalids uint32
+	for i, field := range fields {
+		switch field.Name {
+		case "__typename":
+			out.Values[i] = graphql.MarshalString("AddressChainRanking")
+		case "chainID":
+
+			out.Values[i] = ec._AddressChainRanking_chainID(ctx, field, obj)
+
+		case "volumeUsd":
+
+			out.Values[i] = ec._AddressChainRanking_volumeUsd(ctx, field, obj)
+
+		case "rank":
+
+			out.Values[i] = ec._AddressChainRanking_rank(ctx, field, obj)
+
+		default:
+			panic("unknown field " + strconv.Quote(field.Name))
+		}
+	}
+	out.Dispatch()
+	if invalids > 0 {
+		return graphql.Null
+	}
+	return out
+}
+
+var addressDailyCountImplementors = []string{"AddressDailyCount"}
+
+func (ec *executionContext) _AddressDailyCount(ctx context.Context, sel ast.SelectionSet, obj *model.AddressDailyCount) graphql.Marshaler {
+	fields := graphql.CollectFields(ec.OperationContext, sel, addressDailyCountImplementors)
+	out := graphql.NewFieldSet(fields)
+	var invalids uint32
+	for i, field := range fields {
+		switch field.Name {
+		case "__typename":
+			out.Values[i] = graphql.MarshalString("AddressDailyCount")
+		case "date":
+
+			out.Values[i] = ec._AddressDailyCount_date(ctx, field, obj)
+
+		case "count":
+
+			out.Values[i] = ec._AddressDailyCount_count(ctx, field, obj)
+
+		default:
+			panic("unknown field " + strconv.Quote(field.Name))
+		}
+	}
+	out.Dispatch()
+	if invalids > 0 {
+		return graphql.Null
+	}
+	return out
+}
+
+var addressDataImplementors = []string{"AddressData"}
+
+func (ec *executionContext) _AddressData(ctx context.Context, sel ast.SelectionSet, obj *model.AddressData) graphql.Marshaler {
+	fields := graphql.CollectFields(ec.OperationContext, sel, addressDataImplementors)
+	out := graphql.NewFieldSet(fields)
+	var invalids uint32
+	for i, field := range fields {
+		switch field.Name {
+		case "__typename":
+			out.Values[i] = graphql.MarshalString("AddressData")
+		case "bridgeVolume":
+
+			out.Values[i] = ec._AddressData_bridgeVolume(ctx, field, obj)
+
+		case "bridgeFees":
+
+			out.Values[i] = ec._AddressData_bridgeFees(ctx, field, obj)
+
+		case "bridgeTxs":
+
+			out.Values[i] = ec._AddressData_bridgeTxs(ctx, field, obj)
+
+		case "swapVolume":
+
+			out.Values[i] = ec._AddressData_swapVolume(ctx, field, obj)
+
+		case "swapFees":
+
+			out.Values[i] = ec._AddressData_swapFees(ctx, field, obj)
+
+		case "swapTxs":
+
+			out.Values[i] = ec._AddressData_swapTxs(ctx, field, obj)
+
+		case "rank":
+
+			out.Values[i] = ec._AddressData_rank(ctx, field, obj)
+
+		case "earliestTx":
+
+			out.Values[i] = ec._AddressData_earliestTx(ctx, field, obj)
+
+		case "chainRanking":
+
+			out.Values[i] = ec._AddressData_chainRanking(ctx, field, obj)
+
+		case "dailyData":
+
+			out.Values[i] = ec._AddressData_dailyData(ctx, field, obj)
+
+		default:
+			panic("unknown field " + strconv.Quote(field.Name))
+		}
+	}
+	out.Dispatch()
+	if invalids > 0 {
+		return graphql.Null
+	}
+	return out
+}
+
 var addressRankingImplementors = []string{"AddressRanking"}
 
 func (ec *executionContext) _AddressRanking(ctx context.Context, sel ast.SelectionSet, obj *model.AddressRanking) graphql.Marshaler {
@@ -7721,6 +9174,51 @@ func (ec *executionContext) _HistoricalResult(ctx context.Context, sel ast.Selec
 		case "type":
 
 			out.Values[i] = ec._HistoricalResult_type(ctx, field, obj)
+
+		default:
+			panic("unknown field " + strconv.Quote(field.Name))
+		}
+	}
+	out.Dispatch()
+	if invalids > 0 {
+		return graphql.Null
+	}
+	return out
+}
+
+var leaderboardImplementors = []string{"Leaderboard"}
+
+func (ec *executionContext) _Leaderboard(ctx context.Context, sel ast.SelectionSet, obj *model.Leaderboard) graphql.Marshaler {
+	fields := graphql.CollectFields(ec.OperationContext, sel, leaderboardImplementors)
+	out := graphql.NewFieldSet(fields)
+	var invalids uint32
+	for i, field := range fields {
+		switch field.Name {
+		case "__typename":
+			out.Values[i] = graphql.MarshalString("Leaderboard")
+		case "address":
+
+			out.Values[i] = ec._Leaderboard_address(ctx, field, obj)
+
+		case "volumeUSD":
+
+			out.Values[i] = ec._Leaderboard_volumeUSD(ctx, field, obj)
+
+		case "fees":
+
+			out.Values[i] = ec._Leaderboard_fees(ctx, field, obj)
+
+		case "txs":
+
+			out.Values[i] = ec._Leaderboard_txs(ctx, field, obj)
+
+		case "rank":
+
+			out.Values[i] = ec._Leaderboard_rank(ctx, field, obj)
+
+		case "avgVolumeUSD":
+
+			out.Values[i] = ec._Leaderboard_avgVolumeUSD(ctx, field, obj)
 
 		default:
 			panic("unknown field " + strconv.Quote(field.Name))
@@ -8119,6 +9617,46 @@ func (ec *executionContext) _Query(ctx context.Context, sel ast.SelectionSet) gr
 					}
 				}()
 				res = ec._Query_rankedChainIDsByVolume(ctx, field)
+				return res
+			}
+
+			rrm := func(ctx context.Context) graphql.Marshaler {
+				return ec.OperationContext.RootResolverMiddleware(ctx, innerFunc)
+			}
+
+			out.Concurrently(i, func() graphql.Marshaler {
+				return rrm(innerCtx)
+			})
+		case "addressData":
+			field := field
+
+			innerFunc := func(ctx context.Context) (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._Query_addressData(ctx, field)
+				return res
+			}
+
+			rrm := func(ctx context.Context) graphql.Marshaler {
+				return ec.OperationContext.RootResolverMiddleware(ctx, innerFunc)
+			}
+
+			out.Concurrently(i, func() graphql.Marshaler {
+				return rrm(innerCtx)
+			})
+		case "leaderboard":
+			field := field
+
+			innerFunc := func(ctx context.Context) (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._Query_leaderboard(ctx, field)
 				return res
 			}
 
@@ -8942,6 +10480,109 @@ func (ec *executionContext) marshalN__TypeKind2string(ctx context.Context, sel a
 	return res
 }
 
+func (ec *executionContext) marshalOAddressChainRanking2ᚕᚖgithubᚗcomᚋsynapsecnsᚋsanguineᚋservicesᚋexplorerᚋgraphqlᚋserverᚋgraphᚋmodelᚐAddressChainRanking(ctx context.Context, sel ast.SelectionSet, v []*model.AddressChainRanking) graphql.Marshaler {
+	if v == nil {
+		return graphql.Null
+	}
+	ret := make(graphql.Array, len(v))
+	var wg sync.WaitGroup
+	isLen1 := len(v) == 1
+	if !isLen1 {
+		wg.Add(len(v))
+	}
+	for i := range v {
+		i := i
+		fc := &graphql.FieldContext{
+			Index:  &i,
+			Result: &v[i],
+		}
+		ctx := graphql.WithFieldContext(ctx, fc)
+		f := func(i int) {
+			defer func() {
+				if r := recover(); r != nil {
+					ec.Error(ctx, ec.Recover(ctx, r))
+					ret = nil
+				}
+			}()
+			if !isLen1 {
+				defer wg.Done()
+			}
+			ret[i] = ec.marshalOAddressChainRanking2ᚖgithubᚗcomᚋsynapsecnsᚋsanguineᚋservicesᚋexplorerᚋgraphqlᚋserverᚋgraphᚋmodelᚐAddressChainRanking(ctx, sel, v[i])
+		}
+		if isLen1 {
+			f(i)
+		} else {
+			go f(i)
+		}
+
+	}
+	wg.Wait()
+
+	return ret
+}
+
+func (ec *executionContext) marshalOAddressChainRanking2ᚖgithubᚗcomᚋsynapsecnsᚋsanguineᚋservicesᚋexplorerᚋgraphqlᚋserverᚋgraphᚋmodelᚐAddressChainRanking(ctx context.Context, sel ast.SelectionSet, v *model.AddressChainRanking) graphql.Marshaler {
+	if v == nil {
+		return graphql.Null
+	}
+	return ec._AddressChainRanking(ctx, sel, v)
+}
+
+func (ec *executionContext) marshalOAddressDailyCount2ᚕᚖgithubᚗcomᚋsynapsecnsᚋsanguineᚋservicesᚋexplorerᚋgraphqlᚋserverᚋgraphᚋmodelᚐAddressDailyCount(ctx context.Context, sel ast.SelectionSet, v []*model.AddressDailyCount) graphql.Marshaler {
+	if v == nil {
+		return graphql.Null
+	}
+	ret := make(graphql.Array, len(v))
+	var wg sync.WaitGroup
+	isLen1 := len(v) == 1
+	if !isLen1 {
+		wg.Add(len(v))
+	}
+	for i := range v {
+		i := i
+		fc := &graphql.FieldContext{
+			Index:  &i,
+			Result: &v[i],
+		}
+		ctx := graphql.WithFieldContext(ctx, fc)
+		f := func(i int) {
+			defer func() {
+				if r := recover(); r != nil {
+					ec.Error(ctx, ec.Recover(ctx, r))
+					ret = nil
+				}
+			}()
+			if !isLen1 {
+				defer wg.Done()
+			}
+			ret[i] = ec.marshalOAddressDailyCount2ᚖgithubᚗcomᚋsynapsecnsᚋsanguineᚋservicesᚋexplorerᚋgraphqlᚋserverᚋgraphᚋmodelᚐAddressDailyCount(ctx, sel, v[i])
+		}
+		if isLen1 {
+			f(i)
+		} else {
+			go f(i)
+		}
+
+	}
+	wg.Wait()
+
+	return ret
+}
+
+func (ec *executionContext) marshalOAddressDailyCount2ᚖgithubᚗcomᚋsynapsecnsᚋsanguineᚋservicesᚋexplorerᚋgraphqlᚋserverᚋgraphᚋmodelᚐAddressDailyCount(ctx context.Context, sel ast.SelectionSet, v *model.AddressDailyCount) graphql.Marshaler {
+	if v == nil {
+		return graphql.Null
+	}
+	return ec._AddressDailyCount(ctx, sel, v)
+}
+
+func (ec *executionContext) marshalOAddressData2ᚖgithubᚗcomᚋsynapsecnsᚋsanguineᚋservicesᚋexplorerᚋgraphqlᚋserverᚋgraphᚋmodelᚐAddressData(ctx context.Context, sel ast.SelectionSet, v *model.AddressData) graphql.Marshaler {
+	if v == nil {
+		return graphql.Null
+	}
+	return ec._AddressData(ctx, sel, v)
+}
+
 func (ec *executionContext) marshalOAddressRanking2ᚕᚖgithubᚗcomᚋsynapsecnsᚋsanguineᚋservicesᚋexplorerᚋgraphqlᚋserverᚋgraphᚋmodelᚐAddressRanking(ctx context.Context, sel ast.SelectionSet, v []*model.AddressRanking) graphql.Marshaler {
 	if v == nil {
 		return graphql.Null
@@ -9286,6 +10927,54 @@ func (ec *executionContext) marshalOInt2ᚖint(ctx context.Context, sel ast.Sele
 	}
 	res := graphql.MarshalInt(*v)
 	return res
+}
+
+func (ec *executionContext) marshalOLeaderboard2ᚕᚖgithubᚗcomᚋsynapsecnsᚋsanguineᚋservicesᚋexplorerᚋgraphqlᚋserverᚋgraphᚋmodelᚐLeaderboard(ctx context.Context, sel ast.SelectionSet, v []*model.Leaderboard) graphql.Marshaler {
+	if v == nil {
+		return graphql.Null
+	}
+	ret := make(graphql.Array, len(v))
+	var wg sync.WaitGroup
+	isLen1 := len(v) == 1
+	if !isLen1 {
+		wg.Add(len(v))
+	}
+	for i := range v {
+		i := i
+		fc := &graphql.FieldContext{
+			Index:  &i,
+			Result: &v[i],
+		}
+		ctx := graphql.WithFieldContext(ctx, fc)
+		f := func(i int) {
+			defer func() {
+				if r := recover(); r != nil {
+					ec.Error(ctx, ec.Recover(ctx, r))
+					ret = nil
+				}
+			}()
+			if !isLen1 {
+				defer wg.Done()
+			}
+			ret[i] = ec.marshalOLeaderboard2ᚖgithubᚗcomᚋsynapsecnsᚋsanguineᚋservicesᚋexplorerᚋgraphqlᚋserverᚋgraphᚋmodelᚐLeaderboard(ctx, sel, v[i])
+		}
+		if isLen1 {
+			f(i)
+		} else {
+			go f(i)
+		}
+
+	}
+	wg.Wait()
+
+	return ret
+}
+
+func (ec *executionContext) marshalOLeaderboard2ᚖgithubᚗcomᚋsynapsecnsᚋsanguineᚋservicesᚋexplorerᚋgraphqlᚋserverᚋgraphᚋmodelᚐLeaderboard(ctx context.Context, sel ast.SelectionSet, v *model.Leaderboard) graphql.Marshaler {
+	if v == nil {
+		return graphql.Null
+	}
+	return ec._Leaderboard(ctx, sel, v)
 }
 
 func (ec *executionContext) marshalOMessageBusTransaction2ᚕᚖgithubᚗcomᚋsynapsecnsᚋsanguineᚋservicesᚋexplorerᚋgraphqlᚋserverᚋgraphᚋmodelᚐMessageBusTransaction(ctx context.Context, sel ast.SelectionSet, v []*model.MessageBusTransaction) graphql.Marshaler {

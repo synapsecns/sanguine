@@ -13,7 +13,7 @@ if (process?.env?.NODE_ENV === 'development') {
 export { SYNAPSE_BASE_URL }
 
 export const BASE_PATH = '/'
-
+export const ANALYTICS_KAPPA = 'https://explorer.synapseprotocol.com/tx/'
 export const ANALYTICS_PATH = 'https://explorer.synapseprotocol.com/'
 export const AIRDROP_PATH = '/claim'
 export const SWAP_PATH = '/swap'
@@ -46,7 +46,7 @@ export const getPoolUrl = (token: Token) => {
 export const getExplorerTxUrl = ({
   hash,
   data,
-  chainId = 56,
+  chainId = 1,
   type = 'tx',
 }: {
   hash?: string
@@ -67,7 +67,7 @@ export const getCompleteUrl = (uriPath: string) => {
 }
 
 export const DOCS_URL = 'https://docs.synapseprotocol.com'
-export const DISCORD_URL = 'https://discord.gg/synapseprotocol'
+export const DISCORD_URL = 'https://discord.gg/4rMzuEnKqe'
 export const TELEGRAM_URL = 'https://t.me/synapseprotocol'
 export const FORUM_URL = 'https://forum.synapseprotocol.com/'
 export const TWITTER_URL = 'https://twitter.com/SynapseProtocol'

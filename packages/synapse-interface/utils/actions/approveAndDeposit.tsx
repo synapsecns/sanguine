@@ -12,7 +12,6 @@ import { AVWETH, WETHE } from '@constants/tokens/master'
 import { WETH } from '@constants/tokens/swapMaster'
 import { approveToken } from '@utils/approveToken'
 import { Token } from '@types'
-import { getAddress } from '@ethersproject/address'
 
 export const approve = async (
   pool: Token,
@@ -20,10 +19,8 @@ export const approve = async (
   inputValue: any,
   chainId: number
 ) => {
-  const poolContract = await useSwapDepositContract(pool, chainId)
-
   for (let token of pool.poolTokens) {
-    const tokenAddr = getAddress(token.addresses[chainId])
+    const tokenAddr = token.addresses[chainId]
     if (
       inputValue[tokenAddr].isZero() ||
       inputValue[tokenAddr].lt(depositQuote.allowances[tokenAddr])
@@ -32,7 +29,7 @@ export const approve = async (
 
     if (token.symbol != WETH.symbol) {
       await approveToken(
-        poolContract.address,
+        pool.swapAddresses[chainId],
         chainId,
         token.symbol === AVWETH.symbol
           ? WETHE.addresses[chainId]
@@ -61,8 +58,10 @@ export const deposit = async (
 
     toast('Starting your deposit...')
 
+    const result = Array.from(Object.values(inputAmounts), (value) => value)
+
     let spendTransactionArgs = [
-      Object.values(inputAmounts),
+      result,
       minToMint,
       Math.round(new Date().getTime() / 1000 + 60 * 10),
     ]
@@ -72,6 +71,7 @@ export const deposit = async (
     )
 
     const tx = await spendTransaction.wait()
+
     const toastContent = (
       <div>
         <div>Liquidity added!</div>

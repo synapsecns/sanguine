@@ -16,24 +16,24 @@ export interface TransitionClassesProps extends TransitionClasses {
 
 export const COIN_SLIDE_OVER_PROPS: TransitionClassesProps = {
   appear: true,
-  unmount: false,
+  unmount: true,
   enter: 'duration-425 transition-opacity ease-out',
   enterFrom: 'transform-gpu transform opacity-0',
   enterTo: 'transform-gpu transform opacity-100',
   leave: 'duration-350 transition-opacity ease-out',
   leaveFrom: 'transform-gpu transform opacity-100',
-  leaveTo: 'transform-gpu transform opacity-0',
+  leaveTo: 'transform-gpu transform opacity-0 hidden',
 }
 
 export const SECTION_TRANSITION_PROPS: TransitionClassesProps = {
   appear: true,
   unmount: true,
   enter: 'transition duration-75 ease-out',
-  enterFrom: 'transform-gpu scale-y-0 ',
+  enterFrom: 'transform-gpu scale-y-0',
   enterTo: 'transform-gpu scale-y-100 opacity-100',
   leave: 'transition duration-75 ease-out ',
   leaveFrom: 'transform-gpu scale-y-100 opacity-100',
-  leaveTo: 'transform-gpu scale-y-0 ',
+  leaveTo: 'transform-gpu scale-y-0 hidden',
   className: 'origin-top -mx-0 md:-mx-6',
 }
 

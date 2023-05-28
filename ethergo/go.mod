@@ -15,6 +15,7 @@ require (
 	github.com/btcsuite/btcd v0.22.1
 	github.com/btcsuite/btcd/btcec/v2 v2.3.0
 	github.com/chzyer/test v0.0.0-20180213035817-a1ea475d72b1
+	github.com/davecgh/go-spew v1.1.1
 	github.com/dgraph-io/ristretto v0.1.0
 	github.com/ethereum/go-ethereum v1.10.26
 	github.com/goccy/go-json v0.10.0
@@ -27,6 +28,7 @@ require (
 	github.com/invopop/jsonschema v0.7.0
 	github.com/ipfs/go-log v1.0.5
 	github.com/jarcoal/httpmock v1.2.0
+	github.com/jftuga/ellipsis v1.0.0
 	github.com/jpillora/backoff v1.0.0
 	github.com/keep-network/keep-common v1.7.1-0.20211012131917-7102d7b9c6a0
 	github.com/lmittmann/w3 v0.10.0
@@ -57,6 +59,7 @@ require (
 	golang.org/x/exp v0.0.0-20230127193734-31bee513bff7
 	golang.org/x/sync v0.1.0
 	golang.org/x/time v0.3.0
+	google.golang.org/api v0.103.0
 	google.golang.org/protobuf v1.28.1
 	gopkg.in/yaml.v2 v2.4.0
 	gorm.io/driver/mysql v1.3.6
@@ -107,7 +110,6 @@ require (
 	github.com/cloudflare/circl v1.1.0 // indirect
 	github.com/containerd/continuity v0.3.0 // indirect
 	github.com/cpuguy83/go-md2man/v2 v2.0.2 // indirect
-	github.com/davecgh/go-spew v1.1.1 // indirect
 	github.com/deckarep/golang-set v1.8.0 // indirect
 	github.com/decred/dcrd/dcrec/secp256k1/v4 v4.1.0 // indirect
 	github.com/deepmap/oapi-codegen v1.8.2 // indirect
@@ -274,7 +276,6 @@ require (
 	golang.org/x/text v0.8.0 // indirect
 	golang.org/x/tools v0.6.0 // indirect
 	golang.org/x/xerrors v0.0.0-20220907171357-04be3eba64a2 // indirect
-	google.golang.org/api v0.103.0 // indirect
 	google.golang.org/appengine v1.6.7 // indirect
 	google.golang.org/genproto v0.0.0-20230110181048-76db0878b65f // indirect
 	google.golang.org/grpc v1.53.0 // indirect

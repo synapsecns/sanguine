@@ -2,6 +2,7 @@ package cache
 
 import (
 	"fmt"
+
 	lru "github.com/hashicorp/golang-lru/v2"
 )
 
@@ -31,22 +32,6 @@ func NewAPICacheService() (Service, error) {
 		responseCache: cache,
 	}, nil
 }
-
-// func (t *apiCacheServiceImpl) GetCachedResponse(parentCtx context.Context, callID string) *interface{} {
-//	ctx, cancel := context.WithTimeout(parentCtx, 3*time.Minute)
-//	defer cancel()
-//	key := fmt.Sprintf("%s_%d", coinGeckoID, timestamp)
-//	if data, ok := t.responseCache.Get(key); ok {
-//		return &data
-//	}
-//	tokenPrice := fetcher.GetDefiLlamaData(ctx, timestamp, coinGeckoID)
-//	if tokenPrice == nil {
-//		return nil
-//	}
-//	t.responseCache.Add(callID, *tokenPrice)
-//
-//	return tokenPrice
-//}
 
 func (t *apiCacheServiceImpl) CacheResponse(callID string, data any) error {
 	t.responseCache.Add(callID, data)

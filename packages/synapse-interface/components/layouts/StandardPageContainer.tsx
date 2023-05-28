@@ -40,7 +40,8 @@ const StandardPageContainer = ({
           {chain?.altName ?? chain?.name}{' '}
         </p>
         chain
-      </>
+      </>,
+      { id: 'standard-popup', duration: 5000 }
     )
   }, [connectedChainId])
 

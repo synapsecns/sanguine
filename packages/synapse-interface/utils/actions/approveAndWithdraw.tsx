@@ -1,7 +1,7 @@
 import { ALL } from '@constants/withdrawTypes'
 import { useSwapDepositContract } from '@hooks/useSwapDepositContract'
 import ExplorerToastLink from '@components/ExplorerToastLink'
-import { addSlippage, subtractSlippage, Slippages } from '@utils/slippage'
+import { subtractSlippage } from '@utils/slippage'
 import { txErrorHandler } from '@utils/txErrorHandler'
 import { approveToken } from '@utils/approveToken'
 import { Token } from '@types'
