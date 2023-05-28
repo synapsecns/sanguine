@@ -7,6 +7,8 @@ import { subtractSlippage } from '@utils/slippage'
 
 import ExplorerToastLink from '@components/ExplorerToastLink'
 
+import { AddressZero } from '@ethersproject/constants'
+import { CHAINS_BY_ID } from '@/constants/chains'
 import { txErrorHandler } from '@utils/txErrorHandler'
 import { AVWETH, WETHE } from '@constants/tokens/master'
 import { WETH } from '@constants/tokens/swapMaster'
@@ -19,23 +21,56 @@ export const approve = async (
   inputValue: any,
   chainId: number
 ) => {
+  const currentChainName = CHAINS_BY_ID[chainId].name
+  let pendingPopup: any
+  let successPopup: any
+
+  pendingPopup = toast(`Requesting approval on ${currentChainName}`, {
+    id: 'approve-in-progress-popup',
+    duration: Infinity,
+  })
+
   for (let token of pool.poolTokens) {
     const tokenAddr = token.addresses[chainId]
     if (
-      inputValue[tokenAddr].isZero() ||
+      (inputValue[tokenAddr] && inputValue[tokenAddr].isZero()) ||
       inputValue[tokenAddr].lt(depositQuote.allowances[tokenAddr])
     )
       continue
 
     if (token.symbol != WETH.symbol) {
-      await approveToken(
-        pool.swapAddresses[chainId],
-        chainId,
-        token.symbol === AVWETH.symbol
-          ? WETHE.addresses[chainId]
-          : token.addresses[chainId],
-        inputValue[tokenAddr]
-      )
+      try {
+        await approveToken(
+          pool.swapAddresses[chainId],
+          chainId,
+          token.symbol === AVWETH.symbol
+            ? WETHE.addresses[chainId]
+            : token.addresses[chainId],
+          inputValue[tokenAddr]
+        ).then((approveTx) => {
+          if (approveTx) {
+            toast.dismiss(pendingPopup)
+
+            const successToastContent = (
+              <div>
+                <div>Successfully approved on {currentChainName}</div>
+                <ExplorerToastLink
+                  transactionHash={approveTx?.hash ?? AddressZero}
+                  chainId={chainId}
+                />
+              </div>
+            )
+
+            successPopup = toast.success(successToastContent, {
+              id: 'approve-success-popup',
+              duration: 10000,
+            })
+          }
+        })
+      } catch (error) {
+        toast.dismiss(pendingPopup)
+        txErrorHandler(error)
+      }
     }
   }
 }
@@ -48,6 +83,14 @@ export const deposit = async (
   chainId: number
 ) => {
   const poolContract = await useSwapDepositContract(pool, chainId)
+  let pendingPopup: any
+  let successPopup: any
+
+  pendingPopup = toast(`Starting your deposit...`, {
+    id: 'deposit-in-progress-popup',
+    duration: Infinity,
+  })
+
   try {
     // get this from quote?
     let minToMint = await poolContract.calculateTokenAmount(
@@ -55,8 +98,6 @@ export const deposit = async (
       true
     )
     minToMint = subtractSlippage(minToMint, slippageSelected, slippageCustom)
-
-    toast('Starting your deposit...')
 
     const result = Array.from(Object.values(inputAmounts), (value) => value)
 
@@ -72,17 +113,28 @@ export const deposit = async (
 
     const tx = await spendTransaction.wait()
 
-    const toastContent = (
+    toast.dismiss(pendingPopup)
+
+    const successToastContent = (
       <div>
         <div>Liquidity added!</div>
-        <ExplorerToastLink {...tx} chainId={chainId} />
+        <ExplorerToastLink
+          transactionHash={tx?.transactionHash}
+          chainId={chainId}
+        />
       </div>
     )
 
-    toast.success(toastContent)
+    successPopup = toast.success(successToastContent, {
+      id: 'deposit-success-popup',
+      duration: 10000,
+    })
 
-    return tx
-  } catch (err) {
-    txErrorHandler(err)
+    return tx?.transactionHash ?? tx
+  } catch (error) {
+    console.log('error from deposit: ', error)
+    toast.dismiss(pendingPopup)
+    txErrorHandler(error)
+    return error
   }
 }
