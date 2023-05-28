@@ -10,6 +10,7 @@ import (
 	"github.com/jpillora/backoff"
 	"github.com/synapsecns/sanguine/services/explorer/consumer/client"
 	"github.com/synapsecns/sanguine/services/scribe/graphql"
+	"github.com/synapsecns/sanguine/services/scribe/graphql/server/graph/model"
 )
 
 // ScribeFetcher is the fetcher for the events. It uses GQL.
@@ -98,6 +99,38 @@ func (s ScribeFetcher) FetchLogsInRange(ctx context.Context, chainID uint32, sta
 	}
 
 	return parsedLogs, nil
+}
+
+// FetchTxInRange fetches txs in a range with the GQL client.
+func (s ScribeFetcher) FetchTxInRange(ctx context.Context, chainID uint32, startBlock, endBlock uint64) ([]model.Transaction, error) {
+	txs := &client.GetTransactionsRange{}
+	page := 1
+
+	for {
+		paginatedTxs, err := s.FetchClient.GetTransactionsRange(ctx, int(chainID), int(startBlock), int(endBlock), page)
+		if err != nil {
+			return nil, fmt.Errorf("could not get logs: %w", err)
+		}
+		if len(paginatedTxs.Response) == 0 {
+			break
+		}
+
+		txs.Response = append(txs.Response, paginatedTxs.Response...)
+		page++
+	}
+
+	var parsedTX []model.Transaction
+
+	for _, tx := range txs.Response {
+		parsedLog, err := graphql.ParseTx(*tx)
+		if err != nil {
+			return nil, fmt.Errorf("could not parse log: %w", err)
+		}
+
+		parsedTX = append(parsedTX, *parsedLog)
+	}
+
+	return parsedTX, nil
 }
 
 // FetchBlockTime fetches the timestamp of a block.

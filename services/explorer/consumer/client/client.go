@@ -67,6 +67,24 @@ type GetTransactions struct {
 		Sender    string "json:\"sender\" graphql:\"sender\""
 	} "json:\"response\" graphql:\"response\""
 }
+type GetTransactionsRange struct {
+	Response []*struct {
+		ChainID   int    "json:\"chain_id\" graphql:\"chain_id\""
+		TxHash    string "json:\"tx_hash\" graphql:\"tx_hash\""
+		Protected bool   "json:\"protected\" graphql:\"protected\""
+		Type      int    "json:\"type\" graphql:\"type\""
+		Data      string "json:\"data\" graphql:\"data\""
+		Gas       int    "json:\"gas\" graphql:\"gas\""
+		GasPrice  int    "json:\"gas_price\" graphql:\"gas_price\""
+		GasTipCap string "json:\"gas_tip_cap\" graphql:\"gas_tip_cap\""
+		GasFeeCap string "json:\"gas_fee_cap\" graphql:\"gas_fee_cap\""
+		Value     string "json:\"value\" graphql:\"value\""
+		Nonce     int    "json:\"nonce\" graphql:\"nonce\""
+		To        string "json:\"to\" graphql:\"to\""
+		Timestamp int    "json:\"timestamp\" graphql:\"timestamp\""
+		Sender    string "json:\"sender\" graphql:\"sender\""
+	} "json:\"response\" graphql:\"response\""
+}
 type GetBlockTime struct {
 	Response *int "json:\"response\" graphql:\"response\""
 }
@@ -157,6 +175,42 @@ func (c *Client) GetTransactions(ctx context.Context, chainID int, page int, txH
 
 	var res GetTransactions
 	if err := c.Client.Post(ctx, "GetTransactions", GetTransactionsDocument, &res, vars, httpRequestOptions...); err != nil {
+		return nil, err
+	}
+
+	return &res, nil
+}
+
+const GetTransactionsRangeDocument = `query GetTransactionsRange ($chain_id: Int!, $start_block: Int!, $end_block: Int!, $page: Int!) {
+	response: transactionsRange(chain_id: $chain_id, start_block: $start_block, end_block: $end_block, page: $page) {
+		chain_id
+		tx_hash
+		protected
+		type
+		data
+		gas
+		gas_price
+		gas_tip_cap
+		gas_fee_cap
+		value
+		nonce
+		to
+		timestamp
+		sender
+	}
+}
+`
+
+func (c *Client) GetTransactionsRange(ctx context.Context, chainID int, startBlock int, endBlock int, page int, httpRequestOptions ...client.HTTPRequestOption) (*GetTransactionsRange, error) {
+	vars := map[string]interface{}{
+		"chain_id":    chainID,
+		"start_block": startBlock,
+		"end_block":   endBlock,
+		"page":        page,
+	}
+
+	var res GetTransactionsRange
+	if err := c.Client.Post(ctx, "GetTransactionsRange", GetTransactionsRangeDocument, &res, vars, httpRequestOptions...); err != nil {
 		return nil, err
 	}
 

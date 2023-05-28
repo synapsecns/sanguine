@@ -22,6 +22,20 @@ func ParseLog(log interface{}) (*ethTypes.Log, error) {
 	return buildLogFromModelLogs(unmarshalledLog), nil
 }
 
+// ParseTx converts a tx from GraphQL into an ethType tx.
+func ParseTx(tx interface{}) (*model.Transaction, error) {
+	marshalledTx, err := json.Marshal(tx)
+	if err != nil {
+		return nil, fmt.Errorf("failed to marshal tx: %w", err)
+	}
+	var unmarshalledTx model.Transaction
+	err = json.Unmarshal(marshalledTx, &unmarshalledTx)
+	if err != nil {
+		return nil, fmt.Errorf("failed to unmarshal tx: %w", err)
+	}
+	return &unmarshalledTx, nil
+}
+
 func buildLogFromModelLogs(log model.Log) *ethTypes.Log {
 	var topics []common.Hash
 	for _, topic := range log.Topics {
