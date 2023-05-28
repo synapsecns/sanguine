@@ -69,6 +69,22 @@ const config = {
             docId: 'consensus/index',
             position: 'left',
             label: 'Protocol Overview',
+            items: [
+              'consensus/agentincentives',
+              'consensus/crosschainmessaging',
+              'consensus/gasoracles',
+              'consensus/kindsoffraud',
+              'consensus/messagingflowoverview',
+              'consensus/proofofstake',
+              'consensus/synapsemessaging',
+            ],
+          },
+          {
+            type: 'doc',
+            docId: 'offchain/index',
+            position: 'left',
+            label: 'Participating in the Network',
+            items: ['offchain/executor', 'offchain/guard', 'offchain/notary'],
           },
           {
             type: 'doc',

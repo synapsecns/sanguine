@@ -30,11 +30,11 @@ Now let’s look at the specific mechanism employed by the Synapse Carbon messag
 
 In summary, the Synapse Carbon network has 3 different types of agents that do very important work in delivering messages from one chain to another while maintaining Liveness and Integrity.
 
-1. [Notaries](notary): Maintain Liveness by observing messages from Origin chains and proposing them on Destination chains.
+1. [Notaries](../offchain/notary): Maintain Liveness by observing messages from Origin chains and proposing them on Destination chains.
 
-2. [Guards](guard): Maintain Integrity by observing proposed messages from Notaries on Destination chains and calling out if there is a proposed message that never happened.
+2. [Guards](../offchain/guard): Maintain Integrity by observing proposed messages from Notaries on Destination chains and calling out if there is a proposed message that never happened.
 
-3. [Executors](executor): Maintain Liveness by transitioning messages from the probationary state to the accepted state on the Destination chains so long as no Guard has reported the message fraudulent within the Optimistic Time Period.
+3. [Executors](../offchain/executor): Maintain Liveness by transitioning messages from the probationary state to the accepted state on the Destination chains so long as no Guard has reported the message fraudulent within the Optimistic Time Period.
 
 What incentivizes each of these agents to do this work?
 Agents in the system are doing work (i.e. running servers, paying electricity, etc), so they need to have the proper incentives to make it worthwhile. This means whoever is sending a cross-chain message needs to pay some sort of toll to have the message sent, and the agents all receive a fraction of the toll in proportion to the work they do to get the message delivered.
@@ -42,5 +42,3 @@ Agents in the system are doing work (i.e. running servers, paying electricity, e
 ## Who is allowed to participate as one of the agents?
 
 The Synapse Carbon network is designed to be decentralized and allow anyone to participate as any of the agent types. This means that anyone is able to be a Notary, Guard and/or Executor. However, the network needs to disincentivize fraudulent behavior to maintain integrity.
-
-

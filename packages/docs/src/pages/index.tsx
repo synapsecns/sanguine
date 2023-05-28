@@ -25,41 +25,41 @@ export const HomepageHeader = () => {
 }
 
 const Home = (): JSX.Element => {
-  const { siteConfig } = useDocusaurusContext()
   return (
     <Layout title="Homepage" description="Synapse Dev Docs">
       <main>
         <br />
-        <h1 align="center" style={{ fontWeight: '750' }}>Get Started Below!</h1>
+        <h1 style={{ fontWeight: '750', textAlign: 'center' }}>
+          Get Started Below!
+        </h1>
         <section className={styles.features}>
           <div className="container">
             <div className="row cards__container">
               <Card
-                to="/docs/solidity/intro"
+                to="docs/solidity/intro"
                 header={{
-                  label: "🚀 Send your first message",
+                  label: '🚀 Send your first message',
                 }}
                 body={{
                   label:
-                    "Learn how to send a cross-chain message in under five minutes",
+                    'Learn how to send a cross-chain message in under five minutes',
                 }}
               />
 
               <Card
-                to="intro"
+                to="docs/consensus"
                 header={{
-                  label: "🛠 Learn about Synapse",
+                  label: '🛠 Learn about Synapse',
                 }}
                 body={{
-                  label:
-                    "Discover how cross-chain messaging works.",
+                  label: 'Discover how cross-chain messaging works.',
                 }}
               />
 
               <Card
-                to="nodes"
+                to="docs/offchain"
                 header={{
-                  label: "😎 Run an Agent",
+                  label: '😎 Run an Agent',
                 }}
                 body={{
                   label:
@@ -70,33 +70,32 @@ const Home = (): JSX.Element => {
               <Card
                 to="https://docs.synapseprotocol.com/developers/rest-api"
                 header={{
-                  label: "💻 View Bridge API docs",
+                  label: '💻 View Bridge API docs',
                 }}
                 body={{
                   label:
-                    "Access bridge api docs to learn how to interact with the bridge.",
+                    'Access bridge api docs to learn how to interact with the bridge.',
                 }}
               />
 
               <Card
                 to="/docs/sdk/"
                 header={{
-                  label: "🛠️ View Bridge SDK Docs",
+                  label: '🛠️ View Bridge SDK Docs',
                 }}
                 body={{
                   label:
-                    "Learn how to interact with the synapse bridge using the bridge sdk and send your first bridge in 5 minutes!",
+                    'Learn how to interact with the synapse bridge using the bridge sdk and send your first bridge in 5 minutes!',
                 }}
               />
 
               <Card
                 to="https://docs.synapseprotocol.com/protocol/synapse-chain"
                 header={{
-                  label: "⛓️️ Develop on Synapse Chain",
+                  label: '⛓️️ Develop on Synapse Chain',
                 }}
                 body={{
-                  label:
-                    "Learn how to deploy your dapp on the synapse chain.",
+                  label: 'Learn how to deploy your dapp on the synapse chain.',
                 }}
               />
             </div>
