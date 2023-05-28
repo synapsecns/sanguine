@@ -21,6 +21,13 @@ func TestDBStateToState(t *testing.T) {
 	proof := []string{common.BigToHash(big.NewInt(gofakeit.Int64())).String(), common.BigToHash(big.NewInt(gofakeit.Int64())).String()}
 	stateIndex := gofakeit.Uint32()
 
+	gasPrice := gofakeit.Uint16()
+	dataPrice := gofakeit.Uint16()
+	execBuffer := gofakeit.Uint16()
+	amortAttCost := gofakeit.Uint16()
+	etherPrice := gofakeit.Uint16()
+	markup := gofakeit.Uint16()
+
 	proofJSON, err := json.Marshal(proof)
 	if err != nil {
 		panic(err)
@@ -35,6 +42,12 @@ func TestDBStateToState(t *testing.T) {
 		OriginTimestamp:   &originTimestamp,
 		Proof:             (*json.RawMessage)(&proofJSON),
 		StateIndex:        &stateIndex,
+		GDGasPrice:        &gasPrice,
+		GDDataPrice:       &dataPrice,
+		GDExecBuffer:      &execBuffer,
+		GDAmortAttCost:    &amortAttCost,
+		GDEtherPrice:      &etherPrice,
+		GDMarkup:          &markup,
 	}
 
 	initialState := base.DBStateToState(initialDBState)

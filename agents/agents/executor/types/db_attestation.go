@@ -6,8 +6,8 @@ type DBAttestation struct {
 	Destination *uint32
 	// SnapshotRoot is the snapshot root.
 	SnapshotRoot *string
-	// AgentRoot is the agent root.
-	AgentRoot *string
+	// DataHash is the agent root and SnapGasHash combined into a single hash.
+	DataHash *string
 	// AttestationNonce is the nonce of the attestation.
 	AttestationNonce *uint32
 	// SummitBlockNumber is the block number when the attestation was created in Summit.

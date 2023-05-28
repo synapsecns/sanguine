@@ -10,7 +10,6 @@ import (
 	. "github.com/stretchr/testify/assert"
 	"github.com/synapsecns/sanguine/agents/contracts/origin"
 	"github.com/synapsecns/sanguine/agents/contracts/test/originharness"
-	"github.com/synapsecns/sanguine/agents/types"
 )
 
 func (h OriginSuite) TestLocalDomain() {
@@ -27,12 +26,8 @@ func (h OriginSuite) TestSentTopic() {
 	sub, err := h.originContract.WatchSent(&bind.WatchOpts{Context: h.GetTestContext()}, sentSink, [][32]byte{}, []uint32{}, []uint32{})
 	Nil(h.T(), err)
 
-	encodedTips, err := types.EncodeTips(types.NewTips(big.NewInt(0), big.NewInt(0), big.NewInt(0), big.NewInt(0)))
-	Nil(h.T(), err)
-	paddedTips := new(big.Int).SetBytes(encodedTips)
-
 	paddedRequest := big.NewInt(0)
-	tx, err := h.originContract.SendBaseMessage(txContext.TransactOpts, h.destinationID, [32]byte{}, 1, paddedTips, paddedRequest, []byte{})
+	tx, err := h.originContract.SendBaseMessage(txContext.TransactOpts, h.destinationID, [32]byte{}, 1, paddedRequest, []byte{})
 	Nil(h.T(), err)
 
 	h.testBackend.WaitForConfirmation(h.GetTestContext(), tx)

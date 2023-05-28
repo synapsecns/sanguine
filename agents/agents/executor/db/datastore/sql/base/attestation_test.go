@@ -13,7 +13,7 @@ import (
 func TestAttestationDBAttestationParity(t *testing.T) {
 	destination := gofakeit.Uint32()
 	snapshotRoot := common.BigToHash(big.NewInt(gofakeit.Int64())).String()
-	agentRoot := common.BigToHash(big.NewInt(gofakeit.Int64())).String()
+	dataHash := common.BigToHash(big.NewInt(gofakeit.Int64())).String()
 	attestationNonce := gofakeit.Uint32()
 	summitBlockNumber := gofakeit.Uint64()
 	summitTimestamp := gofakeit.Uint64()
@@ -23,7 +23,7 @@ func TestAttestationDBAttestationParity(t *testing.T) {
 	initialDBAttestation := types.DBAttestation{
 		Destination:            &destination,
 		SnapshotRoot:           &snapshotRoot,
-		AgentRoot:              &agentRoot,
+		DataHash:               &dataHash,
 		AttestationNonce:       &attestationNonce,
 		SummitBlockNumber:      &summitBlockNumber,
 		SummitTimestamp:        &summitTimestamp,

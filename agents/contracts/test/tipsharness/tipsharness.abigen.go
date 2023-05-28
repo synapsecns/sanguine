@@ -30,18 +30,21 @@ var (
 
 // TipsHarnessMetaData contains all meta data concerning the TipsHarness contract.
 var TipsHarnessMetaData = &bind.MetaData{
-	ABI: "[{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"paddedTips\",\"type\":\"uint256\"}],\"name\":\"attestationTip\",\"outputs\":[{\"internalType\":\"uint64\",\"name\":\"\",\"type\":\"uint64\"}],\"stateMutability\":\"pure\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"paddedTips\",\"type\":\"uint256\"}],\"name\":\"deliveryTip\",\"outputs\":[{\"internalType\":\"uint64\",\"name\":\"\",\"type\":\"uint64\"}],\"stateMutability\":\"pure\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"emptyTips\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"pure\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint64\",\"name\":\"summitTip_\",\"type\":\"uint64\"},{\"internalType\":\"uint64\",\"name\":\"attestationTip_\",\"type\":\"uint64\"},{\"internalType\":\"uint64\",\"name\":\"executionTip_\",\"type\":\"uint64\"},{\"internalType\":\"uint64\",\"name\":\"deliveryTip_\",\"type\":\"uint64\"}],\"name\":\"encodeTips\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"pure\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"paddedTips\",\"type\":\"uint256\"}],\"name\":\"executionTip\",\"outputs\":[{\"internalType\":\"uint64\",\"name\":\"\",\"type\":\"uint64\"}],\"stateMutability\":\"pure\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"paddedTips\",\"type\":\"uint256\"}],\"name\":\"summitTip\",\"outputs\":[{\"internalType\":\"uint64\",\"name\":\"\",\"type\":\"uint64\"}],\"stateMutability\":\"pure\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"paddedTips\",\"type\":\"uint256\"}],\"name\":\"value\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"pure\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"paddedTips\",\"type\":\"uint256\"}],\"name\":\"wrapPadded\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"pure\",\"type\":\"function\"}]",
+	ABI: "[{\"inputs\":[],\"name\":\"TipsOverflow\",\"type\":\"error\"},{\"inputs\":[],\"name\":\"TipsValueTooLow\",\"type\":\"error\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"paddedTips\",\"type\":\"uint256\"}],\"name\":\"attestationTip\",\"outputs\":[{\"internalType\":\"uint64\",\"name\":\"\",\"type\":\"uint64\"}],\"stateMutability\":\"pure\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"paddedTips\",\"type\":\"uint256\"}],\"name\":\"deliveryTip\",\"outputs\":[{\"internalType\":\"uint64\",\"name\":\"\",\"type\":\"uint64\"}],\"stateMutability\":\"pure\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"emptyTips\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"pure\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint64\",\"name\":\"summitTip_\",\"type\":\"uint64\"},{\"internalType\":\"uint64\",\"name\":\"attestationTip_\",\"type\":\"uint64\"},{\"internalType\":\"uint64\",\"name\":\"executionTip_\",\"type\":\"uint64\"},{\"internalType\":\"uint64\",\"name\":\"deliveryTip_\",\"type\":\"uint64\"}],\"name\":\"encodeTips\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"pure\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"summitTip_\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"attestationTip_\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"executionTip_\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"deliveryTip_\",\"type\":\"uint256\"}],\"name\":\"encodeTips256\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"pure\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"paddedTips\",\"type\":\"uint256\"}],\"name\":\"executionTip\",\"outputs\":[{\"internalType\":\"uint64\",\"name\":\"\",\"type\":\"uint64\"}],\"stateMutability\":\"pure\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"paddedTips\",\"type\":\"uint256\"}],\"name\":\"leaf\",\"outputs\":[{\"internalType\":\"bytes32\",\"name\":\"\",\"type\":\"bytes32\"}],\"stateMutability\":\"pure\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"Tips\",\"name\":\"tips\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"newValue\",\"type\":\"uint256\"}],\"name\":\"matchValue\",\"outputs\":[{\"internalType\":\"Tips\",\"name\":\"newTips\",\"type\":\"uint256\"}],\"stateMutability\":\"pure\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"paddedTips\",\"type\":\"uint256\"}],\"name\":\"summitTip\",\"outputs\":[{\"internalType\":\"uint64\",\"name\":\"\",\"type\":\"uint64\"}],\"stateMutability\":\"pure\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"paddedTips\",\"type\":\"uint256\"}],\"name\":\"value\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"pure\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"paddedTips\",\"type\":\"uint256\"}],\"name\":\"wrapPadded\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"pure\",\"type\":\"function\"}]",
 	Sigs: map[string]string{
 		"0453e80e": "attestationTip(uint256)",
 		"ecbf034e": "deliveryTip(uint256)",
 		"725bd463": "emptyTips()",
 		"4f2a6f9e": "encodeTips(uint64,uint64,uint64,uint64)",
+		"72d3f3cd": "encodeTips256(uint256,uint256,uint256,uint256)",
 		"4c63c701": "executionTip(uint256)",
+		"f472a58a": "leaf(uint256)",
+		"86450b88": "matchValue(uint256,uint256)",
 		"b284b609": "summitTip(uint256)",
 		"c5a46ee6": "value(uint256)",
 		"138ac42f": "wrapPadded(uint256)",
 	},
-	Bin: "0x608060405234801561001057600080fd5b5061035a806100206000396000f3fe608060405234801561001057600080fd5b50600436106100885760003560e01c8063725bd4631161005b578063725bd46314610178578063b284b60914610180578063c5a46ee614610193578063ecbf034e146101a657600080fd5b80630453e80e1461008d578063138ac42f146100be5780634c63c701146100df5780634f2a6f9e146100f2575b600080fd5b6100a061009b36600461024b565b6101b4565b60405167ffffffffffffffff90911681526020015b60405180910390f35b6100d16100cc36600461024b565b6101c6565b6040519081526020016100b5565b6100a06100ed36600461024b565b6101ce565b6100d1610100366004610281565b60008067ffffffffffffffff8316604085901b6fffffffffffffffff000000000000000016608087901b77ffffffffffffffff000000000000000000000000000000001660c089901b7fffffffffffffffff000000000000000000000000000000000000000000000000161717179695505050505050565b6100d16101da565b6100a061018e36600461024b565b6101e3565b6100d16101a136600461024b565b6101ef565b6100a06100cc36600461024b565b60006101c08260801c90565b92915050565b6000816101c0565b60006101c08260401c90565b600080806101c0565b60006101c08260c01c90565b60006101c0826000816102028360401c90565b61020c8460801c90565b6102168560c01c90565b61022091906102d5565b61022a91906102d5565b61023491906102d5565b60201b6bffffffffffffffff000000001692915050565b60006020828403121561025d57600080fd5b5035919050565b803567ffffffffffffffff8116811461027c57600080fd5b919050565b6000806000806080858703121561029757600080fd5b6102a085610264565b93506102ae60208601610264565b92506102bc60408601610264565b91506102ca60608601610264565b905092959194509250565b67ffffffffffffffff81811683821601908082111561031d577f4e487b7100000000000000000000000000000000000000000000000000000000600052601160045260246000fd5b509291505056fea2646970667358221220bba0346885996d852439a337d047cee3e3cd72b6cfe1bf0503febba253a0b1b564736f6c63430008110033",
+	Bin: "0x608060405234801561001057600080fd5b50610579806100206000396000f3fe608060405234801561001057600080fd5b50600436106100c95760003560e01c806372d3f3cd11610081578063c5a46ee61161005b578063c5a46ee614610187578063ecbf034e1461019a578063f472a58a146101a857600080fd5b806372d3f3cd1461014e57806386450b8814610161578063b284b6091461017457600080fd5b80634c63c701116100b25780634c63c701146101205780634f2a6f9e14610133578063725bd4631461014657600080fd5b80630453e80e146100ce578063138ac42f146100ff575b600080fd5b6100e16100dc36600461042b565b6101bb565b60405167ffffffffffffffff90911681526020015b60405180910390f35b61011261010d36600461042b565b6101cd565b6040519081526020016100f6565b6100e161012e36600461042b565b6101d5565b610112610141366004610461565b6101e1565b61011261025a565b61011261015c3660046104b5565b610263565b61011261016f3660046104e7565b6102dc565b6100e161018236600461042b565b6102ef565b61011261019536600461042b565b6102fb565b6100e161010d36600461042b565b6101126101b636600461042b565b610306565b60006101c78260801c90565b92915050565b6000816101c7565b60006101c78260401c90565b60008067ffffffffffffffff8316604085901b6fffffffffffffffff000000000000000016608087901b77ffffffffffffffff000000000000000000000000000000001660c089901b7fffffffffffffffff000000000000000000000000000000000000000000000000161717175b9695505050505050565b600080806101c7565b60008067ffffffffffffffff602084811c919091169085901b6fffffffffffffffff000000000000000016606087901b77ffffffffffffffff000000000000000000000000000000001660a089901b7fffffffffffffffff00000000000000000000000000000000000000000000000016171717610250565b60006102e88383610314565b9392505050565b60006101c78260c01c90565b60006101c7826103bb565b6000818152602081206101c7565b600080610320846103bb565b90508083101561035c576040517f429726c100000000000000000000000000000000000000000000000000000000815260040160405180910390fd5b80830360201c67ffffffffffffffff8567ffffffffffffffff16820111156103b0576040517f1b438b3300000000000000000000000000000000000000000000000000000000815260040160405180910390fd5b939093019392505050565b60008167ffffffffffffffff166103d28360401c90565b67ffffffffffffffff166103e68460801c90565b67ffffffffffffffff166103fa8560c01c90565b67ffffffffffffffff1661040e9190610509565b6104189190610509565b6104229190610509565b60201b92915050565b60006020828403121561043d57600080fd5b5035919050565b803567ffffffffffffffff8116811461045c57600080fd5b919050565b6000806000806080858703121561047757600080fd5b61048085610444565b935061048e60208601610444565b925061049c60408601610444565b91506104aa60608601610444565b905092959194509250565b600080600080608085870312156104cb57600080fd5b5050823594602084013594506040840135936060013592509050565b600080604083850312156104fa57600080fd5b50508035926020909101359150565b808201808211156101c7577f4e487b7100000000000000000000000000000000000000000000000000000000600052601160045260246000fdfea26469706673582212204802016d997c12987482c28582c1fd0edbd06aa45ede69706c30db80fd4ded0564736f6c63430008110033",
 }
 
 // TipsHarnessABI is the input ABI used to generate the binding from.
@@ -339,6 +342,37 @@ func (_TipsHarness *TipsHarnessCallerSession) EncodeTips(summitTip_ uint64, atte
 	return _TipsHarness.Contract.EncodeTips(&_TipsHarness.CallOpts, summitTip_, attestationTip_, executionTip_, deliveryTip_)
 }
 
+// EncodeTips256 is a free data retrieval call binding the contract method 0x72d3f3cd.
+//
+// Solidity: function encodeTips256(uint256 summitTip_, uint256 attestationTip_, uint256 executionTip_, uint256 deliveryTip_) pure returns(uint256)
+func (_TipsHarness *TipsHarnessCaller) EncodeTips256(opts *bind.CallOpts, summitTip_ *big.Int, attestationTip_ *big.Int, executionTip_ *big.Int, deliveryTip_ *big.Int) (*big.Int, error) {
+	var out []interface{}
+	err := _TipsHarness.contract.Call(opts, &out, "encodeTips256", summitTip_, attestationTip_, executionTip_, deliveryTip_)
+
+	if err != nil {
+		return *new(*big.Int), err
+	}
+
+	out0 := *abi.ConvertType(out[0], new(*big.Int)).(**big.Int)
+
+	return out0, err
+
+}
+
+// EncodeTips256 is a free data retrieval call binding the contract method 0x72d3f3cd.
+//
+// Solidity: function encodeTips256(uint256 summitTip_, uint256 attestationTip_, uint256 executionTip_, uint256 deliveryTip_) pure returns(uint256)
+func (_TipsHarness *TipsHarnessSession) EncodeTips256(summitTip_ *big.Int, attestationTip_ *big.Int, executionTip_ *big.Int, deliveryTip_ *big.Int) (*big.Int, error) {
+	return _TipsHarness.Contract.EncodeTips256(&_TipsHarness.CallOpts, summitTip_, attestationTip_, executionTip_, deliveryTip_)
+}
+
+// EncodeTips256 is a free data retrieval call binding the contract method 0x72d3f3cd.
+//
+// Solidity: function encodeTips256(uint256 summitTip_, uint256 attestationTip_, uint256 executionTip_, uint256 deliveryTip_) pure returns(uint256)
+func (_TipsHarness *TipsHarnessCallerSession) EncodeTips256(summitTip_ *big.Int, attestationTip_ *big.Int, executionTip_ *big.Int, deliveryTip_ *big.Int) (*big.Int, error) {
+	return _TipsHarness.Contract.EncodeTips256(&_TipsHarness.CallOpts, summitTip_, attestationTip_, executionTip_, deliveryTip_)
+}
+
 // ExecutionTip is a free data retrieval call binding the contract method 0x4c63c701.
 //
 // Solidity: function executionTip(uint256 paddedTips) pure returns(uint64)
@@ -368,6 +402,68 @@ func (_TipsHarness *TipsHarnessSession) ExecutionTip(paddedTips *big.Int) (uint6
 // Solidity: function executionTip(uint256 paddedTips) pure returns(uint64)
 func (_TipsHarness *TipsHarnessCallerSession) ExecutionTip(paddedTips *big.Int) (uint64, error) {
 	return _TipsHarness.Contract.ExecutionTip(&_TipsHarness.CallOpts, paddedTips)
+}
+
+// Leaf is a free data retrieval call binding the contract method 0xf472a58a.
+//
+// Solidity: function leaf(uint256 paddedTips) pure returns(bytes32)
+func (_TipsHarness *TipsHarnessCaller) Leaf(opts *bind.CallOpts, paddedTips *big.Int) ([32]byte, error) {
+	var out []interface{}
+	err := _TipsHarness.contract.Call(opts, &out, "leaf", paddedTips)
+
+	if err != nil {
+		return *new([32]byte), err
+	}
+
+	out0 := *abi.ConvertType(out[0], new([32]byte)).(*[32]byte)
+
+	return out0, err
+
+}
+
+// Leaf is a free data retrieval call binding the contract method 0xf472a58a.
+//
+// Solidity: function leaf(uint256 paddedTips) pure returns(bytes32)
+func (_TipsHarness *TipsHarnessSession) Leaf(paddedTips *big.Int) ([32]byte, error) {
+	return _TipsHarness.Contract.Leaf(&_TipsHarness.CallOpts, paddedTips)
+}
+
+// Leaf is a free data retrieval call binding the contract method 0xf472a58a.
+//
+// Solidity: function leaf(uint256 paddedTips) pure returns(bytes32)
+func (_TipsHarness *TipsHarnessCallerSession) Leaf(paddedTips *big.Int) ([32]byte, error) {
+	return _TipsHarness.Contract.Leaf(&_TipsHarness.CallOpts, paddedTips)
+}
+
+// MatchValue is a free data retrieval call binding the contract method 0x86450b88.
+//
+// Solidity: function matchValue(uint256 tips, uint256 newValue) pure returns(uint256 newTips)
+func (_TipsHarness *TipsHarnessCaller) MatchValue(opts *bind.CallOpts, tips *big.Int, newValue *big.Int) (*big.Int, error) {
+	var out []interface{}
+	err := _TipsHarness.contract.Call(opts, &out, "matchValue", tips, newValue)
+
+	if err != nil {
+		return *new(*big.Int), err
+	}
+
+	out0 := *abi.ConvertType(out[0], new(*big.Int)).(**big.Int)
+
+	return out0, err
+
+}
+
+// MatchValue is a free data retrieval call binding the contract method 0x86450b88.
+//
+// Solidity: function matchValue(uint256 tips, uint256 newValue) pure returns(uint256 newTips)
+func (_TipsHarness *TipsHarnessSession) MatchValue(tips *big.Int, newValue *big.Int) (*big.Int, error) {
+	return _TipsHarness.Contract.MatchValue(&_TipsHarness.CallOpts, tips, newValue)
+}
+
+// MatchValue is a free data retrieval call binding the contract method 0x86450b88.
+//
+// Solidity: function matchValue(uint256 tips, uint256 newValue) pure returns(uint256 newTips)
+func (_TipsHarness *TipsHarnessCallerSession) MatchValue(tips *big.Int, newValue *big.Int) (*big.Int, error) {
+	return _TipsHarness.Contract.MatchValue(&_TipsHarness.CallOpts, tips, newValue)
 }
 
 // SummitTip is a free data retrieval call binding the contract method 0xb284b609.
@@ -466,7 +562,7 @@ func (_TipsHarness *TipsHarnessCallerSession) WrapPadded(paddedTips *big.Int) (*
 // TipsLibMetaData contains all meta data concerning the TipsLib contract.
 var TipsLibMetaData = &bind.MetaData{
 	ABI: "[]",
-	Bin: "0x60566037600b82828239805160001a607314602a57634e487b7160e01b600052600060045260246000fd5b30600052607381538281f3fe73000000000000000000000000000000000000000030146080604052600080fdfea2646970667358221220815aebcbce2c277361ec60712a26a99229e6cd51bb59e8532fa87f098dad883864736f6c63430008110033",
+	Bin: "0x60566037600b82828239805160001a607314602a57634e487b7160e01b600052600060045260246000fd5b30600052607381538281f3fe73000000000000000000000000000000000000000030146080604052600080fdfea2646970667358221220b06f5a2640d0a35dc32bd952da8b52ecdaa9d5c41e9e6084eac5de13015f504064736f6c63430008110033",
 }
 
 // TipsLibABI is the input ABI used to generate the binding from.

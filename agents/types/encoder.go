@@ -15,9 +15,96 @@ import (
 )
 
 const (
+	uint16Len = 2
 	uint32Len = 4
 	uint40Len = 5
 )
+
+// EncodeGasData encodes a gasdata.
+func EncodeGasData(gasData GasData) ([]byte, error) {
+	b := make([]byte, 0)
+	markupBytes := make([]byte, uint16Len)
+	etherPriceBytes := make([]byte, uint16Len)
+	amortAttCostBytes := make([]byte, uint16Len)
+	execBufferBytes := make([]byte, uint16Len)
+	dataPriceBytes := make([]byte, uint16Len)
+	gasPriceBytes := make([]byte, uint16Len)
+
+	binary.BigEndian.PutUint16(markupBytes, gasData.Markup())
+	binary.BigEndian.PutUint16(etherPriceBytes, gasData.EtherPrice())
+	binary.BigEndian.PutUint16(amortAttCostBytes, gasData.AmortAttCost())
+	binary.BigEndian.PutUint16(execBufferBytes, gasData.ExecBuffer())
+	binary.BigEndian.PutUint16(dataPriceBytes, gasData.DataPrice())
+	binary.BigEndian.PutUint16(gasPriceBytes, gasData.GasPrice())
+
+	b = append(b, gasPriceBytes...)
+	b = append(b, dataPriceBytes...)
+	b = append(b, execBufferBytes...)
+	b = append(b, amortAttCostBytes...)
+	b = append(b, etherPriceBytes...)
+	b = append(b, markupBytes...)
+
+	return b, nil
+}
+
+// DecodeGasData decodes a gasData.
+func DecodeGasData(toDecode []byte) (GasData, error) {
+	if len(toDecode) != gasDataSize {
+		return nil, fmt.Errorf("invalid gasData length, expected %d, got %d", gasDataSize, len(toDecode))
+	}
+
+	gasPrice := binary.BigEndian.Uint16(toDecode[gasDataOffsetGasPrice:gasDataOffsetDataPrice])
+	dataPrice := binary.BigEndian.Uint16(toDecode[gasDataOffsetDataPrice:gasDataOffsetExecBuffer])
+	execBuffer := binary.BigEndian.Uint16(toDecode[gasDataOffsetExecBuffer:gasDataOffsetAmortAttCost])
+	amortAttCost := binary.BigEndian.Uint16(toDecode[gasDataOffsetAmortAttCost:gasDataOffsetEtherPrice])
+	etherPrice := binary.BigEndian.Uint16(toDecode[gasDataOffsetEtherPrice:gasDataOffsetMarkup])
+	markup := binary.BigEndian.Uint16(toDecode[gasDataOffsetMarkup:gasDataSize])
+
+	return gasData{
+		markup:       markup,
+		etherPrice:   etherPrice,
+		amortAttCost: amortAttCost,
+		execBuffer:   execBuffer,
+		dataPrice:    dataPrice,
+		gasPrice:     gasPrice,
+	}, nil
+}
+
+// EncodeChainGas encodes a chaingas.
+func EncodeChainGas(chainGas ChainGas) ([]byte, error) {
+	b := make([]byte, 0)
+	domainBytes := make([]byte, uint32Len)
+	domain := chainGas.Domain()
+	binary.BigEndian.PutUint32(domainBytes, domain)
+	b = append(b, domainBytes...)
+
+	gasDataEncoded, err := EncodeGasData(chainGas.GasData())
+	if err != nil {
+		return nil, fmt.Errorf("failed to encode gas data for chain gas %w", err)
+	}
+
+	b = append(b, gasDataEncoded...)
+
+	return b, nil
+}
+
+// DecodeChainGas decodes a chainGas.
+func DecodeChainGas(toDecode []byte) (ChainGas, error) {
+	if len(toDecode) != chainGasSize {
+		return nil, fmt.Errorf("invalid chainGas length, expected %d, got %d", chainGasSize, len(toDecode))
+	}
+
+	domain := binary.BigEndian.Uint32(toDecode[chainGasOffsetDomain:chainGasOffsetGasData])
+	gasData, err := DecodeGasData(toDecode[chainGasOffsetGasData:chainGasSize])
+	if err != nil {
+		return nil, fmt.Errorf("failed to decode gas data for chain gas %w", err)
+	}
+
+	return chainGas{
+		gasData: gasData,
+		domain:  domain,
+	}, nil
+}
 
 // EncodeState encodes a state.
 func EncodeState(state State) ([]byte, error) {
@@ -35,6 +122,12 @@ func EncodeState(state State) ([]byte, error) {
 	b = append(b, math.PaddedBigBytes(state.BlockNumber(), uint40Len)...)
 	b = append(b, math.PaddedBigBytes(state.Timestamp(), uint40Len)...)
 
+	gasDataEncoded, err := EncodeGasData(state.GasData())
+	if err != nil {
+		return nil, fmt.Errorf("failed to encode gas data for state %w", err)
+	}
+	b = append(b, gasDataEncoded...)
+
 	return b, nil
 }
 
@@ -48,7 +141,13 @@ func DecodeState(toDecode []byte) (State, error) {
 	origin := binary.BigEndian.Uint32(toDecode[stateOffsetOrigin:stateOffsetNonce])
 	nonce := binary.BigEndian.Uint32(toDecode[stateOffsetNonce:stateOffsetBlockNumber])
 	blockNumber := new(big.Int).SetBytes(toDecode[stateOffsetBlockNumber:stateOffsetTimestamp])
-	timestamp := new(big.Int).SetBytes(toDecode[stateOffsetTimestamp:stateSize])
+	timestamp := new(big.Int).SetBytes(toDecode[stateOffsetTimestamp:stateOffsetGasData])
+
+	gasDataToDecode := toDecode[stateOffsetGasData:stateSize]
+	gasData, err := DecodeGasData(gasDataToDecode)
+	if err != nil {
+		return nil, fmt.Errorf("failed to decode gas data for state %w", err)
+	}
 
 	var rootB32 [32]byte
 	copy(rootB32[:], root)
@@ -59,6 +158,7 @@ func DecodeState(toDecode []byte) (State, error) {
 		nonce:       nonce,
 		blockNumber: blockNumber,
 		timestamp:   timestamp,
+		gasData:     gasData,
 	}, nil
 }
 
@@ -111,10 +211,10 @@ func EncodeAttestation(attestation Attestation) ([]byte, error) {
 
 	binary.BigEndian.PutUint32(nonceBytes, attestation.Nonce())
 	snapshotRoot := attestation.SnapshotRoot()
-	agentRoot := attestation.AgentRoot()
+	dataHash := attestation.DataHash()
 
 	b = append(b, snapshotRoot[:]...)
-	b = append(b, agentRoot[:]...)
+	b = append(b, dataHash[:]...)
 	b = append(b, nonceBytes...)
 	b = append(b, math.PaddedBigBytes(attestation.BlockNumber(), uint40Len)...)
 	b = append(b, math.PaddedBigBytes(attestation.Timestamp(), uint40Len)...)
@@ -128,19 +228,19 @@ func DecodeAttestation(toDecode []byte) (Attestation, error) {
 		return nil, fmt.Errorf("invalid attestation length, expected %d, got %d", attestationSize, len(toDecode))
 	}
 
-	snapshotRoot := toDecode[attestationOffsetRoot:attestationOffsetAgentRoot]
-	agentRoot := toDecode[attestationOffsetAgentRoot:attestationOffsetNonce]
+	snapshotRoot := toDecode[attestationOffsetRoot:attestationOffsetDataHash]
+	dataHash := toDecode[attestationOffsetDataHash:attestationOffsetNonce]
 	nonce := binary.BigEndian.Uint32(toDecode[attestationOffsetNonce:attestationOffsetBlockNumber])
 	blockNumber := new(big.Int).SetBytes(toDecode[attestationOffsetBlockNumber:attestationOffsetTimestamp])
 	timestamp := new(big.Int).SetBytes(toDecode[attestationOffsetTimestamp:attestationSize])
 
-	var snapshotRootB32, agentRootB32 [32]byte
+	var snapshotRootB32, dataHashB32 [32]byte
 	copy(snapshotRootB32[:], snapshotRoot)
-	copy(agentRootB32[:], agentRoot)
+	copy(dataHashB32[:], dataHash)
 
 	return attestation{
 		snapshotRoot: snapshotRootB32,
-		agentRoot:    agentRootB32,
+		dataHash:     dataHashB32,
 		nonce:        nonce,
 		blockNumber:  blockNumber,
 		timestamp:    timestamp,
@@ -172,6 +272,7 @@ func HashRawBytes(rawBytes []byte) (common.Hash, error) {
 
 const (
 	uint64Len = 8
+	uint96Len = 12
 )
 
 // EncodeTips encodes a list of tips.
@@ -199,6 +300,7 @@ func DecodeTips(toDecode []byte) (Tips, error) {
 }
 
 type headerEncoder struct {
+	Flag              MessageFlag
 	OriginDomain      uint32
 	Nonce             uint32
 	DestinationDomain uint32
@@ -208,6 +310,7 @@ type headerEncoder struct {
 // EncodeHeader encodes a message header.
 func EncodeHeader(header Header) ([]byte, error) {
 	newHeader := headerEncoder{
+		Flag:              header.Flag(),
 		OriginDomain:      header.OriginDomain(),
 		Nonce:             header.Nonce(),
 		DestinationDomain: header.DestinationDomain(),
@@ -224,6 +327,87 @@ func EncodeHeader(header Header) ([]byte, error) {
 	return buf.Bytes(), nil
 }
 
+// EncodeRequest encodes a request.
+func EncodeRequest(m Request) ([]byte, error) {
+	b := make([]byte, 0)
+
+	versionBytes := make([]byte, uint32Len)
+	binary.BigEndian.PutUint32(versionBytes, m.Version())
+
+	gasLimitBytes := make([]byte, uint64Len)
+	binary.BigEndian.PutUint64(gasLimitBytes, m.GasLimit())
+
+	b = append(b, versionBytes...)
+	b = append(b, gasLimitBytes...)
+	b = append(b, math.PaddedBigBytes(m.GasDrop(), uint96Len)...)
+
+	return b, nil
+}
+
+// DecodeRequest decodes a request typed mem view.
+func DecodeRequest(toDecode []byte) (Request, error) {
+	version := binary.BigEndian.Uint32(toDecode[VersionOffset:GasLimitOffset])
+	gasLimit := binary.BigEndian.Uint64(toDecode[GasLimitOffset:GasDropOffset])
+	gasDrop := new(big.Int).SetBytes(toDecode[GasDropOffset:RequestSize])
+
+	return NewRequest(version, gasLimit, gasDrop), nil
+}
+
+// EncodeBaseMessage encodes a base message.
+func EncodeBaseMessage(m BaseMessage) ([]byte, error) {
+	b := make([]byte, 0)
+
+	senderRef := m.Sender()
+	recipientRef := m.Recipient()
+
+	b = append(b, senderRef[:]...)
+	b = append(b, recipientRef[:]...)
+
+	encodedTips, err := EncodeTips(m.Tips())
+	if err != nil {
+		return []byte{}, fmt.Errorf("could not encode tips part of message: %w", err)
+	}
+	b = append(b, encodedTips...)
+
+	encodedRequest, err := EncodeRequest(m.Request())
+	if err != nil {
+		return []byte{}, fmt.Errorf("could not encode request part of message: %w", err)
+	}
+	b = append(b, encodedRequest...)
+	b = append(b, m.Content()...)
+
+	return b, nil
+}
+
+// DecodeBaseMessage decodes a base message typed mem view.
+func DecodeBaseMessage(toDecode []byte) (BaseMessage, error) {
+	if len(toDecode) < BaseMessageContentOffset {
+		return nil, fmt.Errorf("invalid attestation length, expected at least %d, got %d", BaseMessageContentOffset, len(toDecode))
+	}
+	senderBytes := toDecode[BaseMessageSenderOffset:BaseMessageRecipientOffset]
+	recipientBytes := toDecode[BaseMessageRecipientOffset:BaseMessageTipsOffset]
+	var sender [32]byte
+	var recipient [32]byte
+	copy(sender[:], senderBytes)
+	copy(recipient[:], recipientBytes)
+
+	encodedTips := toDecode[BaseMessageTipsOffset:BaseMessageRequestOffset]
+	tips, err := DecodeTips(encodedTips)
+	if err != nil {
+		return nil, fmt.Errorf("could not decode tips part of message: %w", err)
+	}
+
+	encodedRequest := toDecode[BaseMessageRequestOffset:BaseMessageContentOffset]
+	request, err := DecodeRequest(encodedRequest)
+	if err != nil {
+		return nil, fmt.Errorf("could not decode request part of message: %w", err)
+	}
+
+	content := toDecode[BaseMessageContentOffset:]
+
+	return NewBaseMessage(sender, recipient, tips, request, content), nil
+}
+
 // EncodeMessage encodes a message.
 func EncodeMessage(m Message) ([]byte, error) {
 	encodedHeader, err := EncodeHeader(m.Header())
@@ -233,11 +417,53 @@ func EncodeMessage(m Message) ([]byte, error) {
 
 	buf := new(bytes.Buffer)
 
-	buf.Write([]byte{uint8(m.Flag())})
 	buf.Write(encodedHeader)
-	buf.Write(m.Body())
+
+	if m.Header().Flag() == MessageFlagBase {
+		encodedBaseMessage, err := EncodeBaseMessage(m.BaseMessage())
+		if err != nil {
+			return []byte{}, fmt.Errorf("could not encode header: %w", err)
+		}
+		buf.Write(encodedBaseMessage)
+	} else {
+		buf.Write(m.Body())
+	}
 
 	return buf.Bytes(), nil
+}
+
+// DecodeMessage decodes a message from a byte slice.
+func DecodeMessage(message []byte) (Message, error) {
+	rawHeader := message[:MessageBodyOffset]
+
+	header, err := DecodeHeader(rawHeader)
+	if err != nil {
+		return nil, fmt.Errorf("could not decode header: %w", err)
+	}
+
+	rawBody := message[MessageBodyOffset:]
+
+	var decoded Message
+
+	var content []byte
+	if header.Flag() == MessageFlagBase {
+		baseMessage, err := DecodeBaseMessage(rawBody)
+		if err != nil {
+			return nil, fmt.Errorf("could not decode base message: %w", err)
+		}
+		decoded = messageImpl{
+			header:      header,
+			baseMessage: baseMessage,
+		}
+	} else {
+		content = rawBody
+		decoded = messageImpl{
+			header: header,
+			body:   content,
+		}
+	}
+
+	return decoded, nil
 }
 
 // EncodeAgentStatus encodes a agent status.

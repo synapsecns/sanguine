@@ -46,10 +46,14 @@ type DomainConfig struct {
 	SummitAddress string `yaml:"summit_address"`
 	// DestinationAddress gets destination contract address
 	DestinationAddress string `yaml:"destination_address"`
-	// LightManagerAddress gets light manager contract address
+	// LightManagerAddress gets then light manager contract address
 	LightManagerAddress string `yaml:"light_manager_address"`
-	// BondingManagerAddress gets bonding manager contract address
+	// BondingManagerAddress gets the bonding manager contract address
 	BondingManagerAddress string `yaml:"bonding_manager_address"`
+	// LightInboxAddress gets the light inbox contract address
+	LightInboxAddress string `yaml:"light_inbox_address"`
+	// InboxAddress gets the inbox contract address
+	InboxAddress string `yaml:"inbox_address"`
 	// RPCUrl to use for the chain
 	RPCUrl string `yaml:"rpc_url"`
 	// Minimum start height

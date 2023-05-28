@@ -80,12 +80,16 @@ func (s Store) GetState(ctx context.Context, stateMask types.DBState) (*agentsTy
 		return nil, nil
 	}
 
+	gasData := agentsTypes.NewGasData(
+		state.GDGasPrice, state.GDDataPrice, state.GDExecBuffer, state.GDAmortAttCost, state.GDEtherPrice, state.GDMarkup)
+
 	receivedState := agentsTypes.NewState(
 		common.HexToHash(state.Root),
 		state.ChainID,
 		state.Nonce,
 		big.NewInt(int64(state.OriginBlockNumber)),
 		big.NewInt(int64(state.OriginTimestamp)),
+		gasData,
 	)
 
 	return &receivedState, nil
@@ -158,6 +162,7 @@ func (s Store) GetSnapshotRootsInNonceRange(ctx context.Context, chainID uint32,
 }
 
 // DBStateToState converts a DBState to a State.
+// nolint:cyclop
 func DBStateToState(dbState types.DBState) State {
 	var state State
 
@@ -193,6 +198,30 @@ func DBStateToState(dbState types.DBState) State {
 		state.StateIndex = *dbState.StateIndex
 	}
 
+	if dbState.GDGasPrice != nil {
+		state.GDGasPrice = *dbState.GDGasPrice
+	}
+
+	if dbState.GDDataPrice != nil {
+		state.GDDataPrice = *dbState.GDDataPrice
+	}
+
+	if dbState.GDExecBuffer != nil {
+		state.GDExecBuffer = *dbState.GDExecBuffer
+	}
+
+	if dbState.GDAmortAttCost != nil {
+		state.GDAmortAttCost = *dbState.GDAmortAttCost
+	}
+
+	if dbState.GDEtherPrice != nil {
+		state.GDEtherPrice = *dbState.GDEtherPrice
+	}
+
+	if dbState.GDMarkup != nil {
+		state.GDMarkup = *dbState.GDMarkup
+	}
+
 	return state
 }
 
@@ -206,6 +235,12 @@ func StateToDBState(state State) types.DBState {
 	originTimestamp := state.OriginTimestamp
 	proof := state.Proof
 	stateIndex := state.StateIndex
+	gasPrice := state.GDGasPrice
+	dataPrice := state.GDDataPrice
+	execBuffer := state.GDExecBuffer
+	amortAttCost := state.GDAmortAttCost
+	etherPrice := state.GDEtherPrice
+	markup := state.GDMarkup
 
 	return types.DBState{
 		SnapshotRoot:      &snapshotRoot,
@@ -216,6 +251,12 @@ func StateToDBState(state State) types.DBState {
 		OriginTimestamp:   &originTimestamp,
 		Proof:             &proof,
 		StateIndex:        &stateIndex,
+		GDGasPrice:        &gasPrice,
+		GDDataPrice:       &dataPrice,
+		GDExecBuffer:      &execBuffer,
+		GDAmortAttCost:    &amortAttCost,
+		GDEtherPrice:      &etherPrice,
+		GDMarkup:          &markup,
 	}
 }
 
@@ -240,5 +281,11 @@ func AgentsTypesStateToState(state agentsTypes.State, snapshotRoot [32]byte, pro
 		OriginTimestamp:   state.Timestamp().Uint64(),
 		Proof:             proofDBFormat,
 		StateIndex:        stateIndex,
+		GDGasPrice:        state.GasData().GasPrice(),
+		GDDataPrice:       state.GasData().DataPrice(),
+		GDExecBuffer:      state.GasData().ExecBuffer(),
+		GDAmortAttCost:    state.GasData().AmortAttCost(),
+		GDEtherPrice:      state.GasData().EtherPrice(),
+		GDMarkup:          state.GasData().Markup(),
 	}, nil
 }

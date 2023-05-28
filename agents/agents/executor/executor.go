@@ -5,6 +5,8 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"github.com/synapsecns/sanguine/agents/contracts/inbox"
+	"github.com/synapsecns/sanguine/agents/contracts/lightinbox"
 	"github.com/synapsecns/sanguine/core/metrics"
 	"go.opentelemetry.io/contrib/instrumentation/google.golang.org/grpc/otelgrpc"
 	"go.opentelemetry.io/otel/attribute"
@@ -53,6 +55,10 @@ type chainExecutor struct {
 	originParser origin.Parser
 	// destinationParser is the destination parser.
 	destinationParser destination.Parser
+	// lightInboxParser is the light inbox parser.
+	lightInboxParser *lightinbox.Parser
+	// inboxParser is the inbox parser.
+	inboxParser *inbox.Parser
 	// summitParser is the summit parser.
 	summitParser *summit.Parser
 	// logChan is the log channel.
@@ -145,6 +151,8 @@ func NewExecutor(ctx context.Context, config config.Config, executorDB db.Execut
 		}
 
 		var summitParserRef *summit.Parser
+		var inboxParserRef *inbox.Parser
+		var lightInboxParserRef *lightinbox.Parser
 
 		if config.SummitChainID == chain.ChainID {
 			summitParser, err := summit.NewParser(common.HexToAddress(config.SummitAddress))
@@ -153,6 +161,20 @@ func NewExecutor(ctx context.Context, config config.Config, executorDB db.Execut
 			}
 
 			summitParserRef = &summitParser
+
+			inboxParser, err := inbox.NewParser(common.HexToAddress(config.InboxAddress))
+			if err != nil {
+				return nil, fmt.Errorf("could not create inbox parser: %w", err)
+			}
+
+			inboxParserRef = &inboxParser
+		} else {
+			lightInboxParser, err := lightinbox.NewParser(common.HexToAddress(chain.LightInboxAddress))
+			if err != nil {
+				return nil, fmt.Errorf("could not create destination parser: %w", err)
+			}
+
+			lightInboxParserRef = &lightInboxParser
 		}
 
 		// chainRPCURL := fmt.Sprintf("%s/1/rpc/%d", config.BaseOmnirpcURL, chain.ChainID)
@@ -183,6 +205,8 @@ func NewExecutor(ctx context.Context, config config.Config, executorDB db.Execut
 			originParser:      originParser,
 			destinationParser: destinationParser,
 			summitParser:      summitParserRef,
+			lightInboxParser:  lightInboxParserRef,
+			inboxParser:       inboxParserRef,
 			logChan:           make(chan *ethTypes.Log, logChanSize),
 			merkleTree:        tree,
 			rpcClient:         clients[chain.ChainID],
@@ -220,10 +244,10 @@ func (e Executor) Run(ctx context.Context) error {
 		return fmt.Errorf("could not backfill executed messages: %w", err)
 	}
 
-	// Listen for snapshotAcceptedEvents on summit.
+	// Listen for snapshotAcceptedEvents on bonding manager.
 	g.Go(func() error {
-		return e.streamLogs(ctx, e.grpcClient, e.grpcConn, e.config.SummitChainID, e.config.SummitAddress, nil, contractEventType{
-			contractType: summitContract,
+		return e.streamLogs(ctx, e.grpcClient, e.grpcConn, e.config.SummitChainID, e.config.InboxAddress, nil, contractEventType{
+			contractType: inboxContract,
 			eventType:    snapshotAcceptedEvent,
 		})
 	})
@@ -242,7 +266,7 @@ func (e Executor) Run(ctx context.Context) error {
 		// Listen for attestationAcceptedEvents on destination.
 		g.Go(func() error {
 			return e.streamLogs(ctx, e.grpcClient, e.grpcConn, chain.ChainID, chain.DestinationAddress, nil, contractEventType{
-				contractType: destinationContract,
+				contractType: lightInboxContract,
 				eventType:    attestationAcceptedEvent,
 			})
 		})
@@ -412,14 +436,15 @@ type eventType int
 const (
 	originContract contractType = iota
 	destinationContract
-	summitContract
+	lightInboxContract
+	inboxContract
 	other
 )
 
 const (
 	// Origin's Sent event.
 	sentEvent eventType = iota
-	// Destination's AttestationAccepted event.
+	// LightManager's AttestationAccepted event.
 	attestationAcceptedEvent
 	// Destination's AttestationExecuted event.
 	executedEvent
@@ -723,28 +748,7 @@ func (e Executor) processLog(parentCtx context.Context, log ethTypes.Log, chainI
 			return fmt.Errorf("could not store message: %w", err)
 		}
 	case destinationContract:
-		//nolint:exhaustive
-		switch contractEvent.eventType {
-		case attestationAcceptedEvent:
-			attestation, err := e.logToAttestation(log, chainID)
-			if err != nil {
-				return fmt.Errorf("could not convert log to attestation: %w", err)
-			}
-
-			if attestation == nil {
-				return nil
-			}
-
-			logHeader, err := e.chainExecutors[chainID].rpcClient.HeaderByNumber(ctx, big.NewInt(int64(log.BlockNumber)))
-			if err != nil {
-				return fmt.Errorf("could not get log header: %w", err)
-			}
-
-			err = e.executorDB.StoreAttestation(ctx, *attestation, chainID, log.BlockNumber, logHeader.Time)
-			if err != nil {
-				return fmt.Errorf("could not store attestation: %w", err)
-			}
-		case executedEvent:
+		if contractEvent.eventType == executedEvent {
 			originDomain, messageLeaf, ok := e.chainExecutors[chainID].destinationParser.ParseExecuted(log)
 			if !ok || originDomain == nil || messageLeaf == nil {
 				return fmt.Errorf("could not parse executed event")
@@ -752,10 +756,8 @@ func (e Executor) processLog(parentCtx context.Context, log ethTypes.Log, chainI
 
 			e.chainExecutors[chainID].executed[*messageLeaf] = true
 		}
-	case summitContract:
-		//nolint:gocritic,exhaustive
-		switch contractEvent.eventType {
-		case snapshotAcceptedEvent:
+	case inboxContract:
+		if contractEvent.eventType == snapshotAcceptedEvent {
 			snapshot, err := e.logToSnapshot(log, chainID)
 			if err != nil {
 				return fmt.Errorf("could not convert log to snapshot: %w", err)
@@ -773,6 +775,27 @@ func (e Executor) processLog(parentCtx context.Context, log ethTypes.Log, chainI
 			err = e.executorDB.StoreStates(ctx, (*snapshot).States(), snapshotRoot, proofs)
 			if err != nil {
 				return fmt.Errorf("could not store states: %w", err)
+			}
+		}
+	case lightInboxContract:
+		if contractEvent.eventType == attestationAcceptedEvent {
+			attestation, err := e.logToAttestation(log, chainID)
+			if err != nil {
+				return fmt.Errorf("could not convert log to attestation: %w", err)
+			}
+
+			if attestation == nil {
+				return nil
+			}
+
+			logHeader, err := e.chainExecutors[chainID].rpcClient.HeaderByNumber(ctx, big.NewInt(int64(log.BlockNumber)))
+			if err != nil {
+				return fmt.Errorf("could not get log header: %w", err)
+			}
+
+			err = e.executorDB.StoreAttestation(ctx, *attestation, chainID, log.BlockNumber, logHeader.Time)
+			if err != nil {
+				return fmt.Errorf("could not store attestation: %w", err)
 			}
 		}
 	case other:

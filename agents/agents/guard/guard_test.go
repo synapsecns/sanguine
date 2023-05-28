@@ -74,11 +74,15 @@ func (u GuardSuite) TestGuardE2E() {
 
 	txContextTestClientOrigin := u.TestBackendOrigin.GetTxContext(u.GetTestContext(), u.TestClientMetadataOnOrigin.OwnerPtr())
 
+	gasLimit := uint64(10000000)
+	version := uint32(1)
 	testClientOnOriginTx, err := u.TestClientOnOrigin.SendMessage(
 		txContextTestClientOrigin.TransactOpts,
 		uint32(u.TestBackendDestination.GetChainID()),
 		u.TestClientMetadataOnDestination.Address(),
 		optimisticSeconds,
+		gasLimit,
+		version,
 		body)
 
 	u.Nil(err)

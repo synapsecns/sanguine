@@ -81,7 +81,7 @@ func (s snapshot) SignSnapshot(ctx context.Context, signer signer.Signer) (signe
 		return nil, nil, common.Hash{}, fmt.Errorf("could not encode snapshot: %w", err)
 	}
 
-	snapshotSalt := crypto.Keccak256Hash([]byte("SNAPSHOT_SALT"))
+	snapshotSalt := crypto.Keccak256Hash([]byte("SNAPSHOT_VALID_SALT"))
 
 	hashedEncodedSnapshot := crypto.Keccak256Hash(encodedSnapshot).Bytes()
 	toSign := append(snapshotSalt.Bytes(), hashedEncodedSnapshot...)
