@@ -17,7 +17,7 @@ export default function CustomToaster() {
             bg-gray-800
             text-gray-400
           `,
-        duration: 15000,
+        duration: 10000,
       }}
     >
       {(toastData) => (
