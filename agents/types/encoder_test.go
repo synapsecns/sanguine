@@ -9,15 +9,17 @@ import (
 )
 
 func TestRequestEncodeDecode(t *testing.T) {
+	version := uint32(1)
 	gasLimit := gofakeit.Uint64()
 	gasDrop := randomUint64BigInt(t)
 
-	ogRequest, err := types.EncodeRequest(types.NewRequest(gasLimit, gasDrop))
+	ogRequest, err := types.EncodeRequest(types.NewRequest(version, gasLimit, gasDrop))
 	Nil(t, err)
 
 	decodedRequest, err := types.DecodeRequest(ogRequest)
 	Nil(t, err)
 
+	Equal(t, decodedRequest.Version(), version)
 	Equal(t, decodedRequest.GasLimit(), gasLimit)
 	Equal(t, decodedRequest.GasDrop(), gasDrop)
 }
@@ -57,10 +59,11 @@ func TestEncodeDecodeBaseMessage(t *testing.T) {
 
 	tips := types.NewTips(summitTip, attestationTip, executionTip, deliveryTip)
 
+	version := uint32(1)
 	gasLimit := gofakeit.Uint64()
 	gasDrop := randomUint64BigInt(t)
 
-	request := types.NewRequest(gasLimit, gasDrop)
+	request := types.NewRequest(version, gasLimit, gasDrop)
 
 	content := randomUint64BigInt(t).Bytes()
 
@@ -76,6 +79,7 @@ func TestEncodeDecodeBaseMessage(t *testing.T) {
 	Equal(t, decodedBaseMessage.Tips().AttestationTip().Uint64(), tips.AttestationTip().Uint64())
 	Equal(t, decodedBaseMessage.Tips().DeliveryTip().Uint64(), tips.DeliveryTip().Uint64())
 	Equal(t, decodedBaseMessage.Tips().ExecutionTip().Uint64(), tips.ExecutionTip().Uint64())
+	Equal(t, decodedBaseMessage.Request().Version(), request.Version())
 	Equal(t, decodedBaseMessage.Request().GasLimit(), request.GasLimit())
 	Equal(t, decodedBaseMessage.Request().GasDrop().Uint64(), request.GasDrop().Uint64())
 	Equal(t, decodedBaseMessage.Content(), content)
