@@ -12,6 +12,7 @@ import (
 	"github.com/synapsecns/sanguine/core/metrics"
 	"github.com/synapsecns/sanguine/ethergo/client"
 	"github.com/synapsecns/sanguine/ethergo/util"
+	"golang.org/x/exp/constraints"
 	"math"
 	"math/big"
 )
@@ -99,4 +100,39 @@ func GetLogsInRange(ctx context.Context, backend ScribeBackend, startHeight uint
 	}
 
 	return res.List(), nil
+}
+
+// BlockHashesInRange gets all block hashes in a range with a single batch request
+// in successful cases an immutable map is returned of [height->hash], otherwise an error is returned.
+func BlockHashesInRange(ctx context.Context, backend ScribeBackend, startHeight uint64, endHeight uint64) (*immutable.Map[uint64, string], error) {
+	// performance impact will be negligible here because of external constraints on blocksize
+	blocks := MakeRange(startHeight, endHeight)
+	bulkSize := len(blocks)
+	calls := make([]w3types.Caller, bulkSize)
+	results := make([]types.Header, bulkSize)
+
+	for i, blockNumber := range blocks {
+		calls[i] = eth.HeaderByNumber(new(big.Int).SetUint64(blockNumber)).Returns(&results[i])
+	}
+
+	if err := backend.BatchWithContext(ctx, calls...); err != nil {
+		return nil, fmt.Errorf("could not fetch blocks in range %d to %d: %w", startHeight, endHeight, err)
+	}
+
+	// use an immutable map for additional safety to the caller, don't allocate until batch returns successfully
+	res := immutable.NewMapBuilder[uint64, string](nil)
+	for _, result := range results {
+		res.Set(result.Number.Uint64(), result.Hash().String())
+	}
+
+	return res.Map(), nil
+}
+
+// MakeRange returns a range of integers from min to max inclusive.
+func MakeRange[T constraints.Integer](min, max T) []T {
+	a := make([]T, max-min+1)
+	for i := range a {
+		a[i] = min + T(i)
+	}
+	return a
 }

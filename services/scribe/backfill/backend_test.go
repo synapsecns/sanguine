@@ -12,6 +12,7 @@ import (
 	"k8s.io/apimachinery/pkg/util/sets"
 	"math/big"
 	"sync"
+	"testing"
 )
 
 // startOmnirpcServer boots an omnirpc server for an rpc address.
@@ -115,5 +116,54 @@ func (b *BackfillSuite) TestLogsInRange() {
 
 		Falsef(b.T(), intSet.Has(int64(index)), "%d appears at least twice", index)
 		intSet.Insert(int64(index))
+	}
+}
+
+func TestMakeRange(t *testing.T) {
+	testIntRange := backfill.MakeRange(0, 4)
+	Equal(t, []int{0, 1, 2, 3, 4}, testIntRange)
+
+	testUintRange := backfill.MakeRange(uint16(10), uint16(12))
+	Equal(t, testUintRange, []uint16{10, 11, 12})
+}
+
+func (b *BackfillSuite) TestBlockHashesInRange() {
+	testBackend := geth.NewEmbeddedBackend(b.GetTestContext(), b.T())
+
+	// start an omnirpc proxy and run 10 test tranactions so we can batch call blocks
+	//  1-10
+	var wg sync.WaitGroup
+	wg.Add(2)
+
+	const desiredBlockHeight = 10
+
+	go func() {
+		defer wg.Done()
+		b.ReachBlockHeight(b.GetTestContext(), testBackend, desiredBlockHeight)
+	}()
+
+	var host string
+	go func() {
+		defer wg.Done()
+		host = b.startOmnirpcServer(b.GetTestContext(), testBackend)
+	}()
+
+	wg.Wait()
+
+	scribeBackend, err := backfill.DialBackend(b.GetTestContext(), host, b.metrics)
+	Nil(b.T(), err)
+
+	res, err := backfill.BlockHashesInRange(b.GetTestContext(), scribeBackend, 1, 10)
+	Nil(b.T(), err)
+
+	// use to make sure we don't double use values
+	intSet := sets.NewInt64()
+
+	itr := res.Iterator()
+
+	for !itr.Done() {
+		index, _, _ := itr.Next()
+
+		Falsef(b.T(), intSet.Has(int64(index)), "%d appears at least twice", index)
 	}
 }
