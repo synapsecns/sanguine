@@ -27,7 +27,7 @@ export const TransactionButton = ({
   ...props
 }: {
   className?: string
-  onClick: () => Promise<TransactionResponse>
+  onClick: () => Promise<TransactionResponse | any>
   pendingLabel: string
   label: string
   onSuccess?: () => void
@@ -49,21 +49,6 @@ export const TransactionButton = ({
       onClick={async () => {
         const tx = await pendingTxWrapFunc(onClick())
         if (tx?.hash || tx?.transactionHash || tx?.status === 1) {
-          const txHash = tx?.hash ?? tx?.transactionHash
-          if (txHash) {
-            const toastContent = (
-              <div>
-                <div>Tx Completed</div>
-                <ExplorerToastLink
-                  transactionHash={
-                    tx?.hash ?? tx?.transactionHash ?? AddressZero
-                  }
-                  chainId={chainId}
-                />
-              </div>
-            )
-            toast.success(toastContent)
-          }
           onSuccess?.()
         }
       }}

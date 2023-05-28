@@ -16,7 +16,7 @@ import RadioButton from '@components/buttons/RadioButton'
 import RecievedTokenSection from '../components/RecievedTokenSection'
 import PriceImpactDisplay from '../components/PriceImpactDisplay'
 
-import { TransactionButton } from '@components/buttons/SubmitTxButton'
+import { TransactionButton } from '@/components/buttons/TransactionButton'
 import { Zero } from '@ethersproject/constants'
 import { Token } from '@types'
 import { approve, withdraw } from '@/utils/actions/approveAndWithdraw'
@@ -40,6 +40,7 @@ const Withdraw = ({
     bn: BigNumber
     str: string
   }>({ bn: Zero, str: '' })
+
   const [withdrawQuote, setWithdrawQuote] = useState<{
     priceImpact: BigNumber
     outputs: Record<

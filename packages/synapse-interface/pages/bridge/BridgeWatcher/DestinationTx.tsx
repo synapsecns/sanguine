@@ -123,7 +123,7 @@ const DestinationTx = (fromEvent: BridgeWatcherTx) => {
         setToEvent(tx)
       })
     }
-  }, [completedConf])
+  }, [completedConf, toEvent, fromEvent])
 
   // Listens for SynapseContract to be set and if so, will check destination chain for logs if there is no toEvent
   useEffect(() => {
@@ -134,7 +134,7 @@ const DestinationTx = (fromEvent: BridgeWatcherTx) => {
       })
     }
     return
-  }, [toSynapseContract])
+  }, [toSynapseContract, toEvent])
 
   useEffect(() => {
     setToSigner(toSignerRaw)

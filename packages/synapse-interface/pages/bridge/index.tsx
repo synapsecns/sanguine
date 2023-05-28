@@ -10,6 +10,8 @@ import { fetchSigner, getNetwork, switchNetwork } from '@wagmi/core'
 import { sortByTokenBalance, sortByVisibilityRank } from '@utils/sortTokens'
 import { calculateExchangeRate } from '@utils/calculateExchangeRate'
 import { subtractSlippage } from '@utils/slippage'
+import { txErrorHandler } from '@/utils/txErrorHandler'
+import ExplorerToastLink from '@/components/ExplorerToastLink'
 import toast from 'react-hot-toast'
 import Popup from '@components/Popup'
 import {
@@ -41,7 +43,7 @@ import {
   EMPTY_BRIDGE_QUOTE_ZERO,
   QUOTE_POLLING_INTERVAL,
 } from '@/constants/bridge'
-
+import { CHAINS_BY_ID } from '@/constants/chains'
 /* TODO
   - look into getting rid of fromChainId state and just using wagmi hook (ran into problems when trying this but forgot why)
 */
@@ -75,7 +77,10 @@ const BridgePage = ({
   const [bridgeQuote, setBridgeQuote] =
     useState<BridgeQuote>(EMPTY_BRIDGE_QUOTE)
 
-  let popup: string
+  let pendingPopup: any
+  let successPopup: any
+  let errorPopup: string
+
   /*
   useEffect Trigger: onMount
   - Gets current network connected and sets it as the state.
@@ -170,7 +175,7 @@ const BridgePage = ({
     return () => {
       isCancelled = true
     }
-  }, [toToken, fromInput, time, fromChainId, toChainId])
+  }, [toToken, fromInput, time, fromChainId, toChainId, fromToken])
 
   /*
   useEffect Triggers: fromInput
@@ -379,9 +384,9 @@ const BridgePage = ({
   */
   useEffect(() => {
     if (address && !isDisconnected) {
-      toast.dismiss(popup)
+      toast.dismiss(errorPopup)
     }
-  }, [address, isDisconnected, popup])
+  }, [address, isDisconnected, errorPopup])
 
   /*
   Function: handleChainChange
@@ -392,11 +397,11 @@ const BridgePage = ({
   const handleChainChange = useCallback(
     async (chainId: number, flip: boolean, type: 'from' | 'to') => {
       if (address === undefined || isDisconnected) {
-        popup = toast.error('Please connect your wallet', {
+        errorPopup = toast.error('Please connect your wallet', {
           id: 'bridge-connect-wallet',
           duration: 20000,
         })
-        return popup
+        return errorPopup
       }
 
       if (flip || type === 'from') {
@@ -475,6 +480,8 @@ const BridgePage = ({
         )
         if (fromInput.string !== '') {
           setIsQuoteLoading(true)
+        } else {
+          setIsQuoteLoading(false)
         }
         return
       }
@@ -482,6 +489,7 @@ const BridgePage = ({
     [
       address,
       isDisconnected,
+      fromInput,
       fromToken,
       fromChainId,
       toToken,
@@ -650,17 +658,48 @@ const BridgePage = ({
           ? { data: data.data, to: data.to, value: fromInput.bigNum }
           : data
       const tx = await wallet.sendTransaction(payload)
+
+      const originChainName = CHAINS_BY_ID[fromChainId]?.name
+      const destinationChainName = CHAINS_BY_ID[toChainId]?.name
+
+      pendingPopup = toast(
+        `Bridging from ${fromToken.symbol} on ${originChainName} to ${toToken.symbol} on ${destinationChainName}`,
+        { id: 'bridge-in-progress-popup', duration: Infinity }
+      )
+
       try {
         await tx.wait()
-        console.log(`Transaction mined successfully: ${tx.hash}`)
         setBridgeTxHash(tx.hash)
+        toast.dismiss(pendingPopup)
+
+        const successToastContent = (
+          <div>
+            <div>
+              Successfully initiated bridge from {fromToken.symbol} on{' '}
+              {originChainName} to {toToken.symbol} on {destinationChainName}
+            </div>
+            <ExplorerToastLink
+              transactionHash={tx?.hash ?? AddressZero}
+              chainId={fromChainId}
+            />
+          </div>
+        )
+
+        successPopup = toast.success(successToastContent, {
+          id: 'bridge-success-popup',
+          duration: 10000,
+        })
+
+        resetRates()
         return tx
       } catch (error) {
         console.log(`Transaction failed with error: ${error}`)
+        toast.dismiss(pendingPopup)
       }
     } catch (error) {
       console.log('Error executing bridge', error)
-      return
+      toast.dismiss(pendingPopup)
+      return txErrorHandler(error)
     }
   }
 
