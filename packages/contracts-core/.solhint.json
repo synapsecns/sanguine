@@ -1,11 +1,9 @@
 {
   "extends": "solhint:recommended",
-  "plugins": ["prettier"],
   "rules": {
-      "prettier/prettier": "warn",
       "compiler-version": "off",
       "code-complexity": ["warn", 5],
-      "max-line-length": ["warn", 100],
+      "max-line-length": ["warn", 120],
       "func-param-name-mixedcase": "error",
       "modifier-name-mixedcase": "error",
       "ordering": "warn",

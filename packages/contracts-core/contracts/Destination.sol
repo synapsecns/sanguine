@@ -1,216 +1,223 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.17;
+
 // ══════════════════════════════ LIBRARY IMPORTS ══════════════════════════════
-import { SYSTEM_ROUTER } from "./libs/Constants.sol";
-import { MerkleLib } from "./libs/Merkle.sol";
-import { Header, Message, MessageLib, Tips } from "./libs/Message.sol";
-import { StateLib } from "./libs/State.sol";
-import { TypeCasts } from "./libs/TypeCasts.sol";
-import { TypedMemView } from "./libs/TypedMemView.sol";
+import {Attestation, AttestationLib} from "./libs/memory/Attestation.sol";
+import {ByteString} from "./libs/memory/ByteString.sol";
+import {AGENT_ROOT_OPTIMISTIC_PERIOD, SYNAPSE_DOMAIN} from "./libs/Constants.sol";
+import {IndexOutOfRange, NotaryInDispute} from "./libs/Errors.sol";
+import {ChainGas, GasData} from "./libs/stack/GasData.sol";
+import {AgentStatus, DestinationStatus} from "./libs/Structures.sol";
 // ═════════════════════════════ INTERNAL IMPORTS ══════════════════════════════
-import { DomainContext } from "./context/DomainContext.sol";
-import { DestinationEvents } from "./events/DestinationEvents.sol";
-import { InterfaceDestination, ORIGIN_TREE_DEPTH } from "./interfaces/InterfaceDestination.sol";
-import { IMessageRecipient } from "./interfaces/IMessageRecipient.sol";
-import { DestinationAttestation, AttestationHub } from "./hubs/AttestationHub.sol";
-import { Attestation, StatementHub } from "./hubs/StatementHub.sol";
-import { SystemRegistry } from "./system/SystemRegistry.sol";
+import {AgentSecured} from "./base/AgentSecured.sol";
+import {DestinationEvents} from "./events/DestinationEvents.sol";
+import {IAgentManager} from "./interfaces/IAgentManager.sol";
+import {InterfaceDestination} from "./interfaces/InterfaceDestination.sol";
+import {InterfaceLightManager} from "./interfaces/InterfaceLightManager.sol";
+import {IStatementInbox} from "./interfaces/IStatementInbox.sol";
+import {ExecutionHub} from "./hubs/ExecutionHub.sol";
 
-contract Destination is
-    StatementHub,
-    AttestationHub,
-    SystemRegistry,
-    DestinationEvents,
-    InterfaceDestination
-{
-    using MessageLib for bytes;
-    using TypedMemView for bytes29;
+/// @notice `Destination` contract is used for receiving messages from other chains. It relies on
+/// Notary-signed statements to get the truthful states of the remote chains. These states are then
+/// used to verify the validity of the messages sent from the remote chains.
+/// `Destination` is responsible for the following:
+/// - Accepting the Attestations from the local Inbox contract.
+/// - Using these Attestations to execute the messages (see parent `ExecutionHub`).
+/// - Passing the Agent Merkle Roots from the Attestations to the local LightManager contract,
+///   if deployed on a non-Synapse chain.
+/// - Keeping track of the remote domains GasData submitted by Notaries, that could be later consumed
+///   by the local `GasOracle` contract.
+contract Destination is ExecutionHub, DestinationEvents, InterfaceDestination {
+    using AttestationLib for bytes;
+    using ByteString for bytes;
 
-    /*╔══════════════════════════════════════════════════════════════════════╗*\
-    ▏*║                              CONSTANTS                               ║*▕
-    \*╚══════════════════════════════════════════════════════════════════════╝*/
-
-    bytes32 internal constant MESSAGE_STATUS_NONE = bytes32(0);
-
-    /*╔══════════════════════════════════════════════════════════════════════╗*\
-    ▏*║                               STORAGE                                ║*▕
-    \*╚══════════════════════════════════════════════════════════════════════╝*/
-
-    /// @notice (messageHash => status)
-    /// TODO: Store something else as "status"? Notary/timestamp?
-    /// - Message hasn't been executed: MESSAGE_STATUS_NONE
-    /// - Message has been executed: snapshot root used for proving when executed
-    /// @dev Messages coming from different origins will always have a different hash
-    /// as origin domain is encoded into the formatted message.
-    /// Thus we can use hash as a key instead of an (origin, hash) tuple.
-    mapping(bytes32 => bytes32) public messageStatus;
-
-    /*╔══════════════════════════════════════════════════════════════════════╗*\
-    ▏*║                      CONSTRUCTOR & INITIALIZER                       ║*▕
-    \*╚══════════════════════════════════════════════════════════════════════╝*/
-
-    constructor(uint32 _domain) DomainContext(_domain) {}
-
-    /// @notice Initializes Origin contract:
-    /// - msg.sender is set as contract owner
-    function initialize() external initializer {
-        // Initialize SystemContract: msg.sender is set as "owner"
-        __SystemContract_initialize();
+    // TODO: this could be further optimized in terms of storage
+    struct StoredAttData {
+        bytes32 agentRoot;
+        bytes32 dataHash;
     }
 
-    /*╔══════════════════════════════════════════════════════════════════════╗*\
-    ▏*║                          ACCEPT STATEMENTS                           ║*▕
-    \*╚══════════════════════════════════════════════════════════════════════╝*/
+    struct StoredGasData {
+        GasData gasData;
+        uint32 notaryIndex;
+        uint40 submittedAt;
+    }
+
+    // ══════════════════════════════════════════════════ STORAGE ══════════════════════════════════════════════════════
+
+    /// @dev Invariant: this is either current LightManager root,
+    /// or the pending root to be passed to LightManager once its optimistic period is over.
+    bytes32 internal _nextAgentRoot;
 
     /// @inheritdoc InterfaceDestination
-    function submitAttestation(bytes memory _attPayload, bytes memory _attSignature)
-        external
-        returns (bool wasAccepted)
-    {
-        // This will revert if payload is not an attestation, or signer is not an active Notary
-        (Attestation att, uint32 domain, address notary) = _verifyAttestation(
-            _attPayload,
-            _attSignature
-        );
-        // Check that Notary is active on local domain
-        require(domain == localDomain, "Wrong Notary domain");
+    DestinationStatus public destStatus;
+
+    /// @dev Stored lookup data for all accepted Notary Attestations
+    StoredAttData[] internal _storedAttestations;
+
+    /// @dev Remote domains GasData submitted by Notaries
+    mapping(uint32 => StoredGasData) internal _storedGasData;
+
+    // ═════════════════════════════════════════ CONSTRUCTOR & INITIALIZER ═════════════════════════════════════════════
+
+    constructor(uint32 domain, address agentManager_, address inbox_)
+        AgentSecured("0.0.3", domain, agentManager_, inbox_)
+    {} // solhint-disable-line no-empty-blocks
+
+    /// @notice Initializes Destination contract:
+    /// - msg.sender is set as contract owner
+    function initialize(bytes32 agentRoot) external initializer {
+        // Initialize Ownable: msg.sender is set as "owner"
+        __Ownable_init();
+        // Initialize ReeentrancyGuard
+        __ReentrancyGuard_init();
+        // Set Agent Merkle Root in Light Manager
+        if (localDomain != SYNAPSE_DOMAIN) {
+            _nextAgentRoot = agentRoot;
+            InterfaceLightManager(address(agentManager)).setAgentRoot(agentRoot);
+            destStatus.agentRootTime = uint40(block.timestamp);
+        }
+        // No need to do anything on Synapse Chain, as the agent root is set in BondingManager
+    }
+
+    // ═════════════════════════════════════════════ ACCEPT STATEMENTS ═════════════════════════════════════════════════
+
+    /// @inheritdoc InterfaceDestination
+    function acceptAttestation(
+        uint32 notaryIndex,
+        uint256 sigIndex,
+        bytes memory attPayload,
+        bytes32 agentRoot,
+        ChainGas[] memory snapGas
+    ) external onlyInbox returns (bool wasAccepted) {
+        if (_isInDispute(notaryIndex)) revert NotaryInDispute();
+        // First, try passing current agent merkle root
+        (bool rootPassed, bool rootPending) = passAgentRoot();
+        // Don't accept attestation, if the agent root was updated in LightManager,
+        // as the following agent check will fail.
+        if (rootPassed) return false;
+        // This will revert if payload is not an attestation
+        Attestation att = attPayload.castToAttestation();
         // This will revert if snapshot root has been previously submitted
-        _acceptAttestation(att, notary);
-        emit AttestationAccepted(domain, notary, _attPayload, _attSignature);
+        _saveAttestation(att, notaryIndex, sigIndex);
+        _storedAttestations.push(StoredAttData({agentRoot: agentRoot, dataHash: att.dataHash()}));
+        // Save Agent Root if required, and update the Destination's Status
+        destStatus = _saveAgentRoot(rootPending, agentRoot, notaryIndex);
+        _saveGasData(snapGas, notaryIndex);
         return true;
     }
 
-    /*╔══════════════════════════════════════════════════════════════════════╗*\
-    ▏*║                           EXECUTE MESSAGES                           ║*▕
-    \*╚══════════════════════════════════════════════════════════════════════╝*/
+    // ═══════════════════════════════════════════ AGENT ROOT QUARANTINE ═══════════════════════════════════════════════
 
     /// @inheritdoc InterfaceDestination
-    function execute(
-        bytes memory _message,
-        bytes32[ORIGIN_TREE_DEPTH] calldata _originProof,
-        bytes32[] calldata _snapProof,
-        uint256 _stateIndex
-    ) external {
-        // This will revert if payload is not a formatted message payload
-        Message message = _message.castToMessage();
-        Header header = message.header();
-        bytes32 msgLeaf = message.leaf();
-        // Check proofs validity and mark message as executed
-        DestinationAttestation memory destAtt = _prove(
-            header,
-            msgLeaf,
-            _originProof,
-            _snapProof,
-            _stateIndex
-        );
-        // Store message tips
-        Tips tips = message.tips();
-        _storeTips(destAtt.notary, tips);
-        // Get the specified recipient address
-        uint32 origin = header.origin();
-        address recipient = _checkForSystemRouter(header.recipient());
-        // Pass the message to the recipient
-        IMessageRecipient(recipient).handle(
-            origin,
-            header.nonce(),
-            header.sender(),
-            destAtt.destTimestamp,
-            message.body().clone()
-        );
-        emit Executed(origin, msgLeaf);
+    function passAgentRoot() public returns (bool rootPassed, bool rootPending) {
+        // Agent root is not passed on Synapse Chain, as it could be accessed via BondingManager
+        if (localDomain == SYNAPSE_DOMAIN) return (false, false);
+        bytes32 oldRoot = IAgentManager(agentManager).agentRoot();
+        bytes32 newRoot = _nextAgentRoot;
+        // Check if agent root differs from the current one in LightManager
+        if (oldRoot == newRoot) return (false, false);
+        DestinationStatus memory status = destStatus;
+        // Invariant: Notary who supplied `newRoot` was registered as active against `oldRoot`
+        // So we just need to check the Dispute status of the Notary
+        if (_isInDispute(status.notaryIndex)) {
+            // Remove the pending agent merkle root, as its signer is in dispute
+            _nextAgentRoot = oldRoot;
+            return (false, false);
+        }
+        // Check if agent root optimistic period is over
+        if (status.agentRootTime + AGENT_ROOT_OPTIMISTIC_PERIOD > block.timestamp) {
+            // We didn't pass anything, but there is a pending root
+            return (false, true);
+        }
+        // `newRoot` signer was not disputed, and the root optimistic period is over.
+        // Finally, pass the Agent Merkle Root to LightManager
+        InterfaceLightManager(address(agentManager)).setAgentRoot(newRoot);
+        return (true, false);
     }
 
-    /*╔══════════════════════════════════════════════════════════════════════╗*\
-    ▏*║                            INTERNAL LOGIC                            ║*▕
-    \*╚══════════════════════════════════════════════════════════════════════╝*/
+    // ═══════════════════════════════════════════════════ VIEWS ═══════════════════════════════════════════════════════
 
-    /**
-     * @notice Attempts to prove the validity of the cross-chain message.
-     * First, the origin Merkle Root is reconstructed using the origin proof.
-     * Then the origin state's "left leaf" is reconstructed using the origin domain.
-     * After that the snapshot Merkle Root is reconstructed using the snapshot proof.
-     * Finally, the optimistic period is checked for the derived snapshot root.
-     * @dev Reverts if any of the checks fail.
-     * @param _header       Typed memory view over message header payload
-     * @param _msgLeaf      Message Leaf that was inserted in the Origin Merkle Tree
-     * @param _originProof  Proof of inclusion of Message Leaf in the Origin Merkle Tree
-     * @param _snapProof    Proof of inclusion of Origin State Left Leaf into Snapshot Merkle Tree
-     * @param _stateIndex   Index of Origin State in the Snapshot
-     * @return destAtt      Attestation data for derived snapshot root
-     */
-    function _prove(
-        Header _header,
-        bytes32 _msgLeaf,
-        bytes32[ORIGIN_TREE_DEPTH] calldata _originProof,
-        bytes32[] calldata _snapProof,
-        uint256 _stateIndex
-    ) internal returns (DestinationAttestation memory destAtt) {
-        // TODO: split into a few smaller functions?
-        // Check that message has not been executed before
-        require(messageStatus[_msgLeaf] == MESSAGE_STATUS_NONE, "!MessageStatus.None");
-        // Ensure message was meant for this domain
-        require(_header.destination() == localDomain, "!destination");
-        // Reconstruct Origin Merkle Root using the origin proof
-        // Message index in the tree is (nonce - 1), as nonce starts from 1
-        bytes32 originRoot = MerkleLib.branchRoot(_msgLeaf, _originProof, _header.nonce() - 1);
-        // Reconstruct left sub-leaf of the Origin State: (merkleRoot, originDomain)
-        bytes32 leftLeaf = StateLib.leftLeaf(originRoot, _header.origin());
-        // Reconstruct Snapshot Merkle Root using the snapshot proof
-        // Index of "leftLeaf" is twice the state position in the snapshot
-        /// @dev We ask to provide state index instead of "leftLeaf" index to enforce
-        /// choice of State's left leaf for root reconstruction
-        bytes32 snapshotRoot = MerkleLib.branchRoot(leftLeaf, _snapProof, _stateIndex << 1);
-        // Fetch the attestation data for the snapshot root
-        destAtt = _rootAttestation(snapshotRoot);
-        // Check if snapshot root has been submitted
-        require(!destAtt.isEmpty(), "Invalid snapshot root");
-        // Check that snapshot proof length matches the height of Snapshot Merkle Tree
-        require(_snapProof.length == destAtt.height, "Invalid proof length");
-        // Check if Notary who submitted the snapshot is still active
-        require(_isActiveAgent(localDomain, destAtt.notary), "Inactive notary");
-        // Check if optimistic period has passed
-        require(
-            block.timestamp >= _header.optimisticSeconds() + destAtt.destTimestamp,
-            "!optimisticSeconds"
-        );
-        // Mark message as executed against the snapshot root
-        messageStatus[_msgLeaf] = snapshotRoot;
+    /// @inheritdoc InterfaceDestination
+    // solhint-disable-next-line ordering
+    function attestationsAmount() external view returns (uint256) {
+        return _roots.length;
     }
 
-    function _storeTips(address _notary, Tips _tips) internal {
-        // TODO: implement tips logic
-        emit TipsStored(_notary, _tips.unwrap().clone());
-    }
-
-    /**
-     * @notice Returns adjusted "recipient" field.
-     * @dev By default, "recipient" field contains the recipient address padded to 32 bytes.
-     * But if SYSTEM_ROUTER value is used for "recipient" field, recipient is Synapse Router.
-     * Note: tx will revert in Origin if anyone but SystemRouter uses SYSTEM_ROUTER as recipient.
-     */
-    function _checkForSystemRouter(bytes32 _recipient) internal view returns (address recipient) {
-        // Check if SYSTEM_ROUTER was specified as message recipient
-        if (_recipient == SYSTEM_ROUTER) {
-            /**
-             * @dev Route message to SystemRouter.
-             * Note: Only SystemRouter contract on origin chain can send a message
-             * using SYSTEM_ROUTER as "recipient" field (enforced in Origin.sol).
-             */
-            recipient = address(systemRouter);
-        } else {
-            // Cast bytes32 to address otherwise
-            recipient = TypeCasts.bytes32ToAddress(_recipient);
+    /// @inheritdoc InterfaceDestination
+    function getAttestation(uint256 index) external view returns (bytes memory attPayload, bytes memory attSignature) {
+        if (index >= _roots.length) revert IndexOutOfRange();
+        bytes32 snapRoot = _roots[index];
+        SnapRootData memory rootData = _rootData[snapRoot];
+        StoredAttData memory storedAtt = _storedAttestations[index];
+        attPayload = AttestationLib.formatAttestation({
+            snapRoot_: snapRoot,
+            dataHash_: storedAtt.dataHash,
+            nonce_: rootData.attNonce,
+            blockNumber_: rootData.attBN,
+            timestamp_: rootData.attTS
+        });
+        // Attestation signatures are not required on Synapse Chain, as the attestations could be accessed via Summit.
+        if (localDomain != SYNAPSE_DOMAIN) {
+            attSignature = IStatementInbox(inbox).getStoredSignature(rootData.sigIndex);
         }
     }
 
-    function _isIgnoredAgent(uint32 _domain, address)
+    /// @inheritdoc InterfaceDestination
+    function getGasData(uint32 domain) external view returns (GasData gasData, uint256 dataMaturity) {
+        StoredGasData memory storedGasData = _storedGasData[domain];
+        // Check if there is a stored gas data for the domain, and if the notary who provided the data is not in dispute
+        if (storedGasData.submittedAt != 0 && !_isInDispute(storedGasData.notaryIndex)) {
+            gasData = storedGasData.gasData;
+            dataMaturity = block.timestamp - storedGasData.submittedAt;
+        }
+        // Return empty values if there is no data for the domain, or if the notary who provided the data is in dispute
+    }
+
+    /// @inheritdoc InterfaceDestination
+    function nextAgentRoot() external view returns (bytes32) {
+        // Return current agent root on Synapse Chain for consistency
+        return localDomain == SYNAPSE_DOMAIN ? IAgentManager(agentManager).agentRoot() : _nextAgentRoot;
+    }
+
+    // ══════════════════════════════════════════════ INTERNAL LOGIC ═══════════════════════════════════════════════════
+
+    /// @dev Saves Agent Merkle Root from the accepted attestation, if there is
+    /// no pending root to be passed to LightManager.
+    /// Returns the updated "last snapshot root / last agent root" status struct.
+    function _saveAgentRoot(bool rootPending, bytes32 agentRoot, uint32 notaryIndex)
         internal
-        view
-        virtual
-        override
-        returns (bool)
+        returns (DestinationStatus memory status)
     {
-        // Destination only keeps track of local Notaries and Guards
-        return _domain != localDomain && _domain != 0;
+        status = destStatus;
+        // Update the timestamp for the latest snapshot root
+        status.snapRootTime = uint40(block.timestamp);
+        // No need to save agent roots on Synapse Chain, as they could be accessed via BondingManager
+        // Don't update agent root, if there is already a pending one
+        // Update the data for latest agent root only if it differs from the saved one
+        if (localDomain != SYNAPSE_DOMAIN && !rootPending && _nextAgentRoot != agentRoot) {
+            status.agentRootTime = uint40(block.timestamp);
+            status.notaryIndex = notaryIndex;
+            _nextAgentRoot = agentRoot;
+            emit AgentRootAccepted(agentRoot);
+        }
+    }
+
+    /// @dev Saves updated values from the snapshot's gas data list.
+    function _saveGasData(ChainGas[] memory snapGas, uint32 notaryIndex) internal {
+        uint256 statesAmount = snapGas.length;
+        for (uint256 i = 0; i < statesAmount; i++) {
+            ChainGas chainGas = snapGas[i];
+            uint32 domain = chainGas.domain();
+            // Don't save gas data for the local domain
+            if (domain == localDomain) continue;
+            StoredGasData memory storedGasData = _storedGasData[domain];
+            // Check that the gas data is not already saved
+            GasData gasData = chainGas.gasData();
+            if (GasData.unwrap(gasData) == GasData.unwrap(storedGasData.gasData)) continue;
+            // Save the gas data
+            _storedGasData[domain] =
+                StoredGasData({gasData: gasData, notaryIndex: notaryIndex, submittedAt: uint40(block.timestamp)});
+        }
     }
 }

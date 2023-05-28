@@ -2,37 +2,33 @@
 
 pragma solidity 0.8.17;
 
-import { IMessageRecipient } from "../../../contracts/interfaces/IMessageRecipient.sol";
-import {
-    InterfaceDestination,
-    ORIGIN_TREE_DEPTH
-} from "../../../contracts/interfaces/InterfaceDestination.sol";
+import {ORIGIN_TREE_HEIGHT} from "../../../contracts/libs/Constants.sol";
+import {IMessageRecipient} from "../../../contracts/interfaces/IMessageRecipient.sol";
+import {IExecutionHub} from "../../../contracts/interfaces/IExecutionHub.sol";
 
+// solhint-disable no-empty-blocks
 contract ReentrantApp is IMessageRecipient {
-    bytes internal message;
-    bytes32[ORIGIN_TREE_DEPTH] internal originProof;
+    bytes internal msgPayload;
+    bytes32[] internal originProof;
     bytes32[] internal snapProof;
     uint256 internal stateIndex;
 
+    /// @notice Prevents this contract from being included in the coverage report
+    function testReentrantApp() external {}
+
     function prepare(
-        bytes memory _message,
-        bytes32[ORIGIN_TREE_DEPTH] memory _originProof,
-        bytes32[] memory _snapProof,
-        uint256 _stateIndex
+        bytes memory msgPayload_,
+        bytes32[] memory originProof_,
+        bytes32[] memory snapProof_,
+        uint256 stateIndex_
     ) external {
-        message = _message;
-        originProof = _originProof;
-        snapProof = _snapProof;
-        stateIndex = _stateIndex;
+        msgPayload = msgPayload_;
+        originProof = originProof_;
+        snapProof = snapProof_;
+        stateIndex = stateIndex_;
     }
 
-    function handle(
-        uint32,
-        uint32,
-        bytes32,
-        uint256,
-        bytes memory
-    ) external {
-        InterfaceDestination(msg.sender).execute(message, originProof, snapProof, stateIndex);
+    function receiveBaseMessage(uint32, uint32, bytes32, uint256, uint32, bytes memory) external payable {
+        IExecutionHub(msg.sender).execute(msgPayload, originProof, snapProof, stateIndex, 0);
     }
 }

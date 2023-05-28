@@ -4,8 +4,12 @@ package testsuite
 import (
 	"context"
 	"fmt"
+	"github.com/ethereum/go-ethereum/params"
 	"github.com/ipfs/go-log"
 	"github.com/stretchr/testify/suite"
+	"github.com/synapsecns/sanguine/ethergo/backends"
+	"github.com/synapsecns/sanguine/ethergo/backends/anvil"
+	"math/big"
 	"sync"
 	"sync/atomic"
 	"testing"
@@ -36,6 +40,9 @@ func newCancellableContext(parentContext context.Context) cancellableContext {
 // TODO: we should make sure global vars don't get mutated. Namely eth params.
 type TestSuite struct {
 	suite.Suite
+	// logDir is the directory where logs will be written for the docker containers that host the anvil nodes
+	// this allows you to do tai -f /path/to/logs/*.combined.log to see all logs
+	LogDir string
 	// context is the context object for the test suite. All other context objects inherit
 	// from it. unlike suiteContext and testContext it is not canceled and functionally does
 	// not have a lifecycle. TODO this should probably replace suiteContext
@@ -72,6 +79,7 @@ func NewTestSuite(tb testing.TB) *TestSuite {
 	tb.Helper()
 	log.SetAllLoggers(log.LevelWarn)
 	ctx := context.Background()
+
 	return &TestSuite{
 		context: ctx,
 		testID:  0,
@@ -201,4 +209,16 @@ func (s *TestSuite) GetSuiteContext() context.Context {
 // fails the test.
 func (s *TestSuite) MustMarshall(v any) []byte {
 	return MustMarshall(s.T(), v)
+}
+
+// MakeBackend creates a new backend. These backends are modified to accept the higher gas limit required by the summit harness.
+func (s *TestSuite) MakeBackend(ctx context.Context, chainID *big.Int) backends.SimulatedTestBackend {
+	options := anvil.NewAnvilOptionBuilder()
+	options.SetChainID(chainID.Uint64())
+	options.SetCodeSizeLimit(params.MaxCodeSize * 3)
+	options.SetGasLimit(50000000)
+	// TODO: set all log dirs to the same temp dir and change name based on chain
+	// master needs to be merged first
+
+	return anvil.NewAnvilBackend(ctx, s.T(), options)
 }

@@ -5,16 +5,16 @@
   "private": "true",
   "scripts": {
     "build": "yarn build:contracts && yarn build:typescript && yarn build:go",
-    "build:go": "script/sh/flatten.sh contracts/*.sol test/harnesses/*.sol test/harnesses/libs/*.sol contracts/client/*.sol",
+    "build:go": "script/sh/flatten.sh contracts/*.sol contracts/manager/*.sol contracts/inbox/*.sol test/harnesses/*.sol test/harnesses/manager/*.sol test/harnesses/libs/**/*.sol contracts/client/*.sol",
     "build:contracts": "forge build",
     "build:slither": "forge build --out=out --build-info --force",
     "test:coverage": "echo 'Please use foundry'",
     "build:typescript": "typechain --target ethers-v5 'artifacts/**/*json'",
     "test": "forge test",
-    "lint:contracts:fix": "prettier --write '{contracts,script,test}/**/*.sol' && solhint --fix -c .solhint.json --ignore-path .prettierignore '{contracts,script,test}/**/*.sol'",
+    "lint:contracts:fix": "forge fmt && solhint --fix -c .solhint.json '{contracts,script,test}/**/*.sol'",
     "lint:fix": "yarn lint:contracts:fix",
-    "lint": "prettier '{contracts,script,test}/**/*.sol'",
-    "ci:lint": "prettier '{contracts,script,test}/**/*.sol' --check && solhint -c .solhint.json --ignore-path .prettierignore contracts/**/*.sol test/**/*.sol"
+    "lint": "forge fmt",
+    "ci:lint": "forge fmt --check && solhint -c .solhint.json '{contracts,script,test}/**/*.sol'"
   },
   "license": "MIT",
   "devDependencies": {

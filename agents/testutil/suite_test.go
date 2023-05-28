@@ -8,12 +8,13 @@ import (
 	"github.com/synapsecns/sanguine/agents/testutil"
 	"github.com/synapsecns/sanguine/core/testsuite"
 	"github.com/synapsecns/sanguine/ethergo/backends"
-	"github.com/synapsecns/sanguine/ethergo/backends/simulated"
 )
 
 // SimulatedSuite is used to test individual contract deployments to make sure other tests don't break.
 type SimulatedSuite struct {
 	*testsuite.TestSuite
+	// testSynBackend is the test syn chain backend
+	testSynBackend backends.SimulatedTestBackend
 	// testBackend is the test backend
 	testBackend backends.SimulatedTestBackend
 	// deployManager is the deploy helper
@@ -24,9 +25,11 @@ type SimulatedSuite struct {
 func (s *SimulatedSuite) SetupTest() {
 	s.TestSuite.SetupTest()
 
-	s.testBackend = simulated.NewSimulatedBackendWithChainID(s.GetTestContext(), s.T(), big.NewInt(int64(10)))
+	s.testSynBackend = s.MakeBackend(s.GetTestContext(), big.NewInt(int64(10)))
+	s.testBackend = s.MakeBackend(s.GetTestContext(), big.NewInt(int64(11)))
 	s.deployManager = testutil.NewDeployManager(s.T())
 	s.deployManager.GetContractRegistry(s.testBackend)
+	s.deployManager.GetContractRegistry(s.testSynBackend)
 }
 
 // NewSimulatedSuite creates a end-to-end test suite.

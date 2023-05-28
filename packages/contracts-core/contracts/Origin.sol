@@ -1,180 +1,151 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.17;
+
 // ══════════════════════════════ LIBRARY IMPORTS ══════════════════════════════
-import { MAX_MESSAGE_BODY_BYTES, SYSTEM_ROUTER } from "./libs/Constants.sol";
-import { HeaderLib, MessageLib } from "./libs/Message.sol";
-import { MerkleLib } from "./libs/Merkle.sol";
-import { Snapshot } from "./libs/Snapshot.sol";
-import { StateLib } from "./libs/State.sol";
-import { Tips, TipsLib } from "./libs/Tips.sol";
-import { TypeCasts } from "./libs/TypeCasts.sol";
+import {BaseMessageLib} from "./libs/memory/BaseMessage.sol";
+import {MAX_CONTENT_BYTES} from "./libs/Constants.sol";
+import {ContentLengthTooBig, EthTransferFailed, InsufficientEthBalance} from "./libs/Errors.sol";
+import {GasData, GasDataLib} from "./libs/stack/GasData.sol";
+import {MemView, MemViewLib} from "./libs/memory/MemView.sol";
+import {Header, MessageLib, MessageFlag} from "./libs/memory/Message.sol";
+import {Request, RequestLib} from "./libs/stack/Request.sol";
+import {Tips, TipsLib} from "./libs/stack/Tips.sol";
+import {TypeCasts} from "./libs/TypeCasts.sol";
 // ═════════════════════════════ INTERNAL IMPORTS ══════════════════════════════
-import { OriginEvents } from "./events/OriginEvents.sol";
-import { InterfaceOrigin } from "./interfaces/InterfaceOrigin.sol";
-import { DomainContext, StateHub } from "./hubs/StateHub.sol";
-import { Attestation, Snapshot, StatementHub } from "./hubs/StatementHub.sol";
-import { SystemRegistry } from "./system/SystemRegistry.sol";
+import {AgentSecured} from "./base/AgentSecured.sol";
+import {OriginEvents} from "./events/OriginEvents.sol";
+import {InterfaceGasOracle} from "./interfaces/InterfaceGasOracle.sol";
+import {InterfaceOrigin} from "./interfaces/InterfaceOrigin.sol";
+import {StateHub} from "./hubs/StateHub.sol";
 
-contract Origin is StatementHub, StateHub, SystemRegistry, OriginEvents, InterfaceOrigin {
-    using MerkleLib for MerkleLib.Tree;
+/// @notice `Origin` contract is used for sending messages to remote chains. It is done
+/// by inserting the message hashes into the Origin Merkle, which makes it possible to
+/// prove that message was sent using the Merkle proof against the Origin Merkle Root. This essentially
+/// compresses the list of messages into a single 32-byte value that needs to be stored on the destination chain.
+/// `Origin` is responsible for the following:
+/// - Formatting the sent message payloads, and inserting their hashes into the Origin Merkle Tree.
+/// - Keeping track of its own historical states (see parent contract `StateHub`).
+/// - Enforcing minimum tip values for sent base messages based on the provided execution requests.
+/// - Distributing the collected tips upon request from a local `AgentManager` contract.
+contract Origin is StateHub, OriginEvents, InterfaceOrigin {
+    using MemViewLib for bytes;
+    using MessageLib for bytes;
     using TipsLib for bytes;
+    using TypeCasts for address;
 
-    /*╔══════════════════════════════════════════════════════════════════════╗*\
-    ▏*║                               STORAGE                                ║*▕
-    \*╚══════════════════════════════════════════════════════════════════════╝*/
+    address public immutable gasOracle;
 
-    MerkleLib.Tree private tree;
+    // ═════════════════════════════════════════ CONSTRUCTOR & INITIALIZER ═════════════════════════════════════════════
 
-    /*╔══════════════════════════════════════════════════════════════════════╗*\
-    ▏*║                      CONSTRUCTOR & INITIALIZER                       ║*▕
-    \*╚══════════════════════════════════════════════════════════════════════╝*/
-
-    constructor(uint32 _domain) DomainContext(_domain) {}
+    // solhint-disable-next-line no-empty-blocks
+    constructor(uint32 domain, address agentManager_, address inbox_, address gasOracle_)
+        AgentSecured("0.0.3", domain, agentManager_, inbox_)
+    {
+        gasOracle = gasOracle_;
+    }
 
     /// @notice Initializes Origin contract:
     /// - msg.sender is set as contract owner
     /// - State of "empty merkle tree" is saved
     function initialize() external initializer {
-        // Initialize SystemContract: msg.sender is set as "owner"
-        __SystemContract_initialize();
+        // Initialize Ownable: msg.sender is set as "owner"
+        __Ownable_init();
         // Initialize "states": state of an "empty merkle tree" is saved
         _initializeStates();
     }
 
-    /*╔══════════════════════════════════════════════════════════════════════╗*\
-    ▏*║                          VERIFY STATEMENTS                           ║*▕
-    \*╚══════════════════════════════════════════════════════════════════════╝*/
+    // ═══════════════════════════════════════════════ SEND MESSAGES ═══════════════════════════════════════════════════
 
     /// @inheritdoc InterfaceOrigin
-    function verifyAttestation(
-        bytes memory _snapPayload,
-        uint256 _stateIndex,
-        bytes memory _attPayload,
-        bytes memory _attSignature
-    ) external returns (bool isValid) {
-        // This will revert if payload is not an attestation, or signer is not an active Notary
-        (Attestation att, uint32 domain, address notary) = _verifyAttestation(
-            _attPayload,
-            _attSignature
-        );
-        // This will revert if payload is not a snapshot, or snapshot/attestation roots don't match
-        Snapshot snapshot = _verifySnapshotRoot(att, _snapPayload);
-        // This will revert, if state index is out of range, or state refers to another domain
-        isValid = _isValidState(snapshot.state(_stateIndex));
-        if (!isValid) {
-            emit InvalidAttestationState(_stateIndex, _snapPayload, _attPayload, _attSignature);
-            // Slash Notary and trigger a hook to send a slashAgent system call
-            _slashAgent(domain, notary, true);
-        }
-    }
-
-    /// @inheritdoc InterfaceOrigin
-    function verifySnapshot(
-        bytes memory _snapPayload,
-        uint256 _stateIndex,
-        bytes memory _snapSignature
-    ) external returns (bool isValid) {
-        // This will revert if payload is not a snapshot, or signer is not an active Agent
-        (Snapshot snapshot, uint32 domain, address agent) = _verifySnapshot(
-            _snapPayload,
-            _snapSignature
-        );
-        // This will revert, if state index is out of range, or state refers to another domain
-        isValid = _isValidState(snapshot.state(_stateIndex));
-        if (!isValid) {
-            emit InvalidSnapshotState(_stateIndex, _snapPayload, _snapSignature);
-            // Slash Agent and trigger a hook to send a slashAgent system call
-            _slashAgent(domain, agent, true);
-        }
-    }
-
-    /*╔══════════════════════════════════════════════════════════════════════╗*\
-    ▏*║                          DISPATCH MESSAGES                           ║*▕
-    \*╚══════════════════════════════════════════════════════════════════════╝*/
-
-    /// @inheritdoc InterfaceOrigin
-    function dispatch(
-        uint32 _destination,
-        bytes32 _recipient,
-        uint32 _optimisticSeconds,
-        bytes memory _tips,
-        bytes memory _messageBody
+    function sendBaseMessage(
+        uint32 destination,
+        bytes32 recipient,
+        uint32 optimisticPeriod,
+        uint256 paddedRequest,
+        bytes memory content
     ) external payable returns (uint32 messageNonce, bytes32 messageHash) {
-        // Modifiers are removed because they prevent from slashing the last active Guard/Notary
-        // haveActiveGuard
-        // haveActiveNotary(_destination)
-        // TODO: figure out a way to filter out unknown domains once Agent Merkle Tree is implemented
-        require(_messageBody.length <= MAX_MESSAGE_BODY_BYTES, "msg too long");
-        // This will revert if payload is not a formatted tips payload
-        Tips tips = _tips.castToTips();
-        // Total tips must exactly match msg.value
-        require(tips.totalTips() == msg.value, "!tips: totalTips");
+        // Check that content is not too large
+        if (content.length > MAX_CONTENT_BYTES) revert ContentLengthTooBig();
+        // This will revert if msg.value is lower than value of minimum tips
+        Tips tips = _getMinimumTips(destination, paddedRequest, content.length).matchValue(msg.value);
+        Request request = RequestLib.wrapPadded(paddedRequest);
+        // Format the BaseMessage body
+        bytes memory body = BaseMessageLib.formatBaseMessage({
+            sender_: msg.sender.addressToBytes32(),
+            recipient_: recipient,
+            tips_: tips,
+            request_: request,
+            content_: content
+        });
+        // Send the message
+        return _sendMessage(destination, optimisticPeriod, MessageFlag.Base, body);
+    }
+
+    /// @inheritdoc InterfaceOrigin
+    function sendManagerMessage(uint32 destination, uint32 optimisticPeriod, bytes memory payload)
+        external
+        onlyAgentManager
+        returns (uint32 messageNonce, bytes32 messageHash)
+    {
+        // AgentManager (checked via modifier) is responsible for constructing the calldata payload correctly.
+        return _sendMessage(destination, optimisticPeriod, MessageFlag.Manager, payload);
+    }
+
+    /// @inheritdoc InterfaceOrigin
+    function withdrawTips(address recipient, uint256 amount) external onlyAgentManager {
+        if (address(this).balance < amount) revert InsufficientEthBalance();
+        (bool success,) = recipient.call{value: amount}("");
+        if (!success) revert EthTransferFailed();
+    }
+
+    // ═══════════════════════════════════════════════════ VIEWS ═══════════════════════════════════════════════════════
+
+    /// @inheritdoc InterfaceOrigin
+    function getMinimumTipsValue(uint32 destination, uint256 paddedRequest, uint256 contentLength)
+        external
+        view
+        returns (uint256 tipsValue)
+    {
+        return _getMinimumTips(destination, paddedRequest, contentLength).value();
+    }
+
+    // ══════════════════════════════════════════════ INTERNAL LOGIC ═══════════════════════════════════════════════════
+
+    /// @dev Sends the given message to the specified destination. Message hash is inserted
+    /// into the Origin Merkle Tree, which will enable message execution on destination chain.
+    function _sendMessage(uint32 destination, uint32 optimisticPeriod, MessageFlag flag, bytes memory body)
+        internal
+        returns (uint32 messageNonce, bytes32 messageHash)
+    {
         // Format the message header
         messageNonce = _nextNonce();
-        bytes memory header = HeaderLib.formatHeader({
-            _origin: localDomain,
-            _sender: _checkForSystemRouter(_recipient),
-            _nonce: messageNonce,
-            _destination: _destination,
-            _recipient: _recipient,
-            _optimisticSeconds: _optimisticSeconds
+        Header header = flag.encodeHeader({
+            origin_: localDomain,
+            nonce_: messageNonce,
+            destination_: destination,
+            optimisticPeriod_: optimisticPeriod
         });
         // Format the full message payload
-        bytes memory message = MessageLib.formatMessage(header, _tips, _messageBody);
-
-        // Insert new leaf into the Origin Merkle Tree
-        messageHash = keccak256(message);
-        /// @dev Before insertion: messageNonce == tree.count() - 1
-        /// tree.insert() requires amount of leaves AFTER the leaf insertion
-        tree.insert(messageNonce, messageHash);
-
-        // Save new State of Origin contract
-        /// @dev After insertion: messageNonce == tree.count()
-        /// tree.root() requires current amount of leaves
-        bytes32 newRoot = tree.root(messageNonce);
-        _saveState(StateLib.originState(newRoot));
-
-        // Emit Dispatched event with message information
-        emit Dispatched(messageHash, messageNonce, _destination, message);
+        bytes memory msgPayload = MessageLib.formatMessage(header, body);
+        // Insert new leaf into the Origin Merkle Tree and save the updated state
+        messageHash = msgPayload.castToMessage().leaf();
+        _insertAndSave(messageHash);
+        // Emit event with message information
+        emit Sent(messageHash, messageNonce, destination, msgPayload);
     }
 
-    /*╔══════════════════════════════════════════════════════════════════════╗*\
-    ▏*║                            INTERNAL LOGIC                            ║*▕
-    \*╚══════════════════════════════════════════════════════════════════════╝*/
-
-    /// @dev Hook that is called after an existing agent was slashed,
-    /// when verification of an invalid agent statement was done in this contract.
-    function _afterAgentSlashed(uint32 _domain, address _agent) internal virtual override {
-        /// @dev We send a "slashAgent" system message
-        /// after the Agent is slashed by submitting an invalid statement.
-        _callLocalBondingManager(_dataSlashAgent(_domain, _agent));
+    /// @dev Returns the minimum tips for sending a message to the given destination with the given request and content.
+    function _getMinimumTips(uint32 destination, uint256 paddedRequest, uint256 contentLength)
+        internal
+        view
+        returns (Tips)
+    {
+        return
+            TipsLib.wrapPadded(InterfaceGasOracle(gasOracle).getMinimumTips(destination, paddedRequest, contentLength));
     }
 
-    /**
-     * @notice Returns adjusted "sender" field.
-     * @dev By default, "sender" field is msg.sender address casted to bytes32.
-     * However, if SYSTEM_ROUTER is used for "recipient" field, and msg.sender is SystemRouter,
-     * SYSTEM_ROUTER is also used as "sender" field.
-     * Note: tx will revert if anyone but SystemRouter uses SYSTEM_ROUTER as the recipient.
-     */
-    function _checkForSystemRouter(bytes32 _recipient) internal view returns (bytes32 sender) {
-        if (_recipient != SYSTEM_ROUTER) {
-            sender = TypeCasts.addressToBytes32(msg.sender);
-            /**
-             * @dev Note: SYSTEM_ROUTER has only the highest 12 bytes set,
-             * whereas TypeCasts.addressToBytes32 sets only the lowest 20 bytes.
-             * Thus, in this branch: sender != SYSTEM_ROUTER
-             */
-        } else {
-            // Check that SystemRouter specified SYSTEM_ROUTER as recipient, revert otherwise.
-            _assertSystemRouter();
-            // Adjust "sender" field for correct processing on remote chain.
-            sender = SYSTEM_ROUTER;
-        }
-    }
-
-    function _isIgnoredAgent(uint32, address) internal view virtual override returns (bool) {
-        // Origin keeps track of every agent
-        return false;
+    /// @dev Gets the current gas data from the gas oracle to be saved as part of the Origin State.
+    function _fetchGasData() internal view override returns (GasData) {
+        return GasDataLib.wrapGasData(InterfaceGasOracle(gasOracle).getGasData());
     }
 }

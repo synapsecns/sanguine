@@ -15,6 +15,7 @@ func domainConfigFixture() config.DomainConfig {
 		RequiredConfirmations: gofakeit.Uint32(),
 		OriginAddress:         mocks.MockAddress().String(),
 		DestinationAddress:    mocks.MockAddress().String(),
+		LightManagerAddress:   mocks.MockAddress().String(),
 		RPCUrl:                gofakeit.URL(),
 	}
 }
