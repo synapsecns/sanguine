@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"github.com/synapsecns/sanguine/agents/contracts/test/attestationharness"
 	"github.com/synapsecns/sanguine/agents/contracts/test/bondingmanagerharness"
+	gasdataharness "github.com/synapsecns/sanguine/agents/contracts/test/gasdata"
 	"github.com/synapsecns/sanguine/agents/contracts/test/lightmanagerharness"
 	"github.com/synapsecns/sanguine/agents/contracts/test/originharness"
 	"github.com/synapsecns/sanguine/agents/contracts/test/snapshotharness"
@@ -144,16 +145,24 @@ func NewOriginHarnessDeployer(registry deployer.GetOnlyContractRegistry, backend
 // nolint:dupl
 func (o OriginHarnessDeployer) Deploy(ctx context.Context) (contracts.DeployedContract, error) {
 	var agentAddress common.Address
+	var inboxAddress common.Address
 	if o.Backend().GetChainID() == 10 {
 		bondingManagerHarnessContract := o.Registry().Get(ctx, BondingManagerHarnessType)
 		agentAddress = bondingManagerHarnessContract.Address()
+
+		inboxContract := o.Registry().Get(ctx, InboxType)
+		inboxAddress = inboxContract.Address()
 	} else {
 		lightManagerHarnessContract := o.Registry().Get(ctx, LightManagerHarnessType)
 		agentAddress = lightManagerHarnessContract.Address()
-	}
 
+		lightInboxContract := o.Registry().Get(ctx, LightInboxType)
+		inboxAddress = lightInboxContract.Address()
+	}
+	gasOracleContract := o.Registry().Get(ctx, GasOracleType)
+	gasOracleAddress := gasOracleContract.Address()
 	return o.DeploySimpleContract(ctx, func(transactOps *bind.TransactOpts, backend bind.ContractBackend) (common.Address, *types.Transaction, interface{}, error) {
-		address, tx, rawHandle, err := originharness.DeployOriginHarness(transactOps, backend, uint32(o.Backend().GetChainID()), agentAddress)
+		address, tx, rawHandle, err := originharness.DeployOriginHarness(transactOps, backend, uint32(o.Backend().GetChainID()), agentAddress, inboxAddress, gasOracleAddress)
 		if err != nil {
 			return common.Address{}, nil, nil, fmt.Errorf("could not deploy %s: %w", o.ContractType().ContractName(), err)
 		}
@@ -175,6 +184,25 @@ func (o OriginHarnessDeployer) Deploy(ctx context.Context) (contracts.DeployedCo
 // Dependencies gets a list of dependencies used to deploy the origin contract.
 func (o OriginHarnessDeployer) Dependencies() []contracts.ContractType {
 	return []contracts.ContractType{}
+}
+
+// GasDataHarnessDeployer deploys the gasData harness.
+type GasDataHarnessDeployer struct {
+	*deployer.BaseDeployer
+}
+
+// NewGasDataHarnessDeployer creates a new deployer for the gasData harness.
+func NewGasDataHarnessDeployer(registry deployer.GetOnlyContractRegistry, backend backends.SimulatedTestBackend) deployer.ContractDeployer {
+	return GasDataHarnessDeployer{deployer.NewSimpleDeployer(registry, backend, GasDataHarnessType)}
+}
+
+// Deploy deploys the gasData harness.
+func (a GasDataHarnessDeployer) Deploy(ctx context.Context) (contracts.DeployedContract, error) {
+	return a.DeploySimpleContract(ctx, func(transactOps *bind.TransactOpts, backend bind.ContractBackend) (common.Address, *types.Transaction, interface{}, error) {
+		return gasdataharness.DeployGasDataHarness(transactOps, backend)
+	}, func(address common.Address, backend bind.ContractBackend) (interface{}, error) {
+		return gasdataharness.NewGasDataHarnessRef(address, backend)
+	})
 }
 
 // StateHarnessDeployer deploys the state harness.
@@ -266,10 +294,23 @@ func NewDestinationHarnessDeployer(registry deployer.GetOnlyContractRegistry, ba
 // Deploy deploys the destination harness.
 // nolint:dupl,dupword
 func (d DestinationHarnessDeployer) Deploy(ctx context.Context) (contracts.DeployedContract, error) {
-	lightManagerHarnessContract := d.Registry().Get(ctx, LightManagerHarnessType)
-	lightManagerAddress := lightManagerHarnessContract.Address()
+	var agentManagerAddress common.Address
+	var inboxAddress common.Address
+	if d.Backend().GetChainID() == 10 {
+		bondingManagerHarnessContract := d.Registry().Get(ctx, BondingManagerHarnessType)
+		agentManagerAddress = bondingManagerHarnessContract.Address()
+
+		inboxContract := d.Registry().Get(ctx, InboxType)
+		inboxAddress = inboxContract.Address()
+	} else {
+		lightManagerHarnessContract := d.Registry().Get(ctx, LightManagerHarnessType)
+		agentManagerAddress = lightManagerHarnessContract.Address()
+
+		lightInboxContract := d.Registry().Get(ctx, LightInboxType)
+		inboxAddress = lightInboxContract.Address()
+	}
 	return d.DeploySimpleContract(ctx, func(transactOps *bind.TransactOpts, backend bind.ContractBackend) (common.Address, *types.Transaction, interface{}, error) {
-		address, tx, rawHandle, err := destinationharness.DeployDestinationHarness(transactOps, backend, uint32(d.Backend().GetChainID()), lightManagerAddress)
+		address, tx, rawHandle, err := destinationharness.DeployDestinationHarness(transactOps, backend, uint32(d.Backend().GetChainID()), agentManagerAddress, inboxAddress)
 		if err != nil {
 			return common.Address{}, nil, nil, fmt.Errorf("could not deploy %s: %w", d.ContractType().ContractName(), err)
 		}
@@ -303,8 +344,10 @@ func NewSummitHarnessDeployer(registry deployer.GetOnlyContractRegistry, backend
 func (d SummitHarnessDeployer) Deploy(ctx context.Context) (contracts.DeployedContract, error) {
 	bondingManagerHarnessContract := d.Registry().Get(ctx, BondingManagerHarnessType)
 	bondingManagerAddress := bondingManagerHarnessContract.Address()
+	inboxContract := d.Registry().Get(ctx, InboxType)
+	inboxAddress := inboxContract.Address()
 	return d.DeploySimpleContract(ctx, func(transactOps *bind.TransactOpts, backend bind.ContractBackend) (common.Address, *types.Transaction, interface{}, error) {
-		address, tx, rawHandle, err := summitharness.DeploySummitHarness(transactOps, backend, bondingManagerAddress)
+		address, tx, rawHandle, err := summitharness.DeploySummitHarness(transactOps, backend, bondingManagerAddress, inboxAddress)
 		if err != nil {
 			return common.Address{}, nil, nil, fmt.Errorf("could not deploy %s: %w", d.ContractType().ContractName(), err)
 		}

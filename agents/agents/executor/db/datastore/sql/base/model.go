@@ -80,8 +80,8 @@ type Attestation struct {
 	Destination uint32 `gorm:"column:destination;primaryKey"`
 	// SnapshotRoot is the snapshot root.
 	SnapshotRoot string `gorm:"column:snapshot_root;primaryKey"`
-	// AgentRoot is the agent root.
-	AgentRoot string `gorm:"column:agent_root"`
+	// DataHash is the agent root and SnapGasHash combined into a single hash.
+	DataHash string `gorm:"column:data_hash"`
 	// AttestationNonce is the nonce of the attestation.
 	AttestationNonce uint32 `gorm:"column:attestation_nonce;primaryKey"`
 	// SummitBlockNumber is the block number when the attestation was created in Summit.
@@ -112,4 +112,16 @@ type State struct {
 	Proof json.RawMessage `gorm:"column:proof"`
 	// StateIndex is the index of the state in the Snapshot.
 	StateIndex uint32 `gorm:"column:state_index"`
+	// GDGasPrice is the gas price from the gas data.
+	GDGasPrice uint16 `gorm:"column:gd_gas_price"`
+	// GDDataPrice is the data price from the gas data.
+	GDDataPrice uint16 `gorm:"column:gd_data_price"`
+	// GDExecBuffer is the exec buffer from the gas data.
+	GDExecBuffer uint16 `gorm:"column:gd_exec_buffer"`
+	// GDAmortAttCost is the amortAttCost from the gas data.
+	GDAmortAttCost uint16 `gorm:"column:gd_amort_att_cost"`
+	// GDEtherPrice is the etherPrice from the gas data.
+	GDEtherPrice uint16 `gorm:"column:gd_ether_price"`
+	// GDMarkup is the markup from the gas data.
+	GDMarkup uint16 `gorm:"column:gd_markup"`
 }

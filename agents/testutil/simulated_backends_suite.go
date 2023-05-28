@@ -5,6 +5,8 @@ import (
 	executorMetadata "github.com/synapsecns/sanguine/agents/agents/executor/metadata"
 	guardMetadata "github.com/synapsecns/sanguine/agents/agents/guard/metadata"
 	notaryMetadata "github.com/synapsecns/sanguine/agents/agents/notary/metadata"
+	"github.com/synapsecns/sanguine/agents/contracts/inbox"
+	"github.com/synapsecns/sanguine/agents/contracts/lightinbox"
 	"github.com/synapsecns/sanguine/agents/contracts/test/bondingmanagerharness"
 	"github.com/synapsecns/sanguine/agents/contracts/test/lightmanagerharness"
 	"github.com/synapsecns/sanguine/core/metrics"
@@ -48,6 +50,8 @@ import (
 // others might want just a destination, etc.
 type SimulatedBackendsTestSuite struct {
 	*testsuite.TestSuite
+	LightInboxOnOrigin                  *lightinbox.LightInboxRef
+	LightInboxMetadataOnOrigin          contracts.DeployedContract
 	LightManagerOnOrigin                *lightmanagerharness.LightManagerHarnessRef
 	LightManagerMetadataOnOrigin        contracts.DeployedContract
 	OriginContract                      *originharness.OriginHarnessRef
@@ -60,6 +64,8 @@ type SimulatedBackendsTestSuite struct {
 	PingPongClientMetadataOnOrigin      contracts.DeployedContract
 	DestinationContract                 *destinationharness.DestinationHarnessRef
 	DestinationContractMetadata         contracts.DeployedContract
+	LightInboxOnDestination             *lightinbox.LightInboxRef
+	LightInboxMetadataOnDestination     contracts.DeployedContract
 	LightManagerOnDestination           *lightmanagerharness.LightManagerHarnessRef
 	LightManagerMetadataOnDestination   contracts.DeployedContract
 	OriginContractOnDestination         *originharness.OriginHarnessRef
@@ -68,6 +74,8 @@ type SimulatedBackendsTestSuite struct {
 	TestClientMetadataOnDestination     contracts.DeployedContract
 	PingPongClientOnDestination         *pingpongclient.PingPongClientRef
 	PingPongClientMetadataOnDestination contracts.DeployedContract
+	InboxOnSummit                       *inbox.InboxRef
+	InboxMetadataOnSummit               contracts.DeployedContract
 	BondingManagerOnSummit              *bondingmanagerharness.BondingManagerHarnessRef
 	BondingManagerMetadataOnSummit      contracts.DeployedContract
 	SummitContract                      *summitharness.SummitHarnessRef
@@ -136,6 +144,7 @@ func (a *SimulatedBackendsTestSuite) SetupOrigin(deployManager *DeployManager) {
 	a.DestinationContractMetadataOnOrigin, a.DestinationContractOnOrigin = deployManager.GetDestinationHarness(a.GetTestContext(), a.TestBackendOrigin)
 	a.TestClientMetadataOnOrigin, a.TestClientOnOrigin = deployManager.GetTestClient(a.GetTestContext(), a.TestBackendOrigin)
 	a.PingPongClientMetadataOnOrigin, a.PingPongClientOnOrigin = deployManager.GetPingPongClient(a.GetTestContext(), a.TestBackendOrigin)
+	a.LightInboxMetadataOnOrigin, a.LightInboxOnOrigin = deployManager.GetLightInbox(a.GetTestContext(), a.TestBackendOrigin)
 	a.LightManagerMetadataOnOrigin, a.LightManagerOnOrigin = deployManager.GetLightManagerHarness(a.GetTestContext(), a.TestBackendOrigin)
 
 	var err error
@@ -145,6 +154,7 @@ func (a *SimulatedBackendsTestSuite) SetupOrigin(deployManager *DeployManager) {
 		OriginAddress:       a.OriginContract.Address().String(),
 		DestinationAddress:  a.DestinationContractOnOrigin.Address().String(),
 		LightManagerAddress: a.LightManagerOnOrigin.Address().String(),
+		LightInboxAddress:   a.LightInboxOnOrigin.Address().String(),
 		RPCUrl:              a.TestBackendOrigin.RPCAddress(),
 	})
 	if err != nil {
@@ -165,6 +175,7 @@ func (a *SimulatedBackendsTestSuite) SetupDestination(deployManager *DeployManag
 	a.OriginContractMetadataOnDestination, a.OriginContractOnDestination = deployManager.GetOriginHarness(a.GetTestContext(), a.TestBackendDestination)
 	a.TestClientMetadataOnDestination, a.TestClientOnDestination = deployManager.GetTestClient(a.GetTestContext(), a.TestBackendDestination)
 	a.PingPongClientMetadataOnDestination, a.PingPongClientOnDestination = deployManager.GetPingPongClient(a.GetTestContext(), a.TestBackendDestination)
+	a.LightInboxMetadataOnDestination, a.LightInboxOnDestination = deployManager.GetLightInbox(a.GetTestContext(), a.TestBackendDestination)
 	a.LightManagerMetadataOnDestination, a.LightManagerOnDestination = deployManager.GetLightManagerHarness(a.GetTestContext(), a.TestBackendDestination)
 
 	var err error
@@ -183,6 +194,7 @@ func (a *SimulatedBackendsTestSuite) SetupDestination(deployManager *DeployManag
 		OriginAddress:       a.OriginContractOnDestination.Address().String(),
 		DestinationAddress:  a.DestinationContract.Address().String(),
 		LightManagerAddress: a.LightManagerOnDestination.Address().String(),
+		LightInboxAddress:   a.LightInboxOnDestination.Address().String(),
 		RPCUrl:              a.TestBackendDestination.RPCAddress(),
 	})
 	if err != nil {
@@ -197,6 +209,7 @@ func (a *SimulatedBackendsTestSuite) SetupDestination(deployManager *DeployManag
 
 // SetupSummit sets up the backend that will have the summit contract deployed on it.
 func (a *SimulatedBackendsTestSuite) SetupSummit(deployManager *DeployManager) {
+	a.InboxMetadataOnSummit, a.InboxOnSummit = deployManager.GetInbox(a.GetTestContext(), a.TestBackendSummit)
 	a.BondingManagerMetadataOnSummit, a.BondingManagerOnSummit = deployManager.GetBondingManagerHarness(a.GetTestContext(), a.TestBackendSummit)
 	a.SummitMetadata, a.SummitContract = deployManager.GetSummitHarness(a.GetTestContext(), a.TestBackendSummit)
 
@@ -206,6 +219,7 @@ func (a *SimulatedBackendsTestSuite) SetupSummit(deployManager *DeployManager) {
 		Type:                  types.EVM.String(),
 		SummitAddress:         a.SummitContract.Address().String(),
 		BondingManagerAddress: a.BondingManagerOnSummit.Address().String(),
+		InboxAddress:          a.InboxOnSummit.Address().String(),
 		RPCUrl:                a.TestBackendSummit.RPCAddress(),
 	})
 	if err != nil {

@@ -6,11 +6,27 @@ import (
 	"fmt"
 )
 
-// MessageHeaderSize is the size in bytes of a message header.
-const MessageHeaderSize = 4 * 4
+// MessageFlag indicates if the message is normal "Base" message or "Manager" message.
+type MessageFlag uint8
+
+const (
+	// MessageFlagBase is the normal message that has tips.
+	MessageFlagBase MessageFlag = iota
+	// MessageFlagManager is manager message and will not have tips.
+	MessageFlagManager
+)
+
+const (
+	// MessageFlagSize if the size in bytes of a message flag.
+	MessageFlagSize = 1
+	// MessageHeaderSize is the size in bytes of a message header.
+	MessageHeaderSize = 4*4 + MessageFlagSize
+)
 
 // Header contains information of a message.
 type Header interface {
+	// Flag is the flag of the message
+	Flag() MessageFlag
 	// OriginDomain is the origin domain of the message
 	OriginDomain() uint32
 	// Nonce is the nonce of the message
@@ -22,6 +38,7 @@ type Header interface {
 }
 
 type headerImpl struct {
+	flag              MessageFlag
 	originDomain      uint32
 	nonce             uint32
 	destinationDomain uint32
@@ -29,8 +46,9 @@ type headerImpl struct {
 }
 
 // NewHeader creates a new header type.
-func NewHeader(originDomain uint32, nonce uint32, destinationDomain uint32, optimisticSeconds uint32) Header {
+func NewHeader(flag MessageFlag, originDomain uint32, nonce uint32, destinationDomain uint32, optimisticSeconds uint32) Header {
 	return &headerImpl{
+		flag:              flag,
 		originDomain:      originDomain,
 		nonce:             nonce,
 		destinationDomain: destinationDomain,
@@ -50,6 +68,7 @@ func DecodeHeader(header []byte) (Header, error) {
 	}
 
 	decoded := headerImpl{
+		flag:              encoded.Flag,
 		originDomain:      encoded.OriginDomain,
 		nonce:             encoded.Nonce,
 		destinationDomain: encoded.DestinationDomain,
@@ -57,6 +76,10 @@ func DecodeHeader(header []byte) (Header, error) {
 	}
 
 	return decoded, nil
+}
+
+func (h headerImpl) Flag() MessageFlag {
+	return h.flag
 }
 
 func (h headerImpl) OriginDomain() uint32 {

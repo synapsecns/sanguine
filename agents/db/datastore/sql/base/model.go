@@ -150,7 +150,7 @@ func (c CommittedMessage) Flag() types.MessageFlag {
 
 // Header gets the header.
 func (c CommittedMessage) Header() types.Header {
-	return types.NewHeader(c.OriginDomain(), c.Nonce(), c.DestinationDomain(), c.OptimisticSeconds())
+	return types.NewHeader(c.Flag(), c.OriginDomain(), c.Nonce(), c.DestinationDomain(), c.OptimisticSeconds())
 }
 
 // OriginDomain returns the Slip-44 ID.
@@ -183,8 +183,24 @@ func (c CommittedMessage) OptimisticSeconds() uint32 {
 	return c.CMOptimisticSeconds
 }
 
+// BaseMessage gets the base message if it exists.
+func (c CommittedMessage) BaseMessage() types.BaseMessage {
+	if types.MessageFlag(c.CMFlag) == types.MessageFlagManager {
+		return nil
+	}
+	baseMessage, err := types.DecodeBaseMessage(c.CMMessage)
+	if err != nil {
+		return nil
+	}
+
+	return baseMessage
+}
+
 // Message gets the message.
 func (c CommittedMessage) Message() []byte {
+	if types.MessageFlag(c.CMFlag) == types.MessageFlagBase {
+		return []byte{}
+	}
 	return c.CMMessage
 }
 

@@ -4,8 +4,9 @@ import (
 	"fmt"
 	ethTypes "github.com/ethereum/go-ethereum/core/types"
 	"github.com/synapsecns/sanguine/agents/contracts/destination"
+	"github.com/synapsecns/sanguine/agents/contracts/inbox"
+	"github.com/synapsecns/sanguine/agents/contracts/lightinbox"
 	"github.com/synapsecns/sanguine/agents/contracts/origin"
-	"github.com/synapsecns/sanguine/agents/contracts/summit"
 	"github.com/synapsecns/sanguine/agents/types"
 )
 
@@ -26,7 +27,7 @@ func (e Executor) logToMessage(log ethTypes.Log, chainID uint32) (*types.Message
 
 // logToAttestation converts the log to an attestation.
 func (e Executor) logToAttestation(log ethTypes.Log, chainID uint32) (*types.Attestation, error) {
-	attestation, ok := e.chainExecutors[chainID].destinationParser.ParseAttestationAccepted(log)
+	attestation, ok := (*e.chainExecutors[chainID].lightInboxParser).ParseAttestationAccepted(log)
 	if !ok {
 		return nil, fmt.Errorf("could not parse attestation")
 	}
@@ -36,7 +37,7 @@ func (e Executor) logToAttestation(log ethTypes.Log, chainID uint32) (*types.Att
 
 // logToSnapshot converts the log to a snapshot.
 func (e Executor) logToSnapshot(log ethTypes.Log, chainID uint32) (*types.Snapshot, error) {
-	snapshot, domain, ok := (*e.chainExecutors[chainID].summitParser).ParseSnapshotAccepted(log)
+	snapshot, domain, ok := (*e.chainExecutors[chainID].inboxParser).ParseSnapshotAccepted(log)
 	if !ok {
 		return nil, fmt.Errorf("could not parse snapshot")
 	}
@@ -57,9 +58,9 @@ func (e Executor) logType(log ethTypes.Log, chainID uint32) contractEventType {
 	}
 
 	//nolint:nestif
-	if e.chainExecutors[chainID].summitParser != nil {
-		if summitEvent, ok := (*e.chainExecutors[chainID].summitParser).EventType(log); ok && summitEvent == summit.SnapshotAcceptedEvent {
-			contractEvent.contractType = summitContract
+	if e.chainExecutors[chainID].inboxParser != nil {
+		if summitEvent, ok := (*e.chainExecutors[chainID].inboxParser).EventType(log); ok && summitEvent == inbox.SnapshotAcceptedEvent {
+			contractEvent.contractType = inboxContract
 			contractEvent.eventType = snapshotAcceptedEvent
 		}
 
@@ -72,10 +73,13 @@ func (e Executor) logType(log ethTypes.Log, chainID uint32) contractEventType {
 		contractEvent.eventType = sentEvent
 	} else if destinationEvent, ok := e.chainExecutors[chainID].destinationParser.EventType(log); ok {
 		contractEvent.contractType = destinationContract
-		if destinationEvent == destination.AttestationAcceptedEvent {
-			contractEvent.eventType = attestationAcceptedEvent
-		} else if destinationEvent == destination.ExecutedEvent {
+		if destinationEvent == destination.ExecutedEvent {
 			contractEvent.eventType = executedEvent
+		}
+	} else if lightManagerEvent, ok := (*e.chainExecutors[chainID].lightInboxParser).EventType(log); ok {
+		contractEvent.contractType = lightInboxContract
+		if lightManagerEvent == lightinbox.AttestationAcceptedEvent {
+			contractEvent.eventType = attestationAcceptedEvent
 		}
 	}
 

@@ -33,8 +33,13 @@ type IBondingManagerCaller interface {
 	Destination(opts *bind.CallOpts) (common.Address, error)
 	// DisputeStatus is a free data retrieval call binding the contract method 0x3463d1b1.
 	//
-	// Solidity: function disputeStatus(address agent) view returns((uint8,uint32,address))
-	DisputeStatus(opts *bind.CallOpts, agent common.Address) (Dispute, error)
+	// Solidity: function disputeStatus(address agent) view returns(uint8 flag, address rival, address fraudProver, uint256 disputePtr)
+	DisputeStatus(opts *bind.CallOpts, agent common.Address) (struct {
+		Flag        uint8
+		Rival       common.Address
+		FraudProver common.Address
+		DisputePtr  *big.Int
+	}, error)
 	// GetActiveAgents is a free data retrieval call binding the contract method 0xc1c0f4f6.
 	//
 	// Solidity: function getActiveAgents(uint32 domain) view returns(address[] agents)
@@ -46,6 +51,21 @@ type IBondingManagerCaller interface {
 		Agent  common.Address
 		Status AgentStatus
 	}, error)
+	// GetDispute is a free data retrieval call binding the contract method 0xe3a96cbd.
+	//
+	// Solidity: function getDispute(uint256 index) view returns(address guard, address notary, address slashedAgent, address fraudProver, bytes reportPayload, bytes reportSignature)
+	GetDispute(opts *bind.CallOpts, index *big.Int) (struct {
+		Guard           common.Address
+		Notary          common.Address
+		SlashedAgent    common.Address
+		FraudProver     common.Address
+		ReportPayload   []byte
+		ReportSignature []byte
+	}, error)
+	// GetDisputesAmount is a free data retrieval call binding the contract method 0x3aaeccc6.
+	//
+	// Solidity: function getDisputesAmount() view returns(uint256)
+	GetDisputesAmount(opts *bind.CallOpts) (*big.Int, error)
 	// GetLeafs is a free data retrieval call binding the contract method 0x33d1b2e8.
 	//
 	// Solidity: function getLeafs(uint256 indexFrom, uint256 amount) view returns(bytes32[] leafs)
@@ -54,6 +74,10 @@ type IBondingManagerCaller interface {
 	//
 	// Solidity: function getProof(address agent) view returns(bytes32[] proof)
 	GetProof(opts *bind.CallOpts, agent common.Address) ([][32]byte, error)
+	// Inbox is a free data retrieval call binding the contract method 0xfb0e722b.
+	//
+	// Solidity: function inbox() view returns(address)
+	Inbox(opts *bind.CallOpts) (common.Address, error)
 	// LeafsAmount is a free data retrieval call binding the contract method 0x33c3a8f3.
 	//
 	// Solidity: function leafsAmount() view returns(uint256 amount)
@@ -70,6 +94,10 @@ type IBondingManagerCaller interface {
 	//
 	// Solidity: function owner() view returns(address)
 	Owner(opts *bind.CallOpts) (common.Address, error)
+	// Summit is a free data retrieval call binding the contract method 0x9fbcb9cb.
+	//
+	// Solidity: function summit() view returns(address)
+	Summit(opts *bind.CallOpts) (common.Address, error)
 	// Version is a free data retrieval call binding the contract method 0x54fd4d50.
 	//
 	// Solidity: function version() view returns(string versionString)

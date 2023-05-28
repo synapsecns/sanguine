@@ -13,7 +13,6 @@ import (
 	"github.com/stretchr/testify/mock"
 	"github.com/synapsecns/sanguine/agents/config"
 	"github.com/synapsecns/sanguine/agents/domains/evm"
-	"github.com/synapsecns/sanguine/agents/types"
 	"github.com/synapsecns/sanguine/ethergo/chain/client/mocks"
 	etherMocks "github.com/synapsecns/sanguine/ethergo/mocks"
 	"github.com/synapsecns/sanguine/ethergo/util"
@@ -114,12 +113,8 @@ func (e *RPCSuite) TestFilterer() {
 	for _, sent := range sents {
 		auth := e.TestBackendOrigin.GetTxContext(e.GetTestContext(), nil)
 
-		encodedTips, err := types.EncodeTips(types.NewTips(big.NewInt(0), big.NewInt(0), big.NewInt(0), big.NewInt(0)))
-		Nil(e.T(), err)
-
-		paddedTips := new(big.Int).SetBytes(encodedTips)
 		paddedRequest := big.NewInt(0)
-		addedSent, err := e.OriginContract.SendBaseMessage(auth.TransactOpts, sent.destinationDomain, sent.recipientAddress, sent.optimisticSeconds, paddedTips, paddedRequest, sent.messageBody)
+		addedSent, err := e.OriginContract.SendBaseMessage(auth.TransactOpts, sent.destinationDomain, sent.recipientAddress, sent.optimisticSeconds, paddedRequest, sent.messageBody)
 		Nil(e.T(), err)
 
 		e.TestBackendOrigin.WaitForConfirmation(e.GetTestContext(), addedSent)

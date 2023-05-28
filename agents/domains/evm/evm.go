@@ -29,11 +29,17 @@ type evmClient struct {
 	lightManager domains.LightManagerContract
 	// bondingManager contains the bondingManager contract
 	bondingManager domains.BondingManagerContract
+	// lightInbox contains the lightInbox contract
+	lightInbox domains.LightInboxContract
+	// inbox contains the inbox contract
+	inbox domains.InboxContract
 }
 
 var _ domains.DomainClient = &evmClient{}
 
 // NewEVM creates a new evm client.
+//
+//nolint:nestif
 func NewEVM(ctx context.Context, name string, domain config.DomainConfig) (domains.DomainClient, error) {
 	underlyingClient, err := chain.NewFromURL(ctx, domain.RPCUrl)
 	if err != nil {
@@ -52,11 +58,17 @@ func NewEVM(ctx context.Context, name string, domain config.DomainConfig) (domai
 
 	var boundSummit domains.SummitContract
 	var boundBondingManager domains.BondingManagerContract
+	var boundInbox domains.InboxContract
 	var boundLightManager domains.LightManagerContract
+	var boundLightInbox domains.LightInboxContract
 	if domain.SummitAddress == "" {
 		boundLightManager, err = NewLightManagerContract(ctx, underlyingClient, common.HexToAddress(domain.LightManagerAddress))
 		if err != nil {
 			return nil, fmt.Errorf("could not bind light manager contract: %w", err)
+		}
+		boundLightInbox, err = NewLightInboxContract(ctx, underlyingClient, common.HexToAddress(domain.LightInboxAddress))
+		if err != nil {
+			return nil, fmt.Errorf("could not bind light inbox contract: %w", err)
 		}
 	} else {
 		boundSummit, err = NewSummitContract(ctx, underlyingClient, common.HexToAddress(domain.SummitAddress))
@@ -68,6 +80,10 @@ func NewEVM(ctx context.Context, name string, domain config.DomainConfig) (domai
 		if err != nil {
 			return nil, fmt.Errorf("could not bind bonding manager contract: %w", err)
 		}
+		boundInbox, err = NewInboxContract(ctx, underlyingClient, common.HexToAddress(domain.InboxAddress))
+		if err != nil {
+			return nil, fmt.Errorf("could not bind inbox contract: %w", err)
+		}
 	}
 
 	return evmClient{
@@ -78,7 +94,9 @@ func NewEVM(ctx context.Context, name string, domain config.DomainConfig) (domai
 		origin:         boundOrigin,
 		destination:    boundDestination,
 		lightManager:   boundLightManager,
+		lightInbox:     boundLightInbox,
 		bondingManager: boundBondingManager,
+		inbox:          boundInbox,
 	}, nil
 }
 
@@ -125,4 +143,14 @@ func (e evmClient) LightManager() domains.LightManagerContract {
 // BondingManager gets the bonding manager.
 func (e evmClient) BondingManager() domains.BondingManagerContract {
 	return e.bondingManager
+}
+
+// LightInbox gets the light inbox.
+func (e evmClient) LightInbox() domains.LightInboxContract {
+	return e.lightInbox
+}
+
+// Inbox gets the inbox.
+func (e evmClient) Inbox() domains.InboxContract {
+	return e.inbox
 }
