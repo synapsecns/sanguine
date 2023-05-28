@@ -64,14 +64,14 @@ func (o originContract) FetchSortedMessages(ctx context.Context, from uint32, to
 			continue
 		}
 
-		if logType == origin.DispatchedEvent {
-			dispatchEvents, ok := o.contract.Parser().ParseDispatched(log)
+		if logType == origin.SentEvent {
+			sentEvents, ok := o.contract.Parser().ParseSent(log)
 			// TODO: this should never happen. Maybe we should return an error here?
 			if !ok {
 				continue
 			}
 
-			messages = append(messages, dispatchEvents)
+			messages = append(messages, sentEvents)
 		}
 	}
 

@@ -46,6 +46,14 @@ type DomainConfig struct {
 	SummitAddress string `yaml:"summit_address"`
 	// DestinationAddress gets destination contract address
 	DestinationAddress string `yaml:"destination_address"`
+	// LightManagerAddress gets then light manager contract address
+	LightManagerAddress string `yaml:"light_manager_address"`
+	// BondingManagerAddress gets the bonding manager contract address
+	BondingManagerAddress string `yaml:"bonding_manager_address"`
+	// LightInboxAddress gets the light inbox contract address
+	LightInboxAddress string `yaml:"light_inbox_address"`
+	// InboxAddress gets the inbox contract address
+	InboxAddress string `yaml:"inbox_address"`
 	// RPCUrl to use for the chain
 	RPCUrl string `yaml:"rpc_url"`
 	// Minimum start height
@@ -70,6 +78,16 @@ func (d DomainConfig) IsValid(_ context.Context) (ok bool, err error) {
 
 	if d.DestinationAddress == "" {
 		return false, fmt.Errorf("field DestinationAddress: %w", ErrRequiredField)
+	}
+
+	if d.SummitAddress == "" {
+		if d.LightManagerAddress == "" {
+			return false, fmt.Errorf("field LightManagerAddress: %w", ErrRequiredField)
+		}
+	} else {
+		if d.BondingManagerAddress == "" {
+			return false, fmt.Errorf("field BondingManagerAddress: %w", ErrRequiredField)
+		}
 	}
 
 	if d.RPCUrl == "" {

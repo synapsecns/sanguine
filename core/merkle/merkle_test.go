@@ -14,7 +14,7 @@ const (
 )
 
 func TestMerkleTree(t *testing.T) {
-	tree := merkle.NewTree(merkle.MessageTreeDepth)
+	tree := merkle.NewTree(merkle.MessageTreeHeight)
 	// Generate test leafs
 	leafs := make([][]byte, leafsAmount)
 	for i := uint32(0); i < leafsAmount; i++ {
@@ -49,22 +49,22 @@ func TestMerkleTree(t *testing.T) {
 			proof, err := tree.MerkleProof(index, count)
 			Nil(t, err)
 			// Proof should have length equal to `TreeDepth`.
-			Equal(t, len(proof), int(merkle.MessageTreeDepth))
+			Equal(t, len(proof), int(merkle.MessageTreeHeight))
 			for i := 0; i < len(proof); i++ {
 				// Each element should be a bytes32 value.
 				Equal(t, len(proof[i]), 32)
 			}
-			branchRoot, err := merkle.BranchRoot(leafs[index], index, proof, merkle.MessageTreeDepth)
+			branchRoot, err := merkle.BranchRoot(leafs[index], index, proof, merkle.MessageTreeHeight)
 			Nil(t, err)
 			// Should match the correct bytes32 value for the root.
 			Equal(t, root, branchRoot)
-			True(t, merkle.VerifyMerkleProof(root, leafs[index], index, proof, merkle.MessageTreeDepth))
+			True(t, merkle.VerifyMerkleProof(root, leafs[index], index, proof, merkle.MessageTreeHeight))
 		}
 	}
 }
 
 func TestIncorrectRequests(t *testing.T) {
-	tree := merkle.NewTree(merkle.MessageTreeDepth)
+	tree := merkle.NewTree(merkle.MessageTreeHeight)
 	// Generate test leafs.
 	leafs := make([][]byte, leafsAmount)
 	for i := uint32(0); i < leafsAmount; i++ {
@@ -95,8 +95,8 @@ func TestIncorrectRequests(t *testing.T) {
 	NotNil(t, proof)
 	Nil(t, err)
 	// Check BranchRoot() with incorrect proof length.
-	proof = make([][]byte, merkle.MessageTreeDepth+1)
-	branchRoot, err := merkle.BranchRoot(leafs[0], leafsAmount, proof, merkle.MessageTreeDepth)
+	proof = make([][]byte, merkle.MessageTreeHeight+1)
+	branchRoot, err := merkle.BranchRoot(leafs[0], leafsAmount, proof, merkle.MessageTreeHeight)
 	Nil(t, branchRoot)
 	NotNil(t, err)
 	// Get current and historical root.
@@ -107,21 +107,21 @@ func TestIncorrectRequests(t *testing.T) {
 	NotNil(t, histRoot)
 	Nil(t, err)
 	// Check VerifyMerkleProof() with incorrect proof length.
-	False(t, merkle.VerifyMerkleProof(root, leafs[0], 0, proof, merkle.MessageTreeDepth))
+	False(t, merkle.VerifyMerkleProof(root, leafs[0], 0, proof, merkle.MessageTreeHeight))
 	// Generate proofs against current root, they should not work with the historical root.
 	for i := uint32(0); i < leafsAmount; i++ {
 		proof, err = tree.MerkleProof(i, leafsAmount)
 		NotNil(t, proof)
 		Nil(t, err)
 		// Should not be able to prove against the historical root.
-		False(t, merkle.VerifyMerkleProof(histRoot, leafs[i], i, proof, merkle.MessageTreeDepth))
+		False(t, merkle.VerifyMerkleProof(histRoot, leafs[i], i, proof, merkle.MessageTreeHeight))
 		// Should be able to prove against the current root.
-		True(t, merkle.VerifyMerkleProof(root, leafs[i], i, proof, merkle.MessageTreeDepth))
+		True(t, merkle.VerifyMerkleProof(root, leafs[i], i, proof, merkle.MessageTreeHeight))
 	}
 }
 
 func TestNewTreeFromItems(t *testing.T) {
-	tree := merkle.NewTree(merkle.MessageTreeDepth)
+	tree := merkle.NewTree(merkle.MessageTreeHeight)
 	// Generate test leafs
 	leafs := make([][]byte, leafsAmount)
 	for i := uint32(0); i < leafsAmount; i++ {
@@ -135,7 +135,7 @@ func TestNewTreeFromItems(t *testing.T) {
 	}
 	// Get items and generate a new tree from them
 	items := tree.Items()
-	newTree := merkle.NewTreeFromItems(items, merkle.MessageTreeDepth)
+	newTree := merkle.NewTreeFromItems(items, merkle.MessageTreeHeight)
 	// Check that the number of items are the same
 	Equal(t, tree.NumOfItems(), newTree.NumOfItems())
 	// Check that the new tree has the same root

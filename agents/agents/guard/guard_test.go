@@ -75,11 +75,15 @@ func (u GuardSuite) TestGuardE2E() {
 
 	txContextTestClientOrigin := u.TestBackendOrigin.GetTxContext(u.GetTestContext(), u.TestClientMetadataOnOrigin.OwnerPtr())
 
+	gasLimit := uint64(10000000)
+	version := uint32(1)
 	testClientOnOriginTx, err := u.TestClientOnOrigin.SendMessage(
 		txContextTestClientOrigin.TransactOpts,
 		uint32(u.TestBackendDestination.GetChainID()),
 		u.TestClientMetadataOnDestination.Address(),
 		optimisticSeconds,
+		gasLimit,
+		version,
 		body)
 
 	u.Nil(err)
@@ -126,23 +130,4 @@ func (u GuardSuite) TestGuardE2E() {
 		Nil(u.T(), err)
 		return state.Nonce() >= uint32(1)
 	})
-}
-
-func (u GuardSuite) TestDeployedGuards() {
-	allOriginGuards, err := u.OriginContract.AllAgents(&bind.CallOpts{Context: u.GetTestContext()}, uint32(0))
-	Nil(u.T(), err)
-	Equal(u.T(), 1, len(allOriginGuards))
-
-	allDestGuards, err := u.DestinationContract.AllAgents(&bind.CallOpts{Context: u.GetTestContext()}, uint32(0))
-	Nil(u.T(), err)
-	Equal(u.T(), 1, len(allDestGuards))
-
-	Equal(u.T(), allOriginGuards[0], allDestGuards[0])
-
-	allSummitGuards, err := u.SummitContract.AllAgents(&bind.CallOpts{Context: u.GetTestContext()}, uint32(0))
-	Nil(u.T(), err)
-
-	Equal(u.T(), 1, len(allSummitGuards))
-
-	Equal(u.T(), allSummitGuards[0], allDestGuards[0])
 }

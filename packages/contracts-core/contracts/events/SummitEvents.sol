@@ -4,23 +4,10 @@ pragma solidity 0.8.17;
 /// @notice A collection of events emitted by the Summit contract
 abstract contract SummitEvents {
     /**
-     * @notice Emitted when a proof of invalid attestation is submitted.
-     * @param attestation   Raw payload with attestation data
-     * @param attSignature  Notary signature for the attestation
+     * @notice Emitted when a tip is awarded to the actor, whether they are bonded or unbonded actor.
+     * @param actor     Actor address
+     * @param origin    Domain where tips were originally paid
+     * @param tip       Tip value, scaled down by TIPS_MULTIPLIER
      */
-    event InvalidAttestation(bytes attestation, bytes attSignature);
-
-    /**
-     * @notice Emitted when a snapshot is accepted by the Summit contract.
-     * @param domain        Domain where the signed Agent is active (ZERO for Guards)
-     * @param agent         Agent who signed the snapshot
-     * @param snapshot      Raw payload with snapshot data
-     * @param snapSignature Agent signature for the snapshot
-     */
-    event SnapshotAccepted(
-        uint32 indexed domain,
-        address indexed agent,
-        bytes snapshot,
-        bytes snapSignature
-    );
+    event TipAwarded(address actor, uint32 origin, uint256 tip);
 }

@@ -44,27 +44,7 @@ type destinationContract struct {
 	nonceManager nonce.Manager
 }
 
-// func (a destinationContract) SubmitAttestation(ctx context.Context, signer signer.Signer, attestation types.SignedAttestation) error {
-//	// TODO (joeallen): FIX ME
-//	/*transactOpts, err := a.transactOptsSetup(ctx, signer)
-//	if err != nil {
-//		return fmt.Errorf("could not setup transact opts: %w", err)
-//	}
-//
-//	encodedAttestation, err := types.EncodeSignedAttestation(attestation)
-//	if err != nil {
-//		return fmt.Errorf("could not get signed attestations: %w", err)
-//	}
-//
-//	_, err = a.contract.SubmitAttestation(transactOpts, encodedAttestation)
-//	if err != nil {
-//		return fmt.Errorf("could not submit attestation: %w", err)
-//	}*/
-//
-//	return nil
-//}
-
-func (a destinationContract) Execute(ctx context.Context, signer signer.Signer, message types.Message, originProof [32][32]byte, snapshotProof [][32]byte, index *big.Int) error {
+func (a destinationContract) Execute(ctx context.Context, signer signer.Signer, message types.Message, originProof [32][32]byte, snapshotProof [][32]byte, index *big.Int, gasLimit uint64) error {
 	transactOpts, err := a.transactOptsSetup(ctx, signer)
 	if err != nil {
 		return fmt.Errorf("could not setup transact opts: %w", err)
@@ -75,7 +55,7 @@ func (a destinationContract) Execute(ctx context.Context, signer signer.Signer, 
 		return fmt.Errorf("could not encode message: %w", err)
 	}
 
-	_, err = a.contract.Execute(transactOpts, encodedMessage, originProof, snapshotProof, index)
+	_, err = a.contract.Execute(transactOpts, encodedMessage, originProof[:], snapshotProof, index, gasLimit)
 	if err != nil {
 		return fmt.Errorf("could not execute message: %w", err)
 	}
@@ -131,21 +111,11 @@ func (a destinationContract) AttestationsAmount(ctx context.Context) (uint64, er
 	return attestationsAmountBigInt.Uint64(), nil
 }
 
-func (a destinationContract) SubmitAttestation(ctx context.Context, signer signer.Signer, attPayload []byte, signature signer.Signature) error {
-	transactOpts, err := a.transactOptsSetup(ctx, signer)
+func (a destinationContract) GetAttestationNonce(ctx context.Context, snapRoot [32]byte) (uint32, error) {
+	attNonce, err := a.contract.GetAttestationNonce(&bind.CallOpts{Context: ctx}, snapRoot)
 	if err != nil {
-		return fmt.Errorf("could not setup transact opts: %w", err)
+		return uint32(0), fmt.Errorf("could not get attNonce for snapRoot: %w", err)
 	}
 
-	rawSig, err := types.EncodeSignature(signature)
-	if err != nil {
-		return fmt.Errorf("could not encode signature: %w", err)
-	}
-
-	_, err = a.contract.SubmitAttestation(transactOpts, attPayload, rawSig)
-	if err != nil {
-		return fmt.Errorf("could not submit attestation: %w", err)
-	}
-
-	return nil
+	return attNonce, nil
 }

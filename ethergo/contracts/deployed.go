@@ -13,7 +13,7 @@ type DeployedContract interface {
 	// Address is the address where the contract has been deployed
 	Address() common.Address
 	// ContractHandle is the actual handle returned by deploying the contract
-	// this must be castt o be useful
+	// this must be cast to be useful
 	ContractHandle() interface{}
 	// Owner of the contract
 	Owner() common.Address

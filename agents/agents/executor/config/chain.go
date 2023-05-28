@@ -16,6 +16,8 @@ type ChainConfig struct {
 	OriginAddress string `yaml:"origin_address"`
 	// DestinationAddress is the address of the destination contract.
 	DestinationAddress string `yaml:"destination_address"`
+	// LightInboxAddress is the address of the light inbox contract.
+	LightInboxAddress string `yaml:"lightinbox_address"`
 }
 
 // ChainConfigs contains an array of ChainConfigs.
@@ -47,6 +49,13 @@ func (c ChainConfig) IsValid(ctx context.Context) (ok bool, err error) {
 
 	if c.DestinationAddress == "" {
 		return false, fmt.Errorf("field DestinationAddress is required")
+	}
+
+	// TODO (joe): Change from 10 to SYN chain constant, this will be wrong in prod
+	if c.ChainID == 10 {
+		if c.LightInboxAddress == "" {
+			return false, fmt.Errorf("field LightInboxAddress is required")
+		}
 	}
 
 	return true, nil

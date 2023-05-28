@@ -1,18 +1,16 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.0;
 
-import { console, Script, stdJson } from "forge-std/Script.sol";
+import {console, Script, stdJson} from "forge-std/Script.sol";
 
-import { Strings } from "@openzeppelin/contracts/utils/Strings.sol";
-import { Address } from "@openzeppelin/contracts/utils/Address.sol";
+import {Strings} from "@openzeppelin/contracts/utils/Strings.sol";
+import {Address} from "@openzeppelin/contracts/utils/Address.sol";
 
 interface ICreate3Factory {
-    function deploy(bytes32 salt, bytes memory creationCode)
-        external
-        payable
-        returns (address deployed);
+    function deploy(bytes32 salt, bytes memory creationCode) external payable returns (address deployed);
 }
 
+// solhint-disable no-empty-blocks
 // solhint-disable ordering
 contract DeployerUtils is Script {
     using stdJson for string;
@@ -24,8 +22,7 @@ contract DeployerUtils is Script {
 
     // TODO: this is only deployed on 7 chains, deploy our own factory for prod deployments
     // This is the factory on testnets
-    ICreate3Factory internal constant FACTORY =
-        ICreate3Factory(0x7D5352B5d0C1d2Df42FF7462233252608A9174db);
+    ICreate3Factory internal constant FACTORY = ICreate3Factory(0x7D5352B5d0C1d2Df42FF7462233252608A9174db);
 
     /// @dev Whether the script will be broadcasted or not
     bool internal isBroadcasted = false;
@@ -36,20 +33,21 @@ contract DeployerUtils is Script {
     uint256 internal broadcasterPK;
     address internal broadcasterAddress;
 
-    /*╔══════════════════════════════════════════════════════════════════════╗*\
-    ▏*║                                SETUP                                 ║*▕
-    \*╚══════════════════════════════════════════════════════════════════════╝*/
+    /// @notice Prevents this contract from being included in the coverage report
+    function testDeployerUtils() external {}
+
+    // ═══════════════════════════════════════════════════ SETUP ═══════════════════════════════════════════════════════
 
     function stopBroadcast() public {
         vm.stopBroadcast();
         isBroadcasted = false;
     }
 
-    function startBroadcast(bool _isBroadcasted) public {
+    function startBroadcast(bool isBroadcasted_) public {
         chainAlias = getChainAlias();
-        if (_isBroadcasted) createDir(string.concat(DEPLOYMENTS, chainAlias));
+        if (isBroadcasted_) createDir(string.concat(DEPLOYMENTS, chainAlias));
         vm.startBroadcast(broadcasterPK);
-        isBroadcasted = _isBroadcasted;
+        isBroadcasted = isBroadcasted_;
     }
 
     function setupDeployerPK() public {
@@ -74,16 +72,13 @@ contract DeployerUtils is Script {
         return getChain(block.chainid).chainAlias;
     }
 
-    /*╔══════════════════════════════════════════════════════════════════════╗*\
-    ▏*║                             DEPLOYMENTS                              ║*▕
-    \*╚══════════════════════════════════════════════════════════════════════╝*/
+    // ════════════════════════════════════════════════ DEPLOYMENTS ════════════════════════════════════════════════════
 
     /// @notice Deploys the contract using Create3Factory. Does not save anything.
-    function factoryDeploy(
-        string memory contractName,
-        bytes memory creationCode,
-        bytes memory constructorArgs
-    ) internal returns (address deployment) {
+    function factoryDeploy(string memory contractName, bytes memory creationCode, bytes memory constructorArgs)
+        internal
+        returns (address deployment)
+    {
         require(Address.isContract(address(FACTORY)), "Factory not deployed");
         deployment = FACTORY.deploy(
             keccak256(bytes(contractName)), // salt
@@ -97,10 +92,10 @@ contract DeployerUtils is Script {
     /// @param contractName     Contract name to deploy
     /// @param deployFunc       Callback function to deploy a requested contract
     /// @return deployment  The deployment address
-    function deployContract(
-        string memory contractName,
-        function() internal returns (address) deployFunc
-    ) internal returns (address deployment) {
+    function deployContract(string memory contractName, function() internal returns (address) deployFunc)
+        internal
+        returns (address deployment)
+    {
         return deployContract(contractName, contractName, deployFunc);
     }
 
@@ -129,10 +124,7 @@ contract DeployerUtils is Script {
     /// Reverts if it doesn't exist.
     function loadDeployment(string memory contractName) public returns (address deployment) {
         deployment = tryLoadDeployment(contractName);
-        require(
-            deployment != address(0),
-            string.concat(contractName, " doesn't exist on ", chainAlias)
-        );
+        require(deployment != address(0), string.concat(contractName, " doesn't exist on ", chainAlias));
     }
 
     /// @notice Returns the deployment for a contract on the current chain, if it exists.
@@ -148,11 +140,7 @@ contract DeployerUtils is Script {
     }
 
     /// @notice Saves the deployment JSON for a deployed contract.
-    function saveDeployment(
-        string memory contractName,
-        string memory saveAsName,
-        address deployedAt
-    ) public {
+    function saveDeployment(string memory contractName, string memory saveAsName, address deployedAt) public {
         console.log("Deployed: [%s] on [%s] at %s", contractName, chainAlias, deployedAt);
         // Do nothing if script isn't broadcasted
         if (!isBroadcasted) return;
@@ -177,9 +165,7 @@ contract DeployerUtils is Script {
         string(full).write(deploymentPath(saveAsName));
     }
 
-    /*╔══════════════════════════════════════════════════════════════════════╗*\
-    ▏*║                            DEPLOY CONFIG                             ║*▕
-    \*╚══════════════════════════════════════════════════════════════════════╝*/
+    // ═══════════════════════════════════════════════ DEPLOY CONFIG ═══════════════════════════════════════════════════
 
     /// @notice Checks if deploy config exists for a given contract on the current chain.
     function deployConfigExists(string memory contractName) public returns (bool) {
@@ -207,17 +193,11 @@ contract DeployerUtils is Script {
 
     /// @notice Loads deploy config for a given contract on the current chain.
     /// Will revert if config doesn't exist.
-    function loadGlobalDeployConfig(string memory contractName)
-        public
-        view
-        returns (string memory json)
-    {
+    function loadGlobalDeployConfig(string memory contractName) public view returns (string memory json) {
         return vm.readFile(globalDeployConfigPath(contractName));
     }
 
-    /*╔══════════════════════════════════════════════════════════════════════╗*\
-    ▏*║                               HELPERS                                ║*▕
-    \*╚══════════════════════════════════════════════════════════════════════╝*/
+    // ══════════════════════════════════════════════════ HELPERS ══════════════════════════════════════════════════════
 
     /// @notice Returns path to the contract artifact.
     function artifactPath(string memory contractName) public pure returns (string memory path) {
@@ -247,18 +227,15 @@ contract DeployerUtils is Script {
     }
 
     /// @notice Returns path to the global contract deploy config JSON.
-    function globalDeployConfigPath(string memory contractName)
-        public
-        pure
-        returns (string memory path)
-    {
+    function globalDeployConfigPath(string memory contractName) public pure returns (string memory path) {
         return string.concat(DEPLOY_CONFIGS, deployConfigFn(contractName));
     }
 
     /// @notice Create directory if it not exists already
     function createDir(string memory dirPath) public {
         // solhint-disable-next-line no-empty-blocks
-        try vm.fsMetadata(dirPath) {} catch {
+        try vm.fsMetadata(dirPath) {}
+        catch {
             string[] memory inputs = new string[](3);
             inputs[0] = "mkdir";
             inputs[1] = "--p";
@@ -280,13 +257,11 @@ contract DeployerUtils is Script {
         string(sorted).write(path);
     }
 
-    /*╔══════════════════════════════════════════════════════════════════════╗*\
-    ▏*║                           INTERNAL HELPERS                           ║*▕
-    \*╚══════════════════════════════════════════════════════════════════════╝*/
+    // ═════════════════════════════════════════════ INTERNAL HELPERS ══════════════════════════════════════════════════
 
     function _fromWei(uint256 amount) internal pure returns (string memory s) {
-        string memory a = Strings.toString(amount / 10**18);
-        string memory b = Strings.toString(amount % 10**18);
+        string memory a = Strings.toString(amount / 10 ** 18);
+        string memory b = Strings.toString(amount % 10 ** 18);
         // Add leading zeroes to the decimal part
         while (bytes(b).length < 18) {
             b = string.concat("0", b);
