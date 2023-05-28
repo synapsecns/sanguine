@@ -22,7 +22,7 @@ type Store struct {
 var MaxIdleConns = 10
 
 // MaxOpenConns is exported here for testing. Tests execute too slowly with a reconnect each time.
-var MaxOpenConns = 200
+var MaxOpenConns = 2048
 
 // NamingStrategy is exported here for testing.
 var NamingStrategy = schema.NamingStrategy{
