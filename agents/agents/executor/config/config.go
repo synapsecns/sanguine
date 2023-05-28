@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"github.com/davecgh/go-spew/spew"
 	"github.com/jftuga/ellipsis"
-	agentsConfig "github.com/synapsecns/sanguine/agents/config"
+	agentsConfig "github.com/synapsecns/sanguine/ethergo/signer/config"
 	scribeConfig "github.com/synapsecns/sanguine/services/scribe/config"
 	"gopkg.in/yaml.v2"
 	"os"

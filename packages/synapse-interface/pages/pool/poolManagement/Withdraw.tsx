@@ -65,7 +65,7 @@ const Withdraw = ({
   const resetInput = () => {
     setInputValue({ bn: Zero, str: '' })
   }
-  const SynapseSDK = useSynapseContext()
+  const { synapseSDK } = useSynapseContext()
 
   const sumBigNumbers = (pool: Token, bigNumMap: any) => {
     let sum = Zero
@@ -85,57 +85,61 @@ const Withdraw = ({
     if (poolUserData == null || address == null) {
       return
     }
-    const outputs: Record<
-      string,
-      {
-        value: BigNumber
-        index: number
+    try {
+      const outputs: Record<
+        string,
+        {
+          value: BigNumber
+          index: number
+        }
+      > = {}
+      if (withdrawType == ALL) {
+        const { amounts } = await synapseSDK.calculateRemoveLiquidity(
+          chainId,
+          pool.swapAddresses[chainId],
+          inputValue.bn
+        )
+        for (const tokenAddr in amounts) {
+          outputs[tokenAddr] = amounts[tokenAddr]
+        }
+      } else {
+        const { amount } = await synapseSDK.calculateRemoveLiquidityOne(
+          chainId,
+          pool.swapAddresses[chainId],
+          inputValue.bn,
+          withdrawType
+        )
+        outputs[withdrawType] = amount
       }
-    > = {}
-    if (withdrawType == ALL) {
-      const { amounts } = await SynapseSDK.calculateRemoveLiquidity(
-        chainId,
-        pool.swapAddresses[chainId],
-        inputValue.bn
-      )
-      for (const tokenAddr in amounts) {
-        outputs[tokenAddr] = amounts[tokenAddr]
-      }
-    } else {
-      const { amount } = await SynapseSDK.calculateRemoveLiquidityOne(
-        chainId,
-        pool.swapAddresses[chainId],
+      const tokenSum = sumBigNumbers(pool, outputs)
+      const priceImpact = calculateExchangeRate(
         inputValue.bn,
-        withdrawType
+        18,
+        inputValue.bn.sub(tokenSum),
+        18
       )
-      outputs[withdrawType] = amount
+      const allowance = await getTokenAllowance(
+        pool.swapAddresses[chainId],
+        pool.addresses[chainId],
+        address,
+        chainId
+      )
+      setWithdrawQuote({
+        priceImpact,
+        allowance,
+        outputs,
+        routerAddress: pool.swapAddresses[chainId],
+      })
+    } catch (e) {
+      console.log(e)
     }
-    const tokenSum = sumBigNumbers(pool, outputs)
-    const priceImpact = calculateExchangeRate(
-      inputValue.bn,
-      18,
-      inputValue.bn.sub(tokenSum),
-      18
-    )
-    const allowance = await getTokenAllowance(
-      pool.swapAddresses[chainId],
-      pool.addresses[chainId],
-      address,
-      chainId
-    )
-    setWithdrawQuote({
-      priceImpact,
-      allowance,
-      outputs,
-      routerAddress: pool.swapAddresses[chainId],
-    })
   }
 
   useEffect(() => {
     if (poolUserData && poolData && address && pool && inputValue.bn.gt(Zero)) {
       calculateMaxWithdraw()
     }
-  }, [inputValue, time])
+  }, [inputValue, time, withdrawType])
 
   const onPercentChange = (percent: number) => {
     if (percent > 100) {
@@ -152,9 +156,17 @@ const Withdraw = ({
   }
 
   const onChangeInputValue = (token: Token, value: string) => {
-    const bigNum = stringToBigNum(value, token.decimals[chainId]) ?? Zero
+    const bigNum = stringToBigNum(value, token.decimals[chainId])
+    if (poolUserData.lpTokenBalance.isZero()) {
+      setInputValue({ bn: bigNum, str: value })
+
+      setPercentage(100)
+      return
+    }
+    const pn = bigNum
+      ? bigNum.mul(100).div(poolUserData.lpTokenBalance).toNumber()
+      : 0
     setInputValue({ bn: bigNum, str: value })
-    const pn = bigNum.mul(100).div(poolUserData.lpTokenBalance).toNumber()
 
     if (pn > 100) {
       setPercentage(100)
@@ -209,7 +221,7 @@ const Withdraw = ({
   const actionBtn = (
     <TransactionButton
       className={btnClassName}
-      disabled={inputValue.bn.eq(0)}
+      disabled={inputValue.bn.eq(0) || !isFromBalanceEnough}
       onClick={() => buttonAction()}
       onSuccess={() => postButtonAction()}
       label={btnLabel}

@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"github.com/synapsecns/sanguine/core/metrics"
+	config2 "github.com/synapsecns/sanguine/ethergo/signer/config"
 	"go.opentelemetry.io/otel/attribute"
 	"go.opentelemetry.io/otel/trace"
 	"time"
@@ -37,12 +38,12 @@ func NewGuard(ctx context.Context, cfg config.AgentConfig, handler metrics.Handl
 	}
 	guard.domains = []domains.DomainClient{}
 
-	guard.bondedSigner, err = config.SignerFromConfig(ctx, cfg.BondedSigner)
+	guard.bondedSigner, err = config2.SignerFromConfig(ctx, cfg.BondedSigner)
 	if err != nil {
 		return Guard{}, fmt.Errorf("error with bondedSigner, could not create guard: %w", err)
 	}
 
-	guard.unbondedSigner, err = config.SignerFromConfig(ctx, cfg.UnbondedSigner)
+	guard.unbondedSigner, err = config2.SignerFromConfig(ctx, cfg.UnbondedSigner)
 	if err != nil {
 		return Guard{}, fmt.Errorf("error with unbondedSigner, could not create guard: %w", err)
 	}

@@ -5,7 +5,7 @@ import { POOL_FEE_PRECISION } from '@constants/fees'
 export const formatBNToString = (
   bn: BigNumber,
   nativePrecison: number,
-  decimalPlaces: number
+  decimalPlaces?: number
 ) => {
   const fullPrecision = formatUnits(bn, nativePrecison)
   const decimalIdx = fullPrecision.indexOf('.')
@@ -42,4 +42,8 @@ export const commifyBnWithDefault = (bn: BigNumber, decimals: number) => {
 
 export const bnPercentFormat = (bn: BigNumber) => {
   return bn ? formatBNToPercentString(bn, POOL_FEE_PRECISION) : null
+}
+
+export function fixNumberToPercentageString(num, numDecimals = 2) {
+  return `${num?.toFixed(numDecimals)}%`
 }

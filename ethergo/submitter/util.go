@@ -99,8 +99,8 @@ func bigPtrToString(num *big.Int) string {
 	return num.String()
 }
 
-// sortTxes sorts a slice of transactions by nonce.
-func sortTxes(txs []db.TX) map[uint64][]db.TX {
+// sortTxesByChainID sorts a slice of transactions by nonce.
+func sortTxesByChainID(txs []db.TX) map[uint64][]db.TX {
 	txesByChainID := make(map[uint64][]db.TX)
 	// put the transactions in a map by chain id
 	for _, t := range txs {

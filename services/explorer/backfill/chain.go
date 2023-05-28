@@ -15,7 +15,6 @@ import (
 	"github.com/synapsecns/sanguine/services/explorer/consumer/fetcher"
 	"github.com/synapsecns/sanguine/services/explorer/consumer/parser"
 	"github.com/synapsecns/sanguine/services/explorer/db"
-	"github.com/synapsecns/sanguine/services/explorer/db/sql"
 	"golang.org/x/sync/errgroup"
 )
 
@@ -144,10 +143,7 @@ func (c *ChainBackfiller) backfillContractLogs(parentCtx context.Context, contra
 	// Set start block to -1 to trigger backfill from last block stored by explorer,
 	// otherwise backfilling will begin at the block number specified in the config file.
 	if contract.StartBlock < 0 {
-		startHeight, err = c.consumerDB.GetUint64(parentCtx, fmt.Sprintf(
-			"SELECT ifNull(MAX(%s), 0) FROM last_blocks WHERE %s = %d AND %s = '%s'",
-			sql.BlockNumberFieldName, sql.ChainIDFieldName, c.chainConfig.ChainID, sql.ContractAddressFieldName, contract.Address,
-		))
+		startHeight, err = c.consumerDB.GetLastStoredBlock(parentCtx, c.chainConfig.ChainID, contract.Address)
 		if err != nil {
 			return fmt.Errorf("could not get last block number: %w, %s", err, contract.ContractType)
 		}
@@ -240,9 +236,7 @@ func (c *ChainBackfiller) backfillContractLogs(parentCtx context.Context, contra
 			return fmt.Errorf("could not store last block for chain %d: %w", c.chainConfig.ChainID, err)
 		}
 		currentHeight = chunkEnd + 1
-		fmt.Println("DONE WITH CHUNK", contract.Address)
 	}
-	fmt.Println("DONE WITH BACKFILLING", contract.Address)
 	return nil
 }
 
@@ -329,7 +323,6 @@ func (c *ChainBackfiller) retryWithBackoff(ctx context.Context, doFunc retryable
 	for attempts < maxAttempt {
 		select {
 		case <-ctx.Done():
-			fmt.Println("CONEXT CANCELED ", ctx.Err(), attempts)
 			return fmt.Errorf("%w while retrying", ctx.Err())
 		case <-time.After(timeout):
 			err := doFunc(ctx)

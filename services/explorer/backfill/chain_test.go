@@ -438,10 +438,7 @@ func (b *BackfillSuite) TestBackfill() {
 	Nil(b.T(), bridgeEvents.Error)
 	Equal(b.T(), int64(16), count)
 
-	lastBlockStored, err := b.db.GetUint64(b.GetTestContext(), fmt.Sprintf(
-		"SELECT ifNull(%s, 0) FROM last_blocks WHERE %s = %d",
-		sql.BlockNumberFieldName, sql.ChainIDFieldName, testChainID.Uint64(),
-	))
+	lastBlockStored, err := b.db.GetLastStoredBlock(b.GetTestContext(), uint32(testChainID.Uint64()), chainConfigsV1[0].Contracts[0].Address)
 
 	Nil(b.T(), err)
 	Equal(b.T(), lastBlock, lastBlockStored)

@@ -3,8 +3,6 @@ package sql
 import (
 	"context"
 	"fmt"
-	"gorm.io/gorm"
-	"gorm.io/gorm/clause"
 )
 
 // StoreEvent stores a generic event that has the proper fields set by `eventToBridgeEvent`.
@@ -75,70 +73,22 @@ func (s *Store) StoreEvents(ctx context.Context, events []interface{}) error {
 
 // StoreLastBlock stores the last block number that has been backfilled for a given chain.
 func (s *Store) StoreLastBlock(ctx context.Context, chainID uint32, blockNumber uint64, contractAddress string) error {
-	entry := LastBlock{}
+	var lastBlock LastBlock
 	dbTx := s.db.WithContext(ctx).
-		Select(fmt.Sprintf("max(%s) as %s", BlockNumberFieldName, BlockNumberFieldName)).
-		Model(&LastBlock{}).
 		Where(&LastBlock{
 			ChainID:         chainID,
 			ContractAddress: contractAddress,
 		}).
-		Scan(&entry)
-	if dbTx.Error != nil {
-		return fmt.Errorf("could not retrieve last block: %w", dbTx.Error)
-	}
-	if dbTx.RowsAffected == 0 {
-		dbTx = s.db.WithContext(ctx).Clauses(clause.OnConflict{
-			Columns: []clause.Column{
-				{Name: ContractAddressFieldName}, {Name: ChainIDFieldName}, {Name: BlockNumberFieldName},
-			},
-			DoNothing: true,
-		}).Model(&LastBlock{}).
-			Create(&LastBlock{
-				ChainID:         chainID,
-				BlockNumber:     blockNumber,
-				ContractAddress: contractAddress,
-			})
+		Order("block_number DESC").
+		Limit(1).
+		Find(&lastBlock)
+	if dbTx.Error == nil && blockNumber > lastBlock.BlockNumber {
+		lastBlock.ChainID = chainID
+		lastBlock.BlockNumber = blockNumber
+		lastBlock.ContractAddress = contractAddress
+		dbTx = s.db.WithContext(ctx).Create(&lastBlock)
 		if dbTx.Error != nil {
 			return fmt.Errorf("could not store last block: %w", dbTx.Error)
-		}
-
-		return nil
-	}
-
-	if blockNumber > entry.BlockNumber {
-		dbTx = s.db.WithContext(ctx).Clauses(clause.OnConflict{
-			Columns: []clause.Column{
-				{Name: ContractAddressFieldName}, {Name: ChainIDFieldName}, {Name: BlockNumberFieldName},
-			},
-			DoNothing: true,
-		}).
-			Model(&LastBlock{}).
-			Create(&LastBlock{
-				ChainID:         chainID,
-				BlockNumber:     blockNumber,
-				ContractAddress: contractAddress,
-			})
-		if dbTx.Error != nil {
-			return fmt.Errorf("could not store last block: %w", dbTx.Error)
-		}
-		alterQuery := fmt.Sprintf("ALTER TABLE last_blocks UPDATE %s=%d WHERE %s = %d AND %s = '%s' AND %s < %d", BlockNumberFieldName, blockNumber, ChainIDFieldName, chainID, ContractAddressFieldName, contractAddress, BlockNumberFieldName, blockNumber)
-
-		err := s.db.Transaction(func(tx *gorm.DB) error {
-			prepareAlter := tx.WithContext(ctx).Exec("set mutations_sync = 2")
-			if prepareAlter.Error != nil {
-				return fmt.Errorf("could not prepare alter: %w", prepareAlter.Error)
-			}
-
-			alterDB := tx.WithContext(ctx).Exec(alterQuery)
-			if alterDB.Error != nil {
-				return fmt.Errorf("could not alter db: %w", prepareAlter.Error)
-			}
-			return nil
-		})
-
-		if err != nil {
-			return fmt.Errorf("could not alter db: %w", err)
 		}
 	}
 

@@ -1104,7 +1104,7 @@ func GenerateAmountStatisticBridgeSQL(typeArg model.StatisticType, address *stri
 		finalSQL = fmt.Sprintf("SELECT %s from (select * FROM mv_bridge_events %s ORDER BY ftimestamp DESC, fblock_number DESC, fevent_index DESC, insert_time DESC LIMIT 1 BY fchain_id, fcontract_address, fevent_type, fblock_number, fevent_index, ftx_hash)  ", operation, compositeFilters)
 	case model.StatisticTypeMedianVolumeUsd:
 		operation = fmt.Sprintf("median(f%s)", sql.AmountUSDFieldName)
-		finalSQL = fmt.Sprintf("SELECT %s FROM mv_bridge_events %s ORDER BY ftimestamp DESC, fblock_number DESC, fevent_index DESC, insert_time DESC LIMIT 1 BY fchain_id, fcontract_address, fevent_type, fblock_number, fevent_index, ftx_hash  ", operation, compositeFilters)
+		finalSQL = fmt.Sprintf("SELECT %s FROM (select * FROM mv_bridge_events %s ORDER BY ftimestamp DESC, fblock_number DESC, fevent_index DESC, insert_time DESC LIMIT 1 BY fchain_id, fcontract_address, fevent_type, fblock_number, fevent_index, ftx_hash)  ", operation, compositeFilters)
 	case model.StatisticTypeTotalVolumeUsd:
 		operation = fmt.Sprintf("sumKahan(f%s)", sql.AmountUSDFieldName)
 		finalSQL = fmt.Sprintf("SELECT %s from ( select * FROM mv_bridge_events %s ORDER BY ftimestamp DESC, fblock_number DESC, fevent_index DESC, insert_time DESC LIMIT 1 BY fchain_id, fcontract_address, fevent_type, fblock_number, fevent_index, ftx_hash)", operation, compositeFilters)

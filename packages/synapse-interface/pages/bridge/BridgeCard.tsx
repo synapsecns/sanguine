@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useRef } from 'react'
+import React, { useEffect, useState, useRef, useMemo } from 'react'
 import { useSettings } from '@hooks/useSettings'
 import { SettingsIcon } from '@icons/SettingsIcon'
 import { Transition } from '@headlessui/react'
@@ -14,7 +14,7 @@ import { PageHeader } from '@components/PageHeader'
 import { TokenSlideOver } from '@/components/misc/TokenSlideOver'
 import { ChainSlideOver } from '@/components/misc/ChainSlideOver'
 import { BigNumber } from '@ethersproject/bignumber'
-import { Zero, MaxInt256 } from '@ethersproject/constants'
+import { Zero, AddressZero } from '@ethersproject/constants'
 import { formatBNToString } from '@bignumber/format'
 import { SECTION_TRANSITION_PROPS, TRANSITION_PROPS } from '@styles/transitions'
 import { approveToken } from '@/utils/approveToken'
@@ -23,9 +23,12 @@ import { DestinationAddressInput } from '../../components/input/DestinationAddre
 import BridgeInputContainer from '../../components/input/TokenAmountInput'
 import { TransactionResponse } from '@ethersproject/providers'
 import { useSpring, animated } from 'react-spring'
-
+import { BRIDGABLE_TOKENS } from '@constants/tokens'
+import { IMPAIRED_CHAINS } from '@/constants/impairedChains'
+import { CHAINS_BY_ID } from '@constants/chains'
 import { Token } from '@/utils/types'
 import { BridgeQuote } from '@/utils/types'
+import { checkStringIfOnlyZeroes } from '@/utils/regex'
 
 export enum DisplayType {
   FROM = 'from',
@@ -48,6 +51,8 @@ const BridgeCard = ({
   toToken,
   toChainId,
   toOptions,
+  isQuoteLoading,
+  setIsQuoteLoading,
   destinationAddress,
   handleChainChange,
   handleTokenChange,
@@ -56,6 +61,7 @@ const BridgeCard = ({
   executeBridge,
   resetRates,
   setTime,
+  bridgeTxnHash,
 }: {
   error
   address: `0x${string}` | undefined
@@ -67,6 +73,8 @@ const BridgeCard = ({
   toToken: Token
   toChainId: number
   toOptions: { tokens: Token[]; chains: string[] }
+  isQuoteLoading: boolean
+  setIsQuoteLoading: (bool: boolean) => void
   destinationAddress: string
   handleChainChange: (
     chainId: number,
@@ -79,6 +87,7 @@ const BridgeCard = ({
   executeBridge: () => Promise<TransactionResponse>
   resetRates: () => void
   setTime: (time: number) => void
+  bridgeTxnHash: string
 }) => {
   const [settings, setSettings] = useSettings()
   const [displayType, setDisplayType] = useState<DisplayType>(
@@ -113,7 +122,7 @@ const BridgeCard = ({
     isOrigin: true,
     isSwap: false,
     chains: ORDERED_CHAINS_BY_ID.filter((id) => id !== String(fromChainId)),
-    tokens: fromTokens,
+    tokens: fromTokens ?? BRIDGABLE_TOKENS[fromChainId] ?? [],
     chainId: fromChainId,
     inputString: fromInput?.string,
     selectedToken: fromToken,
@@ -129,7 +138,7 @@ const BridgeCard = ({
     isOrigin: false,
     isSwap: false,
     chains: toOptions?.chains,
-    tokens: toOptions?.tokens,
+    tokens: toOptions?.tokens ?? BRIDGABLE_TOKENS[toChainId] ?? [],
     chainId: toChainId,
     inputString: bridgeQuote?.outputAmountString,
     selectedToken: toToken,
@@ -137,6 +146,7 @@ const BridgeCard = ({
     setDisplayType,
     handleTokenChange,
     onChangeChain: handleChainChange,
+    isQuoteLoading,
   }
 
   // TODO move this away and into the actual component
@@ -149,93 +159,152 @@ const BridgeCard = ({
     setDeadlineMinutes,
   }
 
-  // some messy button gen stuff (will re-write)
-  // maybe just put everything in index without the card
-  const isFromBalanceEnough = fromTokenBalance.gt(fromInput?.bigNum ?? Zero)
+  const isFromBalanceEnough = fromTokenBalance.gte(fromInput?.bigNum ?? Zero)
   let destAddrNotValid
-  let btnLabel
-  let btnClassName = ''
-  let pendingLabel = 'Bridging funds...'
-  let buttonAction = () => executeBridge()
-  let postButtonAction = () => resetRates()
-  if (error) {
-    btnLabel = error
-  } else if (!isFromBalanceEnough) {
-    btnLabel = `Insufficient ${fromToken?.symbol} Balance`
-  } else if (bridgeQuote.feeAmount.eq(0) && !fromInput?.bigNum?.eq(0)) {
-    btnLabel = `Amount must be greater than fee`
-  } else if (
-    bridgeQuote?.allowance &&
-    bridgeQuote?.allowance?.lt(fromInput?.bigNum)
-  ) {
-    buttonAction = () =>
-      approveToken(
-        bridgeQuote?.routerAddress,
-        fromChainId,
-        fromToken.addresses[fromChainId]
-      )
-    btnLabel = `Approve ${fromToken?.symbol}`
-    pendingLabel = `Approving ${fromToken?.symbol}`
-    btnClassName = 'from-[#feba06] to-[#FEC737]'
-    postButtonAction = () => setTime(0)
-  } else if (
-    destinationAddress &&
-    !validateAndParseAddress(destinationAddress)
-  ) {
-    destAddrNotValid = true
-    btnLabel = 'Invalid Destination Address'
-  } else {
-    btnLabel = bridgeQuote.outputAmount.eq(0)
-      ? 'Enter amount to bridge'
-      : 'Bridge your funds'
 
-    const numExchangeRate = Number(
-      formatBNToString(bridgeQuote?.exchangeRate, 18, 4)
-    )
+  const getButtonProperties = () => {
+    let properties = {
+      label: `Enter amount to bridge`,
+      pendingLabel: 'Bridging funds...',
+      className: '',
+      disabled: true,
+      buttonAction: () => executeBridge(),
+      postButtonAction: () => resetRates(),
+    }
+
+    if (error) {
+      properties.label = error
+      properties.disabled = true
+      return properties
+    }
+
+    if (fromChainId === toChainId) {
+      properties.disabled = true
+      return properties
+    }
+
+    const isInputZero = checkStringIfOnlyZeroes(fromInput?.string)
+    if (isInputZero || fromInput?.bigNum?.eq(0)) {
+      properties.label = `Enter amount to bridge`
+      properties.disabled = true
+      return properties
+    }
+
+    if (!isFromBalanceEnough) {
+      properties.label = `Insufficient ${fromToken?.symbol} Balance`
+      properties.disabled = true
+      return properties
+    }
+
+    if (IMPAIRED_CHAINS[fromChainId]?.disabled) {
+      properties.label = `${CHAINS_BY_ID[fromChainId]?.name} is currently paused`
+      properties.disabled = true
+      return properties
+    }
+
+    if (IMPAIRED_CHAINS[toChainId]?.disabled) {
+      properties.label = `${CHAINS_BY_ID[toChainId]?.name} is currently paused`
+      properties.disabled = true
+      return properties
+    }
+
+    if (bridgeQuote?.feeAmount?.eq(0) && !fromInput?.bigNum?.eq(0)) {
+      properties.label = `Amount must be greater than fee`
+      properties.disabled = true
+      return properties
+    }
+
+    if (
+      !fromInput?.bigNum?.eq(0) &&
+      fromToken?.addresses[fromChainId] !== '' &&
+      fromToken?.addresses[fromChainId] !== AddressZero &&
+      bridgeQuote?.allowance &&
+      bridgeQuote?.allowance?.lt(fromInput?.bigNum)
+    ) {
+      properties.buttonAction = () =>
+        approveToken(
+          bridgeQuote?.routerAddress,
+          fromChainId,
+          fromToken?.addresses[fromChainId]
+        )
+      properties.label = `Approve ${fromToken?.symbol}`
+      properties.pendingLabel = `Approving ${fromToken?.symbol}`
+      properties.className = 'from-[#feba06] to-[#FEC737]'
+      properties.postButtonAction = () => setTime(0)
+      properties.disabled = false
+      return properties
+    }
+
+    if (destinationAddress && !validateAndParseAddress(destinationAddress)) {
+      destAddrNotValid = true
+      properties.label = 'Invalid Destination Address'
+      properties.disabled = true
+      return properties
+    }
+
+    // Default Case
+    properties.label = 'Bridge your funds'
+    properties.disabled = false
+
+    const numExchangeRate = bridgeQuote?.exchangeRate
+      ? Number(formatBNToString(bridgeQuote.exchangeRate, 18, 4))
+      : 0
 
     if (
       !fromInput?.bigNum?.eq(0) &&
       (numExchangeRate < 0.95 || numExchangeRate > 1.05)
     ) {
-      btnClassName = 'from-[#fe064a] to-[#fe5281]'
-      btnLabel = 'Slippage High - Bridge Anyway?'
+      properties.className = 'from-[#fe064a] to-[#fe5281]'
+      properties.label = 'Slippage High - Bridge Anyway?'
     }
+
+    return properties
   }
 
-  const actionBtn = (
-    <TransactionButton
-      className={btnClassName}
-      disabled={
-        fromChainId === toChainId ||
-        bridgeQuote.outputAmount.eq(0) ||
-        !isFromBalanceEnough ||
-        error != null ||
-        destAddrNotValid
-      }
-      onClick={() => buttonAction()}
-      onSuccess={() => {
-        postButtonAction()
-      }}
-      label={btnLabel}
-      pendingLabel={pendingLabel}
-    />
-  )
+  const {
+    label: btnLabel,
+    pendingLabel,
+    className: btnClassName,
+    buttonAction,
+    postButtonAction,
+    disabled,
+  } = useMemo(getButtonProperties, [
+    isFromBalanceEnough,
+    address,
+    fromInput,
+    fromToken,
+    fromChainId,
+    toChainId,
+    bridgeQuote,
+    isQuoteLoading,
+    destinationAddress,
+    error,
+    bridgeTxnHash,
+  ])
 
-  /*
-  useEffect Trigger: displayType
-  - when displayType state is updated (meaning user has clicked a menu dropdown action),
-  window object will smoothly reposition to where the bridge ui is located for convenience
-  */
-  useEffect(() => {
-    if (displayType !== DisplayType.LOADING) {
-      const node = bridgeDisplayRef.current
-      const top = node.offsetTop + 100
-      window.scrollTo({
-        top: top,
-        behavior: 'smooth',
-      })
-    }
-  }, [displayType])
+  const actionBtn = useMemo(
+    () => (
+      <TransactionButton
+        onClick={() => buttonAction()}
+        disabled={disabled || destAddrNotValid}
+        className={btnClassName}
+        label={btnLabel}
+        pendingLabel={pendingLabel}
+        chainId={fromChainId}
+        onSuccess={() => {
+          postButtonAction()
+        }}
+      />
+    ),
+    [
+      buttonAction,
+      postButtonAction,
+      btnLabel,
+      pendingLabel,
+      btnClassName,
+      destAddrNotValid,
+    ]
+  )
 
   const springClass = 'fixed z-50 w-full h-full bg-opacity-50'
 

@@ -41,7 +41,7 @@ const InteractiveInputRow = ({
 }) => {
   let width = 'w-40'
 
-  if (title.length > 6) {
+  if (title && title.length > 6) {
     width = 'w-48'
   }
 
@@ -68,7 +68,7 @@ const InteractiveInputRow = ({
               `}
               >
                 <div
-                  className={`flex justify-center md:justify-start bg-white bg-opacity-10 items-center rounded-lg py-1.5 px-2 ${width}`}
+                  className={`flex justify-center md:justify-start items-center rounded-lg py-1.5 px-2 ${width}`}
                 >
                   <div className="self-center flex-shrink-0 hidden mr-2 sm:block">
                     <div
@@ -90,27 +90,26 @@ const InteractiveInputRow = ({
             <div
               className={`
                 flex flex-grow items-center
-                pl-3 sm:pl-4
-                w-full h-16 border-none
-                rounded-xl
-                relative
+                mx-3 w-full h-16
+                border-none
+                relative overflow-hidden
               `}
             >
               <input
+                autoComplete="off"
                 className={`
                     ${isConnected ? '-mt-2' : '-mt-0'}
-                    focus:outline-none
-                    bg-transparent
-                    w-[300px]
-                    sm:min-w-[300px]
-                    max-w-[calc(100%-92px)]
-                    sm:w-full
-                  placeholder:text-[#88818C]
-                  text-white text-opacity-80 text-lg md:text-2xl lg:text-2xl font-medium
+                    focus:outline-none bg-transparent
+                    w-[300px] sm:min-w-[170px] sm:w-full scrollbar-none
+                  placeholder:text-[#88818C] text-white
+                    text-opacity-80 text-lg md:text-2xl lg:text-2xl font-medium
+                    overflow-hidden
                 `}
                 value={value}
                 placeholder={placeholder}
-                onChange={() => onChange}
+                onChange={(e) => {
+                  onChange(e)
+                }}
                 name="inputRow"
               />
               {isConnected && (

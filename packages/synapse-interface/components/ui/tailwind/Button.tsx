@@ -24,7 +24,7 @@ export default function Button({
   const mergedClassName = twMerge(`${baseClassname} ${className}`)
 
   return (
-    <button className={mergedClassName} {...props}>
+    <button className={mergedClassName} {...props} disabled={disabled}>
       {children}
     </button>
   )

@@ -1,7 +1,7 @@
 import * as all from './master'
 import { Chain } from '@/utils/types/index'
 
-type ChainsByChainID = {
+export type ChainsByChainID = {
   [cID: number]: Chain
 }
 export const CHAINS_ARR = Object.values(all).sort(

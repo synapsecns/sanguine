@@ -27,6 +27,13 @@ export type PoolToken = {
   token: Token
   isLp: boolean
 }
+export type Query = [string, string, BigNumber, BigNumber, string] & {
+  swapAdapter: string
+  tokenOut: string
+  minAmountOut: BigNumber
+  deadline: BigNumber
+  rawParams: string
+}
 export type PoolUserData = {
   name: string
   share: BigNumber
@@ -93,6 +100,21 @@ export type SwapQuote = {
   quote: any
 }
 
+export type BridgeWatcherTx = {
+  isFrom: boolean
+  amount: BigNumber
+  timestamp: number
+  blockNumber: number
+  chainId: number
+  address: string
+  txHash: string
+  txReceipt: any
+  token: Token
+  kappa: string
+  toChainId: number
+  toAddress: string
+}
+
 // TODO
 // Clean up this file as swap and pools get implemented in the sdk and more clarity on the types needed are defined
 // also could just be a type.
@@ -150,6 +172,7 @@ export class Token {
     | 'cyan'
     | 'red'
   priceUnits?: string
+  notStake?: boolean
   constructor({
     addresses,
     wrapperAddresses,
@@ -184,6 +207,7 @@ export class Token {
     priorityPool,
     color,
     priceUnits,
+    notStake,
   }: {
     addresses: { [x: number]: string }
     wrapperAddresses?: Record<number, string>
@@ -229,6 +253,7 @@ export class Token {
       | 'cyan'
       | 'red'
     priceUnits?: string
+    notStake?: boolean
   }) {
     const isMetaVar = Boolean(swapDepositAddresses || forceMeta)
     this.addresses = validateAddresses(addresses)
@@ -266,6 +291,7 @@ export class Token {
     this.priorityPool = priorityPool ?? false
     this.color = color ?? 'gray'
     this.priceUnits = priceUnits ?? 'USD'
+    this.notStake = notStake ?? false
   }
 }
 

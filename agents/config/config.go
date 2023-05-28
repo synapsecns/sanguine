@@ -2,6 +2,7 @@ package config
 
 import (
 	"context"
+	"github.com/synapsecns/sanguine/ethergo/signer/config"
 )
 
 // Config is used for configuring the application. It stores the configurations defined in each module.
@@ -9,7 +10,7 @@ type Config struct {
 	// Domains stores all domains
 	Domains DomainConfigs `yaml:"domains"`
 	// Signer contains the signer config for agents
-	Signer SignerConfig `yaml:"signer"`
+	Signer config.SignerConfig `yaml:"signer"`
 	// DbConfig is the database config
 	Database DBConfig `yaml:"database"`
 }
