@@ -736,15 +736,6 @@ func (e Executor) processLog(parentCtx context.Context, log ethTypes.Log, chainI
 			return fmt.Errorf("could not convert message to leaf: %w", err)
 		}
 
-		fmt.Printf("CRONIN executor message nonce %v, origin %v, destination %v, optimistic seconds %v, content %v, content len %v, leaf %v\n",
-			(*message).Nonce(),
-			(*message).OriginDomain(),
-			(*message).DestinationDomain(),
-			(*message).OptimisticSeconds(),
-			(*message).BaseMessage().Content(),
-			len((*message).BaseMessage().Content()),
-			leaf)
-
 		// Make sure the nonce of the message is being inserted at the right index.
 		if merkleIndex+1 != (*message).Nonce() {
 			return fmt.Errorf("nonce of message is not equal to the merkle index: %d != %d", (*message).Nonce(), merkleIndex+1)

@@ -331,9 +331,13 @@ func EncodeHeader(header Header) ([]byte, error) {
 func EncodeRequest(m Request) ([]byte, error) {
 	b := make([]byte, 0)
 
+	versionBytes := make([]byte, uint32Len)
+	binary.BigEndian.PutUint32(versionBytes, m.Version())
+
 	gasLimitBytes := make([]byte, uint64Len)
 	binary.BigEndian.PutUint64(gasLimitBytes, m.GasLimit())
 
+	b = append(b, versionBytes...)
 	b = append(b, gasLimitBytes...)
 	b = append(b, math.PaddedBigBytes(m.GasDrop(), uint96Len)...)
 
@@ -342,10 +346,11 @@ func EncodeRequest(m Request) ([]byte, error) {
 
 // DecodeRequest decodes a request typed mem view.
 func DecodeRequest(toDecode []byte) (Request, error) {
+	version := binary.BigEndian.Uint32(toDecode[VersionOffset:GasLimitOffset])
 	gasLimit := binary.BigEndian.Uint64(toDecode[GasLimitOffset:GasDropOffset])
 	gasDrop := new(big.Int).SetBytes(toDecode[GasDropOffset:RequestSize])
 
-	return NewRequest(gasLimit, gasDrop), nil
+	return NewRequest(version, gasLimit, gasDrop), nil
 }
 
 // EncodeBaseMessage encodes a base message.
