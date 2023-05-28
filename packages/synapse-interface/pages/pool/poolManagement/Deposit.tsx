@@ -7,7 +7,7 @@ import { getAddress } from '@ethersproject/address'
 import TokenInput from '@components/TokenInput'
 import PriceImpactDisplay from '../components/PriceImpactDisplay'
 import { useSynapseContext } from '@/utils/providers/SynapseProvider'
-import { TransactionButton } from '@components/buttons/SubmitTxButton'
+import { TransactionButton } from '@/components/buttons/TransactionButton'
 import { Zero } from '@ethersproject/constants'
 import { Token } from '@types'
 import { useState, useEffect } from 'react'
@@ -18,6 +18,7 @@ import { approve, deposit } from '@/utils/actions/approveAndDeposit'
 import { QUOTE_POLLING_INTERVAL } from '@/constants/bridge' // TODO CHANGE
 import { PoolData, PoolUserData } from '@types'
 import LoadingTokenInput from '@components/loading/LoadingTokenInput'
+
 const Deposit = ({
   pool,
   chainId,
@@ -42,7 +43,6 @@ const Deposit = ({
     routerAddress: string
   }>({ priceImpact: undefined, allowances: {}, routerAddress: '' })
   const [time, setTime] = useState(Date.now())
-
   const { synapseSDK } = useSynapseContext()
 
   // TODO move this to utils
@@ -103,6 +103,7 @@ const Deposit = ({
       console.log(e)
     }
   }
+
   useEffect(() => {
     const interval = setInterval(
       () => setTime(Date.now()),

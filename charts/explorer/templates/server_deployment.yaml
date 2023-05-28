@@ -14,9 +14,9 @@ spec:
       {{- include "explorer.selectorLabels" . | nindent 6 }}
   template:
     metadata:
-      {{- with .Values.server.podAnnotations }}
       annotations:
-        checksum/config: {{ include (print $.Chart.Name "/templates/" $.Chart.Name "-configmap.yaml") . | sha256sum }}
+        checksum/config: {{ include (print $.Template.BasePath "/configmap.yaml") . | sha256sum }}
+      {{- with .Values.server.podAnnotations }}
         {{- toYaml . | nindent 8 }}
       {{- end }}
       labels:
