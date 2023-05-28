@@ -84,10 +84,12 @@ export const sortByTokenBalance = async (
       contracts: multicallInputs,
     })
     return sortArrayByBalance(
-      multicallData.map((tokenBalance: BigNumber | undefined, index) => ({
-        token: tokens[index],
-        balance: tokenBalance,
-      }))
+      sortByVisibilityRank(
+        multicallData.map((tokenBalance: BigNumber | undefined, index) => ({
+          token: tokens[index],
+          balance: tokenBalance,
+        }))
+      )
     )
   }
 
