@@ -18,6 +18,15 @@ import {InterfaceGasOracle} from "./interfaces/InterfaceGasOracle.sol";
 import {InterfaceOrigin} from "./interfaces/InterfaceOrigin.sol";
 import {StateHub} from "./hubs/StateHub.sol";
 
+/// @notice `Origin` contract is used for sending messages to remote chains. It is done
+/// by inserting the message hashes into the Origin Merkle, which makes it possible to
+/// prove that message was sent using the Merkle proof against the Origin Merkle Root. This essentially
+/// compresses the list of messages into a single 32-byte value that needs to be stored on the destination chain.
+/// `Origin` is responsible for the following:
+/// - Formatting the sent message payloads, and inserting their hashes into the Origin Merkle Tree.
+/// - Keeping track of its own historical states (see parent contract `StateHub`).
+/// - Enforcing minimum tip values for sent base messages based on the provided execution requests.
+/// - Distributing the collected tips upon request from a local `AgentManager` contract.
 contract Origin is StateHub, OriginEvents, InterfaceOrigin {
     using MemViewLib for bytes;
     using MessageLib for bytes;

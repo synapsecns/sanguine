@@ -11,15 +11,6 @@ import {
 
 // Here we define common enums and structures to enable their easier reusing later.
 
-// ══════════════════════════════ SYSTEM CONTRACT ══════════════════════════════
-
-/// @dev All types of system contracts
-enum SystemEntity {
-    Origin,
-    Destination,
-    AgentManager
-}
-
 // ═══════════════════════════════ AGENT STATUS ════════════════════════════════
 
 /// @dev Potential statuses for the off-chain bonded agent:

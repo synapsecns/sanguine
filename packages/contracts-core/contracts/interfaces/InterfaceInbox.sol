@@ -42,11 +42,41 @@ interface InterfaceInbox {
      * > - Receipt signer is not an active Notary.
      * > - Receipt signer is in Dispute.
      * > - Receipt's snapshot root is unknown.
+     * > - Provided tips could not be proven against the message hash.
      * @param rcptPayload       Raw payload with receipt data
      * @param rcptSignature     Notary signature for the receipt
+     * @param paddedTips        Tips for the message execution
+     * @param headerHash        Hash of the message header
+     * @param bodyHash          Hash of the message body excluding the tips
      * @return wasAccepted      Whether the receipt was accepted
      */
-    function submitReceipt(bytes memory rcptPayload, bytes memory rcptSignature) external returns (bool wasAccepted);
+    function submitReceipt(
+        bytes memory rcptPayload,
+        bytes memory rcptSignature,
+        uint256 paddedTips,
+        bytes32 headerHash,
+        bytes32 bodyHash
+    ) external returns (bool wasAccepted);
+
+    /**
+     * @notice Accepts a Guard's receipt report signature, as well as Notary signature
+     * for the reported Receipt.
+     * > ReceiptReport is a Guard statement saying "Reported receipt is invalid".
+     * - This results in an opened Dispute between the Guard and the Notary.
+     * - Note: Guard could (but doesn't have to) form a ReceiptReport and use receipt signature from
+     * `verifyReceipt()` successful call that led to Notary being slashed in Summit on Synapse Chain.
+     * > Will revert if any of these is true:
+     * > - Receipt payload is not properly formatted.
+     * > - Receipt Report signer is not an active Guard.
+     * > - Receipt signer is not an active Notary.
+     * @param rcptPayload       Raw payload with Receipt data that Guard reports as invalid
+     * @param rcptSignature     Notary signature for the reported receipt
+     * @param rrSignature       Guard signature for the report
+     * @return wasAccepted      Whether the Report was accepted (resulting in Dispute between the agents)
+     */
+    function submitReceiptReport(bytes memory rcptPayload, bytes memory rcptSignature, bytes memory rrSignature)
+        external
+        returns (bool wasAccepted);
 
     /**
      * @notice Passes the message execution receipt from Destination to the Summit contract to save.
@@ -56,10 +86,10 @@ interface InterfaceInbox {
      * @param attNotaryIndex    Index of the Notary who signed the attestation
      * @param attNonce          Nonce of the attestation used for proving the executed message
      * @param paddedTips        Tips for the message execution
-     * @param rcptBodyPayload   Raw payload with receipt body
+     * @param rcptPayload       Raw payload with message execution receipt
      * @return wasAccepted      Whether the receipt was accepted
      */
-    function passReceipt(uint32 attNotaryIndex, uint32 attNonce, uint256 paddedTips, bytes memory rcptBodyPayload)
+    function passReceipt(uint32 attNotaryIndex, uint32 attNonce, uint256 paddedTips, bytes memory rcptPayload)
         external
         returns (bool wasAccepted);
 

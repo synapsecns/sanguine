@@ -20,7 +20,7 @@ import {
 } from "../libs/Errors.sol";
 import {MerkleMath} from "../libs/merkle/MerkleMath.sol";
 import {Header, Message, MessageFlag, MessageLib} from "../libs/memory/Message.sol";
-import {Receipt, ReceiptBody, ReceiptLib} from "../libs/memory/Receipt.sol";
+import {Receipt, ReceiptLib} from "../libs/memory/Receipt.sol";
 import {Request} from "../libs/stack/Request.sol";
 import {SnapshotLib} from "../libs/memory/Snapshot.sol";
 import {AgentFlag, AgentStatus, MessageStatus} from "../libs/Structures.sol";
@@ -34,15 +34,16 @@ import {IExecutionHub} from "../interfaces/IExecutionHub.sol";
 import {IMessageRecipient} from "../interfaces/IMessageRecipient.sol";
 // ═════════════════════════════ EXTERNAL IMPORTS ══════════════════════════════
 import {Address} from "@openzeppelin/contracts/utils/Address.sol";
+import {ReentrancyGuardUpgradeable} from "@openzeppelin/contracts-upgradeable/security/ReentrancyGuardUpgradeable.sol";
 
-/**
- * @notice ExecutionHub is responsible for executing the messages that are
- * proven against the Snapshot Merkle Roots.
- * The Snapshot Merkle Roots themselves are supposed to be dealt with in the child contracts.
- * On the Synapse Chain Notaries are submitting the snapshots that are later used for proving.
- * On the other chains Notaries are submitting the attestations that are later used for proving.
- */
-abstract contract ExecutionHub is AgentSecured, ExecutionHubEvents, IExecutionHub {
+/// @notice `ExecutionHub` is a parent contract for `Destination`. It is responsible for the following:
+/// - Executing the messages that are proven against the saved Snapshot Merkle Roots.
+/// - Base messages are forwarded to the specified message recipient, ensuring that the original
+///   execution request is fulfilled correctly.
+/// - Manager messages are forwarded to the local `AgentManager` contract.
+/// - Keeping track of the saved Snapshot Merkle Roots (which are accepted in `Destination`).
+/// - Keeping track of message execution Receipts, as well as verify their validity.
+abstract contract ExecutionHub is AgentSecured, ReentrancyGuardUpgradeable, ExecutionHubEvents, IExecutionHub {
     using Address for address;
     using BaseMessageLib for MemView;
     using ByteString for MemView;
@@ -113,8 +114,7 @@ abstract contract ExecutionHub is AgentSecured, ExecutionHubEvents, IExecutionHu
         bytes32[] calldata snapProof,
         uint256 stateIndex,
         uint64 gasLimit
-    ) external {
-        // TODO: add reentrancy check
+    ) external nonReentrant {
         // This will revert if payload is not a formatted message payload
         Message message = msgPayload.castToMessage();
         Header header = message.header();
@@ -178,10 +178,8 @@ abstract contract ExecutionHub is AgentSecured, ExecutionHubEvents, IExecutionHu
     /// @inheritdoc IExecutionHub
     function isValidReceipt(bytes memory rcptPayload) external view returns (bool isValid) {
         // This will revert if payload is not a receipt
-        Receipt rcpt = rcptPayload.castToReceipt();
         // This will revert if receipt refers to another domain
-        // Note: this doesn't check the validity of tips, this is done in Summit contract
-        return _isValidReceipt(rcpt.body());
+        return _isValidReceipt(rcptPayload.castToReceipt());
     }
 
     /// @inheritdoc IExecutionHub
@@ -197,11 +195,11 @@ abstract contract ExecutionHub is AgentSecured, ExecutionHubEvents, IExecutionHu
     }
 
     /// @inheritdoc IExecutionHub
-    function receiptBody(bytes32 messageHash) external view returns (bytes memory rcptBodyPayload) {
+    function messageReceipt(bytes32 messageHash) external view returns (bytes memory rcptPayload) {
         ReceiptData memory rcptData = _receiptData[messageHash];
         // Return empty payload if there has been no attempt to execute the message
         if (rcptData.origin == 0) return "";
-        return _receiptBody(messageHash, rcptData);
+        return _messageReceipt(messageHash, rcptData);
     }
 
     // ══════════════════════════════════════════════ INTERNAL LOGIC ═══════════════════════════════════════════════════
@@ -234,6 +232,8 @@ abstract contract ExecutionHub is AgentSecured, ExecutionHubEvents, IExecutionHu
         }
     }
 
+    /// @dev Uses message body for a call to AgentManager, and checks the returned magic value to ensure that
+    /// only "remoteX" functions could be called this way.
     function _executeManagerMessage(Header header, uint256 proofMaturity, MemView body) internal returns (bool) {
         // TODO: introduce incentives for executing Manager Messages?
         CallData callData = body.castToCallData();
@@ -250,6 +250,9 @@ abstract contract ExecutionHub is AgentSecured, ExecutionHubEvents, IExecutionHu
         return true;
     }
 
+    /// @dev Passes the message receipt to the Inbox contract, if it is deployed on Synapse Chain.
+    /// This ensures that the message receipts for the messages executed on Synapse Chain are passed to Summit
+    /// without a Notary having to sign them.
     function _passReceipt(
         uint32 attNotaryIndex,
         uint32 attNonce,
@@ -265,7 +268,7 @@ abstract contract ExecutionHub is AgentSecured, ExecutionHubEvents, IExecutionHu
             attNotaryIndex: attNotaryIndex,
             attNonce: attNonce,
             paddedTips: paddedTips,
-            rcptBodyPayload: _receiptBody(messageHash, rcptData)
+            rcptPayload: _messageReceipt(messageHash, rcptData)
         });
     }
 
@@ -290,30 +293,30 @@ abstract contract ExecutionHub is AgentSecured, ExecutionHubEvents, IExecutionHu
 
     /// @dev Checks if receipt body matches the saved data for the referenced message.
     /// Reverts if destination domain doesn't match the local domain.
-    function _isValidReceipt(ReceiptBody rcptBody) internal view returns (bool) {
+    function _isValidReceipt(Receipt rcpt) internal view returns (bool) {
         // Check if receipt refers to this chain
-        if (rcptBody.destination() != localDomain) revert IncorrectDestinationDomain();
-        bytes32 messageHash = rcptBody.messageHash();
+        if (rcpt.destination() != localDomain) revert IncorrectDestinationDomain();
+        bytes32 messageHash = rcpt.messageHash();
         ReceiptData memory rcptData = _receiptData[messageHash];
         // Check if there has been a single attempt to execute the message
         if (rcptData.origin == 0) return false;
         // Check that origin and state index fields match
-        if (rcptBody.origin() != rcptData.origin || rcptBody.stateIndex() != rcptData.stateIndex) return false;
+        if (rcpt.origin() != rcptData.origin || rcpt.stateIndex() != rcptData.stateIndex) return false;
         // Check that snapshot root and notary who submitted it match in the Receipt
-        bytes32 snapRoot = rcptBody.snapshotRoot();
+        bytes32 snapRoot = rcpt.snapshotRoot();
         (address attNotary,) = _getAgent(_rootData[snapRoot].notaryIndex);
-        if (snapRoot != _roots[rcptData.rootIndex] || rcptBody.attNotary() != attNotary) return false;
+        if (snapRoot != _roots[rcptData.rootIndex] || rcpt.attNotary() != attNotary) return false;
         // Check if message was executed from the first attempt
         address firstExecutor = _firstExecutor[messageHash];
         if (firstExecutor == address(0)) {
             // Both first and final executors are saved in receipt data
-            return rcptBody.firstExecutor() == rcptData.executor && rcptBody.finalExecutor() == rcptData.executor;
+            return rcpt.firstExecutor() == rcptData.executor && rcpt.finalExecutor() == rcptData.executor;
         } else {
             // Message was Failed at some point of time, so both receipts are valid:
             // "Failed": finalExecutor is ZERO
             // "Success": finalExecutor matches executor from saved receipt data
-            address finalExecutor = rcptBody.finalExecutor();
-            return rcptBody.firstExecutor() == firstExecutor
+            address finalExecutor = rcpt.finalExecutor();
+            return rcpt.firstExecutor() == firstExecutor
                 && (finalExecutor == address(0) || finalExecutor == rcptData.executor);
         }
     }
@@ -356,10 +359,11 @@ abstract contract ExecutionHub is AgentSecured, ExecutionHubEvents, IExecutionHu
         if (_isInDispute(rootData.notaryIndex)) revert NotaryInDispute();
     }
 
-    function _receiptBody(bytes32 messageHash, ReceiptData memory rcptData)
+    /// @dev Formats the message execution receipt payload for the given hash and receipt data.
+    function _messageReceipt(bytes32 messageHash, ReceiptData memory rcptData)
         internal
         view
-        returns (bytes memory rcptBodyPayload)
+        returns (bytes memory rcptPayload)
     {
         // Determine the first executor who tried to execute the message
         address firstExecutor = _firstExecutor[messageHash];
@@ -367,8 +371,9 @@ abstract contract ExecutionHub is AgentSecured, ExecutionHubEvents, IExecutionHu
         // Determine the snapshot root that was used for proving the message
         bytes32 snapRoot = _roots[rcptData.rootIndex];
         (address attNotary,) = _getAgent(_rootData[snapRoot].notaryIndex);
-        // ExecutionHub does not store the tips, the Notary will have to append the tips payload
-        return ReceiptLib.formatReceiptBody({
+        // ExecutionHub does not store the tips,
+        // the Notary will have to derive the proof of tips from the message payload.
+        return ReceiptLib.formatReceipt({
             origin_: rcptData.origin,
             destination_: localDomain,
             messageHash_: messageHash,

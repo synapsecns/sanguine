@@ -27,6 +27,14 @@ import {IStatementInbox} from "../interfaces/IStatementInbox.sol";
 // ═════════════════════════════ EXTERNAL IMPORTS ══════════════════════════════
 import {ECDSA} from "@openzeppelin/contracts/utils/cryptography/ECDSA.sol";
 
+/// @notice `StatementInbox` is the entry point for all agent-signed statements. It verifies the
+/// agent signatures, and passes the unsigned statements to the contract to consume it via `acceptX` functions. Is is
+/// also used to verify the agent-signed statements and initiate the agent slashing, should the statement be invalid.
+/// `StatementInbox` is responsible for the following:
+/// - Accepting State and Receipt Reports to initiate a dispute between Guard and Notary.
+/// - Storing all the Guard Reports with the Guard signature leading to a dispute.
+/// - Verifying State/State Reports referencing the local chain and slashing the signer if statement is invalid.
+/// - Verifying Receipt/Receipt Reports referencing the local chain and slashing the signer if statement is invalid.
 abstract contract StatementInbox is MessagingBase, StatementInboxEvents, IStatementInbox {
     using AttestationLib for bytes;
     using ReceiptLib for bytes;
@@ -181,6 +189,25 @@ abstract contract StatementInbox is MessagingBase, StatementInboxEvents, IStatem
         if (!isValidReceipt) {
             emit InvalidReceipt(rcptPayload, rcptSignature);
             IAgentManager(agentManager).slashAgent(status.domain, notary, msg.sender);
+        }
+    }
+
+    /// @inheritdoc IStatementInbox
+    function verifyReceiptReport(bytes memory rcptPayload, bytes memory rrSignature)
+        external
+        returns (bool isValidReport)
+    {
+        // This will revert if payload is not a receipt
+        Receipt rcpt = rcptPayload.castToReceipt();
+        // This will revert if the report signer is not a known Guard
+        (AgentStatus memory status, address guard) = _verifyReceiptReport(rcpt, rrSignature);
+        // Guard needs to be Active/Unstaking
+        status.verifyActiveUnstaking();
+        // Report is valid IF AND ONLY IF the reported receipt in invalid
+        isValidReport = !IExecutionHub(destination).isValidReceipt(rcptPayload);
+        if (!isValidReport) {
+            emit InvalidReceiptReport(rcptPayload, rrSignature);
+            IAgentManager(agentManager).slashAgent(status.domain, guard, msg.sender);
         }
     }
 
@@ -414,6 +441,26 @@ abstract contract StatementInbox is MessagingBase, StatementInboxEvents, IStatem
         (status, notary) = _recoverAgent(rcpt.hashValid(), rcptSignature);
         // Receipt signer needs to be a Notary, not a Guard
         if (status.domain == 0) revert AgentNotNotary();
+    }
+
+    /**
+     * @dev Internal function to verify the signed receipt report payload.
+     * Reverts if any of these is true:
+     * - Report signer is not a known Guard.
+     * @param rcpt              Typed memory view over receipt payload that Guard reports as invalid
+     * @param rrSignature       Guard signature for the "invalid receipt" report
+     * @return status           Struct representing guard status, see {_recoverAgent}
+     * @return guard            Guard that signed the report
+     */
+    function _verifyReceiptReport(Receipt rcpt, bytes memory rrSignature)
+        internal
+        view
+        returns (AgentStatus memory status, address guard)
+    {
+        // This will revert if signer is not a known agent
+        (status, guard) = _recoverAgent(rcpt.hashInvalid(), rrSignature);
+        // Report signer needs to be a Guard, not a Notary
+        if (status.domain != 0) revert AgentNotGuard();
     }
 
     // ═══════════════════════════════════════ STATE/SNAPSHOT RELATED CHECKS ═══════════════════════════════════════════

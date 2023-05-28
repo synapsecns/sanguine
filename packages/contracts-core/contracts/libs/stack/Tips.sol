@@ -73,6 +73,20 @@ library TipsLib {
         );
     }
 
+    /// @notice Convenience function to encode tips with uint256 values.
+    function encodeTips256(uint256 summitTip_, uint256 attestationTip_, uint256 executionTip_, uint256 deliveryTip_)
+        internal
+        pure
+        returns (Tips)
+    {
+        return encodeTips({
+            summitTip_: uint64(summitTip_ >> TIPS_GRANULARITY),
+            attestationTip_: uint64(attestationTip_ >> TIPS_GRANULARITY),
+            executionTip_: uint64(executionTip_ >> TIPS_GRANULARITY),
+            deliveryTip_: uint64(deliveryTip_ >> TIPS_GRANULARITY)
+        });
+    }
+
     /// @notice Wraps the padded encoded tips into a Tips-typed value.
     /// @dev There is no actual padding here, as the underlying type is already uint256,
     /// but we include this function for consistency and to be future-proof, if tips will eventually use anything

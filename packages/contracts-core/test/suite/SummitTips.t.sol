@@ -5,6 +5,7 @@ import {
     AgentNotNotary,
     CallerNotInbox,
     IncorrectSnapshotRoot,
+    IncorrectTipsProof,
     NotaryInDispute,
     TipsClaimMoreThanEarned,
     TipsClaimZero
@@ -17,12 +18,12 @@ import {AgentSecuredTest} from "./hubs/ExecutionHub.t.sol";
 import {fakeState} from "../utils/libs/FakeIt.t.sol";
 import {Random} from "../utils/libs/Random.t.sol";
 import {
-    RawReceiptBody,
     RawExecReceipt,
     RawState,
     RawStateIndex,
     RawSnapshot,
-    RawTips
+    RawTips,
+    RawTipsProof
 } from "../utils/libs/SynapseStructs.t.sol";
 
 import {stdStorage, StdStorage} from "forge-std/Test.sol";
@@ -126,66 +127,94 @@ contract SummitTipsTest is AgentSecuredTest {
 
     function test_submitReceipt(
         RawExecReceipt memory re,
+        RawTips memory tips,
+        RawTipsProof memory rtp,
         bool originZero,
         uint256 rcptNotaryIndex,
         uint256 attNotaryIndex,
         bool isSuccess
     ) public checkQueueLength(1) {
-        prepareReceipt(re, originZero, attNotaryIndex, isSuccess);
+        prepareReceipt(re, tips, rtp, originZero, attNotaryIndex, isSuccess);
         rcptNotary = domains[DOMAIN_REMOTE].agents[rcptNotaryIndex % DOMAIN_AGENTS];
         (bytes memory rcptPayload, bytes memory rcptSignature) = signReceipt(rcptNotary, re);
         vm.expectEmit();
         emit ReceiptAccepted(DOMAIN_REMOTE, rcptNotary, rcptPayload, rcptSignature);
-        inbox.submitReceipt(rcptPayload, rcptSignature);
+        inbox.submitReceipt(rcptPayload, rcptSignature, tips.encodeTips(), rtp.headerHash, rtp.bodyHash);
     }
 
     function test_submitReceipt_notAccepted_pending() public checkQueueLength(1) {
-        RawExecReceipt memory re = mockReceipt("First");
-        test_submitReceipt(re, false, 0, 0, false);
-        re.body.finalExecutor = createExecutorEOA(re.body.finalExecutor, "Final Executor");
+        (RawExecReceipt memory re, RawTips memory tips, RawTipsProof memory rtp) = mockReceipt("First");
+        test_submitReceipt(re, tips, rtp, false, 0, 0, false);
+        re.finalExecutor = createExecutorEOA(re.finalExecutor, "Final Executor");
         (bytes memory rcptPayload, bytes memory rcptSignature) = signReceipt(rcptNotary, re);
         vm.recordLogs();
-        inbox.submitReceipt(rcptPayload, rcptSignature);
+        inbox.submitReceipt(rcptPayload, rcptSignature, tips.encodeTips(), rtp.headerHash, rtp.bodyHash);
         assertEq(vm.getRecordedLogs().length, 0);
     }
 
     function test_submitReceipt_notAccepted_outdatedStatus() public checkQueueLength(0) {
-        RawExecReceipt memory re = mockReceipt("First");
-        test_distributeTips_success(re, false, 0, 0);
-        re.body.finalExecutor = address(0);
+        (RawExecReceipt memory re, RawTips memory tips, RawTipsProof memory rtp) = mockReceipt("First");
+        test_distributeTips_success(re, tips, rtp, false, 0, 0);
+        re.finalExecutor = address(0);
         (bytes memory rcptPayload, bytes memory rcptSignature) = signReceipt(rcptNotary, re);
         vm.recordLogs();
-        inbox.submitReceipt(rcptPayload, rcptSignature);
+        inbox.submitReceipt(rcptPayload, rcptSignature, tips.encodeTips(), rtp.headerHash, rtp.bodyHash);
         assertEq(vm.getRecordedLogs().length, 0);
     }
 
     function test_submitReceipt_revert_signedByGuard() public {
-        RawExecReceipt memory re = mockReceipt("First");
-        prepareReceipt(re, false, 0, false);
+        (RawExecReceipt memory re, RawTips memory tips, RawTipsProof memory rtp) = mockReceipt("First");
+        prepareReceipt(re, tips, rtp, false, 0, false);
         (bytes memory rcptPayload, bytes memory rcptSignature) = signReceipt(guard0, re);
         vm.expectRevert(AgentNotNotary.selector);
-        inbox.submitReceipt(rcptPayload, rcptSignature);
+        inbox.submitReceipt(rcptPayload, rcptSignature, tips.encodeTips(), rtp.headerHash, rtp.bodyHash);
     }
 
     function test_submitReceipt_revert_notaryInDispute() public {
-        RawExecReceipt memory re = mockReceipt("First");
-        prepareReceipt(re, false, 0, false);
+        (RawExecReceipt memory re, RawTips memory tips, RawTipsProof memory rtp) = mockReceipt("First");
+        prepareReceipt(re, tips, rtp, false, 0, false);
         // Put DOMAIN_REMOTE notary in Dispute
         address notary = domains[DOMAIN_REMOTE].agent;
         openDispute({guard: domains[0].agent, notary: notary});
         (bytes memory rcptPayload, bytes memory rcptSignature) = signReceipt(notary, re);
         vm.expectRevert(NotaryInDispute.selector);
-        inbox.submitReceipt(rcptPayload, rcptSignature);
+        inbox.submitReceipt(rcptPayload, rcptSignature, tips.encodeTips(), rtp.headerHash, rtp.bodyHash);
     }
 
     function test_submitReceipt_revert_unknownSnapRoot() public {
-        RawExecReceipt memory re = mockReceipt("First");
-        prepareReceipt(re, false, 0, false);
-        re.body.snapshotRoot = "Some fake snapshot root";
+        (RawExecReceipt memory re, RawTips memory tips, RawTipsProof memory rtp) = mockReceipt("First");
+        prepareReceipt(re, tips, rtp, false, 0, false);
+        re.snapshotRoot = "Some fake snapshot root";
         address notary = domains[DOMAIN_REMOTE].agent;
         (bytes memory rcptPayload, bytes memory rcptSignature) = signReceipt(notary, re);
         vm.expectRevert(IncorrectSnapshotRoot.selector);
-        inbox.submitReceipt(rcptPayload, rcptSignature);
+        inbox.submitReceipt(rcptPayload, rcptSignature, tips.encodeTips(), rtp.headerHash, rtp.bodyHash);
+    }
+
+    function test_submitReceipt_revert_incorrectTipsProof(uint256 corruptedId, uint256 corruptedBit) public {
+        (RawExecReceipt memory re, RawTips memory tips, RawTipsProof memory rtp) = mockReceipt("First");
+        prepareReceipt(re, tips, rtp, false, 0, false);
+        uint256 encodedTips = tips.encodeTips();
+        corruptedBit = corruptedBit % 256;
+        corruptedId = corruptedId % 4;
+        // Corrupt a single bit in either of those
+        if (corruptedId == 0) {
+            // Corrupt message hash
+            re.messageHash ^= bytes32(1 << corruptedBit);
+        } else if (corruptedId == 1) {
+            // Corrupt tips
+            encodedTips ^= 1 << corruptedBit;
+        } else if (corruptedId == 2) {
+            // Corrupt header hash
+            rtp.headerHash ^= bytes32(1 << corruptedBit);
+        } else {
+            // Corrupt body hash
+            rtp.bodyHash ^= bytes32(1 << corruptedBit);
+        }
+        address notary = domains[DOMAIN_REMOTE].agent;
+        (bytes memory rcptPayload, bytes memory rcptSignature) = signReceipt(notary, re);
+        vm.expectRevert(IncorrectTipsProof.selector);
+        inbox.submitReceipt(rcptPayload, rcptSignature, encodedTips, rtp.headerHash, rtp.bodyHash);
     }
 
     function test_acceptReceipt_revert_notInbox(address caller) public {
@@ -199,59 +228,65 @@ contract SummitTipsTest is AgentSecuredTest {
 
     function test_distributeTips_success(
         RawExecReceipt memory re,
+        RawTips memory tips,
+        RawTipsProof memory rtp,
         bool originZero,
         uint256 rcptNotaryIndex,
         uint256 attNotaryIndex
     ) public checkQueueLength(0) {
-        test_submitReceipt(re, originZero, rcptNotaryIndex, attNotaryIndex, true);
+        test_submitReceipt(re, tips, rtp, originZero, rcptNotaryIndex, attNotaryIndex, true);
         skip(BONDING_OPTIMISTIC_PERIOD);
         assertTrue(InterfaceSummit(summit).distributeTips());
         rcptNotaryFinal = rcptNotary;
-        checkAwardedTips(re, true);
+        checkAwardedTips(re, tips, true);
     }
 
     function test_distributeTips_failed(
         RawExecReceipt memory re,
+        RawTips memory tips,
+        RawTipsProof memory rtp,
         bool originZero,
         uint256 rcptNotaryIndex,
         uint256 attNotaryIndex
     ) public checkQueueLength(0) {
-        test_submitReceipt(re, originZero, rcptNotaryIndex, attNotaryIndex, false);
+        test_submitReceipt(re, tips, rtp, originZero, rcptNotaryIndex, attNotaryIndex, false);
         skip(BONDING_OPTIMISTIC_PERIOD);
         assertTrue(InterfaceSummit(summit).distributeTips());
         rcptNotaryFinal = address(0);
-        checkAwardedTips(re, false);
+        checkAwardedTips(re, tips, false);
     }
 
     function test_distributeTips_failedThenSuccess(
         RawExecReceipt memory re,
+        RawTips memory tips,
+        RawTipsProof memory rtp,
         bool originZero,
         uint256 rcptNotaryIndex,
         uint256 attNotaryIndex,
         uint256 rcptNotaryIndexFinal,
         address finalExecutor
     ) public checkQueueLength(0) {
-        test_distributeTips_failed(re, originZero, rcptNotaryIndex, attNotaryIndex);
-        re.body.finalExecutor = createExecutorEOA(finalExecutor, "Final Executor");
+        test_distributeTips_failed(re, tips, rtp, originZero, rcptNotaryIndex, attNotaryIndex);
+        re.finalExecutor = createExecutorEOA(finalExecutor, "Final Executor");
         rcptNotaryFinal = domains[DOMAIN_REMOTE].agents[rcptNotaryIndexFinal % DOMAIN_AGENTS];
         emit log_named_address("Receipt Notary", rcptNotaryFinal);
-        emit log_named_address("Attestation Notary", re.body.attNotary);
+        emit log_named_address("Attestation Notary", re.attNotary);
         (bytes memory rcptPayload, bytes memory rcptSignature) = signReceipt(rcptNotaryFinal, re);
-        inbox.submitReceipt(rcptPayload, rcptSignature);
+        inbox.submitReceipt(rcptPayload, rcptSignature, tips.encodeTips(), rtp.headerHash, rtp.bodyHash);
         skip(BONDING_OPTIMISTIC_PERIOD);
         assertTrue(InterfaceSummit(summit).distributeTips());
-        checkAwardedTips(re, true);
+        checkAwardedTips(re, tips, true);
     }
 
     function test_distributeTips_emptyQueue() public checkQueueLength(0) {
-        RawExecReceipt memory re = mockReceipt("First");
-        test_distributeTips_success(re, true, 0, 0);
+        (RawExecReceipt memory re, RawTips memory tips, RawTipsProof memory rtp) = mockReceipt("First");
+        test_distributeTips_success(re, tips, rtp, true, 0, 0);
         assertFalse(InterfaceSummit(summit).distributeTips());
     }
 
     function test_distributeTips_optimisticPeriodNotOver(uint256 timePassed) public checkQueueLength(1) {
-        RawExecReceipt memory re = mockReceipt("First");
-        test_submitReceipt(re, false, 0, 0, false);
+        (RawExecReceipt memory re, RawTips memory tips, RawTipsProof memory rtp) = mockReceipt("First");
+        test_submitReceipt(re, tips, rtp, false, 0, 0, false);
         timePassed = timePassed % BONDING_OPTIMISTIC_PERIOD;
         skip(timePassed);
         assertFalse(InterfaceSummit(summit).distributeTips());
@@ -321,64 +356,63 @@ contract SummitTipsTest is AgentSecuredTest {
         public
         returns (address attNotary)
     {
-        RawExecReceipt memory re = mockReceipt("First");
-        test_submitReceipt(re, false, rcptNotaryIndex, attNotaryIndex, false);
-        re.body.messageHash = keccak256("Second");
-        test_submitReceipt(re, false, rcptNotaryIndex, attNotaryIndex, false);
-        attNotary = re.body.attNotary;
+        (RawExecReceipt memory re, RawTips memory tips, RawTipsProof memory rtp) = mockReceipt("First");
+        test_submitReceipt(re, tips, rtp, false, rcptNotaryIndex, attNotaryIndex, false);
+        re.messageHash = keccak256("Second");
+        test_submitReceipt(re, tips, rtp, false, rcptNotaryIndex, attNotaryIndex, false);
+        attNotary = re.attNotary;
     }
 
-    function checkAwardedTips(RawExecReceipt memory re, bool isFinal) public {
-        logTips(re.tips);
-        checkSnapshotTips(re);
-        uint64 receiptTipFull = splitTip({tip: re.tips.summitTip, parts: 3, roundUp: true});
+    function checkAwardedTips(RawExecReceipt memory re, RawTips memory tips, bool isFinal) public {
+        logTips(tips);
+        checkSnapshotTips(re, tips);
+        uint64 receiptTipFull = splitTip({tip: tips.summitTip, parts: 3, roundUp: true});
         uint64 receiptTipFirst = splitTip({tip: receiptTipFull, parts: 2, roundUp: false});
         uint64 receiptTipFinal = splitTip({tip: receiptTipFull, parts: 2, roundUp: true});
-        RawReceiptBody memory rrb = re.body;
         if (rcptNotary == rcptNotaryFinal) {
-            if (rcptNotary == rrb.attNotary) {
+            if (rcptNotary == re.attNotary) {
                 // rcptNotary == rcptNotaryFinal == attNotary
-                checkActorTips(rcptNotary, rrb.origin, receiptTipFirst + receiptTipFinal + re.tips.attestationTip, 0);
+                checkActorTips(rcptNotary, re.origin, receiptTipFirst + receiptTipFinal + tips.attestationTip, 0);
             } else {
                 // rcptNotary == rcptNotaryFinal != attNotary
-                checkActorTips(rcptNotary, rrb.origin, receiptTipFirst + receiptTipFinal, 0);
-                checkActorTips(rrb.attNotary, rrb.origin, re.tips.attestationTip, 0);
+                checkActorTips(rcptNotary, re.origin, receiptTipFirst + receiptTipFinal, 0);
+                checkActorTips(re.attNotary, re.origin, tips.attestationTip, 0);
             }
-        } else if (rrb.attNotary == rcptNotaryFinal) {
+        } else if (re.attNotary == rcptNotaryFinal) {
             // rcptNotaryFinal == attNotary != rcptNotary
-            checkActorTips(rcptNotary, rrb.origin, receiptTipFirst, 0);
-            checkActorTips(rrb.attNotary, rrb.origin, receiptTipFinal + re.tips.attestationTip, 0);
+            checkActorTips(rcptNotary, re.origin, receiptTipFirst, 0);
+            checkActorTips(re.attNotary, re.origin, receiptTipFinal + tips.attestationTip, 0);
         } else {
-            if (rcptNotary == rrb.attNotary) {
+            if (rcptNotary == re.attNotary) {
                 // rcptNotary == attNotary != rcptNotaryFinal
-                checkActorTips(rcptNotary, rrb.origin, receiptTipFirst + re.tips.attestationTip, 0);
+                checkActorTips(rcptNotary, re.origin, receiptTipFirst + tips.attestationTip, 0);
             } else {
                 // rcptNotary != attNotary != rcptNotaryFinal
-                checkActorTips(rcptNotary, rrb.origin, receiptTipFirst, 0);
-                checkActorTips(rrb.attNotary, rrb.origin, re.tips.attestationTip, 0);
+                checkActorTips(rcptNotary, re.origin, receiptTipFirst, 0);
+                checkActorTips(re.attNotary, re.origin, tips.attestationTip, 0);
             }
-            if (isFinal) checkActorTips(rcptNotaryFinal, rrb.origin, receiptTipFinal, 0);
+            if (isFinal) checkActorTips(rcptNotaryFinal, re.origin, receiptTipFinal, 0);
         }
         // Check non-bonded actors
-        if (rrb.firstExecutor == rrb.finalExecutor) {
-            checkActorTips(rrb.firstExecutor, rrb.origin, re.tips.executionTip + (isFinal ? re.tips.deliveryTip : 0), 0);
+        if (re.firstExecutor == re.finalExecutor) {
+            checkActorTips(re.firstExecutor, re.origin, tips.executionTip + (isFinal ? tips.deliveryTip : 0), 0);
         } else {
-            checkActorTips(rrb.firstExecutor, rrb.origin, re.tips.executionTip, 0);
-            if (isFinal) checkActorTips(rrb.finalExecutor, rrb.origin, re.tips.deliveryTip, 0);
+            checkActorTips(re.firstExecutor, re.origin, tips.executionTip, 0);
+            if (isFinal) checkActorTips(re.finalExecutor, re.origin, tips.deliveryTip, 0);
         }
     }
 
-    function checkSnapshotTips(RawExecReceipt memory re) public {
-        uint64 snapshotTip = splitTip({tip: re.tips.summitTip, parts: 3, roundUp: false});
-        if (re.body.origin == origin0) {
+    function checkSnapshotTips(RawExecReceipt memory re, RawTips memory tips) public {
+        uint64 snapshotTip = splitTip({tip: tips.summitTip, parts: 3, roundUp: false});
+        if (re.origin == origin0) {
             // Tips for origin0 go to guard0 and notary0 (they were first to use it),
             // regardless of what attestation was used
-            checkActorTips(guard0, re.body.origin, snapshotTip, 0);
-            checkActorTips(snapNotary0, re.body.origin, snapshotTip, 0);
-        } else if (re.body.origin == origin1) {
+            checkActorTips(guard0, re.origin, snapshotTip, 0);
+            checkActorTips(snapNotary0, re.origin, snapshotTip, 0);
+        } else if (re.origin == origin1) {
             // Tips for origin1 go to guard1 and notary1 (they were first to use it)
-            checkActorTips(guard1, re.body.origin, snapshotTip, 0);
-            checkActorTips(snapNotary1, re.body.origin, snapshotTip, 0);
+            checkActorTips(guard1, re.origin, snapshotTip, 0);
+            checkActorTips(snapNotary1, re.origin, snapshotTip, 0);
         } else {
             revert("Incorrect origin value");
         }
@@ -443,34 +477,50 @@ contract SummitTipsTest is AgentSecuredTest {
 
     // ══════════════════════════════════════════════════ HELPERS ══════════════════════════════════════════════════════
 
-    function prepareReceipt(RawExecReceipt memory re, bool originZero, uint256 attNotaryIndex, bool isSuccess) public {
+    function prepareReceipt(
+        RawExecReceipt memory re,
+        RawTips memory tips,
+        RawTipsProof memory rtp,
+        bool originZero,
+        uint256 attNotaryIndex,
+        bool isSuccess
+    ) public {
         if (originZero) {
             // For Origin0's state0 we could use (state0) or (state0, state1) attestations
-            re.body.origin = origin0;
-            re.body.snapshotRoot = attNotaryIndex % 2 == 0 ? snapRoot0 : snapRoot1;
-            re.body.stateIndex = 0;
+            re.origin = origin0;
+            re.snapshotRoot = attNotaryIndex % 2 == 0 ? snapRoot0 : snapRoot1;
+            re.stateIndex = 0;
         } else {
             // For Origin1's state1 we could only use (state0, state1) attestation
-            re.body.origin = origin1;
-            re.body.snapshotRoot = snapRoot1;
-            re.body.stateIndex = 1;
+            re.origin = origin1;
+            re.snapshotRoot = snapRoot1;
+            re.stateIndex = 1;
         }
-        re.body.destination = DOMAIN_REMOTE;
-        re.body.attNotary = domains[DOMAIN_REMOTE].agents[attNotaryIndex % DOMAIN_AGENTS];
-        re.body.firstExecutor = createExecutorEOA(re.body.firstExecutor, "First Executor");
+        re.destination = DOMAIN_REMOTE;
+        re.attNotary = domains[DOMAIN_REMOTE].agents[attNotaryIndex % DOMAIN_AGENTS];
+        re.firstExecutor = createExecutorEOA(re.firstExecutor, "First Executor");
         if (isSuccess) {
-            re.body.finalExecutor = createExecutorEOA(re.body.finalExecutor, "Final Executor");
+            re.finalExecutor = createExecutorEOA(re.finalExecutor, "Final Executor");
         } else {
-            re.body.finalExecutor = address(0);
+            re.finalExecutor = address(0);
         }
         // Make every tip component non-zero and not too big
-        re.tips.boundTips(type(uint32).max);
-        re.tips.floorTips(1);
+        tips.boundTips(type(uint32).max);
+        tips.floorTips(1);
+        // Make sure tips could be proven against mocked message hash
+        re.messageHash = tips.getMessageHash(rtp);
     }
 
-    function mockReceipt(bytes memory salt) public pure returns (RawExecReceipt memory re) {
-        re.body.messageHash = keccak256(salt);
+    function mockReceipt(bytes memory salt)
+        public
+        pure
+        returns (RawExecReceipt memory re, RawTips memory tips, RawTipsProof memory rtp)
+    {
+        rtp.headerHash = keccak256(abi.encodePacked(salt, "header"));
+        rtp.bodyHash = keccak256(abi.encodePacked(salt, "body"));
         // Leave everything else as zero, prepareReceipt() takes care of that
+        re;
+        tips;
     }
 
     /// @notice Creates an EOA address that should not collide with existing agents

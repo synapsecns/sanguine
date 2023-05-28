@@ -1,14 +1,28 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.17;
 
-import {CallerNotDestination, MustBeSynapseDomain, NotaryInDispute} from "../../../contracts/libs/Errors.sol";
+import {
+    AgentNotGuard,
+    CallerNotDestination,
+    GuardInDispute,
+    NotaryInDispute,
+    MustBeSynapseDomain,
+    NotaryInDispute
+} from "../../../contracts/libs/Errors.sol";
 import {InterfaceSummit} from "../../../contracts/interfaces/InterfaceSummit.sol";
 
 import {StatementInboxTest} from "./StatementInbox.t.sol";
 
 import {BaseMock} from "../../mocks/base/BaseMock.t.sol";
 import {Random} from "../../utils/libs/Random.t.sol";
-import {RawExecReceipt, RawState, RawStateIndex} from "../../utils/libs/SynapseStructs.t.sol";
+import {
+    RawExecReceipt,
+    RawTips,
+    RawTipsProof,
+    RawReceiptTips,
+    RawState,
+    RawStateIndex
+} from "../../utils/libs/SynapseStructs.t.sol";
 
 import {Inbox, SynapseTest} from "../../utils/SynapseTest.t.sol";
 
@@ -95,13 +109,14 @@ contract InboxTest is StatementInboxTest {
         uint256 domainId,
         uint256 agentId,
         uint256 attNotaryId,
-        RawExecReceipt memory re,
+        RawReceiptTips memory receipt,
         uint256 attNonce
     ) public {
         address rcptNotary = getNotary(domainId, agentId);
-        re.body.destination = DOMAIN_REMOTE;
-        re.body.attNotary = domains[DOMAIN_REMOTE].agents[attNotaryId % DOMAIN_AGENTS];
-        (bytes memory receiptPayload, bytes memory receiptSig) = signReceipt(rcptNotary, re);
+        receipt.re.destination = DOMAIN_REMOTE;
+        receipt.re.attNotary = domains[DOMAIN_REMOTE].agents[attNotaryId % DOMAIN_AGENTS];
+        receipt.re.messageHash = receipt.tips.getMessageHash(receipt.rtp);
+        (bytes memory receiptPayload, bytes memory receiptSig) = signReceipt(rcptNotary, receipt.re);
         // Set value for getAttestationNonce call
         attNonce = bound(attNonce, 1, type(uint32).max);
         BaseMock(localDestination()).setMockReturnValue(attNonce);
@@ -110,14 +125,16 @@ contract InboxTest is StatementInboxTest {
             abi.encodeWithSelector(
                 InterfaceSummit.acceptReceipt.selector,
                 agentIndex[rcptNotary],
-                agentIndex[re.body.attNotary],
+                agentIndex[receipt.re.attNotary],
                 nextSignatureIndex(),
                 attNonce,
-                re.tips.encodeTips(),
-                re.body.formatReceiptBody()
+                receipt.tips.encodeTips(),
+                receipt.re.formatReceipt()
             )
         );
-        inbox.submitReceipt(receiptPayload, receiptSig);
+        inbox.submitReceipt(
+            receiptPayload, receiptSig, receipt.tips.encodeTips(), receipt.rtp.headerHash, receipt.rtp.bodyHash
+        );
     }
 
     function test_passReceipt_revert_notDestination(address caller) public {
@@ -125,6 +142,66 @@ contract InboxTest is StatementInboxTest {
         vm.expectRevert(CallerNotDestination.selector);
         vm.prank(caller);
         inbox.passReceipt(0, 0, 0, "");
+    }
+
+    // ════════════════════════════════════════════ TEST: OPEN DISPUTES ════════════════════════════════════════════════
+
+    function test_submitReceiptReport(Random memory random) public {
+        address prover = makeAddr("Prover");
+        RawExecReceipt memory re = random.nextReceipt(random.nextUint32());
+        // Create Notary signature for the attestation
+        address notary = domains[DOMAIN_LOCAL].agent;
+        (, bytes memory rcptSignature) = signReceipt(notary, re);
+        // Create Guard signature for the report
+        address guard = domains[0].agent;
+        (bytes memory rcptPayload, bytes memory rrSignature) = signReceiptReport(guard, re);
+        expectDisputeOpened(0, guard, notary);
+        vm.prank(prover);
+        inbox.submitReceiptReport(rcptPayload, rcptSignature, rrSignature);
+        assertEq(inbox.getReportsAmount(), 1, "!reportsAmount");
+        (bytes memory reportPayload, bytes memory reportSignature) = inbox.getGuardReport(0);
+        assertEq(reportPayload, rcptPayload, "!reportPayload");
+        assertEq(reportSignature, rrSignature, "!reportSig");
+    }
+
+    function test_submitReceiptReport_revert_signedByNotary(Random memory random) public {
+        RawExecReceipt memory re = random.nextReceipt(random.nextUint32());
+        // Create Notary signature for the attestation
+        address notary = domains[DOMAIN_LOCAL].agent;
+        (, bytes memory rcptSignature) = signReceipt(notary, re);
+        // Force a random Notary to sign the report
+        address reportSigner = getNotary(random.nextUint256(), random.nextUint256());
+        (bytes memory rcptPayload, bytes memory rrSignature) = signReceiptReport(reportSigner, re);
+        vm.expectRevert(AgentNotGuard.selector);
+        inbox.submitReceiptReport(rcptPayload, rcptSignature, rrSignature);
+    }
+
+    function test_submitReceiptReport_revert_guardInDispute(Random memory random) public {
+        RawExecReceipt memory re = random.nextReceipt(random.nextUint32());
+        // Create Notary signature for the attestation
+        address notary = domains[DOMAIN_LOCAL].agent;
+        (, bytes memory rcptSignature) = signReceipt(notary, re);
+        // Create Guard signature for the report
+        address guard = domains[0].agent;
+        (bytes memory rcptPayload, bytes memory rrSignature) = signReceiptReport(guard, re);
+        // Put the Guard in Dispute with another Notary
+        openDispute({guard: guard, notary: domains[DOMAIN_LOCAL].agents[1]});
+        vm.expectRevert(GuardInDispute.selector);
+        inbox.submitReceiptReport(rcptPayload, rcptSignature, rrSignature);
+    }
+
+    function test_submitReceiptReport_revert_notaryInDispute(Random memory random) public {
+        RawExecReceipt memory re = random.nextReceipt(random.nextUint32());
+        // Create Notary signature for the attestation
+        address notary = domains[DOMAIN_LOCAL].agent;
+        (, bytes memory rcptSignature) = signReceipt(notary, re);
+        // Create Guard signature for the report
+        address guard = domains[0].agent;
+        (bytes memory rcptPayload, bytes memory rrSignature) = signReceiptReport(guard, re);
+        // Put the Notary in Dispute with another Guard
+        openDispute({guard: domains[0].agents[1], notary: notary});
+        vm.expectRevert(NotaryInDispute.selector);
+        inbox.submitReceiptReport(rcptPayload, rcptSignature, rrSignature);
     }
 
     // ══════════════════════════════════════════════════ HELPERS ══════════════════════════════════════════════════════
