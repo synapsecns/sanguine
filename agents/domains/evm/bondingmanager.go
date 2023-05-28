@@ -1,3 +1,6 @@
+// Package evm is the package for evm contract stuff.
+//
+//nolint:dupl
 package evm
 
 import (
@@ -40,6 +43,7 @@ type bondingManagerContract struct {
 	nonceManager nonce.Manager
 }
 
+//nolint:dupl
 func (a bondingManagerContract) GetAgentStatus(ctx context.Context, bondedAgentSigner signer.Signer) (types.AgentStatus, error) {
 	rawStatus, err := a.contract.AgentStatus(&bind.CallOpts{Context: ctx}, bondedAgentSigner.Address())
 	if err != nil {

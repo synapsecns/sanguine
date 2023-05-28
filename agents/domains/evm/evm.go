@@ -38,6 +38,8 @@ type evmClient struct {
 var _ domains.DomainClient = &evmClient{}
 
 // NewEVM creates a new evm client.
+//
+//nolint:nestif
 func NewEVM(ctx context.Context, name string, domain config.DomainConfig) (domains.DomainClient, error) {
 	underlyingClient, err := chain.NewFromURL(ctx, domain.RPCUrl)
 	if err != nil {

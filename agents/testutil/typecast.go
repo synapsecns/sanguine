@@ -77,7 +77,7 @@ func (d *DeployManager) GetLightManagerHarness(ctx context.Context, backend back
 	return manager.GetContract[*lightmanagerharness.LightManagerHarnessRef](ctx, d.T(), d, backend, LightManagerHarnessType)
 }
 
-// GetInobx gets the inbox.
+// GetInbox gets the inbox.
 // nolint:dupl
 func (d *DeployManager) GetInbox(ctx context.Context, backend backends.SimulatedTestBackend) (contract contracts.DeployedContract, handle *inbox.InboxRef) {
 	d.T().Helper()

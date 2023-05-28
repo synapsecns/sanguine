@@ -1,3 +1,6 @@
+// Package evm is the package for evm contract stuff.
+//
+//nolint:dupl
 package evm
 
 import (
@@ -40,22 +43,7 @@ type lightManagerContract struct {
 	nonceManager nonce.Manager
 }
 
-func (a lightManagerContract) transactOptsSetup(ctx context.Context, signer signer.Signer) (*bind.TransactOpts, error) {
-	transactor, err := signer.GetTransactor(ctx, a.client.GetBigChainID())
-	if err != nil {
-		return nil, fmt.Errorf("could not sign tx: %w", err)
-	}
-
-	transactOpts, err := a.nonceManager.NewKeyedTransactor(transactor)
-	if err != nil {
-		return nil, fmt.Errorf("could not create tx: %w", err)
-	}
-
-	transactOpts.Context = ctx
-
-	return transactOpts, nil
-}
-
+//nolint:dupl
 func (a lightManagerContract) GetAgentStatus(ctx context.Context, bondedAgentSigner signer.Signer) (types.AgentStatus, error) {
 	rawStatus, err := a.contract.AgentStatus(&bind.CallOpts{Context: ctx}, bondedAgentSigner.Address())
 	if err != nil {
