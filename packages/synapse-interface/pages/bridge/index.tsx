@@ -560,11 +560,12 @@ const BridgePage = ({
       if (bridgeQuote === EMPTY_BRIDGE_QUOTE) {
         setIsQuoteLoading(true)
       }
+      const validFromChainId = AcceptedChainId[fromChainId] ? fromChainId : 1
       const { feeAmount, routerAddress, maxAmountOut, originQuery, destQuery } =
         await synapseSDK.bridgeQuote(
-          fromChainId,
+          validFromChainId,
           toChainId,
-          fromToken.addresses[fromChainId],
+          fromToken.addresses[validFromChainId],
           toToken.addresses[toChainId],
           fromInput.bigNum
         )
@@ -576,7 +577,7 @@ const BridgePage = ({
       }
       // TODO DYNAMIC SLIPPAGE
       const toValueBigNum = maxAmountOut ?? Zero
-      const originTokenDecimals = fromToken.decimals[fromChainId]
+      const originTokenDecimals = fromToken.decimals[validFromChainId]
       // adjusting fee amount from NUSD 18 decimal back down
       // back down to origin token decimals
       const adjustedFeeAmount = feeAmount.lt(fromInput.bigNum)
@@ -584,7 +585,7 @@ const BridgePage = ({
         : feeAmount.div(BigNumber.from(10).pow(18 - originTokenDecimals))
 
       const allowance =
-        fromToken.addresses[fromChainId] === AddressZero ||
+        fromToken.addresses[validFromChainId] === AddressZero ||
         address === undefined
           ? Zero
           : await getCurrentTokenAllowance(routerAddress)
@@ -617,7 +618,7 @@ const BridgePage = ({
         allowance,
         exchangeRate: calculateExchangeRate(
           fromInput.bigNum.sub(adjustedFeeAmount),
-          fromToken.decimals[fromChainId],
+          fromToken.decimals[validFromChainId],
           toValueBigNum,
           toToken.decimals[toChainId]
         ),
