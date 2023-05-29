@@ -43,7 +43,8 @@ import {
   EMPTY_BRIDGE_QUOTE_ZERO,
   QUOTE_POLLING_INTERVAL,
 } from '@/constants/bridge'
-import { CHAINS_BY_ID } from '@/constants/chains'
+import { CHAINS_BY_ID, AcceptedChainId } from '@/constants/chains'
+
 /* TODO
   - look into getting rid of fromChainId state and just using wagmi hook (ran into problems when trying this but forgot why)
 */
@@ -87,12 +88,7 @@ const BridgePage = ({
   - Initializes polling (setInterval) func to re-retrieve quotes.
   */
   useEffect(() => {
-    console.log(
-      'BRIDGABLE_TOKENS[fromChainId]: ',
-      BRIDGABLE_TOKENS[fromChainId]
-    )
-    console.log('fromChainId: ', fromChainId)
-    console.log('address: ', address)
+    console.log('acceptedChainId: ', AcceptedChainId[fromChainId])
     sortByTokenBalance(
       BRIDGABLE_TOKENS[fromChainId] ?? BRIDGABLE_TOKENS[1],
       fromChainId,
