@@ -583,12 +583,16 @@ const BridgePage = ({
         ? feeAmount
         : feeAmount.div(BigNumber.from(10).pow(18 - originTokenDecimals))
 
+      const isUnsupported = AcceptedChainId[fromChainId] ? false : true
+      console.log('isUnsupported')
       const allowance =
         fromToken.addresses[validFromChainId] === AddressZero ||
-        address === undefined
+        address === undefined ||
+        isUnsupported
           ? Zero
           : await getCurrentTokenAllowance(routerAddress)
 
+      console.log('allowance:', allowance)
       // TODO 1) make dynamic, 2) clean this
 
       const originMinWithSlippage = subtractSlippage(
