@@ -125,7 +125,10 @@ const BridgePage = ({
     let tempFromToken: Token = getMostCommonSwapableType(verifiedFromChainId)
 
     if (fromTokenSymbolUrl) {
-      let token = tokenSymbolToToken(fromChainId, String(fromTokenSymbolUrl))
+      let token = tokenSymbolToToken(
+        verifiedFromChainId,
+        String(fromTokenSymbolUrl)
+      )
       if (token) {
         tempFromToken = token
       }
@@ -135,7 +138,7 @@ const BridgePage = ({
         tempFromToken,
         toChainIdUrl ? Number(toChainIdUrl) : undefined,
         toTokenSymbolUrl ? String(toTokenSymbolUrl) : undefined,
-        fromChainId
+        verifiedFromChainId
       )
     resetTokenPermutation(
       tempFromToken,
