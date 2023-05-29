@@ -84,6 +84,7 @@ export const Wallet = () => {
                   )
                 }
                 if (currentChain?.unsupported || chain?.unsupported) {
+                  console.log('chain:', chain)
                   return (
                     <button onClick={openChainModal} type="button">
                       Wrong network
