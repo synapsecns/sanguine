@@ -88,10 +88,10 @@ const BridgePage = ({
   - Initializes polling (setInterval) func to re-retrieve quotes.
   */
   useEffect(() => {
-    console.log('acceptedChainId: ', AcceptedChainId[fromChainId])
+    const validFromChainId = AcceptedChainId[fromChainId] ? fromChainId : 1
     sortByTokenBalance(
-      BRIDGABLE_TOKENS[fromChainId] ?? BRIDGABLE_TOKENS[1],
-      fromChainId,
+      BRIDGABLE_TOKENS[validFromChainId],
+      validFromChainId,
       address
     ).then((tokens) => {
       setFromTokens(tokens)
@@ -117,12 +117,12 @@ const BridgePage = ({
     } = router.query
 
     // set origin chainId to mainnet if network is unsupported
-    const verifiedFromChainId = BRIDGABLE_TOKENS[fromChainId] ? fromChainId : 1
-    let tempFromToken: Token = getMostCommonSwapableType(verifiedFromChainId)
+    const validFromChainId = AcceptedChainId[fromChainId] ? fromChainId : 1
+    let tempFromToken: Token = getMostCommonSwapableType(validFromChainId)
 
     if (fromTokenSymbolUrl) {
       let token = tokenSymbolToToken(
-        verifiedFromChainId,
+        validFromChainId,
         String(fromTokenSymbolUrl)
       )
       if (token) {
@@ -134,7 +134,7 @@ const BridgePage = ({
         tempFromToken,
         toChainIdUrl ? Number(toChainIdUrl) : undefined,
         toTokenSymbolUrl ? String(toTokenSymbolUrl) : undefined,
-        verifiedFromChainId
+        validFromChainId
       )
     resetTokenPermutation(
       tempFromToken,
