@@ -7,7 +7,6 @@ export const calculateExchangeRate = (
   amountTo,
   tokenPrecisionTo
 ) => {
-  console.log('amountFrom: ', amountFrom)
   if (amountFrom.gt('0')) {
     return amountTo
       .mul(BigNumber.from(10).pow(36 - tokenPrecisionTo)) // convert to standard 1e18 precision
