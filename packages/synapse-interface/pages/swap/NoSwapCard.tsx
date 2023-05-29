@@ -16,7 +16,7 @@ const NoSwapCard = ({ chainId }: { chainId: number }) => {
       <div className="w-full pt-4 text-center text-gray-400">
         No swaps available on{' '}
         <span className={`${getNetworkTextColor(chain?.color)} font-medium`}>
-          {chain?.name ?? 'Unsupported Network'}
+          {chain?.name ?? 'current network'}
         </span>
       </div>
     </Card>
