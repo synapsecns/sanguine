@@ -569,7 +569,6 @@ const BridgePage = ({
           toToken.addresses[toChainId],
           fromInput.bigNum
         )
-
       if (!(originQuery && maxAmountOut && destQuery && feeAmount)) {
         setBridgeQuote(EMPTY_BRIDGE_QUOTE_ZERO)
         setIsQuoteLoading(false)
