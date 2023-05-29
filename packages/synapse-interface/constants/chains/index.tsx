@@ -67,3 +67,7 @@ export const ChainId = {
   HARMONY: 1666600000,
   TERRA: 121014925, //"columbus-5", the day columbus reportedly landed in america followed by 5
 }
+
+export const AcceptedChainId = Object.fromEntries(
+  Object.entries(ChainId).map(([key, value]) => [value, key])
+)
