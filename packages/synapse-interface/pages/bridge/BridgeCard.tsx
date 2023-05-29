@@ -186,7 +186,7 @@ const BridgeCard = ({
     }
 
     if (!AcceptedChainId[fromChainId]) {
-      properties.label = 'Unsupported Network'
+      properties.label = 'Wrong Network'
       properties.disabled = true
       return properties
     }
