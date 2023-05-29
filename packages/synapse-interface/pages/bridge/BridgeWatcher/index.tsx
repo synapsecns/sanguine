@@ -126,6 +126,7 @@ const BridgeWatcher = ({
         <Card title="Bridge Watcher" divider={false} className="px-6 py-4">
           <Grid cols={{ xs: 1 }} gap={2}>
             {fromTransactions.map((fromEvent, i) => {
+              console.log('fromEvent: ', fromEvent)
               return <BridgeEvent key={i} {...fromEvent} />
             })}
           </Grid>
