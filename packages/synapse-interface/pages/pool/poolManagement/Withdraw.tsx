@@ -181,22 +181,63 @@ const Withdraw = ({
   // some messy button gen stuff (will re-write)
   let isFromBalanceEnough = true
   let isAllowanceEnough = true
-  let btnLabel = 'Withdraw'
-  let pendingLabel = 'Withdrawing funds...'
-  let btnClassName = ''
-  let buttonAction = () =>
-    withdraw(
-      pool,
-      'ONE_TENTH',
-      null,
-      inputValue.bn,
-      chainId,
-      withdrawType,
-      withdrawQuote.outputs
-    )
-  let postButtonAction = () => {
-    resetInput()
+
+  const getButtonProperties = () => {
+    let properties = {
+      label: 'Withdraw',
+      pendingLabel: 'Withdrawing funds...',
+      className: '',
+      disabled: false,
+      buttonAction: () =>
+        withdraw(
+          pool,
+          'ONE_TENTH',
+          null,
+          inputValue.bn,
+          chainId,
+          withdrawType,
+          withdrawQuote.outputs
+        ),
+      postButtonAction: () => {
+        refetchCallback()
+        resetInput()
+      },
+    }
+
+    if (!isFromBalanceEnough) {
+      properties.label = `Insufficient Balance`
+      properties.disabled = true
+      return properties
+    }
+
+    if (!isAllowanceEnough) {
+      properties.label = `Approve Token(s)`
+      properties.pendingLabel = `Approving Token(s)`
+      properties.className = 'from-[#feba06] to-[#FEC737]'
+      properties.disabled = true
+      properties.buttonAction = () =>
+        approve(pool, withdrawQuote, inputValue.bn, chainId)
+      properties.postButtonAction = () => setTime(0)
+      return properties
+    }
   }
+
+  // let btnLabel = 'Withdraw'
+  // let pendingLabel = 'Withdrawing funds...'
+  // let btnClassName = ''
+  // let buttonAction = () =>
+  //   withdraw(
+  //     pool,
+  //     'ONE_TENTH',
+  //     null,
+  //     inputValue.bn,
+  //     chainId,
+  //     withdrawType,
+  //     withdrawQuote.outputs
+  //   )
+  // let postButtonAction = () => {
+  //   resetInput()
+  // }
 
   if (
     withdrawQuote.allowance &&
@@ -205,6 +246,7 @@ const Withdraw = ({
   ) {
     isAllowanceEnough = false
   }
+
   if (
     !inputValue.bn.isZero() &&
     inputValue.bn.gt(poolUserData.lpTokenBalance)
@@ -212,15 +254,15 @@ const Withdraw = ({
     isFromBalanceEnough = false
   }
 
-  if (!isFromBalanceEnough) {
-    btnLabel = `Insufficient Balance`
-  } else if (!isAllowanceEnough) {
-    buttonAction = () => approve(pool, withdrawQuote, inputValue.bn, chainId)
-    btnLabel = `Approve Token(s)`
-    pendingLabel = `Approving Token(s)`
-    btnClassName = 'from-[#feba06] to-[#FEC737]'
-    postButtonAction = () => setTime(0)
-  }
+  // if (!isFromBalanceEnough) {
+  //   btnLabel = `Insufficient Balance`
+  // } else if (!isAllowanceEnough) {
+  //   buttonAction = () => approve(pool, withdrawQuote, inputValue.bn, chainId)
+  //   btnLabel = `Approve Token(s)`
+  //   pendingLabel = `Approving Token(s)`
+  //   btnClassName = 'from-[#feba06] to-[#FEC737]'
+  //   postButtonAction = () => setTime(0)
+  // }
   const actionBtn = (
     <TransactionButton
       className={btnClassName}
