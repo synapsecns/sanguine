@@ -1,5 +1,4 @@
-import { useEffect, useState, memo } from 'react'
-import { useWatchPendingTransactions } from 'wagmi'
+import { useEffect, useState, useCallback } from 'react'
 import { AddressZero } from '@ethersproject/constants'
 import Link from 'next/link'
 import { Token } from '@types'
@@ -29,6 +28,19 @@ const PoolBody = ({
   const [poolAPYData, setPoolAPYData] = useState(undefined)
 
   console.log('poolUserData: ', poolUserData)
+
+  const handleGetUserPoolData = useCallback(() => {
+    if (address) {
+      getPoolData(poolChainId, pool, address, true)
+        .then((res) => {
+          setPoolUserData(res)
+        })
+        .catch((err) => {
+          console.log('Could not get pool data', err)
+        })
+    }
+  }, [poolChainId, pool, address])
+
   useEffect(() => {
     if (connectedChainId && pool && poolChainId) {
       // TODO - separate the apy and tvl so they load async.
@@ -40,15 +52,7 @@ const PoolBody = ({
           console.log('Could not get pool data', err)
         })
 
-      if (address) {
-        getPoolData(poolChainId, pool, address, true)
-          .then((res) => {
-            setPoolUserData(res)
-          })
-          .catch((err) => {
-            console.log('Could not get pool data', err)
-          })
-      }
+      handleGetUserPoolData()
 
       getPoolApyData(poolChainId, pool)
         .then((res) => {

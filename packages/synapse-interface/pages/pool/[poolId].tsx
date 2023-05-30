@@ -6,7 +6,6 @@ import StandardPageContainer from '@layouts/StandardPageContainer'
 import { LandingPageWrapper } from '@layouts/LandingPageWrapper'
 import { DEFAULT_FROM_CHAIN } from '@/constants/swap'
 import { POOL_BY_ROUTER_INDEX, POOL_CHAINS_BY_NAME } from '@constants/tokens'
-import { useWatchPendingTransactions } from 'wagmi'
 import PoolBody from './PoolBody'
 import NoPoolBody from './NoPoolBody'
 
@@ -36,11 +35,6 @@ const PoolPage = () => {
     () => (pool?.addresses ? Number(Object.keys(pool?.addresses)[0]) : 0),
     [pool]
   )
-
-  const pendingTxns = useWatchPendingTransactions({
-    listener: (hashes) => console.log(hashes),
-  })
-
   return (
     <LandingPageWrapper>
       <StandardPageContainer
