@@ -13,9 +13,10 @@ import { ALL } from '@constants/withdrawTypes'
 import Grid from '@tw/Grid'
 import TokenInput from '@components/TokenInput'
 import RadioButton from '@components/buttons/RadioButton'
-import ReceivedTokenSection from '../components/RecievedTokenSection'
+import ReceivedTokenSection from '../components/ReceivedTokenSection'
 import PriceImpactDisplay from '../components/PriceImpactDisplay'
 
+import { Transition } from '@headlessui/react'
 import { TransactionButton } from '@/components/buttons/TransactionButton'
 import { Zero } from '@ethersproject/constants'
 import { Token } from '@types'
@@ -399,12 +400,11 @@ const Withdraw = ({
         address={address}
       />
       {actionBtn}
-      {/*
-      TODO FIX THIS TRANSITION
+
       <Transition
         appear={true}
         unmount={false}
-        show={lpTokenAmount.gt(0)}
+        show={inputValue.bn.gt(0)}
         enter="transition duration-100 ease-out"
         enterFrom="transform-gpu scale-y-0 "
         enterTo="transform-gpu scale-y-100 opacity-100"
@@ -412,27 +412,27 @@ const Withdraw = ({
         leaveFrom="transform-gpu scale-y-100 opacity-100"
         leaveTo="transform-gpu scale-y-0 "
         className="-mx-6 origin-top "
-      > */}
-      <div
-        className={`py-3.5 pr-6 pl-6 mt-2 rounded-b-2xl bg-bgBase transition-all`}
       >
-        <Grid cols={{ xs: 2 }}>
-          <div>
-            <ReceivedTokenSection
-              poolTokens={pool?.poolTokens ?? []}
-              withdrawQuote={withdrawQuote}
-              chainId={chainId}
-            />
-          </div>
-          <div>
-            {withdrawQuote.priceImpact &&
-              withdrawQuote.priceImpact?.gt(Zero) && (
-                <PriceImpactDisplay priceImpact={withdrawQuote.priceImpact} />
-              )}
-          </div>
-        </Grid>
-      </div>
-      {/* </Transition> */}
+        <div
+          className={`py-3.5 pr-6 pl-6 mt-2 rounded-b-2xl bg-bgBase transition-all`}
+        >
+          <Grid cols={{ xs: 2 }}>
+            <div>
+              <ReceivedTokenSection
+                poolTokens={pool?.poolTokens ?? []}
+                withdrawQuote={withdrawQuote}
+                chainId={chainId}
+              />
+            </div>
+            <div>
+              {withdrawQuote.priceImpact &&
+                withdrawQuote.priceImpact?.gt(Zero) && (
+                  <PriceImpactDisplay priceImpact={withdrawQuote.priceImpact} />
+                )}
+            </div>
+          </Grid>
+        </div>
+      </Transition>
     </div>
   )
 }
