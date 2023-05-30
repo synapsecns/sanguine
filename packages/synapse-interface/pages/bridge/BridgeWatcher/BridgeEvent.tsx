@@ -13,16 +13,6 @@ const BridgeEvent = memo((fromEvent: BridgeWatcherTx) => {
         <div className="flex-1 ">
           {fromEvent && <EventCard {...fromEvent} />}
         </div>
-        <div className="px-3 pt-6 pb-1">
-          <ChevronRightIcon
-            className={`
-            w-5 h-5 animate-pulse
-            place-self-center
-            text-gray-500
-            margin-auto
-          `}
-          />
-        </div>
         <div className="flex-1 ">
           {fromEvent && <DestinationTx {...fromEvent} />}
         </div>

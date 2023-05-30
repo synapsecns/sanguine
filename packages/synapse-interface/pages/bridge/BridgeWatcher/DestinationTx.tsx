@@ -1,10 +1,12 @@
 import { BridgeWatcherTx } from '@types'
-import { useEffect, useState, memo } from 'react'
+import { useEffect, useState, memo, useMemo } from 'react'
 import { Contract, Signer } from 'ethers'
 import { useSigner } from 'wagmi'
 import SYNAPSE_BRIDGE_ABI from '@abis/synapseBridge.json'
 import { BRIDGE_CONTRACTS } from '@constants/bridge'
 import { PendingCreditTransactionItem } from '@components/TransactionItems'
+import { getNetworkTextColor } from '@/styles/chains'
+import { CHAINS_BY_ID } from '@/constants/chains'
 import { fetchBlockNumber } from '@wagmi/core'
 import { Interface } from '@ethersproject/abi'
 import { GETLOGS_SIZE } from '@constants/bridgeWatcher'
@@ -30,6 +32,11 @@ const DestinationTx = (fromEvent: BridgeWatcherTx) => {
   const [completedConf, setCompletedConf] = useState(false)
   const [attempted, setAttempted] = useState(false)
   const { providerMap } = useSynapseContext()
+
+  const networkTextColor: string = useMemo(() => {
+    const networkChainById = CHAINS_BY_ID[fromEvent.chainId]
+    return networkChainById.color
+  }, [fromEvent.toChainId])
 
   const getToBridgeEvent = async (): Promise<BridgeWatcherTx> => {
     const headOnDestination = await fetchBlockNumber({
