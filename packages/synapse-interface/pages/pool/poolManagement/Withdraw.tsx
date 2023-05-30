@@ -220,7 +220,7 @@ const Withdraw = ({
       properties.label = `Approve Token(s)`
       properties.pendingLabel = `Approving Token(s)`
       properties.className = 'from-[#feba06] to-[#FEC737]'
-      properties.disabled = true
+      properties.disabled = false
       properties.buttonAction = () =>
         approve(pool, withdrawQuote, inputValue.bn, chainId)
       properties.postButtonAction = () => setTime(0)
@@ -321,7 +321,7 @@ const Withdraw = ({
             bg-[#111111]
             text-gray-300
           `}
-          placeholder="100"
+          placeholder="0"
           onChange={(e) => {
             onPercentChange(Number(e.currentTarget.value))
           }}
