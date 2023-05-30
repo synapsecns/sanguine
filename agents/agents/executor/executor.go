@@ -631,7 +631,7 @@ func (e Executor) checkIfExecuted(parentCtx context.Context, message types.Messa
 		case <-ctx.Done():
 			return false, fmt.Errorf("context cancelled: %w", ctx.Err())
 		case <-time.After(timeout):
-			if b.Attempt() == 5 {
+			if b.Attempt() >= 5 {
 				return false, fmt.Errorf("could not get executed status: %w", ctx.Err())
 			}
 
@@ -756,26 +756,32 @@ func (e Executor) processLog(parentCtx context.Context, log ethTypes.Log, chainI
 
 	switch contractEvent.contractType {
 	case originContract:
+		span.AddEvent("origin", trace.WithAttributes(attribute.String("step", "a")))
 		message, err := e.logToMessage(log, chainID)
 		if err != nil {
 			return fmt.Errorf("could not convert log to leaf: %w", err)
 		}
+		span.AddEvent("origin", trace.WithAttributes(attribute.String("step", "b")))
 
 		if message == nil {
 			return nil
 		}
+
+		span.AddEvent("origin", trace.WithAttributes(attribute.String("step", "c")))
 
 		merkleIndex := e.chainExecutors[chainID].merkleTree.NumOfItems()
 		leaf, err := (*message).ToLeaf()
 		if err != nil {
 			return fmt.Errorf("could not convert message to leaf: %w", err)
 		}
+		span.AddEvent("origin", trace.WithAttributes(attribute.String("step", "d")))
 		logger.Errorf("message nonce is %d", (*message).Nonce())
 
 		// Make sure the nonce of the message is being inserted at the right index.
 		if merkleIndex+1 != (*message).Nonce() {
 			return fmt.Errorf("nonce is not correct. expected: %d, got: %d", merkleIndex+1, (*message).Nonce())
 		}
+		span.AddEvent("origin", trace.WithAttributes(attribute.String("step", "e")))
 
 		e.chainExecutors[chainID].merkleTree.Insert(leaf[:])
 
@@ -783,12 +789,14 @@ func (e Executor) processLog(parentCtx context.Context, log ethTypes.Log, chainI
 		if err != nil {
 			return fmt.Errorf("could not store message: %w", err)
 		}
+		span.AddEvent("origin", trace.WithAttributes(attribute.String("step", "f")))
 	case destinationContract:
+		span.AddEvent("destination", trace.WithAttributes(attribute.String("step", "a")))
 		attestation, err := e.logToAttestation(log, chainID)
 		if err != nil {
 			return fmt.Errorf("could not convert log to attestation: %w", err)
 		}
-
+		span.AddEvent("destination", trace.WithAttributes(attribute.String("step", "b")))
 		if attestation == nil {
 			return nil
 		}
@@ -810,6 +818,7 @@ func (e Executor) processLog(parentCtx context.Context, log ethTypes.Log, chainI
 			case <-ctx.Done():
 				return fmt.Errorf("context canceled: %w", ctx.Err())
 			case <-time.After(timeout):
+				span.AddEvent("destination", trace.WithAttributes(attribute.String("step", "c")))
 				if b.Attempt() >= rpcRetry {
 					return fmt.Errorf("could not get log header: %w", err)
 				}
@@ -819,6 +828,7 @@ func (e Executor) processLog(parentCtx context.Context, log ethTypes.Log, chainI
 
 					continue
 				}
+				span.AddEvent("destination", trace.WithAttributes(attribute.String("step", "d")))
 
 				break retryLoop
 			}
@@ -828,31 +838,33 @@ func (e Executor) processLog(parentCtx context.Context, log ethTypes.Log, chainI
 		if err != nil {
 			return fmt.Errorf("could not store attestation: %w", err)
 		}
+		span.AddEvent("destination", trace.WithAttributes(attribute.String("step", "e")))
 	case summitContract:
 		//nolint:gocritic,exhaustive
-		switch contractEvent.eventType {
-		case snapshotAcceptedEvent:
-			snapshot, err := e.logToSnapshot(log, chainID)
-			if err != nil {
-				return fmt.Errorf("could not convert log to snapshot: %w", err)
-			}
-
-			if snapshot == nil {
-				return nil
-			}
-
-			snapshotRoot, proofs, err := (*snapshot).SnapshotRootAndProofs()
-			if err != nil {
-				return fmt.Errorf("could not get snapshot root and proofs: %w", err)
-			}
-
-			treeHeight := (*snapshot).TreeHeight()
-
-			err = e.executorDB.StoreStates(ctx, (*snapshot).States(), snapshotRoot, proofs, treeHeight)
-			if err != nil {
-				return fmt.Errorf("could not store states: %w", err)
-			}
+		span.AddEvent("summit", trace.WithAttributes(attribute.String("step", "a")))
+		span.AddEvent("summit", trace.WithAttributes(attribute.String("step", "b")))
+		snapshot, err := e.logToSnapshot(log, chainID)
+		if err != nil {
+			return fmt.Errorf("could not convert log to snapshot: %w", err)
 		}
+		span.AddEvent("summit", trace.WithAttributes(attribute.String("step", "c")))
+		if snapshot == nil {
+			return nil
+		}
+
+		snapshotRoot, proofs, err := (*snapshot).SnapshotRootAndProofs()
+		if err != nil {
+			return fmt.Errorf("could not get snapshot root and proofs: %w", err)
+		}
+		span.AddEvent("summit", trace.WithAttributes(attribute.String("step", "d")))
+
+		treeHeight := (*snapshot).TreeHeight()
+
+		err = e.executorDB.StoreStates(ctx, (*snapshot).States(), snapshotRoot, proofs, treeHeight)
+		if err != nil {
+			return fmt.Errorf("could not store states: %w", err)
+		}
+		span.AddEvent("summit", trace.WithAttributes(attribute.String("step", "e")))
 	case other:
 		span.AddEvent("other contract event")
 	default:
