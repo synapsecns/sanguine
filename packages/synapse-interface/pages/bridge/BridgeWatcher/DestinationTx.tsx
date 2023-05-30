@@ -1,22 +1,19 @@
-import { BridgeWatcherTx } from '@types'
+import _ from 'lodash'
 import { useEffect, useState, memo, useMemo } from 'react'
-import { Contract, Signer } from 'ethers'
 import { useSigner } from 'wagmi'
-import SYNAPSE_BRIDGE_ABI from '@abis/synapseBridge.json'
-import { BRIDGE_CONTRACTS } from '@constants/bridge'
-import { PendingCreditTransactionItem } from '@components/TransactionItems'
-import { getNetworkTextColor } from '@/styles/chains'
+import { fetchBlockNumber } from '@wagmi/core'
+import { Contract, Signer } from 'ethers'
+import { Interface } from '@ethersproject/abi'
 import {
   ChevronRightIcon,
   ChevronDoubleRightIcon,
 } from '@heroicons/react/outline'
+import { BridgeWatcherTx } from '@types'
+import { getNetworkTextColor } from '@/styles/chains'
+import SYNAPSE_BRIDGE_ABI from '@abis/synapseBridge.json'
+import { BRIDGE_CONTRACTS } from '@constants/bridge'
 import { CHAINS_BY_ID } from '@/constants/chains'
-import { fetchBlockNumber } from '@wagmi/core'
-import { Interface } from '@ethersproject/abi'
 import { GETLOGS_SIZE } from '@constants/bridgeWatcher'
-import _ from 'lodash'
-import EventCard from './EventCard'
-import BlockCountdown from './BlockCountdown'
 import { useSynapseContext } from '@/utils/providers/SynapseProvider'
 import {
   getLogs,
@@ -26,7 +23,8 @@ import {
   checkTxIn,
 } from '@utils/bridgeWatcher'
 import { remove0xPrefix } from '@/utils/remove0xPrefix'
-import { EmptySubTransactionItem } from '@components/TransactionItems'
+import EventCard from './EventCard'
+import BlockCountdown from './BlockCountdown'
 
 const DestinationTx = (fromEvent: BridgeWatcherTx) => {
   const [toEvent, setToEvent] = useState<BridgeWatcherTx>(undefined)
@@ -161,7 +159,6 @@ const DestinationTx = (fromEvent: BridgeWatcherTx) => {
               w-5 h-5
               place-self-center
               ${networkTextColorClass}
-              text-opacity-50
             `}
           />
         ) : (

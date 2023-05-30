@@ -1,21 +1,20 @@
+import _ from 'lodash'
+import { useEffect, useState, memo } from 'react'
+import { fetchBlockNumber } from '@wagmi/core'
 import {
   ChevronRightIcon,
   ChevronDoubleRightIcon,
 } from '@heroicons/react/outline'
 import { Arc } from '@visx/shape'
 import { Chord } from '@visx/chord'
-import { CHAINS_BY_ID } from '@/constants/chains'
-import { useEffect, useState } from 'react'
-import { getNetworkTextColor } from '@styles/chains'
-import { fetchBlockNumber } from '@wagmi/core'
 import { BridgeWatcherTx } from '@types'
+import { getNetworkTextColor } from '@styles/chains'
+import { CHAINS_BY_ID } from '@/constants/chains'
 import { BRIDGE_REQUIRED_CONFIRMATIONS } from '@constants/bridge'
 import {
   EmptySubTransactionItem,
   CheckingConfPlaceholder,
 } from '@components/TransactionItems'
-import { memo } from 'react'
-import _ from 'lodash'
 
 const BlockCountdown = memo(
   ({
@@ -73,7 +72,7 @@ const BlockCountdown = memo(
       <>
         <div className="flex-1">
           <div className={`flex items-center align-middle`}>
-            {fromEvent?.toChainId && !toEvent && confirmationDelta > 0 && (
+            {fromEvent?.toChainId && confirmationDelta > 0 && (
               <>
                 <BlockCountdownCircle
                   clampedDiff={confirmationDelta}
@@ -94,18 +93,6 @@ const BlockCountdown = memo(
                 <EmptySubTransactionItem chainId={fromEvent?.toChainId} />
               </>
             )}
-            {/* {confirmationDelta == 0 && (
-              <div className="items-center flex-shrink-0 align-middle">
-                <ChevronDoubleRightIcon
-                  className={`
-                w-5 h-5
-                place-self-center
-                text-gray-500'
-                text-opacity-50
-              `}
-                />
-              </div>
-            )} */}
           </div>
         </div>
       </>
@@ -127,11 +114,11 @@ const BlockCountdownCircle = ({
       viewBox="0 0 200 200"
       xmlns="http://www.w3.org/2000/svg"
       className={`
-            stroke-current stroke-[8px] text-gray-600
-            bg-transparent
-            fill-none
-            w-16 h-16  -mb-3
-          `}
+        stroke-current stroke-[8px] text-gray-600
+        bg-transparent
+        fill-none
+        w-16 h-16  -mb-3
+      `}
     >
       <text
         textAnchor="middle"
@@ -155,9 +142,9 @@ const BlockCountdownCircle = ({
                     innerRadius={72}
                     outerRadius={74}
                     className={`
-                              ${i == 0 ? `fill-current ${coloring}` : null}
-                              transform-gpu transition-all
-                            `}
+                      ${i == 0 ? `fill-current ${coloring}` : null}
+                      transform-gpu transition-all
+                    `}
                   />
                 ))}
             </g>
