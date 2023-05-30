@@ -62,7 +62,7 @@ const Withdraw = ({
   })
 
   const [withdrawType, setWithdrawType] = useState(ALL)
-  const [percentage, setPercentage] = useState(100)
+  const [percentage, setPercentage] = useState(0)
   const [time, setTime] = useState(Date.now())
 
   const resetInput = () => {
