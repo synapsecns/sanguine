@@ -27,7 +27,15 @@ const PoolBody = ({
   const [poolUserData, setPoolUserData] = useState(undefined)
   const [poolAPYData, setPoolAPYData] = useState(undefined)
 
-  console.log('poolUserData: ', poolUserData)
+  const handleGetPoolData = useCallback(() => {
+    getPoolData(poolChainId, pool, address ?? AddressZero, false)
+      .then((res) => {
+        setPoolData(res)
+      })
+      .catch((err) => {
+        console.log('Could not get pool data', err)
+      })
+  }, [poolChainId, pool, address])
 
   const handleGetUserPoolData = useCallback(() => {
     if (address) {
@@ -44,14 +52,8 @@ const PoolBody = ({
   useEffect(() => {
     if (connectedChainId && pool && poolChainId) {
       // TODO - separate the apy and tvl so they load async.
-      getPoolData(poolChainId, pool, address ?? AddressZero, false)
-        .then((res) => {
-          setPoolData(res)
-        })
-        .catch((err) => {
-          console.log('Could not get pool data', err)
-        })
 
+      handleGetPoolData()
       handleGetUserPoolData()
 
       getPoolApyData(poolChainId, pool)
