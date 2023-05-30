@@ -23,6 +23,13 @@ import { approve, withdraw } from '@/utils/actions/approveAndWithdraw'
 import { getTokenAllowance } from '@/utils/actions/getTokenAllowance'
 import { PoolData, PoolUserData } from '@types'
 
+const DEFAULT_WITHDRAW_QUOTE = {
+  priceImpact: Zero,
+  outputs: {},
+  allowance: undefined,
+  routerAddress: '',
+}
+
 const Withdraw = ({
   pool,
   chainId,
@@ -54,12 +61,7 @@ const Withdraw = ({
     >
     allowance: BigNumber
     routerAddress: string
-  }>({
-    priceImpact: Zero,
-    outputs: {},
-    allowance: undefined,
-    routerAddress: '',
-  })
+  }>(DEFAULT_WITHDRAW_QUOTE)
 
   const [withdrawType, setWithdrawType] = useState(ALL)
   const [percentage, setPercentage] = useState(0)
@@ -201,6 +203,7 @@ const Withdraw = ({
       postButtonAction: () => {
         refetchCallback()
         setPercentage(0)
+        setWithdrawQuote(DEFAULT_WITHDRAW_QUOTE)
         resetInput()
       },
     }
