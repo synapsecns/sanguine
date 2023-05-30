@@ -10,7 +10,7 @@ import { useSynapseContext } from '@/utils/providers/SynapseProvider'
 import { TransactionButton } from '@/components/buttons/TransactionButton'
 import { Zero } from '@ethersproject/constants'
 import { Token } from '@types'
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useMemo } from 'react'
 import { BigNumber } from '@ethersproject/bignumber'
 import { calculateExchangeRate } from '@utils/calculateExchangeRate'
 import { getTokenAllowance } from '@/utils/actions/getTokenAllowance'
@@ -162,7 +162,7 @@ const Deposit = ({
       label: 'Deposit',
       pendingLabel: 'Depositing funds...',
       className: '',
-      disabled: true,
+      disabled: false,
       buttonAction: () =>
         deposit(pool, 'ONE_TENTH', null, inputValue.bn, chainId),
       postButtonAction: () => {
@@ -170,6 +170,10 @@ const Deposit = ({
         refetchCallback()
         resetInputs()
       },
+    }
+
+    if (sumBigNumbersFromState().eq(0)) {
+      properties.disabled = true
     }
 
     if (!isFromBalanceEnough) {
@@ -182,6 +186,7 @@ const Deposit = ({
       properties.label = `Approve Token(s)`
       properties.pendingLabel = `Approving Token(s)`
       properties.className = 'from-[#feba06] to-[#FEC737]'
+      properties.disabled = true
       properties.buttonAction = () =>
         approve(pool, depositQuote, inputValue.bn, chainId)
       properties.postButtonAction = () => setTime(0)
@@ -231,15 +236,42 @@ const Deposit = ({
   //   btnClassName = 'from-[#feba06] to-[#FEC737]'
   //   postButtonAction = () => setTime(0)
   // }
-  const actionBtn = (
-    <TransactionButton
-      className={btnClassName}
-      disabled={sumBigNumbersFromState().eq(0) || !isFromBalanceEnough}
-      onClick={() => buttonAction()}
-      onSuccess={() => postButtonAction()}
-      label={btnLabel}
-      pendingLabel={pendingLabel}
-    />
+
+  const {
+    label: btnLabel,
+    pendingLabel,
+    className: btnClassName,
+    buttonAction,
+    postButtonAction,
+    disabled,
+  } = useMemo(getButtonProperties, [
+    isFromBalanceEnough,
+    isAllowanceEnough,
+    address,
+    inputValue,
+    depositQuote,
+  ])
+
+  const actionBtn = useMemo(
+    () => (
+      <TransactionButton
+        className={btnClassName}
+        disabled={sumBigNumbersFromState().eq(0) || disabled}
+        onClick={() => buttonAction()}
+        onSuccess={() => postButtonAction()}
+        label={btnLabel}
+        pendingLabel={pendingLabel}
+      />
+    ),
+    [
+      buttonAction,
+      postButtonAction,
+      btnLabel,
+      pendingLabel,
+      btnClassName,
+      isFromBalanceEnough,
+      isAllowanceEnough,
+    ]
   )
 
   return (
