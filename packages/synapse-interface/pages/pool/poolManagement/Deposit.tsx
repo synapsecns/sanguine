@@ -19,6 +19,12 @@ import { QUOTE_POLLING_INTERVAL } from '@/constants/bridge' // TODO CHANGE
 import { PoolData, PoolUserData } from '@types'
 import LoadingTokenInput from '@components/loading/LoadingTokenInput'
 
+const DEFAULT_DEPOSIT_QUOTE = {
+  priceImpact: undefined,
+  allowances: {},
+  routerAddress: '',
+}
+
 const Deposit = ({
   pool,
   chainId,
@@ -43,7 +49,7 @@ const Deposit = ({
     priceImpact: BigNumber
     allowances: Record<string, BigNumber>
     routerAddress: string
-  }>({ priceImpact: undefined, allowances: {}, routerAddress: '' })
+  }>(DEFAULT_DEPOSIT_QUOTE)
   const [time, setTime] = useState(Date.now())
   const { synapseSDK } = useSynapseContext()
 
@@ -100,6 +106,8 @@ const Deposit = ({
           allowances,
           routerAddress: pool.swapAddresses[chainId],
         })
+      } else {
+        setDepositQuote(DEFAULT_DEPOSIT_QUOTE)
       }
     } catch (e) {
       console.log(e)
@@ -152,6 +160,7 @@ const Deposit = ({
       initInputValue.str[tokenObj.token.addresses[chainId]] = ''
     })
     setInputValue(initInputValue)
+    setDepositQuote(DEFAULT_DEPOSIT_QUOTE)
   }
 
   let isFromBalanceEnough = true
@@ -195,19 +204,6 @@ const Deposit = ({
 
     return properties
   }
-  // some messy button gen stuff (will re-write)
-  // let isFromBalanceEnough = true
-  // let isAllowanceEnough = true
-  // let btnLabel = 'Deposit'
-  // let pendingLabel = 'Depositing funds...'
-  // let btnClassName = ''
-  // let buttonAction = () =>
-  //   deposit(pool, 'ONE_TENTH', null, inputValue.bn, chainId)
-  // let postButtonAction = () => {
-  //   console.log('post button actoin hit')
-  //   // refetchCallback()
-  //   resetInputs()
-  // }
 
   for (const [tokenAddr, amount] of Object.entries(inputValue.bn)) {
     if (
@@ -226,16 +222,6 @@ const Deposit = ({
       }
     })
   }
-
-  // if (!isFromBalanceEnough) {
-  //   btnLabel = `Insufficient Balance`
-  // } else if (!isAllowanceEnough) {
-  //   buttonAction = () => approve(pool, depositQuote, inputValue.bn, chainId)
-  //   btnLabel = `Approve Token(s)`
-  //   pendingLabel = `Approving Token(s)`
-  //   btnClassName = 'from-[#feba06] to-[#FEC737]'
-  //   postButtonAction = () => setTime(0)
-  // }
 
   const {
     label: btnLabel,
