@@ -161,7 +161,7 @@ const BridgePage = ({
     let isCancelled = false
 
     const handleChange = async () => {
-      // await timeout(250) // debounce by 250ms
+      await timeout(250) // debounce by 250ms
       if (!isCancelled) {
         if (
           fromChainId &&
