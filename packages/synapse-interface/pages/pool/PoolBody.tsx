@@ -28,6 +28,7 @@ const PoolBody = ({
   const [poolUserData, setPoolUserData] = useState(undefined)
   const [poolAPYData, setPoolAPYData] = useState(undefined)
 
+  console.log('poolUserData: ', poolUserData)
   useEffect(() => {
     if (connectedChainId && pool && poolChainId) {
       // TODO - separate the apy and tvl so they load async.
