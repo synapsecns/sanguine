@@ -204,7 +204,13 @@ const Withdraw = ({
       },
     }
 
-    if (!isFromBalanceEnough || inputValue.bn.eq(0)) {
+    if (inputValue.bn.eq(0)) {
+      properties.label = `Enter amount`
+      properties.disabled = true
+      return properties
+    }
+
+    if (!isFromBalanceEnough) {
       properties.label = `Insufficient Balance`
       properties.disabled = true
       return properties
@@ -220,6 +226,8 @@ const Withdraw = ({
       properties.postButtonAction = () => setTime(0)
       return properties
     }
+
+    return properties
   }
 
   // let btnLabel = 'Withdraw'
