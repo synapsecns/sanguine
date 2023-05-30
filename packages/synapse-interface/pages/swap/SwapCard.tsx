@@ -100,6 +100,7 @@ const SwapCard = ({
 
   useEffect(() => {
     if (approveTx) {
+      console.log('approveTx:', approveTx)
       setApproveTx(null)
     }
   }, [fromInput])
@@ -674,7 +675,8 @@ const SwapCard = ({
       fromToken?.addresses[connectedChainId] !== '' &&
       fromToken?.addresses[connectedChainId] !== AddressZero &&
       swapQuote?.allowance &&
-      swapQuote?.allowance?.lt(fromInput.bigNum)
+      swapQuote?.allowance?.lt(fromInput.bigNum) &&
+      !approveTx
     ) {
       properties.buttonAction = () =>
         approveToken(
@@ -686,7 +688,9 @@ const SwapCard = ({
       properties.pendingLabel = `Approving ${fromToken.symbol}`
       properties.className = 'from-[#feba06] to-[#FEC737]'
       properties.disabled = false
-      properties.postButtonAction = () => null
+      properties.postButtonAction = () => {
+        setApproveTx('approved')
+      }
       return properties
     }
 
