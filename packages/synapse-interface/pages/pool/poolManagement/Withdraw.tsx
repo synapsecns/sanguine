@@ -1,5 +1,5 @@
 import _ from 'lodash'
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useMemo } from 'react'
 import Slider from 'react-input-slider'
 import { stringToBigNum } from '@/utils/stringToBigNum'
 
@@ -204,7 +204,7 @@ const Withdraw = ({
       },
     }
 
-    if (!isFromBalanceEnough) {
+    if (!isFromBalanceEnough || inputValue.bn.eq(0)) {
       properties.label = `Insufficient Balance`
       properties.disabled = true
       return properties
@@ -263,16 +263,44 @@ const Withdraw = ({
   //   btnClassName = 'from-[#feba06] to-[#FEC737]'
   //   postButtonAction = () => setTime(0)
   // }
-  const actionBtn = (
-    <TransactionButton
-      className={btnClassName}
-      disabled={inputValue.bn.eq(0) || !isFromBalanceEnough}
-      onClick={() => buttonAction()}
-      onSuccess={() => postButtonAction()}
-      label={btnLabel}
-      pendingLabel={pendingLabel}
-    />
+
+  const {
+    label: btnLabel,
+    pendingLabel,
+    className: btnClassName,
+    buttonAction,
+    postButtonAction,
+    disabled,
+  } = useMemo(getButtonProperties, [
+    isFromBalanceEnough,
+    isAllowanceEnough,
+    address,
+    inputValue,
+    withdrawQuote,
+  ])
+
+  const actionBtn = useMemo(
+    () => (
+      <TransactionButton
+        className={btnClassName}
+        disabled={disabled}
+        onClick={() => buttonAction()}
+        onSuccess={() => postButtonAction()}
+        label={btnLabel}
+        pendingLabel={pendingLabel}
+      />
+    ),
+    [
+      buttonAction,
+      postButtonAction,
+      btnLabel,
+      pendingLabel,
+      btnClassName,
+      isFromBalanceEnough,
+      isAllowanceEnough,
+    ]
   )
+
   return (
     <div>
       <div className="percentage">
