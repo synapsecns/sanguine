@@ -30,10 +30,11 @@ const PoolBody = ({
   const handleGetPoolData = useCallback(() => {
     getPoolData(poolChainId, pool, address ?? AddressZero, false)
       .then((res) => {
-        setPoolData(res)
+        return setPoolData(res)
       })
       .catch((err) => {
         console.log('Could not get pool data', err)
+        return err
       })
   }, [poolChainId, pool, address])
 
@@ -41,10 +42,13 @@ const PoolBody = ({
     if (address) {
       getPoolData(poolChainId, pool, address, true)
         .then((res) => {
-          setPoolUserData(res)
+          console.log('res from callback: ', res)
+
+          return setPoolUserData(res)
         })
         .catch((err) => {
           console.log('Could not get pool data', err)
+          return err
         })
     }
   }, [poolChainId, pool, address])
@@ -125,6 +129,7 @@ const PoolBody = ({
               chainId={connectedChainId}
               poolData={poolData}
               poolUserData={poolUserData}
+              refetchCallback={handleGetUserPoolData}
               // poolStakingLink={STAKE_PATH}
               // poolStakingLinkText="Stake" // check this
             />

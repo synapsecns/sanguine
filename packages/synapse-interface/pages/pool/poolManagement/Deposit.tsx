@@ -25,12 +25,14 @@ const Deposit = ({
   address,
   poolData,
   poolUserData,
+  refetchCallback,
 }: {
   pool: Token
   chainId: number
   address: string
   poolData: PoolData
   poolUserData: PoolUserData
+  refetchCallback: () => void
 }) => {
   // todo store sum in here?
   const [inputValue, setInputValue] = useState<{
@@ -161,6 +163,8 @@ const Deposit = ({
   let buttonAction = () =>
     deposit(pool, 'ONE_TENTH', null, inputValue.bn, chainId)
   let postButtonAction = () => {
+    console.log('post button actoin hit')
+    // refetchCallback()
     resetInputs()
   }
 
@@ -202,6 +206,7 @@ const Deposit = ({
     />
   )
 
+  console.log('postActionButton: ', postButtonAction)
   return (
     <div className="flex-col">
       <div className="px-2 pt-1 pb-4 bg-bgLight rounded-xl">

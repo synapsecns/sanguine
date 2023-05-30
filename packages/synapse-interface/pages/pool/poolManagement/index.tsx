@@ -12,12 +12,14 @@ const PoolManagement = ({
   chainId,
   poolData,
   poolUserData,
+  refetchCallback,
 }: {
   pool: Token
   address: string
   chainId: number
   poolData: PoolData
   poolUserData: PoolUserData
+  refetchCallback: () => void
 }) => {
   const [cardNav, setCardNav] = useState(getLiquidityMode('#addLiquidity')) // 'addLiquidity'
   return (
@@ -38,6 +40,7 @@ const PoolManagement = ({
               chainId={chainId}
               poolData={poolData}
               poolUserData={poolUserData}
+              refetchCallback={refetchCallback}
             />
           )}
           {cardNav === 'removeLiquidity' &&
