@@ -43,21 +43,16 @@ const PoolManagement = ({
               refetchCallback={refetchCallback}
             />
           )}
-          {cardNav === 'removeLiquidity' &&
-            (pool && poolUserData && poolData && address ? (
-              <Withdraw
-                pool={pool}
-                chainId={chainId}
-                address={address}
-                poolData={poolData}
-                poolUserData={poolUserData}
-                refetchCallback={refetchCallback}
-              />
-            ) : (
-              <div className="w-full text-center mt-[80px] text-sm text-white">
-                <p>connect wallet</p>
-              </div>
-            ))}
+          {cardNav === 'removeLiquidity' && (
+            <Withdraw
+              pool={pool}
+              chainId={chainId}
+              address={address}
+              poolData={poolData}
+              poolUserData={poolUserData}
+              refetchCallback={refetchCallback}
+            />
+          )}
         </div>
       </div>
     </div>
