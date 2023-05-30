@@ -68,7 +68,7 @@ export const approve = async (
             })
           }
 
-          return approveTx?.hash
+          return approveTx
         })
       } catch (error) {
         toast.dismiss(pendingPopup)
@@ -134,7 +134,7 @@ export const deposit = async (
       duration: 10000,
     })
 
-    return tx?.transactionHash ?? tx
+    return tx
   } catch (error) {
     console.log('error from deposit: ', error)
     toast.dismiss(pendingPopup)
