@@ -364,7 +364,7 @@ const SwapCard = ({
   - will dismiss toast asking user to connect wallet once wallet has been connected
   */
   useEffect(() => {
-    if (address) {
+    if (address && errorPopup) {
       toast.dismiss(errorPopup)
     }
   }, [address, errorPopup])
