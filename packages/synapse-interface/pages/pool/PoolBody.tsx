@@ -42,8 +42,6 @@ const PoolBody = ({
     if (address) {
       getPoolData(poolChainId, pool, address, true)
         .then((res) => {
-          console.log('res from callback: ', res)
-
           return setPoolUserData(res)
         })
         .catch((err) => {
@@ -56,10 +54,8 @@ const PoolBody = ({
   useEffect(() => {
     if (connectedChainId && pool && poolChainId) {
       // TODO - separate the apy and tvl so they load async.
-
       handleGetPoolData()
       handleGetUserPoolData()
-
       getPoolApyData(poolChainId, pool)
         .then((res) => {
           if (Object.keys(res).length > 0) {

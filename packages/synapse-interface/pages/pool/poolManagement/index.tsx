@@ -51,6 +51,7 @@ const PoolManagement = ({
                 address={address}
                 poolData={poolData}
                 poolUserData={poolUserData}
+                refetchCallback={refetchCallback}
               />
             ) : (
               <div className="w-full text-center mt-[80px] text-sm text-white">

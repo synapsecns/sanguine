@@ -29,12 +29,14 @@ const Withdraw = ({
   address,
   poolData,
   poolUserData,
+  refetchCallback,
 }: {
   pool: any
   chainId: number
   address: string
   poolData: PoolData
   poolUserData: PoolUserData
+  refetchCallback: () => void
 }) => {
   const [inputValue, setInputValue] = useState<{
     bn: BigNumber
