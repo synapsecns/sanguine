@@ -67,10 +67,13 @@ export const approve = async (
               duration: 10000,
             })
           }
+
+          return approveTx?.hash
         })
       } catch (error) {
         toast.dismiss(pendingPopup)
         txErrorHandler(error)
+        return error
       }
     }
   }

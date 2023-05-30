@@ -37,7 +37,7 @@ const PoolPage = () => {
     [pool]
   )
 
-  useWatchPendingTransactions({
+  const pendingTxns = useWatchPendingTransactions({
     listener: (hashes) => console.log(hashes),
   })
 
