@@ -13,7 +13,7 @@ import { ALL } from '@constants/withdrawTypes'
 import Grid from '@tw/Grid'
 import TokenInput from '@components/TokenInput'
 import RadioButton from '@components/buttons/RadioButton'
-import RecievedTokenSection from '../components/RecievedTokenSection'
+import ReceivedTokenSection from '../components/RecievedTokenSection'
 import PriceImpactDisplay from '../components/PriceImpactDisplay'
 
 import { TransactionButton } from '@/components/buttons/TransactionButton'
@@ -418,7 +418,7 @@ const Withdraw = ({
       >
         <Grid cols={{ xs: 2 }}>
           <div>
-            <RecievedTokenSection
+            <ReceivedTokenSection
               poolTokens={pool?.poolTokens ?? []}
               withdrawQuote={withdrawQuote}
               chainId={chainId}

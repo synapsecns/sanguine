@@ -1,7 +1,8 @@
 import _ from 'lodash'
 import { formatBNToString } from '@utils/bignumber/format'
 import { Token } from '@types'
-const RecievedTokenSection = ({
+
+const ReceivedTokenSection = ({
   withdrawQuote,
   poolTokens,
   chainId,
@@ -33,7 +34,7 @@ const RecievedTokenSection = ({
                     2
                   )}
                 </span>
-                <span className="text-sm px-1 font-medium text-secondaryTextColor text-opacity-50">
+                <span className="px-1 text-sm font-medium text-opacity-50 text-secondaryTextColor">
                   {token.symbol}
                 </span>
               </div>
@@ -42,4 +43,4 @@ const RecievedTokenSection = ({
     </div>
   )
 }
-export default RecievedTokenSection
+export default ReceivedTokenSection
