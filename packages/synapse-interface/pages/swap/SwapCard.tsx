@@ -100,7 +100,6 @@ const SwapCard = ({
 
   useEffect(() => {
     if (approveTx) {
-      console.log('approveTx:', approveTx)
       setApproveTx(null)
     }
   }, [fromInput])

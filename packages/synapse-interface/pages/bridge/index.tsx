@@ -155,13 +155,13 @@ const BridgePage = ({
   /*
   useEffect Triggers: toToken, fromInput, toChainId, time
   - Gets a quote when the polling function is executed or any of the bridge attributes are altered.
-  - Debounce quote call by calling quote price AFTER user has stopped typing for 500ms
+  - Debounce quote call by calling quote price AFTER user has stopped typing for 250ms
   */
   useEffect(() => {
     let isCancelled = false
 
     const handleChange = async () => {
-      await timeout(400) // debounce by 400ms
+      // await timeout(250) // debounce by 250ms
       if (!isCancelled) {
         if (
           fromChainId &&
