@@ -163,7 +163,7 @@ const Withdraw = ({
     if (poolUserData.lpTokenBalance.isZero()) {
       setInputValue({ bn: bigNum, str: value })
 
-      setPercentage(100)
+      setPercentage(0)
       return
     }
     const pn = bigNum
@@ -200,6 +200,7 @@ const Withdraw = ({
         ),
       postButtonAction: () => {
         refetchCallback()
+        setPercentage(0)
         resetInput()
       },
     }
