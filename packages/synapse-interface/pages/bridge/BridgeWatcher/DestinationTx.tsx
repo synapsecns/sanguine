@@ -25,6 +25,7 @@ import {
 import { remove0xPrefix } from '@/utils/remove0xPrefix'
 import EventCard from './EventCard'
 import BlockCountdown from './BlockCountdown'
+import { CreditedTransactionItem } from '@components/TransactionItems'
 
 const DestinationTx = (fromEvent: BridgeWatcherTx) => {
   const [toEvent, setToEvent] = useState<BridgeWatcherTx>(undefined)
@@ -128,12 +129,12 @@ const DestinationTx = (fromEvent: BridgeWatcherTx) => {
 
   // Listens for confirmations to complete and if so, recheck destination chain for logs
   useEffect(() => {
-    if (completedConf && toSynapseContract && !toEvent && attempted) {
+    if (completedConf && toSynapseContract && attempted) {
       getToBridgeEvent().then((tx) => {
         setToEvent(tx)
       })
     }
-  }, [completedConf, toEvent, fromEvent])
+  }, [completedConf, toEvent, fromEvent, toSynapseContract])
 
   // Listens for SynapseContract to be set and if so, will check destination chain for logs if there is no toEvent
   useEffect(() => {
@@ -144,11 +145,17 @@ const DestinationTx = (fromEvent: BridgeWatcherTx) => {
       })
     }
     return
-  }, [toSynapseContract, toEvent])
+  }, [toSynapseContract])
 
   useEffect(() => {
     setToSigner(toSignerRaw)
   }, [toSignerRaw])
+
+  useEffect(() => {
+    console.log('fromEvent:', fromEvent)
+    console.log('toEvent.kappa:', toEvent?.kappa)
+    console.log('toEvent:', toEvent)
+  }, [toEvent, fromEvent])
 
   return (
     <div className="flex items-center">
@@ -173,17 +180,19 @@ const DestinationTx = (fromEvent: BridgeWatcherTx) => {
         )}
       </div>
 
-      <div className="flex-initial w-auto h-full align-middle mt-[22px]">
-        <BlockCountdown
-          fromEvent={fromEvent}
-          toEvent={toEvent ?? null}
-          setCompletedConf={setCompletedConf}
-        />
-      </div>
-
-      <div className="flex-initial w-full">
-        {toEvent ? <EventCard {...toEvent} /> : null}
-      </div>
+      {toEvent ? (
+        <div className="flex-initial w-full">
+          <EventCard {...toEvent} />
+        </div>
+      ) : (
+        <div className="flex-initial w-auto h-full align-middle mt-[22px]">
+          <BlockCountdown
+            fromEvent={fromEvent}
+            toEvent={toEvent ?? null}
+            setCompletedConf={setCompletedConf}
+          />
+        </div>
+      )}
     </div>
   )
 }

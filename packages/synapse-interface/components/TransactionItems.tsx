@@ -1,6 +1,7 @@
 import { CHAINS_BY_ID } from '@constants/chains'
 import { getNetworkLinkTextColor } from '@styles/chains'
 import { Chain } from '@types'
+
 export const CheckingConfPlaceholder = ({ chain }: { chain: Chain }) => {
   return (
     <div className="flex items-center p-1 max-w-[80%] rounded-lg ">
