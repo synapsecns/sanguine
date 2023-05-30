@@ -154,19 +154,55 @@ const Deposit = ({
     setInputValue(initInputValue)
   }
 
-  // some messy button gen stuff (will re-write)
   let isFromBalanceEnough = true
   let isAllowanceEnough = true
-  let btnLabel = 'Deposit'
-  let pendingLabel = 'Depositing funds...'
-  let btnClassName = ''
-  let buttonAction = () =>
-    deposit(pool, 'ONE_TENTH', null, inputValue.bn, chainId)
-  let postButtonAction = () => {
-    console.log('post button actoin hit')
-    // refetchCallback()
-    resetInputs()
+
+  const getButtonProperties = () => {
+    let properties = {
+      label: 'Deposit',
+      pendingLabel: 'Depositing funds...',
+      className: '',
+      disabled: true,
+      buttonAction: () =>
+        deposit(pool, 'ONE_TENTH', null, inputValue.bn, chainId),
+      postButtonAction: () => {
+        console.log('Post Button Action')
+        refetchCallback()
+        resetInputs()
+      },
+    }
+
+    if (!isFromBalanceEnough) {
+      properties.label = `Insufficient Balance`
+      properties.disabled = true
+      return properties
+    }
+
+    if (!isAllowanceEnough) {
+      properties.label = `Approve Token(s)`
+      properties.pendingLabel = `Approving Token(s)`
+      properties.className = 'from-[#feba06] to-[#FEC737]'
+      properties.buttonAction = () =>
+        approve(pool, depositQuote, inputValue.bn, chainId)
+      properties.postButtonAction = () => setTime(0)
+      return properties
+    }
+
+    return properties
   }
+  // some messy button gen stuff (will re-write)
+  // let isFromBalanceEnough = true
+  // let isAllowanceEnough = true
+  // let btnLabel = 'Deposit'
+  // let pendingLabel = 'Depositing funds...'
+  // let btnClassName = ''
+  // let buttonAction = () =>
+  //   deposit(pool, 'ONE_TENTH', null, inputValue.bn, chainId)
+  // let postButtonAction = () => {
+  //   console.log('post button actoin hit')
+  //   // refetchCallback()
+  //   resetInputs()
+  // }
 
   for (const [tokenAddr, amount] of Object.entries(inputValue.bn)) {
     if (
@@ -186,15 +222,15 @@ const Deposit = ({
     })
   }
 
-  if (!isFromBalanceEnough) {
-    btnLabel = `Insufficient Balance`
-  } else if (!isAllowanceEnough) {
-    buttonAction = () => approve(pool, depositQuote, inputValue.bn, chainId)
-    btnLabel = `Approve Token(s)`
-    pendingLabel = `Approving Token(s)`
-    btnClassName = 'from-[#feba06] to-[#FEC737]'
-    postButtonAction = () => setTime(0)
-  }
+  // if (!isFromBalanceEnough) {
+  //   btnLabel = `Insufficient Balance`
+  // } else if (!isAllowanceEnough) {
+  //   buttonAction = () => approve(pool, depositQuote, inputValue.bn, chainId)
+  //   btnLabel = `Approve Token(s)`
+  //   pendingLabel = `Approving Token(s)`
+  //   btnClassName = 'from-[#feba06] to-[#FEC737]'
+  //   postButtonAction = () => setTime(0)
+  // }
   const actionBtn = (
     <TransactionButton
       className={btnClassName}
@@ -206,7 +242,6 @@ const Deposit = ({
     />
   )
 
-  console.log('postActionButton: ', postButtonAction)
   return (
     <div className="flex-col">
       <div className="px-2 pt-1 pb-4 bg-bgLight rounded-xl">
