@@ -599,12 +599,12 @@ const BridgePage = ({
       // TODO 1) make dynamic, 2) clean this
 
       const originMinWithSlippage = subtractSlippage(
-        originQuery?.minAmountOut ?? Zero,
+        originQuery?.[2] ?? Zero,
         'ONE_TENTH',
         null
       )
       const destMinWithSlippage = subtractSlippage(
-        destQuery?.minAmountOut ?? Zero,
+        destQuery?.[2] ?? Zero,
         'ONE_TENTH',
         null
       )
