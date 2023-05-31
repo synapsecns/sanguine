@@ -280,6 +280,10 @@ func (e Executor) Execute(parentCtx context.Context, message types.Message) (_ b
 		attribute.Int(metrics.Destination, int(message.DestinationDomain())),
 	))
 
+	span.AddEvent("sanity check", trace.WithAttributes(
+		attribute.Int(metrics.ChainID, int(1)),
+	))
+
 	defer func() {
 		metrics.EndSpanWithErr(span, err)
 	}()
