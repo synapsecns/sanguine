@@ -28,7 +28,9 @@ class SynapseSDK {
   public synapseRouters: SynapseRouters
   public providers: { [x: number]: Provider }
   public bridgeAbi: Interface = new Interface(bridgeAbi)
-
+  public bridgeTokenCache: {
+    [x: string]: { symbol: string; token: string }[]
+  } = {}
   constructor(chainIds: number[], providers: Provider[]) {
     invariant(
       chainIds.length === providers.length,
@@ -66,32 +68,45 @@ class SynapseSDK {
     const destRouter: SynapseRouter = this.synapseRouters[destChainId]
     const routerAddress = originRouter.routerContract.address
 
-    const bridgeTokens =
-      await destRouter.routerContract.getConnectedBridgeTokens(tokenOut)
+    let bridgeTokens = this.bridgeTokenCache[tokenOut]
+    if (!bridgeTokens) {
+      const routerBridgeTokens =
+        await destRouter.routerContract.getConnectedBridgeTokens(tokenOut)
 
-    if (bridgeTokens.length === 0) {
-      throw Error('No bridge tokens found for this route')
+      // Filter tokens with a valid symbol and address
+      bridgeTokens = routerBridgeTokens.filter(
+        (bridgeToken) =>
+          bridgeToken.symbol.length && bridgeToken.token !== AddressZero
+      )
+
+      // Throw error if no valid bridge tokens found
+      if (!bridgeTokens?.length) {
+        throw new Error('No bridge tokens found for this route')
+      }
+
+      // Store only the symbol and token fields in the cache
+      bridgeTokens = bridgeTokens.map(({ symbol, token }) => ({
+        symbol,
+        token,
+      }))
+
+      // Cache the bridge tokens
+      this.bridgeTokenCache[tokenOut] = bridgeTokens
     }
-
-    // Filter out tokens with no symbol or address
-    const filteredTokens = bridgeTokens.filter(
-      (bridgeToken) =>
-        bridgeToken.symbol.length !== 0 && bridgeToken.token !== AddressZero
-    )
 
     // Get quotes from origin SynapseRouter
     const originQueries: RawQuery[] =
       await originRouter.routerContract.getOriginAmountOut(
         tokenIn,
-        filteredTokens.map((bridgeToken) => bridgeToken.symbol),
+        bridgeTokens.map((bridgeToken) => bridgeToken.symbol),
         amountIn
       )
 
     // create requests for destination router
     const requests: { symbol: string; amountIn: BigintIsh }[] = []
-    for (let i = 0; i < filteredTokens.length; i++) {
+    for (let i = 0; i < bridgeTokens.length; i++) {
       requests.push({
-        symbol: filteredTokens[i].symbol,
+        symbol: bridgeTokens[i].symbol,
         amountIn: originQueries[i].minAmountOut,
       })
     }
@@ -119,7 +134,7 @@ class SynapseSDK {
         maxAmountOut = destQueries[i].minAmountOut
         rawOriginQuery = originQueries[i]
         rawDestQuery = destQueries[i]
-        destInToken = filteredTokens[i].token
+        destInToken = bridgeTokens[i].token
       }
     }
 
