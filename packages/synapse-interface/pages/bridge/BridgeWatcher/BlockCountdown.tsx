@@ -117,7 +117,7 @@ const BlockCountdownCircle = ({
         stroke-current stroke-[8px] text-gray-600
         bg-transparent
         fill-none
-        w-16 h-16  -mb-3
+        w-14 h-14   -mb-3
       `}
     >
       <text
