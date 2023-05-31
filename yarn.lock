@@ -2691,7 +2691,7 @@
   dependencies:
     "@ethersproject/logger" "^5.7.0"
 
-"@ethersproject/providers@5.7.2":
+"@ethersproject/providers@5.7.2", "@ethersproject/providers@^5.7.2":
   version "5.7.2"
   resolved "https://registry.npmjs.org/@ethersproject/providers/-/providers-5.7.2.tgz"
   integrity sha512-g34EWZ1WWAVgr4aptGlVBF8mhl3VWjv+8hoAnzStu8Ah22VHBsuGzP17eb6xDVRzw895G4W7vvx60lFFur/1Rg==
@@ -10778,7 +10778,7 @@ compare-func@^2.0.0:
     array-ify "^1.0.0"
     dot-prop "^5.1.0"
 
-component-emitter@^1.2.1:
+component-emitter@^1.2.1, component-emitter@^1.3.0:
   version "1.3.0"
   resolved "https://registry.npmjs.org/component-emitter/-/component-emitter-1.3.0.tgz"
   integrity sha512-Rd3se6QB+sO1TwqZjscQrurpEPIfO0/yYnSin6Q/rD3mOutHvUrCAhJub3r90uNb+SESBuE0QYoB90YdfatsRg==
@@ -11021,7 +11021,7 @@ cookie@^0.4.1:
   resolved "https://registry.npmjs.org/cookie/-/cookie-0.4.2.tgz"
   integrity sha512-aSWTXFzaKWkvHO1Ny/s+ePFpvKsPnjc551iI41v3ny/ow6tBG5Vd+FuqGNhh1LxOmVzOlGUriIlOaokOvhaStA==
 
-cookiejar@^2.1.1:
+cookiejar@^2.1.1, cookiejar@^2.1.4:
   version "2.1.4"
   resolved "https://registry.npmjs.org/cookiejar/-/cookiejar-2.1.4.tgz"
   integrity sha512-LDx6oHrK+PhzLKJU9j5S7/Y3jM/mUHvD/DeI1WQmJn652iPC5Y4TBzC9l+5OMOXlyTTA+SmVUPm0HQUwpD5Jqw==
@@ -12137,7 +12137,7 @@ detect-port@^1.3.0:
     address "^1.0.1"
     debug "4"
 
-dezalgo@^1.0.0:
+dezalgo@^1.0.0, dezalgo@^1.0.4:
   version "1.0.4"
   resolved "https://registry.npmjs.org/dezalgo/-/dezalgo-1.0.4.tgz"
   integrity sha512-rXSP0bf+5n0Qonsb+SVVfNfIsimO4HEtmnIpPHY8Q1UCzKlQrDMfdobr8nJOOsRgWCyMRqeSBQzmWUMq7zvVig==
@@ -13717,7 +13717,7 @@ expect@^29.0.0:
     jest-message-util "^29.5.0"
     jest-util "^29.5.0"
 
-express@^4.14.0, express@^4.17.1, express@^4.17.3:
+express@^4.14.0, express@^4.17.1, express@^4.17.3, express@^4.18.2:
   version "4.18.2"
   resolved "https://registry.npmjs.org/express/-/express-4.18.2.tgz"
   integrity sha512-5/PsL6iGPdfQ/lKM1UuielYgv3BUoJfz1aUwU9vHZ+J7gyvwdQXFEBIEIaxeGf0GIcreATNyBExtalisDbuMqQ==
@@ -13893,7 +13893,7 @@ fast-redact@^3.0.0:
   resolved "https://registry.npmjs.org/fast-redact/-/fast-redact-3.1.2.tgz"
   integrity sha512-+0em+Iya9fKGfEQGcd62Yv6onjBmmhV1uh86XVfOU8VwAe6kaFdQCWI9s0/Nnugx5Vd9tdbZ7e6gE2tR9dzXdw==
 
-fast-safe-stringify@^2.0.6:
+fast-safe-stringify@^2.0.6, fast-safe-stringify@^2.1.1:
   version "2.1.1"
   resolved "https://registry.npmjs.org/fast-safe-stringify/-/fast-safe-stringify-2.1.1.tgz"
   integrity sha512-W+KJc2dmILlPplD/H4K9l9LcAHAfPtP6BY84uVLXQ6Evcz9Lcg33Y2z1IVblT6xdY54PXYVHEv+0Wpq8Io6zkA==
@@ -14305,6 +14305,16 @@ format@^0.2.0:
   version "0.2.2"
   resolved "https://registry.npmjs.org/format/-/format-0.2.2.tgz"
   integrity sha512-wzsgA6WOq+09wrU1tsJ09udeR/YZRaeArL9e1wPbFg3GG2yDnC2ldKpxs4xunpFF9DgqCqOIra3bc1HWrJ37Ww==
+
+formidable@^2.1.2:
+  version "2.1.2"
+  resolved "https://registry.yarnpkg.com/formidable/-/formidable-2.1.2.tgz#fa973a2bec150e4ce7cac15589d7a25fc30ebd89"
+  integrity sha512-CM3GuJ57US06mlpQ47YcunuUZ9jpm8Vx+P2CGt2j7HpgkKZO/DJYQ0Bobim8G6PFQmK5lOqOOdUXboU+h73A4g==
+  dependencies:
+    dezalgo "^1.0.4"
+    hexoid "^1.0.0"
+    once "^1.4.0"
+    qs "^6.11.0"
 
 forwarded@0.2.0:
   version "0.2.0"
@@ -15347,6 +15357,11 @@ he@1.2.0, he@^1.2.0:
   version "1.2.0"
   resolved "https://registry.npmjs.org/he/-/he-1.2.0.tgz"
   integrity sha512-F/1DnUGPopORZi0ni+CvrCgHQ5FyEAHRLSApuYWMmrbSwoN2Mn/7k+Gl38gJnR7yyDZk6WLXwiGod1JOWNDKGw==
+
+hexoid@^1.0.0:
+  version "1.0.0"
+  resolved "https://registry.yarnpkg.com/hexoid/-/hexoid-1.0.0.tgz#ad10c6573fb907de23d9ec63a711267d9dc9bc18"
+  integrity sha512-QFLV0taWQOZtvIRIAdBChesmogZrtuXvVWsFHZTk2SU+anspqZ2vMnoLg7IE1+Uk16N19APic1BuF8bC8c2m5g==
 
 hey-listen@^1.0.8:
   version "1.0.8"
@@ -18651,7 +18666,7 @@ merkle-patricia-tree@^4.2.4:
     readable-stream "^3.6.0"
     semaphore-async-await "^1.5.1"
 
-methods@~1.1.2:
+methods@^1.1.2, methods@~1.1.2:
   version "1.1.2"
   resolved "https://registry.npmjs.org/methods/-/methods-1.1.2.tgz"
   integrity sha512-iclAHeNqNm68zFtnZ0e+1L2yUIdvzNoauKU4WBA3VvH/vPFieF7qfRlwUZU+DA9P9bPXIS90ulxoUoCH23sV2w==
@@ -18800,7 +18815,7 @@ mime@1.6.0:
   resolved "https://registry.npmjs.org/mime/-/mime-1.6.0.tgz"
   integrity sha512-x0Vn8spI+wuJ1O6S7gnbaQg8Pxh4NNHb7KSINmEWKiPE4RKOplvijn+NkmYmmRgP68mc70j2EbeTFRsrswaQeg==
 
-mime@^2.4.4:
+mime@2.6.0, mime@^2.4.4:
   version "2.6.0"
   resolved "https://registry.npmjs.org/mime/-/mime-2.6.0.tgz"
   integrity sha512-USPkMeET31rOMiarsBNIHZKLGgvKc/LrjofAnBlOttf5ajRvqiRA8QsenbcooctK6d6Ts6aqZXBA+XbkKthiQg==
@@ -21692,6 +21707,13 @@ qs@^6.10.0, qs@^6.10.3, qs@^6.7.0, qs@^6.9.4:
   version "6.11.1"
   resolved "https://registry.npmjs.org/qs/-/qs-6.11.1.tgz"
   integrity sha512-0wsrzgTz/kAVIeuxSjnpGC56rzYtr6JT/2BwEvMaPhFIoYa1aGO8LbzuU1R0uUYQkLpWBTOj0l/CLAJB64J6nQ==
+  dependencies:
+    side-channel "^1.0.4"
+
+qs@^6.11.0:
+  version "6.11.2"
+  resolved "https://registry.yarnpkg.com/qs/-/qs-6.11.2.tgz#64bea51f12c1f5da1bc01496f48ffcff7c69d7d9"
+  integrity sha512-tDNIz22aBzCDxLtVH++VnTfzxlfeK5CbqohpSqpJgj1Wg/cQbStNAz3NuqCs5vV+pjBsK4x4pN9HlVh7rcYRiA==
   dependencies:
     side-channel "^1.0.4"
 
@@ -24623,10 +24645,34 @@ sucrase@^3.29.0:
     pirates "^4.0.1"
     ts-interface-checker "^0.1.9"
 
+superagent@^8.0.5:
+  version "8.0.9"
+  resolved "https://registry.yarnpkg.com/superagent/-/superagent-8.0.9.tgz#2c6fda6fadb40516515f93e9098c0eb1602e0535"
+  integrity sha512-4C7Bh5pyHTvU33KpZgwrNKh/VQnvgtCSqPRfJAUdmrtSYePVzVg4E4OzsrbkhJj9O7SO6Bnv75K/F8XVZT8YHA==
+  dependencies:
+    component-emitter "^1.3.0"
+    cookiejar "^2.1.4"
+    debug "^4.3.4"
+    fast-safe-stringify "^2.1.1"
+    form-data "^4.0.0"
+    formidable "^2.1.2"
+    methods "^1.1.2"
+    mime "2.6.0"
+    qs "^6.11.0"
+    semver "^7.3.8"
+
 superstruct@^0.14.2:
   version "0.14.2"
   resolved "https://registry.npmjs.org/superstruct/-/superstruct-0.14.2.tgz"
   integrity sha512-nPewA6m9mR3d6k7WkZ8N8zpTWfenFH3q9pA2PkuiZxINr9DKB2+40wEQf0ixn8VaGuJ78AB6iWOtStI+/4FKZQ==
+
+supertest@^6.3.3:
+  version "6.3.3"
+  resolved "https://registry.yarnpkg.com/supertest/-/supertest-6.3.3.tgz#42f4da199fee656106fd422c094cf6c9578141db"
+  integrity sha512-EMCG6G8gDu5qEqRQ3JjjPs6+FYT1a7Hv5ApHvtSghmOFJYtsU5S+pSb6Y2EUeCEY3CmEL3mmQ8YWlPOzQomabA==
+  dependencies:
+    methods "^1.1.2"
+    superagent "^8.0.5"
 
 supports-color@8.1.1, supports-color@^8.0.0, supports-color@^8.1.1:
   version "8.1.1"
