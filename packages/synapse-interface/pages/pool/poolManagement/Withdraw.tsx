@@ -181,7 +181,6 @@ const Withdraw = ({
     }
   }
 
-  // some messy button gen stuff (will re-write)
   let isFromBalanceEnough = true
   let isAllowanceEnough = true
 
@@ -235,23 +234,6 @@ const Withdraw = ({
     return properties
   }
 
-  // let btnLabel = 'Withdraw'
-  // let pendingLabel = 'Withdrawing funds...'
-  // let btnClassName = ''
-  // let buttonAction = () =>
-  //   withdraw(
-  //     pool,
-  //     'ONE_TENTH',
-  //     null,
-  //     inputValue.bn,
-  //     chainId,
-  //     withdrawType,
-  //     withdrawQuote.outputs
-  //   )
-  // let postButtonAction = () => {
-  //   resetInput()
-  // }
-
   if (
     withdrawQuote.allowance &&
     !inputValue.bn.isZero() &&
@@ -266,16 +248,6 @@ const Withdraw = ({
   ) {
     isFromBalanceEnough = false
   }
-
-  // if (!isFromBalanceEnough) {
-  //   btnLabel = `Insufficient Balance`
-  // } else if (!isAllowanceEnough) {
-  //   buttonAction = () => approve(pool, withdrawQuote, inputValue.bn, chainId)
-  //   btnLabel = `Approve Token(s)`
-  //   pendingLabel = `Approving Token(s)`
-  //   btnClassName = 'from-[#feba06] to-[#FEC737]'
-  //   postButtonAction = () => setTime(0)
-  // }
 
   const {
     label: btnLabel,

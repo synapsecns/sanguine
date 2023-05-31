@@ -151,12 +151,6 @@ const DestinationTx = (fromEvent: BridgeWatcherTx) => {
     setToSigner(toSignerRaw)
   }, [toSignerRaw])
 
-  useEffect(() => {
-    console.log('fromEvent:', fromEvent)
-    console.log('toEvent.kappa:', toEvent?.kappa)
-    console.log('toEvent:', toEvent)
-  }, [toEvent, fromEvent])
-
   return (
     <div className="flex items-center">
       <div className="flex items-center px-3 pt-6 pb-1 align-middle">
