@@ -10,7 +10,7 @@ import { useSynapseContext } from '@/utils/providers/SynapseProvider'
 import { TransactionButton } from '@/components/buttons/TransactionButton'
 import { Zero } from '@ethersproject/constants'
 import { Token } from '@types'
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useMemo } from 'react'
 import { BigNumber } from '@ethersproject/bignumber'
 import { calculateExchangeRate } from '@utils/calculateExchangeRate'
 import { getTokenAllowance } from '@/utils/actions/getTokenAllowance'
@@ -19,18 +19,26 @@ import { QUOTE_POLLING_INTERVAL } from '@/constants/bridge' // TODO CHANGE
 import { PoolData, PoolUserData } from '@types'
 import LoadingTokenInput from '@components/loading/LoadingTokenInput'
 
+const DEFAULT_DEPOSIT_QUOTE = {
+  priceImpact: undefined,
+  allowances: {},
+  routerAddress: '',
+}
+
 const Deposit = ({
   pool,
   chainId,
   address,
   poolData,
   poolUserData,
+  refetchCallback,
 }: {
   pool: Token
   chainId: number
   address: string
   poolData: PoolData
   poolUserData: PoolUserData
+  refetchCallback: () => void
 }) => {
   // todo store sum in here?
   const [inputValue, setInputValue] = useState<{
@@ -41,7 +49,7 @@ const Deposit = ({
     priceImpact: BigNumber
     allowances: Record<string, BigNumber>
     routerAddress: string
-  }>({ priceImpact: undefined, allowances: {}, routerAddress: '' })
+  }>(DEFAULT_DEPOSIT_QUOTE)
   const [time, setTime] = useState(Date.now())
   const { synapseSDK } = useSynapseContext()
 
@@ -98,6 +106,8 @@ const Deposit = ({
           allowances,
           routerAddress: pool.swapAddresses[chainId],
         })
+      } else {
+        setDepositQuote(DEFAULT_DEPOSIT_QUOTE)
       }
     } catch (e) {
       console.log(e)
@@ -150,18 +160,49 @@ const Deposit = ({
       initInputValue.str[tokenObj.token.addresses[chainId]] = ''
     })
     setInputValue(initInputValue)
+    setDepositQuote(DEFAULT_DEPOSIT_QUOTE)
   }
 
-  // some messy button gen stuff (will re-write)
   let isFromBalanceEnough = true
   let isAllowanceEnough = true
-  let btnLabel = 'Deposit'
-  let pendingLabel = 'Depositing funds...'
-  let btnClassName = ''
-  let buttonAction = () =>
-    deposit(pool, 'ONE_TENTH', null, inputValue.bn, chainId)
-  let postButtonAction = () => {
-    resetInputs()
+
+  const getButtonProperties = () => {
+    let properties = {
+      label: 'Deposit',
+      pendingLabel: 'Depositing funds...',
+      className: '',
+      disabled: false,
+      buttonAction: () =>
+        deposit(pool, 'ONE_TENTH', null, inputValue.bn, chainId),
+      postButtonAction: () => {
+        console.log('Post Button Action')
+        refetchCallback()
+        resetInputs()
+      },
+    }
+
+    if (sumBigNumbersFromState().eq(0)) {
+      properties.disabled = true
+    }
+
+    if (!isFromBalanceEnough) {
+      properties.label = `Insufficient Balance`
+      properties.disabled = true
+      return properties
+    }
+
+    if (!isAllowanceEnough) {
+      properties.label = `Approve Token(s)`
+      properties.pendingLabel = `Approving Token(s)`
+      properties.className = 'from-[#feba06] to-[#FEC737]'
+      properties.disabled = true
+      properties.buttonAction = () =>
+        approve(pool, depositQuote, inputValue.bn, chainId)
+      properties.postButtonAction = () => setTime(0)
+      return properties
+    }
+
+    return properties
   }
 
   for (const [tokenAddr, amount] of Object.entries(inputValue.bn)) {
@@ -182,24 +223,41 @@ const Deposit = ({
     })
   }
 
-  if (!isFromBalanceEnough) {
-    btnLabel = `Insufficient Balance`
-  } else if (!isAllowanceEnough) {
-    buttonAction = () => approve(pool, depositQuote, inputValue.bn, chainId)
-    btnLabel = `Approve Token(s)`
-    pendingLabel = `Approving Token(s)`
-    btnClassName = 'from-[#feba06] to-[#FEC737]'
-    postButtonAction = () => setTime(0)
-  }
-  const actionBtn = (
-    <TransactionButton
-      className={btnClassName}
-      disabled={sumBigNumbersFromState().eq(0) || !isFromBalanceEnough}
-      onClick={() => buttonAction()}
-      onSuccess={() => postButtonAction()}
-      label={btnLabel}
-      pendingLabel={pendingLabel}
-    />
+  const {
+    label: btnLabel,
+    pendingLabel,
+    className: btnClassName,
+    buttonAction,
+    postButtonAction,
+    disabled,
+  } = useMemo(getButtonProperties, [
+    isFromBalanceEnough,
+    isAllowanceEnough,
+    address,
+    inputValue,
+    depositQuote,
+  ])
+
+  const actionBtn = useMemo(
+    () => (
+      <TransactionButton
+        className={btnClassName}
+        disabled={sumBigNumbersFromState().eq(0) || disabled}
+        onClick={() => buttonAction()}
+        onSuccess={() => postButtonAction()}
+        label={btnLabel}
+        pendingLabel={pendingLabel}
+      />
+    ),
+    [
+      buttonAction,
+      postButtonAction,
+      btnLabel,
+      pendingLabel,
+      btnClassName,
+      isFromBalanceEnough,
+      isAllowanceEnough,
+    ]
   )
 
   return (
