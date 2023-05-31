@@ -561,6 +561,7 @@ const BridgePage = ({
         setIsQuoteLoading(true)
       }
       const validFromChainId = AcceptedChainId[fromChainId] ? fromChainId : 1
+
       const { feeAmount, routerAddress, maxAmountOut, originQuery, destQuery } =
         await synapseSDK.bridgeQuote(
           validFromChainId,
@@ -569,6 +570,7 @@ const BridgePage = ({
           toToken.addresses[toChainId],
           fromInput.bigNum
         )
+
       if (!(originQuery && maxAmountOut && destQuery && feeAmount)) {
         setBridgeQuote(EMPTY_BRIDGE_QUOTE_ZERO)
         setIsQuoteLoading(false)
@@ -594,20 +596,22 @@ const BridgePage = ({
       // TODO 1) make dynamic, 2) clean this
 
       const originMinWithSlippage = subtractSlippage(
-        originQuery?.minAmountOut ?? Zero,
+        originQuery?.[2] ?? Zero,
         'ONE_TENTH',
         null
       )
       const destMinWithSlippage = subtractSlippage(
-        destQuery?.minAmountOut ?? Zero,
+        destQuery?.[2] ?? Zero,
         'ONE_TENTH',
         null
       )
+
       let newOriginQuery = [...originQuery] as Query
       newOriginQuery[2] = originMinWithSlippage
       newOriginQuery.minAmountOut = originMinWithSlippage
+
       let newDestQuery = [...destQuery] as Query
-      newDestQuery[3] = destMinWithSlippage
+      newDestQuery[2] = destMinWithSlippage
       newDestQuery.minAmountOut = destMinWithSlippage
 
       setBridgeQuote({
