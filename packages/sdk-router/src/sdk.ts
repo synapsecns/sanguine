@@ -1,7 +1,6 @@
 import { Provider } from '@ethersproject/abstract-provider'
 import invariant from 'tiny-invariant'
 import { BigNumber } from '@ethersproject/bignumber'
-import { BytesLike } from '@ethersproject/bytes'
 import { PopulatedTransaction } from 'ethers'
 import { AddressZero, Zero } from '@ethersproject/constants'
 import { Interface } from '@ethersproject/abi'
@@ -14,27 +13,17 @@ import {
 import { BigintIsh } from './constants'
 import { SynapseRouter } from './synapseRouter'
 import bridgeAbi from './abi/SynapseBridge.json'
-
+import {
+  Query,
+  FeeConfig,
+  convertQuery,
+  RawQuery,
+  PoolToken,
+} from './utils/types'
+const DEFAULT_DEADLINE = BigNumber.from(Math.floor(Date.now() / 1000) + 10 * 60) // 10 minutes in the future
 type SynapseRouters = {
   [key: number]: SynapseRouter
 }
-
-type Query = [string, string, BigNumber, BigNumber, string] & {
-  swapAdapter: string
-  tokenOut: string
-  minAmountOut: BigNumber
-  deadline: BigNumber
-  rawParams: string
-}
-
-type FeeConfig = [number, BigNumber, BigNumber] & {
-  bridgeFee: number
-  minFee: BigNumber
-  maxFee: BigNumber
-}
-
-type PoolToken = { isWeth: boolean | undefined; token: string }
-
 class SynapseSDK {
   public synapseRouters: SynapseRouters
   public providers: { [x: number]: Provider }
@@ -64,27 +53,19 @@ class SynapseSDK {
     amountIn: BigintIsh,
     deadline?: BigNumber
   ): Promise<{
-    feeAmount?: BigNumber | undefined
-    feeConfig?: FeeConfig | undefined
-    routerAddress?: string | undefined
-    maxAmountOut?: BigNumber | undefined
-    originQuery?: Query | undefined
-    destQuery?: Query | undefined
+    feeAmount: BigNumber | undefined
+    feeConfig: FeeConfig | undefined
+    routerAddress: string | undefined
+    maxAmountOut: BigNumber | undefined
+    originQuery: Query | undefined
+    destQuery: Query | undefined
   }> {
     tokenOut = handleNativeToken(tokenOut)
     tokenIn = handleNativeToken(tokenIn)
-    let originQuery
-    let destQuery
     const originRouter: SynapseRouter = this.synapseRouters[originChainId]
     const destRouter: SynapseRouter = this.synapseRouters[destChainId]
+    const routerAddress = originRouter.routerContract.address
 
-    // Set deadline
-    if (!deadline) {
-      const defaultDeadline = Math.floor(Date.now() / 1000) + 10 * 60
-      deadline = BigNumber.from(defaultDeadline)
-    }
-
-    // Step 0: find connected bridge tokens on destination
     const bridgeTokens =
       await destRouter.routerContract.getConnectedBridgeTokens(tokenOut)
 
@@ -92,45 +73,65 @@ class SynapseSDK {
       throw Error('No bridge tokens found for this route')
     }
 
+    // Filter out tokens with no symbol or address
     const filteredTokens = bridgeTokens.filter(
       (bridgeToken) =>
         bridgeToken.symbol.length !== 0 && bridgeToken.token !== AddressZero
     )
 
-    // Step 1: perform a call to origin SynapseRouter
-    const originQueries = await originRouter.routerContract.getOriginAmountOut(
-      tokenIn,
-      filteredTokens.map((bridgeToken) => bridgeToken.symbol),
-      amountIn
-    )
+    // Get quotes from origin SynapseRouter
+    const originQueries: RawQuery[] =
+      await originRouter.routerContract.getOriginAmountOut(
+        tokenIn,
+        filteredTokens.map((bridgeToken) => bridgeToken.symbol),
+        amountIn
+      )
 
-    // Step 2: form a list of Destination Requests
-    // In practice, there is no need to pass the requests with amountIn = 0, but we will do it for code simplicity
+    // create requests for destination router
     const requests: { symbol: string; amountIn: BigintIsh }[] = []
-
     for (let i = 0; i < filteredTokens.length; i++) {
       requests.push({
         symbol: filteredTokens[i].symbol,
         amountIn: originQueries[i].minAmountOut,
       })
     }
+    if (originQueries.length === 0) {
+      throw Error('No origin queries found for this route')
+    }
 
-    // Step 3: perform a call to destination SynapseRouter
-    const destQueries = await destRouter.routerContract.getDestinationAmountOut(
-      requests,
-      tokenOut
-    )
-    // Step 4: find the best query (in practice, we could return them all)
+    // Get quotes from destination SynapseRouter
+    const destQueries: RawQuery[] =
+      await destRouter.routerContract.getDestinationAmountOut(
+        requests,
+        tokenOut
+      )
+    if (destQueries.length === 0) {
+      throw Error('No destination queries found for this route')
+    }
+
+    // Find the best query (in practice, we could return them all)
     let destInToken
+    let rawOriginQuery
+    let rawDestQuery
     let maxAmountOut: BigNumber = BigNumber.from(0)
     for (let i = 0; i < destQueries.length; i++) {
       if (destQueries[i].minAmountOut.gt(maxAmountOut)) {
         maxAmountOut = destQueries[i].minAmountOut
-        originQuery = originQueries[i]
-        destQuery = destQueries[i]
+        rawOriginQuery = originQueries[i]
+        rawDestQuery = destQueries[i]
         destInToken = filteredTokens[i].token
       }
     }
+
+    if (!rawOriginQuery || !rawDestQuery) {
+      throw Error('No route found')
+    }
+
+    // Set default deadline
+    const originQuery = convertQuery(rawOriginQuery)
+    originQuery.deadline = deadline ?? DEFAULT_DEADLINE
+    const destQuery = convertQuery(rawDestQuery)
+    destQuery.deadline = deadline ?? DEFAULT_DEADLINE
 
     // Get fee data
     let feeAmount
@@ -143,18 +144,6 @@ class SynapseSDK {
       )
       feeConfig = destRouter.routerContract.fee(destInToken)
     }
-
-    if (originQuery && destQuery) {
-      originQuery = [...originQuery] as Query
-      originQuery[3] = deadline
-      originQuery.deadline = deadline
-      destQuery = [...destQuery] as Query
-      destQuery[3] = deadline
-      destQuery.deadline = deadline
-    }
-
-    // Router address so allowance handling be set by client
-    const routerAddress = originRouter.routerContract.address
 
     return {
       feeAmount: await feeAmount,
@@ -172,20 +161,8 @@ class SynapseSDK {
     destChainId: number,
     token: string,
     amount: BigintIsh,
-    originQuery: {
-      swapAdapter: string
-      tokenOut: string
-      minAmountOut: BigintIsh
-      deadline: BigintIsh
-      rawParams: BytesLike
-    },
-    destQuery: {
-      swapAdapter: string
-      tokenOut: string
-      minAmountOut: BigintIsh
-      deadline: BigintIsh
-      rawParams: BytesLike
-    }
+    originQuery: Query,
+    destQuery: Query
   ): Promise<PopulatedTransaction> {
     token = handleNativeToken(token)
     const originRouter: SynapseRouter = this.synapseRouters[originChainId]
@@ -199,7 +176,6 @@ class SynapseSDK {
     )
   }
 
-  // TODO: add gas from bridge
   public async swapQuote(
     chainId: number,
     tokenIn: string,
@@ -207,35 +183,31 @@ class SynapseSDK {
     amountIn: BigintIsh,
     deadline?: BigNumber
   ): Promise<{
-    routerAddress?: string | undefined
-    maxAmountOut?: BigNumber | undefined
-    query?: Query | undefined
+    routerAddress: string | undefined
+    maxAmountOut: BigNumber | undefined
+    query: Query | undefined
   }> {
     tokenOut = handleNativeToken(tokenOut)
     tokenIn = handleNativeToken(tokenIn)
-    // Set deadline
-    if (!deadline) {
-      const defaultDeadline = Math.floor(Date.now() / 1000) + 10 * 60
-      deadline = BigNumber.from(defaultDeadline)
-    }
-    const router: SynapseRouter = this.synapseRouters[chainId]
 
-    // Step 0: get the swap quote
-    let query = await router.routerContract.getAmountOut(
+    const router: SynapseRouter = this.synapseRouters[chainId]
+    const routerAddress = router.routerContract.address
+
+    const rawQuery = await router.routerContract.getAmountOut(
       tokenIn,
       tokenOut,
       amountIn
     )
 
-    // Router address so allowance handling be set by client
-    const routerAddress = router.routerContract.address
+    // Check if call was unsuccessful
+    if (rawQuery?.length !== 5) {
+      throw Error('No queries found for this route')
+    }
+
+    const query = convertQuery(rawQuery)
+    query.deadline = deadline ?? DEFAULT_DEADLINE
     const maxAmountOut = query.minAmountOut
 
-    if (query) {
-      query = [...query] as Query
-      query[3] = deadline
-      query.deadline = deadline
-    }
     return {
       routerAddress,
       maxAmountOut,
@@ -248,13 +220,7 @@ class SynapseSDK {
     to: string,
     token: string,
     amount: BigintIsh,
-    query: {
-      swapAdapter: string
-      tokenOut: string
-      minAmountOut: BigintIsh
-      deadline: BigintIsh
-      rawParams: BytesLike
-    }
+    query: Query
   ): Promise<PopulatedTransaction> {
     token = handleNativeToken(token)
     const originRouter: SynapseRouter = this.synapseRouters[chainId]
