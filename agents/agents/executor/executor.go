@@ -750,6 +750,9 @@ func (e Executor) processLog(parentCtx context.Context, log ethTypes.Log, chainI
 		attribute.String(metrics.TxHash, log.TxHash.String()),
 	))
 
+	span.AddEvent("am i getting here", trace.WithAttributes(
+		attribute.Int(metrics.ChainID, int(chainID)),
+	))
 	defer func() {
 		metrics.EndSpanWithErr(span, err)
 	}()
