@@ -5,6 +5,8 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"github.com/synapsecns/sanguine/agents/contracts/inbox"
+	"github.com/synapsecns/sanguine/agents/contracts/lightinbox"
 	"github.com/synapsecns/sanguine/core/metrics"
 	agentsConfig "github.com/synapsecns/sanguine/ethergo/signer/config"
 	"go.opentelemetry.io/contrib/instrumentation/google.golang.org/grpc/otelgrpc"
@@ -53,6 +55,10 @@ type chainExecutor struct {
 	originParser origin.Parser
 	// destinationParser is the destination parser.
 	destinationParser destination.Parser
+	// lightInboxParser is the light inbox parser.
+	lightInboxParser *lightinbox.Parser
+	// inboxParser is the inbox parser.
+	inboxParser *inbox.Parser
 	// summitParser is the summit parser.
 	summitParser *summit.Parser
 	// logChan is the log channel.
@@ -145,6 +151,8 @@ func NewExecutor(ctx context.Context, config config.Config, executorDB db.Execut
 		}
 
 		var summitParserRef *summit.Parser
+		var inboxParserRef *inbox.Parser
+		var lightInboxParserRef *lightinbox.Parser
 
 		if config.SummitChainID == chain.ChainID {
 			summitParser, err := summit.NewParser(common.HexToAddress(config.SummitAddress))
@@ -153,6 +161,20 @@ func NewExecutor(ctx context.Context, config config.Config, executorDB db.Execut
 			}
 
 			summitParserRef = &summitParser
+
+			inboxParser, err := inbox.NewParser(common.HexToAddress(config.InboxAddress))
+			if err != nil {
+				return nil, fmt.Errorf("could not create inbox parser: %w", err)
+			}
+
+			inboxParserRef = &inboxParser
+		} else {
+			lightInboxParser, err := lightinbox.NewParser(common.HexToAddress(chain.LightInboxAddress))
+			if err != nil {
+				return nil, fmt.Errorf("could not create destination parser: %w", err)
+			}
+
+			lightInboxParserRef = &lightInboxParser
 		}
 
 		// chainRPCURL := fmt.Sprintf("%s/1/rpc/%d", config.BaseOmnirpcURL, chain.ChainID)
@@ -183,6 +205,8 @@ func NewExecutor(ctx context.Context, config config.Config, executorDB db.Execut
 			originParser:      originParser,
 			destinationParser: destinationParser,
 			summitParser:      summitParserRef,
+			lightInboxParser:  lightInboxParserRef,
+			inboxParser:       inboxParserRef,
 			logChan:           make(chan *ethTypes.Log, logChanSize),
 			merkleTree:        tree,
 			rpcClient:         clients[chain.ChainID],
@@ -220,10 +244,10 @@ func (e Executor) Run(ctx context.Context) error {
 		return fmt.Errorf("could not backfill executed messages: %w", err)
 	}
 
-	// Listen for snapshotAcceptedEvents on summit.
+	// Listen for snapshotAcceptedEvents on bonding manager.
 	g.Go(func() error {
-		return e.streamLogs(ctx, e.grpcClient, e.grpcConn, e.config.SummitChainID, e.config.SummitAddress, nil, contractEventType{
-			contractType: summitContract,
+		return e.streamLogs(ctx, e.grpcClient, e.grpcConn, e.config.SummitChainID, e.config.InboxAddress, nil, contractEventType{
+			contractType: inboxContract,
 			eventType:    snapshotAcceptedEvent,
 		})
 	})
@@ -231,18 +255,18 @@ func (e Executor) Run(ctx context.Context) error {
 	for _, chain := range e.config.Chains {
 		chain := chain
 
-		// Listen for dispatchEvents on origin.
+		// Listen for sentEvents on origin.
 		g.Go(func() error {
 			return e.streamLogs(ctx, e.grpcClient, e.grpcConn, chain.ChainID, chain.OriginAddress, nil, contractEventType{
 				contractType: originContract,
-				eventType:    dispatchedEvent,
+				eventType:    sentEvent,
 			})
 		})
 
 		// Listen for attestationAcceptedEvents on destination.
 		g.Go(func() error {
 			return e.streamLogs(ctx, e.grpcClient, e.grpcConn, chain.ChainID, chain.DestinationAddress, nil, contractEventType{
-				contractType: destinationContract,
+				contractType: lightInboxContract,
 				eventType:    attestationAcceptedEvent,
 			})
 		})
@@ -343,7 +367,7 @@ func (e Executor) Execute(parentCtx context.Context, message types.Message) (_ b
 		Nonce:   &stateNonce,
 	}
 
-	_, snapshotProof, _, stateIndex, err := e.executorDB.GetStateMetadata(ctx, stateMask)
+	_, snapshotProof, stateIndex, err := e.executorDB.GetStateMetadata(ctx, stateMask)
 	if err != nil {
 		return false, fmt.Errorf("could not get state index: %w", err)
 	}
@@ -388,7 +412,8 @@ func (e Executor) Execute(parentCtx context.Context, message types.Message) (_ b
 				return false, fmt.Errorf("could not execute message after %f attempts", b.Attempt())
 			}
 
-			err = e.chainExecutors[message.DestinationDomain()].boundDestination.Execute(ctx, e.signer, message, originProof, snapshotProofB32, big.NewInt(int64(*stateIndex)))
+			// TODO (joe and lex): Set gas limit for now to be equal to what was set in the message
+			err = e.chainExecutors[message.DestinationDomain()].boundDestination.Execute(ctx, e.signer, message, originProof, snapshotProofB32, big.NewInt(int64(*stateIndex)), uint64(10000000))
 			if err != nil {
 				timeout = b.Duration()
 				span.AddEvent("error when executing", trace.WithAttributes(
@@ -411,14 +436,15 @@ type eventType int
 const (
 	originContract contractType = iota
 	destinationContract
-	summitContract
+	lightInboxContract
+	inboxContract
 	other
 )
 
 const (
-	// Origin's Dispatched event.
-	dispatchedEvent eventType = iota
-	// Destination's AttestationAccepted event.
+	// Origin's Sent event.
+	sentEvent eventType = iota
+	// LightManager's AttestationAccepted event.
 	attestationAcceptedEvent
 	// Destination's AttestationExecuted event.
 	executedEvent
@@ -449,7 +475,7 @@ func (e Executor) verifyMessageMerkleProof(message types.Message) (bool, error) 
 		return false, fmt.Errorf("could not convert message to leaf: %w", err)
 	}
 
-	inTree := merkle.VerifyMerkleProof(root, leaf[:], message.Nonce()-1, proof, merkle.MessageTreeDepth)
+	inTree := merkle.VerifyMerkleProof(root, leaf[:], message.Nonce()-1, proof, merkle.MessageTreeHeight)
 
 	return inTree, nil
 }
@@ -476,12 +502,12 @@ func (e Executor) verifyStateMerkleProof(parentCtx context.Context, state types.
 		ChainID: &chainID,
 	}
 
-	snapshotRoot, proof, treeHeight, stateIndex, err := e.executorDB.GetStateMetadata(ctx, stateMask)
+	snapshotRoot, proof, stateIndex, err := e.executorDB.GetStateMetadata(ctx, stateMask)
 	if err != nil {
 		return false, fmt.Errorf("could not get snapshot root: %w", err)
 	}
 
-	if snapshotRoot == nil || proof == nil || treeHeight == nil || stateIndex == nil {
+	if snapshotRoot == nil || proof == nil || stateIndex == nil {
 		return false, nil
 	}
 
@@ -496,7 +522,7 @@ func (e Executor) verifyStateMerkleProof(parentCtx context.Context, state types.
 		return false, fmt.Errorf("could not unmarshal proof: %w", err)
 	}
 
-	inTree := merkle.VerifyMerkleProof((*snapshotRoot)[:], leaf[:], (*stateIndex)*2, proofBytes, *treeHeight)
+	inTree := merkle.VerifyMerkleProof((*snapshotRoot)[:], leaf[:], (*stateIndex)*2, proofBytes, merkle.SnapshotTreeHeight)
 
 	return inTree, nil
 }
@@ -580,7 +606,7 @@ func newTreeFromDB(ctx context.Context, chainID uint32, executorDB db.ExecutorDB
 		rawMessages[i] = rawMessage[:]
 	}
 
-	merkleTree := merkle.NewTreeFromItems(rawMessages, merkle.MessageTreeDepth)
+	merkleTree := merkle.NewTreeFromItems(rawMessages, merkle.MessageTreeHeight)
 
 	return merkleTree, nil
 }
@@ -722,9 +748,37 @@ func (e Executor) processLog(parentCtx context.Context, log ethTypes.Log, chainI
 			return fmt.Errorf("could not store message: %w", err)
 		}
 	case destinationContract:
-		//nolint:exhaustive
-		switch contractEvent.eventType {
-		case attestationAcceptedEvent:
+		if contractEvent.eventType == executedEvent {
+			originDomain, messageLeaf, ok := e.chainExecutors[chainID].destinationParser.ParseExecuted(log)
+			if !ok || originDomain == nil || messageLeaf == nil {
+				return fmt.Errorf("could not parse executed event")
+			}
+
+			e.chainExecutors[chainID].executed[*messageLeaf] = true
+		}
+	case inboxContract:
+		if contractEvent.eventType == snapshotAcceptedEvent {
+			snapshot, err := e.logToSnapshot(log, chainID)
+			if err != nil {
+				return fmt.Errorf("could not convert log to snapshot: %w", err)
+			}
+
+			if snapshot == nil {
+				return nil
+			}
+
+			snapshotRoot, proofs, err := (*snapshot).SnapshotRootAndProofs()
+			if err != nil {
+				return fmt.Errorf("could not get snapshot root and proofs: %w", err)
+			}
+
+			err = e.executorDB.StoreStates(ctx, (*snapshot).States(), snapshotRoot, proofs)
+			if err != nil {
+				return fmt.Errorf("could not store states: %w", err)
+			}
+		}
+	case lightInboxContract:
+		if contractEvent.eventType == attestationAcceptedEvent {
 			attestation, err := e.logToAttestation(log, chainID)
 			if err != nil {
 				return fmt.Errorf("could not convert log to attestation: %w", err)
@@ -742,38 +796,6 @@ func (e Executor) processLog(parentCtx context.Context, log ethTypes.Log, chainI
 			err = e.executorDB.StoreAttestation(ctx, *attestation, chainID, log.BlockNumber, logHeader.Time)
 			if err != nil {
 				return fmt.Errorf("could not store attestation: %w", err)
-			}
-		case executedEvent:
-			originDomain, messageLeaf, ok := e.chainExecutors[chainID].destinationParser.ParseExecuted(log)
-			if !ok || originDomain == nil || messageLeaf == nil {
-				return fmt.Errorf("could not parse executed event")
-			}
-
-			e.chainExecutors[chainID].executed[*messageLeaf] = true
-		}
-	case summitContract:
-		//nolint:gocritic,exhaustive
-		switch contractEvent.eventType {
-		case snapshotAcceptedEvent:
-			snapshot, err := e.logToSnapshot(log, chainID)
-			if err != nil {
-				return fmt.Errorf("could not convert log to snapshot: %w", err)
-			}
-
-			if snapshot == nil {
-				return nil
-			}
-
-			snapshotRoot, proofs, err := (*snapshot).SnapshotRootAndProofs()
-			if err != nil {
-				return fmt.Errorf("could not get snapshot root and proofs: %w", err)
-			}
-
-			treeHeight := (*snapshot).TreeHeight()
-
-			err = e.executorDB.StoreStates(ctx, (*snapshot).States(), snapshotRoot, proofs, treeHeight)
-			if err != nil {
-				return fmt.Errorf("could not store states: %w", err)
 			}
 		}
 	case other:

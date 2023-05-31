@@ -16,6 +16,7 @@ import {
 } from '@components/TransactionItems'
 import { memo } from 'react'
 import _ from 'lodash'
+
 const BlockCountdown = memo(
   ({
     fromEvent,
@@ -26,9 +27,7 @@ const BlockCountdown = memo(
     toEvent?: BridgeWatcherTx
     setCompletedConf: (bool: boolean) => void
   }) => {
-    const chain = fromEvent?.toChainId
-      ? CHAINS_BY_ID[fromEvent.toChainId]
-      : null
+    const chain = fromEvent?.chainId ? CHAINS_BY_ID[fromEvent.chainId] : null
     const [confirmationDelta, setConfirmationDelta] = useState(-1)
     const [time, setTime] = useState(Date.now())
 
@@ -49,11 +48,22 @@ const BlockCountdown = memo(
       fetchBlockNumber({
         chainId: fromEvent?.chainId,
       }).then((newestBlockNumber) => {
-        const delta =
-          BRIDGE_REQUIRED_CONFIRMATIONS[fromEvent?.chainId] +
-          (fromEvent.blockNumber - (newestBlockNumber ?? 0))
-        setConfirmationDelta(delta > 0 ? delta : 0)
-        if (delta <= 0) {
+        // if error with rpc getting block number, don't run the following code
+        if (!newestBlockNumber) {
+          return
+        }
+        // get number of blocks since from event blocknumber
+        const blockDifference = newestBlockNumber - fromEvent.blockNumber
+
+        // get number of blocks since event block number - required confirmations
+        const blocksSinceConfirmed =
+          blockDifference - BRIDGE_REQUIRED_CONFIRMATIONS[fromEvent?.chainId]
+
+        // if blocks since confirmed is less than 0, thats how many blocks left to confirm
+        setConfirmationDelta(
+          blocksSinceConfirmed >= 0 ? 0 : blocksSinceConfirmed * -1
+        )
+        if (blocksSinceConfirmed >= 0) {
           setCompletedConf(true)
         }
       })
@@ -62,18 +72,9 @@ const BlockCountdown = memo(
     return (
       <>
         <div className="flex-1">
-          <div className={`flex items-center p-2 align-middle`}>
-            {fromEvent?.toChainId && !toEvent && confirmationDelta != 0 && (
+          <div className={`flex items-center align-middle`}>
+            {fromEvent?.toChainId && !toEvent && confirmationDelta > 0 && (
               <>
-                <ChevronRightIcon
-                  className={`
-                  w-5 h-5
-                  place-self-center
-                  ${getNetworkTextColor(chain?.color)}
-                  text-opacity-50
-                `}
-                />
-
                 <BlockCountdownCircle
                   clampedDiff={confirmationDelta}
                   fromChainConfirmations={
@@ -93,7 +94,7 @@ const BlockCountdown = memo(
                 <EmptySubTransactionItem chainId={fromEvent?.toChainId} />
               </>
             )}
-            {confirmationDelta == 0 && (
+            {/* {confirmationDelta == 0 && (
               <div className="items-center flex-shrink-0 align-middle">
                 <ChevronDoubleRightIcon
                   className={`
@@ -104,7 +105,7 @@ const BlockCountdown = memo(
               `}
                 />
               </div>
-            )}
+            )} */}
           </div>
         </div>
       </>

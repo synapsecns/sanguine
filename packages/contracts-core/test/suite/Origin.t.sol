@@ -1,261 +1,359 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.17;
 
-import { IAgentRegistry } from "../../contracts/interfaces/IAgentRegistry.sol";
-import { IStateHub } from "../../contracts/interfaces/IStateHub.sol";
-import { EMPTY_ROOT, SNAPSHOT_MAX_STATES } from "../../contracts/libs/Constants.sol";
-import { SummitAttestation } from "../../contracts/libs/Attestation.sol";
-import { Snapshot, SnapshotLib } from "../../contracts/libs/Snapshot.sol";
-import { OriginState, State, StateLib, SummitState } from "../../contracts/libs/State.sol";
-import { AgentInfo, SystemEntity } from "../../contracts/libs/Structures.sol";
-import { TipsLib } from "../../contracts/libs/Tips.sol";
+import {IAgentSecured} from "../../contracts/interfaces/IAgentSecured.sol";
+import {InterfaceGasOracle} from "../../contracts/interfaces/InterfaceGasOracle.sol";
+import {IStateHub} from "../../contracts/interfaces/IStateHub.sol";
+import {EthTransferFailed, InsufficientEthBalance, TipsValueTooLow} from "../../contracts/libs/Errors.sol";
+import {SNAPSHOT_MAX_STATES} from "../../contracts/libs/Constants.sol";
+import {TipsLib} from "../../contracts/libs/stack/Tips.sol";
 
-import { InterfaceOrigin } from "../../contracts/Origin.sol";
+import {InterfaceOrigin} from "../../contracts/Origin.sol";
+import {Versioned} from "../../contracts/base/Version.sol";
 
-import { RawState, OriginStateMask } from "./libs/State.t.sol";
-import { fakeStates } from "../utils/libs/FakeIt.t.sol";
-import { Random } from "../utils/libs/Random.t.sol";
-import { RawHeader, RawMessage, RawTips } from "../utils/libs/SynapseStructs.t.sol";
-import { addressToBytes32 } from "../utils/libs/SynapseUtilities.t.sol";
-import { SynapseProofs } from "../utils/SynapseProofs.t.sol";
-import { ISystemContract, SynapseTest } from "../utils/SynapseTest.t.sol";
+import {RevertingApp} from "../harnesses/client/RevertingApp.t.sol";
+
+import {fakeState, fakeSnapshot} from "../utils/libs/FakeIt.t.sol";
+import {Random} from "../utils/libs/Random.t.sol";
+import {
+    MessageFlag,
+    RawAttestation,
+    RawBaseMessage,
+    RawGasData,
+    RawHeader,
+    RawMessage,
+    RawRequest,
+    RawSnapshot,
+    RawState,
+    RawStateIndex,
+    RawTips
+} from "../utils/libs/SynapseStructs.t.sol";
+import {AgentFlag, GasOracle, Origin, SynapseTest} from "../utils/SynapseTest.t.sol";
+import {AgentSecuredTest} from "./base/AgentSecured.t.sol";
 
 // solhint-disable func-name-mixedcase
 // solhint-disable no-empty-blocks
-contract OriginTest is SynapseTest, SynapseProofs {
-    using StateLib for bytes;
-    using SnapshotLib for bytes;
+// solhint-disable ordering
+contract OriginTest is AgentSecuredTest {
+    address public sender = makeAddr("Sender");
+    address public recipient = makeAddr("Recipient");
+    uint32 public period = 1 minutes;
+    RawTips public tips = RawTips(0, 0, 0, 0);
+    RawRequest public request = RawRequest({gasLimit: 100_000, gasDrop: 0, version: 0});
 
     // Deploy Production version of Origin and mocks for everything else
     constructor() SynapseTest(DEPLOY_PROD_ORIGIN) {}
 
     function test_setupCorrectly() public {
-        // Check Messaging addresses
-        assertEq(
-            address(ISystemContract(origin).systemRouter()),
-            address(systemRouter),
-            "!systemRouter"
-        );
-        // Check Agents
-        // Origin should know about agents from all domains, including Guards
+        // Check Agents: currently all Agents are known in LightManager
         for (uint256 d = 0; d < allDomains.length; ++d) {
             uint32 domain = allDomains[d];
             for (uint256 i = 0; i < domains[domain].agents.length; ++i) {
                 address agent = domains[domain].agents[i];
-                assertTrue(IAgentRegistry(origin).isActiveAgent(domain, agent), "!agent");
+                checkAgentStatus(agent, IAgentSecured(origin).agentStatus(agent), AgentFlag.Active);
             }
         }
+        // Check version
+        assertEq(Versioned(origin).version(), LATEST_VERSION, "!version");
     }
 
-    function test_dispatch() public {
-        address sender = makeAddr("Sender");
-        address recipient = makeAddr("Recipient");
-        uint32 period = 1 minutes;
-        bytes memory tips = TipsLib.emptyTips();
-        bytes memory body = "test body";
+    function test_cleanSetup(Random memory random) public override {
+        uint32 domain = random.nextUint32();
+        address caller = random.nextAddress();
+        address agentManager = random.nextAddress();
+        address inbox_ = random.nextAddress();
+        address gasOracle_ = address(new GasOracle(localDomain(), random.nextAddress()));
+        Origin cleanContract = new Origin(domain, agentManager, inbox_, gasOracle_);
+        vm.prank(caller);
+        cleanContract.initialize();
+        assertEq(cleanContract.owner(), caller, "!owner");
+        assertEq(cleanContract.localDomain(), domain, "!localDomain");
+        assertEq(cleanContract.agentManager(), agentManager, "!agentManager");
+        assertEq(cleanContract.inbox(), inbox_, "!inbox");
+        assertEq(cleanContract.gasOracle(), gasOracle_, "!gasOracle");
+        assertEq(cleanContract.statesAmount(), 1, "!statesAmount");
+    }
 
-        RawMessage[] memory rawMessages = new RawMessage[](MESSAGES);
+    function initializeLocalContract() public override {
+        Origin(localContract()).initialize();
+    }
+
+    function test_sendBaseMessage_revert_tipsTooLow(RawTips memory minTips, uint256 msgValue) public {
+        minTips.boundTips(1 ** 32);
+        minTips.floorTips(1);
+        msgValue = msgValue % minTips.castToTips().value();
+        // Force gasOracle.getMinimumTips(DOMAIN_REMOTE, *, *) to return minTips
+        vm.mockCall(
+            gasOracle,
+            abi.encodeWithSelector(InterfaceGasOracle.getMinimumTips.selector, DOMAIN_REMOTE),
+            abi.encode(minTips.encodeTips())
+        );
+        deal(sender, msgValue);
+        vm.expectRevert(TipsValueTooLow.selector);
+        vm.prank(sender);
+        InterfaceOrigin(origin).sendBaseMessage{value: msgValue}(
+            DOMAIN_REMOTE, addressToBytes32(recipient), period, request.encodeRequest(), "test content"
+        );
+    }
+
+    function test_getMinimumTipsValue(
+        uint32 destination_,
+        uint256 paddedRequest,
+        uint256 contentLength,
+        RawTips memory minTips
+    ) public {
+        minTips.boundTips(1 ** 32);
+        // Force gasOracle.getMinimumTips(destination_, *, *) to return minTips
+        vm.mockCall(
+            gasOracle,
+            abi.encodeWithSelector(InterfaceGasOracle.getMinimumTips.selector, destination_),
+            abi.encode(minTips.encodeTips())
+        );
+        vm.expectCall(
+            address(gasOracle),
+            abi.encodeWithSelector(
+                InterfaceGasOracle.getMinimumTips.selector, destination_, paddedRequest, contentLength
+            )
+        );
+        assertEq(
+            InterfaceOrigin(origin).getMinimumTipsValue(destination_, paddedRequest, contentLength),
+            minTips.castToTips().value(),
+            "!getMinimumTipsValue"
+        );
+    }
+
+    function test_sendMessages(RawGasData memory rgd) public {
+        // Force gasOracle.getGasData() to return rgd
+        vm.mockCall(
+            gasOracle, abi.encodeWithSelector(InterfaceGasOracle.getGasData.selector), abi.encode(rgd.encodeGasData())
+        );
+        uint192 encodedRequest = request.encodeRequest();
+        bytes memory content = "test content";
+        bytes memory body = RawBaseMessage({
+            tips: tips,
+            sender: addressToBytes32(sender),
+            recipient: addressToBytes32(recipient),
+            request: request,
+            content: content
+        }).formatBaseMessage();
         bytes[] memory messages = new bytes[](MESSAGES);
+        bytes32[] memory leafs = new bytes32[](MESSAGES);
         bytes32[] memory roots = new bytes32[](MESSAGES);
         for (uint32 i = 0; i < MESSAGES; ++i) {
-            rawMessages[i] = RawMessage(
+            RawMessage memory rm = RawMessage(
                 RawHeader({
+                    flag: uint8(MessageFlag.Base),
                     origin: DOMAIN_LOCAL,
-                    sender: addressToBytes32(sender),
                     nonce: i + 1,
                     destination: DOMAIN_REMOTE,
-                    recipient: addressToBytes32(recipient),
-                    optimisticSeconds: period
+                    optimisticPeriod: period
                 }),
-                RawTips(0, 0, 0, 0),
                 body
             );
-            (messages[i], ) = rawMessages[i].castToMessage();
-            insertMessage(messages[i]);
+            messages[i] = rm.formatMessage();
+            leafs[i] = rm.castToMessage().leaf();
+            insertMessage(leafs[i]);
             roots[i] = getRoot(i + 1);
         }
 
-        // Expect Origin Events
         for (uint32 i = 0; i < MESSAGES; ++i) {
-            // 1 block is skipped after each dispatched message
-            OriginState memory state = OriginState(
-                roots[i],
-                uint40(block.number + i),
-                uint40(block.timestamp + i * BLOCK_TIME)
-            );
-            vm.expectEmit(true, true, true, true);
-            emit StateSaved(state.formatOriginState(DOMAIN_LOCAL, i + 1));
-            vm.expectEmit(true, true, true, true);
-            emit Dispatched(keccak256(messages[i]), i + 1, DOMAIN_REMOTE, messages[i]);
-        }
-
-        for (uint32 i = 0; i < MESSAGES; ++i) {
+            // Expect Origin Events
+            RawState memory rs = RawState({
+                root: roots[i],
+                origin: DOMAIN_LOCAL,
+                nonce: i + 1,
+                blockNumber: uint40(block.number),
+                timestamp: uint40(block.timestamp),
+                gasData: rgd
+            });
+            bytes memory state = rs.formatState();
+            vm.expectEmit();
+            emit StateSaved(state);
+            vm.expectEmit();
+            emit Sent(leafs[i], i + 1, DOMAIN_REMOTE, messages[i]);
             vm.prank(sender);
-            (uint32 messageNonce, bytes32 messageHash) = InterfaceOrigin(origin).dispatch(
-                DOMAIN_REMOTE,
-                addressToBytes32(recipient),
-                period,
-                tips,
-                body
+            (uint32 messageNonce, bytes32 messageHash) = InterfaceOrigin(origin).sendBaseMessage(
+                DOMAIN_REMOTE, addressToBytes32(recipient), period, encodedRequest, content
             );
             // Check return values
             assertEq(messageNonce, i + 1, "!messageNonce");
-            assertEq(messageHash, keccak256(messages[i]), "!messageHash");
+            assertEq(messageHash, leafs[i], "!messageHash");
             skipBlock();
         }
     }
 
-    function test_states() public {
+    function test_states(RawGasData memory rgd) public {
         IStateHub hub = IStateHub(origin);
         // Check initial States
         assertEq(hub.statesAmount(), 1, "!initial statesAmount");
         // Initial state was saved "1 block ago"
-        OriginState memory state = OriginState(
-            EMPTY_ROOT,
-            uint40(block.number - 1),
-            uint40(block.timestamp - BLOCK_TIME)
-        );
-        assertEq(hub.suggestState(0), state.formatOriginState(DOMAIN_LOCAL, 0), "!state: 0");
+        RawState memory rs;
+        rs.origin = DOMAIN_LOCAL;
+        rs.blockNumber = uint40(block.number - 1);
+        rs.timestamp = uint40(block.timestamp - BLOCK_TIME);
+        bytes memory state = rs.formatState();
+        assertEq(hub.suggestState(0), state, "!state: 0");
         assertEq(hub.suggestState(0), hub.suggestLatestState(), "!latest state: 0");
-        uint40 initialBN = uint40(block.number);
-        uint40 initialTS = uint40(block.timestamp);
-        // Dispatch some messages
-        test_dispatch();
+        // Send some messages
+        test_sendMessages(rgd);
         // Check saved States
         assertEq(hub.statesAmount(), MESSAGES + 1, "!statesAmount");
-        assertEq(hub.suggestState(0), state.formatOriginState(DOMAIN_LOCAL, 0), "!suggestState: 0");
+        assertEq(hub.suggestState(0), state, "!suggestState: 0");
         for (uint32 i = 0; i < MESSAGES; ++i) {
-            state = OriginState(getRoot(i + 1), initialBN + i, uint40(initialTS + i * BLOCK_TIME));
-            assertEq(
-                hub.suggestState(i + 1),
-                state.formatOriginState(DOMAIN_LOCAL, i + 1),
-                "!suggestState"
-            );
+            rs.nonce += 1;
+            rs.root = getRoot(rs.nonce);
+            rs.blockNumber += 1;
+            rs.timestamp += uint40(BLOCK_TIME);
+            rs.gasData = rgd;
+            state = rs.formatState();
+            assertEq(hub.suggestState(i + 1), state, "!suggestState");
         }
-        assertEq(
-            hub.suggestLatestState(),
-            state.formatOriginState(DOMAIN_LOCAL, MESSAGES),
-            "!suggestLatestState"
-        );
+        assertEq(hub.suggestLatestState(), state, "!suggestLatestState");
     }
 
-    function test_slashAgent() public {
-        address notary = domains[DOMAIN_REMOTE].agent;
-        vm.expectEmit(true, true, true, true);
-        emit AgentRemoved(DOMAIN_REMOTE, notary);
-        vm.expectEmit(true, true, true, true);
-        emit AgentSlashed(DOMAIN_REMOTE, notary);
-        vm.recordLogs();
-        vm.prank(address(systemRouter));
-        ISystemContract(origin).slashAgent({
-            _rootSubmittedAt: block.timestamp,
-            _callOrigin: DOMAIN_LOCAL,
-            _caller: SystemEntity.BondingManager,
-            _info: AgentInfo(DOMAIN_REMOTE, notary, false)
-        });
-        assertEq(vm.getRecordedLogs().length, 2, "Emitted extra logs");
+    function test_verifySnapshot_valid(uint32 nonce, RawGasData memory rgd, RawStateIndex memory rsi) public {
+        // Use empty mutation mask
+        test_verifySnapshot_existingNonce(nonce, 0, rgd, rsi);
     }
 
     function test_verifySnapshot_existingNonce(
         uint32 nonce,
-        OriginStateMask memory mask,
-        uint256 statesAmount,
-        uint256 stateIndex
-    ) public {
-        (bool isValid, SummitState memory fs) = _prepareExistingState(nonce, mask);
-        _verifySnapshot(fs, isValid, statesAmount, stateIndex);
+        uint256 mask,
+        RawGasData memory rgd,
+        RawStateIndex memory rsi
+    ) public boundIndex(rsi) {
+        (bool isValid, RawState memory rs) = _prepareExistingState(rgd, nonce, mask);
+        _verifySnapshot(rs, isValid, rsi);
     }
 
-    function test_verifySnapshot_unknownNonce(
-        SummitState memory fs,
-        uint256 statesAmount,
-        uint256 stateIndex
-    ) public {
+    function test_verifySnapshot_unknownNonce(RawState memory rs, RawStateIndex memory rsi) public boundIndex(rsi) {
         // Restrict nonce to non-existing ones
-        fs.nonce = uint32(bound(fs.nonce, MESSAGES + 1, type(uint32).max));
-        fs.origin = DOMAIN_LOCAL;
+        rs.nonce = uint32(bound(rs.nonce, MESSAGES + 1, type(uint32).max));
+        rs.origin = DOMAIN_LOCAL;
         // Remaining fields are fuzzed
-        _verifySnapshot(fs, false, statesAmount, stateIndex);
+        _verifySnapshot(rs, false, rsi);
     }
 
-    function test_verifyAttestation_existingNonce(
-        Random memory random,
-        uint32 nonce,
-        OriginStateMask memory mask
-    ) public {
-        (bool isValid, SummitState memory fs) = _prepareExistingState(nonce, mask);
-        _verifyAttestation(random, fs, isValid);
+    function test_verifyAttestation_valid(Random memory random, uint32 nonce) public {
+        test_verifyAttestation_existingNonce(random, nonce, 0);
     }
 
-    function test_verifyAttestation_unknownNonce(Random memory random, SummitState memory fs)
-        public
-    {
+    function test_verifyAttestation_existingNonce(Random memory random, uint32 nonce, uint256 mask) public {
+        (bool isValid, RawState memory rs) = _prepareExistingState(random.nextGasData(), nonce, mask);
+        _verifyAttestation(random, rs, isValid);
+    }
+
+    function test_verifyAttestation_unknownNonce(Random memory random, RawState memory rs) public {
         // Restrict nonce to non-existing ones
-        fs.nonce = uint32(bound(fs.nonce, MESSAGES + 1, type(uint32).max));
-        fs.origin = DOMAIN_LOCAL;
+        rs.nonce = uint32(bound(rs.nonce, MESSAGES + 1, type(uint32).max));
+        rs.origin = DOMAIN_LOCAL;
         // Remaining fields are fuzzed
-        _verifyAttestation(random, fs, false);
+        _verifyAttestation(random, rs, false);
     }
 
-    function _prepareExistingState(uint32 nonce, OriginStateMask memory mask)
+    function test_verifyAttestationWithProof_valid(Random memory random, uint32 nonce) public {
+        // Use empty mutation mask
+        test_verifyAttestationWithProof_existingNonce(random, nonce, 0);
+    }
+
+    function test_verifyAttestationWithProof_existingNonce(Random memory random, uint32 nonce, uint256 mask) public {
+        (bool isValid, RawState memory rs) = _prepareExistingState(random.nextGasData(), nonce, mask);
+        _verifyAttestationWithProof(random, rs, isValid);
+    }
+
+    function test_verifyAttestationWithProof_unknownNonce(Random memory random, RawState memory rs) public {
+        // Restrict nonce to non-existing ones
+        rs.nonce = uint32(bound(rs.nonce, MESSAGES + 1, type(uint32).max));
+        rs.origin = DOMAIN_LOCAL;
+        // Remaining fields are fuzzed
+        _verifyAttestationWithProof(random, rs, false);
+    }
+
+    // ══════════════════════════════════════════════════ HELPERS ══════════════════════════════════════════════════════
+
+    function _prepareExistingState(RawGasData memory rgd, uint32 nonce, uint256 mask)
         internal
-        returns (bool isValid, SummitState memory fs)
+        returns (bool isValid, RawState memory rs)
     {
         uint40 initialBN = uint40(block.number - 1);
         uint40 initialTS = uint40(block.timestamp - BLOCK_TIME);
-        test_dispatch();
+        test_sendMessages(rgd);
         // State is valid if and only if all three fields match
-        isValid = !(mask.diffRoot || mask.diffBlockNumber || mask.diffTimestamp);
+        isValid = mask & 7 == 0;
         // Restrict nonce to existing ones
         nonce = uint32(bound(nonce, 0, MESSAGES));
-        fs = SummitState({
-            root: getRoot(nonce),
-            origin: DOMAIN_LOCAL,
-            nonce: nonce,
-            blockNumber: initialBN + nonce,
-            timestamp: uint40(initialTS + nonce * BLOCK_TIME)
-        });
-        if (mask.diffRoot) fs.root = fs.root ^ bytes32(uint256(1));
-        if (mask.diffBlockNumber) fs.blockNumber = fs.blockNumber ^ 1;
-        if (mask.diffTimestamp) fs.timestamp = fs.timestamp ^ 1;
+        rs.origin = DOMAIN_LOCAL;
+        rs.nonce = nonce;
+        rs.root = getRoot(nonce) ^ bytes32(mask & 1);
+        rs.blockNumber = (initialBN + nonce) ^ uint40(mask & 2);
+        rs.timestamp = uint40(initialTS + nonce * BLOCK_TIME) ^ uint40(mask & 4);
     }
 
-    function _verifyAttestation(
-        Random memory random,
-        SummitState memory state,
-        bool isValid
-    ) internal {
+    function _prepareAttestation(Random memory random, RawState memory rawState)
+        internal
+        returns (
+            uint32 domain,
+            address notary,
+            RawStateIndex memory rsi,
+            bytes memory snapshot,
+            RawAttestation memory ra
+        )
+    {
         // Pick random domain expect for 0
         uint256 domainIndex = bound(random.nextUint256(), 1, allDomains.length - 1);
-        uint32 domain = allDomains[domainIndex];
+        domain = allDomains[domainIndex];
         // Pick random Notary
         uint256 notaryIndex = bound(random.nextUint256(), 0, DOMAIN_AGENTS - 1);
-        address notary = domains[domain].agents[notaryIndex];
+        notary = domains[domain].agents[notaryIndex];
         // Fuzz the position of invalid state in the snapshot
-        uint256 statesAmount = bound(random.nextUint256(), 1, SNAPSHOT_MAX_STATES);
-        uint256 stateIndex = bound(random.nextUint256(), 0, statesAmount - 1);
-        (, State[] memory states) = fakeStates(state, statesAmount, stateIndex);
-        bytes memory snapshot = SnapshotLib.formatSnapshot(states);
-        SummitAttestation memory sa;
-        sa.root = snapshot.castToSnapshot().root();
-        // Rest could be random
-        sa.height = random.nextUint8();
-        sa.blockNumber = random.nextUint40();
-        sa.timestamp = random.nextUint40();
-        bytes memory attestation = sa.formatSummitAttestation(random.nextUint32());
-        bytes memory signature = signMessage(notary, keccak256(attestation));
+        rsi = random.nextStateIndex();
+        RawSnapshot memory rawSnap = fakeSnapshot(rawState, rsi);
+        snapshot = rawSnap.formatSnapshot();
+        // Use random metadata
+        ra = random.nextAttestation(rawSnap, random.nextUint32());
+        // Save snapshot for Snapshot Proof generation
+        acceptSnapshot(rawSnap);
+    }
+
+    function _verifyAttestation(Random memory random, RawState memory rawState, bool isValid) internal {
+        (uint32 domain, address notary, RawStateIndex memory rsi, bytes memory snapshot, RawAttestation memory ra) =
+            _prepareAttestation(random, rawState);
+        bytes memory state = rawState.formatState();
+        (bytes memory attPayload, bytes memory attSig) = signAttestation(notary, ra);
         if (!isValid) {
             // Expect Events to be emitted
             vm.expectEmit(true, true, true, true);
-            emit InvalidAttestationState(stateIndex, snapshot, attestation, signature);
-            vm.expectEmit(true, true, true, true);
-            emit AgentRemoved(domain, notary);
-            vm.expectEmit(true, true, true, true);
-            emit AgentSlashed(domain, notary);
+            emit InvalidStateWithAttestation(rsi.stateIndex, state, attPayload, attSig);
+            // TODO: check that anyone could make the call
+            expectStatusUpdated(AgentFlag.Fraudulent, domain, notary);
+            expectDisputeResolved(0, notary, address(0), address(this));
         }
         vm.recordLogs();
         assertEq(
-            InterfaceOrigin(origin).verifyAttestation(snapshot, stateIndex, attestation, signature),
+            lightInbox.verifyStateWithAttestation(rsi.stateIndex, snapshot, attPayload, attSig), isValid, "!returnValue"
+        );
+        if (isValid) {
+            assertEq(vm.getRecordedLogs().length, 0, "Emitted logs when shouldn't");
+        }
+    }
+
+    function _verifyAttestationWithProof(Random memory random, RawState memory rawState, bool isValid) internal {
+        (uint32 domain, address notary, RawStateIndex memory rsi,, RawAttestation memory ra) =
+            _prepareAttestation(random, rawState);
+        bytes32[] memory snapProof = genSnapshotProof(rsi.stateIndex);
+        bytes memory state = rawState.formatState();
+        (bytes memory attPayload, bytes memory attSig) = signAttestation(notary, ra);
+        if (!isValid) {
+            // Expect Events to be emitted
+            vm.expectEmit(true, true, true, true);
+            emit InvalidStateWithAttestation(rsi.stateIndex, state, attPayload, attSig);
+            // TODO: check that anyone could make the call
+            expectStatusUpdated(AgentFlag.Fraudulent, domain, notary);
+            expectDisputeResolved(0, notary, address(0), address(this));
+        }
+        vm.recordLogs();
+        assertEq(
+            lightInbox.verifyStateWithSnapshotProof(rsi.stateIndex, state, snapProof, attPayload, attSig),
             isValid,
             "!returnValue"
         );
@@ -264,36 +362,81 @@ contract OriginTest is SynapseTest, SynapseProofs {
         }
     }
 
-    function _verifySnapshot(
-        SummitState memory state,
-        bool isValid,
-        uint256 statesAmount,
-        uint256 stateIndex
-    ) internal {
-        // Fuzz the position of invalid state in the snapshot
-        statesAmount = bound(statesAmount, 1, SNAPSHOT_MAX_STATES);
-        stateIndex = bound(stateIndex, 0, statesAmount - 1);
-        (, State[] memory states) = fakeStates(state, statesAmount, stateIndex);
+    function _verifySnapshot(RawState memory rawState, bool isValid, RawStateIndex memory rsi) internal {
         address notary = domains[DOMAIN_REMOTE].agent;
-        bytes memory snapshot = SnapshotLib.formatSnapshot(states);
-        bytes memory signature = signMessage(notary, keccak256(snapshot));
+        RawSnapshot memory rawSnap = fakeSnapshot(rawState, rsi);
+        (bytes memory snapPayload, bytes memory snapSig) = signSnapshot(notary, rawSnap);
         vm.recordLogs();
         if (!isValid) {
             // Expect Events to be emitted
             vm.expectEmit(true, true, true, true);
-            emit InvalidSnapshotState(stateIndex, snapshot, signature);
-            vm.expectEmit(true, true, true, true);
-            emit AgentRemoved(DOMAIN_REMOTE, notary);
-            vm.expectEmit(true, true, true, true);
-            emit AgentSlashed(DOMAIN_REMOTE, notary);
+            emit InvalidStateWithSnapshot(rsi.stateIndex, snapPayload, snapSig);
+            // TODO: check that anyone could make the call
+            expectStatusUpdated(AgentFlag.Fraudulent, DOMAIN_REMOTE, notary);
+            expectDisputeResolved(0, notary, address(0), address(this));
         }
-        assertEq(
-            InterfaceOrigin(origin).verifySnapshot(snapshot, stateIndex, signature),
-            isValid,
-            "!returnValue"
-        );
+        assertEq(lightInbox.verifyStateWithSnapshot(rsi.stateIndex, snapPayload, snapSig), isValid, "!returnValue");
         if (isValid) {
             assertEq(vm.getRecordedLogs().length, 0, "Emitted logs when shouldn't");
         }
+        _verifyStateReport(rawState, isValid);
+    }
+
+    function _verifyStateReport(RawState memory rawState, bool isStateValid) internal {
+        // Report is valid only if reported state is invalid
+        bool isValid = !isStateValid;
+        address guard = domains[0].agent;
+        (bytes memory statePayload, bytes memory srSig) = signStateReport(guard, rawState);
+        if (!isValid) {
+            // Expect Events to be emitted
+            vm.expectEmit(true, true, true, true);
+            emit InvalidStateReport(statePayload, srSig);
+            // TODO: check that anyone could make the call
+            expectStatusUpdated(AgentFlag.Fraudulent, 0, guard);
+            expectDisputeResolved(0, guard, address(0), address(this));
+        }
+        vm.recordLogs();
+        assertEq(lightInbox.verifyStateReport(statePayload, srSig), isValid, "!returnValue");
+        if (isValid) {
+            assertEq(vm.getRecordedLogs().length, 0, "Emitted logs when shouldn't");
+        }
+    }
+
+    // ════════════════════════════════════════════ TEST: WITHDRAW TIPS ════════════════════════════════════════════════
+
+    function test_withdrawTips(uint256 amount) public {
+        vm.deal(origin, amount);
+        vm.prank(address(lightManager));
+        InterfaceOrigin(origin).withdrawTips(recipient, amount);
+        assertEq(recipient.balance, amount);
+    }
+
+    function test_remoteWithdrawTips_revert_insufficientBalance(uint256 balance, uint256 amount) public {
+        amount = bound(amount, 1, type(uint256).max);
+        balance = balance % amount;
+        vm.deal(origin, balance);
+        vm.expectRevert(InsufficientEthBalance.selector);
+        vm.prank(address(lightManager));
+        InterfaceOrigin(origin).withdrawTips(recipient, amount);
+    }
+
+    function test_withdrawTips_revert_recipientReverted(uint256 amount) public {
+        address revertingRecipient = address(new RevertingApp());
+        vm.deal(origin, amount);
+        vm.expectRevert(EthTransferFailed.selector);
+        vm.prank(address(lightManager));
+        InterfaceOrigin(origin).withdrawTips(revertingRecipient, amount);
+    }
+
+    // ═════════════════════════════════════════════════ OVERRIDES ═════════════════════════════════════════════════════
+
+    /// @notice Returns local domain for the tested contract
+    function localDomain() public pure override returns (uint32) {
+        return DOMAIN_LOCAL;
+    }
+
+    /// @notice Returns address of the tested contract
+    function localContract() public view override returns (address) {
+        return localOrigin();
     }
 }

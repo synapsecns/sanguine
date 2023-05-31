@@ -67,7 +67,17 @@ export const Wallet = () => {
                     <button
                       onClick={openConnectModal}
                       type="button"
-                      className="text-sm flex items-center group cursor-pointer text-white outline-none active:outline-none ring-none transition-all duration-100 transform-gpu w-full rounded-lg py-2 pl-2.5 pr-2.5 group focus:outline-none focus:ring-0 hover:bg-opacity-70 bg-bgLight hover:bg-bgLightest focus:bg-bgLightest active:bg-bgLightest border-transparent hover:!border-blue-500 flex-shrink border border-none"
+                      className={`
+                        text-sm flex items-center group cursor-pointer
+                      text-white outline-none active:outline-none
+                        ring-none transition-all duration-100 transform-gpu
+                        w-full rounded-lg py-2 pl-2.5 pr-2.5 group
+                        focus:outline-none focus:ring-0 hover:bg-opacity-70
+                      bg-bgLight hover:bg-bgLightest focus:bg-bgLightest
+                      active:bg-bgLightest hover:!border-blue-500
+                        border border-none border-transparent
+                        flex-shrink  whitespace-nowrap
+                        `}
                     >
                       Connect Wallet
                     </button>
@@ -75,8 +85,18 @@ export const Wallet = () => {
                 }
                 if (currentChain?.unsupported || chain?.unsupported) {
                   return (
-                    <button onClick={openChainModal} type="button">
-                      Wrong network
+                    <button
+                      onClick={openChainModal}
+                      type="button"
+                      className={`
+                      text-white transition-all duration-100th
+                        w-fit cursor-pointer rounded-lg py-2 pl-2.5
+                        pr-2.5 border border-bgLight
+                      active:bg-bgLightest/10 hover:bg-bgLightest/10
+                        whitespace-nowrap
+                        `}
+                    >
+                      Wrong Network
                     </button>
                   )
                 }
@@ -86,7 +106,13 @@ export const Wallet = () => {
                       onClick={openChainModal}
                       style={{ display: 'flex', alignItems: 'center', gap: 7 }}
                       type="button"
-                      className="text-white transition-all duration-100th w-fit cursor-pointer rounded-lg py-2 pl-2.5 pr-2.5 border border-bgLight active:bg-bgLightest/10 hover:bg-bgLightest/10"
+                      className={`
+                        text-white transition-all duration-100th
+                        w-fit cursor-pointer rounded-lg py-2 pl-2.5
+                        pr-2.5 border border-bgLight
+                        active:bg-bgLightest/10 hover:bg-bgLightest/10
+                        whitespace-nowrap
+                        `}
                     >
                       {account?.displayBalance ? (
                         account.displayBalance
@@ -119,7 +145,13 @@ export const Wallet = () => {
                     <button
                       onClick={openAccountModal}
                       type="button"
-                      className="flex items-center cursor-pointer text-white transition-all duration-100 w-fit rounded-lg py-2 pl-2.5 pr-2.5  bg-bgLight hover:bg-opacity-70 hover:bg-bgLightest active:bg-bgLightest text-sm"
+                      className={`
+                        flex items-center cursor-pointer text-white
+                        transition-all duration-100 w-fit rounded-lg
+                        py-2 pl-2.5 pr-2.5  bg-bgLight hover:bg-opacity-70
+                        hover:bg-bgLightest active:bg-bgLightest text-sm
+                        whitespace-nowrap font-bold
+                        `}
                     >
                       {account ? account.displayName : <Spinner />}
                     </button>

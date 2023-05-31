@@ -21,6 +21,7 @@ import (
 )
 
 func TestEncodeTipsParity(t *testing.T) {
+	// TODO (joe): re-enabled this
 	ctx, cancel := context.WithTimeout(context.Background(), time.Second*10)
 	defer cancel()
 
@@ -29,56 +30,28 @@ func TestEncodeTipsParity(t *testing.T) {
 
 	_, handle := deployManager.GetTipsHarness(ctx, testBackend)
 
-	// make sure constants match
-	tipsVersion, err := handle.TipsVersion(&bind.CallOpts{Context: ctx})
-	Nil(t, err)
-	Equal(t, tipsVersion, types.TipsVersion)
-
-	notaryOffset, err := handle.OffsetNotary(&bind.CallOpts{Context: ctx})
-	Nil(t, err)
-	Equal(t, notaryOffset, big.NewInt(types.OffsetNotary))
-
-	relayerOffset, err := handle.OffsetBroadcaster(&bind.CallOpts{Context: ctx})
-	Nil(t, err)
-	Equal(t, relayerOffset, big.NewInt(types.OffsetBroadcaster))
-
-	proverOffset, err := handle.OffsetProver(&bind.CallOpts{Context: ctx})
-	Nil(t, err)
-	Equal(t, proverOffset, big.NewInt(types.OffsetProver))
-
-	processorOffset, err := handle.OffsetExecutor(&bind.CallOpts{Context: ctx})
-	Nil(t, err)
-	Equal(t, processorOffset, big.NewInt(types.OffsetExecutor))
-
 	// we want to make sure we can deal w/ overflows
-	notaryTip := randomUint96BigInt(t)
-	broadcasterTip := randomUint96BigInt(t)
-	proverTip := randomUint96BigInt(t)
-	executorTip := randomUint96BigInt(t)
+	summitTip := randomUint64BigInt(t)
+	attestationTip := randomUint64BigInt(t)
+	executionTip := randomUint64BigInt(t)
+	deliveryTip := randomUint64BigInt(t)
 
-	solidityFormattedTips, err := handle.FormatTips(&bind.CallOpts{Context: ctx}, notaryTip, broadcasterTip, proverTip, executorTip)
+	solidityFormattedTips, err := handle.EncodeTips(&bind.CallOpts{Context: ctx},
+		summitTip.Uint64(), attestationTip.Uint64(), executionTip.Uint64(), deliveryTip.Uint64())
 	Nil(t, err)
 
-	goTips, err := types.EncodeTips(types.NewTips(notaryTip, broadcasterTip, proverTip, executorTip))
+	goTips, err := types.EncodeTips(types.NewTips(summitTip, attestationTip, executionTip, deliveryTip))
 	Nil(t, err)
 
-	Equal(t, goTips, solidityFormattedTips)
-}
+	Equal(t, solidityFormattedTips.Bytes(), goTips)
 
-// randomUint96BigInt is a helper method for generating random uint96 values
-// see:  https://stackoverflow.com/a/45428754
-func randomUint96BigInt(tb testing.TB) *big.Int {
-	tb.Helper()
+	decodedTips, err := types.DecodeTips(goTips)
+	Nil(t, err)
 
-	// Max random value, a 130-bits integer, i.e 2^96 - 1
-	max := new(big.Int)
-	max.Exp(big.NewInt(2), big.NewInt(96), nil).Sub(max, big.NewInt(1))
-
-	// Generate cryptographically strong pseudo-random between 0 - max
-	n, err := rand.Int(rand.Reader, max)
-	Nil(tb, err)
-
-	return n
+	Equal(t, decodedTips.SummitTip(), summitTip)
+	Equal(t, decodedTips.AttestationTip(), attestationTip)
+	Equal(t, decodedTips.ExecutionTip(), executionTip)
+	Equal(t, decodedTips.DeliveryTip(), deliveryTip)
 }
 
 func randomUint40BigInt(tb testing.TB) *big.Int {
@@ -93,6 +66,53 @@ func randomUint40BigInt(tb testing.TB) *big.Int {
 	Nil(tb, err)
 
 	return n
+}
+
+func randomUint64BigInt(tb testing.TB) *big.Int {
+	tb.Helper()
+
+	// Max random value, a 130-bits integer, i.e 2^96 - 1
+	max := new(big.Int)
+	max.Exp(big.NewInt(2), big.NewInt(64), nil).Sub(max, big.NewInt(1))
+
+	// Generate cryptographically strong pseudo-random between 0 - max
+	n, err := rand.Int(rand.Reader, max)
+	Nil(tb, err)
+
+	return n
+}
+
+func TestEncodeGasDataParity(t *testing.T) {
+	ctx, cancel := context.WithTimeout(context.Background(), time.Second*10)
+	defer cancel()
+
+	testBackend := simulated.NewSimulatedBackend(ctx, t)
+	deployManager := testutil.NewDeployManager(t)
+
+	gasPrice := gofakeit.Uint16()
+	dataPrice := gofakeit.Uint16()
+	execBuffer := gofakeit.Uint16()
+	amortAttCost := gofakeit.Uint16()
+	etherPrice := gofakeit.Uint16()
+	markup := gofakeit.Uint16()
+
+	_, gasDataContract := deployManager.GetGasDataHarness(ctx, testBackend)
+
+	contractData, err := gasDataContract.EncodeGasData(&bind.CallOpts{Context: ctx}, gasPrice, dataPrice, execBuffer, amortAttCost, etherPrice, markup)
+	Nil(t, err)
+
+	goFormattedData, err := types.EncodeGasData(types.NewGasData(gasPrice, dataPrice, execBuffer, amortAttCost, etherPrice, markup))
+	Nil(t, err)
+	Equal(t, contractData.Bytes(), goFormattedData)
+
+	gasDataFromBytes, err := types.DecodeGasData(goFormattedData)
+	Nil(t, err)
+	Equal(t, gasPrice, gasDataFromBytes.GasPrice())
+	Equal(t, dataPrice, gasDataFromBytes.DataPrice())
+	Equal(t, execBuffer, gasDataFromBytes.ExecBuffer())
+	Equal(t, amortAttCost, gasDataFromBytes.AmortAttCost())
+	Equal(t, etherPrice, gasDataFromBytes.EtherPrice())
+	Equal(t, markup, gasDataFromBytes.Markup())
 }
 
 func TestEncodeStateParity(t *testing.T) {
@@ -113,11 +133,23 @@ func TestEncodeStateParity(t *testing.T) {
 	timestamp := randomUint40BigInt(t)
 
 	_, stateContract := deployManager.GetStateHarness(ctx, testBackend)
+	_, gasDataContract := deployManager.GetGasDataHarness(ctx, testBackend)
 
-	contractData, err := stateContract.FormatState(&bind.CallOpts{Context: ctx}, rootB32, origin, nonce, blockNumber, timestamp)
+	gasPrice := gofakeit.Uint16()
+	dataPrice := gofakeit.Uint16()
+	execBuffer := gofakeit.Uint16()
+	amortAttCost := gofakeit.Uint16()
+	etherPrice := gofakeit.Uint16()
+	markup := gofakeit.Uint16()
+	gasContractData, err := gasDataContract.EncodeGasData(&bind.CallOpts{Context: ctx}, gasPrice, dataPrice, execBuffer, amortAttCost, etherPrice, markup)
 	Nil(t, err)
 
-	goFormattedData, err := types.EncodeState(types.NewState(rootB32, origin, nonce, blockNumber, timestamp))
+	contractData, err := stateContract.FormatState(&bind.CallOpts{Context: ctx}, rootB32, origin, nonce, blockNumber, timestamp, gasContractData)
+	Nil(t, err)
+
+	gasData := types.NewGasData(gasPrice, dataPrice, execBuffer, amortAttCost, etherPrice, markup)
+
+	goFormattedData, err := types.EncodeState(types.NewState(rootB32, origin, nonce, blockNumber, timestamp, gasData))
 	Nil(t, err)
 	Equal(t, contractData, goFormattedData)
 
@@ -128,6 +160,12 @@ func TestEncodeStateParity(t *testing.T) {
 	Equal(t, nonce, stateFromBytes.Nonce())
 	Equal(t, blockNumber, stateFromBytes.BlockNumber())
 	Equal(t, timestamp, stateFromBytes.Timestamp())
+	Equal(t, gasPrice, stateFromBytes.GasData().GasPrice())
+	Equal(t, dataPrice, stateFromBytes.GasData().DataPrice())
+	Equal(t, execBuffer, stateFromBytes.GasData().ExecBuffer())
+	Equal(t, amortAttCost, stateFromBytes.GasData().AmortAttCost())
+	Equal(t, etherPrice, stateFromBytes.GasData().EtherPrice())
+	Equal(t, markup, stateFromBytes.GasData().Markup())
 }
 
 func TestEncodeSnapshotParity(t *testing.T) {
@@ -150,8 +188,24 @@ func TestEncodeSnapshotParity(t *testing.T) {
 	timestampA := randomUint40BigInt(t)
 	timestampB := randomUint40BigInt(t)
 
-	stateA := types.NewState(rootA, originA, nonceA, blockNumberA, timestampA)
-	stateB := types.NewState(rootB, originB, nonceB, blockNumberB, timestampB)
+	gasPriceA := gofakeit.Uint16()
+	dataPriceA := gofakeit.Uint16()
+	execBufferA := gofakeit.Uint16()
+	amortAttCostA := gofakeit.Uint16()
+	etherPriceA := gofakeit.Uint16()
+	markupA := gofakeit.Uint16()
+	gasDataA := types.NewGasData(gasPriceA, dataPriceA, execBufferA, amortAttCostA, etherPriceA, markupA)
+
+	gasPriceB := gofakeit.Uint16()
+	dataPriceB := gofakeit.Uint16()
+	execBufferB := gofakeit.Uint16()
+	amortAttCostB := gofakeit.Uint16()
+	etherPriceB := gofakeit.Uint16()
+	markupB := gofakeit.Uint16()
+	gasDataB := types.NewGasData(gasPriceB, dataPriceB, execBufferB, amortAttCostB, etherPriceB, markupB)
+
+	stateA := types.NewState(rootA, originA, nonceA, blockNumberA, timestampA, gasDataA)
+	stateB := types.NewState(rootB, originB, nonceB, blockNumberB, timestampB, gasDataB)
 
 	var statesAB [][]byte
 	stateABytes, err := types.EncodeState(stateA)
@@ -176,12 +230,24 @@ func TestEncodeSnapshotParity(t *testing.T) {
 	Equal(t, stateA.Nonce(), snapshotFromBytes.States()[0].Nonce())
 	Equal(t, stateA.BlockNumber(), snapshotFromBytes.States()[0].BlockNumber())
 	Equal(t, stateA.Timestamp(), snapshotFromBytes.States()[0].Timestamp())
+	Equal(t, stateA.GasData().GasPrice(), snapshotFromBytes.States()[0].GasData().GasPrice())
+	Equal(t, stateA.GasData().DataPrice(), snapshotFromBytes.States()[0].GasData().DataPrice())
+	Equal(t, stateA.GasData().ExecBuffer(), snapshotFromBytes.States()[0].GasData().ExecBuffer())
+	Equal(t, stateA.GasData().AmortAttCost(), snapshotFromBytes.States()[0].GasData().AmortAttCost())
+	Equal(t, stateA.GasData().EtherPrice(), snapshotFromBytes.States()[0].GasData().EtherPrice())
+	Equal(t, stateA.GasData().Markup(), snapshotFromBytes.States()[0].GasData().Markup())
 
 	Equal(t, stateB.Root(), snapshotFromBytes.States()[1].Root())
 	Equal(t, stateB.Origin(), snapshotFromBytes.States()[1].Origin())
 	Equal(t, stateB.Nonce(), snapshotFromBytes.States()[1].Nonce())
 	Equal(t, stateB.BlockNumber(), snapshotFromBytes.States()[1].BlockNumber())
 	Equal(t, stateB.Timestamp(), snapshotFromBytes.States()[1].Timestamp())
+	Equal(t, stateB.GasData().GasPrice(), snapshotFromBytes.States()[1].GasData().GasPrice())
+	Equal(t, stateB.GasData().DataPrice(), snapshotFromBytes.States()[1].GasData().DataPrice())
+	Equal(t, stateB.GasData().ExecBuffer(), snapshotFromBytes.States()[1].GasData().ExecBuffer())
+	Equal(t, stateB.GasData().AmortAttCost(), snapshotFromBytes.States()[1].GasData().AmortAttCost())
+	Equal(t, stateB.GasData().EtherPrice(), snapshotFromBytes.States()[1].GasData().EtherPrice())
+	Equal(t, stateB.GasData().Markup(), snapshotFromBytes.States()[1].GasData().Markup())
 
 	testWallet, err := wallet.FromRandom()
 	Nil(t, err)
@@ -219,20 +285,21 @@ func TestEncodeAttestationParity(t *testing.T) {
 
 	_, attestationContract := deployManager.GetAttestationHarness(ctx, testBackend)
 
-	root := common.BigToHash(big.NewInt(gofakeit.Int64()))
+	snapRoot := common.BigToHash(big.NewInt(gofakeit.Int64()))
+	agentRoot := common.BigToHash(big.NewInt(gofakeit.Int64()))
 
-	var rootB32 [32]byte
-	copy(rootB32[:], root[:])
+	var rootB32, dataHashB32 [32]byte
+	copy(rootB32[:], snapRoot[:])
+	copy(dataHashB32[:], agentRoot[:])
 
-	height := gofakeit.Uint8()
 	nonce := gofakeit.Uint32()
 	blockNumber := randomUint40BigInt(t)
 	timestamp := randomUint40BigInt(t)
 
-	contractData, err := attestationContract.FormatAttestation(&bind.CallOpts{Context: ctx}, rootB32, height, nonce, blockNumber, timestamp)
+	contractData, err := attestationContract.FormatAttestation(&bind.CallOpts{Context: ctx}, rootB32, dataHashB32, nonce, blockNumber, timestamp)
 	Nil(t, err)
 
-	goFormattedData, err := types.EncodeAttestation(types.NewAttestation(rootB32, height, nonce, blockNumber, timestamp))
+	goFormattedData, err := types.EncodeAttestation(types.NewAttestation(rootB32, dataHashB32, nonce, blockNumber, timestamp))
 	Nil(t, err)
 
 	Equal(t, contractData, goFormattedData)
@@ -240,7 +307,7 @@ func TestEncodeAttestationParity(t *testing.T) {
 	attestationFromBytes, err := types.DecodeAttestation(goFormattedData)
 	Nil(t, err)
 	Equal(t, rootB32, attestationFromBytes.SnapshotRoot())
-	Equal(t, height, attestationFromBytes.Height())
+	Equal(t, dataHashB32, attestationFromBytes.DataHash())
 	Equal(t, nonce, attestationFromBytes.Nonce())
 	Equal(t, blockNumber, attestationFromBytes.BlockNumber())
 	Equal(t, timestamp, attestationFromBytes.Timestamp())
@@ -248,48 +315,42 @@ func TestEncodeAttestationParity(t *testing.T) {
 
 func TestMessageEncodeParity(t *testing.T) {
 	// TODO (joeallen): FIX ME
-	t.Skip()
+	// t.Skip()
 	ctx, cancel := context.WithTimeout(context.Background(), time.Second*10)
 	defer cancel()
 
 	testBackend := simulated.NewSimulatedBackend(ctx, t)
 	deployManager := testutil.NewDeployManager(t)
 	_, messageContract := deployManager.GetMessageHarness(ctx, testBackend)
-
-	// TODO (joeallen): FIX ME
-	// check constant parity
-	// version, err := messageContract.MessageVersion0(&bind.CallOpts{Context: ctx})
-	// Nil(t, err)
-	// Equal(t, version, types.MessageVersion)
-
-	headerOffset, err := messageContract.OffsetHeader(&bind.CallOpts{Context: ctx})
-	Nil(t, err)
-	Equal(t, headerOffset, big.NewInt(int64(types.HeaderOffset)))
+	_, headerContract := deployManager.GetHeaderHarness(ctx, testBackend)
 
 	// generate some fake data
+	flag := types.MessageFlagManager
 	origin := gofakeit.Uint32()
-	sender := common.BigToHash(big.NewInt(gofakeit.Int64()))
 	nonce := gofakeit.Uint32()
 	destination := gofakeit.Uint32()
-	recipient := common.BigToHash(big.NewInt(gofakeit.Int64()))
 	body := []byte(gofakeit.Sentence(gofakeit.Number(5, 15)))
 	optimisticSeconds := gofakeit.Uint32()
 
-	notaryTip := randomUint96BigInt(t)
-	broadcasterTip := randomUint96BigInt(t)
-	proverTip := randomUint96BigInt(t)
-	executorTip := randomUint96BigInt(t)
+	formattedHeader, err := headerContract.EncodeHeader(&bind.CallOpts{Context: ctx}, uint8(flag), origin, nonce, destination, optimisticSeconds)
+	Nil(t, err)
 
-	formattedMessage, err := messageContract.FormatMessage1(&bind.CallOpts{Context: ctx}, origin, sender, nonce, destination, recipient, optimisticSeconds, notaryTip, broadcasterTip, proverTip, executorTip, body)
+	goHeader, err := types.EncodeHeader(types.NewHeader(flag, origin, nonce, destination, optimisticSeconds))
+	Nil(t, err)
+	formattedHeaderFromGo := new(big.Int).SetBytes(goHeader)
+
+	Equal(t, formattedHeader, formattedHeaderFromGo)
+
+	formattedMessage, err := messageContract.FormatMessage(&bind.CallOpts{Context: ctx}, formattedHeader, body)
 	Nil(t, err)
 
 	decodedMessage, err := types.DecodeMessage(formattedMessage)
 	Nil(t, err)
 
 	Equal(t, decodedMessage.OriginDomain(), origin)
-	Equal(t, decodedMessage.Sender(), sender)
 	Equal(t, decodedMessage.Nonce(), nonce)
 	Equal(t, decodedMessage.DestinationDomain(), destination)
+	Equal(t, decodedMessage.OptimisticSeconds(), optimisticSeconds)
 	Equal(t, decodedMessage.Body(), body)
 }
 
@@ -301,30 +362,23 @@ func TestHeaderEncodeParity(t *testing.T) {
 	deployManager := testutil.NewDeployManager(t)
 	_, headerHarnessContract := deployManager.GetHeaderHarness(ctx, testBackend)
 
+	flag := types.MessageFlagManager
 	origin := gofakeit.Uint32()
-	sender := common.BigToHash(big.NewInt(gofakeit.Int64()))
 	nonce := gofakeit.Uint32()
 	destination := gofakeit.Uint32()
-	recipient := common.BigToHash(big.NewInt(gofakeit.Int64()))
 	optimisticSeconds := gofakeit.Uint32()
 
-	solHeader, err := headerHarnessContract.FormatHeader(&bind.CallOpts{Context: ctx},
+	solHeader, err := headerHarnessContract.EncodeHeader(&bind.CallOpts{Context: ctx},
+		uint8(flag),
 		origin,
-		sender,
 		nonce,
 		destination,
-		recipient,
 		optimisticSeconds,
 	)
 	Nil(t, err)
 
-	goHeader, err := types.EncodeHeader(types.NewHeader(origin, sender, nonce, destination, recipient, optimisticSeconds))
+	goHeader, err := types.EncodeHeader(types.NewHeader(flag, origin, nonce, destination, optimisticSeconds))
 	Nil(t, err)
 
-	Equal(t, goHeader, solHeader)
-
-	headerVersion, err := headerHarnessContract.HeaderVersion(&bind.CallOpts{Context: ctx})
-	Nil(t, err)
-
-	Equal(t, headerVersion, types.HeaderVersion)
+	Equal(t, goHeader, solHeader.Bytes())
 }

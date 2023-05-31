@@ -32,7 +32,7 @@ jobs:
 
       - name: Run Foundry Tests
         working-directory: ./packages/contracts-core
-        run: forge coverage -vvv --report=lcov
+        run: forge coverage -vvv --report lcov --report summary >> $GITHUB_STEP_SUMMARY
 
       - name: Send Coverage (Codecov)
         uses: Wandalen/wretry.action@v1.0.36

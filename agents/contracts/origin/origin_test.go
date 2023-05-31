@@ -10,7 +10,6 @@ import (
 	. "github.com/stretchr/testify/assert"
 	"github.com/synapsecns/sanguine/agents/contracts/origin"
 	"github.com/synapsecns/sanguine/agents/contracts/test/originharness"
-	"github.com/synapsecns/sanguine/agents/types"
 )
 
 func (h OriginSuite) TestLocalDomain() {
@@ -19,18 +18,16 @@ func (h OriginSuite) TestLocalDomain() {
 	Equal(h.T(), uint32(h.testBackend.GetBigChainID().Uint64()), localDomain)
 }
 
-func (h OriginSuite) TestDispatchTopic() {
-	// init the dispatch event
+func (h OriginSuite) TestSentTopic() {
+	// init the sent event
 	txContext := h.testBackend.GetTxContext(h.GetTestContext(), nil)
 
-	dispatchSink := make(chan *originharness.OriginHarnessDispatch)
-	sub, err := h.originContract.WatchDispatch(&bind.WatchOpts{Context: h.GetTestContext()}, dispatchSink, [][32]byte{}, []uint32{}, []uint32{})
+	sentSink := make(chan *originharness.OriginHarnessSent)
+	sub, err := h.originContract.WatchSent(&bind.WatchOpts{Context: h.GetTestContext()}, sentSink, [][32]byte{}, []uint32{}, []uint32{})
 	Nil(h.T(), err)
 
-	enodedTips, err := types.EncodeTips(types.NewTips(big.NewInt(0), big.NewInt(0), big.NewInt(0), big.NewInt(0)))
-	Nil(h.T(), err)
-
-	tx, err := h.originContract.Dispatch(txContext.TransactOpts, h.destinationID, [32]byte{}, 1, enodedTips, nil)
+	paddedRequest := big.NewInt(0)
+	tx, err := h.originContract.SendBaseMessage(txContext.TransactOpts, h.destinationID, [32]byte{}, 1, paddedRequest, []byte{})
 	Nil(h.T(), err)
 
 	h.testBackend.WaitForConfirmation(h.GetTestContext(), tx)
@@ -44,14 +41,14 @@ func (h OriginSuite) TestDispatchTopic() {
 		h.T().Error(h.T(), fmt.Errorf("test context completed %w", h.GetTestContext().Err()))
 	case <-sub.Err():
 		h.T().Error(h.T(), sub.Err())
-	// get dispatch event
-	case item := <-dispatchSink:
+	// get sent event
+	case item := <-sentSink:
 		parser, err := origin.NewParser(h.originContract.Address())
 		Nil(h.T(), err)
 
 		eventType, ok := parser.EventType(item.Raw)
 		True(h.T(), ok)
-		Equal(h.T(), eventType, origin.DispatchedEvent)
+		Equal(h.T(), eventType, origin.SentEvent)
 
 		break
 	}

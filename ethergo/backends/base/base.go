@@ -154,7 +154,6 @@ func (b *Backend) VerifyContract(contractType contracts.ContractType, contract c
 			assert.NotEmpty(b.T(), code)
 		}
 	}()
-
 	var errMux sync.Mutex
 	var wg sync.WaitGroup
 

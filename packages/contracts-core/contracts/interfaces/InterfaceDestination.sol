@@ -1,41 +1,84 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.17;
 
-import { ORIGIN_TREE_DEPTH } from "../libs/Constants.sol";
+import {ChainGas, GasData} from "../libs/stack/GasData.sol";
 
 interface InterfaceDestination {
     /**
-     * @notice Attempts to prove inclusion of message into one of Snapshot Merkle Trees,
-     * previously submitted to this contract in a form of a signed Attestation.
-     * Proven message is immediately executed by passing its contents to the specified recipient.
-     * @dev Will revert if any of these is true:
-     *  - Message payload is not properly formatted.
-     *  - Snapshot root (reconstructed from message hash and proofs) is unknown
-     *  - Snapshot root is known, but was submitted by an inactive Notary
-     *  - Snapshot root is known, but optimistic period for a message hasn't passed
-     *  - Recipient doesn't implement a `handle` method (refer to IMessageRecipient.sol)
-     *  - Recipient reverted upon receiving a message
-     * Note: refer to libs/State.sol for details about Origin State's sub-leafs.
-     * @param _message      Raw payload with a formatted message to execute
-     * @param _originProof  Proof of inclusion of message in the Origin Merkle Tree
-     * @param _snapProof    Proof of inclusion of Origin State's Left Leaf into Snapshot Merkle Tree
-     * @param _stateIndex   Index of Origin State in the Snapshot
+     * @notice Attempts to pass a quarantined Agent Merkle Root to a local Light Manager.
+     * @dev Will do nothing, if root optimistic period is not over.
+     * Note: both returned values can not be true.
+     * @return rootPassed   Whether the agent merkle root was passed to LightManager
+     * @return rootPending  Whether there is a pending agent merkle root left
      */
-    function execute(
-        bytes memory _message,
-        bytes32[ORIGIN_TREE_DEPTH] calldata _originProof,
-        bytes32[] calldata _snapProof,
-        uint256 _stateIndex
-    ) external;
+    function passAgentRoot() external returns (bool rootPassed, bool rootPending);
 
     /**
-     * @notice Submit an Attestation signed by a Notary.
-     * @dev Will revert if any of these is true:
-     *  - Attestation payload is not properly formatted.
-     *  - Attestation signer is not an active Notary for local domain.
-     *  - Attestation's snapshot root has been previously submitted.
+     * @notice Accepts an attestation, which local `AgentManager` verified to have been signed
+     * by an active Notary for this chain.
+     * > Attestation is created whenever a Notary-signed snapshot is saved in Summit on Synapse Chain.
+     * - Saved Attestation could be later used to prove the inclusion of message in the Origin Merkle Tree.
+     * - Messages coming from chains included in the Attestation's snapshot could be proven.
+     * - Proof only exists for messages that were sent prior to when the Attestation's snapshot was taken.
+     * > Will revert if any of these is true:
+     * > - Called by anyone other than local `AgentManager`.
+     * > - Attestation payload is not properly formatted.
+     * > - Attestation signer is in Dispute.
+     * > - Attestation's snapshot root has been previously submitted.
+     * Note: agentRoot and snapGas have been verified by the local `AgentManager`.
+     * @param notaryIndex       Index of Attestation Notary in Agent Merkle Tree
+     * @param sigIndex          Index of stored Notary signature
+     * @param attPayload        Raw payload with Attestation data
+     * @param agentRoot         Agent Merkle Root from the Attestation
+     * @param snapGas           Gas data for each chain in the Attestation's snapshot
+     * @return wasAccepted      Whether the Attestation was accepted
      */
-    function submitAttestation(bytes memory _attPayload, bytes memory _attSignature)
-        external
-        returns (bool wasAccepted);
+    function acceptAttestation(
+        uint32 notaryIndex,
+        uint256 sigIndex,
+        bytes memory attPayload,
+        bytes32 agentRoot,
+        ChainGas[] memory snapGas
+    ) external returns (bool wasAccepted);
+
+    // ═══════════════════════════════════════════════════ VIEWS ═══════════════════════════════════════════════════════
+
+    /**
+     * @notice Returns the total amount of Notaries attestations that have been accepted.
+     */
+    function attestationsAmount() external view returns (uint256);
+
+    /**
+     * @notice Returns a Notary-signed attestation with a given index.
+     * > Index refers to the list of all attestations accepted by this contract.
+     * @dev Attestations are created on Synapse Chain whenever a Notary-signed snapshot is accepted by Summit.
+     * Will return an empty signature if this contract is deployed on Synapse Chain.
+     * @param index             Attestation index
+     * @return attPayload       Raw payload with Attestation data
+     * @return attSignature     Notary signature for the reported attestation
+     */
+    function getAttestation(uint256 index) external view returns (bytes memory attPayload, bytes memory attSignature);
+
+    /**
+     * @notice Returns the gas data for a given chain from the latest accepted attestation with that chain.
+     * @dev Will return empty values if there is no data for the domain,
+     * or if the notary who provided the data is in dispute.
+     * @param domain            Domain for the chain
+     * @return gasData          Gas data for the chain
+     * @return dataMaturity     Gas data age in seconds
+     */
+    function getGasData(uint32 domain) external view returns (GasData gasData, uint256 dataMaturity);
+
+    /**
+     * Returns status of Destination contract as far as snapshot/agent roots are concerned
+     * @return snapRootTime     Timestamp when latest snapshot root was accepted
+     * @return agentRootTime    Timestamp when latest agent root was accepted
+     * @return notaryIndex      Index of Notary who signed the latest agent root
+     */
+    function destStatus() external view returns (uint40 snapRootTime, uint40 agentRootTime, uint32 notaryIndex);
+
+    /**
+     * Returns Agent Merkle Root to be passed to LightManager once its optimistic period is over.
+     */
+    function nextAgentRoot() external view returns (bytes32);
 }

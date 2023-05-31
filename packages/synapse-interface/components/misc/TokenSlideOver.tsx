@@ -5,6 +5,7 @@ import { useKeyPress } from '@hooks/useKeyPress'
 import TokenMenuItem from '@pages/bridge/TokenMenuItem'
 import SlideSearchBox from '@pages/bridge/SlideSearchBox'
 import { DrawerButton } from '@components/buttons/DrawerButton'
+import { sortTokens } from '@constants/tokens'
 
 import { Token } from '@/utils/types'
 import { DisplayType } from '@/pages/bridge/BridgeCard'
@@ -34,6 +35,7 @@ export const TokenSlideOver = ({
   } else {
     tokenList = tokens
   }
+  tokenList = sortTokens(tokenList)
   const fuse = new Fuse(tokenList, {
     includeScore: true,
     threshold: 0.0,
