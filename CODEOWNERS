@@ -18,6 +18,7 @@ packages/contracts-core/ @ChiTimesChi @trajan0x
 packages/docs/ @trajan0x @nautsimon
 packages/sdk-router/ @trajan0x @nautsimon
 packages/explorer-ui/ @trajan0x @nautsimon @bigboydiamonds
+packages/rest-api/ @trajan0x @Defi-Moses @nautsimon
 packages/synapse-interface/ @bigboydiamonds @nautsimon @aureliusbtc
 
 contrib/ @trajan0x

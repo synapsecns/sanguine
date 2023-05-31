@@ -1,0 +1,92 @@
+[
+  {
+    "id": 1,
+    "name": "Ethereum",
+    "rpc": "https://rpc.ankr.com/eth"
+  },
+  {
+    "id": 42161,
+    "name": "Arbitrum",
+    "rpc": "https://arb1.arbitrum.io/rpc"
+  },
+  {
+    "id": 56,
+    "name": "BSC",
+    "rpc": "https://bsc-dataseed1.ninicoin.io/"
+  },
+  {
+    "id": 43114,
+    "name": "Avalanche",
+    "rpc": "https://avalanche.public-rpc.com"
+  },
+  {
+    "id": 7700,
+    "name": "Canto",
+    "rpc": "https://mainnode.plexnode.org:8545"
+  },
+  {
+    "id": 10,
+    "name": "Optimism",
+    "rpc": "https://rpc.ankr.com/optimism"
+  },
+  {
+    "id": 137,
+    "name": "Polygon",
+    "rpc": "https://rpc-mainnet.matic.quiknode.pro"
+  },
+  {
+    "id": 53935,
+    "name": "DFK Chain",
+    "rpc": "https://subnets.avax.Chain/defi-kingdoms/dfk-chain/rpc"
+  },
+  {
+    "id": 8217,
+    "name": "Klaytn",
+    "rpc": "https://klaytn.blockpi.Chain/v1/rpc/public"
+  },
+  {
+    "id": 250,
+    "name": "Fantom",
+    "rpc": "https://rpc.ftm.tools"
+  },
+  {
+    "id": 25,
+    "name": "Cronos",
+    "rpc": "https://evm-cronos.crypto.org"
+  },
+  {
+    "id": 288,
+    "name": "Boba Chain",
+    "rpc": "https://mainnet.boba.Chain/"
+  },
+  {
+    "id": 1088,
+    "name": "Metis",
+    "rpc": "https://andromeda.metis.io/?owner=1088"
+  },
+  {
+    "id": 1313161554,
+    "name": "Aurora",
+    "rpc": "https://mainnet.aurora.dev"
+  },
+  {
+    "id": 1666600000,
+    "name": "Harmony",
+    "rpc": "https://harmony-mainnet.chainstacklabs.com"
+  },
+  {
+    "id": 1284,
+    "name": "Moonbeam",
+    "rpc": "https://rpc.api.moonbeam.Chain"
+  },
+  {
+    "id": 1285,
+    "name": "Moonriver",
+    "rpc": "https://rpc.api.moonriver.moonbeam.Chain"
+  },
+  {
+    "id": 2000,
+    "name": "Dogechain",
+    "rpc": "https://rpc-us.dogechain.dog"
+  }
+]
