@@ -101,5 +101,6 @@ export const withdraw = async (
   } catch (error) {
     toast.dismiss(pendingPopup)
     txErrorHandler(error)
+    return error
   }
 }
