@@ -39,7 +39,7 @@ const DestinationTx = (fromEvent: BridgeWatcherTx) => {
 
   const networkTextColorClass: string = useMemo(() => {
     const networkChainById = CHAINS_BY_ID[fromEvent.chainId]
-    return getNetworkTextColor(networkChainById.color)
+    return getNetworkTextColor(networkChainById?.color)
   }, [fromEvent.toChainId])
 
   const getToBridgeEvent = async (): Promise<BridgeWatcherTx> => {

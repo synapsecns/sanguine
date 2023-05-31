@@ -3,7 +3,6 @@ import DestinationTx from './DestinationTx'
 import { BridgeWatcherTx } from '@types'
 import Link from 'next/link'
 import { ANALYTICS_KAPPA } from '@urls'
-import { ChevronRightIcon } from '@heroicons/react/outline'
 import { memo } from 'react'
 
 const BridgeEvent = memo((fromEvent: BridgeWatcherTx) => {
