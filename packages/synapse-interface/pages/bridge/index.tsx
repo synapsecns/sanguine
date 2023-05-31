@@ -571,9 +571,6 @@ const BridgePage = ({
           fromInput.bigNum
         )
 
-      console.log('originQuery from SDK: ', originQuery)
-      console.log('destQuery from SDK: ', destQuery)
-
       if (!(originQuery && maxAmountOut && destQuery && feeAmount)) {
         setBridgeQuote(EMPTY_BRIDGE_QUOTE_ZERO)
         setIsQuoteLoading(false)
@@ -608,24 +605,14 @@ const BridgePage = ({
         'ONE_TENTH',
         null
       )
-      console.log('originQuery?.minAmountOut: ', originQuery?.minAmountOut)
-      console.log('destQuery?.minAmountOut:', destQuery?.minAmountOut)
-      console.log('originMinWithSlippage:', originMinWithSlippage)
-      console.log('destMinWithSlippage:', destMinWithSlippage)
 
       let newOriginQuery = [...originQuery] as Query
-      console.log('originQuery before assignment: ', newOriginQuery)
       newOriginQuery[2] = originMinWithSlippage
       newOriginQuery.minAmountOut = originMinWithSlippage
-      console.log('originQuery after assignment: ', newOriginQuery)
+
       let newDestQuery = [...destQuery] as Query
-      console.log('destQuery before assignment: ', newDestQuery)
       newDestQuery[2] = destMinWithSlippage
       newDestQuery.minAmountOut = destMinWithSlippage
-      console.log('destQuery after assignment: ', newDestQuery)
-
-      // console.log('destMinWithSlippage in callback: ', destMinWithSlippage)
-      // console.log('originMinWithSlippage in callback: ', originMinWithSlippage)
 
       setBridgeQuote({
         outputAmount: toValueBigNum,
@@ -657,9 +644,6 @@ const BridgePage = ({
     }
   }
 
-  useEffect(() => {
-    console.log('bridgeQuote.quotes.destQuery: ', bridgeQuote.quotes.destQuery)
-  }, [bridgeQuote])
   /*
   Function: executeBridge
   - Gets raw unsigned tx data from sdk and then execute it with ethers.
