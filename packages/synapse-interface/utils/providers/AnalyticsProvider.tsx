@@ -3,7 +3,8 @@ import * as amplitude from '@amplitude/analytics-browser'
 import { useRouter } from 'next/router'
 import { logEvent } from '@amplitude/analytics-browser'
 
-const AMPLITUDE_API_KEY = process.env.NEXT_PUBLIC_AMPLITUDE_KEY
+const AMPLITUDE_API_KEY: string | undefined =
+  process.env.NEXT_PUBLIC_AMPLITUDE_KEY
 
 const AmplitudeContext = createContext<any>(null)
 
@@ -24,6 +25,7 @@ export const AnalyticsProvider = ({
             formInteractions: true,
             fileDownloads: true,
           },
+          logLevel: amplitude.Types.LogLevel.Debug,
         })
         console.log('amplitude initialized')
       } catch (error) {
@@ -35,10 +37,14 @@ export const AnalyticsProvider = ({
   // Update Amplitude on route changes
   useEffect(() => {
     const handleRouteChange = () => {
-      amplitude.logEvent('PageViewed', {
+      amplitude.logEvent('Page Viewed', {
         path: router.pathname,
         // Add any additional data you want to track
       })
+      console.log(
+        'Logged PageViewed on RouteChange in Amplitude: ',
+        router.pathname
+      )
     }
 
     // Listen for route changes
