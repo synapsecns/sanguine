@@ -22,24 +22,19 @@ export const AnalyticsProvider = ({
 
   useEffect(() => {
     if (router.isReady) {
-      try {
-        amplitude.init(AMPLITUDE_API_KEY, AMPLITUDE_USER_ID, {
-          defaultTracking: {
-            sessions: true,
-            pageViews: true,
-            formInteractions: true,
-            fileDownloads: true,
-          },
-          logLevel:
-            process.env.NODE_ENV === 'development'
-              ? amplitude.Types.LogLevel.Debug
-              : amplitude.Types.LogLevel.Error,
-          appVersion: APP_VERSION,
-        })
-        console.log('amplitude initialized')
-      } catch (error) {
-        console.error('Error initializing Amplitude: ', error)
-      }
+      amplitude.init(AMPLITUDE_API_KEY, AMPLITUDE_USER_ID, {
+        defaultTracking: {
+          sessions: true,
+          pageViews: true,
+          formInteractions: true,
+          fileDownloads: true,
+        },
+        logLevel:
+          process.env.NODE_ENV === 'development'
+            ? amplitude.Types.LogLevel.Debug
+            : amplitude.Types.LogLevel.Error,
+        appVersion: APP_VERSION,
+      })
     }
   }, [router.isReady])
 
@@ -48,12 +43,7 @@ export const AnalyticsProvider = ({
     const handleRouteChange = () => {
       amplitude.logEvent('Page Viewed', {
         path: router.pathname,
-        // Add any additional data you want to track
       })
-      console.log(
-        'Logged PageViewed on RouteChange in Amplitude: ',
-        router.pathname
-      )
     }
 
     // Listen for route changes
