@@ -8,6 +8,9 @@ const AMPLITUDE_API_KEY: string | undefined =
 
 const APP_VERSION: string = packageJson.version
 
+const AMPLITUDE_USER_ID: string | null =
+  process.env.NODE_ENV === 'development' && 'test'
+
 const AmplitudeContext = createContext<any>(null)
 
 export const AnalyticsProvider = ({
@@ -20,7 +23,7 @@ export const AnalyticsProvider = ({
   useEffect(() => {
     if (router.isReady) {
       try {
-        amplitude.init(AMPLITUDE_API_KEY, 'test@test.com', {
+        amplitude.init(AMPLITUDE_API_KEY, AMPLITUDE_USER_ID, {
           defaultTracking: {
             sessions: true,
             pageViews: true,
