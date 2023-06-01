@@ -222,7 +222,7 @@ class SynapseSDK {
     }
 
     const query = convertQuery(rawQuery)
-    query.deadline = deadline ?? DEFAULT_DEADLINE
+    query.deadline = deadline ?? TEN_MIN_DEADLINE
     const maxAmountOut = query.minAmountOut
 
     return {
