@@ -16,14 +16,13 @@ export type Query = {
   rawParams: string
 }
 
-
 export type RawFeeConfig = [number, BigNumber, BigNumber] & {
   bridgeFee: number
   minFee: BigNumber
   maxFee: BigNumber
 }
 
-export type FeeConfig =  {
+export type FeeConfig = {
   bridgeFee: number
   minFee: BigNumber
   maxFee: BigNumber
@@ -31,13 +30,12 @@ export type FeeConfig =  {
 
 export type PoolToken = { isWeth: boolean | undefined; token: string }
 
-
-export const convertQuery = (rawQuery: RawQuery): Query =>{
-  const { swapAdapter, tokenOut, minAmountOut, deadline, rawParams } = rawQuery;
+export const convertQuery = (rawQuery: RawQuery): Query => {
+  const { swapAdapter, tokenOut, minAmountOut, deadline, rawParams } = rawQuery
   return { swapAdapter, tokenOut, minAmountOut, deadline, rawParams }
 }
 
-export const convertFeeConfig = (rawFeeConfig: RawFeeConfig): FeeConfig =>{
+export const convertFeeConfig = (rawFeeConfig: RawFeeConfig): FeeConfig => {
   const { bridgeFee, minFee, maxFee } = rawFeeConfig
   return { bridgeFee, minFee, maxFee }
 }
