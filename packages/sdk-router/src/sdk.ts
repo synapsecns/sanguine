@@ -217,7 +217,7 @@ class SynapseSDK {
     )
 
     // Check if call was unsuccessful
-    if (rawQuery?.length !== 5) {
+    if (rawQuery?.length !== 5 || rawQuery?.swapAdapter) {
       throw Error('No queries found for this route')
     }
 
