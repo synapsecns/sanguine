@@ -35,20 +35,29 @@ export const WalletIcon = ({
 }
 
 export const Wallet = () => {
+  const [mounted, setMounted] = useState(false)
+
   const { connector: activeConnector, address: connectedAddress } = useAccount()
   const { chain: currentChain } = useNetwork()
+
   const walletId = activeConnector?.id
-  const [mounted, setMounted] = useState(false)
+  const networkName = currentChain?.name
 
   useEffect(() => {
     setMounted(true)
   }, [])
 
   useEffect(() => {
-    if (walletId) {
+    if (walletId && mounted) {
       amplitude.logEvent('Connected Wallet', { type: walletId })
     }
-  }, [walletId])
+  }, [walletId, mounted])
+
+  useEffect(() => {
+    if (networkName && mounted) {
+      amplitude.logEvent('Connect to Network', { network: networkName })
+    }
+  }, [currentChain, mounted])
 
   const render = useMemo(() => {
     return (
