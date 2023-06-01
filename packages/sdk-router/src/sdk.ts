@@ -20,7 +20,7 @@ import {
   RawQuery,
   PoolToken,
 } from './utils/types'
-const DEFAULT_DEADLINE = BigNumber.from(Math.floor(Date.now() / 1000) + 10 * 60) // 10 minutes in the future
+const DEFAULT_DEADLINE = BigNumber.from(Math.floor(Date.now() / 1000) + 604800) // one week in the future
 type SynapseRouters = {
   [key: number]: SynapseRouter
 }
@@ -146,7 +146,7 @@ class SynapseSDK {
     const originQuery = convertQuery(rawOriginQuery)
     originQuery.deadline = deadline ?? DEFAULT_DEADLINE
     const destQuery = convertQuery(rawDestQuery)
-    destQuery.deadline = deadline ?? DEFAULT_DEADLINE
+    destQuery.deadline = DEFAULT_DEADLINE
 
     // Get fee data
     let feeAmount
