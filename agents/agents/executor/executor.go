@@ -858,12 +858,13 @@ func (e Executor) processLog(parentCtx context.Context, log ethTypes.Log, chainI
 		if snapshot == nil {
 			return nil
 		}
+		span.AddEvent("summit", trace.WithAttributes(attribute.String("step", "e")))
 
 		snapshotRoot, proofs, err := (*snapshot).SnapshotRootAndProofs()
 		if err != nil {
 			return fmt.Errorf("could not get snapshot root and proofs: %w", err)
 		}
-		span.AddEvent("summit", trace.WithAttributes(attribute.String("step", "d")))
+		span.AddEvent("summit", trace.WithAttributes(attribute.String("step", "f")))
 
 		treeHeight := (*snapshot).TreeHeight()
 
@@ -871,7 +872,7 @@ func (e Executor) processLog(parentCtx context.Context, log ethTypes.Log, chainI
 		if err != nil {
 			return fmt.Errorf("could not store states: %w", err)
 		}
-		span.AddEvent("summit", trace.WithAttributes(attribute.String("step", "e")))
+		span.AddEvent("summit", trace.WithAttributes(attribute.String("step", "g")))
 	case other:
 		span.AddEvent("other contract event")
 	default:
