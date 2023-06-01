@@ -636,11 +636,6 @@ const BridgePage = ({
         },
       })
       setIsQuoteLoading(false)
-
-      amplitude.track('Receive Bridge Quote', {
-        quote: bridgeQuote,
-      })
-
       return
     } catch (error) {
       console.log(error)

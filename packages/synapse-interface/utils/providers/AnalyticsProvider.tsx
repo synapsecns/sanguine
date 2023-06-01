@@ -1,9 +1,12 @@
 import React, { createContext, useContext, useEffect } from 'react'
 import * as amplitude from '@amplitude/analytics-browser'
 import { useRouter } from 'next/router'
+import packageJson from '../../package.json'
 
 const AMPLITUDE_API_KEY: string | undefined =
   process.env.NEXT_PUBLIC_AMPLITUDE_KEY
+
+const APP_VERSION: string = packageJson.version
 
 const AmplitudeContext = createContext<any>(null)
 
@@ -25,6 +28,7 @@ export const AnalyticsProvider = ({
             fileDownloads: true,
           },
           logLevel: amplitude.Types.LogLevel.Debug,
+          appVersion: APP_VERSION,
         })
         console.log('amplitude initialized')
       } catch (error) {
