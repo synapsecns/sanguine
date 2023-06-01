@@ -20,6 +20,7 @@
     "build:slither": " "
   },
   "dependencies": {
+    "@amplitude/analytics-browser": "^1.10.3",
     "@depay/web3-mock": "^14.0.0",
     "@ethersproject/abi": "5.7.0",
     "@ethersproject/address": "5.7.0",

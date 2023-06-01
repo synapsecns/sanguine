@@ -13,9 +13,11 @@ const Home = () => {
   useEffect(() => {
     setConnectedChainId(chain?.id ?? DEFAULT_FROM_CHAIN)
   }, [chain])
+
   useEffect(() => {
     setAddress(currentAddress)
   }, [currentAddress])
+
   return (
     <>
       <Head>

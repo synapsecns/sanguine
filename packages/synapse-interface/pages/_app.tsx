@@ -33,7 +33,17 @@ import { JsonRpcProvider } from '@ethersproject/providers'
 import { jsonRpcProvider } from 'wagmi/providers/jsonRpc'
 import * as CHAINS from '@constants/chains/master'
 import { SynapseProvider } from '@/utils/providers/SynapseProvider'
+import * as amplitude from '@amplitude/analytics-browser'
 import CustomToaster from '@/components/toast'
+
+amplitude.init(process.env.REACT_APP_AMPLITUDE_KEY, 'test@test.com', {
+  defaultTracking: {
+    sessions: true,
+    pageViews: true,
+    formInteractions: true,
+    fileDownloads: true,
+  },
+})
 
 const rawChains = [
   mainnet,
