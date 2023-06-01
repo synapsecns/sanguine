@@ -9,7 +9,7 @@ const AMPLITUDE_API_KEY: string | undefined =
 const APP_VERSION: string = packageJson.version
 
 const AMPLITUDE_USER_ID: string | null =
-  process.env.NODE_ENV === 'development' && 'test'
+  process.env.NODE_ENV === 'development' && 'dev_testing'
 
 const AmplitudeContext = createContext<any>(null)
 
@@ -33,7 +33,7 @@ export const AnalyticsProvider = ({
           logLevel:
             process.env.NODE_ENV === 'development'
               ? amplitude.Types.LogLevel.Debug
-              : amplitude.Types.LogLevel.None,
+              : amplitude.Types.LogLevel.Error,
           appVersion: APP_VERSION,
         })
         console.log('amplitude initialized')

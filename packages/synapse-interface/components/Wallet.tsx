@@ -5,6 +5,7 @@ import { MetamaskIcon } from '@icons/WalletIcons/Metamask'
 import { CoinbaseWalletIcon } from '@icons/WalletIcons/CoinbaseWalletIcon'
 import { WalletConnectIcon } from '@icons/WalletIcons/WalletConnectIcon'
 import { IconProps, WalletId } from '@utils/types'
+import { logEvent } from '@amplitude/analytics-browser'
 import Spinner from './icons/Spinner'
 
 const WALLETS = [
@@ -38,9 +39,14 @@ export const Wallet = () => {
   const { chain: currentChain } = useNetwork()
   const walletId = activeConnector?.id
   const [mounted, setMounted] = useState(false)
+
   useEffect(() => {
     setMounted(true)
   }, [])
+
+  useEffect(() => {
+    console.log('walletId: ', walletId)
+  }, [walletId])
 
   const render = useMemo(() => {
     return (
