@@ -1,7 +1,6 @@
 import React, { createContext, useContext, useEffect } from 'react'
 import * as amplitude from '@amplitude/analytics-browser'
 import { useRouter } from 'next/router'
-import { logEvent } from '@amplitude/analytics-browser'
 
 const AMPLITUDE_API_KEY: string | undefined =
   process.env.NEXT_PUBLIC_AMPLITUDE_KEY

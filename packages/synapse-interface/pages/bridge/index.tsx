@@ -44,6 +44,7 @@ import {
   QUOTE_POLLING_INTERVAL,
 } from '@/constants/bridge'
 import { CHAINS_BY_ID, AcceptedChainId } from '@/constants/chains'
+import * as amplitude from '@amplitude/analytics-browser'
 
 /* TODO
   - look into getting rid of fromChainId state and just using wagmi hook (ran into problems when trying this but forgot why)
@@ -635,6 +636,11 @@ const BridgePage = ({
         },
       })
       setIsQuoteLoading(false)
+
+      amplitude.track('Receive Bridge Quote', {
+        quote: bridgeQuote,
+      })
+
       return
     } catch (error) {
       console.log(error)
