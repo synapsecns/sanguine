@@ -68,7 +68,7 @@ class SynapseSDK {
     const destRouter: SynapseRouter = this.synapseRouters[destChainId]
     const routerAddress = originRouter.routerContract.address
 
-    let bridgeTokens = this.bridgeTokenCache[tokenOut]
+    let bridgeTokens = this.bridgeTokenCache[destChainId + '_' + tokenOut]
     if (!bridgeTokens) {
       const routerBridgeTokens =
         await destRouter.routerContract.getConnectedBridgeTokens(tokenOut)
@@ -91,7 +91,7 @@ class SynapseSDK {
       }))
 
       // Cache the bridge tokens
-      this.bridgeTokenCache[tokenOut] = bridgeTokens
+      this.bridgeTokenCache[destChainId + '_' + tokenOut] = bridgeTokens
     }
 
     // Get quotes from origin SynapseRouter
