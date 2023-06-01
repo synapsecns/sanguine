@@ -45,14 +45,6 @@ import {
 } from '@/constants/bridge'
 import { CHAINS_BY_ID, AcceptedChainId } from '@/constants/chains'
 
-import {
-  identify,
-  setGroup,
-  groupIdentify,
-  track,
-  Identify,
-} from '@amplitude/analytics-browser'
-
 /* TODO
   - look into getting rid of fromChainId state and just using wagmi hook (ran into problems when trying this but forgot why)
 */
@@ -180,7 +172,6 @@ const BridgePage = ({
           fromInput.bigNum.gt(Zero)
         ) {
           getQuote()
-          track('Quote', { name: 'test' })
         } else {
           setBridgeQuote(EMPTY_BRIDGE_QUOTE)
         }
@@ -544,7 +535,6 @@ const BridgePage = ({
         if (fromInput.string !== '') {
           setIsQuoteLoading(true)
         }
-        track('Switch Tokens', { name: 'From' })
         return
       case 'to':
         setToToken(token)
@@ -556,7 +546,6 @@ const BridgePage = ({
           inputCurrency: fromToken.symbol,
           outputCurrency: token.symbol,
         })
-        track('Switch Tokens', { name: 'To' })
         return
     }
   }

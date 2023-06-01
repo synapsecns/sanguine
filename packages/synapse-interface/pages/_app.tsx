@@ -1,8 +1,6 @@
 import '@styles/global.css'
 import '@rainbow-me/rainbowkit/styles.css'
-import { useEffect } from 'react'
 import type { AppProps } from 'next/app'
-import { useRouter } from 'next/router'
 import {
   boba,
   cronos,
@@ -35,10 +33,8 @@ import { JsonRpcProvider } from '@ethersproject/providers'
 import { jsonRpcProvider } from 'wagmi/providers/jsonRpc'
 import * as CHAINS from '@constants/chains/master'
 import { SynapseProvider } from '@/utils/providers/SynapseProvider'
-import * as amplitude from '@amplitude/analytics-browser'
 import CustomToaster from '@/components/toast'
-
-const AMPLITUDE_API_KEY = process.env.NEXT_PUBLIC_AMPLITUDE_KEY
+import { AnalyticsProvider } from '@/utils/providers/AnalyticsProvider'
 
 const rawChains = [
   mainnet,
@@ -95,32 +91,14 @@ export const wagmiClient = createClient({
 })
 
 const App = ({ Component, pageProps }: AppProps) => {
-  const router = useRouter()
-
-  useEffect(() => {
-    if (router.isReady) {
-      try {
-        amplitude.init(AMPLITUDE_API_KEY, 'test@test.com', {
-          defaultTracking: {
-            sessions: true,
-            pageViews: true,
-            formInteractions: true,
-            fileDownloads: true,
-          },
-        })
-        console.log('amplitude initialized')
-      } catch (error) {
-        console.error('Error initializing Amplitude: ', error)
-      }
-    }
-  }, [router.isReady])
-
   return (
     <WagmiConfig client={wagmiClient}>
       <RainbowKitProvider chains={chains} theme={darkTheme()}>
         <SynapseProvider chains={chains}>
-          <Component {...pageProps} />
-          <CustomToaster />
+          <AnalyticsProvider>
+            <Component {...pageProps} />
+            <CustomToaster />
+          </AnalyticsProvider>
         </SynapseProvider>
       </RainbowKitProvider>
     </WagmiConfig>
