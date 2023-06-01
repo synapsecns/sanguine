@@ -28,6 +28,19 @@ This snap root is used to prove that a particular Origin state did in fact occur
 5. Block Number of the block on the [SYN Chain](#synapse-chain) that the attestation was registered by a Notary on the Summit chain, which does not have to be the same Notary posting to the destination.
 6. Timestamp is the time that the attestation was registered on the [SYN Chain](#synapse-chain).
 
+### Commitment
+In cryptography, a commitment is often used when someone wants to commit to large amounts of data without having to pass around
+all the data. For example, if there is a message that consists of many terabytes, that message can use a cryptographic hash
+function to come up with a 32 byte hash representation of that message, and it would be probabilistically impossible for someone to come up with another message
+that has the same 32 byte hash. It is a way for someone to say "I have a very large message that I will send you later, but I promise the message hashes to this small 32 bytes".
+Later, when the message is given, it can be checked that it in fact hashes correctly and we know it was not altered.
+
+### Cross Chain
+As opposed to [On Chain](#on-chain), Cross Chain refers to communication between one blockchain and another. If a someone wants to
+send a message from one chain to another chain, this cannot be done in a single blockchain transaction. The only way for Cross Chain
+communication to occur is with the help of [Off Chain](#off-chain) agents who observe transactions on various chains and then submit necessary transactions
+to other chains in order to communicate across chains.
+
 ### Destination Chain
 The chain where the message is being sent to is known as the Destination Chain.
 
@@ -80,8 +93,24 @@ was sent when it never was really sent.
 Liveness is a property of the messaging system that means a message that is sent will be delivered within a
 reasonable amount of time.
 
+### Merkle Proof
+The property of a Merkle Tree that makes it so handy is that a particular leaf node can be proven to exist in a Merkle tree
+without providing the entire Merkle tree. All that is needed is the [Merkle Root](#merkle-root) and a Merkle Proof whose size is
+logarithmic to the number of leaves in the Merkle Tree. Thus, if there are 2^32 number of leaves (over 4 billion leaves), the
+Merkle Proof will only need 32 nodes along the path from the node we are trying to prove to the [Merkle Root](#merkle-root).
+
+### Merkle Root
+When a [Merkl Tree](#merkle-tree) is formed, it will have a unique root that is 32 bytes in size. This Merkle Root
+can serve as a cryptographic commitment to ALL the data contained in the Merkle Tree, which could be terabytes in size or more.
+
+### Merkle Tree
+A Merkle Tree is a fundamental building block used in cryptography that organizes a group of leaf nodes containing
+arbitrary data in a way that allows for very small cryptographic commitments and relatively short and fast proofs that a
+particular node exists in the tree without sending the entire tree.
+Please see [Merkle Trees](https://www.simplilearn.com/tutorials/blockchain-tutorial/merkle-tree-in-blockchain) for a description.
+
 ### Message
-The Message is the raw payload that a sender wants delivered to the destination contract. 
+The Message is the raw payload that a sender wants delivered to the destination contract.
 
 ### Notary
 The Notary is an off-chain agent that is assigned to a specific chain and has the very important job of posting attestations to its chain
@@ -93,6 +122,29 @@ This is a crucial property of messaging system that is set and enforced by the c
 It is the time that a message must wait to be executed in order to give the Guards time to catch potential fraud. The longer
 this time means the Guards have more time to catch fraud and the less likely it is for an attacker to fool a Destination
 into executing a fraudulent message.
+
+### Off Chain
+Anything that happens outside of a blockchain is referred to as Off Chain. If a transaction happens [On Chain](#on-chain) on one
+blockchain, there is no way for another blockchain to know about this without the help of Off Chain agents. These Off Chain agents
+can look at the transactions on one chain and then submit transactions to other chains in order to convey this [Cross Chain](#cross-chain)
+information.
+
+### Off Chain Agent
+When trying to do [Cross Chain](#cross-chain) communication, there needs to be an Off Chain Agent that observes transactions
+on one chain and submits transactions to other chains in order to communicate what happened on the origin chain.
+The term "Off Chain Agent" is very general and could be as simple as a human being looking at something that happened on
+the first chain and then submitting a transaction to the second chain. More typically, this agent is software
+written to do this job in an automated way. The important question is how can the second chain trust this agent.
+In the specific case of the Synapse messaging system, this trust is based on a bond that the agent must post and any fraud
+can be detected and will result in that agent losing the bond. So long as the [Optimistic Period](#optimistic-period) is high
+enough to allow [Guards](#guard) to detect the fraud in time, the
+opportunity to commit fraud that yields more reward than the bond that is slashed is low enough such that the second chain
+can trust what the offchain agent says happened on the first chain.
+
+### On Chain
+The term "On Chain" refers to a transaction that happens on a single blockchain, which means it has all the security
+guarantees of that particular chain. Within the context of discussing cross-chain communication, "on chain" transactioins
+are assumed to be trustworthy so long as the probability of a chain reorg is extremely low.
 
 ### Origin Chain
 The chain where the message is being sent from is known as the Origin Chain.
