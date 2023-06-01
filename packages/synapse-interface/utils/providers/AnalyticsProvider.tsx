@@ -27,7 +27,10 @@ export const AnalyticsProvider = ({
             formInteractions: true,
             fileDownloads: true,
           },
-          logLevel: amplitude.Types.LogLevel.Debug,
+          logLevel:
+            process.env.NODE_ENV === 'development'
+              ? amplitude.Types.LogLevel.Debug
+              : amplitude.Types.LogLevel.None,
           appVersion: APP_VERSION,
         })
         console.log('amplitude initialized')
