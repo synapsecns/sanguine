@@ -548,7 +548,12 @@ const BridgePage = ({
         if (fromInput.string !== '') {
           setIsQuoteLoading(true)
         }
-
+        amplitude.logEvent('[Bridge] Switch Origin Token', {
+          switchFromToken: fromToken?.name,
+          switchFromTokenAddress: fromToken.addresses[fromChainId],
+          switchToToken: token?.name,
+          switchToTokenAddress: token.addresses[fromChainId],
+        })
         return
       case 'to':
         setToToken(token)
@@ -559,6 +564,12 @@ const BridgePage = ({
           outputChain: toChainId,
           inputCurrency: fromToken.symbol,
           outputCurrency: token.symbol,
+        })
+        amplitude.logEvent('[Bridge] Switch Destination Token', {
+          switchFromToken: toToken.name,
+          switchFromTokenAddress: toToken.addresses[toChainId],
+          switchToToken: token?.name,
+          switchToTokenAddress: token.addresses[toChainId],
         })
         return
     }
