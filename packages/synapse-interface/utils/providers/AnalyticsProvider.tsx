@@ -10,7 +10,7 @@ const AMPLITUDE_API_KEY: string | undefined =
 const APP_VERSION: string = packageJson.version
 
 const AMPLITUDE_USER_ID: string | null =
-  process.env.NODE_ENV === 'development' && 'dev_testing'
+  process.env.NODE_ENV === 'development' ? 'dev_testing' : null
 
 const AmplitudeContext = createContext<any>(null)
 
@@ -21,7 +21,7 @@ export const AnalyticsProvider = ({
 }) => {
   const router: NextRouter = useRouter()
 
-  const { connector: activeConnector, address: connectedAddress } = useAccount()
+  const { connector: activeConnector } = useAccount()
   const { chain: currentChain } = useNetwork()
 
   const walletId: string = activeConnector?.id
