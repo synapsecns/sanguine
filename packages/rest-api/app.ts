@@ -40,6 +40,7 @@ for (const chain of chains) {
   providers.push(new JsonRpcProvider(chain.rpc))
   chainIds.push(chain.id)
 }
+// Define the sdk
 const Synapse = new SynapseSDK(chainIds, providers)
 
 // Set up express server
