@@ -332,7 +332,7 @@ func TestHeaderEncodeParity(t *testing.T) {
 }
 
 func TestGiveMeData(t *testing.T) {
-	snapshotBytes, err := hex.DecodeString("4FE9B2947E4ACEB6E3E24382676D6CF0D670DBD0E803E7C4009F6E86096993A8000000890000027C0002969CF10064792979")
+	snapshotBytes, err := hex.DecodeString("F9CA9B9B4F3F20EA31BBD953B464D303ADC6622460C1D3D6AFC1BC47D1AF92B5000000890000031A000296A54C0064793C08")
 	Nil(t, err)
 
 	snapshot, err := types.DecodeSnapshot(snapshotBytes)

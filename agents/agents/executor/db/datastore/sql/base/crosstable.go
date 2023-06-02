@@ -24,7 +24,7 @@ func (s Store) GetTimestampForMessage(ctx context.Context, chainID, destination,
 		attestationsTableName = fmt.Sprintf("%s_%s", tablePrefix, attestationsTableName)
 	}
 
-	dbTx := s.DB().Debug().WithContext(ctx).
+	dbTx := s.DB().WithContext(ctx).
 		Raw(fmt.Sprintf(
 			`SELECT %s FROM %s WHERE %s = (
 					SELECT MIN(%s) FROM (
