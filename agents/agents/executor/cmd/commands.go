@@ -150,20 +150,24 @@ var ExecutorRunCommand = &cli.Command{
 		// The flags below are used when `scribeTypeFlag` is set to "remote".
 		scribePortFlag, scribeURL},
 	Action: func(c *cli.Context) error {
-		metricsProvider := metrics.Get()
 
 		var scribeClient client.ScribeClient
 
 		g, ctx := errgroup.WithContext(c.Context)
 
-		executorConfig, executorDB, clients, err := createExecutorParameters(ctx, c, metricsProvider)
+		handler, err := metrics.NewFromEnv(ctx, metadata.BuildInfo())
+		if err != nil {
+			return fmt.Errorf("failed to create metrics handler: %w", err)
+		}
+
+		executorConfig, executorDB, clients, err := createExecutorParameters(ctx, c, handler)
 		if err != nil {
 			return err
 		}
 
 		switch c.String(scribeTypeFlag.Name) {
 		case "embedded":
-			eventDB, err := scribeAPI.InitDB(ctx, c.String(scribeDBFlag.Name), c.String(scribePathFlag.Name), metricsProvider)
+			eventDB, err := scribeAPI.InitDB(ctx, c.String(scribeDBFlag.Name), c.String(scribePathFlag.Name), handler)
 			if err != nil {
 				return fmt.Errorf("failed to initialize database: %w", err)
 			}
@@ -172,7 +176,7 @@ var ExecutorRunCommand = &cli.Command{
 
 			for _, client := range executorConfig.EmbeddedScribeConfig.Chains {
 				for confNum := 1; confNum <= scribeCmd.MaxConfirmations; confNum++ {
-					backendClient, err := backfill.DialBackend(ctx, fmt.Sprintf("%s/%d/rpc/%d", executorConfig.BaseOmnirpcURL, confNum, client.ChainID), metricsProvider)
+					backendClient, err := backfill.DialBackend(ctx, fmt.Sprintf("%s/%d/rpc/%d", executorConfig.BaseOmnirpcURL, confNum, client.ChainID), handler)
 					if err != nil {
 						return fmt.Errorf("could not start client for %s", fmt.Sprintf("%s/1/rpc/%d", executorConfig.BaseOmnirpcURL, client.ChainID))
 					}
@@ -181,7 +185,7 @@ var ExecutorRunCommand = &cli.Command{
 				}
 			}
 
-			scribe, err := node.NewScribe(eventDB, scribeClients, executorConfig.EmbeddedScribeConfig, metricsProvider)
+			scribe, err := node.NewScribe(eventDB, scribeClients, executorConfig.EmbeddedScribeConfig, handler)
 			if err != nil {
 				return fmt.Errorf("failed to initialize scribe: %w", err)
 			}
@@ -195,7 +199,7 @@ var ExecutorRunCommand = &cli.Command{
 				return nil
 			})
 
-			embedded := client.NewEmbeddedScribe(c.String(scribeDBFlag.Name), c.String(scribePathFlag.Name), metricsProvider)
+			embedded := client.NewEmbeddedScribe(c.String(scribeDBFlag.Name), c.String(scribePathFlag.Name), handler)
 
 			g.Go(func() error {
 				err := embedded.Start(ctx)
@@ -208,14 +212,9 @@ var ExecutorRunCommand = &cli.Command{
 
 			scribeClient = embedded.ScribeClient
 		case "remote":
-			scribeClient = client.NewRemoteScribe(uint16(c.Uint(scribePortFlag.Name)), c.String(scribeURL.Name), metricsProvider).ScribeClient
+			scribeClient = client.NewRemoteScribe(uint16(c.Uint(scribePortFlag.Name)), c.String(scribeURL.Name), handler).ScribeClient
 		default:
 			return fmt.Errorf("invalid scribe type: %s", c.String(scribeTypeFlag.Name))
-		}
-
-		handler, err := metrics.NewFromEnv(ctx, metadata.BuildInfo())
-		if err != nil {
-			return fmt.Errorf("failed to create metrics handler: %w", err)
 		}
 
 		executor, err := executor.NewExecutor(ctx, executorConfig, executorDB, scribeClient, clients, handler)
