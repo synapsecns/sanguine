@@ -65,7 +65,7 @@ export const AnalyticsProvider = ({
   useEffect(() => {
     const handleRouteChange = () => {
       amplitude.logEvent('Page Viewed', {
-        path: router.pathname,
+        path: router.route,
       })
     }
 
@@ -76,7 +76,7 @@ export const AnalyticsProvider = ({
     return () => {
       router.events.off('routeChangeComplete', handleRouteChange)
     }
-  }, [router.events])
+  }, [router.events, router.route])
 
   return (
     <AmplitudeContext.Provider value={null}>
