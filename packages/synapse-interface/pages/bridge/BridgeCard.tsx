@@ -30,6 +30,7 @@ import { Token } from '@/utils/types'
 import { BridgeQuote } from '@/utils/types'
 import { checkStringIfOnlyZeroes } from '@/utils/regex'
 import { AcceptedChainId } from '@constants/chains'
+import { useGasDropAmount } from '@/utils/hooks/useGasDropAmount'
 
 export enum DisplayType {
   FROM = 'from',
@@ -99,6 +100,9 @@ const BridgeCard = ({
   const [approveTx, setApproveTx] = useState<string>(null)
   const bridgeDisplayRef = useRef(null)
 
+  const gasDropAmount = useGasDropAmount(toChainId)
+
+  console.log('gasDropAmount: ', gasDropAmount)
   /*
   useEffect Trigger: fromToken, fromTokens
   - When either the from token or list of from tokens are mutated, the selected token's balance is set in the state
@@ -470,7 +474,7 @@ const BridgeCard = ({
               toToken={toToken}
               exchangeRate={bridgeQuote?.exchangeRate}
               toChainId={toChainId}
-              gasDropAmount={}
+              gasDropAmount={null}
             />
           </Transition>
           <Transition
