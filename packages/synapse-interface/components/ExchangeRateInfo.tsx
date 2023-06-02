@@ -1,4 +1,4 @@
-import { useState, useMemo } from 'react'
+import { useState, useMemo, useEffect } from 'react'
 import { BigNumber } from '@ethersproject/bignumber'
 import { formatBNToPercentString, formatBNToString } from '@bignumber/format'
 import { CHAINS_BY_ID } from '@constants/chains'
@@ -21,6 +21,7 @@ const ExchangeRateInfo = ({
   exchangeRate: BigNumber
   toChainId: number
 }) => {
+  const [gasDropChainId, setGasDropChainId] = useState<number>(null)
   const gasDropAmount = useGasDropAmount(toChainId)
 
   const safeExchangeRate = useMemo(() => exchangeRate ?? Zero, [exchangeRate]) // todo clean
@@ -50,8 +51,19 @@ const ExchangeRateInfo = ({
    * and that there is no lagging state of airdrop amount to switched chain
    */
   const isGasDropped = useMemo(() => {
-    return safeExchangeRate.gt(0)
-  }, [safeExchangeRate])
+    if (gasDropAmount) {
+      return gasDropAmount.gt(0)
+    }
+  }, [gasDropAmount])
+
+  useEffect(() => {
+    setGasDropChainId(toChainId)
+  }, [toChainId, isGasDropped])
+
+  const gasDropLabel = useMemo(() => {
+    if (!isGasDropped || !(toChainId == gasDropChainId)) return null
+    return <GasDropLabel gasDropAmount={gasDropAmount} toChainId={toChainId} />
+  }, [toChainId, gasDropChainId, isGasDropped])
 
   const expectedToChain = useMemo(() => {
     return toChainId && <ChainInfoLabel chainId={toChainId} />
@@ -66,9 +78,10 @@ const ExchangeRateInfo = ({
             : 'flex justify-end'
         }
       >
-        {isGasDropped && (
+        {/* {isGasDropped && gasDropChainId && (
           <GasDropLabel gasDropAmount={gasDropAmount} toChainId={toChainId} />
-        )}
+        )} */}
+        {gasDropLabel}
       </div>
       <div className="flex justify-between">
         <div className="flex space-x-2 text-[#88818C]">
