@@ -100,7 +100,7 @@ var scribeURL = &cli.StringFlag{
 	Usage: "--scribe-url <url>",
 }
 
-func createExecutorParameters(c *cli.Context, metrics metrics.Handler) (executorConfig config.Config, executorDB db.ExecutorDB, clients map[uint32]executor.Backend, err error) {
+func createExecutorParameters(ctx context.Context, c *cli.Context, metrics metrics.Handler) (executorConfig config.Config, executorDB db.ExecutorDB, clients map[uint32]executor.Backend, err error) {
 	executorConfig, err = config.DecodeConfig(core.ExpandOrReturnPath(c.String(configFlag.Name)))
 	if err != nil {
 		return executorConfig, nil, nil, fmt.Errorf("failed to decode config: %w", err)
@@ -114,7 +114,7 @@ func createExecutorParameters(c *cli.Context, metrics metrics.Handler) (executor
 		executorConfig.DBPrefix = ""
 	}
 
-	executorDB, err = InitExecutorDB(c.Context, c.String(dbFlag.Name), c.String(pathFlag.Name), executorConfig.DBPrefix, metrics)
+	executorDB, err = InitExecutorDB(ctx, c.String(dbFlag.Name), c.String(pathFlag.Name), executorConfig.DBPrefix, metrics)
 	if err != nil {
 		return executorConfig, nil, nil, fmt.Errorf("failed to initialize database: %w", err)
 	}
@@ -130,7 +130,7 @@ func createExecutorParameters(c *cli.Context, metrics metrics.Handler) (executor
 		clients[execClient.ChainID] = ethClient
 	} */
 	for _, execClient := range executorConfig.Chains {
-		ethClient, err := client2.DialBackendChainID(c.Context, big.NewInt(int64(execClient.ChainID)), execClient.TempRPC, metrics, client2.Capture(true))
+		ethClient, err := client2.DialBackendChainID(ctx, big.NewInt(int64(execClient.ChainID)), execClient.TempRPC, metrics, client2.Capture(true))
 		if err != nil {
 			return executorConfig, nil, nil, fmt.Errorf("failed to dial rpc: %w", err)
 		}
@@ -152,18 +152,18 @@ var ExecutorRunCommand = &cli.Command{
 	Action: func(c *cli.Context) error {
 		metricsProvider := metrics.Get()
 
-		executorConfig, executorDB, clients, err := createExecutorParameters(c, metricsProvider)
+		var scribeClient client.ScribeClient
+
+		g, ctx := errgroup.WithContext(c.Context)
+
+		executorConfig, executorDB, clients, err := createExecutorParameters(ctx, c, metricsProvider)
 		if err != nil {
 			return err
 		}
 
-		var scribeClient client.ScribeClient
-
-		g, _ := errgroup.WithContext(c.Context)
-
 		switch c.String(scribeTypeFlag.Name) {
 		case "embedded":
-			eventDB, err := scribeAPI.InitDB(c.Context, c.String(scribeDBFlag.Name), c.String(scribePathFlag.Name), metricsProvider)
+			eventDB, err := scribeAPI.InitDB(ctx, c.String(scribeDBFlag.Name), c.String(scribePathFlag.Name), metricsProvider)
 			if err != nil {
 				return fmt.Errorf("failed to initialize database: %w", err)
 			}
@@ -172,7 +172,7 @@ var ExecutorRunCommand = &cli.Command{
 
 			for _, client := range executorConfig.EmbeddedScribeConfig.Chains {
 				for confNum := 1; confNum <= scribeCmd.MaxConfirmations; confNum++ {
-					backendClient, err := backfill.DialBackend(c.Context, fmt.Sprintf("%s/%d/rpc/%d", executorConfig.BaseOmnirpcURL, confNum, client.ChainID), metricsProvider)
+					backendClient, err := backfill.DialBackend(ctx, fmt.Sprintf("%s/%d/rpc/%d", executorConfig.BaseOmnirpcURL, confNum, client.ChainID), metricsProvider)
 					if err != nil {
 						return fmt.Errorf("could not start client for %s", fmt.Sprintf("%s/1/rpc/%d", executorConfig.BaseOmnirpcURL, client.ChainID))
 					}
@@ -187,7 +187,7 @@ var ExecutorRunCommand = &cli.Command{
 			}
 
 			g.Go(func() error {
-				err := scribe.Start(c.Context)
+				err := scribe.Start(ctx)
 				if err != nil {
 					return fmt.Errorf("failed to start scribe: %w", err)
 				}
@@ -198,7 +198,7 @@ var ExecutorRunCommand = &cli.Command{
 			embedded := client.NewEmbeddedScribe(c.String(scribeDBFlag.Name), c.String(scribePathFlag.Name), metricsProvider)
 
 			g.Go(func() error {
-				err := embedded.Start(c.Context)
+				err := embedded.Start(ctx)
 				if err != nil {
 					return fmt.Errorf("failed to start embedded scribe: %w", err)
 				}
@@ -213,18 +213,18 @@ var ExecutorRunCommand = &cli.Command{
 			return fmt.Errorf("invalid scribe type: %s", c.String(scribeTypeFlag.Name))
 		}
 
-		handler, err := metrics.NewFromEnv(c.Context, metadata.BuildInfo())
+		handler, err := metrics.NewFromEnv(ctx, metadata.BuildInfo())
 		if err != nil {
 			return fmt.Errorf("failed to create metrics handler: %w", err)
 		}
 
-		executor, err := executor.NewExecutor(c.Context, executorConfig, executorDB, scribeClient, clients, handler)
+		executor, err := executor.NewExecutor(ctx, executorConfig, executorDB, scribeClient, clients, handler)
 		if err != nil {
 			return fmt.Errorf("failed to create executor: %w", err)
 		}
 
 		g.Go(func() error {
-			err := api.Start(c.Context, uint16(c.Uint(metricsPortFlag.Name)))
+			err := api.Start(ctx, uint16(c.Uint(metricsPortFlag.Name)))
 			if err != nil {
 				return fmt.Errorf("failed to start api: %w", err)
 			}
@@ -233,7 +233,7 @@ var ExecutorRunCommand = &cli.Command{
 		})
 
 		g.Go(func() error {
-			err := executor.Run(c.Context)
+			err := executor.Run(ctx)
 			if err != nil {
 				return fmt.Errorf("failed to run executor: %w", err)
 			}

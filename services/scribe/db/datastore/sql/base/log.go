@@ -206,8 +206,8 @@ func (s Store) RetrieveLogsInRangeAsc(ctx context.Context, logFilter db.LogFilte
 }
 
 func buildLogsFromDBLogs(dbLogs []Log) []*types.Log {
-	var logs []*types.Log
-	for _, dbLog := range dbLogs {
+	logs := make([]*types.Log, len(dbLogs))
+	for i, dbLog := range dbLogs {
 		topics := buildTopics(dbLog)
 
 		parsedLog := &types.Log{
@@ -222,7 +222,7 @@ func buildLogsFromDBLogs(dbLogs []Log) []*types.Log {
 			Removed:     dbLog.Removed,
 		}
 
-		logs = append(logs, parsedLog)
+		logs[i] = parsedLog
 	}
 	return logs
 }

@@ -57,11 +57,11 @@ var PageSize = 50_000
 // Message is the information about a message parsed by the Executor.
 type Message struct {
 	// ChainID is the chain id.
-	ChainID uint32 `gorm:"column:chain_id;primaryKey"`
+	ChainID uint32 `gorm:"column:chain_id;primaryKey;index:idx_chain_dest_nonce"`
 	// Destination is the destination.
-	Destination uint32 `gorm:"column:destination;primaryKey"`
+	Destination uint32 `gorm:"column:destination;primaryKey;index:idx_chain_dest_nonce"`
 	// Nonce is the nonce.
-	Nonce uint32 `gorm:"column:nonce;primaryKey"`
+	Nonce uint32 `gorm:"column:nonce;primaryKey;index:idx_chain_dest_nonce"`
 	// Message is the message.
 	Message []byte `gorm:"column:message"`
 	// BlockNumber is the block number.

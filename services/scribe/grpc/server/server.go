@@ -159,7 +159,7 @@ func (s *server) StreamLogs(req *pbscribe.StreamLogsRequest, res pbscribe.Scribe
 
 				if latestScribeBlock > toBlock {
 					nextFromBlock = toBlock + 1
-					toBlock = latestScribeBlock
+					toBlock = latestScribeBlock - 1
 					wait = 0
 
 					span.AddEvent("New block. From: " + strconv.Itoa(int(nextFromBlock)) + " To: " + strconv.Itoa(int(toBlock)))

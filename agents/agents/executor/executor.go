@@ -92,33 +92,47 @@ type logOrderInfo struct {
 }
 
 const (
-	logChanSize = 1000
-	rpcRetry    = 7
+	logChanSize          = 1000
+	rpcRetry             = 7
+	scribeConnectTimeout = 30 * time.Second
 )
+
+func makeScribeClient(parentCtx context.Context, handler metrics.Handler, url string) (*grpc.ClientConn, pbscribe.ScribeServiceClient, error) {
+	ctx, cancel := context.WithTimeout(parentCtx, scribeConnectTimeout)
+	defer cancel()
+
+	conn, err := grpc.DialContext(ctx, url,
+		grpc.WithTransportCredentials(insecure.NewCredentials()),
+		grpc.WithUnaryInterceptor(otelgrpc.UnaryClientInterceptor(otelgrpc.WithTracerProvider(handler.GetTracerProvider()))),
+		grpc.WithStreamInterceptor(otelgrpc.StreamClientInterceptor(otelgrpc.WithTracerProvider(handler.GetTracerProvider()))),
+	)
+	if err != nil {
+		return nil, nil, fmt.Errorf("could not dial grpc: %w", err)
+	}
+
+	scribeClient := pbscribe.NewScribeServiceClient(conn)
+
+	// Ensure that gRPC is up and running.
+	healthCheck, err := scribeClient.Check(ctx, &pbscribe.HealthCheckRequest{}, grpc.WaitForReady(true))
+	if err != nil {
+		return nil, nil, fmt.Errorf("could not check: %w", err)
+	}
+	if healthCheck.Status != pbscribe.HealthCheckResponse_SERVING {
+		return nil, nil, fmt.Errorf("not serving: %s", healthCheck.Status)
+	}
+
+	return conn, scribeClient, nil
+}
 
 // NewExecutor creates a new executor agent.
 //
 //nolint:cyclop
 func NewExecutor(ctx context.Context, config config.Config, executorDB db.ExecutorDB, scribeClient client.ScribeClient, clients map[uint32]Backend, handler metrics.Handler) (*Executor, error) {
 	chainExecutors := make(map[uint32]*chainExecutor)
-	conn, err := grpc.DialContext(ctx, fmt.Sprintf("%s:%d", scribeClient.URL, scribeClient.Port),
-		grpc.WithTransportCredentials(insecure.NewCredentials()),
-		grpc.WithUnaryInterceptor(otelgrpc.UnaryClientInterceptor(otelgrpc.WithTracerProvider(handler.GetTracerProvider()))),
-		grpc.WithStreamInterceptor(otelgrpc.StreamClientInterceptor(otelgrpc.WithTracerProvider(handler.GetTracerProvider()))),
-	)
-	if err != nil {
-		return nil, fmt.Errorf("could not dial grpc: %w", err)
-	}
 
-	grpcClient := pbscribe.NewScribeServiceClient(conn)
-
-	// Ensure that gRPC is up and running.
-	healthCheck, err := grpcClient.Check(ctx, &pbscribe.HealthCheckRequest{}, grpc.WaitForReady(true))
+	conn, grpcClient, err := makeScribeClient(ctx, handler, fmt.Sprintf("%s:%d", scribeClient.URL, scribeClient.Port))
 	if err != nil {
-		return nil, fmt.Errorf("could not check: %w", err)
-	}
-	if healthCheck.Status != pbscribe.HealthCheckResponse_SERVING {
-		return nil, fmt.Errorf("not serving: %s", healthCheck.Status)
+		return nil, fmt.Errorf("could not create scribe client: %w", err)
 	}
 
 	executorSigner, err := agentsConfig.SignerFromConfig(ctx, config.UnbondedSigner)
@@ -204,8 +218,8 @@ func NewExecutor(ctx context.Context, config config.Config, executorDB db.Execut
 }
 
 // Run starts the executor agent. It calls `Start` and `Listen`.
-func (e Executor) Run(ctx context.Context) error {
-	g, _ := errgroup.WithContext(ctx)
+func (e Executor) Run(parentCtx context.Context) error {
+	g, ctx := errgroup.WithContext(parentCtx)
 
 	// Listen for snapshotAcceptedEvents on summit.
 	g.Go(func() error {
@@ -498,7 +512,7 @@ func (e Executor) verifyStateMerkleProof(parentCtx context.Context, state types.
 }
 
 // verifyMessageOptimisticPeriod verifies that the optimistic period is valid.
-func (e Executor) verifyMessageOptimisticPeriod(parentCtx context.Context, message types.Message) (_ *uint32, err error) {
+func (e Executor) verifyMessageOptimisticPeriod(parentCtx context.Context, message types.Message) (msgNonce *uint32, err error) {
 	chainID := message.OriginDomain()
 	destinationDomain := message.DestinationDomain()
 	nonce := message.Nonce()
@@ -510,6 +524,7 @@ func (e Executor) verifyMessageOptimisticPeriod(parentCtx context.Context, messa
 	))
 
 	defer func() {
+		span.AddEvent("determine execution status", trace.WithAttributes(attribute.Bool("shouldExecute", msgNonce != nil)))
 		metrics.EndSpanWithErr(span, err)
 	}()
 
@@ -731,7 +746,11 @@ func (e Executor) streamLogs(ctx context.Context, grpcClient pbscribe.ScribeServ
 			//	continue
 			//}
 
-			e.chainExecutors[chainID].logChan <- log
+			select {
+			case <-ctx.Done():
+				return fmt.Errorf("context cancelled: %w", ctx.Err())
+			case e.chainExecutors[chainID].logChan <- log:
+			}
 			span.AddEvent("log sent to channel")
 			e.chainExecutors[chainID].lastLog.blockNumber = log.BlockNumber
 			e.chainExecutors[chainID].lastLog.blockIndex = log.Index
@@ -782,12 +801,17 @@ func (e Executor) processLog(parentCtx context.Context, log ethTypes.Log, chainI
 			return fmt.Errorf("could not convert message to leaf: %w", err)
 		}
 		span.AddEvent("origin", trace.WithAttributes(attribute.String("step", "d")))
-		logger.Errorf("message nonce is %d", (*message).Nonce())
+		logger.Errorf("message nonce is %d chain id is %d", (*message).Nonce(), chainID)
 
 		// Make sure the nonce of the message is being inserted at the right index.
-		if merkleIndex+1 != (*message).Nonce() {
+		switch {
+		case merkleIndex+1 > (*message).Nonce():
+			return nil
+		case merkleIndex+1 < (*message).Nonce():
 			return fmt.Errorf("nonce is not correct. expected: %d, got: %d", merkleIndex+1, (*message).Nonce())
+		default:
 		}
+
 		span.AddEvent("origin", trace.WithAttributes(attribute.String("step", "e")))
 
 		e.chainExecutors[chainID].merkleTree.Insert(leaf[:])
@@ -907,11 +931,14 @@ func (e Executor) receiveLogs(ctx context.Context, chainID uint32) error {
 //
 //nolint:gocognit,cyclop
 func (e Executor) executeExecutable(parentCtx context.Context, chainID uint32) (err error) {
+	backoffInterval := time.Duration(0)
 	for {
 		select {
 		case <-parentCtx.Done():
 			return fmt.Errorf("context canceled: %w", parentCtx.Err())
-		case <-time.After(time.Duration(e.config.ExecuteInterval) * time.Second):
+		case <-time.After(backoffInterval):
+			backoffInterval = time.Duration(e.config.ExecuteInterval) * time.Second
+
 			page := 1
 			currentTime := uint64(time.Now().Unix())
 
@@ -920,6 +947,9 @@ func (e Executor) executeExecutable(parentCtx context.Context, chainID uint32) (
 			}
 
 			for {
+				if chainID == 137 {
+					fmt.Printf("")
+				}
 				messages, err := e.executorDB.GetExecutableMessages(parentCtx, messageMask, currentTime, page)
 				if err != nil {
 					return fmt.Errorf("could not get executable messages: %w", err)
@@ -984,11 +1014,15 @@ func (e Executor) executeExecutable(parentCtx context.Context, chainID uint32) (
 //
 //nolint:gocognit,cyclop
 func (e Executor) setMinimumTime(parentCtx context.Context, chainID uint32) (err error) {
+	backoffInterval := time.Duration(0)
+
 	for {
 		select {
 		case <-parentCtx.Done():
 			return fmt.Errorf("context canceled: %w", parentCtx.Err())
-		case <-time.After(time.Duration(e.config.SetMinimumTimeInterval) * time.Second):
+		case <-time.After(backoffInterval):
+			backoffInterval = time.Duration(e.config.SetMinimumTimeInterval) * time.Second
+
 			page := 1
 			messageMask := execTypes.DBMessage{
 				ChainID: &chainID,

@@ -3,6 +3,8 @@ package types_test
 import (
 	"context"
 	"crypto/rand"
+	"encoding/hex"
+	"fmt"
 	"math/big"
 	"testing"
 	"time"
@@ -327,4 +329,19 @@ func TestHeaderEncodeParity(t *testing.T) {
 	Nil(t, err)
 
 	Equal(t, headerVersion, types.HeaderVersion)
+}
+
+func TestGiveMeData(t *testing.T) {
+	snapshotBytes, err := hex.DecodeString("F1E9888106A378AE0168C7090B15CAE2823A878C488A732FD1B8DE08870F6F2E0000A86A0000017E0001D2AC7F006472C0F6")
+	Nil(t, err)
+
+	snapshot, err := types.DecodeSnapshot(snapshotBytes)
+	Nil(t, err)
+
+	for i, state := range snapshot.States() {
+		fmt.Println("State", i)
+		fmt.Println("Root", state.Root())
+		fmt.Println("Origin", state.Origin())
+		fmt.Println("Nonce", state.Nonce())
+	}
 }
