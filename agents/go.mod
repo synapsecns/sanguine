@@ -13,7 +13,6 @@ require (
 	github.com/coinbase/rosetta-sdk-go v0.8.1
 	github.com/davecgh/go-spew v1.1.1
 	github.com/ethereum/go-ethereum v1.10.26
-	github.com/flowerwrong/go-hostsfile v0.0.0-20180523020422-0a383d90e66a
 	github.com/hedzr/log v1.6.3
 	github.com/ipfs/go-log v1.0.5
 	github.com/jftuga/ellipsis v1.0.0
@@ -60,7 +59,6 @@ require (
 	github.com/DataDog/go-tuf v0.3.0--fix-localmeta-fork // indirect
 	github.com/DataDog/gostackparse v0.5.0 // indirect
 	github.com/DataDog/sketches-go v1.2.1 // indirect
-	github.com/FlowerWrong/go-hostsfile v0.0.0-20180523020422-0a383d90e66a // indirect
 	github.com/ImVexed/fasturl v0.0.0-20200730185836-b0c0fbead04e // indirect
 	github.com/LK4d4/trylock v0.0.0-20191027065348-ff7e133a5c54 // indirect
 	github.com/MichaelMure/go-term-text v0.3.1 // indirect

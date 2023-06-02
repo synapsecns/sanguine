@@ -109,8 +109,6 @@ github.com/DataDog/sketches-go v1.2.1/go.mod h1:1xYmPLY1So10AwxV6MJV0J53XVH+WL9A
 github.com/DataDog/zstd v1.3.6-0.20190409195224-796139022798/go.mod h1:1jcaCB/ufaK+sKp1NBhlGmpz41jOoPQ35bpF36t7BBo=
 github.com/Flaque/filet v0.0.0-20201012163910-45f684403088 h1:PnnQln5IGbhLeJOi6hVs+lCeF+B1dRfFKPGXUAez0Ww=
 github.com/Flaque/filet v0.0.0-20201012163910-45f684403088/go.mod h1:TK+jB3mBs+8ZMWhU5BqZKnZWJ1MrLo8etNVg51ueTBo=
-github.com/FlowerWrong/go-hostsfile v0.0.0-20180523020422-0a383d90e66a h1:k4YI/sQZxczSr76XlbnOkyOcNQkVQEru5uWrXNoQQFI=
-github.com/FlowerWrong/go-hostsfile v0.0.0-20180523020422-0a383d90e66a/go.mod h1:PaTJKDjLdBoHBtvZcAK3TJm7p9ZzMT016SxuTt6IDkM=
 github.com/ImVexed/fasturl v0.0.0-20200730185836-b0c0fbead04e h1:oTGPtLDJBqVtsWy1p7XdW8qGYVg1ekeOax1fN6S81+g=
 github.com/ImVexed/fasturl v0.0.0-20200730185836-b0c0fbead04e/go.mod h1:we0YA5CsBbH5+/NUzC/AlMmxaDtWlXeNsqrwXjTzmzA=
 github.com/LK4D4/trylock v0.0.0-20191027065348-ff7e133a5c54 h1:sg9CWNOhr58hMGmJ0q7x7jQ/B1RK/GyHNmeaYCJos9M=
@@ -432,8 +430,6 @@ github.com/filipemendespi/newrelic-context v0.0.0-20200414012421-889cae3d7978 h1
 github.com/fjl/memsize v0.0.0-20180418122429-ca190fb6ffbc/go.mod h1:VvhXpOYNQvB+uIk2RvXzuaQtkQJzzIx6lSBe1xv7hi0=
 github.com/fjl/memsize v0.0.0-20190710130421-bcb5799ab5e5 h1:FtmdgXiUlNeRsoNMFlKLDt+S+6hbjVMEW6RGQ7aUf7c=
 github.com/fjl/memsize v0.0.0-20190710130421-bcb5799ab5e5/go.mod h1:VvhXpOYNQvB+uIk2RvXzuaQtkQJzzIx6lSBe1xv7hi0=
-github.com/flowerwrong/go-hostsfile v0.0.0-20180523020422-0a383d90e66a h1:JPnyCoyrJA/XKWWnhGUAmTZq3MPWLXIAbOSld9c1xZ8=
-github.com/flowerwrong/go-hostsfile v0.0.0-20180523020422-0a383d90e66a/go.mod h1:MpEre1IasIrWJviU44R3lNT5oqLdf954IXoWZiNwHF4=
 github.com/flynn/go-docopt v0.0.0-20140912013429-f6dd2ebbb31e/go.mod h1:HyVoz1Mz5Co8TFO8EupIdlcpwShBmY98dkT2xeHkvEI=
 github.com/flynn/go-shlex v0.0.0-20150515145356-3f9db97f8568/go.mod h1:xEzjJPgXI435gkrCt3MPfRiAkVrwSbHsst4LCFVfpJc=
 github.com/flynn/json5 v0.0.0-20160717195620-7620272ed633 h1:xJMmr4GMYIbALX5edyoDIOQpc2bOQTeJiWMeCl9lX/8=
