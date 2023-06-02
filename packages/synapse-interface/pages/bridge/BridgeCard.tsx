@@ -252,10 +252,6 @@ const BridgeCard = ({
       properties.pendingLabel = `Approving ${fromToken?.symbol}`
       properties.className = 'from-[#feba06] to-[#FEC737]'
       properties.postButtonAction = () => {
-        amplitude.logEvent('Approved Tokens for Bridge', {
-          token: fromToken?.symbol,
-          routerAddress: bridgeQuote?.routerAddress,
-        })
         setApproveTx('approved')
         setTime(0)
       }

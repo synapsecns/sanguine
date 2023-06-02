@@ -1,12 +1,11 @@
 import toast from 'react-hot-toast'
+import * as amplitude from '@amplitude/analytics-browser'
 
 function checkStringForRejection(str: string) {
   return str.includes('user rejected transaction')
 }
 
 export const txErrorHandler = (err: any) => {
-  console.log('err from txErrorHandler: ', err)
-
   if (
     err.code === 4001 ||
     (err?.message && checkStringForRejection(err?.message))

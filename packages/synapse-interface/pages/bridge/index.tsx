@@ -652,6 +652,15 @@ const BridgePage = ({
   - Only executes if token has already been approved.
    */
   const executeBridge = async () => {
+    //TO-DO: Update Log Event once pulling down bridge quote updates from SDK
+    amplitude.logEvent('Initiated Bridge Transaction', {
+      originChainId: fromChainId,
+      destinationChainId: toChainId,
+      inputAmount: fromInput.string,
+      receivedAmount: bridgeQuote.outputAmountString,
+      slippage: bridgeQuote.exchangeRate,
+    })
+
     try {
       const wallet = await fetchSigner({
         chainId: fromChainId,
@@ -679,15 +688,6 @@ const BridgePage = ({
 
       const originChainName = CHAINS_BY_ID[fromChainId]?.name
       const destinationChainName = CHAINS_BY_ID[toChainId]?.name
-
-      //TO-DO: Update Log Event once pulling down bridge quote updates from SDK
-      amplitude.logEvent('Initiated Bridge Transaction', {
-        originChainId: fromChainId,
-        destinationChainId: toChainId,
-        inputAmount: fromInput.string,
-        receivedAmount: bridgeQuote.outputAmountString,
-        slippage: bridgeQuote.exchangeRate,
-      })
 
       pendingPopup = toast(
         `Bridging from ${fromToken.symbol} on ${originChainName} to ${toToken.symbol} on ${destinationChainName}`,
@@ -733,6 +733,21 @@ const BridgePage = ({
       }
     } catch (error) {
       console.log('Error executing bridge', error)
+      const errorCode = error?.code
+      const eventName =
+        errorCode === 'ACTION_REJECTED'
+          ? 'Rejected Bridge Transaction'
+          : 'Error Bridge Transaction'
+
+      amplitude.logEvent(eventName, {
+        originChainId: fromChainId,
+        destinationChainId: toChainId,
+        inputAmount: fromInput.string,
+        receivedAmount: bridgeQuote.outputAmountString,
+        slippage: bridgeQuote.exchangeRate,
+        code: errorCode,
+      })
+
       toast.dismiss(pendingPopup)
       return txErrorHandler(error)
     }
