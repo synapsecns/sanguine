@@ -12,8 +12,8 @@ import (
 )
 
 // StoreState stores a state.
-func (s Store) StoreState(ctx context.Context, state agentsTypes.State, snapshotRoot [32]byte, proof [][]byte, treeHeight, stateIndex uint32) error {
-	dbState, err := AgentsTypesStateToState(state, snapshotRoot, proof, treeHeight, stateIndex)
+func (s Store) StoreState(ctx context.Context, state agentsTypes.State, snapshotRoot [32]byte, proof [][]byte, treeHeight, stateIndex uint32, blockNumber uint64) error {
+	dbState, err := AgentsTypesStateToState(state, snapshotRoot, proof, treeHeight, stateIndex, blockNumber)
 	if err != nil {
 		return fmt.Errorf("failed to convert state to db state: %w", err)
 	}
@@ -35,10 +35,10 @@ func (s Store) StoreState(ctx context.Context, state agentsTypes.State, snapshot
 }
 
 // StoreStates stores multiple states with the same snapshot root.
-func (s Store) StoreStates(ctx context.Context, states []agentsTypes.State, snapshotRoot [32]byte, proofs [][][]byte, treeHeight uint32) error {
+func (s Store) StoreStates(ctx context.Context, states []agentsTypes.State, snapshotRoot [32]byte, proofs [][][]byte, treeHeight uint32, blockNumber uint64) error {
 	var dbStates []State
 	for i := range states {
-		state, err := AgentsTypesStateToState(states[i], snapshotRoot, proofs[i], treeHeight, uint32(i))
+		state, err := AgentsTypesStateToState(states[i], snapshotRoot, proofs[i], treeHeight, uint32(i), blockNumber)
 		if err != nil {
 			return fmt.Errorf("failed to convert state to db state: %w", err)
 		}
@@ -227,7 +227,7 @@ func StateToDBState(state State) types.DBState {
 }
 
 // AgentsTypesStateToState converts an agentsTypes.State to a State.
-func AgentsTypesStateToState(state agentsTypes.State, snapshotRoot [32]byte, proof [][]byte, treeHeight, stateIndex uint32) (State, error) {
+func AgentsTypesStateToState(state agentsTypes.State, snapshotRoot [32]byte, proof [][]byte, treeHeight, stateIndex uint32, blockNumber uint64) (State, error) {
 	root := state.Root()
 
 	// Convert the proof to a json
@@ -248,5 +248,6 @@ func AgentsTypesStateToState(state agentsTypes.State, snapshotRoot [32]byte, pro
 		Proof:             proofDBFormat,
 		TreeHeight:        treeHeight,
 		StateIndex:        stateIndex,
+		BlockNumber:       blockNumber,
 	}, nil
 }

@@ -3,6 +3,7 @@ package executor
 import (
 	"fmt"
 	ethTypes "github.com/ethereum/go-ethereum/core/types"
+	types2 "github.com/synapsecns/sanguine/agents/agents/executor/types"
 	"github.com/synapsecns/sanguine/agents/contracts/destination"
 	"github.com/synapsecns/sanguine/agents/contracts/origin"
 	"github.com/synapsecns/sanguine/agents/contracts/summit"
@@ -52,14 +53,14 @@ func (e Executor) logToSnapshot(log ethTypes.Log, chainID uint32) (*types.Snapsh
 // logType determines whether a log is a `Dispatch` from Origin.sol or `AttestationAccepted` from Destination.sol.
 func (e Executor) logType(log ethTypes.Log, chainID uint32) contractEventType {
 	contractEvent := contractEventType{
-		contractType: other,
+		contractType: types2.Other,
 		eventType:    otherEvent,
 	}
 
 	//nolint:nestif
 	if e.chainExecutors[chainID].summitParser != nil {
 		if summitEvent, ok := (*e.chainExecutors[chainID].summitParser).EventType(log); ok && summitEvent == summit.SnapshotAcceptedEvent {
-			contractEvent.contractType = summitContract
+			contractEvent.contractType = types2.SummitContract
 			contractEvent.eventType = snapshotAcceptedEvent
 		}
 
@@ -68,10 +69,10 @@ func (e Executor) logType(log ethTypes.Log, chainID uint32) contractEventType {
 
 	//nolint:nestif
 	if originEvent, ok := e.chainExecutors[chainID].originParser.EventType(log); ok && originEvent == origin.DispatchedEvent {
-		contractEvent.contractType = originContract
+		contractEvent.contractType = types2.OriginContract
 		contractEvent.eventType = dispatchedEvent
 	} else if destinationEvent, ok := e.chainExecutors[chainID].destinationParser.EventType(log); ok && destinationEvent == destination.AttestationAcceptedEvent {
-		contractEvent.contractType = destinationContract
+		contractEvent.contractType = types2.DestinationContract
 		contractEvent.eventType = attestationAcceptedEvent
 	}
 

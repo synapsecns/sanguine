@@ -7,6 +7,7 @@ import (
 	ethTypes "github.com/ethereum/go-ethereum/core/types"
 	"github.com/synapsecns/sanguine/agents/agents/executor/config"
 	"github.com/synapsecns/sanguine/agents/agents/executor/db"
+	types2 "github.com/synapsecns/sanguine/agents/agents/executor/types"
 	agentsConfig "github.com/synapsecns/sanguine/agents/config"
 	"github.com/synapsecns/sanguine/agents/contracts/destination"
 	"github.com/synapsecns/sanguine/agents/contracts/origin"
@@ -151,7 +152,7 @@ func (e Executor) StartAndListenOrigin(ctx context.Context, chainID uint32, addr
 
 	g.Go(func() error {
 		return e.streamLogs(ctx, e.grpcClient, e.grpcConn, chainID, address, nil, contractEventType{
-			contractType: originContract,
+			contractType: types2.OriginContract,
 			eventType:    dispatchedEvent,
 		})
 	})

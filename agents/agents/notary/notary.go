@@ -2,13 +2,11 @@ package notary
 
 import (
 	"context"
-	"errors"
 	"fmt"
 	"github.com/synapsecns/sanguine/core/metrics"
 	"go.opentelemetry.io/contrib/instrumentation/google.golang.org/grpc/otelgrpc"
 	"go.opentelemetry.io/otel/attribute"
 	"go.opentelemetry.io/otel/trace"
-	"io"
 	"strconv"
 	"time"
 
@@ -131,10 +129,12 @@ func (n Notary) streamLogs(ctx context.Context) error {
 			logger.Info("Notary stream logs default case hit")
 			response, err := stream.Recv()
 			logger.Info("Notary back from stream.Recv")
-			if errors.Is(err, io.EOF) {
-				logger.Info("Notary stream logs returning after EOF")
-				return nil
-			}
+			// Deleting this: this will cause this process to exit if the stream is closed.
+			// but this is better than silently failing. TODO: we should have an inline way to deal with this.
+			//if errors.Is(err, io.EOF) {
+			//	logger.Info("Notary stream logs returning after EOF")
+			//	return nil
+			//}
 			if err != nil {
 				logger.Errorf("Notary stream logs got an error %v", err)
 				return fmt.Errorf("could not receive: %w", err)

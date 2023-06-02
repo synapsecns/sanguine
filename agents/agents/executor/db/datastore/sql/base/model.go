@@ -54,7 +54,7 @@ var (
 // PageSize is the amount of entries per page of logs.
 var PageSize = 50_000
 
-// Message is the information about a message parsed by the Executor.
+// Message is the information about a message parsed by the Executor. This is an event derived from the origin contract.
 type Message struct {
 	// ChainID is the chain id.
 	ChainID uint32 `gorm:"column:chain_id;primaryKey;index:idx_chain_dest_nonce"`
@@ -74,7 +74,7 @@ type Message struct {
 	MinimumTime uint64 `gorm:"column:minimum_time"`
 }
 
-// Attestation is the information about an attestation parsed by the Executor.
+// Attestation is the information about an attestation parsed by the Executor. This is an event derived from the destination contract.
 type Attestation struct {
 	// Destination is the destination of the attestation.
 	Destination uint32 `gorm:"column:destination;primaryKey"`
@@ -114,4 +114,6 @@ type State struct {
 	TreeHeight uint32 `gorm:"column:tree_height"`
 	// StateIndex is the index of the state in the Snapshot.
 	StateIndex uint32 `gorm:"column:state_index"`
+	// BlockNumber is the block number the state update was received at.
+	BlockNumber uint64 `gorm:"column:block_number"`
 }

@@ -224,7 +224,7 @@ func (e Executor) Run(parentCtx context.Context) error {
 	// Listen for snapshotAcceptedEvents on summit.
 	g.Go(func() error {
 		return e.streamLogs(ctx, e.grpcClient, e.grpcConn, e.config.SummitChainID, e.config.SummitAddress, nil, contractEventType{
-			contractType: summitContract,
+			contractType: execTypes.SummitContract,
 			eventType:    snapshotAcceptedEvent,
 		})
 	})
@@ -235,7 +235,7 @@ func (e Executor) Run(parentCtx context.Context) error {
 		// Listen for dispatchEvents on origin.
 		g.Go(func() error {
 			return e.streamLogs(ctx, e.grpcClient, e.grpcConn, chain.ChainID, chain.OriginAddress, nil, contractEventType{
-				contractType: originContract,
+				contractType: execTypes.OriginContract,
 				eventType:    dispatchedEvent,
 			})
 		})
@@ -243,7 +243,7 @@ func (e Executor) Run(parentCtx context.Context) error {
 		// Listen for attestationAcceptedEvents on destination.
 		g.Go(func() error {
 			return e.streamLogs(ctx, e.grpcClient, e.grpcConn, chain.ChainID, chain.DestinationAddress, nil, contractEventType{
-				contractType: destinationContract,
+				contractType: execTypes.DestinationContract,
 				eventType:    attestationAcceptedEvent,
 			})
 		})
@@ -416,16 +416,7 @@ func (e Executor) Execute(parentCtx context.Context, message types.Message) (_ b
 	}
 }
 
-type contractType int
-
 type eventType int
-
-const (
-	originContract contractType = iota
-	destinationContract
-	summitContract
-	other
-)
 
 const (
 	// Origin's Dispatched event.
@@ -438,7 +429,7 @@ const (
 )
 
 type contractEventType struct {
-	contractType contractType
+	contractType execTypes.ContractType
 	eventType    eventType
 }
 
@@ -679,7 +670,7 @@ func (e Executor) checkIfExecuted(parentCtx context.Context, message types.Messa
 //
 //nolint:cyclop
 func (e Executor) streamLogs(ctx context.Context, grpcClient pbscribe.ScribeServiceClient, conn *grpc.ClientConn, chainID uint32, address string, toBlockNumber *uint64, contractEvent contractEventType) error {
-	lastStoredBlock, err := e.executorDB.GetLastBlockNumber(ctx, chainID)
+	lastStoredBlock, err := e.executorDB.GetLastBlockNumber(ctx, chainID, contractEvent.contractType)
 	if err != nil {
 		return fmt.Errorf("could not get last stored block: %w", err)
 	}
@@ -781,7 +772,7 @@ func (e Executor) processLog(parentCtx context.Context, log ethTypes.Log, chainI
 	}()
 
 	switch contractEvent.contractType {
-	case originContract:
+	case execTypes.OriginContract:
 		span.AddEvent("origin", trace.WithAttributes(attribute.String("step", "a")))
 		message, err := e.logToMessage(log, chainID)
 		if err != nil {
@@ -821,7 +812,7 @@ func (e Executor) processLog(parentCtx context.Context, log ethTypes.Log, chainI
 			return fmt.Errorf("could not store message: %w", err)
 		}
 		span.AddEvent("origin", trace.WithAttributes(attribute.String("step", "f")))
-	case destinationContract:
+	case execTypes.DestinationContract:
 		span.AddEvent("destination", trace.WithAttributes(attribute.String("step", "a")))
 		attestation, err := e.logToAttestation(log, chainID)
 		if err != nil {
@@ -870,7 +861,7 @@ func (e Executor) processLog(parentCtx context.Context, log ethTypes.Log, chainI
 			return fmt.Errorf("could not store attestation: %w", err)
 		}
 		span.AddEvent("destination", trace.WithAttributes(attribute.String("step", "e")))
-	case summitContract:
+	case execTypes.SummitContract:
 		//nolint:gocritic,exhaustive
 		span.AddEvent("summit", trace.WithAttributes(attribute.String("step", "a")))
 		span.AddEvent("summit", trace.WithAttributes(attribute.String("step", "b")))
@@ -892,13 +883,13 @@ func (e Executor) processLog(parentCtx context.Context, log ethTypes.Log, chainI
 
 		treeHeight := (*snapshot).TreeHeight()
 
-		err = e.executorDB.StoreStates(ctx, (*snapshot).States(), snapshotRoot, proofs, treeHeight)
+		err = e.executorDB.StoreStates(ctx, (*snapshot).States(), snapshotRoot, proofs, treeHeight, log.BlockNumber)
 		if err != nil {
 			return fmt.Errorf("could not store states: %w", err)
 		}
 		span.AddEvent("summit", trace.WithAttributes(attribute.String("step", "g")))
-	case other:
-		span.AddEvent("other contract event")
+	case execTypes.Other:
+		span.AddEvent("Other contract event")
 	default:
 		return fmt.Errorf("log type not supported")
 	}
