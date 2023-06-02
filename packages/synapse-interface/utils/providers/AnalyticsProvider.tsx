@@ -1,6 +1,6 @@
 import React, { createContext, useContext, useEffect } from 'react'
 import * as amplitude from '@amplitude/analytics-browser'
-import { useRouter } from 'next/router'
+import { useRouter, NextRouter } from 'next/router'
 import { useAccount, useNetwork } from 'wagmi'
 import packageJson from '../../package.json'
 
@@ -19,13 +19,14 @@ export const AnalyticsProvider = ({
 }: {
   children: React.ReactNode
 }) => {
-  const router = useRouter()
+  const router: NextRouter = useRouter()
 
   const { connector: activeConnector, address: connectedAddress } = useAccount()
   const { chain: currentChain } = useNetwork()
 
-  const walletId = activeConnector?.id
-  const networkName = currentChain?.name
+  const walletId: string = activeConnector?.id
+  const networkName: string = currentChain?.name
+  const networkId: number = currentChain?.id
 
   useEffect(() => {
     if (walletId && router.isReady) {
@@ -35,7 +36,10 @@ export const AnalyticsProvider = ({
 
   useEffect(() => {
     if (networkName && router.isReady) {
-      amplitude.logEvent('Connect to Network', { network: networkName })
+      amplitude.logEvent('Connect to Network', {
+        network: networkName,
+        chainId: networkId,
+      })
     }
   }, [currentChain, router.isReady])
 
