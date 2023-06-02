@@ -30,6 +30,7 @@ import { Token } from '@/utils/types'
 import { BridgeQuote } from '@/utils/types'
 import { checkStringIfOnlyZeroes } from '@/utils/regex'
 import { AcceptedChainId } from '@constants/chains'
+import * as amplitude from '@amplitude/analytics-browser'
 
 export enum DisplayType {
   FROM = 'from',
@@ -251,6 +252,10 @@ const BridgeCard = ({
       properties.pendingLabel = `Approving ${fromToken?.symbol}`
       properties.className = 'from-[#feba06] to-[#FEC737]'
       properties.postButtonAction = () => {
+        amplitude.logEvent('Approved Tokens for Bridge', {
+          token: fromToken?.symbol,
+          routerAddress: bridgeQuote?.routerAddress,
+        })
         setApproveTx('approved')
         setTime(0)
       }

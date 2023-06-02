@@ -39,21 +39,21 @@ export const AnalyticsProvider = ({
   }, [router.isReady])
 
   // Update Amplitude on route changes
-  useEffect(() => {
-    const handleRouteChange = () => {
-      amplitude.logEvent('Page Viewed', {
-        path: router.pathname,
-      })
-    }
+  // useEffect(() => {
+  //   const handleRouteChange = () => {
+  //     amplitude.logEvent('Page Viewed', {
+  //       path: router.pathname,
+  //     })
+  //   }
 
-    // Listen for route changes
-    router.events.on('routeChangeComplete', handleRouteChange)
+  //   // Listen for route changes
+  //   router.events.on('routeChangeComplete', handleRouteChange)
 
-    // Clean up the listener when the component unmounts
-    return () => {
-      router.events.off('routeChangeComplete', handleRouteChange)
-    }
-  }, [router.events])
+  //   // Clean up the listener when the component unmounts
+  //   return () => {
+  //     router.events.off('routeChangeComplete', handleRouteChange)
+  //   }
+  // }, [router.events])
 
   return (
     <AmplitudeContext.Provider value={null}>

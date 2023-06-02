@@ -536,6 +536,7 @@ const BridgePage = ({
         if (fromInput.string !== '') {
           setIsQuoteLoading(true)
         }
+
         return
       case 'to':
         setToToken(token)
