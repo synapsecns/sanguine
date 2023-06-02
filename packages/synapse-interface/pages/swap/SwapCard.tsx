@@ -512,7 +512,7 @@ const SwapCard = ({
       // TODO 1) make dynamic 2) clean up
       let newOriginQuery = {...query}
       newOriginQuery.minAmountOut = minWithSlippage
-          console.log('query', newOriginQuery)
+
       setSwapQuote({
         outputAmount: toValueBigNum,
         outputAmountString: commify(

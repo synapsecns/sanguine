@@ -611,7 +611,7 @@ const BridgePage = ({
 
       let newDestQuery = {...destQuery}
       newDestQuery.minAmountOut = destMinWithSlippage
-console.log("sadasdas", newOriginQuery, newDestQuery)
+
       setBridgeQuote({
         outputAmount: toValueBigNum,
         outputAmountString: commify(
