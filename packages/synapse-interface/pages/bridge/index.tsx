@@ -680,6 +680,15 @@ const BridgePage = ({
       const originChainName = CHAINS_BY_ID[fromChainId]?.name
       const destinationChainName = CHAINS_BY_ID[toChainId]?.name
 
+      //TO-DO: Update Log Event once pulling down bridge quote updates from SDK
+      amplitude.logEvent('Initiated Bridge Transaction', {
+        originChainId: fromChainId,
+        destinationChainId: toChainId,
+        inputAmount: fromInput.string,
+        receivedAmount: bridgeQuote.outputAmountString,
+        slippage: bridgeQuote.exchangeRate,
+      })
+
       pendingPopup = toast(
         `Bridging from ${fromToken.symbol} on ${originChainName} to ${toToken.symbol} on ${destinationChainName}`,
         { id: 'bridge-in-progress-popup', duration: Infinity }
@@ -689,6 +698,14 @@ const BridgePage = ({
         await tx.wait()
         setBridgeTxHash(tx.hash)
         toast.dismiss(pendingPopup)
+
+        amplitude.logEvent('Successful Bridge Transaction', {
+          originChainId: fromChainId,
+          destinationChainId: toChainId,
+          inputAmount: fromInput.string,
+          receivedAmount: bridgeQuote.outputAmountString,
+          slippage: bridgeQuote.exchangeRate,
+        })
 
         const successToastContent = (
           <div>

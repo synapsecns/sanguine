@@ -7,6 +7,7 @@ import { CHAINS_BY_ID } from '@/constants/chains'
 import { txErrorHandler } from './txErrorHandler'
 import toast from 'react-hot-toast'
 import ExplorerToastLink from '@components/ExplorerToastLink'
+import * as amplitude from '@amplitude/analytics-browser'
 
 export const approveToken = async (
   address: string,
@@ -28,12 +29,24 @@ export const approveToken = async (
     chainId,
   })
 
+  amplitude.logEvent('Initiating Approval Transaction', {
+    chainId: chainId,
+    token: tokenAddress,
+    routerAddress: address,
+  })
+
   const erc20 = new Contract(tokenAddress, erc20ABI, signer)
   try {
     const approveTx = await erc20.approve(address, amount ?? MaxInt256)
     await approveTx.wait().then((successTx) => {
       if (successTx) {
         toast.dismiss(pendingPopup)
+
+        amplitude.logEvent('Successful Approval Transaction', {
+          chainId: chainId,
+          token: tokenAddress,
+          routerAddress: address,
+        })
 
         const successToastContent = (
           <div>
@@ -56,6 +69,13 @@ export const approveToken = async (
   } catch (error) {
     toast.dismiss(pendingPopup)
     console.log(`Transaction failed with error: ${error}`)
+
+    amplitude.logEvent('Rejected Approval Transaction', {
+      chainId: chainId,
+      token: tokenAddress,
+      routerAddress: address,
+    })
+
     txErrorHandler(error)
   }
 }
