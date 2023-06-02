@@ -55,11 +55,9 @@ const ExchangeRateInfo = ({
             : 'flex justify-end'
         }
       >
-        {/*
-        TODO need to add gas retrieval to sdk
         {isGasDropped && (
           <GasDropLabel gasDropAmount={gasDropAmount} toChainId={toChainId} />
-        )} */}
+        )}
       </div>
       <div className="flex justify-between">
         <div className="flex space-x-2 text-[#88818C]">
