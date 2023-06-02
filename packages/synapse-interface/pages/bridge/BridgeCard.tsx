@@ -474,7 +474,7 @@ const BridgeCard = ({
               toToken={toToken}
               exchangeRate={bridgeQuote?.exchangeRate}
               toChainId={toChainId}
-              gasDropAmount={null}
+              gasDropAmount={gasDropAmount}
             />
           </Transition>
           <Transition
