@@ -36,7 +36,7 @@ const Home = (): JSX.Element => {
           <div className="container">
             <div className="row cards__container">
               <Card
-                to="docs/solidity/intro"
+                to="docs/solidity"
                 header={{
                   label: '🚀 Send your first message',
                 }}
