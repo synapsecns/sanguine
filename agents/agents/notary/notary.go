@@ -136,7 +136,6 @@ func (n Notary) streamLogs(ctx context.Context) error {
 			//	return nil
 			//}
 			if err != nil {
-				logger.Errorf("Notary stream logs got an error %v", err)
 				return fmt.Errorf("could not receive: %w", err)
 			}
 

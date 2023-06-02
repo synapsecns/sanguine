@@ -3,14 +3,12 @@ package executor
 import (
 	"context"
 	"encoding/json"
-	"errors"
 	"fmt"
 	"github.com/synapsecns/sanguine/core/metrics"
 	evmClient "github.com/synapsecns/sanguine/ethergo/client"
 	"go.opentelemetry.io/contrib/instrumentation/google.golang.org/grpc/otelgrpc"
 	"go.opentelemetry.io/otel/attribute"
 	"go.opentelemetry.io/otel/trace"
-	"io"
 	"math/big"
 	"strconv"
 	"time"
@@ -710,10 +708,6 @@ func (e Executor) streamLogs(ctx context.Context, grpcClient pbscribe.ScribeServ
 			return nil
 		default:
 			response, err := stream.Recv()
-			if errors.Is(err, io.EOF) {
-				logger.Errorf("stream closed: %s", err)
-				return nil
-			}
 			if err != nil {
 				return fmt.Errorf("could not receive: %w", err)
 			}
