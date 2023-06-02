@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useMemo } from 'react'
 import { useSynapseContext } from '@/utils/providers/SynapseProvider'
 
 export const useGasDropAmount = (chainId: number) => {
@@ -18,5 +18,7 @@ export const useGasDropAmount = (chainId: number) => {
     }
   }, [chainId])
 
-  return gasDrop
+  return useMemo(() => {
+    return gasDrop
+  }, [gasDrop, chainId])
 }
