@@ -1,7 +1,7 @@
 import React, { createContext, useContext, useEffect } from 'react'
-import * as amplitude from '@amplitude/analytics-browser'
 import { useRouter, NextRouter } from 'next/router'
 import { useAccount, useNetwork } from 'wagmi'
+import * as amplitude from '@amplitude/analytics-browser'
 import packageJson from '../../package.json'
 
 const AMPLITUDE_API_KEY: string | undefined =
