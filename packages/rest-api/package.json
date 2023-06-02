@@ -6,7 +6,7 @@
   },
   "scripts": {
     "test": "tsdx test",
-    "start": " node app.js",
+    "start": "npx tsx app.ts",
     "test:coverage": "echo 'No tests defined.'",
     "lint:fix": "npm run lint -- --fix",
     "lint:check": "eslint . --max-warnings=0",
