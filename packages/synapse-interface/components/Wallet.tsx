@@ -5,7 +5,6 @@ import { MetamaskIcon } from '@icons/WalletIcons/Metamask'
 import { CoinbaseWalletIcon } from '@icons/WalletIcons/CoinbaseWalletIcon'
 import { WalletConnectIcon } from '@icons/WalletIcons/WalletConnectIcon'
 import { IconProps, WalletId } from '@utils/types'
-import * as amplitude from '@amplitude/analytics-browser'
 import Spinner from './icons/Spinner'
 
 const WALLETS = [
@@ -36,28 +35,13 @@ export const WalletIcon = ({
 
 export const Wallet = () => {
   const [mounted, setMounted] = useState(false)
-
   const { connector: activeConnector, address: connectedAddress } = useAccount()
   const { chain: currentChain } = useNetwork()
-
   const walletId = activeConnector?.id
-  const networkName = currentChain?.name
 
   useEffect(() => {
     setMounted(true)
   }, [])
-
-  useEffect(() => {
-    if (walletId && mounted) {
-      amplitude.logEvent('Connected Wallet', { type: walletId })
-    }
-  }, [walletId, mounted])
-
-  useEffect(() => {
-    if (networkName && mounted) {
-      amplitude.logEvent('Connect to Network', { network: networkName })
-    }
-  }, [currentChain, mounted])
 
   const render = useMemo(() => {
     return (

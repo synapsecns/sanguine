@@ -1,6 +1,7 @@
 import React, { createContext, useContext, useEffect } from 'react'
 import * as amplitude from '@amplitude/analytics-browser'
 import { useRouter } from 'next/router'
+import { useAccount, useNetwork } from 'wagmi'
 import packageJson from '../../package.json'
 
 const AMPLITUDE_API_KEY: string | undefined =
@@ -20,12 +21,30 @@ export const AnalyticsProvider = ({
 }) => {
   const router = useRouter()
 
+  const { connector: activeConnector, address: connectedAddress } = useAccount()
+  const { chain: currentChain } = useNetwork()
+
+  const walletId = activeConnector?.id
+  const networkName = currentChain?.name
+
+  useEffect(() => {
+    if (walletId && router.isReady) {
+      amplitude.logEvent('Connected Wallet', { type: walletId })
+    }
+  }, [walletId, router.isReady])
+
+  useEffect(() => {
+    if (networkName && router.isReady) {
+      amplitude.logEvent('Connect to Network', { network: networkName })
+    }
+  }, [currentChain, router.isReady])
+
   useEffect(() => {
     if (router.isReady) {
       amplitude.init(AMPLITUDE_API_KEY, AMPLITUDE_USER_ID, {
         defaultTracking: {
           sessions: true,
-          pageViews: true,
+          pageViews: false,
           formInteractions: true,
           fileDownloads: true,
         },
@@ -39,21 +58,21 @@ export const AnalyticsProvider = ({
   }, [router.isReady])
 
   // Update Amplitude on route changes
-  // useEffect(() => {
-  //   const handleRouteChange = () => {
-  //     amplitude.logEvent('Page Viewed', {
-  //       path: router.pathname,
-  //     })
-  //   }
+  useEffect(() => {
+    const handleRouteChange = () => {
+      amplitude.logEvent('Page Viewed', {
+        path: router.pathname,
+      })
+    }
 
-  //   // Listen for route changes
-  //   router.events.on('routeChangeComplete', handleRouteChange)
+    // Listen for route changes
+    router.events.on('routeChangeComplete', handleRouteChange)
 
-  //   // Clean up the listener when the component unmounts
-  //   return () => {
-  //     router.events.off('routeChangeComplete', handleRouteChange)
-  //   }
-  // }, [router.events])
+    // Clean up the listener when the component unmounts
+    return () => {
+      router.events.off('routeChangeComplete', handleRouteChange)
+    }
+  }, [router.events])
 
   return (
     <AmplitudeContext.Provider value={null}>
