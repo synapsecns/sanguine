@@ -18,7 +18,5 @@ export const useGasDropAmount = (chainId: number) => {
     }
   }, [chainId])
 
-  return useMemo(() => {
-    return gasDrop
-  }, [gasDrop, chainId])
+  return gasDrop
 }

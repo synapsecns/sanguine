@@ -100,9 +100,6 @@ const BridgeCard = ({
   const [approveTx, setApproveTx] = useState<string>(null)
   const bridgeDisplayRef = useRef(null)
 
-  const gasDropAmount = useGasDropAmount(toChainId)
-
-  console.log('gasDropAmount: ', gasDropAmount)
   /*
   useEffect Trigger: fromToken, fromTokens
   - When either the from token or list of from tokens are mutated, the selected token's balance is set in the state
@@ -474,7 +471,7 @@ const BridgeCard = ({
               toToken={toToken}
               exchangeRate={bridgeQuote?.exchangeRate}
               toChainId={toChainId}
-              gasDropAmount={gasDropAmount}
+              // gasDropAmount={gasDropAmount}
             />
           </Transition>
           <Transition
