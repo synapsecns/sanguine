@@ -12,15 +12,15 @@ export const useGasDropAmount = (chainId: number) => {
       ;(async () => {
         try {
           setGasDrop(await synapseSDK.getBridgeGas(chainId))
-          setLoading(true)
+          setLoading(false)
         } catch (error) {
-          //remove after testing
-          console.error('Error from useGasDropAmount hook: ', error)
+          console.error(error)
+          setLoading(false)
         }
       })()
     }
 
-    return () => setLoading(false)
+    return () => setLoading(true)
   }, [chainId])
 
   return { gasDrop, loading }

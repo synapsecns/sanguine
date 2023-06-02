@@ -22,7 +22,7 @@ const ExchangeRateInfo = ({
   toChainId: number
 }) => {
   const [gasDropChainId, setGasDropChainId] = useState<number>(null)
-  const gasDropAmount = useGasDropAmount(toChainId)
+  const { gasDrop: gasDropAmount, loading } = useGasDropAmount(toChainId)
 
   const safeExchangeRate = useMemo(() => exchangeRate ?? Zero, [exchangeRate]) // todo clean
   const safeFromAmount = useMemo(() => fromAmount ?? Zero, [fromAmount]) // todo clean
@@ -42,14 +42,6 @@ const ExchangeRateInfo = ({
     }
   }, [numExchangeRate])
 
-  /**
-   * @DEV to-do: Need to update isGasDropped to compare against
-   * actual gasDropAmount queried from SDK to determine if we
-   * should show/hide the GasDropLabel component
-   *
-   * Note: ensure GasDropLabel updates gas drop amount + chain received
-   * and that there is no lagging state of airdrop amount to switched chain
-   */
   const isGasDropped = useMemo(() => {
     if (gasDropAmount) {
       return gasDropAmount.gt(0)
@@ -60,10 +52,11 @@ const ExchangeRateInfo = ({
     setGasDropChainId(toChainId)
   }, [toChainId, isGasDropped])
 
-  const gasDropLabel = useMemo(() => {
+  const memoizedGasDropLabel = useMemo(() => {
     if (!isGasDropped || !(toChainId == gasDropChainId)) return null
+    if (loading) return null
     return <GasDropLabel gasDropAmount={gasDropAmount} toChainId={toChainId} />
-  }, [toChainId, gasDropChainId, isGasDropped])
+  }, [toChainId, gasDropChainId, isGasDropped, loading])
 
   const expectedToChain = useMemo(() => {
     return toChainId && <ChainInfoLabel chainId={toChainId} />
@@ -78,10 +71,7 @@ const ExchangeRateInfo = ({
             : 'flex justify-end'
         }
       >
-        {/* {isGasDropped && gasDropChainId && (
-          <GasDropLabel gasDropAmount={gasDropAmount} toChainId={toChainId} />
-        )} */}
-        {gasDropLabel}
+        {memoizedGasDropLabel}
       </div>
       <div className="flex justify-between">
         <div className="flex space-x-2 text-[#88818C]">
