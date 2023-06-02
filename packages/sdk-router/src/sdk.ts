@@ -216,7 +216,7 @@ class SynapseSDK {
       amountIn
     )
 
-    // Check if call was unsuccessful
+    // Check if call was unsuccessful.
     if (rawQuery?.length !== 5 || rawQuery.minAmountOut.isZero()) {
       throw Error('No queries found for this route')
     }
