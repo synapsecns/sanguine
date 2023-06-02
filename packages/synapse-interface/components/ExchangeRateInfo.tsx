@@ -15,13 +15,11 @@ const ExchangeRateInfo = ({
   toToken,
   exchangeRate,
   toChainId,
-}: // gasDropAmount,
-{
+}: {
   fromAmount: BigNumber
   toToken: Token
   exchangeRate: BigNumber
   toChainId: number
-  // gasDropAmount: BigInt | any //remove any after implementing hook
 }) => {
   const gasDropAmount = useGasDropAmount(toChainId)
 
@@ -43,6 +41,14 @@ const ExchangeRateInfo = ({
     }
   }, [numExchangeRate])
 
+  /**
+   * @DEV to-do: Need to update isGasDropped to compare against
+   * actual gasDropAmount queried from SDK to determine if we
+   * should show/hide the GasDropLabel component
+   *
+   * Note: ensure GasDropLabel updates gas drop amount + chain received
+   * and that there is no lagging state of airdrop amount to switched chain
+   */
   const isGasDropped = useMemo(() => {
     return safeExchangeRate.gt(0)
   }, [safeExchangeRate])
