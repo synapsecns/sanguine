@@ -18,6 +18,25 @@ https://github.com/synapsecns/sanguine/blob/master/agents/agents/guard/cmd/cmd.m
 The guard configuration file could look something like this:
 
 ```yaml
-
+    refresh_interval_seconds: 1
+    domains:
+      domain_client1:
+        domain_id: 123
+        type: EVM
+        required_confirmations: 0
+        origin_address: 0xabc
+        summit_address: 0xdef
+        destination_address: 0xghi
+        rpc_url: https://chain123.rpc
+      domain_client2:
+        <other client info>
+    summit_domain_id: 10
+    domain_id: 0
+    unbonded_signer:
+      type: "File"
+      file: "/config/guard_signer.txt"
+    bonded_signer:
+      type: "File"
+      file: "/config/guard_signer.txt"
 ```
 
