@@ -44,7 +44,7 @@ export const AnalyticsProvider = ({
       amplitude.init(AMPLITUDE_API_KEY, AMPLITUDE_USER_ID, {
         defaultTracking: {
           sessions: true,
-          pageViews: false,
+          pageViews: true,
           formInteractions: true,
           fileDownloads: true,
         },

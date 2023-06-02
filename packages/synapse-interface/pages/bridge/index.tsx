@@ -422,8 +422,10 @@ const BridgePage = ({
         const res = await switchNetwork({ chainId: desiredChainId })
           .then((res) => {
             amplitude.logEvent('[Bridge] Switch Origin Chain', {
-              switchFrom: fromChainId,
-              switchTo: desiredChainId,
+              switchFromChainId: fromChainId,
+              switchFrom: CHAINS_BY_ID[fromChainId].name,
+              switchToChainId: desiredChainId,
+              switchTo: CHAINS_BY_ID[desiredChainId].name,
             })
             if (fromInput.string !== '') {
               setIsQuoteLoading(true)
@@ -485,8 +487,10 @@ const BridgePage = ({
           bridgeableChains: toBridgeableChains,
         } = handleNewFromToken(fromToken, chainId, toToken.symbol, fromChainId)
         amplitude.logEvent('[Bridge] Switch Destination Chain', {
-          switchFrom: toChainId,
-          switchTo: toNewToChain,
+          switchFromChainId: toChainId,
+          switchFrom: CHAINS_BY_ID[toChainId].name,
+          switchToChainId: toNewToChain,
+          switchTo: CHAINS_BY_ID[toNewToChain].name,
         })
         resetTokenPermutation(
           fromToken,
