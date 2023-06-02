@@ -4,6 +4,8 @@ sidebar_position: 1
 
 # Protocol Overview
 
+![alt text](../../static/img/MessagingSystemOverview.png 'image alt/caption')
+
 The **Synapse Messaging System** allows for messages to be sent from a Smart Contract on one blockchain to a Smart Contract on another blockchain.
 
 The protocol relies on a concept called **Optimistic Messaging** that results in minimizing the amount of work performed unless fraud is detected.

@@ -52,3 +52,4 @@ Clearly, the developers of the “Bridge” application who choose to rely on a 
 
 ### What is the Synapse Messaging System?
 The Synapse Messaging System is designed to enable both Liveness and Integrity, with the priority of always being to maintain Integrity over Liveness since a breakdown of Integrity is what leads to the Black Swan disasters described above.
+

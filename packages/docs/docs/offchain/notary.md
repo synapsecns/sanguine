@@ -12,3 +12,12 @@ Every Notary must post a bond prior to running, and it will need to designate an
 The Synapse team can provide a reference implementation and deployment instructions if you would like to run a Notary.
 To run the Notary, you only need the executable written in Go, and provide the configuration file.
 
+The reference implementation instructions for the Notary can be found here:
+
+https://github.com/synapsecns/sanguine/blob/master/agents/agents/notary/cmd/cmd.md
+
+The notary configuration file could look something like this:
+
+```yaml
+
+```

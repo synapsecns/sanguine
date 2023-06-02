@@ -11,3 +11,13 @@ The Guard’s main job is to catch and report fraud, but it also has a less crit
 Like the Notary, there is another bonded Signing key that the Guard has. The Guard’s bonded Signing key should be kept secret so as to avoid having an attacker use it for getting the Guard slashed.
 To run the Guard, you only need the executable written in Go, and provide the configuration file.
 
+The reference implementation instructions for the Guard can be found here:
+
+https://github.com/synapsecns/sanguine/blob/master/agents/agents/guard/cmd/cmd.md
+
+The guard configuration file could look something like this:
+
+```yaml
+
+```
+
