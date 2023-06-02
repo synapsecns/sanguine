@@ -596,22 +596,20 @@ const BridgePage = ({
       // TODO 1) make dynamic, 2) clean this
 
       const originMinWithSlippage = subtractSlippage(
-        originQuery?.[2] ?? Zero,
+        originQuery?.minAmountOut ?? Zero,
         'ONE_TENTH',
         null
       )
       const destMinWithSlippage = subtractSlippage(
-        destQuery?.[2] ?? Zero,
+        destQuery?.minAmountOut ?? Zero,
         'ONE_TENTH',
         null
       )
 
-      let newOriginQuery = [...originQuery] as Query
-      newOriginQuery[2] = originMinWithSlippage
+      let newOriginQuery = {...originQuery}
       newOriginQuery.minAmountOut = originMinWithSlippage
 
-      let newDestQuery = [...destQuery] as Query
-      newDestQuery[2] = destMinWithSlippage
+      let newDestQuery = {...destQuery}
       newDestQuery.minAmountOut = destMinWithSlippage
 
       setBridgeQuote({
