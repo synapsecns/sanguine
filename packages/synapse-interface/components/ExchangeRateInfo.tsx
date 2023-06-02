@@ -4,6 +4,7 @@ import { formatBNToPercentString, formatBNToString } from '@bignumber/format'
 import { CHAINS_BY_ID } from '@constants/chains'
 import * as CHAINS from '@constants/chains/master'
 import { useCoingeckoPrice } from '@hooks/useCoingeckoPrice'
+import { useGasDropAmount } from '@/utils/hooks/useGasDropAmount'
 import Image from 'next/image'
 import { Zero } from '@ethersproject/constants'
 
@@ -14,14 +15,16 @@ const ExchangeRateInfo = ({
   toToken,
   exchangeRate,
   toChainId,
-  gasDropAmount,
-}: {
+}: // gasDropAmount,
+{
   fromAmount: BigNumber
   toToken: Token
   exchangeRate: BigNumber
   toChainId: number
-  gasDropAmount: BigInt | any //remove any after implementing hook
+  // gasDropAmount: BigInt | any //remove any after implementing hook
 }) => {
+  const gasDropAmount = useGasDropAmount(toChainId)
+
   const safeExchangeRate = useMemo(() => exchangeRate ?? Zero, [exchangeRate]) // todo clean
   const safeFromAmount = useMemo(() => fromAmount ?? Zero, [fromAmount]) // todo clean
   const formattedExchangeRate = formatBNToString(safeExchangeRate, 18, 4)
@@ -40,7 +43,9 @@ const ExchangeRateInfo = ({
     }
   }, [numExchangeRate])
 
-  const isGasDropped = safeExchangeRate.gt(0)
+  const isGasDropped = useMemo(() => {
+    return safeExchangeRate.gt(0)
+  }, [safeExchangeRate])
 
   const expectedToChain = useMemo(() => {
     return toChainId && <ChainInfoLabel chainId={toChainId} />
