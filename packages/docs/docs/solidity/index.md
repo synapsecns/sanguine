@@ -4,7 +4,13 @@ sidebar_position: 1
 
 # Integrating Messaging
 
-For Smart Contract developers who need to send Cross-Chain Messages, you need to call the “dispatch” method on the Synapse Carbon Origin contract that has already been deployed on the chain that you are sending from. The dispatch function has the following interface:
+For those interested in using the Messaging System, there are 2 example Smart Contracts that demonstate how to both send and receive messages:
+1.  [Bare bones test client](https://github.com/synapsecns/sanguine/blob/master/packages/contracts-core/contracts/client/TestClient.sol) is a very basic example that just sends a message from one chain to another.
+2.  [Ping Pong test client](https://github.com/synapsecns/sanguine/blob/master/packages/contracts-core/contracts/client/PingPongClient.sol) is an example of sending ping-pong style messages back and forth.
+
+Note that the idea is that the above example Smart Contracts would be deployed on each chain, since the code in the contract can both send and receive messages.
+
+For Smart Contract developers who need to send Cross-Chain Messages, you need to call the “dispatch” method on the Synapse Origin contract that has already been deployed on the chain that you are sending from. The dispatch function has the following interface:
 
 ```solidity
 /**
@@ -54,7 +60,7 @@ function sendMessage(
 }
 ```
 
-Then, on the receiving chain, there will be a Smart Contract that acts as the recipient of the message. This Smart Contract needs to implement the following interface:
+Then, on the receiving chain, there will be a Smart Contract that acts as the recipient of the message. This Smart Contract needs to implement the following [IMessageRecipient Interface](https://github.com/synapsecns/sanguine/blob/master/packages/contracts-core/contracts/interfaces/IMessageRecipient.sol):
 
 ```solidity
 // SPDX-License-Identifier: MIT
@@ -71,4 +77,4 @@ interface IMessageRecipient {
 }
 ```
 
-Notice that the “message” is of type “bytes” in Solidity, so it is up to the Smart Contract developer to interpret what that message is. The Synapse Carbon messaging system serves merely as a fundamental building block that allows developers to treat sending a message as a black box. Simply send some bytes on the Origin chain, and those bytes will be received on the Destination chain.
+Notice that the “message” is of type “bytes” in Solidity, so it is up to the Smart Contract developer to interpret what that message is. The Synapse Messaging System serves merely as a fundamental building block that allows developers to treat sending a message as a black box. Simply send some bytes on the Origin chain, and those bytes will be received on the Destination chain.

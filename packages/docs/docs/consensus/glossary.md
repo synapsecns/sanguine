@@ -1,34 +1,43 @@
 ---
-sidebar_position: 8
+sidebar_position: 4
 ---
 
 # Glossary
 
+### Accused Agent
+When a [fraud reprt](#fraud-report) is submitted by an [Accusing Guard](#accusing-guard), the report will provide the
+purported [fraud](#fraud) which is a false claim signed by the "Accused Agent".
+
+### Accusing Guard
+The [Guard](#guard) who submits a [fraud report](#fraud-report) is defined to be the Accusing Guard.
+
 ### Agent Root
-The Agent Root is the root of the Merkle Tree of formed from the [Agent Set](#agent-set). The list of all registered bonded agents
+The Agent Root is the root of the Merkle Tree formed from the [Agent Set](#agent-set). The list of all registered bonded agents
 that have posted bond on the [SYN Chain](#synapse-chain) are put into a Merkle Tree, and the root of this tree is the Agent Root.
 This makes it easy for the Remote Chains to detect if there has been a change in the set of bonded agents. Because this Agent Root is
-one of the fields in the [Attestation](#attestation), the Notaries are constantly attesting to the current Agent Root to its chain.
-When the remote chain has a new Agent Root, there is an Optimistic Period that needs to pass before that new Agent Root is considered valid.
-Once it is considered valid, then off-chain agents can submit a proof using that Agent Root that they are part of the new valid agent set.
+one of the fields in the [Attestation](#attestation), the Notaries are constantly attesting to the current Agent Root to its [Remote Chain](#remote-chain).
+When the remote chain has a new Agent Root, there is an [Optimistic Period](#optimistic-period) that needs to pass before that new Agent Root is considered valid.
+Once it is considered valid, then off-chain agents can submit a proof using that Agent Root that proves they are part of the new valid agent set.
+The Agent Root is a critical security property because a malicious Agent Root could allow a chain to be convinced of a malicious agent, which could open the door
+for a malicious message being executed.
 
 ### Agent Set
-The set of bonded agents ([Guards](#guard) and [Notaries](#notary)) that are currently active.
+The set of bonded agents ([Guards](#guard) and [Notaries](#notary)) that are currently bonded.
 
 ### Attestation
-This is what Notaries sign and post to the chain that it is assigned to, and it contains crucial information that is used
-to prove messages and also to prove the state of agents. The Notary signs an attestation and posts it to the destination chain.
+This is what [Notaries](#notary) sign and post to the chain that it is assigned to, and it contains crucial information that is used
+to prove messages and also to prove the [Agent Set](#agent-set). The [Notary](#notary) signs an attestation and posts it to the [Destination](#destination) chain.
 However, in order to be considered a valid attestation, it must first be registered on the [SYN Chain](#synapse-chain)
-as a result of a Notary submitting a [State Snapshot](#state-snapshot) there.
+as a result of a [Notary](#notary) submitting a [State Snapshot](#state-snapshot).
 If an Attestation is not first submitted to the SYN chain, it will not be considered valid by the Destination chain.
-If the Attestation turns out to be fraudulent, the Notary will be slashed and removed as a valid Notary. Thus, it is very important
-that the Notary only sign Attestations that contain information that has been thoroughly confirmed. Below is the data contained in the attestation:
+If the Attestation turns out to be [fraudulent](#fraud), the [Notary](#notary) will be [slashed](#slash) and removed as a valid [Notary](#notary). Thus, it is very important
+that the [Notary](#notary) only sign Attestations that contain information that has been thoroughly confirmed. Below is the data contained in the attestation:
 1. [Snap Root](#snap-root) is the Merkle root of the Origin [States](#state) that were grouped together in a [state snapshot](#state-snapshot) and made into a Merkle tree.
-This snap root is used to prove that a particular Origin state did in fact occur.
-2. [Agent Root](#agent-root) is the Merkle root of the bonded agent data that can be used to prove if a particular agent is part of the set of valid agents.
+This snap root is used to prove that a particular Origin state did in fact occur on the [Origin](#origin).
+2. [Agent Root](#agent-root) is the Merkle root of the bonded agent data that can be used to prove if a particular agent is part of the [Agent Set](#agent-set).
 3. [Gas Data Snapshot](#gas-data-snapshot) contains the [Gas Data](#gas-data) of each of the chains being attested to.
 4. Nonce is the total number of accepted Notary snapshots and serves to uniquely identify this attestation.
-5. Block Number of the block on the [SYN Chain](#synapse-chain) that the attestation was registered by a Notary on the Summit chain, which does not have to be the same Notary posting to the destination.
+5. Block Number of the block on the [SYN Chain](#synapse-chain) that the attestation was registered by a Notary on the [SYN Chain](#synapse-chain), which does not have to be the same [Notary](#notary) posting to the [Destination](#destination-chain).
 6. Timestamp is the time that the attestation was registered on the [SYN Chain](#synapse-chain).
 
 ### Commitment
@@ -39,32 +48,47 @@ that has the same 32 byte hash. It is a way for someone to say "I have a very la
 Later, when the message is given, it can be checked that it in fact hashes correctly and we know it was not altered.
 
 ### Cross Chain
-As opposed to [On Chain](#on-chain), Cross Chain refers to communication between one blockchain and another. If a someone wants to
+As opposed to [On Chain](#on-chain), Cross Chain refers to communication between one blockchain and another blockchain. If a someone wants to
 send a message from one chain to another chain, this cannot be done in a single blockchain transaction. The only way for Cross Chain
 communication to occur is with the help of [Off Chain](#off-chain) agents who observe transactions on various chains and then submit necessary transactions
 to other chains in order to communicate across chains.
 
 ### Destination Chain
-The chain where the message is being sent to is known as the Destination Chain.
+The chain where the [Message](#message) is being sent to is known as the Destination Chain.
+
+### Disputed Agent
+If a [Guard](#guard) detects that another agent (either another [Guard](#guard) or a [Notary](#notary)) has signed a fraudulent claim, the accusing [Guard](#guard)
+will first notify the [Victim Chain](#victim-chain) that the fraud happened and that it suspects the guilty agent. Because the [Fraud Resolution](#fraud-resolution)
+happens on a different chain, the [fraud report](#fraud-report) is submitted on the [resolving chain](#resolving-chain), and the [resolution](#fraud-resolution) will be communicated to the other
+chains through the combination of [System Messages](#system-message) and updating the [Agent Root](#agent-root). In the mean time,
+the [Guard](#guard) will alert the [Victim Chain](#victim-chain) about the pending [Fraud Report](#fraud-report), and both the accusing [Guard](#guard) and the accused agent will be considered
+in a state of dispute and will not be trusted. The exception is if the
+accusing [Guard](#guard) submits another [fraud report](#fraud-report) and in the same transaction pays a [Just In Time Bond](#just-in-time-bond) which will be given back
+once the [fraud report](#fraud-report) is [resolved](#fraud-resolution).
+
+### Disputed Agent Set
+Any time [fraud](#fraud) is reported to a [Victim Chain](#victim-chain), both the accusing Guard and the accused Bonded Agent will be placed in the
+disputed agent set while the [Fraud Resolution](#fraud-resolution) process happens. During this time, even though the disputed agents are
+in the active [Agent Set](#agent-set), the victim chain will not trust any claim signed by these agents.
 
 ### Executor
 The Executor is an off-chain agent that does the work of delivering messages that have passed through the
 [Optimistic Period](#optimistic-period). The Executors are not in a position to commit fraud and therefore do
-not need to post a bond. The are elligible to collect [Tips](#tips) for the work they do in delivering messages.
+not need to post a bond. They are eligible to collect [Tips](#tips) for the work they do in delivering messages.
 
 ### Fraud
-In the Synapse Messaging, Fraud is any time a bonded  [Off Chain Agent](#off-chain-agent) signs a claim of something that turns out to be false.
+In the Synapse Messaging, Fraud is any time a bonded [Off Chain Agent](#off-chain-agent) signs a claim of something that turns out to be false.
 When this happens, the bonded agent will be [slashed](#slash). There are two properties that need to hold for detecting such fraud.
-1. The agent will be guilty of digitally signing the claim so we know that the agent is the one guilty. This assumes the agent is the only one in possession of the bonded address.
-2. The claim needs to be proven to be false by the appropriate Smart Contract on the appropriate chain.
-For example, if there is a fraudulent claim that an Origin chain had a particular state some time in the past, that chain will
-be able to decide whether that is true or not.
+1. The agent will have digitally signed the claim so we know that the agent is guilty. This assumes the agent is the only one in possession of the bonded address's private key, so this is the responsibility of the agent.
+2. The claim needs to be proven false by the appropriate Smart Contract on the [Resolving Chain](#resolving-chain).
+For example, if there is a fraudulent claim that an [Origin](#origin) chain had a particular state some time in the past, the [Origin](#origin) chain will
+be the [resolving chain](#resolving-chain) since it is able to decide whether that is true or not.
 
 ### Fraud Report
-When a Guard discovers that a Notary or other Guard has committed Fraud, it will submit a Fraud report that includes proof of the fraud.
+When a [Guard](#guard) discovers that a [Notary](#notary) or other [Guard](#guard) has committed [Fraud](#fraud), it will submit a Fraud report that includes proof of the fraud.
 The proof of the fraud will be to show that the guilty agent signed something that is false. If the Fraud Report turns out to be wrong,
-the Guard who submitted it will be slashed. Otherwise, if it is a valid fraud report, then the guilty agent will be slashed and
-the reporting Guard will receive the reward.
+the [Guard](#guard) who submitted it will be slashed. Otherwise, if it is a valid fraud report, then the guilty agent will be slashed and
+the reporting Guard will receive the reward. Note
 
 ### Fraud Resolution
 When there is a fraud report, the resolution will be either that the Guard submitting the report is wrong or the accused agent is wrong.
@@ -110,6 +134,17 @@ the primary fraud a Guard can do primarily just results in denial-of-service (at
 Integrity is a property of the messaging system that means a chain cannot be fooled into thinking a message
 was sent when it never was really sent.
 
+### Just In Time Bond
+Whereas normally the bond is escrowed on the [SYN Chain](#synapse-chain), there are use cases for [Just In Time Gaurds](#just-in-time-guard) to
+alert a [Victim Chain](#victim-chain) of fraud even though it is not in the active set of agents. The Just In Time Bond is collected in the same
+transaction as the fraud report, and the bond will be released once the [Victim Chain](#victim-chain) receives the [fraud resolution](#fraud-resolution).
+
+### Just In Time Guard
+There are edge cases when a chain either does not have any registered Guards, or there is a Guard that is momentarily in the
+[Disputed Agent Set](#disputed-agent-set). If either the Disputed Guard or perhaps some other actor would like to submit a fraud report to
+a [Victim Chain](#victim-chain), there is an option to submit the fraud report along with a [Just In Time Bond](#just-in-time-bond) that is collected within the same transaction
+right on the spot.
+
 ### Liveness
 Liveness is a property of the messaging system that means a message that is sent will be delivered within a
 reasonable amount of time.
@@ -138,20 +173,6 @@ The Notary is an off-chain agent that is assigned to a specific chain and has th
 that can then be used to prove messages. If a fraudulent attestation is posted, an attacker could fool the destination into
 executing a malicious message, so the Notary plays a crucial role in maintaining [Integrity](#integrity)
 
-### Optimistic Pause
-If a [Guard](#guard) believes that a [Notary](#notary) has submitted a [fraudulent](#fraud) [attestation](#attestation) to its [Destination](#destination-chain),
-the actual [fraud resolution](#fraud-resolution) needs to be decided on another chain, either the [SYN Chain](#synapse-chain) or the
-[Origin](#origin-chain). Because of this, we allow the Guard to optimisitcally pause the [Destination](#destination) chain which puts
-both the accused Notary and the reporting Guard in dispute. Until the resolution is communicated to that destination chain,
-that attestation and the Notary are not truested by that destination, and the Guard would need to pay a significant amount to
-submit additional reports on that chain (to avoid denial of service).
-
-### Optimistic Period
-This is a crucial property of messaging system that is set and enforced by the client Smart Contract of the messaging system.
-It is the time that a message must wait to be executed in order to give the Guards time to catch potential fraud. The longer
-this time means the Guards have more time to catch fraud and the less likely it is for an attacker to fool a Destination
-into executing a fraudulent message.
-
 ### Off Chain
 Anything that happens outside of a blockchain is referred to as Off Chain. If a transaction happens [On Chain](#on-chain) on one
 blockchain, there is no way for another blockchain to know about this without the help of Off Chain agents. These Off Chain agents
@@ -175,6 +196,21 @@ The term "On Chain" refers to a transaction that happens on a single blockchain,
 guarantees of that particular chain. Within the context of discussing cross-chain communication, "on chain" transactioins
 are assumed to be trustworthy so long as the probability of a chain reorg is extremely low.
 
+### Optimistic Pause
+If a [Guard](#guard) believes that a [Notary](#notary) has submitted a [fraudulent](#fraud) [attestation](#attestation) to its [Destination](#destination-chain),
+the actual [fraud resolution](#fraud-resolution) needs to be decided on another chain, either the [SYN Chain](#synapse-chain) or the
+[Origin](#origin-chain). Because of this, we allow the Guard to optimisitcally pause the [Destination](#destination) chain which puts
+both the accused Notary and the reporting Guard in dispute. Until the resolution is communicated to that destination chain,
+that attestation and the Notary are not truested by that destination, and the Guard would need to pay a significant amount to
+submit additional reports on that chain (to avoid denial of service).
+
+### Optimistic Period
+This is a crucial property of messaging system that is set and enforced by the client Smart Contract of the messaging system.
+It is the time that a message must wait to be executed in order to give the Guards time to catch potential fraud. The longer
+this time means the Guards have more time to catch fraud and the less likely it is for an attacker to fool a Destination
+into executing a fraudulent message. There is also an Optimistic Period when a new [Agent Root](#agent-root) is proposed, because
+we want to give [Guards](#guard) enough time to challenge the proposed root before accepting it as valid.
+
 ### Origin Chain
 The chain where the message is being sent from is known as the Origin Chain.
 
@@ -191,6 +227,12 @@ is where Bonded Agents post their bond, that is the canonical source of truth re
 Part of the protocol therefore requires this information to get propagated to the Remote Chains. The SYN chain is also
 where agents submit "Snapshots" containing information about other chains in the network, and its the job of the Notary agents
 to communicate valid "Snap Roots" to the Remote Chains.
+
+### Resolving Chain
+By definition, [Fraud](#fraud) is when an [Off Chain Agent](#off-chain-agent) makes a claim to a chain about something that happened
+on another chain. (It would be pointless to attempt to lie to a chain about itself because the chain would easily reject the transaction since it knows its own state).
+Thus, the chain that is able to resolve a dispute about a claim made to another chain is called the "Resolving Chain". When the resolving chain
+determines that fraud did in fact happen, it will need to communicate this to the [Victim Chain](#victim-chain).
 
 ### Slash
 If an agent is found guilty of fraud, the punishment is to slash the bond posted on the [SYN Chain](#synapse-chain)
@@ -234,3 +276,18 @@ messages.
 
 ### Tips
 Tips are the rewards that the off-chain agents earn for doing the work of delivering messages.
+
+### Unbonding Period
+When a bonded agent decides to unregister, it is of course elligible to receive its bond back so long as it has not been found
+guilty of fraud. The bonded agent will submit the request to unbond on the [SYN Chain](#synapse-chain), and it will be placed
+in the unbonding state. After the Unbonding Period has passed and no fraud has been detected, the agent can claim its bond.
+The purpose of the Unboding Period is to prevent a Bonded Agent from commiting [fraud](#fraud) and then escaping with its bond before there is enough
+time to [slash](#slash) the agent.
+
+### Victim Chain
+If a malicious bonded agent signs a payload that is [fraudulent](#fraud), it could attempt to trick another chain or set of chains
+into believing the false claim. We refer to these chains as "Victim Chains". Because the [fraud resolution](#fraud-resolution) process takes some time,
+the Guard who detected the fraud will alert the "Victim Chains" about the pending [fraud report](#fraud-report) and the "Victim Chain"
+will consider both the accused agent and the accuser to be in the [Disputed Agent Set](#disputed-agent-set). This means that any claim made by the accused agent will
+not be trusted and also the accusing Guard will not be able to make additional accusation of fraud without posting a [Just In Time Bond](#just-in-time-bond)
+on the Victim Chain at the time it reports the fraud.

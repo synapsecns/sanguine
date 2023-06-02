@@ -70,13 +70,9 @@ const config = {
             position: 'left',
             label: 'Protocol Overview',
             items: [
-              'consensus/agentincentives',
-              'consensus/crosschainmessaging',
-              'consensus/gasoracles',
-              'consensus/kindsoffraud',
-              'consensus/messagingflowoverview',
-              'consensus/proofofstake',
               'consensus/synapsemessaging',
+              'consensus/faq',
+              'consensus/glossary',
             ],
           },
           {
@@ -88,17 +84,17 @@ const config = {
           },
           {
             type: 'doc',
+            docId: 'solidity/index',
+            position: 'left',
+            label: 'Integrating Messages',
+            items: [],
+          },
+          {
+            type: 'doc',
             docId: 'sdk/index',
             position: 'left',
             label: 'Bridge SDK',
             items: ['sdk/usage', 'sdk/examples'],
-          },
-          {
-            type: 'doc',
-            docId: 'solidity/index',
-            position: 'left',
-            label: 'Integrating Messages',
-            items: ['solidity/intro', 'solidity/examples'],
           },
           {
             href: 'https://github.com/synapsecns/sanguine',
