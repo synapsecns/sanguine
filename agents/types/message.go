@@ -2,37 +2,34 @@ package types
 
 import (
 	"bytes"
-	"encoding/binary"
 	"encoding/gob"
 	"fmt"
-
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/crypto"
 )
 
-// Message is an interface that contains metadata.
+const (
+	// MessageBodyOffset is the message body offset.
+	MessageBodyOffset = MessageHeaderSize
+)
+
+// Message is an interface that contains the message.
 //
 //nolint:interfacebloat
 type Message interface {
-	// Version gets the version of the message
-	Version() uint16
 	// Header gets the message header
 	Header() Header
-	// Tips gets the tips
-	Tips() Tips
+	// BaseMessage is the base message if the flag indicates the type is a base message
+	BaseMessage() BaseMessage
 	// Body gets the message body
 	Body() []byte
 
 	// OriginDomain returns the Slip-44 ID
 	OriginDomain() uint32
-	// Sender is the address of the sender
-	Sender() common.Hash
 	// Nonce is the count of all previous messages to the destination
 	Nonce() uint32
 	// DestinationDomain is the slip-44 id of the destination
 	DestinationDomain() uint32
-	// Recipient is the address of the recipient
-	Recipient() common.Hash
 	// ToLeaf converts a leaf to a keccac256
 	ToLeaf() (leaf [32]byte, err error)
 	// OptimisticSeconds gets the optimistic seconds count
@@ -41,23 +38,19 @@ type Message interface {
 
 // messageImpl implements a message. It is used for testutils. Real messages are emitted by the contract.
 type messageImpl struct {
-	version uint16
-	header  Header
-	tips    Tips
-	body    []byte
+	header      Header
+	baseMessage BaseMessage
+	body        []byte
 }
 
-const messageVersion uint16 = 1
-
-const headerOffset uint16 = 6
+const headerOffset uint16 = 0
 
 // NewMessage creates a new message from fields passed in.
-func NewMessage(header Header, tips Tips, body []byte) Message {
+func NewMessage(header Header, baseMessage BaseMessage, body []byte) Message {
 	return &messageImpl{
-		header:  header,
-		tips:    tips,
-		version: messageVersion,
-		body:    body,
+		header:      header,
+		baseMessage: baseMessage,
+		body:        body,
 	}
 }
 
@@ -65,63 +58,8 @@ func (m messageImpl) Header() Header {
 	return m.header
 }
 
-func (m messageImpl) Tips() Tips {
-	return m.tips
-}
-
-// DecodeMessage decodes a message from a byte slice.
-func DecodeMessage(message []byte) (Message, error) {
-	reader := bytes.NewReader(message)
-
-	var encoded messageEncoder
-
-	err := binary.Read(reader, binary.BigEndian, &encoded)
-	if err != nil {
-		return nil, fmt.Errorf("could not parse encoded: %w", err)
-	}
-
-	rawHeader := message[headerOffset : encoded.HeaderLength+headerOffset]
-
-	header, err := DecodeHeader(rawHeader)
-	if err != nil {
-		return nil, fmt.Errorf("could not decode header: %w", err)
-	}
-
-	rawTips := message[headerOffset+encoded.HeaderLength : headerOffset+encoded.HeaderLength+encoded.TipsLength]
-	unmarshalledTips, err := DecodeTips(rawTips)
-	if err != nil {
-		return nil, fmt.Errorf("could not decode unmarshalledTips: %w", err)
-	}
-
-	dataSize := binary.Size(encoded)
-
-	// make sure we can get the body of the message
-	if dataSize > len(message) {
-		return nil, fmt.Errorf("message too small, expected at least %d, got %d", dataSize, len(message))
-	}
-
-	rawBody := message[headerOffset+encoded.HeaderLength+encoded.TipsLength:]
-
-	decoded := messageImpl{
-		version: encoded.Version,
-		body:    rawBody,
-		header:  header,
-		tips:    unmarshalledTips,
-	}
-
-	return decoded, nil
-}
-
-func (m messageImpl) Version() uint16 {
-	return m.version
-}
-
 func (m messageImpl) OriginDomain() uint32 {
 	return m.Header().OriginDomain()
-}
-
-func (m messageImpl) Sender() common.Hash {
-	return m.Header().Sender()
 }
 
 func (m messageImpl) Nonce() uint32 {
@@ -132,12 +70,12 @@ func (m messageImpl) DestinationDomain() uint32 {
 	return m.Header().DestinationDomain()
 }
 
-func (m messageImpl) Recipient() common.Hash {
-	return m.Header().Recipient()
-}
-
 func (m messageImpl) OptimisticSeconds() uint32 {
 	return m.Header().OptimisticSeconds()
+}
+
+func (m messageImpl) BaseMessage() BaseMessage {
+	return m.baseMessage
 }
 
 func (m messageImpl) Body() []byte {
@@ -146,12 +84,18 @@ func (m messageImpl) Body() []byte {
 
 // ToLeaf converts a message to an encoded leaf.
 func (m messageImpl) ToLeaf() (leaf [32]byte, err error) {
-	encodedMessage, err := EncodeMessage(m)
-	if err != nil {
-		return common.Hash{}, fmt.Errorf("could not encode message: %w", err)
+	var toHash []byte
+	if m.Header().Flag() == MessageFlagBase {
+		toHash = m.baseMessage.Content()
+	} else {
+		encodedMessage, err := EncodeMessage(m)
+		if err != nil {
+			return common.Hash{}, fmt.Errorf("could not encode message: %w", err)
+		}
+		toHash = encodedMessage
 	}
 
-	rawLeaf := crypto.Keccak256(encodedMessage)
+	rawLeaf := crypto.Keccak256(toHash)
 	copy(leaf[:], rawLeaf)
 	return leaf, nil
 }

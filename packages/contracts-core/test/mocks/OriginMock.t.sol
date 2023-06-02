@@ -1,31 +1,33 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.17;
 
-import { InterfaceOrigin } from "../../contracts/interfaces/InterfaceOrigin.sol";
-import { StateHubMock } from "./hubs/StateHubMock.t.sol";
-import { AgentRegistryMock } from "./system/AgentRegistryMock.t.sol";
-import { SystemContractMock } from "./system/SystemContractMock.t.sol";
+import {InterfaceOrigin} from "../../contracts/interfaces/InterfaceOrigin.sol";
+import {StateHubMock} from "./hubs/StateHubMock.t.sol";
+import {AgentSecuredMock} from "./base/AgentSecuredMock.t.sol";
 
 // solhint-disable no-empty-blocks
-contract OriginMock is StateHubMock, AgentRegistryMock, SystemContractMock, InterfaceOrigin {
-    function dispatch(
-        uint32 _destination,
-        bytes32 _recipient,
-        uint32 _optimisticSeconds,
-        bytes memory _tips,
-        bytes memory _messageBody
+contract OriginMock is StateHubMock, AgentSecuredMock, InterfaceOrigin {
+    /// @notice Prevents this contract from being included in the coverage report
+    function testOriginMock() external {}
+
+    function sendBaseMessage(
+        uint32 destination,
+        bytes32 recipient,
+        uint32 optimisticPeriod,
+        uint256 paddedRequest,
+        bytes memory content
     ) external payable returns (uint32 messageNonce, bytes32 messageHash) {}
 
-    function verifyAttestation(
-        bytes memory _snapPayload,
-        uint256 _stateIndex,
-        bytes memory _attPayload,
-        bytes memory _attSignature
-    ) external returns (bool isValid) {}
+    function sendManagerMessage(uint32 destination, uint32 optimisticPeriod, bytes memory payload)
+        external
+        returns (uint32 messageNonce, bytes32 messageHash)
+    {}
 
-    function verifySnapshot(
-        bytes memory _snapPayload,
-        uint256 _stateIndex,
-        bytes memory _snapSignature
-    ) external returns (bool isValid) {}
+    function withdrawTips(address recipient, uint256 amount) external {}
+
+    function getMinimumTipsValue(uint32 destination, uint256 paddedRequest, uint256 contentLength)
+        external
+        view
+        returns (uint256 tipsValue)
+    {}
 }

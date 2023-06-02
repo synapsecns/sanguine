@@ -1,5 +1,5 @@
 import _ from 'lodash'
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useMemo } from 'react'
 import Slider from 'react-input-slider'
 import { stringToBigNum } from '@/utils/stringToBigNum'
 
@@ -13,15 +13,23 @@ import { ALL } from '@constants/withdrawTypes'
 import Grid from '@tw/Grid'
 import TokenInput from '@components/TokenInput'
 import RadioButton from '@components/buttons/RadioButton'
-import RecievedTokenSection from '../components/RecievedTokenSection'
+import ReceivedTokenSection from '../components/ReceivedTokenSection'
 import PriceImpactDisplay from '../components/PriceImpactDisplay'
 
-import { TransactionButton } from '@components/buttons/SubmitTxButton'
+import { Transition } from '@headlessui/react'
+import { TransactionButton } from '@/components/buttons/TransactionButton'
 import { Zero } from '@ethersproject/constants'
 import { Token } from '@types'
 import { approve, withdraw } from '@/utils/actions/approveAndWithdraw'
 import { getTokenAllowance } from '@/utils/actions/getTokenAllowance'
 import { PoolData, PoolUserData } from '@types'
+
+const DEFAULT_WITHDRAW_QUOTE = {
+  priceImpact: Zero,
+  outputs: {},
+  allowance: undefined,
+  routerAddress: '',
+}
 
 const Withdraw = ({
   pool,
@@ -29,17 +37,20 @@ const Withdraw = ({
   address,
   poolData,
   poolUserData,
+  refetchCallback,
 }: {
   pool: any
   chainId: number
   address: string
   poolData: PoolData
   poolUserData: PoolUserData
+  refetchCallback: () => void
 }) => {
   const [inputValue, setInputValue] = useState<{
     bn: BigNumber
     str: string
   }>({ bn: Zero, str: '' })
+
   const [withdrawQuote, setWithdrawQuote] = useState<{
     priceImpact: BigNumber
     outputs: Record<
@@ -51,15 +62,10 @@ const Withdraw = ({
     >
     allowance: BigNumber
     routerAddress: string
-  }>({
-    priceImpact: Zero,
-    outputs: {},
-    allowance: undefined,
-    routerAddress: '',
-  })
+  }>(DEFAULT_WITHDRAW_QUOTE)
 
   const [withdrawType, setWithdrawType] = useState(ALL)
-  const [percentage, setPercentage] = useState(100)
+  const [percentage, setPercentage] = useState(0)
   const [time, setTime] = useState(Date.now())
 
   const resetInput = () => {
@@ -160,7 +166,7 @@ const Withdraw = ({
     if (poolUserData.lpTokenBalance.isZero()) {
       setInputValue({ bn: bigNum, str: value })
 
-      setPercentage(100)
+      setPercentage(0)
       return
     }
     const pn = bigNum
@@ -175,24 +181,57 @@ const Withdraw = ({
     }
   }
 
-  // some messy button gen stuff (will re-write)
   let isFromBalanceEnough = true
   let isAllowanceEnough = true
-  let btnLabel = 'Withdraw'
-  let pendingLabel = 'Withdrawing funds...'
-  let btnClassName = ''
-  let buttonAction = () =>
-    withdraw(
-      pool,
-      'ONE_TENTH',
-      null,
-      inputValue.bn,
-      chainId,
-      withdrawType,
-      withdrawQuote.outputs
-    )
-  let postButtonAction = () => {
-    resetInput()
+
+  const getButtonProperties = () => {
+    let properties = {
+      label: 'Withdraw',
+      pendingLabel: 'Withdrawing funds...',
+      className: '',
+      disabled: false,
+      buttonAction: () =>
+        withdraw(
+          pool,
+          'ONE_TENTH',
+          null,
+          inputValue.bn,
+          chainId,
+          withdrawType,
+          withdrawQuote.outputs
+        ),
+      postButtonAction: () => {
+        refetchCallback()
+        setPercentage(0)
+        setWithdrawQuote(DEFAULT_WITHDRAW_QUOTE)
+        resetInput()
+      },
+    }
+
+    if (inputValue.bn.eq(0)) {
+      properties.label = `Enter amount`
+      properties.disabled = true
+      return properties
+    }
+
+    if (!isFromBalanceEnough) {
+      properties.label = `Insufficient Balance`
+      properties.disabled = true
+      return properties
+    }
+
+    if (!isAllowanceEnough) {
+      properties.label = `Approve Token(s)`
+      properties.pendingLabel = `Approving Token(s)`
+      properties.className = 'from-[#feba06] to-[#FEC737]'
+      properties.disabled = false
+      properties.buttonAction = () =>
+        approve(pool, withdrawQuote, inputValue.bn, chainId)
+      properties.postButtonAction = () => setTime(0)
+      return properties
+    }
+
+    return properties
   }
 
   if (
@@ -202,6 +241,7 @@ const Withdraw = ({
   ) {
     isAllowanceEnough = false
   }
+
   if (
     !inputValue.bn.isZero() &&
     inputValue.bn.gt(poolUserData.lpTokenBalance)
@@ -209,25 +249,43 @@ const Withdraw = ({
     isFromBalanceEnough = false
   }
 
-  if (!isFromBalanceEnough) {
-    btnLabel = `Insufficient Balance`
-  } else if (!isAllowanceEnough) {
-    buttonAction = () => approve(pool, withdrawQuote, inputValue.bn, chainId)
-    btnLabel = `Approve Token(s)`
-    pendingLabel = `Approving Token(s)`
-    btnClassName = 'from-[#feba06] to-[#FEC737]'
-    postButtonAction = () => setTime(0)
-  }
-  const actionBtn = (
-    <TransactionButton
-      className={btnClassName}
-      disabled={inputValue.bn.eq(0) || !isFromBalanceEnough}
-      onClick={() => buttonAction()}
-      onSuccess={() => postButtonAction()}
-      label={btnLabel}
-      pendingLabel={pendingLabel}
-    />
+  const {
+    label: btnLabel,
+    pendingLabel,
+    className: btnClassName,
+    buttonAction,
+    postButtonAction,
+    disabled,
+  } = useMemo(getButtonProperties, [
+    isFromBalanceEnough,
+    isAllowanceEnough,
+    address,
+    inputValue,
+    withdrawQuote,
+  ])
+
+  const actionBtn = useMemo(
+    () => (
+      <TransactionButton
+        className={btnClassName}
+        disabled={disabled}
+        onClick={() => buttonAction()}
+        onSuccess={() => postButtonAction()}
+        label={btnLabel}
+        pendingLabel={pendingLabel}
+      />
+    ),
+    [
+      buttonAction,
+      postButtonAction,
+      btnLabel,
+      pendingLabel,
+      btnClassName,
+      isFromBalanceEnough,
+      isAllowanceEnough,
+    ]
   )
+
   return (
     <div>
       <div className="percentage">
@@ -240,7 +298,7 @@ const Withdraw = ({
             bg-[#111111]
             text-gray-300
           `}
-          placeholder="100"
+          placeholder="0"
           onChange={(e) => {
             onPercentChange(Number(e.currentTarget.value))
           }}
@@ -314,12 +372,11 @@ const Withdraw = ({
         address={address}
       />
       {actionBtn}
-      {/*
-      TODO FIX THIS TRANSITION
+
       <Transition
         appear={true}
         unmount={false}
-        show={lpTokenAmount.gt(0)}
+        show={inputValue.bn.gt(0)}
         enter="transition duration-100 ease-out"
         enterFrom="transform-gpu scale-y-0 "
         enterTo="transform-gpu scale-y-100 opacity-100"
@@ -327,27 +384,27 @@ const Withdraw = ({
         leaveFrom="transform-gpu scale-y-100 opacity-100"
         leaveTo="transform-gpu scale-y-0 "
         className="-mx-6 origin-top "
-      > */}
-      <div
-        className={`py-3.5 pr-6 pl-6 mt-2 rounded-b-2xl bg-bgBase transition-all`}
       >
-        <Grid cols={{ xs: 2 }}>
-          <div>
-            <RecievedTokenSection
-              poolTokens={pool?.poolTokens ?? []}
-              withdrawQuote={withdrawQuote}
-              chainId={chainId}
-            />
-          </div>
-          <div>
-            {withdrawQuote.priceImpact &&
-              withdrawQuote.priceImpact?.gt(Zero) && (
-                <PriceImpactDisplay priceImpact={withdrawQuote.priceImpact} />
-              )}
-          </div>
-        </Grid>
-      </div>
-      {/* </Transition> */}
+        <div
+          className={`py-3.5 pr-6 pl-6 mt-2 rounded-b-2xl bg-bgBase transition-all`}
+        >
+          <Grid cols={{ xs: 2 }}>
+            <div>
+              <ReceivedTokenSection
+                poolTokens={pool?.poolTokens ?? []}
+                withdrawQuote={withdrawQuote}
+                chainId={chainId}
+              />
+            </div>
+            <div>
+              {withdrawQuote.priceImpact &&
+                withdrawQuote.priceImpact?.gt(Zero) && (
+                  <PriceImpactDisplay priceImpact={withdrawQuote.priceImpact} />
+                )}
+            </div>
+          </Grid>
+        </div>
+      </Transition>
     </div>
   )
 }

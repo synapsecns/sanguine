@@ -33,7 +33,7 @@ import cantoImg from '@assets/chains/canto.svg'
 import { Chain } from '@types'
 
 export const ETH: Chain = {
-  visibilityRank: 100,
+  visibilityRank: 110,
   id: 1,
   chainSymbol: 'ETH',
   name: 'Ethereum',
@@ -62,7 +62,7 @@ export const ARBITRUM: Chain = {
   layer: 2,
   codeName: 'arbitrum',
   blockTime: 5000,
-  rpc: 'https://nd-906-434-305.p2pify.com/d3dcb79b74467cc870ffb819d446d9f5',
+  rpc: 'https://arbitrum.blockpi.network/v1/rpc/public',
   nativeCurrency: { name: 'Ethereum', symbol: 'ETH', decimals: 18 },
   explorerUrl: 'https://arbiscan.io',
   color: 'gray',
@@ -99,7 +99,7 @@ export const AVALANCHE: Chain = {
   color: 'red',
 }
 export const CANTO: Chain = {
-  visibilityRank: 95,
+  visibilityRank: 89,
   id: 7700,
   chainSymbol: 'CANTO',
   name: 'Canto',
@@ -153,7 +153,7 @@ export const DFK: Chain = {
   layer: 1,
   codeName: 'dfk',
   blockTime: 10000,
-  rpc: 'https://avalanche-c-chain.publicnode.com',
+  rpc: 'https://subnets.avax.network/defi-kingdoms/dfk-chain/rpc',
   nativeCurrency: { name: 'Jewel', symbol: 'JEWEL', decimals: 18 },
   explorerUrl: 'https://subnets.avax.network/defi-kingdoms',
   color: 'lime',
@@ -303,7 +303,7 @@ export const DOGE: Chain = {
   layer: 1,
   codeName: 'dogechain',
   blockTime: 10000,
-  rpc: 'https://rpc.dogechain.dog',
+  rpc: 'https://1rpc.io/avax/c',
   nativeCurrency: { name: 'DOGE', symbol: 'DOGE', decimals: 18 },
   explorerUrl: 'https://explorer.dogechain.dog',
   color: 'purple',

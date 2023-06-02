@@ -28,6 +28,8 @@ interface SwapableTokensByType {
     [swapableType: string]: Token[]
   }
 }
+export const sortTokens = (tokens: Token[]) =>
+  Object.values(tokens).sort((a, b) => b.visibilityRank - a.visibilityRank)
 
 const sortedTokens = Object.values(all).sort(
   (a, b) => b.visibilityRank - a.visibilityRank
@@ -144,14 +146,16 @@ export const BRIDGE_CHAINS_BY_TYPE = getBridgeChainsByType()
 export const BRIDGE_TYPES_BY_CHAIN = getBridgeTypeByChain()
 export const BRIDGE_SWAPABLE_TOKENS_BY_TYPE = getBridgeableTokensByType()
 export const tokenSymbolToToken = (chainId: number, symbol: string) => {
-  const token = BRIDGABLE_TOKENS[chainId].find((token) => {
-    return token.symbol === symbol
-  })
-  return token
+  if (chainId) {
+    const token = BRIDGABLE_TOKENS[chainId].find((token) => {
+      return token.symbol === symbol
+    })
+    return token
+  }
 }
 export const TOKEN_HASH_MAP = getTokenHashMap()
 
-export // SWAPS
+// SWAPS
 const allTokensWithSwap = [...Object.values(all), ...Object.values(allSwap)]
 const getSwapableTokens = (): TokensByChain => {
   const swapTokens: TokensByChain = {}
@@ -167,6 +171,7 @@ const getSwapableTokens = (): TokensByChain => {
   })
   return swapTokens
 }
+
 const getSwapableTokensByType = (): SwapableTokensByType => {
   const swapTokens: SwapableTokensByType = {}
   allTokensWithSwap.map((token) => {

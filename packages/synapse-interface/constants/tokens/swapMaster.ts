@@ -2,6 +2,8 @@ import * as CHAINS from '@constants/chains/master'
 import wethLogo from '@assets/icons/weth.svg'
 import { Token } from '@types'
 import mimLogo from '@assets/icons/mim.svg'
+import usdtLogo from '@assets/icons/usdt.svg'
+import usdcLogo from '@assets/icons/usdc.svg'
 
 export const WETH = new Token({
   addresses: {
@@ -31,4 +33,45 @@ export const MIM = new Token({
   logo: mimLogo,
   swapableType: 'USD',
   color: 'indigo',
+})
+
+export const SwapUSDC = new Token({
+  visibilityRank: 1,
+  addresses: {
+    [CHAINS.AVALANCHE.id]: '0xb97ef9ef8734c71904d8002f8b6bc66dd9c48a6e',
+  },
+  decimals: {
+    [CHAINS.AVALANCHE.id]: 6,
+  },
+  symbol: 'USDC',
+  name: 'USD Circle',
+  logo: usdcLogo,
+  description: `
+    USD Coin (known by its ticker USDC) is a stablecoin that is pegged to the
+    U.S. dollar on a 1:1 basis. Every unit of this cryptocurrency in circulation
+    is backed up by $1 that is held in reserve
+    `,
+  swapableType: 'USD',
+
+  color: 'blue',
+})
+
+export const SwapUSDT = new Token({
+  addresses: {
+    [CHAINS.AVALANCHE.id]: '0x9702230a8ea53601f5cd2dc00fdbc13d4df4a8c7',
+  },
+
+  decimals: {
+    [CHAINS.AVALANCHE.id]: 6,
+  },
+  symbol: 'USDT',
+  name: 'USD Tether',
+  logo: usdtLogo,
+  color: 'lime',
+  description: `
+    USDT mirrors the price of the U.S. dollar, issued by a Hong Kong-based company Tether.
+    The token’s peg to the USD is achieved via maintaining a sum of dollars in reserves equal
+    to the number of USDT in circulation.
+    `,
+  swapableType: 'USD',
 })

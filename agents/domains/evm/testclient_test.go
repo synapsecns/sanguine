@@ -13,7 +13,9 @@ func (i ContractSuite) TestClientSendMessage() {
 	recipient := i.TestClientMetadataOnDestination.Address()
 	optimisticSeconds := uint32(10)
 	message := []byte{byte(gofakeit.Uint32())}
-	tx, err := i.TestClientOnOrigin.SendMessage(auth.TransactOpts, destinationDomain, recipient, optimisticSeconds, message)
+	gasLimit := uint64(10000000)
+	version := uint32(1)
+	tx, err := i.TestClientOnOrigin.SendMessage(auth.TransactOpts, destinationDomain, recipient, optimisticSeconds, gasLimit, version, message)
 	Nil(i.T(), err)
 
 	i.TestBackendOrigin.WaitForConfirmation(i.GetTestContext(), tx)

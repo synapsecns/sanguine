@@ -12,17 +12,12 @@ func init() {
 	// set topics
 	var err error
 
-	parsedDestination, err := abi.JSON(strings.NewReader(DestinationABI))
+	parsedDestination, err := abi.JSON(strings.NewReader(DestinationMetaData.ABI))
 	if err != nil {
 		panic(err)
 	}
 
-	AttestationAcceptedTopic = parsedDestination.Events["AttestationAccepted"].ID
 	ExecutedTopic = parsedDestination.Events["Executed"].ID
-
-	if AttestationAcceptedTopic == (common.Hash{}) {
-		panic("AttestationAcceptedTopic is nil")
-	}
 
 	if ExecutedTopic == (common.Hash{}) {
 		panic("ExecutedTopic is nil")
@@ -39,8 +34,7 @@ var ExecutedTopic common.Hash
 // this is returned as a function to assert immutability.
 func topicMap() map[EventType]common.Hash {
 	return map[EventType]common.Hash{
-		AttestationAcceptedEvent: AttestationAcceptedTopic,
-		ExecutedEvent:            ExecutedTopic,
+		ExecutedEvent: ExecutedTopic,
 	}
 }
 

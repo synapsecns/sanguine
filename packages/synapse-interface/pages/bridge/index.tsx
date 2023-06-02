@@ -10,9 +10,10 @@ import { fetchSigner, getNetwork, switchNetwork } from '@wagmi/core'
 import { sortByTokenBalance, sortByVisibilityRank } from '@utils/sortTokens'
 import { calculateExchangeRate } from '@utils/calculateExchangeRate'
 import { subtractSlippage } from '@utils/slippage'
+import { txErrorHandler } from '@/utils/txErrorHandler'
+import ExplorerToastLink from '@/components/ExplorerToastLink'
 import toast from 'react-hot-toast'
 import Popup from '@components/Popup'
-
 import {
   BRIDGABLE_TOKENS,
   BRIDGE_CHAINS_BY_TYPE,
@@ -21,11 +22,12 @@ import {
 } from '@constants/tokens'
 import { formatBNToString } from '@utils/bignumber/format'
 import { commify } from '@ethersproject/units'
+import { isAddress } from '@ethersproject/address'
 import { erc20ABI } from 'wagmi'
 import { Contract } from 'ethers'
 import BridgeWatcher from './BridgeWatcher'
 import { BridgeQuote } from '@/utils/types'
-import { Token } from '@/utils/types'
+import { Token, Query } from '@/utils/types'
 import { BRIDGE_PATH, HOW_TO_BRIDGE_URL } from '@/constants/urls'
 import { stringToBigNum } from '@/utils/stringToBigNum'
 import BridgeCard from './BridgeCard'
@@ -41,6 +43,7 @@ import {
   EMPTY_BRIDGE_QUOTE_ZERO,
   QUOTE_POLLING_INTERVAL,
 } from '@/constants/bridge'
+import { CHAINS_BY_ID, AcceptedChainId } from '@/constants/chains'
 
 /* TODO
   - look into getting rid of fromChainId state and just using wagmi hook (ran into problems when trying this but forgot why)
@@ -53,7 +56,7 @@ const BridgePage = ({
   address: `0x${string}`
   fromChainId: number
 }) => {
-  const { address: currentAddress, isDisconnected } = useAccount()
+  const { isDisconnected } = useAccount()
   const router = useRouter()
   const { synapseSDK } = useSynapseContext()
   const [time, setTime] = useState(Date.now())
@@ -75,16 +78,20 @@ const BridgePage = ({
   const [bridgeQuote, setBridgeQuote] =
     useState<BridgeQuote>(EMPTY_BRIDGE_QUOTE)
 
-  let popup: string
+  let pendingPopup: any
+  let successPopup: any
+  let errorPopup: string
+
   /*
   useEffect Trigger: onMount
   - Gets current network connected and sets it as the state.
   - Initializes polling (setInterval) func to re-retrieve quotes.
   */
   useEffect(() => {
+    const validFromChainId = AcceptedChainId[fromChainId] ? fromChainId : 1
     sortByTokenBalance(
-      BRIDGABLE_TOKENS[fromChainId],
-      fromChainId,
+      BRIDGABLE_TOKENS[validFromChainId],
+      validFromChainId,
       address
     ).then((tokens) => {
       setFromTokens(tokens)
@@ -97,7 +104,7 @@ const BridgePage = ({
     return () => {
       clearInterval(interval)
     }
-  }, [bridgeTxHash])
+  }, [bridgeTxHash, fromChainId])
 
   useEffect(() => {
     if (!router.isReady) {
@@ -109,10 +116,15 @@ const BridgePage = ({
       outputCurrency: toTokenSymbolUrl,
     } = router.query
 
-    let tempFromToken: Token = getMostCommonSwapableType(fromChainId)
+    // set origin chainId to mainnet if network is unsupported
+    const validFromChainId = AcceptedChainId[fromChainId] ? fromChainId : 1
+    let tempFromToken: Token = getMostCommonSwapableType(validFromChainId)
 
     if (fromTokenSymbolUrl) {
-      let token = tokenSymbolToToken(fromChainId, String(fromTokenSymbolUrl))
+      let token = tokenSymbolToToken(
+        validFromChainId,
+        String(fromTokenSymbolUrl)
+      )
       if (token) {
         tempFromToken = token
       }
@@ -122,7 +134,7 @@ const BridgePage = ({
         tempFromToken,
         toChainIdUrl ? Number(toChainIdUrl) : undefined,
         toTokenSymbolUrl ? String(toTokenSymbolUrl) : undefined,
-        fromChainId
+        validFromChainId
       )
     resetTokenPermutation(
       tempFromToken,
@@ -143,13 +155,13 @@ const BridgePage = ({
   /*
   useEffect Triggers: toToken, fromInput, toChainId, time
   - Gets a quote when the polling function is executed or any of the bridge attributes are altered.
-  - Debounce quote call by calling quote price AFTER user has stopped typing for 500ms
+  - Debounce quote call by calling quote price AFTER user has stopped typing for 250ms
   */
   useEffect(() => {
     let isCancelled = false
 
     const handleChange = async () => {
-      await timeout(400) // debounce by 400ms
+      await timeout(250) // debounce by 250ms
       if (!isCancelled) {
         if (
           fromChainId &&
@@ -170,7 +182,7 @@ const BridgePage = ({
     return () => {
       isCancelled = true
     }
-  }, [toToken, fromInput, time, fromChainId, toChainId])
+  }, [toToken, fromInput, time, fromChainId, toChainId, fromToken])
 
   /*
   useEffect Triggers: fromInput
@@ -185,7 +197,7 @@ const BridgePage = ({
     return () => {
       setIsQuoteLoading(false)
     }
-  }, [fromInput])
+  }, [fromInput, fromChainId])
 
   /*
   Helper Function: resetTokenPermutation
@@ -233,8 +245,11 @@ const BridgePage = ({
         fromToken[fromChainId as keyof Token['decimals']]
       )
     ) {
-      let bigNum =
-        stringToBigNum(value, fromToken.decimals[fromChainId]) ?? Zero
+      const validDecimals = fromToken.decimals[fromChainId]
+        ? fromToken.decimals[fromChainId]
+        : fromToken.decimals[1]
+
+      let bigNum = stringToBigNum(value, validDecimals) ?? Zero
 
       setFromInput({
         string: value,
@@ -263,7 +278,7 @@ const BridgePage = ({
 
       return sortByVisibilityRank(mostCommonSwapableType)[0]
     },
-    [currentAddress, isDisconnected]
+    [address, isDisconnected]
   )
 
   /*
@@ -345,7 +360,6 @@ const BridgePage = ({
             ? Number(bridgeableChains[1])
             : Number(bridgeableChains[0])
       }
-
       const positedToToken = positedToSymbol
         ? tokenSymbolToToken(newToChain, positedToSymbol)
         : tokenSymbolToToken(newToChain, token.symbol)
@@ -375,14 +389,14 @@ const BridgePage = ({
   )
 
   /*
-  useEffect triggers: currentAddress, isDisconnected, popup
+  useEffect triggers: address, isDisconnected, popup
   - will dismiss toast asking user to connect wallet once wallet has been connected
   */
   useEffect(() => {
-    if (currentAddress) {
-      toast.dismiss(popup)
+    if (address && !isDisconnected) {
+      toast.dismiss(errorPopup)
     }
-  }, [currentAddress, isDisconnected, popup])
+  }, [address, isDisconnected, errorPopup])
 
   /*
   Function: handleChainChange
@@ -392,12 +406,12 @@ const BridgePage = ({
   */
   const handleChainChange = useCallback(
     async (chainId: number, flip: boolean, type: 'from' | 'to') => {
-      if (currentAddress === undefined || isDisconnected) {
-        popup = toast.error('Please connect your wallet', {
+      if (address === undefined || isDisconnected) {
+        errorPopup = toast.error('Please connect your wallet', {
           id: 'bridge-connect-wallet',
           duration: 20000,
         })
-        return popup
+        return errorPopup
       }
 
       if (flip || type === 'from') {
@@ -476,13 +490,16 @@ const BridgePage = ({
         )
         if (fromInput.string !== '') {
           setIsQuoteLoading(true)
+        } else {
+          setIsQuoteLoading(false)
         }
         return
       }
     },
     [
-      currentAddress,
+      address,
       isDisconnected,
+      fromInput,
       fromToken,
       fromChainId,
       toToken,
@@ -543,11 +560,13 @@ const BridgePage = ({
       if (bridgeQuote === EMPTY_BRIDGE_QUOTE) {
         setIsQuoteLoading(true)
       }
+      const validFromChainId = AcceptedChainId[fromChainId] ? fromChainId : 1
+
       const { feeAmount, routerAddress, maxAmountOut, originQuery, destQuery } =
         await synapseSDK.bridgeQuote(
-          fromChainId,
+          validFromChainId,
           toChainId,
-          fromToken.addresses[fromChainId],
+          fromToken.addresses[validFromChainId],
           toToken.addresses[toChainId],
           fromInput.bigNum
         )
@@ -557,18 +576,44 @@ const BridgePage = ({
         setIsQuoteLoading(false)
         return
       }
+      // TODO DYNAMIC SLIPPAGE
       const toValueBigNum = maxAmountOut ?? Zero
+      const originTokenDecimals = fromToken.decimals[validFromChainId]
+      // adjusting fee amount from NUSD 18 decimal back down
+      // back down to origin token decimals
       const adjustedFeeAmount = feeAmount.lt(fromInput.bigNum)
         ? feeAmount
-        : feeAmount.div(
-            BigNumber.from(10).pow(18 - toToken.decimals[toChainId])
-          )
+        : feeAmount.div(BigNumber.from(10).pow(18 - originTokenDecimals))
 
+      const isUnsupported = AcceptedChainId[fromChainId] ? false : true
       const allowance =
-        fromToken.addresses[fromChainId] === AddressZero ||
-        address === undefined
+        fromToken.addresses[validFromChainId] === AddressZero ||
+        address === undefined ||
+        isUnsupported
           ? Zero
           : await getCurrentTokenAllowance(routerAddress)
+
+      // TODO 1) make dynamic, 2) clean this
+
+      const originMinWithSlippage = subtractSlippage(
+        originQuery?.[2] ?? Zero,
+        'ONE_TENTH',
+        null
+      )
+      const destMinWithSlippage = subtractSlippage(
+        destQuery?.[2] ?? Zero,
+        'ONE_TENTH',
+        null
+      )
+
+      let newOriginQuery = [...originQuery] as Query
+      newOriginQuery[2] = originMinWithSlippage
+      newOriginQuery.minAmountOut = originMinWithSlippage
+
+      let newDestQuery = [...destQuery] as Query
+      newDestQuery[2] = destMinWithSlippage
+      newDestQuery.minAmountOut = destMinWithSlippage
+
       setBridgeQuote({
         outputAmount: toValueBigNum,
         outputAmountString: commify(
@@ -578,15 +623,15 @@ const BridgePage = ({
         allowance,
         exchangeRate: calculateExchangeRate(
           fromInput.bigNum.sub(adjustedFeeAmount),
-          fromToken.decimals[fromChainId],
+          fromToken.decimals[validFromChainId],
           toValueBigNum,
           toToken.decimals[toChainId]
         ),
         feeAmount,
         delta: maxAmountOut,
         quotes: {
-          originQuery,
-          destQuery,
+          originQuery: newOriginQuery,
+          destQuery: newDestQuery,
         },
       })
       setIsQuoteLoading(false)
@@ -609,9 +654,12 @@ const BridgePage = ({
       const wallet = await fetchSigner({
         chainId: fromChainId,
       })
-      // const adjustedFrom = subtractSlippage(fromInput.bigNum, 'ONE_TENTH', null)
+      var newAddress =
+        destinationAddress && isAddress(destinationAddress)
+          ? destinationAddress
+          : address
       const data = await synapseSDK.bridge(
-        address,
+        newAddress,
         fromChainId,
         toChainId,
         fromToken.addresses[fromChainId as keyof Token['addresses']],
@@ -626,17 +674,48 @@ const BridgePage = ({
           ? { data: data.data, to: data.to, value: fromInput.bigNum }
           : data
       const tx = await wallet.sendTransaction(payload)
+
+      const originChainName = CHAINS_BY_ID[fromChainId]?.name
+      const destinationChainName = CHAINS_BY_ID[toChainId]?.name
+
+      pendingPopup = toast(
+        `Bridging from ${fromToken.symbol} on ${originChainName} to ${toToken.symbol} on ${destinationChainName}`,
+        { id: 'bridge-in-progress-popup', duration: Infinity }
+      )
+
       try {
         await tx.wait()
-        console.log(`Transaction mined successfully: ${tx.hash}`)
         setBridgeTxHash(tx.hash)
+        toast.dismiss(pendingPopup)
+
+        const successToastContent = (
+          <div>
+            <div>
+              Successfully initiated bridge from {fromToken.symbol} on{' '}
+              {originChainName} to {toToken.symbol} on {destinationChainName}
+            </div>
+            <ExplorerToastLink
+              transactionHash={tx?.hash ?? AddressZero}
+              chainId={fromChainId}
+            />
+          </div>
+        )
+
+        successPopup = toast.success(successToastContent, {
+          id: 'bridge-success-popup',
+          duration: 10000,
+        })
+
+        resetRates()
         return tx
       } catch (error) {
         console.log(`Transaction failed with error: ${error}`)
+        toast.dismiss(pendingPopup)
       }
     } catch (error) {
       console.log('Error executing bridge', error)
-      return
+      toast.dismiss(pendingPopup)
+      return txErrorHandler(error)
     }
   }
 

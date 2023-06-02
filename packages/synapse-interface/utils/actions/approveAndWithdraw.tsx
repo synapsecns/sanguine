@@ -42,10 +42,16 @@ export const withdraw = async (
   >
 ) => {
   const poolContract = await useSwapDepositContract(pool, chainId)
-  try {
-    toast('Starting your withdraw...')
-    let spendTransaction
+  let spendTransaction
+  let pendingPopup: any
+  let successPopup: any
 
+  pendingPopup = toast(`Starting your withdrawal...`, {
+    id: 'withdraw-in-progress-popup',
+    duration: Infinity,
+  })
+
+  try {
     if (withdrawType === ALL) {
       const outputMinArr = pool.poolTokens.map(() => Zero)
       for (let poolToken of pool.poolTokens) {
@@ -74,17 +80,27 @@ export const withdraw = async (
 
     const tx = await spendTransaction.wait()
 
-    const toastContent = (
+    toast.dismiss(pendingPopup)
+
+    const successToastContent = (
       <div>
-        <div>Liquidity added!</div>
-        <ExplorerToastLink {...tx} chainId={chainId} />
+        <div>Completed Withdrawal: </div>
+        <ExplorerToastLink
+          transactionHash={tx?.transactionHash}
+          chainId={chainId}
+        />
       </div>
     )
 
-    toast.success(toastContent)
+    successPopup = toast.success(successToastContent, {
+      id: 'withdraw-success-popup',
+      duration: 10000,
+    })
 
     return tx
-  } catch (err) {
-    txErrorHandler(err)
+  } catch (error) {
+    toast.dismiss(pendingPopup)
+    txErrorHandler(error)
+    return error
   }
 }

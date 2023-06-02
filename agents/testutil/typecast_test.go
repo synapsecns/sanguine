@@ -25,7 +25,7 @@ func (s SimulatedSuite) TestTypecastOriginHarness() {
 
 func (s SimulatedSuite) TestTypecastSummit() {
 	NotPanics(s.T(), func() {
-		_, summitRef := s.deployManager.GetSummit(s.GetTestContext(), s.testBackend)
+		_, summitRef := s.deployManager.GetSummit(s.GetTestContext(), s.testSynBackend)
 		NotNil(s.T(), summitRef)
 	})
 }

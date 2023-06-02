@@ -115,14 +115,10 @@ const BridgeInputContainer = ({
               setDisplayType(isOrigin ? DisplayType.FROM : DisplayType.TO)
             }}
           />
-
-          {isQuoteLoading ? (
-            <Spinner className="ml-4" />
-          ) : (
-            <input
-              pattern="[0-9.]+"
-              disabled={!isOrigin} // may cause issues idk goal is to prevent to result from being selectable
-              className={`
+          <input
+            pattern="[0-9.]+"
+            disabled={!isOrigin} // may cause issues idk goal is to prevent to result from being selectable
+            className={`
                 ml-4
                 ${isOrigin && isConnected ? '-mt-0 md:-mt-4' : '-mt-0'}
                 focus:outline-none
@@ -132,17 +128,16 @@ const BridgeInputContainer = ({
                placeholder:text-[#88818C]
                text-white text-opacity-80 text-lg md:text-2xl lg:text-2xl font-medium
               `}
-              placeholder="0.0000"
-              onChange={
-                isOrigin
-                  ? (e) => onChangeAmount(cleanNumberInput(e.target.value))
-                  : () => null
-              }
-              value={inputString}
-              name="inputRow"
-              autoComplete="off"
-            />
-          )}
+            placeholder="0.0000"
+            onChange={
+              isOrigin
+                ? (e) => onChangeAmount(cleanNumberInput(e.target.value))
+                : () => null
+            }
+            value={inputString}
+            name="inputRow"
+            autoComplete="off"
+          />
           {isOrigin && isConnected && (
             <label
               htmlFor="inputRow"

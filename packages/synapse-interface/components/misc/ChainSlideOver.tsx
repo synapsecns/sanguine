@@ -7,6 +7,7 @@ import SlideSearchBox from '@pages/bridge/SlideSearchBox'
 import { DrawerButton } from '@components/buttons/DrawerButton'
 import { useNetwork } from 'wagmi'
 import { DisplayType } from '@/pages/bridge/BridgeCard'
+import { sortChains } from '@constants/chains'
 
 export const ChainSlideOver = ({
   isOrigin,
@@ -51,6 +52,7 @@ export const ChainSlideOver = ({
         tempNetworks.push(chain)
       }
     })
+    tempNetworks = sortChains(tempNetworks)
     if (searchStr?.length > 0) {
       tempNetworks = fuse.search(searchStr).map((i) => i.item)
     }
@@ -117,7 +119,7 @@ export const ChainSlideOver = ({
       </div>
       <div
         data-test-id={dataId}
-        className="px-3 pt-20 pb-8 space-y-4 bg-bgLighter md:px-6 rounded-xl"
+        className="px-3 pt-20 pb-8 space-y-4 bg-bgLighter md:px-6"
       >
         {networks.map(({ id: mapChainId }, idx) => {
           let onClickSpecificNetwork

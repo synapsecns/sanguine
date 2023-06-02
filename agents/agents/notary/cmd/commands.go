@@ -11,9 +11,6 @@ import (
 	"github.com/phayes/freeport"
 	"github.com/synapsecns/sanguine/agents/agents/notary"
 	"github.com/synapsecns/sanguine/agents/agents/notary/api"
-	"github.com/synapsecns/sanguine/services/scribe/backfill"
-	"github.com/synapsecns/sanguine/services/scribe/client"
-	"github.com/synapsecns/sanguine/services/scribe/node"
 	"golang.org/x/sync/errgroup"
 
 	// used to embed markdown.
@@ -22,8 +19,6 @@ import (
 
 	"github.com/synapsecns/sanguine/agents/config"
 	"github.com/synapsecns/sanguine/core"
-	scribeAPI "github.com/synapsecns/sanguine/services/scribe/api"
-	scribeCmd "github.com/synapsecns/sanguine/services/scribe/cmd"
 	"github.com/urfave/cli/v2"
 )
 
@@ -59,28 +54,11 @@ var configFlag = &cli.StringFlag{
 	Required:  true,
 }
 
-var scribeTypeFlag = &cli.StringFlag{
-	Name:     "scribe-type",
-	Usage:    "--scribe-type <embedded> or <remote>",
-	Required: true,
-}
-
-var scribePortFlag = &cli.UintFlag{
-	Name:  "scribe-port",
-	Usage: "--scribe-port <port>",
-	Value: 0,
-}
-
-var scribeURL = &cli.StringFlag{
-	Name:  "scribe-url",
-	Usage: "--scribe-url <url>",
-}
-
 // NotaryRunCommand runs the notary.
 var NotaryRunCommand = &cli.Command{
 	Name:        "notary-run",
 	Description: "runs the notary service",
-	Flags:       []cli.Flag{configFlag, metricsPortFlag, scribeTypeFlag, scribePortFlag, scribeURL, ignoreInitErrorsFlag},
+	Flags:       []cli.Flag{configFlag, metricsPortFlag, ignoreInitErrorsFlag},
 	Action: func(c *cli.Context) error {
 		metricsProvider := metrics.Get()
 
@@ -95,64 +73,9 @@ var NotaryRunCommand = &cli.Command{
 		for shouldRetryAtomic.Load() {
 			shouldRetryAtomic.Store(false)
 
-			var scribeClient client.ScribeClient
-
 			g, _ := errgroup.WithContext(c.Context)
 
-			switch c.String(scribeTypeFlag.Name) {
-			case "embedded":
-				eventDB, err := scribeAPI.InitDB(c.Context, "mysql", "root:MysqlPassword@tcp(agents-mysql:3306)/notaryscribe?parseTime=true", metrics.Get(), false)
-				if err != nil {
-					return fmt.Errorf("failed to initialize database: %w", err)
-				}
-
-				scribeClients := make(map[uint32][]backfill.ScribeBackend)
-
-				for _, domain := range notaryConfig.Domains {
-					for confNum := 1; confNum <= scribeCmd.MaxConfirmations; confNum++ {
-						chainID := domain.DomainID
-						backendClient, err := backfill.DialBackend(c.Context, fmt.Sprintf("%s/%d/rpc/%d", "https://rpc.interoperability.institute/confirmations", confNum, chainID), metricsProvider)
-						if err != nil {
-							return fmt.Errorf("could not start client for %s", fmt.Sprintf("%s/1/rpc/%d", "https://rpc.interoperability.institute/confirmations", chainID))
-						}
-
-						scribeClients[chainID] = append(scribeClients[chainID], backendClient)
-					}
-				}
-
-				scribe, err := node.NewScribe(eventDB, scribeClients, notaryConfig.EmbeddedScribeConfig, metricsProvider)
-				if err != nil {
-					return fmt.Errorf("failed to initialize scribe: %w", err)
-				}
-
-				g.Go(func() error {
-					err := scribe.Start(c.Context)
-					if err != nil {
-						return fmt.Errorf("failed to start scribe: %w", err)
-					}
-
-					return nil
-				})
-
-				embedded := client.NewEmbeddedScribe("mysql", "root:MysqlPassword@tcp(agents-mysql:3306)/notaryscribe?parseTime=true", metricsProvider)
-
-				g.Go(func() error {
-					err := embedded.Start(c.Context)
-					if err != nil {
-						return fmt.Errorf("failed to start embedded scribe: %w", err)
-					}
-
-					return nil
-				})
-
-				scribeClient = embedded.ScribeClient
-			case "remote":
-				scribeClient = client.NewRemoteScribe(uint16(c.Uint(scribePortFlag.Name)), c.String(scribeURL.Name), metricsProvider).ScribeClient
-			default:
-				return fmt.Errorf("invalid scribe type: %s", c.String(scribeTypeFlag.Name))
-			}
-
-			notary, err := notary.NewNotary(c.Context, notaryConfig, scribeClient, metricsProvider)
+			notary, err := notary.NewNotary(c.Context, notaryConfig, metricsProvider)
 			if err != nil && !c.Bool(ignoreInitErrorsFlag.Name) {
 				return fmt.Errorf("failed to create notary: %w", err)
 			}

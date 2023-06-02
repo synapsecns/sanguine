@@ -12,8 +12,8 @@ import (
 )
 
 // StoreState stores a state.
-func (s Store) StoreState(ctx context.Context, state agentsTypes.State, snapshotRoot [32]byte, proof [][]byte, treeHeight, stateIndex uint32) error {
-	dbState, err := AgentsTypesStateToState(state, snapshotRoot, proof, treeHeight, stateIndex)
+func (s Store) StoreState(ctx context.Context, state agentsTypes.State, snapshotRoot [32]byte, proof [][]byte, stateIndex uint32) error {
+	dbState, err := AgentsTypesStateToState(state, snapshotRoot, proof, stateIndex)
 	if err != nil {
 		return fmt.Errorf("failed to convert state to db state: %w", err)
 	}
@@ -35,10 +35,10 @@ func (s Store) StoreState(ctx context.Context, state agentsTypes.State, snapshot
 }
 
 // StoreStates stores multiple states with the same snapshot root.
-func (s Store) StoreStates(ctx context.Context, states []agentsTypes.State, snapshotRoot [32]byte, proofs [][][]byte, treeHeight uint32) error {
+func (s Store) StoreStates(ctx context.Context, states []agentsTypes.State, snapshotRoot [32]byte, proofs [][][]byte) error {
 	var dbStates []State
 	for i := range states {
-		state, err := AgentsTypesStateToState(states[i], snapshotRoot, proofs[i], treeHeight, uint32(i))
+		state, err := AgentsTypesStateToState(states[i], snapshotRoot, proofs[i], uint32(i))
 		if err != nil {
 			return fmt.Errorf("failed to convert state to db state: %w", err)
 		}
@@ -80,19 +80,23 @@ func (s Store) GetState(ctx context.Context, stateMask types.DBState) (*agentsTy
 		return nil, nil
 	}
 
+	gasData := agentsTypes.NewGasData(
+		state.GDGasPrice, state.GDDataPrice, state.GDExecBuffer, state.GDAmortAttCost, state.GDEtherPrice, state.GDMarkup)
+
 	receivedState := agentsTypes.NewState(
 		common.HexToHash(state.Root),
 		state.ChainID,
 		state.Nonce,
 		big.NewInt(int64(state.OriginBlockNumber)),
 		big.NewInt(int64(state.OriginTimestamp)),
+		gasData,
 	)
 
 	return &receivedState, nil
 }
 
 // GetStateMetadata gets the snapshot root, proof, and tree height of a state from the database.
-func (s Store) GetStateMetadata(ctx context.Context, stateMask types.DBState) (snapshotRoot *[32]byte, proof *json.RawMessage, treeHeight *uint32, stateIndex *uint32, err error) {
+func (s Store) GetStateMetadata(ctx context.Context, stateMask types.DBState) (snapshotRoot *[32]byte, proof *json.RawMessage, stateIndex *uint32, err error) {
 	var state State
 
 	dbStateMask := DBStateToState(stateMask)
@@ -102,16 +106,15 @@ func (s Store) GetStateMetadata(ctx context.Context, stateMask types.DBState) (s
 		Limit(1).
 		Scan(&state)
 	if dbTx.Error != nil {
-		return nil, nil, nil, nil, fmt.Errorf("failed to get state snapshot root: %w", dbTx.Error)
+		return nil, nil, nil, fmt.Errorf("failed to get state snapshot root: %w", dbTx.Error)
 	}
 	if dbTx.RowsAffected == 0 {
-		return nil, nil, nil, nil, nil
+		return nil, nil, nil, nil
 	}
 
 	snapshotRootHash := common.HexToHash(state.SnapshotRoot)
 	snapshotRoot = (*[32]byte)(&snapshotRootHash)
 	proof = &state.Proof
-	treeHeight = &state.TreeHeight
 	stateIndex = &state.StateIndex
 
 	return
@@ -159,6 +162,7 @@ func (s Store) GetSnapshotRootsInNonceRange(ctx context.Context, chainID uint32,
 }
 
 // DBStateToState converts a DBState to a State.
+// nolint:cyclop
 func DBStateToState(dbState types.DBState) State {
 	var state State
 
@@ -190,12 +194,32 @@ func DBStateToState(dbState types.DBState) State {
 		state.Proof = *dbState.Proof
 	}
 
-	if dbState.TreeHeight != nil {
-		state.TreeHeight = *dbState.TreeHeight
-	}
-
 	if dbState.StateIndex != nil {
 		state.StateIndex = *dbState.StateIndex
+	}
+
+	if dbState.GDGasPrice != nil {
+		state.GDGasPrice = *dbState.GDGasPrice
+	}
+
+	if dbState.GDDataPrice != nil {
+		state.GDDataPrice = *dbState.GDDataPrice
+	}
+
+	if dbState.GDExecBuffer != nil {
+		state.GDExecBuffer = *dbState.GDExecBuffer
+	}
+
+	if dbState.GDAmortAttCost != nil {
+		state.GDAmortAttCost = *dbState.GDAmortAttCost
+	}
+
+	if dbState.GDEtherPrice != nil {
+		state.GDEtherPrice = *dbState.GDEtherPrice
+	}
+
+	if dbState.GDMarkup != nil {
+		state.GDMarkup = *dbState.GDMarkup
 	}
 
 	return state
@@ -210,8 +234,13 @@ func StateToDBState(state State) types.DBState {
 	originBlockNumber := state.OriginBlockNumber
 	originTimestamp := state.OriginTimestamp
 	proof := state.Proof
-	treeHeight := state.TreeHeight
 	stateIndex := state.StateIndex
+	gasPrice := state.GDGasPrice
+	dataPrice := state.GDDataPrice
+	execBuffer := state.GDExecBuffer
+	amortAttCost := state.GDAmortAttCost
+	etherPrice := state.GDEtherPrice
+	markup := state.GDMarkup
 
 	return types.DBState{
 		SnapshotRoot:      &snapshotRoot,
@@ -221,13 +250,18 @@ func StateToDBState(state State) types.DBState {
 		OriginBlockNumber: &originBlockNumber,
 		OriginTimestamp:   &originTimestamp,
 		Proof:             &proof,
-		TreeHeight:        &treeHeight,
 		StateIndex:        &stateIndex,
+		GDGasPrice:        &gasPrice,
+		GDDataPrice:       &dataPrice,
+		GDExecBuffer:      &execBuffer,
+		GDAmortAttCost:    &amortAttCost,
+		GDEtherPrice:      &etherPrice,
+		GDMarkup:          &markup,
 	}
 }
 
 // AgentsTypesStateToState converts an agentsTypes.State to a State.
-func AgentsTypesStateToState(state agentsTypes.State, snapshotRoot [32]byte, proof [][]byte, treeHeight, stateIndex uint32) (State, error) {
+func AgentsTypesStateToState(state agentsTypes.State, snapshotRoot [32]byte, proof [][]byte, stateIndex uint32) (State, error) {
 	root := state.Root()
 
 	// Convert the proof to a json
@@ -246,7 +280,12 @@ func AgentsTypesStateToState(state agentsTypes.State, snapshotRoot [32]byte, pro
 		OriginBlockNumber: state.BlockNumber().Uint64(),
 		OriginTimestamp:   state.Timestamp().Uint64(),
 		Proof:             proofDBFormat,
-		TreeHeight:        treeHeight,
 		StateIndex:        stateIndex,
+		GDGasPrice:        state.GasData().GasPrice(),
+		GDDataPrice:       state.GasData().DataPrice(),
+		GDExecBuffer:      state.GasData().ExecBuffer(),
+		GDAmortAttCost:    state.GasData().AmortAttCost(),
+		GDEtherPrice:      state.GasData().EtherPrice(),
+		GDMarkup:          state.GasData().Markup(),
 	}, nil
 }

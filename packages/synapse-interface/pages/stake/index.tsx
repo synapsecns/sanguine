@@ -1,23 +1,23 @@
 import { useMemo, useEffect, useState } from 'react'
-import { LandingPageWrapper } from '@/components/layouts/LandingPageWrapper'
 import { useNetwork, useAccount } from 'wagmi'
 import { Token } from '@/utils/types'
 import { Chain } from '@/utils/types'
 import { getNetworkTextColor } from '@/styles/chains'
 import { STAKABLE_TOKENS } from '@/constants/tokens'
 import { CHAINS_BY_ID, ChainsByChainID } from '@/constants/chains'
-import { PageHeader } from '@/components/PageHeader'
 import Grid from '@/components/ui/tailwind/Grid'
+import { PageHeader } from '@/components/PageHeader'
+import { LandingPageWrapper } from '@/components/layouts/LandingPageWrapper'
 import StakeCard from './StakeCard'
 import NoStakeCard from './NoStakeCard'
 
 const StakePage = () => {
-  const [isClient, setIsClient] = useState<boolean>(false)
   const { chain: connectedChain } = useNetwork()
-  const [columns, setColumns] = useState<number>(1)
-  const [connectedChainId, setConnectedChainId] = useState<number>(undefined)
   const { address: currentAddress } = useAccount()
+  const [connectedChainId, setConnectedChainId] = useState<number>(undefined)
   const [address, setAddress] = useState(undefined)
+  const [isClient, setIsClient] = useState<boolean>(false)
+  const [columns, setColumns] = useState<number>(1)
 
   const connectedChainInfo: Chain | undefined = useMemo(() => {
     if (connectedChainId) {
@@ -30,9 +30,11 @@ const StakePage = () => {
 
   const availableStakingTokens: Token[] | [] =
     STAKABLE_TOKENS[connectedChainId] ?? []
+
   useEffect(() => {
     setAddress(currentAddress)
   }, [currentAddress])
+
   useEffect(() => {
     const isSingle = availableStakingTokens.length < 2
     setColumns(isSingle ? 1 : 2)
@@ -52,25 +54,33 @@ const StakePage = () => {
         data-test-id="stake-page"
         className={`
           flex flex-col justify-between
-          px-20 m-14 space-x-2
+          px-4 py-16
+          md:px-20 md:py-3 md:m-14
         `}
       >
-        <PageHeader title="Stake" subtitle="Stake your LP Tokens." />
+        <div className="flex flex-col justify-center max-w-[1300px] m-auto">
+          <PageHeader title="Stake" subtitle="Stake your LP Tokens." />
 
-        <Grid cols={{ xs: 1, sm: 1, md: columns }} gap={6} className="mt-8">
-          {isClient && availableStakingTokens.length > 0 ? (
-            availableStakingTokens.map((token, key) => (
-              <StakeCard
-                key={key}
-                address={currentAddress}
-                chainId={connectedChainId}
-                pool={token}
-              />
-            ))
-          ) : (
-            <NoStakeCard chain={connectedChainInfo} />
-          )}
-        </Grid>
+          <Grid cols={{ xs: 1, sm: 1, md: columns }} gap={6} className="mt-8">
+            {isClient && availableStakingTokens.length > 0 ? (
+              availableStakingTokens.map((token, key) => {
+                if (token.notStake) {
+                  return null
+                }
+                return (
+                  <StakeCard
+                    key={key}
+                    address={currentAddress}
+                    chainId={connectedChainId}
+                    pool={token}
+                  />
+                )
+              })
+            ) : (
+              <NoStakeCard chain={connectedChainInfo} />
+            )}
+          </Grid>
+        </div>
       </main>
     </LandingPageWrapper>
   )
