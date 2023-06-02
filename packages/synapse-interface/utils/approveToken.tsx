@@ -67,15 +67,21 @@ export const approveToken = async (
 
     return approveTx
   } catch (error) {
-    toast.dismiss(pendingPopup)
     console.log(`Transaction failed with error: ${error}`)
 
-    amplitude.logEvent('Rejected Approval Transaction', {
+    const errorCode = error?.code
+    const eventName =
+      errorCode === 'ACTION_REJECTED'
+        ? 'Rejected Approval Transaction'
+        : 'Error Approval Transaction'
+
+    amplitude.logEvent(eventName, {
       chainId: chainId,
       token: tokenAddress,
       routerAddress: address,
     })
 
+    toast.dismiss(pendingPopup)
     txErrorHandler(error)
   }
 }
