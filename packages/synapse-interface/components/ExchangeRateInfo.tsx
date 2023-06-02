@@ -14,11 +14,13 @@ const ExchangeRateInfo = ({
   toToken,
   exchangeRate,
   toChainId,
+  gasDropAmount,
 }: {
   fromAmount: BigNumber
   toToken: Token
   exchangeRate: BigNumber
   toChainId: number
+  gasDropAmount: BigInt | any //remove any after implementing hook
 }) => {
   const safeExchangeRate = useMemo(() => exchangeRate ?? Zero, [exchangeRate]) // todo clean
   const safeFromAmount = useMemo(() => fromAmount ?? Zero, [fromAmount]) // todo clean
