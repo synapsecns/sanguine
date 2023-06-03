@@ -78,7 +78,7 @@ func (s Store) GetEarliestStateInRange(ctx context.Context, chainID, destination
 							(SELECT %s, %s FROM %s WHERE %s = ?) as attestationTable
 							ON stateTable.%s = attestationTable.%s
 						)
-					) LIMIT 1
+					) ORDER BY %s DESC LIMIT 1
 				)`,
 			statesTableName, ChainIDFieldName, SnapshotRootFieldName,
 			SnapshotRootFieldName, attestationsTableName, DestinationFieldName, DestinationBlockNumberFieldName,
@@ -86,6 +86,7 @@ func (s Store) GetEarliestStateInRange(ctx context.Context, chainID, destination
 			SnapshotRootFieldName, statesTableName, NonceFieldName, NonceFieldName, ChainIDFieldName,
 			SnapshotRootFieldName, DestinationBlockNumberFieldName, attestationsTableName, DestinationFieldName,
 			SnapshotRootFieldName, SnapshotRootFieldName,
+			AttestationNonceFieldName,
 		), chainID, destination, startNonce, endNonce, chainID, destination).
 		Scan(&state)
 	if dbTx.Error != nil {
