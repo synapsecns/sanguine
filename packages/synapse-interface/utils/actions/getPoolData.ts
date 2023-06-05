@@ -51,6 +51,8 @@ const getBalanceData = async ({
       })
     )?.value
 
+    // TODO: this is to support virtual price calcs, which needs to get updated
+    // as a contract call
     const balance = rawBalance.mul(
       BigNumber.from(10).pow(18 - token.decimals[chainId])
     )
@@ -73,6 +75,7 @@ const getBalanceData = async ({
       poolTokenSum = poolTokenSum.add(balance)
     }
   }
+
   return {
     tokenBalances,
     poolTokenSum,
@@ -80,6 +83,7 @@ const getBalanceData = async ({
     lpTotalSupply,
   }
 }
+
 export const getPoolData = async (
   chainId: number,
   pool: Token,

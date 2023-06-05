@@ -4,7 +4,7 @@ import { WETH } from '@constants/tokens/swapMaster'
 import { AVWETH, ETH, WETHE } from '@constants/tokens/master'
 import { stringToBigNum } from '@/utils/stringToBigNum'
 import { getAddress } from '@ethersproject/address'
-import TokenInput from '@components/TokenInput'
+import { DepositTokenInput } from '@components/TokenInput'
 import PriceImpactDisplay from '../components/PriceImpactDisplay'
 import { useSynapseContext } from '@/utils/providers/SynapseProvider'
 import { TransactionButton } from '@/components/buttons/TransactionButton'
@@ -266,10 +266,13 @@ const Deposit = ({
         {pool && poolUserData && poolData ? (
           poolUserData.tokens.map((tokenObj, i) => {
             const balanceToken = correctToken(tokenObj.token)
+
             return (
-              <TokenInput
+              <DepositTokenInput
                 token={balanceToken}
                 key={balanceToken.symbol}
+                rawBalance={tokenObj.rawBalance}
+                balance={tokenObj.balance}
                 balanceStr={String(tokenObj.balanceStr)}
                 inputValueStr={inputValue.str[balanceToken.addresses[chainId]]}
                 onChange={(value) => onChangeInputValue(balanceToken, value)}
