@@ -195,7 +195,7 @@ const Deposit = ({
       properties.label = `Approve Token(s)`
       properties.pendingLabel = `Approving Token(s)`
       properties.className = 'from-[#feba06] to-[#FEC737]'
-      properties.disabled = true
+      properties.disabled = false
       properties.buttonAction = () =>
         approve(pool, depositQuote, inputValue.bn, chainId)
       properties.postButtonAction = () => setTime(0)
