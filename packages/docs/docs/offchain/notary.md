@@ -9,7 +9,7 @@ The potential for fraud by a malicious Notary is enormous and there needs to be 
 Each Notary can actually only attest to messages destined to a particular chain, so if you want to run a Notary for more than one destination chain, you will need to run separate Notaries for each.
 Every Notary must post a bond prior to running, and it will need to designate an address to act as the Signing key for the very important attestations that it needs to sign. This should be a different address from the one that pays gas, and there should be great care to keep the bonded signing key safe. If an adversary took possession of that key, they could commit fraud with it just for the purposes of getting that Notary slashed. Usually the Guard who reports the Notary receives the slashed bond, so this is one way an attacker could obtain the bonded amount for itself.
 
-The Synapse team can provide a reference implementation and deployment instructions if you would like to run a Notary.
+Contributors to Synapse Labs can provide a reference implementation and deployment instructions if you would like to run a Notary.
 To run the Notary, you only need the executable written in Go, and provide the configuration file.
 
 The reference implementation instructions for the Notary can be found here:

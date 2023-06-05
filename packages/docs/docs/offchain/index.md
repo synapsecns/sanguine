@@ -4,7 +4,7 @@ sidebar_position: 1
 
 # Participating in the Network
 
-Anyone who is interested in participating in the Synapse Messaging network is free to do so. The Synapse team will provide a reference version of each agent type developed in the Go programming language, along with guidance on how to deploy things in the cloud of your choice.
+Anyone who is interested in participating in the Synapse Messaging network is free to do so. Contributors to Synapse Labs will provide a reference version of each agent type developed in the Go programming language, along with guidance on how to deploy things in the cloud of your choice.
 
 You are free to configure things to select only a subset of the chains, so for example, you can run a Guard that decides to only handle some of the chains.
 

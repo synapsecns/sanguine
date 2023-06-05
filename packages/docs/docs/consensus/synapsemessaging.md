@@ -47,7 +47,7 @@ The Synapse Messaging network is designed to be decentralized and allow anyone t
 
 Before diving deeper into the specifics of each of the offchain agents, it is useful to learn how a message flows from one chain to another with Synapse.
 <br/>
-At the highest level, we have a smart contract on the chain that we are sending the message from, known hereafter as the "Sending Chain",
+At the highest level, there is a smart contract on the chain that we are sending the message from, known hereafter as the "Sending Chain",
 and there is a smart contract on the chain that we are sending the message to, known hereafter as the "Receiving Chain".
 <br/>
 Note that the "Client Smart Contracts" that we are talking about will be whatever smart contract that wants to use the Synapse Messaging System as a client.
@@ -63,7 +63,7 @@ We are now going to take a look at the system starting from the very highest van
 2. Client Smart Contract receives the message on the "Receiving Chain" within a "reasonable" amount of time.
    <br/>
    <br/>
-   This is literally the highest possible level to view the system, and it is the goal of the Synapse team to have it be this simple from the point of view of the Smart Contract Developers.
+   This is literally the highest possible level to view the system, and it is the goal to have it be this simple from the point of view of the Smart Contract Developers.
 
 ### Pulling Back the Curtains
 
@@ -118,23 +118,23 @@ Next, we can talk about the various kinds of "fraud" that can get the agent's sl
 The two kinds of bonded agents are Guards and Notaries. Notaries require a much larger stake due to the potential harm they could cause.
 
 ## How a Notary commits Fraud
-1. Notary can sign and attest to a Merkle Root of States that never happened on the SYN chain.
-   This is easy to catch because a Guard can simply observe the attestation on the Receiving Chain and check if it has already been registered on the SYN chain.
-2. Notary can sign and attest to a Merkle Root of States that is registered on the SYN chain,
+1. Notary can sign and attest to a Merkle Root of States that never happened on the Synapse chain.
+   This is easy to catch because a Guard can simply observe the attestation on the Receiving Chain and check if it has already been registered on the Synapse chain.
+2. Notary can sign and attest to a Merkle Root of States that is registered on the Synapse chain,
    but that Merkle Root includes an invalid state.
    For this, the Guard needs to prove that the invalid state is part of that Merkle Tree of States
    and then the Sending Chain will quickly know that the state is not valid and be able to slash the Notary that signed the attestation.
-3. Note that for the Merkle Root of States to be registered on SYN chain,
+3. Note that for the Merkle Root of States to be registered on Synapse chain,
    there must have been a Guard who signed for the state followed by some
-   other Notary (could be same or could be different Notary) who also submitted that state to the SYN chain.
+   other Notary (could be same or could be different Notary) who also submitted that state to the Synapse chain.
 4. To Summarize, in the event that a Receiving chain has an bad attestation posted for a particular Merkle Root of States,
    the Notary for the Receiving chain must have signed it and will get slashed.
-   If the bad Merkle Root of States is registered on the SYN chain, the Notary who submitted the list of states
+   If the bad Merkle Root of States is registered on the Synapse chain, the Notary who submitted the list of states
    that included that bad state will get slashed AND also the Guard who originally registered the state will get slashed.
 5. Who receives the slashed bond? The Guard who reports each of the agents. Note there must be a fraud report for each agent being slashed.
 
 ## How a Guard commits Fraud
-1. A Guard can submit an invalid state to the SYN chain.
+1. A Guard can submit an invalid state to the Synapse chain.
 2. A Guard can submit an invalid fraud report for the purposes of waging a denial of service attack.
 3. A Guard has the power to put any attestation posted in dispute, and resolving the dispute requires cross-chain coordination and takes time.
 4. While a Guard submitted a bad fraud report will eventually get slashed, if the Guard's stake is too small, it might fail to disincentive griefing from malicious Guards.
@@ -147,22 +147,22 @@ We mentioned that a Notary posts a LARGE stake and a Guard posts a smaller stake
 This section will explain the details of how the stake is collected and how slashing occurs.
 Additionally, we need to talk about how the list of Notaries and Guards are kept in sync across all the remote chains.
 
-## SYN Chain as Central Hub
-The SYN chain is where each agent must post bond which will be held in Escrow by a special Smart Contract deployed there.
-The name of this smart contract on SYN chain is called the Bonding Manager. Upon posting a bond, the agent will be registered as either a Guard or Notary.
+## Synapse Chain as Central Hub
+The Synapse chain is where each agent must post bond which will be held in Escrow by a special Smart Contract deployed there.
+The name of this smart contract on Synapse chain is called the Bonding Manager. Upon posting a bond, the agent will be registered as either a Guard or Notary.
 Each Notary is assigned to a specific chain, while each Guard can service all the chains.
 
 These are the steps of becoming an agent.
-1. Bond is posted to the BondingManager smart contract on SYN chain along with what type of agent it will be.
+1. Bond is posted to the BondingManager smart contract on Synapse chain along with what type of agent it will be.
 2. Upon receiving the bond, the BondingManager adds the new agent to the list of agents.
 3. The list of agents if Merklized and a Merkle Root of Agents is registered.
 4. The 32 bytes Merkle Root of Agents is now the current latest state.
-5. Note that upon receiving the stake, the BondingManager on SYN chain immediately knows who is a Notary and who is a Guard.
+5. Note that upon receiving the stake, the BondingManager on Synapse chain immediately knows who is a Notary and who is a Guard.
 6. The challenge now is communicating this to the remote chains.
 
 ### Updating the Remote Chains with new Agent Set
 1. The Merkle Root of Agents will be stored with every attestation from the previous section where we produce Merkle Roots of Origin States.
-2. Thus, any time a Notary posts an attestation for a Merkle Root of Origin States on its particular Receiving chain, it will also attest to the Merkle Root of Agents at the time the Merkle Root of States was posted on SYN chain.
+2. Thus, any time a Notary posts an attestation for a Merkle Root of Origin States on its particular Receiving chain, it will also attest to the Merkle Root of Agents at the time the Merkle Root of States was posted on Synapse chain.
 3. Just as there is an optimistic period before the Merkle Root of States can be used to execute a message, there will be an optimistic period before an agent can prove itself as a member of the latest Merkle Root of Agents.
 4. After the optimistic period, the Remote Chain will allow any agent to prove itself as being part of the set of agents.
 5. Once a new Merkle Root of Agents is accepted by a remote chain, any agent must re-register itself against that root in order for the remote chain to trust it.
@@ -177,7 +177,7 @@ These are the steps of becoming an agent.
 
 As mentioned there are 3 kinds of agents:
 1. Notaries who post a large bond and are assigned to one Receiving chain.
-2. Guards who post a smaller bond and can report fraud and also submit valid Origin states to the SYN chain that can be used by Notaries when attesting to a list of states.
+2. Guards who post a smaller bond and can report fraud and also submit valid Origin states to the Synapse chain that can be used by Notaries when attesting to a list of states.
 3. Executors actually execute messages after the optimistic period has passed for an attested state that includes that message in the Merkle Tree of Messages.
 
 ## Working for tips.
@@ -186,23 +186,23 @@ When a client wants to send a message, it must obviously pay the gas for perform
 However, for the agents to be incentived to do any work to move that message to the Receiving Chain, the sender needs to provide enough money to pay for the gas on the other chains and also an additional amount to incentivize the agents to do the work.
 ### Where do we pay Gas?
 1.  The Sending Chain will obviously cost a certain amount of Gas.
-2.  A Guard then needs to pay Gas to submit a list of states to SYN chain, although a given state can be amortized for all the messages that came before.
-3.  A Notary also needs to submit a list of states on the SYN chain, again amortized for all messages coming before.
+2.  A Guard then needs to pay Gas to submit a list of states to Synapse chain, although a given state can be amortized for all the messages that came before.
+3.  A Notary also needs to submit a list of states on the Synapse chain, again amortized for all messages coming before.
 4.  For each Receiving chain that has a message sent to it, a Notary assigned to that chain must submit an attesation for a Merkle Root of States which can be amortized for all messages prior.
 5.  For each message to be executed, the Executor needs to pay Gas on the Receiving chain for every message exucuted.
 
 ### Who pays the Gas?
-The Sender of the message must pay gas, but how does this work in terms of paying for gas on the SYN chain and the Receiving chain?
+The Sender of the message must pay gas, but how does this work in terms of paying for gas on the Synapse chain and the Receiving chain?
 
 The next section will discuss how Synapse uses "Gas Oracles" to estimate the amount of Gas needed to perform the work on the other chains so that the gas money plus the extra tips can be collected at the time the message is Sent on the Sending chain.
 
 ### Where are rewards paid?
-Note the tips will be given to the agents on the SYN chain. This means that periodically, the gas collected on the Origin chains will be bridged to the SYN chain because the sender pays on the Sending chain.
+Note the tips will be given to the agents on the Synapse chain. This means that periodically, the gas collected on the Origin chains will be bridged to the Synapse chain because the sender pays on the Sending chain.
 
 When a message is executed on th Destination chain, all the agents who had a hand in delivering that message are elligible to receive a reward that should cover the gas as well as additional rewards to keep them incentivized.
 
 Upon having the message executed, the Destination chain produces a receipt of the message being executed.
-The Notary will need to take that receipt, sign it and submit on the SYN chain in order for it and the other agents to receive tips.
+The Notary will need to take that receipt, sign it and submit on the Synapse chain in order for it and the other agents to receive tips.
 
 Note that this is yet another potential for fraud from the Notary, because the receipt could in theory be fraudulent, but the Notary would be risking a very large stake for a small amount of tips.
 This is another payload that a Guard can potentially look for fraud and report.

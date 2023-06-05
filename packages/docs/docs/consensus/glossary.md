@@ -13,7 +13,7 @@ The [Guard](#guard) who submits a [fraud report](#fraud-report) is defined to be
 
 ### Agent Root
 The Agent Root is the root of the Merkle Tree formed from the [Agent Set](#agent-set). The list of all registered bonded agents
-that have posted bond on the [SYN Chain](#synapse-chain) are put into a Merkle Tree, and the root of this tree is the Agent Root.
+that have posted bond on the [Synapse Chain](#synapse-chain) are put into a Merkle Tree, and the root of this tree is the Agent Root.
 This makes it easy for the Remote Chains to detect if there has been a change in the set of bonded agents. Because this Agent Root is
 one of the fields in the [Attestation](#attestation), the Notaries are constantly attesting to the current Agent Root to its [Remote Chain](#remote-chain).
 When the remote chain has a new Agent Root, there is an [Optimistic Period](#optimistic-period) that needs to pass before that new Agent Root is considered valid.
@@ -27,9 +27,9 @@ The set of bonded agents ([Guards](#guard) and [Notaries](#notary)) that are cur
 ### Attestation
 This is what [Notaries](#notary) sign and post to the chain that it is assigned to, and it contains crucial information that is used
 to prove messages and also to prove the [Agent Set](#agent-set). The [Notary](#notary) signs an attestation and posts it to the [Destination](#destination) chain.
-However, in order to be considered a valid attestation, it must first be registered on the [SYN Chain](#synapse-chain)
+However, in order to be considered a valid attestation, it must first be registered on the [Synapse Chain](#synapse-chain)
 as a result of a [Notary](#notary) submitting a [State Snapshot](#state-snapshot).
-If an Attestation is not first submitted to the SYN chain, it will not be considered valid by the Destination chain.
+If an Attestation is not first submitted to the Synapse chain, it will not be considered valid by the Destination chain.
 If the Attestation turns out to be [fraudulent](#fraud), the [Notary](#notary) will be [slashed](#slash) and removed as a valid [Notary](#notary). Thus, it is very important
 that the [Notary](#notary) only sign Attestations that contain information that has been thoroughly confirmed. Below is the data contained in the attestation:
 1. [Snap Root](#snap-root) is the Merkle root of the Origin [States](#state) that were grouped together in a [state snapshot](#state-snapshot) and made into a Merkle tree.
@@ -37,8 +37,8 @@ This snap root is used to prove that a particular Origin state did in fact occur
 2. [Agent Root](#agent-root) is the Merkle root of the bonded agent data that can be used to prove if a particular agent is part of the [Agent Set](#agent-set).
 3. [Gas Data Snapshot](#gas-data-snapshot) contains the [Gas Data](#gas-data) of each of the chains being attested to.
 4. Nonce is the total number of accepted Notary snapshots and serves to uniquely identify this attestation.
-5. Block Number of the block on the [SYN Chain](#synapse-chain) that the attestation was registered by a Notary on the [SYN Chain](#synapse-chain), which does not have to be the same [Notary](#notary) posting to the [Destination](#destination-chain).
-6. Timestamp is the time that the attestation was registered on the [SYN Chain](#synapse-chain).
+5. Block Number of the block on the [Synapse Chain](#synapse-chain) that the attestation was registered by a Notary on the [Synapse Chain](#synapse-chain), which does not have to be the same [Notary](#notary) posting to the [Destination](#destination-chain).
+6. Timestamp is the time that the attestation was registered on the [Synapse Chain](#synapse-chain).
 
 ### Commitment
 In cryptography, a commitment is often used when someone wants to commit to large amounts of data without having to pass around
@@ -94,9 +94,9 @@ the reporting Guard will receive the reward. Note
 When there is a fraud report, the resolution will be either that the Guard submitting the report is wrong or the accused agent is wrong.
 Depending on the claim that is being reported as fraudulent, there will be a single chain that can decide if this is a true claim or not.
 If the claim is in fact fraudulent, the agent who signed that claim will be slashed. Otherwise, if the claim is true, the Guard
-submitting the fraud report will be slashed. Because the slashing needs to occur on the [SYN chain](#synapse-chain), if the resolution
+submitting the fraud report will be slashed. Because the slashing needs to occur on the [Synapse chain](#synapse-chain), if the resolution
 happens on a [Remote Chain](#remote-chain), then that remote chain will need to send a [System Message](#system-message) to the
-SYN chain. Because the resolution will always result in either the accuser or the accused agent being slashed, this will result
+Synapse chain. Because the resolution will always result in either the accuser or the accused agent being slashed, this will result
 in that agent being removed from the agent set, and that means the [Agent Root](#agent-root) will be updated. This will eventually
 propagate to all the chains in the network and they will learn about the new [Agent Set](#agent-set) this way.
 
@@ -119,14 +119,14 @@ chain can update its local Gas Oracle with the latest information about Gas Pric
 ### Gas Oracle
 The Gas Oracle is a Smart Contract deployed on each of the chains in the network that tracks the estimated gas prices on other chains.
 This is needed to estimate the cost of gas to send a message in the messaging system. The sender of the message pays up front for the transactions
-required on both the [SYN Chain](#synapse-chain) and the [Destination Chain](#destination-chain), and the Gas Oracle is what allows
+required on both the [Synapse Chain](#synapse-chain) and the [Destination Chain](#destination-chain), and the Gas Oracle is what allows
 the [Origin Chain](#origin-chain) to estimate how much should be collected.
 
 ### Guard
 The Guard is an off-chain agent that participates in delivering messages and more importantly in catching fraud committed by
 Notaries and other Guards. If a Guard succeeds at catching fraud, it is elligible to receive the bond posted by the guilty agent.
 As fraud happens more rarely, this is not the only way for the Guard to earn rewards. By submitting [state snapshots](#state-snapshot) (information about the states of
-chains) to the [SYN Chain](#synapse-chain), Guards can receive [tips](#tips) for doing this required step in the protocol for
+chains) to the [Synapse Chain](#synapse-chain), Guards can receive [tips](#tips) for doing this required step in the protocol for
 normal happy path message sending. The size of the bond of the Guard is significantly less than that of the Notary because
 the primary fraud a Guard can do primarily just results in denial-of-service (attacking [Liveness](#liveness)).
 
@@ -135,7 +135,7 @@ Integrity is a property of the messaging system that means a chain cannot be foo
 was sent when it never was really sent.
 
 ### Just In Time Bond
-Whereas normally the bond is escrowed on the [SYN Chain](#synapse-chain), there are use cases for [Just In Time Gaurds](#just-in-time-guard) to
+Whereas normally the bond is escrowed on the [Synapse Chain](#synapse-chain), there are use cases for [Just In Time Gaurds](#just-in-time-guard) to
 alert a [Victim Chain](#victim-chain) of fraud even though it is not in the active set of agents. The Just In Time Bond is collected in the same
 transaction as the fraud report, and the bond will be released once the [Victim Chain](#victim-chain) receives the [fraud resolution](#fraud-resolution).
 
@@ -198,7 +198,7 @@ are assumed to be trustworthy so long as the probability of a chain reorg is ext
 
 ### Optimistic Pause
 If a [Guard](#guard) believes that a [Notary](#notary) has submitted a [fraudulent](#fraud) [attestation](#attestation) to its [Destination](#destination-chain),
-the actual [fraud resolution](#fraud-resolution) needs to be decided on another chain, either the [SYN Chain](#synapse-chain) or the
+the actual [fraud resolution](#fraud-resolution) needs to be decided on another chain, either the [Synapse Chain](#synapse-chain) or the
 [Origin](#origin-chain). Because of this, we allow the Guard to optimisitcally pause the [Destination](#destination) chain which puts
 both the accused Notary and the reporting Guard in dispute. Until the resolution is communicated to that destination chain,
 that attestation and the Notary are not truested by that destination, and the Guard would need to pay a significant amount to
@@ -216,15 +216,15 @@ The chain where the message is being sent from is known as the Origin Chain.
 
 ### Receipt
 When a message is delivered on the Destination chain, all of the agents who participated in delivering the message are owed
-[Tips](#tips), which are to be handed out on the SYN chain and not on the Destination chain. Upon delivering the message,
+[Tips](#tips), which are to be handed out on the Synapse chain and not on the Destination chain. Upon delivering the message,
 a receipt is produced on the Destination chain and a Notary for that chain can sign and sumbit this receipt to
-the SYN chain, and the tips will be distributed at that time. Of course, if the Notary signs a fake receipt, it
+the Synapse chain, and the tips will be distributed at that time. Of course, if the Notary signs a fake receipt, it
 can be found guilty of fraud by a Guard and get slashed.
 
 ### Remote Chain
-Any chain in the network that is not the SYN chain is referred to as a "Remote Chain". Because the SYN chain
+Any chain in the network that is not the Synapse chain is referred to as a "Remote Chain". Because the Synapse chain
 is where Bonded Agents post their bond, that is the canonical source of truth regarding who is a registered agent.
-Part of the protocol therefore requires this information to get propagated to the Remote Chains. The SYN chain is also
+Part of the protocol therefore requires this information to get propagated to the Remote Chains. The Synapse chain is also
 where agents submit "Snapshots" containing information about other chains in the network, and its the job of the Notary agents
 to communicate valid "Snap Roots" to the Remote Chains.
 
@@ -235,7 +235,7 @@ Thus, the chain that is able to resolve a dispute about a claim made to another 
 determines that fraud did in fact happen, it will need to communicate this to the [Victim Chain](#victim-chain).
 
 ### Slash
-If an agent is found guilty of fraud, the punishment is to slash the bond posted on the [SYN Chain](#synapse-chain)
+If an agent is found guilty of fraud, the punishment is to slash the bond posted on the [Synapse Chain](#synapse-chain)
 
 ### Snap Root
 When a bonded agent submits a [snapshot](#state-snapshot) (i.e. a list of States) to the Inbox contract on the Synapse chain,
@@ -261,13 +261,13 @@ Each chain in the network at a given point in time will have values set for the 
 of performing necessary transactions on remote chains.
 
 ### Synapse Chain
-The [Synapse Chain](https://docs.synapseprotocol.com/protocol/synapse-chain) (aka SYN chain) is a blockchain developeed originally for the
+The [Synapse Chain](https://docs.synapseprotocol.com/protocol/synapse-chain) is a blockchain developeed originally for the
 [Synapse Bridge](https://docs.synapseprotocol.com/protocol/synapse-bridge).
-In the new Synapse Messaging System, the SYN chain has special Smart Contracts deployed on it that serve as a
-central hub when sending messages from one chain to another. Bonds are posted on the SYN chain so this serves as the
+In the new Synapse Messaging System, the Synapse chain has special Smart Contracts deployed on it that serve as a
+central hub when sending messages from one chain to another. Bonds are posted on the Synapse chain so this serves as the
 canonical source of truth of who is a valid agent. An important part of the protocol is keeping the other [Remote Chains](#remote-chain) in sync
-with what is on the SYN chain. As another example of how the SYN chain is special, the Bonded Agents observe the states of all the chains
-in the network and first submit these states to the Inbox Smart Contract deployed on the SYN chain.
+with what is on the Synapse chain. As another example of how the Synapse chain is special, the Bonded Agents observe the states of all the chains
+in the network and first submit these states to the Inbox Smart Contract deployed on the Synapse chain.
 
 ### System Message
 In the Synapse Messaging system, there are special "System Messages" that are not sent by a client but rather are for
@@ -279,7 +279,7 @@ Tips are the rewards that the off-chain agents earn for doing the work of delive
 
 ### Unbonding Period
 When a bonded agent decides to unregister, it is of course elligible to receive its bond back so long as it has not been found
-guilty of fraud. The bonded agent will submit the request to unbond on the [SYN Chain](#synapse-chain), and it will be placed
+guilty of fraud. The bonded agent will submit the request to unbond on the [Synapse Chain](#synapse-chain), and it will be placed
 in the unbonding state. After the Unbonding Period has passed and no fraud has been detected, the agent can claim its bond.
 The purpose of the Unboding Period is to prevent a Bonded Agent from commiting [fraud](#fraud) and then escaping with its bond before there is enough
 time to [slash](#slash) the agent.

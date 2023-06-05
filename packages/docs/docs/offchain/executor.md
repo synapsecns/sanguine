@@ -7,7 +7,7 @@ sidebar_position: 4
 Because the Executor is not in a position to commit fraud or perform a Denial of Service attack, there is no need for an Executor to post any stake. The Executor just needs to keep track of all the messages in the probation state and as soon as the optimistic period has lapsed, it can move them from the probationary state to the accepted state on the Destination chains.
 
 The Executor does not have a bonded Signing key, but it does need an address with Gas on each of the chains it supports.
-Running an Executor requires more in terms of the deployment, because it uses a database as well as other microservices developed by the Synapse team. The reference implementation uses these other Microservices, so these need to also be deployed in the Environment.
+Running an Executor requires more in terms of the deployment, because it uses a database as well as other microservices developed by contributors to at Synapse Labs. The reference implementation uses these other Microservices, so these need to also be deployed in the Environment.
 
 The reference implementation instructions for the Executor can be found here:
 
@@ -33,7 +33,7 @@ The Executor requires running an instance of scribe. The instructions for that i
 
 https://github.com/synapsecns/sanguine/blob/master/services/scribe/cmd/cmd.md
 
-And this is an example scrib config file:
+And this is an example scribe config file:
 
 ```yaml
     embedded_scribe_config:
