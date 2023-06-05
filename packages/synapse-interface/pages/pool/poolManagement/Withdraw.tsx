@@ -11,7 +11,7 @@ import { getCoinTextColorCombined } from '@styles/tokens'
 import { calculateExchangeRate } from '@utils/calculateExchangeRate'
 import { ALL } from '@constants/withdrawTypes'
 import Grid from '@tw/Grid'
-import TokenInput from '@components/TokenInput'
+import { WithdrawTokenInput } from '@components/TokenInput'
 import RadioButton from '@components/buttons/RadioButton'
 import ReceivedTokenSection from '../components/ReceivedTokenSection'
 import PriceImpactDisplay from '../components/PriceImpactDisplay'
@@ -362,7 +362,8 @@ const Withdraw = ({
             )
           })}
       </Grid>
-      <TokenInput
+      <WithdrawTokenInput
+        poolUserData={poolUserData}
         token={pool}
         key={pool?.symbol}
         inputValueStr={inputValue.str}
