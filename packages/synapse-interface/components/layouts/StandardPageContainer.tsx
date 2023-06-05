@@ -3,6 +3,8 @@ import toast from 'react-hot-toast'
 import { CHAINS_BY_ID } from '@constants/chains'
 import { getNetworkTextColor } from '@styles/chains'
 import { Chain } from '@/utils/types/index'
+import { AcceptedChainId } from '@constants/chains'
+
 const StandardPageContainer = ({
   title,
   subtitle,
@@ -32,16 +34,27 @@ const StandardPageContainer = ({
   useEffect(() => {
     if (!connectedChainId) return
     const chain = CHAINS_BY_ID[connectedChainId]
-    toast(
-      <>
-        Connected to the{' '}
-        <p className={getNetworkTextColor(chain?.color) + ' mx-1'}>
-          {' '}
-          {chain?.altName ?? chain?.name}{' '}
-        </p>
-        chain
-      </>
-    )
+    const unsupported = AcceptedChainId[connectedChainId] ? false : true
+    let unsupportedToaster
+
+    if (unsupported) {
+      unsupportedToaster = toast.error(
+        `Connected to an unsupported network. Please switch networks.`,
+        { id: 'unsupported-popup', duration: 5000 }
+      )
+    } else {
+      toast(
+        <>
+          Connected to the{' '}
+          <p className={getNetworkTextColor(chain?.color) + ' mx-1'}>
+            {' '}
+            {chain?.altName ?? chain?.name}{' '}
+          </p>
+          chain
+        </>,
+        { id: 'standard-popup', duration: 5000 }
+      )
+    }
   }, [connectedChainId])
 
   return (

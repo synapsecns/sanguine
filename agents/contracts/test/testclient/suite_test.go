@@ -4,7 +4,6 @@ import (
 	"math/big"
 	"testing"
 
-	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/params"
 	. "github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/suite"
@@ -68,10 +67,6 @@ func (h *TestClientSuite) SetupTest() {
 	// tx, err := h.originContract.AddAgent(originOwnerAuth.TransactOpts, h.destinationID, h.notarySigner.Address())
 	// Nil(h.T(), err)
 	// h.testBackend.WaitForConfirmation(h.GetTestContext(), tx)
-
-	notaries, err := h.originContract.AllAgents(&bind.CallOpts{Context: h.GetTestContext()}, h.destinationID)
-	Nil(h.T(), err)
-	Len(h.T(), notaries, 1)
 }
 
 // TestTestClientSuite runs the integration test suite.

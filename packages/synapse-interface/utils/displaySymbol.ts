@@ -22,10 +22,10 @@ export const displaySymbol = (chainId: number, token: Token) => {
     return 'synJEWEL'
   } else if (chainId === CHAINS.AVALANCHE.id) {
     switch (token.symbol) {
-      case 'USDC':
-        return 'USDC.e'
-      case 'USDT':
-        return 'USDT.e'
+      // case 'USDC':
+      //   return 'USDC.e'
+      // case 'USDT':
+      //   return 'USDT.e'
       case 'DAI':
         return 'DAI.e'
       default:

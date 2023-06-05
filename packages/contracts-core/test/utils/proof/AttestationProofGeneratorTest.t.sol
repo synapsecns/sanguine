@@ -1,46 +1,34 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.17;
 
-import { MerkleLib } from "../../../contracts/libs/Merkle.sol";
-import {
-    Snapshot,
-    SnapshotLib,
-    SNAPSHOT_MAX_STATES,
-    State,
-    StateLib
-} from "../../../contracts/libs/Snapshot.sol";
-import { fakeStates, SummitState } from "../libs/FakeIt.t.sol";
-import { AttestationProofGenerator } from "./AttestationProofGenerator.t.sol";
+import {MerkleMath} from "../../../contracts/libs/merkle/MerkleMath.sol";
+import {Snapshot, SNAPSHOT_MAX_STATES, SNAPSHOT_TREE_HEIGHT, State} from "../../../contracts/libs/memory/Snapshot.sol";
+import {fakeSnapshot, RawState, RawStateIndex, RawSnapshot} from "../libs/FakeIt.t.sol";
+import {AttestationProofGenerator} from "./AttestationProofGenerator.t.sol";
 
-import { Test } from "forge-std/Test.sol";
+import {Test} from "forge-std/Test.sol";
 
 // solhint-disable func-name-mixedcase
 contract AttestationProofGeneratorTest is Test {
-    using SnapshotLib for bytes;
-    using StateLib for bytes;
-
     AttestationProofGenerator internal proofGen;
 
     function setUp() public {
         proofGen = new AttestationProofGenerator();
     }
 
-    function test_attestationProof(
-        SummitState memory state,
-        uint256 statesAmount,
-        uint256 stateIndex
-    ) public {
-        statesAmount = bound(statesAmount, 1, SNAPSHOT_MAX_STATES);
-        stateIndex = bound(stateIndex, 0, statesAmount - 1);
-        (bytes[] memory states, State[] memory ptrs) = fakeStates(state, statesAmount, stateIndex);
-        Snapshot snapshot = SnapshotLib.formatSnapshot(ptrs).castToSnapshot();
-
+    function test_attestationProof(RawState memory rawState, RawStateIndex memory rsi) public {
+        rsi.boundStateIndex();
+        RawSnapshot memory rawSnap = fakeSnapshot(rawState, rsi);
+        Snapshot snapshot = rawSnap.castToSnapshot();
+        State state = rawState.castToState();
+        bytes[] memory states = rawSnap.formatStates();
         proofGen.acceptSnapshot(states);
         bytes32 snapshotRoot = proofGen.root();
-        assertEq(snapshotRoot, snapshot.root(), "!snapshotRoot");
+        assertEq(snapshotRoot, snapshot.calculateRoot(), "!snapshotRoot");
 
-        (bytes32 item, ) = state.formatSummitState().castToState().subLeafs();
-        bytes32[] memory proof = proofGen.generateProof(stateIndex);
-        assertEq(MerkleLib.branchRoot(item, proof, stateIndex << 1), snapshotRoot, "!proof");
+        (bytes32 item,) = state.subLeafs();
+        uint256 itemIndex = rsi.stateIndex << 1;
+        bytes32[] memory proof = proofGen.generateProof(rsi.stateIndex);
+        assertEq(MerkleMath.proofRoot(itemIndex, item, proof, SNAPSHOT_TREE_HEIGHT), snapshotRoot, "!proof");
     }
 }

@@ -67,7 +67,7 @@ resources: {}
 
 indexer:
   enabled: true
-  args: ["backfill", "--db=mysql", "--path=root:MysqlPassword@tcp(scribe-mysql:3306)/scribe?parseTime=true", "--config=/config/config.yaml"]
+  args: ["scribe", "--db=mysql", "--path=root:MysqlPassword@tcp(scribe-mysql:3306)/scribe?parseTime=true", "--config=/config/config.yaml"]
   #  args: ["backfill", "--config=/config/config.yaml"]
   podAnnotations: {}
   nodeSelector: {}
@@ -181,7 +181,7 @@ mysql:
   #    tag: 8.0-debian-11-r54
   enabled: true
   fullnameOverride: scribe-mysql
-  nameOverride: scribe-mysql
+#  nameOverride: scribe-mysql
   architecture: standalone
   networkPolicy:
     enabled: true

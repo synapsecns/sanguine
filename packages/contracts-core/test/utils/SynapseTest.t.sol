@@ -1,144 +1,159 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.17;
 
-import { BondingSecondary } from "../../contracts/bonding/BondingSecondary.sol";
-import { ISystemContract } from "../../contracts/interfaces/ISystemContract.sol";
-import { Destination } from "../../contracts/Destination.sol";
-import { Origin } from "../../contracts/Origin.sol";
-import { Summit } from "../../contracts/Summit.sol";
+import {AgentFlag, BondingManager} from "../../contracts/manager/BondingManager.sol";
+import {AgentStatus, LightManager} from "../../contracts/manager/LightManager.sol";
+import {IAgentSecured} from "../../contracts/interfaces/IAgentSecured.sol";
+import {Destination} from "../../contracts/Destination.sol";
+import {GasOracle} from "../../contracts/GasOracle.sol";
+import {Origin} from "../../contracts/Origin.sol";
+import {Summit} from "../../contracts/Summit.sol";
 
-import { SystemRouterHarness } from "../harnesses/system/SystemRouterHarness.t.sol";
+import {Inbox} from "../../contracts/inbox/Inbox.sol";
+import {LightInbox} from "../../contracts/inbox/LightInbox.sol";
 
-import { DestinationMock } from "../mocks/DestinationMock.t.sol";
-import { OriginMock } from "../mocks/OriginMock.t.sol";
-import { SummitMock } from "../mocks/SummitMock.t.sol";
+import {BondingManagerHarness} from "../harnesses/manager/BondingManagerHarness.t.sol";
+import {LightManagerHarness} from "../harnesses/manager/LightManagerHarness.t.sol";
 
-import { ProductionEvents } from "./events/ProductionEvents.t.sol";
-// import "./libs/SynapseUtilities.t.sol";
-import { SynapseTestConstants } from "./SynapseTestConstants.t.sol";
+import {DestinationMock} from "../mocks/DestinationMock.t.sol";
+import {GasOracleMock} from "../mocks/GasOracleMock.t.sol";
+import {OriginMock} from "../mocks/OriginMock.t.sol";
+import {SummitMock} from "../mocks/SummitMock.t.sol";
 
-import { Test } from "forge-std/Test.sol";
-import { Strings } from "@openzeppelin/contracts/utils/Strings.sol";
+import {ProductionEvents} from "./events/ProductionEvents.t.sol";
+import {SuiteEvents} from "./events/SuiteEvents.t.sol";
+import {SynapseAgents} from "./SynapseAgents.t.sol";
+import {SynapseProofs} from "./SynapseProofs.t.sol";
 
+// solhint-disable no-empty-blocks
 // solhint-disable ordering
-abstract contract SynapseTest is ProductionEvents, SynapseTestConstants, Test {
-    struct Domain {
-        string name;
-        address agent;
-        address[] agents;
-    }
-
+abstract contract SynapseTest is ProductionEvents, SuiteEvents, SynapseAgents, SynapseProofs {
     uint256 private immutable deployMask;
 
-    address internal destinationSynapse;
+    address internal gasOracleSynapse;
     address internal originSynapse;
+    address internal destinationSynapse;
     address internal summit;
-    SystemRouterHarness internal systemRouterSynapse;
+    Inbox internal inbox;
+    BondingManagerHarness internal bondingManager;
 
+    address internal gasOracle;
     address internal destination;
     address internal origin;
-    BondingSecondary internal bondingManager;
+    LightInbox internal lightInbox;
+    LightManagerHarness internal lightManager;
 
-    SystemRouterHarness internal systemRouter;
-
-    // domain => Domain's name
-    uint32[] internal allDomains;
-    mapping(uint32 => Domain) internal domains;
-    mapping(address => uint256) internal agentPK;
-
-    constructor(uint256 _deployMask) {
-        deployMask = _deployMask;
+    constructor(uint256 deployMask_) {
+        deployMask = deployMask_;
     }
 
-    function setUp() public virtual {
+    /// @notice Prevents this contract from being included in the coverage report
+    function testSynapseTest() external {}
+
+    function setUp() public virtual override {
         // Setup domains and create agents for them
-        setupDomain(0, "Guards");
-        setupDomain(DOMAIN_LOCAL, "Local");
-        setupDomain(DOMAIN_REMOTE, "Remote");
-        setupDomain(DOMAIN_SYNAPSE, "Synapse");
-        // Deploy a single set of messaging contracts for local chain
-        deployBondingS();
-        deployDestination();
-        deployOrigin();
-        deploySystemRouter();
+        super.setUp();
         // Deploy a single set of messaging contracts for synapse chain
+        deployBondingManager();
+        deployInbox();
         deploySummit();
         deployDestinationSynapse();
+        deployGasOracleSynapse();
         deployOriginSynapse();
-        deploySystemRouterSynapse();
-        // Setup agents on created contracts
-        setupAgents();
+        // Setup agents in BondingManager
+        initBondingManager();
+        initInbox();
+        setupAgentsBM();
+        // Deploy a single set of messaging contracts for local chain
+        deployLightManager();
+        deployLightInbox();
+        deployDestination();
+        deployGasOracle();
+        deployOrigin();
+        // Setup agents in LightManager
+        initLightManager();
+        initLightInbox();
+        setupAgentsLM();
         // Skip block
         skipBlock();
     }
 
-    /*╔══════════════════════════════════════════════════════════════════════╗*\
-    ▏*║                            SETUP DOMAINS                             ║*▕
-    \*╚══════════════════════════════════════════════════════════════════════╝*/
-
-    function setupDomain(uint32 domain, string memory name) public virtual {
-        allDomains.push(domain);
-        domains[domain].name = name;
-        string memory baseAgentName = domain == 0 ? "Guard" : "Notary";
-        baseAgentName = string.concat(baseAgentName, "(", name, ") ");
-        domains[domain].agents = new address[](DOMAIN_AGENTS);
-        for (uint256 i = 0; i < DOMAIN_AGENTS; ++i) {
-            domains[domain].agents[i] = createAgent(
-                string.concat(baseAgentName, Strings.toString(i))
-            );
-        }
-        domains[domain].agent = domains[domain].agents[0];
-    }
-
-    function setupAgents() public virtual {
+    function setupAgentsBM() public virtual {
         for (uint256 d = 0; d < allDomains.length; ++d) {
             uint32 domain = allDomains[d];
             for (uint256 i = 0; i < DOMAIN_AGENTS; ++i) {
                 address agent = domains[domain].agents[i];
-                bondingManager.addAgent(domain, agent);
-                Summit(summit).addAgent(domain, agent);
+                addAgentBM(domain, agent);
             }
         }
     }
 
-    /*╔══════════════════════════════════════════════════════════════════════╗*\
-    ▏*║                                AGENTS                                ║*▕
-    \*╚══════════════════════════════════════════════════════════════════════╝*/
-
-    function createAgent(string memory name) public returns (address agent) {
-        uint256 privKey;
-        (agent, privKey) = makeAddrAndKey(name);
-        agentPK[agent] = privKey;
+    function setupAgentsLM() public virtual {
+        if (deployMask & DEPLOY_MASK_DESTINATION == DEPLOY_PROD_DESTINATION) {
+            // Set initial agent merkle root via production Destination
+            Destination(destination).initialize(getAgentRoot());
+        } else {
+            // Mock a call from destination instead
+            bytes32 root = getAgentRoot();
+            vm.prank(destination);
+            lightManager.setAgentRoot(root);
+        }
+        for (uint256 d = 0; d < allDomains.length; ++d) {
+            uint32 domain = allDomains[d];
+            for (uint256 i = 0; i < DOMAIN_AGENTS; ++i) {
+                address agent = domains[domain].agents[i];
+                updateAgentLM(agent);
+            }
+        }
     }
 
-    function signMessage(uint256 privKey, bytes32 hashedMsg)
-        public
-        pure
-        returns (bytes memory signature)
-    {
-        bytes32 digest = keccak256(abi.encodePacked("\x19Ethereum Signed Message:\n32", hashedMsg));
-        (uint8 v, bytes32 r, bytes32 s) = vm.sign(privKey, digest);
-        signature = abi.encodePacked(r, s, v);
+    // ═════════════════════════════════════════════ DEPLOY CONTRACTS ══════════════════════════════════════════════════
+
+    function deployLightManager() public virtual {
+        lightManager = new LightManagerHarness(DOMAIN_LOCAL);
+        vm.label(address(lightManager), "LightManager");
     }
 
-    function signMessage(address agent, bytes32 hashedMsg)
-        public
-        view
-        returns (bytes memory signature)
-    {
-        uint256 privKey = agentPK[agent];
-        require(privKey != 0, "Unknown agent");
-        return signMessage(privKey, hashedMsg);
+    function initLightManager() public virtual {
+        lightManager.initialize(origin, destination, address(lightInbox));
     }
 
-    /*╔══════════════════════════════════════════════════════════════════════╗*\
-    ▏*║                           DEPLOY CONTRACTS                           ║*▕
-    \*╚══════════════════════════════════════════════════════════════════════╝*/
+    function deployBondingManager() public virtual {
+        bondingManager = new BondingManagerHarness(DOMAIN_SYNAPSE);
+        vm.label(address(bondingManager), "BondingManager");
+    }
 
-    function deployBondingS() public virtual {
-        bondingManager = new BondingSecondary(DOMAIN_LOCAL);
-        bondingManager.initialize();
-        vm.label(address(bondingManager), "BondingSecondary");
+    function initBondingManager() public virtual {
+        bondingManager.initialize(originSynapse, destinationSynapse, address(inbox), summit);
+    }
+
+    function deployLightInbox() public virtual {
+        lightInbox = new LightInbox(DOMAIN_LOCAL);
+    }
+
+    function initLightInbox() public virtual {
+        LightInbox(lightInbox).initialize(address(lightManager), origin, destination);
+    }
+
+    function deployInbox() public virtual {
+        inbox = new Inbox(DOMAIN_SYNAPSE);
+    }
+
+    function initInbox() public virtual {
+        Inbox(inbox).initialize(address(bondingManager), originSynapse, destinationSynapse, summit);
+    }
+
+    function deployGasOracle() public virtual {
+        uint256 option = deployMask & DEPLOY_MASK_GAS_ORACLE;
+        if (option == DEPLOY_MOCK_GAS_ORACLE) {
+            gasOracle = address(new GasOracleMock());
+        } else if (option == DEPLOY_PROD_GAS_ORACLE) {
+            gasOracle = address(new GasOracle(DOMAIN_LOCAL, destination));
+            GasOracle(gasOracle).initialize();
+        } else {
+            revert("Unknown option: GasOracle");
+        }
+        vm.label(gasOracle, "GasOracle Local");
     }
 
     function deployDestination() public virtual {
@@ -146,25 +161,12 @@ abstract contract SynapseTest is ProductionEvents, SynapseTestConstants, Test {
         if (option == DEPLOY_MOCK_DESTINATION) {
             destination = address(new DestinationMock());
         } else if (option == DEPLOY_PROD_DESTINATION) {
-            destination = address(new Destination(DOMAIN_LOCAL));
-            Destination(destination).initialize();
+            destination = address(new Destination(DOMAIN_LOCAL, address(lightManager), address(lightInbox)));
+            // Destination will be initialized once agents are setup
         } else {
             revert("Unknown option: Destination");
         }
         vm.label(destination, "Destination Local");
-    }
-
-    function deployDestinationSynapse() public virtual {
-        uint256 option = deployMask & DEPLOY_MASK_DESTINATION_SYNAPSE;
-        if (option == DEPLOY_MOCK_DESTINATION_SYNAPSE) {
-            destinationSynapse = address(new DestinationMock());
-        } else if (option == DEPLOY_PROD_DESTINATION_SYNAPSE) {
-            destinationSynapse = address(new Destination(DOMAIN_LOCAL));
-            Destination(destinationSynapse).initialize();
-        } else {
-            revert("Unknown option: Destination");
-        }
-        vm.label(destinationSynapse, "Destination Synapse");
     }
 
     function deployOrigin() public virtual {
@@ -172,7 +174,7 @@ abstract contract SynapseTest is ProductionEvents, SynapseTestConstants, Test {
         if (option == DEPLOY_MOCK_ORIGIN) {
             origin = address(new OriginMock());
         } else if (option == DEPLOY_PROD_ORIGIN) {
-            origin = address(new Origin(DOMAIN_LOCAL));
+            origin = address(new Origin(DOMAIN_LOCAL, address(lightManager), address(lightInbox), gasOracle));
             Origin(origin).initialize();
         } else {
             revert("Unknown option: Origin");
@@ -180,12 +182,39 @@ abstract contract SynapseTest is ProductionEvents, SynapseTestConstants, Test {
         vm.label(origin, "Origin Local");
     }
 
+    function deployGasOracleSynapse() public virtual {
+        uint256 option = deployMask & DEPLOY_MASK_GAS_ORACLE_SYNAPSE;
+        if (option == DEPLOY_MOCK_GAS_ORACLE_SYNAPSE) {
+            gasOracleSynapse = address(new GasOracleMock());
+        } else if (option == DEPLOY_PROD_GAS_ORACLE_SYNAPSE) {
+            gasOracleSynapse = address(new GasOracle(DOMAIN_SYNAPSE, destinationSynapse));
+            GasOracle(gasOracleSynapse).initialize();
+        } else {
+            revert("Unknown option: GasOracle");
+        }
+        vm.label(gasOracleSynapse, "GasOracle Synapse");
+    }
+
+    function deployDestinationSynapse() public virtual {
+        uint256 option = deployMask & DEPLOY_MASK_DESTINATION_SYNAPSE;
+        if (option == DEPLOY_MOCK_DESTINATION_SYNAPSE) {
+            destinationSynapse = address(new DestinationMock());
+        } else if (option == DEPLOY_PROD_DESTINATION_SYNAPSE) {
+            destinationSynapse = address(new Destination(DOMAIN_SYNAPSE, address(bondingManager), address(inbox)));
+            Destination(destinationSynapse).initialize(0);
+        } else {
+            revert("Unknown option: Destination");
+        }
+        vm.label(destinationSynapse, "Destination Synapse");
+    }
+
     function deployOriginSynapse() public virtual {
         uint256 option = deployMask & DEPLOY_MASK_ORIGIN_SYNAPSE;
         if (option == DEPLOY_MOCK_ORIGIN_SYNAPSE) {
             originSynapse = address(new OriginMock());
         } else if (option == DEPLOY_PROD_ORIGIN_SYNAPSE) {
-            originSynapse = address(new Origin(DOMAIN_LOCAL));
+            originSynapse =
+                address(new Origin(DOMAIN_SYNAPSE, address(bondingManager), address(inbox), gasOracleSynapse));
             Origin(originSynapse).initialize();
         } else {
             revert("Unknown option: Origin");
@@ -198,7 +227,7 @@ abstract contract SynapseTest is ProductionEvents, SynapseTestConstants, Test {
         if (option == DEPLOY_MOCK_SUMMIT) {
             summit = address(new SummitMock());
         } else if (option == DEPLOY_PROD_SUMMIT) {
-            summit = address(new Summit(DOMAIN_SYNAPSE));
+            summit = address(new Summit(DOMAIN_SYNAPSE, address(bondingManager), address(inbox)));
             Summit(summit).initialize();
         } else {
             revert("Unknown option: Summit");
@@ -206,46 +235,22 @@ abstract contract SynapseTest is ProductionEvents, SynapseTestConstants, Test {
         vm.label(summit, "Summit");
     }
 
-    function deploySystemRouter() public virtual {
-        systemRouter = new SystemRouterHarness(
-            DOMAIN_LOCAL,
-            address(origin),
-            address(destination),
-            address(bondingManager)
-        );
-        ISystemContract(origin).setSystemRouter(systemRouter);
-        ISystemContract(destination).setSystemRouter(systemRouter);
-        bondingManager.setSystemRouter(systemRouter);
-        vm.label(address(systemRouter), "SystemRouter Local");
+    // ═══════════════════════════════════════════════ ADDING AGENTS ═══════════════════════════════════════════════════
+
+    function addAgentBM(uint32 domain, address agent) public {
+        bytes32[] memory proof = getZeroProof();
+        bondingManager.addAgent(domain, agent, proof);
+        addNewAgent(domain, agent);
     }
 
-    function deploySystemRouterSynapse() public virtual {
-        systemRouterSynapse = new SystemRouterHarness(
-            DOMAIN_SYNAPSE,
-            address(originSynapse),
-            address(destinationSynapse),
-            address(summit)
-        );
-        ISystemContract(originSynapse).setSystemRouter(systemRouterSynapse);
-        ISystemContract(destinationSynapse).setSystemRouter(systemRouterSynapse);
-        ISystemContract(summit).setSystemRouter(systemRouterSynapse);
-        vm.label(address(systemRouterSynapse), "SystemRouter Synapse");
+    function updateAgentLM(address agent) public {
+        bytes32[] memory proof = getAgentProof(agent);
+        lightManager.updateAgentStatus(agent, getAgentStatus(agent), proof);
     }
 
-    /*╔══════════════════════════════════════════════════════════════════════╗*\
-    ▏*║                               VM UTILS                               ║*▕
-    \*╚══════════════════════════════════════════════════════════════════════╝*/
-
-    function expectRevertNotOwner() public {
-        vm.expectRevert("Ownable: caller is not the owner");
-    }
-
-    function skipBlock() public {
-        skipBlocks(1);
-    }
-
-    function skipBlocks(uint256 blocks) public {
-        vm.roll(block.number + blocks);
-        skip(blocks * 12 seconds);
+    function checkAgentStatus(address agent, AgentStatus memory status, AgentFlag flag) public virtual {
+        assertEq(uint8(status.flag), uint8(flag), "!flag");
+        assertEq(status.domain, agentDomain[agent], "!domain");
+        assertEq(status.index, agentIndex[agent], "!index");
     }
 }

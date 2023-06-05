@@ -90,30 +90,28 @@ const InteractiveInputRow = ({
             <div
               className={`
                 flex flex-grow items-center
-                pl-3 sm:pl-4 w-full h-16
-                border-none rounded-xl
+                mx-3 w-full h-16
+                border-none
                 relative overflow-hidden
               `}
             >
-              <div className="overflow-x-scroll ">
-                <input
-                  autoComplete="off"
-                  className={`
+              <input
+                autoComplete="off"
+                className={`
                     ${isConnected ? '-mt-2' : '-mt-0'}
                     focus:outline-none bg-transparent
-                    w-[300px] max-w-[calc(100%-92px)]
-                    sm:min-w-[200px] sm:w-full scrollbar-none
+                    w-[300px] sm:min-w-[170px] sm:w-full scrollbar-none
                   placeholder:text-[#88818C] text-white
                     text-opacity-80 text-lg md:text-2xl lg:text-2xl font-medium
+                    overflow-hidden
                 `}
-                  value={value}
-                  placeholder={placeholder}
-                  onChange={(e) => {
-                    onChange(e)
-                  }}
-                  name="inputRow"
-                />
-              </div>
+                value={value}
+                placeholder={placeholder}
+                onChange={(e) => {
+                  onChange(e)
+                }}
+                name="inputRow"
+              />
               {isConnected && (
                 <label
                   htmlFor="inputRow"

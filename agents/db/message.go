@@ -43,8 +43,8 @@ type MessageDB interface {
 
 // MonitorDB stores event data for monitoring.
 type MonitorDB interface {
-	// StoreDispatchMessage stores a dispatch message
-	StoreDispatchMessage(ctx context.Context, message types.Message) error
+	// StoreSentMessage stores a sent message
+	StoreSentMessage(ctx context.Context, message types.Message) error
 	// StoreAcceptedAttestation stores an accepted attestation
 	StoreAcceptedAttestation(ctx context.Context, attestation types.Attestation) error
 	// GetDelinquentMessage gets messages that were sent, but never received

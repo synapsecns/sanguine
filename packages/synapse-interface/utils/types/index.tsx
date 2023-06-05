@@ -27,6 +27,13 @@ export type PoolToken = {
   token: Token
   isLp: boolean
 }
+export type Query = [string, string, BigNumber, BigNumber, string] & {
+  swapAdapter: string
+  tokenOut: string
+  minAmountOut: BigNumber
+  deadline: BigNumber
+  rawParams: string
+}
 export type PoolUserData = {
   name: string
   share: BigNumber
@@ -165,6 +172,7 @@ export class Token {
     | 'cyan'
     | 'red'
   priceUnits?: string
+  notStake?: boolean
   constructor({
     addresses,
     wrapperAddresses,
@@ -199,6 +207,7 @@ export class Token {
     priorityPool,
     color,
     priceUnits,
+    notStake,
   }: {
     addresses: { [x: number]: string }
     wrapperAddresses?: Record<number, string>
@@ -244,6 +253,7 @@ export class Token {
       | 'cyan'
       | 'red'
     priceUnits?: string
+    notStake?: boolean
   }) {
     const isMetaVar = Boolean(swapDepositAddresses || forceMeta)
     this.addresses = validateAddresses(addresses)
@@ -281,6 +291,7 @@ export class Token {
     this.priorityPool = priorityPool ?? false
     this.color = color ?? 'gray'
     this.priceUnits = priceUnits ?? 'USD'
+    this.notStake = notStake ?? false
   }
 }
 

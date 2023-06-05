@@ -6,7 +6,6 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/synapsecns/sanguine/ethergo/backends"
 	"github.com/synapsecns/sanguine/ethergo/contracts"
-	"strconv"
 	"sync"
 	"testing"
 )
@@ -138,12 +137,12 @@ func (c *contractRegistryImpl) GetDeployedContracts() (res map[int]contracts.Dep
 
 // contractLock creates a contractLock from a contract type and locks the mutex.
 func (c *contractRegistryImpl) contractLock(contractType contracts.ContractType) {
-	c.deployMutex.Lock(strconv.Itoa(contractType.ID()))
+	c.deployMutex.LockID(uint(contractType.ID()))
 }
 
 // contractUnlock unlocks a contractLock based on the contract type.
 func (c *contractRegistryImpl) contractUnlock(contractType contracts.ContractType) {
-	c.deployMutex.Unlock(strconv.Itoa(contractType.ID()))
+	c.deployMutex.UnlockID(uint(contractType.ID()))
 }
 
 func (c *contractRegistryImpl) Deploy(ctx context.Context, contractType contracts.ContractType) contracts.DeployedContract {

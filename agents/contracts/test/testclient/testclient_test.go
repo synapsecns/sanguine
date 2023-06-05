@@ -23,7 +23,9 @@ func (h TestClientSuite) TestSendMessage() {
 	optimisticSeconds := uint32(10)
 	recipient := common.BigToAddress(big.NewInt(gofakeit.Int64()))
 	body := []byte{byte(gofakeit.Uint32())}
-	testClientOnOriginTx, err := h.testClientContract.SendMessage(txContextTestClientOrigin.TransactOpts, h.destinationID, recipient, optimisticSeconds, body)
+	gasLimit := uint64(10000000)
+	version := uint32(1)
+	testClientOnOriginTx, err := h.testClientContract.SendMessage(txContextTestClientOrigin.TransactOpts, h.destinationID, recipient, optimisticSeconds, gasLimit, version, body)
 	h.Nil(err)
 	h.testBackend.WaitForConfirmation(h.GetTestContext(), testClientOnOriginTx)
 
@@ -36,7 +38,7 @@ func (h TestClientSuite) TestSendMessage() {
 		h.T().Error(h.T(), fmt.Errorf("test context completed %w", h.GetTestContext().Err()))
 	case <-sub.Err():
 		h.T().Error(h.T(), sub.Err())
-	// get dispatch event
+	// get sent event
 	case item := <-messageSentSink:
 		h.NotNil(item)
 		break

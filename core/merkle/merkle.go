@@ -78,8 +78,11 @@ type HistoricalTree struct {
  * We're using a map to avoid dealing with dynamic arrays.
  */
 
-// MessageTreeDepth is a depth of the merkle tree that is used in the messaging contracts.
-const MessageTreeDepth uint32 = 32
+// MessageTreeHeight is the depth of the merkle tree that is used in the messaging contracts.
+const MessageTreeHeight uint32 = 32
+
+// SnapshotTreeHeight is the depth of the merkle tree that is used in the snapshot contracts.
+const SnapshotTreeHeight uint32 = 6
 
 // NewTree returns an empty Merkle Tree.
 func NewTree(treeHeight uint32) *HistoricalTree {
@@ -242,6 +245,14 @@ func fetchTreeElementState(m *HistoricalTree, h uint32, x uint32, count uint32) 
 
 // getParent calculates a parent node in the merkle tree given its children.
 func getParent(leftChild []byte, rightChild []byte) []byte {
+	var leftChildB32, rightChildB32 [32]byte
+	copy(leftChildB32[:], leftChild)
+	copy(rightChildB32[:], rightChild)
+
+	if leftChildB32 == [32]byte{} && rightChildB32 == [32]byte{} {
+		return leftChild
+	}
+
 	return crypto.Keccak256(append(leftChild, rightChild...))
 }
 
