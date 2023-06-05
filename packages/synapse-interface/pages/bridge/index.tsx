@@ -606,10 +606,10 @@ const BridgePage = ({
         null
       )
 
-      let newOriginQuery = {...originQuery}
+      let newOriginQuery = { ...originQuery }
       newOriginQuery.minAmountOut = originMinWithSlippage
 
-      let newDestQuery = {...destQuery}
+      let newDestQuery = { ...destQuery }
       newDestQuery.minAmountOut = destMinWithSlippage
 
       setBridgeQuote({
