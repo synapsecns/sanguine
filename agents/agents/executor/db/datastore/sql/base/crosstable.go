@@ -24,23 +24,25 @@ func (s Store) GetTimestampForMessage(ctx context.Context, chainID, destination,
 		attestationsTableName = fmt.Sprintf("%s_%s", tablePrefix, attestationsTableName)
 	}
 
+	// TODO: Use string formatting to make this more legible.
 	dbTx := s.DB().WithContext(ctx).
 		Raw(fmt.Sprintf(
-			`SELECT %s FROM %s WHERE %s = ? AND %s = (
+			`SELECT %s FROM %s WHERE %s = (
 					SELECT MIN(%s) FROM (
 						(SELECT * FROM %s WHERE %s = ? AND %s >= ?) AS stateTable
 						INNER JOIN
-						(SELECT %s, %s FROM %s) AS attestationTable
+						(SELECT %s, %s FROM %s WHERE %s = ?) AS attestationTable
 						ON stateTable.%s = attestationTable.%s
 					)
 				)`,
-			DestinationTimestampFieldName, attestationsTableName, DestinationFieldName, DestinationBlockNumberFieldName,
+			DestinationTimestampFieldName, attestationsTableName, DestinationBlockNumberFieldName,
 			DestinationBlockNumberFieldName,
 			statesTableName, ChainIDFieldName, NonceFieldName,
-			SnapshotRootFieldName, DestinationBlockNumberFieldName, attestationsTableName,
+			SnapshotRootFieldName, DestinationBlockNumberFieldName, attestationsTableName, DestinationFieldName,
 			SnapshotRootFieldName, SnapshotRootFieldName,
-		), destination, chainID, nonce).
+		), chainID, nonce, destination).
 		Scan(&timestamp)
+
 	if dbTx.Error != nil {
 		return nil, fmt.Errorf("failed to get timestamp for message: %w", dbTx.Error)
 	}
@@ -67,6 +69,7 @@ func (s Store) GetEarliestStateInRange(ctx context.Context, chainID, destination
 		attestationsTableName = fmt.Sprintf("%s_%s", tablePrefix, attestationsTableName)
 	}
 
+	// TODO: Use string formatting to make this more legible.
 	dbTx := s.DB().WithContext(ctx).
 		Raw(fmt.Sprintf(
 			`SELECT * FROM %s WHERE %s = ? AND %s = (
@@ -74,18 +77,19 @@ func (s Store) GetEarliestStateInRange(ctx context.Context, chainID, destination
 						SELECT MIN(%s) FROM (
 							(SELECT %s FROM %s WHERE %s >= ? AND %s <= ? AND %s = ?) AS stateTable
 							INNER JOIN
-							(SELECT %s, %s FROM %s) as attestationTable
+							(SELECT %s, %s FROM %s WHERE %s = ?) as attestationTable
 							ON stateTable.%s = attestationTable.%s
 						)
-					)
+					) ORDER BY %s DESC LIMIT 1
 				)`,
 			statesTableName, ChainIDFieldName, SnapshotRootFieldName,
 			SnapshotRootFieldName, attestationsTableName, DestinationFieldName, DestinationBlockNumberFieldName,
 			DestinationBlockNumberFieldName,
 			SnapshotRootFieldName, statesTableName, NonceFieldName, NonceFieldName, ChainIDFieldName,
-			SnapshotRootFieldName, DestinationBlockNumberFieldName, attestationsTableName,
+			SnapshotRootFieldName, DestinationBlockNumberFieldName, attestationsTableName, DestinationFieldName,
 			SnapshotRootFieldName, SnapshotRootFieldName,
-		), chainID, destination, startNonce, endNonce, chainID).
+			AttestationNonceFieldName,
+		), chainID, destination, startNonce, endNonce, chainID, destination).
 		Scan(&state)
 	if dbTx.Error != nil {
 		return nil, fmt.Errorf("failed to get earliest state in range: %w", dbTx.Error)
@@ -102,7 +106,8 @@ func (s Store) GetEarliestStateInRange(ctx context.Context, chainID, destination
 		state.GDExecBuffer,
 		state.GDAmortAttCost,
 		state.GDEtherPrice,
-		state.GDMarkup)
+		state.GDMarkup,
+	)
 
 	receivedState := agentsTypes.NewState(
 		common.HexToHash(state.Root),

@@ -107,6 +107,11 @@ func (f *RangeFilter) Start(ctx context.Context) error {
 				return fmt.Errorf("could not filter logs: %w", err)
 			}
 
+			// Log each log's transaction hash and chain ID.
+			for _, log := range logs.logs {
+				LogEvent(InfoLevel, "Contract backfill log", LogData{"ca": f.contractAddress, "tx": log.TxHash, "cid": f.chainID})
+			}
+
 			f.appendToChannel(ctx, logs)
 			LogEvent(InfoLevel, "Contract backfill chunk completed", LogData{"ca": f.contractAddress, "sh": chunk.MinBlock(), "eh": chunk.MaxBlock(), "ts": time.Since(startTime).Seconds()})
 		}
@@ -198,12 +203,15 @@ func (f *RangeFilter) appendToChannel(ctx context.Context, logs *LogInfo) {
 	case <-ctx.Done():
 		return
 	case f.logs <- logs:
+		for _, log := range logs.logs {
+			LogEvent(ErrorLevel, "appended log to channel", LogData{"ca": f.contractAddress, "tx": log.TxHash, "cid": f.chainID})
+		}
 	}
 }
 
 // Done returns a bool indicating whether the filtering operation is done.
-func (f *RangeFilter) Done() chan bool {
-	return f.doneChan
+func (f *RangeFilter) Done() bool {
+	return f.done
 }
 
 // GetLogChan returns a log chan with the logs filtered ahead to bufferSize. Iteration oder is only guaranteed with up to one

@@ -3,6 +3,7 @@ package evm
 import (
 	"context"
 	"fmt"
+	"github.com/synapsecns/sanguine/ethergo/client"
 	"math/big"
 	"time"
 
@@ -12,7 +13,6 @@ import (
 	"github.com/synapsecns/sanguine/agents/contracts/destination"
 	"github.com/synapsecns/sanguine/agents/domains"
 	"github.com/synapsecns/sanguine/agents/types"
-	"github.com/synapsecns/sanguine/ethergo/chain"
 	"github.com/synapsecns/sanguine/ethergo/signer/nonce"
 	"github.com/synapsecns/sanguine/ethergo/signer/signer"
 )
@@ -20,7 +20,7 @@ import (
 // NewDestinationContract returns a bound destination contract.
 //
 //nolint:staticcheck
-func NewDestinationContract(ctx context.Context, client chain.Chain, destinationAddress common.Address) (domains.DestinationContract, error) {
+func NewDestinationContract(ctx context.Context, client client.EVMChainID, destinationAddress common.Address) (domains.DestinationContract, error) {
 	boundCountract, err := destination.NewDestinationRef(destinationAddress, client)
 	if err != nil {
 		return nil, fmt.Errorf("could not create %T: %w", &destination.DestinationRef{}, err)
@@ -39,10 +39,18 @@ type destinationContract struct {
 	contract *destination.DestinationRef
 	// client contains the evm client
 	//nolint: staticcheck
-	client chain.Chain
+	client client.EVMChainID
 	// nonceManager is the nonce manager used for transacting with the chain
 	nonceManager nonce.Manager
 }
+
+type MessageStatus uint8
+
+const (
+	None MessageStatus = iota
+	Failed
+	Success
+)
 
 func (a destinationContract) Execute(ctx context.Context, signer signer.Signer, message types.Message, originProof [32][32]byte, snapshotProof [][32]byte, index *big.Int, gasLimit uint64) error {
 	transactOpts, err := a.transactOptsSetup(ctx, signer)
@@ -118,4 +126,18 @@ func (a destinationContract) GetAttestationNonce(ctx context.Context, snapRoot [
 	}
 
 	return attNonce, nil
+}
+
+func (a destinationContract) MessageStatus(ctx context.Context, message types.Message) (MessageStatus, error) {
+	messageLeaf, err := message.ToLeaf()
+	if err != nil {
+		return None, fmt.Errorf("could not get message leaf: %w", err)
+	}
+
+	status, err := a.contract.MessageStatus(&bind.CallOpts{Context: ctx}, messageLeaf)
+	if err != nil {
+		return None, fmt.Errorf("could not get message status: %w", err)
+	}
+
+	return MessageStatus(status), nil
 }

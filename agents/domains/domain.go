@@ -3,6 +3,7 @@ package domains
 import (
 	"context"
 	"errors"
+	"github.com/synapsecns/sanguine/agents/domains/evm"
 	"math/big"
 
 	"github.com/ethereum/go-ethereum/common"
@@ -83,6 +84,8 @@ type DestinationContract interface {
 	AttestationsAmount(ctx context.Context) (uint64, error)
 	// GetAttestationNonce gets the nonce of the attestation by snap root
 	GetAttestationNonce(ctx context.Context, snapRoot [32]byte) (uint32, error)
+	// MessageStatus takes a message and returns whether it has been executed or not. 0: None, 1: Failed, 2: Success.
+	MessageStatus(ctx context.Context, message types.Message) (evm.MessageStatus, error)
 }
 
 // LightInboxContract contains the interface for the light inbox.

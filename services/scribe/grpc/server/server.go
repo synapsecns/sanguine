@@ -127,11 +127,18 @@ func (s *server) StreamLogs(req *pbscribe.StreamLogsRequest, res pbscribe.Scribe
 			if err != nil {
 				return fmt.Errorf("could not send log: %w", err)
 			}
+
+			span.AddEvent("Sending log.", trace.WithAttributes(
+				attribute.String(metrics.TxHash, log.TxHash.String()),
+			))
 		}
 
 		span.AddEvent("Got logs. Count: " + strconv.Itoa(len(retrievedLogs)))
 
 		if !streamNewBlocks {
+			go func() {
+				span.End()
+			}()
 			return nil
 		}
 
@@ -141,15 +148,17 @@ func (s *server) StreamLogs(req *pbscribe.StreamLogsRequest, res pbscribe.Scribe
 			case <-ctx.Done():
 				return nil
 			default:
+				// TODO: Make wait time configurable (?).
 				time.Sleep(time.Duration(wait) * time.Second)
+				wait = 1
 				latestScribeBlock, err := s.db.RetrieveLastIndexed(ctx, common.HexToAddress(req.Filter.ContractAddress.GetData()), req.Filter.ChainId)
 				if err != nil {
-					return fmt.Errorf("could not retrieve last indexed block: %w", err)
+					continue
 				}
 
 				if latestScribeBlock > toBlock {
 					nextFromBlock = toBlock + 1
-					toBlock = latestScribeBlock
+					toBlock = latestScribeBlock - 1
 					wait = 0
 
 					span.AddEvent("New block. From: " + strconv.Itoa(int(nextFromBlock)) + " To: " + strconv.Itoa(int(toBlock)))
@@ -160,7 +169,6 @@ func (s *server) StreamLogs(req *pbscribe.StreamLogsRequest, res pbscribe.Scribe
 
 					break STREAM
 				}
-				wait = 1
 			}
 		}
 	}

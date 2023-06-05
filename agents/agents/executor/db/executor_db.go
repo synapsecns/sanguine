@@ -20,9 +20,9 @@ type ExecutorDBWriter interface {
 	StoreAttestation(ctx context.Context, attestation agentsTypes.Attestation, destination uint32, destinationBlockNumber, destinationTimestamp uint64) error
 
 	// StoreState stores a state.
-	StoreState(ctx context.Context, state agentsTypes.State, snapshotRoot [32]byte, proof [][]byte, stateIndex uint32) error
+	StoreState(ctx context.Context, state agentsTypes.State, snapshotRoot [32]byte, proof [][]byte, stateIndex uint32, blockNumber uint64) error
 	// StoreStates stores multiple states with the same snapshot root.
-	StoreStates(ctx context.Context, states []agentsTypes.State, snapshotRoot [32]byte, proofs [][][]byte) error
+	StoreStates(ctx context.Context, states []agentsTypes.State, snapshotRoot [32]byte, proofs [][][]byte, blockNumber uint64) error
 }
 
 // ExecutorDBReader is the interface for reading from the executor database.
@@ -36,7 +36,7 @@ type ExecutorDBReader interface {
 	// GetBlockNumber gets the block number of a message from the database.
 	GetBlockNumber(ctx context.Context, messageMask types.DBMessage) (uint64, error)
 	// GetLastBlockNumber gets the last block number that had a message in the database.
-	GetLastBlockNumber(ctx context.Context, chainID uint32) (uint64, error)
+	GetLastBlockNumber(ctx context.Context, chainID uint32, contractType types.ContractType) (uint64, error)
 	// GetExecutableMessages gets executable messages from the database.
 	GetExecutableMessages(ctx context.Context, messageMask types.DBMessage, currentTime uint64, page int) ([]agentsTypes.Message, error)
 	// GetUnsetMinimumTimeMessages gets messages from the database that have not had their minimum time set.

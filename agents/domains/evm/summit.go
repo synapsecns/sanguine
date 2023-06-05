@@ -9,7 +9,7 @@ import (
 	"github.com/synapsecns/sanguine/agents/contracts/summit"
 	"github.com/synapsecns/sanguine/agents/domains"
 	"github.com/synapsecns/sanguine/agents/types"
-	"github.com/synapsecns/sanguine/ethergo/chain"
+	"github.com/synapsecns/sanguine/ethergo/client"
 	"github.com/synapsecns/sanguine/ethergo/signer/nonce"
 	"github.com/synapsecns/sanguine/ethergo/signer/signer"
 )
@@ -17,7 +17,7 @@ import (
 // NewSummitContract returns a bound summit contract.
 //
 //nolint:staticcheck
-func NewSummitContract(ctx context.Context, client chain.Chain, summitAddress common.Address) (domains.SummitContract, error) {
+func NewSummitContract(ctx context.Context, client client.EVMChainID, summitAddress common.Address) (domains.SummitContract, error) {
 	boundCountract, err := summit.NewSummitRef(summitAddress, client)
 	if err != nil {
 		return nil, fmt.Errorf("could not create %T: %w", &summit.SummitRef{}, err)
@@ -36,7 +36,7 @@ type summitContract struct {
 	contract *summit.SummitRef
 	// client contains the evm client
 	//nolint: staticcheck
-	client chain.Chain
+	client client.EVMChainID
 	// nonceManager is the nonce manager used for transacting with the chain
 	nonceManager nonce.Manager
 }

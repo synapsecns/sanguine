@@ -12,8 +12,8 @@ import (
 )
 
 // StoreState stores a state.
-func (s Store) StoreState(ctx context.Context, state agentsTypes.State, snapshotRoot [32]byte, proof [][]byte, stateIndex uint32) error {
-	dbState, err := AgentsTypesStateToState(state, snapshotRoot, proof, stateIndex)
+func (s Store) StoreState(ctx context.Context, state agentsTypes.State, snapshotRoot [32]byte, proof [][]byte, stateIndex uint32, blockNumber uint64) error {
+	dbState, err := AgentsTypesStateToState(state, snapshotRoot, proof, stateIndex, blockNumber)
 	if err != nil {
 		return fmt.Errorf("failed to convert state to db state: %w", err)
 	}
@@ -35,10 +35,10 @@ func (s Store) StoreState(ctx context.Context, state agentsTypes.State, snapshot
 }
 
 // StoreStates stores multiple states with the same snapshot root.
-func (s Store) StoreStates(ctx context.Context, states []agentsTypes.State, snapshotRoot [32]byte, proofs [][][]byte) error {
+func (s Store) StoreStates(ctx context.Context, states []agentsTypes.State, snapshotRoot [32]byte, proofs [][][]byte, blockNumber uint64) error {
 	var dbStates []State
 	for i := range states {
-		state, err := AgentsTypesStateToState(states[i], snapshotRoot, proofs[i], uint32(i))
+		state, err := AgentsTypesStateToState(states[i], snapshotRoot, proofs[i], uint32(i), blockNumber)
 		if err != nil {
 			return fmt.Errorf("failed to convert state to db state: %w", err)
 		}
@@ -81,7 +81,13 @@ func (s Store) GetState(ctx context.Context, stateMask types.DBState) (*agentsTy
 	}
 
 	gasData := agentsTypes.NewGasData(
-		state.GDGasPrice, state.GDDataPrice, state.GDExecBuffer, state.GDAmortAttCost, state.GDEtherPrice, state.GDMarkup)
+		state.GDGasPrice,
+		state.GDDataPrice,
+		state.GDExecBuffer,
+		state.GDAmortAttCost,
+		state.GDEtherPrice,
+		state.GDMarkup,
+	)
 
 	receivedState := agentsTypes.NewState(
 		common.HexToHash(state.Root),
@@ -198,6 +204,10 @@ func DBStateToState(dbState types.DBState) State {
 		state.StateIndex = *dbState.StateIndex
 	}
 
+	if dbState.BlockNumber != nil {
+		state.BlockNumber = *dbState.BlockNumber
+	}
+
 	if dbState.GDGasPrice != nil {
 		state.GDGasPrice = *dbState.GDGasPrice
 	}
@@ -235,6 +245,7 @@ func StateToDBState(state State) types.DBState {
 	originTimestamp := state.OriginTimestamp
 	proof := state.Proof
 	stateIndex := state.StateIndex
+	blockNumber := state.BlockNumber
 	gasPrice := state.GDGasPrice
 	dataPrice := state.GDDataPrice
 	execBuffer := state.GDExecBuffer
@@ -251,6 +262,7 @@ func StateToDBState(state State) types.DBState {
 		OriginTimestamp:   &originTimestamp,
 		Proof:             &proof,
 		StateIndex:        &stateIndex,
+		BlockNumber:       &blockNumber,
 		GDGasPrice:        &gasPrice,
 		GDDataPrice:       &dataPrice,
 		GDExecBuffer:      &execBuffer,
@@ -261,7 +273,7 @@ func StateToDBState(state State) types.DBState {
 }
 
 // AgentsTypesStateToState converts an agentsTypes.State to a State.
-func AgentsTypesStateToState(state agentsTypes.State, snapshotRoot [32]byte, proof [][]byte, stateIndex uint32) (State, error) {
+func AgentsTypesStateToState(state agentsTypes.State, snapshotRoot [32]byte, proof [][]byte, stateIndex uint32, blockNumber uint64) (State, error) {
 	root := state.Root()
 
 	// Convert the proof to a json
@@ -281,6 +293,7 @@ func AgentsTypesStateToState(state agentsTypes.State, snapshotRoot [32]byte, pro
 		OriginTimestamp:   state.Timestamp().Uint64(),
 		Proof:             proofDBFormat,
 		StateIndex:        stateIndex,
+		BlockNumber:       blockNumber,
 		GDGasPrice:        state.GasData().GasPrice(),
 		GDDataPrice:       state.GasData().DataPrice(),
 		GDExecBuffer:      state.GasData().ExecBuffer(),

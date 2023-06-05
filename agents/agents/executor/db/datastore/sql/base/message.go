@@ -2,9 +2,11 @@ package base
 
 import (
 	"context"
+	"database/sql"
 	"fmt"
 	"github.com/synapsecns/sanguine/agents/agents/executor/types"
 	agentsTypes "github.com/synapsecns/sanguine/agents/types"
+	"gorm.io/gorm"
 	"gorm.io/gorm/clause"
 )
 
@@ -136,33 +138,42 @@ func (s Store) GetBlockNumber(ctx context.Context, messageMask types.DBMessage) 
 }
 
 // GetLastBlockNumber gets the last block number that had a message in the database.
-func (s Store) GetLastBlockNumber(ctx context.Context, chainID uint32) (uint64, error) {
-	var message Message
-	var lastBlockNumber uint64
-	var numMessages int64
+// TODO: Test this method.
+func (s Store) GetLastBlockNumber(ctx context.Context, chainID uint32, contractType types.ContractType) (uint64, error) {
+	var lastBlockNumber sql.NullInt64
 
-	// Get the total amount of messages stored in the database.
-	dbTx := s.DB().WithContext(ctx).
-		Model(&message).
-		Where(&Message{ChainID: chainID}).
-		Count(&numMessages)
-	if dbTx.Error != nil {
-		return 0, fmt.Errorf("failed to get number of messages: %w", dbTx.Error)
-	}
-	if numMessages == 0 {
-		return 0, nil
+	preDbTx := s.DB().WithContext(ctx)
+	var dbTx *gorm.DB
+
+	switch contractType {
+	case types.OriginContract:
+		dbTx = preDbTx.Model(&Message{}).
+			Where(fmt.Sprintf("%s = ?", ChainIDFieldName), chainID).
+			Select(fmt.Sprintf("MAX(%s)", BlockNumberFieldName)).
+			Find(&lastBlockNumber)
+	case types.DestinationContract:
+		dbTx = preDbTx.Model(&Attestation{}).
+			Where(fmt.Sprintf("%s = ?", DestinationFieldName), chainID).
+			Select(fmt.Sprintf("MAX(%s)", DestinationBlockNumberFieldName)).
+			Find(&lastBlockNumber)
+	case types.SummitContract:
+		// note: this makes the assumption there is one summit contract. If these are switched between chains without a state copy
+		// you may receive erroneous results from this function
+		dbTx = preDbTx.Model(&State{}).
+			Select(fmt.Sprintf("MAX(%s)", BlockNumberFieldName)).
+			Find(&lastBlockNumber)
 	}
 
-	dbTx = s.DB().WithContext(ctx).
-		Model(&message).
-		Where(fmt.Sprintf("%s = ?", ChainIDFieldName), chainID).
-		Select(fmt.Sprintf("MAX(%s)", BlockNumberFieldName)).
-		Find(&lastBlockNumber)
 	if dbTx.Error != nil {
 		return 0, fmt.Errorf("failed to get last block number: %w", dbTx.Error)
 	}
 
-	return lastBlockNumber, nil
+	// No messages are in the database yet.
+	if !lastBlockNumber.Valid {
+		return 0, nil
+	}
+
+	return uint64(lastBlockNumber.Int64), nil
 }
 
 // GetExecutableMessages gets executable messages from the database.
