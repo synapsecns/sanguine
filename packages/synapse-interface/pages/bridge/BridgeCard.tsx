@@ -30,6 +30,7 @@ import { Token } from '@/utils/types'
 import { BridgeQuote } from '@/utils/types'
 import { checkStringIfOnlyZeroes } from '@/utils/regex'
 import { AcceptedChainId } from '@constants/chains'
+import { useGasDropAmount } from '@/utils/hooks/useGasDropAmount'
 
 export enum DisplayType {
   FROM = 'from',
