@@ -11,7 +11,7 @@ import (
 	"github.com/synapsecns/sanguine/agents/agents/executor/db/datastore/sql/sqlite"
 	"github.com/synapsecns/sanguine/agents/agents/executor/metadata"
 	"github.com/synapsecns/sanguine/core/metrics"
-	client2 "github.com/synapsecns/sanguine/ethergo/client"
+	ethergoClient "github.com/synapsecns/sanguine/ethergo/client"
 	scribeAPI "github.com/synapsecns/sanguine/services/scribe/api"
 	"github.com/synapsecns/sanguine/services/scribe/backfill"
 	"github.com/synapsecns/sanguine/services/scribe/client"
@@ -130,7 +130,7 @@ func createExecutorParameters(ctx context.Context, c *cli.Context, metrics metri
 		clients[execClient.ChainID] = ethClient
 	} */
 	for _, execClient := range executorConfig.Chains {
-		ethClient, err := client2.DialBackendChainID(ctx, big.NewInt(int64(execClient.ChainID)), execClient.TempRPC, metrics, client2.Capture(true))
+		ethClient, err := ethergoClient.DialBackendChainID(ctx, big.NewInt(int64(execClient.ChainID)), execClient.TempRPC, metrics, ethergoClient.Capture(true))
 		if err != nil {
 			return executorConfig, nil, nil, fmt.Errorf("failed to dial rpc: %w", err)
 		}
