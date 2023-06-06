@@ -1,4 +1,4 @@
-package cctprelayer
+package relayer
 
 import (
 	"context"
