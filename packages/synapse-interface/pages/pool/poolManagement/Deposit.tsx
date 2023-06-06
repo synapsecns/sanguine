@@ -207,12 +207,15 @@ const Deposit = ({
 
   for (const [tokenAddr, amount] of Object.entries(inputValue.bn)) {
     if (
+      typeof amount !== 'undefined' &&
       Object.keys(depositQuote.allowances).length > 0 &&
       !amount.isZero() &&
+      typeof depositQuote.allowances[tokenAddr] !== 'undefined' &&
       amount.gt(depositQuote.allowances[tokenAddr])
     ) {
       isAllowanceEnough = false
     }
+
     poolUserData.tokens.map((tokenObj, i) => {
       if (
         tokenObj.token.addresses[chainId] === tokenAddr &&
