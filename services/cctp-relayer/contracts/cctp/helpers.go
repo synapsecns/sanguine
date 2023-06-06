@@ -23,14 +23,14 @@ func (s SynapseCCTPRef) Address() common.Address {
 	return s.address
 }
 
-// NewBondingManagerRef creates a new SynapseCCTPRef contract with a contract ref.
-func NewSynapseCCTPRef(address common.Address, backend bind.ContractBackend) (*BondingManagerRef, error) {
+// NewSynapseCCTPRef creates a new SynapseCCTPRef contract with a contract ref.
+func NewSynapseCCTPRef(address common.Address, backend bind.ContractBackend) (*SynapseCCTPRef, error) {
 	cctpContract, err := NewSynapseCCTP(address, backend)
 	if err != nil {
 		return nil, err
 	}
 
-	return &BondingManagerRef{
+	return &SynapseCCTPRef{
 		SynapseCCTP: cctpContract,
 		address:     address,
 	}, nil
