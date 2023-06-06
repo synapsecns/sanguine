@@ -33,8 +33,9 @@ export const approve = async (
   for (let token of pool.poolTokens) {
     const tokenAddr = token.addresses[chainId]
     if (
-      (inputValue[tokenAddr] && inputValue[tokenAddr].isZero()) ||
-      inputValue[tokenAddr].lt(depositQuote.allowances[tokenAddr])
+      inputValue[tokenAddr] &&
+      (inputValue[tokenAddr].isZero() ||
+        inputValue[tokenAddr].lt(depositQuote.allowances[tokenAddr]))
     )
       continue
 
@@ -66,10 +67,13 @@ export const approve = async (
               duration: 10000,
             })
           }
+
+          return approveTx
         })
       } catch (error) {
         toast.dismiss(pendingPopup)
         txErrorHandler(error)
+        return error
       }
     }
   }
@@ -130,7 +134,7 @@ export const deposit = async (
       duration: 10000,
     })
 
-    return tx?.transactionHash ?? tx
+    return tx
   } catch (error) {
     console.log('error from deposit: ', error)
     toast.dismiss(pendingPopup)

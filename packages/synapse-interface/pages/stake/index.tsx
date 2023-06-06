@@ -55,12 +55,12 @@ const StakePage = () => {
         className={`
           flex flex-col justify-between
           px-4 py-16
-          md:px-20 md:m-14
+          md:px-20 md:py-3 md:m-14
         `}
       >
-        <PageHeader title="Stake" subtitle="Stake your LP Tokens." />
+        <div className="flex flex-col justify-center max-w-[1300px] m-auto">
+          <PageHeader title="Stake" subtitle="Stake your LP Tokens." />
 
-        <div className="flex justify-center">
           <Grid cols={{ xs: 1, sm: 1, md: columns }} gap={6} className="mt-8">
             {isClient && availableStakingTokens.length > 0 ? (
               availableStakingTokens.map((token, key) => {

@@ -55,10 +55,13 @@ export const approve = async (
           duration: 10000,
         })
       }
+
+      return successTx
     })
   } catch (error) {
     toast.dismiss(pendingPopup)
     txErrorHandler(error)
+    return error
   }
 }
 
@@ -119,5 +122,6 @@ export const stake = async (
   } catch (err) {
     toast.dismiss(pendingPopup)
     txErrorHandler(err)
+    return err
   }
 }

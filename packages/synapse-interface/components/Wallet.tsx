@@ -37,7 +37,9 @@ export const Wallet = () => {
   const { connector: activeConnector, address: connectedAddress } = useAccount()
   const { chain: currentChain } = useNetwork()
   const walletId = activeConnector?.id
+
   const [mounted, setMounted] = useState(false)
+
   useEffect(() => {
     setMounted(true)
   }, [])

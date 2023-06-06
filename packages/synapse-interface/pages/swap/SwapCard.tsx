@@ -364,7 +364,7 @@ const SwapCard = ({
   - will dismiss toast asking user to connect wallet once wallet has been connected
   */
   useEffect(() => {
-    if (address) {
+    if (address && errorPopup) {
       toast.dismiss(errorPopup)
     }
   }, [address, errorPopup])
@@ -510,8 +510,7 @@ const SwapCard = ({
         null
       )
       // TODO 1) make dynamic 2) clean up
-      let newOriginQuery = [...query] as Query
-      newOriginQuery[2] = minWithSlippage
+      let newOriginQuery = {...query}
       newOriginQuery.minAmountOut = minWithSlippage
 
       setSwapQuote({
@@ -674,7 +673,8 @@ const SwapCard = ({
       fromToken?.addresses[connectedChainId] !== '' &&
       fromToken?.addresses[connectedChainId] !== AddressZero &&
       swapQuote?.allowance &&
-      swapQuote?.allowance?.lt(fromInput.bigNum)
+      swapQuote?.allowance?.lt(fromInput.bigNum) &&
+      !approveTx
     ) {
       properties.buttonAction = () =>
         approveToken(
@@ -686,7 +686,9 @@ const SwapCard = ({
       properties.pendingLabel = `Approving ${fromToken.symbol}`
       properties.className = 'from-[#feba06] to-[#FEC737]'
       properties.disabled = false
-      properties.postButtonAction = () => null
+      properties.postButtonAction = () => {
+        setApproveTx('approved')
+      }
       return properties
     }
 

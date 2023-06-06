@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [0.1.23](https://github.com/synapsecns/sanguine/compare/@synapsecns/sdk-router@0.1.22...@synapsecns/sdk-router@0.1.23) (2023-06-02)
+
+
+### Reverts
+
+* Revert "Publish" ([8202042](https://github.com/synapsecns/sanguine/commit/8202042d2485f1104f72910183bdb9d17cacb197))
+
+
+
+
+
 ## [0.1.22](https://github.com/synapsecns/sanguine/compare/@synapsecns/sdk-router@0.1.21...@synapsecns/sdk-router@0.1.22) (2023-05-16)
 
 **Note:** Version bump only for package @synapsecns/sdk-router

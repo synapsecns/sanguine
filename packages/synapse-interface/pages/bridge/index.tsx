@@ -155,13 +155,13 @@ const BridgePage = ({
   /*
   useEffect Triggers: toToken, fromInput, toChainId, time
   - Gets a quote when the polling function is executed or any of the bridge attributes are altered.
-  - Debounce quote call by calling quote price AFTER user has stopped typing for 500ms
+  - Debounce quote call by calling quote price AFTER user has stopped typing for 250ms
   */
   useEffect(() => {
     let isCancelled = false
 
     const handleChange = async () => {
-      await timeout(400) // debounce by 400ms
+      await timeout(250) // debounce by 250ms
       if (!isCancelled) {
         if (
           fromChainId &&
@@ -561,6 +561,7 @@ const BridgePage = ({
         setIsQuoteLoading(true)
       }
       const validFromChainId = AcceptedChainId[fromChainId] ? fromChainId : 1
+
       const { feeAmount, routerAddress, maxAmountOut, originQuery, destQuery } =
         await synapseSDK.bridgeQuote(
           validFromChainId,
@@ -569,6 +570,7 @@ const BridgePage = ({
           toToken.addresses[toChainId],
           fromInput.bigNum
         )
+
       if (!(originQuery && maxAmountOut && destQuery && feeAmount)) {
         setBridgeQuote(EMPTY_BRIDGE_QUOTE_ZERO)
         setIsQuoteLoading(false)
@@ -603,11 +605,11 @@ const BridgePage = ({
         'ONE_TENTH',
         null
       )
-      let newOriginQuery = [...originQuery] as Query
-      newOriginQuery[2] = originMinWithSlippage
+
+      let newOriginQuery = { ...originQuery }
       newOriginQuery.minAmountOut = originMinWithSlippage
-      let newDestQuery = [...destQuery] as Query
-      newDestQuery[3] = destMinWithSlippage
+
+      let newDestQuery = { ...destQuery }
       newDestQuery.minAmountOut = destMinWithSlippage
 
       setBridgeQuote({
