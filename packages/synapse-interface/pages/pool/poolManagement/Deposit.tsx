@@ -4,7 +4,7 @@ import { WETH } from '@constants/tokens/swapMaster'
 import { AVWETH, ETH, WETHE } from '@constants/tokens/master'
 import { stringToBigNum } from '@/utils/stringToBigNum'
 import { getAddress } from '@ethersproject/address'
-import TokenInput from '@components/TokenInput'
+import { DepositTokenInput } from '@components/TokenInput'
 import PriceImpactDisplay from '../components/PriceImpactDisplay'
 import { useSynapseContext } from '@/utils/providers/SynapseProvider'
 import { TransactionButton } from '@/components/buttons/TransactionButton'
@@ -195,7 +195,7 @@ const Deposit = ({
       properties.label = `Approve Token(s)`
       properties.pendingLabel = `Approving Token(s)`
       properties.className = 'from-[#feba06] to-[#FEC737]'
-      properties.disabled = true
+      properties.disabled = false
       properties.buttonAction = () =>
         approve(pool, depositQuote, inputValue.bn, chainId)
       properties.postButtonAction = () => setTime(0)
@@ -207,12 +207,15 @@ const Deposit = ({
 
   for (const [tokenAddr, amount] of Object.entries(inputValue.bn)) {
     if (
+      typeof amount !== 'undefined' &&
       Object.keys(depositQuote.allowances).length > 0 &&
       !amount.isZero() &&
+      typeof depositQuote.allowances[tokenAddr] !== 'undefined' &&
       amount.gt(depositQuote.allowances[tokenAddr])
     ) {
       isAllowanceEnough = false
     }
+
     poolUserData.tokens.map((tokenObj, i) => {
       if (
         tokenObj.token.addresses[chainId] === tokenAddr &&
@@ -266,10 +269,13 @@ const Deposit = ({
         {pool && poolUserData && poolData ? (
           poolUserData.tokens.map((tokenObj, i) => {
             const balanceToken = correctToken(tokenObj.token)
+
             return (
-              <TokenInput
+              <DepositTokenInput
                 token={balanceToken}
                 key={balanceToken.symbol}
+                rawBalance={tokenObj.rawBalance}
+                balance={tokenObj.balance}
                 balanceStr={String(tokenObj.balanceStr)}
                 inputValueStr={inputValue.str[balanceToken.addresses[chainId]]}
                 onChange={(value) => onChangeInputValue(balanceToken, value)}

@@ -18,7 +18,7 @@ export const approve = async (
   if (inputValue.isZero() || inputValue.lt(depositQuote.allowance)) {
     return
   }
-  await approveToken(
+  return await approveToken(
     pool.swapAddresses[chainId],
     chainId,
     pool.addresses[chainId],

@@ -11,7 +11,7 @@ import { getCoinTextColorCombined } from '@styles/tokens'
 import { calculateExchangeRate } from '@utils/calculateExchangeRate'
 import { ALL } from '@constants/withdrawTypes'
 import Grid from '@tw/Grid'
-import TokenInput from '@components/TokenInput'
+import { WithdrawTokenInput } from '@components/TokenInput'
 import RadioButton from '@components/buttons/RadioButton'
 import ReceivedTokenSection from '../components/ReceivedTokenSection'
 import PriceImpactDisplay from '../components/PriceImpactDisplay'
@@ -67,6 +67,8 @@ const Withdraw = ({
   const [withdrawType, setWithdrawType] = useState(ALL)
   const [percentage, setPercentage] = useState(0)
   const [time, setTime] = useState(Date.now())
+
+  const [isApproved, setIsApproved] = useState(false)
 
   const resetInput = () => {
     setInputValue({ bn: Zero, str: '' })
@@ -220,13 +222,17 @@ const Withdraw = ({
       return properties
     }
 
-    if (!isAllowanceEnough) {
+    if (!isAllowanceEnough && !isApproved) {
       properties.label = `Approve Token(s)`
       properties.pendingLabel = `Approving Token(s)`
       properties.className = 'from-[#feba06] to-[#FEC737]'
       properties.disabled = false
       properties.buttonAction = () =>
-        approve(pool, withdrawQuote, inputValue.bn, chainId)
+        approve(pool, withdrawQuote, inputValue.bn, chainId).then((res) => {
+          if (res && res.data) {
+            setIsApproved(true)
+          }
+        })
       properties.postButtonAction = () => setTime(0)
       return properties
     }
@@ -262,6 +268,7 @@ const Withdraw = ({
     address,
     inputValue,
     withdrawQuote,
+    isApproved,
   ])
 
   const actionBtn = useMemo(
@@ -283,6 +290,7 @@ const Withdraw = ({
       btnClassName,
       isFromBalanceEnough,
       isAllowanceEnough,
+      isApproved,
     ]
   )
 
@@ -362,7 +370,8 @@ const Withdraw = ({
             )
           })}
       </Grid>
-      <TokenInput
+      <WithdrawTokenInput
+        poolUserData={poolUserData}
         token={pool}
         key={pool?.symbol}
         inputValueStr={inputValue.str}
