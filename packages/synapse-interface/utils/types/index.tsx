@@ -26,6 +26,7 @@ export type PoolToken = {
   balanceStr: string
   token: Token
   isLp: boolean
+  rawBalance: BigNumber
 }
 export type Query = [string, string, BigNumber, BigNumber, string] & {
   swapAdapter: string
