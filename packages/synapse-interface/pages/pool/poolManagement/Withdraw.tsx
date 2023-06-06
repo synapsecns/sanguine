@@ -160,11 +160,13 @@ const Withdraw = ({
           pool.decimals[chainId]
         )
       : ''
-    onChangeInputValue(pool, numericalOut)
+    const bigNum = stringToBigNum(numericalOut, pool.decimals[chainId])
+    setInputValue({ bn: bigNum, str: numericalOut })
   }
 
   const onChangeInputValue = (token: Token, value: string) => {
     const bigNum = stringToBigNum(value, token.decimals[chainId])
+
     if (poolUserData.lpTokenBalance.isZero()) {
       setInputValue({ bn: bigNum, str: value })
 
@@ -174,6 +176,7 @@ const Withdraw = ({
     const pn = bigNum
       ? bigNum.mul(100).div(poolUserData.lpTokenBalance).toNumber()
       : 0
+
     setInputValue({ bn: bigNum, str: value })
 
     if (pn > 100) {
@@ -307,9 +310,7 @@ const Withdraw = ({
             text-gray-300
           `}
           placeholder="0"
-          onChange={(e) => {
-            onPercentChange(Number(e.currentTarget.value))
-          }}
+          onChange={(e) => onPercentChange(Number(e.currentTarget.value))}
           onFocus={(e) => e.target.select()}
           value={percentage ?? ''}
         />
