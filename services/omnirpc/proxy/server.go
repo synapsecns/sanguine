@@ -25,7 +25,7 @@ type RPCProxy struct {
 	chainManager chainmanager.ChainManager
 	// config contains the config for each chain
 	refreshInterval time.Duration
-	// port is the por the server is run on
+	// port is the port the server is run on
 	port uint16
 	// forwarderPool is used for allocating forwarders
 	forwarderPool sync.Pool

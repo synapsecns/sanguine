@@ -1,6 +1,7 @@
 package proxy
 
 import (
+	"bytes"
 	"encoding/json"
 	"fmt"
 	"github.com/davecgh/go-spew/spew"
@@ -37,6 +38,32 @@ func isConfirmable(r rpc2.Request) (bool, error) {
 	return true, nil
 }
 
+var latestBlock []byte
+var finalizedBlock []byte
+
+func init() {
+	var err error
+	latestBlock, err = rpc.LatestBlockNumber.MarshalText()
+	if err != nil {
+		panic(fmt.Errorf("could not marshall test from latest block number"))
+	}
+
+	finalizedBlock, err = rpc.FinalizedBlockNumber.MarshalText()
+	if err != nil {
+		panic(fmt.Errorf("could not marshall test from finalized block number"))
+	}
+}
+
+func rewriteConfirmableRequest(r rpc2.Request) rpc2.Request {
+	switch client.RPCMethod(r.Method) {
+	case client.BlockByNumberMethod:
+		r.Params[0] = bytes.Replace(r.Params[0], latestBlock, finalizedBlock, 1)
+	case client.BlockNumberMethod:
+		r.Params[0] = bytes.Replace(r.Params[0], latestBlock, finalizedBlock, 1)
+	}
+	return r
+}
+
 func areConfirmable(r rpc2.Requests) (_ bool, errs error) {
 	unconfirmable := false
 
@@ -57,6 +84,14 @@ func areConfirmable(r rpc2.Requests) (_ bool, errs error) {
 	}
 
 	return !unconfirmable, nil
+}
+
+func rewriteConfirmableRequests(requests rpc2.Requests) (_ rpc2.Requests) {
+	for i, request := range requests {
+		requests[i] = rewriteConfirmableRequest(request)
+	}
+	return requests
+
 }
 
 func isBlockNumConfirmable(arg json.RawMessage) bool {
