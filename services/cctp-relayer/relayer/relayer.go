@@ -130,6 +130,7 @@ type CCTPRelayerDBReader interface {
 	GetLastBlockNumber(ctx context.Context, chainID uint32) (uint64, error)
 }
 
+// Listens for USDC send events on origin chain, and registers usdcMessages to be signed.
 func (c CCTPRelayer) streamLogs(ctx context.Context, grpcClient pbscribe.ScribeServiceClient, conn *grpc.ClientConn, chainID uint32, address string, toBlockNumber *uint64, contractEvent contractEventType) error {
 	lastStoredBlock, err := c.db.GetLastBlockNumber(ctx, chainID)
 	if err != nil {
@@ -188,10 +189,12 @@ func (c CCTPRelayer) streamLogs(ctx context.Context, grpcClient pbscribe.ScribeS
 	}
 }
 
+// Converts a scribe response to a usdcMessage.
 func scribeResponseToMsg(response *pbscribe.StreamLogsResponse) (*usdcMessage, error) {
 	return nil, nil
 }
 
+// Completes a USDC bridging sequence by calling ReceiveCircleToken() on the destination chain.
 func (c CCTPRelayer) submitReceiveCircleToken(ctx context.Context) error { return nil }
 
 type contractType int
