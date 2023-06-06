@@ -5,7 +5,7 @@ sidebar_position: 4
 # Glossary
 
 ### Accused Agent
-When a [fraud reprt](#fraud-report) is submitted by an [Accusing Guard](#accusing-guard), the report will provide the
+When a [fraud report](#fraud-report) is submitted by an [Accusing Guard](#accusing-guard), the report will include the
 purported [fraud](#fraud) which is a false claim signed by the "Accused Agent".
 
 ### Accusing Guard
@@ -19,7 +19,7 @@ one of the fields in the [Attestation](#attestation), the Notaries are constantl
 When the remote chain has a new Agent Root, there is an [Optimistic Period](#optimistic-period) that needs to pass before that new Agent Root is considered valid.
 Once it is considered valid, then off-chain agents can submit a proof using that Agent Root that proves they are part of the new valid agent set.
 The Agent Root is a critical security property because a malicious Agent Root could allow a chain to be convinced of a malicious agent, which could open the door
-for a malicious message being executed.
+to a malicious message being executed.
 
 ### Agent Set
 The set of bonded agents ([Guards](#guard) and [Notaries](#notary)) that are currently bonded.
@@ -40,6 +40,30 @@ This snap root is used to prove that a particular Origin state did in fact occur
 5. Block Number of the block on the [Synapse Chain](#synapse-chain) that the attestation was registered by a Notary on the [Synapse Chain](#synapse-chain), which does not have to be the same [Notary](#notary) posting to the [Destination](#destination-chain).
 6. Timestamp is the time that the attestation was registered on the [Synapse Chain](#synapse-chain).
 
+### Bonding Manager Smart Contract
+The Bonding Manager Smart Contract is deployed on the [Synapse Chain](#synapse-chain) along with the [Summit](#summit-smart-contract) and
+the [Inbox](#inbox-smart-contract). See the source code of [BondingManager.sol](https://github.com/synapsecns/sanguine/blob/master/packages/contracts-core/contracts/manager/BondingManager.sol).
+The BondingManager keeps track of all existing agents on the Synapse Chain.
+It utilizes a dynamic Merkle Tree to store the agent information. This enables passing only the
+latest merkle root of this tree (referenced as the Agent Merkle Root) to the remote chains,
+so that the agents could "register" themselves by proving their current status against this root.
+BondingManager is responsible for the following:
+1.  Keeping track of all existing agents, as well as their statuses. In the MVP version there is no token staking,
+which will be added in the future. Nonetheless, the agent statuses are still stored in the Merkle Tree, and
+the agent slashing is still possible, though with no reward/penalty for the reporter/reported.
+2.  Marking agents as "ready to be slashed" once their fraud is proven on the local or remote chain. Anyone could
+complete the slashing by providing the proof of the current agent status against the current Agent Merkle Root.
+3.  Sending Manager Message to remote `LightManager` to withdraw collected tips from the remote chain.
+4.  Accepting Manager Message from remote `LightManager` to slash agents on the Synapse Chain, when their fraud
+is proven on the remote chain.
+
+### Canonical Source of Truth
+In the world of [Cross Chain](#cross-chain) messaging, there is the problem of only being able
+to perform atomic transactions on one blockchain at a time. For any piece of information stored, one of the blockchains
+will serve as the canonical source of truth. If two or more chains disagree, the chain that is the canonical source of truth gets
+to decide the real state, and the other chains will need to be corrected to match the correct state.
+
+
 ### Commitment
 In cryptography, a commitment is often used when someone wants to commit to large amounts of data without having to pass around
 all the data. For example, if there is a message that consists of many terabytes, that message can use a cryptographic hash
@@ -55,6 +79,20 @@ to other chains in order to communicate across chains.
 
 ### Destination Chain
 The chain where the [Message](#message) is being sent to is known as the Destination Chain.
+
+### Destination Smart Contract
+The Destination Smart Contract is deployed on all the [Remote Chains](#remote-chain) along with the [Origin](#origin-smart-contract), [Light Inbox](#light-inbox-smart-contract) and
+the [Light Manager](#light-manager-smart-contract).
+(Note that since the [Synapse Chain](#synapse-chain) can also be a participant in the network just like any [Remote Chain](#remote-chain), it also will have Origin and Destination contracts deployed on it).
+See the source code of [Destination.sol](https://github.com/synapsecns/sanguine/blob/master/packages/contracts-core/contracts/Destination.sol).
+The Destination contract is used for receiving messages from other chains. It relies on
+Notary-signed statements to get the truthful states of the remote chains. These states are then
+used to verify the validity of the messages sent from the remote chains.
+The Destination is responsible for the following:
+1.  Accepting the Attestations from the local Inbox contract.
+2.  Using these Attestations to execute the messages (see parent `ExecutionHub`).
+3.  Passing the Agent Merkle Roots from the Attestations to the local LightManager contract, if deployed on a non-Synapse chain.
+4.  Keeping track of the remote domains GasData submitted by Notaries, that could be later consumed by the local [GasOracle](#gas-oracle-smart-contract) contract.
 
 ### Disputed Agent
 If a [Guard](#guard) detects that another agent (either another [Guard](#guard) or a [Notary](#notary)) has signed a fraudulent claim, the accusing [Guard](#guard)
@@ -88,7 +126,7 @@ be the [resolving chain](#resolving-chain) since it is able to decide whether th
 When a [Guard](#guard) discovers that a [Notary](#notary) or other [Guard](#guard) has committed [Fraud](#fraud), it will submit a Fraud report that includes proof of the fraud.
 The proof of the fraud will be to show that the guilty agent signed something that is false. If the Fraud Report turns out to be wrong,
 the [Guard](#guard) who submitted it will be slashed. Otherwise, if it is a valid fraud report, then the guilty agent will be slashed and
-the reporting Guard will receive the reward. Note
+the reporting Guard will receive the reward.
 
 ### Fraud Resolution
 When there is a fraud report, the resolution will be either that the Guard submitting the report is wrong or the accused agent is wrong.
@@ -122,13 +160,41 @@ This is needed to estimate the cost of gas to send a message in the messaging sy
 required on both the [Synapse Chain](#synapse-chain) and the [Destination Chain](#destination-chain), and the Gas Oracle is what allows
 the [Origin Chain](#origin-chain) to estimate how much should be collected.
 
+### Gas Oracle Smart Contract
+The Gas Oracle Smart Contract is deployed on the chains and provides the service of the [Gas Oracle](#gas-oracle)
+See the source code of [GasOracle.sol](https://github.com/synapsecns/sanguine/blob/master/packages/contracts-core/contracts/GasOracle.sol).
+The GasOracle contract is responsible for tracking the gas data for both local and remote chains.
+## Local gas data tracking
+1.  GasOracle is using the available tools such as "tx.gasprice" to track the time-averaged values
+for different "gas statistics" (to be implemented in the future).
+2.  These values are cached, so that the reported values are only changed when a big enough change is detected.
+3.  In the MVP version the gas data is set manually by the owner of the contract.
+4.  The reported values are included in [Origin's State](#state), whenever a new message is sent.
+5.  This leads to cached "chain gas data" being included in the [Guard and Notary snapshots](#state-snapshot).
+## Remote gas data tracking
+1.  To track gas data for the remote chains, GasOracle relies on the Notaries to pass the gas data alongside
+their attestations.
+2.  As the gas data is cached, this leads to a storage write only when the gas data for the remote chain changes significantly.
+3.  GasOracle is in charge of enforcing the optimistic periods for the gas data it gets from [Destination](#destination).
+4.  The optimistic period is smaller when the "gas statistics" are increasing, and bigger when they are decreasing. The reason for that is that the decrease of the gas price leads to lower execution/delivery tips, and we want the
+Executors to be protected against that.
+
 ### Guard
 The Guard is an off-chain agent that participates in delivering messages and more importantly in catching fraud committed by
-Notaries and other Guards. If a Guard succeeds at catching fraud, it is elligible to receive the bond posted by the guilty agent.
+Notaries and other Guards. If a Guard succeeds at catching fraud, it is eligible to receive the bond posted by the guilty agent.
 As fraud happens more rarely, this is not the only way for the Guard to earn rewards. By submitting [state snapshots](#state-snapshot) (information about the states of
-chains) to the [Synapse Chain](#synapse-chain), Guards can receive [tips](#tips) for doing this required step in the protocol for
-normal happy path message sending. The size of the bond of the Guard is significantly less than that of the Notary because
+chains) to the [Synapse Chain](#synapse-chain), Guards are rewarded with [tips](#tips). The size of the bond of the Guard is significantly less than that of the Notary because
 the primary fraud a Guard can do primarily just results in denial-of-service (attacking [Liveness](#liveness)).
+
+### Inbox Smart Contract
+The Inbox Smart Contract is deployed on the [Synapse Chain](#synapse-chain) along with the [Summit](#summit-smart-contract) and
+the [Bonding Manager](#bonding-manager-smart-contract).
+See the source code of [Inbox.sol](https://github.com/synapsecns/sanguine/blob/master/packages/contracts-core/contracts/inbox/Inbox.sol).
+The Inbox
+1.  Accepts Guard and Notary Snapshots and passes them to [Summit](#summit-smart-contract).
+2.  Accepts Notary-signed Receipts and passes them to [Summit](#summit-smart-contract).
+3.  Accepts Receipt Reports to initiate a dispute between Guard and Notary.
+4.  Verifies Attestations and Attestation Reports, and slashes the signer if they are invalid.
 
 ### Integrity
 Integrity is a property of the messaging system that means a chain cannot be fooled into thinking a message
@@ -138,12 +204,33 @@ was sent when it never was really sent.
 Whereas normally the bond is escrowed on the [Synapse Chain](#synapse-chain), there are use cases for [Just In Time Gaurds](#just-in-time-guard) to
 alert a [Victim Chain](#victim-chain) of fraud even though it is not in the active set of agents. The Just In Time Bond is collected in the same
 transaction as the fraud report, and the bond will be released once the [Victim Chain](#victim-chain) receives the [fraud resolution](#fraud-resolution).
+Note that this is not yet implemented in the current version.
 
 ### Just In Time Guard
 There are edge cases when a chain either does not have any registered Guards, or there is a Guard that is momentarily in the
 [Disputed Agent Set](#disputed-agent-set). If either the Disputed Guard or perhaps some other actor would like to submit a fraud report to
 a [Victim Chain](#victim-chain), there is an option to submit the fraud report along with a [Just In Time Bond](#just-in-time-bond) that is collected within the same transaction
-right on the spot.
+right on the spot. Note that this is not yet implemented in the current version.
+
+### Light Inbox Smart Contract
+The Light Inbox Smart Contract is deployed on all the [Remote Chains](#remote-chain) along with the [Origin](#origin-smart-contract), [Destination](#destination-smart-contract) and
+the [Light Manager](#light-manager-smart-contract).
+See the source code of [LightInbox.sol](https://github.com/synapsecns/sanguine/blob/master/packages/contracts-core/contracts/inbox/LightInbox.sol).
+The LightInbox:
+1.  Accepts Notary Attestations and passes them to the [Destination](#destination) contract.
+2.  Accepts Attestation Reports and initiates a dispute between the [Notary](#notary) and the [Guard](#guard).
+
+### Light Manager Smart Contract
+The Light Manager Smart Contract is deployed on all the [Remote Chains](#remote-chain) along with the [Origin](#origin-smart-contract), [Destination](#destination-smart-contract) and
+the [Light Inbox](#light-manager-smart-contract).
+See the source code of [LightManager.sol](https://github.com/synapsecns/sanguine/blob/master/packages/contracts-core/contracts/manager/LightManager.sol).
+The LightManager keeps track of all agents on chains other than Synapse Chain.
+/// It uses the Agent Merkle Roots from the Notary-signed attestations to stay in sync with the [BondingManager](#bonding-manager-smart-contract).
+/// The LightManager is responsible for the following:
+1.  Accepting the Agent Merkle Roots (passing the optimistic period check) from the Destination contract.
+2.  Using these roots to enable agents to register themselves by proving their status.
+3.  Accepting Manager Message from [BondingManager](#bonding-manager-smart-contract) on the [Synapse Chain](#synapse-chain) to withdraw [tips](#tips).
+4.  Sending Manager Messages to the [BondingManager](#bonding-manager-smart-contract) on [Synapse Chain](#synapse-chain) to [slash](#slash) agents, when their [fraud](#fraud) is proven.
 
 ### Liveness
 Liveness is a property of the messaging system that means a message that is sent will be delivered within a
@@ -153,15 +240,15 @@ reasonable amount of time.
 The property of a Merkle Tree that makes it so handy is that a particular leaf node can be proven to exist in a Merkle tree
 without providing the entire Merkle tree. All that is needed is the [Merkle Root](#merkle-root) and a Merkle Proof whose size is
 logarithmic to the number of leaves in the Merkle Tree. Thus, if there are 2^32 number of leaves (over 4 billion leaves), the
-Merkle Proof will only need 32 nodes along the path from the node we are trying to prove to the [Merkle Root](#merkle-root).
+Merkle Proof will only need 32 nodes. The nodes would be the ones along the path from the node we are trying to prove to the [Merkle Root](#merkle-root).
 
 ### Merkle Root
 When a [Merkl Tree](#merkle-tree) is formed, it will have a unique root that is 32 bytes in size. This Merkle Root
-can serve as a cryptographic commitment to ALL the data contained in the Merkle Tree, which could be terabytes in size or more.
+can serve as a cryptographic [commitment](#commitment) to ALL the data contained in the Merkle Tree, which could be terabytes in size or more.
 
 ### Merkle Tree
 A Merkle Tree is a fundamental building block used in cryptography that organizes a group of leaf nodes containing
-arbitrary data in a way that allows for very small cryptographic commitments and relatively short and fast proofs that a
+arbitrary data in a way that allows for very small cryptographic [commitments](#commitment) and relatively short and fast proofs that a
 particular node exists in the tree without sending the entire tree.
 Please see [Merkle Trees](https://www.simplilearn.com/tutorials/blockchain-tutorial/merkle-tree-in-blockchain) for a description.
 
@@ -186,10 +273,7 @@ The term "Off Chain Agent" is very general and could be as simple as a human bei
 the first chain and then submitting a transaction to the second chain. More typically, this agent is software
 written to do this job in an automated way. The important question is how can the second chain trust this agent.
 In the specific case of the Synapse messaging system, this trust is based on a bond that the agent must post and any fraud
-can be detected and will result in that agent losing the bond. So long as the [Optimistic Period](#optimistic-period) is high
-enough to allow [Guards](#guard) to detect the fraud in time, the
-opportunity to commit fraud that yields more reward than the bond that is slashed is low enough such that the second chain
-can trust what the offchain agent says happened on the first chain.
+can be detected and will result in that agent losing the bond.
 
 ### On Chain
 The term "On Chain" refers to a transaction that happens on a single blockchain, which means it has all the security
@@ -201,7 +285,7 @@ If a [Guard](#guard) believes that a [Notary](#notary) has submitted a [fraudule
 the actual [fraud resolution](#fraud-resolution) needs to be decided on another chain, either the [Synapse Chain](#synapse-chain) or the
 [Origin](#origin-chain). Because of this, we allow the Guard to optimisitcally pause the [Destination](#destination) chain which puts
 both the accused Notary and the reporting Guard in dispute. Until the resolution is communicated to that destination chain,
-that attestation and the Notary are not truested by that destination, and the Guard would need to pay a significant amount to
+that attestation and the Notary are not trusted by that destination, and the Guard would need to pay a significant amount to
 submit additional reports on that chain (to avoid denial of service).
 
 ### Optimistic Period
@@ -214,10 +298,36 @@ we want to give [Guards](#guard) enough time to challenge the proposed root befo
 ### Origin Chain
 The chain where the message is being sent from is known as the Origin Chain.
 
+### Origin Smart Contract
+The Origin Smart Contract is deployed on all the [Remote Chains](#remote-chain) along with the [Destination](#destination-smart-contract), [Light Inbox](#light-inbox-smart-contract) and
+the [Light Manager](#light-manager-smart-contract).
+(Note that since the [Synapse Chain](#synapse-chain) can also be a participant in the network just like any [Remote Chain](#remote-chain), it also will have Origin and Destination contracts deployed on it).
+See the source code of [Origin.sol](https://github.com/synapsecns/sanguine/blob/master/packages/contracts-core/contracts/Origin.sol).
+The Origin contract is used for sending messages to remote chains. It is done
+by inserting the message hashes into the Origin Merkle, which makes it possible to
+prove that message was sent using the Merkle proof against the Origin Merkle Root. This essentially
+compresses the list of messages into a single 32-byte value that needs to be stored on the [destination chain](#destination-chain).
+The Origin is responsible for the following:
+1.  Formatting the sent message payloads, and inserting their hashes into the Origin Merkle Tree.
+2.  Keeping track of its own historical [states](#state).
+3.  Enforcing minimum [tip](#tips) values for sent base messages based on the provided execution requests.
+4.  Distributing the collected tips upon request from a local AgentManager contract.
+
+### Permissioned
+As opposed to [permissionless](#permissionless), a permissioned system requires someone who is in a position of authority
+to give permission to someone who wants to do something. For example, if becoming an agent required the signature of
+a quorum of administrators, this would make it a permissioned system. The long term goal of the Synapse Messaging System is
+to become entirely permissionless once the ecosystem has been bootstrapped.
+
+### Permissionless
+The Synapse Messaging System was designed to allow agents to participate without the need of gaining permission from any special
+authority. The only requirement is to post a stake in the case of [guards](#guard) and [notaries](#notary). For [executors](#executor),
+no stake is required and anyone can run a node to act as an executor.
+
 ### Receipt
 When a message is delivered on the Destination chain, all of the agents who participated in delivering the message are owed
 [Tips](#tips), which are to be handed out on the Synapse chain and not on the Destination chain. Upon delivering the message,
-a receipt is produced on the Destination chain and a Notary for that chain can sign and sumbit this receipt to
+a receipt is produced on the Destination chain and a Notary for that chain can sign and submit this receipt to
 the Synapse chain, and the tips will be distributed at that time. Of course, if the Notary signs a fake receipt, it
 can be found guilty of fraud by a Guard and get slashed.
 
@@ -260,8 +370,18 @@ Each chain in the network at a given point in time will have values set for the 
 6. [Gas Data](#gas-data) contains information about recent gas rates on this chain so other chains can estimate gas costs
 of performing necessary transactions on remote chains.
 
+### Summit Smart Contract
+The Summit Smart Contract is deployed on the [Synapse Chain](#synapse-chain) along with the [Bonding Manager](#bonding-manager-smart-contract) and
+the [Inbox](#inbox-smart-contract). See the source code of [Summit.sol](https://github.com/synapsecns/sanguine/blob/master/packages/contracts-core/contracts/Summit.sol).
+The Summit contract is the cornerstone of the Synapse messaging protocol. This is where the states of all the remote chains (provided collectively by the Guards and Notaries) are stored. This is
+also the place where the tips are distributed among the off-chain actors.
+Summit is responsible for the following:
+1.  Accepting Guard and Notary snapshots from the local `Inbox` contract, and storing the states from these snapshots (see parent contract `SnapshotHub`).
+2.  Accepting Notary Receipts from the local `Inbox` contract, and using them to distribute tips among the
+off-chain actors that participated in the message lifecycle.
+
 ### Synapse Chain
-The [Synapse Chain](https://docs.synapseprotocol.com/protocol/synapse-chain) is a blockchain developeed originally for the
+The [Synapse Chain](https://docs.synapseprotocol.com/protocol/synapse-chain) is a blockchain developed originally for the
 [Synapse Bridge](https://docs.synapseprotocol.com/protocol/synapse-bridge).
 In the new Synapse Messaging System, the Synapse chain has special Smart Contracts deployed on it that serve as a
 central hub when sending messages from one chain to another. Bonds are posted on the Synapse chain so this serves as the
@@ -278,7 +398,7 @@ messages.
 Tips are the rewards that the off-chain agents earn for doing the work of delivering messages.
 
 ### Unbonding Period
-When a bonded agent decides to unregister, it is of course elligible to receive its bond back so long as it has not been found
+When a bonded agent decides to unregister, it is of course eligible to receive its bond back so long as it has not been found
 guilty of fraud. The bonded agent will submit the request to unbond on the [Synapse Chain](#synapse-chain), and it will be placed
 in the unbonding state. After the Unbonding Period has passed and no fraud has been detected, the agent can claim its bond.
 The purpose of the Unboding Period is to prevent a Bonded Agent from commiting [fraud](#fraud) and then escaping with its bond before there is enough
