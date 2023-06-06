@@ -2,12 +2,18 @@
 package cctprelayer_test
 
 import (
+	"math/big"
+	"testing"
+
+	"github.com/stretchr/testify/suite"
 	"github.com/synapsecns/sanguine/core/metrics/localmetrics"
 	"github.com/synapsecns/sanguine/core/testsuite"
 	"github.com/synapsecns/sanguine/ethergo/backends"
+	"github.com/synapsecns/sanguine/ethergo/backends/geth"
 	omnirpcHelper "github.com/synapsecns/sanguine/services/omnirpc/testhelper"
 	scribeHelper "github.com/synapsecns/sanguine/services/scribe/testhelper"
 	"github.com/synapsecns/sanguine/services/scribe/testutil"
+	"golang.org/x/sync/errgroup"
 )
 
 // TestHelperSuite defines the basic test suite.
@@ -76,6 +82,9 @@ func (s *CCTPRelayerSuite) SetupTest() {
 	// create the test omnirpc backend
 	s.testOmnirpc = omnirpcHelper.NewOmnirpcServer(s.GetTestContext(), s.T(), s.testBackends...)
 
+	s.deployManager = testutil.NewDeployManager(s.T())
+	// deploy the contract to all backends
+	s.deployManager.BulkDeploy(s.GetTestContext(), s.testBackends, CCTPType)
 }
 
 func TestCCTPRelayerSuite(t *testing.T) {
