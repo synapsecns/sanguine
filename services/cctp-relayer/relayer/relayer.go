@@ -2,9 +2,13 @@ package relayer
 
 import (
 	"context"
+	"encoding/hex"
+	"encoding/json"
 	"errors"
 	"fmt"
 	"io"
+	"io/ioutil"
+	"net/http"
 	"strconv"
 
 	"github.com/ethereum/go-ethereum/core/types"
@@ -23,6 +27,7 @@ import (
 type usdcMessage struct {
 	message       []byte // raw bytes of message produced by Circle's MessageTransmitter
 	auxillaryData []byte // auxillary data emitted by SynapseCCTP
+	txHash        string // hash of the USDC burn transaction
 	signature     []byte // attestation produced by Circle's API: https://developers.circle.com/stablecoin/reference/getattestation
 }
 
@@ -34,10 +39,10 @@ type chainRelayer struct {
 	closeConnection chan bool
 	// stopListenChan is a channel that is used to stop listening to the log channel.
 	stopListenChan chan bool
-	// usdcMsgRecvChain contains incoming usdc messages yet to be signed.
-	usdcMsgRecvChan chan<- *usdcMessage
+	// usdcMsgRecvChan contains incoming usdc messages yet to be signed.
+	usdcMsgRecvChan chan *usdcMessage
 	// usdcMsgSendChan contains outgoing usdc messages that are signed.
-	usdcMsgSendChan <-chan *usdcMessage
+	usdcMsgSendChan chan *usdcMessage
 }
 
 type CCTPRelayer struct {
@@ -46,6 +51,7 @@ type CCTPRelayer struct {
 	scribeClient client.ScribeClient
 	grpcClient   pbscribe.ScribeServiceClient
 	grpcConn     *grpc.ClientConn
+	client       *http.Client
 	// chainRelayers is a map from chain ID -> chain executor.
 	chainRelayers map[uint32]*chainRelayer
 	// handler is the metrics handler.
@@ -92,6 +98,7 @@ func NewCCTPRelayer(ctx context.Context, cfg config.Config, scribeClient client.
 		scribeClient: scribeClient,
 		grpcClient:   grpcClient,
 		grpcConn:     conn,
+		client:       &http.Client{},
 		handler:      handler,
 	}, nil
 }
@@ -108,7 +115,7 @@ func (c CCTPRelayer) Run(ctx context.Context) error {
 		})
 
 		g.Go(func() error {
-			return c.submitReceiveCircleToken(ctx)
+			return c.submitReceiveCircleToken(ctx, chain.ChainID)
 		})
 	}
 
@@ -211,7 +218,72 @@ func scribeResponseToMsg(ctx context.Context, response *pbscribe.StreamLogsRespo
 }
 
 // Completes a USDC bridging sequence by calling ReceiveCircleToken() on the destination chain.
-func (c CCTPRelayer) submitReceiveCircleToken(ctx context.Context) error { return nil }
+func (c CCTPRelayer) submitReceiveCircleToken(ctx context.Context, chainID uint32) (err error) {
+	for {
+		select {
+		// Receive a raw message from the receive channel.
+		case msg := <-c.chainRelayers[chainID].usdcMsgRecvChan:
+			// TODO(dwasse): backoff
+			msg.signature, err = getCircleAttestation(ctx, c.client, msg.txHash)
+			if err != nil {
+				logger.Errorf("could not get circle attestation: %w", err)
+				continue
+			}
+
+			// Send the completed message back through the send channel.
+			c.chainRelayers[chainID].usdcMsgSendChan <- msg
+		case <-ctx.Done():
+			return nil
+		}
+	}
+}
+
+const circleAttestationURL = "https://iris-api-sandbox.circle.com/v1/attestations"
+
+type circleAttestationResponse struct {
+	Data struct {
+		Attestation string `json:"attestation"`
+		Status      string `json:"status"`
+	} `json:"data"`
+}
+
+func getCircleAttestation(ctx context.Context, client *http.Client, txHash string) (signature []byte, err error) {
+	url := fmt.Sprintf("%s/%s", circleAttestationURL, txHash)
+	req, err := http.NewRequestWithContext(ctx, "GET", url, nil)
+	if err != nil {
+		return nil, fmt.Errorf("could not create request: %w", err)
+	}
+
+	resp, err := client.Do(req)
+	if err != nil {
+		return
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode != http.StatusOK {
+		err = fmt.Errorf("received non-200 status code: %d", resp.StatusCode)
+		return
+	}
+
+	body, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		return
+	}
+
+	var attestationResp circleAttestationResponse
+	err = json.Unmarshal(body, &attestationResp)
+	if err != nil {
+		err = fmt.Errorf("could not unmarshal body: %w", err)
+		return
+	}
+
+	signature, err = hex.DecodeString(attestationResp.Data.Attestation)
+	if err != nil {
+		err = fmt.Errorf("could not decode signature: %w", err)
+		return
+	}
+	return
+}
 
 type contractType int
 
