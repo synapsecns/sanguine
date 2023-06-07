@@ -10,7 +10,9 @@ import (
 	"io/ioutil"
 	"net/http"
 	"strconv"
+	"time"
 
+	"github.com/cenkalti/backoff"
 	"github.com/ethereum/go-ethereum/core/types"
 	"github.com/synapsecns/sanguine/core/metrics"
 	"github.com/synapsecns/sanguine/services/cctp-relayer/config"
@@ -223,15 +225,24 @@ func (c CCTPRelayer) submitReceiveCircleToken(ctx context.Context, chainID uint3
 		select {
 		// Receive a raw message from the receive channel.
 		case msg := <-c.chainRelayers[chainID].usdcMsgRecvChan:
-			// TODO(dwasse): backoff
-			msg.signature, err = getCircleAttestation(ctx, c.client, msg.txHash)
-			if err != nil {
-				logger.Errorf("could not get circle attestation: %w", err)
-				continue
-			}
+			go func() {
+				// Fetch the circle attestation in a new goroutine so that we are not blocked from future requests.
+				// TODO(dwasse): configure this backoff
+				backoff.Retry(func() (err error) {
+					msg.signature, err = getCircleAttestation(ctx, c.client, msg.txHash)
+					return
+				}, backoff.WithMaxRetries(backoff.NewConstantBackOff(time.Second), 5))
+				if err != nil {
+					logger.Errorf("could not get circle attestation: %w", err)
+					return
+				}
 
-			// Send the completed message back through the send channel.
-			c.chainRelayers[chainID].usdcMsgSendChan <- msg
+				// Send the completed message back through the send channel.
+				c.chainRelayers[chainID].usdcMsgSendChan <- msg
+			}()
+		case <-c.chainRelayers[chainID].usdcMsgSendChan:
+			// Submit the message to the destination chain.
+			// TODO(dwasse): implement
 		case <-ctx.Done():
 			return nil
 		}
