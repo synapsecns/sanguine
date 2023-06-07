@@ -247,6 +247,12 @@ func (u *AgentsIntegrationSuite) TestAgentsE2E() {
 	u.Nil(err)
 	u.TestBackendOrigin.WaitForConfirmation(u.GetTestContext(), testClientOnOriginTx)
 
+	//This transaction is needed to get the simulated chain's block number to increase by 1, since StreamLogs will
+	//do lastBlockNumber - 1.
+	tx, err := u.TestContractOnOrigin.EmitAgentsEventA(txContextTestClientOrigin.TransactOpts, big.NewInt(gofakeit.Int64()), big.NewInt(gofakeit.Int64()), big.NewInt(gofakeit.Int64()))
+	u.Nil(err)
+	u.TestBackendOrigin.WaitForConfirmation(u.GetTestContext(), tx)
+
 	go func() {
 		// we don't check errors here since this will error on cancellation at the end of the test
 		err = guard.Start(u.GetTestContext())
