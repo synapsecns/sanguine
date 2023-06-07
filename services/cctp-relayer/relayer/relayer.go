@@ -41,6 +41,8 @@ type chainRelayer struct {
 	stopListenChan chan bool
 	// usdcMsgRecvChan contains incoming usdc messages yet to be signed.
 	usdcMsgRecvChan chan *usdcMessage
+	// usdcMsgSendChan contains outgoing usdc messages that are signed.
+	usdcMsgSendChan chan *usdcMessage
 }
 
 type CCTPRelayer struct {
@@ -87,6 +89,7 @@ func NewCCTPRelayer(ctx context.Context, cfg config.Config, scribeClient client.
 			closeConnection: make(chan bool, 1),
 			stopListenChan:  make(chan bool, 1),
 			usdcMsgRecvChan: make(chan *usdcMessage, usdcMsgChanSize),
+			usdcMsgSendChan: make(chan *usdcMessage, usdcMsgChanSize),
 		}
 	}
 
@@ -227,7 +230,8 @@ func (c CCTPRelayer) submitReceiveCircleToken(ctx context.Context, chainID uint3
 				continue
 			}
 
-			// TODO(dwasse): submit the message to the destination chain.
+			// Send the completed message back through the send channel.
+			c.chainRelayers[chainID].usdcMsgSendChan <- msg
 		case <-ctx.Done():
 			return nil
 		}
