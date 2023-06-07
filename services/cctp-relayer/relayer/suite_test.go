@@ -1,5 +1,5 @@
 // not how this is always scoped outside of the package itself
-package cctprelayer_test
+package relayer_test
 
 import (
 	"math/big"
@@ -10,6 +10,7 @@ import (
 	"github.com/synapsecns/sanguine/core/testsuite"
 	"github.com/synapsecns/sanguine/ethergo/backends"
 	"github.com/synapsecns/sanguine/ethergo/backends/geth"
+	cctpTest "github.com/synapsecns/sanguine/services/cctp-relayer/testutil"
 	omnirpcHelper "github.com/synapsecns/sanguine/services/omnirpc/testhelper"
 	scribeHelper "github.com/synapsecns/sanguine/services/scribe/testhelper"
 	"github.com/synapsecns/sanguine/services/scribe/testutil"
@@ -40,7 +41,7 @@ func NewTestSuite(tb testing.TB) *CCTPRelayerSuite {
 func (s *CCTPRelayerSuite) SetupSuite() {
 	s.SetupSuite()
 	// for tracing
-	localmetrics.SetupTestJaeger(ctx, tb)
+	localmetrics.SetupTestJaeger(s.GetSuiteContext(), s.T())
 	// let's create 2 mock chains
 	chainIDs := []uint64{1, 43114}
 
@@ -54,7 +55,7 @@ func (s *CCTPRelayerSuite) SetupSuite() {
 		chainID := chainID // capture func literal
 		g.Go(func() error {
 			// we need to use the embedded backend here, because the simulated backend doesn't support rpcs required by scribe
-			backend := geth.NewEmbeddedBackendForChainID(ctx, s.T(), new(big.Int).SetUint64(chainID))
+			backend := geth.NewEmbeddedBackendForChainID(s.GetSuiteContext(), s.T(), new(big.Int).SetUint64(chainID))
 
 			// add the backend to the list of backends
 			s.testBackends[pos] = backend
@@ -84,7 +85,7 @@ func (s *CCTPRelayerSuite) SetupTest() {
 
 	s.deployManager = testutil.NewDeployManager(s.T())
 	// deploy the contract to all backends
-	s.deployManager.BulkDeploy(s.GetTestContext(), s.testBackends, CCTPType)
+	s.deployManager.BulkDeploy(s.GetTestContext(), s.testBackends, cctpTest.SynapseCCTPType)
 }
 
 func TestCCTPRelayerSuite(t *testing.T) {

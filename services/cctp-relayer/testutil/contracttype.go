@@ -3,6 +3,7 @@ package testutil
 import (
 	"github.com/ethereum/go-ethereum/common/compiler"
 	"github.com/synapsecns/sanguine/ethergo/contracts"
+	"github.com/synapsecns/sanguine/services/cctp-relayer/contracts/cctp"
 )
 
 // contractTypeImpl is the type of the contract being saved/fetched.
@@ -18,6 +19,13 @@ const (
 	MockMessageTransmitterType // MockMessageTransmitter
 )
 
+// verifyStringerUpdated verifies stringer is up to date (this index is included in stringer).
+func verifyStringerUpdated(contractType contractTypeImpl) {
+	if int(contractType) > len(_contractTypeImpl_index) {
+		panic("please update stringer before running test again")
+	}
+}
+
 // ID gets the contract type as an id.
 func (c contractTypeImpl) ID() int {
 	verifyStringerUpdated(c)
@@ -27,9 +35,13 @@ func (c contractTypeImpl) ID() int {
 
 // Name gets the name of the contract.
 func (c contractTypeImpl) Name() string {
-	// TODO: consider implementing a sanity check here, see: https://github.com/synapsecns/sanguine/blob/master/agents/testutil/contracttype.go#L51
+	verifyStringerUpdated(c)
 
 	return c.String()
+}
+
+func (c contractTypeImpl) ContractName() string {
+	return c.Name()
 }
 
 // ContractInfo gets the source code of every contract. See TODO above.
@@ -39,9 +51,10 @@ func (c contractTypeImpl) Name() string {
 func (c contractTypeImpl) ContractInfo() *compiler.Contract {
 	switch c {
 	case SynapseCCTPType:
-		return synapsecctp.Contracts["solidity/SynapseCCTP.sol/SynapseCCTP"]
-	case MockMessageTransmitterType:
-		return mockmessagetransmitter.Contracts["solidity/MockMessageTransmitter.sol:MockMessageTransmitter"]
+		return cctp.Contracts["solidity/SynapseCCTP.sol/SynapseCCTP"]
+	// TODO(dwasse): flatten MockMessageTransmitter contract and add in /contracts dir
+	// case MockMessageTransmitterType:
+	// 	return mockmessagetransmitter.Contracts["solidity/MockMessageTransmitter.sol:MockMessageTransmitter"]
 	default:
 		panic("not yet implemented")
 	}
