@@ -7,9 +7,12 @@ import (
 	"io"
 	"strconv"
 
+	"github.com/ethereum/go-ethereum/core/types"
 	"github.com/synapsecns/sanguine/core/metrics"
 	"github.com/synapsecns/sanguine/services/cctp-relayer/config"
 	"github.com/synapsecns/sanguine/services/scribe/client"
+	"github.com/synapsecns/sanguine/services/scribe/db"
+	scribeDb "github.com/synapsecns/sanguine/services/scribe/db"
 	pbscribe "github.com/synapsecns/sanguine/services/scribe/grpc/types/types/v1"
 	"go.opentelemetry.io/contrib/instrumentation/google.golang.org/grpc/otelgrpc"
 	"golang.org/x/sync/errgroup"
@@ -125,6 +128,8 @@ func (c CCTPRelayer) Stop(chainID uint32) {
 type CCTPRelayerDBReader interface {
 	// GetLastBlockNumber gets the last block number that had a message in the database.
 	GetLastBlockNumber(ctx context.Context, chainID uint32) (uint64, error)
+	// RetrieveReceiptsWithFilter gets the receipts with the given filter.
+	RetrieveReceiptsWithFilter(ctx context.Context, receiptFilter db.ReceiptFilter, page int) ([]types.Receipt, error)
 }
 
 // Listens for USDC send events on origin chain, and registers usdcMessages to be signed.
@@ -176,7 +181,7 @@ func (c CCTPRelayer) streamLogs(ctx context.Context, grpcClient pbscribe.ScribeS
 				return fmt.Errorf("could not receive: %w", err)
 			}
 
-			msg, err := scribeResponseToMsg(response)
+			msg, err := scribeResponseToMsg(ctx, response, c.db)
 			if err != nil {
 				return err
 			}
@@ -187,8 +192,22 @@ func (c CCTPRelayer) streamLogs(ctx context.Context, grpcClient pbscribe.ScribeS
 }
 
 // Converts a scribe response to a usdcMessage.
-func scribeResponseToMsg(response *pbscribe.StreamLogsResponse) (*usdcMessage, error) {
-	return nil, nil
+func scribeResponseToMsg(ctx context.Context, response *pbscribe.StreamLogsResponse, db CCTPRelayerDBReader) (*usdcMessage, error) {
+	receipts, err := db.RetrieveReceiptsWithFilter(ctx, scribeDb.ReceiptFilter{}, 0)
+	if err != nil {
+		return nil, err
+	}
+
+	if len(receipts) != 1 {
+		err = fmt.Errorf("expected one receipt; got %d", len(receipts))
+		return nil, err
+	}
+
+	// TODO(dwasse): parse the logs from the receipt to populate
+	// msg.message and msg.auxillaryData
+	msg := &usdcMessage{}
+
+	return msg, nil
 }
 
 // Completes a USDC bridging sequence by calling ReceiveCircleToken() on the destination chain.
