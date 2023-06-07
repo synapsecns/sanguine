@@ -33,9 +33,9 @@ type usdcMessage struct {
 	signature     []byte // attestation produced by Circle's API: https://developers.circle.com/stablecoin/reference/getattestation
 }
 
-// chainRelayer is a struct that contains the necessary information for each chain level executor.
+// chainRelayer is a struct that contains the necessary information for each chain level relayer.
 type chainRelayer struct {
-	// chainID is the chain ID of the chain that this executor is responsible for.
+	// chainID is the chain ID of the chain that this relayer is responsible for.
 	chainID uint32
 	// closeConnection is a channel that is used to close the connection.
 	closeConnection chan bool
@@ -54,7 +54,7 @@ type CCTPRelayer struct {
 	grpcClient   pbscribe.ScribeServiceClient
 	grpcConn     *grpc.ClientConn
 	client       *http.Client
-	// chainRelayers is a map from chain ID -> chain executor.
+	// chainRelayers is a map from chain ID -> chain relayer.
 	chainRelayers map[uint32]*chainRelayer
 	// handler is the metrics handler.
 	handler metrics.Handler
@@ -105,7 +105,7 @@ func NewCCTPRelayer(ctx context.Context, cfg config.Config, scribeClient client.
 	}, nil
 }
 
-// Run starts the executor agent. It calls `Start` and `Listen`.
+// Run starts the cctp relayer. It calls `Start` and `Listen`.
 func (c CCTPRelayer) Run(ctx context.Context) error {
 	g, _ := errgroup.WithContext(ctx)
 
@@ -122,7 +122,7 @@ func (c CCTPRelayer) Run(ctx context.Context) error {
 	}
 
 	if err := g.Wait(); err != nil {
-		return fmt.Errorf("error in executor agent: %w", err)
+		return fmt.Errorf("error in cctp relayer: %w", err)
 	}
 
 	return nil
