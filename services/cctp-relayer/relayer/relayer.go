@@ -134,6 +134,7 @@ func (c CCTPRelayer) Stop(chainID uint32) {
 	c.chainRelayers[chainID].stopListenChan <- true
 }
 
+// TODO(dwasse): impl db interactions
 type CCTPRelayerDBReader interface {
 	// GetLastBlockNumber gets the last block number that had a message in the database.
 	GetLastBlockNumber(ctx context.Context, chainID uint32) (uint64, error)
