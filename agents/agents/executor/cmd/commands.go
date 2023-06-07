@@ -120,7 +120,7 @@ func createExecutorParameters(ctx context.Context, c *cli.Context, metrics metri
 	}
 
 	clients = make(map[uint32]executor.Backend)
-	
+
 	// TODO: The following chunk of code should be added back once we have confidence in omniRPC. For now we use tempRPC.
 	/* for _, execClient := range executorConfig.Chains {
 		rpcDial, err := rpc.DialContext(c.Context, fmt.Sprintf("%s/%d/rpc/%d", executorConfig.BaseOmnirpcURL, 1, execClient.ChainID))

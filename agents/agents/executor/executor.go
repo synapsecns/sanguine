@@ -652,7 +652,7 @@ func (e Executor) checkIfExecuted(parentCtx context.Context, message types.Messa
 	for {
 		select {
 		case <-ctx.Done():
-			return false, fmt.Errorf("context cancelled: %w", ctx.Err())
+			return false, fmt.Errorf("context canceled: %w", ctx.Err())
 		case <-time.After(timeout):
 			if b.Attempt() >= 5 {
 				return false, fmt.Errorf("could not get executed status: %w", ctx.Err())
@@ -741,7 +741,7 @@ func (e Executor) streamLogs(ctx context.Context, grpcClient pbscribe.ScribeServ
 
 			select {
 			case <-ctx.Done():
-				return fmt.Errorf("context cancelled: %w", ctx.Err())
+				return fmt.Errorf("context canceled: %w", ctx.Err())
 			case e.chainExecutors[chainID].logChan <- log:
 			}
 			e.chainExecutors[chainID].lastLog.blockNumber = log.BlockNumber

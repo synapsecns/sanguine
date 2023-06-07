@@ -97,7 +97,7 @@ func (t *DBSuite) TestGetLastBlockNumber() {
 		err = testDB.StoreMessage(t.GetTestContext(), typesMessageB, blockNumberB, false, 0)
 		Nil(t.T(), err)
 
-		lastBlockNumber, err := testDB.GetLastBlockNumber(t.GetTestContext(), chainID)
+		lastBlockNumber, err := testDB.GetLastBlockNumber(t.GetTestContext(), chainID, types.OriginContract)
 		Nil(t.T(), err)
 
 		Equal(t.T(), blockNumberB, lastBlockNumber)

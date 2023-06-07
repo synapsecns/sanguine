@@ -9,6 +9,7 @@ import (
 	"math/big"
 )
 
+// TODO: More edge cases for this test.
 func (t *DBSuite) TestGetTimestampForMessage() {
 	t.RunOnAllDBs(func(testDB db.ExecutorDB) {
 		origin := gofakeit.Uint32()
@@ -70,11 +71,11 @@ func (t *DBSuite) TestGetTimestampForMessage() {
 		agentRootC := common.BigToHash(big.NewInt(gofakeit.Int64()))
 		proofC := [][]byte{[]byte(gofakeit.Word()), []byte(gofakeit.Word())}
 
-		err := testDB.StoreState(t.GetTestContext(), stateA, snapshotRootA, proofA, 1)
+		err := testDB.StoreState(t.GetTestContext(), stateA, snapshotRootA, proofA, 1, 1)
 		Nil(t.T(), err)
-		err = testDB.StoreState(t.GetTestContext(), stateB, snapshotRootB, proofB, 2)
+		err = testDB.StoreState(t.GetTestContext(), stateB, snapshotRootB, proofB, 2, 2)
 		Nil(t.T(), err)
-		err = testDB.StoreState(t.GetTestContext(), stateC, snapshotRootC, proofC, 3)
+		err = testDB.StoreState(t.GetTestContext(), stateC, snapshotRootC, proofC, 3, 3)
 		Nil(t.T(), err)
 
 		attestationA := agentstypes.NewAttestation(snapshotRootA, agentRootA, 1, big.NewInt(int64(gofakeit.Uint32())), big.NewInt(int64(gofakeit.Uint32())))
@@ -102,6 +103,7 @@ func (t *DBSuite) TestGetTimestampForMessage() {
 	})
 }
 
+// TODO: Add more edge cases.
 func (t *DBSuite) TestGetEarliestStateInRange() {
 	t.RunOnAllDBs(func(testDB db.ExecutorDB) {
 		origin := gofakeit.Uint32()
@@ -125,7 +127,7 @@ func (t *DBSuite) TestGetEarliestStateInRange() {
 			agentRoots = append(agentRoots, common.BigToHash(big.NewInt(gofakeit.Int64())))
 			proof := [][]byte{[]byte(gofakeit.Word()), []byte(gofakeit.Word())}
 
-			err := testDB.StoreState(t.GetTestContext(), state, snapshotRoots[i-1], proof, 1)
+			err := testDB.StoreState(t.GetTestContext(), state, snapshotRoots[i-1], proof, 1, 1)
 			Nil(t.T(), err)
 		}
 

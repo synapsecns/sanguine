@@ -220,8 +220,8 @@ func (e *ExecutorSuite) TestMerkleInsert() {
 	e.Nil(err)
 	e.TestBackendOrigin.WaitForConfirmation(e.GetTestContext(), tx)
 
-	//This transaction is needed to get the simulated chain's block number to increase by 1, since StreamLogs will
-	//do lastBlockNumber - 1.
+	// This transaction is needed to get the simulated chain's block number to increase by 1, since StreamLogs will
+	// do lastBlockNumber - 1.
 	tx, err = e.TestContractOnOrigin.EmitAgentsEventA(transactOpts.TransactOpts, big.NewInt(gofakeit.Int64()), big.NewInt(gofakeit.Int64()), big.NewInt(gofakeit.Int64()))
 	e.Nil(err)
 	e.TestBackendOrigin.WaitForConfirmation(e.GetTestContext(), tx)
