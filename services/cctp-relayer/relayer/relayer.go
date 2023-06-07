@@ -105,7 +105,7 @@ func NewCCTPRelayer(ctx context.Context, cfg config.Config, scribeClient client.
 	}, nil
 }
 
-// Run starts the cctp relayer. It calls `Start` and `Listen`.
+// Run starts the CCTPRelayer.
 func (c CCTPRelayer) Run(ctx context.Context) error {
 	g, _ := errgroup.WithContext(ctx)
 
@@ -215,7 +215,10 @@ func scribeResponseToMsg(ctx context.Context, response *pbscribe.StreamLogsRespo
 
 	// TODO(dwasse): parse the logs from the receipt to populate
 	// msg.message and msg.auxillaryData
-	msg := &usdcMessage{}
+	receipt := receipts[0]
+	msg := &usdcMessage{
+		txHash: receipt.TxHash.Hex(),
+	}
 
 	return msg, nil
 }
