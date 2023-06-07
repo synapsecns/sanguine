@@ -13,7 +13,7 @@ The protocol relies on a concept called **Optimistic Messaging** that results in
 - **Step 1**: Client Smart Contract on Chain A tells Synapse Origin Contract to say "hello" to Chain B.
 - **Step 2**: Off Chain Agents observe that Chain A client wants to say "hello" to Chain B.
 - **Step 3**: Off Chain Agents tell the Synapse Destination Contract on Chain B that Chain A says "hello".
-- **Step 4**: Destination waits for a period of time (in this case 1 hour) to give other Off Chain Agents time to object
+- **Step 4**: Destination waits for a period of time (in this case 1 hour) to give other Off Chain Agents time to object.
 - **Step 5**: After 1 hour with nobody objecting, Off Chain Agents tells the Client Smart Contract on Chain B that Chain A says "hello".
 
 During the normal path of sending a message, the flow looks like this:
@@ -40,4 +40,10 @@ Under normal conditions, in order to send a message, there needs to be 3 differe
 
 For cases when fraud occurs, all it takes is one honest Off Chain Agent to stop the fraud.
 
-
+**Synapse Messaging Fraud Protection:**
+![SynapseMessagingFraudProtection](../../static/img/SynapseMessagingFraudProtection.png 'Synapse Messaging Fraud Protection')
+- **Step 1**: Malicious Off Chain Agent lies to Chain B and says Chain A said "goodbye".
+- **Step 2**: Destination waits for a period of time (in this case 1 hour) to give other Off Chain Agents time to object.
+- **Step 3**: An honest Off Chain Agent double checks with Chain A and checks if Chain A did in fact say "goodbye" to Chain B.
+- **Step 4**: Chain A lets the honest Off Chain Agent know that it never said goodbye to Chain B.
+- **Step 5**: The honest Off Chain Agent tells Chain B that the Malicious agent is lying, and Chain B will not allow the fraudulent message.
