@@ -75,20 +75,6 @@ const Withdraw = ({
   }
   const { synapseSDK } = useSynapseContext()
 
-  const sumBigNumbers = (pool: Token, bigNumMap: any) => {
-    let sum = Zero
-    pool?.poolTokens &&
-      pool.poolTokens.map((token) => {
-        if (bigNumMap[token.addresses[chainId]]) {
-          sum = sum.add(
-            bigNumMap[token.addresses[chainId]].value.mul(
-              BigNumber.from(10).pow(18 - token.decimals[chainId])
-            )
-          )
-        }
-      })
-    return sum
-  }
   const calculateMaxWithdraw = async () => {
     if (poolUserData == null || address == null) {
       return
@@ -119,7 +105,7 @@ const Withdraw = ({
         )
         outputs[withdrawType] = amount
       }
-      const tokenSum = sumBigNumbers(pool, outputs)
+      const tokenSum = sumBigNumbers(pool, outputs, chainId)
       const priceImpact = calculateExchangeRate(
         inputValue.bn,
         18,
@@ -160,11 +146,13 @@ const Withdraw = ({
           pool.decimals[chainId]
         )
       : ''
-    onChangeInputValue(pool, numericalOut)
+    const bigNum = stringToBigNum(numericalOut, pool.decimals[chainId])
+    setInputValue({ bn: bigNum, str: numericalOut })
   }
 
   const onChangeInputValue = (token: Token, value: string) => {
     const bigNum = stringToBigNum(value, token.decimals[chainId])
+
     if (poolUserData.lpTokenBalance.isZero()) {
       setInputValue({ bn: bigNum, str: value })
 
@@ -174,6 +162,7 @@ const Withdraw = ({
     const pn = bigNum
       ? bigNum.mul(100).div(poolUserData.lpTokenBalance).toNumber()
       : 0
+
     setInputValue({ bn: bigNum, str: value })
 
     if (pn > 100) {
@@ -307,9 +296,7 @@ const Withdraw = ({
             text-gray-300
           `}
           placeholder="0"
-          onChange={(e) => {
-            onPercentChange(Number(e.currentTarget.value))
-          }}
+          onChange={(e) => onPercentChange(Number(e.currentTarget.value))}
           onFocus={(e) => e.target.select()}
           value={percentage ?? ''}
         />
@@ -416,6 +403,28 @@ const Withdraw = ({
       </Transition>
     </div>
   )
+}
+
+const sumBigNumbers = (
+  pool: Token,
+  bigNumMap: Record<string, { value: BigNumber; index: number }>,
+  chainId: number
+) => {
+  if (!pool?.poolTokens) {
+    return Zero
+  }
+
+  return pool.poolTokens.reduce((sum, token) => {
+    if (!bigNumMap[token.addresses[chainId]]) {
+      return sum
+    }
+
+    const valueToAdd = bigNumMap[token.addresses[chainId]].value.mul(
+      BigNumber.from(10).pow(18 - token.decimals[chainId])
+    )
+
+    return sum.add(valueToAdd)
+  }, Zero)
 }
 
 export default Withdraw
