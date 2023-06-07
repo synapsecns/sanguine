@@ -21,8 +21,28 @@ Once it is considered valid, then off-chain agents can submit a proof using that
 The Agent Root is a critical security property because a malicious Agent Root could allow a chain to be convinced of a malicious agent, which could open the door
 to a malicious message being executed.
 
+**Agent Root formed from Merkle Tree of Agent Infos:**
+![AgentRoot](../../static/img/AgentRoot.png 'Diagram of AgentRoot formed from Merkle Tree of Agent Infos')
+
+### Agent Status
+Every bonded agent will have a given status consisting of the following fields
+1.  **Flag**: Indicates the status. The options are as follows:
+    1.  Unknown: This agent was not found in the agent set.
+    2.  Active: This is an active agent.
+    3.  Unstaking: Agent has unstaked and is waiting for the [Unbonding Period](#unbonding-period).
+    4.  Resting: Agent still has posted bond but currently down and not actively participating in the protocol for whatever reason.
+    5.  Fraudulent: Agent has been accused of fraud by a [Guard](#guard).
+    6.  Slashed: Agent was found guilty of fraud and slashed.
+2.  **Domain**: Will be 0 if it is a [Guard](#guard) or set to a specific chain id if it is a [Notary](#notary).
+3.  **Index**: The position in the list of agents states that this one was inserted into.
+
+See the Diagram under the section explaining [Agent Root](#agent-root) which also depicts the [Agent Set](#agent-set) consisting of all the
+Agent Statuses.
+
 ### Agent Set
 The set of bonded agents ([Guards](#guard) and [Notaries](#notary)) that are currently bonded.
+
+See the Diagram under the section explaining [Agent Root](#agent-root) which also depicts the Agent Set consisting of all the [Agent Statuses](#agent-status).
 
 ### Attestation
 This is what [Notaries](#notary) sign and post to the chain that it is assigned to, and it contains crucial information that is used
@@ -154,6 +174,9 @@ A Gas Data Snapshot is nothing more than a list of Gas Data from more than one c
 multiple chains. Whenever a Notary posts an [Attestation](#attestation) to its [Destinaion Chain](#destination-chain), it will pass along the Gas Data Snapshot so that
 chain can update its local Gas Oracle with the latest information about Gas Prices on the other chains.
 
+**Gas Data Snapshot formed from the Gas Data from multiple chains:**
+![GasSnapshot](../../static/img/GasSnapshot.png 'Diagram of Gas Data Snapshot formed from the Gas Data from multiple chains')
+
 ### Gas Oracle
 The Gas Oracle is a Smart Contract deployed on each of the chains in the network that tracks the estimated gas prices on other chains.
 This is needed to estimate the cost of gas to send a message in the messaging system. The sender of the message pays up front for the transactions
@@ -164,14 +187,14 @@ the [Origin Chain](#origin-chain) to estimate how much should be collected.
 The Gas Oracle Smart Contract is deployed on the chains and provides the service of the [Gas Oracle](#gas-oracle)
 See the source code of [GasOracle.sol](https://github.com/synapsecns/sanguine/blob/master/packages/contracts-core/contracts/GasOracle.sol).
 The GasOracle contract is responsible for tracking the gas data for both local and remote chains.
-## Local gas data tracking
+#### Local gas data tracking
 1.  GasOracle is using the available tools such as "tx.gasprice" to track the time-averaged values
 for different "gas statistics" (to be implemented in the future).
 2.  These values are cached, so that the reported values are only changed when a big enough change is detected.
 3.  In the MVP version the gas data is set manually by the owner of the contract.
 4.  The reported values are included in [Origin's State](#state), whenever a new message is sent.
 5.  This leads to cached "chain gas data" being included in the [Guard and Notary snapshots](#state-snapshot).
-## Remote gas data tracking
+#### Remote gas data tracking
 1.  To track gas data for the remote chains, GasOracle relies on the Notaries to pass the gas data alongside
 their attestations.
 2.  As the gas data is cached, this leads to a storage write only when the gas data for the remote chain changes significantly.
@@ -254,6 +277,20 @@ Please see [Merkle Trees](https://www.simplilearn.com/tutorials/blockchain-tutor
 
 ### Message
 The Message is the raw payload that a sender wants delivered to the destination contract.
+
+See the Diagram under the section explaining [Message Merkle Root](#message-merkle-root) which also depicts the [Message Merkle Tree](#message-merkle-tree) consisting of all the messages sent from a particular chain.
+
+### Message Merkle Tree
+Each chain has an [Origin Smart Contract](#origin-smart-contract) that keeps a list of ordered messages sent from it.
+This list of ordered messages is put into a [Merkle Tree](#merkle-tree) with a capacity of (2^32 - 1) messages.
+
+See the Diagram under the section explaining [Message Merkle Root](#message-merkle-root) which also depicts the Merkle Tree consisting of all the [Messages](#message).
+
+### Message Merkle Root
+The 32 byte [merkle root](#merkle-root) of the [Message Merkle Tree](#message-merkle-tree).
+
+**Message Merkle Root formed from Merkle Tree of Messages:**
+![MessageMerkleRoot](../../static/img/MessageMerkleRoot.png 'Diagram of Message Merkle Root formed from Merkle Tree of Messages')
 
 ### Notary
 The Notary is an off-chain agent that is assigned to a specific chain and has the very important job of posting attestations to its chain
@@ -353,12 +390,17 @@ the list of states will be inserted into a Merkle tree, where the leaves of the 
 essentially a hash of the State. The root of the Merkle tree is known as the "Snap Root", which is short for
 "Snapshot Merkle Root".
 
+**Snap Root formed from Merkle Tree of Snapshot States:**
+![SnapRoot](../../static/img/SnapRoot.png 'Diagram of SnapRoot formed from Snapshot of States')
+
 ### State Snapshot
 The Synapse messaging protocol uses the term snapshot to describe a list of Origin [States](#state).
 The bonded agents (i.e. Notaries and Guards) periodically observe all the chains in the network and track
 the latest "States" of those chains. For all the chains whose State has changed, the bonded agent will
 update the Inbox contract on the Synapse chain by sending a list of all the new States. Thus, a snapshot is
 just a way to batch the states of multiple chains in order to reduce the number of calls.
+
+See the Diagram under the section explaining [Snap Root](#snap-root) which also depicts the Snapshot of States.
 
 ### State
 Each chain in the network at a given point in time will have values set for the following properties that define its "state":
@@ -369,6 +411,9 @@ Each chain in the network at a given point in time will have values set for the 
 5. Timestamp is the time when the current tip was added to the chain.
 6. [Gas Data](#gas-data) contains information about recent gas rates on this chain so other chains can estimate gas costs
 of performing necessary transactions on remote chains.
+
+See the Diagram under the section explaining [Snap Root](#snap-root) which also depicts the [Snapshot](#state-snapshot) of States, with a
+zoom in example State.
 
 ### Summit Smart Contract
 The Summit Smart Contract is deployed on the [Synapse Chain](#synapse-chain) along with the [Bonding Manager](#bonding-manager-smart-contract) and
