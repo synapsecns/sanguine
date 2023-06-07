@@ -197,7 +197,9 @@ const Deposit = ({
       properties.className = 'from-[#feba06] to-[#FEC737]'
       properties.disabled = false
       properties.buttonAction = () =>
-        approve(pool, depositQuote, inputValue.bn, chainId)
+        approve(pool, depositQuote, inputValue.bn, chainId).then(() =>
+          calculateMaxDeposits()
+        )
       properties.postButtonAction = () => setTime(0)
       return properties
     }
