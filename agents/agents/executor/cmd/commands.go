@@ -21,8 +21,6 @@ import (
 	"go.opentelemetry.io/otel/trace"
 	"golang.org/x/sync/errgroup"
 	"gorm.io/gorm/schema"
-	"math/big"
-
 	// used to embed markdown.
 	_ "embed"
 	"fmt"
@@ -133,7 +131,7 @@ func createExecutorParameters(ctx context.Context, c *cli.Context, metrics metri
 	} */
 
 	for _, execClient := range executorConfig.Chains {
-		ethClient, err := ethergoClient.DialBackendChainID(ctx, big.NewInt(int64(execClient.ChainID)), execClient.TempRPC, metrics, ethergoClient.Capture(true))
+		ethClient, err := ethergoClient.DialBackend(ctx, execClient.TempRPC, metrics, ethergoClient.Capture(true))
 		if err != nil {
 			return executorConfig, nil, nil, fmt.Errorf("failed to dial rpc: %w", err)
 		}

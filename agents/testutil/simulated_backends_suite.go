@@ -144,7 +144,6 @@ func (a *SimulatedBackendsTestSuite) SetupSuite() {
 		coreConfig.DefaultDate,
 	), metrics.Jaeger)
 	a.Require().Nil(err)
-
 }
 
 // SetupOrigin sets up the backend that will have the origin contract deployed on it.
@@ -168,9 +167,7 @@ func (a *SimulatedBackendsTestSuite) SetupOrigin(deployManager *DeployManager) {
 		LightManagerAddress: a.LightManagerOnOrigin.Address().String(),
 		LightInboxAddress:   a.LightInboxOnOrigin.Address().String(),
 		RPCUrl:              a.TestBackendOrigin.RPCAddress(),
-	},
-		a.ContractMetrics,
-	)
+	})
 	if err != nil {
 		a.T().Fatal(err)
 	}
@@ -210,9 +207,7 @@ func (a *SimulatedBackendsTestSuite) SetupDestination(deployManager *DeployManag
 		LightManagerAddress: a.LightManagerOnDestination.Address().String(),
 		LightInboxAddress:   a.LightInboxOnDestination.Address().String(),
 		RPCUrl:              a.TestBackendDestination.RPCAddress(),
-	},
-		a.ContractMetrics,
-	)
+	})
 	if err != nil {
 		a.T().Fatal(err)
 	}
@@ -237,9 +232,7 @@ func (a *SimulatedBackendsTestSuite) SetupSummit(deployManager *DeployManager) {
 		BondingManagerAddress: a.BondingManagerOnSummit.Address().String(),
 		InboxAddress:          a.InboxOnSummit.Address().String(),
 		RPCUrl:                a.TestBackendSummit.RPCAddress(),
-	},
-		a.ContractMetrics,
-	)
+	})
 	if err != nil {
 		a.T().Fatal(err)
 	}

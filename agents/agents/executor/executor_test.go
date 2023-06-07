@@ -116,6 +116,7 @@ func (e *ExecutorSuite) TestVerifyState() {
 	e.False(inTreeFail)
 }
 
+//nolint:maintidx
 func (e *ExecutorSuite) TestMerkleInsert() {
 	// TODO (joe and lex): FIX ME
 	// e.T().Skip()

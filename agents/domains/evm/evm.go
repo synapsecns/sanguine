@@ -4,13 +4,10 @@ package evm
 import (
 	"context"
 	"fmt"
-	"github.com/synapsecns/sanguine/core/metrics"
-	"github.com/synapsecns/sanguine/ethergo/client"
-	"math/big"
-
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/synapsecns/sanguine/agents/config"
 	"github.com/synapsecns/sanguine/agents/domains"
+	"github.com/synapsecns/sanguine/ethergo/chain"
 )
 
 type evmClient struct {
@@ -20,7 +17,7 @@ type evmClient struct {
 	config config.DomainConfig
 	// client uses the old synapse client for now
 	//nolint: staticcheck
-	client client.EVMChainID
+	client chain.Chain
 	// origin contains the origin contract
 	origin domains.OriginContract
 	// summit contains the summit contract
@@ -42,8 +39,8 @@ var _ domains.DomainClient = &evmClient{}
 // NewEVM creates a new evm client.
 //
 //nolint:nestif
-func NewEVM(ctx context.Context, name string, domain config.DomainConfig, handler metrics.Handler) (domains.DomainClient, error) {
-	underlyingClient, err := client.DialBackendChainID(ctx, big.NewInt(int64(domain.DomainID)), domain.RPCUrl, handler, client.Capture(true))
+func NewEVM(ctx context.Context, name string, domain config.DomainConfig) (domains.DomainClient, error) {
+	underlyingClient, err := chain.NewFromURL(ctx, domain.RPCUrl)
 	if err != nil {
 		return nil, fmt.Errorf("could not get evm: %w", err)
 	}

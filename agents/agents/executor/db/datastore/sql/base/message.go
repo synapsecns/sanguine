@@ -142,26 +142,29 @@ func (s Store) GetBlockNumber(ctx context.Context, messageMask types.DBMessage) 
 func (s Store) GetLastBlockNumber(ctx context.Context, chainID uint32, contractType types.ContractType) (uint64, error) {
 	var lastBlockNumber sql.NullInt64
 
-	preDbTx := s.DB().WithContext(ctx)
+	preDBTx := s.DB().WithContext(ctx)
 	var dbTx *gorm.DB
 
+	//nolint:exhaustive
 	switch contractType {
 	case types.OriginContract:
-		dbTx = preDbTx.Model(&Message{}).
+		dbTx = preDBTx.Model(&Message{}).
 			Where(fmt.Sprintf("%s = ?", ChainIDFieldName), chainID).
 			Select(fmt.Sprintf("MAX(%s)", BlockNumberFieldName)).
 			Find(&lastBlockNumber)
 	case types.LightInboxContract:
-		dbTx = preDbTx.Model(&Attestation{}).
+		dbTx = preDBTx.Model(&Attestation{}).
 			Where(fmt.Sprintf("%s = ?", DestinationFieldName), chainID).
 			Select(fmt.Sprintf("MAX(%s)", DestinationBlockNumberFieldName)).
 			Find(&lastBlockNumber)
 	case types.InboxContract:
 		// note: this makes the assumption there is one summit contract. If these are switched between chains without a state copy
 		// you may receive erroneous results from this function
-		dbTx = preDbTx.Model(&State{}).
+		dbTx = preDBTx.Model(&State{}).
 			Select(fmt.Sprintf("MAX(%s)", BlockNumberFieldName)).
 			Find(&lastBlockNumber)
+	default:
+		return 0, fmt.Errorf("unknown contract type: %v", contractType)
 	}
 
 	if dbTx.Error != nil {

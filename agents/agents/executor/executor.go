@@ -20,7 +20,7 @@ import (
 	"github.com/synapsecns/sanguine/agents/types"
 	"github.com/synapsecns/sanguine/core/merkle"
 	"github.com/synapsecns/sanguine/core/metrics"
-	evmClient "github.com/synapsecns/sanguine/ethergo/client"
+	ethergoChain "github.com/synapsecns/sanguine/ethergo/chain"
 	agentsConfig "github.com/synapsecns/sanguine/ethergo/signer/config"
 	"github.com/synapsecns/sanguine/ethergo/signer/signer"
 	"github.com/synapsecns/sanguine/services/scribe/client"
@@ -190,7 +190,7 @@ func NewExecutor(ctx context.Context, config config.Config, executorDB db.Execut
 		// TODO: The following line of code should be added back once we have confidence in omniRPC. For now we use tempRPC.
 		// chainRPCURL := fmt.Sprintf("%s/1/rpc/%d", config.BaseOmnirpcURL, chain.ChainID)
 
-		underlyingClient, err := evmClient.DialBackendChainID(ctx, big.NewInt(int64(chain.ChainID)), chain.TempRPC, handler, evmClient.Capture(true))
+		underlyingClient, err := ethergoChain.NewFromURL(ctx, chain.TempRPC)
 		if err != nil {
 			return nil, fmt.Errorf("could not get evm: %w", err)
 		}
@@ -243,10 +243,7 @@ func (e Executor) Run(parentCtx context.Context) error {
 
 	// Listen for snapshotAcceptedEvents on bonding manager.
 	g.Go(func() error {
-		return e.streamLogs(ctx, e.grpcClient, e.grpcConn, e.config.SummitChainID, e.config.InboxAddress, nil, ContractEventType{
-			contractType: execTypes.InboxContract,
-			eventType:    snapshotAcceptedEvent,
-		})
+		return e.streamLogs(ctx, e.grpcClient, e.grpcConn, e.config.SummitChainID, e.config.InboxAddress, execTypes.InboxContract)
 	})
 
 	for _, chain := range e.config.Chains {
@@ -254,18 +251,12 @@ func (e Executor) Run(parentCtx context.Context) error {
 
 		// Listen for sentEvents on origin.
 		g.Go(func() error {
-			return e.streamLogs(ctx, e.grpcClient, e.grpcConn, chain.ChainID, chain.OriginAddress, nil, ContractEventType{
-				contractType: execTypes.OriginContract,
-				eventType:    sentEvent,
-			})
+			return e.streamLogs(ctx, e.grpcClient, e.grpcConn, chain.ChainID, chain.OriginAddress, execTypes.OriginContract)
 		})
 
 		// Listen for attestationAcceptedEvents on destination.
 		g.Go(func() error {
-			return e.streamLogs(ctx, e.grpcClient, e.grpcConn, chain.ChainID, chain.DestinationAddress, nil, ContractEventType{
-				contractType: execTypes.LightInboxContract,
-				eventType:    attestationAcceptedEvent,
-			})
+			return e.streamLogs(ctx, e.grpcClient, e.grpcConn, chain.ChainID, chain.DestinationAddress, execTypes.LightInboxContract)
 		})
 
 		g.Go(func() error {
@@ -424,25 +415,6 @@ func (e Executor) Execute(parentCtx context.Context, message types.Message) (_ b
 			return true, nil
 		}
 	}
-}
-
-type eventType int
-
-const (
-	// Origin's Sent event.
-	sentEvent eventType = iota
-	// LightManager's AttestationAccepted event.
-	attestationAcceptedEvent
-	// Destination's AttestationExecuted event.
-	executedEvent
-	// Summit's SnapshotAccepted event.
-	snapshotAcceptedEvent
-	otherEvent
-)
-
-type ContractEventType struct {
-	contractType execTypes.ContractType
-	eventType    eventType
 }
 
 // verifyMessageMerkleProof verifies a message against the merkle tree at the state of the given nonce.
@@ -682,8 +654,8 @@ func (e Executor) checkIfExecuted(parentCtx context.Context, message types.Messa
 // streamLogs uses gRPC to stream logs into a channel.
 //
 //nolint:cyclop
-func (e Executor) streamLogs(ctx context.Context, grpcClient pbscribe.ScribeServiceClient, conn *grpc.ClientConn, chainID uint32, address string, toBlockNumber *uint64, contractEvent ContractEventType) error {
-	lastStoredBlock, err := e.executorDB.GetLastBlockNumber(ctx, chainID, contractEvent.contractType)
+func (e Executor) streamLogs(ctx context.Context, grpcClient pbscribe.ScribeServiceClient, conn *grpc.ClientConn, chainID uint32, address string, contractType execTypes.ContractType) error {
+	lastStoredBlock, err := e.executorDB.GetLastBlockNumber(ctx, chainID, contractType)
 	if err != nil {
 		return fmt.Errorf("could not get last stored block: %w", err)
 	}
@@ -691,9 +663,6 @@ func (e Executor) streamLogs(ctx context.Context, grpcClient pbscribe.ScribeServ
 	fromBlock := strconv.FormatUint(lastStoredBlock, 16)
 
 	toBlock := "latest"
-	if toBlockNumber != nil {
-		toBlock = strconv.FormatUint(*toBlockNumber, 16)
-	}
 
 	stream, err := grpcClient.StreamLogs(ctx, &pbscribe.StreamLogsRequest{
 		Filter: &pbscribe.LogFilter{
@@ -734,8 +703,7 @@ func (e Executor) streamLogs(ctx context.Context, grpcClient pbscribe.ScribeServ
 
 			_, span := e.handler.Tracer().Start(ctx, "executor.streamLog", trace.WithAttributes(
 				attribute.Int(metrics.ChainID, int(chainID)),
-				attribute.Int("contract", int(contractEvent.contractType)),
-				attribute.Int("event", int(contractEvent.eventType)),
+				attribute.Int("contract", int(contractType)),
 				attribute.String(metrics.TxHash, log.TxHash.String()),
 			))
 
@@ -756,12 +724,11 @@ func (e Executor) streamLogs(ctx context.Context, grpcClient pbscribe.ScribeServ
 //
 //nolint:cyclop,gocognit
 func (e Executor) processLog(parentCtx context.Context, log ethTypes.Log, chainID uint32) (err error) {
-	contractEvent := e.logType(log, chainID)
+	contractType := e.logType(log, chainID)
 
 	ctx, span := e.handler.Tracer().Start(parentCtx, "processLog", trace.WithAttributes(
 		attribute.Int(metrics.ChainID, int(chainID)),
-		attribute.Int("contract", int(contractEvent.contractType)),
-		attribute.Int("event", int(contractEvent.eventType)),
+		attribute.Int("contract", int(contractType)),
 		attribute.String(metrics.TxHash, log.TxHash.String()),
 	))
 
@@ -769,7 +736,8 @@ func (e Executor) processLog(parentCtx context.Context, log ethTypes.Log, chainI
 		metrics.EndSpanWithErr(span, err)
 	}()
 
-	switch contractEvent.contractType {
+	//nolint:exhaustive
+	switch contractType {
 	case execTypes.OriginContract:
 		message, err := e.logToMessage(log, chainID)
 		if err != nil {
@@ -802,72 +770,68 @@ func (e Executor) processLog(parentCtx context.Context, log ethTypes.Log, chainI
 			return fmt.Errorf("could not store message: %w", err)
 		}
 	case execTypes.InboxContract:
-		if contractEvent.eventType == snapshotAcceptedEvent {
-			snapshot, err := e.logToSnapshot(log, chainID)
-			if err != nil {
-				return fmt.Errorf("could not convert log to snapshot: %w", err)
-			}
+		snapshot, err := e.logToSnapshot(log, chainID)
+		if err != nil {
+			return fmt.Errorf("could not convert log to snapshot: %w", err)
+		}
 
-			if snapshot == nil {
-				return nil
-			}
+		if snapshot == nil {
+			return nil
+		}
 
-			snapshotRoot, proofs, err := (*snapshot).SnapshotRootAndProofs()
-			if err != nil {
-				return fmt.Errorf("could not get snapshot root and proofs: %w", err)
-			}
+		snapshotRoot, proofs, err := (*snapshot).SnapshotRootAndProofs()
+		if err != nil {
+			return fmt.Errorf("could not get snapshot root and proofs: %w", err)
+		}
 
-			err = e.executorDB.StoreStates(ctx, (*snapshot).States(), snapshotRoot, proofs, log.BlockNumber)
-			if err != nil {
-				return fmt.Errorf("could not store states: %w", err)
-			}
+		err = e.executorDB.StoreStates(ctx, (*snapshot).States(), snapshotRoot, proofs, log.BlockNumber)
+		if err != nil {
+			return fmt.Errorf("could not store states: %w", err)
 		}
 	case execTypes.LightInboxContract:
-		if contractEvent.eventType == attestationAcceptedEvent {
-			attestation, err := e.logToAttestation(log, chainID)
-			if err != nil {
-				return fmt.Errorf("could not convert log to attestation: %w", err)
-			}
+		attestation, err := e.logToAttestation(log, chainID)
+		if err != nil {
+			return fmt.Errorf("could not convert log to attestation: %w", err)
+		}
 
-			if attestation == nil {
-				return nil
-			}
+		if attestation == nil {
+			return nil
+		}
 
-			b := &backoff.Backoff{
-				Factor: 2,
-				Jitter: true,
-				Min:    30 * time.Millisecond,
-				Max:    3 * time.Second,
-			}
+		b := &backoff.Backoff{
+			Factor: 2,
+			Jitter: true,
+			Min:    30 * time.Millisecond,
+			Max:    3 * time.Second,
+		}
 
-			timeout := time.Duration(0)
+		timeout := time.Duration(0)
 
-			var logHeader *ethTypes.Header
+		var logHeader *ethTypes.Header
 
-		retryLoop:
-			for {
-				select {
-				case <-ctx.Done():
-					return fmt.Errorf("context canceled: %w", ctx.Err())
-				case <-time.After(timeout):
-					if b.Attempt() >= rpcRetry {
-						return fmt.Errorf("could not get log header: %w", err)
-					}
-					logHeader, err = e.chainExecutors[chainID].rpcClient.HeaderByNumber(ctx, big.NewInt(int64(log.BlockNumber)))
-					if err != nil {
-						timeout = b.Duration()
-
-						continue
-					}
-
-					break retryLoop
+	retryLoop:
+		for {
+			select {
+			case <-ctx.Done():
+				return fmt.Errorf("context canceled: %w", ctx.Err())
+			case <-time.After(timeout):
+				if b.Attempt() >= rpcRetry {
+					return fmt.Errorf("could not get log header: %w", err)
 				}
-			}
+				logHeader, err = e.chainExecutors[chainID].rpcClient.HeaderByNumber(ctx, big.NewInt(int64(log.BlockNumber)))
+				if err != nil {
+					timeout = b.Duration()
 
-			err = e.executorDB.StoreAttestation(ctx, *attestation, chainID, log.BlockNumber, logHeader.Time)
-			if err != nil {
-				return fmt.Errorf("could not store attestation: %w", err)
+					continue
+				}
+
+				break retryLoop
 			}
+		}
+
+		err = e.executorDB.StoreAttestation(ctx, *attestation, chainID, log.BlockNumber, logHeader.Time)
+		if err != nil {
+			return fmt.Errorf("could not store attestation: %w", err)
 		}
 	case execTypes.Other:
 		span.AddEvent("other contract event")

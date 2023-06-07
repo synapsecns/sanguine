@@ -2,7 +2,7 @@ package types
 
 // MessageStatusType is the type for message statuses on the Destination.
 //
-//go:generate go run golang.org/x/tools/cmd/stringer -type=ContractType -linecomment
+//go:generate go run golang.org/x/tools/cmd/stringer -type=MessageStatusType -linecomment
 type MessageStatusType int
 
 const (

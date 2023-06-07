@@ -3,7 +3,7 @@ package evm
 import (
 	"context"
 	"fmt"
-	"github.com/synapsecns/sanguine/ethergo/client"
+	"github.com/synapsecns/sanguine/ethergo/chain"
 	"math/big"
 	"time"
 
@@ -20,7 +20,7 @@ import (
 // NewDestinationContract returns a bound destination contract.
 //
 //nolint:staticcheck
-func NewDestinationContract(ctx context.Context, client client.EVMChainID, destinationAddress common.Address) (domains.DestinationContract, error) {
+func NewDestinationContract(ctx context.Context, client chain.Chain, destinationAddress common.Address) (domains.DestinationContract, error) {
 	boundCountract, err := destination.NewDestinationRef(destinationAddress, client)
 	if err != nil {
 		return nil, fmt.Errorf("could not create %T: %w", &destination.DestinationRef{}, err)
@@ -39,7 +39,7 @@ type destinationContract struct {
 	contract *destination.DestinationRef
 	// client contains the evm client
 	//nolint: staticcheck
-	client client.EVMChainID
+	client chain.Chain
 	// nonceManager is the nonce manager used for transacting with the chain
 	nonceManager nonce.Manager
 }

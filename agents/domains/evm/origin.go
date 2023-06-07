@@ -3,7 +3,7 @@ package evm
 import (
 	"context"
 	"fmt"
-	"github.com/synapsecns/sanguine/ethergo/client"
+	"github.com/synapsecns/sanguine/ethergo/chain"
 	"math/big"
 
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
@@ -17,7 +17,7 @@ import (
 // NewOriginContract returns a new bound origin contract.
 //
 //nolint:staticcheck
-func NewOriginContract(ctx context.Context, client client.EVMChainID, originAddress common.Address) (domains.OriginContract, error) {
+func NewOriginContract(ctx context.Context, client chain.Chain, originAddress common.Address) (domains.OriginContract, error) {
 	boundContract, err := origin.NewOriginRef(originAddress, client)
 	if err != nil {
 		return nil, fmt.Errorf("could not create %T: %w", &origin.OriginRef{}, err)
@@ -39,7 +39,7 @@ type originContract struct {
 	contract origin.IOrigin
 	// client is the client
 	//nolint: staticcheck
-	client client.EVMChainID
+	client chain.Chain
 	// nonceManager is the nonce manager used for transacting
 	nonceManager nonce.Manager
 }

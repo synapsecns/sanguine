@@ -11,7 +11,7 @@ import (
 	"github.com/synapsecns/sanguine/agents/contracts/lightmanager"
 	"github.com/synapsecns/sanguine/agents/domains"
 	"github.com/synapsecns/sanguine/agents/types"
-	"github.com/synapsecns/sanguine/ethergo/client"
+	"github.com/synapsecns/sanguine/ethergo/chain"
 	"github.com/synapsecns/sanguine/ethergo/signer/nonce"
 	"github.com/synapsecns/sanguine/ethergo/signer/signer"
 )
@@ -19,7 +19,7 @@ import (
 // NewLightManagerContract returns a bound light manager contract.
 //
 //nolint:staticcheck
-func NewLightManagerContract(ctx context.Context, client client.EVMChainID, lightManagerAddress common.Address) (domains.LightManagerContract, error) {
+func NewLightManagerContract(ctx context.Context, client chain.Chain, lightManagerAddress common.Address) (domains.LightManagerContract, error) {
 	boundCountract, err := lightmanager.NewLightManagerRef(lightManagerAddress, client)
 	if err != nil {
 		return nil, fmt.Errorf("could not create %T: %w", &lightmanager.LightManagerRef{}, err)
@@ -38,7 +38,7 @@ type lightManagerContract struct {
 	contract *lightmanager.LightManagerRef
 	// client contains the evm client
 	//nolint: staticcheck
-	client client.EVMChainID
+	client chain.Chain
 	// nonceManager is the nonce manager used for transacting with the chain
 	nonceManager nonce.Manager
 }

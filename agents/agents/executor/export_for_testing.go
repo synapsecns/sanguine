@@ -17,11 +17,10 @@ import (
 	"github.com/synapsecns/sanguine/agents/types"
 	"github.com/synapsecns/sanguine/core/merkle"
 	"github.com/synapsecns/sanguine/core/metrics"
-	evmClient "github.com/synapsecns/sanguine/ethergo/client"
+	ethergoChain "github.com/synapsecns/sanguine/ethergo/chain"
 	agentsConfig "github.com/synapsecns/sanguine/ethergo/signer/config"
 	"github.com/synapsecns/sanguine/services/scribe/client"
 	"golang.org/x/sync/errgroup"
-	"math/big"
 )
 
 // -------- [ UTILS ] -------- \\
@@ -88,7 +87,7 @@ func NewExecutorInjectedBackend(ctx context.Context, config config.Config, execu
 			lightInboxParserRef = &lightInboxParser
 		}
 
-		underlyingClient, err := evmClient.DialBackendChainID(ctx, big.NewInt(int64(chain.ChainID)), urls[chain.ChainID], handler, evmClient.Capture(true))
+		underlyingClient, err := ethergoChain.NewFromURL(ctx, urls[chain.ChainID])
 		if err != nil {
 			return nil, fmt.Errorf("could not get evm: %w", err)
 		}
@@ -158,10 +157,7 @@ func (e Executor) StartAndListenOrigin(ctx context.Context, chainID uint32, addr
 	g, _ := errgroup.WithContext(ctx)
 
 	g.Go(func() error {
-		return e.streamLogs(ctx, e.grpcClient, e.grpcConn, chainID, address, nil, ContractEventType{
-			contractType: execTypes.OriginContract,
-			eventType:    sentEvent,
-		})
+		return e.streamLogs(ctx, e.grpcClient, e.grpcConn, chainID, address, execTypes.OriginContract)
 	})
 
 	g.Go(func() error {
