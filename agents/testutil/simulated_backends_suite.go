@@ -1,44 +1,44 @@
 package testutil
 
 import (
-	"github.com/ethereum/go-ethereum/common"
-	executorMetadata "github.com/synapsecns/sanguine/agents/agents/executor/metadata"
-	guardMetadata "github.com/synapsecns/sanguine/agents/agents/guard/metadata"
-	notaryMetadata "github.com/synapsecns/sanguine/agents/agents/notary/metadata"
-	"github.com/synapsecns/sanguine/agents/contracts/inbox"
-	"github.com/synapsecns/sanguine/agents/contracts/lightinbox"
-	"github.com/synapsecns/sanguine/agents/contracts/test/bondingmanagerharness"
-	"github.com/synapsecns/sanguine/agents/contracts/test/lightmanagerharness"
-	"github.com/synapsecns/sanguine/core/metrics"
-	"github.com/synapsecns/sanguine/core/metrics/localmetrics"
-	"github.com/synapsecns/sanguine/ethergo/backends/preset"
-	"github.com/synapsecns/sanguine/ethergo/signer/signer/localsigner"
-	scribeMetadata "github.com/synapsecns/sanguine/services/scribe/metadata"
-	"math/big"
-	"sync"
-	"testing"
-
 	"github.com/Flaque/filet"
-	"github.com/synapsecns/sanguine/core/testsuite"
-	"github.com/synapsecns/sanguine/ethergo/contracts"
-
+	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/params"
 	"github.com/synapsecns/sanguine/agents/agents/executor/db"
 	executorsqllite "github.com/synapsecns/sanguine/agents/agents/executor/db/datastore/sql/sqlite"
+	executorMetadata "github.com/synapsecns/sanguine/agents/agents/executor/metadata"
+	guardMetadata "github.com/synapsecns/sanguine/agents/agents/guard/metadata"
+	notaryMetadata "github.com/synapsecns/sanguine/agents/agents/notary/metadata"
 	"github.com/synapsecns/sanguine/agents/config"
+	"github.com/synapsecns/sanguine/agents/contracts/inbox"
+	"github.com/synapsecns/sanguine/agents/contracts/lightinbox"
+	"github.com/synapsecns/sanguine/agents/contracts/test/bondingmanagerharness"
 	"github.com/synapsecns/sanguine/agents/contracts/test/destinationharness"
+	"github.com/synapsecns/sanguine/agents/contracts/test/lightmanagerharness"
 	"github.com/synapsecns/sanguine/agents/contracts/test/originharness"
 	"github.com/synapsecns/sanguine/agents/contracts/test/pingpongclient"
 	"github.com/synapsecns/sanguine/agents/contracts/test/summitharness"
 	"github.com/synapsecns/sanguine/agents/contracts/test/testclient"
 	"github.com/synapsecns/sanguine/agents/domains"
 	"github.com/synapsecns/sanguine/agents/domains/evm"
+	"github.com/synapsecns/sanguine/agents/testutil/agentstestcontract"
 	"github.com/synapsecns/sanguine/agents/types"
+	coreConfig "github.com/synapsecns/sanguine/core/config"
+	"github.com/synapsecns/sanguine/core/metrics"
+	"github.com/synapsecns/sanguine/core/metrics/localmetrics"
+	"github.com/synapsecns/sanguine/core/testsuite"
 	"github.com/synapsecns/sanguine/ethergo/backends"
+	"github.com/synapsecns/sanguine/ethergo/backends/preset"
+	"github.com/synapsecns/sanguine/ethergo/contracts"
 	"github.com/synapsecns/sanguine/ethergo/signer/signer"
+	"github.com/synapsecns/sanguine/ethergo/signer/signer/localsigner"
 	"github.com/synapsecns/sanguine/ethergo/signer/wallet"
 	scribedb "github.com/synapsecns/sanguine/services/scribe/db"
 	scribesqlite "github.com/synapsecns/sanguine/services/scribe/db/datastore/sql/sqlite"
+	scribeMetadata "github.com/synapsecns/sanguine/services/scribe/metadata"
+	"math/big"
+	"sync"
+	"testing"
 )
 
 // SimulatedBackendsTestSuite can be used as the base for any test needing simulated backends
@@ -58,6 +58,8 @@ type SimulatedBackendsTestSuite struct {
 	OriginContractMetadata              contracts.DeployedContract
 	DestinationContractOnOrigin         *destinationharness.DestinationHarnessRef
 	DestinationContractMetadataOnOrigin contracts.DeployedContract
+	TestContractOnOrigin                *agentstestcontract.AgentsTestContractRef
+	TestContractMetadataOnOrigin        contracts.DeployedContract
 	TestClientOnOrigin                  *testclient.TestClientRef
 	TestClientMetadataOnOrigin          contracts.DeployedContract
 	PingPongClientOnOrigin              *pingpongclient.PingPongClientRef
@@ -108,6 +110,7 @@ type SimulatedBackendsTestSuite struct {
 	ExecutorMetrics                     metrics.Handler
 	NotaryMetrics                       metrics.Handler
 	GuardMetrics                        metrics.Handler
+	ContractMetrics                     metrics.Handler
 }
 
 // NewSimulatedBackendsTestSuite creates an end-to-end test suite with simulated
@@ -134,6 +137,14 @@ func (a *SimulatedBackendsTestSuite) SetupSuite() {
 	a.Require().Nil(err)
 	a.GuardMetrics, err = metrics.NewByType(a.GetSuiteContext(), guardMetadata.BuildInfo(), metrics.Jaeger)
 	a.Require().Nil(err)
+	a.ContractMetrics, err = metrics.NewByType(a.GetSuiteContext(), coreConfig.NewBuildInfo(
+		coreConfig.DefaultVersion,
+		coreConfig.DefaultCommit,
+		"contract",
+		coreConfig.DefaultDate,
+	), metrics.Jaeger)
+	a.Require().Nil(err)
+
 }
 
 // SetupOrigin sets up the backend that will have the origin contract deployed on it.
@@ -146,6 +157,7 @@ func (a *SimulatedBackendsTestSuite) SetupOrigin(deployManager *DeployManager) {
 	a.PingPongClientMetadataOnOrigin, a.PingPongClientOnOrigin = deployManager.GetPingPongClient(a.GetTestContext(), a.TestBackendOrigin)
 	a.LightInboxMetadataOnOrigin, a.LightInboxOnOrigin = deployManager.GetLightInbox(a.GetTestContext(), a.TestBackendOrigin)
 	a.LightManagerMetadataOnOrigin, a.LightManagerOnOrigin = deployManager.GetLightManagerHarness(a.GetTestContext(), a.TestBackendOrigin)
+	a.TestContractMetadataOnOrigin, a.TestContractOnOrigin = deployManager.GetAgentsTestContract(a.GetTestContext(), a.TestBackendOrigin)
 
 	var err error
 	a.OriginDomainClient, err = evm.NewEVM(a.GetTestContext(), "origin_client", config.DomainConfig{
@@ -156,7 +168,9 @@ func (a *SimulatedBackendsTestSuite) SetupOrigin(deployManager *DeployManager) {
 		LightManagerAddress: a.LightManagerOnOrigin.Address().String(),
 		LightInboxAddress:   a.LightInboxOnOrigin.Address().String(),
 		RPCUrl:              a.TestBackendOrigin.RPCAddress(),
-	})
+	},
+		a.ContractMetrics,
+	)
 	if err != nil {
 		a.T().Fatal(err)
 	}
@@ -196,7 +210,9 @@ func (a *SimulatedBackendsTestSuite) SetupDestination(deployManager *DeployManag
 		LightManagerAddress: a.LightManagerOnDestination.Address().String(),
 		LightInboxAddress:   a.LightInboxOnDestination.Address().String(),
 		RPCUrl:              a.TestBackendDestination.RPCAddress(),
-	})
+	},
+		a.ContractMetrics,
+	)
 	if err != nil {
 		a.T().Fatal(err)
 	}
@@ -221,7 +237,9 @@ func (a *SimulatedBackendsTestSuite) SetupSummit(deployManager *DeployManager) {
 		BondingManagerAddress: a.BondingManagerOnSummit.Address().String(),
 		InboxAddress:          a.InboxOnSummit.Address().String(),
 		RPCUrl:                a.TestBackendSummit.RPCAddress(),
-	})
+	},
+		a.ContractMetrics,
+	)
 	if err != nil {
 		a.T().Fatal(err)
 	}

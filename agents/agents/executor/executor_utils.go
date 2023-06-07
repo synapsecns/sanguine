@@ -3,6 +3,7 @@ package executor
 import (
 	"fmt"
 	ethTypes "github.com/ethereum/go-ethereum/core/types"
+	execTypes "github.com/synapsecns/sanguine/agents/agents/executor/types"
 	"github.com/synapsecns/sanguine/agents/contracts/destination"
 	"github.com/synapsecns/sanguine/agents/contracts/inbox"
 	"github.com/synapsecns/sanguine/agents/contracts/lightinbox"
@@ -51,16 +52,16 @@ func (e Executor) logToSnapshot(log ethTypes.Log, chainID uint32) (*types.Snapsh
 }
 
 // logType determines whether a log is a `Sent` from Origin.sol or `AttestationAccepted` from Destination.sol.
-func (e Executor) logType(log ethTypes.Log, chainID uint32) contractEventType {
-	contractEvent := contractEventType{
-		contractType: other,
+func (e Executor) logType(log ethTypes.Log, chainID uint32) ContractEventType {
+	contractEvent := ContractEventType{
+		contractType: execTypes.Other,
 		eventType:    otherEvent,
 	}
 
 	//nolint:nestif
 	if e.chainExecutors[chainID].inboxParser != nil {
 		if summitEvent, ok := (*e.chainExecutors[chainID].inboxParser).EventType(log); ok && summitEvent == inbox.SnapshotAcceptedEvent {
-			contractEvent.contractType = inboxContract
+			contractEvent.contractType = execTypes.InboxContract
 			contractEvent.eventType = snapshotAcceptedEvent
 		}
 
@@ -69,15 +70,15 @@ func (e Executor) logType(log ethTypes.Log, chainID uint32) contractEventType {
 
 	//nolint:nestif
 	if originEvent, ok := e.chainExecutors[chainID].originParser.EventType(log); ok && originEvent == origin.SentEvent {
-		contractEvent.contractType = originContract
+		contractEvent.contractType = execTypes.OriginContract
 		contractEvent.eventType = sentEvent
 	} else if destinationEvent, ok := e.chainExecutors[chainID].destinationParser.EventType(log); ok {
-		contractEvent.contractType = destinationContract
+		contractEvent.contractType = execTypes.DestinationContract
 		if destinationEvent == destination.ExecutedEvent {
 			contractEvent.eventType = executedEvent
 		}
 	} else if lightManagerEvent, ok := (*e.chainExecutors[chainID].lightInboxParser).EventType(log); ok {
-		contractEvent.contractType = lightInboxContract
+		contractEvent.contractType = execTypes.LightInboxContract
 		if lightManagerEvent == lightinbox.AttestationAcceptedEvent {
 			contractEvent.eventType = attestationAcceptedEvent
 		}

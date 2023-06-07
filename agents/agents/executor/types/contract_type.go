@@ -10,8 +10,10 @@ const (
 	OriginContract ContractType = iota + 1 // OriginContract
 	// DestinationContract is a contract that receives messages on a specific chain.
 	DestinationContract // DestinationContract
-	// SummitContract is a contract that stores the combined data from all the chains.
-	SummitContract // SummitContract
+	// LightInboxContract is a TODO.
+	LightInboxContract // LightInboxContract
+	// InboxContract is a TODO.
+	InboxContract // InboxContract
 	// Other is any other contract.
 	Other // Other
 )

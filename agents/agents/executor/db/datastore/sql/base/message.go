@@ -151,12 +151,12 @@ func (s Store) GetLastBlockNumber(ctx context.Context, chainID uint32, contractT
 			Where(fmt.Sprintf("%s = ?", ChainIDFieldName), chainID).
 			Select(fmt.Sprintf("MAX(%s)", BlockNumberFieldName)).
 			Find(&lastBlockNumber)
-	case types.DestinationContract:
+	case types.LightInboxContract:
 		dbTx = preDbTx.Model(&Attestation{}).
 			Where(fmt.Sprintf("%s = ?", DestinationFieldName), chainID).
 			Select(fmt.Sprintf("MAX(%s)", DestinationBlockNumberFieldName)).
 			Find(&lastBlockNumber)
-	case types.SummitContract:
+	case types.InboxContract:
 		// note: this makes the assumption there is one summit contract. If these are switched between chains without a state copy
 		// you may receive erroneous results from this function
 		dbTx = preDbTx.Model(&State{}).

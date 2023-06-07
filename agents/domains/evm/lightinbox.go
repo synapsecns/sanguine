@@ -8,7 +8,7 @@ import (
 	"github.com/synapsecns/sanguine/agents/contracts/lightinbox"
 	"github.com/synapsecns/sanguine/agents/domains"
 	"github.com/synapsecns/sanguine/agents/types"
-	"github.com/synapsecns/sanguine/ethergo/chain"
+	"github.com/synapsecns/sanguine/ethergo/client"
 	"github.com/synapsecns/sanguine/ethergo/signer/nonce"
 	"github.com/synapsecns/sanguine/ethergo/signer/signer"
 	"math/big"
@@ -17,7 +17,7 @@ import (
 // NewLightInboxContract returns a bound light inbox contract.
 //
 //nolint:staticcheck
-func NewLightInboxContract(ctx context.Context, client chain.Chain, lightInboxAddress common.Address) (domains.LightInboxContract, error) {
+func NewLightInboxContract(ctx context.Context, client client.EVMChainID, lightInboxAddress common.Address) (domains.LightInboxContract, error) {
 	boundCountract, err := lightinbox.NewLightInboxRef(lightInboxAddress, client)
 	if err != nil {
 		return nil, fmt.Errorf("could not create %T: %w", &lightinbox.LightInboxRef{}, err)
@@ -36,7 +36,7 @@ type lightInboxContract struct {
 	contract *lightinbox.LightInboxRef
 	// client contains the evm client
 	//nolint: staticcheck
-	client chain.Chain
+	client client.EVMChainID
 	// nonceManager is the nonce manager used for transacting with the chain
 	nonceManager nonce.Manager
 }

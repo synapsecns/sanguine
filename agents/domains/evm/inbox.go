@@ -7,7 +7,7 @@ import (
 	"github.com/synapsecns/sanguine/agents/contracts/inbox"
 	"github.com/synapsecns/sanguine/agents/domains"
 	"github.com/synapsecns/sanguine/agents/types"
-	"github.com/synapsecns/sanguine/ethergo/chain"
+	"github.com/synapsecns/sanguine/ethergo/client"
 	"github.com/synapsecns/sanguine/ethergo/signer/nonce"
 	"github.com/synapsecns/sanguine/ethergo/signer/signer"
 	"strings"
@@ -16,7 +16,7 @@ import (
 // NewInboxContract returns a bound inbox contract.
 //
 //nolint:staticcheck
-func NewInboxContract(ctx context.Context, client chain.Chain, inboxAddress common.Address) (domains.InboxContract, error) {
+func NewInboxContract(ctx context.Context, client client.EVMChainID, inboxAddress common.Address) (domains.InboxContract, error) {
 	boundCountract, err := inbox.NewInboxRef(inboxAddress, client)
 	if err != nil {
 		return nil, fmt.Errorf("could not create %T: %w", &inbox.InboxRef{}, err)
@@ -35,7 +35,7 @@ type inboxContract struct {
 	contract *inbox.InboxRef
 	// client contains the evm client
 	//nolint: staticcheck
-	client chain.Chain
+	client client.EVMChainID
 	// nonceManager is the nonce manager used for transacting with the chain
 	nonceManager nonce.Manager
 }

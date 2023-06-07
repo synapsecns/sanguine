@@ -7,6 +7,7 @@ import (
 	ethTypes "github.com/ethereum/go-ethereum/core/types"
 	"github.com/synapsecns/sanguine/agents/agents/executor/config"
 	"github.com/synapsecns/sanguine/agents/agents/executor/db"
+	execTypes "github.com/synapsecns/sanguine/agents/agents/executor/types"
 	"github.com/synapsecns/sanguine/agents/contracts/destination"
 	"github.com/synapsecns/sanguine/agents/contracts/inbox"
 	"github.com/synapsecns/sanguine/agents/contracts/lightinbox"
@@ -16,13 +17,11 @@ import (
 	"github.com/synapsecns/sanguine/agents/types"
 	"github.com/synapsecns/sanguine/core/merkle"
 	"github.com/synapsecns/sanguine/core/metrics"
-	ethergoChain "github.com/synapsecns/sanguine/ethergo/chain"
+	evmClient "github.com/synapsecns/sanguine/ethergo/client"
 	agentsConfig "github.com/synapsecns/sanguine/ethergo/signer/config"
 	"github.com/synapsecns/sanguine/services/scribe/client"
-	pbscribe "github.com/synapsecns/sanguine/services/scribe/grpc/types/types/v1"
 	"golang.org/x/sync/errgroup"
-	"google.golang.org/grpc"
-	"google.golang.org/grpc/credentials/insecure"
+	"math/big"
 )
 
 // -------- [ UTILS ] -------- \\
@@ -32,20 +31,10 @@ import (
 //nolint:cyclop
 func NewExecutorInjectedBackend(ctx context.Context, config config.Config, executorDB db.ExecutorDB, scribeClient client.ScribeClient, clients map[uint32]Backend, urls map[uint32]string, handler metrics.Handler) (*Executor, error) {
 	chainExecutors := make(map[uint32]*chainExecutor)
-	conn, err := grpc.DialContext(ctx, fmt.Sprintf("%s:%d", scribeClient.URL, scribeClient.Port), grpc.WithTransportCredentials(insecure.NewCredentials()))
-	if err != nil {
-		return nil, fmt.Errorf("could not dial grpc: %w", err)
-	}
 
-	grpcClient := pbscribe.NewScribeServiceClient(conn)
-
-	// Ensure that gRPC is up and running.
-	healthCheck, err := grpcClient.Check(ctx, &pbscribe.HealthCheckRequest{}, grpc.WaitForReady(true))
+	conn, grpcClient, err := makeScribeClient(ctx, handler, fmt.Sprintf("%s:%d", scribeClient.URL, scribeClient.Port))
 	if err != nil {
-		return nil, fmt.Errorf("could not check: %w", err)
-	}
-	if healthCheck.Status != pbscribe.HealthCheckResponse_SERVING {
-		return nil, fmt.Errorf("not serving: %s", healthCheck.Status)
+		return nil, fmt.Errorf("could not create scribe client: %w", err)
 	}
 
 	executorSigner, err := agentsConfig.SignerFromConfig(ctx, config.UnbondedSigner)
@@ -86,7 +75,7 @@ func NewExecutorInjectedBackend(ctx context.Context, config config.Config, execu
 
 			inboxParser, err := inbox.NewParser(common.HexToAddress(config.InboxAddress))
 			if err != nil {
-				return nil, fmt.Errorf("could not create bonding manager parser: %w", err)
+				return nil, fmt.Errorf("could not create inbox parser: %w", err)
 			}
 
 			inboxParserRef = &inboxParser
@@ -99,7 +88,7 @@ func NewExecutorInjectedBackend(ctx context.Context, config config.Config, execu
 			lightInboxParserRef = &lightInboxParser
 		}
 
-		underlyingClient, err := ethergoChain.NewFromURL(ctx, urls[chain.ChainID])
+		underlyingClient, err := evmClient.DialBackendChainID(ctx, big.NewInt(int64(chain.ChainID)), urls[chain.ChainID], handler, evmClient.Capture(true))
 		if err != nil {
 			return nil, fmt.Errorf("could not get evm: %w", err)
 		}
@@ -131,7 +120,6 @@ func NewExecutorInjectedBackend(ctx context.Context, config config.Config, execu
 			merkleTree:        tree,
 			rpcClient:         clients[chain.ChainID],
 			boundDestination:  boundDestination,
-			executed:          make(map[[32]byte]bool),
 		}
 	}
 
@@ -170,8 +158,8 @@ func (e Executor) StartAndListenOrigin(ctx context.Context, chainID uint32, addr
 	g, _ := errgroup.WithContext(ctx)
 
 	g.Go(func() error {
-		return e.streamLogs(ctx, e.grpcClient, e.grpcConn, chainID, address, nil, contractEventType{
-			contractType: originContract,
+		return e.streamLogs(ctx, e.grpcClient, e.grpcConn, chainID, address, nil, ContractEventType{
+			contractType: execTypes.OriginContract,
 			eventType:    sentEvent,
 		})
 	})
@@ -190,11 +178,6 @@ func (e Executor) StartAndListenOrigin(ctx context.Context, chainID uint32, addr
 // GetMerkleTree gets a merkle tree.
 func (e Executor) GetMerkleTree(chainID uint32) *merkle.HistoricalTree {
 	return e.chainExecutors[chainID].merkleTree
-}
-
-// GetExecuted gets the executed mapping.
-func (e Executor) GetExecuted(chainID uint32) map[[32]byte]bool {
-	return e.chainExecutors[chainID].executed
 }
 
 // VerifyMessageMerkleProof verifies message merkle proof.

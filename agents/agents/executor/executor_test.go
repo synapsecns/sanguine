@@ -92,7 +92,7 @@ func (e *ExecutorSuite) TestVerifyState() {
 	e.Nil(err)
 
 	// Insert the states into the database.
-	err = e.ExecutorTestDB.StoreStates(e.GetTestContext(), snapshot.States(), root, proofs)
+	err = e.ExecutorTestDB.StoreStates(e.GetTestContext(), snapshot.States(), root, proofs, 5)
 	e.Nil(err)
 
 	inTree0, err := exec.VerifyStateMerkleProof(e.GetTestContext(), state0)
@@ -133,6 +133,8 @@ func (e *ExecutorSuite) TestMerkleInsert() {
 	}
 	chainConfig := config.ChainConfig{
 		ChainID:               chainID,
+		BlockTimeChunkSize:    1,
+		ContractSubChunkSize:  1,
 		RequiredConfirmations: 0,
 		Contracts:             []config.ContractConfig{contractConfig},
 	}
@@ -156,7 +158,10 @@ func (e *ExecutorSuite) TestMerkleInsert() {
 
 	// Start the Scribe.
 	go func() {
-		_ = scribe.Start(e.GetTestContext())
+		scribeError := scribe.Start(e.GetTestContext())
+		if !testDone {
+			e.Nil(scribeError)
+		}
 	}()
 
 	excCfg := executorCfg.Config{
@@ -215,6 +220,12 @@ func (e *ExecutorSuite) TestMerkleInsert() {
 	e.Nil(err)
 	e.TestBackendOrigin.WaitForConfirmation(e.GetTestContext(), tx)
 
+	//This transaction is needed to get the simulated chain's block number to increase by 1, since StreamLogs will
+	//do lastBlockNumber - 1.
+	tx, err = e.TestContractOnOrigin.EmitAgentsEventA(transactOpts.TransactOpts, big.NewInt(gofakeit.Int64()), big.NewInt(gofakeit.Int64()), big.NewInt(gofakeit.Int64()))
+	e.Nil(err)
+	e.TestBackendOrigin.WaitForConfirmation(e.GetTestContext(), tx)
+
 	header := types.NewHeader(types.MessageFlagBase, chainID, 1, destination, optimisticSeconds[0])
 
 	var msgSender [32]byte
@@ -222,7 +233,6 @@ func (e *ExecutorSuite) TestMerkleInsert() {
 	msgTips := types.NewTips(big.NewInt(0), big.NewInt(0), big.NewInt(0), big.NewInt(0))
 	msgRequest := types.NewRequest(uint32(1), uint64(0), big.NewInt(0))
 	baseMessage := types.NewBaseMessage(msgSender, recipients[0], msgTips, msgRequest, messageBytes)
-
 	message := types.NewMessage(header, baseMessage, []byte{})
 	e.Nil(err)
 
@@ -266,6 +276,11 @@ func (e *ExecutorSuite) TestMerkleInsert() {
 	transactOpts.Value = types.TotalTips(tips[1])
 	// paddedRequest = big.NewInt(0)
 	tx, err = e.OriginContract.SendBaseMessage(transactOpts.TransactOpts, destination, recipients[1], optimisticSeconds[1], paddedRequest, messageBytes)
+	e.Nil(err)
+	e.TestBackendOrigin.WaitForConfirmation(e.GetTestContext(), tx)
+
+	// Advance block again.
+	tx, err = e.TestContractOnOrigin.EmitAgentsEventA(transactOpts.TransactOpts, big.NewInt(gofakeit.Int64()), big.NewInt(gofakeit.Int64()), big.NewInt(gofakeit.Int64()))
 	e.Nil(err)
 	e.TestBackendOrigin.WaitForConfirmation(e.GetTestContext(), tx)
 
@@ -594,6 +609,12 @@ func (e *ExecutorSuite) TestExecutor() {
 	e.Nil(err)
 	e.TestBackendOrigin.WaitForConfirmation(e.GetTestContext(), tx)
 
+	// This transaction is needed to get the simulated chain's block number to increase by 1, since StreamLogs will
+	// do lastBlockNumber - 1.
+	tx, err = e.TestContractOnOrigin.EmitAgentsEventA(txContextOrigin.TransactOpts, big.NewInt(gofakeit.Int64()), big.NewInt(gofakeit.Int64()), big.NewInt(gofakeit.Int64()))
+	e.Nil(err)
+	e.TestBackendOrigin.WaitForConfirmation(e.GetTestContext(), tx)
+
 	tree := merkle.NewTree(merkle.MessageTreeHeight)
 
 	header := types.NewHeader(types.MessageFlagBase, uint32(e.TestBackendOrigin.GetChainID()), nonce, uint32(e.TestBackendDestination.GetChainID()), optimisticSeconds)
@@ -624,7 +645,7 @@ func (e *ExecutorSuite) TestExecutor() {
 	snapshotRoot, proofs, err := originSnapshot.SnapshotRootAndProofs()
 	e.Nil(err)
 
-	err = e.ExecutorTestDB.StoreStates(e.GetTestContext(), []types.State{originState, randomState}, snapshotRoot, proofs)
+	err = e.ExecutorTestDB.StoreStates(e.GetTestContext(), []types.State{originState, randomState}, snapshotRoot, proofs, 5)
 	e.Nil(err)
 
 	destinationAttestation := types.NewAttestation(snapshotRoot, [32]byte{}, uint32(1), big.NewInt(1), big.NewInt(1))
@@ -717,11 +738,11 @@ func (e *ExecutorSuite) TestSetMinimumTime() {
 	snapshotRoot2, proofs2, err := snapshot2.SnapshotRootAndProofs()
 	e.Nil(err)
 
-	err = e.ExecutorTestDB.StoreStates(e.GetTestContext(), snapshot0.States(), snapshotRoot0, proofs0)
+	err = e.ExecutorTestDB.StoreStates(e.GetTestContext(), snapshot0.States(), snapshotRoot0, proofs0, 0)
 	e.Nil(err)
-	err = e.ExecutorTestDB.StoreStates(e.GetTestContext(), snapshot1.States(), snapshotRoot1, proofs1)
+	err = e.ExecutorTestDB.StoreStates(e.GetTestContext(), snapshot1.States(), snapshotRoot1, proofs1, 1)
 	e.Nil(err)
-	err = e.ExecutorTestDB.StoreStates(e.GetTestContext(), snapshot2.States(), snapshotRoot2, proofs2)
+	err = e.ExecutorTestDB.StoreStates(e.GetTestContext(), snapshot2.States(), snapshotRoot2, proofs2, 2)
 	e.Nil(err)
 
 	potentialSnapshotRoots, err := e.ExecutorTestDB.GetPotentialSnapshotRoots(e.GetTestContext(), chainID, 1)

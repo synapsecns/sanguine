@@ -44,14 +44,6 @@ type destinationContract struct {
 	nonceManager nonce.Manager
 }
 
-type MessageStatus uint8
-
-const (
-	None MessageStatus = iota
-	Failed
-	Success
-)
-
 func (a destinationContract) Execute(ctx context.Context, signer signer.Signer, message types.Message, originProof [32][32]byte, snapshotProof [][32]byte, index *big.Int, gasLimit uint64) error {
 	transactOpts, err := a.transactOptsSetup(ctx, signer)
 	if err != nil {
@@ -128,16 +120,16 @@ func (a destinationContract) GetAttestationNonce(ctx context.Context, snapRoot [
 	return attNonce, nil
 }
 
-func (a destinationContract) MessageStatus(ctx context.Context, message types.Message) (MessageStatus, error) {
+func (a destinationContract) MessageStatus(ctx context.Context, message types.Message) (uint8, error) {
 	messageLeaf, err := message.ToLeaf()
 	if err != nil {
-		return None, fmt.Errorf("could not get message leaf: %w", err)
+		return 0, fmt.Errorf("could not get message leaf: %w", err)
 	}
 
 	status, err := a.contract.MessageStatus(&bind.CallOpts{Context: ctx}, messageLeaf)
 	if err != nil {
-		return None, fmt.Errorf("could not get message status: %w", err)
+		return 0, fmt.Errorf("could not get message status: %w", err)
 	}
 
-	return MessageStatus(status), nil
+	return status, nil
 }
