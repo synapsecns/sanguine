@@ -6,10 +6,6 @@ import (
 	"github.com/ethereum/go-ethereum/core/vm"
 )
 
-type ContractRef interface {
-	Address() common.Address
-}
-
 // SynapseCCTPRef is a bound cctp contract that conforms to vm.ContractRef.
 //
 //nolint:golint

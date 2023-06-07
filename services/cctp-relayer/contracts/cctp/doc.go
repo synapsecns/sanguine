@@ -1,2 +1,2 @@
-// CCTP contains a synapse interface for interacting with circles Cross-Chain transfer protocol. It works by x, y, and z
+// Package cctp contains a synapse interface for interacting with Circle's Cross-Chain transfer protocol.
 package cctp

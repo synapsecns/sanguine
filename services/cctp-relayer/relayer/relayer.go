@@ -101,10 +101,7 @@ func (c CCTPRelayer) Run(ctx context.Context) error {
 	for _, chain := range c.cfg.Chains {
 		chain := chain
 		g.Go(func() error {
-			return c.streamLogs(ctx, c.grpcClient, c.grpcConn, chain.ChainID, chain.OriginAddress, nil, contractEventType{
-				contractType: synapseCCTPContract,
-				eventType:    messageSent,
-			})
+			return c.streamLogs(ctx, c.grpcClient, c.grpcConn, chain.ChainID, chain.OriginAddress, nil)
 		})
 
 		g.Go(func() error {
@@ -131,7 +128,7 @@ type CCTPRelayerDBReader interface {
 }
 
 // Listens for USDC send events on origin chain, and registers usdcMessages to be signed.
-func (c CCTPRelayer) streamLogs(ctx context.Context, grpcClient pbscribe.ScribeServiceClient, conn *grpc.ClientConn, chainID uint32, address string, toBlockNumber *uint64, contractEvent contractEventType) error {
+func (c CCTPRelayer) streamLogs(ctx context.Context, grpcClient pbscribe.ScribeServiceClient, conn *grpc.ClientConn, chainID uint32, address string, toBlockNumber *uint64) error {
 	lastStoredBlock, err := c.db.GetLastBlockNumber(ctx, chainID)
 	if err != nil {
 		return fmt.Errorf("could not get last stored block: %w", err)
@@ -203,15 +200,13 @@ type eventType int
 
 const (
 	synapseCCTPContract contractType = iota
-	other
 )
 
 const (
-	// MessageSent event emitted by Circle's contracts
+	// MessageSent event emitted by Circle's contracts.
 	messageSent eventType = iota
-	// CircleRequestSent event with auxillary data emitted by SynapseCCTP
+	// CircleRequestSent event with auxillary data emitted by SynapseCCTP.
 	circleRequestSent
-	otherEvent
 )
 
 type contractEventType struct {

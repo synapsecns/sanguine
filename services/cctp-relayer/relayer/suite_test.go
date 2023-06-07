@@ -30,7 +30,7 @@ type CCTPRelayerSuite struct {
 	testOmnirpc string
 }
 
-// NewTestSuite creates a new test suite
+// NewTestSuite creates a new test suite.
 func NewTestSuite(tb testing.TB) *CCTPRelayerSuite {
 	tb.Helper()
 	return &CCTPRelayerSuite{
@@ -39,7 +39,6 @@ func NewTestSuite(tb testing.TB) *CCTPRelayerSuite {
 }
 
 func (s *CCTPRelayerSuite) SetupSuite() {
-	s.SetupSuite()
 	// for tracing
 	localmetrics.SetupTestJaeger(s.GetSuiteContext(), s.T())
 	// let's create 2 mock chains
