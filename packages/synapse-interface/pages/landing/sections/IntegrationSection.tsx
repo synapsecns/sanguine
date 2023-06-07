@@ -48,8 +48,9 @@ export default function IntegrationSection() {
         gap={4}
         className="py-6 mx-auto md:py-12 lg:py-12 2xl:w-3/4"
       >
-        {OrderedSupportedNetworks.map((network: Chain) => (
+        {OrderedSupportedNetworks.map((network: Chain, index: number) => (
           <NetworkCard
+            key={index}
             chainId={network.id}
             chainName={network.name}
             chainImg={network.chainImg.src}

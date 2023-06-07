@@ -46,8 +46,9 @@ export default function UseCasesSection() {
         gap={4}
         className="py-6 pt-6 pb-24 mx-auto place-items-center 2xl:w-3/4"
       >
-        {useCases.map((useCase: useCaseProp) => (
+        {useCases.map((useCase: useCaseProp, index: number) => (
           <UseCaseCard
+            key={index}
             image={useCase.image}
             title={useCase.title}
             description={useCase.description}

@@ -34,7 +34,7 @@ const getBalanceData = async ({
   const lpTotalSupply =
     (
       await fetchToken({
-        address: `0x${lpTokenAddress.slice(2)}`,
+        address: lpTokenAddress as `0x${string}`,
         chainId,
       })
     )?.totalSupply?.value ?? Zero
@@ -45,9 +45,9 @@ const getBalanceData = async ({
 
     const rawBalance = (
       await fetchBalance({
-        address: `0x${address.slice(2)}`,
+        address: address as `0x${string}`,
         chainId,
-        token: `0x${token.addresses[chainId].slice(2)}`,
+        token: token.addresses[chainId] as `0x${string}`,
       })
     )?.value
 
