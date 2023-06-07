@@ -8,6 +8,14 @@ The **Synapse Messaging System** allows for messages to be sent from a Smart Con
 
 The protocol relies on a concept called **Optimistic Messaging** that results in minimizing the amount of work performed unless fraud is detected.
 
+**Synapse Optimistic Messaging:**
+![SynapseOptimisticMessaging](../../static/img/SynapseMessagingMileHigh.png 'Synapse Optimistic Messaging')
+- **Step 1**: Client Smart Contract on Chain A tells Synapse Origin Contract to say "hello" to Chain B.
+- **Step 2**: Off Chain Agents observe that Chain A client wants to say "hello" to Chain B.
+- **Step 3**: Off Chain Agents tell the Synapse Destination Contract on Chain B that Chain A says "hello".
+- **Step 4**: Destination waits for a period of time (in this case 1 hour) to give other Off Chain Agents time to object
+- **Step 5**: After 1 hour with nobody objecting, Off Chain Agents tells the Client Smart Contract on Chain B that Chain A says "hello".
+
 During the normal path of sending a message, the flow looks like this:
 1. Client Smart Contract submits a blockchain transaction on the Origin blockchain, posting the following:
     1. **Message** to send.
