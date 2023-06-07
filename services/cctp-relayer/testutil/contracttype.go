@@ -4,6 +4,7 @@ import (
 	"github.com/ethereum/go-ethereum/common/compiler"
 	"github.com/synapsecns/sanguine/ethergo/contracts"
 	"github.com/synapsecns/sanguine/services/cctp-relayer/contracts/cctp"
+	"github.com/synapsecns/sanguine/services/cctp-relayer/contracts/mockmessagetransmitter"
 )
 
 // contractTypeImpl is the type of the contract being saved/fetched.
@@ -52,9 +53,8 @@ func (c contractTypeImpl) ContractInfo() *compiler.Contract {
 	switch c {
 	case SynapseCCTPType:
 		return cctp.Contracts["solidity/SynapseCCTP.sol/SynapseCCTP"]
-	// TODO(dwasse): flatten MockMessageTransmitter contract and add in /contracts dir
-	// case MockMessageTransmitterType:
-	// 	return mockmessagetransmitter.Contracts["solidity/MockMessageTransmitter.sol:MockMessageTransmitter"]
+	case MockMessageTransmitterType:
+		return mockmessagetransmitter.Contracts["solidity/MockMessageTransmitter.sol:MockMessageTransmitter"]
 	default:
 		panic("not yet implemented")
 	}

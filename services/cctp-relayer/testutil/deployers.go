@@ -12,6 +12,7 @@ import (
 	"github.com/synapsecns/sanguine/ethergo/deployer"
 	"github.com/synapsecns/sanguine/ethergo/manager"
 	"github.com/synapsecns/sanguine/services/cctp-relayer/contracts/cctp"
+	"github.com/synapsecns/sanguine/services/cctp-relayer/contracts/mockmessagetransmitter"
 )
 
 // NewDeployManager creates a deploy manager.
@@ -43,14 +44,10 @@ func NewMockMessageTransmitterDeployer(registry deployer.GetOnlyContractRegistry
 func (d MockMessageTransmitterDeployer) Deploy(ctx context.Context) (contracts.DeployedContract, error) {
 	return d.DeploySimpleContract(ctx, func(transactOps *bind.TransactOpts, backend bind.ContractBackend) (address common.Address, tx *types.Transaction, data interface{}, err error) {
 		// define the domain as the chain id!
-		// TODO(dwasse): uncomment
-		// return mockmessagetransmitter.DeployMockMessageTransmitter(transactOps, backend, uint32(d.Backend().GetChainID()))
-		return
+		return mockmessagetransmitter.DeployMockMessageTransmitter(transactOps, backend, uint32(d.Backend().GetChainID()))
 	}, func(address common.Address, backend bind.ContractBackend) (interface{}, error) {
 		// remember what I said about vm.ContractRef!
-		// TODO(dwasse): uncomment
-		// return mockmessagetransmitter.NewMockMessageTransmitterRef(address, backend)
-		return nil, nil
+		return mockmessagetransmitter.NewMockMessageTransmitterRef(address, backend)
 	})
 }
 
@@ -78,7 +75,5 @@ func (d SynapseCCTPDeployer) Deploy(ctx context.Context) (contracts.DeployedCont
 }
 
 func (d SynapseCCTPDeployer) Dependencies() []contracts.ContractType {
-	//TODO(dwasse): uncomment
-	// return []contracts.ContractType{MockMessageTransmitter}
-	return []contracts.ContractType{}
+	return []contracts.ContractType{MockMessageTransmitterType}
 }
