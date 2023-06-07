@@ -75,20 +75,6 @@ const Withdraw = ({
   }
   const { synapseSDK } = useSynapseContext()
 
-  const sumBigNumbers = (pool: Token, bigNumMap: any) => {
-    let sum = Zero
-    pool?.poolTokens &&
-      pool.poolTokens.map((token) => {
-        if (bigNumMap[token.addresses[chainId]]) {
-          sum = sum.add(
-            bigNumMap[token.addresses[chainId]].value.mul(
-              BigNumber.from(10).pow(18 - token.decimals[chainId])
-            )
-          )
-        }
-      })
-    return sum
-  }
   const calculateMaxWithdraw = async () => {
     if (poolUserData == null || address == null) {
       return
@@ -119,7 +105,7 @@ const Withdraw = ({
         )
         outputs[withdrawType] = amount
       }
-      const tokenSum = sumBigNumbers(pool, outputs)
+      const tokenSum = sumBigNumbers(pool, outputs, chainId)
       const priceImpact = calculateExchangeRate(
         inputValue.bn,
         18,
@@ -417,6 +403,28 @@ const Withdraw = ({
       </Transition>
     </div>
   )
+}
+
+const sumBigNumbers = (
+  pool: Token,
+  bigNumMap: Record<string, { value: BigNumber; index: number }>,
+  chainId: number
+) => {
+  if (!pool?.poolTokens) {
+    return Zero
+  }
+
+  return pool.poolTokens.reduce((sum, token) => {
+    if (!bigNumMap[token.addresses[chainId]]) {
+      return sum
+    }
+
+    const valueToAdd = bigNumMap[token.addresses[chainId]].value.mul(
+      BigNumber.from(10).pow(18 - token.decimals[chainId])
+    )
+
+    return sum.add(valueToAdd)
+  }, Zero)
 }
 
 export default Withdraw
