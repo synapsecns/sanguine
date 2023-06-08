@@ -13,7 +13,6 @@ import (
 	cctpTest "github.com/synapsecns/sanguine/services/cctp-relayer/testutil"
 	omnirpcHelper "github.com/synapsecns/sanguine/services/omnirpc/testhelper"
 	scribeHelper "github.com/synapsecns/sanguine/services/scribe/testhelper"
-	"github.com/synapsecns/sanguine/services/scribe/testutil"
 	"golang.org/x/sync/errgroup"
 )
 
@@ -23,7 +22,7 @@ type CCTPRelayerSuite struct {
 	// testBackends contins a list of all test backends
 	testBackends []backends.SimulatedTestBackend
 	// we'll use this later
-	deployManager *testutil.DeployManager
+	deployManager *cctpTest.DeployManager
 	// testScribeURL setup in SetupTest
 	testScribe string
 	// testOmnirpc setup in SetupTest
@@ -72,7 +71,7 @@ func (s *CCTPRelayerSuite) SetupSuite() {
 func (s *CCTPRelayerSuite) SetupTest() {
 	s.TestSuite.SetupTest()
 
-	s.deployManager = testutil.NewDeployManager(s.T())
+	s.deployManager = cctpTest.NewDeployManager(s.T())
 	// deploy the contract to all backends
 	// note: since we haven't gone over contract generation, we'll do this a bit later
 	// s.deployManager.BulkDeploy(s.GetTestContext(), s.testBackends, )
@@ -82,9 +81,8 @@ func (s *CCTPRelayerSuite) SetupTest() {
 	// create the test omnirpc backend
 	s.testOmnirpc = omnirpcHelper.NewOmnirpcServer(s.GetTestContext(), s.T(), s.testBackends...)
 
-	s.deployManager = testutil.NewDeployManager(s.T())
 	// deploy the contract to all backends
-	s.deployManager.BulkDeploy(s.GetTestContext(), s.testBackends, cctpTest.SynapseCCTPType)
+	s.deployManager.BulkDeploy(s.GetTestContext(), s.testBackends, cctpTest.SynapseCCTPType, cctpTest.MockMintBurnTokenType)
 }
 
 func TestCCTPRelayerSuite(t *testing.T) {
