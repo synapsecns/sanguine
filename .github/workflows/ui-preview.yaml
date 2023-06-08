@@ -39,10 +39,9 @@ jobs:
           FILTERED_PATHS: ${{ steps.filter_ui.outputs.changes }}
   deploy:
     name: Deploy to Vercel
-    if: ${{ format('refs/heads/{0}', github.event.repository.default_branch) == github.ref || contains(github.event.head_commit.message, '[vercel]') }}
     runs-on: ubuntu-latest
     needs: changes
-    if: ${{ needs.changes.outputs.package_count > 0 }}
+    if: ${{ needs.changes.outputs.package_count > 0 && (format('refs/heads/{0}', github.event.repository.default_branch) == github.ref || contains(github.event.head_commit.message, '[vercel]'))}}
     strategy:
       matrix:
         package: ${{ fromJson(needs.changes.outputs.packages) }}
