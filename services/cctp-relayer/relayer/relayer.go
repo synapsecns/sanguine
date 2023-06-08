@@ -315,21 +315,8 @@ func (c CCTPRelayer) submitReceiveCircleToken(ctx context.Context, chainID uint3
 		select {
 		// Receive a raw message from the receive channel.
 		case msg := <-c.chainRelayers[chainID].usdcMsgRecvChan:
-			go func() {
-				// Fetch the circle attestation in a new goroutine so that we are not blocked from future requests.
-				// TODO(dwasse): configure this backoff
-				backoff.Retry(func() (err error) {
-					msg.signature, err = c.attestationApi.GetAttestation(ctx, msg.txHash)
-					return
-				}, backoff.WithMaxRetries(backoff.NewConstantBackOff(time.Second), 5))
-				if err != nil {
-					logger.Errorf("could not get circle attestation: %w", err)
-					return
-				}
-
-				// Send the completed message back through the send channel.
-				c.chainRelayers[chainID].usdcMsgSendChan <- msg
-			}()
+			// Fetch the circle attestation in a new goroutine so that we are not blocked from future requests.
+			go c.fetchAttestation(ctx, chainID, msg)
 		case <-c.chainRelayers[chainID].usdcMsgSendChan:
 			// Submit the message to the destination chain.
 			// TODO(dwasse): implement
@@ -337,6 +324,22 @@ func (c CCTPRelayer) submitReceiveCircleToken(ctx context.Context, chainID uint3
 			return nil
 		}
 	}
+}
+
+func (c CCTPRelayer) fetchAttestation(ctx context.Context, chainID uint32, msg *usdcMessage) {
+	// TODO(dwasse): configure this backoff
+	err := backoff.Retry(func() (err error) {
+		msg.signature, err = c.attestationApi.GetAttestation(ctx, msg.txHash)
+		return
+	}, backoff.WithMaxRetries(backoff.NewConstantBackOff(time.Second), 5))
+	if err != nil {
+		logger.Errorf("could not get circle attestation: %w", err)
+		return
+	}
+
+	// Send the completed message back through the send channel.
+	c.chainRelayers[chainID].usdcMsgSendChan <- msg
+	return
 }
 
 type contractType int
