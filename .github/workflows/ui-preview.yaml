@@ -100,7 +100,9 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       - name: Comment link to preview
         uses: aaimio/vercel-preview-url-action@v2.2.0
-        script: |
+        with:
+          github-token: ${{secrets.GITHUB_TOKEN}}
+          script: |
             github.issues.createComment({
               owner: context.repo.owner,
               repo: context.repo.repo,
