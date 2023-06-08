@@ -66,7 +66,7 @@ const PoolBody = ({
           console.log('Could not get pool data', err)
         })
     }
-  }, [connectedChainId, pool, poolChainId])
+  }, [connectedChainId, pool, poolChainId, address])
 
   return (
     <>
