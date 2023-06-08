@@ -228,13 +228,10 @@ func (c CCTPRelayer) handleLog(ctx context.Context, log *types.Log, originChain 
 }
 
 func (c CCTPRelayer) handleSendRequest(parentCtx context.Context, txhash common.Hash, originChain uint32) (err error) {
-	fmt.Printf("handleSendRequest with ctx %v, hash %v, chain %v\n", parentCtx, txhash.String(), originChain)
-	fmt.Printf("relayers: %v\n", c.chainRelayers)
 	ctx, span := c.handler.Tracer().Start(parentCtx, "handleSendRequest", trace.WithAttributes(
 		attribute.String(metrics.TxHash, txhash.String()),
 		attribute.Int(metrics.ChainID, int(originChain)),
 	))
-	fmt.Printf("tracer ctx: %v\n", ctx)
 
 	defer func() {
 		metrics.EndSpanWithErr(span, err)
@@ -301,12 +298,14 @@ func (c CCTPRelayer) handleSendRequest(parentCtx context.Context, txhash common.
 	select {
 	case <-ctx.Done():
 		return ctx.Err()
-	case c.chainRelayers[originChain].usdcMsgSendChan <- &UsdcMessage{
-		TxHash:        txhash,
-		AuxillaryData: circleRequestSentEvent.Request,
-		Message:       messageSentEvent.Message,
-		//Signature: //comes from the api
-	}:
+	default:
+		msg := UsdcMessage{
+			TxHash:        txhash,
+			AuxillaryData: circleRequestSentEvent.Request,
+			Message:       messageSentEvent.Message,
+			//Signature: //comes from the api
+		}
+		c.chainRelayers[originChain].usdcMsgRecvChan <- &msg
 	}
 	return nil
 }

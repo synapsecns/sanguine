@@ -60,6 +60,11 @@ func (c *CCTPRelayerSuite) TestSendCircleToken() {
 	c.Nil(err)
 	sendChain.WaitForConfirmation(c.GetTestContext(), tx)
 
+	// handle send request
 	err = relay.HandleSendRequest(c.GetTestContext(), tx.Hash(), uint32(sendChain.GetChainID()))
 	c.Nil(err)
+	recvChan := relay.GetUsdcMsgRecvChan(uint32(sendChain.GetChainID()))
+	msg := <-recvChan
+	// TODO(dwasse): validate rest of msg?
+	c.Equal(msg.TxHash, tx.Hash())
 }
