@@ -24,7 +24,7 @@ func (s Store) GetTimestampForMessage(ctx context.Context, chainID, destination,
 		attestationsTableName = fmt.Sprintf("%s_%s", tablePrefix, attestationsTableName)
 	}
 
-	// TODO: Use string formatting to make this more legible.
+	// TODO: Use string formatting to make this query more legible.
 	dbTx := s.DB().WithContext(ctx).
 		Raw(fmt.Sprintf(
 			`SELECT %s FROM %s WHERE %s = (
@@ -69,7 +69,7 @@ func (s Store) GetEarliestStateInRange(ctx context.Context, chainID, destination
 		attestationsTableName = fmt.Sprintf("%s_%s", tablePrefix, attestationsTableName)
 	}
 
-	// TODO: Use string formatting to make this more legible.
+	// TODO: Use string formatting to make this query more legible.
 	dbTx := s.DB().WithContext(ctx).
 		Raw(fmt.Sprintf(
 			`SELECT * FROM %s WHERE %s = ? AND %s = (
