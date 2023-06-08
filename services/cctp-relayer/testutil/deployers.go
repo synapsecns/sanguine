@@ -2,6 +2,7 @@ package testutil
 
 import (
 	"context"
+	"github.com/synapsecns/sanguine/services/cctp-relayer/contracts/mocktokenmessenger"
 	"testing"
 
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
@@ -20,7 +21,7 @@ func NewDeployManager(t *testing.T) *DeployManager {
 	t.Helper()
 
 	parentManager := manager.NewDeployerManager(t,
-		NewMockMessageTransmitterDeployer, NewSynapseCCTPDeployer,
+		NewMockMessageTransmitterDeployer, NewSynapseCCTPDeployer, NewMockTokenMessengerDeployer,
 	)
 	return &DeployManager{parentManager}
 }
@@ -51,6 +52,31 @@ func (d MockMessageTransmitterDeployer) Deploy(ctx context.Context) (contracts.D
 	})
 }
 
+// NewMockTokenMessengerDeployer deploys the mocktokenmessenger.
+func NewMockTokenMessengerDeployer(registry deployer.GetOnlyContractRegistry, backend backends.SimulatedTestBackend) deployer.ContractDeployer {
+	return MockTokenMessengerDeployer{deployer.NewSimpleDeployer(registry, backend, MockTokenMessengerType)}
+}
+
+type MockTokenMessengerDeployer struct {
+	*deployer.BaseDeployer
+}
+
+func (m MockTokenMessengerDeployer) Deploy(ctx context.Context) (contracts.DeployedContract, error) {
+	messageTransmitter := m.Registry().Get(ctx, MockMessageTransmitterType)
+
+	return m.DeploySimpleContract(ctx, func(transactOps *bind.TransactOpts, backend bind.ContractBackend) (address common.Address, tx *types.Transaction, data interface{}, err error) {
+		// define the domain as the chain id!
+		return mocktokenmessenger.DeployMockTokenMessenger(transactOps, backend, messageTransmitter.Address())
+	}, func(address common.Address, backend bind.ContractBackend) (interface{}, error) {
+		// remember what I said about vm.ContractRef!
+		return mocktokenmessenger.NewMockTokenMessengerRef(address, backend)
+	})
+}
+
+func (m MockTokenMessengerDeployer) Dependencies() []contracts.ContractType {
+	return []contracts.ContractType{MockMessageTransmitterType}
+}
+
 // MockMessageTransmitterDeployer deploys the mockmessagetransmitter.
 type SynapseCCTPDeployer struct {
 	*deployer.BaseDeployer
@@ -58,16 +84,16 @@ type SynapseCCTPDeployer struct {
 
 // NewMockMessageTransmitterDeployer deploys the light inbox contract.
 func NewSynapseCCTPDeployer(registry deployer.GetOnlyContractRegistry, backend backends.SimulatedTestBackend) deployer.ContractDeployer {
-	return SynapseCCTPDeployer{deployer.NewSimpleDeployer(registry, backend, MockMessageTransmitterType)}
+	return SynapseCCTPDeployer{deployer.NewSimpleDeployer(registry, backend, SynapseCCTPType)}
 }
 
 // Deploy deploys the light manager contract.
 func (d SynapseCCTPDeployer) Deploy(ctx context.Context) (contracts.DeployedContract, error) {
 	return d.DeploySimpleContract(ctx, func(transactOps *bind.TransactOpts, backend bind.ContractBackend) (address common.Address, tx *types.Transaction, data interface{}, err error) {
-		// ah hah! the dependency
-		messageTransmitter := d.Registry().Get(ctx, MockMessageTransmitterType)
+		tokenMessenger := d.Registry().Get(ctx, MockTokenMessengerType)
+
 		// define the domain as the chain id!
-		return cctp.DeploySynapseCCTP(transactOps, backend, messageTransmitter.Address())
+		return cctp.DeploySynapseCCTP(transactOps, backend, tokenMessenger.Address())
 	}, func(address common.Address, backend bind.ContractBackend) (interface{}, error) {
 		// remember what I said about vm.ContractRef!
 		return cctp.NewSynapseCCTPRef(address, backend)
@@ -75,5 +101,5 @@ func (d SynapseCCTPDeployer) Deploy(ctx context.Context) (contracts.DeployedCont
 }
 
 func (d SynapseCCTPDeployer) Dependencies() []contracts.ContractType {
-	return []contracts.ContractType{MockMessageTransmitterType}
+	return d.RecursiveDependencies([]contracts.ContractType{MockTokenMessengerType})
 }

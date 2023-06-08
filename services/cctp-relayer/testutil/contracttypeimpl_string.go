@@ -10,11 +10,12 @@ func _() {
 	var x [1]struct{}
 	_ = x[SynapseCCTPType-1]
 	_ = x[MockMessageTransmitterType-2]
+	_ = x[MockTokenMessengerType-3]
 }
 
-const _contractTypeImpl_name = "SynapseCCTPMockMessageTransmitter"
+const _contractTypeImpl_name = "SynapseCCTPMockMessageTransmitterMockTokenMessenger"
 
-var _contractTypeImpl_index = [...]uint8{0, 11, 33}
+var _contractTypeImpl_index = [...]uint8{0, 11, 33, 51}
 
 func (i contractTypeImpl) String() string {
 	i -= 1

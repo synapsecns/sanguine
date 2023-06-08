@@ -5,7 +5,27 @@ import (
 	"github.com/synapsecns/sanguine/ethergo/contracts"
 	"github.com/synapsecns/sanguine/services/cctp-relayer/contracts/cctp"
 	"github.com/synapsecns/sanguine/services/cctp-relayer/contracts/mockmessagetransmitter"
+	"github.com/synapsecns/sanguine/services/cctp-relayer/contracts/mocktokenmessenger"
 )
+
+// set all contact types.
+func init() {
+	for i := 0; i < len(_contractTypeImpl_index)-1; i++ {
+		contractType := contractTypeImpl(i + 1)
+		AllContractTypes = append(AllContractTypes, contractType)
+		// assert type is correct
+		var _ contracts.ContractType = contractType
+		// boot time assertion
+		if contractType.ContractInfo() == nil {
+			panic("contract info is nil")
+		}
+	}
+}
+
+// AllContractTypes is a list of all contract types. Since we use stringer and this is a testing library, instead
+// of manually copying all these out we pull the names out of stringer. In order to make sure stringer is updated, we panic on
+// any method called where the index is higher than the stringer array length.
+var AllContractTypes []contractTypeImpl
 
 // contractTypeImpl is the type of the contract being saved/fetched.
 // we use an interface here so the deploy helper here can be abstracted away from the synapse contracts
@@ -18,6 +38,8 @@ const (
 	SynapseCCTPType contractTypeImpl = iota + 1 // SynapseCCTP
 	// MockMessageTransmitter is the type of the mock message transmitter contract.
 	MockMessageTransmitterType // MockMessageTransmitter
+	// MockTokenMessengerType is the type of the mock token messenger contract.
+	MockTokenMessengerType // MockTokenMessenger
 )
 
 // verifyStringerUpdated verifies stringer is up to date (this index is included in stringer).
@@ -52,9 +74,11 @@ func (c contractTypeImpl) ContractName() string {
 func (c contractTypeImpl) ContractInfo() *compiler.Contract {
 	switch c {
 	case SynapseCCTPType:
-		return cctp.Contracts["solidity/SynapseCCTP.sol/SynapseCCTP"]
+		return cctp.Contracts["solidity/SynapseCCTP.sol:SynapseCCTP"]
 	case MockMessageTransmitterType:
 		return mockmessagetransmitter.Contracts["solidity/MockMessageTransmitter.sol:MockMessageTransmitter"]
+	case MockTokenMessengerType:
+		return mocktokenmessenger.Contracts["solidity/MockTokenMessenger.sol:MockTokenMessenger"]
 	default:
 		panic("not yet implemented")
 	}
