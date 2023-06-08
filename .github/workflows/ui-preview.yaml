@@ -35,6 +35,9 @@ jobs:
         run: |
           export FILTER_LENGTH=$(echo $FILTERED_PATHS | jq '. | length')
           echo "FILTER_LENGTH=$FILTER_LENGTH" >> "$GITHUB_OUTPUT"
+          echo ${{ github.event.head_commit.message }}
+          echo ${{ github.event.head_commit }}
+          echo ${{ github.sha }}
           echo ${{ contains(github.event.head_commit.message, '[vercel]') }}
         env:
           FILTERED_PATHS: ${{ steps.filter_ui.outputs.changes }}
