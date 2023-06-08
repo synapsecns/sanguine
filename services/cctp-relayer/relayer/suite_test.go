@@ -2,18 +2,19 @@
 package relayer_test
 
 import (
-	"math/big"
-	"testing"
-
 	"github.com/stretchr/testify/suite"
+	"github.com/synapsecns/sanguine/core/metrics"
 	"github.com/synapsecns/sanguine/core/metrics/localmetrics"
 	"github.com/synapsecns/sanguine/core/testsuite"
 	"github.com/synapsecns/sanguine/ethergo/backends"
 	"github.com/synapsecns/sanguine/ethergo/backends/geth"
+	"github.com/synapsecns/sanguine/services/cctp-relayer/metadata"
 	cctpTest "github.com/synapsecns/sanguine/services/cctp-relayer/testutil"
 	omnirpcHelper "github.com/synapsecns/sanguine/services/omnirpc/testhelper"
 	scribeHelper "github.com/synapsecns/sanguine/services/scribe/testhelper"
 	"golang.org/x/sync/errgroup"
+	"math/big"
+	"testing"
 )
 
 // TestHelperSuite defines the basic test suite.
@@ -27,6 +28,8 @@ type CCTPRelayerSuite struct {
 	testScribe string
 	// testOmnirpc setup in SetupTest
 	testOmnirpc string
+	// metricsHandler is the metrics handler for the test
+	metricsHandler metrics.Handler
 }
 
 // NewTestSuite creates a new test suite.
@@ -66,7 +69,30 @@ func (s *CCTPRelayerSuite) SetupSuite() {
 	if err := g.Wait(); err != nil {
 		s.T().Fatal(err)
 	}
+}
 
+// TODO: there should be a way to do this in the deployer, this probably involves making the concept of a contract-registry
+// multi-chain (possibly by wrapping the registry). This would allow the use of setting remotes in the deployer itself rather than here
+func (s *CCTPRelayerSuite) registerRemoteDeployments() {
+	for _, backend := range s.testBackends {
+		cctpContract, cctpHandle := s.deployManager.GetSynapseCCTP(s.GetTestContext(), backend)
+
+		// on the above contract, set the remote for each backend
+		for _, backendToSetFrom := range s.testBackends {
+			// we don't need to set the backends own remote!
+			if backendToSetFrom.GetChainID() == backend.GetChainID() {
+				continue
+			}
+
+			remoteContract, _ := s.deployManager.GetSynapseCCTP(s.GetTestContext(), backendToSetFrom)
+
+			txOpts := backend.GetTxContext(s.GetTestContext(), cctpContract.OwnerPtr())
+			tx, err := cctpHandle.SetRemoteSynapseCCTP(txOpts.TransactOpts, uint32(backendToSetFrom.GetChainID()), remoteContract.Address())
+			s.Require().NoError(err)
+			backend.WaitForConfirmation(s.GetTestContext(), tx)
+		}
+
+	}
 }
 
 func (s *CCTPRelayerSuite) SetupTest() {
@@ -82,8 +108,14 @@ func (s *CCTPRelayerSuite) SetupTest() {
 	// create the test omnirpc backend
 	s.testOmnirpc = omnirpcHelper.NewOmnirpcServer(s.GetTestContext(), s.T(), s.testBackends...)
 
+	var err error
+	s.metricsHandler, err = metrics.NewByType(s.GetTestContext(), metadata.BuildInfo(), metrics.Jaeger)
+	s.Require().NoError(err)
+
 	// deploy the contract to all backends
 	s.deployManager.BulkDeploy(s.GetTestContext(), s.testBackends, cctpTest.SynapseCCTPType, cctpTest.MockMintBurnTokenType)
+
+	s.registerRemoteDeployments()
 }
 
 func TestCCTPRelayerSuite(t *testing.T) {

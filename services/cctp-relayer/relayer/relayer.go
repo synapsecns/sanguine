@@ -4,9 +4,12 @@ import (
 	"context"
 	"encoding/hex"
 	"encoding/json"
-	"errors"
 	"fmt"
-	"io"
+	"github.com/ethereum/go-ethereum/common"
+	"github.com/synapsecns/sanguine/services/cctp-relayer/contracts/cctp"
+	"github.com/synapsecns/sanguine/services/cctp-relayer/contracts/mockmessagetransmitter"
+	"go.opentelemetry.io/otel/attribute"
+	"go.opentelemetry.io/otel/trace"
 	"io/ioutil"
 	"net/http"
 	"strconv"
@@ -16,9 +19,9 @@ import (
 	"github.com/ethereum/go-ethereum/core/types"
 	"github.com/synapsecns/sanguine/core/metrics"
 	"github.com/synapsecns/sanguine/services/cctp-relayer/config"
+	omniClient "github.com/synapsecns/sanguine/services/omnirpc/client"
 	"github.com/synapsecns/sanguine/services/scribe/client"
 	"github.com/synapsecns/sanguine/services/scribe/db"
-	scribeDb "github.com/synapsecns/sanguine/services/scribe/db"
 	pbscribe "github.com/synapsecns/sanguine/services/scribe/grpc/types/types/v1"
 	"go.opentelemetry.io/contrib/instrumentation/google.golang.org/grpc/otelgrpc"
 	"golang.org/x/sync/errgroup"
@@ -27,10 +30,10 @@ import (
 )
 
 type usdcMessage struct {
-	message       []byte // raw bytes of message produced by Circle's MessageTransmitter
-	auxillaryData []byte // auxillary data emitted by SynapseCCTP
-	txHash        string // hash of the USDC burn transaction
-	signature     []byte // attestation produced by Circle's API: https://developers.circle.com/stablecoin/reference/getattestation
+	message       []byte      // raw bytes of message produced by Circle's MessageTransmitter
+	auxillaryData []byte      // auxillary data emitted by SynapseCCTP
+	txHash        common.Hash // hash of the USDC burn transaction
+	signature     []byte      // attestation produced by Circle's API: https://developers.circle.com/stablecoin/reference/getattestation
 }
 
 // chainRelayer is a struct that contains the necessary information for each chain level relayer.
@@ -48,12 +51,13 @@ type chainRelayer struct {
 }
 
 type CCTPRelayer struct {
-	cfg          config.Config
-	db           CCTPRelayerDBReader
-	scribeClient client.ScribeClient
-	grpcClient   pbscribe.ScribeServiceClient
-	grpcConn     *grpc.ClientConn
-	client       *http.Client
+	cfg           config.Config
+	db            CCTPRelayerDBReader
+	scribeClient  client.ScribeClient
+	grpcClient    pbscribe.ScribeServiceClient
+	grpcConn      *grpc.ClientConn
+	client        *http.Client
+	omnirpcClient omniClient.RPCClient
 	// chainRelayers is a map from chain ID -> chain relayer.
 	chainRelayers map[uint32]*chainRelayer
 	// handler is the metrics handler.
@@ -184,44 +188,125 @@ func (c CCTPRelayer) streamLogs(ctx context.Context, grpcClient pbscribe.ScribeS
 			return nil
 		default:
 			response, err := stream.Recv()
-			if errors.Is(err, io.EOF) {
-				return nil
-			}
 			if err != nil {
 				return fmt.Errorf("could not receive: %w", err)
 			}
 
-			msg, err := scribeResponseToMsg(ctx, response, c.db)
+			err = c.handleLog(ctx, response.Log.ToLog(), chainID)
 			if err != nil {
 				return err
 			}
-
-			c.chainRelayers[chainID].usdcMsgRecvChan <- msg
 		}
 	}
 }
 
 // Converts a scribe response to a usdcMessage.
-func scribeResponseToMsg(ctx context.Context, response *pbscribe.StreamLogsResponse, db CCTPRelayerDBReader) (*usdcMessage, error) {
-	// TODO: think about pulling this from the chain? Or scribe
-	receipts, err := db.RetrieveReceiptsWithFilter(ctx, scribeDb.ReceiptFilter{}, 0)
+// This takes ina  log from the SynapseCCTP contract, determines the topic and then performs an action based on that topic
+// this could be a send or receive
+func (c CCTPRelayer) handleLog(ctx context.Context, log *types.Log, originChain uint32) error {
+	if log == nil {
+		return fmt.Errorf("log is nil")
+	}
+
+	// shouldn't be possible: maybe remove?
+	if len(log.Topics) == 0 {
+		return fmt.Errorf("not enough topics")
+	}
+
+	switch log.Topics[0] {
+	// since this is the last stopic that comes out of the message, we use it to kick off the send loop
+	case cctp.CircleRequestSentTopic:
+		// TODO: figure out if we want to use scribe here, for now, we'll keep it simple w/ omnirpc gettxreceipt
+
+	case cctp.CircleRequestFulfilledTopic:
+		// TODO mark request as fulfilled
+	default:
+		// TODO; just continue
+		logger.Warnf("unknown topic %s", log.Topics[0])
+		return nil
+	}
+	return nil
+}
+
+func (c CCTPRelayer) handleSendRequest(parentCtx context.Context, txhash common.Hash, originChain uint32) (err error) {
+	ctx, span := c.handler.Tracer().Start(parentCtx, "handleSendRequest", trace.WithAttributes(
+		attribute.String(metrics.TxHash, txhash.String()),
+		attribute.Int(metrics.ChainID, int(originChain)),
+	))
+
+	defer func() {
+		metrics.EndSpanWithErr(span, err)
+	}()
+
+	ethClient, err := c.omnirpcClient.GetChainClient(ctx, int(originChain))
 	if err != nil {
-		return nil, err
+		return fmt.Errorf("could not get chain client: %w", err)
 	}
 
-	if len(receipts) != 1 {
-		err = fmt.Errorf("expected one receipt; got %d", len(receipts))
-		return nil, err
+	// TODO: consider pulling from scribe
+	receipt, err := ethClient.TransactionReceipt(ctx, txhash)
+	if err != nil {
+		return fmt.Errorf("could not get transaction receipt: %w", err)
 	}
 
-	// TODO(dwasse): parse the logs from the receipt to populate
-	// msg.message and msg.auxillaryData
-	receipt := receipts[0]
-	msg := &usdcMessage{
-		txHash: receipt.TxHash.Hex(),
+	// from this receipt, we expect two different logs. One is message sent
+	// message sent tells us: TODO fill me in
+	// circleRequestSentEvent tells us: TODO fill me in?
+	var messageSentEvent *mockmessagetransmitter.MessageTransmitterEventsMessageSent
+	var circleRequestSentEvent *cctp.SynapseCCTPEventsCircleRequestSent
+
+	for _, log := range receipt.Logs {
+		// this should never happen
+		if len(log.Topics) == 0 {
+			continue
+		}
+
+		switch log.Topics[0] {
+		case cctp.CircleRequestSentTopic:
+			// TODO: do we need to make sure log.Address matches our log.Address?
+			eventParser, err := cctp.NewSynapseCCTPEvents(log.Address, ethClient)
+			if err != nil {
+				return fmt.Errorf("could not create event parser: %w", err)
+			}
+
+			circleRequestSentEvent, err = eventParser.ParseCircleRequestSent(*log)
+			if err != nil {
+				return fmt.Errorf("could not parse circle request sent: %w", err)
+			}
+			// TODO: this shouldn't be coming from a mock contract, generate from the abstract contract itself
+		case mockmessagetransmitter.MessageSentTopic:
+			eventParser, err := mockmessagetransmitter.NewMessageTransmitterEvents(log.Address, ethClient)
+			if err != nil {
+				return fmt.Errorf("could not create event parser: %w", err)
+			}
+
+			messageSentEvent, err = eventParser.ParseMessageSent(*log)
+			if err != nil {
+				return fmt.Errorf("could not parse message sent: %w", err)
+			}
+
+		}
 	}
 
-	return msg, nil
+	if messageSentEvent == nil {
+		return fmt.Errorf("no message sent event found")
+	}
+
+	if circleRequestSentEvent == nil {
+		return fmt.Errorf("no circle request sent event found")
+	}
+
+	select {
+	case <-ctx.Done():
+		return ctx.Err()
+	case c.chainRelayers[originChain].usdcMsgSendChan <- &usdcMessage{
+		txHash:        txhash,
+		auxillaryData: circleRequestSentEvent.Request,
+		message:       messageSentEvent.Message,
+		//signature: //comes from the api
+	}:
+	}
+	return nil
 }
 
 // Completes a USDC bridging sequence by calling ReceiveCircleToken() on the destination chain.
@@ -263,8 +348,8 @@ type circleAttestationResponse struct {
 	} `json:"data"`
 }
 
-func getCircleAttestation(ctx context.Context, client *http.Client, txHash string) (signature []byte, err error) {
-	url := fmt.Sprintf("%s/%s", circleAttestationURL, txHash)
+func getCircleAttestation(ctx context.Context, client *http.Client, txHash common.Hash) (signature []byte, err error) {
+	url := fmt.Sprintf("%s/%s", circleAttestationURL, txHash.String())
 	req, err := http.NewRequestWithContext(ctx, "GET", url, nil)
 	if err != nil {
 		return nil, fmt.Errorf("could not create request: %w", err)
