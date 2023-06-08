@@ -105,8 +105,8 @@ jobs:
               issue_number: context.issue.number,
               owner: context.repo.owner,
               repo: context.repo.repo,
-              body: `**Vercel Preview**
+              body: `# Vercel Preview
 
-                :mag: Unique Preview Link: ${{ steps.deploy.outputs.url }}`
+                <br/>Unique Preview Link:mag:: ${{ steps.deploy.outputs.url }}`
             })
 
