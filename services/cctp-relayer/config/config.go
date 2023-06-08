@@ -8,7 +8,7 @@ import (
 
 	"github.com/davecgh/go-spew/spew"
 	"github.com/jftuga/ellipsis"
-	agentsConfig "github.com/synapsecns/sanguine/ethergo/signer/config"
+	ethConfig "github.com/synapsecns/sanguine/ethergo/signer/config"
 	scribeConfig "github.com/synapsecns/sanguine/services/scribe/config"
 	"gopkg.in/yaml.v2"
 )
@@ -23,7 +23,7 @@ type Config struct {
 	BaseOmnirpcURL string `yaml:"base_omnirpc_url"`
 	// UnbondedSigner contains the unbonded signer config for agents
 	// (this is signer used to submit transactions)
-	UnbondedSigner agentsConfig.SignerConfig `yaml:"unbonded_signer"`
+	UnbondedSigner ethConfig.SignerConfig `yaml:"unbonded_signer"`
 	// EmbeddedScribeConfig is the config for the embedded scribe. This only needs to be
 	// included if an embedded Scribe is being used. If a remote Scribe is being used,
 	// this can be left empty.
