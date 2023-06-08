@@ -2,8 +2,10 @@ package testutil
 
 import (
 	"context"
-	"github.com/synapsecns/sanguine/services/cctp-relayer/contracts/mocktokenmessenger"
 	"testing"
+
+	"github.com/synapsecns/sanguine/services/cctp-relayer/contracts/mockmintburntoken"
+	"github.com/synapsecns/sanguine/services/cctp-relayer/contracts/mocktokenmessenger"
 
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/common"
@@ -74,6 +76,31 @@ func (m MockTokenMessengerDeployer) Deploy(ctx context.Context) (contracts.Deplo
 }
 
 func (m MockTokenMessengerDeployer) Dependencies() []contracts.ContractType {
+	return []contracts.ContractType{MockMessageTransmitterType}
+}
+
+// NewMockMintBurnTokenDeployer deploys the mocktokenmessenger.
+func NewMockMintBurnTokenDeployer(registry deployer.GetOnlyContractRegistry, backend backends.SimulatedTestBackend) deployer.ContractDeployer {
+	return MockMintBurnTokenDeployer{deployer.NewSimpleDeployer(registry, backend, MockMintBurnTokenType)}
+}
+
+type MockMintBurnTokenDeployer struct {
+	*deployer.BaseDeployer
+}
+
+func (m MockMintBurnTokenDeployer) Deploy(ctx context.Context) (contracts.DeployedContract, error) {
+	messageTransmitter := m.Registry().Get(ctx, MockMessageTransmitterType)
+
+	return m.DeploySimpleContract(ctx, func(transactOps *bind.TransactOpts, backend bind.ContractBackend) (address common.Address, tx *types.Transaction, data interface{}, err error) {
+		// define the domain as the chain id!
+		return mockmintburntoken.DeployMockMintBurnToken(transactOps, backend, messageTransmitter.Address())
+	}, func(address common.Address, backend bind.ContractBackend) (interface{}, error) {
+		// remember what I said about vm.ContractRef!
+		return mockmintburntoken.NewMockMintBurnTokenRef(address, backend)
+	})
+}
+
+func (m MockMintBurnTokenDeployer) Dependencies() []contracts.ContractType {
 	return []contracts.ContractType{MockMessageTransmitterType}
 }
 

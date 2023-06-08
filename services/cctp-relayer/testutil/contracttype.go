@@ -40,6 +40,8 @@ const (
 	MockMessageTransmitterType // MockMessageTransmitter
 	// MockTokenMessengerType is the type of the mock token messenger contract.
 	MockTokenMessengerType // MockTokenMessenger
+	// MockMintBurnTokenType is the type of the mock token messenger contract.
+	MockMintBurnTokenType // MockMintBurnToken
 )
 
 // verifyStringerUpdated verifies stringer is up to date (this index is included in stringer).
