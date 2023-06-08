@@ -2,18 +2,17 @@ package relayer
 
 import (
 	"context"
-	"encoding/hex"
-	"encoding/json"
 	"fmt"
+	"net/http"
+	"strconv"
+	"time"
+
 	"github.com/ethereum/go-ethereum/common"
+	"github.com/synapsecns/sanguine/services/cctp-relayer/api"
 	"github.com/synapsecns/sanguine/services/cctp-relayer/contracts/cctp"
 	"github.com/synapsecns/sanguine/services/cctp-relayer/contracts/mockmessagetransmitter"
 	"go.opentelemetry.io/otel/attribute"
 	"go.opentelemetry.io/otel/trace"
-	"io/ioutil"
-	"net/http"
-	"strconv"
-	"time"
 
 	"github.com/cenkalti/backoff"
 	"github.com/ethereum/go-ethereum/core/types"
@@ -21,7 +20,6 @@ import (
 	"github.com/synapsecns/sanguine/services/cctp-relayer/config"
 	omniClient "github.com/synapsecns/sanguine/services/omnirpc/client"
 	"github.com/synapsecns/sanguine/services/scribe/client"
-	"github.com/synapsecns/sanguine/services/scribe/db"
 	pbscribe "github.com/synapsecns/sanguine/services/scribe/grpc/types/types/v1"
 	"go.opentelemetry.io/contrib/instrumentation/google.golang.org/grpc/otelgrpc"
 	"golang.org/x/sync/errgroup"
@@ -62,11 +60,13 @@ type CCTPRelayer struct {
 	chainRelayers map[uint32]*chainRelayer
 	// handler is the metrics handler.
 	handler metrics.Handler
+	// attestationApi is the client for Circle's REST API.
+	attestationApi api.AttestationApi
 }
 
 const usdcMsgChanSize = 1000
 
-func NewCCTPRelayer(ctx context.Context, cfg config.Config, scribeClient client.ScribeClient, handler metrics.Handler) (*CCTPRelayer, error) {
+func NewCCTPRelayer(ctx context.Context, cfg config.Config, scribeClient client.ScribeClient, handler metrics.Handler, attestationApi api.AttestationApi) (*CCTPRelayer, error) {
 	chainRelayers := make(map[uint32]*chainRelayer)
 	conn, err := grpc.DialContext(ctx, fmt.Sprintf("%s:%d", scribeClient.URL, scribeClient.Port),
 		grpc.WithTransportCredentials(insecure.NewCredentials()),
@@ -100,13 +100,14 @@ func NewCCTPRelayer(ctx context.Context, cfg config.Config, scribeClient client.
 	}
 
 	return &CCTPRelayer{
-		cfg:           cfg,
-		chainRelayers: chainRelayers,
-		scribeClient:  scribeClient,
-		grpcClient:    grpcClient,
-		grpcConn:      conn,
-		client:        &http.Client{},
-		handler:       handler,
+		cfg:            cfg,
+		chainRelayers:  chainRelayers,
+		scribeClient:   scribeClient,
+		grpcClient:     grpcClient,
+		grpcConn:       conn,
+		client:         &http.Client{},
+		handler:        handler,
+		attestationApi: attestationApi,
 	}, nil
 }
 
@@ -143,8 +144,6 @@ func (c CCTPRelayer) Stop(chainID uint32) {
 type CCTPRelayerDBReader interface {
 	// GetLastBlockNumber gets the last block number that had a message in the database.
 	GetLastBlockNumber(ctx context.Context, chainID uint32) (uint64, error)
-	// RetrieveReceiptsWithFilter gets the receipts with the given filter.
-	RetrieveReceiptsWithFilter(ctx context.Context, receiptFilter db.ReceiptFilter, page int) ([]types.Receipt, error)
 }
 
 // Listens for USDC send events on origin chain, and registers usdcMessages to be signed.
@@ -320,7 +319,7 @@ func (c CCTPRelayer) submitReceiveCircleToken(ctx context.Context, chainID uint3
 				// Fetch the circle attestation in a new goroutine so that we are not blocked from future requests.
 				// TODO(dwasse): configure this backoff
 				backoff.Retry(func() (err error) {
-					msg.signature, err = getCircleAttestation(ctx, c.client, msg.txHash)
+					msg.signature, err = c.attestationApi.GetAttestation(ctx, msg.txHash)
 					return
 				}, backoff.WithMaxRetries(backoff.NewConstantBackOff(time.Second), 5))
 				if err != nil {
@@ -338,53 +337,6 @@ func (c CCTPRelayer) submitReceiveCircleToken(ctx context.Context, chainID uint3
 			return nil
 		}
 	}
-}
-
-const circleAttestationURL = "https://iris-api-sandbox.circle.com/v1/attestations"
-
-type circleAttestationResponse struct {
-	Data struct {
-		Attestation string `json:"attestation"`
-		Status      string `json:"status"`
-	} `json:"data"`
-}
-
-func getCircleAttestation(ctx context.Context, client *http.Client, txHash common.Hash) (signature []byte, err error) {
-	url := fmt.Sprintf("%s/%s", circleAttestationURL, txHash.String())
-	req, err := http.NewRequestWithContext(ctx, "GET", url, nil)
-	if err != nil {
-		return nil, fmt.Errorf("could not create request: %w", err)
-	}
-
-	resp, err := client.Do(req)
-	if err != nil {
-		return
-	}
-	defer resp.Body.Close()
-
-	if resp.StatusCode != http.StatusOK {
-		err = fmt.Errorf("received non-200 status code: %d", resp.StatusCode)
-		return
-	}
-
-	body, err := ioutil.ReadAll(resp.Body)
-	if err != nil {
-		return
-	}
-
-	var attestationResp circleAttestationResponse
-	err = json.Unmarshal(body, &attestationResp)
-	if err != nil {
-		err = fmt.Errorf("could not unmarshal body: %w", err)
-		return
-	}
-
-	signature, err = hex.DecodeString(attestationResp.Data.Attestation)
-	if err != nil {
-		err = fmt.Errorf("could not decode signature: %w", err)
-		return
-	}
-	return
 }
 
 type contractType int
