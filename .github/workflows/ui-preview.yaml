@@ -93,13 +93,16 @@ jobs:
         run: vercel build --token=${{ secrets.VERCEL_TOKEN }}
       - name: Deploy to Vercel (Output Preview/Inspect Links)
         run: vercel deploy --prebuilt --token=${{ secrets.VERCEL_TOKEN }}
-      - name: Get Preview URL
-        uses: aaimio/vercel-preview-url-action@v2.2.0
+  capture_vercel_preview_url:
+    name: Capture Vercel preview URL
+    runs-on: "ubuntu-latest"
+    if: ${{ contains(github.event.head_commit.message, '[vercel]') }}
+    steps:
+      - uses: aaimio/vercel-preview-url-action@v2.2.0
         id: vercel_preview_url
         with:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      - name: Comment link to preview
-        uses: aaimio/vercel-preview-url-action@v2.2.0
+      - uses: actions/github-script@v3
         with:
           github-token: ${{secrets.GITHUB_TOKEN}}
           script: |
