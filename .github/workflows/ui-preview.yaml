@@ -108,12 +108,14 @@ jobs:
         uses: actions/github-script@v3
         with:
           script: |
+            echo ${{ secrets.VERCEL_PROJECT_ID }}
             github.issues.createComment({
               issue_number: context.issue.number,
               owner: context.repo.owner,
               repo: context.repo.repo,
               body: `***Vercel Preview***
-              Unique Preview Link: ${{ steps.deploy.outputs.url }}
-              Inspection result: ${{ steps.inspect.outputs.inspect }}`
+              🔎 Unique Preview Link: ${{ steps.deploy.outputs.url }}
+              Other Deployments: https://vercel.com/${{ secrets.VERCEL_ORG_ID }}/${{ secrets.VERCEL_PROJECT_ID }}/deployments
+              `
             })
 
