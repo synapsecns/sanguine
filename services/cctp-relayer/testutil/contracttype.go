@@ -5,6 +5,7 @@ import (
 	"github.com/synapsecns/sanguine/ethergo/contracts"
 	"github.com/synapsecns/sanguine/services/cctp-relayer/contracts/cctp"
 	"github.com/synapsecns/sanguine/services/cctp-relayer/contracts/mockmessagetransmitter"
+	"github.com/synapsecns/sanguine/services/cctp-relayer/contracts/mockmintburntoken"
 	"github.com/synapsecns/sanguine/services/cctp-relayer/contracts/mocktokenmessenger"
 )
 
@@ -81,6 +82,8 @@ func (c contractTypeImpl) ContractInfo() *compiler.Contract {
 		return mockmessagetransmitter.Contracts["solidity/MockMessageTransmitter.sol:MockMessageTransmitter"]
 	case MockTokenMessengerType:
 		return mocktokenmessenger.Contracts["solidity/MockTokenMessenger.sol:MockTokenMessenger"]
+	case MockMintBurnTokenType:
+		return mockmintburntoken.Contracts["solidity/MockMintBurnToken.sol:MockMintBurnToken"]
 	default:
 		panic("not yet implemented")
 	}

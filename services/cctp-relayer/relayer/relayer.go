@@ -203,6 +203,7 @@ func (c CCTPRelayer) streamLogs(ctx context.Context, grpcClient pbscribe.ScribeS
 
 // Converts a scribe response to a usdcMessage.
 func scribeResponseToMsg(ctx context.Context, response *pbscribe.StreamLogsResponse, db CCTPRelayerDBReader) (*usdcMessage, error) {
+	// TODO: think about pulling this from the chain? Or scribe
 	receipts, err := db.RetrieveReceiptsWithFilter(ctx, scribeDb.ReceiptFilter{}, 0)
 	if err != nil {
 		return nil, err

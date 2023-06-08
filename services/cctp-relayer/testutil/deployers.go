@@ -23,7 +23,7 @@ func NewDeployManager(t *testing.T) *DeployManager {
 	t.Helper()
 
 	parentManager := manager.NewDeployerManager(t,
-		NewMockMessageTransmitterDeployer, NewSynapseCCTPDeployer, NewMockTokenMessengerDeployer,
+		NewMockMessageTransmitterDeployer, NewSynapseCCTPDeployer, NewMockTokenMessengerDeployer, NewMockMintBurnTokenDeployer,
 	)
 	return &DeployManager{parentManager}
 }
