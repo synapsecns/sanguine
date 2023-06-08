@@ -13,5 +13,6 @@ export const getTokenAllowance = async (
   })
   const erc20 = new Contract(tokenAddress, erc20ABI, wallet)
   const allowance = await erc20.allowance(address, routerAddress)
+
   return allowance
 }
