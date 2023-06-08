@@ -6,6 +6,7 @@ import (
 
 	"github.com/synapsecns/sanguine/services/cctp-relayer/contracts/mockmintburntoken"
 	"github.com/synapsecns/sanguine/services/cctp-relayer/contracts/mocktokenmessenger"
+	"github.com/synapsecns/sanguine/services/cctp-relayer/contracts/mocktokenminter"
 
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/common"
@@ -82,6 +83,31 @@ func (m MockTokenMessengerDeployer) Dependencies() []contracts.ContractType {
 // NewMockMintBurnTokenDeployer deploys the mocktokenmessenger.
 func NewMockMintBurnTokenDeployer(registry deployer.GetOnlyContractRegistry, backend backends.SimulatedTestBackend) deployer.ContractDeployer {
 	return MockMintBurnTokenDeployer{deployer.NewSimpleDeployer(registry, backend, MockMintBurnTokenType)}
+}
+
+type MockTokenMinterDeployer struct {
+	*deployer.BaseDeployer
+}
+
+func (m MockTokenMinterDeployer) Deploy(ctx context.Context) (contracts.DeployedContract, error) {
+	messageTransmitter := m.Registry().Get(ctx, MockMessageTransmitterType)
+
+	return m.DeploySimpleContract(ctx, func(transactOps *bind.TransactOpts, backend bind.ContractBackend) (address common.Address, tx *types.Transaction, data interface{}, err error) {
+		// define the domain as the chain id!
+		return mocktokenminter.DeployMockTokenMinter(transactOps, backend, messageTransmitter.Address())
+	}, func(address common.Address, backend bind.ContractBackend) (interface{}, error) {
+		// remember what I said about vm.ContractRef!
+		return mocktokenminter.NewMockTokenMinterRef(address, backend)
+	})
+}
+
+func (m MockTokenMinterDeployer) Dependencies() []contracts.ContractType {
+	return []contracts.ContractType{MockMessageTransmitterType}
+}
+
+// NewMockTokenMinter deploys the mocktokenminter.
+func NewMockTokenMinter(registry deployer.GetOnlyContractRegistry, backend backends.SimulatedTestBackend) deployer.ContractDeployer {
+	return MockTokenMinterDeployer{deployer.NewSimpleDeployer(registry, backend, MockMintBurnTokenType)}
 }
 
 type MockMintBurnTokenDeployer struct {
