@@ -99,7 +99,7 @@ jobs:
           echo "DEPLOY_URL=$DEPLOY_URL" >> $GITHUB_ENV
           echo "::set-output name=url::$DEPLOY_URL"
       - name: TEST
-        run: echo ${{ steps.deploy.outputs.DEPLOY_URL }} && echo ${{ steps.deploy.outputs.url }} && echo ${{ $DEPLOY_URL }}
+        run: echo ${{ steps.deploy.outputs.DEPLOY_URL }} && echo ${{ steps.deploy.outputs.url }}
       - name: Comment PR
         uses: actions/github-script@v3
         with:
