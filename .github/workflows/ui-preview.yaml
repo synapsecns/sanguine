@@ -85,8 +85,7 @@ jobs:
           TARGET_ID=$(echo $PROJECT_IDS | jq -r 'to_entries[] | select(.key=="${{ matrix.package }}") | .value')
           # set the vercel project id`
           echo "VERCEL_PROJECT_ID=$TARGET_ID" >> $GITHUB_ENV
-          echo "::set-output name=project_id::$VERCEL_PROJECT_ID"
-
+          echo "::set-output name=project_id::$TARGET_ID"
       - name: Install Vercel CLI
         run: npm install --global vercel@30.1.0
       - name: Pull Vercel Environment Information
@@ -110,7 +109,7 @@ jobs:
               repo: context.repo.repo,
               body: `# Vercel Preview
                 :mag: Unique Preview Link: ${{ steps.deploy.outputs.url }}
-                Other Deployments: https://vercel.com/synapsecns/${{ env.VERCEL_PROJECT_ID }}/deployments
+                Other Deployments: https://vercel.com/synapsecns/${{ steps.project_id.outputs.project_id }}/deployments
               `
             })
 
