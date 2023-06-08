@@ -27,11 +27,11 @@ import (
 	"google.golang.org/grpc/credentials/insecure"
 )
 
-type usdcMessage struct {
-	message       []byte      // raw bytes of message produced by Circle's MessageTransmitter
-	auxillaryData []byte      // auxillary data emitted by SynapseCCTP
-	txHash        common.Hash // hash of the USDC burn transaction
-	signature     []byte      // attestation produced by Circle's API: https://developers.circle.com/stablecoin/reference/getattestation
+type UsdcMessage struct {
+	Message       []byte      // raw bytes of message produced by Circle's MessageTransmitter
+	AuxillaryData []byte      // auxillary data emitted by SynapseCCTP
+	TxHash        common.Hash // hash of the USDC burn transaction
+	Signature     []byte      // attestation produced by Circle's API: https://developers.circle.com/stablecoin/reference/getattestation
 }
 
 // chainRelayer is a struct that contains the necessary information for each chain level relayer.
@@ -43,9 +43,9 @@ type chainRelayer struct {
 	// stopListenChan is a channel that is used to stop listening to the log channel.
 	stopListenChan chan bool
 	// usdcMsgRecvChan contains incoming usdc messages yet to be signed.
-	usdcMsgRecvChan chan *usdcMessage
+	usdcMsgRecvChan chan *UsdcMessage
 	// usdcMsgSendChan contains outgoing usdc messages that are signed.
-	usdcMsgSendChan chan *usdcMessage
+	usdcMsgSendChan chan *UsdcMessage
 }
 
 type CCTPRelayer struct {
@@ -94,8 +94,8 @@ func NewCCTPRelayer(ctx context.Context, cfg config.Config, scribeClient client.
 			chainID:         chain.ChainID,
 			closeConnection: make(chan bool, 1),
 			stopListenChan:  make(chan bool, 1),
-			usdcMsgRecvChan: make(chan *usdcMessage, usdcMsgChanSize),
-			usdcMsgSendChan: make(chan *usdcMessage, usdcMsgChanSize),
+			usdcMsgRecvChan: make(chan *UsdcMessage, usdcMsgChanSize),
+			usdcMsgSendChan: make(chan *UsdcMessage, usdcMsgChanSize),
 		}
 	}
 
@@ -146,7 +146,7 @@ type CCTPRelayerDBReader interface {
 	GetLastBlockNumber(ctx context.Context, chainID uint32) (uint64, error)
 }
 
-// Listens for USDC send events on origin chain, and registers usdcMessages to be signed.
+// Listens for USDC send events on origin chain, and registers UsdcMessages to be signed.
 func (c CCTPRelayer) streamLogs(ctx context.Context, grpcClient pbscribe.ScribeServiceClient, conn *grpc.ClientConn, chainID uint32, address string, toBlockNumber *uint64) error {
 	lastStoredBlock, err := c.db.GetLastBlockNumber(ctx, chainID)
 	if err != nil {
@@ -301,11 +301,11 @@ func (c CCTPRelayer) handleSendRequest(parentCtx context.Context, txhash common.
 	select {
 	case <-ctx.Done():
 		return ctx.Err()
-	case c.chainRelayers[originChain].usdcMsgSendChan <- &usdcMessage{
-		txHash:        txhash,
-		auxillaryData: circleRequestSentEvent.Request,
-		message:       messageSentEvent.Message,
-		//signature: //comes from the api
+	case c.chainRelayers[originChain].usdcMsgSendChan <- &UsdcMessage{
+		TxHash:        txhash,
+		AuxillaryData: circleRequestSentEvent.Request,
+		Message:       messageSentEvent.Message,
+		//Signature: //comes from the api
 	}:
 	}
 	return nil
@@ -328,9 +328,9 @@ func (c CCTPRelayer) submitReceiveCircleToken(ctx context.Context, chainID uint3
 	}
 }
 
-func (c CCTPRelayer) fetchAttestation(parentCtx context.Context, chainID uint32, msg *usdcMessage) {
+func (c CCTPRelayer) fetchAttestation(parentCtx context.Context, chainID uint32, msg *UsdcMessage) {
 	ctx, span := c.handler.Tracer().Start(parentCtx, "fetchAttestation", trace.WithAttributes(
-		attribute.String(metrics.TxHash, msg.txHash.String()),
+		attribute.String(metrics.TxHash, msg.TxHash.String()),
 		attribute.Int(metrics.ChainID, int(chainID)),
 	))
 
@@ -341,7 +341,7 @@ func (c CCTPRelayer) fetchAttestation(parentCtx context.Context, chainID uint32,
 
 	// TODO(dwasse): configure this backoff
 	err = backoff.Retry(func() (err error) {
-		msg.signature, err = c.attestationApi.GetAttestation(ctx, msg.txHash)
+		msg.Signature, err = c.attestationApi.GetAttestation(ctx, msg.TxHash)
 		return
 	}, backoff.WithMaxRetries(backoff.NewConstantBackOff(time.Second), 5))
 
