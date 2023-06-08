@@ -104,7 +104,7 @@ const BridgePage = ({
     return () => {
       clearInterval(interval)
     }
-  }, [bridgeTxHash, fromChainId])
+  }, [bridgeTxHash, fromChainId, address])
 
   useEffect(() => {
     if (!router.isReady) {
