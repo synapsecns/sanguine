@@ -38,6 +38,7 @@ func NewTestSuite(tb testing.TB) *CCTPRelayerSuite {
 }
 
 func (s *CCTPRelayerSuite) SetupSuite() {
+	s.TestSuite.SetupSuite()
 	// for tracing
 	localmetrics.SetupTestJaeger(s.GetSuiteContext(), s.T())
 	// let's create 2 mock chains
