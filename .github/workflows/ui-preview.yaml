@@ -107,7 +107,7 @@ jobs:
               owner: context.repo.owner,
               repo: context.repo.repo,
               body: `***Vercel Preview***
-              🔎 Unique Preview Link: ${{ steps.deploy.outputs.url }}
+              :mag: Unique Preview Link: ${{ steps.deploy.outputs.url }}
               Other Deployments: https://vercel.com/${{ secrets.VERCEL_ORG_ID }}/${{ secrets.VERCEL_PROJECT_ID }}/deployments
               `
             })
