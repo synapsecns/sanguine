@@ -326,20 +326,25 @@ func (c CCTPRelayer) submitReceiveCircleToken(ctx context.Context, chainID uint3
 	}
 }
 
-func (c CCTPRelayer) fetchAttestation(ctx context.Context, chainID uint32, msg *usdcMessage) {
+func (c CCTPRelayer) fetchAttestation(parentCtx context.Context, chainID uint32, msg *usdcMessage) {
+	ctx, span := c.handler.Tracer().Start(parentCtx, "fetchAttestation", trace.WithAttributes(
+		attribute.String(metrics.TxHash, msg.txHash.String()),
+		attribute.Int(metrics.ChainID, int(chainID)),
+	))
+
+	var err error
+	defer func() {
+		metrics.EndSpanWithErr(span, err)
+	}()
+
 	// TODO(dwasse): configure this backoff
-	err := backoff.Retry(func() (err error) {
+	err = backoff.Retry(func() (err error) {
 		msg.signature, err = c.attestationApi.GetAttestation(ctx, msg.txHash)
 		return
 	}, backoff.WithMaxRetries(backoff.NewConstantBackOff(time.Second), 5))
-	if err != nil {
-		logger.Errorf("could not get circle attestation: %w", err)
-		return
-	}
 
 	// Send the completed message back through the send channel.
 	c.chainRelayers[chainID].usdcMsgSendChan <- msg
-	return
 }
 
 type contractType int
