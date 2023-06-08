@@ -95,7 +95,6 @@ jobs:
         id: deploy
         run: vercel deploy --prebuilt --token=${{ secrets.VERCEL_TOKEN }}
       - name: TEST
-        uses: actions/github-script@v3
         run: echo ${{ steps.deploy.outputs }} && echo ${{ steps.deploy.outputs.url }} && steps.deploy.outputs
       - name: Comment PR
         uses: actions/github-script@v3
