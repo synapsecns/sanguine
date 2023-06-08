@@ -1,13 +1,15 @@
 package relayer_test
 
 import (
+	"math/big"
+	"net/url"
+	"strconv"
+
+	"github.com/synapsecns/sanguine/services/cctp-relayer/api"
 	"github.com/synapsecns/sanguine/services/cctp-relayer/config"
 	"github.com/synapsecns/sanguine/services/cctp-relayer/relayer"
 	omniClient "github.com/synapsecns/sanguine/services/omnirpc/client"
 	scribeClient "github.com/synapsecns/sanguine/services/scribe/client"
-	"math/big"
-	"net/url"
-	"strconv"
 )
 
 func (c *CCTPRelayerSuite) TestSendCircleToken() {
@@ -28,7 +30,8 @@ func (c *CCTPRelayerSuite) TestSendCircleToken() {
 	c.Nil(err)
 
 	sc := scribeClient.NewRemoteScribe(uint16(port), parsedScribe.Host, c.metricsHandler)
-	relay, err := relayer.NewCCTPRelayer(c.GetTestContext(), cfg, sc.ScribeClient, c.metricsHandler)
+	mockApi := api.MockCircleApi{}
+	relay, err := relayer.NewCCTPRelayer(c.GetTestContext(), cfg, sc.ScribeClient, c.metricsHandler, mockApi)
 	c.Nil(err)
 
 	relay.SetOmnirpcClient(omniClient.NewOmnirpcClient(c.testOmnirpc, c.metricsHandler, omniClient.WithCaptureReqRes()))
