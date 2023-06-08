@@ -95,6 +95,7 @@ jobs:
         run: vercel deploy --prebuilt --token=${{ secrets.VERCEL_TOKEN }}
   capture_vercel_preview_url:
     name: Capture Vercel preview URL
+    needs: deploy
     runs-on: "ubuntu-latest"
     if: ${{ contains(github.event.head_commit.message, '[vercel]') }}
     steps:
