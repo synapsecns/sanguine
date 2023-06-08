@@ -85,6 +85,8 @@ jobs:
           TARGET_ID=$(echo $PROJECT_IDS | jq -r 'to_entries[] | select(.key=="${{ matrix.package }}") | .value')
           # set the vercel project id`
           echo "VERCEL_PROJECT_ID=$TARGET_ID" >> $GITHUB_ENV
+          echo "::set-output name=project_id::$TARGET_ID"
+
       - name: Install Vercel CLI
         run: npm install --global vercel@30.1.0
       - name: Pull Vercel Environment Information
@@ -97,11 +99,11 @@ jobs:
           export DEPLOY_URL=$(vercel deploy --prebuilt --token=${{ secrets.VERCEL_TOKEN }})
           echo "DEPLOY_URL=$DEPLOY_URL" >> $GITHUB_ENV
           echo "::set-output name=url::$DEPLOY_URL"
-      - name: Comment PR
+      - name: Comment Deploy Link
         uses: actions/github-script@v3
         with:
           script: |
-            echo ${{ env.VERCEL_PROJECT_ID }}
+            echo ${{ steps.project_id.outputs.project_id }}
             github.issues.createComment({
               issue_number: context.issue.number,
               owner: context.repo.owner,
