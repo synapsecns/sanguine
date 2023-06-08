@@ -92,23 +92,19 @@ jobs:
       - name: Build Project Artifacts
         run: vercel build --token=${{ secrets.VERCEL_TOKEN }}
       - name: Deploy to Vercel (Output Preview/Inspect Links)
+        id: deploy
         run: vercel deploy --prebuilt --token=${{ secrets.VERCEL_TOKEN }}
-  capture_vercel_preview_url:
-    name: Capture Vercel preview URL
-    needs: deploy
-    runs-on: 'ubuntu-latest'
-    # if: ${{ contains(github.event.head_commit.message, '[vercel]') }}
-    steps:
-      - uses: aaimio/vercel-preview-url-action@v2.2.0
-        id: vercel_preview_url
+      - name: TEST
+        uses: actions/github-script@v3
+        run: echo ${{ steps.deploy.outputs }} && echo ${{ steps.deploy.outputs.url }} && steps.deploy.outputs
+      - name: Comment PR
+        uses: actions/github-script@v3
         with:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      - uses: actions/github-script@v3
-        with:
-          github-token: ${{secrets.GITHUB_TOKEN}}
           script: |
             github.issues.createComment({
               owner: context.repo.owner,
               repo: context.repo.repo,
-              body: 'The preview URL is: ${{ steps.vercel_preview_url.outputs.vercel_preview_url }}.'
-            });
+              body: `Deployment ready: ${process.env.DEPLOYMENT_URL}`
+            })
+        env:
+          DEPLOYMENT_URL: ${{ steps.deploy.outputs.url }}
