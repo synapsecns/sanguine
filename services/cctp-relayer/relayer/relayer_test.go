@@ -20,8 +20,15 @@ func (c *CCTPRelayerSuite) TestSendCircleToken() {
 	_, mintContractRef := c.deployManager.GetMockMintBurnTokenType(c.GetTestContext(), sendChain)
 
 	// create a relayer
-	// TODO: figure out
-	cfg := config.Config{}
+	sendChainId, err := sendChain.ChainID(c.GetTestContext())
+	c.Nil(err)
+	cfg := config.Config{
+		Chains: []config.ChainConfig{
+			{
+				ChainID: uint32(sendChainId.Int64()),
+			},
+		},
+	}
 
 	// TODO clean this part up
 	parsedScribe, err := url.Parse(c.testScribe)
@@ -55,5 +62,4 @@ func (c *CCTPRelayerSuite) TestSendCircleToken() {
 
 	err = relay.HandleSendRequest(c.GetTestContext(), tx.Hash(), uint32(sendChain.GetChainID()))
 	c.Nil(err)
-
 }

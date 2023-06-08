@@ -200,9 +200,8 @@ func (c CCTPRelayer) streamLogs(ctx context.Context, grpcClient pbscribe.ScribeS
 	}
 }
 
-// Converts a scribe response to a usdcMessage.
-// This takes ina  log from the SynapseCCTP contract, determines the topic and then performs an action based on that topic
-// this could be a send or receive
+// This takes in a log from the SynapseCCTP contract, determines the topic and then performs an action based on that topic.
+// Note that the log could correspond to a send or receive event.
 func (c CCTPRelayer) handleLog(ctx context.Context, log *types.Log, originChain uint32) error {
 	if log == nil {
 		return fmt.Errorf("log is nil")
@@ -229,10 +228,13 @@ func (c CCTPRelayer) handleLog(ctx context.Context, log *types.Log, originChain 
 }
 
 func (c CCTPRelayer) handleSendRequest(parentCtx context.Context, txhash common.Hash, originChain uint32) (err error) {
+	fmt.Printf("handleSendRequest with ctx %v, hash %v, chain %v\n", parentCtx, txhash.String(), originChain)
+	fmt.Printf("relayers: %v\n", c.chainRelayers)
 	ctx, span := c.handler.Tracer().Start(parentCtx, "handleSendRequest", trace.WithAttributes(
 		attribute.String(metrics.TxHash, txhash.String()),
 		attribute.Int(metrics.ChainID, int(originChain)),
 	))
+	fmt.Printf("tracer ctx: %v\n", ctx)
 
 	defer func() {
 		metrics.EndSpanWithErr(span, err)
