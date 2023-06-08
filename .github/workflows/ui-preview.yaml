@@ -97,13 +97,6 @@ jobs:
           export DEPLOY_URL=$(vercel deploy --prebuilt --token=${{ secrets.VERCEL_TOKEN }})
           echo "DEPLOY_URL=$DEPLOY_URL" >> $GITHUB_ENV
           echo "::set-output name=url::$DEPLOY_URL"
-      - name: Inspect deployment
-        id: inspect
-        run: |
-          echo ${{ steps.deploy.outputs.url }}
-          INSPECT_OUTPUT=$(vercel inspect ${{ steps.deploy.outputs.url }} --token=${{ secrets.VERCEL_TOKEN }})
-          echo "INSPECT_OUTPUT=$INSPECT_OUTPUT" >> $GITHUB_ENV
-          echo "::set-output name=inspect::$INSPECT_OUTPUT"
       - name: Comment PR
         uses: actions/github-script@v3
         with:
