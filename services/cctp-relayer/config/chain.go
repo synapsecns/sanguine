@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 
+	"github.com/ethereum/go-ethereum/common"
 	"github.com/richardwilkes/toolbox/collection"
 )
 
@@ -17,6 +18,14 @@ type ChainConfig struct {
 	OriginAddress string `yaml:"origin_address"`
 	// DestinationAddress is the address of the destination contract.
 	DestinationAddress string `yaml:"destination_address"`
+}
+
+func (c ChainConfig) GetOriginAddress() common.Address {
+	return common.HexToAddress(c.OriginAddress)
+}
+
+func (c ChainConfig) GetDestinationAddress() common.Address {
+	return common.HexToAddress(c.DestinationAddress)
 }
 
 // ChainConfigs contains an array of ChainConfigs.
