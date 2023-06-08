@@ -45,6 +45,27 @@ In summary, the Synapse Messaging network has 3 different types of agents that d
 What incentivizes each of these agents to do this work?
 Agents in the system are doing work (i.e. running servers, paying electricity, etc), so they need to have the proper incentives to make it worthwhile. This means whoever is sending a cross-chain message needs to pay some sort of toll to have the message sent, and the agents all receive a fraction of the toll in proportion to the work they do to get the message delivered.
 
+**Synapse Messaging Network Topology:**
+![SynapseMessagingNetworkTopology](../../static/img/DeploymentOverview.png 'Synapse Messaging Network Topology')
+1. The above network topology shows two [remote chains](glossary.md/#remote-chain) (Chain A and Chain B) as well as the [Synapse Chain](glossary.md/#synapse-chain).
+2. Each [remote chain](glossary.md/#remote-chain) has the following smart contracts deployed:
+    1. Three different [Client Sending Contracts](glossary.md/#client-sending-smart-contract).
+    2. Three corresponding [Client Receiving Contracts](glossary.md/#client-receiving-smart-contract).
+    3. Synapse [Origin Smart Contract](glossary.md/#origin-smart-contract).
+    4. Synapse [Destination Smart Contract](glossary.md/#destination-smart-contract).
+    5. Synapse [Gas Oracle Smart Contract](glossary.md/#gas-oracle-smart-contract).
+    6. Synapse [Light Manager Smart Contract](glossary.md/#light-manager-smart-contract).
+    7. Synapse [Light Inbox Smart Contract](glossary.md/#light-inbox-smart-contract).
+3. The [Syanpse Chain](glossary.md/#synapse-chain) has the following smart contracts deployed:
+    1. Synapse [Summit Smart Contract](glossary.md/#summit-smart-contract).
+    2. Synapse [Gas Oracle Smart Contract](glossary.md/#gas-oracle-smart-contract).
+    3. Synapse [Bonding Manager Smart Contract](glossary.md/#bonding-manager-smart-contract).
+    4. Synapse [Inbox Smart Contract](glossary.md/#inbox-smart-contract).
+4. Chain A shows two [Notaries](glossary.md/#notary) (Notary 1 for Chain A and Notary 2 for Chain A) assigned to it.
+5. Chain B shows two [Notaries](glossary.md/#notary) (Notary 1 for Chain B and Notary 2 for Chain B) assigned to it.
+6. The network shows three [Guards](glossary.md/#guard) (Guard 1, Guard 2 and Guard 3).
+7. The network shows four [Executors](glossary.md/#executor) (Executor 1, Executor 2 and Executor 3).
+
 ## Who is allowed to participate as one of the agents?
 
 The Synapse Messaging network is designed to be permissionless and allow anyone to participate as any of the agent types. This means that anyone is able to be a Notary, Guard and/or Executor. However, the network needs to disincentivize fraudulent behavior to maintain integrity.

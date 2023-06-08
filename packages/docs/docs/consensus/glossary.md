@@ -83,6 +83,18 @@ to perform atomic transactions on one blockchain at a time. For any piece of inf
 will serve as the canonical source of truth. If two or more chains disagree, the chain that is the canonical source of truth gets
 to decide the real state, and the other chains will need to be corrected to match the correct state.
 
+### Client Receiving Smart Contract
+If a Smart Contract application requires sending cross chain messages, it must develop and deploy
+a Smart Contract to receive messages sent by the [Client Sending Smart Contract](#client-sending-smart-contract).
+This is referred to as the "Client Receiving Smart Contract". This is the contract that
+implements the interface [IMessageRecipient.sol](https://github.com/synapsecns/sanguine/blob/master/packages/contracts-core/contracts/interfaces/IMessageRecipient.sol)
+in order to provide the "receiveBaseMessage" method. (Note that in theory the same Smart Contract could implement both the
+sender and receiver, but of course it would be the sender of one chain sending to a different chain.)
+
+### Client Sending Smart Contract
+If a Smart Contract application requires sending cross chain messages, it must develop and deploy
+a Smart Contract to send messages. This is referred to as the "Client Sending Smart Contract". This is the contract that
+interacts with the Synapse [Origin Smart Contract](#origin-smart-contract) by calling the Origin's "sendBaseMessage" method.
 
 ### Commitment
 In cryptography, a commitment is often used when someone wants to commit to large amounts of data without having to pass around
