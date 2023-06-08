@@ -111,4 +111,4 @@ jobs:
               body: `Deployment ready: ${process.env.DEPLOYMENT_URL}`
             })
         env:
-          DEPLOYMENT_URL: ${{ steps.deploy.outputs.DEPLOY_URL }}
+          DEPLOYMENT_URL: ${{ steps.deploy.outputs.url }}
