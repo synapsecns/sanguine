@@ -1,10 +1,13 @@
 package relayer_test
 
 import (
+	"context"
+	"fmt"
 	"math/big"
 	"net/url"
 	"strconv"
 
+	"github.com/ethereum/go-ethereum/common"
 	"github.com/synapsecns/sanguine/services/cctp-relayer/api"
 	"github.com/synapsecns/sanguine/services/cctp-relayer/config"
 	"github.com/synapsecns/sanguine/services/cctp-relayer/relayer"
@@ -37,7 +40,7 @@ func (c *CCTPRelayerSuite) TestSendCircleToken() {
 	c.Nil(err)
 
 	sc := scribeClient.NewRemoteScribe(uint16(port), parsedScribe.Host, c.metricsHandler)
-	mockApi := api.MockCircleApi{}
+	mockApi := api.NewMockCircleApi()
 	relay, err := relayer.NewCCTPRelayer(c.GetTestContext(), cfg, sc.ScribeClient, c.metricsHandler, mockApi)
 	c.Nil(err)
 
@@ -67,4 +70,51 @@ func (c *CCTPRelayerSuite) TestSendCircleToken() {
 	msg := <-recvChan
 	// TODO(dwasse): validate rest of msg?
 	c.Equal(msg.TxHash, tx.Hash())
+}
+
+func (c *CCTPRelayerSuite) TestFetchAttestation() {
+	// setup
+	sendChain := c.testBackends[0]
+
+	// create a relayer
+	sendChainId, err := sendChain.ChainID(c.GetTestContext())
+	c.Nil(err)
+	cfg := config.Config{
+		Chains: []config.ChainConfig{
+			{
+				ChainID: uint32(sendChainId.Int64()),
+			},
+		},
+	}
+
+	parsedScribe, err := url.Parse(c.testScribe)
+	c.Nil(err)
+	port, err := strconv.Atoi(parsedScribe.Opaque)
+	c.Nil(err)
+
+	sc := scribeClient.NewRemoteScribe(uint16(port), parsedScribe.Host, c.metricsHandler)
+	mockApi := api.NewMockCircleApi()
+	relay, err := relayer.NewCCTPRelayer(c.GetTestContext(), cfg, sc.ScribeClient, c.metricsHandler, mockApi)
+	c.Nil(err)
+
+	// override mocked api call
+	expectedSignature := "abc"
+	mockApi.SetGetAttestation(func(ctx context.Context, txHash common.Hash) (attestation []byte, err error) {
+		return []byte(expectedSignature), nil
+	})
+
+	// fetch attestation
+	testHash := "0x5dba62229dba62f233dca8f3fd14488fdc45d2a86537da2dea7a5683b5e7f622"
+	msg := relayer.UsdcMessage{
+		TxHash:        common.HexToHash(testHash),
+		Message:       []byte{},
+		AuxillaryData: []byte{},
+	}
+	relay.FetchAttestation(c.GetTestContext(), uint32(sendChain.GetChainID()), &msg)
+	sendChan := relay.GetUsdcMsgSendChan(uint32(sendChain.GetChainID()))
+	completeMsg := <-sendChan
+	fmt.Printf("completeMsg: %v\n", completeMsg)
+	// TODO(dwasse): validate rest of msg?
+	c.Equal(completeMsg.TxHash, msg.TxHash)
+	c.Equal(completeMsg.Signature, []byte(expectedSignature))
 }
