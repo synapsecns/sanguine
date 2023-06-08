@@ -11,11 +11,13 @@ func _() {
 	_ = x[SynapseCCTPType-1]
 	_ = x[MockMessageTransmitterType-2]
 	_ = x[MockTokenMessengerType-3]
+	_ = x[MockMintBurnTokenType-4]
+	_ = x[MockTokenMinterType-5]
 }
 
-const _contractTypeImpl_name = "SynapseCCTPMockMessageTransmitterMockTokenMessenger"
+const _contractTypeImpl_name = "SynapseCCTPMockMessageTransmitterMockTokenMessengerMockMintBurnTokenMockTokenMinter"
 
-var _contractTypeImpl_index = [...]uint8{0, 11, 33, 51}
+var _contractTypeImpl_index = [...]uint8{0, 11, 33, 51, 68, 83}
 
 func (i contractTypeImpl) String() string {
 	i -= 1

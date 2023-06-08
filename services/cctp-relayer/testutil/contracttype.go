@@ -7,6 +7,7 @@ import (
 	"github.com/synapsecns/sanguine/services/cctp-relayer/contracts/mockmessagetransmitter"
 	"github.com/synapsecns/sanguine/services/cctp-relayer/contracts/mockmintburntoken"
 	"github.com/synapsecns/sanguine/services/cctp-relayer/contracts/mocktokenmessenger"
+	"github.com/synapsecns/sanguine/services/cctp-relayer/contracts/mocktokenminter"
 )
 
 // set all contact types.
@@ -43,6 +44,8 @@ const (
 	MockTokenMessengerType // MockTokenMessenger
 	// MockMintBurnTokenType is the type of the mock token messenger contract.
 	MockMintBurnTokenType // MockMintBurnToken
+	// MockTokenMinterType is the type of the mock token minter contract.
+	MockTokenMinterType // MockTokenMinter
 )
 
 // verifyStringerUpdated verifies stringer is up to date (this index is included in stringer).
@@ -84,6 +87,8 @@ func (c contractTypeImpl) ContractInfo() *compiler.Contract {
 		return mocktokenmessenger.Contracts["solidity/MockTokenMessenger.sol:MockTokenMessenger"]
 	case MockMintBurnTokenType:
 		return mockmintburntoken.Contracts["solidity/MockMintBurnToken.sol:MockMintBurnToken"]
+	case MockTokenMinterType:
+		return mocktokenminter.Contracts["solidity/MockTokenMinter.sol:MockTokenMinter"]
 	default:
 		panic("not yet implemented")
 	}

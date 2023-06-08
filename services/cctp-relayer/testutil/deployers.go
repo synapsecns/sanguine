@@ -2,6 +2,7 @@ package testutil
 
 import (
 	"context"
+	"fmt"
 	"testing"
 
 	"github.com/synapsecns/sanguine/services/cctp-relayer/contracts/mockmintburntoken"
@@ -24,7 +25,7 @@ func NewDeployManager(t *testing.T) *DeployManager {
 	t.Helper()
 
 	parentManager := manager.NewDeployerManager(t,
-		NewMockMessageTransmitterDeployer, NewSynapseCCTPDeployer, NewMockTokenMessengerDeployer, NewMockMintBurnTokenDeployer,
+		NewMockMessageTransmitterDeployer, NewSynapseCCTPDeployer, NewMockTokenMessengerDeployer, NewMockMintBurnTokenDeployer, NewMockTokenMinterDeployer,
 	)
 	return &DeployManager{parentManager}
 }
@@ -89,12 +90,35 @@ type MockTokenMinterDeployer struct {
 	*deployer.BaseDeployer
 }
 
+// NewMockTokenMinterDeployer deploys the mocktokenminter.
+func NewMockTokenMinterDeployer(registry deployer.GetOnlyContractRegistry, backend backends.SimulatedTestBackend) deployer.ContractDeployer {
+	return MockTokenMinterDeployer{deployer.NewSimpleDeployer(registry, backend, MockTokenMinterType)}
+}
+
 func (m MockTokenMinterDeployer) Deploy(ctx context.Context) (contracts.DeployedContract, error) {
-	messageTransmitter := m.Registry().Get(ctx, MockMessageTransmitterType)
+	tokenMessenger := m.Registry().Get(ctx, MockTokenMessengerType)
 
 	return m.DeploySimpleContract(ctx, func(transactOps *bind.TransactOpts, backend bind.ContractBackend) (address common.Address, tx *types.Transaction, data interface{}, err error) {
 		// define the domain as the chain id!
-		return mocktokenminter.DeployMockTokenMinter(transactOps, backend, messageTransmitter.Address())
+		address, tx, handle, err := mocktokenminter.DeployMockTokenMinter(transactOps, backend, tokenMessenger.Address())
+		if err != nil {
+			return address, tx, handle, fmt.Errorf("could not deploy mock token minter: %w", err)
+		}
+
+		messengerOpts := m.Backend().GetTxContext(ctx, tokenMessenger.OwnerPtr())
+		messengerHandle, ok := tokenMessenger.ContractHandle().(*mocktokenmessenger.MockTokenMessengerRef)
+		if !ok {
+			return address, tx, handle, fmt.Errorf("could not case %T to %T", tokenMessenger.ContractHandle(), messengerHandle)
+		}
+
+		setTx, err := messengerHandle.SetLocalMinter(messengerOpts.TransactOpts, address)
+		if err != nil {
+			return address, tx, handle, fmt.Errorf("could not set local minter: %w", err)
+		}
+		m.Backend().WaitForConfirmation(ctx, setTx)
+
+		return address, tx, handle, nil
+
 	}, func(address common.Address, backend bind.ContractBackend) (interface{}, error) {
 		// remember what I said about vm.ContractRef!
 		return mocktokenminter.NewMockTokenMinterRef(address, backend)
@@ -102,12 +126,7 @@ func (m MockTokenMinterDeployer) Deploy(ctx context.Context) (contracts.Deployed
 }
 
 func (m MockTokenMinterDeployer) Dependencies() []contracts.ContractType {
-	return []contracts.ContractType{MockMessageTransmitterType}
-}
-
-// NewMockTokenMinter deploys the mocktokenminter.
-func NewMockTokenMinter(registry deployer.GetOnlyContractRegistry, backend backends.SimulatedTestBackend) deployer.ContractDeployer {
-	return MockTokenMinterDeployer{deployer.NewSimpleDeployer(registry, backend, MockMintBurnTokenType)}
+	return m.RecursiveDependencies([]contracts.ContractType{MockTokenMessengerType})
 }
 
 type MockMintBurnTokenDeployer struct {
@@ -145,6 +164,9 @@ func (d SynapseCCTPDeployer) Deploy(ctx context.Context) (contracts.DeployedCont
 	return d.DeploySimpleContract(ctx, func(transactOps *bind.TransactOpts, backend bind.ContractBackend) (address common.Address, tx *types.Transaction, data interface{}, err error) {
 		tokenMessenger := d.Registry().Get(ctx, MockTokenMessengerType)
 
+		// make this a dependency so it self registers the remote domains
+		_ = d.Registry().Get(ctx, MockTokenMinterType)
+
 		// define the domain as the chain id!
 		return cctp.DeploySynapseCCTP(transactOps, backend, tokenMessenger.Address())
 	}, func(address common.Address, backend bind.ContractBackend) (interface{}, error) {
@@ -154,5 +176,5 @@ func (d SynapseCCTPDeployer) Deploy(ctx context.Context) (contracts.DeployedCont
 }
 
 func (d SynapseCCTPDeployer) Dependencies() []contracts.ContractType {
-	return d.RecursiveDependencies([]contracts.ContractType{MockTokenMessengerType})
+	return d.RecursiveDependencies([]contracts.ContractType{MockTokenMessengerType, MockTokenMinterType})
 }

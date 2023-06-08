@@ -100,12 +100,13 @@ func NewCCTPRelayer(ctx context.Context, cfg config.Config, scribeClient client.
 	}
 
 	return &CCTPRelayer{
-		cfg:          cfg,
-		scribeClient: scribeClient,
-		grpcClient:   grpcClient,
-		grpcConn:     conn,
-		client:       &http.Client{},
-		handler:      handler,
+		cfg:           cfg,
+		chainRelayers: chainRelayers,
+		scribeClient:  scribeClient,
+		grpcClient:    grpcClient,
+		grpcConn:      conn,
+		client:        &http.Client{},
+		handler:       handler,
 	}, nil
 }
 

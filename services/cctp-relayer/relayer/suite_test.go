@@ -2,6 +2,7 @@
 package relayer_test
 
 import (
+	"github.com/ethereum/go-ethereum/common"
 	"github.com/stretchr/testify/suite"
 	"github.com/synapsecns/sanguine/core/metrics"
 	"github.com/synapsecns/sanguine/core/metrics/localmetrics"
@@ -76,6 +77,7 @@ func (s *CCTPRelayerSuite) SetupSuite() {
 func (s *CCTPRelayerSuite) registerRemoteDeployments() {
 	for _, backend := range s.testBackends {
 		cctpContract, cctpHandle := s.deployManager.GetSynapseCCTP(s.GetTestContext(), backend)
+		_, tokenMessengeHandle := s.deployManager.GetMockTokenMessengerType(s.GetTestContext(), backend)
 
 		// on the above contract, set the remote for each backend
 		for _, backendToSetFrom := range s.testBackends {
@@ -84,15 +86,28 @@ func (s *CCTPRelayerSuite) registerRemoteDeployments() {
 				continue
 			}
 
-			remoteContract, _ := s.deployManager.GetSynapseCCTP(s.GetTestContext(), backendToSetFrom)
+			remoteCCTP, _ := s.deployManager.GetSynapseCCTP(s.GetTestContext(), backendToSetFrom)
+			remoteMessenger, _ := s.deployManager.GetMockTokenMessengerType(s.GetTestContext(), backendToSetFrom)
 
 			txOpts := backend.GetTxContext(s.GetTestContext(), cctpContract.OwnerPtr())
-			tx, err := cctpHandle.SetRemoteSynapseCCTP(txOpts.TransactOpts, uint32(backendToSetFrom.GetChainID()), remoteContract.Address())
+			// set the remote cctp contract ont his cctp contract
+			tx, err := cctpHandle.SetRemoteSynapseCCTP(txOpts.TransactOpts, uint32(backendToSetFrom.GetChainID()), remoteCCTP.Address())
 			s.Require().NoError(err)
 			backend.WaitForConfirmation(s.GetTestContext(), tx)
+
+			// register the remote token messenger on the tokenMessenger contract
+			tx, err = tokenMessengeHandle.SetRemoteTokenMessenger(txOpts.TransactOpts, uint32(backendToSetFrom.GetChainID()), addressToBytes32(remoteMessenger.Address()))
+
 		}
 
 	}
+}
+
+// addressToBytes32 converts an address to a bytes32
+func addressToBytes32(addr common.Address) [32]byte {
+	var buf [32]byte
+	copy(buf[:], addr[:])
+	return buf
 }
 
 func (s *CCTPRelayerSuite) SetupTest() {

@@ -9,6 +9,7 @@ import (
 	"github.com/synapsecns/sanguine/services/cctp-relayer/contracts/mockmessagetransmitter"
 	"github.com/synapsecns/sanguine/services/cctp-relayer/contracts/mockmintburntoken"
 	"github.com/synapsecns/sanguine/services/cctp-relayer/contracts/mocktokenmessenger"
+	"github.com/synapsecns/sanguine/services/cctp-relayer/contracts/mocktokenminter"
 )
 
 // GetSynapseCCTP gets a typecast synapsecctp contract.
@@ -37,4 +38,11 @@ func (d *DeployManager) GetMockMintBurnTokenType(ctx context.Context, backend ba
 	d.T().Helper()
 
 	return manager.GetContract[*mockmintburntoken.MockMintBurnTokenRef](ctx, d.T(), d, backend, MockMintBurnTokenType)
+}
+
+// GetMockTokenMinter gets a mock token minter contract.
+func (d *DeployManager) GetMockTokenMinter(ctx context.Context, backend backends.SimulatedTestBackend) (contract contracts.DeployedContract, handle *mocktokenminter.MockTokenMinterRef) {
+	d.T().Helper()
+
+	return manager.GetContract[*mocktokenminter.MockTokenMinterRef](ctx, d.T(), d, backend, MockTokenMinterType)
 }
