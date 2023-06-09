@@ -30,6 +30,10 @@ type Config struct {
 	EmbeddedScribeConfig scribeConfig.Config `yaml:"embedded_scribe_config"`
 	// DBPrefix is the prefix for the tables in the database. This is only to be used with mysql.
 	DBPrefix string `yaml:"db_prefix"`
+	// HttpBackoffInitialInterval is the initial interval for attestation request retries
+	HttpBackoffInitialIntervalMs int `yaml:"http_backoff_initial_interval_ms"`
+	// HttpBackoffMaxElapsedTime is the max elapsed time for attestation request retries
+	HttpBackoffMaxElapsedTimeMs int `yaml:"http_backoff_max_elapsed_time_ms"`
 }
 
 // IsValid makes sure the config is valid. This is done by calling IsValid() on each

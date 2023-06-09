@@ -3,7 +3,6 @@ package relayer
 import (
 	"context"
 	"fmt"
-	"net/http"
 	"strconv"
 	"time"
 
@@ -54,7 +53,7 @@ type CCTPRelayer struct {
 	scribeClient  client.ScribeClient
 	grpcClient    pbscribe.ScribeServiceClient
 	grpcConn      *grpc.ClientConn
-	client        *http.Client
+	httpBackoff   backoff.BackOff
 	omnirpcClient omniClient.RPCClient
 	// chainRelayers is a map from chain ID -> chain relayer.
 	chainRelayers map[uint32]*chainRelayer
@@ -99,13 +98,16 @@ func NewCCTPRelayer(ctx context.Context, cfg config.Config, scribeClient client.
 		}
 	}
 
+	httpBackoff := backoff.NewExponentialBackOff()
+	httpBackoff.InitialInterval = time.Duration(cfg.HttpBackoffInitialIntervalMs) * time.Millisecond
+	httpBackoff.MaxElapsedTime = time.Duration(cfg.HttpBackoffMaxElapsedTimeMs) * time.Millisecond
 	return &CCTPRelayer{
 		cfg:            cfg,
 		chainRelayers:  chainRelayers,
 		scribeClient:   scribeClient,
 		grpcClient:     grpcClient,
 		grpcConn:       conn,
-		client:         &http.Client{},
+		httpBackoff:    httpBackoff,
 		handler:        handler,
 		attestationApi: attestationApi,
 	}, nil
@@ -340,11 +342,10 @@ func (c CCTPRelayer) fetchAttestation(parentCtx context.Context, chainID uint32,
 		metrics.EndSpanWithErr(span, err)
 	}()
 
-	// TODO(dwasse): configure this backoff
 	err = backoff.Retry(func() (err error) {
 		msg.Signature, err = c.attestationApi.GetAttestation(ctx, msg.TxHash)
 		return
-	}, backoff.WithMaxRetries(backoff.NewConstantBackOff(time.Second), 5))
+	}, c.httpBackoff)
 
 	// Send the completed message back through the send channel.
 	c.chainRelayers[chainID].usdcMsgSendChan <- msg
