@@ -33,7 +33,7 @@ export default function ExplorerSection() {
           </div>
           <div className="text-secondaryTextColor ">
             Synapse has processed millions of transactions and tens of billions
-            in bridged assets. DELETE ME
+            in bridged assets.
           </div>
         </div>
         <div className="hidden col-span-1 text-center md:block">
