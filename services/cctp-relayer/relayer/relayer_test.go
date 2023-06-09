@@ -40,7 +40,7 @@ func (c *CCTPRelayerSuite) TestHandleCircleRequestSent() {
 	c.Nil(err)
 
 	sc := scribeClient.NewRemoteScribe(uint16(port), parsedScribe.Host, c.metricsHandler)
-	mockApi := api.NewMockCircleApi()
+	mockApi := api.NewMockCircleAPI()
 	relay, err := relayer.NewCCTPRelayer(c.GetTestContext(), cfg, sc.ScribeClient, c.metricsHandler, mockApi)
 	c.Nil(err)
 
@@ -93,7 +93,7 @@ func (c *CCTPRelayerSuite) TestFetchAttestation() {
 	c.Nil(err)
 
 	sc := scribeClient.NewRemoteScribe(uint16(port), parsedScribe.Host, c.metricsHandler)
-	mockApi := api.NewMockCircleApi()
+	mockApi := api.NewMockCircleAPI()
 	relay, err := relayer.NewCCTPRelayer(c.GetTestContext(), cfg, sc.ScribeClient, c.metricsHandler, mockApi)
 	c.Nil(err)
 
