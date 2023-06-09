@@ -350,23 +350,3 @@ func (c CCTPRelayer) fetchAttestation(parentCtx context.Context, chainID uint32,
 	// Send the completed message back through the send channel.
 	c.chainRelayers[chainID].usdcMsgSendChan <- msg
 }
-
-type contractType int
-
-type eventType int
-
-const (
-	synapseCCTPContract contractType = iota
-)
-
-const (
-	// MessageSent event emitted by Circle's contracts.
-	messageSent eventType = iota
-	// CircleRequestSent event with auxillary data emitted by SynapseCCTP.
-	circleRequestSent
-)
-
-type contractEventType struct {
-	contractType contractType
-	eventType    eventType
-}
