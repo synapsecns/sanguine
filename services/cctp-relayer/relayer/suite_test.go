@@ -2,6 +2,9 @@
 package relayer_test
 
 import (
+	"math/big"
+	"testing"
+
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/stretchr/testify/suite"
 	"github.com/synapsecns/sanguine/core/metrics"
@@ -14,8 +17,6 @@ import (
 	omnirpcHelper "github.com/synapsecns/sanguine/services/omnirpc/testhelper"
 	scribeHelper "github.com/synapsecns/sanguine/services/scribe/testhelper"
 	"golang.org/x/sync/errgroup"
-	"math/big"
-	"testing"
 )
 
 // TestHelperSuite defines the basic test suite.
@@ -73,7 +74,7 @@ func (s *CCTPRelayerSuite) SetupSuite() {
 }
 
 // TODO: there should be a way to do this in the deployer, this probably involves making the concept of a contract-registry
-// multi-chain (possibly by wrapping the registry). This would allow the use of setting remotes in the deployer itself rather than here
+// multi-chain (possibly by wrapping the registry). This would allow the use of setting remotes in the deployer itself rather than here.
 func (s *CCTPRelayerSuite) registerRemoteDeployments() {
 	for _, backend := range s.testBackends {
 		cctpContract, cctpHandle := s.deployManager.GetSynapseCCTP(s.GetTestContext(), backend)
@@ -96,10 +97,9 @@ func (s *CCTPRelayerSuite) registerRemoteDeployments() {
 			backend.WaitForConfirmation(s.GetTestContext(), tx)
 
 			// register the remote token messenger on the tokenMessenger contract
-			tx, err = tokenMessengeHandle.SetRemoteTokenMessenger(txOpts.TransactOpts, uint32(backendToSetFrom.GetChainID()), addressToBytes32(remoteMessenger.Address()))
-
+			_, err = tokenMessengeHandle.SetRemoteTokenMessenger(txOpts.TransactOpts, uint32(backendToSetFrom.GetChainID()), addressToBytes32(remoteMessenger.Address()))
+			s.Nil(err)
 		}
-
 	}
 }
 

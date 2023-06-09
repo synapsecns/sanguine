@@ -11,7 +11,7 @@ import (
 	"github.com/ethereum/go-ethereum/common"
 )
 
-// CircleAPI is a wrapper for Circle's REST API.
+// CircleAPI is a wrapper for Circle's REST API..
 type CircleAPI struct {
 	client  *http.Client
 	baseURL string
@@ -34,7 +34,7 @@ type circleAttestationResponse struct {
 	} `json:"data"`
 }
 
-// Wrapper for GET /attestations/{txHash}
+// Wrapper for GET /attestations/{txHash}.
 func (c CircleAPI) GetAttestation(ctx context.Context, txHash common.Hash) (attestation []byte, err error) {
 	url := fmt.Sprintf("%s/%s", c.baseURL, txHash.String())
 	req, err := http.NewRequestWithContext(ctx, "GET", url, nil)
@@ -47,6 +47,7 @@ func (c CircleAPI) GetAttestation(ctx context.Context, txHash common.Hash) (atte
 	if err != nil {
 		return
 	}
+	//nolint:errcheck
 	defer resp.Body.Close()
 
 	if resp.StatusCode != http.StatusOK {
