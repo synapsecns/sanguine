@@ -45,6 +45,7 @@ import {
 } from '@/constants/bridge'
 import { CHAINS_BY_ID, AcceptedChainId } from '@/constants/chains'
 import { getSortedBridgableTokens } from '@/utils/actions/getSortedBridgableTokens'
+import { useAnalytics } from '@/contexts/AnalyticsProvider'
 
 /* TODO
   - look into getting rid of fromChainId state and just using wagmi hook (ran into problems when trying this but forgot why)
@@ -77,6 +78,40 @@ const BridgePage = ({
   })
   const [bridgeQuote, setBridgeQuote] =
     useState<BridgeQuote>(EMPTY_BRIDGE_QUOTE)
+
+  const { query, pathname } = router
+  const analytics = useAnalytics()
+
+  useEffect(() => {
+    analytics.track('[Bridge Page] User arrives', {
+      address: address,
+      fromChainId: fromChainId,
+      query,
+      pathname,
+    })
+  }, [query])
+
+  useEffect(() => {
+    const {
+      outputAmountString,
+      routerAddress,
+      exchangeRate,
+      feeAmount,
+      delta,
+    } = bridgeQuote
+
+    // TODO: Update to correct for these decimals
+    analytics.track(`[Bridge Page] User gets bridge quote`, {
+      address: address,
+      fromChainId: fromChainId,
+      inputAmountString: fromInput.string,
+      outputAmountString: outputAmountString,
+      routerAddress: routerAddress,
+      exchangeRate: formatBNToString(exchangeRate, 18, 8),
+      feeAmount: formatBNToString(feeAmount, 18, 8),
+      delta: formatBNToString(delta, 18, 8),
+    })
+  }, [bridgeQuote])
 
   let pendingPopup: any
   let successPopup: any

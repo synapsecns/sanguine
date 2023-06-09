@@ -10,6 +10,8 @@ import { PageHeader } from '@/components/PageHeader'
 import { LandingPageWrapper } from '@/components/layouts/LandingPageWrapper'
 import StakeCard from './StakeCard'
 import NoStakeCard from './NoStakeCard'
+import { useRouter } from 'next/router'
+import { useAnalytics } from '@/contexts/AnalyticsProvider'
 
 const StakePage = () => {
   const { chain: connectedChain } = useNetwork()
@@ -18,6 +20,9 @@ const StakePage = () => {
   const [address, setAddress] = useState(undefined)
   const [isClient, setIsClient] = useState<boolean>(false)
   const [columns, setColumns] = useState<number>(1)
+
+  const router = useRouter()
+  const analytics = useAnalytics()
 
   const connectedChainInfo: Chain | undefined = useMemo(() => {
     if (connectedChainId) {
@@ -30,6 +35,14 @@ const StakePage = () => {
 
   const availableStakingTokens: Token[] | [] =
     STAKABLE_TOKENS[connectedChainId] ?? []
+
+  useEffect(() => {
+    analytics.track('[Stake Page] User arrives', {
+      address: currentAddress,
+      query: router.query,
+      pathname: router.pathname,
+    })
+  }, [])
 
   useEffect(() => {
     setAddress(currentAddress)

@@ -8,12 +8,25 @@ import StandardPageContainer from '@layouts/StandardPageContainer'
 import Grid from '@tw/Grid'
 import SwapCard from './SwapCard'
 import NoSwapCard from './NoSwapCard'
+import { useRouter } from 'next/router'
+import { useAnalytics } from '@/contexts/AnalyticsProvider'
 
 const SwapPage = () => {
   const { address: currentAddress } = useAccount()
   const { chain } = useNetwork()
   const [connectedChainId, setConnectedChainId] = useState<number>(0)
   const [address, setAddress] = useState<`0x${string}` | undefined>(undefined)
+  const router = useRouter()
+  const analytics = useAnalytics()
+
+  useEffect(() => {
+    analytics.track('[Swap Page] User arrives', {
+      address: currentAddress,
+      fromChainId: chain?.id,
+      query: router.query,
+      pathname: router.pathname,
+    })
+  }, [])
 
   useEffect(() => {
     setConnectedChainId(chain?.id ?? DEFAULT_FROM_CHAIN)

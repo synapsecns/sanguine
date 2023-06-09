@@ -13,12 +13,28 @@ import { LandingPageWrapper } from '@layouts/LandingPageWrapper'
 import { DEFAULT_FROM_CHAIN } from '@/constants/swap'
 
 import PoolCards from './PoolCards'
+import { useRouter } from 'next/router'
+
+import { useAnalytics } from '@/contexts/AnalyticsProvider'
 
 const PoolsPage = () => {
   const { address: currentAddress } = useAccount()
   const { chain } = useNetwork()
   const [connectedChainId, setConnectedChainId] = useState(0)
   const [address, setAddress] = useState(undefined)
+
+  const router = useRouter()
+  const analytics = useAnalytics()
+
+  useEffect(() => {
+    analytics.track('[Pools Page] User arrives', {
+      address: currentAddress,
+      fromChainId: chain?.id,
+      query: router.query,
+      pathname: router.pathname,
+    })
+  }, [])
+
   useEffect(() => {
     setConnectedChainId(chain?.id ?? DEFAULT_FROM_CHAIN)
   }, [chain])

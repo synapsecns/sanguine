@@ -10,7 +10,26 @@ import HowItWorksSection from './sections/HowItWorksSection'
 import UseCasesSection from './sections/UseCasesSection'
 import ResourcesSection from './sections/ResourcesSection'
 
+import { useRouter } from 'next/router'
+import { useEffect } from 'react'
+import { useAccount } from 'wagmi'
+
+import { useAnalytics } from '@/contexts/AnalyticsProvider'
+
 const LandingPage = () => {
+  const { address: currentAddress } = useAccount()
+  const router = useRouter()
+
+  const analytics = useAnalytics()
+
+  useEffect(() => {
+    analytics.track('[Landing Page] User arrives', {
+      address: currentAddress,
+      query: router.query,
+      pathname: router.pathname,
+    })
+  }, [])
+
   return (
     <LandingPageWrapper>
       <LandingPageContainer>

@@ -21,6 +21,8 @@
       "@assets/*": ["./assets/*"],
       "@components": ["./components"],
       "@components/*": ["./components/*"],
+      "@contexts": ["./contexts"],
+      "@contexts/*": ["./contexts/*"],
       "@tw": ["./components/ui/tailwind"],
       "@tw/*": ["./components/ui/tailwind/*"],
       "@layouts": ["./components/layouts"],
