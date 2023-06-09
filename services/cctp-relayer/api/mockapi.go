@@ -6,6 +6,7 @@ import (
 	"github.com/ethereum/go-ethereum/common"
 )
 
+// MockCircleApi is a mock CircleApi for testing.
 type MockCircleApi struct {
 	attestFunc func(context.Context, common.Hash) ([]byte, error)
 }
