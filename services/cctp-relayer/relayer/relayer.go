@@ -99,8 +99,8 @@ func NewCCTPRelayer(ctx context.Context, cfg config.Config, scribeClient client.
 	}
 
 	httpBackoff := backoff.NewExponentialBackOff()
-	httpBackoff.InitialInterval = time.Duration(cfg.HttpBackoffInitialIntervalMs) * time.Millisecond
-	httpBackoff.MaxElapsedTime = time.Duration(cfg.HttpBackoffMaxElapsedTimeMs) * time.Millisecond
+	httpBackoff.InitialInterval = time.Duration(cfg.HTTPBackoffInitialIntervalMs) * time.Millisecond
+	httpBackoff.MaxElapsedTime = time.Duration(cfg.HTTPBackoffMaxElapsedTimeMs) * time.Millisecond
 	return &CCTPRelayer{
 		cfg:            cfg,
 		chainRelayers:  chainRelayers,

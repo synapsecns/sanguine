@@ -34,7 +34,7 @@ type circleAttestationResponse struct {
 	} `json:"data"`
 }
 
-// Wrapper for GET /attestations/{txHash}.
+// GetAttestation is a wrapper for GET /attestations/{txHash}.
 func (c CircleAPI) GetAttestation(ctx context.Context, txHash common.Hash) (attestation []byte, err error) {
 	url := fmt.Sprintf("%s/%s", c.baseURL, txHash.String())
 	req, err := http.NewRequestWithContext(ctx, "GET", url, nil)

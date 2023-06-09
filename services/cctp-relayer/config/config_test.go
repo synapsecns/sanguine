@@ -36,8 +36,8 @@ func configFixture(c ConfigSuite) config.Config {
 		EmbeddedScribeConfig: scribeConfig.Config{
 			RPCURL: gofakeit.URL(),
 		},
-		HttpBackoffInitialIntervalMs: int(gofakeit.Int64()),
-		HttpBackoffMaxElapsedTimeMs:  int(gofakeit.Int64()),
+		HTTPBackoffInitialIntervalMs: int(gofakeit.Int64()),
+		HTTPBackoffMaxElapsedTimeMs:  int(gofakeit.Int64()),
 	}
 }
 

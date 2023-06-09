@@ -20,10 +20,12 @@ type ChainConfig struct {
 	DestinationAddress string `yaml:"destination_address"`
 }
 
+// GetOriginAddress returns the origin address.
 func (c ChainConfig) GetOriginAddress() common.Address {
 	return common.HexToAddress(c.OriginAddress)
 }
 
+// GetDestinationAddress returns the destination address.
 func (c ChainConfig) GetDestinationAddress() common.Address {
 	return common.HexToAddress(c.DestinationAddress)
 }
