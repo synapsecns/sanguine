@@ -60,6 +60,10 @@ This snap root is used to prove that a particular Origin state did in fact occur
 5. Block Number of the block on the [Synapse Chain](#synapse-chain) that the attestation was registered by a Notary on the [Synapse Chain](#synapse-chain), which does not have to be the same [Notary](#notary) posting to the [Destination](#destination-chain).
 6. Timestamp is the time that the attestation was registered on the [Synapse Chain](#synapse-chain).
 
+This is what the [Attestation](glossary.md/#attestation) might look like:
+
+![ExampleAttestation](../../static/img/ExampleAttestation.png 'Example Attestation')
+
 ### Bond
 The cryptocurrency held in escrow in order to disincentivize fraud from one of the [Offchain Agents](#off-chain-agent) is
 called the "Bond". If the agent is caught committing fraud, it will have it's bond [slashed](#slash). The idea is that
@@ -330,7 +334,7 @@ See the Diagram under the section explaining [Message Merkle Root](#message-merk
 ### Message Merkle Root
 The 32 byte [merkle root](#merkle-root) of the [Message Merkle Tree](#message-merkle-tree).
 
-**Message Merkle Root formed from Merkle Tree of Messages:**
+**Message Merkle Root formed from Merkle Tree of Messages, with the simplification of having a height of only 3 rather than 32::**
 ![MessageMerkleRoot](../../static/img/MessageMerkleRoot.png 'Diagram of Message Merkle Root formed from Merkle Tree of Messages')
 
 ### Notary
