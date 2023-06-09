@@ -59,13 +59,13 @@ type CCTPRelayer struct {
 	chainRelayers map[uint32]*chainRelayer
 	// handler is the metrics handler.
 	handler metrics.Handler
-	// attestationApi is the client for Circle's REST API.
-	attestationApi api.AttestationApi
+	// AttestationAPI is the client for Circle's REST API.
+	AttestationAPI api.AttestationAPI
 }
 
 const usdcMsgChanSize = 1000
 
-func NewCCTPRelayer(ctx context.Context, cfg config.Config, scribeClient client.ScribeClient, handler metrics.Handler, attestationApi api.AttestationApi) (*CCTPRelayer, error) {
+func NewCCTPRelayer(ctx context.Context, cfg config.Config, scribeClient client.ScribeClient, handler metrics.Handler, AttestationAPI api.AttestationAPI) (*CCTPRelayer, error) {
 	chainRelayers := make(map[uint32]*chainRelayer)
 	conn, err := grpc.DialContext(ctx, fmt.Sprintf("%s:%d", scribeClient.URL, scribeClient.Port),
 		grpc.WithTransportCredentials(insecure.NewCredentials()),
@@ -109,7 +109,7 @@ func NewCCTPRelayer(ctx context.Context, cfg config.Config, scribeClient client.
 		grpcConn:       conn,
 		httpBackoff:    httpBackoff,
 		handler:        handler,
-		attestationApi: attestationApi,
+		AttestationAPI: AttestationAPI,
 	}, nil
 }
 
@@ -343,7 +343,7 @@ func (c CCTPRelayer) fetchAttestation(parentCtx context.Context, chainID uint32,
 	}()
 
 	err = backoff.Retry(func() (err error) {
-		msg.Signature, err = c.attestationApi.GetAttestation(ctx, msg.TxHash)
+		msg.Signature, err = c.AttestationAPI.GetAttestation(ctx, msg.TxHash)
 		return
 	}, c.httpBackoff)
 
