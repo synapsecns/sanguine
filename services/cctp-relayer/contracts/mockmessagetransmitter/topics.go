@@ -1,9 +1,10 @@
 package mockmessagetransmitter
 
 import (
+	"strings"
+
 	"github.com/ethereum/go-ethereum/accounts/abi"
 	"github.com/ethereum/go-ethereum/common"
-	"strings"
 )
 
 func init() {
@@ -19,7 +20,6 @@ func init() {
 	if MessageSentTopic == (common.Hash{}) {
 		panic("topic is nil")
 	}
-
 }
 
 // MessageSentTopic is the topic that gets emitted when the sent event is called.

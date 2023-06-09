@@ -129,7 +129,6 @@ func (m MockTokenMinterDeployer) Deploy(ctx context.Context) (contracts.Deployed
 		m.Backend().WaitForConfirmation(ctx, setTx)
 
 		return address, tx, handle, nil
-
 	}, func(address common.Address, backend bind.ContractBackend) (interface{}, error) {
 		// remember what I said about vm.ContractRef!
 		return mocktokenminter.NewMockTokenMinterRef(address, backend)

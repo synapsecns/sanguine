@@ -63,13 +63,14 @@ type CCTPRelayer struct {
 	chainRelayers map[uint32]*chainRelayer
 	// handler is the metrics handler.
 	handler metrics.Handler
-	// AttestationAPI is the client for Circle's REST API.
-	AttestationAPI api.AttestationAPI
+	// attestationAPI is the client for Circle's REST API.
+	attestationAPI api.AttestationAPI
 }
 
 const usdcMsgChanSize = 1000
 
-func NewCCTPRelayer(ctx context.Context, cfg config.Config, scribeClient client.ScribeClient, handler metrics.Handler, AttestationAPI api.AttestationAPI) (*CCTPRelayer, error) {
+// NewCCTPRelayer creates a new CCTPRelayer.
+func NewCCTPRelayer(ctx context.Context, cfg config.Config, scribeClient client.ScribeClient, handler metrics.Handler, attestationAPI api.AttestationAPI) (*CCTPRelayer, error) {
 	chainRelayers := make(map[uint32]*chainRelayer)
 	conn, err := grpc.DialContext(ctx, fmt.Sprintf("%s:%d", scribeClient.URL, scribeClient.Port),
 		grpc.WithTransportCredentials(insecure.NewCredentials()),
@@ -113,7 +114,7 @@ func NewCCTPRelayer(ctx context.Context, cfg config.Config, scribeClient client.
 		grpcConn:       conn,
 		httpBackoff:    httpBackoff,
 		handler:        handler,
-		AttestationAPI: AttestationAPI,
+		attestationAPI: attestationAPI,
 	}, nil
 }
 
@@ -147,6 +148,7 @@ func (c CCTPRelayer) Stop(chainID uint32) {
 }
 
 // TODO(dwasse): impl db interactions.
+// CCTPRelayerDBReader is the interface for reading from the database.
 type CCTPRelayerDBReader interface {
 	// GetLastBlockNumber gets the last block number that had a message in the database.
 	GetLastBlockNumber(ctx context.Context, chainID uint32) (uint64, error)
@@ -349,7 +351,7 @@ func (c CCTPRelayer) fetchAttestation(parentCtx context.Context, chainID uint32,
 	}()
 
 	err = backoff.Retry(func() (err error) {
-		msg.Signature, err = c.AttestationAPI.GetAttestation(ctx, msg.TxHash)
+		msg.Signature, err = c.attestationAPI.GetAttestation(ctx, msg.TxHash)
 		return
 	}, c.httpBackoff)
 

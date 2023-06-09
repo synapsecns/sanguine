@@ -7,6 +7,8 @@ import (
 )
 
 // MockTokenMinterRef is a bound cctp contract that conforms to vm.ContractRef.
+//
+//nolint:golint
 type MockTokenMinterRef struct {
 	*MockTokenMinter
 	address common.Address
