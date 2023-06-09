@@ -37,7 +37,7 @@ jobs:
         with:
           driver-opts: network=host
 
-      - name: Enviornment variables
+      - name: Environment variables
         # TODO: this if block needs to be run on every step now, but should be fixed in a future version: https://github.com/actions/runner/issues/662
         if: steps.changes.outputs.src == 'true'
         uses: franzdiebold/github-env-vars-action@v1.0.0
