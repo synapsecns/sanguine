@@ -31,7 +31,7 @@ var (
 // AddressMetaData contains all meta data concerning the Address contract.
 var AddressMetaData = &bind.MetaData{
 	ABI: "[]",
-	Bin: "0x60566037600b82828239805160001a607314602a57634e487b7160e01b600052600060045260246000fd5b30600052607381538281f3fe73000000000000000000000000000000000000000030146080604052600080fdfea2646970667358221220fc828fb07644f999d6f18438f39c0713cf4d1888cb55951b3211f1f4cce1a05264736f6c63430008110033",
+	Bin: "0x60566037600b82828239805160001a607314602a57634e487b7160e01b600052600060045260246000fd5b30600052607381538281f3fe73000000000000000000000000000000000000000030146080604052600080fdfea2646970667358221220dd1790f715b9503832d7cbd531a84f9ba1d192821e322c245940712f589b2ec564736f6c63430008110033",
 }
 
 // AddressABI is the input ABI used to generate the binding from.
@@ -199,249 +199,6 @@ func (_Address *AddressTransactorRaw) Transfer(opts *bind.TransactOpts) (*types.
 // Transact invokes the (paid) contract method with params as input values.
 func (_Address *AddressTransactorRaw) Transact(opts *bind.TransactOpts, method string, params ...interface{}) (*types.Transaction, error) {
 	return _Address.Contract.contract.Transact(opts, method, params...)
-}
-
-// IDefaultPoolMetaData contains all meta data concerning the IDefaultPool contract.
-var IDefaultPoolMetaData = &bind.MetaData{
-	ABI: "[{\"inputs\":[{\"internalType\":\"uint8\",\"name\":\"tokenIndexFrom\",\"type\":\"uint8\"},{\"internalType\":\"uint8\",\"name\":\"tokenIndexTo\",\"type\":\"uint8\"},{\"internalType\":\"uint256\",\"name\":\"dx\",\"type\":\"uint256\"}],\"name\":\"calculateSwap\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"amountOut\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint8\",\"name\":\"index\",\"type\":\"uint8\"}],\"name\":\"getToken\",\"outputs\":[{\"internalType\":\"address\",\"name\":\"token\",\"type\":\"address\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint8\",\"name\":\"tokenIndexFrom\",\"type\":\"uint8\"},{\"internalType\":\"uint8\",\"name\":\"tokenIndexTo\",\"type\":\"uint8\"},{\"internalType\":\"uint256\",\"name\":\"dx\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"minDy\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"deadline\",\"type\":\"uint256\"}],\"name\":\"swap\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"amountOut\",\"type\":\"uint256\"}],\"stateMutability\":\"nonpayable\",\"type\":\"function\"}]",
-	Sigs: map[string]string{
-		"a95b089f": "calculateSwap(uint8,uint8,uint256)",
-		"82b86600": "getToken(uint8)",
-		"91695586": "swap(uint8,uint8,uint256,uint256,uint256)",
-	},
-}
-
-// IDefaultPoolABI is the input ABI used to generate the binding from.
-// Deprecated: Use IDefaultPoolMetaData.ABI instead.
-var IDefaultPoolABI = IDefaultPoolMetaData.ABI
-
-// Deprecated: Use IDefaultPoolMetaData.Sigs instead.
-// IDefaultPoolFuncSigs maps the 4-byte function signature to its string representation.
-var IDefaultPoolFuncSigs = IDefaultPoolMetaData.Sigs
-
-// IDefaultPool is an auto generated Go binding around an Ethereum contract.
-type IDefaultPool struct {
-	IDefaultPoolCaller     // Read-only binding to the contract
-	IDefaultPoolTransactor // Write-only binding to the contract
-	IDefaultPoolFilterer   // Log filterer for contract events
-}
-
-// IDefaultPoolCaller is an auto generated read-only Go binding around an Ethereum contract.
-type IDefaultPoolCaller struct {
-	contract *bind.BoundContract // Generic contract wrapper for the low level calls
-}
-
-// IDefaultPoolTransactor is an auto generated write-only Go binding around an Ethereum contract.
-type IDefaultPoolTransactor struct {
-	contract *bind.BoundContract // Generic contract wrapper for the low level calls
-}
-
-// IDefaultPoolFilterer is an auto generated log filtering Go binding around an Ethereum contract events.
-type IDefaultPoolFilterer struct {
-	contract *bind.BoundContract // Generic contract wrapper for the low level calls
-}
-
-// IDefaultPoolSession is an auto generated Go binding around an Ethereum contract,
-// with pre-set call and transact options.
-type IDefaultPoolSession struct {
-	Contract     *IDefaultPool     // Generic contract binding to set the session for
-	CallOpts     bind.CallOpts     // Call options to use throughout this session
-	TransactOpts bind.TransactOpts // Transaction auth options to use throughout this session
-}
-
-// IDefaultPoolCallerSession is an auto generated read-only Go binding around an Ethereum contract,
-// with pre-set call options.
-type IDefaultPoolCallerSession struct {
-	Contract *IDefaultPoolCaller // Generic contract caller binding to set the session for
-	CallOpts bind.CallOpts       // Call options to use throughout this session
-}
-
-// IDefaultPoolTransactorSession is an auto generated write-only Go binding around an Ethereum contract,
-// with pre-set transact options.
-type IDefaultPoolTransactorSession struct {
-	Contract     *IDefaultPoolTransactor // Generic contract transactor binding to set the session for
-	TransactOpts bind.TransactOpts       // Transaction auth options to use throughout this session
-}
-
-// IDefaultPoolRaw is an auto generated low-level Go binding around an Ethereum contract.
-type IDefaultPoolRaw struct {
-	Contract *IDefaultPool // Generic contract binding to access the raw methods on
-}
-
-// IDefaultPoolCallerRaw is an auto generated low-level read-only Go binding around an Ethereum contract.
-type IDefaultPoolCallerRaw struct {
-	Contract *IDefaultPoolCaller // Generic read-only contract binding to access the raw methods on
-}
-
-// IDefaultPoolTransactorRaw is an auto generated low-level write-only Go binding around an Ethereum contract.
-type IDefaultPoolTransactorRaw struct {
-	Contract *IDefaultPoolTransactor // Generic write-only contract binding to access the raw methods on
-}
-
-// NewIDefaultPool creates a new instance of IDefaultPool, bound to a specific deployed contract.
-func NewIDefaultPool(address common.Address, backend bind.ContractBackend) (*IDefaultPool, error) {
-	contract, err := bindIDefaultPool(address, backend, backend, backend)
-	if err != nil {
-		return nil, err
-	}
-	return &IDefaultPool{IDefaultPoolCaller: IDefaultPoolCaller{contract: contract}, IDefaultPoolTransactor: IDefaultPoolTransactor{contract: contract}, IDefaultPoolFilterer: IDefaultPoolFilterer{contract: contract}}, nil
-}
-
-// NewIDefaultPoolCaller creates a new read-only instance of IDefaultPool, bound to a specific deployed contract.
-func NewIDefaultPoolCaller(address common.Address, caller bind.ContractCaller) (*IDefaultPoolCaller, error) {
-	contract, err := bindIDefaultPool(address, caller, nil, nil)
-	if err != nil {
-		return nil, err
-	}
-	return &IDefaultPoolCaller{contract: contract}, nil
-}
-
-// NewIDefaultPoolTransactor creates a new write-only instance of IDefaultPool, bound to a specific deployed contract.
-func NewIDefaultPoolTransactor(address common.Address, transactor bind.ContractTransactor) (*IDefaultPoolTransactor, error) {
-	contract, err := bindIDefaultPool(address, nil, transactor, nil)
-	if err != nil {
-		return nil, err
-	}
-	return &IDefaultPoolTransactor{contract: contract}, nil
-}
-
-// NewIDefaultPoolFilterer creates a new log filterer instance of IDefaultPool, bound to a specific deployed contract.
-func NewIDefaultPoolFilterer(address common.Address, filterer bind.ContractFilterer) (*IDefaultPoolFilterer, error) {
-	contract, err := bindIDefaultPool(address, nil, nil, filterer)
-	if err != nil {
-		return nil, err
-	}
-	return &IDefaultPoolFilterer{contract: contract}, nil
-}
-
-// bindIDefaultPool binds a generic wrapper to an already deployed contract.
-func bindIDefaultPool(address common.Address, caller bind.ContractCaller, transactor bind.ContractTransactor, filterer bind.ContractFilterer) (*bind.BoundContract, error) {
-	parsed, err := abi.JSON(strings.NewReader(IDefaultPoolABI))
-	if err != nil {
-		return nil, err
-	}
-	return bind.NewBoundContract(address, parsed, caller, transactor, filterer), nil
-}
-
-// Call invokes the (constant) contract method with params as input values and
-// sets the output to result. The result type might be a single field for simple
-// returns, a slice of interfaces for anonymous returns and a struct for named
-// returns.
-func (_IDefaultPool *IDefaultPoolRaw) Call(opts *bind.CallOpts, result *[]interface{}, method string, params ...interface{}) error {
-	return _IDefaultPool.Contract.IDefaultPoolCaller.contract.Call(opts, result, method, params...)
-}
-
-// Transfer initiates a plain transaction to move funds to the contract, calling
-// its default method if one is available.
-func (_IDefaultPool *IDefaultPoolRaw) Transfer(opts *bind.TransactOpts) (*types.Transaction, error) {
-	return _IDefaultPool.Contract.IDefaultPoolTransactor.contract.Transfer(opts)
-}
-
-// Transact invokes the (paid) contract method with params as input values.
-func (_IDefaultPool *IDefaultPoolRaw) Transact(opts *bind.TransactOpts, method string, params ...interface{}) (*types.Transaction, error) {
-	return _IDefaultPool.Contract.IDefaultPoolTransactor.contract.Transact(opts, method, params...)
-}
-
-// Call invokes the (constant) contract method with params as input values and
-// sets the output to result. The result type might be a single field for simple
-// returns, a slice of interfaces for anonymous returns and a struct for named
-// returns.
-func (_IDefaultPool *IDefaultPoolCallerRaw) Call(opts *bind.CallOpts, result *[]interface{}, method string, params ...interface{}) error {
-	return _IDefaultPool.Contract.contract.Call(opts, result, method, params...)
-}
-
-// Transfer initiates a plain transaction to move funds to the contract, calling
-// its default method if one is available.
-func (_IDefaultPool *IDefaultPoolTransactorRaw) Transfer(opts *bind.TransactOpts) (*types.Transaction, error) {
-	return _IDefaultPool.Contract.contract.Transfer(opts)
-}
-
-// Transact invokes the (paid) contract method with params as input values.
-func (_IDefaultPool *IDefaultPoolTransactorRaw) Transact(opts *bind.TransactOpts, method string, params ...interface{}) (*types.Transaction, error) {
-	return _IDefaultPool.Contract.contract.Transact(opts, method, params...)
-}
-
-// CalculateSwap is a free data retrieval call binding the contract method 0xa95b089f.
-//
-// Solidity: function calculateSwap(uint8 tokenIndexFrom, uint8 tokenIndexTo, uint256 dx) view returns(uint256 amountOut)
-func (_IDefaultPool *IDefaultPoolCaller) CalculateSwap(opts *bind.CallOpts, tokenIndexFrom uint8, tokenIndexTo uint8, dx *big.Int) (*big.Int, error) {
-	var out []interface{}
-	err := _IDefaultPool.contract.Call(opts, &out, "calculateSwap", tokenIndexFrom, tokenIndexTo, dx)
-
-	if err != nil {
-		return *new(*big.Int), err
-	}
-
-	out0 := *abi.ConvertType(out[0], new(*big.Int)).(**big.Int)
-
-	return out0, err
-
-}
-
-// CalculateSwap is a free data retrieval call binding the contract method 0xa95b089f.
-//
-// Solidity: function calculateSwap(uint8 tokenIndexFrom, uint8 tokenIndexTo, uint256 dx) view returns(uint256 amountOut)
-func (_IDefaultPool *IDefaultPoolSession) CalculateSwap(tokenIndexFrom uint8, tokenIndexTo uint8, dx *big.Int) (*big.Int, error) {
-	return _IDefaultPool.Contract.CalculateSwap(&_IDefaultPool.CallOpts, tokenIndexFrom, tokenIndexTo, dx)
-}
-
-// CalculateSwap is a free data retrieval call binding the contract method 0xa95b089f.
-//
-// Solidity: function calculateSwap(uint8 tokenIndexFrom, uint8 tokenIndexTo, uint256 dx) view returns(uint256 amountOut)
-func (_IDefaultPool *IDefaultPoolCallerSession) CalculateSwap(tokenIndexFrom uint8, tokenIndexTo uint8, dx *big.Int) (*big.Int, error) {
-	return _IDefaultPool.Contract.CalculateSwap(&_IDefaultPool.CallOpts, tokenIndexFrom, tokenIndexTo, dx)
-}
-
-// GetToken is a free data retrieval call binding the contract method 0x82b86600.
-//
-// Solidity: function getToken(uint8 index) view returns(address token)
-func (_IDefaultPool *IDefaultPoolCaller) GetToken(opts *bind.CallOpts, index uint8) (common.Address, error) {
-	var out []interface{}
-	err := _IDefaultPool.contract.Call(opts, &out, "getToken", index)
-
-	if err != nil {
-		return *new(common.Address), err
-	}
-
-	out0 := *abi.ConvertType(out[0], new(common.Address)).(*common.Address)
-
-	return out0, err
-
-}
-
-// GetToken is a free data retrieval call binding the contract method 0x82b86600.
-//
-// Solidity: function getToken(uint8 index) view returns(address token)
-func (_IDefaultPool *IDefaultPoolSession) GetToken(index uint8) (common.Address, error) {
-	return _IDefaultPool.Contract.GetToken(&_IDefaultPool.CallOpts, index)
-}
-
-// GetToken is a free data retrieval call binding the contract method 0x82b86600.
-//
-// Solidity: function getToken(uint8 index) view returns(address token)
-func (_IDefaultPool *IDefaultPoolCallerSession) GetToken(index uint8) (common.Address, error) {
-	return _IDefaultPool.Contract.GetToken(&_IDefaultPool.CallOpts, index)
-}
-
-// Swap is a paid mutator transaction binding the contract method 0x91695586.
-//
-// Solidity: function swap(uint8 tokenIndexFrom, uint8 tokenIndexTo, uint256 dx, uint256 minDy, uint256 deadline) returns(uint256 amountOut)
-func (_IDefaultPool *IDefaultPoolTransactor) Swap(opts *bind.TransactOpts, tokenIndexFrom uint8, tokenIndexTo uint8, dx *big.Int, minDy *big.Int, deadline *big.Int) (*types.Transaction, error) {
-	return _IDefaultPool.contract.Transact(opts, "swap", tokenIndexFrom, tokenIndexTo, dx, minDy, deadline)
-}
-
-// Swap is a paid mutator transaction binding the contract method 0x91695586.
-//
-// Solidity: function swap(uint8 tokenIndexFrom, uint8 tokenIndexTo, uint256 dx, uint256 minDy, uint256 deadline) returns(uint256 amountOut)
-func (_IDefaultPool *IDefaultPoolSession) Swap(tokenIndexFrom uint8, tokenIndexTo uint8, dx *big.Int, minDy *big.Int, deadline *big.Int) (*types.Transaction, error) {
-	return _IDefaultPool.Contract.Swap(&_IDefaultPool.TransactOpts, tokenIndexFrom, tokenIndexTo, dx, minDy, deadline)
-}
-
-// Swap is a paid mutator transaction binding the contract method 0x91695586.
-//
-// Solidity: function swap(uint8 tokenIndexFrom, uint8 tokenIndexTo, uint256 dx, uint256 minDy, uint256 deadline) returns(uint256 amountOut)
-func (_IDefaultPool *IDefaultPoolTransactorSession) Swap(tokenIndexFrom uint8, tokenIndexTo uint8, dx *big.Int, minDy *big.Int, deadline *big.Int) (*types.Transaction, error) {
-	return _IDefaultPool.Contract.Swap(&_IDefaultPool.TransactOpts, tokenIndexFrom, tokenIndexTo, dx, minDy, deadline)
 }
 
 // IERC20MetaData contains all meta data concerning the IERC20 contract.
@@ -1338,10 +1095,10 @@ func (_IMessageTransmitter *IMessageTransmitterTransactorSession) SendMessageWit
 
 // ISynapseCCTPMetaData contains all meta data concerning the ISynapseCCTP contract.
 var ISynapseCCTPMetaData = &bind.MetaData{
-	ABI: "[{\"inputs\":[{\"internalType\":\"bytes\",\"name\":\"message\",\"type\":\"bytes\"},{\"internalType\":\"bytes\",\"name\":\"signature\",\"type\":\"bytes\"},{\"internalType\":\"uint32\",\"name\":\"requestVersion\",\"type\":\"uint32\"},{\"internalType\":\"bytes\",\"name\":\"formattedRequest\",\"type\":\"bytes\"}],\"name\":\"receiveCircleToken\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"recipient\",\"type\":\"address\"},{\"internalType\":\"uint32\",\"name\":\"destinationDomain\",\"type\":\"uint32\"},{\"internalType\":\"address\",\"name\":\"burnToken\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"amount\",\"type\":\"uint256\"},{\"internalType\":\"uint32\",\"name\":\"requestVersion\",\"type\":\"uint32\"},{\"internalType\":\"bytes\",\"name\":\"swapParams\",\"type\":\"bytes\"}],\"name\":\"sendCircleToken\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"}]",
+	ABI: "[{\"inputs\":[{\"internalType\":\"bytes\",\"name\":\"message\",\"type\":\"bytes\"},{\"internalType\":\"bytes\",\"name\":\"signature\",\"type\":\"bytes\"},{\"internalType\":\"uint32\",\"name\":\"requestVersion\",\"type\":\"uint32\"},{\"internalType\":\"bytes\",\"name\":\"formattedRequest\",\"type\":\"bytes\"}],\"name\":\"receiveCircleToken\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"recipient\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"chainId\",\"type\":\"uint256\"},{\"internalType\":\"address\",\"name\":\"burnToken\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"amount\",\"type\":\"uint256\"},{\"internalType\":\"uint32\",\"name\":\"requestVersion\",\"type\":\"uint32\"},{\"internalType\":\"bytes\",\"name\":\"swapParams\",\"type\":\"bytes\"}],\"name\":\"sendCircleToken\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"}]",
 	Sigs: map[string]string{
 		"4a5ae51d": "receiveCircleToken(bytes,bytes,uint32,bytes)",
-		"08617500": "sendCircleToken(address,uint32,address,uint256,uint32,bytes)",
+		"304ddb4c": "sendCircleToken(address,uint256,address,uint256,uint32,bytes)",
 	},
 }
 
@@ -1516,25 +1273,25 @@ func (_ISynapseCCTP *ISynapseCCTPTransactorSession) ReceiveCircleToken(message [
 	return _ISynapseCCTP.Contract.ReceiveCircleToken(&_ISynapseCCTP.TransactOpts, message, signature, requestVersion, formattedRequest)
 }
 
-// SendCircleToken is a paid mutator transaction binding the contract method 0x08617500.
+// SendCircleToken is a paid mutator transaction binding the contract method 0x304ddb4c.
 //
-// Solidity: function sendCircleToken(address recipient, uint32 destinationDomain, address burnToken, uint256 amount, uint32 requestVersion, bytes swapParams) returns()
-func (_ISynapseCCTP *ISynapseCCTPTransactor) SendCircleToken(opts *bind.TransactOpts, recipient common.Address, destinationDomain uint32, burnToken common.Address, amount *big.Int, requestVersion uint32, swapParams []byte) (*types.Transaction, error) {
-	return _ISynapseCCTP.contract.Transact(opts, "sendCircleToken", recipient, destinationDomain, burnToken, amount, requestVersion, swapParams)
+// Solidity: function sendCircleToken(address recipient, uint256 chainId, address burnToken, uint256 amount, uint32 requestVersion, bytes swapParams) returns()
+func (_ISynapseCCTP *ISynapseCCTPTransactor) SendCircleToken(opts *bind.TransactOpts, recipient common.Address, chainId *big.Int, burnToken common.Address, amount *big.Int, requestVersion uint32, swapParams []byte) (*types.Transaction, error) {
+	return _ISynapseCCTP.contract.Transact(opts, "sendCircleToken", recipient, chainId, burnToken, amount, requestVersion, swapParams)
 }
 
-// SendCircleToken is a paid mutator transaction binding the contract method 0x08617500.
+// SendCircleToken is a paid mutator transaction binding the contract method 0x304ddb4c.
 //
-// Solidity: function sendCircleToken(address recipient, uint32 destinationDomain, address burnToken, uint256 amount, uint32 requestVersion, bytes swapParams) returns()
-func (_ISynapseCCTP *ISynapseCCTPSession) SendCircleToken(recipient common.Address, destinationDomain uint32, burnToken common.Address, amount *big.Int, requestVersion uint32, swapParams []byte) (*types.Transaction, error) {
-	return _ISynapseCCTP.Contract.SendCircleToken(&_ISynapseCCTP.TransactOpts, recipient, destinationDomain, burnToken, amount, requestVersion, swapParams)
+// Solidity: function sendCircleToken(address recipient, uint256 chainId, address burnToken, uint256 amount, uint32 requestVersion, bytes swapParams) returns()
+func (_ISynapseCCTP *ISynapseCCTPSession) SendCircleToken(recipient common.Address, chainId *big.Int, burnToken common.Address, amount *big.Int, requestVersion uint32, swapParams []byte) (*types.Transaction, error) {
+	return _ISynapseCCTP.Contract.SendCircleToken(&_ISynapseCCTP.TransactOpts, recipient, chainId, burnToken, amount, requestVersion, swapParams)
 }
 
-// SendCircleToken is a paid mutator transaction binding the contract method 0x08617500.
+// SendCircleToken is a paid mutator transaction binding the contract method 0x304ddb4c.
 //
-// Solidity: function sendCircleToken(address recipient, uint32 destinationDomain, address burnToken, uint256 amount, uint32 requestVersion, bytes swapParams) returns()
-func (_ISynapseCCTP *ISynapseCCTPTransactorSession) SendCircleToken(recipient common.Address, destinationDomain uint32, burnToken common.Address, amount *big.Int, requestVersion uint32, swapParams []byte) (*types.Transaction, error) {
-	return _ISynapseCCTP.Contract.SendCircleToken(&_ISynapseCCTP.TransactOpts, recipient, destinationDomain, burnToken, amount, requestVersion, swapParams)
+// Solidity: function sendCircleToken(address recipient, uint256 chainId, address burnToken, uint256 amount, uint32 requestVersion, bytes swapParams) returns()
+func (_ISynapseCCTP *ISynapseCCTPTransactorSession) SendCircleToken(recipient common.Address, chainId *big.Int, burnToken common.Address, amount *big.Int, requestVersion uint32, swapParams []byte) (*types.Transaction, error) {
+	return _ISynapseCCTP.Contract.SendCircleToken(&_ISynapseCCTP.TransactOpts, recipient, chainId, burnToken, amount, requestVersion, swapParams)
 }
 
 // ITokenMessengerMetaData contains all meta data concerning the ITokenMessenger contract.
@@ -2038,7 +1795,7 @@ func (_ITokenMinter *ITokenMinterTransactorSession) Mint(sourceDomain uint32, bu
 // MinimalForwarderLibMetaData contains all meta data concerning the MinimalForwarderLib contract.
 var MinimalForwarderLibMetaData = &bind.MetaData{
 	ABI: "[]",
-	Bin: "0x60566037600b82828239805160001a607314602a57634e487b7160e01b600052600060045260246000fd5b30600052607381538281f3fe73000000000000000000000000000000000000000030146080604052600080fdfea2646970667358221220f307cfade7290b01ce378a32f68375b6d314d10850206360baf8e68a7d5c31dc64736f6c63430008110033",
+	Bin: "0x60566037600b82828239805160001a607314602a57634e487b7160e01b600052600060045260246000fd5b30600052607381538281f3fe73000000000000000000000000000000000000000030146080604052600080fdfea264697066735822122062b83228cb4cad1893c1d418e8705515a544b4a769800ee731c552ce3f9cf81c64736f6c63430008110033",
 }
 
 // MinimalForwarderLibABI is the input ABI used to generate the binding from.
@@ -2211,7 +1968,7 @@ func (_MinimalForwarderLib *MinimalForwarderLibTransactorRaw) Transact(opts *bin
 // RequestLibMetaData contains all meta data concerning the RequestLib contract.
 var RequestLibMetaData = &bind.MetaData{
 	ABI: "[]",
-	Bin: "0x60566037600b82828239805160001a607314602a57634e487b7160e01b600052600060045260246000fd5b30600052607381538281f3fe73000000000000000000000000000000000000000030146080604052600080fdfea26469706673582212209ca1acaa574c66f31b02db6897319423cddde8143106c8b212473ea01febe71364736f6c63430008110033",
+	Bin: "0x60566037600b82828239805160001a607314602a57634e487b7160e01b600052600060045260246000fd5b30600052607381538281f3fe73000000000000000000000000000000000000000030146080604052600080fdfea2646970667358221220dce9c2238eef7e699856efa83369c374cb4d872745cd3deefd0571ff5fe22fbb64736f6c63430008110033",
 }
 
 // RequestLibABI is the input ABI used to generate the binding from.
@@ -2384,7 +2141,7 @@ func (_RequestLib *RequestLibTransactorRaw) Transact(opts *bind.TransactOpts, me
 // SafeERC20MetaData contains all meta data concerning the SafeERC20 contract.
 var SafeERC20MetaData = &bind.MetaData{
 	ABI: "[]",
-	Bin: "0x60566037600b82828239805160001a607314602a57634e487b7160e01b600052600060045260246000fd5b30600052607381538281f3fe73000000000000000000000000000000000000000030146080604052600080fdfea2646970667358221220594c83648e7d75d49f1b534f5358fa6b59362c6b3c97c27a6271888fb6ca79e664736f6c63430008110033",
+	Bin: "0x60566037600b82828239805160001a607314602a57634e487b7160e01b600052600060045260246000fd5b30600052607381538281f3fe73000000000000000000000000000000000000000030146080604052600080fdfea2646970667358221220db481b01e27340107f8773a209c67cc43e84d8758d685f09c04b63dab17b8b4164736f6c63430008110033",
 }
 
 // SafeERC20ABI is the input ABI used to generate the binding from.
@@ -2557,7 +2314,7 @@ func (_SafeERC20 *SafeERC20TransactorRaw) Transact(opts *bind.TransactOpts, meth
 // SlicerLibMetaData contains all meta data concerning the SlicerLib contract.
 var SlicerLibMetaData = &bind.MetaData{
 	ABI: "[]",
-	Bin: "0x60566037600b82828239805160001a607314602a57634e487b7160e01b600052600060045260246000fd5b30600052607381538281f3fe73000000000000000000000000000000000000000030146080604052600080fdfea264697066735822122049ef00c9b41b262d67087f130937881653f1fb80469b1aa1603332f6fc4378c964736f6c63430008110033",
+	Bin: "0x60566037600b82828239805160001a607314602a57634e487b7160e01b600052600060045260246000fd5b30600052607381538281f3fe73000000000000000000000000000000000000000030146080604052600080fdfea26469706673582212206bc0ea76823bc81c8dc727db42575df1d55cb6d977435627f0cf6b152e41d33b64736f6c63430008110033",
 }
 
 // SlicerLibABI is the input ABI used to generate the binding from.
@@ -2729,19 +2486,19 @@ func (_SlicerLib *SlicerLibTransactorRaw) Transact(opts *bind.TransactOpts, meth
 
 // SynapseCCTPMetaData contains all meta data concerning the SynapseCCTP contract.
 var SynapseCCTPMetaData = &bind.MetaData{
-	ABI: "[{\"inputs\":[{\"internalType\":\"contractITokenMessenger\",\"name\":\"tokenMessenger_\",\"type\":\"address\"}],\"stateMutability\":\"nonpayable\",\"type\":\"constructor\"},{\"inputs\":[],\"name\":\"ForwarderDeploymentFailed\",\"type\":\"error\"},{\"inputs\":[],\"name\":\"IncorrectRequestLength\",\"type\":\"error\"},{\"inputs\":[],\"name\":\"IndexOutOrRange\",\"type\":\"error\"},{\"inputs\":[],\"name\":\"LocalCCTPTokenNotFound\",\"type\":\"error\"},{\"inputs\":[],\"name\":\"RemoteCCTPDeploymentNotSet\",\"type\":\"error\"},{\"inputs\":[],\"name\":\"RemoteCCTPTokenNotSet\",\"type\":\"error\"},{\"inputs\":[],\"name\":\"SliceOverrun\",\"type\":\"error\"},{\"inputs\":[],\"name\":\"UnknownRequestVersion\",\"type\":\"error\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"address\",\"name\":\"recipient\",\"type\":\"address\"},{\"indexed\":false,\"internalType\":\"address\",\"name\":\"mintToken\",\"type\":\"address\"},{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"fee\",\"type\":\"uint256\"},{\"indexed\":false,\"internalType\":\"address\",\"name\":\"token\",\"type\":\"address\"},{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"amount\",\"type\":\"uint256\"},{\"indexed\":true,\"internalType\":\"bytes32\",\"name\":\"kappa\",\"type\":\"bytes32\"}],\"name\":\"CircleRequestFulfilledTopic\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":false,\"internalType\":\"uint32\",\"name\":\"destinationDomain\",\"type\":\"uint32\"},{\"indexed\":false,\"internalType\":\"uint64\",\"name\":\"nonce\",\"type\":\"uint64\"},{\"indexed\":false,\"internalType\":\"address\",\"name\":\"token\",\"type\":\"address\"},{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"amount\",\"type\":\"uint256\"},{\"indexed\":false,\"internalType\":\"uint32\",\"name\":\"requestVersion\",\"type\":\"uint32\"},{\"indexed\":false,\"internalType\":\"bytes\",\"name\":\"request\",\"type\":\"bytes\"},{\"indexed\":true,\"internalType\":\"bytes32\",\"name\":\"kappa\",\"type\":\"bytes32\"}],\"name\":\"CircleRequestSent\",\"type\":\"event\"},{\"inputs\":[{\"internalType\":\"uint32\",\"name\":\"remoteDomain\",\"type\":\"uint32\"},{\"internalType\":\"address\",\"name\":\"remoteToken\",\"type\":\"address\"}],\"name\":\"getLocalToken\",\"outputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"localDomain\",\"outputs\":[{\"internalType\":\"uint32\",\"name\":\"\",\"type\":\"uint32\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"messageTransmitter\",\"outputs\":[{\"internalType\":\"contractIMessageTransmitter\",\"name\":\"\",\"type\":\"address\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"bytes\",\"name\":\"message\",\"type\":\"bytes\"},{\"internalType\":\"bytes\",\"name\":\"signature\",\"type\":\"bytes\"},{\"internalType\":\"uint32\",\"name\":\"requestVersion\",\"type\":\"uint32\"},{\"internalType\":\"bytes\",\"name\":\"formattedRequest\",\"type\":\"bytes\"}],\"name\":\"receiveCircleToken\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint32\",\"name\":\"\",\"type\":\"uint32\"}],\"name\":\"remoteSynapseCCTP\",\"outputs\":[{\"internalType\":\"bytes32\",\"name\":\"\",\"type\":\"bytes32\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"recipient\",\"type\":\"address\"},{\"internalType\":\"uint32\",\"name\":\"destinationDomain\",\"type\":\"uint32\"},{\"internalType\":\"address\",\"name\":\"burnToken\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"amount\",\"type\":\"uint256\"},{\"internalType\":\"uint32\",\"name\":\"requestVersion\",\"type\":\"uint32\"},{\"internalType\":\"bytes\",\"name\":\"swapParams\",\"type\":\"bytes\"}],\"name\":\"sendCircleToken\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint32\",\"name\":\"remoteDomain\",\"type\":\"uint32\"},{\"internalType\":\"address\",\"name\":\"remoteToken\",\"type\":\"address\"}],\"name\":\"setLocalToken\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint32\",\"name\":\"remoteDomain\",\"type\":\"uint32\"},{\"internalType\":\"address\",\"name\":\"remoteSynapseCCTP_\",\"type\":\"address\"}],\"name\":\"setRemoteSynapseCCTP\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"tokenMessenger\",\"outputs\":[{\"internalType\":\"contractITokenMessenger\",\"name\":\"\",\"type\":\"address\"}],\"stateMutability\":\"view\",\"type\":\"function\"}]",
+	ABI: "[{\"inputs\":[{\"internalType\":\"contractITokenMessenger\",\"name\":\"tokenMessenger_\",\"type\":\"address\"}],\"stateMutability\":\"nonpayable\",\"type\":\"constructor\"},{\"inputs\":[],\"name\":\"CCTPMessageNotReceived\",\"type\":\"error\"},{\"inputs\":[],\"name\":\"ForwarderDeploymentFailed\",\"type\":\"error\"},{\"inputs\":[],\"name\":\"IncorrectRequestLength\",\"type\":\"error\"},{\"inputs\":[],\"name\":\"IndexOutOrRange\",\"type\":\"error\"},{\"inputs\":[],\"name\":\"LocalCCTPTokenNotFound\",\"type\":\"error\"},{\"inputs\":[],\"name\":\"RemoteCCTPDeploymentNotSet\",\"type\":\"error\"},{\"inputs\":[],\"name\":\"RemoteCCTPTokenNotSet\",\"type\":\"error\"},{\"inputs\":[],\"name\":\"SliceOverrun\",\"type\":\"error\"},{\"inputs\":[],\"name\":\"UnknownRequestVersion\",\"type\":\"error\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"address\",\"name\":\"recipient\",\"type\":\"address\"},{\"indexed\":false,\"internalType\":\"address\",\"name\":\"mintToken\",\"type\":\"address\"},{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"fee\",\"type\":\"uint256\"},{\"indexed\":false,\"internalType\":\"address\",\"name\":\"token\",\"type\":\"address\"},{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"amount\",\"type\":\"uint256\"},{\"indexed\":true,\"internalType\":\"bytes32\",\"name\":\"kappa\",\"type\":\"bytes32\"}],\"name\":\"CircleRequestFulfilled\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"chainId\",\"type\":\"uint256\"},{\"indexed\":false,\"internalType\":\"uint64\",\"name\":\"nonce\",\"type\":\"uint64\"},{\"indexed\":false,\"internalType\":\"address\",\"name\":\"token\",\"type\":\"address\"},{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"amount\",\"type\":\"uint256\"},{\"indexed\":false,\"internalType\":\"uint32\",\"name\":\"requestVersion\",\"type\":\"uint32\"},{\"indexed\":false,\"internalType\":\"bytes\",\"name\":\"formattedRequest\",\"type\":\"bytes\"},{\"indexed\":true,\"internalType\":\"bytes32\",\"name\":\"kappa\",\"type\":\"bytes32\"}],\"name\":\"CircleRequestSent\",\"type\":\"event\"},{\"inputs\":[{\"internalType\":\"uint32\",\"name\":\"remoteDomain\",\"type\":\"uint32\"},{\"internalType\":\"address\",\"name\":\"remoteToken\",\"type\":\"address\"}],\"name\":\"getLocalToken\",\"outputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"localDomain\",\"outputs\":[{\"internalType\":\"uint32\",\"name\":\"\",\"type\":\"uint32\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"messageTransmitter\",\"outputs\":[{\"internalType\":\"contractIMessageTransmitter\",\"name\":\"\",\"type\":\"address\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"bytes\",\"name\":\"message\",\"type\":\"bytes\"},{\"internalType\":\"bytes\",\"name\":\"signature\",\"type\":\"bytes\"},{\"internalType\":\"uint32\",\"name\":\"requestVersion\",\"type\":\"uint32\"},{\"internalType\":\"bytes\",\"name\":\"formattedRequest\",\"type\":\"bytes\"}],\"name\":\"receiveCircleToken\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"name\":\"remoteDomainConfig\",\"outputs\":[{\"internalType\":\"uint32\",\"name\":\"domain\",\"type\":\"uint32\"},{\"internalType\":\"address\",\"name\":\"synapseCCTP\",\"type\":\"address\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"recipient\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"chainId\",\"type\":\"uint256\"},{\"internalType\":\"address\",\"name\":\"burnToken\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"amount\",\"type\":\"uint256\"},{\"internalType\":\"uint32\",\"name\":\"requestVersion\",\"type\":\"uint32\"},{\"internalType\":\"bytes\",\"name\":\"swapParams\",\"type\":\"bytes\"}],\"name\":\"sendCircleToken\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint32\",\"name\":\"remoteDomain\",\"type\":\"uint32\"},{\"internalType\":\"address\",\"name\":\"remoteToken\",\"type\":\"address\"}],\"name\":\"setLocalToken\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"remoteChainId\",\"type\":\"uint256\"},{\"internalType\":\"uint32\",\"name\":\"remoteDomain\",\"type\":\"uint32\"},{\"internalType\":\"address\",\"name\":\"remoteSynapseCCTP\",\"type\":\"address\"}],\"name\":\"setRemoteDomainConfig\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"tokenMessenger\",\"outputs\":[{\"internalType\":\"contractITokenMessenger\",\"name\":\"\",\"type\":\"address\"}],\"stateMutability\":\"view\",\"type\":\"function\"}]",
 	Sigs: map[string]string{
 		"f879a41a": "getLocalToken(uint32,address)",
 		"8d3638f4": "localDomain()",
 		"7b04c181": "messageTransmitter()",
 		"4a5ae51d": "receiveCircleToken(bytes,bytes,uint32,bytes)",
-		"e8eb1df0": "remoteSynapseCCTP(uint32)",
-		"08617500": "sendCircleToken(address,uint32,address,uint256,uint32,bytes)",
+		"e9259ab9": "remoteDomainConfig(uint256)",
+		"304ddb4c": "sendCircleToken(address,uint256,address,uint256,uint32,bytes)",
 		"393e5b60": "setLocalToken(uint32,address)",
-		"242fdf1d": "setRemoteSynapseCCTP(uint32,address)",
+		"e9bbb36d": "setRemoteDomainConfig(uint256,uint32,address)",
 		"46117830": "tokenMessenger()",
 	},
-	Bin: "0x60e06040523480156200001157600080fd5b50604051620024e9380380620024e983398101604081905262000034916200013e565b6001600160a01b03811660c081905260408051632c12192160e01b81529051632c121921916004808201926020929091908290030181865afa1580156200007f573d6000803e3d6000fd5b505050506040513d601f19601f82011682018060405250810190620000a591906200013e565b6001600160a01b031660a08190526040805163234d8e3d60e21b81529051638d3638f4916004808201926020929091908290030181865afa158015620000ef573d6000803e3d6000fd5b505050506040513d601f19601f8201168201806040525081019062000115919062000165565b63ffffffff16608052506200018d565b6001600160a01b03811681146200013b57600080fd5b50565b6000602082840312156200015157600080fd5b81516200015e8162000125565b9392505050565b6000602082840312156200017857600080fd5b815163ffffffff811681146200015e57600080fd5b60805160a05160c0516122fb620001ee600039600081816101170152818161041501528181610451015261058701526000818161017b0152818161022a0152610f8a0152600081816101a2015281816102bd01526107d701526122fb6000f3fe608060405234801561001057600080fd5b50600436106100a35760003560e01c80634a5ae51d116100765780638d3638f41161005b5780638d3638f41461019d578063e8eb1df0146101d9578063f879a41a1461020757600080fd5b80634a5ae51d146101635780637b04c1811461017657600080fd5b806308617500146100a8578063242fdf1d146100bd578063393e5b60146100ff5780634611783014610112575b600080fd5b6100bb6100b6366004611e13565b61021a565b005b6100bb6100cb366004611e9f565b73ffffffffffffffffffffffffffffffffffffffff811663ffffffff90921660009081526020819052604090209190915550565b6100bb61010d366004611e9f565b610583565b6101397f000000000000000000000000000000000000000000000000000000000000000081565b60405173ffffffffffffffffffffffffffffffffffffffff90911681526020015b60405180910390f35b6100bb610171366004611f18565b6107b5565b6101397f000000000000000000000000000000000000000000000000000000000000000081565b6101c47f000000000000000000000000000000000000000000000000000000000000000081565b60405163ffffffff909116815260200161015a565b6101f96101e7366004611fb1565b60006020819052908152604090205481565b60405190815260200161015a565b610139610215366004611e9f565b6108d6565b6102248484610925565b925060007f000000000000000000000000000000000000000000000000000000000000000073ffffffffffffffffffffffffffffffffffffffff16638371744e6040518163ffffffff1660e01b8152600401602060405180830381865afa158015610293573d6000803e3d6000fd5b505050506040513d601f19601f820116820180604052508101906102b79190611fcc565b604080517f000000000000000000000000000000000000000000000000000000000000000060e01b7fffffffff0000000000000000000000000000000000000000000000000000000016602082015260c083901b7fffffffffffffffff000000000000000000000000000000000000000000000000166024820152606088811b7fffffffffffffffffffffffffffffffffffffffff000000000000000000000000908116602c8401528284018990528b821b169082015281516054818303018152607490910190915290915060009061039290859085610a7e565b63ffffffff88166000908152602081905260408120549192508190036103e4576040517fa86a3b0e00000000000000000000000000000000000000000000000000000000815260040160405180910390fd5b815160208084019190912067ffffffff000000008a831b1663ffffffff881617600090815291526040902061043a887f000000000000000000000000000000000000000000000000000000000000000089610c43565b73ffffffffffffffffffffffffffffffffffffffff7f00000000000000000000000000000000000000000000000000000000000000001663f856ddb6888b858c6104848288610d56565b6040517fffffffff0000000000000000000000000000000000000000000000000000000060e088901b168152600481019590955263ffffffff939093166024850152604484019190915273ffffffffffffffffffffffffffffffffffffffff166064830152608482015260a4016020604051808303816000875af1158015610510573d6000803e3d6000fd5b505050506040513d601f19601f820116820180604052508101906105349190611fcc565b50807f6e7df7fbb64a0b631dd90e0dffa7f84a3d04e73eb844cf7be956d4c7e3bbdc728a868b8b8b8960405161056f96959493929190612046565b60405180910390a250505050505050505050565b60007f000000000000000000000000000000000000000000000000000000000000000073ffffffffffffffffffffffffffffffffffffffff1663cb75c11c6040518163ffffffff1660e01b8152600401602060405180830381865afa1580156105f0573d6000803e3d6000fd5b505050506040513d601f19601f8201168201806040525081019061061491906120ad565b905060008173ffffffffffffffffffffffffffffffffffffffff166378a0565e856106688673ffffffffffffffffffffffffffffffffffffffff1673ffffffffffffffffffffffffffffffffffffffff1690565b6040517fffffffff0000000000000000000000000000000000000000000000000000000060e085901b16815263ffffffff9290921660048301526024820152604401602060405180830381865afa1580156106c7573d6000803e3d6000fd5b505050506040513d601f19601f820116820180604052508101906106eb91906120ad565b905073ffffffffffffffffffffffffffffffffffffffff811661073a576040517f74e3d32e00000000000000000000000000000000000000000000000000000000815260040160405180910390fd5b77ffffffff000000000000000000000000000000000000000060a09490941b9390931673ffffffffffffffffffffffffffffffffffffffff92831617600090815260016020526040902080547fffffffffffffffffffffffff0000000000000000000000000000000000000000169390921692909217905550565b60006107c18383610d9b565b825160208085019190912067ffffffff000000007f0000000000000000000000000000000000000000000000000000000000000000831b1663ffffffff871617600090815291526040902090915061081c8888888885610edf565b60008061082884610fb9565b915091506000610838838361105a565b9092509050600061084886611065565b905060008061085a8387878d8c611087565b6040805173ffffffffffffffffffffffffffffffffffffffff8a8116825260208201899052848116828401526060820184905291519395509193508992908616917feaf2537b3a5c10387b14e2c0e57b1e11b46ff39b0f4ead5dac98cb0f4fd2118f919081900360800190a35050505050505050505050505050565b73ffffffffffffffffffffffffffffffffffffffff81811660a084901b77ffffffff00000000000000000000000000000000000000001617600090815260016020526040902054165b92915050565b6040517f70a08231000000000000000000000000000000000000000000000000000000008152306004820152600090819073ffffffffffffffffffffffffffffffffffffffff8516906370a0823190602401602060405180830381865afa158015610994573d6000803e3d6000fd5b505050506040513d601f19601f820116820180604052508101906109b891906120ca565b90506109dc73ffffffffffffffffffffffffffffffffffffffff8516333086611163565b6040517f70a08231000000000000000000000000000000000000000000000000000000008152306004820152819073ffffffffffffffffffffffffffffffffffffffff8616906370a0823190602401602060405180830381865afa158015610a48573d6000803e3d6000fd5b505050506040513d601f19601f82011682018060405250810190610a6c91906120ca565b610a769190612112565b949350505050565b6060600163ffffffff85161115610ac1576040517f523fa8d500000000000000000000000000000000000000000000000000000000815260040160405180910390fd5b610acd60006020612125565b610ad8906020612125565b610ae3906014612125565b835114610b1c576040517f74593f8700000000000000000000000000000000000000000000000000000000815260040160405180910390fd5b63ffffffff8416158015610b305750815115155b15610b67576040517f74593f8700000000000000000000000000000000000000000000000000000000815260040160405180910390fd5b63ffffffff84166001148015610be15750610b8460006020612125565b610b8f906020612125565b610b9a906014612125565b610ba660006020612125565b610bb1906020612125565b610bbc906014612125565b610bc7906020612125565b610bd2906020612125565b610bdc9190612112565b825114155b15610c18576040517f74593f8700000000000000000000000000000000000000000000000000000000815260040160405180910390fd5b8282604051602001610c2b929190612138565b60405160208183030381529060405290509392505050565b6040517fdd62ed3e00000000000000000000000000000000000000000000000000000000815230600482015273ffffffffffffffffffffffffffffffffffffffff83811660248301526000919085169063dd62ed3e90604401602060405180830381865afa158015610cb9573d6000803e3d6000fd5b505050506040513d601f19601f82011682018060405250810190610cdd91906120ca565b905081811015610d50578015610d0f57610d0f73ffffffffffffffffffffffffffffffffffffffff8516846000611221565b610d5073ffffffffffffffffffffffffffffffffffffffff8516847fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff611221565b50505050565b6000610d94610d7b73ffffffffffffffffffffffffffffffffffffffff8516846113ad565b73ffffffffffffffffffffffffffffffffffffffff1690565b9392505050565b6000600163ffffffff84161115610dde576040517f523fa8d500000000000000000000000000000000000000000000000000000000815260040160405180910390fd5b63ffffffff8316158015610e145750610df960006020612125565b610e04906020612125565b610e0f906014612125565b825114155b15610e4b576040517f74593f8700000000000000000000000000000000000000000000000000000000815260040160405180910390fd5b63ffffffff83166001148015610e995750610e6860006020612125565b610e73906020612125565b610e7e906014612125565b610e89906020612125565b610e94906020612125565b825114155b15610ed0576040517f74593f8700000000000000000000000000000000000000000000000000000000815260040160405180910390fd5b81516020830160801b17610d94565b6000610eea82611499565b905060006357ecfd2860e01b87878787604051602401610f0d9493929190612192565b60408051601f198184030181529190526020810180517bffffffffffffffffffffffffffffffffffffffffffffffffffffffff167fffffffff00000000000000000000000000000000000000000000000000000000909316929092179091529050610faf73ffffffffffffffffffffffffffffffffffffffff83167f000000000000000000000000000000000000000000000000000000000000000083611552565b5050505050505050565b600080600080610fc885611561565b73ffffffffffffffffffffffffffffffffffffffff80831660a086901b77ffffffff000000000000000000000000000000000000000016176000908152600160205260409020541697509550919350909150849050611053576040517f5ec62f3300000000000000000000000000000000000000000000000000000000815260040160405180910390fd5b5050915091565b8060005b9250929050565b600061091f611075826020612125565b611080906020612125565b83906115c8565b60008063ffffffff84166110a9576110a0878787611666565b91509150611159565b60008060008060006110ba88611691565b945094509450945094506110ce8584611736565b965073ffffffffffffffffffffffffffffffffffffffff8716611104576110f68c8c8c611666565b965096505050505050611159565b61110f8b868c610c43565b61111d8585858d86866117ce565b955085600003611132576110f68c8c8c611666565b61115373ffffffffffffffffffffffffffffffffffffffff88168d8861189d565b50505050505b9550959350505050565b60405173ffffffffffffffffffffffffffffffffffffffff80851660248301528316604482015260648101829052610d509085907f23b872dd00000000000000000000000000000000000000000000000000000000906084015b60408051601f198184030181529190526020810180517bffffffffffffffffffffffffffffffffffffffffffffffffffffffff167fffffffff00000000000000000000000000000000000000000000000000000000909316929092179091526118f3565b8015806112c157506040517fdd62ed3e00000000000000000000000000000000000000000000000000000000815230600482015273ffffffffffffffffffffffffffffffffffffffff838116602483015284169063dd62ed3e90604401602060405180830381865afa15801561129b573d6000803e3d6000fd5b505050506040513d601f19601f820116820180604052508101906112bf91906120ca565b155b611352576040517f08c379a000000000000000000000000000000000000000000000000000000000815260206004820152603660248201527f5361666545524332303a20617070726f76652066726f6d206e6f6e2d7a65726f60448201527f20746f206e6f6e2d7a65726f20616c6c6f77616e63650000000000000000000060648201526084015b60405180910390fd5b60405173ffffffffffffffffffffffffffffffffffffffff83166024820152604481018290526113a89084907f095ea7b300000000000000000000000000000000000000000000000000000000906064016111bd565b505050565b6000610d9483836040518060400160405280602081526020017f602036038060203d373d3d3d923d343d355af13d82803e903d91601e57fd5bf38152506040516020016113fa91906121b9565b60405160208183030381529060405280519060200120604051602001611480939291907fff00000000000000000000000000000000000000000000000000000000000000815260609390931b7fffffffffffffffffffffffffffffffffffffffff0000000000000000000000001660018401526015830191909152603582015260550190565b6040516020818303038152906040528051906020012090565b6000806040518060400160405280602081526020017f602036038060203d373d3d3d923d343d355af13d82803e903d91601e57fd5bf38152506040516020016114e291906121b9565b6040516020818303038152906040529050828151602083016000f5915073ffffffffffffffffffffffffffffffffffffffff821661154c576040517f27afa9fc00000000000000000000000000000000000000000000000000000000815260040160405180910390fd5b50919050565b6060610a7684848460006119ff565b60008080808061157381875b90611a64565b90508060e01c945067ffffffffffffffff8160a01c16935073ffffffffffffffffffffffffffffffffffffffff811692506115bb600060206115b59190612125565b8761156d565b60001c9150509193509193565b6000608083901c6fffffffffffffffffffffffffffffffff841680841061161b576040517fdfc52d7b00000000000000000000000000000000000000000000000000000000815260040160405180910390fd5b80846014011115611658576040517f4b72f29d00000000000000000000000000000000000000000000000000000000815260040160405180910390fd5b509091015160601c92915050565b818161168973ffffffffffffffffffffffffffffffffffffffff8316868361189d565b935093915050565b600080808080806116c26116a6826020612125565b6116b1906020612125565b6116bc906014612125565b8861156d565b90508060601c955060ff8160581c16945060ff8160501c16935073ffffffffffffffffffffffffffffffffffffffff81169250611727600060206117069190612125565b611711906020612125565b61171c906014612125565b6116bc906020612125565b60001c91505091939590929450565b6040517f82b8660000000000000000000000000000000000000000000000000000000000815260ff8216600482015260009073ffffffffffffffffffffffffffffffffffffffff8416906382b8660090602401602060405180830381865afa9250505080156117c2575060408051601f3d908101601f191682019092526117bf918101906120ad565b60015b610d945750600061091f565b6040517f9169558600000000000000000000000000000000000000000000000000000000815260ff808716600483015285166024820152604481018490526064810182905269ffffffffffffffffffff8316608482015260009073ffffffffffffffffffffffffffffffffffffffff88169063916955869060a4016020604051808303816000875af1925050508015611884575060408051601f3d908101601f19168201909252611881918101906120ca565b60015b61189057506000611893565b90505b9695505050505050565b60405173ffffffffffffffffffffffffffffffffffffffff83166024820152604481018290526113a89084907fa9059cbb00000000000000000000000000000000000000000000000000000000906064016111bd565b6000611955826040518060400160405280602081526020017f5361666545524332303a206c6f772d6c6576656c2063616c6c206661696c65648152508573ffffffffffffffffffffffffffffffffffffffff16611aff9092919063ffffffff16565b8051909150156113a857808060200190518101906119739190612225565b6113a8576040517f08c379a000000000000000000000000000000000000000000000000000000000815260206004820152602a60248201527f5361666545524332303a204552433230206f7065726174696f6e20646964206e60448201527f6f742073756363656564000000000000000000000000000000000000000000006064820152608401611349565b6060611a5b73ffffffffffffffffffffffffffffffffffffffff851684604051602001611a2d929190612247565b60408051601f1981840301815291905273ffffffffffffffffffffffffffffffffffffffff87169084611b0e565b95945050505050565b6000608083901c6fffffffffffffffffffffffffffffffff8416808410611ab7576040517fdfc52d7b00000000000000000000000000000000000000000000000000000000815260040160405180910390fd5b80846020011115611af4576040517f4b72f29d00000000000000000000000000000000000000000000000000000000815260040160405180910390fd5b509091015192915050565b6060610a768484600085611b30565b6060610a7684848460405180606001604052806029815260200161229d602991395b606082471015611bc2576040517f08c379a000000000000000000000000000000000000000000000000000000000815260206004820152602660248201527f416464726573733a20696e73756666696369656e742062616c616e636520666f60448201527f722063616c6c00000000000000000000000000000000000000000000000000006064820152608401611349565b73ffffffffffffffffffffffffffffffffffffffff85163b611c40576040517f08c379a000000000000000000000000000000000000000000000000000000000815260206004820152601d60248201527f416464726573733a2063616c6c20746f206e6f6e2d636f6e74726163740000006044820152606401611349565b6000808673ffffffffffffffffffffffffffffffffffffffff168587604051611c69919061226d565b60006040518083038185875af1925050503d8060008114611ca6576040519150601f19603f3d011682016040523d82523d6000602084013e611cab565b606091505b5091509150611cbb828286611cc6565b979650505050505050565b60608315611cd5575081610d94565b825115611ce55782518084602001fd5b816040517f08c379a00000000000000000000000000000000000000000000000000000000081526004016113499190612289565b73ffffffffffffffffffffffffffffffffffffffff81168114611d3b57600080fd5b50565b803563ffffffff81168114611d5257600080fd5b919050565b7f4e487b7100000000000000000000000000000000000000000000000000000000600052604160045260246000fd5b600082601f830112611d9757600080fd5b813567ffffffffffffffff80821115611db257611db2611d57565b604051601f8301601f19908116603f01168101908282118183101715611dda57611dda611d57565b81604052838152866020858801011115611df357600080fd5b836020870160208301376000602085830101528094505050505092915050565b60008060008060008060c08789031215611e2c57600080fd5b8635611e3781611d19565b9550611e4560208801611d3e565b94506040870135611e5581611d19565b935060608701359250611e6a60808801611d3e565b915060a087013567ffffffffffffffff811115611e8657600080fd5b611e9289828a01611d86565b9150509295509295509295565b60008060408385031215611eb257600080fd5b611ebb83611d3e565b91506020830135611ecb81611d19565b809150509250929050565b60008083601f840112611ee857600080fd5b50813567ffffffffffffffff811115611f0057600080fd5b60208301915083602082850101111561105e57600080fd5b60008060008060008060808789031215611f3157600080fd5b863567ffffffffffffffff80821115611f4957600080fd5b611f558a838b01611ed6565b90985096506020890135915080821115611f6e57600080fd5b611f7a8a838b01611ed6565b9096509450849150611f8e60408a01611d3e565b93506060890135915080821115611fa457600080fd5b50611e9289828a01611d86565b600060208284031215611fc357600080fd5b610d9482611d3e565b600060208284031215611fde57600080fd5b815167ffffffffffffffff81168114610d9457600080fd5b60005b83811015612011578181015183820152602001611ff9565b50506000910152565b60008151808452612032816020860160208601611ff6565b601f01601f19169290920160200192915050565b600063ffffffff808916835267ffffffffffffffff8816602084015273ffffffffffffffffffffffffffffffffffffffff8716604084015285606084015280851660808401525060c060a08301526120a160c083018461201a565b98975050505050505050565b6000602082840312156120bf57600080fd5b8151610d9481611d19565b6000602082840312156120dc57600080fd5b5051919050565b7f4e487b7100000000000000000000000000000000000000000000000000000000600052601160045260246000fd5b8181038181111561091f5761091f6120e3565b8082018082111561091f5761091f6120e3565b6000835161214a818460208801611ff6565b83519083019061215e818360208801611ff6565b01949350505050565b818352818160208501375060006020828401015260006020601f19601f840116840101905092915050565b6040815260006121a6604083018688612167565b8281036020840152611cbb818587612167565b7f7f000000000000000000000000000000000000000000000000000000000000008152600082516121f1816001850160208701611ff6565b7f3d5260203df300000000000000000000000000000000000000000000000000006001939091019283015250600701919050565b60006020828403121561223757600080fd5b81518015158114610d9457600080fd5b8281526000825161225f816020850160208701611ff6565b919091016020019392505050565b6000825161227f818460208701611ff6565b9190910192915050565b602081526000610d94602083018461201a56fe416464726573733a206c6f772d6c6576656c2063616c6c20776974682076616c7565206661696c6564a2646970667358221220060b52138225159131259d6cde225506f670307a9634d5a5c057476b1bfe617f64736f6c63430008110033",
+	Bin: "0x60e06040523480156200001157600080fd5b506040516200239e3803806200239e83398101604081905262000034916200013e565b6001600160a01b03811660c081905260408051632c12192160e01b81529051632c121921916004808201926020929091908290030181865afa1580156200007f573d6000803e3d6000fd5b505050506040513d601f19601f82011682018060405250810190620000a591906200013e565b6001600160a01b031660a08190526040805163234d8e3d60e21b81529051638d3638f4916004808201926020929091908290030181865afa158015620000ef573d6000803e3d6000fd5b505050506040513d601f19601f8201168201806040525081019062000115919062000165565b63ffffffff16608052506200018d565b6001600160a01b03811681146200013b57600080fd5b50565b6000602082840312156200015157600080fd5b81516200015e8162000125565b9392505050565b6000602082840312156200017857600080fd5b815163ffffffff811681146200015e57600080fd5b60805160a05160c0516121a3620001fb6000396000818160d5015281816104f40152818161062c01528181610d2001528181610dc30152610e05015260008181610139015281816102bc01526110850152600081816101600152818161034f015261087c01526121a36000f3fe608060405234801561001057600080fd5b50600436106100a35760003560e01c80637b04c18111610076578063e9259ab91161005b578063e9259ab914610197578063e9bbb36d1461020e578063f879a41a1461029957600080fd5b80637b04c181146101345780638d3638f41461015b57600080fd5b8063304ddb4c146100a8578063393e5b60146100bd57806346117830146100d05780634a5ae51d14610121575b600080fd5b6100bb6100b6366004611c88565b6102ac565b005b6100bb6100cb366004611d0d565b610628565b6100f77f000000000000000000000000000000000000000000000000000000000000000081565b60405173ffffffffffffffffffffffffffffffffffffffff90911681526020015b60405180910390f35b6100bb61012f366004611d86565b61085a565b6100f77f000000000000000000000000000000000000000000000000000000000000000081565b6101827f000000000000000000000000000000000000000000000000000000000000000081565b60405163ffffffff9091168152602001610118565b6101dd6101a5366004611e1f565b60006020819052908152604090205463ffffffff811690640100000000900473ffffffffffffffffffffffffffffffffffffffff1682565b6040805163ffffffff909316835273ffffffffffffffffffffffffffffffffffffffff909116602083015201610118565b6100bb61021c366004611e38565b60408051808201825263ffffffff938416815273ffffffffffffffffffffffffffffffffffffffff9283166020808301918252600096875286905291909420935184549151909216640100000000027fffffffffffffffff0000000000000000000000000000000000000000000000009091169190921617179055565b6100f76102a7366004611d0d565b610970565b6102b684846109bf565b925060007f000000000000000000000000000000000000000000000000000000000000000073ffffffffffffffffffffffffffffffffffffffff16638371744e6040518163ffffffff1660e01b8152600401602060405180830381865afa158015610325573d6000803e3d6000fd5b505050506040513d601f19601f820116820180604052508101906103499190611e78565b604080517f000000000000000000000000000000000000000000000000000000000000000060e01b7fffffffff0000000000000000000000000000000000000000000000000000000016602082015260c083901b7fffffffffffffffff000000000000000000000000000000000000000000000000166024820152606088811b7fffffffffffffffffffffffffffffffffffffffff000000000000000000000000908116602c8401528284018990528b821b169082015281516054818303018152607490910190915290915060009061042490859085610b18565b60008881526020818152604080832081518083019092525463ffffffff81168252640100000000900473ffffffffffffffffffffffffffffffffffffffff16918101829052929350908190036104a6576040517fa86a3b0e00000000000000000000000000000000000000000000000000000000815260040160405180910390fd5b8151835160208086019190912067ffffffff0000000083831b1663ffffffff8a161760009081529152604090206104dd8a8a610cdd565b73ffffffffffffffffffffffffffffffffffffffff7f00000000000000000000000000000000000000000000000000000000000000001663f856ddb68a84868e6105278288610e4f565b6040517fffffffff0000000000000000000000000000000000000000000000000000000060e088901b168152600481019590955263ffffffff939093166024850152604484019190915273ffffffffffffffffffffffffffffffffffffffff166064830152608482015260a4016020604051808303816000875af11580156105b3573d6000803e3d6000fd5b505050506040513d601f19601f820116820180604052508101906105d79190611e78565b50807f4ce96273f442a9bc593fea917ea7e8c2a009befc78ba3e334008948c7addf22a8c888d8d8d8b60405161061296959493929190611ef2565b60405180910390a2505050505050505050505050565b60007f000000000000000000000000000000000000000000000000000000000000000073ffffffffffffffffffffffffffffffffffffffff1663cb75c11c6040518163ffffffff1660e01b8152600401602060405180830381865afa158015610695573d6000803e3d6000fd5b505050506040513d601f19601f820116820180604052508101906106b99190611f55565b905060008173ffffffffffffffffffffffffffffffffffffffff166378a0565e8561070d8673ffffffffffffffffffffffffffffffffffffffff1673ffffffffffffffffffffffffffffffffffffffff1690565b6040517fffffffff0000000000000000000000000000000000000000000000000000000060e085901b16815263ffffffff9290921660048301526024820152604401602060405180830381865afa15801561076c573d6000803e3d6000fd5b505050506040513d601f19601f820116820180604052508101906107909190611f55565b905073ffffffffffffffffffffffffffffffffffffffff81166107df576040517f74e3d32e00000000000000000000000000000000000000000000000000000000815260040160405180910390fd5b77ffffffff000000000000000000000000000000000000000060a09490941b9390931673ffffffffffffffffffffffffffffffffffffffff92831617600090815260016020526040902080547fffffffffffffffffffffffff0000000000000000000000000000000000000000169390921692909217905550565b60006108668383610e94565b825160208085019190912067ffffffff000000007f0000000000000000000000000000000000000000000000000000000000000000831b1663ffffffff87161760009081529152604090209091506108c18888888885610fd8565b6000806108cd84611100565b9150915060006108dd83836111a1565b9092509050600080806108f186868a6111ac565b6040805173ffffffffffffffffffffffffffffffffffffffff8b81168252602082018a9052848116828401526060820184905291519497509295509093508992908616917feaf2537b3a5c10387b14e2c0e57b1e11b46ff39b0f4ead5dac98cb0f4fd2118f919081900360800190a35050505050505050505050505050565b73ffffffffffffffffffffffffffffffffffffffff81811660a084901b77ffffffff00000000000000000000000000000000000000001617600090815260016020526040902054165b92915050565b6040517f70a08231000000000000000000000000000000000000000000000000000000008152306004820152600090819073ffffffffffffffffffffffffffffffffffffffff8516906370a0823190602401602060405180830381865afa158015610a2e573d6000803e3d6000fd5b505050506040513d601f19601f82011682018060405250810190610a529190611f72565b9050610a7673ffffffffffffffffffffffffffffffffffffffff85163330866111ec565b6040517f70a08231000000000000000000000000000000000000000000000000000000008152306004820152819073ffffffffffffffffffffffffffffffffffffffff8616906370a0823190602401602060405180830381865afa158015610ae2573d6000803e3d6000fd5b505050506040513d601f19601f82011682018060405250810190610b069190611f72565b610b109190611fba565b949350505050565b6060600163ffffffff85161115610b5b576040517f523fa8d500000000000000000000000000000000000000000000000000000000815260040160405180910390fd5b610b6760006020611fcd565b610b72906020611fcd565b610b7d906014611fcd565b835114610bb6576040517f74593f8700000000000000000000000000000000000000000000000000000000815260040160405180910390fd5b63ffffffff8416158015610bca5750815115155b15610c01576040517f74593f8700000000000000000000000000000000000000000000000000000000815260040160405180910390fd5b63ffffffff84166001148015610c7b5750610c1e60006020611fcd565b610c29906020611fcd565b610c34906014611fcd565b610c4060006020611fcd565b610c4b906020611fcd565b610c56906014611fcd565b610c61906020611fcd565b610c6c906020611fcd565b610c769190611fba565b825114155b15610cb2576040517f74593f8700000000000000000000000000000000000000000000000000000000815260040160405180910390fd5b8282604051602001610cc5929190611fe0565b60405160208183030381529060405290509392505050565b6040517fdd62ed3e00000000000000000000000000000000000000000000000000000000815230600482015273ffffffffffffffffffffffffffffffffffffffff7f0000000000000000000000000000000000000000000000000000000000000000811660248301526000919084169063dd62ed3e90604401602060405180830381865afa158015610d73573d6000803e3d6000fd5b505050506040513d601f19601f82011682018060405250810190610d979190611f72565b905081811015610e4a578015610de957610de973ffffffffffffffffffffffffffffffffffffffff84167f000000000000000000000000000000000000000000000000000000000000000060006112b0565b610e4a73ffffffffffffffffffffffffffffffffffffffff84167f00000000000000000000000000000000000000000000000000000000000000007fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff6112b0565b505050565b6000610e8d610e7473ffffffffffffffffffffffffffffffffffffffff851684611437565b73ffffffffffffffffffffffffffffffffffffffff1690565b9392505050565b6000600163ffffffff84161115610ed7576040517f523fa8d500000000000000000000000000000000000000000000000000000000815260040160405180910390fd5b63ffffffff8316158015610f0d5750610ef260006020611fcd565b610efd906020611fcd565b610f08906014611fcd565b825114155b15610f44576040517f74593f8700000000000000000000000000000000000000000000000000000000815260040160405180910390fd5b63ffffffff83166001148015610f925750610f6160006020611fcd565b610f6c906020611fcd565b610f77906014611fcd565b610f82906020611fcd565b610f8d906020611fcd565b825114155b15610fc9576040517f74593f8700000000000000000000000000000000000000000000000000000000815260040160405180910390fd5b81516020830160801b17610e8d565b6000610fe382611523565b905060006357ecfd2860e01b87878787604051602401611006949392919061203a565b60408051601f198184030181529190526020810180517bffffffffffffffffffffffffffffffffffffffffffffffffffffffff167fffffffff0000000000000000000000000000000000000000000000000000000090931692909217909152905060006110aa73ffffffffffffffffffffffffffffffffffffffff84167f0000000000000000000000000000000000000000000000000000000000000000846115dc565b9050808060200190518101906110c09190612061565b6110f6576040517f182f34eb00000000000000000000000000000000000000000000000000000000815260040160405180910390fd5b5050505050505050565b60008060008061110f856115eb565b73ffffffffffffffffffffffffffffffffffffffff80831660a086901b77ffffffff00000000000000000000000000000000000000001617600090815260016020526040902054169750955091935090915084905061119a576040517f5ec62f3300000000000000000000000000000000000000000000000000000000815260040160405180910390fd5b5050915091565b8060005b9250929050565b60008060006111ba84611652565b92508591508490506111e373ffffffffffffffffffffffffffffffffffffffff83168483611674565b93509350939050565b60405173ffffffffffffffffffffffffffffffffffffffff808516602483015283166044820152606481018290526112aa9085907f23b872dd00000000000000000000000000000000000000000000000000000000906084015b60408051601f198184030181529190526020810180517bffffffffffffffffffffffffffffffffffffffffffffffffffffffff167fffffffff00000000000000000000000000000000000000000000000000000000909316929092179091526116ca565b50505050565b80158061135057506040517fdd62ed3e00000000000000000000000000000000000000000000000000000000815230600482015273ffffffffffffffffffffffffffffffffffffffff838116602483015284169063dd62ed3e90604401602060405180830381865afa15801561132a573d6000803e3d6000fd5b505050506040513d601f19601f8201168201806040525081019061134e9190611f72565b155b6113e1576040517f08c379a000000000000000000000000000000000000000000000000000000000815260206004820152603660248201527f5361666545524332303a20617070726f76652066726f6d206e6f6e2d7a65726f60448201527f20746f206e6f6e2d7a65726f20616c6c6f77616e63650000000000000000000060648201526084015b60405180910390fd5b60405173ffffffffffffffffffffffffffffffffffffffff8316602482015260448101829052610e4a9084907f095ea7b30000000000000000000000000000000000000000000000000000000090606401611246565b6000610e8d83836040518060400160405280602081526020017f602036038060203d373d3d3d923d343d355af13d82803e903d91601e57fd5bf38152506040516020016114849190612083565b6040516020818303038152906040528051906020012060405160200161150a939291907fff00000000000000000000000000000000000000000000000000000000000000815260609390931b7fffffffffffffffffffffffffffffffffffffffff0000000000000000000000001660018401526015830191909152603582015260550190565b6040516020818303038152906040528051906020012090565b6000806040518060400160405280602081526020017f602036038060203d373d3d3d923d343d355af13d82803e903d91601e57fd5bf381525060405160200161156c9190612083565b6040516020818303038152906040529050828151602083016000f5915073ffffffffffffffffffffffffffffffffffffffff82166115d6576040517f27afa9fc00000000000000000000000000000000000000000000000000000000815260040160405180910390fd5b50919050565b6060610b1084848460006117d6565b6000808080806115fd81875b9061183b565b90508060e01c945067ffffffffffffffff8160a01c16935073ffffffffffffffffffffffffffffffffffffffff811692506116456000602061163f9190611fcd565b876115f7565b60001c9150509193509193565b60006109b9611662826020611fcd565b61166d906020611fcd565b83906118d6565b60405173ffffffffffffffffffffffffffffffffffffffff8316602482015260448101829052610e4a9084907fa9059cbb0000000000000000000000000000000000000000000000000000000090606401611246565b600061172c826040518060400160405280602081526020017f5361666545524332303a206c6f772d6c6576656c2063616c6c206661696c65648152508573ffffffffffffffffffffffffffffffffffffffff166119749092919063ffffffff16565b805190915015610e4a578080602001905181019061174a9190612061565b610e4a576040517f08c379a000000000000000000000000000000000000000000000000000000000815260206004820152602a60248201527f5361666545524332303a204552433230206f7065726174696f6e20646964206e60448201527f6f7420737563636565640000000000000000000000000000000000000000000060648201526084016113d8565b606061183273ffffffffffffffffffffffffffffffffffffffff8516846040516020016118049291906120ef565b60408051601f1981840301815291905273ffffffffffffffffffffffffffffffffffffffff87169084611983565b95945050505050565b6000608083901c6fffffffffffffffffffffffffffffffff841680841061188e576040517fdfc52d7b00000000000000000000000000000000000000000000000000000000815260040160405180910390fd5b808460200111156118cb576040517f4b72f29d00000000000000000000000000000000000000000000000000000000815260040160405180910390fd5b509091015192915050565b6000608083901c6fffffffffffffffffffffffffffffffff8416808410611929576040517fdfc52d7b00000000000000000000000000000000000000000000000000000000815260040160405180910390fd5b80846014011115611966576040517f4b72f29d00000000000000000000000000000000000000000000000000000000815260040160405180910390fd5b509091015160601c92915050565b6060610b1084846000856119a5565b6060610b10848484604051806060016040528060298152602001612145602991395b606082471015611a37576040517f08c379a000000000000000000000000000000000000000000000000000000000815260206004820152602660248201527f416464726573733a20696e73756666696369656e742062616c616e636520666f60448201527f722063616c6c000000000000000000000000000000000000000000000000000060648201526084016113d8565b73ffffffffffffffffffffffffffffffffffffffff85163b611ab5576040517f08c379a000000000000000000000000000000000000000000000000000000000815260206004820152601d60248201527f416464726573733a2063616c6c20746f206e6f6e2d636f6e747261637400000060448201526064016113d8565b6000808673ffffffffffffffffffffffffffffffffffffffff168587604051611ade9190612115565b60006040518083038185875af1925050503d8060008114611b1b576040519150601f19603f3d011682016040523d82523d6000602084013e611b20565b606091505b5091509150611b30828286611b3b565b979650505050505050565b60608315611b4a575081610e8d565b825115611b5a5782518084602001fd5b816040517f08c379a00000000000000000000000000000000000000000000000000000000081526004016113d89190612131565b73ffffffffffffffffffffffffffffffffffffffff81168114611bb057600080fd5b50565b803563ffffffff81168114611bc757600080fd5b919050565b7f4e487b7100000000000000000000000000000000000000000000000000000000600052604160045260246000fd5b600082601f830112611c0c57600080fd5b813567ffffffffffffffff80821115611c2757611c27611bcc565b604051601f8301601f19908116603f01168101908282118183101715611c4f57611c4f611bcc565b81604052838152866020858801011115611c6857600080fd5b836020870160208301376000602085830101528094505050505092915050565b60008060008060008060c08789031215611ca157600080fd5b8635611cac81611b8e565b9550602087013594506040870135611cc381611b8e565b935060608701359250611cd860808801611bb3565b915060a087013567ffffffffffffffff811115611cf457600080fd5b611d0089828a01611bfb565b9150509295509295509295565b60008060408385031215611d2057600080fd5b611d2983611bb3565b91506020830135611d3981611b8e565b809150509250929050565b60008083601f840112611d5657600080fd5b50813567ffffffffffffffff811115611d6e57600080fd5b6020830191508360208285010111156111a557600080fd5b60008060008060008060808789031215611d9f57600080fd5b863567ffffffffffffffff80821115611db757600080fd5b611dc38a838b01611d44565b90985096506020890135915080821115611ddc57600080fd5b611de88a838b01611d44565b9096509450849150611dfc60408a01611bb3565b93506060890135915080821115611e1257600080fd5b50611d0089828a01611bfb565b600060208284031215611e3157600080fd5b5035919050565b600080600060608486031215611e4d57600080fd5b83359250611e5d60208501611bb3565b91506040840135611e6d81611b8e565b809150509250925092565b600060208284031215611e8a57600080fd5b815167ffffffffffffffff81168114610e8d57600080fd5b60005b83811015611ebd578181015183820152602001611ea5565b50506000910152565b60008151808452611ede816020860160208601611ea2565b601f01601f19169290920160200192915050565b86815267ffffffffffffffff8616602082015273ffffffffffffffffffffffffffffffffffffffff8516604082015283606082015263ffffffff8316608082015260c060a08201526000611f4960c0830184611ec6565b98975050505050505050565b600060208284031215611f6757600080fd5b8151610e8d81611b8e565b600060208284031215611f8457600080fd5b5051919050565b7f4e487b7100000000000000000000000000000000000000000000000000000000600052601160045260246000fd5b818103818111156109b9576109b9611f8b565b808201808211156109b9576109b9611f8b565b60008351611ff2818460208801611ea2565b835190830190612006818360208801611ea2565b01949350505050565b818352818160208501375060006020828401015260006020601f19601f840116840101905092915050565b60408152600061204e60408301868861200f565b8281036020840152611b3081858761200f565b60006020828403121561207357600080fd5b81518015158114610e8d57600080fd5b7f7f000000000000000000000000000000000000000000000000000000000000008152600082516120bb816001850160208701611ea2565b7f3d5260203df300000000000000000000000000000000000000000000000000006001939091019283015250600701919050565b82815260008251612107816020850160208701611ea2565b919091016020019392505050565b60008251612127818460208701611ea2565b9190910192915050565b602081526000610e8d6020830184611ec656fe416464726573733a206c6f772d6c6576656c2063616c6c20776974682076616c7565206661696c6564a2646970667358221220b20f91da13ced161bd28ee9ec04443facf85562f061afbf72510e53e231d859164736f6c63430008110033",
 }
 
 // SynapseCCTPABI is the input ABI used to generate the binding from.
@@ -3008,35 +2765,49 @@ func (_SynapseCCTP *SynapseCCTPCallerSession) MessageTransmitter() (common.Addre
 	return _SynapseCCTP.Contract.MessageTransmitter(&_SynapseCCTP.CallOpts)
 }
 
-// RemoteSynapseCCTP is a free data retrieval call binding the contract method 0xe8eb1df0.
+// RemoteDomainConfig is a free data retrieval call binding the contract method 0xe9259ab9.
 //
-// Solidity: function remoteSynapseCCTP(uint32 ) view returns(bytes32)
-func (_SynapseCCTP *SynapseCCTPCaller) RemoteSynapseCCTP(opts *bind.CallOpts, arg0 uint32) ([32]byte, error) {
+// Solidity: function remoteDomainConfig(uint256 ) view returns(uint32 domain, address synapseCCTP)
+func (_SynapseCCTP *SynapseCCTPCaller) RemoteDomainConfig(opts *bind.CallOpts, arg0 *big.Int) (struct {
+	Domain      uint32
+	SynapseCCTP common.Address
+}, error) {
 	var out []interface{}
-	err := _SynapseCCTP.contract.Call(opts, &out, "remoteSynapseCCTP", arg0)
+	err := _SynapseCCTP.contract.Call(opts, &out, "remoteDomainConfig", arg0)
 
+	outstruct := new(struct {
+		Domain      uint32
+		SynapseCCTP common.Address
+	})
 	if err != nil {
-		return *new([32]byte), err
+		return *outstruct, err
 	}
 
-	out0 := *abi.ConvertType(out[0], new([32]byte)).(*[32]byte)
+	outstruct.Domain = *abi.ConvertType(out[0], new(uint32)).(*uint32)
+	outstruct.SynapseCCTP = *abi.ConvertType(out[1], new(common.Address)).(*common.Address)
 
-	return out0, err
+	return *outstruct, err
 
 }
 
-// RemoteSynapseCCTP is a free data retrieval call binding the contract method 0xe8eb1df0.
+// RemoteDomainConfig is a free data retrieval call binding the contract method 0xe9259ab9.
 //
-// Solidity: function remoteSynapseCCTP(uint32 ) view returns(bytes32)
-func (_SynapseCCTP *SynapseCCTPSession) RemoteSynapseCCTP(arg0 uint32) ([32]byte, error) {
-	return _SynapseCCTP.Contract.RemoteSynapseCCTP(&_SynapseCCTP.CallOpts, arg0)
+// Solidity: function remoteDomainConfig(uint256 ) view returns(uint32 domain, address synapseCCTP)
+func (_SynapseCCTP *SynapseCCTPSession) RemoteDomainConfig(arg0 *big.Int) (struct {
+	Domain      uint32
+	SynapseCCTP common.Address
+}, error) {
+	return _SynapseCCTP.Contract.RemoteDomainConfig(&_SynapseCCTP.CallOpts, arg0)
 }
 
-// RemoteSynapseCCTP is a free data retrieval call binding the contract method 0xe8eb1df0.
+// RemoteDomainConfig is a free data retrieval call binding the contract method 0xe9259ab9.
 //
-// Solidity: function remoteSynapseCCTP(uint32 ) view returns(bytes32)
-func (_SynapseCCTP *SynapseCCTPCallerSession) RemoteSynapseCCTP(arg0 uint32) ([32]byte, error) {
-	return _SynapseCCTP.Contract.RemoteSynapseCCTP(&_SynapseCCTP.CallOpts, arg0)
+// Solidity: function remoteDomainConfig(uint256 ) view returns(uint32 domain, address synapseCCTP)
+func (_SynapseCCTP *SynapseCCTPCallerSession) RemoteDomainConfig(arg0 *big.Int) (struct {
+	Domain      uint32
+	SynapseCCTP common.Address
+}, error) {
+	return _SynapseCCTP.Contract.RemoteDomainConfig(&_SynapseCCTP.CallOpts, arg0)
 }
 
 // TokenMessenger is a free data retrieval call binding the contract method 0x46117830.
@@ -3091,25 +2862,25 @@ func (_SynapseCCTP *SynapseCCTPTransactorSession) ReceiveCircleToken(message []b
 	return _SynapseCCTP.Contract.ReceiveCircleToken(&_SynapseCCTP.TransactOpts, message, signature, requestVersion, formattedRequest)
 }
 
-// SendCircleToken is a paid mutator transaction binding the contract method 0x08617500.
+// SendCircleToken is a paid mutator transaction binding the contract method 0x304ddb4c.
 //
-// Solidity: function sendCircleToken(address recipient, uint32 destinationDomain, address burnToken, uint256 amount, uint32 requestVersion, bytes swapParams) returns()
-func (_SynapseCCTP *SynapseCCTPTransactor) SendCircleToken(opts *bind.TransactOpts, recipient common.Address, destinationDomain uint32, burnToken common.Address, amount *big.Int, requestVersion uint32, swapParams []byte) (*types.Transaction, error) {
-	return _SynapseCCTP.contract.Transact(opts, "sendCircleToken", recipient, destinationDomain, burnToken, amount, requestVersion, swapParams)
+// Solidity: function sendCircleToken(address recipient, uint256 chainId, address burnToken, uint256 amount, uint32 requestVersion, bytes swapParams) returns()
+func (_SynapseCCTP *SynapseCCTPTransactor) SendCircleToken(opts *bind.TransactOpts, recipient common.Address, chainId *big.Int, burnToken common.Address, amount *big.Int, requestVersion uint32, swapParams []byte) (*types.Transaction, error) {
+	return _SynapseCCTP.contract.Transact(opts, "sendCircleToken", recipient, chainId, burnToken, amount, requestVersion, swapParams)
 }
 
-// SendCircleToken is a paid mutator transaction binding the contract method 0x08617500.
+// SendCircleToken is a paid mutator transaction binding the contract method 0x304ddb4c.
 //
-// Solidity: function sendCircleToken(address recipient, uint32 destinationDomain, address burnToken, uint256 amount, uint32 requestVersion, bytes swapParams) returns()
-func (_SynapseCCTP *SynapseCCTPSession) SendCircleToken(recipient common.Address, destinationDomain uint32, burnToken common.Address, amount *big.Int, requestVersion uint32, swapParams []byte) (*types.Transaction, error) {
-	return _SynapseCCTP.Contract.SendCircleToken(&_SynapseCCTP.TransactOpts, recipient, destinationDomain, burnToken, amount, requestVersion, swapParams)
+// Solidity: function sendCircleToken(address recipient, uint256 chainId, address burnToken, uint256 amount, uint32 requestVersion, bytes swapParams) returns()
+func (_SynapseCCTP *SynapseCCTPSession) SendCircleToken(recipient common.Address, chainId *big.Int, burnToken common.Address, amount *big.Int, requestVersion uint32, swapParams []byte) (*types.Transaction, error) {
+	return _SynapseCCTP.Contract.SendCircleToken(&_SynapseCCTP.TransactOpts, recipient, chainId, burnToken, amount, requestVersion, swapParams)
 }
 
-// SendCircleToken is a paid mutator transaction binding the contract method 0x08617500.
+// SendCircleToken is a paid mutator transaction binding the contract method 0x304ddb4c.
 //
-// Solidity: function sendCircleToken(address recipient, uint32 destinationDomain, address burnToken, uint256 amount, uint32 requestVersion, bytes swapParams) returns()
-func (_SynapseCCTP *SynapseCCTPTransactorSession) SendCircleToken(recipient common.Address, destinationDomain uint32, burnToken common.Address, amount *big.Int, requestVersion uint32, swapParams []byte) (*types.Transaction, error) {
-	return _SynapseCCTP.Contract.SendCircleToken(&_SynapseCCTP.TransactOpts, recipient, destinationDomain, burnToken, amount, requestVersion, swapParams)
+// Solidity: function sendCircleToken(address recipient, uint256 chainId, address burnToken, uint256 amount, uint32 requestVersion, bytes swapParams) returns()
+func (_SynapseCCTP *SynapseCCTPTransactorSession) SendCircleToken(recipient common.Address, chainId *big.Int, burnToken common.Address, amount *big.Int, requestVersion uint32, swapParams []byte) (*types.Transaction, error) {
+	return _SynapseCCTP.Contract.SendCircleToken(&_SynapseCCTP.TransactOpts, recipient, chainId, burnToken, amount, requestVersion, swapParams)
 }
 
 // SetLocalToken is a paid mutator transaction binding the contract method 0x393e5b60.
@@ -3133,28 +2904,28 @@ func (_SynapseCCTP *SynapseCCTPTransactorSession) SetLocalToken(remoteDomain uin
 	return _SynapseCCTP.Contract.SetLocalToken(&_SynapseCCTP.TransactOpts, remoteDomain, remoteToken)
 }
 
-// SetRemoteSynapseCCTP is a paid mutator transaction binding the contract method 0x242fdf1d.
+// SetRemoteDomainConfig is a paid mutator transaction binding the contract method 0xe9bbb36d.
 //
-// Solidity: function setRemoteSynapseCCTP(uint32 remoteDomain, address remoteSynapseCCTP_) returns()
-func (_SynapseCCTP *SynapseCCTPTransactor) SetRemoteSynapseCCTP(opts *bind.TransactOpts, remoteDomain uint32, remoteSynapseCCTP_ common.Address) (*types.Transaction, error) {
-	return _SynapseCCTP.contract.Transact(opts, "setRemoteSynapseCCTP", remoteDomain, remoteSynapseCCTP_)
+// Solidity: function setRemoteDomainConfig(uint256 remoteChainId, uint32 remoteDomain, address remoteSynapseCCTP) returns()
+func (_SynapseCCTP *SynapseCCTPTransactor) SetRemoteDomainConfig(opts *bind.TransactOpts, remoteChainId *big.Int, remoteDomain uint32, remoteSynapseCCTP common.Address) (*types.Transaction, error) {
+	return _SynapseCCTP.contract.Transact(opts, "setRemoteDomainConfig", remoteChainId, remoteDomain, remoteSynapseCCTP)
 }
 
-// SetRemoteSynapseCCTP is a paid mutator transaction binding the contract method 0x242fdf1d.
+// SetRemoteDomainConfig is a paid mutator transaction binding the contract method 0xe9bbb36d.
 //
-// Solidity: function setRemoteSynapseCCTP(uint32 remoteDomain, address remoteSynapseCCTP_) returns()
-func (_SynapseCCTP *SynapseCCTPSession) SetRemoteSynapseCCTP(remoteDomain uint32, remoteSynapseCCTP_ common.Address) (*types.Transaction, error) {
-	return _SynapseCCTP.Contract.SetRemoteSynapseCCTP(&_SynapseCCTP.TransactOpts, remoteDomain, remoteSynapseCCTP_)
+// Solidity: function setRemoteDomainConfig(uint256 remoteChainId, uint32 remoteDomain, address remoteSynapseCCTP) returns()
+func (_SynapseCCTP *SynapseCCTPSession) SetRemoteDomainConfig(remoteChainId *big.Int, remoteDomain uint32, remoteSynapseCCTP common.Address) (*types.Transaction, error) {
+	return _SynapseCCTP.Contract.SetRemoteDomainConfig(&_SynapseCCTP.TransactOpts, remoteChainId, remoteDomain, remoteSynapseCCTP)
 }
 
-// SetRemoteSynapseCCTP is a paid mutator transaction binding the contract method 0x242fdf1d.
+// SetRemoteDomainConfig is a paid mutator transaction binding the contract method 0xe9bbb36d.
 //
-// Solidity: function setRemoteSynapseCCTP(uint32 remoteDomain, address remoteSynapseCCTP_) returns()
-func (_SynapseCCTP *SynapseCCTPTransactorSession) SetRemoteSynapseCCTP(remoteDomain uint32, remoteSynapseCCTP_ common.Address) (*types.Transaction, error) {
-	return _SynapseCCTP.Contract.SetRemoteSynapseCCTP(&_SynapseCCTP.TransactOpts, remoteDomain, remoteSynapseCCTP_)
+// Solidity: function setRemoteDomainConfig(uint256 remoteChainId, uint32 remoteDomain, address remoteSynapseCCTP) returns()
+func (_SynapseCCTP *SynapseCCTPTransactorSession) SetRemoteDomainConfig(remoteChainId *big.Int, remoteDomain uint32, remoteSynapseCCTP common.Address) (*types.Transaction, error) {
+	return _SynapseCCTP.Contract.SetRemoteDomainConfig(&_SynapseCCTP.TransactOpts, remoteChainId, remoteDomain, remoteSynapseCCTP)
 }
 
-// SynapseCCTPCircleRequestFulfilledIterator is returned from FilterCircleRequestFulfilled and is used to iterate over the raw logs and unpacked data for CircleRequestFulfilledTopic events raised by the SynapseCCTP contract.
+// SynapseCCTPCircleRequestFulfilledIterator is returned from FilterCircleRequestFulfilled and is used to iterate over the raw logs and unpacked data for CircleRequestFulfilled events raised by the SynapseCCTP contract.
 type SynapseCCTPCircleRequestFulfilledIterator struct {
 	Event *SynapseCCTPCircleRequestFulfilled // Event containing the contract specifics and raw log
 
@@ -3221,7 +2992,7 @@ func (it *SynapseCCTPCircleRequestFulfilledIterator) Close() error {
 	return nil
 }
 
-// SynapseCCTPCircleRequestFulfilled represents a CircleRequestFulfilledTopic event raised by the SynapseCCTP contract.
+// SynapseCCTPCircleRequestFulfilled represents a CircleRequestFulfilled event raised by the SynapseCCTP contract.
 type SynapseCCTPCircleRequestFulfilled struct {
 	Recipient common.Address
 	MintToken common.Address
@@ -3234,7 +3005,7 @@ type SynapseCCTPCircleRequestFulfilled struct {
 
 // FilterCircleRequestFulfilled is a free log retrieval operation binding the contract event 0xeaf2537b3a5c10387b14e2c0e57b1e11b46ff39b0f4ead5dac98cb0f4fd2118f.
 //
-// Solidity: event CircleRequestFulfilledTopic(address indexed recipient, address mintToken, uint256 fee, address token, uint256 amount, bytes32 indexed kappa)
+// Solidity: event CircleRequestFulfilled(address indexed recipient, address mintToken, uint256 fee, address token, uint256 amount, bytes32 indexed kappa)
 func (_SynapseCCTP *SynapseCCTPFilterer) FilterCircleRequestFulfilled(opts *bind.FilterOpts, recipient []common.Address, kappa [][32]byte) (*SynapseCCTPCircleRequestFulfilledIterator, error) {
 
 	var recipientRule []interface{}
@@ -3247,16 +3018,16 @@ func (_SynapseCCTP *SynapseCCTPFilterer) FilterCircleRequestFulfilled(opts *bind
 		kappaRule = append(kappaRule, kappaItem)
 	}
 
-	logs, sub, err := _SynapseCCTP.contract.FilterLogs(opts, "CircleRequestFulfilledTopic", recipientRule, kappaRule)
+	logs, sub, err := _SynapseCCTP.contract.FilterLogs(opts, "CircleRequestFulfilled", recipientRule, kappaRule)
 	if err != nil {
 		return nil, err
 	}
-	return &SynapseCCTPCircleRequestFulfilledIterator{contract: _SynapseCCTP.contract, event: "CircleRequestFulfilledTopic", logs: logs, sub: sub}, nil
+	return &SynapseCCTPCircleRequestFulfilledIterator{contract: _SynapseCCTP.contract, event: "CircleRequestFulfilled", logs: logs, sub: sub}, nil
 }
 
 // WatchCircleRequestFulfilled is a free log subscription operation binding the contract event 0xeaf2537b3a5c10387b14e2c0e57b1e11b46ff39b0f4ead5dac98cb0f4fd2118f.
 //
-// Solidity: event CircleRequestFulfilledTopic(address indexed recipient, address mintToken, uint256 fee, address token, uint256 amount, bytes32 indexed kappa)
+// Solidity: event CircleRequestFulfilled(address indexed recipient, address mintToken, uint256 fee, address token, uint256 amount, bytes32 indexed kappa)
 func (_SynapseCCTP *SynapseCCTPFilterer) WatchCircleRequestFulfilled(opts *bind.WatchOpts, sink chan<- *SynapseCCTPCircleRequestFulfilled, recipient []common.Address, kappa [][32]byte) (event.Subscription, error) {
 
 	var recipientRule []interface{}
@@ -3269,7 +3040,7 @@ func (_SynapseCCTP *SynapseCCTPFilterer) WatchCircleRequestFulfilled(opts *bind.
 		kappaRule = append(kappaRule, kappaItem)
 	}
 
-	logs, sub, err := _SynapseCCTP.contract.WatchLogs(opts, "CircleRequestFulfilledTopic", recipientRule, kappaRule)
+	logs, sub, err := _SynapseCCTP.contract.WatchLogs(opts, "CircleRequestFulfilled", recipientRule, kappaRule)
 	if err != nil {
 		return nil, err
 	}
@@ -3280,7 +3051,7 @@ func (_SynapseCCTP *SynapseCCTPFilterer) WatchCircleRequestFulfilled(opts *bind.
 			case log := <-logs:
 				// New log arrived, parse the event and forward to the user
 				event := new(SynapseCCTPCircleRequestFulfilled)
-				if err := _SynapseCCTP.contract.UnpackLog(event, "CircleRequestFulfilledTopic", log); err != nil {
+				if err := _SynapseCCTP.contract.UnpackLog(event, "CircleRequestFulfilled", log); err != nil {
 					return err
 				}
 				event.Raw = log
@@ -3303,10 +3074,10 @@ func (_SynapseCCTP *SynapseCCTPFilterer) WatchCircleRequestFulfilled(opts *bind.
 
 // ParseCircleRequestFulfilled is a log parse operation binding the contract event 0xeaf2537b3a5c10387b14e2c0e57b1e11b46ff39b0f4ead5dac98cb0f4fd2118f.
 //
-// Solidity: event CircleRequestFulfilledTopic(address indexed recipient, address mintToken, uint256 fee, address token, uint256 amount, bytes32 indexed kappa)
+// Solidity: event CircleRequestFulfilled(address indexed recipient, address mintToken, uint256 fee, address token, uint256 amount, bytes32 indexed kappa)
 func (_SynapseCCTP *SynapseCCTPFilterer) ParseCircleRequestFulfilled(log types.Log) (*SynapseCCTPCircleRequestFulfilled, error) {
 	event := new(SynapseCCTPCircleRequestFulfilled)
-	if err := _SynapseCCTP.contract.UnpackLog(event, "CircleRequestFulfilledTopic", log); err != nil {
+	if err := _SynapseCCTP.contract.UnpackLog(event, "CircleRequestFulfilled", log); err != nil {
 		return nil, err
 	}
 	event.Raw = log
@@ -3382,19 +3153,19 @@ func (it *SynapseCCTPCircleRequestSentIterator) Close() error {
 
 // SynapseCCTPCircleRequestSent represents a CircleRequestSent event raised by the SynapseCCTP contract.
 type SynapseCCTPCircleRequestSent struct {
-	DestinationDomain uint32
-	Nonce             uint64
-	Token             common.Address
-	Amount            *big.Int
-	RequestVersion    uint32
-	Request           []byte
-	Kappa             [32]byte
-	Raw               types.Log // Blockchain specific contextual infos
+	ChainId          *big.Int
+	Nonce            uint64
+	Token            common.Address
+	Amount           *big.Int
+	RequestVersion   uint32
+	FormattedRequest []byte
+	Kappa            [32]byte
+	Raw              types.Log // Blockchain specific contextual infos
 }
 
-// FilterCircleRequestSent is a free log retrieval operation binding the contract event 0x6e7df7fbb64a0b631dd90e0dffa7f84a3d04e73eb844cf7be956d4c7e3bbdc72.
+// FilterCircleRequestSent is a free log retrieval operation binding the contract event 0x4ce96273f442a9bc593fea917ea7e8c2a009befc78ba3e334008948c7addf22a.
 //
-// Solidity: event CircleRequestSent(uint32 destinationDomain, uint64 nonce, address token, uint256 amount, uint32 requestVersion, bytes request, bytes32 indexed kappa)
+// Solidity: event CircleRequestSent(uint256 chainId, uint64 nonce, address token, uint256 amount, uint32 requestVersion, bytes formattedRequest, bytes32 indexed kappa)
 func (_SynapseCCTP *SynapseCCTPFilterer) FilterCircleRequestSent(opts *bind.FilterOpts, kappa [][32]byte) (*SynapseCCTPCircleRequestSentIterator, error) {
 
 	var kappaRule []interface{}
@@ -3409,9 +3180,9 @@ func (_SynapseCCTP *SynapseCCTPFilterer) FilterCircleRequestSent(opts *bind.Filt
 	return &SynapseCCTPCircleRequestSentIterator{contract: _SynapseCCTP.contract, event: "CircleRequestSent", logs: logs, sub: sub}, nil
 }
 
-// WatchCircleRequestSent is a free log subscription operation binding the contract event 0x6e7df7fbb64a0b631dd90e0dffa7f84a3d04e73eb844cf7be956d4c7e3bbdc72.
+// WatchCircleRequestSent is a free log subscription operation binding the contract event 0x4ce96273f442a9bc593fea917ea7e8c2a009befc78ba3e334008948c7addf22a.
 //
-// Solidity: event CircleRequestSent(uint32 destinationDomain, uint64 nonce, address token, uint256 amount, uint32 requestVersion, bytes request, bytes32 indexed kappa)
+// Solidity: event CircleRequestSent(uint256 chainId, uint64 nonce, address token, uint256 amount, uint32 requestVersion, bytes formattedRequest, bytes32 indexed kappa)
 func (_SynapseCCTP *SynapseCCTPFilterer) WatchCircleRequestSent(opts *bind.WatchOpts, sink chan<- *SynapseCCTPCircleRequestSent, kappa [][32]byte) (event.Subscription, error) {
 
 	var kappaRule []interface{}
@@ -3451,9 +3222,9 @@ func (_SynapseCCTP *SynapseCCTPFilterer) WatchCircleRequestSent(opts *bind.Watch
 	}), nil
 }
 
-// ParseCircleRequestSent is a log parse operation binding the contract event 0x6e7df7fbb64a0b631dd90e0dffa7f84a3d04e73eb844cf7be956d4c7e3bbdc72.
+// ParseCircleRequestSent is a log parse operation binding the contract event 0x4ce96273f442a9bc593fea917ea7e8c2a009befc78ba3e334008948c7addf22a.
 //
-// Solidity: event CircleRequestSent(uint32 destinationDomain, uint64 nonce, address token, uint256 amount, uint32 requestVersion, bytes request, bytes32 indexed kappa)
+// Solidity: event CircleRequestSent(uint256 chainId, uint64 nonce, address token, uint256 amount, uint32 requestVersion, bytes formattedRequest, bytes32 indexed kappa)
 func (_SynapseCCTP *SynapseCCTPFilterer) ParseCircleRequestSent(log types.Log) (*SynapseCCTPCircleRequestSent, error) {
 	event := new(SynapseCCTPCircleRequestSent)
 	if err := _SynapseCCTP.contract.UnpackLog(event, "CircleRequestSent", log); err != nil {
@@ -3465,7 +3236,7 @@ func (_SynapseCCTP *SynapseCCTPFilterer) ParseCircleRequestSent(log types.Log) (
 
 // SynapseCCTPEventsMetaData contains all meta data concerning the SynapseCCTPEvents contract.
 var SynapseCCTPEventsMetaData = &bind.MetaData{
-	ABI: "[{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"address\",\"name\":\"recipient\",\"type\":\"address\"},{\"indexed\":false,\"internalType\":\"address\",\"name\":\"mintToken\",\"type\":\"address\"},{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"fee\",\"type\":\"uint256\"},{\"indexed\":false,\"internalType\":\"address\",\"name\":\"token\",\"type\":\"address\"},{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"amount\",\"type\":\"uint256\"},{\"indexed\":true,\"internalType\":\"bytes32\",\"name\":\"kappa\",\"type\":\"bytes32\"}],\"name\":\"CircleRequestFulfilledTopic\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":false,\"internalType\":\"uint32\",\"name\":\"destinationDomain\",\"type\":\"uint32\"},{\"indexed\":false,\"internalType\":\"uint64\",\"name\":\"nonce\",\"type\":\"uint64\"},{\"indexed\":false,\"internalType\":\"address\",\"name\":\"token\",\"type\":\"address\"},{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"amount\",\"type\":\"uint256\"},{\"indexed\":false,\"internalType\":\"uint32\",\"name\":\"requestVersion\",\"type\":\"uint32\"},{\"indexed\":false,\"internalType\":\"bytes\",\"name\":\"request\",\"type\":\"bytes\"},{\"indexed\":true,\"internalType\":\"bytes32\",\"name\":\"kappa\",\"type\":\"bytes32\"}],\"name\":\"CircleRequestSent\",\"type\":\"event\"}]",
+	ABI: "[{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"address\",\"name\":\"recipient\",\"type\":\"address\"},{\"indexed\":false,\"internalType\":\"address\",\"name\":\"mintToken\",\"type\":\"address\"},{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"fee\",\"type\":\"uint256\"},{\"indexed\":false,\"internalType\":\"address\",\"name\":\"token\",\"type\":\"address\"},{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"amount\",\"type\":\"uint256\"},{\"indexed\":true,\"internalType\":\"bytes32\",\"name\":\"kappa\",\"type\":\"bytes32\"}],\"name\":\"CircleRequestFulfilled\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"chainId\",\"type\":\"uint256\"},{\"indexed\":false,\"internalType\":\"uint64\",\"name\":\"nonce\",\"type\":\"uint64\"},{\"indexed\":false,\"internalType\":\"address\",\"name\":\"token\",\"type\":\"address\"},{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"amount\",\"type\":\"uint256\"},{\"indexed\":false,\"internalType\":\"uint32\",\"name\":\"requestVersion\",\"type\":\"uint32\"},{\"indexed\":false,\"internalType\":\"bytes\",\"name\":\"formattedRequest\",\"type\":\"bytes\"},{\"indexed\":true,\"internalType\":\"bytes32\",\"name\":\"kappa\",\"type\":\"bytes32\"}],\"name\":\"CircleRequestSent\",\"type\":\"event\"}]",
 }
 
 // SynapseCCTPEventsABI is the input ABI used to generate the binding from.
@@ -3614,7 +3385,7 @@ func (_SynapseCCTPEvents *SynapseCCTPEventsTransactorRaw) Transact(opts *bind.Tr
 	return _SynapseCCTPEvents.Contract.contract.Transact(opts, method, params...)
 }
 
-// SynapseCCTPEventsCircleRequestFulfilledIterator is returned from FilterCircleRequestFulfilled and is used to iterate over the raw logs and unpacked data for CircleRequestFulfilledTopic events raised by the SynapseCCTPEvents contract.
+// SynapseCCTPEventsCircleRequestFulfilledIterator is returned from FilterCircleRequestFulfilled and is used to iterate over the raw logs and unpacked data for CircleRequestFulfilled events raised by the SynapseCCTPEvents contract.
 type SynapseCCTPEventsCircleRequestFulfilledIterator struct {
 	Event *SynapseCCTPEventsCircleRequestFulfilled // Event containing the contract specifics and raw log
 
@@ -3681,7 +3452,7 @@ func (it *SynapseCCTPEventsCircleRequestFulfilledIterator) Close() error {
 	return nil
 }
 
-// SynapseCCTPEventsCircleRequestFulfilled represents a CircleRequestFulfilledTopic event raised by the SynapseCCTPEvents contract.
+// SynapseCCTPEventsCircleRequestFulfilled represents a CircleRequestFulfilled event raised by the SynapseCCTPEvents contract.
 type SynapseCCTPEventsCircleRequestFulfilled struct {
 	Recipient common.Address
 	MintToken common.Address
@@ -3694,7 +3465,7 @@ type SynapseCCTPEventsCircleRequestFulfilled struct {
 
 // FilterCircleRequestFulfilled is a free log retrieval operation binding the contract event 0xeaf2537b3a5c10387b14e2c0e57b1e11b46ff39b0f4ead5dac98cb0f4fd2118f.
 //
-// Solidity: event CircleRequestFulfilledTopic(address indexed recipient, address mintToken, uint256 fee, address token, uint256 amount, bytes32 indexed kappa)
+// Solidity: event CircleRequestFulfilled(address indexed recipient, address mintToken, uint256 fee, address token, uint256 amount, bytes32 indexed kappa)
 func (_SynapseCCTPEvents *SynapseCCTPEventsFilterer) FilterCircleRequestFulfilled(opts *bind.FilterOpts, recipient []common.Address, kappa [][32]byte) (*SynapseCCTPEventsCircleRequestFulfilledIterator, error) {
 
 	var recipientRule []interface{}
@@ -3707,16 +3478,16 @@ func (_SynapseCCTPEvents *SynapseCCTPEventsFilterer) FilterCircleRequestFulfille
 		kappaRule = append(kappaRule, kappaItem)
 	}
 
-	logs, sub, err := _SynapseCCTPEvents.contract.FilterLogs(opts, "CircleRequestFulfilledTopic", recipientRule, kappaRule)
+	logs, sub, err := _SynapseCCTPEvents.contract.FilterLogs(opts, "CircleRequestFulfilled", recipientRule, kappaRule)
 	if err != nil {
 		return nil, err
 	}
-	return &SynapseCCTPEventsCircleRequestFulfilledIterator{contract: _SynapseCCTPEvents.contract, event: "CircleRequestFulfilledTopic", logs: logs, sub: sub}, nil
+	return &SynapseCCTPEventsCircleRequestFulfilledIterator{contract: _SynapseCCTPEvents.contract, event: "CircleRequestFulfilled", logs: logs, sub: sub}, nil
 }
 
 // WatchCircleRequestFulfilled is a free log subscription operation binding the contract event 0xeaf2537b3a5c10387b14e2c0e57b1e11b46ff39b0f4ead5dac98cb0f4fd2118f.
 //
-// Solidity: event CircleRequestFulfilledTopic(address indexed recipient, address mintToken, uint256 fee, address token, uint256 amount, bytes32 indexed kappa)
+// Solidity: event CircleRequestFulfilled(address indexed recipient, address mintToken, uint256 fee, address token, uint256 amount, bytes32 indexed kappa)
 func (_SynapseCCTPEvents *SynapseCCTPEventsFilterer) WatchCircleRequestFulfilled(opts *bind.WatchOpts, sink chan<- *SynapseCCTPEventsCircleRequestFulfilled, recipient []common.Address, kappa [][32]byte) (event.Subscription, error) {
 
 	var recipientRule []interface{}
@@ -3729,7 +3500,7 @@ func (_SynapseCCTPEvents *SynapseCCTPEventsFilterer) WatchCircleRequestFulfilled
 		kappaRule = append(kappaRule, kappaItem)
 	}
 
-	logs, sub, err := _SynapseCCTPEvents.contract.WatchLogs(opts, "CircleRequestFulfilledTopic", recipientRule, kappaRule)
+	logs, sub, err := _SynapseCCTPEvents.contract.WatchLogs(opts, "CircleRequestFulfilled", recipientRule, kappaRule)
 	if err != nil {
 		return nil, err
 	}
@@ -3740,7 +3511,7 @@ func (_SynapseCCTPEvents *SynapseCCTPEventsFilterer) WatchCircleRequestFulfilled
 			case log := <-logs:
 				// New log arrived, parse the event and forward to the user
 				event := new(SynapseCCTPEventsCircleRequestFulfilled)
-				if err := _SynapseCCTPEvents.contract.UnpackLog(event, "CircleRequestFulfilledTopic", log); err != nil {
+				if err := _SynapseCCTPEvents.contract.UnpackLog(event, "CircleRequestFulfilled", log); err != nil {
 					return err
 				}
 				event.Raw = log
@@ -3763,10 +3534,10 @@ func (_SynapseCCTPEvents *SynapseCCTPEventsFilterer) WatchCircleRequestFulfilled
 
 // ParseCircleRequestFulfilled is a log parse operation binding the contract event 0xeaf2537b3a5c10387b14e2c0e57b1e11b46ff39b0f4ead5dac98cb0f4fd2118f.
 //
-// Solidity: event CircleRequestFulfilledTopic(address indexed recipient, address mintToken, uint256 fee, address token, uint256 amount, bytes32 indexed kappa)
+// Solidity: event CircleRequestFulfilled(address indexed recipient, address mintToken, uint256 fee, address token, uint256 amount, bytes32 indexed kappa)
 func (_SynapseCCTPEvents *SynapseCCTPEventsFilterer) ParseCircleRequestFulfilled(log types.Log) (*SynapseCCTPEventsCircleRequestFulfilled, error) {
 	event := new(SynapseCCTPEventsCircleRequestFulfilled)
-	if err := _SynapseCCTPEvents.contract.UnpackLog(event, "CircleRequestFulfilledTopic", log); err != nil {
+	if err := _SynapseCCTPEvents.contract.UnpackLog(event, "CircleRequestFulfilled", log); err != nil {
 		return nil, err
 	}
 	event.Raw = log
@@ -3842,19 +3613,19 @@ func (it *SynapseCCTPEventsCircleRequestSentIterator) Close() error {
 
 // SynapseCCTPEventsCircleRequestSent represents a CircleRequestSent event raised by the SynapseCCTPEvents contract.
 type SynapseCCTPEventsCircleRequestSent struct {
-	DestinationDomain uint32
-	Nonce             uint64
-	Token             common.Address
-	Amount            *big.Int
-	RequestVersion    uint32
-	Request           []byte
-	Kappa             [32]byte
-	Raw               types.Log // Blockchain specific contextual infos
+	ChainId          *big.Int
+	Nonce            uint64
+	Token            common.Address
+	Amount           *big.Int
+	RequestVersion   uint32
+	FormattedRequest []byte
+	Kappa            [32]byte
+	Raw              types.Log // Blockchain specific contextual infos
 }
 
-// FilterCircleRequestSent is a free log retrieval operation binding the contract event 0x6e7df7fbb64a0b631dd90e0dffa7f84a3d04e73eb844cf7be956d4c7e3bbdc72.
+// FilterCircleRequestSent is a free log retrieval operation binding the contract event 0x4ce96273f442a9bc593fea917ea7e8c2a009befc78ba3e334008948c7addf22a.
 //
-// Solidity: event CircleRequestSent(uint32 destinationDomain, uint64 nonce, address token, uint256 amount, uint32 requestVersion, bytes request, bytes32 indexed kappa)
+// Solidity: event CircleRequestSent(uint256 chainId, uint64 nonce, address token, uint256 amount, uint32 requestVersion, bytes formattedRequest, bytes32 indexed kappa)
 func (_SynapseCCTPEvents *SynapseCCTPEventsFilterer) FilterCircleRequestSent(opts *bind.FilterOpts, kappa [][32]byte) (*SynapseCCTPEventsCircleRequestSentIterator, error) {
 
 	var kappaRule []interface{}
@@ -3869,9 +3640,9 @@ func (_SynapseCCTPEvents *SynapseCCTPEventsFilterer) FilterCircleRequestSent(opt
 	return &SynapseCCTPEventsCircleRequestSentIterator{contract: _SynapseCCTPEvents.contract, event: "CircleRequestSent", logs: logs, sub: sub}, nil
 }
 
-// WatchCircleRequestSent is a free log subscription operation binding the contract event 0x6e7df7fbb64a0b631dd90e0dffa7f84a3d04e73eb844cf7be956d4c7e3bbdc72.
+// WatchCircleRequestSent is a free log subscription operation binding the contract event 0x4ce96273f442a9bc593fea917ea7e8c2a009befc78ba3e334008948c7addf22a.
 //
-// Solidity: event CircleRequestSent(uint32 destinationDomain, uint64 nonce, address token, uint256 amount, uint32 requestVersion, bytes request, bytes32 indexed kappa)
+// Solidity: event CircleRequestSent(uint256 chainId, uint64 nonce, address token, uint256 amount, uint32 requestVersion, bytes formattedRequest, bytes32 indexed kappa)
 func (_SynapseCCTPEvents *SynapseCCTPEventsFilterer) WatchCircleRequestSent(opts *bind.WatchOpts, sink chan<- *SynapseCCTPEventsCircleRequestSent, kappa [][32]byte) (event.Subscription, error) {
 
 	var kappaRule []interface{}
@@ -3911,9 +3682,9 @@ func (_SynapseCCTPEvents *SynapseCCTPEventsFilterer) WatchCircleRequestSent(opts
 	}), nil
 }
 
-// ParseCircleRequestSent is a log parse operation binding the contract event 0x6e7df7fbb64a0b631dd90e0dffa7f84a3d04e73eb844cf7be956d4c7e3bbdc72.
+// ParseCircleRequestSent is a log parse operation binding the contract event 0x4ce96273f442a9bc593fea917ea7e8c2a009befc78ba3e334008948c7addf22a.
 //
-// Solidity: event CircleRequestSent(uint32 destinationDomain, uint64 nonce, address token, uint256 amount, uint32 requestVersion, bytes request, bytes32 indexed kappa)
+// Solidity: event CircleRequestSent(uint256 chainId, uint64 nonce, address token, uint256 amount, uint32 requestVersion, bytes formattedRequest, bytes32 indexed kappa)
 func (_SynapseCCTPEvents *SynapseCCTPEventsFilterer) ParseCircleRequestSent(log types.Log) (*SynapseCCTPEventsCircleRequestSent, error) {
 	event := new(SynapseCCTPEventsCircleRequestSent)
 	if err := _SynapseCCTPEvents.contract.UnpackLog(event, "CircleRequestSent", log); err != nil {
@@ -3926,7 +3697,7 @@ func (_SynapseCCTPEvents *SynapseCCTPEventsFilterer) ParseCircleRequestSent(log 
 // TypeCastsMetaData contains all meta data concerning the TypeCasts contract.
 var TypeCastsMetaData = &bind.MetaData{
 	ABI: "[]",
-	Bin: "0x60566037600b82828239805160001a607314602a57634e487b7160e01b600052600060045260246000fd5b30600052607381538281f3fe73000000000000000000000000000000000000000030146080604052600080fdfea264697066735822122079aba74b1e3a52eb29a69ba387a21d32a46e3ee6d6952e6e0bd15101d09805ad64736f6c63430008110033",
+	Bin: "0x60566037600b82828239805160001a607314602a57634e487b7160e01b600052600060045260246000fd5b30600052607381538281f3fe73000000000000000000000000000000000000000030146080604052600080fdfea26469706673582212203dcc62b08e0ccaeb776e315e0258adfdd7dbc3da007caeda048df5bbb8699a9864736f6c63430008110033",
 }
 
 // TypeCastsABI is the input ABI used to generate the binding from.

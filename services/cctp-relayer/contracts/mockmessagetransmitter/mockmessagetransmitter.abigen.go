@@ -1003,7 +1003,7 @@ func (_MessageTransmitterEvents *MessageTransmitterEventsFilterer) ParseMessageS
 
 // MockMessageTransmitterMetaData contains all meta data concerning the MockMessageTransmitter contract.
 var MockMessageTransmitterMetaData = &bind.MetaData{
-	ABI: "[{\"inputs\":[{\"internalType\":\"uint32\",\"name\":\"localDomain_\",\"type\":\"uint32\"}],\"stateMutability\":\"nonpayable\",\"type\":\"constructor\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"address\",\"name\":\"caller\",\"type\":\"address\"},{\"indexed\":false,\"internalType\":\"uint32\",\"name\":\"sourceDomain\",\"type\":\"uint32\"},{\"indexed\":true,\"internalType\":\"uint64\",\"name\":\"nonce\",\"type\":\"uint64\"},{\"indexed\":false,\"internalType\":\"bytes32\",\"name\":\"sender\",\"type\":\"bytes32\"},{\"indexed\":false,\"internalType\":\"bytes\",\"name\":\"messageBody\",\"type\":\"bytes\"}],\"name\":\"MessageReceived\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":false,\"internalType\":\"bytes\",\"name\":\"message\",\"type\":\"bytes\"}],\"name\":\"MessageSent\",\"type\":\"event\"},{\"inputs\":[{\"internalType\":\"uint32\",\"name\":\"remoteDomain\",\"type\":\"uint32\"},{\"internalType\":\"address\",\"name\":\"sender\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"recipient\",\"type\":\"address\"},{\"internalType\":\"bytes32\",\"name\":\"destinationCaller\",\"type\":\"bytes32\"},{\"internalType\":\"bytes\",\"name\":\"messageBody\",\"type\":\"bytes\"}],\"name\":\"formatMessage\",\"outputs\":[{\"internalType\":\"bytes\",\"name\":\"message\",\"type\":\"bytes\"}],\"stateMutability\":\"pure\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"localDomain\",\"outputs\":[{\"internalType\":\"uint32\",\"name\":\"\",\"type\":\"uint32\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"nextAvailableNonce\",\"outputs\":[{\"internalType\":\"uint64\",\"name\":\"\",\"type\":\"uint64\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"bytes\",\"name\":\"message\",\"type\":\"bytes\"},{\"internalType\":\"bytes\",\"name\":\"signature\",\"type\":\"bytes\"}],\"name\":\"receiveMessage\",\"outputs\":[{\"internalType\":\"bool\",\"name\":\"success\",\"type\":\"bool\"}],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint32\",\"name\":\"\",\"type\":\"uint32\"},{\"internalType\":\"bytes32\",\"name\":\"recipient\",\"type\":\"bytes32\"},{\"internalType\":\"bytes32\",\"name\":\"destinationCaller\",\"type\":\"bytes32\"},{\"internalType\":\"bytes\",\"name\":\"messageBody\",\"type\":\"bytes\"}],\"name\":\"sendMessageWithCaller\",\"outputs\":[{\"internalType\":\"uint64\",\"name\":\"reservedNonce\",\"type\":\"uint64\"}],\"stateMutability\":\"nonpayable\",\"type\":\"function\"}]",
+	ABI: "[{\"inputs\":[{\"internalType\":\"uint32\",\"name\":\"localDomain_\",\"type\":\"uint32\"}],\"stateMutability\":\"nonpayable\",\"type\":\"constructor\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"address\",\"name\":\"caller\",\"type\":\"address\"},{\"indexed\":false,\"internalType\":\"uint32\",\"name\":\"sourceDomain\",\"type\":\"uint32\"},{\"indexed\":true,\"internalType\":\"uint64\",\"name\":\"nonce\",\"type\":\"uint64\"},{\"indexed\":false,\"internalType\":\"bytes32\",\"name\":\"sender\",\"type\":\"bytes32\"},{\"indexed\":false,\"internalType\":\"bytes\",\"name\":\"messageBody\",\"type\":\"bytes\"}],\"name\":\"MessageReceived\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":false,\"internalType\":\"bytes\",\"name\":\"message\",\"type\":\"bytes\"}],\"name\":\"MessageSent\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":false,\"internalType\":\"bytes\",\"name\":\"signature\",\"type\":\"bytes\"}],\"name\":\"SignatureReceived\",\"type\":\"event\"},{\"inputs\":[{\"internalType\":\"uint32\",\"name\":\"remoteDomain\",\"type\":\"uint32\"},{\"internalType\":\"address\",\"name\":\"sender\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"recipient\",\"type\":\"address\"},{\"internalType\":\"bytes32\",\"name\":\"destinationCaller\",\"type\":\"bytes32\"},{\"internalType\":\"bytes\",\"name\":\"messageBody\",\"type\":\"bytes\"}],\"name\":\"formatMessage\",\"outputs\":[{\"internalType\":\"bytes\",\"name\":\"message\",\"type\":\"bytes\"}],\"stateMutability\":\"pure\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"localDomain\",\"outputs\":[{\"internalType\":\"uint32\",\"name\":\"\",\"type\":\"uint32\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"nextAvailableNonce\",\"outputs\":[{\"internalType\":\"uint64\",\"name\":\"\",\"type\":\"uint64\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"bytes\",\"name\":\"message\",\"type\":\"bytes\"},{\"internalType\":\"bytes\",\"name\":\"signature\",\"type\":\"bytes\"}],\"name\":\"receiveMessage\",\"outputs\":[{\"internalType\":\"bool\",\"name\":\"success\",\"type\":\"bool\"}],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint32\",\"name\":\"\",\"type\":\"uint32\"},{\"internalType\":\"bytes32\",\"name\":\"recipient\",\"type\":\"bytes32\"},{\"internalType\":\"bytes32\",\"name\":\"destinationCaller\",\"type\":\"bytes32\"},{\"internalType\":\"bytes\",\"name\":\"messageBody\",\"type\":\"bytes\"}],\"name\":\"sendMessageWithCaller\",\"outputs\":[{\"internalType\":\"uint64\",\"name\":\"reservedNonce\",\"type\":\"uint64\"}],\"stateMutability\":\"nonpayable\",\"type\":\"function\"}]",
 	Sigs: map[string]string{
 		"d81bbe02": "formatMessage(uint32,address,address,bytes32,bytes)",
 		"8d3638f4": "localDomain()",
@@ -1011,7 +1011,7 @@ var MockMessageTransmitterMetaData = &bind.MetaData{
 		"57ecfd28": "receiveMessage(bytes,bytes)",
 		"f7259a75": "sendMessageWithCaller(uint32,bytes32,bytes32,bytes)",
 	},
-	Bin: "0x608060405234801561001057600080fd5b506040516109a93803806109a983398101604081905261002f91610057565b600080546001600160601b03191663ffffffff90921691909117640100000000179055610084565b60006020828403121561006957600080fd5b815163ffffffff8116811461007d57600080fd5b9392505050565b610916806100936000396000f3fe608060405234801561001057600080fd5b50600436106100675760003560e01c80638d3638f4116100505780638d3638f4146100c9578063d81bbe02146100ee578063f7259a751461010e57600080fd5b806357ecfd281461006c5780638371744e14610094575b600080fd5b61007f61007a366004610491565b610121565b60405190151581526020015b60405180910390f35b6000546100b090640100000000900467ffffffffffffffff1681565b60405167ffffffffffffffff909116815260200161008b565b6000546100d99063ffffffff1681565b60405163ffffffff909116815260200161008b565b6101016100fc366004610615565b610336565b60405161008b91906106f6565b6100b061011c366004610710565b61036b565b600061012e604183610778565b1561019a576040517f08c379a000000000000000000000000000000000000000000000000000000000815260206004820152601a60248201527f496e76616c6964206174746573746174696f6e206c656e67746800000000000060448201526064015b60405180910390fd5b6000808080806101ac898b018b6107b3565b939850919650945092509050811561022757338214610227576040517f08c379a000000000000000000000000000000000000000000000000000000000815260206004820152601a60248201527f496e76616c69642063616c6c657220666f72206d6573736167650000000000006044820152606401610191565b6040517f96abeb7000000000000000000000000000000000000000000000000000000000815273ffffffffffffffffffffffffffffffffffffffff8416906396abeb709061027d908890889086906004016107eb565b6020604051808303816000875af115801561029c573d6000803e3d6000fd5b505050506040513d601f19601f820116820180604052508101906102c09190610819565b610326576040517f08c379a000000000000000000000000000000000000000000000000000000000815260206004820152601d60248201527f68616e646c65526563656976654d6573736167652829206661696c65640000006044820152606401610191565b5060019998505050505050505050565b6060858585858560405160200161035195949392919061083b565b604051602081830303815290604052905095945050505050565b600054640100000000900467ffffffffffffffff1661038b816001610891565b600060046101000a81548167ffffffffffffffff021916908367ffffffffffffffff1602179055507f8c5261668696ce22758910d05bab8f186d6eb247ceac2af2e82c7dc17669b03661042a60008054906101000a900463ffffffff16338860001c8888888080601f01602080910402602001604051908101604052809392919081815260200183838082843760009201919091525061033692505050565b60405161043791906106f6565b60405180910390a195945050505050565b60008083601f84011261045a57600080fd5b50813567ffffffffffffffff81111561047257600080fd5b60208301915083602082850101111561048a57600080fd5b9250929050565b600080600080604085870312156104a757600080fd5b843567ffffffffffffffff808211156104bf57600080fd5b6104cb88838901610448565b909650945060208701359150808211156104e457600080fd5b506104f187828801610448565b95989497509550505050565b803563ffffffff8116811461051157600080fd5b919050565b73ffffffffffffffffffffffffffffffffffffffff8116811461053857600080fd5b50565b7f4e487b7100000000000000000000000000000000000000000000000000000000600052604160045260246000fd5b600082601f83011261057b57600080fd5b813567ffffffffffffffff808211156105965761059661053b565b604051601f83017fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffe0908116603f011681019082821181831017156105dc576105dc61053b565b816040528381528660208588010111156105f557600080fd5b836020870160208301376000602085830101528094505050505092915050565b600080600080600060a0868803121561062d57600080fd5b610636866104fd565b9450602086013561064681610516565b9350604086013561065681610516565b925060608601359150608086013567ffffffffffffffff81111561067957600080fd5b6106858882890161056a565b9150509295509295909350565b6000815180845260005b818110156106b85760208185018101518683018201520161069c565b5060006020828601015260207fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffe0601f83011685010191505092915050565b6020815260006107096020830184610692565b9392505050565b60008060008060006080868803121561072857600080fd5b610731866104fd565b94506020860135935060408601359250606086013567ffffffffffffffff81111561075b57600080fd5b61076788828901610448565b969995985093965092949392505050565b6000826107ae577f4e487b7100000000000000000000000000000000000000000000000000000000600052601260045260246000fd5b500690565b600080600080600060a086880312156107cb57600080fd5b6107d4866104fd565b945060208601359350604086013561065681610516565b63ffffffff841681528260208201526060604082015260006108106060830184610692565b95945050505050565b60006020828403121561082b57600080fd5b8151801515811461070957600080fd5b63ffffffff86168152600073ffffffffffffffffffffffffffffffffffffffff808716602084015280861660408401525083606083015260a0608083015261088660a0830184610692565b979650505050505050565b67ffffffffffffffff8181168382160190808211156108d9577f4e487b7100000000000000000000000000000000000000000000000000000000600052601160045260246000fd5b509291505056fea26469706673582212209874915b07e34ac16ed64214241c61d8472f274c87cb343d9eaff2fb6a76d3d164736f6c63430008110033",
+	Bin: "0x608060405234801561001057600080fd5b50604051610a42380380610a4283398101604081905261002f91610057565b600080546001600160601b03191663ffffffff90921691909117640100000000179055610084565b60006020828403121561006957600080fd5b815163ffffffff8116811461007d57600080fd5b9392505050565b6109af806100936000396000f3fe608060405234801561001057600080fd5b50600436106100675760003560e01c80638d3638f4116100505780638d3638f4146100c9578063d81bbe02146100ee578063f7259a751461010e57600080fd5b806357ecfd281461006c5780638371744e14610094575b600080fd5b61007f61007a3660046104dd565b610121565b60405190151581526020015b60405180910390f35b6000546100b090640100000000900467ffffffffffffffff1681565b60405167ffffffffffffffff909116815260200161008b565b6000546100d99063ffffffff1681565b60405163ffffffff909116815260200161008b565b6101016100fc366004610661565b610382565b60405161008b9190610742565b6100b061011c36600461075c565b6103b7565b600060018290036101345750600061037a565b61013f6041836107c4565b156101ab576040517f08c379a000000000000000000000000000000000000000000000000000000000815260206004820152601a60248201527f496e76616c6964206174746573746174696f6e206c656e67746800000000000060448201526064015b60405180910390fd5b6000808080806101bd898b018b6107ff565b939850919650945092509050811561023857338214610238576040517f08c379a000000000000000000000000000000000000000000000000000000000815260206004820152601a60248201527f496e76616c69642063616c6c657220666f72206d65737361676500000000000060448201526064016101a2565b6040517f96abeb7000000000000000000000000000000000000000000000000000000000815273ffffffffffffffffffffffffffffffffffffffff8416906396abeb709061028e90889088908690600401610837565b6020604051808303816000875af11580156102ad573d6000803e3d6000fd5b505050506040513d601f19601f820116820180604052508101906102d19190610865565b610337576040517f08c379a000000000000000000000000000000000000000000000000000000000815260206004820152601d60248201527f68616e646c65526563656976654d6573736167652829206661696c656400000060448201526064016101a2565b7fd5abd8bafd66536a7715960b4606ae43cbe944953190b51b2e984dff14d6b6108888604051610368929190610887565b60405180910390a16001955050505050505b949350505050565b6060858585858560405160200161039d9594939291906108d4565b604051602081830303815290604052905095945050505050565b600054640100000000900467ffffffffffffffff166103d781600161092a565b600060046101000a81548167ffffffffffffffff021916908367ffffffffffffffff1602179055507f8c5261668696ce22758910d05bab8f186d6eb247ceac2af2e82c7dc17669b03661047660008054906101000a900463ffffffff16338860001c8888888080601f01602080910402602001604051908101604052809392919081815260200183838082843760009201919091525061038292505050565b6040516104839190610742565b60405180910390a195945050505050565b60008083601f8401126104a657600080fd5b50813567ffffffffffffffff8111156104be57600080fd5b6020830191508360208285010111156104d657600080fd5b9250929050565b600080600080604085870312156104f357600080fd5b843567ffffffffffffffff8082111561050b57600080fd5b61051788838901610494565b9096509450602087013591508082111561053057600080fd5b5061053d87828801610494565b95989497509550505050565b803563ffffffff8116811461055d57600080fd5b919050565b73ffffffffffffffffffffffffffffffffffffffff8116811461058457600080fd5b50565b7f4e487b7100000000000000000000000000000000000000000000000000000000600052604160045260246000fd5b600082601f8301126105c757600080fd5b813567ffffffffffffffff808211156105e2576105e2610587565b604051601f83017fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffe0908116603f0116810190828211818310171561062857610628610587565b8160405283815286602085880101111561064157600080fd5b836020870160208301376000602085830101528094505050505092915050565b600080600080600060a0868803121561067957600080fd5b61068286610549565b9450602086013561069281610562565b935060408601356106a281610562565b925060608601359150608086013567ffffffffffffffff8111156106c557600080fd5b6106d1888289016105b6565b9150509295509295909350565b6000815180845260005b81811015610704576020818501810151868301820152016106e8565b5060006020828601015260207fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffe0601f83011685010191505092915050565b60208152600061075560208301846106de565b9392505050565b60008060008060006080868803121561077457600080fd5b61077d86610549565b94506020860135935060408601359250606086013567ffffffffffffffff8111156107a757600080fd5b6107b388828901610494565b969995985093965092949392505050565b6000826107fa577f4e487b7100000000000000000000000000000000000000000000000000000000600052601260045260246000fd5b500690565b600080600080600060a0868803121561081757600080fd5b61082086610549565b94506020860135935060408601356106a281610562565b63ffffffff8416815282602082015260606040820152600061085c60608301846106de565b95945050505050565b60006020828403121561087757600080fd5b8151801515811461075557600080fd5b60208152816020820152818360408301376000818301604090810191909152601f9092017fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffe0160101919050565b63ffffffff86168152600073ffffffffffffffffffffffffffffffffffffffff808716602084015280861660408401525083606083015260a0608083015261091f60a08301846106de565b979650505050505050565b67ffffffffffffffff818116838216019080821115610972577f4e487b7100000000000000000000000000000000000000000000000000000000600052601160045260246000fd5b509291505056fea26469706673582212207c37228c4ae7cd15c4835c68e07402b56b73d3dab056c5e4d7ff06bdb231368464736f6c63430008110033",
 }
 
 // MockMessageTransmitterABI is the input ABI used to generate the binding from.
@@ -1606,6 +1606,140 @@ func (_MockMessageTransmitter *MockMessageTransmitterFilterer) WatchMessageSent(
 func (_MockMessageTransmitter *MockMessageTransmitterFilterer) ParseMessageSent(log types.Log) (*MockMessageTransmitterMessageSent, error) {
 	event := new(MockMessageTransmitterMessageSent)
 	if err := _MockMessageTransmitter.contract.UnpackLog(event, "MessageSent", log); err != nil {
+		return nil, err
+	}
+	event.Raw = log
+	return event, nil
+}
+
+// MockMessageTransmitterSignatureReceivedIterator is returned from FilterSignatureReceived and is used to iterate over the raw logs and unpacked data for SignatureReceived events raised by the MockMessageTransmitter contract.
+type MockMessageTransmitterSignatureReceivedIterator struct {
+	Event *MockMessageTransmitterSignatureReceived // Event containing the contract specifics and raw log
+
+	contract *bind.BoundContract // Generic contract to use for unpacking event data
+	event    string              // Event name to use for unpacking event data
+
+	logs chan types.Log        // Log channel receiving the found contract events
+	sub  ethereum.Subscription // Subscription for errors, completion and termination
+	done bool                  // Whether the subscription completed delivering logs
+	fail error                 // Occurred error to stop iteration
+}
+
+// Next advances the iterator to the subsequent event, returning whether there
+// are any more events found. In case of a retrieval or parsing error, false is
+// returned and Error() can be queried for the exact failure.
+func (it *MockMessageTransmitterSignatureReceivedIterator) Next() bool {
+	// If the iterator failed, stop iterating
+	if it.fail != nil {
+		return false
+	}
+	// If the iterator completed, deliver directly whatever's available
+	if it.done {
+		select {
+		case log := <-it.logs:
+			it.Event = new(MockMessageTransmitterSignatureReceived)
+			if err := it.contract.UnpackLog(it.Event, it.event, log); err != nil {
+				it.fail = err
+				return false
+			}
+			it.Event.Raw = log
+			return true
+
+		default:
+			return false
+		}
+	}
+	// Iterator still in progress, wait for either a data or an error event
+	select {
+	case log := <-it.logs:
+		it.Event = new(MockMessageTransmitterSignatureReceived)
+		if err := it.contract.UnpackLog(it.Event, it.event, log); err != nil {
+			it.fail = err
+			return false
+		}
+		it.Event.Raw = log
+		return true
+
+	case err := <-it.sub.Err():
+		it.done = true
+		it.fail = err
+		return it.Next()
+	}
+}
+
+// Error returns any retrieval or parsing error occurred during filtering.
+func (it *MockMessageTransmitterSignatureReceivedIterator) Error() error {
+	return it.fail
+}
+
+// Close terminates the iteration process, releasing any pending underlying
+// resources.
+func (it *MockMessageTransmitterSignatureReceivedIterator) Close() error {
+	it.sub.Unsubscribe()
+	return nil
+}
+
+// MockMessageTransmitterSignatureReceived represents a SignatureReceived event raised by the MockMessageTransmitter contract.
+type MockMessageTransmitterSignatureReceived struct {
+	Signature []byte
+	Raw       types.Log // Blockchain specific contextual infos
+}
+
+// FilterSignatureReceived is a free log retrieval operation binding the contract event 0xd5abd8bafd66536a7715960b4606ae43cbe944953190b51b2e984dff14d6b610.
+//
+// Solidity: event SignatureReceived(bytes signature)
+func (_MockMessageTransmitter *MockMessageTransmitterFilterer) FilterSignatureReceived(opts *bind.FilterOpts) (*MockMessageTransmitterSignatureReceivedIterator, error) {
+
+	logs, sub, err := _MockMessageTransmitter.contract.FilterLogs(opts, "SignatureReceived")
+	if err != nil {
+		return nil, err
+	}
+	return &MockMessageTransmitterSignatureReceivedIterator{contract: _MockMessageTransmitter.contract, event: "SignatureReceived", logs: logs, sub: sub}, nil
+}
+
+// WatchSignatureReceived is a free log subscription operation binding the contract event 0xd5abd8bafd66536a7715960b4606ae43cbe944953190b51b2e984dff14d6b610.
+//
+// Solidity: event SignatureReceived(bytes signature)
+func (_MockMessageTransmitter *MockMessageTransmitterFilterer) WatchSignatureReceived(opts *bind.WatchOpts, sink chan<- *MockMessageTransmitterSignatureReceived) (event.Subscription, error) {
+
+	logs, sub, err := _MockMessageTransmitter.contract.WatchLogs(opts, "SignatureReceived")
+	if err != nil {
+		return nil, err
+	}
+	return event.NewSubscription(func(quit <-chan struct{}) error {
+		defer sub.Unsubscribe()
+		for {
+			select {
+			case log := <-logs:
+				// New log arrived, parse the event and forward to the user
+				event := new(MockMessageTransmitterSignatureReceived)
+				if err := _MockMessageTransmitter.contract.UnpackLog(event, "SignatureReceived", log); err != nil {
+					return err
+				}
+				event.Raw = log
+
+				select {
+				case sink <- event:
+				case err := <-sub.Err():
+					return err
+				case <-quit:
+					return nil
+				}
+			case err := <-sub.Err():
+				return err
+			case <-quit:
+				return nil
+			}
+		}
+	}), nil
+}
+
+// ParseSignatureReceived is a log parse operation binding the contract event 0xd5abd8bafd66536a7715960b4606ae43cbe944953190b51b2e984dff14d6b610.
+//
+// Solidity: event SignatureReceived(bytes signature)
+func (_MockMessageTransmitter *MockMessageTransmitterFilterer) ParseSignatureReceived(log types.Log) (*MockMessageTransmitterSignatureReceived, error) {
+	event := new(MockMessageTransmitterSignatureReceived)
+	if err := _MockMessageTransmitter.contract.UnpackLog(event, "SignatureReceived", log); err != nil {
 		return nil, err
 	}
 	event.Raw = log
