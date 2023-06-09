@@ -259,9 +259,9 @@ func (c CCTPRelayer) handleCircleRequestSent(parentCtx context.Context, txhash c
 		return fmt.Errorf("could not get transaction receipt: %w", err)
 	}
 
-	// from this receipt, we expect two different logs. One is message sent
-	// messageSentEvent gives us the raw bytes of the CCTP message
-	// circleRequestSentEvent gives us auxiliary data for SynapseCCTP
+	// From this receipt, we expect two different logs:
+	// - `messageSentEvent` gives us the raw bytes of the CCTP message
+	// - `circleRequestSentEvent` gives us auxiliary data for SynapseCCTP
 	var messageSentEvent *mockmessagetransmitter.MessageTransmitterEventsMessageSent
 	var circleRequestSentEvent *cctp.SynapseCCTPEventsCircleRequestSent
 
@@ -294,7 +294,6 @@ func (c CCTPRelayer) handleCircleRequestSent(parentCtx context.Context, txhash c
 			if err != nil {
 				return fmt.Errorf("could not parse message sent: %w", err)
 			}
-
 		}
 	}
 
