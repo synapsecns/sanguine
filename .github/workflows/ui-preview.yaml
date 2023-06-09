@@ -35,9 +35,7 @@ jobs:
         run: |
           export FILTER_LENGTH=$(echo $FILTERED_PATHS | jq '. | length')
           echo "FILTER_LENGTH=$FILTER_LENGTH" >> "$GITHUB_OUTPUT"
-          echo ${{ context.issue.number }}
-          echo ${{ context.repo.owner }}
-          echo ${{ context.repo.repo }}
+
 
 
 
@@ -109,6 +107,9 @@ jobs:
         uses: actions/github-script@v3
         with:
           script: |
+            echo ${{ context.issue.number }}
+            echo ${{ context.repo.owner }}
+            echo ${{ context.repo.repo }}
             github.issues.createComment({
               issue_number: context.issue.number,
               owner: context.repo.owner,
