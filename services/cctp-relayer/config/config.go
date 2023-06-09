@@ -3,6 +3,7 @@ package config
 import (
 	"context"
 	"fmt"
+	submitterConfig "github.com/synapsecns/sanguine/ethergo/submitter/config"
 	"os"
 	"path/filepath"
 
@@ -21,9 +22,9 @@ type Config struct {
 	// The format is "https://omnirpc.url/". Notice the lack of "confirmations" on the URL
 	// in comparison to what `Scribe` uses.
 	BaseOmnirpcURL string `yaml:"base_omnirpc_url"`
-	// UnbondedSigner contains the unbonded signer config for agents
+	// Signer contains the unbonded signer config for agents
 	// (this is signer used to submit transactions)
-	UnbondedSigner ethConfig.SignerConfig `yaml:"unbonded_signer"`
+	Signer ethConfig.SignerConfig `yaml:"unbonded_signer"`
 	// EmbeddedScribeConfig is the config for the embedded scribe. This only needs to be
 	// included if an embedded Scribe is being used. If a remote Scribe is being used,
 	// this can be left empty.
@@ -33,7 +34,8 @@ type Config struct {
 	// HTTPBackoffInitialInterval is the initial interval for attestation request retries
 	HTTPBackoffInitialIntervalMs int `yaml:"http_backoff_initial_interval_ms"`
 	// HTTPBackoffMaxElapsedTime is the max elapsed time for attestation request retries
-	HTTPBackoffMaxElapsedTimeMs int `yaml:"http_backoff_max_elapsed_time_ms"`
+	HTTPBackoffMaxElapsedTimeMs int                    `yaml:"http_backoff_max_elapsed_time_ms"`
+	SubmitterConfig             submitterConfig.Config `yaml:"submitter_config"`
 }
 
 // IsValid makes sure the config is valid. This is done by calling IsValid() on each
@@ -48,7 +50,7 @@ func (c *Config) IsValid(ctx context.Context) (ok bool, err error) {
 		return false, fmt.Errorf("rpc url cannot be empty")
 	}
 
-	if ok, err = c.UnbondedSigner.IsValid(ctx); !ok {
+	if ok, err = c.Signer.IsValid(ctx); !ok {
 		return false, fmt.Errorf("unbonded signer is invalid: %w", err)
 	}
 

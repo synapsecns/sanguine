@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"github.com/davecgh/go-spew/spew"
 	"github.com/jftuga/ellipsis"
-	agentsConfig "github.com/synapsecns/sanguine/ethergo/signer/config"
+	signerConfig "github.com/synapsecns/sanguine/ethergo/signer/config"
 	scribeConfig "github.com/synapsecns/sanguine/services/scribe/config"
 	"gopkg.in/yaml.v2"
 	"os"
@@ -28,7 +28,7 @@ type Config struct {
 	BaseOmnirpcURL string `yaml:"base_omnirpc_url"`
 	// UnbondedSigner contains the unbonded signer config for agents
 	// (this is signer used to submit transactions)
-	UnbondedSigner agentsConfig.SignerConfig `yaml:"unbonded_signer"`
+	UnbondedSigner signerConfig.SignerConfig `yaml:"unbonded_signer"`
 	// ExecuteInterval is the interval at which the executor agent will
 	// check if messages in the database are ready to be executed.
 	ExecuteInterval uint32 `yaml:"execute_interval"`

@@ -3,6 +3,12 @@ package relayer
 import (
 	"context"
 	"fmt"
+	"github.com/ethereum/go-ethereum/accounts/abi/bind"
+	signerConfig "github.com/synapsecns/sanguine/ethergo/signer/config"
+	"github.com/synapsecns/sanguine/ethergo/submitter"
+	db2 "github.com/synapsecns/sanguine/services/cctp-relayer/db"
+	"github.com/synapsecns/sanguine/services/cctp-relayer/db/sqlite"
+	"math/big"
 	"strconv"
 	"time"
 
@@ -53,7 +59,7 @@ type chainRelayer struct {
 // on the destination chain to complete the USDC bridging process.
 type CCTPRelayer struct {
 	cfg           config.Config
-	db            CCTPRelayerDBReader
+	db            db2.CCTPRelayerDBReader
 	scribeClient  client.ScribeClient
 	grpcClient    pbscribe.ScribeServiceClient
 	grpcConn      *grpc.ClientConn
@@ -65,6 +71,8 @@ type CCTPRelayer struct {
 	handler metrics.Handler
 	// attestationAPI is the client for Circle's REST API.
 	attestationAPI api.AttestationAPI
+	// txSubmitter is the tx submission service
+	txSubmitter submitter.TransactionSubmitter
 }
 
 const usdcMsgChanSize = 1000
@@ -106,6 +114,21 @@ func NewCCTPRelayer(ctx context.Context, cfg config.Config, scribeClient client.
 	httpBackoff := backoff.NewExponentialBackOff()
 	httpBackoff.InitialInterval = time.Duration(cfg.HTTPBackoffInitialIntervalMs) * time.Millisecond
 	httpBackoff.MaxElapsedTime = time.Duration(cfg.HTTPBackoffMaxElapsedTimeMs) * time.Millisecond
+
+	signer, err := signerConfig.SignerFromConfig(ctx, cfg.Signer)
+	if err != nil {
+		return nil, fmt.Errorf("could not make cctp signer: %w", err)
+	}
+
+	db, err := sqlite.NewSqliteStore(ctx, cfg.DBPrefix, handler, false)
+	if err != nil {
+		return nil, fmt.Errorf("could not make cctp db: %w", err)
+	}
+
+	omniRPCClient := omniClient.NewOmnirpcClient(cfg.BaseOmnirpcURL, handler) // TODO
+
+	txSubmitter := submitter.NewTransactionSubmitter(handler, signer, omniRPCClient, db.SubmitterDB(), &cfg.SubmitterConfig)
+
 	return &CCTPRelayer{
 		cfg:            cfg,
 		chainRelayers:  chainRelayers,
@@ -115,6 +138,7 @@ func NewCCTPRelayer(ctx context.Context, cfg config.Config, scribeClient client.
 		httpBackoff:    httpBackoff,
 		handler:        handler,
 		attestationAPI: attestationAPI,
+		txSubmitter:    txSubmitter,
 	}, nil
 }
 
@@ -132,6 +156,10 @@ func (c CCTPRelayer) Run(ctx context.Context) error {
 		g.Go(func() error {
 			return c.submitReceiveCircleToken(ctx, chain.ChainID)
 		})
+
+		g.Go(func() error {
+			return c.txSubmitter.Start(ctx)
+		})
 	}
 
 	if err := g.Wait(); err != nil {
@@ -145,13 +173,6 @@ func (c CCTPRelayer) Run(ctx context.Context) error {
 func (c CCTPRelayer) Stop(chainID uint32) {
 	c.chainRelayers[chainID].closeConnection <- true
 	c.chainRelayers[chainID].stopListenChan <- true
-}
-
-// CCTPRelayerDBReader is the interface for reading from the database.
-// TODO(dwasse): impl db interactions.
-type CCTPRelayerDBReader interface {
-	// GetLastBlockNumber gets the last block number that had a message in the database.
-	GetLastBlockNumber(ctx context.Context, chainID uint32) (uint64, error)
 }
 
 // Listens for USDC send events on origin chain, and registers UsdcMessages to be signed.
@@ -334,9 +355,11 @@ func (c CCTPRelayer) submitReceiveCircleToken(ctx context.Context, chainID uint3
 		case msg := <-c.chainRelayers[chainID].usdcMsgRecvChan:
 			// Fetch the circle attestation in a new goroutine so that we are not blocked from future requests.
 			go c.fetchAttestation(ctx, chainID, msg)
-		case <-c.chainRelayers[chainID].usdcMsgSendChan:
+		case msg := <-c.chainRelayers[chainID].usdcMsgSendChan:
 			// Submit the message to the destination chain.
-			// TODO(dwasse): implement
+			nonce, err := c.txSubmitter.SubmitTransaction(ctx, big.NewInt(int64(chainID)), func(transactor *bind.TransactOpts) (tx *types.Transaction, err error) {
+				return
+			})
 		case <-ctx.Done():
 			return nil
 		}

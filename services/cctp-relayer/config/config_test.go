@@ -29,7 +29,7 @@ func configFixture(c ConfigSuite) config.Config {
 			},
 		},
 		BaseOmnirpcURL: gofakeit.URL(),
-		UnbondedSigner: ethConfig.SignerConfig{
+		Signer: ethConfig.SignerConfig{
 			Type: ethConfig.FileType.String(),
 			File: filet.TmpFile(c.T(), "", testWallet.PrivateKeyHex()).Name(),
 		},
