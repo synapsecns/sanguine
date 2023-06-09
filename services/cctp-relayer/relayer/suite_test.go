@@ -103,7 +103,7 @@ func (s *CCTPRelayerSuite) registerRemoteDeployments() {
 	}
 }
 
-// addressToBytes32 converts an address to a bytes32
+// addressToBytes32 converts an address to a bytes32.
 func addressToBytes32(addr common.Address) [32]byte {
 	var buf [32]byte
 	copy(buf[:], addr[:])

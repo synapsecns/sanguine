@@ -46,6 +46,8 @@ func NewMockMessageTransmitterDeployer(registry deployer.GetOnlyContractRegistry
 }
 
 // Deploy deploys the light manager contract.
+//
+//nolint:dupword,dupl,cyclop
 func (d MockMessageTransmitterDeployer) Deploy(ctx context.Context) (contracts.DeployedContract, error) {
 	return d.DeploySimpleContract(ctx, func(transactOps *bind.TransactOpts, backend bind.ContractBackend) (address common.Address, tx *types.Transaction, data interface{}, err error) {
 		// define the domain as the chain id!
@@ -61,10 +63,14 @@ func NewMockTokenMessengerDeployer(registry deployer.GetOnlyContractRegistry, ba
 	return MockTokenMessengerDeployer{deployer.NewSimpleDeployer(registry, backend, MockTokenMessengerType)}
 }
 
+// MockTokenMessengerDeployer deploys the mocktokenmessenger.
 type MockTokenMessengerDeployer struct {
 	*deployer.BaseDeployer
 }
 
+// Deploy deploys the mock token messenger contract.
+//
+//nolint:dupword,dupl,cyclop
 func (m MockTokenMessengerDeployer) Deploy(ctx context.Context) (contracts.DeployedContract, error) {
 	messageTransmitter := m.Registry().Get(ctx, MockMessageTransmitterType)
 
@@ -86,6 +92,7 @@ func NewMockMintBurnTokenDeployer(registry deployer.GetOnlyContractRegistry, bac
 	return MockMintBurnTokenDeployer{deployer.NewSimpleDeployer(registry, backend, MockMintBurnTokenType)}
 }
 
+// MockTokenMinterDeployer deploys the mocktokenminter.
 type MockTokenMinterDeployer struct {
 	*deployer.BaseDeployer
 }
@@ -95,6 +102,9 @@ func NewMockTokenMinterDeployer(registry deployer.GetOnlyContractRegistry, backe
 	return MockTokenMinterDeployer{deployer.NewSimpleDeployer(registry, backend, MockTokenMinterType)}
 }
 
+// Deploy deploys the mock token minter contract.
+//
+//nolint:dupword,dupl,cyclop
 func (m MockTokenMinterDeployer) Deploy(ctx context.Context) (contracts.DeployedContract, error) {
 	tokenMessenger := m.Registry().Get(ctx, MockTokenMessengerType)
 
@@ -125,14 +135,19 @@ func (m MockTokenMinterDeployer) Deploy(ctx context.Context) (contracts.Deployed
 	})
 }
 
+// Dependencies returns the dependencies of the mock token minter.
 func (m MockTokenMinterDeployer) Dependencies() []contracts.ContractType {
 	return m.RecursiveDependencies([]contracts.ContractType{MockTokenMessengerType})
 }
 
+// MockMintBurnTokenDeployer deploys the mocktokenminter.
 type MockMintBurnTokenDeployer struct {
 	*deployer.BaseDeployer
 }
 
+// Deploy deploys the mock mint burn token contract.
+//
+//nolint:dupword,dupl,cyclop
 func (m MockMintBurnTokenDeployer) Deploy(ctx context.Context) (contracts.DeployedContract, error) {
 	messageTransmitter := m.Registry().Get(ctx, MockMessageTransmitterType)
 
@@ -145,6 +160,7 @@ func (m MockMintBurnTokenDeployer) Deploy(ctx context.Context) (contracts.Deploy
 	})
 }
 
+// Dependencies returns the dependencies of the mock mint burn token.
 func (m MockMintBurnTokenDeployer) Dependencies() []contracts.ContractType {
 	return []contracts.ContractType{MockMessageTransmitterType}
 }
@@ -160,6 +176,8 @@ func NewSynapseCCTPDeployer(registry deployer.GetOnlyContractRegistry, backend b
 }
 
 // Deploy deploys the light manager contract.
+//
+//nolint:dupword,dupl,cyclop
 func (d SynapseCCTPDeployer) Deploy(ctx context.Context) (contracts.DeployedContract, error) {
 	return d.DeploySimpleContract(ctx, func(transactOps *bind.TransactOpts, backend bind.ContractBackend) (address common.Address, tx *types.Transaction, data interface{}, err error) {
 		tokenMessenger := d.Registry().Get(ctx, MockTokenMessengerType)
@@ -175,6 +193,7 @@ func (d SynapseCCTPDeployer) Deploy(ctx context.Context) (contracts.DeployedCont
 	})
 }
 
+// Dependencies returns the dependencies of the SynapseCCTP contract.
 func (d SynapseCCTPDeployer) Dependencies() []contracts.ContractType {
 	return d.RecursiveDependencies([]contracts.ContractType{MockTokenMessengerType, MockTokenMinterType})
 }

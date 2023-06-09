@@ -36,9 +36,9 @@ var AllContractTypes []contractTypeImpl
 type contractTypeImpl int
 
 const (
-	// SynapseCCTP is the type of the synapse cctp contract.
+	// SynapseCCTPType is the type of the synapse cctp contract.
 	SynapseCCTPType contractTypeImpl = iota + 1 // SynapseCCTP
-	// MockMessageTransmitter is the type of the mock message transmitter contract.
+	// MockMessageTransmitterType is the type of the mock message transmitter contract.
 	MockMessageTransmitterType // MockMessageTransmitter
 	// MockTokenMessengerType is the type of the mock token messenger contract.
 	MockTokenMessengerType // MockTokenMessenger

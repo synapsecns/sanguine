@@ -18,6 +18,8 @@ func (m MockTokenMinterRef) Address() common.Address {
 }
 
 // NewMockTokenMinterRef creates a new MockMessageTransmitterRef contract with a contract ref.
+//
+//nolint:golint
 func NewMockTokenMinterRef(address common.Address, backend bind.ContractBackend) (*MockTokenMinterRef, error) {
 	cctpContract, err := NewMockTokenMinter(address, backend)
 	if err != nil {
