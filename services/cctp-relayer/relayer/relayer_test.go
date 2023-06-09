@@ -23,12 +23,12 @@ func (c *CCTPRelayerSuite) TestHandleCircleRequestSent() {
 	_, mintContractRef := c.deployManager.GetMockMintBurnTokenType(c.GetTestContext(), sendChain)
 
 	// create a relayer
-	sendChainId, err := sendChain.ChainID(c.GetTestContext())
+	sendChainID, err := sendChain.ChainID(c.GetTestContext())
 	c.Nil(err)
 	cfg := config.Config{
 		Chains: []config.ChainConfig{
 			{
-				ChainID: uint32(sendChainId.Int64()),
+				ChainID: uint32(sendChainID.Int64()),
 			},
 		},
 	}
@@ -40,8 +40,8 @@ func (c *CCTPRelayerSuite) TestHandleCircleRequestSent() {
 	c.Nil(err)
 
 	sc := scribeClient.NewRemoteScribe(uint16(port), parsedScribe.Host, c.metricsHandler)
-	mockApi := api.NewMockCircleAPI()
-	relay, err := relayer.NewCCTPRelayer(c.GetTestContext(), cfg, sc.ScribeClient, c.metricsHandler, mockApi)
+	mockAPI := api.NewMockCircleAPI()
+	relay, err := relayer.NewCCTPRelayer(c.GetTestContext(), cfg, sc.ScribeClient, c.metricsHandler, mockAPI)
 	c.Nil(err)
 
 	relay.SetOmnirpcClient(omniClient.NewOmnirpcClient(c.testOmnirpc, c.metricsHandler, omniClient.WithCaptureReqRes()))
@@ -77,12 +77,12 @@ func (c *CCTPRelayerSuite) TestFetchAttestation() {
 	sendChain := c.testBackends[0]
 
 	// create a relayer
-	sendChainId, err := sendChain.ChainID(c.GetTestContext())
+	sendChainID, err := sendChain.ChainID(c.GetTestContext())
 	c.Nil(err)
 	cfg := config.Config{
 		Chains: []config.ChainConfig{
 			{
-				ChainID: uint32(sendChainId.Int64()),
+				ChainID: uint32(sendChainID.Int64()),
 			},
 		},
 	}
@@ -93,13 +93,13 @@ func (c *CCTPRelayerSuite) TestFetchAttestation() {
 	c.Nil(err)
 
 	sc := scribeClient.NewRemoteScribe(uint16(port), parsedScribe.Host, c.metricsHandler)
-	mockApi := api.NewMockCircleAPI()
-	relay, err := relayer.NewCCTPRelayer(c.GetTestContext(), cfg, sc.ScribeClient, c.metricsHandler, mockApi)
+	mockAPI := api.NewMockCircleAPI()
+	relay, err := relayer.NewCCTPRelayer(c.GetTestContext(), cfg, sc.ScribeClient, c.metricsHandler, mockAPI)
 	c.Nil(err)
 
 	// override mocked api call
 	expectedSignature := "abc"
-	mockApi.SetGetAttestation(func(ctx context.Context, txHash common.Hash) (attestation []byte, err error) {
+	mockAPI.SetGetAttestation(func(ctx context.Context, txHash common.Hash) (attestation []byte, err error) {
 		return []byte(expectedSignature), nil
 	})
 
@@ -108,7 +108,7 @@ func (c *CCTPRelayerSuite) TestFetchAttestation() {
 	msg := relayer.UsdcMessage{
 		TxHash:        common.HexToHash(testHash),
 		Message:       []byte{},
-		AuxillaryData: []byte{},
+		AuxiliaryData: []byte{},
 	}
 	relay.FetchAttestation(c.GetTestContext(), uint32(sendChain.GetChainID()), &msg)
 	sendChan := relay.GetUsdcMsgSendChan(uint32(sendChain.GetChainID()))

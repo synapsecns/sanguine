@@ -83,6 +83,7 @@ func (m MockTokenMessengerDeployer) Deploy(ctx context.Context) (contracts.Deplo
 	})
 }
 
+// Dependencies returns the dependencies of the mocktokenmessenger.
 func (m MockTokenMessengerDeployer) Dependencies() []contracts.ContractType {
 	return []contracts.ContractType{MockMessageTransmitterType}
 }
@@ -165,12 +166,12 @@ func (m MockMintBurnTokenDeployer) Dependencies() []contracts.ContractType {
 	return []contracts.ContractType{MockMessageTransmitterType}
 }
 
-// MockMessageTransmitterDeployer deploys the mockmessagetransmitter.
+// SynapseCCTPDeployer deploys the synapse cctp contract.
 type SynapseCCTPDeployer struct {
 	*deployer.BaseDeployer
 }
 
-// NewMockMessageTransmitterDeployer deploys the light inbox contract.
+// NewSynapseCCTPDeployer deploys the synapse cctp contract.
 func NewSynapseCCTPDeployer(registry deployer.GetOnlyContractRegistry, backend backends.SimulatedTestBackend) deployer.ContractDeployer {
 	return SynapseCCTPDeployer{deployer.NewSimpleDeployer(registry, backend, SynapseCCTPType)}
 }

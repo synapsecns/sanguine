@@ -5,7 +5,7 @@ import (
 	"encoding/hex"
 	"encoding/json"
 	"fmt"
-	"io/ioutil"
+	"io"
 	"net/http"
 
 	"github.com/ethereum/go-ethereum/common"
@@ -37,7 +37,7 @@ type circleAttestationResponse struct {
 // GetAttestation is a wrapper for GET /attestations/{txHash}.
 func (c CircleAPI) GetAttestation(ctx context.Context, txHash common.Hash) (attestation []byte, err error) {
 	url := fmt.Sprintf("%s/%s", c.baseURL, txHash.String())
-	req, err := http.NewRequestWithContext(ctx, "GET", url, nil)
+	req, err := http.NewRequestWithContext(ctx, http.MethodGet, url, nil)
 	if err != nil {
 		err = fmt.Errorf("could not create request: %w", err)
 		return
@@ -55,7 +55,7 @@ func (c CircleAPI) GetAttestation(ctx context.Context, txHash common.Hash) (atte
 		return
 	}
 
-	body, err := ioutil.ReadAll(resp.Body)
+	body, err := io.ReadAll(resp.Body)
 	if err != nil {
 		return
 	}

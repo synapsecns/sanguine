@@ -26,9 +26,10 @@ import (
 	"google.golang.org/grpc/credentials/insecure"
 )
 
+// UsdcMessage contains data necessary to be posted on the destination chain.
 type UsdcMessage struct {
 	Message       []byte      // raw bytes of message produced by Circle's MessageTransmitter
-	AuxillaryData []byte      // auxillary data emitted by SynapseCCTP
+	AuxiliaryData []byte      // auxiliary data emitted by SynapseCCTP
 	TxHash        common.Hash // hash of the USDC burn transaction
 	Signature     []byte      // attestation produced by Circle's API: https://developers.circle.com/stablecoin/reference/getattestation
 }
@@ -47,6 +48,9 @@ type chainRelayer struct {
 	usdcMsgSendChan chan *UsdcMessage
 }
 
+// CCTPRelayer listens for USDC burn events on origin chains,
+// fetches attestations from Circle's API, and posts the necessary data
+// on the destination chain to complete the USDC bridging process.
 type CCTPRelayer struct {
 	cfg           config.Config
 	db            CCTPRelayerDBReader
@@ -149,6 +153,8 @@ type CCTPRelayerDBReader interface {
 }
 
 // Listens for USDC send events on origin chain, and registers UsdcMessages to be signed.
+//
+//nolint:cyclop
 func (c CCTPRelayer) streamLogs(ctx context.Context, grpcClient pbscribe.ScribeServiceClient, conn *grpc.ClientConn, chainID uint32, address string, toBlockNumber *uint64) error {
 	lastStoredBlock, err := c.db.GetLastBlockNumber(ctx, chainID)
 	if err != nil {
@@ -254,7 +260,7 @@ func (c CCTPRelayer) handleCircleRequestSent(parentCtx context.Context, txhash c
 
 	// from this receipt, we expect two different logs. One is message sent
 	// messageSentEvent gives us the raw bytes of the CCTP message
-	// circleRequestSentEvent gives us auxillary data for SynapseCCTP
+	// circleRequestSentEvent gives us auxiliary data for SynapseCCTP
 	var messageSentEvent *mockmessagetransmitter.MessageTransmitterEventsMessageSent
 	var circleRequestSentEvent *cctp.SynapseCCTPEventsCircleRequestSent
 
@@ -305,7 +311,7 @@ func (c CCTPRelayer) handleCircleRequestSent(parentCtx context.Context, txhash c
 	default:
 		msg := UsdcMessage{
 			TxHash:        txhash,
-			AuxillaryData: circleRequestSentEvent.Request,
+			AuxiliaryData: circleRequestSentEvent.Request,
 			Message:       messageSentEvent.Message,
 			//Signature: //comes from the api
 		}
