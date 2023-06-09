@@ -9,7 +9,7 @@ export const useSwapDepositContract = async (pool: Token, chainId: number) => {
   let poolAddress
   let abi
   if (pool?.swapEthAddresses?.[chainId]) {
-    poolAddress = pool.swapAddresses[chainId]
+    poolAddress = pool.swapEthAddresses[chainId]
     abi = SWAP_ETH_WRAPPER_ABI
   } else if (pool?.swapWrapperAddresses?.[chainId]) {
     poolAddress = pool.swapWrapperAddresses[chainId]
