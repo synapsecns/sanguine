@@ -215,8 +215,10 @@ func (c CCTPRelayer) handleLog(ctx context.Context, log *types.Log, originChain 
 	switch log.Topics[0] {
 	// since this is the last stopic that comes out of the message, we use it to kick off the send loop
 	case cctp.CircleRequestSentTopic:
-		// TODO: figure out if we want to use scribe here, for now, we'll keep it simple w/ omnirpc gettxreceipt
-
+		err := c.handleCircleRequestSent(ctx, log.TxHash, originChain)
+		if err != nil {
+			return err
+		}
 	case cctp.CircleRequestFulfilledTopic:
 		// TODO mark request as fulfilled
 	default:
@@ -227,8 +229,8 @@ func (c CCTPRelayer) handleLog(ctx context.Context, log *types.Log, originChain 
 	return nil
 }
 
-func (c CCTPRelayer) handleSendRequest(parentCtx context.Context, txhash common.Hash, originChain uint32) (err error) {
-	ctx, span := c.handler.Tracer().Start(parentCtx, "handleSendRequest", trace.WithAttributes(
+func (c CCTPRelayer) handleCircleRequestSent(parentCtx context.Context, txhash common.Hash, originChain uint32) (err error) {
+	ctx, span := c.handler.Tracer().Start(parentCtx, "handleCircleRequestSent", trace.WithAttributes(
 		attribute.String(metrics.TxHash, txhash.String()),
 		attribute.Int(metrics.ChainID, int(originChain)),
 	))
@@ -249,8 +251,8 @@ func (c CCTPRelayer) handleSendRequest(parentCtx context.Context, txhash common.
 	}
 
 	// from this receipt, we expect two different logs. One is message sent
-	// message sent tells us: TODO fill me in
-	// circleRequestSentEvent tells us: TODO fill me in?
+	// messageSentEvent gives us the raw bytes of the CCTP message
+	// circleRequestSentEvent gives us auxillary data for SynapseCCTP
 	var messageSentEvent *mockmessagetransmitter.MessageTransmitterEventsMessageSent
 	var circleRequestSentEvent *cctp.SynapseCCTPEventsCircleRequestSent
 
