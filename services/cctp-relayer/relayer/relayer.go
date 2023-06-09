@@ -147,8 +147,8 @@ func (c CCTPRelayer) Stop(chainID uint32) {
 	c.chainRelayers[chainID].stopListenChan <- true
 }
 
-// TODO(dwasse): impl db interactions.
 // CCTPRelayerDBReader is the interface for reading from the database.
+// TODO(dwasse): impl db interactions.
 type CCTPRelayerDBReader interface {
 	// GetLastBlockNumber gets the last block number that had a message in the database.
 	GetLastBlockNumber(ctx context.Context, chainID uint32) (uint64, error)
@@ -309,7 +309,11 @@ func (c CCTPRelayer) handleCircleRequestSent(parentCtx context.Context, txhash c
 
 	select {
 	case <-ctx.Done():
-		return ctx.Err()
+		err = ctx.Err()
+		if err != nil {
+			err = fmt.Errorf("error handling circle request sent: %w", err)
+		}
+		return err
 	default:
 		msg := UsdcMessage{
 			TxHash:        txhash,

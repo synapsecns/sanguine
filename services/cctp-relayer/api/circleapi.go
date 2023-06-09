@@ -35,8 +35,6 @@ type circleAttestationResponse struct {
 }
 
 // GetAttestation is a wrapper for GET /attestations/{txHash}.
-//
-//nolint:stylecheck
 func (c CircleAPI) GetAttestation(ctx context.Context, txHash common.Hash) (attestation []byte, err error) {
 	url := fmt.Sprintf("%s/%s", c.baseURL, txHash.String())
 	req, err := http.NewRequestWithContext(ctx, http.MethodGet, url, nil)
@@ -73,5 +71,5 @@ func (c CircleAPI) GetAttestation(ctx context.Context, txHash common.Hash) (atte
 	if err != nil {
 		err = fmt.Errorf("could not decode signature: %w", err)
 	}
-	return
+	return attestation, err
 }
