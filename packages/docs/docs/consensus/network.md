@@ -145,15 +145,15 @@ We will see how the [Synapse Messaging System](glossary.md/#synapse-messaging-sy
 1.  On Chain A, [Client Sending Smart Contract](glossary.md/#client-sending-smart-contract) calls the "send message" method on the [Origin Smart Contract](#origin-smart-contract).
 The result of this is that the message is added in the Origin's [Message Merkle Tree](glossary.md/#message-merkle-tree) and Chain A will have
 a new [state](glossary.md/#state) with a new [Message Merkle Root](glossary.md/#message-merkle-root).
-2.  On [Synapse Chain](glossary.md/#synapse-chain), the [Guard](glossary.md/#guard) will submit a [State Snapshot](glassary.md/#state-snapshot) that includes
+2.  On [Synapse Chain](glossary.md/#synapse-chain), the [Guard](glossary.md/#guard) will submit a [State Snapshot](glossary.md/#state-snapshot) that includes
 the new [state](glossary.md/#state) of Chain A.
-3.  On [Synapse Chain](glossary.md/#synapse-chain), either of the [Notaries](glossary.md/#notary) will submit a [State Snapshot](glassary.md/#state-snapshot) that includes
+3.  On [Synapse Chain](glossary.md/#synapse-chain), either of the [Notaries](glossary.md/#notary) will submit a [State Snapshot](glossary.md/#state-snapshot) that includes
 the new [state](glossary.md/#state) of Chain A. This results in the [Synapse Chain](glossary.md/#synapse-chain) registering a
 new [Attestation](glossary.md/#attestation) that includes the [Snap Root](glossary.md/#snap-root) as well as the current [Agent Root](glossary.md/#agent-root).
 4.  On Chain B, the [Notary](glossary.md/#notary) for Chain B proposes the [Attestation](glossary.md/#attestation).
 5.  The system must wait for the [Optimistic Period](glossary.md/#optimistic-period) before executing the message. This is when
 the [Guard](glossary.md/#guard) has an opportunity to report [fraud](glossary.md/#fraud) if either the [Attestation](glossary.md/#attestation)
-was not registered on the [Synapse Chain](glossary.md/#synapse-chain) or if one of the [states](glossary.md/#state) included in the [State Snapshot](glassary.md/#state-snapshot)
+was not registered on the [Synapse Chain](glossary.md/#synapse-chain) or if one of the [states](glossary.md/#state) included in the [State Snapshot](glossary.md/#state-snapshot)
 was not a valid state on the Origin chain.
 6.  On Chain B after the [Optimistic Period](glossary.md/#optimistic-period) has passed without any [fraud reports](glossary.md/#fraud-report), the
 [Executor](glossary.md/#executor) will execute the message. This is done by a Merkle Proof for the [state](glossary.md/#state) against the [Snap Root](glossary.md/#snap-root)
@@ -166,7 +166,7 @@ that results in a new [Agent Root](glossary.md/#agent-root).
 
 The tricky part is how to communicate this to the [remote chains](glossary.md/#remote-chain).
 
-Whenever a [Notary](glossary.md/#notary) submits a [State Snapshot](glassary.md/#state-snapshot) to the [Syanpse Chain](glossary.md/#synapse-chain),
+Whenever a [Notary](glossary.md/#notary) submits a [State Snapshot](glossary.md/#state-snapshot) to the [Syanpse Chain](glossary.md/#synapse-chain),
 the Synapse Smart Contract that handles that transaction will register an [Attestation](glossary.md/#attestation)
 that includes the [Snap Root](glossary.md/#snap-root) as well as the current [Agent Root](glossary.md/#agent-root).
 
