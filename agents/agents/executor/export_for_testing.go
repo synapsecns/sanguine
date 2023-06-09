@@ -196,6 +196,11 @@ func (e Executor) OverrideMerkleTree(chainID uint32, tree *merkle.HistoricalTree
 	e.chainExecutors[chainID].merkleTree = tree
 }
 
+// CheckIfExecuted checks if a message has been executed.
+func (e Executor) CheckIfExecuted(ctx context.Context, message types.Message) (bool, error) {
+	return e.checkIfExecuted(ctx, message)
+}
+
 // SetMinimumTime sets the minimum times.
 func (e Executor) SetMinimumTime(ctx context.Context) error {
 	g, _ := errgroup.WithContext(ctx)

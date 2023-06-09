@@ -4,10 +4,12 @@ import (
 	"context"
 	"fmt"
 	"github.com/synapsecns/sanguine/agents/contracts/test/attestationharness"
+	"github.com/synapsecns/sanguine/agents/contracts/test/basemessageharness"
 	"github.com/synapsecns/sanguine/agents/contracts/test/bondingmanagerharness"
 	gasdataharness "github.com/synapsecns/sanguine/agents/contracts/test/gasdata"
 	"github.com/synapsecns/sanguine/agents/contracts/test/lightmanagerharness"
 	"github.com/synapsecns/sanguine/agents/contracts/test/originharness"
+	"github.com/synapsecns/sanguine/agents/contracts/test/requestharness"
 	"github.com/synapsecns/sanguine/agents/contracts/test/snapshotharness"
 	"github.com/synapsecns/sanguine/agents/contracts/test/stateharness"
 	"github.com/synapsecns/sanguine/agents/contracts/test/tipsharness"
@@ -44,6 +46,44 @@ func (d MessageHarnessDeployer) Deploy(ctx context.Context) (contracts.DeployedC
 		return messageharness.DeployMessageHarness(transactOps, backend)
 	}, func(address common.Address, backend bind.ContractBackend) (interface{}, error) {
 		return messageharness.NewMessageHarnessRef(address, backend)
+	})
+}
+
+// BaseMessageHarnessDeployer deploys the base message harness for testing.
+type BaseMessageHarnessDeployer struct {
+	*deployer.BaseDeployer
+}
+
+// NewBaseMessageHarnessDeployer creates a base message harness deployer.
+func NewBaseMessageHarnessDeployer(regirstry deployer.GetOnlyContractRegistry, backend backends.SimulatedTestBackend) deployer.ContractDeployer {
+	return BaseMessageHarnessDeployer{deployer.NewSimpleDeployer(regirstry, backend, BaseMessageHarnessType)}
+}
+
+// Deploy deploys the base message harness deployer.
+func (d BaseMessageHarnessDeployer) Deploy(ctx context.Context) (contracts.DeployedContract, error) {
+	return d.DeploySimpleContract(ctx, func(transactOpts *bind.TransactOpts, backend bind.ContractBackend) (common.Address, *types.Transaction, interface{}, error) {
+		return basemessageharness.DeployBaseMessageHarness(transactOpts, backend)
+	}, func(address common.Address, backend bind.ContractBackend) (interface{}, error) {
+		return basemessageharness.NewBaseMessageHarnessRef(address, backend)
+	})
+}
+
+// RequestHarnessDeployer deploys the request harness for testing.
+type RequestHarnessDeployer struct {
+	*deployer.BaseDeployer
+}
+
+// NewRequestHarnessDeployer creates a request harness deployer.
+func NewRequestHarnessDeployer(registry deployer.GetOnlyContractRegistry, backend backends.SimulatedTestBackend) deployer.ContractDeployer {
+	return RequestHarnessDeployer{deployer.NewSimpleDeployer(registry, backend, RequestHarnessType)}
+}
+
+// Deploy deploys the request harness deployer.
+func (d RequestHarnessDeployer) Deploy(ctx context.Context) (contracts.DeployedContract, error) {
+	return d.DeploySimpleContract(ctx, func(transactOpts *bind.TransactOpts, backend bind.ContractBackend) (common.Address, *types.Transaction, interface{}, error) {
+		return requestharness.DeployRequestHarness(transactOpts, backend)
+	}, func(address common.Address, backend bind.ContractBackend) (interface{}, error) {
+		return requestharness.NewRequestHarnessRef(address, backend)
 	})
 }
 

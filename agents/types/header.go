@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"encoding/binary"
 	"fmt"
+	"github.com/ethereum/go-ethereum/crypto"
 )
 
 // MessageFlag indicates if the message is normal "Base" message or "Manager" message.
@@ -35,6 +36,9 @@ type Header interface {
 	DestinationDomain() uint32
 	// OptimisticSeconds is the optimistic time period of the message in seconds
 	OptimisticSeconds() uint32
+
+	// Leaf is the leaf of the header.
+	Leaf() ([32]byte, error)
 }
 
 type headerImpl struct {
@@ -96,4 +100,23 @@ func (h headerImpl) DestinationDomain() uint32 {
 
 func (h headerImpl) OptimisticSeconds() uint32 {
 	return h.optimisticSeconds
+}
+
+func (h headerImpl) Leaf() ([32]byte, error) {
+	var paddedHeader [32]byte
+	bytesHeader, err := EncodeHeader(h)
+	if err != nil {
+		return [32]byte{}, fmt.Errorf("failed to encode header: %w", err)
+	}
+
+	copy(paddedHeader[:], bytesHeader)
+	headerHash := crypto.Keccak256(paddedHeader[:])
+
+	fmt.Println("bytesHeader: ", paddedHeader)
+	fmt.Println("len paddedfHeader: ", len(paddedHeader))
+
+	var headerHash32Byte [32]byte
+	copy(headerHash32Byte[:], headerHash)
+
+	return headerHash32Byte, nil
 }

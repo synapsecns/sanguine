@@ -345,29 +345,29 @@ func EncodeRequest(m Request) ([]byte, error) {
 }
 
 // DecodeRequest decodes a request typed mem view.
-func DecodeRequest(toDecode []byte) (Request, error) {
+func DecodeRequest(toDecode []byte) Request {
 	version := binary.BigEndian.Uint32(toDecode[VersionOffset:GasLimitOffset])
 	gasLimit := binary.BigEndian.Uint64(toDecode[GasLimitOffset:GasDropOffset])
 	gasDrop := new(big.Int).SetBytes(toDecode[GasDropOffset:RequestSize])
 
-	return NewRequest(version, gasLimit, gasDrop), nil
+	return NewRequest(version, gasLimit, gasDrop)
 }
 
 // EncodeBaseMessage encodes a base message.
 func EncodeBaseMessage(m BaseMessage) ([]byte, error) {
 	b := make([]byte, 0)
 
-	senderRef := m.Sender()
-	recipientRef := m.Recipient()
-
-	b = append(b, senderRef[:]...)
-	b = append(b, recipientRef[:]...)
-
 	encodedTips, err := EncodeTips(m.Tips())
 	if err != nil {
 		return []byte{}, fmt.Errorf("could not encode tips part of message: %w", err)
 	}
 	b = append(b, encodedTips...)
+
+	senderRef := m.Sender()
+	recipientRef := m.Recipient()
+
+	b = append(b, senderRef[:]...)
+	b = append(b, recipientRef[:]...)
 
 	encodedRequest, err := EncodeRequest(m.Request())
 	if err != nil {
@@ -384,28 +384,26 @@ func DecodeBaseMessage(toDecode []byte) (BaseMessage, error) {
 	if len(toDecode) < BaseMessageContentOffset {
 		return nil, fmt.Errorf("invalid attestation length, expected at least %d, got %d", BaseMessageContentOffset, len(toDecode))
 	}
+
+	tipsBytes := toDecode[BaseMessageTipsOffset:BaseMessageSenderOffset]
 	senderBytes := toDecode[BaseMessageSenderOffset:BaseMessageRecipientOffset]
-	recipientBytes := toDecode[BaseMessageRecipientOffset:BaseMessageTipsOffset]
+	recipientBytes := toDecode[BaseMessageRecipientOffset:BaseMessageRequestOffset]
+	requestBytes := toDecode[BaseMessageRequestOffset:BaseMessageContentOffset]
+	content := toDecode[BaseMessageContentOffset:]
+
 	var sender [32]byte
 	var recipient [32]byte
 	copy(sender[:], senderBytes)
 	copy(recipient[:], recipientBytes)
 
-	encodedTips := toDecode[BaseMessageTipsOffset:BaseMessageRequestOffset]
-	tips, err := DecodeTips(encodedTips)
+	decodedTips, err := DecodeTips(tipsBytes)
 	if err != nil {
 		return nil, fmt.Errorf("could not decode tips part of message: %w", err)
 	}
 
-	encodedRequest := toDecode[BaseMessageRequestOffset:BaseMessageContentOffset]
-	request, err := DecodeRequest(encodedRequest)
-	if err != nil {
-		return nil, fmt.Errorf("could not decode request part of message: %w", err)
-	}
+	request := DecodeRequest(requestBytes)
 
-	content := toDecode[BaseMessageContentOffset:]
-
-	return NewBaseMessage(sender, recipient, tips, request, content), nil
+	return NewBaseMessage(sender, recipient, decodedTips, request, content), nil
 }
 
 // EncodeMessage encodes a message.

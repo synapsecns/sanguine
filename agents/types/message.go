@@ -45,7 +45,37 @@ type messageImpl struct {
 
 const headerOffset uint16 = 0
 
+func NewMessageFromBaseMessage(header Header, baseMessage BaseMessage) (Message, error) {
+	if header.Flag() != MessageFlagBase {
+		return nil, fmt.Errorf("header flag is not base")
+	}
+
+	baseMessageBytes, err := EncodeBaseMessage(baseMessage)
+	if err != nil {
+		return nil, fmt.Errorf("could not encode base message: %w", err)
+	}
+
+	return &messageImpl{
+		header:      header,
+		baseMessage: baseMessage,
+		body:        baseMessageBytes,
+	}, nil
+}
+
+func NewMessageFromManagerMessage(header Header, payload []byte) (Message, error) {
+	if header.Flag() != MessageFlagManager {
+		return nil, fmt.Errorf("header flag is not manager")
+	}
+
+	return &messageImpl{
+		header:      header,
+		baseMessage: nil,
+		body:        payload,
+	}, nil
+}
+
 // NewMessage creates a new message from fields passed in.
+// TODO: Set up different initializers. One for BaseMessage and one for ManagerMessage.
 func NewMessage(header Header, baseMessage BaseMessage, body []byte) Message {
 	return &messageImpl{
 		header:      header,
@@ -86,7 +116,12 @@ func (m messageImpl) Body() []byte {
 func (m messageImpl) ToLeaf() (leaf [32]byte, err error) {
 	var toHash []byte
 	if m.Header().Flag() == MessageFlagBase {
-		toHash = m.baseMessage.Content()
+		leaf, err = m.BaseMessage().Leaf()
+		if err != nil {
+			return common.Hash{}, fmt.Errorf("could not get leaf: %w", err)
+		}
+
+		toHash = leaf[:]
 	} else {
 		encodedMessage, err := EncodeMessage(m)
 		if err != nil {
@@ -95,8 +130,14 @@ func (m messageImpl) ToLeaf() (leaf [32]byte, err error) {
 		toHash = encodedMessage
 	}
 
-	rawLeaf := crypto.Keccak256(toHash)
+	headerLeaf, err := m.Header().Leaf()
+	if err != nil {
+		return common.Hash{}, fmt.Errorf("could not get header leaf: %w", err)
+	}
+
+	rawLeaf := crypto.Keccak256(headerLeaf[:], toHash)
 	copy(leaf[:], rawLeaf)
+
 	return leaf, nil
 }
 
