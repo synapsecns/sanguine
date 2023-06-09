@@ -4,6 +4,7 @@ on:
     branches:
       - master
   pull_request:
+      types: [opened, synchronize, reopened]
 jobs:
   changes:
     runs-on: ubuntu-latest
@@ -30,6 +31,7 @@ jobs:
         run: |
           export FILTER_LENGTH=$(echo $FILTERED_PATHS | jq '. | length')
           echo "FILTER_LENGTH=$FILTER_LENGTH" >> "$GITHUB_OUTPUT"
+          echo ${{ github.event.head_commit.message}}
 
 
 
