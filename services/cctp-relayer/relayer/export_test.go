@@ -7,9 +7,9 @@ import (
 	omniClient "github.com/synapsecns/sanguine/services/omnirpc/client"
 )
 
-// HandleSendRequest wraps handleSendRequest for testing.
-func (c CCTPRelayer) HandleSendRequest(parentCtx context.Context, txhash common.Hash, originChain uint32) (err error) {
-	return c.handleSendRequest(parentCtx, txhash, originChain)
+// HandleCircleRequestSent wraps handleCircleRequestSent for testing.
+func (c CCTPRelayer) HandleCircleRequestSent(parentCtx context.Context, txhash common.Hash, originChain uint32) (err error) {
+	return c.handleCircleRequestSent(parentCtx, txhash, originChain)
 }
 
 // FetchAttestation wraps fetchAttestation for testing.

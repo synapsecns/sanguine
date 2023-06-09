@@ -15,7 +15,7 @@ import (
 	scribeClient "github.com/synapsecns/sanguine/services/scribe/client"
 )
 
-func (c *CCTPRelayerSuite) TestSendCircleToken() {
+func (c *CCTPRelayerSuite) TestHandleCircleRequestSent() {
 	// setup
 	sendChain := c.testBackends[0]
 	recvChain := c.testBackends[1]
@@ -64,7 +64,7 @@ func (c *CCTPRelayerSuite) TestSendCircleToken() {
 	sendChain.WaitForConfirmation(c.GetTestContext(), tx)
 
 	// handle send request
-	err = relay.HandleSendRequest(c.GetTestContext(), tx.Hash(), uint32(sendChain.GetChainID()))
+	err = relay.HandleCircleRequestSent(c.GetTestContext(), tx.Hash(), uint32(sendChain.GetChainID()))
 	c.Nil(err)
 	recvChan := relay.GetUsdcMsgRecvChan(uint32(sendChain.GetChainID()))
 	msg := <-recvChan
