@@ -175,7 +175,7 @@ const SwapCard = ({
       setFromTokens(tokens)
     })
     return
-  }, [connectedChainId, swapTxnHash])
+  }, [connectedChainId, swapTxnHash, address])
 
   /*
   useEffect Triggers: toToken, fromInput, toChainId, time
