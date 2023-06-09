@@ -70,7 +70,6 @@ func (c CircleAPI) GetAttestation(ctx context.Context, txHash common.Hash) (atte
 	attestation, err = hex.DecodeString(attestationResp.Data.Attestation)
 	if err != nil {
 		err = fmt.Errorf("could not decode signature: %w", err)
-		return
 	}
 	return
 }

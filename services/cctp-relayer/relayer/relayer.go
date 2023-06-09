@@ -237,6 +237,7 @@ func (c CCTPRelayer) handleLog(ctx context.Context, log *types.Log, originChain 
 	return nil
 }
 
+//nolint:cyclop
 func (c CCTPRelayer) handleCircleRequestSent(parentCtx context.Context, txhash common.Hash, originChain uint32) (err error) {
 	ctx, span := c.handler.Tracer().Start(parentCtx, "handleCircleRequestSent", trace.WithAttributes(
 		attribute.String(metrics.TxHash, txhash.String()),
