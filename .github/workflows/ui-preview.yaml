@@ -58,17 +58,6 @@ jobs:
           cache: 'npm'
           install_dependencies: 'false'
           cache-path: ''
-      # - name: Setup Node.js 16.14.0
-      #   uses: actions/setup-node@v2
-      #   with:
-      #     node-version: '16.14.0'
-      # - name: Install dependencies
-      #   run: yarn install && yarn build
-      #   working-directory: './packages/synapse-interface'
-      # - name: Install sdk-router
-      #   run: yarn install && yarn build
-      #   working-directory: './packages/sdk-router'
-      # make sure new project ids are added here
       - name: Get Project ID
         id: project_id
         # see: https://stackoverflow.com/a/75231888 for details
