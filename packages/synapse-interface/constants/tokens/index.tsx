@@ -292,7 +292,7 @@ export const LEGACY_POOLS_BY_CHAIN = getLegacyTokensByChain()
 
 export const STAKABLE_TOKENS = {
   ...getPoolsByChain(false),
-  [CHAINS.ETH.id]: [...POOLS_BY_CHAIN[CHAINS.ETH.id], SYN_ETH_SUSHI_TOKEN],
+  [CHAINS.ETH.id]: [SYN_ETH_SUSHI_TOKEN],
 }
 
 const getStakingMap = () => {
