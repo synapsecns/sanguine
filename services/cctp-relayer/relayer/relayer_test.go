@@ -59,7 +59,7 @@ func (c *CCTPRelayerSuite) TestHandleCircleRequestSent() {
 	sendChain.WaitForConfirmation(c.GetTestContext(), tx)
 
 	// send token
-	tx, err = cctpContractRef.SendCircleToken(opts.TransactOpts, opts.From, uint32(recvChain.GetChainID()), mintContractRef.Address(), amount, 0, []byte{})
+	tx, err = cctpContractRef.SendCircleToken(opts.TransactOpts, opts.From, big.NewInt(int64(recvChain.GetChainID())), mintContractRef.Address(), amount, 0, []byte{})
 	c.Nil(err)
 	sendChain.WaitForConfirmation(c.GetTestContext(), tx)
 

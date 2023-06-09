@@ -312,7 +312,7 @@ func (c CCTPRelayer) handleCircleRequestSent(parentCtx context.Context, txhash c
 	default:
 		msg := UsdcMessage{
 			TxHash:        txhash,
-			AuxiliaryData: circleRequestSentEvent.Request,
+			AuxiliaryData: circleRequestSentEvent.FormattedRequest,
 			Message:       messageSentEvent.Message,
 			//Signature: //comes from the api
 		}

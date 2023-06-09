@@ -91,8 +91,9 @@ func (s *CCTPRelayerSuite) registerRemoteDeployments() {
 			remoteMessenger, _ := s.deployManager.GetMockTokenMessengerType(s.GetTestContext(), backendToSetFrom)
 
 			txOpts := backend.GetTxContext(s.GetTestContext(), cctpContract.OwnerPtr())
-			// set the remote cctp contract ont his cctp contract
-			tx, err := cctpHandle.SetRemoteSynapseCCTP(txOpts.TransactOpts, uint32(backendToSetFrom.GetChainID()), remoteCCTP.Address())
+			// set the remote cctp contract on this cctp contract
+			// TODO: verify chainID / domain are correct
+			tx, err := cctpHandle.SetRemoteDomainConfig(txOpts.TransactOpts, big.NewInt(int64(backendToSetFrom.GetChainID())), uint32(remoteCCTP.ChainID().Int64()), remoteCCTP.Address())
 			s.Require().NoError(err)
 			backend.WaitForConfirmation(s.GetTestContext(), tx)
 

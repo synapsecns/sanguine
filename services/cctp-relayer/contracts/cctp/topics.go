@@ -1,9 +1,10 @@
 package cctp
 
 import (
+	"strings"
+
 	"github.com/ethereum/go-ethereum/accounts/abi"
 	"github.com/ethereum/go-ethereum/common"
-	"strings"
 )
 
 func init() {
@@ -17,7 +18,7 @@ func init() {
 
 	CircleRequestSentTopic = parsedCCTP.Events["CircleRequestSent"].ID
 
-	CircleRequestFulfilledTopic = parsedCCTP.Events["CircleRequestFulfilledTopic"].ID
+	CircleRequestFulfilledTopic = parsedCCTP.Events["CircleRequestFulfilled"].ID
 
 	for _, topic := range []common.Hash{CircleRequestSentTopic, CircleRequestFulfilledTopic} {
 		if topic == (common.Hash{}) {
