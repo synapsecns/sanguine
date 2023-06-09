@@ -35,9 +35,12 @@ import * as CHAINS from '@constants/chains/master'
 import { SynapseProvider } from '@/utils/providers/SynapseProvider'
 import CustomToaster from '@/components/toast'
 import { AnalyticsProvider } from '@/contexts/AnalyticsProvider'
+<<<<<<< HEAD
 
 import { Provider } from 'react-redux'
 import { store } from '@/store/store'
+=======
+>>>>>>> 6871f7fa (Adds Segment)
 
 const rawChains = [
   mainnet,
