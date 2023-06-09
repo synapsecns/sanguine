@@ -1,8 +1,8 @@
 ---
-sidebar_position: 2
+sidebar_position: 3
 ---
 
-# Synapse Messaging Deep Dive
+# Synapse Messaging Overview
 
 Synapse Messaging System is a cross-chain messaging system designed to be used by Smart Contract developers who need to send messages from one chain to another.
 Synapse Messaging gives the Smart Contract developers the ability to choose the balance between Liveness and Integrity.

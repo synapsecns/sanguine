@@ -1,5 +1,5 @@
 ---
-sidebar_position: 4
+sidebar_position: 5
 ---
 
 # Glossary
@@ -40,7 +40,7 @@ See the Diagram under the section explaining [Agent Root](#agent-root) which als
 Agent Statuses.
 
 ### Agent Set
-The set of bonded agents ([Guards](#guard) and [Notaries](#notary)) that are currently bonded.
+The set of [bonded agents](#bonded-agent) that are currently active.
 
 See the Diagram under the section explaining [Agent Root](#agent-root) which also depicts the Agent Set consisting of all the [Agent Statuses](#agent-status).
 
@@ -59,6 +59,17 @@ This snap root is used to prove that a particular Origin state did in fact occur
 4. Nonce is the total number of accepted Notary snapshots and serves to uniquely identify this attestation.
 5. Block Number of the block on the [Synapse Chain](#synapse-chain) that the attestation was registered by a Notary on the [Synapse Chain](#synapse-chain), which does not have to be the same [Notary](#notary) posting to the [Destination](#destination-chain).
 6. Timestamp is the time that the attestation was registered on the [Synapse Chain](#synapse-chain).
+
+### Bond
+The cryptocurrency held in escrow in order to disincentivize fraud from one of the [Offchain Agents](#off-chain-agent) is
+called the "Bond". If the agent is caught committing fraud, it will have it's bond [slashed](#slash). The idea is that
+if the bond is high enough to make fraud unprofitable, then claims made by the agents can be trusted based on the
+game theory assumption that the agents are rational.
+
+### Bonded Agent
+The [Root of Trust](#root-of-trust) of the [Synapse Messaging System](#synapse-messaging-system) comes from the [Off Chain Agents](#off-chain-agent)
+posting a [bond](#bond). Within the [Synapse Messaging System](#synapse-messaging-system), there are two kinds of Bonded Agents: [Notaries](#notaries)
+and [Guards](#gaurds). The only kind of [Unbonded Agent](#unbonded-agent) is the [Executor](#executor).
 
 ### Bonding Manager Smart Contract
 The Bonding Manager Smart Contract is deployed on the [Synapse Chain](#synapse-chain) along with the [Summit](#summit-smart-contract) and
@@ -83,6 +94,11 @@ to perform atomic transactions on one blockchain at a time. For any piece of inf
 will serve as the canonical source of truth. If two or more chains disagree, the chain that is the canonical source of truth gets
 to decide the real state, and the other chains will need to be corrected to match the correct state.
 
+### Client Smart Contract Application Developer
+The developer who is creating an application that requires [Cross Chain Messaging](#cross-chain-messaging-system) is
+referred to as the "Client Smart Contract Application Developer".
+These are the customers of the [Synapse Messaging System](#synapse-messaging-system).
+
 ### Client Receiving Smart Contract
 If a Smart Contract application requires sending cross chain messages, it must develop and deploy
 a Smart Contract to receive messages sent by the [Client Sending Smart Contract](#client-sending-smart-contract).
@@ -91,10 +107,18 @@ implements the interface [IMessageRecipient.sol](https://github.com/synapsecns/s
 in order to provide the "receiveBaseMessage" method. (Note that in theory the same Smart Contract could implement both the
 sender and receiver, but of course it would be the sender of one chain sending to a different chain.)
 
+Please see the examples here for reference (note that each combines the [sender](#client-sending-smart-contract) and receiver):
+1.  [TestClient.sol](https://github.com/synapsecns/sanguine/blob/master/packages/contracts-core/contracts/client/TestClient.sol)
+2.  [PingPong.sol](https://github.com/synapsecns/sanguine/blob/master/packages/contracts-core/contracts/client/PingPongClient.sol)
+
 ### Client Sending Smart Contract
 If a Smart Contract application requires sending cross chain messages, it must develop and deploy
 a Smart Contract to send messages. This is referred to as the "Client Sending Smart Contract". This is the contract that
 interacts with the Synapse [Origin Smart Contract](#origin-smart-contract) by calling the Origin's "sendBaseMessage" method.
+
+Please see the examples here for reference (note that each combines the sender and [receiver](#client-receiving-smart-contract)):
+1.  [TestClient.sol](https://github.com/synapsecns/sanguine/blob/master/packages/contracts-core/contracts/client/TestClient.sol)
+2.  [PingPong.sol](https://github.com/synapsecns/sanguine/blob/master/packages/contracts-core/contracts/client/PingPongClient.sol)
 
 ### Commitment
 In cryptography, a commitment is often used when someone wants to commit to large amounts of data without having to pass around
@@ -108,6 +132,11 @@ As opposed to [On Chain](#on-chain), Cross Chain refers to communication between
 send a message from one chain to another chain, this cannot be done in a single blockchain transaction. The only way for Cross Chain
 communication to occur is with the help of [Off Chain](#off-chain) agents who observe transactions on various chains and then submit necessary transactions
 to other chains in order to communicate across chains.
+
+### Cross Chain Messaging System
+A system that allows a [message](#message) to be sent [Cross Chain](#cross-chain) from a [Client Sending Smart Contract](#client-sending-smart-contract)
+on one chain to a [Client Receiving Smart Contract](#client-receiving-smart-contract) on another chain is a
+"Cross Chain Messaging System".
 
 ### Destination Chain
 The chain where the [Message](#message) is being sent to is known as the Destination Chain.
@@ -305,7 +334,7 @@ The 32 byte [merkle root](#merkle-root) of the [Message Merkle Tree](#message-me
 ![MessageMerkleRoot](../../static/img/MessageMerkleRoot.png 'Diagram of Message Merkle Root formed from Merkle Tree of Messages')
 
 ### Notary
-The Notary is an off-chain agent that is assigned to a specific chain and has the very important job of posting attestations to its chain
+The Notary is an off-chain agent that is assigned to a specific chain and has the very important job of posting [attestations](#Attestation) to its chain
 that can then be used to prove messages. If a fraudulent attestation is posted, an attacker could fool the destination into
 executing a malicious message, so the Notary plays a crucial role in maintaining [Integrity](#integrity)
 
@@ -321,7 +350,7 @@ on one chain and submits transactions to other chains in order to communicate wh
 The term "Off Chain Agent" is very general and could be as simple as a human being looking at something that happened on
 the first chain and then submitting a transaction to the second chain. More typically, this agent is software
 written to do this job in an automated way. The important question is how can the second chain trust this agent.
-In the specific case of the Synapse messaging system, this trust is based on a bond that the agent must post and any fraud
+In the specific case of the [Synapse Messaging System](#synapse-messaging-system), this trust is based on a bond that the agent must post and any fraud
 can be detected and will result in that agent losing the bond.
 
 ### On Chain
@@ -365,11 +394,11 @@ The Origin is responsible for the following:
 ### Permissioned
 As opposed to [permissionless](#permissionless), a permissioned system requires someone who is in a position of authority
 to give permission to someone who wants to do something. For example, if becoming an agent required the signature of
-a quorum of administrators, this would make it a permissioned system. The long term goal of the Synapse Messaging System is
+a quorum of administrators, this would make it a permissioned system. The long term goal of the [Synapse Messaging System](#synapse-messaging-system) is
 to become entirely permissionless once the ecosystem has been bootstrapped.
 
 ### Permissionless
-The Synapse Messaging System was designed to allow agents to participate without the need of gaining permission from any special
+The [Synapse Messaging System](#synapse-messaging-system) was designed to allow agents to participate without the need of gaining permission from any special
 authority. The only requirement is to post a stake in the case of [guards](#guard) and [notaries](#notary). For [executors](#executor),
 no stake is required and anyone can run a node to act as an executor.
 
@@ -393,6 +422,32 @@ on another chain. (It would be pointless to attempt to lie to a chain about itse
 Thus, the chain that is able to resolve a dispute about a claim made to another chain is called the "Resolving Chain". When the resolving chain
 determines that fraud did in fact happen, it will need to communicate this to the [Victim Chain](#victim-chain).
 
+### Root of Trust
+A common problem in layered systems is that each layer must trust the layer before, and if the layer before is compromised, then
+all trust is lost at all the layers after. At the very first layer, trust must be bootstrapped somehow in order to establish
+the foundation of trust, or "Root of Trust". In the context of the [Synapse Messaging System](#synapse-messaging-system), a message receiver trusts in the
+fact that a Bonded Agent must stake a large amount of value and will be certain to lose it if it signs something that is not true.
+What's more, if an honest agent is alert to catching the fraud, it will receive the stake that is lost, and given a large
+enough [Optimistic Period](#optimistic-period), the probability for a [Guard](#guard) to catch and repoprt cheating is high.
+Thus, a message receiver trusts that:
+1.  [Notaries](#notary) don't want to lose their stake since it is quite large.
+2.  [Guards](#guard) want to catch a fraudulent Notary because they will receive a large reward for doing so.
+3.  The [Optimistic Period](#optimistic-period) is in the control of the [Client Sending Smart Contract](#client-sending-smart-contract)
+and the [Client Receiving Smart Contract](#client-receiving-smart-contract) and will be set high enough to give [Guards](#guard)
+enough time to prevent the message from being executed.
+
+In conclusion, the trust is based on the Bonded Agents, which means the "Root of Trust" must be establishing the set of
+Bonded Agents. In the very beginning, Synapse Messaging bootstraps this root of trust through a [permissioned](#permissioned)
+mechanism whereby when a new [remote chain](#remote-chain) is added, the [Notary](#notary) for that chain posts the bond to
+the [Bonding Manager Smart Contract](#bonding-manager-smart-contract) deployed on the [Synapse chain](#synapse-chain).
+This results in the Bonding Manager having a new [Agent Root](#agent-root) that must now propagate to all the remote chains.
+Because the new chain does not have an active [Notary](#notary) under the old [Agent Root](#agent-root), there would be nobody
+to let the new chain know about the new [Agent Root](#agent-root). To boostrap the "Root of Trust",
+when the [Destination Smart Contract](#destination-smart-contract) is deployed on the [remote chain](#remote-chain),
+it is initialized with the new [Agent Root](#agent-root). This will allow the new chain's [Notary](#notary) to provide a proof of inclusion
+to the new chain's [Light Manager Smart Contract](#light-manager-smart-contract), and from then on that chain
+will trust it's [Notary](#notary).
+
 ### Slash
 If an agent is found guilty of fraud, the punishment is to slash the bond posted on the [Synapse Chain](#synapse-chain)
 
@@ -404,6 +459,9 @@ essentially a hash of the State. The root of the Merkle tree is known as the "Sn
 
 **Snap Root formed from Merkle Tree of Snapshot States:**
 ![SnapRoot](../../static/img/SnapRoot.png 'Diagram of SnapRoot formed from Snapshot of States')
+
+### Stake
+Synonym of [bond](#bond).
 
 ### State Snapshot
 The Synapse messaging protocol uses the term snapshot to describe a list of Origin [States](#state).
@@ -437,22 +495,30 @@ Summit is responsible for the following:
 2.  Accepting Notary Receipts from the local `Inbox` contract, and using them to distribute tips among the
 off-chain actors that participated in the message lifecycle.
 
+### Synapse Messaging System
+The [Cross Chain Messaging System](#cross-chain-messaging-system) developed by Synapse.
+
 ### Synapse Chain
 The [Synapse Chain](https://docs.synapseprotocol.com/protocol/synapse-chain) is a blockchain developed originally for the
 [Synapse Bridge](https://docs.synapseprotocol.com/protocol/synapse-bridge).
-In the new Synapse Messaging System, the Synapse chain has special Smart Contracts deployed on it that serve as a
+In the [Synapse Messaging System](#synapse-messaging-system), the Synapse chain has special Smart Contracts deployed on it that serve as a
 central hub when sending messages from one chain to another. Bonds are posted on the Synapse chain so this serves as the
 canonical source of truth of who is a valid agent. An important part of the protocol is keeping the other [Remote Chains](#remote-chain) in sync
 with what is on the Synapse chain. As another example of how the Synapse chain is special, the Bonded Agents observe the states of all the chains
 in the network and first submit these states to the Inbox Smart Contract deployed on the Synapse chain.
 
 ### System Message
-In the Synapse Messaging system, there are special "System Messages" that are not sent by a client but rather are for
+In the [Synapse Messaging System](#synapse-messaging-system), there are special "System Messages" that are not sent by a client but rather are for
 communicating things like fraud resolution from one chain to another. System Messages go through the same path as normal
 messages.
 
 ### Tips
 Tips are the rewards that the off-chain agents earn for doing the work of delivering messages.
+
+### Unbonded Agent
+An [Offchain Agent](#off-chain-agent) that does valuable work in the [Synapse Messaging System](#synapse-messaging-system) but is not required
+to post a [bond](#bond) because it is not in a position to sign any claims that need to be trusted. The only kind
+of Unbonded Agent in the [Synapse Messaging System](#synapse-messaging-system) is the [Executor](#executor).
 
 ### Unbonding Period
 When a bonded agent decides to unregister, it is of course eligible to receive its bond back so long as it has not been found
