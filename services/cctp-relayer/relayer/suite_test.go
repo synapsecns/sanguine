@@ -22,7 +22,7 @@ import (
 // TestHelperSuite defines the basic test suite.
 type CCTPRelayerSuite struct {
 	*testsuite.TestSuite
-	// testBackends contins a list of all test backends
+	// testBackends contains a list of all test backends
 	testBackends []backends.SimulatedTestBackend
 	// we'll use this later
 	deployManager *cctpTest.DeployManager
@@ -115,9 +115,6 @@ func (s *CCTPRelayerSuite) SetupTest() {
 	s.TestSuite.SetupTest()
 
 	s.deployManager = cctpTest.NewDeployManager(s.T())
-	// deploy the contract to all backends
-	// note: since we haven't gone over contract generation, we'll do this a bit later
-	// s.deployManager.BulkDeploy(s.GetTestContext(), s.testBackends, )
 
 	// create the test scribe backend
 	s.testScribe = scribeHelper.NewTestScribe(s.GetTestContext(), s.T(), s.deployManager.GetDeployedContracts(), s.testBackends...)
