@@ -106,9 +106,9 @@ func (c *CCTPRelayerSuite) TestFetchAttestation() {
 	// fetch attestation
 	testHash := "0x5dba62229dba62f233dca8f3fd14488fdc45d2a86537da2dea7a5683b5e7f622"
 	msg := relayer.UsdcMessage{
-		TxHash:        common.HexToHash(testHash),
-		Message:       []byte{},
-		AuxiliaryData: []byte{},
+		TxHash:           common.HexToHash(testHash),
+		Message:          []byte{},
+		FormattedRequest: []byte{},
 	}
 	relay.FetchAttestation(c.GetTestContext(), uint32(sendChain.GetChainID()), &msg)
 	sendChan := relay.GetUsdcMsgSendChan(uint32(sendChain.GetChainID()))

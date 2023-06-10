@@ -3,14 +3,15 @@ package relayer
 import (
 	"context"
 	"fmt"
+	"math/big"
+	"strconv"
+	"time"
+
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	signerConfig "github.com/synapsecns/sanguine/ethergo/signer/config"
 	"github.com/synapsecns/sanguine/ethergo/submitter"
 	db2 "github.com/synapsecns/sanguine/services/cctp-relayer/db"
 	"github.com/synapsecns/sanguine/services/cctp-relayer/db/sqlite"
-	"math/big"
-	"strconv"
-	"time"
 
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/synapsecns/sanguine/services/cctp-relayer/api"
@@ -34,10 +35,11 @@ import (
 
 // UsdcMessage contains data necessary to be posted on the destination chain.
 type UsdcMessage struct {
-	Message       []byte      // raw bytes of message produced by Circle's MessageTransmitter
-	AuxiliaryData []byte      // auxiliary data emitted by SynapseCCTP
-	TxHash        common.Hash // hash of the USDC burn transaction
-	Signature     []byte      // attestation produced by Circle's API: https://developers.circle.com/stablecoin/reference/getattestation
+	TxHash           common.Hash // hash of the transaction that produced the USDC burn tx
+	Message          []byte      // raw bytes of message produced by Circle's MessageTransmitter
+	Signature        []byte      // attestation produced by Circle's API: https://developers.circle.com/stablecoin/reference/getattestation
+	RequestVersion   uint32      // version of the request
+	FormattedRequest []byte      // formatted request produced by SynapseCCTP
 }
 
 // chainRelayer is a struct that contains the necessary information for each chain level relayer.
@@ -73,13 +75,14 @@ type CCTPRelayer struct {
 	attestationAPI api.AttestationAPI
 	// txSubmitter is the tx submission service
 	txSubmitter submitter.TransactionSubmitter
+	// boundSynapseCCTPs is a map from chain ID -> SynapseCCTP.
+	boundSynapseCCTPs map[uint32]*cctp.SynapseCCTP
 }
 
 const usdcMsgChanSize = 1000
 
 // NewCCTPRelayer creates a new CCTPRelayer.
 func NewCCTPRelayer(ctx context.Context, cfg config.Config, scribeClient client.ScribeClient, handler metrics.Handler, attestationAPI api.AttestationAPI) (*CCTPRelayer, error) {
-	chainRelayers := make(map[uint32]*chainRelayer)
 	conn, err := grpc.DialContext(ctx, fmt.Sprintf("%s:%d", scribeClient.URL, scribeClient.Port),
 		grpc.WithTransportCredentials(insecure.NewCredentials()),
 		grpc.WithUnaryInterceptor(otelgrpc.UnaryClientInterceptor(otelgrpc.WithTracerProvider(handler.GetTracerProvider()))),
@@ -100,7 +103,12 @@ func NewCCTPRelayer(ctx context.Context, cfg config.Config, scribeClient client.
 		return nil, fmt.Errorf("not serving: %s", healthCheck.Status)
 	}
 
-	// Build chainRelayers.
+	// Create omni rpc client.
+	omniRPCClient := omniClient.NewOmnirpcClient(cfg.BaseOmnirpcURL, handler) // TODO
+
+	// Build chainRelayers and bound contracts.
+	chainRelayers := make(map[uint32]*chainRelayer)
+	boundSynapseCCTPs := make(map[uint32]*cctp.SynapseCCTP)
 	for _, chain := range cfg.Chains {
 		chainRelayers[chain.ChainID] = &chainRelayer{
 			chainID:         chain.ChainID,
@@ -108,6 +116,14 @@ func NewCCTPRelayer(ctx context.Context, cfg config.Config, scribeClient client.
 			stopListenChan:  make(chan bool, 1),
 			usdcMsgRecvChan: make(chan *UsdcMessage, usdcMsgChanSize),
 			usdcMsgSendChan: make(chan *UsdcMessage, usdcMsgChanSize),
+		}
+		client, err := omniRPCClient.GetClient(ctx, big.NewInt(int64(chain.ChainID)))
+		if err != nil {
+			return nil, fmt.Errorf("could not get client: %w", err)
+		}
+		boundSynapseCCTPs[chain.ChainID], err = cctp.NewSynapseCCTP(chain.GetDestinationAddress(), client)
+		if err != nil {
+			return nil, fmt.Errorf("could not build bound contract: %w", err)
 		}
 	}
 
@@ -124,8 +140,6 @@ func NewCCTPRelayer(ctx context.Context, cfg config.Config, scribeClient client.
 	if err != nil {
 		return nil, fmt.Errorf("could not make cctp db: %w", err)
 	}
-
-	omniRPCClient := omniClient.NewOmnirpcClient(cfg.BaseOmnirpcURL, handler) // TODO
 
 	txSubmitter := submitter.NewTransactionSubmitter(handler, signer, omniRPCClient, db.SubmitterDB(), &cfg.SubmitterConfig)
 
@@ -337,10 +351,11 @@ func (c CCTPRelayer) handleCircleRequestSent(parentCtx context.Context, txhash c
 		return err
 	default:
 		msg := UsdcMessage{
-			TxHash:        txhash,
-			AuxiliaryData: circleRequestSentEvent.FormattedRequest,
-			Message:       messageSentEvent.Message,
+			TxHash:  txhash,
+			Message: messageSentEvent.Message,
 			//Signature: //comes from the api
+			RequestVersion:   circleRequestSentEvent.RequestVersion,
+			FormattedRequest: circleRequestSentEvent.FormattedRequest,
 		}
 		c.chainRelayers[originChain].usdcMsgRecvChan <- &msg
 	}
@@ -357,9 +372,14 @@ func (c CCTPRelayer) submitReceiveCircleToken(ctx context.Context, chainID uint3
 			go c.fetchAttestation(ctx, chainID, msg)
 		case msg := <-c.chainRelayers[chainID].usdcMsgSendChan:
 			// Submit the message to the destination chain.
-			nonce, err := c.txSubmitter.SubmitTransaction(ctx, big.NewInt(int64(chainID)), func(transactor *bind.TransactOpts) (tx *types.Transaction, err error) {
-				return
+			_, err := c.txSubmitter.SubmitTransaction(ctx, big.NewInt(int64(chainID)), func(transactor *bind.TransactOpts) (tx *types.Transaction, err error) {
+				contract := c.boundSynapseCCTPs[chainID]
+				return contract.ReceiveCircleToken(transactor, msg.Message, msg.Signature, msg.RequestVersion, msg.FormattedRequest)
 			})
+			if err != nil {
+				return fmt.Errorf("could not submit transaction: %w", err)
+			}
+
 		case <-ctx.Done():
 			return nil
 		}
