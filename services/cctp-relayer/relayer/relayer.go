@@ -166,7 +166,7 @@ func (c CCTPRelayer) Run(ctx context.Context) error {
 		})
 
 		g.Go(func() error {
-			return c.submitReceiveCircleToken(ctx, chain.ChainID)
+			return c.processBridgeEvents(ctx, chain.ChainID)
 		})
 
 		g.Go(func() error {
@@ -361,7 +361,7 @@ func (c CCTPRelayer) handleCircleRequestSent(parentCtx context.Context, txhash c
 }
 
 // Completes a USDC bridging sequence by calling ReceiveCircleToken() on the destination chain.
-func (c CCTPRelayer) submitReceiveCircleToken(ctx context.Context, chainID uint32) (err error) {
+func (c CCTPRelayer) processBridgeEvents(ctx context.Context, chainID uint32) (err error) {
 	for {
 		select {
 		// Receive a raw message from the receive channel.
@@ -370,14 +370,7 @@ func (c CCTPRelayer) submitReceiveCircleToken(ctx context.Context, chainID uint3
 			go c.fetchAttestation(ctx, chainID, msg)
 		case msg := <-c.chainRelayers[chainID].usdcMsgSendChan:
 			// Submit the message to the destination chain.
-			_, err := c.txSubmitter.SubmitTransaction(ctx, big.NewInt(int64(chainID)), func(transactor *bind.TransactOpts) (tx *types.Transaction, err error) {
-				contract := c.boundSynapseCCTPs[chainID]
-				return contract.ReceiveCircleToken(transactor, msg.Message, msg.Signature, msg.RequestVersion, msg.FormattedRequest)
-			})
-			if err != nil {
-				return fmt.Errorf("could not submit transaction: %w", err)
-			}
-
+			go c.submitReceiveCircleToken(ctx, chainID, msg)
 		case <-ctx.Done():
 			return nil
 		}
@@ -402,4 +395,24 @@ func (c CCTPRelayer) fetchAttestation(parentCtx context.Context, chainID uint32,
 
 	// Send the completed message back through the send channel.
 	c.chainRelayers[chainID].usdcMsgSendChan <- msg
+}
+
+func (c CCTPRelayer) submitReceiveCircleToken(parentCtx context.Context, chainID uint32, msg *UsdcMessage) {
+	ctx, span := c.handler.Tracer().Start(parentCtx, "fetchAttestation", trace.WithAttributes(
+		attribute.String(metrics.TxHash, msg.TxHash.String()),
+		attribute.Int(metrics.ChainID, int(chainID)),
+	))
+
+	var err error
+	defer func() {
+		metrics.EndSpanWithErr(span, err)
+	}()
+
+	_, err = c.txSubmitter.SubmitTransaction(ctx, big.NewInt(int64(chainID)), func(transactor *bind.TransactOpts) (tx *types.Transaction, err error) {
+		contract := c.boundSynapseCCTPs[chainID]
+		return contract.ReceiveCircleToken(transactor, msg.Message, msg.Signature, msg.RequestVersion, msg.FormattedRequest)
+	})
+	if err != nil {
+		err = fmt.Errorf("could not submit transaction: %w", err)
+	}
 }
