@@ -184,4 +184,5 @@ func (c *CCTPRelayerSuite) TestSubmitReceiveCircleToken() {
 	}
 	err = relay.SubmitReceiveCircleToken(c.GetTestContext(), &msg)
 	c.Nil(err)
+	// TODO(dwasse): verify usdc balance on recv chain?
 }
