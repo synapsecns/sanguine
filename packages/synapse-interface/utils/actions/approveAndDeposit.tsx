@@ -3,7 +3,7 @@ import _ from 'lodash'
 import toast from 'react-hot-toast'
 
 import {
-  getSwapDepositContract,
+  getSwapDepositContractFields,
   useSwapDepositContract,
 } from '@hooks/useSwapDepositContract'
 import { subtractSlippage } from '@utils/slippage'
@@ -26,7 +26,7 @@ export const approve = async (
 ) => {
   const currentChainName = CHAINS_BY_ID[chainId].name
 
-  const { poolAddress } = getSwapDepositContract(pool, chainId)
+  const { poolAddress } = getSwapDepositContractFields(pool, chainId)
 
   const requestingApprovalPopup = toast(
     `Requesting approval on ${currentChainName}`,

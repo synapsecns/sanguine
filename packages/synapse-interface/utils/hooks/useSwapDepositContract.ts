@@ -6,7 +6,7 @@ import { Contract } from 'ethers'
 import { fetchSigner } from '@wagmi/core'
 
 export const useSwapDepositContract = async (pool: Token, chainId: number) => {
-  const { abi, poolAddress } = getSwapDepositContract(pool, chainId)
+  const { abi, poolAddress } = getSwapDepositContractFields(pool, chainId)
 
   const signer = await fetchSigner({ chainId })
 
@@ -15,7 +15,7 @@ export const useSwapDepositContract = async (pool: Token, chainId: number) => {
   return swapContract
 }
 
-export const getSwapDepositContract = (pool: Token, chainId: number) => {
+export const getSwapDepositContractFields = (pool: Token, chainId: number) => {
   let poolAddress
   let abi
 

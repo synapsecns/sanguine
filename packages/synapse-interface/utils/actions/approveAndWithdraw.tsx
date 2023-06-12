@@ -1,6 +1,6 @@
 import { ALL } from '@constants/withdrawTypes'
 import {
-  getSwapDepositContract,
+  getSwapDepositContractFields,
   useSwapDepositContract,
 } from '@hooks/useSwapDepositContract'
 import ExplorerToastLink from '@components/ExplorerToastLink'
@@ -22,7 +22,7 @@ export const approve = async (
     return
   }
 
-  const { poolAddress } = getSwapDepositContract(pool, chainId)
+  const { poolAddress } = getSwapDepositContractFields(pool, chainId)
 
   return await approveToken(
     poolAddress,

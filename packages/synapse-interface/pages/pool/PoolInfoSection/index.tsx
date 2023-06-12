@@ -13,7 +13,7 @@ import CurrencyReservesCard from './CurrencyReservesCard'
 import LoadingSpinner from '@tw/LoadingSpinner'
 import { useEffect, useState } from 'react'
 import { getPoolFee } from '@utils/actions/getPoolFee'
-import { getSwapDepositContract } from '@/utils/hooks/useSwapDepositContract'
+import { getSwapDepositContractFields } from '@/utils/hooks/useSwapDepositContract'
 const PoolInfoSection = ({
   pool,
   poolData,
@@ -24,7 +24,7 @@ const PoolInfoSection = ({
   chainId: number
 }) => {
   const [swapFee, setSwapFee] = useState('')
-  const { poolAddress } = getSwapDepositContract(pool, chainId)
+  const { poolAddress } = getSwapDepositContractFields(pool, chainId)
   useEffect(() => {
     if (pool && chainId) {
       getPoolFee(poolAddress, chainId).then((res) => {

@@ -20,7 +20,7 @@ import { PoolData, PoolUserData } from '@types'
 import LoadingTokenInput from '@components/loading/LoadingTokenInput'
 import { fetchBalance, fetchToken } from '@wagmi/core'
 import { formatBNToString } from '@/utils/bignumber/format'
-import { getSwapDepositContract } from '@/utils/hooks/useSwapDepositContract'
+import { getSwapDepositContractFields } from '@/utils/hooks/useSwapDepositContract'
 
 const DEFAULT_DEPOSIT_QUOTE = {
   priceImpact: undefined,
@@ -56,7 +56,7 @@ const Deposit = ({
   const [time, setTime] = useState(Date.now())
   const { synapseSDK } = useSynapseContext()
 
-  const { poolAddress } = getSwapDepositContract(pool, chainId)
+  const { poolAddress } = getSwapDepositContractFields(pool, chainId)
 
   // TODO move this to utils
   const sumBigNumbersFromState = () => {

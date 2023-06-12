@@ -23,7 +23,7 @@ import { Token } from '@types'
 import { approve, withdraw } from '@/utils/actions/approveAndWithdraw'
 import { getTokenAllowance } from '@/utils/actions/getTokenAllowance'
 import { PoolData, PoolUserData } from '@types'
-import { getSwapDepositContract } from '@/utils/hooks/useSwapDepositContract'
+import { getSwapDepositContractFields } from '@/utils/hooks/useSwapDepositContract'
 
 const DEFAULT_WITHDRAW_QUOTE = {
   priceImpact: Zero,
@@ -77,7 +77,7 @@ const Withdraw = ({
   const { synapseSDK } = useSynapseContext()
 
   const showTokens = pool.nativeTokens ?? pool.poolTokens
-  const { poolAddress } = getSwapDepositContract(pool, chainId)
+  const { poolAddress } = getSwapDepositContractFields(pool, chainId)
 
   const calculateMaxWithdraw = async () => {
     if (poolUserData == null || address == null) {
