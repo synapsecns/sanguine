@@ -9,7 +9,7 @@ import PriceImpactDisplay from '../components/PriceImpactDisplay'
 import { useSynapseContext } from '@/utils/providers/SynapseProvider'
 import { TransactionButton } from '@/components/buttons/TransactionButton'
 import { Zero } from '@ethersproject/constants'
-import { Token } from '@types'
+import { PoolToken, Token } from '@types'
 import { useState, useEffect, useMemo } from 'react'
 import { BigNumber } from '@ethersproject/bignumber'
 import { calculateExchangeRate } from '@utils/calculateExchangeRate'
@@ -18,12 +18,16 @@ import { approve, deposit } from '@/utils/actions/approveAndDeposit'
 import { QUOTE_POLLING_INTERVAL } from '@/constants/bridge' // TODO CHANGE
 import { PoolData, PoolUserData } from '@types'
 import LoadingTokenInput from '@components/loading/LoadingTokenInput'
+import { fetchBalance, fetchToken } from '@wagmi/core'
+import { formatBNToString } from '@/utils/bignumber/format'
 
 const DEFAULT_DEPOSIT_QUOTE = {
   priceImpact: undefined,
   allowances: {},
   routerAddress: '',
 }
+
+// TODO: Find mistmatch in pool tokens vs. native tokens
 
 const Deposit = ({
   pool,
@@ -129,6 +133,9 @@ const Deposit = ({
   }, [inputValue, time, pool, chainId, address])
 
   const onChangeInputValue = (token: Token, value: string) => {
+    // console.log(`[changeInputValue] token`, token)
+    // const ga = getAddress(token.addresses[chainId])
+    // console.log(`ga`, ga)
     const bigNum = stringToBigNum(value, token.decimals[chainId]) ?? Zero
     if (chainId && token) {
       setInputValue({
@@ -172,8 +179,20 @@ const Deposit = ({
       pendingLabel: 'Depositing funds...',
       className: '',
       disabled: false,
-      buttonAction: () =>
-        deposit(pool, 'ONE_TENTH', null, inputValue.bn, chainId),
+      buttonAction: () => {
+        console.log(`[buttonAction] inputValue.bn`, inputValue.bn)
+        console.log(`[buttonAction] pool`, pool)
+        console.log(`[buttonAction] poolData`, poolData)
+        console.log(`[buttonAction] poolUserData`, poolUserData)
+
+        const filteredInputValues = filterInputValues(inputValue, pool, chainId)
+
+        console.log(`[buttonAction] filteredInputValues`, filteredInputValues)
+
+        // return deposit(pool, 'ONE_TENTH', null, inputValue.bn, chainId)
+        return deposit(pool, 'ONE_TENTH', null, filteredInputValues, chainId)
+      },
+
       postButtonAction: () => {
         console.log('Post Button Action')
         refetchCallback()
@@ -181,11 +200,13 @@ const Deposit = ({
       },
     }
 
-    if (sumBigNumbersFromState().eq(0)) {
-      properties.disabled = true
-    }
+    // if (sumBigNumbersFromState().eq(0)) {
+    //   console.log(`'am hi here `)
+    //   properties.disabled = true
+    // }
 
     if (!isFromBalanceEnough) {
+      console.log(`m i here `)
       properties.label = `Insufficient Balance`
       properties.disabled = true
       return properties
@@ -247,7 +268,8 @@ const Deposit = ({
     () => (
       <TransactionButton
         className={btnClassName}
-        disabled={sumBigNumbersFromState().eq(0) || disabled}
+        // disabled={sumBigNumbersFromState().eq(0) || disabled}
+        disabled={disabled}
         onClick={() => buttonAction()}
         onSuccess={() => postButtonAction()}
         label={btnLabel}
@@ -262,27 +284,25 @@ const Deposit = ({
       btnClassName,
       isFromBalanceEnough,
       isAllowanceEnough,
+      inputValue,
     ]
   )
+
+  // console.log(`pooluserData`, poolUserData)
 
   return (
     <div className="flex-col">
       <div className="px-2 pt-1 pb-4 bg-bgLight rounded-xl">
         {pool && poolUserData && poolData ? (
           poolUserData.tokens.map((tokenObj, i) => {
-            const balanceToken = correctToken(tokenObj.token)
-
             return (
-              <DepositTokenInput
-                token={balanceToken}
-                key={balanceToken.symbol}
-                rawBalance={tokenObj.rawBalance}
-                balance={tokenObj.balance}
-                balanceStr={String(tokenObj.balanceStr)}
-                inputValueStr={inputValue.str[balanceToken.addresses[chainId]]}
-                onChange={(value) => onChangeInputValue(balanceToken, value)}
-                chainId={chainId}
+              <SerializedDepositInput
+                key={i}
+                tokenObj={tokenObj}
                 address={address}
+                chainId={chainId}
+                inputValue={inputValue}
+                onChangeInputValue={onChangeInputValue}
               />
             )
           })
@@ -300,6 +320,53 @@ const Deposit = ({
     </div>
   )
 }
+
+const SerializedDepositInput = ({
+  tokenObj,
+  address,
+  chainId,
+  inputValue,
+  onChangeInputValue,
+}) => {
+  const [serializedToken, setSerializedToken] = useState(undefined)
+  const balanceToken = correctToken(tokenObj.token)
+
+  useEffect(() => {
+    const fetchSerializedData = async () => {
+      try {
+        const token = await serializeToken(
+          address,
+          chainId,
+          balanceToken,
+          tokenObj
+        )
+        setSerializedToken(token)
+      } catch (error) {
+        console.log(`error`, error)
+      }
+    }
+
+    fetchSerializedData()
+  }, [])
+
+  // console.log(`serializedToken`, serializedToken)
+  // console.log(`inputValue`, inputValue)
+  return (
+    serializedToken && (
+      <DepositTokenInput
+        token={serializedToken}
+        key={serializedToken.symbol}
+        rawBalance={serializedToken.rawBalance}
+        balanceStr={String(serializedToken.balanceStr)}
+        inputValueStr={inputValue.str[serializedToken.addresses[chainId]]}
+        onChange={(value) => onChangeInputValue(serializedToken, value)}
+        chainId={chainId}
+        address={address}
+      />
+    )
+  )
+}
+
 const correctToken = (token: Token) => {
   let balanceToken: Token | undefined
   if (token.symbol == WETH.symbol) {
@@ -311,6 +378,77 @@ const correctToken = (token: Token) => {
     balanceToken = token
   }
   return balanceToken
+}
+
+const filterInputValues = (inputValues, pool, chainId) => {
+  // take the inputvalues and only keep the ones that have pool native tokens
+
+  // inputvalues.bn
+  // 0x0000000000000000000000000000000000000000: BigNumber {_hex: '0x11c37937e08000', _isBigNumber: true}
+  // 0x3ea9B0ab55F34Fb188824Ee288CeaEfC63cf908e: BigNumber {_hex: '0x00', _isBigNumber: true}
+  // 0x82aF49447D8a07e3bd95BD0d56f35241523fBab1 : BigNumber {_hex: '0x00',
+
+  const poolTokens = pool.nativeTokens ?? pool.poolTokens
+
+  const poolTokenAddresses = []
+
+  poolTokens.map((nativeToken) => {
+    poolTokenAddresses.push(nativeToken.addresses[chainId])
+  })
+
+  let filteredInputValues = Object.keys(inputValues.bn)
+    .filter((key) => poolTokenAddresses.includes(key))
+    .reduce((obj, key) => {
+      obj[key] = inputValues.bn[key]
+      return obj
+    }, {})
+
+  return filteredInputValues
+}
+
+const serializeToken = async (
+  address: string,
+  chainId: number,
+  balanceToken: Token,
+  tokenObj: any
+  // tokenObj: PoolToken
+) => {
+  let fetchedBalance
+
+  if (balanceToken === ETH) {
+    fetchedBalance = await fetchBalance({
+      address: address as `0x${string}`,
+      chainId,
+    })
+
+    return {
+      ...balanceToken,
+      rawBalance: fetchedBalance.value,
+      balanceStr: formatBNToString(
+        fetchedBalance.value,
+        balanceToken.decimals[chainId],
+        4
+      ),
+    }
+  } else if (balanceToken === WETHE) {
+    fetchedBalance = await fetchBalance({
+      address: address as `0x${string}`,
+      chainId,
+      token: balanceToken.addresses[chainId] as `0x${string}`,
+    })
+
+    return {
+      ...balanceToken,
+      rawBalance: fetchedBalance.value,
+      balanceStr: fetchedBalance.formatted,
+    }
+  } else {
+    return {
+      ...balanceToken,
+      rawBalance: tokenObj.rawBalance,
+      balanceStr: tokenObj.balanceStr,
+    }
+  }
 }
 
 export default Deposit

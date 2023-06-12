@@ -15,6 +15,8 @@ import { WETH } from '@constants/tokens/swapMaster'
 import { approveToken } from '@utils/approveToken'
 import { Token } from '@types'
 
+import { parseUnits } from '@ethersproject/units'
+
 export const approve = async (
   pool: Token,
   depositQuote: any,
@@ -93,6 +95,9 @@ export const deposit = async (
   chainId: number
 ) => {
   const poolContract = await useSwapDepositContract(pool, chainId)
+  console.log(`[approveAndDeposit] pool`, pool)
+  console.log(`[approveAndDeposit] poolContract`, poolContract)
+  console.log(`[approveAndDeposit deposit()] inputAmounts`, inputAmounts)
   let pendingPopup: any
   let successPopup: any
 
@@ -103,13 +108,29 @@ export const deposit = async (
 
   try {
     // get this from quote?
+    console.log('[approveAndDeposit] here 1')
+    console.log(
+      `[approveAndDeposit] Object.values(inputAmounts)`,
+      Object.values(inputAmounts)
+    )
     let minToMint = await poolContract.calculateTokenAmount(
       Object.values(inputAmounts),
       true
     )
+    console.log('[approveAndDeposit] here 2')
+    console.log(`[approveAndDeposit] minToMint`, minToMint)
+    console.log(`[approveAndDeposit] slippageSelected`, slippageSelected)
+    console.log(`[approveAndDeposit] slippageCustom`, slippageCustom)
     minToMint = subtractSlippage(minToMint, slippageSelected, slippageCustom)
 
     const result = Array.from(Object.values(inputAmounts), (value) => value)
+    console.log(`[approveAndDeposit] result`, result)
+    console.log(`[approveAndDeposit] minToMint`, minToMint)
+
+    const wethIndex = _.findIndex(
+      pool.poolTokens,
+      (t) => t.symbol == WETH.symbol
+    )
 
     let spendTransactionArgs = [
       result,
@@ -117,11 +138,27 @@ export const deposit = async (
       Math.round(new Date().getTime() / 1000 + 60 * 10),
     ]
 
+    //   const liquidityAmounts = pool.poolTokens.map((i) =>
+    //   parseUnits(sanitizeValue(inputState[i.symbol]), i.decimals[chainId])
+    // )
+
+    // if (wethIndex >= 0) {
+    //   spendTransactionArgs.push({ value: liquidityAmounts[wethIndex] })
+    // }
+
+    console.log(
+      `[approveAndDeposit] spendTransactionArgs`,
+      spendTransactionArgs
+    )
+
+    console.log('[approveAndDeposit] here 3')
     const spendTransaction = await poolContract.addLiquidity(
       ...spendTransactionArgs
     )
+    console.log('[approveAndDeposit] here 4')
 
     const tx = await spendTransaction.wait()
+    console.log('[approveAndDeposit] here 5')
 
     toast.dismiss(pendingPopup)
 
