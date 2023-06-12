@@ -7,5 +7,5 @@
 ```
 const coverageAggregator = require('@synapsecns/coverage-aggregator');
 
-// TODO: DEMONSTRATE USAGE
+// TODO: DEMONSTRATE API
 ```
