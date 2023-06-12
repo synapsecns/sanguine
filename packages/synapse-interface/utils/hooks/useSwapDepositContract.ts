@@ -6,8 +6,19 @@ import { Contract } from 'ethers'
 import { fetchSigner } from '@wagmi/core'
 
 export const useSwapDepositContract = async (pool: Token, chainId: number) => {
+  const { abi, poolAddress } = getSwapDepositContract(pool, chainId)
+
+  const signer = await fetchSigner({ chainId })
+
+  const swapContract = new Contract(poolAddress, abi, signer)
+
+  return swapContract
+}
+
+export const getSwapDepositContract = (pool: Token, chainId: number) => {
   let poolAddress
   let abi
+
   if (pool?.swapEthAddresses?.[chainId]) {
     poolAddress = pool.swapEthAddresses[chainId]
     abi = SWAP_ETH_WRAPPER_ABI
@@ -18,9 +29,6 @@ export const useSwapDepositContract = async (pool: Token, chainId: number) => {
     poolAddress = pool.swapAddresses[chainId]
     abi = SWAP_ABI
   }
-  const signer = await fetchSigner({ chainId })
 
-  const swapContract = new Contract(poolAddress, abi, signer)
-
-  return swapContract
+  return { poolAddress, abi }
 }

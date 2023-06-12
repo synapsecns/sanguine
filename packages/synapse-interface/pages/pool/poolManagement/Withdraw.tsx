@@ -23,6 +23,7 @@ import { Token } from '@types'
 import { approve, withdraw } from '@/utils/actions/approveAndWithdraw'
 import { getTokenAllowance } from '@/utils/actions/getTokenAllowance'
 import { PoolData, PoolUserData } from '@types'
+import { getSwapDepositContract } from '@/utils/hooks/useSwapDepositContract'
 
 const DEFAULT_WITHDRAW_QUOTE = {
   priceImpact: Zero,
@@ -74,6 +75,8 @@ const Withdraw = ({
     setInputValue({ bn: Zero, str: '' })
   }
   const { synapseSDK } = useSynapseContext()
+
+  const showTokens = pool.nativeTokens ?? pool.poolTokens
 
   const calculateMaxWithdraw = async () => {
     if (poolUserData == null || address == null) {
@@ -337,8 +340,8 @@ const Withdraw = ({
           label="Combo"
           labelClassName={withdrawType === ALL && 'text-indigo-500'}
         />
-        {pool?.poolTokens &&
-          pool.poolTokens.map((token) => {
+        {showTokens &&
+          showTokens.map((token) => {
             const checked = withdrawType === token.addresses[chainId]
             return (
               <RadioButton
@@ -387,7 +390,7 @@ const Withdraw = ({
           <Grid cols={{ xs: 2 }}>
             <div>
               <ReceivedTokenSection
-                poolTokens={pool?.poolTokens ?? []}
+                poolTokens={showTokens}
                 withdrawQuote={withdrawQuote}
                 chainId={chainId}
               />
