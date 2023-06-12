@@ -138,13 +138,11 @@ export const deposit = async (
       Math.round(new Date().getTime() / 1000 + 60 * 10),
     ]
 
-    //   const liquidityAmounts = pool.poolTokens.map((i) =>
-    //   parseUnits(sanitizeValue(inputState[i.symbol]), i.decimals[chainId])
-    // )
+    const liquidityAmounts = Object.values(inputAmounts)
 
-    // if (wethIndex >= 0) {
-    //   spendTransactionArgs.push({ value: liquidityAmounts[wethIndex] })
-    // }
+    if (wethIndex >= 0) {
+      spendTransactionArgs.push({ value: liquidityAmounts[wethIndex] })
+    }
 
     console.log(
       `[approveAndDeposit] spendTransactionArgs`,
