@@ -13,8 +13,13 @@ func (c CCTPRelayer) HandleCircleRequestSent(parentCtx context.Context, txhash c
 }
 
 // FetchAttestation wraps fetchAttestation for testing.
-func (c CCTPRelayer) FetchAttestation(parentCtx context.Context, chainID uint32, msg *UsdcMessage) {
-	c.fetchAttestation(parentCtx, chainID, msg)
+func (c CCTPRelayer) FetchAttestation(parentCtx context.Context, chainID uint32, msg *UsdcMessage) error {
+	return c.fetchAttestation(parentCtx, chainID, msg)
+}
+
+// SubmitReceiveCircleToken wraps submitReceiveCircleToken for testing.
+func (c CCTPRelayer) SubmitReceiveCircleToken(parentCtx context.Context, msg *UsdcMessage) error {
+	return c.submitReceiveCircleToken(parentCtx, msg)
 }
 
 // SetOmnirpcClient sets the omnirpc client for testing.

@@ -8,6 +8,7 @@ import (
 	"time"
 
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
+	"github.com/ethereum/go-ethereum/crypto"
 	signerConfig "github.com/synapsecns/sanguine/ethergo/signer/config"
 	"github.com/synapsecns/sanguine/ethergo/submitter"
 	db2 "github.com/synapsecns/sanguine/services/cctp-relayer/db"
@@ -35,8 +36,9 @@ import (
 
 // UsdcMessage contains data necessary to be posted on the destination chain.
 type UsdcMessage struct {
-	TxHash           common.Hash // hash of the transaction that produced the USDC burn tx
+	ChainID          uint32      // chain ID of the destination chain
 	Message          []byte      // raw bytes of message produced by Circle's MessageTransmitter
+	MessageHash      common.Hash // keccak256 hash of message bytes
 	Signature        []byte      // attestation produced by Circle's API: https://developers.circle.com/stablecoin/reference/getattestation
 	RequestVersion   uint32      // version of the request
 	FormattedRequest []byte      // formatted request produced by SynapseCCTP
@@ -122,6 +124,7 @@ func NewCCTPRelayer(ctx context.Context, cfg config.Config, scribeClient client.
 		if err != nil {
 			return nil, fmt.Errorf("could not build bound contract: %w", err)
 		}
+		fmt.Printf("Set synapseCCTP on chain %v at address %v\n", chain.ChainID, chain.GetDestinationAddress())
 	}
 
 	httpBackoff := backoff.NewExponentialBackOff()
@@ -141,16 +144,17 @@ func NewCCTPRelayer(ctx context.Context, cfg config.Config, scribeClient client.
 	txSubmitter := submitter.NewTransactionSubmitter(handler, signer, omniRPCClient, db.SubmitterDB(), &cfg.SubmitterConfig)
 
 	return &CCTPRelayer{
-		cfg:            cfg,
-		omnirpcClient:  omniRPCClient,
-		chainRelayers:  chainRelayers,
-		scribeClient:   scribeClient,
-		grpcClient:     grpcClient,
-		grpcConn:       conn,
-		httpBackoff:    httpBackoff,
-		handler:        handler,
-		attestationAPI: attestationAPI,
-		txSubmitter:    txSubmitter,
+		cfg:               cfg,
+		omnirpcClient:     omniRPCClient,
+		chainRelayers:     chainRelayers,
+		scribeClient:      scribeClient,
+		grpcClient:        grpcClient,
+		grpcConn:          conn,
+		httpBackoff:       httpBackoff,
+		handler:           handler,
+		attestationAPI:    attestationAPI,
+		txSubmitter:       txSubmitter,
+		boundSynapseCCTPs: boundSynapseCCTPs,
 	}, nil
 }
 
@@ -349,8 +353,9 @@ func (c CCTPRelayer) handleCircleRequestSent(parentCtx context.Context, txhash c
 		return err
 	default:
 		msg := UsdcMessage{
-			TxHash:  txhash,
-			Message: messageSentEvent.Message,
+			ChainID:     uint32(circleRequestSentEvent.ChainId.Int64()),
+			Message:     messageSentEvent.Message,
+			MessageHash: crypto.Keccak256Hash(messageSentEvent.Message),
 			//Signature: //comes from the api
 			RequestVersion:   circleRequestSentEvent.RequestVersion,
 			FormattedRequest: circleRequestSentEvent.FormattedRequest,
@@ -370,49 +375,57 @@ func (c CCTPRelayer) processBridgeEvents(ctx context.Context, chainID uint32) (e
 			go c.fetchAttestation(ctx, chainID, msg)
 		case msg := <-c.chainRelayers[chainID].usdcMsgSendChan:
 			// Submit the message to the destination chain.
-			go c.submitReceiveCircleToken(ctx, chainID, msg)
+			go c.submitReceiveCircleToken(ctx, msg)
 		case <-ctx.Done():
 			return nil
 		}
 	}
 }
 
-func (c CCTPRelayer) fetchAttestation(parentCtx context.Context, chainID uint32, msg *UsdcMessage) {
+func (c CCTPRelayer) fetchAttestation(parentCtx context.Context, chainID uint32, msg *UsdcMessage) (err error) {
 	ctx, span := c.handler.Tracer().Start(parentCtx, "fetchAttestation", trace.WithAttributes(
-		attribute.String(metrics.TxHash, msg.TxHash.String()),
+		attribute.String("messageHash", msg.MessageHash.String()),
 		attribute.Int(metrics.ChainID, int(chainID)),
 	))
 
-	var err error
 	defer func() {
 		metrics.EndSpanWithErr(span, err)
 	}()
 
 	err = backoff.Retry(func() (err error) {
-		msg.Signature, err = c.attestationAPI.GetAttestation(ctx, msg.TxHash)
+		msg.Signature, err = c.attestationAPI.GetAttestation(ctx, msg.MessageHash)
 		return
 	}, c.httpBackoff)
+	if err != nil {
+		return
+	}
 
 	// Send the completed message back through the send channel.
 	c.chainRelayers[chainID].usdcMsgSendChan <- msg
+	return
 }
 
-func (c CCTPRelayer) submitReceiveCircleToken(parentCtx context.Context, chainID uint32, msg *UsdcMessage) {
-	ctx, span := c.handler.Tracer().Start(parentCtx, "fetchAttestation", trace.WithAttributes(
-		attribute.String(metrics.TxHash, msg.TxHash.String()),
-		attribute.Int(metrics.ChainID, int(chainID)),
+func (c CCTPRelayer) submitReceiveCircleToken(parentCtx context.Context, msg *UsdcMessage) (err error) {
+	ctx, span := c.handler.Tracer().Start(parentCtx, "submitReceiveCircleToken", trace.WithAttributes(
+		attribute.String("messageHash", msg.MessageHash.String()),
+		attribute.Int(metrics.ChainID, int(msg.ChainID)),
 	))
 
-	var err error
 	defer func() {
 		metrics.EndSpanWithErr(span, err)
 	}()
 
-	_, err = c.txSubmitter.SubmitTransaction(ctx, big.NewInt(int64(chainID)), func(transactor *bind.TransactOpts) (tx *types.Transaction, err error) {
-		contract := c.boundSynapseCCTPs[chainID]
+	_, err = c.txSubmitter.SubmitTransaction(ctx, big.NewInt(int64(msg.ChainID)), func(transactor *bind.TransactOpts) (tx *types.Transaction, err error) {
+		fmt.Printf("ChainID: %v\n", msg.ChainID)
+		contract := c.boundSynapseCCTPs[msg.ChainID]
+		fmt.Printf("transactor: %v\n", transactor)
+		fmt.Printf("contract: %v\n", contract)
+		fmt.Printf("msg: %v\n", msg)
+		fmt.Printf("synapsecctps: %v\n", c.boundSynapseCCTPs)
 		return contract.ReceiveCircleToken(transactor, msg.Message, msg.Signature, msg.RequestVersion, msg.FormattedRequest)
 	})
 	if err != nil {
 		err = fmt.Errorf("could not submit transaction: %w", err)
 	}
+	return
 }
