@@ -76,7 +76,7 @@ const Withdraw = ({
   }
   const { synapseSDK } = useSynapseContext()
 
-  const showTokens = pool.nativeTokens ?? pool.poolTokens
+  const showTokens = pool ? pool.nativeTokens ?? pool.poolTokens : []
   const { poolAddress } = getSwapDepositContractFields(pool, chainId)
 
   const calculateMaxWithdraw = async () => {

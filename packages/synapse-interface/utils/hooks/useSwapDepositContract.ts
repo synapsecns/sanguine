@@ -25,9 +25,12 @@ export const getSwapDepositContractFields = (pool: Token, chainId: number) => {
   } else if (pool?.swapWrapperAddresses?.[chainId]) {
     poolAddress = pool.swapWrapperAddresses[chainId]
     abi = AV_SWAP_WRAPPER_ABI
-  } else {
-    poolAddress = pool.swapAddresses[chainId]
+  } else if (pool?.swapAddresses?.[chainId]) {
+    poolAddress = pool?.swapAddresses[chainId]
     abi = SWAP_ABI
+  } else {
+    poolAddress = undefined
+    abi = undefined
   }
 
   return { poolAddress, abi }
