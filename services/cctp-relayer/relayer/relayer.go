@@ -124,7 +124,6 @@ func NewCCTPRelayer(ctx context.Context, cfg config.Config, scribeClient client.
 		if err != nil {
 			return nil, fmt.Errorf("could not build bound contract: %w", err)
 		}
-		fmt.Printf("Set synapseCCTP on chain %v at address %v\n", chain.ChainID, chain.GetDestinationAddress())
 	}
 
 	httpBackoff := backoff.NewExponentialBackOff()
@@ -416,12 +415,7 @@ func (c CCTPRelayer) submitReceiveCircleToken(parentCtx context.Context, msg *Us
 	}()
 
 	_, err = c.txSubmitter.SubmitTransaction(ctx, big.NewInt(int64(msg.ChainID)), func(transactor *bind.TransactOpts) (tx *types.Transaction, err error) {
-		fmt.Printf("ChainID: %v\n", msg.ChainID)
 		contract := c.boundSynapseCCTPs[msg.ChainID]
-		fmt.Printf("transactor: %v\n", transactor)
-		fmt.Printf("contract: %v\n", contract)
-		fmt.Printf("msg: %v\n", msg)
-		fmt.Printf("synapsecctps: %v\n", c.boundSynapseCCTPs)
 		return contract.ReceiveCircleToken(transactor, msg.Message, msg.Signature, msg.RequestVersion, msg.FormattedRequest)
 	})
 	if err != nil {
