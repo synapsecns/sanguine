@@ -45,6 +45,7 @@ type messageImpl struct {
 
 const headerOffset uint16 = 0
 
+// NewMessageFromBaseMessage creates a generic message given a base message.
 func NewMessageFromBaseMessage(header Header, baseMessage BaseMessage) (Message, error) {
 	if header.Flag() != MessageFlagBase {
 		return nil, fmt.Errorf("header flag is not base")
@@ -62,6 +63,7 @@ func NewMessageFromBaseMessage(header Header, baseMessage BaseMessage) (Message,
 	}, nil
 }
 
+// NewMessageFromManagerMessage creates a generic message given a manager message.
 func NewMessageFromManagerMessage(header Header, payload []byte) (Message, error) {
 	if header.Flag() != MessageFlagManager {
 		return nil, fmt.Errorf("header flag is not manager")

@@ -327,23 +327,24 @@ func (u *AgentsIntegrationSuite) TestAgentsE2E() {
 		u.Nil(err)
 		if executed {
 			return true
-		} else {
-			// This transaction is needed to get the simulated chain's block number to increase by 1, since StreamLogs will
-			// do lastBlockNumber - 1.
-			tx, err = u.TestContractOnOrigin.EmitAgentsEventA(txContextOrigin.TransactOpts, big.NewInt(gofakeit.Int64()), big.NewInt(gofakeit.Int64()), big.NewInt(gofakeit.Int64()))
-			u.Nil(err)
-			u.TestBackendOrigin.WaitForConfirmation(u.GetTestContext(), tx)
-
-			txContextDestination := u.TestBackendDestination.GetTxContext(u.GetTestContext(), u.DestinationContractMetadata.OwnerPtr())
-			txContextSummit := u.TestBackendSummit.GetTxContext(u.GetTestContext(), u.InboxMetadataOnSummit.OwnerPtr())
-
-			tx, err = u.TestContractOnSummit.EmitAgentsEventA(txContextSummit.TransactOpts, big.NewInt(gofakeit.Int64()), big.NewInt(gofakeit.Int64()), big.NewInt(gofakeit.Int64()))
-			u.Nil(err)
-			u.TestBackendSummit.WaitForConfirmation(u.GetTestContext(), tx)
-			tx, err = u.TestContractOnDestination.EmitAgentsEventA(txContextDestination.TransactOpts, big.NewInt(gofakeit.Int64()), big.NewInt(gofakeit.Int64()), big.NewInt(gofakeit.Int64()))
-			u.Nil(err)
-			u.TestBackendDestination.WaitForConfirmation(u.GetTestContext(), tx)
-			return false
 		}
+
+		// This transaction is needed to get the simulated chain's block number to increase by 1, since StreamLogs will
+		// do lastBlockNumber - 1.
+		tx, err = u.TestContractOnOrigin.EmitAgentsEventA(txContextOrigin.TransactOpts, big.NewInt(gofakeit.Int64()), big.NewInt(gofakeit.Int64()), big.NewInt(gofakeit.Int64()))
+		u.Nil(err)
+		u.TestBackendOrigin.WaitForConfirmation(u.GetTestContext(), tx)
+
+		txContextDestination := u.TestBackendDestination.GetTxContext(u.GetTestContext(), u.DestinationContractMetadata.OwnerPtr())
+		txContextSummit := u.TestBackendSummit.GetTxContext(u.GetTestContext(), u.InboxMetadataOnSummit.OwnerPtr())
+
+		tx, err = u.TestContractOnSummit.EmitAgentsEventA(txContextSummit.TransactOpts, big.NewInt(gofakeit.Int64()), big.NewInt(gofakeit.Int64()), big.NewInt(gofakeit.Int64()))
+		u.Nil(err)
+		u.TestBackendSummit.WaitForConfirmation(u.GetTestContext(), tx)
+		tx, err = u.TestContractOnDestination.EmitAgentsEventA(txContextDestination.TransactOpts, big.NewInt(gofakeit.Int64()), big.NewInt(gofakeit.Int64()), big.NewInt(gofakeit.Int64()))
+		u.Nil(err)
+		u.TestBackendDestination.WaitForConfirmation(u.GetTestContext(), tx)
+
+		return false
 	})
 }
