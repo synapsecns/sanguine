@@ -28,11 +28,11 @@ jobs:
           echo "//registry.npmjs.org/:_authToken=${{ secrets.NPM_TOKEN }}" > ~/.npmrc
           echo "always-auth=true" >> ~/.npmrc
 
-      - name: 'Version and publish' # Interesting step
-        uses: oleksiyrudenko/gha-git-credentials@v2-latest
+      - uses: oleksiyrudenko/gha-git-credentials@v2-latest
         with:
-          token: '${{ secrets.LERNA_FGPAT }}'
+          token: '${{ secrets.LERNA_DK }}'
 
+      - name: 'Version and publish' # Interesting step
         # branch is protected so this must be an admin token, this will expire on 03/01/2024
         # replacement should be done by a service account with a fine-grained personal access token
         run: |
