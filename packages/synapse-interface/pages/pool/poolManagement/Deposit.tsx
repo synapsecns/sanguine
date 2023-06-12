@@ -20,14 +20,13 @@ import { PoolData, PoolUserData } from '@types'
 import LoadingTokenInput from '@components/loading/LoadingTokenInput'
 import { fetchBalance, fetchToken } from '@wagmi/core'
 import { formatBNToString } from '@/utils/bignumber/format'
+import { getSwapDepositContract } from '@/utils/hooks/useSwapDepositContract'
 
 const DEFAULT_DEPOSIT_QUOTE = {
   priceImpact: undefined,
   allowances: {},
   routerAddress: '',
 }
-
-// TODO: Find mistmatch in pool tokens vs. native tokens
 
 const Deposit = ({
   pool,
@@ -57,6 +56,8 @@ const Deposit = ({
   const [time, setTime] = useState(Date.now())
   const { synapseSDK } = useSynapseContext()
 
+  const { poolAddress } = getSwapDepositContract(pool, chainId)
+
   // TODO move this to utils
   const sumBigNumbersFromState = () => {
     let sum = Zero
@@ -84,14 +85,14 @@ const Deposit = ({
       if (poolData.totalLocked.gt(0) && inputSum.gt(0)) {
         const { amount } = await synapseSDK.calculateAddLiquidity(
           chainId,
-          pool.swapAddresses[chainId],
+          poolAddress,
           inputValue.bn
         )
 
         let allowances: Record<string, BigNumber> = {}
         for (const [key, value] of Object.entries(inputValue.bn)) {
           allowances[key] = await getTokenAllowance(
-            pool.swapAddresses[chainId],
+            poolAddress,
             key,
             address,
             chainId
@@ -108,7 +109,7 @@ const Deposit = ({
         setDepositQuote({
           priceImpact,
           allowances,
-          routerAddress: pool.swapAddresses[chainId],
+          routerAddress: poolAddress,
         })
       } else {
         setDepositQuote(DEFAULT_DEPOSIT_QUOTE)
@@ -133,9 +134,6 @@ const Deposit = ({
   }, [inputValue, time, pool, chainId, address])
 
   const onChangeInputValue = (token: Token, value: string) => {
-    // console.log(`[changeInputValue] token`, token)
-    // const ga = getAddress(token.addresses[chainId])
-    // console.log(`ga`, ga)
     const bigNum = stringToBigNum(value, token.decimals[chainId]) ?? Zero
     if (chainId && token) {
       setInputValue({
@@ -180,16 +178,8 @@ const Deposit = ({
       className: '',
       disabled: false,
       buttonAction: () => {
-        console.log(`[buttonAction] inputValue.bn`, inputValue.bn)
-        console.log(`[buttonAction] pool`, pool)
-        console.log(`[buttonAction] poolData`, poolData)
-        console.log(`[buttonAction] poolUserData`, poolUserData)
-
         const filteredInputValues = filterInputValues(inputValue, pool, chainId)
 
-        console.log(`[buttonAction] filteredInputValues`, filteredInputValues)
-
-        // return deposit(pool, 'ONE_TENTH', null, inputValue.bn, chainId)
         return deposit(pool, 'ONE_TENTH', null, filteredInputValues, chainId)
       },
 
@@ -206,7 +196,6 @@ const Deposit = ({
     // }
 
     if (!isFromBalanceEnough) {
-      console.log(`m i here `)
       properties.label = `Insufficient Balance`
       properties.disabled = true
       return properties
@@ -288,8 +277,6 @@ const Deposit = ({
     ]
   )
 
-  // console.log(`pooluserData`, poolUserData)
-
   return (
     <div className="flex-col">
       <div className="px-2 pt-1 pb-4 bg-bgLight rounded-xl">
@@ -349,8 +336,6 @@ const SerializedDepositInput = ({
     fetchSerializedData()
   }, [])
 
-  // console.log(`serializedToken`, serializedToken)
-  // console.log(`inputValue`, inputValue)
   return (
     serializedToken && (
       <DepositTokenInput
@@ -381,13 +366,6 @@ const correctToken = (token: Token) => {
 }
 
 const filterInputValues = (inputValues, pool, chainId) => {
-  // take the inputvalues and only keep the ones that have pool native tokens
-
-  // inputvalues.bn
-  // 0x0000000000000000000000000000000000000000: BigNumber {_hex: '0x11c37937e08000', _isBigNumber: true}
-  // 0x3ea9B0ab55F34Fb188824Ee288CeaEfC63cf908e: BigNumber {_hex: '0x00', _isBigNumber: true}
-  // 0x82aF49447D8a07e3bd95BD0d56f35241523fBab1 : BigNumber {_hex: '0x00',
-
   const poolTokens = pool.nativeTokens ?? pool.poolTokens
 
   const poolTokenAddresses = []
@@ -396,14 +374,12 @@ const filterInputValues = (inputValues, pool, chainId) => {
     poolTokenAddresses.push(nativeToken.addresses[chainId])
   })
 
-  let filteredInputValues = Object.keys(inputValues.bn)
-    .filter((key) => poolTokenAddresses.includes(key))
-    .reduce((obj, key) => {
-      obj[key] = inputValues.bn[key]
-      return obj
-    }, {})
+  let filteredObj = poolTokenAddresses.reduce((obj, key) => {
+    obj[key] = inputValues.bn.hasOwnProperty(key) ? inputValues.bn[key] : Zero
+    return obj
+  }, {})
 
-  return filteredInputValues
+  return filteredObj
 }
 
 const serializeToken = async (

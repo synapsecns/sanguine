@@ -2,7 +2,10 @@ import _ from 'lodash'
 
 import toast from 'react-hot-toast'
 
-import { useSwapDepositContract } from '@hooks/useSwapDepositContract'
+import {
+  getSwapDepositContract,
+  useSwapDepositContract,
+} from '@hooks/useSwapDepositContract'
 import { subtractSlippage } from '@utils/slippage'
 
 import ExplorerToastLink from '@components/ExplorerToastLink'
@@ -15,8 +18,6 @@ import { WETH } from '@constants/tokens/swapMaster'
 import { approveToken } from '@utils/approveToken'
 import { Token } from '@types'
 
-import { parseUnits } from '@ethersproject/units'
-
 export const approve = async (
   pool: Token,
   depositQuote: any,
@@ -24,6 +25,8 @@ export const approve = async (
   chainId: number
 ) => {
   const currentChainName = CHAINS_BY_ID[chainId].name
+
+  const { poolAddress } = getSwapDepositContract(pool, chainId)
 
   const requestingApprovalPopup = toast(
     `Requesting approval on ${currentChainName}`,
@@ -49,7 +52,7 @@ export const approve = async (
         : token.addresses[chainId]
 
     const approveTx = await approveToken(
-      pool.swapAddresses[chainId],
+      poolAddress,
       chainId,
       tokenToApprove,
       inputValue[tokenAddr]
@@ -95,9 +98,6 @@ export const deposit = async (
   chainId: number
 ) => {
   const poolContract = await useSwapDepositContract(pool, chainId)
-  console.log(`[approveAndDeposit] pool`, pool)
-  console.log(`[approveAndDeposit] poolContract`, poolContract)
-  console.log(`[approveAndDeposit deposit()] inputAmounts`, inputAmounts)
   let pendingPopup: any
   let successPopup: any
 
@@ -108,24 +108,13 @@ export const deposit = async (
 
   try {
     // get this from quote?
-    console.log('[approveAndDeposit] here 1')
-    console.log(
-      `[approveAndDeposit] Object.values(inputAmounts)`,
-      Object.values(inputAmounts)
-    )
     let minToMint = await poolContract.calculateTokenAmount(
       Object.values(inputAmounts),
       true
     )
-    console.log('[approveAndDeposit] here 2')
-    console.log(`[approveAndDeposit] minToMint`, minToMint)
-    console.log(`[approveAndDeposit] slippageSelected`, slippageSelected)
-    console.log(`[approveAndDeposit] slippageCustom`, slippageCustom)
     minToMint = subtractSlippage(minToMint, slippageSelected, slippageCustom)
 
     const result = Array.from(Object.values(inputAmounts), (value) => value)
-    console.log(`[approveAndDeposit] result`, result)
-    console.log(`[approveAndDeposit] minToMint`, minToMint)
 
     const wethIndex = _.findIndex(
       pool.poolTokens,
@@ -144,19 +133,11 @@ export const deposit = async (
       spendTransactionArgs.push({ value: liquidityAmounts[wethIndex] })
     }
 
-    console.log(
-      `[approveAndDeposit] spendTransactionArgs`,
-      spendTransactionArgs
-    )
-
-    console.log('[approveAndDeposit] here 3')
     const spendTransaction = await poolContract.addLiquidity(
       ...spendTransactionArgs
     )
-    console.log('[approveAndDeposit] here 4')
 
     const tx = await spendTransaction.wait()
-    console.log('[approveAndDeposit] here 5')
 
     toast.dismiss(pendingPopup)
 

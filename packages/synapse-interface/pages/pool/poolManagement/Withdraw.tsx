@@ -77,6 +77,7 @@ const Withdraw = ({
   const { synapseSDK } = useSynapseContext()
 
   const showTokens = pool.nativeTokens ?? pool.poolTokens
+  const { poolAddress } = getSwapDepositContract(pool, chainId)
 
   const calculateMaxWithdraw = async () => {
     if (poolUserData == null || address == null) {
@@ -93,7 +94,7 @@ const Withdraw = ({
       if (withdrawType == ALL) {
         const { amounts } = await synapseSDK.calculateRemoveLiquidity(
           chainId,
-          pool.swapAddresses[chainId],
+          poolAddress,
           inputValue.bn
         )
         for (const tokenAddr in amounts) {
@@ -102,7 +103,7 @@ const Withdraw = ({
       } else {
         const { amount } = await synapseSDK.calculateRemoveLiquidityOne(
           chainId,
-          pool.swapAddresses[chainId],
+          poolAddress,
           inputValue.bn,
           withdrawType
         )
@@ -116,7 +117,7 @@ const Withdraw = ({
         18
       )
       const allowance = await getTokenAllowance(
-        pool.swapAddresses[chainId],
+        poolAddress,
         pool.addresses[chainId],
         address,
         chainId
@@ -125,7 +126,7 @@ const Withdraw = ({
         priceImpact,
         allowance,
         outputs,
-        routerAddress: pool.swapAddresses[chainId],
+        routerAddress: poolAddress,
       })
     } catch (e) {
       console.log(e)
