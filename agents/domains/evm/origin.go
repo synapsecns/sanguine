@@ -44,18 +44,18 @@ type originContract struct {
 	nonceManager nonce.Manager
 }
 
-func (o originContract) FetchSortedMessages(ctx context.Context, from uint32, to uint32) (messages []types.CommittedMessage, err error) {
+func (o originContract) FetchSortedMessages(ctx context.Context, from uint32, to uint32) (messages []types.Message, err error) {
 	rangeFilter := NewRangeFilter(o.contract.Address(), o.client, big.NewInt(int64(from)), big.NewInt(int64(to)), 100, false)
 
 	// blocks until done `
 	err = rangeFilter.Start(ctx)
 	if err != nil {
-		return []types.CommittedMessage{}, fmt.Errorf("could not filter: %w", err)
+		return []types.Message{}, fmt.Errorf("could not filter: %w", err)
 	}
 
 	filteredLogs, err := rangeFilter.Drain(ctx)
 	if err != nil {
-		return []types.CommittedMessage{}, fmt.Errorf("could not drain queue: %w", err)
+		return []types.Message{}, fmt.Errorf("could not drain queue: %w", err)
 	}
 
 	for _, log := range filteredLogs {

@@ -44,7 +44,7 @@ type DomainClient interface {
 // OriginContract represents the origin contract on a particular chain.
 type OriginContract interface {
 	// FetchSortedMessages fetches all messages in order form lowest->highest in a given block range
-	FetchSortedMessages(ctx context.Context, from uint32, to uint32) (messages []types.CommittedMessage, err error)
+	FetchSortedMessages(ctx context.Context, from uint32, to uint32) (messages []types.Message, err error)
 	// SuggestLatestState gets the latest state on the origin
 	SuggestLatestState(ctx context.Context) (types.State, error)
 	// SuggestState gets the state on the origin with the given nonce if it exists

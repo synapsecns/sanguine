@@ -471,9 +471,11 @@ func DecodeMessage(message []byte) (Message, error) {
 		if err != nil {
 			return nil, fmt.Errorf("could not decode base message: %w", err)
 		}
+
 		decoded = messageImpl{
 			header:      header,
 			baseMessage: baseMessage,
+			body:        rawBody,
 		}
 	} else {
 		content = rawBody

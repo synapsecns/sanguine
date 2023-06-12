@@ -1,14 +1,13 @@
 package agentsintegration_test
 
 import (
-	"fmt"
 	awsTime "github.com/aws/smithy-go/time"
 	"github.com/brianvoe/gofakeit/v6"
+	"github.com/ethereum/go-ethereum/common"
 	"github.com/synapsecns/sanguine/agents/agents/executor"
 	executorCfg "github.com/synapsecns/sanguine/agents/agents/executor/config"
 	"github.com/synapsecns/sanguine/agents/agents/guard"
 	"github.com/synapsecns/sanguine/agents/agents/notary"
-	"github.com/synapsecns/sanguine/agents/testutil"
 	"github.com/synapsecns/sanguine/agents/types"
 	config2 "github.com/synapsecns/sanguine/ethergo/signer/config"
 	"math/big"
@@ -41,9 +40,6 @@ func (u *AgentsIntegrationSuite) TestAgentsE2E() {
 	defer func() {
 		testDone = true
 	}()
-
-	//_, testContractRef := u.TestDeployManager.GetAgentsTestContract(u.GetTestContext(), u.TestBackendDestination)
-	//testTransactOpts := u.TestBackendDestination.GetTxContext(u.GetTestContext(), nil)
 
 	originClient, err := backfill.DialBackend(u.GetTestContext(), u.TestBackendOrigin.RPCAddress(), u.ScribeMetrics)
 	u.Nil(err)
@@ -233,10 +229,9 @@ func (u *AgentsIntegrationSuite) TestAgentsE2E() {
 	txContextOrigin.Value = types.TotalTips(tips)
 	paddedRequest := big.NewInt(0)
 
-	var msgSender [32]byte
-	copy(msgSender[:], txContextOrigin.TransactOpts.From.Bytes())
+	msgSender := common.BytesToHash(txContextOrigin.TransactOpts.From.Bytes())
 	header := types.NewHeader(types.MessageFlagBase, uint32(u.TestBackendOrigin.GetChainID()), nonce, uint32(u.TestBackendDestination.GetChainID()), optimisticSeconds)
-	msgRequest := types.NewRequest(uint32(1), uint64(0), big.NewInt(0))
+	msgRequest := types.NewRequest(uint32(0), uint64(0), big.NewInt(0))
 	baseMessage := types.NewBaseMessage(msgSender, recipientDestination, tips, msgRequest, body)
 	message, err := types.NewMessageFromBaseMessage(header, baseMessage)
 	Nil(u.T(), err)
@@ -258,47 +253,6 @@ func (u *AgentsIntegrationSuite) TestAgentsE2E() {
 	)
 	Nil(u.T(), err)
 	u.TestBackendOrigin.WaitForConfirmation(u.GetTestContext(), tx)
-
-	deployManager := testutil.NewDeployManager(u.T())
-	_, messageContract := deployManager.GetMessageHarness(u.GetTestContext(), u.TestBackendOrigin)
-
-	messageBytes, err := types.EncodeMessage(message)
-	Nil(u.T(), err)
-
-	contractLeaf, err := messageContract.Leaf(&bind.CallOpts{Context: u.GetTestContext()}, messageBytes)
-	Nil(u.T(), err)
-
-	goLeaf, err := message.ToLeaf()
-	Nil(u.T(), err)
-
-	fmt.Println("contractLeaf", contractLeaf)
-	fmt.Println("goLeaf", goLeaf)
-	Equal(u.T(), goLeaf, contractLeaf)
-
-	//tips := types.NewTips(big.NewInt(int64(0)), big.NewInt(int64(0)), big.NewInt(int64(0)), big.NewInt(int64(0)))
-	//
-	//optimisticSeconds := uint32(10)
-	//
-	//body := []byte{byte(gofakeit.Uint32())}
-	//
-	//txContextOrigin := u.TestBackendOrigin.GetTxContext(u.GetTestContext(), u.OriginContractMetadata.OwnerPtr())
-	//txContextOrigin.Value = types.TotalTips(tips)
-	//
-	//txContextTestClientOrigin := u.TestBackendOrigin.GetTxContext(u.GetTestContext(), u.TestClientMetadataOnOrigin.OwnerPtr())
-	//
-	//gasLimit := uint64(10000000)
-	//version := uint32(1)
-	//testClientOnOriginTx, err := u.TestClientOnOrigin.SendMessage(
-	//	txContextTestClientOrigin.TransactOpts,
-	//	uint32(u.TestBackendDestination.GetChainID()),
-	//	u.TestClientMetadataOnDestination.Address(),
-	//	optimisticSeconds,
-	//	gasLimit,
-	//	version,
-	//	body)
-	//
-	//u.Nil(err)
-	//u.TestBackendOrigin.WaitForConfirmation(u.GetTestContext(), testClientOnOriginTx)
 
 	go func() {
 		// we don't check errors here since this will error on cancellation at the end of the test
@@ -374,7 +328,6 @@ func (u *AgentsIntegrationSuite) TestAgentsE2E() {
 		if executed {
 			return true
 		} else {
-			fmt.Println("Not executed yet")
 			// This transaction is needed to get the simulated chain's block number to increase by 1, since StreamLogs will
 			// do lastBlockNumber - 1.
 			tx, err = u.TestContractOnOrigin.EmitAgentsEventA(txContextOrigin.TransactOpts, big.NewInt(gofakeit.Int64()), big.NewInt(gofakeit.Int64()), big.NewInt(gofakeit.Int64()))

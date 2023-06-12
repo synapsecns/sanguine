@@ -12,14 +12,9 @@ import (
 
 // logToMessage converts the log to a leaf data.
 func (e Executor) logToMessage(log ethTypes.Log, chainID uint32) (*types.Message, error) {
-	committedMessage, ok := e.chainExecutors[chainID].originParser.ParseSent(log)
+	message, ok := e.chainExecutors[chainID].originParser.ParseSent(log)
 	if !ok {
 		return nil, fmt.Errorf("could not parse committed message")
-	}
-
-	message, err := types.DecodeMessage(committedMessage.Message())
-	if err != nil {
-		return nil, fmt.Errorf("could not decode message: %w", err)
 	}
 
 	return &message, nil
