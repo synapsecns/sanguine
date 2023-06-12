@@ -82,7 +82,7 @@ type CCTPRelayer struct {
 const usdcMsgChanSize = 1000
 
 // NewCCTPRelayer creates a new CCTPRelayer.
-func NewCCTPRelayer(ctx context.Context, cfg config.Config, scribeClient client.ScribeClient, handler metrics.Handler, attestationAPI api.AttestationAPI) (*CCTPRelayer, error) {
+func NewCCTPRelayer(ctx context.Context, cfg config.Config, scribeClient client.ScribeClient, omniRPCClient omniClient.RPCClient, handler metrics.Handler, attestationAPI api.AttestationAPI) (*CCTPRelayer, error) {
 	conn, err := grpc.DialContext(ctx, fmt.Sprintf("%s:%d", scribeClient.URL, scribeClient.Port),
 		grpc.WithTransportCredentials(insecure.NewCredentials()),
 		grpc.WithUnaryInterceptor(otelgrpc.UnaryClientInterceptor(otelgrpc.WithTracerProvider(handler.GetTracerProvider()))),
@@ -102,9 +102,6 @@ func NewCCTPRelayer(ctx context.Context, cfg config.Config, scribeClient client.
 	if healthCheck.Status != pbscribe.HealthCheckResponse_SERVING {
 		return nil, fmt.Errorf("not serving: %s", healthCheck.Status)
 	}
-
-	// Create omni rpc client.
-	omniRPCClient := omniClient.NewOmnirpcClient(cfg.BaseOmnirpcURL, handler) // TODO
 
 	// Build chainRelayers and bound contracts.
 	chainRelayers := make(map[uint32]*chainRelayer)
@@ -145,6 +142,7 @@ func NewCCTPRelayer(ctx context.Context, cfg config.Config, scribeClient client.
 
 	return &CCTPRelayer{
 		cfg:            cfg,
+		omnirpcClient:  omniRPCClient,
 		chainRelayers:  chainRelayers,
 		scribeClient:   scribeClient,
 		grpcClient:     grpcClient,
