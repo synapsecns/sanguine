@@ -327,6 +327,28 @@ func EncodeHeader(header Header) ([]byte, error) {
 	return buf.Bytes(), nil
 }
 
+// DecodeHeader decodes a header from a byte slice.
+func DecodeHeader(header []byte) (Header, error) {
+	reader := bytes.NewReader(header)
+
+	var encoded headerEncoder
+
+	err := binary.Read(reader, binary.BigEndian, &encoded)
+	if err != nil {
+		return nil, fmt.Errorf("failed to decode header: %w", err)
+	}
+
+	decoded := headerImpl{
+		flag:              encoded.Flag,
+		originDomain:      encoded.OriginDomain,
+		nonce:             encoded.Nonce,
+		destinationDomain: encoded.DestinationDomain,
+		optimisticSeconds: encoded.OptimisticSeconds,
+	}
+
+	return decoded, nil
+}
+
 // EncodeRequest encodes a request.
 func EncodeRequest(m Request) ([]byte, error) {
 	b := make([]byte, 0)

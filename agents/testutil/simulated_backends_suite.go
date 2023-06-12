@@ -60,6 +60,10 @@ type SimulatedBackendsTestSuite struct {
 	DestinationContractMetadataOnOrigin contracts.DeployedContract
 	TestContractOnOrigin                *agentstestcontract.AgentsTestContractRef
 	TestContractMetadataOnOrigin        contracts.DeployedContract
+	TestContractOnSummit                *agentstestcontract.AgentsTestContractRef
+	TestContractMetadataOnSummit        contracts.DeployedContract
+	TestContractOnDestination           *agentstestcontract.AgentsTestContractRef
+	TestContractMetadataOnDestination   contracts.DeployedContract
 	TestClientOnOrigin                  *testclient.TestClientRef
 	TestClientMetadataOnOrigin          contracts.DeployedContract
 	PingPongClientOnOrigin              *pingpongclient.PingPongClientRef
@@ -188,6 +192,7 @@ func (a *SimulatedBackendsTestSuite) SetupDestination(deployManager *DeployManag
 	a.PingPongClientMetadataOnDestination, a.PingPongClientOnDestination = deployManager.GetPingPongClient(a.GetTestContext(), a.TestBackendDestination)
 	a.LightInboxMetadataOnDestination, a.LightInboxOnDestination = deployManager.GetLightInbox(a.GetTestContext(), a.TestBackendDestination)
 	a.LightManagerMetadataOnDestination, a.LightManagerOnDestination = deployManager.GetLightManagerHarness(a.GetTestContext(), a.TestBackendDestination)
+	a.TestContractMetadataOnDestination, a.TestContractOnDestination = deployManager.GetAgentsTestContract(a.GetTestContext(), a.TestBackendDestination)
 
 	var err error
 	/*agentStatus, err := a.DestinationContract.AgentStatus(&bind.CallOpts{Context: a.GetTestContext()}, a.NotaryBondedSigner.Address())
@@ -223,6 +228,7 @@ func (a *SimulatedBackendsTestSuite) SetupSummit(deployManager *DeployManager) {
 	a.InboxMetadataOnSummit, a.InboxOnSummit = deployManager.GetInbox(a.GetTestContext(), a.TestBackendSummit)
 	a.BondingManagerMetadataOnSummit, a.BondingManagerOnSummit = deployManager.GetBondingManagerHarness(a.GetTestContext(), a.TestBackendSummit)
 	a.SummitMetadata, a.SummitContract = deployManager.GetSummitHarness(a.GetTestContext(), a.TestBackendSummit)
+	a.TestContractMetadataOnSummit, a.TestContractOnSummit = deployManager.GetAgentsTestContract(a.GetTestContext(), a.TestBackendSummit)
 
 	var err error
 	a.SummitDomainClient, err = evm.NewEVM(a.GetTestContext(), "summit_client", config.DomainConfig{

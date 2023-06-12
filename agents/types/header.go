@@ -1,8 +1,6 @@
 package types
 
 import (
-	"bytes"
-	"encoding/binary"
 	"fmt"
 	"github.com/ethereum/go-ethereum/crypto"
 )
@@ -60,28 +58,6 @@ func NewHeader(flag MessageFlag, originDomain uint32, nonce uint32, destinationD
 	}
 }
 
-// DecodeHeader decodes a header from a byte slice.
-func DecodeHeader(header []byte) (Header, error) {
-	reader := bytes.NewReader(header)
-
-	var encoded headerEncoder
-
-	err := binary.Read(reader, binary.BigEndian, &encoded)
-	if err != nil {
-		return nil, fmt.Errorf("failed to decode header: %w", err)
-	}
-
-	decoded := headerImpl{
-		flag:              encoded.Flag,
-		originDomain:      encoded.OriginDomain,
-		nonce:             encoded.Nonce,
-		destinationDomain: encoded.DestinationDomain,
-		optimisticSeconds: encoded.OptimisticSeconds,
-	}
-
-	return decoded, nil
-}
-
 func (h headerImpl) Flag() MessageFlag {
 	return h.flag
 }
@@ -109,11 +85,16 @@ func (h headerImpl) Leaf() ([32]byte, error) {
 		return [32]byte{}, fmt.Errorf("failed to encode header: %w", err)
 	}
 
-	copy(paddedHeader[:], bytesHeader)
-	headerHash := crypto.Keccak256(paddedHeader[:])
+	// Determine where to start copying bytesHeader into paddedHeader
+	startIndex := len(paddedHeader) - len(bytesHeader)
+	copy(paddedHeader[startIndex:], bytesHeader)
 
-	fmt.Println("bytesHeader: ", paddedHeader)
-	fmt.Println("len paddedfHeader: ", len(paddedHeader))
+	// Pad the beginning bytes with zeros
+	for i := 0; i < startIndex; i++ {
+		paddedHeader[i] = 0
+	}
+
+	headerHash := crypto.Keccak256(paddedHeader[:])
 
 	var headerHash32Byte [32]byte
 	copy(headerHash32Byte[:], headerHash)

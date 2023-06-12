@@ -3,7 +3,6 @@ package types_test
 import (
 	"context"
 	"crypto/rand"
-	"fmt"
 	"math/big"
 	"testing"
 	"time"
@@ -406,12 +405,8 @@ func TestBaseMessageEncodeParity(t *testing.T) {
 
 	headerLeaf, err := headerContract.Leaf(&bind.CallOpts{Context: ctx}, formattedHeader)
 	Nil(t, err)
-
-	fmt.Println("NO BOIT", formattedHeader.Bytes())
-
 	goHeaderLeaf, err := decodedMessage.Header().Leaf()
 	Nil(t, err)
-
 	Equal(t, headerLeaf, goHeaderLeaf)
 
 	leaf, err := messageContract.Leaf(&bind.CallOpts{Context: ctx}, formattedMessage)

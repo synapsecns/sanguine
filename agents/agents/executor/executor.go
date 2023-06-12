@@ -256,7 +256,7 @@ func (e Executor) Run(parentCtx context.Context) error {
 
 		// Listen for attestationAcceptedEvents on destination.
 		g.Go(func() error {
-			return e.streamLogs(ctx, e.grpcClient, e.grpcConn, chain.ChainID, chain.DestinationAddress, execTypes.LightInboxContract)
+			return e.streamLogs(ctx, e.grpcClient, e.grpcConn, chain.ChainID, chain.LightInboxAddress, execTypes.LightInboxContract)
 		})
 
 		g.Go(func() error {
