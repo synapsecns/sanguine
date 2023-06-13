@@ -29,10 +29,10 @@ func (c *CCTPRelayer) SetOmnirpcClient(client omniClient.RPCClient) {
 
 // RecvUsdcMsg receives a usdc message from the given chain.
 func (c *CCTPRelayer) GetUsdcMsgRecvChan(chainID uint32) chan *UsdcMessage {
-	return c.chainRelayers[chainID].usdcMsgRecvChan
+	return c.chainListeners[chainID].usdcMsgRecvChan
 }
 
 // SendUsdcMsg receives a usdc message from the given chain.
 func (c *CCTPRelayer) GetUsdcMsgSendChan(chainID uint32) chan *UsdcMessage {
-	return c.chainRelayers[chainID].usdcMsgSendChan
+	return c.chainListeners[chainID].usdcMsgSendChan
 }

@@ -46,8 +46,8 @@ type UsdcMessage struct {
 	FormattedRequest []byte      // formatted request produced by SynapseCCTP
 }
 
-// chainRelayer is a struct that contains the necessary information for each chain level relayer.
-type chainRelayer struct {
+// chainListener is a struct that contains the necessary information for each chain level relayer.
+type chainListener struct {
 	// chainID is the chain ID of the chain that this relayer is responsible for.
 	chainID uint32
 	// closeConnection is a channel that is used to close the connection.
@@ -71,8 +71,8 @@ type CCTPRelayer struct {
 	grpcConn      *grpc.ClientConn
 	httpBackoff   backoff.BackOff
 	omnirpcClient omniClient.RPCClient
-	// chainRelayers is a map from chain ID -> chain relayer.
-	chainRelayers map[uint32]*chainRelayer
+	// chainListeners is a map from chain ID -> chain relayer.
+	chainListeners map[uint32]*chainListener
 	// handler is the metrics handler.
 	handler metrics.Handler
 	// attestationAPI is the client for Circle's REST API.
@@ -107,11 +107,11 @@ func NewCCTPRelayer(ctx context.Context, cfg config.Config, scribeClient client.
 		return nil, fmt.Errorf("not serving: %s", healthCheck.Status)
 	}
 
-	// Build chainRelayers and bound contracts.
-	chainRelayers := make(map[uint32]*chainRelayer)
+	// Build chainListeners and bound contracts.
+	chainListeners := make(map[uint32]*chainListener)
 	boundSynapseCCTPs := make(map[uint32]*cctp.SynapseCCTP)
 	for _, chain := range cfg.Chains {
-		chainRelayers[chain.ChainID] = &chainRelayer{
+		chainListeners[chain.ChainID] = &chainListener{
 			chainID:         chain.ChainID,
 			closeConnection: make(chan bool, 1),
 			stopListenChan:  make(chan bool, 1),
@@ -147,7 +147,7 @@ func NewCCTPRelayer(ctx context.Context, cfg config.Config, scribeClient client.
 	return &CCTPRelayer{
 		cfg:               cfg,
 		omnirpcClient:     omniRPCClient,
-		chainRelayers:     chainRelayers,
+		chainListeners:    chainListeners,
 		scribeClient:      scribeClient,
 		grpcClient:        grpcClient,
 		grpcConn:          conn,
@@ -188,8 +188,8 @@ func (c CCTPRelayer) Run(ctx context.Context) error {
 
 // Stop stops the CCTPRelayer.
 func (c CCTPRelayer) Stop(chainID uint32) {
-	c.chainRelayers[chainID].closeConnection <- true
-	c.chainRelayers[chainID].stopListenChan <- true
+	c.chainListeners[chainID].closeConnection <- true
+	c.chainListeners[chainID].stopListenChan <- true
 }
 
 // Listens for USDC send events on origin chain, and registers UsdcMessages to be signed.
@@ -222,7 +222,7 @@ func (c CCTPRelayer) streamLogs(ctx context.Context, grpcClient pbscribe.ScribeS
 
 	for {
 		select {
-		case <-c.chainRelayers[chainID].closeConnection:
+		case <-c.chainListeners[chainID].closeConnection:
 			err := stream.CloseSend()
 			if err != nil {
 				return fmt.Errorf("could not close stream: %w", err)
@@ -363,7 +363,7 @@ func (c CCTPRelayer) handleCircleRequestSent(parentCtx context.Context, txhash c
 			RequestVersion:   circleRequestSentEvent.RequestVersion,
 			FormattedRequest: circleRequestSentEvent.FormattedRequest,
 		}
-		c.chainRelayers[originChain].usdcMsgRecvChan <- &msg
+		c.chainListeners[originChain].usdcMsgRecvChan <- &msg
 	}
 	return nil
 }
@@ -373,10 +373,10 @@ func (c CCTPRelayer) processBridgeEvents(ctx context.Context, chainID uint32) (e
 	for {
 		select {
 		// Receive a raw message from the receive channel.
-		case msg := <-c.chainRelayers[chainID].usdcMsgRecvChan:
+		case msg := <-c.chainListeners[chainID].usdcMsgRecvChan:
 			// Fetch the circle attestation in a new goroutine so that we are not blocked from future requests.
 			go c.fetchAttestation(ctx, chainID, msg)
-		case msg := <-c.chainRelayers[chainID].usdcMsgSendChan:
+		case msg := <-c.chainListeners[chainID].usdcMsgSendChan:
 			// Submit the message to the destination chain.
 			go c.submitReceiveCircleToken(ctx, msg)
 		case <-ctx.Done():
@@ -406,7 +406,7 @@ func (c CCTPRelayer) fetchAttestation(parentCtx context.Context, chainID uint32,
 	}
 
 	// Send the completed message back through the send channel.
-	c.chainRelayers[chainID].usdcMsgSendChan <- msg
+	c.chainListeners[chainID].usdcMsgSendChan <- msg
 	return
 }
 
