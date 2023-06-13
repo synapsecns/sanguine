@@ -14,7 +14,7 @@ import {
   AVWETH,
   WETHE,
   ONEETH,
-  // FTMETH,
+  FTMETH,
   USDCe,
   USDTe,
   METISETH,
@@ -701,8 +701,7 @@ export const FANTOM_WETH_SWAP_TOKEN = new Token({
   swapAddresses: {
     [CHAINS.FANTOM.id]: '0x8D9bA570D6cb60C7e3e0F31343Efe75AB8E65FB1',
   },
-  // poolTokens: [NETH, FTMETH], PAUSED
-  poolTokens: [NETH],
+  poolTokens: [NETH, FTMETH],
   description: "Synapse's ETH swap LP token on Fantom",
   display: true,
   priorityPool: true,

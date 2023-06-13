@@ -23,6 +23,7 @@ import { Token } from '@types'
 import { approve, withdraw } from '@/utils/actions/approveAndWithdraw'
 import { getTokenAllowance } from '@/utils/actions/getTokenAllowance'
 import { PoolData, PoolUserData } from '@types'
+import { getSwapDepositContractFields } from '@/utils/hooks/useSwapDepositContract'
 
 const DEFAULT_WITHDRAW_QUOTE = {
   priceImpact: Zero,
@@ -75,6 +76,9 @@ const Withdraw = ({
   }
   const { synapseSDK } = useSynapseContext()
 
+  const showTokens = pool ? pool.nativeTokens ?? pool.poolTokens : []
+  const { poolAddress } = getSwapDepositContractFields(pool, chainId)
+
   const calculateMaxWithdraw = async () => {
     if (poolUserData == null || address == null) {
       return
@@ -90,16 +94,15 @@ const Withdraw = ({
       if (withdrawType == ALL) {
         const { amounts } = await synapseSDK.calculateRemoveLiquidity(
           chainId,
-          pool.swapAddresses[chainId],
+          poolAddress,
           inputValue.bn
         )
-        for (const tokenAddr in amounts) {
-          outputs[tokenAddr] = amounts[tokenAddr]
-        }
+        console.log(amounts)
+        outputs[withdrawType] = amounts
       } else {
         const { amount } = await synapseSDK.calculateRemoveLiquidityOne(
           chainId,
-          pool.swapAddresses[chainId],
+          poolAddress,
           inputValue.bn,
           withdrawType
         )
@@ -113,7 +116,7 @@ const Withdraw = ({
         18
       )
       const allowance = await getTokenAllowance(
-        pool.swapAddresses[chainId],
+        poolAddress,
         pool.addresses[chainId],
         address,
         chainId
@@ -122,7 +125,7 @@ const Withdraw = ({
         priceImpact,
         allowance,
         outputs,
-        routerAddress: pool.swapAddresses[chainId],
+        routerAddress: poolAddress,
       })
     } catch (e) {
       console.log(e)
@@ -337,16 +340,25 @@ const Withdraw = ({
           label="Combo"
           labelClassName={withdrawType === ALL && 'text-indigo-500'}
         />
-        {pool?.poolTokens &&
-          pool.poolTokens.map((token) => {
-            const checked = withdrawType === token.addresses[chainId]
+        {showTokens &&
+          showTokens.map((token) => {
+            // TODO: poolsToken.findIndex is too verbose and was a hacky solution to not have to refactor a lot of state passing. Needs to be fixed to handle indexes correctly.
+            const checked = withdrawType === (pool.nativeTokens ? pool.nativeTokens : pool.poolTokens).findIndex(poolToken => poolToken.addresses[chainId] === token.addresses[chainId]).toString();
             return (
               <RadioButton
                 radioClassName={getCoinTextColorCombined(token.color)}
                 key={token?.symbol}
                 checked={checked}
                 onChange={() => {
-                  setWithdrawType(token.addresses[chainId])
+                  // Determine the tokens array
+                  const tokensArray = pool.nativeTokens ? pool.nativeTokens : pool.poolTokens;
+
+                  // Find the index
+                  const index = tokensArray.findIndex(poolToken => poolToken.addresses[chainId] === token.addresses[chainId]);
+
+                  // Convert the index to a string
+                  const indexString = index.toString();
+                  setWithdrawType(indexString)
                 }}
                 labelClassName={
                   checked &&
@@ -387,16 +399,16 @@ const Withdraw = ({
           <Grid cols={{ xs: 2 }}>
             <div>
               <ReceivedTokenSection
-                poolTokens={pool?.poolTokens ?? []}
+                poolTokens={showTokens}
                 withdrawQuote={withdrawQuote}
                 chainId={chainId}
               />
             </div>
             <div>
-              {withdrawQuote.priceImpact &&
+              {/* {withdrawQuote.priceImpact &&
                 withdrawQuote.priceImpact?.gt(Zero) && (
                   <PriceImpactDisplay priceImpact={withdrawQuote.priceImpact} />
-                )}
+                )} */}
             </div>
           </Grid>
         </div>
