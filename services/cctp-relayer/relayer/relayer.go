@@ -54,7 +54,7 @@ type chainListener struct {
 // on the destination chain to complete the USDC bridging process.
 type CCTPRelayer struct {
 	cfg           config.Config
-	db            db2.CCTPRelayerDBReader
+	db            db2.CCTPRelayerDB
 	scribeClient  client.ScribeClient
 	grpcClient    pbscribe.ScribeServiceClient
 	grpcConn      *grpc.ClientConn
@@ -130,6 +130,7 @@ func NewCCTPRelayer(ctx context.Context, cfg config.Config, store *base.Store, s
 
 	return &CCTPRelayer{
 		cfg:               cfg,
+		db:                store,
 		omnirpcClient:     omniRPCClient,
 		chainListeners:    chainListeners,
 		scribeClient:      scribeClient,
@@ -251,8 +252,6 @@ func (c CCTPRelayer) handleLog(ctx context.Context, log *types.Log, originChain 
 		if err != nil {
 			return err
 		}
-	case cctp.CircleRequestFulfilledTopic:
-		// TODO mark request as fulfilled
 	default:
 		// TODO; just continue
 		logger.Warnf("unknown topic %s", log.Topics[0])
@@ -346,7 +345,14 @@ func (c CCTPRelayer) handleCircleRequestSent(parentCtx context.Context, txhash c
 			//Signature: //comes from the api
 			RequestVersion:   circleRequestSentEvent.RequestVersion,
 			FormattedRequest: circleRequestSentEvent.FormattedRequest,
+			BlockNumber:      uint64(receipt.BlockNumber.Int64()),
 		}
+
+		// Store the requested message.
+		msg.State = relayTypes.Attested
+		c.db.StoreMessage(ctx, msg)
+
+		// Queue the message for attestation.
 		c.chainListeners[originChain].usdcMsgRecvChan <- &msg
 	}
 	return nil
@@ -389,6 +395,10 @@ func (c CCTPRelayer) fetchAttestation(parentCtx context.Context, chainID uint32,
 		return
 	}
 
+	// Store the attested message.
+	msg.State = relayTypes.Pending
+	c.db.StoreMessage(ctx, *msg)
+
 	// Send the completed message back through the send channel.
 	c.chainListeners[chainID].usdcMsgSendChan <- msg
 	return
@@ -412,6 +422,11 @@ func (c CCTPRelayer) submitReceiveCircleToken(parentCtx context.Context, msg *re
 	})
 	if err != nil {
 		err = fmt.Errorf("could not submit transaction: %w", err)
+		return
 	}
+
+	// store the completed message
+	msg.State = relayTypes.Complete
+	c.db.StoreMessage(ctx, *msg)
 	return
 }

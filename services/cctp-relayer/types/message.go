@@ -22,4 +22,6 @@ type Message struct {
 	FormattedRequest []byte
 	// BlockNumber is the block number.
 	BlockNumber uint64 `gorm:"column:block_number"`
+	// State is the state of the message.
+	State MessageState
 }

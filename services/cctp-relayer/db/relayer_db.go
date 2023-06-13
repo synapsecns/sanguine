@@ -15,10 +15,11 @@ type CCTPRelayerDBReader interface {
 // CCTPRelayerDBWriter is the interface for writing to the database.
 type CCTPRelayerDBWriter interface {
 	// StoreMessage stores a message in the database.
-	StoreMessage(ctx context.Context, message types.Message)
+	StoreMessage(ctx context.Context, message types.Message) error
 }
 
 // CCTPRelayerDB is the interface for the database service.
 type CCTPRelayerDB interface {
 	CCTPRelayerDBReader
+	CCTPRelayerDBWriter
 }
