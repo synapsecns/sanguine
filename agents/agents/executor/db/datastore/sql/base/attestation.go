@@ -123,6 +123,22 @@ func (s Store) GetEarliestSnapshotFromAttestation(ctx context.Context, attestati
 	return (*[32]byte)(&snapshotRoot), nil
 }
 
+// GetAttestationCount gets the number of attestations that have fields matching the attestation mask.
+func (s Store) GetAttestationCount(ctx context.Context, attestationMask types.DBAttestation) (uint64, error) {
+	var count int64
+
+	dbAttestationMask := DBAttestationToAttestation(attestationMask)
+	dbTx := s.DB().WithContext(ctx).
+		Model(&Attestation{}).
+		Where(&dbAttestationMask).
+		Count(&count)
+	if dbTx.Error != nil {
+		return 0, fmt.Errorf("failed to get attestation count: %w", dbTx.Error)
+	}
+
+	return uint64(count), nil
+}
+
 // DBAttestationToAttestation converts a DBAttestation to an Attestation.
 func DBAttestationToAttestation(dbAttestation types.DBAttestation) Attestation {
 	var attestation Attestation

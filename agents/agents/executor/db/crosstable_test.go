@@ -5,6 +5,7 @@ import (
 	"github.com/ethereum/go-ethereum/common"
 	. "github.com/stretchr/testify/assert"
 	"github.com/synapsecns/sanguine/agents/agents/executor/db"
+	"github.com/synapsecns/sanguine/agents/agents/executor/types"
 	agentstypes "github.com/synapsecns/sanguine/agents/types"
 	"math/big"
 )
@@ -93,6 +94,12 @@ func (t *DBSuite) TestGetTimestampForMessage() {
 		potentialSnapshotRoots, err := testDB.GetPotentialSnapshotRoots(t.GetTestContext(), origin, 0)
 		Nil(t.T(), err)
 		Equal(t.T(), 3, len(potentialSnapshotRoots))
+
+		dest := origin + 1
+		attestationMask := types.DBAttestation{Destination: &dest}
+		attestationCount, err := testDB.GetAttestationCount(t.GetTestContext(), attestationMask)
+		Nil(t.T(), err)
+		Equal(t.T(), uint64(3), attestationCount)
 
 		timestamp, err := testDB.GetTimestampForMessage(t.GetTestContext(), origin, origin+1, nonceA, "")
 		Nil(t.T(), err)

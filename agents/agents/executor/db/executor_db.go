@@ -52,6 +52,7 @@ type ExecutorDBReader interface {
 	GetAttestationTimestamp(ctx context.Context, attestationMask types.DBAttestation) (*uint64, error)
 	// GetEarliestSnapshotFromAttestation takes a list of snapshot roots, checks which one has the lowest block number, and returns that snapshot root back.
 	GetEarliestSnapshotFromAttestation(ctx context.Context, attestationMask types.DBAttestation, snapshotRoots []string) (*[32]byte, error)
+	GetAttestationCount(ctx context.Context, attestationMask types.DBAttestation) (uint64, error)
 
 	// GetState gets a state from the database.
 	GetState(ctx context.Context, stateMask types.DBState) (*agentsTypes.State, error)
