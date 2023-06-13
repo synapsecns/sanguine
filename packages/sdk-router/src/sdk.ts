@@ -351,20 +351,12 @@ class SynapseSDK {
     chainId: number,
     poolAddress: string,
     amount: BigNumber,
-    token: string
+    poolIndex: number
   ): Promise<{
     amount: { value: BigNumber; index: number }
     routerAddress: string
   }> {
     const router: SynapseRouter = this.synapseRouters[chainId]
-
-    let poolIndex = 0
-    const poolTokens = await router.routerContract.poolTokens(poolAddress)
-    poolTokens.map((poolToken, index) => {
-      if (poolToken.token === token) {
-        poolIndex = index
-      }
-    })
 
     const outAmount = await router.routerContract.calculateWithdrawOneToken(
       poolAddress,
