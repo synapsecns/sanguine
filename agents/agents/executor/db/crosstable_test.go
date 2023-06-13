@@ -73,9 +73,9 @@ func (t *DBSuite) TestGetTimestampForMessage() {
 
 		err := testDB.StoreState(t.GetTestContext(), stateA, snapshotRootA, proofA, 1, 1)
 		Nil(t.T(), err)
-		err = testDB.StoreState(t.GetTestContext(), stateB, snapshotRootB, proofB, 2, 2)
+		err = testDB.StoreState(t.GetTestContext(), stateB, snapshotRootB, proofB, 2, 1)
 		Nil(t.T(), err)
-		err = testDB.StoreState(t.GetTestContext(), stateC, snapshotRootC, proofC, 3, 3)
+		err = testDB.StoreState(t.GetTestContext(), stateC, snapshotRootC, proofC, 3, 1)
 		Nil(t.T(), err)
 
 		attestationA := agentstypes.NewAttestation(snapshotRootA, agentRootA, 1, big.NewInt(int64(gofakeit.Uint32())), big.NewInt(int64(gofakeit.Uint32())))
