@@ -36,7 +36,9 @@ import (
 
 // UsdcMessage contains data necessary to be posted on the destination chain.
 type UsdcMessage struct {
-	ChainID          uint32      // chain ID of the destination chain
+	BurnTxHash       common.Hash // hash of USDC burn transaction
+	OriginChainID    uint32      // chain ID of the origin chain
+	DestChainID      uint32      // chain ID of the destination chain
 	Message          []byte      // raw bytes of message produced by Circle's MessageTransmitter
 	MessageHash      common.Hash // keccak256 hash of message bytes
 	Signature        []byte      // attestation produced by Circle's API: https://developers.circle.com/stablecoin/reference/getattestation
@@ -352,9 +354,11 @@ func (c CCTPRelayer) handleCircleRequestSent(parentCtx context.Context, txhash c
 		return err
 	default:
 		msg := UsdcMessage{
-			ChainID:     uint32(circleRequestSentEvent.ChainId.Int64()),
-			Message:     messageSentEvent.Message,
-			MessageHash: crypto.Keccak256Hash(messageSentEvent.Message),
+			BurnTxHash:    txhash,
+			OriginChainID: originChain,
+			DestChainID:   uint32(circleRequestSentEvent.ChainId.Int64()),
+			Message:       messageSentEvent.Message,
+			MessageHash:   crypto.Keccak256Hash(messageSentEvent.Message),
 			//Signature: //comes from the api
 			RequestVersion:   circleRequestSentEvent.RequestVersion,
 			FormattedRequest: circleRequestSentEvent.FormattedRequest,
@@ -383,8 +387,10 @@ func (c CCTPRelayer) processBridgeEvents(ctx context.Context, chainID uint32) (e
 
 func (c CCTPRelayer) fetchAttestation(parentCtx context.Context, chainID uint32, msg *UsdcMessage) (err error) {
 	ctx, span := c.handler.Tracer().Start(parentCtx, "fetchAttestation", trace.WithAttributes(
-		attribute.String("messageHash", msg.MessageHash.String()),
-		attribute.Int(metrics.ChainID, int(chainID)),
+		attribute.String(MessageHash, msg.MessageHash.String()),
+		attribute.Int(metrics.Origin, int(msg.OriginChainID)),
+		attribute.Int(metrics.Destination, int(msg.DestChainID)),
+		attribute.String(metrics.TxHash, msg.BurnTxHash.String()),
 	))
 
 	defer func() {
@@ -406,16 +412,18 @@ func (c CCTPRelayer) fetchAttestation(parentCtx context.Context, chainID uint32,
 
 func (c CCTPRelayer) submitReceiveCircleToken(parentCtx context.Context, msg *UsdcMessage) (err error) {
 	ctx, span := c.handler.Tracer().Start(parentCtx, "submitReceiveCircleToken", trace.WithAttributes(
-		attribute.String("messageHash", msg.MessageHash.String()),
-		attribute.Int(metrics.ChainID, int(msg.ChainID)),
+		attribute.String(MessageHash, msg.MessageHash.String()),
+		attribute.Int(metrics.Origin, int(msg.OriginChainID)),
+		attribute.Int(metrics.Destination, int(msg.DestChainID)),
+		attribute.String(metrics.TxHash, msg.BurnTxHash.String()),
 	))
 
 	defer func() {
 		metrics.EndSpanWithErr(span, err)
 	}()
 
-	_, err = c.txSubmitter.SubmitTransaction(ctx, big.NewInt(int64(msg.ChainID)), func(transactor *bind.TransactOpts) (tx *types.Transaction, err error) {
-		contract := c.boundSynapseCCTPs[msg.ChainID]
+	_, err = c.txSubmitter.SubmitTransaction(ctx, big.NewInt(int64(msg.DestChainID)), func(transactor *bind.TransactOpts) (tx *types.Transaction, err error) {
+		contract := c.boundSynapseCCTPs[msg.DestChainID]
 		return contract.ReceiveCircleToken(transactor, msg.Message, msg.Signature, msg.RequestVersion, msg.FormattedRequest)
 	})
 	if err != nil {
