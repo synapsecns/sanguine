@@ -315,15 +315,13 @@ describe('SynapseSDK', () => {
       const chainIds = [42161]
       const providers = [arbitrumProvider]
       const Synapse = new SynapseSDK(chainIds, providers)
-      const { amounts, routerAddress }  = await Synapse.calculateRemoveLiquidity(
+      const { amounts, routerAddress } = await Synapse.calculateRemoveLiquidity(
         42161,
         '0x1c3fe783a7c06bfAbd124F2708F5Cc51fA42E102',
         BigNumber.from('1000000')
       )
       expect(amounts.length).toBeGreaterThan(0)
-      expect(
-        amounts[0].value.toNumber()
-      ).toBeGreaterThan(0)
+      expect(amounts[0].value.toNumber()).toBeGreaterThan(0)
       expect(routerAddress?.length).toBeGreaterThan(0)
     })
   })
@@ -332,12 +330,13 @@ describe('SynapseSDK', () => {
       const chainIds = [42161]
       const providers = [arbitrumProvider]
       const Synapse = new SynapseSDK(chainIds, providers)
-      const {amount, routerAddress} = await Synapse.calculateRemoveLiquidityOne(
-        42161,
-        '0x1c3fe783a7c06bfAbd124F2708F5Cc51fA42E102',
-        BigNumber.from('1000000'),
-        1
-      )
+      const { amount, routerAddress } =
+        await Synapse.calculateRemoveLiquidityOne(
+          42161,
+          '0x1c3fe783a7c06bfAbd124F2708F5Cc51fA42E102',
+          BigNumber.from('1000000'),
+          1
+        )
       expect(Object.keys(amount)?.length).toBeGreaterThan(0)
       expect(amount.value.toNumber()).toBeGreaterThan(0)
       expect(routerAddress.length).toBeGreaterThan(0)
