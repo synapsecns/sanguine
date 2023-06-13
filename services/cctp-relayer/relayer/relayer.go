@@ -337,11 +337,11 @@ func (c CCTPRelayer) handleCircleRequestSent(parentCtx context.Context, txhash c
 		return err
 	default:
 		msg := relayTypes.Message{
-			BurnTxHash:    txhash,
+			OriginTxHash:  txhash.String(),
 			OriginChainID: originChain,
 			DestChainID:   uint32(circleRequestSentEvent.ChainId.Int64()),
 			Message:       messageSentEvent.Message,
-			MessageHash:   crypto.Keccak256Hash(messageSentEvent.Message),
+			MessageHash:   crypto.Keccak256Hash(messageSentEvent.Message).String(),
 			//Signature: //comes from the api
 			RequestVersion:   circleRequestSentEvent.RequestVersion,
 			FormattedRequest: circleRequestSentEvent.FormattedRequest,
@@ -377,10 +377,10 @@ func (c CCTPRelayer) processBridgeEvents(ctx context.Context, chainID uint32) (e
 
 func (c CCTPRelayer) fetchAttestation(parentCtx context.Context, chainID uint32, msg *relayTypes.Message) (err error) {
 	ctx, span := c.handler.Tracer().Start(parentCtx, "fetchAttestation", trace.WithAttributes(
-		attribute.String(MessageHash, msg.MessageHash.String()),
+		attribute.String(MessageHash, msg.MessageHash),
 		attribute.Int(metrics.Origin, int(msg.OriginChainID)),
 		attribute.Int(metrics.Destination, int(msg.DestChainID)),
-		attribute.String(metrics.TxHash, msg.BurnTxHash.String()),
+		attribute.String(metrics.TxHash, msg.OriginTxHash),
 	))
 
 	defer func() {
@@ -406,27 +406,31 @@ func (c CCTPRelayer) fetchAttestation(parentCtx context.Context, chainID uint32,
 
 func (c CCTPRelayer) submitReceiveCircleToken(parentCtx context.Context, msg *relayTypes.Message) (err error) {
 	ctx, span := c.handler.Tracer().Start(parentCtx, "submitReceiveCircleToken", trace.WithAttributes(
-		attribute.String(MessageHash, msg.MessageHash.String()),
+		attribute.String(MessageHash, msg.MessageHash),
 		attribute.Int(metrics.Origin, int(msg.OriginChainID)),
 		attribute.Int(metrics.Destination, int(msg.DestChainID)),
-		attribute.String(metrics.TxHash, msg.BurnTxHash.String()),
+		attribute.String(metrics.TxHash, msg.OriginTxHash),
 	))
 
 	defer func() {
 		metrics.EndSpanWithErr(span, err)
 	}()
 
+	var txHash string
 	_, err = c.txSubmitter.SubmitTransaction(ctx, big.NewInt(int64(msg.DestChainID)), func(transactor *bind.TransactOpts) (tx *types.Transaction, err error) {
 		contract := c.boundSynapseCCTPs[msg.DestChainID]
-		return contract.ReceiveCircleToken(transactor, msg.Message, msg.Signature, msg.RequestVersion, msg.FormattedRequest)
+		tx, err = contract.ReceiveCircleToken(transactor, msg.Message, msg.Signature, msg.RequestVersion, msg.FormattedRequest)
+		txHash = tx.Hash().String()
+		return
 	})
 	if err != nil {
 		err = fmt.Errorf("could not submit transaction: %w", err)
 		return
 	}
 
-	// store the completed message
+	// Store the completed message.
 	msg.State = relayTypes.Complete
+	msg.DestTxHash = txHash
 	c.db.StoreMessage(ctx, *msg)
 	return
 }

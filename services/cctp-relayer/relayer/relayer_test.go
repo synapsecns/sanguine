@@ -7,7 +7,6 @@ import (
 	"strconv"
 
 	"github.com/Flaque/filet"
-	"github.com/ethereum/go-ethereum/common"
 	signerConfig "github.com/synapsecns/sanguine/ethergo/signer/config"
 	"github.com/synapsecns/sanguine/ethergo/signer/wallet"
 	"github.com/synapsecns/sanguine/services/cctp-relayer/api"
@@ -78,7 +77,7 @@ func (c *CCTPRelayerSuite) TestHandleCircleRequestSent() {
 	recvChan := relay.GetUsdcMsgRecvChan(uint32(sendChain.GetChainID()))
 	msg := <-recvChan
 	// TODO(dwasse): validate rest of msg?
-	c.Equal(msg.BurnTxHash, tx.Hash())
+	c.Equal(msg.OriginTxHash, tx.Hash().String())
 }
 
 func (c *CCTPRelayerSuite) TestFetchAttestation() {
@@ -116,7 +115,7 @@ func (c *CCTPRelayerSuite) TestFetchAttestation() {
 
 	// override mocked api call
 	expectedSignature := "abc"
-	mockAPI.SetGetAttestation(func(ctx context.Context, txHash common.Hash) (attestation []byte, err error) {
+	mockAPI.SetGetAttestation(func(ctx context.Context, txHash string) (attestation []byte, err error) {
 		return []byte(expectedSignature), nil
 	})
 
@@ -124,7 +123,7 @@ func (c *CCTPRelayerSuite) TestFetchAttestation() {
 	testHash := "0x5dba62229dba62f233dca8f3fd14488fdc45d2a86537da2dea7a5683b5e7f622"
 	msg := types.Message{
 		Message:          []byte{},
-		MessageHash:      common.HexToHash(testHash),
+		MessageHash:      testHash,
 		FormattedRequest: []byte{},
 	}
 	err = relay.FetchAttestation(c.GetTestContext(), uint32(sendChain.GetChainID()), &msg)
@@ -181,7 +180,7 @@ func (c *CCTPRelayerSuite) TestSubmitReceiveCircleToken() {
 		OriginChainID:    uint32(sendChainID.Int64()),
 		DestChainID:      uint32(recvChainID.Int64()),
 		Message:          []byte{},
-		MessageHash:      common.HexToHash(testHash),
+		MessageHash:      testHash,
 		FormattedRequest: []byte{},
 	}
 	err = relay.SubmitReceiveCircleToken(c.GetTestContext(), &msg)
