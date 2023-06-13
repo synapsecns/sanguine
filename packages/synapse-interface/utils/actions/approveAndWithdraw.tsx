@@ -59,19 +59,17 @@ export const withdraw = async (
 
   try {
     if (withdrawType === ALL) {
-      const outputMinArr = pool.poolTokens.map(() => Zero)
-      for (let poolToken of pool.poolTokens) {
-        const outputAmount = outputs[poolToken.addresses[chainId]]
-        outputMinArr[outputAmount.index] = subtractSlippage(
-          outputAmount.value,
-          slippageSelected,
-          slippageCustom
-        )
-      }
 
+      console.log(outputs[withdrawType])
       spendTransaction = await poolContract.removeLiquidity(
         inputAmount,
-        outputMinArr,
+        pool.poolTokens?.map((t,index) =>
+          subtractSlippage(
+            outputs[withdrawType][index].value,
+            slippageSelected,
+            slippageCustom
+          )
+          ),
         Math.round(new Date().getTime() / 1000 + 60 * 10)
       )
     } else {

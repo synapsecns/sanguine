@@ -97,9 +97,8 @@ const Withdraw = ({
           poolAddress,
           inputValue.bn
         )
-        for (const tokenAddr in amounts) {
-          outputs[tokenAddr] = amounts[tokenAddr]
-        }
+        console.log(amounts)
+        outputs[withdrawType] = amounts
       } else {
         const { amount } = await synapseSDK.calculateRemoveLiquidityOne(
           chainId,
