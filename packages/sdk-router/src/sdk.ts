@@ -336,8 +336,8 @@ class SynapseSDK {
       poolAddress,
       amount
     )
-    const amountsOut: Array<{ value: BigNumber, index: number }> = amounts.map((amount, index) => ({
-      value: amount,
+    const amountsOut: Array<{ value: BigNumber, index: number }> = amounts.map((respAmount, index) => ({
+      value: respAmount,
       index,
     }));
 
