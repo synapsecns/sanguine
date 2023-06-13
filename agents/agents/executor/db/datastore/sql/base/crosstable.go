@@ -34,7 +34,7 @@ func (s Store) GetTimestampForMessage(ctx context.Context, chainID, destination,
 						(SELECT %s, %s FROM %s WHERE %s = ?) AS attestationTable
 						ON stateTable.%s = attestationTable.%s
 					)
-				)`,
+				) LIMIT 1`,
 			DestinationTimestampFieldName, attestationsTableName, DestinationBlockNumberFieldName,
 			DestinationBlockNumberFieldName,
 			statesTableName, ChainIDFieldName, NonceFieldName,

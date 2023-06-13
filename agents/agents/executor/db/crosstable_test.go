@@ -7,6 +7,7 @@ import (
 	"github.com/synapsecns/sanguine/agents/agents/executor/db"
 	agentstypes "github.com/synapsecns/sanguine/agents/types"
 	"math/big"
+	"time"
 )
 
 // TODO: More edge cases for this test.
@@ -73,9 +74,9 @@ func (t *DBSuite) TestGetTimestampForMessage() {
 
 		err := testDB.StoreState(t.GetTestContext(), stateA, snapshotRootA, proofA, 1, 1)
 		Nil(t.T(), err)
-		err = testDB.StoreState(t.GetTestContext(), stateB, snapshotRootB, proofB, 2, 1)
+		err = testDB.StoreState(t.GetTestContext(), stateB, snapshotRootB, proofB, 2, 2)
 		Nil(t.T(), err)
-		err = testDB.StoreState(t.GetTestContext(), stateC, snapshotRootC, proofC, 3, 1)
+		err = testDB.StoreState(t.GetTestContext(), stateC, snapshotRootC, proofC, 3, 3)
 		Nil(t.T(), err)
 
 		attestationA := agentstypes.NewAttestation(snapshotRootA, agentRootA, 1, big.NewInt(int64(gofakeit.Uint32())), big.NewInt(int64(gofakeit.Uint32())))
@@ -88,6 +89,8 @@ func (t *DBSuite) TestGetTimestampForMessage() {
 		Nil(t.T(), err)
 		err = testDB.StoreAttestation(t.GetTestContext(), attestationC, origin+1, 3, 1)
 		Nil(t.T(), err)
+
+		time.Sleep(10 * time.Second)
 
 		timestamp, err := testDB.GetTimestampForMessage(t.GetTestContext(), origin, origin+1, nonceA, "")
 		Nil(t.T(), err)
