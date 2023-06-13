@@ -17,7 +17,7 @@ type PriceService interface {
 }
 
 // tokenMetadataMaxRetry is the maximum number of times to retry requesting token metadata
-// from the defi llama API.
+// from the DeFi llama API.
 const tokenMetadataMaxRetry = 20
 const tokenMetadataMaxRetrySecondary = 1
 
