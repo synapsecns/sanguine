@@ -175,7 +175,7 @@ const SwapCard = ({
       setFromTokens(tokens)
     })
     return
-  }, [connectedChainId, swapTxnHash])
+  }, [connectedChainId, swapTxnHash, address])
 
   /*
   useEffect Triggers: toToken, fromInput, toChainId, time
@@ -510,7 +510,7 @@ const SwapCard = ({
         null
       )
       // TODO 1) make dynamic 2) clean up
-      let newOriginQuery = {...query}
+      let newOriginQuery = { ...query }
       newOriginQuery.minAmountOut = minWithSlippage
 
       setSwapQuote({
@@ -844,6 +844,7 @@ const SwapCard = ({
           toToken={toToken}
           exchangeRate={swapQuote.exchangeRate}
           toChainId={connectedChainId}
+          showGasDrop={false}
         />
         <div className="px-2 py-2 md:px-0 md:py-4">{ActionButton}</div>
       </div>

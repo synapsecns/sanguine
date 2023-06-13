@@ -31,7 +31,7 @@ const ReceivedTokenSection = ({
                   {formatBNToString(
                     withdrawQuote.outputs[token.addresses[chainId]].value,
                     token.decimals[chainId],
-                    2
+                    6
                   )}
                 </span>
                 <span className="px-1 text-sm font-medium text-opacity-50 text-secondaryTextColor">

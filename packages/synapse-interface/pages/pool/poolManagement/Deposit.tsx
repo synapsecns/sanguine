@@ -4,12 +4,12 @@ import { WETH } from '@constants/tokens/swapMaster'
 import { AVWETH, ETH, WETHE } from '@constants/tokens/master'
 import { stringToBigNum } from '@/utils/stringToBigNum'
 import { getAddress } from '@ethersproject/address'
-import TokenInput from '@components/TokenInput'
+import { DepositTokenInput } from '@components/TokenInput'
 import PriceImpactDisplay from '../components/PriceImpactDisplay'
 import { useSynapseContext } from '@/utils/providers/SynapseProvider'
 import { TransactionButton } from '@/components/buttons/TransactionButton'
 import { Zero } from '@ethersproject/constants'
-import { Token } from '@types'
+import { PoolToken, Token } from '@types'
 import { useState, useEffect, useMemo } from 'react'
 import { BigNumber } from '@ethersproject/bignumber'
 import { calculateExchangeRate } from '@utils/calculateExchangeRate'
@@ -18,6 +18,9 @@ import { approve, deposit } from '@/utils/actions/approveAndDeposit'
 import { QUOTE_POLLING_INTERVAL } from '@/constants/bridge' // TODO CHANGE
 import { PoolData, PoolUserData } from '@types'
 import LoadingTokenInput from '@components/loading/LoadingTokenInput'
+import { fetchBalance, fetchToken } from '@wagmi/core'
+import { formatBNToString } from '@/utils/bignumber/format'
+import { getSwapDepositContractFields } from '@/utils/hooks/useSwapDepositContract'
 
 const DEFAULT_DEPOSIT_QUOTE = {
   priceImpact: undefined,
@@ -53,6 +56,8 @@ const Deposit = ({
   const [time, setTime] = useState(Date.now())
   const { synapseSDK } = useSynapseContext()
 
+  const { poolAddress } = getSwapDepositContractFields(pool, chainId)
+
   // TODO move this to utils
   const sumBigNumbersFromState = () => {
     let sum = Zero
@@ -80,14 +85,14 @@ const Deposit = ({
       if (poolData.totalLocked.gt(0) && inputSum.gt(0)) {
         const { amount } = await synapseSDK.calculateAddLiquidity(
           chainId,
-          pool.swapAddresses[chainId],
+          poolAddress,
           inputValue.bn
         )
 
         let allowances: Record<string, BigNumber> = {}
         for (const [key, value] of Object.entries(inputValue.bn)) {
           allowances[key] = await getTokenAllowance(
-            pool.swapAddresses[chainId],
+            poolAddress,
             key,
             address,
             chainId
@@ -104,7 +109,7 @@ const Deposit = ({
         setDepositQuote({
           priceImpact,
           allowances,
-          routerAddress: pool.swapAddresses[chainId],
+          routerAddress: poolAddress,
         })
       } else {
         setDepositQuote(DEFAULT_DEPOSIT_QUOTE)
@@ -172,8 +177,12 @@ const Deposit = ({
       pendingLabel: 'Depositing funds...',
       className: '',
       disabled: false,
-      buttonAction: () =>
-        deposit(pool, 'ONE_TENTH', null, inputValue.bn, chainId),
+      buttonAction: () => {
+        const filteredInputValues = filterInputValues(inputValue, pool, chainId)
+
+        return deposit(pool, 'ONE_TENTH', null, filteredInputValues, chainId)
+      },
+
       postButtonAction: () => {
         console.log('Post Button Action')
         refetchCallback()
@@ -181,9 +190,10 @@ const Deposit = ({
       },
     }
 
-    if (sumBigNumbersFromState().eq(0)) {
-      properties.disabled = true
-    }
+    // if (sumBigNumbersFromState().eq(0)) {
+    //   console.log(`'am hi here `)
+    //   properties.disabled = true
+    // }
 
     if (!isFromBalanceEnough) {
       properties.label = `Insufficient Balance`
@@ -195,9 +205,11 @@ const Deposit = ({
       properties.label = `Approve Token(s)`
       properties.pendingLabel = `Approving Token(s)`
       properties.className = 'from-[#feba06] to-[#FEC737]'
-      properties.disabled = true
+      properties.disabled = false
       properties.buttonAction = () =>
-        approve(pool, depositQuote, inputValue.bn, chainId)
+        approve(pool, depositQuote, inputValue.bn, chainId).then(() =>
+          calculateMaxDeposits()
+        )
       properties.postButtonAction = () => setTime(0)
       return properties
     }
@@ -207,12 +219,15 @@ const Deposit = ({
 
   for (const [tokenAddr, amount] of Object.entries(inputValue.bn)) {
     if (
+      typeof amount !== 'undefined' &&
       Object.keys(depositQuote.allowances).length > 0 &&
       !amount.isZero() &&
+      typeof depositQuote.allowances[tokenAddr] !== 'undefined' &&
       amount.gt(depositQuote.allowances[tokenAddr])
     ) {
       isAllowanceEnough = false
     }
+
     poolUserData.tokens.map((tokenObj, i) => {
       if (
         tokenObj.token.addresses[chainId] === tokenAddr &&
@@ -242,7 +257,8 @@ const Deposit = ({
     () => (
       <TransactionButton
         className={btnClassName}
-        disabled={sumBigNumbersFromState().eq(0) || disabled}
+        // disabled={sumBigNumbersFromState().eq(0) || disabled}
+        disabled={disabled}
         onClick={() => buttonAction()}
         onSuccess={() => postButtonAction()}
         label={btnLabel}
@@ -257,6 +273,7 @@ const Deposit = ({
       btnClassName,
       isFromBalanceEnough,
       isAllowanceEnough,
+      inputValue,
     ]
   )
 
@@ -265,16 +282,14 @@ const Deposit = ({
       <div className="px-2 pt-1 pb-4 bg-bgLight rounded-xl">
         {pool && poolUserData && poolData ? (
           poolUserData.tokens.map((tokenObj, i) => {
-            const balanceToken = correctToken(tokenObj.token)
             return (
-              <TokenInput
-                token={balanceToken}
-                key={balanceToken.symbol}
-                balanceStr={String(tokenObj.balanceStr)}
-                inputValueStr={inputValue.str[balanceToken.addresses[chainId]]}
-                onChange={(value) => onChangeInputValue(balanceToken, value)}
-                chainId={chainId}
+              <SerializedDepositInput
+                key={i}
+                tokenObj={tokenObj}
                 address={address}
+                chainId={chainId}
+                inputValue={inputValue}
+                onChangeInputValue={onChangeInputValue}
               />
             )
           })
@@ -292,6 +307,51 @@ const Deposit = ({
     </div>
   )
 }
+
+const SerializedDepositInput = ({
+  tokenObj,
+  address,
+  chainId,
+  inputValue,
+  onChangeInputValue,
+}) => {
+  const [serializedToken, setSerializedToken] = useState(undefined)
+  const balanceToken = correctToken(tokenObj.token)
+
+  useEffect(() => {
+    const fetchSerializedData = async () => {
+      try {
+        const token = await serializeToken(
+          address,
+          chainId,
+          balanceToken,
+          tokenObj
+        )
+        setSerializedToken(token)
+      } catch (error) {
+        console.log(`error`, error)
+      }
+    }
+
+    fetchSerializedData()
+  }, [])
+
+  return (
+    serializedToken && (
+      <DepositTokenInput
+        token={serializedToken}
+        key={serializedToken.symbol}
+        rawBalance={serializedToken.rawBalance}
+        balanceStr={String(serializedToken.balanceStr)}
+        inputValueStr={inputValue.str[serializedToken.addresses[chainId]]}
+        onChange={(value) => onChangeInputValue(serializedToken, value)}
+        chainId={chainId}
+        address={address}
+      />
+    )
+  )
+}
+
 const correctToken = (token: Token) => {
   let balanceToken: Token | undefined
   if (token.symbol == WETH.symbol) {
@@ -303,6 +363,68 @@ const correctToken = (token: Token) => {
     balanceToken = token
   }
   return balanceToken
+}
+
+const filterInputValues = (inputValues, pool, chainId) => {
+  const poolTokens = pool.nativeTokens ?? pool.poolTokens
+
+  const poolTokenAddresses = []
+
+  poolTokens.map((nativeToken) => {
+    poolTokenAddresses.push(nativeToken.addresses[chainId])
+  })
+
+  let filteredObj = poolTokenAddresses.reduce((obj, key) => {
+    obj[key] = inputValues.bn.hasOwnProperty(key) ? inputValues.bn[key] : Zero
+    return obj
+  }, {})
+
+  return filteredObj
+}
+
+const serializeToken = async (
+  address: string,
+  chainId: number,
+  balanceToken: Token,
+  tokenObj: any
+  // tokenObj: PoolToken
+) => {
+  let fetchedBalance
+
+  if (balanceToken === ETH) {
+    fetchedBalance = await fetchBalance({
+      address: address as `0x${string}`,
+      chainId,
+    })
+
+    return {
+      ...balanceToken,
+      rawBalance: fetchedBalance.value,
+      balanceStr: formatBNToString(
+        fetchedBalance.value,
+        balanceToken.decimals[chainId],
+        4
+      ),
+    }
+  } else if (balanceToken === WETHE) {
+    fetchedBalance = await fetchBalance({
+      address: address as `0x${string}`,
+      chainId,
+      token: balanceToken.addresses[chainId] as `0x${string}`,
+    })
+
+    return {
+      ...balanceToken,
+      rawBalance: fetchedBalance.value,
+      balanceStr: fetchedBalance.formatted,
+    }
+  } else {
+    return {
+      ...balanceToken,
+      rawBalance: tokenObj.rawBalance,
+      balanceStr: tokenObj.balanceStr,
+    }
+  }
 }
 
 export default Deposit

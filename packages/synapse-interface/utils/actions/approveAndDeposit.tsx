@@ -2,7 +2,10 @@ import _ from 'lodash'
 
 import toast from 'react-hot-toast'
 
-import { useSwapDepositContract } from '@hooks/useSwapDepositContract'
+import {
+  getSwapDepositContractFields,
+  useSwapDepositContract,
+} from '@hooks/useSwapDepositContract'
 import { subtractSlippage } from '@utils/slippage'
 
 import ExplorerToastLink from '@components/ExplorerToastLink'
@@ -22,59 +25,67 @@ export const approve = async (
   chainId: number
 ) => {
   const currentChainName = CHAINS_BY_ID[chainId].name
-  let pendingPopup: any
-  let successPopup: any
 
-  pendingPopup = toast(`Requesting approval on ${currentChainName}`, {
-    id: 'approve-in-progress-popup',
-    duration: Infinity,
-  })
+  const { poolAddress } = getSwapDepositContractFields(pool, chainId)
 
-  for (let token of pool.poolTokens) {
-    const tokenAddr = token.addresses[chainId]
+  const requestingApprovalPopup = toast(
+    `Requesting approval on ${currentChainName}`,
+    {
+      id: 'approve-in-progress-popup',
+      duration: Infinity,
+    }
+  )
+
+  const handleApproval = async (token, tokenAddr) => {
     if (
       inputValue[tokenAddr] &&
       (inputValue[tokenAddr].isZero() ||
-        inputValue[tokenAddr].lt(depositQuote.allowances[tokenAddr]))
+        inputValue[tokenAddr].lte(depositQuote.allowances[tokenAddr]))
     )
-      continue
+      return
 
-    if (token.symbol != WETH.symbol) {
-      try {
-        await approveToken(
-          pool.swapAddresses[chainId],
-          chainId,
-          token.symbol === AVWETH.symbol
-            ? WETHE.addresses[chainId]
-            : token.addresses[chainId],
-          inputValue[tokenAddr]
-        ).then((approveTx) => {
-          if (approveTx) {
-            toast.dismiss(pendingPopup)
+    if (token.symbol === WETH.symbol) return
 
-            const successToastContent = (
-              <div>
-                <div>Successfully approved on {currentChainName}</div>
-                <ExplorerToastLink
-                  transactionHash={approveTx?.hash ?? AddressZero}
-                  chainId={chainId}
-                />
-              </div>
-            )
+    const tokenToApprove =
+      token.symbol === AVWETH.symbol
+        ? WETHE.addresses[chainId]
+        : token.addresses[chainId]
 
-            successPopup = toast.success(successToastContent, {
-              id: 'approve-success-popup',
-              duration: 10000,
-            })
-          }
+    const approveTx = await approveToken(
+      poolAddress,
+      chainId,
+      tokenToApprove,
+      inputValue[tokenAddr]
+    )
 
-          return approveTx
-        })
-      } catch (error) {
-        toast.dismiss(pendingPopup)
-        txErrorHandler(error)
-        return error
-      }
+    if (!approveTx) return
+
+    toast.dismiss(requestingApprovalPopup)
+    const successToastContent = (
+      <div>
+        <div>Successfully approved on {currentChainName}</div>
+        <ExplorerToastLink
+          transactionHash={approveTx?.hash ?? AddressZero}
+          chainId={chainId}
+        />
+      </div>
+    )
+
+    toast.success(successToastContent, {
+      id: 'approve-success-popup',
+      duration: 10000,
+    })
+
+    return approveTx
+  }
+
+  for (let token of pool.poolTokens) {
+    try {
+      await handleApproval(token, token.addresses[chainId])
+    } catch (error) {
+      toast.dismiss(requestingApprovalPopup)
+      txErrorHandler(error)
+      return error
     }
   }
 }
@@ -105,11 +116,22 @@ export const deposit = async (
 
     const result = Array.from(Object.values(inputAmounts), (value) => value)
 
+    const wethIndex = _.findIndex(
+      pool.poolTokens,
+      (t) => t.symbol == WETH.symbol
+    )
+
     let spendTransactionArgs = [
       result,
       minToMint,
       Math.round(new Date().getTime() / 1000 + 60 * 10),
     ]
+
+    const liquidityAmounts = Object.values(inputAmounts)
+
+    if (wethIndex >= 0) {
+      spendTransactionArgs.push({ value: liquidityAmounts[wethIndex] })
+    }
 
     const spendTransaction = await poolContract.addLiquidity(
       ...spendTransactionArgs

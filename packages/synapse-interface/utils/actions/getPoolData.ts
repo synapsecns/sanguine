@@ -34,7 +34,7 @@ const getBalanceData = async ({
   const lpTotalSupply =
     (
       await fetchToken({
-        address: `0x${lpTokenAddress.slice(2)}`,
+        address: lpTokenAddress as `0x${string}`,
         chainId,
       })
     )?.totalSupply?.value ?? Zero
@@ -45,12 +45,14 @@ const getBalanceData = async ({
 
     const rawBalance = (
       await fetchBalance({
-        address: `0x${address.slice(2)}`,
+        address: address as `0x${string}`,
         chainId,
-        token: `0x${token.addresses[chainId].slice(2)}`,
+        token: token.addresses[chainId] as `0x${string}`,
       })
     )?.value
 
+    // TODO: this is to support virtual price calcs, which needs to get updated
+    // as a contract call
     const balance = rawBalance.mul(
       BigNumber.from(10).pow(18 - token.decimals[chainId])
     )
@@ -73,6 +75,7 @@ const getBalanceData = async ({
       poolTokenSum = poolTokenSum.add(balance)
     }
   }
+
   return {
     tokenBalances,
     poolTokenSum,
@@ -80,6 +83,7 @@ const getBalanceData = async ({
     lpTotalSupply,
   }
 }
+
 export const getPoolData = async (
   chainId: number,
   pool: Token,
@@ -146,6 +150,7 @@ export const getPoolData = async (
       tokens: poolTokensMatured,
       lpTokenBalance,
       lpTokenBalanceStr: formatBNToString(lpTokenBalance, 18, 4),
+      nativeTokens: pool.nativeTokens,
     }
   }
 

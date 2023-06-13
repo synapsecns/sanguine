@@ -15,11 +15,13 @@ const ExchangeRateInfo = ({
   toToken,
   exchangeRate,
   toChainId,
+  showGasDrop,
 }: {
   fromAmount: BigNumber
   toToken: Token
   exchangeRate: BigNumber
   toChainId: number
+  showGasDrop: boolean
 }) => {
   const [gasDropChainId, setGasDropChainId] = useState<number>(null)
   const { gasDrop: gasDropAmount, loading } = useGasDropAmount(toChainId)
@@ -64,15 +66,17 @@ const ExchangeRateInfo = ({
 
   return (
     <div className="py-3.5 px-1 space-y-2 text-xs md:text-base lg:text-base md:px-6">
-      <div
-        className={
-          isGasDropped
-            ? 'flex items-center justify-between'
-            : 'flex justify-end'
-        }
-      >
-        {memoizedGasDropLabel}
-      </div>
+      {showGasDrop && (
+        <div
+          className={
+            isGasDropped
+              ? 'flex items-center justify-between'
+              : 'flex justify-end'
+          }
+        >
+          {memoizedGasDropLabel}
+        </div>
+      )}
       <div className="flex justify-between">
         <div className="flex space-x-2 text-[#88818C]">
           <p>Expected Price on</p>

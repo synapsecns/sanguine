@@ -1,7 +1,7 @@
 {
   "name": "@synapsecns/coverage-aggregator",
   "version": "1.0.1",
-  "description": "> TODO: description",
+  "description": "Aggregates coverage from js/ts packages",
   "author": "Trajan0x <trajan0x@users.noreply.github.com>",
   "homepage": "https://github.com/synapsecns/sanguine/tree/main/packages/coverage-aggregator#readme",
   "license": "MIT",

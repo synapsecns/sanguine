@@ -72,5 +72,6 @@ export const getPoolTokenInfoArr = ({
     balanceStr: formatBNToString(poolToken.balance, 18, 4),
     token: poolToken.token,
     isLp: poolToken.isLP,
+    rawBalance: poolToken.rawBalance,
   }))
 }
