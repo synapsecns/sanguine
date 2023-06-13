@@ -72,8 +72,8 @@ game theory assumption that the agents are rational.
 
 ### Bonded Agent
 The [Root of Trust](#root-of-trust) of the [Synapse Messaging System](#synapse-messaging-system) comes from the [Off Chain Agents](#off-chain-agent)
-posting a [bond](#bond). Within the [Synapse Messaging System](#synapse-messaging-system), there are two kinds of Bonded Agents: [Notaries](#notaries)
-and [Guards](#gaurds). The only kind of [Unbonded Agent](#unbonded-agent) is the [Executor](#executor).
+posting a [bond](#bond). Within the [Synapse Messaging System](#synapse-messaging-system), there are two kinds of Bonded Agents: [Notaries](#notary)
+and [Guards](#gaurd). The only kind of [Unbonded Agent](#unbonded-agent) is the [Executor](#executor).
 
 ### Bonding Manager Smart Contract
 The Bonding Manager Smart Contract is deployed on the [Synapse Chain](#synapse-chain) along with the [Summit](#summit-smart-contract) and
@@ -202,6 +202,21 @@ happens on a [Remote Chain](#remote-chain), then that remote chain will need to 
 Synapse chain. Because the resolution will always result in either the accuser or the accused agent being slashed, this will result
 in that agent being removed from the agent set, and that means the [Agent Root](#agent-root) will be updated. This will eventually
 propagate to all the chains in the network and they will learn about the new [Agent Set](#agent-set) this way.
+
+### Fraudulent Attestation
+This is [fraud](#fraud) committed by a [Notary](#notary) by submitting an [Attestation](#attestation) to its [remote chain](#remote-chain)
+that is not registered on
+the [Synapse Chain](#synapse-chain).
+
+### Fraudulent Attestation Detection
+[Fraudulent Attestation](#fraudulent-attestation) is easily detected by a [Guard](#guard) who observes the [Attestation](#attestation)
+posted on the [remote chain](#remote-chain) and then doing a look-up on the [Synapse Chain](#synapse-chain) for that [Attestation](#attestation).
+If the [Synapse Chain](#synapse-chain) has no record of that attestation, then the [Guard](#guard) will submit a
+[fraud report](#fraud-report) to the [Synapse Chain](#synapse-chain)
+
+### Fraudulent Attestation Report
+A [fraud report](#fraud-report) submitted to the [Synapse Chain](#synapse-chain) by a [Guard](#guard) who
+[detects a fraudulent attestation](#fraudulent-attestation-detection) commited by a [Notary](#notary).
 
 ### Gas Data
 The Gas Data holds important information about the current gas prices of a particular chain. This Gas Data is part of the [State](#state) of
