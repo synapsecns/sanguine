@@ -119,7 +119,7 @@ func (e *ExecutorSuite) TestVerifyState() {
 //nolint:maintidx
 func (e *ExecutorSuite) TestMerkleInsert() {
 	// TODO (joe and lex): FIX ME
-	//e.T().Skip()
+	// e.T().Skip()
 	testDone := false
 	defer func() {
 		testDone = true
@@ -466,7 +466,7 @@ func (e *ExecutorSuite) TestVerifyMessageMerkleProof() {
 }
 
 func (e *ExecutorSuite) TestExecutor() {
-	//e.T().Skip()
+	// e.T().Skip()
 	testDone := false
 	defer func() {
 		testDone = true
