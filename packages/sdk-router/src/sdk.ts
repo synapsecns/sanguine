@@ -336,7 +336,6 @@ class SynapseSDK {
       poolAddress,
       amount
     )
-    console.log(amounts)
     const amountsOut: Array<{ value: BigNumber, index: number }> = amounts.map((amount, index) => ({
       value: amount,
       index,
