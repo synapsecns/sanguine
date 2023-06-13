@@ -87,7 +87,7 @@ jobs:
         package: ${{ fromJSON(needs.changes.outputs.packages_deps) }}
     services:
       mariadb:
-        image: mariadb:latest
+        image: mariadb:10.11.3
         ports:
           - 3306
         env:
