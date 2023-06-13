@@ -62,8 +62,6 @@ const getBridgeableTokens = (): TokensByChain => {
 const getBridgeChainsByType = (): BridgeChainsByType => {
   const bridgeChainsByType: BridgeChainsByType = {}
   Object.entries(all).map(([key, token]) => {
-    // Skip if the token is paused on all chains
-    if (Object.values(PAUSED_TOKENS_BY_CHAIN).some((pausedTokens) => pausedTokens.includes(key))) return
 
     const swapableType = String(token?.swapableType)
     const keys = Object.keys(token.addresses).filter(
@@ -120,9 +118,6 @@ const getBridgeableTokensByType = (): SwapableTokensByType => {
   )
 
   Object.entries(all).map(([key, token]) => {
-    // Skip if the token is paused on all chains
-    if (Object.values(PAUSED_TOKENS_BY_CHAIN).some((pausedTokens) => pausedTokens.includes(key))) return
-
     const swapableType = String(token?.swapableType)
 
     for (const cID of Object.keys(token.addresses)) {
