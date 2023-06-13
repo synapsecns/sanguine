@@ -328,7 +328,7 @@ class SynapseSDK {
     poolAddress: string,
     amount: BigNumber
   ): Promise<{
-    amounts: Array<{ value: BigNumber, index: number }>;
+    amounts: Array<{ value: BigNumber; index: number }>
     routerAddress: string
   }> {
     const router: SynapseRouter = this.synapseRouters[chainId]
@@ -336,17 +336,18 @@ class SynapseSDK {
       poolAddress,
       amount
     )
-    const amountsOut: Array<{ value: BigNumber, index: number }> = amounts.map((amount, index) => ({
-      value: amount,
-      index,
-    }));
+    const amountsOut: Array<{ value: BigNumber; index: number }> = amounts.map(
+      (respAmount, index) => ({
+        value: respAmount,
+        index,
+      })
+    )
 
     return {
       amounts: amountsOut,
       routerAddress: router.routerContract.address,
     }
   }
-
 
   public async calculateRemoveLiquidityOne(
     chainId: number,
