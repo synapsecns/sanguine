@@ -23,6 +23,7 @@ import { Token } from '@types'
 import { approve, withdraw } from '@/utils/actions/approveAndWithdraw'
 import { getTokenAllowance } from '@/utils/actions/getTokenAllowance'
 import { PoolData, PoolUserData } from '@types'
+import { getSwapDepositContractFields } from '@/utils/hooks/useSwapDepositContract'
 
 const DEFAULT_WITHDRAW_QUOTE = {
   priceImpact: Zero,
@@ -75,6 +76,9 @@ const Withdraw = ({
   }
   const { synapseSDK } = useSynapseContext()
 
+  const showTokens = pool ? pool.nativeTokens ?? pool.poolTokens : []
+  const { poolAddress } = getSwapDepositContractFields(pool, chainId)
+
   const calculateMaxWithdraw = async () => {
     if (poolUserData == null || address == null) {
       return
@@ -90,7 +94,7 @@ const Withdraw = ({
       if (withdrawType == ALL) {
         const { amounts } = await synapseSDK.calculateRemoveLiquidity(
           chainId,
-          pool.swapAddresses[chainId],
+          poolAddress,
           inputValue.bn
         )
         for (const tokenAddr in amounts) {
@@ -99,7 +103,7 @@ const Withdraw = ({
       } else {
         const { amount } = await synapseSDK.calculateRemoveLiquidityOne(
           chainId,
-          pool.swapAddresses[chainId],
+          poolAddress,
           inputValue.bn,
           withdrawType
         )
@@ -113,7 +117,7 @@ const Withdraw = ({
         18
       )
       const allowance = await getTokenAllowance(
-        pool.swapAddresses[chainId],
+        poolAddress,
         pool.addresses[chainId],
         address,
         chainId
@@ -122,7 +126,7 @@ const Withdraw = ({
         priceImpact,
         allowance,
         outputs,
-        routerAddress: pool.swapAddresses[chainId],
+        routerAddress: poolAddress,
       })
     } catch (e) {
       console.log(e)
@@ -337,8 +341,8 @@ const Withdraw = ({
           label="Combo"
           labelClassName={withdrawType === ALL && 'text-indigo-500'}
         />
-        {pool?.poolTokens &&
-          pool.poolTokens.map((token) => {
+        {showTokens &&
+          showTokens.map((token) => {
             const checked = withdrawType === token.addresses[chainId]
             return (
               <RadioButton
@@ -387,7 +391,7 @@ const Withdraw = ({
           <Grid cols={{ xs: 2 }}>
             <div>
               <ReceivedTokenSection
-                poolTokens={pool?.poolTokens ?? []}
+                poolTokens={showTokens}
                 withdrawQuote={withdrawQuote}
                 chainId={chainId}
               />

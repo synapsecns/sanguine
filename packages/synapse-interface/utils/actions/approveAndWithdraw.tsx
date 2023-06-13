@@ -1,5 +1,8 @@
 import { ALL } from '@constants/withdrawTypes'
-import { useSwapDepositContract } from '@hooks/useSwapDepositContract'
+import {
+  getSwapDepositContractFields,
+  useSwapDepositContract,
+} from '@hooks/useSwapDepositContract'
 import ExplorerToastLink from '@components/ExplorerToastLink'
 import { subtractSlippage } from '@utils/slippage'
 import { txErrorHandler } from '@utils/txErrorHandler'
@@ -18,8 +21,11 @@ export const approve = async (
   if (inputValue.isZero() || inputValue.lt(depositQuote.allowance)) {
     return
   }
+
+  const { poolAddress } = getSwapDepositContractFields(pool, chainId)
+
   return await approveToken(
-    pool.swapAddresses[chainId],
+    poolAddress,
     chainId,
     pool.addresses[chainId],
     inputValue
@@ -62,6 +68,7 @@ export const withdraw = async (
           slippageCustom
         )
       }
+
       spendTransaction = await poolContract.removeLiquidity(
         inputAmount,
         outputMinArr,
@@ -70,6 +77,7 @@ export const withdraw = async (
     } else {
       const outputAmount = Object.values(outputs)[0]
       const poolTokenIndex = outputAmount.index
+
       spendTransaction = await poolContract.removeLiquidityOneToken(
         inputAmount,
         poolTokenIndex,
