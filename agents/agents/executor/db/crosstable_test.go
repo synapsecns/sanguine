@@ -89,7 +89,7 @@ func (t *DBSuite) TestGetTimestampForMessage() {
 		err = testDB.StoreAttestation(t.GetTestContext(), attestationC, origin+1, 3, 1)
 		Nil(t.T(), err)
 
-		// Make sure everything is stored.
+		// Make sure everything is stored
 		potentialSnapshotRoots, err := testDB.GetPotentialSnapshotRoots(t.GetTestContext(), origin, 0)
 		Nil(t.T(), err)
 		Equal(t.T(), 3, len(potentialSnapshotRoots))
