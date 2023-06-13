@@ -11,6 +11,9 @@ const ReceivedTokenSection = ({
   poolTokens: Token[]
   chainId: number
 }) => {
+  // If withdrawQuote or outputs in withdrawQuote is undefined, return null
+  if (!withdrawQuote || !withdrawQuote.outputs) return null;
+
   // Cannot handle nativeTokens currently without state reworking to make accessible the pools object
   // const tokensArray = poolTokens ? poolTokens : pool.nativeTokens;  // Using the appropriate tokens array
   const tokensArray = poolTokens
