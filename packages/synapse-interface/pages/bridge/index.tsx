@@ -44,6 +44,7 @@ import {
   QUOTE_POLLING_INTERVAL,
 } from '@/constants/bridge'
 import { CHAINS_BY_ID, AcceptedChainId } from '@/constants/chains'
+import { PortfolioPreview, Portfolio } from '@/components/Portfolio'
 
 /* TODO
   - look into getting rid of fromChainId state and just using wagmi hook (ran into problems when trying this but forgot why)
@@ -56,7 +57,7 @@ const BridgePage = ({
   address: `0x${string}`
   fromChainId: number
 }) => {
-  const { isDisconnected } = useAccount()
+  const { isConnected, isDisconnected } = useAccount()
   const router = useRouter()
   const { synapseSDK } = useSynapseContext()
   const [time, setTime] = useState(Date.now())
@@ -406,7 +407,10 @@ const BridgePage = ({
   */
   const handleChainChange = useCallback(
     async (chainId: number, flip: boolean, type: 'from' | 'to') => {
-      if (address === undefined && type === 'from' || isDisconnected && type === 'from') {
+      if (
+        (address === undefined && type === 'from') ||
+        (isDisconnected && type === 'from')
+      ) {
         errorPopup = toast.error('Please connect your wallet', {
           id: 'bridge-connect-wallet',
           duration: 20000,
@@ -723,12 +727,19 @@ const BridgePage = ({
         data-test-id="bridge-page"
         className="relative z-0 flex-1 h-full overflow-y-auto focus:outline-none"
       >
-        <div className="items-center px-4 py-8 mx-auto mt-4 2xl:w-3/4 sm:mt-6 sm:px-8 md:px-12">
-          <div>
+        <div
+          className={`
+            flex flex-col md:flex-row 
+            items-start justify-center 
+            2xl:w-3/4 px-4 py-16 mx-auto 
+            mt-4 sm:mt-6 sm:px-8 md:px-12`}
+        >
+          {isConnected ? <Portfolio /> : <PortfolioPreview />}
+          <div className="w-2/3">
             <Grid
               cols={{ xs: 1 }}
               gap={6}
-              className="justify-center px-2 py-16 sm:px-6 md:px-8"
+              className="justify-center px-2 sm:px-6 md:px-8"
             >
               <Popup chainId={fromChainId} />
               <div className="flex justify-center">
