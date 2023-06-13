@@ -1,11 +1,11 @@
 package base
 
 import (
-	"context"
 	"github.com/synapsecns/sanguine/core/metrics"
 	submitterDB "github.com/synapsecns/sanguine/ethergo/submitter/db"
 	"github.com/synapsecns/sanguine/ethergo/submitter/db/txdb"
 	"github.com/synapsecns/sanguine/services/cctp-relayer/db"
+	"github.com/synapsecns/sanguine/services/cctp-relayer/types"
 	"gorm.io/gorm"
 )
 
@@ -35,12 +35,8 @@ func (s Store) SubmitterDB() submitterDB.Service {
 // see: https://medium.com/@SaifAbid/slice-interfaces-8c78f8b6345d for an explanation of why we can't do this at initialization time
 func GetAllModels() (allModels []interface{}) {
 	allModels = append(allModels, txdb.GetAllModels()...)
+	allModels = append(allModels, &types.Message{})
 	return allModels
 }
 
-func (s Store) GetLastBlockNumber(ctx context.Context, chainID uint32) (uint64, error) {
-	//TODO implement me
-	panic("not implemented yet")
-}
-
-var _ db.Service = &Store{}
+var _ db.CCTPRelayerDB = &Store{}

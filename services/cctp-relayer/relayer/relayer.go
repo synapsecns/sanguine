@@ -12,7 +12,8 @@ import (
 	signerConfig "github.com/synapsecns/sanguine/ethergo/signer/config"
 	"github.com/synapsecns/sanguine/ethergo/submitter"
 	db2 "github.com/synapsecns/sanguine/services/cctp-relayer/db"
-	"github.com/synapsecns/sanguine/services/cctp-relayer/db/sqlite"
+	"github.com/synapsecns/sanguine/services/cctp-relayer/db/base"
+	relayTypes "github.com/synapsecns/sanguine/services/cctp-relayer/types"
 
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/synapsecns/sanguine/services/cctp-relayer/api"
@@ -34,18 +35,6 @@ import (
 	"google.golang.org/grpc/credentials/insecure"
 )
 
-// UsdcMessage contains data necessary to be posted on the destination chain.
-type UsdcMessage struct {
-	BurnTxHash       common.Hash // hash of USDC burn transaction
-	OriginChainID    uint32      // chain ID of the origin chain
-	DestChainID      uint32      // chain ID of the destination chain
-	Message          []byte      // raw bytes of message produced by Circle's MessageTransmitter
-	MessageHash      common.Hash // keccak256 hash of message bytes
-	Signature        []byte      // attestation produced by Circle's API: https://developers.circle.com/stablecoin/reference/getattestation
-	RequestVersion   uint32      // version of the request
-	FormattedRequest []byte      // formatted request produced by SynapseCCTP
-}
-
 // chainListener is a struct that contains the necessary information for each chain level relayer.
 type chainListener struct {
 	// chainID is the chain ID of the chain that this relayer is responsible for.
@@ -55,9 +44,9 @@ type chainListener struct {
 	// stopListenChan is a channel that is used to stop listening to the log channel.
 	stopListenChan chan bool
 	// usdcMsgRecvChan contains incoming usdc messages yet to be signed.
-	usdcMsgRecvChan chan *UsdcMessage
+	usdcMsgRecvChan chan *relayTypes.Message
 	// usdcMsgSendChan contains outgoing usdc messages that are signed.
-	usdcMsgSendChan chan *UsdcMessage
+	usdcMsgSendChan chan *relayTypes.Message
 }
 
 // CCTPRelayer listens for USDC burn events on origin chains,
@@ -86,7 +75,7 @@ type CCTPRelayer struct {
 const usdcMsgChanSize = 1000
 
 // NewCCTPRelayer creates a new CCTPRelayer.
-func NewCCTPRelayer(ctx context.Context, cfg config.Config, scribeClient client.ScribeClient, omniRPCClient omniClient.RPCClient, handler metrics.Handler, attestationAPI api.AttestationAPI) (*CCTPRelayer, error) {
+func NewCCTPRelayer(ctx context.Context, cfg config.Config, store *base.Store, scribeClient client.ScribeClient, omniRPCClient omniClient.RPCClient, handler metrics.Handler, attestationAPI api.AttestationAPI) (*CCTPRelayer, error) {
 	conn, err := grpc.DialContext(ctx, fmt.Sprintf("%s:%d", scribeClient.URL, scribeClient.Port),
 		grpc.WithTransportCredentials(insecure.NewCredentials()),
 		grpc.WithUnaryInterceptor(otelgrpc.UnaryClientInterceptor(otelgrpc.WithTracerProvider(handler.GetTracerProvider()))),
@@ -115,8 +104,8 @@ func NewCCTPRelayer(ctx context.Context, cfg config.Config, scribeClient client.
 			chainID:         chain.ChainID,
 			closeConnection: make(chan bool, 1),
 			stopListenChan:  make(chan bool, 1),
-			usdcMsgRecvChan: make(chan *UsdcMessage, usdcMsgChanSize),
-			usdcMsgSendChan: make(chan *UsdcMessage, usdcMsgChanSize),
+			usdcMsgRecvChan: make(chan *relayTypes.Message, usdcMsgChanSize),
+			usdcMsgSendChan: make(chan *relayTypes.Message, usdcMsgChanSize),
 		}
 		client, err := omniRPCClient.GetClient(ctx, big.NewInt(int64(chain.ChainID)))
 		if err != nil {
@@ -137,12 +126,7 @@ func NewCCTPRelayer(ctx context.Context, cfg config.Config, scribeClient client.
 		return nil, fmt.Errorf("could not make cctp signer: %w", err)
 	}
 
-	db, err := sqlite.NewSqliteStore(ctx, cfg.DBPrefix, handler, false)
-	if err != nil {
-		return nil, fmt.Errorf("could not make cctp db: %w", err)
-	}
-
-	txSubmitter := submitter.NewTransactionSubmitter(handler, signer, omniRPCClient, db.SubmitterDB(), &cfg.SubmitterConfig)
+	txSubmitter := submitter.NewTransactionSubmitter(handler, signer, omniRPCClient, store.SubmitterDB(), &cfg.SubmitterConfig)
 
 	return &CCTPRelayer{
 		cfg:               cfg,
@@ -192,7 +176,7 @@ func (c CCTPRelayer) Stop(chainID uint32) {
 	c.chainListeners[chainID].stopListenChan <- true
 }
 
-// Listens for USDC send events on origin chain, and registers UsdcMessages to be signed.
+// Listens for USDC send events on origin chain, and registers relayTypes.Messages to be signed.
 //
 //nolint:cyclop
 func (c CCTPRelayer) streamLogs(ctx context.Context, grpcClient pbscribe.ScribeServiceClient, conn *grpc.ClientConn, chainID uint32, address string, toBlockNumber *uint64) error {
@@ -353,7 +337,7 @@ func (c CCTPRelayer) handleCircleRequestSent(parentCtx context.Context, txhash c
 		}
 		return err
 	default:
-		msg := UsdcMessage{
+		msg := relayTypes.Message{
 			BurnTxHash:    txhash,
 			OriginChainID: originChain,
 			DestChainID:   uint32(circleRequestSentEvent.ChainId.Int64()),
@@ -385,7 +369,7 @@ func (c CCTPRelayer) processBridgeEvents(ctx context.Context, chainID uint32) (e
 	}
 }
 
-func (c CCTPRelayer) fetchAttestation(parentCtx context.Context, chainID uint32, msg *UsdcMessage) (err error) {
+func (c CCTPRelayer) fetchAttestation(parentCtx context.Context, chainID uint32, msg *relayTypes.Message) (err error) {
 	ctx, span := c.handler.Tracer().Start(parentCtx, "fetchAttestation", trace.WithAttributes(
 		attribute.String(MessageHash, msg.MessageHash.String()),
 		attribute.Int(metrics.Origin, int(msg.OriginChainID)),
@@ -410,7 +394,7 @@ func (c CCTPRelayer) fetchAttestation(parentCtx context.Context, chainID uint32,
 	return
 }
 
-func (c CCTPRelayer) submitReceiveCircleToken(parentCtx context.Context, msg *UsdcMessage) (err error) {
+func (c CCTPRelayer) submitReceiveCircleToken(parentCtx context.Context, msg *relayTypes.Message) (err error) {
 	ctx, span := c.handler.Tracer().Start(parentCtx, "submitReceiveCircleToken", trace.WithAttributes(
 		attribute.String(MessageHash, msg.MessageHash.String()),
 		attribute.Int(metrics.Origin, int(msg.OriginChainID)),

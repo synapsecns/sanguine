@@ -13,6 +13,7 @@ import (
 	"github.com/synapsecns/sanguine/services/cctp-relayer/api"
 	"github.com/synapsecns/sanguine/services/cctp-relayer/config"
 	"github.com/synapsecns/sanguine/services/cctp-relayer/relayer"
+	"github.com/synapsecns/sanguine/services/cctp-relayer/types"
 	omniClient "github.com/synapsecns/sanguine/services/omnirpc/client"
 	scribeClient "github.com/synapsecns/sanguine/services/scribe/client"
 )
@@ -51,7 +52,7 @@ func (c *CCTPRelayerSuite) TestHandleCircleRequestSent() {
 	sc := scribeClient.NewRemoteScribe(uint16(port), parsedScribe.Host, c.metricsHandler)
 	mockAPI := api.NewMockCircleAPI()
 	omniRPCClient := omniClient.NewOmnirpcClient(c.testOmnirpc, c.metricsHandler, omniClient.WithCaptureReqRes())
-	relay, err := relayer.NewCCTPRelayer(c.GetTestContext(), cfg, sc.ScribeClient, omniRPCClient, c.metricsHandler, mockAPI)
+	relay, err := relayer.NewCCTPRelayer(c.GetTestContext(), cfg, c.testStore, sc.ScribeClient, omniRPCClient, c.metricsHandler, mockAPI)
 	c.Nil(err)
 
 	// mint token
@@ -77,7 +78,7 @@ func (c *CCTPRelayerSuite) TestHandleCircleRequestSent() {
 	recvChan := relay.GetUsdcMsgRecvChan(uint32(sendChain.GetChainID()))
 	msg := <-recvChan
 	// TODO(dwasse): validate rest of msg?
-	c.Equal(msg.MessageHash, tx.Hash())
+	c.Equal(msg.BurnTxHash, tx.Hash())
 }
 
 func (c *CCTPRelayerSuite) TestFetchAttestation() {
@@ -110,7 +111,7 @@ func (c *CCTPRelayerSuite) TestFetchAttestation() {
 	sc := scribeClient.NewRemoteScribe(uint16(port), parsedScribe.Host, c.metricsHandler)
 	mockAPI := api.NewMockCircleAPI()
 	omniRPCClient := omniClient.NewOmnirpcClient(c.testOmnirpc, c.metricsHandler, omniClient.WithCaptureReqRes())
-	relay, err := relayer.NewCCTPRelayer(c.GetTestContext(), cfg, sc.ScribeClient, omniRPCClient, c.metricsHandler, mockAPI)
+	relay, err := relayer.NewCCTPRelayer(c.GetTestContext(), cfg, c.testStore, sc.ScribeClient, omniRPCClient, c.metricsHandler, mockAPI)
 	c.Nil(err)
 
 	// override mocked api call
@@ -121,7 +122,7 @@ func (c *CCTPRelayerSuite) TestFetchAttestation() {
 
 	// fetch attestation
 	testHash := "0x5dba62229dba62f233dca8f3fd14488fdc45d2a86537da2dea7a5683b5e7f622"
-	msg := relayer.UsdcMessage{
+	msg := types.Message{
 		Message:          []byte{},
 		MessageHash:      common.HexToHash(testHash),
 		FormattedRequest: []byte{},
@@ -171,13 +172,14 @@ func (c *CCTPRelayerSuite) TestSubmitReceiveCircleToken() {
 	sc := scribeClient.NewRemoteScribe(uint16(port), parsedScribe.Host, c.metricsHandler)
 	mockAPI := api.NewMockCircleAPI()
 	omniRPCClient := omniClient.NewOmnirpcClient(c.testOmnirpc, c.metricsHandler, omniClient.WithCaptureReqRes())
-	relay, err := relayer.NewCCTPRelayer(c.GetTestContext(), cfg, sc.ScribeClient, omniRPCClient, c.metricsHandler, mockAPI)
+	relay, err := relayer.NewCCTPRelayer(c.GetTestContext(), cfg, c.testStore, sc.ScribeClient, omniRPCClient, c.metricsHandler, mockAPI)
 	c.Nil(err)
 
 	// submit receive circle token
 	testHash := "0x5dba62229dba62f233dca8f3fd14488fdc45d2a86537da2dea7a5683b5e7f622"
-	msg := relayer.UsdcMessage{
-		ChainID:          uint32(recvChainID.Int64()),
+	msg := types.Message{
+		OriginChainID:    uint32(sendChainID.Int64()),
+		DestChainID:      uint32(recvChainID.Int64()),
 		Message:          []byte{},
 		MessageHash:      common.HexToHash(testHash),
 		FormattedRequest: []byte{},

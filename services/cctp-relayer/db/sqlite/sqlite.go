@@ -3,6 +3,8 @@ package sqlite
 import (
 	"context"
 	"fmt"
+	"os"
+
 	"github.com/ipfs/go-log"
 	common_base "github.com/synapsecns/sanguine/core/dbcommon"
 	"github.com/synapsecns/sanguine/core/metrics"
@@ -10,7 +12,6 @@ import (
 	"github.com/synapsecns/sanguine/services/cctp-relayer/db/base"
 	"gorm.io/driver/sqlite"
 	"gorm.io/gorm"
-	"os"
 )
 
 // Store is the sqlite store. It extends the base store for sqlite specific queries.
@@ -58,4 +59,4 @@ func NewSqliteStore(parentCtx context.Context, dbPath string, handler metrics.Ha
 	return &Store{base.NewStore(gdb, handler)}, nil
 }
 
-var _ db.Service = &Store{}
+var _ db.CCTPRelayerDB = &Store{}

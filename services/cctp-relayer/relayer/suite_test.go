@@ -12,6 +12,8 @@ import (
 	"github.com/synapsecns/sanguine/core/testsuite"
 	"github.com/synapsecns/sanguine/ethergo/backends"
 	"github.com/synapsecns/sanguine/ethergo/backends/geth"
+	"github.com/synapsecns/sanguine/services/cctp-relayer/db/base"
+	"github.com/synapsecns/sanguine/services/cctp-relayer/db/sqlite"
 	"github.com/synapsecns/sanguine/services/cctp-relayer/metadata"
 	cctpTest "github.com/synapsecns/sanguine/services/cctp-relayer/testutil"
 	omnirpcHelper "github.com/synapsecns/sanguine/services/omnirpc/testhelper"
@@ -32,6 +34,8 @@ type CCTPRelayerSuite struct {
 	testOmnirpc string
 	// metricsHandler is the metrics handler for the test
 	metricsHandler metrics.Handler
+	// testStore is the test store for the test
+	testStore *base.Store
 }
 
 // NewTestSuite creates a new test suite.
@@ -121,9 +125,15 @@ func (s *CCTPRelayerSuite) SetupTest() {
 	// create the test omnirpc backend
 	s.testOmnirpc = omnirpcHelper.NewOmnirpcServer(s.GetTestContext(), s.T(), s.testBackends...)
 
+	// create the test metrics handler
 	var err error
 	s.metricsHandler, err = metrics.NewByType(s.GetTestContext(), metadata.BuildInfo(), metrics.Jaeger)
 	s.Require().NoError(err)
+
+	// create the test store
+	db, err := sqlite.NewSqliteStore(s.GetTestContext(), "test-db", s.metricsHandler, false)
+	s.Require().NoError(err)
+	s.testStore = base.NewStore(db.DB(), s.metricsHandler)
 
 	// deploy the contract to all backends
 	s.deployManager.BulkDeploy(s.GetTestContext(), s.testBackends, cctpTest.SynapseCCTPType, cctpTest.MockMintBurnTokenType)
