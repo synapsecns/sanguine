@@ -35,10 +35,18 @@ const sortedTokens = Object.values(all).sort(
   (a, b) => b.visibilityRank - a.visibilityRank
 )
 
+// This should be an object where keys are chain IDs and values are arrays of token keys that you want to pause on each chain
+const PAUSED_TOKENS_BY_CHAIN = {
+  [CHAINS.FANTOM.id]: ["USDC", "USDT", "FTMETH"]
+}
+
 const getBridgeableTokens = (): TokensByChain => {
   const bridgeableTokens: TokensByChain = {}
-  Object.values(all).map((token) => {
+  Object.entries(all).map(([key, token]) => {
     for (const cID of Object.keys(token.addresses)) {
+      // Skip if the token is paused on the current chain
+      if (PAUSED_TOKENS_BY_CHAIN[cID]?.includes(key)) continue
+
       if (!bridgeableTokens[cID]) {
         bridgeableTokens[cID] = [token]
       } else {
@@ -53,11 +61,20 @@ const getBridgeableTokens = (): TokensByChain => {
 
 const getBridgeChainsByType = (): BridgeChainsByType => {
   const bridgeChainsByType: BridgeChainsByType = {}
-  Object.values(all).map((token) => {
+  Object.entries(all).map(([key, token]) => {
+    // Skip if the token is paused on all chains
+    if (Object.values(PAUSED_TOKENS_BY_CHAIN).some((pausedTokens) => pausedTokens.includes(key))) return
+
     const swapableType = String(token?.swapableType)
     const keys = Object.keys(token.addresses).filter(
-      (a) => !bridgeChainsByType[swapableType]?.includes(a)
+      (cID) => {
+        // Skip if the token is paused on the current chain
+        if (PAUSED_TOKENS_BY_CHAIN[cID]?.includes(key)) return false
+
+        return !bridgeChainsByType[swapableType]?.includes(cID)
+      }
     )
+
     if (bridgeChainsByType[swapableType]) {
       bridgeChainsByType[swapableType] = [
         ...bridgeChainsByType[swapableType],
@@ -69,6 +86,7 @@ const getBridgeChainsByType = (): BridgeChainsByType => {
   })
   return bridgeChainsByType
 }
+
 const getBridgeTypeByChain = (): BridgeTypeByChain => {
   const bridgeChainByType = getBridgeChainsByType()
   const bridgeTypeByChain: BridgeTypeByChain = {}
@@ -91,6 +109,7 @@ const convertArrayToObject = (array: any) => {
   }, {})
 }
 
+
 const getBridgeableTokensByType = (): SwapableTokensByType => {
   const bridgeTypeByChain = getBridgeTypeByChain()
   const bridgeSwapableTokensByType = Object.fromEntries(
@@ -99,10 +118,17 @@ const getBridgeableTokensByType = (): SwapableTokensByType => {
       convertArrayToObject(v),
     ])
   )
-  Object.values(all).map((token) => {
+
+  Object.entries(all).map(([key, token]) => {
+    // Skip if the token is paused on all chains
+    if (Object.values(PAUSED_TOKENS_BY_CHAIN).some((pausedTokens) => pausedTokens.includes(key))) return
+
     const swapableType = String(token?.swapableType)
 
     for (const cID of Object.keys(token.addresses)) {
+      // Skip if the token is paused on the current chain
+      if (PAUSED_TOKENS_BY_CHAIN[cID]?.includes(key)) continue
+
       if (bridgeSwapableTokensByType[cID][swapableType].length === 0) {
         bridgeSwapableTokensByType[cID][swapableType] = [token]
       } else if (
@@ -118,6 +144,7 @@ const getBridgeableTokensByType = (): SwapableTokensByType => {
 
   return bridgeSwapableTokensByType
 }
+
 const getTokenHashMap = () => {
   let tokenHashMap = {}
 
