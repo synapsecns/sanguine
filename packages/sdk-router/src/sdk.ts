@@ -337,8 +337,8 @@ class SynapseSDK {
       amount
     )
     const amountsOut: Array<{ value: BigNumber; index: number }> = amounts.map(
-      (respAmount, index) => ({
-        value: respAmount,
+      (amount, index) => ({
+        value: amount,
         index,
       })
     )
