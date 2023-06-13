@@ -150,6 +150,7 @@ export const getPoolData = async (
       tokens: poolTokensMatured,
       lpTokenBalance,
       lpTokenBalanceStr: formatBNToString(lpTokenBalance, 18, 4),
+      nativeTokens: pool.nativeTokens,
     }
   }
 

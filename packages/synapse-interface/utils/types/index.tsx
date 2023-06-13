@@ -42,6 +42,7 @@ export type PoolUserData = {
   tokens: PoolToken[]
   lpTokenBalance: BigNumber
   lpTokenBalanceStr: string
+  nativeTokens?: any
 }
 export type PoolData = {
   name: string
@@ -52,6 +53,7 @@ export type PoolData = {
   totalLockedUSDStr: string
   virtualPrice: BigNumber
   virtualPriceStr: string
+  nativeTokens?: any
 }
 
 export type BridgeQuote = {

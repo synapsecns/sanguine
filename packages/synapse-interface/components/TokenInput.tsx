@@ -8,7 +8,6 @@ import { BigNumber } from '@ethersproject/bignumber'
 
 export const DepositTokenInput = ({
   token,
-  balance,
   balanceStr,
   rawBalance,
   inputValueStr,
@@ -17,7 +16,6 @@ export const DepositTokenInput = ({
   address,
 }: {
   token: Token
-  balance: BigNumber
   balanceStr: string
   rawBalance: BigNumber
   inputValueStr: string
