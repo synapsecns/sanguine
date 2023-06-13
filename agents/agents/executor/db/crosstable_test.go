@@ -7,7 +7,6 @@ import (
 	"github.com/synapsecns/sanguine/agents/agents/executor/db"
 	agentstypes "github.com/synapsecns/sanguine/agents/types"
 	"math/big"
-	"time"
 )
 
 // TODO: More edge cases for this test.
@@ -90,7 +89,10 @@ func (t *DBSuite) TestGetTimestampForMessage() {
 		err = testDB.StoreAttestation(t.GetTestContext(), attestationC, origin+1, 3, 1)
 		Nil(t.T(), err)
 
-		time.Sleep(10 * time.Second)
+		// Make sure everything is stored.
+		potentialSnapshotRoots, err := testDB.GetPotentialSnapshotRoots(t.GetTestContext(), origin, 0)
+		Nil(t.T(), err)
+		Equal(t.T(), 3, len(potentialSnapshotRoots))
 
 		timestamp, err := testDB.GetTimestampForMessage(t.GetTestContext(), origin, origin+1, nonceA, "")
 		Nil(t.T(), err)

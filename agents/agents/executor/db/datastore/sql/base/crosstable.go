@@ -25,7 +25,7 @@ func (s Store) GetTimestampForMessage(ctx context.Context, chainID, destination,
 	}
 
 	// TODO: Use string formatting to make this query more legible.
-	dbTx := s.DB().WithContext(ctx).
+	dbTx := s.DB().Debug().WithContext(ctx).
 		Raw(fmt.Sprintf(
 			`SELECT %s FROM %s WHERE %s = (
 					SELECT MIN(%s) FROM (
