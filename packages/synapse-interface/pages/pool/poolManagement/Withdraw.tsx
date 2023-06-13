@@ -396,10 +396,10 @@ const Withdraw = ({
               />
             </div>
             <div>
-              {withdrawQuote.priceImpact &&
+              {/* {withdrawQuote.priceImpact &&
                 withdrawQuote.priceImpact?.gt(Zero) && (
                   <PriceImpactDisplay priceImpact={withdrawQuote.priceImpact} />
-                )}
+                )} */}
             </div>
           </Grid>
         </div>
