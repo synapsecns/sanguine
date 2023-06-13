@@ -184,5 +184,74 @@ func (c *CCTPRelayerSuite) TestSubmitReceiveCircleToken() {
 	}
 	err = relay.SubmitReceiveCircleToken(c.GetTestContext(), &msg)
 	c.Nil(err)
-	// TODO(dwasse): verify usdc balance on recv chain?
 }
+
+// func (c *CCTPRelayerSuite) TestBridgeUSDC() {
+// 	// setup
+// 	sendChain := c.testBackends[0]
+// 	recvChain := c.testBackends[1]
+
+// 	// create a relayer
+// 	sendChainID, err := sendChain.ChainID(c.GetTestContext())
+// 	recvChainID, err := recvChain.ChainID(c.GetTestContext())
+// 	c.Nil(err)
+// 	testWallet, err := wallet.FromRandom()
+// 	cfg := config.Config{
+// 		DBPrefix: filet.TmpDir(c.T(), ""),
+// 		Chains: []config.ChainConfig{
+// 			{
+// 				ChainID: uint32(sendChainID.Int64()),
+// 			},
+// 			{
+// 				ChainID: uint32(recvChainID.Int64()),
+// 			},
+// 		},
+// 		BaseOmnirpcURL: c.testBackends[0].RPCAddress(),
+// 		Signer: signerConfig.SignerConfig{
+// 			Type: signerConfig.FileType.String(),
+// 			File: filet.TmpFile(c.T(), "", testWallet.PrivateKeyHex()).Name(),
+// 		},
+// 	}
+
+// 	parsedScribe, err := url.Parse(c.testScribe)
+// 	c.Nil(err)
+// 	port, err := strconv.Atoi(parsedScribe.Opaque)
+// 	c.Nil(err)
+
+// 	sc := scribeClient.NewRemoteScribe(uint16(port), parsedScribe.Host, c.metricsHandler)
+// 	mockAPI := api.NewMockCircleAPI()
+// 	omniRPCClient := omniClient.NewOmnirpcClient(c.testOmnirpc, c.metricsHandler, omniClient.WithCaptureReqRes())
+// 	relay, err := relayer.NewCCTPRelayer(c.GetTestContext(), cfg, sc.ScribeClient, omniRPCClient, c.metricsHandler, mockAPI)
+// 	c.Nil(err)
+
+// 	// start relayer
+// 	ctx, cancel := context.WithCancel(c.GetTestContext())
+// 	defer cancel()
+// 	relay.Run(ctx)
+
+// 	// mint some USDC on send chain
+// 	_, sendMockUsdc := c.deployManager.GetMockMintBurnTokenType(c.GetTestContext(), sendChain)
+// 	sendTxOpts, err := bind.NewKeyedTransactorWithChainID(testWallet.PrivateKey(), sendChainID)
+// 	c.Nil(err)
+// 	bridgeAmount := big.NewInt(1000000000) // 1000 USDC
+// 	tx, err := sendMockUsdc.Mint(sendTxOpts, testWallet.Address(), bridgeAmount)
+// 	c.Nil(err)
+// 	sendChain.WaitForConfirmation(c.GetTestContext(), tx)
+
+// 	// send USDC from sendChain
+// 	_, sendSynapseCCTP := c.deployManager.GetSynapseCCTP(c.GetTestContext(), sendChain)
+// 	c.Nil(err)
+// 	tx, err = sendSynapseCCTP.SendCircleToken(sendTxOpts, testWallet.Address(), recvChainID, sendMockUsdc.Address(), bridgeAmount, 0, []byte{})
+// 	c.Nil(err)
+// 	sendChain.WaitForConfirmation(c.GetTestContext(), tx)
+
+// 	// verify USDC is credited on recv chain
+// 	_, recvMockUsdc := c.deployManager.GetMockMintBurnTokenType(c.GetTestContext(), recvChain)
+// 	c.Nil(err)
+// 	expectedBalance := bridgeAmount
+// 	c.Eventually(func() bool {
+// 		balance, err := recvMockUsdc.BalanceOf(nil, testWallet.Address())
+// 		c.Nil(err)
+// 		return c.Equal(expectedBalance, balance)
+// 	})
+// }
