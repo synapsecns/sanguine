@@ -37,6 +37,7 @@ func (s Store) GetLastBlockNumber(ctx context.Context, chainID uint32) (uint64, 
 	return lastBlockNumber, nil
 }
 
+// StoreMessage stores a message in the database.
 func (s Store) StoreMessage(ctx context.Context, msg types.Message) error {
 	dbTx := s.DB().WithContext(ctx).Create(&msg)
 	if dbTx.Error != nil {

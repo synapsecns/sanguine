@@ -349,8 +349,11 @@ func (c CCTPRelayer) handleCircleRequestSent(parentCtx context.Context, txhash c
 		}
 
 		// Store the requested message.
-		msg.State = relayTypes.Attested
-		c.db.StoreMessage(ctx, msg)
+		msg.State = relayTypes.Pending
+		err = c.db.StoreMessage(ctx, msg)
+		if err != nil {
+			return err
+		}
 
 		// Queue the message for attestation.
 		c.chainListeners[originChain].usdcMsgRecvChan <- &msg
@@ -396,8 +399,11 @@ func (c CCTPRelayer) fetchAttestation(parentCtx context.Context, chainID uint32,
 	}
 
 	// Store the attested message.
-	msg.State = relayTypes.Pending
-	c.db.StoreMessage(ctx, *msg)
+	msg.State = relayTypes.Attested
+	err = c.db.StoreMessage(ctx, *msg)
+	if err != nil {
+		return err
+	}
 
 	// Send the completed message back through the send channel.
 	c.chainListeners[chainID].usdcMsgSendChan <- msg
@@ -431,6 +437,9 @@ func (c CCTPRelayer) submitReceiveCircleToken(parentCtx context.Context, msg *re
 	// Store the completed message.
 	msg.State = relayTypes.Complete
 	msg.DestTxHash = txHash
-	c.db.StoreMessage(ctx, *msg)
+	err = c.db.StoreMessage(ctx, *msg)
+	if err != nil {
+		return err
+	}
 	return
 }

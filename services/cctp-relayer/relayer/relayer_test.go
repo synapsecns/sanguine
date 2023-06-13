@@ -76,8 +76,14 @@ func (c *CCTPRelayerSuite) TestHandleCircleRequestSent() {
 	c.Nil(err)
 	recvChan := relay.GetUsdcMsgRecvChan(uint32(sendChain.GetChainID()))
 	msg := <-recvChan
-	// TODO(dwasse): validate rest of msg?
 	c.Equal(msg.OriginTxHash, tx.Hash().String())
+	c.Equal(msg.State, types.Pending)
+
+	// verify that the request is stored in the db
+	var storedMsg types.Message
+	err = c.testStore.DB().Where("origin_tx_hash = ?", msg.OriginTxHash).First(&storedMsg).Error
+	c.Nil(err)
+	c.Equal(*msg, storedMsg)
 }
 
 func (c *CCTPRelayerSuite) TestFetchAttestation() {
@@ -134,6 +140,13 @@ func (c *CCTPRelayerSuite) TestFetchAttestation() {
 	// TODO(dwasse): validate rest of msg?
 	c.Equal(completeMsg.MessageHash, msg.MessageHash)
 	c.Equal(completeMsg.Signature, []byte(expectedSignature))
+	c.Equal(completeMsg.State, types.Attested)
+
+	// verify that the attested request is stored in the db
+	var storedMsg types.Message
+	err = c.testStore.DB().Where("origin_tx_hash = ?", completeMsg.OriginTxHash).First(&storedMsg).Error
+	c.Nil(err)
+	c.Equal(*completeMsg, storedMsg)
 }
 
 func (c *CCTPRelayerSuite) TestSubmitReceiveCircleToken() {
@@ -177,6 +190,7 @@ func (c *CCTPRelayerSuite) TestSubmitReceiveCircleToken() {
 	// submit receive circle token
 	testHash := "0x5dba62229dba62f233dca8f3fd14488fdc45d2a86537da2dea7a5683b5e7f622"
 	msg := types.Message{
+		OriginTxHash:     testHash,
 		OriginChainID:    uint32(sendChainID.Int64()),
 		DestChainID:      uint32(recvChainID.Int64()),
 		Message:          []byte{},
@@ -185,6 +199,14 @@ func (c *CCTPRelayerSuite) TestSubmitReceiveCircleToken() {
 	}
 	err = relay.SubmitReceiveCircleToken(c.GetTestContext(), &msg)
 	c.Nil(err)
+
+	// verify that the attested request is stored in the db
+	var storedMsg types.Message
+	err = c.testStore.DB().Where("origin_tx_hash = ?", msg.OriginTxHash).First(&storedMsg).Error
+	c.Nil(err)
+	msg.State = types.Complete
+	msg.DestTxHash = storedMsg.DestTxHash
+	c.Equal(msg, storedMsg)
 }
 
 // func (c *CCTPRelayerSuite) TestBridgeUSDC() {

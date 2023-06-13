@@ -3,9 +3,9 @@ package types
 // Message is the information about a message parsed by the CCTPRelayer.
 type Message struct {
 	// Hash of USDC burn transaction
-	OriginTxHash string `gorm:"column:send_tx_hash"`
+	OriginTxHash string `gorm:"column:origin_tx_hash"`
 	// Hash of USDC mint transaction
-	DestTxHash string `gorm:"column:recv_tx_hash"`
+	DestTxHash string `gorm:"column:dest_tx_hash"`
 	// Chain ID of the origin chain
 	OriginChainID uint32 `gorm:"column:origin_chain_id"`
 	// Chain ID of the destination chain
