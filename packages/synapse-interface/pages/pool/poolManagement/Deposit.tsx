@@ -301,9 +301,9 @@ const Deposit = ({
         )}
       </div>
       {actionBtn}
-      {depositQuote.priceImpact && depositQuote.priceImpact?.gt(Zero) && (
+      {/* {depositQuote.priceImpact && depositQuote.priceImpact?.gt(Zero) && (
         <PriceImpactDisplay priceImpact={depositQuote.priceImpact} />
-      )}
+      )} */}
     </div>
   )
 }
