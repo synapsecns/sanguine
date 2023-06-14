@@ -25,7 +25,6 @@ import {
   useSwapDepositContract,
 } from '@/utils/hooks/useSwapDepositContract'
 import { calculatePriceImpact } from '@/utils/priceImpact'
-import { Price } from '@synapsecns/sdk-router'
 
 const DEFAULT_DEPOSIT_QUOTE = {
   priceImpact: undefined,
