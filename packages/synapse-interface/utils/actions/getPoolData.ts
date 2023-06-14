@@ -113,12 +113,8 @@ export const getPoolData = async (
       lpTokenAddress,
     })
 
-  const virtualPrice = lpTotalSupply.isZero()
-    ? MAX_BN_POW
-    : calculateExchangeRate(lpTotalSupply, 18, poolTokenSum, 18)
+  const virtualPrice = await getVirtualPrice(poolAddress, chainId)
 
-  const virtualPrice1 = await getVirtualPrice(poolAddress, chainId)
-  console.log('virtualPrice1: ', virtualPrice1)
   const ethPrice = prices?.ethPrice ?? (await getEthPrice())
   const avaxPrice = prices?.avaxPrice ?? (await getAvaxPrice())
 
