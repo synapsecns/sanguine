@@ -406,7 +406,7 @@ const BridgePage = ({
   */
   const handleChainChange = useCallback(
     async (chainId: number, flip: boolean, type: 'from' | 'to') => {
-      if (address === undefined || isDisconnected) {
+      if (address === undefined && type === 'from' || isDisconnected && type === 'from') {
         errorPopup = toast.error('Please connect your wallet', {
           id: 'bridge-connect-wallet',
           duration: 20000,
