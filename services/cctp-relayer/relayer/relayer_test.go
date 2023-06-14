@@ -4,7 +4,6 @@ import (
 	"context"
 	"math/big"
 
-	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/core/types"
 	"github.com/synapsecns/sanguine/services/cctp-relayer/api"
 	"github.com/synapsecns/sanguine/services/cctp-relayer/contracts/cctp"
@@ -151,23 +150,22 @@ func (c *CCTPRelayerSuite) TestBridgeUSDC() {
 	_, originMockUsdc := c.deployManager.GetMockMintBurnTokenType(c.GetTestContext(), originChain)
 	originChainID, err := originChain.ChainID(c.GetTestContext())
 	c.Nil(err)
-	sendTxOpts, err := bind.NewKeyedTransactorWithChainID(c.testWallet.PrivateKey(), originChainID)
-	c.Nil(err)
 	bridgeAmount := big.NewInt(1000000000) // 1000 USDC
-	tx, err := originMockUsdc.MintPublic(sendTxOpts, c.testWallet.Address(), bridgeAmount)
+	opts := originChain.GetTxContext(c.GetTestContext(), nil)
+	tx, err := originMockUsdc.MintPublic(opts.TransactOpts, opts.From, bridgeAmount)
 	c.Nil(err)
 	originChain.WaitForConfirmation(c.GetTestContext(), tx)
 
 	// approve USDC for spending
 	_, originSynapseCCTP := c.deployManager.GetSynapseCCTP(c.GetTestContext(), originChain)
-	tx, err = originMockUsdc.Approve(sendTxOpts, originSynapseCCTP.Address(), bridgeAmount)
+	tx, err = originMockUsdc.Approve(opts.TransactOpts, originSynapseCCTP.Address(), bridgeAmount)
 	c.Nil(err)
 	originChain.WaitForConfirmation(c.GetTestContext(), tx)
 
 	// send USDC from originChain
 	destChainID, err := destChain.ChainID(c.GetTestContext())
 	c.Nil(err)
-	tx, err = originSynapseCCTP.SendCircleToken(sendTxOpts, c.testWallet.Address(), destChainID, originMockUsdc.Address(), bridgeAmount, 0, []byte{})
+	tx, err = originSynapseCCTP.SendCircleToken(opts.TransactOpts, opts.From, destChainID, originMockUsdc.Address(), bridgeAmount, 0, []byte{})
 	c.Nil(err)
 	originChain.WaitForConfirmation(c.GetTestContext(), tx)
 
@@ -200,7 +198,7 @@ func (c *CCTPRelayerSuite) TestBridgeUSDC() {
 	// c.Nil(err)
 	// expectedBalance := bridgeAmount
 	// c.Eventually(func() bool {
-	// 	balance, err := recvMockUsdc.BalanceOf(nil, c.testWallet.Address())
+	// 	balance, err := recvMockUsdc.BalanceOf(nil, opts.From)
 	// 	c.Nil(err)
 	// 	return c.Equal(expectedBalance, balance)
 	// })
