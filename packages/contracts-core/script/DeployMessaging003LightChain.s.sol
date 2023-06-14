@@ -19,9 +19,13 @@ contract DeployMessaging003LightChainScript is DeployMessaging003BaseScript {
 
     /// @dev Deploys and initializes BondingManager or LightManager
     /// Note: requires Origin, Destination and StatementInbox addresses to be set
-    function _deployInitializeAgentManager() internal override returns (address deployment) {
+    function _deployInitializeAgentManager()
+        internal
+        override
+        returns (address deployment, bytes memory constructorArgs)
+    {
         // new LightManager(domain)
-        bytes memory constructorArgs = abi.encode(localDomain);
+        constructorArgs = abi.encode(localDomain);
         deployment = factoryDeploy(agentManagerName(), type(LightManager).creationCode, constructorArgs);
         require(origin != address(0), "Origin not set");
         require(destination != address(0), "Destination not set");
@@ -31,9 +35,13 @@ contract DeployMessaging003LightChainScript is DeployMessaging003BaseScript {
 
     /// @dev Deploys and initializes Inbox or LightInbox
     /// Note: requires AgentManager, Origin and Destination addresses to be set
-    function _deployInitializeStatementInbox() internal override returns (address deployment) {
+    function _deployInitializeStatementInbox()
+        internal
+        override
+        returns (address deployment, bytes memory constructorArgs)
+    {
         // new LightInbox(domain)
-        bytes memory constructorArgs = abi.encode(localDomain);
+        constructorArgs = abi.encode(localDomain);
         deployment = factoryDeploy(statementInboxName(), type(LightInbox).creationCode, constructorArgs);
         require(agentManager != address(0), "Agent Manager not set");
         require(origin != address(0), "Origin not set");

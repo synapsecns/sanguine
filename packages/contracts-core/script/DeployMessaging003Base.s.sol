@@ -94,19 +94,13 @@ abstract contract DeployMessaging003BaseScript is DeployerUtils {
             summit = predictFactoryDeployment(SUMMIT);
         }
         // Deploy and initialize contracts
-        require(
-            agentManager == deployContract(agentManagerName(), _deployInitializeAgentManager),
-            "AgentManager: wrong address"
-        );
-        require(
-            statementInbox == deployContract(statementInboxName(), _deployInitializeStatementInbox),
-            "StatementInbox: wrong address"
-        );
-        require(destination == deployContract(DESTINATION, _deployInitializeDestination), "Destination: wrong address");
-        require(gasOracle == deployContract(GAS_ORACLE, _deployInitializeGasOracle), "GasOracle: wrong address");
-        require(origin == deployContract(ORIGIN, _deployInitializeOrigin), "Origin: wrong address");
+        _deployAndCheckAddress(agentManagerName(), _deployInitializeAgentManager, agentManager);
+        _deployAndCheckAddress(statementInboxName(), _deployInitializeStatementInbox, statementInbox);
+        _deployAndCheckAddress(DESTINATION, _deployInitializeDestination, destination);
+        _deployAndCheckAddress(GAS_ORACLE, _deployInitializeGasOracle, gasOracle);
+        _deployAndCheckAddress(ORIGIN, _deployInitializeOrigin, origin);
         if (isSynapseChain()) {
-            require(summit == deployContract(SUMMIT, _deployInitializeSummit), "Summit: wrong address");
+            _deployAndCheckAddress(SUMMIT, _deployInitializeSummit, summit);
         }
         // Add agents to BondingManager
         _addAgents();
@@ -118,13 +112,28 @@ abstract contract DeployMessaging003BaseScript is DeployerUtils {
         _checkAgents();
     }
 
+    function _deployAndCheckAddress(
+        string memory contractName,
+        function() internal returns (address, bytes memory) deployFn,
+        address predictedDeployment
+    ) internal {
+        (address deployment,) = deployContract(contractName, deployFn);
+        require(deployment == predictedDeployment, string.concat(contractName, ": wrong address"));
+    }
+
     /// @dev Deploys and initializes BondingManager or LightManager
     /// Note: requires Origin, Destination, StatementInbox (and Summit for BondingManager) addresses to be set
-    function _deployInitializeAgentManager() internal virtual returns (address);
+    function _deployInitializeAgentManager()
+        internal
+        virtual
+        returns (address deployment, bytes memory constructorArgs);
 
     /// @dev Deploys and initializes Inbox or LightInbox
     /// Note: requires AgentManager, Origin, Destination (and Summit for Inbox) addresses to be set
-    function _deployInitializeStatementInbox() internal virtual returns (address);
+    function _deployInitializeStatementInbox()
+        internal
+        virtual
+        returns (address deployment, bytes memory constructorArgs);
 
     /// @dev Adds agents to BondingManager (no-op for LightManager)
     function _addAgents() internal virtual;
@@ -134,45 +143,45 @@ abstract contract DeployMessaging003BaseScript is DeployerUtils {
     /// @dev Deploys and initializes Destination.
     /// Note: requires AgentManager and StatementInbox addresses to have been set.
     /// Note: requires AgentManager to have been deployed.
-    function _deployInitializeDestination() internal returns (address deployment) {
+    function _deployInitializeDestination() internal returns (address deployment, bytes memory constructorArgs) {
         // new Destination(domain, agentManager, statementInbox)
         require(agentManager != address(0), "Agent Manager not set");
         require(statementInbox != address(0), "Statement Inbox not set");
         require(agentManager.code.length > 0, "Agent Manager not deployed");
-        bytes memory constructorArgs = abi.encode(localDomain, agentManager, statementInbox);
+        constructorArgs = abi.encode(localDomain, agentManager, statementInbox);
         deployment = factoryDeploy(DESTINATION, type(Destination).creationCode, constructorArgs);
         Destination(deployment).initialize(_getInitialAgentRoot());
     }
 
     /// @dev Deploys and initializes GasOracle.
     /// Note: requires Destination address to have been set.
-    function _deployInitializeGasOracle() internal returns (address deployment) {
+    function _deployInitializeGasOracle() internal returns (address deployment, bytes memory constructorArgs) {
         // new GasOracle(domain, destination)
         require(destination != address(0), "Destination not set");
-        bytes memory constructorArgs = abi.encode(localDomain, destination);
+        constructorArgs = abi.encode(localDomain, destination);
         deployment = factoryDeploy(GAS_ORACLE, type(GasOracle).creationCode, constructorArgs);
         GasOracle(deployment).initialize();
     }
 
     /// @dev Deploys and initializes Origin.
     /// Note: requires AgentManager, StatementInbox and GasOracle addresses to have been set.
-    function _deployInitializeOrigin() internal returns (address deployment) {
+    function _deployInitializeOrigin() internal returns (address deployment, bytes memory constructorArgs) {
         // new Origin(domain, agentManager, statementInbox, gasOracle)
         require(agentManager != address(0), "Agent Manager not set");
         require(statementInbox != address(0), "Statement Inbox not set");
         require(gasOracle != address(0), "Gas Oracle not set");
-        bytes memory constructorArgs = abi.encode(localDomain, agentManager, statementInbox, gasOracle);
+        constructorArgs = abi.encode(localDomain, agentManager, statementInbox, gasOracle);
         deployment = factoryDeploy(ORIGIN, type(Origin).creationCode, constructorArgs);
         Origin(deployment).initialize();
     }
 
     /// @dev Deploys and initializes Summit.
     /// Note: requires AgentManager and StatementInbox addresses to have been set.
-    function _deployInitializeSummit() internal returns (address deployment) {
+    function _deployInitializeSummit() internal returns (address deployment, bytes memory constructorArgs) {
         // new Summit(domain, agentManager, statementInbox)
         require(agentManager != address(0), "Agent Manager not set");
         require(statementInbox != address(0), "Statement Inbox not set");
-        bytes memory constructorArgs = abi.encode(localDomain, agentManager, statementInbox);
+        constructorArgs = abi.encode(localDomain, agentManager, statementInbox);
         deployment = factoryDeploy(SUMMIT, type(Summit).creationCode, constructorArgs);
         Summit(deployment).initialize();
     }

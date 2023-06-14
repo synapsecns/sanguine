@@ -12,6 +12,7 @@ interface ICreate3Factory {
     function getDeployed(address deployer, bytes32 salt) external view returns (address deployed);
 }
 
+// solhint-disable no-console
 // solhint-disable no-empty-blocks
 // solhint-disable ordering
 contract DeployerUtils is Script {
@@ -105,9 +106,9 @@ contract DeployerUtils is Script {
     /// @param contractName     Contract name to deploy
     /// @param deployFunc       Callback function to deploy a requested contract
     /// @return deployment  The deployment address
-    function deployContract(string memory contractName, function() internal returns (address) deployFunc)
+    function deployContract(string memory contractName, function() internal returns (address, bytes memory) deployFunc)
         internal
-        returns (address deployment)
+        returns (address deployment, bytes memory constructorArgs)
     {
         return deployContract(contractName, contractName, deployFunc);
     }
@@ -121,12 +122,12 @@ contract DeployerUtils is Script {
     function deployContract(
         string memory contractName,
         string memory saveAsName,
-        function() internal returns (address) deployFunc
-    ) internal returns (address deployment) {
+        function() internal returns (address, bytes memory) deployFunc
+    ) internal returns (address deployment, bytes memory constructorArgs) {
         deployment = tryLoadDeployment(saveAsName);
         if (deployment == address(0)) {
-            deployment = deployFunc();
-            saveDeployment(contractName, saveAsName, deployment);
+            (deployment, constructorArgs) = deployFunc();
+            saveDeployment(contractName, saveAsName, deployment, constructorArgs);
         } else {
             console.log("Reusing existing deployment for %s: %s", contractName, deployment);
         }
@@ -153,14 +154,20 @@ contract DeployerUtils is Script {
     }
 
     /// @notice Saves the deployment JSON for a deployed contract.
-    function saveDeployment(string memory contractName, string memory saveAsName, address deployedAt) public {
+    function saveDeployment(
+        string memory contractName,
+        string memory saveAsName,
+        address deployedAt,
+        bytes memory constructorArgs
+    ) public {
         console.log("Deployed: [%s] on [%s] at %s", contractName, chainAlias, deployedAt);
         // Do nothing if script isn't broadcasted
         if (!isBroadcasted) return;
         // Otherwise, save the deployment JSON
         string memory deployment = "deployment";
-        // First, write only the deployment address
-        deployment = deployment.serialize("address", deployedAt);
+        // First, write only the deployment address and the constructor args
+        deployment.serialize("address", deployedAt);
+        deployment = deployment.serialize("args", constructorArgs);
         deployment.write(deploymentPath(saveAsName));
         // Then, initiate the jq command to add "abi" as the next key
         // This makes sure that "address" value is printed first later
