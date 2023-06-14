@@ -3,7 +3,9 @@ import { createContext, useContext, useMemo } from 'react'
 
 const AnalyticsContext = createContext(undefined)
 
-export const AnalyticsProvider = ({ children, writeKey }) => {
+export const AnalyticsProvider = ({ children }) => {
+  const writeKey = process.env.NEXT_PUBLIC_SEGMENT_WRITE_KEY
+
   const analytics = useMemo(
     () => AnalyticsBrowser.load({ writeKey }, { initialPageview: true }),
     [writeKey]

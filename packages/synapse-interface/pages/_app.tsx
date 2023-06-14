@@ -98,7 +98,7 @@ const App = ({ Component, pageProps }: AppProps) => {
     <WagmiConfig client={wagmiClient}>
       <RainbowKitProvider chains={chains} theme={darkTheme()}>
         <SynapseProvider chains={chains}>
-          <AnalyticsProvider writeKey={'KEY_GOES_HERE'}>
+          <AnalyticsProvider>
             <Provider store={store}>
               <Component {...pageProps} />
               <CustomToaster />
