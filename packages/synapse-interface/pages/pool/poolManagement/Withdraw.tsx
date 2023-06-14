@@ -342,14 +342,23 @@ const Withdraw = ({
         />
         {showTokens &&
           showTokens.map((token) => {
-            const checked = withdrawType === token.addresses[chainId]
+            // TODO: poolsToken.findIndex is too verbose and was a hacky solution to not have to refactor a lot of state passing. Needs to be fixed to handle indexes correctly.
+            const checked = withdrawType === (pool.nativeTokens ? pool.nativeTokens : pool.poolTokens).findIndex(poolToken => poolToken.addresses[chainId] === token.addresses[chainId]).toString();
             return (
               <RadioButton
                 radioClassName={getCoinTextColorCombined(token.color)}
                 key={token?.symbol}
                 checked={checked}
                 onChange={() => {
-                  setWithdrawType(token.addresses[chainId])
+                  // Determine the tokens array
+                  const tokensArray = pool.nativeTokens ? pool.nativeTokens : pool.poolTokens;
+
+                  // Find the index
+                  const index = tokensArray.findIndex(poolToken => poolToken.addresses[chainId] === token.addresses[chainId]);
+
+                  // Convert the index to a string
+                  const indexString = index.toString();
+                  setWithdrawType(indexString)
                 }}
                 labelClassName={
                   checked &&
@@ -396,10 +405,10 @@ const Withdraw = ({
               />
             </div>
             <div>
-              {withdrawQuote.priceImpact &&
+              {/* {withdrawQuote.priceImpact &&
                 withdrawQuote.priceImpact?.gt(Zero) && (
                   <PriceImpactDisplay priceImpact={withdrawQuote.priceImpact} />
-                )}
+                )} */}
             </div>
           </Grid>
         </div>

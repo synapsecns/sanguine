@@ -10,9 +10,9 @@ on:
       - '.github/workflows/foundry-tests.yml'
 
 jobs:
-  check:
+  coverage:
     name: Foundry Coverage
-    runs-on: ubuntu-latest-16-cores
+    runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
         with:
@@ -47,6 +47,25 @@ jobs:
           attempt_limit: 5
           attempt_delay: 30000
 
+  snapshot:
+    runs-on: ubuntu-latest
+    name: Foundry Gas Snapshot
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          submodules: recursive
+
+      - name: Setup Node JS
+        uses: ./.github/actions/setup-nodejs
+
+      - name: Installing dependencies
+        working-directory: ./packages/contracts-core
+        run: yarn install --immutable
+
+      - name: Install Foundry
+        uses: foundry-rs/foundry-toolchain@v1
+        with:
+          version: nightly
       - name: Run snapshot
         working-directory: ./packages/contracts-core
         run: forge snapshot >> $GITHUB_STEP_SUMMARY

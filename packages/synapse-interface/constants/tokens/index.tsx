@@ -37,7 +37,8 @@ const sortedTokens = Object.values(all).sort(
 
 // This should be an object where keys are chain IDs and values are arrays of token keys that you want to pause on each chain
 const PAUSED_TOKENS_BY_CHAIN = {
-  [CHAINS.FANTOM.id]: ["USDC", "USDT", "FTMETH"]
+  [CHAINS.FANTOM.id]: ['USDC', 'USDT', 'FTMETH'],
+  [CHAINS.AVALANCHE.id]: ['AVWETH'],
 }
 
 const getBridgeableTokens = (): TokensByChain => {
@@ -62,18 +63,13 @@ const getBridgeableTokens = (): TokensByChain => {
 const getBridgeChainsByType = (): BridgeChainsByType => {
   const bridgeChainsByType: BridgeChainsByType = {}
   Object.entries(all).map(([key, token]) => {
-    // Skip if the token is paused on all chains
-    if (Object.values(PAUSED_TOKENS_BY_CHAIN).some((pausedTokens) => pausedTokens.includes(key))) return
-
     const swapableType = String(token?.swapableType)
-    const keys = Object.keys(token.addresses).filter(
-      (cID) => {
-        // Skip if the token is paused on the current chain
-        if (PAUSED_TOKENS_BY_CHAIN[cID]?.includes(key)) return false
+    const keys = Object.keys(token.addresses).filter((cID) => {
+      // Skip if the token is paused on the current chain
+      if (PAUSED_TOKENS_BY_CHAIN[cID]?.includes(key)) return false
 
-        return !bridgeChainsByType[swapableType]?.includes(cID)
-      }
-    )
+      return !bridgeChainsByType[swapableType]?.includes(cID)
+    })
 
     if (bridgeChainsByType[swapableType]) {
       bridgeChainsByType[swapableType] = [
@@ -109,7 +105,6 @@ const convertArrayToObject = (array: any) => {
   }, {})
 }
 
-
 const getBridgeableTokensByType = (): SwapableTokensByType => {
   const bridgeTypeByChain = getBridgeTypeByChain()
   const bridgeSwapableTokensByType = Object.fromEntries(
@@ -120,9 +115,6 @@ const getBridgeableTokensByType = (): SwapableTokensByType => {
   )
 
   Object.entries(all).map(([key, token]) => {
-    // Skip if the token is paused on all chains
-    if (Object.values(PAUSED_TOKENS_BY_CHAIN).some((pausedTokens) => pausedTokens.includes(key))) return
-
     const swapableType = String(token?.swapableType)
 
     for (const cID of Object.keys(token.addresses)) {
