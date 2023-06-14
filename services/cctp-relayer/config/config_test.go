@@ -19,13 +19,11 @@ func configFixture(c ConfigSuite) config.Config {
 		Chains: config.ChainConfigs{
 			config.ChainConfig{
 				ChainID:            chainIDA,
-				OriginAddress:      gofakeit.Word(),
-				DestinationAddress: gofakeit.Word(),
+				SynapseCCTPAddress: gofakeit.Word(),
 			},
 			config.ChainConfig{
 				ChainID:            chainIDB,
-				OriginAddress:      gofakeit.Word(),
-				DestinationAddress: gofakeit.Word(),
+				SynapseCCTPAddress: gofakeit.Word(),
 			},
 		},
 		BaseOmnirpcURL: gofakeit.URL(),
