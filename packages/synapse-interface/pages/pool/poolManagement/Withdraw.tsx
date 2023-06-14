@@ -25,6 +25,7 @@ import { getTokenAllowance } from '@/utils/actions/getTokenAllowance'
 import { PoolData, PoolUserData } from '@types'
 import { getSwapDepositContractFields } from '@/utils/hooks/useSwapDepositContract'
 import { transformCalculateLiquidityInput } from '@/utils/transformCalculateLiquidityInput'
+import { calculatePriceImpact } from '@/utils/priceImpact'
 
 const DEFAULT_WITHDRAW_QUOTE = {
   priceImpact: Zero,
@@ -93,13 +94,15 @@ const Withdraw = ({
         }
       > = {}
       const { virtualPrice } = poolData
+      console.log('inputValue: ', inputValue)
+
       if (withdrawType == ALL) {
         const { amounts } = await synapseSDK.calculateRemoveLiquidity(
           chainId,
           poolAddress,
           inputValue.bn
         )
-        console.log(amounts)
+        console.log('amounts: ', amounts)
         outputs[withdrawType] = amounts
       } else {
         const { amount } = await synapseSDK.calculateRemoveLiquidityOne(
@@ -108,15 +111,27 @@ const Withdraw = ({
           inputValue.bn,
           withdrawType
         )
+        console.log('amount:', amount)
         outputs[withdrawType] = amount
       }
-      const tokenSum = sumBigNumbers(pool, outputs, chainId)
+
+      const tokenSum = sumBigNumbers(pool, outputs, chainId, withdrawType)
+      console.log('tokenSum: ', tokenSum)
+
       const priceImpact = calculateExchangeRate(
         inputValue.bn,
         18,
         inputValue.bn.sub(tokenSum),
         18
       )
+      // console.log('outputs[withdrawType].value:', outputs[withdrawType].value)
+      // const newPriceImpact = calculatePriceImpact(
+      //   inputValue.bn,
+      //   outputs[withdrawType].value,
+      //   virtualPrice
+      // )
+      console.log('virtualPrice:', virtualPrice)
+      // console.log('newPriceImpact:', newPriceImpact)
       const allowance = await getTokenAllowance(
         poolAddress,
         pool.addresses[chainId],
@@ -419,10 +434,10 @@ const Withdraw = ({
               />
             </div>
             <div>
-              {/* {withdrawQuote.priceImpact &&
+              {withdrawQuote.priceImpact &&
                 withdrawQuote.priceImpact?.gt(Zero) && (
                   <PriceImpactDisplay priceImpact={withdrawQuote.priceImpact} />
-                )} */}
+                )}
             </div>
           </Grid>
         </div>
@@ -434,18 +449,19 @@ const Withdraw = ({
 const sumBigNumbers = (
   pool: Token,
   bigNumMap: Record<string, { value: BigNumber; index: number }>,
-  chainId: number
+  chainId: number,
+  withdrawType
 ) => {
   if (!pool?.poolTokens) {
     return Zero
   }
 
-  return pool.poolTokens.reduce((sum, token) => {
-    if (!bigNumMap[token.addresses[chainId]]) {
+  return pool.poolTokens.reduce((sum, token, index) => {
+    if (!bigNumMap[withdrawType][index]) {
       return sum
     }
 
-    const valueToAdd = bigNumMap[token.addresses[chainId]].value.mul(
+    const valueToAdd = bigNumMap[withdrawType][index].value.mul(
       BigNumber.from(10).pow(18 - token.decimals[chainId])
     )
 
