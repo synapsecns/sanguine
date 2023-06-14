@@ -21,6 +21,7 @@ import { fetchBalance } from '@wagmi/core'
 import { formatBNToString } from '@/utils/bignumber/format'
 import { getSwapDepositContractFields } from '@/utils/hooks/useSwapDepositContract'
 import { calculatePriceImpact } from '@/utils/priceImpact'
+import { transformCalculateAddLiquidityInput } from '@/utils/transformCalculateLiquidityInput'
 
 const DEFAULT_DEPOSIT_QUOTE = {
   priceImpact: undefined,
@@ -67,39 +68,39 @@ const Deposit = ({
     return sumBigNumbers(pool, filteredInputValue, chainId)
   }, [pool, filteredInputValue, chainId])
 
-  const transformCalculateAddLiquidityInput = (
-    chainId: number,
-    pool: Token,
-    filteredInputValue?: Record<string, BigNumber>
-  ): Record<string, BigNumber> => {
-    const wethIndex = _.findIndex(
-      pool.poolTokens,
-      (t) => t.symbol == WETH.symbol
-    )
-    const poolHasWeth: boolean = wethIndex > 0
-    const nativeEthAddress = '0x0000000000000000000000000000000000000000'
-    const wethAddress = poolHasWeth
-      ? pool.poolTokens[wethIndex].addresses[chainId]
-      : null
+  // const transformCalculateAddLiquidityInput = (
+  //   chainId: number,
+  //   pool: Token,
+  //   filteredInputValue?: Record<string, BigNumber>
+  // ): Record<string, BigNumber> => {
+  //   const wethIndex = _.findIndex(
+  //     pool.poolTokens,
+  //     (t) => t.symbol == WETH.symbol
+  //   )
+  //   const poolHasWeth: boolean = wethIndex > 0
+  //   const nativeEthAddress = '0x0000000000000000000000000000000000000000'
+  //   const wethAddress = poolHasWeth
+  //     ? pool.poolTokens[wethIndex].addresses[chainId]
+  //     : null
 
-    function replaceKey(
-      obj: Record<string, BigNumber>,
-      oldKey: string,
-      newKey: string
-    ) {
-      if (obj.hasOwnProperty(oldKey)) {
-        obj[newKey] = obj[oldKey]
-        delete obj[oldKey]
-      }
-      return obj
-    }
+  //   function replaceKey(
+  //     obj: Record<string, BigNumber>,
+  //     oldKey: string,
+  //     newKey: string
+  //   ) {
+  //     if (obj.hasOwnProperty(oldKey)) {
+  //       obj[newKey] = obj[oldKey]
+  //       delete obj[oldKey]
+  //     }
+  //     return obj
+  //   }
 
-    const transformedInput = poolHasWeth
-      ? replaceKey(filteredInputValue, nativeEthAddress, wethAddress)
-      : filteredInputValue
+  //   const transformedInput = poolHasWeth
+  //     ? replaceKey(filteredInputValue, nativeEthAddress, wethAddress)
+  //     : filteredInputValue
 
-    return transformedInput
-  }
+  //   return transformedInput
+  // }
 
   const calculateMaxDeposits = async () => {
     try {

@@ -91,6 +91,7 @@ const Withdraw = ({
           index: number
         }
       > = {}
+      const { virtualPrice } = poolData
       if (withdrawType == ALL) {
         const { amounts } = await synapseSDK.calculateRemoveLiquidity(
           chainId,
@@ -343,7 +344,14 @@ const Withdraw = ({
         {showTokens &&
           showTokens.map((token) => {
             // TODO: poolsToken.findIndex is too verbose and was a hacky solution to not have to refactor a lot of state passing. Needs to be fixed to handle indexes correctly.
-            const checked = withdrawType === (pool.nativeTokens ? pool.nativeTokens : pool.poolTokens).findIndex(poolToken => poolToken.addresses[chainId] === token.addresses[chainId]).toString();
+            const checked =
+              withdrawType ===
+              (pool.nativeTokens ? pool.nativeTokens : pool.poolTokens)
+                .findIndex(
+                  (poolToken) =>
+                    poolToken.addresses[chainId] === token.addresses[chainId]
+                )
+                .toString()
             return (
               <RadioButton
                 radioClassName={getCoinTextColorCombined(token.color)}
@@ -351,13 +359,18 @@ const Withdraw = ({
                 checked={checked}
                 onChange={() => {
                   // Determine the tokens array
-                  const tokensArray = pool.nativeTokens ? pool.nativeTokens : pool.poolTokens;
+                  const tokensArray = pool.nativeTokens
+                    ? pool.nativeTokens
+                    : pool.poolTokens
 
                   // Find the index
-                  const index = tokensArray.findIndex(poolToken => poolToken.addresses[chainId] === token.addresses[chainId]);
+                  const index = tokensArray.findIndex(
+                    (poolToken) =>
+                      poolToken.addresses[chainId] === token.addresses[chainId]
+                  )
 
                   // Convert the index to a string
-                  const indexString = index.toString();
+                  const indexString = index.toString()
                   setWithdrawType(indexString)
                 }}
                 labelClassName={
