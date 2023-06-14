@@ -14,10 +14,12 @@ import (
 	"github.com/synapsecns/sanguine/core/metrics"
 	"github.com/synapsecns/sanguine/core/metrics/localmetrics"
 	"github.com/synapsecns/sanguine/core/testsuite"
+	"gorm.io/gorm/schema"
 	"os"
 	"sync"
 	"sync/atomic"
 	"testing"
+	"time"
 )
 
 type DBSuite struct {
@@ -80,10 +82,16 @@ func (t *DBSuite) setupMysqlDB() {
 		Nil(t.T(), testDB.Close())
 	}()
 
+	// override the naming strategy to prevent tests from messing with each other.
+	// todo this should be solved via a proper teardown process or transactions.
+	mysql.NamingStrategy = schema.NamingStrategy{
+		TablePrefix: fmt.Sprintf("test%d_%d_", t.GetTestID(), time.Now().Unix()),
+	}
+
 	mysql.MaxIdleConns = 10
 
 	// create the sql store
-	mysqlStore, err := mysql.NewMysqlStore(t.GetTestContext(), connString, t.metrics)
+	mysqlStore, err := mysql.NewMysqlStore(t.GetTestContext(), connString, t.metrics, false)
 	Nil(t.T(), err)
 	// add the db
 	t.dbs = append(t.dbs, mysqlStore)
