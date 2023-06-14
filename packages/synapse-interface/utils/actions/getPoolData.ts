@@ -1,5 +1,4 @@
 import { Zero, One } from '@ethersproject/constants'
-import { calculateExchangeRate } from '@utils/calculateExchangeRate'
 import { getEthPrice, getAvaxPrice } from '@utils/actions/getPrices'
 import {
   commifyBnToString,
@@ -105,13 +104,14 @@ export const getPoolData = async (
 
   const lpTokenAddress = pool?.addresses[chainId]
 
-  const { tokenBalances, poolTokenSum, lpTokenBalance, lpTotalSupply } =
-    await getBalanceData({
+  const { tokenBalances, lpTokenBalance, lpTotalSupply } = await getBalanceData(
+    {
       pool,
       chainId,
       address: user ? address : poolAddress,
       lpTokenAddress,
-    })
+    }
+  )
 
   const virtualPrice = await getVirtualPrice(poolAddress, chainId)
 
