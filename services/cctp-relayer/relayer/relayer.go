@@ -111,7 +111,7 @@ func NewCCTPRelayer(ctx context.Context, cfg config.Config, store *base.Store, s
 		if err != nil {
 			return nil, fmt.Errorf("could not get client: %w", err)
 		}
-		boundSynapseCCTPs[chain.ChainID], err = cctp.NewSynapseCCTP(chain.GetDestinationAddress(), client)
+		boundSynapseCCTPs[chain.ChainID], err = cctp.NewSynapseCCTP(chain.GetSynapseCCTPAddress(), client)
 		if err != nil {
 			return nil, fmt.Errorf("could not build bound contract: %w", err)
 		}
@@ -152,7 +152,7 @@ func (c CCTPRelayer) Run(ctx context.Context) error {
 	for _, chain := range c.cfg.Chains {
 		chain := chain
 		g.Go(func() error {
-			return c.streamLogs(ctx, c.grpcClient, c.grpcConn, chain.ChainID, chain.OriginAddress, nil)
+			return c.streamLogs(ctx, c.grpcClient, c.grpcConn, chain.ChainID, chain.SynapseCCTPAddress, nil)
 		})
 
 		g.Go(func() error {

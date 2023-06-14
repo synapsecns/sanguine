@@ -5,13 +5,16 @@ import (
 	"math/big"
 	"testing"
 
+	"github.com/Flaque/filet"
 	"github.com/ethereum/go-ethereum/common"
+	"github.com/ethereum/go-ethereum/params"
 	"github.com/stretchr/testify/suite"
 	"github.com/synapsecns/sanguine/core/metrics"
 	"github.com/synapsecns/sanguine/core/metrics/localmetrics"
 	"github.com/synapsecns/sanguine/core/testsuite"
 	"github.com/synapsecns/sanguine/ethergo/backends"
 	"github.com/synapsecns/sanguine/ethergo/backends/geth"
+	"github.com/synapsecns/sanguine/ethergo/signer/wallet"
 	"github.com/synapsecns/sanguine/services/cctp-relayer/db/base"
 	"github.com/synapsecns/sanguine/services/cctp-relayer/db/sqlite"
 	"github.com/synapsecns/sanguine/services/cctp-relayer/metadata"
@@ -36,6 +39,8 @@ type CCTPRelayerSuite struct {
 	metricsHandler metrics.Handler
 	// testStore is the test store for the test
 	testStore *base.Store
+	// testWallet is the test wallet for the test
+	testWallet wallet.Wallet
 }
 
 // NewTestSuite creates a new test suite.
@@ -74,6 +79,14 @@ func (s *CCTPRelayerSuite) SetupSuite() {
 	// wait for all backends to be ready
 	if err := g.Wait(); err != nil {
 		s.T().Fatal(err)
+	}
+
+	// fund test wallet with ether
+	var err error
+	s.testWallet, err = wallet.FromRandom()
+	s.Nil(err)
+	for _, backend := range s.testBackends {
+		backend.FundAccount(s.GetSuiteContext(), s.testWallet.Address(), *big.NewInt(params.Ether))
 	}
 }
 
@@ -131,7 +144,8 @@ func (s *CCTPRelayerSuite) SetupTest() {
 	s.Require().NoError(err)
 
 	// create the test store
-	db, err := sqlite.NewSqliteStore(s.GetTestContext(), "test-db", s.metricsHandler, false)
+	path := filet.TmpDir(s.T(), "")
+	db, err := sqlite.NewSqliteStore(s.GetTestContext(), path, s.metricsHandler, false)
 	s.Require().NoError(err)
 	s.testStore = base.NewStore(db.DB(), s.metricsHandler)
 

@@ -14,20 +14,13 @@ type ChainConfig struct {
 	TempRPC string `yaml:"temp_rpc"`
 	// ChainID is the ID of the chain.
 	ChainID uint32 `yaml:"chain_id"`
-	// OriginAddress is the address of the origin contract.
-	OriginAddress string `yaml:"origin_address"`
-	// DestinationAddress is the address of the destination contract.
-	DestinationAddress string `yaml:"destination_address"`
+	// SynapseCCTPAddress is the address of the SynapseCCTP contract.
+	SynapseCCTPAddress string `yaml:"synapse_cctp_address"`
 }
 
-// GetOriginAddress returns the origin address.
-func (c ChainConfig) GetOriginAddress() common.Address {
-	return common.HexToAddress(c.OriginAddress)
-}
-
-// GetDestinationAddress returns the destination address.
-func (c ChainConfig) GetDestinationAddress() common.Address {
-	return common.HexToAddress(c.DestinationAddress)
+// GetSynapseCCTPAddress returns the SynapseCCTP address.
+func (c ChainConfig) GetSynapseCCTPAddress() common.Address {
+	return common.HexToAddress(c.SynapseCCTPAddress)
 }
 
 // ChainConfigs contains an array of ChainConfigs.
@@ -53,12 +46,8 @@ func (c ChainConfig) IsValid(ctx context.Context) (ok bool, err error) {
 		return false, fmt.Errorf("%s: chain ID cannot be 0", "invalid chain id")
 	}
 
-	if c.OriginAddress == "" {
-		return false, fmt.Errorf("field OriginAddress is required")
-	}
-
-	if c.DestinationAddress == "" {
-		return false, fmt.Errorf("field DestinationAddress is required")
+	if c.SynapseCCTPAddress == "" {
+		return false, fmt.Errorf("field SynapseCCTPAddress is required")
 	}
 
 	return true, nil
