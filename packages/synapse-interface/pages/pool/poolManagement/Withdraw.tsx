@@ -8,7 +8,6 @@ import { formatUnits } from '@ethersproject/units'
 import { useSynapseContext } from '@/utils/providers/SynapseProvider'
 
 import { getCoinTextColorCombined } from '@styles/tokens'
-import { calculateExchangeRate } from '@utils/calculateExchangeRate'
 import { ALL } from '@constants/withdrawTypes'
 import Grid from '@tw/Grid'
 import { WithdrawTokenInput } from '@components/TokenInput'
@@ -24,7 +23,6 @@ import { approve, withdraw } from '@/utils/actions/approveAndWithdraw'
 import { getTokenAllowance } from '@/utils/actions/getTokenAllowance'
 import { PoolData, PoolUserData } from '@types'
 import { getSwapDepositContractFields } from '@/utils/hooks/useSwapDepositContract'
-import { transformCalculateLiquidityInput } from '@/utils/transformCalculateLiquidityInput'
 import { calculatePriceImpact } from '@/utils/priceImpact'
 
 const DEFAULT_WITHDRAW_QUOTE = {
@@ -111,16 +109,12 @@ const Withdraw = ({
         outputs[withdrawType] = amount
       }
 
-      console.log('outputs: ', outputs)
-
       const outputTokensSum = sumBigNumbers(
         pool,
         outputs,
         chainId,
         withdrawType
       )
-
-      console.log('outputTokensSum: ', outputTokensSum)
 
       const priceImpact = calculatePriceImpact(
         inputValue.bn,
