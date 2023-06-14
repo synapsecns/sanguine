@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react'
 import { useAccount, useNetwork } from 'wagmi'
 import { formatUnits } from '@ethersproject/units'
 import { Zero } from '@ethersproject/constants'
+import { Address } from '@wagmi/core'
 
 import { usePendingTxWrapper } from '@/utils/hooks/usePendingTxWrapper'
 import { getTokenAllowance } from '@/utils/actions/getTokenAllowance'
@@ -59,8 +60,8 @@ const StakeCard = ({ address, chainId, pool }: StakeCardProps) => {
   })
 
   useEffect(() => {
-    if (!address || !chainId || !stakingPoolId) return
-    getStakedBalance(`0x${address.slice(2)}`, chainId, stakingPoolId)
+    if (!address || !chainId || stakingPoolId == null) return
+    getStakedBalance(address as Address, chainId, stakingPoolId)
       .then((data) => {
         setUserStakeData(data)
       })
