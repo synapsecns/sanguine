@@ -24,9 +24,10 @@ import (
 
 type DBSuite struct {
 	*testsuite.TestSuite
-	dbs      []db.ExecutorDB
-	logIndex atomic.Int64
-	metrics  metrics.Handler
+	dbs              []db.ExecutorDB
+	logIndex         atomic.Int64
+	metrics          metrics.Handler
+	mysqlTablePrefix string
 }
 
 // NewEventDBSuite creates a new EventDBSuite.
@@ -77,15 +78,17 @@ func (t *DBSuite) setupMysqlDB() {
 	// sets up the myqsl db
 	testDB, err := sql.Open("mysql", connString)
 	Nil(t.T(), err)
-	// close the db once the ocnnection is odne
+	// close the db once the connection is done
 	defer func() {
 		Nil(t.T(), testDB.Close())
 	}()
 
+	t.mysqlTablePrefix = fmt.Sprintf("test%d_%d_", t.GetTestID(), time.Now().Unix())
+
 	// override the naming strategy to prevent tests from messing with each other.
 	// todo this should be solved via a proper teardown process or transactions.
 	mysql.NamingStrategy = schema.NamingStrategy{
-		TablePrefix: fmt.Sprintf("test%d_%d_", t.GetTestID(), time.Now().Unix()),
+		TablePrefix: t.mysqlTablePrefix,
 	}
 
 	mysql.MaxIdleConns = 10
@@ -97,16 +100,17 @@ func (t *DBSuite) setupMysqlDB() {
 	t.dbs = append(t.dbs, mysqlStore)
 }
 
-func (t *DBSuite) RunOnAllDBs(testFunc func(testDB db.ExecutorDB)) {
+func (t *DBSuite) RunOnAllDBs(testFunc func(testDB db.ExecutorDB, dbIndex int)) {
 	t.T().Helper()
 
 	wg := sync.WaitGroup{}
-	for _, testDB := range t.dbs {
+	for i, testDB := range t.dbs {
 		wg.Add(1)
 		// capture the value
+		i := i
 		go func(testDB db.ExecutorDB) {
 			defer wg.Done()
-			testFunc(testDB)
+			testFunc(testDB, i)
 		}(testDB)
 	}
 	wg.Wait()

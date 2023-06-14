@@ -11,7 +11,7 @@ import (
 )
 
 func (t *DBSuite) TestStoreRetrieveAttestation() {
-	t.RunOnAllDBs(func(testDB db.ExecutorDB) {
+	t.RunOnAllDBs(func(testDB db.ExecutorDB, _ int) {
 		snapshotRootA := common.BigToHash(big.NewInt(gofakeit.Int64()))
 		agentsRootA := common.BigToHash(big.NewInt(gofakeit.Int64()))
 		nonceA := gofakeit.Uint32()
@@ -68,7 +68,7 @@ func (t *DBSuite) TestStoreRetrieveAttestation() {
 }
 
 func (t *DBSuite) TestGetEarliestSnapshotFromAttestation() {
-	t.RunOnAllDBs(func(testDB db.ExecutorDB) {
+	t.RunOnAllDBs(func(testDB db.ExecutorDB, _ int) {
 		destination := gofakeit.Uint32()
 
 		snapshotRootA := common.BigToHash(big.NewInt(gofakeit.Int64()))

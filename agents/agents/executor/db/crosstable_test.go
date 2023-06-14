@@ -13,7 +13,13 @@ import (
 
 // TODO: More edge cases for this test.
 func (t *DBSuite) TestGetTimestampForMessage() {
-	t.RunOnAllDBs(func(testDB db.ExecutorDB) {
+	t.RunOnAllDBs(func(testDB db.ExecutorDB, dbIndex int) {
+		// If we are using MySQL, we need to set the table prefix.
+		var tablePrefix string
+		if dbIndex == 1 {
+			tablePrefix = t.mysqlTablePrefix
+		}
+
 		origin := gofakeit.Uint32()
 		nonceA := uint32(5)
 		nonceB := uint32(10)
@@ -91,7 +97,7 @@ func (t *DBSuite) TestGetTimestampForMessage() {
 		err = testDB.StoreAttestation(t.GetTestContext(), attestationC, origin+1, 3, 1)
 		Nil(t.T(), err)
 
-		retrievedTimestampA, err := testDB.GetTimestampForMessage(t.GetTestContext(), origin, origin+1, nonceA, "")
+		retrievedTimestampA, err := testDB.GetTimestampForMessage(t.GetTestContext(), origin, origin+1, nonceA, tablePrefix)
 		Nil(t.T(), err)
 		if *retrievedTimestampA != uint64(3) {
 			allStates, err := testDB.GetAllStates(t.GetTestContext())
@@ -122,11 +128,11 @@ func (t *DBSuite) TestGetTimestampForMessage() {
 		}
 		Equal(t.T(), uint64(3), *retrievedTimestampA)
 
-		retrievedTimestampB, err := testDB.GetTimestampForMessage(t.GetTestContext(), origin, origin+1, nonceB, "")
+		retrievedTimestampB, err := testDB.GetTimestampForMessage(t.GetTestContext(), origin, origin+1, nonceB, tablePrefix)
 		Nil(t.T(), err)
 		Equal(t.T(), uint64(3), *retrievedTimestampB)
 
-		retrievedTimestampC, err := testDB.GetTimestampForMessage(t.GetTestContext(), origin, origin+1, nonceC, "")
+		retrievedTimestampC, err := testDB.GetTimestampForMessage(t.GetTestContext(), origin, origin+1, nonceC, tablePrefix)
 		Nil(t.T(), err)
 		Equal(t.T(), uint64(1), *retrievedTimestampC)
 	})
@@ -134,7 +140,13 @@ func (t *DBSuite) TestGetTimestampForMessage() {
 
 // TODO: Add more edge cases.
 func (t *DBSuite) TestGetEarliestStateInRange() {
-	t.RunOnAllDBs(func(testDB db.ExecutorDB) {
+	t.RunOnAllDBs(func(testDB db.ExecutorDB, dbIndex int) {
+		// If we are using MySQL, we need to set the table prefix.
+		var tablePrefix string
+		if dbIndex == 1 {
+			tablePrefix = t.mysqlTablePrefix
+		}
+
 		origin := gofakeit.Uint32()
 		var snapshotRoots, agentRoots []common.Hash
 		for i := uint32(1); i <= 6; i++ {
@@ -176,23 +188,23 @@ func (t *DBSuite) TestGetEarliestStateInRange() {
 		err = testDB.StoreAttestation(t.GetTestContext(), attestation2, origin+1, 3, 3)
 		Nil(t.T(), err)
 
-		earliestState, err := testDB.GetEarliestStateInRange(t.GetTestContext(), origin, origin+1, 0, 5, "")
+		earliestState, err := testDB.GetEarliestStateInRange(t.GetTestContext(), origin, origin+1, 0, 5, tablePrefix)
 		Nil(t.T(), err)
 		Equal(t.T(), uint32(2), (*earliestState).Nonce())
 
-		earliestState, err = testDB.GetEarliestStateInRange(t.GetTestContext(), origin, origin+1, 0, 1, "")
+		earliestState, err = testDB.GetEarliestStateInRange(t.GetTestContext(), origin, origin+1, 0, 1, tablePrefix)
 		Nil(t.T(), err)
 		Nil(t.T(), earliestState)
 
-		earliestState, err = testDB.GetEarliestStateInRange(t.GetTestContext(), origin, origin+1, 3, 5, "")
+		earliestState, err = testDB.GetEarliestStateInRange(t.GetTestContext(), origin, origin+1, 3, 5, tablePrefix)
 		Nil(t.T(), err)
 		Equal(t.T(), uint32(4), (*earliestState).Nonce())
 
-		earliestState, err = testDB.GetEarliestStateInRange(t.GetTestContext(), origin, origin+1, 6, 6, "")
+		earliestState, err = testDB.GetEarliestStateInRange(t.GetTestContext(), origin, origin+1, 6, 6, tablePrefix)
 		Nil(t.T(), err)
 		Nil(t.T(), earliestState)
 
-		earliestState, err = testDB.GetEarliestStateInRange(t.GetTestContext(), origin, origin+1, 5, 5, "")
+		earliestState, err = testDB.GetEarliestStateInRange(t.GetTestContext(), origin, origin+1, 5, 5, tablePrefix)
 		Nil(t.T(), err)
 		Equal(t.T(), uint32(5), (*earliestState).Nonce())
 	})

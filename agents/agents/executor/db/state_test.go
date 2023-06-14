@@ -12,7 +12,7 @@ import (
 )
 
 func (t *DBSuite) TestStoreRetrieveState() {
-	t.RunOnAllDBs(func(testDB db.ExecutorDB) {
+	t.RunOnAllDBs(func(testDB db.ExecutorDB, _ int) {
 		rootA := common.BigToHash(big.NewInt(gofakeit.Int64()))
 		originA := gofakeit.Uint32()
 		nonceA := gofakeit.Uint32()
@@ -162,7 +162,7 @@ func (t *DBSuite) TestStoreRetrieveState() {
 }
 
 func (t *DBSuite) TestGetStateMetadata() {
-	t.RunOnAllDBs(func(testDB db.ExecutorDB) {
+	t.RunOnAllDBs(func(testDB db.ExecutorDB, _ int) {
 		rootA := common.BigToHash(big.NewInt(gofakeit.Int64()))
 		originA := gofakeit.Uint32()
 		nonceA := gofakeit.Uint32()
@@ -206,7 +206,7 @@ func (t *DBSuite) TestGetStateMetadata() {
 }
 
 func (t *DBSuite) TestGetPotentialSnapshotRoots() {
-	t.RunOnAllDBs(func(testDB db.ExecutorDB) {
+	t.RunOnAllDBs(func(testDB db.ExecutorDB, _ int) {
 		origin := gofakeit.Uint32()
 		nonceA := uint32(5)
 		nonceB := uint32(10)
@@ -281,7 +281,7 @@ func (t *DBSuite) TestGetPotentialSnapshotRoots() {
 }
 
 func (t *DBSuite) TestGetSnapshotRootsInNonceRange() {
-	t.RunOnAllDBs(func(testDB db.ExecutorDB) {
+	t.RunOnAllDBs(func(testDB db.ExecutorDB, _ int) {
 		origin := gofakeit.Uint32()
 		nonceA := uint32(5)
 		nonceB := uint32(10)
