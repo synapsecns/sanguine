@@ -6,7 +6,6 @@ RED='\033[0;31m'
 GREEN='\033[0;32m'
 YELLOW='\033[0;33m'
 NC='\033[0m' # No Color
-ENV_FN=".env"
 
 CHAIN_NAME=$1
 CONTRACT_NAME=$2
@@ -20,7 +19,9 @@ if [ -z "$CONTRACT_NAME" ]; then
   exit 1
 fi
 
-source "$ENV_FN"
+# https://www.shellcheck.net/wiki/SC1091
+# shellcheck source=/dev/null
+source .env
 ETHERSCAN_KEY="ETHERSCAN_${CHAIN_NAME^^}_KEY"
 ETHERSCAN_KEY=${!ETHERSCAN_KEY}
 if [ -z "$ETHERSCAN_KEY" ]; then
@@ -34,12 +35,12 @@ if [ ! -e "$DEPLOYMENT_FN" ]; then
   exit 1
 fi
 
-ADDRESS=$(cat "$DEPLOYMENT_FN" | jq -r ".address")
+ADDRESS=$(jq -r ".address" < "$DEPLOYMENT_FN")
 if [ "$ADDRESS" == "null" ]; then
   echo -e "${RED}Error: Contract address not found in [$DEPLOYMENT_FN].${NC}"
   exit 1
 fi
-CONSTUCTOR_ARGS=$(cat "$DEPLOYMENT_FN" | jq -r ".args")
+CONSTUCTOR_ARGS=$(jq -r ".args" < "$DEPLOYMENT_FN")
 if [ "$CONSTUCTOR_ARGS" == "null" ]; then
   echo -e "${YELLOW}No constructor args found in [$DEPLOYMENT_FN].${NC}"
   CONSTUCTOR_ARGS=""
