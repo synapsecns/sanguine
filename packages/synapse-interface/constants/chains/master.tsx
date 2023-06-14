@@ -33,7 +33,7 @@ import cantoImg from '@assets/chains/canto.svg'
 import { Chain } from '@types'
 
 export const ETH: Chain = {
-  visibilityRank: 100,
+  visibilityRank: 110,
   id: 1,
   chainSymbol: 'ETH',
   name: 'Ethereum',
@@ -62,7 +62,7 @@ export const ARBITRUM: Chain = {
   layer: 2,
   codeName: 'arbitrum',
   blockTime: 5000,
-  rpc: 'https://arbitrum.blockpi.network/v1/rpc/public',
+  rpc: 'https://rpc.ankr.com/arbitrum',
   nativeCurrency: { name: 'Ethereum', symbol: 'ETH', decimals: 18 },
   explorerUrl: 'https://arbiscan.io',
   color: 'gray',
@@ -99,7 +99,7 @@ export const AVALANCHE: Chain = {
   color: 'red',
 }
 export const CANTO: Chain = {
-  visibilityRank: 95,
+  visibilityRank: 89,
   id: 7700,
   chainSymbol: 'CANTO',
   name: 'Canto',

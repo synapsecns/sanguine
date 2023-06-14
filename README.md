@@ -6,7 +6,7 @@
 ## Contributing
 
 Read through [CONTRIBUTING.md](./CONTRIBUTING.md) for a general overview of our contribution process.
-Then check out our list of [good first issues](https://github.com/ethereum-optimism/optimism/contribute) to find something fun to work on!
+Then check out our list of [good first issues](https://github.com/synapsecns/sanguine/contribute) to find something fun to work on!
 
 ## Directory Structure
 

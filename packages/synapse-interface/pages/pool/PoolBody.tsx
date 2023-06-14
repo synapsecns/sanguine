@@ -1,5 +1,4 @@
-import { useEffect, useState, memo } from 'react'
-import { useWatchPendingTransactions } from 'wagmi'
+import { useEffect, useState, useCallback } from 'react'
 import { AddressZero } from '@ethersproject/constants'
 import Link from 'next/link'
 import { Token } from '@types'
@@ -28,27 +27,35 @@ const PoolBody = ({
   const [poolUserData, setPoolUserData] = useState(undefined)
   const [poolAPYData, setPoolAPYData] = useState(undefined)
 
-  useEffect(() => {
-    if (connectedChainId && pool && poolChainId) {
-      // TODO - separate the apy and tvl so they load async.
-      getPoolData(poolChainId, pool, address ?? AddressZero, false)
+  const handleGetPoolData = useCallback(() => {
+    getPoolData(poolChainId, pool, address ?? AddressZero, false)
+      .then((res) => {
+        return setPoolData(res)
+      })
+      .catch((err) => {
+        console.log('Could not get pool data', err)
+        return err
+      })
+  }, [poolChainId, pool, address])
+
+  const handleGetUserPoolData = useCallback(() => {
+    if (address) {
+      getPoolData(poolChainId, pool, address, true)
         .then((res) => {
-          setPoolData(res)
+          return setPoolUserData(res)
         })
         .catch((err) => {
           console.log('Could not get pool data', err)
+          return err
         })
+    }
+  }, [poolChainId, pool, address])
 
-      if (address) {
-        getPoolData(poolChainId, pool, address, true)
-          .then((res) => {
-            setPoolUserData(res)
-          })
-          .catch((err) => {
-            console.log('Could not get pool data', err)
-          })
-      }
-
+  useEffect(() => {
+    if (connectedChainId && pool && poolChainId) {
+      // TODO - separate the apy and tvl so they load async.
+      handleGetPoolData()
+      handleGetUserPoolData()
       getPoolApyData(poolChainId, pool)
         .then((res) => {
           if (Object.keys(res).length > 0) {
@@ -59,7 +66,7 @@ const PoolBody = ({
           console.log('Could not get pool data', err)
         })
     }
-  }, [connectedChainId, pool, poolChainId])
+  }, [connectedChainId, pool, poolChainId, address])
 
   return (
     <>
@@ -118,6 +125,7 @@ const PoolBody = ({
               chainId={connectedChainId}
               poolData={poolData}
               poolUserData={poolUserData}
+              refetchCallback={handleGetUserPoolData}
               // poolStakingLink={STAKE_PATH}
               // poolStakingLinkText="Stake" // check this
             />

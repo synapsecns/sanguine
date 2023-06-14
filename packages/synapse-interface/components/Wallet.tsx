@@ -37,7 +37,9 @@ export const Wallet = () => {
   const { connector: activeConnector, address: connectedAddress } = useAccount()
   const { chain: currentChain } = useNetwork()
   const walletId = activeConnector?.id
+
   const [mounted, setMounted] = useState(false)
+
   useEffect(() => {
     setMounted(true)
   }, [])
@@ -85,8 +87,18 @@ export const Wallet = () => {
                 }
                 if (currentChain?.unsupported || chain?.unsupported) {
                   return (
-                    <button onClick={openChainModal} type="button">
-                      Wrong network
+                    <button
+                      onClick={openChainModal}
+                      type="button"
+                      className={`
+                      text-white transition-all duration-100th
+                        w-fit cursor-pointer rounded-lg py-2 pl-2.5
+                        pr-2.5 border border-bgLight
+                      active:bg-bgLightest/10 hover:bg-bgLightest/10
+                        whitespace-nowrap
+                        `}
+                    >
+                      Wrong Network
                     </button>
                   )
                 }

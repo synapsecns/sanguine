@@ -29,6 +29,8 @@ import { CHAINS_BY_ID } from '@constants/chains'
 import { Token } from '@/utils/types'
 import { BridgeQuote } from '@/utils/types'
 import { checkStringIfOnlyZeroes } from '@/utils/regex'
+import { AcceptedChainId } from '@constants/chains'
+import { useGasDropAmount } from '@/utils/hooks/useGasDropAmount'
 
 export enum DisplayType {
   FROM = 'from',
@@ -182,6 +184,12 @@ const BridgeCard = ({
       disabled: true,
       buttonAction: () => executeBridge(),
       postButtonAction: () => resetRates(),
+    }
+
+    if (!AcceptedChainId[fromChainId]) {
+      properties.label = 'Wrong Network'
+      properties.disabled = true
+      return properties
     }
 
     if (error) {
@@ -463,6 +471,7 @@ const BridgeCard = ({
               toToken={toToken}
               exchangeRate={bridgeQuote?.exchangeRate}
               toChainId={toChainId}
+              showGasDrop={true}
             />
           </Transition>
           <Transition

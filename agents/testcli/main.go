@@ -82,7 +82,9 @@ func main() {
 	fmt.Scanln(&message)
 	messageBody := []byte(message)
 
-	err = boundTestClient.SendMessage(ctx, localSigner, destinationID, recipient, optimisticSeconds, messageBody)
+	gasLimit := uint64(10000000)
+	version := uint32(1)
+	err = boundTestClient.SendMessage(ctx, localSigner, destinationID, recipient, optimisticSeconds, gasLimit, version, messageBody)
 	if err != nil {
 		fmt.Printf("could not send message: %s", err)
 		return

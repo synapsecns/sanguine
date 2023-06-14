@@ -3,6 +3,14 @@ import { providers as etherProvider } from 'ethers'
 import { BigNumber } from '@ethersproject/bignumber'
 
 import { SynapseSDK } from './sdk'
+
+const checkQueryFields = (query: any) => {
+  expect(query.swapAdapter).not.toBeNull()
+  expect(query.tokenOut).not.toBeNull()
+  expect(query.minAmountOut).not.toBeNull()
+  expect(query.deadline).not.toBeNull()
+  expect(query.rawParams).not.toBeNull()
+}
 jest.setTimeout(30000)
 // TODO add more tests checking parity of to/from values
 // as well as more token/chain combinations
@@ -48,8 +56,11 @@ describe('SynapseSDK', () => {
           BigNumber.from('100000000')
         )
       expect(feeConfig?.bridgeFee).toBeGreaterThan(0)
-      expect(originQuery?.length).toBeGreaterThan(0)
-      expect(destQuery?.length).toBeGreaterThan(0)
+      expect(originQuery).not.toBeNull()
+      expect(destQuery).not.toBeNull()
+      checkQueryFields(originQuery)
+      checkQueryFields(destQuery)
+
       expect(routerAddress?.length).toBeGreaterThan(0)
 
       const { data, to } = await Synapse.bridge(
@@ -80,8 +91,10 @@ describe('SynapseSDK', () => {
         BigNumber.from('100000000')
       )
       expect(feeConfig?.bridgeFee).toBeGreaterThan(0)
-      expect(originQuery?.length).toBeGreaterThan(0)
-      expect(destQuery?.length).toBeGreaterThan(0)
+      expect(originQuery).not.toBeNull()
+      expect(destQuery).not.toBeNull()
+      checkQueryFields(originQuery)
+      checkQueryFields(destQuery)
       const { data, to } = await Synapse.bridge(
         '0x0AF91FA049A7e1894F480bFE5bBa20142C6c29a9',
         43114,
@@ -112,6 +125,8 @@ describe('SynapseSDK', () => {
       )
 
       expect(originQuery?.deadline).toStrictEqual(BigNumber.from('100000000'))
+      checkQueryFields(originQuery)
+      checkQueryFields(destQuery)
       const { data, to } = await Synapse.bridge(
         '0x0AF91FA049A7e1894F480bFE5bBa20142C6c29a9',
         43114,
@@ -139,8 +154,10 @@ describe('SynapseSDK', () => {
         BigNumber.from('10000000000000000000')
       )
       expect(feeConfig?.bridgeFee).toBeGreaterThan(0)
-      expect(originQuery?.length).toBeGreaterThan(0)
-      expect(destQuery?.length).toBeGreaterThan(0)
+      expect(originQuery).not.toBeNull()
+      expect(destQuery).not.toBeNull()
+      checkQueryFields(originQuery)
+      checkQueryFields(destQuery)
       const { data, to } = await Synapse.bridge(
         '0x0AF91FA049A7e1894F480bFE5bBa20142C6c29a9',
         42161,
@@ -168,8 +185,8 @@ describe('SynapseSDK', () => {
       )
 
       expect(feeConfig?.bridgeFee).toBeGreaterThan(0)
-      expect(originQuery?.length).toBeGreaterThan(0)
-      expect(destQuery?.length).toBeGreaterThan(0)
+      expect(originQuery).not.toBeNull()
+      expect(destQuery).not.toBeNull()
       const { data, to } = await Synapse.bridge(
         '0x0AF91FA049A7e1894F480bFE5bBa20142C6c29a9',
         42161,
@@ -194,7 +211,8 @@ describe('SynapseSDK', () => {
         '0xFd086bC7CD5C481DCC9C85ebE478A1C0b69FCbb9',
         BigNumber.from('1000000')
       )
-      expect(query?.length).toBeGreaterThan(0)
+      expect(query).not.toBeNull()
+      checkQueryFields(query)
       const { data, to } = await Synapse.swap(
         42161,
         '0x0AF91FA049A7e1894F480bFE5bBa20142C6c29a9',
@@ -291,21 +309,20 @@ describe('SynapseSDK', () => {
       expect(amount?.toString()?.length).toBeGreaterThan(0)
     })
   })
+  // this test uses the swap eth wrapper pool address to test if calculate remove liquidity works on ETH Wrapper pools
   describe('calculate remove liquidity', () => {
     it('test', async () => {
       const chainIds = [42161]
       const providers = [arbitrumProvider]
       const Synapse = new SynapseSDK(chainIds, providers)
-      const amounts = await Synapse.calculateRemoveLiquidity(
+      const { amounts, routerAddress } = await Synapse.calculateRemoveLiquidity(
         42161,
-        '0xa067668661C84476aFcDc6fA5D758C4c01C34352',
+        '0x1c3fe783a7c06bfAbd124F2708F5Cc51fA42E102',
         BigNumber.from('1000000')
       )
-      expect(Object.keys(amounts.amounts)?.length).toBeGreaterThan(0)
-      expect(
-        amounts.amounts[Object.keys(amounts.amounts)[0]].value.toNumber()
-      ).toBeGreaterThan(0)
-      expect(amounts?.routerAddress.length).toBeGreaterThan(0)
+      expect(amounts.length).toBeGreaterThan(0)
+      expect(amounts[0].value.toNumber()).toBeGreaterThan(0)
+      expect(routerAddress?.length).toBeGreaterThan(0)
     })
   })
   describe('calculate remove liquidity one', () => {
@@ -313,15 +330,16 @@ describe('SynapseSDK', () => {
       const chainIds = [42161]
       const providers = [arbitrumProvider]
       const Synapse = new SynapseSDK(chainIds, providers)
-      const amounts = await Synapse.calculateRemoveLiquidityOne(
-        42161,
-        '0xa067668661C84476aFcDc6fA5D758C4c01C34352',
-        BigNumber.from('1000000'),
-        '0x6b175474e89094c44da98b954eedeac495271d0f'
-      )
-      expect(Object.keys(amounts.amount)?.length).toBeGreaterThan(0)
-      expect(amounts.amount.value.toNumber()).toBeGreaterThan(0)
-      expect(amounts?.routerAddress.length).toBeGreaterThan(0)
+      const { amount, routerAddress } =
+        await Synapse.calculateRemoveLiquidityOne(
+          42161,
+          '0x1c3fe783a7c06bfAbd124F2708F5Cc51fA42E102',
+          BigNumber.from('1000000'),
+          1
+        )
+      expect(Object.keys(amount)?.length).toBeGreaterThan(0)
+      expect(amount.value.toNumber()).toBeGreaterThan(0)
+      expect(routerAddress.length).toBeGreaterThan(0)
     })
   })
 })

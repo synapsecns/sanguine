@@ -1,93 +1,44 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.17;
+
 // ══════════════════════════════ LIBRARY IMPORTS ══════════════════════════════
-import { TipsLib } from "../libs/Tips.sol";
-import { TypeCasts } from "../libs/TypeCasts.sol";
-
+import {TypeCasts} from "../libs/TypeCasts.sol";
 // ═════════════════════════════ INTERNAL IMPORTS ══════════════════════════════
-import { IMessageRecipient } from "../interfaces/IMessageRecipient.sol";
-import { InterfaceOrigin } from "../interfaces/InterfaceOrigin.sol";
+import {MessageRecipient} from "./MessageRecipient.sol";
 
-contract TestClient is IMessageRecipient {
-    /*╔══════════════════════════════════════════════════════════════════════╗*\
-    ▏*║                              IMMUTABLES                              ║*▕
-    \*╚══════════════════════════════════════════════════════════════════════╝*/
-
-    // local chain Origin: used for sending messages
-    address public immutable origin;
-
-    // local chain Destination: used for receiving messages
-    address public immutable destination;
-
-    /*╔══════════════════════════════════════════════════════════════════════╗*\
-    ▏*║                                EVENTS                                ║*▕
-    \*╚══════════════════════════════════════════════════════════════════════╝*/
-
+contract TestClient is MessageRecipient {
     event MessageReceived(
-        uint32 origin,
-        uint32 nonce,
-        bytes32 sender,
-        uint256 rootSubmittedAt,
-        bytes message
+        uint32 origin, uint32 nonce, bytes32 sender, uint256 proofMaturity, uint32 version, bytes content
     );
 
-    event MessageSent(
-        uint32 destination,
-        uint32 nonce,
-        bytes32 sender,
-        bytes32 recipient,
-        bytes message
-    );
+    event MessageSent(uint32 destination, uint32 nonce, bytes32 sender, bytes32 recipient, bytes content);
 
-    /*╔══════════════════════════════════════════════════════════════════════╗*\
-    ▏*║                             CONSTRUCTOR                              ║*▕
-    \*╚══════════════════════════════════════════════════════════════════════╝*/
-
-    constructor(address _origin, address _destination) {
-        origin = _origin;
-        destination = _destination;
-    }
-
-    /*╔══════════════════════════════════════════════════════════════════════╗*\
-    ▏*║                          RECEIVING MESSAGES                          ║*▕
-    \*╚══════════════════════════════════════════════════════════════════════╝*/
-
-    function handle(
-        uint32 _origin,
-        uint32 _nonce,
-        bytes32 _sender,
-        uint256 _rootSubmittedAt,
-        bytes memory _message
-    ) external {
-        require(msg.sender == destination, "TestClient: !destination");
-        emit MessageReceived(_origin, _nonce, _sender, _rootSubmittedAt, _message);
-    }
-
-    /*╔══════════════════════════════════════════════════════════════════════╗*\
-    ▏*║                           SENDING MESSAGES                           ║*▕
-    \*╚══════════════════════════════════════════════════════════════════════╝*/
+    // solhint-disable-next-line no-empty-blocks
+    constructor(address origin_, address destination_) MessageRecipient(origin_, destination_) {}
 
     function sendMessage(
-        uint32 _destination,
-        address _recipient,
-        uint32 _optimisticSeconds,
-        bytes memory _message
-    ) external {
-        bytes32 recipient = TypeCasts.addressToBytes32(_recipient);
-        bytes memory tips = TipsLib.emptyTips();
-        (uint32 nonce, ) = InterfaceOrigin(origin).dispatch(
-            _destination,
-            recipient,
-            _optimisticSeconds,
-            tips,
-            _message
-        );
-        emit MessageSent(
-            _destination,
-            nonce,
-            TypeCasts.addressToBytes32(address(this)),
-            recipient,
-            _message
-        );
+        uint32 destination_,
+        address recipientAddress,
+        uint32 optimisticSeconds,
+        uint64 gasLimit,
+        uint32 version,
+        bytes memory content
+    ) external payable {
+        bytes32 recipient = TypeCasts.addressToBytes32(recipientAddress);
+        MessageRequest memory request = MessageRequest({gasDrop: 0, gasLimit: gasLimit, version: version});
+        (uint32 nonce,) = _sendBaseMessage(destination_, recipient, optimisticSeconds, request, content);
+        emit MessageSent(destination_, nonce, TypeCasts.addressToBytes32(address(this)), recipient, content);
+    }
+
+    /// @inheritdoc MessageRecipient
+    function _receiveBaseMessageUnsafe(
+        uint32 origin_,
+        uint32 nonce,
+        bytes32 sender,
+        uint256 proofMaturity,
+        uint32 version,
+        bytes memory content
+    ) internal override {
+        emit MessageReceived(origin_, nonce, sender, proofMaturity, version, content);
     }
 }

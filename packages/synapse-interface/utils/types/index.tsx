@@ -26,6 +26,7 @@ export type PoolToken = {
   balanceStr: string
   token: Token
   isLp: boolean
+  rawBalance: BigNumber
 }
 export type Query = [string, string, BigNumber, BigNumber, string] & {
   swapAdapter: string
@@ -41,6 +42,7 @@ export type PoolUserData = {
   tokens: PoolToken[]
   lpTokenBalance: BigNumber
   lpTokenBalanceStr: string
+  nativeTokens?: any
 }
 export type PoolData = {
   name: string
@@ -51,6 +53,7 @@ export type PoolData = {
   totalLockedUSDStr: string
   virtualPrice: BigNumber
   virtualPriceStr: string
+  nativeTokens?: any
 }
 
 export type BridgeQuote = {

@@ -43,7 +43,8 @@ import {
   EMPTY_BRIDGE_QUOTE_ZERO,
   QUOTE_POLLING_INTERVAL,
 } from '@/constants/bridge'
-import { CHAINS_BY_ID } from '@/constants/chains'
+import { CHAINS_BY_ID, AcceptedChainId } from '@/constants/chains'
+
 /* TODO
   - look into getting rid of fromChainId state and just using wagmi hook (ran into problems when trying this but forgot why)
 */
@@ -87,9 +88,10 @@ const BridgePage = ({
   - Initializes polling (setInterval) func to re-retrieve quotes.
   */
   useEffect(() => {
+    const validFromChainId = AcceptedChainId[fromChainId] ? fromChainId : 1
     sortByTokenBalance(
-      BRIDGABLE_TOKENS[fromChainId],
-      fromChainId,
+      BRIDGABLE_TOKENS[validFromChainId],
+      validFromChainId,
       address
     ).then((tokens) => {
       setFromTokens(tokens)
@@ -102,7 +104,7 @@ const BridgePage = ({
     return () => {
       clearInterval(interval)
     }
-  }, [bridgeTxHash, fromChainId])
+  }, [bridgeTxHash, fromChainId, address])
 
   useEffect(() => {
     if (!router.isReady) {
@@ -114,10 +116,15 @@ const BridgePage = ({
       outputCurrency: toTokenSymbolUrl,
     } = router.query
 
-    let tempFromToken: Token = getMostCommonSwapableType(fromChainId)
+    // set origin chainId to mainnet if network is unsupported
+    const validFromChainId = AcceptedChainId[fromChainId] ? fromChainId : 1
+    let tempFromToken: Token = getMostCommonSwapableType(validFromChainId)
 
     if (fromTokenSymbolUrl) {
-      let token = tokenSymbolToToken(fromChainId, String(fromTokenSymbolUrl))
+      let token = tokenSymbolToToken(
+        validFromChainId,
+        String(fromTokenSymbolUrl)
+      )
       if (token) {
         tempFromToken = token
       }
@@ -127,7 +134,7 @@ const BridgePage = ({
         tempFromToken,
         toChainIdUrl ? Number(toChainIdUrl) : undefined,
         toTokenSymbolUrl ? String(toTokenSymbolUrl) : undefined,
-        fromChainId
+        validFromChainId
       )
     resetTokenPermutation(
       tempFromToken,
@@ -148,13 +155,13 @@ const BridgePage = ({
   /*
   useEffect Triggers: toToken, fromInput, toChainId, time
   - Gets a quote when the polling function is executed or any of the bridge attributes are altered.
-  - Debounce quote call by calling quote price AFTER user has stopped typing for 500ms
+  - Debounce quote call by calling quote price AFTER user has stopped typing for 250ms
   */
   useEffect(() => {
     let isCancelled = false
 
     const handleChange = async () => {
-      await timeout(400) // debounce by 400ms
+      await timeout(250) // debounce by 250ms
       if (!isCancelled) {
         if (
           fromChainId &&
@@ -238,8 +245,11 @@ const BridgePage = ({
         fromToken[fromChainId as keyof Token['decimals']]
       )
     ) {
-      let bigNum =
-        stringToBigNum(value, fromToken.decimals[fromChainId]) ?? Zero
+      const validDecimals = fromToken.decimals[fromChainId]
+        ? fromToken.decimals[fromChainId]
+        : fromToken.decimals[1]
+
+      let bigNum = stringToBigNum(value, validDecimals) ?? Zero
 
       setFromInput({
         string: value,
@@ -396,7 +406,7 @@ const BridgePage = ({
   */
   const handleChainChange = useCallback(
     async (chainId: number, flip: boolean, type: 'from' | 'to') => {
-      if (address === undefined || isDisconnected) {
+      if (address === undefined && type === 'from' || isDisconnected && type === 'from') {
         errorPopup = toast.error('Please connect your wallet', {
           id: 'bridge-connect-wallet',
           duration: 20000,
@@ -550,11 +560,13 @@ const BridgePage = ({
       if (bridgeQuote === EMPTY_BRIDGE_QUOTE) {
         setIsQuoteLoading(true)
       }
+      const validFromChainId = AcceptedChainId[fromChainId] ? fromChainId : 1
+
       const { feeAmount, routerAddress, maxAmountOut, originQuery, destQuery } =
         await synapseSDK.bridgeQuote(
-          fromChainId,
+          validFromChainId,
           toChainId,
-          fromToken.addresses[fromChainId],
+          fromToken.addresses[validFromChainId],
           toToken.addresses[toChainId],
           fromInput.bigNum
         )
@@ -566,16 +578,18 @@ const BridgePage = ({
       }
       // TODO DYNAMIC SLIPPAGE
       const toValueBigNum = maxAmountOut ?? Zero
-      const originTokenDecimals = fromToken.decimals[fromChainId]
+      const originTokenDecimals = fromToken.decimals[validFromChainId]
       // adjusting fee amount from NUSD 18 decimal back down
       // back down to origin token decimals
       const adjustedFeeAmount = feeAmount.lt(fromInput.bigNum)
         ? feeAmount
         : feeAmount.div(BigNumber.from(10).pow(18 - originTokenDecimals))
 
+      const isUnsupported = AcceptedChainId[fromChainId] ? false : true
       const allowance =
-        fromToken.addresses[fromChainId] === AddressZero ||
-        address === undefined
+        fromToken.addresses[validFromChainId] === AddressZero ||
+        address === undefined ||
+        isUnsupported
           ? Zero
           : await getCurrentTokenAllowance(routerAddress)
 
@@ -591,11 +605,11 @@ const BridgePage = ({
         'ONE_TENTH',
         null
       )
-      let newOriginQuery = [...originQuery] as Query
-      newOriginQuery[2] = originMinWithSlippage
+
+      let newOriginQuery = { ...originQuery }
       newOriginQuery.minAmountOut = originMinWithSlippage
-      let newDestQuery = [...destQuery] as Query
-      newDestQuery[3] = destMinWithSlippage
+
+      let newDestQuery = { ...destQuery }
       newDestQuery.minAmountOut = destMinWithSlippage
 
       setBridgeQuote({
@@ -607,7 +621,7 @@ const BridgePage = ({
         allowance,
         exchangeRate: calculateExchangeRate(
           fromInput.bigNum.sub(adjustedFeeAmount),
-          fromToken.decimals[fromChainId],
+          fromToken.decimals[validFromChainId],
           toValueBigNum,
           toToken.decimals[toChainId]
         ),

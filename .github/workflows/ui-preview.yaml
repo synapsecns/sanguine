@@ -1,14 +1,9 @@
 name: UI Deployment
 on:
+  push:
+    branches:
+      - master
   pull_request:
-#    branches-ignore:
-#      - master
-# note: as of right now this will not cover changes in dependent packages
-#    paths:
-#      - 'packages/explorer-ui/**'
-#      - 'packages/synapse-interface/**'
-#      - '.github/workflows/ui-preview.yaml'
-#      - 'packages/docs/**'
 jobs:
   changes:
     runs-on: ubuntu-latest
@@ -35,6 +30,7 @@ jobs:
         run: |
           export FILTER_LENGTH=$(echo $FILTERED_PATHS | jq '. | length')
           echo "FILTER_LENGTH=$FILTER_LENGTH" >> "$GITHUB_OUTPUT"
+
         env:
           FILTERED_PATHS: ${{ steps.filter_ui.outputs.changes }}
   deploy:
@@ -59,17 +55,6 @@ jobs:
           cache: 'npm'
           install_dependencies: 'false'
           cache-path: ''
-      # - name: Setup Node.js 16.14.0
-      #   uses: actions/setup-node@v2
-      #   with:
-      #     node-version: '16.14.0'
-      # - name: Install dependencies
-      #   run: yarn install && yarn build
-      #   working-directory: './packages/synapse-interface'
-      # - name: Install sdk-router
-      #   run: yarn install && yarn build
-      #   working-directory: './packages/sdk-router'
-      # make sure new project ids are added here
       - name: Get Project ID
         id: project_id
         # see: https://stackoverflow.com/a/75231888 for details
@@ -86,10 +71,32 @@ jobs:
           # set the vercel project id`
           echo "VERCEL_PROJECT_ID=$TARGET_ID" >> $GITHUB_ENV
       - name: Install Vercel CLI
-        run: npm install --global vercel@latest
+        run: npm install --global vercel@30.1.0
       - name: Pull Vercel Environment Information
         run: vercel pull --yes --environment=preview --token=${{ secrets.VERCEL_TOKEN }}
       - name: Build Project Artifacts
         run: vercel build --token=${{ secrets.VERCEL_TOKEN }}
-      - name: Deploy Project Artifacts to Vercel
-        run: vercel deploy --prebuilt --token=${{ secrets.VERCEL_TOKEN }}
+      - name: Deploy to Vercel (Output Preview/Inspect Links)
+        id: deploy
+        run: |
+          export DEPLOY_URL=$(vercel deploy --prebuilt --token=${{ secrets.VERCEL_TOKEN }})
+          echo "DEPLOY_URL=$DEPLOY_URL" >> $GITHUB_ENV
+          echo "::set-output name=url::$DEPLOY_URL"
+      - name: Update PR Description
+        if: ${{ github.event_name == 'pull_request' && format('refs/heads/{0}', github.event.repository.default_branch) != github.ref }}
+        uses: actions/github-script@v3
+        with:
+          script: |
+            const {data: pullRequest} = await github.pulls.get({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              pull_number: context.issue.number
+            });
+            const newBody = `${pullRequest.body}\n${{github.sha}}: [${{matrix.package}} preview link ](${{ steps.deploy.outputs.url }})`;
+            await github.pulls.update({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              pull_number: context.issue.number,
+              body: newBody
+            });
+

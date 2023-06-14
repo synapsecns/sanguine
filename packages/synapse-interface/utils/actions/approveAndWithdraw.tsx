@@ -1,5 +1,8 @@
 import { ALL } from '@constants/withdrawTypes'
-import { useSwapDepositContract } from '@hooks/useSwapDepositContract'
+import {
+  getSwapDepositContractFields,
+  useSwapDepositContract,
+} from '@hooks/useSwapDepositContract'
 import ExplorerToastLink from '@components/ExplorerToastLink'
 import { subtractSlippage } from '@utils/slippage'
 import { txErrorHandler } from '@utils/txErrorHandler'
@@ -18,8 +21,11 @@ export const approve = async (
   if (inputValue.isZero() || inputValue.lt(depositQuote.allowance)) {
     return
   }
-  await approveToken(
-    pool.swapAddresses[chainId],
+
+  const { poolAddress } = getSwapDepositContractFields(pool, chainId)
+
+  return await approveToken(
+    poolAddress,
     chainId,
     pool.addresses[chainId],
     inputValue
@@ -53,23 +59,23 @@ export const withdraw = async (
 
   try {
     if (withdrawType === ALL) {
-      const outputMinArr = pool.poolTokens.map(() => Zero)
-      for (let poolToken of pool.poolTokens) {
-        const outputAmount = outputs[poolToken.addresses[chainId]]
-        outputMinArr[outputAmount.index] = subtractSlippage(
-          outputAmount.value,
-          slippageSelected,
-          slippageCustom
-        )
-      }
+
+      console.log(outputs[withdrawType])
       spendTransaction = await poolContract.removeLiquidity(
         inputAmount,
-        outputMinArr,
+        pool.poolTokens?.map((t,index) =>
+          subtractSlippage(
+            outputs[withdrawType][index].value,
+            slippageSelected,
+            slippageCustom
+          )
+          ),
         Math.round(new Date().getTime() / 1000 + 60 * 10)
       )
     } else {
       const outputAmount = Object.values(outputs)[0]
       const poolTokenIndex = outputAmount.index
+
       spendTransaction = await poolContract.removeLiquidityOneToken(
         inputAmount,
         poolTokenIndex,
@@ -101,5 +107,6 @@ export const withdraw = async (
   } catch (error) {
     toast.dismiss(pendingPopup)
     txErrorHandler(error)
+    return error
   }
 }

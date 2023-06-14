@@ -45,7 +45,7 @@ func makeNodeConfig(tb testing.TB) *node.Config {
 func makeEthConfig(address common.Address, config *params.ChainConfig) *ethconfig.Config {
 	ethConfig := ethconfig.Defaults
 	ethConfig.NetworkId = config.ChainID.Uint64()
-	ethConfig.Genesis = core.DeveloperGenesisBlock(0, 5000000, address)
+	ethConfig.Genesis = core.DeveloperGenesisBlock(0, 10000000, address)
 	ethConfig.Genesis.Config = config
 	ethConfig.Miner.Etherbase = address
 	ethConfig.SyncMode = downloader.FullSync

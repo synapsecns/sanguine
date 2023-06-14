@@ -35,7 +35,6 @@ const PoolPage = () => {
     () => (pool?.addresses ? Number(Object.keys(pool?.addresses)[0]) : 0),
     [pool]
   )
-
   return (
     <LandingPageWrapper>
       <StandardPageContainer

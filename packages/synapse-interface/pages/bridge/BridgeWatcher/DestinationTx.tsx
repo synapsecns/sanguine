@@ -1,16 +1,19 @@
-import { BridgeWatcherTx } from '@types'
-import { useEffect, useState, memo } from 'react'
-import { Contract, Signer } from 'ethers'
+import _ from 'lodash'
+import { useEffect, useState, memo, useMemo } from 'react'
 import { useSigner } from 'wagmi'
+import { fetchBlockNumber } from '@wagmi/core'
+import { Contract, Signer } from 'ethers'
+import { Interface } from '@ethersproject/abi'
+import {
+  ChevronRightIcon,
+  ChevronDoubleRightIcon,
+} from '@heroicons/react/outline'
+import { BridgeWatcherTx } from '@types'
+import { getNetworkTextColor } from '@/styles/chains'
 import SYNAPSE_BRIDGE_ABI from '@abis/synapseBridge.json'
 import { BRIDGE_CONTRACTS } from '@constants/bridge'
-import { PendingCreditTransactionItem } from '@components/TransactionItems'
-import { fetchBlockNumber } from '@wagmi/core'
-import { Interface } from '@ethersproject/abi'
+import { CHAINS_BY_ID } from '@/constants/chains'
 import { GETLOGS_SIZE } from '@constants/bridgeWatcher'
-import _ from 'lodash'
-import EventCard from './EventCard'
-import BlockCountdown from './BlockCountdown'
 import { useSynapseContext } from '@/utils/providers/SynapseProvider'
 import {
   getLogs,
@@ -20,6 +23,9 @@ import {
   checkTxIn,
 } from '@utils/bridgeWatcher'
 import { remove0xPrefix } from '@/utils/remove0xPrefix'
+import EventCard from './EventCard'
+import BlockCountdown from './BlockCountdown'
+import { CreditedTransactionItem } from '@components/TransactionItems'
 
 const DestinationTx = (fromEvent: BridgeWatcherTx) => {
   const [toEvent, setToEvent] = useState<BridgeWatcherTx>(undefined)
@@ -30,6 +36,11 @@ const DestinationTx = (fromEvent: BridgeWatcherTx) => {
   const [completedConf, setCompletedConf] = useState(false)
   const [attempted, setAttempted] = useState(false)
   const { providerMap } = useSynapseContext()
+
+  const networkTextColorClass: string = useMemo(() => {
+    const networkChainById = CHAINS_BY_ID[fromEvent.chainId]
+    return getNetworkTextColor(networkChainById?.color)
+  }, [fromEvent.toChainId])
 
   const getToBridgeEvent = async (): Promise<BridgeWatcherTx> => {
     const headOnDestination = await fetchBlockNumber({
@@ -118,12 +129,12 @@ const DestinationTx = (fromEvent: BridgeWatcherTx) => {
 
   // Listens for confirmations to complete and if so, recheck destination chain for logs
   useEffect(() => {
-    if (completedConf && toSynapseContract && !toEvent && attempted) {
+    if (completedConf && toSynapseContract && attempted) {
       getToBridgeEvent().then((tx) => {
         setToEvent(tx)
       })
     }
-  }, [completedConf, toEvent, fromEvent])
+  }, [completedConf, toEvent, fromEvent, toSynapseContract])
 
   // Listens for SynapseContract to be set and if so, will check destination chain for logs if there is no toEvent
   useEffect(() => {
@@ -134,7 +145,7 @@ const DestinationTx = (fromEvent: BridgeWatcherTx) => {
       })
     }
     return
-  }, [toSynapseContract, toEvent])
+  }, [toSynapseContract])
 
   useEffect(() => {
     setToSigner(toSignerRaw)
@@ -142,16 +153,40 @@ const DestinationTx = (fromEvent: BridgeWatcherTx) => {
 
   return (
     <div className="flex items-center">
-      <div className="flex-initial w-auto h-full align-middle mt-[22px]">
-        <BlockCountdown
-          fromEvent={fromEvent}
-          toEvent={toEvent ?? null}
-          setCompletedConf={setCompletedConf}
-        />
+      <div className="flex items-center px-3 pt-6 pb-1 align-middle">
+        {toEvent ? (
+          <ChevronDoubleRightIcon
+            className={`
+              w-5 h-5
+              place-self-center
+              ${networkTextColorClass}
+            `}
+          />
+        ) : (
+          <ChevronRightIcon
+            className={`
+            w-5 h-5
+            place-self-center
+            ${networkTextColorClass}
+            animate-pulse
+            `}
+          />
+        )}
       </div>
-      <div className="flex-initial w-full">
-        {toEvent ? <EventCard {...toEvent} /> : null}
-      </div>
+
+      {toEvent ? (
+        <div className="flex-initial w-full">
+          <EventCard {...toEvent} />
+        </div>
+      ) : (
+        <div className="flex-initial w-auto h-full align-middle mt-[22px]">
+          <BlockCountdown
+            fromEvent={fromEvent}
+            toEvent={toEvent ?? null}
+            setCompletedConf={setCompletedConf}
+          />
+        </div>
+      )}
     </div>
   )
 }
