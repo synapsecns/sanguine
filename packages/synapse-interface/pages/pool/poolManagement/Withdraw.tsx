@@ -118,20 +118,12 @@ const Withdraw = ({
         withdrawType
       )
 
-      // const priceImpact = calculateExchangeRate(
-      //   inputValue.bn,
-      //   18,
-      //   inputValue.bn.sub(tokenSum),
-      //   18
-      // )
-      // console.log('outputs[withdrawType].value:', outputs[withdrawType].value)
-      const newPriceImpact = calculatePriceImpact(
+      const priceImpact = calculatePriceImpact(
         inputValue.bn,
         outputTokensSum,
         virtualPrice
       )
-      console.log('virtualPrice:', newPriceImpact)
-      // console.log('newPriceImpact:', newPriceImpact)
+
       const allowance = await getTokenAllowance(
         poolAddress,
         pool.addresses[chainId],
@@ -139,7 +131,7 @@ const Withdraw = ({
         chainId
       )
       setWithdrawQuote({
-        priceImpact: newPriceImpact,
+        priceImpact,
         allowance,
         outputs,
         routerAddress: poolAddress,
