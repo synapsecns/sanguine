@@ -50,14 +50,17 @@ type ExecutorDBReader interface {
 	GetAttestationBlockNumber(ctx context.Context, attestationMask types.DBAttestation) (*uint64, error)
 	// GetAttestationTimestamp gets the timestamp of an attestation.
 	GetAttestationTimestamp(ctx context.Context, attestationMask types.DBAttestation) (*uint64, error)
+	// GetAllAttestations gets attestations from the database, paginated and ordered in ascending order by nonce.
+	GetAllAttestations(ctx context.Context) ([]agentsTypes.Attestation, error)
 	// GetEarliestSnapshotFromAttestation takes a list of snapshot roots, checks which one has the lowest block number, and returns that snapshot root back.
 	GetEarliestSnapshotFromAttestation(ctx context.Context, attestationMask types.DBAttestation, snapshotRoots []string) (*[32]byte, error)
-	GetAllAttestations(ctx context.Context) ([]agentsTypes.Attestation, error)
-	GetAllStates(ctx context.Context) ([]agentsTypes.State, error)
+
 	// GetState gets a state from the database.
 	GetState(ctx context.Context, stateMask types.DBState) (*agentsTypes.State, error)
 	// GetStateMetadata gets the snapshot root, proof, and tree height of a state from the database.
 	GetStateMetadata(ctx context.Context, stateMask types.DBState) (snapshotRoot *[32]byte, proof *json.RawMessage, stateIndex *uint32, err error)
+	// GetAllStates gets attestations from the database, paginated and ordered in ascending order by nonce.
+	GetAllStates(ctx context.Context) ([]agentsTypes.State, error)
 	// GetPotentialSnapshotRoots gets all snapshot roots that are greater than or equal to a specified nonce and matches
 	// a specified chain ID.
 	GetPotentialSnapshotRoots(ctx context.Context, chainID uint32, nonce uint32) ([]string, error)
