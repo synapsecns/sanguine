@@ -6,19 +6,39 @@ import { Zero } from '@ethersproject/constants'
  * @param {BigNumber} tokenOutputAmount assuming 18d precision
  * @param {BigNumber} virtualPrice cause everything is fake anyway
  */
+// export const calculatePriceImpact = (
+//   tokenInputAmount,
+//   tokenOutputAmount,
+//   virtualPrice = BigNumber.from(10).pow(18)
+// ) => {
+//   if (tokenInputAmount.gt(0)) {
+//     return virtualPrice
+//       .mul(tokenOutputAmount)
+//       .div(tokenInputAmount)
+//       .sub(BigNumber.from(10).pow(18))
+//   } else {
+//     return Zero
+//   }
+// }
+
+const BN_1E18 = BigNumber.from(10).pow(18)
+
 export const calculatePriceImpact = (
-  tokenInputAmount,
-  tokenOutputAmount,
-  virtualPrice = BigNumber.from(10).pow(18)
-) => {
-  if (tokenInputAmount.gt(0)) {
-    return virtualPrice
-      .mul(tokenOutputAmount)
-      .div(tokenInputAmount)
-      .sub(BigNumber.from(10).pow(18))
-  } else {
+  tokenInputAmount: BigNumber, // assumed to be 18d precision
+  tokenOutputAmount: BigNumber,
+  virtualPrice = BN_1E18,
+  isWithdraw = false
+): BigNumber => {
+  if (tokenInputAmount.lte(0)) {
     return Zero
   }
+
+  return isWithdraw
+    ? tokenOutputAmount
+        .mul(BigNumber.from(10).pow(36))
+        .div(tokenInputAmount.mul(virtualPrice))
+        .sub(BN_1E18)
+    : virtualPrice.mul(tokenOutputAmount).div(tokenInputAmount).sub(BN_1E18)
 }
 
 export const calculatePriceImpactWithdraw = (

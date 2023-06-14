@@ -8,7 +8,6 @@ export const getTokenAllowance = async (
   address: string,
   chainId: number
 ) => {
-  console.log(`[getTokenAllowance] tokenAddress`, tokenAddress)
   let fetchedBalance
   let allowance
   const wallet = await fetchSigner({
@@ -26,8 +25,6 @@ export const getTokenAllowance = async (
     const erc20 = new Contract(tokenAddress, erc20ABI, wallet)
     allowance = await erc20.allowance(address, routerAddress)
   }
-
-  console.log(`allowance`, allowance)
 
   return allowance
 }
