@@ -29,6 +29,8 @@ const DEFAULT_DEPOSIT_QUOTE = {
   routerAddress: '',
 }
 
+const DEFAULT_INPUT_VALUE = { bn: {}, str: {} }
+
 const Deposit = ({
   pool,
   chainId,
@@ -124,10 +126,12 @@ const Deposit = ({
   }, [])
 
   useEffect(() => {
-    const filteredVal = filterAndSerializeInputValues(inputValue, pool, chainId)
+    const filteredVal = pool
+      ? filterAndSerializeInputValues(inputValue, pool, chainId)
+      : DEFAULT_INPUT_VALUE
 
     setFilteredInputValue(filteredVal)
-  }, [inputValue])
+  }, [inputValue, pool])
 
   useEffect(() => {
     calculateMaxDeposits()
@@ -458,6 +462,10 @@ const filterAndSerializeInputValues = (inputValues, pool, chainId) => {
 
 const sumBigNumbers = (pool, filteredInputValue, chainId) => {
   let sum = Zero
+
+  if (!pool) {
+    return sum
+  }
 
   const showTokens = pool.nativeTokens ?? pool.poolTokens
 

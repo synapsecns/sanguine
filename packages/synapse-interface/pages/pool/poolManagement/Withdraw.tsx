@@ -445,7 +445,7 @@ const sumBigNumbers = (
   pool: Token,
   bigNumMap: Record<string, { value: BigNumber; index: number }>,
   chainId: number,
-  withdrawType
+  withdrawType: string
 ) => {
   if (!pool?.poolTokens) {
     return Zero
