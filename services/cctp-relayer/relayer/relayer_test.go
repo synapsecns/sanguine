@@ -59,9 +59,6 @@ func (c *CCTPRelayerSuite) TestHandleCircleRequestSent() {
 }
 
 func (c *CCTPRelayerSuite) TestFetchAttestation() {
-	// setup
-	originChain := c.testBackends[0]
-
 	// create a new relayer
 	mockAPI := api.NewMockCircleAPI()
 	omniRPCClient := omniClient.NewOmnirpcClient(c.testOmnirpc, c.metricsHandler, omniClient.WithCaptureReqRes())
@@ -81,6 +78,7 @@ func (c *CCTPRelayerSuite) TestFetchAttestation() {
 		MessageHash:      testHash,
 		FormattedRequest: []byte{},
 	}
+	originChain := c.testBackends[0]
 	err = relay.FetchAttestation(c.GetTestContext(), uint32(originChain.GetChainID()), &msg)
 	c.Nil(err)
 
@@ -99,20 +97,18 @@ func (c *CCTPRelayerSuite) TestFetchAttestation() {
 }
 
 func (c *CCTPRelayerSuite) TestSubmitReceiveCircleToken() {
-	// setup
-	originChain := c.testBackends[0]
-	destChain := c.testBackends[1]
-
 	// create a new relayer
 	mockAPI := api.NewMockCircleAPI()
 	omniRPCClient := omniClient.NewOmnirpcClient(c.testOmnirpc, c.metricsHandler, omniClient.WithCaptureReqRes())
 	relay, err := relayer.NewCCTPRelayer(c.GetTestContext(), c.GetTestConfig(), c.testStore, c.GetTestScribe(), omniRPCClient, c.metricsHandler, mockAPI)
 	c.Nil(err)
 
-	// submit ReceiveCircleToken()
+	// build test msg
 	testHash := "0x5dba62229dba62f233dca8f3fd14488fdc45d2a86537da2dea7a5683b5e7f622"
+	originChain := c.testBackends[0]
 	originChainID, err := originChain.ChainID(c.GetTestContext())
 	c.Nil(err)
+	destChain := c.testBackends[1]
 	destChainID, err := destChain.ChainID(c.GetTestContext())
 	c.Nil(err)
 	msg := relayTypes.Message{
@@ -123,6 +119,8 @@ func (c *CCTPRelayerSuite) TestSubmitReceiveCircleToken() {
 		MessageHash:      testHash,
 		FormattedRequest: []byte{},
 	}
+
+	// submit ReceiveCircleToken()
 	err = relay.SubmitReceiveCircleToken(c.GetTestContext(), &msg)
 	c.Nil(err)
 
@@ -136,10 +134,6 @@ func (c *CCTPRelayerSuite) TestSubmitReceiveCircleToken() {
 }
 
 func (c *CCTPRelayerSuite) TestBridgeUSDC() {
-	// setup
-	originChain := c.testBackends[0]
-	destChain := c.testBackends[1]
-
 	// create a new relayer
 	mockAPI := api.NewMockCircleAPI()
 	omniRPCClient := omniClient.NewOmnirpcClient(c.testOmnirpc, c.metricsHandler, omniClient.WithCaptureReqRes())
@@ -152,6 +146,8 @@ func (c *CCTPRelayerSuite) TestBridgeUSDC() {
 	go relay.Run(ctx)
 
 	// mint some USDC on send chain
+	originChain := c.testBackends[0]
+	destChain := c.testBackends[1]
 	_, originMockUsdc := c.deployManager.GetMockMintBurnTokenType(c.GetTestContext(), originChain)
 	originChainID, err := originChain.ChainID(c.GetTestContext())
 	c.Nil(err)
