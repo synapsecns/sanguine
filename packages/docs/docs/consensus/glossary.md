@@ -8,6 +8,14 @@ sidebar_position: 5
 When a [fraud report](#fraud-report) is submitted by an [Accusing Guard](#accusing-guard), the report will include the
 purported [fraud](#fraud) which is a false claim signed by the "Accused Agent".
 
+### Accused Guard
+When a [Guard](#guard) is the [Accused Agent](#accused-agent) in a [fraud report](#fraud-report) submitted by another [Accusing Guard](accusing-guard),
+it is referred to as the "Accused Guard".
+
+### Accused Notary
+When a [Notary](#notary) is the [Accused Agent](#accused-agent) in a [fraud report](#fraud-report) submitted by an [Accusing Guard](accusing-guard),
+it is referred to as the "Accused Notary".
+
 ### Accusing Guard
 The [Guard](#guard) who submits a [fraud report](#fraud-report) is defined to be the Accusing Guard.
 
@@ -63,6 +71,13 @@ This snap root is used to prove that a particular Origin state did in fact occur
 This is what the [Attestation](glossary.md/#attestation) might look like:
 
 ![ExampleAttestation](../../static/img/ExampleAttestation.png 'Example Attestation')
+
+### Attestation Fraud Report
+The "Attestation Fraud Report" is how a [Guard](#guard) protects a [remote chain](#remote-chain) when it detects a
+[Fraudulent Attestation](#fraudulent-attestation). Because the [fraud resolution](#fraud-resolution) happens
+on the [Synapse Chain](#synapse-chain) and takes time to propagate to the [remote chain](#remote-chain),
+the [Guard](#guard) sumbits an "Attestation Fraud Report" so that the [remote chain](#remote-chain) disallows
+any message using an [attestation](#attestation) from the [Accused Notary](#accused-notary).
 
 ### Bond
 The cryptocurrency held in escrow in order to disincentivize fraud from one of the [Offchain Agents](#off-chain-agent) is
@@ -159,6 +174,10 @@ The Destination is responsible for the following:
 3.  Passing the Agent Merkle Roots from the Attestations to the local LightManager contract, if deployed on a non-Synapse chain.
 4.  Keeping track of the remote domains GasData submitted by Notaries, that could be later consumed by the local [GasOracle](#gas-oracle-smart-contract) contract.
 
+### Digital Signatures
+Digital Signatures are a fundamental tool used in cryptography that allows for proving that a specific actor signed
+a specific message. More can be read [here](https://en.wikipedia.org/wiki/Digital_signature).
+
 ### Disputed Agent
 If a [Guard](#guard) detects that another agent (either another [Guard](#guard) or a [Notary](#notary)) has signed a fraudulent claim, the accusing [Guard](#guard)
 will first notify the [Victim Chain](#victim-chain) that the fraud happened and that it suspects the guilty agent. Because the [Fraud Resolution](#fraud-resolution)
@@ -217,6 +236,16 @@ If the [Synapse Chain](#synapse-chain) has no record of that attestation, then t
 ### Fraudulent Attestation Report
 A [fraud report](#fraud-report) submitted to the [Synapse Chain](#synapse-chain) by a [Guard](#guard) who
 [detects a fraudulent attestation](#fraudulent-attestation-detection) commited by a [Notary](#notary).
+1. Guard calls submitAttestationReport on remote chain so remote chain puts both in dispute.
+    1. What happens if Guard just griefs remote chain with this?
+    2. Iterate through guard reports by index with getGuardReport (all agents should do this, why not?)
+    3. Check if its a valid attestation on syn chain
+    4. If not, then call verifyAttestationReport on Inbox.
+    5. If the guard is malicious, it gets slashed, otherwise sender just wastes gas.
+    6. Sender should receive guard's bond?
+2. Guard calls verifyAttestation on Inbox.sol
+2. verifyAttestation ends up slashing Notary (or Guard)
+3.
 
 ### Gas Data
 The Gas Data holds important information about the current gas prices of a particular chain. This Gas Data is part of the [State](#state) of

@@ -190,3 +190,59 @@ on the [remote chain](glossary.md/#remote-chain).
 
 Whenever there is a change in the [Agent Root](glossary.md/#agent-root) on a [remote chain](glossary.md/#remote-chain),
 each [Bonded Agent](glossary.md/#bonded-agent) must re-register themselves by providing a proof of inclusion.
+
+## Trust But Verify: Detecting and Reporting Fraud from Bonded Agents
+
+Any time a [Bonded Agent](glossary.md/#bonded-agent) makes a claim to one blockchain about something that happened
+on another blockchain, it must provide a [digital signature](glossary.md/#digital-signature) which binds that
+specific [Bonded Agent](#bonded-agent) to that specific claim. The [digital signature](glossary.md/#digital-signature)
+is thus how the [Bonded Agents](#bonded-agent) receive credit for truthful claims and blame from fraudulent claims.
+If the claim ends
+up being [fraud](glossary.md/#fraud), the [Bonded Agent](glossary.md/#bonded-agent) will be [slashed](glossary.md/#slash)
+and removed from the [Agent Set](glossary.md/#agent-set).
+The purpose of this section is to walk through the flow of each of the possible forms of [fraud](glossary.md/#fraud)
+and how the [Synapse Messaging System](glossary.md/#synapse-messaging-system) protects itself from attackers.
+
+### Fraudulent Attestation
+When a [Guard](#guard) detects a [Fraudulent Attestation](gloassary.md/#fraudulent-attestation), this means that a malicious
+[Notary](gloassary.md/#notary) has posted an [Attestation](gloassary.md/#attestation) to its [remote chain](gloassary.md/#remote-chain) that was never registered
+on the [Synapse Chain](gloassary.md/#synapse-chain).
+
+Below is the steps of what happens starting from the intitial [fraud](glossary.md/#fraud) to the  [fraud resolution](glossary.md/#fraud-resoltuion).
+1. A malicious [Notary](glossary.md/#notary) posts an [Attestation](gloassary.md/#attestation) to its [remote chain](gloassary.md/#remote-chain)
+that was never registered on the [Synapse Chain](gloassary.md/#synapse-chain).
+2. A [Guard](glossary.md/#guard) observes the [Attestation](gloassary.md/#attestation) on the [remote chain](gloassary.md/#remote-chain).
+3. The [Guard](glossary.md/#guard) checks on the [Synapse Chain](gloassary.md/#synapse-chain) whether or not the [Attestation](gloassary.md/#attestation) is valid.
+4. Upon learning from the [Synapse Chain](gloassary.md/#synapse-chain) that it is a [fraudulent attestation](glossary.md/#fraudulent-attestation),
+the [Guard](glossary.md/#guard) submits a transaction to the [Synapse Chain](gloassary.md/#synapse-chain) that provides proof
+of the [fraudulent attestation](glossary.md/#fraudulent-attestation) and this results in the [Synapse Chain](gloassary.md/#synapse-chain)
+[slashing](glossary.md/#slash) the [Accused Notary](glossary.md/#accused-notary) and removing it from the [Agent Set](glossary.md/#agent-set).
+5. While the [remote chain](gloassary.md/#remote-chain) waits to learn about the new [Agent Root](glossary.md/#agent-root),
+it is at risk of having messages executed using the [fraudulent attestation](glossary.md/#fraudulent-attestation). The [Guard](glossary.md/#guard)
+protects the [remote chain](gloassary.md/#remote-chain) by submitting an [Attestation Fraud Report](gloassary.md/#attestation-fraud-report) to
+the [remote chain](gloassary.md/#remote-chain) so it knows to immediately stop trusting that [Accused Notary](glossary.md/accused-notary).
+
+It is very important that the [Guard](#guard) lets the [remote chain](#remote-chain)
+know that it should pause all trust of the suspected [Notary](#notary). For this, the [Guard](#guard) submits an
+"Attestation Fraud Report" to the [remote chain](#remote-chain). The result of this is that the [remote chain](#remote-chain)
+considers both the accused [Notary](#notary) and the accusing [Guard](#guard) in the [Disputed Agent Set](#disputed-agent-set) until
+the [Fraud Resolution](#fraud-resolution) happens on the [Synapse Chain](#synapse-chain).
+Prior to submitting the
+"Attestation Fraud Report" on the [remote chain](#remote-chain), the [Accusing Guard](#accusing-guard) will have checked
+the [Synapse Chain](#synapse-chain) to confirm the [Fraudulent Attestation](#fraudulent-attestation), and it will have
+submitted a proof of the [Fraudulent Attestation](#fraudulent-attestation) to the [Synapse Chain](#synapse-chain).
+This immediately results in the
+[Accused Notary](#accused-notary) getting [slashed](#slash) and removed from the [Agent Set](#agent-set) on the [Synapse Chain](#synapse-chain).
+However, it will take time for this information to propagate to the [remote chain](#remote-chain), which is now
+at risk of having [messages](#message) executed using the [Fraudulent Attestation](#fraudulent-attestation).
+Thus, the [Guard](#guard) will submit the "Attestation Fraud Report" on the [remote chain](#remote-chain) as a way
+to immediately protect that chain from the malicious [Notary](#notary).
+
+
+### Fraudulent Snapshot
+
+### Fraudulent Attestation Fraud Report
+
+### Fraudulent Shapshot Fraud Report
+
+### Fraudulent Receipt
