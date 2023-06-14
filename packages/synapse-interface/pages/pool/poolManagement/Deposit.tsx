@@ -68,46 +68,11 @@ const Deposit = ({
     return sumBigNumbers(pool, filteredInputValue, chainId)
   }, [pool, filteredInputValue, chainId])
 
-  // const transformCalculateAddLiquidityInput = (
-  //   chainId: number,
-  //   pool: Token,
-  //   filteredInputValue?: Record<string, BigNumber>
-  // ): Record<string, BigNumber> => {
-  //   const wethIndex = _.findIndex(
-  //     pool.poolTokens,
-  //     (t) => t.symbol == WETH.symbol
-  //   )
-  //   const poolHasWeth: boolean = wethIndex > 0
-  //   const nativeEthAddress = '0x0000000000000000000000000000000000000000'
-  //   const wethAddress = poolHasWeth
-  //     ? pool.poolTokens[wethIndex].addresses[chainId]
-  //     : null
-
-  //   function replaceKey(
-  //     obj: Record<string, BigNumber>,
-  //     oldKey: string,
-  //     newKey: string
-  //   ) {
-  //     if (obj.hasOwnProperty(oldKey)) {
-  //       obj[newKey] = obj[oldKey]
-  //       delete obj[oldKey]
-  //     }
-  //     return obj
-  //   }
-
-  //   const transformedInput = poolHasWeth
-  //     ? replaceKey(filteredInputValue, nativeEthAddress, wethAddress)
-  //     : filteredInputValue
-
-  //   return transformedInput
-  // }
-
   const calculateMaxDeposits = async () => {
     try {
       if (poolUserData == null || address == null) {
         return
       }
-      // const inputSum = sumBigNumbers(pool, filteredInputValue, chainId)
       const { totalLocked, virtualPrice } = poolData
 
       if (totalLocked.gt(0) && inputSum.gt(0)) {
