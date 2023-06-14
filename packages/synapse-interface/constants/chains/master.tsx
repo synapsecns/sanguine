@@ -62,7 +62,7 @@ export const ARBITRUM: Chain = {
   layer: 2,
   codeName: 'arbitrum',
   blockTime: 5000,
-  rpc: 'https://arbitrum.blockpi.network/v1/rpc/public',
+  rpc: 'https://rpc.ankr.com/arbitrum',
   nativeCurrency: { name: 'Ethereum', symbol: 'ETH', decimals: 18 },
   explorerUrl: 'https://arbiscan.io',
   color: 'gray',
