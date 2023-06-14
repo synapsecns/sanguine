@@ -167,6 +167,42 @@ func (s Store) GetSnapshotRootsInNonceRange(ctx context.Context, chainID uint32,
 	return snapshotRoots, nil
 }
 
+func (s Store) GetAllStates(ctx context.Context) ([]agentsTypes.State, error) {
+	var states []State
+
+	dbTx := s.DB().WithContext(ctx).
+		Model(&states).
+		Scan(&states)
+	if dbTx.Error != nil {
+		return nil, fmt.Errorf("failed to get all states: %w", dbTx.Error)
+	}
+
+	var receivedStates []agentsTypes.State
+	for _, state := range states {
+		gasData := agentsTypes.NewGasData(
+			state.GDGasPrice,
+			state.GDDataPrice,
+			state.GDExecBuffer,
+			state.GDAmortAttCost,
+			state.GDEtherPrice,
+			state.GDMarkup,
+		)
+
+		receivedState := agentsTypes.NewState(
+			common.HexToHash(state.Root),
+			state.ChainID,
+			state.Nonce,
+			big.NewInt(int64(state.OriginBlockNumber)),
+			big.NewInt(int64(state.OriginTimestamp)),
+			gasData,
+		)
+
+		receivedStates = append(receivedStates, receivedState)
+	}
+
+	return receivedStates, nil
+}
+
 // DBStateToState converts a DBState to a State.
 // nolint:cyclop
 func DBStateToState(dbState types.DBState) State {

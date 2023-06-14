@@ -123,20 +123,28 @@ func (s Store) GetEarliestSnapshotFromAttestation(ctx context.Context, attestati
 	return (*[32]byte)(&snapshotRoot), nil
 }
 
-// GetAttestationCount gets the number of attestations that have fields matching the attestation mask.
-func (s Store) GetAttestationCount(ctx context.Context, attestationMask types.DBAttestation) (uint64, error) {
-	var count int64
+// GetAllAttestations gets all attestations.
+func (s Store) GetAllAttestations(ctx context.Context) ([]agentsTypes.Attestation, error) {
+	var dbAttestations []Attestation
 
-	dbAttestationMask := DBAttestationToAttestation(attestationMask)
 	dbTx := s.DB().WithContext(ctx).
-		Model(&Attestation{}).
-		Where(&dbAttestationMask).
-		Count(&count)
+		Find(&dbAttestations)
 	if dbTx.Error != nil {
-		return 0, fmt.Errorf("failed to get attestation count: %w", dbTx.Error)
+		return nil, fmt.Errorf("failed to get all attestations: %w", dbTx.Error)
 	}
 
-	return uint64(count), nil
+	attestations := make([]agentsTypes.Attestation, len(dbAttestations))
+	for i, dbAttestation := range dbAttestations {
+		attestations[i] = agentsTypes.NewAttestation(
+			common.HexToHash(dbAttestation.SnapshotRoot),
+			common.HexToHash(dbAttestation.DataHash),
+			dbAttestation.AttestationNonce,
+			big.NewInt(int64(dbAttestation.SummitBlockNumber)),
+			big.NewInt(int64(dbAttestation.SummitTimestamp)),
+		)
+	}
+
+	return attestations, nil
 }
 
 // DBAttestationToAttestation converts a DBAttestation to an Attestation.

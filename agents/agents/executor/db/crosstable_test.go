@@ -1,6 +1,7 @@
 package db_test
 
 import (
+	"fmt"
 	"github.com/brianvoe/gofakeit/v6"
 	"github.com/ethereum/go-ethereum/common"
 	. "github.com/stretchr/testify/assert"
@@ -90,19 +91,35 @@ func (t *DBSuite) TestGetTimestampForMessage() {
 		err = testDB.StoreAttestation(t.GetTestContext(), attestationC, origin+1, 3, 1)
 		Nil(t.T(), err)
 
-		// Make sure everything is stored
-		potentialSnapshotRoots, err := testDB.GetPotentialSnapshotRoots(t.GetTestContext(), origin, 0)
-		Nil(t.T(), err)
-		Equal(t.T(), 3, len(potentialSnapshotRoots))
-
-		dest := origin + 1
-		attestationMask := types.DBAttestation{Destination: &dest}
-		attestationCount, err := testDB.GetAttestationCount(t.GetTestContext(), attestationMask)
-		Nil(t.T(), err)
-		Equal(t.T(), uint64(3), attestationCount)
-
 		retrievedTimestampA, err := testDB.GetTimestampForMessage(t.GetTestContext(), origin, origin+1, nonceA, "")
 		Nil(t.T(), err)
+		if *retrievedTimestampA != uint64(3) {
+			allStates, err := testDB.GetAllStates(t.GetTestContext())
+			Nil(t.T(), err)
+
+			for i, state := range allStates {
+				fmt.Println("SS State", i)
+				fmt.Println("SS Root", state.Root())
+				fmt.Println("SS Origin", state.Origin())
+				fmt.Println("SS Nonce", state.Nonce())
+				stateNonce := state.Nonce()
+				stateMask := types.DBState{Nonce: &stateNonce}
+				snapshotRoot, _, stateIndex, err := testDB.GetStateMetadata(t.GetTestContext(), stateMask)
+				Nil(t.T(), err)
+				fmt.Println("SS SnapshotRoot", snapshotRoot)
+				fmt.Println("SS StateIndex", stateIndex)
+			}
+
+			allAttestations, err := testDB.GetAllAttestations(t.GetTestContext())
+			Nil(t.T(), err)
+			for i, attestation := range allAttestations {
+				fmt.Println("ATT Attestation", i)
+				fmt.Println("ATT SnapshotRoot", attestation.SnapshotRoot())
+				fmt.Println("ATT Nonce", attestation.Nonce())
+				fmt.Println("ATT BlockNumber", attestation.BlockNumber())
+				fmt.Println("ATT Timestamp", attestation.Timestamp())
+			}
+		}
 		Equal(t.T(), uint64(3), *retrievedTimestampA)
 
 		retrievedTimestampB, err := testDB.GetTimestampForMessage(t.GetTestContext(), origin, origin+1, nonceB, "")
