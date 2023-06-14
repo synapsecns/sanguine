@@ -12,7 +12,7 @@ on:
 jobs:
   coverage:
     name: Foundry Coverage
-    runs-on: ubuntu-latest-16-cores
+    runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
         with:
@@ -48,7 +48,7 @@ jobs:
           attempt_delay: 30000
 
   snapshot:
-    runs-on: ubuntu-latest-16-cores
+    runs-on: ubuntu-latest
     name: Foundry Gas Snapshot
     steps:
       - uses: actions/checkout@v3
