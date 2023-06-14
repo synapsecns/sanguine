@@ -81,23 +81,33 @@ abstract contract DeployMessaging003BaseScript is DeployerUtils {
 
     /// @dev Deploys Messaging contracts, transfer ownership and sanity check the new deployments.
     /// Will save the deployments, if script is being broadcasted.
-    /// TODO: predict the deployment addresses to deploy & initialize in one tx
     function _deploy(bool _isBroadcasted) internal {
         startBroadcast(_isBroadcasted);
         globalConfig = loadGlobalDeployConfig("Messaging003");
-        // Deploy contracts that require further initialization
-        agentManager = deployContract(agentManagerName(), _deployAgentManager);
-        statementInbox = deployContract(statementInboxName(), _deployStatementInbox);
-        // Deploy and initialize other contracts
-        destination = deployContract(DESTINATION, _deployInitializeDestination);
-        gasOracle = deployContract(GAS_ORACLE, _deployInitializeGasOracle);
-        origin = deployContract(ORIGIN, _deployInitializeOrigin);
+        // Predict deployments
+        agentManager = predictFactoryDeployment(agentManagerName());
+        statementInbox = predictFactoryDeployment(statementInboxName());
+        destination = predictFactoryDeployment(DESTINATION);
+        gasOracle = predictFactoryDeployment(GAS_ORACLE);
+        origin = predictFactoryDeployment(ORIGIN);
         if (isSynapseChain()) {
-            summit = deployContract(SUMMIT, _deployInitializeSummit);
+            summit = predictFactoryDeployment(SUMMIT);
         }
-        // Initialize previously deployed contracts
-        _initializeAgentManager();
-        _initializeStatementInbox();
+        // Deploy and initialize contracts
+        require(
+            agentManager == deployContract(agentManagerName(), _deployInitializeAgentManager),
+            "AgentManager: wrong address"
+        );
+        require(
+            statementInbox == deployContract(statementInboxName(), _deployInitializeStatementInbox),
+            "StatementInbox: wrong address"
+        );
+        require(destination == deployContract(DESTINATION, _deployInitializeDestination), "Destination: wrong address");
+        require(gasOracle == deployContract(GAS_ORACLE, _deployInitializeGasOracle), "GasOracle: wrong address");
+        require(origin == deployContract(ORIGIN, _deployInitializeOrigin), "Origin: wrong address");
+        if (isSynapseChain()) {
+            require(summit == deployContract(SUMMIT, _deployInitializeSummit), "Summit: wrong address");
+        }
         // Add agents to BondingManager
         _addAgents();
         // Transfer ownership of contracts
@@ -108,17 +118,13 @@ abstract contract DeployMessaging003BaseScript is DeployerUtils {
         _checkAgents();
     }
 
-    /// @dev Deploys BondingManager or LightManager
-    function _deployAgentManager() internal virtual returns (address);
+    /// @dev Deploys and initializes BondingManager or LightManager
+    /// Note: requires Origin, Destination, StatementInbox (and Summit for BondingManager) addresses to be set
+    function _deployInitializeAgentManager() internal virtual returns (address);
 
-    /// @dev Initializes BondingManager or LightManager
-    function _initializeAgentManager() internal virtual;
-
-    /// @dev Deploys Inbox or LightInbox
-    function _deployStatementInbox() internal virtual returns (address);
-
-    /// @dev Initializes Inbox or LightInbox
-    function _initializeStatementInbox() internal virtual;
+    /// @dev Deploys and initializes Inbox or LightInbox
+    /// Note: requires AgentManager, Origin, Destination (and Summit for Inbox) addresses to be set
+    function _deployInitializeStatementInbox() internal virtual returns (address);
 
     /// @dev Adds agents to BondingManager (no-op for LightManager)
     function _addAgents() internal virtual;
@@ -126,44 +132,46 @@ abstract contract DeployMessaging003BaseScript is DeployerUtils {
     // ═══════════════════════════════════════ DEPLOY AND INITIALIZE ROUTINE ═══════════════════════════════════════════
 
     /// @dev Deploys and initializes Destination.
-    /// Note: requires AgentManager and StatementInbox to have been deployed.
+    /// Note: requires AgentManager and StatementInbox addresses to have been set.
+    /// Note: requires AgentManager to have been deployed.
     function _deployInitializeDestination() internal returns (address deployment) {
         // new Destination(domain, agentManager, statementInbox)
-        require(agentManager != address(0), "Agent Manager not deployed");
-        require(statementInbox != address(0), "Statement Inbox not deployed");
+        require(agentManager != address(0), "Agent Manager not set");
+        require(statementInbox != address(0), "Statement Inbox not set");
+        require(agentManager.code.length > 0, "Agent Manager not deployed");
         bytes memory constructorArgs = abi.encode(localDomain, agentManager, statementInbox);
         deployment = factoryDeploy(DESTINATION, type(Destination).creationCode, constructorArgs);
         Destination(deployment).initialize(_getInitialAgentRoot());
     }
 
     /// @dev Deploys and initializes GasOracle.
-    /// Note: requires Destination to have been deployed.
+    /// Note: requires Destination address to have been set.
     function _deployInitializeGasOracle() internal returns (address deployment) {
         // new GasOracle(domain, destination)
-        require(destination != address(0), "Destination not deployed");
+        require(destination != address(0), "Destination not set");
         bytes memory constructorArgs = abi.encode(localDomain, destination);
         deployment = factoryDeploy(GAS_ORACLE, type(GasOracle).creationCode, constructorArgs);
         GasOracle(deployment).initialize();
     }
 
     /// @dev Deploys and initializes Origin.
-    /// Note: requires AgentManager, StatementInbox and GasOracle to have been deployed.
+    /// Note: requires AgentManager, StatementInbox and GasOracle addresses to have been set.
     function _deployInitializeOrigin() internal returns (address deployment) {
         // new Origin(domain, agentManager, statementInbox, gasOracle)
-        require(agentManager != address(0), "Agent Manager not deployed");
-        require(statementInbox != address(0), "Statement Inbox not deployed");
-        require(gasOracle != address(0), "Gas Oracle not deployed");
+        require(agentManager != address(0), "Agent Manager not set");
+        require(statementInbox != address(0), "Statement Inbox not set");
+        require(gasOracle != address(0), "Gas Oracle not set");
         bytes memory constructorArgs = abi.encode(localDomain, agentManager, statementInbox, gasOracle);
         deployment = factoryDeploy(ORIGIN, type(Origin).creationCode, constructorArgs);
         Origin(deployment).initialize();
     }
 
-    /// @dev Deploys and initializes Origin.
-    /// Note: requires AgentManager and StatementInbox to have been deployed.
+    /// @dev Deploys and initializes Summit.
+    /// Note: requires AgentManager and StatementInbox addresses to have been set.
     function _deployInitializeSummit() internal returns (address deployment) {
         // new Summit(domain, agentManager, statementInbox)
-        require(agentManager != address(0), "Agent Manager not deployed");
-        require(statementInbox != address(0), "Statement Inbox not deployed");
+        require(agentManager != address(0), "Agent Manager not set");
+        require(statementInbox != address(0), "Statement Inbox not set");
         bytes memory constructorArgs = abi.encode(localDomain, agentManager, statementInbox);
         deployment = factoryDeploy(SUMMIT, type(Summit).creationCode, constructorArgs);
         Summit(deployment).initialize();

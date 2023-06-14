@@ -8,6 +8,8 @@ import {Address} from "@openzeppelin/contracts/utils/Address.sol";
 
 interface ICreate3Factory {
     function deploy(bytes32 salt, bytes memory creationCode) external payable returns (address deployed);
+
+    function getDeployed(address deployer, bytes32 salt) external view returns (address deployed);
 }
 
 // solhint-disable no-empty-blocks
@@ -82,10 +84,20 @@ contract DeployerUtils is Script {
     {
         require(Address.isContract(address(FACTORY)), "Factory not deployed");
         deployment = FACTORY.deploy(
-            keccak256(bytes.concat(deploymentSalt, bytes(contractName))), // salt
+            getDeploymentSalt(contractName), // salt
             abi.encodePacked(creationCode, constructorArgs) // creation code with appended constructor args
         );
         require(deployment != address(0), "Factory deployment failed");
+    }
+
+    /// @notice Gets the deployment salt for a given contract.
+    function getDeploymentSalt(string memory contractName) internal view returns (bytes32) {
+        return keccak256(bytes.concat(deploymentSalt, bytes(contractName)));
+    }
+
+    /// @notice Predicts the deployment address for a contract.
+    function predictFactoryDeployment(string memory contractName) internal view returns (address) {
+        return FACTORY.getDeployed(broadcasterAddress, getDeploymentSalt(contractName));
     }
 
     /// @notice Deploys the contract and saves the deployment artifact
