@@ -119,6 +119,7 @@ func (c *CCTPRelayerSuite) TestSubmitReceiveCircleToken() {
 	}
 
 	// submit ReceiveCircleToken()
+	// nolint: wrapcheck
 	err = relay.SubmitReceiveCircleToken(c.GetTestContext(), &msg)
 	c.Nil(err)
 
