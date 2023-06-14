@@ -22,7 +22,6 @@ export const POOLS_PATH = '/pools'
 export const POOL_PATH = '/pool'
 export const BRIDGE_PATH = '/'
 export const CONTRACTS_PATH = '/contracts'
-export const PORTFOLIO_PATH = '/portfolio'
 export const STATISTICS_PATH = '/statistics'
 export const LANDING_PATH = '/landing'
 export const TERMS_OF_SERVICE_PATH =
