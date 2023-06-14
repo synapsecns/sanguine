@@ -236,10 +236,6 @@ const Deposit = ({
       },
     }
 
-    // if (sumBigNumbers(pool, filteredInputValue, chainId).eq(0)) {
-    //   properties.disabled = true
-    // }
-
     if (!isFromBalanceEnough) {
       properties.label = `Insufficient Balance`
       properties.disabled = true
