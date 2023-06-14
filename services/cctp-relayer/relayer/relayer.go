@@ -160,7 +160,11 @@ func (c CCTPRelayer) Run(ctx context.Context) error {
 		})
 
 		g.Go(func() error {
-			return c.txSubmitter.Start(ctx)
+			err := c.txSubmitter.Start(ctx)
+			if err != nil {
+				err = fmt.Errorf("could not start tx submitter: %w", err)
+			}
+			return err
 		})
 	}
 
@@ -351,7 +355,7 @@ func (c CCTPRelayer) handleCircleRequestSent(parentCtx context.Context, txhash c
 		msg.State = relayTypes.Pending
 		err = c.db.StoreMessage(ctx, msg)
 		if err != nil {
-			return err
+			return fmt.Errorf("could not store pending message: %w", err)
 		}
 
 		// Queue the message for attestation.
@@ -361,6 +365,8 @@ func (c CCTPRelayer) handleCircleRequestSent(parentCtx context.Context, txhash c
 }
 
 // Completes a USDC bridging sequence by calling ReceiveCircleToken() on the destination chain.
+//
+//nolint:errcheck
 func (c CCTPRelayer) processBridgeEvents(ctx context.Context, chainID uint32) (err error) {
 	for {
 		select {
@@ -401,7 +407,7 @@ func (c CCTPRelayer) fetchAttestation(parentCtx context.Context, chainID uint32,
 	msg.State = relayTypes.Attested
 	err = c.db.StoreMessage(ctx, *msg)
 	if err != nil {
-		return err
+		return fmt.Errorf("could not store attested message: %w", err)
 	}
 
 	// Send the completed message back through the send channel.
@@ -426,11 +432,11 @@ func (c CCTPRelayer) submitReceiveCircleToken(parentCtx context.Context, msg *re
 		contract := c.boundSynapseCCTPs[msg.DestChainID]
 		tx, err = contract.ReceiveCircleToken(transactor, msg.Message, msg.Attestation, msg.RequestVersion, msg.FormattedRequest)
 		txHash = tx.Hash().String()
-		return
+		return tx, err
 	})
 	if err != nil {
 		err = fmt.Errorf("could not submit transaction: %w", err)
-		return
+		return err
 	}
 
 	// Store the completed message.
@@ -438,7 +444,7 @@ func (c CCTPRelayer) submitReceiveCircleToken(parentCtx context.Context, msg *re
 	msg.DestTxHash = txHash
 	err = c.db.StoreMessage(ctx, *msg)
 	if err != nil {
-		return err
+		return fmt.Errorf("could not store completed message: %w", err)
 	}
-	return
+	return nil
 }
