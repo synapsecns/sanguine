@@ -75,7 +75,7 @@ func (t *DBSuite) setupMysqlDB() {
 	}
 	// sets up the conn string to the default database
 	connString := t.connString(os.Getenv("MYSQL_DATABASE"))
-	// sets up the myqsl db
+	// sets up the mysql db
 	testDB, err := sql.Open("mysql", connString)
 	Nil(t.T(), err)
 	// close the db once the connection is done
@@ -100,18 +100,23 @@ func (t *DBSuite) setupMysqlDB() {
 	t.dbs = append(t.dbs, mysqlStore)
 }
 
-func (t *DBSuite) RunOnAllDBs(testFunc func(testDB db.ExecutorDB, dbIndex int)) {
+func (t *DBSuite) RunOnAllDBs(testFunc func(testDB db.ExecutorDB, tablePrefix string)) {
 	t.T().Helper()
 
 	wg := sync.WaitGroup{}
 	for i, testDB := range t.dbs {
+		var tablePrefix string
 		wg.Add(1)
 		// capture the value
 		i := i
-		go func(testDB db.ExecutorDB) {
+		// Mysql Check
+		if i == 1 {
+			tablePrefix = t.mysqlTablePrefix
+		}
+		go func(testDB db.ExecutorDB, tablePrefix string) {
 			defer wg.Done()
-			testFunc(testDB, i)
-		}(testDB)
+			testFunc(testDB, tablePrefix)
+		}(testDB, tablePrefix)
 	}
 	wg.Wait()
 }

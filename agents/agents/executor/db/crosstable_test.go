@@ -13,13 +13,7 @@ import (
 
 // TODO: More edge cases for this test.
 func (t *DBSuite) TestGetTimestampForMessage() {
-	t.RunOnAllDBs(func(testDB db.ExecutorDB, dbIndex int) {
-		// If we are using MySQL, we need to set the table prefix.
-		var tablePrefix string
-		if dbIndex == 1 {
-			tablePrefix = t.mysqlTablePrefix
-		}
-
+	t.RunOnAllDBs(func(testDB db.ExecutorDB, tablePrefix string) {
 		origin := gofakeit.Uint32()
 		nonceA := uint32(5)
 		nonceB := uint32(10)
@@ -140,13 +134,7 @@ func (t *DBSuite) TestGetTimestampForMessage() {
 
 // TODO: Add more edge cases.
 func (t *DBSuite) TestGetEarliestStateInRange() {
-	t.RunOnAllDBs(func(testDB db.ExecutorDB, dbIndex int) {
-		// If we are using MySQL, we need to set the table prefix.
-		var tablePrefix string
-		if dbIndex == 1 {
-			tablePrefix = t.mysqlTablePrefix
-		}
-
+	t.RunOnAllDBs(func(testDB db.ExecutorDB, tablePrefix string) {
 		origin := gofakeit.Uint32()
 		var snapshotRoots, agentRoots []common.Hash
 		for i := uint32(1); i <= 6; i++ {
