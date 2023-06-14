@@ -17,16 +17,17 @@ contract DeployMessaging003SynChainScript is DeployMessaging003BaseScript {
     using stdJson for string;
     using Strings for uint256;
 
-    /// @dev Deploys BondingManager or LightManager
-    function _deployAgentManager() internal override returns (address) {
+    /// @dev Deploys and initializes BondingManager or LightManager
+    /// Note: requires Origin, Destination, StatementInbox and Summit addresses to be set
+    function _deployInitializeAgentManager() internal override returns (address deployment) {
         // new BondingManager(domain)
         bytes memory constructorArgs = abi.encode(localDomain);
-        return factoryDeploy(agentManagerName(), type(BondingManager).creationCode, constructorArgs);
-    }
-
-    /// @dev Initializes BondingManager or LightManager
-    function _initializeAgentManager() internal override {
-        BondingManager(agentManager).initialize({
+        deployment = factoryDeploy(agentManagerName(), type(BondingManager).creationCode, constructorArgs);
+        require(origin != address(0), "Origin not set");
+        require(destination != address(0), "Destination not set");
+        require(statementInbox != address(0), "Statement Inbox not set");
+        require(summit != address(0), "Summit not set");
+        BondingManager(deployment).initialize({
             origin_: origin,
             destination_: destination,
             inbox_: statementInbox,
@@ -34,15 +35,16 @@ contract DeployMessaging003SynChainScript is DeployMessaging003BaseScript {
         });
     }
 
-    /// @dev Deploys Inbox or LightInbox
-    function _deployStatementInbox() internal override returns (address) {
+    /// @dev Deploys and initializes Inbox or LightInbox
+    /// Note: requires AgentManager, Origin, Destination and Summit addresses to be set
+    function _deployInitializeStatementInbox() internal override returns (address deployment) {
         // new Inbox(domain)
         bytes memory constructorArgs = abi.encode(localDomain);
-        return factoryDeploy(statementInboxName(), type(Inbox).creationCode, constructorArgs);
-    }
-
-    /// @dev Initializes Inbox or LightInbox
-    function _initializeStatementInbox() internal override {
+        deployment = factoryDeploy(statementInboxName(), type(Inbox).creationCode, constructorArgs);
+        require(agentManager != address(0), "Agent Manager not set");
+        require(origin != address(0), "Origin not set");
+        require(destination != address(0), "Destination not set");
+        require(summit != address(0), "Summit not set");
         Inbox(statementInbox).initialize({
             agentManager_: agentManager,
             origin_: origin,
@@ -67,11 +69,27 @@ contract DeployMessaging003SynChainScript is DeployMessaging003BaseScript {
                 console.log("   %s on domain [%s]", agent, domain);
             }
         }
+        string memory proofsKey = "proofs";
+        string memory proofsJson = "";
+        for (uint256 i = 0; i < domains.length; ++i) {
+            uint256 domain = domains[i];
+            // Key is ".agents.0: for Guards, ".agents.10" for Optimism Notaries, etc
+            address[] memory agents = globalConfig.readAddressArray(string.concat(".agents.", domain.toString()));
+            string[] memory agentsStr = globalConfig.readStringArray(string.concat(".agents.", domain.toString()));
+            for (uint256 j = 0; j < agents.length; ++j) {
+                address agent = agents[j];
+                // Get a proof of inclusion
+                bytes32[] memory proof = BondingManager(agentManager).getProof(agent);
+                proofsJson = proofsKey.serialize(agentsStr[j], proof);
+            }
+        }
         // Save resulting agent root for deployments on other chains
         bytes32 agentRoot = BondingManager(agentManager).agentRoot();
         string memory agentRootConfig = "agentRoot";
-        agentRootConfig = agentRootConfig.serialize("initialAgentRoot", agentRoot);
-        agentRootConfig.write(globalDeployConfigPath("Messaging003AgentRoot"));
+        agentRootConfig.serialize("initialAgentRoot", agentRoot);
+        agentRootConfig = agentRootConfig.serialize("proofs", proofsJson);
+        string memory path = globalDeployConfigPath("Messaging003AgentRoot");
+        agentRootConfig.write(path);
     }
 
     /// @dev Checks that all agents have been added correctly to BondingManager

@@ -17,28 +17,28 @@ contract DeployMessaging003LightChainScript is DeployMessaging003BaseScript {
     using stdJson for string;
     using Strings for uint256;
 
-    /// @dev Deploys BondingManager or LightManager
-    function _deployAgentManager() internal override returns (address) {
+    /// @dev Deploys and initializes BondingManager or LightManager
+    /// Note: requires Origin, Destination and StatementInbox addresses to be set
+    function _deployInitializeAgentManager() internal override returns (address deployment) {
         // new LightManager(domain)
         bytes memory constructorArgs = abi.encode(localDomain);
-        return factoryDeploy(agentManagerName(), type(LightManager).creationCode, constructorArgs);
+        deployment = factoryDeploy(agentManagerName(), type(LightManager).creationCode, constructorArgs);
+        require(origin != address(0), "Origin not set");
+        require(destination != address(0), "Destination not set");
+        require(statementInbox != address(0), "Statement Inbox not set");
+        LightManager(deployment).initialize({origin_: origin, destination_: destination, inbox_: statementInbox});
     }
 
-    /// @dev Initializes BondingManager or LightManager
-    function _initializeAgentManager() internal override {
-        LightManager(agentManager).initialize({origin_: origin, destination_: destination, inbox_: statementInbox});
-    }
-
-    /// @dev Deploys Inbox or LightInbox
-    function _deployStatementInbox() internal override returns (address) {
+    /// @dev Deploys and initializes Inbox or LightInbox
+    /// Note: requires AgentManager, Origin and Destination addresses to be set
+    function _deployInitializeStatementInbox() internal override returns (address deployment) {
         // new LightInbox(domain)
         bytes memory constructorArgs = abi.encode(localDomain);
-        return factoryDeploy(statementInboxName(), type(LightInbox).creationCode, constructorArgs);
-    }
-
-    /// @dev Initializes Inbox or LightInbox
-    function _initializeStatementInbox() internal override {
-        LightInbox(statementInbox).initialize({agentManager_: agentManager, origin_: origin, destination_: destination});
+        deployment = factoryDeploy(statementInboxName(), type(LightInbox).creationCode, constructorArgs);
+        require(agentManager != address(0), "Agent Manager not set");
+        require(origin != address(0), "Origin not set");
+        require(destination != address(0), "Destination not set");
+        LightInbox(deployment).initialize({agentManager_: agentManager, origin_: origin, destination_: destination});
     }
 
     /// @dev Adds agents to BondingManager (no-op for LightManager)
@@ -49,7 +49,8 @@ contract DeployMessaging003LightChainScript is DeployMessaging003BaseScript {
     /// @dev Checks that all agents have been added correctly to BondingManager
     /// or that they could be added to LightManager.
     function _checkAgents() internal override {
-        console.log("Checking Agents");
+        console.log("Adding Agents (simulation)");
+        string memory agentRootConfig = loadGlobalDeployConfig("Messaging003AgentRoot");
         uint256[] memory domains = globalConfig.readUintArray(".domains");
         // Agent indexes start from 1
         uint256 expectedIndex = 1;
@@ -57,8 +58,14 @@ contract DeployMessaging003LightChainScript is DeployMessaging003BaseScript {
             uint256 domain = domains[i];
             // Key is ".agents.0: for Guards, ".agents.10" for Optimism Notaries, etc
             address[] memory agents = globalConfig.readAddressArray(string.concat(".agents.", domain.toString()));
+            string[] memory agentsStr = globalConfig.readStringArray(string.concat(".agents.", domain.toString()));
             for (uint256 j = 0; j < agents.length; ++j) {
                 address agent = agents[j];
+                bytes32[] memory proof = agentRootConfig.readBytes32Array(string.concat(".proofs.", agentsStr[j]));
+                AgentStatus memory status =
+                    AgentStatus({flag: AgentFlag.Active, domain: uint32(domain), index: uint32(expectedIndex)});
+                console.log("   [index: %s] [address: %s] [domain: %s]", status.index, agent, status.domain);
+                LightManager(agentManager).updateAgentStatus(agent, status, proof);
                 ++expectedIndex;
             }
         }
