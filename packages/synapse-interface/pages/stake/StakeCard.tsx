@@ -60,7 +60,7 @@ const StakeCard = ({ address, chainId, pool }: StakeCardProps) => {
   })
 
   useEffect(() => {
-    if (!address || !chainId || stakingPoolId == null) return
+    if (!address || !chainId || stakingPoolId === null) return
     getStakedBalance(address as Address, chainId, stakingPoolId)
       .then((data) => {
         setUserStakeData(data)
