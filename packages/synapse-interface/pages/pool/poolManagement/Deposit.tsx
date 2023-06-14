@@ -9,21 +9,17 @@ import PriceImpactDisplay from '../components/PriceImpactDisplay'
 import { useSynapseContext } from '@/utils/providers/SynapseProvider'
 import { TransactionButton } from '@/components/buttons/TransactionButton'
 import { Zero } from '@ethersproject/constants'
-import { PoolToken, Token } from '@types'
+import { Token } from '@types'
 import { useState, useEffect, useMemo } from 'react'
 import { BigNumber } from '@ethersproject/bignumber'
-import { calculateExchangeRate } from '@utils/calculateExchangeRate'
 import { getTokenAllowance } from '@/utils/actions/getTokenAllowance'
 import { approve, deposit } from '@/utils/actions/approveAndDeposit'
 import { QUOTE_POLLING_INTERVAL } from '@/constants/bridge' // TODO CHANGE
 import { PoolData, PoolUserData } from '@types'
 import LoadingTokenInput from '@components/loading/LoadingTokenInput'
-import { fetchBalance, fetchToken } from '@wagmi/core'
+import { fetchBalance } from '@wagmi/core'
 import { formatBNToString } from '@/utils/bignumber/format'
-import {
-  getSwapDepositContractFields,
-  useSwapDepositContract,
-} from '@/utils/hooks/useSwapDepositContract'
+import { getSwapDepositContractFields } from '@/utils/hooks/useSwapDepositContract'
 import { calculatePriceImpact } from '@/utils/priceImpact'
 
 const DEFAULT_DEPOSIT_QUOTE = {
