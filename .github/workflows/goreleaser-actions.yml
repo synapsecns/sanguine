@@ -123,7 +123,7 @@ jobs:
       packages: write
       # only required for private repos
       actions: read
-      contents: read
+      contents: write
     strategy:
       matrix:
         # list of packages, if you update this update changes as well
