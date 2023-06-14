@@ -9,6 +9,12 @@ jobs:
     runs-on: ubuntu-latest
     outputs:
       goreleaser-image: ${{ steps.name-export.outputs.TAG_NAME }}
+    permissions:
+      # always required
+      packages: write
+      # only required for private repos
+      actions: read
+      contents: read
     steps:
       - name: Git Checkout
         uses: actions/checkout@v3
@@ -51,7 +57,7 @@ jobs:
         with:
           registry: ghcr.io
           username: ${{ github.actor }}
-          password: ${{ secrets.GHCR_DOCKER }}
+          password: ${{ secrets.GITHUB_TOKEN }}
 
       # we do this so we can use it in subseuqnet steps
       - name: Export latest tag name
@@ -112,6 +118,12 @@ jobs:
     runs-on: ubuntu-latest
     needs: [build-goreleaser,changes]
     if: ${{ needs.changes.outputs.package_count > 0 }}
+    permissions:
+      # always required
+      packages: write
+      # only required for private repos
+      actions: read
+      contents: write
     strategy:
       matrix:
         # list of packages, if you update this update changes as well
@@ -170,7 +182,7 @@ jobs:
         with:
           registry: ghcr.io
           username: ${{ github.actor }}
-          password: ${{ secrets.GHCR_DOCKER }}
+          password: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Run GoReleaser (Release)
         if: steps.branch-name.outputs.is_default == 'true'

@@ -7,6 +7,7 @@ import { WETH } from './swapMaster'
 import { SYN_ETH_SUSHI_TOKEN } from './sushiMaster'
 import { Token } from '@/utils/types'
 import _ from 'lodash'
+
 // TODO change this to token by key
 interface TokensByChain {
   [cID: string]: Token[]
