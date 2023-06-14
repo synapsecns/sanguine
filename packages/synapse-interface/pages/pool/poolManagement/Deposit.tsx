@@ -168,7 +168,7 @@ const Deposit = ({
 
   useEffect(() => {
     calculateMaxDeposits()
-  }, [inputValue, pool, chainId, address])
+  }, [inputValue, filteredInputValue, pool, chainId, address])
 
   useEffect(() => {
     if (depositQuote.priceImpact && !depositQuote.priceImpact?.eq(Zero)) {
