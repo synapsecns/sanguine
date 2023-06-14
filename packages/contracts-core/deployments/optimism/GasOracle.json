@@ -1,0 +1,396 @@
+{
+  "address": "0x58D11431bf750CF2EC5D328cA9309B9B86ee6993",
+  "args": "0x000000000000000000000000000000000000000000000000000000000000000a0000000000000000000000009fee2fc46550752d9a16bef631145c025df48177",
+  "abi": [
+    {
+      "inputs": [
+        {
+          "internalType": "uint32",
+          "name": "domain",
+          "type": "uint32"
+        },
+        {
+          "internalType": "address",
+          "name": "destination_",
+          "type": "address"
+        }
+      ],
+      "stateMutability": "nonpayable",
+      "type": "constructor"
+    },
+    {
+      "inputs": [],
+      "name": "IncorrectDestinationDomain",
+      "type": "error"
+    },
+    {
+      "inputs": [],
+      "name": "IncorrectVersionLength",
+      "type": "error"
+    },
+    {
+      "inputs": [],
+      "name": "LocalGasDataNotSet",
+      "type": "error"
+    },
+    {
+      "inputs": [],
+      "name": "RemoteGasDataNotSet",
+      "type": "error"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": false,
+          "internalType": "uint32",
+          "name": "domain",
+          "type": "uint32"
+        },
+        {
+          "indexed": false,
+          "internalType": "uint256",
+          "name": "paddedGasData",
+          "type": "uint256"
+        }
+      ],
+      "name": "GasDataUpdated",
+      "type": "event"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": false,
+          "internalType": "uint8",
+          "name": "version",
+          "type": "uint8"
+        }
+      ],
+      "name": "Initialized",
+      "type": "event"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": true,
+          "internalType": "address",
+          "name": "previousOwner",
+          "type": "address"
+        },
+        {
+          "indexed": true,
+          "internalType": "address",
+          "name": "newOwner",
+          "type": "address"
+        }
+      ],
+      "name": "OwnershipTransferred",
+      "type": "event"
+    },
+    {
+      "inputs": [],
+      "name": "GAS_DATA_DECREASED_OPTIMISTIC_PERIOD",
+      "outputs": [
+        {
+          "internalType": "uint256",
+          "name": "",
+          "type": "uint256"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [],
+      "name": "GAS_DATA_INCREASED_OPTIMISTIC_PERIOD",
+      "outputs": [
+        {
+          "internalType": "uint256",
+          "name": "",
+          "type": "uint256"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [],
+      "name": "destination",
+      "outputs": [
+        {
+          "internalType": "address",
+          "name": "",
+          "type": "address"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "uint32",
+          "name": "domain",
+          "type": "uint32"
+        }
+      ],
+      "name": "getDecodedGasData",
+      "outputs": [
+        {
+          "internalType": "uint256",
+          "name": "gasPrice",
+          "type": "uint256"
+        },
+        {
+          "internalType": "uint256",
+          "name": "dataPrice",
+          "type": "uint256"
+        },
+        {
+          "internalType": "uint256",
+          "name": "execBuffer",
+          "type": "uint256"
+        },
+        {
+          "internalType": "uint256",
+          "name": "amortAttCost",
+          "type": "uint256"
+        },
+        {
+          "internalType": "uint256",
+          "name": "etherPrice",
+          "type": "uint256"
+        },
+        {
+          "internalType": "uint256",
+          "name": "markup",
+          "type": "uint256"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [],
+      "name": "getGasData",
+      "outputs": [
+        {
+          "internalType": "uint256",
+          "name": "paddedGasData",
+          "type": "uint256"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "uint32",
+          "name": "destination_",
+          "type": "uint32"
+        },
+        {
+          "internalType": "uint256",
+          "name": "paddedRequest",
+          "type": "uint256"
+        },
+        {
+          "internalType": "uint256",
+          "name": "contentLength",
+          "type": "uint256"
+        }
+      ],
+      "name": "getMinimumTips",
+      "outputs": [
+        {
+          "internalType": "uint256",
+          "name": "paddedTips",
+          "type": "uint256"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [],
+      "name": "initialize",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "inputs": [],
+      "name": "localDomain",
+      "outputs": [
+        {
+          "internalType": "uint32",
+          "name": "",
+          "type": "uint32"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "components": [
+            {
+              "internalType": "bool",
+              "name": "allowFailure",
+              "type": "bool"
+            },
+            {
+              "internalType": "bytes",
+              "name": "callData",
+              "type": "bytes"
+            }
+          ],
+          "internalType": "struct MultiCallable.Call[]",
+          "name": "calls",
+          "type": "tuple[]"
+        }
+      ],
+      "name": "multicall",
+      "outputs": [
+        {
+          "components": [
+            {
+              "internalType": "bool",
+              "name": "success",
+              "type": "bool"
+            },
+            {
+              "internalType": "bytes",
+              "name": "returnData",
+              "type": "bytes"
+            }
+          ],
+          "internalType": "struct MultiCallable.Result[]",
+          "name": "callResults",
+          "type": "tuple[]"
+        }
+      ],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "inputs": [],
+      "name": "owner",
+      "outputs": [
+        {
+          "internalType": "address",
+          "name": "",
+          "type": "address"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [],
+      "name": "renounceOwnership",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "uint32",
+          "name": "domain",
+          "type": "uint32"
+        },
+        {
+          "internalType": "uint256",
+          "name": "gasPrice",
+          "type": "uint256"
+        },
+        {
+          "internalType": "uint256",
+          "name": "dataPrice",
+          "type": "uint256"
+        },
+        {
+          "internalType": "uint256",
+          "name": "execBuffer",
+          "type": "uint256"
+        },
+        {
+          "internalType": "uint256",
+          "name": "amortAttCost",
+          "type": "uint256"
+        },
+        {
+          "internalType": "uint256",
+          "name": "etherPrice",
+          "type": "uint256"
+        },
+        {
+          "internalType": "uint256",
+          "name": "markup",
+          "type": "uint256"
+        }
+      ],
+      "name": "setGasData",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "uint256",
+          "name": "summitTipWei",
+          "type": "uint256"
+        }
+      ],
+      "name": "setSummitTip",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "address",
+          "name": "newOwner",
+          "type": "address"
+        }
+      ],
+      "name": "transferOwnership",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "uint32",
+          "name": "domain",
+          "type": "uint32"
+        }
+      ],
+      "name": "updateGasData",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "inputs": [],
+      "name": "version",
+      "outputs": [
+        {
+          "internalType": "string",
+          "name": "versionString",
+          "type": "string"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    }
+  ]
+}
