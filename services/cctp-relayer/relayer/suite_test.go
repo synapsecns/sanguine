@@ -3,6 +3,8 @@ package relayer_test
 
 import (
 	"math/big"
+	"net/url"
+	"strconv"
 	"testing"
 
 	"github.com/Flaque/filet"
@@ -22,6 +24,7 @@ import (
 	"github.com/synapsecns/sanguine/services/cctp-relayer/metadata"
 	cctpTest "github.com/synapsecns/sanguine/services/cctp-relayer/testutil"
 	omnirpcHelper "github.com/synapsecns/sanguine/services/omnirpc/testhelper"
+	scribeClient "github.com/synapsecns/sanguine/services/scribe/client"
 	scribeHelper "github.com/synapsecns/sanguine/services/scribe/testhelper"
 	"golang.org/x/sync/errgroup"
 )
@@ -176,6 +179,16 @@ func (s *CCTPRelayerSuite) GetTestConfig() config.Config {
 	}
 	cfg.Chains = chains
 	return cfg
+}
+
+func (s *CCTPRelayerSuite) GetTestScribe() scribeClient.ScribeClient {
+	parsedScribe, err := url.Parse(s.testScribe)
+	s.Nil(err)
+	port, err := strconv.Atoi(parsedScribe.Opaque)
+	s.Nil(err)
+
+	sc := scribeClient.NewRemoteScribe(uint16(port), parsedScribe.Host, s.metricsHandler)
+	return sc.ScribeClient
 }
 
 func TestCCTPRelayerSuite(t *testing.T) {
