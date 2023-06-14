@@ -106,11 +106,12 @@ contract DeployerUtils is Script {
     /// @param contractName     Contract name to deploy
     /// @param deployFunc       Callback function to deploy a requested contract
     /// @return deployment  The deployment address
-    function deployContract(string memory contractName, function() internal returns (address, bytes memory) deployFunc)
-        internal
-        returns (address deployment, bytes memory constructorArgs)
-    {
-        return deployContract(contractName, contractName, deployFunc);
+    function deployContract(
+        string memory contractName,
+        function() internal returns (address, bytes memory) deployFunc,
+        function(address) internal initFunc
+    ) internal returns (address deployment, bytes memory constructorArgs) {
+        return deployContract(contractName, contractName, deployFunc, initFunc);
     }
 
     /// @notice Deploys the contract and saves the deployment artifact under specified name
@@ -118,11 +119,13 @@ contract DeployerUtils is Script {
     /// @param contractName     Contract name to deploy
     /// @param saveAsName       Name to use for saving the deployment artifact
     /// @param deployFunc       Callback function to deploy a requested contract
+    /// @param initFunc         Callback function to initialize a deployed contract
     /// @return deployment  The deployment address
     function deployContract(
         string memory contractName,
         string memory saveAsName,
-        function() internal returns (address, bytes memory) deployFunc
+        function() internal returns (address, bytes memory) deployFunc,
+        function(address) internal initFunc
     ) internal returns (address deployment, bytes memory constructorArgs) {
         deployment = tryLoadDeployment(saveAsName);
         if (deployment == address(0)) {
@@ -132,6 +135,7 @@ contract DeployerUtils is Script {
             console.log("Reusing existing deployment for %s: %s", contractName, deployment);
         }
         vm.label(deployment, contractName);
+        initFunc(deployment);
     }
 
     /// @notice Returns the deployment for a contract on the current chain, if it exists.

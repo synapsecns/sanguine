@@ -17,9 +17,9 @@ contract DeployMessaging003SynChainScript is DeployMessaging003BaseScript {
     using stdJson for string;
     using Strings for uint256;
 
-    /// @dev Deploys and initializes BondingManager or LightManager
+    /// @dev Deploys BondingManager or LightManager
     /// Note: requires Origin, Destination, StatementInbox and Summit addresses to be set
-    function _deployInitializeAgentManager() internal override returns (address deployment, bytes memory constructorArgs) {
+    function _deployAgentManager() internal override returns (address deployment, bytes memory constructorArgs) {
         // new BondingManager(domain)
         constructorArgs = abi.encode(localDomain);
         deployment = factoryDeploy(agentManagerName(), type(BondingManager).creationCode, constructorArgs);
@@ -27,17 +27,26 @@ contract DeployMessaging003SynChainScript is DeployMessaging003BaseScript {
         require(destination != address(0), "Destination not set");
         require(statementInbox != address(0), "Statement Inbox not set");
         require(summit != address(0), "Summit not set");
-        BondingManager(deployment).initialize({
-            origin_: origin,
-            destination_: destination,
-            inbox_: statementInbox,
-            summit_: summit
-        });
     }
 
-    /// @dev Deploys and initializes Inbox or LightInbox
+    /// @dev Initializes BondingManager or LightManager
+    function _initializeAgentManager(address deployment) internal override {
+        if (BondingManager(deployment).owner() == address(0)) {
+            console.log("   %s: initializing", agentManagerName());
+            BondingManager(deployment).initialize({
+                origin_: origin,
+                destination_: destination,
+                inbox_: statementInbox,
+                summit_: summit
+            });
+        } else {
+            console.log("   %s: already initialized", agentManagerName());
+        }
+    }
+
+    /// @dev Deploys Inbox or LightInbox
     /// Note: requires AgentManager, Origin, Destination and Summit addresses to be set
-    function _deployInitializeStatementInbox() internal override returns (address deployment, bytes memory constructorArgs) {
+    function _deployStatementInbox() internal override returns (address deployment, bytes memory constructorArgs) {
         // new Inbox(domain)
         constructorArgs = abi.encode(localDomain);
         deployment = factoryDeploy(statementInboxName(), type(Inbox).creationCode, constructorArgs);
@@ -45,12 +54,21 @@ contract DeployMessaging003SynChainScript is DeployMessaging003BaseScript {
         require(origin != address(0), "Origin not set");
         require(destination != address(0), "Destination not set");
         require(summit != address(0), "Summit not set");
-        Inbox(statementInbox).initialize({
-            agentManager_: agentManager,
-            origin_: origin,
-            destination_: destination,
-            summit_: summit
-        });
+    }
+
+    /// @dev Initializes Inbox or LightInbox
+    function _initializeStatementInbox(address deployment) internal override {
+        if (Inbox(deployment).owner() == address(0)) {
+            console.log("   %s: initializing", statementInboxName());
+            Inbox(deployment).initialize({
+                agentManager_: agentManager,
+                origin_: origin,
+                destination_: destination,
+                summit_: summit
+            });
+        } else {
+            console.log("   %s: already initialized", statementInboxName());
+        }
     }
 
     /// @dev Adds agents to BondingManager (no-op for LightManager)
@@ -63,10 +81,14 @@ contract DeployMessaging003SynChainScript is DeployMessaging003BaseScript {
             address[] memory agents = globalConfig.readAddressArray(string.concat(".agents.", domain.toString()));
             for (uint256 j = 0; j < agents.length; ++j) {
                 address agent = agents[j];
+                if (BondingManager(agentManager).agentStatus(agent).flag != AgentFlag.Unknown) {
+                    console.log("   [address: %s] [domain: %s] skipped (already added)", agent, domain);
+                    continue;
+                }
                 // Get a proof of non-inclusion
                 bytes32[] memory proof = BondingManager(agentManager).getProof(agent);
                 BondingManager(agentManager).addAgent(uint32(domain), agent, proof);
-                console.log("   %s on domain [%s]", agent, domain);
+                console.log("   [address: %s] [domain: %s] added", agent, domain);
             }
         }
         string memory proofsKey = "proofs";

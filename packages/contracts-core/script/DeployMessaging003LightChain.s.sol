@@ -17,36 +17,46 @@ contract DeployMessaging003LightChainScript is DeployMessaging003BaseScript {
     using stdJson for string;
     using Strings for uint256;
 
-    /// @dev Deploys and initializes BondingManager or LightManager
+    /// @dev Deploys BondingManager or LightManager
     /// Note: requires Origin, Destination and StatementInbox addresses to be set
-    function _deployInitializeAgentManager()
-        internal
-        override
-        returns (address deployment, bytes memory constructorArgs)
-    {
+    function _deployAgentManager() internal override returns (address deployment, bytes memory constructorArgs) {
         // new LightManager(domain)
         constructorArgs = abi.encode(localDomain);
         deployment = factoryDeploy(agentManagerName(), type(LightManager).creationCode, constructorArgs);
         require(origin != address(0), "Origin not set");
         require(destination != address(0), "Destination not set");
         require(statementInbox != address(0), "Statement Inbox not set");
-        LightManager(deployment).initialize({origin_: origin, destination_: destination, inbox_: statementInbox});
     }
 
-    /// @dev Deploys and initializes Inbox or LightInbox
+    /// @dev Initializes BondingManager or LightManager
+    function _initializeAgentManager(address deployment) internal override {
+        if (LightManager(deployment).owner() == address(0)) {
+            console.log("   %s: initializing", agentManagerName());
+            LightManager(deployment).initialize({origin_: origin, destination_: destination, inbox_: statementInbox});
+        } else {
+            console.log("   %s: already initialized", agentManagerName());
+        }
+    }
+
+    /// @dev Deploys Inbox or LightInbox
     /// Note: requires AgentManager, Origin and Destination addresses to be set
-    function _deployInitializeStatementInbox()
-        internal
-        override
-        returns (address deployment, bytes memory constructorArgs)
-    {
+    function _deployStatementInbox() internal override returns (address deployment, bytes memory constructorArgs) {
         // new LightInbox(domain)
         constructorArgs = abi.encode(localDomain);
         deployment = factoryDeploy(statementInboxName(), type(LightInbox).creationCode, constructorArgs);
         require(agentManager != address(0), "Agent Manager not set");
         require(origin != address(0), "Origin not set");
         require(destination != address(0), "Destination not set");
-        LightInbox(deployment).initialize({agentManager_: agentManager, origin_: origin, destination_: destination});
+    }
+
+    /// @dev Initializes Inbox or LightInbox
+    function _initializeStatementInbox(address deployment) internal override {
+        if (LightInbox(deployment).owner() == address(0)) {
+            console.log("   %s: initializing", statementInboxName());
+            LightInbox(deployment).initialize({agentManager_: agentManager, origin_: origin, destination_: destination});
+        } else {
+            console.log("   %s: already initialized", statementInboxName());
+        }
     }
 
     /// @dev Adds agents to BondingManager (no-op for LightManager)
