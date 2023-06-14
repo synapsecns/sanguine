@@ -17,7 +17,6 @@ export const calculateExchangeRate = (
     )
 
     const ratio = increasedPrecisionAmountTo.div(increasedPrecisionAmountFrom)
-    console.log('ratio: ', ratio)
     return ratio
   } else {
     return Zero

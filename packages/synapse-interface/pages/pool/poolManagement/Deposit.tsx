@@ -107,9 +107,8 @@ const Deposit = ({
       if (poolUserData == null || address == null) {
         return
       }
-      let inputSum = sumBigNumbers(pool, filteredInputValue, chainId)
+      const inputSum = sumBigNumbers(pool, filteredInputValue, chainId)
 
-      // console.log('inputSum before conditional: ', inputSum)
       if (poolData.totalLocked.gt(0) && inputSum.gt(0)) {
         const input = transformCalculateAddLiquidityInput(
           chainId,
@@ -117,12 +116,11 @@ const Deposit = ({
           filteredInputValue.bn
         )
 
-        const { amount, routerAddress } =
-          await synapseSDK.calculateAddLiquidity(
-            chainId,
-            pool.swapAddresses[chainId],
-            input
-          )
+        const { amount } = await synapseSDK.calculateAddLiquidity(
+          chainId,
+          pool.swapAddresses[chainId],
+          input
+        )
 
         let allowances: Record<string, BigNumber> = {}
         for (const [tokenAddress, value] of Object.entries(
@@ -136,17 +134,9 @@ const Deposit = ({
           )
         }
 
-        let tokenInputAmount = inputSum
         const poolContract = await useSwapDepositContract(pool, chainId)
-        let tokenOutputAmount = await poolContract.calculateTokenAmount(
-          Object.values(filteredInputValue.bn),
-          true
-        )
-
-        const p2 = calculatePriceImpact(tokenInputAmount, tokenOutputAmount)
         const priceImpact = calculateExchangeRate(inputSum, 18, amount, 18)
 
-        console.log('priceImpact: ', priceImpact)
         setDepositQuote({
           priceImpact: priceImpact,
           allowances,
