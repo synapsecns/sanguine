@@ -6,9 +6,6 @@ import (
 	"fmt"
 	"github.com/ipfs/go-log"
 	"github.com/stretchr/testify/suite"
-	"github.com/synapsecns/sanguine/ethergo/backends"
-	"github.com/synapsecns/sanguine/ethergo/backends/simulated"
-	"math/big"
 	"sync"
 	"sync/atomic"
 	"testing"
@@ -208,9 +205,4 @@ func (s *TestSuite) GetSuiteContext() context.Context {
 // fails the test.
 func (s *TestSuite) MustMarshall(v any) []byte {
 	return MustMarshall(s.T(), v)
-}
-
-// MakeBackend creates a new backend. These backends are modified to accept the higher gas limit required by the summit harness.
-func (s *TestSuite) MakeBackend(ctx context.Context, chainID *big.Int) backends.SimulatedTestBackend {
-	return simulated.NewSimulatedBackendWithChainID(s.GetTestContext(), s.T(), chainID)
 }
