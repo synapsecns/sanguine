@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"github.com/ethereum/go-ethereum/common"
 	agentsTypes "github.com/synapsecns/sanguine/agents/types"
+	"github.com/synapsecns/sanguine/core/dbcommon"
 	"math/big"
 )
 
@@ -14,15 +15,17 @@ import (
 // 2. Get the minimum destination block number for all attestations that are associated to the potential snapshot roots.
 // 3. Return the timestamp of the attestation with the minimum destination block number.
 func (s Store) GetTimestampForMessage(ctx context.Context, chainID, destination, nonce uint32, tablePrefix string) (*uint64, error) {
-	var timestamp uint64
-
-	statesTableName := "states"
-	attestationsTableName := "attestations"
-
-	if tablePrefix != "" {
-		statesTableName = fmt.Sprintf("%s_%s", tablePrefix, statesTableName)
-		attestationsTableName = fmt.Sprintf("%s_%s", tablePrefix, attestationsTableName)
+	statesTableName, err := dbcommon.GetModelName(s.DB(), &State{})
+	if err != nil {
+		return nil, fmt.Errorf("failed to get states table name: %w", err)
 	}
+
+	attestationsTableName, err := dbcommon.GetModelName(s.DB(), &Attestation{})
+	if err != nil {
+		return nil, fmt.Errorf("failed to get attestations table name: %w", err)
+	}
+
+	var timestamp uint64
 
 	// TODO: Use string formatting to make this query more legible.
 	dbTx := s.DB().WithContext(ctx).
@@ -59,15 +62,17 @@ func (s Store) GetTimestampForMessage(ctx context.Context, chainID, destination,
 // 1. Get all states that are within a nonce range.
 // 2. Get the state with the earliest attestation associated to it.
 func (s Store) GetEarliestStateInRange(ctx context.Context, chainID, destination, startNonce, endNonce uint32, tablePrefix string) (*agentsTypes.State, error) {
-	var state State
-
-	statesTableName := "states"
-	attestationsTableName := "attestations"
-
-	if tablePrefix != "" {
-		statesTableName = fmt.Sprintf("%s_%s", tablePrefix, statesTableName)
-		attestationsTableName = fmt.Sprintf("%s_%s", tablePrefix, attestationsTableName)
+	statesTableName, err := dbcommon.GetModelName(s.DB(), &State{})
+	if err != nil {
+		return nil, fmt.Errorf("failed to get states table name: %w", err)
 	}
+
+	attestationsTableName, err := dbcommon.GetModelName(s.DB(), &Attestation{})
+	if err != nil {
+		return nil, fmt.Errorf("failed to get attestations table name: %w", err)
+	}
+
+	var state State
 
 	// TODO: Use string formatting to make this query more legible.
 	dbTx := s.DB().WithContext(ctx).

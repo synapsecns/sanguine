@@ -11,7 +11,7 @@ import (
 )
 
 func (t *DBSuite) TestStoreRetrieveMessage() {
-	t.RunOnAllDBs(func(testDB db.ExecutorDB, _ string) {
+	t.RunOnAllDBs(func(testDB db.ExecutorDB) {
 		chainIDA := gofakeit.Uint32()
 		destinationA := gofakeit.Uint32()
 		nonceA := gofakeit.Uint32()
@@ -74,7 +74,7 @@ func (t *DBSuite) TestStoreRetrieveMessage() {
 }
 
 func (t *DBSuite) TestGetLastBlockNumber() {
-	t.RunOnAllDBs(func(testDB db.ExecutorDB, _ string) {
+	t.RunOnAllDBs(func(testDB db.ExecutorDB) {
 		chainID := gofakeit.Uint32()
 		destinationA := gofakeit.Uint32()
 		destinationB := destinationA + 1
@@ -105,7 +105,7 @@ func (t *DBSuite) TestGetLastBlockNumber() {
 }
 
 func (t *DBSuite) TestExecuteMessage() {
-	t.RunOnAllDBs(func(testDB db.ExecutorDB, _ string) {
+	t.RunOnAllDBs(func(testDB db.ExecutorDB) {
 		chainID := gofakeit.Uint32()
 		destination := gofakeit.Uint32()
 		nonce := gofakeit.Uint32()
@@ -145,7 +145,7 @@ func (t *DBSuite) TestExecuteMessage() {
 }
 
 func (t *DBSuite) TestGetExecutableMessages() {
-	t.RunOnAllDBs(func(testDB db.ExecutorDB, _ string) {
+	t.RunOnAllDBs(func(testDB db.ExecutorDB) {
 		chainID := gofakeit.Uint32()
 		destination := gofakeit.Uint32()
 		nonce := gofakeit.Uint32()
@@ -205,7 +205,7 @@ func (t *DBSuite) TestGetExecutableMessages() {
 }
 
 func (t *DBSuite) TestGetUnsetMinimumTimeMessages() {
-	t.RunOnAllDBs(func(testDB db.ExecutorDB, _ string) {
+	t.RunOnAllDBs(func(testDB db.ExecutorDB) {
 		chainID := gofakeit.Uint32()
 		destination := gofakeit.Uint32()
 		nonce := gofakeit.Uint32()
@@ -245,7 +245,7 @@ func (t *DBSuite) TestGetUnsetMinimumTimeMessages() {
 }
 
 func (t *DBSuite) TestSetMinimumTime() {
-	t.RunOnAllDBs(func(testDB db.ExecutorDB, _ string) {
+	t.RunOnAllDBs(func(testDB db.ExecutorDB) {
 		chainID := gofakeit.Uint32()
 		destination := gofakeit.Uint32()
 		nonce := gofakeit.Uint32()

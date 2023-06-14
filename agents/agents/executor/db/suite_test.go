@@ -100,23 +100,17 @@ func (t *DBSuite) setupMysqlDB() {
 	t.dbs = append(t.dbs, mysqlStore)
 }
 
-func (t *DBSuite) RunOnAllDBs(testFunc func(testDB db.ExecutorDB, tablePrefix string)) {
+func (t *DBSuite) RunOnAllDBs(testFunc func(testDB db.ExecutorDB)) {
 	t.T().Helper()
 
 	wg := sync.WaitGroup{}
-	for i, testDB := range t.dbs {
-		var tablePrefix string
+	for _, testDB := range t.dbs {
 		wg.Add(1)
 		// capture the value
-		i := i
-		// Mysql Check
-		if i == 1 {
-			tablePrefix = t.mysqlTablePrefix
-		}
-		go func(testDB db.ExecutorDB, tablePrefix string) {
+		go func(testDB db.ExecutorDB) {
 			defer wg.Done()
-			testFunc(testDB, tablePrefix)
-		}(testDB, tablePrefix)
+			testFunc(testDB)
+		}(testDB)
 	}
 	wg.Wait()
 }
