@@ -6,6 +6,8 @@ on:
     - cron: '30 1 * * *'
   workflow_dispatch:
   push:
+    branches:
+      - master
 
 # This environment is necessary to avoid the following issue
 # https://github.com/github/codeql/issues/6321
