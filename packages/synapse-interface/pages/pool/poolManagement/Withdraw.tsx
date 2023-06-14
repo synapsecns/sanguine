@@ -94,15 +94,12 @@ const Withdraw = ({
         }
       > = {}
       const { virtualPrice } = poolData
-      console.log('inputValue: ', inputValue)
-
       if (withdrawType == ALL) {
         const { amounts } = await synapseSDK.calculateRemoveLiquidity(
           chainId,
           poolAddress,
           inputValue.bn
         )
-        console.log('amounts: ', amounts)
         outputs[withdrawType] = amounts
       } else {
         const { amount } = await synapseSDK.calculateRemoveLiquidityOne(
@@ -111,26 +108,29 @@ const Withdraw = ({
           inputValue.bn,
           withdrawType
         )
-        console.log('amount:', amount)
         outputs[withdrawType] = amount
       }
 
-      const tokenSum = sumBigNumbers(pool, outputs, chainId, withdrawType)
-      console.log('tokenSum: ', tokenSum)
-
-      const priceImpact = calculateExchangeRate(
-        inputValue.bn,
-        18,
-        inputValue.bn.sub(tokenSum),
-        18
+      const outputTokensSum = sumBigNumbers(
+        pool,
+        outputs,
+        chainId,
+        withdrawType
       )
-      // console.log('outputs[withdrawType].value:', outputs[withdrawType].value)
-      // const newPriceImpact = calculatePriceImpact(
+
+      // const priceImpact = calculateExchangeRate(
       //   inputValue.bn,
-      //   outputs[withdrawType].value,
-      //   virtualPrice
+      //   18,
+      //   inputValue.bn.sub(tokenSum),
+      //   18
       // )
-      console.log('virtualPrice:', virtualPrice)
+      // console.log('outputs[withdrawType].value:', outputs[withdrawType].value)
+      const newPriceImpact = calculatePriceImpact(
+        inputValue.bn,
+        outputTokensSum,
+        virtualPrice
+      )
+      console.log('virtualPrice:', newPriceImpact)
       // console.log('newPriceImpact:', newPriceImpact)
       const allowance = await getTokenAllowance(
         poolAddress,
@@ -139,7 +139,7 @@ const Withdraw = ({
         chainId
       )
       setWithdrawQuote({
-        priceImpact,
+        priceImpact: newPriceImpact,
         allowance,
         outputs,
         routerAddress: poolAddress,
