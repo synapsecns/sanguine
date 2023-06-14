@@ -118,6 +118,12 @@ jobs:
     runs-on: ubuntu-latest
     needs: [build-goreleaser,changes]
     if: ${{ needs.changes.outputs.package_count > 0 }}
+    permissions:
+      # always required
+      packages: write
+      # only required for private repos
+      actions: read
+      contents: read
     strategy:
       matrix:
         # list of packages, if you update this update changes as well
@@ -176,7 +182,7 @@ jobs:
         with:
           registry: ghcr.io
           username: ${{ github.actor }}
-          password: ${{ secrets.GHCR_DOCKER }}
+          password: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Run GoReleaser (Release)
         if: steps.branch-name.outputs.is_default == 'true'

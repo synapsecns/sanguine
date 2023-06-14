@@ -73,7 +73,7 @@ jobs:
         run: go test -v ${{ steps.filter_go.outputs.changed_modules }}
 ```
 
-This workflow will run tests for all changed Go modules and their dependencies whenever a pull request is opened or synchronized.
+This workflow will run tests for all changed go modules and their dependencies whenever a pull request is opened or synchronized.
 
 
 
