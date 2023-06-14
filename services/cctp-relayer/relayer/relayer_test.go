@@ -6,13 +6,9 @@ import (
 	"net/url"
 	"strconv"
 
-	"github.com/Flaque/filet"
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/core/types"
-	"github.com/synapsecns/sanguine/ethergo/backends"
-	signerConfig "github.com/synapsecns/sanguine/ethergo/signer/config"
 	"github.com/synapsecns/sanguine/services/cctp-relayer/api"
-	"github.com/synapsecns/sanguine/services/cctp-relayer/config"
 	"github.com/synapsecns/sanguine/services/cctp-relayer/contracts/cctp"
 	"github.com/synapsecns/sanguine/services/cctp-relayer/relayer"
 	relayTypes "github.com/synapsecns/sanguine/services/cctp-relayer/types"
@@ -27,23 +23,6 @@ func (c *CCTPRelayerSuite) TestHandleCircleRequestSent() {
 	_, cctpContractRef := c.deployManager.GetSynapseCCTP(c.GetTestContext(), sendChain)
 	_, mintContractRef := c.deployManager.GetMockMintBurnTokenType(c.GetTestContext(), sendChain)
 
-	// create a relayer
-	sendChainID, err := sendChain.ChainID(c.GetTestContext())
-	c.Nil(err)
-	cfg := config.Config{
-		DBPrefix: filet.TmpDir(c.T(), ""),
-		Chains: []config.ChainConfig{
-			{
-				ChainID: uint32(sendChainID.Int64()),
-			},
-		},
-		BaseOmnirpcURL: c.testBackends[0].RPCAddress(),
-		Signer: signerConfig.SignerConfig{
-			Type: signerConfig.FileType.String(),
-			File: filet.TmpFile(c.T(), "", c.testWallet.PrivateKeyHex()).Name(),
-		},
-	}
-
 	// TODO clean this part up
 	parsedScribe, err := url.Parse(c.testScribe)
 	c.Nil(err)
@@ -53,7 +32,7 @@ func (c *CCTPRelayerSuite) TestHandleCircleRequestSent() {
 	sc := scribeClient.NewRemoteScribe(uint16(port), parsedScribe.Host, c.metricsHandler)
 	mockAPI := api.NewMockCircleAPI()
 	omniRPCClient := omniClient.NewOmnirpcClient(c.testOmnirpc, c.metricsHandler, omniClient.WithCaptureReqRes())
-	relay, err := relayer.NewCCTPRelayer(c.GetTestContext(), cfg, c.testStore, sc.ScribeClient, omniRPCClient, c.metricsHandler, mockAPI)
+	relay, err := relayer.NewCCTPRelayer(c.GetTestContext(), c.GetTestConfig(), c.testStore, sc.ScribeClient, omniRPCClient, c.metricsHandler, mockAPI)
 	c.Nil(err)
 
 	// mint token
@@ -92,23 +71,6 @@ func (c *CCTPRelayerSuite) TestFetchAttestation() {
 	// setup
 	sendChain := c.testBackends[0]
 
-	// create a relayer
-	sendChainID, err := sendChain.ChainID(c.GetTestContext())
-	c.Nil(err)
-	cfg := config.Config{
-		DBPrefix: filet.TmpDir(c.T(), ""),
-		Chains: []config.ChainConfig{
-			{
-				ChainID: uint32(sendChainID.Int64()),
-			},
-		},
-		BaseOmnirpcURL: c.testBackends[0].RPCAddress(),
-		Signer: signerConfig.SignerConfig{
-			Type: signerConfig.FileType.String(),
-			File: filet.TmpFile(c.T(), "", c.testWallet.PrivateKeyHex()).Name(),
-		},
-	}
-
 	parsedScribe, err := url.Parse(c.testScribe)
 	c.Nil(err)
 	port, err := strconv.Atoi(parsedScribe.Opaque)
@@ -117,7 +79,7 @@ func (c *CCTPRelayerSuite) TestFetchAttestation() {
 	sc := scribeClient.NewRemoteScribe(uint16(port), parsedScribe.Host, c.metricsHandler)
 	mockAPI := api.NewMockCircleAPI()
 	omniRPCClient := omniClient.NewOmnirpcClient(c.testOmnirpc, c.metricsHandler, omniClient.WithCaptureReqRes())
-	relay, err := relayer.NewCCTPRelayer(c.GetTestContext(), cfg, c.testStore, sc.ScribeClient, omniRPCClient, c.metricsHandler, mockAPI)
+	relay, err := relayer.NewCCTPRelayer(c.GetTestContext(), c.GetTestConfig(), c.testStore, sc.ScribeClient, omniRPCClient, c.metricsHandler, mockAPI)
 	c.Nil(err)
 
 	// override mocked api call
@@ -159,22 +121,6 @@ func (c *CCTPRelayerSuite) TestSubmitReceiveCircleToken() {
 	sendChainID, err := sendChain.ChainID(c.GetTestContext())
 	recvChainID, err := recvChain.ChainID(c.GetTestContext())
 	c.Nil(err)
-	cfg := config.Config{
-		DBPrefix: filet.TmpDir(c.T(), ""),
-		Chains: []config.ChainConfig{
-			{
-				ChainID: uint32(sendChainID.Int64()),
-			},
-			{
-				ChainID: uint32(recvChainID.Int64()),
-			},
-		},
-		BaseOmnirpcURL: c.testBackends[0].RPCAddress(),
-		Signer: signerConfig.SignerConfig{
-			Type: signerConfig.FileType.String(),
-			File: filet.TmpFile(c.T(), "", c.testWallet.PrivateKeyHex()).Name(),
-		},
-	}
 
 	parsedScribe, err := url.Parse(c.testScribe)
 	c.Nil(err)
@@ -184,10 +130,10 @@ func (c *CCTPRelayerSuite) TestSubmitReceiveCircleToken() {
 	sc := scribeClient.NewRemoteScribe(uint16(port), parsedScribe.Host, c.metricsHandler)
 	mockAPI := api.NewMockCircleAPI()
 	omniRPCClient := omniClient.NewOmnirpcClient(c.testOmnirpc, c.metricsHandler, omniClient.WithCaptureReqRes())
-	relay, err := relayer.NewCCTPRelayer(c.GetTestContext(), cfg, c.testStore, sc.ScribeClient, omniRPCClient, c.metricsHandler, mockAPI)
+	relay, err := relayer.NewCCTPRelayer(c.GetTestContext(), c.GetTestConfig(), c.testStore, sc.ScribeClient, omniRPCClient, c.metricsHandler, mockAPI)
 	c.Nil(err)
 
-	// submit receive circle token
+	// submit ReceiveCircleToken()
 	testHash := "0x5dba62229dba62f233dca8f3fd14488fdc45d2a86537da2dea7a5683b5e7f622"
 	msg := relayTypes.Message{
 		OriginTxHash:     testHash,
@@ -209,27 +155,6 @@ func (c *CCTPRelayerSuite) TestSubmitReceiveCircleToken() {
 	c.Equal(msg, storedMsg)
 }
 
-func getTestConfig(c *CCTPRelayerSuite, backends []backends.SimulatedTestBackend) config.Config {
-	cfg := config.Config{
-		DBPrefix:       filet.TmpDir(c.T(), ""),
-		BaseOmnirpcURL: c.testBackends[0].RPCAddress(),
-		Signer: signerConfig.SignerConfig{
-			Type: signerConfig.FileType.String(),
-			File: filet.TmpFile(c.T(), "", c.testWallet.PrivateKeyHex()).Name(),
-		},
-	}
-	chains := []config.ChainConfig{}
-	for _, backend := range backends {
-		_, handle := c.deployManager.GetSynapseCCTP(c.GetTestContext(), backend)
-		chains = append(chains, config.ChainConfig{
-			ChainID:            uint32(backend.GetChainID()),
-			SynapseCCTPAddress: handle.Address().String(),
-		})
-	}
-	cfg.Chains = chains
-	return cfg
-}
-
 func (c *CCTPRelayerSuite) TestBridgeUSDC() {
 	// setup
 	sendChain := c.testBackends[0]
@@ -237,9 +162,9 @@ func (c *CCTPRelayerSuite) TestBridgeUSDC() {
 
 	// create a relayer
 	sendChainID, err := sendChain.ChainID(c.GetTestContext())
+	c.Nil(err)
 	recvChainID, err := recvChain.ChainID(c.GetTestContext())
 	c.Nil(err)
-	cfg := getTestConfig(c, []backends.SimulatedTestBackend{sendChain, recvChain})
 
 	parsedScribe, err := url.Parse(c.testScribe)
 	c.Nil(err)
@@ -249,7 +174,7 @@ func (c *CCTPRelayerSuite) TestBridgeUSDC() {
 	sc := scribeClient.NewRemoteScribe(uint16(port), parsedScribe.Host, c.metricsHandler)
 	mockAPI := api.NewMockCircleAPI()
 	omniRPCClient := omniClient.NewOmnirpcClient(c.testOmnirpc, c.metricsHandler, omniClient.WithCaptureReqRes())
-	relay, err := relayer.NewCCTPRelayer(c.GetTestContext(), cfg, c.testStore, sc.ScribeClient, omniRPCClient, c.metricsHandler, mockAPI)
+	relay, err := relayer.NewCCTPRelayer(c.GetTestContext(), c.GetTestConfig(), c.testStore, sc.ScribeClient, omniRPCClient, c.metricsHandler, mockAPI)
 	c.Nil(err)
 
 	// start relayer

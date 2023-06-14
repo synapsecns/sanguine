@@ -14,7 +14,9 @@ import (
 	"github.com/synapsecns/sanguine/core/testsuite"
 	"github.com/synapsecns/sanguine/ethergo/backends"
 	"github.com/synapsecns/sanguine/ethergo/backends/geth"
+	signerConfig "github.com/synapsecns/sanguine/ethergo/signer/config"
 	"github.com/synapsecns/sanguine/ethergo/signer/wallet"
+	"github.com/synapsecns/sanguine/services/cctp-relayer/config"
 	"github.com/synapsecns/sanguine/services/cctp-relayer/db/base"
 	"github.com/synapsecns/sanguine/services/cctp-relayer/db/sqlite"
 	"github.com/synapsecns/sanguine/services/cctp-relayer/metadata"
@@ -153,6 +155,27 @@ func (s *CCTPRelayerSuite) SetupTest() {
 	s.deployManager.BulkDeploy(s.GetTestContext(), s.testBackends, cctpTest.SynapseCCTPType, cctpTest.MockMintBurnTokenType)
 
 	s.registerRemoteDeployments()
+}
+
+func (s *CCTPRelayerSuite) GetTestConfig() config.Config {
+	cfg := config.Config{
+		DBPrefix:       filet.TmpDir(s.T(), ""),
+		BaseOmnirpcURL: s.testBackends[0].RPCAddress(),
+		Signer: signerConfig.SignerConfig{
+			Type: signerConfig.FileType.String(),
+			File: filet.TmpFile(s.T(), "", s.testWallet.PrivateKeyHex()).Name(),
+		},
+	}
+	chains := []config.ChainConfig{}
+	for _, backend := range s.testBackends {
+		_, handle := s.deployManager.GetSynapseCCTP(s.GetTestContext(), backend)
+		chains = append(chains, config.ChainConfig{
+			ChainID:            uint32(backend.GetChainID()),
+			SynapseCCTPAddress: handle.Address().String(),
+		})
+	}
+	cfg.Chains = chains
+	return cfg
 }
 
 func TestCCTPRelayerSuite(t *testing.T) {
