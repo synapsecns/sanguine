@@ -30,9 +30,26 @@ jobs:
         with:
           languages: ${{ matrix.language }}
 
-      - name: Autobuild
-        uses: github/codeql-action/autobuild@v2
-
+      - name: Go modules cache
+        uses: actions/cache@v3
+        with:
+          # see https://github.com/mvdan/github-actions-golang
+          path: |
+            ~/go/pkg/mod
+            ~/.cache/go-build
+            ~/Library/Caches/go-build
+            %LocalAppData%\go-build
+          key: ${{ runner.os }}-go-${{ hashFiles('**/go.sum') }}
+          restore-keys: |
+            ${{ runner.os }}-go-
+      - name: Build
+        # go build all workspaces
+        run: go build $(go work edit -json | jq -c -r '[.Use[].DiskPath] | map_values(. + "/...")[]')
+        # see: https://www.reddit.com/r/golang/comments/476pae/how_to_speed_up_go_compiler_and_many_other_go/
+        # this cannot use gomemlimit because we are running multiple builds in paralell
+        env:
+          GOGC: 2000
+          GOMEMLIMIT: 6GiB
 
       - name: Perform CodeQL Analysis
         uses: github/codeql-action/analyze@v2
