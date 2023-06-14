@@ -14,7 +14,8 @@ import (
 // TODO: More edge cases for this test.
 func (t *DBSuite) TestGetTimestampForMessage() {
 	t.RunOnAllDBs(func(testDB db.ExecutorDB) {
-		origin := gofakeit.Uint32()
+		//origin := gofakeit.Uint32()
+		origin := uint32(1111111)
 		nonceA := uint32(5)
 		nonceB := uint32(10)
 		nonceC := uint32(15)
