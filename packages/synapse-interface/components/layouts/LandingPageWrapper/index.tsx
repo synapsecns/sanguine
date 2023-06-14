@@ -17,7 +17,6 @@ import {
   DOCS_URL,
   FORUM_URL,
   LANDING_PATH,
-  PORTFOLIO_PATH,
   TELEGRAM_URL,
   TWITTER_URL,
   getBuySynUrl,
@@ -247,11 +246,6 @@ function MoreInfoButtons() {
         to={NAVIGATION.Contracts.path}
         labelText={NAVIGATION.Contracts.text}
         description="View contract related information such as contract addresses"
-      />
-      <MoreInfoItem
-        to={NAVIGATION.Portfolio.path}
-        labelText={NAVIGATION.Portfolio.text}
-        description="View your portfolio of related assets on this chain"
       />
     </>
   )
