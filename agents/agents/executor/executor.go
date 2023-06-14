@@ -998,7 +998,7 @@ func (e Executor) setMinimumTime(parentCtx context.Context, chainID uint32) (err
 					return fmt.Errorf("could not get timestamp for message: %w", err)
 				}
 
-				if minimumTimestamp == uint64(0) {
+				if minimumTimestamp == nil {
 					continue
 				}
 
@@ -1008,7 +1008,7 @@ func (e Executor) setMinimumTime(parentCtx context.Context, chainID uint32) (err
 					Nonce:       &nonce,
 				}
 
-				err = e.executorDB.SetMinimumTime(ctx, setMessageMask, minimumTimestamp+uint64(message.OptimisticSeconds()))
+				err = e.executorDB.SetMinimumTime(ctx, setMessageMask, *minimumTimestamp+uint64(message.OptimisticSeconds()))
 				if err != nil {
 					return fmt.Errorf("could not set minimum time: %w", err)
 				}

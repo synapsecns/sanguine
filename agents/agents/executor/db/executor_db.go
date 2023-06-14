@@ -69,7 +69,7 @@ type ExecutorDBReader interface {
 	// the same chain ID and a nonce greater than or equal to the message nonce).
 	// 2. Get the minimum destination block number for all attestations that are associated to the potential snapshot roots.
 	// 3. Return the timestamp of the attestation with the minimum destination block number.
-	GetTimestampForMessage(ctx context.Context, chainID, destination, nonce uint32, tablePrefix string) (uint64, error)
+	GetTimestampForMessage(ctx context.Context, chainID, destination, nonce uint32, tablePrefix string) (*uint64, error)
 	// GetEarliestStateInRange gets the earliest state with the same snapshot root as an attestation within a nonce range.
 	// 1. Get all states that are within a nonce range.
 	// 2. Get the state with the earliest attestation associated to it.

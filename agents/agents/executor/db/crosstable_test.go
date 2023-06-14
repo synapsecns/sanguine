@@ -103,18 +103,15 @@ func (t *DBSuite) TestGetTimestampForMessage() {
 
 		retrievedTimestampA, err := testDB.GetTimestampForMessage(t.GetTestContext(), origin, origin+1, nonceA, "")
 		Nil(t.T(), err)
-		NotNil(t.T(), retrievedTimestampA)
-		Equal(t.T(), uint64(3), retrievedTimestampA)
+		Equal(t.T(), uint64(3), *retrievedTimestampA)
 
 		retrievedTimestampB, err := testDB.GetTimestampForMessage(t.GetTestContext(), origin, origin+1, nonceB, "")
 		Nil(t.T(), err)
-		NotNil(t.T(), retrievedTimestampB)
-		Equal(t.T(), uint64(3), retrievedTimestampB)
+		Equal(t.T(), uint64(3), *retrievedTimestampB)
 
 		retrievedTimestampC, err := testDB.GetTimestampForMessage(t.GetTestContext(), origin, origin+1, nonceC, "")
 		Nil(t.T(), err)
-		NotNil(t.T(), retrievedTimestampC)
-		Equal(t.T(), uint64(1), retrievedTimestampC)
+		Equal(t.T(), uint64(1), *retrievedTimestampC)
 	})
 }
 
