@@ -63,6 +63,10 @@ const Deposit = ({
 
   const { poolAddress } = getSwapDepositContractFields(pool, chainId)
 
+  const inputSum = useMemo(() => {
+    return sumBigNumbers(pool, filteredInputValue, chainId)
+  }, [pool, filteredInputValue, chainId])
+
   const transformCalculateAddLiquidityInput = (
     chainId: number,
     pool: Token,
@@ -102,7 +106,7 @@ const Deposit = ({
       if (poolUserData == null || address == null) {
         return
       }
-      const inputSum = sumBigNumbers(pool, filteredInputValue, chainId)
+      // const inputSum = sumBigNumbers(pool, filteredInputValue, chainId)
       const { totalLocked, virtualPrice } = poolData
 
       if (totalLocked.gt(0) && inputSum.gt(0)) {
@@ -164,12 +168,16 @@ const Deposit = ({
   }, [inputValue, filteredInputValue, pool, chainId, address])
 
   useEffect(() => {
-    if (depositQuote.priceImpact && !depositQuote.priceImpact?.eq(Zero)) {
+    if (
+      depositQuote.priceImpact &&
+      !depositQuote.priceImpact?.eq(Zero) &&
+      !inputSum.isZero()
+    ) {
       setShowPriceImpact(true)
     } else {
       setShowPriceImpact(false)
     }
-  }, [depositQuote])
+  }, [depositQuote, inputSum])
 
   const onChangeInputValue = (token: Token, value: string) => {
     const bigNum = stringToBigNum(value, token.decimals[chainId]) ?? Zero
