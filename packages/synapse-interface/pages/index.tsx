@@ -4,6 +4,8 @@ import BridgePage from './bridge'
 import { useEffect, useState } from 'react'
 import { DEFAULT_FROM_CHAIN } from '@/constants/bridge'
 
+// TODO: remove, just testing deploy
+
 const Home = () => {
   const { address: currentAddress } = useAccount()
   const { chain } = useNetwork()
