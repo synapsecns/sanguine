@@ -21,7 +21,7 @@ import { fetchBalance } from '@wagmi/core'
 import { formatBNToString } from '@/utils/bignumber/format'
 import { getSwapDepositContractFields } from '@/utils/hooks/useSwapDepositContract'
 import { calculatePriceImpact } from '@/utils/priceImpact'
-import { transformCalculateAddLiquidityInput } from '@/utils/transformCalculateLiquidityInput'
+import { transformCalculateLiquidityInput } from '@/utils/transformCalculateLiquidityInput'
 
 const DEFAULT_DEPOSIT_QUOTE = {
   priceImpact: undefined,
@@ -76,7 +76,7 @@ const Deposit = ({
       const { totalLocked, virtualPrice } = poolData
 
       if (totalLocked.gt(0) && inputSum.gt(0)) {
-        const input = transformCalculateAddLiquidityInput(
+        const input = transformCalculateLiquidityInput(
           chainId,
           pool,
           filteredInputValue.bn

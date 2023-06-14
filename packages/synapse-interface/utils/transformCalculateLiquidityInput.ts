@@ -16,7 +16,7 @@ const replaceKey = (
   return obj
 }
 
-export const transformCalculateAddLiquidityInput = (
+export const transformCalculateLiquidityInput = (
   chainId: number,
   pool: Token,
   filteredInputValue?: Record<string, BigNumber>
