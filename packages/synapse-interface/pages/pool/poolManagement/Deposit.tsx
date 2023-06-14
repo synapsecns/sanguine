@@ -146,6 +146,7 @@ const Deposit = ({
         const p2 = calculatePriceImpact(tokenInputAmount, tokenOutputAmount)
         const priceImpact = calculateExchangeRate(inputSum, 18, amount, 18)
 
+        console.log('priceImpact: ', priceImpact)
         setDepositQuote({
           priceImpact: priceImpact,
           allowances,
