@@ -119,8 +119,14 @@ const Withdraw = ({
       const priceImpact = calculatePriceImpact(
         inputValue.bn,
         outputTokensSum,
-        virtualPrice
+        virtualPrice,
+        true
       )
+
+      console.log('inputValue.bn: ', inputValue.bn)
+      console.log('outputTokensSum: ', outputTokensSum)
+      console.log('virtualPrice:', virtualPrice)
+      console.log('priceImpact:', priceImpact)
 
       const allowance = await getTokenAllowance(
         poolAddress,
@@ -424,10 +430,9 @@ const Withdraw = ({
               />
             </div>
             <div>
-              {withdrawQuote.priceImpact &&
-                withdrawQuote.priceImpact?.gt(Zero) && (
-                  <PriceImpactDisplay priceImpact={withdrawQuote.priceImpact} />
-                )}
+              {withdrawQuote.priceImpact && (
+                <PriceImpactDisplay priceImpact={withdrawQuote.priceImpact} />
+              )}
             </div>
           </Grid>
         </div>
