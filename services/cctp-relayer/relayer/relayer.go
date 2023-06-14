@@ -253,7 +253,6 @@ func (c CCTPRelayer) handleLog(ctx context.Context, log *types.Log, originChain 
 			return err
 		}
 	default:
-		// TODO; just continue
 		logger.Warnf("unknown topic %s", log.Topics[0])
 		return nil
 	}

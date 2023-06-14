@@ -277,7 +277,7 @@ func (c *CCTPRelayerSuite) TestBridgeUSDC() {
 	c.Nil(err)
 	sendChain.WaitForConfirmation(c.GetTestContext(), tx)
 
-	// TODO(dwasse): figure out why log is not streamed properly by relayer.
+	// TODO: figure out why log is not streamed properly by relayer.
 	// for now, inject the log manually
 	receipt, err := sendChain.TransactionReceipt(c.GetTestContext(), tx.Hash())
 	c.Nil(err)
@@ -295,7 +295,9 @@ func (c *CCTPRelayerSuite) TestBridgeUSDC() {
 	c.Eventually(func() bool {
 		var storedMsg relayTypes.Message
 		err = c.testStore.DB().Where("state = ?", relayTypes.Complete).Last(&storedMsg).Error
-		c.Nil(err)
+		if err != nil {
+			return false
+		}
 		return storedMsg.OriginTxHash == tx.Hash().String()
 	})
 
