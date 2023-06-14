@@ -3,8 +3,6 @@
 # Usage: ./script/sh/verify-contract.sh <chainName>
 
 RED='\033[0;31m'
-GREEN='\033[0;32m'
-YELLOW='\033[0;33m'
 NC='\033[0m' # No Color
 
 CHAIN_NAME=$1
@@ -14,8 +12,8 @@ if [ -z "$CHAIN_NAME" ]; then
   exit 1
 fi
 
-./script/sh/verify-contract.sh $CHAIN_NAME "Destination"
-./script/sh/verify-contract.sh $CHAIN_NAME "GasOracle"
-./script/sh/verify-contract.sh $CHAIN_NAME "LightInbox"
-./script/sh/verify-contract.sh $CHAIN_NAME "LightManager"
-./script/sh/verify-contract.sh $CHAIN_NAME "Origin"
+./script/sh/verify-contract.sh "$CHAIN_NAME" "Destination"
+./script/sh/verify-contract.sh "$CHAIN_NAME" "GasOracle"
+./script/sh/verify-contract.sh "$CHAIN_NAME" "LightInbox"
+./script/sh/verify-contract.sh "$CHAIN_NAME" "LightManager"
+./script/sh/verify-contract.sh "$CHAIN_NAME" "Origin"
