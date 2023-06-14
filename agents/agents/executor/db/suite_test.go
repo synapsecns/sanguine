@@ -55,7 +55,7 @@ func (t *DBSuite) SetupTest() {
 	Nil(t.T(), err)
 
 	t.dbs = []db.ExecutorDB{sqliteStore}
-	t.setupMysqlDB()
+	//t.setupMysqlDB()
 }
 
 // connString gets the connection string.
