@@ -13,8 +13,8 @@ import (
 // the same chain ID and a nonce greater than or equal to the message nonce).
 // 2. Get the minimum destination block number for all attestations that are associated to the potential snapshot roots.
 // 3. Return the timestamp of the attestation with the minimum destination block number.
-func (s Store) GetTimestampForMessage(ctx context.Context, chainID, destination, nonce uint32, tablePrefix string) (*uint64, error) {
-	var timestamp uint64
+func (s Store) GetTimestampForMessage(ctx context.Context, chainID, destination, nonce uint32, tablePrefix string) (uint64, error) {
+	timestamp := uint64(0)
 
 	statesTableName := "states"
 	attestationsTableName := "attestations"
@@ -27,32 +27,34 @@ func (s Store) GetTimestampForMessage(ctx context.Context, chainID, destination,
 	// TODO: Use string formatting to make this query more legible.
 	dbTx := s.DB().Debug().WithContext(ctx).
 		Raw(fmt.Sprintf(
-			`SELECT %s FROM %s WHERE %s = (
+			`SELECT %s FROM %s WHERE %s IS NOT NULL AND %s > 0 AND %s = (
 					SELECT MIN(%s) FROM (
-						(SELECT * FROM %s WHERE %s = ? AND %s >= ?) AS stateTable
+						(SELECT %s, %s, %s FROM %s WHERE %s = ? AND %s >= ?) AS stateTable
 						INNER JOIN
 						(SELECT %s, %s FROM %s WHERE %s = ?) AS attestationTable
 						ON stateTable.%s = attestationTable.%s
 					)
-				) LIMIT 1`,
-			DestinationTimestampFieldName, attestationsTableName, DestinationBlockNumberFieldName,
+				) ORDER BY %s LIMIT 1`,
+			DestinationTimestampFieldName, attestationsTableName, DestinationBlockNumberFieldName, DestinationBlockNumberFieldName, DestinationBlockNumberFieldName,
 			DestinationBlockNumberFieldName,
+			SnapshotRootFieldName, ChainIDFieldName, NonceFieldName,
 			statesTableName, ChainIDFieldName, NonceFieldName,
 			SnapshotRootFieldName, DestinationBlockNumberFieldName, attestationsTableName, DestinationFieldName,
 			SnapshotRootFieldName, SnapshotRootFieldName,
+			DestinationTimestampFieldName,
 		), chainID, nonce, destination).
 		Scan(&timestamp)
 
 	if dbTx.Error != nil {
-		return nil, fmt.Errorf("failed to get timestamp for message: %w", dbTx.Error)
+		return uint64(0), fmt.Errorf("failed to get timestamp for message: %w", dbTx.Error)
 	}
 
 	if dbTx.RowsAffected == 0 {
 		//nolint:nilnil
-		return nil, nil
+		return uint64(0), nil
 	}
 
-	return &timestamp, nil
+	return timestamp, nil
 }
 
 // GetEarliestStateInRange gets the earliest state with the same snapshot root as an attestation within a nonce range.
