@@ -20,7 +20,12 @@ import { PoolData, PoolUserData } from '@types'
 import LoadingTokenInput from '@components/loading/LoadingTokenInput'
 import { fetchBalance, fetchToken } from '@wagmi/core'
 import { formatBNToString } from '@/utils/bignumber/format'
-import { getSwapDepositContractFields } from '@/utils/hooks/useSwapDepositContract'
+import {
+  getSwapDepositContractFields,
+  useSwapDepositContract,
+} from '@/utils/hooks/useSwapDepositContract'
+import { calculatePriceImpact } from '@/utils/priceImpact'
+import { Price } from '@synapsecns/sdk-router'
 
 const DEFAULT_DEPOSIT_QUOTE = {
   priceImpact: undefined,
@@ -48,32 +53,53 @@ const Deposit = ({
     bn: Record<string, BigNumber>
     str: Record<string, string>
   }>({ bn: {}, str: {} })
+  const [filteredInputValue, setFilteredInputValue] = useState<{
+    bn: Record<string, BigNumber>
+    str: Record<string, string>
+  }>({ bn: {}, str: {} })
   const [depositQuote, setDepositQuote] = useState<{
     priceImpact: BigNumber
     allowances: Record<string, BigNumber>
     routerAddress: string
   }>(DEFAULT_DEPOSIT_QUOTE)
+  const [showPriceImpact, setShowPriceImpact] = useState(false)
   const [time, setTime] = useState(Date.now())
   const { synapseSDK } = useSynapseContext()
 
   const { poolAddress } = getSwapDepositContractFields(pool, chainId)
 
-  // TODO move this to utils
-  const sumBigNumbersFromState = () => {
-    let sum = Zero
-    pool?.poolTokens &&
-      pool.poolTokens.map((token) => {
-        if (!token.addresses[chainId]) return
-        const tokenAddress = getAddress(token.addresses[chainId])
-        if (inputValue.bn[tokenAddress]) {
-          sum = sum.add(
-            inputValue.bn[getAddress(token.addresses[chainId])].mul(
-              BigNumber.from(10).pow(18 - token.decimals[chainId])
-            )
-          )
-        }
-      })
-    return sum
+  const transformCalculateAddLiquidityInput = (
+    chainId: number,
+    pool: Token,
+    filteredInputValue?: Record<string, BigNumber>
+  ): Record<string, BigNumber> => {
+    const wethIndex = _.findIndex(
+      pool.poolTokens,
+      (t) => t.symbol == WETH.symbol
+    )
+    const poolHasWeth: boolean = wethIndex > 0
+    const nativeEthAddress = '0x0000000000000000000000000000000000000000'
+    const wethAddress = poolHasWeth
+      ? pool.poolTokens[wethIndex].addresses[chainId]
+      : null
+
+    function replaceKey(
+      obj: Record<string, BigNumber>,
+      oldKey: string,
+      newKey: string
+    ) {
+      if (obj.hasOwnProperty(oldKey)) {
+        obj[newKey] = obj[oldKey]
+        delete obj[oldKey]
+      }
+      return obj
+    }
+
+    const transformedInput = poolHasWeth
+      ? replaceKey(filteredInputValue, nativeEthAddress, wethAddress)
+      : filteredInputValue
+
+    return transformedInput
   }
 
   const calculateMaxDeposits = async () => {
@@ -81,33 +107,47 @@ const Deposit = ({
       if (poolUserData == null || address == null) {
         return
       }
-      let inputSum = sumBigNumbersFromState()
+      let inputSum = sumBigNumbers(pool, filteredInputValue, chainId)
+
+      // console.log('inputSum before conditional: ', inputSum)
       if (poolData.totalLocked.gt(0) && inputSum.gt(0)) {
-        const { amount } = await synapseSDK.calculateAddLiquidity(
+        const input = transformCalculateAddLiquidityInput(
           chainId,
-          poolAddress,
-          inputValue.bn
+          pool,
+          filteredInputValue.bn
         )
 
+        const { amount, routerAddress } =
+          await synapseSDK.calculateAddLiquidity(
+            chainId,
+            pool.swapAddresses[chainId],
+            input
+          )
+
         let allowances: Record<string, BigNumber> = {}
-        for (const [key, value] of Object.entries(inputValue.bn)) {
-          allowances[key] = await getTokenAllowance(
+        for (const [tokenAddress, value] of Object.entries(
+          filteredInputValue.bn
+        )) {
+          allowances[tokenAddress] = await getTokenAllowance(
             poolAddress,
-            key,
+            tokenAddress,
             address,
             chainId
           )
         }
 
-        const priceImpact = calculateExchangeRate(
-          inputSum,
-          18,
-          inputSum.sub(amount),
-          18
+        let tokenInputAmount = inputSum
+        const poolContract = await useSwapDepositContract(pool, chainId)
+        let tokenOutputAmount = await poolContract.calculateTokenAmount(
+          Object.values(filteredInputValue.bn),
+          true
         )
-        // TODO: DOUBLE CHECK THIS
+
+        const p2 = calculatePriceImpact(tokenInputAmount, tokenOutputAmount)
+        const priceImpact = calculateExchangeRate(inputSum, 18, amount, 18)
+
         setDepositQuote({
-          priceImpact,
+          priceImpact: priceImpact,
           allowances,
           routerAddress: poolAddress,
         })
@@ -130,8 +170,22 @@ const Deposit = ({
   }, [])
 
   useEffect(() => {
+    const filteredVal = filterAndSerializeInputValues(inputValue, pool, chainId)
+
+    setFilteredInputValue(filteredVal)
+  }, [inputValue])
+
+  useEffect(() => {
     calculateMaxDeposits()
-  }, [inputValue, time, pool, chainId, address])
+  }, [inputValue, pool, chainId, address])
+
+  useEffect(() => {
+    if (depositQuote.priceImpact && !depositQuote.priceImpact?.eq(Zero)) {
+      setShowPriceImpact(true)
+    } else {
+      setShowPriceImpact(false)
+    }
+  }, [depositQuote])
 
   const onChangeInputValue = (token: Token, value: string) => {
     const bigNum = stringToBigNum(value, token.decimals[chainId]) ?? Zero
@@ -190,8 +244,7 @@ const Deposit = ({
       },
     }
 
-    // if (sumBigNumbersFromState().eq(0)) {
-    //   console.log(`'am hi here `)
+    // if (sumBigNumbers(pool, filteredInputValue, chainId).eq(0)) {
     //   properties.disabled = true
     // }
 
@@ -301,9 +354,9 @@ const Deposit = ({
         )}
       </div>
       {actionBtn}
-      {/* {depositQuote.priceImpact && depositQuote.priceImpact?.gt(Zero) && (
+      {showPriceImpact && (
         <PriceImpactDisplay priceImpact={depositQuote.priceImpact} />
-      )} */}
+      )}
     </div>
   )
 }
@@ -425,6 +478,48 @@ const serializeToken = async (
       balanceStr: tokenObj.balanceStr,
     }
   }
+}
+
+const filterAndSerializeInputValues = (inputValues, pool, chainId) => {
+  const filteredInputValues = filterInputValues(inputValues, pool, chainId)
+  const showTokens = pool.nativeTokens ?? pool.poolTokens
+
+  const keys = Object.keys(filteredInputValues)
+
+  const serializedValues = { bn: {}, str: {} }
+
+  keys.map((key) => {
+    const token = showTokens.find((token) => token.addresses[chainId] === key)
+
+    serializedValues['bn'][key] = filteredInputValues[key]
+    serializedValues['str'][key] = formatBNToString(
+      filteredInputValues[key],
+      token.decimals[chainId],
+      8
+    )
+  })
+
+  return serializedValues
+}
+
+const sumBigNumbers = (pool, filteredInputValue, chainId) => {
+  let sum = Zero
+
+  const showTokens = pool.nativeTokens ?? pool.poolTokens
+
+  showTokens &&
+    showTokens.map((token) => {
+      if (!token.addresses[chainId]) return
+      const tokenAddress = getAddress(token.addresses[chainId])
+      if (filteredInputValue.bn[tokenAddress]) {
+        sum = sum.add(
+          filteredInputValue.bn[getAddress(token.addresses[chainId])].mul(
+            BigNumber.from(10).pow(18 - token.decimals[chainId])
+          )
+        )
+      }
+    })
+  return sum
 }
 
 export default Deposit
