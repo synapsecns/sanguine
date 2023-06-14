@@ -3,12 +3,10 @@ package db_test
 import (
 	"database/sql"
 	"fmt"
-	"github.com/Flaque/filet"
 	. "github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/suite"
 	"github.com/synapsecns/sanguine/agents/agents/executor/db"
 	"github.com/synapsecns/sanguine/agents/agents/executor/db/datastore/sql/mysql"
-	"github.com/synapsecns/sanguine/agents/agents/executor/db/datastore/sql/sqlite"
 	"github.com/synapsecns/sanguine/agents/agents/executor/metadata"
 	"github.com/synapsecns/sanguine/core"
 	"github.com/synapsecns/sanguine/core/metrics"
@@ -51,11 +49,11 @@ func (t *DBSuite) SetupTest() {
 
 	t.logIndex.Store(0)
 
-	sqliteStore, err := sqlite.NewSqliteStore(t.GetTestContext(), filet.TmpDir(t.T(), ""), t.metrics)
-	Nil(t.T(), err)
+	//sqliteStore, err := sqlite.NewSqliteStore(t.GetTestContext(), filet.TmpDir(t.T(), ""), t.metrics)
+	//Nil(t.T(), err)
 
-	t.dbs = []db.ExecutorDB{sqliteStore}
-	//t.setupMysqlDB()
+	//t.dbs = []db.ExecutorDB{sqliteStore}
+	t.setupMysqlDB()
 }
 
 // connString gets the connection string.
