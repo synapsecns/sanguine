@@ -133,11 +133,11 @@ const Deposit = ({
           )
         }
 
+        console.log('amount: ', amount)
         const poolContract = await useSwapDepositContract(pool, chainId)
-        const priceImpact = calculateExchangeRate(inputSum, 18, amount, 18)
-        const newPriceImpact = calculatePriceImpact(inputSum, amount)
+        // const priceImpact = calculateExchangeRate(inputSum, 18, amount, 18)
+        const priceImpact = calculatePriceImpact(inputSum, amount)
 
-        console.log('newPriceImpact: ', newPriceImpact)
         setDepositQuote({
           priceImpact: priceImpact,
           allowances,

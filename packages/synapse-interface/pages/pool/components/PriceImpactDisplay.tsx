@@ -6,14 +6,12 @@ const PriceImpactDisplay = ({ priceImpact }: { priceImpact: BigNumber }) => {
   let colorClassName
   let labelText
 
-  let receivedPriceImpactPercentOfInput =
-    priceImpact && Number(formatBNToString(priceImpact.mul(100), 18, 2))
+  console.log('priceImpact from component: ', priceImpact)
 
   let priceImpactBP =
-    receivedPriceImpactPercentOfInput &&
-    Number((100 - receivedPriceImpactPercentOfInput).toFixed(2))
+    priceImpact && Number(formatBNToString(priceImpact.mul(100), 18, 2))
 
-  if (priceImpactBP < 0) {
+  if (priceImpactBP > 0) {
     colorClassName = 'text-green-500'
     labelText = 'Bonus'
   } else {
