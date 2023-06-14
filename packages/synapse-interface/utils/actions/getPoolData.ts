@@ -17,6 +17,8 @@ import { fetchBalance, fetchToken } from '@wagmi/core'
 import { PoolTokenObject, Token, PoolUserData, PoolData } from '@types'
 import { BigNumber } from 'ethers'
 
+import { getVirtualPrice } from './getVirtualPrice'
+
 const getBalanceData = async ({
   pool,
   chainId,
@@ -115,6 +117,8 @@ export const getPoolData = async (
     ? MAX_BN_POW
     : calculateExchangeRate(lpTotalSupply, 18, poolTokenSum, 18)
 
+  const virtualPrice1 = await getVirtualPrice(poolAddress, chainId)
+  console.log('virtualPrice1: ', virtualPrice1)
   const ethPrice = prices?.ethPrice ?? (await getEthPrice())
   const avaxPrice = prices?.avaxPrice ?? (await getAvaxPrice())
 
