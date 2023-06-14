@@ -1,5 +1,6 @@
 package types
 
+// MessageState represents the state transitions of a CCTP transfer.
 type MessageState int
 
 const (

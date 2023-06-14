@@ -141,6 +141,7 @@ func (c *CCTPRelayerSuite) TestBridgeUSDC() {
 	// start relayer
 	ctx, cancel := context.WithCancel(c.GetTestContext())
 	defer cancel()
+	//nolint:errcheck
 	go relay.Run(ctx)
 
 	// mint some USDC on send chain
