@@ -8,7 +8,6 @@ import (
 	"github.com/synapsecns/sanguine/agents/agents/executor/types"
 	agentstypes "github.com/synapsecns/sanguine/agents/types"
 	"math/big"
-	"time"
 )
 
 // TODO: More edge cases for this test.
@@ -102,19 +101,17 @@ func (t *DBSuite) TestGetTimestampForMessage() {
 		Nil(t.T(), err)
 		Equal(t.T(), uint64(3), attestationCount)
 
-		time.Sleep(5 * time.Second)
-
-		timestamp, err := testDB.GetTimestampForMessage(t.GetTestContext(), origin, origin+1, nonceA, "")
+		retrievedTimestampA, err := testDB.GetTimestampForMessage(t.GetTestContext(), origin, origin+1, nonceA, "")
 		Nil(t.T(), err)
-		Equal(t.T(), uint64(3), *timestamp)
+		Equal(t.T(), uint64(3), *retrievedTimestampA)
 
-		timestamp, err = testDB.GetTimestampForMessage(t.GetTestContext(), origin, origin+1, nonceB, "")
+		retrievedTimestampB, err := testDB.GetTimestampForMessage(t.GetTestContext(), origin, origin+1, nonceB, "")
 		Nil(t.T(), err)
-		Equal(t.T(), uint64(3), *timestamp)
+		Equal(t.T(), uint64(3), *retrievedTimestampB)
 
-		timestamp, err = testDB.GetTimestampForMessage(t.GetTestContext(), origin, origin+1, nonceC, "")
+		retrievedTimestampC, err := testDB.GetTimestampForMessage(t.GetTestContext(), origin, origin+1, nonceC, "")
 		Nil(t.T(), err)
-		Equal(t.T(), uint64(1), *timestamp)
+		Equal(t.T(), uint64(1), *retrievedTimestampC)
 	})
 }
 
