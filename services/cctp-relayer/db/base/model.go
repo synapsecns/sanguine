@@ -15,7 +15,7 @@ func init() {
 	DestChainIDFieldName = namer.GetConsistentName("DestChainID")
 	MessageFieldName = namer.GetConsistentName("Message")
 	MessageHashFieldName = namer.GetConsistentName("MessageHash")
-	SignatureFieldName = namer.GetConsistentName("Signature")
+	AttestationFieldName = namer.GetConsistentName("Attestation")
 	RequestVersionFieldName = namer.GetConsistentName("RequestVersion")
 	FormattedRequestFieldName = namer.GetConsistentName("FormattedRequest")
 	BlockNumberFieldName = namer.GetConsistentName("BlockNumber")
@@ -34,8 +34,8 @@ var (
 	MessageFieldName string
 	// MessageHashFieldName gets the message hash field name.
 	MessageHashFieldName string
-	// SignatureFieldName gets the signature field name.
-	SignatureFieldName string
+	// AttestationFieldName gets the signature field name.
+	AttestationFieldName string
 	// RequestVersionFieldName gets the request version field name.
 	RequestVersionFieldName string
 	// FormattedRequestFieldName gets the formatted request field name.

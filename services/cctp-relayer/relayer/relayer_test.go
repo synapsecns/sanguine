@@ -83,9 +83,8 @@ func (c *CCTPRelayerSuite) TestFetchAttestation() {
 
 	sendChan := relay.GetUsdcMsgSendChan(uint32(originChain.GetChainID()))
 	completeMsg := <-sendChan
-	// TODO(dwasse): validate rest of msg?
 	c.Equal(completeMsg.MessageHash, msg.MessageHash)
-	c.Equal(completeMsg.Signature, []byte(expectedSignature))
+	c.Equal(completeMsg.Attestation, []byte(expectedSignature))
 	c.Equal(completeMsg.State, relayTypes.Attested)
 
 	// verify that the attested request is stored in the db

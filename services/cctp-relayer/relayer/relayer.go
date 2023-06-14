@@ -341,7 +341,7 @@ func (c CCTPRelayer) handleCircleRequestSent(parentCtx context.Context, txhash c
 			DestChainID:   uint32(circleRequestSentEvent.ChainId.Int64()),
 			Message:       messageSentEvent.Message,
 			MessageHash:   crypto.Keccak256Hash(messageSentEvent.Message).String(),
-			//Signature: //comes from the api
+			//Attestation: //comes from the api
 			RequestVersion:   circleRequestSentEvent.RequestVersion,
 			FormattedRequest: circleRequestSentEvent.FormattedRequest,
 			BlockNumber:      uint64(receipt.BlockNumber.Int64()),
@@ -390,7 +390,7 @@ func (c CCTPRelayer) fetchAttestation(parentCtx context.Context, chainID uint32,
 	}()
 
 	err = backoff.Retry(func() (err error) {
-		msg.Signature, err = c.attestationAPI.GetAttestation(ctx, msg.MessageHash)
+		msg.Attestation, err = c.attestationAPI.GetAttestation(ctx, msg.MessageHash)
 		return
 	}, c.httpBackoff)
 	if err != nil {
@@ -424,7 +424,7 @@ func (c CCTPRelayer) submitReceiveCircleToken(parentCtx context.Context, msg *re
 	var txHash string
 	_, err = c.txSubmitter.SubmitTransaction(ctx, big.NewInt(int64(msg.DestChainID)), func(transactor *bind.TransactOpts) (tx *types.Transaction, err error) {
 		contract := c.boundSynapseCCTPs[msg.DestChainID]
-		tx, err = contract.ReceiveCircleToken(transactor, msg.Message, msg.Signature, msg.RequestVersion, msg.FormattedRequest)
+		tx, err = contract.ReceiveCircleToken(transactor, msg.Message, msg.Attestation, msg.RequestVersion, msg.FormattedRequest)
 		txHash = tx.Hash().String()
 		return
 	})

@@ -15,7 +15,7 @@ type Message struct {
 	// Keccak256 hash of message bytes
 	MessageHash string `gorm:"column:message_hash"`
 	// Attestation produced by Circle's API: https://developers.circle.com/stablecoin/reference/getattestation
-	Signature []byte `gorm:"column:signature"`
+	Attestation []byte `gorm:"column:attestation"`
 	// Version of the request
 	RequestVersion uint32 `gorm:"column:request_version"`
 	// Formatted request produced by SynapseCCTP
