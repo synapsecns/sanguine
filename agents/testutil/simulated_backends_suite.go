@@ -355,7 +355,7 @@ func (a *SimulatedBackendsTestSuite) SetupTest() {
 		a.T().Fatal(err)
 	}
 	a.ScribeTestDB = scribeSqliteStore
-	sqliteStore, err := executorsqllite.NewSqliteStore(a.GetTestContext(), a.DBPath, a.ExecutorMetrics)
+	sqliteStore, err := executorsqllite.NewSqliteStore(a.GetTestContext(), a.DBPath, a.ExecutorMetrics, false)
 	if err != nil {
 		a.T().Fatal(err)
 	}

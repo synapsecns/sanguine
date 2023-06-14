@@ -269,7 +269,7 @@ func InitExecutorDB(parentCtx context.Context, database string, path string, tab
 
 	switch {
 	case database == "sqlite":
-		sqliteStore, err := sqlite.NewSqliteStore(ctx, path, handler)
+		sqliteStore, err := sqlite.NewSqliteStore(ctx, path, handler, false)
 		if err != nil {
 			return nil, fmt.Errorf("failed to create sqlite store: %w", err)
 		}
@@ -281,7 +281,7 @@ func InitExecutorDB(parentCtx context.Context, database string, path string, tab
 			dbname := os.Getenv("MYSQL_DATABASE")
 			connString := fmt.Sprintf("%s:%s@tcp(%s:%d)/%s?parseTime=true", core.GetEnv("MYSQL_USER", "root"), os.Getenv("MYSQL_PASSWORD"), core.GetEnv("MYSQL_HOST", "127.0.0.1"), core.GetEnvInt("MYSQL_PORT", 3306), dbname)
 
-			mysqlStore, err := mysql.NewMysqlStore(ctx, connString, handler)
+			mysqlStore, err := mysql.NewMysqlStore(ctx, connString, handler, false)
 			if err != nil {
 				return nil, fmt.Errorf("failed to create mysql store: %w", err)
 			}
@@ -295,7 +295,7 @@ func InitExecutorDB(parentCtx context.Context, database string, path string, tab
 
 		mysql.NamingStrategy = namingStrategy
 
-		mysqlStore, err := mysql.NewMysqlStore(ctx, path, handler)
+		mysqlStore, err := mysql.NewMysqlStore(ctx, path, handler, false)
 		if err != nil {
 			return nil, fmt.Errorf("failed to create mysql store: %w", err)
 		}

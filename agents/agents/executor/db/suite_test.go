@@ -53,7 +53,7 @@ func (t *DBSuite) SetupTest() {
 
 	t.logIndex.Store(0)
 
-	sqliteStore, err := sqlite.NewSqliteStore(t.GetTestContext(), filet.TmpDir(t.T(), ""), t.metrics)
+	sqliteStore, err := sqlite.NewSqliteStore(t.GetTestContext(), filet.TmpDir(t.T(), ""), t.metrics, false)
 	Nil(t.T(), err)
 
 	t.dbs = []db.ExecutorDB{sqliteStore}

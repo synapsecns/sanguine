@@ -167,6 +167,7 @@ func (s Store) GetSnapshotRootsInNonceRange(ctx context.Context, chainID uint32,
 	return snapshotRoots, nil
 }
 
+// GetAllStates gets attestations from the database, paginated and ordered in ascending order by nonce.
 func (s Store) GetAllStates(ctx context.Context) ([]agentsTypes.State, error) {
 	var states []State
 
