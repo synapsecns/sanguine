@@ -9,6 +9,12 @@ jobs:
     runs-on: ubuntu-latest
     outputs:
       goreleaser-image: ${{ steps.name-export.outputs.TAG_NAME }}
+    permissions:
+      # always required
+      packages: write
+      # only required for private repos
+      actions: read
+      contents: read
     steps:
       - name: Git Checkout
         uses: actions/checkout@v3
@@ -51,7 +57,7 @@ jobs:
         with:
           registry: ghcr.io
           username: ${{ github.actor }}
-          password: ${{ secrets.GHCR_DOCKER }}
+          token: ${{ secrets.GITHUB_TOKEN }}
 
       # we do this so we can use it in subseuqnet steps
       - name: Export latest tag name
