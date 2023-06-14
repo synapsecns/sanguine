@@ -106,10 +106,12 @@ const Withdraw = ({
           chainId,
           poolAddress,
           inputValue.bn,
-          withdrawType
+          Number(withdrawType)
         )
         outputs[withdrawType] = amount
       }
+
+      console.log('outputs: ', outputs)
 
       const outputTokensSum = sumBigNumbers(
         pool,
@@ -117,6 +119,8 @@ const Withdraw = ({
         chainId,
         withdrawType
       )
+
+      console.log('outputTokensSum: ', outputTokensSum)
 
       const priceImpact = calculatePriceImpact(
         inputValue.bn,
@@ -448,15 +452,16 @@ const sumBigNumbers = (
     return Zero
   }
 
+  const currentTokens =
+    withdrawType === ALL ? bigNumMap[withdrawType] : bigNumMap
+
   return pool.poolTokens.reduce((sum, token, index) => {
-    if (!bigNumMap[withdrawType][index]) {
+    if (!currentTokens[index]) {
       return sum
     }
-
-    const valueToAdd = bigNumMap[withdrawType][index].value.mul(
+    const valueToAdd = currentTokens[index].value.mul(
       BigNumber.from(10).pow(18 - token.decimals[chainId])
     )
-
     return sum.add(valueToAdd)
   }, Zero)
 }
