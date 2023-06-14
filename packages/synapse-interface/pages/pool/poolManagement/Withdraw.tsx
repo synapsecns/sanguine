@@ -122,6 +122,11 @@ const Withdraw = ({
         virtualPrice
       )
 
+      console.log('priceImpact: ', priceImpact)
+      console.log('virtualPrice:', virtualPrice)
+      console.log('outputTokensSum: ', outputTokensSum)
+      console.log('inputValue.bn:', inputValue.bn)
+
       const allowance = await getTokenAllowance(
         poolAddress,
         pool.addresses[chainId],

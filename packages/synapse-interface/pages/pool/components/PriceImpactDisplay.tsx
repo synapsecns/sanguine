@@ -5,9 +5,6 @@ import { WeiPerEther } from '@ethersproject/constants'
 const PriceImpactDisplay = ({ priceImpact }: { priceImpact: BigNumber }) => {
   let colorClassName
   let labelText
-
-  console.log('priceImpact from component: ', priceImpact)
-
   let priceImpactBP =
     priceImpact && Number(formatBNToString(priceImpact.mul(100), 18, 2))
 
