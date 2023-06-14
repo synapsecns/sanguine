@@ -21,8 +21,7 @@ contract DeployerUtils is Script {
     string private constant DEPLOY_CONFIGS = "script/configs/";
 
     // TODO: this is only deployed on 7 chains, deploy our own factory for prod deployments
-    // This is the factory on testnets
-    ICreate3Factory internal constant FACTORY = ICreate3Factory(0x7D5352B5d0C1d2Df42FF7462233252608A9174db);
+    ICreate3Factory internal constant FACTORY = ICreate3Factory(0x9fBB3DF7C40Da2e5A0dE984fFE2CCB7C47cd0ABf);
 
     /// @dev Whether the script will be broadcasted or not
     bool internal isBroadcasted = false;
@@ -32,6 +31,8 @@ contract DeployerUtils is Script {
     /// @dev Private key and address for deploying contracts
     uint256 internal broadcasterPK;
     address internal broadcasterAddress;
+
+    bytes32 internal deploymentSalt;
 
     /// @notice Prevents this contract from being included in the coverage report
     function testDeployerUtils() external {}
@@ -81,7 +82,7 @@ contract DeployerUtils is Script {
     {
         require(Address.isContract(address(FACTORY)), "Factory not deployed");
         deployment = FACTORY.deploy(
-            keccak256(bytes(contractName)), // salt
+            keccak256(bytes.concat(deploymentSalt, bytes(contractName))), // salt
             abi.encodePacked(creationCode, constructorArgs) // creation code with appended constructor args
         );
         require(deployment != address(0), "Factory deployment failed");
