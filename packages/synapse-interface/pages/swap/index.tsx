@@ -21,12 +21,16 @@ const SwapPage = () => {
   const analytics = useAnalytics()
 
   useEffect(() => {
-    analytics.track(`[Swap] ${shortenAddress(currentAddress)} arrives`, {
-      address: currentAddress,
-      fromChainId: chain?.id,
-      query: router.query,
-      pathname: router.pathname,
-    })
+    analytics.track(
+      `[Swap] ${shortenAddress(currentAddress)} arrives`,
+      {
+        address: currentAddress,
+        fromChainId: chain?.id,
+        query: router.query,
+        pathname: router.pathname,
+      },
+      { context: { ip: '0.0.0.0' } }
+    )
   }, [])
 
   useEffect(() => {

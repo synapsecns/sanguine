@@ -24,11 +24,15 @@ const LandingPage = () => {
   const analytics = useAnalytics()
 
   useEffect(() => {
-    analytics.track(`[Landing] ${shortenAddress(currentAddress)}arrives`, {
-      address: currentAddress,
-      query: router.query,
-      pathname: router.pathname,
-    })
+    analytics.track(
+      `[Landing] ${shortenAddress(currentAddress)}arrives`,
+      {
+        address: currentAddress,
+        query: router.query,
+        pathname: router.pathname,
+      },
+      { context: { ip: '0.0.0.0' } }
+    )
   }, [])
 
   return (

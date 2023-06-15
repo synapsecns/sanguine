@@ -38,11 +38,15 @@ const StakePage = () => {
     STAKABLE_TOKENS[connectedChainId] ?? []
 
   useEffect(() => {
-    analytics.track(`[Stake] ${shortenAddress(currentAddress)} arrives`, {
-      address: currentAddress,
-      query: router.query,
-      pathname: router.pathname,
-    })
+    analytics.track(
+      `[Stake page] ${shortenAddress(currentAddress)} arrives`,
+      {
+        address: currentAddress,
+        query: router.query,
+        pathname: router.pathname,
+      },
+      { context: { ip: '0.0.0.0' } }
+    )
   }, [])
 
   useEffect(() => {

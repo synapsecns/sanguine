@@ -8,6 +8,8 @@ import { DEFAULT_FROM_CHAIN } from '@/constants/swap'
 import { POOL_BY_ROUTER_INDEX, POOL_CHAINS_BY_NAME } from '@constants/tokens'
 import PoolBody from './PoolBody'
 import NoPoolBody from './NoPoolBody'
+import { useAnalytics } from '@/contexts/AnalyticsProvider'
+import { shortenAddress } from '@/utils/shortenAddress'
 
 const PoolPage = () => {
   const router = useRouter()
@@ -17,6 +19,20 @@ const PoolPage = () => {
   const [connectedChainId, setConnectedChainId] = useState(0)
   const [address, setAddress] = useState(undefined)
   const [pool, setPool] = useState(undefined)
+
+  const analytics = useAnalytics()
+  const { query, pathname } = router
+
+  analytics.track(
+    `[Pool] ${shortenAddress(currentAddress)} arrives at ${pool?.name}`,
+    {
+      address: currentAddress,
+      query,
+      pathname,
+      poolName: pool?.name,
+    },
+    { context: { ip: '0.0.0.0' } }
+  )
 
   useEffect(() => {
     setConnectedChainId(chain?.id ?? DEFAULT_FROM_CHAIN)

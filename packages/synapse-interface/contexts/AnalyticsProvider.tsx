@@ -7,7 +7,7 @@ export const AnalyticsProvider = ({ children }) => {
   const writeKey = process.env.NEXT_PUBLIC_SEGMENT_WRITE_KEY
 
   const analytics = useMemo(
-    () => AnalyticsBrowser.load({ writeKey }, { initialPageview: true }),
+    () => AnalyticsBrowser.load({ writeKey }, { initialPageview: false }),
     [writeKey]
   )
 

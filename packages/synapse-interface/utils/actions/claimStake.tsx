@@ -7,6 +7,8 @@ import { Contract } from 'ethers'
 import ExplorerToastLink from '@/components/ExplorerToastLink'
 import { txErrorHandler } from '@utils/txErrorHandler'
 import { fetchSigner } from '@wagmi/core'
+import { useAnalytics } from '@/contexts/AnalyticsProvider'
+import { shortenAddress } from '../shortenAddress'
 
 export const claimStake = async (
   chainId: number,
@@ -15,6 +17,7 @@ export const claimStake = async (
 ) => {
   let pendingPopup: any
   let successPopup: any
+  const analytics = useAnalytics()
 
   const wallet = await fetchSigner({
     chainId,
@@ -33,6 +36,16 @@ export const claimStake = async (
   try {
     if (!address) throw new Error('Wallet must be connected')
     if (!miniChefContract) throw new Error('MMind contract is not loaded')
+
+    analytics.track(
+      `[Claim Stake] ${shortenAddress(address)} Attempt`,
+      {
+        poolId,
+      },
+      {
+        context: { ip: '0.0.0.0' },
+      }
+    )
 
     const stakeTransaction = await miniChefContract.harvest(poolId, address)
     const tx = await stakeTransaction.wait()
@@ -53,6 +66,16 @@ export const claimStake = async (
       id: 'claim-success-popup',
       duration: 10000,
     })
+
+    analytics.track(
+      `[Claim Stake] ${shortenAddress(address)} Success`,
+      {
+        poolId,
+      },
+      {
+        context: { ip: '0.0.0.0' },
+      }
+    )
 
     return tx
   } catch (err) {

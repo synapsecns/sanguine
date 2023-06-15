@@ -35,13 +35,18 @@ export const WalletAnalyticsProvider = ({ children }) => {
           networkId,
           query,
           pathname,
-        }
+        },
+        { context: { ip: '0.0.0.0' } }
       )
     } else {
-      analytics.track(`[Wallet Analytics] User not connected`, {
-        query,
-        pathname,
-      })
+      analytics.track(
+        `[Wallet Analytics] User not connected`,
+        {
+          query,
+          pathname,
+        },
+        { context: { ip: '0.0.0.0' } }
+      )
     }
   }, [isConnected])
 
@@ -58,7 +63,8 @@ export const WalletAnalyticsProvider = ({ children }) => {
           networkId,
           query,
           pathname,
-        }
+        },
+        { context: { ip: '0.0.0.0' } }
       )
     }
     if (chain !== prevChain) {
@@ -72,7 +78,8 @@ export const WalletAnalyticsProvider = ({ children }) => {
           networkId,
           query,
           pathname,
-        }
+        },
+        { context: { ip: '0.0.0.0' } }
       )
     }
   }, [chain])

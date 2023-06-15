@@ -17,6 +17,9 @@ import { AVWETH, WETHE } from '@constants/tokens/master'
 import { WETH } from '@constants/tokens/swapMaster'
 import { approveToken } from '@utils/approveToken'
 import { Token } from '@types'
+import { useAnalytics } from '@/contexts/AnalyticsProvider'
+import { shortenAddress } from '../shortenAddress'
+import { getAccount } from '@wagmi/core'
 
 export const approve = async (
   pool: Token,
@@ -25,6 +28,9 @@ export const approve = async (
   chainId: number
 ) => {
   const currentChainName = CHAINS_BY_ID[chainId].name
+  const analytics = useAnalytics()
+  const account = getAccount()
+  const address = account?.address
 
   const { poolAddress } = getSwapDepositContractFields(pool, chainId)
 
@@ -76,13 +82,35 @@ export const approve = async (
       duration: 10000,
     })
 
+    analytics.track(
+      `[Pool Approval] ${shortenAddress(address)} Successful for ${pool?.name}`,
+      {
+        context: { ip: '0.0.0.0' },
+      }
+    )
+
     return approveTx
   }
 
   for (let token of pool.poolTokens) {
     try {
+      analytics.track(
+        `[Pool Approval] ${shortenAddress(address)} Attempt for ${pool?.name}`,
+        {
+          context: { ip: '0.0.0.0' },
+        }
+      )
       await handleApproval(token, token.addresses[chainId])
     } catch (error) {
+      analytics.track(
+        `[Pool Approval] ${shortenAddress(address)} Failed for ${pool?.name}`,
+        {
+          errorCode: error.code,
+        },
+        {
+          context: { ip: '0.0.0.0' },
+        }
+      )
       toast.dismiss(requestingApprovalPopup)
       txErrorHandler(error)
       return error
@@ -100,6 +128,9 @@ export const deposit = async (
   const poolContract = await useSwapDepositContract(pool, chainId)
   let pendingPopup: any
   let successPopup: any
+  const analytics = useAnalytics()
+  const account = getAccount()
+  const address = account?.address
 
   pendingPopup = toast(`Starting your deposit...`, {
     id: 'deposit-in-progress-popup',
@@ -108,6 +139,14 @@ export const deposit = async (
 
   try {
     // get this from quote?
+
+    analytics.track(
+      `[Pool Deposit] ${shortenAddress(address)} Attempt for ${pool?.name}`,
+      {
+        context: { ip: '0.0.0.0' },
+      }
+    )
+
     let minToMint = await poolContract.calculateTokenAmount(
       Object.values(inputAmounts),
       true
@@ -156,9 +195,27 @@ export const deposit = async (
       duration: 10000,
     })
 
+    analytics.track(
+      `[Pool Deposit] ${shortenAddress(address)} Success for ${pool?.name}`,
+      {
+        inputAmounts,
+      },
+      {
+        context: { ip: '0.0.0.0' },
+      }
+    )
+
     return tx
   } catch (error) {
     console.log('error from deposit: ', error)
+    analytics.track(
+      `[Pool Deposit] ${shortenAddress(address)} Failure for ${pool?.name}`,
+      {
+        inputAmounts,
+        errorCode: error.code,
+      },
+      { context: { ip: '0.0.0.0' } }
+    )
     toast.dismiss(pendingPopup)
     txErrorHandler(error)
     return error

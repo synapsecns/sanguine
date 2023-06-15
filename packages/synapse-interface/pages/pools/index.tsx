@@ -28,12 +28,16 @@ const PoolsPage = () => {
   const analytics = useAnalytics()
 
   useEffect(() => {
-    analytics.track(`[Pools] ${shortenAddress(currentAddress)}arrives`, {
-      address: currentAddress,
-      fromChainId: chain?.id,
-      query: router.query,
-      pathname: router.pathname,
-    })
+    analytics.track(
+      `[Pools page] ${shortenAddress(currentAddress)}arrives`,
+      {
+        address: currentAddress,
+        fromChainId: chain?.id,
+        query: router.query,
+        pathname: router.pathname,
+      },
+      { context: { ip: '0.0.0.0' } }
+    )
   }, [])
 
   useEffect(() => {

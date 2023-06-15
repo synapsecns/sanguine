@@ -39,7 +39,8 @@ export const approveToken = async (
         chainId,
         tokenAddress,
         amount,
-      }
+      },
+      { context: { ip: '0.0.0.0' } }
     )
 
     const approveTx = await erc20.approve(address, amount ?? MaxInt256)
@@ -53,7 +54,8 @@ export const approveToken = async (
             chainId,
             tokenAddress,
             amount,
-          }
+          },
+          { context: { ip: '0.0.0.0' } }
         )
 
         const successToastContent = (
@@ -75,12 +77,16 @@ export const approveToken = async (
 
     return approveTx
   } catch (error) {
-    analytics.track(`[Approval] ${shortenAddress(address)} approval fails`, {
-      chainId,
-      tokenAddress,
-      amount,
-      errorCode: error.code,
-    })
+    analytics.track(
+      `[Approval] ${shortenAddress(address)} approval fails`,
+      {
+        chainId,
+        tokenAddress,
+        amount,
+        errorCode: error.code,
+      },
+      { context: { ip: '0.0.0.0' } }
+    )
     toast.dismiss(pendingPopup)
     console.log(`Transaction failed with error: ${error}`)
     txErrorHandler(error)

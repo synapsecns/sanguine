@@ -1,4 +1,5 @@
 import Link from 'next/link'
+import { useRouter } from 'next/router'
 import { getPoolUrl } from '@urls'
 import { switchNetwork } from '@wagmi/core'
 import { useEffect, useState } from 'react'
@@ -13,6 +14,8 @@ import LoadingSpinner from '@tw/LoadingSpinner'
 import { AddressZero } from '@ethersproject/constants'
 import { useAccount } from 'wagmi'
 import { toast } from 'react-hot-toast'
+import { useAnalytics } from '@/contexts/AnalyticsProvider'
+import { shortenAddress } from '@/utils/shortenAddress'
 
 const PoolsListCard = memo(
   ({

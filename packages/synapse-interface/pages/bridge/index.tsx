@@ -84,12 +84,16 @@ const BridgePage = ({
   const analytics = useAnalytics()
 
   useEffect(() => {
-    analytics.track(`[Bridge] ${shortenAddress(address)} arrives`, {
-      address,
-      fromChainId,
-      query,
-      pathname,
-    })
+    analytics.track(
+      `[Bridge page] ${shortenAddress(address)} arrives`,
+      {
+        address,
+        fromChainId,
+        query,
+        pathname,
+      },
+      { context: { ip: '0.0.0.0' } }
+    )
   }, [query])
 
   useEffect(() => {
@@ -101,17 +105,18 @@ const BridgePage = ({
       delta,
     } = bridgeQuote
 
-    // TODO: Update to correct for these decimals
-    analytics.track(`[Bridge] ${shortenAddress(address)} gets bridge quote`, {
-      address: address,
-      fromChainId: fromChainId,
-      inputAmountString: fromInput.string,
-      outputAmountString: outputAmountString,
-      routerAddress: routerAddress,
-      exchangeRate: formatBNToString(exchangeRate, 18, 8),
-      feeAmount: formatBNToString(feeAmount, 18, 8),
-      delta: formatBNToString(delta, 18, 8),
-    })
+    analytics.track(
+      `[Bridge] ${shortenAddress(address)} gets bridge quote`,
+      {
+        address: address,
+        fromChainId: fromChainId,
+        inputAmountString: fromInput.string,
+        outputAmountString: outputAmountString,
+        routerAddress: routerAddress,
+        exchangeRate: formatBNToString(exchangeRate, 18, 8),
+      },
+      { context: { ip: '0.0.0.0' } }
+    )
   }, [bridgeQuote])
 
   let pendingPopup: any
@@ -469,7 +474,8 @@ const BridgePage = ({
                 switchFrom: CHAINS_BY_ID[fromChainId].name,
                 switchToChainId: desiredChainId,
                 switchTo: CHAINS_BY_ID[desiredChainId].name,
-              }
+              },
+              { context: { ip: '0.0.0.0' } }
             )
             if (fromInput.string !== '') {
               setIsQuoteLoading(true)
@@ -551,7 +557,8 @@ const BridgePage = ({
             switchFrom: CHAINS_BY_ID[toChainId].name,
             switchToChainId: toNewToChain,
             switchTo: CHAINS_BY_ID[toNewToChain].name,
-          }
+          },
+          { context: { ip: '0.0.0.0' } }
         )
         return
       }
@@ -602,7 +609,8 @@ const BridgePage = ({
             switchFromTokenAddress: fromToken?.addresses[fromChainId],
             switchToToken: token?.name,
             switchToTokenAddress: token?.addresses[fromChainId],
-          }
+          },
+          { context: { ip: '0.0.0.0' } }
         )
         return
       case 'to':
@@ -622,7 +630,8 @@ const BridgePage = ({
             switchFromTokenAddress: toToken.addresses[toChainId],
             switchToToken: token?.name,
             switchToTokenAddress: token.addresses[toChainId],
-          }
+          },
+          { context: { ip: '0.0.0.0' } }
         )
         return
     }
@@ -726,13 +735,17 @@ const BridgePage = ({
   - Only executes if token has already been approved.
    */
   const executeBridge = async () => {
-    analytics.track(`[Bridge] ${shortenAddress(address)} initiates bridge`, {
-      originChainId: fromChainId,
-      destinationChainId: toChainId,
-      inputAmount: fromInput.string,
-      expectedReceivedAmount: bridgeQuote.outputAmountString,
-      slippage: bridgeQuote.exchangeRate,
-    })
+    analytics.track(
+      `[Bridge] ${shortenAddress(address)} initiates bridge`,
+      {
+        originChainId: fromChainId,
+        destinationChainId: toChainId,
+        inputAmount: fromInput.string,
+        expectedReceivedAmount: bridgeQuote.outputAmountString,
+        slippage: bridgeQuote.exchangeRate,
+      },
+      { context: { ip: '0.0.0.0' } }
+    )
 
     try {
       const wallet = await fetchSigner({
@@ -798,23 +811,32 @@ const BridgePage = ({
             inputAmount: fromInput.string,
             receivedAmount: bridgeQuote.outputAmountString,
             slippage: bridgeQuote.exchangeRate,
-          }
+          },
+          { context: { ip: '0.0.0.0' } }
         )
 
         resetRates()
         return tx
       } catch (error) {
-        analytics.track(`[Bridge] ${shortenAddress(address)} error bridging`, {
-          errorCode: error.code,
-        })
+        analytics.track(
+          `[Bridge] ${shortenAddress(address)} error bridging`,
+          {
+            errorCode: error.code,
+          },
+          { context: { ip: '0.0.0.0' } }
+        )
 
         console.log(`Transaction failed with error: ${error}`)
         toast.dismiss(pendingPopup)
       }
     } catch (error) {
-      analytics.track(`[Bridge] ${shortenAddress(address)} error bridging`, {
-        errorCode: error.code,
-      })
+      analytics.track(
+        `[Bridge] ${shortenAddress(address)} error bridging`,
+        {
+          errorCode: error.code,
+        },
+        { context: { ip: '0.0.0.0' } }
+      )
 
       toast.dismiss(pendingPopup)
       return txErrorHandler(error)
