@@ -1,6 +1,7 @@
 package testutil_test
 
 import (
+	"github.com/synapsecns/sanguine/ethergo/backends/simulated"
 	"math/big"
 	"testing"
 
@@ -25,8 +26,8 @@ type SimulatedSuite struct {
 func (s *SimulatedSuite) SetupTest() {
 	s.TestSuite.SetupTest()
 
-	s.testSynBackend = s.MakeBackend(s.GetTestContext(), big.NewInt(int64(10)))
-	s.testBackend = s.MakeBackend(s.GetTestContext(), big.NewInt(int64(11)))
+	s.testSynBackend = simulated.NewSimulatedBackendWithChainID(s.GetTestContext(), s.T(), big.NewInt(int64(10)))
+	s.testBackend = simulated.NewSimulatedBackendWithChainID(s.GetTestContext(), s.T(), big.NewInt(int64(11)))
 	s.deployManager = testutil.NewDeployManager(s.T())
 	s.deployManager.GetContractRegistry(s.testBackend)
 	s.deployManager.GetContractRegistry(s.testSynBackend)
