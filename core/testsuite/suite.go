@@ -4,12 +4,8 @@ package testsuite
 import (
 	"context"
 	"fmt"
-	"github.com/ethereum/go-ethereum/params"
 	"github.com/ipfs/go-log"
 	"github.com/stretchr/testify/suite"
-	"github.com/synapsecns/sanguine/ethergo/backends"
-	"github.com/synapsecns/sanguine/ethergo/backends/anvil"
-	"math/big"
 	"sync"
 	"sync/atomic"
 	"testing"
@@ -209,16 +205,4 @@ func (s *TestSuite) GetSuiteContext() context.Context {
 // fails the test.
 func (s *TestSuite) MustMarshall(v any) []byte {
 	return MustMarshall(s.T(), v)
-}
-
-// MakeBackend creates a new backend. These backends are modified to accept the higher gas limit required by the summit harness.
-func (s *TestSuite) MakeBackend(ctx context.Context, chainID *big.Int) backends.SimulatedTestBackend {
-	options := anvil.NewAnvilOptionBuilder()
-	options.SetChainID(chainID.Uint64())
-	options.SetCodeSizeLimit(params.MaxCodeSize * 3)
-	options.SetGasLimit(50000000)
-	// TODO: set all log dirs to the same temp dir and change name based on chain
-	// master needs to be merged first
-
-	return anvil.NewAnvilBackend(ctx, s.T(), options)
 }
