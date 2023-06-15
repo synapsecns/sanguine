@@ -16,7 +16,7 @@ function removeLeadingZeros(inputValue: number): number {
 const PriceImpactDisplay = ({ priceImpact }: { priceImpact: BigNumber }) => {
   let colorClassName: string
   let labelText: string
-  let content: string | React.ReactNode
+  let content: any
 
   const priceImpactValue: number = useMemo(() => {
     let formattedPriceImpact = Number(
