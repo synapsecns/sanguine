@@ -1,7 +1,6 @@
 import { useMemo } from 'react'
 import { formatBNToString } from '@bignumber/format'
 import { BigNumber } from '@ethersproject/bignumber'
-import { WeiPerEther } from '@ethersproject/constants'
 
 function removeLeadingZeros(inputValue: number): number {
   const numberString = inputValue.toString()
@@ -19,6 +18,8 @@ const PriceImpactDisplay = ({ priceImpact }: { priceImpact: BigNumber }) => {
   let content: any
 
   const priceImpactValue: number = useMemo(() => {
+    if (!priceImpact) return 0
+
     let formattedPriceImpact = Number(
       formatBNToString(priceImpact.mul(100), 18, 2)
     )
