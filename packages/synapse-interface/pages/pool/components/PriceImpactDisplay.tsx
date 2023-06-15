@@ -3,19 +3,20 @@ import { formatBNToString } from '@bignumber/format'
 import { BigNumber } from '@ethersproject/bignumber'
 import { WeiPerEther } from '@ethersproject/constants'
 
-function removeLeadingZeros(number) {
-  const numberString = number.toString()
+function removeLeadingZeros(inputValue: number): number {
+  const numberString = inputValue.toString()
   const integerPart = parseInt(numberString)
   const decimalPart = parseFloat(
-    numberString.substr(integerPart.toString().length)
+    numberString.substring(integerPart.toString().length)
   )
 
   return integerPart + decimalPart
 }
 
 const PriceImpactDisplay = ({ priceImpact }: { priceImpact: BigNumber }) => {
-  let colorClassName
-  let labelText
+  let colorClassName: string
+  let labelText: string
+  let content: string | React.ReactNode
 
   const priceImpactValue: number = useMemo(() => {
     let formattedPriceImpact = Number(
@@ -39,7 +40,6 @@ const PriceImpactDisplay = ({ priceImpact }: { priceImpact: BigNumber }) => {
     labelText = 'Price Impact'
   }
 
-  let content
   if (priceImpactValue == 0) {
     content = ''
   } else {
