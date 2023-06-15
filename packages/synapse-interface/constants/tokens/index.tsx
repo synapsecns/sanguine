@@ -6,6 +6,7 @@ import { GMX, ETH } from './master'
 import { WETH } from './swapMaster'
 import { SYN_ETH_SUSHI_TOKEN } from './sushiMaster'
 import { Token } from '@/utils/types'
+import { BigNumber } from 'ethers'
 import _ from 'lodash'
 
 // TODO change this to token by key
@@ -30,8 +31,7 @@ interface SwapableTokensByType {
   }
 }
 export const sortTokens = (tokens: {token:Token, balance: BigNumber}[]) => {
-  const ranked = Object.values(tokens).sort((a, b) => b.token.visibilityRank - a.token.visibilityRank)
-  return ranked
+  return Object.values(tokens).sort((a, b) => b.token.visibilityRank - a.token.visibilityRank)
 }
 
 const sortedTokens = Object.values(all).sort(
