@@ -432,7 +432,7 @@ func (c CCTPRelayer) submitReceiveCircleToken(parentCtx context.Context, msg *re
 		contract := c.boundSynapseCCTPs[msg.DestChainID]
 		tx, err = contract.ReceiveCircleToken(transactor, msg.Message, msg.Attestation, msg.RequestVersion, msg.FormattedRequest)
 		txHash = tx.Hash().String()
-		return tx, err
+		return tx, fmt.Errorf("could not submit transaction: %w", err)
 	})
 	if err != nil {
 		err = fmt.Errorf("could not submit transaction: %w", err)
