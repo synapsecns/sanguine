@@ -903,7 +903,7 @@ export const NOTE = new Token({
   swapableOn: [CHAINS.CANTO.id],
   color: 'green',
   visibilityRank: 90,
-  priorityRank: 6,
+  priorityRank: 3,
 })
 
 export const DFK_USDC = new Token({
@@ -974,7 +974,7 @@ export const KLAYTN_WETH = new Token({
   logo: ethLogo,
   description: '',
   swapableType: 'ETH',
-  priorityRank: 2,
+  priorityRank: 3,
 })
 
 export const ETH = new Token({
@@ -1038,7 +1038,7 @@ export const WMOVR = new Token({
   description: 'ERC-20 Wrapped form of MOVR',
   swapableType: 'MOVR',
   color: 'purple',
-  priorityRank: 6,
+  priorityRank: 3,
 })
 
 export const WAVAX = new Token({
@@ -1086,7 +1086,7 @@ export const MULTIAVAX = new Token({
   swapableType: 'AVAX',
   swapableOn: [CHAINS.HARMONY.id],
   color: 'red',
-  priorityRank: 6,
+  priorityRank: 3,
 })
 
 // export const JEWEL = new Token({
@@ -1186,6 +1186,7 @@ export const USDTe = new Token({
   visibilityRank: 100,
   priorityRank: 1,
 })
+
 // export const WMATIC = new Token({
 //   addresses: {
 //     [CHAINS.POLYGON.id]: '0x9b17bAADf0f21F03e35249e0e59723F34994F806',
