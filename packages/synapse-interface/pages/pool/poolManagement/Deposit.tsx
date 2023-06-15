@@ -9,24 +9,27 @@ import PriceImpactDisplay from '../components/PriceImpactDisplay'
 import { useSynapseContext } from '@/utils/providers/SynapseProvider'
 import { TransactionButton } from '@/components/buttons/TransactionButton'
 import { Zero } from '@ethersproject/constants'
-import { PoolToken, Token } from '@types'
+import { Token } from '@types'
 import { useState, useEffect, useMemo } from 'react'
 import { BigNumber } from '@ethersproject/bignumber'
-import { calculateExchangeRate } from '@utils/calculateExchangeRate'
 import { getTokenAllowance } from '@/utils/actions/getTokenAllowance'
 import { approve, deposit } from '@/utils/actions/approveAndDeposit'
 import { QUOTE_POLLING_INTERVAL } from '@/constants/bridge' // TODO CHANGE
 import { PoolData, PoolUserData } from '@types'
 import LoadingTokenInput from '@components/loading/LoadingTokenInput'
-import { fetchBalance, fetchToken } from '@wagmi/core'
+import { fetchBalance } from '@wagmi/core'
 import { formatBNToString } from '@/utils/bignumber/format'
 import { getSwapDepositContractFields } from '@/utils/hooks/useSwapDepositContract'
+import { calculatePriceImpact } from '@/utils/priceImpact'
+import { transformCalculateLiquidityInput } from '@/utils/transformCalculateLiquidityInput'
 
 const DEFAULT_DEPOSIT_QUOTE = {
   priceImpact: undefined,
   allowances: {},
   routerAddress: '',
 }
+
+const DEFAULT_INPUT_VALUE = { bn: {}, str: {} }
 
 const Deposit = ({
   pool,
@@ -48,66 +51,60 @@ const Deposit = ({
     bn: Record<string, BigNumber>
     str: Record<string, string>
   }>({ bn: {}, str: {} })
+  const [filteredInputValue, setFilteredInputValue] = useState<{
+    bn: Record<string, BigNumber>
+    str: Record<string, string>
+  }>({ bn: {}, str: {} })
   const [depositQuote, setDepositQuote] = useState<{
     priceImpact: BigNumber
     allowances: Record<string, BigNumber>
     routerAddress: string
   }>(DEFAULT_DEPOSIT_QUOTE)
+  const [showPriceImpact, setShowPriceImpact] = useState(false)
   const [time, setTime] = useState(Date.now())
   const { synapseSDK } = useSynapseContext()
 
   const { poolAddress } = getSwapDepositContractFields(pool, chainId)
 
-  // TODO move this to utils
-  const sumBigNumbersFromState = () => {
-    let sum = Zero
-    pool?.poolTokens &&
-      pool.poolTokens.map((token) => {
-        if (!token.addresses[chainId]) return
-        const tokenAddress = getAddress(token.addresses[chainId])
-        if (inputValue.bn[tokenAddress]) {
-          sum = sum.add(
-            inputValue.bn[getAddress(token.addresses[chainId])].mul(
-              BigNumber.from(10).pow(18 - token.decimals[chainId])
-            )
-          )
-        }
-      })
-    return sum
-  }
+  const inputSum = useMemo(() => {
+    return sumBigNumbers(pool, filteredInputValue, chainId)
+  }, [pool, filteredInputValue, chainId])
 
   const calculateMaxDeposits = async () => {
     try {
       if (poolUserData == null || address == null) {
         return
       }
-      let inputSum = sumBigNumbersFromState()
-      if (poolData.totalLocked.gt(0) && inputSum.gt(0)) {
+      const { totalLocked, virtualPrice } = poolData
+
+      if (totalLocked.gt(0) && inputSum.gt(0)) {
+        const input = transformCalculateLiquidityInput(
+          chainId,
+          pool,
+          filteredInputValue.bn
+        )
         const { amount } = await synapseSDK.calculateAddLiquidity(
           chainId,
-          poolAddress,
-          inputValue.bn
+          pool.swapAddresses[chainId],
+          input
         )
 
         let allowances: Record<string, BigNumber> = {}
-        for (const [key, value] of Object.entries(inputValue.bn)) {
-          allowances[key] = await getTokenAllowance(
+        for (const [tokenAddress, value] of Object.entries(
+          filteredInputValue.bn
+        )) {
+          allowances[tokenAddress] = await getTokenAllowance(
             poolAddress,
-            key,
+            tokenAddress,
             address,
             chainId
           )
         }
 
-        const priceImpact = calculateExchangeRate(
-          inputSum,
-          18,
-          inputSum.sub(amount),
-          18
-        )
-        // TODO: DOUBLE CHECK THIS
+        const priceImpact = calculatePriceImpact(inputSum, amount, virtualPrice)
+
         setDepositQuote({
-          priceImpact,
+          priceImpact: priceImpact,
           allowances,
           routerAddress: poolAddress,
         })
@@ -130,8 +127,28 @@ const Deposit = ({
   }, [])
 
   useEffect(() => {
+    const filteredVal = pool
+      ? filterAndSerializeInputValues(inputValue, pool, chainId)
+      : DEFAULT_INPUT_VALUE
+
+    setFilteredInputValue(filteredVal)
+  }, [inputValue, pool])
+
+  useEffect(() => {
     calculateMaxDeposits()
-  }, [inputValue, time, pool, chainId, address])
+  }, [inputValue, filteredInputValue, pool, chainId, address])
+
+  useEffect(() => {
+    if (
+      depositQuote.priceImpact &&
+      !depositQuote.priceImpact?.eq(Zero) &&
+      !inputSum.isZero()
+    ) {
+      setShowPriceImpact(true)
+    } else {
+      setShowPriceImpact(false)
+    }
+  }, [depositQuote, inputSum])
 
   const onChangeInputValue = (token: Token, value: string) => {
     const bigNum = stringToBigNum(value, token.decimals[chainId]) ?? Zero
@@ -190,10 +207,7 @@ const Deposit = ({
       },
     }
 
-    // if (sumBigNumbersFromState().eq(0)) {
-    //   console.log(`'am hi here `)
-    //   properties.disabled = true
-    // }
+    // if (depositQuote.priceImpact)
 
     if (!isFromBalanceEnough) {
       properties.label = `Insufficient Balance`
@@ -301,9 +315,9 @@ const Deposit = ({
         )}
       </div>
       {actionBtn}
-      {/* {depositQuote.priceImpact && depositQuote.priceImpact?.gt(Zero) && (
+      {showPriceImpact && (
         <PriceImpactDisplay priceImpact={depositQuote.priceImpact} />
-      )} */}
+      )}
     </div>
   )
 }
@@ -425,6 +439,52 @@ const serializeToken = async (
       balanceStr: tokenObj.balanceStr,
     }
   }
+}
+
+const filterAndSerializeInputValues = (inputValues, pool, chainId) => {
+  const filteredInputValues = filterInputValues(inputValues, pool, chainId)
+  const showTokens = pool.nativeTokens ?? pool.poolTokens
+
+  const keys = Object.keys(filteredInputValues)
+
+  const serializedValues = { bn: {}, str: {} }
+
+  keys.map((key) => {
+    const token = showTokens.find((token) => token.addresses[chainId] === key)
+
+    serializedValues['bn'][key] = filteredInputValues[key]
+    serializedValues['str'][key] = formatBNToString(
+      filteredInputValues[key],
+      token.decimals[chainId],
+      8
+    )
+  })
+
+  return serializedValues
+}
+
+const sumBigNumbers = (pool, filteredInputValue, chainId) => {
+  let sum = Zero
+
+  if (!pool) {
+    return sum
+  }
+
+  const showTokens = pool.nativeTokens ?? pool.poolTokens
+
+  showTokens &&
+    showTokens.map((token) => {
+      if (!token.addresses[chainId]) return
+      const tokenAddress = getAddress(token.addresses[chainId])
+      if (filteredInputValue.bn[tokenAddress]) {
+        sum = sum.add(
+          filteredInputValue.bn[getAddress(token.addresses[chainId])].mul(
+            BigNumber.from(10).pow(18 - token.decimals[chainId])
+          )
+        )
+      }
+    })
+  return sum
 }
 
 export default Deposit
