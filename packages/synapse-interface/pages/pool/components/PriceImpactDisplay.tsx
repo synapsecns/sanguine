@@ -26,12 +26,17 @@ const PriceImpactDisplay = ({ priceImpact }: { priceImpact: BigNumber }) => {
 
     if (priceImpact.gt(0) && formattedPriceImpact === 0) {
       formattedPriceImpact = removeLeadingZeros(
-        Number(formatBNToString(priceImpact.mul(100), 18, 5))
+        Number(formatBNToString(priceImpact.mul(100), 18, 10))
       )
     }
 
     return formattedPriceImpact
   }, [priceImpact])
+
+  const priceImpactDisplayValue: string = useMemo(() => {
+    if (Math.abs(priceImpactValue) < 0.01) return '<0.01'
+    else return priceImpactValue.toString()
+  }, [priceImpactValue])
 
   if (priceImpactValue > 0) {
     colorClassName = 'text-green-500'
@@ -55,7 +60,7 @@ const PriceImpactDisplay = ({ priceImpact }: { priceImpact: BigNumber }) => {
           ${colorClassName}
         `}
         >
-          {priceImpactValue}%
+          {priceImpactDisplayValue}%
         </span>
       </div>
     )
