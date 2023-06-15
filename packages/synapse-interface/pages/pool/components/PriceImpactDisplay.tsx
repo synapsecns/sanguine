@@ -1,14 +1,37 @@
+import { useMemo } from 'react'
 import { formatBNToString } from '@bignumber/format'
 import { BigNumber } from '@ethersproject/bignumber'
 import { WeiPerEther } from '@ethersproject/constants'
 
+function removeLeadingZeros(number) {
+  const numberString = number.toString()
+  const integerPart = parseInt(numberString)
+  const decimalPart = parseFloat(
+    numberString.substr(integerPart.toString().length)
+  )
+
+  return integerPart + decimalPart
+}
+
 const PriceImpactDisplay = ({ priceImpact }: { priceImpact: BigNumber }) => {
   let colorClassName
   let labelText
-  let priceImpactBP =
-    priceImpact && Number(formatBNToString(priceImpact.mul(100), 18, 2))
 
-  if (priceImpactBP > 0) {
+  const priceImpactValue: number = useMemo(() => {
+    let formattedPriceImpact = Number(
+      formatBNToString(priceImpact.mul(100), 18, 2)
+    )
+
+    if (priceImpact.gt(0) && formattedPriceImpact === 0) {
+      formattedPriceImpact = removeLeadingZeros(
+        Number(formatBNToString(priceImpact.mul(100), 18, 5))
+      )
+    }
+
+    return formattedPriceImpact
+  }, [priceImpact])
+
+  if (priceImpactValue > 0) {
     colorClassName = 'text-green-500'
     labelText = 'Bonus'
   } else {
@@ -17,7 +40,7 @@ const PriceImpactDisplay = ({ priceImpact }: { priceImpact: BigNumber }) => {
   }
 
   let content
-  if (priceImpactBP == 0) {
+  if (priceImpactValue == 0) {
     content = ''
   } else {
     content = (
@@ -31,7 +54,7 @@ const PriceImpactDisplay = ({ priceImpact }: { priceImpact: BigNumber }) => {
           ${colorClassName}
         `}
         >
-          {priceImpactBP}%
+          {priceImpactValue}%
         </span>
       </div>
     )

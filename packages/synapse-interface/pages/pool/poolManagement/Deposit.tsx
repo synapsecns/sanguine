@@ -102,6 +102,7 @@ const Deposit = ({
         }
 
         const priceImpact = calculatePriceImpact(inputSum, amount, virtualPrice)
+
         setDepositQuote({
           priceImpact: priceImpact,
           allowances,
