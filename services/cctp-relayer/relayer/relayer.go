@@ -431,8 +431,11 @@ func (c CCTPRelayer) submitReceiveCircleToken(parentCtx context.Context, msg *re
 	_, err = c.txSubmitter.SubmitTransaction(ctx, big.NewInt(int64(msg.DestChainID)), func(transactor *bind.TransactOpts) (tx *types.Transaction, err error) {
 		contract := c.boundSynapseCCTPs[msg.DestChainID]
 		tx, err = contract.ReceiveCircleToken(transactor, msg.Message, msg.Attestation, msg.RequestVersion, msg.FormattedRequest)
+		if err != nil {
+			return nil, fmt.Errorf("could not submit transaction: %w", err)
+		}
 		txHash = tx.Hash().String()
-		return tx, fmt.Errorf("could not submit transaction: %w", err)
+		return tx, nil
 	})
 	if err != nil {
 		err = fmt.Errorf("could not submit transaction: %w", err)
