@@ -14,7 +14,7 @@ import (
 // the same chain ID and a nonce greater than or equal to the message nonce).
 // 2. Get the minimum destination block number for all attestations that are associated to the potential snapshot roots.
 // 3. Return the timestamp of the attestation with the minimum destination block number.
-func (s Store) GetTimestampForMessage(ctx context.Context, chainID, destination, nonce uint32, tablePrefix string) (*uint64, error) {
+func (s Store) GetTimestampForMessage(ctx context.Context, chainID, destination, nonce uint32) (*uint64, error) {
 	statesTableName, err := dbcommon.GetModelName(s.DB(), &State{})
 	if err != nil {
 		return nil, fmt.Errorf("failed to get states table name: %w", err)
@@ -61,7 +61,7 @@ func (s Store) GetTimestampForMessage(ctx context.Context, chainID, destination,
 // GetEarliestStateInRange gets the earliest state with the same snapshot root as an attestation within a nonce range.
 // 1. Get all states that are within a nonce range.
 // 2. Get the state with the earliest attestation associated to it.
-func (s Store) GetEarliestStateInRange(ctx context.Context, chainID, destination, startNonce, endNonce uint32, tablePrefix string) (*agentsTypes.State, error) {
+func (s Store) GetEarliestStateInRange(ctx context.Context, chainID, destination, startNonce, endNonce uint32) (*agentsTypes.State, error) {
 	statesTableName, err := dbcommon.GetModelName(s.DB(), &State{})
 	if err != nil {
 		return nil, fmt.Errorf("failed to get states table name: %w", err)

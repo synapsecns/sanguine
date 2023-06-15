@@ -1,12 +1,10 @@
 package db_test
 
 import (
-	"fmt"
 	"github.com/brianvoe/gofakeit/v6"
 	"github.com/ethereum/go-ethereum/common"
 	. "github.com/stretchr/testify/assert"
 	"github.com/synapsecns/sanguine/agents/agents/executor/db"
-	"github.com/synapsecns/sanguine/agents/agents/executor/types"
 	agentstypes "github.com/synapsecns/sanguine/agents/types"
 	"math/big"
 )
@@ -91,42 +89,15 @@ func (t *DBSuite) TestGetTimestampForMessage() {
 		err = testDB.StoreAttestation(t.GetTestContext(), attestationC, origin+1, 3, 1)
 		Nil(t.T(), err)
 
-		retrievedTimestampA, err := testDB.GetTimestampForMessage(t.GetTestContext(), origin, origin+1, nonceA, "")
+		retrievedTimestampA, err := testDB.GetTimestampForMessage(t.GetTestContext(), origin, origin+1, nonceA)
 		Nil(t.T(), err)
-		if *retrievedTimestampA != uint64(3) {
-			allStates, err := testDB.GetAllStates(t.GetTestContext())
-			Nil(t.T(), err)
-
-			for i, state := range allStates {
-				fmt.Println("SS State", i)
-				fmt.Println("SS Root", state.Root())
-				fmt.Println("SS Origin", state.Origin())
-				fmt.Println("SS Nonce", state.Nonce())
-				stateNonce := state.Nonce()
-				stateMask := types.DBState{Nonce: &stateNonce}
-				snapshotRoot, _, stateIndex, err := testDB.GetStateMetadata(t.GetTestContext(), stateMask)
-				Nil(t.T(), err)
-				fmt.Println("SS SnapshotRoot", snapshotRoot)
-				fmt.Println("SS StateIndex", stateIndex)
-			}
-
-			allAttestations, err := testDB.GetAllAttestations(t.GetTestContext())
-			Nil(t.T(), err)
-			for i, attestation := range allAttestations {
-				fmt.Println("ATT Attestation", i)
-				fmt.Println("ATT SnapshotRoot", attestation.SnapshotRoot())
-				fmt.Println("ATT Nonce", attestation.Nonce())
-				fmt.Println("ATT BlockNumber", attestation.BlockNumber())
-				fmt.Println("ATT Timestamp", attestation.Timestamp())
-			}
-		}
 		Equal(t.T(), uint64(3), *retrievedTimestampA)
 
-		retrievedTimestampB, err := testDB.GetTimestampForMessage(t.GetTestContext(), origin, origin+1, nonceB, "")
+		retrievedTimestampB, err := testDB.GetTimestampForMessage(t.GetTestContext(), origin, origin+1, nonceB)
 		Nil(t.T(), err)
 		Equal(t.T(), uint64(3), *retrievedTimestampB)
 
-		retrievedTimestampC, err := testDB.GetTimestampForMessage(t.GetTestContext(), origin, origin+1, nonceC, "")
+		retrievedTimestampC, err := testDB.GetTimestampForMessage(t.GetTestContext(), origin, origin+1, nonceC)
 		Nil(t.T(), err)
 		Equal(t.T(), uint64(1), *retrievedTimestampC)
 	})
@@ -176,23 +147,23 @@ func (t *DBSuite) TestGetEarliestStateInRange() {
 		err = testDB.StoreAttestation(t.GetTestContext(), attestation2, origin+1, 3, 3)
 		Nil(t.T(), err)
 
-		earliestState, err := testDB.GetEarliestStateInRange(t.GetTestContext(), origin, origin+1, 0, 5, "")
+		earliestState, err := testDB.GetEarliestStateInRange(t.GetTestContext(), origin, origin+1, 0, 5)
 		Nil(t.T(), err)
 		Equal(t.T(), uint32(2), (*earliestState).Nonce())
 
-		earliestState, err = testDB.GetEarliestStateInRange(t.GetTestContext(), origin, origin+1, 0, 1, "")
+		earliestState, err = testDB.GetEarliestStateInRange(t.GetTestContext(), origin, origin+1, 0, 1)
 		Nil(t.T(), err)
 		Nil(t.T(), earliestState)
 
-		earliestState, err = testDB.GetEarliestStateInRange(t.GetTestContext(), origin, origin+1, 3, 5, "")
+		earliestState, err = testDB.GetEarliestStateInRange(t.GetTestContext(), origin, origin+1, 3, 5)
 		Nil(t.T(), err)
 		Equal(t.T(), uint32(4), (*earliestState).Nonce())
 
-		earliestState, err = testDB.GetEarliestStateInRange(t.GetTestContext(), origin, origin+1, 6, 6, "")
+		earliestState, err = testDB.GetEarliestStateInRange(t.GetTestContext(), origin, origin+1, 6, 6)
 		Nil(t.T(), err)
 		Nil(t.T(), earliestState)
 
-		earliestState, err = testDB.GetEarliestStateInRange(t.GetTestContext(), origin, origin+1, 5, 5, "")
+		earliestState, err = testDB.GetEarliestStateInRange(t.GetTestContext(), origin, origin+1, 5, 5)
 		Nil(t.T(), err)
 		Equal(t.T(), uint32(5), (*earliestState).Nonce())
 	})

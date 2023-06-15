@@ -312,7 +312,7 @@ func (e Executor) Execute(parentCtx context.Context, message types.Message) (_ b
 	}
 
 	maximumNonce := e.chainExecutors[message.OriginDomain()].merkleTree.NumOfItems()
-	state, err := e.executorDB.GetEarliestStateInRange(ctx, originDomain, destinationDomain, *nonce, maximumNonce, e.config.DBPrefix)
+	state, err := e.executorDB.GetEarliestStateInRange(ctx, originDomain, destinationDomain, *nonce, maximumNonce)
 	if err != nil {
 		return false, fmt.Errorf("could not get earliest attestation nonce: %w", err)
 	}
@@ -993,7 +993,7 @@ func (e Executor) setMinimumTime(parentCtx context.Context, chainID uint32) (err
 				nonce := message.Nonce()
 				destinationDomain := message.DestinationDomain()
 
-				minimumTimestamp, err := e.executorDB.GetTimestampForMessage(ctx, chainID, destinationDomain, nonce, e.config.DBPrefix)
+				minimumTimestamp, err := e.executorDB.GetTimestampForMessage(ctx, chainID, destinationDomain, nonce)
 				if err != nil {
 					return fmt.Errorf("could not get timestamp for message: %w", err)
 				}

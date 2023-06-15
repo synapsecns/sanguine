@@ -123,30 +123,6 @@ func (s Store) GetEarliestSnapshotFromAttestation(ctx context.Context, attestati
 	return (*[32]byte)(&snapshotRoot), nil
 }
 
-// GetAllAttestations gets all attestations.
-func (s Store) GetAllAttestations(ctx context.Context) ([]agentsTypes.Attestation, error) {
-	var dbAttestations []Attestation
-
-	dbTx := s.DB().WithContext(ctx).
-		Find(&dbAttestations)
-	if dbTx.Error != nil {
-		return nil, fmt.Errorf("failed to get all attestations: %w", dbTx.Error)
-	}
-
-	attestations := make([]agentsTypes.Attestation, len(dbAttestations))
-	for i, dbAttestation := range dbAttestations {
-		attestations[i] = agentsTypes.NewAttestation(
-			common.HexToHash(dbAttestation.SnapshotRoot),
-			common.HexToHash(dbAttestation.DataHash),
-			dbAttestation.AttestationNonce,
-			big.NewInt(int64(dbAttestation.SummitBlockNumber)),
-			big.NewInt(int64(dbAttestation.SummitTimestamp)),
-		)
-	}
-
-	return attestations, nil
-}
-
 // DBAttestationToAttestation converts a DBAttestation to an Attestation.
 func DBAttestationToAttestation(dbAttestation types.DBAttestation) Attestation {
 	var attestation Attestation
