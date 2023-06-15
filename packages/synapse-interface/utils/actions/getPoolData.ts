@@ -16,7 +16,7 @@ import { fetchBalance, fetchToken } from '@wagmi/core'
 import { PoolTokenObject, Token, PoolUserData, PoolData } from '@types'
 import { BigNumber } from 'ethers'
 
-import { getVirtualPrice } from './getVirtualPrice'
+import { getVirtualPrice } from './getPoolFee'
 
 const getBalanceData = async ({
   pool,
