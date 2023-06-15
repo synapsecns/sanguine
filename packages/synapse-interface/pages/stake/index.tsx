@@ -12,6 +12,7 @@ import StakeCard from './StakeCard'
 import NoStakeCard from './NoStakeCard'
 import { useRouter } from 'next/router'
 import { useAnalytics } from '@/contexts/AnalyticsProvider'
+import { shortenAddress } from '@/utils/shortenAddress'
 
 const StakePage = () => {
   const { chain: connectedChain } = useNetwork()
@@ -37,7 +38,7 @@ const StakePage = () => {
     STAKABLE_TOKENS[connectedChainId] ?? []
 
   useEffect(() => {
-    analytics.track('[Stake Page] User arrives', {
+    analytics.track(`[Stake] ${shortenAddress(currentAddress)} arrives`, {
       address: currentAddress,
       query: router.query,
       pathname: router.pathname,

@@ -8,6 +8,7 @@ import { txErrorHandler } from './txErrorHandler'
 import toast from 'react-hot-toast'
 import ExplorerToastLink from '@components/ExplorerToastLink'
 import { useAnalytics } from '@/contexts/AnalyticsProvider'
+import { shortenAddress } from './shortenAddress'
 
 export const approveToken = async (
   address: string,
@@ -32,11 +33,14 @@ export const approveToken = async (
 
   const erc20 = new Contract(tokenAddress, erc20ABI, signer)
   try {
-    analytics.track(`[Approval] User ${address} initiates approval`, {
-      chainId,
-      tokenAddress,
-      amount,
-    })
+    analytics.track(
+      `[Approval] ${shortenAddress(address)} initiates approval`,
+      {
+        chainId,
+        tokenAddress,
+        amount,
+      }
+    )
 
     const approveTx = await erc20.approve(address, amount ?? MaxInt256)
     await approveTx.wait().then((successTx) => {
@@ -44,7 +48,7 @@ export const approveToken = async (
         toast.dismiss(pendingPopup)
 
         analytics.track(
-          `[Approval] User ${address} successfully approves token`,
+          `[Approval] ${shortenAddress(address)} successfully approves token`,
           {
             chainId,
             tokenAddress,
@@ -71,7 +75,7 @@ export const approveToken = async (
 
     return approveTx
   } catch (error) {
-    analytics.track(`[Approval] User ${address} approval fails`, {
+    analytics.track(`[Approval] ${shortenAddress(address)} approval fails`, {
       chainId,
       tokenAddress,
       amount,

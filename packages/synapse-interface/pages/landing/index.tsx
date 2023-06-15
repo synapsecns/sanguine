@@ -15,6 +15,7 @@ import { useEffect } from 'react'
 import { useAccount } from 'wagmi'
 
 import { useAnalytics } from '@/contexts/AnalyticsProvider'
+import { shortenAddress } from '@/utils/shortenAddress'
 
 const LandingPage = () => {
   const { address: currentAddress } = useAccount()
@@ -23,7 +24,7 @@ const LandingPage = () => {
   const analytics = useAnalytics()
 
   useEffect(() => {
-    analytics.track('[Landing Page] User arrives', {
+    analytics.track(`[Landing] ${shortenAddress(currentAddress)}arrives`, {
       address: currentAddress,
       query: router.query,
       pathname: router.pathname,

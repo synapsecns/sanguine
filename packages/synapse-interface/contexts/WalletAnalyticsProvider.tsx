@@ -2,6 +2,7 @@ import { createContext, useContext, useEffect, useRef } from 'react'
 import { Chain, useAccount, useNetwork } from 'wagmi'
 import { useAnalytics } from './AnalyticsProvider'
 import { useRouter } from 'next/router'
+import { shortenAddress } from '@/utils/shortenAddress'
 
 const WalletStatusContext = createContext(undefined)
 
@@ -26,13 +27,16 @@ export const WalletAnalyticsProvider = ({ children }) => {
 
   useEffect(() => {
     if (isConnected) {
-      analytics.track(`[Wallet Analytics] User ${address} connected`, {
-        walletId,
-        networkName,
-        networkId,
-        query,
-        pathname,
-      })
+      analytics.track(
+        `[Wallet Analytics] ${shortenAddress(address)} connected`,
+        {
+          walletId,
+          networkName,
+          networkId,
+          query,
+          pathname,
+        }
+      )
     } else {
       analytics.track(`[Wallet Analytics] User not connected`, {
         query,
@@ -46,24 +50,30 @@ export const WalletAnalyticsProvider = ({ children }) => {
       return
     }
     if (!prevChain) {
-      analytics.track(`[Wallet Analytics] User ${address} connected to chain`, {
-        walletId,
-        networkName,
-        networkId,
-        query,
-        pathname,
-      })
+      analytics.track(
+        `[Wallet Analytics] ${shortenAddress(address)} connected to chain`,
+        {
+          walletId,
+          networkName,
+          networkId,
+          query,
+          pathname,
+        }
+      )
     }
     if (chain !== prevChain) {
-      analytics.track(`[Wallet Analytics] User ${address} switched chains`, {
-        previousNetworkName: prevChain?.name,
-        previousNetworkId: prevChain?.id,
-        walletId,
-        networkName,
-        networkId,
-        query,
-        pathname,
-      })
+      analytics.track(
+        `[Wallet Analytics] ${shortenAddress(address)} switched chains`,
+        {
+          previousNetworkName: prevChain?.name,
+          previousNetworkId: prevChain?.id,
+          walletId,
+          networkName,
+          networkId,
+          query,
+          pathname,
+        }
+      )
     }
   }, [chain])
 

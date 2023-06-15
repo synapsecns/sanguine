@@ -10,6 +10,7 @@ import SwapCard from './SwapCard'
 import NoSwapCard from './NoSwapCard'
 import { useRouter } from 'next/router'
 import { useAnalytics } from '@/contexts/AnalyticsProvider'
+import { shortenAddress } from '@/utils/shortenAddress'
 
 const SwapPage = () => {
   const { address: currentAddress } = useAccount()
@@ -20,7 +21,7 @@ const SwapPage = () => {
   const analytics = useAnalytics()
 
   useEffect(() => {
-    analytics.track('[Swap Page] User arrives', {
+    analytics.track(`[Swap] ${shortenAddress(currentAddress)} arrives`, {
       address: currentAddress,
       fromChainId: chain?.id,
       query: router.query,

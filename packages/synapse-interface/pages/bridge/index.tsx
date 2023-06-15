@@ -46,6 +46,7 @@ import {
 import { CHAINS_BY_ID, AcceptedChainId } from '@/constants/chains'
 import { getSortedBridgableTokens } from '@/utils/actions/getSortedBridgableTokens'
 import { useAnalytics } from '@/contexts/AnalyticsProvider'
+import { shortenAddress } from '@/utils/shortenAddress'
 
 /* TODO
   - look into getting rid of fromChainId state and just using wagmi hook (ran into problems when trying this but forgot why)
@@ -83,9 +84,9 @@ const BridgePage = ({
   const analytics = useAnalytics()
 
   useEffect(() => {
-    analytics.track('[Bridge Page] User arrives', {
-      address: address,
-      fromChainId: fromChainId,
+    analytics.track(`[Bridge] ${shortenAddress(address)} arrives`, {
+      address,
+      fromChainId,
       query,
       pathname,
     })
@@ -101,7 +102,7 @@ const BridgePage = ({
     } = bridgeQuote
 
     // TODO: Update to correct for these decimals
-    analytics.track(`[Bridge Page] User gets bridge quote`, {
+    analytics.track(`[Bridge] ${shortenAddress(address)} gets bridge quote`, {
       address: address,
       fromChainId: fromChainId,
       inputAmountString: fromInput.string,
@@ -173,12 +174,7 @@ const BridgePage = ({
         toTokenSymbolUrl ? String(toTokenSymbolUrl) : undefined,
         validFromChainId
       )
-    analytics.track(`[Bridge] User ${address} switches destination chain`, {
-      switchFromChainId: toChainId,
-      switchFrom: CHAINS_BY_ID[toChainId].name,
-      switchToChainId: newToChain,
-      switchTo: CHAINS_BY_ID[newToChain].name,
-    })
+
     resetTokenPermutation(
       tempFromToken,
       newToChain,
@@ -466,6 +462,15 @@ const BridgePage = ({
 
         const res = await switchNetwork({ chainId: desiredChainId })
           .then((res) => {
+            analytics.track(
+              `[Bridge] ${shortenAddress(address)} switches origin chain`,
+              {
+                switchFromChainId: fromChainId,
+                switchFrom: CHAINS_BY_ID[fromChainId].name,
+                switchToChainId: desiredChainId,
+                switchTo: CHAINS_BY_ID[desiredChainId].name,
+              }
+            )
             if (fromInput.string !== '') {
               setIsQuoteLoading(true)
             }
@@ -539,6 +544,15 @@ const BridgePage = ({
         } else {
           setIsQuoteLoading(false)
         }
+        analytics.track(
+          `[Bridge] ${shortenAddress(address)} switches destination chain`,
+          {
+            switchFromChainId: toChainId,
+            switchFrom: CHAINS_BY_ID[toChainId].name,
+            switchToChainId: toNewToChain,
+            switchTo: CHAINS_BY_ID[toNewToChain].name,
+          }
+        )
         return
       }
     },
@@ -581,12 +595,15 @@ const BridgePage = ({
         if (fromInput.string !== '') {
           setIsQuoteLoading(true)
         }
-        analytics.track(`[Bridge] User ${address} switches origin token`, {
-          switchFromToken: fromToken?.name,
-          switchFromTokenAddress: fromToken?.addresses[fromChainId],
-          switchToToken: token?.name,
-          switchToTokenAddress: token?.addresses[fromChainId],
-        })
+        analytics.track(
+          `[Bridge] ${shortenAddress(address)} switches origin token`,
+          {
+            switchFromToken: fromToken?.name,
+            switchFromTokenAddress: fromToken?.addresses[fromChainId],
+            switchToToken: token?.name,
+            switchToTokenAddress: token?.addresses[fromChainId],
+          }
+        )
         return
       case 'to':
         setToToken(token)
@@ -598,12 +615,15 @@ const BridgePage = ({
           inputCurrency: fromToken.symbol,
           outputCurrency: token.symbol,
         })
-        analytics.track(`[Bridge] User ${address} switches destination token`, {
-          switchFromToken: toToken.name,
-          switchFromTokenAddress: toToken.addresses[toChainId],
-          switchToToken: token?.name,
-          switchToTokenAddress: token.addresses[toChainId],
-        })
+        analytics.track(
+          `[Bridge] ${shortenAddress(address)} switches destination token`,
+          {
+            switchFromToken: toToken.name,
+            switchFromTokenAddress: toToken.addresses[toChainId],
+            switchToToken: token?.name,
+            switchToTokenAddress: token.addresses[toChainId],
+          }
+        )
         return
     }
   }
@@ -706,11 +726,11 @@ const BridgePage = ({
   - Only executes if token has already been approved.
    */
   const executeBridge = async () => {
-    analytics.track(`[Bridge] User ${address} initiates bridge`, {
+    analytics.track(`[Bridge] ${shortenAddress(address)} initiates bridge`, {
       originChainId: fromChainId,
       destinationChainId: toChainId,
       inputAmount: fromInput.string,
-      receivedAmount: bridgeQuote.outputAmountString,
+      expectedReceivedAmount: bridgeQuote.outputAmountString,
       slippage: bridgeQuote.exchangeRate,
     })
 
@@ -770,19 +790,21 @@ const BridgePage = ({
           duration: 10000,
         })
 
-        // TODO: are these values different from the initiator?
-        analytics.track(`[Bridge] User ${address} bridges successfully`, {
-          originChainId: fromChainId,
-          destinationChainId: toChainId,
-          inputAmount: fromInput.string,
-          receivedAmount: bridgeQuote.outputAmountString,
-          slippage: bridgeQuote.exchangeRate,
-        })
+        analytics.track(
+          `[Bridge] ${shortenAddress(address)} bridges successfully`,
+          {
+            originChainId: fromChainId,
+            destinationChainId: toChainId,
+            inputAmount: fromInput.string,
+            receivedAmount: bridgeQuote.outputAmountString,
+            slippage: bridgeQuote.exchangeRate,
+          }
+        )
 
         resetRates()
         return tx
       } catch (error) {
-        analytics.track(`[Bridge] User ${address} error bridging`, {
+        analytics.track(`[Bridge] ${shortenAddress(address)} error bridging`, {
           errorCode: error.code,
         })
 
@@ -790,7 +812,7 @@ const BridgePage = ({
         toast.dismiss(pendingPopup)
       }
     } catch (error) {
-      analytics.track(`[Bridge] User ${address} error bridging`, {
+      analytics.track(`[Bridge] ${shortenAddress(address)} error bridging`, {
         errorCode: error.code,
       })
 

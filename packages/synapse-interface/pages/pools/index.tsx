@@ -16,6 +16,7 @@ import PoolCards from './PoolCards'
 import { useRouter } from 'next/router'
 
 import { useAnalytics } from '@/contexts/AnalyticsProvider'
+import { shortenAddress } from '@/utils/shortenAddress'
 
 const PoolsPage = () => {
   const { address: currentAddress } = useAccount()
@@ -27,7 +28,7 @@ const PoolsPage = () => {
   const analytics = useAnalytics()
 
   useEffect(() => {
-    analytics.track('[Pools Page] User arrives', {
+    analytics.track(`[Pools] ${shortenAddress(currentAddress)}arrives`, {
       address: currentAddress,
       fromChainId: chain?.id,
       query: router.query,
