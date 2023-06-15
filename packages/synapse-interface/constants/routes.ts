@@ -6,7 +6,6 @@ import {
   LANDING_PATH,
   BRIDGE_PATH,
   CONTRACTS_PATH,
-  PORTFOLIO_PATH,
 } from './urls'
 
 interface RouteObject {
@@ -52,10 +51,5 @@ export const NAVIGATION: RouteObject = {
     path: CONTRACTS_PATH,
     text: 'Contracts',
     match: '/contracts',
-  },
-  Portfolio: {
-    path: PORTFOLIO_PATH,
-    text: 'Portfolio',
-    match: '/portfolio',
   },
 }

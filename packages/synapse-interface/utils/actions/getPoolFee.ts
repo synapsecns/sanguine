@@ -25,3 +25,18 @@ export const getPoolFee = async (poolAddress: string, chainId: number) => {
   const swapFee = bnPercentFormat(swapFeeRaw)
   return { swapFee, virtualPrice }
 }
+
+export const getVirtualPrice = async (poolAddress: string, chainId: number) => {
+  const data: any = await readContracts({
+    contracts: [
+      {
+        address: `0x${poolAddress.slice(2)}`,
+        abi: SWAP_ABI,
+        functionName: 'getVirtualPrice',
+        chainId,
+      },
+    ],
+  })
+  const virtualPrice: any = data[0]
+  return virtualPrice
+}

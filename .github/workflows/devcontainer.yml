@@ -13,6 +13,12 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
+    permissions:
+      # always required
+      packages: write
+      # only required for private repos
+      actions: read
+      contents: read
     steps:
       - name: Git Checkout
         uses: actions/checkout@v3
@@ -30,7 +36,7 @@ jobs:
         with:
           registry: ghcr.io
           username: ${{ github.actor }}
-          password: ${{ secrets.GHCR_DOCKER }}
+          password: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Push dev container image
         uses: devcontainers/ci@v0.3

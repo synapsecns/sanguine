@@ -8,10 +8,9 @@ import { formatUnits } from '@ethersproject/units'
 import { useSynapseContext } from '@/utils/providers/SynapseProvider'
 
 import { getCoinTextColorCombined } from '@styles/tokens'
-import { calculateExchangeRate } from '@utils/calculateExchangeRate'
 import { ALL } from '@constants/withdrawTypes'
 import Grid from '@tw/Grid'
-import TokenInput from '@components/TokenInput'
+import { WithdrawTokenInput } from '@components/TokenInput'
 import RadioButton from '@components/buttons/RadioButton'
 import ReceivedTokenSection from '../components/ReceivedTokenSection'
 import PriceImpactDisplay from '../components/PriceImpactDisplay'
@@ -23,6 +22,8 @@ import { Token } from '@types'
 import { approve, withdraw } from '@/utils/actions/approveAndWithdraw'
 import { getTokenAllowance } from '@/utils/actions/getTokenAllowance'
 import { PoolData, PoolUserData } from '@types'
+import { getSwapDepositContractFields } from '@/utils/hooks/useSwapDepositContract'
+import { calculatePriceImpact } from '@/utils/priceImpact'
 
 const DEFAULT_WITHDRAW_QUOTE = {
   priceImpact: Zero,
@@ -68,25 +69,16 @@ const Withdraw = ({
   const [percentage, setPercentage] = useState(0)
   const [time, setTime] = useState(Date.now())
 
+  const [isApproved, setIsApproved] = useState(false)
+
   const resetInput = () => {
     setInputValue({ bn: Zero, str: '' })
   }
   const { synapseSDK } = useSynapseContext()
 
-  const sumBigNumbers = (pool: Token, bigNumMap: any) => {
-    let sum = Zero
-    pool?.poolTokens &&
-      pool.poolTokens.map((token) => {
-        if (bigNumMap[token.addresses[chainId]]) {
-          sum = sum.add(
-            bigNumMap[token.addresses[chainId]].value.mul(
-              BigNumber.from(10).pow(18 - token.decimals[chainId])
-            )
-          )
-        }
-      })
-    return sum
-  }
+  const showTokens = pool ? pool.nativeTokens ?? pool.poolTokens : []
+  const { poolAddress } = getSwapDepositContractFields(pool, chainId)
+
   const calculateMaxWithdraw = async () => {
     if (poolUserData == null || address == null) {
       return
@@ -99,33 +91,40 @@ const Withdraw = ({
           index: number
         }
       > = {}
+      const { virtualPrice } = poolData
       if (withdrawType == ALL) {
         const { amounts } = await synapseSDK.calculateRemoveLiquidity(
           chainId,
-          pool.swapAddresses[chainId],
+          poolAddress,
           inputValue.bn
         )
-        for (const tokenAddr in amounts) {
-          outputs[tokenAddr] = amounts[tokenAddr]
-        }
+        outputs[withdrawType] = amounts
       } else {
         const { amount } = await synapseSDK.calculateRemoveLiquidityOne(
           chainId,
-          pool.swapAddresses[chainId],
+          poolAddress,
           inputValue.bn,
-          withdrawType
+          Number(withdrawType)
         )
         outputs[withdrawType] = amount
       }
-      const tokenSum = sumBigNumbers(pool, outputs)
-      const priceImpact = calculateExchangeRate(
-        inputValue.bn,
-        18,
-        inputValue.bn.sub(tokenSum),
-        18
+
+      const outputTokensSum = sumBigNumbers(
+        pool,
+        outputs,
+        chainId,
+        withdrawType
       )
+
+      const priceImpact = calculatePriceImpact(
+        inputValue.bn,
+        outputTokensSum,
+        virtualPrice,
+        true
+      )
+
       const allowance = await getTokenAllowance(
-        pool.swapAddresses[chainId],
+        poolAddress,
         pool.addresses[chainId],
         address,
         chainId
@@ -134,7 +133,7 @@ const Withdraw = ({
         priceImpact,
         allowance,
         outputs,
-        routerAddress: pool.swapAddresses[chainId],
+        routerAddress: poolAddress,
       })
     } catch (e) {
       console.log(e)
@@ -158,11 +157,13 @@ const Withdraw = ({
           pool.decimals[chainId]
         )
       : ''
-    onChangeInputValue(pool, numericalOut)
+    const bigNum = stringToBigNum(numericalOut, pool.decimals[chainId])
+    setInputValue({ bn: bigNum, str: numericalOut })
   }
 
   const onChangeInputValue = (token: Token, value: string) => {
     const bigNum = stringToBigNum(value, token.decimals[chainId])
+
     if (poolUserData.lpTokenBalance.isZero()) {
       setInputValue({ bn: bigNum, str: value })
 
@@ -172,6 +173,7 @@ const Withdraw = ({
     const pn = bigNum
       ? bigNum.mul(100).div(poolUserData.lpTokenBalance).toNumber()
       : 0
+
     setInputValue({ bn: bigNum, str: value })
 
     if (pn > 100) {
@@ -220,13 +222,17 @@ const Withdraw = ({
       return properties
     }
 
-    if (!isAllowanceEnough) {
+    if (!isAllowanceEnough && !isApproved) {
       properties.label = `Approve Token(s)`
       properties.pendingLabel = `Approving Token(s)`
       properties.className = 'from-[#feba06] to-[#FEC737]'
       properties.disabled = false
       properties.buttonAction = () =>
-        approve(pool, withdrawQuote, inputValue.bn, chainId)
+        approve(pool, withdrawQuote, inputValue.bn, chainId).then((res) => {
+          if (res && res.data) {
+            setIsApproved(true)
+          }
+        })
       properties.postButtonAction = () => setTime(0)
       return properties
     }
@@ -262,6 +268,7 @@ const Withdraw = ({
     address,
     inputValue,
     withdrawQuote,
+    isApproved,
   ])
 
   const actionBtn = useMemo(
@@ -283,6 +290,7 @@ const Withdraw = ({
       btnClassName,
       isFromBalanceEnough,
       isAllowanceEnough,
+      isApproved,
     ]
   )
 
@@ -299,9 +307,7 @@ const Withdraw = ({
             text-gray-300
           `}
           placeholder="0"
-          onChange={(e) => {
-            onPercentChange(Number(e.currentTarget.value))
-          }}
+          onChange={(e) => onPercentChange(Number(e.currentTarget.value))}
           onFocus={(e) => e.target.select()}
           value={percentage ?? ''}
         />
@@ -342,16 +348,37 @@ const Withdraw = ({
           label="Combo"
           labelClassName={withdrawType === ALL && 'text-indigo-500'}
         />
-        {pool?.poolTokens &&
-          pool.poolTokens.map((token) => {
-            const checked = withdrawType === token.addresses[chainId]
+        {showTokens &&
+          showTokens.map((token) => {
+            // TODO: poolsToken.findIndex is too verbose and was a hacky solution to not have to refactor a lot of state passing. Needs to be fixed to handle indexes correctly.
+            const checked =
+              withdrawType ===
+              (pool.nativeTokens ? pool.nativeTokens : pool.poolTokens)
+                .findIndex(
+                  (poolToken) =>
+                    poolToken.addresses[chainId] === token.addresses[chainId]
+                )
+                .toString()
             return (
               <RadioButton
                 radioClassName={getCoinTextColorCombined(token.color)}
                 key={token?.symbol}
                 checked={checked}
                 onChange={() => {
-                  setWithdrawType(token.addresses[chainId])
+                  // Determine the tokens array
+                  const tokensArray = pool.nativeTokens
+                    ? pool.nativeTokens
+                    : pool.poolTokens
+
+                  // Find the index
+                  const index = tokensArray.findIndex(
+                    (poolToken) =>
+                      poolToken.addresses[chainId] === token.addresses[chainId]
+                  )
+
+                  // Convert the index to a string
+                  const indexString = index.toString()
+                  setWithdrawType(indexString)
                 }}
                 labelClassName={
                   checked &&
@@ -362,7 +389,8 @@ const Withdraw = ({
             )
           })}
       </Grid>
-      <TokenInput
+      <WithdrawTokenInput
+        poolUserData={poolUserData}
         token={pool}
         key={pool?.symbol}
         inputValueStr={inputValue.str}
@@ -391,22 +419,45 @@ const Withdraw = ({
           <Grid cols={{ xs: 2 }}>
             <div>
               <ReceivedTokenSection
-                poolTokens={pool?.poolTokens ?? []}
+                poolTokens={showTokens}
                 withdrawQuote={withdrawQuote}
                 chainId={chainId}
               />
             </div>
             <div>
-              {withdrawQuote.priceImpact &&
-                withdrawQuote.priceImpact?.gt(Zero) && (
-                  <PriceImpactDisplay priceImpact={withdrawQuote.priceImpact} />
-                )}
+              {withdrawQuote.priceImpact && (
+                <PriceImpactDisplay priceImpact={withdrawQuote.priceImpact} />
+              )}
             </div>
           </Grid>
         </div>
       </Transition>
     </div>
   )
+}
+
+const sumBigNumbers = (
+  pool: Token,
+  bigNumMap: Record<string, { value: BigNumber; index: number }>,
+  chainId: number,
+  withdrawType: string
+) => {
+  if (!pool?.poolTokens) {
+    return Zero
+  }
+
+  const currentTokens =
+    withdrawType === ALL ? bigNumMap[withdrawType] : bigNumMap
+
+  return pool.poolTokens.reduce((sum, token, index) => {
+    if (!currentTokens[index]) {
+      return sum
+    }
+    const valueToAdd = currentTokens[index].value.mul(
+      BigNumber.from(10).pow(18 - token.decimals[chainId])
+    )
+    return sum.add(valueToAdd)
+  }, Zero)
 }
 
 export default Withdraw

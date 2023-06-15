@@ -323,15 +323,15 @@ func (a *SimulatedBackendsTestSuite) SetupTest() {
 	wg.Add(3)
 	go func() {
 		defer wg.Done()
-		a.TestBackendOrigin = a.MakeBackend(a.GetSuiteContext(), preset.GetRinkeby().GetBigChainID())
+		a.TestBackendOrigin = preset.GetRinkeby().Geth(a.GetTestContext(), a.T())
 	}()
 	go func() {
 		defer wg.Done()
-		a.TestBackendDestination = a.MakeBackend(a.GetSuiteContext(), preset.GetBSCTestnet().GetBigChainID())
+		a.TestBackendDestination = preset.GetBSCTestnet().Geth(a.GetTestContext(), a.T())
 	}()
 	go func() {
 		defer wg.Done()
-		a.TestBackendSummit = a.MakeBackend(a.GetSuiteContext(), preset.GetMaticMumbaiFakeSynDomain().GetBigChainID())
+		a.TestBackendSummit = preset.GetMaticMumbaiFakeSynDomain().Geth(a.GetTestContext(), a.T())
 	}()
 	wg.Wait()
 
