@@ -52,6 +52,9 @@ flags:
     paths:
       - ethergo/
     carryforward: true
+  cctp-relayer:
+    paths:
+      - services/cctp-relayer/
   explorer:
     paths:
       - services/explorer/
