@@ -9,7 +9,6 @@ import (
 	"math/big"
 )
 
-// TODO: More edge cases for this test.
 func (t *DBSuite) TestGetTimestampForMessage() {
 	t.RunOnAllDBs(func(testDB db.ExecutorDB) {
 		origin := gofakeit.Uint32()
@@ -71,6 +70,7 @@ func (t *DBSuite) TestGetTimestampForMessage() {
 		agentRootC := common.BigToHash(big.NewInt(gofakeit.Int64()))
 		proofC := [][]byte{[]byte(gofakeit.Word()), []byte(gofakeit.Word())}
 
+		// Store a state with a nonce of 5, 10, and 15. (The other fields are not checked in the query we are testing).
 		err := testDB.StoreState(t.GetTestContext(), stateA, snapshotRootA, proofA, 1, 1)
 		Nil(t.T(), err)
 		err = testDB.StoreState(t.GetTestContext(), stateB, snapshotRootB, proofB, 2, 2)
@@ -82,6 +82,7 @@ func (t *DBSuite) TestGetTimestampForMessage() {
 		attestationB := agentstypes.NewAttestation(snapshotRootB, agentRootB, 2, big.NewInt(int64(gofakeit.Uint32())), big.NewInt(int64(gofakeit.Uint32())))
 		attestationC := agentstypes.NewAttestation(snapshotRootC, agentRootC, 3, big.NewInt(int64(gofakeit.Uint32())), big.NewInt(int64(gofakeit.Uint32())))
 
+		// Store attestations associated with each state via snapshot root. (stateA to attestationA, etc.)
 		err = testDB.StoreAttestation(t.GetTestContext(), attestationA, origin+1, 2, 2)
 		Nil(t.T(), err)
 		err = testDB.StoreAttestation(t.GetTestContext(), attestationB, origin+1, 1, 3)
@@ -89,21 +90,27 @@ func (t *DBSuite) TestGetTimestampForMessage() {
 		err = testDB.StoreAttestation(t.GetTestContext(), attestationC, origin+1, 3, 1)
 		Nil(t.T(), err)
 
+		// We want to get the timestamp of the attestation that has the earliest `destinationBlockNumber` and has a nonce
+		// greater than or equal to nonceA (5). This would be attestationB since it has a nonce of 10 and a
+		// `destinationBlockNumber` of 1. Because of this, we should get attestationB's timestamp of 3.
 		retrievedTimestampA, err := testDB.GetTimestampForMessage(t.GetTestContext(), origin, origin+1, nonceA)
 		Nil(t.T(), err)
 		Equal(t.T(), uint64(3), *retrievedTimestampA)
 
+		// We want the timestamp of attestationB again here, since we are checking for nonce 10, and attestation has a
+		// nonce of 10 and a `destinationBlockNumber` of 1. Because of this, we should get attestationB's timestamp of 3.
 		retrievedTimestampB, err := testDB.GetTimestampForMessage(t.GetTestContext(), origin, origin+1, nonceB)
 		Nil(t.T(), err)
 		Equal(t.T(), uint64(3), *retrievedTimestampB)
 
+		// We want the timestamp of attestationC because that is the only attestation that has a nonce greater than or
+		// equal to nonceC (15). We expect to get attestationC's `destinationTimestamp` of 1.
 		retrievedTimestampC, err := testDB.GetTimestampForMessage(t.GetTestContext(), origin, origin+1, nonceC)
 		Nil(t.T(), err)
 		Equal(t.T(), uint64(1), *retrievedTimestampC)
 	})
 }
 
-// TODO: Add more edge cases.
 func (t *DBSuite) TestGetEarliestStateInRange() {
 	t.RunOnAllDBs(func(testDB db.ExecutorDB) {
 		origin := gofakeit.Uint32()

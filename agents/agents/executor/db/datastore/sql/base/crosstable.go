@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"github.com/ethereum/go-ethereum/common"
+	"github.com/imkira/go-interpol"
 	agentsTypes "github.com/synapsecns/sanguine/agents/types"
 	"github.com/synapsecns/sanguine/core/dbcommon"
 	"math/big"
@@ -27,25 +28,34 @@ func (s Store) GetTimestampForMessage(ctx context.Context, chainID, destination,
 
 	var timestamp uint64
 
-	// TODO: Use string formatting to make this query more legible.
-	dbTx := s.DB().WithContext(ctx).
-		Raw(fmt.Sprintf(
-			`SELECT %s FROM %s WHERE %s = (
-					SELECT MIN(%s) FROM (
-						(SELECT * FROM %s WHERE %s = ? AND %s >= ?) AS stateTable
+	query, err := interpol.WithMap(
+		`SELECT {destTimestamp} FROM {attTable} WHERE {destBlockNum} = (
+					SELECT MIN({destBlockNum}) FROM (
+						(SELECT * FROM {stTable} WHERE {chainID} = ? AND {nonce} >= ?) AS stateTable
 						INNER JOIN
-						(SELECT %s, %s FROM %s WHERE %s = ?) AS attestationTable
-						ON stateTable.%s = attestationTable.%s
+						(SELECT {snapshotRoot}, {destBlockNum} FROM {attTable} WHERE {destination} = ?) AS attestationTable
+						ON stateTable.{snapshotRoot}= attestationTable.{snapshotRoot}
 					)
-				) LIMIT 1`,
-			DestinationTimestampFieldName, attestationsTableName, DestinationBlockNumberFieldName,
-			DestinationBlockNumberFieldName,
-			statesTableName, ChainIDFieldName, NonceFieldName,
-			SnapshotRootFieldName, DestinationBlockNumberFieldName, attestationsTableName, DestinationFieldName,
-			SnapshotRootFieldName, SnapshotRootFieldName,
-		), chainID, nonce, destination).
-		Scan(&timestamp)
+				) ORDER BY {attNonce} DESC LIMIT 1`,
+		map[string]string{
+			"destTimestamp": DestinationTimestampFieldName,
+			"attTable":      attestationsTableName,
+			"destBlockNum":  DestinationBlockNumberFieldName,
+			"stTable":       statesTableName,
+			"chainID":       ChainIDFieldName,
+			"nonce":         NonceFieldName,
+			"snapshotRoot":  SnapshotRootFieldName,
+			"destination":   DestinationFieldName,
+			"attNonce":      AttestationNonceFieldName,
+		},
+	)
+	if err != nil {
+		return nil, fmt.Errorf("failed to interpolate GetTimestampForMessage query: %w", err)
+	}
 
+	dbTx := s.DB().WithContext(ctx).
+		Raw(query, chainID, nonce, destination).
+		Scan(&timestamp)
 	if dbTx.Error != nil {
 		return nil, fmt.Errorf("failed to get timestamp for message: %w", dbTx.Error)
 	}
@@ -74,27 +84,34 @@ func (s Store) GetEarliestStateInRange(ctx context.Context, chainID, destination
 
 	var state State
 
-	// TODO: Use string formatting to make this query more legible.
-	dbTx := s.DB().WithContext(ctx).
-		Raw(fmt.Sprintf(
-			`SELECT * FROM %s WHERE %s = ? AND %s = (
-                     SELECT %s FROM %s WHERE %s = ? AND %s = (
-						SELECT MIN(%s) FROM (
-							(SELECT %s FROM %s WHERE %s >= ? AND %s <= ? AND %s = ?) AS stateTable
+	query, err := interpol.WithMap(
+		`SELECT * FROM {stTable} WHERE {chainID} = ? AND {snapshotRoot} = (
+                     SELECT {snapshotRoot} FROM {attTable} WHERE {destination} = ? AND {destBlockNum} = (
+						SELECT MIN({destBlockNum}) FROM (
+							(SELECT {snapshotRoot} FROM {stTable} WHERE {nonce} >= ? AND {nonce} <= ? AND {chainID} = ?) AS stateTable
 							INNER JOIN
-							(SELECT %s, %s FROM %s WHERE %s = ?) as attestationTable
-							ON stateTable.%s = attestationTable.%s
+							(SELECT {snapshotRoot}, {destBlockNum} FROM {attTable} WHERE {destination} = ?) as attestationTable
+							ON stateTable.{snapshotRoot} = attestationTable.{snapshotRoot}
 						)
-					) ORDER BY %s DESC LIMIT 1
+					) ORDER BY {attNonce} DESC LIMIT 1
 				)`,
-			statesTableName, ChainIDFieldName, SnapshotRootFieldName,
-			SnapshotRootFieldName, attestationsTableName, DestinationFieldName, DestinationBlockNumberFieldName,
-			DestinationBlockNumberFieldName,
-			SnapshotRootFieldName, statesTableName, NonceFieldName, NonceFieldName, ChainIDFieldName,
-			SnapshotRootFieldName, DestinationBlockNumberFieldName, attestationsTableName, DestinationFieldName,
-			SnapshotRootFieldName, SnapshotRootFieldName,
-			AttestationNonceFieldName,
-		), chainID, destination, startNonce, endNonce, chainID, destination).
+		map[string]string{
+			"stTable":      statesTableName,
+			"chainID":      ChainIDFieldName,
+			"snapshotRoot": SnapshotRootFieldName,
+			"attTable":     attestationsTableName,
+			"destination":  DestinationFieldName,
+			"destBlockNum": DestinationBlockNumberFieldName,
+			"nonce":        NonceFieldName,
+			"attNonce":     AttestationNonceFieldName,
+		},
+	)
+	if err != nil {
+		return nil, fmt.Errorf("failed to interpolate GetEarliestStateInRange query: %w", err)
+	}
+
+	dbTx := s.DB().WithContext(ctx).
+		Raw(query, chainID, destination, startNonce, endNonce, chainID, destination).
 		Scan(&state)
 	if dbTx.Error != nil {
 		return nil, fmt.Errorf("failed to get earliest state in range: %w", dbTx.Error)

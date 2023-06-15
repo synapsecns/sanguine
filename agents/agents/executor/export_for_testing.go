@@ -8,11 +8,9 @@ import (
 	"github.com/synapsecns/sanguine/agents/agents/executor/config"
 	"github.com/synapsecns/sanguine/agents/agents/executor/db"
 	execTypes "github.com/synapsecns/sanguine/agents/agents/executor/types"
-	"github.com/synapsecns/sanguine/agents/contracts/destination"
 	"github.com/synapsecns/sanguine/agents/contracts/inbox"
 	"github.com/synapsecns/sanguine/agents/contracts/lightinbox"
 	"github.com/synapsecns/sanguine/agents/contracts/origin"
-	"github.com/synapsecns/sanguine/agents/contracts/summit"
 	"github.com/synapsecns/sanguine/agents/domains/evm"
 	"github.com/synapsecns/sanguine/agents/types"
 	"github.com/synapsecns/sanguine/core/merkle"
@@ -55,41 +53,25 @@ func NewExecutorInjectedBackend(ctx context.Context, config config.Config, execu
 			return nil, fmt.Errorf("could not create origin parser: %w", err)
 		}
 
-		destinationParser, err := destination.NewParser(common.HexToAddress(chain.DestinationAddress))
+		lightInboxParser, err := lightinbox.NewParser(common.HexToAddress(chain.LightInboxAddress))
 		if err != nil {
 			return nil, fmt.Errorf("could not create destination parser: %w", err)
 		}
 
-		var summitParserRef *summit.Parser
-		var inboxParserRef *inbox.Parser
-		var lightInboxParserRef *lightinbox.Parser
+		var inboxParser inbox.Parser
 
 		if config.SummitChainID == chain.ChainID {
-			summitParser, err := summit.NewParser(common.HexToAddress(config.SummitAddress))
-			if err != nil {
-				return nil, fmt.Errorf("could not create summit parser: %w", err)
-			}
-
-			summitParserRef = &summitParser
-
-			inboxParser, err := inbox.NewParser(common.HexToAddress(config.InboxAddress))
+			inboxParser, err = inbox.NewParser(common.HexToAddress(config.InboxAddress))
 			if err != nil {
 				return nil, fmt.Errorf("could not create inbox parser: %w", err)
 			}
-
-			inboxParserRef = &inboxParser
 		} else {
-			lightInboxParser, err := lightinbox.NewParser(common.HexToAddress(chain.LightInboxAddress))
-			if err != nil {
-				return nil, fmt.Errorf("could not create destination parser: %w", err)
-			}
-
-			lightInboxParserRef = &lightInboxParser
+			inboxParser = nil
 		}
 
 		underlyingClient, err := ethergoChain.NewFromURL(ctx, urls[chain.ChainID])
 		if err != nil {
-			return nil, fmt.Errorf("could not get evm: %w", err)
+			return nil, fmt.Errorf("could not create underlying client: %w", err)
 		}
 
 		boundDestination, err := evm.NewDestinationContract(ctx, underlyingClient, common.HexToAddress(chain.DestinationAddress))
@@ -108,17 +90,15 @@ func NewExecutorInjectedBackend(ctx context.Context, config config.Config, execu
 				blockNumber: 0,
 				blockIndex:  0,
 			},
-			closeConnection:   make(chan bool, 1),
-			stopListenChan:    make(chan bool, 1),
-			originParser:      originParser,
-			destinationParser: destinationParser,
-			summitParser:      summitParserRef,
-			lightInboxParser:  lightInboxParserRef,
-			inboxParser:       inboxParserRef,
-			logChan:           make(chan *ethTypes.Log, logChanSize),
-			merkleTree:        tree,
-			rpcClient:         clients[chain.ChainID],
-			boundDestination:  boundDestination,
+			closeConnection:  make(chan bool, 1),
+			stopListenChan:   make(chan bool, 1),
+			originParser:     originParser,
+			lightInboxParser: lightInboxParser,
+			inboxParser:      inboxParser,
+			logChan:          make(chan *ethTypes.Log, logChanSize),
+			merkleTree:       tree,
+			rpcClient:        clients[chain.ChainID],
+			boundDestination: boundDestination,
 		}
 	}
 

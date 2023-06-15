@@ -10,11 +10,9 @@ import (
 	"github.com/synapsecns/sanguine/agents/agents/executor/config"
 	"github.com/synapsecns/sanguine/agents/agents/executor/db"
 	execTypes "github.com/synapsecns/sanguine/agents/agents/executor/types"
-	"github.com/synapsecns/sanguine/agents/contracts/destination"
 	"github.com/synapsecns/sanguine/agents/contracts/inbox"
 	"github.com/synapsecns/sanguine/agents/contracts/lightinbox"
 	"github.com/synapsecns/sanguine/agents/contracts/origin"
-	"github.com/synapsecns/sanguine/agents/contracts/summit"
 	"github.com/synapsecns/sanguine/agents/domains"
 	"github.com/synapsecns/sanguine/agents/domains/evm"
 	"github.com/synapsecns/sanguine/agents/types"
@@ -48,14 +46,10 @@ type chainExecutor struct {
 	stopListenChan chan bool
 	// originParser is the origin parser.
 	originParser origin.Parser
-	// destinationParser is the destination parser.
-	destinationParser destination.Parser
 	// lightInboxParser is the light inbox parser.
-	lightInboxParser *lightinbox.Parser
+	lightInboxParser lightinbox.Parser
 	// inboxParser is the inbox parser.
-	inboxParser *inbox.Parser
-	// summitParser is the summit parser.
-	summitParser *summit.Parser
+	inboxParser inbox.Parser
 	// logChan is the log channel.
 	logChan chan *ethTypes.Log
 	// merkleTree is a merkle tree for a specific origin chain.
@@ -155,42 +149,25 @@ func NewExecutor(ctx context.Context, config config.Config, executorDB db.Execut
 			return nil, fmt.Errorf("could not create origin parser: %w", err)
 		}
 
-		destinationParser, err := destination.NewParser(common.HexToAddress(chain.DestinationAddress))
+		lightInboxParser, err := lightinbox.NewParser(common.HexToAddress(chain.LightInboxAddress))
 		if err != nil {
 			return nil, fmt.Errorf("could not create destination parser: %w", err)
 		}
 
-		var summitParserRef *summit.Parser
-		var inboxParserRef *inbox.Parser
-		var lightInboxParserRef *lightinbox.Parser
+		var inboxParser inbox.Parser
 
 		if config.SummitChainID == chain.ChainID {
-			summitParser, err := summit.NewParser(common.HexToAddress(config.SummitAddress))
-			if err != nil {
-				return nil, fmt.Errorf("could not create summit parser: %w", err)
-			}
-
-			summitParserRef = &summitParser
-
-			inboxParser, err := inbox.NewParser(common.HexToAddress(config.InboxAddress))
+			inboxParser, err = inbox.NewParser(common.HexToAddress(config.InboxAddress))
 			if err != nil {
 				return nil, fmt.Errorf("could not create inbox parser: %w", err)
 			}
-
-			inboxParserRef = &inboxParser
 		} else {
-			lightInboxParser, err := lightinbox.NewParser(common.HexToAddress(chain.LightInboxAddress))
-			if err != nil {
-				return nil, fmt.Errorf("could not create destination parser: %w", err)
-			}
-
-			lightInboxParserRef = &lightInboxParser
+			inboxParser = nil
 		}
 
-		// TODO: The following line of code should be added back once we have confidence in omniRPC. For now we use tempRPC.
-		// chainRPCURL := fmt.Sprintf("%s/1/rpc/%d", config.BaseOmnirpcURL, chain.ChainID)
+		chainRPCURL := fmt.Sprintf("%s/1/rpc/%d", config.BaseOmnirpcURL, chain.ChainID)
 
-		underlyingClient, err := ethergoChain.NewFromURL(ctx, chain.TempRPC)
+		underlyingClient, err := ethergoChain.NewFromURL(ctx, chainRPCURL)
 		if err != nil {
 			return nil, fmt.Errorf("could not get evm: %w", err)
 		}
@@ -211,17 +188,15 @@ func NewExecutor(ctx context.Context, config config.Config, executorDB db.Execut
 				blockNumber: 0,
 				blockIndex:  0,
 			},
-			closeConnection:   make(chan bool, 1),
-			stopListenChan:    make(chan bool, 1),
-			originParser:      originParser,
-			destinationParser: destinationParser,
-			summitParser:      summitParserRef,
-			lightInboxParser:  lightInboxParserRef,
-			inboxParser:       inboxParserRef,
-			logChan:           make(chan *ethTypes.Log, logChanSize),
-			merkleTree:        tree,
-			rpcClient:         clients[chain.ChainID],
-			boundDestination:  boundDestination,
+			closeConnection:  make(chan bool, 1),
+			stopListenChan:   make(chan bool, 1),
+			originParser:     originParser,
+			lightInboxParser: lightInboxParser,
+			inboxParser:      inboxParser,
+			logChan:          make(chan *ethTypes.Log, logChanSize),
+			merkleTree:       tree,
+			rpcClient:        clients[chain.ChainID],
+			boundDestination: boundDestination,
 		}
 	}
 
@@ -626,7 +601,7 @@ func (e Executor) checkIfExecuted(parentCtx context.Context, message types.Messa
 		case <-ctx.Done():
 			return false, fmt.Errorf("context canceled: %w", ctx.Err())
 		case <-time.After(timeout):
-			if b.Attempt() >= 5 {
+			if b.Attempt() >= rpcRetry {
 				return false, fmt.Errorf("could not get executed status: %w", ctx.Err())
 			}
 
@@ -701,6 +676,7 @@ func (e Executor) streamLogs(ctx context.Context, grpcClient pbscribe.ScribeServ
 				return fmt.Errorf("could not convert log")
 			}
 
+			// We do not use a span context here because this is just meant to track transactions coming in.
 			_, span := e.handler.Tracer().Start(ctx, "executor.streamLog", trace.WithAttributes(
 				attribute.Int(metrics.ChainID, int(chainID)),
 				attribute.Int("contract", int(contractType)),
@@ -724,11 +700,16 @@ func (e Executor) streamLogs(ctx context.Context, grpcClient pbscribe.ScribeServ
 //
 //nolint:cyclop,gocognit
 func (e Executor) processLog(parentCtx context.Context, log ethTypes.Log, chainID uint32) (err error) {
-	contractType := e.logType(log, chainID)
+	datatypeInterface, err := e.logToInterface(log, chainID)
+	if err != nil {
+		return fmt.Errorf("could not convert log to interface: %w", err)
+	}
+	if datatypeInterface == nil {
+		return nil
+	}
 
 	ctx, span := e.handler.Tracer().Start(parentCtx, "processLog", trace.WithAttributes(
 		attribute.Int(metrics.ChainID, int(chainID)),
-		attribute.Int("contract", int(contractType)),
 		attribute.String(metrics.TxHash, log.TxHash.String()),
 	))
 
@@ -736,68 +717,40 @@ func (e Executor) processLog(parentCtx context.Context, log ethTypes.Log, chainI
 		metrics.EndSpanWithErr(span, err)
 	}()
 
-	//nolint:exhaustive
-	switch contractType {
-	case execTypes.OriginContract:
-		message, err := e.logToMessage(log, chainID)
-		if err != nil {
-			return fmt.Errorf("could not convert log to leaf: %w", err)
-		}
-
-		if message == nil {
-			return nil
-		}
-
+	switch datatype := datatypeInterface.(type) {
+	case types.Message:
 		merkleIndex := e.chainExecutors[chainID].merkleTree.NumOfItems()
-		leaf, err := (*message).ToLeaf()
+		leaf, err := datatype.ToLeaf()
 		if err != nil {
 			return fmt.Errorf("could not convert message to leaf: %w", err)
 		}
 
 		// Make sure the nonce of the message is being inserted at the right index.
 		switch {
-		case merkleIndex+1 > (*message).Nonce():
+		case merkleIndex+1 > datatype.Nonce():
 			return nil
-		case merkleIndex+1 < (*message).Nonce():
-			return fmt.Errorf("nonce is not correct. expected: %d, got: %d", merkleIndex+1, (*message).Nonce())
+		case merkleIndex+1 < datatype.Nonce():
+			return fmt.Errorf("nonce is not correct. expected: %d, got: %d", merkleIndex+1, datatype.Nonce())
 		default:
 		}
 
 		e.chainExecutors[chainID].merkleTree.Insert(leaf[:])
 
-		err = e.executorDB.StoreMessage(ctx, *message, log.BlockNumber, false, 0)
+		err = e.executorDB.StoreMessage(ctx, datatype, log.BlockNumber, false, 0)
 		if err != nil {
 			return fmt.Errorf("could not store message: %w", err)
 		}
-	case execTypes.InboxContract:
-		snapshot, err := e.logToSnapshot(log, chainID)
-		if err != nil {
-			return fmt.Errorf("could not convert log to snapshot: %w", err)
-		}
-
-		if snapshot == nil {
-			return nil
-		}
-
-		snapshotRoot, proofs, err := (*snapshot).SnapshotRootAndProofs()
+	case types.Snapshot:
+		snapshotRoot, proofs, err := datatype.SnapshotRootAndProofs()
 		if err != nil {
 			return fmt.Errorf("could not get snapshot root and proofs: %w", err)
 		}
 
-		err = e.executorDB.StoreStates(ctx, (*snapshot).States(), snapshotRoot, proofs, log.BlockNumber)
+		err = e.executorDB.StoreStates(ctx, datatype.States(), snapshotRoot, proofs, log.BlockNumber)
 		if err != nil {
 			return fmt.Errorf("could not store states: %w", err)
 		}
-	case execTypes.LightInboxContract:
-		attestation, err := e.logToAttestation(log, chainID)
-		if err != nil {
-			return fmt.Errorf("could not convert log to attestation: %w", err)
-		}
-
-		if attestation == nil {
-			return nil
-		}
-
+	case types.Attestation:
 		b := &backoff.Backoff{
 			Factor: 2,
 			Jitter: true,
@@ -829,14 +782,12 @@ func (e Executor) processLog(parentCtx context.Context, log ethTypes.Log, chainI
 			}
 		}
 
-		err = e.executorDB.StoreAttestation(ctx, *attestation, chainID, log.BlockNumber, logHeader.Time)
+		err = e.executorDB.StoreAttestation(ctx, datatype, chainID, log.BlockNumber, logHeader.Time)
 		if err != nil {
 			return fmt.Errorf("could not store attestation: %w", err)
 		}
-	case execTypes.Other:
-		span.AddEvent("other contract event")
 	default:
-		return fmt.Errorf("log type not supported")
+		return fmt.Errorf("type not supported")
 	}
 
 	return nil
@@ -907,7 +858,7 @@ func (e Executor) executeExecutable(parentCtx context.Context, chainID uint32) (
 					span.AddEvent("checked if message was executed", trace.WithAttributes(
 						attribute.Int(metrics.ChainID, int(chainID)),
 						attribute.Int(metrics.Nonce, int(message.Nonce())),
-						attribute.Bool("message_executed", messageExecuted),
+						attribute.Bool(metrics.MessageExecuted, messageExecuted),
 					))
 
 					if !messageExecuted {

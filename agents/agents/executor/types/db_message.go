@@ -1,6 +1,8 @@
 package types
 
 // DBMessage is the executor type for interacting with the database representation of a message.
+//
+// TODO: Abstract this DB representation so user only deals with the agents types.
 type DBMessage struct {
 	// ChainID is the chain ID of the chain that the message is for.
 	ChainID *uint32

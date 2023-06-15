@@ -3,6 +3,8 @@ package types
 import "encoding/json"
 
 // DBState is the executor type for interacting with the database representation of a state.
+//
+// TODO: Abstract this DB representation so user only deals with the agents types.
 type DBState struct {
 	// SnapshotRoot is the snapshot root.
 	SnapshotRoot *string

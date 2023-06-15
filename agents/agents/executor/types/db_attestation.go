@@ -1,6 +1,8 @@
 package types
 
 // DBAttestation is the executor type for interacting with the database representation of an attestation.
+//
+// TODO: Abstract this DB representation so user only deals with the agents types.
 type DBAttestation struct {
 	// Destination is the destination of the attestation.
 	Destination *uint32

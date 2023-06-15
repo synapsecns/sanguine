@@ -13,6 +13,7 @@ require (
 	github.com/davecgh/go-spew v1.1.1
 	github.com/ethereum/go-ethereum v1.10.26
 	github.com/hedzr/log v1.6.3
+	github.com/imkira/go-interpol v1.1.0
 	github.com/ipfs/go-log v1.0.5
 	github.com/jftuga/ellipsis v1.0.0
 	github.com/jftuga/termsize v1.0.2

@@ -3,6 +3,8 @@ package cmd
 import (
 	"context"
 	markdown "github.com/MichaelMure/go-term-markdown"
+	"github.com/ethereum/go-ethereum/ethclient"
+	"github.com/ethereum/go-ethereum/rpc"
 	"github.com/jftuga/termsize"
 	"github.com/phayes/freeport"
 	"github.com/synapsecns/sanguine/agents/agents/executor"
@@ -11,7 +13,6 @@ import (
 	"github.com/synapsecns/sanguine/agents/agents/executor/db/datastore/sql/sqlite"
 	"github.com/synapsecns/sanguine/agents/agents/executor/metadata"
 	"github.com/synapsecns/sanguine/core/metrics"
-	ethergoClient "github.com/synapsecns/sanguine/ethergo/client"
 	scribeAPI "github.com/synapsecns/sanguine/services/scribe/api"
 	"github.com/synapsecns/sanguine/services/scribe/backfill"
 	"github.com/synapsecns/sanguine/services/scribe/client"
@@ -98,6 +99,11 @@ var scribeURL = &cli.StringFlag{
 	Usage: "--scribe-url <url>",
 }
 
+var debugFlag = &cli.BoolFlag{
+	Name:  "debug",
+	Usage: "--debug",
+}
+
 func createExecutorParameters(ctx context.Context, c *cli.Context, metrics metrics.Handler) (executorConfig config.Config, executorDB db.ExecutorDB, clients map[uint32]executor.Backend, err error) {
 	executorConfig, err = config.DecodeConfig(core.ExpandOrReturnPath(c.String(configFlag.Name)))
 	if err != nil {
@@ -119,22 +125,13 @@ func createExecutorParameters(ctx context.Context, c *cli.Context, metrics metri
 
 	clients = make(map[uint32]executor.Backend)
 
-	// TODO: The following chunk of code should be added back once we have confidence in omniRPC. For now we use tempRPC.
-	/* for _, execClient := range executorConfig.Chains {
+	for _, execClient := range executorConfig.Chains {
 		rpcDial, err := rpc.DialContext(c.Context, fmt.Sprintf("%s/%d/rpc/%d", executorConfig.BaseOmnirpcURL, 1, execClient.ChainID))
 		if err != nil {
 			return executorConfig, nil, nil, fmt.Errorf("failed to dial rpc: %w", err)
 		}
 
 		ethClient := ethclient.NewClient(rpcDial)
-		clients[execClient.ChainID] = ethClient
-	} */
-
-	for _, execClient := range executorConfig.Chains {
-		ethClient, err := ethergoClient.DialBackend(ctx, execClient.TempRPC, metrics, ethergoClient.Capture(true))
-		if err != nil {
-			return executorConfig, nil, nil, fmt.Errorf("failed to dial rpc: %w", err)
-		}
 		clients[execClient.ChainID] = ethClient
 	}
 
@@ -145,7 +142,7 @@ func createExecutorParameters(ctx context.Context, c *cli.Context, metrics metri
 var ExecutorRunCommand = &cli.Command{
 	Name:        "executor-run",
 	Description: "runs the executor service",
-	Flags: []cli.Flag{configFlag, dbFlag, pathFlag, scribeTypeFlag, metricsPortFlag,
+	Flags: []cli.Flag{configFlag, dbFlag, pathFlag, scribeTypeFlag, metricsPortFlag, debugFlag,
 		// The flags below are used when `scribeTypeFlag` is set to "embedded".
 		scribeDBFlag, scribePathFlag,
 		// The flags below are used when `scribeTypeFlag` is set to "remote".
@@ -289,11 +286,11 @@ func InitExecutorDB(parentCtx context.Context, database string, path string, tab
 			return mysqlStore, nil
 		}
 
-		namingStrategy := schema.NamingStrategy{
-			TablePrefix: fmt.Sprintf("%s_", tablePrefix),
+		if tablePrefix != "" {
+			mysql.NamingStrategy = schema.NamingStrategy{
+				TablePrefix: fmt.Sprintf("%s_", tablePrefix),
+			}
 		}
-
-		mysql.NamingStrategy = namingStrategy
 
 		mysqlStore, err := mysql.NewMysqlStore(ctx, path, handler, false)
 		if err != nil {
