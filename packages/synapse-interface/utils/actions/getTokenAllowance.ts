@@ -1,4 +1,4 @@
-import { fetchBalance, fetchSigner } from '@wagmi/core'
+import { fetchBalance, fetchSigner, Address } from '@wagmi/core'
 import { erc20ABI } from 'wagmi'
 import { Contract } from 'ethers'
 
@@ -16,7 +16,7 @@ export const getTokenAllowance = async (
 
   if (tokenAddress === '0x0000000000000000000000000000000000000000') {
     fetchedBalance = await fetchBalance({
-      address: address as `0x${string}`,
+      address: address as Address,
       chainId,
     })
 
