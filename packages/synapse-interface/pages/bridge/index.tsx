@@ -82,6 +82,7 @@ const BridgePage = ({
   let successPopup: any
   let errorPopup: string
 
+  console.log('BRIDGABLE_TOKENS: ', BRIDGABLE_TOKENS)
   /*
   useEffect Trigger: onMount
   - Gets current network connected and sets it as the state.
@@ -406,7 +407,10 @@ const BridgePage = ({
   */
   const handleChainChange = useCallback(
     async (chainId: number, flip: boolean, type: 'from' | 'to') => {
-      if (address === undefined && type === 'from' || isDisconnected && type === 'from') {
+      if (
+        (address === undefined && type === 'from') ||
+        (isDisconnected && type === 'from')
+      ) {
         errorPopup = toast.error('Please connect your wallet', {
           id: 'bridge-connect-wallet',
           duration: 20000,
