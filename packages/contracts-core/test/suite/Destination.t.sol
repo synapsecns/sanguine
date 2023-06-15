@@ -1,186 +1,354 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.17;
 
-import { AttestationLib, SummitAttestation } from "../../contracts/libs/Attestation.sol";
-import { SNAPSHOT_MAX_STATES } from "../../contracts/libs/Constants.sol";
-import { Snapshot, SnapshotLib } from "../../contracts/libs/Snapshot.sol";
-import { State, SummitState } from "../../contracts/libs/State.sol";
-import { AgentInfo, SystemEntity } from "../../contracts/libs/Structures.sol";
-import { IAgentRegistry } from "../../contracts/interfaces/IAgentRegistry.sol";
+import {CallerNotInbox, NotaryInDispute} from "../../contracts/libs/Errors.sol";
+import {SNAPSHOT_MAX_STATES} from "../../contracts/libs/memory/Snapshot.sol";
+import {DisputeFlag} from "../../contracts/libs/Structures.sol";
+import {IAgentSecured} from "../../contracts/interfaces/IAgentSecured.sol";
 
-import { InterfaceDestination, ORIGIN_TREE_DEPTH } from "../../contracts/Destination.sol";
+import {ChainGas, GasData, InterfaceDestination} from "../../contracts/Destination.sol";
+import {Versioned} from "../../contracts/base/Version.sol";
 
-import { MessageRecipientMock } from "../mocks/client/MessageRecipientMock.t.sol";
-
-import { fakeStates } from "../utils/libs/FakeIt.t.sol";
-import { RawHeader, RawMessage, RawTips } from "../utils/libs/SynapseStructs.t.sol";
-import { addressToBytes32 } from "../utils/libs/SynapseUtilities.t.sol";
-import { SynapseProofs } from "../utils/SynapseProofs.t.sol";
-import { ISystemContract, SynapseTest } from "../utils/SynapseTest.t.sol";
+import {fakeSnapshot} from "../utils/libs/FakeIt.t.sol";
+import {Random} from "../utils/libs/Random.t.sol";
+import {RawAttestation, RawSnapshot, RawState, RawStateIndex} from "../utils/libs/SynapseStructs.t.sol";
+import {AgentFlag, AgentStatus, Destination, LightManager, SynapseTest} from "../utils/SynapseTest.t.sol";
+import {ExecutionHubTest} from "./hubs/ExecutionHub.t.sol";
 
 // solhint-disable func-name-mixedcase
 // solhint-disable no-empty-blocks
-contract DestinationTest is SynapseTest, SynapseProofs {
-    using SnapshotLib for bytes;
-
-    uint32 internal constant PERIOD = 1 minutes;
-    bytes internal constant BODY = "Test Body";
-
-    RawMessage[] internal rawMessages;
-    bytes[] internal messages;
-    SummitAttestation internal summitAtt;
-
-    address internal sender;
-    address internal recipient;
-
+// solhint-disable ordering
+contract DestinationTest is ExecutionHubTest {
     // Deploy Production version of Destination and mocks for everything else
     constructor() SynapseTest(DEPLOY_PROD_DESTINATION) {}
 
-    function setUp() public override {
-        super.setUp();
-        sender = makeAddr("Sender");
-        recipient = address(new MessageRecipientMock());
-    }
+    // ═══════════════════════════════════════════════ TESTS: SETUP ════════════════════════════════════════════════════
 
     function test_setupCorrectly() public {
-        // Check Messaging addresses
-        assertEq(
-            address(ISystemContract(destination).systemRouter()),
-            address(systemRouter),
-            "!systemRouter"
-        );
-        // Check Agents
-        // Destination should know about local Notaries and Guards
+        Destination dst = Destination(localDestination());
+        // Check Agents: all Agents are known in LightManager post-setup
         for (uint256 d = 0; d < allDomains.length; ++d) {
             uint32 domain = allDomains[d];
             for (uint256 i = 0; i < domains[domain].agents.length; ++i) {
                 address agent = domains[domain].agents[i];
-                if (domain == 0) {
-                    assertTrue(IAgentRegistry(destination).isActiveAgent(domain, agent), "!guard");
-                } else if (domain == DOMAIN_LOCAL) {
-                    assertTrue(
-                        IAgentRegistry(destination).isActiveAgent(domain, agent),
-                        "!local notary"
-                    );
-                } else {
-                    // Remote Notaries are unknown to Destination
-                    assertFalse(
-                        IAgentRegistry(destination).isActiveAgent(domain, agent),
-                        "!remote notary"
-                    );
-                }
+                checkAgentStatus(agent, dst.agentStatus(agent), AgentFlag.Active);
             }
         }
+        // Check AgentManager and Inbox
+        assertEq(dst.agentManager(), localAgentManager(), "!agentManager");
+        assertEq(dst.inbox(), localInbox(), "!inbox");
+        // Check version
+        assertEq(dst.version(), LATEST_VERSION, "!version");
+        // Check pending Agent Merkle Root
+        (bool rootPassed, bool rootPending) = dst.passAgentRoot();
+        assertFalse(rootPassed);
+        assertFalse(rootPending);
     }
 
-    function test_slashAgent() public {
+    function test_cleanSetup(Random memory random) public override {
+        uint32 domain = random.nextUint32();
+        vm.assume(domain != DOMAIN_SYNAPSE);
+        address caller = random.nextAddress();
+        LightManager agentManager = new LightManager(domain);
+        address inbox_ = random.nextAddress();
+        bytes32 agentRoot = random.next();
+        Destination cleanContract = new Destination(domain, address(agentManager), inbox_);
+        agentManager.initialize(address(0), address(cleanContract), inbox_);
+        vm.prank(caller);
+        cleanContract.initialize(agentRoot);
+        assertEq(cleanContract.owner(), caller, "!owner");
+        assertEq(cleanContract.localDomain(), domain, "!localDomain");
+        assertEq(cleanContract.agentManager(), address(agentManager), "!agentManager");
+        assertEq(cleanContract.inbox(), inbox_, "!inbox");
+        assertEq(cleanContract.nextAgentRoot(), agentRoot, "!nextAgentRoot");
+    }
+
+    function initializeLocalContract() public override {
+        Destination(localContract()).initialize(0);
+    }
+
+    // ════════════════════════════════════════════════ OTHER TESTS ════════════════════════════════════════════════════
+
+    function test_getAttestation(Random memory random) public {
+        uint256 amount = 10;
+        bytes[] memory attPayloads = new bytes[](amount);
+        bytes[] memory attSignatures = new bytes[](amount);
+        for (uint32 index = 0; index < amount; ++index) {
+            address notary = domains[localDomain()].agents[random.nextUint256() % DOMAIN_AGENTS];
+            RawSnapshot memory rs = random.nextSnapshot();
+            RawAttestation memory ra = random.nextAttestation(rs, index + 1);
+            uint256[] memory snapGas = rs.snapGas();
+            (attPayloads[index], attSignatures[index]) = signAttestation(notary, ra);
+            lightInbox.submitAttestation(attPayloads[index], attSignatures[index], ra._agentRoot, snapGas);
+        }
+        for (uint32 index = 0; index < amount; ++index) {
+            (bytes memory attPayload, bytes memory attSignature) =
+                InterfaceDestination(localDestination()).getAttestation(index);
+            assertEq(attPayload, attPayloads[index], "!payload");
+            assertEq(attSignature, attSignatures[index], "!signature");
+        }
+    }
+
+    function test_submitAttestation(RawAttestation memory ra, uint32 rootSubmittedAt) public {
+        RawSnapshot memory rs = Random(ra.snapRoot).nextSnapshot();
+        ra._snapGasHash = rs.snapGasHash();
+        ra.setDataHash();
+        uint256[] memory snapGas = rs.snapGas();
         address notary = domains[DOMAIN_LOCAL].agent;
-        vm.expectEmit(true, true, true, true);
-        emit AgentRemoved(DOMAIN_LOCAL, notary);
-        vm.expectEmit(true, true, true, true);
-        emit AgentSlashed(DOMAIN_LOCAL, notary);
-        vm.recordLogs();
-        vm.prank(address(systemRouter));
-        ISystemContract(destination).slashAgent({
-            _rootSubmittedAt: block.timestamp,
-            _callOrigin: DOMAIN_LOCAL,
-            _caller: SystemEntity.BondingManager,
-            _info: AgentInfo(DOMAIN_LOCAL, notary, false)
-        });
-        assertEq(vm.getRecordedLogs().length, 2, "Emitted extra logs");
+        (bytes memory attPayload, bytes memory attSig) = signAttestation(notary, ra);
+        vm.warp(rootSubmittedAt);
+        vm.expectEmit();
+        emit AttestationAccepted(DOMAIN_LOCAL, notary, attPayload, attSig);
+        lightInbox.submitAttestation(attPayload, attSig, ra._agentRoot, snapGas);
+        (uint48 snapRootTime,,) = InterfaceDestination(localDestination()).destStatus();
+        assertEq(snapRootTime, rootSubmittedAt);
     }
 
-    function test_execute(
-        SummitState memory state,
-        uint256 statesAmount,
-        uint256 stateIndex,
-        uint32 attNonce,
-        uint16 skipTime
+    function test_submitAttestation_updatesAgentRoot(RawAttestation memory ra, uint32 rootSubmittedAt) public {
+        RawSnapshot memory rs = Random(ra.snapRoot).nextSnapshot();
+        ra._snapGasHash = rs.snapGasHash();
+        ra.setDataHash();
+        uint256[] memory snapGas = rs.snapGas();
+        bytes32 agentRootLM = lightManager.agentRoot();
+        vm.assume(ra._agentRoot != agentRootLM);
+        address notary = domains[DOMAIN_LOCAL].agent;
+        (bytes memory attPayload, bytes memory attSig) = signAttestation(notary, ra);
+        vm.warp(rootSubmittedAt);
+        vm.expectEmit();
+        emit AttestationAccepted(DOMAIN_LOCAL, notary, attPayload, attSig);
+        lightInbox.submitAttestation(attPayload, attSig, ra._agentRoot, snapGas);
+        (, uint40 agentRootTime, uint32 index) = InterfaceDestination(localDestination()).destStatus();
+        // Check that values were assigned
+        assertEq(InterfaceDestination(localDestination()).nextAgentRoot(), ra._agentRoot);
+        assertEq(agentRootTime, rootSubmittedAt);
+        assertEq(index, agentIndex[notary]);
+    }
+
+    function test_submitAttestation_doesNotOverwritePending(
+        RawAttestation memory firstRA,
+        RawAttestation memory secondRA,
+        uint32 firstRootSubmittedAt,
+        uint32 timePassed
     ) public {
-        address executor = makeAddr("Executor");
+        bytes32 agentRootLM = lightManager.agentRoot();
+        vm.assume(firstRA._agentRoot != agentRootLM);
+        vm.assume(firstRA.snapRoot != secondRA.snapRoot);
+        test_submitAttestation(firstRA, firstRootSubmittedAt);
+        timePassed = timePassed % AGENT_ROOT_OPTIMISTIC_PERIOD;
+        skip(timePassed);
+        // Form a second attestation: Notary 1
+        RawSnapshot memory rs = Random(secondRA.snapRoot).nextSnapshot();
+        secondRA._snapGasHash = rs.snapGasHash();
+        secondRA.setDataHash();
+        uint256[] memory snapGas = rs.snapGas();
+        address notaryF = domains[DOMAIN_LOCAL].agents[0];
+        address notaryS = domains[DOMAIN_LOCAL].agents[1];
+        (bytes memory attPayload, bytes memory attSig) = signAttestation(notaryS, secondRA);
+        vm.expectEmit();
+        emit AttestationAccepted(DOMAIN_LOCAL, notaryS, attPayload, attSig);
+        assertTrue(lightInbox.submitAttestation(attPayload, attSig, secondRA._agentRoot, snapGas));
+        (uint40 snapRootTime, uint40 agentRootTime, uint32 index) =
+            InterfaceDestination(localDestination()).destStatus();
+        assertEq(snapRootTime, block.timestamp);
+        assertEq(agentRootTime, firstRootSubmittedAt);
+        assertEq(index, agentIndex[notaryF]);
+    }
 
-        statesAmount = bound(statesAmount, 1, SNAPSHOT_MAX_STATES);
-        stateIndex = bound(stateIndex, 0, statesAmount - 1);
+    function test_acceptAttestation_revert_notInbox(address caller) public {
+        vm.assume(caller != localInbox());
+        vm.expectRevert(CallerNotInbox.selector);
+        vm.prank(caller);
+        InterfaceDestination(localDestination()).acceptAttestation(0, 0, "", 0, new ChainGas[](0));
+    }
 
-        createMessages();
-        state.root = getRoot(MESSAGES);
-        state.origin = DOMAIN_REMOTE;
-        // Remainder of State struct is fuzzed
-        createAttestation(state, statesAmount, stateIndex);
-        bytes32[] memory snapProof = genSnapshotProof(stateIndex);
+    function test_acceptAttestation_revert_notaryInDispute(uint256 notaryId) public {
+        address notary = domains[DOMAIN_LOCAL].agents[notaryId % DOMAIN_AGENTS];
+        openDispute({guard: domains[0].agent, notary: notary});
+        vm.prank(address(lightInbox));
+        vm.expectRevert(NotaryInDispute.selector);
+        InterfaceDestination(localDestination()).acceptAttestation(agentIndex[notary], 0, "", 0, new ChainGas[](0));
+    }
 
-        // Attestation Nonce is fuzzed as well
-        bytes memory attPayload = AttestationLib.formatSummitAttestation(summitAtt, attNonce);
-        bytes memory attSignature = signMessage(domains[DOMAIN_LOCAL].agent, keccak256(attPayload));
+    function test_acceptAttestation_notAccepted_agentRootUpdated(
+        RawAttestation memory firstRA,
+        uint32 firstRootSubmittedAt
+    ) public {
+        bytes32 agentRootLM = lightManager.agentRoot();
+        vm.assume(firstRA._agentRoot != agentRootLM);
+        test_submitAttestation(firstRA, firstRootSubmittedAt);
+        skip(AGENT_ROOT_OPTIMISTIC_PERIOD);
+        // Mock a call from lightInbox, could as well use the empty values as they won't be checked for validity
+        vm.prank(address(lightInbox));
+        assertFalse(InterfaceDestination(localDestination()).acceptAttestation(0, 0, "", 0, new ChainGas[](0)));
+        (uint40 snapRootTime, uint40 agentRootTime, uint32 index) =
+            InterfaceDestination(localDestination()).destStatus();
+        assertEq(snapRootTime, firstRootSubmittedAt);
+        assertEq(agentRootTime, firstRootSubmittedAt);
+        assertEq(index, agentIndex[domains[DOMAIN_LOCAL].agent]);
+        // Should update the Agent Merkle Root
+        assertEq(lightManager.agentRoot(), firstRA._agentRoot);
+    }
 
-        skip(skipTime);
-        uint256 rootTimestamp = block.timestamp;
-        // Should emit event when attestation is accepted
-        vm.expectEmit(true, true, true, true);
-        emit AttestationAccepted(
-            DOMAIN_LOCAL,
-            domains[DOMAIN_LOCAL].agent,
-            attPayload,
-            attSignature
+    function test_passAgentRoot_optimisticPeriodNotOver(
+        RawAttestation memory ra,
+        uint32 rootSubmittedAt,
+        uint32 timePassed
+    ) public {
+        bytes32 agentRootLM = lightManager.agentRoot();
+        vm.assume(ra._agentRoot != agentRootLM);
+        // Submit attestation that updates `nextAgentRoot`
+        test_submitAttestation_updatesAgentRoot(ra, rootSubmittedAt);
+        timePassed = timePassed % AGENT_ROOT_OPTIMISTIC_PERIOD;
+        skip(timePassed);
+        (bool rootPassed, bool rootPending) = InterfaceDestination(localDestination()).passAgentRoot();
+        assertFalse(rootPassed);
+        assertTrue(rootPending);
+        assertEq(lightManager.agentRoot(), agentRootLM);
+    }
+
+    function test_passAgentRoot_optimisticPeriodOver(RawAttestation memory ra, uint32 rootSubmittedAt) public {
+        // Submit attestation that updates `nextAgentRoot`
+        test_submitAttestation_updatesAgentRoot(ra, rootSubmittedAt);
+        skip(AGENT_ROOT_OPTIMISTIC_PERIOD);
+        (bool rootPassed, bool rootPending) = InterfaceDestination(localDestination()).passAgentRoot();
+        assertTrue(rootPassed);
+        assertFalse(rootPending);
+        assertEq(lightManager.agentRoot(), ra._agentRoot);
+    }
+
+    // ═════════════════════════════════════════════════ GAS DATA ══════════════════════════════════════════════════════
+
+    function test_getGasData(Random memory random) public {
+        RawSnapshot memory firstSnap;
+        firstSnap.states = new RawState[](2);
+        firstSnap.states[0] = random.nextState({origin: DOMAIN_REMOTE, nonce: random.nextUint32()});
+        firstSnap.states[1] = random.nextState({origin: DOMAIN_SYNAPSE, nonce: random.nextUint32()});
+        RawAttestation memory ra = random.nextAttestation(firstSnap, random.nextUint32());
+        // Use current agent root in the attestation
+        ra._agentRoot = getAgentRoot();
+        ra.setDataHash();
+        address firstNotary = domains[DOMAIN_LOCAL].agents[0];
+        (bytes memory attPayload, bytes memory attSig) = signAttestation(firstNotary, ra);
+        uint256[] memory firstSnapGas = firstSnap.snapGas();
+        // Submit first attestation
+        lightInbox.submitAttestation(attPayload, attSig, ra._agentRoot, firstSnapGas);
+        uint256 firstSkipTime = random.nextUint32();
+        skip(firstSkipTime);
+        RawSnapshot memory secondSnap;
+        secondSnap.states = new RawState[](1);
+        secondSnap.states[0] = random.nextState({origin: DOMAIN_REMOTE, nonce: random.nextUint32()});
+        vm.assume(
+            GasData.unwrap(firstSnap.states[0].castToState().gasData())
+                != GasData.unwrap(secondSnap.states[0].castToState().gasData())
         );
-        InterfaceDestination(destination).submitAttestation(attPayload, attSignature);
-        skip(PERIOD);
-        for (uint256 i = 0; i < MESSAGES; ++i) {
-            bytes32[ORIGIN_TREE_DEPTH] memory originProof = getLatestProof(i);
-            // (_origin, _nonce, _sender, _rootTimestamp, _message)
-            vm.expectCall(
-                recipient,
-                abi.encodeWithSelector(
-                    MessageRecipientMock.handle.selector,
-                    DOMAIN_REMOTE,
-                    i + 1,
-                    sender,
-                    rootTimestamp,
-                    BODY
-                )
-            );
-            // Should emit event when message is executed
-            vm.expectEmit(true, true, true, true);
-            emit Executed(DOMAIN_REMOTE, keccak256(messages[i]));
-            vm.prank(executor);
-            InterfaceDestination(destination).execute(
-                messages[i],
-                originProof,
-                snapProof,
-                stateIndex
-            );
-        }
+        RawAttestation memory secondRA = random.nextAttestation(secondSnap, random.nextUint32());
+        address secondNotary = domains[DOMAIN_LOCAL].agents[1];
+        (attPayload, attSig) = signAttestation(secondNotary, secondRA);
+        uint256[] memory secondSnapGas = secondSnap.snapGas();
+        // Submit second attestation
+        lightInbox.submitAttestation(attPayload, attSig, secondRA._agentRoot, secondSnapGas);
+        uint256 secondSkipTime = random.nextUint32();
+        skip(secondSkipTime);
+        // Check getGasData
+        GasData firstRemoteGasData = firstSnap.states[0].castToState().gasData();
+        GasData firstSynapseGasData = firstSnap.states[1].castToState().gasData();
+        GasData secondRemoteGasData = secondSnap.states[0].castToState().gasData();
+        emit log_named_uint("Remote gasData: first", GasData.unwrap(firstRemoteGasData));
+        emit log_named_uint("Remote gasData: second", GasData.unwrap(secondRemoteGasData));
+        emit log_named_uint("Synapse gasData: first", GasData.unwrap(firstSynapseGasData));
+        (GasData gasData, uint256 dataMaturity) = InterfaceDestination(localDestination()).getGasData(DOMAIN_REMOTE);
+        assertEq(GasData.unwrap(gasData), GasData.unwrap(secondRemoteGasData), "!remoteGasData");
+        assertEq(dataMaturity, secondSkipTime, "!remoteDataMaturity");
+        (gasData, dataMaturity) = InterfaceDestination(localDestination()).getGasData(DOMAIN_SYNAPSE);
+        assertEq(GasData.unwrap(gasData), GasData.unwrap(firstSynapseGasData), "!synapseGasData");
+        assertEq(dataMaturity, firstSkipTime + secondSkipTime, "!synapseDataMaturity");
     }
 
-    function createAttestation(
-        SummitState memory state,
-        uint256 statesAmount,
-        uint256 stateIndex
-    ) public {
-        (bytes[] memory states, State[] memory ptrs) = fakeStates(state, statesAmount, stateIndex);
-        Snapshot snapshot = SnapshotLib.formatSnapshot(ptrs).castToSnapshot();
-        acceptSnapshot(states);
-        summitAtt = snapshot.toSummitAttestation();
+    function test_getGasData_localDomain(Random memory random) public {
+        RawSnapshot memory firstSnap;
+        firstSnap.states = new RawState[](2);
+        firstSnap.states[0] = random.nextState({origin: DOMAIN_REMOTE, nonce: random.nextUint32()});
+        firstSnap.states[1] = random.nextState({origin: localDomain(), nonce: random.nextUint32()});
+        RawAttestation memory ra = random.nextAttestation(firstSnap, random.nextUint32());
+        address firstNotary = domains[DOMAIN_LOCAL].agents[0];
+        (bytes memory attPayload, bytes memory attSig) = signAttestation(firstNotary, ra);
+        uint256[] memory firstSnapGas = firstSnap.snapGas();
+        // Submit first attestation
+        lightInbox.submitAttestation(attPayload, attSig, ra._agentRoot, firstSnapGas);
+        uint256 firstSkipTime = random.nextUint32();
+        skip(firstSkipTime);
+        // Check getGasData
+        GasData firstRemoteGasData = firstSnap.states[0].castToState().gasData();
+        (GasData gasData, uint256 dataMaturity) = InterfaceDestination(localDestination()).getGasData(DOMAIN_REMOTE);
+        assertEq(GasData.unwrap(gasData), GasData.unwrap(firstRemoteGasData), "!remoteGasData");
+        assertEq(dataMaturity, firstSkipTime, "!remoteDataMaturity");
+        // Should not save data for local domain
+        (gasData, dataMaturity) = InterfaceDestination(localDestination()).getGasData(localDomain());
+        assertEq(GasData.unwrap(gasData), 0, "!localGasData");
+        assertEq(dataMaturity, 0, "!localDataMaturity");
     }
 
-    function createMessages() public {
-        for (uint32 i = 0; i < MESSAGES; ++i) {
-            RawMessage memory rm = RawMessage(
-                RawHeader({
-                    origin: DOMAIN_REMOTE,
-                    sender: addressToBytes32(sender),
-                    nonce: i + 1,
-                    destination: DOMAIN_LOCAL,
-                    recipient: addressToBytes32(recipient),
-                    optimisticSeconds: PERIOD
-                }),
-                RawTips(0, 0, 0, 0),
-                BODY
-            );
-            (bytes memory message, ) = rm.castToMessage();
-            rawMessages.push(rm);
-            messages.push(message);
-            insertMessage(message);
-        }
+    function test_getGasData_noDataForDomain(Random memory random, uint32 domain) public {
+        vm.assume(domain != DOMAIN_REMOTE && domain != DOMAIN_SYNAPSE);
+        RawSnapshot memory firstSnap;
+        firstSnap.states = new RawState[](2);
+        firstSnap.states[0] = random.nextState({origin: DOMAIN_REMOTE, nonce: random.nextUint32()});
+        firstSnap.states[1] = random.nextState({origin: DOMAIN_SYNAPSE, nonce: random.nextUint32()});
+        RawAttestation memory ra = random.nextAttestation(firstSnap, random.nextUint32());
+        address firstNotary = domains[DOMAIN_LOCAL].agents[0];
+        (bytes memory attPayload, bytes memory attSig) = signAttestation(firstNotary, ra);
+        uint256[] memory firstSnapGas = firstSnap.snapGas();
+        // Submit first attestation
+        lightInbox.submitAttestation(attPayload, attSig, ra._agentRoot, firstSnapGas);
+        skip(random.nextUint32());
+        // Check getGasData
+        (GasData gasData, uint256 dataMaturity) = InterfaceDestination(localDestination()).getGasData(domain);
+        assertEq(GasData.unwrap(gasData), 0);
+        assertEq(dataMaturity, 0);
+    }
+
+    function test_getGasData_notaryInDispute(Random memory random) public {
+        RawSnapshot memory firstSnap;
+        firstSnap.states = new RawState[](2);
+        firstSnap.states[0] = random.nextState({origin: DOMAIN_REMOTE, nonce: random.nextUint32()});
+        firstSnap.states[1] = random.nextState({origin: DOMAIN_SYNAPSE, nonce: random.nextUint32()});
+        RawAttestation memory ra = random.nextAttestation(firstSnap, random.nextUint32());
+        address firstNotary = domains[DOMAIN_LOCAL].agents[0];
+        (bytes memory attPayload, bytes memory attSig) = signAttestation(firstNotary, ra);
+        uint256[] memory firstSnapGas = firstSnap.snapGas();
+        // Submit first attestation
+        lightInbox.submitAttestation(attPayload, attSig, ra._agentRoot, firstSnapGas);
+        skip(random.nextUint32());
+        // Open dispute
+        openDispute({guard: domains[0].agent, notary: firstNotary});
+        // Check getGasData
+        (GasData gasData, uint256 dataMaturity) = InterfaceDestination(localDestination()).getGasData(DOMAIN_REMOTE);
+        assertEq(GasData.unwrap(gasData), 0);
+        assertEq(dataMaturity, 0);
+        (gasData, dataMaturity) = InterfaceDestination(localDestination()).getGasData(DOMAIN_SYNAPSE);
+        assertEq(GasData.unwrap(gasData), 0);
+        assertEq(dataMaturity, 0);
+    }
+
+    // ══════════════════════════════════════════════════ HELPERS ══════════════════════════════════════════════════════
+
+    /// @notice Prepares execution of the created messages
+    function prepareExecution(SnapshotMock memory sm)
+        public
+        override
+        returns (bytes32 snapRoot, bytes32[] memory snapProof)
+    {
+        RawAttestation memory ra;
+        (ra, snapProof) = createSnapshotProof(sm);
+        RawSnapshot memory rs = fakeSnapshot(sm.rs, sm.rsi);
+        uint256[] memory snapGas = rs.snapGas();
+        snapRoot = ra.snapRoot;
+        (bytes memory attPayload, bytes memory attSig) = signAttestation(domains[DOMAIN_LOCAL].agent, ra);
+        lightInbox.submitAttestation(attPayload, attSig, ra._agentRoot, snapGas);
+    }
+
+    /// @notice Returns local domain for the tested contract
+    function localDomain() public pure override returns (uint32) {
+        return DOMAIN_LOCAL;
     }
 }

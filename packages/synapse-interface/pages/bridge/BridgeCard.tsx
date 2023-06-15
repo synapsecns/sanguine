@@ -9,7 +9,7 @@ import Grid from '@tw/Grid'
 import Card from '@tw/Card'
 import Button from '@tw/Button'
 import ExchangeRateInfo from '@components/ExchangeRateInfo'
-import { TransactionButton } from '@components/buttons/SubmitTxButton'
+import { TransactionButton } from '@/components/buttons/TransactionButton'
 import { PageHeader } from '@components/PageHeader'
 import { TokenSlideOver } from '@/components/misc/TokenSlideOver'
 import { ChainSlideOver } from '@/components/misc/ChainSlideOver'
@@ -29,6 +29,8 @@ import { CHAINS_BY_ID } from '@constants/chains'
 import { Token } from '@/utils/types'
 import { BridgeQuote } from '@/utils/types'
 import { checkStringIfOnlyZeroes } from '@/utils/regex'
+import { AcceptedChainId } from '@constants/chains'
+import { useGasDropAmount } from '@/utils/hooks/useGasDropAmount'
 
 export enum DisplayType {
   FROM = 'from',
@@ -84,7 +86,7 @@ const BridgeCard = ({
   handleTokenChange: (token: Token, type: 'from' | 'to') => void
   onChangeFromAmount: (amount: string) => void
   setDestinationAddress: (address: string) => void
-  executeBridge: () => Promise<TransactionResponse>
+  executeBridge: () => Promise<TransactionResponse | string>
   resetRates: () => void
   setTime: (time: number) => void
   bridgeTxnHash: string
@@ -95,6 +97,7 @@ const BridgeCard = ({
   )
   const [deadlineMinutes, setDeadlineMinutes] = useState('')
   const [fromTokenBalance, setFromTokenBalance] = useState<BigNumber>(Zero)
+  const [approveTx, setApproveTx] = useState<string>(null)
   const bridgeDisplayRef = useRef(null)
 
   /*
@@ -111,6 +114,17 @@ const BridgeCard = ({
       )
     }
   }, [fromToken, fromTokens])
+
+  /*
+  useEffect Trigger: fromInput
+  - Resets approve txn status if user input changes after amount is approved
+  */
+
+  useEffect(() => {
+    if (approveTx) {
+      setApproveTx(null)
+    }
+  }, [fromInput])
 
   /*
   Constant: fromArgs, toArgs
@@ -172,6 +186,12 @@ const BridgeCard = ({
       postButtonAction: () => resetRates(),
     }
 
+    if (!AcceptedChainId[fromChainId]) {
+      properties.label = 'Wrong Network'
+      properties.disabled = true
+      return properties
+    }
+
     if (error) {
       properties.label = error
       properties.disabled = true
@@ -219,7 +239,8 @@ const BridgeCard = ({
       fromToken?.addresses[fromChainId] !== '' &&
       fromToken?.addresses[fromChainId] !== AddressZero &&
       bridgeQuote?.allowance &&
-      bridgeQuote?.allowance?.lt(fromInput?.bigNum)
+      bridgeQuote?.allowance?.lt(fromInput?.bigNum) &&
+      !approveTx
     ) {
       properties.buttonAction = () =>
         approveToken(
@@ -230,7 +251,10 @@ const BridgeCard = ({
       properties.label = `Approve ${fromToken?.symbol}`
       properties.pendingLabel = `Approving ${fromToken?.symbol}`
       properties.className = 'from-[#feba06] to-[#FEC737]'
-      properties.postButtonAction = () => setTime(0)
+      properties.postButtonAction = () => {
+        setApproveTx('approved')
+        setTime(0)
+      }
       properties.disabled = false
       return properties
     }
@@ -280,6 +304,7 @@ const BridgeCard = ({
     destinationAddress,
     error,
     bridgeTxnHash,
+    approveTx,
   ])
 
   const actionBtn = useMemo(
@@ -303,6 +328,7 @@ const BridgeCard = ({
       pendingLabel,
       btnClassName,
       destAddrNotValid,
+      bridgeTxnHash,
     ]
   )
 
@@ -445,6 +471,7 @@ const BridgeCard = ({
               toToken={toToken}
               exchangeRate={bridgeQuote?.exchangeRate}
               toChainId={toChainId}
+              showGasDrop={true}
             />
           </Transition>
           <Transition

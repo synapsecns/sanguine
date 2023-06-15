@@ -7,6 +7,7 @@ import { WETH } from './swapMaster'
 import { SYN_ETH_SUSHI_TOKEN } from './sushiMaster'
 import { Token } from '@/utils/types'
 import _ from 'lodash'
+
 // TODO change this to token by key
 interface TokensByChain {
   [cID: string]: Token[]
@@ -28,15 +29,26 @@ interface SwapableTokensByType {
     [swapableType: string]: Token[]
   }
 }
+export const sortTokens = (tokens: Token[]) =>
+  Object.values(tokens).sort((a, b) => b.visibilityRank - a.visibilityRank)
 
 const sortedTokens = Object.values(all).sort(
   (a, b) => b.visibilityRank - a.visibilityRank
 )
 
+// This should be an object where keys are chain IDs and values are arrays of token keys that you want to pause on each chain
+const PAUSED_TOKENS_BY_CHAIN = {
+  [CHAINS.FANTOM.id]: ['USDC', 'USDT', 'FTMETH'],
+  [CHAINS.AVALANCHE.id]: ['AVWETH'],
+}
+
 const getBridgeableTokens = (): TokensByChain => {
   const bridgeableTokens: TokensByChain = {}
-  Object.values(all).map((token) => {
+  Object.entries(all).map(([key, token]) => {
     for (const cID of Object.keys(token.addresses)) {
+      // Skip if the token is paused on the current chain
+      if (PAUSED_TOKENS_BY_CHAIN[cID]?.includes(key)) continue
+
       if (!bridgeableTokens[cID]) {
         bridgeableTokens[cID] = [token]
       } else {
@@ -51,11 +63,15 @@ const getBridgeableTokens = (): TokensByChain => {
 
 const getBridgeChainsByType = (): BridgeChainsByType => {
   const bridgeChainsByType: BridgeChainsByType = {}
-  Object.values(all).map((token) => {
+  Object.entries(all).map(([key, token]) => {
     const swapableType = String(token?.swapableType)
-    const keys = Object.keys(token.addresses).filter(
-      (a) => !bridgeChainsByType[swapableType]?.includes(a)
-    )
+    const keys = Object.keys(token.addresses).filter((cID) => {
+      // Skip if the token is paused on the current chain
+      if (PAUSED_TOKENS_BY_CHAIN[cID]?.includes(key)) return false
+
+      return !bridgeChainsByType[swapableType]?.includes(cID)
+    })
+
     if (bridgeChainsByType[swapableType]) {
       bridgeChainsByType[swapableType] = [
         ...bridgeChainsByType[swapableType],
@@ -67,6 +83,7 @@ const getBridgeChainsByType = (): BridgeChainsByType => {
   })
   return bridgeChainsByType
 }
+
 const getBridgeTypeByChain = (): BridgeTypeByChain => {
   const bridgeChainByType = getBridgeChainsByType()
   const bridgeTypeByChain: BridgeTypeByChain = {}
@@ -97,10 +114,14 @@ const getBridgeableTokensByType = (): SwapableTokensByType => {
       convertArrayToObject(v),
     ])
   )
-  Object.values(all).map((token) => {
+
+  Object.entries(all).map(([key, token]) => {
     const swapableType = String(token?.swapableType)
 
     for (const cID of Object.keys(token.addresses)) {
+      // Skip if the token is paused on the current chain
+      if (PAUSED_TOKENS_BY_CHAIN[cID]?.includes(key)) continue
+
       if (bridgeSwapableTokensByType[cID][swapableType].length === 0) {
         bridgeSwapableTokensByType[cID][swapableType] = [token]
       } else if (
@@ -116,6 +137,7 @@ const getBridgeableTokensByType = (): SwapableTokensByType => {
 
   return bridgeSwapableTokensByType
 }
+
 const getTokenHashMap = () => {
   let tokenHashMap = {}
 
@@ -290,7 +312,7 @@ export const LEGACY_POOLS_BY_CHAIN = getLegacyTokensByChain()
 
 export const STAKABLE_TOKENS = {
   ...getPoolsByChain(false),
-  [CHAINS.ETH.id]: [...POOLS_BY_CHAIN[CHAINS.ETH.id], SYN_ETH_SUSHI_TOKEN],
+  [CHAINS.ETH.id]: [SYN_ETH_SUSHI_TOKEN],
 }
 
 const getStakingMap = () => {

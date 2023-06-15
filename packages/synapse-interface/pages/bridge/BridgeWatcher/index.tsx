@@ -94,8 +94,11 @@ const BridgeWatcher = ({
 
   useEffect(() => {
     if (fromSigner && fromChainId && toChainId && address) {
+      const validBridgeContract = BRIDGE_CONTRACTS[fromChainId]
+        ? BRIDGE_CONTRACTS[fromChainId]
+        : BRIDGE_CONTRACTS[1]
       const fromSynapseContract = new Contract(
-        BRIDGE_CONTRACTS[fromChainId],
+        validBridgeContract,
         SYNAPSE_BRIDGE_ABI,
         fromSigner
       )
@@ -109,6 +112,8 @@ const BridgeWatcher = ({
         setFromTransactions(txs)
       })
     }
+
+    return () => setFromTransactions([...fromTransactions])
   }, [fromSynapseContract, bridgeTxHash])
 
   useEffect(() => {

@@ -62,6 +62,7 @@ export const GOHM = new Token({
   description: 'OHM',
   swapableType: 'OHM',
   color: 'gray',
+  visibilityRank: 40,
 })
 
 export const LINK = new Token({
@@ -370,14 +371,14 @@ export const BUSD = new Token({
 })
 
 export const USDC = new Token({
-  visibilityRank: 1,
+  visibilityRank: 101,
   addresses: {
     [CHAINS.BNB.id]: '0x8ac76a51cc950d9822d68b83fe1ad97b32cd580d',
     [CHAINS.ETH.id]: '0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48',
     [CHAINS.CRONOS.id]: '0xc21223249ca28397b4b6541dffaecc539bff0c59',
     [CHAINS.OPTIMISM.id]: '0x7f5c764cbc14f9669b88837ca1490cca17c31607',
     [CHAINS.POLYGON.id]: '0x2791bca1f2de4661ed88a30c99a7a9449aa84174',
-    // [CHAINS.FANTOM.id]: '0x04068da6c83afcfa0e13ba15a6696662335d5b75', PAUSED
+    [CHAINS.FANTOM.id]: '0x04068da6c83afcfa0e13ba15a6696662335d5b75',
     // [CHAINS.AVALANCHE.id]: '0xb97ef9ef8734c71904d8002f8b6bc66dd9c48a6e',
     [CHAINS.ARBITRUM.id]: '0xff970a61a04b1ca14834a43f5de4533ebddb5cc8',
     [CHAINS.HARMONY.id]: '0x985458e523db3d53125813ed68c274899e9dfab4',
@@ -530,7 +531,7 @@ export const USDT = new Token({
     // [CHAINS.AVALANCHE.id]: '0x9702230a8ea53601f5cd2dc00fdbc13d4df4a8c7',
     // [CHAINS.HARDHAT.id]: '0x9A9f2CCfdE556A7E9Ff0848998Aa4a0CFD8863AE',
     [CHAINS.ARBITRUM.id]: '0xfd086bc7cd5c481dcc9c85ebe478a1c0b69fcbb9',
-    // [CHAINS.FANTOM.id]: '0x049d68029688eabf473097a2fc38ef61633a3c7a', PAUSED 05/24
+    [CHAINS.FANTOM.id]: '0x049d68029688eabf473097a2fc38ef61633a3c7a',
     [CHAINS.HARMONY.id]: '0x3c2b8be99c50593081eaa2a724f0b8285f5aba8f',
     [CHAINS.BOBA.id]: '0x5DE1677344D3Cb0D7D465c10b72A8f60699C062d',
     [CHAINS.AURORA.id]: '0x4988a896b1227218e4A686fdE5EabdcAbd91571f',
@@ -577,6 +578,7 @@ export const USDT = new Token({
     CHAINS.BOBA.id,
     CHAINS.CANTO.id,
   ],
+  visibilityRank: 100,
 })
 
 export const DAI = new Token({
@@ -609,6 +611,7 @@ export const DAI = new Token({
     CHAINS.BOBA.id,
   ],
   color: 'orange',
+  visibilityRank: 100,
 })
 
 export const WBTC = new Token({
@@ -699,19 +702,19 @@ export const ONEETH = new Token({
   color: 'sky',
 })
 
-// export const FTMETH = new Token({
-//   addresses: {
-//     // [CHAINS.FANTOM.id]: '0x74b23882a30290451A17c44f4F05243b6b58C76d',  PAUSED 05/24
-//   },
-//   decimals: 18,
-//   symbol: 'ETH ',
-//   name: 'Wrapped ETH',
-//   logo: wethLogo,
-//   description: 'Fantom Wrapped form of ETH',
-//   swapableType: 'ETH',
-//   // swapableOn: [CHAINS.FANTOM.id],
-//   color: 'sky',
-// })
+export const FTMETH = new Token({
+  addresses: {
+    [CHAINS.FANTOM.id]: '0x74b23882a30290451A17c44f4F05243b6b58C76d'
+  },
+  decimals: 18,
+  symbol: 'ETH ',
+  name: 'Wrapped ETH',
+  logo: wethLogo,
+  description: 'Fantom Wrapped form of ETH',
+  swapableType: 'ETH',
+  swapableOn: [CHAINS.FANTOM.id],
+  color: 'sky',
+})
 
 export const CANTOETH = new Token({
   addresses: {
@@ -725,6 +728,7 @@ export const CANTOETH = new Token({
   swapableType: 'ETH',
   swapableOn: [CHAINS.CANTO.id],
   color: 'sky',
+  visibilityRank: 100,
 })
 
 export const METISETH = new Token({
@@ -767,6 +771,7 @@ export const SYN = new Token({
   description: 'SYN is the base token behind synapse',
   swapableType: 'SYN',
   color: 'purple',
+  visibilityRank: 90,
 })
 
 export const FRAX = new Token({
@@ -845,6 +850,7 @@ export const NUSD = new Token({
     CHAINS.CANTO.id,
   ],
   color: 'purple',
+  visibilityRank: 50,
 })
 
 export const NOTE = new Token({
@@ -859,6 +865,7 @@ export const NOTE = new Token({
   swapableType: 'USD',
   swapableOn: [CHAINS.CANTO.id],
   color: 'green',
+  visibilityRank: 90,
 })
 
 export const DFK_USDC = new Token({
@@ -874,6 +881,7 @@ export const DFK_USDC = new Token({
   description: '',
   swapableType: 'USD',
   color: 'blue',
+  visibilityRank: 100,
 })
 
 /**
@@ -909,6 +917,7 @@ export const NETH = new Token({
     CHAINS.CANTO.id,
   ],
   color: 'purple',
+  visibilityRank: 50,
 })
 
 export const KLAYTN_WETH = new Token({
@@ -942,6 +951,7 @@ export const ETH = new Token({
   isNative: true,
   swapableType: 'ETH',
   color: 'sky',
+  visibilityRank: 101,
 })
 
 export const MOVR = new Token({
@@ -1000,6 +1010,7 @@ export const WAVAX = new Token({
   description: 'ERC-20 Wrapped form of AVAX',
   swapableType: 'AVAX',
   color: 'red',
+  visibilityRank: 90,
 })
 
 export const SYNAVAX = new Token({
@@ -1102,6 +1113,7 @@ export const USDCe = new Token({
   `,
   swapableType: 'USD',
   swapableOn: [CHAINS.AVALANCHE.id],
+  visibilityRank: 100,
 })
 
 export const USDTe = new Token({
@@ -1119,6 +1131,7 @@ export const USDTe = new Token({
   `,
   swapableType: 'USD',
   swapableOn: [CHAINS.AVALANCHE.id],
+  visibilityRank: 100,
 })
 // export const WMATIC = new Token({
 //   addresses: {

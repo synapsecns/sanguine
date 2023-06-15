@@ -3,8 +3,6 @@ package evm
 import (
 	"context"
 	"fmt"
-	"strings"
-
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/event"
@@ -43,43 +41,6 @@ type summitContract struct {
 	nonceManager nonce.Manager
 }
 
-func (a summitContract) AddAgent(transactOpts *bind.TransactOpts, domainID uint32, signer signer.Signer) error {
-	_, err := a.contract.AddAgent(transactOpts, domainID, signer.Address())
-	if err != nil {
-		return fmt.Errorf("could not add notary: %w", err)
-	}
-
-	return nil
-}
-
-func (a summitContract) SubmitSnapshot(ctx context.Context, signer signer.Signer, encodedSnapshot []byte, signature signer.Signature) error {
-	transactor, err := signer.GetTransactor(ctx, a.client.GetBigChainID())
-	if err != nil {
-		return fmt.Errorf("could not sign tx: %w", err)
-	}
-
-	transactOpts, err := a.nonceManager.NewKeyedTransactor(transactor)
-	if err != nil {
-		return fmt.Errorf("could not create tx: %w", err)
-	}
-
-	transactOpts.Context = ctx
-
-	rawSig, err := types.EncodeSignature(signature)
-	if err != nil {
-		return fmt.Errorf("could not encode signature: %w", err)
-	}
-	_, err = a.contract.SubmitSnapshot(transactOpts, encodedSnapshot, rawSig)
-	if err != nil {
-		if strings.Contains(err.Error(), "nonce too low") {
-			a.nonceManager.ClearNonce(signer.Address())
-		}
-		return fmt.Errorf("could not submit sanpshot: %w", err)
-	}
-
-	return nil
-}
-
 func (a summitContract) GetLatestState(ctx context.Context, origin uint32) (types.State, error) {
 	rawState, err := a.contract.GetLatestState(&bind.CallOpts{Context: ctx}, origin)
 	if err != nil {
@@ -106,6 +67,24 @@ func (a summitContract) GetLatestAgentState(ctx context.Context, origin uint32, 
 	}
 
 	return state, nil
+}
+
+func (a summitContract) GetLatestNotaryAttestation(ctx context.Context, notarySigner signer.Signer) (types.NotaryAttestation, error) {
+	lastNotaryAttestation, err := a.contract.GetLatestNotaryAttestation(&bind.CallOpts{Context: ctx}, notarySigner.Address())
+	if err != nil {
+		return nil, fmt.Errorf("could not retrieve latest notary attestation: %w", err)
+	}
+
+	if len(lastNotaryAttestation.AttPayload) == 0 {
+		return nil, nil
+	}
+
+	notaryAttestation, err := types.NewNotaryAttestation(lastNotaryAttestation.AttPayload, lastNotaryAttestation.AgentRoot, lastNotaryAttestation.SnapGas)
+	if err != nil {
+		return nil, fmt.Errorf("could not decode notary attestation: %w", err)
+	}
+
+	return notaryAttestation, nil
 }
 
 func (a summitContract) WatchAttestationSaved(ctx context.Context, sink chan<- *summit.SummitAttestationSaved) (event.Subscription, error) {

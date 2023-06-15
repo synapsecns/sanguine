@@ -4,6 +4,9 @@ import { Chain } from '@/utils/types/index'
 export type ChainsByChainID = {
   [cID: number]: Chain
 }
+export const sortChains = (chains: Chain[]) =>
+  Object.values(chains).sort((a, b) => b.visibilityRank - a.visibilityRank)
+
 export const CHAINS_ARR = Object.values(all).sort(
   (a, b) => b.visibilityRank - a.visibilityRank
 )
@@ -64,3 +67,7 @@ export const ChainId = {
   HARMONY: 1666600000,
   TERRA: 121014925, //"columbus-5", the day columbus reportedly landed in america followed by 5
 }
+
+export const AcceptedChainId = Object.fromEntries(
+  Object.entries(ChainId).map(([key, value]) => [value, key])
+)

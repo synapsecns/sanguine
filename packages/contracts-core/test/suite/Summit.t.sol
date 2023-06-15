@@ -1,44 +1,53 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.17;
 
-import { IAgentRegistry } from "../../contracts/interfaces/IAgentRegistry.sol";
-import { ISnapshotHub } from "../../contracts/interfaces/ISnapshotHub.sol";
-import { MerkleLib } from "../../contracts/libs/Merkle.sol";
-import { SnapshotLib, SummitAttestation } from "../../contracts/libs/Snapshot.sol";
-import { State, StateLib, SummitState } from "../../contracts/libs/State.sol";
-import { AgentInfo, SystemEntity } from "../../contracts/libs/Structures.sol";
+import {CallerNotInbox, NotaryInDispute} from "../../contracts/libs/Errors.sol";
+import {IAgentSecured} from "../../contracts/interfaces/IAgentSecured.sol";
+import {InterfaceDestination} from "../../contracts/interfaces/InterfaceDestination.sol";
+import {ISnapshotHub} from "../../contracts/interfaces/ISnapshotHub.sol";
+import {SNAPSHOT_TREE_HEIGHT} from "../../contracts/libs/Constants.sol";
+import {MerkleMath} from "../../contracts/libs/merkle/MerkleMath.sol";
 
-import { InterfaceSummit } from "../../contracts/Summit.sol";
+import {InterfaceSummit} from "../../contracts/Summit.sol";
+import {Versioned} from "../../contracts/base/Version.sol";
 
-import { ISystemContract, SynapseTest } from "../utils/SynapseTest.t.sol";
-import { SynapseProofs } from "../utils/SynapseProofs.t.sol";
-import { Random } from "../utils/libs/Random.t.sol";
+import {AgentFlag, AgentStatus, Summit, SynapseTest} from "../utils/SynapseTest.t.sol";
+import {State, RawAttestation, RawSnapshot, RawState, RawStateIndex} from "../utils/libs/SynapseStructs.t.sol";
+import {Random} from "../utils/libs/Random.t.sol";
+import {AgentSecuredTest} from "./hubs/ExecutionHub.t.sol";
 
 // solhint-disable func-name-mixedcase
 // solhint-disable no-empty-blocks
-contract SummitTest is SynapseTest, SynapseProofs {
-    using StateLib for bytes;
-
+// solhint-disable code-complexity
+contract SummitTest is AgentSecuredTest {
     struct SignedSnapshot {
         bytes snapshot;
         bytes signature;
     }
 
-    struct AttestationMask {
-        bool diffRoot;
-        bool diffHeight;
-        bool diffBlockNumber;
-        bool diffTimestamp;
-    }
-
     uint256 internal constant STATES = 10;
 
-    mapping(uint256 => mapping(uint256 => SummitState)) internal guardStates;
+    mapping(uint256 => mapping(uint256 => RawState)) internal guardStates;
     mapping(uint256 => SignedSnapshot) internal guardSnapshots;
-    mapping(uint256 => SummitAttestation) internal notaryAttestations;
+    mapping(uint256 => RawAttestation) internal notaryAttestations;
 
     // Deploy Production version of Summit and mocks for everything else
     constructor() SynapseTest(DEPLOY_PROD_SUMMIT) {}
+
+    function setUp() public virtual override {
+        RawAttestation memory empty = RawAttestation({
+            snapRoot: 0,
+            dataHash: 0,
+            _agentRoot: 0,
+            _snapGasHash: 0,
+            nonce: 0,
+            blockNumber: uint40(block.number),
+            timestamp: uint40(block.timestamp)
+        });
+        empty.setDataHash();
+        notaryAttestations[0] = empty;
+        super.setUp();
+    }
 
     function test_setupCorrectly() public {
         // Check Agents
@@ -47,78 +56,108 @@ contract SummitTest is SynapseTest, SynapseProofs {
             uint32 domain = allDomains[d];
             for (uint256 i = 0; i < domains[domain].agents.length; ++i) {
                 address agent = domains[domain].agents[i];
-                assertTrue(IAgentRegistry(summit).isActiveAgent(domain, agent), "!agent");
+                checkAgentStatus(agent, IAgentSecured(summit).agentStatus(agent), AgentFlag.Active);
             }
         }
+        // Check version
+        assertEq(Versioned(summit).version(), LATEST_VERSION, "!version");
+        // Check attestation getter for zero nonce
+        (bytes memory attPayload, bytes32 agentRoot, uint256[] memory snapGas) = ISnapshotHub(summit).getAttestation(0);
+        assertEq(attPayload, notaryAttestations[0].formatAttestation(), "!attPayload");
+        assertEq(agentRoot, 0, "!agentRoot");
+        assertEq(snapGas.length, 0, "!snapGas");
     }
 
-    function test_verifyAttestation_existingNonce(Random memory random, AttestationMask memory mask)
-        public
-    {
+    function test_cleanSetup(Random memory random) public override {
+        uint32 domain = DOMAIN_SYNAPSE;
+        address agentManager = random.nextAddress();
+        address inbox_ = random.nextAddress();
+        address caller = random.nextAddress();
+        Summit cleanContract = new Summit(domain, agentManager, inbox_);
+        vm.prank(caller);
+        cleanContract.initialize();
+        assertEq(cleanContract.owner(), caller, "!owner");
+        assertEq(cleanContract.agentManager(), agentManager, "!agentManager");
+        assertEq(cleanContract.inbox(), inbox_, "!inbox");
+        assertEq(cleanContract.localDomain(), domain, "!localDomain");
+    }
+
+    function initializeLocalContract() public override {
+        Summit(localContract()).initialize();
+    }
+
+    function test_acceptGuardSnapshot_revert_notInbox(address caller) public {
+        vm.assume(caller != localAgentManager());
+        vm.expectRevert(CallerNotInbox.selector);
+        vm.prank(caller);
+        InterfaceSummit(summit).acceptGuardSnapshot(0, 0, "");
+    }
+
+    function test_acceptNotarySnapshot_revert_notInbox(address caller) public {
+        vm.assume(caller != localInbox());
+        vm.expectRevert(CallerNotInbox.selector);
+        vm.prank(caller);
+        InterfaceSummit(summit).acceptNotarySnapshot(0, 0, 0, "");
+    }
+
+    function test_verifyAttestation_existingNonce(Random memory random, uint256 mask) public {
         test_notarySnapshots(random);
         // Restrict nonce to existing ones
-        uint32 nonce = uint32(bound(random.nextUint32(), 0, DOMAIN_AGENTS - 1));
+        uint32 nonce = uint32(bound(random.nextUint32(), 0, DOMAIN_AGENTS));
         // Attestation is valid if and only if all four fields match
-        bool isValid = !(mask.diffRoot ||
-            mask.diffHeight ||
-            mask.diffBlockNumber ||
-            mask.diffTimestamp);
-        SummitAttestation memory sa = notaryAttestations[nonce];
-        if (mask.diffRoot) sa.root = sa.root ^ bytes32(uint256(1));
-        if (mask.diffHeight) sa.height = sa.height ^ 1;
-        if (mask.diffBlockNumber) sa.blockNumber = sa.blockNumber ^ 1;
-        if (mask.diffTimestamp) sa.timestamp = sa.timestamp ^ 1;
-        verifyAttestation(random, nonce, sa, isValid);
+        (bool isValid, RawAttestation memory ra) = notaryAttestations[nonce].modifyAttestation(mask);
+        verifyAttestation(random, ra, isValid);
     }
 
-    function test_verifyAttestation_unknownNonce(
-        Random memory random,
-        uint32 nonce,
-        SummitAttestation memory sa
-    ) public {
+    function test_verifyAttestation_unknownNonce(Random memory random, RawAttestation memory ra) public {
         test_notarySnapshots(random);
-        // Restrict nonce to existing ones
-        nonce = uint32(bound(nonce, DOMAIN_AGENTS, type(uint32).max));
-        verifyAttestation(random, nonce, sa, false);
+        // Restrict nonce to non-existing ones
+        ra.nonce = uint32(bound(ra.nonce, DOMAIN_AGENTS + 1, type(uint32).max));
+        verifyAttestation(random, ra, false);
     }
 
-    function verifyAttestation(
-        Random memory random,
-        uint32 nonce,
-        SummitAttestation memory sa,
-        bool isValid
-    ) public {
+    function verifyAttestation(Random memory random, RawAttestation memory ra, bool isValid) public {
         // Pick random domain expect for 0
         uint256 domainIndex = bound(random.nextUint256(), 1, allDomains.length - 1);
         uint32 domain = allDomains[domainIndex];
         // Pick random Notary
         uint256 notaryIndex = bound(random.nextUint256(), 0, DOMAIN_AGENTS - 1);
         address notary = domains[domain].agents[notaryIndex];
-        bytes memory attestation = sa.formatSummitAttestation(nonce);
-        bytes memory signature = signMessage(notary, keccak256(attestation));
+        (bytes memory attPayload, bytes memory attSig) = signAttestation(notary, ra);
         if (!isValid) {
             // Expect Events to be emitted
             vm.expectEmit(true, true, true, true);
-            emit InvalidAttestation(attestation, signature);
-            vm.expectEmit(true, true, true, true);
-            emit AgentRemoved(domain, notary);
-            vm.expectEmit(true, true, true, true);
-            emit AgentSlashed(domain, notary);
-            // Should slash Agents on Synapse Chain registries
-            bytes memory expectedCall = _expectedSlashCall(domain, notary);
-            vm.expectCall(originSynapse, expectedCall);
-            vm.expectCall(destinationSynapse, expectedCall);
-            // Should forward Slash system calls
-            bytes memory data = _dataSlashAgentCall(domain, notary);
-            _expectRemoteCallBondingManager(DOMAIN_LOCAL, data);
-            _expectRemoteCallBondingManager(DOMAIN_REMOTE, data);
+            emit InvalidAttestation(attPayload, attSig);
+            // TODO: check that anyone could make the call
+            expectStatusUpdated(AgentFlag.Fraudulent, domain, notary);
+            expectDisputeResolved(0, notary, address(0), address(this));
         }
         vm.recordLogs();
-        assertEq(
-            InterfaceSummit(summit).verifyAttestation(attestation, signature),
-            isValid,
-            "!returnValue"
-        );
+        assertEq(inbox.verifyAttestation(attPayload, attSig), isValid, "!returnValue");
+        if (isValid) {
+            assertEq(vm.getRecordedLogs().length, 0, "Emitted logs when shouldn't");
+        }
+        // Verify report on constructed attestation
+        verifyAttestationReport(random, ra, isValid);
+    }
+
+    function verifyAttestationReport(Random memory random, RawAttestation memory ra, bool isAttestationValid) public {
+        // Report is considered invalid, if reported attestation is valid
+        bool isValid = !isAttestationValid;
+        // Pick random Guard
+        uint256 guardIndex = bound(random.nextUint256(), 0, DOMAIN_AGENTS - 1);
+        address guard = domains[0].agents[guardIndex];
+        (bytes memory attPayload, bytes memory arSig) = signAttestationReport(guard, ra);
+        if (!isValid) {
+            // Expect Events to be emitted
+            vm.expectEmit(true, true, true, true);
+            emit InvalidAttestationReport(attPayload, arSig);
+            // TODO: check that anyone could make the call
+            expectStatusUpdated(AgentFlag.Fraudulent, 0, guard);
+            expectDisputeResolved(0, guard, address(0), address(this));
+        }
+        vm.recordLogs();
+        assertEq(inbox.verifyAttestationReport(attPayload, arSig), isValid, "!returnValue");
         if (isValid) {
             assertEq(vm.getRecordedLogs().length, 0, "Emitted logs when shouldn't");
         }
@@ -131,39 +170,41 @@ contract SummitTest is SynapseTest, SynapseProofs {
             for (uint32 j = 0; j < STATES; ++j) {
                 // Use random non-zero nonce for every state
                 uint32 nonce = uint32(bound(random.nextUint32(), 1, type(uint32).max));
-                guardStates[i][j] = random.nextState({ origin: j + 1, nonce: nonce });
-                states[j] = guardStates[i][j].formatSummitState().castToState();
+                guardStates[i][j] = random.nextState({origin: j + 1, nonce: nonce});
+                states[j] = guardStates[i][j].castToState();
             }
-            bytes memory snapshot = SnapshotLib.formatSnapshot(states);
-            bytes memory signature = signMessage(domains[0].agents[i], keccak256(snapshot));
-            guardSnapshots[i] = SignedSnapshot(snapshot, signature);
+            address guard = domains[0].agents[i];
+            (bytes memory snapPayload, bytes memory snapSig) = signSnapshot(guard, states);
+            guardSnapshots[i] = SignedSnapshot(snapPayload, snapSig);
         }
 
         for (uint32 i = 0; i < DOMAIN_AGENTS; ++i) {
             // Check that every State is saved
             for (uint256 j = 0; j < STATES; ++j) {
                 vm.expectEmit(true, true, true, true);
-                emit StateSaved(guardStates[i][j].formatSummitState());
+                emit StateSaved(guardStates[i][j].formatState());
             }
             vm.expectEmit(true, true, true, true);
-            emit SnapshotAccepted(
-                0,
-                domains[0].agents[i],
-                guardSnapshots[i].snapshot,
-                guardSnapshots[i].signature
-            );
-            InterfaceSummit(summit).submitSnapshot(
-                guardSnapshots[i].snapshot,
-                guardSnapshots[i].signature
-            );
+            emit SnapshotAccepted(0, domains[0].agents[i], guardSnapshots[i].snapshot, guardSnapshots[i].signature);
+            (bytes memory attPayload, bytes32 agentRoot, uint256[] memory snapGas) =
+                inbox.submitSnapshot(guardSnapshots[i].snapshot, guardSnapshots[i].signature);
+            assertEq(attPayload, "", "Guard: non-empty attestation");
+            assertEq(agentRoot, bytes32(0), "Guard: non-empty agent root");
+            assertEq(snapGas.length, 0, "Guard: non-empty snap gas data");
             // Check latest Guard States
             for (uint32 j = 0; j < STATES; ++j) {
                 assertEq(
                     ISnapshotHub(summit).getLatestAgentState(j + 1, domains[0].agents[i]),
-                    guardStates[i][j].formatSummitState(),
+                    guardStates[i][j].formatState(),
                     "!latestState: guard"
                 );
             }
+        }
+
+        for (uint32 i = 0; i < DOMAIN_AGENTS; ++i) {
+            (bytes memory snapPayload, bytes memory snapSignature) = ISnapshotHub(summit).getGuardSnapshot(i);
+            assertEq(snapPayload, guardSnapshots[i].snapshot, "!snapshot");
+            assertEq(snapSignature, guardSnapshots[i].signature, "!signature");
         }
 
         // Check global latest state
@@ -174,52 +215,87 @@ contract SummitTest is SynapseTest, SynapseProofs {
         // Every Guard submits a snapshot with a random state for domains in [1 .. DOMAINS] range
         test_guardSnapshots(random);
 
+        bytes[] memory snapPayloads = new bytes[](DOMAIN_AGENTS);
+        bytes[] memory snapSignatures = new bytes[](DOMAIN_AGENTS);
+
         // Every Notary submits a snapshot with a random Guard state for all domains
         for (uint32 i = 0; i < DOMAIN_AGENTS; ++i) {
             // Set random timestamp and block height
-            SummitAttestation memory sa;
-            sa.blockNumber = random.nextUint40();
-            sa.timestamp = random.nextUint40();
-            vm.roll(sa.blockNumber);
-            vm.warp(sa.timestamp);
+            RawAttestation memory ra;
+            ra.blockNumber = random.nextUint40();
+            ra.timestamp = random.nextUint40();
+            vm.roll(ra.blockNumber);
+            vm.warp(ra.timestamp);
 
-            bytes[] memory rawStates = new bytes[](STATES);
-            State[] memory states = new State[](STATES);
+            RawSnapshot memory rs;
+            rs.states = new RawState[](STATES);
             for (uint256 j = 0; j < STATES; ++j) {
                 // Pick a random Guard to choose their state for domain (J+1)
-                uint256 guardIndex = random.nextUint256() % DOMAIN_AGENTS;
-                rawStates[j] = guardStates[guardIndex][j].formatSummitState();
-                states[j] = rawStates[j].castToState();
+                // To ensure that all Notary snapshots are different pick Guard
+                // with the same index as Notary for the first state
+                uint256 guardIndex = j == 0 ? i : random.nextUint256() % DOMAIN_AGENTS;
+                rs.states[j] = guardStates[guardIndex][j];
             }
 
             // Calculate root and height using AttestationProofGenerator
-            acceptSnapshot(rawStates);
-            sa.root = getSnapshotRoot();
-            sa.height = getSnapshotHeight();
-            // This is i-th submitted attestation so far
-            notaryAttestations[i] = sa;
-            bytes memory attestation = sa.formatSummitAttestation({ _nonce: i });
+            acceptSnapshot(rs);
+            ra.snapRoot = getSnapshotRoot();
+            ra._agentRoot = getAgentRoot();
+            ra._snapGasHash = rs.snapGasHash();
+            ra.setDataHash();
+            // This is i-th submitted attestation so far, but attestation nonce starts from 1
+            ra.nonce = i + 1;
+            notaryAttestations[ra.nonce] = ra;
+            bytes memory attestation = ra.formatAttestation();
 
             address notary = domains[DOMAIN_LOCAL].agents[i];
-            bytes memory snapshot = SnapshotLib.formatSnapshot(states);
-            bytes memory signature = signMessage(notary, keccak256(snapshot));
+            (snapPayloads[i], snapSignatures[i]) = signSnapshot(notary, rs);
+            // Nothing should be saved before Notary submitted their first snapshot
+            (bytes memory attPayload, bytes32 agentRoot, uint256[] memory snapGas) =
+                ISnapshotHub(summit).getLatestNotaryAttestation(notary);
+            assertEq(attPayload, "");
+            assertEq(agentRoot, bytes32(0));
+            assertEq(snapGas.length, 0);
 
             vm.expectEmit(true, true, true, true);
             emit AttestationSaved(attestation);
             vm.expectEmit(true, true, true, true);
-            emit SnapshotAccepted(DOMAIN_LOCAL, notary, snapshot, signature);
-            InterfaceSummit(summit).submitSnapshot(snapshot, signature);
+            emit SnapshotAccepted(DOMAIN_LOCAL, notary, snapPayloads[i], snapSignatures[i]);
+            // Should pass to Destination: acceptAttestation(status, sigIndex, attestation, agentRoot, snapGas)
+            vm.expectCall(
+                destinationSynapse,
+                abi.encodeWithSelector(
+                    InterfaceDestination.acceptAttestation.selector,
+                    agentIndex[notary],
+                    type(uint256).max,
+                    attestation,
+                    ra._agentRoot,
+                    rs.snapGas()
+                )
+            );
+
+            (attPayload, agentRoot, snapGas) = inbox.submitSnapshot(snapPayloads[i], snapSignatures[i]);
+            assertEq(attPayload, attestation, "Notary: incorrect attestation");
+            assertEq(agentRoot, ra._agentRoot, "Notary: incorrect agent root");
+            assertEq(keccak256(abi.encodePacked(snapGas)), ra._snapGasHash, "Notary: incorrect snap gas hash");
+            // Check attestation getter
+            (attPayload, agentRoot, snapGas) = ISnapshotHub(summit).getAttestation(ra.nonce);
+            assertEq(attPayload, attestation, "!getAttestation");
+            assertEq(agentRoot, ra._agentRoot, "!getAttestation: agent root");
+            assertEq(keccak256(abi.encodePacked(snapGas)), ra._snapGasHash, "!getAttestation: gas hash");
+            (attPayload, agentRoot, snapGas) = ISnapshotHub(summit).getLatestNotaryAttestation(notary);
+            assertEq(attPayload, attestation, "!latestAttestation");
+            assertEq(agentRoot, ra._agentRoot, "!latestAttestation: agent root");
+            assertEq(keccak256(abi.encodePacked(snapGas)), ra._snapGasHash, "!latestAttestation: gas hash");
 
             // Check proofs for every State in the Notary snapshot
             for (uint256 j = 0; j < STATES; ++j) {
-                bytes32[] memory snapProof = ISnapshotHub(summit).getSnapshotProof(i, j);
+                bytes32[] memory snapProof = ISnapshotHub(summit).getSnapshotProof(ra.nonce, j);
                 // Item to prove is State's "left sub-leaf"
-                (bytes32 item, ) = states[j].subLeafs();
+                (bytes32 item,) = rs.states[j].castToState().subLeafs();
                 // Item index is twice the state index (since it's a left child)
                 assertEq(
-                    MerkleLib.branchRoot(item, snapProof, 2 * j),
-                    sa.root,
-                    "!getSnapshotProof"
+                    MerkleMath.proofRoot(2 * j, item, snapProof, SNAPSHOT_TREE_HEIGHT), ra.snapRoot, "!getSnapshotProof"
                 );
             }
 
@@ -227,73 +303,93 @@ contract SummitTest is SynapseTest, SynapseProofs {
             for (uint32 j = 0; j < STATES; ++j) {
                 assertEq(
                     ISnapshotHub(summit).getLatestAgentState(j + 1, notary),
-                    rawStates[j],
+                    rs.states[j].formatState(),
                     "!latestState: notary"
                 );
             }
+        }
+
+        for (uint32 i = 0; i < DOMAIN_AGENTS; ++i) {
+            (bytes memory snapPayload, bytes memory snapSignature) = ISnapshotHub(summit).getNotarySnapshot(i);
+            assertEq(snapPayload, snapPayloads[i], "!payload");
+            assertEq(snapSignature, snapSignatures[i], "!signature");
+        }
+
+        for (uint32 i = 0; i < DOMAIN_AGENTS; ++i) {
+            address guard = domains[0].agents[i];
+            // No Attestations should be saved for Guards
+            (bytes memory attPayload, bytes32 agentRoot, uint256[] memory snapGas) =
+                ISnapshotHub(summit).getLatestNotaryAttestation(guard);
+            assertEq(attPayload, "");
+            assertEq(agentRoot, bytes32(0));
+            assertEq(snapGas.length, 0);
         }
 
         // Check global latest state
         checkLatestState();
     }
 
+    function test_getLatestState_empty(uint32 domain) public {
+        assertEq(InterfaceSummit(summit).getLatestState(domain), "");
+    }
+
     function checkLatestState() public {
         // Check global latest state
         for (uint32 j = 0; j < STATES; ++j) {
-            SummitState memory latestState;
+            RawState memory latestState;
             for (uint32 i = 0; i < DOMAIN_AGENTS; ++i) {
                 if (guardStates[i][j].nonce > latestState.nonce) {
                     latestState = guardStates[i][j];
                 }
             }
-            assertEq(
-                InterfaceSummit(summit).getLatestState(j + 1),
-                latestState.formatSummitState(),
-                "!getLatestState"
-            );
+            assertEq(InterfaceSummit(summit).getLatestState(j + 1), latestState.formatState(), "!getLatestState");
         }
     }
 
-    function _expectRemoteCallBondingManager(uint32 domain, bytes memory data) internal {
-        vm.expectCall(
-            address(systemRouterSynapse),
-            abi.encodeWithSelector(
-                systemRouterSynapse.systemCall.selector,
-                domain, // destination
-                BONDING_OPTIMISTIC_PERIOD, // optimisticSeconds
-                SystemEntity.BondingManager, //recipient
-                data
-            )
-        );
+    // ══════════════════════════════════════════ TESTS: WHILE IN DISPUTE ══════════════════════════════════════════════
+
+    function test_submitSnapshot_revert_notaryInDispute(RawState memory rs) public {
+        (uint256 domainId, RawStateIndex memory rsi) = (1, RawStateIndex(0, 1));
+        uint32 domain = allDomains[domainId];
+        (address guard0, address guard1, address notary) =
+            (domains[0].agents[0], domains[0].agents[1], domains[domain].agents[0]);
+        // Put Notary 0 and Guard 0 in dispute
+        openDispute({guard: guard0, notary: notary});
+        // Make sure state nonce is non-zero
+        if (rs.nonce == 0) rs.nonce = 1;
+        // Create Guard 1 snapshot
+        (bytes memory snapPayload, bytes memory guardSig) = createSignedSnapshot(guard1, rs, rsi);
+        // Guard 1 submits snapshot
+        inbox.submitSnapshot(snapPayload, guardSig);
+        // Notary 0 signs the same snapshot
+        bytes memory notarySig = signSnapshot(notary, snapPayload);
+        vm.expectRevert(NotaryInDispute.selector);
+        inbox.submitSnapshot(snapPayload, notarySig);
     }
 
-    function _dataSlashAgentCall(uint32 domain, address notary)
-        internal
-        pure
-        returns (bytes memory)
-    {
-        return
-            abi.encodeWithSelector(
-                ISystemContract.slashAgent.selector,
-                0, // rootSubmittedAt
-                0, // callOrigin
-                0, // systemCaller
-                AgentInfo(domain, notary, false)
-            );
+    function test_submitSnapshot_success_guardInDispute(RawState memory rs) public {
+        (uint256 domainId, RawStateIndex memory rsi) = (1, RawStateIndex(0, 1));
+        uint32 domain = allDomains[domainId];
+        (address guard, address notary) = (domains[0].agents[0], domains[domain].agents[0]);
+        // Put Notary 0 and Guard 0 in dispute
+        openDispute({guard: guard, notary: notary});
+        // Make sure state nonce is non-zero
+        if (rs.nonce == 0) rs.nonce = 1;
+        (bytes memory snapPayload, bytes memory guardSig) = createSignedSnapshot(guard, rs, rsi);
+        // Guard 0 submits snapshot - being in dispute does not interfere with future snapshots
+        vm.expectEmit();
+        emit SnapshotAccepted(0, guard, snapPayload, guardSig);
+        inbox.submitSnapshot(snapPayload, guardSig);
     }
 
-    function _expectedSlashCall(uint32 domain, address notary)
-        internal
-        view
-        returns (bytes memory)
-    {
-        return
-            abi.encodeWithSelector(
-                ISystemContract.slashAgent.selector,
-                block.timestamp,
-                DOMAIN_SYNAPSE,
-                SystemEntity.BondingManager,
-                AgentInfo(domain, notary, false)
-            );
+    // ═════════════════════════════════════════════════ OVERRIDES ═════════════════════════════════════════════════════
+
+    function localContract() public view override returns (address) {
+        return summit;
+    }
+
+    /// @notice Returns local domain for the tested contract
+    function localDomain() public pure override returns (uint32) {
+        return DOMAIN_SYNAPSE;
     }
 }

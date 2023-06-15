@@ -1,19 +1,23 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.17;
 
-import { AgentRegistryEvents } from "../../../contracts/events/AgentRegistryEvents.sol";
-import { DestinationEvents } from "../../../contracts/events/DestinationEvents.sol";
-import { OriginEvents } from "../../../contracts/events/OriginEvents.sol";
-import { SnapshotHubEvents } from "../../../contracts/events/SnapshotHubEvents.sol";
-import { SummitEvents } from "../../../contracts/events/SummitEvents.sol";
+import {AgentManagerEvents} from "../../../contracts/events/AgentManagerEvents.sol";
+import {DestinationEvents} from "../../../contracts/events/DestinationEvents.sol";
+import {ExecutionHubEvents} from "../../../contracts/events/ExecutionHubEvents.sol";
+import {InboxEvents} from "../../../contracts/events/InboxEvents.sol";
+import {OriginEvents} from "../../../contracts/events/OriginEvents.sol";
+import {SnapshotHubEvents} from "../../../contracts/events/SnapshotHubEvents.sol";
+import {StatementInboxEvents} from "../../../contracts/events/StatementInboxEvents.sol";
+import {SummitEvents} from "../../../contracts/events/SummitEvents.sol";
 
 // solhint-disable no-empty-blocks
 abstract contract ProductionEvents is
-    AgentRegistryEvents,
+    AgentManagerEvents,
     DestinationEvents,
+    ExecutionHubEvents,
+    InboxEvents,
     OriginEvents,
     SnapshotHubEvents,
+    StatementInboxEvents,
     SummitEvents
-{
-
-}
+{}

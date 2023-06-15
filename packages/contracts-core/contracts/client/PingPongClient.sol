@@ -1,13 +1,12 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.17;
-// ══════════════════════════════ LIBRARY IMPORTS ══════════════════════════════
-import { TipsLib } from "../libs/Tips.sol";
-import { TypeCasts } from "../libs/TypeCasts.sol";
-// ═════════════════════════════ INTERNAL IMPORTS ══════════════════════════════
-import { IMessageRecipient } from "../interfaces/IMessageRecipient.sol";
-import { InterfaceOrigin } from "../interfaces/InterfaceOrigin.sol";
 
-contract PingPongClient is IMessageRecipient {
+// ══════════════════════════════ LIBRARY IMPORTS ══════════════════════════════
+import {TypeCasts} from "../libs/TypeCasts.sol";
+// ═════════════════════════════ INTERNAL IMPORTS ══════════════════════════════
+import {MessageRecipient} from "./MessageRecipient.sol";
+
+contract PingPongClient is MessageRecipient {
     using TypeCasts for address;
 
     struct PingPongMessage {
@@ -16,19 +15,7 @@ contract PingPongClient is IMessageRecipient {
         uint16 counter;
     }
 
-    /*╔══════════════════════════════════════════════════════════════════════╗*\
-    ▏*║                              IMMUTABLES                              ║*▕
-    \*╚══════════════════════════════════════════════════════════════════════╝*/
-
-    // local chain Origin: used for sending messages
-    address public immutable origin;
-
-    // local chain Destination: used for receiving messages
-    address public immutable destination;
-
-    /*╔══════════════════════════════════════════════════════════════════════╗*\
-    ▏*║                               STORAGE                                ║*▕
-    \*╚══════════════════════════════════════════════════════════════════════╝*/
+    // ══════════════════════════════════════════════════ STORAGE ══════════════════════════════════════════════════════
 
     uint256 public random;
 
@@ -43,9 +30,7 @@ contract PingPongClient is IMessageRecipient {
     /// When all messages are delivered, should be equal to `pingsSent`
     uint256 public pongsReceived;
 
-    /*╔══════════════════════════════════════════════════════════════════════╗*\
-    ▏*║                                EVENTS                                ║*▕
-    \*╚══════════════════════════════════════════════════════════════════════╝*/
+    // ══════════════════════════════════════════════════ EVENTS ═══════════════════════════════════════════════════════
 
     /// @notice Emitted when a Ping message is sent.
     /// Triggered externally, or by receveing a Pong message with instructions to do more pings.
@@ -63,85 +48,64 @@ contract PingPongClient is IMessageRecipient {
     /// Will initiate a new Ping, if the counter in the message is non-zero.
     event PongReceived(uint256 pingId);
 
-    /*╔══════════════════════════════════════════════════════════════════════╗*\
-    ▏*║                             CONSTRUCTOR                              ║*▕
-    \*╚══════════════════════════════════════════════════════════════════════╝*/
+    // ════════════════════════════════════════════════ CONSTRUCTOR ════════════════════════════════════════════════════
 
-    constructor(address _origin, address _destination) {
-        origin = _origin;
-        destination = _destination;
+    constructor(address origin_, address destination_) MessageRecipient(origin_, destination_) {
         // Initiate "random" value
         random = uint256(keccak256(abi.encode(block.number)));
     }
 
-    /*╔══════════════════════════════════════════════════════════════════════╗*\
-    ▏*║                          RECEIVING MESSAGES                          ║*▕
-    \*╚══════════════════════════════════════════════════════════════════════╝*/
+    // ═══════════════════════════════════════════════ MESSAGE LOGIC ═══════════════════════════════════════════════════
 
-    /// @notice Called by Destination upon executing the message.
-    function handle(
-        uint32 _origin,
-        uint32,
-        bytes32 _sender,
-        uint256,
-        bytes memory _message
-    ) external {
-        require(msg.sender == destination, "PingPongClient: !destination");
-        PingPongMessage memory _msg = abi.decode(_message, (PingPongMessage));
-        if (_msg.isPing) {
-            // Ping is received
-            ++pingsReceived;
-            emit PingReceived(_msg.pingId);
-            // Send Pong back
-            _pong(_origin, _sender, _msg);
-        } else {
-            // Pong is received
-            ++pongsReceived;
-            emit PongReceived(_msg.pingId);
-            // Send extra ping, if initially requested
-            if (_msg.counter != 0) {
-                _ping(_origin, _sender, _msg.counter - 1);
-            }
-        }
-    }
-
-    /*╔══════════════════════════════════════════════════════════════════════╗*\
-    ▏*║                           SENDING MESSAGES                           ║*▕
-    \*╚══════════════════════════════════════════════════════════════════════╝*/
-
-    function doPings(
-        uint16 _pingCount,
-        uint32 _destination,
-        address _recipient,
-        uint16 _counter
-    ) external {
-        for (uint256 i = 0; i < _pingCount; ++i) {
-            _ping(_destination, _recipient.addressToBytes32(), _counter);
+    function doPings(uint16 pingCount, uint32 destination_, address recipient, uint16 counter) external {
+        for (uint256 i = 0; i < pingCount; ++i) {
+            _ping(destination_, recipient.addressToBytes32(), counter);
         }
     }
 
     /// @notice Send a Ping message to destination chain.
     /// Upon receiving a Ping, a Pong message will be sent back.
-    /// If `_counter > 0`, this process will be repeated when the Pong message is received.
-    /// @param _destination Chain to send Ping message to
-    /// @param _recipient   Recipient of Ping message
-    /// @param _counter     Additional amount of Ping-Pong rounds to conclude
-    function doPing(
-        uint32 _destination,
-        address _recipient,
-        uint16 _counter
-    ) external {
-        _ping(_destination, _recipient.addressToBytes32(), _counter);
+    /// If `counter > 0`, this process will be repeated when the Pong message is received.
+    /// @param destination_ Chain to send Ping message to
+    /// @param recipient    Recipient of Ping message
+    /// @param counter      Additional amount of Ping-Pong rounds to conclude
+    function doPing(uint32 destination_, address recipient, uint16 counter) external {
+        _ping(destination_, recipient.addressToBytes32(), counter);
     }
+
+    // ═══════════════════════════════════════════════════ VIEWS ═══════════════════════════════════════════════════════
 
     function nextOptimisticPeriod() public view returns (uint32 period) {
         // Use random optimistic period up to one minute
         return uint32(random % 1 minutes);
     }
 
-    /*╔══════════════════════════════════════════════════════════════════════╗*\
-    ▏*║                            INTERNAL LOGIC                            ║*▕
-    \*╚══════════════════════════════════════════════════════════════════════╝*/
+    // ═════════════════════════════════════ INTERNAL LOGIC: RECEIVE MESSAGES ══════════════════════════════════════════
+
+    /// @inheritdoc MessageRecipient
+    function _receiveBaseMessageUnsafe(uint32 origin_, uint32, bytes32 sender, uint256, uint32, bytes memory content)
+        internal
+        override
+    {
+        PingPongMessage memory message = abi.decode(content, (PingPongMessage));
+        if (message.isPing) {
+            // Ping is received
+            ++pingsReceived;
+            emit PingReceived(message.pingId);
+            // Send Pong back
+            _pong(origin_, sender, message);
+        } else {
+            // Pong is received
+            ++pongsReceived;
+            emit PongReceived(message.pingId);
+            // Send extra ping, if initially requested
+            if (message.counter != 0) {
+                _ping(origin_, sender, message.counter - 1);
+            }
+        }
+    }
+
+    // ═══════════════════════════════════════ INTERNAL LOGIC: SEND MESSAGES ═══════════════════════════════════════════
 
     /// @dev Returns a random optimistic period value from 0 to 59 seconds.
     function _optimisticPeriod() internal returns (uint32 period) {
@@ -153,52 +117,29 @@ contract PingPongClient is IMessageRecipient {
 
     /**
      * @dev Send a "Ping" or "Pong" message.
-     * @param _destination  Domain of destination chain
-     * @param _recipient    Message recipient on destination chain
-     * @param _msg          Ping-pong message
+     * @param destination_  Domain of destination chain
+     * @param recipient     Message recipient on destination chain
+     * @param message   Ping-pong message
      */
-    function _sendMessage(
-        uint32 _destination,
-        bytes32 _recipient,
-        PingPongMessage memory _msg
-    ) internal {
-        bytes memory tips = TipsLib.emptyTips();
-        bytes memory message = abi.encode(_msg);
-        InterfaceOrigin(origin).dispatch(
-            _destination,
-            _recipient,
-            _optimisticPeriod(),
-            tips,
-            message
-        );
+    function _sendMessage(uint32 destination_, bytes32 recipient, PingPongMessage memory message) internal {
+        // TODO: this probably shouldn't be hardcoded
+        MessageRequest memory request = MessageRequest({gasDrop: 0, gasLimit: 500_000, version: 0});
+        bytes memory content = abi.encode(message);
+        _sendBaseMessage(destination_, recipient, _optimisticPeriod(), request, content);
     }
 
     /// @dev Initiate a new Ping-Pong round.
-    function _ping(
-        uint32 _destination,
-        bytes32 _recipient,
-        uint16 _counter
-    ) internal {
+    function _ping(uint32 destination_, bytes32 recipient, uint16 counter) internal {
         uint256 pingId = pingsSent++;
-        _sendMessage(
-            _destination,
-            _recipient,
-            PingPongMessage({ pingId: pingId, isPing: true, counter: _counter })
-        );
+        _sendMessage(destination_, recipient, PingPongMessage({pingId: pingId, isPing: true, counter: counter}));
         emit PingSent(pingId);
     }
 
     /// @dev Send a Pong message back.
-    function _pong(
-        uint32 _destination,
-        bytes32 _recipient,
-        PingPongMessage memory _msg
-    ) internal {
+    function _pong(uint32 destination_, bytes32 recipient, PingPongMessage memory message) internal {
         _sendMessage(
-            _destination,
-            _recipient,
-            PingPongMessage({ pingId: _msg.pingId, isPing: false, counter: _msg.counter })
+            destination_, recipient, PingPongMessage({pingId: message.pingId, isPing: false, counter: message.counter})
         );
-        emit PongSent(_msg.pingId);
+        emit PongSent(message.pingId);
     }
 }

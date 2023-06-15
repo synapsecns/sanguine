@@ -36,6 +36,9 @@ func newCancellableContext(parentContext context.Context) cancellableContext {
 // TODO: we should make sure global vars don't get mutated. Namely eth params.
 type TestSuite struct {
 	suite.Suite
+	// logDir is the directory where logs will be written for the docker containers that host the anvil nodes
+	// this allows you to do tai -f /path/to/logs/*.combined.log to see all logs
+	LogDir string
 	// context is the context object for the test suite. All other context objects inherit
 	// from it. unlike suiteContext and testContext it is not canceled and functionally does
 	// not have a lifecycle. TODO this should probably replace suiteContext
@@ -72,6 +75,7 @@ func NewTestSuite(tb testing.TB) *TestSuite {
 	tb.Helper()
 	log.SetAllLoggers(log.LevelWarn)
 	ctx := context.Background()
+
 	return &TestSuite{
 		context: ctx,
 		testID:  0,

@@ -3,9 +3,10 @@ package tokenprice
 import (
 	"context"
 	"fmt"
+	"time"
+
 	lru "github.com/hashicorp/golang-lru/v2"
 	"github.com/synapsecns/sanguine/services/explorer/consumer/fetcher"
-	"time"
 )
 
 // Service provides price data about tokens using either a cache or defillama
@@ -39,7 +40,7 @@ func (t *tokenPriceServiceImpl) GetPriceData(parentCtx context.Context, timestam
 	defer cancel()
 	key := fmt.Sprintf("%s_%d", coinGeckoID, timestamp)
 	// truncate key to save requests
-	key = key[:len(key)-3]
+	key = key[:len(key)-4]
 	if data, ok := t.tokenPriceCache.Get(key); ok {
 		return &data
 	}

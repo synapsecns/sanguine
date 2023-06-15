@@ -1,5 +1,8 @@
 import { ALL } from '@constants/withdrawTypes'
-import { useSwapDepositContract } from '@hooks/useSwapDepositContract'
+import {
+  getSwapDepositContractFields,
+  useSwapDepositContract,
+} from '@hooks/useSwapDepositContract'
 import ExplorerToastLink from '@components/ExplorerToastLink'
 import { subtractSlippage } from '@utils/slippage'
 import { txErrorHandler } from '@utils/txErrorHandler'
@@ -18,8 +21,11 @@ export const approve = async (
   if (inputValue.isZero() || inputValue.lt(depositQuote.allowance)) {
     return
   }
-  await approveToken(
-    pool.swapAddresses[chainId],
+
+  const { poolAddress } = getSwapDepositContractFields(pool, chainId)
+
+  return await approveToken(
+    poolAddress,
     chainId,
     pool.addresses[chainId],
     inputValue
@@ -42,28 +48,34 @@ export const withdraw = async (
   >
 ) => {
   const poolContract = await useSwapDepositContract(pool, chainId)
-  try {
-    toast('Starting your withdraw...')
-    let spendTransaction
+  let spendTransaction
+  let pendingPopup: any
+  let successPopup: any
 
+  pendingPopup = toast(`Starting your withdrawal...`, {
+    id: 'withdraw-in-progress-popup',
+    duration: Infinity,
+  })
+
+  try {
     if (withdrawType === ALL) {
-      const outputMinArr = pool.poolTokens.map(() => Zero)
-      for (let poolToken of pool.poolTokens) {
-        const outputAmount = outputs[poolToken.addresses[chainId]]
-        outputMinArr[outputAmount.index] = subtractSlippage(
-          outputAmount.value,
-          slippageSelected,
-          slippageCustom
-        )
-      }
+
+      console.log(outputs[withdrawType])
       spendTransaction = await poolContract.removeLiquidity(
         inputAmount,
-        outputMinArr,
+        pool.poolTokens?.map((t,index) =>
+          subtractSlippage(
+            outputs[withdrawType][index].value,
+            slippageSelected,
+            slippageCustom
+          )
+          ),
         Math.round(new Date().getTime() / 1000 + 60 * 10)
       )
     } else {
       const outputAmount = Object.values(outputs)[0]
       const poolTokenIndex = outputAmount.index
+
       spendTransaction = await poolContract.removeLiquidityOneToken(
         inputAmount,
         poolTokenIndex,
@@ -74,17 +86,27 @@ export const withdraw = async (
 
     const tx = await spendTransaction.wait()
 
-    const toastContent = (
+    toast.dismiss(pendingPopup)
+
+    const successToastContent = (
       <div>
-        <div>Liquidity added!</div>
-        <ExplorerToastLink {...tx} chainId={chainId} />
+        <div>Completed Withdrawal: </div>
+        <ExplorerToastLink
+          transactionHash={tx?.transactionHash}
+          chainId={chainId}
+        />
       </div>
     )
 
-    toast.success(toastContent)
+    successPopup = toast.success(successToastContent, {
+      id: 'withdraw-success-popup',
+      duration: 10000,
+    })
 
     return tx
-  } catch (err) {
-    txErrorHandler(err)
+  } catch (error) {
+    toast.dismiss(pendingPopup)
+    txErrorHandler(error)
+    return error
   }
 }

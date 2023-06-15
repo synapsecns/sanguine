@@ -155,7 +155,7 @@ func (j *testJaeger) buildLogMessage(includeAuxiliary bool) string {
 func (j *testJaeger) getDockerizedResources() (dockerizedResources []*dockertest.Resource) {
 	allResources := []*uiResource{j.jaegerResource, j.pyroscopeResource}
 	for _, resource := range allResources {
-		if resource.Resource == nil {
+		if resource == nil || resource.Resource == nil {
 			return nil
 		}
 		dockerizedResources = append(dockerizedResources, resource.Resource)

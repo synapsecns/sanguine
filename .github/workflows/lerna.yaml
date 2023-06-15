@@ -28,7 +28,6 @@ jobs:
           echo "//registry.npmjs.org/:_authToken=${{ secrets.NPM_TOKEN }}" > ~/.npmrc
           echo "always-auth=true" >> ~/.npmrc
 
-
       - name: 'Version and publish' # Interesting step
         env:
           GH_TOKEN: ${{ secrets.LERNA_FGPAT }}

@@ -5,21 +5,22 @@ import Deposit from './Deposit'
 import Withdraw from './Withdraw'
 import { PoolData, PoolUserData } from '@types'
 import { Token } from '@types'
+
 const PoolManagement = ({
   pool,
   address,
   chainId,
   poolData,
   poolUserData,
+  refetchCallback,
 }: {
   pool: Token
   address: string
   chainId: number
   poolData: PoolData
   poolUserData: PoolUserData
+  refetchCallback: () => void
 }) => {
-  // const [cardNav, setCardNav] = useState(getLiquidityMode(location.hash)) // 'addLiquidity'
-
   const [cardNav, setCardNav] = useState(getLiquidityMode('#addLiquidity')) // 'addLiquidity'
   return (
     <div>
@@ -39,22 +40,19 @@ const PoolManagement = ({
               chainId={chainId}
               poolData={poolData}
               poolUserData={poolUserData}
+              refetchCallback={refetchCallback}
             />
           )}
-          {cardNav === 'removeLiquidity' &&
-            (pool && poolUserData && poolData && address ? (
-              <Withdraw
-                pool={pool}
-                chainId={chainId}
-                address={address}
-                poolData={poolData}
-                poolUserData={poolUserData}
-              />
-            ) : (
-              <div className="w-full text-center mt-[80px] text-sm text-white">
-                <p>connect wallet</p>
-              </div>
-            ))}
+          {cardNav === 'removeLiquidity' && (
+            <Withdraw
+              pool={pool}
+              chainId={chainId}
+              address={address}
+              poolData={poolData}
+              poolUserData={poolUserData}
+              refetchCallback={refetchCallback}
+            />
+          )}
         </div>
       </div>
     </div>

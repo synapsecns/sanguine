@@ -1,13 +1,14 @@
 import Grid from '@tw/Grid'
-import { useRouter } from 'next/router'
 import { useEffect, useState, useMemo, useCallback } from 'react'
+import { useRouter } from 'next/router'
 import { AddressZero, Zero } from '@ethersproject/constants'
 import { BigNumber } from '@ethersproject/bignumber'
 import { fetchSigner, switchNetwork } from '@wagmi/core'
+import { useWatchPendingTransactions } from 'wagmi'
 import { sortByTokenBalance, sortByVisibilityRank } from '@utils/sortTokens'
 import { calculateExchangeRate } from '@utils/calculateExchangeRate'
 import ExchangeRateInfo from '@components/ExchangeRateInfo'
-import { TransactionButton } from '@components/buttons/SubmitTxButton'
+import { TransactionButton } from '@/components/buttons/TransactionButton'
 import BridgeInputContainer from '../../components/input/TokenAmountInput/index'
 import { approveToken } from '@/utils/approveToken'
 import { validateAndParseAddress } from '@utils/validateAndParseAddress'
@@ -31,6 +32,8 @@ import { SwapQuote, Query } from '@types'
 import { IMPAIRED_CHAINS } from '@/constants/impairedChains'
 import { CHAINS_BY_ID } from '@constants/chains'
 import { toast } from 'react-hot-toast'
+import { txErrorHandler } from '@/utils/txErrorHandler'
+import ExplorerToastLink from '@/components/ExplorerToastLink'
 
 import {
   DEFAULT_FROM_TOKEN,
@@ -68,7 +71,13 @@ const SwapCard = ({
   const [displayType, setDisplayType] = useState(undefined)
   const [fromTokenBalance, setFromTokenBalance] = useState<BigNumber>(Zero)
   const [validChainId, setValidChainId] = useState(true)
-  let popup: string
+  const [swapTxnHash, setSwapTxnHash] = useState<string>('')
+  const [approveTx, setApproveTx] = useState<string>(null)
+
+  let pendingPopup: any
+  let successPopup: any
+  let errorPopup: string
+
   /*
   useEffect Trigger: onMount
   - Gets current network connected and sets it as the state.
@@ -83,6 +92,17 @@ const SwapCard = ({
       clearInterval(interval)
     }
   }, [])
+
+  /*
+  useEffect Trigger: fromInput
+  - Resets approve txn status if user input changes after amount is approved
+  */
+
+  useEffect(() => {
+    if (approveTx) {
+      setApproveTx(null)
+    }
+  }, [fromInput])
 
   /*
   useEffect Trigger: fromToken, fromTokens
@@ -155,7 +175,7 @@ const SwapCard = ({
       setFromTokens(tokens)
     })
     return
-  }, [connectedChainId])
+  }, [connectedChainId, swapTxnHash, address])
 
   /*
   useEffect Triggers: toToken, fromInput, toChainId, time
@@ -166,7 +186,7 @@ const SwapCard = ({
     let isCancelled = false
 
     const handleChange = async () => {
-      await timeout(1000)
+      // await timeout(1000)
       if (
         connectedChainId &&
         String(fromToken.addresses[connectedChainId]) &&
@@ -344,10 +364,10 @@ const SwapCard = ({
   - will dismiss toast asking user to connect wallet once wallet has been connected
   */
   useEffect(() => {
-    if (address) {
-      toast.dismiss(popup)
+    if (address && errorPopup) {
+      toast.dismiss(errorPopup)
     }
-  }, [address, popup])
+  }, [address, errorPopup])
 
   /*
   Function: handleChainChange
@@ -358,11 +378,11 @@ const SwapCard = ({
   const handleChainChange = useCallback(
     async (chainId: number, flip: boolean, type: 'from' | 'to') => {
       if (address === undefined) {
-        popup = toast.error('Please connect your wallet', {
+        errorPopup = toast.error('Please connect your wallet', {
           id: 'bridge-connect-wallet',
           duration: 20000,
         })
-        return popup
+        return errorPopup
       }
       const desiredChainId = Number(chainId)
 
@@ -490,8 +510,7 @@ const SwapCard = ({
         null
       )
       // TODO 1) make dynamic 2) clean up
-      let newOriginQuery = [...query] as Query
-      newOriginQuery[2] = minWithSlippage
+      let newOriginQuery = { ...query }
       newOriginQuery.minAmountOut = minWithSlippage
 
       setSwapQuote({
@@ -525,6 +544,12 @@ const SwapCard = ({
   - Only executes if token has already been approved.
    */
   const executeSwap = async () => {
+    const currentChainName = CHAINS_BY_ID[connectedChainId]?.name
+    pendingPopup = toast(
+      `Initiating swap from ${fromToken.symbol} to ${toToken.symbol} on ${currentChainName}`,
+      { id: 'swap-in-progress-popup', duration: Infinity }
+    )
+
     try {
       const wallet = await fetchSigner({
         chainId: connectedChainId,
@@ -544,15 +569,44 @@ const SwapCard = ({
           ? { data: data.data, to: data.to, value: fromInput.bigNum }
           : data
       const tx = await wallet.sendTransaction(payload)
+
       try {
-        await tx.wait()
+        const successTx = await tx.wait()
+
+        setSwapTxnHash(successTx?.transactionHash)
+
+        toast.dismiss(pendingPopup)
+
         console.log(`Transaction mined successfully: ${tx.hash}`)
+
+        const successToastContent = (
+          <div>
+            <div>
+              Successfully swapped from {fromToken.symbol} to {toToken.symbol}{' '}
+              on {currentChainName}
+            </div>
+            <ExplorerToastLink
+              transactionHash={tx?.hash ?? AddressZero}
+              chainId={connectedChainId}
+            />
+          </div>
+        )
+
+        successPopup = toast.success(successToastContent, {
+          id: 'swap-successful-popup',
+          duration: 10000,
+        })
+
+        resetRates()
         return tx
       } catch (error) {
+        toast.dismiss(pendingPopup)
         console.log(`Transaction failed with error: ${error}`)
       }
     } catch (error) {
       console.log(`Swap Execution failed with error: ${error}`)
+      toast.dismiss(pendingPopup)
+      txErrorHandler(error)
     }
   }
 
@@ -616,8 +670,11 @@ const SwapCard = ({
 
     if (
       !fromInput?.bigNum?.eq(0) &&
+      fromToken?.addresses[connectedChainId] !== '' &&
+      fromToken?.addresses[connectedChainId] !== AddressZero &&
       swapQuote?.allowance &&
-      swapQuote?.allowance?.lt(fromInput.bigNum)
+      swapQuote?.allowance?.lt(fromInput.bigNum) &&
+      !approveTx
     ) {
       properties.buttonAction = () =>
         approveToken(
@@ -629,7 +686,10 @@ const SwapCard = ({
       properties.pendingLabel = `Approving ${fromToken.symbol}`
       properties.className = 'from-[#feba06] to-[#FEC737]'
       properties.disabled = false
-      properties.postButtonAction = () => null
+      properties.postButtonAction = () => {
+        setApproveTx('approved')
+      }
+      return properties
     }
 
     if (destinationAddress && !validateAndParseAddress(destinationAddress)) {
@@ -640,9 +700,7 @@ const SwapCard = ({
     }
 
     // default case
-    properties.label = swapQuote.outputAmount.eq(0)
-      ? 'Enter amount to swap'
-      : 'Swap your funds'
+    properties.label = 'Swap your funds'
     properties.disabled = false
 
     const numExchangeRate = swapQuote?.exchangeRate
@@ -677,6 +735,7 @@ const SwapCard = ({
     isQuoteLoading,
     destinationAddress,
     error,
+    approveTx,
   ])
 
   const ActionButton = useMemo(() => {
@@ -693,7 +752,7 @@ const SwapCard = ({
         }}
       />
     )
-  }, [fromInput, time, swapQuote, error])
+  }, [fromInput, time, swapQuote, error, approveTx])
 
   /*
   useEffect Triggers: fromInput
@@ -785,6 +844,7 @@ const SwapCard = ({
           toToken={toToken}
           exchangeRate={swapQuote.exchangeRate}
           toChainId={connectedChainId}
+          showGasDrop={false}
         />
         <div className="px-2 py-2 md:px-0 md:py-4">{ActionButton}</div>
       </div>

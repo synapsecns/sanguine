@@ -35,9 +35,9 @@ require (
 	github.com/phayes/freeport v0.0.0-20220201140144-74d24b5ae9f5
 	github.com/richardwilkes/toolbox v1.74.0
 	github.com/stretchr/testify v1.8.2
-	github.com/synapsecns/sanguine/core v0.0.0-20220823193711-904c560fc7d3
+	github.com/synapsecns/sanguine/core v0.0.0-00010101000000-000000000000
 	github.com/synapsecns/sanguine/ethergo v0.0.2
-	github.com/synapsecns/sanguine/services/scribe v0.0.19
+	github.com/synapsecns/sanguine/services/scribe v0.0.0-00010101000000-000000000000
 	github.com/urfave/cli/v2 v2.16.3
 	github.com/vektah/gqlparser/v2 v2.5.1
 	go.uber.org/atomic v1.10.0
