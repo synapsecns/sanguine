@@ -45,5 +45,3 @@ func NewSqliteStore(ctx context.Context, dbPath string, handler metrics.Handler)
 	}
 	return &Store{base.NewStore(gdb)}, nil
 }
-
-// var _ db.TxQueueDb = &Store{}
