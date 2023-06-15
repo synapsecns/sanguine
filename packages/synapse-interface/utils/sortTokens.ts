@@ -1,6 +1,7 @@
 import { BigNumber } from 'ethers'
 import { multicall, Address } from '@wagmi/core'
 import { Zero, AddressZero } from '@ethersproject/constants'
+import { sortTokens } from '@constants/tokens'
 
 import multicallABI from '../constants/abis/multicall.json'
 import erc20ABI from '../constants/abis/erc20.json'
@@ -16,14 +17,17 @@ export const sortByVisibilityRank = (tokens: Token[]) => {
   )
 }
 
-const sortArrayByBalance = (array) => {
+const sortArrayByBalance = (array, chainId) => {
   return array.sort((a, b) => {
-    const balanceA = BigInt(a.balance || '')
-    const balanceB = BigInt(b.balance || '')
-
-    if (balanceA < balanceB) {
+    const balanceA = (a.balance ?? Zero).mul(
+      BigNumber.from(10).pow(18 - a.token.decimals[chainId])
+    )
+    const balanceB = (b.balance ?? Zero).mul(
+      BigNumber.from(10).pow(18 - b.token.decimals[chainId])
+    )
+    if (balanceA.lt(balanceB)) {
       return 1
-    } else if (balanceA > balanceB) {
+    } else if (balanceA.gt(balanceB)) {
       return -1
     } else {
       return 0
@@ -84,12 +88,13 @@ export const sortByTokenBalance = async (
       contracts: multicallInputs,
     })
     return sortArrayByBalance(
-      sortByVisibilityRank(
+      sortTokens(
         multicallData.map((tokenBalance: BigNumber | undefined, index) => ({
           token: tokens[index],
           balance: tokenBalance,
         }))
-      )
+      ),
+      chainId
     )
   }
 

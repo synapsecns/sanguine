@@ -35,7 +35,6 @@ export const TokenSlideOver = ({
   } else {
     tokenList = tokens
   }
-  tokenList = sortTokens(tokenList)
   const fuse = new Fuse(tokenList, {
     includeScore: true,
     threshold: 0.0,
