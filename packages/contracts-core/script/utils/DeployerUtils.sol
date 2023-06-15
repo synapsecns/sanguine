@@ -8,8 +8,11 @@ import {Address} from "@openzeppelin/contracts/utils/Address.sol";
 
 interface ICreate3Factory {
     function deploy(bytes32 salt, bytes memory creationCode) external payable returns (address deployed);
+
+    function getDeployed(address deployer, bytes32 salt) external view returns (address deployed);
 }
 
+// solhint-disable no-console
 // solhint-disable no-empty-blocks
 // solhint-disable ordering
 contract DeployerUtils is Script {
@@ -21,8 +24,7 @@ contract DeployerUtils is Script {
     string private constant DEPLOY_CONFIGS = "script/configs/";
 
     // TODO: this is only deployed on 7 chains, deploy our own factory for prod deployments
-    // This is the factory on testnets
-    ICreate3Factory internal constant FACTORY = ICreate3Factory(0x7D5352B5d0C1d2Df42FF7462233252608A9174db);
+    ICreate3Factory internal constant FACTORY = ICreate3Factory(0x9fBB3DF7C40Da2e5A0dE984fFE2CCB7C47cd0ABf);
 
     /// @dev Whether the script will be broadcasted or not
     bool internal isBroadcasted = false;
@@ -32,6 +34,8 @@ contract DeployerUtils is Script {
     /// @dev Private key and address for deploying contracts
     uint256 internal broadcasterPK;
     address internal broadcasterAddress;
+
+    bytes32 internal deploymentSalt;
 
     /// @notice Prevents this contract from being included in the coverage report
     function testDeployerUtils() external {}
@@ -81,10 +85,20 @@ contract DeployerUtils is Script {
     {
         require(Address.isContract(address(FACTORY)), "Factory not deployed");
         deployment = FACTORY.deploy(
-            keccak256(bytes(contractName)), // salt
+            getDeploymentSalt(contractName), // salt
             abi.encodePacked(creationCode, constructorArgs) // creation code with appended constructor args
         );
         require(deployment != address(0), "Factory deployment failed");
+    }
+
+    /// @notice Gets the deployment salt for a given contract.
+    function getDeploymentSalt(string memory contractName) internal view returns (bytes32) {
+        return keccak256(bytes.concat(deploymentSalt, bytes(contractName)));
+    }
+
+    /// @notice Predicts the deployment address for a contract.
+    function predictFactoryDeployment(string memory contractName) internal view returns (address) {
+        return FACTORY.getDeployed(broadcasterAddress, getDeploymentSalt(contractName));
     }
 
     /// @notice Deploys the contract and saves the deployment artifact
@@ -92,11 +106,12 @@ contract DeployerUtils is Script {
     /// @param contractName     Contract name to deploy
     /// @param deployFunc       Callback function to deploy a requested contract
     /// @return deployment  The deployment address
-    function deployContract(string memory contractName, function() internal returns (address) deployFunc)
-        internal
-        returns (address deployment)
-    {
-        return deployContract(contractName, contractName, deployFunc);
+    function deployContract(
+        string memory contractName,
+        function() internal returns (address, bytes memory) deployFunc,
+        function(address) internal initFunc
+    ) internal returns (address deployment, bytes memory constructorArgs) {
+        return deployContract(contractName, contractName, deployFunc, initFunc);
     }
 
     /// @notice Deploys the contract and saves the deployment artifact under specified name
@@ -104,20 +119,23 @@ contract DeployerUtils is Script {
     /// @param contractName     Contract name to deploy
     /// @param saveAsName       Name to use for saving the deployment artifact
     /// @param deployFunc       Callback function to deploy a requested contract
+    /// @param initFunc         Callback function to initialize a deployed contract
     /// @return deployment  The deployment address
     function deployContract(
         string memory contractName,
         string memory saveAsName,
-        function() internal returns (address) deployFunc
-    ) internal returns (address deployment) {
+        function() internal returns (address, bytes memory) deployFunc,
+        function(address) internal initFunc
+    ) internal returns (address deployment, bytes memory constructorArgs) {
         deployment = tryLoadDeployment(saveAsName);
         if (deployment == address(0)) {
-            deployment = deployFunc();
-            saveDeployment(contractName, saveAsName, deployment);
+            (deployment, constructorArgs) = deployFunc();
+            saveDeployment(contractName, saveAsName, deployment, constructorArgs);
         } else {
             console.log("Reusing existing deployment for %s: %s", contractName, deployment);
         }
         vm.label(deployment, contractName);
+        initFunc(deployment);
     }
 
     /// @notice Returns the deployment for a contract on the current chain, if it exists.
@@ -140,14 +158,20 @@ contract DeployerUtils is Script {
     }
 
     /// @notice Saves the deployment JSON for a deployed contract.
-    function saveDeployment(string memory contractName, string memory saveAsName, address deployedAt) public {
+    function saveDeployment(
+        string memory contractName,
+        string memory saveAsName,
+        address deployedAt,
+        bytes memory constructorArgs
+    ) public {
         console.log("Deployed: [%s] on [%s] at %s", contractName, chainAlias, deployedAt);
         // Do nothing if script isn't broadcasted
         if (!isBroadcasted) return;
         // Otherwise, save the deployment JSON
         string memory deployment = "deployment";
-        // First, write only the deployment address
-        deployment = deployment.serialize("address", deployedAt);
+        // First, write only the deployment address and the constructor args
+        deployment.serialize("address", deployedAt);
+        deployment = deployment.serialize("args", constructorArgs);
         deployment.write(deploymentPath(saveAsName));
         // Then, initiate the jq command to add "abi" as the next key
         // This makes sure that "address" value is printed first later
