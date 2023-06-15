@@ -207,6 +207,8 @@ const Deposit = ({
       },
     }
 
+    // if (depositQuote.priceImpact)
+
     if (!isFromBalanceEnough) {
       properties.label = `Insufficient Balance`
       properties.disabled = true
