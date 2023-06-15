@@ -173,6 +173,12 @@ const BridgePage = ({
         toTokenSymbolUrl ? String(toTokenSymbolUrl) : undefined,
         validFromChainId
       )
+    analytics.track(`[Bridge] User ${address} switches destination chain`, {
+      switchFromChainId: toChainId,
+      switchFrom: CHAINS_BY_ID[toChainId].name,
+      switchToChainId: newToChain,
+      switchTo: CHAINS_BY_ID[newToChain].name,
+    })
     resetTokenPermutation(
       tempFromToken,
       newToChain,
@@ -575,6 +581,12 @@ const BridgePage = ({
         if (fromInput.string !== '') {
           setIsQuoteLoading(true)
         }
+        analytics.track(`[Bridge] User ${address} switches origin token`, {
+          switchFromToken: fromToken?.name,
+          switchFromTokenAddress: fromToken?.addresses[fromChainId],
+          switchToToken: token?.name,
+          switchToTokenAddress: token?.addresses[fromChainId],
+        })
         return
       case 'to':
         setToToken(token)
@@ -585,6 +597,12 @@ const BridgePage = ({
           outputChain: toChainId,
           inputCurrency: fromToken.symbol,
           outputCurrency: token.symbol,
+        })
+        analytics.track(`[Bridge] User ${address} switches destination token`, {
+          switchFromToken: toToken.name,
+          switchFromTokenAddress: toToken.addresses[toChainId],
+          switchToToken: token?.name,
+          switchToTokenAddress: token.addresses[toChainId],
         })
         return
     }
@@ -688,6 +706,14 @@ const BridgePage = ({
   - Only executes if token has already been approved.
    */
   const executeBridge = async () => {
+    analytics.track(`[Bridge] User ${address} initiates bridge`, {
+      originChainId: fromChainId,
+      destinationChainId: toChainId,
+      inputAmount: fromInput.string,
+      receivedAmount: bridgeQuote.outputAmountString,
+      slippage: bridgeQuote.exchangeRate,
+    })
+
     try {
       const wallet = await fetchSigner({
         chainId: fromChainId,
@@ -744,14 +770,30 @@ const BridgePage = ({
           duration: 10000,
         })
 
+        // TODO: are these values different from the initiator?
+        analytics.track(`[Bridge] User ${address} bridges successfully`, {
+          originChainId: fromChainId,
+          destinationChainId: toChainId,
+          inputAmount: fromInput.string,
+          receivedAmount: bridgeQuote.outputAmountString,
+          slippage: bridgeQuote.exchangeRate,
+        })
+
         resetRates()
         return tx
       } catch (error) {
+        analytics.track(`[Bridge] User ${address} error bridging`, {
+          errorCode: error.code,
+        })
+
         console.log(`Transaction failed with error: ${error}`)
         toast.dismiss(pendingPopup)
       }
     } catch (error) {
-      console.log('Error executing bridge', error)
+      analytics.track(`[Bridge] User ${address} error bridging`, {
+        errorCode: error.code,
+      })
+
       toast.dismiss(pendingPopup)
       return txErrorHandler(error)
     }

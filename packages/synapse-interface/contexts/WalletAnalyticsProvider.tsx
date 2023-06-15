@@ -56,8 +56,8 @@ export const WalletAnalyticsProvider = ({ children }) => {
     }
     if (chain !== prevChain) {
       analytics.track(`[Wallet Analytics] User ${address} switched chains`, {
-        previousNetworkName: prevChain.name,
-        previousNetworkId: prevChain.id,
+        previousNetworkName: prevChain?.name,
+        previousNetworkId: prevChain?.id,
         walletId,
         networkName,
         networkId,
