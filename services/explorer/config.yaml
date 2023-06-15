@@ -183,7 +183,7 @@ chains:
         start_block: -1
   - chain_id: 8217
     fetch_block_increment: 10000
-    max_goroutines: 4
+    max_goroutines: 2
     contracts:
       - contract_type: bridge
         address: '0xAf41a65F786339e7911F4acDAD6BD49426F2Dc6b'

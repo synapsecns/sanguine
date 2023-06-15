@@ -58,7 +58,7 @@ func OpenGormClickhouse(ctx context.Context, address string, readOnly bool) (*St
 			}
 		}
 		if (!clickhouseDB.WithContext(ctx).Migrator().HasTable(&LastBlock{})) {
-			err = clickhouseDB.WithContext(ctx).Set("gorm:table_options", "ENGINE=MergeTree ORDER BY (chain_id, contract_address)").AutoMigrate(&LastBlock{})
+			err = clickhouseDB.WithContext(ctx).Set("gorm:table_options", "ENGINE=ReplacingMergeTree(block_number) ORDER BY (chain_id, contract_address)").AutoMigrate(&LastBlock{})
 			if err != nil {
 				return nil, fmt.Errorf("could not migrate last block number on clickhouse: %w", err)
 			}
