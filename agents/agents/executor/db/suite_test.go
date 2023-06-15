@@ -24,10 +24,9 @@ import (
 
 type DBSuite struct {
 	*testsuite.TestSuite
-	dbs              []db.ExecutorDB
-	logIndex         atomic.Int64
-	metrics          metrics.Handler
-	mysqlTablePrefix string
+	dbs      []db.ExecutorDB
+	logIndex atomic.Int64
+	metrics  metrics.Handler
 }
 
 // NewEventDBSuite creates a new EventDBSuite.
@@ -83,12 +82,10 @@ func (t *DBSuite) setupMysqlDB() {
 		Nil(t.T(), testDB.Close())
 	}()
 
-	t.mysqlTablePrefix = fmt.Sprintf("test%d_%d_", t.GetTestID(), time.Now().Unix())
-
 	// override the naming strategy to prevent tests from messing with each other.
 	// todo this should be solved via a proper teardown process or transactions.
 	mysql.NamingStrategy = schema.NamingStrategy{
-		TablePrefix: t.mysqlTablePrefix,
+		TablePrefix: fmt.Sprintf("test%d_%d_", t.GetTestID(), time.Now().Unix()),
 	}
 
 	mysql.MaxIdleConns = 10
