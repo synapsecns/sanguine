@@ -70,7 +70,6 @@ export function useUserHeldTokens(bridgeTxHash: string): TokenBalance[] {
 
       if (multicallInputs.length > 0) {
         multicallData = await multicall({ contracts: multicallInputs })
-        console.log('fetching')
         const newHeldTokens = multicallData.map(
           (tokenBalance: BigNumber, index: number) => {
             return {
