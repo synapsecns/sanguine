@@ -4,6 +4,7 @@ import (
 	"context"
 	"database/sql"
 	"fmt"
+	"github.com/synapsecns/sanguine/agents/agents/executor/db"
 	"github.com/synapsecns/sanguine/agents/agents/executor/types"
 	agentsTypes "github.com/synapsecns/sanguine/agents/types"
 	"gorm.io/gorm"
@@ -34,7 +35,7 @@ func (s Store) StoreMessage(ctx context.Context, message agentsTypes.Message, bl
 
 // ExecuteMessage marks a message as executed in the database.
 // TODO: Make batch update.
-func (s Store) ExecuteMessage(ctx context.Context, messageMask DBMessage) error {
+func (s Store) ExecuteMessage(ctx context.Context, messageMask db.DBMessage) error {
 	dbMessageMask := DBMessageToMessage(messageMask)
 	dbTx := s.DB().WithContext(ctx).
 		Model(&Message{}).
@@ -48,7 +49,7 @@ func (s Store) ExecuteMessage(ctx context.Context, messageMask DBMessage) error 
 }
 
 // SetMinimumTime sets the minimum time of a message.
-func (s Store) SetMinimumTime(ctx context.Context, messageMask DBMessage, minimumTime uint64) error {
+func (s Store) SetMinimumTime(ctx context.Context, messageMask db.DBMessage, minimumTime uint64) error {
 	dbMessageMask := DBMessageToMessage(messageMask)
 	update := Message{MinimumTime: minimumTime, MinimumTimeSet: true}
 	dbTx := s.DB().WithContext(ctx).
@@ -63,7 +64,7 @@ func (s Store) SetMinimumTime(ctx context.Context, messageMask DBMessage, minimu
 }
 
 // GetMessage gets a message from the database.
-func (s Store) GetMessage(ctx context.Context, messageMask DBMessage) (*agentsTypes.Message, error) {
+func (s Store) GetMessage(ctx context.Context, messageMask db.DBMessage) (*agentsTypes.Message, error) {
 	var message Message
 
 	dbMessageMask := DBMessageToMessage(messageMask)
@@ -88,7 +89,7 @@ func (s Store) GetMessage(ctx context.Context, messageMask DBMessage) (*agentsTy
 }
 
 // GetMessages gets messages from the database, paginated and ordered in ascending order by nonce.
-func (s Store) GetMessages(ctx context.Context, messageMask DBMessage, page int) ([]agentsTypes.Message, error) {
+func (s Store) GetMessages(ctx context.Context, messageMask db.DBMessage, page int) ([]agentsTypes.Message, error) {
 	if page < 1 {
 		page = 1
 	}
@@ -122,7 +123,7 @@ func (s Store) GetMessages(ctx context.Context, messageMask DBMessage, page int)
 }
 
 // GetBlockNumber gets the block number of a message from the database.
-func (s Store) GetBlockNumber(ctx context.Context, messageMask DBMessage) (uint64, error) {
+func (s Store) GetBlockNumber(ctx context.Context, messageMask db.DBMessage) (uint64, error) {
 	var message Message
 
 	dbMessageMask := DBMessageToMessage(messageMask)
@@ -179,7 +180,7 @@ func (s Store) GetLastBlockNumber(ctx context.Context, chainID uint32, contractT
 }
 
 // GetExecutableMessages gets executable messages from the database.
-func (s Store) GetExecutableMessages(ctx context.Context, messageMask DBMessage, currentTime uint64, page int) ([]agentsTypes.Message, error) {
+func (s Store) GetExecutableMessages(ctx context.Context, messageMask db.DBMessage, currentTime uint64, page int) ([]agentsTypes.Message, error) {
 	if page < 1 {
 		page = 1
 	}
@@ -218,7 +219,7 @@ func (s Store) GetExecutableMessages(ctx context.Context, messageMask DBMessage,
 }
 
 // GetUnsetMinimumTimeMessages gets messages from the database that have not had their minimum time set.
-func (s Store) GetUnsetMinimumTimeMessages(ctx context.Context, messageMask DBMessage, page int) ([]agentsTypes.Message, error) {
+func (s Store) GetUnsetMinimumTimeMessages(ctx context.Context, messageMask db.DBMessage, page int) ([]agentsTypes.Message, error) {
 	if page < 1 {
 		page = 1
 	}
@@ -255,7 +256,7 @@ func (s Store) GetUnsetMinimumTimeMessages(ctx context.Context, messageMask DBMe
 }
 
 // GetMessageMinimumTime gets the minimum time for a message to be executed.
-func (s Store) GetMessageMinimumTime(ctx context.Context, messageMask DBMessage) (*uint64, error) {
+func (s Store) GetMessageMinimumTime(ctx context.Context, messageMask db.DBMessage) (*uint64, error) {
 	var message Message
 
 	dbMessageMask := DBMessageToMessage(messageMask)
@@ -278,7 +279,7 @@ func (s Store) GetMessageMinimumTime(ctx context.Context, messageMask DBMessage)
 }
 
 // DBMessageToMessage converts a DBMessage to a Message.
-func DBMessageToMessage(dbMessage DBMessage) Message {
+func DBMessageToMessage(dbMessage db.DBMessage) Message {
 	var message Message
 
 	if dbMessage.ChainID != nil {
@@ -317,7 +318,7 @@ func DBMessageToMessage(dbMessage DBMessage) Message {
 }
 
 // MessageToDBMessage converts a Message to a DBMessage.
-func MessageToDBMessage(message Message) DBMessage {
+func MessageToDBMessage(message Message) db.DBMessage {
 	chainID := message.ChainID
 	destination := message.Destination
 	nonce := message.Nonce
@@ -327,7 +328,7 @@ func MessageToDBMessage(message Message) DBMessage {
 	minimumTimeSet := message.MinimumTimeSet
 	minimumTime := message.MinimumTime
 
-	return DBMessage{
+	return db.DBMessage{
 		ChainID:        &chainID,
 		Destination:    &destination,
 		Nonce:          &nonce,

@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"github.com/ethereum/go-ethereum/common"
+	"github.com/synapsecns/sanguine/agents/agents/executor/db"
 	agentsTypes "github.com/synapsecns/sanguine/agents/types"
 	"gorm.io/gorm/clause"
 	"math/big"
@@ -30,7 +31,7 @@ func (s Store) StoreAttestation(ctx context.Context, attestation agentsTypes.Att
 }
 
 // GetAttestation gets an attestation that has fields matching the attestation mask.
-func (s Store) GetAttestation(ctx context.Context, attestationMask DBAttestation) (*agentsTypes.Attestation, error) {
+func (s Store) GetAttestation(ctx context.Context, attestationMask db.DBAttestation) (*agentsTypes.Attestation, error) {
 	var attestation Attestation
 
 	dbAttestationMask := DBAttestationToAttestation(attestationMask)
@@ -58,7 +59,7 @@ func (s Store) GetAttestation(ctx context.Context, attestationMask DBAttestation
 }
 
 // GetAttestationBlockNumber gets the block number of an attestation.
-func (s Store) GetAttestationBlockNumber(ctx context.Context, attestationMask DBAttestation) (*uint64, error) {
+func (s Store) GetAttestationBlockNumber(ctx context.Context, attestationMask db.DBAttestation) (*uint64, error) {
 	var attestation Attestation
 
 	dbAttestationMask := DBAttestationToAttestation(attestationMask)
@@ -78,7 +79,7 @@ func (s Store) GetAttestationBlockNumber(ctx context.Context, attestationMask DB
 }
 
 // GetAttestationTimestamp gets the timestamp of an attestation.
-func (s Store) GetAttestationTimestamp(ctx context.Context, attestationMask DBAttestation) (*uint64, error) {
+func (s Store) GetAttestationTimestamp(ctx context.Context, attestationMask db.DBAttestation) (*uint64, error) {
 	var attestation Attestation
 
 	dbAttestationMask := DBAttestationToAttestation(attestationMask)
@@ -98,7 +99,7 @@ func (s Store) GetAttestationTimestamp(ctx context.Context, attestationMask DBAt
 }
 
 // GetEarliestSnapshotFromAttestation takes a list of snapshot roots, checks which one has the lowest block number, and returns that snapshot root back.
-func (s Store) GetEarliestSnapshotFromAttestation(ctx context.Context, attestationMask DBAttestation, snapshotRoots []string) (*[32]byte, error) {
+func (s Store) GetEarliestSnapshotFromAttestation(ctx context.Context, attestationMask db.DBAttestation, snapshotRoots []string) (*[32]byte, error) {
 	var attestation Attestation
 
 	dbAttestationMask := DBAttestationToAttestation(attestationMask)
@@ -123,7 +124,7 @@ func (s Store) GetEarliestSnapshotFromAttestation(ctx context.Context, attestati
 }
 
 // DBAttestationToAttestation converts a DBAttestation to an Attestation.
-func DBAttestationToAttestation(dbAttestation DBAttestation) Attestation {
+func DBAttestationToAttestation(dbAttestation db.DBAttestation) Attestation {
 	var attestation Attestation
 
 	if dbAttestation.Destination != nil {
@@ -162,7 +163,7 @@ func DBAttestationToAttestation(dbAttestation DBAttestation) Attestation {
 }
 
 // AttestationToDBAttestation converts an Attestation to a DBAttestation.
-func AttestationToDBAttestation(attestation Attestation) DBAttestation {
+func AttestationToDBAttestation(attestation Attestation) db.DBAttestation {
 	destination := attestation.Destination
 	snapshotRoot := attestation.SnapshotRoot
 	dataHash := attestation.DataHash
@@ -172,7 +173,7 @@ func AttestationToDBAttestation(attestation Attestation) DBAttestation {
 	destinationBlockNumber := attestation.DestinationBlockNumber
 	destinationBlockTime := attestation.DestinationTimestamp
 
-	return DBAttestation{
+	return db.DBAttestation{
 		Destination:            &destination,
 		SnapshotRoot:           &snapshotRoot,
 		DataHash:               &dataHash,

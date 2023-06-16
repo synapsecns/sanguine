@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/ethereum/go-ethereum/common"
+	"github.com/synapsecns/sanguine/agents/agents/executor/db"
 	agentsTypes "github.com/synapsecns/sanguine/agents/types"
 	"gorm.io/gorm/clause"
 	"math/big"
@@ -62,7 +63,7 @@ func (s Store) StoreStates(ctx context.Context, states []agentsTypes.State, snap
 }
 
 // GetState gets a state from the database.
-func (s Store) GetState(ctx context.Context, stateMask DBState) (*agentsTypes.State, error) {
+func (s Store) GetState(ctx context.Context, stateMask db.DBState) (*agentsTypes.State, error) {
 	var state State
 
 	dbStateMask := DBStateToState(stateMask)
@@ -101,7 +102,7 @@ func (s Store) GetState(ctx context.Context, stateMask DBState) (*agentsTypes.St
 }
 
 // GetStateMetadata gets the snapshot root, proof, and tree height of a state from the database.
-func (s Store) GetStateMetadata(ctx context.Context, stateMask DBState) (snapshotRoot *[32]byte, proof *json.RawMessage, stateIndex *uint32, err error) {
+func (s Store) GetStateMetadata(ctx context.Context, stateMask db.DBState) (snapshotRoot *[32]byte, proof *json.RawMessage, stateIndex *uint32, err error) {
 	var state State
 
 	dbStateMask := DBStateToState(stateMask)
@@ -168,7 +169,7 @@ func (s Store) GetSnapshotRootsInNonceRange(ctx context.Context, chainID uint32,
 
 // DBStateToState converts a DBState to a State.
 // nolint:cyclop
-func DBStateToState(dbState DBState) State {
+func DBStateToState(dbState db.DBState) State {
 	var state State
 
 	if dbState.SnapshotRoot != nil {
@@ -235,7 +236,7 @@ func DBStateToState(dbState DBState) State {
 }
 
 // StateToDBState converts a State to a DBState.
-func StateToDBState(state State) DBState {
+func StateToDBState(state State) db.DBState {
 	snapshotRoot := state.SnapshotRoot
 	root := state.Root
 	chainID := state.ChainID
@@ -252,7 +253,7 @@ func StateToDBState(state State) DBState {
 	etherPrice := state.GDEtherPrice
 	markup := state.GDMarkup
 
-	return DBState{
+	return db.DBState{
 		SnapshotRoot:      &snapshotRoot,
 		Root:              &root,
 		ChainID:           &chainID,

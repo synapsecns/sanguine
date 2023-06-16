@@ -4,6 +4,7 @@ import (
 	"github.com/brianvoe/gofakeit/v6"
 	"github.com/ethereum/go-ethereum/common"
 	. "github.com/stretchr/testify/assert"
+	"github.com/synapsecns/sanguine/agents/agents/executor/db"
 	"github.com/synapsecns/sanguine/agents/agents/executor/db/datastore/sql/base"
 	"math/big"
 	"testing"
@@ -18,7 +19,7 @@ func TestMessageDBMessageParity(t *testing.T) {
 	executed := gofakeit.Bool()
 	minimumTimeSet := gofakeit.Bool()
 	minimumTime := gofakeit.Uint64()
-	initialDBMessage := base.DBMessage{
+	initialDBMessage := db.DBMessage{
 		ChainID:        &chainID,
 		Destination:    &destination,
 		Nonce:          &nonce,

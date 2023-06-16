@@ -5,7 +5,6 @@ import (
 	"github.com/ethereum/go-ethereum/common"
 	. "github.com/stretchr/testify/assert"
 	"github.com/synapsecns/sanguine/agents/agents/executor/db"
-	"github.com/synapsecns/sanguine/agents/agents/executor/db/datastore/sql/base"
 	"github.com/synapsecns/sanguine/agents/agents/executor/types"
 	agentsTypes "github.com/synapsecns/sanguine/agents/types"
 	"math/big"
@@ -41,7 +40,7 @@ func (t *DBSuite) TestStoreRetrieveMessage() {
 		err = testDB.StoreMessage(t.GetTestContext(), typesMessageB, blockNumberB, minimumTimeSetB, minimumTimeB)
 		Nil(t.T(), err)
 
-		messageAMask := base.DBMessage{
+		messageAMask := db.DBMessage{
 			ChainID:     &chainIDA,
 			Destination: &destinationA,
 			Nonce:       &nonceA,
@@ -57,7 +56,7 @@ func (t *DBSuite) TestStoreRetrieveMessage() {
 
 		Equal(t.T(), encodeTypesMessageA, encodeRetrievedMessageA)
 
-		messageBMask := base.DBMessage{
+		messageBMask := db.DBMessage{
 			Nonce:          &nonceB,
 			MinimumTimeSet: &minimumTimeSetB,
 			MinimumTime:    &minimumTimeB,
@@ -149,7 +148,7 @@ func (t *DBSuite) TestExecuteMessage() {
 		err := testDB.StoreMessage(t.GetTestContext(), typesMessage, blockNumber, true, 5)
 		Nil(t.T(), err)
 
-		messageMask := base.DBMessage{
+		messageMask := db.DBMessage{
 			ChainID: &chainID,
 		}
 		messages, err := testDB.GetExecutableMessages(t.GetTestContext(), messageMask, 10, 1)
@@ -157,7 +156,7 @@ func (t *DBSuite) TestExecuteMessage() {
 
 		Equal(t.T(), 1, len(messages))
 
-		messageMask = base.DBMessage{
+		messageMask = db.DBMessage{
 			ChainID:     &chainID,
 			Destination: &destination,
 			Nonce:       &nonce,
@@ -165,7 +164,7 @@ func (t *DBSuite) TestExecuteMessage() {
 		err = testDB.ExecuteMessage(t.GetTestContext(), messageMask)
 		Nil(t.T(), err)
 
-		messageMask = base.DBMessage{
+		messageMask = db.DBMessage{
 			ChainID: &chainID,
 		}
 		messages, err = testDB.GetExecutableMessages(t.GetTestContext(), messageMask, 0, 1)
@@ -189,7 +188,7 @@ func (t *DBSuite) TestGetExecutableMessages() {
 		err := testDB.StoreMessage(t.GetTestContext(), typesMessage, blockNumber, false, 10)
 		Nil(t.T(), err)
 
-		messageMask := base.DBMessage{
+		messageMask := db.DBMessage{
 			ChainID: &chainID,
 		}
 		// Check when the current time is after the minimum time, but minimum time is set to false.
@@ -216,7 +215,7 @@ func (t *DBSuite) TestGetExecutableMessages() {
 
 		Equal(t.T(), 1, len(messages))
 
-		messageMask = base.DBMessage{
+		messageMask = db.DBMessage{
 			ChainID:     &chainID,
 			Destination: &destination,
 			Nonce:       &nonce,
@@ -224,7 +223,7 @@ func (t *DBSuite) TestGetExecutableMessages() {
 		err = testDB.ExecuteMessage(t.GetTestContext(), messageMask)
 		Nil(t.T(), err)
 
-		messageMask = base.DBMessage{
+		messageMask = db.DBMessage{
 			ChainID: &chainID,
 		}
 		// Check when a message has the correct current time, has its minimum time set, but has already been executed.
@@ -249,7 +248,7 @@ func (t *DBSuite) TestGetUnsetMinimumTimeMessages() {
 		err := testDB.StoreMessage(t.GetTestContext(), typesMessage, blockNumber, false, 0)
 		Nil(t.T(), err)
 
-		messageMask := base.DBMessage{
+		messageMask := db.DBMessage{
 			ChainID: &chainID,
 		}
 		messages, err := testDB.GetUnsetMinimumTimeMessages(t.GetTestContext(), messageMask, 1)
@@ -290,7 +289,7 @@ func (t *DBSuite) TestSetMinimumTime() {
 		Nil(t.T(), err)
 
 		trueVal := true
-		messageMask := base.DBMessage{
+		messageMask := db.DBMessage{
 			ChainID:        &chainID,
 			MinimumTimeSet: &trueVal,
 		}
@@ -300,14 +299,14 @@ func (t *DBSuite) TestSetMinimumTime() {
 
 		Equal(t.T(), 0, len(messages))
 
-		messageMask = base.DBMessage{
+		messageMask = db.DBMessage{
 			ChainID: &chainID,
 		}
 
 		err = testDB.SetMinimumTime(t.GetTestContext(), messageMask, 10)
 		Nil(t.T(), err)
 
-		messageMask = base.DBMessage{
+		messageMask = db.DBMessage{
 			ChainID:        &chainID,
 			MinimumTimeSet: &trueVal,
 		}

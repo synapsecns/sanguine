@@ -9,7 +9,6 @@ import (
 	"github.com/jpillora/backoff"
 	"github.com/synapsecns/sanguine/agents/agents/executor/config"
 	"github.com/synapsecns/sanguine/agents/agents/executor/db"
-	"github.com/synapsecns/sanguine/agents/agents/executor/db/datastore/sql/base"
 	execTypes "github.com/synapsecns/sanguine/agents/agents/executor/types"
 	"github.com/synapsecns/sanguine/agents/contracts/inbox"
 	"github.com/synapsecns/sanguine/agents/contracts/lightinbox"
@@ -325,7 +324,7 @@ func (e Executor) Execute(parentCtx context.Context, message types.Message) (_ b
 	stateRootString := common.BytesToHash(root[:]).String()
 	origin := (*state).Origin()
 	stateNonce := (*state).Nonce()
-	stateMask := base.DBState{
+	stateMask := db.DBState{
 		Root:    &stateRootString,
 		ChainID: &origin,
 		Nonce:   &stateNonce,
@@ -432,7 +431,7 @@ func (e Executor) verifyStateMerkleProof(parentCtx context.Context, state types.
 		metrics.EndSpanWithErr(span, err)
 	}()
 
-	stateMask := base.DBState{
+	stateMask := db.DBState{
 		Root:    &root,
 		ChainID: &chainID,
 	}
@@ -479,7 +478,7 @@ func (e Executor) verifyMessageOptimisticPeriod(parentCtx context.Context, messa
 		metrics.EndSpanWithErr(span, err)
 	}()
 
-	messageMask := base.DBMessage{
+	messageMask := db.DBMessage{
 		ChainID:     &chainID,
 		Destination: &destinationDomain,
 		Nonce:       &nonce,
@@ -541,7 +540,7 @@ retryLoop:
 func newTreeFromDB(ctx context.Context, chainID uint32, executorDB db.ExecutorDB) (*merkle.HistoricalTree, error) {
 	var allMessages []types.Message
 
-	messageMask := base.DBMessage{
+	messageMask := db.DBMessage{
 		ChainID: &chainID,
 	}
 	page := 1
@@ -830,7 +829,7 @@ func (e Executor) executeExecutable(parentCtx context.Context, chainID uint32) (
 			page := 1
 			currentTime := uint64(time.Now().Unix())
 
-			messageMask := base.DBMessage{
+			messageMask := db.DBMessage{
 				ChainID: &chainID,
 			}
 
@@ -876,7 +875,7 @@ func (e Executor) executeExecutable(parentCtx context.Context, chainID uint32) (
 
 					destinationDomain := message.DestinationDomain()
 					nonce := message.Nonce()
-					executedMessageMask := base.DBMessage{
+					executedMessageMask := db.DBMessage{
 						ChainID:     &chainID,
 						Destination: &destinationDomain,
 						Nonce:       &nonce,
@@ -909,7 +908,7 @@ func (e Executor) setMinimumTime(parentCtx context.Context, chainID uint32) (err
 			backoffInterval = time.Duration(e.config.SetMinimumTimeInterval) * time.Second
 
 			page := 1
-			messageMask := base.DBMessage{
+			messageMask := db.DBMessage{
 				ChainID: &chainID,
 			}
 
@@ -954,7 +953,7 @@ func (e Executor) setMinimumTime(parentCtx context.Context, chainID uint32) (err
 					continue
 				}
 
-				setMessageMask := base.DBMessage{
+				setMessageMask := db.DBMessage{
 					ChainID:     &chainID,
 					Destination: &destinationDomain,
 					Nonce:       &nonce,

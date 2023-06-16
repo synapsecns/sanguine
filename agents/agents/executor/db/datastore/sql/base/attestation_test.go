@@ -4,6 +4,7 @@ import (
 	"github.com/brianvoe/gofakeit/v6"
 	"github.com/ethereum/go-ethereum/common"
 	. "github.com/stretchr/testify/assert"
+	"github.com/synapsecns/sanguine/agents/agents/executor/db"
 	"github.com/synapsecns/sanguine/agents/agents/executor/db/datastore/sql/base"
 	"math/big"
 	"testing"
@@ -19,7 +20,7 @@ func TestAttestationDBAttestationParity(t *testing.T) {
 	destinationBlockNumber := gofakeit.Uint64()
 	destinationTimestamp := gofakeit.Uint64()
 
-	initialDBAttestation := base.DBAttestation{
+	initialDBAttestation := db.DBAttestation{
 		Destination:            &destination,
 		SnapshotRoot:           &snapshotRoot,
 		DataHash:               &dataHash,
