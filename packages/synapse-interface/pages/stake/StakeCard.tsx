@@ -59,9 +59,6 @@ const StakeCard = ({ address, chainId, pool }: StakeCardProps) => {
   })
   const [tx, setTx] = useState(undefined)
 
-  console.log('allowance:', allowance)
-  console.log('tx:', tx)
-
   useEffect(() => {
     if (!address || !chainId || stakingPoolId === null) return
     getStakedBalance(address as Address, chainId, stakingPoolId)
