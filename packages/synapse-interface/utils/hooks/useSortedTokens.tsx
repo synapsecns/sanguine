@@ -15,10 +15,10 @@ interface TokenBalance {
 }
 
 // Function to sort the tokens by priorityRank and alphabetically
-function sortTokensArray(arr: TokenBalance[]) {
+function sortTokensArray(arr: TokenBalance[]): TokenBalance[] {
   return arr.sort((a, b) => {
-    const tokenA = a.token
-    const tokenB = b.token
+    const tokenA: Token = a.token
+    const tokenB: Token = b.token
     if (tokenA.priorityRank < tokenB.priorityRank) {
       return -1
     } else if (tokenA.priorityRank > tokenB.priorityRank) {
@@ -38,7 +38,7 @@ export function useUserHeldTokens(): TokenBalance[] {
     if (address === undefined || chain === undefined) return
 
     async function fetchUserHeldTokens() {
-      let multicallInputs = []
+      let multicallInputs: any[] = []
       let multicallData: any
 
       const currentChainBridgableTokens: Token[] = BRIDGABLE_TOKENS[chain?.id]
@@ -78,7 +78,9 @@ export function useUserHeldTokens(): TokenBalance[] {
             } as TokenBalance
           }
         )
-        setHeldTokens(newHeldTokens.filter((token) => token.balance.gt(0)))
+        setHeldTokens(
+          newHeldTokens.filter((token: TokenBalance) => token.balance.gt(0))
+        )
       }
     }
 
