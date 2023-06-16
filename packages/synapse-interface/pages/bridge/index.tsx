@@ -742,7 +742,6 @@ const BridgePage = ({
               <div className="flex justify-center">
                 <div className="pb-3 place-self-center">
                   <BridgeCard
-                    error={error}
                     address={address}
                     bridgeQuote={bridgeQuote}
                     fromInput={fromInput}
