@@ -998,7 +998,7 @@ export const ETH = new Token({
 
 export const MOVR = new Token({
   addresses: {
-    [CHAINS.MOONRIVER.id]: '',
+    [CHAINS.MOONRIVER.id]: AddressZero,
   },
   decimals: 18,
   symbol: 'MOVR',
@@ -1013,7 +1013,7 @@ export const MOVR = new Token({
 
 export const AVAX = new Token({
   addresses: {
-    [CHAINS.AVALANCHE.id]: '',
+    [CHAINS.AVALANCHE.id]: AddressZero,
   },
   decimals: 18,
   symbol: 'AVAX',
@@ -1089,27 +1089,28 @@ export const MULTIAVAX = new Token({
   priorityRank: 3,
 })
 
-// export const JEWEL = new Token({
-//   addresses: {
-//     [CHAINS.DFK.id]: '',
-//   },
-//   decimals: 18,
-//   symbol: 'JEWEL',
-//   name: 'JEWEL',
-//   logo: jewelLogo,
-//   description: 'JEWEL',
-//   isNative: true,
-//   swapableType: 'JEWEL',
-// })
+export const JEWEL = new Token({
+  addresses: {
+    [CHAINS.DFK.id]: AddressZero,
+    [CHAINS.HARMONY.id]: '0x72cb10c6bfa5624dd07ef608027e366bd690048f', // from harmony jewel?
+    [CHAINS.KLAYTN.id]: '0x30C103f8f5A3A732DFe2dCE1Cc9446f545527b43',
+  },
+  decimals: 18,
+  symbol: 'JEWEL',
+  name: 'JEWEL',
+  logo: jewelLogo,
+  description: 'JEWEL',
+  isNative: true,
+  swapableType: 'JEWEL',
+})
 
 export const WJEWEL = new Token({
   addresses: {
     [CHAINS.DFK.id]: '0xCCb93dABD71c8Dad03Fc4CE5559dC3D89F67a260', // from actual jewl
-    [CHAINS.HARMONY.id]: '0x72cb10c6bfa5624dd07ef608027e366bd690048f', // from harmony jewel?
   },
   decimals: 18,
-  symbol: 'JEWEL ', // THE SPACES ARE VERY IMPORTANT
-  name: 'JEWEL ', // THE SPACES ARE VERY IMPORTANT
+  symbol: 'WJEWEL',
+  name: 'Wrapped JEWEL',
   logo: jewelLogo,
   description: 'JEWEL',
   swapableType: 'JEWEL',
