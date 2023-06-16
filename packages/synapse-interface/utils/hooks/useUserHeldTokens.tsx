@@ -61,6 +61,8 @@ export function useUserHeldTokens() {
       )
     }
 
-    // return heldTokens.filter(token)
+    return heldTokens.filter((token) => {
+      return token.balance.gt(0)
+    })
   }, [address, chain])
 }
