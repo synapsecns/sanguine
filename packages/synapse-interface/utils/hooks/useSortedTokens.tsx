@@ -48,10 +48,8 @@ export function useUserHeldTokens(bridgeTxHash: string): TokenBalance[] {
           token.addresses[chain.id as keyof Token['addresses']]
         const multicallAddress: Address = `0xcA11bde05977b3631167028862bE2a173976CA11` //deterministic multicall3 ethereum address
 
-        console.log('tokenAddress: ', tokenAddress)
         if (tokenAddress === undefined) return
         else if (tokenAddress == AddressZero) {
-          console.log('got hit for Eth: ', tokenAddress)
           multicallInputs.push({
             address: multicallAddress,
             abi: multicallABI,
@@ -83,10 +81,7 @@ export function useUserHeldTokens(bridgeTxHash: string): TokenBalance[] {
           }
         )
         setHeldTokens(
-          newHeldTokens.filter((token: TokenBalance) => {
-            console.log('token: ', token)
-            return token && token.balance.gt(0)
-          })
+          newHeldTokens.filter((token: TokenBalance) => token.balance.gt(0))
         )
       }
     }
