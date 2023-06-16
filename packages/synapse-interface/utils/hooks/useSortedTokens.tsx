@@ -29,93 +29,87 @@ function sortTokensArray(arr: TokenBalance[]) {
   })
 }
 
-export function getSortedBridgableTokens(chainId: number): TokenBalance[] {
-  const userHeldTokens: TokenBalance[] = getUserHeldTokens()
-
-  return useMemo(() => {
-    if (chainId === undefined) return []
-    const availableBridgableTokens: Token[] = BRIDGABLE_TOKENS[chainId]
-    const heldTokenSymbols = userHeldTokens.map(
-      (token: TokenBalance) => token.symbol
-    )
-
-    const noBalanceTokens = availableBridgableTokens
-      .filter((token) => !heldTokenSymbols.includes(token.symbol))
-      .map((token) => {
-        return {
-          token: token,
-          symbol: token.symbol,
-          balance: Zero,
-        } as TokenBalance
-      })
-
-    return [
-      ...sortTokensArray(userHeldTokens),
-      ...sortTokensArray(noBalanceTokens),
-    ]
-  }, [userHeldTokens, chainId])
-}
-
-export function getUserHeldTokens(): TokenBalance[] {
-  let heldTokens: TokenBalance[] = []
-  const promise = fetchUserHeldTokens()
-
-  promise.then((response) => (heldTokens = response))
-
-  return useMemo(() => {
-    return heldTokens
-  }, [heldTokens])
-}
-
-export function fetchUserHeldTokens(): Promise<TokenBalance[]> {
+export function useUserHeldTokens(): TokenBalance[] {
+  const [heldTokens, setHeldTokens] = useState<TokenBalance[]>([])
   const { address } = useAccount()
   const { chain } = useNetwork()
 
-  return useMemo(async () => {
-    if (address === undefined || chain === undefined) return []
+  useEffect(() => {
+    if (address === undefined || chain === undefined) return
 
-    let heldTokens: TokenBalance[] = []
-    const currentChainBridgableTokens: Token[] = BRIDGABLE_TOKENS[chain?.id]
-    let multicallInputs = []
-    let multicallData: any
+    async function fetchUserHeldTokens() {
+      let multicallInputs = []
+      let multicallData: any
 
-    currentChainBridgableTokens.map((token) => {
-      const tokenAddress = token.addresses[chain.id as keyof Token['addresses']]
-      const multicallAddress: Address = `0xcA11bde05977b3631167028862bE2a173976CA11` //deterministic multicall3 ethereum address
+      const currentChainBridgableTokens: Token[] = BRIDGABLE_TOKENS[chain?.id]
 
-      if (tokenAddress === undefined) return
-      else if (tokenAddress === AddressZero) {
-        multicallInputs.push({
-          address: multicallAddress,
-          abi: multicallABI,
-          functionName: 'getEthBalance',
-        } as Partial<Contract>)
-      } else {
-        const formattedTokenAddress: Address = `0x${tokenAddress.slice(2)}`
-        multicallInputs.push({
-          address: formattedTokenAddress,
-          abi: erc20ABI,
-          functionName: 'balanceOf',
-          chainId: chain.id as number,
-          args: [address],
-        } as Partial<Contract>)
-      }
-    })
+      currentChainBridgableTokens.forEach((token) => {
+        const tokenAddress =
+          token.addresses[chain.id as keyof Token['addresses']]
+        const multicallAddress: Address = `0xcA11bde05977b3631167028862bE2a173976CA11` //deterministic multicall3 ethereum address
 
-    if (multicallInputs.length > 0) {
-      multicallData = await multicall({ contracts: multicallInputs })
-      heldTokens = await multicallData.map(
-        (tokenBalance: BigNumber, index: number) => {
-          return {
-            token: currentChainBridgableTokens[index],
-            symbol: currentChainBridgableTokens[index].symbol,
-            balance: tokenBalance,
-          } as TokenBalance
+        if (tokenAddress === undefined) return
+        else if (tokenAddress === AddressZero) {
+          multicallInputs.push({
+            address: multicallAddress,
+            abi: multicallABI,
+            functionName: 'getEthBalance',
+          } as Partial<Contract>)
+        } else {
+          const formattedTokenAddress: Address = `0x${tokenAddress.slice(2)}`
+          multicallInputs.push({
+            address: formattedTokenAddress,
+            abi: erc20ABI,
+            functionName: 'balanceOf',
+            chainId: chain.id as number,
+            args: [address],
+          } as Partial<Contract>)
         }
-      )
-      return heldTokens.filter((token) => token.balance.gt(0))
+      })
+
+      if (multicallInputs.length > 0) {
+        multicallData = await multicall({ contracts: multicallInputs })
+        const newHeldTokens = multicallData.map(
+          (tokenBalance: BigNumber, index: number) => {
+            return {
+              token: currentChainBridgableTokens[index],
+              symbol: currentChainBridgableTokens[index].symbol,
+              balance: tokenBalance,
+            } as TokenBalance
+          }
+        )
+        setHeldTokens(newHeldTokens.filter((token) => token.balance.gt(0)))
+      }
     }
 
-    return heldTokens
+    fetchUserHeldTokens()
   }, [address, chain])
+
+  return heldTokens
+}
+
+export function getSortedBridgableTokens(chainId: number): TokenBalance[] {
+  const userHeldTokens: TokenBalance[] = useUserHeldTokens()
+
+  if (chainId === undefined) return []
+
+  const availableBridgableTokens: Token[] = BRIDGABLE_TOKENS[chainId]
+  const heldTokenSymbols = userHeldTokens.map(
+    (token: TokenBalance) => token.symbol
+  )
+
+  const noBalanceTokens = availableBridgableTokens
+    .filter((token) => !heldTokenSymbols.includes(token.symbol))
+    .map((token) => {
+      return {
+        token: token,
+        symbol: token.symbol,
+        balance: Zero,
+      } as TokenBalance
+    })
+
+  return [
+    ...sortTokensArray(userHeldTokens),
+    ...sortTokensArray(noBalanceTokens),
+  ]
 }

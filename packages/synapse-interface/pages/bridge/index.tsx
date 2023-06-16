@@ -88,8 +88,11 @@ const BridgePage = ({
 
   const bridgableTokens = getSortedBridgableTokens(fromChainId)
   console.log('bridgableTokens:', bridgableTokens)
-  // console.log('fromTokens:', fromTokens)
-  // console.log('BRIDGABLE_TOKENS: ', BRIDGABLE_TOKENS)
+  // console.log('fromTokens: ', fromTokens)
+
+  // useEffect(() => {
+  //   setFromTokens(bridgableTokens)
+  // }, [fromChainId])
 
   /*
   useEffect Trigger: onMount
