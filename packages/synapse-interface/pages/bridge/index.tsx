@@ -44,7 +44,10 @@ import {
   QUOTE_POLLING_INTERVAL,
 } from '@/constants/bridge'
 import { CHAINS_BY_ID, AcceptedChainId } from '@/constants/chains'
-import { useUserHeldTokens } from '@/utils/hooks/useUserHeldTokens'
+import {
+  useUserHeldTokens,
+  useSortedBridgableTokens,
+} from '@/utils/hooks/useUserHeldTokens'
 
 /* TODO
   - look into getting rid of fromChainId state and just using wagmi hook (ran into problems when trying this but forgot why)
@@ -84,7 +87,9 @@ const BridgePage = ({
   let errorPopup: string
 
   const userHeldTokens = useUserHeldTokens()
+  const bridgableTokens = useSortedBridgableTokens()
   console.log('userHeldTokens: ', userHeldTokens)
+  console.log('bridgableTokens:', bridgableTokens)
 
   // console.log('BRIDGABLE_TOKENS: ', BRIDGABLE_TOKENS)
 

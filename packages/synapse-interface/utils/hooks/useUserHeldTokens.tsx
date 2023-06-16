@@ -9,15 +9,38 @@ import { Token } from '../types'
 import { Contract, BigNumber } from 'ethers'
 
 interface TokenBalance {
-  token: string
+  symbol: string
   balance: BigNumber
 }
 
-export function useBridgableTokens() {
+// Function to sort the tokens by priorityRank and alphabetically
+function sortTokens(a, b) {
+  if (a.priorityRank < b.priorityRank) {
+    return -1
+  } else if (a.priorityRank > b.priorityRank) {
+    return 1
+  } else {
+    return a.symbol < b.symbol ? -1 : 1 // In case of a tie in priorityRank, sort alphabetically
+  }
+}
+
+export function useSortedBridgableTokens(): Token[] {
   const userHeldTokens = useUserHeldTokens()
   const { chain } = useNetwork()
 
-  const currentChainBridgableTokens: Token[] = BRIDGABLE_TOKENS[chain.id]
+  const availableBridgableTokens: Token[] = BRIDGABLE_TOKENS[chain.id]
+  const heldTokenSymbols = userHeldTokens.map(
+    (token: TokenBalance) => token.symbol
+  )
+
+  const tokensWithBalance = availableBridgableTokens.filter((token) =>
+    heldTokenSymbols.includes(token.symbol)
+  )
+  const tokensNoBalance = availableBridgableTokens.filter(
+    (token) => !heldTokenSymbols.includes(token.symbol)
+  )
+
+  return [...tokensWithBalance, ...tokensNoBalance]
 }
 
 export function useUserHeldTokens(): TokenBalance[] {
@@ -71,7 +94,7 @@ export function fetchUserHeldTokens(): Promise<TokenBalance[]> {
       heldTokens = await multicallData.map(
         (tokenBalance: BigNumber, index: number) => {
           return {
-            token: currentChainBridgableTokens[index].symbol,
+            symbol: currentChainBridgableTokens[index].symbol,
             balance: tokenBalance,
           } as TokenBalance
         }
