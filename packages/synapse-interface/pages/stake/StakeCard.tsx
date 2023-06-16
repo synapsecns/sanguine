@@ -1,5 +1,4 @@
 import { useState, useEffect } from 'react'
-import { useAccount, useNetwork } from 'wagmi'
 import { formatUnits } from '@ethersproject/units'
 import { Zero } from '@ethersproject/constants'
 import { Address } from '@wagmi/core'
@@ -58,7 +57,10 @@ const StakeCard = ({ address, chainId, pool }: StakeCardProps) => {
     amount: Zero,
     reward: Zero,
   })
-  const [tx, setTx] = useState()
+  const [tx, setTx] = useState(undefined)
+
+  console.log('allowance:', allowance)
+  console.log('tx:', tx)
 
   useEffect(() => {
     if (!address || !chainId || stakingPoolId === null) return
@@ -70,6 +72,20 @@ const StakeCard = ({ address, chainId, pool }: StakeCardProps) => {
         console.log(err)
       })
   }, [address, chainId, stakingPoolId])
+
+  useEffect(() => {
+    if (tx !== undefined) {
+      ;(async () => {
+        const tkAllowance = await getTokenAllowance(
+          MINICHEF_ADDRESSES[chainId],
+          pool.addresses[chainId],
+          address,
+          chainId
+        )
+        setAllowance(tkAllowance)
+      })()
+    }
+  }, [tx])
 
   return (
     <div className="flex-wrap space-y-2">
@@ -203,11 +219,12 @@ const StakeCard = ({ address, chainId, pool }: StakeCardProps) => {
             onClickEnter={
               allowance.lt(deposit.bn)
                 ? async (e) => {
+                    await setTx(undefined)
                     const tx = await pendingApproveTxWrapFunc(
                       approve(pool, deposit.bn, chainId)
                     )
 
-                    setTx(tx)
+                    setTx(tx?.hash)
                   }
                 : async (e) => {
                     const tx = await pendingStakeTxWrapFunc(
