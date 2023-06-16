@@ -1041,18 +1041,18 @@ export const MULTIAVAX = new Token({
   color: 'red',
 })
 
-// export const JEWEL = new Token({
-//   addresses: {
-//     [CHAINS.DFK.id]: '',
-//   },
-//   decimals: 18,
-//   symbol: 'JEWEL',
-//   name: 'JEWEL',
-//   logo: jewelLogo,
-//   description: 'JEWEL',
-//   isNative: true,
-//   swapableType: 'JEWEL',
-// })
+export const JEWEL = new Token({
+  addresses: {
+    [CHAINS.DFK.id]: '',
+  },
+  decimals: 18,
+  symbol: 'JEWEL',
+  name: 'JEWEL',
+  logo: jewelLogo,
+  description: 'JEWEL',
+  isNative: true,
+  swapableType: 'JEWEL',
+})
 
 export const WJEWEL = new Token({
   addresses: {
