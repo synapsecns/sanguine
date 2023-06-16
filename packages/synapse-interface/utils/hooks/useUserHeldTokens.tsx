@@ -13,7 +13,14 @@ interface TokenBalance {
   balance: BigNumber
 }
 
-export function useUserHeldTokens() {
+export function useBridgableTokens() {
+  const userHeldTokens = useUserHeldTokens()
+  const { chain } = useNetwork()
+
+  const currentChainBridgableTokens: Token[] = BRIDGABLE_TOKENS[chain.id]
+}
+
+export function useUserHeldTokens(): TokenBalance[] {
   const [heldTokens, setHeldTokens] = useState<TokenBalance[]>([])
   const promise = fetchUserHeldTokens()
 
@@ -24,7 +31,7 @@ export function useUserHeldTokens() {
   }, [heldTokens])
 }
 
-export function fetchUserHeldTokens() {
+export function fetchUserHeldTokens(): Promise<TokenBalance[]> {
   const { address } = useAccount()
   const { chain } = useNetwork()
 
