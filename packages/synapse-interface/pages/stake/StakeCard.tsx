@@ -59,6 +59,7 @@ const StakeCard = ({ address, chainId, pool }: StakeCardProps) => {
     amount: Zero,
     reward: Zero,
   })
+  const [tx, setTx] = useState()
 
   useEffect(() => {
     if (!address || !chainId || stakingPoolId === null) return
@@ -203,9 +204,11 @@ const StakeCard = ({ address, chainId, pool }: StakeCardProps) => {
             onClickEnter={
               allowance.lt(deposit.bn)
                 ? async (e) => {
-                    await pendingApproveTxWrapFunc(
+                    const tx = await pendingApproveTxWrapFunc(
                       approve(pool, deposit.bn, chainId)
                     )
+
+                    setTx(tx)
                   }
                 : async (e) => {
                     const tx = await pendingStakeTxWrapFunc(
