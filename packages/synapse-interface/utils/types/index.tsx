@@ -294,7 +294,7 @@ export class Token {
     this.swapableOn = swapableOn ?? []
     this.display = display ?? true
     this.legacy = legacy ?? false
-    this.priorityRank = priorityRank ?? 6
+    this.priorityRank = priorityRank
     this.priorityPool = priorityPool ?? false
     this.color = color ?? 'gray'
     this.priceUnits = priceUnits ?? 'USD'
