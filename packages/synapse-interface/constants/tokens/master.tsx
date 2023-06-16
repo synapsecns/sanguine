@@ -1008,7 +1008,7 @@ export const MOVR = new Token({
   isNative: true,
   swapableType: 'MOVR',
   color: 'purple',
-  priorityRank: 6,
+  priorityRank: 3,
 })
 
 export const AVAX = new Token({
@@ -1102,6 +1102,7 @@ export const JEWEL = new Token({
   description: 'JEWEL',
   isNative: true,
   swapableType: 'JEWEL',
+  priorityRank: 3,
 })
 
 export const WJEWEL = new Token({
