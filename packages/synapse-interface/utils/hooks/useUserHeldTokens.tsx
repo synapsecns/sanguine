@@ -6,7 +6,7 @@ import { BRIDGABLE_TOKENS } from '@/constants/tokens'
 import multicallABI from '@/constants/abis/multicall.json'
 import erc20ABI from '@/constants/abis/erc20.json'
 import { Token } from '../types'
-import { Contract } from 'ethers'
+import { Contract, BigNumber } from 'ethers'
 
 export function useUserHeldTokens() {
   const [tokens, setTokens] = useState([])
@@ -19,6 +19,7 @@ export function useUserHeldTokens() {
     const currentChainBridgableTokens: Token[] = BRIDGABLE_TOKENS[chain.id]
     let multicallInputs = []
     let multicallData: any
+    let heldTokens = []
 
     currentChainBridgableTokens.map((token) => {
       const tokenAddress = token.addresses[chain.id as keyof Token['addresses']]
@@ -45,6 +46,16 @@ export function useUserHeldTokens() {
 
     if (multicallInputs.length > 0) {
       multicallData = await multicall({ contracts: multicallInputs })
+      heldTokens = multicallData.map(
+        (tokenBalance: BigNumber, index: number) => {
+          return {
+            token: currentChainBridgableTokens[index].symbol,
+            balance: tokenBalance,
+          }
+        }
+      )
+
+      console.log('heldTokens:', heldTokens)
     }
   }, [address, chain])
 }
