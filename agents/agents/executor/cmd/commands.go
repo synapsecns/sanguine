@@ -11,7 +11,7 @@ import (
 	"github.com/synapsecns/sanguine/agents/agents/executor/db/datastore/sql/sqlite"
 	"github.com/synapsecns/sanguine/agents/agents/executor/metadata"
 	"github.com/synapsecns/sanguine/core/metrics"
-	ethergoClient "github.com/synapsecns/sanguine/ethergo/client"
+	omnirpcClient "github.com/synapsecns/sanguine/services/omnirpc/client"
 	scribeAPI "github.com/synapsecns/sanguine/services/scribe/api"
 	"github.com/synapsecns/sanguine/services/scribe/backfill"
 	"github.com/synapsecns/sanguine/services/scribe/client"
@@ -124,11 +124,17 @@ func createExecutorParameters(ctx context.Context, c *cli.Context, metrics metri
 
 	clients = make(map[uint32]executor.Backend)
 
+	var baseOmniRPCClient omnirpcClient.RPCClient
+	if debugFlag.IsSet() {
+		baseOmniRPCClient = omnirpcClient.NewOmnirpcClient(executorConfig.BaseOmnirpcURL, metrics, omnirpcClient.WithCaptureReqRes())
+	} else {
+		baseOmniRPCClient = omnirpcClient.NewOmnirpcClient(executorConfig.BaseOmnirpcURL, metrics)
+	}
+
 	for _, execClient := range executorConfig.Chains {
-		rpcURL := fmt.Sprintf("%s/%d/rpc/%d", executorConfig.BaseOmnirpcURL, 1, execClient.ChainID)
-		ethClient, err := ethergoClient.DialBackend(ctx, rpcURL, metrics, ethergoClient.Capture(debugFlag.IsSet()))
+		ethClient, err := baseOmniRPCClient.GetConfirmationsClient(ctx, int(execClient.ChainID), 1)
 		if err != nil {
-			return executorConfig, nil, nil, fmt.Errorf("failed to dial backend: %w", err)
+			return executorConfig, nil, nil, fmt.Errorf("failed to get confirmations client: %w", err)
 		}
 
 		clients[execClient.ChainID] = ethClient

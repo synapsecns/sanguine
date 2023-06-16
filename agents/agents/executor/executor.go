@@ -719,78 +719,14 @@ func (e Executor) processLog(parentCtx context.Context, log ethTypes.Log, chainI
 
 	switch datatype := datatypeInterface.(type) {
 	case types.Message:
-		merkleIndex := e.chainExecutors[chainID].merkleTree.NumOfItems()
-		leaf, err := datatype.ToLeaf()
-		if err != nil {
-			return fmt.Errorf("could not convert message to leaf: %w", err)
-		}
-
-		// Make sure the nonce of the message is being inserted at the right index.
-		switch {
-		case merkleIndex+1 > datatype.Nonce():
-			return nil
-		case merkleIndex+1 < datatype.Nonce():
-			return fmt.Errorf("nonce is not correct. expected: %d, got: %d", merkleIndex+1, datatype.Nonce())
-		default:
-		}
-
-		e.chainExecutors[chainID].merkleTree.Insert(leaf[:])
-
-		err = e.executorDB.StoreMessage(ctx, datatype, log.BlockNumber, false, 0)
-		if err != nil {
-			return fmt.Errorf("could not store message: %w", err)
-		}
+		return e.processMessage(ctx, datatype, log.BlockNumber)
 	case types.Snapshot:
-		snapshotRoot, proofs, err := datatype.SnapshotRootAndProofs()
-		if err != nil {
-			return fmt.Errorf("could not get snapshot root and proofs: %w", err)
-		}
-
-		err = e.executorDB.StoreStates(ctx, datatype.States(), snapshotRoot, proofs, log.BlockNumber)
-		if err != nil {
-			return fmt.Errorf("could not store states: %w", err)
-		}
+		return e.processSnapshot(ctx, datatype, log.BlockNumber)
 	case types.Attestation:
-		b := &backoff.Backoff{
-			Factor: 2,
-			Jitter: true,
-			Min:    30 * time.Millisecond,
-			Max:    3 * time.Second,
-		}
-
-		timeout := time.Duration(0)
-
-		var logHeader *ethTypes.Header
-
-	retryLoop:
-		for {
-			select {
-			case <-ctx.Done():
-				return fmt.Errorf("context canceled: %w", ctx.Err())
-			case <-time.After(timeout):
-				if b.Attempt() >= rpcRetry {
-					return fmt.Errorf("could not get log header: %w", err)
-				}
-				logHeader, err = e.chainExecutors[chainID].rpcClient.HeaderByNumber(ctx, big.NewInt(int64(log.BlockNumber)))
-				if err != nil {
-					timeout = b.Duration()
-
-					continue
-				}
-
-				break retryLoop
-			}
-		}
-
-		err = e.executorDB.StoreAttestation(ctx, datatype, chainID, log.BlockNumber, logHeader.Time)
-		if err != nil {
-			return fmt.Errorf("could not store attestation: %w", err)
-		}
+		return e.processAttestation(ctx, datatype, chainID, log.BlockNumber)
 	default:
 		return fmt.Errorf("type not supported")
 	}
-
-	return nil
 }
 
 // receiveLogs receives logs from the log channel and processes them.
