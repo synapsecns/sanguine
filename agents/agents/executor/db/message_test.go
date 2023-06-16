@@ -76,31 +76,61 @@ func (t *DBSuite) TestStoreRetrieveMessage() {
 func (t *DBSuite) TestGetLastBlockNumber() {
 	t.RunOnAllDBs(func(testDB db.ExecutorDB) {
 		chainID := gofakeit.Uint32()
-		destinationA := gofakeit.Uint32()
-		destinationB := destinationA + 1
-		nonceA := gofakeit.Uint32()
-		nonceB := nonceA + 1
-		messageA := common.BigToHash(big.NewInt(gofakeit.Int64())).Bytes()
-		messageB := common.BigToHash(big.NewInt(gofakeit.Int64())).Bytes()
-		blockNumberA := gofakeit.Uint64()
-		blockNumberB := blockNumberA + 1
+		destination := gofakeit.Uint32()
+		nonce := gofakeit.Uint32()
+		optimisticSeconds := gofakeit.Uint32()
+		messageBody := common.BigToHash(big.NewInt(gofakeit.Int64())).Bytes()
+		snapshotRoot := common.BigToHash(big.NewInt(gofakeit.Int64()))
+		stateRoot := common.BigToHash(big.NewInt(gofakeit.Int64()))
+		dataHash := common.BigToHash(big.NewInt(gofakeit.Int64()))
+		stateBlockNumber := big.NewInt(gofakeit.Int64())
+		summitBlockNumber := big.NewInt(gofakeit.Int64())
+		summitTimestamp := big.NewInt(gofakeit.Int64())
+		stateTimestamp := big.NewInt(gofakeit.Int64())
+		destinationTimestamp := gofakeit.Uint64()
+		proof := [][]byte{common.BigToHash(big.NewInt(gofakeit.Int64())).Bytes()}
+		stateIndex := gofakeit.Uint32()
+		gasPrice := gofakeit.Uint16()
+		dataPrice := gofakeit.Uint16()
+		execBuffer := gofakeit.Uint16()
+		amortAttCost := gofakeit.Uint16()
+		etherPrice := gofakeit.Uint16()
+		markup := gofakeit.Uint16()
 
-		headerA := agentsTypes.NewHeader(agentsTypes.MessageFlagManager, chainID, nonceA, destinationA, gofakeit.Uint32())
-		typesMessageA := agentsTypes.NewMessage(headerA, nil, messageA)
+		messageBlockNumber := gofakeit.Uint64()
+		attestationDestinationBlockNumber := gofakeit.Uint64()
+		stateSnapshotBlockNumber := gofakeit.Uint64()
 
-		err := testDB.StoreMessage(t.GetTestContext(), typesMessageA, blockNumberA, false, 0)
+		// Create and store a message.
+		header := agentsTypes.NewHeader(agentsTypes.MessageFlagManager, chainID, nonce, destination, optimisticSeconds)
+		message, err := agentsTypes.NewMessageFromManagerMessage(header, messageBody)
+		Nil(t.T(), err)
+		err = testDB.StoreMessage(t.GetTestContext(), message, messageBlockNumber, false, 0)
 		Nil(t.T(), err)
 
-		headerB := agentsTypes.NewHeader(agentsTypes.MessageFlagManager, chainID, nonceB, destinationB, gofakeit.Uint32())
-		typesMessageB := agentsTypes.NewMessage(headerB, nil, messageB)
-
-		err = testDB.StoreMessage(t.GetTestContext(), typesMessageB, blockNumberB, false, 0)
+		// Create and store an attestation.
+		attestation := agentsTypes.NewAttestation(snapshotRoot, dataHash, nonce, summitBlockNumber, summitTimestamp)
+		err = testDB.StoreAttestation(t.GetTestContext(), attestation, destination, attestationDestinationBlockNumber, destinationTimestamp)
 		Nil(t.T(), err)
 
-		lastBlockNumber, err := testDB.GetLastBlockNumber(t.GetTestContext(), chainID, types.OriginContract)
+		// Create and store a state.
+		gasData := agentsTypes.NewGasData(gasPrice, dataPrice, execBuffer, amortAttCost, etherPrice, markup)
+		state := agentsTypes.NewState(stateRoot, chainID, nonce, stateBlockNumber, stateTimestamp, gasData)
+		err = testDB.StoreState(t.GetTestContext(), state, snapshotRoot, proof, stateIndex, stateSnapshotBlockNumber)
 		Nil(t.T(), err)
 
-		Equal(t.T(), blockNumberB, lastBlockNumber)
+		// Get the last block number for each type.
+		lastMessageBlockNumber, err := testDB.GetLastBlockNumber(t.GetTestContext(), chainID, types.OriginContract)
+		Nil(t.T(), err)
+		Equal(t.T(), messageBlockNumber, lastMessageBlockNumber)
+
+		lastAttestationBlockNumber, err := testDB.GetLastBlockNumber(t.GetTestContext(), destination, types.LightInboxContract)
+		Nil(t.T(), err)
+		Equal(t.T(), attestationDestinationBlockNumber, lastAttestationBlockNumber)
+
+		lastStateBlockNumber, err := testDB.GetLastBlockNumber(t.GetTestContext(), chainID, types.InboxContract)
+		Nil(t.T(), err)
+		Equal(t.T(), stateSnapshotBlockNumber, lastStateBlockNumber)
 	})
 }
 

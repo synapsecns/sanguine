@@ -138,7 +138,6 @@ func (s Store) GetBlockNumber(ctx context.Context, messageMask types.DBMessage) 
 }
 
 // GetLastBlockNumber gets the last block number that had a message in the database.
-// TODO: Test this method.
 func (s Store) GetLastBlockNumber(ctx context.Context, chainID uint32, contractType types.ContractType) (uint64, error) {
 	var lastBlockNumber sql.NullInt64
 
