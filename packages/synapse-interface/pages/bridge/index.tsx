@@ -46,8 +46,8 @@ import {
 import { CHAINS_BY_ID, AcceptedChainId } from '@/constants/chains'
 import {
   useUserHeldTokens,
-  useSortedBridgableTokens,
-} from '@/utils/hooks/useUserHeldTokens'
+  getSortedBridgableTokens,
+} from '@/utils/hooks/useSortedTokens'
 
 /* TODO
   - look into getting rid of fromChainId state and just using wagmi hook (ran into problems when trying this but forgot why)
@@ -86,9 +86,7 @@ const BridgePage = ({
   let successPopup: any
   let errorPopup: string
 
-  const userHeldTokens = useUserHeldTokens()
-  const bridgableTokens = useSortedBridgableTokens()
-  // console.log('userHeldTokens: ', userHeldTokens)
+  const bridgableTokens = getSortedBridgableTokens(fromChainId)
   console.log('bridgableTokens:', bridgableTokens)
   // console.log('fromTokens:', fromTokens)
   // console.log('BRIDGABLE_TOKENS: ', BRIDGABLE_TOKENS)

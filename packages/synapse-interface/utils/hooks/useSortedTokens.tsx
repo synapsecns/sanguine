@@ -29,36 +29,38 @@ function sortTokensArray(arr: TokenBalance[]) {
   })
 }
 
-export function useSortedBridgableTokens() {
-  const userHeldTokens: TokenBalance[] = useUserHeldTokens()
-  const { chain } = useNetwork()
+export function getSortedBridgableTokens(chainId: number): TokenBalance[] {
+  const userHeldTokens: TokenBalance[] = getUserHeldTokens()
 
-  const availableBridgableTokens: Token[] = BRIDGABLE_TOKENS[chain.id]
-  const heldTokenSymbols = userHeldTokens.map(
-    (token: TokenBalance) => token.symbol
-  )
+  return useMemo(() => {
+    if (chainId === undefined) return []
+    const availableBridgableTokens: Token[] = BRIDGABLE_TOKENS[chainId]
+    const heldTokenSymbols = userHeldTokens.map(
+      (token: TokenBalance) => token.symbol
+    )
 
-  const noBalanceTokens = availableBridgableTokens
-    .filter((token) => !heldTokenSymbols.includes(token.symbol))
-    .map((token) => {
-      return {
-        token: token,
-        symbol: token.symbol,
-        balance: Zero,
-      } as TokenBalance
-    })
+    const noBalanceTokens = availableBridgableTokens
+      .filter((token) => !heldTokenSymbols.includes(token.symbol))
+      .map((token) => {
+        return {
+          token: token,
+          symbol: token.symbol,
+          balance: Zero,
+        } as TokenBalance
+      })
 
-  return [
-    ...sortTokensArray(userHeldTokens),
-    ...sortTokensArray(noBalanceTokens),
-  ]
+    return [
+      ...sortTokensArray(userHeldTokens),
+      ...sortTokensArray(noBalanceTokens),
+    ]
+  }, [userHeldTokens, chainId])
 }
 
-export function useUserHeldTokens(): TokenBalance[] {
-  const [heldTokens, setHeldTokens] = useState<TokenBalance[]>([])
+export function getUserHeldTokens(): TokenBalance[] {
+  let heldTokens: TokenBalance[] = []
   const promise = fetchUserHeldTokens()
 
-  promise.then((response) => setHeldTokens(response))
+  promise.then((response) => (heldTokens = response))
 
   return useMemo(() => {
     return heldTokens
@@ -73,7 +75,7 @@ export function fetchUserHeldTokens(): Promise<TokenBalance[]> {
     if (address === undefined || chain === undefined) return []
 
     let heldTokens: TokenBalance[] = []
-    const currentChainBridgableTokens: Token[] = BRIDGABLE_TOKENS[chain.id]
+    const currentChainBridgableTokens: Token[] = BRIDGABLE_TOKENS[chain?.id]
     let multicallInputs = []
     let multicallData: any
 
