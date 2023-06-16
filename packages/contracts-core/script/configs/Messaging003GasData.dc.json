@@ -1,0 +1,33 @@
+{
+  "domains": [10, 137, 43114],
+  "gasData": {
+    "10": {
+      "gasPrice": 0,
+      "dataPrice": 0,
+      "execBuffer": 0,
+      "amortAttCost": 0,
+      "etherPriceUSDCent": 173000,
+      "markupPercent": 0,
+      "summitTip": 0
+    },
+    "137": {
+      "gasPrice": 0,
+      "dataPrice": 0,
+      "execBuffer": 0,
+      "amortAttCost": 0,
+      "etherPriceUSDCent": 65,
+      "markupPercent": 0,
+      "summitTip": 0
+    },
+    "43114": {
+      "gasPrice": 0,
+      "dataPrice": 0,
+      "execBuffer": 0,
+      "amortAttCost": 0,
+      "etherPriceUSDCent": 1180,
+      "markupPercent": 0,
+      "summitTip": 0
+    }
+  },
+  "ethPriceUSDCent": 173000
+}

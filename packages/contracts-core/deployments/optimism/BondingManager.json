@@ -1,6 +1,6 @@
 {
-  "address": "0x1b387592D98685eFde35265c0E784CEfa5473CA8",
-  "args": "0x000000000000000000000000000000000000000000000000000000000000000a000000000000000000000000f1165e8fc7311fbd6ee2969dd29ca19304c0be34000000000000000000000000104dd80d69dd4e869b436d3f2d174fe3a9cdb285",
+  "address": "0xf1165E8FC7311FbD6EE2969Dd29Ca19304C0bE34",
+  "args": "0x000000000000000000000000000000000000000000000000000000000000000a",
   "abi": [
     {
       "inputs": [
@@ -8,16 +8,6 @@
           "internalType": "uint32",
           "name": "domain",
           "type": "uint32"
-        },
-        {
-          "internalType": "address",
-          "name": "agentManager_",
-          "type": "address"
-        },
-        {
-          "internalType": "address",
-          "name": "inbox_",
-          "type": "address"
         }
       ],
       "stateMutability": "nonpayable",
@@ -25,7 +15,32 @@
     },
     {
       "inputs": [],
-      "name": "CallerNotAgentManager",
+      "name": "AgentCantBeAdded",
+      "type": "error"
+    },
+    {
+      "inputs": [],
+      "name": "AgentNotActive",
+      "type": "error"
+    },
+    {
+      "inputs": [],
+      "name": "AgentNotActiveNorUnstaking",
+      "type": "error"
+    },
+    {
+      "inputs": [],
+      "name": "AgentNotFraudulent",
+      "type": "error"
+    },
+    {
+      "inputs": [],
+      "name": "AgentNotUnstaking",
+      "type": "error"
+    },
+    {
+      "inputs": [],
+      "name": "CallerNotDestination",
       "type": "error"
     },
     {
@@ -35,22 +50,32 @@
     },
     {
       "inputs": [],
-      "name": "Empty",
+      "name": "CallerNotSummit",
       "type": "error"
     },
     {
       "inputs": [],
-      "name": "IncorrectAttestation",
+      "name": "DisputeAlreadyResolved",
       "type": "error"
     },
     {
       "inputs": [],
-      "name": "IncorrectState",
+      "name": "DisputeNotOpened",
       "type": "error"
     },
     {
       "inputs": [],
-      "name": "IncorrectStatesAmount",
+      "name": "DisputeNotStuck",
+      "type": "error"
+    },
+    {
+      "inputs": [],
+      "name": "GuardInDispute",
+      "type": "error"
+    },
+    {
+      "inputs": [],
+      "name": "IncorrectAgentDomain",
       "type": "error"
     },
     {
@@ -65,7 +90,12 @@
     },
     {
       "inputs": [],
-      "name": "IndexedTooMuch",
+      "name": "LeafNotProven",
+      "type": "error"
+    },
+    {
+      "inputs": [],
+      "name": "MerkleTreeFull",
       "type": "error"
     },
     {
@@ -75,37 +105,17 @@
     },
     {
       "inputs": [],
-      "name": "NonceOutOfRange",
-      "type": "error"
-    },
-    {
-      "inputs": [],
       "name": "NotaryInDispute",
       "type": "error"
     },
     {
       "inputs": [],
-      "name": "OccupiedMemory",
+      "name": "SlashAgentOptimisticPeriod",
       "type": "error"
     },
     {
       "inputs": [],
-      "name": "OutdatedNonce",
-      "type": "error"
-    },
-    {
-      "inputs": [],
-      "name": "PrecompileOutOfGas",
-      "type": "error"
-    },
-    {
-      "inputs": [],
-      "name": "TipsClaimMoreThanEarned",
-      "type": "error"
-    },
-    {
-      "inputs": [],
-      "name": "TipsClaimZero",
+      "name": "SynapseDomainForbidden",
       "type": "error"
     },
     {
@@ -114,46 +124,59 @@
       "type": "error"
     },
     {
-      "inputs": [],
-      "name": "UnallocatedMemory",
-      "type": "error"
-    },
-    {
-      "inputs": [],
-      "name": "UnformattedAttestation",
-      "type": "error"
-    },
-    {
-      "inputs": [],
-      "name": "UnformattedReceipt",
-      "type": "error"
-    },
-    {
-      "inputs": [],
-      "name": "UnformattedSnapshot",
-      "type": "error"
-    },
-    {
-      "inputs": [],
-      "name": "UnformattedState",
-      "type": "error"
-    },
-    {
-      "inputs": [],
-      "name": "ViewOverrun",
-      "type": "error"
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": false,
+          "internalType": "uint256",
+          "name": "disputeIndex",
+          "type": "uint256"
+        },
+        {
+          "indexed": false,
+          "internalType": "uint32",
+          "name": "guardIndex",
+          "type": "uint32"
+        },
+        {
+          "indexed": false,
+          "internalType": "uint32",
+          "name": "notaryIndex",
+          "type": "uint32"
+        }
+      ],
+      "name": "DisputeOpened",
+      "type": "event"
     },
     {
       "anonymous": false,
       "inputs": [
         {
           "indexed": false,
-          "internalType": "bytes",
-          "name": "attestation",
-          "type": "bytes"
+          "internalType": "uint256",
+          "name": "disputeIndex",
+          "type": "uint256"
+        },
+        {
+          "indexed": false,
+          "internalType": "uint32",
+          "name": "slashedIndex",
+          "type": "uint32"
+        },
+        {
+          "indexed": false,
+          "internalType": "uint32",
+          "name": "rivalIndex",
+          "type": "uint32"
+        },
+        {
+          "indexed": false,
+          "internalType": "address",
+          "name": "fraudProver",
+          "type": "address"
         }
       ],
-      "name": "AttestationSaved",
+      "name": "DisputeResolved",
       "type": "event"
     },
     {
@@ -193,12 +216,12 @@
       "inputs": [
         {
           "indexed": false,
-          "internalType": "bytes",
-          "name": "state",
-          "type": "bytes"
+          "internalType": "bytes32",
+          "name": "newRoot",
+          "type": "bytes32"
         }
       ],
-      "name": "StateSaved",
+      "name": "RootUpdated",
       "type": "event"
     },
     {
@@ -206,45 +229,45 @@
       "inputs": [
         {
           "indexed": false,
-          "internalType": "address",
-          "name": "actor",
-          "type": "address"
+          "internalType": "enum AgentFlag",
+          "name": "flag",
+          "type": "uint8"
         },
         {
-          "indexed": false,
+          "indexed": true,
           "internalType": "uint32",
-          "name": "origin",
+          "name": "domain",
           "type": "uint32"
         },
         {
-          "indexed": false,
-          "internalType": "uint256",
-          "name": "tip",
-          "type": "uint256"
+          "indexed": true,
+          "internalType": "address",
+          "name": "agent",
+          "type": "address"
         }
       ],
-      "name": "TipAwarded",
+      "name": "StatusUpdated",
       "type": "event"
     },
     {
       "inputs": [
         {
           "internalType": "uint32",
-          "name": "guardIndex",
+          "name": "domain",
           "type": "uint32"
         },
         {
-          "internalType": "uint256",
-          "name": "sigIndex",
-          "type": "uint256"
+          "internalType": "address",
+          "name": "agent",
+          "type": "address"
         },
         {
-          "internalType": "bytes",
-          "name": "snapPayload",
-          "type": "bytes"
+          "internalType": "bytes32[]",
+          "name": "proof",
+          "type": "bytes32[]"
         }
       ],
-      "name": "acceptGuardSnapshot",
+      "name": "addAgent",
       "outputs": [],
       "stateMutability": "nonpayable",
       "type": "function"
@@ -252,105 +275,17 @@
     {
       "inputs": [
         {
-          "internalType": "uint32",
-          "name": "notaryIndex",
-          "type": "uint32"
-        },
-        {
-          "internalType": "uint256",
-          "name": "sigIndex",
-          "type": "uint256"
-        },
+          "internalType": "address",
+          "name": "agent",
+          "type": "address"
+        }
+      ],
+      "name": "agentLeaf",
+      "outputs": [
         {
           "internalType": "bytes32",
-          "name": "agentRoot",
+          "name": "leaf",
           "type": "bytes32"
-        },
-        {
-          "internalType": "bytes",
-          "name": "snapPayload",
-          "type": "bytes"
-        }
-      ],
-      "name": "acceptNotarySnapshot",
-      "outputs": [
-        {
-          "internalType": "bytes",
-          "name": "attPayload",
-          "type": "bytes"
-        }
-      ],
-      "stateMutability": "nonpayable",
-      "type": "function"
-    },
-    {
-      "inputs": [
-        {
-          "internalType": "uint32",
-          "name": "rcptNotaryIndex",
-          "type": "uint32"
-        },
-        {
-          "internalType": "uint32",
-          "name": "attNotaryIndex",
-          "type": "uint32"
-        },
-        {
-          "internalType": "uint256",
-          "name": "sigIndex",
-          "type": "uint256"
-        },
-        {
-          "internalType": "uint32",
-          "name": "attNonce",
-          "type": "uint32"
-        },
-        {
-          "internalType": "uint256",
-          "name": "paddedTips",
-          "type": "uint256"
-        },
-        {
-          "internalType": "bytes",
-          "name": "rcptPayload",
-          "type": "bytes"
-        }
-      ],
-      "name": "acceptReceipt",
-      "outputs": [
-        {
-          "internalType": "bool",
-          "name": "wasAccepted",
-          "type": "bool"
-        }
-      ],
-      "stateMutability": "nonpayable",
-      "type": "function"
-    },
-    {
-      "inputs": [
-        {
-          "internalType": "address",
-          "name": "",
-          "type": "address"
-        },
-        {
-          "internalType": "uint32",
-          "name": "",
-          "type": "uint32"
-        }
-      ],
-      "name": "actorTips",
-      "outputs": [
-        {
-          "internalType": "uint128",
-          "name": "earned",
-          "type": "uint128"
-        },
-        {
-          "internalType": "uint128",
-          "name": "claimed",
-          "type": "uint128"
         }
       ],
       "stateMutability": "view",
@@ -358,12 +293,12 @@
     },
     {
       "inputs": [],
-      "name": "agentManager",
+      "name": "agentRoot",
       "outputs": [
         {
-          "internalType": "address",
+          "internalType": "bytes32",
           "name": "",
-          "type": "address"
+          "type": "bytes32"
         }
       ],
       "stateMutability": "view",
@@ -398,7 +333,7 @@
             }
           ],
           "internalType": "struct AgentStatus",
-          "name": "",
+          "name": "status",
           "type": "tuple"
         }
       ],
@@ -407,15 +342,127 @@
     },
     {
       "inputs": [],
-      "name": "distributeTips",
+      "name": "allLeafs",
       "outputs": [
         {
-          "internalType": "bool",
-          "name": "queuePopped",
-          "type": "bool"
+          "internalType": "bytes32[]",
+          "name": "leafs",
+          "type": "bytes32[]"
         }
       ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "uint32",
+          "name": "domain",
+          "type": "uint32"
+        },
+        {
+          "internalType": "address",
+          "name": "agent",
+          "type": "address"
+        },
+        {
+          "internalType": "bytes32[]",
+          "name": "proof",
+          "type": "bytes32[]"
+        }
+      ],
+      "name": "completeSlashing",
+      "outputs": [],
       "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "uint32",
+          "name": "domain",
+          "type": "uint32"
+        },
+        {
+          "internalType": "address",
+          "name": "agent",
+          "type": "address"
+        },
+        {
+          "internalType": "bytes32[]",
+          "name": "proof",
+          "type": "bytes32[]"
+        }
+      ],
+      "name": "completeUnstaking",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "inputs": [],
+      "name": "destination",
+      "outputs": [
+        {
+          "internalType": "address",
+          "name": "",
+          "type": "address"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "address",
+          "name": "agent",
+          "type": "address"
+        }
+      ],
+      "name": "disputeStatus",
+      "outputs": [
+        {
+          "internalType": "enum DisputeFlag",
+          "name": "flag",
+          "type": "uint8"
+        },
+        {
+          "internalType": "address",
+          "name": "rival",
+          "type": "address"
+        },
+        {
+          "internalType": "address",
+          "name": "fraudProver",
+          "type": "address"
+        },
+        {
+          "internalType": "uint256",
+          "name": "disputePtr",
+          "type": "uint256"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "uint32",
+          "name": "domain",
+          "type": "uint32"
+        }
+      ],
+      "name": "getActiveAgents",
+      "outputs": [
+        {
+          "internalType": "address[]",
+          "name": "agents",
+          "type": "address[]"
+        }
+      ],
+      "stateMutability": "view",
       "type": "function"
     },
     {
@@ -462,27 +509,55 @@
     {
       "inputs": [
         {
-          "internalType": "uint32",
-          "name": "attNonce",
-          "type": "uint32"
+          "internalType": "uint256",
+          "name": "index",
+          "type": "uint256"
         }
       ],
-      "name": "getAttestation",
+      "name": "getDispute",
       "outputs": [
         {
+          "internalType": "address",
+          "name": "guard",
+          "type": "address"
+        },
+        {
+          "internalType": "address",
+          "name": "notary",
+          "type": "address"
+        },
+        {
+          "internalType": "address",
+          "name": "slashedAgent",
+          "type": "address"
+        },
+        {
+          "internalType": "address",
+          "name": "fraudProver",
+          "type": "address"
+        },
+        {
           "internalType": "bytes",
-          "name": "attPayload",
+          "name": "reportPayload",
           "type": "bytes"
         },
         {
-          "internalType": "bytes32",
-          "name": "agentRoot",
-          "type": "bytes32"
-        },
+          "internalType": "bytes",
+          "name": "reportSignature",
+          "type": "bytes"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [],
+      "name": "getDisputesAmount",
+      "outputs": [
         {
-          "internalType": "uint256[]",
-          "name": "snapGas",
-          "type": "uint256[]"
+          "internalType": "uint256",
+          "name": "",
+          "type": "uint256"
         }
       ],
       "stateMutability": "view",
@@ -492,21 +567,21 @@
       "inputs": [
         {
           "internalType": "uint256",
-          "name": "index",
+          "name": "indexFrom",
+          "type": "uint256"
+        },
+        {
+          "internalType": "uint256",
+          "name": "amount",
           "type": "uint256"
         }
       ],
-      "name": "getGuardSnapshot",
+      "name": "getLeafs",
       "outputs": [
         {
-          "internalType": "bytes",
-          "name": "snapPayload",
-          "type": "bytes"
-        },
-        {
-          "internalType": "bytes",
-          "name": "snapSignature",
-          "type": "bytes"
+          "internalType": "bytes32[]",
+          "name": "leafs",
+          "type": "bytes32[]"
         }
       ],
       "stateMutability": "view",
@@ -514,142 +589,17 @@
     },
     {
       "inputs": [
-        {
-          "internalType": "uint32",
-          "name": "origin",
-          "type": "uint32"
-        },
         {
           "internalType": "address",
           "name": "agent",
           "type": "address"
         }
       ],
-      "name": "getLatestAgentState",
-      "outputs": [
-        {
-          "internalType": "bytes",
-          "name": "stateData",
-          "type": "bytes"
-        }
-      ],
-      "stateMutability": "view",
-      "type": "function"
-    },
-    {
-      "inputs": [
-        {
-          "internalType": "address",
-          "name": "notary",
-          "type": "address"
-        }
-      ],
-      "name": "getLatestNotaryAttestation",
-      "outputs": [
-        {
-          "internalType": "bytes",
-          "name": "attPayload",
-          "type": "bytes"
-        },
-        {
-          "internalType": "bytes32",
-          "name": "agentRoot",
-          "type": "bytes32"
-        },
-        {
-          "internalType": "uint256[]",
-          "name": "snapGas",
-          "type": "uint256[]"
-        }
-      ],
-      "stateMutability": "view",
-      "type": "function"
-    },
-    {
-      "inputs": [
-        {
-          "internalType": "uint32",
-          "name": "origin",
-          "type": "uint32"
-        }
-      ],
-      "name": "getLatestState",
-      "outputs": [
-        {
-          "internalType": "bytes",
-          "name": "statePayload",
-          "type": "bytes"
-        }
-      ],
-      "stateMutability": "view",
-      "type": "function"
-    },
-    {
-      "inputs": [
-        {
-          "internalType": "bytes",
-          "name": "attPayload",
-          "type": "bytes"
-        }
-      ],
-      "name": "getNotarySnapshot",
-      "outputs": [
-        {
-          "internalType": "bytes",
-          "name": "snapPayload",
-          "type": "bytes"
-        },
-        {
-          "internalType": "bytes",
-          "name": "snapSignature",
-          "type": "bytes"
-        }
-      ],
-      "stateMutability": "view",
-      "type": "function"
-    },
-    {
-      "inputs": [
-        {
-          "internalType": "uint256",
-          "name": "index",
-          "type": "uint256"
-        }
-      ],
-      "name": "getNotarySnapshot",
-      "outputs": [
-        {
-          "internalType": "bytes",
-          "name": "snapPayload",
-          "type": "bytes"
-        },
-        {
-          "internalType": "bytes",
-          "name": "snapSignature",
-          "type": "bytes"
-        }
-      ],
-      "stateMutability": "view",
-      "type": "function"
-    },
-    {
-      "inputs": [
-        {
-          "internalType": "uint32",
-          "name": "attNonce",
-          "type": "uint32"
-        },
-        {
-          "internalType": "uint256",
-          "name": "stateIndex",
-          "type": "uint256"
-        }
-      ],
-      "name": "getSnapshotProof",
+      "name": "getProof",
       "outputs": [
         {
           "internalType": "bytes32[]",
-          "name": "snapProof",
+          "name": "proof",
           "type": "bytes32[]"
         }
       ],
@@ -670,7 +620,28 @@
       "type": "function"
     },
     {
-      "inputs": [],
+      "inputs": [
+        {
+          "internalType": "address",
+          "name": "origin_",
+          "type": "address"
+        },
+        {
+          "internalType": "address",
+          "name": "destination_",
+          "type": "address"
+        },
+        {
+          "internalType": "address",
+          "name": "inbox_",
+          "type": "address"
+        },
+        {
+          "internalType": "address",
+          "name": "summit_",
+          "type": "address"
+        }
+      ],
       "name": "initialize",
       "outputs": [],
       "stateMutability": "nonpayable",
@@ -679,17 +650,34 @@
     {
       "inputs": [
         {
-          "internalType": "bytes",
-          "name": "attPayload",
-          "type": "bytes"
+          "internalType": "uint32",
+          "name": "domain",
+          "type": "uint32"
+        },
+        {
+          "internalType": "address",
+          "name": "agent",
+          "type": "address"
+        },
+        {
+          "internalType": "bytes32[]",
+          "name": "proof",
+          "type": "bytes32[]"
         }
       ],
-      "name": "isValidAttestation",
+      "name": "initiateUnstaking",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "inputs": [],
+      "name": "leafsAmount",
       "outputs": [
         {
-          "internalType": "bool",
-          "name": "isValid",
-          "type": "bool"
+          "internalType": "uint256",
+          "name": "amount",
+          "type": "uint256"
         }
       ],
       "stateMutability": "view",
@@ -771,7 +759,7 @@
     },
     {
       "inputs": [],
-      "name": "owner",
+      "name": "origin",
       "outputs": [
         {
           "internalType": "address",
@@ -784,15 +772,54 @@
     },
     {
       "inputs": [],
-      "name": "receiptQueueLength",
+      "name": "owner",
       "outputs": [
         {
-          "internalType": "uint256",
+          "internalType": "address",
           "name": "",
-          "type": "uint256"
+          "type": "address"
         }
       ],
       "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "uint32",
+          "name": "msgOrigin",
+          "type": "uint32"
+        },
+        {
+          "internalType": "uint256",
+          "name": "proofMaturity",
+          "type": "uint256"
+        },
+        {
+          "internalType": "uint32",
+          "name": "domain",
+          "type": "uint32"
+        },
+        {
+          "internalType": "address",
+          "name": "agent",
+          "type": "address"
+        },
+        {
+          "internalType": "address",
+          "name": "prover",
+          "type": "address"
+        }
+      ],
+      "name": "remoteSlashAgent",
+      "outputs": [
+        {
+          "internalType": "bytes4",
+          "name": "magicValue",
+          "type": "bytes4"
+        }
+      ],
+      "stateMutability": "nonpayable",
       "type": "function"
     },
     {
@@ -806,18 +833,54 @@
       "inputs": [
         {
           "internalType": "uint32",
-          "name": "slashedIndex",
+          "name": "domain",
           "type": "uint32"
         },
         {
-          "internalType": "uint32",
-          "name": "honestIndex",
-          "type": "uint32"
+          "internalType": "address",
+          "name": "slashedAgent",
+          "type": "address"
         }
       ],
-      "name": "resolveDispute",
+      "name": "resolveStuckDispute",
       "outputs": [],
       "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "uint32",
+          "name": "domain",
+          "type": "uint32"
+        },
+        {
+          "internalType": "address",
+          "name": "agent",
+          "type": "address"
+        },
+        {
+          "internalType": "address",
+          "name": "prover",
+          "type": "address"
+        }
+      ],
+      "name": "slashAgent",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "inputs": [],
+      "name": "summit",
+      "outputs": [
+        {
+          "internalType": "address",
+          "name": "",
+          "type": "address"
+        }
+      ],
+      "stateMutability": "view",
       "type": "function"
     },
     {
@@ -849,8 +912,13 @@
     {
       "inputs": [
         {
+          "internalType": "address",
+          "name": "recipient",
+          "type": "address"
+        },
+        {
           "internalType": "uint32",
-          "name": "origin",
+          "name": "origin_",
           "type": "uint32"
         },
         {
