@@ -8,6 +8,11 @@ import erc20ABI from '@/constants/abis/erc20.json'
 import { Token } from '../types'
 import { Contract, BigNumber } from 'ethers'
 
+interface TokenBalance {
+  token: string
+  balance: BigNumber
+}
+
 export function useUserHeldTokens() {
   const [tokens, setTokens] = useState([])
   const { address } = useAccount()
@@ -19,7 +24,7 @@ export function useUserHeldTokens() {
     const currentChainBridgableTokens: Token[] = BRIDGABLE_TOKENS[chain.id]
     let multicallInputs = []
     let multicallData: any
-    let heldTokens = []
+    let heldTokens: TokenBalance[] = []
 
     currentChainBridgableTokens.map((token) => {
       const tokenAddress = token.addresses[chain.id as keyof Token['addresses']]
@@ -51,11 +56,11 @@ export function useUserHeldTokens() {
           return {
             token: currentChainBridgableTokens[index].symbol,
             balance: tokenBalance,
-          }
+          } as TokenBalance
         }
       )
-
-      console.log('heldTokens:', heldTokens)
     }
+
+    // return heldTokens.filter(token)
   }, [address, chain])
 }
