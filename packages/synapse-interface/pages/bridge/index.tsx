@@ -65,7 +65,6 @@ const BridgePage = ({
   const [fromInput, setFromInput] = useState({ string: '', bigNum: Zero })
   const [toChainId, setToChainId] = useState(DEFAULT_TO_CHAIN)
   const [toToken, setToToken] = useState(DEFAULT_TO_TOKEN)
-  const [isQuoteLoading, setIsQuoteLoading] = useState<boolean>(false)
   const [error, setError] = useState('')
   const [bridgeTxHash, setBridgeTxHash] = useState('')
   const [destinationAddress, setDestinationAddress] = useState('')
@@ -183,21 +182,6 @@ const BridgePage = ({
       isCancelled = true
     }
   }, [toToken, fromInput, time, fromChainId, toChainId, fromToken])
-
-  /*
-  useEffect Triggers: fromInput
-  - Checks that user input is not zero. When input changes,
-  - isQuoteLoading state is set to true for loading state interactions
-  */
-  useEffect(() => {
-    const { string, bigNum } = fromInput
-    const isInvalid = checkStringIfOnlyZeroes(string)
-    isInvalid ? () => null : setIsQuoteLoading(true)
-
-    return () => {
-      setIsQuoteLoading(false)
-    }
-  }, [fromInput, fromChainId])
 
   /*
   Helper Function: resetTokenPermutation
@@ -406,7 +390,10 @@ const BridgePage = ({
   */
   const handleChainChange = useCallback(
     async (chainId: number, flip: boolean, type: 'from' | 'to') => {
-      if (address === undefined && type === 'from' || isDisconnected && type === 'from') {
+      if (
+        (address === undefined && type === 'from') ||
+        (isDisconnected && type === 'from')
+      ) {
         errorPopup = toast.error('Please connect your wallet', {
           id: 'bridge-connect-wallet',
           duration: 20000,
@@ -420,9 +407,6 @@ const BridgePage = ({
 
         const res = await switchNetwork({ chainId: desiredChainId })
           .then((res) => {
-            if (fromInput.string !== '') {
-              setIsQuoteLoading(true)
-            }
             return res
           })
           .catch((error) => {
@@ -488,11 +472,6 @@ const BridgePage = ({
           fromToken.symbol,
           toBridgeableToken.symbol
         )
-        if (fromInput.string !== '') {
-          setIsQuoteLoading(true)
-        } else {
-          setIsQuoteLoading(false)
-        }
         return
       }
     },
@@ -504,7 +483,6 @@ const BridgePage = ({
       fromChainId,
       toToken,
       toChainId,
-      isQuoteLoading,
       handleNewFromToken,
       switchNetwork,
     ]
@@ -532,15 +510,9 @@ const BridgePage = ({
           token.symbol,
           bridgeableToken.symbol
         )
-        if (fromInput.string !== '') {
-          setIsQuoteLoading(true)
-        }
         return
       case 'to':
         setToToken(token)
-        if (fromInput.string !== '') {
-          setIsQuoteLoading(true)
-        }
         updateUrlParams({
           outputChain: toChainId,
           inputCurrency: fromToken.symbol,
@@ -557,9 +529,6 @@ const BridgePage = ({
   */
   const getQuote = async () => {
     try {
-      if (bridgeQuote === EMPTY_BRIDGE_QUOTE) {
-        setIsQuoteLoading(true)
-      }
       const validFromChainId = AcceptedChainId[fromChainId] ? fromChainId : 1
 
       const { feeAmount, routerAddress, maxAmountOut, originQuery, destQuery } =
@@ -573,7 +542,6 @@ const BridgePage = ({
 
       if (!(originQuery && maxAmountOut && destQuery && feeAmount)) {
         setBridgeQuote(EMPTY_BRIDGE_QUOTE_ZERO)
-        setIsQuoteLoading(false)
         return
       }
       // TODO DYNAMIC SLIPPAGE
@@ -632,12 +600,10 @@ const BridgePage = ({
           destQuery: newDestQuery,
         },
       })
-      setIsQuoteLoading(false)
       return
     } catch (error) {
       console.log(error)
       setBridgeQuote(EMPTY_BRIDGE_QUOTE_ZERO)
-      setIsQuoteLoading(false)
       return
     }
   }
@@ -744,8 +710,6 @@ const BridgePage = ({
                     toToken={toToken}
                     toChainId={toChainId}
                     toOptions={toOptions}
-                    isQuoteLoading={isQuoteLoading}
-                    setIsQuoteLoading={setIsQuoteLoading}
                     destinationAddress={destinationAddress}
                     handleChainChange={handleChainChange}
                     handleTokenChange={handleTokenChange}
