@@ -87,12 +87,6 @@ const BridgePage = ({
   let errorPopup: string
 
   const bridgableTokens = getSortedBridgableTokens(fromChainId)
-  console.log('bridgableTokens:', bridgableTokens)
-  // console.log('fromTokens: ', fromTokens)
-
-  useEffect(() => {
-    setFromTokens(bridgableTokens)
-  }, [fromChainId])
 
   /*
   useEffect Trigger: onMount
@@ -754,7 +748,7 @@ const BridgePage = ({
                     bridgeQuote={bridgeQuote}
                     fromInput={fromInput}
                     fromToken={fromToken}
-                    fromTokens={fromTokens}
+                    fromTokens={bridgableTokens}
                     fromChainId={fromChainId}
                     toToken={toToken}
                     toChainId={toChainId}
