@@ -14,17 +14,27 @@ interface TokenBalance {
 }
 
 export function useUserHeldTokens() {
-  const [tokens, setTokens] = useState([])
+  const [heldTokens, setHeldTokens] = useState<TokenBalance[]>([])
+  const promise = fetchUserHeldTokens()
+
+  promise.then((response) => setHeldTokens(response))
+
+  return useMemo(() => {
+    return heldTokens
+  }, [heldTokens])
+}
+
+export function fetchUserHeldTokens() {
   const { address } = useAccount()
   const { chain } = useNetwork()
 
   return useMemo(async () => {
     if (address === undefined || chain === undefined) return []
 
+    let heldTokens: TokenBalance[] = []
     const currentChainBridgableTokens: Token[] = BRIDGABLE_TOKENS[chain.id]
     let multicallInputs = []
     let multicallData: any
-    let heldTokens: TokenBalance[] = []
 
     currentChainBridgableTokens.map((token) => {
       const tokenAddress = token.addresses[chain.id as keyof Token['addresses']]
@@ -51,7 +61,7 @@ export function useUserHeldTokens() {
 
     if (multicallInputs.length > 0) {
       multicallData = await multicall({ contracts: multicallInputs })
-      heldTokens = multicallData.map(
+      heldTokens = await multicallData.map(
         (tokenBalance: BigNumber, index: number) => {
           return {
             token: currentChainBridgableTokens[index].symbol,
@@ -59,10 +69,9 @@ export function useUserHeldTokens() {
           } as TokenBalance
         }
       )
+      return heldTokens.filter((token) => token.balance.gt(0))
     }
 
-    return heldTokens.filter((token) => {
-      return token.balance.gt(0)
-    })
+    return heldTokens
   }, [address, chain])
 }

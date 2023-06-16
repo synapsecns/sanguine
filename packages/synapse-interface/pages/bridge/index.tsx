@@ -85,7 +85,15 @@ const BridgePage = ({
 
   const userHeldTokens = useUserHeldTokens()
 
+  console.log('userHeldTokens: ', userHeldTokens)
+  // console.log(
+  //   'userHeldTokens: ',
+  //   userHeldTokens.then((response) => console.log(response))
+  // )
+  // console.log('fromTokens: ', fromTokens)
+
   // console.log('BRIDGABLE_TOKENS: ', BRIDGABLE_TOKENS)
+
   /*
   useEffect Trigger: onMount
   - Gets current network connected and sets it as the state.
