@@ -219,7 +219,6 @@ const StakeCard = ({ address, chainId, pool }: StakeCardProps) => {
             onClickEnter={
               allowance.lt(deposit.bn)
                 ? async (e) => {
-                    await setTx(undefined)
                     const tx = await pendingApproveTxWrapFunc(
                       approve(pool, deposit.bn, chainId)
                     )
