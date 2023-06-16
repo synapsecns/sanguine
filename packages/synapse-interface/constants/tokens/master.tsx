@@ -1044,6 +1044,8 @@ export const MULTIAVAX = new Token({
 export const JEWEL = new Token({
   addresses: {
     [CHAINS.DFK.id]: AddressZero,
+    [CHAINS.HARMONY.id]: '0x72cb10c6bfa5624dd07ef608027e366bd690048f', // from harmony jewel?
+    [CHAINS.KLAYTN.id]: '0x30C103f8f5A3A732DFe2dCE1Cc9446f545527b43',
   },
   decimals: 18,
   symbol: 'JEWEL',
@@ -1057,12 +1059,10 @@ export const JEWEL = new Token({
 export const WJEWEL = new Token({
   addresses: {
     [CHAINS.DFK.id]: '0xCCb93dABD71c8Dad03Fc4CE5559dC3D89F67a260', // from actual jewl
-    [CHAINS.HARMONY.id]: '0x72cb10c6bfa5624dd07ef608027e366bd690048f', // from harmony jewel?
-    [CHAINS.KLAYTN.id]: '0x30C103f8f5A3A732DFe2dCE1Cc9446f545527b43',
   },
   decimals: 18,
-  symbol: 'JEWEL ', // THE SPACES ARE VERY IMPORTANT
-  name: 'JEWEL ', // THE SPACES ARE VERY IMPORTANT
+  symbol: 'WJEWEL',
+  name: 'Wrapped JEWEL',
   logo: jewelLogo,
   description: 'JEWEL',
   swapableType: 'JEWEL',
