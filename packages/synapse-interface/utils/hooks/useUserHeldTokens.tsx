@@ -1,6 +1,6 @@
 import { useState, useEffect, useMemo } from 'react'
 import { useAccount, useNetwork } from 'wagmi'
-import { AddressZero } from '@ethersproject/constants'
+import { AddressZero, Zero } from '@ethersproject/constants'
 import { multicall, Address } from '@wagmi/core'
 import { BRIDGABLE_TOKENS } from '@/constants/tokens'
 import multicallABI from '@/constants/abis/multicall.json'
@@ -25,8 +25,8 @@ function sortTokens(a, b) {
   }
 }
 
-export function useSortedBridgableTokens(): Token[] {
-  const userHeldTokens = useUserHeldTokens()
+export function useSortedBridgableTokens() {
+  const userHeldTokens: TokenBalance[] = useUserHeldTokens()
   const { chain } = useNetwork()
 
   const availableBridgableTokens: Token[] = BRIDGABLE_TOKENS[chain.id]
@@ -34,14 +34,25 @@ export function useSortedBridgableTokens(): Token[] {
     (token: TokenBalance) => token.symbol
   )
 
-  const tokensWithBalance = availableBridgableTokens.filter((token) =>
-    heldTokenSymbols.includes(token.symbol)
-  )
-  const tokensNoBalance = availableBridgableTokens.filter(
-    (token) => !heldTokenSymbols.includes(token.symbol)
-  )
+  const noBalanceTokens = availableBridgableTokens
+    .filter((token) => !heldTokenSymbols.includes(token.symbol))
+    .map((token) => {
+      return {
+        token: token,
+        balance: Zero,
+        symbol: token.symbol,
+      } as TokenBalance
+    })
 
-  return [...tokensWithBalance, ...tokensNoBalance]
+  console.log('noBalanceTokens: ', noBalanceTokens)
+  // const tokensWithBalance = availableBridgableTokens.filter((token) =>
+  //   heldTokenSymbols.includes(token.symbol)
+  // )
+  // const tokensNoBalance = availableBridgableTokens.filter(
+  //   (token) => !heldTokenSymbols.includes(token.symbol)
+  // )
+
+  // return [...tokensWithBalance, ...tokensNoBalance]
 }
 
 export function useUserHeldTokens(): TokenBalance[] {
