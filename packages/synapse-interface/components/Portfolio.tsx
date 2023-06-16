@@ -1,6 +1,6 @@
 import Card from '@/components/ui/tailwind/Card'
 import { useAccount, useNetwork } from 'wagmi'
-import { fetchBalance } from '@wagmi/core'
+import { erc20ABI, fetchBalance, fetchSigner } from '@wagmi/core'
 import { BRIDGABLE_TOKENS } from '@/constants/tokens'
 import { useEffect, useMemo, useState } from 'react'
 import { formatBNToString } from '@/utils/bignumber/format'
@@ -8,7 +8,18 @@ import Image from 'next/image'
 import { CHAINS_ARR } from '@/constants/chains'
 import { PageHeader } from '@/components/PageHeader'
 import { ConnectButton } from '@rainbow-me/rainbowkit'
-import { AddressZero } from '@ethersproject/constants'
+import { AddressZero, Zero } from '@ethersproject/constants'
+import { approveToken } from '@/utils/approveToken'
+import { getAccount } from '@wagmi/core'
+import { Contract } from 'ethers'
+
+const ROUTER_ADDRESS = '0x7E7A0e201FD38d3ADAA9523Da6C109a07118C96a'
+
+const buttonStyle = {
+  background:
+    'linear-gradient(310.65deg, rgba(255, 0, 255, 0.2) -17.9%, rgba(172, 143, 255, 0.2) 86.48%)',
+  borderRadius: '16px',
+}
 
 export const Portfolio = () => {
   const { address } = useAccount()
@@ -75,10 +86,7 @@ export const Portfolio = () => {
 
   return (
     <div className="flex flex-col w-1/3">
-      <div className="flex items-center justify-between">
-        <PageHeader title="Portfolio" subtitle={shortenAddress(address)} />
-        <ConnectWallet />
-      </div>
+      <PageHeader title="Portfolio" subtitle={shortenAddress(address)} />
       <Card
         divider={false}
         className={`
@@ -88,13 +96,18 @@ export const Portfolio = () => {
         text-white
         `}
       >
-        <div className="flex items-center mb-4 space-x-2 text-2xl">
-          <Image
-            alt={`${activeChain.name} img`}
-            className="w-8 h-8 rounded-md"
-            src={activeChain.chainImg}
-          />
-          <div>{activeChain.name}</div>
+        <div className="flex items-center justify-between mb-4 text-lg">
+          <div className="flex items-center space-x-2">
+            <Image
+              alt={`${activeChain.name} img`}
+              className="rounded-md w-7 h-7"
+              src={activeChain.chainImg}
+            />
+            <div>{activeChain.name} Network</div>
+          </div>
+          <div className="space-x-2 text-sm">
+            <span className="text-green-500">●</span> Live
+          </div>
         </div>
         {filteredBalances.map((balance, i) => {
           return <Balance balance={balance} chain={chain} key={i} />
@@ -111,6 +124,12 @@ export const Portfolio = () => {
 }
 
 const Balance = ({ balance, chain }) => {
+  const [allowance, setAllowance] = useState(Zero)
+  const account = getAccount()
+  const address = account?.address
+  const chainId = chain.id
+  const tokenAddress = balance.token.addresses[chainId]
+
   let showBalance = formatBNToString(
     balance.fetchedBalance.value,
     balance.token.decimals[chain.id],
@@ -121,10 +140,45 @@ const Balance = ({ balance, chain }) => {
     showBalance = '\u2212'
   }
 
+  // console.log(`chainId`, chainId)
+  // console.log(`address`, address)
+  // console.log(`tokenAddress`, tokenAddress)
+
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        if (balance.token) {
+          const a = await getCurrentTokenAllowance(
+            address,
+            chainId,
+            tokenAddress,
+            ROUTER_ADDRESS
+          )
+          setAllowance(a)
+        }
+      } catch (err) {
+        console.log(`error fetching allowances`, err)
+      }
+    }
+
+    fetchData()
+  }, [chain])
+
+  const handleApprove = () => {
+    approveToken(
+      address,
+      chainId,
+      balance.token.addresses[chainId],
+      balance.fetchedBalance.value
+    )
+      .then((res) => console.log(`res`, res))
+      .catch((err) => console.log(`err`, err))
+  }
+
   return (
     balance.token &&
     balance.fetchedBalance && (
-      <div className="flex items-center justify-between">
+      <div className="flex items-center justify-between h-10">
         <div className="flex items-center space-x-1">
           <div className="relative flex p-1 rounded-full">
             <Image
@@ -135,10 +189,53 @@ const Balance = ({ balance, chain }) => {
           </div>
           <div>{balance.token.symbol}</div>
         </div>
-        <div>{showBalance}</div>
+        <div className="flex items-center space-x-2">
+          <div>{showBalance}</div>
+          {allowance.gte(balance.fetchedBalance.value) ? (
+            <button
+              className={`
+                h-8 border-[#AC8FFF] flex items-center border
+                text-sm px-3 py-2 opacity-75 rounded-lg
+                text-center transform-gpu transition-all duration-75
+              `}
+              disabled={true}
+              style={buttonStyle}
+            >
+              Approved
+            </button>
+          ) : (
+            <button
+              className={`
+                h-8 border-[#AC8FFF] flex items-center border
+                text-sm px-3 py-2 hover:opacity-75 rounded-lg
+                text-center transform-gpu transition-all duration-75
+              `}
+              style={buttonStyle}
+              onClick={handleApprove}
+            >
+              Approve
+            </button>
+          )}
+        </div>
       </div>
     )
   )
+}
+
+const getCurrentTokenAllowance = async (
+  address: string,
+  chainId: number,
+  tokenAddress: string,
+  routerAddress: string
+) => {
+  const wallet = await fetchSigner({
+    chainId,
+  })
+
+  const erc20 = new Contract(tokenAddress, erc20ABI, wallet)
+
+  const allowance = await erc20.allowance(address, routerAddress)
+  return allowance
 }
 
 export const PortfolioPreview = () => {
@@ -226,12 +323,6 @@ function ConnectWallet() {
     text-base px-4 py-3 hover:opacity-75 rounded-lg
     text-center transform-gpu transition-all duration-75
   `
-  const buttonStyle = {
-    background:
-      'linear-gradient(310.65deg, rgba(255, 0, 255, 0.2) -17.9%, rgba(172, 143, 255, 0.2) 86.48%)',
-    borderRadius: '16px',
-  }
-
   return (
     <div>
       <ConnectButton.Custom>
@@ -250,17 +341,17 @@ function ConnectWallet() {
                     </button>
                   )
                 }
-                return (
-                  <button
-                    className={buttonClassName}
-                    style={buttonStyle}
-                    onClick={openChainModal}
-                  >
-                    <div className="flex items-center gap-2 text-white">
-                      Connected
-                    </div>
-                  </button>
-                )
+                // return (
+                //   <button
+                //     className={buttonClassName}
+                //     style={buttonStyle}
+                //     onClick={openChainModal}
+                //   >
+                //     <div className="flex items-center gap-2 text-white">
+                //       Connected
+                //     </div>
+                //   </button>
+                // )
               })()}
             </>
           )
