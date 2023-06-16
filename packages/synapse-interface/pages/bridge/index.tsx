@@ -70,7 +70,6 @@ const BridgePage = ({
   const [toChainId, setToChainId] = useState(DEFAULT_TO_CHAIN)
   const [toToken, setToToken] = useState(DEFAULT_TO_TOKEN)
   const [isQuoteLoading, setIsQuoteLoading] = useState<boolean>(false)
-  const [error, setError] = useState('')
   const [bridgeTxHash, setBridgeTxHash] = useState('')
   const [destinationAddress, setDestinationAddress] = useState('')
   const [toOptions, setToOptions] = useState({
