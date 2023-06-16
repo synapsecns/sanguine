@@ -127,22 +127,19 @@ export const TokenSlideOver = ({
           rounded-3xl
         `}
       >
-        {tokenList.map((token, idx) => {
-          // console.log('token: ', token)
-          return (
-            <TokenMenuItem
-              key={idx}
-              chainId={chainId}
-              token={token.token}
-              selectedToken={selectedToken}
-              active={idx === currentIdx}
-              tokenBalance={token.balance}
-              onClick={() => {
-                onMenuItemClick(token.token)
-              }}
-            />
-          )
-        })}
+        {tokenList.map((token, idx) => (
+          <TokenMenuItem
+            key={idx}
+            chainId={chainId}
+            token={token.token}
+            selectedToken={selectedToken}
+            active={idx === currentIdx}
+            tokenBalance={token.balance}
+            onClick={() => {
+              onMenuItemClick(token.token)
+            }}
+          />
+        ))}
         {searchStr && (
           <div className="px-12 py-4 text-xl text-center text-white">
             No other results found for{' '}
