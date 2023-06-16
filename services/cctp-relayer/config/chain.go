@@ -9,10 +9,7 @@ import (
 )
 
 // ChainConfig defines the config for a specific chain.
-type ChainConfig struct {
-	// TempRPC is the temporary RPC endpoint for the chain.
-	TempRPC string `yaml:"temp_rpc"`
-	// ChainID is the ID of the chain.
+type ChainConfig struct { // ChainID is the ID of the chain.
 	ChainID uint32 `yaml:"chain_id"`
 	// SynapseCCTPAddress is the address of the SynapseCCTP contract.
 	SynapseCCTPAddress string `yaml:"synapse_cctp_address"`
