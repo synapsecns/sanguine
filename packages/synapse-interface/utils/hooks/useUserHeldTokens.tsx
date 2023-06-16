@@ -15,14 +15,18 @@ interface TokenBalance {
 }
 
 // Function to sort the tokens by priorityRank and alphabetically
-function sortTokens(a, b) {
-  if (a.priorityRank < b.priorityRank) {
-    return -1
-  } else if (a.priorityRank > b.priorityRank) {
-    return 1
-  } else {
-    return a.symbol < b.symbol ? -1 : 1 // In case of a tie in priorityRank, sort alphabetically
-  }
+function sortTokensArray(arr: TokenBalance[]) {
+  return arr.sort((a, b) => {
+    const tokenA = a.token
+    const tokenB = b.token
+    if (tokenA.priorityRank < tokenB.priorityRank) {
+      return -1
+    } else if (tokenA.priorityRank > tokenB.priorityRank) {
+      return 1
+    } else {
+      return tokenA.symbol < tokenB.symbol ? -1 : 1
+    }
+  })
 }
 
 export function useSortedBridgableTokens() {
@@ -39,20 +43,15 @@ export function useSortedBridgableTokens() {
     .map((token) => {
       return {
         token: token,
-        balance: Zero,
         symbol: token.symbol,
+        balance: Zero,
       } as TokenBalance
     })
 
-  console.log('noBalanceTokens: ', noBalanceTokens)
-  // const tokensWithBalance = availableBridgableTokens.filter((token) =>
-  //   heldTokenSymbols.includes(token.symbol)
-  // )
-  // const tokensNoBalance = availableBridgableTokens.filter(
-  //   (token) => !heldTokenSymbols.includes(token.symbol)
-  // )
-
-  // return [...tokensWithBalance, ...tokensNoBalance]
+  return [
+    ...sortTokensArray(userHeldTokens),
+    ...sortTokensArray(noBalanceTokens),
+  ]
 }
 
 export function useUserHeldTokens(): TokenBalance[] {
