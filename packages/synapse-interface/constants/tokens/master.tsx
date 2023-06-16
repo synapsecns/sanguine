@@ -956,7 +956,7 @@ export const ETH = new Token({
 
 export const MOVR = new Token({
   addresses: {
-    [CHAINS.MOONRIVER.id]: '',
+    [CHAINS.MOONRIVER.id]: AddressZero,
   },
   decimals: 18,
   symbol: 'MOVR',
@@ -970,7 +970,7 @@ export const MOVR = new Token({
 
 export const AVAX = new Token({
   addresses: {
-    [CHAINS.AVALANCHE.id]: '',
+    [CHAINS.AVALANCHE.id]: AddressZero,
   },
   decimals: 18,
   symbol: 'AVAX',
@@ -1043,7 +1043,7 @@ export const MULTIAVAX = new Token({
 
 export const JEWEL = new Token({
   addresses: {
-    [CHAINS.DFK.id]: '',
+    [CHAINS.DFK.id]: AddressZero,
   },
   decimals: 18,
   symbol: 'JEWEL',
