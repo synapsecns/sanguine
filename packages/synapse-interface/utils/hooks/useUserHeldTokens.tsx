@@ -9,6 +9,7 @@ import { Token } from '../types'
 import { Contract, BigNumber } from 'ethers'
 
 interface TokenBalance {
+  token: Token
   symbol: string
   balance: BigNumber
 }
@@ -94,6 +95,7 @@ export function fetchUserHeldTokens(): Promise<TokenBalance[]> {
       heldTokens = await multicallData.map(
         (tokenBalance: BigNumber, index: number) => {
           return {
+            token: currentChainBridgableTokens[index],
             symbol: currentChainBridgableTokens[index].symbol,
             balance: tokenBalance,
           } as TokenBalance

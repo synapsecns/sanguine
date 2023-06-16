@@ -88,9 +88,9 @@ const BridgePage = ({
 
   const userHeldTokens = useUserHeldTokens()
   const bridgableTokens = useSortedBridgableTokens()
-  console.log('userHeldTokens: ', userHeldTokens)
-  console.log('bridgableTokens:', bridgableTokens)
-
+  // console.log('userHeldTokens: ', userHeldTokens)
+  // console.log('bridgableTokens:', bridgableTokens)
+  console.log('fromTokens:', fromTokens)
   // console.log('BRIDGABLE_TOKENS: ', BRIDGABLE_TOKENS)
 
   /*
