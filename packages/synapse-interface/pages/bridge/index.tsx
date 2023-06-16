@@ -86,7 +86,7 @@ const BridgePage = ({
   let successPopup: any
   let errorPopup: string
 
-  const bridgableTokens = getSortedBridgableTokens(fromChainId)
+  const bridgableTokens = getSortedBridgableTokens(fromChainId, bridgeTxHash)
 
   /*
   useEffect Trigger: onMount
