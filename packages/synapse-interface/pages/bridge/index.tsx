@@ -90,33 +90,33 @@ const BridgePage = ({
   console.log('bridgableTokens:', bridgableTokens)
   // console.log('fromTokens: ', fromTokens)
 
-  // useEffect(() => {
-  //   setFromTokens(bridgableTokens)
-  // }, [fromChainId])
+  useEffect(() => {
+    setFromTokens(bridgableTokens)
+  }, [fromChainId])
 
   /*
   useEffect Trigger: onMount
   - Gets current network connected and sets it as the state.
   - Initializes polling (setInterval) func to re-retrieve quotes.
   */
-  useEffect(() => {
-    const validFromChainId = AcceptedChainId[fromChainId] ? fromChainId : 1
-    sortByTokenBalance(
-      BRIDGABLE_TOKENS[validFromChainId],
-      validFromChainId,
-      address
-    ).then((tokens) => {
-      setFromTokens(tokens)
-    })
-    const interval = setInterval(
-      () => setTime(Date.now()),
-      QUOTE_POLLING_INTERVAL
-    )
+  // useEffect(() => {
+  //   const validFromChainId = AcceptedChainId[fromChainId] ? fromChainId : 1
+  //   sortByTokenBalance(
+  //     BRIDGABLE_TOKENS[validFromChainId],
+  //     validFromChainId,
+  //     address
+  //   ).then((tokens) => {
+  //     setFromTokens(tokens)
+  //   })
+  //   const interval = setInterval(
+  //     () => setTime(Date.now()),
+  //     QUOTE_POLLING_INTERVAL
+  //   )
 
-    return () => {
-      clearInterval(interval)
-    }
-  }, [bridgeTxHash, fromChainId, address])
+  //   return () => {
+  //     clearInterval(interval)
+  //   }
+  // }, [bridgeTxHash, fromChainId, address])
 
   useEffect(() => {
     if (!router.isReady) {
