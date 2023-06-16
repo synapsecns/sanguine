@@ -3,6 +3,7 @@ package db
 import (
 	"context"
 	"encoding/json"
+	"github.com/synapsecns/sanguine/agents/agents/executor/db/datastore/sql/base"
 	"github.com/synapsecns/sanguine/agents/agents/executor/types"
 	agentsTypes "github.com/synapsecns/sanguine/agents/types"
 )
@@ -12,9 +13,9 @@ type ExecutorDBWriter interface {
 	// StoreMessage stores a message in the database.
 	StoreMessage(ctx context.Context, message agentsTypes.Message, blockNumber uint64, minimumTimeSet bool, minimumTime uint64) error
 	// ExecuteMessage marks a message as executed in the database.
-	ExecuteMessage(ctx context.Context, messageMask types.DBMessage) error
+	ExecuteMessage(ctx context.Context, messageMask base.DBMessage) error
 	// SetMinimumTime sets the minimum time of a message.
-	SetMinimumTime(ctx context.Context, messageMask types.DBMessage, minimumTime uint64) error
+	SetMinimumTime(ctx context.Context, messageMask base.DBMessage, minimumTime uint64) error
 
 	// StoreAttestation stores an attestation.
 	StoreAttestation(ctx context.Context, attestation agentsTypes.Attestation, destination uint32, destinationBlockNumber, destinationTimestamp uint64) error
@@ -30,33 +31,33 @@ type ExecutorDBWriter interface {
 //nolint:interfacebloat
 type ExecutorDBReader interface {
 	// GetMessage gets a message from the database.
-	GetMessage(ctx context.Context, messageMask types.DBMessage) (*agentsTypes.Message, error)
+	GetMessage(ctx context.Context, messageMask base.DBMessage) (*agentsTypes.Message, error)
 	// GetMessages gets messages from the database, paginated and ordered in ascending order by nonce.
-	GetMessages(ctx context.Context, messageMask types.DBMessage, page int) ([]agentsTypes.Message, error)
+	GetMessages(ctx context.Context, messageMask base.DBMessage, page int) ([]agentsTypes.Message, error)
 	// GetBlockNumber gets the block number of a message from the database.
-	GetBlockNumber(ctx context.Context, messageMask types.DBMessage) (uint64, error)
+	GetBlockNumber(ctx context.Context, messageMask base.DBMessage) (uint64, error)
 	// GetLastBlockNumber gets the last block number that had a message in the database.
 	GetLastBlockNumber(ctx context.Context, chainID uint32, contractType types.ContractType) (uint64, error)
 	// GetExecutableMessages gets executable messages from the database.
-	GetExecutableMessages(ctx context.Context, messageMask types.DBMessage, currentTime uint64, page int) ([]agentsTypes.Message, error)
+	GetExecutableMessages(ctx context.Context, messageMask base.DBMessage, currentTime uint64, page int) ([]agentsTypes.Message, error)
 	// GetUnsetMinimumTimeMessages gets messages from the database that have not had their minimum time set.
-	GetUnsetMinimumTimeMessages(ctx context.Context, messageMask types.DBMessage, page int) ([]agentsTypes.Message, error)
+	GetUnsetMinimumTimeMessages(ctx context.Context, messageMask base.DBMessage, page int) ([]agentsTypes.Message, error)
 	// GetMessageMinimumTime gets the minimum time for a message to be executed.
-	GetMessageMinimumTime(ctx context.Context, messageMask types.DBMessage) (*uint64, error)
+	GetMessageMinimumTime(ctx context.Context, messageMask base.DBMessage) (*uint64, error)
 
 	// GetAttestation gets an attestation that has fields matching the attestation mask.
-	GetAttestation(ctx context.Context, attestationMask types.DBAttestation) (*agentsTypes.Attestation, error)
+	GetAttestation(ctx context.Context, attestationMask base.DBAttestation) (*agentsTypes.Attestation, error)
 	// GetAttestationBlockNumber gets the block number of an attestation.
-	GetAttestationBlockNumber(ctx context.Context, attestationMask types.DBAttestation) (*uint64, error)
+	GetAttestationBlockNumber(ctx context.Context, attestationMask base.DBAttestation) (*uint64, error)
 	// GetAttestationTimestamp gets the timestamp of an attestation.
-	GetAttestationTimestamp(ctx context.Context, attestationMask types.DBAttestation) (*uint64, error)
+	GetAttestationTimestamp(ctx context.Context, attestationMask base.DBAttestation) (*uint64, error)
 	// GetEarliestSnapshotFromAttestation takes a list of snapshot roots, checks which one has the lowest block number, and returns that snapshot root back.
-	GetEarliestSnapshotFromAttestation(ctx context.Context, attestationMask types.DBAttestation, snapshotRoots []string) (*[32]byte, error)
+	GetEarliestSnapshotFromAttestation(ctx context.Context, attestationMask base.DBAttestation, snapshotRoots []string) (*[32]byte, error)
 
 	// GetState gets a state from the database.
-	GetState(ctx context.Context, stateMask types.DBState) (*agentsTypes.State, error)
+	GetState(ctx context.Context, stateMask base.DBState) (*agentsTypes.State, error)
 	// GetStateMetadata gets the snapshot root, proof, and tree height of a state from the database.
-	GetStateMetadata(ctx context.Context, stateMask types.DBState) (snapshotRoot *[32]byte, proof *json.RawMessage, stateIndex *uint32, err error)
+	GetStateMetadata(ctx context.Context, stateMask base.DBState) (snapshotRoot *[32]byte, proof *json.RawMessage, stateIndex *uint32, err error)
 	// GetPotentialSnapshotRoots gets all snapshot roots that are greater than or equal to a specified nonce and matches
 	// a specified chain ID.
 	GetPotentialSnapshotRoots(ctx context.Context, chainID uint32, nonce uint32) ([]string, error)

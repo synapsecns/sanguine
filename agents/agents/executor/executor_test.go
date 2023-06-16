@@ -6,7 +6,7 @@ import (
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/synapsecns/sanguine/agents/agents/executor"
 	executorCfg "github.com/synapsecns/sanguine/agents/agents/executor/config"
-	execTypes "github.com/synapsecns/sanguine/agents/agents/executor/types"
+	execTypes "github.com/synapsecns/sanguine/agents/agents/executor/db/datastore/sql/base"
 	"github.com/synapsecns/sanguine/agents/types"
 	"github.com/synapsecns/sanguine/core/merkle"
 	agentsConfig "github.com/synapsecns/sanguine/ethergo/signer/config"

@@ -9,6 +9,7 @@ import (
 	"github.com/jpillora/backoff"
 	"github.com/synapsecns/sanguine/agents/agents/executor/config"
 	"github.com/synapsecns/sanguine/agents/agents/executor/db"
+	"github.com/synapsecns/sanguine/agents/agents/executor/db/datastore/sql/base"
 	execTypes "github.com/synapsecns/sanguine/agents/agents/executor/types"
 	"github.com/synapsecns/sanguine/agents/contracts/inbox"
 	"github.com/synapsecns/sanguine/agents/contracts/lightinbox"
@@ -324,7 +325,7 @@ func (e Executor) Execute(parentCtx context.Context, message types.Message) (_ b
 	stateRootString := common.BytesToHash(root[:]).String()
 	origin := (*state).Origin()
 	stateNonce := (*state).Nonce()
-	stateMask := execTypes.DBState{
+	stateMask := base.DBState{
 		Root:    &stateRootString,
 		ChainID: &origin,
 		Nonce:   &stateNonce,
@@ -431,7 +432,7 @@ func (e Executor) verifyStateMerkleProof(parentCtx context.Context, state types.
 		metrics.EndSpanWithErr(span, err)
 	}()
 
-	stateMask := execTypes.DBState{
+	stateMask := base.DBState{
 		Root:    &root,
 		ChainID: &chainID,
 	}
@@ -478,7 +479,7 @@ func (e Executor) verifyMessageOptimisticPeriod(parentCtx context.Context, messa
 		metrics.EndSpanWithErr(span, err)
 	}()
 
-	messageMask := execTypes.DBMessage{
+	messageMask := base.DBMessage{
 		ChainID:     &chainID,
 		Destination: &destinationDomain,
 		Nonce:       &nonce,
@@ -540,7 +541,7 @@ retryLoop:
 func newTreeFromDB(ctx context.Context, chainID uint32, executorDB db.ExecutorDB) (*merkle.HistoricalTree, error) {
 	var allMessages []types.Message
 
-	messageMask := execTypes.DBMessage{
+	messageMask := base.DBMessage{
 		ChainID: &chainID,
 	}
 	page := 1
@@ -679,7 +680,7 @@ func (e Executor) streamLogs(ctx context.Context, grpcClient pbscribe.ScribeServ
 			// We do not use a span context here because this is just meant to track transactions coming in.
 			_, span := e.handler.Tracer().Start(ctx, "executor.streamLog", trace.WithAttributes(
 				attribute.Int(metrics.ChainID, int(chainID)),
-				attribute.Int("contract", int(contractType)),
+				attribute.String(metrics.Contract, contractType.String()),
 				attribute.String(metrics.TxHash, log.TxHash.String()),
 			))
 
@@ -829,7 +830,7 @@ func (e Executor) executeExecutable(parentCtx context.Context, chainID uint32) (
 			page := 1
 			currentTime := uint64(time.Now().Unix())
 
-			messageMask := execTypes.DBMessage{
+			messageMask := base.DBMessage{
 				ChainID: &chainID,
 			}
 
@@ -875,7 +876,7 @@ func (e Executor) executeExecutable(parentCtx context.Context, chainID uint32) (
 
 					destinationDomain := message.DestinationDomain()
 					nonce := message.Nonce()
-					executedMessageMask := execTypes.DBMessage{
+					executedMessageMask := base.DBMessage{
 						ChainID:     &chainID,
 						Destination: &destinationDomain,
 						Nonce:       &nonce,
@@ -908,7 +909,7 @@ func (e Executor) setMinimumTime(parentCtx context.Context, chainID uint32) (err
 			backoffInterval = time.Duration(e.config.SetMinimumTimeInterval) * time.Second
 
 			page := 1
-			messageMask := execTypes.DBMessage{
+			messageMask := base.DBMessage{
 				ChainID: &chainID,
 			}
 
@@ -953,7 +954,7 @@ func (e Executor) setMinimumTime(parentCtx context.Context, chainID uint32) (err
 					continue
 				}
 
-				setMessageMask := execTypes.DBMessage{
+				setMessageMask := base.DBMessage{
 					ChainID:     &chainID,
 					Destination: &destinationDomain,
 					Nonce:       &nonce,

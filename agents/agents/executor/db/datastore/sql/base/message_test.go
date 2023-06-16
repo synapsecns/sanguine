@@ -5,7 +5,6 @@ import (
 	"github.com/ethereum/go-ethereum/common"
 	. "github.com/stretchr/testify/assert"
 	"github.com/synapsecns/sanguine/agents/agents/executor/db/datastore/sql/base"
-	"github.com/synapsecns/sanguine/agents/agents/executor/types"
 	"math/big"
 	"testing"
 )
@@ -19,7 +18,7 @@ func TestMessageDBMessageParity(t *testing.T) {
 	executed := gofakeit.Bool()
 	minimumTimeSet := gofakeit.Bool()
 	minimumTime := gofakeit.Uint64()
-	initialDBMessage := types.DBMessage{
+	initialDBMessage := base.DBMessage{
 		ChainID:        &chainID,
 		Destination:    &destination,
 		Nonce:          &nonce,

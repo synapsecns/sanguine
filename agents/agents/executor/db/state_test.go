@@ -6,7 +6,7 @@ import (
 	"github.com/ethereum/go-ethereum/common"
 	. "github.com/stretchr/testify/assert"
 	"github.com/synapsecns/sanguine/agents/agents/executor/db"
-	"github.com/synapsecns/sanguine/agents/agents/executor/types"
+	"github.com/synapsecns/sanguine/agents/agents/executor/db/datastore/sql/base"
 	agentstypes "github.com/synapsecns/sanguine/agents/types"
 	"math/big"
 )
@@ -59,7 +59,7 @@ func (t *DBSuite) TestStoreRetrieveState() {
 
 		snapshotRootAString := snapshotRootA.String()
 		rootAString := rootA.String()
-		stateMaskA := types.DBState{
+		stateMaskA := base.DBState{
 			SnapshotRoot: &snapshotRootAString,
 			Root:         &rootAString,
 			ChainID:      &originA,
@@ -76,7 +76,7 @@ func (t *DBSuite) TestStoreRetrieveState() {
 		proofBBytes, err := json.Marshal(proofB)
 		Nil(t.T(), err)
 		proofBJSON := json.RawMessage(proofBBytes)
-		stateMaskB := types.DBState{
+		stateMaskB := base.DBState{
 			OriginBlockNumber: &blockNumberBUint64,
 			OriginTimestamp:   &timestampBUint64,
 			Proof:             &proofBJSON,
@@ -131,7 +131,7 @@ func (t *DBSuite) TestStoreRetrieveState() {
 
 		snapshotRootCDString := snapshotRootCD.String()
 		rootCString := rootC.String()
-		stateMaskC := types.DBState{
+		stateMaskC := base.DBState{
 			SnapshotRoot: &snapshotRootCDString,
 			Root:         &rootCString,
 			ChainID:      &originC,
@@ -148,7 +148,7 @@ func (t *DBSuite) TestStoreRetrieveState() {
 		proofDBytes, err := json.Marshal(proofD)
 		Nil(t.T(), err)
 		proofDJSON := json.RawMessage(proofDBytes)
-		stateMaskD := types.DBState{
+		stateMaskD := base.DBState{
 			OriginBlockNumber: &blockNumberDUint64,
 			OriginTimestamp:   &timestampDUint64,
 			Proof:             &proofDJSON,
@@ -186,7 +186,7 @@ func (t *DBSuite) TestGetStateMetadata() {
 		err := testDB.StoreState(t.GetTestContext(), stateA, snapshotRootA, proofA, indexA, blockNumberA.Uint64())
 		Nil(t.T(), err)
 
-		stateMask := types.DBState{
+		stateMask := base.DBState{
 			ChainID: &originA,
 		}
 

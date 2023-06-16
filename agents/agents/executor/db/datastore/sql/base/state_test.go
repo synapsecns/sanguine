@@ -6,7 +6,6 @@ import (
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/stretchr/testify/assert"
 	"github.com/synapsecns/sanguine/agents/agents/executor/db/datastore/sql/base"
-	"github.com/synapsecns/sanguine/agents/agents/executor/types"
 	"math/big"
 	"testing"
 )
@@ -34,7 +33,7 @@ func TestDBStateToState(t *testing.T) {
 		panic(err)
 	}
 
-	initialDBState := types.DBState{
+	initialDBState := base.DBState{
 		SnapshotRoot:      &snapshotRoot,
 		Root:              &root,
 		ChainID:           &chainID,

@@ -1,4 +1,4 @@
-package types
+package base
 
 // DBMessage is the executor type for interacting with the database representation of a message.
 //

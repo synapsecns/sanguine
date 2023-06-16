@@ -5,7 +5,7 @@ import (
 	"github.com/ethereum/go-ethereum/common"
 	. "github.com/stretchr/testify/assert"
 	"github.com/synapsecns/sanguine/agents/agents/executor/db"
-	"github.com/synapsecns/sanguine/agents/agents/executor/types"
+	"github.com/synapsecns/sanguine/agents/agents/executor/db/datastore/sql/base"
 	agentsTypes "github.com/synapsecns/sanguine/agents/types"
 	"math/big"
 )
@@ -40,7 +40,7 @@ func (t *DBSuite) TestStoreRetrieveAttestation() {
 
 		snapshotRootAString := snapshotRootA.String()
 		dataHashAString := agentsRootA.String()
-		attestationMaskA := types.DBAttestation{
+		attestationMaskA := base.DBAttestation{
 			Destination:      &destinationA,
 			SnapshotRoot:     &snapshotRootAString,
 			DataHash:         &dataHashAString,
@@ -53,7 +53,7 @@ func (t *DBSuite) TestStoreRetrieveAttestation() {
 
 		blockNumberBUint64 := blockNumberB.Uint64()
 		timestampBUint64 := timestampB.Uint64()
-		attestationMaskB := types.DBAttestation{
+		attestationMaskB := base.DBAttestation{
 			SummitBlockNumber:      &blockNumberBUint64,
 			SummitTimestamp:        &timestampBUint64,
 			DestinationBlockNumber: &destinationBlockNumberB,
@@ -110,7 +110,7 @@ func (t *DBSuite) TestGetEarliestSnapshotFromAttestation() {
 		err = testDB.StoreAttestation(t.GetTestContext(), attestationC, destination, destinationBlockNumberC, destinationTimestampC)
 		Nil(t.T(), err)
 
-		mask := types.DBAttestation{
+		mask := base.DBAttestation{
 			Destination: &destination,
 		}
 
