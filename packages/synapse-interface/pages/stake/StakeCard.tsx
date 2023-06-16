@@ -44,7 +44,7 @@ const StakeCard = ({ address, chainId, pool }: StakeCardProps) => {
   const routerAddress = MINICHEF_ADDRESSES[chainId]
   // TODO get rid of this hook
   const balance = useTokenBalance(pool)
-  const lpTokenBalance = balance?.data.value ?? Zero
+  const lpTokenBalance = balance?.data?.value ?? Zero
 
   const prices = usePrices(chainId)
   const [deposit, setDeposit] = useState({ str: '', bn: Zero })
