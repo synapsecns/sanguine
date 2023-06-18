@@ -51,11 +51,7 @@ func NewSqliteStore(parentCtx context.Context, dbPath string, handler metrics.Ha
 		}
 	}
 
-	baseStore, err := base.NewStore(gdb)
-	if err != nil {
-		return nil, fmt.Errorf("could not create base store: %w", err)
-	}
-	return &Store{baseStore}, nil
+	return &Store{base.NewStore(gdb)}, nil
 }
 
 // var _ db.TxQueueDb = &Store{}

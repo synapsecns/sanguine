@@ -65,12 +65,7 @@ func NewMysqlStore(parentCtx context.Context, dbURL string, handler metrics.Hand
 	if err != nil {
 		return nil, fmt.Errorf("could not migrate on mysql: %w", err)
 	}
-
-	baseStore, err := base.NewStore(gdb)
-	if err != nil {
-		return nil, fmt.Errorf("could not create base store: %w", err)
-	}
-	return &Store{baseStore}, nil
+	return &Store{base.NewStore(gdb)}, nil
 }
 
 // var _ db.Service = &Store{}
