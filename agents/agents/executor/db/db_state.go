@@ -1,8 +1,10 @@
-package types
+package db
 
 import "encoding/json"
 
 // DBState is the executor type for interacting with the database representation of a state.
+//
+//nolint:golint,revive
 type DBState struct {
 	// SnapshotRoot is the snapshot root.
 	SnapshotRoot *string
@@ -20,6 +22,8 @@ type DBState struct {
 	Proof *json.RawMessage
 	// StateIndex is the index of the state in the Snapshot.
 	StateIndex *uint32
+	// BlockNumber is the block number the state was received at on Summit.
+	BlockNumber *uint64
 	// GDGasPrice is the gas price from the gas data.
 	GDGasPrice *uint16
 	// GDDataPrice is the data price from the gas data.

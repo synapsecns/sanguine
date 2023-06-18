@@ -4,7 +4,6 @@ package evm
 import (
 	"context"
 	"fmt"
-
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/synapsecns/sanguine/agents/config"
 	"github.com/synapsecns/sanguine/agents/domains"

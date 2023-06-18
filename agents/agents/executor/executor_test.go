@@ -6,7 +6,7 @@ import (
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/synapsecns/sanguine/agents/agents/executor"
 	executorCfg "github.com/synapsecns/sanguine/agents/agents/executor/config"
-	execTypes "github.com/synapsecns/sanguine/agents/agents/executor/types"
+	execTypes "github.com/synapsecns/sanguine/agents/agents/executor/db"
 	"github.com/synapsecns/sanguine/agents/types"
 	"github.com/synapsecns/sanguine/core/merkle"
 	agentsConfig "github.com/synapsecns/sanguine/ethergo/signer/config"
@@ -92,7 +92,7 @@ func (e *ExecutorSuite) TestVerifyState() {
 	e.Nil(err)
 
 	// Insert the states into the database.
-	err = e.ExecutorTestDB.StoreStates(e.GetTestContext(), snapshot.States(), root, proofs)
+	err = e.ExecutorTestDB.StoreStates(e.GetTestContext(), snapshot.States(), root, proofs, 5)
 	e.Nil(err)
 
 	inTree0, err := exec.VerifyStateMerkleProof(e.GetTestContext(), state0)
@@ -116,6 +116,7 @@ func (e *ExecutorSuite) TestVerifyState() {
 	e.False(inTreeFail)
 }
 
+//nolint:maintidx
 func (e *ExecutorSuite) TestMerkleInsert() {
 	// TODO (joe and lex): FIX ME
 	// e.T().Skip()
@@ -133,6 +134,8 @@ func (e *ExecutorSuite) TestMerkleInsert() {
 	}
 	chainConfig := config.ChainConfig{
 		ChainID:               chainID,
+		BlockTimeChunkSize:    1,
+		ContractSubChunkSize:  1,
 		RequiredConfirmations: 0,
 		Contracts:             []config.ContractConfig{contractConfig},
 	}
@@ -156,7 +159,10 @@ func (e *ExecutorSuite) TestMerkleInsert() {
 
 	// Start the Scribe.
 	go func() {
-		_ = scribe.Start(e.GetTestContext())
+		scribeError := scribe.Start(e.GetTestContext())
+		if !testDone {
+			e.Nil(scribeError)
+		}
 	}()
 
 	excCfg := executorCfg.Config{
@@ -196,34 +202,31 @@ func (e *ExecutorSuite) TestMerkleInsert() {
 
 	recipients := [][32]byte{{byte(gofakeit.Uint32())}, {byte(gofakeit.Uint32())}}
 	optimisticSeconds := []uint32{gofakeit.Uint32(), gofakeit.Uint32()}
-	notaryTips := []*big.Int{big.NewInt(int64(int(gofakeit.Uint32()))), big.NewInt(int64(int(gofakeit.Uint32())))}
-	broadcasterTips := []*big.Int{big.NewInt(int64(int(gofakeit.Uint32()))), big.NewInt(int64(int(gofakeit.Uint32())))}
-	proverTips := []*big.Int{big.NewInt(int64(int(gofakeit.Uint32()))), big.NewInt(int64(int(gofakeit.Uint32())))}
-	executorTips := []*big.Int{big.NewInt(int64(int(gofakeit.Uint32()))), big.NewInt(int64(int(gofakeit.Uint32())))}
-	tips := []types.Tips{
-		types.NewTips(notaryTips[0], broadcasterTips[0], proverTips[0], executorTips[0]),
-		types.NewTips(notaryTips[1], broadcasterTips[1], proverTips[1], executorTips[1]),
-	}
 
 	messageBytes := []byte{byte(gofakeit.Uint32()), byte(gofakeit.Uint32()), byte(gofakeit.Uint32()), byte(gofakeit.Uint32()), byte(gofakeit.Uint32())}
+	msgTips := types.NewTips(big.NewInt(0), big.NewInt(0), big.NewInt(0), big.NewInt(0))
 
 	transactOpts := e.TestBackendOrigin.GetTxContext(e.GetTestContext(), e.OriginContractMetadata.OwnerPtr())
-	transactOpts.Value = types.TotalTips(tips[0])
+	transactOpts.Value = types.TotalTips(msgTips)
 
-	paddedRequest := big.NewInt(0).SetBytes([]byte{byte(6), byte(5), byte(4), byte(3)})
-	tx, err := e.OriginContract.SendBaseMessage(transactOpts.TransactOpts, destination, recipients[0], optimisticSeconds[0], paddedRequest, messageBytes)
+	paddedRequest := big.NewInt(0)
+	tx, err := e.OriginContract.SendBaseMessage(
+		transactOpts.TransactOpts,
+		destination,
+		recipients[0],
+		optimisticSeconds[0],
+		paddedRequest,
+		messageBytes,
+	)
 	e.Nil(err)
 	e.TestBackendOrigin.WaitForConfirmation(e.GetTestContext(), tx)
 
 	header := types.NewHeader(types.MessageFlagBase, chainID, 1, destination, optimisticSeconds[0])
 
-	var msgSender [32]byte
-	copy(msgSender[:], transactOpts.TransactOpts.From.Bytes())
-	msgTips := types.NewTips(big.NewInt(0), big.NewInt(0), big.NewInt(0), big.NewInt(0))
-	msgRequest := types.NewRequest(uint32(1), uint64(0), big.NewInt(0))
+	msgSender := common.BytesToHash(transactOpts.TransactOpts.From.Bytes())
+	msgRequest := types.NewRequest(uint32(0), uint64(0), big.NewInt(0))
 	baseMessage := types.NewBaseMessage(msgSender, recipients[0], msgTips, msgRequest, messageBytes)
-
-	message := types.NewMessage(header, baseMessage, []byte{})
+	message, err := types.NewMessageFromBaseMessage(header, baseMessage)
 	e.Nil(err)
 
 	leafA, err := message.ToLeaf()
@@ -246,6 +249,12 @@ func (e *ExecutorSuite) TestMerkleInsert() {
 	e.Eventually(func() bool {
 		rootA, err := exec.GetMerkleTree(chainID).Root(1)
 		if err != nil {
+			// This transaction is needed to get the simulated chain's block number to increase by 1, since StreamLogs will
+			// do lastBlockNumber - 1.
+			tx, err = e.TestContractOnOrigin.EmitAgentsEventA(transactOpts.TransactOpts, big.NewInt(gofakeit.Int64()), big.NewInt(gofakeit.Int64()), big.NewInt(gofakeit.Int64()))
+			e.Nil(err)
+			e.TestBackendOrigin.WaitForConfirmation(e.GetTestContext(), tx)
+
 			return false
 		}
 
@@ -260,22 +269,26 @@ func (e *ExecutorSuite) TestMerkleInsert() {
 			waitChan <- true
 			return true
 		}
+
 		return false
 	})
 
-	transactOpts.Value = types.TotalTips(tips[1])
+	transactOpts.Value = types.TotalTips(msgTips)
 	// paddedRequest = big.NewInt(0)
 	tx, err = e.OriginContract.SendBaseMessage(transactOpts.TransactOpts, destination, recipients[1], optimisticSeconds[1], paddedRequest, messageBytes)
 	e.Nil(err)
 	e.TestBackendOrigin.WaitForConfirmation(e.GetTestContext(), tx)
 
+	// Advance block again.
+	tx, err = e.TestContractOnOrigin.EmitAgentsEventA(transactOpts.TransactOpts, big.NewInt(gofakeit.Int64()), big.NewInt(gofakeit.Int64()), big.NewInt(gofakeit.Int64()))
+	e.Nil(err)
+	e.TestBackendOrigin.WaitForConfirmation(e.GetTestContext(), tx)
+
 	header = types.NewHeader(types.MessageFlagBase, chainID, 2, destination, optimisticSeconds[1])
 
-	copy(msgSender[:], transactOpts.TransactOpts.From.Bytes())
-	msgTips = types.NewTips(big.NewInt(0), big.NewInt(0), big.NewInt(0), big.NewInt(0))
-	msgRequest = types.NewRequest(uint32(1), uint64(0), big.NewInt(0))
+	msgRequest = types.NewRequest(uint32(0), uint64(0), big.NewInt(0))
 	baseMessage = types.NewBaseMessage(msgSender, recipients[1], msgTips, msgRequest, messageBytes)
-	message = types.NewMessage(header, baseMessage, []byte{})
+	message, err = types.NewMessageFromBaseMessage(header, baseMessage)
 	e.Nil(err)
 
 	leafB, err := message.ToLeaf()
@@ -287,6 +300,11 @@ func (e *ExecutorSuite) TestMerkleInsert() {
 	e.Eventually(func() bool {
 		rootB, err := exec.GetMerkleTree(chainID).Root(2)
 		if err != nil {
+			// This transaction is needed to get the simulated chain's block number to increase by 1, since StreamLogs will
+			// do lastBlockNumber - 1.
+			tx, err = e.TestContractOnOrigin.EmitAgentsEventA(transactOpts.TransactOpts, big.NewInt(gofakeit.Int64()), big.NewInt(gofakeit.Int64()), big.NewInt(gofakeit.Int64()))
+			e.Nil(err)
+			e.TestBackendOrigin.WaitForConfirmation(e.GetTestContext(), tx)
 			return false
 		}
 
@@ -301,6 +319,7 @@ func (e *ExecutorSuite) TestMerkleInsert() {
 			waitChan <- true
 			return true
 		}
+
 		return false
 	})
 
@@ -447,7 +466,6 @@ func (e *ExecutorSuite) TestVerifyMessageMerkleProof() {
 }
 
 func (e *ExecutorSuite) TestExecutor() {
-	// TODO (joe and lex): FIX ME
 	// e.T().Skip()
 	testDone := false
 	defer func() {
@@ -594,6 +612,12 @@ func (e *ExecutorSuite) TestExecutor() {
 	e.Nil(err)
 	e.TestBackendOrigin.WaitForConfirmation(e.GetTestContext(), tx)
 
+	// This transaction is needed to get the simulated chain's block number to increase by 1, since StreamLogs will
+	// do lastBlockNumber - 1.
+	tx, err = e.TestContractOnOrigin.EmitAgentsEventA(txContextOrigin.TransactOpts, big.NewInt(gofakeit.Int64()), big.NewInt(gofakeit.Int64()), big.NewInt(gofakeit.Int64()))
+	e.Nil(err)
+	e.TestBackendOrigin.WaitForConfirmation(e.GetTestContext(), tx)
+
 	tree := merkle.NewTree(merkle.MessageTreeHeight)
 
 	header := types.NewHeader(types.MessageFlagBase, uint32(e.TestBackendOrigin.GetChainID()), nonce, uint32(e.TestBackendDestination.GetChainID()), optimisticSeconds)
@@ -624,7 +648,7 @@ func (e *ExecutorSuite) TestExecutor() {
 	snapshotRoot, proofs, err := originSnapshot.SnapshotRootAndProofs()
 	e.Nil(err)
 
-	err = e.ExecutorTestDB.StoreStates(e.GetTestContext(), []types.State{originState, randomState}, snapshotRoot, proofs)
+	err = e.ExecutorTestDB.StoreStates(e.GetTestContext(), []types.State{originState, randomState}, snapshotRoot, proofs, 5)
 	e.Nil(err)
 
 	destinationAttestation := types.NewAttestation(snapshotRoot, [32]byte{}, uint32(1), big.NewInt(1), big.NewInt(1))
@@ -717,11 +741,11 @@ func (e *ExecutorSuite) TestSetMinimumTime() {
 	snapshotRoot2, proofs2, err := snapshot2.SnapshotRootAndProofs()
 	e.Nil(err)
 
-	err = e.ExecutorTestDB.StoreStates(e.GetTestContext(), snapshot0.States(), snapshotRoot0, proofs0)
+	err = e.ExecutorTestDB.StoreStates(e.GetTestContext(), snapshot0.States(), snapshotRoot0, proofs0, 0)
 	e.Nil(err)
-	err = e.ExecutorTestDB.StoreStates(e.GetTestContext(), snapshot1.States(), snapshotRoot1, proofs1)
+	err = e.ExecutorTestDB.StoreStates(e.GetTestContext(), snapshot1.States(), snapshotRoot1, proofs1, 1)
 	e.Nil(err)
-	err = e.ExecutorTestDB.StoreStates(e.GetTestContext(), snapshot2.States(), snapshotRoot2, proofs2)
+	err = e.ExecutorTestDB.StoreStates(e.GetTestContext(), snapshot2.States(), snapshotRoot2, proofs2, 2)
 	e.Nil(err)
 
 	potentialSnapshotRoots, err := e.ExecutorTestDB.GetPotentialSnapshotRoots(e.GetTestContext(), chainID, 1)

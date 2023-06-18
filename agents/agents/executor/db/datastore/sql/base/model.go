@@ -54,14 +54,14 @@ var (
 // PageSize is the amount of entries per page of logs.
 var PageSize = 50_000
 
-// Message is the information about a message parsed by the Executor.
+// Message is the information about a message parsed by the Executor. This is an event derived from the origin contract.
 type Message struct {
 	// ChainID is the chain id.
-	ChainID uint32 `gorm:"column:chain_id;primaryKey"`
+	ChainID uint32 `gorm:"column:chain_id;primaryKey;index:idx_chain_dest_nonce"`
 	// Destination is the destination.
-	Destination uint32 `gorm:"column:destination;primaryKey"`
+	Destination uint32 `gorm:"column:destination;primaryKey;index:idx_chain_dest_nonce"`
 	// Nonce is the nonce.
-	Nonce uint32 `gorm:"column:nonce;primaryKey"`
+	Nonce uint32 `gorm:"column:nonce;primaryKey;index:idx_chain_dest_nonce"`
 	// Message is the message.
 	Message []byte `gorm:"column:message"`
 	// BlockNumber is the block number.
@@ -74,7 +74,7 @@ type Message struct {
 	MinimumTime uint64 `gorm:"column:minimum_time"`
 }
 
-// Attestation is the information about an attestation parsed by the Executor.
+// Attestation is the information about an attestation parsed by the Executor. This is an event derived from the destination contract.
 type Attestation struct {
 	// Destination is the destination of the attestation.
 	Destination uint32 `gorm:"column:destination;primaryKey"`
@@ -112,6 +112,8 @@ type State struct {
 	Proof json.RawMessage `gorm:"column:proof"`
 	// StateIndex is the index of the state in the Snapshot.
 	StateIndex uint32 `gorm:"column:state_index"`
+	// BlockNumber is the block number the state update was received on Summit.
+	BlockNumber uint64 `gorm:"column:block_number"`
 	// GDGasPrice is the gas price from the gas data.
 	GDGasPrice uint16 `gorm:"column:gd_gas_price"`
 	// GDDataPrice is the data price from the gas data.

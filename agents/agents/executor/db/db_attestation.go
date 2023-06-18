@@ -1,6 +1,8 @@
-package types
+package db
 
 // DBAttestation is the executor type for interacting with the database representation of an attestation.
+//
+//nolint:golint,revive
 type DBAttestation struct {
 	// Destination is the destination of the attestation.
 	Destination *uint32

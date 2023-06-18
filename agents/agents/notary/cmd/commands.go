@@ -1,6 +1,7 @@
 package cmd
 
 import (
+	"github.com/synapsecns/sanguine/agents/agents/notary/metadata"
 	"github.com/synapsecns/sanguine/core/metrics"
 	"sync/atomic"
 	"time"
@@ -60,8 +61,10 @@ var NotaryRunCommand = &cli.Command{
 	Description: "runs the notary service",
 	Flags:       []cli.Flag{configFlag, metricsPortFlag, ignoreInitErrorsFlag},
 	Action: func(c *cli.Context) error {
-		metricsProvider := metrics.Get()
-
+		metricsProvider, err := metrics.NewFromEnv(c.Context, metadata.BuildInfo())
+		if err != nil {
+			return fmt.Errorf("failed to create metrics handler: %w", err)
+		}
 		notaryConfig, err := config.DecodeAgentConfig(core.ExpandOrReturnPath(c.String(configFlag.Name)))
 		if err != nil {
 			return fmt.Errorf("failed to decode config: %w", err)

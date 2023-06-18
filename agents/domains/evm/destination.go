@@ -3,6 +3,7 @@ package evm
 import (
 	"context"
 	"fmt"
+	"github.com/synapsecns/sanguine/ethergo/chain"
 	"math/big"
 	"time"
 
@@ -12,7 +13,6 @@ import (
 	"github.com/synapsecns/sanguine/agents/contracts/destination"
 	"github.com/synapsecns/sanguine/agents/domains"
 	"github.com/synapsecns/sanguine/agents/types"
-	"github.com/synapsecns/sanguine/ethergo/chain"
 	"github.com/synapsecns/sanguine/ethergo/signer/nonce"
 	"github.com/synapsecns/sanguine/ethergo/signer/signer"
 )
@@ -118,4 +118,20 @@ func (a destinationContract) GetAttestationNonce(ctx context.Context, snapRoot [
 	}
 
 	return attNonce, nil
+}
+
+func (a destinationContract) MessageStatus(ctx context.Context, message types.Message) (uint8, error) {
+	messageLeaf, err := message.ToLeaf()
+	if err != nil {
+		return 0, fmt.Errorf("could not get message leaf: %w", err)
+	}
+
+	status, err := a.contract.MessageStatus(&bind.CallOpts{Context: ctx}, messageLeaf)
+	if err != nil {
+		return 0, fmt.Errorf("could not get message status: %w", err)
+	}
+
+	fmt.Println("status: ", status)
+
+	return status, nil
 }
