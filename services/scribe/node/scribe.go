@@ -109,6 +109,8 @@ func (s Scribe) Start(ctx context.Context) error {
 	return nil
 }
 
+// TODO: Has issues with last confirmed data. Needs to be fixed.
+//
 //nolint:gocognit, cyclop
 func (s Scribe) confirmBlocks(ctx context.Context, chainID uint32, requiredConfirmations uint32) error {
 	logger.Infof("[LIVEFILL] start livefilling chain: %d", chainID)

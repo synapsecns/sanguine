@@ -5,8 +5,8 @@ import (
 	"github.com/brianvoe/gofakeit/v6"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/stretchr/testify/assert"
+	"github.com/synapsecns/sanguine/agents/agents/executor/db"
 	"github.com/synapsecns/sanguine/agents/agents/executor/db/datastore/sql/base"
-	"github.com/synapsecns/sanguine/agents/agents/executor/types"
 	"math/big"
 	"testing"
 )
@@ -20,6 +20,7 @@ func TestDBStateToState(t *testing.T) {
 	originTimestamp := gofakeit.Uint64()
 	proof := []string{common.BigToHash(big.NewInt(gofakeit.Int64())).String(), common.BigToHash(big.NewInt(gofakeit.Int64())).String()}
 	stateIndex := gofakeit.Uint32()
+	blockNumber := gofakeit.Uint64()
 
 	gasPrice := gofakeit.Uint16()
 	dataPrice := gofakeit.Uint16()
@@ -33,7 +34,7 @@ func TestDBStateToState(t *testing.T) {
 		panic(err)
 	}
 
-	initialDBState := types.DBState{
+	initialDBState := db.DBState{
 		SnapshotRoot:      &snapshotRoot,
 		Root:              &root,
 		ChainID:           &chainID,
@@ -42,6 +43,7 @@ func TestDBStateToState(t *testing.T) {
 		OriginTimestamp:   &originTimestamp,
 		Proof:             (*json.RawMessage)(&proofJSON),
 		StateIndex:        &stateIndex,
+		BlockNumber:       &blockNumber,
 		GDGasPrice:        &gasPrice,
 		GDDataPrice:       &dataPrice,
 		GDExecBuffer:      &execBuffer,

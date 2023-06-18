@@ -25,8 +25,13 @@ var MaxIdleConns = 10
 var NamingStrategy = schema.NamingStrategy{}
 
 // NewMysqlStore creates a new mysql store for a given data store.
-func NewMysqlStore(ctx context.Context, dbURL string, handler metrics.Handler) (*Store, error) {
+func NewMysqlStore(parentCtx context.Context, dbURL string, handler metrics.Handler, skipMigrations bool) (_ *Store, err error) {
 	logger.Debug("creating mysql store")
+
+	ctx, span := handler.Tracer().Start(parentCtx, "start-mysql")
+	defer func() {
+		metrics.EndSpanWithErr(span, err)
+	}()
 
 	gdb, err := gorm.Open(mysql.Open(dbURL), &gorm.Config{
 		Logger:               common_base.GetGormLogger(logger),
@@ -50,8 +55,13 @@ func NewMysqlStore(ctx context.Context, dbURL string, handler metrics.Handler) (
 
 	handler.AddGormCallbacks(gdb)
 
-	err = gdb.WithContext(ctx).AutoMigrate(base.GetAllModels()...)
-
+	if !skipMigrations {
+		// migrate in a transaction since we skip this by default
+		err = gdb.Transaction(func(tx *gorm.DB) error {
+			//nolint: wrapcheck
+			return gdb.WithContext(ctx).AutoMigrate(base.GetAllModels()...)
+		})
+	}
 	if err != nil {
 		return nil, fmt.Errorf("could not migrate on mysql: %w", err)
 	}
