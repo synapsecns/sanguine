@@ -74,6 +74,7 @@ func (i ContractSuite) TestFetchSortedOriginUpdates() {
 
 	for iter, message := range messages {
 		testSent := testSents[iter]
-		True(i.T(), bytes.Contains(message.Message(), testSent.message))
+		// TODO: Update this check.
+		True(i.T(), bytes.Contains(message.Body(), testSent.message))
 	}
 }

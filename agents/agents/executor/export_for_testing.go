@@ -7,11 +7,10 @@ import (
 	ethTypes "github.com/ethereum/go-ethereum/core/types"
 	"github.com/synapsecns/sanguine/agents/agents/executor/config"
 	"github.com/synapsecns/sanguine/agents/agents/executor/db"
-	"github.com/synapsecns/sanguine/agents/contracts/destination"
+	execTypes "github.com/synapsecns/sanguine/agents/agents/executor/types"
 	"github.com/synapsecns/sanguine/agents/contracts/inbox"
 	"github.com/synapsecns/sanguine/agents/contracts/lightinbox"
 	"github.com/synapsecns/sanguine/agents/contracts/origin"
-	"github.com/synapsecns/sanguine/agents/contracts/summit"
 	"github.com/synapsecns/sanguine/agents/domains/evm"
 	"github.com/synapsecns/sanguine/agents/types"
 	"github.com/synapsecns/sanguine/core/merkle"
@@ -19,10 +18,7 @@ import (
 	ethergoChain "github.com/synapsecns/sanguine/ethergo/chain"
 	agentsConfig "github.com/synapsecns/sanguine/ethergo/signer/config"
 	"github.com/synapsecns/sanguine/services/scribe/client"
-	pbscribe "github.com/synapsecns/sanguine/services/scribe/grpc/types/types/v1"
 	"golang.org/x/sync/errgroup"
-	"google.golang.org/grpc"
-	"google.golang.org/grpc/credentials/insecure"
 )
 
 // -------- [ UTILS ] -------- \\
@@ -32,20 +28,10 @@ import (
 //nolint:cyclop
 func NewExecutorInjectedBackend(ctx context.Context, config config.Config, executorDB db.ExecutorDB, scribeClient client.ScribeClient, clients map[uint32]Backend, urls map[uint32]string, handler metrics.Handler) (*Executor, error) {
 	chainExecutors := make(map[uint32]*chainExecutor)
-	conn, err := grpc.DialContext(ctx, fmt.Sprintf("%s:%d", scribeClient.URL, scribeClient.Port), grpc.WithTransportCredentials(insecure.NewCredentials()))
-	if err != nil {
-		return nil, fmt.Errorf("could not dial grpc: %w", err)
-	}
 
-	grpcClient := pbscribe.NewScribeServiceClient(conn)
-
-	// Ensure that gRPC is up and running.
-	healthCheck, err := grpcClient.Check(ctx, &pbscribe.HealthCheckRequest{}, grpc.WaitForReady(true))
+	conn, grpcClient, err := makeScribeClient(ctx, handler, fmt.Sprintf("%s:%d", scribeClient.URL, scribeClient.Port))
 	if err != nil {
-		return nil, fmt.Errorf("could not check: %w", err)
-	}
-	if healthCheck.Status != pbscribe.HealthCheckResponse_SERVING {
-		return nil, fmt.Errorf("not serving: %s", healthCheck.Status)
+		return nil, fmt.Errorf("could not create scribe client: %w", err)
 	}
 
 	executorSigner, err := agentsConfig.SignerFromConfig(ctx, config.UnbondedSigner)
@@ -67,41 +53,25 @@ func NewExecutorInjectedBackend(ctx context.Context, config config.Config, execu
 			return nil, fmt.Errorf("could not create origin parser: %w", err)
 		}
 
-		destinationParser, err := destination.NewParser(common.HexToAddress(chain.DestinationAddress))
+		lightInboxParser, err := lightinbox.NewParser(common.HexToAddress(chain.LightInboxAddress))
 		if err != nil {
 			return nil, fmt.Errorf("could not create destination parser: %w", err)
 		}
 
-		var summitParserRef *summit.Parser
-		var inboxParserRef *inbox.Parser
-		var lightInboxParserRef *lightinbox.Parser
+		var inboxParser inbox.Parser
 
 		if config.SummitChainID == chain.ChainID {
-			summitParser, err := summit.NewParser(common.HexToAddress(config.SummitAddress))
+			inboxParser, err = inbox.NewParser(common.HexToAddress(config.InboxAddress))
 			if err != nil {
-				return nil, fmt.Errorf("could not create summit parser: %w", err)
+				return nil, fmt.Errorf("could not create inbox parser: %w", err)
 			}
-
-			summitParserRef = &summitParser
-
-			inboxParser, err := inbox.NewParser(common.HexToAddress(config.InboxAddress))
-			if err != nil {
-				return nil, fmt.Errorf("could not create bonding manager parser: %w", err)
-			}
-
-			inboxParserRef = &inboxParser
 		} else {
-			lightInboxParser, err := lightinbox.NewParser(common.HexToAddress(chain.LightInboxAddress))
-			if err != nil {
-				return nil, fmt.Errorf("could not create destination parser: %w", err)
-			}
-
-			lightInboxParserRef = &lightInboxParser
+			inboxParser = nil
 		}
 
 		underlyingClient, err := ethergoChain.NewFromURL(ctx, urls[chain.ChainID])
 		if err != nil {
-			return nil, fmt.Errorf("could not get evm: %w", err)
+			return nil, fmt.Errorf("could not create underlying client: %w", err)
 		}
 
 		boundDestination, err := evm.NewDestinationContract(ctx, underlyingClient, common.HexToAddress(chain.DestinationAddress))
@@ -120,18 +90,15 @@ func NewExecutorInjectedBackend(ctx context.Context, config config.Config, execu
 				blockNumber: 0,
 				blockIndex:  0,
 			},
-			closeConnection:   make(chan bool, 1),
-			stopListenChan:    make(chan bool, 1),
-			originParser:      originParser,
-			destinationParser: destinationParser,
-			summitParser:      summitParserRef,
-			lightInboxParser:  lightInboxParserRef,
-			inboxParser:       inboxParserRef,
-			logChan:           make(chan *ethTypes.Log, logChanSize),
-			merkleTree:        tree,
-			rpcClient:         clients[chain.ChainID],
-			boundDestination:  boundDestination,
-			executed:          make(map[[32]byte]bool),
+			closeConnection:  make(chan bool, 1),
+			stopListenChan:   make(chan bool, 1),
+			originParser:     originParser,
+			lightInboxParser: lightInboxParser,
+			inboxParser:      inboxParser,
+			logChan:          make(chan *ethTypes.Log, logChanSize),
+			merkleTree:       tree,
+			rpcClient:        clients[chain.ChainID],
+			boundDestination: boundDestination,
 		}
 	}
 
@@ -170,10 +137,7 @@ func (e Executor) StartAndListenOrigin(ctx context.Context, chainID uint32, addr
 	g, _ := errgroup.WithContext(ctx)
 
 	g.Go(func() error {
-		return e.streamLogs(ctx, e.grpcClient, e.grpcConn, chainID, address, nil, contractEventType{
-			contractType: originContract,
-			eventType:    sentEvent,
-		})
+		return e.streamLogs(ctx, e.grpcClient, e.grpcConn, chainID, address, execTypes.OriginContract)
 	})
 
 	g.Go(func() error {
@@ -190,11 +154,6 @@ func (e Executor) StartAndListenOrigin(ctx context.Context, chainID uint32, addr
 // GetMerkleTree gets a merkle tree.
 func (e Executor) GetMerkleTree(chainID uint32) *merkle.HistoricalTree {
 	return e.chainExecutors[chainID].merkleTree
-}
-
-// GetExecuted gets the executed mapping.
-func (e Executor) GetExecuted(chainID uint32) map[[32]byte]bool {
-	return e.chainExecutors[chainID].executed
 }
 
 // VerifyMessageMerkleProof verifies message merkle proof.
@@ -215,6 +174,11 @@ func (e Executor) VerifyMessageOptimisticPeriod(ctx context.Context, message typ
 // OverrideMerkleTree overrides the merkle tree for the chainID and domain.
 func (e Executor) OverrideMerkleTree(chainID uint32, tree *merkle.HistoricalTree) {
 	e.chainExecutors[chainID].merkleTree = tree
+}
+
+// CheckIfExecuted checks if a message has been executed.
+func (e Executor) CheckIfExecuted(ctx context.Context, message types.Message) (bool, error) {
+	return e.checkIfExecuted(ctx, message)
 }
 
 // SetMinimumTime sets the minimum times.

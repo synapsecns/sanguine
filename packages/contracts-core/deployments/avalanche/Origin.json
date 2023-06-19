@@ -1,110 +1,122 @@
 {
-  "address": "0xF3773BE7cb59235Ced272cF324aaeb0A4115280f",
+  "address": "0xF1777e069F89b9C73F874b9D9e41fbe6FC2779D5",
+  "args": "0x000000000000000000000000000000000000000000000000000000000000a86a00000000000000000000000019d49b378fd2ae1e92a92383200776f57a480ef6000000000000000000000000aebd008e03b1904c14c83eaa8a348ab6af82cb9200000000000000000000000058d11431bf750cf2ec5d328ca9309b9b86ee6993",
   "abi": [
     {
       "inputs": [
         {
           "internalType": "uint32",
-          "name": "_domain",
+          "name": "domain",
           "type": "uint32"
+        },
+        {
+          "internalType": "address",
+          "name": "agentManager_",
+          "type": "address"
+        },
+        {
+          "internalType": "address",
+          "name": "inbox_",
+          "type": "address"
+        },
+        {
+          "internalType": "address",
+          "name": "gasOracle_",
+          "type": "address"
         }
       ],
       "stateMutability": "nonpayable",
       "type": "constructor"
     },
     {
-      "anonymous": false,
-      "inputs": [
-        {
-          "indexed": true,
-          "internalType": "uint32",
-          "name": "domain",
-          "type": "uint32"
-        },
-        {
-          "indexed": true,
-          "internalType": "address",
-          "name": "account",
-          "type": "address"
-        }
-      ],
-      "name": "AgentAdded",
-      "type": "event"
+      "inputs": [],
+      "name": "CallerNotAgentManager",
+      "type": "error"
     },
     {
-      "anonymous": false,
-      "inputs": [
-        {
-          "indexed": true,
-          "internalType": "uint32",
-          "name": "domain",
-          "type": "uint32"
-        },
-        {
-          "indexed": true,
-          "internalType": "address",
-          "name": "account",
-          "type": "address"
-        }
-      ],
-      "name": "AgentRemoved",
-      "type": "event"
+      "inputs": [],
+      "name": "ContentLengthTooBig",
+      "type": "error"
     },
     {
-      "anonymous": false,
-      "inputs": [
-        {
-          "indexed": true,
-          "internalType": "uint32",
-          "name": "domain",
-          "type": "uint32"
-        },
-        {
-          "indexed": true,
-          "internalType": "address",
-          "name": "account",
-          "type": "address"
-        }
-      ],
-      "name": "AgentSlashed",
-      "type": "event"
+      "inputs": [],
+      "name": "EthTransferFailed",
+      "type": "error"
     },
     {
-      "anonymous": false,
-      "inputs": [
-        {
-          "indexed": true,
-          "internalType": "bytes32",
-          "name": "messageHash",
-          "type": "bytes32"
-        },
-        {
-          "indexed": true,
-          "internalType": "uint32",
-          "name": "nonce",
-          "type": "uint32"
-        },
-        {
-          "indexed": true,
-          "internalType": "uint32",
-          "name": "destination",
-          "type": "uint32"
-        },
-        {
-          "indexed": false,
-          "internalType": "bytes",
-          "name": "tips",
-          "type": "bytes"
-        },
-        {
-          "indexed": false,
-          "internalType": "bytes",
-          "name": "message",
-          "type": "bytes"
-        }
-      ],
-      "name": "Dispatch",
-      "type": "event"
+      "inputs": [],
+      "name": "FlagOutOfRange",
+      "type": "error"
+    },
+    {
+      "inputs": [],
+      "name": "IncorrectOriginDomain",
+      "type": "error"
+    },
+    {
+      "inputs": [],
+      "name": "IncorrectVersionLength",
+      "type": "error"
+    },
+    {
+      "inputs": [],
+      "name": "IndexedTooMuch",
+      "type": "error"
+    },
+    {
+      "inputs": [],
+      "name": "InsufficientEthBalance",
+      "type": "error"
+    },
+    {
+      "inputs": [],
+      "name": "MerkleTreeFull",
+      "type": "error"
+    },
+    {
+      "inputs": [],
+      "name": "NotEnoughLeafs",
+      "type": "error"
+    },
+    {
+      "inputs": [],
+      "name": "TipsOverflow",
+      "type": "error"
+    },
+    {
+      "inputs": [],
+      "name": "TipsValueTooLow",
+      "type": "error"
+    },
+    {
+      "inputs": [],
+      "name": "UnallocatedMemory",
+      "type": "error"
+    },
+    {
+      "inputs": [],
+      "name": "UnformattedBaseMessage",
+      "type": "error"
+    },
+    {
+      "inputs": [],
+      "name": "UnformattedCallData",
+      "type": "error"
+    },
+    {
+      "inputs": [],
+      "name": "UnformattedMessage",
+      "type": "error"
+    },
+    {
+      "inputs": [],
+      "name": "UnformattedState",
+      "type": "error"
+    },
+    {
+      "inputs": [],
+      "name": "ViewOverrun",
+      "type": "error"
     },
     {
       "anonymous": false,
@@ -141,32 +153,6 @@
       "anonymous": false,
       "inputs": [
         {
-          "indexed": true,
-          "internalType": "uint32",
-          "name": "domain",
-          "type": "uint32"
-        }
-      ],
-      "name": "DomainActivated",
-      "type": "event"
-    },
-    {
-      "anonymous": false,
-      "inputs": [
-        {
-          "indexed": true,
-          "internalType": "uint32",
-          "name": "domain",
-          "type": "uint32"
-        }
-      ],
-      "name": "DomainDeactivated",
-      "type": "event"
-    },
-    {
-      "anonymous": false,
-      "inputs": [
-        {
           "indexed": false,
           "internalType": "uint8",
           "name": "version",
@@ -174,62 +160,6 @@
         }
       ],
       "name": "Initialized",
-      "type": "event"
-    },
-    {
-      "anonymous": false,
-      "inputs": [
-        {
-          "indexed": false,
-          "internalType": "uint256",
-          "name": "stateIndex",
-          "type": "uint256"
-        },
-        {
-          "indexed": false,
-          "internalType": "bytes",
-          "name": "snapshot",
-          "type": "bytes"
-        },
-        {
-          "indexed": false,
-          "internalType": "bytes",
-          "name": "attestation",
-          "type": "bytes"
-        },
-        {
-          "indexed": false,
-          "internalType": "bytes",
-          "name": "attSignature",
-          "type": "bytes"
-        }
-      ],
-      "name": "InvalidAttestationState",
-      "type": "event"
-    },
-    {
-      "anonymous": false,
-      "inputs": [
-        {
-          "indexed": false,
-          "internalType": "uint256",
-          "name": "stateIndex",
-          "type": "uint256"
-        },
-        {
-          "indexed": false,
-          "internalType": "bytes",
-          "name": "snapshot",
-          "type": "bytes"
-        },
-        {
-          "indexed": false,
-          "internalType": "bytes",
-          "name": "snapSignature",
-          "type": "bytes"
-        }
-      ],
-      "name": "InvalidSnapshotState",
       "type": "event"
     },
     {
@@ -255,6 +185,37 @@
       "anonymous": false,
       "inputs": [
         {
+          "indexed": true,
+          "internalType": "bytes32",
+          "name": "messageHash",
+          "type": "bytes32"
+        },
+        {
+          "indexed": true,
+          "internalType": "uint32",
+          "name": "nonce",
+          "type": "uint32"
+        },
+        {
+          "indexed": true,
+          "internalType": "uint32",
+          "name": "destination",
+          "type": "uint32"
+        },
+        {
+          "indexed": false,
+          "internalType": "bytes",
+          "name": "message",
+          "type": "bytes"
+        }
+      ],
+      "name": "Sent",
+      "type": "event"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
           "indexed": false,
           "internalType": "bytes",
           "name": "state",
@@ -266,12 +227,12 @@
     },
     {
       "inputs": [],
-      "name": "SYNAPSE_DOMAIN",
+      "name": "agentManager",
       "outputs": [
         {
-          "internalType": "uint32",
+          "internalType": "address",
           "name": "",
-          "type": "uint32"
+          "type": "address"
         }
       ],
       "stateMutability": "view",
@@ -280,17 +241,34 @@
     {
       "inputs": [
         {
-          "internalType": "uint32",
-          "name": "_domain",
-          "type": "uint32"
+          "internalType": "address",
+          "name": "agent",
+          "type": "address"
         }
       ],
-      "name": "allAgents",
+      "name": "agentStatus",
       "outputs": [
         {
-          "internalType": "address[]",
+          "components": [
+            {
+              "internalType": "enum AgentFlag",
+              "name": "flag",
+              "type": "uint8"
+            },
+            {
+              "internalType": "uint32",
+              "name": "domain",
+              "type": "uint32"
+            },
+            {
+              "internalType": "uint32",
+              "name": "index",
+              "type": "uint32"
+            }
+          ],
+          "internalType": "struct AgentStatus",
           "name": "",
-          "type": "address[]"
+          "type": "tuple"
         }
       ],
       "stateMutability": "view",
@@ -298,107 +276,7 @@
     },
     {
       "inputs": [],
-      "name": "allDomains",
-      "outputs": [
-        {
-          "internalType": "uint32[]",
-          "name": "domains_",
-          "type": "uint32[]"
-        }
-      ],
-      "stateMutability": "view",
-      "type": "function"
-    },
-    {
-      "inputs": [
-        {
-          "internalType": "uint32",
-          "name": "_domain",
-          "type": "uint32"
-        }
-      ],
-      "name": "amountAgents",
-      "outputs": [
-        {
-          "internalType": "uint256",
-          "name": "",
-          "type": "uint256"
-        }
-      ],
-      "stateMutability": "view",
-      "type": "function"
-    },
-    {
-      "inputs": [],
-      "name": "amountDomains",
-      "outputs": [
-        {
-          "internalType": "uint256",
-          "name": "",
-          "type": "uint256"
-        }
-      ],
-      "stateMutability": "view",
-      "type": "function"
-    },
-    {
-      "inputs": [
-        {
-          "internalType": "uint32",
-          "name": "_destination",
-          "type": "uint32"
-        },
-        {
-          "internalType": "bytes32",
-          "name": "_recipient",
-          "type": "bytes32"
-        },
-        {
-          "internalType": "uint32",
-          "name": "_optimisticSeconds",
-          "type": "uint32"
-        },
-        {
-          "internalType": "bytes",
-          "name": "_tips",
-          "type": "bytes"
-        },
-        {
-          "internalType": "bytes",
-          "name": "_messageBody",
-          "type": "bytes"
-        }
-      ],
-      "name": "dispatch",
-      "outputs": [
-        {
-          "internalType": "uint32",
-          "name": "messageNonce",
-          "type": "uint32"
-        },
-        {
-          "internalType": "bytes32",
-          "name": "messageHash",
-          "type": "bytes32"
-        }
-      ],
-      "stateMutability": "payable",
-      "type": "function"
-    },
-    {
-      "inputs": [
-        {
-          "internalType": "uint32",
-          "name": "_domain",
-          "type": "uint32"
-        },
-        {
-          "internalType": "uint256",
-          "name": "_agentIndex",
-          "type": "uint256"
-        }
-      ],
-      "name": "getAgent",
+      "name": "gasOracle",
       "outputs": [
         {
           "internalType": "address",
@@ -413,16 +291,80 @@
       "inputs": [
         {
           "internalType": "uint256",
-          "name": "_domainIndex",
+          "name": "index",
           "type": "uint256"
         }
       ],
-      "name": "getDomain",
+      "name": "getAgent",
       "outputs": [
         {
+          "internalType": "address",
+          "name": "agent",
+          "type": "address"
+        },
+        {
+          "components": [
+            {
+              "internalType": "enum AgentFlag",
+              "name": "flag",
+              "type": "uint8"
+            },
+            {
+              "internalType": "uint32",
+              "name": "domain",
+              "type": "uint32"
+            },
+            {
+              "internalType": "uint32",
+              "name": "index",
+              "type": "uint32"
+            }
+          ],
+          "internalType": "struct AgentStatus",
+          "name": "status",
+          "type": "tuple"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
           "internalType": "uint32",
-          "name": "",
+          "name": "destination",
           "type": "uint32"
+        },
+        {
+          "internalType": "uint256",
+          "name": "paddedRequest",
+          "type": "uint256"
+        },
+        {
+          "internalType": "uint256",
+          "name": "contentLength",
+          "type": "uint256"
+        }
+      ],
+      "name": "getMinimumTipsValue",
+      "outputs": [
+        {
+          "internalType": "uint256",
+          "name": "tipsValue",
+          "type": "uint256"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [],
+      "name": "inbox",
+      "outputs": [
+        {
+          "internalType": "address",
+          "name": "",
+          "type": "address"
         }
       ],
       "stateMutability": "view",
@@ -438,75 +380,8 @@
     {
       "inputs": [
         {
-          "internalType": "uint32",
-          "name": "_domain",
-          "type": "uint32"
-        },
-        {
-          "internalType": "address",
-          "name": "_account",
-          "type": "address"
-        }
-      ],
-      "name": "isActiveAgent",
-      "outputs": [
-        {
-          "internalType": "bool",
-          "name": "",
-          "type": "bool"
-        }
-      ],
-      "stateMutability": "view",
-      "type": "function"
-    },
-    {
-      "inputs": [
-        {
-          "internalType": "address",
-          "name": "_account",
-          "type": "address"
-        }
-      ],
-      "name": "isActiveAgent",
-      "outputs": [
-        {
-          "internalType": "bool",
-          "name": "isActive",
-          "type": "bool"
-        },
-        {
-          "internalType": "uint32",
-          "name": "domain",
-          "type": "uint32"
-        }
-      ],
-      "stateMutability": "view",
-      "type": "function"
-    },
-    {
-      "inputs": [
-        {
-          "internalType": "uint32",
-          "name": "_domain",
-          "type": "uint32"
-        }
-      ],
-      "name": "isActiveDomain",
-      "outputs": [
-        {
-          "internalType": "bool",
-          "name": "",
-          "type": "bool"
-        }
-      ],
-      "stateMutability": "view",
-      "type": "function"
-    },
-    {
-      "inputs": [
-        {
           "internalType": "bytes",
-          "name": "_statePayload",
+          "name": "statePayload",
           "type": "bytes"
         }
       ],
@@ -535,6 +410,67 @@
       "type": "function"
     },
     {
+      "inputs": [
+        {
+          "components": [
+            {
+              "internalType": "bool",
+              "name": "allowFailure",
+              "type": "bool"
+            },
+            {
+              "internalType": "bytes",
+              "name": "callData",
+              "type": "bytes"
+            }
+          ],
+          "internalType": "struct MultiCallable.Call[]",
+          "name": "calls",
+          "type": "tuple[]"
+        }
+      ],
+      "name": "multicall",
+      "outputs": [
+        {
+          "components": [
+            {
+              "internalType": "bool",
+              "name": "success",
+              "type": "bool"
+            },
+            {
+              "internalType": "bytes",
+              "name": "returnData",
+              "type": "bytes"
+            }
+          ],
+          "internalType": "struct MultiCallable.Result[]",
+          "name": "callResults",
+          "type": "tuple[]"
+        }
+      ],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "uint32",
+          "name": "guardIndex",
+          "type": "uint32"
+        },
+        {
+          "internalType": "uint32",
+          "name": "notaryIndex",
+          "type": "uint32"
+        }
+      ],
+      "name": "openDispute",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
       "inputs": [],
       "name": "owner",
       "outputs": [
@@ -557,12 +493,17 @@
     {
       "inputs": [
         {
-          "internalType": "contract InterfaceSystemRouter",
-          "name": "_systemRouter",
-          "type": "address"
+          "internalType": "uint32",
+          "name": "slashedIndex",
+          "type": "uint32"
+        },
+        {
+          "internalType": "uint32",
+          "name": "honestIndex",
+          "type": "uint32"
         }
       ],
-      "name": "setSystemRouter",
+      "name": "resolveDispute",
       "outputs": [],
       "stateMutability": "nonpayable",
       "type": "function"
@@ -570,45 +511,78 @@
     {
       "inputs": [
         {
-          "internalType": "uint256",
-          "name": "",
-          "type": "uint256"
-        },
-        {
           "internalType": "uint32",
-          "name": "_callOrigin",
+          "name": "destination",
           "type": "uint32"
         },
         {
-          "internalType": "enum SystemEntity",
-          "name": "_caller",
-          "type": "uint8"
+          "internalType": "bytes32",
+          "name": "recipient",
+          "type": "bytes32"
         },
         {
-          "components": [
-            {
-              "internalType": "uint32",
-              "name": "domain",
-              "type": "uint32"
-            },
-            {
-              "internalType": "address",
-              "name": "account",
-              "type": "address"
-            },
-            {
-              "internalType": "bool",
-              "name": "bonded",
-              "type": "bool"
-            }
-          ],
-          "internalType": "struct AgentInfo",
-          "name": "_info",
-          "type": "tuple"
+          "internalType": "uint32",
+          "name": "optimisticPeriod",
+          "type": "uint32"
+        },
+        {
+          "internalType": "uint256",
+          "name": "paddedRequest",
+          "type": "uint256"
+        },
+        {
+          "internalType": "bytes",
+          "name": "content",
+          "type": "bytes"
         }
       ],
-      "name": "slashAgent",
-      "outputs": [],
+      "name": "sendBaseMessage",
+      "outputs": [
+        {
+          "internalType": "uint32",
+          "name": "messageNonce",
+          "type": "uint32"
+        },
+        {
+          "internalType": "bytes32",
+          "name": "messageHash",
+          "type": "bytes32"
+        }
+      ],
+      "stateMutability": "payable",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "uint32",
+          "name": "destination",
+          "type": "uint32"
+        },
+        {
+          "internalType": "uint32",
+          "name": "optimisticPeriod",
+          "type": "uint32"
+        },
+        {
+          "internalType": "bytes",
+          "name": "payload",
+          "type": "bytes"
+        }
+      ],
+      "name": "sendManagerMessage",
+      "outputs": [
+        {
+          "internalType": "uint32",
+          "name": "messageNonce",
+          "type": "uint32"
+        },
+        {
+          "internalType": "bytes32",
+          "name": "messageHash",
+          "type": "bytes32"
+        }
+      ],
       "stateMutability": "nonpayable",
       "type": "function"
     },
@@ -642,7 +616,7 @@
       "inputs": [
         {
           "internalType": "uint32",
-          "name": "_nonce",
+          "name": "nonce",
           "type": "uint32"
         }
       ],
@@ -652,64 +626,6 @@
           "internalType": "bytes",
           "name": "stateData",
           "type": "bytes"
-        }
-      ],
-      "stateMutability": "view",
-      "type": "function"
-    },
-    {
-      "inputs": [
-        {
-          "internalType": "uint256",
-          "name": "",
-          "type": "uint256"
-        },
-        {
-          "internalType": "uint32",
-          "name": "_callOrigin",
-          "type": "uint32"
-        },
-        {
-          "internalType": "enum SystemEntity",
-          "name": "_caller",
-          "type": "uint8"
-        },
-        {
-          "components": [
-            {
-              "internalType": "uint32",
-              "name": "domain",
-              "type": "uint32"
-            },
-            {
-              "internalType": "address",
-              "name": "account",
-              "type": "address"
-            },
-            {
-              "internalType": "bool",
-              "name": "bonded",
-              "type": "bool"
-            }
-          ],
-          "internalType": "struct AgentInfo",
-          "name": "_info",
-          "type": "tuple"
-        }
-      ],
-      "name": "syncAgent",
-      "outputs": [],
-      "stateMutability": "nonpayable",
-      "type": "function"
-    },
-    {
-      "inputs": [],
-      "name": "systemRouter",
-      "outputs": [
-        {
-          "internalType": "contract InterfaceSystemRouter",
-          "name": "",
-          "type": "address"
         }
       ],
       "stateMutability": "view",
@@ -729,69 +645,6 @@
       "type": "function"
     },
     {
-      "inputs": [
-        {
-          "internalType": "bytes",
-          "name": "_snapPayload",
-          "type": "bytes"
-        },
-        {
-          "internalType": "uint256",
-          "name": "_stateIndex",
-          "type": "uint256"
-        },
-        {
-          "internalType": "bytes",
-          "name": "_attPayload",
-          "type": "bytes"
-        },
-        {
-          "internalType": "bytes",
-          "name": "_attSignature",
-          "type": "bytes"
-        }
-      ],
-      "name": "verifyAttestation",
-      "outputs": [
-        {
-          "internalType": "bool",
-          "name": "isValid",
-          "type": "bool"
-        }
-      ],
-      "stateMutability": "nonpayable",
-      "type": "function"
-    },
-    {
-      "inputs": [
-        {
-          "internalType": "bytes",
-          "name": "_snapPayload",
-          "type": "bytes"
-        },
-        {
-          "internalType": "uint256",
-          "name": "_stateIndex",
-          "type": "uint256"
-        },
-        {
-          "internalType": "bytes",
-          "name": "_snapSignature",
-          "type": "bytes"
-        }
-      ],
-      "name": "verifySnapshot",
-      "outputs": [
-        {
-          "internalType": "bool",
-          "name": "isValid",
-          "type": "bool"
-        }
-      ],
-      "stateMutability": "nonpayable",
-      "type": "function"
-    },
-    {
       "inputs": [],
       "name": "version",
       "outputs": [
@@ -802,6 +655,24 @@
         }
       ],
       "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "address",
+          "name": "recipient",
+          "type": "address"
+        },
+        {
+          "internalType": "uint256",
+          "name": "amount",
+          "type": "uint256"
+        }
+      ],
+      "name": "withdrawTips",
+      "outputs": [],
+      "stateMutability": "nonpayable",
       "type": "function"
     }
   ]

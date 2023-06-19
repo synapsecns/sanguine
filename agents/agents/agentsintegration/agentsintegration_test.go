@@ -3,9 +3,9 @@ package agentsintegration_test
 import (
 	awsTime "github.com/aws/smithy-go/time"
 	"github.com/brianvoe/gofakeit/v6"
+	"github.com/ethereum/go-ethereum/common"
 	"github.com/synapsecns/sanguine/agents/agents/executor"
 	executorCfg "github.com/synapsecns/sanguine/agents/agents/executor/config"
-	execTypes "github.com/synapsecns/sanguine/agents/agents/executor/types"
 	"github.com/synapsecns/sanguine/agents/agents/guard"
 	"github.com/synapsecns/sanguine/agents/agents/notary"
 	"github.com/synapsecns/sanguine/agents/types"
@@ -41,9 +41,6 @@ func (u *AgentsIntegrationSuite) TestAgentsE2E() {
 		testDone = true
 	}()
 
-	_, testContractRef := u.TestDeployManager.GetAgentsTestContract(u.GetTestContext(), u.TestBackendDestination)
-	testTransactOpts := u.TestBackendDestination.GetTxContext(u.GetTestContext(), nil)
-
 	originClient, err := backfill.DialBackend(u.GetTestContext(), u.TestBackendOrigin.RPCAddress(), u.ScribeMetrics)
 	u.Nil(err)
 	destinationClient, err := backfill.DialBackend(u.GetTestContext(), u.TestBackendDestination.RPCAddress(), u.ScribeMetrics)
@@ -63,7 +60,7 @@ func (u *AgentsIntegrationSuite) TestAgentsE2E() {
 		Contracts:             []scribeConfig2.ContractConfig{originConfig},
 	}
 	destinationConfig := scribeConfig2.ContractConfig{
-		Address:    u.DestinationContract.Address().String(),
+		Address:    u.LightInboxOnDestination.Address().String(),
 		StartBlock: 0,
 	}
 	destinationChainConfig := scribeConfig2.ChainConfig{
@@ -74,7 +71,7 @@ func (u *AgentsIntegrationSuite) TestAgentsE2E() {
 		Contracts:             []scribeConfig2.ContractConfig{destinationConfig},
 	}
 	summitConfig := scribeConfig2.ContractConfig{
-		Address:    u.BondingManagerOnSummit.Address().String(),
+		Address:    u.InboxOnSummit.Address().String(),
 		StartBlock: 0,
 	}
 	summitChainConfig := scribeConfig2.ChainConfig{
@@ -125,6 +122,7 @@ func (u *AgentsIntegrationSuite) TestAgentsE2E() {
 			},
 			{
 				ChainID:            destination,
+				LightInboxAddress:  u.LightInboxOnDestination.Address().String(),
 				DestinationAddress: u.DestinationContract.Address().String(),
 			},
 			{
@@ -159,10 +157,6 @@ func (u *AgentsIntegrationSuite) TestAgentsE2E() {
 			Nil(u.T(), execErr)
 		}
 	}()
-
-	/*attestationSavedSink := make(chan *summitharness.SummitHarnessAttestationSaved)
-	savedAttestation, err := u.SummitContract.WatchAttestationSaved(&bind.WatchOpts{Context: u.GetTestContext()}, attestationSavedSink)
-	Nil(u.T(), err)*/
 
 	guardTestConfig := config.AgentConfig{
 		Domains: map[string]config.DomainConfig{
@@ -222,30 +216,39 @@ func (u *AgentsIntegrationSuite) TestAgentsE2E() {
 	guard, err := guard.NewGuard(u.GetTestContext(), guardTestConfig, u.GuardMetrics)
 	Nil(u.T(), err)
 
-	tips := types.NewTips(big.NewInt(int64(0)), big.NewInt(int64(0)), big.NewInt(int64(0)), big.NewInt(int64(0)))
-
-	optimisticSeconds := uint32(10)
-
+	tips := types.NewTips(big.NewInt(0), big.NewInt(0), big.NewInt(0), big.NewInt(0))
+	optimisticSeconds := uint32(1)
+	recipientDestination := u.TestClientMetadataOnDestination.Address().Hash()
+	nonce := uint32(1)
 	body := []byte{byte(gofakeit.Uint32())}
-
 	txContextOrigin := u.TestBackendOrigin.GetTxContext(u.GetTestContext(), u.OriginContractMetadata.OwnerPtr())
 	txContextOrigin.Value = types.TotalTips(tips)
+	paddedRequest := big.NewInt(0)
 
-	txContextTestClientOrigin := u.TestBackendOrigin.GetTxContext(u.GetTestContext(), u.TestClientMetadataOnOrigin.OwnerPtr())
+	msgSender := common.BytesToHash(txContextOrigin.TransactOpts.From.Bytes())
+	header := types.NewHeader(types.MessageFlagBase, uint32(u.TestBackendOrigin.GetChainID()), nonce, uint32(u.TestBackendDestination.GetChainID()), optimisticSeconds)
+	msgRequest := types.NewRequest(uint32(0), uint64(0), big.NewInt(0))
+	baseMessage := types.NewBaseMessage(msgSender, recipientDestination, tips, msgRequest, body)
+	message, err := types.NewMessageFromBaseMessage(header, baseMessage)
+	Nil(u.T(), err)
 
-	gasLimit := uint64(10000000)
-	version := uint32(1)
-	testClientOnOriginTx, err := u.TestClientOnOrigin.SendMessage(
-		txContextTestClientOrigin.TransactOpts,
+	// Ensure the message is not executed yet.
+	executed, err := exec.CheckIfExecuted(u.GetTestContext(), message)
+	Nil(u.T(), err)
+
+	False(u.T(), executed)
+
+	// Send a message.
+	tx, err := u.OriginContract.SendBaseMessage(
+		txContextOrigin.TransactOpts,
 		uint32(u.TestBackendDestination.GetChainID()),
-		u.TestClientMetadataOnDestination.Address(),
+		recipientDestination,
 		optimisticSeconds,
-		gasLimit,
-		version,
-		body)
-
-	u.Nil(err)
-	u.TestBackendOrigin.WaitForConfirmation(u.GetTestContext(), testClientOnOriginTx)
+		paddedRequest,
+		body,
+	)
+	Nil(u.T(), err)
+	u.TestBackendOrigin.WaitForConfirmation(u.GetTestContext(), tx)
 
 	go func() {
 		// we don't check errors here since this will error on cancellation at the end of the test
@@ -314,64 +317,125 @@ func (u *AgentsIntegrationSuite) TestAgentsE2E() {
 		return state.Nonce() >= uint32(1)
 	})
 
-	// waitChan := make(chan bool, 1)
-	// Make sure there is one executable message in the database.
+	// Check that it was executed.
+	//nolint:dupl
 	u.Eventually(func() bool {
-		mask := execTypes.DBMessage{
-			ChainID:     &chainID,
-			Destination: &destination,
-		}
-		executableMessages, err := u.ExecutorTestDB.GetUnsetMinimumTimeMessages(u.GetTestContext(), mask, 1)
+		executed, err := exec.CheckIfExecuted(u.GetTestContext(), message)
 		u.Nil(err)
-		return len(executableMessages) == 1
-	})
-	// <-waitChan
-
-	/*watchCtx, cancel := context.WithCancel(u.GetTestContext())
-	defer cancel()
-
-	var retrievedAtt []byte
-	select {
-	// check for errors and fail
-	case <-watchCtx.Done():
-		retrievedAtt = []byte{}
-		break
-	case <-savedAttestation.Err():
-		Nil(u.T(), savedAttestation.Err())
-		retrievedAtt = []byte{}
-		break
-	// get message sent event
-	case receivedAttestationSaved := <-attestationSavedSink:
-		attToSubmit := receivedAttestationSaved.Attestation
-		retrievedAtt = attToSubmit
-		break
-	}
-
-	Greater(u.T(), len(retrievedAtt), 0)
-
-	<-waitChan*/
-
-	u.Eventually(func() bool {
-		mask := execTypes.DBMessage{
-			ChainID:     &chainID,
-			Destination: &destination,
-		}
-		executedMessages, err := u.ExecutorTestDB.GetExecutableMessages(u.GetTestContext(), mask, uint64(time.Now().Unix()), 1)
-		Nil(u.T(), err)
-		if len(executedMessages) == 0 {
+		if executed {
 			return true
 		}
 
-		// Need to create a tx and wait for it to be confirmed to continue adding blocks, and therefore
-		// increase the `time`.
-		countBeforeIncrement, err := testContractRef.GetCount(&bind.CallOpts{Context: u.GetTestContext()})
+		// This transaction is needed to get the simulated chain's block number to increase by 1, since StreamLogs will
+		// do lastBlockNumber - 1.
+		tx, err = u.TestContractOnOrigin.EmitAgentsEventA(txContextOrigin.TransactOpts, big.NewInt(gofakeit.Int64()), big.NewInt(gofakeit.Int64()), big.NewInt(gofakeit.Int64()))
 		u.Nil(err)
-		testTx, err := testContractRef.IncrementCounter(testTransactOpts.TransactOpts)
+		u.TestBackendOrigin.WaitForConfirmation(u.GetTestContext(), tx)
+
+		txContextDestination := u.TestBackendDestination.GetTxContext(u.GetTestContext(), u.DestinationContractMetadata.OwnerPtr())
+		txContextSummit := u.TestBackendSummit.GetTxContext(u.GetTestContext(), u.InboxMetadataOnSummit.OwnerPtr())
+
+		tx, err = u.TestContractOnSummit.EmitAgentsEventA(txContextSummit.TransactOpts, big.NewInt(gofakeit.Int64()), big.NewInt(gofakeit.Int64()), big.NewInt(gofakeit.Int64()))
 		u.Nil(err)
-		u.TestBackendDestination.WaitForConfirmation(u.GetTestContext(), testTx)
-		countAfterIncrement, err := testContractRef.GetCount(&bind.CallOpts{Context: u.GetTestContext()})
+		u.TestBackendSummit.WaitForConfirmation(u.GetTestContext(), tx)
+		tx, err = u.TestContractOnDestination.EmitAgentsEventA(txContextDestination.TransactOpts, big.NewInt(gofakeit.Int64()), big.NewInt(gofakeit.Int64()), big.NewInt(gofakeit.Int64()))
 		u.Nil(err)
-		u.Greater(countAfterIncrement.Uint64(), countBeforeIncrement.Uint64())
+		u.TestBackendDestination.WaitForConfirmation(u.GetTestContext(), tx)
+
+		return false
+	})
+
+	// Send a second message.
+	tx, err = u.OriginContract.SendBaseMessage(
+		txContextOrigin.TransactOpts,
+		uint32(u.TestBackendDestination.GetChainID()),
+		recipientDestination,
+		optimisticSeconds,
+		paddedRequest,
+		body,
+	)
+
+	u.Eventually(func() bool {
+		_ = awsTime.SleepWithContext(u.GetTestContext(), time.Second*5)
+
+		rawState, err := u.SummitContract.GetLatestAgentState(
+			&bind.CallOpts{Context: u.GetTestContext()},
+			u.OriginDomainClient.Config().DomainID,
+			u.GuardBondedSigner.Address())
+		Nil(u.T(), err)
+
+		if len(rawState) == 0 {
+			return false
+		}
+
+		state, err := types.DecodeState(rawState)
+		Nil(u.T(), err)
+		return state.Nonce() >= uint32(2)
+	})
+
+	u.Eventually(func() bool {
+		_ = awsTime.SleepWithContext(u.GetTestContext(), time.Second*5)
+
+		rawState, err := u.SummitContract.GetLatestState(
+			&bind.CallOpts{Context: u.GetTestContext()},
+			u.OriginDomainClient.Config().DomainID)
+		Nil(u.T(), err)
+
+		if len(rawState) == 0 {
+			return false
+		}
+
+		state, err := types.DecodeState(rawState)
+		Nil(u.T(), err)
+		return state.Nonce() >= uint32(2)
+	})
+
+	u.Eventually(func() bool {
+		_ = awsTime.SleepWithContext(u.GetTestContext(), time.Second*5)
+
+		rawState, err := u.SummitContract.GetLatestAgentState(
+			&bind.CallOpts{Context: u.GetTestContext()},
+			u.OriginDomainClient.Config().DomainID,
+			u.NotaryBondedSigner.Address())
+		Nil(u.T(), err)
+
+		if len(rawState) == 0 {
+			return false
+		}
+
+		state, err := types.DecodeState(rawState)
+		Nil(u.T(), err)
+		return state.Nonce() >= uint32(2)
+	})
+
+	header = types.NewHeader(types.MessageFlagBase, uint32(u.TestBackendOrigin.GetChainID()), nonce+1, uint32(u.TestBackendDestination.GetChainID()), optimisticSeconds)
+	message, err = types.NewMessageFromBaseMessage(header, baseMessage)
+
+	// Check that it was executed.
+	//nolint:dupl
+	u.Eventually(func() bool {
+		executed, err := exec.CheckIfExecuted(u.GetTestContext(), message)
+		u.Nil(err)
+		if executed {
+			return true
+		}
+
+		// This transaction is needed to get the simulated chain's block number to increase by 1, since StreamLogs will
+		// do lastBlockNumber - 1.
+		tx, err = u.TestContractOnOrigin.EmitAgentsEventA(txContextOrigin.TransactOpts, big.NewInt(gofakeit.Int64()), big.NewInt(gofakeit.Int64()), big.NewInt(gofakeit.Int64()))
+		u.Nil(err)
+		u.TestBackendOrigin.WaitForConfirmation(u.GetTestContext(), tx)
+
+		txContextDestination := u.TestBackendDestination.GetTxContext(u.GetTestContext(), u.DestinationContractMetadata.OwnerPtr())
+		txContextSummit := u.TestBackendSummit.GetTxContext(u.GetTestContext(), u.InboxMetadataOnSummit.OwnerPtr())
+
+		tx, err = u.TestContractOnSummit.EmitAgentsEventA(txContextSummit.TransactOpts, big.NewInt(gofakeit.Int64()), big.NewInt(gofakeit.Int64()), big.NewInt(gofakeit.Int64()))
+		u.Nil(err)
+		u.TestBackendSummit.WaitForConfirmation(u.GetTestContext(), tx)
+		tx, err = u.TestContractOnDestination.EmitAgentsEventA(txContextDestination.TransactOpts, big.NewInt(gofakeit.Int64()), big.NewInt(gofakeit.Int64()), big.NewInt(gofakeit.Int64()))
+		u.Nil(err)
+		u.TestBackendDestination.WaitForConfirmation(u.GetTestContext(), tx)
+
 		return false
 	})
 }

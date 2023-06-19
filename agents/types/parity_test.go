@@ -82,6 +82,20 @@ func randomUint64BigInt(tb testing.TB) *big.Int {
 	return n
 }
 
+func randomUint96BigInt(tb testing.TB) *big.Int {
+	tb.Helper()
+
+	// Max random value, a 130-bits integer, i.e 2^96 - 1
+	max := new(big.Int)
+	max.Exp(big.NewInt(2), big.NewInt(96), nil).Sub(max, big.NewInt(1))
+
+	// Generate cryptographically strong pseudo-random between 0 - max
+	n, err := rand.Int(rand.Reader, max)
+	Nil(tb, err)
+
+	return n
+}
+
 func TestEncodeGasDataParity(t *testing.T) {
 	ctx, cancel := context.WithTimeout(context.Background(), time.Second*10)
 	defer cancel()
@@ -313,6 +327,96 @@ func TestEncodeAttestationParity(t *testing.T) {
 	Equal(t, timestamp, attestationFromBytes.Timestamp())
 }
 
+func TestBaseMessageEncodeParity(t *testing.T) {
+	ctx, cancel := context.WithTimeout(context.Background(), time.Second*10)
+	defer cancel()
+
+	testBackend := simulated.NewSimulatedBackend(ctx, t)
+	deployManager := testutil.NewDeployManager(t)
+	_, baseMessageContract := deployManager.GetBaseMessageHarness(ctx, testBackend)
+	_, tipsContract := deployManager.GetTipsHarness(ctx, testBackend)
+	_, requestContract := deployManager.GetRequestHarness(ctx, testBackend)
+	_, messageContract := deployManager.GetMessageHarness(ctx, testBackend)
+	_, headerContract := deployManager.GetHeaderHarness(ctx, testBackend)
+
+	// Generate some fake data.
+	flag := types.MessageFlagBase
+	origin := gofakeit.Uint32()
+	nonce := gofakeit.Uint32()
+	destination := gofakeit.Uint32()
+	optimisticSeconds := gofakeit.Uint32()
+	summitTip := gofakeit.Uint64()
+	attestationTip := gofakeit.Uint64()
+	executionTip := gofakeit.Uint64()
+	deliveryTip := gofakeit.Uint64()
+	sender := common.BigToHash(big.NewInt(gofakeit.Int64()))
+	recipient := common.BigToHash(big.NewInt(gofakeit.Int64()))
+	gasDrop := randomUint96BigInt(t)
+	gasLimit := gofakeit.Uint64()
+	version := gofakeit.Uint32()
+	content := []byte{byte(gofakeit.Int64())}
+
+	formattedHeader, err := headerContract.EncodeHeader(&bind.CallOpts{Context: ctx}, uint8(flag), origin, nonce, destination, optimisticSeconds)
+	Nil(t, err)
+
+	formattedTips, err := tipsContract.EncodeTips(&bind.CallOpts{Context: ctx}, summitTip, attestationTip, executionTip, deliveryTip)
+	Nil(t, err)
+
+	formattedRequest, err := requestContract.EncodeRequest(&bind.CallOpts{Context: ctx}, gasDrop, gasLimit, version)
+	Nil(t, err)
+
+	formattedBaseMessage, err := baseMessageContract.FormatBaseMessage(&bind.CallOpts{Context: ctx}, formattedTips, sender, recipient, formattedRequest, content)
+	Nil(t, err)
+
+	formattedMessage, err := messageContract.FormatMessage(&bind.CallOpts{Context: ctx}, formattedHeader, formattedBaseMessage)
+	Nil(t, err)
+
+	decodedMessage, err := types.DecodeMessage(formattedMessage)
+	Nil(t, err)
+
+	// Header parity.
+	Equal(t, decodedMessage.Header().Flag(), flag)
+	Equal(t, decodedMessage.Header().OriginDomain(), origin)
+	Equal(t, decodedMessage.Header().Nonce(), nonce)
+	Equal(t, decodedMessage.Header().DestinationDomain(), destination)
+	Equal(t, decodedMessage.Header().OptimisticSeconds(), optimisticSeconds)
+
+	// BaseMessage parity.
+	senderBytes32 := [32]byte{}
+	copy(senderBytes32[:], sender.Bytes()[:32])
+	recipientBytes32 := [32]byte{}
+	copy(recipientBytes32[:], recipient.Bytes()[:32])
+	Equal(t, decodedMessage.BaseMessage().Sender(), senderBytes32)
+	Equal(t, decodedMessage.BaseMessage().Recipient(), recipientBytes32)
+	Equal(t, decodedMessage.BaseMessage().Content(), content)
+
+	// Leaf parity.
+	bodyLeaf, err := baseMessageContract.BodyLeaf(&bind.CallOpts{Context: ctx}, formattedBaseMessage)
+	Nil(t, err)
+	goBodyLeaf, err := decodedMessage.BaseMessage().BodyLeaf()
+	Nil(t, err)
+	Equal(t, bodyLeaf[:], goBodyLeaf)
+
+	baseMessageLeaf, err := baseMessageContract.Leaf(&bind.CallOpts{Context: ctx}, formattedBaseMessage)
+	Nil(t, err)
+	goBaseMessageLeaf, err := decodedMessage.BaseMessage().Leaf()
+	Nil(t, err)
+	Equal(t, baseMessageLeaf, goBaseMessageLeaf)
+
+	headerLeaf, err := headerContract.Leaf(&bind.CallOpts{Context: ctx}, formattedHeader)
+	Nil(t, err)
+	goHeaderLeaf, err := decodedMessage.Header().Leaf()
+	Nil(t, err)
+	Equal(t, headerLeaf, goHeaderLeaf)
+
+	leaf, err := messageContract.Leaf(&bind.CallOpts{Context: ctx}, formattedMessage)
+	Nil(t, err)
+	goLeaf, err := decodedMessage.ToLeaf()
+	Nil(t, err)
+	Equal(t, leaf, goLeaf)
+}
+
+// TODO: Add separate tests for BaseMessage and ManagerMessage.
 func TestMessageEncodeParity(t *testing.T) {
 	// TODO (joeallen): FIX ME
 	// t.Skip()
@@ -334,12 +438,6 @@ func TestMessageEncodeParity(t *testing.T) {
 
 	formattedHeader, err := headerContract.EncodeHeader(&bind.CallOpts{Context: ctx}, uint8(flag), origin, nonce, destination, optimisticSeconds)
 	Nil(t, err)
-
-	goHeader, err := types.EncodeHeader(types.NewHeader(flag, origin, nonce, destination, optimisticSeconds))
-	Nil(t, err)
-	formattedHeaderFromGo := new(big.Int).SetBytes(goHeader)
-
-	Equal(t, formattedHeader, formattedHeaderFromGo)
 
 	formattedMessage, err := messageContract.FormatMessage(&bind.CallOpts{Context: ctx}, formattedHeader, body)
 	Nil(t, err)

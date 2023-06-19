@@ -134,7 +134,7 @@ const BridgeInputContainer = ({
                 ? (e) => onChangeAmount(cleanNumberInput(e.target.value))
                 : () => null
             }
-            value={inputString}
+            value={inputString === "0" ? null : inputString}
             name="inputRow"
             autoComplete="off"
           />

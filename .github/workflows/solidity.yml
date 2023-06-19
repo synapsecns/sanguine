@@ -61,4 +61,4 @@ jobs:
         if: ${{!github.event.repository.private}}
         uses: github/codeql-action/upload-sarif@v2
         with:
-          sarif_file: ./packages/contracts-core/results.sarif
+          sarif_file: ./results.sarif
