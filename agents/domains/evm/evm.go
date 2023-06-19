@@ -60,6 +60,7 @@ func NewEVM(ctx context.Context, name string, domain config.DomainConfig) (domai
 	var boundInbox domains.InboxContract
 	var boundLightManager domains.LightManagerContract
 	var boundLightInbox domains.LightInboxContract
+	logger.Errorf("sanity check")
 	if domain.SummitAddress == "" {
 		boundLightManager, err = NewLightManagerContract(ctx, underlyingClient, common.HexToAddress(domain.LightManagerAddress))
 		if err != nil {
