@@ -74,6 +74,8 @@ export const Portfolio = () => {
 
   const bridgeableTokens = BRIDGABLE_TOKENS[chain.id]
 
+  console.log('BRIDGABLE_TOKENS: ', BRIDGABLE_TOKENS)
+
   const filteredBalances = useMemo(() => {
     return showZeroBalances
       ? allBalances
