@@ -1,6 +1,6 @@
 import Card from '@/components/ui/tailwind/Card'
-import { useAccount, useNetwork } from 'wagmi'
-import { erc20ABI, fetchBalance, fetchSigner } from '@wagmi/core'
+import { useAccount, useProvider, useNetwork } from 'wagmi'
+import { Address, erc20ABI, fetchBalance, fetchSigner } from '@wagmi/core'
 import { BRIDGABLE_TOKENS } from '@/constants/tokens'
 import { useEffect, useMemo, useState } from 'react'
 import { formatBNToString } from '@/utils/bignumber/format'
@@ -12,6 +12,7 @@ import { AddressZero, Zero } from '@ethersproject/constants'
 import { approveToken } from '@/utils/approveToken'
 import { getAccount } from '@wagmi/core'
 import { Contract } from 'ethers'
+import { getContract } from '@wagmi/core'
 
 const ROUTER_ADDRESS = '0x7E7A0e201FD38d3ADAA9523Da6C109a07118C96a'
 
@@ -21,9 +22,50 @@ const buttonStyle = {
   borderRadius: '16px',
 }
 
+const fetchBalanceAndAllownaces = async (token, activeChain, address) => {
+  let obj = {}
+
+  try {
+    if (token.addresses[activeChain.id] !== AddressZero) {
+      const fetchedBalance = await fetchBalance({
+        address: address,
+        chainId: activeChain.id,
+        token: token.addresses[activeChain.id] as Address,
+      })
+
+      obj['token'] = token
+      obj['fetchedBalance'] = fetchedBalance
+
+      try {
+        const a = await getTokenAllowance(
+          address,
+          activeChain.id,
+          token.addresses[activeChain.id],
+          ROUTER_ADDRESS
+        )
+
+        obj['allowance'] = a
+      } catch (error) {
+        console.log(`[getTokenAllowance] error`, error)
+        obj['allowance'] = Zero
+      }
+
+      return obj
+    }
+  } catch (error) {
+    console.log(`error, `, error)
+    return {
+      token: token,
+      fetchedBalance: null,
+      allowance: null,
+    }
+  }
+}
+
 export const Portfolio = () => {
   const { address } = useAccount()
   const { chain } = useNetwork()
+  const [isLoading, setIsLoading] = useState(false)
 
   const [allBalances, setAllBalances] = useState([])
   const [showZeroBalances, setShowZeroBalances] = useState(false)
@@ -46,20 +88,7 @@ export const Portfolio = () => {
 
     if (bridgeableTokens) {
       const promises = bridgeableTokens.map(async (token) => {
-        let obj = {}
-
-        if (token.addresses[chain.id] !== AddressZero) {
-          const fetchedBalance = await fetchBalance({
-            address: address,
-            chainId: chain.id,
-            token: token.addresses[chain.id] as `0x${string}`,
-          })
-
-          obj['token'] = token
-          obj['fetchedBalance'] = fetchedBalance
-
-          return obj
-        }
+        return await fetchBalanceAndAllownaces(token, activeChain, address)
       })
 
       const results = await Promise.all(promises)
@@ -76,12 +105,14 @@ export const Portfolio = () => {
   }
 
   useEffect(() => {
+    setIsLoading(true)
     const fetchData = async () => {
       const b = await fetchAllBalances()
       setAllBalances(b)
     }
 
     fetchData()
+    setIsLoading(false)
   }, [chain])
 
   return (
@@ -92,7 +123,7 @@ export const Portfolio = () => {
         className={`
           max-w-lg px-1 pb-0 mt-3 overflow-hidden
           rounded-xl
-          bg-transparent 
+          bg-transparent
         text-white
         `}
       >
@@ -103,15 +134,18 @@ export const Portfolio = () => {
               className="rounded-md w-7 h-7"
               src={activeChain.chainImg}
             />
-            <div>{activeChain.name} Network</div>
+            <div>{activeChain.name}</div>
           </div>
           <div className="space-x-2 text-sm">
             <span className="text-green-500">●</span> Live
           </div>
         </div>
-        {filteredBalances.map((balance, i) => {
-          return <Balance balance={balance} chain={chain} key={i} />
-        })}
+        {!isLoading &&
+          filteredBalances.map((balance, i) => {
+            return (
+              <Balance balance={balance} chainId={activeChain.id} key={i} />
+            )
+          })}
         <button
           className="mt-2 text-sm hover:opacity-80"
           onClick={() => setShowZeroBalances(!showZeroBalances)}
@@ -123,46 +157,20 @@ export const Portfolio = () => {
   )
 }
 
-const Balance = ({ balance, chain }) => {
-  const [allowance, setAllowance] = useState(Zero)
+const Balance = ({ balance, chainId }) => {
+  const allowance = balance.allowance
   const account = getAccount()
   const address = account?.address
-  const chainId = chain.id
-  const tokenAddress = balance.token.addresses[chainId]
 
   let showBalance = formatBNToString(
     balance.fetchedBalance.value,
-    balance.token.decimals[chain.id],
+    balance.token.decimals[chainId],
     3
   )
 
   if (showBalance === '0.0') {
     showBalance = '\u2212'
   }
-
-  // console.log(`chainId`, chainId)
-  // console.log(`address`, address)
-  // console.log(`tokenAddress`, tokenAddress)
-
-  useEffect(() => {
-    const fetchData = async () => {
-      try {
-        if (balance.token) {
-          const a = await getCurrentTokenAllowance(
-            address,
-            chainId,
-            tokenAddress,
-            ROUTER_ADDRESS
-          )
-          setAllowance(a)
-        }
-      } catch (err) {
-        console.log(`error fetching allowances`, err)
-      }
-    }
-
-    fetchData()
-  }, [chain])
 
   const handleApprove = () => {
     approveToken(
@@ -191,7 +199,7 @@ const Balance = ({ balance, chain }) => {
         </div>
         <div className="flex items-center space-x-2">
           <div>{showBalance}</div>
-          {allowance.gte(balance.fetchedBalance.value) ? (
+          {allowance && allowance.gte(balance.fetchedBalance.value) ? (
             <button
               className={`
                 h-8 border-[#AC8FFF] flex items-center border
@@ -222,15 +230,23 @@ const Balance = ({ balance, chain }) => {
   )
 }
 
-const getCurrentTokenAllowance = async (
+const getTokenAllowance = async (
   address: string,
   chainId: number,
   tokenAddress: string,
   routerAddress: string
 ) => {
-  const wallet = await fetchSigner({
-    chainId,
+  let wallet = await fetchSigner({
+    chainId: 43114,
   })
+
+  // if (!wallet) {
+  //   wallet = await fetchSigner({
+  //     chainId,
+  //   })
+  // }
+
+  console.log(`wallet, wallet`, wallet)
 
   const erc20 = new Contract(tokenAddress, erc20ABI, wallet)
 
@@ -307,7 +323,7 @@ export const PortfolioPreview = () => {
         className={`
           max-w-lg px-1 pb-0 mt-3 overflow-hidden
           rounded-xl
-          bg-transparent 
+          bg-transparent
         text-white
         `}
       >
@@ -389,3 +405,6 @@ const HomeSvg = () => {
     </svg>
   )
 }
+
+// function where you pass it a token and it returns an allowance
+// { needsAllowance: true, amount: BigNumber, }
