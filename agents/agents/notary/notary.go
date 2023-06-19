@@ -93,6 +93,9 @@ func (n *Notary) loadSummitMyLatestStates(parentCtx context.Context) {
 		))
 
 		originID := domain.Config().DomainID
+		if n.destinationDomain.Config().DomainID == originID {
+			continue
+		}
 		myLatestState, err := n.summitDomain.Summit().GetLatestAgentState(ctx, originID, n.bondedSigner)
 		if err != nil {
 			myLatestState = nil
