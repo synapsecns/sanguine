@@ -66,6 +66,7 @@ func NewEVM(ctx context.Context, name string, domain config.DomainConfig) (domai
 			return nil, fmt.Errorf("could not bind light manager contract: %w", err)
 		}
 		boundLightInbox, err = NewLightInboxContract(ctx, underlyingClient, common.HexToAddress(domain.LightInboxAddress))
+		logger.Errorf("LightInboxAddress: %s", domain.LightInboxAddress)
 		if err != nil {
 			return nil, fmt.Errorf("could not bind light inbox contract: %w", err)
 		}
