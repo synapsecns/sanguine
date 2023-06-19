@@ -1,5 +1,4 @@
 import { Zero, One } from '@ethersproject/constants'
-import { calculateExchangeRate } from '@utils/calculateExchangeRate'
 import { getEthPrice, getAvaxPrice } from '@utils/actions/getPrices'
 import {
   commifyBnToString,
@@ -16,6 +15,8 @@ import {
 import { fetchBalance, fetchToken } from '@wagmi/core'
 import { PoolTokenObject, Token, PoolUserData, PoolData } from '@types'
 import { BigNumber } from 'ethers'
+
+import { getVirtualPrice } from './getPoolFee'
 
 const getBalanceData = async ({
   pool,
@@ -103,17 +104,16 @@ export const getPoolData = async (
 
   const lpTokenAddress = pool?.addresses[chainId]
 
-  const { tokenBalances, poolTokenSum, lpTokenBalance, lpTotalSupply } =
-    await getBalanceData({
+  const { tokenBalances, lpTokenBalance, lpTotalSupply } = await getBalanceData(
+    {
       pool,
       chainId,
       address: user ? address : poolAddress,
       lpTokenAddress,
-    })
+    }
+  )
 
-  const virtualPrice = lpTotalSupply.isZero()
-    ? MAX_BN_POW
-    : calculateExchangeRate(lpTotalSupply, 18, poolTokenSum, 18)
+  const virtualPrice = await getVirtualPrice(poolAddress, chainId)
 
   const ethPrice = prices?.ethPrice ?? (await getEthPrice())
   const avaxPrice = prices?.avaxPrice ?? (await getAvaxPrice())
@@ -150,6 +150,7 @@ export const getPoolData = async (
       tokens: poolTokensMatured,
       lpTokenBalance,
       lpTokenBalanceStr: formatBNToString(lpTokenBalance, 18, 4),
+      nativeTokens: pool.nativeTokens,
     }
   }
 

@@ -2,7 +2,10 @@ import _ from 'lodash'
 
 import toast from 'react-hot-toast'
 
-import { useSwapDepositContract } from '@hooks/useSwapDepositContract'
+import {
+  getSwapDepositContractFields,
+  useSwapDepositContract,
+} from '@hooks/useSwapDepositContract'
 import { subtractSlippage } from '@utils/slippage'
 
 import ExplorerToastLink from '@components/ExplorerToastLink'
@@ -22,6 +25,8 @@ export const approve = async (
   chainId: number
 ) => {
   const currentChainName = CHAINS_BY_ID[chainId].name
+
+  const { poolAddress } = getSwapDepositContractFields(pool, chainId)
 
   const requestingApprovalPopup = toast(
     `Requesting approval on ${currentChainName}`,
@@ -47,7 +52,7 @@ export const approve = async (
         : token.addresses[chainId]
 
     const approveTx = await approveToken(
-      pool.swapAddresses[chainId],
+      poolAddress,
       chainId,
       tokenToApprove,
       inputValue[tokenAddr]
@@ -111,11 +116,22 @@ export const deposit = async (
 
     const result = Array.from(Object.values(inputAmounts), (value) => value)
 
+    const wethIndex = _.findIndex(
+      pool.poolTokens,
+      (t) => t.symbol == WETH.symbol
+    )
+
     let spendTransactionArgs = [
       result,
       minToMint,
       Math.round(new Date().getTime() / 1000 + 60 * 10),
     ]
+
+    const liquidityAmounts = Object.values(inputAmounts)
+
+    if (wethIndex >= 0) {
+      spendTransactionArgs.push({ value: liquidityAmounts[wethIndex] })
+    }
 
     const spendTransaction = await poolContract.addLiquidity(
       ...spendTransactionArgs

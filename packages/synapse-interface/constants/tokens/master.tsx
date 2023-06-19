@@ -378,7 +378,7 @@ export const USDC = new Token({
     [CHAINS.CRONOS.id]: '0xc21223249ca28397b4b6541dffaecc539bff0c59',
     [CHAINS.OPTIMISM.id]: '0x7f5c764cbc14f9669b88837ca1490cca17c31607',
     [CHAINS.POLYGON.id]: '0x2791bca1f2de4661ed88a30c99a7a9449aa84174',
-    // [CHAINS.FANTOM.id]: '0x04068da6c83afcfa0e13ba15a6696662335d5b75', PAUSED
+    [CHAINS.FANTOM.id]: '0x04068da6c83afcfa0e13ba15a6696662335d5b75',
     // [CHAINS.AVALANCHE.id]: '0xb97ef9ef8734c71904d8002f8b6bc66dd9c48a6e',
     [CHAINS.ARBITRUM.id]: '0xff970a61a04b1ca14834a43f5de4533ebddb5cc8',
     [CHAINS.HARMONY.id]: '0x985458e523db3d53125813ed68c274899e9dfab4',
@@ -531,7 +531,7 @@ export const USDT = new Token({
     // [CHAINS.AVALANCHE.id]: '0x9702230a8ea53601f5cd2dc00fdbc13d4df4a8c7',
     // [CHAINS.HARDHAT.id]: '0x9A9f2CCfdE556A7E9Ff0848998Aa4a0CFD8863AE',
     [CHAINS.ARBITRUM.id]: '0xfd086bc7cd5c481dcc9c85ebe478a1c0b69fcbb9',
-    // [CHAINS.FANTOM.id]: '0x049d68029688eabf473097a2fc38ef61633a3c7a', PAUSED 05/24
+    [CHAINS.FANTOM.id]: '0x049d68029688eabf473097a2fc38ef61633a3c7a',
     [CHAINS.HARMONY.id]: '0x3c2b8be99c50593081eaa2a724f0b8285f5aba8f',
     [CHAINS.BOBA.id]: '0x5DE1677344D3Cb0D7D465c10b72A8f60699C062d',
     [CHAINS.AURORA.id]: '0x4988a896b1227218e4A686fdE5EabdcAbd91571f',
@@ -702,19 +702,19 @@ export const ONEETH = new Token({
   color: 'sky',
 })
 
-// export const FTMETH = new Token({
-//   addresses: {
-//     // [CHAINS.FANTOM.id]: '0x74b23882a30290451A17c44f4F05243b6b58C76d',  PAUSED 05/24
-//   },
-//   decimals: 18,
-//   symbol: 'ETH ',
-//   name: 'Wrapped ETH',
-//   logo: wethLogo,
-//   description: 'Fantom Wrapped form of ETH',
-//   swapableType: 'ETH',
-//   // swapableOn: [CHAINS.FANTOM.id],
-//   color: 'sky',
-// })
+export const FTMETH = new Token({
+  addresses: {
+    [CHAINS.FANTOM.id]: '0x74b23882a30290451A17c44f4F05243b6b58C76d'
+  },
+  decimals: 18,
+  symbol: 'ETH ',
+  name: 'Wrapped ETH',
+  logo: wethLogo,
+  description: 'Fantom Wrapped form of ETH',
+  swapableType: 'ETH',
+  swapableOn: [CHAINS.FANTOM.id],
+  color: 'sky',
+})
 
 export const CANTOETH = new Token({
   addresses: {
@@ -956,7 +956,7 @@ export const ETH = new Token({
 
 export const MOVR = new Token({
   addresses: {
-    [CHAINS.MOONRIVER.id]: '',
+    [CHAINS.MOONRIVER.id]: AddressZero,
   },
   decimals: 18,
   symbol: 'MOVR',
@@ -970,7 +970,7 @@ export const MOVR = new Token({
 
 export const AVAX = new Token({
   addresses: {
-    [CHAINS.AVALANCHE.id]: '',
+    [CHAINS.AVALANCHE.id]: AddressZero,
   },
   decimals: 18,
   symbol: 'AVAX',
@@ -1041,27 +1041,28 @@ export const MULTIAVAX = new Token({
   color: 'red',
 })
 
-// export const JEWEL = new Token({
-//   addresses: {
-//     [CHAINS.DFK.id]: '',
-//   },
-//   decimals: 18,
-//   symbol: 'JEWEL',
-//   name: 'JEWEL',
-//   logo: jewelLogo,
-//   description: 'JEWEL',
-//   isNative: true,
-//   swapableType: 'JEWEL',
-// })
+export const JEWEL = new Token({
+  addresses: {
+    [CHAINS.DFK.id]: AddressZero,
+    [CHAINS.HARMONY.id]: '0x72cb10c6bfa5624dd07ef608027e366bd690048f', // from harmony jewel?
+    [CHAINS.KLAYTN.id]: '0x30C103f8f5A3A732DFe2dCE1Cc9446f545527b43',
+  },
+  decimals: 18,
+  symbol: 'JEWEL',
+  name: 'JEWEL',
+  logo: jewelLogo,
+  description: 'JEWEL',
+  isNative: true,
+  swapableType: 'JEWEL',
+})
 
 export const WJEWEL = new Token({
   addresses: {
     [CHAINS.DFK.id]: '0xCCb93dABD71c8Dad03Fc4CE5559dC3D89F67a260', // from actual jewl
-    [CHAINS.HARMONY.id]: '0x72cb10c6bfa5624dd07ef608027e366bd690048f', // from harmony jewel?
   },
   decimals: 18,
-  symbol: 'JEWEL ', // THE SPACES ARE VERY IMPORTANT
-  name: 'JEWEL ', // THE SPACES ARE VERY IMPORTANT
+  symbol: 'WJEWEL',
+  name: 'Wrapped JEWEL',
   logo: jewelLogo,
   description: 'JEWEL',
   swapableType: 'JEWEL',

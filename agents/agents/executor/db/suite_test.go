@@ -14,10 +14,12 @@ import (
 	"github.com/synapsecns/sanguine/core/metrics"
 	"github.com/synapsecns/sanguine/core/metrics/localmetrics"
 	"github.com/synapsecns/sanguine/core/testsuite"
+	"gorm.io/gorm/schema"
 	"os"
 	"sync"
 	"sync/atomic"
 	"testing"
+	"time"
 )
 
 type DBSuite struct {
@@ -51,7 +53,7 @@ func (t *DBSuite) SetupTest() {
 
 	t.logIndex.Store(0)
 
-	sqliteStore, err := sqlite.NewSqliteStore(t.GetTestContext(), filet.TmpDir(t.T(), ""), t.metrics)
+	sqliteStore, err := sqlite.NewSqliteStore(t.GetTestContext(), filet.TmpDir(t.T(), ""), t.metrics, false)
 	Nil(t.T(), err)
 
 	t.dbs = []db.ExecutorDB{sqliteStore}
@@ -72,18 +74,24 @@ func (t *DBSuite) setupMysqlDB() {
 	}
 	// sets up the conn string to the default database
 	connString := t.connString(os.Getenv("MYSQL_DATABASE"))
-	// sets up the myqsl db
+	// sets up the mysql db
 	testDB, err := sql.Open("mysql", connString)
 	Nil(t.T(), err)
-	// close the db once the ocnnection is odne
+	// close the db once the connection is done
 	defer func() {
 		Nil(t.T(), testDB.Close())
 	}()
 
+	// override the naming strategy to prevent tests from messing with each other.
+	// todo this should be solved via a proper teardown process or transactions.
+	mysql.NamingStrategy = schema.NamingStrategy{
+		TablePrefix: fmt.Sprintf("test%d_%d_", t.GetTestID(), time.Now().Unix()),
+	}
+
 	mysql.MaxIdleConns = 10
 
 	// create the sql store
-	mysqlStore, err := mysql.NewMysqlStore(t.GetTestContext(), connString, t.metrics)
+	mysqlStore, err := mysql.NewMysqlStore(t.GetTestContext(), connString, t.metrics, false)
 	Nil(t.T(), err)
 	// add the db
 	t.dbs = append(t.dbs, mysqlStore)

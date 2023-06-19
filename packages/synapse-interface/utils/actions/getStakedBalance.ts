@@ -9,9 +9,7 @@ export const getStakedBalance = async (
   chainId: number,
   poolId: number
 ) => {
-  const miniChefContractAddress: `0x${string}` = `0x${MINICHEF_ADDRESSES[
-    chainId
-  ].slice(2)}`
+  const miniChefContractAddress: Address = MINICHEF_ADDRESSES[chainId]
   try {
     const data: ReadContractResult = await readContracts({
       contracts: [

@@ -25,8 +25,8 @@ export const boba = {
   network: 'boba',
   nativeCurrency: {
     decimals: 18,
-    name: 'Boba',
-    symbol: 'BOBA',
+    name: 'Ether',
+    symbol: 'ETH',
   },
   rpcUrls: {
     default: { http: ['https://mainnet.boba.network'] },
