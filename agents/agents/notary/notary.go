@@ -348,7 +348,7 @@ func (n *Notary) submitLatestSnapshot(parentCtx context.Context) {
 	}
 }
 
-//nolint:cyclop,unused
+//nolint:cyclop
 func (n *Notary) submitMyLatestAttestation(parentCtx context.Context) {
 	ctx, span := n.handler.Tracer().Start(parentCtx, "submitMyLatestAttestation")
 	defer span.End()
