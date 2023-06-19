@@ -3,7 +3,6 @@ package domains
 import (
 	"context"
 	"errors"
-	ethTypes "github.com/ethereum/go-ethereum/core/types"
 	"math/big"
 
 	"github.com/ethereum/go-ethereum/common"
@@ -98,7 +97,7 @@ type LightInboxContract interface {
 		signature signer.Signature,
 		agentRoot [32]byte,
 		snapGas []*big.Int,
-	) (*ethTypes.Transaction, error)
+	) error
 }
 
 // LightManagerContract contains the interface for the light manager.

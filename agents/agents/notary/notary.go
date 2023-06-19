@@ -2,7 +2,6 @@ package notary
 
 import (
 	"context"
-	"encoding/hex"
 	"fmt"
 	"github.com/synapsecns/sanguine/core/metrics"
 
@@ -369,15 +368,13 @@ func (n *Notary) submitMyLatestAttestation(parentCtx context.Context) {
 			attribute.String("err", err.Error()),
 		))
 	} else {
-		tx, err := n.destinationDomain.LightInbox().SubmitAttestation(
+		err = n.destinationDomain.LightInbox().SubmitAttestation(
 			ctx,
 			n.unbondedSigner,
 			n.myLatestNotaryAttestation.AttPayload(),
 			attestationSignature,
 			n.myLatestNotaryAttestation.AgentRoot(),
 			n.myLatestNotaryAttestation.SnapGas())
-		logger.Errorf("tx from: %v", tx.To())
-		logger.Errorf("data: %v", hex.EncodeToString(tx.Data()))
 		if err != nil {
 			span.AddEvent("Error submitting attestation", trace.WithAttributes(
 				attribute.String("err", err.Error()),

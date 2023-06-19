@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/common"
-	ethTypes "github.com/ethereum/go-ethereum/core/types"
 	"github.com/synapsecns/sanguine/agents/contracts/lightinbox"
 	"github.com/synapsecns/sanguine/agents/domains"
 	"github.com/synapsecns/sanguine/agents/types"
@@ -65,23 +64,23 @@ func (a lightInboxContract) SubmitAttestation(
 	signature signer.Signature,
 	agentRoot [32]byte,
 	snapGas []*big.Int,
-) (*ethTypes.Transaction, error) {
+) error {
 	transactOpts, err := a.transactOptsSetup(ctx, signer)
 	if err != nil {
-		return nil, fmt.Errorf("could not setup transact opts: %w", err)
+		return fmt.Errorf("could not setup transact opts: %w", err)
 	}
 
 	transactOpts.GasLimit = uint64(10000000)
 
 	rawSig, err := types.EncodeSignature(signature)
 	if err != nil {
-		return nil, fmt.Errorf("could not encode signature: %w", err)
+		return fmt.Errorf("could not encode signature: %w", err)
 	}
 
-	tx, err := a.contract.SubmitAttestation(transactOpts, attPayload, rawSig, agentRoot, snapGas)
+	_, err = a.contract.SubmitAttestation(transactOpts, attPayload, rawSig, agentRoot, snapGas)
 	if err != nil {
-		return nil, fmt.Errorf("could not submit attestation: %w", err)
+		return fmt.Errorf("could not submit attestation: %w", err)
 	}
 
-	return tx, nil
+	return nil
 }
