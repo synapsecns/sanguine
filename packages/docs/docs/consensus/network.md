@@ -195,6 +195,10 @@ on the [remote chain](glossary.md/#remote-chain).
 Whenever there is a change in the [Agent Root](glossary.md/#agent-root) on a [remote chain](glossary.md/#remote-chain),
 each [Bonded Agent](glossary.md/#bonded-agent) must re-register themselves by providing a proof of inclusion.
 
+Below is a diagram illustrating the steps involved in adding another bonded agent (a new Guard):
+
+![AddingBondedAgentOverview](../../static/img/AddAgentSystemDiagram.png 'Diagram illustrating the steps involved in adding another bonded agent (a new Guard)')
+
 ## Trust But Verify: Detecting and Reporting Fraud from Bonded Agents
 
 Any time a [Bonded Agent](glossary.md/#bonded-agent) makes a claim to one blockchain about something that happened
