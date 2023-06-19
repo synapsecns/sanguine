@@ -2,6 +2,7 @@ import { LandingPageWrapper } from '@/components/layouts/LandingPageWrapper'
 import { useAccount } from 'wagmi'
 import { useDispatch, useSelector } from 'react-redux'
 import { RootState } from '../../store/store'
+import toast from 'react-hot-toast'
 
 import {
   setFromToken,
@@ -25,12 +26,13 @@ import { subtractSlippage } from '@/utils/slippage'
 import { commify } from '@ethersproject/units'
 import { formatBNToString } from '@/utils/bignumber/format'
 import { calculateExchangeRate } from '@/utils/calculateExchangeRate'
-import { useEffect } from 'react'
+import { useEffect, useState } from 'react'
 import { Token } from '@/utils/types'
 import { fetchSigner } from '@wagmi/core'
 import { txErrorHandler } from '@/utils/txErrorHandler'
 import { BRIDGABLE_TOKENS, BRIDGE_CHAINS_BY_TYPE } from '@/constants/tokens'
 import { CHAINS_BY_ID } from '@/constants/chains'
+import { approveToken } from '@/utils/approveToken'
 
 // NOTE: These are idle utility functions that will be re-written to
 // support sorting by desired mechanism
@@ -53,7 +55,7 @@ const sortToTokens = (tokens: Token[]) => {
   return tokens
 }
 
-// Need to add token approval checking
+// Need to update url params
 
 const StateManagedBridge = () => {
   const { address } = useAccount()
@@ -71,6 +73,8 @@ const StateManagedBridge = () => {
     supportedToTokens,
   } = useSelector((state: RootState) => state.bridge)
 
+  const [isApproved, setIsApproved] = useState(false)
+
   const dispatch = useDispatch()
 
   const fromChainIds = Object.keys(CHAINS_BY_ID).map((id) => Number(id))
@@ -87,6 +91,19 @@ const StateManagedBridge = () => {
 
     getAndSetBridgeQuote()
   }, [fromChainId, toChainId, fromToken, toToken, fromValue])
+
+  // don't like this, rewrite: could be custom hook
+  useEffect(() => {
+    if (fromToken?.addresses[fromChainId] === AddressZero) {
+      setIsApproved(true)
+    } else {
+      if (bridgeQuote?.allowance && fromValue.lt(bridgeQuote.allowance)) {
+        setIsApproved(true)
+      } else {
+        setIsApproved(false)
+      }
+    }
+  }, [bridgeQuote, fromToken, fromValue, fromChainId, toChainId])
 
   const handleFromTokenChange = (
     event: React.ChangeEvent<HTMLSelectElement>
@@ -217,12 +234,28 @@ const StateManagedBridge = () => {
       )
       dispatch(setIsLoading(false))
       return
-    } catch (error) {
-      console.log(error)
+    } catch {
+      const str = formatBNToString(
+        fromValue,
+        fromToken.decimals[fromChainId],
+        4
+      )
+      const message = `No route found for bridging ${fromToken.symbol} on ${CHAINS_BY_ID[fromChainId]?.name} to ${toToken.symbol} on ${CHAINS_BY_ID[toChainId]?.name} for ${str}`
+      toast(message)
       dispatch(setBridgeQuote(EMPTY_BRIDGE_QUOTE_ZERO))
       dispatch(setIsLoading(false))
       return
     }
+  }
+
+  // Would like to move this function outside of this component
+
+  const approveTxn = async () => {
+    approveToken(
+      bridgeQuote?.routerAddress,
+      fromChainId,
+      fromToken?.addresses[fromChainId]
+    ).then(() => setIsApproved(true))
   }
 
   // Would like to move this into function outside of this component
@@ -337,17 +370,31 @@ const StateManagedBridge = () => {
             </select>
           </div>
           <div>
-            <button
-              className="p-2 bg-blue-500 disabled:opacity-50"
-              onClick={executeBridge}
-              disabled={
-                isLoading ||
-                bridgeQuote === EMPTY_BRIDGE_QUOTE_ZERO ||
-                bridgeQuote === EMPTY_BRIDGE_QUOTE
-              }
-            >
-              Bridge
-            </button>
+            {!isApproved ? (
+              <button
+                className="p-2 bg-blue-500 disabled:opacity-50"
+                onClick={approveTxn}
+                disabled={
+                  isLoading ||
+                  bridgeQuote === EMPTY_BRIDGE_QUOTE_ZERO ||
+                  bridgeQuote === EMPTY_BRIDGE_QUOTE
+                }
+              >
+                Approve
+              </button>
+            ) : (
+              <button
+                className="p-2 bg-blue-500 disabled:opacity-50"
+                onClick={executeBridge}
+                disabled={
+                  isLoading ||
+                  bridgeQuote === EMPTY_BRIDGE_QUOTE_ZERO ||
+                  bridgeQuote === EMPTY_BRIDGE_QUOTE
+                }
+              >
+                Bridge
+              </button>
+            )}
           </div>
           <div className="max-w-1/4">
             <div className="underline">Your bridge quote</div>
