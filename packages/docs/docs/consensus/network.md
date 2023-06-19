@@ -166,6 +166,10 @@ was not a valid state on the Origin chain.
 in the [Attestation](glossary.md/#attestation), and then with another Merkle proof for the [message](glossary.md/#message) against the [Message Merkle Root](glossary.md/#message-merkle-root)
 in the [state](glossary.md/#state).
 
+Below is a diagram illustrating the steps involved in sending a message from Chain A to Chain B:
+
+![SendingMessageOverview](../../static/img/MessageHappyPathSystemDiagram.png 'Diagram illustrating the steps involved in sending a message from Chain A to Chain B')
+
 ### Adding other Bonded Agents
 Whenever a new [Bonded Agent](glossary.md/#bonded-agent) posts a [bond](glossary.md/#bond) on the [Bonding Manager Smart Contract](glossary.md/#bonding-manager-smart-contract) on the [Syanpse Chain](glossary.md/#synapse-chain),
 that results in a new [Agent Root](glossary.md/#agent-root).
