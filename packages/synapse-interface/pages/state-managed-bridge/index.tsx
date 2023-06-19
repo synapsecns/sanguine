@@ -9,8 +9,11 @@ import {
   updateFromValue,
   setBridgeQuote,
   setIsLoading,
+  setFromChainId,
+  setToChainId,
+  setSupportedFromTokens,
+  setSupportedToTokens,
 } from '../../slices/bridgeSlice'
-import { ETH } from '@/constants/tokens/master'
 import { stringToBigNum } from '@/utils/stringToBigNum'
 import { EMPTY_BRIDGE_QUOTE, EMPTY_BRIDGE_QUOTE_ZERO } from '@/constants/bridge'
 
@@ -26,6 +29,31 @@ import { useEffect } from 'react'
 import { Token } from '@/utils/types'
 import { fetchSigner } from '@wagmi/core'
 import { txErrorHandler } from '@/utils/txErrorHandler'
+import { BRIDGABLE_TOKENS, BRIDGE_CHAINS_BY_TYPE } from '@/constants/tokens'
+import { CHAINS_BY_ID } from '@/constants/chains'
+
+// NOTE: These are idle utility functions that will be re-written to
+// support sorting by desired mechanism
+// We want to keep them separate as to not overload Component and UI logic
+// i.e., call when needed
+
+const sortFromChainIds = (chainIds: number[]) => {
+  return chainIds
+}
+
+const sortToChainIds = (chainIds: number[]) => {
+  return chainIds
+}
+
+const sortFromTokens = (tokens: Token[]) => {
+  return tokens
+}
+
+const sortToTokens = (tokens: Token[]) => {
+  return tokens
+}
+
+// Need to add token approval checking
 
 const StateManagedBridge = () => {
   const { address } = useAccount()
@@ -39,27 +67,38 @@ const StateManagedBridge = () => {
     bridgeQuote,
     fromValue,
     isLoading,
+    supportedFromTokens,
+    supportedToTokens,
   } = useSelector((state: RootState) => state.bridge)
 
   const dispatch = useDispatch()
 
-  const tokens = [ETH]
+  const fromChainIds = Object.keys(CHAINS_BY_ID).map((id) => Number(id))
+  const toChainIds = BRIDGE_CHAINS_BY_TYPE[fromToken.swapableType]
+    .filter((chainId) => Number(chainId) !== fromChainId)
+    .map((chainId) => Number(chainId))
 
   useEffect(() => {
+    const fromTokens = BRIDGABLE_TOKENS[fromChainId]
+    const toTokens = BRIDGABLE_TOKENS[toChainId]
+
+    dispatch(setSupportedFromTokens(fromTokens))
+    dispatch(setSupportedToTokens(toTokens))
+
     getAndSetBridgeQuote()
   }, [fromChainId, toChainId, fromToken, toToken, fromValue])
 
   const handleFromTokenChange = (
     event: React.ChangeEvent<HTMLSelectElement>
   ) => {
-    const selectedToken = tokens.find(
+    const selectedToken = supportedFromTokens.find(
       (token) => token.name === event.target.value
     )
     dispatch(setFromToken(selectedToken))
   }
 
   const handleToTokenChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
-    const selectedToken = tokens.find(
+    const selectedToken = supportedToTokens.find(
       (token) => token.name === event.target.value
     )
     dispatch(setToToken(selectedToken))
@@ -77,6 +116,27 @@ const StateManagedBridge = () => {
       dispatch(updateFromValue(fromValueBigNumber))
     } catch (error) {
       console.error('Invalid value for conversion to BigNumber')
+    }
+  }
+
+  const handleFromChainChange = (
+    event: React.ChangeEvent<HTMLSelectElement>
+  ) => {
+    let fromChainId = Number(event.target.value)
+    try {
+      dispatch(setFromChainId(fromChainId))
+    } catch (error) {
+      console.log(`error`, error)
+    }
+  }
+
+  const handleToChainChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
+    let toChainId = Number(event.target.value)
+
+    try {
+      dispatch(setToChainId(toChainId))
+    } catch (error) {
+      console.log(`error`, error)
     }
   }
 
@@ -208,8 +268,20 @@ const StateManagedBridge = () => {
         <div className="space-y-1">
           <div className="mb-5 text-xl">Redux State Managed Bridge</div>
           <div className="flex items-center justify-between">
-            <div>fromChainId</div>
-            <div>{fromChainId}</div>
+            <div>fromChain</div>
+            <div>
+              <select
+                className="text-black"
+                onChange={handleFromChainChange}
+                value={fromChainId}
+              >
+                {sortFromChainIds(fromChainIds).map((chainId) => (
+                  <option key={chainId} value={chainId}>
+                    {CHAINS_BY_ID[chainId]?.name}
+                  </option>
+                ))}
+              </select>
+            </div>
           </div>
           <div className="flex items-center justify-between">
             <div>fromToken</div>
@@ -218,7 +290,7 @@ const StateManagedBridge = () => {
               onChange={handleFromTokenChange}
               value={fromToken?.name}
             >
-              {tokens.map((token) => (
+              {sortFromTokens(supportedFromTokens).map((token) => (
                 <option key={token.name} value={token.name}>
                   {token.symbol}
                 </option>
@@ -235,17 +307,29 @@ const StateManagedBridge = () => {
             />
           </div>
           <div className="flex items-center justify-between">
-            <div>toChainId</div>
-            <div>{toChainId}</div>
+            <div>toChain</div>
+            <div>
+              <select
+                className="text-black"
+                onChange={handleToChainChange}
+                value={toChainId}
+              >
+                {sortToChainIds(toChainIds).map((chainId) => (
+                  <option key={chainId} value={chainId}>
+                    {CHAINS_BY_ID[chainId]?.name}
+                  </option>
+                ))}
+              </select>
+            </div>
           </div>
           <div className="flex items-center justify-between">
             <div>toToken</div>
             <select
               className="text-black"
               onChange={handleToTokenChange}
-              value={toToken.name}
+              value={toToken?.name}
             >
-              {tokens.map((token) => (
+              {sortToTokens(supportedToTokens).map((token) => (
                 <option key={token.name} value={token.name}>
                   {token.symbol}
                 </option>

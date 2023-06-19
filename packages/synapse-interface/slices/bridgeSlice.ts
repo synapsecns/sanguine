@@ -6,6 +6,8 @@ import { EMPTY_BRIDGE_QUOTE } from '@/constants/bridge'
 import { ETH } from '@/constants/tokens/master'
 import { BridgeQuote, Token } from '@/utils/types'
 
+import { ARBITRUM, ETH as ETHEREUM } from '@/constants/chains/master'
+
 export interface BridgeState {
   fromChainId: number
   supportedFromTokens: Token[]
@@ -18,10 +20,12 @@ export interface BridgeState {
   isLoading: boolean
 }
 
+// How do we update query params based on initial state?
+// Additionally how do we set query params based on user input updates?
 const initialState: BridgeState = {
-  fromChainId: 1,
+  fromChainId: ETHEREUM.id,
   supportedFromTokens: [],
-  toChainId: 10,
+  toChainId: ARBITRUM.id,
   supportedToTokens: [],
   fromToken: ETH,
   toToken: ETH,
@@ -56,7 +60,7 @@ export const bridgeSlice = createSlice({
       state.supportedFromTokens = action.payload
     },
     setSupportedToTokens: (state, action: PayloadAction<Token[]>) => {
-      state.supportedFromTokens = action.payload
+      state.supportedToTokens = action.payload
     },
     updateFromValue: (state, action: PayloadAction<BigNumber>) => {
       state.fromValue = action.payload
