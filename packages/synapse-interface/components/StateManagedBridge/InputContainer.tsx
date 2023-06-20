@@ -1,8 +1,11 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
 import { RootState } from '@/store/store'
 
-import { updateFromValue, setShowTokenSlideOver } from '@/slices/bridgeSlice'
+import {
+  updateFromValue,
+  setShowFromTokenSlideOver,
+} from '@/slices/bridgeSlice'
 import { stringToBigNum } from '@/utils/stringToBigNum'
 import SelectTokenDropdown from '@/components/input/TokenAmountInput/SelectTokenDropdown'
 import { ChainLabel } from '@/components/ChainLabel'
@@ -15,6 +18,12 @@ export const InputContainer = () => {
   const [showValue, setShowValue] = useState('')
   const { fromChainId, fromToken, fromChainIds, supportedFromTokenBalances } =
     useSelector((state: RootState) => state.bridge)
+
+  const [hasMounted, setHasMounted] = useState(false)
+
+  useEffect(() => {
+    setHasMounted(true)
+  }, [])
 
   const { isConnected } = useAccount()
 
@@ -88,7 +97,7 @@ export const InputContainer = () => {
             chainId={fromChainId}
             selectedToken={fromToken}
             isOrigin={false}
-            onClick={() => dispatch(setShowTokenSlideOver(true))}
+            onClick={() => dispatch(setShowFromTokenSlideOver(true))}
           />
           <input
             pattern="[0-9.]+"
@@ -109,7 +118,7 @@ export const InputContainer = () => {
             name="inputRow"
             autoComplete="off"
           />
-          {isConnected && (
+          {hasMounted && isConnected && (
             <label
               htmlFor="inputRow"
               className="absolute hidden pt-1 mt-8 ml-40 text-xs text-white transition-all duration-150 md:block transform-gpu hover:text-opacity-70 hover:cursor-pointer"
@@ -122,7 +131,7 @@ export const InputContainer = () => {
               </span>
             </label>
           )}
-          {isConnected && (
+          {hasMounted && isConnected && (
             <div className="hidden mr-2 sm:inline-block">
               <MiniMaxButton
                 disabled={fromTokenBalance && fromTokenBalance.eq(Zero)}
