@@ -18,11 +18,15 @@ import {
   setFromChainIds,
   setToChainIds,
   setSupportedFromTokenBalances,
-  setShowFromTokenSlideOver,
-  setShowToTokenSlideOver,
+} from '@/slices/bridgeSlice'
+
+import {
   setShowFromChainSlideOver,
+  setShowFromTokenSlideOver,
   setShowToChainSlideOver,
-} from '../../slices/bridgeSlice'
+  setShowToTokenSlideOver,
+} from '@/slices/bridgeDisplaySlice'
+
 import { stringToBigNum } from '@/utils/stringToBigNum'
 import { EMPTY_BRIDGE_QUOTE, EMPTY_BRIDGE_QUOTE_ZERO } from '@/constants/bridge'
 
@@ -91,13 +95,16 @@ const StateManagedBridge = () => {
     bridgeQuote,
     fromValue,
     isLoading,
-    showFromTokenSlideOver,
-    showToTokenSlideOver,
     supportedFromTokens,
     supportedToTokens,
+  } = useSelector((state: RootState) => state.bridge)
+
+  const {
+    showFromTokenSlideOver,
+    showToTokenSlideOver,
     showFromChainSlideOver,
     showToChainSlideOver,
-  } = useSelector((state: RootState) => state.bridge)
+  } = useSelector((state: RootState) => state.bridgeDisplay)
 
   const [isApproved, setIsApproved] = useState(false)
 

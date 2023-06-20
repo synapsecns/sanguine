@@ -3,10 +3,8 @@ import { useDispatch, useSelector } from 'react-redux'
 import { Zero } from '@ethersproject/constants'
 import { RootState } from '@/store/store'
 
-import {
-  updateFromValue,
-  setShowFromTokenSlideOver,
-} from '@/slices/bridgeSlice'
+import { updateFromValue } from '@/slices/bridgeSlice'
+import { setShowFromTokenSlideOver } from '@/slices/bridgeDisplaySlice'
 import { stringToBigNum } from '@/utils/stringToBigNum'
 import SelectTokenDropdown from '@/components/input/TokenAmountInput/SelectTokenDropdown'
 import { useAccount } from 'wagmi'

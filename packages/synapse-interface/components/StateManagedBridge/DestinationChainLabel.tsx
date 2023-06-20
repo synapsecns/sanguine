@@ -5,7 +5,8 @@ import Image from 'next/image'
 import Tooltip from '@tw/Tooltip'
 import { useEffect, useState } from 'react'
 import { useDispatch } from 'react-redux'
-import { setShowToChainSlideOver, setToChainId } from '@/slices/bridgeSlice'
+import { setToChainId } from '@/slices/bridgeSlice'
+import { setShowToChainSlideOver } from '@/slices/bridgeDisplaySlice'
 import { getOrderedChains } from '@/utils/getOrderedChains'
 
 export const DestinationChainLabel = ({

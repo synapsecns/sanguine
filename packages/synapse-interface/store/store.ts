@@ -1,10 +1,12 @@
 import { configureStore } from '@reduxjs/toolkit'
 
-import bridgeReducer from '../slices/bridgeSlice'
+import bridgeReducer from '@/slices/bridgeSlice'
+import bridgeDisplayReducer from '@/slices/bridgeDisplaySlice'
 
 export const store = configureStore({
   reducer: {
     bridge: bridgeReducer,
+    bridgeDisplay: bridgeDisplayReducer,
   },
 })
 

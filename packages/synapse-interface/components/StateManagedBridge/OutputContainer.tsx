@@ -2,9 +2,8 @@ import { useSelector } from 'react-redux'
 import { RootState } from '@/store/store'
 
 import SelectTokenDropdown from '@/components/input/TokenAmountInput/SelectTokenDropdown'
-import { ChainLabel } from '@/components/ChainLabel'
 import { useDispatch } from 'react-redux'
-import { setShowToTokenSlideOver } from '@/slices/bridgeSlice'
+import { setShowToTokenSlideOver } from '@/slices/bridgeDisplaySlice'
 import LoadingSpinner from '../ui/tailwind/LoadingSpinner'
 import { DestinationChainLabel } from './DestinationChainLabel'
 
