@@ -15,17 +15,33 @@ interface TokenBalance {
 }
 
 // Function to sort the tokens by priorityRank and alphabetically
-function sortTokensArray(arr: TokenBalance[]): TokenBalance[] {
-  return arr.sort((a, b) => {
+function sortTokensArray(arr: TokenBalance[], chainId: number): TokenBalance[] {
+  // Create a copy of the array to prevent modifying the original one
+  const sortedArr = [...arr]
+
+  return sortedArr.sort((a, b) => {
     const tokenA: Token = a.token
     const tokenB: Token = b.token
-    if (tokenA.priorityRank < tokenB.priorityRank) {
-      return -1
-    } else if (tokenA.priorityRank > tokenB.priorityRank) {
-      return 1
-    } else {
-      return tokenA.symbol < tokenB.symbol ? -1 : 1
+
+    // Sort by priorityRank first
+    if (tokenA.priorityRank !== tokenB.priorityRank) {
+      return tokenA.priorityRank - tokenB.priorityRank
     }
+
+    // If priorityRank is the same, sort by balance, taking into account decimals
+    const balanceA = a.balance
+      .div(BigNumber.from(10).pow(BigNumber.from(tokenA.decimals[chainId])))
+      .toNumber()
+    const balanceB = b.balance
+      .div(BigNumber.from(10).pow(BigNumber.from(tokenB.decimals[chainId])))
+      .toNumber()
+
+    if (balanceA !== balanceB) {
+      return balanceB - balanceA // For descending order
+    }
+
+    // If balance is the same, sort by symbol
+    return tokenA.symbol.localeCompare(tokenB.symbol)
   })
 }
 
@@ -115,7 +131,7 @@ export function getSortedBridgableTokens(
     })
 
   return [
-    ...sortTokensArray(userHeldTokens),
-    ...sortTokensArray(noBalanceTokens),
+    ...sortTokensArray(userHeldTokens, chainId),
+    ...sortTokensArray(noBalanceTokens, chainId),
   ]
 }
