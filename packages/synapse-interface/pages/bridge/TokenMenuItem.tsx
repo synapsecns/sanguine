@@ -1,4 +1,3 @@
-import { useMemo } from 'react'
 import { BigNumber } from '@ethersproject/bignumber'
 import { Zero } from '@ethersproject/constants'
 import { CHAINS_BY_ID } from '@constants/chains'
