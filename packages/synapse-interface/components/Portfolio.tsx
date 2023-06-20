@@ -249,8 +249,6 @@ const getTokenAllowance = async (
   //   })
   // }
 
-  console.log(`wallet, wallet`, wallet)
-
   const erc20 = new Contract(tokenAddress, erc20ABI, wallet)
 
   const allowance = await erc20.allowance(address, routerAddress)

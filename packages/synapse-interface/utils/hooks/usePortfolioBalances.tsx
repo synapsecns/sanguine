@@ -20,18 +20,22 @@ export const usePortfolioBalances = () => {
   const tokens = []
   const queryableNetworks = Object.keys(BRIDGABLE_TOKENS)
   queryableNetworks.forEach((chainId: string) => {
-    const updatedTokensForChain = queryableNetworks[chainId].map(
+    const updatedTokensForChain = BRIDGABLE_TOKENS[chainId].forEach(
       (token: Token) => {
-        return {
+        const transformedToken = {
           token: token,
           symbol: token.symbol,
           queryAddress:
             token.addresses[Number(chainId) as keyof Token['addresses']],
           chainId: Number(chainId),
         } as NetworkSpecificToken
+
+        tokens.push(transformedToken)
       }
     )
   })
+
+  console.log('tokens: ', tokens)
 }
 
 const useTokenBalances = (
