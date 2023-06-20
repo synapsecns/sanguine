@@ -154,6 +154,50 @@ func (n *Notary) loadNotaryLatestAttestation(parentCtx context.Context) {
 	}
 }
 
+func (n *Notary) shouldNotaryRegisteredOnDestination(parentCtx context.Context) (bool, bool) {
+	ctx, span := n.handler.Tracer().Start(parentCtx, "shouldNotaryRegisteredOnDestination", trace.WithAttributes(
+		attribute.Int(metrics.ChainID, int(n.destinationDomain.Config().DomainID)),
+	))
+	defer span.End()
+
+	bondingManagerAgentRoot, err := n.summitDomain.BondingManager().GetAgentRoot(ctx)
+	if err != nil {
+		span.AddEvent("GetAgentRoot failed on bonding manager", trace.WithAttributes(
+			attribute.String("err", err.Error()),
+		))
+		return false, false
+	}
+
+	destinationLightManagerAgentRoot, err := n.destinationDomain.LightManager().GetAgentRoot(ctx)
+	if err != nil {
+		span.AddEvent("GetAgentRoot failed on destination light manager", trace.WithAttributes(
+			attribute.String("err", err.Error()),
+		))
+		return false, false
+	}
+
+	if bondingManagerAgentRoot != destinationLightManagerAgentRoot {
+		// We need to wait until destination has same agent root as the synapse chain.
+		return false, false
+	}
+
+	agentStatus, err := n.destinationDomain.LightManager().GetAgentStatus(ctx, n.bondedSigner)
+	if err != nil {
+		span.AddEvent("GetAgentStatus failed", trace.WithAttributes(
+			attribute.String("err", err.Error()),
+		))
+		return false, false
+	}
+	if types.AgentFlagType(agentStatus.Flag()) == types.AgentFlagUnknown {
+		// Here we want to add the Notary and proceed with sending to destination
+		return true, true
+	} else if types.AgentFlagType(agentStatus.Flag()) == types.AgentFlagActive {
+		// Here we already added the Notary and can proceed with sending to destination
+		return false, true
+	}
+	return false, false
+}
+
 func (n *Notary) checkDidSubmitNotaryLatestAttestation(parentCtx context.Context) {
 	ctx, span := n.handler.Tracer().Start(parentCtx, "checkDidSubmitNotaryLatestAttestation", trace.WithAttributes(
 		attribute.Int(metrics.ChainID, int(n.destinationDomain.Config().DomainID)),
@@ -345,6 +389,40 @@ func (n *Notary) submitLatestSnapshot(parentCtx context.Context) {
 	}
 }
 
+//nolint:cyclop
+func (n *Notary) registerNotaryOnDestination(parentCtx context.Context) bool {
+	ctx, span := n.handler.Tracer().Start(parentCtx, "registerNotaryOnDestination")
+	defer span.End()
+
+	agentProof, err := n.summitDomain.BondingManager().GetProof(ctx, n.bondedSigner)
+	if err != nil {
+		logger.Errorf("Error getting agent proof: %v", err)
+		span.AddEvent("Error getting agent proof", trace.WithAttributes(
+			attribute.String("err", err.Error()),
+		))
+		return false
+	}
+	agentStatus, err := n.summitDomain.BondingManager().GetAgentStatus(ctx, n.bondedSigner)
+	if err != nil {
+		span.AddEvent("GetAgentStatus on bonding manager failed", trace.WithAttributes(
+			attribute.String("err", err.Error()),
+		))
+		return false
+	}
+	err = n.destinationDomain.LightManager().UpdateAgentStatus(
+		ctx,
+		n.unbondedSigner,
+		agentStatus,
+		agentProof)
+	if err != nil {
+		span.AddEvent("Error updating agent status", trace.WithAttributes(
+			attribute.String("err", err.Error()),
+		))
+		return false
+	}
+	return true
+}
+
 //nolint:cyclop,unused
 func (n *Notary) submitMyLatestAttestation(parentCtx context.Context) {
 	ctx, span := n.handler.Tracer().Start(parentCtx, "submitMyLatestAttestation")
@@ -416,7 +494,14 @@ func (n *Notary) Start(ctx context.Context) error {
 				n.submitLatestSnapshot(ctx)
 				n.loadNotaryLatestAttestation(ctx)
 				n.checkDidSubmitNotaryLatestAttestation(ctx)
-				n.submitMyLatestAttestation(ctx)
+				shouldRegisterNotary, shouldSendToDestination := n.shouldNotaryRegisteredOnDestination(ctx)
+				didRegisterAgent := true
+				if shouldRegisterNotary {
+					didRegisterAgent = n.registerNotaryOnDestination(ctx)
+				}
+				if shouldSendToDestination && didRegisterAgent {
+					n.submitMyLatestAttestation(ctx)
+				}
 			}
 		}
 	})

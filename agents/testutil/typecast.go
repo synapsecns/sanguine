@@ -523,6 +523,12 @@ func (d *DeployManager) AddAgentsToLightManagerHarnessContract(
 			Index:  bondingManagerAgentStatus.Index,
 		}
 
+		// We want to make the notary do the work of adding the agent and not
+		// have it done automatically by the test harness
+		if lightManagerAgentStatus.Domain != 0 {
+			continue
+		}
+
 		txAddAgent, err := lightManagerHarnessContract.UpdateAgentStatus(
 			lightManagerHarnessOwnerAuth.TransactOpts,
 			agent,

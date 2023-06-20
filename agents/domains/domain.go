@@ -73,6 +73,10 @@ type InboxContract interface {
 type BondingManagerContract interface {
 	// GetAgentStatus returns the current agent status for the given agent.
 	GetAgentStatus(ctx context.Context, signer signer.Signer) (types.AgentStatus, error)
+	// GetAgentRoot gets the current agent root
+	GetAgentRoot(ctx context.Context) ([32]byte, error)
+	// GetProof gets the proof that the agent is in the Agent Merkle Tree
+	GetProof(ctx context.Context, bondedAgentSigner signer.Signer) ([][32]byte, error)
 }
 
 // DestinationContract contains the interface for the destination.
@@ -103,6 +107,14 @@ type LightInboxContract interface {
 type LightManagerContract interface {
 	// GetAgentStatus returns the current agent status for the given agent.
 	GetAgentStatus(ctx context.Context, signer signer.Signer) (types.AgentStatus, error)
+	// GetAgentRoot gets the current agent root
+	GetAgentRoot(ctx context.Context) ([32]byte, error)
+	// UpdateAgentStatus updates the agent status on the remote chain.
+	UpdateAgentStatus(
+		ctx context.Context,
+		signer signer.Signer,
+		agentStatus types.AgentStatus,
+		agentProof [][32]byte) error
 }
 
 // TestClientContract contains the interface for the test client.

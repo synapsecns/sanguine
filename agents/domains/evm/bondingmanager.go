@@ -54,3 +54,23 @@ func (a bondingManagerContract) GetAgentStatus(ctx context.Context, bondedAgentS
 
 	return agentStatus, nil
 }
+
+//nolint:dupl
+func (a bondingManagerContract) GetAgentRoot(ctx context.Context) ([32]byte, error) {
+	agentRoot, err := a.contract.AgentRoot(&bind.CallOpts{Context: ctx})
+	if err != nil {
+		return [32]byte{}, fmt.Errorf("could not retrieve agent root: %w", err)
+	}
+
+	return agentRoot, nil
+}
+
+//nolint:dupl
+func (a bondingManagerContract) GetProof(ctx context.Context, bondedAgentSigner signer.Signer) ([][32]byte, error) {
+	proof, err := a.contract.GetProof(&bind.CallOpts{Context: ctx}, bondedAgentSigner.Address())
+	if err != nil {
+		return nil, fmt.Errorf("could not retrieve agent proof: %w", err)
+	}
+
+	return proof, nil
+}
