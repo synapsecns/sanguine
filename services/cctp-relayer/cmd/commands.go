@@ -2,6 +2,7 @@ package cmd
 
 import (
 	"fmt"
+
 	"github.com/synapsecns/sanguine/core"
 	"github.com/synapsecns/sanguine/core/dbcommon"
 	"github.com/synapsecns/sanguine/core/metrics"
@@ -48,6 +49,7 @@ var scribeURL = &cli.StringFlag{
 var runCommand = &cli.Command{
 	Name:        "run",
 	Description: "run the cctp relayer",
+	Flags:       []cli.Flag{configFlag, dbFlag, pathFlag, scribePortFlag, scribeURL},
 	Action: func(c *cli.Context) error {
 		cfg, err := config.DecodeConfig(c.String(configFlag.Name))
 		if err != nil {
@@ -75,9 +77,9 @@ var runCommand = &cli.Command{
 
 		scribeClient := client.NewRemoteScribe(uint16(c.Uint(scribePortFlag.Name)), c.String(scribeURL.Name), metricsProvider).ScribeClient
 		omnirpcClient := omniClient.NewOmnirpcClient(cfg.BaseOmnirpcURL, metricsProvider, omniClient.WithCaptureReqRes())
-		attApi := api.NewCircleAPI(c.String(cfg.CircleAPIURl))
+		attAPI := api.NewCircleAPI(c.String(cfg.CircleAPIURl))
 
-		cctpRelayer, err := relayer.NewCCTPRelayer(c.Context, cfg, store, scribeClient, omnirpcClient, metricsProvider, attApi)
+		cctpRelayer, err := relayer.NewCCTPRelayer(c.Context, cfg, store, scribeClient, omnirpcClient, metricsProvider, attAPI)
 		if err != nil {
 			return fmt.Errorf("could not create cctp relayer: %w", err)
 		}
