@@ -28,6 +28,8 @@ import { WETH, MIM, SwapUSDC, SwapUSDT } from '@constants/tokens/swapMaster'
 
 import { Token } from '@/utils/types'
 
+// @dev: Reassign correct priorityRanking
+
 /**
  * Eth Stablecoin Swap
  */
@@ -52,6 +54,7 @@ export const ETH_POOL_SWAP_TOKEN = new Token({
   priorityPool: true,
   color: 'gray',
   priceUnits: 'USD',
+  priorityRank: 6,
 })
 
 // Stablecoin Swap
@@ -76,6 +79,7 @@ export const BSC_POOL_SWAP_TOKEN = new Token({
   priorityPool: true,
   color: 'purple',
   priceUnits: 'USD',
+  priorityRank: 6,
 })
 
 /**
@@ -100,6 +104,7 @@ export const OPTIMISM_POOL_SWAP_TOKEN = new Token({
   description: "Synapse's 2pool stableswap LP token on Optimism",
   display: true,
   priorityPool: true,
+  priorityRank: 6,
 })
 
 /**
@@ -124,6 +129,7 @@ export const CRONOS_POOL_SWAP_TOKEN = new Token({
   description: "Synapse's 2pool stableswap LP token on Cronos",
   display: true,
   priorityPool: true,
+  priorityRank: 6,
 })
 
 /**
@@ -150,6 +156,7 @@ export const POLYGON_POOL_SWAP_TOKEN = new Token({
   priorityPool: true,
   color: 'purple',
   priceUnits: 'USD',
+  priorityRank: 6,
 })
 
 /**
@@ -175,6 +182,7 @@ export const AVALANCHE_POOL_SWAP_TOKEN = new Token({
   },
   poolTokens: [NUSD, SwapUSDC, SwapUSDT],
   description: "Synapse's 3pool stableswap LP token on Avalanche",
+  priorityRank: 6,
 })
 /**
  * Avalanche Stablecoin Swap
@@ -196,6 +204,7 @@ export const LEGACY_AVALANCHE_POOL_SWAP_TOKEN = new Token({
   },
   poolTokens: [NUSD, DAI, USDCe, USDTe],
   description: "Synapse's 4pool stableswap LP token on Avalanche",
+  priorityRank: 6,
 })
 
 /**
@@ -222,6 +231,7 @@ export const ARBITRUM_POOL_SWAP_TOKEN = new Token({
   legacy: true,
   color: 'purple',
   priceUnits: 'USD',
+  priorityRank: 6,
 })
 
 /**
@@ -248,6 +258,7 @@ export const FANTOM_POOL_SWAP_TOKEN = new Token({
   legacy: true,
   color: 'blue',
   priceUnits: 'USD',
+  priorityRank: 6,
 })
 
 /**
@@ -274,6 +285,7 @@ export const HARMONY_POOL_SWAP_TOKEN = new Token({
   priorityPool: true,
   color: 'purple',
   priceUnits: 'USD',
+  priorityRank: 6,
 })
 
 /**
@@ -300,6 +312,7 @@ export const BOBA_POOL_SWAP_TOKEN = new Token({
   priorityPool: true,
   color: 'green',
   priceUnits: 'USD',
+  priorityRank: 6,
 })
 
 /**
@@ -324,6 +337,7 @@ export const AURORA_POOL_SWAP_TOKEN = new Token({
   description: "Synapse's 3pool stableswap LP token on Aurora",
   display: true,
   legacy: true,
+  priorityRank: 6,
 })
 
 /**
@@ -349,6 +363,7 @@ export const AURORA_TS_POOL_SWAP_TOKEN = new Token({
   display: false,
   priorityPool: true,
   priceUnits: 'USD',
+  priorityRank: 6,
 })
 
 /**
@@ -374,6 +389,7 @@ export const ARBITRUM_3POOL_SWAP_TOKEN = new Token({
   display: true,
   priorityPool: true,
   priceUnits: 'USD',
+  priorityRank: 6,
 })
 
 /**
@@ -399,6 +415,7 @@ export const FANTOM_3POOL_SWAP_TOKEN = new Token({
   display: true,
   priorityPool: true,
   priceUnits: 'USD',
+  priorityRank: 6,
 })
 
 /**
@@ -423,6 +440,7 @@ export const METIS_POOL_SWAP_TOKEN = new Token({
   description: "Synapse's 2pool stableswap LP token on Metis",
   display: true,
   priorityPool: true,
+  priorityRank: 6,
 })
 
 /**
@@ -446,6 +464,7 @@ export const CANTO_POOL_SWAP_TOKEN = new Token({
   poolTokens: [NUSD, NOTE],
   description: "Synapse's nUSD & NOTE stableswap LP token on Canto",
   display: true,
+  priorityRank: 6,
 })
 
 export const CANTO_USDC_SWAP_TOKEN = new Token({
@@ -466,6 +485,7 @@ export const CANTO_USDC_SWAP_TOKEN = new Token({
   poolTokens: [NUSD, USDC],
   description: "Synapse's nUSD & USDC stableswap LP token on Canto",
   display: true,
+  priorityRank: 6,
 })
 
 /**
@@ -491,6 +511,7 @@ export const CANTO_WRAPPER_POOL_SWAP_TOKEN = new Token({
   description: '',
   display: false,
   priorityPool: true,
+  priorityRank: 6,
 })
 
 /**
@@ -515,6 +536,7 @@ export const KLAYTN_ORBIT_SWAP_TOKEN = new Token({
   description: "Synapse's 2pool stableswap LP token on Klaytn",
   display: true,
   priorityPool: true,
+  priorityRank: 6,
 })
 
 export const HARMONY_AVAX_SWAP_TOKEN = new Token({
@@ -538,6 +560,7 @@ export const HARMONY_AVAX_SWAP_TOKEN = new Token({
   priorityPool: true,
   color: 'red',
   priceUnits: 'AVAX',
+  priorityRank: 6,
 })
 
 export const ARBITRUM_ETH_SWAP_TOKEN = new Token({
@@ -565,6 +588,7 @@ export const ARBITRUM_ETH_SWAP_TOKEN = new Token({
   priorityPool: true,
   color: 'sky',
   priceUnits: 'ETH',
+  priorityRank: 6,
 })
 
 /**
@@ -595,6 +619,7 @@ export const OPTIMISM_ETH_SWAP_TOKEN = new Token({
   priorityPool: true,
   color: 'sky',
   priceUnits: 'ETH',
+  priorityRank: 6,
 })
 
 /**
@@ -625,6 +650,7 @@ export const BOBA_ETH_SWAP_TOKEN = new Token({
   priorityPool: true,
   color: 'sky',
   priceUnits: 'ETH',
+  priorityRank: 6,
 })
 
 /**
@@ -659,6 +685,7 @@ export const AVALANCHE_AVETH_SWAP_TOKEN = new Token({
   priorityPool: true,
   color: 'sky',
   priceUnits: 'ETH',
+  priorityRank: 6,
 })
 
 /**
@@ -684,6 +711,7 @@ export const HARMONY_ONEETH_SWAP_TOKEN = new Token({
   display: true,
   priorityPool: true,
   priceUnits: 'ETH',
+  priorityRank: 6,
 })
 
 export const FANTOM_WETH_SWAP_TOKEN = new Token({
@@ -706,6 +734,7 @@ export const FANTOM_WETH_SWAP_TOKEN = new Token({
   display: true,
   priorityPool: true,
   priceUnits: 'ETH',
+  priorityRank: 6,
 })
 
 export const METIS_WETH_SWAP_TOKEN = new Token({
@@ -728,6 +757,7 @@ export const METIS_WETH_SWAP_TOKEN = new Token({
   display: true,
   priorityPool: true,
   priceUnits: 'ETH',
+  priorityRank: 6,
 })
 
 export const CANTO_WETH_SWAP_TOKEN = new Token({
@@ -750,6 +780,7 @@ export const CANTO_WETH_SWAP_TOKEN = new Token({
   display: true,
   priorityPool: true,
   priceUnits: 'ETH',
+  priorityRank: 6,
 })
 
 /**
@@ -774,4 +805,5 @@ export const HARMONY_JEWEL_SWAP_TOKEN = new Token({
   description: "Synapse's 2pool JEWEL swapper psuedotoken on Harmony",
   display: false,
   priorityPool: true,
+  priorityRank: 6,
 })
