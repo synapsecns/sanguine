@@ -165,7 +165,7 @@ func NewExecutor(ctx context.Context, config config.Config, executorDB db.Execut
 			inboxParser = nil
 		}
 
-		chainRPCURL := fmt.Sprintf("%s/1/rpc/%d", config.BaseOmnirpcURL, chain.ChainID)
+		chainRPCURL := fmt.Sprintf("%s/confirmations/1/rpc/%d", config.BaseOmnirpcURL, chain.ChainID)
 
 		underlyingClient, err := ethergoChain.NewFromURL(ctx, chainRPCURL)
 		if err != nil {
