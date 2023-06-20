@@ -493,6 +493,7 @@ func (d *DeployManager) InitializeRemoteDeployedHarnessContracts(
 
 // AddAgentsToLightManagerHarnessContract handles adding the agents to the light manager harness contract on the remote chain.
 // nolint:dupl,cyclop
+// codebeat:disable[CYCLO]
 func (d *DeployManager) AddAgentsToLightManagerHarnessContract(
 	ctx context.Context,
 	backend backends.SimulatedTestBackend,
@@ -521,6 +522,12 @@ func (d *DeployManager) AddAgentsToLightManagerHarnessContract(
 			Flag:   bondingManagerAgentStatus.Flag,
 			Domain: bondingManagerAgentStatus.Domain,
 			Index:  bondingManagerAgentStatus.Index,
+		}
+
+		// We want to make the notary do the work of adding the agent and not
+		// have it done automatically by the test harness
+		if lightManagerAgentStatus.Domain != 0 {
+			continue
 		}
 
 		txAddAgent, err := lightManagerHarnessContract.UpdateAgentStatus(
