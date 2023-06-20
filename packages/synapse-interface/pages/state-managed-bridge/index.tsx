@@ -17,6 +17,7 @@ import {
   setSupportedToTokens,
   setFromChainIds,
   setToChainIds,
+  setSupportedFromTokenBalances,
 } from '../../slices/bridgeSlice'
 import { stringToBigNum } from '@/utils/stringToBigNum'
 import { EMPTY_BRIDGE_QUOTE, EMPTY_BRIDGE_QUOTE_ZERO } from '@/constants/bridge'
@@ -47,6 +48,7 @@ import {
 import { TokenSlideOver } from '@/components/StateManagedBridge/TokenSlideOver'
 import { InputContainer } from '@/components/StateManagedBridge/InputContainer'
 import { OutputContainer } from '@/components/StateManagedBridge/OutputContainer'
+import { sortByTokenBalance } from '@/utils/sortTokens'
 
 // NOTE: These are idle utility functions that will be re-written to
 // support sorting by desired mechanism
@@ -97,6 +99,8 @@ const StateManagedBridge = () => {
     .filter((chainId) => Number(chainId) !== fromChainId)
     .map((chainId) => Number(chainId))
 
+  // Can be smarter about breaking out which calls happen assoc with which
+  // dependencies (like some stuff should only change on fromChainId changes)
   useEffect(() => {
     const fromTokens = BRIDGABLE_TOKENS[fromChainId]
     const toTokens = BRIDGABLE_TOKENS[toChainId]
@@ -104,9 +108,12 @@ const StateManagedBridge = () => {
     dispatch(setSupportedFromTokens(fromTokens))
     dispatch(setSupportedToTokens(toTokens))
 
+    sortByTokenBalance(fromTokens, fromChainId, address).then((res) => {
+      dispatch(setSupportedFromTokenBalances(res))
+    })
+
     dispatch(setFromChainIds(fromChainIds))
     dispatch(setToChainIds(toChainIds))
-
     getAndSetBridgeQuote()
   }, [fromChainId, toChainId, fromToken, toToken, fromValue])
 

@@ -1,3 +1,4 @@
+import { useState } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
 import { RootState } from '@/store/store'
 
@@ -5,13 +6,31 @@ import { updateFromValue, setShowTokenSlideOver } from '@/slices/bridgeSlice'
 import { stringToBigNum } from '@/utils/stringToBigNum'
 import SelectTokenDropdown from '@/components/input/TokenAmountInput/SelectTokenDropdown'
 import { ChainLabel } from '@/components/ChainLabel'
+import { useAccount } from 'wagmi'
+import MiniMaxButton from '../buttons/MiniMaxButton'
+import { Zero } from '@ethersproject/constants'
+import { formatBNToString } from '@/utils/bignumber/format'
 
-export const InputContainer = ({}) => {
-  const { fromChainId, fromToken, fromChainIds, fromValue } = useSelector(
-    (state: RootState) => state.bridge
-  )
+export const InputContainer = () => {
+  const [showValue, setShowValue] = useState('')
+  const { fromChainId, fromToken, fromChainIds, supportedFromTokenBalances } =
+    useSelector((state: RootState) => state.bridge)
+
+  const { isConnected } = useAccount()
 
   const dispatch = useDispatch()
+
+  const hasBalances = Object.keys(supportedFromTokenBalances).length > 0
+
+  const fromTokenBalance =
+    (hasBalances &&
+      supportedFromTokenBalances.filter((token) => token.token === fromToken)[0]
+        ?.balance) ??
+    Zero
+
+  const formattedBalance = hasBalances
+    ? formatBNToString(fromTokenBalance, fromToken.decimals[fromChainId], 4)
+    : '0'
 
   const handleFromValueChange = (
     event: React.ChangeEvent<HTMLInputElement>
@@ -23,9 +42,17 @@ export const InputContainer = ({}) => {
         fromToken.decimals[fromChainId]
       )
       dispatch(updateFromValue(fromValueBigNumber))
+      setShowValue(fromValueString)
     } catch (error) {
       console.error('Invalid value for conversion to BigNumber')
     }
+  }
+
+  const onClickBalance = () => {
+    dispatch(updateFromValue(fromTokenBalance))
+    setShowValue(
+      formatBNToString(fromTokenBalance, fromToken.decimals[fromChainId])
+    )
   }
 
   return (
@@ -68,6 +95,7 @@ export const InputContainer = ({}) => {
             disabled={false}
             className={`
               ml-4
+              ${isConnected ? '-mt-0 md:-mt-4' : '-mt-0'}
               focus:outline-none
               bg-transparent
               pr-4
@@ -77,9 +105,31 @@ export const InputContainer = ({}) => {
             `}
             placeholder="0.0000"
             onChange={handleFromValueChange}
+            value={showValue}
             name="inputRow"
             autoComplete="off"
           />
+          {isConnected && (
+            <label
+              htmlFor="inputRow"
+              className="absolute hidden pt-1 mt-8 ml-40 text-xs text-white transition-all duration-150 md:block transform-gpu hover:text-opacity-70 hover:cursor-pointer"
+              onClick={onClickBalance}
+            >
+              {formattedBalance}
+              <span className="text-opacity-50 text-secondaryTextColor">
+                {' '}
+                available
+              </span>
+            </label>
+          )}
+          {isConnected && (
+            <div className="hidden mr-2 sm:inline-block">
+              <MiniMaxButton
+                disabled={fromTokenBalance && fromTokenBalance.eq(Zero)}
+                onClickBalance={onClickBalance}
+              />
+            </div>
+          )}
         </div>
       </div>
     </div>

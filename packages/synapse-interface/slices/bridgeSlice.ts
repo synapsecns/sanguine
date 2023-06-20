@@ -11,6 +11,7 @@ import { ARBITRUM, ETH as ETHEREUM } from '@/constants/chains/master'
 export interface BridgeState {
   fromChainId: number
   supportedFromTokens: Token[]
+  supportedFromTokenBalances: any
   toChainId: number
   supportedToTokens: Token[]
   fromToken: Token
@@ -29,6 +30,7 @@ export interface BridgeState {
 const initialState: BridgeState = {
   fromChainId: ETHEREUM.id,
   supportedFromTokens: [],
+  supportedFromTokenBalances: {},
   toChainId: ARBITRUM.id,
   supportedToTokens: [],
   fromToken: ETH,
@@ -70,6 +72,9 @@ export const bridgeSlice = createSlice({
     setSupportedToTokens: (state, action: PayloadAction<Token[]>) => {
       state.supportedToTokens = action.payload
     },
+    setSupportedFromTokenBalances: (state, action: PayloadAction<{}>) => {
+      state.supportedFromTokenBalances = action.payload
+    },
     setFromChainIds: (state, action: PayloadAction<number[]>) => {
       state.fromChainIds = action.payload
     },
@@ -97,6 +102,7 @@ export const {
   updateFromValue,
   setSupportedFromTokens,
   setSupportedToTokens,
+  setSupportedFromTokenBalances,
   setFromChainIds,
   setToChainIds,
   setIsLoading,
