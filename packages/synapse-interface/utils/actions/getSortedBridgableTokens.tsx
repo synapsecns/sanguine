@@ -45,6 +45,10 @@ function sortTokensArray(arr: TokenBalance[], chainId: number): TokenBalance[] {
   })
 }
 
+/**
+ *  Returns an array of token balances held by current connected wallet
+ *  based on specified chainId
+ */
 export function useUserHeldTokens(bridgeTxHash: string): TokenBalance[] {
   const [heldTokens, setHeldTokens] = useState<TokenBalance[]>([])
   const { address } = useAccount()
@@ -107,6 +111,7 @@ export function useUserHeldTokens(bridgeTxHash: string): TokenBalance[] {
   return heldTokens
 }
 
+/** Returns sorted array of tokens, ordered by Held / Unheld tokens */
 export function getSortedBridgableTokens(
   chainId: number,
   bridgeTxHash: string
