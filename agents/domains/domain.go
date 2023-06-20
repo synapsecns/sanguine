@@ -112,7 +112,8 @@ type LightManagerContract interface {
 	// UpdateAgentStatus updates the agent status on the remote chain.
 	UpdateAgentStatus(
 		ctx context.Context,
-		signer signer.Signer,
+		unbondedSigner signer.Signer,
+		bondedSigner signer.Signer,
 		agentStatus types.AgentStatus,
 		agentProof [][32]byte) error
 }

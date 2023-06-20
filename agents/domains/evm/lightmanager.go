@@ -84,10 +84,11 @@ func (a lightManagerContract) GetAgentRoot(ctx context.Context) ([32]byte, error
 
 func (a lightManagerContract) UpdateAgentStatus(
 	ctx context.Context,
-	signer signer.Signer,
+	unbondedSigner signer.Signer,
+	bondedSigner signer.Signer,
 	agentStatus types.AgentStatus,
 	agentProof [][32]byte) error {
-	transactOpts, err := a.transactOptsSetup(ctx, signer)
+	transactOpts, err := a.transactOptsSetup(ctx, unbondedSigner)
 	if err != nil {
 		return fmt.Errorf("could not setup transact opts: %w", err)
 	}
@@ -97,7 +98,7 @@ func (a lightManagerContract) UpdateAgentStatus(
 		Domain: agentStatus.Domain(),
 		Index:  agentStatus.Index(),
 	}
-	_, err = a.contract.UpdateAgentStatus(transactOpts, signer.Address(), lightManagerAgentStatus, agentProof)
+	_, err = a.contract.UpdateAgentStatus(transactOpts, bondedSigner.Address(), lightManagerAgentStatus, agentProof)
 	if err != nil {
 		return fmt.Errorf("could not submit attestation: %w", err)
 	}
