@@ -5,7 +5,7 @@ import Image from 'next/image'
 import Tooltip from '@tw/Tooltip'
 import { useEffect, useState } from 'react'
 import { useDispatch } from 'react-redux'
-import { setToChainId } from '@/slices/bridgeSlice'
+import { setShowToChainSlideOver, setToChainId } from '@/slices/bridgeSlice'
 import { getOrderedChains } from '@/utils/getOrderedChains'
 
 export const DestinationChainLabel = ({
@@ -18,6 +18,7 @@ export const DestinationChainLabel = ({
   connectedChainId: number
 }) => {
   const [orderedChains, setOrderedChains] = useState<number[]>([])
+  const dispatch = useDispatch()
 
   useEffect(() => {
     setOrderedChains(chainOrderBySwapSide(connectedChainId, chainId, chains))
@@ -38,7 +39,7 @@ export const DestinationChainLabel = ({
         )}
         <button
           onClick={() => {
-            // open up Destination Chain ChainSlideOver
+            dispatch(setShowToChainSlideOver(true))
           }}
           tabIndex={0}
           className="w-8 h-8 px-1.5 py-1.5 bg-[#C4C4C4] bg-opacity-10 rounded-full hover:cursor-pointer group"

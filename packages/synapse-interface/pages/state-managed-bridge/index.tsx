@@ -20,6 +20,8 @@ import {
   setSupportedFromTokenBalances,
   setShowFromTokenSlideOver,
   setShowToTokenSlideOver,
+  setShowFromChainSlideOver,
+  setShowToChainSlideOver,
 } from '../../slices/bridgeSlice'
 import { stringToBigNum } from '@/utils/stringToBigNum'
 import { EMPTY_BRIDGE_QUOTE, EMPTY_BRIDGE_QUOTE_ZERO } from '@/constants/bridge'
@@ -51,6 +53,7 @@ import { TokenSlideOver } from '@/components/StateManagedBridge/TokenSlideOver'
 import { InputContainer } from '@/components/StateManagedBridge/InputContainer'
 import { OutputContainer } from '@/components/StateManagedBridge/OutputContainer'
 import { sortByTokenBalance } from '@/utils/sortTokens'
+import { ChainSlideOver } from '@/components/StateManagedBridge/ChainSlideOver'
 
 // NOTE: These are idle utility functions that will be re-written to
 // support sorting by desired mechanism
@@ -92,6 +95,8 @@ const StateManagedBridge = () => {
     showToTokenSlideOver,
     supportedFromTokens,
     supportedToTokens,
+    showFromChainSlideOver,
+    showToChainSlideOver,
   } = useSelector((state: RootState) => state.bridge)
 
   const [isApproved, setIsApproved] = useState(false)
@@ -371,6 +376,30 @@ const StateManagedBridge = () => {
                     setToken={setToToken}
                     setShowSlideOver={setShowToTokenSlideOver}
                   />{' '}
+                </animated.div>
+              </Transition>
+              <Transition show={showFromChainSlideOver} {...TRANSITION_PROPS}>
+                <animated.div>
+                  <ChainSlideOver
+                    key="fromChainBlock"
+                    isOrigin={true}
+                    chains={fromChainIds}
+                    chainId={fromChainId}
+                    setChain={setFromChainId}
+                    setShowSlideOver={setShowFromChainSlideOver}
+                  />
+                </animated.div>
+              </Transition>
+              <Transition show={showToChainSlideOver} {...TRANSITION_PROPS}>
+                <animated.div>
+                  <ChainSlideOver
+                    key="toChainBlock"
+                    isOrigin={true}
+                    chains={toChainIds}
+                    chainId={toChainId}
+                    setChain={setToChainId}
+                    setShowSlideOver={setShowToChainSlideOver}
+                  />
                 </animated.div>
               </Transition>
               <div className="space-y-2">

@@ -22,7 +22,8 @@ export interface BridgeState {
   isLoading: boolean
   showFromTokenSlideOver: boolean
   showToTokenSlideOver: boolean
-  showChainSlideOver: boolean
+  showFromChainSlideOver: boolean
+  showToChainSlideOver: boolean
 }
 
 // How do we update query params based on initial state?
@@ -42,7 +43,8 @@ const initialState: BridgeState = {
   isLoading: false,
   showFromTokenSlideOver: false,
   showToTokenSlideOver: false,
-  showChainSlideOver: false,
+  showFromChainSlideOver: false,
+  showToChainSlideOver: false,
 }
 
 export const bridgeSlice = createSlice({
@@ -94,8 +96,11 @@ export const bridgeSlice = createSlice({
     setShowToTokenSlideOver: (state, action: PayloadAction<boolean>) => {
       state.showToTokenSlideOver = action.payload
     },
-    setShowChainSlideOver: (state, action: PayloadAction<boolean>) => {
-      state.showChainSlideOver = action.payload
+    setShowFromChainSlideOver: (state, action: PayloadAction<boolean>) => {
+      state.showFromChainSlideOver = action.payload
+    },
+    setShowToChainSlideOver: (state, action: PayloadAction<boolean>) => {
+      state.showToChainSlideOver = action.payload
     },
   },
 })
@@ -113,7 +118,8 @@ export const {
   setFromChainIds,
   setToChainIds,
   setIsLoading,
-  setShowChainSlideOver,
+  setShowFromChainSlideOver,
+  setShowToChainSlideOver,
   setShowFromTokenSlideOver,
   setShowToTokenSlideOver,
 } = bridgeSlice.actions

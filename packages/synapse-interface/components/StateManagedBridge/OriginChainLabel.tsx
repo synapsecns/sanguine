@@ -5,7 +5,7 @@ import Image from 'next/image'
 import Tooltip from '@tw/Tooltip'
 import { useEffect, useState } from 'react'
 import { useDispatch } from 'react-redux'
-import { setFromChainId } from '@/slices/bridgeSlice'
+import { setFromChainId, setShowFromChainSlideOver } from '@/slices/bridgeSlice'
 
 export const OriginChainLabel = ({
   chains,
@@ -20,6 +20,8 @@ export const OriginChainLabel = ({
   useEffect(() => {
     setOrderedChains(chainOrderBySwapSide(chainId))
   }, [chainId, connectedChainId, chains])
+
+  const dispatch = useDispatch()
 
   return (
     <div className="flex items-center justify-center md:justify-between">
@@ -36,7 +38,7 @@ export const OriginChainLabel = ({
         )}
         <button
           onClick={() => {
-            // open up Origin Chain ChainSlideOver
+            dispatch(setShowFromChainSlideOver(true))
           }}
           tabIndex={0}
           className="w-8 h-8 px-1.5 py-1.5 bg-[#C4C4C4] bg-opacity-10 rounded-full hover:cursor-pointer group"
