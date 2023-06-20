@@ -26,7 +26,6 @@ const TokenMenuItem = ({
   tokenBalance: BigNumber | undefined
   onClick: () => void
 }) => {
-  console.log(`in token mneu item`, token)
   const isCurrentlySelected = selectedToken?.symbol === token?.symbol
 
   let bgClassName

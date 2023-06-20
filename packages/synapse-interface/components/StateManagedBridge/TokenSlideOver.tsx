@@ -29,13 +29,8 @@ export const TokenSlideOver = ({
   const [searchStr, setSearchStr] = useState('')
   const dispatch = useDispatch()
   let tokenList: any[] = []
-  if (!isOrigin && tokens?.length > 0) {
-    tokens.map((token) => {
-      tokenList.push({ token, balance: Zero })
-    })
-  } else {
-    tokenList = tokens
-  }
+
+  tokenList = tokens
 
   tokenList = sortTokens(tokenList)
   const fuse = new Fuse(tokenList, {

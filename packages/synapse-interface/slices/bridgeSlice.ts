@@ -4,9 +4,8 @@ import { createSlice, PayloadAction } from '@reduxjs/toolkit'
 
 import { EMPTY_BRIDGE_QUOTE } from '@/constants/bridge'
 import { ETH } from '@/constants/tokens/master'
-import { BridgeQuote, Token } from '@/utils/types'
-
 import { ARBITRUM, ETH as ETHEREUM } from '@/constants/chains/master'
+import { BridgeQuote, Token } from '@/utils/types'
 
 export interface BridgeState {
   fromChainId: number
@@ -43,7 +42,7 @@ const initialState: BridgeState = {
   isLoading: false,
   showFromTokenSlideOver: false,
   showToTokenSlideOver: false,
-  showChainSlideOver: false
+  showChainSlideOver: false,
 }
 
 export const bridgeSlice = createSlice({
@@ -94,7 +93,7 @@ export const bridgeSlice = createSlice({
     },
     setShowChainSlideOver: (state, action: PayloadAction<boolean>) => {
       state.showChainSlideOver = action.payload
-    }
+    },
   },
 })
 
