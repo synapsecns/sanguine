@@ -6,6 +6,7 @@ import { ChainLabel } from '@/components/ChainLabel'
 import { useDispatch } from 'react-redux'
 import { setShowToTokenSlideOver } from '@/slices/bridgeSlice'
 import LoadingSpinner from '../ui/tailwind/LoadingSpinner'
+import { DestinationChainLabel } from './DestinationChainLabel'
 
 export const OutputContainer = ({}) => {
   const dispatch = useDispatch()
@@ -27,12 +28,9 @@ export const OutputContainer = ({}) => {
     >
       <div>
         <div className="pt-1 pb-3">
-          <ChainLabel
-            isOrigin={false}
+          <DestinationChainLabel
             chainId={toChainId}
-            setDisplayType={() => {}}
-            onChangeChain={() => {}}
-            chains={toChainIds.map((id) => `${id}`)}
+            chains={toChainIds}
             connectedChainId={fromChainId}
           />
         </div>

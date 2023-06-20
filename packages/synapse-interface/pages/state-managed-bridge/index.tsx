@@ -99,9 +99,15 @@ const StateManagedBridge = () => {
   const dispatch = useDispatch()
 
   const fromChainIds = Object.keys(CHAINS_BY_ID).map((id) => Number(id))
-  const toChainIds = BRIDGE_CHAINS_BY_TYPE[fromToken.swapableType]
-    .filter((chainId) => Number(chainId) !== fromChainId)
-    .map((chainId) => Number(chainId))
+  const toChainIds = Object.keys(CHAINS_BY_ID).map((id) => Number(id))
+
+  // Commenting out for a bit to debug, but basic issue is we need
+  // a mapping for allowable routes/tokens, and how we set them on
+  // init and state changes
+
+  // const toChainIds = BRIDGE_CHAINS_BY_TYPE[fromToken.swapableType]
+  //   .filter((chainId) => Number(chainId) !== fromChainId)
+  //   .map((chainId) => Number(chainId))
 
   // Can be smarter about breaking out which calls happen assoc with which
   // dependencies (like some stuff should only change on fromChainId changes)

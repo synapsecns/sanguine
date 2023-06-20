@@ -118,7 +118,7 @@ export const InputContainer = () => {
           {hasMounted && isConnected && (
             <label
               htmlFor="inputRow"
-              className="absolute hidden pt-1 mt-8 ml-40 text-xs text-white transition-all duration-150 md:block transform-gpu hover:text-opacity-70 hover:cursor-pointer"
+              className="absolute hidden pt-1 mt-10 ml-40 text-xs text-white transition-all duration-150 md:block transform-gpu hover:text-opacity-70 hover:cursor-pointer"
               onClick={onClickBalance}
             >
               {formattedBalance}

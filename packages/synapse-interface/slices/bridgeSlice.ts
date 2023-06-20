@@ -53,6 +53,9 @@ export const bridgeSlice = createSlice({
       state.isLoading = action.payload
     },
     setFromChainId: (state, action: PayloadAction<number>) => {
+      if (state.toChainId === action.payload) {
+        state.toChainId = state.fromChainId
+      }
       state.fromChainId = action.payload
     },
     setToChainId: (state, action: PayloadAction<number>) => {
