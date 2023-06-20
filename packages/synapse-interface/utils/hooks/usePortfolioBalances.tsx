@@ -13,49 +13,50 @@ interface NetworkSpecificToken {
   token: Token
   symbol: string
   queryAddress: Address
-  chainId: number
+  queryChainId: number
+}
+
+const getQueryableTokensByChain = (): NetworkSpecificToken[] => {
+  const tokens = []
+  const queryableNetworks = Object.keys(BRIDGABLE_TOKENS)
+
+  queryableNetworks.forEach((chainId: string) => {
+    BRIDGABLE_TOKENS[chainId].forEach((token: Token) => {
+      const transformedToken = {
+        token: token,
+        symbol: token.symbol,
+        queryAddress:
+          token.addresses[Number(chainId) as keyof Token['addresses']],
+        queryChainId: Number(chainId),
+      } as NetworkSpecificToken
+      tokens.push(transformedToken)
+    })
+  })
+
+  return tokens
 }
 
 export const usePortfolioBalances = () => {
-  const tokens = []
-  const queryableNetworks = Object.keys(BRIDGABLE_TOKENS)
-  queryableNetworks.forEach((chainId: string) => {
-    const updatedTokensForChain = BRIDGABLE_TOKENS[chainId].forEach(
-      (token: Token) => {
-        const transformedToken = {
-          token: token,
-          symbol: token.symbol,
-          queryAddress:
-            token.addresses[Number(chainId) as keyof Token['addresses']],
-          chainId: Number(chainId),
-        } as NetworkSpecificToken
-
-        tokens.push(transformedToken)
-      }
-    )
-  })
-
-  console.log('tokens: ', tokens)
+  const { address } = useAccount()
+  const tokens = getQueryableTokensByChain()
+  const balances = useTokenBalances(address, tokens)
 }
 
-const useTokenBalances = (
-  address: Address,
-  tokens: Token[],
-  chainId: number
-) => {
+const useTokenBalances = (address: Address, tokens: NetworkSpecificToken[]) => {
   const [balances, setBalances] = useState([])
 
   let calls = []
 
   useEffect(() => {
-    if (!address || chainId === undefined) return
+    if (!address) return
     if (tokens.length === 0) return
     ;(async () => {
-      tokens.forEach((token: Token) => {
-        const tokenAddress =
-          token.addresses[chainId as keyof Token['addresses']]
+      tokens.forEach((queryToken: NetworkSpecificToken) => {
+        const { token, symbol, queryAddress, queryChainId } = queryToken
 
-        switch (tokenAddress) {
+        console.log('queryChainId: ', queryChainId)
+        console.log('queryAddress: ', queryAddress)
+        switch (queryAddress) {
           case undefined:
             break
           case AddressZero || '':
@@ -63,22 +64,23 @@ const useTokenBalances = (
               address: MULTICALL3_ADDRESS,
               abi: multicallABI,
               functionName: 'getEthBalance',
-              chainId,
+              chainId: queryChainId,
               args: [address],
             })
             break
           default:
             calls.push({
-              address: tokenAddress,
+              address: queryAddress,
               abi: multicallABI,
               functionName: 'balanceOf',
-              chainId,
+              chainId: queryChainId,
               args: [address],
             })
         }
       })
 
       const multicallData = await multicall({ contracts: calls })
+      console.log('multicallData: ', multicallData)
     })()
   }, [tokens])
 }
