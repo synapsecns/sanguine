@@ -8,21 +8,22 @@ import { DrawerButton } from '@components/buttons/DrawerButton'
 import { sortTokens } from '@constants/tokens'
 
 import { Token } from '@/utils/types'
-import { setFromToken, setShowTokenSlideOver } from '@/slices/bridgeSlice'
 import { useDispatch } from 'react-redux'
 
 export const TokenSlideOver = ({
-  isOrigin = false,
+  isOrigin,
   tokens = [],
   chainId,
   selectedToken,
-  handleTokenChange,
+  setToken,
+  setShowSlideOver,
 }: {
   isOrigin: boolean
   tokens: any[]
   chainId: number
   selectedToken: Token
-  handleTokenChange: (token: Token, type: 'from' | 'to') => void
+  setToken: any
+  setShowSlideOver: any
 }) => {
   const [currentIdx, setCurrentIdx] = useState(-1)
   const [searchStr, setSearchStr] = useState('')
@@ -35,6 +36,7 @@ export const TokenSlideOver = ({
   } else {
     tokenList = tokens
   }
+
   tokenList = sortTokens(tokenList)
   const fuse = new Fuse(tokenList, {
     includeScore: true,
@@ -59,11 +61,12 @@ export const TokenSlideOver = ({
 
   function onClose() {
     setCurrentIdx(-1)
+    dispatch(setShowSlideOver(false))
   }
 
   function onMenuItemClick(coin: any) {
-    dispatch(setFromToken(coin))
-    dispatch(setShowTokenSlideOver(false))
+    dispatch(setToken(coin))
+    dispatch(setShowSlideOver(false))
     onClose()
   }
 

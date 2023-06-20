@@ -18,6 +18,8 @@ import {
   setFromChainIds,
   setToChainIds,
   setSupportedFromTokenBalances,
+  setShowFromTokenSlideOver,
+  setShowToTokenSlideOver,
 } from '../../slices/bridgeSlice'
 import { stringToBigNum } from '@/utils/stringToBigNum'
 import { EMPTY_BRIDGE_QUOTE, EMPTY_BRIDGE_QUOTE_ZERO } from '@/constants/bridge'
@@ -30,7 +32,7 @@ import { subtractSlippage } from '@/utils/slippage'
 import { commify } from '@ethersproject/units'
 import { formatBNToString } from '@/utils/bignumber/format'
 import { calculateExchangeRate } from '@/utils/calculateExchangeRate'
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { Token } from '@/utils/types'
 import { fetchSigner } from '@wagmi/core'
 import { txErrorHandler } from '@/utils/txErrorHandler'
@@ -76,6 +78,7 @@ const sortToTokens = (tokens: Token[]) => {
 const StateManagedBridge = () => {
   const { address } = useAccount()
   const { synapseSDK } = useSynapseContext()
+  const bridgeDisplayRef = useRef(null)
 
   const {
     fromChainId,
@@ -85,7 +88,8 @@ const StateManagedBridge = () => {
     bridgeQuote,
     fromValue,
     isLoading,
-    showTokenSlideOver,
+    showFromTokenSlideOver,
+    showToTokenSlideOver,
     supportedFromTokens,
     supportedToTokens,
   } = useSelector((state: RootState) => state.bridge)
@@ -336,8 +340,8 @@ const StateManagedBridge = () => {
             bg-bgBase md:px-6 lg:px-6 mt-5
           `}
           >
-            <div ref={null}>
-              <Transition show={showTokenSlideOver} {...TRANSITION_PROPS}>
+            <div ref={bridgeDisplayRef}>
+              <Transition show={showFromTokenSlideOver} {...TRANSITION_PROPS}>
                 <animated.div>
                   <TokenSlideOver
                     key="fromBlock"
@@ -345,7 +349,21 @@ const StateManagedBridge = () => {
                     tokens={supportedFromTokens}
                     chainId={fromChainId}
                     selectedToken={fromToken}
-                    handleTokenChange={() => {}}
+                    setToken={setFromToken}
+                    setShowSlideOver={setShowFromTokenSlideOver}
+                  />{' '}
+                </animated.div>
+              </Transition>
+              <Transition show={showToTokenSlideOver} {...TRANSITION_PROPS}>
+                <animated.div>
+                  <TokenSlideOver
+                    key="toBlock"
+                    isOrigin={false}
+                    tokens={supportedToTokens}
+                    chainId={toChainId}
+                    selectedToken={toToken}
+                    setToken={setToToken}
+                    setShowSlideOver={setShowToTokenSlideOver}
                   />{' '}
                 </animated.div>
               </Transition>
@@ -467,17 +485,17 @@ const StateManagedBridge = () => {
                     </button>
                   )}
                 </div>
-                <div className="max-w-1/4">
-                  <div className="underline">Your bridge quote</div>
-                  <div>
-                    {Object.entries(bridgeQuote).map(([key, value]) => (
-                      <div key={key}>{`${key}: ${value}`}</div>
-                    ))}
-                  </div>
-                </div>
               </div>
             </div>
           </Card>
+          <div className="max-w-1/4">
+            <div className="underline">Your bridge quote</div>
+            <div>
+              {Object.entries(bridgeQuote).map(([key, value]) => (
+                <div key={key}>{`${key}: ${value}`}</div>
+              ))}
+            </div>
+          </div>
         </div>
       </div>
     </LandingPageWrapper>

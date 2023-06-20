@@ -23,13 +23,13 @@ const TokenBalance = ({
   return (
     <div className="ml-auto mr-5 text-lg text-white">
       {!tokenBalance.eq(0) && (
-        <p>
+        <div>
           {formattedBalance}
           <span className="text-sm opacity-80">
             {' '}
             {token ? displaySymbol(chainId, token) : ''}
           </span>
-        </p>
+        </div>
       )}
     </div>
   )

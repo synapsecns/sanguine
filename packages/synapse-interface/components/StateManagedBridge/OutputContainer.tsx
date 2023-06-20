@@ -3,8 +3,11 @@ import { RootState } from '@/store/store'
 
 import SelectTokenDropdown from '@/components/input/TokenAmountInput/SelectTokenDropdown'
 import { ChainLabel } from '@/components/ChainLabel'
+import { useDispatch } from 'react-redux'
+import { setShowToTokenSlideOver } from '@/slices/bridgeSlice'
 
 export const OutputContainer = ({}) => {
+  const dispatch = useDispatch()
   const {
     fromChainId,
     toChainId,
@@ -51,7 +54,7 @@ export const OutputContainer = ({}) => {
             chainId={toChainId}
             selectedToken={toToken}
             isOrigin={false}
-            onClick={() => {}}
+            onClick={() => dispatch(setShowToTokenSlideOver(true))}
           />
           <input
             pattern="[0-9.]+"

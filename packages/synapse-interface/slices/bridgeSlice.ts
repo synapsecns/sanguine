@@ -21,7 +21,8 @@ export interface BridgeState {
   fromChainIds: number[]
   toChainIds: number[]
   isLoading: boolean
-  showTokenSlideOver: boolean
+  showFromTokenSlideOver: boolean
+  showToTokenSlideOver: boolean
   showChainSlideOver: boolean
 }
 
@@ -40,7 +41,8 @@ const initialState: BridgeState = {
   fromChainIds: [],
   toChainIds: [],
   isLoading: false,
-  showTokenSlideOver: false,
+  showFromTokenSlideOver: false,
+  showToTokenSlideOver: false,
   showChainSlideOver: false
 }
 
@@ -84,8 +86,11 @@ export const bridgeSlice = createSlice({
     updateFromValue: (state, action: PayloadAction<BigNumber>) => {
       state.fromValue = action.payload
     },
-    setShowTokenSlideOver: (state, action: PayloadAction<boolean>) => {
-      state.showTokenSlideOver = action.payload
+    setShowFromTokenSlideOver: (state, action: PayloadAction<boolean>) => {
+      state.showFromTokenSlideOver = action.payload
+    },
+    setShowToTokenSlideOver: (state, action: PayloadAction<boolean>) => {
+      state.showToTokenSlideOver = action.payload
     },
     setShowChainSlideOver: (state, action: PayloadAction<boolean>) => {
       state.showChainSlideOver = action.payload
@@ -107,7 +112,8 @@ export const {
   setToChainIds,
   setIsLoading,
   setShowChainSlideOver,
-  setShowTokenSlideOver,
+  setShowFromTokenSlideOver,
+  setShowToTokenSlideOver,
 } = bridgeSlice.actions
 
 export default bridgeSlice.reducer
