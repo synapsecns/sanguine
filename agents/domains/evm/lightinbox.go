@@ -41,6 +41,7 @@ type lightInboxContract struct {
 	nonceManager nonce.Manager
 }
 
+//nolint:dupl
 func (a lightInboxContract) transactOptsSetup(ctx context.Context, signer signer.Signer) (*bind.TransactOpts, error) {
 	transactor, err := signer.GetTransactor(ctx, a.client.GetBigChainID())
 	if err != nil {
