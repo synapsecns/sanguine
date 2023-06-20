@@ -3,14 +3,14 @@ package config
 import (
 	"context"
 	"fmt"
-	submitterConfig "github.com/synapsecns/sanguine/ethergo/submitter/config"
 	"os"
 	"path/filepath"
+
+	submitterConfig "github.com/synapsecns/sanguine/ethergo/submitter/config"
 
 	"github.com/davecgh/go-spew/spew"
 	"github.com/jftuga/ellipsis"
 	ethConfig "github.com/synapsecns/sanguine/ethergo/signer/config"
-	scribeConfig "github.com/synapsecns/sanguine/services/scribe/config"
 	"gopkg.in/yaml.v2"
 )
 
@@ -27,10 +27,6 @@ type Config struct {
 	// Signer contains the unbonded signer config for agents
 	// (this is signer used to submit transactions)
 	Signer ethConfig.SignerConfig `yaml:"unbonded_signer"`
-	// EmbeddedScribeConfig is the config for the embedded scribe. This only needs to be
-	// included if an embedded Scribe is being used. If a remote Scribe is being used,
-	// this can be left empty.
-	EmbeddedScribeConfig scribeConfig.Config `yaml:"embedded_scribe_config"`
 	// HTTPBackoffInitialInterval is the initial interval for attestation request retries
 	HTTPBackoffInitialIntervalMs int `yaml:"http_backoff_initial_interval_ms"`
 	// HTTPBackoffMaxElapsedTime is the max elapsed time for attestation request retries
@@ -52,10 +48,6 @@ func (c *Config) IsValid(ctx context.Context) (ok bool, err error) {
 
 	if ok, err = c.Signer.IsValid(ctx); !ok {
 		return false, fmt.Errorf("unbonded signer is invalid: %w", err)
-	}
-
-	if ok, err = c.EmbeddedScribeConfig.IsValid(ctx); !ok {
-		return false, fmt.Errorf("embedded scribe config is invalid: %w", err)
 	}
 
 	return true, nil
