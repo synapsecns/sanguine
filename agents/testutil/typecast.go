@@ -493,6 +493,7 @@ func (d *DeployManager) InitializeRemoteDeployedHarnessContracts(
 
 // AddAgentsToLightManagerHarnessContract handles adding the agents to the light manager harness contract on the remote chain.
 // nolint:dupl,cyclop
+// codebeat:disable[CYCLO]
 func (d *DeployManager) AddAgentsToLightManagerHarnessContract(
 	ctx context.Context,
 	backend backends.SimulatedTestBackend,

@@ -389,6 +389,8 @@ func (n *Notary) submitLatestSnapshot(parentCtx context.Context) {
 	}
 }
 
+// codebeat:disable[CYCLO,DEPTH,LOC]
+//
 //nolint:cyclop
 func (n *Notary) registerNotaryOnDestination(parentCtx context.Context) bool {
 	ctx, span := n.handler.Tracer().Start(parentCtx, "registerNotaryOnDestination")
@@ -460,6 +462,8 @@ func (n *Notary) submitMyLatestAttestation(parentCtx context.Context) {
 }
 
 // Start starts the notary.
+//
+// codebeat:disable[CYCLO,DEPTH]
 //
 //nolint:cyclop
 func (n *Notary) Start(ctx context.Context) error {
