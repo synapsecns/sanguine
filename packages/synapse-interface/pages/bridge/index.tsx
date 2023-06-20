@@ -44,6 +44,7 @@ import {
   QUOTE_POLLING_INTERVAL,
 } from '@/constants/bridge'
 import { CHAINS_BY_ID, AcceptedChainId } from '@/constants/chains'
+import { getSortedBridgableTokens } from '@/utils/actions/getSortedBridgableTokens'
 import { PortfolioPreview, Portfolio } from '@/components/Portfolio'
 
 /* TODO
@@ -67,7 +68,6 @@ const BridgePage = ({
   const [toChainId, setToChainId] = useState(DEFAULT_TO_CHAIN)
   const [toToken, setToToken] = useState(DEFAULT_TO_TOKEN)
   const [isQuoteLoading, setIsQuoteLoading] = useState<boolean>(false)
-  const [error, setError] = useState('')
   const [bridgeTxHash, setBridgeTxHash] = useState('')
   const [destinationAddress, setDestinationAddress] = useState('')
   const [toOptions, setToOptions] = useState({
@@ -83,29 +83,31 @@ const BridgePage = ({
   let successPopup: any
   let errorPopup: string
 
+  const bridgableTokens = getSortedBridgableTokens(fromChainId, bridgeTxHash)
+
   /*
   useEffect Trigger: onMount
   - Gets current network connected and sets it as the state.
   - Initializes polling (setInterval) func to re-retrieve quotes.
   */
-  useEffect(() => {
-    const validFromChainId = AcceptedChainId[fromChainId] ? fromChainId : 1
-    sortByTokenBalance(
-      BRIDGABLE_TOKENS[validFromChainId],
-      validFromChainId,
-      address
-    ).then((tokens) => {
-      setFromTokens(tokens)
-    })
-    const interval = setInterval(
-      () => setTime(Date.now()),
-      QUOTE_POLLING_INTERVAL
-    )
+  // useEffect(() => {
+  //   const validFromChainId = AcceptedChainId[fromChainId] ? fromChainId : 1
+  //   sortByTokenBalance(
+  //     BRIDGABLE_TOKENS[validFromChainId],
+  //     validFromChainId,
+  //     address
+  //   ).then((tokens) => {
+  //     setFromTokens(tokens)
+  //   })
+  //   const interval = setInterval(
+  //     () => setTime(Date.now()),
+  //     QUOTE_POLLING_INTERVAL
+  //   )
 
-    return () => {
-      clearInterval(interval)
-    }
-  }, [bridgeTxHash, fromChainId, address])
+  //   return () => {
+  //     clearInterval(interval)
+  //   }
+  // }, [bridgeTxHash, fromChainId, address])
 
   useEffect(() => {
     if (!router.isReady) {
@@ -729,9 +731,9 @@ const BridgePage = ({
       >
         <div
           className={`
-            flex flex-col md:flex-row 
-            items-start justify-center 
-            2xl:w-3/4 px-4 py-16 mx-auto 
+            flex flex-col md:flex-row
+            items-start justify-center
+            2xl:w-3/4 px-4 py-16 mx-auto
             mt-4 sm:mt-6 sm:px-8 md:px-12`}
         >
           {isConnected ? <Portfolio /> : <PortfolioPreview />}
@@ -745,12 +747,11 @@ const BridgePage = ({
               <div className="flex justify-center">
                 <div className="pb-3 place-self-center">
                   <BridgeCard
-                    error={error}
                     address={address}
                     bridgeQuote={bridgeQuote}
                     fromInput={fromInput}
                     fromToken={fromToken}
-                    fromTokens={fromTokens}
+                    fromTokens={bridgableTokens}
                     fromChainId={fromChainId}
                     toToken={toToken}
                     toChainId={toChainId}

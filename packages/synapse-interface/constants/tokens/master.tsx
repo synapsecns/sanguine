@@ -63,6 +63,7 @@ export const GOHM = new Token({
   swapableType: 'OHM',
   color: 'gray',
   visibilityRank: 40,
+  priorityRank: 6,
 })
 
 export const LINK = new Token({
@@ -77,6 +78,7 @@ export const LINK = new Token({
   description: 'LINK',
   swapableType: 'LINK',
   color: 'blue',
+  priorityRank: 6,
 })
 
 export const HIGHSTREET = new Token({
@@ -91,6 +93,7 @@ export const HIGHSTREET = new Token({
   description: 'HIGH is the token behind Highstreet',
   swapableType: 'HIGHSTREET',
   color: 'cyan',
+  priorityRank: 6,
 })
 
 export const JUMP = new Token({
@@ -107,6 +110,7 @@ export const JUMP = new Token({
   docUrl: '',
   swapableType: 'JUMP',
   color: 'cyan',
+  priorityRank: 6,
 })
 
 export const SFI = new Token({
@@ -122,6 +126,7 @@ export const SFI = new Token({
   docUrl: '',
   swapableType: 'SFI',
   color: 'red',
+  priorityRank: 6,
 })
 
 export const DOG = new Token({
@@ -139,6 +144,7 @@ export const DOG = new Token({
   docUrl: '',
   swapableType: 'DOG',
   color: 'yellow',
+  priorityRank: 6,
 })
 
 export const NFD = new Token({
@@ -156,6 +162,7 @@ export const NFD = new Token({
   docUrl: '',
   swapableType: 'NFD',
   color: 'yellow',
+  priorityRank: 6,
 })
 
 export const SOLAR = new Token({
@@ -171,6 +178,7 @@ export const SOLAR = new Token({
   docUrl: '',
   swapableType: 'SOLAR',
   color: 'orange',
+  priorityRank: 6,
 })
 
 export const GMX = new Token({
@@ -188,6 +196,7 @@ export const GMX = new Token({
   description: 'GMX Financial',
   docUrl: '',
   swapableType: 'GMX',
+  priorityRank: 6,
 })
 
 export const SDT = new Token({
@@ -206,6 +215,7 @@ export const SDT = new Token({
   docUrl: '',
   swapableType: 'SDT',
   color: 'gray',
+  priorityRank: 6,
 })
 
 export const NEWO = new Token({
@@ -222,6 +232,7 @@ export const NEWO = new Token({
   docUrl: '',
   swapableType: 'NEWO',
   color: 'yellow',
+  priorityRank: 6,
 })
 
 export const USDB = new Token({
@@ -240,6 +251,7 @@ export const USDB = new Token({
   description: 'USDB',
   docUrl: '',
   swapableType: 'USDB',
+  priorityRank: 6,
 })
 
 export const PEPE = new Token({
@@ -253,7 +265,9 @@ export const PEPE = new Token({
   logo: pepeLogo,
   description: 'PEPE',
   swapableType: 'PEPE',
+  priorityRank: 6,
 })
+
 export const VSTA = new Token({
   addresses: {
     [CHAINS.ETH.id]: '0xA8d7F5e7C78ed0Fa097Cc5Ec66C1DC3104c9bbeb', // redeem
@@ -267,6 +281,7 @@ export const VSTA = new Token({
   docUrl: '',
   swapableType: 'VSTA',
   color: 'gray',
+  priorityRank: 6,
 })
 
 export const H2O = new Token({
@@ -288,6 +303,7 @@ export const H2O = new Token({
   docUrl: '',
   swapableType: 'H2O',
   color: 'cyan',
+  priorityRank: 6,
 })
 
 export const L2DAO = new Token({
@@ -303,6 +319,7 @@ export const L2DAO = new Token({
   docUrl: '',
   swapableType: 'L2DAO',
   color: 'cyan',
+  priorityRank: 6,
 })
 
 export const PLS = new Token({
@@ -318,6 +335,7 @@ export const PLS = new Token({
   docUrl: '',
   swapableType: 'PLS',
   color: 'green',
+  priorityRank: 6,
 })
 
 export const AGEUR = new Token({
@@ -334,6 +352,7 @@ export const AGEUR = new Token({
   docUrl: '',
   swapableType: 'AGEUR',
   color: 'yellow',
+  priorityRank: 6,
 })
 
 export const UNIDX = new Token({
@@ -349,6 +368,7 @@ export const UNIDX = new Token({
   docUrl: '',
   swapableType: 'UNIDX',
   color: 'gray',
+  priorityRank: 6,
 })
 
 // BASIC TOKENS
@@ -368,6 +388,7 @@ export const BUSD = new Token({
   swapableType: 'BUSD',
   swapableOn: [CHAINS.BNB.id],
   color: 'yellow',
+  priorityRank: 1,
 })
 
 export const USDC = new Token({
@@ -435,6 +456,7 @@ export const USDC = new Token({
     CHAINS.CANTO.id,
   ],
   color: 'blue',
+  priorityRank: 1,
 })
 
 // export const KLAYTN_USDC = new Token({
@@ -488,6 +510,7 @@ export const KLAYTN_oUSDT = new Token({
   logo: usdtLogo,
   swapableType: 'KLAYTN_USDT',
   swapableOn: [CHAINS.KLAYTN.id],
+  priorityRank: 6,
 })
 
 // export const KLAYTN_DAI = new Token({
@@ -579,6 +602,7 @@ export const USDT = new Token({
     CHAINS.CANTO.id,
   ],
   visibilityRank: 100,
+  priorityRank: 1,
 })
 
 export const DAI = new Token({
@@ -612,6 +636,7 @@ export const DAI = new Token({
   ],
   color: 'orange',
   visibilityRank: 100,
+  priorityRank: 1,
 })
 
 export const WBTC = new Token({
@@ -630,6 +655,7 @@ export const WBTC = new Token({
   logo: wbtcLogo,
   swapableType: 'WBTC',
   color: 'yellow',
+  priorityRank: 3,
 })
 
 // export const MIM = new Token({
@@ -656,6 +682,7 @@ export const WETHE = new Token({
   swapableType: 'ETH',
   swapableOn: [CHAINS.AVALANCHE.id],
   color: 'sky',
+  priorityRank: 2,
 })
 
 /**
@@ -673,6 +700,7 @@ export const WETHBEAM = new Token({
   description: 'ERC-20 Wrapped form of ETH on Moonbeam',
   swapableType: 'ETH',
   color: 'sky',
+  priorityRank: 2,
 })
 
 export const AVWETH = new Token({
@@ -686,6 +714,7 @@ export const AVWETH = new Token({
   description: 'Aave Wrapped form of ETH',
   swapableType: 'ETH',
   color: 'cyan',
+  priorityRank: 2,
 })
 
 export const ONEETH = new Token({
@@ -700,11 +729,12 @@ export const ONEETH = new Token({
   swapableType: 'ETH',
   swapableOn: [CHAINS.HARMONY.id],
   color: 'sky',
+  priorityRank: 2,
 })
 
 export const FTMETH = new Token({
   addresses: {
-    [CHAINS.FANTOM.id]: '0x74b23882a30290451A17c44f4F05243b6b58C76d'
+    [CHAINS.FANTOM.id]: '0x74b23882a30290451A17c44f4F05243b6b58C76d',
   },
   decimals: 18,
   symbol: 'ETH ',
@@ -714,6 +744,7 @@ export const FTMETH = new Token({
   swapableType: 'ETH',
   swapableOn: [CHAINS.FANTOM.id],
   color: 'sky',
+  priorityRank: 2,
 })
 
 export const CANTOETH = new Token({
@@ -729,6 +760,7 @@ export const CANTOETH = new Token({
   swapableOn: [CHAINS.CANTO.id],
   color: 'sky',
   visibilityRank: 100,
+  priorityRank: 2,
 })
 
 export const METISETH = new Token({
@@ -743,6 +775,7 @@ export const METISETH = new Token({
   swapableType: 'ETH',
   swapableOn: [CHAINS.METIS.id],
   color: 'sky',
+  priorityRank: 2,
 })
 
 export const SYN = new Token({
@@ -772,6 +805,7 @@ export const SYN = new Token({
   swapableType: 'SYN',
   color: 'purple',
   visibilityRank: 90,
+  priorityRank: 2,
 })
 
 export const FRAX = new Token({
@@ -792,6 +826,7 @@ export const FRAX = new Token({
   swapableType: 'FRAX',
   // swapableOn: [CHAINS.MOONRIVER.id, CHAINS.MOONBEAM.id],
   color: 'gray',
+  priorityRank: 6,
 })
 
 export const SYN_FRAX = new Token({
@@ -807,6 +842,7 @@ export const SYN_FRAX = new Token({
   logo: synapseLogo,
   description: 'Frax',
   swapableType: 'FRAX',
+  priorityRank: 4,
 })
 
 /**
@@ -851,6 +887,7 @@ export const NUSD = new Token({
   ],
   color: 'purple',
   visibilityRank: 50,
+  priorityRank: 5,
 })
 
 export const NOTE = new Token({
@@ -866,6 +903,7 @@ export const NOTE = new Token({
   swapableOn: [CHAINS.CANTO.id],
   color: 'green',
   visibilityRank: 90,
+  priorityRank: 3,
 })
 
 export const DFK_USDC = new Token({
@@ -882,6 +920,7 @@ export const DFK_USDC = new Token({
   swapableType: 'USD',
   color: 'blue',
   visibilityRank: 100,
+  priorityRank: 1,
 })
 
 /**
@@ -918,6 +957,7 @@ export const NETH = new Token({
   ],
   color: 'purple',
   visibilityRank: 50,
+  priorityRank: 5,
 })
 
 export const KLAYTN_WETH = new Token({
@@ -934,6 +974,7 @@ export const KLAYTN_WETH = new Token({
   logo: ethLogo,
   description: '',
   swapableType: 'ETH',
+  priorityRank: 3,
 })
 
 export const ETH = new Token({
@@ -952,6 +993,7 @@ export const ETH = new Token({
   swapableType: 'ETH',
   color: 'sky',
   visibilityRank: 101,
+  priorityRank: 2,
 })
 
 export const MOVR = new Token({
@@ -966,6 +1008,7 @@ export const MOVR = new Token({
   isNative: true,
   swapableType: 'MOVR',
   color: 'purple',
+  priorityRank: 3,
 })
 
 export const AVAX = new Token({
@@ -980,6 +1023,7 @@ export const AVAX = new Token({
   isNative: true,
   swapableType: 'AVAX',
   color: 'red',
+  priorityRank: 3,
 })
 
 export const WMOVR = new Token({
@@ -994,6 +1038,7 @@ export const WMOVR = new Token({
   description: 'ERC-20 Wrapped form of MOVR',
   swapableType: 'MOVR',
   color: 'purple',
+  priorityRank: 3,
 })
 
 export const WAVAX = new Token({
@@ -1004,13 +1049,14 @@ export const WAVAX = new Token({
     [CHAINS.HARMONY.id]: '0xD9eAA386cCD65F30b77FF175F6b52115FE454fD6',
   },
   decimals: 18,
-  symbol: 'AVAX', // SHOULD BE WETH
+  symbol: 'AVAX',
   name: 'Wrapped AVAX',
   logo: avaxLogo,
   description: 'ERC-20 Wrapped form of AVAX',
   swapableType: 'AVAX',
   color: 'red',
   visibilityRank: 90,
+  priorityRank: 3,
 })
 
 export const SYNAVAX = new Token({
@@ -1018,13 +1064,14 @@ export const SYNAVAX = new Token({
     [CHAINS.HARMONY.id]: '0xD9eAA386cCD65F30b77FF175F6b52115FE454fD6',
   },
   decimals: 18,
-  symbol: 'synAVAX', // SHOULD BE WETH
+  symbol: 'synAVAX',
   name: 'Wrapped AVAX',
   logo: avaxLogo,
   description: 'ERC-20 Wrapped form of AVAX',
   swapableType: 'AVAX',
   swapableOn: [CHAINS.HARMONY.id],
   color: 'red',
+  priorityRank: 4,
 })
 
 export const MULTIAVAX = new Token({
@@ -1039,6 +1086,7 @@ export const MULTIAVAX = new Token({
   swapableType: 'AVAX',
   swapableOn: [CHAINS.HARMONY.id],
   color: 'red',
+  priorityRank: 3,
 })
 
 export const JEWEL = new Token({
@@ -1054,6 +1102,7 @@ export const JEWEL = new Token({
   description: 'JEWEL',
   isNative: true,
   swapableType: 'JEWEL',
+  priorityRank: 3,
 })
 
 export const WJEWEL = new Token({
@@ -1068,6 +1117,7 @@ export const WJEWEL = new Token({
   swapableType: 'JEWEL',
   swapableOn: [CHAINS.HARMONY.id],
   color: 'lime',
+  priorityRank: 3,
 })
 
 export const SYNJEWEL = new Token({
@@ -1083,6 +1133,7 @@ export const SYNJEWEL = new Token({
   swapableType: 'JEWEL',
   swapableOn: [CHAINS.HARMONY.id],
   color: 'lime',
+  priorityRank: 4,
 })
 
 export const XJEWEL = new Token({
@@ -1097,6 +1148,7 @@ export const XJEWEL = new Token({
   description: 'ERC-20 Wrapped form of xJEWEL',
   swapableType: 'XJEWEL',
   color: 'lime',
+  priorityRank: 3,
 })
 
 export const USDCe = new Token({
@@ -1115,6 +1167,7 @@ export const USDCe = new Token({
   swapableType: 'USD',
   swapableOn: [CHAINS.AVALANCHE.id],
   visibilityRank: 100,
+  priorityRank: 1,
 })
 
 export const USDTe = new Token({
@@ -1133,7 +1186,9 @@ export const USDTe = new Token({
   swapableType: 'USD',
   swapableOn: [CHAINS.AVALANCHE.id],
   visibilityRank: 100,
+  priorityRank: 1,
 })
+
 // export const WMATIC = new Token({
 //   addresses: {
 //     [CHAINS.POLYGON.id]: '0x9b17bAADf0f21F03e35249e0e59723F34994F806',
