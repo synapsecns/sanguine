@@ -13,7 +13,7 @@ interface NetworkSpecificToken {
   token: Token
   symbol: string
   queryAddress: Address
-  queryChainId: number
+  queryChainId: string
 }
 
 const getQueryableTokensByChain = (): NetworkSpecificToken[] => {
@@ -22,13 +22,16 @@ const getQueryableTokensByChain = (): NetworkSpecificToken[] => {
 
   queryableNetworks.forEach((chainId: string) => {
     BRIDGABLE_TOKENS[chainId].forEach((token: Token) => {
+      console.log('chainId: ', chainId)
       const transformedToken = {
         token: token,
         symbol: token.symbol,
         queryAddress:
           token.addresses[Number(chainId) as keyof Token['addresses']],
-        queryChainId: Number(chainId),
+        queryChainId: chainId,
       } as NetworkSpecificToken
+
+      console.log('transformedTokens:', transformedToken)
       tokens.push(transformedToken)
     })
   })
@@ -52,37 +55,36 @@ const useTokenBalances = (address: Address, tokens: NetworkSpecificToken[]) => {
     if (tokens.length === 0) return
     ;(async () => {
       tokens.forEach((queryToken: NetworkSpecificToken) => {
+        console.log('queryToken: ', queryToken)
         const { token, symbol, queryAddress, queryChainId } = queryToken
 
-        console.log('queryChainId: ', queryChainId)
-        console.log('queryAddress: ', queryAddress)
-        switch (queryAddress) {
-          case undefined:
-            break
-          case AddressZero || '':
-            calls.push({
-              address: MULTICALL3_ADDRESS,
-              abi: multicallABI,
-              functionName: 'getEthBalance',
-              chainId: queryChainId,
-              args: [address],
-            })
-            break
-          default:
-            calls.push({
-              address: queryAddress,
-              abi: multicallABI,
-              functionName: 'balanceOf',
-              chainId: queryChainId,
-              args: [address],
-            })
+        if (queryAddress === undefined) return
+        else if (queryAddress === AddressZero) {
+          calls.push({
+            address: MULTICALL3_ADDRESS,
+            abi: multicallABI,
+            functionName: 'getEthBalance',
+            chainId: queryChainId,
+            args: [address],
+          })
+        } else {
+          calls.push({
+            address: queryAddress,
+            abi: multicallABI,
+            functionName: 'balanceOf',
+            chainId: queryChainId,
+            args: [address],
+          })
         }
       })
+      console.log('calls: ', calls)
 
       const multicallData = await multicall({ contracts: calls })
-      console.log('multicallData: ', multicallData)
+      setBalances(multicallData)
     })()
   }, [tokens])
+
+  return balances
 }
 
 const useTokenApprovals = () => {}
