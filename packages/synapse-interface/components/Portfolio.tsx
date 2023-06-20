@@ -13,6 +13,7 @@ import { approveToken } from '@/utils/approveToken'
 import { getAccount } from '@wagmi/core'
 import { Contract } from 'ethers'
 import { getContract } from '@wagmi/core'
+import { usePortfolioBalances } from '@/utils/hooks/usePortfolioBalances'
 
 const ROUTER_ADDRESS = '0x7E7A0e201FD38d3ADAA9523Da6C109a07118C96a'
 
@@ -63,6 +64,8 @@ const fetchBalanceAndAllownaces = async (token, activeChain, address) => {
 }
 
 export const Portfolio = () => {
+  const balances = usePortfolioBalances()
+
   const { address } = useAccount()
   const { chain } = useNetwork()
   const [isLoading, setIsLoading] = useState(false)
@@ -73,8 +76,6 @@ export const Portfolio = () => {
   const activeChain = CHAINS_ARR.find((ch) => ch.id === chain.id)
 
   const bridgeableTokens = BRIDGABLE_TOKENS[chain.id]
-
-  console.log('BRIDGABLE_TOKENS: ', BRIDGABLE_TOKENS)
 
   const filteredBalances = useMemo(() => {
     return showZeroBalances
