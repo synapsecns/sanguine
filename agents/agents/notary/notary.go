@@ -411,7 +411,7 @@ func (n *Notary) registerNotaryOnDestination(parentCtx context.Context) bool {
 	}
 	err = n.destinationDomain.LightManager().UpdateAgentStatus(
 		ctx,
-		n.unbondedSigner,
+		n.bondedSigner,
 		agentStatus,
 		agentProof)
 	if err != nil {
