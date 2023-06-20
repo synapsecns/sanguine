@@ -1,5 +1,4 @@
 import { useState, useEffect } from 'react'
-import { useAccount, useNetwork } from 'wagmi'
 import { formatUnits } from '@ethersproject/units'
 import { Zero } from '@ethersproject/constants'
 import { Address } from '@wagmi/core'
@@ -42,8 +41,8 @@ const StakeCard = ({ address, chainId, pool }: StakeCardProps) => {
   const stakingPoolId: number = tokenInfo?.poolId
 
   // TODO get rid of this hook
-  const { data } = useTokenBalance(pool)
-  const lpTokenBalance = data?.value ?? Zero
+  const balance = useTokenBalance(pool)
+  const lpTokenBalance = balance?.data?.value ?? Zero
 
   const prices = usePrices(chainId)
   const [deposit, setDeposit] = useState({ str: '', bn: Zero })
@@ -58,6 +57,7 @@ const StakeCard = ({ address, chainId, pool }: StakeCardProps) => {
     amount: Zero,
     reward: Zero,
   })
+  const [tx, setTx] = useState(undefined)
 
   useEffect(() => {
     if (!address || !chainId || stakingPoolId === null) return
@@ -69,6 +69,20 @@ const StakeCard = ({ address, chainId, pool }: StakeCardProps) => {
         console.log(err)
       })
   }, [address, chainId, stakingPoolId])
+
+  useEffect(() => {
+    if (tx !== undefined) {
+      ;(async () => {
+        const tkAllowance = await getTokenAllowance(
+          MINICHEF_ADDRESSES[chainId],
+          pool.addresses[chainId],
+          address,
+          chainId
+        )
+        setAllowance(tkAllowance)
+      })()
+    }
+  }, [tx])
 
   return (
     <div className="flex-wrap space-y-2">
@@ -202,9 +216,11 @@ const StakeCard = ({ address, chainId, pool }: StakeCardProps) => {
             onClickEnter={
               allowance.lt(deposit.bn)
                 ? async (e) => {
-                    await pendingApproveTxWrapFunc(
+                    const tx = await pendingApproveTxWrapFunc(
                       approve(pool, deposit.bn, chainId)
                     )
+
+                    setTx(tx?.hash)
                   }
                 : async (e) => {
                     const tx = await pendingStakeTxWrapFunc(
@@ -215,7 +231,6 @@ const StakeCard = ({ address, chainId, pool }: StakeCardProps) => {
                         deposit.bn
                       )
                     )
-
                     if (tx?.status === 1) {
                       setDeposit({ bn: Zero, str: '' })
                     }
