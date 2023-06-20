@@ -1,9 +1,11 @@
-// Our first program will print the classic "hello world"
-// message. Here's the full source code.
 package main
 
-import "fmt"
+import (
+	"github.com/synapsecns/sanguine/services/cctp-relayer/cmd"
+	"github.com/synapsecns/sanguine/services/cctp-relayer/metadata"
+	"os"
+)
 
 func main() {
-	fmt.Println("hello world")
+	cmd.Start(os.Args, metadata.BuildInfo())
 }

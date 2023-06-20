@@ -2,6 +2,8 @@
 package relayer_test
 
 import (
+	"github.com/synapsecns/sanguine/services/cctp-relayer/db/sql/base"
+	"github.com/synapsecns/sanguine/services/cctp-relayer/db/sql/sqlite"
 	"math/big"
 	"net/url"
 	"strconv"
@@ -19,8 +21,6 @@ import (
 	signerConfig "github.com/synapsecns/sanguine/ethergo/signer/config"
 	"github.com/synapsecns/sanguine/ethergo/signer/wallet"
 	"github.com/synapsecns/sanguine/services/cctp-relayer/config"
-	"github.com/synapsecns/sanguine/services/cctp-relayer/db/base"
-	"github.com/synapsecns/sanguine/services/cctp-relayer/db/sqlite"
 	"github.com/synapsecns/sanguine/services/cctp-relayer/metadata"
 	cctpTest "github.com/synapsecns/sanguine/services/cctp-relayer/testutil"
 	omnirpcHelper "github.com/synapsecns/sanguine/services/omnirpc/testhelper"

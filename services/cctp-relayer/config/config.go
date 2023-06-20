@@ -16,6 +16,8 @@ import (
 
 // Config is used to configure an Executor agent.
 type Config struct {
+	// CircleAPIURl is the URL for the Circle API
+	CircleAPIURl string `yaml:"circle_api_url"`
 	// Chains stores all chain information
 	Chains ChainConfigs `yaml:"chains"`
 	// BaseOmnirpcURL is the base url for omnirpc.
@@ -29,8 +31,6 @@ type Config struct {
 	// included if an embedded Scribe is being used. If a remote Scribe is being used,
 	// this can be left empty.
 	EmbeddedScribeConfig scribeConfig.Config `yaml:"embedded_scribe_config"`
-	// DBPrefix is the prefix for the tables in the database. This is only to be used with mysql.
-	DBPrefix string `yaml:"db_prefix"`
 	// HTTPBackoffInitialInterval is the initial interval for attestation request retries
 	HTTPBackoffInitialIntervalMs int `yaml:"http_backoff_initial_interval_ms"`
 	// HTTPBackoffMaxElapsedTime is the max elapsed time for attestation request retries

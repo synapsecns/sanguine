@@ -3,13 +3,13 @@ package sqlite
 import (
 	"context"
 	"fmt"
+	"github.com/synapsecns/sanguine/services/cctp-relayer/db/sql/base"
 	"os"
 
 	"github.com/ipfs/go-log"
 	common_base "github.com/synapsecns/sanguine/core/dbcommon"
 	"github.com/synapsecns/sanguine/core/metrics"
 	"github.com/synapsecns/sanguine/services/cctp-relayer/db"
-	"github.com/synapsecns/sanguine/services/cctp-relayer/db/base"
 	"gorm.io/driver/sqlite"
 	"gorm.io/gorm"
 )

@@ -2,6 +2,7 @@ package db
 
 import (
 	"context"
+	submitterDB "github.com/synapsecns/sanguine/ethergo/submitter/db"
 
 	"github.com/synapsecns/sanguine/services/cctp-relayer/types"
 )
@@ -22,4 +23,5 @@ type CCTPRelayerDBWriter interface {
 type CCTPRelayerDB interface {
 	CCTPRelayerDBReader
 	CCTPRelayerDBWriter
+	SubmitterDB() submitterDB.Service
 }

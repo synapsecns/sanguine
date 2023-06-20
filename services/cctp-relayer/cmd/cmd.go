@@ -22,7 +22,7 @@ func Start(args []string, buildInfo config.BuildInfo) {
 	}
 
 	// commands
-	app.Commands = cli.Commands{}
+	app.Commands = cli.Commands{runCommand}
 	shellCommand := commandline.GenerateShellCommand(app.Commands)
 	app.Commands = append(app.Commands, shellCommand)
 	app.Action = shellCommand.Action
