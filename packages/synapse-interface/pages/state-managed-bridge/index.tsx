@@ -3,6 +3,7 @@ import { useAccount } from 'wagmi'
 import { useDispatch, useSelector } from 'react-redux'
 import { RootState } from '../../store/store'
 import toast from 'react-hot-toast'
+import { useSpring, animated } from 'react-spring'
 
 import {
   setFromToken,
@@ -14,6 +15,8 @@ import {
   setToChainId,
   setSupportedFromTokens,
   setSupportedToTokens,
+  setFromChainIds,
+  setToChainIds,
 } from '../../slices/bridgeSlice'
 import { stringToBigNum } from '@/utils/stringToBigNum'
 import { EMPTY_BRIDGE_QUOTE, EMPTY_BRIDGE_QUOTE_ZERO } from '@/constants/bridge'
@@ -33,6 +36,17 @@ import { txErrorHandler } from '@/utils/txErrorHandler'
 import { BRIDGABLE_TOKENS, BRIDGE_CHAINS_BY_TYPE } from '@/constants/tokens'
 import { CHAINS_BY_ID } from '@/constants/chains'
 import { approveToken } from '@/utils/approveToken'
+import { PageHeader } from '@/components/PageHeader'
+import Card from '@/components/ui/tailwind/Card'
+import ExchangeRateInfo from '@/components/ExchangeRateInfo'
+import { Transition } from '@headlessui/react'
+import {
+  SECTION_TRANSITION_PROPS,
+  TRANSITION_PROPS,
+} from '@/styles/transitions'
+import { TokenSlideOver } from '@/components/StateManagedBridge/TokenSlideOver'
+import { InputContainer } from '@/components/StateManagedBridge/InputContainer'
+import { OutputContainer } from '@/components/StateManagedBridge/OutputContainer'
 
 // NOTE: These are idle utility functions that will be re-written to
 // support sorting by desired mechanism
@@ -69,6 +83,7 @@ const StateManagedBridge = () => {
     bridgeQuote,
     fromValue,
     isLoading,
+    showTokenSlideOver,
     supportedFromTokens,
     supportedToTokens,
   } = useSelector((state: RootState) => state.bridge)
@@ -88,6 +103,9 @@ const StateManagedBridge = () => {
 
     dispatch(setSupportedFromTokens(fromTokens))
     dispatch(setSupportedToTokens(toTokens))
+
+    dispatch(setFromChainIds(fromChainIds))
+    dispatch(setToChainIds(toChainIds))
 
     getAndSetBridgeQuote()
   }, [fromChainId, toChainId, fromToken, toToken, fromValue])
@@ -297,113 +315,162 @@ const StateManagedBridge = () => {
 
   return (
     <LandingPageWrapper>
-      <div className="flex justify-center text-white">
-        <div className="space-y-1">
-          <div className="mb-5 text-xl">Redux State Managed Bridge</div>
-          <div className="flex items-center justify-between">
-            <div>fromChain</div>
-            <div>
-              <select
-                className="text-black"
-                onChange={handleFromChainChange}
-                value={fromChainId}
-              >
-                {sortFromChainIds(fromChainIds).map((chainId) => (
-                  <option key={chainId} value={chainId}>
-                    {CHAINS_BY_ID[chainId]?.name}
-                  </option>
-                ))}
-              </select>
+      <div className="flex justify-center">
+        <div className="text-white">
+          <PageHeader
+            title="Redux State Managed Bridge"
+            subtitle="Send your assets across chains."
+          />
+          <Card
+            divider={false}
+            className={`
+            max-w-lg px-1 pb-0 mb-3 overflow-hidden
+            transition-all duration-100 transform rounded-xl
+            bg-bgBase md:px-6 lg:px-6 mt-5
+          `}
+          >
+            <div ref={null}>
+              <Transition show={showTokenSlideOver} {...TRANSITION_PROPS}>
+                <animated.div>
+                  <TokenSlideOver
+                    key="fromBlock"
+                    isOrigin={true}
+                    tokens={supportedFromTokens}
+                    chainId={fromChainId}
+                    selectedToken={fromToken}
+                    handleTokenChange={() => {}}
+                  />{' '}
+                </animated.div>
+              </Transition>
+              <div className="space-y-2">
+                <div className="flex items-center justify-between">
+                  <div>fromChain</div>
+                  <div>
+                    <select
+                      className="text-black"
+                      onChange={handleFromChainChange}
+                      value={fromChainId}
+                    >
+                      {sortFromChainIds(fromChainIds).map((chainId) => (
+                        <option key={chainId} value={chainId}>
+                          {CHAINS_BY_ID[chainId]?.name}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                </div>
+                <div className="flex items-center justify-between">
+                  <div>fromToken</div>
+                  <select
+                    className="text-black"
+                    onChange={handleFromTokenChange}
+                    value={fromToken?.name}
+                  >
+                    {sortFromTokens(supportedFromTokens).map((token) => (
+                      <option key={token.name} value={token.name}>
+                        {token.symbol}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+                <div className="flex items-center justify-between">
+                  <div>from amount</div>
+                  <input
+                    type="text"
+                    onChange={handleFromValueChange}
+                    className="text-black"
+                    placeholder="Enter value"
+                  />
+                </div>
+                <div className="flex items-center justify-between">
+                  <div>toChain</div>
+                  <div>
+                    <select
+                      className="text-black"
+                      onChange={handleToChainChange}
+                      value={toChainId}
+                    >
+                      {sortToChainIds(toChainIds).map((chainId) => (
+                        <option key={chainId} value={chainId}>
+                          {CHAINS_BY_ID[chainId]?.name}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                </div>
+                <div className="flex items-center justify-between">
+                  <div>toToken</div>
+                  <select
+                    className="text-black"
+                    onChange={handleToTokenChange}
+                    value={toToken?.name}
+                  >
+                    {sortToTokens(supportedToTokens).map((token) => (
+                      <option key={token.name} value={token.name}>
+                        {token.symbol}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+                <div className="flex items-center justify-between">
+                  <div>Output amount</div>
+                  <div>{bridgeQuote?.outputAmountString}</div>
+                </div>
+                <h1 className="text-2xl">UI experimentation below</h1>
+                <InputContainer />
+                <OutputContainer />
+                <Transition
+                  appear={true}
+                  unmount={false}
+                  show={!fromValue.eq(0)}
+                  {...SECTION_TRANSITION_PROPS}
+                >
+                  <ExchangeRateInfo
+                    fromAmount={fromValue}
+                    toToken={toToken}
+                    exchangeRate={bridgeQuote?.exchangeRate}
+                    toChainId={toChainId}
+                    showGasDrop={true}
+                  />
+                </Transition>
+                <div>
+                  {!isApproved ? (
+                    <button
+                      className="p-2 bg-blue-500 disabled:opacity-50"
+                      onClick={approveTxn}
+                      disabled={
+                        isLoading ||
+                        bridgeQuote === EMPTY_BRIDGE_QUOTE_ZERO ||
+                        bridgeQuote === EMPTY_BRIDGE_QUOTE
+                      }
+                    >
+                      Approve
+                    </button>
+                  ) : (
+                    <button
+                      className="p-2 bg-blue-500 disabled:opacity-50"
+                      onClick={executeBridge}
+                      disabled={
+                        isLoading ||
+                        bridgeQuote === EMPTY_BRIDGE_QUOTE_ZERO ||
+                        bridgeQuote === EMPTY_BRIDGE_QUOTE
+                      }
+                    >
+                      Bridge
+                    </button>
+                  )}
+                </div>
+                <div className="max-w-1/4">
+                  <div className="underline">Your bridge quote</div>
+                  <div>
+                    {Object.entries(bridgeQuote).map(([key, value]) => (
+                      <div key={key}>{`${key}: ${value}`}</div>
+                    ))}
+                  </div>
+                </div>
+              </div>
             </div>
-          </div>
-          <div className="flex items-center justify-between">
-            <div>fromToken</div>
-            <select
-              className="text-black"
-              onChange={handleFromTokenChange}
-              value={fromToken?.name}
-            >
-              {sortFromTokens(supportedFromTokens).map((token) => (
-                <option key={token.name} value={token.name}>
-                  {token.symbol}
-                </option>
-              ))}
-            </select>
-          </div>
-          <div className="flex items-center justify-between">
-            <div>from amount</div>
-            <input
-              type="text"
-              onChange={handleFromValueChange}
-              className="text-black"
-              placeholder="Enter value"
-            />
-          </div>
-          <div className="flex items-center justify-between">
-            <div>toChain</div>
-            <div>
-              <select
-                className="text-black"
-                onChange={handleToChainChange}
-                value={toChainId}
-              >
-                {sortToChainIds(toChainIds).map((chainId) => (
-                  <option key={chainId} value={chainId}>
-                    {CHAINS_BY_ID[chainId]?.name}
-                  </option>
-                ))}
-              </select>
-            </div>
-          </div>
-          <div className="flex items-center justify-between">
-            <div>toToken</div>
-            <select
-              className="text-black"
-              onChange={handleToTokenChange}
-              value={toToken?.name}
-            >
-              {sortToTokens(supportedToTokens).map((token) => (
-                <option key={token.name} value={token.name}>
-                  {token.symbol}
-                </option>
-              ))}
-            </select>
-          </div>
-          <div>
-            {!isApproved ? (
-              <button
-                className="p-2 bg-blue-500 disabled:opacity-50"
-                onClick={approveTxn}
-                disabled={
-                  isLoading ||
-                  bridgeQuote === EMPTY_BRIDGE_QUOTE_ZERO ||
-                  bridgeQuote === EMPTY_BRIDGE_QUOTE
-                }
-              >
-                Approve
-              </button>
-            ) : (
-              <button
-                className="p-2 bg-blue-500 disabled:opacity-50"
-                onClick={executeBridge}
-                disabled={
-                  isLoading ||
-                  bridgeQuote === EMPTY_BRIDGE_QUOTE_ZERO ||
-                  bridgeQuote === EMPTY_BRIDGE_QUOTE
-                }
-              >
-                Bridge
-              </button>
-            )}
-          </div>
-          <div className="max-w-1/4">
-            <div className="underline">Your bridge quote</div>
-            <div>
-              {Object.entries(bridgeQuote).map(([key, value]) => (
-                <div key={key}>{`${key}: ${value}`}</div>
-              ))}
-            </div>
-          </div>
+          </Card>
         </div>
       </div>
     </LandingPageWrapper>

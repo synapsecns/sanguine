@@ -17,7 +17,11 @@ export interface BridgeState {
   toToken: Token
   fromValue: BigNumber
   bridgeQuote: BridgeQuote
+  fromChainIds: number[]
+  toChainIds: number[]
   isLoading: boolean
+  showTokenSlideOver: boolean
+  showChainSlideOver: boolean
 }
 
 // How do we update query params based on initial state?
@@ -31,7 +35,11 @@ const initialState: BridgeState = {
   toToken: ETH,
   fromValue: Zero,
   bridgeQuote: EMPTY_BRIDGE_QUOTE,
+  fromChainIds: [],
+  toChainIds: [],
   isLoading: false,
+  showTokenSlideOver: false,
+  showChainSlideOver: false
 }
 
 export const bridgeSlice = createSlice({
@@ -62,9 +70,21 @@ export const bridgeSlice = createSlice({
     setSupportedToTokens: (state, action: PayloadAction<Token[]>) => {
       state.supportedToTokens = action.payload
     },
+    setFromChainIds: (state, action: PayloadAction<number[]>) => {
+      state.fromChainIds = action.payload
+    },
+    setToChainIds: (state, action: PayloadAction<number[]>) => {
+      state.toChainIds = action.payload
+    },
     updateFromValue: (state, action: PayloadAction<BigNumber>) => {
       state.fromValue = action.payload
     },
+    setShowTokenSlideOver: (state, action: PayloadAction<boolean>) => {
+      state.showTokenSlideOver = action.payload
+    },
+    setShowChainSlideOver: (state, action: PayloadAction<boolean>) => {
+      state.showChainSlideOver = action.payload
+    }
   },
 })
 
@@ -77,7 +97,11 @@ export const {
   updateFromValue,
   setSupportedFromTokens,
   setSupportedToTokens,
+  setFromChainIds,
+  setToChainIds,
   setIsLoading,
+  setShowChainSlideOver,
+  setShowTokenSlideOver,
 } = bridgeSlice.actions
 
 export default bridgeSlice.reducer
