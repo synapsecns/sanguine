@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
+import { Zero } from '@ethersproject/constants'
 import { RootState } from '@/store/store'
 
 import {
@@ -8,11 +9,10 @@ import {
 } from '@/slices/bridgeSlice'
 import { stringToBigNum } from '@/utils/stringToBigNum'
 import SelectTokenDropdown from '@/components/input/TokenAmountInput/SelectTokenDropdown'
-import { ChainLabel } from '@/components/ChainLabel'
 import { useAccount } from 'wagmi'
 import MiniMaxButton from '../buttons/MiniMaxButton'
-import { Zero } from '@ethersproject/constants'
 import { formatBNToString } from '@/utils/bignumber/format'
+import { OriginChainLabel } from './OriginChainLabel'
 
 export const InputContainer = () => {
   const [showValue, setShowValue] = useState('')
@@ -73,12 +73,9 @@ export const InputContainer = () => {
     >
       <div>
         <div className="pt-1 pb-3">
-          <ChainLabel
-            isOrigin={true}
+          <OriginChainLabel
             chainId={fromChainId}
-            setDisplayType={() => {}}
-            onChangeChain={() => {}}
-            chains={fromChainIds.map((id) => `${id}`)}
+            chains={fromChainIds}
             connectedChainId={fromChainId}
           />
         </div>
