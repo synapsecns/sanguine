@@ -216,7 +216,7 @@ When a [Guard](#guard) detects a [Fraudulent Attestation](gloassary.md/#fraudule
 [Notary](gloassary.md/#notary) has posted an [Attestation](gloassary.md/#attestation) to its [remote chain](gloassary.md/#remote-chain) that was never registered
 on the [Synapse Chain](gloassary.md/#synapse-chain).
 
-Below is the steps of what happens starting from the intitial [fraud](glossary.md/#fraud) to the  [fraud resolution](glossary.md/#fraud-resoltuion).
+Below are the steps of what happens starting from the intitial [fraud](glossary.md/#fraud) to the  [fraud resolution](glossary.md/#fraud-resoltuion).
 1. A malicious [Notary](glossary.md/#notary) posts an [Attestation](gloassary.md/#attestation) to its [remote chain](gloassary.md/#remote-chain)
 that was never registered on the [Synapse Chain](gloassary.md/#synapse-chain).
 2. A [Guard](glossary.md/#guard) observes the [Attestation](gloassary.md/#attestation) on the [remote chain](gloassary.md/#remote-chain).
