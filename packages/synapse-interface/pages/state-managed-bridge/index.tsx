@@ -31,7 +31,6 @@ import {
   setShowToTokenSlideOver,
 } from '@/slices/bridgeDisplaySlice'
 
-import { stringToBigNum } from '@/utils/stringToBigNum'
 import {
   DEFAULT_TO_CHAIN,
   EMPTY_BRIDGE_QUOTE,
@@ -76,6 +75,7 @@ import Button from '@/components/ui/tailwind/Button'
 import { SettingsIcon } from '@/components/icons/SettingsIcon'
 import { DestinationAddressInput } from '@/components/StateManagedBridge/DestinationAddressInput'
 import { isAddress } from '@ethersproject/address'
+import { TransactionButton } from '@/components/buttons/TransactionButton'
 
 // NOTE: These are idle utility functions that will be re-written to
 // support sorting by desired mechanism
@@ -178,65 +178,13 @@ const StateManagedBridge = () => {
     if (fromToken?.addresses[fromChainId] === AddressZero) {
       setIsApproved(true)
     } else {
-      if (bridgeQuote?.allowance && fromValue.lt(bridgeQuote.allowance)) {
+      if (bridgeQuote?.allowance && fromValue.lte(bridgeQuote.allowance)) {
         setIsApproved(true)
       } else {
         setIsApproved(false)
       }
     }
   }, [bridgeQuote, fromToken, fromValue, fromChainId, toChainId])
-
-  const handleFromTokenChange = (
-    event: React.ChangeEvent<HTMLSelectElement>
-  ) => {
-    const selectedToken = supportedFromTokens.find(
-      (token) => token.name === event.target.value
-    )
-    dispatch(setFromToken(selectedToken))
-  }
-
-  const handleToTokenChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
-    const selectedToken = supportedToTokens.find(
-      (token) => token.name === event.target.value
-    )
-    dispatch(setToToken(selectedToken))
-  }
-
-  const handleFromValueChange = (
-    event: React.ChangeEvent<HTMLInputElement>
-  ) => {
-    let fromValueString = event.target.value
-    try {
-      let fromValueBigNumber = stringToBigNum(
-        fromValueString,
-        fromToken.decimals[fromChainId]
-      )
-      dispatch(updateFromValue(fromValueBigNumber))
-    } catch (error) {
-      console.error('Invalid value for conversion to BigNumber')
-    }
-  }
-
-  const handleFromChainChange = (
-    event: React.ChangeEvent<HTMLSelectElement>
-  ) => {
-    let fromChainId = Number(event.target.value)
-    try {
-      dispatch(setFromChainId(fromChainId))
-    } catch (error) {
-      console.log(`error`, error)
-    }
-  }
-
-  const handleToChainChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
-    let toChainId = Number(event.target.value)
-
-    try {
-      dispatch(setToChainId(toChainId))
-    } catch (error) {
-      console.log(`error`, error)
-    }
-  }
 
   // Would like to move this into function outside of this component
   const getAndSetBridgeQuote = async () => {
@@ -330,8 +278,6 @@ const StateManagedBridge = () => {
     }
   }
 
-  // Would like to move this function outside of this component
-
   const approveTxn = async () => {
     approveToken(
       bridgeQuote?.routerAddress,
@@ -340,7 +286,6 @@ const StateManagedBridge = () => {
     ).then(() => setIsApproved(true))
   }
 
-  // Would like to move this into function outside of this component
   const executeBridge = async () => {
     try {
       const wallet = await fetchSigner({
@@ -375,6 +320,7 @@ const StateManagedBridge = () => {
         dispatch(setBridgeQuote(EMPTY_BRIDGE_QUOTE_ZERO))
         dispatch(setDestinationAddress(null))
         dispatch(setShowDestinationAddress(false))
+        dispatch(updateFromValue(Zero))
 
         return tx
       } catch (error) {
@@ -505,29 +451,31 @@ const StateManagedBridge = () => {
             )}
             <div>
               {!isApproved ? (
-                <button
-                  className="p-2 bg-blue-500 disabled:opacity-50"
+                <TransactionButton
                   onClick={approveTxn}
                   disabled={
                     isLoading ||
                     bridgeQuote === EMPTY_BRIDGE_QUOTE_ZERO ||
                     bridgeQuote === EMPTY_BRIDGE_QUOTE
                   }
-                >
-                  Approve
-                </button>
+                  label={`Approve ${fromToken.symbol}`}
+                  pendingLabel="Approving"
+                  chainId={fromChainId}
+                  onSuccess={() => {}}
+                />
               ) : (
-                <button
-                  className="p-2 bg-blue-500 disabled:opacity-50"
+                <TransactionButton
                   onClick={executeBridge}
                   disabled={
                     isLoading ||
                     bridgeQuote === EMPTY_BRIDGE_QUOTE_ZERO ||
                     bridgeQuote === EMPTY_BRIDGE_QUOTE
                   }
-                >
-                  Bridge
-                </button>
+                  label={`Bridge ${fromToken.symbol}`}
+                  pendingLabel="Bridging"
+                  chainId={fromChainId}
+                  onSuccess={() => {}}
+                />
               )}
             </div>
           </div>
