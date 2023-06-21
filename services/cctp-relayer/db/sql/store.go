@@ -2,6 +2,7 @@ package sql
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"github.com/synapsecns/sanguine/core/dbcommon"
 	"github.com/synapsecns/sanguine/core/metrics"
@@ -27,6 +28,8 @@ func Connect(ctx context.Context, dbType dbcommon.DBType, path string, metrics m
 		}
 
 		return store, nil
+	case dbcommon.Clickhouse:
+		return nil, errors.New("driver not supported")
 	default:
 		return nil, fmt.Errorf("unsupported driver: %s", dbType)
 	}

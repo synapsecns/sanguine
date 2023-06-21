@@ -7,7 +7,6 @@ import (
 	ethConfig "github.com/synapsecns/sanguine/ethergo/signer/config"
 	"github.com/synapsecns/sanguine/ethergo/signer/wallet"
 	"github.com/synapsecns/sanguine/services/cctp-relayer/config"
-	scribeConfig "github.com/synapsecns/sanguine/services/scribe/config"
 )
 
 func configFixture(c ConfigSuite) config.Config {
@@ -30,9 +29,6 @@ func configFixture(c ConfigSuite) config.Config {
 		Signer: ethConfig.SignerConfig{
 			Type: ethConfig.FileType.String(),
 			File: filet.TmpFile(c.T(), "", testWallet.PrivateKeyHex()).Name(),
-		},
-		EmbeddedScribeConfig: scribeConfig.Config{
-			RPCURL: gofakeit.URL(),
 		},
 		HTTPBackoffInitialIntervalMs: int(gofakeit.Int64()),
 		HTTPBackoffMaxElapsedTimeMs:  int(gofakeit.Int64()),

@@ -162,7 +162,6 @@ func (s *CCTPRelayerSuite) SetupTest() {
 
 func (s *CCTPRelayerSuite) GetTestConfig() config.Config {
 	cfg := config.Config{
-		DBPrefix:       filet.TmpDir(s.T(), ""),
 		BaseOmnirpcURL: s.testBackends[0].RPCAddress(),
 		Signer: signerConfig.SignerConfig{
 			Type: signerConfig.FileType.String(),
