@@ -13,9 +13,9 @@ import { formatBNToString } from '@/utils/bignumber/format'
 import { OriginChainLabel } from './OriginChainLabel'
 
 export const InputContainer = () => {
-  const [showValue, setShowValue] = useState('')
   const { fromChainId, fromToken, fromChainIds, supportedFromTokenBalances } =
     useSelector((state: RootState) => state.bridge)
+  const [showValue, setShowValue] = useState('')
 
   const [hasMounted, setHasMounted] = useState(false)
 

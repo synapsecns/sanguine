@@ -28,7 +28,11 @@ import {
 } from '@/slices/bridgeDisplaySlice'
 
 import { stringToBigNum } from '@/utils/stringToBigNum'
-import { EMPTY_BRIDGE_QUOTE, EMPTY_BRIDGE_QUOTE_ZERO } from '@/constants/bridge'
+import {
+  DEFAULT_TO_CHAIN,
+  EMPTY_BRIDGE_QUOTE,
+  EMPTY_BRIDGE_QUOTE_ZERO,
+} from '@/constants/bridge'
 
 import { useSynapseContext } from '@/utils/providers/SynapseProvider'
 import { AddressZero, Zero } from '@ethersproject/constants'
@@ -42,7 +46,12 @@ import { useEffect, useRef, useState } from 'react'
 import { Token } from '@/utils/types'
 import { fetchSigner } from '@wagmi/core'
 import { txErrorHandler } from '@/utils/txErrorHandler'
-import { BRIDGABLE_TOKENS, BRIDGE_CHAINS_BY_TYPE } from '@/constants/tokens'
+import {
+  BRIDGABLE_TOKENS,
+  BRIDGE_CHAINS_BY_TYPE,
+  BRIDGE_SWAPABLE_TOKENS_BY_TYPE,
+  tokenSymbolToToken,
+} from '@/constants/tokens'
 import { CHAINS_BY_ID } from '@/constants/chains'
 import { approveToken } from '@/utils/approveToken'
 import { PageHeader } from '@/components/PageHeader'
@@ -56,7 +65,7 @@ import {
 import { TokenSlideOver } from '@/components/StateManagedBridge/TokenSlideOver'
 import { InputContainer } from '@/components/StateManagedBridge/InputContainer'
 import { OutputContainer } from '@/components/StateManagedBridge/OutputContainer'
-import { sortByTokenBalance } from '@/utils/sortTokens'
+import { sortByTokenBalance, sortByVisibilityRank } from '@/utils/sortTokens'
 import { ChainSlideOver } from '@/components/StateManagedBridge/ChainSlideOver'
 
 // NOTE: These are idle utility functions that will be re-written to
@@ -127,15 +136,24 @@ const StateManagedBridge = () => {
     const fromTokens = BRIDGABLE_TOKENS[fromChainId]
     const toTokens = BRIDGABLE_TOKENS[toChainId]
 
+    const { bridgeableChainIds, bridgeableTokens, bridgeableToken } =
+      findSupportedChainsAndTokens(
+        fromToken,
+        toChainId,
+        toToken.symbol,
+        fromChainId
+      )
+
     dispatch(setSupportedFromTokens(fromTokens))
-    dispatch(setSupportedToTokens(toTokens))
+    dispatch(setSupportedToTokens(bridgeableTokens))
+    dispatch(setToToken(bridgeableToken))
 
     sortByTokenBalance(fromTokens, fromChainId, address).then((res) => {
       dispatch(setSupportedFromTokenBalances(res))
     })
 
     dispatch(setFromChainIds(fromChainIds))
-    dispatch(setToChainIds(toChainIds))
+    dispatch(setToChainIds(bridgeableChainIds))
     getAndSetBridgeQuote()
   }, [fromChainId, toChainId, fromToken, toToken, fromValue])
 
@@ -282,12 +300,15 @@ const StateManagedBridge = () => {
       dispatch(setIsLoading(false))
       return
     } catch {
+      console.log(`fromChainId`, fromChainId)
+      console.log(`toChainid`, toChainId)
+      console.log(`fromValue`, fromValue)
       const str = formatBNToString(
         fromValue,
         fromToken.decimals[fromChainId],
         4
       )
-      const message = `No route found for bridging ${fromToken.symbol} on ${CHAINS_BY_ID[fromChainId]?.name} to ${toToken.symbol} on ${CHAINS_BY_ID[toChainId]?.name} for ${str}`
+      const message = `No route found for bridging ${str} ${fromToken.symbol} on ${CHAINS_BY_ID[fromChainId]?.name} to ${toToken.symbol} on ${CHAINS_BY_ID[toChainId]?.name}`
       toast(message)
       dispatch(setBridgeQuote(EMPTY_BRIDGE_QUOTE_ZERO))
       dispatch(setIsLoading(false))
@@ -542,6 +563,62 @@ const StateManagedBridge = () => {
       </div>
     </LandingPageWrapper>
   )
+}
+
+// TODO: Refactor
+// would like to refactor this as a function that
+// takes fromChainId, fromToken only and returns rest
+
+const findSupportedChainsAndTokens = (
+  token: Token,
+  positedToChain: number | undefined,
+  positedToSymbol: string | undefined,
+  fromChainId: number
+) => {
+  let newToChain =
+    positedToChain && positedToChain !== fromChainId
+      ? Number(positedToChain)
+      : DEFAULT_TO_CHAIN
+  let bridgeableChains = BRIDGE_CHAINS_BY_TYPE[
+    String(token.swapableType)
+  ].filter((chainId) => Number(chainId) !== fromChainId)
+  const swapExceptionsArr: number[] =
+    token?.swapExceptions?.[fromChainId as keyof Token['swapExceptions']]
+  if (swapExceptionsArr?.length > 0) {
+    bridgeableChains = swapExceptionsArr.map((chainId) => String(chainId))
+  }
+
+  if (!bridgeableChains.includes(String(newToChain))) {
+    newToChain =
+      Number(bridgeableChains[0]) === fromChainId
+        ? Number(bridgeableChains[1])
+        : Number(bridgeableChains[0])
+  }
+  const positedToToken = positedToSymbol
+    ? tokenSymbolToToken(newToChain, positedToSymbol)
+    : tokenSymbolToToken(newToChain, token.symbol)
+
+  let bridgeableTokens: Token[] = sortByVisibilityRank(
+    BRIDGE_SWAPABLE_TOKENS_BY_TYPE[newToChain][String(token.swapableType)]
+  )
+
+  if (swapExceptionsArr?.length > 0) {
+    bridgeableTokens = bridgeableTokens.filter(
+      (toToken) => toToken.symbol === token.symbol
+    )
+  }
+  let bridgeableToken: Token = positedToToken
+  if (!bridgeableTokens.includes(positedToToken)) {
+    bridgeableToken = bridgeableTokens[0]
+  }
+
+  return {
+    bridgeableChainIds: bridgeableChains.map((chainId: string) =>
+      Number(chainId)
+    ),
+    bridgeableTokens,
+    bridgeableToken,
+  }
 }
 
 export default StateManagedBridge

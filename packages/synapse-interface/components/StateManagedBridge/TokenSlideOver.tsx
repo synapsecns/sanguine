@@ -58,8 +58,8 @@ export const TokenSlideOver = ({
     dispatch(setShowSlideOver(false))
   }
 
-  function onMenuItemClick(coin: any) {
-    dispatch(setToken(coin))
+  function onMenuItemClick(token: Token) {
+    dispatch(setToken(token))
     dispatch(setShowSlideOver(false))
     onClose()
   }
