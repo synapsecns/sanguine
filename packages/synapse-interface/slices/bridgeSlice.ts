@@ -1,6 +1,7 @@
 import { BigNumber } from 'ethers'
 import { Zero } from '@ethersproject/constants'
 import { createSlice, PayloadAction } from '@reduxjs/toolkit'
+import { Address } from 'wagmi'
 
 import { EMPTY_BRIDGE_QUOTE } from '@/constants/bridge'
 import { ETH } from '@/constants/tokens/master'
@@ -20,6 +21,8 @@ export interface BridgeState {
   fromChainIds: number[]
   toChainIds: number[]
   isLoading: boolean
+  deadlineMinutes: number | null
+  destinationAddress: Address | null
 }
 
 // How do we update query params based on initial state?
@@ -37,6 +40,8 @@ const initialState: BridgeState = {
   fromChainIds: [],
   toChainIds: [],
   isLoading: false,
+  deadlineMinutes: null,
+  destinationAddress: null,
 }
 
 export const bridgeSlice = createSlice({
@@ -82,6 +87,12 @@ export const bridgeSlice = createSlice({
     updateFromValue: (state, action: PayloadAction<BigNumber>) => {
       state.fromValue = action.payload
     },
+    setDeadlineMinutes: (state, action: PayloadAction<number | null>) => {
+      state.deadlineMinutes = action.payload
+    },
+    setDestinationAddress: (state, action: PayloadAction<Address | null>) => {
+      state.destinationAddress = action.payload
+    },
   },
 })
 
@@ -97,6 +108,8 @@ export const {
   setSupportedFromTokenBalances,
   setFromChainIds,
   setToChainIds,
+  setDeadlineMinutes,
+  setDestinationAddress,
   setIsLoading,
 } = bridgeSlice.actions
 

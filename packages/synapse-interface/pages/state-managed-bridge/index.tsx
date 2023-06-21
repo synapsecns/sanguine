@@ -18,11 +18,15 @@ import {
   setFromChainIds,
   setToChainIds,
   setSupportedFromTokenBalances,
+  setDeadlineMinutes,
+  setDestinationAddress,
 } from '@/slices/bridgeSlice'
 
 import {
+  setShowDestinationAddress,
   setShowFromChainSlideOver,
   setShowFromTokenSlideOver,
+  setShowSettingsSlideOver,
   setShowToChainSlideOver,
   setShowToTokenSlideOver,
 } from '@/slices/bridgeDisplaySlice'
@@ -67,6 +71,11 @@ import { InputContainer } from '@/components/StateManagedBridge/InputContainer'
 import { OutputContainer } from '@/components/StateManagedBridge/OutputContainer'
 import { sortByTokenBalance, sortByVisibilityRank } from '@/utils/sortTokens'
 import { ChainSlideOver } from '@/components/StateManagedBridge/ChainSlideOver'
+import SettingsSlideOver from '@/components/StateManagedBridge/SettingsSlideOver'
+import Button from '@/components/ui/tailwind/Button'
+import { SettingsIcon } from '@/components/icons/SettingsIcon'
+import { DestinationAddressInput } from '@/components/StateManagedBridge/DestinationAddressInput'
+import { isAddress } from '@ethersproject/address'
 
 // NOTE: These are idle utility functions that will be re-written to
 // support sorting by desired mechanism
@@ -106,6 +115,7 @@ const StateManagedBridge = () => {
     isLoading,
     supportedFromTokens,
     supportedToTokens,
+    destinationAddress,
   } = useSelector((state: RootState) => state.bridge)
 
   const {
@@ -113,6 +123,8 @@ const StateManagedBridge = () => {
     showToTokenSlideOver,
     showFromChainSlideOver,
     showToChainSlideOver,
+    showSettingsSlideOver,
+    showDestinationAddress,
   } = useSelector((state: RootState) => state.bridgeDisplay)
 
   const [isApproved, setIsApproved] = useState(false)
@@ -228,6 +240,7 @@ const StateManagedBridge = () => {
 
   // Would like to move this into function outside of this component
   const getAndSetBridgeQuote = async () => {
+    // will have to handle deadlineMinutes here at later time, gets passed as optional last arg in .bridgeQuote()
     try {
       dispatch(setIsLoading(true))
 
@@ -304,9 +317,6 @@ const StateManagedBridge = () => {
       dispatch(setIsLoading(false))
       return
     } catch {
-      console.log(`fromChainId`, fromChainId)
-      console.log(`toChainid`, toChainId)
-      console.log(`fromValue`, fromValue)
       const str = formatBNToString(
         fromValue,
         fromToken.decimals[fromChainId],
@@ -336,8 +346,14 @@ const StateManagedBridge = () => {
       const wallet = await fetchSigner({
         chainId: fromChainId,
       })
+
+      const toAddress =
+        destinationAddress && isAddress(destinationAddress)
+          ? destinationAddress
+          : address
+
       const data = await synapseSDK.bridge(
-        address,
+        toAddress,
         fromChainId,
         toChainId,
         fromToken.addresses[fromChainId as keyof Token['addresses']],
@@ -357,6 +373,9 @@ const StateManagedBridge = () => {
         await tx.wait()
 
         dispatch(setBridgeQuote(EMPTY_BRIDGE_QUOTE_ZERO))
+        dispatch(setDestinationAddress(null))
+        dispatch(setShowDestinationAddress(false))
+
         return tx
       } catch (error) {
         console.log(`Transaction failed with error: ${error}`)
@@ -369,199 +388,156 @@ const StateManagedBridge = () => {
 
   return (
     <LandingPageWrapper>
-      <div className="flex justify-center">
-        <div className="text-white">
+      <div className="flex flex-col items-center justify-center">
+        <div className="flex items-center space-x-20">
           <PageHeader
-            title="Redux State Managed Bridge"
+            title="Bridge"
             subtitle="Send your assets across chains."
           />
-          <Card
-            divider={false}
-            className={`
+          <div>
+            <Button
+              className="flex items-center p-3 text-opacity-75 bg-bgLight hover:bg-bgLighter text-secondaryTextColor hover:text-white"
+              onClick={() => {
+                if (showSettingsSlideOver === true) {
+                  dispatch(setShowSettingsSlideOver(false))
+                } else {
+                  dispatch(setShowSettingsSlideOver(true))
+                }
+              }}
+            >
+              {!showSettingsSlideOver ? (
+                <>
+                  <SettingsIcon className="w-5 h-5 mr-2" />
+                  <span>Settings</span>
+                </>
+              ) : (
+                <span>Close</span>
+              )}
+            </Button>
+          </div>
+        </div>
+        <Card
+          divider={false}
+          className={`
             max-w-lg px-1 pb-0 mb-3 overflow-hidden
             transition-all duration-100 transform rounded-xl
             bg-bgBase md:px-6 lg:px-6 mt-5
           `}
-          >
-            <div ref={bridgeDisplayRef}>
-              <Transition show={showFromTokenSlideOver} {...TRANSITION_PROPS}>
-                <animated.div>
-                  <TokenSlideOver
-                    key="fromBlock"
-                    isOrigin={true}
-                    tokens={supportedFromTokens}
-                    chainId={fromChainId}
-                    selectedToken={fromToken}
-                    setToken={setFromToken}
-                    setShowSlideOver={setShowFromTokenSlideOver}
-                  />{' '}
-                </animated.div>
-              </Transition>
-              <Transition show={showToTokenSlideOver} {...TRANSITION_PROPS}>
-                <animated.div>
-                  <TokenSlideOver
-                    key="toBlock"
-                    isOrigin={false}
-                    tokens={supportedToTokens}
-                    chainId={toChainId}
-                    selectedToken={toToken}
-                    setToken={setToToken}
-                    setShowSlideOver={setShowToTokenSlideOver}
-                  />{' '}
-                </animated.div>
-              </Transition>
-              <Transition show={showFromChainSlideOver} {...TRANSITION_PROPS}>
-                <animated.div>
-                  <ChainSlideOver
-                    key="fromChainBlock"
-                    isOrigin={true}
-                    chains={fromChainIds}
-                    chainId={fromChainId}
-                    setChain={setFromChainId}
-                    setShowSlideOver={setShowFromChainSlideOver}
-                  />
-                </animated.div>
-              </Transition>
-              <Transition show={showToChainSlideOver} {...TRANSITION_PROPS}>
-                <animated.div>
-                  <ChainSlideOver
-                    key="toChainBlock"
-                    isOrigin={true}
-                    chains={toChainIds}
-                    chainId={toChainId}
-                    setChain={setToChainId}
-                    setShowSlideOver={setShowToChainSlideOver}
-                  />
-                </animated.div>
-              </Transition>
-              <div className="space-y-2">
-                <div className="flex items-center justify-between">
-                  <div>fromChain</div>
-                  <div>
-                    <select
-                      className="text-black"
-                      onChange={handleFromChainChange}
-                      value={fromChainId}
-                    >
-                      {sortFromChainIds(fromChainIds).map((chainId) => (
-                        <option key={chainId} value={chainId}>
-                          {CHAINS_BY_ID[chainId]?.name}
-                        </option>
-                      ))}
-                    </select>
-                  </div>
-                </div>
-                <div className="flex items-center justify-between">
-                  <div>fromToken</div>
-                  <select
-                    className="text-black"
-                    onChange={handleFromTokenChange}
-                    value={fromToken?.name}
-                  >
-                    {sortFromTokens(supportedFromTokens).map((token) => (
-                      <option key={token.name} value={token.name}>
-                        {token.symbol}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-                <div className="flex items-center justify-between">
-                  <div>from amount</div>
-                  <input
-                    type="text"
-                    onChange={handleFromValueChange}
-                    className="text-black"
-                    placeholder="Enter value"
-                  />
-                </div>
-                <div className="flex items-center justify-between">
-                  <div>toChain</div>
-                  <div>
-                    <select
-                      className="text-black"
-                      onChange={handleToChainChange}
-                      value={toChainId}
-                    >
-                      {sortToChainIds(toChainIds).map((chainId) => (
-                        <option key={chainId} value={chainId}>
-                          {CHAINS_BY_ID[chainId]?.name}
-                        </option>
-                      ))}
-                    </select>
-                  </div>
-                </div>
-                <div className="flex items-center justify-between">
-                  <div>toToken</div>
-                  <select
-                    className="text-black"
-                    onChange={handleToTokenChange}
-                    value={toToken?.name}
-                  >
-                    {sortToTokens(supportedToTokens).map((token) => (
-                      <option key={token.name} value={token.name}>
-                        {token.symbol}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-                <div className="flex items-center justify-between">
-                  <div>Output amount</div>
-                  <div>{bridgeQuote?.outputAmountString}</div>
-                </div>
-                <h1 className="text-2xl">UI experimentation below</h1>
-                <InputContainer />
-                <OutputContainer />
-                <Transition
-                  appear={true}
-                  unmount={false}
-                  show={!fromValue.eq(0)}
-                  {...SECTION_TRANSITION_PROPS}
-                >
-                  <ExchangeRateInfo
-                    fromAmount={fromValue}
-                    toToken={toToken}
-                    exchangeRate={bridgeQuote?.exchangeRate}
-                    toChainId={toChainId}
-                    showGasDrop={true}
-                  />
-                </Transition>
-                <div>
-                  {!isApproved ? (
-                    <button
-                      className="p-2 bg-blue-500 disabled:opacity-50"
-                      onClick={approveTxn}
-                      disabled={
-                        isLoading ||
-                        bridgeQuote === EMPTY_BRIDGE_QUOTE_ZERO ||
-                        bridgeQuote === EMPTY_BRIDGE_QUOTE
-                      }
-                    >
-                      Approve
-                    </button>
-                  ) : (
-                    <button
-                      className="p-2 bg-blue-500 disabled:opacity-50"
-                      onClick={executeBridge}
-                      disabled={
-                        isLoading ||
-                        bridgeQuote === EMPTY_BRIDGE_QUOTE_ZERO ||
-                        bridgeQuote === EMPTY_BRIDGE_QUOTE
-                      }
-                    >
-                      Bridge
-                    </button>
-                  )}
-                </div>
-              </div>
-            </div>
-          </Card>
-          <div className="max-w-1/4">
-            <div className="underline">Your bridge quote</div>
+        >
+          <div ref={bridgeDisplayRef}>
+            <Transition show={showFromTokenSlideOver} {...TRANSITION_PROPS}>
+              <animated.div>
+                <TokenSlideOver
+                  key="fromBlock"
+                  isOrigin={true}
+                  tokens={supportedFromTokens}
+                  chainId={fromChainId}
+                  selectedToken={fromToken}
+                  setToken={setFromToken}
+                  setShowSlideOver={setShowFromTokenSlideOver}
+                />{' '}
+              </animated.div>
+            </Transition>
+            <Transition show={showToTokenSlideOver} {...TRANSITION_PROPS}>
+              <animated.div>
+                <TokenSlideOver
+                  key="toBlock"
+                  isOrigin={false}
+                  tokens={supportedToTokens}
+                  chainId={toChainId}
+                  selectedToken={toToken}
+                  setToken={setToToken}
+                  setShowSlideOver={setShowToTokenSlideOver}
+                />{' '}
+              </animated.div>
+            </Transition>
+            <Transition show={showFromChainSlideOver} {...TRANSITION_PROPS}>
+              <animated.div>
+                <ChainSlideOver
+                  key="fromChainBlock"
+                  isOrigin={true}
+                  chains={fromChainIds}
+                  chainId={fromChainId}
+                  setChain={setFromChainId}
+                  setShowSlideOver={setShowFromChainSlideOver}
+                />
+              </animated.div>
+            </Transition>
+            <Transition show={showToChainSlideOver} {...TRANSITION_PROPS}>
+              <animated.div>
+                <ChainSlideOver
+                  key="toChainBlock"
+                  isOrigin={true}
+                  chains={toChainIds}
+                  chainId={toChainId}
+                  setChain={setToChainId}
+                  setShowSlideOver={setShowToChainSlideOver}
+                />
+              </animated.div>
+            </Transition>
+            <Transition show={showSettingsSlideOver} {...TRANSITION_PROPS}>
+              <animated.div>
+                <SettingsSlideOver key="settings" />
+              </animated.div>
+            </Transition>
+            <InputContainer />
+            <div className="mt-2 mb-2" />
+            <OutputContainer />
+            <Transition
+              appear={true}
+              unmount={false}
+              show={!fromValue.eq(0)}
+              {...SECTION_TRANSITION_PROPS}
+            >
+              <ExchangeRateInfo
+                fromAmount={fromValue}
+                toToken={toToken}
+                exchangeRate={bridgeQuote?.exchangeRate}
+                toChainId={toChainId}
+                showGasDrop={true}
+              />
+            </Transition>
+            {showDestinationAddress && (
+              <DestinationAddressInput
+                toChainId={toChainId}
+                destinationAddress={destinationAddress}
+              />
+            )}
             <div>
-              {Object.entries(bridgeQuote).map(([key, value]) => (
-                <div key={key}>{`${key}: ${value}`}</div>
-              ))}
+              {!isApproved ? (
+                <button
+                  className="p-2 bg-blue-500 disabled:opacity-50"
+                  onClick={approveTxn}
+                  disabled={
+                    isLoading ||
+                    bridgeQuote === EMPTY_BRIDGE_QUOTE_ZERO ||
+                    bridgeQuote === EMPTY_BRIDGE_QUOTE
+                  }
+                >
+                  Approve
+                </button>
+              ) : (
+                <button
+                  className="p-2 bg-blue-500 disabled:opacity-50"
+                  onClick={executeBridge}
+                  disabled={
+                    isLoading ||
+                    bridgeQuote === EMPTY_BRIDGE_QUOTE_ZERO ||
+                    bridgeQuote === EMPTY_BRIDGE_QUOTE
+                  }
+                >
+                  Bridge
+                </button>
+              )}
             </div>
+          </div>
+        </Card>
+        <div className="text-left text-white max-w-1/4">
+          <div className="underline">Your bridge quote</div>
+          <div>
+            {Object.entries(bridgeQuote).map(([key, value]) => (
+              <div key={key}>{`${key}: ${value}`}</div>
+            ))}
           </div>
         </div>
       </div>
