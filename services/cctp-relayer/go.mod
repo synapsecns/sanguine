@@ -16,12 +16,14 @@ require (
 	github.com/synapsecns/sanguine/ethergo v0.0.2
 	github.com/synapsecns/sanguine/services/omnirpc v0.0.0-00010101000000-000000000000
 	github.com/synapsecns/sanguine/services/scribe v0.0.63
+	github.com/urfave/cli/v2 v2.16.3
 	go.opentelemetry.io/contrib/instrumentation/google.golang.org/grpc/otelgrpc v0.40.0
 	go.opentelemetry.io/otel v1.14.0
 	go.opentelemetry.io/otel/trace v1.14.0
 	golang.org/x/sync v0.1.0
 	google.golang.org/grpc v1.53.0
 	gopkg.in/yaml.v2 v2.4.0
+	gorm.io/driver/mysql v1.3.6
 	gorm.io/driver/sqlite v1.4.3
 	gorm.io/gorm v1.24.6
 )
@@ -267,7 +269,6 @@ require (
 	github.com/ugorji/go/codec v1.2.9 // indirect
 	github.com/uptrace/opentelemetry-go-extra/otelgorm v0.1.21 // indirect
 	github.com/uptrace/opentelemetry-go-extra/otelsql v0.1.21 // indirect
-	github.com/urfave/cli/v2 v2.16.3 // indirect
 	github.com/valyala/bytebufferpool v1.0.0 // indirect
 	github.com/valyala/fasthttp v1.41.0 // indirect
 	github.com/valyala/fastrand v1.1.0 // indirect
@@ -311,7 +312,6 @@ require (
 	gopkg.in/natefinch/npipe.v2 v2.0.0-20160621034901-c1b8fa8bdcce // indirect
 	gopkg.in/warnings.v0 v0.1.2 // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect
-	gorm.io/driver/mysql v1.3.6 // indirect
 	inet.af/netaddr v0.0.0-20220811202034-502d2d690317 // indirect
 	k8s.io/apimachinery v0.25.5 // indirect
 	k8s.io/klog/v2 v2.80.1 // indirect

@@ -45,12 +45,12 @@ var scribeURL = &cli.StringFlag{
 	Usage: "--scribe-url <url>",
 }
 
-// runCommand runs the cctp relayer
+// runCommand runs the cctp relayer.
 var runCommand = &cli.Command{
 	Name:        "run",
 	Description: "run the cctp relayer",
 	Flags:       []cli.Flag{configFlag, dbFlag, pathFlag, scribePortFlag, scribeURL},
-	Action: func(c *cli.Context) error {
+	Action: func(c *cli.Context) (err error) {
 		cfg, err := config.DecodeConfig(c.String(configFlag.Name))
 		if err != nil {
 			return fmt.Errorf("could not read config file: %w", err)
@@ -84,7 +84,10 @@ var runCommand = &cli.Command{
 			return fmt.Errorf("could not create cctp relayer: %w", err)
 		}
 
-		// nolint: errwrap
-		return cctpRelayer.Run(c.Context)
+		err = cctpRelayer.Run(c.Context)
+		if err != nil {
+			return fmt.Errorf("could not run cctp relayer: %w", err)
+		}
+		return nil
 	},
 }
