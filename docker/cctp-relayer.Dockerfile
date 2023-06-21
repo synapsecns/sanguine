@@ -10,6 +10,6 @@ LABEL org.opencontainers.image.description = "CCTP Relayer Docker image"
 USER nonroot:nonroot
 
 WORKDIR /app
-COPY --chown=nonroot:nonroot scribe /app/cctp-relayer
+COPY --chown=nonroot:nonroot cctp-relayer /app/cctp-relayer
 
 ENTRYPOINT ["/app/cctp-relayer"]
