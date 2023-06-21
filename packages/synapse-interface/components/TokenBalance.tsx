@@ -17,7 +17,7 @@ const TokenBalance = ({
     formatBNToString(
       tokenBalance,
       token?.decimals?.[chainId as keyof Token['decimals']],
-      2
+      3
     )
   )
   return (

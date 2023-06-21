@@ -7,7 +7,9 @@ import { DrawerButton } from '@components/buttons/DrawerButton'
 import { sortTokens } from '@constants/tokens'
 
 import { Token } from '@/utils/types'
-import { useDispatch } from 'react-redux'
+import { useDispatch, useSelector } from 'react-redux'
+import { RootState } from '@/store/store'
+import { Zero } from '@ethersproject/constants'
 
 export const TokenSlideOver = ({
   isOrigin,
@@ -29,9 +31,15 @@ export const TokenSlideOver = ({
   const dispatch = useDispatch()
   let tokenList: any[] = []
 
+  const { supportedFromTokenBalances } = useSelector(
+    (state: RootState) => state.bridge
+  )
+
   tokenList = tokens
 
-  tokenList = sortTokens(tokenList)
+  // Hiding this below for now bc its conflicting with tokens w/ balances
+  // tokenList = sortTokens(tokenList)
+
   const fuse = new Fuse(tokenList, {
     includeScore: true,
     threshold: 0.0,
@@ -123,19 +131,34 @@ export const TokenSlideOver = ({
           rounded-3xl
         `}
       >
-        {tokenList.map((token, idx) => (
-          <TokenMenuItem
-            key={idx}
-            chainId={chainId}
-            token={token}
-            selectedToken={selectedToken}
-            active={idx === currentIdx}
-            tokenBalance={token.balance}
-            onClick={() => {
-              onMenuItemClick(token)
-            }}
-          />
-        ))}
+        {tokenList.map((token, idx) => {
+          let balance
+
+          if (isOrigin) {
+            const tokenAndBalance = supportedFromTokenBalances.filter(
+              (t) => t.token === token
+            )
+
+            balance = tokenAndBalance[0]?.balance ?? Zero
+          } else {
+            balance = Zero
+          }
+
+          return (
+            <TokenMenuItem
+              key={idx}
+              chainId={chainId}
+              token={token}
+              selectedToken={selectedToken}
+              active={idx === currentIdx}
+              tokenBalance={balance}
+              onClick={() => {
+                onMenuItemClick(token)
+              }}
+            />
+          )
+        })}
+
         {searchStr && (
           <div className="px-12 py-4 text-xl text-center text-white">
             No other results found for{' '}

@@ -144,16 +144,20 @@ const StateManagedBridge = () => {
         fromChainId
       )
 
-    dispatch(setSupportedFromTokens(fromTokens))
     dispatch(setSupportedToTokens(bridgeableTokens))
     dispatch(setToToken(bridgeableToken))
 
     sortByTokenBalance(fromTokens, fromChainId, address).then((res) => {
+      const t = res.map((tokenAndBalances) => tokenAndBalances.token)
       dispatch(setSupportedFromTokenBalances(res))
+      dispatch(setSupportedFromTokens(t))
     })
 
     dispatch(setFromChainIds(fromChainIds))
     dispatch(setToChainIds(bridgeableChainIds))
+
+    /// maybe you need to wrap this in a then/finally so it only happens
+    // after the dispatches happen
     getAndSetBridgeQuote()
   }, [fromChainId, toChainId, fromToken, toToken, fromValue])
 
