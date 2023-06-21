@@ -37,11 +37,11 @@ export const TokenSlideOver = ({
     threshold: 0.0,
     keys: [
       {
-        name: 'token.symbol',
+        name: 'symbol',
         weight: 2,
       },
-      `token.addresses.${chainId}`,
-      'token.name',
+      `addresses.${chainId}`,
+      'name',
     ],
   })
 
