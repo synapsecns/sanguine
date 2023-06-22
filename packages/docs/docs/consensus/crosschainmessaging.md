@@ -276,6 +276,10 @@ to submit a fraudulent [State Snapshot](glossary.md/#state-snapshot) using that 
 The next section talks about what happens if the malicious [Notary](glossary.md/#notary) is able to commit such
 [fraud](glossary.md/#fraud) using the bad [State](glossary.md/#state).
 
+Below is a diagram illustrating the steps involved in detecting a Fraudulent Snapshot by a Guard:
+
+![FraudulentSnapshotByGuard](../../static/img/FraudulentSnapshotByGuard.png 'Diagram illustrating the steps involved in detecting a Fraudulent Snapshot by a Guard')
+
 ### Fraudulent Snapshot by Notary
 It is important to keep in mind that the only way for a [Notary](glossary.md/#notary) to submit a [State Snapshot](glossary.md/#state-snapshot)
 containing a bad [State](glossary.md/#state) is if a malicious [Guard](glossary.md/#guard) first registered the bad [State](glossary.md/#state).
