@@ -293,6 +293,10 @@ fraudulent [State Snapshot](glossary.md/#state-snapshot) will also be guilty of 
 This is why it is very important that all [Notaries](glossary.md/#notary) independently verify the [States](glossary.md/#state) being
 attested to when signing and submitting an [Attestation](glossary.md/#attestation) to its [remote chains](glossary.md/#remote-chain).
 
+Below is a diagram illustrating the steps involved in detecting a Fraudulent Snapshot by a Notary:
+
+![FraudulentSnapshotByNotary](../../static/img/FraudulentSnapshotByNotary.png 'Diagram illustrating the steps involved in detecting a Fraudulent Snapshot by a Notary')
+
 ### Fraudulent Attestation Fraud Report
 The section that talks about [Fraudulent Attestations](glossary.md/#fraudulent-attestation) mentions the need for alerting the
 [remote chain](glossary.md/#remote-chain) about the pending [fraud](glossary.md/#fraud). While the
@@ -310,6 +314,10 @@ is valid or not. If it is NOT valid, then the malicious [Gaurd](glossary.md/#gua
 and removed from the [Agent Set](glossary.md/#agent-set). This will result in a new [Agent Root](glossary.md/#agent-root)
 which is how the [remote chain](glossary.md/#remote-chain) will learn about the result of the [fraud resolution](glossary.md/#fraud-resolution).
 
+Below is a diagram illustrating the steps involved in detecting a Fraudulent Attestation Fraud Report by a Guard:
+
+![FraudulentAttestatonFraudReport](../../static/img/FraudulentAttestationFraudReport.png 'Diagram illustrating the steps involved in detecting a Fraudulent Attestation Fraud Report by a Guard:')
+
 ### Fraudulent Shapshot Fraud Report
 Another denial of service attack that a malicious [Guard](glossary.md/#Guard) could attempt is to claim that another [Guard](glossary.md/#Guard)
 or [Notary](glossary.md/#Notary) submitted a bad [State Snapshot](glossary.md/#state-snapshot) in order to get that chain
@@ -321,6 +329,10 @@ which is the only chain that can decide whether the [fraud report](glossary.md/#
 If the [Origin Chain](glossary.md/#origin-chain) determines that it was a dishonest fraud report, it will send
 a [System Message](glossary.md/#system-message) to the [Synapse Chain](glossary.md/#synapse-chain) which will then [slash](glossary.md/#slash)
 the malicious [Guard](glossary.md/#guard) and restore the status of the wrongfully [Accused Agent](glossary.md/#accused-agent).
+
+Below is a diagram illustrating the steps involved in detecting a Fraudulent Snapshot Fraud Report by a Guard:
+
+![FraudulentSnapshotFraudReport](../../static/img/FraudulentSnapshotFraudReport.png 'Diagram illustrating the steps involved in detecting a Fraudulent Snapshot Fraud Report by a Guard:')
 
 ### Fraudulent Receipt
 In order to distribute [tips](glossary.md/#tips) for taking part in successfully executing a message, the [Destination Chain](glossary.md/#destination-chain)
