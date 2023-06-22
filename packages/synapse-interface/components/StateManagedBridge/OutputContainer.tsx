@@ -6,6 +6,8 @@ import { useDispatch } from 'react-redux'
 import { setShowToTokenSlideOver } from '@/slices/bridgeDisplaySlice'
 import LoadingSpinner from '../ui/tailwind/LoadingSpinner'
 import { DestinationChainLabel } from './DestinationChainLabel'
+import SwitchButton from '../buttons/SwitchButton'
+import { setFromChainId, setToChainId } from '@/slices/bridgeSlice'
 
 export const OutputContainer = ({}) => {
   const dispatch = useDispatch()
@@ -21,11 +23,22 @@ export const OutputContainer = ({}) => {
   return (
     <div
       className={`
+        mt-12
         text-left px-2 sm:px-4 pt-2 pb-4 rounded-xl
         bg-bgLight
       `}
     >
       <div>
+        <div className="absolute">
+          <div className="-mt-12">
+            <SwitchButton
+              onClick={() => {
+                dispatch(setFromChainId(toChainId))
+                dispatch(setToChainId(fromChainId))
+              }}
+            />
+          </div>
+        </div>
         <div className="pt-1 pb-3">
           <DestinationChainLabel
             chainId={toChainId}

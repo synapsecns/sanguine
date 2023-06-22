@@ -53,7 +53,7 @@ import {
   BRIDGE_SWAPABLE_TOKENS_BY_TYPE,
   tokenSymbolToToken,
 } from '@/constants/tokens'
-import { CHAINS_BY_ID } from '@/constants/chains'
+import { AcceptedChainId, CHAINS_BY_ID } from '@/constants/chains'
 import { approveToken } from '@/utils/approveToken'
 import { PageHeader } from '@/components/PageHeader'
 import Card from '@/components/ui/tailwind/Card'
@@ -154,20 +154,23 @@ const StateManagedBridge = () => {
         fromChainId
       )
 
+    // when any of those changes happen,
     dispatch(setSupportedToTokens(bridgeableTokens))
     dispatch(setToToken(bridgeableToken))
 
     sortByTokenBalance(fromTokens, fromChainId, address).then((res) => {
       const t = res.map((tokenAndBalances) => tokenAndBalances.token)
+
       dispatch(setSupportedFromTokenBalances(res))
       dispatch(setSupportedFromTokens(t))
     })
 
     dispatch(setFromChainIds(fromChainIds))
     dispatch(setToChainIds(bridgeableChainIds))
-
     /// maybe you need to wrap this in a then/finally so it only happens
     // after the dispatches happen
+    console.log(`[useEffect] fromToken`, fromToken.symbol)
+    console.log(`[useEffect] toToken`, toToken.symbol)
     getAndSetBridgeQuote()
   }, [fromChainId, toChainId, fromToken, toToken, fromValue])
 
@@ -199,20 +202,32 @@ const StateManagedBridge = () => {
           fromValue
         )
 
+      console.log(`[getAndSetQuote] fromChainId`, fromChainId)
+      console.log(`[getAndSetQuote] toChainId`, toChainId)
+      console.log(`[getAndSetQuote] fromToken.symbol`, fromToken.symbol)
+      console.log(`[getAndSetQuote] toToken.symbol`, toToken.symbol)
+      console.log(`[getAndSetQuote] fromValue`, fromValue)
+
+      console.log(`[getAndSetQuote] maxAmountOut`, maxAmountOut)
+
       if (!(originQuery && maxAmountOut && destQuery && feeAmount)) {
         dispatch(setBridgeQuote(EMPTY_BRIDGE_QUOTE_ZERO))
         dispatch(setIsLoading(false))
         return
       }
+
       const toValueBigNum = maxAmountOut ?? Zero
       const originTokenDecimals = fromToken.decimals[fromChainId]
       const adjustedFeeAmount = feeAmount.lt(fromValue)
         ? feeAmount
         : feeAmount.div(BigNumber.from(10).pow(18 - originTokenDecimals))
 
+      const isUnsupported = AcceptedChainId[fromChainId] ? false : true
+
       const allowance =
         fromToken.addresses[fromChainId] === AddressZero ||
-        address === undefined
+        address === undefined ||
+        isUnsupported
           ? Zero
           : await getCurrentTokenAllowance(
               address,
@@ -260,7 +275,6 @@ const StateManagedBridge = () => {
           },
         })
       )
-      dispatch(setIsLoading(false))
       return
     } catch {
       const str = formatBNToString(
@@ -269,10 +283,13 @@ const StateManagedBridge = () => {
         4
       )
       const message = `No route found for bridging ${str} ${fromToken.symbol} on ${CHAINS_BY_ID[fromChainId]?.name} to ${toToken.symbol} on ${CHAINS_BY_ID[toChainId]?.name}`
+      console.log(message)
       toast(message)
+
       dispatch(setBridgeQuote(EMPTY_BRIDGE_QUOTE_ZERO))
-      dispatch(setIsLoading(false))
       return
+    } finally {
+      dispatch(setIsLoading(false))
     }
   }
 
@@ -421,7 +438,6 @@ const StateManagedBridge = () => {
               </animated.div>
             </Transition>
             <InputContainer />
-            <div className="mt-2 mb-2" />
             <OutputContainer />
             <Transition
               appear={true}
@@ -443,7 +459,7 @@ const StateManagedBridge = () => {
                 destinationAddress={destinationAddress}
               />
             )}
-            <div>
+            <div className="mt-3 mb-3">
               {!isApproved ? (
                 <TransactionButton
                   onClick={approveTxn}
