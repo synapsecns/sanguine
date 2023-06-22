@@ -2,7 +2,7 @@
 sidebar_position: 2
 ---
 
-# Permissionless Trusted Network
+# Cross Chain Messaging
 
 This section will walk through building the [Synapse Messaging System](glossary.md/#synapse-messaging-system) from the ground up.
 The goal in doing so is to establish how trust is established layer by layer throughout the system.
