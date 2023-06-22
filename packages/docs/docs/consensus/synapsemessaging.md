@@ -56,7 +56,7 @@ Agents in the system are doing work (i.e. running servers, paying electricity, e
     5. Synapse [Gas Oracle Smart Contract](glossary.md/#gas-oracle-smart-contract).
     6. Synapse [Light Manager Smart Contract](glossary.md/#light-manager-smart-contract).
     7. Synapse [Light Inbox Smart Contract](glossary.md/#light-inbox-smart-contract).
-3. The [Syanpse Chain](glossary.md/#synapse-chain) has the following smart contracts deployed:
+3. The [Synapse Chain](glossary.md/#synapse-chain) has the following smart contracts deployed:
     1. Synapse [Summit Smart Contract](glossary.md/#summit-smart-contract).
     2. Synapse [Gas Oracle Smart Contract](glossary.md/#gas-oracle-smart-contract).
     3. Synapse [Bonding Manager Smart Contract](glossary.md/#bonding-manager-smart-contract).
@@ -249,6 +249,6 @@ What this means is that part of the Origin "state" will include the current cost
 
 This means that when a remote chain hears about the state of another chain, it will get a rough idea of the going rate of gas.
 
-Thus, when a message is sent from chain A to chain B, chain A will estimate the cost of gas on the Syanpse chain and also the cost of gas on chain B, and it will collect a sufficient amount to cover the gas required to execute the message.
+Thus, when a message is sent from chain A to chain B, chain A will estimate the cost of gas on the Synapse chain and also the cost of gas on chain B, and it will collect a sufficient amount to cover the gas required to execute the message.
 
 
