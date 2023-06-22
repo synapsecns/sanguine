@@ -9,11 +9,11 @@ When a [fraud report](#fraud-report) is submitted by an [Accusing Guard](#accusi
 purported [fraud](#fraud) which is a false claim signed by the "Accused Agent".
 
 ### Accused Guard
-When a [Guard](#guard) is the [Accused Agent](#accused-agent) in a [fraud report](#fraud-report) submitted by another [Accusing Guard](accusing-guard),
+When a [Guard](#guard) is the [Accused Agent](#accused-agent) in a [fraud report](#fraud-report) submitted by another [Accusing Guard](#accusing-guard),
 it is referred to as the "Accused Guard".
 
 ### Accused Notary
-When a [Notary](#notary) is the [Accused Agent](#accused-agent) in a [fraud report](#fraud-report) submitted by an [Accusing Guard](accusing-guard),
+When a [Notary](#notary) is the [Accused Agent](#accused-agent) in a [fraud report](#fraud-report) submitted by an [Accusing Guard](#accusing-guard),
 it is referred to as the "Accused Notary".
 
 ### Accusing Guard

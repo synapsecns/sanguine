@@ -97,12 +97,12 @@ This section is for [Client Smart Contract Application Developers](glossary.md/#
 The first step is to identify which chains need to communicate with each other. In this case, we have our two chains already
 set up.
 
-The next step is for each chain, deploy a [Client Sending Smart Contract](#client-sending-smart-contract) and
-a [Client Receiving Smart Contract](#client-receiving-smart-contract). These are the application-specific smart contracts
+The next step is for each chain, deploy a [Client Sending Smart Contract](glossary.md/#client-sending-smart-contract) and
+a [Client Receiving Smart Contract](glossary.md/#client-receiving-smart-contract). These are the application-specific smart contracts
 developed by the [Client Smart Contract Application Developers](glossary.md/#client-smart-contract-application-developer).
 
-Note that it is perfectly normal to combine the [Client Sending Smart Contract](#client-sending-smart-contract) and
-a [Client Receiving Smart Contract](#client-receiving-smart-contract) into a single smart contract.
+Note that it is perfectly normal to combine the [Client Sending Smart Contract](glossary.md/#client-sending-smart-contract) and
+a [Client Receiving Smart Contract](glossary.md/#client-receiving-smart-contract) into a single smart contract.
 
 In fact the Synapse team has a couple example test clients that do just this.
 
@@ -136,13 +136,13 @@ through a [permissioned](glossary.md/#permissioned) mechanism during initializat
 new [Bonded Agents](glossary.md/#bonded-agents) through a [permissionaless](glossary.md/#permissionless) mechanism.
 
 ### Sending Messages
-We will now illustrate sending a message from the [Client Sending Smart Contract](#client-sending-smart-contract)
-on Chain A to the [Client Receiving Smart Contract](#client-receiving-smart-contract) on Chain B.
+We will now illustrate sending a message from the [Client Sending Smart Contract](glossary.md/#client-sending-smart-contract)
+on Chain A to the [Client Receiving Smart Contract](glossary.md/#client-receiving-smart-contract) on Chain B.
 
 We will see how the [Synapse Messaging System](glossary.md/#synapse-messaging-system) supports both
 [Liveness](glossary.md/#liveness) and [Integrity](glossary.md/#integrity).
 
-1.  On Chain A, [Client Sending Smart Contract](glossary.md/#client-sending-smart-contract) calls the "send message" method on the [Origin Smart Contract](#origin-smart-contract).
+1.  On Chain A, [Client Sending Smart Contract](glossary.md/#client-sending-smart-contract) calls the "send message" method on the [Origin Smart Contract](glossary.md/#origin-smart-contract).
 The result of this is that the message is added in the Origin's [Message Merkle Tree](glossary.md/#message-merkle-tree) and Chain A will have
 a new [state](glossary.md/#state) with a new [Message Merkle Root](glossary.md/#message-merkle-root).
 For this example, we will say that Chain A sends 4 messages to Chain B so we can illustrate what it's [Message Merkle Tree](glossary.md/#message-merkle-tree) looks like.
@@ -203,8 +203,8 @@ Below is a diagram illustrating the steps involved in adding another bonded agen
 
 Any time a [Bonded Agent](glossary.md/#bonded-agent) makes a claim to one blockchain about something that happened
 on another blockchain, it must provide a [digital signature](glossary.md/#digital-signature) which binds that
-specific [Bonded Agent](#bonded-agent) to that specific claim. The [digital signature](glossary.md/#digital-signature)
-is thus how the [Bonded Agents](#bonded-agent) receive credit for truthful claims and blame from fraudulent claims.
+specific [Bonded Agent](glossary.md/#bonded-agent) to that specific claim. The [digital signature](glossary.md/#digital-signature)
+is thus how the [Bonded Agents](glossary.md/#bonded-agent) receive credit for truthful claims and blame from fraudulent claims.
 If the claim ends
 up being [fraud](glossary.md/#fraud), the [Bonded Agent](glossary.md/#bonded-agent) will be [slashed](glossary.md/#slash)
 and removed from the [Agent Set](glossary.md/#agent-set).
@@ -212,91 +212,91 @@ The purpose of this section is to walk through the flow of each of the possible 
 and how the [Synapse Messaging System](glossary.md/#synapse-messaging-system) protects itself from attackers.
 
 ### Fraudulent Attestation
-When a [Guard](#guard) detects a [Fraudulent Attestation](gloassary.md/#fraudulent-attestation), this means that a malicious
-[Notary](gloassary.md/#notary) has posted an [Attestation](gloassary.md/#attestation) to its [remote chain](gloassary.md/#remote-chain) that was never registered
-on the [Synapse Chain](gloassary.md/#synapse-chain).
+When a [Guard](glossary.md/#guard) detects a [Fraudulent Attestation](glossary.md/#fraudulent-attestation), this means that a malicious
+[Notary](glossary.md/#notary) has posted an [Attestation](glossary.md/#attestation) to its [remote chain](glossary.md/#remote-chain) that was never registered
+on the [Synapse Chain](glossary.md/#synapse-chain).
 
 Below are the steps of what happens starting from the intitial [fraud](glossary.md/#fraud) to the  [fraud resolution](glossary.md/#fraud-resoltuion).
-1. A malicious [Notary](glossary.md/#notary) posts an [Attestation](gloassary.md/#attestation) to its [remote chain](gloassary.md/#remote-chain)
-that was never registered on the [Synapse Chain](gloassary.md/#synapse-chain).
-2. A [Guard](glossary.md/#guard) observes the [Attestation](gloassary.md/#attestation) on the [remote chain](gloassary.md/#remote-chain).
-3. The [Guard](glossary.md/#guard) checks on the [Synapse Chain](gloassary.md/#synapse-chain) whether or not the [Attestation](gloassary.md/#attestation) is valid.
-4. Upon learning from the [Synapse Chain](gloassary.md/#synapse-chain) that it is a [fraudulent attestation](glossary.md/#fraudulent-attestation),
-the [Guard](glossary.md/#guard) submits a transaction to the [Synapse Chain](gloassary.md/#synapse-chain) that provides proof
-of the [fraudulent attestation](glossary.md/#fraudulent-attestation) and this results in the [Synapse Chain](gloassary.md/#synapse-chain)
+1. A malicious [Notary](glossary.md/#notary) posts an [Attestation](glossary.md/#attestation) to its [remote chain](glossary.md/#remote-chain)
+that was never registered on the [Synapse Chain](glossary.md/#synapse-chain).
+2. A [Guard](glossary.md/#guard) observes the [Attestation](glossary.md/#attestation) on the [remote chain](glossary.md/#remote-chain).
+3. The [Guard](glossary.md/#guard) checks on the [Synapse Chain](glossary.md/#synapse-chain) whether or not the [Attestation](glossary.md/#attestation) is valid.
+4. Upon learning from the [Synapse Chain](glossary.md/#synapse-chain) that it is a [fraudulent attestation](glossary.md/#fraudulent-attestation),
+the [Guard](glossary.md/#guard) submits a transaction to the [Synapse Chain](glossary.md/#synapse-chain) that provides proof
+of the [fraudulent attestation](glossary.md/#fraudulent-attestation) and this results in the [Synapse Chain](glossary.md/#synapse-chain)
 [slashing](glossary.md/#slash) the [Accused Notary](glossary.md/#accused-notary) and removing it from the [Agent Set](glossary.md/#agent-set).
-5. While the [remote chain](gloassary.md/#remote-chain) waits to learn about the new [Agent Root](glossary.md/#agent-root),
+5. While the [remote chain](glossary.md/#remote-chain) waits to learn about the new [Agent Root](glossary.md/#agent-root),
 it is at risk of having messages executed using the [fraudulent attestation](glossary.md/#fraudulent-attestation). The [Guard](glossary.md/#guard)
-protects the [remote chain](gloassary.md/#remote-chain) by submitting an [Attestation Fraud Report](gloassary.md/#attestation-fraud-report) to
-the [remote chain](gloassary.md/#remote-chain) so it knows to immediately stop trusting that [Accused Notary](glossary.md/accused-notary).
+protects the [remote chain](glossary.md/#remote-chain) by submitting an [Attestation Fraud Report](glossary.md/#attestation-fraud-report) to
+the [remote chain](glossary.md/#remote-chain) so it knows to immediately stop trusting that [Accused Notary](glossary.md/#accused-notary).
 
-It is very important that the [Guard](#guard) lets the [remote chain](#remote-chain)
-know that it should pause all trust of the suspected [Notary](#notary). For this, the [Guard](#guard) submits an
-"Attestation Fraud Report" to the [remote chain](#remote-chain). The result of this is that the [remote chain](#remote-chain)
-considers both the accused [Notary](#notary) and the accusing [Guard](#guard) in the [Disputed Agent Set](#disputed-agent-set) until
-the [Fraud Resolution](#fraud-resolution) happens on the [Synapse Chain](#synapse-chain).
+It is very important that the [Guard](glossary.md/#guard) lets the [remote chain](glossary.md/#remote-chain)
+know that it should pause all trust of the suspected [Notary](glossary.md/#notary). For this, the [Guard](glossary.md/#guard) submits an
+"Attestation Fraud Report" to the [remote chain](glossary.md/#remote-chain). The result of this is that the [remote chain](glossary.md/#remote-chain)
+considers both the accused [Notary](glossary.md/#notary) and the accusing [Guard](glossary.md/#guard) in the [Disputed Agent Set](glossary.md/#disputed-agent-set) until
+the [Fraud Resolution](glossary.md/#fraud-resolution) happens on the [Synapse Chain](glossary.md/#synapse-chain).
 Prior to submitting the
-"Attestation Fraud Report" on the [remote chain](#remote-chain), the [Accusing Guard](#accusing-guard) will have checked
-the [Synapse Chain](#synapse-chain) to confirm the [Fraudulent Attestation](#fraudulent-attestation), and it will have
-submitted a proof of the [Fraudulent Attestation](#fraudulent-attestation) to the [Synapse Chain](#synapse-chain).
+"Attestation Fraud Report" on the [remote chain](glossary.md/#remote-chain), the [Accusing Guard](glossary.md/#accusing-guard) will have checked
+the [Synapse Chain](glossary.md/#synapse-chain) to confirm the [Fraudulent Attestation](glossary.md/#fraudulent-attestation), and it will have
+submitted a proof of the [Fraudulent Attestation](glossary.md/#fraudulent-attestation) to the [Synapse Chain](glossary.md/#synapse-chain).
 This immediately results in the
-[Accused Notary](#accused-notary) getting [slashed](#slash) and removed from the [Agent Set](#agent-set) on the [Synapse Chain](#synapse-chain).
-However, it will take time for this information to propagate to the [remote chain](#remote-chain), which is now
-at risk of having [messages](#message) executed using the [Fraudulent Attestation](#fraudulent-attestation).
-Thus, the [Guard](#guard) will submit the "Attestation Fraud Report" on the [remote chain](#remote-chain) as a way
-to immediately protect that chain from the malicious [Notary](#notary).
+[Accused Notary](glossary.md/#accused-notary) getting [slashed](glossary.md/#slash) and removed from the [Agent Set](glossary.md/#agent-set) on the [Synapse Chain](glossary.md/#synapse-chain).
+However, it will take time for this information to propagate to the [remote chain](glossary.md/#remote-chain), which is now
+at risk of having [messages](glossary.md/#message) executed using the [Fraudulent Attestation](glossary.md/#fraudulent-attestation).
+Thus, the [Guard](glossary.md/#guard) will submit the "Attestation Fraud Report" on the [remote chain](glossary.md/#remote-chain) as a way
+to immediately protect that chain from the malicious [Notary](glossary.md/#notary).
 
 Below is a diagram illustrating the steps involved in detecting a Fraudulent Attestation:
 
 ![FraudulentAttestationOverview](../../static/img/FraudulentAttestationSystemOverview.png 'Diagram illustrating the steps involved in detecting a Fraudulent Attestation')
 
 ### Fraudulent Snapshot by a Guard
- If a malicious [Guard](gloassary.md/#guard) posts a [State Snapshot](glossary.md/#state-snapshot) that has at least one fraudulent
-[State](gloassary.md/#state) to the [Synapse Chain](gloassary.md/#synapse-chain), a non-malicious [Guard](gloassary.md/#guard)
-can submit a [Fraud Report](glossary.md/#fraud-report) to the [Origin Chain](gloassary.md/#origin-chain), which is the
-chain that is uniquely able to determine whether the [State](gloassary.md/#state) is valid or not.
+ If a malicious [Guard](glossary.md/#guard) posts a [State Snapshot](glossary.md/#state-snapshot) that has at least one fraudulent
+[State](glossary.md/#state) to the [Synapse Chain](glossary.md/#synapse-chain), a non-malicious [Guard](glossary.md/#guard)
+can submit a [Fraud Report](glossary.md/#fraud-report) to the [Origin Chain](glossary.md/#origin-chain), which is the
+chain that is uniquely able to determine whether the [State](glossary.md/#state) is valid or not.
 Upon determining that the [State Snapshot](glossary.md/#state-snapshot) did in fact contain [fraud](glossary.md/#fraud),
-this needs to be communicated to the rest of the chains in the network, and importantly the malicious [Guard](gloassary.md/#guard)
+this needs to be communicated to the rest of the chains in the network, and importantly the malicious [Guard](glossary.md/#guard)
 will need to be [slashed](glossary.md/#slash) on the [Synapse Chain](glossary.md/#synapse-chain).
-This is accomplished through a special kind of [message](glossary.md/#message) called a [System Message](#system-message), which
-is sent by the Origin when it determines the malicious [Guard](gloassary.md/#guard) should be [slashed](glossary.md/#slash).
-The [System Message](#system-message) requires an
+This is accomplished through a special kind of [message](glossary.md/#message) called a [System Message](glossary.md/#system-message), which
+is sent by the Origin when it determines the malicious [Guard](glossary.md/#guard) should be [slashed](glossary.md/#slash).
+The [System Message](glossary.md/#system-message) requires an
  [Optimisic Period](glossary.md/#optimistic-period) just like any other message before it can be accepted. The result of
-executing this particular [System Message](#system-message) will be to [slash](glossary.md/#slash) the malicious
- [Guard](gloassary.md/#guard) and remove it from the [Agent Set](gloassary.md/#agent-set).
-The other chains will learn about the removal of the [Guard](gloassary.md/#guard) because there will be a new
- [Agent Root](gloassary.md/#agent-root).
-Because the [System Message](#system-message) and the new [Agent Root](gloassary.md/#agent-root) both take time to
-propagate through the network, there is a a mechanism for any honest [Guard](gloassary.md/#guard) to submit a fraud
-report to the other chains that will cause the other chain to halt trusting anything from the malicious [Guard](gloassary.md/#guard)
-until the [Fraud Resolution](gloassary.md/#fraud-resolution) has transpired.
-The hope is that the [fraud](glossary.md/fraud) committed by the [Guard](gloassary.md/#guard) will be detected and
-blocked before the fraudulent [State](gloassary.md/#state) can be used by a malicious [Notary](gloassary.md/#notary)
+executing this particular [System Message](glossary.md/#system-message) will be to [slash](glossary.md/#slash) the malicious
+ [Guard](glossary.md/#guard) and remove it from the [Agent Set](glossary.md/#agent-set).
+The other chains will learn about the removal of the [Guard](glossary.md/#guard) because there will be a new
+ [Agent Root](glossary.md/#agent-root).
+Because the [System Message](glossary.md/#system-message) and the new [Agent Root](glossary.md/#agent-root) both take time to
+propagate through the network, there is a a mechanism for any honest [Guard](glossary.md/#guard) to submit a fraud
+report to the other chains that will cause the other chain to halt trusting anything from the malicious [Guard](glossary.md/#guard)
+until the [Fraud Resolution](glossary.md/#fraud-resolution) has transpired.
+The hope is that the [fraud](glossary.md/#fraud) committed by the [Guard](glossary.md/#guard) will be detected and
+blocked before the fraudulent [State](glossary.md/#state) can be used by a malicious [Notary](glossary.md/#notary)
 to submit a fraudulent [State Snapshot](glossary.md/#state-snapshot) using that bad state.
-The next section talks about what happens if the malicious [Notary](gloassary.md/#notary) is able to commit such
-[fraud](glossary.md/fraud) using the bad [State](gloassary.md/#state).
+The next section talks about what happens if the malicious [Notary](glossary.md/#notary) is able to commit such
+[fraud](glossary.md/#fraud) using the bad [State](glossary.md/#state).
 
 ### Fraudulent Snapshot by Notary
 It is important to keep in mind that the only way for a [Notary](glossary.md/#notary) to submit a [State Snapshot](glossary.md/#state-snapshot)
-containing a bad [State](gloassary.md/#state) is if a malicious [Guard](glossary.md/#guard) first registered the bad [State](gloassary.md/#state).
+containing a bad [State](glossary.md/#state) is if a malicious [Guard](glossary.md/#guard) first registered the bad [State](glossary.md/#state).
 When the [Notary](glossary.md/#notary) submits a [State Snapshot](glossary.md/#state-snapshot), the byproduct is an [Attestation](glossary.md/#attestation)
 that is registered on the [Synapse Chain](glossary.md/#synapse-chain) which can be used to submit to any of the [remote chains](glossary.md/#remote-chain).
 It is very important to catch and block fraudulent [Attestations](glossary.md/#attestation).
-All of the steps involved in catching and reporting the [Fraudulent Snapshot by a Guard](#fraudulent-snapshot-by-a-guard) applies to
+All of the steps involved in catching and reporting the [Fraudulent Snapshot by a Guard](glossary.md/#fraudulent-snapshot-by-a-guard) applies to
 the Fraudulent Snapshot by a Notary.
 Note that any [Notary](glossary.md/#notary) who signed and submitted an [Attestation](glossary.md/#attestation) that came from a
-fraudulent [State Snapshot](glossary.md/#state-snapshot) will also be guilty of committing a [Fraudulent Attestation](#fraudulent-attestation).
-This is why it is very important that all [Notaries](glossary.md/#notary) independently verify the [States](gloassary.md/#state) being
+fraudulent [State Snapshot](glossary.md/#state-snapshot) will also be guilty of committing a [Fraudulent Attestation](glossary.md/#fraudulent-attestation).
+This is why it is very important that all [Notaries](glossary.md/#notary) independently verify the [States](glossary.md/#state) being
 attested to when signing and submitting an [Attestation](glossary.md/#attestation) to its [remote chains](glossary.md/#remote-chain).
 
 ### Fraudulent Attestation Fraud Report
-The section that talks about [Fraudulent Attestations](#fraudulent-attestation) mentions the need for alerting the
-[remote chain](glossary.md/#remote-chain) about the pending [fraud](glossary.md/fraud). While the
+The section that talks about [Fraudulent Attestations](glossary.md/#fraudulent-attestation) mentions the need for alerting the
+[remote chain](glossary.md/#remote-chain) about the pending [fraud](glossary.md/#fraud). While the
 [fraud resolution](glossary.md/#fraud-resolution) works its way through the system, the [remote chain](glossary.md/#remote-chain)
 can momentarily halt using anything from the accused agent.
 While this is critical to ensuring the [Integrity](glossary.md/#integrity) of the system, it opens the door for a denial of service attack
 by a malicious [Gaurd](glossary.md/#guard) to submit a dishonest fraud report. This is the reason why [Gaurds](glossary.md/#guard)
-are required to post a bond. If it turns out that they sign off on a dishonest fraud report, they will be [slashed](glossary.md/slash).
+are required to post a bond. If it turns out that they sign off on a dishonest fraud report, they will be [slashed](glossary.md/#slash).
 Thus, other [Gaurds](glossary.md/#guard) will be on the look out whenever a [fraud report](glossary.md/#fraud-report) is
 submitted, and they will check if it is a valid report or not.
 In the case of an [Attestation Fraud Report](glossary.md/#attestation-fraud-report), this will have been submitted on
@@ -319,13 +319,13 @@ a [System Message](glossary.md/#system-message) to the [Synapse Chain](glossary.
 the malicious [Guard](glossary.md/#guard) and restore the status of the wrongfully [Accused Agent](glossary.md/#accused-agent).
 
 ### Fraudulent Receipt
-In order to distribute [tips](glossary.md/#tips) for taking part in successfully executing a message, the [Destination Chain](#glossary.md/destination-chain)
+In order to distribute [tips](glossary.md/#tips) for taking part in successfully executing a message, the [Destination Chain](glossary.md/#destination-chain)
 will generate a message [receipt](glossary.md/#receipt) that will be signed by the [Notary](glossary.md/#notary) and submitted to the
 [Synapse chain](glossary.md/#synapse-chain). This is another opportunity for the [Notary](glossary.md/#notary) to commit fraud by
 signing a bad [receipt](glossary.md/#receipt). For this, [Guards](glossary.md/#guard) will montior the submitted receipts and double check that
-they are valid on the [Destination Chain](#glossary.md/destination-chain). If a fraudulent [receipt](glossary.md/#receipt) is detected,
-the [Guards](glossary.md/#guard) will submit the [Fraud Report](glossary.md/#fraud-report) to the [Destination Chain](#glossary.md/destination-chain),
-which is the chain uniquely able to determine fraud or not in this case. If it is fraudulent, the [Destination Chain](#glossary.md/destination-chain)
-will send a [System Message](glossary.md/system-message) to the [Synapse chain](glossary.md/#synapse-chain). The result of that
+they are valid on the [Destination Chain](glossary.md/#destination-chain). If a fraudulent [receipt](glossary.md/#receipt) is detected,
+the [Guards](glossary.md/#guard) will submit the [Fraud Report](glossary.md/#fraud-report) to the [Destination Chain](glossary.md/#destination-chain),
+which is the chain uniquely able to determine fraud or not in this case. If it is fraudulent, the [Destination Chain](glossary.md/#destination-chain)
+will send a [System Message](glossary.md/#system-message) to the [Synapse chain](glossary.md/#synapse-chain). The result of that
 will be to [slash](glossary.md/#slash) the [Notary](glossary.md/#notary) and remove it from the [Agent Set](glossary.md/#agent-set).
 The other chains will learn about it when they receive the new [Agent Root](glossary.md/#agent-root).
