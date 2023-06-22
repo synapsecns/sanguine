@@ -345,3 +345,7 @@ which is the chain uniquely able to determine fraud or not in this case. If it i
 will send a [System Message](glossary.md/#system-message) to the [Synapse chain](glossary.md/#synapse-chain). The result of that
 will be to [slash](glossary.md/#slash) the [Notary](glossary.md/#notary) and remove it from the [Agent Set](glossary.md/#agent-set).
 The other chains will learn about it when they receive the new [Agent Root](glossary.md/#agent-root).
+
+Below is a diagram illustrating the steps involved in detecting a Fraudulent Receipt by a Notary:
+
+![FraudulentReceipt](../../static/img/FraudulentReceipt.png 'Diagram illustrating the steps involved in detecting a Fraudulent Receipt by a Notary:')
