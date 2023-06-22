@@ -43,7 +43,6 @@ export enum DisplayType {
 }
 
 const BridgeCard = ({
-  error,
   address,
   bridgeQuote,
   fromInput,
@@ -65,7 +64,6 @@ const BridgeCard = ({
   setTime,
   bridgeTxnHash,
 }: {
-  error
   address: `0x${string}` | undefined
   bridgeQuote: BridgeQuote
   fromInput: { string: string; bigNum: BigNumber }
@@ -192,12 +190,6 @@ const BridgeCard = ({
       return properties
     }
 
-    if (error) {
-      properties.label = error
-      properties.disabled = true
-      return properties
-    }
-
     if (fromChainId === toChainId) {
       properties.disabled = true
       return properties
@@ -302,7 +294,6 @@ const BridgeCard = ({
     bridgeQuote,
     isQuoteLoading,
     destinationAddress,
-    error,
     bridgeTxnHash,
     approveTx,
   ])

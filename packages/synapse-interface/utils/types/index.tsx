@@ -161,6 +161,7 @@ export class Token {
   swapableOn: number[] = [] // list of chains where token is swapable
   display = true // display token
   legacy = false // legacy token
+  priorityRank: number // priority token ordering
   priorityPool?: boolean = false // priority pool
   color?:
     | 'gray'
@@ -207,6 +208,7 @@ export class Token {
     swapableOn,
     display,
     legacy,
+    priorityRank,
     priorityPool,
     color,
     priceUnits,
@@ -242,6 +244,7 @@ export class Token {
     swapableOn?: number[]
     display?: boolean
     legacy?: boolean
+    priorityRank: number
     priorityPool?: boolean
     color?:
       | 'gray'
@@ -291,6 +294,7 @@ export class Token {
     this.swapableOn = swapableOn ?? []
     this.display = display ?? true
     this.legacy = legacy ?? false
+    this.priorityRank = priorityRank
     this.priorityPool = priorityPool ?? false
     this.color = color ?? 'gray'
     this.priceUnits = priceUnits ?? 'USD'
