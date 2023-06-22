@@ -10,22 +10,34 @@ import { Token } from '@/utils/types'
 import { useDispatch, useSelector } from 'react-redux'
 import { RootState } from '@/store/store'
 import { Zero } from '@ethersproject/constants'
+import { setFromToken, setToToken } from '@/slices/bridgeSlice'
+import {
+  setShowFromTokenSlideOver,
+  setShowToTokenSlideOver,
+} from '@/slices/bridgeDisplaySlice'
 
 export const TokenSlideOver = ({
   isOrigin,
   tokens = [],
   chainId,
   selectedToken,
-  setToken,
-  setShowSlideOver,
 }: {
   isOrigin: boolean
-  tokens: any[]
+  tokens: Token[]
   chainId: number
   selectedToken: Token
-  setToken: any
-  setShowSlideOver: any
 }) => {
+  let setToken
+  let setShowSlideOver
+
+  if (isOrigin) {
+    setToken = setFromToken
+    setShowSlideOver = setShowFromTokenSlideOver
+  } else {
+    setToken = setToToken
+    setShowSlideOver = setShowToTokenSlideOver
+  }
+
   const [currentIdx, setCurrentIdx] = useState(-1)
   const [searchStr, setSearchStr] = useState('')
   const dispatch = useDispatch()

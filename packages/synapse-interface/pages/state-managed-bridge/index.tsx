@@ -25,10 +25,8 @@ import {
 import {
   setShowDestinationAddress,
   setShowFromChainSlideOver,
-  setShowFromTokenSlideOver,
   setShowSettingsSlideOver,
   setShowToChainSlideOver,
-  setShowToTokenSlideOver,
 } from '@/slices/bridgeDisplaySlice'
 
 import {
@@ -379,8 +377,6 @@ const StateManagedBridge = () => {
                   tokens={supportedFromTokens}
                   chainId={fromChainId}
                   selectedToken={fromToken}
-                  setToken={setFromToken}
-                  setShowSlideOver={setShowFromTokenSlideOver}
                 />{' '}
               </animated.div>
             </Transition>
@@ -392,8 +388,6 @@ const StateManagedBridge = () => {
                   tokens={supportedToTokens}
                   chainId={toChainId}
                   selectedToken={toToken}
-                  setToken={setToToken}
-                  setShowSlideOver={setShowToTokenSlideOver}
                 />{' '}
               </animated.div>
             </Transition>
