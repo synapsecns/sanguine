@@ -86,10 +86,6 @@ func (u *NotarySuite) TestNotaryE2E() {
 
 	Equal(u.T(), encodedNotaryTestConfig, decodedAgentConfigBackToEncodedBytes)
 
-	agentStatus, err := u.DestinationContract.AgentStatus(&bind.CallOpts{Context: u.GetTestContext()}, u.NotaryBondedSigner.Address())
-	Nil(u.T(), err)
-	Equal(u.T(), uint32(u.TestBackendDestination.GetChainID()), agentStatus.Domain)
-
 	guard, err := guard.NewGuard(u.GetTestContext(), guardTestConfig, u.GuardMetrics)
 	Nil(u.T(), err)
 
@@ -162,10 +158,26 @@ func (u *NotarySuite) TestNotaryE2E() {
 	notary, err := notary.NewNotary(u.GetTestContext(), notaryTestConfig, u.NotaryMetrics)
 	Nil(u.T(), err)
 
+	agentStatus, err := u.DestinationContract.AgentStatus(&bind.CallOpts{Context: u.GetTestContext()}, u.NotaryBondedSigner.Address())
+	Nil(u.T(), err)
+	Equal(u.T(), types.AgentFlagUnknown, types.AgentFlagType(agentStatus.Flag))
+
 	go func() {
 		// we don't check errors here since this will error on cancellation at the end of the test
 		_ = notary.Start(u.GetTestContext())
 	}()
+
+	u.Eventually(func() bool {
+		_ = awsTime.SleepWithContext(u.GetTestContext(), time.Second*5)
+
+		agentStatus, err := u.DestinationContract.AgentStatus(&bind.CallOpts{Context: u.GetTestContext()}, u.NotaryBondedSigner.Address())
+		Nil(u.T(), err)
+		return types.AgentFlagActive == types.AgentFlagType(agentStatus.Flag)
+	})
+
+	agentStatus, err = u.DestinationContract.AgentStatus(&bind.CallOpts{Context: u.GetTestContext()}, u.NotaryBondedSigner.Address())
+	Nil(u.T(), err)
+	Equal(u.T(), uint32(u.TestBackendDestination.GetChainID()), agentStatus.Domain)
 
 	u.Eventually(func() bool {
 		_ = awsTime.SleepWithContext(u.GetTestContext(), time.Second*5)

@@ -44,7 +44,7 @@ type DomainClient interface {
 // OriginContract represents the origin contract on a particular chain.
 type OriginContract interface {
 	// FetchSortedMessages fetches all messages in order form lowest->highest in a given block range
-	FetchSortedMessages(ctx context.Context, from uint32, to uint32) (messages []types.CommittedMessage, err error)
+	FetchSortedMessages(ctx context.Context, from uint32, to uint32) (messages []types.Message, err error)
 	// SuggestLatestState gets the latest state on the origin
 	SuggestLatestState(ctx context.Context) (types.State, error)
 	// SuggestState gets the state on the origin with the given nonce if it exists
@@ -73,6 +73,10 @@ type InboxContract interface {
 type BondingManagerContract interface {
 	// GetAgentStatus returns the current agent status for the given agent.
 	GetAgentStatus(ctx context.Context, signer signer.Signer) (types.AgentStatus, error)
+	// GetAgentRoot gets the current agent root
+	GetAgentRoot(ctx context.Context) ([32]byte, error)
+	// GetProof gets the proof that the agent is in the Agent Merkle Tree
+	GetProof(ctx context.Context, bondedAgentSigner signer.Signer) ([][32]byte, error)
 }
 
 // DestinationContract contains the interface for the destination.
@@ -83,6 +87,8 @@ type DestinationContract interface {
 	AttestationsAmount(ctx context.Context) (uint64, error)
 	// GetAttestationNonce gets the nonce of the attestation by snap root
 	GetAttestationNonce(ctx context.Context, snapRoot [32]byte) (uint32, error)
+	// MessageStatus takes a message and returns whether it has been executed or not. 0: None, 1: Failed, 2: Success.
+	MessageStatus(ctx context.Context, message types.Message) (uint8, error)
 }
 
 // LightInboxContract contains the interface for the light inbox.
@@ -101,6 +107,15 @@ type LightInboxContract interface {
 type LightManagerContract interface {
 	// GetAgentStatus returns the current agent status for the given agent.
 	GetAgentStatus(ctx context.Context, signer signer.Signer) (types.AgentStatus, error)
+	// GetAgentRoot gets the current agent root
+	GetAgentRoot(ctx context.Context) ([32]byte, error)
+	// UpdateAgentStatus updates the agent status on the remote chain.
+	UpdateAgentStatus(
+		ctx context.Context,
+		unbondedSigner signer.Signer,
+		bondedSigner signer.Signer,
+		agentStatus types.AgentStatus,
+		agentProof [][32]byte) error
 }
 
 // TestClientContract contains the interface for the test client.

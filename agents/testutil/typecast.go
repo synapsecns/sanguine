@@ -9,9 +9,11 @@ import (
 	"github.com/synapsecns/sanguine/agents/contracts/inbox"
 	"github.com/synapsecns/sanguine/agents/contracts/lightinbox"
 	"github.com/synapsecns/sanguine/agents/contracts/lightmanager"
+	"github.com/synapsecns/sanguine/agents/contracts/test/basemessageharness"
 	"github.com/synapsecns/sanguine/agents/contracts/test/bondingmanagerharness"
 	gasdataharness "github.com/synapsecns/sanguine/agents/contracts/test/gasdata"
 	"github.com/synapsecns/sanguine/agents/contracts/test/lightmanagerharness"
+	"github.com/synapsecns/sanguine/agents/contracts/test/requestharness"
 	"github.com/synapsecns/sanguine/ethergo/manager"
 
 	"github.com/synapsecns/sanguine/agents/contracts/test/attestationharness"
@@ -51,6 +53,22 @@ func (d *DeployManager) GetMessageHarness(ctx context.Context, backend backends.
 	d.T().Helper()
 
 	return manager.GetContract[*messageharness.MessageHarnessRef](ctx, d.T(), d, backend, MessageHarnessType)
+}
+
+// GetBaseMessageHarness gets the base message harness.
+// nolint:dupl
+func (d *DeployManager) GetBaseMessageHarness(ctx context.Context, backend backends.SimulatedTestBackend) (contract contracts.DeployedContract, handle *basemessageharness.BaseMessageHarnessRef) {
+	d.T().Helper()
+
+	return manager.GetContract[*basemessageharness.BaseMessageHarnessRef](ctx, d.T(), d, backend, BaseMessageHarnessType)
+}
+
+// GetRequestHarness gets the request harness.
+// nolint:dupl
+func (d *DeployManager) GetRequestHarness(ctx context.Context, backend backends.SimulatedTestBackend) (contract contracts.DeployedContract, handle *requestharness.RequestHarnessRef) {
+	d.T().Helper()
+
+	return manager.GetContract[*requestharness.RequestHarnessRef](ctx, d.T(), d, backend, RequestHarnessType)
 }
 
 // GetLightInbox gets the light inbox.
@@ -475,6 +493,7 @@ func (d *DeployManager) InitializeRemoteDeployedHarnessContracts(
 
 // AddAgentsToLightManagerHarnessContract handles adding the agents to the light manager harness contract on the remote chain.
 // nolint:dupl,cyclop
+// codebeat:disable[CYCLO]
 func (d *DeployManager) AddAgentsToLightManagerHarnessContract(
 	ctx context.Context,
 	backend backends.SimulatedTestBackend,
@@ -503,6 +522,12 @@ func (d *DeployManager) AddAgentsToLightManagerHarnessContract(
 			Flag:   bondingManagerAgentStatus.Flag,
 			Domain: bondingManagerAgentStatus.Domain,
 			Index:  bondingManagerAgentStatus.Index,
+		}
+
+		// We want to make the notary do the work of adding the agent and not
+		// have it done automatically by the test harness
+		if lightManagerAgentStatus.Domain != 0 {
+			continue
 		}
 
 		txAddAgent, err := lightManagerHarnessContract.UpdateAgentStatus(

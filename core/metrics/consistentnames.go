@@ -15,4 +15,8 @@ const (
 	TxHash = "tx_hash"
 	// Page is the metric name for the page.
 	Page = "page"
+	// Contract is the metric name for the contract.
+	Contract = "contract"
+	// MessageExecuted is the metric name for the message executed.
+	MessageExecuted = "message_executed"
 )
