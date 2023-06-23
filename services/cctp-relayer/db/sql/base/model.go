@@ -19,6 +19,7 @@ func init() {
 	RequestVersionFieldName = namer.GetConsistentName("RequestVersion")
 	FormattedRequestFieldName = namer.GetConsistentName("FormattedRequest")
 	BlockNumberFieldName = namer.GetConsistentName("BlockNumber")
+	StateFieldName = namer.GetConsistentName("State")
 }
 
 var (
@@ -42,4 +43,6 @@ var (
 	FormattedRequestFieldName string
 	// BlockNumberFieldName gets the block number field name.
 	BlockNumberFieldName string
+	// StateFieldName gets the state field name.
+	StateFieldName string
 )

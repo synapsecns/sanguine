@@ -33,8 +33,34 @@ func (s Store) GetLastBlockNumber(ctx context.Context, chainID uint32) (uint64, 
 
 // StoreMessage stores a message in the database.
 func (s Store) StoreMessage(ctx context.Context, msg types.Message) error {
-	dbTx := s.DB().WithContext(ctx).Clauses(
-		clause.OnConflict{DoNothing: true}).Create(&msg)
+	// This one is a bit tricky, what we want to do is insert the message into the database
+	// if it hasn't been inserted already and update the status, but only if the status is not stored
+	// we'll add an ignore if the status is Created otherwise we'll force an update
+	var clauses clause.Expression
+
+	if msg.State == types.Pending {
+		// ignore queries don't work w/ sqlite so we need to adjust this to do nothing
+		if s.db.Dialector.Name() == "sqlite" {
+			clauses = clause.OnConflict{
+				Columns:   []clause.Column{{Name: MessageHashFieldName}},
+				DoNothing: true,
+			}
+		} else {
+			clauses = clause.Insert{
+				Modifier: "IGNORE",
+			}
+		}
+	} else {
+		clauses = clause.OnConflict{
+			Columns: []clause.Column{{Name: MessageHashFieldName}},
+			DoUpdates: clause.AssignmentColumns([]string{
+				StateFieldName,
+			}),
+		}
+	}
+	dbTx := s.DB().WithContext(ctx).Clauses(clauses).Create(&msg)
+
+	// .Create(&msg)
 	if dbTx.Error != nil {
 		return fmt.Errorf("failed to store message: %w", dbTx.Error)
 	}
