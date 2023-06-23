@@ -53,7 +53,7 @@ import {
   BRIDGE_SWAPABLE_TOKENS_BY_TYPE,
   tokenSymbolToToken,
 } from '@/constants/tokens'
-import { AcceptedChainId, CHAINS_BY_ID } from '@/constants/chains'
+import { AcceptedChainId, CHAINS_ARR, CHAINS_BY_ID } from '@/constants/chains'
 import { approveToken } from '@/utils/approveToken'
 import { PageHeader } from '@/components/PageHeader'
 import Card from '@/components/ui/tailwind/Card'
@@ -172,6 +172,24 @@ const StateManagedBridge = () => {
         fromChainId
       )
 
+      let bridgeableToChainId
+       // Check if toChainId is in the bridgeableChainIds
+       if (!bridgeableChainIds.includes(toChainId)) {
+        // Assuming you have an array or object with all chains,
+        // sort bridgeableChainIds based on the visibilityRank of the corresponding chains
+        // TODO: This can be refactored using the sortChains functions defined in constants/chains/index.tsx
+        const sortedChainIds = bridgeableChainIds.sort((a, b) => {
+          const chainA = CHAINS_ARR.find(chain => chain.id === a);           // Get chain object corresponding to ID a
+          const chainB = CHAINS_ARR.find(chain => chain.id === b); // Get chain object corresponding to ID b
+
+          return chainB.visibilityRank - chainA.visibilityRank; // Sort in descending order
+        });
+
+        // Set toChainId to the chain with the highest visibilityRank
+        bridgeableToChainId = sortedChainIds[0];
+      }
+
+
     // when any of those changes happen,
     dispatch(setSupportedToTokens(sortToTokens(bridgeableTokens)))
     dispatch(setToToken(bridgeableToken))
@@ -185,6 +203,9 @@ const StateManagedBridge = () => {
 
     dispatch(setFromChainIds(fromChainIds))
     dispatch(setToChainIds(bridgeableChainIds))
+    if (bridgeableToChainId && bridgeableToChainId !== toChainId) {
+      dispatch(setToChainId(bridgeableToChainId))  // Dispatch the updated toChainId
+  }
     /// maybe you need to wrap this in a then/finally so it only happens
     // after the dispatches happen
     console.log(`[useEffect] fromToken`, fromToken.symbol)
