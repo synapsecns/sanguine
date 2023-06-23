@@ -3,10 +3,10 @@ package config
 import (
 	"context"
 	"fmt"
+	"github.com/ImVexed/fasturl"
+	submitterConfig "github.com/synapsecns/sanguine/ethergo/submitter/config"
 	"os"
 	"path/filepath"
-
-	submitterConfig "github.com/synapsecns/sanguine/ethergo/submitter/config"
 
 	"github.com/davecgh/go-spew/spew"
 	"github.com/jftuga/ellipsis"
@@ -44,6 +44,14 @@ func (c *Config) IsValid(ctx context.Context) (ok bool, err error) {
 
 	if c.BaseOmnirpcURL == "" {
 		return false, fmt.Errorf("rpc url cannot be empty")
+	}
+
+	if _, err := fasturl.ParseURL(c.BaseOmnirpcURL); err != nil {
+		return false, fmt.Errorf("rpc url is invalid: %w", err)
+	}
+
+	if _, err := c.Chains.IsValid(ctx); err != nil {
+		return false, fmt.Errorf(fmt.Errorf("could not validate chains: %w", err).Error())
 	}
 
 	if ok, err = c.Signer.IsValid(ctx); !ok {

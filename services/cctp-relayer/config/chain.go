@@ -24,7 +24,7 @@ func (c ChainConfig) GetSynapseCCTPAddress() common.Address {
 type ChainConfigs []ChainConfig
 
 // IsValid validates the chain config by asserting no two chains appear twice.
-func (c ChainConfigs) IsValid(ctx context.Context) (ok bool, err error) {
+func (c ChainConfigs) IsValid(_ context.Context) (ok bool, err error) {
 	intSet := collection.Set[uint32]{}
 
 	for _, cfg := range c {
@@ -32,6 +32,10 @@ func (c ChainConfigs) IsValid(ctx context.Context) (ok bool, err error) {
 			return false, fmt.Errorf("chain id %d appears twice: %s", cfg.ChainID, "duplicate chain id")
 		}
 		intSet.Add(cfg.ChainID)
+
+		if !common.IsHexAddress(cfg.SynapseCCTPAddress) {
+			return false, fmt.Errorf("invalid address %s: %s", cfg.SynapseCCTPAddress, "invalid address")
+		}
 	}
 
 	return true, nil

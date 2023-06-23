@@ -51,7 +51,7 @@ var runCommand = &cli.Command{
 	Description: "run the cctp relayer",
 	Flags:       []cli.Flag{configFlag, dbFlag, pathFlag, scribePortFlag, scribeURL},
 	Action: func(c *cli.Context) (err error) {
-		cfg, err := config.DecodeConfig(c.String(configFlag.Name))
+		cfg, err := config.DecodeConfig(core.ExpandOrReturnPath(c.String(configFlag.Name)))
 		if err != nil {
 			return fmt.Errorf("could not read config file: %w", err)
 		}

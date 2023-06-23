@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"github.com/davecgh/go-spew/spew"
 	"github.com/jftuga/ellipsis"
+	"github.com/synapsecns/sanguine/core"
 	"github.com/synapsecns/sanguine/ethergo/signer/signer"
 	"github.com/synapsecns/sanguine/ethergo/signer/signer/awssigner"
 	"github.com/synapsecns/sanguine/ethergo/signer/signer/gcpsigner"
@@ -91,7 +92,7 @@ func allSignerTypesList() string {
 func SignerFromConfig(ctx context.Context, config SignerConfig) (signer.Signer, error) {
 	switch config.Type {
 	case FileType.String():
-		wall, err := wallet.FromKeyFile(config.File)
+		wall, err := wallet.FromKeyFile(core.ExpandOrReturnPath(config.File))
 		if err != nil {
 			return nil, fmt.Errorf("could not add signer: %w", err)
 		}
