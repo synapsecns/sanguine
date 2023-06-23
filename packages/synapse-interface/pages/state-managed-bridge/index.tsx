@@ -174,6 +174,10 @@ const StateManagedBridge = () => {
     console.log(`[useEffect] toToken`, toToken.symbol)
     if (fromValue.gt(0)) {
       getAndSetBridgeQuote()
+    } else {
+      dispatch(setBridgeQuote(EMPTY_BRIDGE_QUOTE_ZERO))
+      dispatch(setIsLoading(false))
+      console.log(bridgeQuote)
     }
   }, [fromChainId, toChainId, fromToken, toToken, fromValue])
 
