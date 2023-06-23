@@ -347,6 +347,8 @@ const StateManagedBridge = () => {
     }
   }
 
+  const springClass = 'fixed z-50 w-full h-full bg-opacity-50'
+
   return (
     <LandingPageWrapper>
       <div className="flex flex-col items-center justify-center">
@@ -387,7 +389,7 @@ const StateManagedBridge = () => {
         >
           <div ref={bridgeDisplayRef}>
             <Transition show={showFromTokenSlideOver} {...TRANSITION_PROPS}>
-              <animated.div>
+              <animated.div  className={springClass}>
                 <TokenSlideOver
                   key="fromBlock"
                   isOrigin={true}
@@ -398,7 +400,7 @@ const StateManagedBridge = () => {
               </animated.div>
             </Transition>
             <Transition show={showToTokenSlideOver} {...TRANSITION_PROPS}>
-              <animated.div>
+              <animated.div  className={springClass}>
                 <TokenSlideOver
                   key="toBlock"
                   isOrigin={false}
@@ -409,7 +411,7 @@ const StateManagedBridge = () => {
               </animated.div>
             </Transition>
             <Transition show={showFromChainSlideOver} {...TRANSITION_PROPS}>
-              <animated.div>
+            <animated.div className={springClass}>
                 <ChainSlideOver
                   key="fromChainBlock"
                   isOrigin={true}
@@ -421,7 +423,7 @@ const StateManagedBridge = () => {
               </animated.div>
             </Transition>
             <Transition show={showToChainSlideOver} {...TRANSITION_PROPS}>
-              <animated.div>
+            <animated.div className={springClass}>
                 <ChainSlideOver
                   key="toChainBlock"
                   isOrigin={true}
