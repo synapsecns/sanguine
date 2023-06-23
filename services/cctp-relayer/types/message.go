@@ -13,7 +13,7 @@ type Message struct {
 	// Raw bytes of message produced by Circle's MessageTransmitter
 	Message []byte `gorm:"column:message"`
 	// Keccak256 hash of message bytes
-	MessageHash string `gorm:"column:message_hash"`
+	MessageHash string `gorm:"column:message_hash;primaryKey"`
 	// Attestation produced by Circle's API: https://developers.circle.com/stablecoin/reference/getattestation
 	Attestation []byte `gorm:"column:attestation"`
 	// Version of the request

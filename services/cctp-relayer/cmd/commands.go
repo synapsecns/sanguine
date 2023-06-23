@@ -2,6 +2,7 @@ package cmd
 
 import (
 	"fmt"
+	"github.com/synapsecns/sanguine/core/commandline"
 
 	"github.com/synapsecns/sanguine/core"
 	"github.com/synapsecns/sanguine/core/dbcommon"
@@ -49,8 +50,9 @@ var scribeURL = &cli.StringFlag{
 var runCommand = &cli.Command{
 	Name:        "run",
 	Description: "run the cctp relayer",
-	Flags:       []cli.Flag{configFlag, dbFlag, pathFlag, scribePortFlag, scribeURL},
+	Flags:       []cli.Flag{configFlag, dbFlag, pathFlag, scribePortFlag, scribeURL, &commandline.LogLevel},
 	Action: func(c *cli.Context) (err error) {
+		commandline.SetLogLevel(c)
 		cfg, err := config.DecodeConfig(core.ExpandOrReturnPath(c.String(configFlag.Name)))
 		if err != nil {
 			return fmt.Errorf("could not read config file: %w", err)

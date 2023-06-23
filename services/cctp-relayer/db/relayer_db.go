@@ -9,7 +9,7 @@ import (
 
 // CCTPRelayerDBReader is the interface for reading from the database.
 type CCTPRelayerDBReader interface {
-	// GetLastBlockNumber gets the last block number that had a message in the database.
+	// GetLastBlockNumber gets the last block number that had a message for the respective origin chain in the database.
 	GetLastBlockNumber(ctx context.Context, chainID uint32) (uint64, error)
 }
 

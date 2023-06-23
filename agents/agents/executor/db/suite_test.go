@@ -2,7 +2,6 @@ package db_test
 
 import (
 	"database/sql"
-	"fmt"
 	"github.com/Flaque/filet"
 	. "github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/suite"
@@ -10,7 +9,7 @@ import (
 	"github.com/synapsecns/sanguine/agents/agents/executor/db/datastore/sql/mysql"
 	"github.com/synapsecns/sanguine/agents/agents/executor/db/datastore/sql/sqlite"
 	"github.com/synapsecns/sanguine/agents/agents/executor/metadata"
-	"github.com/synapsecns/sanguine/core"
+	"github.com/synapsecns/sanguine/core/dbcommon"
 	"github.com/synapsecns/sanguine/core/metrics"
 	"github.com/synapsecns/sanguine/core/metrics/localmetrics"
 	"github.com/synapsecns/sanguine/core/testsuite"
@@ -58,20 +57,15 @@ func (t *DBSuite) SetupTest() {
 	t.setupMysqlDB()
 }
 
-// connString gets the connection string.
-func (t *DBSuite) connString(dbname string) string {
-	return fmt.Sprintf("%s:%s@tcp(%s:%d)/%s?parseTime=true", core.GetEnv("MYSQL_USER", "root"), os.Getenv("MYSQL_PASSWORD"), core.GetEnv("MYSQL_HOST", "127.0.0.1"), core.GetEnvInt("MYSQL_PORT", 3306), dbname)
-}
-
 func (t *DBSuite) setupMysqlDB() {
 	// skip if mysql test disabled, this really only needs to be run in ci
 
 	// skip if mysql test disabled
-	if os.Getenv("ENABLE_MYSQL_TEST") == "" {
+	if os.Getenv(dbcommon.EnableMysqlTestVar) == "" {
 		return
 	}
 	// sets up the conn string to the default database
-	connString := t.connString(os.Getenv("MYSQL_DATABASE"))
+	connString := dbcommon.GetTestConnString()
 	// sets up the myqsl db
 	testDB, err := sql.Open("mysql", connString)
 	Nil(t.T(), err)
