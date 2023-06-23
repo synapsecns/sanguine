@@ -515,14 +515,6 @@ const StateManagedBridge = () => {
           </div>
         </Card>
         <ActionCardFooter link={HOW_TO_BRIDGE_URL} />
-        <div className="text-left text-white max-w-1/4">
-          <div className="underline">Your bridge quote</div>
-          <div>
-            {Object.entries(bridgeQuote).map(([key, value]) => (
-              <div key={key}>{`${key}: ${value}`}</div>
-            ))}
-          </div>
-        </div>
       </div>
     </LandingPageWrapper>
   );
@@ -531,54 +523,105 @@ const StateManagedBridge = () => {
 // TODO: Refactor
 // would like to refactor this as a function that
 // takes fromChainId, fromToken only and returns rest
-
-const findSupportedChainsAndTokens = (
-  token: Token,
-  positedToChain: number | undefined,
-  positedToSymbol: string | undefined,
-  fromChainId: number
+// Determines the chain to be used for the token swap.
+const getNewToChain = (
+  positedToChain,
+  fromChainId,
+  bridgeableChains
 ) => {
+  // If positedToChain is defined and different from fromChainId, use it.
+  // Otherwise, use a default chain.
   let newToChain =
     positedToChain && positedToChain !== fromChainId
       ? Number(positedToChain)
       : DEFAULT_TO_CHAIN;
-  let bridgeableChains = BRIDGE_CHAINS_BY_TYPE[
-    String(token.swapableType)
-  ].filter((chainId) => Number(chainId) !== fromChainId);
-  const swapExceptionsArr: number[] =
-    token?.swapExceptions?.[fromChainId as keyof Token["swapExceptions"]];
-  if (swapExceptionsArr?.length > 0) {
-    bridgeableChains = swapExceptionsArr.map((chainId) => String(chainId));
-  }
-
+  // If newToChain is not a part of bridgeableChains, select a chain from bridgeableChains
+  // that is different from fromChainId.
   if (!bridgeableChains.includes(String(newToChain))) {
     newToChain =
       Number(bridgeableChains[0]) === fromChainId
         ? Number(bridgeableChains[1])
         : Number(bridgeableChains[0]);
   }
-  const positedToToken = positedToSymbol
-    ? tokenSymbolToToken(newToChain, positedToSymbol)
-    : tokenSymbolToToken(newToChain, token.symbol);
+  return newToChain;
+};
 
-  let bridgeableTokens: Token[] = sortByVisibilityRank(
+// Determines which chains are bridgeable based on the swapableType of the token.
+const getBridgeableChains = (
+  token,
+  fromChainId,
+  swapExceptionsArr
+) => {
+  // Filter out chains that are not bridgeable for the given token type.
+  let bridgeableChains = BRIDGE_CHAINS_BY_TYPE[
+    String(token.swapableType)
+  ].filter((chainId) => Number(chainId) !== fromChainId);
+  // If there are swap exceptions, replace bridgeableChains with the chains from exceptions.
+  if (swapExceptionsArr?.length > 0) {
+    bridgeableChains = swapExceptionsArr.map((chainId) => String(chainId));
+  }
+  return bridgeableChains;
+};
+
+// Determines which tokens are bridgeable on the new chain.
+const getBridgeableTokens = (
+  newToChain,
+  token,
+  swapExceptionsArr
+) => {
+  // Get tokens that are bridgeable on the new chain and of the same type as the given token.
+  let bridgeableTokens: Token[] = sortToTokens(
     BRIDGE_SWAPABLE_TOKENS_BY_TYPE[newToChain][String(token.swapableType)]
   );
-
+  // If there are swap exceptions, filter out tokens that have a different symbol from the given token.
   if (swapExceptionsArr?.length > 0) {
     bridgeableTokens = bridgeableTokens.filter(
       (toToken) => toToken.symbol === token.symbol
     );
   }
+  return bridgeableTokens;
+};
+
+// Determines the token to be used for the swap.
+const getBridgeableToken = (
+  bridgeableTokens,
+  positedToToken
+) => {
+  // If positedToToken is a part of bridgeableTokens, use it.
+  // Otherwise, use the first token from bridgeableTokens.
   let bridgeableToken: Token = positedToToken;
   if (!bridgeableTokens.includes(positedToToken)) {
     bridgeableToken = bridgeableTokens[0];
   }
+  return bridgeableToken;
+};
 
+// The main function to find bridgeable chains and tokens.
+const findSupportedChainsAndTokens = (
+  token: Token,
+  positedToChain: number | undefined,
+  positedToSymbol: string | undefined,
+  fromChainId: number
+) => {
+  // Get the swap exceptions for the given fromChainId if any.
+  const swapExceptionsArr: number[] =
+    token?.swapExceptions?.[fromChainId as keyof Token["swapExceptions"]];
+  // Determine which chains are bridgeable.
+  const bridgeableChains = getBridgeableChains(token, fromChainId, swapExceptionsArr);
+  // Determine the new chain to be used for the swap.
+  const newToChain = getNewToChain(positedToChain, fromChainId, bridgeableChains);
+  // Determine the token to be used for the swap based on the posited symbol or the symbol of the given token.
+  const positedToToken = positedToSymbol
+    ? tokenSymbolToToken(newToChain, positedToSymbol)
+    : tokenSymbolToToken(newToChain, token.symbol);
+  // Determine which tokens are bridgeable on the new chain.
+  const bridgeableTokens = getBridgeableTokens(newToChain, token, swapExceptionsArr);
+  // Determine the specific token to be used for the swap.
+  const bridgeableToken = getBridgeableToken(bridgeableTokens, positedToToken);
+
+  // Return the bridgeable chains, bridgeable tokens, and the specific bridgeable token.
   return {
-    bridgeableChainIds: bridgeableChains.map((chainId: string) =>
-      Number(chainId)
-    ),
+    bridgeableChainIds: bridgeableChains.map((chainId: string) => Number(chainId)),
     bridgeableTokens,
     bridgeableToken,
   };
