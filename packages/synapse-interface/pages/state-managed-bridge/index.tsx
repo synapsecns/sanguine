@@ -298,7 +298,9 @@ const StateManagedBridge = () => {
       bridgeQuote?.routerAddress,
       fromChainId,
       fromToken?.addresses[fromChainId]
-    ).then(() => setIsApproved(true))
+    ).then(() => setIsApproved(true)).catch((err) => {
+      console.log(err);
+    })
   }
 
   const executeBridge = async () => {
