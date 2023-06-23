@@ -57,7 +57,7 @@ import { AcceptedChainId, CHAINS_ARR, CHAINS_BY_ID } from '@/constants/chains'
 import { approveToken } from '@/utils/approveToken'
 import { PageHeader } from '@/components/PageHeader'
 import Card from '@/components/ui/tailwind/Card'
-import ExchangeRateInfo from '@/components/ExchangeRateInfo'
+import BridgeExchangeRateInfo from '@/components/StateManagedBridge/BridgeExchangeRateInfo'
 import { Transition } from '@headlessui/react'
 import {
   SECTION_TRANSITION_PROPS,
@@ -491,14 +491,10 @@ const StateManagedBridge = () => {
             <Transition
               appear={true}
               unmount={false}
-              show={!fromValue.eq(0)}
+              show={true}
               {...SECTION_TRANSITION_PROPS}
             >
-              <ExchangeRateInfo
-                fromAmount={fromValue}
-                toToken={toToken}
-                exchangeRate={bridgeQuote?.exchangeRate}
-                toChainId={toChainId}
+              <BridgeExchangeRateInfo
                 showGasDrop={true}
               />
             </Transition>
