@@ -74,6 +74,7 @@ import { SettingsIcon } from '@/components/icons/SettingsIcon'
 import { DestinationAddressInput } from '@/components/StateManagedBridge/DestinationAddressInput'
 import { isAddress } from '@ethersproject/address'
 import { TransactionButton } from '@/components/buttons/TransactionButton'
+import { BridgeTransactionButton } from '@/components/StateManagedBridge/BridgeTransactionButton'
 
 // NOTE: These are idle utility functions that will be re-written to
 // support sorting by desired mechanism
@@ -171,7 +172,9 @@ const StateManagedBridge = () => {
     // after the dispatches happen
     console.log(`[useEffect] fromToken`, fromToken.symbol)
     console.log(`[useEffect] toToken`, toToken.symbol)
-    getAndSetBridgeQuote()
+    if (fromValue.gt(0)) {
+      getAndSetBridgeQuote()
+    }
   }, [fromChainId, toChainId, fromToken, toToken, fromValue])
 
   // don't like this, rewrite: could be custom hook
@@ -464,33 +467,11 @@ const StateManagedBridge = () => {
               />
             )}
             <div className="mt-3 mb-3">
-              {!isApproved ? (
-                <TransactionButton
-                  onClick={approveTxn}
-                  disabled={
-                    isLoading ||
-                    bridgeQuote === EMPTY_BRIDGE_QUOTE_ZERO ||
-                    bridgeQuote === EMPTY_BRIDGE_QUOTE
-                  }
-                  label={`Approve ${fromToken.symbol}`}
-                  pendingLabel="Approving"
-                  chainId={fromChainId}
-                  onSuccess={() => {}}
-                />
-              ) : (
-                <TransactionButton
-                  onClick={executeBridge}
-                  disabled={
-                    isLoading ||
-                    bridgeQuote === EMPTY_BRIDGE_QUOTE_ZERO ||
-                    bridgeQuote === EMPTY_BRIDGE_QUOTE
-                  }
-                  label={`Bridge ${fromToken.symbol}`}
-                  pendingLabel="Bridging"
-                  chainId={fromChainId}
-                  onSuccess={() => {}}
-                />
-              )}
+              <BridgeTransactionButton
+                isApproved={isApproved}
+                approveTxn={approveTxn}
+                executeBridge={executeBridge}
+              />
             </div>
           </div>
         </Card>
