@@ -33,7 +33,7 @@ import cantoImg from '@assets/chains/canto.svg'
 import { Chain } from '@types'
 
 export const ETH: Chain = {
-  priorityRank: 110,
+  priorityRank: 100,
   id: 1,
   chainSymbol: 'ETH',
   name: 'Ethereum',
@@ -99,7 +99,7 @@ export const AVALANCHE: Chain = {
   color: 'red',
 }
 export const CANTO: Chain = {
-  priorityRank: 89,
+  priorityRank: 70,
   id: 7700,
   chainSymbol: 'CANTO',
   name: 'Canto',
@@ -146,7 +146,7 @@ export const POLYGON: Chain = {
 }
 
 export const DFK: Chain = {
-  priorityRank: 80,
+  priorityRank: 75,
   id: 53935,
   chainSymbol: 'DFK',
   name: 'DFK Chain',
@@ -161,7 +161,7 @@ export const DFK: Chain = {
 }
 
 export const KLAYTN: Chain = {
-  priorityRank: 80,
+  priorityRank: 70,
   id: 8217,
   chainSymbol: 'KLAYTN',
   name: 'Klaytn',
@@ -175,7 +175,7 @@ export const KLAYTN: Chain = {
   color: 'orange',
 }
 export const FANTOM: Chain = {
-  priorityRank: 80,
+  priorityRank: 70,
   id: 250,
   chainSymbol: 'FANTOM',
   name: 'Fantom',
