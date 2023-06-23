@@ -33,7 +33,7 @@ import cantoImg from '@assets/chains/canto.svg'
 import { Chain } from '@types'
 
 export const ETH: Chain = {
-  visibilityRank: 110,
+  priorityRank: 110,
   id: 1,
   chainSymbol: 'ETH',
   name: 'Ethereum',
@@ -53,7 +53,7 @@ export const ETH: Chain = {
   color: 'eth',
 }
 export const ARBITRUM: Chain = {
-  visibilityRank: 90,
+  priorityRank: 90,
   id: 42161,
   chainSymbol: 'ARBITRUM',
   name: 'Arbitrum',
@@ -68,7 +68,7 @@ export const ARBITRUM: Chain = {
   color: 'gray',
 }
 export const BNB: Chain = {
-  visibilityRank: 90,
+  priorityRank: 90,
   id: 56,
   chainSymbol: 'BNB',
   name: 'BNB Chain',
@@ -84,7 +84,7 @@ export const BNB: Chain = {
   color: 'yellow',
 }
 export const AVALANCHE: Chain = {
-  visibilityRank: 90,
+  priorityRank: 90,
   id: 43114,
   chainSymbol: 'AVALANCHE',
   name: 'Avalanche',
@@ -99,7 +99,7 @@ export const AVALANCHE: Chain = {
   color: 'red',
 }
 export const CANTO: Chain = {
-  visibilityRank: 89,
+  priorityRank: 89,
   id: 7700,
   chainSymbol: 'CANTO',
   name: 'Canto',
@@ -114,7 +114,7 @@ export const CANTO: Chain = {
 }
 
 export const OPTIMISM: Chain = {
-  visibilityRank: 80,
+  priorityRank: 80,
   id: 10,
   chainSymbol: 'OPTIMISM',
   name: 'Optimism',
@@ -130,7 +130,7 @@ export const OPTIMISM: Chain = {
 }
 
 export const POLYGON: Chain = {
-  visibilityRank: 80,
+  priorityRank: 80,
   id: 137,
   chainSymbol: 'POLYGON',
   name: 'Polygon',
@@ -146,6 +146,7 @@ export const POLYGON: Chain = {
 }
 
 export const DFK: Chain = {
+  priorityRank: 80,
   id: 53935,
   chainSymbol: 'DFK',
   name: 'DFK Chain',
@@ -160,7 +161,7 @@ export const DFK: Chain = {
 }
 
 export const KLAYTN: Chain = {
-  visibilityRank: 80,
+  priorityRank: 80,
   id: 8217,
   chainSymbol: 'KLAYTN',
   name: 'Klaytn',
@@ -174,7 +175,7 @@ export const KLAYTN: Chain = {
   color: 'orange',
 }
 export const FANTOM: Chain = {
-  visibilityRank: 80,
+  priorityRank: 80,
   id: 250,
   chainSymbol: 'FANTOM',
   name: 'Fantom',
@@ -189,7 +190,7 @@ export const FANTOM: Chain = {
   color: 'blue',
 }
 export const CRONOS: Chain = {
-  visibilityRank: 10,
+  priorityRank: 10,
   id: 25,
   chainSymbol: 'CRONOS',
   name: 'Cronos',
@@ -204,7 +205,7 @@ export const CRONOS: Chain = {
   color: 'blue',
 }
 export const BOBA: Chain = {
-  visibilityRank: 10,
+  priorityRank: 10,
   id: 288,
   chainSymbol: 'BOBA',
   name: 'Boba Chain',
@@ -220,7 +221,7 @@ export const BOBA: Chain = {
   color: 'lime',
 }
 export const METIS: Chain = {
-  visibilityRank: 10,
+  priorityRank: 10,
   id: 1088,
   chainSymbol: 'METIS',
   name: 'Metis',
@@ -236,7 +237,7 @@ export const METIS: Chain = {
 }
 
 export const AURORA: Chain = {
-  visibilityRank: 10,
+  priorityRank: 10,
   id: 1313161554,
   chainSymbol: 'AURORA',
   name: 'Aurora',
@@ -251,7 +252,7 @@ export const AURORA: Chain = {
   color: 'lime',
 }
 export const HARMONY: Chain = {
-  visibilityRank: 10,
+  priorityRank: 10,
   id: 1666600000,
   chainSymbol: 'HARMONY',
   name: 'Harmony',
@@ -267,7 +268,7 @@ export const HARMONY: Chain = {
 }
 
 export const MOONBEAM: Chain = {
-  visibilityRank: 0,
+  priorityRank: 0,
   id: 1284,
   chainSymbol: 'MOONBEAM',
   name: 'Moonbeam',
@@ -281,7 +282,7 @@ export const MOONBEAM: Chain = {
   color: 'teal',
 }
 export const MOONRIVER: Chain = {
-  visibilityRank: 0,
+  priorityRank: 0,
   id: 1285,
   chainSymbol: 'MOONRIVER',
   name: 'Moonriver',
@@ -295,7 +296,7 @@ export const MOONRIVER: Chain = {
   color: 'purple',
 }
 export const DOGE: Chain = {
-  visibilityRank: 0,
+  priorityRank: 0,
   id: 2000,
   chainSymbol: 'DOGE',
   name: 'Dogechain',

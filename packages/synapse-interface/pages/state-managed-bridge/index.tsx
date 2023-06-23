@@ -176,16 +176,16 @@ const StateManagedBridge = () => {
        // Check if toChainId is in the bridgeableChainIds
        if (!bridgeableChainIds.includes(toChainId)) {
         // Assuming you have an array or object with all chains,
-        // sort bridgeableChainIds based on the visibilityRank of the corresponding chains
+        // sort bridgeableChainIds based on the priorityRank of the corresponding chains
         // TODO: This can be refactored using the sortChains functions defined in constants/chains/index.tsx
         const sortedChainIds = bridgeableChainIds.sort((a, b) => {
           const chainA = CHAINS_ARR.find(chain => chain.id === a);           // Get chain object corresponding to ID a
           const chainB = CHAINS_ARR.find(chain => chain.id === b); // Get chain object corresponding to ID b
 
-          return chainB.visibilityRank - chainA.visibilityRank; // Sort in descending order
+          return chainB.priorityRank - chainA.priorityRank; // Sort in descending order
         });
 
-        // Set toChainId to the chain with the highest visibilityRank
+        // Set toChainId to the chain with the highest priorityRank
         bridgeableToChainId = sortedChainIds[0];
       }
 
