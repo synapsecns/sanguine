@@ -81,6 +81,23 @@ import { BridgeTransactionButton } from '@/components/StateManagedBridge/BridgeT
 // We want to keep them separate as to not overload Component and UI logic
 // i.e., call when needed
 
+// Function to sort the tokens by priorityRank and alphabetically
+function sortTokensArray(arr: Token[]): Token[] {
+  // Create a copy of the array to prevent modifying the original one
+  const sortedArr = [...arr]
+
+  return sortedArr.sort((a, b) => {
+    // Sort by priorityRank first
+    if (a.priorityRank !== b.priorityRank) {
+      return a.priorityRank - b.priorityRank
+    }
+
+    // If priorityRank is the same, sort by symbol
+    return a.symbol.localeCompare(b.symbol)
+  })
+}
+
+
 const sortFromChainIds = (chainIds: number[]) => {
   return chainIds
 }
@@ -90,11 +107,11 @@ const sortToChainIds = (chainIds: number[]) => {
 }
 
 const sortFromTokens = (tokens: Token[]) => {
-  return tokens
+  return sortTokensArray(tokens)
 }
 
 const sortToTokens = (tokens: Token[]) => {
-  return tokens
+  return sortTokensArray(tokens)
 }
 
 // Need to update url params
@@ -156,14 +173,14 @@ const StateManagedBridge = () => {
       )
 
     // when any of those changes happen,
-    dispatch(setSupportedToTokens(bridgeableTokens))
+    dispatch(setSupportedToTokens(sortToTokens(bridgeableTokens)))
     dispatch(setToToken(bridgeableToken))
 
     sortByTokenBalance(fromTokens, fromChainId, address).then((res) => {
       const t = res.map((tokenAndBalances) => tokenAndBalances.token)
 
       dispatch(setSupportedFromTokenBalances(res))
-      dispatch(setSupportedFromTokens(t))
+      dispatch(setSupportedFromTokens(sortFromTokens(t)))
     })
 
     dispatch(setFromChainIds(fromChainIds))
