@@ -22,7 +22,7 @@ const (
 )
 
 // GetTestConnString returns the connection string for the mysql test database.
-// this is derived from environment variables
+// this is derived from environment variables.
 func GetTestConnString() string {
 	return fmt.Sprintf("%s:%s@tcp(%s:%d)/%s?parseTime=true", core.GetEnv(MysqlUserVar, "root"), os.Getenv(MysqlPasswordVar), core.GetEnv(MysqlHostVar, "127.0.0.1"), core.GetEnvInt(MysqlPortVar, 3306), MysqlDatabaseVar)
 }
