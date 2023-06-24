@@ -20,6 +20,14 @@ import (
 	"github.com/synapsecns/sanguine/services/cctp-relayer/contracts/mockmessagetransmitter"
 )
 
+// ChainIDDomainMap maps chain IDs to domains.
+// see: https://developers.circle.com/stablecoin/docs/cctp-technical-reference#domain
+// TODO: make this eaiser to debug in the case of missing domains, etc.
+var ChainIDDomainMap = map[uint32]uint32{
+	1:     0,
+	43114: 1,
+}
+
 // NewDeployManager creates a deploy manager.
 func NewDeployManager(t *testing.T) *DeployManager {
 	t.Helper()
@@ -51,7 +59,7 @@ func NewMockMessageTransmitterDeployer(registry deployer.GetOnlyContractRegistry
 func (d MockMessageTransmitterDeployer) Deploy(ctx context.Context) (contracts.DeployedContract, error) {
 	return d.DeploySimpleContract(ctx, func(transactOps *bind.TransactOpts, backend bind.ContractBackend) (address common.Address, tx *types.Transaction, data interface{}, err error) {
 		// define the domain as the chain id!
-		return mockmessagetransmitter.DeployMockMessageTransmitter(transactOps, backend, uint32(d.Backend().GetChainID()))
+		return mockmessagetransmitter.DeployMockMessageTransmitter(transactOps, backend, ChainIDDomainMap[uint32(d.Backend().GetChainID())])
 	}, func(address common.Address, backend bind.ContractBackend) (interface{}, error) {
 		// remember what I said about vm.ContractRef!
 		return mockmessagetransmitter.NewMockMessageTransmitterRef(address, backend)

@@ -2,6 +2,7 @@
 package relayer_test
 
 import (
+	"fmt"
 	"github.com/synapsecns/sanguine/services/cctp-relayer/db/sql/base"
 	"github.com/synapsecns/sanguine/services/cctp-relayer/db/sql/sqlite"
 	"math/big"
@@ -115,8 +116,10 @@ func (s *CCTPRelayerSuite) registerRemoteDeployments() {
 			txOpts := backend.GetTxContext(s.GetTestContext(), cctpContract.OwnerPtr())
 			// set the remote cctp contract on this cctp contract
 			// TODO: verify chainID / domain are correct
+			remoteDomain := cctpTest.ChainIDDomainMap[uint32(remoteCCTP.ChainID().Int64())]
+
 			tx, err := cctpHandle.SetRemoteDomainConfig(txOpts.TransactOpts,
-				big.NewInt(int64(backendToSetFrom.GetChainID())), uint32(remoteCCTP.ChainID().Int64()), remoteCCTP.Address())
+				big.NewInt(remoteCCTP.ChainID().Int64()), remoteDomain, remoteCCTP.Address())
 			s.Require().NoError(err)
 			backend.WaitForConfirmation(s.GetTestContext(), tx)
 
@@ -124,6 +127,21 @@ func (s *CCTPRelayerSuite) registerRemoteDeployments() {
 			_, err = tokenMessengeHandle.SetRemoteTokenMessenger(txOpts.TransactOpts, uint32(backendToSetFrom.GetChainID()), addressToBytes32(remoteMessenger.Address()))
 			s.Nil(err)
 		}
+	}
+}
+
+// CCTPPrefix is the prefix for all CCTP tokens.
+const CCTPPrefix = "CCTP."
+
+func (s *CCTPRelayerSuite) registerTokens() {
+	for _, backend := range s.testBackends {
+		_, tokenHandle := s.deployManager.GetMockMintBurnTokenType(s.GetTestContext(), backend)
+		cctpContract, cctpHandle := s.deployManager.GetSynapseCCTP(s.GetTestContext(), backend)
+
+		txOpts := backend.GetTxContext(s.GetTestContext(), cctpContract.OwnerPtr())
+		tx, err := cctpHandle.AddToken(txOpts.TransactOpts, fmt.Sprintf("%sUSDC", CCTPPrefix), tokenHandle.Address(), big.NewInt(0), big.NewInt(0), big.NewInt(0), big.NewInt(0))
+		s.Require().NoError(err)
+		backend.WaitForConfirmation(s.GetTestContext(), tx)
 	}
 }
 
@@ -159,6 +177,7 @@ func (s *CCTPRelayerSuite) SetupTest() {
 	s.deployManager.BulkDeploy(s.GetTestContext(), s.testBackends, cctpTest.SynapseCCTPType, cctpTest.MockMintBurnTokenType)
 
 	s.registerRemoteDeployments()
+	s.registerTokens()
 }
 
 func (s *CCTPRelayerSuite) GetTestConfig() config.Config {
