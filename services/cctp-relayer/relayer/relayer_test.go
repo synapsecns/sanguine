@@ -3,6 +3,7 @@ package relayer_test
 import (
 	"context"
 	"math/big"
+	"time"
 
 	"github.com/ethereum/go-ethereum/core/types"
 	"github.com/synapsecns/sanguine/services/cctp-relayer/api"
@@ -166,6 +167,7 @@ func (c *CCTPRelayerSuite) TestBridgeUSDC() {
 	// send USDC from originChain
 	destChainID, err := destChain.ChainID(c.GetTestContext())
 	c.Nil(err)
+	time.Sleep(time.Second * 30)
 	tx, err = originSynapseCCTP.SendCircleToken(opts.TransactOpts, opts.From, destChainID, originMockUsdc.Address(), bridgeAmount, 0, []byte{})
 	c.Nil(err)
 	originChain.WaitForConfirmation(c.GetTestContext(), tx)
@@ -182,7 +184,7 @@ func (c *CCTPRelayerSuite) TestBridgeUSDC() {
 		}
 	}
 	err = relay.HandleLog(c.GetTestContext(), sentLog, uint32(originChainID.Int64()))
-	c.Nil(err)
+	c.Require().Nil(err)
 
 	// verify that the confirmed request is stored in the backend
 	c.Eventually(func() bool {
