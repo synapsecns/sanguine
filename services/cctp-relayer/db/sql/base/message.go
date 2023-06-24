@@ -38,7 +38,8 @@ func (s Store) StoreMessage(ctx context.Context, msg types.Message) error {
 	// we'll add an ignore if the status is Created otherwise we'll force an update
 	var clauses clause.Expression
 
-	if msg.State == types.Pending {
+	switch msg.State {
+	case types.Pending:
 		// ignore queries don't work w/ sqlite so we need to adjust this to do nothing
 		if s.db.Dialector.Name() == "sqlite" {
 			clauses = clause.OnConflict{
@@ -50,7 +51,15 @@ func (s Store) StoreMessage(ctx context.Context, msg types.Message) error {
 				Modifier: "IGNORE",
 			}
 		}
-	} else {
+	case types.Attested:
+		clauses = clause.OnConflict{
+			Columns: []clause.Column{{Name: MessageHashFieldName}},
+			DoUpdates: clause.AssignmentColumns([]string{
+				StateFieldName,
+				AttestationFieldName,
+			}),
+		}
+	case types.Complete:
 		clauses = clause.OnConflict{
 			Columns: []clause.Column{{Name: MessageHashFieldName}},
 			DoUpdates: clause.AssignmentColumns([]string{
@@ -58,6 +67,7 @@ func (s Store) StoreMessage(ctx context.Context, msg types.Message) error {
 			}),
 		}
 	}
+
 	dbTx := s.DB().WithContext(ctx).Clauses(clauses).Create(&msg)
 
 	// .Create(&msg)

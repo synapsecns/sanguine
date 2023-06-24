@@ -2,9 +2,9 @@ package api
 
 import (
 	"context"
-	"encoding/hex"
 	"encoding/json"
 	"fmt"
+	"github.com/ethereum/go-ethereum/common/hexutil"
 	"io"
 	"net/http"
 )
@@ -26,10 +26,8 @@ func NewCircleAPI(url string) CircleAPI {
 }
 
 type circleAttestationResponse struct {
-	Data struct {
-		Attestation string `json:"attestation"`
-		Status      string `json:"status"`
-	} `json:"data"`
+	Attestation string `json:"attestation"`
+	Status      string `json:"status"`
 }
 
 // GetAttestation is a wrapper for GET /attestations/{txHash}.
@@ -61,15 +59,15 @@ func (c CircleAPI) GetAttestation(ctx context.Context, txHash string) (attestati
 	var attestationResp circleAttestationResponse
 	err = json.Unmarshal(body, &attestationResp)
 	if err != nil {
-		err = fmt.Errorf("could not unmarshal body: %w", err)
-		return
+		return nil, fmt.Errorf("could not unmarshal body: %w", err)
 	}
 
-	attestation, err = hex.DecodeString(attestationResp.Data.Attestation)
+	// TODO: check status
+	attestation, err = hexutil.Decode(attestationResp.Attestation)
 	if err != nil {
-		err = fmt.Errorf("could not decode signature: %w", err)
+		return nil, fmt.Errorf("could not decode signature: %w", err)
 	}
-	return attestation, err
+	return attestation, nil
 }
 
 var _ AttestationAPI = &CircleAPI{}

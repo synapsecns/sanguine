@@ -144,8 +144,8 @@ func NewCCTPRelayer(ctx context.Context, cfg config.Config, store db2.CCTPRelaye
 }
 
 // Run starts the CCTPRelayer.
-func (c CCTPRelayer) Run(ctx context.Context) error {
-	g, _ := errgroup.WithContext(ctx)
+func (c CCTPRelayer) Run(parentCtx context.Context) error {
+	g, ctx := errgroup.WithContext(parentCtx)
 
 	// Listen for USDC burn events on origin chains.
 	for _, chain := range c.cfg.Chains {
@@ -377,7 +377,7 @@ func (c CCTPRelayer) processBridgeEvents(ctx context.Context, chainID uint32) (e
 			// Submit the message to the destination chain.
 			go c.submitReceiveCircleToken(ctx, msg)
 		case <-ctx.Done():
-			return nil
+			return fmt.Errorf(ctx.Err().Error())
 		}
 	}
 }
