@@ -429,7 +429,14 @@ func (c CCTPRelayer) submitReceiveCircleToken(parentCtx context.Context, msg *re
 	var txHash string
 	_, err = c.txSubmitter.SubmitTransaction(ctx, big.NewInt(int64(msg.DestChainID)), func(transactor *bind.TransactOpts) (tx *types.Transaction, err error) {
 		contract := c.boundSynapseCCTPs[msg.DestChainID]
+		gasAmount, err := contract.ChainGasAmount(&bind.CallOpts{Context: ctx})
+		if err != nil {
+			return nil, fmt.Errorf("could not get chain gas amount: %w", err)
+		}
+		transactor.Value = gasAmount
+
 		tx, err = contract.ReceiveCircleToken(transactor, msg.Message, msg.Attestation, msg.RequestVersion, msg.FormattedRequest)
+
 		if err != nil {
 			return nil, fmt.Errorf("could not submit transaction: %w", err)
 		}

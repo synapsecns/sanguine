@@ -70,7 +70,6 @@ func (s Store) StoreMessage(ctx context.Context, msg types.Message) error {
 
 	dbTx := s.DB().WithContext(ctx).Clauses(clauses).Create(&msg)
 
-	// .Create(&msg)
 	if dbTx.Error != nil {
 		return fmt.Errorf("failed to store message: %w", dbTx.Error)
 	}

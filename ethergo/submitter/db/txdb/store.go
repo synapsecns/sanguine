@@ -48,12 +48,12 @@ func (s *Store) DBTransaction(parentCtx context.Context, f db.TransactionFunc) (
 // MarkAllBeforeOrAtNonceReplacedOrConfirmed marks all transactions before or at the given nonce as replaced or confirmed.
 func (s *Store) MarkAllBeforeOrAtNonceReplacedOrConfirmed(ctx context.Context, signer common.Address, chainID *big.Int, nonce uint64) error {
 	dbTX := s.db.WithContext(ctx).Model(&ETHTX{}).
-		Where(fmt.Sprintf("%s = ?", chainIDFieldName), chainID).
+		Where(fmt.Sprintf("%s = ?", chainIDFieldName), chainID.Uint64()).
 		Where(fmt.Sprintf("%s <= ?", nonceFieldName), nonce).
-		Where(fmt.Sprintf("%s = ?", fromFieldName), signer.String()).
+		Where(fmt.Sprintf("`%s` = ?", fromFieldName), signer.String()).
 		// just in case we're updating a tx already marked as confirmed
-		Where("%s IN ?", statusFieldName, []uint8{db.Submitted.Int(), db.FailedSubmit.Int()}).
-		Updates(map[string]interface{}{statusFieldName: db.ReplacedOrConfirmed})
+		Where(fmt.Sprintf("%s IN ?", statusFieldName), []int{int(db.Submitted.Int()), int(db.FailedSubmit.Int())}).
+		Updates(map[string]interface{}{statusFieldName: db.ReplacedOrConfirmed.Int()})
 
 	if dbTX.Error != nil {
 		return fmt.Errorf("could not mark all txs before nonce %d as replaced: %w", nonce, dbTX.Error)
