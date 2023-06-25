@@ -69,7 +69,12 @@ import {
 import { TokenSlideOver } from '@/components/StateManagedBridge/TokenSlideOver'
 import { InputContainer } from '@/components/StateManagedBridge/InputContainer'
 import { OutputContainer } from '@/components/StateManagedBridge/OutputContainer'
-import { sortByTokenBalance, sortByVisibilityRank } from '@/utils/sortTokens'
+import {
+  sortByTokenBalance,
+  sortByVisibilityRank,
+  separateAndSortTokensWithBalances,
+  sortTokensByPriorityRankAndAlpha,
+} from '@/utils/sortTokens'
 import { ChainSlideOver } from '@/components/StateManagedBridge/ChainSlideOver'
 import SettingsSlideOver from '@/components/StateManagedBridge/SettingsSlideOver'
 import Button from '@/components/ui/tailwind/Button'
@@ -84,22 +89,6 @@ import { BridgeTransactionButton } from '@/components/StateManagedBridge/BridgeT
 // We want to keep them separate as to not overload Component and UI logic
 // i.e., call when needed
 
-// Function to sort the tokens by priorityRank and alphabetically
-function sortTokensArray(arr: Token[]): Token[] {
-  // Create a copy of the array to prevent modifying the original one
-  const sortedArr = [...arr]
-
-  return sortedArr.sort((a, b) => {
-    // Sort by priorityRank first
-    if (a.priorityRank !== b.priorityRank) {
-      return a.priorityRank - b.priorityRank
-    }
-
-    // If priorityRank is the same, sort by symbol
-    return a.symbol.localeCompare(b.symbol)
-  })
-}
-
 const sortFromChainIds = (chainIds: number[]) => {
   return chainIds
 }
@@ -109,11 +98,11 @@ const sortToChainIds = (chainIds: number[]) => {
 }
 
 const sortFromTokens = (tokens: Token[]) => {
-  return sortTokensArray(tokens)
+  return sortTokensByPriorityRankAndAlpha(tokens)
 }
 
 const sortToTokens = (tokens: Token[]) => {
-  return sortTokensArray(tokens)
+  return sortTokensByPriorityRankAndAlpha(tokens)
 }
 
 // Need to update url params
@@ -122,8 +111,6 @@ const StateManagedBridge = () => {
   const { address } = useAccount()
   const { synapseSDK } = useSynapseContext()
   const bridgeDisplayRef = useRef(null)
-  const currentSDKRequestID = useRef(0);
-
 
   const {
     fromChainId,
@@ -134,6 +121,7 @@ const StateManagedBridge = () => {
     fromValue,
     isLoading,
     supportedFromTokens,
+    supportedFromTokenBalances,
     supportedToTokens,
     destinationAddress,
   } = useSelector((state: RootState) => state.bridge)
@@ -169,26 +157,30 @@ const StateManagedBridge = () => {
     const toTokens = BRIDGABLE_TOKENS[toChainId]
 
     // Checking whether the selected fromToken exists in the BRIDGABLE_TOKENS for the chosen chain
-    if (!fromTokens.some(token => token.symbol === fromToken.symbol)) {
+    if (!fromTokens.some((token) => token.symbol === fromToken.symbol)) {
       // Sort the tokens based on priorityRank in ascending order
-      const sortedTokens = fromTokens.sort((a, b) => a.priorityRank - b.priorityRank);
+      const sortedTokens = fromTokens.sort(
+        (a, b) => a.priorityRank - b.priorityRank
+      )
       // Select the token with the highest priority rank
       dispatch(setFromToken(sortedTokens[0]))
       // Update fromTokens for the selected fromToken
-      fromTokens = [fromToken];
+      fromTokens = [fromToken]
     }
 
-    let {
-      bridgeableChainIds,
-      bridgeableTokens,
-      bridgeableToken
-    } = findSupportedChainsAndTokens(fromToken, toChainId, toToken.symbol, fromChainId)
+    let { bridgeableChainIds, bridgeableTokens, bridgeableToken } =
+      findSupportedChainsAndTokens(
+        fromToken,
+        toChainId,
+        toToken.symbol,
+        fromChainId
+      )
 
     let bridgeableToChainId = toChainId
     if (!bridgeableChainIds.includes(toChainId)) {
       const sortedChainIds = bridgeableChainIds.sort((a, b) => {
-        const chainA = CHAINS_ARR.find(chain => chain.id === a)
-        const chainB = CHAINS_ARR.find(chain => chain.id === b)
+        const chainA = CHAINS_ARR.find((chain) => chain.id === a)
+        const chainB = CHAINS_ARR.find((chain) => chain.id === b)
         return chainB.priorityRank - chainA.priorityRank
       })
       bridgeableToChainId = sortedChainIds[0]
@@ -197,10 +189,10 @@ const StateManagedBridge = () => {
     dispatch(setSupportedToTokens(sortToTokens(bridgeableTokens)))
     dispatch(setToToken(bridgeableToken))
 
-    sortByTokenBalance(fromTokens, fromChainId, address).then(res => {
-      const t = res.map(tokenAndBalances => tokenAndBalances.token)
+    sortByTokenBalance(fromTokens, fromChainId, address).then((res) => {
+      const t = res.map((tokenAndBalances) => tokenAndBalances.token)
       dispatch(setSupportedFromTokenBalances(res))
-      dispatch(setSupportedFromTokens(sortFromTokens(t)))
+      dispatch(setSupportedFromTokens(t))
     })
 
     dispatch(setFromChainIds(fromChainIds))
@@ -237,9 +229,6 @@ const StateManagedBridge = () => {
 
   // Would like to move this into function outside of this component
   const getAndSetBridgeQuote = async () => {
-    currentSDKRequestID.current += 1;
-    const thisRequestId = currentSDKRequestID.current;
-
     // will have to handle deadlineMinutes here at later time, gets passed as optional last arg in .bridgeQuote()
     try {
       dispatch(setIsLoading(true))
@@ -303,41 +292,40 @@ const StateManagedBridge = () => {
 
       let newDestQuery = { ...destQuery }
       newDestQuery.minAmountOut = destMinWithSlippage
-      if (thisRequestId === currentSDKRequestID.current) {
-        dispatch(
-          setBridgeQuote({
-            outputAmount: toValueBigNum,
-            outputAmountString: commify(
-              formatBNToString(toValueBigNum, toToken.decimals[toChainId], 8)
-            ),
-            routerAddress,
-            allowance,
-            exchangeRate: calculateExchangeRate(
-              fromValue.sub(adjustedFeeAmount),
-              fromToken.decimals[fromChainId],
-              toValueBigNum,
-              toToken.decimals[toChainId]
-            ),
-            feeAmount,
-            delta: maxAmountOut,
-            quotes: {
-              originQuery: newOriginQuery,
-              destQuery: newDestQuery,
-            },
-          })
-        )
-        const str = formatBNToString(
-          fromValue,
-          fromToken.decimals[fromChainId],
-          4
-        )
-        const message = `Route found for bridging ${str} ${fromToken.symbol} on ${CHAINS_BY_ID[fromChainId]?.name} to ${toToken.symbol} on ${CHAINS_BY_ID[toChainId]?.name}`
-        console.log(message)
-        toast(message)
-      }
-    } catch(err) {
-      if (thisRequestId === currentSDKRequestID.current) {
 
+      dispatch(
+        setBridgeQuote({
+          outputAmount: toValueBigNum,
+          outputAmountString: commify(
+            formatBNToString(toValueBigNum, toToken.decimals[toChainId], 8)
+          ),
+          routerAddress,
+          allowance,
+          exchangeRate: calculateExchangeRate(
+            fromValue.sub(adjustedFeeAmount),
+            fromToken.decimals[fromChainId],
+            toValueBigNum,
+            toToken.decimals[toChainId]
+          ),
+          feeAmount,
+          delta: maxAmountOut,
+          quotes: {
+            originQuery: newOriginQuery,
+            destQuery: newDestQuery,
+          },
+        })
+      )
+
+      const str = formatBNToString(
+        fromValue,
+        fromToken.decimals[fromChainId],
+        4
+      )
+      const message = `Route found for bridging ${str} ${fromToken.symbol} on ${CHAINS_BY_ID[fromChainId]?.name} to ${toToken.symbol} on ${CHAINS_BY_ID[toChainId]?.name}`
+      console.log(message)
+      toast(message)
+      return
+    } catch (err) {
       const str = formatBNToString(
         fromValue,
         fromToken.decimals[fromChainId],
@@ -348,11 +336,9 @@ const StateManagedBridge = () => {
       toast(message)
 
       dispatch(setBridgeQuote(EMPTY_BRIDGE_QUOTE_ZERO))
-      }
+      return
     } finally {
-      if (thisRequestId === currentSDKRequestID.current) {
-        dispatch(setIsLoading(false))
-      }
+      dispatch(setIsLoading(false))
     }
   }
 
@@ -465,7 +451,9 @@ const StateManagedBridge = () => {
                     <TokenSlideOver
                       key="fromBlock"
                       isOrigin={true}
-                      tokens={supportedFromTokens}
+                      tokens={separateAndSortTokensWithBalances(
+                        supportedFromTokenBalances
+                      )}
                       chainId={fromChainId}
                       selectedToken={fromToken}
                     />{' '}
