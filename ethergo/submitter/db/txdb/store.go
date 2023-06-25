@@ -246,6 +246,11 @@ func (s *Store) GetNonceForChainID(ctx context.Context, fromAddress common.Addre
 
 // PutTXS puts a transaction in the database.
 func (s Store) PutTXS(ctx context.Context, txs ...db.TX) error {
+	// TODO: consider warning.
+	if len(txs) == 0 {
+		return nil
+	}
+
 	var toInsert []*ETHTX
 
 	for _, tx := range txs {

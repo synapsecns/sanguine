@@ -210,6 +210,8 @@ func (c CCTPRelayer) streamLogs(ctx context.Context, grpcClient pbscribe.ScribeS
 
 	for {
 		select {
+		case <-ctx.Done():
+			return fmt.Errorf("context done: %w", ctx.Err())
 		case <-c.chainListeners[chainID].closeConnection:
 			err := stream.CloseSend()
 			if err != nil {
