@@ -122,6 +122,8 @@ const StateManagedBridge = () => {
   const { address } = useAccount()
   const { synapseSDK } = useSynapseContext()
   const bridgeDisplayRef = useRef(null)
+  const currentSDKRequestID = useRef(0);
+
 
   const {
     fromChainId,
@@ -235,6 +237,9 @@ const StateManagedBridge = () => {
 
   // Would like to move this into function outside of this component
   const getAndSetBridgeQuote = async () => {
+    currentSDKRequestID.current += 1;
+    const thisRequestId = currentSDKRequestID.current;
+
     // will have to handle deadlineMinutes here at later time, gets passed as optional last arg in .bridgeQuote()
     try {
       dispatch(setIsLoading(true))
@@ -298,40 +303,41 @@ const StateManagedBridge = () => {
 
       let newDestQuery = { ...destQuery }
       newDestQuery.minAmountOut = destMinWithSlippage
-
-      dispatch(
-        setBridgeQuote({
-          outputAmount: toValueBigNum,
-          outputAmountString: commify(
-            formatBNToString(toValueBigNum, toToken.decimals[toChainId], 8)
-          ),
-          routerAddress,
-          allowance,
-          exchangeRate: calculateExchangeRate(
-            fromValue.sub(adjustedFeeAmount),
-            fromToken.decimals[fromChainId],
-            toValueBigNum,
-            toToken.decimals[toChainId]
-          ),
-          feeAmount,
-          delta: maxAmountOut,
-          quotes: {
-            originQuery: newOriginQuery,
-            destQuery: newDestQuery,
-          },
-        })
-      )
-
-      const str = formatBNToString(
-        fromValue,
-        fromToken.decimals[fromChainId],
-        4
-      )
-      const message = `Route found for bridging ${str} ${fromToken.symbol} on ${CHAINS_BY_ID[fromChainId]?.name} to ${toToken.symbol} on ${CHAINS_BY_ID[toChainId]?.name}`
-      console.log(message)
-      toast(message)
-      return
+      if (thisRequestId === currentSDKRequestID.current) {
+        dispatch(
+          setBridgeQuote({
+            outputAmount: toValueBigNum,
+            outputAmountString: commify(
+              formatBNToString(toValueBigNum, toToken.decimals[toChainId], 8)
+            ),
+            routerAddress,
+            allowance,
+            exchangeRate: calculateExchangeRate(
+              fromValue.sub(adjustedFeeAmount),
+              fromToken.decimals[fromChainId],
+              toValueBigNum,
+              toToken.decimals[toChainId]
+            ),
+            feeAmount,
+            delta: maxAmountOut,
+            quotes: {
+              originQuery: newOriginQuery,
+              destQuery: newDestQuery,
+            },
+          })
+        )
+        const str = formatBNToString(
+          fromValue,
+          fromToken.decimals[fromChainId],
+          4
+        )
+        const message = `Route found for bridging ${str} ${fromToken.symbol} on ${CHAINS_BY_ID[fromChainId]?.name} to ${toToken.symbol} on ${CHAINS_BY_ID[toChainId]?.name}`
+        console.log(message)
+        toast(message)
+      }
     } catch(err) {
+      if (thisRequestId === currentSDKRequestID.current) {
+
       const str = formatBNToString(
         fromValue,
         fromToken.decimals[fromChainId],
@@ -342,9 +348,11 @@ const StateManagedBridge = () => {
       toast(message)
 
       dispatch(setBridgeQuote(EMPTY_BRIDGE_QUOTE_ZERO))
-      return
+      }
     } finally {
-      dispatch(setIsLoading(false))
+      if (thisRequestId === currentSDKRequestID.current) {
+        dispatch(setIsLoading(false))
+      }
     }
   }
 
