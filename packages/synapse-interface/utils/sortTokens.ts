@@ -67,9 +67,8 @@ export const sortByTokenBalance = async (
           args: [address],
         })
       } else {
-        const formattedTokenAddress: Address = `0x${tokenAddress.slice(2)}`
         multicallInputs.push({
-          address: formattedTokenAddress,
+          address: tokenAddress,
           abi: tokenAbi,
           functionName: 'balanceOf',
           chainId,
@@ -82,6 +81,7 @@ export const sortByTokenBalance = async (
   if (multicallInputs.length > 0) {
     multicallData = await multicall({
       contracts: multicallInputs,
+      chainId,
     })
     return sortArrayByBalance(
       sortByVisibilityRank(
