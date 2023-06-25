@@ -96,6 +96,54 @@ export const bridgeSlice = createSlice({
   },
 })
 
+
+export const tokenDecimalMiddleware = ({ getState, dispatch }) => next => action => {
+  // check if the action is setFromToken
+  if (action.type === 'bridge/setFromToken') {
+    const currentState = getState();
+
+    // if fromValue is 0, no need to adjust it
+    if (currentState.bridge.fromValue.isZero()) {
+      next(action);
+      return;
+    }
+
+    // get the current fromToken decimal
+    const currentDecimal = typeof currentState.bridge.fromToken.decimals === 'number' ?
+      currentState.bridge.fromToken.decimals :
+      currentState.bridge.fromToken.decimals[currentState.bridge.fromChainId];
+
+    // get the new token decimal
+    const newDecimal = typeof action.payload.decimals === 'number' ?
+      action.payload.decimals :
+      action.payload.decimals[currentState.bridge.fromChainId];
+
+    // calculate the decimal difference
+    const decimalDifference = newDecimal - currentDecimal;
+
+    if (decimalDifference !== 0) {
+      let newFromValue;
+
+      if(decimalDifference > 0) {
+        // if newDecimal is greater, multiply fromValue by the decimal difference
+        newFromValue = currentState.bridge.fromValue.mul(BigNumber.from(10).pow(decimalDifference));
+      } else {
+        // if newDecimal is smaller, divide fromValue by the decimal difference
+        newFromValue = currentState.bridge.fromValue.div(BigNumber.from(10).pow(Math.abs(decimalDifference)));
+      }
+
+      // dispatch updateFromValue action to set the new fromValue
+      dispatch(updateFromValue(newFromValue));
+    }
+  }
+
+  // call the next middleware in the line
+  next(action);
+}
+
+
+
+
 export const {
   setBridgeQuote,
   setFromChainId,
