@@ -18,16 +18,22 @@ export const BridgeTransactionButton = ({
   isApproved,
 }) => {
   // TODO: This is only implemented this way to fix a Next Hydration Error
-  const { address, isConnected: isConnectedInit } = useAccount()
   const [isConnected, setIsConnected] = useState(false) // Initialize to false
   const { openConnectModal } = useConnectModal()
 
   const { chain } = useNetwork()
   const { chains, error, pendingChainId, switchNetwork } = useSwitchNetwork()
 
+  const { address, isConnected: isConnectedInit } = useAccount({
+    onDisconnect() {
+      setIsConnected(false);
+    },
+  });
+
   useEffect(() => {
     setIsConnected(isConnectedInit)
-  }, [isConnectedInit])
+  }, [isConnectedInit]);
+
   // Get state from Redux store
   const {
     destinationAddress,
