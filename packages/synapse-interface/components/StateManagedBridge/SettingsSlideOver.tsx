@@ -11,7 +11,7 @@ import {
   setShowDestinationAddress,
   setShowSettingsSlideOver,
 } from '@/slices/bridgeDisplaySlice'
-import { setDeadlineMinutes } from '@/slices/bridgeSlice'
+import { setDeadlineMinutes, setDestinationAddress } from '@/slices/bridgeSlice'
 import { RootState } from '@/store/store'
 
 const SettingsSlideOver = () => {
@@ -69,6 +69,7 @@ const SettingsSlideOver = () => {
                   setExpertMode(true)
                 } else {
                   dispatch(setShowDestinationAddress(false))
+                  dispatch(setDestinationAddress(null))
                   setExpertMode(false)
                 }
               }}
