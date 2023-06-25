@@ -388,7 +388,7 @@ export const BUSD = new Token({
   swapableType: 'BUSD',
   swapableOn: [CHAINS.BNB.id],
   color: 'yellow',
-  priorityRank: 1,
+  priorityRank: 2,
 })
 
 export const USDC = new Token({

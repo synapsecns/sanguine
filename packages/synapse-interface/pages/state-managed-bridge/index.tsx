@@ -165,54 +165,54 @@ const StateManagedBridge = () => {
   // Can be smarter about breaking out which calls happen assoc with which
   // dependencies (like some stuff should only change on fromChainId changes)
   useEffect(() => {
-    const fromTokens = BRIDGABLE_TOKENS[fromChainId]
+    let fromTokens = BRIDGABLE_TOKENS[fromChainId]
     const toTokens = BRIDGABLE_TOKENS[toChainId]
 
-    const { bridgeableChainIds, bridgeableTokens, bridgeableToken } =
-      findSupportedChainsAndTokens(
-        fromToken,
-        toChainId,
-        toToken.symbol,
-        fromChainId
-      )
+    // Checking whether the selected fromToken exists in the BRIDGABLE_TOKENS for the chosen chain
+    if (!fromTokens.some(token => token.symbol === fromToken.symbol)) {
+      // Sort the tokens based on priorityRank in ascending order
+      const sortedTokens = fromTokens.sort((a, b) => a.priorityRank - b.priorityRank);
+      // Select the token with the highest priority rank
+      dispatch(setFromToken(sortedTokens[0]))
+      // Update fromTokens for the selected fromToken
+      fromTokens = [fromToken];
+    }
 
-    let bridgeableToChainId
-    // Check if toChainId is in the bridgeableChainIds
+    let {
+      bridgeableChainIds,
+      bridgeableTokens,
+      bridgeableToken
+    } = findSupportedChainsAndTokens(fromToken, toChainId, toToken.symbol, fromChainId)
+
+    let bridgeableToChainId = toChainId
     if (!bridgeableChainIds.includes(toChainId)) {
-      // Assuming you have an array or object with all chains,
-      // sort bridgeableChainIds based on the priorityRank of the corresponding chains
-      // TODO: This can be refactored using the sortChains functions defined in constants/chains/index.tsx
       const sortedChainIds = bridgeableChainIds.sort((a, b) => {
-        const chainA = CHAINS_ARR.find((chain) => chain.id === a) // Get chain object corresponding to ID a
-        const chainB = CHAINS_ARR.find((chain) => chain.id === b) // Get chain object corresponding to ID b
-
-        return chainB.priorityRank - chainA.priorityRank // Sort in descending order
+        const chainA = CHAINS_ARR.find(chain => chain.id === a)
+        const chainB = CHAINS_ARR.find(chain => chain.id === b)
+        return chainB.priorityRank - chainA.priorityRank
       })
-
-      // Set toChainId to the chain with the highest priorityRank
       bridgeableToChainId = sortedChainIds[0]
     }
 
-    // when any of those changes happen,
     dispatch(setSupportedToTokens(sortToTokens(bridgeableTokens)))
     dispatch(setToToken(bridgeableToken))
 
-    sortByTokenBalance(fromTokens, fromChainId, address).then((res) => {
-      const t = res.map((tokenAndBalances) => tokenAndBalances.token)
-
+    sortByTokenBalance(fromTokens, fromChainId, address).then(res => {
+      const t = res.map(tokenAndBalances => tokenAndBalances.token)
       dispatch(setSupportedFromTokenBalances(res))
       dispatch(setSupportedFromTokens(sortFromTokens(t)))
     })
 
     dispatch(setFromChainIds(fromChainIds))
     dispatch(setToChainIds(bridgeableChainIds))
+
     if (bridgeableToChainId && bridgeableToChainId !== toChainId) {
-      dispatch(setToChainId(bridgeableToChainId)) // Dispatch the updated toChainId
+      dispatch(setToChainId(bridgeableToChainId))
     }
-    /// maybe you need to wrap this in a then/finally so it only happens
-    // after the dispatches happen
+
     console.log(`[useEffect] fromToken`, fromToken.symbol)
     console.log(`[useEffect] toToken`, toToken.symbol)
+
     if (fromValue.gt(0)) {
       getAndSetBridgeQuote()
     } else {
