@@ -331,7 +331,7 @@ const StateManagedBridge = () => {
       console.log(message)
       toast(message)
       return
-    } catch(err) {
+    } catch (err) {
       const str = formatBNToString(
         fromValue,
         fromToken.decimals[fromChainId],
