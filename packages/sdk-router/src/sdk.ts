@@ -75,47 +75,33 @@ class SynapseSDK {
   public async getBridgeTokens(
     destChainId: number,
     tokenOut: string,
-    destRouters: (SynapseRouter | SynapseCCTPRouter)[]
-  ): Promise<{ symbol: string; token: string }[][]> {
+    destRouter: SynapseRouter | SynapseCCTPRouter
+  ): Promise<{ symbol: string; token: string }[]> {
 
-    const bridgeTokensPromises = destRouters.map(async (destRouter) => {
-      // Check the cache first
-      let bridgeTokens = this.bridgeTokenCache[destChainId + '_' + tokenOut];
+    // Use the cache if possible
+    const cacheKey = `${destChainId}_${tokenOut}_${destRouter.routerContract.address}`;
+    if (this.bridgeTokenCache[cacheKey]) {
+      return this.bridgeTokenCache[cacheKey];
+    }
 
-      // If not in cache, fetch from destination router
-      if (!bridgeTokens) {
-        const routerBridgeTokens =
-          await destRouter.routerContract.getConnectedBridgeTokens(tokenOut);
+    // Fetch bridge tokens from the destination router
+    const routerBridgeTokens = await destRouter.routerContract.getConnectedBridgeTokens(tokenOut);
 
-        // Filter tokens with a valid symbol and address
-        bridgeTokens = routerBridgeTokens.filter(
-          (bridgeToken) =>
-            bridgeToken.symbol.length && bridgeToken.token !== AddressZero
-        );
+    // Filter tokens with a valid symbol and address
+    const validBridgeTokens = routerBridgeTokens.filter(
+      (bridgeToken) =>
+        bridgeToken.symbol.length && bridgeToken.token !== AddressZero
+    );
 
-        // Throw error if no valid bridge tokens found
-        if (!bridgeTokens?.length) {
-          // throw new Error('No bridge tokens found for this route');
-          return bridgeTokens
-        }
+    // Store only the symbol and token fields
+    const bridgeTokens = validBridgeTokens.map(({ symbol, token }) => ({ symbol, token }));
 
-        // Store only the symbol and token fields in the cache
-        bridgeTokens = bridgeTokens.map(({ symbol, token }) => ({
-          symbol,
-          token,
-        }));
+    // Cache the bridge tokens
+    this.bridgeTokenCache[cacheKey] = bridgeTokens;
 
-        // Cache the bridge tokens
-        this.bridgeTokenCache[destChainId + '_' + tokenOut] = bridgeTokens;
-      }
-      return bridgeTokens;
-    });
-
-    // Fetch bridge tokens for all routers in parallel
-    const allBridgeTokens = await Promise.all(bridgeTokensPromises);
-
-    return allBridgeTokens;
+    return bridgeTokens;
   }
+
 
 
     // Function to fetch origin queries from a router
@@ -306,10 +292,10 @@ private async calculateBestQuote(
   let bestQuote: BridgeQuote | undefined;
 
   // Getting bridge tokens from cache or fetch from destination router
-  const bridgeTokensArray = await this.getBridgeTokens(destChainId, tokenOut, [destRouter]);
+  const bridgeTokensArray = await this.getBridgeTokens(destChainId, tokenOut, destRouter);
 
   // Iterate through each array of bridge tokens
-  for (let bridgeTokens of bridgeTokensArray[0]) {
+  for (let bridgeTokens of bridgeTokensArray) {
     // Fetching queries from origin router
     const originQueries = await this.getOriginQueries(originRouter, tokenIn, [bridgeTokens.symbol], amountIn);
     if (!originQueries.length) continue;  // Skip if no origin queries for these bridge tokens

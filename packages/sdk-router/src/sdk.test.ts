@@ -58,30 +58,39 @@ describe('SynapseSDK', () => {
     })
   })
 
-    describe('getBridgeTokens', () => {
-      it('fetches bridge tokens for all routers in parallel', async () => {
+      describe('getBridgeTokens', () => {
         const destChainId = SupportedChainId.ETH;
         const tokenOut = "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48";
         const sdk = new SynapseSDK([destChainId], [ethProvider]);
 
-        // Assuming you have a way to mock the bridge tokens returned by the routers
-        const mockedRouterBridgeTokens = [
-          { symbol: 'nUSD', token: '0x1B84765dE8B7566e4cEAF4D0fD3c5aF52D3DdE4F' },
-          { symbol: 'USDC', token: '0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48' }
-        ];
+        it('fetches bridge tokens for Synapse router', async () => {
+          // Assuming you have a way to mock the bridge tokens returned by the router
+          const mockedRouterBridgeTokens = [
+            { symbol: 'nUSD', token: '0x1B84765dE8B7566e4cEAF4D0fD3c5aF52D3DdE4F' },
+            { symbol: 'USDC', token: '0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48' }
+          ];
 
-        const mockedCCTPBridgeTokens = [
-          { symbol: 'CCTP.USDC', token: '0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48' }
-        ];
+          const routerBridgeTokens =
+            await sdk.getBridgeTokens(destChainId, tokenOut, sdk.synapseRouters[destChainId]);
 
-        const [routerBridgeTokens, routerBridgeCCTPTokens] =
-          await sdk.getBridgeTokens(destChainId, tokenOut, [sdk.synapseRouters[destChainId], sdk.synapseCCTPRouters[destChainId]]);
+          // Assert that the function returned the correct bridge tokens for the router
+          expect(routerBridgeTokens).toEqual(mockedRouterBridgeTokens);
+        });
 
-        // Assert that the function returned the correct bridge tokens for both routers
-        expect(routerBridgeTokens).toEqual(mockedRouterBridgeTokens);
-        expect(routerBridgeCCTPTokens).toEqual(mockedCCTPBridgeTokens);
+        it('fetches bridge tokens for CCTP router', async () => {
+          // Assuming you have a way to mock the bridge tokens returned by the CCTP router
+          const mockedCCTPBridgeTokens = [
+            { symbol: 'CCTP.USDC', token: '0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48' }
+          ];
+
+          const routerCCTPTokens =
+            await sdk.getBridgeTokens(destChainId, tokenOut, sdk.synapseCCTPRouters[destChainId]);
+
+          // Assert that the function returned the correct bridge tokens for the CCTP router
+          expect(routerCCTPTokens).toEqual(mockedCCTPBridgeTokens);
+        });
       });
-    });
+
 
 
     describe('getOriginQueries', () => {
