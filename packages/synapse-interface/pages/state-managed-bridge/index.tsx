@@ -335,6 +335,7 @@ const StateManagedBridge = () => {
       toast(message)
       }
     } catch (err) {
+      console.log(err)
       if (thisRequestId === currentSDKRequestID.current) {
 
         const str = formatBNToString(
@@ -381,6 +382,7 @@ const StateManagedBridge = () => {
 
       const data = await synapseSDK.bridge(
         toAddress,
+        bridgeQuote.routerAddress,
         fromChainId,
         toChainId,
         fromToken.addresses[fromChainId as keyof Token['addresses']],

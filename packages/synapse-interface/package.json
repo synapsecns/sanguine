@@ -7,7 +7,7 @@
   },
   "scripts": {
     "dev": "next dev",
-    "build": "yarn add @synapsecns/sdk-router && next build",
+    "build": "next build",
     "start": "next start",
     "lint": "next lint",
     "cypress:run": "start-server-and-test dev http://localhost:3000 \"cypress run --e2e\"",
@@ -34,7 +34,7 @@
     "@heroicons/react": "1.0.6",
     "@rainbow-me/rainbowkit": "^0.11.0",
     "@reduxjs/toolkit": "^1.9.5",
-    "@synapsecns/sdk-router": "0.1.27",
+    "@synapsecns/sdk-router": "0.1.30",
     "@tailwindcss/aspect-ratio": "^0.4.2",
     "@tailwindcss/forms": "^0.5.3",
     "@tailwindcss/line-clamp": "^0.4.2",
