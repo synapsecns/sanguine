@@ -313,8 +313,10 @@ class SynapseSDK {
     }
     formattedOriginQuery.deadline = deadline ?? TEN_MIN_DEADLINE
 
+    let isSwap = false
     if ((destQuery as SynapseCCTPRouterQuery).routerAdapter) {
       formattedDestQuery = { ...(destQuery as SynapseCCTPRouterQuery) }
+      isSwap = formattedDestQuery.routerAdapter != AddressZero;
     } else {
       formattedDestQuery = { ...(destQuery as SynapseRouterQuery) }
     }
@@ -322,14 +324,16 @@ class SynapseSDK {
 
     let feeAmount!: BigNumber
     let feeConfig!: FeeConfig
+
+
     // Get fee data from the appropriate router
     if (isCCTP) {
       const cctpRouter = router as SynapseCCTPRouter
-      // TODO: Update to allow for isSwap on fee amount
+
       feeAmount = await cctpRouter.routerContract.calculateFeeAmount(
         bestBridgeToken.token,
         formattedOriginQuery.minAmountOut,
-        false
+        isSwap
       )
 
       const [relayerFee, minBaseFee, , maxFee] =
