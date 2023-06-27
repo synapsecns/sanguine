@@ -306,10 +306,10 @@ class SynapseSDK {
 
       let feeAmount!: BigNumber;
       let feeConfig!: FeeConfig;
-
       // Get fee data from the appropriate router
       if (isCCTP) {
         const cctpRouter = router as SynapseCCTPRouter;
+        // TODO: Update to allow for isSwap on fee amount
         feeAmount = await cctpRouter.routerContract.calculateFeeAmount(bestBridgeToken.token, formattedOriginQuery.minAmountOut, false);
 
         const [relayerFee, minBaseFee, , maxFee] = await cctpRouter.routerContract.feeStructures(bestBridgeToken.token);
