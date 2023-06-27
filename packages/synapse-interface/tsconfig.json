@@ -45,8 +45,10 @@
       "@hooks/*": ["./utils/hooks/*"],
       "@bignumber": ["./utils/bignumber"],
       "@bignumber/*": ["./utils/bignumber/*"],
-      "@store": ["./utils/store"],
-      "@store/*": ["./utils/store/*"],
+      "@slices": ["./slices"],
+      "@slices/*": ["./slices/*"],
+      "@store": ["./store"],
+      "@store/*": ["./store/*"],
       "@types": ["./utils/types"],
       "@types/*": ["./utils/types/*"]
     },

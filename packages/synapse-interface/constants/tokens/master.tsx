@@ -388,7 +388,7 @@ export const BUSD = new Token({
   swapableType: 'BUSD',
   swapableOn: [CHAINS.BNB.id],
   color: 'yellow',
-  priorityRank: 1,
+  priorityRank: 2,
 })
 
 export const USDC = new Token({
@@ -400,8 +400,8 @@ export const USDC = new Token({
     [CHAINS.OPTIMISM.id]: '0x7f5c764cbc14f9669b88837ca1490cca17c31607',
     [CHAINS.POLYGON.id]: '0x2791bca1f2de4661ed88a30c99a7a9449aa84174',
     [CHAINS.FANTOM.id]: '0x04068da6c83afcfa0e13ba15a6696662335d5b75',
-    // [CHAINS.AVALANCHE.id]: '0xb97ef9ef8734c71904d8002f8b6bc66dd9c48a6e',
-    [CHAINS.ARBITRUM.id]: '0xff970a61a04b1ca14834a43f5de4533ebddb5cc8',
+    [CHAINS.AVALANCHE.id]: '0xb97ef9ef8734c71904d8002f8b6bc66dd9c48a6e',
+    [CHAINS.ARBITRUM.id]: '0xaf88d065e77c8cc2239327c5edb3a432268e5831',
     [CHAINS.HARMONY.id]: '0x985458e523db3d53125813ed68c274899e9dfab4',
     [CHAINS.BOBA.id]: '0x66a2A913e447d6b4BF33EFbec43aAeF87890FBbc',
     [CHAINS.AURORA.id]: '0xB12BFcA5A55806AaF64E99521918A4bf0fC40802',
@@ -445,7 +445,7 @@ export const USDC = new Token({
     CHAINS.ETH.id,
     CHAINS.POLYGON.id,
     CHAINS.FANTOM.id,
-    CHAINS.ARBITRUM.id,
+    // CHAINS.ARBITRUM.id,
     // CHAINS.AVALANCHE.id,
     CHAINS.HARMONY.id,
     CHAINS.AURORA.id,
@@ -1154,10 +1154,11 @@ export const XJEWEL = new Token({
 export const USDCe = new Token({
   addresses: {
     [CHAINS.AVALANCHE.id]: '0xA7D7079b0FEaD91F3e65f86E8915Cb59c1a4C664',
+    [CHAINS.ARBITRUM.id]: '0xff970a61a04b1ca14834a43f5de4533ebddb5cc8'
   },
   decimals: 6,
   symbol: 'USDCe',
-  name: 'USD Circle',
+  name: 'Bridged USDC',
   logo: usdcLogo,
   description: `
     USD Coin (known by its ticker USDC) is a stablecoin that is pegged to the
@@ -1165,7 +1166,7 @@ export const USDCe = new Token({
     is backed up by $1 that is held in reserve
   `,
   swapableType: 'USD',
-  swapableOn: [CHAINS.AVALANCHE.id],
+  swapableOn: [CHAINS.AVALANCHE.id, CHAINS.ARBITRUM.id],
   visibilityRank: 100,
   priorityRank: 1,
 })

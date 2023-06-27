@@ -225,7 +225,7 @@ export const ARBITRUM_POOL_SWAP_TOKEN = new Token({
   swapAddresses: {
     [CHAINS.ARBITRUM.id]: '0x0Db3FE3B770c95A0B99D1Ed6F2627933466c0Dd8',
   },
-  poolTokens: [NUSD, MIM, USDC, USDT],
+  poolTokens: [NUSD, MIM, USDCe, USDT],
   description: "Synapse's 4pool stableswap LP token on Arbitrum",
   display: true,
   legacy: true,
@@ -384,7 +384,7 @@ export const ARBITRUM_3POOL_SWAP_TOKEN = new Token({
   swapAddresses: {
     [CHAINS.ARBITRUM.id]: '0x9Dd329F5411466d9e0C488fF72519CA9fEf0cb40',
   },
-  poolTokens: [NUSD, USDC, USDT],
+  poolTokens: [NUSD, USDCe, USDT],
   description: "Synapse's 3pool stableswap LP token on Arbitrum",
   display: true,
   priorityPool: true,
