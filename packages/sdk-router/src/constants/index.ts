@@ -22,6 +22,12 @@ export enum SupportedChainId {
   HARMONY = 1666600000,
 }
 
+// TODO: these should be typescript maps
+export const CCTP_ROUTER_ADDRESS: object = {
+  [SupportedChainId.ETH]: '0xd359bc471554504f683fbd4f6e36848612349ddf',
+  [SupportedChainId.ARBITRUM]: '0xd359bc471554504f683fbd4f6e36848612349ddf',
+  [SupportedChainId.AVALANCHE]: '0xd359bc471554504f683fbd4f6e36848612349ddf',
+}
 export const ROUTER_ADDRESS: object = {
   [SupportedChainId.BSC]: '0x7E7A0e201FD38d3ADAA9523Da6C109a07118C96a',
   [SupportedChainId.ETH]: '0x7E7A0e201FD38d3ADAA9523Da6C109a07118C96a',

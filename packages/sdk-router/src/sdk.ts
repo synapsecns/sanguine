@@ -7,27 +7,36 @@ import { Interface } from '@ethersproject/abi'
 import { Contract } from '@ethersproject/contracts'
 
 import {
-  handleNativeToken,
   ETH_NATIVE_TOKEN_ADDRESS,
+  handleNativeToken,
 } from './utils/handleNativeToken'
-import { BigintIsh } from './constants'
+import { BigintIsh, CCTP_ROUTER_ADDRESS } from './constants'
 import { SynapseRouter } from './synapseRouter'
 import bridgeAbi from './abi/SynapseBridge.json'
 import {
-  Query,
-  FeeConfig,
   convertQuery,
-  RawQuery,
+  convertRouterQuery,
+  FeeConfig,
   PoolToken,
+  Query,
+  RawQuery,
+  RawRouterQuery,
 } from './utils/types'
+import { SynapseCCTPRouter } from './synapseCCTPRouter'
+
 const ONE_WEEK_DEADLINE = BigNumber.from(Math.floor(Date.now() / 1000) + 604800) // one week in the future
 const TEN_MIN_DEADLINE = BigNumber.from(Math.floor(Date.now() / 1000) + 600) // ten minutes in the future
 
 type SynapseRouters = {
   [key: number]: SynapseRouter
 }
+
+type SynapseCCTPRouters = {
+  [key: number]: SynapseCCTPRouter
+}
 class SynapseSDK {
   public synapseRouters: SynapseRouters
+  public cctpRouters: SynapseCCTPRouters
   public providers: { [x: number]: Provider }
   public bridgeAbi: Interface = new Interface(bridgeAbi)
   public bridgeTokenCache: {
@@ -39,17 +48,198 @@ class SynapseSDK {
       `Amount of chains and providers does not equal`
     )
     this.synapseRouters = {}
+    this.cctpRouters = {}
     this.providers = {}
     for (let i = 0; i < chainIds.length; i++) {
       this.synapseRouters[chainIds[i]] = new SynapseRouter(
         chainIds[i],
         providers[i]
       )
+      if (CCTP_ROUTER_ADDRESS.hasOwnProperty(chainIds[i])) {
+        this.cctpRouters[chainIds[i]] = new SynapseCCTPRouter(
+          chainIds[i],
+          providers[i]
+        )
+      }
       this.providers[chainIds[i]] = providers[i]
     }
   }
 
   public async bridgeQuote(
+    originChainId: number,
+    destChainId: number,
+    tokenIn: string,
+    tokenOut: string,
+    amountIn: BigintIsh,
+    deadline?: BigNumber
+  ): Promise<{
+    feeAmount: BigNumber | undefined
+    feeConfig: FeeConfig | undefined
+    routerAddress: string | undefined
+    maxAmountOut: BigNumber | undefined
+    originQuery: Query | undefined
+    destQuery: Query | undefined
+  }> {
+    const nonCCTPQuotePen = this.bridgeQuoteFromRouters(
+      originChainId,
+      destChainId,
+      tokenIn,
+      tokenOut,
+      amountIn,
+      deadline
+    )
+
+    const cctpQuotePen = this.bridgeQuoteFromCCTP(
+      originChainId,
+      destChainId,
+      tokenIn,
+      tokenOut,
+      amountIn,
+      deadline
+    )
+
+    try {
+      return await cctpQuotePen
+    } catch (error) {
+      return nonCCTPQuotePen
+    }
+  }
+
+  private async bridgeQuoteFromCCTP(
+    originChainId: number,
+    destChainId: number,
+    tokenIn: string,
+    tokenOut: string,
+    amountIn: BigintIsh,
+    deadline?: BigNumber
+  ): Promise<{
+    feeAmount: BigNumber | undefined
+    feeConfig: FeeConfig | undefined
+    routerAddress: string | undefined
+    maxAmountOut: BigNumber | undefined
+    originQuery: Query | undefined
+    destQuery: Query | undefined
+  }> {
+    tokenOut = handleNativeToken(tokenOut)
+    tokenIn = handleNativeToken(tokenIn)
+    const originRouter: SynapseCCTPRouter = this.cctpRouters[originChainId]
+    const destRouter: SynapseCCTPRouter = this.cctpRouters[destChainId]
+    const routerAddress = originRouter.routerContract.address
+
+    let bridgeTokens = this.bridgeTokenCache[destChainId + '_' + tokenOut]
+    if (!bridgeTokens) {
+      const routerBridgeTokens =
+        await destRouter.routerContract.getConnectedBridgeTokens(tokenOut)
+
+      // Filter tokens with a valid symbol and address
+      bridgeTokens = routerBridgeTokens.filter(
+        (bridgeToken) =>
+          bridgeToken.symbol.length && bridgeToken.token !== AddressZero
+      )
+
+      // Throw error if no valid bridge tokens found
+      if (!bridgeTokens?.length) {
+        throw new Error('No bridge tokens found for this route')
+      }
+
+      // Store only the symbol and token fields in the cache
+      bridgeTokens = bridgeTokens.map(({ symbol, token }) => ({
+        symbol,
+        token,
+      }))
+
+      // Cache the bridge tokens
+      this.bridgeTokenCache[destChainId + '_' + tokenOut] = bridgeTokens
+    }
+
+    // Get quotes from origin SynapseRouter
+    const originQueries: RawRouterQuery[] =
+      await originRouter.routerContract.getOriginAmountOut(
+        tokenIn,
+        bridgeTokens.map((bridgeToken) => bridgeToken.symbol),
+        amountIn
+      )
+
+    // create requests for destination router
+    const requests: { symbol: string; amountIn: BigintIsh }[] = []
+    for (let i = 0; i < bridgeTokens.length; i++) {
+      requests.push({
+        symbol: bridgeTokens[i].symbol,
+        amountIn: originQueries[i].minAmountOut,
+      })
+    }
+    if (originQueries.length === 0) {
+      throw Error('No origin queries found for this route')
+    }
+
+    // Get quotes from destination SynapseRouter
+    const destQueries: RawRouterQuery[] =
+      await destRouter.routerContract.getDestinationAmountOut(
+        requests,
+        tokenOut
+      )
+    if (destQueries.length === 0) {
+      throw Error('No destination queries found for this route')
+    }
+
+    // Find the best query (in practice, we could return them all)
+    let destInToken
+    let rawOriginQuery
+    let rawDestQuery
+    let maxAmountOut: BigNumber = BigNumber.from(0)
+    for (let i = 0; i < destQueries.length; i++) {
+      if (destQueries[i].minAmountOut.gt(maxAmountOut)) {
+        maxAmountOut = destQueries[i].minAmountOut
+        rawOriginQuery = originQueries[i]
+        rawDestQuery = destQueries[i]
+        destInToken = bridgeTokens[i].token
+      }
+    }
+
+    if (!rawOriginQuery || !rawDestQuery) {
+      throw Error('No route found')
+    }
+
+    // Set default deadline
+    const originQuery = convertRouterQuery(rawOriginQuery)
+    originQuery.deadline = deadline ?? TEN_MIN_DEADLINE
+    const destQuery = convertRouterQuery(rawDestQuery)
+    destQuery.deadline = ONE_WEEK_DEADLINE
+
+    // Get fee data
+    let feeAmount
+    const feeConfig: FeeConfig = {
+      bridgeFee: 0,
+      minFee: BigNumber.from(0),
+      maxFee: BigNumber.from(0),
+    }
+
+    if (originQuery && destInToken) {
+      feeAmount = destRouter.routerContract.calculateFeeAmount(
+        destInToken,
+        originQuery.minAmountOut,
+        false
+      )
+      // TODO: I'm not sure how correct these are, verify in tests
+      const feeStructs = await destRouter.routerContract.feeStructures(
+        destInToken
+      )
+      feeConfig.maxFee = feeStructs.maxFee
+      feeConfig.bridgeFee = feeStructs.relayerFee
+      feeConfig.minFee = feeStructs.minBaseFee
+    }
+
+    return {
+      feeAmount: await feeAmount,
+      feeConfig,
+      routerAddress,
+      maxAmountOut,
+      originQuery,
+      destQuery,
+    }
+  }
+
+  private async bridgeQuoteFromRouters(
     originChainId: number,
     destChainId: number,
     tokenIn: string,
