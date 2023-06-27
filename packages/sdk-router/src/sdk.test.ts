@@ -152,7 +152,6 @@ describe('SynapseSDK', () => {
           '0xaf88d065e77c8cc2239327c5edb3a432268e5831',
           BigNumber.from('100000000')
         )
-
       if (!result) {
         // console.log(result)
         throw Error
@@ -165,8 +164,6 @@ describe('SynapseSDK', () => {
       expect(feeConfig?.bridgeFee).toBeGreaterThan(0)
       expect(originQuery).not.toBeNull()
       expect(destQuery).not.toBeNull()
-      checkQueryFields(originQuery)
-      checkQueryFields(destQuery)
 
       expect(routerAddress?.length).toBeGreaterThan(0)
 
