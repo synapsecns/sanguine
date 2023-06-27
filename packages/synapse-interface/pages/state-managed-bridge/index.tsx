@@ -423,7 +423,7 @@ const StateManagedBridge = () => {
         data-test-id="bridge-page"
         className="relative z-0 flex-1 h-full overflow-y-auto focus:outline-none"
       >
-        <div className="items-center px-4 py-24 mx-auto mt-4 2xl:w-3/4 sm:mt-6 sm:px-8 md:px-12">
+        <div className="items-center px-4 py-20 mx-auto mt-4 2xl:w-3/4 sm:mt-6 sm:px-8 md:px-12">
           <div className="flex flex-col items-center justify-center">
             <div className="flex items-center space-x-20">
               <PageHeader
@@ -539,16 +539,19 @@ const StateManagedBridge = () => {
                 </div>
               </div>
             </Card>
-            <ActionCardFooter link={HOW_TO_BRIDGE_URL} />
+            {/* <ActionCardFooter link={HOW_TO_BRIDGE_URL} /> */}
           </div>
-        </div>
-        <BridgeWatcher
+          <div className="mt-8">
+          <BridgeWatcher
                   fromChainId={fromChainId}
                   toChainId={toChainId}
                   address={address}
                   destinationAddress={destinationAddress}
                   bridgeTxHash={bridgeTxHashes[bridgeTxHashes.length - 1]}
                 />
+                </div>
+        </div>
+
       </main>
     </LandingPageWrapper>
   )
