@@ -116,7 +116,7 @@ export function useUserHeldTokens(
 /** Returns sorted array of tokens, ordered by Held / Unheld tokens */
 export function getSortedBridgableTokens(
   chainId: number,
-  bridgeTxHash: string
+  bridgeTxHash?: string
 ): TokenBalance[] {
   const userHeldTokens: TokenBalance[] = useUserHeldTokens(
     chainId,
