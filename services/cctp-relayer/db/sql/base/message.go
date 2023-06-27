@@ -60,6 +60,14 @@ func (s Store) StoreMessage(ctx context.Context, msg types.Message) error {
 				AttestationFieldName,
 			}),
 		}
+	case types.Submitted:
+		clauses = clause.OnConflict{
+			Columns: []clause.Column{{Name: MessageHashFieldName}},
+			DoUpdates: clause.AssignmentColumns([]string{
+				StateFieldName,
+				NonceFieldName,
+			}),
+		}
 	case types.Complete:
 		clauses = clause.OnConflict{
 			Columns: []clause.Column{{Name: MessageHashFieldName}},

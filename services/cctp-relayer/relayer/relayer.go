@@ -2,6 +2,7 @@ package relayer
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"gorm.io/gorm"
 	"math/big"
@@ -426,7 +427,7 @@ func (c *CCTPRelayer) fetchAndStoreCircleRequestSent(parentCtx context.Context, 
 	if err == nil {
 		return msg, nil
 	}
-	if err != gorm.ErrRecordNotFound {
+	if !errors.Is(err, gorm.ErrRecordNotFound) {
 		return nil, fmt.Errorf("could not get message by origin hash: %w", err)
 	}
 
@@ -500,7 +501,7 @@ func (c *CCTPRelayer) fetchAndStoreCircleRequestSent(parentCtx context.Context, 
 	}
 
 	// Store the requested message.
-	msg.State = relayTypes.Pending
+	rawMsg.State = relayTypes.Pending
 	err = c.db.StoreMessage(ctx, rawMsg)
 	if err != nil {
 		return nil, fmt.Errorf("could not store pending message: %w", err)
@@ -551,8 +552,8 @@ func (c *CCTPRelayer) submitReceiveCircleToken(parentCtx context.Context, msg *r
 		metrics.EndSpanWithErr(span, err)
 	}()
 
-	var txHash string
-	_, err = c.txSubmitter.SubmitTransaction(ctx, big.NewInt(int64(msg.DestChainID)), func(transactor *bind.TransactOpts) (tx *types.Transaction, err error) {
+	var nonce uint64
+	nonce, err = c.txSubmitter.SubmitTransaction(ctx, big.NewInt(int64(msg.DestChainID)), func(transactor *bind.TransactOpts) (tx *types.Transaction, err error) {
 		contract := c.boundSynapseCCTPs[msg.DestChainID]
 		gasAmount, err := contract.ChainGasAmount(&bind.CallOpts{Context: ctx})
 		if err != nil {
@@ -565,7 +566,6 @@ func (c *CCTPRelayer) submitReceiveCircleToken(parentCtx context.Context, msg *r
 		if err != nil {
 			return nil, fmt.Errorf("could not submit transaction: %w", err)
 		}
-		txHash = tx.Hash().String()
 		return tx, nil
 	})
 	if err != nil {
@@ -575,7 +575,7 @@ func (c *CCTPRelayer) submitReceiveCircleToken(parentCtx context.Context, msg *r
 
 	// Store the completed message.
 	msg.State = relayTypes.Submitted
-	msg.DestTxHash = txHash
+	msg.DestNonce = int(nonce)
 	err = c.db.StoreMessage(ctx, *msg)
 	if err != nil {
 		return fmt.Errorf("could not store completed message: %w", err)
