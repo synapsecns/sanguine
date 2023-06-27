@@ -102,7 +102,7 @@ export const sortByTokenBalance = async (
 }
 
 // Function to sort the tokens by priorityRank and alphabetically
-export function sortTokensByPriorityRankAndAlpha(arr: Token[]): Token[] {
+export const sortTokensByPriorityRankAndAlpha = (arr: Token[]): Token[] => {
   // Create a copy of the array to prevent modifying the original one
   const sortedArr = [...arr]
 

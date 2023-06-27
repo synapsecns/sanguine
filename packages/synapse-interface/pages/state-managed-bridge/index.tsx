@@ -218,7 +218,7 @@ const StateManagedBridge = () => {
       dispatch(setIsLoading(false))
       console.log(bridgeQuote)
     }
-  }, [fromChainId, toChainId, fromToken, toToken, fromValue])
+  }, [fromChainId, toChainId, fromToken, toToken, fromValue, address])
 
   // don't like this, rewrite: could be custom hook
   useEffect(() => {

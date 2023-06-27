@@ -1,8 +1,6 @@
-import { fetchSigner } from '@wagmi/core'
+import { getProvider } from '@wagmi/core'
 import { erc20ABI } from 'wagmi'
 import { Contract } from 'ethers'
-
-import { getProvider } from '@wagmi/core'
 
 export const getCurrentTokenAllowance = async (
   address,
@@ -11,7 +9,7 @@ export const getCurrentTokenAllowance = async (
   routerAddress: string
 ) => {
   const provider = getProvider({
-    chainId: fromChainId
+    chainId: fromChainId,
   })
 
   const erc20 = new Contract(fromToken.addresses[fromChainId], erc20ABI, provider)
