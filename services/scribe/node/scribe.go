@@ -44,10 +44,6 @@ func NewScribe(eventDB db.EventDB, clients map[uint32][]backfill.ScribeBackend, 
 	}, nil
 }
 
-// checkFinality checks if the block is final on the chain.
-// and deletes irrelevant blocks.
-const checkFinality = false
-
 // Start starts the scribe. This works by starting a backfill and recording what the
 // current block, which it will backfill to. Then, each chain will listen for new block
 // heights and backfill to that height.
@@ -77,9 +73,6 @@ func (s Scribe) Start(ctx context.Context) error {
 
 		// Check confirmations
 		g.Go(func() error {
-			if !checkFinality {
-				return nil
-			}
 			b := &backoff.Backoff{
 				Factor: 2,
 				Jitter: true,
