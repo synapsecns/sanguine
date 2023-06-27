@@ -4,6 +4,7 @@ import (
 	"context"
 	"database/sql"
 	"fmt"
+	"github.com/ethereum/go-ethereum/common"
 	"gorm.io/gorm/clause"
 
 	"github.com/synapsecns/sanguine/services/cctp-relayer/types"
@@ -94,4 +95,18 @@ func (s Store) GetMessagesByState(ctx context.Context, states ...types.MessageSt
 	}
 
 	return messages, nil
+}
+
+func (s Store) GetMessageByOriginHash(ctx context.Context, originHash common.Hash) (*types.Message, error) {
+	var message types.Message
+
+	dbTx := s.DB().WithContext(ctx).
+		Model(&types.Message{}).
+		Where(fmt.Sprintf("%s = ?", OriginTxHashFieldName), originHash.String()).
+		First(&message)
+	if dbTx.Error != nil {
+		return nil, fmt.Errorf("failed to get message by hash: %w", dbTx.Error)
+	}
+
+	return &message, nil
 }

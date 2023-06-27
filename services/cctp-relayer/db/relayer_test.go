@@ -2,6 +2,7 @@ package db_test
 
 import (
 	"github.com/brianvoe/gofakeit/v6"
+	"github.com/ethereum/go-ethereum/common"
 	"github.com/synapsecns/sanguine/ethergo/mocks"
 	"github.com/synapsecns/sanguine/services/cctp-relayer/db"
 	"github.com/synapsecns/sanguine/services/cctp-relayer/types"
@@ -21,6 +22,25 @@ func (d *DBSuite) mockMessage(originChainID, destinationChainID, blockNumber uin
 		BlockNumber:      uint64(blockNumber),
 		State:            types.Pending,
 	}
+}
+
+func (d *DBSuite) TestGetMessageByHash() {
+	d.RunOnAllDBs(func(testDB db.CCTPRelayerDB) {
+		message1 := d.mockMessage(gofakeit.Uint32(), gofakeit.Uint32(), gofakeit.Uint32())
+		message2 := d.mockMessage(gofakeit.Uint32(), gofakeit.Uint32(), gofakeit.Uint32())
+
+		err := testDB.StoreMessage(d.GetTestContext(), message1)
+		d.Nil(err)
+
+		err = testDB.StoreMessage(d.GetTestContext(), message2)
+		d.Nil(err)
+
+		message, err := testDB.GetMessageByOriginHash(d.GetTestContext(), common.HexToHash(message1.OriginTxHash))
+		d.Nil(err)
+
+		d.Equal(message1.MessageHash, message.MessageHash)
+	})
+
 }
 
 func (d *DBSuite) TestLastBlockNumber() {

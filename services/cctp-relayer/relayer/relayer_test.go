@@ -43,10 +43,8 @@ func (s *CCTPRelayerSuite) TestHandleCircleRequestSent() {
 	originChain.WaitForConfirmation(s.GetTestContext(), tx)
 
 	// handle send request
-	err = relay.HandleCircleRequestSent(s.GetTestContext(), tx.Hash(), uint32(originChain.GetChainID()))
+	msg, err := relay.HandleCircleRequestSent(s.GetTestContext(), tx.Hash(), uint32(originChain.GetChainID()))
 	s.Nil(err)
-	recvChan := relay.GetUsdcMsgRecvChan(uint32(originChain.GetChainID()))
-	msg := <-recvChan
 	s.Equal(msg.OriginTxHash, tx.Hash().String())
 	s.Equal(msg.State, relayTypes.Pending)
 
@@ -77,12 +75,9 @@ func (s *CCTPRelayerSuite) TestFetchAttestation() {
 		MessageHash:      testHash,
 		FormattedRequest: []byte{},
 	}
-	originChain := s.testBackends[0]
-	err = relay.FetchAttestation(s.GetTestContext(), uint32(originChain.GetChainID()), &msg)
+	completeMsg, err := relay.FetchAttestation(s.GetTestContext(), &msg)
 	s.Nil(err)
 
-	sendChan := relay.GetUsdcMsgSendChan(uint32(originChain.GetChainID()))
-	completeMsg := <-sendChan
 	s.Equal(completeMsg.MessageHash, msg.MessageHash)
 	s.Equal(completeMsg.Attestation, []byte(expectedSignature))
 	s.Equal(completeMsg.State, relayTypes.Attested)

@@ -3,8 +3,10 @@ package relayer
 import (
 	"context"
 	"fmt"
+	"gorm.io/gorm"
 	"math/big"
 	"strconv"
+	"sync"
 	"time"
 
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
@@ -42,10 +44,6 @@ type chainListener struct {
 	closeConnection chan bool
 	// stopListenChan is a channel that is used to stop listening to the log channel.
 	stopListenChan chan bool
-	// usdcMsgRecvChan contains incoming usdc messages yet to be signed.
-	usdcMsgRecvChan chan *relayTypes.Message
-	// usdcMsgSendChan contains outgoing usdc messages that are signed.
-	usdcMsgSendChan chan *relayTypes.Message
 }
 
 // CCTPRelayer listens for USDC burn events on origin chains,
@@ -69,6 +67,13 @@ type CCTPRelayer struct {
 	txSubmitter submitter.TransactionSubmitter
 	// boundSynapseCCTPs is a map from chain ID -> SynapseCCTP.
 	boundSynapseCCTPs map[uint32]*cctp.SynapseCCTP
+	// retryNow is used to trigger a retry immediately.
+	// it circumvents the retry interval.
+	// to prevent memory leaks, this has a buffer of 1.
+	// callers adding to this channel should not block.
+	retryNow chan bool
+	// retryOnce is used to return 0 for the first retry. timer
+	retryOnce sync.Once
 }
 
 const usdcMsgChanSize = 1000
@@ -103,8 +108,7 @@ func NewCCTPRelayer(ctx context.Context, cfg config.Config, store db2.CCTPRelaye
 			chainID:         chain.ChainID,
 			closeConnection: make(chan bool, 1),
 			stopListenChan:  make(chan bool, 1),
-			usdcMsgRecvChan: make(chan *relayTypes.Message, usdcMsgChanSize),
-			usdcMsgSendChan: make(chan *relayTypes.Message, usdcMsgChanSize),
+			// processChan is buffered to prevent blocking.
 		}
 		client, err := omniRPCClient.GetClient(ctx, big.NewInt(int64(chain.ChainID)))
 		if err != nil {
@@ -135,6 +139,7 @@ func NewCCTPRelayer(ctx context.Context, cfg config.Config, store db2.CCTPRelaye
 		scribeClient:      scribeClient,
 		grpcClient:        grpcClient,
 		grpcConn:          conn,
+		retryNow:          make(chan bool, 1),
 		httpBackoff:       httpBackoff,
 		handler:           handler,
 		attestationAPI:    attestationAPI,
@@ -143,8 +148,143 @@ func NewCCTPRelayer(ctx context.Context, cfg config.Config, store db2.CCTPRelaye
 	}, nil
 }
 
+// triggerProcessQueue triggers the process queue.
+// will not block if the channel is full (the tx will be processed on the next retry).
+func (c *CCTPRelayer) triggerProcessQueue(ctx context.Context) {
+	select {
+	case <-ctx.Done():
+		return
+	// trigger the process queue now if we can.
+	case c.retryNow <- true:
+	default:
+		// do nothing
+		return
+	}
+}
+
+const defaultRetryInterval = 5 * time.Second
+
+// getRetryInterval returns the retry interval.
+// on the first try this is 0 and it is the configured interval (or default) after that.
+func (c *CCTPRelayer) getRetryInterval() time.Duration {
+	retryInterval := time.Duration(c.cfg.RetryIntervalMS)
+	if retryInterval == 0 {
+		retryInterval = defaultRetryInterval
+	}
+
+	// make 0 on first try
+	c.retryOnce.Do(func() {
+		retryInterval = 0
+	})
+	return retryInterval
+}
+
+func (c *CCTPRelayer) runQueueSelector(ctx context.Context) (err error) {
+	for {
+		select {
+		case <-ctx.Done():
+			return ctx.Err()
+		case <-c.retryNow:
+			err = c.processQueue(ctx)
+		case <-time.After(c.getRetryInterval()):
+			err = c.processQueue(ctx)
+		}
+		if err != nil {
+			logger.Warnf("could not process queue: %v", err)
+		}
+	}
+}
+
+func (c *CCTPRelayer) processQueue(parentCtx context.Context) (err error) {
+	// TODO: this might be too short of a deadline depending on the number of pendingTxes in the queue
+	deadlineCtx, cancel := context.WithTimeout(parentCtx, time.Second*90)
+	defer cancel()
+
+	ctx, span := c.handler.Tracer().Start(deadlineCtx, "relayer.ProcessQueue")
+	defer func() {
+		metrics.EndSpanWithErr(span, err)
+	}()
+
+	attestations, err := c.db.GetMessagesByState(ctx, relayTypes.Pending, relayTypes.Attested)
+	if err != nil {
+		return fmt.Errorf("could not get pending messages: %w", err)
+	}
+
+	g, gctx := errgroup.WithContext(ctx)
+
+	// add attestations to the queue
+	attQueue := make(chan *relayTypes.Message, len(attestations))
+	for _, att := range attestations {
+		select {
+		case <-gctx.Done():
+			return fmt.Errorf("could not process: %w", gctx.Err())
+		case attQueue <- &att:
+			// queue to be reprocessed
+		}
+	}
+	// TODO: consider closing channel here?
+
+	// process queue 7 at a time
+	for i := 0; i < 7; i++ {
+		g.Go(func() error {
+			for {
+				select {
+				case <-gctx.Done():
+					return fmt.Errorf("could not process: %w", gctx.Err())
+				case attToProcess := <-attQueue:
+					err := c.processMessage(gctx, attToProcess)
+					if err != nil {
+						logger.Warnf("could not process: %v", err)
+					}
+					continue
+				default:
+					return nil
+				}
+			}
+		})
+	}
+
+	err = g.Wait()
+	if err != nil {
+		return fmt.Errorf("could not process: %w", err)
+	}
+
+	return nil
+
+}
+
+// processMessage processes a message. Before each stage it checks if the current step is done.
+func (c *CCTPRelayer) processMessage(parentCtx context.Context, msg *relayTypes.Message) (err error) {
+	ctx, span := c.handler.Tracer().Start(parentCtx, "processMessage", trace.WithAttributes(
+		attribute.String(MessageHash, msg.MessageHash),
+		attribute.Int(metrics.Origin, int(msg.OriginChainID)),
+		attribute.Int(metrics.Destination, int(msg.DestChainID)),
+		attribute.String(metrics.TxHash, msg.OriginTxHash),
+	))
+
+	defer func() {
+		metrics.EndSpanWithErr(span, err)
+	}()
+
+	if msg.State == relayTypes.Pending {
+		msg, err = c.fetchAttestation(ctx, msg)
+		if err != nil {
+			return fmt.Errorf("could not fetch attestation: %w", err)
+		}
+	}
+
+	if msg.State == relayTypes.Attested {
+		err := c.submitReceiveCircleToken(ctx, msg)
+		if err != nil {
+			return fmt.Errorf("could not submit receive circle token: %w", err)
+		}
+	}
+
+	return nil
+}
+
 // Run starts the CCTPRelayer.
-func (c CCTPRelayer) Run(parentCtx context.Context) error {
+func (c *CCTPRelayer) Run(parentCtx context.Context) error {
 	g, ctx := errgroup.WithContext(parentCtx)
 
 	// Listen for USDC burn events on origin chains.
@@ -155,7 +295,7 @@ func (c CCTPRelayer) Run(parentCtx context.Context) error {
 		})
 
 		g.Go(func() error {
-			return c.processBridgeEvents(ctx, chain.ChainID)
+			return c.runQueueSelector(ctx)
 		})
 
 		g.Go(func() error {
@@ -175,7 +315,7 @@ func (c CCTPRelayer) Run(parentCtx context.Context) error {
 }
 
 // Stop stops the CCTPRelayer.
-func (c CCTPRelayer) Stop(chainID uint32) {
+func (c *CCTPRelayer) Stop(chainID uint32) {
 	c.chainListeners[chainID].closeConnection <- true
 	c.chainListeners[chainID].stopListenChan <- true
 }
@@ -183,7 +323,7 @@ func (c CCTPRelayer) Stop(chainID uint32) {
 // Listens for USDC send events on origin chain, and registers relayTypes.Messages to be signed.
 //
 //nolint:cyclop
-func (c CCTPRelayer) streamLogs(ctx context.Context, grpcClient pbscribe.ScribeServiceClient, conn *grpc.ClientConn, chainID uint32, address string, toBlockNumber *uint64) error {
+func (c *CCTPRelayer) streamLogs(ctx context.Context, grpcClient pbscribe.ScribeServiceClient, conn *grpc.ClientConn, chainID uint32, address string, toBlockNumber *uint64) error {
 	lastStoredBlock, err := c.db.GetLastBlockNumber(ctx, chainID)
 	if err != nil {
 		return fmt.Errorf("could not get last stored block: %w", err)
@@ -240,7 +380,7 @@ func (c CCTPRelayer) streamLogs(ctx context.Context, grpcClient pbscribe.ScribeS
 
 // This takes in a log from the SynapseCCTP contract, determines the topic and then performs an action based on that topic.
 // Note that the log could correspond to a send or receive event.
-func (c CCTPRelayer) handleLog(ctx context.Context, log *types.Log, originChain uint32) error {
+func (c *CCTPRelayer) handleLog(ctx context.Context, log *types.Log, originChain uint32) (err error) {
 	if log == nil {
 		return fmt.Errorf("log is nil")
 	}
@@ -253,20 +393,25 @@ func (c CCTPRelayer) handleLog(ctx context.Context, log *types.Log, originChain 
 	switch log.Topics[0] {
 	// since this is the last stopic that comes out of the message, we use it to kick off the send loop
 	case cctp.CircleRequestSentTopic:
-		err := c.handleCircleRequestSent(ctx, log.TxHash, originChain)
+		_, err := c.fetchAndStoreCircleRequestSent(ctx, log.TxHash, originChain)
 		if err != nil {
-			return err
+			return fmt.Errorf("could not fetch and store circle request sent: %w", err)
 		}
+
+		c.triggerProcessQueue(ctx)
+
+		return nil
 	default:
 		logger.Warnf("unknown topic %s", log.Topics[0])
 		return nil
 	}
-	return nil
 }
 
+// fetchAndStoreCircleRequestSent handles the CircleRequestSent event.
+//
 //nolint:cyclop
-func (c CCTPRelayer) handleCircleRequestSent(parentCtx context.Context, txhash common.Hash, originChain uint32) (err error) {
-	ctx, span := c.handler.Tracer().Start(parentCtx, "handleCircleRequestSent", trace.WithAttributes(
+func (c *CCTPRelayer) fetchAndStoreCircleRequestSent(parentCtx context.Context, txhash common.Hash, originChain uint32) (msg *relayTypes.Message, err error) {
+	ctx, span := c.handler.Tracer().Start(parentCtx, "fetchAndStoreCircleRequestSent", trace.WithAttributes(
 		attribute.String(metrics.TxHash, txhash.String()),
 		attribute.Int(metrics.ChainID, int(originChain)),
 	))
@@ -275,15 +420,25 @@ func (c CCTPRelayer) handleCircleRequestSent(parentCtx context.Context, txhash c
 		metrics.EndSpanWithErr(span, err)
 	}()
 
-	ethClient, err := c.omnirpcClient.GetChainClient(ctx, int(originChain))
-	if err != nil {
-		return fmt.Errorf("could not get chain client: %w", err)
+	// check if message already exist before we do anything
+	msg, err = c.db.GetMessageByOriginHash(ctx, txhash)
+	// if we already have the message, we can just return it
+	if err == nil {
+		return msg, nil
+	}
+	if err != gorm.ErrRecordNotFound {
+		return nil, fmt.Errorf("could not get message by origin hash: %w", err)
 	}
 
-	// TODO: consider pulling from scribe
+	ethClient, err := c.omnirpcClient.GetChainClient(ctx, int(originChain))
+	if err != nil {
+		return nil, fmt.Errorf("could not get chain client: %w", err)
+	}
+
+	// TODO: consider pulling from scribe?
 	receipt, err := ethClient.TransactionReceipt(ctx, txhash)
 	if err != nil {
-		return fmt.Errorf("could not get transaction receipt: %w", err)
+		return nil, fmt.Errorf("could not get transaction receipt: %w", err)
 	}
 
 	// From this receipt, we expect two different logs:
@@ -303,97 +458,58 @@ func (c CCTPRelayer) handleCircleRequestSent(parentCtx context.Context, txhash c
 			// TODO: do we need to make sure log.Address matches our log.Address?
 			eventParser, err := cctp.NewSynapseCCTPEvents(log.Address, ethClient)
 			if err != nil {
-				return fmt.Errorf("could not create event parser: %w", err)
+				return nil, fmt.Errorf("could not create event parser: %w", err)
 			}
 
 			circleRequestSentEvent, err = eventParser.ParseCircleRequestSent(*log)
 			if err != nil {
-				return fmt.Errorf("could not parse circle request sent: %w", err)
+				return nil, fmt.Errorf("could not parse circle request sent: %w", err)
 			}
 			// TODO: this shouldn't be coming from a mock contract, generate from the abstract contract itself
 		case mockmessagetransmitter.MessageSentTopic:
 			eventParser, err := mockmessagetransmitter.NewMessageTransmitterEvents(log.Address, ethClient)
 			if err != nil {
-				return fmt.Errorf("could not create event parser: %w", err)
+				return nil, fmt.Errorf("could not create event parser: %w", err)
 			}
 
 			messageSentEvent, err = eventParser.ParseMessageSent(*log)
 			if err != nil {
-				return fmt.Errorf("could not parse message sent: %w", err)
+				return nil, fmt.Errorf("could not parse message sent: %w", err)
 			}
 		}
 	}
 
 	if messageSentEvent == nil {
-		return fmt.Errorf("no message sent event found")
+		return nil, fmt.Errorf("no message sent event found")
 	}
 
 	if circleRequestSentEvent == nil {
-		return fmt.Errorf("no circle request sent event found")
+		return nil, fmt.Errorf("no circle request sent event found")
 	}
 
-	select {
-	case <-ctx.Done():
-		err = ctx.Err()
-		if err != nil {
-			err = fmt.Errorf("error handling circle request sent: %w", err)
-		}
-		return err
-	default:
-		msg := relayTypes.Message{
-			OriginTxHash:  txhash.String(),
-			OriginChainID: originChain,
-			DestChainID:   uint32(circleRequestSentEvent.ChainId.Int64()),
-			Message:       messageSentEvent.Message,
-			MessageHash:   crypto.Keccak256Hash(messageSentEvent.Message).String(),
-			//Attestation: //comes from the api
-			RequestVersion:   circleRequestSentEvent.RequestVersion,
-			FormattedRequest: circleRequestSentEvent.FormattedRequest,
-			BlockNumber:      uint64(receipt.BlockNumber.Int64()),
-		}
-
-		// Store the requested message.
-		msg.State = relayTypes.Pending
-		err = c.db.StoreMessage(ctx, msg)
-		if err != nil {
-			return fmt.Errorf("could not store pending message: %w", err)
-		}
-
-		// Queue the message for attestation.
-		c.chainListeners[originChain].usdcMsgRecvChan <- &msg
+	rawMsg := relayTypes.Message{
+		OriginTxHash:  txhash.String(),
+		OriginChainID: originChain,
+		DestChainID:   uint32(circleRequestSentEvent.ChainId.Int64()),
+		Message:       messageSentEvent.Message,
+		MessageHash:   crypto.Keccak256Hash(messageSentEvent.Message).String(),
+		//Attestation: //comes from the api
+		RequestVersion:   circleRequestSentEvent.RequestVersion,
+		FormattedRequest: circleRequestSentEvent.FormattedRequest,
+		BlockNumber:      uint64(receipt.BlockNumber.Int64()),
 	}
-	return nil
-}
 
-// fetchAttestations runs a loop that fetches txes that require an attestation from the db
-// TODO: depending on load, we may need to consider adding some rate limiting here or a sort on the events
-// returned by the db
-func (c CCTPRelayer) runFetchAttestations(ctx context.Context) {
-	c.db.GetMessagesByState(ctx, relayTypes.Pending)
-}
-
-// Completes a USDC bridging sequence by calling ReceiveCircleToken() on the destination chain.
-//
-// Deprecated: use seperate loops for fetch and submit
-//
-//nolint:errcheck
-func (c CCTPRelayer) processBridgeEvents(ctx context.Context, chainID uint32) (err error) {
-	for {
-		select {
-		// Receive a raw message from the receive channel.
-		case msg := <-c.chainListeners[chainID].usdcMsgRecvChan:
-			// Fetch the circle attestation in a new goroutine so that we are not blocked from future requests.
-			go c.fetchAttestation(ctx, chainID, msg)
-		case msg := <-c.chainListeners[chainID].usdcMsgSendChan:
-			// Submit the message to the destination chain.
-			go c.submitReceiveCircleToken(ctx, msg)
-		case <-ctx.Done():
-			return fmt.Errorf(ctx.Err().Error())
-		}
+	// Store the requested message.
+	msg.State = relayTypes.Pending
+	err = c.db.StoreMessage(ctx, rawMsg)
+	if err != nil {
+		return nil, fmt.Errorf("could not store pending message: %w", err)
 	}
+
+	return &rawMsg, nil
 }
 
-func (c CCTPRelayer) fetchAttestation(parentCtx context.Context, chainID uint32, msg *relayTypes.Message) (err error) {
+func (c *CCTPRelayer) fetchAttestation(parentCtx context.Context, msg *relayTypes.Message) (_ *relayTypes.Message, err error) {
 	ctx, span := c.handler.Tracer().Start(parentCtx, "fetchAttestation", trace.WithAttributes(
 		attribute.String(MessageHash, msg.MessageHash),
 		attribute.Int(metrics.Origin, int(msg.OriginChainID)),
@@ -417,15 +533,13 @@ func (c CCTPRelayer) fetchAttestation(parentCtx context.Context, chainID uint32,
 	msg.State = relayTypes.Attested
 	err = c.db.StoreMessage(ctx, *msg)
 	if err != nil {
-		return fmt.Errorf("could not store attested message: %w", err)
+		return nil, fmt.Errorf("could not store attested message: %w", err)
 	}
 
-	// Send the completed message back through the send channel.
-	c.chainListeners[chainID].usdcMsgSendChan <- msg
-	return
+	return msg, nil
 }
 
-func (c CCTPRelayer) submitReceiveCircleToken(parentCtx context.Context, msg *relayTypes.Message) (err error) {
+func (c *CCTPRelayer) submitReceiveCircleToken(parentCtx context.Context, msg *relayTypes.Message) (err error) {
 	ctx, span := c.handler.Tracer().Start(parentCtx, "submitReceiveCircleToken", trace.WithAttributes(
 		attribute.String(MessageHash, msg.MessageHash),
 		attribute.Int(metrics.Origin, int(msg.OriginChainID)),
@@ -440,7 +554,6 @@ func (c CCTPRelayer) submitReceiveCircleToken(parentCtx context.Context, msg *re
 	var txHash string
 	_, err = c.txSubmitter.SubmitTransaction(ctx, big.NewInt(int64(msg.DestChainID)), func(transactor *bind.TransactOpts) (tx *types.Transaction, err error) {
 		contract := c.boundSynapseCCTPs[msg.DestChainID]
-
 		gasAmount, err := contract.ChainGasAmount(&bind.CallOpts{Context: ctx})
 		if err != nil {
 			return nil, fmt.Errorf("could not get chain gas amount: %w", err)
@@ -448,6 +561,7 @@ func (c CCTPRelayer) submitReceiveCircleToken(parentCtx context.Context, msg *re
 		transactor.Value = gasAmount
 
 		tx, err = contract.ReceiveCircleToken(transactor, msg.Message, msg.Attestation, msg.RequestVersion, msg.FormattedRequest)
+
 		if err != nil {
 			return nil, fmt.Errorf("could not submit transaction: %w", err)
 		}
@@ -460,7 +574,7 @@ func (c CCTPRelayer) submitReceiveCircleToken(parentCtx context.Context, msg *re
 	}
 
 	// Store the completed message.
-	msg.State = relayTypes.Complete
+	msg.State = relayTypes.Submitted
 	msg.DestTxHash = txHash
 	err = c.db.StoreMessage(ctx, *msg)
 	if err != nil {
