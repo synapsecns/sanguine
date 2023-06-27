@@ -41,9 +41,12 @@ describe('SynapseSDK', () => {
       )
     })
 
-
     it('succeeds with SynapseCCTPRouter instantiation for keys in CCTP_ROUTER_ADDRESS', () => {
-      const chainIds = [SupportedChainId.ETH, SupportedChainId.ARBITRUM, SupportedChainId.AVALANCHE]
+      const chainIds = [
+        SupportedChainId.ETH,
+        SupportedChainId.ARBITRUM,
+        SupportedChainId.AVALANCHE,
+      ]
       const providers = [ethProvider, arbitrumProvider, avalancheProvider]
 
       const sdk = new SynapseSDK(chainIds, providers)
@@ -58,108 +61,131 @@ describe('SynapseSDK', () => {
     })
   })
 
-      describe('getBridgeTokens', () => {
-        const destChainId = SupportedChainId.ETH;
-        const tokenOut = "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48";
-        const sdk = new SynapseSDK([destChainId], [ethProvider]);
+  describe('getBridgeTokens', () => {
+    const destChainId = SupportedChainId.ETH
+    const tokenOut = '0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48'
+    const sdk = new SynapseSDK([destChainId], [ethProvider])
 
-        it('fetches bridge tokens for Synapse router', async () => {
-          // Assuming you have a way to mock the bridge tokens returned by the router
-          const mockedRouterBridgeTokens = [
-            { symbol: 'nUSD', token: '0x1B84765dE8B7566e4cEAF4D0fD3c5aF52D3DdE4F' },
-            { symbol: 'USDC', token: '0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48' }
-          ];
+    it('fetches bridge tokens for Synapse router', async () => {
+      // Assuming you have a way to mock the bridge tokens returned by the router
+      const mockedRouterBridgeTokens = [
+        { symbol: 'nUSD', token: '0x1B84765dE8B7566e4cEAF4D0fD3c5aF52D3DdE4F' },
+        { symbol: 'USDC', token: '0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48' },
+      ]
 
-          const routerBridgeTokens =
-            await sdk.getBridgeTokens(destChainId, tokenOut, sdk.synapseRouters[destChainId]);
+      const routerBridgeTokens = await sdk.getBridgeTokens(
+        destChainId,
+        tokenOut,
+        sdk.synapseRouters[destChainId]
+      )
 
-          // Assert that the function returned the correct bridge tokens for the router
-          expect(routerBridgeTokens).toEqual(mockedRouterBridgeTokens);
-        });
+      // Assert that the function returned the correct bridge tokens for the router
+      expect(routerBridgeTokens).toEqual(mockedRouterBridgeTokens)
+    })
 
-        it('fetches bridge tokens for CCTP router', async () => {
-          // Assuming you have a way to mock the bridge tokens returned by the CCTP router
-          const mockedCCTPBridgeTokens = [
-            { symbol: 'CCTP.USDC', token: '0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48' }
-          ];
+    it('fetches bridge tokens for CCTP router', async () => {
+      // Assuming you have a way to mock the bridge tokens returned by the CCTP router
+      const mockedCCTPBridgeTokens = [
+        {
+          symbol: 'CCTP.USDC',
+          token: '0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48',
+        },
+      ]
 
-          const routerCCTPTokens =
-            await sdk.getBridgeTokens(destChainId, tokenOut, sdk.synapseCCTPRouters[destChainId]);
+      const routerCCTPTokens = await sdk.getBridgeTokens(
+        destChainId,
+        tokenOut,
+        sdk.synapseCCTPRouters[destChainId]
+      )
 
-          // Assert that the function returned the correct bridge tokens for the CCTP router
-          expect(routerCCTPTokens).toEqual(mockedCCTPBridgeTokens);
-        });
-      });
+      // Assert that the function returned the correct bridge tokens for the CCTP router
+      expect(routerCCTPTokens).toEqual(mockedCCTPBridgeTokens)
+    })
+  })
 
+  describe('getOriginQueries', () => {
+    it('fetches origin queries from both SynapseRouter and SynapseCCTPRouter', async () => {
+      const originChainId = SupportedChainId.ETH
+      const tokenIn = '0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48'
+      const routerTokenSymbols = ['USDC']
+      const cctpTokenSymbols = ['CCTP.USDC']
+      const amountIn = BigNumber.from('100000000')
+      const sdk = new SynapseSDK([originChainId], [ethProvider])
 
+      const synapseRouterOriginQuery = await sdk.getOriginQueries(
+        sdk.synapseRouters[originChainId],
+        tokenIn,
+        routerTokenSymbols,
+        amountIn
+      )
+      const synapseCCTPRouterOriginQuery = await sdk.getOriginQueries(
+        sdk.synapseCCTPRouters[originChainId],
+        tokenIn,
+        cctpTokenSymbols,
+        amountIn
+      )
 
-    describe('getOriginQueries', () => {
-      it('fetches origin queries from both SynapseRouter and SynapseCCTPRouter', async () => {
-        const originChainId = SupportedChainId.ETH;
-        const tokenIn = "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48";
-        const routerTokenSymbols = ['USDC'];
-        const cctpTokenSymbols = ['CCTP.USDC']
-        const amountIn = BigNumber.from('100000000');
-        const sdk = new SynapseSDK([originChainId], [ethProvider]);
+      expect(synapseRouterOriginQuery).toBeTruthy()
+      expect(synapseCCTPRouterOriginQuery).toBeTruthy()
 
-        const synapseRouterOriginQuery =
-        await sdk.getOriginQueries(sdk.synapseRouters[originChainId], tokenIn, routerTokenSymbols, amountIn);
-      const synapseCCTPRouterOriginQuery =
-        await sdk.getOriginQueries(sdk.synapseCCTPRouters[originChainId], tokenIn, cctpTokenSymbols, amountIn);
+      expect(synapseRouterOriginQuery[0].minAmountOut.gt(0)).toBeTruthy()
+      expect(synapseCCTPRouterOriginQuery[0].minAmountOut.gt(0)).toBeTruthy()
+    })
+  })
 
-        expect(synapseRouterOriginQuery).toBeTruthy()
-        expect(synapseCCTPRouterOriginQuery).toBeTruthy()
+  describe('getDestinationQueries', () => {
+    it('fetches destination queries from both SynapseRouter and SynapseCCTPRouter', async () => {
+      const destChainId = SupportedChainId.ETH
+      const tokenOut = '0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48'
+      const routerRequests = [
+        { symbol: 'nUSD', amountIn: BigNumber.from('100000000000000000000') },
+      ]
+      const cctpRequests = [
+        { symbol: 'CCTP.USDC', amountIn: BigNumber.from('100000000') },
+      ]
+      const sdk = new SynapseSDK([destChainId], [ethProvider])
 
-        expect(synapseRouterOriginQuery[0].minAmountOut.gt(0)).toBeTruthy()
-        expect(synapseCCTPRouterOriginQuery[0].minAmountOut.gt(0)).toBeTruthy()
-      });
-    });
+      const synapseRouterDestinationQuery = await sdk.getDestinationQueries(
+        sdk.synapseRouters[destChainId],
+        routerRequests,
+        tokenOut
+      )
+      const synapseCCTPRouterDestinationQuery = await sdk.getDestinationQueries(
+        sdk.synapseCCTPRouters[destChainId],
+        cctpRequests,
+        tokenOut
+      )
 
-    describe('getDestinationQueries', () => {
-      it('fetches destination queries from both SynapseRouter and SynapseCCTPRouter', async () => {
-        const destChainId = SupportedChainId.ETH;
-        const tokenOut = "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48";
-        const routerRequests = [{ symbol: 'nUSD', amountIn: BigNumber.from('100000000000000000000') }];
-        const cctpRequests = [{ symbol: 'CCTP.USDC', amountIn: BigNumber.from('100000000') }];
-        const sdk = new SynapseSDK([destChainId], [ethProvider]);
+      // Ensure the function returned queries
+      expect(synapseRouterDestinationQuery).toBeTruthy()
+      expect(synapseCCTPRouterDestinationQuery).toBeTruthy()
 
-        const synapseRouterDestinationQuery =
-          await sdk.getDestinationQueries(sdk.synapseRouters[destChainId], routerRequests, tokenOut);
-        const synapseCCTPRouterDestinationQuery =
-          await sdk.getDestinationQueries(sdk.synapseCCTPRouters[destChainId], cctpRequests, tokenOut);
-
-        // Ensure the function returned queries
-        expect(synapseRouterDestinationQuery).toBeTruthy();
-        expect(synapseCCTPRouterDestinationQuery).toBeTruthy();
-
-        // Ensure minAmountOut is greater than 0
-        expect(synapseRouterDestinationQuery[0].minAmountOut.gt(0)).toBeTruthy();
-        expect(synapseCCTPRouterDestinationQuery[0].minAmountOut.gt(0)).toBeTruthy();
-      });
-    });
-
+      // Ensure minAmountOut is greater than 0
+      expect(synapseRouterDestinationQuery[0].minAmountOut.gt(0)).toBeTruthy()
+      expect(
+        synapseCCTPRouterDestinationQuery[0].minAmountOut.gt(0)
+      ).toBeTruthy()
+    })
+  })
 
   describe('bridgeQuote', () => {
     it('CCTP: ETH > Arbitrum', async () => {
       const chainIds = [1, 42161]
       const providers = [ethProvider, arbitrumProvider]
       const Synapse = new SynapseSDK(chainIds, providers)
-      const result =
-        await Synapse.bridgeQuote(
-          1,
-          42161,
-          '0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48',
-          '0xaf88d065e77c8cc2239327c5edb3a432268e5831',
-          BigNumber.from('100000000')
-        )
+      const result = await Synapse.bridgeQuote(
+        1,
+        42161,
+        '0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48',
+        '0xaf88d065e77c8cc2239327c5edb3a432268e5831',
+        BigNumber.from('100000000')
+      )
       if (!result) {
         // console.log(result)
         throw Error
       }
 
       const { feeConfig, originQuery, destQuery, routerAddress } = result
-
-
 
       expect(feeConfig?.bridgeFee).toBeGreaterThan(0)
       expect(originQuery).not.toBeNull()
@@ -168,8 +194,8 @@ describe('SynapseSDK', () => {
       expect(routerAddress?.length).toBeGreaterThan(0)
 
       const { data, to } = await Synapse.bridge(
-        "0x0AF91FA049A7e1894F480bFE5bBa20142C6c29a9",
-        "0xD359bc471554504f683fbd4f6e36848612349DDF",
+        '0x0AF91FA049A7e1894F480bFE5bBa20142C6c29a9',
+        '0xD359bc471554504f683fbd4f6e36848612349DDF',
         1,
         42161,
         '0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48',
@@ -190,14 +216,13 @@ describe('SynapseSDK', () => {
       const chainIds = [42161, 10]
       const providers = [arbitrumProvider, optimisimProvider]
       const Synapse = new SynapseSDK(chainIds, providers)
-      const result =
-        await Synapse.bridgeQuote(
-          42161,
-          10,
-          '0xFF970A61A04b1cA14834A43f5dE4533eBDDB5CC8',
-          '0x7F5c764cBc14f9669B88837ca1490cCa17c31607',
-          BigNumber.from('100000000')
-        )
+      const result = await Synapse.bridgeQuote(
+        42161,
+        10,
+        '0xFF970A61A04b1cA14834A43f5dE4533eBDDB5CC8',
+        '0x7F5c764cBc14f9669B88837ca1490cCa17c31607',
+        BigNumber.from('100000000')
+      )
 
       if (!result) {
         // console.log(result)
@@ -205,7 +230,6 @@ describe('SynapseSDK', () => {
       }
 
       const { feeConfig, originQuery, destQuery, routerAddress } = result
-
 
       expect(feeConfig?.bridgeFee).toBeGreaterThan(0)
       expect(originQuery).not.toBeNull()
@@ -217,7 +241,7 @@ describe('SynapseSDK', () => {
 
       const { data, to } = await Synapse.bridge(
         '0x0AF91FA049A7e1894F480bFE5bBa20142C6c29a9',
-        "0x7e7a0e201fd38d3adaa9523da6c109a07118c96a",
+        '0x7e7a0e201fd38d3adaa9523da6c109a07118c96a',
         42161,
         10,
         '0x7F5c764cBc14f9669B88837ca1490cCa17c31607',
@@ -251,8 +275,6 @@ describe('SynapseSDK', () => {
 
       const { feeConfig, originQuery, destQuery } = result
 
-
-
       expect(feeConfig?.bridgeFee).toBeGreaterThan(0)
       expect(originQuery).not.toBeNull()
       expect(destQuery).not.toBeNull()
@@ -260,7 +282,7 @@ describe('SynapseSDK', () => {
       checkQueryFields(destQuery)
       const { data, to } = await Synapse.bridge(
         '0x0AF91FA049A7e1894F480bFE5bBa20142C6c29a9',
-        "0x7e7a0e201fd38d3adaa9523da6c109a07118c96a",
+        '0x7e7a0e201fd38d3adaa9523da6c109a07118c96a',
         43114,
         56,
         '0x8AC76a51cc950d9822D68b83fE1Ad97B32Cd580d',
@@ -288,7 +310,6 @@ describe('SynapseSDK', () => {
         BigNumber.from('100000000')
       )
 
-
       if (!result) {
         // console.log(result)
         throw Error
@@ -296,14 +317,12 @@ describe('SynapseSDK', () => {
 
       const { originQuery, destQuery } = result
 
-
-
       expect(originQuery?.deadline).toStrictEqual(BigNumber.from('100000000'))
       checkQueryFields(originQuery)
       checkQueryFields(destQuery)
       const { data, to } = await Synapse.bridge(
         '0x0AF91FA049A7e1894F480bFE5bBa20142C6c29a9',
-        "0x7e7a0e201fd38d3adaa9523da6c109a07118c96a",
+        '0x7e7a0e201fd38d3adaa9523da6c109a07118c96a',
         43114,
         56,
         '0x8AC76a51cc950d9822D68b83fE1Ad97B32Cd580d',
@@ -335,8 +354,6 @@ describe('SynapseSDK', () => {
 
       const { feeConfig, originQuery, destQuery } = result
 
-
-
       expect(feeConfig?.bridgeFee).toBeGreaterThan(0)
       expect(originQuery).not.toBeNull()
       expect(destQuery).not.toBeNull()
@@ -344,7 +361,7 @@ describe('SynapseSDK', () => {
       checkQueryFields(destQuery)
       const { data, to } = await Synapse.bridge(
         '0x0AF91FA049A7e1894F480bFE5bBa20142C6c29a9',
-        "0x7e7a0e201fd38d3adaa9523da6c109a07118c96a",
+        '0x7e7a0e201fd38d3adaa9523da6c109a07118c96a',
         42161,
         43114,
         '0x321E7092a180BB43555132ec53AaA65a5bF84251',
@@ -376,15 +393,12 @@ describe('SynapseSDK', () => {
 
       const { feeConfig, originQuery, destQuery } = result
 
-
-
-
       expect(feeConfig?.bridgeFee).toBeGreaterThan(0)
       expect(originQuery).not.toBeNull()
       expect(destQuery).not.toBeNull()
       const { data, to } = await Synapse.bridge(
         '0x0AF91FA049A7e1894F480bFE5bBa20142C6c29a9',
-        "0x7e7a0e201fd38d3adaa9523da6c109a07118c96a",
+        '0x7e7a0e201fd38d3adaa9523da6c109a07118c96a',
         42161,
         43114,
         '0x321E7092a180BB43555132ec53AaA65a5bF84251',
