@@ -98,9 +98,6 @@ export const bridgeSlice = createSlice({
     addBridgeTxHash: (state, action: PayloadAction<string>) => {
       state.bridgeTxHashes = [...state.bridgeTxHashes, action.payload];
     },
-    setBridgeTxHashes: (state, action: PayloadAction<string[]>) => {
-      state.bridgeTxHashes = action.payload;
-    },
   },
 })
 

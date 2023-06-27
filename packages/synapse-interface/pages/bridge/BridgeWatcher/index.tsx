@@ -13,7 +13,7 @@ import { BridgeWatcherTx } from '@types'
 import { GETLOGS_SIZE, GETLOGS_REQUEST_COUNT } from '@constants/bridgeWatcher'
 import { useSynapseContext } from '@/utils/providers/SynapseProvider'
 import { useSelector } from 'react-redux';
-import { RootState } from '../../../store/store'
+import { RootState } from '@/store/store'
 
 import {
   getLogs,
