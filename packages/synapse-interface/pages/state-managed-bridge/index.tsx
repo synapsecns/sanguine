@@ -7,6 +7,8 @@ import toast from 'react-hot-toast'
 import { useSpring, animated } from 'react-spring'
 import { ActionCardFooter } from '@components/ActionCardFooter'
 import { BRIDGE_PATH, HOW_TO_BRIDGE_URL } from '@/constants/urls'
+import BridgeWatcher from '@/pages/bridge/BridgeWatcher'
+
 
 import {
   setFromToken,
@@ -23,6 +25,7 @@ import {
   setSupportedFromTokenBalances,
   setDeadlineMinutes,
   setDestinationAddress,
+  addBridgeTxHash
 } from '@/slices/bridgeSlice'
 
 import {
@@ -126,6 +129,7 @@ const StateManagedBridge = () => {
     supportedFromTokenBalances,
     supportedToTokens,
     destinationAddress,
+    bridgeTxHashes
   } = useSelector((state: RootState) => state.bridge)
 
   const {
@@ -394,6 +398,7 @@ const StateManagedBridge = () => {
 
       try {
         await tx.wait()
+        dispatch(addBridgeTxHash(tx.hash));
 
         dispatch(setBridgeQuote(EMPTY_BRIDGE_QUOTE_ZERO))
         dispatch(setDestinationAddress(null))
@@ -537,6 +542,13 @@ const StateManagedBridge = () => {
             <ActionCardFooter link={HOW_TO_BRIDGE_URL} />
           </div>
         </div>
+        <BridgeWatcher
+                  fromChainId={fromChainId}
+                  toChainId={toChainId}
+                  address={address}
+                  destinationAddress={destinationAddress}
+                  bridgeTxHash={bridgeTxHashes[bridgeTxHashes.length - 1]}
+                />
       </main>
     </LandingPageWrapper>
   )
