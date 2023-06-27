@@ -105,6 +105,8 @@ func (s Store) GetMessagesByState(ctx context.Context, states ...types.MessageSt
 	return messages, nil
 }
 
+// GetMessageByOriginHash gets a message by its origin hash.
+// TODO: this is actually non-unique, but we only return 1.
 func (s Store) GetMessageByOriginHash(ctx context.Context, originHash common.Hash) (*types.Message, error) {
 	var message types.Message
 

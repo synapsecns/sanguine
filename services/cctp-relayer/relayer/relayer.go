@@ -77,8 +77,6 @@ type CCTPRelayer struct {
 	retryOnce sync.Once
 }
 
-const usdcMsgChanSize = 1000
-
 // NewCCTPRelayer creates a new CCTPRelayer.
 func NewCCTPRelayer(ctx context.Context, cfg config.Config, store db2.CCTPRelayerDB, scribeClient client.ScribeClient, omniRPCClient omniClient.RPCClient, handler metrics.Handler, attestationAPI api.AttestationAPI) (*CCTPRelayer, error) {
 	conn, err := grpc.DialContext(ctx, fmt.Sprintf("%s:%d", scribeClient.URL, scribeClient.Port),
@@ -184,6 +182,7 @@ func (c *CCTPRelayer) runQueueSelector(ctx context.Context) (err error) {
 	for {
 		select {
 		case <-ctx.Done():
+			//nolint: wrapcheck
 			return ctx.Err()
 		case <-c.retryNow:
 			err = c.processQueue(ctx)
@@ -196,6 +195,7 @@ func (c *CCTPRelayer) runQueueSelector(ctx context.Context) (err error) {
 	}
 }
 
+// nolint: cyclop
 func (c *CCTPRelayer) processQueue(parentCtx context.Context) (err error) {
 	// TODO: this might be too short of a deadline depending on the number of pendingTxes in the queue
 	deadlineCtx, cancel := context.WithTimeout(parentCtx, time.Second*90)
@@ -215,11 +215,11 @@ func (c *CCTPRelayer) processQueue(parentCtx context.Context) (err error) {
 
 	// add attestations to the queue
 	attQueue := make(chan *relayTypes.Message, len(attestations))
-	for _, att := range attestations {
+	for i := range attestations {
 		select {
 		case <-gctx.Done():
 			return fmt.Errorf("could not process: %w", gctx.Err())
-		case attQueue <- &att:
+		case attQueue <- &attestations[i]:
 			// queue to be reprocessed
 		}
 	}
@@ -251,7 +251,6 @@ func (c *CCTPRelayer) processQueue(parentCtx context.Context) (err error) {
 	}
 
 	return nil
-
 }
 
 // processMessage processes a message. Before each stage it checks if the current step is done.
