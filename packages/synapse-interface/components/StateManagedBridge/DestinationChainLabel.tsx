@@ -43,6 +43,7 @@ export const DestinationChainLabel = ({
             dispatch(setShowToChainSlideOver(true))
           }}
           tabIndex={0}
+          data-test-id="bridge-destination-chain-list-button"
           className="w-8 h-8 px-1.5 py-1.5 bg-[#C4C4C4] bg-opacity-10 rounded-full hover:cursor-pointer group"
         >
           <ChevronDownIcon className="text-gray-300 transition transform-gpu group-hover:opacity-50 group-active:rotate-180" />

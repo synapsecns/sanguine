@@ -91,7 +91,7 @@ export const InputContainer = () => {
           <SelectTokenDropdown
             chainId={fromChainId}
             selectedToken={fromToken}
-            isOrigin={false}
+            isOrigin={true}
             onClick={() => dispatch(setShowFromTokenSlideOver(true))}
           />
           <input

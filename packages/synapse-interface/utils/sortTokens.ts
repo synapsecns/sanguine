@@ -117,26 +117,26 @@ export const sortTokensByPriorityRankAndAlpha = (arr: Token[]): Token[] => {
   })
 }
 
-export const separateAndSortTokensWithBalances = (tokensAndBalances: TokenAndBalance[]): Token[] => {
+export const separateAndSortTokensWithBalances = (
+  tokensAndBalances: TokenAndBalance[]
+): Token[] => {
   const hasTokensAndBalances = Object.keys(tokensAndBalances).length > 0
 
   if (hasTokensAndBalances) {
-  const tokensWithBalances = tokensAndBalances
-    .filter((t) => !t.balance.eq(Zero))
-    .map((t) => t.token)
+    const tokensWithBalances = tokensAndBalances
+      .filter((t) => !t.balance.eq(Zero))
+      .map((t) => t.token)
 
-  const a = sortTokensByPriorityRankAndAlpha(tokensWithBalances)
+    const a = sortTokensByPriorityRankAndAlpha(tokensWithBalances)
 
-  const tokensWithNoBalances = tokensAndBalances
-    .filter((t) => t.balance.eq(Zero))
-    .map((t) => t.token)
+    const tokensWithNoBalances = tokensAndBalances
+      .filter((t) => t.balance.eq(Zero))
+      .map((t) => t.token)
 
-  const b = sortTokensByPriorityRankAndAlpha(tokensWithNoBalances)
+    const b = sortTokensByPriorityRankAndAlpha(tokensWithNoBalances)
 
-  return [...a, ...b]
-
+    return [...a, ...b]
   } else {
     return []
   }
 }
-

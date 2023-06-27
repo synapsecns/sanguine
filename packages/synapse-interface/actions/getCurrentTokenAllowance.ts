@@ -12,7 +12,11 @@ export const getCurrentTokenAllowance = async (
     chainId: fromChainId,
   })
 
-  const erc20 = new Contract(fromToken.addresses[fromChainId], erc20ABI, provider)
+  const erc20 = new Contract(
+    fromToken.addresses[fromChainId],
+    erc20ABI,
+    provider
+  )
   const allowance = await erc20.allowance(address, routerAddress)
   return allowance
 }

@@ -117,7 +117,10 @@ export const ChainSlideOver = ({
           <DrawerButton onClick={onClose} isOrigin={isOrigin} />
         </div>
       </div>
-      <div className="px-3 pt-20 pb-8 space-y-4 bg-bgLighter md:px-6">
+      <div
+        data-test-id={dataId}
+        className="px-3 pt-20 pb-8 space-y-4 bg-bgLighter md:px-6"
+      >
         {networks.map(({ id: mapChainId }, idx) => {
           let onClickSpecificNetwork
           if (chainId === mapChainId) {
