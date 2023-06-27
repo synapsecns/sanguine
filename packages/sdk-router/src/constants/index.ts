@@ -22,13 +22,13 @@ export enum SupportedChainId {
   HARMONY = 1666600000,
 }
 
-export const CCTP_ROUTER_ADDRESS: object = {
+export const CCTP_ROUTER_ADDRESS: { [chainId: number]: string } = {
   [SupportedChainId.ETH]: '0xd359bc471554504f683fbd4f6e36848612349ddf',
   [SupportedChainId.ARBITRUM]: '0xd359bc471554504f683fbd4f6e36848612349ddf',
   [SupportedChainId.AVALANCHE]: '0xd359bc471554504f683fbd4f6e36848612349ddf',
 }
 
-export const ROUTER_ADDRESS: object = {
+export const ROUTER_ADDRESS: { [chainId: number]: string } = {
   [SupportedChainId.BSC]: '0x7E7A0e201FD38d3ADAA9523Da6C109a07118C96a',
   [SupportedChainId.ETH]: '0x7E7A0e201FD38d3ADAA9523Da6C109a07118C96a',
   [SupportedChainId.POLYGON]: '0x7E7A0e201FD38d3ADAA9523Da6C109a07118C96a',

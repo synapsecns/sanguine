@@ -243,7 +243,7 @@ describe('SynapseSDK', () => {
         throw Error
       }
 
-      const { feeConfig, originQuery, destQuery, routerAddress} = result
+      const { feeConfig, originQuery, destQuery } = result
 
 
 
@@ -288,7 +288,7 @@ describe('SynapseSDK', () => {
         throw Error
       }
 
-      const { originQuery, destQuery, routerAddress} = result
+      const { originQuery, destQuery } = result
 
 
 
@@ -327,7 +327,7 @@ describe('SynapseSDK', () => {
         throw Error
       }
 
-      const { feeConfig, originQuery, destQuery, routerAddress} = result
+      const { feeConfig, originQuery, destQuery } = result
 
 
 
@@ -368,7 +368,7 @@ describe('SynapseSDK', () => {
         throw Error
       }
 
-      const { feeConfig, originQuery, destQuery, routerAddress} = result
+      const { feeConfig, originQuery, destQuery } = result
 
 
 

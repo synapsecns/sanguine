@@ -252,7 +252,6 @@ class SynapseSDK {
       };
     }
 
-
     public async bridgeQuote(
       originChainId: number,
       destChainId: number,
@@ -264,48 +263,24 @@ class SynapseSDK {
       tokenOut = handleNativeToken(tokenOut);
       tokenIn = handleNativeToken(tokenIn);
 
-      const originRouters: (SynapseRouter | SynapseCCTPRouter)[] = [this.synapseRouters[originChainId], this.synapseCCTPRouters[originChainId]].filter(Boolean);
-      const destRouters: (SynapseRouter | SynapseCCTPRouter)[] = [this.synapseRouters[destChainId], this.synapseCCTPRouters[destChainId]].filter(Boolean);
+      const originSynapseRouter = this.synapseRouters[originChainId];
+      const destSynapseRouter = this.synapseRouters[destChainId];
 
-      let bestQuote: BridgeQuote | undefined;
+      const synapseQuotePromise = this.calculateBestQuote(originSynapseRouter, destSynapseRouter, destChainId, tokenIn, tokenOut, amountIn, deadline);
 
-      for (let originRouter of originRouters) {
-        for (let destRouter of destRouters) {
-          console.log(destRouter.routerContract.address)
-          console.log(originRouter.routerContract.address)
-          // Getting bridge tokens from cache or fetch from destination router
-          const bridgeTokensArray = await this.getBridgeTokens(destChainId, tokenOut, [destRouter]);
-
-          // Iterate through each array of bridge tokens
-          for (let bridgeTokens of bridgeTokensArray[0]) {
-            // Fetching queries from origin router
-            console.log(bridgeTokens.symbol)
-            const originQueries = await this.getOriginQueries(originRouter, tokenIn, [bridgeTokens.symbol], amountIn);
-            console.log(originQueries)
-            if (!originQueries.length) continue;  // Skip if no origin queries for these bridge tokens
-
-            // Building request for destination queries
-            const requests = originQueries.map((query) => ({ symbol: bridgeTokens.symbol, amountIn: query.minAmountOut }));
-            console.log(requests)
-            // Fetching queries from destination router
-            const destQueries = await this.getDestinationQueries(destRouter, requests, tokenOut);
-            console.log(destQueries)
-            if (!destQueries.length) continue;  // Skip if no destination queries for these requests
-
-            // Finding the best query
-            const bestQuery = this.findBestQuery(destQueries, originQueries, [bridgeTokens]);
-            console.log(bestQuery)
-
-            // Finalizing quote
-            const quote = await this.finalizeQuote(bestQuery, destRouter, deadline, destRouter instanceof SynapseCCTPRouter);
-            console.log(quote)
-            // Check if this quote is better than previous best
-            if (!bestQuote || quote.maxAmountOut.gt(bestQuote.maxAmountOut)) {
-              bestQuote = quote;
-            }
-          }
-        }
+      let cctpQuotePromise: Promise<BridgeQuote | undefined>;
+      if(CCTP_ROUTER_ADDRESS[originChainId] && CCTP_ROUTER_ADDRESS[destChainId]) {
+        const originCCTPRouter = this.synapseCCTPRouters[originChainId];
+        const destCCTPRouter = this.synapseCCTPRouters[destChainId];
+        cctpQuotePromise = this.calculateBestQuote(originCCTPRouter, destCCTPRouter, destChainId, tokenIn, tokenOut, amountIn, deadline);
+      } else {
+        cctpQuotePromise = Promise.resolve(undefined);
       }
+
+      const [synapseQuote, cctpQuote] = await Promise.all([synapseQuotePromise, cctpQuotePromise]);
+
+      const bestQuote = [synapseQuote, cctpQuote].reduce((prev, current) =>
+        (!prev || (current && current.maxAmountOut && prev.maxAmountOut && current.maxAmountOut.gt(prev.maxAmountOut)) ? current : prev), undefined);
 
       if (!bestQuote) {
         throw new Error('No route found');
@@ -313,6 +288,51 @@ class SynapseSDK {
 
       return bestQuote;
     }
+
+
+private async calculateBestQuote(
+  originRouter: SynapseRouter | SynapseCCTPRouter | undefined,
+  destRouter: SynapseRouter | SynapseCCTPRouter | undefined,
+  destChainId: number,
+  tokenIn: string,
+  tokenOut: string,
+  amountIn: BigintIsh,
+  deadline?: BigNumber
+): Promise<BridgeQuote | undefined> {
+  if (!originRouter || !destRouter) {
+    return;
+  }
+
+  let bestQuote: BridgeQuote | undefined;
+
+  // Getting bridge tokens from cache or fetch from destination router
+  const bridgeTokensArray = await this.getBridgeTokens(destChainId, tokenOut, [destRouter]);
+
+  // Iterate through each array of bridge tokens
+  for (let bridgeTokens of bridgeTokensArray[0]) {
+    // Fetching queries from origin router
+    const originQueries = await this.getOriginQueries(originRouter, tokenIn, [bridgeTokens.symbol], amountIn);
+    if (!originQueries.length) continue;  // Skip if no origin queries for these bridge tokens
+
+    // Building request for destination queries
+    const requests = originQueries.map((query) => ({ symbol: bridgeTokens.symbol, amountIn: query.minAmountOut }));
+    // Fetching queries from destination router
+    const destQueries = await this.getDestinationQueries(destRouter, requests, tokenOut);
+    if (!destQueries.length) continue;  // Skip if no destination queries for these requests
+
+    // Finding the best query
+    const bestQuery = this.findBestQuery(destQueries, originQueries, [bridgeTokens]);
+
+    // Finalizing quote
+    const quote = await this.finalizeQuote(bestQuery, destRouter, deadline, destRouter instanceof SynapseCCTPRouter);
+    // Check if this quote is better than previous best
+    if (!bestQuote || quote.maxAmountOut.gt(bestQuote.maxAmountOut)) {
+      bestQuote = quote;
+    }
+  }
+
+  return bestQuote;
+}
 
 
 
