@@ -5,10 +5,10 @@ export type ChainsByChainID = {
   [cID: number]: Chain
 }
 export const sortChains = (chains: Chain[]) =>
-  Object.values(chains).sort((a, b) => b.visibilityRank - a.visibilityRank)
+  Object.values(chains).sort((a, b) => b.priorityRank - a.priorityRank)
 
 export const CHAINS_ARR = Object.values(all).sort(
-  (a, b) => b.visibilityRank - a.visibilityRank
+  (a, b) => b.priorityRank - a.priorityRank
 )
 
 const getChainEnumById = () => {

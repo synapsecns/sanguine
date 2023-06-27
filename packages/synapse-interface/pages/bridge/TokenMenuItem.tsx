@@ -1,4 +1,3 @@
-import { useMemo } from 'react'
 import { BigNumber } from '@ethersproject/bignumber'
 import { Zero } from '@ethersproject/constants'
 import { CHAINS_BY_ID } from '@constants/chains'
@@ -103,14 +102,14 @@ const CoinOnChain = ({ token, chainId }: { token: Token; chainId: number }) => {
         {token ? displaySymbol(chainId, token) : ''}
       </div>
       <div className="flex items-center text-sm text-white">
-        <div className="mr-1 opacity-70">{token.name}</div>
+        <div className="mr-1 opacity-70">{token?.name}</div>
         <div className="opacity-60">on</div>
         <Image
-          src={chain.chainImg}
-          alt={chain.name}
+          src={chain?.chainImg}
+          alt={chain?.name}
           className="w-4 h-4 ml-2 mr-2 rounded-full"
         />
-        <div className="hidden md:inline-block opacity-70">{chain.name}</div>
+        <div className="hidden md:inline-block opacity-70">{chain?.name}</div>
       </div>
     </div>
   ) : null

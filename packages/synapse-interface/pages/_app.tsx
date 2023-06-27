@@ -35,6 +35,9 @@ import * as CHAINS from '@constants/chains/master'
 import { SynapseProvider } from '@/utils/providers/SynapseProvider'
 import CustomToaster from '@/components/toast'
 
+import { Provider } from 'react-redux'
+import { store } from '@/store/store'
+
 const rawChains = [
   mainnet,
   arbitrum,
@@ -94,8 +97,10 @@ const App = ({ Component, pageProps }: AppProps) => {
     <WagmiConfig client={wagmiClient}>
       <RainbowKitProvider chains={chains} theme={darkTheme()}>
         <SynapseProvider chains={chains}>
-          <Component {...pageProps} />
-          <CustomToaster />
+          <Provider store={store}>
+            <Component {...pageProps} />
+            <CustomToaster />
+          </Provider>
         </SynapseProvider>
       </RainbowKitProvider>
     </WagmiConfig>
