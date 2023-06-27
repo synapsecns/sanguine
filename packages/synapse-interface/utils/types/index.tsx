@@ -16,7 +16,7 @@ export type Chain = {
   explorerUrl: string
   blockTime: number
   nativeCurrency: { name: string; symbol: string; decimals: number }
-  visibilityRank?: number
+  priorityRank?: number
   color?: string
 }
 export type PoolToken = {
