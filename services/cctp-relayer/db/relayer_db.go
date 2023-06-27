@@ -17,6 +17,8 @@ type CCTPRelayerDBReader interface {
 type CCTPRelayerDBWriter interface {
 	// StoreMessage stores a message in the database.
 	StoreMessage(ctx context.Context, message types.Message) error
+	// GetMessagesByState gets all messages with the given state.
+	GetMessagesByState(ctx context.Context, states ...types.MessageState) ([]types.Message, error)
 }
 
 // CCTPRelayerDB is the interface for the database service.

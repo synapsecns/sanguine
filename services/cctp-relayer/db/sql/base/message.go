@@ -75,3 +75,23 @@ func (s Store) StoreMessage(ctx context.Context, msg types.Message) error {
 	}
 	return nil
 }
+
+// GetMessagesByState gets messages by state.
+func (s Store) GetMessagesByState(ctx context.Context, states ...types.MessageState) ([]types.Message, error) {
+	var messages []types.Message
+
+	stateArgs := make([]int, len(states))
+
+	for i := range states {
+		stateArgs[i] = int(states[i])
+	}
+
+	dbTx := s.DB().WithContext(ctx).
+		Where(fmt.Sprintf("%s IN ?", StateFieldName), stateArgs).
+		Find(&messages)
+	if dbTx.Error != nil {
+		return nil, fmt.Errorf("failed to get messages by status: %w", dbTx.Error)
+	}
+
+	return messages, nil
+}

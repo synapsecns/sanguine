@@ -365,7 +365,16 @@ func (c CCTPRelayer) handleCircleRequestSent(parentCtx context.Context, txhash c
 	return nil
 }
 
+// fetchAttestations runs a loop that fetches txes that require an attestation from the db
+// TODO: depending on load, we may need to consider adding some rate limiting here or a sort on the events
+// returned by the db
+func (c CCTPRelayer) runFetchAttestations(ctx context.Context) {
+	c.db.GetMessagesByState(ctx, relayTypes.Pending)
+}
+
 // Completes a USDC bridging sequence by calling ReceiveCircleToken() on the destination chain.
+//
+// Deprecated: use seperate loops for fetch and submit
 //
 //nolint:errcheck
 func (c CCTPRelayer) processBridgeEvents(ctx context.Context, chainID uint32) (err error) {
@@ -431,6 +440,7 @@ func (c CCTPRelayer) submitReceiveCircleToken(parentCtx context.Context, msg *re
 	var txHash string
 	_, err = c.txSubmitter.SubmitTransaction(ctx, big.NewInt(int64(msg.DestChainID)), func(transactor *bind.TransactOpts) (tx *types.Transaction, err error) {
 		contract := c.boundSynapseCCTPs[msg.DestChainID]
+
 		gasAmount, err := contract.ChainGasAmount(&bind.CallOpts{Context: ctx})
 		if err != nil {
 			return nil, fmt.Errorf("could not get chain gas amount: %w", err)
@@ -438,7 +448,6 @@ func (c CCTPRelayer) submitReceiveCircleToken(parentCtx context.Context, msg *re
 		transactor.Value = gasAmount
 
 		tx, err = contract.ReceiveCircleToken(transactor, msg.Message, msg.Attestation, msg.RequestVersion, msg.FormattedRequest)
-
 		if err != nil {
 			return nil, fmt.Errorf("could not submit transaction: %w", err)
 		}

@@ -65,6 +65,26 @@ func (d *DBSuite) TestUpsertStoreMessage() {
 		err := testDB.StoreMessage(d.GetTestContext(), message)
 		d.Nil(err)
 
-		d.T().Skip("TODO: finish test, this needs better getters to make sure it's working correctly")
+		var fetchedMessages []types.Message
+		fetchedMessages, err = testDB.GetMessagesByState(d.GetTestContext(), types.Pending)
+		d.Nil(err)
+
+		fetchedMessage := fetchedMessages[0]
+		d.Equal(fetchedMessage.State, types.Pending)
+
+		message.State = types.Attested
+		err = testDB.StoreMessage(d.GetTestContext(), message)
+		d.Nil(err)
+
+		// this will be empty if the previous message was actually upserted
+		emptyMessages, err := testDB.GetMessagesByState(d.GetTestContext(), types.Pending)
+		d.Nil(err)
+		d.Empty(emptyMessages)
+
+		fetchedMessages, err = testDB.GetMessagesByState(d.GetTestContext(), types.Attested)
+		d.Nil(err)
+
+		fetchedMessage = fetchedMessages[0]
+		d.Equal(fetchedMessage.State, types.Attested)
 	})
 }
