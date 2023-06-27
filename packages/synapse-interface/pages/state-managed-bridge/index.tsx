@@ -9,7 +9,6 @@ import { ActionCardFooter } from '@components/ActionCardFooter'
 import { BRIDGE_PATH, HOW_TO_BRIDGE_URL } from '@/constants/urls'
 import BridgeWatcher from '@/pages/bridge/BridgeWatcher'
 
-
 import {
   setFromToken,
   setToToken,
@@ -25,7 +24,7 @@ import {
   setSupportedFromTokenBalances,
   setDeadlineMinutes,
   setDestinationAddress,
-  addBridgeTxHash
+  addBridgeTxHash,
 } from '@/slices/bridgeSlice'
 
 import {
@@ -114,8 +113,7 @@ const StateManagedBridge = () => {
   const { address } = useAccount()
   const { synapseSDK } = useSynapseContext()
   const bridgeDisplayRef = useRef(null)
-  const currentSDKRequestID = useRef(0);
-
+  const currentSDKRequestID = useRef(0)
 
   const {
     fromChainId,
@@ -129,7 +127,7 @@ const StateManagedBridge = () => {
     supportedFromTokenBalances,
     supportedToTokens,
     destinationAddress,
-    bridgeTxHashes
+    bridgeTxHashes,
   } = useSelector((state: RootState) => state.bridge)
 
   const {
@@ -235,8 +233,8 @@ const StateManagedBridge = () => {
 
   // Would like to move this into function outside of this component
   const getAndSetBridgeQuote = async () => {
-    currentSDKRequestID.current += 1;
-    const thisRequestId = currentSDKRequestID.current;
+    currentSDKRequestID.current += 1
+    const thisRequestId = currentSDKRequestID.current
     // will have to handle deadlineMinutes here at later time, gets passed as optional last arg in .bridgeQuote()
     try {
       dispatch(setIsLoading(true))
@@ -301,42 +299,40 @@ const StateManagedBridge = () => {
       let newDestQuery = { ...destQuery }
       newDestQuery.minAmountOut = destMinWithSlippage
       if (thisRequestId === currentSDKRequestID.current) {
+        dispatch(
+          setBridgeQuote({
+            outputAmount: toValueBigNum,
+            outputAmountString: commify(
+              formatBNToString(toValueBigNum, toToken.decimals[toChainId], 8)
+            ),
+            routerAddress,
+            allowance,
+            exchangeRate: calculateExchangeRate(
+              fromValue.sub(adjustedFeeAmount),
+              fromToken.decimals[fromChainId],
+              toValueBigNum,
+              toToken.decimals[toChainId]
+            ),
+            feeAmount,
+            delta: maxAmountOut,
+            quotes: {
+              originQuery: newOriginQuery,
+              destQuery: newDestQuery,
+            },
+          })
+        )
 
-      dispatch(
-        setBridgeQuote({
-          outputAmount: toValueBigNum,
-          outputAmountString: commify(
-            formatBNToString(toValueBigNum, toToken.decimals[toChainId], 8)
-          ),
-          routerAddress,
-          allowance,
-          exchangeRate: calculateExchangeRate(
-            fromValue.sub(adjustedFeeAmount),
-            fromToken.decimals[fromChainId],
-            toValueBigNum,
-            toToken.decimals[toChainId]
-          ),
-          feeAmount,
-          delta: maxAmountOut,
-          quotes: {
-            originQuery: newOriginQuery,
-            destQuery: newDestQuery,
-          },
-        })
-      )
-
-      const str = formatBNToString(
-        fromValue,
-        fromToken.decimals[fromChainId],
-        4
-      )
-      const message = `Route found for bridging ${str} ${fromToken.symbol} on ${CHAINS_BY_ID[fromChainId]?.name} to ${toToken.symbol} on ${CHAINS_BY_ID[toChainId]?.name}`
-      console.log(message)
-      toast(message)
+        const str = formatBNToString(
+          fromValue,
+          fromToken.decimals[fromChainId],
+          4
+        )
+        const message = `Route found for bridging ${str} ${fromToken.symbol} on ${CHAINS_BY_ID[fromChainId]?.name} to ${toToken.symbol} on ${CHAINS_BY_ID[toChainId]?.name}`
+        console.log(message)
+        toast(message)
       }
     } catch (err) {
       if (thisRequestId === currentSDKRequestID.current) {
-
         const str = formatBNToString(
           fromValue,
           fromToken.decimals[fromChainId],
@@ -398,7 +394,7 @@ const StateManagedBridge = () => {
 
       try {
         await tx.wait()
-        dispatch(addBridgeTxHash(tx.hash));
+        dispatch(addBridgeTxHash(tx.hash))
 
         dispatch(setBridgeQuote(EMPTY_BRIDGE_QUOTE_ZERO))
         dispatch(setDestinationAddress(null))
@@ -501,7 +497,7 @@ const StateManagedBridge = () => {
                   <animated.div className={springClass}>
                     <ChainSlideOver
                       key="toChainBlock"
-                      isOrigin={true}
+                      isOrigin={false}
                       chains={toChainIds}
                       chainId={toChainId}
                       setChain={setToChainId}
@@ -542,16 +538,15 @@ const StateManagedBridge = () => {
             {/* <ActionCardFooter link={HOW_TO_BRIDGE_URL} /> */}
           </div>
           <div className="mt-8">
-          <BridgeWatcher
-                  fromChainId={fromChainId}
-                  toChainId={toChainId}
-                  address={address}
-                  destinationAddress={destinationAddress}
-                  bridgeTxHash={bridgeTxHashes[bridgeTxHashes.length - 1]}
-                />
-                </div>
+            <BridgeWatcher
+              fromChainId={fromChainId}
+              toChainId={toChainId}
+              address={address}
+              destinationAddress={destinationAddress}
+              bridgeTxHash={bridgeTxHashes[bridgeTxHashes.length - 1]}
+            />
+          </div>
         </div>
-
       </main>
     </LandingPageWrapper>
   )
