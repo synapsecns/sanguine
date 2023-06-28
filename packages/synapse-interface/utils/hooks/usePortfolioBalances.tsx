@@ -11,10 +11,10 @@ interface NetworkTokenBalances {
 }
 
 export const getTokensByChainId = async (
+  tokens: Token[],
   chainId: number
 ): Promise<TokenAndBalance[]> => {
   const { address } = getAccount()
-  const tokens = BRIDGABLE_TOKENS[chainId]
   return await sortByTokenBalance(tokens, chainId, address)
 }
 
@@ -27,7 +27,9 @@ export const usePortfolioBalances = () => {
       const balanceRecord = {}
       availableChains.forEach(async (chainId) => {
         const currentChainId = Number(chainId)
+        const currentChainTokens = BRIDGABLE_TOKENS[chainId]
         const tokenBalances: TokenAndBalance[] = await getTokensByChainId(
+          currentChainTokens,
           currentChainId
         )
         balanceRecord[currentChainId] = tokenBalances
