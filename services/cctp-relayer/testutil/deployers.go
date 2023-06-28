@@ -194,7 +194,7 @@ func (d SynapseCCTPDeployer) Deploy(ctx context.Context) (contracts.DeployedCont
 		_ = d.Registry().Get(ctx, MockTokenMinterType)
 
 		// define the domain as the chain id!
-		return cctp.DeploySynapseCCTP(transactOps, backend, tokenMessenger.Address())
+		return cctp.DeploySynapseCCTP(transactOps, backend, tokenMessenger.Address(), transactOps.From)
 	}, func(address common.Address, backend bind.ContractBackend) (interface{}, error) {
 		// remember what I said about vm.ContractRef!
 		return cctp.NewSynapseCCTPRef(address, backend)

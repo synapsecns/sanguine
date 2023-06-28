@@ -25,7 +25,7 @@ func init() {
 var (
 	// OriginTxHashFieldName gets the burn tx hash field name.
 	OriginTxHashFieldName string
-	// DestTxHashFieldName gets the mint tx hash field name.
+	// NonceFieldName gets the mint tx hash field name.
 	NonceFieldName string
 	// OriginChainIDFieldName gets the origin chain ID field name.
 	OriginChainIDFieldName string

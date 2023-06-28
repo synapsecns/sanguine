@@ -15,13 +15,16 @@ type CircleAPI struct {
 	baseURL string
 }
 
-const circleAttestationURL = "https://iris-api-sandbox.circle.com/v1/attestations"
+const circleAttestationURL = "https://iris-api.circle.com/v1/attestations"
 
 // NewCircleAPI creates a new CircleAPI.
 func NewCircleAPI(url string) CircleAPI {
+	if url == "" {
+		url = circleAttestationURL
+	}
 	return CircleAPI{
 		client:  &http.Client{},
-		baseURL: circleAttestationURL,
+		baseURL: url,
 	}
 }
 

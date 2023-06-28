@@ -238,8 +238,10 @@ func (t *txSubmitterImpl) SubmitTransaction(parentCtx context.Context, chainID *
 	if err != nil {
 		span.AddEvent("could not set gas price", trace.WithAttributes(attribute.String("error", err.Error())))
 	}
+	if !t.config.GetDynamicGasEstimate(int(chainID.Uint64())) {
+		transactor.GasLimit = t.config.GetGasEstimate(int(chainID.Uint64()))
+	}
 
-	transactor.GasLimit = t.config.GetGasEstimate(int(chainID.Uint64()))
 	transactor.Signer = func(address common.Address, transaction *types.Transaction) (_ *types.Transaction, err error) {
 		locker = t.nonceMux.Lock(chainID)
 		// it's important that we unlock the nonce if we fail to sign the transaction.
