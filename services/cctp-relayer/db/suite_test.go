@@ -2,6 +2,7 @@ package db_test
 
 import (
 	dbSQL "database/sql"
+	"fmt"
 	"github.com/Flaque/filet"
 	. "github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/suite"
@@ -13,6 +14,7 @@ import (
 	"github.com/synapsecns/sanguine/services/cctp-relayer/db/sql"
 	"github.com/synapsecns/sanguine/services/cctp-relayer/db/sql/mysql"
 	"github.com/synapsecns/sanguine/services/cctp-relayer/metadata"
+	"gorm.io/gorm/schema"
 	"os"
 	"sync"
 	"testing"
@@ -55,6 +57,10 @@ func (d *DBSuite) SetupTest() {
 func (d *DBSuite) setupMysqlDB() {
 	if os.Getenv(dbcommon.EnableMysqlTestVar) != "true" {
 		return
+	}
+
+	mysql.NamingStrategy = schema.NamingStrategy{
+		TablePrefix: fmt.Sprintf("cctp_%d", d.GetTestID()),
 	}
 
 	// sets up the conn string to the default database
