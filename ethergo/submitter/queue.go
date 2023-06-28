@@ -69,7 +69,7 @@ func (t *txSubmitterImpl) processQueue(parentCtx context.Context) (err error) {
 	// fetch txes into a map by chainid.
 	sortedTXsByChainID := sortTxesByChainID(pendingTxes)
 
-	wg.Add(len(sortedTXsByChainID) + 1)
+	wg.Add(len(sortedTXsByChainID))
 
 	for chainID := range sortedTXsByChainID {
 		go func(chainID uint64) {

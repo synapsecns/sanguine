@@ -461,6 +461,7 @@ jobs:
 
       - name: Go modules cache
         uses: actions/cache@v3
+        if: ${{ !contains(matrix.package, 'services/cctp-relayer') }}
         with:
           # see https://github.com/mvdan/github-actions-golang
           path: |
@@ -517,6 +518,7 @@ jobs:
       # TODO: consider implementing https://github.com/golang/go/issues/20520 to speed up process if possible
       - name: Try Go Generate
         working-directory: ${{matrix.package}}/
+        if: ${{ !contains(matrix.package, 'services/cctp-relayer') }}
         run: |
           go generate ./...
         env:
