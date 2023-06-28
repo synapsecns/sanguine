@@ -34,8 +34,6 @@ func RemoveAgentsTempFile(t *testing.T, fileName string) {
 
 //nolint:cyclop,maintidx
 func (u *AgentsIntegrationSuite) TestAgentsE2E() {
-	// TODO (joe and lex): FIX ME
-	// u.T().Skip()
 	testDone := false
 	defer func() {
 		testDone = true

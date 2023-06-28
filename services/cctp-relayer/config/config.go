@@ -21,7 +21,7 @@ type Config struct {
 	// Chains stores all chain information
 	Chains ChainConfigs `yaml:"chains"`
 	// BaseOmnirpcURL is the base url for omnirpc.
-	// The format is "https://omnirpc.url/". Notice the lack of "confirmations" on the URL
+	// The format is "https://omnirpc.url". Notice the lack of "confirmations" on the URL
 	// in comparison to what `Scribe` uses.
 	BaseOmnirpcURL string `yaml:"base_omnirpc_url"`
 	// Signer contains the unbonded signer config for agents
