@@ -85,6 +85,7 @@ import { DestinationAddressInput } from '@/components/StateManagedBridge/Destina
 import { isAddress } from '@ethersproject/address'
 import { TransactionButton } from '@/components/buttons/TransactionButton'
 import { BridgeTransactionButton } from '@/components/StateManagedBridge/BridgeTransactionButton'
+import ExplorerToastLink from '@/components/ExplorerToastLink'
 
 // NOTE: These are idle utility functions that will be re-written to
 // support sorting by desired mechanism
@@ -114,6 +115,8 @@ const StateManagedBridge = () => {
   const { synapseSDK } = useSynapseContext()
   const bridgeDisplayRef = useRef(null)
   const currentSDKRequestID = useRef(0)
+  let pendingPopup
+  let successPopup
 
   const {
     fromChainId,
@@ -394,6 +397,13 @@ const StateManagedBridge = () => {
           : data
       const tx = await wallet.sendTransaction(payload)
 
+      const originChainName = CHAINS_BY_ID[fromChainId]?.name
+      const destinationChainName = CHAINS_BY_ID[toChainId]?.name
+      pendingPopup = toast(
+        `Bridging from ${fromToken.symbol} on ${originChainName} to ${toToken.symbol} on ${destinationChainName}`,
+        { id: 'bridge-in-progress-popup', duration: Infinity }
+      )
+
       try {
         await tx.wait()
         dispatch(addBridgeTxHash(tx.hash))
@@ -403,12 +413,34 @@ const StateManagedBridge = () => {
         dispatch(setShowDestinationAddress(false))
         dispatch(updateFromValue(Zero))
 
+        const successToastContent = (
+          <div>
+            <div>
+              Successfully initiated bridge from {fromToken.symbol} on{' '}
+              {originChainName} to {toToken.symbol} on {destinationChainName}
+            </div>
+            <ExplorerToastLink
+              transactionHash={tx?.hash ?? AddressZero}
+              chainId={fromChainId}
+            />
+          </div>
+        )
+
+        successPopup = toast.success(successToastContent, {
+          id: 'bridge-success-popup',
+          duration: 10000,
+        })
+
+        toast.dismiss(pendingPopup)
+
         return tx
       } catch (error) {
         console.log(`Transaction failed with error: ${error}`)
+        toast.dismiss(pendingPopup)
       }
     } catch (error) {
       console.log('Error executing bridge', error)
+      toast.dismiss(pendingPopup)
       return txErrorHandler(error)
     }
   }
