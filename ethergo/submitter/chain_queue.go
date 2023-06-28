@@ -209,6 +209,8 @@ func (c *chainQueue) bumpTX(parentCtx context.Context, ogTx db.TX) {
 			return fmt.Errorf("could not sign tx: %w", err)
 		}
 
+		span.AddEvent("add to reprocess queue", trace.WithAttributes(txToAttributes(tx)...))
+
 		c.addToReprocessQueue(db.TX{
 			Transaction: tx,
 			Status:      db.Stored,
