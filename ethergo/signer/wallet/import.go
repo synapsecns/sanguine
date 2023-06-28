@@ -3,6 +3,7 @@ package wallet
 import (
 	"crypto/ecdsa"
 	"fmt"
+	"github.com/synapsecns/sanguine/core"
 	"os"
 	"strings"
 
@@ -41,7 +42,7 @@ func FromPrivateKey(privKey *ecdsa.PrivateKey) (Wallet, error) {
 // TODO: support json files.
 func FromKeyFile(keyFile string) (Wallet, error) {
 	//nolint:gosec
-	rawKey, err := os.ReadFile(keyFile)
+	rawKey, err := os.ReadFile(core.ExpandOrReturnPath(keyFile))
 	if err != nil {
 		return nil, fmt.Errorf("could not get seed phrase: %w", err)
 	}
