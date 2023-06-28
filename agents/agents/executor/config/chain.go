@@ -15,7 +15,7 @@ type ChainConfig struct {
 	// DestinationAddress is the address of the destination contract.
 	DestinationAddress string `yaml:"destination_address"`
 	// LightInboxAddress is the address of the light inbox contract.
-	LightInboxAddress string `yaml:"lightinbox_address"`
+	LightInboxAddress string `yaml:"light_inbox_address"`
 }
 
 // ChainConfigs contains an array of ChainConfigs.
