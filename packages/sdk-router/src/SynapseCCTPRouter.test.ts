@@ -32,7 +32,6 @@ describe('SynapseCCTPRouter', () => {
             .address
         ).toEqual(
           CCTP_ROUTER_ADDRESS[
-            // eslint-disable-next-line
             parseInt(chainId, 10) as keyof typeof CCTP_ROUTER_ADDRESS
           ]
         )
