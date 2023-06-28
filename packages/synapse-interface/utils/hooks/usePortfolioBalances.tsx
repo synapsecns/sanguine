@@ -27,28 +27,26 @@ interface TokenBalance {
   balance: BigNumber
 }
 interface NetworkTokenBalances {
-  [index: number]: Array<TokenBalance>
+  [index: number]: TokenBalance[]
 }
 
 export const usePortfolioBalances = () => {
   const [balances, setBalances] = useState<NetworkTokenBalances>({})
-  const { address } = getAccount()
   const availableChains = Object.keys(BRIDGABLE_TOKENS)
 
   useEffect(() => {
-    const getData = async () => {
+    const fetchBalances = async () => {
       const balanceLibrary = {}
       availableChains.forEach(async (chainId) => {
         const currentChainId = Number(chainId)
-        const tokenBalances: Array<TokenBalance> = await getTokensByChainId(
+        const tokenBalances: TokenBalance[] = await getTokensByChainId(
           currentChainId
         )
         balanceLibrary[currentChainId] = tokenBalances
       })
-
       setBalances(balanceLibrary)
     }
-    getData()
+    fetchBalances()
   }, [])
 
   return balances
