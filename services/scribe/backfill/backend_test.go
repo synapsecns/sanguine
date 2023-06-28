@@ -2,16 +2,19 @@ package backfill_test
 
 import (
 	"context"
+	"fmt"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/params"
 	. "github.com/stretchr/testify/assert"
 	"github.com/synapsecns/sanguine/ethergo/backends"
 	"github.com/synapsecns/sanguine/ethergo/backends/geth"
+	"github.com/synapsecns/sanguine/ethergo/util"
 	"github.com/synapsecns/sanguine/services/omnirpc/testhelper"
 	"github.com/synapsecns/sanguine/services/scribe/backfill"
 	"k8s.io/apimachinery/pkg/util/sets"
 	"math/big"
 	"sync"
+	"testing"
 )
 
 // startOmnirpcServer boots an omnirpc server for an rpc address.
@@ -76,12 +79,12 @@ func (b *BackfillSuite) PopuluateWithLogs(ctx context.Context, backend backends.
 
 func (b *BackfillSuite) TestLogsInRange() {
 	testBackend := geth.NewEmbeddedBackend(b.GetTestContext(), b.T())
-	// start an omnirpc proxy and run 10 test tranactions so we can batch call blocks
-	//  1-10
+	// start an omnirpc proxy and run 10 test transactions so we can batch call blocks 1-10
 	var wg sync.WaitGroup
 	wg.Add(2)
 
 	const desiredBlockHeight = 10
+
 	var commonAddress common.Address
 	go func() {
 		defer wg.Done()
@@ -101,8 +104,71 @@ func (b *BackfillSuite) TestLogsInRange() {
 
 	chainID, err := scribeBackend.ChainID(b.GetTestContext())
 	Nil(b.T(), err)
+	iterator := util.NewChunkIterator(big.NewInt(int64(1)), big.NewInt(int64(desiredBlockHeight)), 1, true)
 
-	res, err := backfill.GetLogsInRange(b.GetTestContext(), scribeBackend, 1, 10, 1, commonAddress, chainID.Uint64())
+	var chunks []*util.Chunk
+	chunk := iterator.NextChunk()
+
+	for chunk != nil {
+		chunks = append(chunks, chunk)
+		chunk = iterator.NextChunk()
+	}
+	fmt.Println("num chunks", len(chunks))
+	res, err := backfill.GetLogsInRange(b.GetTestContext(), scribeBackend, commonAddress, chainID.Uint64(), chunks)
+	Nil(b.T(), err)
+
+	// use to make sure we don't double use values
+	intSet := sets.NewInt64()
+
+	itr := res.Iterator()
+
+	numLogs := 0
+	for !itr.Done() {
+		numLogs++
+		index, _ := itr.Next()
+
+		Falsef(b.T(), intSet.Has(int64(index)), "%d appears at least twice", index)
+		intSet.Insert(int64(index))
+		numLogs++
+	}
+	fmt.Println("Number of Logs", numLogs)
+}
+
+func TestMakeRange(t *testing.T) {
+	testIntRange := backfill.MakeRange(0, 4)
+	Equal(t, []int{0, 1, 2, 3, 4}, testIntRange)
+
+	testUintRange := backfill.MakeRange(uint16(10), uint16(12))
+	Equal(t, testUintRange, []uint16{10, 11, 12})
+}
+
+func (b *BackfillSuite) TestBlockHashesInRange() {
+	testBackend := geth.NewEmbeddedBackend(b.GetTestContext(), b.T())
+
+	// start an omnirpc proxy and run 10 test tranactions so we can batch call blocks
+	//  1-10
+	var wg sync.WaitGroup
+	wg.Add(2)
+
+	const desiredBlockHeight = 10
+
+	go func() {
+		defer wg.Done()
+		b.ReachBlockHeight(b.GetTestContext(), testBackend, desiredBlockHeight)
+	}()
+
+	var host string
+	go func() {
+		defer wg.Done()
+		host = b.startOmnirpcServer(b.GetTestContext(), testBackend)
+	}()
+
+	wg.Wait()
+
+	scribeBackend, err := backfill.DialBackend(b.GetTestContext(), host, b.metrics)
+	Nil(b.T(), err)
+
+	res, err := backfill.BlockHashesInRange(b.GetTestContext(), scribeBackend, 1, 10)
 	Nil(b.T(), err)
 
 	// use to make sure we don't double use values
@@ -111,9 +177,8 @@ func (b *BackfillSuite) TestLogsInRange() {
 	itr := res.Iterator()
 
 	for !itr.Done() {
-		index, _ := itr.Next()
+		index, _, _ := itr.Next()
 
 		Falsef(b.T(), intSet.Has(int64(index)), "%d appears at least twice", index)
-		intSet.Insert(int64(index))
 	}
 }

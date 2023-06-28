@@ -45,6 +45,7 @@ func (s Store) StoreReceipt(ctx context.Context, chainID uint32, receipt types.R
 	})
 
 	if dbTx.Error != nil {
+		fmt.Println("AJJ:", dbTx.Error)
 		return fmt.Errorf("could not store receipt: %w", dbTx.Error)
 	}
 

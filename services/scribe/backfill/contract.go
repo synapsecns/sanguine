@@ -4,6 +4,9 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"math/big"
+	"time"
+
 	"github.com/lmittmann/w3"
 	"github.com/lmittmann/w3/module/eth"
 	"github.com/lmittmann/w3/w3types"
@@ -11,8 +14,6 @@ import (
 	"github.com/synapsecns/sanguine/core/metrics"
 	"go.opentelemetry.io/otel/attribute"
 	"go.opentelemetry.io/otel/trace"
-	"math/big"
-	"time"
 
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/core/types"
@@ -109,21 +110,26 @@ func (c *ContractBackfiller) Backfill(parentCtx context.Context, givenStart uint
 	LogEvent(InfoLevel, "Beginning to backfill contract ", LogData{"cid": c.chainConfig.ChainID, "sh": startHeight, "eh": endHeight})
 
 	// logsChain and doneChan are used to pass logs from rangeFilter onto the next stage of the backfill process.
-	logsChan, doneChan := c.getLogs(groupCtx, startHeight, endHeight)
+	logsChan, errChan := c.getLogs(groupCtx, startHeight, endHeight)
 
 	// Reads from the local logsChan and stores the logs and associated receipts / txs.
 	g.Go(func() error {
 		concurrentCalls := 0
 		gS, storeCtx := errgroup.WithContext(ctx)
+		// could change this to for - range
 		for {
 			select {
 			case <-groupCtx.Done():
 				LogEvent(ErrorLevel, "Context canceled while storing and retrieving logs", LogData{"cid": c.chainConfig.ChainID, "ca": c.contractConfig.Address})
 
 				return fmt.Errorf("context canceled while storing and retrieving logs: %w", groupCtx.Err())
-			case log := <-logsChan:
+			case log, ok := <-logsChan:
+				if !ok {
+					return nil
+				}
 				concurrentCalls++
 				gS.Go(func() error {
+
 					// another goroutine is already storing this receipt
 					locker, ok := c.mux.TryLock(log.TxHash)
 					if !ok {
@@ -147,7 +153,7 @@ func (c *ContractBackfiller) Backfill(parentCtx context.Context, givenStart uint
 				})
 
 				// Stop spawning store threads and wait
-				if concurrentCalls >= c.chainConfig.StoreConcurrency || endHeight-log.BlockNumber < c.chainConfig.StoreConcurrencyThreshold {
+				if concurrentCalls >= c.chainConfig.StoreConcurrency || endHeight-log.BlockNumber < c.chainConfig.ConcurrencyThreshold {
 					if err = gS.Wait(); err != nil {
 						return fmt.Errorf("error waiting for go routines: %w", err)
 					}
@@ -163,18 +169,10 @@ func (c *ContractBackfiller) Backfill(parentCtx context.Context, givenStart uint
 					}
 				}
 
-			case doneFlag := <-doneChan:
-				if doneFlag {
-					LogEvent(InfoLevel, "Received doneChan", LogData{"cid": c.chainConfig.ChainID, "ca": c.contractConfig.Address})
+			case errFromChan := <-errChan:
+				LogEvent(ErrorLevel, "Received errChan", LogData{"cid": c.chainConfig.ChainID, "ca": c.contractConfig.Address, "err": errFromChan})
 
-					err = c.eventDB.StoreLastIndexed(ctx, common.HexToAddress(c.contractConfig.Address), c.chainConfig.ChainID, endHeight)
-					if err != nil {
-						return fmt.Errorf("could not store last indexed block: %w", err)
-					}
-
-					return nil
-				}
-				return fmt.Errorf("doneChan returned false, context cancel while storing and retrieving logs")
+				return fmt.Errorf("errChan returned an err %s", errFromChan)
 			}
 		}
 	})
@@ -185,6 +183,10 @@ func (c *ContractBackfiller) Backfill(parentCtx context.Context, givenStart uint
 		return fmt.Errorf("could not backfill contract: %w \nChain: %d\nLog 's Contract Address: %s\nContract Address: %s", err, c.chainConfig.ChainID, c.contractConfig.Address, c.contractConfig.Address)
 	}
 
+	err = c.eventDB.StoreLastIndexed(ctx, common.HexToAddress(c.contractConfig.Address), c.chainConfig.ChainID, endHeight)
+	if err != nil {
+		return fmt.Errorf("could not store last indexed block: %w", err)
+	}
 	LogEvent(InfoLevel, "Finished backfilling contract", LogData{"cid": c.chainConfig.ChainID, "ca": c.contractConfig.Address})
 
 	return nil
@@ -312,7 +314,7 @@ OUTER:
 	return nil
 }
 
-func (c *ContractBackfiller) getLogs(parentCtx context.Context, startHeight, endHeight uint64) (<-chan types.Log, <-chan bool) {
+func (c *ContractBackfiller) getLogs(parentCtx context.Context, startHeight, endHeight uint64) (<-chan types.Log, <-chan string) {
 	ctx, span := c.handler.Tracer().Start(parentCtx, "getLogs")
 
 	defer func() {
@@ -320,49 +322,48 @@ func (c *ContractBackfiller) getLogs(parentCtx context.Context, startHeight, end
 	}()
 
 	// rangeFilter generates filter type that will retrieve logs from omnirpc in chunks of batch requests specified in the config.
-	rangeFilter := NewRangeFilter(common.HexToAddress(c.contractConfig.Address), c.client[0], big.NewInt(int64(startHeight)), big.NewInt(int64(endHeight)), c.chainConfig.ContractChunkSize, true, c.chainConfig.ContractSubChunkSize, c.chainConfig.ChainID)
-
+	logFetcher := NewRangeFilter(common.HexToAddress(c.contractConfig.Address), c.client[0], big.NewInt(int64(startHeight)), big.NewInt(int64(endHeight)), &c.chainConfig)
 	logsChan := make(chan types.Log)
-	doneChan := make(chan bool)
+	errChan := make(chan string)
+
 	// This go routine is responsible for running the range filter and collect logs from omnirpc and put it into it's logChan (see filter.go).
 	go func() {
-		err := rangeFilter.Start(ctx)
+		err := logFetcher.Start(ctx)
 		if err != nil {
-			doneChan <- false
+			errChan <- err.Error()
 			return
 		}
 	}()
 
 	// Reads from the range filter's logsChan and puts the logs into the local logsChan until completion.
 	go func() {
+
 		for {
 			select {
 			case <-ctx.Done():
 				LogEvent(ErrorLevel, "Context canceled while getting log", LogData{"cid": c.chainConfig.ChainID, "sh": startHeight, "eh": endHeight, "e": ctx.Err()})
-				doneChan <- false
+				errChan <- ctx.Err().Error()
 				return
-			case logInfos := <-rangeFilter.GetLogChan():
-				for _, log := range logInfos.logs {
+			case logChunks := <-logFetcher.logs:
+				for _, log := range logChunks {
 					logsChan <- log
 				}
-			default:
-				if rangeFilter.Done() {
-					finLogs, err := rangeFilter.Drain(ctx)
-					LogEvent(ErrorLevel, "range filter drained", LogData{"cid": c.chainConfig.ChainID, "ca": c.contractConfig.Address, "len": len(finLogs), "err": err})
-
-					for _, log := range finLogs {
-						LogEvent(ErrorLevel, "Log filter done, adding log to chan", LogData{"cid": c.chainConfig.ChainID, "bn": log.BlockNumber, "tx": log.TxHash.Hex(), "la": log.Address.String(), "ca": c.contractConfig.Address})
-
-						logsChan <- log
-					}
-					doneChan <- true
+			case <-logFetcher.doneChan:
+				remLogChunks, err := logFetcher.Drain(ctx)
+				if err != nil {
+					LogEvent(ErrorLevel, "Error draining logs", LogData{"cid": c.chainConfig.ChainID, "sh": startHeight, "eh": endHeight, "e": err.Error()})
 					return
 				}
+				for _, log := range remLogChunks {
+					logsChan <- log
+				}
+				close(logsChan)
+				return
 			}
 		}
 	}()
 
-	return logsChan, doneChan
+	return logsChan, errChan
 }
 
 // prunedReceiptLogs gets all logs from a receipt and prunes null logs.

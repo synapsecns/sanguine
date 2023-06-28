@@ -12,7 +12,7 @@ import (
 	"github.com/synapsecns/sanguine/core/metrics"
 	"github.com/synapsecns/sanguine/ethergo/client"
 	"github.com/synapsecns/sanguine/ethergo/util"
-	"math"
+	"golang.org/x/exp/constraints"
 	"math/big"
 )
 
@@ -53,32 +53,28 @@ func DialBackend(ctx context.Context, url string, handler metrics.Handler) (Scri
 
 // GetLogsInRange gets all logs in a range with a single batch request
 // in successful cases an immutable list is returned, otherwise an error is returned.
-func GetLogsInRange(ctx context.Context, backend ScribeBackend, startHeight uint64, endHeight uint64, subChunkSize uint64, contractAddress common.Address, expectedChainID uint64) (*immutable.List[*[]types.Log], error) {
-	blockRange := (endHeight - startHeight) + 1
-	subChunkCount := int(math.Ceil(float64(blockRange) / float64(subChunkSize)))
-	iterator := util.NewChunkIterator(big.NewInt(int64(startHeight)), big.NewInt(int64(endHeight)), int(subChunkSize)-1, true)
-	calls := make([]w3types.Caller, subChunkCount+2)
-	results := make([][]types.Log, subChunkCount)
+func GetLogsInRange(ctx context.Context, backend ScribeBackend, contractAddress common.Address, expectedChainID uint64, chunks []*util.Chunk) (*immutable.List[*[]types.Log], error) {
+	calls := make([]w3types.Caller, len(chunks)+2)
+	results := make([][]types.Log, len(chunks))
 	chainID := new(uint64)
 	calls[0] = eth.ChainID().Returns(chainID)
 
 	maxHeight := new(big.Int)
 	calls[1] = eth.BlockNumber().Returns(maxHeight)
 
-	subChunkIdx := uint64(0)
-	chunk := iterator.NextChunk()
-
-	for chunk != nil {
+	for i := 0; i < len(chunks); i++ {
 		filter := ethereum.FilterQuery{
-			FromBlock: chunk.StartBlock,
-			ToBlock:   chunk.EndBlock,
+			FromBlock: chunks[i].StartBlock,
+			ToBlock:   chunks[i].EndBlock,
 			Addresses: []common.Address{contractAddress},
 		}
-		calls[subChunkIdx+2] = eth.Logs(filter).Returns(&results[subChunkIdx])
-		subChunkIdx++
-		chunk = iterator.NextChunk()
+		calls[i+2] = eth.Logs(filter).Returns(&results[i])
 	}
 
+	// for logging purposes
+	startHeight := chunks[0].StartBlock.Uint64()
+	endHeight := chunks[len(chunks)-1].EndBlock.Uint64()
+	fmt.Println("OIUOIUOI_", startHeight, endHeight)
 	if err := backend.BatchWithContext(ctx, calls...); err != nil {
 		return nil, fmt.Errorf("could not fetch logs in range %d to %d: %w", startHeight, endHeight, err)
 	}
@@ -91,12 +87,48 @@ func GetLogsInRange(ctx context.Context, backend ScribeBackend, startHeight uint
 
 	// use an immutable list for additional safety to the caller, don't allocate until batch returns successfully
 	res := immutable.NewListBuilder[*[]types.Log]()
-	for _, result := range results {
+	for i, result := range results {
 		logChunk := result
 		if len(result) > 0 {
 			res.Append(&logChunk)
+			fmt.Println("jj", i, logChunk)
 		}
 	}
 
 	return res.List(), nil
+}
+
+// BlockHashesInRange gets all block hashes in a range with a single batch request
+// in successful cases an immutable map is returned of [height->hash], otherwise an error is returned.
+func BlockHashesInRange(ctx context.Context, backend ScribeBackend, startHeight uint64, endHeight uint64) (*immutable.Map[uint64, string], error) {
+	// performance impact will be negligible here because of external constraints on blocksize
+	blocks := MakeRange(startHeight, endHeight)
+	bulkSize := len(blocks)
+	calls := make([]w3types.Caller, bulkSize)
+	results := make([]types.Header, bulkSize)
+
+	for i, blockNumber := range blocks {
+		calls[i] = eth.HeaderByNumber(new(big.Int).SetUint64(blockNumber)).Returns(&results[i])
+	}
+
+	if err := backend.BatchWithContext(ctx, calls...); err != nil {
+		return nil, fmt.Errorf("could not fetch blocks in range %d to %d: %w", startHeight, endHeight, err)
+	}
+
+	// use an immutable map for additional safety to the caller, don't allocate until batch returns successfully
+	res := immutable.NewMapBuilder[uint64, string](nil)
+	for _, result := range results {
+		res.Set(result.Number.Uint64(), result.Hash().String())
+	}
+
+	return res.Map(), nil
+}
+
+// MakeRange returns a range of integers from min to max inclusive.
+func MakeRange[T constraints.Integer](min, max T) []T {
+	a := make([]T, max-min+1)
+	for i := range a {
+		a[i] = min + T(i)
+	}
+	return a
 }

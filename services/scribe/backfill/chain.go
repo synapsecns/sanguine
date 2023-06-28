@@ -3,9 +3,10 @@ package backfill
 import (
 	"context"
 	"fmt"
-	"github.com/synapsecns/sanguine/core/metrics"
 	"math"
 	"time"
+
+	"github.com/synapsecns/sanguine/core/metrics"
 
 	"github.com/jpillora/backoff"
 	"github.com/synapsecns/sanguine/services/scribe/config"
@@ -51,12 +52,12 @@ func NewChainBackfiller(eventDB db.EventDB, client []ScribeBackend, chainConfig 
 
 	startHeights := make(map[string]uint64)
 
-	if chainConfig.ContractSubChunkSize == 0 {
-		chainConfig.ContractSubChunkSize = 600
+	if chainConfig.GetLogsRange == 0 {
+		chainConfig.GetLogsRange = 600
 	}
 
-	if chainConfig.ContractChunkSize == 0 {
-		chainConfig.ContractChunkSize = 30000
+	if chainConfig.GetLogsBatchAmount == 0 {
+		chainConfig.GetLogsBatchAmount = 5
 	}
 
 	if chainConfig.StoreConcurrency == 0 {
@@ -67,8 +68,8 @@ func NewChainBackfiller(eventDB db.EventDB, client []ScribeBackend, chainConfig 
 		refreshRate = 1
 	}
 
-	if chainConfig.StoreConcurrencyThreshold == 0 {
-		chainConfig.StoreConcurrencyThreshold = 500
+	if chainConfig.ConcurrencyThreshold == 0 {
+		chainConfig.ConcurrencyThreshold = 5000
 	}
 	minBlockHeight := uint64(math.MaxUint64)
 

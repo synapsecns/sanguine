@@ -15,18 +15,14 @@ type ChainConfig struct {
 	RequiredConfirmations uint32 `yaml:"required_confirmations"`
 	// Contracts stores all the contract information for the chain.
 	Contracts ContractConfigs `yaml:"contracts"`
-	// BlockTimeChunkCount is the number of chunks (goroutines) to process at a time while backfilling blocktimes.
-	BlockTimeChunkCount uint64 `yaml:"block_time_chunk_count"`
-	// BlockTimeChunkSize is the number of blocks to process per chunk (goroutine) while backfilling blocktimes.
-	BlockTimeChunkSize uint64 `yaml:"block_time_chunk_size"`
-	// ContractSubChunkSize is the number of blocks to request for in each get logs request in the batch request.
-	ContractSubChunkSize int `yaml:"contract_sub_chunk_size"`
-	// ContractChunkSize is the number of blocks to process per chunk while backfilling contracts.
-	ContractChunkSize int `yaml:"contract_chunk_size"`
+	// GetLogsRange is the number of blocks to request in a single getLogs request.
+	GetLogsRange uint64 `yaml:"get_logs_range"`
+	// GetLogsBatchAmount is the number of getLogs requests to include in a single batch request.
+	GetLogsBatchAmount uint64 `yaml:"get_logs_batch_amount"`
 	// StoreConcurrency is the number of goroutines to use when storing data.
 	StoreConcurrency int `yaml:"store_concurrency"`
-	// storeConcurrencyThreshold is the max number of block from head in which concurrent store is allowed.
-	StoreConcurrencyThreshold uint64 `yaml:"store_concurrency_threshold"`
+	// ConcurrencyThreshold is the max number of block from head in which concurrent operations (store, getlogs) is allowed.
+	ConcurrencyThreshold uint64 `yaml:"concurrency_threshold"`
 }
 
 // ChainConfigs contains an array of ChainConfigs.

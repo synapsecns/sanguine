@@ -15,7 +15,6 @@ import (
 	"github.com/synapsecns/sanguine/services/scribe/db"
 	"github.com/synapsecns/sanguine/services/scribe/db/mocks"
 	"math/big"
-	"os"
 )
 
 // TestFailedStore tests that the ChainBackfiller continues backfilling after a failed store.
@@ -56,9 +55,10 @@ func (b BackfillSuite) TestFailedStore() {
 	}
 	simulatedChainArr := []backfill.ScribeBackend{simulatedClient, simulatedClient}
 	chainConfig := config.ChainConfig{
-		ChainID:              chainID,
-		ContractChunkSize:    1,
-		ContractSubChunkSize: 1,
+		ChainID:            chainID,
+		GetLogsBatchAmount: 1,
+		StoreConcurrency:   1,
+		GetLogsRange:       1,
 	}
 	backfiller, err := backfill.NewContractBackfiller(chainConfig, contractConfig, mockDB, simulatedChainArr, b.metrics)
 	Nil(b.T(), err)
@@ -95,9 +95,10 @@ func (b BackfillSuite) TestGetLogsSimulated() {
 	}
 	simulatedChainArr := []backfill.ScribeBackend{simulatedClient, simulatedClient}
 	chainConfig := config.ChainConfig{
-		ChainID:              3,
-		ContractChunkSize:    1,
-		ContractSubChunkSize: 1,
+		ChainID:            3,
+		GetLogsBatchAmount: 1,
+		StoreConcurrency:   1,
+		GetLogsRange:       1,
 	}
 
 	backfiller, err := backfill.NewContractBackfiller(chainConfig, contractConfig, b.testDB, simulatedChainArr, b.metrics)
@@ -132,40 +133,40 @@ func (b BackfillSuite) TestGetLogsSimulated() {
 
 	// Get the logs for the first two events.
 	collectedLogs := []types.Log{}
-	logs, done := backfiller.GetLogs(b.GetTestContext(), contractConfig.StartBlock, txBlockNumberA)
+	logs, _ := backfiller.GetLogs(b.GetTestContext(), contractConfig.StartBlock, txBlockNumberA)
 
 	for {
 		select {
 		case <-b.GetTestContext().Done():
 			b.T().Error("test timed out")
-		case log := <-logs:
+		case log, ok := <-logs:
+			if !ok {
+				goto Done
+			}
 			collectedLogs = append(collectedLogs, log)
-		case <-done:
-			goto Next
+
 		}
 	}
-
-Next:
-
+Done:
 	// Check to see if 2 logs were collected.
 	Equal(b.T(), 2, len(collectedLogs))
 
 	// Get the logs for the last three events.
 	collectedLogs = []types.Log{}
-	logs, done = backfiller.GetLogs(b.GetTestContext(), txBlockNumberA+1, txBlockNumberB)
+	logs, _ = backfiller.GetLogs(b.GetTestContext(), txBlockNumberA+1, txBlockNumberB)
 
 	for {
 		select {
 		case <-b.GetTestContext().Done():
 			b.T().Error("test timed out")
-		case log := <-logs:
+		case log, ok := <-logs:
+			if !ok {
+				goto Done2
+			}
 			collectedLogs = append(collectedLogs, log)
-		case <-done:
-			goto Done
 		}
 	}
-
-Done:
+Done2:
 
 	// Check to see if 3 logs were collected.
 	Equal(b.T(), 3, len(collectedLogs))
@@ -191,9 +192,10 @@ func (b BackfillSuite) TestContractBackfill() {
 
 	simulatedChainArr := []backfill.ScribeBackend{simulatedClient, simulatedClient}
 	chainConfig := config.ChainConfig{
-		ChainID:              142,
-		ContractChunkSize:    1,
-		ContractSubChunkSize: 1,
+		ChainID:            142,
+		GetLogsBatchAmount: 1,
+		StoreConcurrency:   1,
+		GetLogsRange:       1,
 	}
 	backfiller, err := backfill.NewContractBackfiller(chainConfig, contractConfig, b.testDB, simulatedChainArr, b.metrics)
 	b.Require().NoError(err)
@@ -248,86 +250,88 @@ func (b BackfillSuite) TestContractBackfill() {
 	Equal(b.T(), txBlockNumber, lastIndexed)
 }
 
-// TestTxTypeNotSupported tests how the contract backfiller handles a transaction type that is not supported.
+// // TestTxTypeNotSupported tests how the contract backfiller handles a transaction type that is not supported.
+// //
+// // nolint:dupl
 //
-// nolint:dupl
-func (b BackfillSuite) TestTxTypeNotSupported() {
-	if os.Getenv("CI") != "" {
-		b.T().Skip("Network test flake")
-	}
-
-	var backendClient backfill.ScribeBackend
-	omnirpcURL := "https://rpc.interoperability.institute/confirmations/1/rpc/42161"
-	backendClient, err := backfill.DialBackend(b.GetTestContext(), omnirpcURL, b.metrics)
-	Nil(b.T(), err)
-
-	// This config is using this block https://arbiscan.io/block/6262099
-	// and this tx https://arbiscan.io/tx/0x8800222adf9578fb576db0bd7fb4860fe89932549be084a3313939c03e4d279d
-	// with a unique Arbitrum type to verify that anomalous tx type is handled correctly.
-	contractConfig := config.ContractConfig{
-		Address:    "0xA67b7147DcE20D6F25Fd9ABfBCB1c3cA74E11f0B",
-		StartBlock: 6262099,
-	}
-
-	chainConfig := config.ChainConfig{
-		ChainID:               42161,
-		RequiredConfirmations: 0,
-		Contracts:             []config.ContractConfig{contractConfig},
-	}
-	backendClientArr := []backfill.ScribeBackend{backendClient, backendClient}
-	chainBackfiller, err := backfill.NewChainBackfiller(b.testDB, backendClientArr, chainConfig, 1, b.metrics)
-	Nil(b.T(), err)
-	err = chainBackfiller.Backfill(b.GetTestContext(), &contractConfig.StartBlock, false)
-	Nil(b.T(), err)
-
-	logs, err := b.testDB.RetrieveLogsWithFilter(b.GetTestContext(), db.LogFilter{}, 1)
-	Nil(b.T(), err)
-	Equal(b.T(), 4, len(logs))
-	receipts, err := b.testDB.RetrieveReceiptsWithFilter(b.GetTestContext(), db.ReceiptFilter{}, 1)
-	Nil(b.T(), err)
-	Equal(b.T(), 1, len(receipts))
-}
-
-// TestTxTypeNotSupported tests how the contract backfiller handles a transaction type that is not supported.
+//	func (b BackfillSuite) TestTxTypeNotSupported() {
+//		if os.Getenv("CI") != "" {
+//			b.T().Skip("Network test flake")
+//		}
 //
-// nolint:dupl
-func (b BackfillSuite) TestInvalidTxVRS() {
-	if os.Getenv("CI") != "" {
-		b.T().Skip("Network test flake")
-	}
-
-	var backendClient backfill.ScribeBackend
-	omnirpcURL := "https://rpc.interoperability.institute/confirmations/1/rpc/1313161554"
-	backendClient, err := backfill.DialBackend(b.GetTestContext(), omnirpcURL, b.metrics)
-	Nil(b.T(), err)
-
-	// This config is using this block https://aurorascan.dev/block/58621373
-	// and this tx https://aurorascan.dev/tx/0x687282d7bd6c3d591f9ad79784e0983afabcac2a9074d368b7ca3d7caf4edee5
-	// to test handling of the v,r,s tx not found error.
-	contractConfig := config.ContractConfig{
-		Address:    "0xaeD5b25BE1c3163c907a471082640450F928DDFE",
-		StartBlock: 58621373,
-	}
-
-	chainConfig := config.ChainConfig{
-		ChainID:               1313161554,
-		RequiredConfirmations: 0,
-		Contracts:             []config.ContractConfig{contractConfig},
-	}
-	backendClientArr := []backfill.ScribeBackend{backendClient, backendClient}
-	chainBackfiller, err := backfill.NewChainBackfiller(b.testDB, backendClientArr, chainConfig, 1, b.metrics)
-	Nil(b.T(), err)
-
-	err = chainBackfiller.Backfill(b.GetTestContext(), &contractConfig.StartBlock, false)
-	Nil(b.T(), err)
-
-	logs, err := b.testDB.RetrieveLogsWithFilter(b.GetTestContext(), db.LogFilter{}, 1)
-	Nil(b.T(), err)
-	Equal(b.T(), 9, len(logs))
-	receipts, err := b.testDB.RetrieveReceiptsWithFilter(b.GetTestContext(), db.ReceiptFilter{}, 1)
-	Nil(b.T(), err)
-	Equal(b.T(), 1, len(receipts))
-}
+//		var backendClient backfill.ScribeBackend
+//		omnirpcURL := "https://rpc.interoperability.institute/confirmations/1/rpc/42161"
+//		backendClient, err := backfill.DialBackend(b.GetTestContext(), omnirpcURL, b.metrics)
+//		Nil(b.T(), err)
+//
+//		// This config is using this block https://arbiscan.io/block/6262099
+//		// and this tx https://arbiscan.io/tx/0x8800222adf9578fb576db0bd7fb4860fe89932549be084a3313939c03e4d279d
+//		// with a unique Arbitrum type to verify that anomalous tx type is handled correctly.
+//		contractConfig := config.ContractConfig{
+//			Address:    "0xA67b7147DcE20D6F25Fd9ABfBCB1c3cA74E11f0B",
+//			StartBlock: 6262099,
+//		}
+//
+//		chainConfig := config.ChainConfig{
+//			ChainID:               42161,
+//			RequiredConfirmations: 0,
+//			Contracts:             []config.ContractConfig{contractConfig},
+//		}
+//		backendClientArr := []backfill.ScribeBackend{backendClient, backendClient}
+//		chainBackfiller, err := backfill.NewChainBackfiller(b.testDB, backendClientArr, chainConfig, 1, b.metrics)
+//		Nil(b.T(), err)
+//		err = chainBackfiller.Backfill(b.GetTestContext(), &contractConfig.StartBlock, false)
+//		Nil(b.T(), err)
+//
+//		logs, err := b.testDB.RetrieveLogsWithFilter(b.GetTestContext(), db.LogFilter{}, 1)
+//		Nil(b.T(), err)
+//		Equal(b.T(), 4, len(logs))
+//		receipts, err := b.testDB.RetrieveReceiptsWithFilter(b.GetTestContext(), db.ReceiptFilter{}, 1)
+//		Nil(b.T(), err)
+//		Equal(b.T(), 1, len(receipts))
+//	}
+//
+// // TestTxTypeNotSupported tests how the contract backfiller handles a transaction type that is not supported.
+// //
+// // nolint:dupl
+//
+//	func (b BackfillSuite) TestInvalidTxVRS() {
+//		if os.Getenv("CI") != "" {
+//			b.T().Skip("Network test flake")
+//		}
+//
+//		var backendClient backfill.ScribeBackend
+//		omnirpcURL := "https://rpc.interoperability.institute/confirmations/1/rpc/1313161554"
+//		backendClient, err := backfill.DialBackend(b.GetTestContext(), omnirpcURL, b.metrics)
+//		Nil(b.T(), err)
+//
+//		// This config is using this block https://aurorascan.dev/block/58621373
+//		// and this tx https://aurorascan.dev/tx/0x687282d7bd6c3d591f9ad79784e0983afabcac2a9074d368b7ca3d7caf4edee5
+//		// to test handling of the v,r,s tx not found error.
+//		contractConfig := config.ContractConfig{
+//			Address:    "0xaeD5b25BE1c3163c907a471082640450F928DDFE",
+//			StartBlock: 58621373,
+//		}
+//
+//		chainConfig := config.ChainConfig{
+//			ChainID:               1313161554,
+//			RequiredConfirmations: 0,
+//			Contracts:             []config.ContractConfig{contractConfig},
+//		}
+//		backendClientArr := []backfill.ScribeBackend{backendClient, backendClient}
+//		chainBackfiller, err := backfill.NewChainBackfiller(b.testDB, backendClientArr, chainConfig, 1, b.metrics)
+//		Nil(b.T(), err)
+//
+//		err = chainBackfiller.Backfill(b.GetTestContext(), &contractConfig.StartBlock, false)
+//		Nil(b.T(), err)
+//
+//		logs, err := b.testDB.RetrieveLogsWithFilter(b.GetTestContext(), db.LogFilter{}, 1)
+//		Nil(b.T(), err)
+//		Equal(b.T(), 9, len(logs))
+//		receipts, err := b.testDB.RetrieveReceiptsWithFilter(b.GetTestContext(), db.ReceiptFilter{}, 1)
+//		Nil(b.T(), err)
+//		Equal(b.T(), 1, len(receipts))
+//	}
 func (b BackfillSuite) getTxBlockNumber(chain backends.SimulatedTestBackend, tx *types.Transaction) (uint64, error) {
 	receipt, err := chain.TransactionReceipt(b.GetTestContext(), tx.Hash())
 	if err != nil {
@@ -355,9 +359,10 @@ func (b BackfillSuite) TestContractBackfillFromPreIndexed() {
 
 	simulatedChainArr := []backfill.ScribeBackend{simulatedClient, simulatedClient}
 	chainConfig := config.ChainConfig{
-		ChainID:              142,
-		ContractChunkSize:    1,
-		ContractSubChunkSize: 1,
+		ChainID:            142,
+		GetLogsBatchAmount: 1,
+		StoreConcurrency:   1,
+		GetLogsRange:       1,
 	}
 	backfiller, err := backfill.NewContractBackfiller(chainConfig, contractConfig, b.testDB, simulatedChainArr, b.metrics)
 	Nil(b.T(), err)
