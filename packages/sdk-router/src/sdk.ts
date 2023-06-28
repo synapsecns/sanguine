@@ -594,11 +594,7 @@ class SynapseSDK {
       bridgeDestQuery = { ...(destQuery as SynapseRouterQuery) }
     }
 
-    const isCCTP =
-      originRouterAddress.toLowerCase() ===
-      this.synapseCCTPRouters[
-        originChainId
-      ].routerContract.address.toLowerCase()
+    const isCCTP = this.synapseCCTPRouters[originChainId] && originRouterAddress.toLowerCase() === this.synapseCCTPRouters[originChainId].routerContract.address.toLowerCase()
 
     if (isCCTP) {
       // Call CCTP router bridge method

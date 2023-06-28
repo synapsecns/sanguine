@@ -40,7 +40,7 @@ type ChainConfig struct {
 	IsL2 bool `yaml:"is_l2"`
 	// GasEstimate is the gas estimate to use for transactions
 	// if dynamic gas estimation is enabled, this is only used as a default if the estimate fails
-	GasEstimate uint64
+	GasEstimate uint64 `yaml:"gas_estimate"`
 	// DynamicGasEstimate is whether or not to use dynamic gas estimation
 	DynamicGasEstimate bool `yaml:"dynamic_gas_estimate"`
 	// SupportsEIP1559 is whether or not this chain supports EIP1559

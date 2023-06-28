@@ -66,6 +66,7 @@ export const ChainSlideOver = ({
 
   const onClose = useCallback(() => {
     setCurrentIdx(-1)
+    setSearchStr('')
     dispatch(setShowSlideOver(false))
   }, [setShowSlideOver])
 
