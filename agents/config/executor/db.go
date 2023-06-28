@@ -10,7 +10,7 @@ type DBConfig struct {
 	// Type is the type of database. This can be either "sqlite" or "mysql".
 	Type string `yaml:"type"`
 	// Source is the source of the database. This can be either a path to a sqlite database or a mysql database url.
-	Source string `yaml:"source,omitempty"`
+	Source string `yaml:"source"`
 }
 
 // IsValid asserts the database connection is valid.
