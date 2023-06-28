@@ -185,8 +185,6 @@ const StateManagedBridge = () => {
         fromChainId
       )
 
-    console.log('bridgeableTokens: ', bridgeableTokens)
-
     let bridgeableToChainId = toChainId
     if (!bridgeableChainIds.includes(toChainId)) {
       const sortedChainIds = bridgeableChainIds.sort((a, b) => {
@@ -685,8 +683,6 @@ const findSupportedChainsAndTokens = (
     positedToToken
   )
 
-  console.log('filteredBridgeableTokens: ', filteredBridgeableTokens)
-  console.log('bridgeableToken: ', bridgeableToken)
   // Return the bridgeable chains, bridgeable tokens, and the specific bridgeable token.
   return {
     bridgeableChainIds: bridgeableChains.map((chainId: string) =>
