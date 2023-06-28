@@ -200,6 +200,7 @@ func (t *txSubmitterImpl) triggerProcessQueue(ctx context.Context) {
 	}
 }
 
+// nolint: cyclop
 func (t *txSubmitterImpl) SubmitTransaction(parentCtx context.Context, chainID *big.Int, call ContractCallType) (nonce uint64, err error) {
 	ctx, span := t.metrics.Tracer().Start(parentCtx, "submitter.SubmitTransaction", trace.WithAttributes(
 		attribute.Stringer("chainID", chainID),
