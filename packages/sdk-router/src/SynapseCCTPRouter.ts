@@ -5,14 +5,15 @@ import { BytesLike } from '@ethersproject/bytes'
 import invariant from 'tiny-invariant'
 import { PopulatedTransaction } from 'ethers'
 
-import abi from './abi/SynapseRouter.json'
-import { BigintIsh, ROUTER_ADDRESS } from './constants'
-import { SynapseRouter as SynapseRouterContract } from './typechain/SynapseRouter'
-export class SynapseRouter {
+import abi from './abi/SynapseCCTPRouter.json'
+import { BigintIsh, CCTP_ROUTER_ADDRESS } from './constants'
+import { SynapseCCTPRouter as SynapseCCTPRouterContract } from './typechain/SynapseCCTPRouter'
+
+export class SynapseCCTPRouter {
   public static INTERFACE: Interface = new Interface(abi)
   public readonly chainId: number
   public readonly provider: Provider
-  public readonly routerContract: SynapseRouterContract
+  public readonly routerContract: SynapseCCTPRouterContract
 
   constructor(chainId: number, provider: Provider) {
     invariant(chainId !== undefined, 'CHAIN_ID_UNDEFINED')
@@ -20,18 +21,10 @@ export class SynapseRouter {
     this.chainId = chainId
     this.provider = provider
     this.routerContract = new Contract(
-      ROUTER_ADDRESS[chainId as keyof object],
-      SynapseRouter.INTERFACE,
+      CCTP_ROUTER_ADDRESS[chainId as keyof object],
+      SynapseCCTPRouter.INTERFACE,
       provider
-    ) as SynapseRouterContract
-  }
-
-  public async getAmountOut(
-    tokenIn: string,
-    tokenOut: string,
-    amountIn: BigintIsh
-  ): Promise<any> {
-    return this.routerContract.getAmountOut(tokenIn, tokenOut, amountIn)
+    ) as SynapseCCTPRouterContract
   }
 
   public async getOriginAmountOut(
@@ -45,7 +38,6 @@ export class SynapseRouter {
       amountIn
     )
   }
-
 
   public async getDestinationAmountOut(
     requests: { symbol: string; amountIn: BigintIsh }[],
@@ -64,14 +56,14 @@ export class SynapseRouter {
     token: string,
     amount: BigintIsh,
     originQuery: {
-      swapAdapter: string
+      routerAdapter: string
       tokenOut: string
       minAmountOut: BigintIsh
       deadline: BigintIsh
       rawParams: BytesLike
     },
     destQuery: {
-      swapAdapter: string
+      routerAdapter: string
       tokenOut: string
       minAmountOut: BigintIsh
       deadline: BigintIsh

@@ -57,5 +57,6 @@ export const approveToken = async (
     toast.dismiss(pendingPopup)
     console.log(`Transaction failed with error: ${error}`)
     txErrorHandler(error)
+    throw error;
   }
 }

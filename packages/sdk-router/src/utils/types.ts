@@ -8,13 +8,31 @@ export type RawQuery = [string, string, BigNumber, BigNumber, string] & {
   rawParams: string
 }
 
-export type Query = {
+export interface SynapseRouterQuery {
   swapAdapter: string
   tokenOut: string
   minAmountOut: BigNumber
   deadline: BigNumber
   rawParams: string
 }
+
+export interface SynapseCCTPRouterQuery {
+  routerAdapter: string
+  tokenOut: string
+  minAmountOut: BigNumber
+  deadline: BigNumber
+  rawParams: string
+}
+
+export type Query = SynapseRouterQuery | SynapseCCTPRouterQuery
+
+// export type Query = {
+//   swapAdapter: string
+//   tokenOut: string
+//   minAmountOut: BigNumber
+//   deadline: BigNumber
+//   rawParams: string
+// }
 
 export type RawFeeConfig = [number, BigNumber, BigNumber] & {
   bridgeFee: number
