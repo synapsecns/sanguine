@@ -75,6 +75,7 @@ export const TokenSlideOver = ({
 
   function onClose() {
     setCurrentIdx(-1)
+    setSearchStr('')
     dispatch(setShowSlideOver(false))
   }
 
