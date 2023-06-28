@@ -50,11 +50,11 @@ function sortTokensArray(arr: TokenBalance[], chainId: number): TokenBalance[] {
  *  based on specified chainId
  */
 export function useUserHeldTokens(
+  address: string,
   chainId: number,
   bridgeTxHash: string
 ): TokenBalance[] {
   const [heldTokens, setHeldTokens] = useState<TokenBalance[]>([])
-  const { address } = useAccount()
 
   useEffect(() => {
     if (address === undefined || chainId === undefined) return
@@ -115,10 +115,12 @@ export function useUserHeldTokens(
 
 /** Returns sorted array of tokens, ordered by Held / Unheld tokens */
 export function getSortedBridgableTokens(
+  address: string,
   chainId: number,
   bridgeTxHash?: string
 ): TokenBalance[] {
   const userHeldTokens: TokenBalance[] = useUserHeldTokens(
+    address,
     chainId,
     bridgeTxHash
   )

@@ -83,9 +83,13 @@ const BridgePage = ({
   let successPopup: any
   let errorPopup: string
 
-  const bridgableTokens = getSortedBridgableTokens(fromChainId, bridgeTxHash)
+  const bridgableTokens = getSortedBridgableTokens(
+    address,
+    fromChainId,
+    bridgeTxHash
+  )
 
-  console.log('bridgableTokens: ', bridgableTokens)
+  // console.log('bridgableTokens: ', bridgableTokens)
   /*
   useEffect Trigger: onMount
   - Gets current network connected and sets it as the state.
