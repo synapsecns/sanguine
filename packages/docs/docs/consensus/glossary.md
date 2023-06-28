@@ -108,10 +108,10 @@ complete the slashing by providing the proof of the current agent status against
 is proven on the remote chain.
 
 ### Canonical Source of Truth
-In the world of [Cross Chain](#cross-chain) messaging, there is the problem of only being able
-to perform atomic transactions on one blockchain at a time. For any piece of information stored, one of the blockchains
+In the world of [Cross Chain](#cross-chain) messaging, atomic transactions can only be performed on
+one blockchain at a time. For any piece of information stored, one of the blockchains
 will serve as the canonical source of truth. If two or more chains disagree, the chain that is the canonical source of truth gets
-to decide the real state, and the other chains will need to be corrected to match the correct state.
+to decide the actual state, and the other chains will need to be corrected to match the correct state.
 
 ### Client Smart Contract Application Developer
 The developer who is creating an application that requires [Cross Chain Messaging](#cross-chain-messaging-system) is
@@ -446,7 +446,7 @@ a quorum of administrators, this would make it a permissioned system. The long t
 to become entirely permissionless once the ecosystem has been bootstrapped.
 
 ### Permissionless
-The [Synapse Messaging System](#synapse-messaging-system) was designed to allow agents to participate without the need of gaining permission from any special
+The [Synapse Messaging System](#synapse-messaging-system) was designed to allow agents to participate without the requirement of gaining permission from any special
 authority. The only requirement is to post a stake in the case of [guards](#guard) and [notaries](#notary). For [executors](#executor),
 no stake is required and anyone can run a node to act as an executor.
 
@@ -474,9 +474,9 @@ determines that fraud did in fact happen, it will need to communicate this to th
 A common problem in layered systems is that each layer must trust the layer before, and if the layer before is compromised, then
 all trust is lost at all the layers after. At the very first layer, trust must be bootstrapped somehow in order to establish
 the foundation of trust, or "Root of Trust". In the context of the [Synapse Messaging System](#synapse-messaging-system), a message receiver trusts in the
-fact that a Bonded Agent must stake a large amount of value and will be certain to lose it if it signs something that is not true.
+fact that a Bonded Agent must stake a large amount of value and will be certain to lose it by signing something that is not true.
 What's more, if an honest agent is alert to catching the fraud, it will receive the stake that is lost, and given a large
-enough [Optimistic Period](#optimistic-period), the probability for a [Guard](#guard) to catch and repoprt cheating is high.
+enough [Optimistic Period](#optimistic-period), the probability for a [Guard](#guard) to catch and report cheating is high.
 Thus, a message receiver trusts that:
 1.  [Notaries](#notary) don't want to lose their stake since it is quite large.
 2.  [Guards](#guard) want to catch a fraudulent Notary because they will receive a large reward for doing so.
@@ -484,7 +484,7 @@ Thus, a message receiver trusts that:
 and the [Client Receiving Smart Contract](#client-receiving-smart-contract) and will be set high enough to give [Guards](#guard)
 enough time to prevent the message from being executed.
 
-In conclusion, the trust is based on the Bonded Agents, which means the "Root of Trust" must be establishing the set of
+In conclusion, the trust is based on the Bonded Agents, which means the "Root of Trust" begins with establishing the set of
 Bonded Agents. In the very beginning, Synapse Messaging bootstraps this root of trust through a [permissioned](#permissioned)
 mechanism whereby when a new [remote chain](#remote-chain) is added, the [Notary](#notary) for that chain posts the bond to
 the [Bonding Manager Smart Contract](#bonding-manager-smart-contract) deployed on the [Synapse chain](#synapse-chain).

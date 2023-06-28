@@ -31,7 +31,11 @@ const config = {
     defaultLocale: 'en',
     locales: ['en'],
   },
-  themes: ['@docusaurus/theme-live-codeblock'],
+  markdown: {
+    mermaid: true,
+  },
+  themes: ['@docusaurus/theme-live-codeblock','@docusaurus/theme-mermaid'],
+  plugins: [require.resolve("docusaurus-plugin-image-zoom")],
   presets: [
     [
       'classic',
@@ -55,6 +59,21 @@ const config = {
   themeConfig:
     /** @type {import('@docusaurus/preset-classic').ThemeConfig} */
     ({
+      zoom: {
+        selector: '.markdown :not(em) > img',
+        config: {
+          // options you can specify via https://github.com/francoischalifour/medium-zoom#usage
+          background: {
+            light: 'rgb(255, 255, 255)',
+            dark: 'rgb(50, 50, 50)'
+          }
+        }
+      },
+      mermaid: {
+        options: {
+          fontSize: 32,
+        },
+      },
       // Replace with your project's social card
       image: 'img/docusaurus-social-card.jpg',
       navbar: {
