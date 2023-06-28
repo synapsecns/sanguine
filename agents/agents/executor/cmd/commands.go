@@ -72,7 +72,7 @@ func createExecutorParameters(ctx context.Context, c *cli.Context, metrics metri
 		executorConfig.DBPrefix = "executor"
 	}
 
-	if executorConfig.DBPrefix != "" && executorConfig.DBConfig.Type == "sqlite" {
+	if executorConfig.DBConfig.Type == "sqlite" {
 		executorConfig.DBPrefix = ""
 	}
 
