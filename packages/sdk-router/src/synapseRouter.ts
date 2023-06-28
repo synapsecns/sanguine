@@ -46,7 +46,6 @@ export class SynapseRouter {
     )
   }
 
-
   public async getDestinationAmountOut(
     requests: { symbol: string; amountIn: BigintIsh }[],
     tokenOut: string
