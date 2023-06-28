@@ -16,17 +16,14 @@ import (
 	"github.com/jpillora/backoff"
 )
 
-// LogInfo is the log info.
-type LogInfo struct {
-	logs []types.Log
-}
-
 // RangeFilter pre-fetches filter logs into a channel in deterministic order.
 type RangeFilter struct {
 	// iterator is the chunk iterator used for the range.
-	iterator   util.ChunkIterator
+	iterator util.ChunkIterator
+	// for logging
 	startBlock *big.Int
-	endBlock   *big.Int
+	// for logging
+	endBlock *big.Int
 	// logs is a channel with the filtered ahead logs. This channel is not closed
 	// and the user can rely on the garbage collection behavior of RangeFilter to remove it.
 	logs chan []types.Log
@@ -68,9 +65,8 @@ func NewRangeFilter(address ethCommon.Address, backend ScribeBackend, startBlock
 	}
 }
 
-// closeOnDone closes the done channel when the process is finished
+// closeOnDone closes the done channel when the process is finished.
 func (f *RangeFilter) closeOnDone() {
-	fmt.Println("CLOSING FETCHER")
 	f.doneChan <- true
 }
 
@@ -92,7 +88,7 @@ func (f *RangeFilter) GetChunkArr() (chunkArr []*util.Chunk) {
 }
 
 // Start starts the log fetching process. If the context is canceled, logs will stop being filtered.
-// 1. Within a infinite for loop, chunks of getLogs blocks are constructed and used to get logs. This flow is paused
+// 1. Within an infinite for loop, chunks of getLogs blocks are constructed and used to get logs. This flow is paused
 // when the logs channel's buffer of 15 is reached.
 // 2. Each time the logs are received, a wait group is used to ensure that there is no race condition
 // where channels could be closed before a log could be saved.

@@ -74,7 +74,6 @@ func GetLogsInRange(ctx context.Context, backend ScribeBackend, contractAddress 
 	// for logging purposes
 	startHeight := chunks[0].StartBlock.Uint64()
 	endHeight := chunks[len(chunks)-1].EndBlock.Uint64()
-	fmt.Println("OIUOIUOI_", startHeight, endHeight)
 	if err := backend.BatchWithContext(ctx, calls...); err != nil {
 		return nil, fmt.Errorf("could not fetch logs in range %d to %d: %w", startHeight, endHeight, err)
 	}
@@ -87,11 +86,10 @@ func GetLogsInRange(ctx context.Context, backend ScribeBackend, contractAddress 
 
 	// use an immutable list for additional safety to the caller, don't allocate until batch returns successfully
 	res := immutable.NewListBuilder[*[]types.Log]()
-	for i, result := range results {
+	for _, result := range results {
 		logChunk := result
 		if len(result) > 0 {
 			res.Append(&logChunk)
-			fmt.Println("jj", i, logChunk)
 		}
 	}
 

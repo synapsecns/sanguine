@@ -129,7 +129,6 @@ func (c *ContractBackfiller) Backfill(parentCtx context.Context, givenStart uint
 				}
 				concurrentCalls++
 				gS.Go(func() error {
-
 					// another goroutine is already storing this receipt
 					locker, ok := c.mux.TryLock(log.TxHash)
 					if !ok {
@@ -337,7 +336,6 @@ func (c *ContractBackfiller) getLogs(parentCtx context.Context, startHeight, end
 
 	// Reads from the range filter's logsChan and puts the logs into the local logsChan until completion.
 	go func() {
-
 		for {
 			select {
 			case <-ctx.Done():

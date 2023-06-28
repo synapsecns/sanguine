@@ -35,7 +35,7 @@ func (b BackfillSuite) TestFilterLogsMaxAttempts() {
 	mockFilterer.
 		On("FilterLogs", mock.Anything, mock.Anything).
 		Return(nil, errors.New("I'm a test error"))
-	chunks := []*util.Chunk{&util.Chunk{
+	chunks := []*util.Chunk{{
 		StartBlock: big.NewInt(1),
 		EndBlock:   big.NewInt(10),
 	}}

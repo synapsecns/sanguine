@@ -2,7 +2,6 @@ package backfill_test
 
 import (
 	"context"
-	"fmt"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/params"
 	. "github.com/stretchr/testify/assert"
@@ -113,7 +112,6 @@ func (b *BackfillSuite) TestLogsInRange() {
 		chunks = append(chunks, chunk)
 		chunk = iterator.NextChunk()
 	}
-	fmt.Println("num chunks", len(chunks))
 	res, err := backfill.GetLogsInRange(b.GetTestContext(), scribeBackend, commonAddress, chainID.Uint64(), chunks)
 	Nil(b.T(), err)
 
@@ -131,7 +129,6 @@ func (b *BackfillSuite) TestLogsInRange() {
 		intSet.Insert(int64(index))
 		numLogs++
 	}
-	fmt.Println("Number of Logs", numLogs)
 }
 
 func TestMakeRange(t *testing.T) {

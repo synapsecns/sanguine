@@ -20,7 +20,7 @@ import (
 )
 
 // TestLivefillParity runs livefill on certain prod chains. Then it checks parity with an explorer API.
-//func (l LiveSuite) TestLivefillParity() {
+// func (l LiveSuite) TestLivefillParity() {
 //	originAddress := "0xF3773BE7cb59235Ced272cF324aaeb0A4115280f"
 //	destinationAddress := "0xde5BB62aBCF588EC200674757EDB2f6889aCd065"
 //	summitAddress := "0x128fF47f1a614c61beC9935898C33B91486aA04e"
@@ -219,7 +219,7 @@ import (
 //	// Use explorer API's to do a parity check on the number of logs.
 //}
 //
-//func getLogAmount(ctx context.Context, db db.EventDB, filter db.LogFilter, startBlock, endBlock uint64) (int, error) {
+// func getLogAmount(ctx context.Context, db db.EventDB, filter db.LogFilter, startBlock, endBlock uint64) (int, error) {
 //	page := 1
 //
 //	var retrievedLogs []*types.Log
@@ -419,8 +419,8 @@ func (l LiveSuite) TestRequiredConfirmationSetting() {
 	simulatedChain.WaitForConfirmation(l.GetTestContext(), tx)
 
 	//// Process the events.
-	//err = scribe.ProcessRange(l.GetTestContext(), chainID, chainConfig.RequiredConfirmations)
-	//Nil(l.T(), err)
+	// err = scribe.ProcessRange(l.GetTestContext(), chainID, chainConfig.RequiredConfirmations)
+	// Nil(l.T(), err)
 
 	//	// Check logs.
 	//	logs, err = l.testDB.RetrieveLogsWithFilter(l.GetTestContext(), logFilter, 1)

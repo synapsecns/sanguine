@@ -144,7 +144,6 @@ func (b BackfillSuite) TestGetLogsSimulated() {
 				goto Done
 			}
 			collectedLogs = append(collectedLogs, log)
-
 		}
 	}
 Done:
