@@ -60,6 +60,7 @@ func TestGlobalConfig(t *testing.T) {
 bump_interval_seconds: 60
 gas_bump_percentage: 10
 is_l2: true
+gas_estimate: 1000
 dynamic_gas_estimate: true
 supports_eip_1559: true`
 	var cfg config.Config
@@ -69,6 +70,7 @@ supports_eip_1559: true`
 	assert.Equal(t, 60, cfg.BumpIntervalSeconds)
 	assert.Equal(t, 10, cfg.GasBumpPercentage)
 	assert.Equal(t, true, cfg.IsL2(0))
+	assert.Equal(t, uint64(1000), cfg.GasEstimate)
 	assert.Equal(t, true, cfg.DynamicGasEstimate)
 	assert.Equal(t, true, cfg.SupportsEIP1559(0))
 }
