@@ -6,7 +6,7 @@ import multicallABI from '../constants/abis/multicall.json'
 import erc20ABI from '../constants/abis/erc20.json'
 import { Token } from '@/utils/types'
 
-interface TokenAndBalance {
+export interface TokenAndBalance {
   token: Token
   balance: BigNumber
 }
@@ -40,7 +40,7 @@ export const sortByTokenBalance = async (
   tokens: Token[],
   chainId: number,
   address: any
-) => {
+): Promise<TokenAndBalance[]> => {
   const tokensWithBalances: any[] = []
   const multicallInputs = []
   let multicallData

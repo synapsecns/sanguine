@@ -3,23 +3,19 @@ import { useAccount } from 'wagmi'
 import { Address, multicall, erc20ABI, getAccount } from '@wagmi/core'
 import { BRIDGABLE_TOKENS } from '@/constants/tokens'
 import { Token } from '../types'
-import { sortByTokenBalance } from '../sortTokens'
+import { sortByTokenBalance, TokenAndBalance } from '../sortTokens'
 import { BigNumber } from 'ethers'
+
+interface NetworkTokenBalances {
+  [index: number]: TokenAndBalance[]
+}
 
 export const getTokensByChainId = async (
   chainId: number
-): Promise<TokenBalance[]> => {
+): Promise<TokenAndBalance[]> => {
   const { address } = getAccount()
   const tokens = BRIDGABLE_TOKENS[chainId]
   return await sortByTokenBalance(tokens, chainId, address)
-}
-
-interface TokenBalance {
-  token: Token
-  balance: BigNumber
-}
-interface NetworkTokenBalances {
-  [index: number]: TokenBalance[]
 }
 
 export const usePortfolioBalances = () => {
@@ -27,21 +23,19 @@ export const usePortfolioBalances = () => {
   const availableChains = Object.keys(BRIDGABLE_TOKENS)
 
   useEffect(() => {
-    const fetchBalances = async () => {
-      const balanceLibrary = {}
+    const fetchBalancesAcrossNetworks = async () => {
+      const balanceRecord = {}
       availableChains.forEach(async (chainId) => {
         const currentChainId = Number(chainId)
-        const tokenBalances: TokenBalance[] = await getTokensByChainId(
+        const tokenBalances: TokenAndBalance[] = await getTokensByChainId(
           currentChainId
         )
-        balanceLibrary[currentChainId] = tokenBalances
+        balanceRecord[currentChainId] = tokenBalances
       })
-      setBalances(balanceLibrary)
+      setBalances(balanceRecord)
     }
-    fetchBalances()
+    fetchBalancesAcrossNetworks()
   }, [])
 
   return balances
 }
-
-const useTokenApprovals = () => {}
