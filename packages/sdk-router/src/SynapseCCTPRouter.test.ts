@@ -31,7 +31,9 @@ describe('SynapseCCTPRouter', () => {
           new SynapseCCTPRouter(Number(chainId), provider).routerContract
             .address
         ).toEqual(
-          CCTP_ROUTER_ADDRESS[parseInt(chainId) as keyof typeof CCTP_ROUTER_ADDRESS]
+          CCTP_ROUTER_ADDRESS[
+            parseInt(chainId) as keyof typeof CCTP_ROUTER_ADDRESS
+          ]
         )
       }
     })
