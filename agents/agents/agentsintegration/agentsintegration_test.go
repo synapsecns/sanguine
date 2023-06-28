@@ -5,9 +5,9 @@ import (
 	"github.com/brianvoe/gofakeit/v6"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/synapsecns/sanguine/agents/agents/executor"
-	executorCfg "github.com/synapsecns/sanguine/agents/agents/executor/config"
 	"github.com/synapsecns/sanguine/agents/agents/guard"
 	"github.com/synapsecns/sanguine/agents/agents/notary"
+	executor2 "github.com/synapsecns/sanguine/agents/config/executor"
 	"github.com/synapsecns/sanguine/agents/types"
 	config2 "github.com/synapsecns/sanguine/ethergo/signer/config"
 	"math/big"
@@ -111,11 +111,11 @@ func (u *AgentsIntegrationSuite) TestAgentsE2E() {
 	destination := uint32(u.TestBackendDestination.GetChainID())
 	summit := uint32(u.TestBackendSummit.GetChainID())
 
-	excCfg := executorCfg.Config{
+	excCfg := executor2.Config{
 		SummitChainID: summit,
 		SummitAddress: u.SummitContract.Address().String(),
 		InboxAddress:  u.InboxOnSummit.Address().String(),
-		Chains: []executorCfg.ChainConfig{
+		Chains: []executor2.ChainConfig{
 			{
 				ChainID:       chainID,
 				OriginAddress: u.OriginContract.Address().String(),
