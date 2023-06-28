@@ -20,16 +20,17 @@ it is referred to as the "Accused Notary".
 The [Guard](#guard) who submits a [fraud report](#fraud-report) is defined to be the Accusing Guard.
 
 ### Agent Root
-The Agent Root is the root of the Merkle Tree formed from the [Agent Set](#agent-set). The list of all registered bonded agents
-that have posted bond on the [Synapse Chain](#synapse-chain) are put into a Merkle Tree, and the root of this tree is the Agent Root.
-This makes it easy for the Remote Chains to detect if there has been a change in the set of bonded agents. Because this Agent Root is
+The Agent Root is the root of the [Merkle Tree](#merkle-tree) formed from the [Agent Set](#agent-set). The list of all registered bonded agents
+that have posted bond on the [Synapse Chain](#synapse-chain) are put into a [Merkle Tree](#merkle-tree), and the root of this tree is the Agent Root.
+This makes it easy for the [Remote Chains](#remote-chain) to detect if there has been a change in the set of bonded agents. Because this Agent Root is
 one of the fields in the [Attestation](#attestation), the Notaries are constantly attesting to the current Agent Root to its [Remote Chain](#remote-chain).
-When the remote chain has a new Agent Root, there is an [Optimistic Period](#optimistic-period) that needs to pass before that new Agent Root is considered valid.
+When the [remote chain](#remote-chain) has a new Agent Root, there is an [Optimistic Period](#optimistic-period) that needs to pass before that new Agent Root is considered valid.
 Once it is considered valid, then off-chain agents can submit a proof using that Agent Root that proves they are part of the new valid agent set.
 The Agent Root is a critical security property because a malicious Agent Root could allow a chain to be convinced of a malicious agent, which could open the door
 to a malicious message being executed.
 
 **Agent Root formed from Merkle Tree of Agent Infos:**
+
 ![AgentRoot](../../static/img/AgentRoot.png 'Diagram of AgentRoot formed from Merkle Tree of Agent Infos')
 
 ### Agent Status
@@ -38,7 +39,7 @@ Every bonded agent will have a given status consisting of the following fields
     1.  Unknown: This agent was not found in the agent set.
     2.  Active: This is an active agent.
     3.  Unstaking: Agent has unstaked and is waiting for the [Unbonding Period](#unbonding-period).
-    4.  Resting: Agent still has posted bond but currently down and not actively participating in the protocol for whatever reason.
+    4.  Resting: Agent still has posted bond but currently is down and not actively participating in the protocol for whatever reason.
     5.  Fraudulent: Agent has been accused of fraud by a [Guard](#guard).
     6.  Slashed: Agent was found guilty of fraud and slashed.
 2.  **Domain**: Will be 0 if it is a [Guard](#guard) or set to a specific chain id if it is a [Notary](#notary).
@@ -54,15 +55,15 @@ See the Diagram under the section explaining [Agent Root](#agent-root) which als
 
 ### Attestation
 This is what [Notaries](#notary) sign and post to the chain that it is assigned to, and it contains crucial information that is used
-to prove messages and also to prove the [Agent Set](#agent-set). The [Notary](#notary) signs an attestation and posts it to the [Destination](#destination) chain.
+to prove messages and also to prove the [Agent Set](#agent-set). The [Notary](#notary) signs an attestation and posts it to the [Destination chain](#destination-chain).
 However, in order to be considered a valid attestation, it must first be registered on the [Synapse Chain](#synapse-chain)
 as a result of a [Notary](#notary) submitting a [State Snapshot](#state-snapshot).
-If an Attestation is not first submitted to the Synapse chain, it will not be considered valid by the Destination chain.
+If an Attestation is not first submitted to the [Synapse Chain](#synapse-chain), it will not be considered valid by the [Destination chain](#destination-chain).
 If the Attestation turns out to be [fraudulent](#fraud), the [Notary](#notary) will be [slashed](#slash) and removed as a valid [Notary](#notary). Thus, it is very important
 that the [Notary](#notary) only sign Attestations that contain information that has been thoroughly confirmed. Below is the data contained in the attestation:
-1. [Snap Root](#snap-root) is the Merkle root of the Origin [States](#state) that were grouped together in a [state snapshot](#state-snapshot) and made into a Merkle tree.
-This snap root is used to prove that a particular Origin state did in fact occur on the [Origin](#origin).
-2. [Agent Root](#agent-root) is the Merkle root of the bonded agent data that can be used to prove if a particular agent is part of the [Agent Set](#agent-set).
+1. [Snap Root](#snap-root) is the Merkle root of the Origin [States](#state) that were grouped together in a [state snapshot](#state-snapshot) and made into a [Merkle Tree](#merkle-tree).
+This snap root is used to prove that a particular Origin state did in fact occur on the [Origin](#origin-chain).
+2. [Agent Root](#agent-root) is the [Merkle Root](#merkle-root) of the bonded agent data that can be used to prove if a particular agent is part of the [Agent Set](#agent-set).
 3. [Gas Data Snapshot](#gas-data-snapshot) contains the [Gas Data](#gas-data) of each of the chains being attested to.
 4. Nonce is the total number of accepted Notary snapshots and serves to uniquely identify this attestation.
 5. Block Number of the block on the [Synapse Chain](#synapse-chain) that the attestation was registered by a Notary on the [Synapse Chain](#synapse-chain), which does not have to be the same [Notary](#notary) posting to the [Destination](#destination-chain).
@@ -88,7 +89,7 @@ game theory assumption that the agents are rational.
 ### Bonded Agent
 The [Root of Trust](#root-of-trust) of the [Synapse Messaging System](#synapse-messaging-system) comes from the [Off Chain Agents](#off-chain-agent)
 posting a [bond](#bond). Within the [Synapse Messaging System](#synapse-messaging-system), there are two kinds of Bonded Agents: [Notaries](#notary)
-and [Guards](#gaurd). The only kind of [Unbonded Agent](#unbonded-agent) is the [Executor](#executor).
+and [Guards](#guard). The only kind of [Unbonded Agent](#unbonded-agent) is the [Executor](#executor).
 
 ### Bonding Manager Smart Contract
 The Bonding Manager Smart Contract is deployed on the [Synapse Chain](#synapse-chain) along with the [Summit](#summit-smart-contract) and
@@ -97,15 +98,6 @@ The BondingManager keeps track of all existing agents on the Synapse Chain.
 It utilizes a dynamic Merkle Tree to store the agent information. This enables passing only the
 latest merkle root of this tree (referenced as the Agent Merkle Root) to the remote chains,
 so that the agents could "register" themselves by proving their current status against this root.
-BondingManager is responsible for the following:
-1.  Keeping track of all existing agents, as well as their statuses. In the MVP version there is no token staking,
-which will be added in the future. Nonetheless, the agent statuses are still stored in the Merkle Tree, and
-the agent slashing is still possible, though with no reward/penalty for the reporter/reported.
-2.  Marking agents as "ready to be slashed" once their fraud is proven on the local or remote chain. Anyone could
-complete the slashing by providing the proof of the current agent status against the current Agent Merkle Root.
-3.  Sending Manager Message to remote `LightManager` to withdraw collected tips from the remote chain.
-4.  Accepting Manager Message from remote `LightManager` to slash agents on the Synapse Chain, when their fraud
-is proven on the remote chain.
 
 ### Canonical Source of Truth
 In the world of [Cross Chain](#cross-chain) messaging, atomic transactions can only be performed on
@@ -168,11 +160,6 @@ See the source code of [Destination.sol](https://github.com/synapsecns/sanguine/
 The Destination contract is used for receiving messages from other chains. It relies on
 Notary-signed statements to get the truthful states of the remote chains. These states are then
 used to verify the validity of the messages sent from the remote chains.
-The Destination is responsible for the following:
-1.  Accepting the Attestations from the local Inbox contract.
-2.  Using these Attestations to execute the messages (see parent `ExecutionHub`).
-3.  Passing the Agent Merkle Roots from the Attestations to the local LightManager contract, if deployed on a non-Synapse chain.
-4.  Keeping track of the remote domains GasData submitted by Notaries, that could be later consumed by the local [GasOracle](#gas-oracle-smart-contract) contract.
 
 ### Digital Signatures
 Digital Signatures are a fundamental tool used in cryptography that allows for proving that a specific actor signed
@@ -203,7 +190,7 @@ In the Synapse Messaging, Fraud is any time a bonded [Off Chain Agent](#off-chai
 When this happens, the bonded agent will be [slashed](#slash). There are two properties that need to hold for detecting such fraud.
 1. The agent will have digitally signed the claim so we know that the agent is guilty. This assumes the agent is the only one in possession of the bonded address's private key, so this is the responsibility of the agent.
 2. The claim needs to be proven false by the appropriate Smart Contract on the [Resolving Chain](#resolving-chain).
-For example, if there is a fraudulent claim that an [Origin](#origin) chain had a particular state some time in the past, the [Origin](#origin) chain will
+For example, if there is a fraudulent claim that an [Origin](#origin-chain) chain had a particular state some time in the past, the [Origin](#origin-chain) chain will
 be the [resolving chain](#resolving-chain) since it is able to decide whether that is true or not.
 
 ### Fraud Report
@@ -227,26 +214,6 @@ This is [fraud](#fraud) committed by a [Notary](#notary) by submitting an [Attes
 that is not registered on
 the [Synapse Chain](#synapse-chain).
 
-### Fraudulent Attestation Detection
-[Fraudulent Attestation](#fraudulent-attestation) is easily detected by a [Guard](#guard) who observes the [Attestation](#attestation)
-posted on the [remote chain](#remote-chain) and then doing a look-up on the [Synapse Chain](#synapse-chain) for that [Attestation](#attestation).
-If the [Synapse Chain](#synapse-chain) has no record of that attestation, then the [Guard](#guard) will submit a
-[fraud report](#fraud-report) to the [Synapse Chain](#synapse-chain)
-
-### Fraudulent Attestation Report
-A [fraud report](#fraud-report) submitted to the [Synapse Chain](#synapse-chain) by a [Guard](#guard) who
-[detects a fraudulent attestation](#fraudulent-attestation-detection) commited by a [Notary](#notary).
-1. Guard calls submitAttestationReport on remote chain so remote chain puts both in dispute.
-    1. What happens if Guard just griefs remote chain with this?
-    2. Iterate through guard reports by index with getGuardReport (all agents should do this, why not?)
-    3. Check if its a valid attestation on syn chain
-    4. If not, then call verifyAttestationReport on Inbox.
-    5. If the guard is malicious, it gets slashed, otherwise sender just wastes gas.
-    6. Sender should receive guard's bond?
-2. Guard calls verifyAttestation on Inbox.sol
-2. verifyAttestation ends up slashing Notary (or Guard)
-3.
-
 ### Gas Data
 The Gas Data holds important information about the current gas prices of a particular chain. This Gas Data is part of the [State](#state) of
 each chain, and it will be updated whenever there is a change in gas prices above a certain threshold. The goal is to avoid updating the Gas Data
@@ -264,6 +231,7 @@ multiple chains. Whenever a Notary posts an [Attestation](#attestation) to its [
 chain can update its local Gas Oracle with the latest information about Gas Prices on the other chains.
 
 **Gas Data Snapshot formed from the Gas Data from multiple chains:**
+
 ![GasSnapshot](../../static/img/GasSnapshot.png 'Diagram of Gas Data Snapshot formed from the Gas Data from multiple chains')
 
 ### Gas Oracle
@@ -273,23 +241,10 @@ required on both the [Synapse Chain](#synapse-chain) and the [Destination Chain]
 the [Origin Chain](#origin-chain) to estimate how much should be collected.
 
 ### Gas Oracle Smart Contract
-The Gas Oracle Smart Contract is deployed on the chains and provides the service of the [Gas Oracle](#gas-oracle)
+The Gas Oracle Smart Contract is deployed on the chains and provides the service of the [Gas Oracle](#gas-oracle).
+
 See the source code of [GasOracle.sol](https://github.com/synapsecns/sanguine/blob/master/packages/contracts-core/contracts/GasOracle.sol).
 The GasOracle contract is responsible for tracking the gas data for both local and remote chains.
-#### Local gas data tracking
-1.  GasOracle is using the available tools such as "tx.gasprice" to track the time-averaged values
-for different "gas statistics" (to be implemented in the future).
-2.  These values are cached, so that the reported values are only changed when a big enough change is detected.
-3.  In the MVP version the gas data is set manually by the owner of the contract.
-4.  The reported values are included in [Origin's State](#state), whenever a new message is sent.
-5.  This leads to cached "chain gas data" being included in the [Guard and Notary snapshots](#state-snapshot).
-#### Remote gas data tracking
-1.  To track gas data for the remote chains, GasOracle relies on the Notaries to pass the gas data alongside
-their attestations.
-2.  As the gas data is cached, this leads to a storage write only when the gas data for the remote chain changes significantly.
-3.  GasOracle is in charge of enforcing the optimistic periods for the gas data it gets from [Destination](#destination).
-4.  The optimistic period is smaller when the "gas statistics" are increasing, and bigger when they are decreasing. The reason for that is that the decrease of the gas price leads to lower execution/delivery tips, and we want the
-Executors to be protected against that.
 
 ### Guard
 The Guard is an off-chain agent that participates in delivering messages and more importantly in catching fraud committed by
@@ -302,18 +257,13 @@ the primary fraud a Guard can do primarily just results in denial-of-service (at
 The Inbox Smart Contract is deployed on the [Synapse Chain](#synapse-chain) along with the [Summit](#summit-smart-contract) and
 the [Bonding Manager](#bonding-manager-smart-contract).
 See the source code of [Inbox.sol](https://github.com/synapsecns/sanguine/blob/master/packages/contracts-core/contracts/inbox/Inbox.sol).
-The Inbox
-1.  Accepts Guard and Notary Snapshots and passes them to [Summit](#summit-smart-contract).
-2.  Accepts Notary-signed Receipts and passes them to [Summit](#summit-smart-contract).
-3.  Accepts Receipt Reports to initiate a dispute between Guard and Notary.
-4.  Verifies Attestations and Attestation Reports, and slashes the signer if they are invalid.
 
 ### Integrity
 Integrity is a property of the messaging system that means a chain cannot be fooled into thinking a message
 was sent when it never was really sent.
 
 ### Just In Time Bond
-Whereas normally the bond is escrowed on the [Synapse Chain](#synapse-chain), there are use cases for [Just In Time Gaurds](#just-in-time-guard) to
+Whereas normally the bond is escrowed on the [Synapse Chain](#synapse-chain), there are use cases for [Just In Time Guards](#just-in-time-guard) to
 alert a [Victim Chain](#victim-chain) of fraud even though it is not in the active set of agents. The Just In Time Bond is collected in the same
 transaction as the fraud report, and the bond will be released once the [Victim Chain](#victim-chain) receives the [fraud resolution](#fraud-resolution).
 Note that this is not yet implemented in the current version.
@@ -328,21 +278,13 @@ right on the spot. Note that this is not yet implemented in the current version.
 The Light Inbox Smart Contract is deployed on all the [Remote Chains](#remote-chain) along with the [Origin](#origin-smart-contract), [Destination](#destination-smart-contract) and
 the [Light Manager](#light-manager-smart-contract).
 See the source code of [LightInbox.sol](https://github.com/synapsecns/sanguine/blob/master/packages/contracts-core/contracts/inbox/LightInbox.sol).
-The LightInbox:
-1.  Accepts Notary Attestations and passes them to the [Destination](#destination) contract.
-2.  Accepts Attestation Reports and initiates a dispute between the [Notary](#notary) and the [Guard](#guard).
 
 ### Light Manager Smart Contract
 The Light Manager Smart Contract is deployed on all the [Remote Chains](#remote-chain) along with the [Origin](#origin-smart-contract), [Destination](#destination-smart-contract) and
 the [Light Inbox](#light-manager-smart-contract).
 See the source code of [LightManager.sol](https://github.com/synapsecns/sanguine/blob/master/packages/contracts-core/contracts/manager/LightManager.sol).
 The LightManager keeps track of all agents on chains other than Synapse Chain.
-/// It uses the Agent Merkle Roots from the Notary-signed attestations to stay in sync with the [BondingManager](#bonding-manager-smart-contract).
-/// The LightManager is responsible for the following:
-1.  Accepting the Agent Merkle Roots (passing the optimistic period check) from the Destination contract.
-2.  Using these roots to enable agents to register themselves by proving their status.
-3.  Accepting Manager Message from [BondingManager](#bonding-manager-smart-contract) on the [Synapse Chain](#synapse-chain) to withdraw [tips](#tips).
-4.  Sending Manager Messages to the [BondingManager](#bonding-manager-smart-contract) on [Synapse Chain](#synapse-chain) to [slash](#slash) agents, when their [fraud](#fraud) is proven.
+It uses the Agent Merkle Roots from the Notary-signed attestations to stay in sync with the [BondingManager](#bonding-manager-smart-contract).
 
 ### Liveness
 Liveness is a property of the messaging system that means a message that is sent will be delivered within a
@@ -382,7 +324,7 @@ The 32 byte [merkle root](#merkle-root) of the [Message Merkle Tree](#message-me
 ![MessageMerkleRoot](../../static/img/MessageMerkleRoot.png 'Diagram of Message Merkle Root formed from Merkle Tree of Messages')
 
 ### Notary
-The Notary is an off-chain agent that is assigned to a specific chain and has the very important job of posting [attestations](#Attestation) to its chain
+The Notary is an off-chain agent that is assigned to a specific chain and has the very important job of posting [attestations](#attestation) to its chain
 that can then be used to prove messages. If a fraudulent attestation is posted, an attacker could fool the destination into
 executing a malicious message, so the Notary plays a crucial role in maintaining [Integrity](#integrity)
 
@@ -409,13 +351,13 @@ are assumed to be trustworthy so long as the probability of a chain reorg is ext
 ### Optimistic Pause
 If a [Guard](#guard) believes that a [Notary](#notary) has submitted a [fraudulent](#fraud) [attestation](#attestation) to its [Destination](#destination-chain),
 the actual [fraud resolution](#fraud-resolution) needs to be decided on another chain, either the [Synapse Chain](#synapse-chain) or the
-[Origin](#origin-chain). Because of this, we allow the Guard to optimisitcally pause the [Destination](#destination) chain which puts
+[Origin](#origin-chain). Because of this, we allow the Guard to optimisitcally pause the [Destination](#destination-chain) chain which puts
 both the accused Notary and the reporting Guard in dispute. Until the resolution is communicated to that destination chain,
 that attestation and the Notary are not trusted by that destination, and the Guard would need to pay a significant amount to
 submit additional reports on that chain (to avoid denial of service).
 
 ### Optimistic Period
-This is a crucial property of messaging system that is set and enforced by the client Smart Contract of the messaging system.
+This is a crucial property of an optimistic messaging system that is set and enforced by the client Smart Contract of the messaging system.
 It is the time that a message must wait to be executed in order to give the Guards time to catch potential fraud. The longer
 this time means the Guards have more time to catch fraud and the less likely it is for an attacker to fool a Destination
 into executing a fraudulent message. There is also an Optimistic Period when a new [Agent Root](#agent-root) is proposed, because
@@ -433,11 +375,6 @@ The Origin contract is used for sending messages to remote chains. It is done
 by inserting the message hashes into the Origin Merkle, which makes it possible to
 prove that message was sent using the Merkle proof against the Origin Merkle Root. This essentially
 compresses the list of messages into a single 32-byte value that needs to be stored on the [destination chain](#destination-chain).
-The Origin is responsible for the following:
-1.  Formatting the sent message payloads, and inserting their hashes into the Origin Merkle Tree.
-2.  Keeping track of its own historical [states](#state).
-3.  Enforcing minimum [tip](#tips) values for sent base messages based on the provided execution requests.
-4.  Distributing the collected tips upon request from a local AgentManager contract.
 
 ### Permissioned
 As opposed to [permissionless](#permissionless), a permissioned system requires someone who is in a position of authority
@@ -506,7 +443,15 @@ essentially a hash of the State. The root of the Merkle tree is known as the "Sn
 "Snapshot Merkle Root".
 
 **Snap Root formed from Merkle Tree of Snapshot States:**
+
 ![SnapRoot](../../static/img/SnapRoot.png 'Diagram of SnapRoot formed from Snapshot of States')
+
+### Snapshot Fraud Report
+The "Snapshot Fraud Report" is how a [Guard](#guard) protects the [Synapse Chain](#synapse-chain) when it detects a
+Fraudulent Snapshot. Because the [fraud resolution](#fraud-resolution) happens
+on the [Origin Chain](#origin-chain) and takes time to propagate to the [synapse chain](#synapse-chain),
+the [Guard](#guard) submits a "Snapshot Fraud Report" so that the [synapse chain](#synapse-chain) disallows
+[State Snapshot](#state-snapshot) using a state from the accused guard or notary.
 
 ### Stake
 Synonym of [bond](#bond).
@@ -531,17 +476,13 @@ Each chain in the network at a given point in time will have values set for the 
 of performing necessary transactions on remote chains.
 
 See the Diagram under the section explaining [Snap Root](#snap-root) which also depicts the [Snapshot](#state-snapshot) of States, with a
-zoom in example State.
+zoomed-in example State.
 
 ### Summit Smart Contract
 The Summit Smart Contract is deployed on the [Synapse Chain](#synapse-chain) along with the [Bonding Manager](#bonding-manager-smart-contract) and
 the [Inbox](#inbox-smart-contract). See the source code of [Summit.sol](https://github.com/synapsecns/sanguine/blob/master/packages/contracts-core/contracts/Summit.sol).
 The Summit contract is the cornerstone of the Synapse messaging protocol. This is where the states of all the remote chains (provided collectively by the Guards and Notaries) are stored. This is
 also the place where the tips are distributed among the off-chain actors.
-Summit is responsible for the following:
-1.  Accepting Guard and Notary snapshots from the local `Inbox` contract, and storing the states from these snapshots (see parent contract `SnapshotHub`).
-2.  Accepting Notary Receipts from the local `Inbox` contract, and using them to distribute tips among the
-off-chain actors that participated in the message lifecycle.
 
 ### Synapse Messaging System
 The [Cross Chain Messaging System](#cross-chain-messaging-system) developed by Synapse.
