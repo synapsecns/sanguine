@@ -11,7 +11,7 @@ import { LandingPageWrapper } from '@/components/layouts/LandingPageWrapper'
 import StakeCard from './StakeCard'
 import NoStakeCard from './NoStakeCard'
 import { useRouter } from 'next/router'
-import { useAnalytics } from '@/contexts/AnalyticsProvider'
+import { segmentAnalyticsEvent } from '@/contexts/SegmentAnalyticsProvider'
 import { shortenAddress } from '@/utils/shortenAddress'
 
 const StakePage = () => {
@@ -23,7 +23,7 @@ const StakePage = () => {
   const [columns, setColumns] = useState<number>(1)
 
   const router = useRouter()
-  const analytics = useAnalytics()
+  const { query, pathname } = router
 
   const connectedChainInfo: Chain | undefined = useMemo(() => {
     if (connectedChainId) {
@@ -37,15 +37,17 @@ const StakePage = () => {
   const availableStakingTokens: Token[] | [] =
     STAKABLE_TOKENS[connectedChainId] ?? []
 
+  const routerIndices = availableStakingTokens.map((token) => token.routerIndex)
   useEffect(() => {
-    analytics.track(
+    segmentAnalyticsEvent(
       `[Stake page] ${shortenAddress(currentAddress)} arrives`,
       {
         address: currentAddress,
-        query: router.query,
-        pathname: router.pathname,
-      },
-      { context: { ip: '0.0.0.0' } }
+        connectedChainId,
+        query,
+        pathname,
+        routerIndices,
+      }
     )
   }, [])
 

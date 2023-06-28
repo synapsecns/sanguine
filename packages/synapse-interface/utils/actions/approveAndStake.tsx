@@ -11,7 +11,7 @@ import { CHAINS_BY_ID } from '@/constants/chains'
 import { MINICHEF_ADDRESSES } from '@/constants/minichef'
 import MINI_CHEF_ABI from '@/constants/abis/miniChef.json'
 import { Token } from '../types'
-import { useAnalytics } from '@/contexts/AnalyticsProvider'
+import { segmentAnalyticsEvent } from '@/contexts/SegmentAnalyticsProvider'
 import { shortenAddress } from '../shortenAddress'
 
 export const approve = async (
@@ -79,7 +79,6 @@ export const stake = async (
 ) => {
   let pendingPopup: any
   let successPopup: any
-  const analytics = useAnalytics()
 
   const signer = await fetchSigner({
     chainId,
@@ -97,16 +96,10 @@ export const stake = async (
   })
 
   try {
-    analytics.track(
-      `[Stake] ${shortenAddress(address)} Attempt`,
-      {
-        poolId,
-        inputValue,
-      },
-      {
-        context: { ip: '0.0.0.0' },
-      }
-    )
+    segmentAnalyticsEvent(`[Stake] ${shortenAddress(address)} Attempt`, {
+      poolId,
+      inputValue,
+    })
     if (!address) throw new Error('Wallet must be connected')
     if (!miniChefContract) throw new Error('MMind contract is not loaded')
 
@@ -135,30 +128,18 @@ export const stake = async (
       duration: 10000,
     })
 
-    analytics.track(
-      `[Stake] ${shortenAddress(address)} Success`,
-      {
-        poolId,
-        inputValue,
-      },
-      {
-        context: { ip: '0.0.0.0' },
-      }
-    )
+    segmentAnalyticsEvent(`[Stake] ${shortenAddress(address)} Success`, {
+      poolId,
+      inputValue,
+    })
 
     return tx
   } catch (err) {
-    analytics.track(
-      `[Stake] ${shortenAddress(address)} Error`,
-      {
-        poolId,
-        inputValue,
-        errorCode: err.code,
-      },
-      {
-        context: { ip: '0.0.0.0' },
-      }
-    )
+    segmentAnalyticsEvent(`[Stake] ${shortenAddress(address)} Error`, {
+      poolId,
+      inputValue,
+      errorCode: err.code,
+    })
     toast.dismiss(pendingPopup)
     txErrorHandler(err)
     return err

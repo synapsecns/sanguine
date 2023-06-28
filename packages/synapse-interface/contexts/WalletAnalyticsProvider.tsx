@@ -1,6 +1,6 @@
 import { createContext, useContext, useEffect, useRef } from 'react'
 import { Chain, useAccount, useNetwork } from 'wagmi'
-import { useAnalytics } from './AnalyticsProvider'
+import { segmentAnalyticsEvent } from './SegmentAnalyticsProvider'
 import { useRouter } from 'next/router'
 import { shortenAddress } from '@/utils/shortenAddress'
 
@@ -11,7 +11,6 @@ export const WalletAnalyticsProvider = ({ children }) => {
   const { chain } = useNetwork()
   const router = useRouter()
   const { query, pathname } = router
-  const analytics = useAnalytics()
 
   const walletId: string = connector?.id
   const networkName: string = chain?.name
@@ -27,7 +26,7 @@ export const WalletAnalyticsProvider = ({ children }) => {
 
   useEffect(() => {
     if (isConnected) {
-      analytics.track(
+      segmentAnalyticsEvent(
         `[Wallet Analytics] ${shortenAddress(address)} connected`,
         {
           walletId,
@@ -35,18 +34,13 @@ export const WalletAnalyticsProvider = ({ children }) => {
           networkId,
           query,
           pathname,
-        },
-        { context: { ip: '0.0.0.0' } }
+        }
       )
     } else {
-      analytics.track(
-        `[Wallet Analytics] User not connected`,
-        {
-          query,
-          pathname,
-        },
-        { context: { ip: '0.0.0.0' } }
-      )
+      segmentAnalyticsEvent(`[Wallet Analytics] User not connected`, {
+        query,
+        pathname,
+      })
     }
   }, [isConnected])
 
@@ -55,7 +49,7 @@ export const WalletAnalyticsProvider = ({ children }) => {
       return
     }
     if (!prevChain) {
-      analytics.track(
+      segmentAnalyticsEvent(
         `[Wallet Analytics] ${shortenAddress(address)} connected to chain`,
         {
           walletId,
@@ -63,13 +57,12 @@ export const WalletAnalyticsProvider = ({ children }) => {
           networkId,
           query,
           pathname,
-        },
-        { context: { ip: '0.0.0.0' } }
+        }
       )
     }
-    if (chain !== prevChain) {
-      analytics.track(
-        `[Wallet Analytics] ${shortenAddress(address)} switched chains`,
+    if (prevChain && chain !== prevChain) {
+      segmentAnalyticsEvent(
+        `[Wallet Analytics] ${shortenAddress(address)} connected to new chain`,
         {
           previousNetworkName: prevChain?.name,
           previousNetworkId: prevChain?.id,
@@ -78,8 +71,7 @@ export const WalletAnalyticsProvider = ({ children }) => {
           networkId,
           query,
           pathname,
-        },
-        { context: { ip: '0.0.0.0' } }
+        }
       )
     }
   }, [chain])

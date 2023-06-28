@@ -45,8 +45,6 @@ import {
 } from '@/constants/bridge'
 import { CHAINS_BY_ID, AcceptedChainId } from '@/constants/chains'
 import { getSortedBridgableTokens } from '@/utils/actions/getSortedBridgableTokens'
-import { useAnalytics } from '@/contexts/AnalyticsProvider'
-import { shortenAddress } from '@/utils/shortenAddress'
 
 /* TODO
   - look into getting rid of fromChainId state and just using wagmi hook (ran into problems when trying this but forgot why)
@@ -79,45 +77,6 @@ const BridgePage = ({
   })
   const [bridgeQuote, setBridgeQuote] =
     useState<BridgeQuote>(EMPTY_BRIDGE_QUOTE)
-
-  const { query, pathname } = router
-  const analytics = useAnalytics()
-
-  useEffect(() => {
-    analytics.track(
-      `[Bridge page] ${shortenAddress(address)} arrives`,
-      {
-        address,
-        fromChainId,
-        query,
-        pathname,
-      },
-      { context: { ip: '0.0.0.0' } }
-    )
-  }, [query])
-
-  useEffect(() => {
-    const {
-      outputAmountString,
-      routerAddress,
-      exchangeRate,
-      feeAmount,
-      delta,
-    } = bridgeQuote
-
-    analytics.track(
-      `[Bridge] ${shortenAddress(address)} gets bridge quote`,
-      {
-        address: address,
-        fromChainId: fromChainId,
-        inputAmountString: fromInput.string,
-        outputAmountString: outputAmountString,
-        routerAddress: routerAddress,
-        exchangeRate: formatBNToString(exchangeRate, 18, 8),
-      },
-      { context: { ip: '0.0.0.0' } }
-    )
-  }, [bridgeQuote])
 
   let pendingPopup: any
   let successPopup: any
@@ -179,7 +138,6 @@ const BridgePage = ({
         toTokenSymbolUrl ? String(toTokenSymbolUrl) : undefined,
         validFromChainId
       )
-
     resetTokenPermutation(
       tempFromToken,
       newToChain,
@@ -467,16 +425,6 @@ const BridgePage = ({
 
         const res = await switchNetwork({ chainId: desiredChainId })
           .then((res) => {
-            analytics.track(
-              `[Bridge] ${shortenAddress(address)} switches origin chain`,
-              {
-                switchFromChainId: fromChainId,
-                switchFrom: CHAINS_BY_ID[fromChainId].name,
-                switchToChainId: desiredChainId,
-                switchTo: CHAINS_BY_ID[desiredChainId].name,
-              },
-              { context: { ip: '0.0.0.0' } }
-            )
             if (fromInput.string !== '') {
               setIsQuoteLoading(true)
             }
@@ -550,16 +498,6 @@ const BridgePage = ({
         } else {
           setIsQuoteLoading(false)
         }
-        analytics.track(
-          `[Bridge] ${shortenAddress(address)} switches destination chain`,
-          {
-            switchFromChainId: toChainId,
-            switchFrom: CHAINS_BY_ID[toChainId].name,
-            switchToChainId: toNewToChain,
-            switchTo: CHAINS_BY_ID[toNewToChain].name,
-          },
-          { context: { ip: '0.0.0.0' } }
-        )
         return
       }
     },
@@ -602,16 +540,6 @@ const BridgePage = ({
         if (fromInput.string !== '') {
           setIsQuoteLoading(true)
         }
-        analytics.track(
-          `[Bridge] ${shortenAddress(address)} switches origin token`,
-          {
-            switchFromToken: fromToken?.name,
-            switchFromTokenAddress: fromToken?.addresses[fromChainId],
-            switchToToken: token?.name,
-            switchToTokenAddress: token?.addresses[fromChainId],
-          },
-          { context: { ip: '0.0.0.0' } }
-        )
         return
       case 'to':
         setToToken(token)
@@ -623,16 +551,6 @@ const BridgePage = ({
           inputCurrency: fromToken.symbol,
           outputCurrency: token.symbol,
         })
-        analytics.track(
-          `[Bridge] ${shortenAddress(address)} switches destination token`,
-          {
-            switchFromToken: toToken.name,
-            switchFromTokenAddress: toToken.addresses[toChainId],
-            switchToToken: token?.name,
-            switchToTokenAddress: token.addresses[toChainId],
-          },
-          { context: { ip: '0.0.0.0' } }
-        )
         return
     }
   }
@@ -735,18 +653,6 @@ const BridgePage = ({
   - Only executes if token has already been approved.
    */
   const executeBridge = async () => {
-    analytics.track(
-      `[Bridge] ${shortenAddress(address)} initiates bridge`,
-      {
-        originChainId: fromChainId,
-        destinationChainId: toChainId,
-        inputAmount: fromInput.string,
-        expectedReceivedAmount: bridgeQuote.outputAmountString,
-        slippage: bridgeQuote.exchangeRate,
-      },
-      { context: { ip: '0.0.0.0' } }
-    )
-
     try {
       const wallet = await fetchSigner({
         chainId: fromChainId,
@@ -803,41 +709,14 @@ const BridgePage = ({
           duration: 10000,
         })
 
-        analytics.track(
-          `[Bridge] ${shortenAddress(address)} bridges successfully`,
-          {
-            originChainId: fromChainId,
-            destinationChainId: toChainId,
-            inputAmount: fromInput.string,
-            receivedAmount: bridgeQuote.outputAmountString,
-            slippage: bridgeQuote.exchangeRate,
-          },
-          { context: { ip: '0.0.0.0' } }
-        )
-
         resetRates()
         return tx
       } catch (error) {
-        analytics.track(
-          `[Bridge] ${shortenAddress(address)} error bridging`,
-          {
-            errorCode: error.code,
-          },
-          { context: { ip: '0.0.0.0' } }
-        )
-
         console.log(`Transaction failed with error: ${error}`)
         toast.dismiss(pendingPopup)
       }
     } catch (error) {
-      analytics.track(
-        `[Bridge] ${shortenAddress(address)} error bridging`,
-        {
-          errorCode: error.code,
-        },
-        { context: { ip: '0.0.0.0' } }
-      )
-
+      console.log('Error executing bridge', error)
       toast.dismiss(pendingPopup)
       return txErrorHandler(error)
     }

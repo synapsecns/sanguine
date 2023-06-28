@@ -11,7 +11,7 @@ import { Token } from '@types'
 import { BigNumber } from 'ethers'
 import { Zero } from '@ethersproject/constants'
 import toast from 'react-hot-toast'
-import { useAnalytics } from '@/contexts/AnalyticsProvider'
+import { segmentAnalyticsEvent } from '@/contexts/SegmentAnalyticsProvider'
 import { getAccount } from '@wagmi/core'
 import { shortenAddress } from '../shortenAddress'
 
@@ -54,7 +54,6 @@ export const withdraw = async (
   let spendTransaction
   let pendingPopup: any
   let successPopup: any
-  const analytics = useAnalytics()
   const account = getAccount()
   const address = account?.address
 
@@ -64,13 +63,10 @@ export const withdraw = async (
   })
 
   try {
-    analytics.track(
+    segmentAnalyticsEvent(
       `[Pool Withdrawal] ${shortenAddress(address)} Attempt for ${pool?.name}`,
       {
         inputAmount,
-      },
-      {
-        context: { ip: '0.0.0.0' },
       }
     )
     if (withdrawType === ALL) {
@@ -117,23 +113,21 @@ export const withdraw = async (
       duration: 10000,
     })
 
-    analytics.track(
+    segmentAnalyticsEvent(
       `[Pool Withdrawal] ${shortenAddress(address)} Success for ${pool?.name}`,
       {
         inputAmount,
-      },
-      { context: { ip: '0.0.0.0' } }
+      }
     )
 
     return tx
   } catch (error) {
-    analytics.track(
+    segmentAnalyticsEvent(
       `[Pool Withdrawal] ${shortenAddress(address)} Failure for ${pool?.name}`,
       {
         inputAmount,
         errorCode: error.code,
-      },
-      { context: { ip: '0.0.0.0' } }
+      }
     )
     toast.dismiss(pendingPopup)
     txErrorHandler(error)

@@ -11,6 +11,10 @@ import Grid from '@tw/Grid'
 import Button from '@tw/Button'
 import PoolInfoSection from './PoolInfoSection'
 import PoolManagement from './poolManagement'
+import { useAccount } from 'wagmi'
+import { useRouter } from 'next/router'
+import { segmentAnalyticsEvent } from '@/contexts/SegmentAnalyticsProvider'
+import { shortenAddress } from '@/utils/shortenAddress'
 
 const PoolBody = ({
   pool,
@@ -23,9 +27,27 @@ const PoolBody = ({
   poolChainId: number
   connectedChainId: number
 }) => {
+  const { address: currentAddress } = useAccount()
   const [poolData, setPoolData] = useState(undefined)
   const [poolUserData, setPoolUserData] = useState(undefined)
   const [poolAPYData, setPoolAPYData] = useState(undefined)
+
+  const router = useRouter()
+  const { query, pathname } = router
+
+  useEffect(() => {
+    if (pool?.name && query.poolId) {
+      segmentAnalyticsEvent(
+        `[Pool] ${shortenAddress(currentAddress)} arrives at ${query.poolId}`,
+        {
+          address: currentAddress,
+          query,
+          pathname,
+          poolName: pool.name,
+        }
+      )
+    }
+  }, [])
 
   const handleGetPoolData = useCallback(() => {
     getPoolData(poolChainId, pool, address ?? AddressZero, false)

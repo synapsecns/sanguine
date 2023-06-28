@@ -1,12 +1,16 @@
 import { BigNumber } from 'ethers'
+import { getAccount } from '@wagmi/core'
 import { Zero } from '@ethersproject/constants'
 import { createSlice, PayloadAction } from '@reduxjs/toolkit'
 import { Address } from 'wagmi'
 
+import { segmentAnalyticsEvent } from '@/contexts/SegmentAnalyticsProvider'
 import { EMPTY_BRIDGE_QUOTE } from '@/constants/bridge'
 import { ETH } from '@/constants/tokens/master'
 import { ARBITRUM, ETH as ETHEREUM } from '@/constants/chains/master'
 import { BridgeQuote, Token } from '@/utils/types'
+import { shortenAddress } from '@/utils/shortenAddress'
+import { formatBNToString } from '@/utils/bignumber/format'
 
 export interface BridgeState {
   fromChainId: number
@@ -154,6 +158,86 @@ export const tokenDecimalMiddleware =
 
     // call the next middleware in the line
     next(action)
+  }
+
+export const segmentMiddleware =
+  ({ getState }) =>
+  (next) =>
+  (action) => {
+    const account = getAccount()
+    const { address } = account
+
+    const currentState = getState()
+    const bridgeState = currentState.bridge
+
+    let eventTitle
+    let eventData
+
+    switch (action.type) {
+      case 'bridge/setFromChainId':
+        eventTitle = `[Bridge Action] ${shortenAddress(address)} sets fromChain`
+        eventData = {
+          address,
+          fromChainId: bridgeState.fromChainId,
+        }
+        break
+      case 'bridge/setToChainId':
+        eventTitle = `[Bridge Action] ${shortenAddress(address)} sets toChain`
+        eventData = {
+          address,
+          toChainId: bridgeState.toChainId,
+        }
+        break
+      case 'bridge/setFromToken':
+        eventTitle = `[Bridge Action] ${shortenAddress(address)} sets fromToken`
+        eventData = {
+          address,
+          fromToken: bridgeState.fromToken.symbol,
+          toToken: bridgeState.toToken.symbol,
+        }
+        break
+      case 'bridge/setToToken':
+        eventTitle = `[Bridge Action] ${shortenAddress(address)} sets toToken`
+        eventData = {
+          address,
+          fromToken: bridgeState.fromToken.symbol,
+          toToken: bridgeState.toToken.symbol,
+        }
+        break
+      case 'bridge/setBridgeQuote':
+        const { outputAmountString, routerAddress, exchangeRate } =
+          bridgeState.bridgeQuote
+        const { fromChainId, toChainId, fromToken, toToken, fromValue } =
+          bridgeState
+
+        eventTitle = `[Bridge Action] ${shortenAddress(
+          address
+        )} gets bridge quote`
+        eventData = {
+          address,
+          fromChainId,
+          toChainId,
+          fromToken: fromToken.symbol,
+          toToken: toToken.symbol,
+          inputAmountString: formatBNToString(
+            fromValue,
+            fromToken.decimals[fromChainId],
+            8
+          ),
+          outputAmountString,
+          routerAddress,
+          exchangeRate: formatBNToString(exchangeRate, 18, 8),
+        }
+        break
+      default:
+        break
+    }
+
+    if (eventTitle && eventData) {
+      segmentAnalyticsEvent(eventTitle, eventData)
+    }
+
+    return next(action)
   }
 
 export const {

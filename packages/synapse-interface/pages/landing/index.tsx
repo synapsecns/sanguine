@@ -14,24 +14,21 @@ import { useRouter } from 'next/router'
 import { useEffect } from 'react'
 import { useAccount } from 'wagmi'
 
-import { useAnalytics } from '@/contexts/AnalyticsProvider'
+import { segmentAnalyticsEvent } from '@/contexts/SegmentAnalyticsProvider'
 import { shortenAddress } from '@/utils/shortenAddress'
 
 const LandingPage = () => {
   const { address: currentAddress } = useAccount()
   const router = useRouter()
 
-  const analytics = useAnalytics()
-
   useEffect(() => {
-    analytics.track(
-      `[Landing] ${shortenAddress(currentAddress)}arrives`,
+    segmentAnalyticsEvent(
+      `[Landing] ${shortenAddress(currentAddress)} arrives`,
       {
         address: currentAddress,
         query: router.query,
         pathname: router.pathname,
-      },
-      { context: { ip: '0.0.0.0' } }
+      }
     )
   }, [])
 

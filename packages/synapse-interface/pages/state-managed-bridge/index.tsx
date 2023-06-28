@@ -8,6 +8,9 @@ import { useSpring, animated } from 'react-spring'
 import { ActionCardFooter } from '@components/ActionCardFooter'
 import { BRIDGE_PATH, HOW_TO_BRIDGE_URL } from '@/constants/urls'
 import BridgeWatcher from '@/pages/bridge/BridgeWatcher'
+import { useRouter } from 'next/router'
+import { segmentAnalyticsEvent } from '@/contexts/SegmentAnalyticsProvider'
+import { shortenAddress } from '@/utils/shortenAddress'
 
 import {
   setFromToken,
@@ -115,8 +118,8 @@ const StateManagedBridge = () => {
   const { synapseSDK } = useSynapseContext()
   const bridgeDisplayRef = useRef(null)
   const currentSDKRequestID = useRef(0)
-  let pendingPopup
-  let successPopup
+  const router = useRouter()
+  const { query, pathname } = router
 
   const {
     fromChainId,
@@ -142,12 +145,24 @@ const StateManagedBridge = () => {
     showDestinationAddress,
   } = useSelector((state: RootState) => state.bridgeDisplay)
 
+  let pendingPopup
+  let successPopup
+
   const [isApproved, setIsApproved] = useState(false)
 
   const dispatch = useDispatch()
 
   const fromChainIds = Object.keys(CHAINS_BY_ID).map((id) => Number(id))
   const toChainIds = Object.keys(CHAINS_BY_ID).map((id) => Number(id))
+
+  useEffect(() => {
+    segmentAnalyticsEvent(`[Bridge page] ${shortenAddress(address)} arrives`, {
+      address,
+      fromChainId,
+      query,
+      pathname,
+    })
+  }, [query])
 
   // Commenting out for a bit to debug, but basic issue is we need
   // a mapping for allowable routes/tokens, and how we set them on
@@ -376,6 +391,21 @@ const StateManagedBridge = () => {
   }
 
   const executeBridge = async () => {
+    segmentAnalyticsEvent(
+      `[Bridge] ${shortenAddress(address)} initiates bridge`,
+      {
+        address,
+        originChainId: fromChainId,
+        destinationChainId: toChainId,
+        inputAmount: formatBNToString(
+          fromValue,
+          fromToken.decimals[fromChainId],
+          8
+        ),
+        expectedReceivedAmount: bridgeQuote.outputAmountString,
+        slippage: bridgeQuote.exchangeRate,
+      }
+    )
     try {
       const wallet = await fetchSigner({
         chainId: fromChainId,
@@ -413,6 +443,21 @@ const StateManagedBridge = () => {
 
       try {
         await tx.wait()
+        segmentAnalyticsEvent(
+          `[Bridge] ${shortenAddress(address)} bridges successfully`,
+          {
+            address,
+            originChainId: fromChainId,
+            destinationChainId: toChainId,
+            inputAmount: formatBNToString(
+              fromValue,
+              fromToken.decimals[fromChainId],
+              8
+            ),
+            expectedReceivedAmount: bridgeQuote.outputAmountString,
+            slippage: bridgeQuote.exchangeRate,
+          }
+        )
         dispatch(addBridgeTxHash(tx.hash))
 
         dispatch(setBridgeQuote(EMPTY_BRIDGE_QUOTE_ZERO))
@@ -442,10 +487,24 @@ const StateManagedBridge = () => {
 
         return tx
       } catch (error) {
+        segmentAnalyticsEvent(
+          `[Bridge] ${shortenAddress(address)} error bridging`,
+          {
+            address,
+            errorCode: error.code,
+          }
+        )
         console.log(`Transaction failed with error: ${error}`)
         toast.dismiss(pendingPopup)
       }
     } catch (error) {
+      segmentAnalyticsEvent(
+        `[Bridge] ${shortenAddress(address)} error bridging`,
+        {
+          address,
+          errorCode: error.code,
+        }
+      )
       console.log('Error executing bridge', error)
       toast.dismiss(pendingPopup)
       return txErrorHandler(error)

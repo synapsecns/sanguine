@@ -34,7 +34,7 @@ import { jsonRpcProvider } from 'wagmi/providers/jsonRpc'
 import * as CHAINS from '@constants/chains/master'
 import { SynapseProvider } from '@/utils/providers/SynapseProvider'
 import CustomToaster from '@/components/toast'
-import { AnalyticsProvider } from '@/contexts/AnalyticsProvider'
+import { SegmentAnalyticsProvider } from '@/contexts/SegmentAnalyticsProvider'
 
 import { Provider } from 'react-redux'
 import { store } from '@/store/store'
@@ -99,14 +99,14 @@ const App = ({ Component, pageProps }: AppProps) => {
     <WagmiConfig client={wagmiClient}>
       <RainbowKitProvider chains={chains} theme={darkTheme()}>
         <SynapseProvider chains={chains}>
-          <AnalyticsProvider>
+          <SegmentAnalyticsProvider>
             <WalletAnalyticsProvider>
               <Provider store={store}>
                 <Component {...pageProps} />
                 <CustomToaster />
               </Provider>
             </WalletAnalyticsProvider>
-          </AnalyticsProvider>
+          </SegmentAnalyticsProvider>
         </SynapseProvider>
       </RainbowKitProvider>
     </WagmiConfig>

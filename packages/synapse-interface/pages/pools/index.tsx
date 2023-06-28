@@ -15,7 +15,7 @@ import { DEFAULT_FROM_CHAIN } from '@/constants/swap'
 import PoolCards from './PoolCards'
 import { useRouter } from 'next/router'
 
-import { useAnalytics } from '@/contexts/AnalyticsProvider'
+import { segmentAnalyticsEvent } from '@/contexts/SegmentAnalyticsProvider'
 import { shortenAddress } from '@/utils/shortenAddress'
 
 const PoolsPage = () => {
@@ -25,18 +25,16 @@ const PoolsPage = () => {
   const [address, setAddress] = useState(undefined)
 
   const router = useRouter()
-  const analytics = useAnalytics()
 
   useEffect(() => {
-    analytics.track(
-      `[Pools page] ${shortenAddress(currentAddress)}arrives`,
+    segmentAnalyticsEvent(
+      `[Pools page] ${shortenAddress(currentAddress)} arrives`,
       {
         address: currentAddress,
         fromChainId: chain?.id,
         query: router.query,
         pathname: router.pathname,
-      },
-      { context: { ip: '0.0.0.0' } }
+      }
     )
   }, [])
 

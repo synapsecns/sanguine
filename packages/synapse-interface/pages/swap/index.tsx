@@ -9,7 +9,7 @@ import Grid from '@tw/Grid'
 import SwapCard from './SwapCard'
 import NoSwapCard from './NoSwapCard'
 import { useRouter } from 'next/router'
-import { useAnalytics } from '@/contexts/AnalyticsProvider'
+import { segmentAnalyticsEvent } from '@/contexts/SegmentAnalyticsProvider'
 import { shortenAddress } from '@/utils/shortenAddress'
 
 const SwapPage = () => {
@@ -18,19 +18,14 @@ const SwapPage = () => {
   const [connectedChainId, setConnectedChainId] = useState<number>(0)
   const [address, setAddress] = useState<`0x${string}` | undefined>(undefined)
   const router = useRouter()
-  const analytics = useAnalytics()
 
   useEffect(() => {
-    analytics.track(
-      `[Swap] ${shortenAddress(currentAddress)} arrives`,
-      {
-        address: currentAddress,
-        fromChainId: chain?.id,
-        query: router.query,
-        pathname: router.pathname,
-      },
-      { context: { ip: '0.0.0.0' } }
-    )
+    segmentAnalyticsEvent(`[Swap] ${shortenAddress(currentAddress)} arrives`, {
+      address: currentAddress,
+      fromChainId: chain?.id,
+      query: router.query,
+      pathname: router.pathname,
+    })
   }, [])
 
   useEffect(() => {

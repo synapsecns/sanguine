@@ -8,7 +8,7 @@ import { BigNumber, Contract } from 'ethers'
 import ExplorerToastLink from '@/components/ExplorerToastLink'
 import { txErrorHandler } from '@utils/txErrorHandler'
 import { fetchSigner } from '@wagmi/core'
-import { useAnalytics } from '@/contexts/AnalyticsProvider'
+import { segmentAnalyticsEvent } from '@/contexts/SegmentAnalyticsProvider'
 import { shortenAddress } from '../shortenAddress'
 
 export const withdrawStake = async (
@@ -25,18 +25,16 @@ export const withdrawStake = async (
     MINI_CHEF_ABI,
     wallet
   )
-  const analytics = useAnalytics()
   try {
     if (!address) throw new Error('Wallet must be connected')
     if (!miniChefContract) throw new Error('MMind contract is not loaded')
 
-    analytics.track(
+    segmentAnalyticsEvent(
       `[Withdraw Stake] ${shortenAddress(address)} Attempt`,
       {
         poolId,
         inputValue,
-      },
-      { context: { ip: '0.0.0.0' } }
+      }
     )
 
     const withdrawTransactionArgs = [poolId, inputValue, address]
@@ -56,26 +54,21 @@ export const withdrawStake = async (
 
     toast.success(toastContent)
 
-    analytics.track(
+    segmentAnalyticsEvent(
       `[Withdraw Stake] ${shortenAddress(address)} Success`,
       {
         poolId,
         inputValue,
-      },
-      { context: { ip: '0.0.0.0' } }
+      }
     )
 
     return tx
   } catch (err) {
-    analytics.track(
-      `[Withdraw Stake] ${shortenAddress(address)} Error`,
-      {
-        poolId,
-        inputValue,
-        errorCode: err.code,
-      },
-      { context: { ip: '0.0.0.0' } }
-    )
+    segmentAnalyticsEvent(`[Withdraw Stake] ${shortenAddress(address)} Error`, {
+      poolId,
+      inputValue,
+      errorCode: err.code,
+    })
     txErrorHandler(err)
   }
 }
