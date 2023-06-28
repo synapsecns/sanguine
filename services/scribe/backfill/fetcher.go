@@ -113,13 +113,12 @@ func (f *RangeFilter) Start(ctx context.Context) error {
 			return nil
 		default:
 			chunks := f.GetChunkArr()
-			// Backfilling completed  CHANGE TO len() == 0
+
 			if len(chunks) == 0 {
 				wg.Wait()
 				return nil
 			}
 			logs, err := f.FilterLogs(ctx, chunks)
-
 			if err != nil {
 				return fmt.Errorf("could not filter logs: %w", err)
 			}
@@ -135,7 +134,7 @@ func (f *RangeFilter) Start(ctx context.Context) error {
 }
 
 // FilterLogs safely calls FilterLogs with the filtering implementing a backoff in the case of
-// rate limiting and respecting context cancellation.
+// rate limiting and respects context cancellation.
 //
 // nolint:cyclop
 func (f *RangeFilter) FilterLogs(ctx context.Context, chunks []*util.Chunk) ([]types.Log, error) {
@@ -196,7 +195,7 @@ func (f *RangeFilter) FilterLogs(ctx context.Context, chunks []*util.Chunk) ([]t
 	}
 }
 
-// Drain fetches all logs and concatenated them into a single slice.
+// Drain fetches empties the log chan. For use once the doneChan is emitted.
 func (f *RangeFilter) Drain(ctx context.Context) (filteredLogs []types.Log, err error) {
 	for {
 		select {

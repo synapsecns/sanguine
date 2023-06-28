@@ -145,7 +145,9 @@ func (c ChainBackfiller) Backfill(ctx context.Context, onlyOneBlock *uint64, liv
 							return fmt.Errorf("could not get current block number while backfilling: %w", err)
 						}
 					}
-
+					if onlyOneBlock != nil {
+						fmt.Println("SHOUT OUT", startHeight, *latestBlock)
+					}
 					err = contractBackfiller.Backfill(backfillCtx, startHeight, *latestBlock)
 					if err != nil {
 						timeout = b.Duration()

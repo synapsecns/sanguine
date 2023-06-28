@@ -474,6 +474,29 @@ func (_m *EventDB) RetrieveReceiptsWithFilter(ctx context.Context, receiptFilter
 	return r0, r1
 }
 
+// RetrieveReceiptsWithStaleBlockHash provides a mock function with given fields: ctx, chainID, blockHashes, startBlock, endBlock
+func (_m *EventDB) RetrieveReceiptsWithStaleBlockHash(ctx context.Context, chainID uint32, blockHashes []string, startBlock uint64, endBlock uint64) ([]types.Receipt, error) {
+	ret := _m.Called(ctx, chainID, blockHashes, startBlock, endBlock)
+
+	var r0 []types.Receipt
+	if rf, ok := ret.Get(0).(func(context.Context, uint32, []string, uint64, uint64) []types.Receipt); ok {
+		r0 = rf(ctx, chainID, blockHashes, startBlock, endBlock)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).([]types.Receipt)
+		}
+	}
+
+	var r1 error
+	if rf, ok := ret.Get(1).(func(context.Context, uint32, []string, uint64, uint64) error); ok {
+		r1 = rf(ctx, chainID, blockHashes, startBlock, endBlock)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
 // StoreBlockTime provides a mock function with given fields: ctx, chainID, blockNumber, timestamp
 func (_m *EventDB) StoreBlockTime(ctx context.Context, chainID uint32, blockNumber uint64, timestamp uint64) error {
 	ret := _m.Called(ctx, chainID, blockNumber, timestamp)

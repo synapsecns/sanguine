@@ -105,14 +105,14 @@ func (b *BackfillSuite) TestLogsInRange() {
 	Nil(b.T(), err)
 	iterator := util.NewChunkIterator(big.NewInt(int64(1)), big.NewInt(int64(desiredBlockHeight)), 1, true)
 
-	var chunks []*util.Chunk
-	chunk := iterator.NextChunk()
+	var blockRanges []*util.Chunk
+	blockRange := iterator.NextChunk()
 
-	for chunk != nil {
-		chunks = append(chunks, chunk)
-		chunk = iterator.NextChunk()
+	for blockRange != nil {
+		blockRanges = append(blockRanges, blockRange)
+		blockRange = iterator.NextChunk()
 	}
-	res, err := backfill.GetLogsInRange(b.GetTestContext(), scribeBackend, commonAddress, chainID.Uint64(), chunks)
+	res, err := backfill.GetLogsInRange(b.GetTestContext(), scribeBackend, commonAddress, chainID.Uint64(), blockRanges)
 	Nil(b.T(), err)
 
 	// use to make sure we don't double use values

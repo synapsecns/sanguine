@@ -20,8 +20,7 @@ import (
 type ScribeBackend interface {
 	// ChainID gets the chain id from the rpc server.
 	ChainID(ctx context.Context) (*big.Int, error)
-	// BlockByNumber retrieves a block from the database by number, caching it
-	// (associated with its hash) if found.
+	// BlockByNumber retrieves a block
 	BlockByNumber(ctx context.Context, number *big.Int) (*types.Block, error)
 	// TransactionByHash checks the pool of pending transactions in addition to the
 	// blockchain. The isPending return value indicates whether the transaction has been

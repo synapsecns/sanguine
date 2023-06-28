@@ -28,6 +28,7 @@ func (s Store) StoreReceipt(ctx context.Context, chainID uint32, receipt types.R
 			Modifier: "IGNORE",
 		})
 	}
+	fmt.Println("STORING RECEIPT", receipt.BlockHash.String(), receipt.BlockNumber.Uint64())
 	dbTx = dbTx.Create(&Receipt{
 		ChainID:           chainID,
 		Type:              receipt.Type,
@@ -45,7 +46,6 @@ func (s Store) StoreReceipt(ctx context.Context, chainID uint32, receipt types.R
 	})
 
 	if dbTx.Error != nil {
-		fmt.Println("AJJ:", dbTx.Error)
 		return fmt.Errorf("could not store receipt: %w", dbTx.Error)
 	}
 
@@ -188,8 +188,6 @@ func (s Store) buildReceiptsFromDBReceipts(ctx context.Context, dbReceipts []Rec
 		logs := []*types.Log{}
 		page := 1
 		for {
-			// TODO DELETE
-			logger.Infof("[RECEIPT QUERY] logFilter: %v, page: %d", logFilter, page)
 			logGroup, err := s.RetrieveLogsWithFilter(ctx, logFilter, page)
 			if err != nil {
 				return []types.Receipt{}, fmt.Errorf("could not retrieve logs with tx hash %s and chain id %d: %w", dbReceipt.TxHash, chainID, err)
@@ -238,4 +236,19 @@ func (s Store) RetrieveReceiptCountForChain(ctx context.Context, chainID uint32)
 	}
 
 	return count, nil
+}
+
+// RetrieveReceiptsWithStaleBlockHash gets receipts that are from a reorged/stale block.
+func (s Store) RetrieveReceiptsWithStaleBlockHash(ctx context.Context, chainID uint32, blockHashes []string, startBlock uint64, endBlock uint64) ([]types.Receipt, error) {
+	var dbReceipts []Receipt
+	dbTx := s.DB().WithContext(ctx).Model(&Receipt{}).Where("block_number >= ? ", startBlock).Where("block_number <= ? ", endBlock).Where("block_hash NOT IN (?)", blockHashes).Scan(&dbReceipts)
+	if dbTx.Error != nil {
+		return nil, fmt.Errorf("could not get receipts: %w", dbTx.Error)
+	}
+	parsedReceipts, err := s.buildReceiptsFromDBReceipts(ctx, dbReceipts, chainID)
+	if err != nil {
+		return []types.Receipt{}, fmt.Errorf("could not build receipts from db receipts: %w", err)
+	}
+
+	return parsedReceipts, nil
 }

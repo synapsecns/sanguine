@@ -104,10 +104,8 @@ func (c *ContractBackfiller) Backfill(parentCtx context.Context, givenStart uint
 		return fmt.Errorf("could not get last indexed: %w", err)
 	}
 	if lastBlockIndexed > startHeight {
-		LogEvent(WarnLevel, "Using last indexed block (lastIndexBlock > startHeight)", LogData{"cid": c.chainConfig.ChainID, "sh": startHeight, "eh": endHeight})
 		startHeight = lastBlockIndexed + 1
 	}
-	LogEvent(InfoLevel, "Beginning to backfill contract ", LogData{"cid": c.chainConfig.ChainID, "sh": startHeight, "eh": endHeight})
 
 	// logsChain and doneChan are used to pass logs from rangeFilter onto the next stage of the backfill process.
 	logsChan, errChan := c.getLogs(groupCtx, startHeight, endHeight)
