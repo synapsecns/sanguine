@@ -1328,9 +1328,10 @@ func (_IMintBurnToken *IMintBurnTokenFilterer) ParseTransfer(log types.Log) (*IM
 
 // ITokenMinterMetaData contains all meta data concerning the ITokenMinter contract.
 var ITokenMinterMetaData = &bind.MetaData{
-	ABI: "[{\"inputs\":[{\"internalType\":\"address\",\"name\":\"burnToken\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"amount\",\"type\":\"uint256\"}],\"name\":\"burn\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint32\",\"name\":\"remoteDomain\",\"type\":\"uint32\"},{\"internalType\":\"bytes32\",\"name\":\"remoteToken\",\"type\":\"bytes32\"}],\"name\":\"getLocalToken\",\"outputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint32\",\"name\":\"sourceDomain\",\"type\":\"uint32\"},{\"internalType\":\"bytes32\",\"name\":\"burnToken\",\"type\":\"bytes32\"},{\"internalType\":\"address\",\"name\":\"to\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"amount\",\"type\":\"uint256\"}],\"name\":\"mint\",\"outputs\":[{\"internalType\":\"address\",\"name\":\"mintToken\",\"type\":\"address\"}],\"stateMutability\":\"nonpayable\",\"type\":\"function\"}]",
+	ABI: "[{\"inputs\":[{\"internalType\":\"address\",\"name\":\"burnToken\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"amount\",\"type\":\"uint256\"}],\"name\":\"burn\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"token\",\"type\":\"address\"}],\"name\":\"burnLimitsPerMessage\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint32\",\"name\":\"remoteDomain\",\"type\":\"uint32\"},{\"internalType\":\"bytes32\",\"name\":\"remoteToken\",\"type\":\"bytes32\"}],\"name\":\"getLocalToken\",\"outputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint32\",\"name\":\"sourceDomain\",\"type\":\"uint32\"},{\"internalType\":\"bytes32\",\"name\":\"burnToken\",\"type\":\"bytes32\"},{\"internalType\":\"address\",\"name\":\"to\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"amount\",\"type\":\"uint256\"}],\"name\":\"mint\",\"outputs\":[{\"internalType\":\"address\",\"name\":\"mintToken\",\"type\":\"address\"}],\"stateMutability\":\"nonpayable\",\"type\":\"function\"}]",
 	Sigs: map[string]string{
 		"9dc29fac": "burn(address,uint256)",
+		"a56ec632": "burnLimitsPerMessage(address)",
 		"78a0565e": "getLocalToken(uint32,bytes32)",
 		"d54de06f": "mint(uint32,bytes32,address,uint256)",
 	},
@@ -1486,6 +1487,37 @@ func (_ITokenMinter *ITokenMinterTransactorRaw) Transact(opts *bind.TransactOpts
 	return _ITokenMinter.Contract.contract.Transact(opts, method, params...)
 }
 
+// BurnLimitsPerMessage is a free data retrieval call binding the contract method 0xa56ec632.
+//
+// Solidity: function burnLimitsPerMessage(address token) view returns(uint256)
+func (_ITokenMinter *ITokenMinterCaller) BurnLimitsPerMessage(opts *bind.CallOpts, token common.Address) (*big.Int, error) {
+	var out []interface{}
+	err := _ITokenMinter.contract.Call(opts, &out, "burnLimitsPerMessage", token)
+
+	if err != nil {
+		return *new(*big.Int), err
+	}
+
+	out0 := *abi.ConvertType(out[0], new(*big.Int)).(**big.Int)
+
+	return out0, err
+
+}
+
+// BurnLimitsPerMessage is a free data retrieval call binding the contract method 0xa56ec632.
+//
+// Solidity: function burnLimitsPerMessage(address token) view returns(uint256)
+func (_ITokenMinter *ITokenMinterSession) BurnLimitsPerMessage(token common.Address) (*big.Int, error) {
+	return _ITokenMinter.Contract.BurnLimitsPerMessage(&_ITokenMinter.CallOpts, token)
+}
+
+// BurnLimitsPerMessage is a free data retrieval call binding the contract method 0xa56ec632.
+//
+// Solidity: function burnLimitsPerMessage(address token) view returns(uint256)
+func (_ITokenMinter *ITokenMinterCallerSession) BurnLimitsPerMessage(token common.Address) (*big.Int, error) {
+	return _ITokenMinter.Contract.BurnLimitsPerMessage(&_ITokenMinter.CallOpts, token)
+}
+
 // GetLocalToken is a free data retrieval call binding the contract method 0x78a0565e.
 //
 // Solidity: function getLocalToken(uint32 remoteDomain, bytes32 remoteToken) view returns(address)
@@ -1561,15 +1593,17 @@ func (_ITokenMinter *ITokenMinterTransactorSession) Mint(sourceDomain uint32, bu
 
 // MockTokenMinterMetaData contains all meta data concerning the MockTokenMinter contract.
 var MockTokenMinterMetaData = &bind.MetaData{
-	ABI: "[{\"inputs\":[{\"internalType\":\"address\",\"name\":\"localTokenMessenger_\",\"type\":\"address\"}],\"stateMutability\":\"nonpayable\",\"type\":\"constructor\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"burnToken\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"amount\",\"type\":\"uint256\"}],\"name\":\"burn\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint32\",\"name\":\"remoteDomain\",\"type\":\"uint32\"},{\"internalType\":\"bytes32\",\"name\":\"remoteToken\",\"type\":\"bytes32\"}],\"name\":\"getLocalToken\",\"outputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"localTokenMessenger\",\"outputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint32\",\"name\":\"sourceDomain\",\"type\":\"uint32\"},{\"internalType\":\"bytes32\",\"name\":\"burnToken\",\"type\":\"bytes32\"},{\"internalType\":\"address\",\"name\":\"to\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"amount\",\"type\":\"uint256\"}],\"name\":\"mint\",\"outputs\":[{\"internalType\":\"address\",\"name\":\"mintToken\",\"type\":\"address\"}],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint32\",\"name\":\"remoteDomain\",\"type\":\"uint32\"},{\"internalType\":\"bytes32\",\"name\":\"remoteToken\",\"type\":\"bytes32\"},{\"internalType\":\"address\",\"name\":\"localToken\",\"type\":\"address\"}],\"name\":\"setLocalToken\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"}]",
+	ABI: "[{\"inputs\":[{\"internalType\":\"address\",\"name\":\"localTokenMessenger_\",\"type\":\"address\"}],\"stateMutability\":\"nonpayable\",\"type\":\"constructor\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"burnToken\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"amount\",\"type\":\"uint256\"}],\"name\":\"burn\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"}],\"name\":\"burnLimitsPerMessage\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint32\",\"name\":\"remoteDomain\",\"type\":\"uint32\"},{\"internalType\":\"bytes32\",\"name\":\"remoteToken\",\"type\":\"bytes32\"}],\"name\":\"getLocalToken\",\"outputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"localTokenMessenger\",\"outputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint32\",\"name\":\"sourceDomain\",\"type\":\"uint32\"},{\"internalType\":\"bytes32\",\"name\":\"burnToken\",\"type\":\"bytes32\"},{\"internalType\":\"address\",\"name\":\"to\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"amount\",\"type\":\"uint256\"}],\"name\":\"mint\",\"outputs\":[{\"internalType\":\"address\",\"name\":\"mintToken\",\"type\":\"address\"}],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"token\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"limit\",\"type\":\"uint256\"}],\"name\":\"setBurnLimitPerMessage\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint32\",\"name\":\"remoteDomain\",\"type\":\"uint32\"},{\"internalType\":\"bytes32\",\"name\":\"remoteToken\",\"type\":\"bytes32\"},{\"internalType\":\"address\",\"name\":\"localToken\",\"type\":\"address\"}],\"name\":\"setLocalToken\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"}]",
 	Sigs: map[string]string{
 		"9dc29fac": "burn(address,uint256)",
+		"a56ec632": "burnLimitsPerMessage(address)",
 		"78a0565e": "getLocalToken(uint32,bytes32)",
 		"770fc1f0": "localTokenMessenger()",
 		"d54de06f": "mint(uint32,bytes32,address,uint256)",
+		"c7823e2b": "setBurnLimitPerMessage(address,uint256)",
 		"6a879ac4": "setLocalToken(uint32,bytes32,address)",
 	},
-	Bin: "0x608060405234801561001057600080fd5b5060405161065738038061065783398101604081905261002f91610054565b600180546001600160a01b0319166001600160a01b0392909216919091179055610084565b60006020828403121561006657600080fd5b81516001600160a01b038116811461007d57600080fd5b9392505050565b6105c4806100936000396000f3fe608060405234801561001057600080fd5b50600436106100675760003560e01c806378a0565e1161005057806378a0565e146101285780639dc29fac1461016f578063d54de06f1461018257600080fd5b80636a879ac41461006c578063770fc1f0146100df575b600080fd5b6100dd61007a36600461049f565b63ffffffff929092166000908152602081815260408083209383529290522080547fffffffffffffffffffffffff00000000000000000000000000000000000000001673ffffffffffffffffffffffffffffffffffffffff909216919091179055565b005b6001546100ff9073ffffffffffffffffffffffffffffffffffffffff1681565b60405173ffffffffffffffffffffffffffffffffffffffff909116815260200160405180910390f35b6100ff6101363660046104db565b63ffffffff91909116600090815260208181526040808320938352929052205473ffffffffffffffffffffffffffffffffffffffff1690565b6100dd61017d366004610505565b610195565b6100ff610190366004610521565b61029f565b60015473ffffffffffffffffffffffffffffffffffffffff16331461021b576040517f08c379a000000000000000000000000000000000000000000000000000000000815260206004820152601f60248201527f43616c6c6572206e6f74206c6f63616c20546f6b656e4d657373656e6765720060448201526064015b60405180910390fd5b6040517f42966c680000000000000000000000000000000000000000000000000000000081526004810182905273ffffffffffffffffffffffffffffffffffffffff8316906342966c6890602401600060405180830381600087803b15801561028357600080fd5b505af1158015610297573d6000803e3d6000fd5b505050505050565b60015460009073ffffffffffffffffffffffffffffffffffffffff163314610323576040517f08c379a000000000000000000000000000000000000000000000000000000000815260206004820152601f60248201527f43616c6c6572206e6f74206c6f63616c20546f6b656e4d657373656e676572006044820152606401610212565b5063ffffffff841660009081526020818152604080832086845290915290205473ffffffffffffffffffffffffffffffffffffffff16806103c0576040517f08c379a000000000000000000000000000000000000000000000000000000000815260206004820152601860248201527f4d696e7420746f6b656e206e6f7420737570706f7274656400000000000000006044820152606401610212565b6040517f40c10f1900000000000000000000000000000000000000000000000000000000815273ffffffffffffffffffffffffffffffffffffffff8481166004830152602482018490528216906340c10f19906044016020604051808303816000875af1158015610435573d6000803e3d6000fd5b505050506040513d601f19601f820116820180604052508101906104599190610565565b50949350505050565b803563ffffffff8116811461047657600080fd5b919050565b803573ffffffffffffffffffffffffffffffffffffffff8116811461047657600080fd5b6000806000606084860312156104b457600080fd5b6104bd84610462565b9250602084013591506104d26040850161047b565b90509250925092565b600080604083850312156104ee57600080fd5b6104f783610462565b946020939093013593505050565b6000806040838503121561051857600080fd5b6104f78361047b565b6000806000806080858703121561053757600080fd5b61054085610462565b9350602085013592506105556040860161047b565b9396929550929360600135925050565b60006020828403121561057757600080fd5b8151801515811461058757600080fd5b939250505056fea264697066735822122057ce9106d6b42caad8692ed901f0c652916efeff5040e5e95bcc7c4ac73f8c1d64736f6c63430008110033",
+	Bin: "0x608060405234801561001057600080fd5b506040516106ee3803806106ee83398101604081905261002f91610054565b600180546001600160a01b0319166001600160a01b0392909216919091179055610084565b60006020828403121561006657600080fd5b81516001600160a01b038116811461007d57600080fd5b9392505050565b61065b806100936000396000f3fe608060405234801561001057600080fd5b506004361061007d5760003560e01c80639dc29fac1161005b5780639dc29fac14610186578063a56ec63214610199578063c7823e2b146101c7578063d54de06f146101fe57600080fd5b80636a879ac414610082578063770fc1f0146100f557806378a0565e1461013f575b600080fd5b6100f361009036600461051b565b63ffffffff929092166000908152602081815260408083209383529290522080547fffffffffffffffffffffffff00000000000000000000000000000000000000001673ffffffffffffffffffffffffffffffffffffffff909216919091179055565b005b6001546101159073ffffffffffffffffffffffffffffffffffffffff1681565b60405173ffffffffffffffffffffffffffffffffffffffff90911681526020015b60405180910390f35b61011561014d366004610557565b63ffffffff91909116600090815260208181526040808320938352929052205473ffffffffffffffffffffffffffffffffffffffff1690565b6100f3610194366004610581565b610211565b6101b96101a736600461059d565b60026020526000908152604090205481565b604051908152602001610136565b6100f36101d5366004610581565b73ffffffffffffffffffffffffffffffffffffffff909116600090815260026020526040902055565b61011561020c3660046105bf565b61031b565b60015473ffffffffffffffffffffffffffffffffffffffff163314610297576040517f08c379a000000000000000000000000000000000000000000000000000000000815260206004820152601f60248201527f43616c6c6572206e6f74206c6f63616c20546f6b656e4d657373656e6765720060448201526064015b60405180910390fd5b6040517f42966c680000000000000000000000000000000000000000000000000000000081526004810182905273ffffffffffffffffffffffffffffffffffffffff8316906342966c6890602401600060405180830381600087803b1580156102ff57600080fd5b505af1158015610313573d6000803e3d6000fd5b505050505050565b60015460009073ffffffffffffffffffffffffffffffffffffffff16331461039f576040517f08c379a000000000000000000000000000000000000000000000000000000000815260206004820152601f60248201527f43616c6c6572206e6f74206c6f63616c20546f6b656e4d657373656e67657200604482015260640161028e565b5063ffffffff841660009081526020818152604080832086845290915290205473ffffffffffffffffffffffffffffffffffffffff168061043c576040517f08c379a000000000000000000000000000000000000000000000000000000000815260206004820152601860248201527f4d696e7420746f6b656e206e6f7420737570706f727465640000000000000000604482015260640161028e565b6040517f40c10f1900000000000000000000000000000000000000000000000000000000815273ffffffffffffffffffffffffffffffffffffffff8481166004830152602482018490528216906340c10f19906044016020604051808303816000875af11580156104b1573d6000803e3d6000fd5b505050506040513d601f19601f820116820180604052508101906104d59190610603565b50949350505050565b803563ffffffff811681146104f257600080fd5b919050565b803573ffffffffffffffffffffffffffffffffffffffff811681146104f257600080fd5b60008060006060848603121561053057600080fd5b610539846104de565b92506020840135915061054e604085016104f7565b90509250925092565b6000806040838503121561056a57600080fd5b610573836104de565b946020939093013593505050565b6000806040838503121561059457600080fd5b610573836104f7565b6000602082840312156105af57600080fd5b6105b8826104f7565b9392505050565b600080600080608085870312156105d557600080fd5b6105de856104de565b9350602085013592506105f3604086016104f7565b9396929550929360600135925050565b60006020828403121561061557600080fd5b815180151581146105b857600080fdfea2646970667358221220dd305bbb874df5df5ebd93550fd296a25a4152acafb318f1ae3083cbd42e7b0364736f6c63430008110033",
 }
 
 // MockTokenMinterABI is the input ABI used to generate the binding from.
@@ -1743,6 +1777,37 @@ func (_MockTokenMinter *MockTokenMinterTransactorRaw) Transact(opts *bind.Transa
 	return _MockTokenMinter.Contract.contract.Transact(opts, method, params...)
 }
 
+// BurnLimitsPerMessage is a free data retrieval call binding the contract method 0xa56ec632.
+//
+// Solidity: function burnLimitsPerMessage(address ) view returns(uint256)
+func (_MockTokenMinter *MockTokenMinterCaller) BurnLimitsPerMessage(opts *bind.CallOpts, arg0 common.Address) (*big.Int, error) {
+	var out []interface{}
+	err := _MockTokenMinter.contract.Call(opts, &out, "burnLimitsPerMessage", arg0)
+
+	if err != nil {
+		return *new(*big.Int), err
+	}
+
+	out0 := *abi.ConvertType(out[0], new(*big.Int)).(**big.Int)
+
+	return out0, err
+
+}
+
+// BurnLimitsPerMessage is a free data retrieval call binding the contract method 0xa56ec632.
+//
+// Solidity: function burnLimitsPerMessage(address ) view returns(uint256)
+func (_MockTokenMinter *MockTokenMinterSession) BurnLimitsPerMessage(arg0 common.Address) (*big.Int, error) {
+	return _MockTokenMinter.Contract.BurnLimitsPerMessage(&_MockTokenMinter.CallOpts, arg0)
+}
+
+// BurnLimitsPerMessage is a free data retrieval call binding the contract method 0xa56ec632.
+//
+// Solidity: function burnLimitsPerMessage(address ) view returns(uint256)
+func (_MockTokenMinter *MockTokenMinterCallerSession) BurnLimitsPerMessage(arg0 common.Address) (*big.Int, error) {
+	return _MockTokenMinter.Contract.BurnLimitsPerMessage(&_MockTokenMinter.CallOpts, arg0)
+}
+
 // GetLocalToken is a free data retrieval call binding the contract method 0x78a0565e.
 //
 // Solidity: function getLocalToken(uint32 remoteDomain, bytes32 remoteToken) view returns(address)
@@ -1845,6 +1910,27 @@ func (_MockTokenMinter *MockTokenMinterSession) Mint(sourceDomain uint32, burnTo
 // Solidity: function mint(uint32 sourceDomain, bytes32 burnToken, address to, uint256 amount) returns(address mintToken)
 func (_MockTokenMinter *MockTokenMinterTransactorSession) Mint(sourceDomain uint32, burnToken [32]byte, to common.Address, amount *big.Int) (*types.Transaction, error) {
 	return _MockTokenMinter.Contract.Mint(&_MockTokenMinter.TransactOpts, sourceDomain, burnToken, to, amount)
+}
+
+// SetBurnLimitPerMessage is a paid mutator transaction binding the contract method 0xc7823e2b.
+//
+// Solidity: function setBurnLimitPerMessage(address token, uint256 limit) returns()
+func (_MockTokenMinter *MockTokenMinterTransactor) SetBurnLimitPerMessage(opts *bind.TransactOpts, token common.Address, limit *big.Int) (*types.Transaction, error) {
+	return _MockTokenMinter.contract.Transact(opts, "setBurnLimitPerMessage", token, limit)
+}
+
+// SetBurnLimitPerMessage is a paid mutator transaction binding the contract method 0xc7823e2b.
+//
+// Solidity: function setBurnLimitPerMessage(address token, uint256 limit) returns()
+func (_MockTokenMinter *MockTokenMinterSession) SetBurnLimitPerMessage(token common.Address, limit *big.Int) (*types.Transaction, error) {
+	return _MockTokenMinter.Contract.SetBurnLimitPerMessage(&_MockTokenMinter.TransactOpts, token, limit)
+}
+
+// SetBurnLimitPerMessage is a paid mutator transaction binding the contract method 0xc7823e2b.
+//
+// Solidity: function setBurnLimitPerMessage(address token, uint256 limit) returns()
+func (_MockTokenMinter *MockTokenMinterTransactorSession) SetBurnLimitPerMessage(token common.Address, limit *big.Int) (*types.Transaction, error) {
+	return _MockTokenMinter.Contract.SetBurnLimitPerMessage(&_MockTokenMinter.TransactOpts, token, limit)
 }
 
 // SetLocalToken is a paid mutator transaction binding the contract method 0x6a879ac4.

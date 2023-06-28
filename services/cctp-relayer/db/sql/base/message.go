@@ -4,6 +4,7 @@ import (
 	"context"
 	"database/sql"
 	"fmt"
+	"github.com/ethereum/go-ethereum/common"
 	"gorm.io/gorm/clause"
 
 	"github.com/synapsecns/sanguine/services/cctp-relayer/types"
@@ -59,6 +60,14 @@ func (s Store) StoreMessage(ctx context.Context, msg types.Message) error {
 				AttestationFieldName,
 			}),
 		}
+	case types.Submitted:
+		clauses = clause.OnConflict{
+			Columns: []clause.Column{{Name: MessageHashFieldName}},
+			DoUpdates: clause.AssignmentColumns([]string{
+				StateFieldName,
+				NonceFieldName,
+			}),
+		}
 	case types.Complete:
 		clauses = clause.OnConflict{
 			Columns: []clause.Column{{Name: MessageHashFieldName}},
@@ -74,4 +83,40 @@ func (s Store) StoreMessage(ctx context.Context, msg types.Message) error {
 		return fmt.Errorf("failed to store message: %w", dbTx.Error)
 	}
 	return nil
+}
+
+// GetMessagesByState gets messages by state.
+func (s Store) GetMessagesByState(ctx context.Context, states ...types.MessageState) ([]types.Message, error) {
+	var messages []types.Message
+
+	stateArgs := make([]int, len(states))
+
+	for i := range states {
+		stateArgs[i] = int(states[i])
+	}
+
+	dbTx := s.DB().WithContext(ctx).
+		Where(fmt.Sprintf("%s IN ?", StateFieldName), stateArgs).
+		Find(&messages)
+	if dbTx.Error != nil {
+		return nil, fmt.Errorf("failed to get messages by status: %w", dbTx.Error)
+	}
+
+	return messages, nil
+}
+
+// GetMessageByOriginHash gets a message by its origin hash.
+// TODO: this is actually non-unique, but we only return 1.
+func (s Store) GetMessageByOriginHash(ctx context.Context, originHash common.Hash) (*types.Message, error) {
+	var message types.Message
+
+	dbTx := s.DB().WithContext(ctx).
+		Model(&types.Message{}).
+		Where(fmt.Sprintf("%s = ?", OriginTxHashFieldName), originHash.String()).
+		First(&message)
+	if dbTx.Error != nil {
+		return nil, fmt.Errorf("failed to get message by hash: %w", dbTx.Error)
+	}
+
+	return &message, nil
 }

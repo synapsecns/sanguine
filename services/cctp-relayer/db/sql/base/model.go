@@ -10,7 +10,7 @@ import (
 func init() {
 	namer := dbcommon.NewNamer(GetAllModels())
 	OriginTxHashFieldName = namer.GetConsistentName("OriginTxHash")
-	DestTxHashFieldName = namer.GetConsistentName("DestTxHash")
+	NonceFieldName = namer.GetConsistentName("DestNonce")
 	OriginChainIDFieldName = namer.GetConsistentName("OriginChainID")
 	DestChainIDFieldName = namer.GetConsistentName("DestChainID")
 	MessageFieldName = namer.GetConsistentName("Message")
@@ -25,8 +25,8 @@ func init() {
 var (
 	// OriginTxHashFieldName gets the burn tx hash field name.
 	OriginTxHashFieldName string
-	// DestTxHashFieldName gets the mint tx hash field name.
-	DestTxHashFieldName string
+	// NonceFieldName gets the mint tx hash field name.
+	NonceFieldName string
 	// OriginChainIDFieldName gets the origin chain ID field name.
 	OriginChainIDFieldName string
 	// DestChainIDFieldName gets the destination chain ID field name.

@@ -2,6 +2,7 @@ package db
 
 import (
 	"context"
+	"github.com/ethereum/go-ethereum/common"
 	submitterDB "github.com/synapsecns/sanguine/ethergo/submitter/db"
 
 	"github.com/synapsecns/sanguine/services/cctp-relayer/types"
@@ -17,6 +18,10 @@ type CCTPRelayerDBReader interface {
 type CCTPRelayerDBWriter interface {
 	// StoreMessage stores a message in the database.
 	StoreMessage(ctx context.Context, message types.Message) error
+	// GetMessagesByState gets all messages with the given state.
+	GetMessagesByState(ctx context.Context, states ...types.MessageState) ([]types.Message, error)
+	// GetMessageByOriginHash gets a message by its origin hash.
+	GetMessageByOriginHash(ctx context.Context, originHash common.Hash) (*types.Message, error)
 }
 
 // CCTPRelayerDB is the interface for the database service.

@@ -5,7 +5,7 @@ type Message struct {
 	// Hash of USDC burn transaction
 	OriginTxHash string `gorm:"column:origin_tx_hash"`
 	// Hash of USDC mint transaction
-	DestTxHash string `gorm:"column:dest_tx_hash"`
+	DestNonce int `gorm:"column:dest_nonce"`
 	// Chain ID of the origin chain
 	OriginChainID uint32 `gorm:"column:origin_chain_id"`
 	// Chain ID of the destination chain
@@ -14,6 +14,8 @@ type Message struct {
 	Message []byte `gorm:"column:message"`
 	// Keccak256 hash of message bytes
 	MessageHash string `gorm:"column:message_hash;primaryKey"`
+	// RequestID of the message
+	RequestID string `gorm:"column:request_id"`
 	// Attestation produced by Circle's API: https://developers.circle.com/stablecoin/reference/getattestation
 	Attestation []byte `gorm:"column:attestation"`
 	// Version of the request
