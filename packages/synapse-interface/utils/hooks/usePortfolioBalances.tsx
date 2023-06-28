@@ -9,6 +9,7 @@ import { getSortedBridgableTokens } from '../actions/getSortedBridgableTokens'
 import { ChainId } from '@/constants/chains'
 import { sortByTokenBalance } from '../sortTokens'
 import { fetchBalance } from '@wagmi/core'
+import { BigNumber } from 'ethers'
 
 //move to constants file later
 const MULTICALL3_ADDRESS: Address = '0xcA11bde05977b3631167028862bE2a173976CA11'
@@ -21,19 +22,36 @@ export const getTokensByChainId = async (chainId: number) => {
   return await sortByTokenBalance(tokens, chainId, address)
 }
 
+interface TokenBalance {
+  token: Token
+  balance: BigNumber
+}
+interface NetworkTokenBalances {
+  [index: number]: Array<TokenBalance>
+}
+
 export const usePortfolioBalances = () => {
+  const [balances, setBalances] = useState<NetworkTokenBalances>({})
   const { address } = getAccount()
   const availableChains = Object.keys(BRIDGABLE_TOKENS)
 
   useEffect(() => {
     const getData = async () => {
+      const balanceLibrary = {}
       availableChains.forEach(async (chainId) => {
-        const response = await getTokensByChainId(Number(chainId))
-        console.log('response chainId: ', chainId, response)
+        const currentChainId = Number(chainId)
+        const tokenBalances: Array<TokenBalance> = await getTokensByChainId(
+          currentChainId
+        )
+        balanceLibrary[currentChainId] = tokenBalances
       })
+
+      setBalances(balanceLibrary)
     }
     getData()
   }, [])
+
+  return balances
 }
 
 const useTokenApprovals = () => {}

@@ -66,6 +66,7 @@ const fetchBalanceAndAllownaces = async (token, activeChain, address) => {
 export const Portfolio = () => {
   const balances = usePortfolioBalances()
 
+  console.log('balances from Portfolio: ', balances)
   // const { address } = useAccount()
   // const { chain } = useNetwork()
   // const [isLoading, setIsLoading] = useState(false)
