@@ -85,6 +85,7 @@ const BridgePage = ({
 
   const bridgableTokens = getSortedBridgableTokens(fromChainId, bridgeTxHash)
 
+  console.log('bridgableTokens: ', bridgableTokens)
   /*
   useEffect Trigger: onMount
   - Gets current network connected and sets it as the state.

@@ -17,25 +17,11 @@ export const usePortfolioBalances = () => {
   const { address } = useAccount()
   const availableChains = Object.keys(BRIDGABLE_TOKENS)
 
-  const arbitrumTokens = BRIDGABLE_TOKENS[ChainId.ARBITRUM]
-  console.log('arbitrumTokens: ', arbitrumTokens)
+  const test1 = getSortedBridgableTokens(ChainId.ETH)
+  const test2 = getSortedBridgableTokens(ChainId.AVALANCHE)
 
-  const sorted = sortByTokenBalance(arbitrumTokens, 42161, address)
-
-  sorted.then((response) => console.log('response: ', response))
-  // const test1 = getSortedBridgableTokens(42161)
-  // const test2 = getSortedBridgableTokens(ChainId.ETH)
-  // const test3 = getSortedBridgableTokens(ChainId.AVALANCHE)
-
-  const balance = fetchBalance({
-    address: '0x080F6AEd32Fc474DD5717105Dba5ea57268F46eb',
-    chainId: ChainId.ARBITRUM,
-  })
-
-  console.log('balance: ', balance)
-  // console.log('test1: ', test1)
-  // console.log('test2: ', test2)
-  // console.log('test3: ', test3)
+  console.log('test1: ', test1)
+  console.log('test2:', test2)
 }
 
 const useTokenApprovals = () => {}

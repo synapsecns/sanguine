@@ -9,12 +9,10 @@ import IntegrationSection from './sections/IntegrationSection'
 import HowItWorksSection from './sections/HowItWorksSection'
 import UseCasesSection from './sections/UseCasesSection'
 import ResourcesSection from './sections/ResourcesSection'
-import { Portfolio } from '@/components/Portfolio'
 
 const LandingPage = () => {
   return (
     <LandingPageWrapper>
-      <Portfolio />
       <LandingPageContainer>
         <HeroSection />
         <SecuritySection />

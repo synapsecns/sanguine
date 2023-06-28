@@ -63,7 +63,6 @@ export function useUserHeldTokens(
       let multicallInputs: any[] = []
       let multicallData: any
 
-      console.log('chainId: ', chainId)
       const currentChainBridgableTokens: Token[] = BRIDGABLE_TOKENS[chainId]
 
       currentChainBridgableTokens.forEach((token) => {
@@ -124,7 +123,6 @@ export function getSortedBridgableTokens(
     bridgeTxHash
   )
 
-  console.log('chainId from getSortedBridgableTokens: ', chainId)
   if (chainId === undefined) return []
 
   const availableBridgableTokens: Token[] = BRIDGABLE_TOKENS[chainId]
