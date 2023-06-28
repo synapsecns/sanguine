@@ -66,61 +66,61 @@ const fetchBalanceAndAllownaces = async (token, activeChain, address) => {
 export const Portfolio = () => {
   const balances = usePortfolioBalances()
 
-  const { address } = useAccount()
-  const { chain } = useNetwork()
-  const [isLoading, setIsLoading] = useState(false)
+  // const { address } = useAccount()
+  // const { chain } = useNetwork()
+  // const [isLoading, setIsLoading] = useState(false)
 
-  const [allBalances, setAllBalances] = useState([])
-  const [showZeroBalances, setShowZeroBalances] = useState(false)
+  // const [allBalances, setAllBalances] = useState([])
+  // const [showZeroBalances, setShowZeroBalances] = useState(false)
 
-  const activeChain = CHAINS_ARR.find((ch) => ch.id === chain.id)
+  // const activeChain = CHAINS_ARR.find((ch) => ch.id === chain.id)
 
-  const bridgeableTokens = BRIDGABLE_TOKENS[chain.id]
+  // const bridgeableTokens = BRIDGABLE_TOKENS[chain.id]
 
-  const filteredBalances = useMemo(() => {
-    return showZeroBalances
-      ? allBalances
-      : allBalances.filter(
-          (token) => Number(token.fetchedBalance.formatted) !== 0
-        )
-  }, [allBalances, showZeroBalances])
+  // const filteredBalances = useMemo(() => {
+  //   return showZeroBalances
+  //     ? allBalances
+  //     : allBalances.filter(
+  //         (token) => Number(token.fetchedBalance.formatted) !== 0
+  //       )
+  // }, [allBalances, showZeroBalances])
 
   // TODO: NEEDS TO HANDLE ETH too + gas tokens, right now only doing erc20s
-  const fetchAllBalances = async () => {
-    const amounts = []
+  // const fetchAllBalances = async () => {
+  //   const amounts = []
 
-    if (bridgeableTokens) {
-      const promises = bridgeableTokens.map(async (token) => {
-        return await fetchBalanceAndAllownaces(token, activeChain, address)
-      })
+  //   if (bridgeableTokens) {
+  //     const promises = bridgeableTokens.map(async (token) => {
+  //       return await fetchBalanceAndAllownaces(token, activeChain, address)
+  //     })
 
-      const results = await Promise.all(promises)
+  //     const results = await Promise.all(promises)
 
-      results.forEach((result) => {
-        if (result) amounts.push(result)
-      })
-    }
+  //     results.forEach((result) => {
+  //       if (result) amounts.push(result)
+  //     })
+  //   }
 
-    return amounts.sort(
-      (a, b) =>
-        Number(b.fetchedBalance.formatted) - Number(a.fetchedBalance.formatted)
-    )
-  }
+  //   return amounts.sort(
+  //     (a, b) =>
+  //       Number(b.fetchedBalance.formatted) - Number(a.fetchedBalance.formatted)
+  //   )
+  // }
 
-  useEffect(() => {
-    setIsLoading(true)
-    const fetchData = async () => {
-      const b = await fetchAllBalances()
-      setAllBalances(b)
-    }
+  // useEffect(() => {
+  //   setIsLoading(true)
+  //   const fetchData = async () => {
+  //     const b = await fetchAllBalances()
+  //     setAllBalances(b)
+  //   }
 
-    fetchData()
-    setIsLoading(false)
-  }, [chain])
+  //   fetchData()
+  //   setIsLoading(false)
+  // }, [chain])
 
   return (
     <div className="flex flex-col w-1/3">
-      <PageHeader title="Portfolio" subtitle={shortenAddress(address)} />
+      {/* <PageHeader title="Portfolio" subtitle={shortenAddress(address)} />
       <Card
         divider={false}
         className={`
@@ -155,7 +155,7 @@ export const Portfolio = () => {
         >
           {showZeroBalances ? 'Hide' : 'Show'} zero balances
         </button>
-      </Card>
+      </Card> */}
     </div>
   )
 }
