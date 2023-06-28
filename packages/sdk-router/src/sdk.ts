@@ -316,7 +316,7 @@ class SynapseSDK {
     let isSwap = false
     if ((destQuery as SynapseCCTPRouterQuery).routerAdapter) {
       formattedDestQuery = { ...(destQuery as SynapseCCTPRouterQuery) }
-      isSwap = formattedDestQuery.routerAdapter != AddressZero;
+      isSwap = formattedDestQuery.routerAdapter !== AddressZero
     } else {
       formattedDestQuery = { ...(destQuery as SynapseRouterQuery) }
     }
@@ -324,7 +324,6 @@ class SynapseSDK {
 
     let feeAmount!: BigNumber
     let feeConfig!: FeeConfig
-
 
     // Get fee data from the appropriate router
     if (isCCTP) {
