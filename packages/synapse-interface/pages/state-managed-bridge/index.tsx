@@ -58,7 +58,12 @@ import {
   BRIDGE_SWAPABLE_TOKENS_BY_TYPE,
   tokenSymbolToToken,
 } from '@/constants/tokens'
-import { AcceptedChainId, CHAINS_ARR, CHAINS_BY_ID } from '@/constants/chains'
+import {
+  AcceptedChainId,
+  CHAINS_ARR,
+  CHAINS_BY_ID,
+  ChainId,
+} from '@/constants/chains'
 import { approveToken } from '@/utils/approveToken'
 import { PageHeader } from '@/components/PageHeader'
 import Card from '@/components/ui/tailwind/Card'
@@ -179,6 +184,8 @@ const StateManagedBridge = () => {
         toToken.symbol,
         fromChainId
       )
+
+    console.log('bridgeableTokens: ', bridgeableTokens)
 
     let bridgeableToChainId = toChainId
     if (!bridgeableChainIds.includes(toChainId)) {
@@ -647,15 +654,45 @@ const findSupportedChainsAndTokens = (
     token,
     swapExceptionsArr
   )
-  // Determine the specific token to be used for the swap.
-  const bridgeableToken = getBridgeableToken(bridgeableTokens, positedToToken)
 
+  // console.log('token from f: ', token)
+  // console.log('bridgeableTokens from f: ', bridgeableTokens)
+
+  let filteredBridgeableTokens: Token[]
+
+  if (
+    fromChainId === ChainId.ETH ||
+    fromChainId === ChainId.ARBITRUM ||
+    fromChainId === ChainId.AVALANCHE
+  ) {
+    if (token.symbol === 'USDCe') {
+      filteredBridgeableTokens = bridgeableTokens.filter(
+        (token) => token.symbol !== 'USDC'
+      )
+    } else if (token.symbol === 'USDC') {
+      filteredBridgeableTokens = bridgeableTokens.filter(
+        (token) => token.symbol !== 'USDCe'
+      )
+    } else {
+      filteredBridgeableTokens = bridgeableTokens
+    }
+  }
+
+  // Determine the specific token to be used for the swap.
+  const bridgeableToken = getBridgeableToken(
+    // bridgeableTokens,
+    filteredBridgeableTokens,
+    positedToToken
+  )
+
+  console.log('filteredBridgeableTokens: ', filteredBridgeableTokens)
+  console.log('bridgeableToken: ', bridgeableToken)
   // Return the bridgeable chains, bridgeable tokens, and the specific bridgeable token.
   return {
     bridgeableChainIds: bridgeableChains.map((chainId: string) =>
       Number(chainId)
     ),
-    bridgeableTokens,
+    bridgeableTokens: filteredBridgeableTokens,
     bridgeableToken,
   }
 }
