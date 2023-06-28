@@ -653,9 +653,6 @@ const findSupportedChainsAndTokens = (
     swapExceptionsArr
   )
 
-  // console.log('token from f: ', token)
-  // console.log('bridgeableTokens from f: ', bridgeableTokens)
-
   let filteredBridgeableTokens: Token[]
 
   if (
@@ -678,7 +675,6 @@ const findSupportedChainsAndTokens = (
 
   // Determine the specific token to be used for the swap.
   const bridgeableToken = getBridgeableToken(
-    // bridgeableTokens,
     filteredBridgeableTokens,
     positedToToken
   )
