@@ -250,11 +250,11 @@ func (t *TXSubmitterDBSuite) setupMysqlDB() {
 	// skip if mysql test disabled, this really only needs to be run in ci
 
 	// skip if mysql test disabled
-	if os.Getenv("ENABLE_MYSQL_TEST") == "" {
+	if os.Getenv(common_base.EnableMysqlTestVar) == "" {
 		return
 	}
 	// sets up the conn string to the default database
-	connString := t.connString(os.Getenv("MYSQL_DATABASE"))
+	connString := t.connString(os.Getenv(common_base.MysqlDatabaseVar))
 	// sets up the myqsl db
 	testDB, err := sql.Open("mysql", connString)
 	t.Require().NoError(err)

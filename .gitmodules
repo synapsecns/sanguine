@@ -8,3 +8,6 @@
 [submodule "services/explorer/external/synapse-contracts"]
 	path = services/explorer/external/synapse-contracts
 	url = https://github.com/synapsecns/synapse-contracts.git
+[submodule "services/cctp-relayer/external/synapse-contracts"]
+	path = services/cctp-relayer/external/synapse-contracts
+	url = https://github.com/synapsecns/synapse-contracts
