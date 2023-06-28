@@ -86,6 +86,8 @@ import { isAddress } from '@ethersproject/address'
 import { TransactionButton } from '@/components/buttons/TransactionButton'
 import { BridgeTransactionButton } from '@/components/StateManagedBridge/BridgeTransactionButton'
 import ExplorerToastLink from '@/components/ExplorerToastLink'
+import { getTokensByChainId } from '@/actions/getTokenBalancesByChainId'
+import { ARBITRUM, AVALANCHE, ETH } from '@/constants/chains/master'
 
 // NOTE: These are idle utility functions that will be re-written to
 // support sorting by desired mechanism
@@ -148,6 +150,18 @@ const StateManagedBridge = () => {
 
   const fromChainIds = Object.keys(CHAINS_BY_ID).map((id) => Number(id))
   const toChainIds = Object.keys(CHAINS_BY_ID).map((id) => Number(id))
+
+  useEffect(() => {
+    const getData = async () => {
+      const arbTokens = await getTokensByChainId(ARBITRUM.id)
+      const avaxTokens = await getTokensByChainId(AVALANCHE.id)
+
+      console.log(`arbTokens`, arbTokens)
+      console.log(`avaxTokens`, avaxTokens)
+    }
+
+    getData()
+  }, [])
 
   // Commenting out for a bit to debug, but basic issue is we need
   // a mapping for allowable routes/tokens, and how we set them on
