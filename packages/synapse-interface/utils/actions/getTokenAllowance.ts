@@ -10,6 +10,7 @@ export const getTokenAllowance = async (
 ) => {
   let fetchedBalance
   let allowance
+
   const wallet = await fetchSigner({
     chainId,
   })

@@ -31,6 +31,8 @@ export const approve = async (
   })
 
   try {
+    let tx
+
     await approveToken(
       MINICHEF_ADDRESSES[chainId],
       chainId,
@@ -56,8 +58,10 @@ export const approve = async (
         })
       }
 
-      return successTx
+      tx = successTx
     })
+
+    return tx
   } catch (error) {
     toast.dismiss(pendingPopup)
     txErrorHandler(error)

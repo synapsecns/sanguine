@@ -11,7 +11,7 @@ import (
 
 func TestGetters(t *testing.T) {
 	cfg := config.Config{
-		GlobalConfig: config.ChainConfig{
+		ChainConfig: config.ChainConfig{
 			MaxBatchSize: 5,
 			DoNotBatch:   false,
 			MaxGasPrice:  big.NewInt(250 * params.GWei),

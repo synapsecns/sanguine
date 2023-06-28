@@ -15,6 +15,7 @@ export const SYN_ETH_SUSHI_TOKEN = new Token({
   poolId: 0,
   poolType: 'EXTERNAL_LP',
   description: 'The SYN/ETH Sushiswap LP Token',
+  priorityRank: 6,
 })
 
 export const ETH_USDC_SUSHI_TOKEN = new Token({
@@ -29,4 +30,5 @@ export const ETH_USDC_SUSHI_TOKEN = new Token({
   poolId: 666,
   poolType: 'EXTERNAL_LP',
   description: 'The ETH/USDC Sushiswap LP Token',
+  priorityRank: 6,
 })

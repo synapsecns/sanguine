@@ -44,6 +44,7 @@ import {
   QUOTE_POLLING_INTERVAL,
 } from '@/constants/bridge'
 import { CHAINS_BY_ID, AcceptedChainId } from '@/constants/chains'
+import { getSortedBridgableTokens } from '@/utils/actions/getSortedBridgableTokens'
 
 /* TODO
   - look into getting rid of fromChainId state and just using wagmi hook (ran into problems when trying this but forgot why)
@@ -66,7 +67,6 @@ const BridgePage = ({
   const [toChainId, setToChainId] = useState(DEFAULT_TO_CHAIN)
   const [toToken, setToToken] = useState(DEFAULT_TO_TOKEN)
   const [isQuoteLoading, setIsQuoteLoading] = useState<boolean>(false)
-  const [error, setError] = useState('')
   const [bridgeTxHash, setBridgeTxHash] = useState('')
   const [destinationAddress, setDestinationAddress] = useState('')
   const [toOptions, setToOptions] = useState({
@@ -82,29 +82,31 @@ const BridgePage = ({
   let successPopup: any
   let errorPopup: string
 
+  const bridgableTokens = getSortedBridgableTokens(fromChainId, bridgeTxHash)
+
   /*
   useEffect Trigger: onMount
   - Gets current network connected and sets it as the state.
   - Initializes polling (setInterval) func to re-retrieve quotes.
   */
-  useEffect(() => {
-    const validFromChainId = AcceptedChainId[fromChainId] ? fromChainId : 1
-    sortByTokenBalance(
-      BRIDGABLE_TOKENS[validFromChainId],
-      validFromChainId,
-      address
-    ).then((tokens) => {
-      setFromTokens(tokens)
-    })
-    const interval = setInterval(
-      () => setTime(Date.now()),
-      QUOTE_POLLING_INTERVAL
-    )
+  // useEffect(() => {
+  //   const validFromChainId = AcceptedChainId[fromChainId] ? fromChainId : 1
+  //   sortByTokenBalance(
+  //     BRIDGABLE_TOKENS[validFromChainId],
+  //     validFromChainId,
+  //     address
+  //   ).then((tokens) => {
+  //     setFromTokens(tokens)
+  //   })
+  //   const interval = setInterval(
+  //     () => setTime(Date.now()),
+  //     QUOTE_POLLING_INTERVAL
+  //   )
 
-    return () => {
-      clearInterval(interval)
-    }
-  }, [bridgeTxHash, fromChainId, address])
+  //   return () => {
+  //     clearInterval(interval)
+  //   }
+  // }, [bridgeTxHash, fromChainId, address])
 
   useEffect(() => {
     if (!router.isReady) {
@@ -406,7 +408,10 @@ const BridgePage = ({
   */
   const handleChainChange = useCallback(
     async (chainId: number, flip: boolean, type: 'from' | 'to') => {
-      if (address === undefined && type === 'from' || isDisconnected && type === 'from') {
+      if (
+        (address === undefined && type === 'from') ||
+        (isDisconnected && type === 'from')
+      ) {
         errorPopup = toast.error('Please connect your wallet', {
           id: 'bridge-connect-wallet',
           duration: 20000,
@@ -734,12 +739,11 @@ const BridgePage = ({
               <div className="flex justify-center">
                 <div className="pb-3 place-self-center">
                   <BridgeCard
-                    error={error}
                     address={address}
                     bridgeQuote={bridgeQuote}
                     fromInput={fromInput}
                     fromToken={fromToken}
-                    fromTokens={fromTokens}
+                    fromTokens={bridgableTokens}
                     fromChainId={fromChainId}
                     toToken={toToken}
                     toChainId={toChainId}

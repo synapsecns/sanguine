@@ -21,6 +21,7 @@ export const WETH = new Token({
   swapableType: 'ETH',
   swapableOn: [CHAINS.ARBITRUM.id, CHAINS.BOBA.id, CHAINS.OPTIMISM.id],
   color: 'sky',
+  priorityRank: 3,
 })
 export const MIM = new Token({
   addresses: {
@@ -33,6 +34,7 @@ export const MIM = new Token({
   logo: mimLogo,
   swapableType: 'USD',
   color: 'indigo',
+  priorityRank: 6,
 })
 
 export const SwapUSDC = new Token({
@@ -54,6 +56,7 @@ export const SwapUSDC = new Token({
   swapableType: 'USD',
 
   color: 'blue',
+  priorityRank: 1,
 })
 
 export const SwapUSDT = new Token({
@@ -74,4 +77,5 @@ export const SwapUSDT = new Token({
     to the number of USDT in circulation.
     `,
   swapableType: 'USD',
+  priorityRank: 1,
 })
