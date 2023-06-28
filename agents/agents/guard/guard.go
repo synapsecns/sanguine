@@ -50,7 +50,9 @@ func NewGuard(ctx context.Context, cfg config.AgentConfig, handler metrics.Handl
 
 	for domainName, domain := range cfg.Domains {
 		var domainClient domains.DomainClient
-		domainClient, err = evm.NewEVM(ctx, domainName, domain)
+
+		chainRPCURL := fmt.Sprintf("%s/1/rpc/%d", cfg.BaseOmnirpcURL, domain.DomainID)
+		domainClient, err = evm.NewEVM(ctx, domainName, domain, chainRPCURL)
 		if err != nil {
 			return Guard{}, fmt.Errorf("failing to create evm for domain, could not create guard for: %w", err)
 		}

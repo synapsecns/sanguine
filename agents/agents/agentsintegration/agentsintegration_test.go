@@ -213,7 +213,12 @@ func (u *AgentsIntegrationSuite) TestAgentsE2E() {
 
 	Equal(u.T(), encodedNotaryTestConfig, decodedAgentConfigBackToEncodedBytes)
 
-	guard, err := guard.NewGuard(u.GetTestContext(), guardTestConfig, u.GuardMetrics)
+	rpcURLs := map[uint32]string{
+		chainID:     u.TestBackendOrigin.RPCAddress(),
+		destination: u.TestBackendDestination.RPCAddress(),
+		summit:      u.TestBackendSummit.RPCAddress(),
+	}
+	guard, err := guard.NewGuardInjectedBackend(u.GetTestContext(), guardTestConfig, u.GuardMetrics, rpcURLs)
 	Nil(u.T(), err)
 
 	tips := types.NewTips(big.NewInt(0), big.NewInt(0), big.NewInt(0), big.NewInt(0))
@@ -291,7 +296,7 @@ func (u *AgentsIntegrationSuite) TestAgentsE2E() {
 		return state.Nonce() >= uint32(1)
 	})
 
-	notary, err := notary.NewNotary(u.GetTestContext(), notaryTestConfig, u.NotaryMetrics)
+	notary, err := notary.NewNotaryInjectedBackend(u.GetTestContext(), notaryTestConfig, u.NotaryMetrics, rpcURLs)
 	Nil(u.T(), err)
 
 	go func() {

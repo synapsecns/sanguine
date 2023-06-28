@@ -170,8 +170,7 @@ func (a *SimulatedBackendsTestSuite) SetupOrigin(deployManager *DeployManager) {
 		DestinationAddress:  a.DestinationContractOnOrigin.Address().String(),
 		LightManagerAddress: a.LightManagerOnOrigin.Address().String(),
 		LightInboxAddress:   a.LightInboxOnOrigin.Address().String(),
-		RPCUrl:              a.TestBackendOrigin.RPCAddress(),
-	})
+	}, a.TestBackendOrigin.RPCAddress())
 	if err != nil {
 		a.T().Fatal(err)
 	}
@@ -211,8 +210,7 @@ func (a *SimulatedBackendsTestSuite) SetupDestination(deployManager *DeployManag
 		DestinationAddress:  a.DestinationContract.Address().String(),
 		LightManagerAddress: a.LightManagerOnDestination.Address().String(),
 		LightInboxAddress:   a.LightInboxOnDestination.Address().String(),
-		RPCUrl:              a.TestBackendDestination.RPCAddress(),
-	})
+	}, a.TestBackendDestination.RPCAddress())
 	if err != nil {
 		a.T().Fatal(err)
 	}
@@ -237,8 +235,7 @@ func (a *SimulatedBackendsTestSuite) SetupSummit(deployManager *DeployManager) {
 		SummitAddress:         a.SummitContract.Address().String(),
 		BondingManagerAddress: a.BondingManagerOnSummit.Address().String(),
 		InboxAddress:          a.InboxOnSummit.Address().String(),
-		RPCUrl:                a.TestBackendSummit.RPCAddress(),
-	})
+	}, a.TestBackendSummit.RPCAddress())
 	if err != nil {
 		a.T().Fatal(err)
 	}

@@ -26,11 +26,10 @@ func (e *RPCSuite) TestGetters() {
 
 	testCfg := config.DomainConfig{
 		DomainID:      originDomain,
-		RPCUrl:        e.TestBackendOrigin.RPCAddress(),
 		OriginAddress: e.OriginContract.Address().String(),
 	}
 
-	testEvm, err := evm.NewEVM(e.GetTestContext(), name, testCfg)
+	testEvm, err := evm.NewEVM(e.GetTestContext(), name, testCfg, e.TestBackendOrigin.RPCAddress())
 	Nil(e.T(), err)
 	Equal(e.T(), testEvm.Config(), testCfg)
 	Equal(e.T(), testEvm.Name(), name)

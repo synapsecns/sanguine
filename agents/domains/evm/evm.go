@@ -39,8 +39,8 @@ var _ domains.DomainClient = &evmClient{}
 // NewEVM creates a new evm client.
 //
 //nolint:nestif
-func NewEVM(ctx context.Context, name string, domain config.DomainConfig) (domains.DomainClient, error) {
-	underlyingClient, err := chain.NewFromURL(ctx, domain.RPCUrl)
+func NewEVM(ctx context.Context, name string, domain config.DomainConfig, chainRPCURL string) (domains.DomainClient, error) {
+	underlyingClient, err := chain.NewFromURL(ctx, chainRPCURL)
 	if err != nil {
 		return nil, fmt.Errorf("could not get evm: %w", err)
 	}
