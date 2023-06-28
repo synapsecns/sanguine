@@ -95,6 +95,9 @@ func (n *Notary) loadSummitMyLatestStates(parentCtx context.Context) {
 		))
 
 		originID := domain.Config().DomainID
+		if n.destinationDomain.Config().DomainID == originID {
+			continue
+		}
 		myLatestState, err := n.summitDomain.Summit().GetLatestAgentState(ctx, originID, n.bondedSigner)
 		if err != nil {
 			myLatestState = nil
@@ -350,6 +353,9 @@ func (n *Notary) getLatestSnapshot(parentCtx context.Context) (types.Snapshot, m
 	snapshotStates := make([]types.State, 0, len(statesToSubmit))
 	for _, state := range statesToSubmit {
 		if state.Nonce() == 0 {
+			continue
+		}
+		if state.Origin() == n.destinationDomain.Config().DomainID {
 			continue
 		}
 		snapshotStates = append(snapshotStates, state)

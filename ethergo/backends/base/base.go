@@ -220,7 +220,7 @@ func (b *Backend) WaitForConfirmation(parentCtx context.Context, transaction *ty
 		if err != nil {
 			errMessage := fmt.Sprintf("could not call contract: %v on tx: %s", err, transaction.Hash())
 			if b.RPCAddress() != "" {
-				errMessage += fmt.Sprintf("For more info run (before the process stops): cast run --rpc-url %s %s --trace-printer", b.RPCAddress(), transaction.Hash())
+				errMessage += fmt.Sprintf("\nFor more info run (before the process stops): cast run --rpc-url %s %s --trace-printer", b.RPCAddress(), transaction.Hash())
 			}
 			logger.Error(errMessage)
 			return
@@ -248,7 +248,7 @@ func (b *Backend) WaitForConfirmation(parentCtx context.Context, transaction *ty
 			//nolint: forcetypeassert
 			errMessage := fmt.Sprintf("tx %s reverted: %v", transaction.Hash(), vs[0].(string))
 			if b.RPCAddress() != "" {
-				errMessage += fmt.Sprintf("For more info run (before the process stops): cast run --rpc-url %s %s --trace-printer", b.RPCAddress(), transaction.Hash())
+				errMessage += fmt.Sprintf("\nFor more info run (before the process stops): cast run --rpc-url %s %s --trace-printer", b.RPCAddress(), transaction.Hash())
 			}
 			logger.Error(errMessage)
 		}

@@ -165,7 +165,7 @@ func NewExecutor(ctx context.Context, config executor.Config, executorDB db.Exec
 			inboxParser = nil
 		}
 
-		chainRPCURL := fmt.Sprintf("%s/1/rpc/%d", config.BaseOmnirpcURL, chain.ChainID)
+		chainRPCURL := fmt.Sprintf("%s/confirmations/1/rpc/%d", config.BaseOmnirpcURL, chain.ChainID)
 
 		underlyingClient, err := ethergoChain.NewFromURL(ctx, chainRPCURL)
 		if err != nil {
@@ -415,8 +415,6 @@ func (e Executor) verifyMessageMerkleProof(message types.Message) (bool, error) 
 }
 
 // verifyStateMerkleProof verifies that a state is in the snapshot merkle tree.
-//
-//nolint:unused
 func (e Executor) verifyStateMerkleProof(parentCtx context.Context, state types.State) (_ bool, err error) {
 	stateRoot := state.Root()
 	root := common.BytesToHash(stateRoot[:]).String()
