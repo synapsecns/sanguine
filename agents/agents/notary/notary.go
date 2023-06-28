@@ -433,7 +433,6 @@ func (n *Notary) registerNotaryOnDestination(parentCtx context.Context) bool {
 }
 
 //nolint:cyclop,unused
-//nolint:cyclop
 func (n *Notary) submitMyLatestAttestation(parentCtx context.Context) {
 	ctx, span := n.handler.Tracer().Start(parentCtx, "submitMyLatestAttestation")
 	defer span.End()
