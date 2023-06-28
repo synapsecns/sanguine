@@ -57,7 +57,7 @@ const (
 	DefaultGasBumpPercentage = 5
 
 	// DefaultGasEstimate is the default gas estimate to use for transactions.
-	DefaultGasEstimate = uint64(5000000)
+	DefaultGasEstimate = uint64(1200000)
 )
 
 // DefaultMaxPrice is the default max price of a tx.
