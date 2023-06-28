@@ -1,4 +1,5 @@
 import { configureStore } from '@reduxjs/toolkit'
+
 import bridgeReducer, { tokenDecimalMiddleware } from '@/slices/bridgeSlice'
 import bridgeDisplayReducer from '@/slices/bridgeDisplaySlice'
 
