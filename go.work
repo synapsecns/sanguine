@@ -11,6 +11,7 @@ use (
 	./contrib/tfcore
 	./core
 	./ethergo
+	./services/cctp-relayer
 	./services/explorer
 	./services/omnirpc
 	./services/scribe

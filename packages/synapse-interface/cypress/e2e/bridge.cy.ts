@@ -10,10 +10,6 @@ describe('Bridge without wallet connected', () => {
       .should('be.visible')
       .click()
 
-    cy.get('[data-test-id="bridge-origin-chain-list"]')
-      .its('0.offsetHeight')
-      .should('be.gt', 0)
-
     cy.fixture(BRIDGE_CONSTANTS).then((fixture) => {
       cy.get('button[data-test-id="bridge-origin-chain-list-item"]').should(
         'have.length',

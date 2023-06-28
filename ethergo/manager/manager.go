@@ -3,13 +3,14 @@ package manager
 
 import (
 	"context"
+	"sync"
+	"testing"
+
 	"github.com/stretchr/testify/assert"
 	"github.com/synapsecns/sanguine/ethergo/backends"
 	"github.com/synapsecns/sanguine/ethergo/backends/simulated"
 	"github.com/synapsecns/sanguine/ethergo/contracts"
 	"github.com/synapsecns/sanguine/ethergo/deployer"
-	"sync"
-	"testing"
 )
 
 // IDeployManager is responsible for deploying contracts.
@@ -162,7 +163,7 @@ func AssertDependenciesCorrect(ctx context.Context, t *testing.T, deployManagerF
 		assert.Equal(t, dc.ChainID().String(), backend.GetBigChainID().String())
 
 		deployedContracts := contractRegistry.GetDeployedContracts()
-		// make sure dependency count is equal (adding our own contract to there expected amount)
+		// make sure dependency count is equal (adding our own contract to their expected amount)
 		assert.Equal(t, len(deployedContracts), len(contract.Dependencies())+1)
 
 		for _, dep := range contract.Dependencies() {
