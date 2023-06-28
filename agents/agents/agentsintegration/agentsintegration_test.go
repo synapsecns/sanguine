@@ -1,29 +1,27 @@
 package agentsintegration_test
 
 import (
+	"github.com/Flaque/filet"
 	awsTime "github.com/aws/smithy-go/time"
 	"github.com/brianvoe/gofakeit/v6"
+	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/common"
+	. "github.com/stretchr/testify/assert"
 	"github.com/synapsecns/sanguine/agents/agents/executor"
 	"github.com/synapsecns/sanguine/agents/agents/guard"
 	"github.com/synapsecns/sanguine/agents/agents/notary"
-	executor2 "github.com/synapsecns/sanguine/agents/config/executor"
+	"github.com/synapsecns/sanguine/agents/config"
+	execConfig "github.com/synapsecns/sanguine/agents/config/executor"
 	"github.com/synapsecns/sanguine/agents/types"
-	config2 "github.com/synapsecns/sanguine/ethergo/signer/config"
+	signerConfig "github.com/synapsecns/sanguine/ethergo/signer/config"
+	"github.com/synapsecns/sanguine/services/scribe/backfill"
+	"github.com/synapsecns/sanguine/services/scribe/client"
+	scribeConfig "github.com/synapsecns/sanguine/services/scribe/config"
+	"github.com/synapsecns/sanguine/services/scribe/node"
 	"math/big"
 	"os"
 	"testing"
 	"time"
-
-	"github.com/synapsecns/sanguine/services/scribe/backfill"
-	"github.com/synapsecns/sanguine/services/scribe/client"
-	scribeConfig2 "github.com/synapsecns/sanguine/services/scribe/config"
-	"github.com/synapsecns/sanguine/services/scribe/node"
-
-	"github.com/Flaque/filet"
-	"github.com/ethereum/go-ethereum/accounts/abi/bind"
-	. "github.com/stretchr/testify/assert"
-	"github.com/synapsecns/sanguine/agents/config"
 )
 
 func RemoveAgentsTempFile(t *testing.T, fileName string) {
@@ -46,41 +44,41 @@ func (u *AgentsIntegrationSuite) TestAgentsE2E() {
 	summitClient, err := backfill.DialBackend(u.GetTestContext(), u.TestBackendSummit.RPCAddress(), u.ScribeMetrics)
 	u.Nil(err)
 
-	originConfig := scribeConfig2.ContractConfig{
+	originConfig := scribeConfig.ContractConfig{
 		Address:    u.OriginContract.Address().String(),
 		StartBlock: 0,
 	}
-	originChainConfig := scribeConfig2.ChainConfig{
+	originChainConfig := scribeConfig.ChainConfig{
 		ChainID:               uint32(u.TestBackendOrigin.GetChainID()),
 		BlockTimeChunkSize:    1,
 		ContractSubChunkSize:  1,
 		RequiredConfirmations: 0,
-		Contracts:             []scribeConfig2.ContractConfig{originConfig},
+		Contracts:             []scribeConfig.ContractConfig{originConfig},
 	}
-	destinationConfig := scribeConfig2.ContractConfig{
+	destinationConfig := scribeConfig.ContractConfig{
 		Address:    u.LightInboxOnDestination.Address().String(),
 		StartBlock: 0,
 	}
-	destinationChainConfig := scribeConfig2.ChainConfig{
+	destinationChainConfig := scribeConfig.ChainConfig{
 		ChainID:               uint32(u.TestBackendDestination.GetChainID()),
 		BlockTimeChunkSize:    1,
 		ContractSubChunkSize:  1,
 		RequiredConfirmations: 0,
-		Contracts:             []scribeConfig2.ContractConfig{destinationConfig},
+		Contracts:             []scribeConfig.ContractConfig{destinationConfig},
 	}
-	summitConfig := scribeConfig2.ContractConfig{
+	summitConfig := scribeConfig.ContractConfig{
 		Address:    u.InboxOnSummit.Address().String(),
 		StartBlock: 0,
 	}
-	summitChainConfig := scribeConfig2.ChainConfig{
+	summitChainConfig := scribeConfig.ChainConfig{
 		ChainID:               uint32(u.TestBackendSummit.GetChainID()),
 		BlockTimeChunkSize:    1,
 		ContractSubChunkSize:  1,
 		RequiredConfirmations: 0,
-		Contracts:             []scribeConfig2.ContractConfig{summitConfig},
+		Contracts:             []scribeConfig.ContractConfig{summitConfig},
 	}
-	scribeConfig := scribeConfig2.Config{
-		Chains: []scribeConfig2.ChainConfig{originChainConfig, destinationChainConfig, summitChainConfig},
+	scribeConfig := scribeConfig.Config{
+		Chains: []scribeConfig.ChainConfig{originChainConfig, destinationChainConfig, summitChainConfig},
 	}
 	clients := map[uint32][]backfill.ScribeBackend{
 		uint32(u.TestBackendOrigin.GetChainID()):      {originClient, originClient},
@@ -109,11 +107,11 @@ func (u *AgentsIntegrationSuite) TestAgentsE2E() {
 	destination := uint32(u.TestBackendDestination.GetChainID())
 	summit := uint32(u.TestBackendSummit.GetChainID())
 
-	excCfg := executor2.Config{
+	excCfg := execConfig.Config{
 		SummitChainID: summit,
 		SummitAddress: u.SummitContract.Address().String(),
 		InboxAddress:  u.InboxOnSummit.Address().String(),
-		Chains: []executor2.ChainConfig{
+		Chains: []execConfig.ChainConfig{
 			{
 				ChainID:       chainID,
 				OriginAddress: u.OriginContract.Address().String(),
@@ -128,8 +126,8 @@ func (u *AgentsIntegrationSuite) TestAgentsE2E() {
 			},
 		},
 		BaseOmnirpcURL: u.TestBackendOrigin.RPCAddress(),
-		UnbondedSigner: config2.SignerConfig{
-			Type: config2.FileType.String(),
+		UnbondedSigner: signerConfig.SignerConfig{
+			Type: signerConfig.FileType.String(),
 			File: filet.TmpFile(u.T(), "", u.ExecutorUnbondedWallet.PrivateKeyHex()).Name(),
 		},
 	}
@@ -164,12 +162,12 @@ func (u *AgentsIntegrationSuite) TestAgentsE2E() {
 		},
 		DomainID:       uint32(0),
 		SummitDomainID: u.SummitDomainClient.Config().DomainID,
-		BondedSigner: config2.SignerConfig{
-			Type: config2.FileType.String(),
+		BondedSigner: signerConfig.SignerConfig{
+			Type: signerConfig.FileType.String(),
 			File: filet.TmpFile(u.T(), "", u.GuardBondedWallet.PrivateKeyHex()).Name(),
 		},
-		UnbondedSigner: config2.SignerConfig{
-			Type: config2.FileType.String(),
+		UnbondedSigner: signerConfig.SignerConfig{
+			Type: signerConfig.FileType.String(),
 			File: filet.TmpFile(u.T(), "", u.GuardUnbondedWallet.PrivateKeyHex()).Name(),
 		},
 		RefreshIntervalSeconds: 5,
@@ -182,12 +180,12 @@ func (u *AgentsIntegrationSuite) TestAgentsE2E() {
 		},
 		DomainID:       u.DestinationDomainClient.Config().DomainID,
 		SummitDomainID: u.SummitDomainClient.Config().DomainID,
-		BondedSigner: config2.SignerConfig{
-			Type: config2.FileType.String(),
+		BondedSigner: signerConfig.SignerConfig{
+			Type: signerConfig.FileType.String(),
 			File: filet.TmpFile(u.T(), "", u.NotaryBondedWallet.PrivateKeyHex()).Name(),
 		},
-		UnbondedSigner: config2.SignerConfig{
-			Type: config2.FileType.String(),
+		UnbondedSigner: signerConfig.SignerConfig{
+			Type: signerConfig.FileType.String(),
 			File: filet.TmpFile(u.T(), "", u.NotaryUnbondedWallet.PrivateKeyHex()).Name(),
 		},
 		RefreshIntervalSeconds: 5,

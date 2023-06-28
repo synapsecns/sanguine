@@ -3,6 +3,7 @@ package executor
 import (
 	"context"
 	"fmt"
+	"github.com/synapsecns/sanguine/core/dbcommon"
 )
 
 // DBConfig is used to configure a database.
@@ -15,7 +16,7 @@ type DBConfig struct {
 
 // IsValid asserts the database connection is valid.
 func (d *DBConfig) IsValid(_ context.Context) (ok bool, err error) {
-	if d.Type != "sqlite" && d.Type != "mysql" {
+	if d.Type != dbcommon.Sqlite.String() && d.Type != dbcommon.Mysql.String() {
 		return false, fmt.Errorf("invalid database type: %s", d.Type)
 	}
 

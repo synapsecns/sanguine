@@ -8,7 +8,7 @@ import (
 	"github.com/synapsecns/sanguine/agents/domains/evm"
 	"github.com/synapsecns/sanguine/agents/types"
 	"github.com/synapsecns/sanguine/core/metrics"
-	config2 "github.com/synapsecns/sanguine/ethergo/signer/config"
+	signerConfig "github.com/synapsecns/sanguine/ethergo/signer/config"
 	"time"
 )
 
@@ -21,12 +21,12 @@ func NewGuardInjectedBackend(ctx context.Context, cfg config.AgentConfig, handle
 	}
 	guard.domains = []domains.DomainClient{}
 
-	guard.bondedSigner, err = config2.SignerFromConfig(ctx, cfg.BondedSigner)
+	guard.bondedSigner, err = signerConfig.SignerFromConfig(ctx, cfg.BondedSigner)
 	if err != nil {
 		return Guard{}, fmt.Errorf("error with bondedSigner, could not create guard: %w", err)
 	}
 
-	guard.unbondedSigner, err = config2.SignerFromConfig(ctx, cfg.UnbondedSigner)
+	guard.unbondedSigner, err = signerConfig.SignerFromConfig(ctx, cfg.UnbondedSigner)
 	if err != nil {
 		return Guard{}, fmt.Errorf("error with unbondedSigner, could not create guard: %w", err)
 	}

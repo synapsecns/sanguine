@@ -6,7 +6,7 @@ import (
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/synapsecns/sanguine/agents/agents/executor"
 	execTypes "github.com/synapsecns/sanguine/agents/agents/executor/db"
-	executor2 "github.com/synapsecns/sanguine/agents/config/executor"
+	execConfig "github.com/synapsecns/sanguine/agents/config/executor"
 	"github.com/synapsecns/sanguine/agents/types"
 	"github.com/synapsecns/sanguine/core/merkle"
 	agentsConfig "github.com/synapsecns/sanguine/ethergo/signer/config"
@@ -22,8 +22,8 @@ func (e *ExecutorSuite) TestVerifyState() {
 	chainID := uint32(e.TestBackendOrigin.GetChainID())
 	destination := uint32(e.TestBackendDestination.GetChainID())
 
-	excCfg := executor2.Config{
-		Chains: []executor2.ChainConfig{
+	excCfg := execConfig.Config{
+		Chains: []execConfig.ChainConfig{
 			{
 				ChainID: chainID,
 			},
@@ -165,8 +165,8 @@ func (e *ExecutorSuite) TestMerkleInsert() {
 		}
 	}()
 
-	excCfg := executor2.Config{
-		Chains: []executor2.ChainConfig{
+	excCfg := execConfig.Config{
+		Chains: []execConfig.ChainConfig{
 			{
 				ChainID:       chainID,
 				OriginAddress: e.OriginContractMetadata.Address().String(),
@@ -366,8 +366,8 @@ func (e *ExecutorSuite) TestVerifyMessageMerkleProof() {
 	chainID := uint32(e.TestBackendOrigin.GetChainID())
 	destination := uint32(e.TestBackendDestination.GetChainID())
 
-	excCfg := executor2.Config{
-		Chains: []executor2.ChainConfig{
+	excCfg := execConfig.Config{
+		Chains: []execConfig.ChainConfig{
 			{
 				ChainID: chainID,
 			},
@@ -544,10 +544,10 @@ func (e *ExecutorSuite) TestExecutor() {
 		}
 	}()
 
-	excCfg := executor2.Config{
+	excCfg := execConfig.Config{
 		SummitChainID: summit,
 		SummitAddress: e.SummitContract.Address().String(),
-		Chains: []executor2.ChainConfig{
+		Chains: []execConfig.ChainConfig{
 			{
 				ChainID:       chainID,
 				OriginAddress: e.OriginContract.Address().String(),
@@ -767,8 +767,8 @@ func (e *ExecutorSuite) TestSetMinimumTime() {
 	err = e.ExecutorTestDB.StoreAttestation(e.GetTestContext(), attestation2, destination, 20, 20)
 	e.Nil(err)
 
-	excCfg := executor2.Config{
-		Chains: []executor2.ChainConfig{
+	excCfg := execConfig.Config{
+		Chains: []execConfig.ChainConfig{
 			{
 				ChainID: chainID,
 			},

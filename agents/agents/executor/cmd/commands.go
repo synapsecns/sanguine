@@ -11,6 +11,7 @@ import (
 	"github.com/synapsecns/sanguine/agents/agents/executor/db/datastore/sql/sqlite"
 	"github.com/synapsecns/sanguine/agents/agents/executor/metadata"
 	execConfig "github.com/synapsecns/sanguine/agents/config/executor"
+	"github.com/synapsecns/sanguine/core/dbcommon"
 	"github.com/synapsecns/sanguine/core/metrics"
 	omnirpcClient "github.com/synapsecns/sanguine/services/omnirpc/client"
 	scribeAPI "github.com/synapsecns/sanguine/services/scribe/api"
@@ -68,11 +69,11 @@ func createExecutorParameters(ctx context.Context, c *cli.Context, metrics metri
 		return executorConfig, nil, nil, fmt.Errorf("failed to decode config: %w", err)
 	}
 
-	if executorConfig.DBPrefix == "" && executorConfig.DBConfig.Type == "mysql" {
+	if executorConfig.DBPrefix == "" && executorConfig.DBConfig.Type == dbcommon.Mysql.String() {
 		executorConfig.DBPrefix = "executor"
 	}
 
-	if executorConfig.DBConfig.Type == "sqlite" {
+	if executorConfig.DBConfig.Type == dbcommon.Sqlite.String() {
 		executorConfig.DBPrefix = ""
 	}
 

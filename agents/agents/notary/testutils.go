@@ -10,7 +10,7 @@ import (
 	"github.com/synapsecns/sanguine/agents/domains/evm"
 	"github.com/synapsecns/sanguine/agents/types"
 	"github.com/synapsecns/sanguine/core/metrics"
-	config2 "github.com/synapsecns/sanguine/ethergo/signer/config"
+	signerConfig "github.com/synapsecns/sanguine/ethergo/signer/config"
 	"time"
 )
 
@@ -23,12 +23,12 @@ func NewNotaryInjectedBackend(ctx context.Context, cfg config.AgentConfig, handl
 	}
 	notary.domains = []domains.DomainClient{}
 
-	notary.bondedSigner, err = config2.SignerFromConfig(ctx, cfg.BondedSigner)
+	notary.bondedSigner, err = signerConfig.SignerFromConfig(ctx, cfg.BondedSigner)
 	if err != nil {
 		return Notary{}, fmt.Errorf("error with bondedSigner, could not create notary: %w", err)
 	}
 
-	notary.unbondedSigner, err = config2.SignerFromConfig(ctx, cfg.UnbondedSigner)
+	notary.unbondedSigner, err = signerConfig.SignerFromConfig(ctx, cfg.UnbondedSigner)
 	if err != nil {
 		return Notary{}, fmt.Errorf("error with unbondedSigner, could not create notary: %w", err)
 	}

@@ -1,7 +1,7 @@
 package guard_test
 
 import (
-	config2 "github.com/synapsecns/sanguine/ethergo/signer/config"
+	signerConfig "github.com/synapsecns/sanguine/ethergo/signer/config"
 	"math/big"
 	"os"
 	"testing"
@@ -32,12 +32,12 @@ func (u GuardSuite) TestGuardE2E() {
 		},
 		DomainID:       uint32(0),
 		SummitDomainID: u.SummitDomainClient.Config().DomainID,
-		BondedSigner: config2.SignerConfig{
-			Type: config2.FileType.String(),
+		BondedSigner: signerConfig.SignerConfig{
+			Type: signerConfig.FileType.String(),
 			File: filet.TmpFile(u.T(), "", u.GuardBondedWallet.PrivateKeyHex()).Name(),
 		},
-		UnbondedSigner: config2.SignerConfig{
-			Type: config2.FileType.String(),
+		UnbondedSigner: signerConfig.SignerConfig{
+			Type: signerConfig.FileType.String(),
 			File: filet.TmpFile(u.T(), "", u.GuardUnbondedWallet.PrivateKeyHex()).Name(),
 		},
 		RefreshIntervalSeconds: 5,
