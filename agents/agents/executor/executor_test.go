@@ -134,7 +134,7 @@ func (e *ExecutorSuite) TestMerkleInsert() {
 		StartBlock: 0,
 	}
 	chainConfig := config.ChainConfig{
-		ChainID:               chainID,
+		ChainID:            chainID,
 		GetLogsBatchAmount: 1,
 		StoreConcurrency:   1,
 		GetLogsRange:       1,
@@ -143,7 +143,7 @@ func (e *ExecutorSuite) TestMerkleInsert() {
 			ConfirmationThreshold:   1,
 			ConfirmationRefreshRate: 1,
 		},
-		Contracts:             []config.ContractConfig{contractConfig},
+		Contracts: []config.ContractConfig{contractConfig},
 	}
 	scribeConfig := config.Config{
 		Chains: []config.ChainConfig{chainConfig},
@@ -496,7 +496,7 @@ func (e *ExecutorSuite) TestExecutor() {
 		StartBlock: 0,
 	}
 	originChainConfig := config.ChainConfig{
-		ChainID:               chainID,
+		ChainID:            chainID,
 		GetLogsBatchAmount: 1,
 		StoreConcurrency:   1,
 		GetLogsRange:       1,
@@ -505,14 +505,14 @@ func (e *ExecutorSuite) TestExecutor() {
 			ConfirmationThreshold:   1,
 			ConfirmationRefreshRate: 1,
 		},
-		Contracts:             []config.ContractConfig{originConfig},
+		Contracts: []config.ContractConfig{originConfig},
 	}
 	destinationConfig := config.ContractConfig{
 		Address:    e.DestinationContract.Address().String(),
 		StartBlock: 0,
 	}
 	destinationChainConfig := config.ChainConfig{
-		ChainID:               destination,
+		ChainID:            destination,
 		GetLogsBatchAmount: 1,
 		StoreConcurrency:   1,
 		GetLogsRange:       1,
@@ -521,14 +521,14 @@ func (e *ExecutorSuite) TestExecutor() {
 			ConfirmationThreshold:   1,
 			ConfirmationRefreshRate: 1,
 		},
-		Contracts:             []config.ContractConfig{destinationConfig},
+		Contracts: []config.ContractConfig{destinationConfig},
 	}
 	summitConfig := config.ContractConfig{
 		Address:    e.SummitContract.Address().String(),
 		StartBlock: 0,
 	}
 	summitChainConfig := config.ChainConfig{
-		ChainID:               summit,
+		ChainID:            summit,
 		GetLogsBatchAmount: 1,
 		StoreConcurrency:   1,
 		GetLogsRange:       1,
@@ -537,7 +537,7 @@ func (e *ExecutorSuite) TestExecutor() {
 			ConfirmationThreshold:   1,
 			ConfirmationRefreshRate: 1,
 		},
-		Contracts:             []config.ContractConfig{summitConfig},
+		Contracts: []config.ContractConfig{summitConfig},
 	}
 	scribeConfig := config.Config{
 		Chains: []config.ChainConfig{originChainConfig, destinationChainConfig, summitChainConfig},

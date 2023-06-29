@@ -54,7 +54,7 @@ func (u *AgentsIntegrationSuite) TestAgentsE2E() {
 		StartBlock: 0,
 	}
 	originChainConfig := scribeConfig2.ChainConfig{
-		ChainID:               uint32(u.TestBackendOrigin.GetChainID()),
+		ChainID:            uint32(u.TestBackendOrigin.GetChainID()),
 		GetLogsBatchAmount: 1,
 		StoreConcurrency:   1,
 		GetLogsRange:       1,
@@ -63,14 +63,14 @@ func (u *AgentsIntegrationSuite) TestAgentsE2E() {
 			ConfirmationThreshold:   1,
 			ConfirmationRefreshRate: 1,
 		},
-		Contracts:             []scribeConfig2.ContractConfig{originConfig},
+		Contracts: []scribeConfig2.ContractConfig{originConfig},
 	}
 	destinationConfig := scribeConfig2.ContractConfig{
 		Address:    u.LightInboxOnDestination.Address().String(),
 		StartBlock: 0,
 	}
 	destinationChainConfig := scribeConfig2.ChainConfig{
-		ChainID:               uint32(u.TestBackendDestination.GetChainID()),
+		ChainID:            uint32(u.TestBackendDestination.GetChainID()),
 		GetLogsBatchAmount: 1,
 		StoreConcurrency:   1,
 		GetLogsRange:       1,
@@ -79,14 +79,14 @@ func (u *AgentsIntegrationSuite) TestAgentsE2E() {
 			ConfirmationThreshold:   1,
 			ConfirmationRefreshRate: 1,
 		},
-		Contracts:             []scribeConfig2.ContractConfig{destinationConfig},
+		Contracts: []scribeConfig2.ContractConfig{destinationConfig},
 	}
 	summitConfig := scribeConfig2.ContractConfig{
 		Address:    u.InboxOnSummit.Address().String(),
 		StartBlock: 0,
 	}
 	summitChainConfig := scribeConfig2.ChainConfig{
-		ChainID:               uint32(u.TestBackendSummit.GetChainID()),
+		ChainID:            uint32(u.TestBackendSummit.GetChainID()),
 		GetLogsBatchAmount: 1,
 		StoreConcurrency:   1,
 		GetLogsRange:       1,
@@ -95,7 +95,7 @@ func (u *AgentsIntegrationSuite) TestAgentsE2E() {
 			ConfirmationThreshold:   1,
 			ConfirmationRefreshRate: 1,
 		},
-		Contracts:             []scribeConfig2.ContractConfig{summitConfig},
+		Contracts: []scribeConfig2.ContractConfig{summitConfig},
 	}
 	scribeConfig := scribeConfig2.Config{
 		Chains: []scribeConfig2.ChainConfig{originChainConfig, destinationChainConfig, summitChainConfig},
