@@ -18,6 +18,7 @@ func (d *DBSuite) mockMessage(originChainID, destinationChainID, blockNumber uin
 		Attestation:      []byte(gofakeit.Paragraph(10, 10, 10, " ")),
 		RequestVersion:   0,
 		FormattedRequest: []byte(gofakeit.Paragraph(10, 10, 10, " ")),
+		RequestID:        mocks.NewMockHash(d.T()).String(),
 		BlockNumber:      uint64(blockNumber),
 		State:            types.Pending,
 	}
@@ -35,6 +36,24 @@ func (d *DBSuite) TestGetMessageByHash() {
 		d.Nil(err)
 
 		message, err := testDB.GetMessageByOriginHash(d.GetTestContext(), common.HexToHash(message1.OriginTxHash))
+		d.Nil(err)
+
+		d.Equal(message1.MessageHash, message.MessageHash)
+	})
+}
+
+func (d *DBSuite) TestGetMessageByRequestID() {
+	d.RunOnAllDBs(func(testDB db.CCTPRelayerDB) {
+		message1 := d.mockMessage(gofakeit.Uint32(), gofakeit.Uint32(), gofakeit.Uint32())
+		message2 := d.mockMessage(gofakeit.Uint32(), gofakeit.Uint32(), gofakeit.Uint32())
+
+		err := testDB.StoreMessage(d.GetTestContext(), message1)
+		d.Nil(err)
+
+		err = testDB.StoreMessage(d.GetTestContext(), message2)
+		d.Nil(err)
+
+		message, err := testDB.GetMessageByRequestID(d.GetTestContext(), message1.RequestID)
 		d.Nil(err)
 
 		d.Equal(message1.MessageHash, message.MessageHash)
