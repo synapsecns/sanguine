@@ -1,3 +1,5 @@
 import { usePortfolioBalancesAndAllowances } from '@/utils/hooks/usePortfolioBalances'
 
-export const Portfolio = () => {}
+export const Portfolio = () => {
+  const portfolioData = usePortfolioBalancesAndAllowances()
+}
