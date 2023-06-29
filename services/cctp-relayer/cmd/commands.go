@@ -2,6 +2,7 @@ package cmd
 
 import (
 	"fmt"
+
 	"github.com/synapsecns/sanguine/core/commandline"
 
 	"github.com/synapsecns/sanguine/core"
@@ -44,6 +45,18 @@ var scribePortFlag = &cli.UintFlag{
 var scribeURL = &cli.StringFlag{
 	Name:  "scribe-url",
 	Usage: "--scribe-url <url>",
+}
+
+var originFlag = &cli.UintFlag{
+	Name:     "origin",
+	Usage:    "--origin <chain id>",
+	Required: true,
+}
+
+var txHashFlag = &cli.StringFlag{
+	Name:     "tx-hash",
+	Usage:    "--tx-hash <hash>",
+	Required: true,
 }
 
 // runCommand runs the cctp relayer.
@@ -89,6 +102,54 @@ var runCommand = &cli.Command{
 		err = cctpRelayer.Run(c.Context)
 		if err != nil {
 			return fmt.Errorf("could not run cctp relayer: %w", err)
+		}
+		return nil
+	},
+}
+
+// relaySingleCommand uses a new cctp relayer to relay a single message.
+var relaySingleCommand = &cli.Command{
+	Name:        "relay-single",
+	Description: "relay a single cctp message",
+	Flags:       []cli.Flag{originFlag, txHashFlag, configFlag, dbFlag, pathFlag, scribePortFlag, scribeURL, &commandline.LogLevel},
+	Action: func(c *cli.Context) (err error) {
+		commandline.SetLogLevel(c)
+		cfg, err := config.DecodeConfig(core.ExpandOrReturnPath(c.String(configFlag.Name)))
+		if err != nil {
+			return fmt.Errorf("could not read config file: %w", err)
+		}
+
+		_, err = cfg.IsValid(c.Context)
+		if err != nil {
+			return fmt.Errorf("could not decode config file: %w", err)
+		}
+
+		dbTypeFromString, err := dbcommon.DBTypeFromString(c.String(dbFlag.Name))
+		if err != nil {
+			return fmt.Errorf("could not get db type from string: %w", err)
+		}
+
+		path := core.ExpandOrReturnPath(c.String(pathFlag.Name))
+
+		metricsProvider := metrics.Get()
+
+		store, err := sql.Connect(c.Context, dbTypeFromString, path, metricsProvider)
+		if err != nil {
+			return fmt.Errorf("could not connect to database: %w", err)
+		}
+
+		scribeClient := client.NewRemoteScribe(uint16(c.Uint(scribePortFlag.Name)), c.String(scribeURL.Name), metricsProvider).ScribeClient
+		omnirpcClient := omniClient.NewOmnirpcClient(cfg.BaseOmnirpcURL, metricsProvider, omniClient.WithCaptureReqRes())
+		attAPI := api.NewCircleAPI(c.String(cfg.CircleAPIURl))
+
+		cctpRelayer, err := relayer.NewCCTPRelayer(c.Context, cfg, store, scribeClient, omnirpcClient, metricsProvider, attAPI)
+		if err != nil {
+			return fmt.Errorf("could not create cctp relayer: %w", err)
+		}
+
+		err = cctpRelayer.RelaySingle(c.Context, uint32(c.Uint(originFlag.Name)), c.String(txHashFlag.Name))
+		if err != nil {
+			return fmt.Errorf("could not relay single message: %w", err)
 		}
 		return nil
 	},

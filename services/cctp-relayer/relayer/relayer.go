@@ -4,11 +4,12 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"gorm.io/gorm"
 	"math/big"
 	"strconv"
 	"sync"
 	"time"
+
+	"gorm.io/gorm"
 
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/crypto"
@@ -308,6 +309,48 @@ func (c *CCTPRelayer) Run(parentCtx context.Context) error {
 
 	if err := g.Wait(); err != nil {
 		return fmt.Errorf("error in cctp relayer: %w", err)
+	}
+
+	return nil
+}
+
+func (c *CCTPRelayer) RelaySingle(parentCtx context.Context, originChain uint32, txHash string) error {
+	g, ctx := errgroup.WithContext(parentCtx)
+
+	g.Go(func() error {
+		err := c.txSubmitter.Start(ctx)
+		if err != nil {
+			err = fmt.Errorf("could not start tx submitter: %w", err)
+		}
+		return err
+	})
+
+	// fetch logs for the given tx
+	resp, err := c.grpcClient.FilterLogs(parentCtx, &pbscribe.FilterLogsRequest{
+		Filter: &pbscribe.LogFilter{
+			TxHash:  &pbscribe.NullableString{Kind: &pbscribe.NullableString_Data{Data: txHash}},
+			ChainId: originChain,
+		},
+	})
+	if err != nil {
+		return fmt.Errorf("could not filter logs: %w", err)
+	}
+	if len(resp.Logs) == 0 {
+		return fmt.Errorf("no logs found for tx %s", txHash)
+	}
+
+	// handle each log and queue a CCTP message
+	for _, scribeLog := range resp.Logs {
+		err = c.handleLog(parentCtx, scribeLog.ToLog(), originChain)
+		if err != nil {
+			return err
+		}
+	}
+
+	// manually process the queue
+	err = c.processQueue(parentCtx)
+	if err != nil {
+		return fmt.Errorf("could not process queue: %w", err)
 	}
 
 	return nil
