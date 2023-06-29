@@ -8,7 +8,6 @@ import ExplorerToastLink from '@/components/ExplorerToastLink'
 import { txErrorHandler } from '@utils/txErrorHandler'
 import { fetchSigner } from '@wagmi/core'
 import { segmentAnalyticsEvent } from '@/contexts/SegmentAnalyticsProvider'
-import { shortenAddress } from '../shortenAddress'
 
 export const claimStake = async (
   chainId: number,
@@ -36,7 +35,7 @@ export const claimStake = async (
     if (!address) throw new Error('Wallet must be connected')
     if (!miniChefContract) throw new Error('MMind contract is not loaded')
 
-    segmentAnalyticsEvent(`[Claim Stake] ${shortenAddress(address)} Attempt`, {
+    segmentAnalyticsEvent(`[Claim Stake] Attempt`, {
       poolId,
     })
 
@@ -60,13 +59,13 @@ export const claimStake = async (
       duration: 10000,
     })
 
-    segmentAnalyticsEvent(`[Claim Stake] ${shortenAddress(address)} Success`, {
+    segmentAnalyticsEvent(`[Claim Stake] Success`, {
       poolId,
     })
 
     return tx
   } catch (error) {
-    segmentAnalyticsEvent(`[Claim Stake] ${shortenAddress(address)} Failure`, {
+    segmentAnalyticsEvent(`[Claim Stake] Failure`, {
       errorCode: error.code,
     })
     toast.dismiss(pendingPopup)

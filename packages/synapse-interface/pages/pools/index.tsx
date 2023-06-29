@@ -16,7 +16,6 @@ import PoolCards from './PoolCards'
 import { useRouter } from 'next/router'
 
 import { segmentAnalyticsEvent } from '@/contexts/SegmentAnalyticsProvider'
-import { shortenAddress } from '@/utils/shortenAddress'
 
 const PoolsPage = () => {
   const { address: currentAddress } = useAccount()
@@ -27,15 +26,11 @@ const PoolsPage = () => {
   const router = useRouter()
 
   useEffect(() => {
-    segmentAnalyticsEvent(
-      `[Pools page] ${shortenAddress(currentAddress)} arrives`,
-      {
-        address: currentAddress,
-        fromChainId: chain?.id,
-        query: router.query,
-        pathname: router.pathname,
-      }
-    )
+    segmentAnalyticsEvent(`[Pools page] arrives`, {
+      fromChainId: chain?.id,
+      query: router.query,
+      pathname: router.pathname,
+    })
   }, [])
 
   useEffect(() => {

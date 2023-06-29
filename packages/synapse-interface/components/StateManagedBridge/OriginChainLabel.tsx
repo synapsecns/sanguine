@@ -1,3 +1,4 @@
+import { useSelector } from 'react-redux'
 import { ChevronDownIcon } from '@heroicons/react/outline'
 import { CHAINS_BY_ID, ORDERED_CHAINS_BY_ID } from '@constants/chains'
 import { getNetworkButtonBorder } from '@/styles/chains'
@@ -7,6 +8,8 @@ import { useEffect, useState } from 'react'
 import { useDispatch } from 'react-redux'
 import { setFromChainId } from '@/slices/bridgeSlice'
 import { setShowFromChainSlideOver } from '@/slices/bridgeDisplaySlice'
+import { RootState } from '@/store/store'
+import { segmentAnalyticsEvent } from '@/contexts/SegmentAnalyticsProvider'
 
 export const OriginChainLabel = ({
   chains,
@@ -54,10 +57,17 @@ export const OriginChainLabel = ({
 
 const PossibleChain = ({ chainId }: { chainId: number }) => {
   const chain = CHAINS_BY_ID[chainId]
+  const { fromChainId } = useSelector((state: RootState) => state.bridge)
 
   const dispatch = useDispatch()
 
   const onChangeChain = () => {
+    const eventTitle = `[Bridge User Action] Change Origin Chain`
+    const eventData = {
+      previousFromChainId: fromChainId,
+      newFromChainId: chainId,
+    }
+    segmentAnalyticsEvent(eventTitle, eventData)
     dispatch(setFromChainId(chainId))
   }
   return chain ? (

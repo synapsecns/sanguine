@@ -15,21 +15,17 @@ import { useEffect } from 'react'
 import { useAccount } from 'wagmi'
 
 import { segmentAnalyticsEvent } from '@/contexts/SegmentAnalyticsProvider'
-import { shortenAddress } from '@/utils/shortenAddress'
 
 const LandingPage = () => {
   const { address: currentAddress } = useAccount()
   const router = useRouter()
 
   useEffect(() => {
-    segmentAnalyticsEvent(
-      `[Landing] ${shortenAddress(currentAddress)} arrives`,
-      {
-        address: currentAddress,
-        query: router.query,
-        pathname: router.pathname,
-      }
-    )
+    segmentAnalyticsEvent(`[Landing] arrives`, {
+      address: currentAddress,
+      query: router.query,
+      pathname: router.pathname,
+    })
   }, [])
 
   return (

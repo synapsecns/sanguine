@@ -13,7 +13,6 @@ import { Zero } from '@ethersproject/constants'
 import toast from 'react-hot-toast'
 import { segmentAnalyticsEvent } from '@/contexts/SegmentAnalyticsProvider'
 import { getAccount } from '@wagmi/core'
-import { shortenAddress } from '../shortenAddress'
 
 export const approve = async (
   pool: Token,
@@ -63,12 +62,9 @@ export const withdraw = async (
   })
 
   try {
-    segmentAnalyticsEvent(
-      `[Pool Withdrawal] ${shortenAddress(address)} Attempt for ${pool?.name}`,
-      {
-        inputAmount,
-      }
-    )
+    segmentAnalyticsEvent(`[Pool Withdrawal] Attempt for ${pool?.name}`, {
+      inputAmount,
+    })
     if (withdrawType === ALL) {
       console.log(outputs[withdrawType])
       spendTransaction = await poolContract.removeLiquidity(
@@ -113,22 +109,16 @@ export const withdraw = async (
       duration: 10000,
     })
 
-    segmentAnalyticsEvent(
-      `[Pool Withdrawal] ${shortenAddress(address)} Success for ${pool?.name}`,
-      {
-        inputAmount,
-      }
-    )
+    segmentAnalyticsEvent(`[Pool Withdrawal] Success for ${pool?.name}`, {
+      inputAmount,
+    })
 
     return tx
   } catch (error) {
-    segmentAnalyticsEvent(
-      `[Pool Withdrawal] ${shortenAddress(address)} Failure for ${pool?.name}`,
-      {
-        inputAmount,
-        errorCode: error.code,
-      }
-    )
+    segmentAnalyticsEvent(`[Pool Withdrawal] Failure for ${pool?.name}`, {
+      inputAmount,
+      errorCode: error.code,
+    })
     toast.dismiss(pendingPopup)
     txErrorHandler(error)
     return error

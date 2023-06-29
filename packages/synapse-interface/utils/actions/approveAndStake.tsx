@@ -12,7 +12,6 @@ import { MINICHEF_ADDRESSES } from '@/constants/minichef'
 import MINI_CHEF_ABI from '@/constants/abis/miniChef.json'
 import { Token } from '../types'
 import { segmentAnalyticsEvent } from '@/contexts/SegmentAnalyticsProvider'
-import { shortenAddress } from '../shortenAddress'
 
 export const approve = async (
   pool: Token,
@@ -96,7 +95,7 @@ export const stake = async (
   })
 
   try {
-    segmentAnalyticsEvent(`[Stake] ${shortenAddress(address)} Attempt`, {
+    segmentAnalyticsEvent(`[Stake] Attempt`, {
       poolId,
       inputValue,
     })
@@ -128,14 +127,14 @@ export const stake = async (
       duration: 10000,
     })
 
-    segmentAnalyticsEvent(`[Stake] ${shortenAddress(address)} Success`, {
+    segmentAnalyticsEvent(`[Stake] Success`, {
       poolId,
       inputValue,
     })
 
     return tx
   } catch (err) {
-    segmentAnalyticsEvent(`[Stake] ${shortenAddress(address)} Error`, {
+    segmentAnalyticsEvent(`[Stake] Error`, {
       poolId,
       inputValue,
       errorCode: err.code,

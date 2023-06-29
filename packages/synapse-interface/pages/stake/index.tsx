@@ -12,7 +12,6 @@ import StakeCard from './StakeCard'
 import NoStakeCard from './NoStakeCard'
 import { useRouter } from 'next/router'
 import { segmentAnalyticsEvent } from '@/contexts/SegmentAnalyticsProvider'
-import { shortenAddress } from '@/utils/shortenAddress'
 
 const StakePage = () => {
   const { chain: connectedChain } = useNetwork()
@@ -39,16 +38,12 @@ const StakePage = () => {
 
   const routerIndices = availableStakingTokens.map((token) => token.routerIndex)
   useEffect(() => {
-    segmentAnalyticsEvent(
-      `[Stake page] ${shortenAddress(currentAddress)} arrives`,
-      {
-        address: currentAddress,
-        connectedChainId,
-        query,
-        pathname,
-        routerIndices,
-      }
-    )
+    segmentAnalyticsEvent(`[Stake page] arrives`, {
+      connectedChainId,
+      query,
+      pathname,
+      routerIndices,
+    })
   }, [])
 
   useEffect(() => {

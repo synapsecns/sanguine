@@ -10,7 +10,6 @@ import { BRIDGE_PATH, HOW_TO_BRIDGE_URL } from '@/constants/urls'
 import BridgeWatcher from '@/pages/bridge/BridgeWatcher'
 import { useRouter } from 'next/router'
 import { segmentAnalyticsEvent } from '@/contexts/SegmentAnalyticsProvider'
-import { shortenAddress } from '@/utils/shortenAddress'
 
 import {
   setFromToken,
@@ -156,8 +155,7 @@ const StateManagedBridge = () => {
   const toChainIds = Object.keys(CHAINS_BY_ID).map((id) => Number(id))
 
   useEffect(() => {
-    segmentAnalyticsEvent(`[Bridge page] ${shortenAddress(address)} arrives`, {
-      address,
+    segmentAnalyticsEvent(`[Bridge page] arrives`, {
       fromChainId,
       query,
       pathname,
@@ -391,21 +389,18 @@ const StateManagedBridge = () => {
   }
 
   const executeBridge = async () => {
-    segmentAnalyticsEvent(
-      `[Bridge] ${shortenAddress(address)} initiates bridge`,
-      {
-        address,
-        originChainId: fromChainId,
-        destinationChainId: toChainId,
-        inputAmount: formatBNToString(
-          fromValue,
-          fromToken.decimals[fromChainId],
-          8
-        ),
-        expectedReceivedAmount: bridgeQuote.outputAmountString,
-        slippage: bridgeQuote.exchangeRate,
-      }
-    )
+    segmentAnalyticsEvent(`[Bridge] initiates bridge`, {
+      address,
+      originChainId: fromChainId,
+      destinationChainId: toChainId,
+      inputAmount: formatBNToString(
+        fromValue,
+        fromToken.decimals[fromChainId],
+        8
+      ),
+      expectedReceivedAmount: bridgeQuote.outputAmountString,
+      slippage: bridgeQuote.exchangeRate,
+    })
     try {
       const wallet = await fetchSigner({
         chainId: fromChainId,
@@ -443,21 +438,18 @@ const StateManagedBridge = () => {
 
       try {
         await tx.wait()
-        segmentAnalyticsEvent(
-          `[Bridge] ${shortenAddress(address)} bridges successfully`,
-          {
-            address,
-            originChainId: fromChainId,
-            destinationChainId: toChainId,
-            inputAmount: formatBNToString(
-              fromValue,
-              fromToken.decimals[fromChainId],
-              8
-            ),
-            expectedReceivedAmount: bridgeQuote.outputAmountString,
-            slippage: bridgeQuote.exchangeRate,
-          }
-        )
+        segmentAnalyticsEvent(`[Bridge] bridges successfully`, {
+          address,
+          originChainId: fromChainId,
+          destinationChainId: toChainId,
+          inputAmount: formatBNToString(
+            fromValue,
+            fromToken.decimals[fromChainId],
+            8
+          ),
+          expectedReceivedAmount: bridgeQuote.outputAmountString,
+          slippage: bridgeQuote.exchangeRate,
+        })
         dispatch(addBridgeTxHash(tx.hash))
 
         dispatch(setBridgeQuote(EMPTY_BRIDGE_QUOTE_ZERO))
@@ -487,24 +479,18 @@ const StateManagedBridge = () => {
 
         return tx
       } catch (error) {
-        segmentAnalyticsEvent(
-          `[Bridge] ${shortenAddress(address)} error bridging`,
-          {
-            address,
-            errorCode: error.code,
-          }
-        )
+        segmentAnalyticsEvent(`[Bridge] error bridging`, {
+          address,
+          errorCode: error.code,
+        })
         console.log(`Transaction failed with error: ${error}`)
         toast.dismiss(pendingPopup)
       }
     } catch (error) {
-      segmentAnalyticsEvent(
-        `[Bridge] ${shortenAddress(address)} error bridging`,
-        {
-          address,
-          errorCode: error.code,
-        }
-      )
+      segmentAnalyticsEvent(`[Bridge]  error bridging`, {
+        address,
+        errorCode: error.code,
+      })
       console.log('Error executing bridge', error)
       toast.dismiss(pendingPopup)
       return txErrorHandler(error)

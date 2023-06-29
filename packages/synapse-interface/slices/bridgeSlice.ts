@@ -9,7 +9,6 @@ import { EMPTY_BRIDGE_QUOTE } from '@/constants/bridge'
 import { ETH } from '@/constants/tokens/master'
 import { ARBITRUM, ETH as ETHEREUM } from '@/constants/chains/master'
 import { BridgeQuote, Token } from '@/utils/types'
-import { shortenAddress } from '@/utils/shortenAddress'
 import { formatBNToString } from '@/utils/bignumber/format'
 
 export interface BridgeState {
@@ -174,45 +173,13 @@ export const segmentMiddleware =
     let eventData
 
     switch (action.type) {
-      case 'bridge/setFromChainId':
-        eventTitle = `[Bridge Action] ${shortenAddress(address)} sets fromChain`
-        eventData = {
-          address,
-          fromChainId: bridgeState.fromChainId,
-        }
-        break
-      case 'bridge/setToChainId':
-        eventTitle = `[Bridge Action] ${shortenAddress(address)} sets toChain`
-        eventData = {
-          address,
-          toChainId: bridgeState.toChainId,
-        }
-        break
-      case 'bridge/setFromToken':
-        eventTitle = `[Bridge Action] ${shortenAddress(address)} sets fromToken`
-        eventData = {
-          address,
-          fromToken: bridgeState.fromToken.symbol,
-          toToken: bridgeState.toToken.symbol,
-        }
-        break
-      case 'bridge/setToToken':
-        eventTitle = `[Bridge Action] ${shortenAddress(address)} sets toToken`
-        eventData = {
-          address,
-          fromToken: bridgeState.fromToken.symbol,
-          toToken: bridgeState.toToken.symbol,
-        }
-        break
       case 'bridge/setBridgeQuote':
         const { outputAmountString, routerAddress, exchangeRate } =
           bridgeState.bridgeQuote
         const { fromChainId, toChainId, fromToken, toToken, fromValue } =
           bridgeState
 
-        eventTitle = `[Bridge Action] ${shortenAddress(
-          address
-        )} gets bridge quote`
+        eventTitle = `[Bridge System Action] Generate bridge quote`
         eventData = {
           address,
           fromChainId,
@@ -229,6 +196,23 @@ export const segmentMiddleware =
           exchangeRate: formatBNToString(exchangeRate, 18, 8),
         }
         break
+      case 'bridgeDisplay/setShowDestinationAddress':
+        if (action.payload) {
+          eventTitle = `[Bridge User Action] Show destination address`
+          eventData = {}
+        } else {
+          eventTitle = `[Bridge User Action] Hide destination address`
+          eventData = {}
+        }
+        break
+      case 'bridgeDisplay/setShowSettingsSlideOver':
+        if (action.payload) {
+          eventTitle = `[Bridge User Action] Show Settings`
+          eventData = {}
+        } else {
+          eventTitle = `[Bridge User Action] Hide Settings`
+          eventData = {}
+        }
       default:
         break
     }
@@ -255,7 +239,7 @@ export const {
   setDeadlineMinutes,
   setDestinationAddress,
   setIsLoading,
-  addBridgeTxHash, // new action
+  addBridgeTxHash,
 } = bridgeSlice.actions
 
 export default bridgeSlice.reducer

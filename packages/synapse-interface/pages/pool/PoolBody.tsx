@@ -14,7 +14,6 @@ import PoolManagement from './poolManagement'
 import { useAccount } from 'wagmi'
 import { useRouter } from 'next/router'
 import { segmentAnalyticsEvent } from '@/contexts/SegmentAnalyticsProvider'
-import { shortenAddress } from '@/utils/shortenAddress'
 
 const PoolBody = ({
   pool,
@@ -27,7 +26,6 @@ const PoolBody = ({
   poolChainId: number
   connectedChainId: number
 }) => {
-  const { address: currentAddress } = useAccount()
   const [poolData, setPoolData] = useState(undefined)
   const [poolUserData, setPoolUserData] = useState(undefined)
   const [poolAPYData, setPoolAPYData] = useState(undefined)
@@ -37,15 +35,11 @@ const PoolBody = ({
 
   useEffect(() => {
     if (pool?.name && query.poolId) {
-      segmentAnalyticsEvent(
-        `[Pool] ${shortenAddress(currentAddress)} arrives at ${query.poolId}`,
-        {
-          address: currentAddress,
-          query,
-          pathname,
-          poolName: pool.name,
-        }
-      )
+      segmentAnalyticsEvent(`[Pool] arrives at ${query.poolId}`, {
+        query,
+        pathname,
+        poolName: pool.name,
+      })
     }
   }, [])
 

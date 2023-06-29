@@ -32,28 +32,22 @@ export const approveToken = async (
 
   const erc20 = new Contract(tokenAddress, erc20ABI, signer)
   try {
-    segmentAnalyticsEvent(
-      `[Approval] ${shortenAddress(address)} initiates approval`,
-      {
-        chainId,
-        tokenAddress,
-        amount,
-      }
-    )
+    segmentAnalyticsEvent(`[Approval] initiates approval`, {
+      chainId,
+      tokenAddress,
+      amount,
+    })
 
     const approveTx = await erc20.approve(address, amount ?? MaxInt256)
     await approveTx.wait().then((successTx) => {
       if (successTx) {
         toast.dismiss(pendingPopup)
 
-        segmentAnalyticsEvent(
-          `[Approval] ${shortenAddress(address)} successfully approves token`,
-          {
-            chainId,
-            tokenAddress,
-            amount,
-          }
-        )
+        segmentAnalyticsEvent(`[Approval] successfully approves token`, {
+          chainId,
+          tokenAddress,
+          amount,
+        })
 
         const successToastContent = (
           <div>
@@ -74,15 +68,12 @@ export const approveToken = async (
 
     return approveTx
   } catch (error) {
-    segmentAnalyticsEvent(
-      `[Approval] ${shortenAddress(address)} approval fails`,
-      {
-        chainId,
-        tokenAddress,
-        amount,
-        errorCode: error.code,
-      }
-    )
+    segmentAnalyticsEvent(`[Approval] approval fails`, {
+      chainId,
+      tokenAddress,
+      amount,
+      errorCode: error.code,
+    })
     toast.dismiss(pendingPopup)
     console.log(`Transaction failed with error: ${error}`)
     txErrorHandler(error)

@@ -10,7 +10,6 @@ import SwapCard from './SwapCard'
 import NoSwapCard from './NoSwapCard'
 import { useRouter } from 'next/router'
 import { segmentAnalyticsEvent } from '@/contexts/SegmentAnalyticsProvider'
-import { shortenAddress } from '@/utils/shortenAddress'
 
 const SwapPage = () => {
   const { address: currentAddress } = useAccount()
@@ -20,8 +19,7 @@ const SwapPage = () => {
   const router = useRouter()
 
   useEffect(() => {
-    segmentAnalyticsEvent(`[Swap] ${shortenAddress(currentAddress)} arrives`, {
-      address: currentAddress,
+    segmentAnalyticsEvent(`[Swap] arrives`, {
       fromChainId: chain?.id,
       query: router.query,
       pathname: router.pathname,
