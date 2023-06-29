@@ -4,11 +4,12 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"gorm.io/gorm"
 	"math/big"
 	"strconv"
 	"sync"
 	"time"
+
+	"gorm.io/gorm"
 
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/crypto"
@@ -24,9 +25,9 @@ import (
 	"go.opentelemetry.io/otel/attribute"
 	"go.opentelemetry.io/otel/trace"
 
-	"github.com/cenkalti/backoff"
 	"github.com/ethereum/go-ethereum/core/types"
 	"github.com/synapsecns/sanguine/core/metrics"
+	"github.com/synapsecns/sanguine/core/retry"
 	"github.com/synapsecns/sanguine/services/cctp-relayer/config"
 	omniClient "github.com/synapsecns/sanguine/services/omnirpc/client"
 	"github.com/synapsecns/sanguine/services/scribe/client"
@@ -56,7 +57,6 @@ type CCTPRelayer struct {
 	scribeClient  client.ScribeClient
 	grpcClient    pbscribe.ScribeServiceClient
 	grpcConn      *grpc.ClientConn
-	httpBackoff   backoff.BackOff
 	omnirpcClient omniClient.RPCClient
 	// chainListeners is a map from chain ID -> chain relayer.
 	chainListeners map[uint32]*chainListener
@@ -119,10 +119,6 @@ func NewCCTPRelayer(ctx context.Context, cfg config.Config, store db2.CCTPRelaye
 		}
 	}
 
-	httpBackoff := backoff.NewExponentialBackOff()
-	httpBackoff.InitialInterval = time.Duration(cfg.HTTPBackoffInitialIntervalMs) * time.Millisecond
-	httpBackoff.MaxElapsedTime = time.Duration(cfg.HTTPBackoffMaxElapsedTimeMs) * time.Millisecond
-
 	signer, err := signerConfig.SignerFromConfig(ctx, cfg.Signer)
 	if err != nil {
 		return nil, fmt.Errorf("could not make cctp signer: %w", err)
@@ -139,7 +135,6 @@ func NewCCTPRelayer(ctx context.Context, cfg config.Config, store db2.CCTPRelaye
 		grpcClient:        grpcClient,
 		grpcConn:          conn,
 		retryNow:          make(chan bool, 1),
-		httpBackoff:       httpBackoff,
 		handler:           handler,
 		attestationAPI:    attestationAPI,
 		txSubmitter:       txSubmitter,
@@ -525,10 +520,10 @@ func (c *CCTPRelayer) fetchAttestation(parentCtx context.Context, msg *relayType
 		metrics.EndSpanWithErr(span, err)
 	}()
 
-	err = backoff.Retry(func() (err error) {
+	err = retry.WithBackoff(ctx, func(ctx context.Context) (err error) {
 		msg.Attestation, err = c.attestationAPI.GetAttestation(ctx, msg.MessageHash)
 		return
-	}, c.httpBackoff)
+	}, retry.WithMax(time.Duration(c.cfg.HTTPBackoffMaxElapsedTimeMs)*time.Millisecond))
 	if err != nil {
 		return
 	}
