@@ -44,6 +44,9 @@ export const usePortfolioBalances = () => {
           currentChainTokens,
           currentChainId
         )
+
+        console.log('tokenBalances, chainId: ', chainId, tokenBalances)
+        console.log('tokenAllowances, chainId: ', chainId, tokenAllowances)
       })
       setBalances(balanceRecord)
     }
@@ -78,7 +81,7 @@ const getTokensAllowance = async (
 
   return tokens.map((token: Token, index: number) => {
     return {
-      token: Token,
+      token,
       allowance: allowances[index],
     }
   })
