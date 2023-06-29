@@ -11,13 +11,13 @@ import (
 	"time"
 )
 
-// InitMeter creates and sets a global meter.
+// InitMeter creates and sets a global meter provider.
 func InitMeter(serviceName string, interval time.Duration) error {
 	// TODO configure exporter how we need.
 
 	exporter, err := stdout.New()
 	if err != nil {
-		return err
+		return fmt.Errorf("creating exporter failed %w", err)
 	}
 	resource := resource.NewWithAttributes(
 		semconv.SchemaURL,
