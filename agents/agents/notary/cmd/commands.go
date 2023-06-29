@@ -42,12 +42,6 @@ var metricsPortFlag = &cli.UintFlag{
 	Value: 0,
 }
 
-var ignoreInitErrorsFlag = &cli.BoolFlag{
-	Name:  "ignore-init-errors",
-	Usage: "--ignore-init-errors",
-	Value: false,
-}
-
 var configFlag = &cli.StringFlag{
 	Name:      "config",
 	Usage:     "--config /Users/synapsecns/notary_config.yaml",
@@ -59,7 +53,7 @@ var configFlag = &cli.StringFlag{
 var NotaryRunCommand = &cli.Command{
 	Name:        "notary-run",
 	Description: "runs the notary service",
-	Flags:       []cli.Flag{configFlag, metricsPortFlag, ignoreInitErrorsFlag},
+	Flags:       []cli.Flag{configFlag, metricsPortFlag},
 	Action: func(c *cli.Context) error {
 		metricsProvider, err := metrics.NewFromEnv(c.Context, metadata.BuildInfo())
 		if err != nil {
@@ -79,7 +73,7 @@ var NotaryRunCommand = &cli.Command{
 			g, _ := errgroup.WithContext(c.Context)
 
 			notary, err := notary.NewNotary(c.Context, notaryConfig, metricsProvider)
-			if err != nil && !c.Bool(ignoreInitErrorsFlag.Name) {
+			if err != nil {
 				return fmt.Errorf("failed to create notary: %w", err)
 			}
 

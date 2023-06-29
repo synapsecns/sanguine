@@ -5,9 +5,9 @@ import (
 	"fmt"
 	"github.com/ethereum/go-ethereum/common"
 	ethTypes "github.com/ethereum/go-ethereum/core/types"
-	"github.com/synapsecns/sanguine/agents/agents/executor/config"
 	"github.com/synapsecns/sanguine/agents/agents/executor/db"
 	execTypes "github.com/synapsecns/sanguine/agents/agents/executor/types"
+	"github.com/synapsecns/sanguine/agents/config/executor"
 	"github.com/synapsecns/sanguine/agents/contracts/inbox"
 	"github.com/synapsecns/sanguine/agents/contracts/lightinbox"
 	"github.com/synapsecns/sanguine/agents/contracts/origin"
@@ -26,7 +26,7 @@ import (
 // NewExecutorInjectedBackend creates a new Executor suitable for testing since it does not need a valid omnirpcURL.
 //
 //nolint:cyclop
-func NewExecutorInjectedBackend(ctx context.Context, config config.Config, executorDB db.ExecutorDB, scribeClient client.ScribeClient, clients map[uint32]Backend, urls map[uint32]string, handler metrics.Handler) (*Executor, error) {
+func NewExecutorInjectedBackend(ctx context.Context, config executor.Config, executorDB db.ExecutorDB, scribeClient client.ScribeClient, clients map[uint32]Backend, urls map[uint32]string, handler metrics.Handler) (*Executor, error) {
 	chainExecutors := make(map[uint32]*chainExecutor)
 
 	conn, grpcClient, err := makeScribeClient(ctx, handler, fmt.Sprintf("%s:%d", scribeClient.URL, scribeClient.Port))

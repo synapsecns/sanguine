@@ -10,6 +10,8 @@ import (
 	"github.com/synapsecns/sanguine/agents/agents/executor/db/datastore/sql/mysql"
 	"github.com/synapsecns/sanguine/agents/agents/executor/db/datastore/sql/sqlite"
 	"github.com/synapsecns/sanguine/agents/agents/executor/metadata"
+	execConfig "github.com/synapsecns/sanguine/agents/config/executor"
+	"github.com/synapsecns/sanguine/core/dbcommon"
 	"github.com/synapsecns/sanguine/core/metrics"
 	omnirpcClient "github.com/synapsecns/sanguine/services/omnirpc/client"
 	scribeAPI "github.com/synapsecns/sanguine/services/scribe/api"
@@ -24,7 +26,6 @@ import (
 	// used to embed markdown.
 	_ "embed"
 	"fmt"
-	"github.com/synapsecns/sanguine/agents/agents/executor/config"
 	"github.com/synapsecns/sanguine/agents/agents/executor/db"
 	"github.com/synapsecns/sanguine/core"
 	"github.com/urfave/cli/v2"
@@ -51,51 +52,10 @@ var configFlag = &cli.StringFlag{
 	Required:  true,
 }
 
-var dbFlag = &cli.StringFlag{
-	Name:     "db",
-	Usage:    "--db <sqlite> or <mysql>",
-	Value:    "sqlite",
-	Required: true,
-}
-
-var pathFlag = &cli.StringFlag{
-	Name:     "path",
-	Usage:    "--path <path/to/database> or <database url>",
-	Value:    "",
-	Required: true,
-}
-
 var metricsPortFlag = &cli.UintFlag{
 	Name:  "metrics-port",
 	Usage: "--port 5121",
 	Value: 0,
-}
-
-var scribeTypeFlag = &cli.StringFlag{
-	Name:     "scribe-type",
-	Usage:    "--scribe-type <embedded> or <remote>",
-	Required: true,
-}
-
-var scribeDBFlag = &cli.StringFlag{
-	Name:  "scribe-db",
-	Usage: "--scribe-db <sqlite> or <mysql>",
-}
-
-var scribePathFlag = &cli.StringFlag{
-	Name:  "scribe-path",
-	Usage: "--scribe-path <path/to/database> or <database url>",
-}
-
-var scribePortFlag = &cli.UintFlag{
-	Name:  "scribe-port",
-	Usage: "--scribe-port <port>",
-	Value: 0,
-}
-
-var scribeURL = &cli.StringFlag{
-	Name:  "scribe-url",
-	Usage: "--scribe-url <url>",
 }
 
 var debugFlag = &cli.BoolFlag{
@@ -103,21 +63,27 @@ var debugFlag = &cli.BoolFlag{
 	Usage: "--debug",
 }
 
-func createExecutorParameters(ctx context.Context, c *cli.Context, metrics metrics.Handler) (executorConfig config.Config, executorDB db.ExecutorDB, clients map[uint32]executor.Backend, err error) {
-	executorConfig, err = config.DecodeConfig(core.ExpandOrReturnPath(c.String(configFlag.Name)))
+func createExecutorParameters(ctx context.Context, c *cli.Context, metrics metrics.Handler) (executorConfig execConfig.Config, executorDB db.ExecutorDB, clients map[uint32]executor.Backend, err error) {
+	executorConfig, err = execConfig.DecodeConfig(core.ExpandOrReturnPath(c.String(configFlag.Name)))
 	if err != nil {
 		return executorConfig, nil, nil, fmt.Errorf("failed to decode config: %w", err)
 	}
 
-	if executorConfig.DBPrefix == "" && c.String(dbFlag.Name) == "mysql" {
+	if executorConfig.DBPrefix == "" && executorConfig.DBConfig.Type == dbcommon.Mysql.String() {
 		executorConfig.DBPrefix = "executor"
 	}
 
-	if executorConfig.DBPrefix != "" && c.String(dbFlag.Name) == "sqlite" {
+	if executorConfig.DBConfig.Type == dbcommon.Sqlite.String() {
 		executorConfig.DBPrefix = ""
 	}
 
-	executorDB, err = InitExecutorDB(ctx, c.String(dbFlag.Name), c.String(pathFlag.Name), executorConfig.DBPrefix, metrics)
+	executorDB, err = InitExecutorDB(
+		ctx,
+		executorConfig.DBConfig.Type,
+		executorConfig.DBConfig.Source,
+		executorConfig.DBPrefix,
+		metrics,
+	)
 	if err != nil {
 		return executorConfig, nil, nil, fmt.Errorf("failed to initialize database: %w", err)
 	}
@@ -147,11 +113,7 @@ func createExecutorParameters(ctx context.Context, c *cli.Context, metrics metri
 var ExecutorRunCommand = &cli.Command{
 	Name:        "executor-run",
 	Description: "runs the executor service",
-	Flags: []cli.Flag{configFlag, dbFlag, pathFlag, scribeTypeFlag, metricsPortFlag, debugFlag,
-		// The flags below are used when `scribeTypeFlag` is set to "embedded".
-		scribeDBFlag, scribePathFlag,
-		// The flags below are used when `scribeTypeFlag` is set to "remote".
-		scribePortFlag, scribeURL},
+	Flags:       []cli.Flag{configFlag, metricsPortFlag, debugFlag},
 	Action: func(c *cli.Context) error {
 
 		var scribeClient client.ScribeClient
@@ -168,16 +130,22 @@ var ExecutorRunCommand = &cli.Command{
 			return err
 		}
 
-		switch c.String(scribeTypeFlag.Name) {
+		switch executorConfig.ScribeConfig.Type {
 		case "embedded":
-			eventDB, err := scribeAPI.InitDB(ctx, c.String(scribeDBFlag.Name), c.String(scribePathFlag.Name), handler, false)
+			eventDB, err := scribeAPI.InitDB(
+				ctx,
+				executorConfig.ScribeConfig.EmbeddedDBConfig.Type,
+				executorConfig.ScribeConfig.EmbeddedDBConfig.Source,
+				handler,
+				false,
+			)
 			if err != nil {
 				return fmt.Errorf("failed to initialize database: %w", err)
 			}
 
 			scribeClients := make(map[uint32][]backfill.ScribeBackend)
 
-			for _, client := range executorConfig.EmbeddedScribeConfig.Chains {
+			for _, client := range executorConfig.ScribeConfig.EmbeddedScribeConfig.Chains {
 				for confNum := 1; confNum <= scribeCmd.MaxConfirmations; confNum++ {
 					backendClient, err := backfill.DialBackend(ctx, fmt.Sprintf("%s/%d/rpc/%d", executorConfig.BaseOmnirpcURL, confNum, client.ChainID), handler)
 					if err != nil {
@@ -188,7 +156,7 @@ var ExecutorRunCommand = &cli.Command{
 				}
 			}
 
-			scribe, err := node.NewScribe(eventDB, scribeClients, executorConfig.EmbeddedScribeConfig, handler)
+			scribe, err := node.NewScribe(eventDB, scribeClients, executorConfig.ScribeConfig.EmbeddedScribeConfig, handler)
 			if err != nil {
 				return fmt.Errorf("failed to initialize scribe: %w", err)
 			}
@@ -202,7 +170,11 @@ var ExecutorRunCommand = &cli.Command{
 				return nil
 			})
 
-			embedded := client.NewEmbeddedScribe(c.String(scribeDBFlag.Name), c.String(scribePathFlag.Name), handler)
+			embedded := client.NewEmbeddedScribe(
+				executorConfig.ScribeConfig.EmbeddedDBConfig.Type,
+				executorConfig.ScribeConfig.EmbeddedDBConfig.Source,
+				handler,
+			)
 
 			g.Go(func() error {
 				err := embedded.Start(ctx)
@@ -215,9 +187,13 @@ var ExecutorRunCommand = &cli.Command{
 
 			scribeClient = embedded.ScribeClient
 		case "remote":
-			scribeClient = client.NewRemoteScribe(uint16(c.Uint(scribePortFlag.Name)), c.String(scribeURL.Name), handler).ScribeClient
+			scribeClient = client.NewRemoteScribe(
+				uint16(executorConfig.ScribeConfig.Port),
+				executorConfig.ScribeConfig.URL,
+				handler,
+			).ScribeClient
 		default:
-			return fmt.Errorf("invalid scribe type: %s", c.String(scribeTypeFlag.Name))
+			return fmt.Errorf("invalid scribe type: %s", executorConfig.ScribeConfig.Type)
 		}
 
 		executor, err := executor.NewExecutor(ctx, executorConfig, executorDB, scribeClient, clients, handler)

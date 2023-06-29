@@ -4,7 +4,7 @@ import (
 	"context"
 	"fmt"
 	"github.com/synapsecns/sanguine/core/metrics"
-	config2 "github.com/synapsecns/sanguine/ethergo/signer/config"
+	signerConfig "github.com/synapsecns/sanguine/ethergo/signer/config"
 	"go.opentelemetry.io/otel/attribute"
 	"go.opentelemetry.io/otel/trace"
 	"time"
@@ -38,19 +38,21 @@ func NewGuard(ctx context.Context, cfg config.AgentConfig, handler metrics.Handl
 	}
 	guard.domains = []domains.DomainClient{}
 
-	guard.bondedSigner, err = config2.SignerFromConfig(ctx, cfg.BondedSigner)
+	guard.bondedSigner, err = signerConfig.SignerFromConfig(ctx, cfg.BondedSigner)
 	if err != nil {
 		return Guard{}, fmt.Errorf("error with bondedSigner, could not create guard: %w", err)
 	}
 
-	guard.unbondedSigner, err = config2.SignerFromConfig(ctx, cfg.UnbondedSigner)
+	guard.unbondedSigner, err = signerConfig.SignerFromConfig(ctx, cfg.UnbondedSigner)
 	if err != nil {
 		return Guard{}, fmt.Errorf("error with unbondedSigner, could not create guard: %w", err)
 	}
 
 	for domainName, domain := range cfg.Domains {
 		var domainClient domains.DomainClient
-		domainClient, err = evm.NewEVM(ctx, domainName, domain)
+
+		chainRPCURL := fmt.Sprintf("%s/confirmations/1/rpc/%d", cfg.BaseOmnirpcURL, domain.DomainID)
+		domainClient, err = evm.NewEVM(ctx, domainName, domain, chainRPCURL)
 		if err != nil {
 			return Guard{}, fmt.Errorf("failing to create evm for domain, could not create guard for: %w", err)
 		}
