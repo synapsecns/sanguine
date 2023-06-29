@@ -1,7 +1,7 @@
 import { Contract, BigNumber } from 'ethers'
 import { AddressZero } from '@ethersproject/constants'
 import { Address } from 'wagmi'
-import { fetchSigner } from '@wagmi/core'
+import { getWalletClient } from '@wagmi/core'
 import toast from 'react-hot-toast'
 
 import { txErrorHandler } from '@utils/txErrorHandler'
@@ -11,6 +11,7 @@ import { CHAINS_BY_ID } from '@/constants/chains'
 import { MINICHEF_ADDRESSES } from '@/constants/minichef'
 import MINI_CHEF_ABI from '@/constants/abis/miniChef.json'
 import { Token } from '../types'
+import { walletClientToSigner } from '@/ethers'
 
 export const approve = async (
   pool: Token,
@@ -78,14 +79,14 @@ export const stake = async (
   let pendingPopup: any
   let successPopup: any
 
-  const signer = await fetchSigner({
+  const signer = await getWalletClient({
     chainId,
   })
 
   const miniChefContract = new Contract(
     MINICHEF_ADDRESSES[chainId],
     MINI_CHEF_ABI,
-    signer
+    walletClientToSigner(signer)
   )
 
   pendingPopup = toast(`Starting your deposit...`, {

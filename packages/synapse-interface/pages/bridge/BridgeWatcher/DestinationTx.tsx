@@ -1,6 +1,6 @@
 import _ from 'lodash'
 import { useEffect, useState, memo, useMemo } from 'react'
-import { useSigner } from 'wagmi'
+import { useWalletClient } from 'wagmi'
 import { fetchBlockNumber } from '@wagmi/core'
 import { Contract, Signer } from 'ethers'
 import { Interface } from '@ethersproject/abi'
@@ -26,13 +26,13 @@ import { remove0xPrefix } from '@/utils/remove0xPrefix'
 import EventCard from './EventCard'
 import BlockCountdown from './BlockCountdown'
 import { CreditedTransactionItem } from '@components/TransactionItems'
-
+import { Address } from 'viem'
 const DestinationTx = (fromEvent: BridgeWatcherTx) => {
   const [toEvent, setToEvent] = useState<BridgeWatcherTx>(undefined)
   const [toSynapseContract, setToSynapseContract] =
     useState<Contract>(undefined)
-  const [toSigner, setToSigner] = useState<Signer>()
-  const { data: toSignerRaw } = useSigner({ chainId: fromEvent.toChainId })
+  const [toSigner, setToSigner] = useState<Address>()
+  const { data: toSignerRaw } = useWalletClient({ chainId: fromEvent.toChainId })
   const [completedConf, setCompletedConf] = useState(false)
   const [attempted, setAttempted] = useState(false)
   const { providerMap } = useSynapseContext()
@@ -121,7 +121,7 @@ const DestinationTx = (fromEvent: BridgeWatcherTx) => {
       const toSynapseContract = new Contract(
         BRIDGE_CONTRACTS[fromEvent.toChainId],
         SYNAPSE_BRIDGE_ABI,
-        toSigner
+        toSigner as unknown as Signer
       )
       setToSynapseContract(toSynapseContract)
     }
@@ -148,7 +148,7 @@ const DestinationTx = (fromEvent: BridgeWatcherTx) => {
   }, [toSynapseContract])
 
   useEffect(() => {
-    setToSigner(toSignerRaw)
+    setToSigner(toSignerRaw.account.address)
   }, [toSignerRaw])
 
   return (

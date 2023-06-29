@@ -6,7 +6,8 @@ import MINI_CHEF_ABI from '@/constants/abis/miniChef.json'
 import { Contract } from 'ethers'
 import ExplorerToastLink from '@/components/ExplorerToastLink'
 import { txErrorHandler } from '@utils/txErrorHandler'
-import { fetchSigner } from '@wagmi/core'
+import { getWalletClient } from '@wagmi/core'
+import { walletClientToSigner } from '@/ethers'
 
 export const claimStake = async (
   chainId: number,
@@ -16,13 +17,13 @@ export const claimStake = async (
   let pendingPopup: any
   let successPopup: any
 
-  const wallet = await fetchSigner({
+  const wallet = await getWalletClient({
     chainId,
   })
   const miniChefContract = new Contract(
     MINICHEF_ADDRESSES[chainId],
     MINI_CHEF_ABI,
-    wallet
+    walletClientToSigner(wallet)
   )
 
   pendingPopup = toast(`Starting your claim...`, {

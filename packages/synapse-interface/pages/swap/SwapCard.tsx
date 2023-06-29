@@ -3,7 +3,7 @@ import { useEffect, useState, useMemo, useCallback } from 'react'
 import { useRouter } from 'next/router'
 import { AddressZero, Zero } from '@ethersproject/constants'
 import { BigNumber } from '@ethersproject/bignumber'
-import { fetchSigner, switchNetwork } from '@wagmi/core'
+import { getWalletClient, switchNetwork } from '@wagmi/core'
 import { useWatchPendingTransactions } from 'wagmi'
 import { sortByTokenBalance, sortByVisibilityRank } from '@utils/sortTokens'
 import { calculateExchangeRate } from '@utils/calculateExchangeRate'
@@ -34,6 +34,7 @@ import { CHAINS_BY_ID } from '@constants/chains'
 import { toast } from 'react-hot-toast'
 import { txErrorHandler } from '@/utils/txErrorHandler'
 import ExplorerToastLink from '@/components/ExplorerToastLink'
+import { walletClientToSigner } from '@/ethers'
 
 import {
   DEFAULT_FROM_TOKEN,
@@ -112,8 +113,8 @@ const SwapCard = ({
   useEffect(() => {
     if (fromTokens && fromToken) {
       setFromTokenBalance(
-        fromTokens.filter((token) => token.token === fromToken)[0]?.balance
-          ? fromTokens.filter((token) => token.token === fromToken)[0]?.balance
+        fromTokens.filter((token) => token.token === fromToken)[0]?.balance.result
+          ? fromTokens.filter((token) => token.token === fromToken)[0]?.balance.result
           : Zero
       )
     }
@@ -310,14 +311,14 @@ const SwapCard = ({
   TODO store this erc20 and signer retrieval in a state in a parent component? add to utils + use memo?
   */
   const getCurrentTokenAllowance = async (routerAddress: string) => {
-    const wallet = await fetchSigner({
+    const wallet = await getWalletClient({
       chainId: connectedChainId,
     })
 
     const erc20 = new Contract(
       fromToken.addresses[connectedChainId],
       erc20ABI,
-      wallet
+      walletClientToSigner(wallet)
     )
     const allowance = await erc20.allowance(address, routerAddress)
     return allowance
@@ -551,7 +552,7 @@ const SwapCard = ({
     )
 
     try {
-      const wallet = await fetchSigner({
+      const wallet = await getWalletClient({
         chainId: connectedChainId,
       })
 

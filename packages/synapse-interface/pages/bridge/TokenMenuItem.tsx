@@ -22,7 +22,7 @@ const TokenMenuItem = ({
   active: boolean
   chainId: number
   selectedToken: Token
-  tokenBalance: BigNumber | undefined
+  tokenBalance: BigInt | undefined
   onClick: () => void
 }) => {
   const isCurrentlySelected = selectedToken?.symbol === token?.symbol
@@ -59,7 +59,7 @@ const TokenMenuItem = ({
       <ButtonContent
         token={token}
         chainId={chainId}
-        tokenBalance={tokenBalance ? tokenBalance : Zero}
+        tokenBalance={tokenBalance ? tokenBalance : BigInt(0)}
       />
     </div>
   )
@@ -73,7 +73,7 @@ const ButtonContent = memo(
   }: {
     token: Token
     chainId: number
-    tokenBalance: BigNumber
+    tokenBalance: bigint
   }) => {
     return (
       <div className="flex items-center w-full">

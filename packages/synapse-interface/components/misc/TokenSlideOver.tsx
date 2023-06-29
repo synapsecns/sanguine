@@ -134,7 +134,7 @@ export const TokenSlideOver = ({
             token={token.token}
             selectedToken={selectedToken}
             active={idx === currentIdx}
-            tokenBalance={token.balance}
+            tokenBalance={token.balance.result}
             onClick={() => {
               onMenuItemClick(token.token)
             }}

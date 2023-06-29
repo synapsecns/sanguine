@@ -1,4 +1,4 @@
-import { useContract, useNetwork, Address } from 'wagmi'
+import { getContract, useNetwork, Address } from 'wagmi'
 import { Contract } from 'ethers'
 
 import { MINICHEF_ADDRESSES } from '@/constants/minichef'
@@ -8,7 +8,7 @@ export const useMiniChefContract = (): [Contract, Address] => {
   const { chain: connectedChain } = useNetwork()
   const miniChefAddress: Address = MINICHEF_ADDRESSES[connectedChain.id]
 
-  const miniChefContract = useContract({
+  const miniChefContract = getContract({
     address: MINICHEF_ADDRESSES[connectedChain.id],
     abi: MINI_CHEF_ABI,
   })

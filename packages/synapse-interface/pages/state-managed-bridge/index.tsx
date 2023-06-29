@@ -8,7 +8,8 @@ import { useSpring, animated } from 'react-spring'
 import { ActionCardFooter } from '@components/ActionCardFooter'
 import { BRIDGE_PATH, HOW_TO_BRIDGE_URL } from '@/constants/urls'
 import BridgeWatcher from '@/pages/bridge/BridgeWatcher'
-
+import { deserializeBalance } from '@/utils/bigint/serialization'
+import { deserialize } from 'wagmi'
 import {
   setFromToken,
   setToToken,
@@ -46,11 +47,11 @@ import { BigNumber } from '@ethersproject/bignumber'
 import { getCurrentTokenAllowance } from '../../actions/getCurrentTokenAllowance'
 import { subtractSlippage } from '@/utils/slippage'
 import { commify } from '@ethersproject/units'
-import { formatBNToString } from '@/utils/bignumber/format'
+import { formatBNToString } from '@/utils/bigint/format'
 import { calculateExchangeRate } from '@/utils/calculateExchangeRate'
 import { useEffect, useRef, useState } from 'react'
 import { Token } from '@/utils/types'
-import { fetchSigner } from '@wagmi/core'
+import { getWalletClient } from '@wagmi/core'
 import { txErrorHandler } from '@/utils/txErrorHandler'
 import {
   BRIDGABLE_TOKENS,
@@ -211,13 +212,14 @@ const StateManagedBridge = () => {
 
     console.log(`[useEffect] fromToken`, fromToken.symbol)
     console.log(`[useEffect] toToken`, toToken.symbol)
-
-    if (fromValue.gt(0)) {
+    // TODO: Double serialization happening somewhere??
+    console.log(deserialize(fromValue as string))
+    if (deserialize(fromValue as string) > 0) {
+      console.log("trying to set bridge quote")
       getAndSetBridgeQuote()
     } else {
       dispatch(setBridgeQuote(EMPTY_BRIDGE_QUOTE_ZERO))
       dispatch(setIsLoading(false))
-      console.log(bridgeQuote)
     }
   }, [fromChainId, toChainId, fromToken, toToken, fromValue, address])
 
@@ -226,7 +228,7 @@ const StateManagedBridge = () => {
     if (fromToken?.addresses[fromChainId] === AddressZero) {
       setIsApproved(true)
     } else {
-      if (bridgeQuote?.allowance && fromValue.lte(bridgeQuote.allowance)) {
+      if (bridgeQuote?.allowance && deserialize(fromValue as string) < (bridgeQuote.allowance)) {
         setIsApproved(true)
       } else {
         setIsApproved(false)
@@ -236,11 +238,13 @@ const StateManagedBridge = () => {
 
   // Would like to move this into function outside of this component
   const getAndSetBridgeQuote = async () => {
+    console.log(BigNumber.from(deserialize(fromValue as string)))
     currentSDKRequestID.current += 1
     const thisRequestId = currentSDKRequestID.current
     // will have to handle deadlineMinutes here at later time, gets passed as optional last arg in .bridgeQuote()
     try {
       dispatch(setIsLoading(true))
+
 
       const { feeAmount, routerAddress, maxAmountOut, originQuery, destQuery } =
         await synapseSDK.bridgeQuote(
@@ -248,7 +252,7 @@ const StateManagedBridge = () => {
           toChainId,
           fromToken.addresses[fromChainId],
           toToken.addresses[toChainId],
-          fromValue
+          BigNumber.from(deserialize(fromValue as string))
         )
 
       console.log(`[getAndSetQuote] fromChainId`, fromChainId)
@@ -267,7 +271,7 @@ const StateManagedBridge = () => {
 
       const toValueBigNum = maxAmountOut ?? Zero
       const originTokenDecimals = fromToken.decimals[fromChainId]
-      const adjustedFeeAmount = feeAmount.lt(fromValue)
+      const adjustedFeeAmount = feeAmount < (deserialize(fromValue as string))
         ? feeAmount
         : feeAmount.div(BigNumber.from(10).pow(18 - originTokenDecimals))
 
@@ -311,7 +315,7 @@ const StateManagedBridge = () => {
             routerAddress,
             allowance,
             exchangeRate: calculateExchangeRate(
-              fromValue.sub(adjustedFeeAmount),
+              deserialize(fromValue as string) - BigInt(adjustedFeeAmount),
               fromToken.decimals[fromChainId],
               toValueBigNum,
               toToken.decimals[toChainId]
@@ -326,7 +330,7 @@ const StateManagedBridge = () => {
         )
 
         const str = formatBNToString(
-          fromValue,
+          deserialize(fromValue as string),
           fromToken.decimals[fromChainId],
           4
         )
@@ -338,7 +342,7 @@ const StateManagedBridge = () => {
       console.log(err)
       if (thisRequestId === currentSDKRequestID.current) {
         const str = formatBNToString(
-          fromValue,
+          deserialize(fromValue as string),
           fromToken.decimals[fromChainId],
           4
         )
@@ -377,7 +381,7 @@ const StateManagedBridge = () => {
 
   const executeBridge = async () => {
     try {
-      const wallet = await fetchSigner({
+      const wallet = await getWalletClient({
         chainId: fromChainId,
       })
 
@@ -392,7 +396,7 @@ const StateManagedBridge = () => {
         fromChainId,
         toChainId,
         fromToken.addresses[fromChainId as keyof Token['addresses']],
-        fromValue,
+        BigNumber.from(deserialize(fromValue as string)),
         bridgeQuote.quotes.originQuery,
         bridgeQuote.quotes.destQuery
       )
@@ -503,9 +507,7 @@ const StateManagedBridge = () => {
                     <TokenSlideOver
                       key="fromBlock"
                       isOrigin={true}
-                      tokens={separateAndSortTokensWithBalances(
-                        supportedFromTokenBalances
-                      )}
+                      tokens={separateAndSortTokensWithBalances(supportedFromTokenBalances)}
                       chainId={fromChainId}
                       selectedToken={fromToken}
                     />{' '}

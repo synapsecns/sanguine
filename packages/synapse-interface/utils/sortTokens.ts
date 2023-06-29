@@ -5,10 +5,10 @@ import { Zero, AddressZero } from '@ethersproject/constants'
 import multicallABI from '../constants/abis/multicall.json'
 import erc20ABI from '../constants/abis/erc20.json'
 import { Token } from '@/utils/types'
-
+import { deserializeBalance } from '@/utils/bigint/serialization'
 interface TokenAndBalance {
   token: Token
-  balance: BigNumber
+  balance: BigInt
 }
 
 export const sortByVisibilityRank = (tokens: Token[]) => {
@@ -23,8 +23,8 @@ export const sortByVisibilityRank = (tokens: Token[]) => {
 
 const sortArrayByBalance = (array) => {
   return array.sort((a, b) => {
-    const balanceA = BigInt(a.balance || '')
-    const balanceB = BigInt(b.balance || '')
+    const balanceA = BigInt(a.balance.result || '')
+    const balanceB = BigInt(b.balance.result || '')
 
     if (balanceA < balanceB) {
       return 1
@@ -90,9 +90,9 @@ export const sortByTokenBalance = async (
     })
     return sortArrayByBalance(
       sortByVisibilityRank(
-        multicallData.map((tokenBalance: BigNumber | undefined, index) => ({
+        multicallData.map((tokenBalance, index) => ({
           token: tokens[index],
-          balance: tokenBalance,
+          balance: tokenBalance.result,
         }))
       )
     )
@@ -121,20 +121,18 @@ export const separateAndSortTokensWithBalances = (
   tokensAndBalances: TokenAndBalance[]
 ): Token[] => {
   const hasTokensAndBalances = Object.keys(tokensAndBalances).length > 0
-
   if (hasTokensAndBalances) {
-    const tokensWithBalances = tokensAndBalances
-      .filter((t) => !t.balance.eq(Zero))
+    const tokensWithBalances = deserializeBalance(tokensAndBalances)
+      .filter((t) => !(t.balance == BigInt(0)))
       .map((t) => t.token)
 
     const a = sortTokensByPriorityRankAndAlpha(tokensWithBalances)
 
     const tokensWithNoBalances = tokensAndBalances
-      .filter((t) => t.balance.eq(Zero))
+      .filter((t) => (t.balance == BigInt(0)))
       .map((t) => t.token)
 
     const b = sortTokensByPriorityRankAndAlpha(tokensWithNoBalances)
-
     return [...a, ...b]
   } else {
     return []

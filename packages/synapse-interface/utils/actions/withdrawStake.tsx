@@ -7,20 +7,22 @@ import MINI_CHEF_ABI from '@/constants/abis/miniChef.json'
 import { BigNumber, Contract } from 'ethers'
 import ExplorerToastLink from '@/components/ExplorerToastLink'
 import { txErrorHandler } from '@utils/txErrorHandler'
-import { fetchSigner } from '@wagmi/core'
+import { getWalletClient } from '@wagmi/core'
+import { walletClientToSigner } from '@/ethers'
+
 export const withdrawStake = async (
   address: Address,
   chainId: number,
   poolId: number,
   inputValue: BigNumber
 ) => {
-  const wallet = await fetchSigner({
+  const wallet = await getWalletClient({
     chainId,
   })
   const miniChefContract = new Contract(
     MINICHEF_ADDRESSES[chainId],
     MINI_CHEF_ABI,
-    wallet
+    walletClientToSigner(wallet)
   )
   try {
     if (!address) throw new Error('Wallet must be connected')

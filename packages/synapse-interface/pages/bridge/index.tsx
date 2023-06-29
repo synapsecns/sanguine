@@ -6,7 +6,7 @@ import { useEffect, useState, useCallback, useMemo } from 'react'
 import { AddressZero, Zero } from '@ethersproject/constants'
 import { BigNumber } from '@ethersproject/bignumber'
 import { ActionCardFooter } from '@components/ActionCardFooter'
-import { fetchSigner, getNetwork, switchNetwork } from '@wagmi/core'
+import { getWalletClient, getNetwork, switchNetwork } from '@wagmi/core'
 import { sortByTokenBalance, sortByVisibilityRank } from '@utils/sortTokens'
 import { calculateExchangeRate } from '@utils/calculateExchangeRate'
 import { subtractSlippage } from '@utils/slippage'
@@ -45,6 +45,8 @@ import {
 } from '@/constants/bridge'
 import { CHAINS_BY_ID, AcceptedChainId } from '@/constants/chains'
 import { getSortedBridgableTokens } from '@/utils/actions/getSortedBridgableTokens'
+
+import { walletClientToSigner } from '@/ethers'
 
 /* TODO
   - look into getting rid of fromChainId state and just using wagmi hook (ran into problems when trying this but forgot why)
@@ -318,14 +320,14 @@ const BridgePage = ({
   TODO store this erc20 and signer retrieval in a state in a parent component? add to utils + use memo?
   */
   const getCurrentTokenAllowance = async (routerAddress: string) => {
-    const wallet = await fetchSigner({
+    const wallet = await getWalletClient({
       chainId: fromChainId,
     })
 
     const erc20 = new Contract(
       fromToken.addresses[fromChainId],
       erc20ABI,
-      wallet
+      walletClientToSigner(wallet)
     )
     const allowance = await erc20.allowance(address, routerAddress)
     return allowance
@@ -654,7 +656,7 @@ const BridgePage = ({
    */
   const executeBridge = async () => {
     try {
-      const wallet = await fetchSigner({
+      const wallet = await getWalletClient({
         chainId: fromChainId,
       })
       var newAddress =

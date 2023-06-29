@@ -1,6 +1,7 @@
-import { fetchBalance, fetchSigner, Address } from '@wagmi/core'
+import { fetchBalance, getWalletClient, Address } from '@wagmi/core'
 import { erc20ABI } from 'wagmi'
 import { Contract } from 'ethers'
+import { walletClientToSigner } from '@/ethers'
 
 export const getTokenAllowance = async (
   routerAddress: string,
@@ -11,7 +12,7 @@ export const getTokenAllowance = async (
   let fetchedBalance
   let allowance
 
-  const wallet = await fetchSigner({
+  const wallet = await getWalletClient({
     chainId,
   })
 
@@ -23,7 +24,7 @@ export const getTokenAllowance = async (
 
     allowance = fetchedBalance.value
   } else {
-    const erc20 = new Contract(tokenAddress, erc20ABI, wallet)
+    const erc20 = new Contract(tokenAddress, erc20ABI, walletClientToSigner(wallet))
     allowance = await erc20.allowance(address, routerAddress)
   }
 

@@ -5,6 +5,7 @@ import { RootState } from '../../store/store'
 import { useAccount, useNetwork, useSwitchNetwork } from 'wagmi'
 import { useEffect, useState } from 'react'
 import { isAddress } from '@ethersproject/address'
+import { deserialize } from 'wagmi'
 
 import {
   useConnectModal,
@@ -57,12 +58,12 @@ export const BridgeTransactionButton = ({
 
   let buttonProperties
 
-  if (!isLoading && bridgeQuote?.feeAmount?.eq(0) && fromValue.gt(0)) {
+  if (!isLoading && bridgeQuote?.feeAmount?.eq(0) && deserialize(fromValue) > 0) {
     buttonProperties = {
       label: `Amount must be greater than fee`,
       onClick: null,
     }
-  } else if (!isConnected && fromValue.gt(0)) {
+  } else if (!isConnected && deserialize(fromValue) > 0) {
     buttonProperties = {
       label: `Connect Wallet to Bridge`,
       onClick: openConnectModal,
@@ -75,7 +76,7 @@ export const BridgeTransactionButton = ({
     buttonProperties = {
       label: 'Invalid destination address',
     }
-  } else if (chain?.id != fromChainId && fromValue.gt(0)) {
+  } else if (chain?.id != fromChainId && deserialize(fromValue) > 0) {
     buttonProperties = {
       label: `Switch to ${chains.find((c) => c.id === fromChainId).name}`,
       onClick: () => switchNetwork(fromChainId),

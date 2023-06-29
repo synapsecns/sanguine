@@ -1,5 +1,5 @@
 import { erc20ABI } from 'wagmi'
-import { fetchSigner } from '@wagmi/core'
+import { getWalletClient } from '@wagmi/core'
 import { Contract } from 'ethers'
 import { MaxInt256, AddressZero } from '@ethersproject/constants'
 import { BigNumber } from '@ethersproject/bignumber'
@@ -7,6 +7,7 @@ import { CHAINS_BY_ID } from '@/constants/chains'
 import { txErrorHandler } from './txErrorHandler'
 import toast from 'react-hot-toast'
 import ExplorerToastLink from '@components/ExplorerToastLink'
+import { walletClientToSigner } from '@/ethers'
 
 export const approveToken = async (
   address: string,
@@ -24,11 +25,11 @@ export const approveToken = async (
   })
 
   // TODO store this erc20 and signer retrieval in a state in a parent component
-  const signer = await fetchSigner({
+  const signer = await getWalletClient({
     chainId,
   })
 
-  const erc20 = new Contract(tokenAddress, erc20ABI, signer)
+  const erc20 = new Contract(tokenAddress, erc20ABI, walletClientToSigner(signer))
   try {
     const approveTx = await erc20.approve(address, amount ?? MaxInt256)
     await approveTx.wait().then((successTx) => {

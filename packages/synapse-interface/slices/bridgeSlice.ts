@@ -16,7 +16,7 @@ export interface BridgeState {
   supportedToTokens: Token[]
   fromToken: Token
   toToken: Token
-  fromValue: BigNumber
+  fromValue: String
   bridgeQuote: BridgeQuote
   fromChainIds: number[]
   toChainIds: number[]
@@ -36,7 +36,7 @@ const initialState: BridgeState = {
   supportedToTokens: [],
   fromToken: ETH,
   toToken: ETH,
-  fromValue: Zero,
+  fromValue: '{"value":"#bigint.0"}'  ,
   bridgeQuote: EMPTY_BRIDGE_QUOTE,
   fromChainIds: [],
   toChainIds: [],
@@ -78,6 +78,7 @@ export const bridgeSlice = createSlice({
       state.supportedToTokens = action.payload
     },
     setSupportedFromTokenBalances: (state, action: PayloadAction<{}>) => {
+      console.log(action.payload)
       state.supportedFromTokenBalances = action.payload
     },
     setFromChainIds: (state, action: PayloadAction<number[]>) => {
@@ -86,7 +87,7 @@ export const bridgeSlice = createSlice({
     setToChainIds: (state, action: PayloadAction<number[]>) => {
       state.toChainIds = action.payload
     },
-    updateFromValue: (state, action: PayloadAction<BigNumber>) => {
+    updateFromValue: (state, action: PayloadAction<string>) => {
       state.fromValue = action.payload
     },
     setDeadlineMinutes: (state, action: PayloadAction<number | null>) => {

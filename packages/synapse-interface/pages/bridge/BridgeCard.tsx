@@ -106,8 +106,8 @@ const BridgeCard = ({
   useEffect(() => {
     if (fromTokens && fromToken) {
       setFromTokenBalance(
-        fromTokens.filter((token) => token.token === fromToken)[0]?.balance
-          ? fromTokens.filter((token) => token.token === fromToken)[0]?.balance
+        fromTokens.filter((token) => token.token === fromToken)[0]?.balance.result
+          ? fromTokens.filter((token) => token.token === fromToken)[0]?.balance.result
           : Zero
       )
     }

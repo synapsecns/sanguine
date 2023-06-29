@@ -1,6 +1,7 @@
-import { getProvider } from '@wagmi/core'
+import { getPublicClient } from '@wagmi/core'
 import { erc20ABI } from 'wagmi'
 import { Contract } from 'ethers'
+import { publicClientToProvider } from '@/ethers'
 
 export const getCurrentTokenAllowance = async (
   address,
@@ -8,14 +9,14 @@ export const getCurrentTokenAllowance = async (
   fromToken,
   routerAddress: string
 ) => {
-  const provider = getProvider({
+  const publicClient = getPublicClient({
     chainId: fromChainId,
   })
 
   const erc20 = new Contract(
     fromToken.addresses[fromChainId],
     erc20ABI,
-    provider
+    publicClientToProvider(publicClient)
   )
   const allowance = await erc20.allowance(address, routerAddress)
   return allowance

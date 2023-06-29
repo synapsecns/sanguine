@@ -5,12 +5,14 @@ import { RootState } from '@/store/store'
 
 import { updateFromValue } from '@/slices/bridgeSlice'
 import { setShowFromTokenSlideOver } from '@/slices/bridgeDisplaySlice'
-import { stringToBigNum } from '@/utils/stringToBigNum'
+import { stringToBigNum, stringToBigInt } from '@/utils/stringToBigNum'
 import SelectTokenDropdown from '@/components/input/TokenAmountInput/SelectTokenDropdown'
 import { useAccount } from 'wagmi'
 import MiniMaxButton from '../buttons/MiniMaxButton'
-import { formatBNToString } from '@/utils/bignumber/format'
+import { formatBNToString } from '@/utils/bigint/format'
 import { OriginChainLabel } from './OriginChainLabel'
+import { deserializeBalance } from '@/utils/bigint/serialization'
+import { serialize } from 'wagmi'
 
 export const InputContainer = () => {
   const { fromChainId, fromToken, fromChainIds, supportedFromTokenBalances } =
@@ -31,10 +33,10 @@ export const InputContainer = () => {
 
   const fromTokenBalance =
     (hasBalances &&
-      supportedFromTokenBalances.filter((token) => token.token === fromToken)[0]
+      deserializeBalance(supportedFromTokenBalances).filter((token) => token.token === fromToken)[0]
         ?.balance) ??
     Zero
-
+  console.log('fromTokenBalance', fromTokenBalance)
   const formattedBalance = hasBalances
     ? formatBNToString(fromTokenBalance, fromToken.decimals[fromChainId], 4)
     : '0'
@@ -44,11 +46,12 @@ export const InputContainer = () => {
   ) => {
     let fromValueString = event.target.value
     try {
-      let fromValueBigNumber = stringToBigNum(
+      let fromValueBigNumber = stringToBigInt(
         fromValueString,
         fromToken.decimals[fromChainId]
       )
-      dispatch(updateFromValue(fromValueBigNumber))
+      console.log('fromValueBigNumber', fromValueBigNumber)
+      dispatch(updateFromValue(fromValueBigNumber as any))
       setShowValue(fromValueString)
     } catch (error) {
       console.error('Invalid value for conversion to BigNumber')
@@ -129,7 +132,7 @@ export const InputContainer = () => {
           {hasMounted && isConnected && (
             <div className="hidden mr-2 sm:inline-block">
               <MiniMaxButton
-                disabled={fromTokenBalance && fromTokenBalance.eq(Zero)}
+                disabled={fromTokenBalance && (fromTokenBalance == 0)}
                 onClickBalance={onClickBalance}
               />
             </div>
