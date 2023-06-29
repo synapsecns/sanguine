@@ -8,11 +8,15 @@ import { BigNumber } from 'ethers'
 import { AddressZero } from '@ethersproject/constants'
 
 const ROUTER_ADDRESS = '0x7E7A0e201FD38d3ADAA9523Da6C109a07118C96a'
-interface TokenWithBalanceAndAllowance {
+
+interface TokenAndAllowance {
   token: Token
-  balance: BigNumber
   allowance: BigNumber
 }
+
+interface TokenWithBalanceAndAllowance
+  extends TokenAndBalance,
+    TokenAndAllowance {}
 
 interface NetworkTokenBalancesAndAllowances {
   [index: number]: TokenWithBalanceAndAllowance[]
@@ -51,42 +55,41 @@ function mergeBalancesAndAllowances(
   })
 }
 
-export const usePortfolioBalancesAndAllowances = () => {
-  const [balancesAndAllowances, setBalancesAndAllowances] =
-    useState<NetworkTokenBalancesAndAllowances>({})
-  const { address } = getAccount()
-  const availableChains = Object.keys(BRIDGABLE_TOKENS)
+export const usePortfolioBalancesAndAllowances =
+  (): NetworkTokenBalancesAndAllowances => {
+    const [balancesAndAllowances, setBalancesAndAllowances] =
+      useState<NetworkTokenBalancesAndAllowances>({})
+    const { address } = getAccount()
+    const availableChains = Object.keys(BRIDGABLE_TOKENS)
 
-  useEffect(() => {
-    const fetchBalancesAcrossNetworks = async () => {
-      const balanceRecord = {}
-      availableChains.forEach(async (chainId) => {
-        const currentChainId = Number(chainId)
-        const currentChainTokens = BRIDGABLE_TOKENS[chainId]
-        const tokenBalances: TokenAndBalance[] = await getTokensByChainId(
-          address,
-          currentChainTokens,
-          currentChainId
-        )
-        const tokenAllowances = await getTokensAllowance(
-          address,
-          ROUTER_ADDRESS,
-          currentChainTokens,
-          currentChainId
-        )
-        const mergedBalancesAndAllowances = mergeBalancesAndAllowances(
-          tokenBalances,
-          tokenAllowances
-        )
-        balanceRecord[currentChainId] = mergedBalancesAndAllowances
-      })
-      setBalancesAndAllowances(balanceRecord)
-    }
-    fetchBalancesAcrossNetworks()
-  }, [])
+    useEffect(() => {
+      const fetchBalancesAcrossNetworks = async () => {
+        const balanceRecord = {}
+        availableChains.forEach(async (chainId) => {
+          const currentChainId = Number(chainId)
+          const currentChainTokens = BRIDGABLE_TOKENS[chainId]
+          const tokenBalances: TokenAndBalance[] = await getTokensByChainId(
+            address,
+            currentChainTokens,
+            currentChainId
+          )
+          const tokenAllowances: TokenAndAllowance[] = await getTokensAllowance(
+            address,
+            ROUTER_ADDRESS,
+            currentChainTokens,
+            currentChainId
+          )
+          const mergedBalancesAndAllowances: TokenWithBalanceAndAllowance[] =
+            mergeBalancesAndAllowances(tokenBalances, tokenAllowances)
+          balanceRecord[currentChainId] = mergedBalancesAndAllowances
+        })
+        setBalancesAndAllowances(balanceRecord)
+      }
+      fetchBalancesAcrossNetworks()
+    }, [])
 
-  return balancesAndAllowances
-}
+    return balancesAndAllowances
+  }
 
 const getTokensAllowance = async (
   owner: string,
