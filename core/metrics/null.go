@@ -5,7 +5,9 @@ import (
 	"github.com/gin-gonic/gin"
 	"go.opentelemetry.io/contrib/instrumentation/net/http/otelhttp"
 	"go.opentelemetry.io/otel/propagation"
+	sdkmetric "go.opentelemetry.io/otel/sdk/metric"
 	"go.opentelemetry.io/otel/trace"
+
 	"gorm.io/gorm"
 	"net/http"
 )
@@ -50,6 +52,9 @@ func (n nullHandler) Gin() gin.HandlerFunc {
 func (n nullHandler) Start(_ context.Context) error {
 	return nil
 }
+func (n nullHandler) Meter() *sdkmetric.MeterProvider {
+	return nil
+}
 
 // NewNullHandler creates a new null transaction handler.
 func NewNullHandler() Handler {
@@ -73,6 +78,10 @@ func (n nullPropogator) Extract(ctx context.Context, _ propagation.TextMapCarrie
 
 func (n nullPropogator) Fields() []string {
 	return []string{}
+}
+
+func (n nullPropogator) Meter() *sdkmetric.MeterProvider {
+	return nil
 }
 
 var _ propagation.TextMapPropagator = &nullPropogator{}

@@ -8,12 +8,14 @@ import (
 	"github.com/ethereum/go-ethereum/params"
 	. "github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
+	"github.com/synapsecns/sanguine/core/metrics"
 	"github.com/synapsecns/sanguine/ethergo/backends"
 	"github.com/synapsecns/sanguine/ethergo/backends/geth"
 	"github.com/synapsecns/sanguine/services/scribe/backfill"
 	"github.com/synapsecns/sanguine/services/scribe/config"
 	"github.com/synapsecns/sanguine/services/scribe/db"
 	"github.com/synapsecns/sanguine/services/scribe/db/mocks"
+
 	"math/big"
 )
 
@@ -60,7 +62,10 @@ func (b BackfillSuite) TestFailedStore() {
 		StoreConcurrency:   1,
 		GetLogsRange:       1,
 	}
-	backfiller, err := backfill.NewContractBackfiller(chainConfig, contractConfig, mockDB, simulatedChainArr, b.metrics)
+	blockHeightMeter, err := metrics.NewHistogram(b.metrics.Meter(), fmt.Sprint("scribe_block_meter", chainConfig.ChainID), "block_histogram", "a block height meter", "blocks")
+	Nil(b.T(), err)
+
+	backfiller, err := backfill.NewContractBackfiller(chainConfig, contractConfig, mockDB, simulatedChainArr, b.metrics, blockHeightMeter)
 	Nil(b.T(), err)
 
 	tx, err := testRef.EmitEventA(transactOpts.TransactOpts, big.NewInt(1), big.NewInt(2), big.NewInt(3))
@@ -100,8 +105,10 @@ func (b BackfillSuite) TestGetLogsSimulated() {
 		StoreConcurrency:   1,
 		GetLogsRange:       1,
 	}
+	blockHeightMeter, err := metrics.NewHistogram(b.metrics.Meter(), fmt.Sprint("scribe_block_meter", chainConfig.ChainID), "block_histogram", "a block height meter", "blocks")
+	Nil(b.T(), err)
 
-	backfiller, err := backfill.NewContractBackfiller(chainConfig, contractConfig, b.testDB, simulatedChainArr, b.metrics)
+	backfiller, err := backfill.NewContractBackfiller(chainConfig, contractConfig, b.testDB, simulatedChainArr, b.metrics, blockHeightMeter)
 	Nil(b.T(), err)
 
 	// Emit five events, and then fetch them with GetLogs. The first two will be fetched first,
@@ -196,7 +203,9 @@ func (b BackfillSuite) TestContractBackfill() {
 		StoreConcurrency:   1,
 		GetLogsRange:       1,
 	}
-	backfiller, err := backfill.NewContractBackfiller(chainConfig, contractConfig, b.testDB, simulatedChainArr, b.metrics)
+	blockHeightMeter, err := metrics.NewHistogram(b.metrics.Meter(), fmt.Sprint("scribe_block_meter", chainConfig.ChainID), "block_histogram", "a block height meter", "blocks")
+	Nil(b.T(), err)
+	backfiller, err := backfill.NewContractBackfiller(chainConfig, contractConfig, b.testDB, simulatedChainArr, b.metrics, blockHeightMeter)
 	b.Require().NoError(err)
 
 	// Emit events for the backfiller to read.
@@ -363,7 +372,9 @@ func (b BackfillSuite) TestContractBackfillFromPreIndexed() {
 		StoreConcurrency:   1,
 		GetLogsRange:       1,
 	}
-	backfiller, err := backfill.NewContractBackfiller(chainConfig, contractConfig, b.testDB, simulatedChainArr, b.metrics)
+	blockHeightMeter, err := metrics.NewHistogram(b.metrics.Meter(), fmt.Sprint("scribe_block_meter", chainConfig.ChainID), "block_histogram", "a block height meter", "blocks")
+	Nil(b.T(), err)
+	backfiller, err := backfill.NewContractBackfiller(chainConfig, contractConfig, b.testDB, simulatedChainArr, b.metrics, blockHeightMeter)
 	Nil(b.T(), err)
 
 	// Emit events for the backfiller to read.
