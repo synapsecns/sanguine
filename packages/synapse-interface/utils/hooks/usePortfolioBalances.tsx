@@ -53,8 +53,9 @@ function mergeBalancesAndAllowances(
   })
 }
 
-export const usePortfolioBalances = () => {
-  const [balances, setBalances] = useState<NetworkTokenBalances>({})
+export const usePortfolioBalancesAndAllowances = () => {
+  const [balancesAndAllowances, setBalancesAndAllowances] =
+    useState<NetworkTokenBalances>({})
   const { address } = getAccount()
   const availableChains = Object.keys(BRIDGABLE_TOKENS)
 
@@ -64,36 +65,31 @@ export const usePortfolioBalances = () => {
       availableChains.forEach(async (chainId) => {
         const currentChainId = Number(chainId)
         const currentChainTokens = BRIDGABLE_TOKENS[chainId]
+
         const tokenBalances: TokenAndBalance[] = await getTokensByChainId(
           address,
           currentChainTokens,
           currentChainId
         )
-        balanceRecord[currentChainId] = tokenBalances
-
         const tokenAllowances = await getTokensAllowance(
           address,
           ROUTER_ADDRESS,
           currentChainTokens,
           currentChainId
         )
-
         const mergedBalancesAndAllowances = mergeBalancesAndAllowances(
           tokenBalances,
           tokenAllowances
         )
-        console.log(
-          'mergedBalancesAndAllowances chainId:',
-          chainId,
-          mergedBalancesAndAllowances
-        )
+
+        balanceRecord[currentChainId] = mergedBalancesAndAllowances
       })
-      setBalances(balanceRecord)
+      setBalancesAndAllowances(balanceRecord)
     }
     fetchBalancesAcrossNetworks()
   }, [])
 
-  return balances
+  return balancesAndAllowances
 }
 
 const getTokensAllowance = async (
