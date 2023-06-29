@@ -23,7 +23,6 @@ import {
   generateBridgeTx,
   checkTxIn,
 } from '@utils/bridgeWatcher'
-import { SynapseSDK } from '@/../sdk-router/dist'
 
 const BridgeWatcher = ({
   fromChainId,
