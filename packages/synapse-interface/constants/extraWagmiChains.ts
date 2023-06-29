@@ -183,6 +183,12 @@ export const dogechain = {
       url: 'https://explorer.dogechain.dog',
     },
   },
+  contracts: {
+    multicall3: {
+      address: '0xafc091536CB20C5B366a9B7c09b6d74fC2483671',
+      blockCreated: 13882887,
+    },
+  },
 } as const satisfies Chain
 
 export const metis = {

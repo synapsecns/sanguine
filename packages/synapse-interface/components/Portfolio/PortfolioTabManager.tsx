@@ -46,7 +46,7 @@ const Tab = ({ display, activeTab, tabType, handleTabChange }: TabProps) => {
       className={`
       font-medium text-2xl text-gray-500
       border-b-2 border-transparent
-      mr-2
+      mr-2 pb-2
       ${isCurrentlyActive && radialGradient}
       `}
       onClick={() => handleTabChange(tabType)}
