@@ -8,8 +8,14 @@ import { BigNumber } from 'ethers'
 import { AddressZero } from '@ethersproject/constants'
 
 const ROUTER_ADDRESS = '0x7E7A0e201FD38d3ADAA9523Da6C109a07118C96a'
-interface NetworkTokenBalances {
-  [index: number]: TokenAndBalance[]
+interface TokenWithBalanceAndAllowance {
+  token: Token
+  balance: BigNumber
+  allowance: BigNumber
+}
+
+interface NetworkTokenBalancesAndAllowances {
+  [index: number]: TokenWithBalanceAndAllowance[]
 }
 
 export const getTokensByChainId = async (
@@ -18,12 +24,6 @@ export const getTokensByChainId = async (
   chainId: number
 ): Promise<TokenAndBalance[]> => {
   return await sortByTokenBalance(tokens, chainId, owner)
-}
-
-interface TokenWithBalanceAndAllowance {
-  token: Token
-  balance: BigNumber
-  allowance: BigNumber
 }
 
 function mergeBalancesAndAllowances(
@@ -55,7 +55,7 @@ function mergeBalancesAndAllowances(
 
 export const usePortfolioBalancesAndAllowances = () => {
   const [balancesAndAllowances, setBalancesAndAllowances] =
-    useState<NetworkTokenBalances>({})
+    useState<NetworkTokenBalancesAndAllowances>({})
   const { address } = getAccount()
   const availableChains = Object.keys(BRIDGABLE_TOKENS)
 
