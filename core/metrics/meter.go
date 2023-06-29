@@ -13,7 +13,7 @@ import (
 
 // InitMeter creates and sets a global meter.
 func InitMeter(serviceName string, interval time.Duration) error {
-	// TODO configure exporter how we need
+	// TODO configure exporter how we need.
 
 	exporter, err := stdout.New()
 	if err != nil {
@@ -34,7 +34,7 @@ func InitMeter(serviceName string, interval time.Duration) error {
 	return nil
 }
 
-// NewCounter creates a new meter counter instrument
+// NewCounter creates a new meter counter instrument.
 // https://github.com/open-telemetry/opentelemetry-specification/blob/main/specification/metrics/api.md#counter
 func NewCounter(meterName string, counterName string, desc string, units string) (metric.Int64Counter, error) {
 	counter, err := otel.GetMeterProvider().
@@ -52,7 +52,7 @@ func NewCounter(meterName string, counterName string, desc string, units string)
 	return counter, nil
 }
 
-// NewHistogram creates a new meter histogram instrument
+// NewHistogram creates a new meter histogram instrument.
 // https://github.com/open-telemetry/opentelemetry-specification/blob/main/specification/metrics/api.md#histogram
 func NewHistogram(meterName string, histName string, desc string, units string) (metric.Int64Histogram, error) {
 	histogram, err := otel.GetMeterProvider().
