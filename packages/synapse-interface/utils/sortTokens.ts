@@ -5,7 +5,7 @@ import { Zero, AddressZero } from '@ethersproject/constants'
 import multicallABI from '../constants/abis/multicall.json'
 import erc20ABI from '../constants/abis/erc20.json'
 import { Token } from '@/utils/types'
-import { deserializeBalance } from '@/utils/bigint/serialization'
+
 interface TokenAndBalance {
   token: Token
   balance: BigInt
@@ -122,7 +122,7 @@ export const separateAndSortTokensWithBalances = (
 ): Token[] => {
   const hasTokensAndBalances = Object.keys(tokensAndBalances).length > 0
   if (hasTokensAndBalances) {
-    const tokensWithBalances = deserializeBalance(tokensAndBalances)
+    const tokensWithBalances = (tokensAndBalances)
       .filter((t) => !(t.balance == BigInt(0)))
       .map((t) => t.token)
 

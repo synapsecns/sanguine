@@ -11,7 +11,6 @@ import { Zero } from '@ethersproject/constants'
 import { Token } from '@/utils/types'
 import { useDispatch, useSelector } from 'react-redux'
 import { RootState } from '../../store/store'
-import { deserialize } from 'wagmi'
 
 const BridgeExchangeRateInfo = ({
   showGasDrop,
@@ -28,13 +27,13 @@ const BridgeExchangeRateInfo = ({
 
 
   const safeExchangeRate = exchangeRate ?? Zero;
-  const safeFromAmount = deserialize(fromAmount as string) ?? BigInt(0);
+  const safeFromAmount = fromAmount ?? "0";
 
   const formattedExchangeRate = formatBNToString(safeExchangeRate, 18, 4)
   const numExchangeRate = Number(formattedExchangeRate)
   const slippage = safeExchangeRate.sub(BigNumber.from(10).pow(18))
   const formattedPercentSlippage = formatBNToPercentString(slippage, 18)
-  const underFee = safeExchangeRate.eq(0) && safeFromAmount != 0
+  const underFee = safeExchangeRate.eq(0) && safeFromAmount != "0"
 
   const textColor: string = useMemo(() => {
     if (numExchangeRate >= 1) {
@@ -85,7 +84,7 @@ const BridgeExchangeRateInfo = ({
           {expectedToChain}
         </div>
         <span className="text-[#88818C]">
-          {safeFromAmount != 0 ? (
+          {safeFromAmount != "0" ? (
             <>
               {formattedExchangeRate}{' '}
               <span className="text-white">{toToken.symbol}</span>
@@ -97,7 +96,7 @@ const BridgeExchangeRateInfo = ({
       </div>
       <div className="flex justify-between">
         <p className="text-[#88818C] ">Slippage</p>
-        {safeFromAmount != 0 && !underFee ? (
+        {safeFromAmount != "0" && !underFee ? (
           <span className={` ${textColor}`}>{formattedPercentSlippage}</span>
         ) : (
           <span className="text-[#88818C]">—</span>

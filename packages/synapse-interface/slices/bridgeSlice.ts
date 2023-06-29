@@ -111,7 +111,7 @@ export const tokenDecimalMiddleware =
       const currentState = getState()
 
       // if fromValue is 0, no need to adjust it
-      if (currentState.bridge.fromValue.isZero()) {
+      if (currentState.bridge.fromValue === "0") {
         next(action)
         return
       }
@@ -138,14 +138,16 @@ export const tokenDecimalMiddleware =
 
         if (decimalDifference > 0) {
           // if newDecimal is greater, multiply fromValue by the decimal difference
-          newFromValue = currentState.bridge.fromValue.mul(
+          newFromValue = BigNumber.from(currentState.bridge.fromValue).mul(
             BigNumber.from(10).pow(decimalDifference)
           )
+          newFromValue = BigInt(newFromValue.toString())
         } else {
           // if newDecimal is smaller, divide fromValue by the decimal difference
-          newFromValue = currentState.bridge.fromValue.div(
+          newFromValue = BigNumber.from(currentState.bridge.fromValue).div(
             BigNumber.from(10).pow(Math.abs(decimalDifference))
           )
+          newFromValue = BigInt(newFromValue.toString())
         }
 
         // dispatch updateFromValue action to set the new fromValue

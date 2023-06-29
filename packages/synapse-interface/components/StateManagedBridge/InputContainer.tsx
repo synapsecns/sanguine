@@ -11,8 +11,6 @@ import { useAccount } from 'wagmi'
 import MiniMaxButton from '../buttons/MiniMaxButton'
 import { formatBNToString } from '@/utils/bigint/format'
 import { OriginChainLabel } from './OriginChainLabel'
-import { deserializeBalance } from '@/utils/bigint/serialization'
-import { serialize } from 'wagmi'
 
 export const InputContainer = () => {
   const { fromChainId, fromToken, fromChainIds, supportedFromTokenBalances } =
@@ -33,7 +31,7 @@ export const InputContainer = () => {
 
   const fromTokenBalance =
     (hasBalances &&
-      deserializeBalance(supportedFromTokenBalances).filter((token) => token.token === fromToken)[0]
+      (supportedFromTokenBalances).filter((token) => token.token === fromToken)[0]
         ?.balance) ??
     Zero
   console.log('fromTokenBalance', fromTokenBalance)
