@@ -30,7 +30,7 @@ const PoolCards = memo(
     useEffect(() => {
       getSynPrices()
         .then((res) => {
-          console.log(res)
+
           setSynPrices(res)
         })
         .catch((err) => console.log('Could not get syn prices', err))
@@ -48,6 +48,7 @@ const PoolCards = memo(
         .catch((err) => console.log('Could not get avax prices', err))
     }, [])
     return (
+      // @ts-ignore
       <Tab.Group>
         <div className="flex-wrap justify-between mb-8 px-36 md:flex">
           <PageHeader title="Pools" subtitle="Provide liquidity." />

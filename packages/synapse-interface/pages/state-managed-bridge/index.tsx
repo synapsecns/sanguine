@@ -211,8 +211,7 @@ const StateManagedBridge = () => {
     console.log(`[useEffect] fromToken`, fromToken.symbol)
     console.log(`[useEffect] toToken`, toToken.symbol)
     // TODO: Double serialization happening somewhere??
-    console.log((fromValue as string))
-    if ((fromValue as string) > 0) {
+    if (BigInt(fromValue as string) > 0n) {
       console.log("trying to set bridge quote")
       getAndSetBridgeQuote()
     } else {
@@ -226,7 +225,7 @@ const StateManagedBridge = () => {
     if (fromToken?.addresses[fromChainId] === AddressZero) {
       setIsApproved(true)
     } else {
-      if (bridgeQuote?.allowance && (fromValue as string) < (bridgeQuote.allowance)) {
+      if (bridgeQuote?.allowance && (BigNumber.from(fromValue)).lte(bridgeQuote.allowance)) {
         setIsApproved(true)
       } else {
         setIsApproved(false)
@@ -313,7 +312,7 @@ const StateManagedBridge = () => {
             routerAddress,
             allowance,
             exchangeRate: calculateExchangeRate(
-              (fromValue as string) - BigInt(adjustedFeeAmount),
+              BigInt(fromValue as string) - BigInt(adjustedFeeAmount),
               fromToken.decimals[fromChainId],
               toValueBigNum,
               toToken.decimals[toChainId]
@@ -328,7 +327,7 @@ const StateManagedBridge = () => {
         )
 
         const str = formatBNToString(
-          (fromValue as string),
+          BigInt(fromValue as string),
           fromToken.decimals[fromChainId],
           4
         )
@@ -340,7 +339,7 @@ const StateManagedBridge = () => {
       console.log(err)
       if (thisRequestId === currentSDKRequestID.current) {
         const str = formatBNToString(
-          (fromValue as string),
+          BigInt(fromValue as string),
           fromToken.decimals[fromChainId],
           4
         )
@@ -414,13 +413,13 @@ const StateManagedBridge = () => {
       )
 
       try {
-        await tx.wait()
-        dispatch(addBridgeTxHash(tx.hash))
+        // await tx.wait()
+        dispatch(addBridgeTxHash(tx))
 
         dispatch(setBridgeQuote(EMPTY_BRIDGE_QUOTE_ZERO))
         dispatch(setDestinationAddress(null))
         dispatch(setShowDestinationAddress(false))
-        dispatch(updateFromValue(Zero))
+        dispatch(updateFromValue(""))
 
         const successToastContent = (
           <div>
@@ -429,7 +428,7 @@ const StateManagedBridge = () => {
               {originChainName} to {toToken.symbol} on {destinationChainName}
             </div>
             <ExplorerToastLink
-              transactionHash={tx?.hash ?? AddressZero}
+              transactionHash={tx ?? AddressZero}
               chainId={fromChainId}
             />
           </div>

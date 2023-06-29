@@ -8,7 +8,7 @@ import { DrawerButton } from '@components/buttons/DrawerButton'
 import { sortTokens } from '@constants/tokens'
 
 import { Token } from '@/utils/types'
-import { DisplayType } from '@/pages/bridge/BridgeCard'
+import { DisplayType } from '@/pages/bridge/DisplayType'
 
 export const TokenSlideOver = ({
   isOrigin,

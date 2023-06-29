@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react'
 import { readContracts, ReadContractResult, Address } from '@wagmi/core'
 import { useBlockNumber, useAccount } from 'wagmi'
 import { Contract, BigNumber } from 'ethers'
-import MINICHEF_ABI from '@abis/miniChef.json'
+import {MINICHEF_ABI} from '@abis/miniChef'
 import { Zero } from '@ethersproject/constants'
 
 import { useMiniChefContract } from '../contracts/useMiniChefContract'
@@ -28,13 +28,13 @@ export const useStakedBalance = ({ poolId }: { poolId: number }) => {
               address: miniChefAddress,
               abi: MINICHEF_ABI,
               functionName: 'userInfo',
-              args: [poolId, address],
+              args: [BigInt(poolId), address],
             },
             {
               address: miniChefAddress,
               abi: MINICHEF_ABI,
               functionName: 'pendingSynapse',
-              args: [poolId, address],
+              args: [BigInt(poolId), address],
             },
           ],
         })

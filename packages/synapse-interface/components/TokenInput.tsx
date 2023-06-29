@@ -5,6 +5,7 @@ import { PoolToken, PoolUserData, Token } from '@types'
 import { cleanNumberInput } from '@utils/cleanNumberInput'
 import { formatUnits } from '@ethersproject/units'
 import { BigNumber } from '@ethersproject/bignumber'
+import { formatBigIntToString } from '@/utils/bigint/format'
 
 export const DepositTokenInput = ({
   token,
@@ -29,7 +30,7 @@ export const DepositTokenInput = ({
     (e: MouseEvent<HTMLButtonElement>) => {
       e.preventDefault()
 
-      const adjustedValue = formatUnits(rawBalance, token.decimals[chainId])
+      const adjustedValue = formatBigIntToString(BigInt(rawBalance.toString()), token.decimals[chainId])
 
       onChange(adjustedValue)
     },
@@ -82,8 +83,8 @@ export const WithdrawTokenInput = ({
   const onClickMax = useCallback(
     (e: MouseEvent<HTMLButtonElement>) => {
       e.preventDefault()
-      const adjustedValue = formatUnits(
-        poolUserData?.lpTokenBalance,
+      const adjustedValue = formatBigIntToString(
+        BigInt(poolUserData?.lpTokenBalance.toString()),
         token.decimals[chainId]
       )
 

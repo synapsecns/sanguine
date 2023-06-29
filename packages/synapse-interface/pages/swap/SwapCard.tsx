@@ -572,13 +572,13 @@ const SwapCard = ({
       const tx = await wallet.sendTransaction(payload)
 
       try {
-        const successTx = await tx.wait()
+        const successTx = await tx
 
-        setSwapTxnHash(successTx?.transactionHash)
+        setSwapTxnHash(successTx)
 
         toast.dismiss(pendingPopup)
 
-        console.log(`Transaction mined successfully: ${tx.hash}`)
+        console.log(`Transaction mined successfully: ${tx}`)
 
         const successToastContent = (
           <div>
@@ -587,7 +587,7 @@ const SwapCard = ({
               on {currentChainName}
             </div>
             <ExplorerToastLink
-              transactionHash={tx?.hash ?? AddressZero}
+              transactionHash={tx ?? AddressZero}
               chainId={connectedChainId}
             />
           </div>

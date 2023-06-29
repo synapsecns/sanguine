@@ -8,7 +8,7 @@ import { cleanNumberInput } from '@utils/cleanNumberInput'
 
 import { Token } from '@/utils/types'
 import { ChainLabel } from '@components/ChainLabel'
-import { DisplayType } from '@/pages/bridge/BridgeCard'
+import { DisplayType } from '@/pages/bridge/DisplayType'
 import SelectTokenDropdown from './SelectTokenDropdown'
 
 const BridgeInputContainer = ({

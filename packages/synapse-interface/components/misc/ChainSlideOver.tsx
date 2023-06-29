@@ -6,7 +6,7 @@ import { SelectSpecificNetworkButton } from '@components/buttons/SelectSpecificN
 import SlideSearchBox from '@pages/bridge/SlideSearchBox'
 import { DrawerButton } from '@components/buttons/DrawerButton'
 import { useNetwork } from 'wagmi'
-import { DisplayType } from '@/pages/bridge/BridgeCard'
+import { DisplayType } from '@/pages/bridge/DisplayType'
 import { sortChains } from '@constants/chains'
 
 export const ChainSlideOver = ({

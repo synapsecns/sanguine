@@ -1,5 +1,5 @@
 import { Token } from '@types'
-import SWAP_ABI from '@abis/swap.json'
+import {SWAP_ABI} from '@abis/swap'
 import AV_SWAP_WRAPPER_ABI from '@abis/avSwapWrapper.json'
 import SWAP_ETH_WRAPPER_ABI from '@abis/swapEthWrapper.json'
 import { Contract } from 'ethers'

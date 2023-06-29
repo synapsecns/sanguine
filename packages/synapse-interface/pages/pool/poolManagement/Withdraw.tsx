@@ -24,6 +24,7 @@ import { getTokenAllowance } from '@/utils/actions/getTokenAllowance'
 import { PoolData, PoolUserData } from '@types'
 import { getSwapDepositContractFields } from '@/utils/hooks/useSwapDepositContract'
 import { calculatePriceImpact } from '@/utils/priceImpact'
+import { formatBigIntToString } from '@/utils/bigint/format'
 
 const DEFAULT_WITHDRAW_QUOTE = {
   priceImpact: Zero,
@@ -119,7 +120,7 @@ const Withdraw = ({
       const priceImpact = calculatePriceImpact(
         inputValue.bn,
         outputTokensSum,
-        virtualPrice,
+        BigNumber.from(virtualPrice.toString()),
         true
       )
 
@@ -152,8 +153,8 @@ const Withdraw = ({
     }
     setPercentage(percent)
     const numericalOut = poolUserData.lpTokenBalance
-      ? formatUnits(
-          poolUserData.lpTokenBalance.mul(Number(percent)).div(100),
+      ? formatBigIntToString(
+          BigInt(poolUserData.lpTokenBalance.toString()) * (BigInt(percent)) / BigInt((100)),
           pool.decimals[chainId]
         )
       : ''
@@ -250,7 +251,7 @@ const Withdraw = ({
 
   if (
     !inputValue.bn.isZero() &&
-    inputValue.bn.gt(poolUserData.lpTokenBalance)
+    BigInt(inputValue.bn.toString()) > BigInt(poolUserData.lpTokenBalance.toString())
   ) {
     isFromBalanceEnough = false
   }
@@ -312,6 +313,7 @@ const Withdraw = ({
           value={percentage ?? ''}
         />
         <div className="my-2">
+          {/* @ts-ignore */}
           <Slider
             axis="x"
             xstep={10}
