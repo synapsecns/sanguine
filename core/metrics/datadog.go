@@ -48,7 +48,6 @@ func NewDatadogMetricsHandler(buildInfo config.BuildInfo) Handler {
 		profiler.WithLogStartup(true),
 		profiler.WithProfileTypes(getProfileTypesFromEnv()...),
 	}
-
 	return &handler
 }
 
