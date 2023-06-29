@@ -1,6 +1,7 @@
 package metrics
 
 import (
+	"fmt"
 	"go.opentelemetry.io/otel"
 	stdout "go.opentelemetry.io/otel/exporters/stdout/stdoutmetric"
 	"go.opentelemetry.io/otel/metric"
@@ -10,6 +11,7 @@ import (
 	"time"
 )
 
+// InitMeter creates and sets a global meter.
 func InitMeter(serviceName string, interval time.Duration) error {
 	// TODO configure exporter how we need
 
@@ -32,6 +34,8 @@ func InitMeter(serviceName string, interval time.Duration) error {
 	return nil
 }
 
+// NewCounter creates a new meter counter instrument
+// https://github.com/open-telemetry/opentelemetry-specification/blob/main/specification/metrics/api.md#counter
 func NewCounter(meterName string, counterName string, desc string, units string) (metric.Int64Counter, error) {
 	counter, err := otel.GetMeterProvider().
 		Meter(
@@ -43,13 +47,15 @@ func NewCounter(meterName string, counterName string, desc string, units string)
 			metric.WithUnit(units),
 		)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("creating counter failed %w", err)
 	}
 	return counter, nil
 }
 
+// NewHistogram creates a new meter histogram instrument
+// https://github.com/open-telemetry/opentelemetry-specification/blob/main/specification/metrics/api.md#histogram
 func NewHistogram(meterName string, histName string, desc string, units string) (metric.Int64Histogram, error) {
-	counter, err := otel.GetMeterProvider().
+	histogram, err := otel.GetMeterProvider().
 		Meter(
 			meterName,
 		).Int64Histogram(
@@ -58,7 +64,7 @@ func NewHistogram(meterName string, histName string, desc string, units string) 
 		metric.WithUnit(units),
 	)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("creating histogram failed %w", err)
 	}
-	return counter, nil
+	return histogram, nil
 }

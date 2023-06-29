@@ -9,7 +9,7 @@ import (
 	"time"
 )
 
-// Recording an arbitrary event, such as recording block number
+// Recording an arbitrary event, such as recording block number.
 func TestCounter(t *testing.T) {
 	err := InitMeter("test", time.Duration(30)*time.Second)
 	Nil(t, err)
@@ -27,7 +27,7 @@ func TestCounter(t *testing.T) {
 	)
 }
 
-// Recording values in a histogram format, such the actual block numbers stored over time
+// Recording values in a histogram format, such the actual block numbers stored over time.
 func TestHistogram(t *testing.T) {
 	err := InitMeter("test", time.Duration(30)*time.Second)
 	Nil(t, err)
