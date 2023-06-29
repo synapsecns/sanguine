@@ -58,7 +58,7 @@ const getTokensAllowance = async (
   spender: string,
   tokens: Token[],
   chainId: number
-) => {
+): Promise<any> => {
   const inputs = tokens.map((token: Token) => {
     const tokenAddress = token.addresses[
       chainId as keyof Token['addresses']
@@ -71,7 +71,7 @@ const getTokensAllowance = async (
       args: [owner, spender],
     }
   })
-  const allowances = await multicall({
+  const allowances: unknown[] = await multicall({
     contracts: inputs,
     chainId,
   })
