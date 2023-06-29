@@ -38,7 +38,7 @@ export const usePortfolioBalances = () => {
         )
         balanceRecord[currentChainId] = tokenBalances
 
-        getTokensAllowance(
+        const tokenAllowances = await getTokensAllowance(
           address,
           ROUTER_ADDRESS,
           currentChainTokens,
