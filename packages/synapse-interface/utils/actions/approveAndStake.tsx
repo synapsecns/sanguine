@@ -9,7 +9,7 @@ import { approveToken } from '@utils/approveToken'
 import ExplorerToastLink from '@components/ExplorerToastLink'
 import { CHAINS_BY_ID } from '@/constants/chains'
 import { MINICHEF_ADDRESSES } from '@/constants/minichef'
-import MINI_CHEF_ABI from '@/constants/abis/miniChef.json'
+import { MINICHEF_ABI } from '@/constants/abis/miniChef'
 import { Token } from '../types'
 import { walletClientToSigner } from '@/ethers'
 
@@ -85,7 +85,7 @@ export const stake = async (
 
   const miniChefContract = new Contract(
     MINICHEF_ADDRESSES[chainId],
-    MINI_CHEF_ABI,
+    MINICHEF_ABI,
     walletClientToSigner(signer)
   )
 

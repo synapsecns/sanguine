@@ -52,7 +52,8 @@ function CurrencyInfoListItem({ chainId, percent, balance, token }) {
       <div>{percent}</div>
       {balance && (
         <AugmentWithUnits
-          content={commifyBnToString(balance, decimalsToDisplay)}
+          // content={commifyBnToString(balance, decimalsToDisplay)}
+          content={balance}
           label={symbol}
         />
       )}

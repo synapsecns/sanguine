@@ -2,7 +2,7 @@ import { useBlockNumber, useAccount, useNetwork, Address, Chain } from 'wagmi'
 import toast from 'react-hot-toast'
 
 import { MINICHEF_ADDRESSES } from '@/constants/minichef'
-import MINI_CHEF_ABI from '@/constants/abis/miniChef.json'
+import {MINICHEF_ABI} from '@/constants/abis/miniChef'
 import { Contract } from 'ethers'
 import ExplorerToastLink from '@/components/ExplorerToastLink'
 import { txErrorHandler } from '@utils/txErrorHandler'
@@ -22,7 +22,7 @@ export const claimStake = async (
   })
   const miniChefContract = new Contract(
     MINICHEF_ADDRESSES[chainId],
-    MINI_CHEF_ABI,
+    MINICHEF_ABI,
     walletClientToSigner(wallet)
   )
 

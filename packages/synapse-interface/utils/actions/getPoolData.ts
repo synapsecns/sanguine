@@ -17,7 +17,7 @@ import { PoolTokenObject, Token, PoolUserData, PoolData } from '@types'
 import { BigNumber } from 'ethers'
 
 import { getVirtualPrice } from './getPoolFee'
-
+import { formatBigIntToString } from '@/utils/bigint/format'
 const getBalanceData = async ({
   pool,
   chainId,
@@ -29,51 +29,45 @@ const getBalanceData = async ({
   address: string
   lpTokenAddress: string
 }) => {
-  const tokenBalances: PoolTokenObject[] = []
-  let poolTokenSum = Zero
-  let lpTokenBalance = One
+  const tokenBalances = []
+  let poolTokenSum = 0n
+  let lpTokenBalance = 1n
   const lpTotalSupply =
     (
       await fetchToken({
         address: lpTokenAddress as `0x${string}`,
         chainId,
       })
-    )?.totalSupply?.value ?? Zero
+    )?.totalSupply?.value ?? 0n
 
   const tokens: Token[] = [...pool.poolTokens, pool]
   for (const token of tokens) {
     const isLP = token.addresses[chainId] === lpTokenAddress
 
-    const rawBalance = (
+    const rawBalanceResult = (
       await fetchBalance({
         address: address as `0x${string}`,
         chainId,
         token: token.addresses[chainId] as `0x${string}`,
       })
-    )?.value
-
-    // TODO: this is to support virtual price calcs, which needs to get updated
-    // as a contract call
-    const balance = rawBalance.mul(
-      BigNumber.from(10).pow(18 - token.decimals[chainId])
     )
-
+    console.log(rawBalanceResult?.value)
     // add to balances
     tokenBalances.push({
-      rawBalance,
-      balance,
+      rawBalance: rawBalanceResult?.value ?? 0n,
+      balance: rawBalanceResult?.formatted ?? "0",
       token,
       isLP,
     })
 
     // set lp variables
     if (isLP) {
-      lpTokenBalance = balance
+      lpTokenBalance = rawBalanceResult?.value
       continue
     }
     // running sum of all tokens in the pool
-    if (balance) {
-      poolTokenSum = poolTokenSum.add(balance)
+    if (rawBalanceResult?.formatted) {
+      poolTokenSum = poolTokenSum + BigInt(Math.round(Number(rawBalanceResult?.formatted)))
     }
   }
 
@@ -126,30 +120,34 @@ export const getPoolData = async (
     },
     poolType: pool?.poolType,
   })
-  const poolTokensMatured = getPoolTokenInfoArr({
-    tokenBalances: tokenBalances.filter((t) => !t.isLP),
-    ...{
-      lpTotalSupply,
-      tokenBalancesSum,
-    },
-    chainId,
-  })
+  // const poolTokensMatured = getPoolTokenInfoArr({
+  //   tokenBalances: tokenBalances.filter((t) => !t.isLP),
+  //   ...{
+  //     lpTotalSupply,
+  //     tokenBalancesSum,
+  //   },
+  //   chainId,
+  // })
+  const poolTokensMatured = tokenBalances
   if (user) {
-    const userShare = lpTokenBalance
-      .mul(MAX_BN_POW)
-      .div(calcIfZero(lpTokenBalance))
-    const userPoolTokenBalances = tokenBalances.map((token) =>
-      userShare.mul(token.balance).div(MAX_BN_POW)
-    )
-    const userPoolTokenBalancesSum = calcBnSum(userPoolTokenBalances)
+    // const MAX_BN_POW_BIGINT = 1000000000000000000n;
+    // const power = 18n;
+    // const base = 10n;
+    // console.log("ebfore erorr")
+    // console.log(base ** power);
+
+  // const userShare = (lpTokenBalance * MAX_BN_POW_BIGINT) / (lpTokenBalance === 0n ? 1n : lpTokenBalance);
+  // const userPoolTokenBalances = tokenBalances.map((token) => (userShare * token.rawBalance) / MAX_BN_POW_BIGINT);
+  // const userPoolTokenBalancesSum = userPoolTokenBalances.reduce((sum, b) => sum + b, 0n);
 
     return {
       name: pool.name,
-      share: userShare,
-      value: userPoolTokenBalancesSum,
+      share: 0n,
+      value: 0n,
       tokens: poolTokensMatured,
       lpTokenBalance,
-      lpTokenBalanceStr: formatBNToString(lpTokenBalance, 18, 4),
+      // lpTokenBalanceStr: formatBigIntToString(lpTokenBalance, 18, 4),
+      lpTokenBalanceStr: lpTokenBalance.toString(),
       nativeTokens: pool.nativeTokens,
     }
   }
@@ -160,10 +158,13 @@ export const getPoolData = async (
     name: pool.name,
     tokens: poolTokensMatured,
     totalLocked: tokenBalancesSum,
-    totalLockedStr: commifyBnWithDefault(tokenBalancesSum, displayDecimals),
+    // totalLockedStr: commifyBnWithDefault(tokenBalancesSum, displayDecimals),
+    totalLockedStr: tokenBalancesSum,
     totalLockedUSD: tokenBalancesUSD,
-    totalLockedUSDStr: commifyBnToString(tokenBalancesUSD, 0),
+    // totalLockedUSDStr: commifyBnToString(tokenBalancesUSD, 0),
+    totalLockedUSDStr: tokenBalancesUSD,
     virtualPrice,
-    virtualPriceStr: commifyBnToString(virtualPrice, 5),
+    // virtualPriceStr: commifyBnToString(virtualPrice, 5),
+    virtualPriceStr: virtualPrice.toString()
   }
 }

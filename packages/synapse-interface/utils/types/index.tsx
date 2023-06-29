@@ -21,12 +21,12 @@ export type Chain = {
 }
 export type PoolToken = {
   symbol: string
-  percent: string
-  balance: BigNumber
+  percent: number
+  balance: string
   balanceStr: string
   token: Token
   isLp: boolean
-  rawBalance: BigNumber
+  rawBalance: BigInt
 }
 export type Query = [string, string, BigNumber, BigNumber, string] & {
   swapAdapter: string
@@ -37,21 +37,21 @@ export type Query = [string, string, BigNumber, BigNumber, string] & {
 }
 export type PoolUserData = {
   name: string
-  share: BigNumber
-  value: BigNumber
+  share: BigInt
+  value: BigInt
   tokens: PoolToken[]
-  lpTokenBalance: BigNumber
+  lpTokenBalance: BigInt
   lpTokenBalanceStr: string
   nativeTokens?: any
 }
 export type PoolData = {
   name: string
   tokens: PoolToken[]
-  totalLocked: BigNumber
-  totalLockedStr: string
-  totalLockedUSD: BigNumber
-  totalLockedUSDStr: string
-  virtualPrice: BigNumber
+  totalLocked: number
+  totalLockedStr: number
+  totalLockedUSD: Number
+  totalLockedUSDStr: number
+  virtualPrice: BigInt
   virtualPriceStr: string
   nativeTokens?: any
 }
@@ -88,8 +88,8 @@ export type PoolTokenObj = {
 }
 export type PoolTokenObject = {
   token: Token
-  balance: BigNumber
-  rawBalance: BigNumber
+  balance: string
+  rawBalance: BigInt
   isLP: boolean
 }
 

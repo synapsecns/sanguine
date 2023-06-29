@@ -77,7 +77,7 @@ const Deposit = ({
       }
       const { totalLocked, virtualPrice } = poolData
 
-      if (totalLocked.gt(0) && inputSum.gt(0)) {
+      if (totalLocked > (0) && inputSum.gt(0)) {
         const input = transformCalculateLiquidityInput(
           chainId,
           pool,
@@ -101,7 +101,7 @@ const Deposit = ({
           )
         }
 
-        const priceImpact = calculatePriceImpact(inputSum, amount, virtualPrice)
+        const priceImpact = calculatePriceImpact(inputSum, amount, BigNumber.from(Number(virtualPrice)))
 
         setDepositQuote({
           priceImpact: priceImpact,
@@ -243,7 +243,7 @@ const Deposit = ({
     poolUserData.tokens.map((tokenObj, i) => {
       if (
         tokenObj.token.addresses[chainId] === tokenAddr &&
-        amount.gt(tokenObj.balance)
+        amount.gt(BigNumber.from(tokenObj.rawBalance).toString())
       ) {
         isFromBalanceEnough = false
       }
@@ -289,6 +289,7 @@ const Deposit = ({
     ]
   )
 
+  console.log(pool, poolUserData, poolData)
   return (
     <div className="flex-col">
       <div className="px-2 pt-1 pb-4 bg-bgLight rounded-xl">

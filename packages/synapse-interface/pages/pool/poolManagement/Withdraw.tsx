@@ -164,14 +164,14 @@ const Withdraw = ({
   const onChangeInputValue = (token: Token, value: string) => {
     const bigNum = stringToBigNum(value, token.decimals[chainId])
 
-    if (poolUserData.lpTokenBalance.isZero()) {
+    if (poolUserData.lpTokenBalance === 0n) {
       setInputValue({ bn: bigNum, str: value })
 
       setPercentage(0)
       return
     }
     const pn = bigNum
-      ? bigNum.mul(100).div(poolUserData.lpTokenBalance).toNumber()
+      ? bigNum.mul(100).div(BigNumber.from(poolUserData.lpTokenBalance.toString())).toNumber()
       : 0
 
     setInputValue({ bn: bigNum, str: value })
