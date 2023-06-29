@@ -20,6 +20,39 @@ export const getTokensByChainId = async (
   return await sortByTokenBalance(tokens, chainId, owner)
 }
 
+interface TokenWithBalanceAndAllowance {
+  token: Token
+  balance: BigNumber
+  allowance: BigNumber
+}
+
+function mergeBalancesAndAllowances(
+  balances: { token: Token; balance: BigNumber }[],
+  allowances: { token: Token; allowance: BigNumber }[]
+): TokenWithBalanceAndAllowance[] {
+  return balances.map((balance) => {
+    const correspondingAllowance = allowances.find(
+      (item2) => item2.token === balance.token
+    )
+
+    if (correspondingAllowance) {
+      return {
+        token: balance.token,
+        balance: balance.balance,
+        allowance: correspondingAllowance.allowance,
+      }
+    }
+
+    // if no allowance is matched with corresponding balance
+    // e.g native gas tokens
+    return {
+      token: balance.token,
+      balance: balance.balance,
+      allowance: null,
+    }
+  })
+}
+
 export const usePortfolioBalances = () => {
   const [balances, setBalances] = useState<NetworkTokenBalances>({})
   const { address } = getAccount()
@@ -45,8 +78,15 @@ export const usePortfolioBalances = () => {
           currentChainId
         )
 
-        console.log('tokenBalances, chainId: ', chainId, tokenBalances)
-        console.log('tokenAllowances, chainId: ', chainId, tokenAllowances)
+        const mergedBalancesAndAllowances = mergeBalancesAndAllowances(
+          tokenBalances,
+          tokenAllowances
+        )
+        console.log(
+          'mergedBalancesAndAllowances chainId:',
+          chainId,
+          mergedBalancesAndAllowances
+        )
       })
       setBalances(balanceRecord)
     }
