@@ -58,6 +58,7 @@ export const BridgeTransactionButton = ({
 
   let buttonProperties
 
+  console.log(fromValue)
   if (!isLoading && bridgeQuote?.feeAmount?.eq(0) && (BigInt(fromValue as string)) > 0) {
     buttonProperties = {
       label: `Amount must be greater than fee`,

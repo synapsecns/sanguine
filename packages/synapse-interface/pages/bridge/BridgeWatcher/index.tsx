@@ -1,5 +1,5 @@
 import { fetchBlockNumber } from '@wagmi/core'
-import { useWalletClient } from 'wagmi'
+import { useWalletClient, useAccount } from 'wagmi'
 import SYNAPSE_BRIDGE_ABI from '@abis/synapseBridge.json'
 import { Contract, Signer } from 'ethers'
 import { BRIDGE_CONTRACTS } from '@constants/bridge'
@@ -40,8 +40,8 @@ const BridgeWatcher = ({
   const bridgeTxHashes = useSelector((state: RootState) => state.bridge)
   const [fromTransactions, setFromTransactions] = useState([])
   const [fromSynapseContract, setFromSynapseContract] = useState<Contract>()
-  const [fromSigner, setFromSigner] = useState<Signer>()
-  const { data: fromSignerRaw } = useWalletClient({ chainId: fromChainId })
+  const [fromSigner, setFromSigner] = useState<string>()
+  const { address: fromSignerRaw, isConnecting, isDisconnected } = useAccount()
   const { providerMap } = useSynapseContext()
 
   const getFromBridgeEvents = async (): Promise<BridgeWatcherTx[]> => {
@@ -104,7 +104,7 @@ const BridgeWatcher = ({
       const fromSynapseContract = new Contract(
         validBridgeContract,
         SYNAPSE_BRIDGE_ABI,
-        fromSigner
+        providerMap[fromChainId]
       )
       setFromSynapseContract(fromSynapseContract)
     }
@@ -121,7 +121,8 @@ const BridgeWatcher = ({
   }, [fromSynapseContract, bridgeTxHash])
 
   useEffect(() => {
-    setFromSigner(walletClientToSigner(fromSignerRaw))
+    console.log(fromSignerRaw)
+    setFromSigner(fromSignerRaw)
   }, [fromSignerRaw])
 
   return (

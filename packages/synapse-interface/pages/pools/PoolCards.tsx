@@ -30,16 +30,19 @@ const PoolCards = memo(
     useEffect(() => {
       getSynPrices()
         .then((res) => {
+          console.log(res)
           setSynPrices(res)
         })
         .catch((err) => console.log('Could not get syn prices', err))
       getEthPrice()
         .then((res) => {
+          console.log(res)
           setEthPrice(res)
         })
         .catch((err) => console.log('Could not get eth prices', err))
       getAvaxPrice()
         .then((res) => {
+          console.log(res)
           setAvaxPrice(res)
         })
         .catch((err) => console.log('Could not get avax prices', err))

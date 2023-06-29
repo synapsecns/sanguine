@@ -28,6 +28,7 @@ export function getEthersProvider({ chainId }: { chainId?: number } = {}) {
 
 
 export function walletClientToSigner(walletClient: WalletClient) {
+  console.log(walletClient)
   const { account, chain, transport } = walletClient
   const network = {
     chainId: chain.id,

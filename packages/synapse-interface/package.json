@@ -30,7 +30,7 @@
     "@ethersproject/hash": "5.7.0",
     "@ethersproject/providers": "5.7.2",
     "@ethersproject/units": "5.7.0",
-    "@headlessui/react": "1.6.2",
+    "@headlessui/react": "^1.7.15",
     "@heroicons/react": "1.0.6",
     "@rainbow-me/rainbowkit": "^1.0.4",
     "@reduxjs/toolkit": "^1.9.5",

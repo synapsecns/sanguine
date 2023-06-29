@@ -15,8 +15,8 @@ import { SYN_ETH_SUSHI_TOKEN } from '@constants/tokens/sushiMaster'
 
 export const usePrices = (connectedChainId: number) => {
   const [synPrices, setSynPrices] = useState<any>(undefined)
-  const [ethPrice, setEthPrice] = useState<BigNumber>(undefined)
-  const [avaxPrice, setAvaxPrice] = useState<BigNumber>(undefined)
+  const [ethPrice, setEthPrice] = useState<number>(undefined)
+  const [avaxPrice, setAvaxPrice] = useState<number>(undefined)
 
   useEffect(() => {
     ;(async () => {
@@ -49,7 +49,7 @@ export const usePrices = (connectedChainId: number) => {
   }, [synPrices, ethPrice, avaxPrice])
 }
 
-export const getEthPrice = async (): Promise<BigNumber> => {
+export const getEthPrice = async (): Promise<number> => {
   // the price result returned by latestAnswer is 8 decimals
   const ethPriceResult: any = await readContract({
     address: `0x${CHAINLINK_ETH_PRICE_ADDRESSES[ALL_CHAINS.ETH.id].slice(2)}`,
@@ -57,12 +57,18 @@ export const getEthPrice = async (): Promise<BigNumber> => {
     functionName: 'latestAnswer',
     chainId: 1,
   })
-  const ethPriceBigNumber = BigNumber.from(ethPriceResult?._hex) ?? Zero
 
-  return ethPriceBigNumber.div(BigNumber.from(10).pow(8))
+  const ethPriceBigInt = ethPriceResult ? BigInt(ethPriceResult) : BigInt('0');
+  if (ethPriceBigInt === BigInt('0')) {
+    return 0
+  } else {
+    // Note: BigInt to Number conversion happens here
+    return Number(ethPriceBigInt) / Math.pow(10, 8);
+  }
 }
 
-export const getAvaxPrice = async (): Promise<BigNumber> => {
+
+export const getAvaxPrice = async (): Promise<number> => {
   // the price result returned by latestAnswer is 8 decimals
   const avaxPriceResult: any = await readContract({
     address: `0x${CHAINLINK_AVAX_PRICE_ADDRESSES[ALL_CHAINS.ETH.id].slice(2)}`,
@@ -70,13 +76,18 @@ export const getAvaxPrice = async (): Promise<BigNumber> => {
     functionName: 'latestAnswer',
     chainId: 1,
   })
-  const avaxPriceBigNumber = BigNumber.from(avaxPriceResult?._hex) ?? Zero
 
-  return avaxPriceBigNumber.div(BigNumber.from(10).pow(8))
+  const avaxPriceBigInt = avaxPriceResult ? BigInt(avaxPriceResult) : BigInt('0');
+
+  if (avaxPriceBigInt === BigInt('0')) {
+    return 0
+  } else {
+    return Number(avaxPriceBigInt) / Math.pow(10, 8);
+  }
 }
 
 export const getSynPrices = async () => {
-  const ethPrice: BigNumber = await getEthPrice()
+  const ethPrice: number = await getEthPrice()
   const sushiSynBalance =
     (
       await fetchBalance({
@@ -86,7 +97,7 @@ export const getSynPrices = async () => {
           2
         )}`,
       })
-    )?.value ?? Zero
+    )?.value ?? BigInt('0')
   const sushiEthBalance =
     (
       await fetchBalance({
@@ -96,19 +107,20 @@ export const getSynPrices = async () => {
           2
         )}`,
       })
-    )?.value ?? Zero
+    )?.value ?? BigInt('0')
 
-  const ethBalanceNumber = Number(formatUnits(sushiEthBalance, 'ether'))
-  const synBalanceNumber = Number(formatUnits(sushiSynBalance, 'ether'))
+  // Assuming formatUnits(sushiEthBalance, 'ether') converts the balance to Ether (i.e., divides by 10**18)
+  const ethBalanceNumber = Number(sushiEthBalance) / Math.pow(10, 18);
+  const synBalanceNumber = Number(sushiSynBalance) / Math.pow(10, 18);
 
   const synPerEth = synBalanceNumber / ethBalanceNumber
 
-  const synPrice: number = ethPrice.toNumber() / synPerEth
+  const synPrice: number = ethPrice * synPerEth
 
   return {
     synBalanceNumber,
     ethBalanceNumber,
     synPrice,
-    ethPrice: ethPrice.toNumber(),
+    ethPrice,
   }
 }

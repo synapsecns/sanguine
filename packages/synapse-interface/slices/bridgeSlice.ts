@@ -36,7 +36,7 @@ const initialState: BridgeState = {
   supportedToTokens: [],
   fromToken: ETH,
   toToken: ETH,
-  fromValue: '{"value":"#bigint.0"}'  ,
+  fromValue: "" ,
   bridgeQuote: EMPTY_BRIDGE_QUOTE,
   fromChainIds: [],
   toChainIds: [],
@@ -111,7 +111,7 @@ export const tokenDecimalMiddleware =
       const currentState = getState()
 
       // if fromValue is 0, no need to adjust it
-      if (currentState.bridge.fromValue === "0") {
+      if (currentState.bridge.fromValue === "0" || currentState.bridge.fromValue === "") {
         next(action)
         return
       }
