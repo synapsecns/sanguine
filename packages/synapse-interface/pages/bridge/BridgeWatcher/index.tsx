@@ -5,7 +5,7 @@ import { Contract, Signer } from 'ethers'
 import { BRIDGE_CONTRACTS, SYNAPSE_CCTP_CONTRACTS } from '@constants/bridge'
 import { useEffect, useState } from 'react'
 import { Interface } from '@ethersproject/abi'
-import _, { chain } from 'lodash'
+import _ from 'lodash'
 import Grid from '@tw/Grid'
 import Card from '@tw/Card'
 import BridgeEvent from './BridgeEvent'
@@ -15,6 +15,7 @@ import { useSynapseContext } from '@/utils/providers/SynapseProvider'
 import { useSelector } from 'react-redux';
 import { RootState } from '@/store/store'
 import SYNAPSE_CCTP_ABI from '@abis/synapseCCTP.json'
+import * as CHAINS from '@constants/chains/master'
 
 import {
   getLogs,
@@ -50,7 +51,7 @@ const BridgeWatcher = ({
 
     const validBridgeContract = BRIDGE_CONTRACTS[fromChainId]
     ? BRIDGE_CONTRACTS[fromChainId]
-    : BRIDGE_CONTRACTS[1]
+    : BRIDGE_CONTRACTS[CHAINS.ETH.id]
     const bridgeContract = new Contract(
       validBridgeContract,
       SYNAPSE_BRIDGE_ABI,

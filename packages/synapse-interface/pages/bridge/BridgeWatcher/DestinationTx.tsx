@@ -26,7 +26,7 @@ import { remove0xPrefix } from '@/utils/remove0xPrefix'
 import EventCard from './EventCard'
 import BlockCountdown from './BlockCountdown'
 import { CreditedTransactionItem } from '@components/TransactionItems'
-import SYNASE_CCTP_ABI from '@abis/synapseCCTP.json'
+import SYNAPSE_CCTP_ABI from '@abis/synapseCCTP.json'
 import { SYNAPSE_CCTP_CONTRACTS } from '@constants/bridge'
 
 const DestinationTx = (fromEvent: BridgeWatcherTx) => {
@@ -159,7 +159,7 @@ const DestinationTx = (fromEvent: BridgeWatcherTx) => {
       if (SYNAPSE_CCTP_CONTRACTS[fromEvent.toChainId]) {
         const toCCTPContract = new Contract(
           SYNAPSE_CCTP_CONTRACTS[fromEvent.toChainId],
-          SYNASE_CCTP_ABI,
+          SYNAPSE_CCTP_ABI,
           toSigner
         )
         setToCCTPContract(toCCTPContract)
