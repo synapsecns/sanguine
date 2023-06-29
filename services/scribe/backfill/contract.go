@@ -170,7 +170,7 @@ func (c *ContractBackfiller) Backfill(parentCtx context.Context, givenStart uint
 					}
 
 					c.blockMeter.Record(ctx, int64(log.BlockNumber), otelMetrics.WithAttributeSet(
-						attribute.NewSet(attribute.String("contract_address", c.contractConfig.Address), attribute.Int64("chain_id", int64(c.chainConfig.ChainID)))),
+						attribute.NewSet(attribute.Int64("start_block", int64(startHeight)), attribute.Int64("chain_id", int64(c.chainConfig.ChainID)))),
 					)
 				}
 
@@ -193,7 +193,7 @@ func (c *ContractBackfiller) Backfill(parentCtx context.Context, givenStart uint
 		return fmt.Errorf("could not store last indexed block: %w", err)
 	}
 	c.blockMeter.Record(ctx, int64(endHeight), otelMetrics.WithAttributeSet(
-		attribute.NewSet(attribute.String("contract_address", c.contractConfig.Address), attribute.Int64("chain_id", int64(c.chainConfig.ChainID)))),
+		attribute.NewSet(attribute.Int64("start_block", int64(startHeight)), attribute.Int64("chain_id", int64(c.chainConfig.ChainID)))),
 	)
 	LogEvent(InfoLevel, "Finished backfilling contract", LogData{"cid": c.chainConfig.ChainID, "ca": c.contractConfig.Address})
 

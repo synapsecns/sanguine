@@ -63,7 +63,7 @@ func (s Scribe) Start(ctx context.Context) error {
 	for i := range s.config.Chains {
 		chainConfig := s.config.Chains[i]
 		chainID := chainConfig.ChainID
-		reorgMeter, err := metrics.NewCounter(s.handler.Meter(), fmt.Sprint("scribe_reorg_counter_", chainID), "reorg_counter", "a reorg meter", "reorg events")
+		reorgMeter, err := metrics.NewCounter(s.handler.Meter(), fmt.Sprintf("scribe_reorg_meter_%d", chainID), "reorg_counter", "a reorg meter", "reorg events")
 		if err != nil {
 			return fmt.Errorf("error creating otel counter %w", err)
 		}
