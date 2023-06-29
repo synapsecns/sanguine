@@ -215,3 +215,72 @@ export const metis = {
     },
   },
 } as const satisfies Chain
+
+export const canto = {
+  id: 7700,
+  name: 'Canto',
+  network: 'canto',
+  nativeCurrency: {
+    decimals: 18,
+    name: 'Canto',
+    symbol: 'CANTO',
+  },
+  rpcUrls: {
+    default: {
+      http: ['https://canto.slingshot.finance'],
+    },
+    public: {
+      http: ['https://canto.slingshot.finance'],
+    },
+  },
+  blockExplorers: {
+    default: {
+      name: 'Canto EVM Explorer (Blockscout)',
+      url: 'https://evm.explorer.canto.io',
+    },
+  },
+  contracts: {
+    multicall3: {
+      address: '0xca11bde05977b3631167028862be2a173976ca11',
+      blockCreated: 4876481, //update this when cantoscan is working
+    },
+  },
+} as const satisfies Chain
+
+export const aurora = {
+  id: 1313161554,
+  name: 'Aurora',
+  network: 'aurora',
+  nativeCurrency: {
+    decimals: 18,
+    name: 'Ether',
+    symbol: 'ETH',
+  },
+  rpcUrls: {
+    infura: {
+      http: ['https://aurora-mainnet.infura.io/v3'],
+    },
+    default: {
+      http: ['https://mainnet.aurora.dev'],
+    },
+    public: {
+      http: ['https://mainnet.aurora.dev'],
+    },
+  },
+  blockExplorers: {
+    etherscan: {
+      name: 'Aurorascan',
+      url: 'https://aurorascan.dev',
+    },
+    default: {
+      name: 'Aurorascan',
+      url: 'https://aurorascan.dev',
+    },
+  },
+  contracts: {
+    multicall3: {
+      address: '0xca11bde05977b3631167028862be2a173976ca11',
+      blockCreated: 62907816,
+    },
+  },
+} as const satisfies Chain
