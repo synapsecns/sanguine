@@ -195,3 +195,7 @@ body {
 .no-mt {
   margin-top: 0 !important;
 }
+
+.radial-gradient {
+  border-image: linear-gradient(to right, rgba(255, 0, 255, 1), rgba(172, 143, 255, 1)) 1;
+}
