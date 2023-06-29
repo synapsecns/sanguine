@@ -86,7 +86,12 @@ func (u *NotarySuite) TestNotaryE2E() {
 
 	Equal(u.T(), encodedNotaryTestConfig, decodedAgentConfigBackToEncodedBytes)
 
-	guard, err := guard.NewGuard(u.GetTestContext(), guardTestConfig, u.GuardMetrics)
+	rpcURLs := map[uint32]string{
+		u.OriginDomainClient.Config().DomainID:      u.TestBackendOrigin.RPCAddress(),
+		u.DestinationDomainClient.Config().DomainID: u.TestBackendDestination.RPCAddress(),
+		u.SummitDomainClient.Config().DomainID:      u.TestBackendSummit.RPCAddress(),
+	}
+	guard, err := guard.NewGuardInjectedBackend(u.GetTestContext(), guardTestConfig, u.GuardMetrics, rpcURLs)
 	Nil(u.T(), err)
 
 	tips := types.NewTips(big.NewInt(int64(0)), big.NewInt(int64(0)), big.NewInt(int64(0)), big.NewInt(int64(0)))
@@ -155,7 +160,7 @@ func (u *NotarySuite) TestNotaryE2E() {
 		return state.Nonce() >= uint32(1)
 	})
 
-	notary, err := notary.NewNotary(u.GetTestContext(), notaryTestConfig, u.NotaryMetrics)
+	notary, err := notary.NewNotaryInjectedBackend(u.GetTestContext(), notaryTestConfig, u.NotaryMetrics, rpcURLs)
 	Nil(u.T(), err)
 
 	agentStatus, err := u.DestinationContract.AgentStatus(&bind.CallOpts{Context: u.GetTestContext()}, u.NotaryBondedSigner.Address())

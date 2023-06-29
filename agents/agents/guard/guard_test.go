@@ -1,7 +1,7 @@
 package guard_test
 
 import (
-	config2 "github.com/synapsecns/sanguine/ethergo/signer/config"
+	signerConfig "github.com/synapsecns/sanguine/ethergo/signer/config"
 	"math/big"
 	"os"
 	"testing"
@@ -32,12 +32,12 @@ func (u GuardSuite) TestGuardE2E() {
 		},
 		DomainID:       uint32(0),
 		SummitDomainID: u.SummitDomainClient.Config().DomainID,
-		BondedSigner: config2.SignerConfig{
-			Type: config2.FileType.String(),
+		BondedSigner: signerConfig.SignerConfig{
+			Type: signerConfig.FileType.String(),
 			File: filet.TmpFile(u.T(), "", u.GuardBondedWallet.PrivateKeyHex()).Name(),
 		},
-		UnbondedSigner: config2.SignerConfig{
-			Type: config2.FileType.String(),
+		UnbondedSigner: signerConfig.SignerConfig{
+			Type: signerConfig.FileType.String(),
 			File: filet.TmpFile(u.T(), "", u.GuardUnbondedWallet.PrivateKeyHex()).Name(),
 		},
 		RefreshIntervalSeconds: 5,
@@ -61,7 +61,13 @@ func (u GuardSuite) TestGuardE2E() {
 
 	Equal(u.T(), encodedTestConfig, decodedAgentConfigBackToEncodedBytes)
 
-	guard, err := guard.NewGuard(u.GetTestContext(), testConfig, u.GuardMetrics)
+	rpcURLs := map[uint32]string{
+		u.OriginDomainClient.Config().DomainID:      u.TestBackendOrigin.RPCAddress(),
+		u.DestinationDomainClient.Config().DomainID: u.TestBackendDestination.RPCAddress(),
+		u.SummitDomainClient.Config().DomainID:      u.TestBackendSummit.RPCAddress(),
+	}
+
+	guard, err := guard.NewGuardInjectedBackend(u.GetTestContext(), testConfig, u.GuardMetrics, rpcURLs)
 	Nil(u.T(), err)
 
 	tips := types.NewTips(big.NewInt(int64(0)), big.NewInt(int64(0)), big.NewInt(int64(0)), big.NewInt(int64(0)))
