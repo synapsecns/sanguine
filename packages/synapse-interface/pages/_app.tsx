@@ -7,6 +7,7 @@ import {
   dfk,
   dogechain,
   klaytn,
+  metis,
 } from '@constants/extraWagmiChains'
 import { WagmiConfig, configureChains, createClient } from 'wagmi'
 import {
@@ -18,7 +19,6 @@ import {
   fantom,
   harmonyOne,
   mainnet,
-  metis,
   moonbeam,
   moonriver,
   optimism,
