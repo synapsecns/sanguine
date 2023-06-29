@@ -11,12 +11,16 @@ import (
 	"go.opentelemetry.io/otel"
 	"go.opentelemetry.io/otel/attribute"
 	"go.opentelemetry.io/otel/propagation"
+	sdkmetric "go.opentelemetry.io/otel/sdk/metric"
 	"go.opentelemetry.io/otel/sdk/resource"
 	tracesdk "go.opentelemetry.io/otel/sdk/trace"
 	semconv "go.opentelemetry.io/otel/semconv/v1.17.0"
 	"go.opentelemetry.io/otel/trace"
 	"gorm.io/gorm"
 	"net/http"
+	"os"
+	"strconv"
+	"time"
 )
 
 // baseHandler is a base metrics handler that implements the Handler interface.
@@ -26,6 +30,7 @@ type baseHandler struct {
 	tracer     trace.Tracer
 	name       string
 	propagator propagation.TextMapPropagator
+	meter      *sdkmetric.MeterProvider
 }
 
 func (b *baseHandler) Start(ctx context.Context) error {
@@ -66,6 +71,10 @@ func (b *baseHandler) Type() HandlerType {
 	panic("must be overridden by children")
 }
 
+func (b *baseHandler) Meter() *sdkmetric.MeterProvider {
+	return b.meter
+}
+
 // newBaseHandler creates a new baseHandler for otel.
 // this is exported for testing.
 func newBaseHandler(buildInfo config.BuildInfo, extraOpts ...tracesdk.TracerProviderOption) *baseHandler {
@@ -102,11 +111,22 @@ func newBaseHandlerWithTracerProvider(buildInfo config.BuildInfo, tracerProvider
 	tracer := tracerProvider.Tracer(buildInfo.Name())
 	otel.SetTextMapPropagator(propagator)
 
+	interval, err := strconv.Atoi(os.Getenv("OTEL_METER_INTERVAL"))
+	if err != nil {
+		// default interval
+		interval = 60
+	}
+	mp, err := InitMeter(buildInfo.Name(), time.Duration(interval)*time.Second)
+	if err != nil {
+		return nil
+	}
+
 	return &baseHandler{
 		tp:         tracerProvider,
 		tracer:     tracer,
 		name:       buildInfo.Name(),
 		propagator: propagator,
+		meter:      mp,
 	}
 }
 

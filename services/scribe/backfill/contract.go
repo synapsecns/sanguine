@@ -13,6 +13,7 @@ import (
 	"github.com/synapsecns/sanguine/core/mapmutex"
 	"github.com/synapsecns/sanguine/core/metrics"
 	"go.opentelemetry.io/otel/attribute"
+	otelMetrics "go.opentelemetry.io/otel/metric"
 	"go.opentelemetry.io/otel/trace"
 
 	"github.com/ethereum/go-ethereum/common"
@@ -40,6 +41,8 @@ type ContractBackfiller struct {
 	mux mapmutex.StringerMapMutex
 	// handler is the metrics handler for the scribe.
 	handler metrics.Handler
+	// blockMeter is an otel historgram for doing metrics on block heights by chain
+	blockMeter otelMetrics.Int64Histogram
 }
 
 // retryTolerance is the number of times to retry a failed operation before rerunning the entire Backfill function.
@@ -55,7 +58,7 @@ const invalidTxVRSError = "invalid transaction v, r, s values"
 const txNotFoundError = "not found"
 
 // NewContractBackfiller creates a new backfiller for a contract.
-func NewContractBackfiller(chainConfig config.ChainConfig, contractConfig config.ContractConfig, eventDB db.EventDB, client []ScribeBackend, handler metrics.Handler) (*ContractBackfiller, error) {
+func NewContractBackfiller(chainConfig config.ChainConfig, contractConfig config.ContractConfig, eventDB db.EventDB, client []ScribeBackend, handler metrics.Handler, blockMeter otelMetrics.Int64Histogram) (*ContractBackfiller, error) {
 	cache, err := lru.New(500)
 	if err != nil {
 		return nil, fmt.Errorf("could not initialize cache: %w", err)
@@ -73,6 +76,7 @@ func NewContractBackfiller(chainConfig config.ChainConfig, contractConfig config
 		cache:          cache,
 		mux:            mapmutex.NewStringerMapMutex(),
 		handler:        handler,
+		blockMeter:     blockMeter,
 	}, nil
 }
 
@@ -164,6 +168,10 @@ func (c *ContractBackfiller) Backfill(parentCtx context.Context, givenStart uint
 
 						return fmt.Errorf("could not store last indexed block: %w", err)
 					}
+
+					c.blockMeter.Record(ctx, int64(log.BlockNumber), otelMetrics.WithAttributeSet(
+						attribute.NewSet(attribute.String("contract_address", c.contractConfig.Address), attribute.Int64("chain_id", int64(c.chainConfig.ChainID)))),
+					)
 				}
 
 			case errFromChan := <-errChan:
@@ -184,6 +192,9 @@ func (c *ContractBackfiller) Backfill(parentCtx context.Context, givenStart uint
 	if err != nil {
 		return fmt.Errorf("could not store last indexed block: %w", err)
 	}
+	c.blockMeter.Record(ctx, int64(endHeight), otelMetrics.WithAttributeSet(
+		attribute.NewSet(attribute.String("contract_address", c.contractConfig.Address), attribute.Int64("chain_id", int64(c.chainConfig.ChainID)))),
+	)
 	LogEvent(InfoLevel, "Finished backfilling contract", LogData{"cid": c.chainConfig.ChainID, "ca": c.contractConfig.Address})
 
 	return nil
