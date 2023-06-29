@@ -83,7 +83,7 @@ export const PortfolioPreview = () => {
   )
 }
 
-function ConnectWallet() {
+export function ConnectWallet() {
   const buttonClassName = `
     h-10 border-[#AC8FFF] flex items-center border
     text-base px-4 py-3 hover:opacity-75 rounded-lg

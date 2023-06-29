@@ -2,6 +2,7 @@ import { usePortfolioBalancesAndAllowances } from '@/utils/hooks/usePortfolioBal
 import { PortfolioTabManager } from './PortfolioTabManager'
 import { useAccount, useNetwork } from 'wagmi'
 import { useState } from 'react'
+import { ConnectWalletButton } from './ConnectWalletButton'
 import HomeSvg from '../icons/HomeIcon'
 
 export enum PortfolioTabs {
@@ -34,10 +35,11 @@ const HomeContent = () => {
         Synapse is the most widely used, extensible, and secure cross-chain
         communications network.
       </p>
-      <p>
+      <p className="mb-5">
         Preview your route in the Bridge panel, and connect your wallet when
         you're ready to authorize your transaction.
       </p>
+      <ConnectWalletButton />
     </div>
   )
 }
