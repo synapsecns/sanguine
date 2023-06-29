@@ -34,7 +34,6 @@ function mergeBalancesAndAllowances(
     const correspondingAllowance = allowances.find(
       (item2) => item2.token === balance.token
     )
-
     if (correspondingAllowance) {
       return {
         token: balance.token,
@@ -42,7 +41,6 @@ function mergeBalancesAndAllowances(
         allowance: correspondingAllowance.allowance,
       }
     }
-
     // if no allowance is matched with corresponding balance
     // e.g native gas tokens
     return {
@@ -65,7 +63,6 @@ export const usePortfolioBalancesAndAllowances = () => {
       availableChains.forEach(async (chainId) => {
         const currentChainId = Number(chainId)
         const currentChainTokens = BRIDGABLE_TOKENS[chainId]
-
         const tokenBalances: TokenAndBalance[] = await getTokensByChainId(
           address,
           currentChainTokens,
@@ -81,7 +78,6 @@ export const usePortfolioBalancesAndAllowances = () => {
           tokenBalances,
           tokenAllowances
         )
-
         balanceRecord[currentChainId] = mergedBalancesAndAllowances
       })
       setBalancesAndAllowances(balanceRecord)
