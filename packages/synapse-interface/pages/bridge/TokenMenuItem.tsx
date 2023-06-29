@@ -59,7 +59,7 @@ const TokenMenuItem = ({
       <ButtonContent
         token={token}
         chainId={chainId}
-        tokenBalance={tokenBalance ? tokenBalance : BigInt(0)}
+        tokenBalance={tokenBalance ? BigInt(tokenBalance.toString()) : BigInt(0)}
       />
     </div>
   )

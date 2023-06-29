@@ -243,7 +243,7 @@ const Deposit = ({
     poolUserData.tokens.map((tokenObj, i) => {
       if (
         tokenObj.token.addresses[chainId] === tokenAddr &&
-        amount.gt(tokenObj.balance.result)
+        amount.gt(tokenObj.balance)
       ) {
         isFromBalanceEnough = false
       }

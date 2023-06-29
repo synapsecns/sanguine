@@ -40,7 +40,7 @@ const BridgeWatcher = ({
   const bridgeTxHashes = useSelector((state: RootState) => state.bridge)
   const [fromTransactions, setFromTransactions] = useState([])
   const [fromSynapseContract, setFromSynapseContract] = useState<Contract>()
-  const [fromSigner, setFromSigner] = useState<Address>()
+  const [fromSigner, setFromSigner] = useState<Signer>()
   const { data: fromSignerRaw } = useWalletClient({ chainId: fromChainId })
   const { providerMap } = useSynapseContext()
 
@@ -104,7 +104,7 @@ const BridgeWatcher = ({
       const fromSynapseContract = new Contract(
         validBridgeContract,
         SYNAPSE_BRIDGE_ABI,
-        walletClientToSigner(fromSigner)
+        fromSigner
       )
       setFromSynapseContract(fromSynapseContract)
     }
@@ -121,7 +121,7 @@ const BridgeWatcher = ({
   }, [fromSynapseContract, bridgeTxHash])
 
   useEffect(() => {
-    setFromSigner(fromSignerRaw as unknown as Address)
+    setFromSigner(walletClientToSigner(fromSignerRaw))
   }, [fromSignerRaw])
 
   return (

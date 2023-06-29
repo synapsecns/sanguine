@@ -53,7 +53,7 @@ const DestinationTx = (fromEvent: BridgeWatcherTx) => {
     let i = 0
     let afterOrginTx = true
     while (afterOrginTx) {
-      const startBlock = headOnDestination - GETLOGS_SIZE * i
+      const startBlock = Number(headOnDestination) - GETLOGS_SIZE * i
 
       // get timestamp from from block
       const blockRaw = await getBlock(startBlock - (GETLOGS_SIZE + 1), provider)
