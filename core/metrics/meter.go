@@ -2,7 +2,6 @@ package metrics
 
 import (
 	"fmt"
-	"go.opentelemetry.io/otel"
 	stdout "go.opentelemetry.io/otel/exporters/stdout/stdoutmetric"
 	"go.opentelemetry.io/otel/metric"
 	sdkmetric "go.opentelemetry.io/otel/sdk/metric"
@@ -12,12 +11,12 @@ import (
 )
 
 // InitMeter creates and sets a global meter provider.
-func InitMeter(serviceName string, interval time.Duration) error {
+func InitMeter(serviceName string, interval time.Duration) (*sdkmetric.MeterProvider, error) {
 	// TODO configure exporter how we need.
 
 	exporter, err := stdout.New()
 	if err != nil {
-		return fmt.Errorf("creating exporter failed %w", err)
+		return nil, fmt.Errorf("creating exporter failed %w", err)
 	}
 	resource := resource.NewWithAttributes(
 		semconv.SchemaURL,
@@ -30,17 +29,15 @@ func InitMeter(serviceName string, interval time.Duration) error {
 			sdkmetric.NewPeriodicReader(exporter, sdkmetric.WithInterval(interval)),
 		),
 	)
-	otel.SetMeterProvider(mp)
-	return nil
+	return mp, nil
 }
 
 // NewCounter creates a new meter counter instrument.
 // https://github.com/open-telemetry/opentelemetry-specification/blob/main/specification/metrics/api.md#counter
-func NewCounter(meterName string, counterName string, desc string, units string) (metric.Int64Counter, error) {
-	counter, err := otel.GetMeterProvider().
-		Meter(
-			meterName,
-		).
+func NewCounter(mp *sdkmetric.MeterProvider, meterName string, counterName string, desc string, units string) (metric.Int64Counter, error) {
+	counter, err := (*mp).Meter(
+		meterName,
+	).
 		Int64Counter(
 			counterName,
 			metric.WithDescription(desc),
@@ -54,8 +51,8 @@ func NewCounter(meterName string, counterName string, desc string, units string)
 
 // NewHistogram creates a new meter histogram instrument.
 // https://github.com/open-telemetry/opentelemetry-specification/blob/main/specification/metrics/api.md#histogram
-func NewHistogram(meterName string, histName string, desc string, units string) (metric.Int64Histogram, error) {
-	histogram, err := otel.GetMeterProvider().
+func NewHistogram(mp *sdkmetric.MeterProvider, meterName string, histName string, desc string, units string) (metric.Int64Histogram, error) {
+	histogram, err := (*mp).
 		Meter(
 			meterName,
 		).Int64Histogram(

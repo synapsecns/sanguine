@@ -12,10 +12,10 @@ import (
 
 // Recording an arbitrary event, such as recording block number.
 func TestCounter(t *testing.T) {
-	err := metrics.InitMeter("test", time.Duration(30)*time.Second)
+	mp, err := metrics.InitMeter("test", time.Duration(30)*time.Second)
 	Nil(t, err)
 
-	counter, err := metrics.NewCounter("test", "block_counter", "a block counter", "blocks")
+	counter, err := metrics.NewCounter(mp, "test", "block_counter", "a block counter", "blocks")
 	Nil(t, err)
 	counter.Add(context.Background(), 1, metric.WithAttributeSet(
 		attribute.NewSet(attribute.Int64("block_number", 30), attribute.Int64("chain_id", 1))),
@@ -30,10 +30,10 @@ func TestCounter(t *testing.T) {
 
 // Recording values in a histogram format, such the actual block numbers stored over time.
 func TestHistogram(t *testing.T) {
-	err := metrics.InitMeter("test", time.Duration(30)*time.Second)
+	mp, err := metrics.InitMeter("test", time.Duration(30)*time.Second)
 	Nil(t, err)
 
-	histogram, err := metrics.NewHistogram("test", "block_histogram", "a block counter", "blocks")
+	histogram, err := metrics.NewHistogram(mp, "test", "block_histogram", "a block counter", "blocks")
 	Nil(t, err)
 	histogram.Record(context.Background(), 30, metric.WithAttributeSet(
 		attribute.NewSet(attribute.String("contract_address", "0x00"), attribute.Int64("chain_id", 1))),
