@@ -1,6 +1,9 @@
 package executor_test
 
 import (
+	"math/big"
+	"time"
+
 	"github.com/Flaque/filet"
 	"github.com/brianvoe/gofakeit/v6"
 	"github.com/ethereum/go-ethereum/common"
@@ -14,8 +17,6 @@ import (
 	"github.com/synapsecns/sanguine/services/scribe/client"
 	"github.com/synapsecns/sanguine/services/scribe/config"
 	"github.com/synapsecns/sanguine/services/scribe/node"
-	"math/big"
-	"time"
 )
 
 func (e *ExecutorSuite) TestVerifyState() {
@@ -134,9 +135,14 @@ func (e *ExecutorSuite) TestMerkleInsert() {
 	}
 	chainConfig := config.ChainConfig{
 		ChainID:               chainID,
-		BlockTimeChunkSize:    1,
-		ContractSubChunkSize:  1,
-		RequiredConfirmations: 0,
+		GetLogsBatchAmount: 1,
+		StoreConcurrency:   1,
+		GetLogsRange:       1,
+		ConfirmationConfig: config.ConfirmationConfig{
+			RequiredConfirmations:   1,
+			ConfirmationThreshold:   1,
+			ConfirmationRefreshRate: 1,
+		},
 		Contracts:             []config.ContractConfig{contractConfig},
 	}
 	scribeConfig := config.Config{
@@ -491,9 +497,14 @@ func (e *ExecutorSuite) TestExecutor() {
 	}
 	originChainConfig := config.ChainConfig{
 		ChainID:               chainID,
-		BlockTimeChunkSize:    1,
-		ContractSubChunkSize:  1,
-		RequiredConfirmations: 0,
+		GetLogsBatchAmount: 1,
+		StoreConcurrency:   1,
+		GetLogsRange:       1,
+		ConfirmationConfig: config.ConfirmationConfig{
+			RequiredConfirmations:   1,
+			ConfirmationThreshold:   1,
+			ConfirmationRefreshRate: 1,
+		},
 		Contracts:             []config.ContractConfig{originConfig},
 	}
 	destinationConfig := config.ContractConfig{
@@ -502,9 +513,14 @@ func (e *ExecutorSuite) TestExecutor() {
 	}
 	destinationChainConfig := config.ChainConfig{
 		ChainID:               destination,
-		BlockTimeChunkSize:    1,
-		ContractSubChunkSize:  1,
-		RequiredConfirmations: 0,
+		GetLogsBatchAmount: 1,
+		StoreConcurrency:   1,
+		GetLogsRange:       1,
+		ConfirmationConfig: config.ConfirmationConfig{
+			RequiredConfirmations:   1,
+			ConfirmationThreshold:   1,
+			ConfirmationRefreshRate: 1,
+		},
 		Contracts:             []config.ContractConfig{destinationConfig},
 	}
 	summitConfig := config.ContractConfig{
@@ -513,9 +529,14 @@ func (e *ExecutorSuite) TestExecutor() {
 	}
 	summitChainConfig := config.ChainConfig{
 		ChainID:               summit,
-		BlockTimeChunkSize:    1,
-		ContractSubChunkSize:  1,
-		RequiredConfirmations: 0,
+		GetLogsBatchAmount: 1,
+		StoreConcurrency:   1,
+		GetLogsRange:       1,
+		ConfirmationConfig: config.ConfirmationConfig{
+			RequiredConfirmations:   1,
+			ConfirmationThreshold:   1,
+			ConfirmationRefreshRate: 1,
+		},
 		Contracts:             []config.ContractConfig{summitConfig},
 	}
 	scribeConfig := config.Config{

@@ -1,6 +1,11 @@
 package agentsintegration_test
 
 import (
+	"math/big"
+	"os"
+	"testing"
+	"time"
+
 	awsTime "github.com/aws/smithy-go/time"
 	"github.com/brianvoe/gofakeit/v6"
 	"github.com/ethereum/go-ethereum/common"
@@ -10,10 +15,6 @@ import (
 	"github.com/synapsecns/sanguine/agents/agents/notary"
 	"github.com/synapsecns/sanguine/agents/types"
 	config2 "github.com/synapsecns/sanguine/ethergo/signer/config"
-	"math/big"
-	"os"
-	"testing"
-	"time"
 
 	"github.com/synapsecns/sanguine/services/scribe/backfill"
 	"github.com/synapsecns/sanguine/services/scribe/client"
@@ -54,9 +55,14 @@ func (u *AgentsIntegrationSuite) TestAgentsE2E() {
 	}
 	originChainConfig := scribeConfig2.ChainConfig{
 		ChainID:               uint32(u.TestBackendOrigin.GetChainID()),
-		BlockTimeChunkSize:    1,
-		ContractSubChunkSize:  1,
-		RequiredConfirmations: 0,
+		GetLogsBatchAmount: 1,
+		StoreConcurrency:   1,
+		GetLogsRange:       1,
+		ConfirmationConfig: scribeConfig2.ConfirmationConfig{
+			RequiredConfirmations:   1,
+			ConfirmationThreshold:   1,
+			ConfirmationRefreshRate: 1,
+		},
 		Contracts:             []scribeConfig2.ContractConfig{originConfig},
 	}
 	destinationConfig := scribeConfig2.ContractConfig{
@@ -65,9 +71,14 @@ func (u *AgentsIntegrationSuite) TestAgentsE2E() {
 	}
 	destinationChainConfig := scribeConfig2.ChainConfig{
 		ChainID:               uint32(u.TestBackendDestination.GetChainID()),
-		BlockTimeChunkSize:    1,
-		ContractSubChunkSize:  1,
-		RequiredConfirmations: 0,
+		GetLogsBatchAmount: 1,
+		StoreConcurrency:   1,
+		GetLogsRange:       1,
+		ConfirmationConfig: scribeConfig2.ConfirmationConfig{
+			RequiredConfirmations:   1,
+			ConfirmationThreshold:   1,
+			ConfirmationRefreshRate: 1,
+		},
 		Contracts:             []scribeConfig2.ContractConfig{destinationConfig},
 	}
 	summitConfig := scribeConfig2.ContractConfig{
@@ -76,9 +87,14 @@ func (u *AgentsIntegrationSuite) TestAgentsE2E() {
 	}
 	summitChainConfig := scribeConfig2.ChainConfig{
 		ChainID:               uint32(u.TestBackendSummit.GetChainID()),
-		BlockTimeChunkSize:    1,
-		ContractSubChunkSize:  1,
-		RequiredConfirmations: 0,
+		GetLogsBatchAmount: 1,
+		StoreConcurrency:   1,
+		GetLogsRange:       1,
+		ConfirmationConfig: scribeConfig2.ConfirmationConfig{
+			RequiredConfirmations:   1,
+			ConfirmationThreshold:   1,
+			ConfirmationRefreshRate: 1,
+		},
 		Contracts:             []scribeConfig2.ContractConfig{summitConfig},
 	}
 	scribeConfig := scribeConfig2.Config{
