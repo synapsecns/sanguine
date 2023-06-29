@@ -4,6 +4,7 @@ import (
 	"context"
 	"database/sql"
 	"fmt"
+
 	"github.com/ethereum/go-ethereum/common"
 	"gorm.io/gorm/clause"
 
@@ -116,6 +117,22 @@ func (s Store) GetMessageByOriginHash(ctx context.Context, originHash common.Has
 		First(&message)
 	if dbTx.Error != nil {
 		return nil, fmt.Errorf("failed to get message by hash: %w", dbTx.Error)
+	}
+
+	return &message, nil
+}
+
+// GetMessageByRequestID gets a message by its request id.
+// TODO: this is actually non-unique, but we only return 1.
+func (s Store) GetMessageByRequestID(ctx context.Context, requestID string) (*types.Message, error) {
+	var message types.Message
+
+	dbTx := s.DB().WithContext(ctx).
+		Model(&types.Message{}).
+		Where(fmt.Sprintf("%s = ?", RequestIDFieldName), requestID).
+		First(&message)
+	if dbTx.Error != nil {
+		return nil, fmt.Errorf("failed to get message by request id: %w", dbTx.Error)
 	}
 
 	return &message, nil

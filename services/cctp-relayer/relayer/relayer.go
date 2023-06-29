@@ -397,6 +397,12 @@ func (c *CCTPRelayer) handleLog(ctx context.Context, log *types.Log, originChain
 		}
 
 		return nil
+	case cctp.CircleRequestFulfilledTopic:
+		err = c.storeCircleRequestFulfilled(ctx, log, originChain)
+		if err != nil {
+			return fmt.Errorf("could not store circle request fulfilled: %w", err)
+		}
+		return nil
 	default:
 		logger.Warnf("unknown topic %s", log.Topics[0])
 		return nil
@@ -506,6 +512,69 @@ func (c *CCTPRelayer) fetchAndStoreCircleRequestSent(parentCtx context.Context, 
 	}
 
 	return &rawMsg, nil
+}
+
+// fetchAndStoreCircleRequestFulfilled handles the CircleRequestFulfilled event.
+//
+//nolint:cyclop
+func (c *CCTPRelayer) storeCircleRequestFulfilled(parentCtx context.Context, log *types.Log, destChain uint32) (err error) {
+	ctx, span := c.handler.Tracer().Start(parentCtx, "storeCircleRequestFulfilled", trace.WithAttributes(
+		attribute.String(metrics.TxHash, log.TxHash.String()),
+		attribute.Int(metrics.Destination, int(destChain)),
+	))
+
+	defer func() {
+		metrics.EndSpanWithErr(span, err)
+	}()
+
+	if len(log.Topics) == 0 {
+		return fmt.Errorf("no topics found")
+	}
+
+	// Parse the request id from the log.
+	ethClient, err := c.omnirpcClient.GetConfirmationsClient(ctx, int(destChain), 1)
+	if err != nil {
+		return fmt.Errorf("could not get chain client: %w", err)
+	}
+	if log.Topics[0] != cctp.CircleRequestFulfilledTopic {
+		return fmt.Errorf("log topic does not match CircleRequestFulfilledTopic")
+	}
+	eventParser, err := cctp.NewSynapseCCTPEvents(log.Address, ethClient)
+	if err != nil {
+		return fmt.Errorf("could not create event parser: %w", err)
+	}
+	circleRequestFulfilledEvent, err := eventParser.ParseCircleRequestFulfilled(*log)
+	if err != nil {
+		return fmt.Errorf("could not parse circle request fulfilled: %w", err)
+	}
+
+	// Fetch pending message from db, and mark as complete if found.
+	var msg *relayTypes.Message
+	requestID := common.Bytes2Hex(circleRequestFulfilledEvent.RequestID[:])
+	msg, err = c.db.GetMessageByRequestID(ctx, requestID)
+	if err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			// Reconstruct what we can from the given log.
+			msg = &relayTypes.Message{
+				OriginTxHash:  log.TxHash.String(),
+				OriginChainID: circleRequestFulfilledEvent.OriginDomain,
+				DestChainID:   destChain,
+				RequestID:     requestID,
+				BlockNumber:   log.BlockNumber,
+			}
+		} else {
+			return fmt.Errorf("could not get message by origin hash: %w", err)
+		}
+	}
+
+	// Mark as Complete and store the message.
+	msg.State = relayTypes.Complete
+	err = c.db.StoreMessage(ctx, *msg)
+	if err != nil {
+		return fmt.Errorf("could not store complete message: %w", err)
+	}
+
+	return nil
 }
 
 func (c *CCTPRelayer) fetchAttestation(parentCtx context.Context, msg *relayTypes.Message) (_ *relayTypes.Message, err error) {

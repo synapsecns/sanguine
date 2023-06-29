@@ -2,6 +2,7 @@ package db
 
 import (
 	"context"
+
 	"github.com/ethereum/go-ethereum/common"
 	submitterDB "github.com/synapsecns/sanguine/ethergo/submitter/db"
 
@@ -12,6 +13,8 @@ import (
 type CCTPRelayerDBReader interface {
 	// GetLastBlockNumber gets the last block number that had a message for the respective origin chain in the database.
 	GetLastBlockNumber(ctx context.Context, chainID uint32) (uint64, error)
+	// GetMessageByRequestID gets a message by its request id.
+	GetMessageByRequestID(ctx context.Context, requestID string) (*types.Message, error)
 }
 
 // CCTPRelayerDBWriter is the interface for writing to the database.
