@@ -23,9 +23,14 @@ export const Portfolio = () => {
       <PortfolioTabManager activeTab={tab} setTab={setTab} />
       <div className="border-t border-solid border-[#28282F] mt-4">
         {tab === PortfolioTabs.HOME && <HomeContent />}
+        {tab === PortfolioTabs.PORTFOLIO && <PortfolioContent />}
       </div>
     </div>
   )
+}
+
+const PortfolioContent = () => {
+  return <div></div>
 }
 
 const HomeContent = () => {
