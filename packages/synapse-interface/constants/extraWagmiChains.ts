@@ -17,6 +17,12 @@ export const klaytn = {
     etherscan: { name: 'KlaytnScope', url: 'https://scope.klaytn.com/' },
     default: { name: 'KlaytnScope', url: 'https://scope.klaytn.com/' },
   },
+  contracts: {
+    multicall3: {
+      address: '0xca11bde05977b3631167028862be2a173976ca11',
+      blockCreated: 96002415,
+    },
+  },
 } as const satisfies Chain
 
 export const boba = {
@@ -94,6 +100,12 @@ export const dfk = {
     default: {
       name: 'DFKSubnetScan',
       url: 'https://subnets.avax.network/defi-kingdoms',
+    },
+  },
+  contracts: {
+    multicall3: {
+      address: '0xca11bde05977b3631167028862be2a173976ca11',
+      blockCreated: 14790551,
     },
   },
 } as const satisfies Chain
