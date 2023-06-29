@@ -1,13 +1,13 @@
-package config_test
+package executor_test
 
 import (
 	"github.com/brianvoe/gofakeit/v6"
 	. "github.com/stretchr/testify/assert"
-	"github.com/synapsecns/sanguine/agents/agents/executor/config"
+	"github.com/synapsecns/sanguine/agents/config/executor"
 )
 
-func chainConfigFixture() config.ChainConfig {
-	return config.ChainConfig{
+func chainConfigFixture() executor.ChainConfig {
+	return executor.ChainConfig{
 		ChainID:            gofakeit.Uint32(),
 		OriginAddress:      gofakeit.Word(),
 		DestinationAddress: gofakeit.Word(),
@@ -29,7 +29,7 @@ func (c ConfigSuite) TestChainConfigsDuplicateChainID() {
 
 	// manually set these to the same id
 	chainConfigB.ChainID = chainConfigA.ChainID
-	chainConfigs := config.ChainConfigs{
+	chainConfigs := executor.ChainConfigs{
 		chainConfigA,
 		chainConfigB,
 	}

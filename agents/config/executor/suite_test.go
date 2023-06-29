@@ -1,4 +1,4 @@
-package config_test
+package executor_test
 
 import (
 	"github.com/stretchr/testify/suite"
