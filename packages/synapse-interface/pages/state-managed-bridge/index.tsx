@@ -584,7 +584,6 @@ const StateManagedBridge = () => {
               toChainId={toChainId}
               address={address}
               destinationAddress={destinationAddress}
-              bridgeTxHash={bridgeTxHashes[bridgeTxHashes.length - 1]}
             />
           </div>
         </div>
