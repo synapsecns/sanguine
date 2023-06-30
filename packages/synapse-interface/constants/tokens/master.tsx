@@ -429,7 +429,6 @@ export const USDC = new Token({
   swapExceptions: {
     [CHAINS.KLAYTN.id]: [CHAINS.ETH.id, CHAINS.DOGE.id],
     [CHAINS.DOGE.id]: [CHAINS.ETH.id, CHAINS.DOGE.id],
-    [CHAINS.AVALANCHE.id]: [],
   },
   symbol: 'USDC',
   name: 'USD Circle',

@@ -116,6 +116,7 @@ export type BridgeWatcherTx = {
   kappa: string
   toChainId: number
   toAddress: string
+  contractEmittedFrom: string
 }
 
 // TODO
