@@ -1,6 +1,7 @@
 package metrics
 
 import (
+	"cloud.google.com/go/compute/metadata"
 	"context"
 	"fmt"
 	texporter "github.com/GoogleCloudPlatform/opentelemetry-operations-go/exporter/trace"
@@ -11,6 +12,7 @@ import (
 	"go.opentelemetry.io/otel/sdk/resource"
 	sdktrace "go.opentelemetry.io/otel/sdk/trace"
 	semconv "go.opentelemetry.io/otel/semconv/v1.7.0"
+	"net/http"
 	"os"
 )
 
@@ -20,8 +22,6 @@ type googleHandler struct {
 }
 
 const googleProjectEnv = "GOOGLE_CLOUD_PROJECT"
-
-var errMissingProjectID = fmt.Errorf("missing project ID, please set %s", googleProjectEnv)
 
 func NewGoogleMetricsHandler(buildInfo config.BuildInfo) Handler {
 	handler := googleHandler{
@@ -38,10 +38,15 @@ func Type() HandlerType {
 	return Google
 }
 
-func (h *googleHandler) Start(ctx context.Context) error {
+func (h *googleHandler) Start(ctx context.Context) (err error) {
 	projectID := os.Getenv(googleProjectEnv)
+	// if project id can't be detected, try fetching it from the compute metadata server
 	if projectID == "" {
-		return errMissingProjectID
+		metadataClient := metadata.NewClient(http.DefaultClient)
+		projectID, err = metadataClient.ProjectID()
+		if err != nil {
+			return fmt.Errorf("could not get project ID from metadata server: %w. If you cannot get this to work, please set %s", err, googleProjectEnv)
+		}
 	}
 
 	exporter, err := texporter.New(texporter.WithProjectID(projectID))

@@ -8,6 +8,7 @@ replace (
 )
 
 require (
+	cloud.google.com/go/compute/metadata v0.2.3
 	github.com/BurntSushi/toml v1.2.0
 	github.com/Flaque/filet v0.0.0-20201012163910-45f684403088
 	github.com/GoogleCloudPlatform/opentelemetry-operations-go/exporter/trace v1.15.2
@@ -78,7 +79,6 @@ require (
 
 require (
 	cloud.google.com/go/compute v1.18.0 // indirect
-	cloud.google.com/go/compute/metadata v0.2.3 // indirect
 	cloud.google.com/go/trace v1.8.0 // indirect
 	github.com/Azure/go-ansiterm v0.0.0-20210617225240-d185dfc1b5a1 // indirect
 	github.com/DataDog/appsec-internal-go v1.0.0 // indirect
