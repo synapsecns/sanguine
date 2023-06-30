@@ -1,4 +1,4 @@
-import { useMemo } from 'react'
+import React, { useMemo } from 'react'
 import { useNetwork } from 'wagmi'
 import { switchNetwork } from '@wagmi/core'
 import { Zero } from '@ethersproject/constants'
@@ -13,35 +13,6 @@ import { formatBNToString } from '@/utils/bignumber/format'
 type SingleNetworkPortfolioProps = {
   chainId: number
   tokens: TokenWithBalanceAndAllowance[]
-}
-
-function separateTokensByAllowance(
-  tokens: TokenWithBalanceAndAllowance[]
-): [TokenWithBalanceAndAllowance[], TokenWithBalanceAndAllowance[]] {
-  const tokensWithAllowance: TokenWithBalanceAndAllowance[] = []
-  const tokensWithoutAllowance: TokenWithBalanceAndAllowance[] = []
-
-  tokens.forEach((token) => {
-    // allowance is null for native gas tokens
-    if (token.allowance === null) {
-      tokensWithAllowance.push(token)
-    } else if (token.allowance.gt(Zero)) {
-      tokensWithAllowance.push(token)
-    } else {
-      tokensWithoutAllowance.push(token)
-    }
-  })
-
-  return [tokensWithAllowance, tokensWithoutAllowance]
-}
-
-function sortByBalanceDescending(
-  tokens: TokenWithBalanceAndAllowance[]
-): TokenWithBalanceAndAllowance[] {
-  return tokens.sort(
-    (a: TokenWithBalanceAndAllowance, b: TokenWithBalanceAndAllowance) =>
-      b.balance.gt(a.balance) ? 1 : -1
-  )
 }
 
 export const SingleNetworkPortfolio = ({
@@ -75,6 +46,7 @@ export const SingleNetworkPortfolio = ({
             token={token}
             balance={balance}
             chainId={chainId}
+            isApproved={true}
           />
         )
       )}
@@ -85,6 +57,7 @@ export const SingleNetworkPortfolio = ({
               token={token}
               balance={balance}
               chainId={chainId}
+              isApproved={false}
             />
           )
         )}
@@ -97,18 +70,20 @@ type PortfolioTokenAssetProps = {
   token: Token
   balance: BigNumber
   chainId: number
+  isApproved: boolean
 }
 
 const PortfolioTokenAsset = ({
   token,
   balance,
   chainId,
+  isApproved,
 }: PortfolioTokenAssetProps) => {
   const { icon, symbol, decimals, addresses } = token
   const parsedBalance = formatBNToString(balance, decimals[chainId], 3)
 
   return (
-    <div className="flex flex-row my-2 text-white">
+    <div className="flex flex-row items-center my-2 text-white">
       <div className="flex flex-row w-1/2 text-left">
         <Image
           alt={`${symbol} img`}
@@ -117,10 +92,47 @@ const PortfolioTokenAsset = ({
         />
         <div>{symbol}</div>
       </div>
-      <div className="flex flex-row w-1/2 text-left">
+      <div className="flex flex-row items-center w-1/2 text-left">
         <div>{parsedBalance}</div>
+        <PortfolioAssetActionButton isApproved={isApproved} />
       </div>
     </div>
+  )
+}
+
+const PortfolioAssetActionButton = ({
+  isApproved,
+}: {
+  isApproved: boolean
+}) => {
+  const buttonClassName = `
+    flex ml-auto justify-center
+    w-36 py-1 rounded-3xl
+    transform-gpu transition-all duration-75
+    hover:cursor-pointer
+  `
+  return (
+    <React.Fragment>
+      {isApproved ? (
+        <button
+          className={`
+            ${buttonClassName}
+            border-2 border-[#D747FF]
+          `}
+        >
+          Bridge
+        </button>
+      ) : (
+        <button
+          className={`
+            ${buttonClassName}
+            border-2 border-[#28282F] border-opacity-50
+          `}
+        >
+          Approve
+        </button>
+      )}
+    </React.Fragment>
   )
 }
 
@@ -161,11 +173,11 @@ const PortfolioNetwork = ({
 
 const ConnectedButton = () => {
   const buttonClassName = `
-    h-8 flex items-center
-    text-base text-white px-4 py-2 rounded-3xl
-    text-center transform-gpu transition-all duration-75
-    border-2 border-[#D747FF] radial-gradient-bg
-    hover:cursor-default
+  h-8 flex items-center
+  text-base text-white px-4 py-2 rounded-3xl
+  text-center transform-gpu transition-all duration-75
+  border-2 border-[#D747FF] radial-gradient-bg
+  hover:cursor-default
   `
 
   return <button className={buttonClassName}>Connected</button>
@@ -197,5 +209,34 @@ export const PortfolioAssetHeader = () => {
       <div className="w-1/2 text-left">Token</div>
       <div className="w-1/2 text-left">Amount</div>
     </div>
+  )
+}
+
+function separateTokensByAllowance(
+  tokens: TokenWithBalanceAndAllowance[]
+): [TokenWithBalanceAndAllowance[], TokenWithBalanceAndAllowance[]] {
+  const tokensWithAllowance: TokenWithBalanceAndAllowance[] = []
+  const tokensWithoutAllowance: TokenWithBalanceAndAllowance[] = []
+
+  tokens.forEach((token) => {
+    // allowance is null for native gas tokens
+    if (token.allowance === null) {
+      tokensWithAllowance.push(token)
+    } else if (token.allowance.gt(Zero)) {
+      tokensWithAllowance.push(token)
+    } else {
+      tokensWithoutAllowance.push(token)
+    }
+  })
+
+  return [tokensWithAllowance, tokensWithoutAllowance]
+}
+
+function sortByBalanceDescending(
+  tokens: TokenWithBalanceAndAllowance[]
+): TokenWithBalanceAndAllowance[] {
+  return tokens.sort(
+    (a: TokenWithBalanceAndAllowance, b: TokenWithBalanceAndAllowance) =>
+      b.balance.gt(a.balance) ? 1 : -1
   )
 }

@@ -7,7 +7,7 @@ import { PortfolioTabManager } from './PortfolioTabManager'
 import {
   PortfolioAssetHeader,
   SingleNetworkPortfolio,
-} from './SinglePortfolioNetwork'
+} from './SingleNetworkPortfolio'
 import { useAccount, useNetwork, Address } from 'wagmi'
 import { Zero } from '@ethersproject/constants'
 import React, { useState } from 'react'
