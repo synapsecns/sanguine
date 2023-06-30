@@ -104,7 +104,7 @@ func (f *LogFetcher) Start(ctx context.Context) error {
 
 			select {
 			case <-ctx.Done():
-				return fmt.Errorf("context cancelled while adding log to chan %w", ctx.Err())
+				return fmt.Errorf("context canceled while adding log to chan %w", ctx.Err())
 			case f.fetchedLogsChan <- logs:
 			}
 		}
