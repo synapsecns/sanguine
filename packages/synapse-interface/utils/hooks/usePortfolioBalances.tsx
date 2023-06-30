@@ -3,22 +3,26 @@ import { useAccount } from 'wagmi'
 import { Address, multicall, erc20ABI, getAccount } from '@wagmi/core'
 import { BRIDGABLE_TOKENS } from '@/constants/tokens'
 import { Token } from '../types'
-import { sortByTokenBalance, TokenAndBalance } from '../sortTokens'
+import { sortByTokenBalance } from '../sortTokens'
 import { BigNumber } from 'ethers'
 import { AddressZero } from '@ethersproject/constants'
 
 const ROUTER_ADDRESS = '0x7E7A0e201FD38d3ADAA9523Da6C109a07118C96a'
 
-interface TokenAndAllowance {
+export interface TokenAndBalance {
+  token: Token
+  balance: BigNumber
+}
+export interface TokenAndAllowance {
   token: Token
   allowance: BigNumber
 }
 
-interface TokenWithBalanceAndAllowance
+export interface TokenWithBalanceAndAllowance
   extends TokenAndBalance,
     TokenAndAllowance {}
 
-interface NetworkTokenBalancesAndAllowances {
+export interface NetworkTokenBalancesAndAllowances {
   [index: number]: TokenWithBalanceAndAllowance[]
 }
 
