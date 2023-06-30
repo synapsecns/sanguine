@@ -4,13 +4,15 @@ import AccordionIcon from '../icons/AccordionIcon'
 type PortfolioAccordionProps = {
   header: React.ReactNode
   children: React.ReactNode
+  initializeExpanded: boolean
 }
 
 export const PortfolioAccordion = ({
   header,
   children,
+  initializeExpanded = false,
 }: PortfolioAccordionProps) => {
-  const [isExpanded, setIsExpanded] = useState(false)
+  const [isExpanded, setIsExpanded] = useState(initializeExpanded)
 
   const handleToggle = () => {
     setIsExpanded((prevExpanded) => !prevExpanded)
