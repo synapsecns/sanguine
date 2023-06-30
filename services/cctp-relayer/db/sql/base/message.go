@@ -65,6 +65,7 @@ func (s Store) StoreMessage(ctx context.Context, msg types.Message) error {
 		clauses = clause.OnConflict{
 			Columns: []clause.Column{{Name: MessageHashFieldName}},
 			DoUpdates: clause.AssignmentColumns([]string{
+				DestTxHashFieldName,
 				StateFieldName,
 				NonceFieldName,
 			}),
@@ -73,6 +74,7 @@ func (s Store) StoreMessage(ctx context.Context, msg types.Message) error {
 		clauses = clause.OnConflict{
 			Columns: []clause.Column{{Name: MessageHashFieldName}},
 			DoUpdates: clause.AssignmentColumns([]string{
+				DestTxHashFieldName,
 				StateFieldName,
 			}),
 		}

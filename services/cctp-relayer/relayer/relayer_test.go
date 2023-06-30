@@ -16,6 +16,23 @@ import (
 	omniClient "github.com/synapsecns/sanguine/services/omnirpc/client"
 )
 
+func (s *CCTPRelayerSuite) mockMessage(originChainID, destinationChainID, blockNumber uint32) relayTypes.Message {
+	return relayTypes.Message{
+		OriginTxHash:     mocks.NewMockHash(s.T()).String(),
+		DestTxHash:       mocks.NewMockHash(s.T()).String(),
+		OriginChainID:    originChainID,
+		DestChainID:      destinationChainID,
+		Message:          []byte(gofakeit.Paragraph(10, 10, 10, " ")),
+		MessageHash:      mocks.NewMockHash(s.T()).String(),
+		Attestation:      []byte(gofakeit.Paragraph(10, 10, 10, " ")),
+		RequestVersion:   0,
+		FormattedRequest: []byte(gofakeit.Paragraph(10, 10, 10, " ")),
+		RequestID:        strings.TrimPrefix(mocks.NewMockHash(s.T()).String(), "0x"),
+		BlockNumber:      uint64(blockNumber),
+		State:            relayTypes.Submitted,
+	}
+}
+
 func (s *CCTPRelayerSuite) TestHandleCircleRequestSent() {
 	// setup
 	originChain := s.testBackends[0]
@@ -59,22 +76,6 @@ func (s *CCTPRelayerSuite) TestHandleCircleRequestSent() {
 	s.Equal(*msg, storedMsg)
 }
 
-func (s *CCTPRelayerSuite) mockMessage(originChainID, destinationChainID, blockNumber uint32) relayTypes.Message {
-	return relayTypes.Message{
-		OriginTxHash:     mocks.NewMockHash(s.T()).String(),
-		OriginChainID:    originChainID,
-		DestChainID:      destinationChainID,
-		Message:          []byte(gofakeit.Paragraph(10, 10, 10, " ")),
-		MessageHash:      mocks.NewMockHash(s.T()).String(),
-		Attestation:      []byte(gofakeit.Paragraph(10, 10, 10, " ")),
-		RequestVersion:   0,
-		FormattedRequest: []byte(gofakeit.Paragraph(10, 10, 10, " ")),
-		RequestID:        strings.TrimPrefix(mocks.NewMockHash(s.T()).String(), "0x"),
-		BlockNumber:      uint64(blockNumber),
-		State:            relayTypes.Submitted,
-	}
-}
-
 func (s *CCTPRelayerSuite) TestStoreCircleRequestFulfilled() {
 	// setup
 	originChain := s.testBackends[0]
@@ -91,7 +92,7 @@ func (s *CCTPRelayerSuite) TestStoreCircleRequestFulfilled() {
 	s.Nil(err)
 	message1 := s.mockMessage(uint32(originChain.GetChainID()), uint32(destChain.GetChainID()), uint32(blockNumber))
 	fulfilledLog := &types.Log{
-		TxHash:      common.HexToHash(message1.OriginTxHash),
+		TxHash:      common.HexToHash(message1.DestTxHash),
 		BlockNumber: blockNumber,
 	}
 	var requestID [32]byte
@@ -108,7 +109,7 @@ func (s *CCTPRelayerSuite) TestStoreCircleRequestFulfilled() {
 	var storedMsg relayTypes.Message
 	err = s.testStore.DB().Where("request_id = ?", message1.RequestID).First(&storedMsg).Error
 	s.Nil(err)
-	s.Equal(message1.OriginTxHash, storedMsg.OriginTxHash)
+	s.Equal(message1.DestTxHash, storedMsg.DestTxHash)
 	s.Equal(message1.OriginChainID, storedMsg.OriginChainID)
 	s.Equal(message1.DestChainID, storedMsg.DestChainID)
 	s.Equal(message1.RequestID, storedMsg.RequestID)
@@ -126,7 +127,7 @@ func (s *CCTPRelayerSuite) TestStoreCircleRequestFulfilled() {
 	fulfilledEvent = &cctp.SynapseCCTPEventsCircleRequestFulfilled{
 		RequestID: requestID,
 	}
-	err = relay.StoreCircleRequestFulfilled(s.GetTestContext(), &types.Log{}, fulfilledEvent, uint32(destChain.GetChainID()))
+	err = relay.StoreCircleRequestFulfilled(s.GetTestContext(), &types.Log{TxHash: common.HexToHash(message2.DestTxHash)}, fulfilledEvent, uint32(destChain.GetChainID()))
 	s.Nil(err)
 
 	// verify that the message is stored as Complete in the db

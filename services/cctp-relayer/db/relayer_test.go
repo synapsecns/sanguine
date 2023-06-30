@@ -13,6 +13,7 @@ import (
 func (d *DBSuite) mockMessage(originChainID, destinationChainID, blockNumber uint32) types.Message {
 	return types.Message{
 		OriginTxHash:     mocks.NewMockHash(d.T()).String(),
+		DestTxHash:       mocks.NewMockHash(d.T()).String(),
 		OriginChainID:    originChainID,
 		DestChainID:      destinationChainID,
 		Message:          []byte(gofakeit.Paragraph(10, 10, 10, " ")),

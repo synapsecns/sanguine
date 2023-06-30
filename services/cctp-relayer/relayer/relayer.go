@@ -566,7 +566,6 @@ func (c *CCTPRelayer) storeCircleRequestFulfilled(ctx context.Context, log *type
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			// Reconstruct what we can from the given log.
 			msg = &relayTypes.Message{
-				OriginTxHash:  log.TxHash.String(),
 				OriginChainID: event.OriginDomain,
 				DestChainID:   destChain,
 				RequestID:     requestID,
@@ -579,6 +578,7 @@ func (c *CCTPRelayer) storeCircleRequestFulfilled(ctx context.Context, log *type
 
 	// Mark as Complete and store the message.
 	msg.State = relayTypes.Complete
+	msg.DestTxHash = log.TxHash.String()
 	err = c.db.StoreMessage(ctx, *msg)
 	if err != nil {
 		return fmt.Errorf("could not store complete message: %w", err)
@@ -651,6 +651,7 @@ func (c *CCTPRelayer) submitReceiveCircleToken(parentCtx context.Context, msg *r
 	// end: functionalization
 
 	var nonce uint64
+	var destTxHash common.Hash
 	nonce, err = c.txSubmitter.SubmitTransaction(ctx, big.NewInt(int64(msg.DestChainID)), func(transactor *bind.TransactOpts) (tx *types.Transaction, err error) {
 		gasAmount, err := contract.ChainGasAmount(&bind.CallOpts{Context: ctx})
 		if err != nil {
@@ -663,6 +664,7 @@ func (c *CCTPRelayer) submitReceiveCircleToken(parentCtx context.Context, msg *r
 			return nil, fmt.Errorf("could not submit transaction: %w", err)
 		}
 
+		destTxHash = tx.Hash()
 		return tx, nil
 	})
 	if err != nil {
@@ -671,9 +673,10 @@ func (c *CCTPRelayer) submitReceiveCircleToken(parentCtx context.Context, msg *r
 	}
 
 	// Store the completed message.
-	// Note: this can cause double sbumissin sometimes
+	// Note: this can cause double submission sometimes
 	msg.State = relayTypes.Submitted
 	msg.DestNonce = int(nonce)
+	msg.DestTxHash = destTxHash.String()
 	err = c.db.StoreMessage(ctx, *msg)
 	if err != nil {
 		return fmt.Errorf("could not store completed message: %w", err)
