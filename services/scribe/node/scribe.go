@@ -161,7 +161,6 @@ func (s Scribe) confirmBlocks(ctx context.Context, chainConfig config.ChainConfi
 		return nil
 	}
 
-	// TODO  add option to backfill confirmations
 	// To prevent getting confirmations for anything more than 1000 blocks in the past (preventing backfilling
 	// confirmations AKA checking every single hash for reorg)
 	if latestBlock-lastConfirmedBlock > 1000 {
@@ -172,7 +171,7 @@ func (s Scribe) confirmBlocks(ctx context.Context, chainConfig config.ChainConfi
 	confirmFrom := lastConfirmedBlock + 1
 	blockHashes, err := GetBlockHashes(ctx, s.clients[chainID][0], confirmFrom, confirmTo, getBlockBatchAmount)
 	if err != nil {
-		return fmt.Errorf("could not get blockHashes: %w", err)
+		return fmt.Errorf("could not get blockHashes  on chain %d: %w", chainID, err)
 	}
 	// get receipts emitted on invalid block hashes
 	invalidReceipts, err := s.eventDB.RetrieveReceiptsWithStaleBlockHash(ctx, chainID, blockHashes, confirmFrom, confirmTo)
@@ -244,6 +243,7 @@ func (s Scribe) confirmBlocks(ctx context.Context, chainConfig config.ChainConfi
 		}
 
 		cache.Add(cacheKey, true)
+		fmt.Println(fmt.Sprintf(" [LIVEFILL] could not backfill %d chain: %d, block: %d", latestBlock-uint64(requiredConfirmations), chainID, i))
 
 		// Add to meter
 		s.reorgMeters[chainID].Add(ctx, 1, otelMetrics.WithAttributeSet(

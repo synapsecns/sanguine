@@ -4,6 +4,7 @@ import (
 	"database/sql"
 	"fmt"
 	"github.com/synapsecns/sanguine/core"
+	"github.com/synapsecns/sanguine/core/dbcommon"
 	"github.com/synapsecns/sanguine/core/metrics"
 	"github.com/synapsecns/sanguine/core/metrics/localmetrics"
 	"github.com/synapsecns/sanguine/core/testsuite"
@@ -69,11 +70,11 @@ func (t *DBSuite) setupMysqlDB() {
 	// skip if mysql test disabled, this really only needs to be run in ci
 
 	// skip if mysql test disabled
-	if os.Getenv("ENABLE_MYSQL_TEST") == "" {
+	if os.Getenv(dbcommon.EnableMysqlTestVar) == "" {
 		return
 	}
 	// sets up the conn string to the default database
-	connString := t.connString(os.Getenv("MYSQL_DATABASE"))
+	connString := dbcommon.GetTestConnString()
 	// sets up the myqsl db
 	testDB, err := sql.Open("mysql", connString)
 	Nil(t.T(), err)

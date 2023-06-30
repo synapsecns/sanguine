@@ -42,7 +42,7 @@ type RangeFilter struct {
 const bufferSize = 15
 
 // minBackoff is the minimum backoff period between requests.
-var minBackoff = 1 * time.Second
+var minBackoff = 2 * time.Second
 
 // maxBackoff is the maximum backoff period between requests.
 var maxBackoff = 10 * time.Second
@@ -166,7 +166,7 @@ func (f *RangeFilter) FilterLogs(ctx context.Context, chunks []*util.Chunk) ([]t
 			res, err := GetLogsInRange(ctx, f.backend, f.contractAddress, uint64(f.chainConfig.ChainID), chunks)
 			if err != nil {
 				timeout = b.Duration()
-				LogEvent(WarnLevel, "Could not filter logs for range, retrying", LogData{"sh": startHeight, "ca": f.contractAddress, "eh": endHeight, "cid": &f.chainConfig.ChainID, "e": err})
+				LogEvent(WarnLevel, "Could not filter logs for range, retrying", LogData{"sh": startHeight, "ca": f.contractAddress, "eh": endHeight, "cid": f.chainConfig.ChainID, "e": err})
 
 				continue
 			}

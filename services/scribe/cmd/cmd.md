@@ -21,6 +21,7 @@ $ server --port <port> --db <sqlite or mysql> --path <path/to/database or databa
 ```
 
 ## Configuration
+
 chain_id: The ID of the chain
 required_confirmations: the number of confirmations required for a block to be finalized
 contracts: stores all the contract information for the chain.
@@ -59,6 +60,7 @@ scribe
 
 
 ## Flow
+
 1. Scribe initializes with config
 2. A go routine is started for each chain in the config
 3. Each go routine starts a concurrent backfill for each contract in the config
