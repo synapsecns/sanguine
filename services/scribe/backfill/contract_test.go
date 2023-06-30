@@ -1,6 +1,7 @@
 package backfill_test
 
 import (
+	"context"
 	"fmt"
 	"github.com/brianvoe/gofakeit/v6"
 	"github.com/ethereum/go-ethereum/common"
@@ -15,6 +16,7 @@ import (
 	"github.com/synapsecns/sanguine/services/scribe/db"
 	"github.com/synapsecns/sanguine/services/scribe/db/mocks"
 	"os"
+	"sync"
 
 	"math/big"
 )
@@ -447,4 +449,81 @@ func (b BackfillSuite) TestContractBackfillFromPreIndexed() {
 	lastIndexed, err := b.testDB.RetrieveLastIndexed(b.GetTestContext(), testContract.Address(), uint32(testContract.ChainID().Uint64()))
 	Nil(b.T(), err)
 	Equal(b.T(), txBlockNumber, lastIndexed)
+}
+
+func (b BackfillSuite) TestGetLogs() {
+	testBackend := geth.NewEmbeddedBackend(b.GetTestContext(), b.T())
+	var wg sync.WaitGroup
+	wg.Add(2)
+
+	const desiredBlockHeight = 10
+	var contractAddress common.Address
+	go func() {
+		defer wg.Done()
+		contractAddress = b.PopuluateWithLogs(b.GetTestContext(), testBackend, desiredBlockHeight)
+	}()
+
+	var host string
+	go func() {
+		defer wg.Done()
+		host = b.startOmnirpcServer(b.GetTestContext(), testBackend)
+	}()
+
+	wg.Wait()
+
+	scribeBackend, err := backfill.DialBackend(b.GetTestContext(), host, b.metrics)
+	Nil(b.T(), err)
+	simulatedChainArr := []backfill.ScribeBackend{scribeBackend, scribeBackend}
+
+	chainID, err := scribeBackend.ChainID(b.GetTestContext())
+	Nil(b.T(), err)
+
+	contractConfig := &config.ContractConfig{
+		Address: contractAddress.Hex(),
+	}
+	chainConfig := config.ChainConfig{
+		ChainID:            uint32(chainID.Uint64()),
+		GetLogsBatchAmount: 1,
+		StoreConcurrency:   1,
+		GetLogsRange:       1,
+	}
+	blockHeightMeter, err := b.metrics.Meter().NewHistogram(fmt.Sprint("scribe_block_meter", chainConfig.ChainID), "block_histogram", "a block height meter", "blocks")
+	Nil(b.T(), err)
+	contractBackfiller, err := backfill.NewContractBackfiller(chainConfig, *contractConfig, b.testDB, simulatedChainArr, b.metrics, blockHeightMeter)
+	Nil(b.T(), err)
+
+	startHeight, endHeight := uint64(1), uint64(10)
+	logsChan, errChan := contractBackfiller.GetLogs(b.GetTestContext(), startHeight, endHeight)
+
+	var logs []types.Log
+	var errs []string
+loop:
+	for {
+		select {
+		case log, ok := <-logsChan:
+			if !ok {
+				break loop
+			}
+			logs = append(logs, log)
+		case err, ok := <-errChan:
+			if !ok {
+				break loop
+			}
+			errs = append(errs, err)
+		}
+	}
+
+	Equal(b.T(), 2, len(logs))
+	Equal(b.T(), 0, len(errs))
+
+	cancelCtx, cancel := context.WithCancel(b.GetTestContext())
+	cancel()
+
+	_, errChan = contractBackfiller.GetLogs(cancelCtx, startHeight, endHeight)
+loop2:
+	for {
+		errStr := <-errChan
+		Contains(b.T(), errStr, "context canceled")
+		break loop2
+	}
 }

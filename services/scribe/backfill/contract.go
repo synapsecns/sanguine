@@ -340,17 +340,17 @@ func (c *ContractBackfiller) getLogs(parentCtx context.Context, startHeight, end
 	logFetcher := NewLogFetcher(common.HexToAddress(c.contractConfig.Address), c.client[0], big.NewInt(int64(startHeight)), big.NewInt(int64(endHeight)), &c.chainConfig)
 	logsChan, errChan := make(chan types.Log), make(chan string)
 
-	go c.runFetcher(ctx, startHeight, endHeight, logFetcher, errChan)
-	go c.processLogs(ctx, startHeight, endHeight, logFetcher, logsChan)
+	go c.runFetcher(ctx, logFetcher, errChan)
+	go c.processLogs(ctx, logFetcher, logsChan, errChan)
 
 	return logsChan, errChan
 }
 
-func (c *ContractBackfiller) runFetcher(ctx context.Context, startHeight, endHeight uint64, logFetcher *LogFetcher, errChan chan<- string) {
+func (c *ContractBackfiller) runFetcher(ctx context.Context, logFetcher *LogFetcher, errChan chan<- string) {
 	if err := logFetcher.Start(ctx); err != nil {
-		LogEvent(ErrorLevel, "Error occurred while running log fetcher", LogData{"cid": c.chainConfig.ChainID, "sh": startHeight, "eh": endHeight, "e": err.Error()})
 		select {
 		case <-ctx.Done():
+			errChan <- fmt.Sprintf("context canceled while appending log to channel %v", ctx.Err())
 			return
 		case errChan <- err.Error():
 			return
@@ -358,11 +358,11 @@ func (c *ContractBackfiller) runFetcher(ctx context.Context, startHeight, endHei
 	}
 }
 
-func (c *ContractBackfiller) processLogs(ctx context.Context, startHeight, endHeight uint64, logFetcher *LogFetcher, logsChan chan<- types.Log) {
+func (c *ContractBackfiller) processLogs(ctx context.Context, logFetcher *LogFetcher, logsChan chan<- types.Log, errChan chan<- string) {
 	for {
 		select {
 		case <-ctx.Done():
-			LogEvent(ErrorLevel, "context canceled while consuming logs", LogData{"cid": c.chainConfig.ChainID, "sh": startHeight, "eh": endHeight, "e": ctx.Err()})
+			errChan <- fmt.Sprintf("context canceled %v", ctx.Err())
 			return
 		case logChunks, ok := <-logFetcher.fetchedLogsChan:
 			if !ok {
@@ -370,22 +370,14 @@ func (c *ContractBackfiller) processLogs(ctx context.Context, startHeight, endHe
 				return
 			}
 			for _, log := range logChunks {
-				if c.appendLogToChannel(ctx, startHeight, endHeight, log, logsChan) {
-					// Context canceled while appending
+				select {
+				case <-ctx.Done():
+					errChan <- fmt.Sprintf("context canceled while loading log chunks to log %v", ctx.Err())
 					return
+				case logsChan <- log:
 				}
 			}
 		}
-	}
-}
-
-func (c *ContractBackfiller) appendLogToChannel(ctx context.Context, startHeight, endHeight uint64, log types.Log, logsChan chan<- types.Log) bool {
-	select {
-	case <-ctx.Done():
-		LogEvent(ErrorLevel, "context canceled while appending log to channel", LogData{"cid": c.chainConfig.ChainID, "sh": startHeight, "eh": endHeight, "e": ctx.Err()})
-		return true
-	case logsChan <- log:
-		return false
 	}
 }
 
