@@ -27,10 +27,14 @@ import EventCard from './EventCard'
 import BlockCountdown from './BlockCountdown'
 import { CreditedTransactionItem } from '@components/TransactionItems'
 import { Address } from 'viem'
+import SYNAPSE_CCTP_ABI from '@abis/synapseCCTP.json'
+import { SYNAPSE_CCTP_CONTRACTS } from '@constants/bridge'
+
 const DestinationTx = (fromEvent: BridgeWatcherTx) => {
   const [toEvent, setToEvent] = useState<BridgeWatcherTx>(undefined)
   const [toSynapseContract, setToSynapseContract] =
     useState<Contract>(undefined)
+  const [toCCTPContract, setToCCTPContract] = useState<Contract>(undefined)
   const [toSigner, setToSigner] = useState<Address>()
   const { data: toSignerRaw } = useWalletClient({ chainId: fromEvent.toChainId })
   const [completedConf, setCompletedConf] = useState(false)
@@ -48,7 +52,10 @@ const DestinationTx = (fromEvent: BridgeWatcherTx) => {
     })
     const provider = providerMap[fromEvent.toChainId]
 
-    const iface = new Interface(SYNAPSE_BRIDGE_ABI)
+    const isCCTP = fromEvent.contractEmittedFrom.toLowerCase() === SYNAPSE_CCTP_CONTRACTS[fromEvent.chainId].toLowerCase() ? true : false
+
+    const iface = new Interface(isCCTP ? SYNAPSE_CCTP_ABI : SYNAPSE_BRIDGE_ABI)
+
     let allToEvents = []
     let i = 0
     let afterOrginTx = true
@@ -64,13 +71,21 @@ const DestinationTx = (fromEvent: BridgeWatcherTx) => {
         afterOrginTx = false
       }
 
-      const fromEvents = await getLogs(
+      const fromEventsBridge = await getLogs(
         startBlock,
         provider,
         toSynapseContract,
         fromEvent.toAddress
       )
-      allToEvents.push(fromEvents)
+
+      const fromEventsCCTP = await getLogs(
+        startBlock,
+        provider,
+        toCCTPContract,
+        fromEvent.toAddress
+      )
+
+      allToEvents.push(fromEventsBridge, fromEventsCCTP)
       i++
 
       // Break if cannot find tx
@@ -79,7 +94,9 @@ const DestinationTx = (fromEvent: BridgeWatcherTx) => {
       }
     }
     const flattendEvents = _.flatten(allToEvents)
-    const parsedLogs = flattendEvents
+    let parsedLogs
+    if (!isCCTP) {
+      parsedLogs = flattendEvents
       .map((log) => {
         return {
           ...iface.parseLog(log).args,
@@ -90,7 +107,21 @@ const DestinationTx = (fromEvent: BridgeWatcherTx) => {
       .filter((log: any) => {
         const convertedKappa = remove0xPrefix(log.kappa)
         return !checkTxIn(log) && convertedKappa === fromEvent.kappa
-      })
+      })}
+      else {
+        parsedLogs = flattendEvents
+        .map((log) => {
+          return {
+            ...iface.parseLog(log).args,
+            transactionHash: log.transactionHash,
+            blockNumber: Number(log.blockNumber),
+          }
+        }).filter((log: any) => {
+          return log.requestID === fromEvent.kappa
+        })
+
+
+      }
 
     const parsedLog = parsedLogs?.[0]
     if (parsedLog) {
@@ -124,28 +155,38 @@ const DestinationTx = (fromEvent: BridgeWatcherTx) => {
         toSigner as unknown as Signer
       )
       setToSynapseContract(toSynapseContract)
+
+      // Initialize CCTP Contract when signer and fromEvent are available
+      if (SYNAPSE_CCTP_CONTRACTS[fromEvent.toChainId]) {
+        const toCCTPContract = new Contract(
+          SYNAPSE_CCTP_CONTRACTS[fromEvent.toChainId],
+          SYNAPSE_CCTP_ABI,
+          providerMap[fromEvent.toChainId]
+        )
+        setToCCTPContract(toCCTPContract)
+      }
     }
   }, [fromEvent, toSigner])
 
   // Listens for confirmations to complete and if so, recheck destination chain for logs
   useEffect(() => {
-    if (completedConf && toSynapseContract && attempted) {
+    if (completedConf && (toSynapseContract || toCCTPContract) && attempted) {
       getToBridgeEvent().then((tx) => {
         setToEvent(tx)
       })
     }
-  }, [completedConf, toEvent, fromEvent, toSynapseContract])
+  }, [completedConf, toEvent, fromEvent, toSynapseContract, toCCTPContract])
 
   // Listens for SynapseContract to be set and if so, will check destination chain for logs if there is no toEvent
   useEffect(() => {
-    if (toSynapseContract && !toEvent) {
+    if ((toSynapseContract || toCCTPContract) && !toEvent) {
       getToBridgeEvent().then((tx) => {
         setToEvent(tx)
         return
       })
     }
     return
-  }, [toSynapseContract])
+  }, [toSynapseContract, toCCTPContract])
 
   useEffect(() => {
     setToSigner(toSignerRaw.account.address)

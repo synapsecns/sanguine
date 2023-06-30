@@ -9,18 +9,18 @@ import {
   dfk,
   dogechain,
   klaytn,
+  metis,
+  aurora,
+  canto,
 } from '@constants/extraWagmiChains'
 import { WagmiConfig, configureChains, createConfig } from 'wagmi'
 import {
   arbitrum,
-  aurora,
   avalanche,
   bsc,
-  canto,
   fantom,
   harmonyOne,
   mainnet,
-  metis,
   moonbeam,
   moonriver,
   optimism,
