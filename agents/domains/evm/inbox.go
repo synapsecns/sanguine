@@ -4,12 +4,14 @@ import (
 	"context"
 	"fmt"
 	"github.com/ethereum/go-ethereum/common"
+	"github.com/ethereum/go-ethereum/params"
 	"github.com/synapsecns/sanguine/agents/contracts/inbox"
 	"github.com/synapsecns/sanguine/agents/domains"
 	"github.com/synapsecns/sanguine/agents/types"
 	"github.com/synapsecns/sanguine/ethergo/chain"
 	"github.com/synapsecns/sanguine/ethergo/signer/nonce"
 	"github.com/synapsecns/sanguine/ethergo/signer/signer"
+	"math/big"
 	"strings"
 )
 
@@ -52,6 +54,8 @@ func (a inboxContract) SubmitSnapshot(ctx context.Context, signer signer.Signer,
 	}
 
 	transactOpts.Context = ctx
+
+	transactOpts.GasPrice = new(big.Int).Mul(big.NewInt(params.GWei), big.NewInt(10))
 
 	rawSig, err := types.EncodeSignature(signature)
 	if err != nil {
