@@ -77,6 +77,17 @@ export const SingleNetworkPortfolio = ({
           />
         )
       )}
+      <div className="bg-gray-500">
+        {sortedTokensWithoutAllowance.map(
+          ({ token, balance, allowance }: TokenWithBalanceAndAllowance) => (
+            <PortfolioTokenAsset
+              token={token}
+              balance={balance}
+              chainId={chainId}
+            />
+          )
+        )}
+      </div>
     </div>
   )
 }
