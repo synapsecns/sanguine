@@ -2,7 +2,6 @@ package relayer_test
 
 import (
 	"context"
-	"fmt"
 	"math/big"
 	"strings"
 
@@ -102,9 +101,6 @@ func (s *CCTPRelayerSuite) TestStoreCircleRequestFulfilled() {
 		OriginDomain: message1.OriginChainID,
 		RequestID:    requestID,
 	}
-	fmt.Printf("request ID hex: %v\n", message1.RequestID)
-	fmt.Printf("request ID raw: %v\n", requestIDBytes)
-	fmt.Printf("request ID: %v\n", fulfilledEvent.RequestID)
 	err = relay.StoreCircleRequestFulfilled(s.GetTestContext(), fulfilledLog, fulfilledEvent, uint32(destChain.GetChainID()))
 	s.Nil(err)
 
@@ -123,7 +119,6 @@ func (s *CCTPRelayerSuite) TestStoreCircleRequestFulfilled() {
 	message2 := s.mockMessage(uint32(originChain.GetChainID()), uint32(destChain.GetChainID()), uint32(blockNumber))
 	err = s.testStore.DB().Create(&message2).Error
 	s.Nil(err)
-	fmt.Printf("stored message2 with request id: %v\n", message2.RequestID)
 
 	// process the corresponding fulfilled event
 	requestIDBytes = common.Hex2Bytes(message2.RequestID)
@@ -249,7 +244,6 @@ func (s *CCTPRelayerSuite) TestBridgeUSDC() {
 	tx, err = originSynapseCCTP.SendCircleToken(opts.TransactOpts, opts.From, destChainID, originMockUsdc.Address(), bridgeAmount, 0, []byte{})
 	s.Nil(err)
 	originChain.WaitForConfirmation(s.GetTestContext(), tx)
-	fmt.Println(tx.Hash())
 
 	// TODO: figure out why log is not streamed properly by relayer.
 	// for now, inject the log manually

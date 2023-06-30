@@ -561,10 +561,8 @@ func (c *CCTPRelayer) handleCircleRequestFulfilled(parentCtx context.Context, lo
 func (c *CCTPRelayer) storeCircleRequestFulfilled(ctx context.Context, log *types.Log, event *cctp.SynapseCCTPEventsCircleRequestFulfilled, destChain uint32) error {
 	var msg *relayTypes.Message
 	requestID := common.Bytes2Hex(event.RequestID[:])
-	fmt.Printf("getting msg by request id: %vraw:%v\n", requestID, event.RequestID)
 	msg, err := c.db.GetMessageByRequestID(ctx, requestID)
 	if err != nil {
-		fmt.Printf("db err: %v\n", err)
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			// Reconstruct what we can from the given log.
 			msg = &relayTypes.Message{
