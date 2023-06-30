@@ -374,7 +374,7 @@ func (c *CCTPRelayer) streamLogs(ctx context.Context, grpcClient pbscribe.Scribe
 
 // This takes in a log from the SynapseCCTP contract, determines the topic and then performs an action based on that topic.
 // Note that the log could correspond to a send or receive event.
-func (c *CCTPRelayer) handleLog(ctx context.Context, log *types.Log, originChain uint32) (err error) {
+func (c *CCTPRelayer) handleLog(ctx context.Context, log *types.Log, chainID uint32) (err error) {
 	if log == nil {
 		return fmt.Errorf("log is nil")
 	}
@@ -387,7 +387,7 @@ func (c *CCTPRelayer) handleLog(ctx context.Context, log *types.Log, originChain
 	switch log.Topics[0] {
 	// since this is the last stopic that comes out of the message, we use it to kick off the send loop
 	case cctp.CircleRequestSentTopic:
-		msg, err := c.fetchAndStoreCircleRequestSent(ctx, log.TxHash, originChain)
+		msg, err := c.fetchAndStoreCircleRequestSent(ctx, log.TxHash, chainID)
 		if err != nil {
 			return fmt.Errorf("could not fetch and store circle request sent: %w", err)
 		}
@@ -398,7 +398,7 @@ func (c *CCTPRelayer) handleLog(ctx context.Context, log *types.Log, originChain
 
 		return nil
 	case cctp.CircleRequestFulfilledTopic:
-		err = c.storeCircleRequestFulfilled(ctx, log, originChain)
+		err = c.handleCircleRequestFulfilled(ctx, log, chainID)
 		if err != nil {
 			return fmt.Errorf("could not store circle request fulfilled: %w", err)
 		}
@@ -514,11 +514,11 @@ func (c *CCTPRelayer) fetchAndStoreCircleRequestSent(parentCtx context.Context, 
 	return &rawMsg, nil
 }
 
-// fetchAndStoreCircleRequestFulfilled handles the CircleRequestFulfilled event.
+// handleCircleRequestFulfilled handles the CircleRequestFulfilled event.
 //
 //nolint:cyclop
-func (c *CCTPRelayer) storeCircleRequestFulfilled(parentCtx context.Context, log *types.Log, destChain uint32) (err error) {
-	ctx, span := c.handler.Tracer().Start(parentCtx, "storeCircleRequestFulfilled", trace.WithAttributes(
+func (c *CCTPRelayer) handleCircleRequestFulfilled(parentCtx context.Context, log *types.Log, destChain uint32) (err error) {
+	ctx, span := c.handler.Tracer().Start(parentCtx, "handleCircleRequestFulfilled", trace.WithAttributes(
 		attribute.String(metrics.TxHash, log.TxHash.String()),
 		attribute.Int(metrics.Destination, int(destChain)),
 	))
@@ -548,22 +548,32 @@ func (c *CCTPRelayer) storeCircleRequestFulfilled(parentCtx context.Context, log
 		return fmt.Errorf("could not parse circle request fulfilled: %w", err)
 	}
 
-	// Fetch pending message from db, and mark as complete if found.
+	err = c.storeCircleRequestFulfilled(ctx, log, circleRequestFulfilledEvent, destChain)
+	if err != nil {
+		return fmt.Errorf("could not store circle request fulfilled: %w", err)
+	}
+
+	return nil
+}
+
+// storeCircleRequestFullfilled fetches pending message from db, and marks as complete if found.
+// If the message is not found, it will be created from the given log.
+func (c *CCTPRelayer) storeCircleRequestFulfilled(ctx context.Context, log *types.Log, event *cctp.SynapseCCTPEventsCircleRequestFulfilled, destChain uint32) error {
 	var msg *relayTypes.Message
-	requestID := common.Bytes2Hex(circleRequestFulfilledEvent.RequestID[:])
-	msg, err = c.db.GetMessageByRequestID(ctx, requestID)
+	requestID := common.Bytes2Hex(event.RequestID[:])
+	msg, err := c.db.GetMessageByRequestID(ctx, requestID)
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			// Reconstruct what we can from the given log.
 			msg = &relayTypes.Message{
 				OriginTxHash:  log.TxHash.String(),
-				OriginChainID: circleRequestFulfilledEvent.OriginDomain,
+				OriginChainID: event.OriginDomain,
 				DestChainID:   destChain,
 				RequestID:     requestID,
 				BlockNumber:   log.BlockNumber,
 			}
 		} else {
-			return fmt.Errorf("could not get message by origin hash: %w", err)
+			return fmt.Errorf("could not get message by request id: %w", err)
 		}
 	}
 
@@ -573,7 +583,6 @@ func (c *CCTPRelayer) storeCircleRequestFulfilled(parentCtx context.Context, log
 	if err != nil {
 		return fmt.Errorf("could not store complete message: %w", err)
 	}
-
 	return nil
 }
 

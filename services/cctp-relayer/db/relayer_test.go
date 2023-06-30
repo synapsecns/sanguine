@@ -1,6 +1,8 @@
 package db_test
 
 import (
+	"strings"
+
 	"github.com/brianvoe/gofakeit/v6"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/synapsecns/sanguine/ethergo/mocks"
@@ -18,7 +20,7 @@ func (d *DBSuite) mockMessage(originChainID, destinationChainID, blockNumber uin
 		Attestation:      []byte(gofakeit.Paragraph(10, 10, 10, " ")),
 		RequestVersion:   0,
 		FormattedRequest: []byte(gofakeit.Paragraph(10, 10, 10, " ")),
-		RequestID:        mocks.NewMockHash(d.T()).String(),
+		RequestID:        strings.TrimPrefix(mocks.NewMockHash(d.T()).String(), "0x"),
 		BlockNumber:      uint64(blockNumber),
 		State:            types.Pending,
 	}
