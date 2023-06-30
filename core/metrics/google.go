@@ -54,7 +54,7 @@ func (h *googleHandler) Start(ctx context.Context) (err error) {
 			return fmt.Errorf("could not create gkehub service: %w", err)
 		}
 
-		call, err := svc.Projects.Locations.Memberships.List("test").Do()
+		_, err = svc.Projects.Locations.Memberships.List("test").Do()
 		if err != nil {
 			return fmt.Errorf("could not list memberships: %w", err)
 		}
