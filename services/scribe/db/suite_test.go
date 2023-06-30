@@ -3,7 +3,6 @@ package db_test
 import (
 	"database/sql"
 	"fmt"
-	"github.com/synapsecns/sanguine/core"
 	"github.com/synapsecns/sanguine/core/dbcommon"
 	"github.com/synapsecns/sanguine/core/metrics"
 	"github.com/synapsecns/sanguine/core/metrics/localmetrics"
@@ -61,14 +60,8 @@ func (t *DBSuite) SetupSuite() {
 	t.Require().Nil(err)
 }
 
-// connString gets the connection string.
-func (t *DBSuite) connString(dbname string) string {
-	return fmt.Sprintf("%s:%s@tcp(%s:%d)/%s?parseTime=true", core.GetEnv("MYSQL_USER", "root"), os.Getenv("MYSQL_PASSWORD"), core.GetEnv("MYSQL_HOST", "127.0.0.1"), core.GetEnvInt("MYSQL_PORT", 3306), dbname)
-}
-
 func (t *DBSuite) setupMysqlDB() {
 	// skip if mysql test disabled, this really only needs to be run in ci
-
 	// skip if mysql test disabled
 	if os.Getenv(dbcommon.EnableMysqlTestVar) == "" {
 		return

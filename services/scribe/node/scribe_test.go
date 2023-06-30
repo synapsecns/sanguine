@@ -8,6 +8,7 @@ import (
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/core/types"
 	"github.com/ethereum/go-ethereum/params"
+	"github.com/ipfs/go-log"
 	"github.com/jpillora/backoff"
 	. "github.com/stretchr/testify/assert"
 	"github.com/synapsecns/sanguine/ethergo/backends"
@@ -21,7 +22,6 @@ import (
 	"github.com/synapsecns/sanguine/services/scribe/node"
 	"github.com/synapsecns/sanguine/services/scribe/testutil"
 	"github.com/synapsecns/sanguine/services/scribe/testutil/testcontract"
-
 	"math/big"
 	"net/http"
 	"os"
@@ -417,10 +417,10 @@ func (l LiveSuite) TestLivefillParity() {
 	if os.Getenv("CI") != "" {
 		l.T().Skip("Network test flake")
 	}
-	//ethRPCURL := "https://1rpc.io/eth"
-	//arbRPCURL := "https://endpoints.omniatech.io/v1/arbitrum/one/public"
-	//maticRPCURL := "https://poly-rpc.gateway.pokt.network"
-	//avaxRPCURL := "https://avalanche.public-rpc.com"
+	// ethRPCURL := "https://1rpc.io/eth"
+	// arbRPCURL := "https://endpoints.omniatech.io/v1/arbitrum/one/public"
+	// maticRPCURL := "https://poly-rpc.gateway.pokt.network"
+	// avaxRPCURL := "https://avalanche.public-rpc.com"
 
 	ethRPCURL := "https://rpc.interoperability.institute/confirmations/1/rpc/1"
 	arbRPCURL := "https://rpc.interoperability.institute/confirmations/1/rpc/42161"
@@ -442,7 +442,6 @@ func (l LiveSuite) TestLivefillParity() {
 	Nil(l.T(), err)
 
 	ethID := uint32(1)
-	//opID := uint32(10)
 	bscID := uint32(56)
 	arbID := uint32(42161)
 	maticID := uint32(137)
@@ -476,7 +475,7 @@ func (l LiveSuite) TestLivefillParity() {
 		avaxID:  {avaxClient, avaxClient},
 	}
 
-	apiUrls := map[uint32]string{
+	apiURLs := map[uint32]string{
 		ethID:   "https://api.etherscan.io/api",
 		arbID:   "https://api.arbiscan.io/api",
 		avaxID:  "https://api.snowtrace.io/api",
@@ -650,10 +649,9 @@ func (l LiveSuite) TestLivefillParity() {
 			dbLogCount, err := getLogAmount(l.GetTestContext(), l.testDB, logFilter, fromBlock, toBlock)
 			Nil(l.T(), err)
 
-			explorerLogCount, err := getLogs(l.GetTestContext(), contract.Address, fromBlock, toBlock, apiUrls[chain.ChainID])
+			explorerLogCount, err := getLogs(l.GetTestContext(), contract.Address, fromBlock, toBlock, apiURLs[chain.ChainID])
 			Nil(l.T(), err)
 			Equal(l.T(), dbLogCount, explorerLogCount)
-
 		}
 	}
 }
@@ -674,9 +672,8 @@ func processBatch(ctx context.Context, client *http.Client, url string) (int, er
 	}
 	resRaw, err := client.Do(req)
 	if err != nil {
-		return 0, err
+		return 0, fmt.Errorf("could not get data from explorer %w", err)
 	}
-	defer resRaw.Body.Close()
 
 	var decodedRes map[string]json.RawMessage
 	if err := json.NewDecoder(resRaw.Body).Decode(&decodedRes); err != nil {
@@ -688,10 +685,13 @@ func processBatch(ctx context.Context, client *http.Client, url string) (int, er
 		return 0, fmt.Errorf("error unmarshaling result: %w", err)
 	}
 
+	if err = resRaw.Body.Close(); err != nil {
+		log.Logger("synapse-scribe-node-test").Errorf("could not close  response body: %v", err)
+	}
 	return len(resultSlice), nil
 }
 
-func getLogs(ctx context.Context, contractAddress string, fromBlock uint64, toBlock uint64, apiUrl string) (int, error) {
+func getLogs(ctx context.Context, contractAddress string, fromBlock uint64, toBlock uint64, apiURL string) (int, error) {
 	blockRange := toBlock - fromBlock
 	batchSize := uint64(600)
 	numBatches := blockRange/batchSize + 1
@@ -705,7 +705,7 @@ func getLogs(ctx context.Context, contractAddress string, fromBlock uint64, toBl
 			endBlock = toBlock
 		}
 		url := fmt.Sprintf("%s?module=logs&action=getLogs&address=%s&fromBlock=%d&toBlock=%d&page=1",
-			apiUrl, contractAddress, startBlock, endBlock)
+			apiURL, contractAddress, startBlock, endBlock)
 		b := &backoff.Backoff{
 			Factor: 2,
 			Jitter: true,
@@ -717,7 +717,7 @@ func getLogs(ctx context.Context, contractAddress string, fromBlock uint64, toBl
 	RETRY:
 		select {
 		case <-ctx.Done():
-			return 0, fmt.Errorf("context cancelled: %s", ctx.Err())
+			return 0, fmt.Errorf("context canceled: %w", ctx.Err())
 		case <-time.After(timeout):
 			resultCount, err := processBatch(ctx, client, url)
 			if err != nil {
@@ -741,7 +741,7 @@ func getLogAmount(ctx context.Context, db db.EventDB, filter db.LogFilter, start
 	for {
 		logs, err := db.RetrieveLogsInRangeAsc(ctx, filter, startBlock, endBlock, page)
 		if err != nil {
-			return 0, err
+			return 0, fmt.Errorf("failure while retreiving logs from database %w", err)
 		}
 		retrievedLogs = append(retrievedLogs, logs...)
 		if len(logs) < base.PageSize {

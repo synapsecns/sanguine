@@ -5,7 +5,6 @@ import (
 	"fmt"
 	gormLogger "gorm.io/gorm/logger"
 
-	//common_base "github.com/synapsecns/sanguine/core/dbcommon"
 	"github.com/synapsecns/sanguine/core/metrics"
 	"os"
 

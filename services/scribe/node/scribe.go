@@ -243,7 +243,6 @@ func (s Scribe) confirmBlocks(ctx context.Context, chainConfig config.ChainConfi
 		}
 
 		cache.Add(cacheKey, true)
-		fmt.Println(fmt.Sprintf(" [LIVEFILL] could not backfill %d chain: %d, block: %d", latestBlock-uint64(requiredConfirmations), chainID, i))
 
 		// Add to meter
 		s.reorgMeters[chainID].Add(ctx, 1, otelMetrics.WithAttributeSet(
