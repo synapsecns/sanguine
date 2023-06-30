@@ -86,16 +86,18 @@ func (m *NullMeterImpl) NewHistogram(_ string, _ string, _ string, _ string) (me
 	return &NullHistogram{}, nil
 }
 
-// NullCounter is a no-op implementation of the metric.Int64Counter
+// NullCounter is a no-op implementation of the metric.Int64Counter.
 type NullCounter struct {
 	embedded.Int64Counter
 }
 
+// Add is a no-op implementation of Int64Counter Add() function.
 func (n *NullCounter) Add(_ context.Context, _ int64, _ ...metric.AddOption) {}
 
-// NullHistogram is a no-op implementation of the metric.Int64Histogram
+// NullHistogram is a no-op implementation of the metric.Int64Histogram.
 type NullHistogram struct {
 	embedded.Int64Histogram
 }
 
+// Record is a no-op implementation of RecordOption Record() function.
 func (n *NullHistogram) Record(_ context.Context, _ int64, _ ...metric.RecordOption) {}
