@@ -9,7 +9,7 @@ import Image from 'next/image'
 import { Token } from '@/utils/types'
 import { BigNumber } from 'ethers'
 import { formatBNToString } from '@/utils/bignumber/format'
-import Accordion from './PortfolioAccordion'
+import PortfolioAccordion from './PortfolioAccordion'
 
 type SingleNetworkPortfolioProps = {
   chainId: number
@@ -30,16 +30,13 @@ export const SingleNetworkPortfolio = ({
   const sortedTokensWithoutAllowance: TokenWithBalanceAndAllowance[] =
     sortByBalanceDescending(tokensWithoutAllowance)
 
-  console.log('sortedTokensWithAllowance:', sortedTokensWithAllowance)
-  console.log('sortedTokensWithoutAllowance:', sortedTokensWithoutAllowance)
-
   const shouldShowDivider: boolean =
     sortedTokensWithAllowance.length > 0 &&
     sortedTokensWithoutAllowance.length > 0
 
   return (
     <div className="flex flex-col border-b border-solid border-[#28282F] pt-4 pb-2 mt-2">
-      <Accordion
+      <PortfolioAccordion
         header={
           <PortfolioNetwork
             displayName={currentChain.name}
@@ -74,12 +71,7 @@ export const SingleNetworkPortfolio = ({
               />
             )
           )}
-      </Accordion>
-      {/* <PortfolioNetwork
-        displayName={currentChain.name}
-        chainIcon={currentChain.chainImg}
-        chainId={chainId}
-      /> */}
+      </PortfolioAccordion>
     </div>
   )
 }
@@ -177,7 +169,7 @@ const PortfolioNetwork = ({
 
   return (
     <div className="flex flex-row justify-between flex-1 mb-4">
-      <div className="flex flex-row">
+      <div className="flex flex-row items-center">
         <Image
           className="mr-4 rounded-md w-7 h-7"
           alt={`${displayName} img`}
