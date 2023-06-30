@@ -13,6 +13,7 @@ import { CHAINS_BY_ID } from '@/constants/chains'
 import HomeSvg from '../icons/HomeIcon'
 import { Chain } from '@/utils/types'
 import Image from 'next/image'
+import { switchNetwork } from '@wagmi/core'
 
 export enum PortfolioTabs {
   HOME = 'home',
@@ -156,7 +157,7 @@ const PortfolioNetwork = ({
       {isCurrentlyConnectedNetwork ? (
         <ConnectedButton />
       ) : (
-        <button>Connect</button>
+        <ConnectButton chainId={chainId} />
       )}
     </div>
   )
@@ -172,6 +173,26 @@ const ConnectedButton = () => {
   `
 
   return <button className={buttonClassName}>Connected</button>
+}
+
+const ConnectButton = ({ chainId }: { chainId: number }) => {
+  const handleConnectNetwork = async () => {
+    await switchNetwork({ chainId: chainId })
+  }
+
+  const buttonClassName = `
+    h-8 flex items-center
+    text-base text-white px-4 py-2 rounded-3xl
+    text-center transform-gpu transition-all duration-75
+    border-2 border-[#101018]
+    hover:cursor-pointer
+  `
+
+  return (
+    <button className={buttonClassName} onClick={handleConnectNetwork}>
+      Connect
+    </button>
+  )
 }
 
 const PortfolioAssetHeader = () => {
