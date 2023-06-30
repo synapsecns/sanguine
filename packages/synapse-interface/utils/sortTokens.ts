@@ -8,7 +8,7 @@ import { Token } from '@/utils/types'
 
 interface TokenAndBalance {
   token: Token
-  balance: BigInt
+  balance: bigint
 }
 
 export const sortByVisibilityRank = (tokens: Token[]) => {

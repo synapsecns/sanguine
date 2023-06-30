@@ -9,6 +9,7 @@ import Image from 'next/image'
 import { Zero } from '@ethersproject/constants'
 
 import { Token } from '@/utils/types'
+import { formatBigIntToPercentString, formatBigIntToString } from '@/utils/bigint/format'
 
 const ExchangeRateInfo = ({
   fromAmount,
@@ -19,20 +20,20 @@ const ExchangeRateInfo = ({
 }: {
   fromAmount: BigNumber
   toToken: Token
-  exchangeRate: BigNumber
+  exchangeRate: bigint
   toChainId: number
   showGasDrop: boolean
 }) => {
   const [gasDropChainId, setGasDropChainId] = useState<number>(null)
   const { gasDrop: gasDropAmount, loading } = useGasDropAmount(toChainId)
 
-  const safeExchangeRate = useMemo(() => exchangeRate ?? Zero, [exchangeRate]) // todo clean
+  const safeExchangeRate = useMemo(() => exchangeRate ?? 0n, [exchangeRate]) // todo clean
   const safeFromAmount = useMemo(() => fromAmount ?? Zero, [fromAmount]) // todo clean
-  const formattedExchangeRate = formatBNToString(safeExchangeRate, 18, 4)
+  const formattedExchangeRate = formatBigIntToString(safeExchangeRate, 18, 4)
   const numExchangeRate = Number(formattedExchangeRate)
-  const slippage = safeExchangeRate.sub(BigNumber.from(10).pow(18))
-  const formattedPercentSlippage = formatBNToPercentString(slippage, 18)
-  const underFee = safeExchangeRate.eq(0) && !safeFromAmount.eq(0)
+  const slippage = safeExchangeRate - 1000000000000000000n
+  const formattedPercentSlippage = formatBigIntToPercentString(slippage, 18)
+  const underFee = safeExchangeRate === 0n && !safeFromAmount.eq(0)
 
   const textColor: string = useMemo(() => {
     if (numExchangeRate >= 1) {

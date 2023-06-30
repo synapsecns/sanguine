@@ -22,7 +22,7 @@ const TokenMenuItem = ({
   active: boolean
   chainId: number
   selectedToken: Token
-  tokenBalance: BigInt | undefined
+  tokenBalance: bigint | undefined
   onClick: () => void
 }) => {
   const isCurrentlySelected = selectedToken?.symbol === token?.symbol

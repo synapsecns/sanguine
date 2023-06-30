@@ -1,4 +1,3 @@
-import { BigNumber } from '@ethersproject/bignumber'
 import { formatBNToString } from '@utils/bigint/format'
 import { commify } from '@ethersproject/units'
 import { displaySymbol } from '@utils/displaySymbol'

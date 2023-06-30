@@ -59,12 +59,12 @@ export const BridgeTransactionButton = ({
   let buttonProperties
 
   console.log(fromValue)
-  if (!isLoading && bridgeQuote?.feeAmount?.eq(0) && (BigInt(fromValue as string)) > 0) {
+  if (!isLoading && bridgeQuote?.feeAmount === 0n && BigInt(fromValue) > 0) {
     buttonProperties = {
       label: `Amount must be greater than fee`,
       onClick: null,
     }
-  } else if (!isConnected && BigInt((fromValue as string)) > 0) {
+  } else if (!isConnected && BigInt((fromValue)) > 0) {
     buttonProperties = {
       label: `Connect Wallet to Bridge`,
       onClick: openConnectModal,
@@ -77,7 +77,7 @@ export const BridgeTransactionButton = ({
     buttonProperties = {
       label: 'Invalid destination address',
     }
-  } else if (chain?.id != fromChainId && BigInt((fromValue as string)) > 0) {
+  } else if (chain?.id != fromChainId && BigInt((fromValue)) > 0) {
     buttonProperties = {
       label: `Switch to ${chains.find((c) => c.id === fromChainId).name}`,
       onClick: () => switchNetwork(fromChainId),

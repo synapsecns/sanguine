@@ -1,13 +1,14 @@
 import { useState, useMemo, useEffect } from 'react'
 import { BigNumber } from '@ethersproject/bignumber'
 import { formatBNToPercentString, formatBNToString } from '@bignumber/format'
+import  { formatBigIntToPercentString } from '@/utils/bigint/format'
 import { CHAINS_BY_ID } from '@constants/chains'
 import * as CHAINS from '@constants/chains/master'
 import { useCoingeckoPrice } from '@hooks/useCoingeckoPrice'
 import { useGasDropAmount } from '@/utils/hooks/useGasDropAmount'
 import Image from 'next/image'
 import { Zero } from '@ethersproject/constants'
-
+import { formatBigIntToString } from '@/utils/bigint/format'
 import { Token } from '@/utils/types'
 import { useDispatch, useSelector } from 'react-redux'
 import { RootState } from '../../store/store'
@@ -26,14 +27,15 @@ const BridgeExchangeRateInfo = ({
   const { gasDrop: gasDropAmount, loading } = useGasDropAmount(toChainId)
 
 
-  const safeExchangeRate = exchangeRate ?? Zero;
+  const safeExchangeRate = exchangeRate ?? 0n;
   const safeFromAmount = fromAmount ?? "0";
 
-  const formattedExchangeRate = formatBNToString(safeExchangeRate, 18, 4)
+  const formattedExchangeRate = formatBigIntToString(safeExchangeRate, 18, 4)
   const numExchangeRate = Number(formattedExchangeRate)
-  const slippage = safeExchangeRate.sub(BigNumber.from(10).pow(18))
-  const formattedPercentSlippage = formatBNToPercentString(slippage, 18)
-  const underFee = safeExchangeRate.eq(0) && safeFromAmount != "0"
+  // const slippage = safeExchangeRate.sub(BigNumber.from(10).pow(18))
+  const slippage = safeExchangeRate - (1000000000000000000n);
+  const formattedPercentSlippage = formatBigIntToPercentString(slippage, 18)
+  const underFee = safeExchangeRate === 0n && safeFromAmount != "0"
 
   const textColor: string = useMemo(() => {
     if (numExchangeRate >= 1) {

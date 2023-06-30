@@ -45,7 +45,7 @@ import { BigNumber } from '@ethersproject/bignumber'
 import { getCurrentTokenAllowance } from '../../actions/getCurrentTokenAllowance'
 import { subtractSlippage } from '@/utils/slippage'
 import { commify } from '@ethersproject/units'
-import { formatBNToString } from '@/utils/bigint/format'
+import { formatBigIntToString } from '@/utils/bigint/format'
 import { calculateExchangeRate } from '@/utils/calculateExchangeRate'
 import { useEffect, useRef, useState } from 'react'
 import { Token } from '@/utils/types'
@@ -211,7 +211,7 @@ const StateManagedBridge = () => {
     console.log(`[useEffect] fromToken`, fromToken.symbol)
     console.log(`[useEffect] toToken`, toToken.symbol)
     // TODO: Double serialization happening somewhere??
-    if (BigInt(fromValue as string) > 0n) {
+    if (BigInt(fromValue) > 0n) {
       console.log("trying to set bridge quote")
       getAndSetBridgeQuote()
     } else {
@@ -235,7 +235,7 @@ const StateManagedBridge = () => {
 
   // Would like to move this into function outside of this component
   const getAndSetBridgeQuote = async () => {
-    console.log(BigNumber.from((fromValue as string)))
+    console.log(BigNumber.from((fromValue)))
     currentSDKRequestID.current += 1
     const thisRequestId = currentSDKRequestID.current
     // will have to handle deadlineMinutes here at later time, gets passed as optional last arg in .bridgeQuote()
@@ -249,7 +249,7 @@ const StateManagedBridge = () => {
           toChainId,
           fromToken.addresses[fromChainId],
           toToken.addresses[toChainId],
-          BigNumber.from((fromValue as string))
+          BigNumber.from((fromValue))
         )
 
       console.log(`[getAndSetQuote] fromChainId`, fromChainId)
@@ -268,7 +268,7 @@ const StateManagedBridge = () => {
 
       const toValueBigNum = maxAmountOut ?? Zero
       const originTokenDecimals = fromToken.decimals[fromChainId]
-      const adjustedFeeAmount = feeAmount < ((fromValue as string))
+      const adjustedFeeAmount = feeAmount < ((fromValue))
         ? feeAmount
         : feeAmount.div(BigNumber.from(10).pow(18 - originTokenDecimals))
 
@@ -278,7 +278,7 @@ const StateManagedBridge = () => {
         fromToken.addresses[fromChainId] === AddressZero ||
         address === undefined ||
         isUnsupported
-          ? Zero
+          ? 0n
           : await getCurrentTokenAllowance(
               address,
               fromChainId,
@@ -305,20 +305,20 @@ const StateManagedBridge = () => {
       if (thisRequestId === currentSDKRequestID.current) {
         dispatch(
           setBridgeQuote({
-            outputAmount: toValueBigNum,
+            outputAmount: BigInt(toValueBigNum.toString()),
             outputAmountString: commify(
-              formatBNToString(toValueBigNum, toToken.decimals[toChainId], 8)
+              formatBigIntToString(toValueBigNum, toToken.decimals[toChainId], 8)
             ),
             routerAddress,
             allowance,
             exchangeRate: calculateExchangeRate(
-              BigInt(fromValue as string) - BigInt(adjustedFeeAmount),
+              BigInt(fromValue) - BigInt(adjustedFeeAmount),
               fromToken.decimals[fromChainId],
-              toValueBigNum,
+              BigInt(toValueBigNum.toString()),
               toToken.decimals[toChainId]
             ),
             feeAmount,
-            delta: maxAmountOut,
+            delta: BigInt(maxAmountOut.toString()),
             quotes: {
               originQuery: newOriginQuery,
               destQuery: newDestQuery,
@@ -326,8 +326,8 @@ const StateManagedBridge = () => {
           })
         )
 
-        const str = formatBNToString(
-          BigInt(fromValue as string),
+        const str = formatBigIntToString(
+          BigInt(fromValue),
           fromToken.decimals[fromChainId],
           4
         )
@@ -338,8 +338,8 @@ const StateManagedBridge = () => {
     } catch (err) {
       console.log(err)
       if (thisRequestId === currentSDKRequestID.current) {
-        const str = formatBNToString(
-          BigInt(fromValue as string),
+        const str = formatBigIntToString(
+          BigInt(fromValue),
           fromToken.decimals[fromChainId],
           4
         )
@@ -393,7 +393,7 @@ const StateManagedBridge = () => {
         fromChainId,
         toChainId,
         fromToken.addresses[fromChainId as keyof Token['addresses']],
-        BigNumber.from((fromValue as string)),
+        BigNumber.from((fromValue)),
         bridgeQuote.quotes.originQuery,
         bridgeQuote.quotes.destQuery
       )

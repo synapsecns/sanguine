@@ -1,7 +1,6 @@
 import { BigNumber } from '@ethersproject/bignumber'
 import { Zero, One, AddressZero } from '@ethersproject/constants'
 import { formatBNToPercentString, formatBNToString } from '@bignumber/format'
-import { PoolTokenObject } from '@types'
 import { formatBigIntToPercentString } from '@/utils/bigint/format'
 export const MAX_BN_POW = BigNumber.from(10).pow(18)
 

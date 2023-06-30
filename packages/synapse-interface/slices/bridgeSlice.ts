@@ -16,7 +16,7 @@ export interface BridgeState {
   supportedToTokens: Token[]
   fromToken: Token
   toToken: Token
-  fromValue: String
+  fromValue: string
   bridgeQuote: BridgeQuote
   fromChainIds: number[]
   toChainIds: number[]

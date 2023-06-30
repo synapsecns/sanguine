@@ -26,7 +26,7 @@ export type PoolToken = {
   balanceStr: string
   token: Token
   isLp: boolean
-  rawBalance: BigInt
+  rawBalance: bigint
 }
 export type Query = [string, string, BigNumber, BigNumber, string] & {
   swapAdapter: string
@@ -37,10 +37,10 @@ export type Query = [string, string, BigNumber, BigNumber, string] & {
 }
 export type PoolUserData = {
   name: string
-  share: BigInt
-  value: BigInt
+  share: bigint
+  value: bigint
   tokens: PoolToken[]
-  lpTokenBalance: BigInt
+  lpTokenBalance: bigint
   lpTokenBalanceStr: string
   nativeTokens?: any
 }
@@ -51,19 +51,19 @@ export type PoolData = {
   totalLockedStr: number
   totalLockedUSD: Number
   totalLockedUSDStr: number
-  virtualPrice: BigInt
+  virtualPrice: bigint
   virtualPriceStr: string
   nativeTokens?: any
 }
 
 export type BridgeQuote = {
-  outputAmount: BigNumber
+  outputAmount: bigint
   outputAmountString: string
   routerAddress: string
-  allowance: BigNumber
-  exchangeRate: BigNumber
-  feeAmount: BigNumber
-  delta: BigNumber
+  allowance: bigint
+  exchangeRate: bigint
+  feeAmount: bigint
+  delta: bigint
   quotes: { originQuery: any; destQuery: any }
 }
 interface TokensByChain {
@@ -83,13 +83,10 @@ export interface IconProps {
   walletId?: string
   className?: string
 }
-export type PoolTokenObj = {
-  [x: string]: { token: Token; balance: BigNumber; rawBalance: BigNumber }
-}
 export type PoolTokenObject = {
   token: Token
   balance: string
-  rawBalance: BigInt
+  rawBalance: bigint
   isLP: boolean
 }
 
@@ -98,7 +95,7 @@ export type SwapQuote = {
   outputAmountString: string
   routerAddress: string
   allowance: BigNumber
-  exchangeRate: BigNumber
+  exchangeRate: bigint
   delta: BigNumber
   quote: any
 }

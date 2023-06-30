@@ -13,7 +13,7 @@ import {
   MAX_BN_POW,
 } from '@utils/poolDataFuncs'
 import { fetchBalance, fetchToken } from '@wagmi/core'
-import { PoolTokenObject, Token, PoolUserData, PoolData } from '@types'
+import { Token, PoolUserData, PoolData } from '@types'
 import { BigNumber } from 'ethers'
 
 import { getVirtualPrice } from './getPoolFee'

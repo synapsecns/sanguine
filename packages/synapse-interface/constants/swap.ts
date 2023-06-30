@@ -9,7 +9,7 @@ export const EMPTY_SWAP_QUOTE: SwapQuote = {
   outputAmountString: '',
   routerAddress: '',
   allowance: Zero,
-  exchangeRate: Zero,
+  exchangeRate: 0n,
   delta: Zero,
   quote: null,
 }
@@ -18,7 +18,7 @@ export const EMPTY_SWAP_QUOTE_ZERO: SwapQuote = {
   outputAmountString: '0',
   routerAddress: '',
   allowance: Zero,
-  exchangeRate: Zero,
+  exchangeRate: 0n,
   delta: Zero,
   quote: null,
 }

@@ -2,7 +2,7 @@ import { commifyBnToString } from '@bignumber/format'
 import AugmentWithUnits from '../components/AugmentWithUnits'
 import InfoSectionCard from './InfoSectionCard'
 import { displaySymbol } from '@utils/displaySymbol'
-import { PoolTokenObject, Token } from '@types'
+import { Token } from '@types'
 import LoadingRow from '@/components/loading/LoadingRow'
 
 const CurrencyReservesCard = ({

@@ -49,6 +49,7 @@ import {
   SWAPABLE_TOKENS_BY_TYPE,
   tokenSymbolToToken,
 } from '@constants/tokens'
+import { formatBigIntToString } from '@/utils/bigint/format'
 
 const SwapCard = ({
   address,
@@ -522,7 +523,7 @@ const SwapCard = ({
         routerAddress,
         allowance,
         exchangeRate: calculateExchangeRate(
-          fromInput.bigNum.sub(Zero), // this needs to be changed once we can get fee data from router.
+          BigInt(fromInput.string) - 0n, // this needs to be changed once we can get fee data from router.
           fromToken.decimals[connectedChainId],
           toValueBigNum,
           toToken.decimals[connectedChainId]
@@ -705,7 +706,7 @@ const SwapCard = ({
     properties.disabled = false
 
     const numExchangeRate = swapQuote?.exchangeRate
-      ? Number(formatBNToString(swapQuote.exchangeRate, 18, 4))
+      ? Number(formatBigIntToString(swapQuote.exchangeRate, 18, 4))
       : 0
 
     if (
