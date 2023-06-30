@@ -28,7 +28,6 @@ func (s Store) StoreReceipt(ctx context.Context, chainID uint32, receipt types.R
 			Modifier: "IGNORE",
 		})
 	}
-	fmt.Println("STORING RECEIPT", receipt.BlockHash.String(), receipt.BlockNumber.Uint64())
 	dbTx = dbTx.Create(&Receipt{
 		ChainID:           chainID,
 		Type:              receipt.Type,

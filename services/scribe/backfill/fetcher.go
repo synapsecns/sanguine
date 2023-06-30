@@ -4,7 +4,6 @@ import (
 	"context"
 	"fmt"
 	"math/big"
-	"sync"
 	"time"
 
 	"github.com/synapsecns/sanguine/ethergo/util"
@@ -16,62 +15,46 @@ import (
 	"github.com/jpillora/backoff"
 )
 
-// RangeFilter pre-fetches filter logs into a channel in deterministic order.
-type RangeFilter struct {
+// LogFetcher pre-fetches filter logs into a channel in deterministic order.
+type LogFetcher struct {
 	// iterator is the chunk iterator used for the range.
 	iterator util.ChunkIterator
 	// for logging
 	startBlock *big.Int
 	// for logging
 	endBlock *big.Int
-	// logs is a channel with the filtered ahead logs. This channel is not closed
-	// and the user can rely on the garbage collection behavior of RangeFilter to remove it.
-	logs chan []types.Log
+	// fetchedLogsChan is a channel with the fetched chunks of logs.
+	fetchedLogsChan chan []types.Log
 	// backend is the ethereum backend used to fetch logs.
 	backend ScribeBackend
 	// contractAddress is the contractAddress that logs are fetched for.
 	contractAddress ethCommon.Address
-	// doneChan is a channel that is closed when the RangeFilter has completed.
-	// this is only to be used by external callers
-	doneChan chan bool
 	// chainConfig holds the chain config (config data for the chain)
 	chainConfig *config.ChainConfig
 }
 
-// bufferSize is how many ranges ahead should be fetched.
-const bufferSize = 15
+// bufferSize is how many getLogs*batch amount chunks ahead should be fetched.
+const bufferSize = 3
 
-// minBackoff is the minimum backoff period between requests.
-var minBackoff = 1 * time.Second
-
-// maxBackoff is the maximum backoff period between requests.
-var maxBackoff = 10 * time.Second
-
-// NewRangeFilter creates a new filtering interface for a range of blocks. If reverse is not set, block heights are filtered from start->end.
-func NewRangeFilter(address ethCommon.Address, backend ScribeBackend, startBlock, endBlock *big.Int, chainConfig *config.ChainConfig) *RangeFilter {
+// NewLogFetcher creates a new filtering interface for a range of blocks. If reverse is not set, block heights are filtered from start->end.
+func NewLogFetcher(address ethCommon.Address, backend ScribeBackend, startBlock, endBlock *big.Int, chainConfig *config.ChainConfig) *LogFetcher {
 	// The ChunkIterator is inclusive of the start and ending block resulting in potentially confusing behavior when
 	// setting the range size in the config. For example, setting a range of 1 would result in two blocks being queried
 	// instead of 1. This is accounted for by subtracting 1.
 	chunkSize := int(chainConfig.GetLogsRange) - 1
-	return &RangeFilter{
+	return &LogFetcher{
 		iterator:        util.NewChunkIterator(startBlock, endBlock, chunkSize, true),
 		startBlock:      startBlock,
 		endBlock:        endBlock,
-		logs:            make(chan []types.Log, bufferSize),
+		fetchedLogsChan: make(chan []types.Log, bufferSize),
 		backend:         backend,
 		contractAddress: address,
-		doneChan:        make(chan bool),
 		chainConfig:     chainConfig,
 	}
 }
 
-// closeOnDone closes the done channel when the process is finished.
-func (f *RangeFilter) closeOnDone() {
-	f.doneChan <- true
-}
-
 // GetChunkArr gets the appropriate amount of block chunks (getLogs ranges).
-func (f *RangeFilter) GetChunkArr() (chunkArr []*util.Chunk) {
+func (f *LogFetcher) GetChunkArr() (chunkArr []*util.Chunk) {
 	for i := uint64(0); i < f.chainConfig.GetLogsBatchAmount; i++ {
 		chunk := f.iterator.NextChunk()
 		if chunk == nil {
@@ -97,11 +80,7 @@ func (f *RangeFilter) GetChunkArr() (chunkArr []*util.Chunk) {
 // 4. Completing the Start function triggers the closeOnDone function, which sends a boolean in the done channel
 // that signals that the fetcher has completed. The consumer of these logs then performs a drain to fully empty the logs
 // channel. See contract.go to learn more how the logs from this file are consumed.
-func (f *RangeFilter) Start(ctx context.Context) error {
-	var wg sync.WaitGroup
-
-	defer f.closeOnDone()
-
+func (f *LogFetcher) Start(ctx context.Context) error {
 	for {
 		select {
 		case <-ctx.Done():
@@ -115,79 +94,55 @@ func (f *RangeFilter) Start(ctx context.Context) error {
 			chunks := f.GetChunkArr()
 
 			if len(chunks) == 0 {
-				wg.Wait()
+				close(f.fetchedLogsChan)
 				return nil
 			}
-			logs, err := f.FilterLogs(ctx, chunks)
+			logs, err := f.FetchLogs(ctx, chunks)
 			if err != nil {
 				return fmt.Errorf("could not filter logs: %w", err)
 			}
 
-			wg.Add(1)
-			go func(logs []types.Log) {
-				defer wg.Done()
-				f.logs <- logs
-			}(logs)
-			LogEvent(InfoLevel, "Contract backfill chunk completed", LogData{"ca": f.contractAddress, "sh": chunks[0].MinBlock(), "eh": chunks[0].MaxBlock(), "cid": &f.chainConfig.ChainID})
+			select {
+			case <-ctx.Done():
+				return fmt.Errorf("context canceled while adding log to chan %w", ctx.Err())
+			case f.fetchedLogsChan <- logs:
+			}
 		}
 	}
 }
 
-// FilterLogs safely calls FilterLogs with the filtering implementing a backoff in the case of
+// FetchLogs safely calls FilterLogs with the filtering implementing a backoff in the case of
 // rate limiting and respects context cancellation.
 //
 // nolint:cyclop
-func (f *RangeFilter) FilterLogs(ctx context.Context, chunks []*util.Chunk) ([]types.Log, error) {
-	b := &backoff.Backoff{
+func (f *LogFetcher) FetchLogs(ctx context.Context, chunks []*util.Chunk) ([]types.Log, error) {
+	backoffConfig := &backoff.Backoff{
 		Factor: 2,
 		Jitter: true,
-		Min:    minBackoff,
-		Max:    maxBackoff,
+		Min:    1 * time.Second,
+		Max:    10 * time.Second,
 	}
 
 	attempt := 0
 	timeout := time.Duration(0)
 
-	// for logging purposes
 	startHeight := chunks[0].StartBlock.Uint64()
 	endHeight := chunks[len(chunks)-1].EndBlock.Uint64()
 
 	for {
 		select {
 		case <-ctx.Done():
-			return nil, fmt.Errorf("could not finish filtering logs: %w", ctx.Err())
+			return nil, fmt.Errorf("context was canceled before logs could be filtered")
 		case <-time.After(timeout):
 			attempt++
-
 			if attempt > retryTolerance {
 				return nil, fmt.Errorf("maximum number of filter attempts exceeded")
 			}
 
-			res, err := GetLogsInRange(ctx, f.backend, f.contractAddress, uint64(f.chainConfig.ChainID), chunks)
+			logs, err := f.getAndUnpackLogs(ctx, chunks, backoffConfig, startHeight, endHeight)
 			if err != nil {
-				timeout = b.Duration()
-				LogEvent(WarnLevel, "Could not filter logs for range, retrying", LogData{"sh": startHeight, "ca": f.contractAddress, "eh": endHeight, "cid": &f.chainConfig.ChainID, "e": err})
-
+				LogEvent(WarnLevel, "Could not get and unpack logs for range, retrying", LogData{"sh": startHeight, "ca": f.contractAddress, "eh": endHeight, "cid": f.chainConfig.ChainID, "e": err})
 				continue
-			}
-
-			var logs []types.Log
-			itr := res.Iterator()
-			for !itr.Done() {
-				select {
-				case <-ctx.Done():
-					return nil, fmt.Errorf("could not finish filtering logs: %w", ctx.Err())
-				default:
-					_, resLogChunk := itr.Next()
-
-					if resLogChunk == nil || len(*resLogChunk) == 0 {
-						LogEvent(WarnLevel, "empty subchunk", LogData{"sh": startHeight, "ca": f.contractAddress, "cid": &f.chainConfig.ChainID, "eh": endHeight})
-						continue
-					}
-					logsChunk := *resLogChunk
-
-					logs = append(logs, logsChunk...)
-				}
 			}
 
 			return logs, nil
@@ -195,16 +150,29 @@ func (f *RangeFilter) FilterLogs(ctx context.Context, chunks []*util.Chunk) ([]t
 	}
 }
 
-// Drain fetches empties the log chan. For use once the doneChan is emitted.
-func (f *RangeFilter) Drain(ctx context.Context) (filteredLogs []types.Log, err error) {
-	for {
+func (f *LogFetcher) getAndUnpackLogs(ctx context.Context, chunks []*util.Chunk, backoffConfig *backoff.Backoff, startHeight, endHeight uint64) ([]types.Log, error) {
+	result, err := GetLogsInRange(ctx, f.backend, f.contractAddress, uint64(f.chainConfig.ChainID), chunks)
+	if err != nil {
+		backoffConfig.Duration()
+		LogEvent(WarnLevel, "Could not filter logs for range, retrying", LogData{"sh": startHeight, "ca": f.contractAddress, "eh": endHeight, "cid": f.chainConfig.ChainID, "e": err})
+		return nil, err
+	}
+	var logs []types.Log
+	resultIterator := result.Iterator()
+	for !resultIterator.Done() {
 		select {
 		case <-ctx.Done():
-			return nil, fmt.Errorf("context ended: %w", ctx.Err())
-		case log := <-f.logs:
-			filteredLogs = append(filteredLogs, log...)
+			return nil, fmt.Errorf("context canceled while unpacking logs from request: %w", ctx.Err())
 		default:
-			return filteredLogs, nil
+			_, logChunk := resultIterator.Next()
+			if logChunk == nil || len(*logChunk) == 0 {
+				LogEvent(WarnLevel, "empty subchunk", LogData{"sh": startHeight, "ca": f.contractAddress, "cid": f.chainConfig.ChainID, "eh": endHeight})
+				continue
+			}
+
+			logs = append(logs, *logChunk...)
 		}
 	}
+
+	return logs, nil
 }

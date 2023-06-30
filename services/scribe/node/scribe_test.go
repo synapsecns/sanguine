@@ -2,10 +2,14 @@ package node_test
 
 import (
 	"context"
+	"encoding/json"
+	"fmt"
 	"github.com/brianvoe/gofakeit/v6"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/core/types"
 	"github.com/ethereum/go-ethereum/params"
+	"github.com/ipfs/go-log"
+	"github.com/jpillora/backoff"
 	. "github.com/stretchr/testify/assert"
 	"github.com/synapsecns/sanguine/ethergo/backends"
 	"github.com/synapsecns/sanguine/ethergo/backends/geth"
@@ -14,10 +18,12 @@ import (
 	"github.com/synapsecns/sanguine/services/scribe/backfill"
 	"github.com/synapsecns/sanguine/services/scribe/config"
 	"github.com/synapsecns/sanguine/services/scribe/db"
+	"github.com/synapsecns/sanguine/services/scribe/db/datastore/sql/base"
 	"github.com/synapsecns/sanguine/services/scribe/node"
 	"github.com/synapsecns/sanguine/services/scribe/testutil"
 	"github.com/synapsecns/sanguine/services/scribe/testutil/testcontract"
 	"math/big"
+	"net/http"
 	"os"
 	"sync"
 	"time"
@@ -406,226 +412,342 @@ func (l LiveSuite) TestRequiredConfirmationRemAndAdd() {
 	Equal(l.T(), uint64(9), lastBlockIndexed)
 }
 
-// TODO finish this test
-// TestLivefillParity runs livefill on certain prod chains. Then it checks parity with an explorer API.
-// func (l LiveSuite) TestLivefillParity() {
-//	originAddress := "0xF3773BE7cb59235Ced272cF324aaeb0A4115280f"
-//	destinationAddress := "0xde5BB62aBCF588EC200674757EDB2f6889aCd065"
-//	summitAddress := "0x128fF47f1a614c61beC9935898C33B91486aA04e"
-//
-//	maticOriginStart := uint64(40189736)
-//	maticDestinationStart := uint64(40189736)
-//	avaxOriginStart := uint64(27262747)
-//	avaxDestinationStart := uint64(27262744)
-//	opSummitStart := uint64(79864182)
-//
-//	maticChainID := uint32(137)
-//	avaxChainID := uint32(43114)
-//	opChainID := uint32(10)
-//
-//	maticRPCURL := "https://polygon-mainnet.g.alchemy.com/v2/Kmd9QLE1B3CFtVH879DJKsAvv92LV0E2"
-//	avaxRPCURL := "https://1rpc.io/avax/c"
-//	opRPCURL := "https://optimism-rpc.gateway.pokt.network/"
-//
-//	maticClient, err := backfill.DialBackend(l.GetTestContext(), maticRPCURL, l.metrics)
-//	Nil(l.T(), err)
-//	avaxClient, err := backfill.DialBackend(l.GetTestContext(), avaxRPCURL, l.metrics)
-//	Nil(l.T(), err)
-//	opClient, err := backfill.DialBackend(l.GetTestContext(), opRPCURL, l.metrics)
-//	Nil(l.T(), err)
-//
-//	scribeConfig := config.Config{
-//		Chains: []config.ChainConfig{
-//			{
-//				ChainID:                   maticChainID,
-//				RequiredConfirmations:     0,
-//				GetLogsRange:      256,
-//				GetLogsBatchAmount:         2,
-//				ConcurrencyThreshold: 100000,
-//				Contracts: []config.ContractConfig{
-//					{
-//						Address:    originAddress,
-//						StartBlock: maticOriginStart,
-//					},
-//					{
-//						Address:    destinationAddress,
-//						StartBlock: maticDestinationStart,
-//					},
-//				},
-//			},
-//			{
-//				ChainID:                   avaxChainID,
-//				RequiredConfirmations:     0,
-//				GetLogsRange:      256,
-//				GetLogsBatchAmount:         2,
-//				ConcurrencyThreshold: 100000,
-//				Contracts: []config.ContractConfig{
-//					{
-//						Address:    originAddress,
-//						StartBlock: avaxOriginStart,
-//					},
-//					{
-//						Address:    destinationAddress,
-//						StartBlock: avaxDestinationStart,
-//					},
-//				},
-//			},
-//			{
-//				ChainID:                   opChainID,
-//				RequiredConfirmations:     0,
-//				StoreConcurrency:          1,
-//				ConcurrencyThreshold: 100000,
-//				Contracts: []config.ContractConfig{
-//					{
-//						Address:    summitAddress,
-//						StartBlock: opSummitStart,
-//					},
-//				},
-//			},
-//		},
-//	}
-//
-//	clients := map[uint32][]backfill.ScribeBackend{
-//		maticChainID: {maticClient, maticClient},
-//		avaxChainID:  {avaxClient, avaxClient},
-//		opChainID:    {opClient, opClient},
-//	}
-//
-//	// Get the current block for each chain.
-//	maticCurrentBlock, err := maticClient.BlockNumber(l.GetTestContext())
-//	Nil(l.T(), err)
-//	avaxCurrentBlock, err := avaxClient.BlockNumber(l.GetTestContext())
-//	Nil(l.T(), err)
-//	opCurrentBlock, err := opClient.BlockNumber(l.GetTestContext())
-//	Nil(l.T(), err)
-//
-//	scribe, err := node.NewScribe(l.testDB, clients, scribeConfig, l.metrics)
-//	Nil(l.T(), err)
-//
-//	killableContext, cancel := context.WithCancel(l.GetTestContext())
-//
-//	go func() {
-//		_ = scribe.Start(killableContext)
-//	}()
-//
-//	waitChan := make(chan bool, 3)
-//
-//	// Wait for scribe to get to/past the current block for each chain.
-//
-//	// Wait on Polygon.
-//	l.Eventually(func() bool {
-//		originBlock, err := l.testDB.RetrieveLastIndexed(l.GetTestContext(), common.HexToAddress(originAddress), maticChainID)
-//		Nil(l.T(), err)
-//		destinationBlock, err := l.testDB.RetrieveLastIndexed(l.GetTestContext(), common.HexToAddress(destinationAddress), maticChainID)
-//		Nil(l.T(), err)
-//
-//		if originBlock >= maticCurrentBlock && destinationBlock >= maticCurrentBlock {
-//			waitChan <- true
-//			return true
-//		}
-//
-//		time.Sleep(5 * time.Second)
-//
-//		return false
-//	})
-//
-//	// Wait on Avalanche.
-//	l.Eventually(func() bool {
-//		originBlock, err := l.testDB.RetrieveLastIndexed(l.GetTestContext(), common.HexToAddress(originAddress), avaxChainID)
-//		Nil(l.T(), err)
-//		destinationBlock, err := l.testDB.RetrieveLastIndexed(l.GetTestContext(), common.HexToAddress(destinationAddress), avaxChainID)
-//		Nil(l.T(), err)
-//
-//		if originBlock >= avaxCurrentBlock && destinationBlock >= avaxCurrentBlock {
-//			waitChan <- true
-//			return true
-//		}
-//
-//		time.Sleep(5 * time.Second)
-//
-//		return false
-//	})
-//
-//	// Wait on Optimism.
-//	l.Eventually(func() bool {
-//		summitBlock, err := l.testDB.RetrieveLastIndexed(l.GetTestContext(), common.HexToAddress(summitAddress), opChainID)
-//		Nil(l.T(), err)
-//
-//		if summitBlock >= opCurrentBlock {
-//			waitChan <- true
-//			return true
-//		}
-//
-//		time.Sleep(5 * time.Second)
-//
-//		return false
-//	})
-//
-//	// Do not continue until all chains have reached the current block.
-//	<-waitChan
-//	<-waitChan
-//	<-waitChan
-//
-//	// Stop the scribe.
-//	cancel()
-//
-//	// Get the last indexed block for each chain.
-//	maticLastIndexed, err := l.testDB.RetrieveLastIndexed(l.GetTestContext(), common.HexToAddress(originAddress), maticChainID)
-//	Nil(l.T(), err)
-//	avaxLastIndexed, err := l.testDB.RetrieveLastIndexed(l.GetTestContext(), common.HexToAddress(originAddress), avaxChainID)
-//	Nil(l.T(), err)
-//	opLastIndexed, err := l.testDB.RetrieveLastIndexed(l.GetTestContext(), common.HexToAddress(summitAddress), opChainID)
-//	Nil(l.T(), err)
-//
-//	// Get the number of logs stored in the scribe DB for each chain.
-//	logFilter := db.LogFilter{
-//		ChainID: maticChainID,
-//	}
-//	maticLogAmount, err := getLogAmount(l.GetTestContext(), l.testDB, logFilter, maticOriginStart, maticCurrentBlock)
-//	Nil(l.T(), err)
-//
-//	logFilter = db.LogFilter{
-//		ChainID: avaxChainID,
-//	}
-//	avaxLogAmount, err := getLogAmount(l.GetTestContext(), l.testDB, logFilter, avaxOriginStart, avaxCurrentBlock)
-//	Nil(l.T(), err)
-//
-//	logFilter = db.LogFilter{
-//		ChainID: opChainID,
-//	}
-//	opLogAmount, err := getLogAmount(l.GetTestContext(), l.testDB, logFilter, opSummitStart, opCurrentBlock)
-//	Nil(l.T(), err)
-//
-//	fmt.Println("Matic last indexed:", maticLastIndexed)
-//	fmt.Println("Avalanche last indexed:", avaxLastIndexed)
-//	fmt.Println("Optimism last indexed:", opLastIndexed)
-//
-//	fmt.Println("Matic log amount:", maticLogAmount)
-//	fmt.Println("Avalanche log amount:", avaxLogAmount)
-//	fmt.Println("Optimism log amount:", opLogAmount)
-//
-//	// Use explorer API's to do a parity check on the number of logs.
-//}
-//
-// func getLogAmount(ctx context.Context, db db.EventDB, filter db.LogFilter, startBlock, endBlock uint64) (int, error) {
-//	page := 1
-//
-//	var retrievedLogs []*types.Log
-//
-//	for {
-//		logs, err := db.RetrieveLogsInRangeAsc(ctx, filter, startBlock, endBlock, page)
-//		if err != nil {
-//			return 0, err
-//		}
-//
-//		retrievedLogs = append(retrievedLogs, logs...)
-//
-//		if len(logs) < base.PageSize {
-//			break
-//		}
-//
-//		page++
-//	}
-//
-//	return len(retrievedLogs), nil
-//}
+// TestLivefillParity runs livefill on certain prod chains. Then it checks parity with that chain's block explorer API.
+func (l LiveSuite) TestLivefillParity() {
+	if os.Getenv("CI") != "" {
+		l.T().Skip("Network test flake")
+	}
+	// ethRPCURL := "https://1rpc.io/eth"
+	// arbRPCURL := "https://endpoints.omniatech.io/v1/arbitrum/one/public"
+	// maticRPCURL := "https://poly-rpc.gateway.pokt.network"
+	// avaxRPCURL := "https://avalanche.public-rpc.com"
+
+	ethRPCURL := "https://rpc.interoperability.institute/confirmations/1/rpc/1"
+	arbRPCURL := "https://rpc.interoperability.institute/confirmations/1/rpc/42161"
+	maticRPCURL := "https://rpc.interoperability.institute/confirmations/1/rpc/137"
+	avaxRPCURL := "https://rpc.interoperability.institute/confirmations/1/rpc/43114"
+	bscRPCURL := "https://rpc.interoperability.institute/confirmations/1/rpc/56"
+
+	blockRange := uint64(1000)
+
+	ethClient, err := backfill.DialBackend(l.GetTestContext(), ethRPCURL, l.metrics)
+	Nil(l.T(), err)
+	arbClient, err := backfill.DialBackend(l.GetTestContext(), arbRPCURL, l.metrics)
+	Nil(l.T(), err)
+	maticClient, err := backfill.DialBackend(l.GetTestContext(), maticRPCURL, l.metrics)
+	Nil(l.T(), err)
+	avaxClient, err := backfill.DialBackend(l.GetTestContext(), avaxRPCURL, l.metrics)
+	Nil(l.T(), err)
+	bscClient, err := backfill.DialBackend(l.GetTestContext(), bscRPCURL, l.metrics)
+	Nil(l.T(), err)
+
+	ethID := uint32(1)
+	bscID := uint32(56)
+	arbID := uint32(42161)
+	maticID := uint32(137)
+	avaxID := uint32(43114)
+	chains := []uint32{ethID, bscID, arbID, maticID, avaxID}
+
+	// Get the current block for each chain.
+	ethCurrentBlock, err := ethClient.BlockNumber(l.GetTestContext())
+	Nil(l.T(), err)
+	arbCurrentBlock, err := arbClient.BlockNumber(l.GetTestContext())
+	Nil(l.T(), err)
+	maticCurrentBlock, err := maticClient.BlockNumber(l.GetTestContext())
+	Nil(l.T(), err)
+	avaxCurrentBlock, err := avaxClient.BlockNumber(l.GetTestContext())
+	Nil(l.T(), err)
+	bscCurrentBlock, err := bscClient.BlockNumber(l.GetTestContext())
+	Nil(l.T(), err)
+
+	latestBlocks := map[uint32]uint64{
+		ethID:   ethCurrentBlock,
+		arbID:   arbCurrentBlock,
+		maticID: maticCurrentBlock,
+		avaxID:  avaxCurrentBlock,
+		bscID:   bscCurrentBlock,
+	}
+	clients := map[uint32][]backfill.ScribeBackend{
+		ethID:   {ethClient, ethClient},
+		bscID:   {bscClient, bscClient},
+		arbID:   {arbClient, arbClient},
+		maticID: {maticClient, maticClient},
+		avaxID:  {avaxClient, avaxClient},
+	}
+
+	apiURLs := map[uint32]string{
+		ethID:   "https://api.etherscan.io/api",
+		arbID:   "https://api.arbiscan.io/api",
+		avaxID:  "https://api.snowtrace.io/api",
+		bscID:   "https://api.bscscan.com/api",
+		maticID: "https://api.polygonscan.com/api",
+	}
+	scribeConfig := config.Config{
+		RefreshRate: 1,
+		Chains: []config.ChainConfig{
+			{
+				ChainID: ethID,
+				ConfirmationConfig: config.ConfirmationConfig{
+					ConfirmationThreshold:   10,
+					ConfirmationRefreshRate: 10,
+					RequiredConfirmations:   1,
+				},
+				GetLogsRange:         1000,
+				GetLogsBatchAmount:   3,
+				GetBlockBatchAmount:  10,
+				ConcurrencyThreshold: 20000,
+				Contracts: []config.ContractConfig{
+					{
+						Address:    "0x2796317b0fF8538F253012862c06787Adfb8cEb6",
+						StartBlock: ethCurrentBlock - blockRange,
+					},
+					{
+						Address:    "0x1116898DdA4015eD8dDefb84b6e8Bc24528Af2d8",
+						StartBlock: ethCurrentBlock - blockRange,
+					},
+				},
+			},
+			{
+				ChainID: bscID,
+				ConfirmationConfig: config.ConfirmationConfig{
+					ConfirmationThreshold:   10,
+					ConfirmationRefreshRate: 10,
+					RequiredConfirmations:   1,
+				},
+				GetLogsRange:         256,
+				GetLogsBatchAmount:   2,
+				ConcurrencyThreshold: 256,
+				GetBlockBatchAmount:  10,
+				Contracts: []config.ContractConfig{
+					{
+						Address:    "0x28ec0B36F0819ecB5005cAB836F4ED5a2eCa4D13",
+						StartBlock: bscCurrentBlock - blockRange,
+					},
+					{
+						Address:    "0x930d001b7efb225613aC7F35911c52Ac9E111Fa9",
+						StartBlock: bscCurrentBlock - blockRange,
+					},
+				},
+			},
+			{
+				ChainID: arbID,
+				ConfirmationConfig: config.ConfirmationConfig{
+					ConfirmationThreshold:   10,
+					ConfirmationRefreshRate: 10,
+					RequiredConfirmations:   1,
+				},
+				GetLogsRange:         1024,
+				GetLogsBatchAmount:   2,
+				ConcurrencyThreshold: 20000,
+				GetBlockBatchAmount:  10,
+
+				Contracts: []config.ContractConfig{
+					{
+						Address:    "0x6F4e8eBa4D337f874Ab57478AcC2Cb5BACdc19c9",
+						StartBlock: arbCurrentBlock - blockRange,
+					},
+					{
+						Address:    "0x9Dd329F5411466d9e0C488fF72519CA9fEf0cb40",
+						StartBlock: arbCurrentBlock - blockRange,
+					},
+				},
+			},
+			{
+				ChainID: maticID,
+				ConfirmationConfig: config.ConfirmationConfig{
+					ConfirmationThreshold:   10,
+					ConfirmationRefreshRate: 10,
+					RequiredConfirmations:   1,
+				},
+				GetLogsRange:         1000,
+				GetLogsBatchAmount:   2,
+				GetBlockBatchAmount:  10,
+				ConcurrencyThreshold: 1001,
+				Contracts: []config.ContractConfig{
+					{
+						Address:    "0x8F5BBB2BB8c2Ee94639E55d5F41de9b4839C1280",
+						StartBlock: maticCurrentBlock - blockRange,
+					},
+					{
+						Address:    "0x85fCD7Dd0a1e1A9FCD5FD886ED522dE8221C3EE5",
+						StartBlock: maticCurrentBlock - blockRange,
+					},
+				},
+			},
+			{
+				ChainID: avaxID,
+				ConfirmationConfig: config.ConfirmationConfig{
+					ConfirmationThreshold:   10,
+					ConfirmationRefreshRate: 10,
+					RequiredConfirmations:   1,
+				},
+				GetLogsRange:        256,
+				GetLogsBatchAmount:  1,
+				GetBlockBatchAmount: 10,
+
+				ConcurrencyThreshold: 20000,
+				Contracts: []config.ContractConfig{
+					{
+						Address:    "0xC05e61d0E7a63D27546389B7aD62FdFf5A91aACE",
+						StartBlock: avaxCurrentBlock - blockRange,
+					},
+					{
+						Address:    "0x77a7e60555bC18B4Be44C181b2575eee46212d44",
+						StartBlock: avaxCurrentBlock - blockRange,
+					},
+				},
+			},
+		},
+	}
+
+	scribe, err := node.NewScribe(l.testDB, clients, scribeConfig, l.metrics)
+	Nil(l.T(), err)
+
+	killableContext, cancel := context.WithCancel(l.GetTestContext())
+
+	go func() {
+		_ = scribe.Start(killableContext)
+	}()
+
+	doneChan := make(chan bool, len(chains))
+
+	for i := range chains {
+		go func(index int) {
+			for {
+				allContractsBackfilled := true
+				chain := scribeConfig.Chains[index]
+				for _, contract := range chain.Contracts {
+					currentBlock, err := l.testDB.RetrieveLastIndexed(l.GetTestContext(), common.HexToAddress(contract.Address), chain.ChainID)
+					Nil(l.T(), err)
+					if latestBlocks[chain.ChainID] > currentBlock {
+						allContractsBackfilled = false
+					}
+				}
+				if allContractsBackfilled {
+					doneChan <- true
+					return
+				}
+				time.Sleep(time.Second)
+			}
+		}(i)
+	}
+
+	for range chains {
+		<-doneChan
+	}
+	cancel()
+
+	for i := range chains {
+		chain := scribeConfig.Chains[i]
+		for _, contract := range chain.Contracts {
+			logFilter := db.LogFilter{
+				ChainID:         chains[i],
+				ContractAddress: contract.Address,
+			}
+			fromBlock := latestBlocks[chains[i]] - blockRange
+			toBlock := latestBlocks[chains[i]]
+			dbLogCount, err := getLogAmount(l.GetTestContext(), l.testDB, logFilter, fromBlock, toBlock)
+			Nil(l.T(), err)
+
+			explorerLogCount, err := getLogs(l.GetTestContext(), contract.Address, fromBlock, toBlock, apiURLs[chain.ChainID])
+			Nil(l.T(), err)
+			Equal(l.T(), dbLogCount, explorerLogCount)
+		}
+	}
+}
+
+func createHTTPClient() *http.Client {
+	return &http.Client{
+		Timeout: 10 * time.Second,
+		Transport: &http.Transport{
+			ResponseHeaderTimeout: 10 * time.Second,
+		},
+	}
+}
+
+func processBatch(ctx context.Context, client *http.Client, url string) (int, error) {
+	req, err := http.NewRequestWithContext(ctx, http.MethodGet, url, nil)
+	if err != nil {
+		return 0, fmt.Errorf("error getting data: %w", err)
+	}
+	resRaw, err := client.Do(req)
+	if err != nil {
+		return 0, fmt.Errorf("could not get data from explorer %w", err)
+	}
+
+	var decodedRes map[string]json.RawMessage
+	if err := json.NewDecoder(resRaw.Body).Decode(&decodedRes); err != nil {
+		return 0, fmt.Errorf("error decoding response: %w", err)
+	}
+
+	var resultSlice []map[string]interface{}
+	if err := json.Unmarshal(decodedRes["result"], &resultSlice); err != nil {
+		return 0, fmt.Errorf("error unmarshaling result: %w", err)
+	}
+
+	if err = resRaw.Body.Close(); err != nil {
+		log.Logger("synapse-scribe-node-test").Errorf("could not close  response body: %v", err)
+	}
+	return len(resultSlice), nil
+}
+
+func getLogs(ctx context.Context, contractAddress string, fromBlock uint64, toBlock uint64, apiURL string) (int, error) {
+	blockRange := toBlock - fromBlock
+	batchSize := uint64(600)
+	numBatches := blockRange/batchSize + 1
+	client := createHTTPClient()
+	totalResults := 0
+
+	for i := uint64(0); i < numBatches; i++ {
+		startBlock := fromBlock + i*batchSize
+		endBlock := startBlock + batchSize - 1
+		if endBlock > toBlock {
+			endBlock = toBlock
+		}
+		url := fmt.Sprintf("%s?module=logs&action=getLogs&address=%s&fromBlock=%d&toBlock=%d&page=1",
+			apiURL, contractAddress, startBlock, endBlock)
+		b := &backoff.Backoff{
+			Factor: 2,
+			Jitter: true,
+			Min:    10 * time.Millisecond,
+			Max:    1 * time.Second,
+		}
+		timeout := time.Duration(0)
+
+	RETRY:
+		select {
+		case <-ctx.Done():
+			return 0, fmt.Errorf("context canceled: %w", ctx.Err())
+		case <-time.After(timeout):
+			resultCount, err := processBatch(ctx, client, url)
+			if err != nil {
+				timeout = b.Duration()
+				goto RETRY
+			}
+			totalResults += resultCount
+		}
+
+		if i < numBatches-1 {
+			time.Sleep(1 * time.Second)
+		}
+	}
+
+	return totalResults, nil
+}
+
+func getLogAmount(ctx context.Context, db db.EventDB, filter db.LogFilter, startBlock uint64, endBlock uint64) (int, error) {
+	page := 1
+	var retrievedLogs []*types.Log
+	for {
+		logs, err := db.RetrieveLogsInRangeAsc(ctx, filter, startBlock, endBlock, page)
+		if err != nil {
+			return 0, fmt.Errorf("failure while retreiving logs from database %w", err)
+		}
+		retrievedLogs = append(retrievedLogs, logs...)
+		if len(logs) < base.PageSize {
+			break
+		}
+		page++
+	}
+	return len(retrievedLogs), nil
+}

@@ -31,6 +31,8 @@ type Handler interface {
 	Propagator() propagation.TextMapPropagator
 	// Type returns the handler type.
 	Type() HandlerType
+	// Meter returns an otel meter provider
+	Meter() Meter
 }
 
 // HandlerType is the handler type to use

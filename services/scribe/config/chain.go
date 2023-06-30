@@ -15,7 +15,7 @@ type ConfirmationConfig struct {
 	RequiredConfirmations uint32 `yaml:"required_confirmations"`
 	// ConfirmationThreshold is the number of blocks to wait until doing a reorg check.
 	ConfirmationThreshold uint64 `yaml:"confirmation_threshold"`
-	// ConfirmationMinWait is the  amount of time in seconds to wait before checking confirmations
+	// ConfirmationMinWait is the amount of time in seconds to wait before checking confirmations
 	ConfirmationRefreshRate int `yaml:"confirmation_min_wait"`
 }
 
@@ -25,7 +25,7 @@ type ChainConfig struct {
 	ChainID uint32 `yaml:"chain_id"`
 	// Contracts stores all the contract information for the chain.
 	Contracts ContractConfigs `yaml:"contracts"`
-	// GetLogsRange is the number of blocks to request in a single getLogs request.
+	// GetLogsRange is the max number of blocks to request in a single getLogs request.
 	GetLogsRange uint64 `yaml:"get_logs_range"`
 	// GetLogsBatchAmount is the number of getLogs requests to include in a single batch request.
 	GetLogsBatchAmount uint64 `yaml:"get_logs_batch_amount"`

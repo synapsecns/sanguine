@@ -1,6 +1,11 @@
 package agentsintegration_test
 
 import (
+	"math/big"
+	"os"
+	"testing"
+	"time"
+
 	awsTime "github.com/aws/smithy-go/time"
 	"github.com/brianvoe/gofakeit/v6"
 	"github.com/ethereum/go-ethereum/common"
@@ -10,10 +15,6 @@ import (
 	"github.com/synapsecns/sanguine/agents/agents/notary"
 	"github.com/synapsecns/sanguine/agents/types"
 	config2 "github.com/synapsecns/sanguine/ethergo/signer/config"
-	"math/big"
-	"os"
-	"testing"
-	"time"
 
 	"github.com/synapsecns/sanguine/services/scribe/backfill"
 	"github.com/synapsecns/sanguine/services/scribe/client"
@@ -53,33 +54,48 @@ func (u *AgentsIntegrationSuite) TestAgentsE2E() {
 		StartBlock: 0,
 	}
 	originChainConfig := scribeConfig2.ChainConfig{
-		ChainID:               uint32(u.TestBackendOrigin.GetChainID()),
-		BlockTimeChunkSize:    1,
-		ContractSubChunkSize:  1,
-		RequiredConfirmations: 0,
-		Contracts:             []scribeConfig2.ContractConfig{originConfig},
+		ChainID:            uint32(u.TestBackendOrigin.GetChainID()),
+		GetLogsBatchAmount: 1,
+		StoreConcurrency:   1,
+		GetLogsRange:       1,
+		ConfirmationConfig: scribeConfig2.ConfirmationConfig{
+			RequiredConfirmations:   1,
+			ConfirmationThreshold:   1,
+			ConfirmationRefreshRate: 1,
+		},
+		Contracts: []scribeConfig2.ContractConfig{originConfig},
 	}
 	destinationConfig := scribeConfig2.ContractConfig{
 		Address:    u.LightInboxOnDestination.Address().String(),
 		StartBlock: 0,
 	}
 	destinationChainConfig := scribeConfig2.ChainConfig{
-		ChainID:               uint32(u.TestBackendDestination.GetChainID()),
-		BlockTimeChunkSize:    1,
-		ContractSubChunkSize:  1,
-		RequiredConfirmations: 0,
-		Contracts:             []scribeConfig2.ContractConfig{destinationConfig},
+		ChainID:            uint32(u.TestBackendDestination.GetChainID()),
+		GetLogsBatchAmount: 1,
+		StoreConcurrency:   1,
+		GetLogsRange:       1,
+		ConfirmationConfig: scribeConfig2.ConfirmationConfig{
+			RequiredConfirmations:   1,
+			ConfirmationThreshold:   1,
+			ConfirmationRefreshRate: 1,
+		},
+		Contracts: []scribeConfig2.ContractConfig{destinationConfig},
 	}
 	summitConfig := scribeConfig2.ContractConfig{
 		Address:    u.InboxOnSummit.Address().String(),
 		StartBlock: 0,
 	}
 	summitChainConfig := scribeConfig2.ChainConfig{
-		ChainID:               uint32(u.TestBackendSummit.GetChainID()),
-		BlockTimeChunkSize:    1,
-		ContractSubChunkSize:  1,
-		RequiredConfirmations: 0,
-		Contracts:             []scribeConfig2.ContractConfig{summitConfig},
+		ChainID:            uint32(u.TestBackendSummit.GetChainID()),
+		GetLogsBatchAmount: 1,
+		StoreConcurrency:   1,
+		GetLogsRange:       1,
+		ConfirmationConfig: scribeConfig2.ConfirmationConfig{
+			RequiredConfirmations:   1,
+			ConfirmationThreshold:   1,
+			ConfirmationRefreshRate: 1,
+		},
+		Contracts: []scribeConfig2.ContractConfig{summitConfig},
 	}
 	scribeConfig := scribeConfig2.Config{
 		Chains: []scribeConfig2.ChainConfig{originChainConfig, destinationChainConfig, summitChainConfig},

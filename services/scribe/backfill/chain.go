@@ -74,7 +74,11 @@ func NewChainBackfiller(eventDB db.EventDB, client []ScribeBackend, chainConfig 
 	minBlockHeight := uint64(math.MaxUint64)
 
 	for _, contract := range chainConfig.Contracts {
-		contractBackfiller, err := NewContractBackfiller(chainConfig, contract, eventDB, client, handler)
+		blockHeightMeter, err := handler.Meter().NewHistogram(fmt.Sprintf("scribe_block_meter_%d_%s", chainConfig.ChainID, contract.Address), "block_histogram", "a block height meter", "blocks")
+		if err != nil {
+			return nil, fmt.Errorf("error creating otel histogram %w", err)
+		}
+		contractBackfiller, err := NewContractBackfiller(chainConfig, contract, eventDB, client, handler, blockHeightMeter)
 		if err != nil {
 			return nil, fmt.Errorf("could not create contract backfiller: %w", err)
 		}
@@ -145,9 +149,7 @@ func (c ChainBackfiller) Backfill(ctx context.Context, onlyOneBlock *uint64, liv
 							return fmt.Errorf("could not get current block number while backfilling: %w", err)
 						}
 					}
-					if onlyOneBlock != nil {
-						fmt.Println("SHOUT OUT", startHeight, *latestBlock)
-					}
+
 					err = contractBackfiller.Backfill(backfillCtx, startHeight, *latestBlock)
 					if err != nil {
 						timeout = b.Duration()

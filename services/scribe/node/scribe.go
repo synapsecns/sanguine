@@ -10,7 +10,11 @@ import (
 	"github.com/synapsecns/sanguine/services/scribe/backfill"
 	"github.com/synapsecns/sanguine/services/scribe/config"
 	"github.com/synapsecns/sanguine/services/scribe/db"
+	"go.opentelemetry.io/otel/attribute"
+	otelMetrics "go.opentelemetry.io/otel/metric"
+
 	"golang.org/x/sync/errgroup"
+
 	"math/big"
 	"time"
 )
@@ -27,6 +31,8 @@ type Scribe struct {
 	config config.Config
 	// handler is the metrics handler for the scribe.
 	handler metrics.Handler
+	// reorgMeters holds a otel counter meter for reorgs for each chain
+	reorgMeters map[uint32]otelMetrics.Int64Counter
 }
 
 // NewScribe creates a new scribe.
@@ -42,6 +48,7 @@ func NewScribe(eventDB db.EventDB, clients map[uint32][]backfill.ScribeBackend, 
 		scribeBackfiller: scribeBackfiller,
 		config:           config,
 		handler:          handler,
+		reorgMeters:      make(map[uint32]otelMetrics.Int64Counter),
 	}, nil
 }
 
@@ -56,7 +63,11 @@ func (s Scribe) Start(ctx context.Context) error {
 	for i := range s.config.Chains {
 		chainConfig := s.config.Chains[i]
 		chainID := chainConfig.ChainID
-
+		reorgMeter, err := s.handler.Meter().NewCounter(fmt.Sprintf("scribe_reorg_meter_%d", chainID), "reorg_counter", "a reorg meter", "reorg events")
+		if err != nil {
+			return fmt.Errorf("error creating otel counter %w", err)
+		}
+		s.reorgMeters[chainID] = reorgMeter
 		// Set default confirmation values
 		if chainConfig.ConfirmationConfig.RequiredConfirmations == 0 ||
 			chainConfig.ConfirmationConfig.ConfirmationThreshold == 0 ||
@@ -150,7 +161,6 @@ func (s Scribe) confirmBlocks(ctx context.Context, chainConfig config.ChainConfi
 		return nil
 	}
 
-	// TODO  add option to backfill confirmations
 	// To prevent getting confirmations for anything more than 1000 blocks in the past (preventing backfilling
 	// confirmations AKA checking every single hash for reorg)
 	if latestBlock-lastConfirmedBlock > 1000 {
@@ -161,7 +171,7 @@ func (s Scribe) confirmBlocks(ctx context.Context, chainConfig config.ChainConfi
 	confirmFrom := lastConfirmedBlock + 1
 	blockHashes, err := GetBlockHashes(ctx, s.clients[chainID][0], confirmFrom, confirmTo, getBlockBatchAmount)
 	if err != nil {
-		return fmt.Errorf("could not get blockHashes: %w", err)
+		return fmt.Errorf("could not get blockHashes  on chain %d: %w", chainID, err)
 	}
 	// get receipts emitted on invalid block hashes
 	invalidReceipts, err := s.eventDB.RetrieveReceiptsWithStaleBlockHash(ctx, chainID, blockHashes, confirmFrom, confirmTo)
@@ -233,6 +243,11 @@ func (s Scribe) confirmBlocks(ctx context.Context, chainConfig config.ChainConfi
 		}
 
 		cache.Add(cacheKey, true)
+
+		// Add to meter
+		s.reorgMeters[chainID].Add(ctx, 1, otelMetrics.WithAttributeSet(
+			attribute.NewSet(attribute.Int64("block_number", int64(blockNumber)), attribute.Int64("chain_id", int64(chainID)))),
+		)
 	}
 
 	// update items in the database as confirmed
