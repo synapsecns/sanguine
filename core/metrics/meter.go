@@ -9,12 +9,15 @@ import (
 	"time"
 )
 
+// Meter is an interface for counter and histogram.
 type Meter interface {
+	// NewCounter creates a new meter counter instrument.
 	NewCounter(meterName string, counterName string, desc string, units string) (metric.Int64Counter, error)
+	// NewHistogram creates a new meter histogram instrument.
 	NewHistogram(meterName string, histName string, desc string, units string) (metric.Int64Histogram, error)
 }
 
-// MeterImpl is an implementation of the MeterProvider interface
+// MeterImpl is an implementation of the MeterProvider interface.
 type MeterImpl struct {
 	mp *sdkmetric.MeterProvider
 }

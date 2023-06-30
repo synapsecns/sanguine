@@ -12,6 +12,8 @@ import (
 )
 
 // Recording an arbitrary event, such as recording block number.
+//
+// nolint:dupl
 func TestCounter(t *testing.T) {
 	metricExporter, err := stdout.New()
 	Nil(t, err)
@@ -33,6 +35,8 @@ func TestCounter(t *testing.T) {
 }
 
 // Recording values in a histogram format, such the actual block numbers stored over time.
+//
+// nolint:dupl
 func TestHistogram(t *testing.T) {
 	metricExporter, err := stdout.New()
 	Nil(t, err)
