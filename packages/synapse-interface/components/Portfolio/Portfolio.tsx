@@ -113,11 +113,34 @@ type SingleNetworkPortfolioProps = {
   tokens: TokenWithBalanceAndAllowance[]
 }
 
+function separateTokensByAllowance(
+  tokens: TokenWithBalanceAndAllowance[]
+): [TokenWithBalanceAndAllowance[], TokenWithBalanceAndAllowance[]] {
+  const tokensWithAllowance: TokenWithBalanceAndAllowance[] = []
+  const tokensWithoutAllowance: TokenWithBalanceAndAllowance[] = []
+
+  tokens.forEach((token) => {
+    // allowance is null for native gas tokens
+    if (token.allowance === null) {
+      tokensWithAllowance.push(token)
+    } else if (token.allowance.gt(Zero)) {
+      tokensWithAllowance.push(token)
+    } else {
+      tokensWithoutAllowance.push(token)
+    }
+  })
+
+  return [tokensWithAllowance, tokensWithoutAllowance]
+}
+
 const SingleNetworkPortfolio = ({
   chainId,
   tokens,
 }: SingleNetworkPortfolioProps) => {
   const currentChain: Chain = CHAINS_BY_ID[chainId]
+
+  const [tokensWithAllowance, tokensWithoutAllowance] =
+    separateTokensByAllowance(tokens)
 
   return (
     <div className="flex flex-col">
