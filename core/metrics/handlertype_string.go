@@ -9,14 +9,15 @@ func _() {
 	// Re-run the stringer command to generate them again.
 	var x [1]struct{}
 	_ = x[DataDog-1]
-	_ = x[NewRelic-2]
-	_ = x[Jaeger-3]
-	_ = x[Null-4]
+	_ = x[Google-2]
+	_ = x[NewRelic-3]
+	_ = x[Jaeger-4]
+	_ = x[Null-5]
 }
 
-const _HandlerType_name = "DatadogNewRelicJaegerNull"
+const _HandlerType_name = "DatadogGoogleNewRelicJaegerNull"
 
-var _HandlerType_index = [...]uint8{0, 7, 15, 21, 25}
+var _HandlerType_index = [...]uint8{0, 7, 13, 21, 27, 31}
 
 func (i HandlerType) String() string {
 	i -= 1

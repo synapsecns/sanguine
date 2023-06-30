@@ -55,6 +55,8 @@ func init() {
 const (
 	// DataDog is the datadog driver.
 	DataDog HandlerType = iota + 1 // Datadog
+	// Google is the GCP driver.
+	Google // Google
 	// NewRelic is the new relic driver.t.
 	NewRelic // NewRelic
 	// Jaeger is the jaeger driver.
@@ -85,6 +87,8 @@ func NewFromEnv(ctx context.Context, buildInfo config.BuildInfo) (handler Handle
 		ht = NewRelic
 	case Jaeger.Lower():
 		ht = Jaeger
+	case Google.Lower():
+		ht = Google
 	case Null.Lower():
 		ht = Null
 	default:
@@ -104,6 +108,8 @@ func NewByType(ctx context.Context, buildInfo config.BuildInfo, ht HandlerType) 
 		handler = NewRelicMetricsHandler(buildInfo)
 	case Jaeger:
 		handler = NewJaegerHandler(buildInfo)
+	case Google:
+		handler = NewGoogleMetricsHandler(buildInfo)
 	case Null:
 		handler = NewNullHandler()
 	default:

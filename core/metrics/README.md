@@ -18,3 +18,7 @@ Pass in the `JAEGER_ENDPOINT` enviornment variable
 ## Pyroscope
 
 Pass in the `PYROSCOPE_ENDPOINT` environment variable
+
+## Google
+
+Pass in the `GOOGLE_CLOUD_PROJECT` environment variable. This will be present by default on gke.
