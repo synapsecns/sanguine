@@ -56,6 +56,7 @@ export const Portfolio = () => {
         {tab === PortfolioTabs.PORTFOLIO && (
           <PortfolioContent
             connectedAddress={address}
+            connectedChainId={chain.id}
             networkPortfolioWithBalances={filteredPortfolioDataForBalances}
           />
         )}
@@ -66,13 +67,42 @@ export const Portfolio = () => {
 
 type PortfolioContentProps = {
   connectedAddress: Address | string
+  connectedChainId: number
   networkPortfolioWithBalances: NetworkTokenBalancesAndAllowances
+}
+
+function getCurrentNetworkPortfolio(
+  currentChainId: number,
+  networks: NetworkTokenBalancesAndAllowances
+): {
+  currentNetwork: TokenWithBalanceAndAllowance[]
+  remainingNetworks: NetworkTokenBalancesAndAllowances
+} {
+  const currentNetwork = networks[currentChainId]
+  const remainingNetworks = { ...networks }
+  delete remainingNetworks[currentChainId]
+
+  return {
+    currentNetwork,
+    remainingNetworks,
+  }
 }
 
 const PortfolioContent = ({
   connectedAddress,
+  connectedChainId,
   networkPortfolioWithBalances,
 }: PortfolioContentProps) => {
+  console.log('networkPortfolioWithBalances:', networkPortfolioWithBalances)
+
+  const { currentNetwork, remainingNetworks } = getCurrentNetworkPortfolio(
+    connectedChainId,
+    networkPortfolioWithBalances
+  )
+
+  console.log('currentNetwork: ', currentNetwork)
+  console.log('remainingNetworks, ', remainingNetworks)
+
   return (
     <div className="">
       {connectedAddress ? (
