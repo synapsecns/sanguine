@@ -37,7 +37,7 @@ export const SingleNetworkPortfolio = ({
     sortedTokensWithoutAllowance.length > 0
 
   return (
-    <div className="flex flex-col border-b border-solid border-[#28282F] py-2 mb-4">
+    <div className="flex flex-col border-b border-solid border-[#28282F] pt-4 pb-2 mt-2">
       <PortfolioNetwork
         displayName={currentChain.name}
         chainIcon={currentChain.chainImg}
@@ -165,7 +165,7 @@ const PortfolioNetwork = ({
   }, [chain.id])
 
   return (
-    <div className="flex flex-row justify-between">
+    <div className="flex flex-row justify-between mb-4">
       <div className="flex flex-row">
         <Image
           className="mr-4 rounded-md w-7 h-7"
