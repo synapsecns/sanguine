@@ -466,10 +466,10 @@ func (l LiveSuite) TestLivefillParity() {
 
 	apiUrls := map[uint32]string{
 		ethID:   "https://api.etherscan.io/api",
-		bscID:   "https://api.arbiscan.io/api",
-		arbID:   "https://api.snowtrace.io/api",
-		maticID: "https://api.bscscan.com/api",
-		avaxID:  "https://api.polygonscan.com/api",
+		arbID:   "https://api.arbiscan.io/api",
+		avaxID:  "https://api.snowtrace.io/api",
+		bscID:   "https://api.bscscan.com/api",
+		maticID: "https://api.polygonscan.com/api",
 	}
 	fmt.Println("latest", latestBlocks)
 	scribeConfig := config.Config{
