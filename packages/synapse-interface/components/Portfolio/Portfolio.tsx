@@ -75,10 +75,13 @@ function getCurrentNetworkPortfolio(
   currentChainId: number,
   networks: NetworkTokenBalancesAndAllowances
 ): {
-  currentNetwork: TokenWithBalanceAndAllowance[]
+  currentNetwork: NetworkTokenBalancesAndAllowances
   remainingNetworks: NetworkTokenBalancesAndAllowances
 } {
-  const currentNetwork = networks[currentChainId]
+  const currentNetwork: NetworkTokenBalancesAndAllowances = {
+    [currentChainId]: networks[currentChainId],
+  }
+
   const remainingNetworks = { ...networks }
   delete remainingNetworks[currentChainId]
 
@@ -93,21 +96,22 @@ const PortfolioContent = ({
   connectedChainId,
   networkPortfolioWithBalances,
 }: PortfolioContentProps) => {
-  console.log('networkPortfolioWithBalances:', networkPortfolioWithBalances)
-
   const { currentNetwork, remainingNetworks } = getCurrentNetworkPortfolio(
     connectedChainId,
     networkPortfolioWithBalances
   )
 
-  console.log('currentNetwork: ', currentNetwork)
-  console.log('remainingNetworks, ', remainingNetworks)
-
   return (
     <div className="">
+      {currentNetwork && (
+        <SingleNetworkPortfolio
+          chainId={connectedChainId}
+          tokens={currentNetwork[connectedChainId]}
+        />
+      )}
       {connectedAddress ? (
-        Object.keys(networkPortfolioWithBalances).map((chainId) => {
-          const tokens = networkPortfolioWithBalances[chainId]
+        Object.keys(remainingNetworks).map((chainId) => {
+          const tokens = remainingNetworks[chainId]
           return (
             <SingleNetworkPortfolio chainId={Number(chainId)} tokens={tokens} />
           )
