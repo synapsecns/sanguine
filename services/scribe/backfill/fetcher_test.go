@@ -1,17 +1,19 @@
 package backfill_test
 
 import (
+	"context"
+	"github.com/ethereum/go-ethereum/common"
+	"github.com/pkg/errors"
+	. "github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/mock"
 	"github.com/synapsecns/sanguine/ethergo/backends/geth"
 	"github.com/synapsecns/sanguine/ethergo/chain/client/mocks"
 	etherMocks "github.com/synapsecns/sanguine/ethergo/mocks"
 	"github.com/synapsecns/sanguine/ethergo/util"
+	"github.com/synapsecns/sanguine/services/scribe/backfill"
 	"github.com/synapsecns/sanguine/services/scribe/config"
 	"math/big"
-
-	"github.com/pkg/errors"
-	. "github.com/stretchr/testify/assert"
-	"github.com/stretchr/testify/mock"
-	"github.com/synapsecns/sanguine/services/scribe/backfill"
+	"sync"
 )
 
 // TestFilterLogsMaxAttempts ensures after the maximum number of attempts, an error is returned.
@@ -29,7 +31,7 @@ func (b BackfillSuite) TestFilterLogsMaxAttempts() {
 		GetLogsRange:       1,
 	}
 
-	rangeFilter := backfill.NewRangeFilter(contractAddress, simulatedClient, big.NewInt(1), big.NewInt(10), config)
+	rangeFilter := backfill.NewLogFetcher(contractAddress, simulatedClient, big.NewInt(1), big.NewInt(10), config)
 
 	// Use the range filterer created above to create a mock log filter.
 	mockFilterer.
@@ -39,7 +41,7 @@ func (b BackfillSuite) TestFilterLogsMaxAttempts() {
 		StartBlock: big.NewInt(1),
 		EndBlock:   big.NewInt(10),
 	}}
-	logInfo, err := rangeFilter.FilterLogs(b.GetTestContext(), chunks)
+	logInfo, err := rangeFilter.FetchLogs(b.GetTestContext(), chunks)
 	Nil(b.T(), logInfo)
 	NotNil(b.T(), err)
 }
@@ -61,7 +63,7 @@ func (b BackfillSuite) TestGetChunkArr() {
 	startBlock := int64(1)
 	endBlock := int64(10)
 
-	rangeFilter := backfill.NewRangeFilter(contractAddress, simulatedClient, big.NewInt(startBlock), big.NewInt(endBlock), config)
+	rangeFilter := backfill.NewLogFetcher(contractAddress, simulatedClient, big.NewInt(startBlock), big.NewInt(endBlock), config)
 
 	numberOfRequests := int64(0)
 	for i := int64(0); i < endBlock; i++ {
@@ -76,7 +78,7 @@ func (b BackfillSuite) TestGetChunkArr() {
 
 	// Test with a larger batch size
 	config.GetLogsBatchAmount = 4
-	rangeFilter = backfill.NewRangeFilter(contractAddress, simulatedClient, big.NewInt(1), big.NewInt(10), config)
+	rangeFilter = backfill.NewLogFetcher(contractAddress, simulatedClient, big.NewInt(1), big.NewInt(10), config)
 	numberOfRequests = int64(0)
 	loopCount := endBlock/int64(config.GetLogsBatchAmount) + 1
 	for i := int64(0); i < loopCount; i++ {
@@ -95,7 +97,7 @@ func (b BackfillSuite) TestGetChunkArr() {
 
 	// Test with a larger range size
 	config.GetLogsRange = 2
-	rangeFilter = backfill.NewRangeFilter(contractAddress, simulatedClient, big.NewInt(1), big.NewInt(10), config)
+	rangeFilter = backfill.NewLogFetcher(contractAddress, simulatedClient, big.NewInt(1), big.NewInt(10), config)
 	numberOfRequests = int64(0)
 	loopCount = endBlock/int64(config.GetLogsBatchAmount*config.GetLogsRange) + 1
 	for i := int64(0); i < loopCount; i++ {
@@ -111,4 +113,73 @@ func (b BackfillSuite) TestGetChunkArr() {
 		numberOfRequests++
 	}
 	Equal(b.T(), numberOfRequests, loopCount)
+}
+
+// TestGetChunkArr ensures that the batching orchestration function (collecting block range chunks into arrays) works properly.
+func (b BackfillSuite) TestFetchLogs() {
+	testBackend := geth.NewEmbeddedBackend(b.GetTestContext(), b.T())
+	// start an omnirpc proxy and run 10 test transactions so we can batch call blocks 1-10
+	var wg sync.WaitGroup
+	wg.Add(2)
+
+	const desiredBlockHeight = 10
+
+	var contractAddress common.Address
+	go func() {
+		defer wg.Done()
+		contractAddress = b.PopuluateWithLogs(b.GetTestContext(), testBackend, desiredBlockHeight)
+	}()
+
+	var host string
+	go func() {
+		defer wg.Done()
+		host = b.startOmnirpcServer(b.GetTestContext(), testBackend)
+	}()
+
+	wg.Wait()
+
+	scribeBackend, err := backfill.DialBackend(b.GetTestContext(), host, b.metrics)
+	Nil(b.T(), err)
+
+	chunks := []*util.Chunk{
+		{
+			StartBlock: big.NewInt(1),
+			EndBlock:   big.NewInt(2),
+		},
+		{
+			StartBlock: big.NewInt(3),
+			EndBlock:   big.NewInt(4),
+		},
+		{
+			StartBlock: big.NewInt(5),
+			EndBlock:   big.NewInt(6),
+		},
+		{
+			StartBlock: big.NewInt(7),
+			EndBlock:   big.NewInt(8),
+		},
+		{
+			StartBlock: big.NewInt(9),
+			EndBlock:   big.NewInt(10),
+		},
+	}
+	chainID, err := scribeBackend.ChainID(b.GetTestContext())
+	Nil(b.T(), err)
+	config := &config.ChainConfig{
+		ChainID:              uint32(chainID.Uint64()),
+		ConcurrencyThreshold: 1,
+		GetLogsBatchAmount:   1,
+		GetLogsRange:         2,
+	}
+	rangeFilter := backfill.NewLogFetcher(contractAddress, scribeBackend, big.NewInt(1), big.NewInt(desiredBlockHeight), config)
+	logs, err := rangeFilter.FetchLogs(b.GetTestContext(), chunks)
+	Nil(b.T(), err)
+	Equal(b.T(), 2, len(logs))
+
+	cancelCtx, cancel := context.WithCancel(b.GetTestContext())
+	cancel()
+
+	_, err = rangeFilter.FetchLogs(cancelCtx, chunks)
+	NotNil(b.T(), err)
+	Contains(b.T(), err.Error(), "context was canceled")
 }

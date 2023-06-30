@@ -57,6 +57,19 @@ const invalidTxVRSError = "invalid transaction v, r, s values"
 // txNotFoundError is for handling omniRPC errors for BSC.
 const txNotFoundError = "not found"
 
+// txData returns the transaction data for a given transaction hash.
+type txData struct {
+	receipt     types.Receipt
+	transaction types.Transaction
+	blockHeader types.Header
+	success     bool
+}
+
+var errNoContinue = errors.New("encountered unreconcilable error, will not attempt to store tx")
+
+// errNoTx indicates a tx cannot be parsed, this is only returned when the tx doesn't match our data model.
+var errNoTx = errors.New("tx is not supported by the client")
+
 // NewContractBackfiller creates a new backfiller for a contract.
 func NewContractBackfiller(chainConfig config.ChainConfig, contractConfig config.ContractConfig, eventDB db.EventDB, client []ScribeBackend, handler metrics.Handler, blockMeter otelMetrics.Int64Histogram) (*ContractBackfiller, error) {
 	cache, err := lru.New(500)
@@ -111,7 +124,7 @@ func (c *ContractBackfiller) Backfill(parentCtx context.Context, givenStart uint
 		startHeight = lastBlockIndexed + 1
 	}
 
-	// logsChain and doneChan are used to pass logs from rangeFilter onto the next stage of the backfill process.
+	// logsChain and errChan are used to pass logs from rangeFilter onto the next stage of the backfill process.
 	logsChan, errChan := c.getLogs(groupCtx, startHeight, endHeight)
 
 	// Reads from the local logsChan and stores the logs and associated receipts / txs.
@@ -240,7 +253,7 @@ OUTER:
 		case <-time.After(timeout):
 			tryCount++
 
-			tx, err = c.fetchTx(ctx, log.TxHash, log.BlockNumber)
+			tx, err = c.fetchEventData(ctx, log.TxHash, log.BlockNumber)
 			if err != nil {
 				if errors.Is(err, errNoContinue) {
 					return nil
@@ -263,7 +276,6 @@ OUTER:
 		}
 	}
 
-	// TODO: this will all be handled in the store function
 	g, groupCtx := errgroup.WithContext(ctx)
 
 	g.Go(func() error {
@@ -321,56 +333,60 @@ OUTER:
 
 	return nil
 }
-
 func (c *ContractBackfiller) getLogs(parentCtx context.Context, startHeight, endHeight uint64) (<-chan types.Log, <-chan string) {
 	ctx, span := c.handler.Tracer().Start(parentCtx, "getLogs")
+	defer metrics.EndSpan(span)
 
-	defer func() {
-		metrics.EndSpan(span)
-	}()
+	logFetcher := NewLogFetcher(common.HexToAddress(c.contractConfig.Address), c.client[0], big.NewInt(int64(startHeight)), big.NewInt(int64(endHeight)), &c.chainConfig)
+	logsChan, errChan := make(chan types.Log), make(chan string)
 
-	// rangeFilter generates filter type that will retrieve logs from omnirpc in chunks of batch requests specified in the config.
-	logFetcher := NewRangeFilter(common.HexToAddress(c.contractConfig.Address), c.client[0], big.NewInt(int64(startHeight)), big.NewInt(int64(endHeight)), &c.chainConfig)
-	logsChan := make(chan types.Log)
-	errChan := make(chan string)
+	go c.runFetcher(ctx, startHeight, endHeight, logFetcher, errChan)
+	go c.processLogs(ctx, startHeight, endHeight, logFetcher, logsChan)
 
-	// This go routine is responsible for running the range filter and collect logs from omnirpc and put it into it's logChan (see filter.go).
-	go func() {
-		err := logFetcher.Start(ctx)
-		if err != nil {
-			errChan <- err.Error()
+	return logsChan, errChan
+}
+
+func (c *ContractBackfiller) runFetcher(ctx context.Context, startHeight, endHeight uint64, logFetcher *LogFetcher, errChan chan<- string) {
+	if err := logFetcher.Start(ctx); err != nil {
+		LogEvent(ErrorLevel, "Error occurred while running log fetcher", LogData{"cid": c.chainConfig.ChainID, "sh": startHeight, "eh": endHeight, "e": err.Error()})
+		select {
+		case <-ctx.Done():
+			return
+		case errChan <- err.Error():
 			return
 		}
-	}()
+	}
+}
 
-	// Reads from the range filter's logsChan and puts the logs into the local logsChan until completion.
-	go func() {
-		for {
-			select {
-			case <-ctx.Done():
-				LogEvent(ErrorLevel, "Context canceled while getting log", LogData{"cid": c.chainConfig.ChainID, "sh": startHeight, "eh": endHeight, "e": ctx.Err()})
-				errChan <- ctx.Err().Error()
-				return
-			case logChunks := <-logFetcher.logs:
-				for _, log := range logChunks {
-					logsChan <- log
-				}
-			case <-logFetcher.doneChan:
-				remLogChunks, err := logFetcher.Drain(ctx)
-				if err != nil {
-					LogEvent(ErrorLevel, "Error draining logs", LogData{"cid": c.chainConfig.ChainID, "sh": startHeight, "eh": endHeight, "e": err.Error()})
-					return
-				}
-				for _, log := range remLogChunks {
-					logsChan <- log
-				}
+func (c *ContractBackfiller) processLogs(ctx context.Context, startHeight, endHeight uint64, logFetcher *LogFetcher, logsChan chan<- types.Log) {
+	for {
+		select {
+		case <-ctx.Done():
+			LogEvent(ErrorLevel, "context canceled while consuming logs", LogData{"cid": c.chainConfig.ChainID, "sh": startHeight, "eh": endHeight, "e": ctx.Err()})
+			return
+		case logChunks, ok := <-logFetcher.fetchedLogsChan:
+			if !ok {
 				close(logsChan)
 				return
 			}
+			for _, log := range logChunks {
+				if c.appendLogToChannel(ctx, startHeight, endHeight, log, logsChan) {
+					// Context canceled while appending
+					return
+				}
+			}
 		}
-	}()
+	}
+}
 
-	return logsChan, errChan
+func (c *ContractBackfiller) appendLogToChannel(ctx context.Context, startHeight, endHeight uint64, log types.Log, logsChan chan<- types.Log) bool {
+	select {
+	case <-ctx.Done():
+		LogEvent(ErrorLevel, "context canceled while appending log to channel", LogData{"cid": c.chainConfig.ChainID, "sh": startHeight, "eh": endHeight, "e": ctx.Err()})
+		return true
+	case logsChan <- log:
+		return false
+	}
 }
 
 // prunedReceiptLogs gets all logs from a receipt and prunes null logs.
@@ -387,23 +403,10 @@ func (c *ContractBackfiller) prunedReceiptLogs(receipt types.Receipt) (logs []ty
 	return logs, nil
 }
 
-// txData returns the transaction data for a given transaction hash.
-type txData struct {
-	receipt     types.Receipt
-	transaction types.Transaction
-	blockHeader types.Header
-	success     bool
-}
-
-var errNoContinue = errors.New("encountered unreconcilable error, will not attempt to store tx")
-
-// errNoTx indicates a tx cannot be parsed, this is only returned when the tx doesn't match our data model.
-var errNoTx = errors.New("tx is not supported by the client")
-
-// fetchTx tries to fetch a transaction from the cache, if it's not there it tries to fetch it from the database.
+// fetchEventData tries to fetch a transaction from the cache, if it's not there it tries to fetch it from the database.
 // nolint: cyclop
-func (c *ContractBackfiller) fetchTx(parentCtx context.Context, txhash common.Hash, blockNumber uint64) (tx *txData, err error) {
-	ctx, span := c.handler.Tracer().Start(parentCtx, "fetchTx", trace.WithAttributes(
+func (c *ContractBackfiller) fetchEventData(parentCtx context.Context, txhash common.Hash, blockNumber uint64) (tx *txData, err error) {
+	ctx, span := c.handler.Tracer().Start(parentCtx, "fetchEventData", trace.WithAttributes(
 		attribute.String("tx", txhash.Hex()),
 		attribute.String("block", fmt.Sprintf("%d", blockNumber)),
 	))

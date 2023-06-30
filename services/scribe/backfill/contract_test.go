@@ -140,7 +140,7 @@ func (b BackfillSuite) TestGetLogsSimulated() {
 
 	// Get the logs for the first two events.
 	collectedLogs := []types.Log{}
-	logs, _ := backfiller.GetLogs(b.GetTestContext(), contractConfig.StartBlock, txBlockNumberA)
+	logs, errChan := backfiller.GetLogs(b.GetTestContext(), contractConfig.StartBlock, txBlockNumberA)
 
 	for {
 		select {
@@ -151,6 +151,8 @@ func (b BackfillSuite) TestGetLogsSimulated() {
 				goto Done
 			}
 			collectedLogs = append(collectedLogs, log)
+		case errorFromChan := <-errChan:
+			Nil(b.T(), errorFromChan)
 		}
 	}
 Done:
@@ -159,7 +161,7 @@ Done:
 
 	// Get the logs for the last three events.
 	collectedLogs = []types.Log{}
-	logs, _ = backfiller.GetLogs(b.GetTestContext(), txBlockNumberA+1, txBlockNumberB)
+	logs, errChan = backfiller.GetLogs(b.GetTestContext(), txBlockNumberA+1, txBlockNumberB)
 
 	for {
 		select {
@@ -170,6 +172,8 @@ Done:
 				goto Done2
 			}
 			collectedLogs = append(collectedLogs, log)
+		case errorFromChan := <-errChan:
+			Nil(b.T(), errorFromChan)
 		}
 	}
 Done2:
