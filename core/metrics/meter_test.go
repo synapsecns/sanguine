@@ -2,25 +2,18 @@ package metrics_test
 
 import (
 	"context"
-	"testing"
-	"time"
-
 	. "github.com/stretchr/testify/assert"
 	"github.com/synapsecns/sanguine/core/metrics"
 	"go.opentelemetry.io/otel/attribute"
-	stdout "go.opentelemetry.io/otel/exporters/stdout/stdoutmetric"
 	"go.opentelemetry.io/otel/metric"
+	"testing"
 )
 
 // Recording an arbitrary event, such as recording block number.
 //
 // nolint:dupl
 func TestCounter(t *testing.T) {
-	metricExporter, err := stdout.New()
-	Nil(t, err)
-
-	mp, err := metrics.NewOtelMeter("test", time.Duration(30)*time.Second, metricExporter)
-	Nil(t, err)
+	mp := &metrics.NullMeterImpl{}
 
 	counter, err := mp.NewCounter("test", "block_counter", "a block counter", "blocks")
 	Nil(t, err)
@@ -39,11 +32,7 @@ func TestCounter(t *testing.T) {
 //
 // nolint:dupl
 func TestHistogram(t *testing.T) {
-	metricExporter, err := stdout.New()
-	Nil(t, err)
-
-	mp, err := metrics.NewOtelMeter("test", time.Duration(30)*time.Second, metricExporter)
-	Nil(t, err)
+	mp := &metrics.NullMeterImpl{}
 
 	histogram, err := mp.NewHistogram("test", "block_histogram", "a block counter", "blocks")
 	Nil(t, err)

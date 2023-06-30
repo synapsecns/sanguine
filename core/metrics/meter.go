@@ -1,7 +1,9 @@
 package metrics
 
 import (
+	"context"
 	"fmt"
+	"go.opentelemetry.io/otel/metric/embedded"
 	"time"
 
 	"go.opentelemetry.io/otel/metric"
@@ -29,7 +31,7 @@ func NewOtelMeter(serviceName string, interval time.Duration, exporter sdkmetric
 		semconv.SchemaURL,
 		semconv.ServiceNameKey.String(serviceName),
 	)
-	mp := sdkmetric.NewOtelMeterProvider(
+	mp := sdkmetric.NewMeterProvider(
 		sdkmetric.WithResource(resource),
 		sdkmetric.WithReader(
 			sdkmetric.NewPeriodicReader(exporter, sdkmetric.WithInterval(interval)),
@@ -70,3 +72,30 @@ func (m *MeterImpl) NewHistogram(meterName string, histName string, desc string,
 	}
 	return histogram, nil
 }
+
+// NullMeterImpl is a no-op implementation of the Meter interface.
+type NullMeterImpl struct{}
+
+// NewCounter creates a new meter counter instrument.
+func (m *NullMeterImpl) NewCounter(_ string, _ string, _ string, _ string) (metric.Int64Counter, error) {
+	return &NullCounter{}, nil
+}
+
+// NewHistogram creates a new meter histogram instrument.
+func (m *NullMeterImpl) NewHistogram(_ string, _ string, _ string, _ string) (metric.Int64Histogram, error) {
+	return &NullHistogram{}, nil
+}
+
+// NullCounter is a no-op implementation of the metric.Int64Counter
+type NullCounter struct {
+	embedded.Int64Counter
+}
+
+func (n *NullCounter) Add(_ context.Context, _ int64, _ ...metric.AddOption) {}
+
+// NullHistogram is a no-op implementation of the metric.Int64Histogram
+type NullHistogram struct {
+	embedded.Int64Histogram
+}
+
+func (n *NullHistogram) Record(_ context.Context, _ int64, _ ...metric.RecordOption) {}

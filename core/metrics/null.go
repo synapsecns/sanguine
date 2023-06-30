@@ -6,7 +6,6 @@ import (
 	"go.opentelemetry.io/contrib/instrumentation/net/http/otelhttp"
 	"go.opentelemetry.io/otel/propagation"
 	"go.opentelemetry.io/otel/trace"
-
 	"gorm.io/gorm"
 	"net/http"
 )
@@ -16,6 +15,7 @@ import (
 type nullHandler struct {
 	tracer     trace.Tracer
 	propagator nullPropogator
+	meter      Meter
 }
 
 func (n nullHandler) Type() HandlerType {
@@ -52,7 +52,7 @@ func (n nullHandler) Start(_ context.Context) error {
 	return nil
 }
 func (n nullHandler) Meter() Meter {
-	return nil
+	return n.meter
 }
 
 // NewNullHandler creates a new null transaction handler.
@@ -60,6 +60,7 @@ func NewNullHandler() Handler {
 	return &nullHandler{
 		tracer:     trace.NewNoopTracerProvider().Tracer(""),
 		propagator: nullPropogator{},
+		meter:      &NullMeterImpl{},
 	}
 }
 
