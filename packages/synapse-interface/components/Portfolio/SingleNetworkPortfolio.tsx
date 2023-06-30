@@ -32,8 +32,12 @@ export const SingleNetworkPortfolio = ({
   console.log('sortedTokensWithAllowance:', sortedTokensWithAllowance)
   console.log('sortedTokensWithoutAllowance:', sortedTokensWithoutAllowance)
 
+  const shouldShowDivider: boolean =
+    sortedTokensWithAllowance.length > 0 &&
+    sortedTokensWithoutAllowance.length > 0
+
   return (
-    <div className="flex flex-col border-b border-solid border-[#28282F] py-4 mb-4">
+    <div className="flex flex-col border-b border-solid border-[#28282F] py-2 mb-4">
       <PortfolioNetwork
         displayName={currentChain.name}
         chainIcon={currentChain.chainImg}
@@ -51,6 +55,9 @@ export const SingleNetworkPortfolio = ({
             />
           )
         )}
+      {shouldShowDivider && (
+        <div className="border-b border-solid border-[#28282F] my-2" />
+      )}
       {sortedTokensWithoutAllowance.length > 0 &&
         sortedTokensWithoutAllowance.map(
           ({ token, balance, allowance }: TokenWithBalanceAndAllowance) => (
