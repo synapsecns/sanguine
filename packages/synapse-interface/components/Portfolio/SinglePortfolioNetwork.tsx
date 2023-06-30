@@ -6,6 +6,9 @@ import { TokenWithBalanceAndAllowance } from '@/utils/hooks/usePortfolioBalances
 import { Chain } from '@/utils/types'
 import { CHAINS_BY_ID } from '@/constants/chains'
 import Image from 'next/image'
+import { Token } from '@/utils/types'
+import { BigNumber } from 'ethers'
+import { formatBNToString } from '@/utils/bignumber/format'
 
 type SingleNetworkPortfolioProps = {
   chainId: number
@@ -50,10 +53,10 @@ export const SingleNetworkPortfolio = ({
   const [tokensWithAllowance, tokensWithoutAllowance] =
     separateTokensByAllowance(tokens)
 
-  const sortedTokensWithAllowance = sortByBalanceDescending(tokensWithAllowance)
-  const sortedTokensWithoutAllowance = sortByBalanceDescending(
-    tokensWithoutAllowance
-  )
+  const sortedTokensWithAllowance: TokenWithBalanceAndAllowance[] =
+    sortByBalanceDescending(tokensWithAllowance)
+  const sortedTokensWithoutAllowance: TokenWithBalanceAndAllowance[] =
+    sortByBalanceDescending(tokensWithoutAllowance)
 
   console.log('sortedTokensWithAllowance:', sortedTokensWithAllowance)
   console.log('sortedTokensWithoutAllowance:', sortedTokensWithoutAllowance)
@@ -65,6 +68,46 @@ export const SingleNetworkPortfolio = ({
         chainIcon={currentChain.chainImg}
         chainId={chainId}
       />
+      {sortedTokensWithAllowance.map(
+        ({ token, balance, allowance }: TokenWithBalanceAndAllowance) => (
+          <PortfolioTokenAsset
+            token={token}
+            balance={balance}
+            chainId={chainId}
+          />
+        )
+      )}
+    </div>
+  )
+}
+
+type PortfolioTokenAssetProps = {
+  token: Token
+  balance: BigNumber
+  chainId: number
+}
+
+const PortfolioTokenAsset = ({
+  token,
+  balance,
+  chainId,
+}: PortfolioTokenAssetProps) => {
+  const { icon, symbol, decimals, addresses } = token
+  const parsedBalance = formatBNToString(balance, decimals[chainId], 3)
+
+  return (
+    <div className="flex flex-row my-2 text-white">
+      <div className="flex flex-row w-1/2 text-left">
+        <Image
+          alt={`${symbol} img`}
+          className="w-6 h-6 mr-2 rounded-md"
+          src={icon}
+        />
+        <div>{symbol}</div>
+      </div>
+      <div className="flex flex-row w-1/2 text-left">
+        <div>{parsedBalance}</div>
+      </div>
     </div>
   )
 }
