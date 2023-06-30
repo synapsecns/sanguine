@@ -568,15 +568,18 @@ export const USDT = new Token({
   decimals: {
     [CHAINS.BNB.id]: 18,
     [CHAINS.ETH.id]: 6,
+    [CHAINS.CRONOS.id]: 6,
     [CHAINS.POLYGON.id]: 6,
-    [CHAINS.AVALANCHE.id]: 6,
+    // Commenting out as currently unsupported above
+    // [CHAINS.AVALANCHE.id]: 6,
     [CHAINS.ARBITRUM.id]: 6,
     [CHAINS.FANTOM.id]: 6,
     [CHAINS.HARMONY.id]: 6,
     [CHAINS.BOBA.id]: 6,
     [CHAINS.AURORA.id]: 6,
-    [CHAINS.CRONOS.id]: 6,
     [CHAINS.CANTO.id]: 6,
+    [CHAINS.KLAYTN.id]: 6,
+    [CHAINS.DOGE.id]: 6,
   },
   symbol: 'USDT',
   name: 'USD Tether',
@@ -1153,7 +1156,7 @@ export const XJEWEL = new Token({
 export const USDCe = new Token({
   addresses: {
     [CHAINS.AVALANCHE.id]: '0xA7D7079b0FEaD91F3e65f86E8915Cb59c1a4C664',
-    [CHAINS.ARBITRUM.id]: '0xff970a61a04b1ca14834a43f5de4533ebddb5cc8'
+    [CHAINS.ARBITRUM.id]: '0xff970a61a04b1ca14834a43f5de4533ebddb5cc8',
   },
   decimals: 6,
   symbol: 'USDCe',
