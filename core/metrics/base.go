@@ -10,8 +10,8 @@ import (
 	"go.opentelemetry.io/contrib/propagators/b3"
 	"go.opentelemetry.io/otel"
 	"go.opentelemetry.io/otel/attribute"
+	stdout "go.opentelemetry.io/otel/exporters/stdout/stdoutmetric"
 	"go.opentelemetry.io/otel/propagation"
-	sdkmetric "go.opentelemetry.io/otel/sdk/metric"
 	"go.opentelemetry.io/otel/sdk/resource"
 	tracesdk "go.opentelemetry.io/otel/sdk/trace"
 	semconv "go.opentelemetry.io/otel/semconv/v1.17.0"
@@ -30,7 +30,7 @@ type baseHandler struct {
 	tracer     trace.Tracer
 	name       string
 	propagator propagation.TextMapPropagator
-	meter      *sdkmetric.MeterProvider
+	meter      Meter
 }
 
 func (b *baseHandler) Start(ctx context.Context) error {
@@ -71,7 +71,7 @@ func (b *baseHandler) Type() HandlerType {
 	panic("must be overridden by children")
 }
 
-func (b *baseHandler) Meter() *sdkmetric.MeterProvider {
+func (b *baseHandler) Meter() Meter {
 	return b.meter
 }
 
@@ -116,7 +116,13 @@ func newBaseHandlerWithTracerProvider(buildInfo config.BuildInfo, tracerProvider
 		// default interval
 		interval = 60
 	}
-	mp, err := InitMeter(buildInfo.Name(), time.Duration(interval)*time.Second)
+
+	// TODO set up exporting the way we need here
+	metricExporter, err := stdout.New()
+	if err != nil {
+		return nil
+	}
+	mp, err := NewMeter(buildInfo.Name(), time.Duration(interval)*time.Second, metricExporter)
 	if err != nil {
 		return nil
 	}

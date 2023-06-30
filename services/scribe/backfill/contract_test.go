@@ -8,7 +8,6 @@ import (
 	"github.com/ethereum/go-ethereum/params"
 	. "github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
-	"github.com/synapsecns/sanguine/core/metrics"
 	"github.com/synapsecns/sanguine/ethergo/backends"
 	"github.com/synapsecns/sanguine/ethergo/backends/geth"
 	"github.com/synapsecns/sanguine/services/scribe/backfill"
@@ -62,7 +61,7 @@ func (b BackfillSuite) TestFailedStore() {
 		StoreConcurrency:   1,
 		GetLogsRange:       1,
 	}
-	blockHeightMeter, err := metrics.NewHistogram(b.metrics.Meter(), fmt.Sprint("scribe_block_meter", chainConfig.ChainID), "block_histogram", "a block height meter", "blocks")
+	blockHeightMeter, err := b.metrics.Meter().NewHistogram(fmt.Sprint("scribe_block_meter", chainConfig.ChainID), "block_histogram", "a block height meter", "blocks")
 	Nil(b.T(), err)
 
 	backfiller, err := backfill.NewContractBackfiller(chainConfig, contractConfig, mockDB, simulatedChainArr, b.metrics, blockHeightMeter)
@@ -105,7 +104,7 @@ func (b BackfillSuite) TestGetLogsSimulated() {
 		StoreConcurrency:   1,
 		GetLogsRange:       1,
 	}
-	blockHeightMeter, err := metrics.NewHistogram(b.metrics.Meter(), fmt.Sprint("scribe_block_meter", chainConfig.ChainID), "block_histogram", "a block height meter", "blocks")
+	blockHeightMeter, err := b.metrics.Meter().NewHistogram(fmt.Sprint("scribe_block_meter", chainConfig.ChainID), "block_histogram", "a block height meter", "blocks")
 	Nil(b.T(), err)
 
 	backfiller, err := backfill.NewContractBackfiller(chainConfig, contractConfig, b.testDB, simulatedChainArr, b.metrics, blockHeightMeter)
@@ -203,7 +202,7 @@ func (b BackfillSuite) TestContractBackfill() {
 		StoreConcurrency:   1,
 		GetLogsRange:       1,
 	}
-	blockHeightMeter, err := metrics.NewHistogram(b.metrics.Meter(), fmt.Sprint("scribe_block_meter", chainConfig.ChainID), "block_histogram", "a block height meter", "blocks")
+	blockHeightMeter, err := b.metrics.Meter().NewHistogram(fmt.Sprint("scribe_block_meter", chainConfig.ChainID), "block_histogram", "a block height meter", "blocks")
 	Nil(b.T(), err)
 	backfiller, err := backfill.NewContractBackfiller(chainConfig, contractConfig, b.testDB, simulatedChainArr, b.metrics, blockHeightMeter)
 	b.Require().NoError(err)
@@ -372,7 +371,7 @@ func (b BackfillSuite) TestContractBackfillFromPreIndexed() {
 		StoreConcurrency:   1,
 		GetLogsRange:       1,
 	}
-	blockHeightMeter, err := metrics.NewHistogram(b.metrics.Meter(), fmt.Sprint("scribe_block_meter", chainConfig.ChainID), "block_histogram", "a block height meter", "blocks")
+	blockHeightMeter, err := b.metrics.Meter().NewHistogram(fmt.Sprint("scribe_block_meter", chainConfig.ChainID), "block_histogram", "a block height meter", "blocks")
 	Nil(b.T(), err)
 	backfiller, err := backfill.NewContractBackfiller(chainConfig, contractConfig, b.testDB, simulatedChainArr, b.metrics, blockHeightMeter)
 	Nil(b.T(), err)

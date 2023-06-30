@@ -5,6 +5,7 @@ import (
 	. "github.com/stretchr/testify/assert"
 	"github.com/synapsecns/sanguine/core/metrics"
 	"go.opentelemetry.io/otel/attribute"
+	stdout "go.opentelemetry.io/otel/exporters/stdout/stdoutmetric"
 	"go.opentelemetry.io/otel/metric"
 	"testing"
 	"time"
@@ -12,10 +13,13 @@ import (
 
 // Recording an arbitrary event, such as recording block number.
 func TestCounter(t *testing.T) {
-	mp, err := metrics.InitMeter("test", time.Duration(30)*time.Second)
+	metricExporter, err := stdout.New()
 	Nil(t, err)
 
-	counter, err := metrics.NewCounter(mp, "test", "block_counter", "a block counter", "blocks")
+	mp, err := metrics.NewMeter("test", time.Duration(30)*time.Second, metricExporter)
+	Nil(t, err)
+
+	counter, err := mp.NewCounter("test", "block_counter", "a block counter", "blocks")
 	Nil(t, err)
 	counter.Add(context.Background(), 1, metric.WithAttributeSet(
 		attribute.NewSet(attribute.Int64("block_number", 30), attribute.Int64("chain_id", 1))),
@@ -30,10 +34,13 @@ func TestCounter(t *testing.T) {
 
 // Recording values in a histogram format, such the actual block numbers stored over time.
 func TestHistogram(t *testing.T) {
-	mp, err := metrics.InitMeter("test", time.Duration(30)*time.Second)
+	metricExporter, err := stdout.New()
 	Nil(t, err)
 
-	histogram, err := metrics.NewHistogram(mp, "test", "block_histogram", "a block counter", "blocks")
+	mp, err := metrics.NewMeter("test", time.Duration(30)*time.Second, metricExporter)
+	Nil(t, err)
+
+	histogram, err := mp.NewHistogram("test", "block_histogram", "a block counter", "blocks")
 	Nil(t, err)
 	histogram.Record(context.Background(), 30, metric.WithAttributeSet(
 		attribute.NewSet(attribute.String("contract_address", "0x00"), attribute.Int64("chain_id", 1))),

@@ -7,7 +7,6 @@ import (
 	"github.com/synapsecns/sanguine/core/config"
 	"go.opentelemetry.io/contrib/instrumentation/net/http/otelhttp"
 	"go.opentelemetry.io/otel/propagation"
-	sdkmetric "go.opentelemetry.io/otel/sdk/metric"
 	"go.opentelemetry.io/otel/trace"
 	"gorm.io/gorm"
 	"net/http"
@@ -33,7 +32,7 @@ type Handler interface {
 	// Type returns the handler type.
 	Type() HandlerType
 	// Meter returns an otel meter provider
-	Meter() *sdkmetric.MeterProvider
+	Meter() Meter
 }
 
 // HandlerType is the handler type to use

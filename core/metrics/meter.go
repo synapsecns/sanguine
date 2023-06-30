@@ -2,7 +2,6 @@ package metrics
 
 import (
 	"fmt"
-	stdout "go.opentelemetry.io/otel/exporters/stdout/stdoutmetric"
 	"go.opentelemetry.io/otel/metric"
 	sdkmetric "go.opentelemetry.io/otel/sdk/metric"
 	"go.opentelemetry.io/otel/sdk/resource"
@@ -10,32 +9,35 @@ import (
 	"time"
 )
 
-// InitMeter creates and sets a global meter provider.
-func InitMeter(serviceName string, interval time.Duration) (*sdkmetric.MeterProvider, error) {
-	// TODO configure exporter how we need.
+type Meter interface {
+	NewCounter(meterName string, counterName string, desc string, units string) (metric.Int64Counter, error)
+	NewHistogram(meterName string, histName string, desc string, units string) (metric.Int64Histogram, error)
+}
 
-	exporter, err := stdout.New()
-	if err != nil {
-		return nil, fmt.Errorf("creating exporter failed %w", err)
-	}
+// MeterImpl is an implementation of the MeterProvider interface
+type MeterImpl struct {
+	mp *sdkmetric.MeterProvider
+}
+
+// NewMeter creates a new meter provider.
+func NewMeter(serviceName string, interval time.Duration, exporter sdkmetric.Exporter) (*MeterImpl, error) {
 	resource := resource.NewWithAttributes(
 		semconv.SchemaURL,
 		semconv.ServiceNameKey.String(serviceName),
 	)
-
 	mp := sdkmetric.NewMeterProvider(
 		sdkmetric.WithResource(resource),
 		sdkmetric.WithReader(
 			sdkmetric.NewPeriodicReader(exporter, sdkmetric.WithInterval(interval)),
 		),
 	)
-	return mp, nil
+	return &MeterImpl{mp: mp}, nil
 }
 
 // NewCounter creates a new meter counter instrument.
 // https://github.com/open-telemetry/opentelemetry-specification/blob/main/specification/metrics/api.md#counter
-func NewCounter(mp *sdkmetric.MeterProvider, meterName string, counterName string, desc string, units string) (metric.Int64Counter, error) {
-	counter, err := (*mp).Meter(
+func (m *MeterImpl) NewCounter(meterName string, counterName string, desc string, units string) (metric.Int64Counter, error) {
+	counter, err := m.mp.Meter(
 		meterName,
 	).
 		Int64Counter(
@@ -51,11 +53,10 @@ func NewCounter(mp *sdkmetric.MeterProvider, meterName string, counterName strin
 
 // NewHistogram creates a new meter histogram instrument.
 // https://github.com/open-telemetry/opentelemetry-specification/blob/main/specification/metrics/api.md#histogram
-func NewHistogram(mp *sdkmetric.MeterProvider, meterName string, histName string, desc string, units string) (metric.Int64Histogram, error) {
-	histogram, err := (*mp).
-		Meter(
-			meterName,
-		).Int64Histogram(
+func (m *MeterImpl) NewHistogram(meterName string, histName string, desc string, units string) (metric.Int64Histogram, error) {
+	histogram, err := m.mp.Meter(
+		meterName,
+	).Int64Histogram(
 		histName,
 		metric.WithDescription(desc),
 		metric.WithUnit(units),
