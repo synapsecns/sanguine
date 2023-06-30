@@ -133,6 +133,15 @@ function separateTokensByAllowance(
   return [tokensWithAllowance, tokensWithoutAllowance]
 }
 
+function sortByBalanceDescending(
+  tokens: TokenWithBalanceAndAllowance[]
+): TokenWithBalanceAndAllowance[] {
+  return tokens.sort(
+    (a: TokenWithBalanceAndAllowance, b: TokenWithBalanceAndAllowance) =>
+      b.balance.gt(a.balance) ? 1 : -1
+  )
+}
+
 const SingleNetworkPortfolio = ({
   chainId,
   tokens,
@@ -141,6 +150,14 @@ const SingleNetworkPortfolio = ({
 
   const [tokensWithAllowance, tokensWithoutAllowance] =
     separateTokensByAllowance(tokens)
+
+  const sortedTokensWithAllowance = sortByBalanceDescending(tokensWithAllowance)
+  const sortedTokensWithoutAllowance = sortByBalanceDescending(
+    tokensWithoutAllowance
+  )
+
+  console.log('sortedTokensWithAllowance:', sortedTokensWithAllowance)
+  console.log('sortedTokensWithoutAllowance:', sortedTokensWithoutAllowance)
 
   return (
     <div className="flex flex-col">
