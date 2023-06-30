@@ -5,7 +5,7 @@ type Message struct {
 	// Hash of USDC burn transaction
 	OriginTxHash string `gorm:"column:origin_tx_hash"`
 	// Hash of USDC mint transaction
-	DestTxHash string `gorm:"column:test_tx_hash"`
+	DestTxHash string `gorm:"column:dest_tx_hash"`
 	// Nonce of USDC mint transaction
 	DestNonce int `gorm:"column:dest_nonce"`
 	// Chain ID of the origin chain
