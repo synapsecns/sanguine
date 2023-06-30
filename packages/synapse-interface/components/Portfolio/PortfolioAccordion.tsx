@@ -1,12 +1,15 @@
 import React, { useState } from 'react'
-import { PlayIcon } from '@heroicons/react/outline'
+import AccordionIcon from '../icons/AccordionIcon'
 
-type AccordionProps = {
+type PortfolioAccordionProps = {
   header: React.ReactNode
   children: React.ReactNode
 }
 
-export const Accordion = ({ header, children }: AccordionProps) => {
+export const PortfolioAccordion = ({
+  header,
+  children,
+}: PortfolioAccordionProps) => {
   const [isExpanded, setIsExpanded] = useState(false)
 
   const handleToggle = () => {
@@ -16,8 +19,8 @@ export const Accordion = ({ header, children }: AccordionProps) => {
   return (
     <div>
       <div className="flex flex-row" data-test-id="Accordion">
-        <button onClick={handleToggle} className={`w-2`}>
-          <PlayIcon className="w-4 h-4" />
+        <button onClick={handleToggle} className="mb-4 mr-2">
+          <AccordionIcon className="w-4 h-4" />
         </button>
         {header}
       </div>
@@ -26,4 +29,4 @@ export const Accordion = ({ header, children }: AccordionProps) => {
   )
 }
 
-export default Accordion
+export default PortfolioAccordion

@@ -9,7 +9,7 @@ import Image from 'next/image'
 import { Token } from '@/utils/types'
 import { BigNumber } from 'ethers'
 import { formatBNToString } from '@/utils/bignumber/format'
-import Accordion from './Accordion'
+import Accordion from './PortfolioAccordion'
 
 type SingleNetworkPortfolioProps = {
   chainId: number
@@ -176,7 +176,7 @@ const PortfolioNetwork = ({
   }, [chain.id])
 
   return (
-    <div className="flex flex-row justify-between mb-4">
+    <div className="flex flex-row justify-between flex-1 mb-4">
       <div className="flex flex-row">
         <Image
           className="mr-4 rounded-md w-7 h-7"
