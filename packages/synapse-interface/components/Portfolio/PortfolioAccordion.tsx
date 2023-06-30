@@ -16,11 +16,19 @@ export const PortfolioAccordion = ({
     setIsExpanded((prevExpanded) => !prevExpanded)
   }
 
+  const expanded = 'rotate-0'
+  const collapsed = '-rotate-90'
+
   return (
     <div>
       <div className="flex flex-row" data-test-id="Accordion">
         <button onClick={handleToggle} className="mb-4 mr-2">
-          <AccordionIcon className="w-4 h-4" />
+          <AccordionIcon
+            className={`
+              ${isExpanded ? expanded : collapsed}
+              w-4 h-4
+            `}
+          />
         </button>
         {header}
       </div>
