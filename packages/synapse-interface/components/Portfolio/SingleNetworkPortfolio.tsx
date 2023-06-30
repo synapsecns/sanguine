@@ -50,18 +50,16 @@ export const SingleNetworkPortfolio = ({
           />
         )
       )}
-      <div className="bg-gray-500">
-        {sortedTokensWithoutAllowance.map(
-          ({ token, balance, allowance }: TokenWithBalanceAndAllowance) => (
-            <PortfolioTokenAsset
-              token={token}
-              balance={balance}
-              chainId={chainId}
-              isApproved={false}
-            />
-          )
-        )}
-      </div>
+      {sortedTokensWithoutAllowance.map(
+        ({ token, balance, allowance }: TokenWithBalanceAndAllowance) => (
+          <PortfolioTokenAsset
+            token={token}
+            balance={balance}
+            chainId={chainId}
+            isApproved={false}
+          />
+        )
+      )}
     </div>
   )
 }
@@ -84,7 +82,12 @@ const PortfolioTokenAsset = ({
 
   return (
     <div className="flex flex-row items-center my-2 text-white">
-      <div className="flex flex-row w-1/2 text-left">
+      <div
+        className={`
+          flex flex-row w-1/2 text-left
+          ${!isApproved && 'opacity-50'}
+          `}
+      >
         <Image
           alt={`${symbol} img`}
           className="w-6 h-6 mr-2 rounded-md"
@@ -93,7 +96,7 @@ const PortfolioTokenAsset = ({
         <div>{symbol}</div>
       </div>
       <div className="flex flex-row items-center w-1/2 text-left">
-        <div>{parsedBalance}</div>
+        <div className={!isApproved && 'opacity-50'}>{parsedBalance}</div>
         <PortfolioAssetActionButton isApproved={isApproved} />
       </div>
     </div>
