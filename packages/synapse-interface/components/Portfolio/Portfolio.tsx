@@ -45,11 +45,6 @@ export const Portfolio = () => {
   const filteredPortfolioDataForBalances: NetworkTokenBalancesAndAllowances =
     filterPortfolioBalancesWithBalances(portfolioData)
 
-  console.log(
-    'filteredPortfolioDataForBalances: ',
-    filteredPortfolioDataForBalances
-  )
-
   const { address } = useAccount()
   const { chain } = useNetwork()
 
@@ -61,7 +56,7 @@ export const Portfolio = () => {
         {tab === PortfolioTabs.PORTFOLIO && (
           <PortfolioContent
             connectedAddress={address}
-            portfolioData={portfolioData}
+            networkPortfolioWithBalances={filteredPortfolioDataForBalances}
           />
         )}
       </div>
@@ -71,32 +66,34 @@ export const Portfolio = () => {
 
 type PortfolioContentProps = {
   connectedAddress: Address | string
-  portfolioData: NetworkTokenBalancesAndAllowances
+  networkPortfolioWithBalances: NetworkTokenBalancesAndAllowances
+}
+
+const UnconnectedPortfolioContent = () => {
+  return (
+    <>
+      <p
+        className={`
+      text-[#CCCAD3BF] mt-6 mb-4 pb-6
+      border-b border-solid border-[#28282F]
+      `}
+      >
+        Your bridgable assets appear here when your wallet is connected.
+      </p>
+      <ConnectWalletButton />
+    </>
+  )
 }
 
 const PortfolioContent = ({
   connectedAddress,
-  portfolioData,
+  networkPortfolioWithBalances,
 }: PortfolioContentProps) => {
-  console.log('portfolioData inside content: ', portfolioData)
+  console.log('networkPortfolioWithBalances: ', networkPortfolioWithBalances)
   return (
     <div className="">
       <PortfolioAssetHeader />
-      {connectedAddress ? (
-        <></>
-      ) : (
-        <>
-          <p
-            className={`
-            text-[#CCCAD3BF] mt-6 mb-4 pb-6
-            border-b border-solid border-[#28282F]
-            `}
-          >
-            Your bridgable assets appear here when your wallet is connected.
-          </p>
-          <ConnectWalletButton />
-        </>
-      )}
+      {connectedAddress ? <></> : <UnconnectedPortfolioContent />}
     </div>
   )
 }
