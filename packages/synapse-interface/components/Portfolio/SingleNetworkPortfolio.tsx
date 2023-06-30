@@ -9,6 +9,7 @@ import Image from 'next/image'
 import { Token } from '@/utils/types'
 import { BigNumber } from 'ethers'
 import { formatBNToString } from '@/utils/bignumber/format'
+import Accordion from './Accordion'
 
 type SingleNetworkPortfolioProps = {
   chainId: number
@@ -38,37 +39,47 @@ export const SingleNetworkPortfolio = ({
 
   return (
     <div className="flex flex-col border-b border-solid border-[#28282F] pt-4 pb-2 mt-2">
-      <PortfolioNetwork
+      <Accordion
+        header={
+          <PortfolioNetwork
+            displayName={currentChain.name}
+            chainIcon={currentChain.chainImg}
+            chainId={chainId}
+          />
+        }
+      >
+        <PortfolioAssetHeader />
+        {sortedTokensWithAllowance.length > 0 &&
+          sortedTokensWithAllowance.map(
+            ({ token, balance, allowance }: TokenWithBalanceAndAllowance) => (
+              <PortfolioTokenAsset
+                token={token}
+                balance={balance}
+                chainId={chainId}
+                isApproved={true}
+              />
+            )
+          )}
+        {shouldShowDivider && (
+          <div className="border-b border-solid border-[#28282F] my-2" />
+        )}
+        {sortedTokensWithoutAllowance.length > 0 &&
+          sortedTokensWithoutAllowance.map(
+            ({ token, balance, allowance }: TokenWithBalanceAndAllowance) => (
+              <PortfolioTokenAsset
+                token={token}
+                balance={balance}
+                chainId={chainId}
+                isApproved={false}
+              />
+            )
+          )}
+      </Accordion>
+      {/* <PortfolioNetwork
         displayName={currentChain.name}
         chainIcon={currentChain.chainImg}
         chainId={chainId}
-      />
-      <PortfolioAssetHeader />
-      {sortedTokensWithAllowance.length > 0 &&
-        sortedTokensWithAllowance.map(
-          ({ token, balance, allowance }: TokenWithBalanceAndAllowance) => (
-            <PortfolioTokenAsset
-              token={token}
-              balance={balance}
-              chainId={chainId}
-              isApproved={true}
-            />
-          )
-        )}
-      {shouldShowDivider && (
-        <div className="border-b border-solid border-[#28282F] my-2" />
-      )}
-      {sortedTokensWithoutAllowance.length > 0 &&
-        sortedTokensWithoutAllowance.map(
-          ({ token, balance, allowance }: TokenWithBalanceAndAllowance) => (
-            <PortfolioTokenAsset
-              token={token}
-              balance={balance}
-              chainId={chainId}
-              isApproved={false}
-            />
-          )
-        )}
+      /> */}
     </div>
   )
 }
