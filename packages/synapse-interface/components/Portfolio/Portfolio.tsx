@@ -69,6 +69,27 @@ type PortfolioContentProps = {
   networkPortfolioWithBalances: NetworkTokenBalancesAndAllowances
 }
 
+const PortfolioContent = ({
+  connectedAddress,
+  networkPortfolioWithBalances,
+}: PortfolioContentProps) => {
+  return (
+    <div className="">
+      <PortfolioAssetHeader />
+      {connectedAddress ? (
+        Object.keys(networkPortfolioWithBalances).map((chainId) => {
+          const tokens = networkPortfolioWithBalances[chainId]
+          return (
+            <SingleNetworkPortfolio chainId={Number(chainId)} tokens={tokens} />
+          )
+        })
+      ) : (
+        <UnconnectedPortfolioContent />
+      )}
+    </div>
+  )
+}
+
 const UnconnectedPortfolioContent = () => {
   return (
     <>
@@ -85,19 +106,6 @@ const UnconnectedPortfolioContent = () => {
   )
 }
 
-const PortfolioContent = ({
-  connectedAddress,
-  networkPortfolioWithBalances,
-}: PortfolioContentProps) => {
-  console.log('networkPortfolioWithBalances: ', networkPortfolioWithBalances)
-  return (
-    <div className="">
-      <PortfolioAssetHeader />
-      {connectedAddress ? <></> : <UnconnectedPortfolioContent />}
-    </div>
-  )
-}
-
 type SingleNetworkPortfolioProps = {
   chainId: number
   tokens: TokenWithBalanceAndAllowance[]
@@ -109,7 +117,7 @@ const SingleNetworkPortfolio = ({
 }: SingleNetworkPortfolioProps) => {
   const currentChain: Chain = CHAINS_BY_ID[chainId]
 
-  return <></>
+  return <div className="flex flex-col">{chainId}</div>
 }
 
 const PortfolioAssetHeader = () => {
