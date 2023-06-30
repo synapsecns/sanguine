@@ -2,11 +2,12 @@ package metrics
 
 import (
 	"fmt"
+	"time"
+
 	"go.opentelemetry.io/otel/metric"
 	sdkmetric "go.opentelemetry.io/otel/sdk/metric"
 	"go.opentelemetry.io/otel/sdk/resource"
 	semconv "go.opentelemetry.io/otel/semconv/v1.12.0"
-	"time"
 )
 
 // Meter is an interface for counter and histogram.
@@ -22,13 +23,13 @@ type MeterImpl struct {
 	mp *sdkmetric.MeterProvider
 }
 
-// NewMeter creates a new meter provider.
-func NewMeter(serviceName string, interval time.Duration, exporter sdkmetric.Exporter) (*MeterImpl, error) {
+// NewOtelMeter creates a new meter provider.
+func NewOtelMeter(serviceName string, interval time.Duration, exporter sdkmetric.Exporter) (*MeterImpl, error) {
 	resource := resource.NewWithAttributes(
 		semconv.SchemaURL,
 		semconv.ServiceNameKey.String(serviceName),
 	)
-	mp := sdkmetric.NewMeterProvider(
+	mp := sdkmetric.NewOtelMeterProvider(
 		sdkmetric.WithResource(resource),
 		sdkmetric.WithReader(
 			sdkmetric.NewPeriodicReader(exporter, sdkmetric.WithInterval(interval)),

@@ -2,6 +2,11 @@ package metrics
 
 import (
 	"context"
+	"net/http"
+	"os"
+	"strconv"
+	"time"
+
 	"github.com/gin-gonic/gin"
 	"github.com/synapsecns/sanguine/core/config"
 	"github.com/uptrace/opentelemetry-go-extra/otelgorm"
@@ -17,10 +22,6 @@ import (
 	semconv "go.opentelemetry.io/otel/semconv/v1.17.0"
 	"go.opentelemetry.io/otel/trace"
 	"gorm.io/gorm"
-	"net/http"
-	"os"
-	"strconv"
-	"time"
 )
 
 // baseHandler is a base metrics handler that implements the Handler interface.
@@ -122,7 +123,7 @@ func newBaseHandlerWithTracerProvider(buildInfo config.BuildInfo, tracerProvider
 	if err != nil {
 		return nil
 	}
-	mp, err := NewMeter(buildInfo.Name(), time.Duration(interval)*time.Second, metricExporter)
+	mp, err := NewOtelMeter(buildInfo.Name(), time.Duration(interval)*time.Second, metricExporter)
 	if err != nil {
 		return nil
 	}

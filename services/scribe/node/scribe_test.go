@@ -725,7 +725,6 @@ func getLogs(ctx context.Context, contractAddress string, fromBlock uint64, toBl
 				goto RETRY
 			}
 			totalResults += resultCount
-			fmt.Println("totalResults += resultCount", totalResults, resultCount)
 		}
 
 		if i < numBatches-1 {
