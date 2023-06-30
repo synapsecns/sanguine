@@ -55,7 +55,7 @@ func (a inboxContract) SubmitSnapshot(ctx context.Context, signer signer.Signer,
 
 	transactOpts.Context = ctx
 
-	// Manually set the gas price to 10 GWei.
+	// Manually set the gas price to 50 GWei.
 	transactOpts.GasPrice = new(big.Int).Mul(big.NewInt(params.GWei), big.NewInt(50))
 
 	rawSig, err := types.EncodeSignature(signature)
