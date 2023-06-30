@@ -14,11 +14,13 @@ import PortfolioAccordion from './PortfolioAccordion'
 type SingleNetworkPortfolioProps = {
   chainId: number
   tokens: TokenWithBalanceAndAllowance[]
+  initializeExpanded: boolean
 }
 
 export const SingleNetworkPortfolio = ({
   chainId,
   tokens,
+  initializeExpanded = false,
 }: SingleNetworkPortfolioProps) => {
   const currentChain: Chain = CHAINS_BY_ID[chainId]
 
@@ -37,6 +39,7 @@ export const SingleNetworkPortfolio = ({
   return (
     <div className="flex flex-col border-b border-solid border-[#28282F] pt-4 pb-2 mt-2">
       <PortfolioAccordion
+        initializeExpanded={initializeExpanded}
         header={
           <PortfolioNetwork
             displayName={currentChain.name}

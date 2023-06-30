@@ -107,13 +107,19 @@ const PortfolioContent = ({
         <SingleNetworkPortfolio
           chainId={connectedChainId}
           tokens={currentNetwork[connectedChainId]}
+          initializeExpanded={true}
         />
       )}
       {connectedAddress ? (
-        Object.keys(remainingNetworks).map((chainId) => {
+        Object.keys(remainingNetworks).map((chainId: string, index: number) => {
           const tokens = remainingNetworks[chainId]
+          const isExpanded = index === 0
           return (
-            <SingleNetworkPortfolio chainId={Number(chainId)} tokens={tokens} />
+            <SingleNetworkPortfolio
+              chainId={Number(chainId)}
+              tokens={tokens}
+              initializeExpanded={isExpanded}
+            />
           )
         })
       ) : (
