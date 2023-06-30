@@ -4,10 +4,13 @@ import {
   TokenWithBalanceAndAllowance,
 } from '@/utils/hooks/usePortfolioBalances'
 import { PortfolioTabManager } from './PortfolioTabManager'
-import { PortfolioAssetHeader, SingleNetworkPortfolio } from './SinglePortfolioNetwork'
+import {
+  PortfolioAssetHeader,
+  SingleNetworkPortfolio,
+} from './SinglePortfolioNetwork'
 import { useAccount, useNetwork, Address } from 'wagmi'
 import { Zero } from '@ethersproject/constants'
-import { useState } from 'react'
+import React, { useState } from 'react'
 import { ConnectWalletButton } from './ConnectWalletButton'
 
 export enum PortfolioTabs {
@@ -72,7 +75,6 @@ const PortfolioContent = ({
 }: PortfolioContentProps) => {
   return (
     <div className="">
-      <PortfolioAssetHeader />
       {connectedAddress ? (
         Object.keys(networkPortfolioWithBalances).map((chainId) => {
           const tokens = networkPortfolioWithBalances[chainId]
@@ -81,7 +83,10 @@ const PortfolioContent = ({
           )
         })
       ) : (
-        <UnconnectedPortfolioContent />
+        <React.Fragment>
+          <PortfolioAssetHeader />
+          <UnconnectedPortfolioContent />
+        </React.Fragment>
       )}
     </div>
   )

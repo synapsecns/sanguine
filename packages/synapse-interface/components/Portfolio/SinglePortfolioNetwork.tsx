@@ -62,12 +62,13 @@ export const SingleNetworkPortfolio = ({
   console.log('sortedTokensWithoutAllowance:', sortedTokensWithoutAllowance)
 
   return (
-    <div className="flex flex-col">
+    <div className="flex flex-col border-b border-solid border-[#28282F] py-4 mb-4">
       <PortfolioNetwork
         displayName={currentChain.name}
         chainIcon={currentChain.chainImg}
         chainId={chainId}
       />
+      <PortfolioAssetHeader />
       {sortedTokensWithAllowance.map(
         ({ token, balance, allowance }: TokenWithBalanceAndAllowance) => (
           <PortfolioTokenAsset
