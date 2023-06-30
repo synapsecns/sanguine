@@ -7,7 +7,7 @@ import { PortfolioTabManager } from './PortfolioTabManager'
 import { useAccount, useNetwork, Address } from 'wagmi'
 import { BigNumber } from 'ethers'
 import { Zero } from '@ethersproject/constants'
-import { useState } from 'react'
+import { useState, useMemo } from 'react'
 import { ConnectWalletButton } from './ConnectWalletButton'
 import { CHAINS_BY_ID } from '@/constants/chains'
 import HomeSvg from '../icons/HomeIcon'
@@ -140,6 +140,11 @@ const PortfolioNetwork = ({
   chainIcon,
   chainId,
 }: PortfolioNetworkProps) => {
+  const { chain } = useNetwork()
+  const isCurrentlyConnectedNetwork: boolean = useMemo(() => {
+    return chainId === chain.id
+  }, [chain.id])
+
   return (
     <div className="flex flex-row">
       <Image
@@ -147,6 +152,12 @@ const PortfolioNetwork = ({
         alt={`${displayName} img`}
         src={chainIcon}
       />
+      <div>{displayName}</div>
+      {isCurrentlyConnectedNetwork ? (
+        <button className="bg-purple-500">Connected</button>
+      ) : (
+        <button>Connect</button>
+      )}
     </div>
   )
 }
