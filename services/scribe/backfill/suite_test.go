@@ -54,8 +54,6 @@ func (b *BackfillSuite) SetupSuite() {
 
 	var err error
 	b.metrics, err = metrics.NewByType(b.GetSuiteContext(), metadata.BuildInfo(), metrics.Jaeger)
-	b.nullMetrics, err = metrics.NewByType(b.GetSuiteContext(), metadata.BuildInfo(), metrics.Jaeger)
-
 	Nil(b.T(), err)
 }
 
