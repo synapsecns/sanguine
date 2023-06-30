@@ -40,7 +40,7 @@ type TabProps = {
 
 const Tab = ({ display, activeTab, tabType, handleTabChange }: TabProps) => {
   const isCurrentlyActive: boolean = activeTab === tabType
-  const radialGradient = 'radial-gradient text-white'
+  const radialGradient = 'radial-gradient-underline text-white'
   return (
     <button
       className={`

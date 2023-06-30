@@ -154,12 +154,24 @@ const PortfolioNetwork = ({
       />
       <div>{displayName}</div>
       {isCurrentlyConnectedNetwork ? (
-        <button className="bg-purple-500">Connected</button>
+        <ConnectedButton />
       ) : (
         <button>Connect</button>
       )}
     </div>
   )
+}
+
+const ConnectedButton = () => {
+  const buttonClassName = `
+    h-8 flex items-center
+    text-base text-white px-4 py-2 rounded-3xl
+    text-center transform-gpu transition-all duration-75
+    border-2 border-[#D747FF] radial-gradient-bg
+    hover:cursor-default
+  `
+
+  return <button className={buttonClassName}>Connected</button>
 }
 
 const PortfolioAssetHeader = () => {
