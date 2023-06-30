@@ -12,6 +12,7 @@ import { ConnectWalletButton } from './ConnectWalletButton'
 import { CHAINS_BY_ID } from '@/constants/chains'
 import HomeSvg from '../icons/HomeIcon'
 import { Chain } from '@/utils/types'
+import Image from 'next/image'
 
 export enum PortfolioTabs {
   HOME = 'home',
@@ -117,7 +118,37 @@ const SingleNetworkPortfolio = ({
 }: SingleNetworkPortfolioProps) => {
   const currentChain: Chain = CHAINS_BY_ID[chainId]
 
-  return <div className="flex flex-col">{chainId}</div>
+  return (
+    <div className="flex flex-col">
+      <PortfolioNetwork
+        displayName={currentChain.name}
+        chainIcon={currentChain.chainImg}
+        chainId={chainId}
+      />
+    </div>
+  )
+}
+
+type PortfolioNetworkProps = {
+  displayName: string
+  chainIcon: string
+  chainId: number
+}
+
+const PortfolioNetwork = ({
+  displayName,
+  chainIcon,
+  chainId,
+}: PortfolioNetworkProps) => {
+  return (
+    <div className="flex flex-row">
+      <Image
+        className="rounded-md w-7 h-7"
+        alt={`${displayName} img`}
+        src={chainIcon}
+      />
+    </div>
+  )
 }
 
 const PortfolioAssetHeader = () => {
