@@ -110,7 +110,7 @@ func (s *CCTPRelayerSuite) TestStoreCircleRequestFulfilled() {
 
 	// verify that the request is stored as Complete in the db
 	var storedMsg relayTypes.Message
-	err = s.testStore.DB().Where("origin_tx_hash = ?", message1.OriginTxHash).First(&storedMsg).Error
+	err = s.testStore.DB().Where("request_id = ?", message1.RequestID).First(&storedMsg).Error
 	s.Nil(err)
 	s.Equal(message1.OriginTxHash, storedMsg.OriginTxHash)
 	s.Equal(message1.OriginChainID, storedMsg.OriginChainID)
@@ -118,6 +118,27 @@ func (s *CCTPRelayerSuite) TestStoreCircleRequestFulfilled() {
 	s.Equal(message1.RequestID, storedMsg.RequestID)
 	s.Equal(message1.BlockNumber, storedMsg.BlockNumber)
 	s.Equal(relayTypes.Complete, storedMsg.State)
+
+	// store a Submitted message
+	message2 := s.mockMessage(uint32(originChain.GetChainID()), uint32(destChain.GetChainID()), uint32(blockNumber))
+	err = s.testStore.DB().Create(&message2).Error
+	s.Nil(err)
+	fmt.Printf("stored message2 with request id: %v\n", message2.RequestID)
+
+	// process the corresponding fulfilled event
+	requestIDBytes = common.Hex2Bytes(message2.RequestID)
+	copy(requestID[:], requestIDBytes)
+	fulfilledEvent = &cctp.SynapseCCTPEventsCircleRequestFulfilled{
+		RequestID: requestID,
+	}
+	err = relay.StoreCircleRequestFulfilled(s.GetTestContext(), &types.Log{}, fulfilledEvent, uint32(destChain.GetChainID()))
+	s.Nil(err)
+
+	// verify that the message is stored as Complete in the db
+	err = s.testStore.DB().Where("request_id = ?", message2.RequestID).First(&storedMsg).Error
+	s.Nil(err)
+	message2.State = relayTypes.Complete
+	s.Equal(message2, storedMsg)
 }
 
 func (s *CCTPRelayerSuite) TestFetchAttestation() {
