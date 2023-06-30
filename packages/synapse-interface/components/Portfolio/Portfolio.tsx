@@ -147,13 +147,15 @@ const PortfolioNetwork = ({
   }, [chain.id])
 
   return (
-    <div className="flex flex-row">
-      <Image
-        className="rounded-md w-7 h-7"
-        alt={`${displayName} img`}
-        src={chainIcon}
-      />
-      <div>{displayName}</div>
+    <div className="flex flex-row justify-between">
+      <div className="flex flex-row">
+        <Image
+          className="mr-4 rounded-md w-7 h-7"
+          alt={`${displayName} img`}
+          src={chainIcon}
+        />
+        <div className="font-medium text-white text-18">{displayName}</div>
+      </div>
       {isCurrentlyConnectedNetwork ? (
         <ConnectedButton />
       ) : (
