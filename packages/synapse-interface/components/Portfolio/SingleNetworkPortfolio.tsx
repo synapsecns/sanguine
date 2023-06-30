@@ -40,26 +40,28 @@ export const SingleNetworkPortfolio = ({
         chainId={chainId}
       />
       <PortfolioAssetHeader />
-      {sortedTokensWithAllowance.map(
-        ({ token, balance, allowance }: TokenWithBalanceAndAllowance) => (
-          <PortfolioTokenAsset
-            token={token}
-            balance={balance}
-            chainId={chainId}
-            isApproved={true}
-          />
-        )
-      )}
-      {sortedTokensWithoutAllowance.map(
-        ({ token, balance, allowance }: TokenWithBalanceAndAllowance) => (
-          <PortfolioTokenAsset
-            token={token}
-            balance={balance}
-            chainId={chainId}
-            isApproved={false}
-          />
-        )
-      )}
+      {sortedTokensWithAllowance.length > 0 &&
+        sortedTokensWithAllowance.map(
+          ({ token, balance, allowance }: TokenWithBalanceAndAllowance) => (
+            <PortfolioTokenAsset
+              token={token}
+              balance={balance}
+              chainId={chainId}
+              isApproved={true}
+            />
+          )
+        )}
+      {sortedTokensWithoutAllowance.length > 0 &&
+        sortedTokensWithoutAllowance.map(
+          ({ token, balance, allowance }: TokenWithBalanceAndAllowance) => (
+            <PortfolioTokenAsset
+              token={token}
+              balance={balance}
+              chainId={chainId}
+              isApproved={false}
+            />
+          )
+        )}
     </div>
   )
 }
