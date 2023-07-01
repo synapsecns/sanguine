@@ -67,6 +67,7 @@ func (u ExampleAgentSuite) TestEncodeDecodeAttestationSignature() {
 	Nil(u.T(), err)
 
 	decodedSignature, err := types.DecodeSignature(encodedSignature)
+	Nil(u.T(), err)
 
 	Equal(u.T(), attestationSignature.R().Uint64(), decodedSignature.R().Uint64())
 	Equal(u.T(), attestationSignature.V().Uint64(), decodedSignature.V().Uint64())

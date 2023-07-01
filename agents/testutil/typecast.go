@@ -527,7 +527,7 @@ func (d *DeployManager) AddAgentsToLightManagerHarnessContract(
 
 		// We want to make the notary do the work of adding the agent and not
 		// have it done automatically by the test harness
-		if shouldUpdateAgentStatuses[i] == false {
+		if !shouldUpdateAgentStatuses[i] {
 			continue
 		}
 
