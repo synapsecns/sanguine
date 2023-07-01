@@ -1,7 +1,6 @@
 package agentsintegration_test
 
 import (
-	"fmt"
 	"github.com/Flaque/filet"
 	awsTime "github.com/aws/smithy-go/time"
 	"github.com/brianvoe/gofakeit/v6"
@@ -524,15 +523,139 @@ func (u *AgentsIntegrationSuite) TestAgentsE2E() {
 		_ = awsTime.SleepWithContext(u.GetTestContext(), time.Second*5)
 
 		notaryMalicious1Status, err := u.BondingManagerOnSummit.AgentStatus(&bind.CallOpts{Context: u.GetTestContext()}, u.NotaryMalicious1BondedSigner.Address())
-		if err != nil {
-			fmt.Printf("CRONIN got an error from AgentStatus %v\n", err)
-		}
 		Nil(u.T(), err)
-
-		if err == nil {
-			fmt.Printf("CRONIN malicious notary status is %v\n", notaryMalicious1Status.Flag)
-		}
 
 		return uint8(types.AgentFlagFraudulent) == notaryMalicious1Status.Flag
 	})
+
+	var badStateRoot [32]byte
+	for i := 0; i < 32; i++ {
+		badStateRoot[i] = byte(i)
+	}
+	badGasData := types.NewGasData(uint16(7), uint16(7), uint16(7), uint16(7), uint16(7), uint16(7))
+
+	originID := u.OriginDomainClient.Config().DomainID
+	badStateNonce := uint32(100)
+	badState := types.NewState(badStateRoot, originID, badStateNonce, badBlockNumberBigInt, badTimeStampBigInt, badGasData)
+
+	badSnapshotStates := make([]types.State, 0, 1)
+	badSnapshotStates = append(badSnapshotStates, badState)
+
+	badSnapshot := types.NewSnapshot(badSnapshotStates)
+
+	badSnapshotSignature, badEncodedSnapshot, _, err := badSnapshot.SignSnapshot(u.GetTestContext(), u.GuardMalicious1BondedSigner)
+	Nil(u.T(), err)
+
+	badSnapshotRawSig, err := types.EncodeSignature(badSnapshotSignature)
+	Nil(u.T(), err)
+
+	txContextSummit := u.TestBackendSummit.GetTxContext(u.GetTestContext(), u.SummitMetadata.OwnerPtr())
+	badSummitTx, err := u.InboxOnSummit.SubmitSnapshot(
+		txContextSummit.TransactOpts,
+		badEncodedSnapshot,
+		badSnapshotRawSig)
+	Nil(u.T(), err)
+	u.TestBackendSummit.WaitForConfirmation(u.GetTestContext(), badSummitTx)
+
+	u.Eventually(func() bool {
+		_ = awsTime.SleepWithContext(u.GetTestContext(), time.Second*5)
+
+		rawBadState, err := u.SummitContract.GetLatestAgentState(
+			&bind.CallOpts{Context: u.GetTestContext()},
+			u.OriginDomainClient.Config().DomainID,
+			u.GuardMalicious1BondedSigner.Address())
+		Nil(u.T(), err)
+
+		if len(rawBadState) == 0 {
+			return false
+		}
+
+		badState, err := types.DecodeState(rawBadState)
+		Nil(u.T(), err)
+		return badState.Nonce() == badStateNonce
+	})
+
+	guardLatestRawBadState, err := u.SummitContract.GetLatestState(&bind.CallOpts{Context: u.GetTestContext()}, originID)
+	Nil(u.T(), err)
+	NotNil(u.T(), guardLatestRawBadState)
+
+	guardLatestBadState, err := types.DecodeState(guardLatestRawBadState)
+	Nil(u.T(), err)
+
+	Equal(u.T(), badStateNonce, guardLatestBadState.Nonce())
+
+	badNotarySnapshot := types.NewSnapshot([]types.State{guardLatestBadState})
+
+	badNotarySnapshotSignature, encodedBadNotarySnapshot, _, err := badNotarySnapshot.SignSnapshot(u.GetTestContext(), u.NotaryMalicious2BondedSigner)
+	Nil(u.T(), err)
+
+	badNotarySnapshotRawSig, err := types.EncodeSignature(badNotarySnapshotSignature)
+	Nil(u.T(), err)
+
+	badNotarySummitTx, err := u.InboxOnSummit.SubmitSnapshot(txContextSummit.TransactOpts, encodedBadNotarySnapshot, badNotarySnapshotRawSig)
+	Nil(u.T(), err)
+
+	u.TestBackendSummit.WaitForConfirmation(u.GetTestContext(), badNotarySummitTx)
+
+	u.Eventually(func() bool {
+		_ = awsTime.SleepWithContext(u.GetTestContext(), time.Second*5)
+
+		rawBadNotaryState, err := u.SummitContract.GetLatestAgentState(
+			&bind.CallOpts{Context: u.GetTestContext()},
+			u.OriginDomainClient.Config().DomainID,
+			u.NotaryMalicious2BondedSigner.Address())
+		Nil(u.T(), err)
+
+		if len(rawBadNotaryState) == 0 {
+			return false
+		}
+
+		badNotaryState, err := types.DecodeState(rawBadNotaryState)
+		Nil(u.T(), err)
+		return badNotaryState.Nonce() >= badStateNonce
+	})
+
+	latestNotaryBadAttestationRaw, err := u.SummitContract.GetLatestNotaryAttestation(
+		&bind.CallOpts{Context: u.GetTestContext()},
+		u.NotaryMalicious2BondedSigner.Address())
+	Nil(u.T(), err)
+	NotNil(u.T(), latestNotaryBadAttestationRaw)
+
+	latestNotaryBadAttestation, err := types.DecodeAttestation(latestNotaryBadAttestationRaw.AttPayload)
+	Nil(u.T(), err)
+	Equal(u.T(), uint32(3), latestNotaryBadAttestation.Nonce())
+
+	badNotary2AttestationSignature, _, _, err := latestNotaryBadAttestation.SignAttestation(u.GetTestContext(), u.NotaryMalicious2BondedSigner)
+
+	badNotary2AttestationRawSignature, err := types.EncodeSignature(badNotary2AttestationSignature)
+	Nil(u.T(), err)
+
+	badNotary2Tx, err := u.LightInboxOnDestination.SubmitAttestation(
+		txContextDestination.TransactOpts,
+		latestNotaryBadAttestationRaw.AttPayload,
+		badNotary2AttestationRawSignature,
+		latestNotaryBadAttestationRaw.AgentRoot,
+		latestNotaryBadAttestationRaw.SnapGas)
+	Nil(u.T(), err)
+
+	u.TestBackendDestination.WaitForConfirmation(u.GetTestContext(), badNotary2Tx)
+
+	u.Eventually(func() bool {
+		_ = awsTime.SleepWithContext(u.GetTestContext(), time.Second*5)
+
+		numAttestations, err := u.DestinationContract.AttestationsAmount(&bind.CallOpts{Context: u.GetTestContext()})
+		Nil(u.T(), err)
+
+		return numAttestations.Uint64() >= uint64(4)
+	})
+
+	/*u.Eventually(func() bool {
+		_ = awsTime.SleepWithContext(u.GetTestContext(), time.Second*5)
+
+		notaryMalicious2Status, err := u.BondingManagerOnSummit.AgentStatus(&bind.CallOpts{Context: u.GetTestContext()}, u.NotaryMalicious2BondedSigner.Address())
+		Nil(u.T(), err)
+
+		//return err != nil
+		return uint8(types.AgentFlagFraudulent) == notaryMalicious2Status.Flag
+	})*/
 }

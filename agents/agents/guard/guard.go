@@ -70,6 +70,15 @@ func NewGuard(ctx context.Context, cfg config.AgentConfig, handler metrics.Handl
 	return guard, nil
 }
 
+func (g Guard) getDomainByDomainID(domainID uint32) domains.DomainClient {
+	for _, domain := range g.domains {
+		if domain.Config().DomainID == domainID {
+			return domain
+		}
+	}
+	return nil
+}
+
 //nolint:cyclop
 func (g Guard) loadSummitLatestStates(parentCtx context.Context) {
 	for _, domain := range g.domains {
@@ -220,7 +229,7 @@ func (g Guard) runAttestationFraudDetection(parentCtx context.Context) {
 		for count := numAttestations; count > 0; count-- {
 			i := count - 1
 			if count == 3 {
-				fmt.Printf("CRONIN count == 3")
+				fmt.Printf("CRONIN count == 3\n")
 			}
 			attestation, attestationSignature, err := domain.Destination().GetAttestation(ctx, i)
 			if err != nil {
@@ -249,23 +258,68 @@ func (g Guard) runAttestationFraudDetection(parentCtx context.Context) {
 				))
 				continue
 			}
-			if isValidAttestation {
-				fmt.Printf("CRONIN Attestation is valid!!!\n")
-			} else {
-				// TODO (joe): Submit fraud report here
-				fmt.Printf("CRONIN Attestation is NOT valid!!! WE FOUND FRAUD!!!!!!\n")
 
-				// First thing is to call verify on Summit
-				attPayload, err := types.EncodeAttestation(attestation)
+			fmt.Printf("CRONIN Attestation is valid!!!\n")
+			// TODO (joe): First look up snapshot on Summit to get all states
+			// Then iterate through all states and check on the corresponding origin chains if it is ok
+			attPayload, err := types.EncodeAttestation(attestation)
+			if err != nil {
+				logger.Errorf("Failed EncodeAttestation for destinationID %d and index %d: err = %v", domain.Config().DomainID, i, err)
+				span.AddEvent("Failed calling EncodeAttestation for destinationID and index", trace.WithAttributes(
+					attribute.Int("destinationID", int(domain.Config().DomainID)),
+					attribute.Int64("index", int64(i)),
+					attribute.String("err", err.Error()),
+				))
+				continue
+			}
+
+			if isValidAttestation {
+				snapshot /*snapshotSignature*/, _, err := g.summitDomain.Summit().GetNotarySnapshot(ctx, attPayload)
 				if err != nil {
-					logger.Errorf("Failed EncodeAttestation for destinationID %d and index %d: err = %v", domain.Config().DomainID, i, err)
-					span.AddEvent("Failed calling EncodeAttestation for destinationID and index", trace.WithAttributes(
-						attribute.Int("destinationID", int(domain.Config().DomainID)),
-						attribute.Int64("index", int64(i)),
+					logger.Errorf("Failed to GetNotarySnapshot on Summit: %v", err)
+					span.AddEvent("Failed to GetNotarySnapshot on Summit", trace.WithAttributes(
 						attribute.String("err", err.Error()),
 					))
 					continue
 				}
+
+				fmt.Printf("CRONIN got Notary snapshot with this many states %v\n", len(snapshot.States()))
+				for i, state := range snapshot.States() {
+					fmt.Printf("CRONIN notary snapshot state[%v]: origin(%v), nonce(%v), blockNumber(%v), timeStamp(%v)\n",
+						i, state.Origin(), state.Nonce(), state.BlockNumber(), state.Timestamp().Uint64())
+
+					originDomain := g.getDomainByDomainID(state.Origin())
+					if originDomain == nil {
+						logger.Errorf("Do not have the ability to check state from origin domain id: %v", state.Origin())
+						span.AddEvent("Do not have the ability to check state from origin domain id", trace.WithAttributes(
+							attribute.Int64("originDomainID", int64(state.Origin())),
+						))
+						continue
+					}
+					isValidState, err := originDomain.Origin().IsValidState(ctx, state)
+					if err != nil {
+						// TODO (joe): This could be very serious if we can't reach the Origin for an extended period of time.
+						// We need to monitor and alert cases when a state can't be checked.
+						// If need be, we should manually pause the Synapse Chain from using this state.
+						logger.Errorf("Failed calling IsValidState for originID %v, destinationID %d and index %d on the Origin contract: err = %v", state.Origin(), domain.Config().DomainID, i, err)
+						span.AddEvent("Failed calling IsValidState for originID, destinationID and index on the Summit contract", trace.WithAttributes(
+							attribute.Int("originID", int(state.Origin())),
+							attribute.Int("destinationID", int(domain.Config().DomainID)),
+							attribute.Int64("index", int64(i)),
+							attribute.String("err", err.Error()),
+						))
+						continue
+					}
+					if !isValidState {
+						fmt.Printf("CRONIN state is NOT valid!!! We found a FRAUDULENT STATE!!!!\n")
+					} else {
+						fmt.Printf("CRONIN state is valid!!!\n")
+					}
+				}
+			} else {
+				// TODO (joe): Submit fraud report here
+				fmt.Printf("CRONIN Attestation is NOT valid!!! WE FOUND FRAUD!!!!!!\n")
+
 				attSignature, err := types.EncodeSignature(attestationSignature)
 				if err != nil {
 					logger.Errorf("Failed EncodeSignature for destinationID %d and index %d: err = %v", domain.Config().DomainID, i, err)

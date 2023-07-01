@@ -62,7 +62,7 @@ func (a lightInboxContract) SubmitAttestation(
 	ctx context.Context,
 	signer signer.Signer,
 	attPayload []byte,
-	signature signer.Signature,
+	signature types.Signature,
 	agentRoot [32]byte,
 	snapGas []*big.Int,
 ) error {

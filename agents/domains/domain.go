@@ -49,6 +49,8 @@ type OriginContract interface {
 	SuggestLatestState(ctx context.Context) (types.State, error)
 	// SuggestState gets the state on the origin with the given nonce if it exists
 	SuggestState(ctx context.Context, nonce uint32) (types.State, error)
+	// IsValidState checks if the State is valid on the Origin chain
+	IsValidState(ctx context.Context, state types.State) (bool, error)
 }
 
 // SummitContract contains the interface for the summit.
@@ -63,12 +65,14 @@ type SummitContract interface {
 	WatchAttestationSaved(ctx context.Context, sink chan<- *summit.SummitAttestationSaved) (event.Subscription, error)
 	// IsValidAttestation checks if the Attestation is valid on the Synapse Chain's Summit contract
 	IsValidAttestation(ctx context.Context, attestation types.Attestation) (bool, error)
+	// GetNotarySnapshot gets snapshot from the attestation payload
+	GetNotarySnapshot(ctx context.Context, attPayload []byte) (types.Snapshot, types.Signature, error)
 }
 
 // InboxContract contains the interface for the inbox.
 type InboxContract interface {
 	// SubmitSnapshot submits a snapshot to the inbox (via the Inbox).
-	SubmitSnapshot(ctx context.Context, signer signer.Signer, encodedSnapshot []byte, signature signer.Signature) error
+	SubmitSnapshot(ctx context.Context, signer signer.Signer, encodedSnapshot []byte, signature types.Signature) error
 	// VerifyAttestation is called by a Guard who finds a Notary guilty of a fraudulent Attestation. The result will be to
 	// slash the Notary if it's in fact guilty.
 	VerifyAttestation(ctx context.Context, signer signer.Signer, attPayload []byte, attSignature []byte) error
@@ -95,7 +99,7 @@ type DestinationContract interface {
 	// MessageStatus takes a message and returns whether it has been executed or not. 0: None, 1: Failed, 2: Success.
 	MessageStatus(ctx context.Context, message types.Message) (uint8, error)
 	// GetAttestation gets the Attestation and its signature at the given index if it exists
-	GetAttestation(ctx context.Context, index uint64) (types.Attestation, signer.Signature, error)
+	GetAttestation(ctx context.Context, index uint64) (types.Attestation, types.Signature, error)
 }
 
 // LightInboxContract contains the interface for the light inbox.
@@ -105,7 +109,7 @@ type LightInboxContract interface {
 		ctx context.Context,
 		signer signer.Signer,
 		attPayload []byte,
-		signature signer.Signature,
+		signature types.Signature,
 		agentRoot [32]byte,
 		snapGas []*big.Int,
 	) error

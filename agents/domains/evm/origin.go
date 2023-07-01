@@ -116,4 +116,17 @@ func (o originContract) SuggestState(ctx context.Context, nonce uint32) (types.S
 	return suggestedState, nil
 }
 
+func (o originContract) IsValidState(ctx context.Context, state types.State) (bool, error) {
+	rawState, err := types.EncodeState(state)
+	if err != nil {
+		return false, fmt.Errorf("could not encode state: %w", err)
+	}
+	isValidState, err := o.contract.IsValidState(&bind.CallOpts{Context: ctx}, rawState)
+	if err != nil {
+		return false, fmt.Errorf("could not check if state is valid: %w", err)
+	}
+
+	return isValidState, nil
+}
+
 var _ domains.OriginContract = &originContract{}

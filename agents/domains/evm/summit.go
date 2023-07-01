@@ -108,3 +108,22 @@ func (a summitContract) IsValidAttestation(ctx context.Context, attestation type
 
 	return isValidAttestation, nil
 }
+
+func (a summitContract) GetNotarySnapshot(ctx context.Context, attPayload []byte) (types.Snapshot, types.Signature, error) {
+	notarySnapshotPayload, err := a.contract.GetNotarySnapshot(&bind.CallOpts{Context: ctx}, attPayload)
+	if err != nil {
+		return nil, nil, fmt.Errorf("could not retrieve notary snapshot: %w", err)
+	}
+
+	snapshot, err := types.DecodeSnapshot(notarySnapshotPayload.SnapPayload)
+	if err != nil {
+		return nil, nil, fmt.Errorf("could not decode notary snapshot: %w", err)
+	}
+
+	snapshotSignature, err := types.DecodeSignature(notarySnapshotPayload.SnapSignature)
+	if err != nil {
+		return nil, nil, fmt.Errorf("could not decode signature from snapshot: %w", err)
+	}
+
+	return snapshot, snapshotSignature, nil
+}

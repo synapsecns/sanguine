@@ -40,7 +40,7 @@ type inboxContract struct {
 	nonceManager nonce.Manager
 }
 
-func (a inboxContract) SubmitSnapshot(ctx context.Context, signer signer.Signer, encodedSnapshot []byte, signature signer.Signature) error {
+func (a inboxContract) SubmitSnapshot(ctx context.Context, signer signer.Signer, encodedSnapshot []byte, signature types.Signature) error {
 	transactor, err := signer.GetTransactor(ctx, a.client.GetBigChainID())
 	if err != nil {
 		return fmt.Errorf("could not sign tx: %w", err)
