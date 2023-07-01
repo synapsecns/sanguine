@@ -18,6 +18,39 @@ type SingleNetworkPortfolioProps = {
   initializeExpanded: boolean
 }
 
+const PortfolioTokenVisualizer = ({
+  portfolioTokens,
+}: {
+  portfolioTokens: TokenWithBalanceAndAllowance[]
+}) => {
+  const hasOneToken = portfolioTokens.length > 0
+  const hasTwoTokens = portfolioTokens.length > 1
+  const numOverTwoTokens =
+    portfolioTokens.length - 2 > 0 ? portfolioTokens.length - 2 : 0
+
+  return (
+    <div className="flex flex-row">
+      {hasOneToken && (
+        <Image
+          className="w-6 h-6 mr-1 rounded-md"
+          alt={`${portfolioTokens[0].token.symbol} img`}
+          src={portfolioTokens[0].token.icon}
+        />
+      )}
+      {hasTwoTokens && (
+        <Image
+          className="w-6 h-6 mr-2 rounded-md"
+          alt={`${portfolioTokens[1].token.symbol} img`}
+          src={portfolioTokens[1].token.icon}
+        />
+      )}
+      {numOverTwoTokens && (
+        <div className="text-white">+ {numOverTwoTokens}</div>
+      )}
+    </div>
+  )
+}
+
 export const SingleNetworkPortfolio = ({
   portfolioChainId,
   connectedChainId,
@@ -53,6 +86,7 @@ export const SingleNetworkPortfolio = ({
           />
         }
       >
+        <PortfolioTokenVisualizer portfolioTokens={tokens} />
         <PortfolioAssetHeader />
         {sortedTokensWithAllowance.length > 0 &&
           sortedTokensWithAllowance.map(
