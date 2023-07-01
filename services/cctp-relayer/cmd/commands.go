@@ -111,7 +111,7 @@ var runCommand = &cli.Command{
 var relaySingleCommand = &cli.Command{
 	Name:        "relay-single",
 	Description: "relay a single cctp message",
-	Flags:       []cli.Flag{originFlag, txHashFlag, configFlag, dbFlag, pathFlag, scribePortFlag, scribeURL, &commandline.LogLevel},
+	Flags:       []cli.Flag{originFlag, txHashFlag, configFlag, dbFlag, pathFlag, &commandline.LogLevel},
 	Action: func(c *cli.Context) (err error) {
 		commandline.SetLogLevel(c)
 		cfg, err := config.DecodeConfig(core.ExpandOrReturnPath(c.String(configFlag.Name)))
@@ -142,13 +142,16 @@ var relaySingleCommand = &cli.Command{
 		omnirpcClient := omniClient.NewOmnirpcClient(cfg.BaseOmnirpcURL, metricsProvider, omniClient.WithCaptureReqRes())
 		attAPI := api.NewCircleAPI(c.String(cfg.CircleAPIURl))
 
+		fmt.Println("creating new relayer")
 		cctpRelayer, err := relayer.NewCCTPRelayer(c.Context, cfg, store, scribeClient, omnirpcClient, metricsProvider, attAPI)
 		if err != nil {
 			return fmt.Errorf("could not create cctp relayer: %w", err)
 		}
+		fmt.Printf("built relayer")
 
 		err = cctpRelayer.RelaySingle(c.Context, uint32(c.Uint(originFlag.Name)), c.String(txHashFlag.Name))
 		if err != nil {
+			fmt.Printf("relaysingle err: %v\n", err)
 			return fmt.Errorf("could not relay single message: %w", err)
 		}
 		return nil
