@@ -2,14 +2,13 @@
 sidebar_position: 1
 ---
 
-# Protocol Overview
+# Overview
+
+The **Synapse Messaging System** allows smart contracts to send messages from one blockchain to another.
 
 ## How It Works
 
 Decentralized agents follow a simple and secure four-step process to relay cross-chain messages on behalf of client-controlled smart contracts:
-
-1. **Broadcast**:
-   Cross-chain messages are broadcast by client-controlled smart contracts and sent to the Synapse origin chain contract.
 
 ```
 DEST_CHAIN_ID:    123456
@@ -19,39 +18,27 @@ SECURITY_SECONDS: 60
 TIP_USDC:         10
 ```
 
+1. **Broadcast**:
+   Cross-chain messages are broadcast by client-controlled smart contracts and sent to the Synapse origin chain contract.
 2. **Submit**:
    Off-chain agents watching the origin-chain contract compete to validate and submit messages to the Synapse destination-chain contract.
-
 3. **Challenge**:
    Off-chain agents may watch for, and object to, fraudulently submitted messages during a security window set by the initiating contract.
-
 4. **Execute**:
    Once the security window has passed, off-chain agents compete to relay the message to the client smart contract on the destination chain.
 
-## Blockchain Execution
-
-On the origin and destination chains, individual blockchain transactions are made on a per-message basis. The Synapse origin and destination contracts also record blockchain transactions, but in a batched method.
-
-### Rewards
-
-To reward participation, broadcast messages include a tip to be split among the submission and execution agents once the broadcast is sucessfully executed.
-
-```
-Recommended tip: $10
-```
-
 ## Optimistic Security
 
-To discourage fraudulent messages from being submitted, participating agents must register and post a bond which is forfeit in the event of a fraudulent message or report.
+To discourage fraudulent messages, participating agents must register and post a bond which is forfeit in the event of a fraudulent message or report.
 
 During the challenge window, reporting agents may detect and report fraud to the Synapse origin and destination contracts. Agents found to have acted dishonestly forfeit their bond to the reporting agent.
 
 ```
 Submission bond: $2,000,000
-Reporting bond:  $20,000
+Reporting bond: $20,000
 ```
 
-### Fraud Reporting
+## Fraud Prevention
 
 If a fraudulent message is observed, detecting agents submit a fraud report to the Synapse origin and destination contracts. The destination contract pauses message execution while the origin contract evaluates the report:
 
@@ -60,6 +47,16 @@ If a fraudulent message is observed, detecting agents submit a fraud report to t
 - Dishonest agents are removed from the system, in addition to forfeiting their bonds
 
 Fraud evaluation takes approximately 30 seconds, after which message execution resumes among the remaining honest agents.
+
+## Execution Rewards
+
+To reward participation, broadcast messages include a tip to be split among the submission and execution agents once the broadcast is sucessfully executed.
+
+```
+Recommended tip: $10
+```
+
+While blockchain transactions occur on the origin and destination chains on a per-message basis, The Synapse origin and destination transactions are batched for efficiency and cost savings.
 
 <!-- **Synapse Optimistic Messaging:**
 ![SynapseOptimisticMessaging](../../static/img/SynapseMessagingMileHigh.png 'Synapse Optimistic Messaging')
