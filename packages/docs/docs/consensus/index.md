@@ -8,7 +8,7 @@ The **Synapse Messaging System** allows smart contracts to send messages from on
 
 ## How It Works
 
-Decentralized agents follow a simple and secure four-step process to relay cross-chain messages on behalf of client-controlled smart contracts:
+Client-controlled smart contracts broadcast messages to be relayed cross-chain by a series of decentralized agents in a simple and secure four-step process:
 
 ```
 DEST_CHAIN_ID:    123456
