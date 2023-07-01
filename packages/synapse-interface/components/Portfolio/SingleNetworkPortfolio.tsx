@@ -12,17 +12,19 @@ import { formatBNToString } from '@/utils/bignumber/format'
 import PortfolioAccordion from './PortfolioAccordion'
 
 type SingleNetworkPortfolioProps = {
-  chainId: number
+  portfolioChainId: number
+  connectedChainId: number
   tokens: TokenWithBalanceAndAllowance[]
   initializeExpanded: boolean
 }
 
 export const SingleNetworkPortfolio = ({
-  chainId,
+  portfolioChainId,
+  connectedChainId,
   tokens,
   initializeExpanded = false,
 }: SingleNetworkPortfolioProps) => {
-  const currentChain: Chain = CHAINS_BY_ID[chainId]
+  const currentChain: Chain = CHAINS_BY_ID[portfolioChainId]
 
   const [tokensWithAllowance, tokensWithoutAllowance] =
     separateTokensByAllowance(tokens)
@@ -37,14 +39,17 @@ export const SingleNetworkPortfolio = ({
     sortedTokensWithoutAllowance.length > 0
 
   return (
-    <div className="flex flex-col border-b border-solid border-[#28282F] pt-4 pb-2 mt-2">
+    <div
+      data-test-id="single-network-portfolio"
+      className="flex flex-col border-b border-solid border-[#28282F] pt-4 pb-2 mt-2"
+    >
       <PortfolioAccordion
         initializeExpanded={initializeExpanded}
         header={
           <PortfolioNetwork
             displayName={currentChain.name}
             chainIcon={currentChain.chainImg}
-            chainId={chainId}
+            chainId={portfolioChainId}
           />
         }
       >
@@ -55,7 +60,8 @@ export const SingleNetworkPortfolio = ({
               <PortfolioTokenAsset
                 token={token}
                 balance={balance}
-                chainId={chainId}
+                chainId={portfolioChainId}
+                connectedChainId={connectedChainId}
                 isApproved={true}
               />
             )
@@ -69,7 +75,8 @@ export const SingleNetworkPortfolio = ({
               <PortfolioTokenAsset
                 token={token}
                 balance={balance}
-                chainId={chainId}
+                chainId={portfolioChainId}
+                connectedChainId={connectedChainId}
                 isApproved={false}
               />
             )
@@ -83,6 +90,7 @@ type PortfolioTokenAssetProps = {
   token: Token
   balance: BigNumber
   chainId: number
+  connectedChainId: number
   isApproved: boolean
 }
 
@@ -90,13 +98,21 @@ const PortfolioTokenAsset = ({
   token,
   balance,
   chainId,
+  connectedChainId,
   isApproved,
 }: PortfolioTokenAssetProps) => {
   const { icon, symbol, decimals, addresses } = token
   const parsedBalance = formatBNToString(balance, decimals[chainId], 3)
-
+  const isDisabled = chainId !== connectedChainId
+  const filteredOpacity = 'opacity-50 cursor-default'
   return (
-    <div className="flex flex-row items-center my-2 text-white">
+    <div
+      data-test-id="Portfolio Token Asset"
+      className={`
+        flex flex-row items-center my-2 text-white
+        ${isDisabled && filteredOpacity}
+        `}
+    >
       <div
         className={`
           flex flex-row w-1/2 text-left

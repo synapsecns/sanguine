@@ -105,7 +105,8 @@ const PortfolioContent = ({
     <div className="">
       {currentNetwork && (
         <SingleNetworkPortfolio
-          chainId={connectedChainId}
+          portfolioChainId={connectedChainId}
+          connectedChainId={connectedChainId}
           tokens={currentNetwork[connectedChainId]}
           initializeExpanded={true}
         />
@@ -116,7 +117,8 @@ const PortfolioContent = ({
           const isExpanded = index === 0
           return (
             <SingleNetworkPortfolio
-              chainId={Number(chainId)}
+              portfolioChainId={Number(chainId)}
+              connectedChainId={connectedChainId}
               tokens={tokens}
               initializeExpanded={isExpanded}
             />
@@ -137,9 +139,9 @@ const UnconnectedPortfolioContent = () => {
     <>
       <p
         className={`
-      text-[#CCCAD3BF] mt-6 mb-4 pb-6
-      border-b border-solid border-[#28282F]
-      `}
+        text-[#CCCAD3BF] mt-6 mb-4 pb-6
+          border-b border-solid border-[#28282F]
+        `}
       >
         Your bridgable assets appear here when your wallet is connected.
       </p>
