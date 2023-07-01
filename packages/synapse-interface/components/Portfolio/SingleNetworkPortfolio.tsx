@@ -41,7 +41,7 @@ export const SingleNetworkPortfolio = ({
   return (
     <div
       data-test-id="single-network-portfolio"
-      className="flex flex-col border-b border-solid border-[#28282F] pt-4 pb-2 mt-2"
+      className="flex flex-col border-b border-solid border-[#28282F] pt-2 mb-2 mt-2"
     >
       <PortfolioAccordion
         initializeExpanded={initializeExpanded}
@@ -107,7 +107,7 @@ const PortfolioTokenAsset = ({
   const filteredOpacity = 'opacity-50 cursor-default'
   return (
     <div
-      data-test-id="Portfolio Token Asset"
+      data-test-id="portfolio-token-asset"
       className={`
         flex flex-row items-center my-2 text-white
         ${isDisabled && filteredOpacity}
@@ -149,6 +149,7 @@ const PortfolioAssetActionButton = ({
     <React.Fragment>
       {isApproved ? (
         <button
+          data-test-id="portfolio-asset-action-button"
           className={`
             ${buttonClassName}
             border-2 border-[#D747FF]
@@ -158,6 +159,7 @@ const PortfolioAssetActionButton = ({
         </button>
       ) : (
         <button
+          data-test-id="portfolio-asset-action-button"
           className={`
             ${buttonClassName}
             border-2 border-[#28282F] border-opacity-50
@@ -187,7 +189,10 @@ const PortfolioNetwork = ({
   }, [chain.id])
 
   return (
-    <div className="flex flex-row justify-between flex-1 mb-4">
+    <div
+      data-test-id="portfolio-network"
+      className="flex flex-row justify-between flex-1 mb-4"
+    >
       <div className="flex flex-row items-center">
         <Image
           className="mr-4 rounded-md w-7 h-7"
@@ -214,7 +219,11 @@ const ConnectedButton = () => {
   hover:cursor-default
   `
 
-  return <button className={buttonClassName}>Connected</button>
+  return (
+    <button data-test-id="connected-button" className={buttonClassName}>
+      Connected
+    </button>
+  )
 }
 
 const ConnectButton = ({ chainId }: { chainId: number }) => {
@@ -231,7 +240,11 @@ const ConnectButton = ({ chainId }: { chainId: number }) => {
   `
 
   return (
-    <button className={buttonClassName} onClick={handleConnectNetwork}>
+    <button
+      data-test-id="connect-button"
+      className={buttonClassName}
+      onClick={handleConnectNetwork}
+    >
       Connect
     </button>
   )
@@ -239,7 +252,10 @@ const ConnectButton = ({ chainId }: { chainId: number }) => {
 
 export const PortfolioAssetHeader = () => {
   return (
-    <div className="flex text-[#CCCAD3BF] my-2">
+    <div
+      data-test-id="portfolio-asset-header"
+      className="flex text-[#CCCAD3BF] my-2"
+    >
       <div className="w-1/2 text-left">Token</div>
       <div className="w-1/2 text-left">Amount</div>
     </div>

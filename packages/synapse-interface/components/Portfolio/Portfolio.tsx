@@ -49,7 +49,7 @@ export const Portfolio = () => {
   const { chain } = useNetwork()
 
   return (
-    <div className="flex flex-col w-1/2">
+    <div data-test-id="portfolio" className="flex flex-col w-1/2">
       <PortfolioTabManager activeTab={tab} setTab={setTab} />
       <div className="border-t border-solid border-[#28282F] mt-4">
         {tab === PortfolioTabs.HOME && <HomeContent />}
@@ -102,7 +102,7 @@ const PortfolioContent = ({
   )
 
   return (
-    <div className="">
+    <div data-test-id="portfolio-content">
       {currentNetwork && (
         <SingleNetworkPortfolio
           portfolioChainId={connectedChainId}
@@ -138,6 +138,7 @@ const UnconnectedPortfolioContent = () => {
   return (
     <>
       <p
+        data-test-id="unconnected-portfolio-content"
         className={`
         text-[#CCCAD3BF] mt-6 mb-4 pb-6
           border-b border-solid border-[#28282F]
@@ -152,7 +153,7 @@ const UnconnectedPortfolioContent = () => {
 
 const HomeContent = () => {
   return (
-    <div className="my-4 text-white">
+    <div data-test-id="portfolio-home-content" className="my-4 text-white">
       <p className="mb-3">
         Synapse is the most widely used, extensible, and secure cross-chain
         communications network.

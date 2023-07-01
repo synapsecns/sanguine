@@ -23,7 +23,10 @@ export const PortfolioAccordion = ({
 
   return (
     <div>
-      <div className="flex flex-row items-center" data-test-id="Accordion">
+      <div
+        className="flex flex-row items-center"
+        data-test-id="portfolio-accordion"
+      >
         <button onClick={handleToggle} className="mb-4 mr-2">
           <AccordionIcon
             className={`
