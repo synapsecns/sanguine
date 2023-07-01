@@ -135,3 +135,27 @@ func (a destinationContract) MessageStatus(ctx context.Context, message types.Me
 
 	return status, nil
 }
+
+func (a destinationContract) GetAttestation(ctx context.Context, index uint64) (types.Attestation, signer.Signature, error) {
+	indexAsBigInt := new(big.Int).SetUint64(index)
+	attestationDataReturned, err := a.contract.GetAttestation(&bind.CallOpts{Context: ctx}, indexAsBigInt)
+	if err != nil {
+		return nil, nil, fmt.Errorf("could not get attestation with index of %v: %w", index, err)
+	}
+
+	if len(attestationDataReturned.AttPayload) == 0 {
+		return nil, nil, nil
+	}
+
+	attestation, err := types.DecodeAttestation(attestationDataReturned.AttPayload)
+	if err != nil {
+		return nil, nil, fmt.Errorf("could not decode attestation with that index: %w", err)
+	}
+
+	attestationSignature, err := types.DecodeSignature(attestationDataReturned.AttSignature)
+	if err != nil {
+		return nil, nil, fmt.Errorf("could not decode signature with that index: %w", err)
+	}
+
+	return attestation, attestationSignature, nil
+}

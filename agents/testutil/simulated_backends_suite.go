@@ -90,13 +90,17 @@ type SimulatedBackendsTestSuite struct {
 	TestBackendDestination              backends.SimulatedTestBackend
 	TestBackendSummit                   backends.SimulatedTestBackend
 	NotaryBondedWallet                  wallet.Wallet
+	NotaryMalicious1BondedWallet        wallet.Wallet
 	NotaryOnOriginBondedWallet          wallet.Wallet
 	GuardBondedWallet                   wallet.Wallet
 	NotaryBondedSigner                  signer.Signer
+	NotaryMalicious1BondedSigner        signer.Signer
 	NotaryOnOriginBondedSigner          signer.Signer
 	GuardBondedSigner                   signer.Signer
 	NotaryUnbondedWallet                wallet.Wallet
 	NotaryUnbondedSigner                signer.Signer
+	NotaryMalicious1UnbondedWallet      wallet.Wallet
+	NotaryMalicious1UnbondedSigner      signer.Signer
 	NotaryOnOriginUnbondedWallet        wallet.Wallet
 	NotaryOnOriginUnbondedSigner        signer.Signer
 	GuardUnbondedWallet                 wallet.Wallet
@@ -176,6 +180,7 @@ func (a *SimulatedBackendsTestSuite) SetupOrigin(deployManager *DeployManager) {
 	}
 
 	a.TestBackendOrigin.FundAccount(a.GetTestContext(), a.NotaryUnbondedSigner.Address(), *big.NewInt(params.Ether))
+	a.TestBackendOrigin.FundAccount(a.GetTestContext(), a.NotaryMalicious1UnbondedSigner.Address(), *big.NewInt(params.Ether))
 	a.TestBackendOrigin.FundAccount(a.GetTestContext(), a.NotaryOnOriginUnbondedSigner.Address(), *big.NewInt(params.Ether))
 	a.TestBackendOrigin.FundAccount(a.GetTestContext(), a.GuardUnbondedSigner.Address(), *big.NewInt(params.Ether))
 	a.TestBackendOrigin.FundAccount(a.GetTestContext(), a.ExecutorUnbondedSigner.Address(), *big.NewInt(params.Ether))
@@ -194,14 +199,6 @@ func (a *SimulatedBackendsTestSuite) SetupDestination(deployManager *DeployManag
 	a.TestContractMetadataOnDestination, a.TestContractOnDestination = deployManager.GetAgentsTestContract(a.GetTestContext(), a.TestBackendDestination)
 
 	var err error
-	/*agentStatus, err := a.DestinationContract.AgentStatus(&bind.CallOpts{Context: a.GetTestContext()}, a.NotaryBondedSigner.Address())
-	if err != nil {
-		a.T().Fatal(err)
-	}
-
-	if agentStatus.Domain != uint32(a.TestBackendDestination.GetChainID()) {
-		a.T().Fatal(err)
-	}*/
 
 	a.DestinationDomainClient, err = evm.NewEVM(a.GetTestContext(), "destination_client", config.DomainConfig{
 		DomainID:            uint32(a.TestBackendDestination.GetBigChainID().Uint64()),
@@ -216,6 +213,7 @@ func (a *SimulatedBackendsTestSuite) SetupDestination(deployManager *DeployManag
 	}
 
 	a.TestBackendDestination.FundAccount(a.GetTestContext(), a.NotaryUnbondedSigner.Address(), *big.NewInt(params.Ether))
+	a.TestBackendDestination.FundAccount(a.GetTestContext(), a.NotaryMalicious1UnbondedSigner.Address(), *big.NewInt(params.Ether))
 	a.TestBackendDestination.FundAccount(a.GetTestContext(), a.NotaryOnOriginUnbondedSigner.Address(), *big.NewInt(params.Ether))
 	a.TestBackendDestination.FundAccount(a.GetTestContext(), a.GuardUnbondedSigner.Address(), *big.NewInt(params.Ether))
 	a.TestBackendDestination.FundAccount(a.GetTestContext(), a.ExecutorUnbondedSigner.Address(), *big.NewInt(params.Ether))
@@ -241,6 +239,7 @@ func (a *SimulatedBackendsTestSuite) SetupSummit(deployManager *DeployManager) {
 	}
 
 	a.TestBackendSummit.FundAccount(a.GetTestContext(), a.NotaryUnbondedSigner.Address(), *big.NewInt(params.Ether))
+	a.TestBackendSummit.FundAccount(a.GetTestContext(), a.NotaryMalicious1UnbondedSigner.Address(), *big.NewInt(params.Ether))
 	a.TestBackendSummit.FundAccount(a.GetTestContext(), a.NotaryOnOriginUnbondedSigner.Address(), *big.NewInt(params.Ether))
 	a.TestBackendSummit.FundAccount(a.GetTestContext(), a.GuardUnbondedSigner.Address(), *big.NewInt(params.Ether))
 	a.TestBackendSummit.FundAccount(a.GetTestContext(), a.ExecutorUnbondedSigner.Address(), *big.NewInt(params.Ether))
@@ -278,6 +277,22 @@ func (a *SimulatedBackendsTestSuite) SetupNotary() {
 	a.NotaryUnbondedSigner = localsigner.NewSigner(a.NotaryUnbondedWallet.PrivateKey())
 }
 
+// SetupNotaryMalicious1 sets up the NotaryMalicious1 agent.
+func (a *SimulatedBackendsTestSuite) SetupNotaryMalicious1() {
+	var err error
+	a.NotaryMalicious1BondedWallet, err = wallet.FromRandom()
+	if err != nil {
+		a.T().Fatal(err)
+	}
+	a.NotaryMalicious1BondedSigner = localsigner.NewSigner(a.NotaryMalicious1BondedWallet.PrivateKey())
+
+	a.NotaryMalicious1UnbondedWallet, err = wallet.FromRandom()
+	if err != nil {
+		a.T().Fatal(err)
+	}
+	a.NotaryMalicious1UnbondedSigner = localsigner.NewSigner(a.NotaryMalicious1UnbondedWallet.PrivateKey())
+}
+
 // SetupNotaryOnOrigin sets up the Notary agent on the origin chain.
 func (a *SimulatedBackendsTestSuite) SetupNotaryOnOrigin() {
 	var err error
@@ -311,6 +326,7 @@ func (a *SimulatedBackendsTestSuite) SetupTest() {
 
 	a.SetupGuard()
 	a.SetupNotary()
+	a.SetupNotaryMalicious1()
 	a.SetupNotaryOnOrigin()
 	a.SetupExecutor()
 
@@ -340,8 +356,9 @@ func (a *SimulatedBackendsTestSuite) SetupTest() {
 		a.GetTestContext(),
 		a.TestBackendSummit,
 		[]backends.SimulatedTestBackend{a.TestBackendOrigin, a.TestBackendDestination},
-		[]common.Address{a.GuardBondedSigner.Address(), a.NotaryBondedSigner.Address(), a.NotaryOnOriginBondedSigner.Address()},
-		[]uint32{uint32(0), uint32(a.TestBackendDestination.GetChainID()), uint32(a.TestBackendOrigin.GetChainID())})
+		[]common.Address{a.GuardBondedSigner.Address(), a.NotaryBondedSigner.Address(), a.NotaryMalicious1BondedSigner.Address(), a.NotaryOnOriginBondedSigner.Address()},
+		[]bool{true, false, true, false},
+		[]uint32{uint32(0), uint32(a.TestBackendDestination.GetChainID()), uint32(a.TestBackendDestination.GetChainID()), uint32(a.TestBackendOrigin.GetChainID())})
 	if err != nil {
 		a.T().Fatal(err)
 	}

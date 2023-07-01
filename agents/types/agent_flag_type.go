@@ -14,8 +14,8 @@ const (
 	AgentFlagUnstaking
 	// AgentFlagResting means agent has staked but not currently doing any work.
 	AgentFlagResting
-	// AgentFlagFraudulent means agent has been accused of fraud and is awaiting fraud resolution.
+	// AgentFlagFraudulent means agent has been found to be fraudulent but has not yet been slashed.
 	AgentFlagFraudulent
-	// AgentFlagSlashed means that the agent has been slashed and will not be a part of agent set in the next epoch.
+	// AgentFlagSlashed means that the agent was found fraudulent and has been slashed.
 	AgentFlagSlashed
 )

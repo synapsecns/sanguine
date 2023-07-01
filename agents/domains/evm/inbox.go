@@ -67,3 +67,27 @@ func (a inboxContract) SubmitSnapshot(ctx context.Context, signer signer.Signer,
 
 	return nil
 }
+
+func (a inboxContract) VerifyAttestation(ctx context.Context, signer signer.Signer, attPayload []byte, attSignature []byte) error {
+	transactor, err := signer.GetTransactor(ctx, a.client.GetBigChainID())
+	if err != nil {
+		return fmt.Errorf("could not sign tx: %w", err)
+	}
+
+	transactOpts, err := a.nonceManager.NewKeyedTransactor(transactor)
+	if err != nil {
+		return fmt.Errorf("could not create tx: %w", err)
+	}
+
+	transactOpts.Context = ctx
+
+	_, err = a.contract.VerifyAttestation(transactOpts, attPayload, attSignature)
+	if err != nil {
+		if strings.Contains(err.Error(), "nonce too low") {
+			a.nonceManager.ClearNonce(signer.Address())
+		}
+		return fmt.Errorf("could not call verify attestation: %w", err)
+	}
+
+	return nil
+}

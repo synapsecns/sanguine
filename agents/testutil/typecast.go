@@ -498,6 +498,7 @@ func (d *DeployManager) AddAgentsToLightManagerHarnessContract(
 	ctx context.Context,
 	backend backends.SimulatedTestBackend,
 	agents []common.Address,
+	shouldUpdateAgentStatuses []bool,
 	agentProofs [][][32]byte,
 	agentStatuses []bondingmanagerharness.AgentStatus) error {
 	d.T().Helper()
@@ -526,7 +527,7 @@ func (d *DeployManager) AddAgentsToLightManagerHarnessContract(
 
 		// We want to make the notary do the work of adding the agent and not
 		// have it done automatically by the test harness
-		if lightManagerAgentStatus.Domain != 0 {
+		if shouldUpdateAgentStatuses[i] == false {
 			continue
 		}
 
@@ -651,6 +652,7 @@ func (d *DeployManager) LoadHarnessContractsOnChains(
 	synChainBackend backends.SimulatedTestBackend,
 	backends []backends.SimulatedTestBackend,
 	agents []common.Address,
+	shouldUpdateAgentStatuses []bool,
 	agentDomains []uint32) error {
 	d.T().Helper()
 
@@ -682,6 +684,7 @@ func (d *DeployManager) LoadHarnessContractsOnChains(
 			ctx,
 			backend,
 			agents,
+			shouldUpdateAgentStatuses,
 			agentProofs,
 			agentStatuses)
 		if err != nil {

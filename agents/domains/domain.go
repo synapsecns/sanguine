@@ -61,12 +61,17 @@ type SummitContract interface {
 	GetLatestNotaryAttestation(ctx context.Context, notarySigner signer.Signer) (types.NotaryAttestation, error)
 	// WatchAttestationSaved looks for attesation saved events
 	WatchAttestationSaved(ctx context.Context, sink chan<- *summit.SummitAttestationSaved) (event.Subscription, error)
+	// IsValidAttestation checks if the Attestation is valid on the Synapse Chain's Summit contract
+	IsValidAttestation(ctx context.Context, attestation types.Attestation) (bool, error)
 }
 
 // InboxContract contains the interface for the inbox.
 type InboxContract interface {
 	// SubmitSnapshot submits a snapshot to the inbox (via the Inbox).
 	SubmitSnapshot(ctx context.Context, signer signer.Signer, encodedSnapshot []byte, signature signer.Signature) error
+	// VerifyAttestation is called by a Guard who finds a Notary guilty of a fraudulent Attestation. The result will be to
+	// slash the Notary if it's in fact guilty.
+	VerifyAttestation(ctx context.Context, signer signer.Signer, attPayload []byte, attSignature []byte) error
 }
 
 // BondingManagerContract contains the interface for the bonding manager.
@@ -89,6 +94,8 @@ type DestinationContract interface {
 	GetAttestationNonce(ctx context.Context, snapRoot [32]byte) (uint32, error)
 	// MessageStatus takes a message and returns whether it has been executed or not. 0: None, 1: Failed, 2: Success.
 	MessageStatus(ctx context.Context, message types.Message) (uint8, error)
+	// GetAttestation gets the Attestation and its signature at the given index if it exists
+	GetAttestation(ctx context.Context, index uint64) (types.Attestation, signer.Signature, error)
 }
 
 // LightInboxContract contains the interface for the light inbox.

@@ -196,6 +196,106 @@ func (g Guard) submitLatestSnapshot(parentCtx context.Context) {
 	}
 }
 
+//nolint:cyclop
+func (g Guard) loadNumAttestations(parentCtx context.Context) {
+	for _, domain := range g.domains {
+		ctx, span := g.handler.Tracer().Start(parentCtx, "loadNumAttestations", trace.WithAttributes(
+			attribute.Int("domain", int(domain.Config().DomainID)),
+		))
+
+		if domain.Config().DomainID == g.summitDomain.Config().DomainID {
+			continue
+		}
+
+		numAttestations, err := domain.Destination().AttestationsAmount(ctx)
+		if err != nil {
+			logger.Errorf("Failed calling AttestationsAmount for destinationID %d on the Destination contract: err = %v", domain.Config().DomainID, err)
+			span.AddEvent("Failed calling AttestationsAmount for destinationID on the Destination contract", trace.WithAttributes(
+				attribute.Int("destinationID", int(domain.Config().DomainID)),
+				attribute.String("err", err.Error()),
+			))
+		}
+
+		if numAttestations > 0 {
+			fmt.Printf("CRONIN destinationID %d domain.Config().DomainID has an Attestation count of %v\n", domain.Config().DomainID, numAttestations)
+			for count := numAttestations; count > 0; count-- {
+				i := count - 1
+				if count == 3 {
+					fmt.Printf("CRONIN count == 3")
+				}
+				attestation, attestationSignature, err := domain.Destination().GetAttestation(ctx, i)
+				if err != nil {
+					logger.Errorf("Failed calling GetAttestation for destinationID %d and index %v on the Destination contract: err = %v", domain.Config().DomainID, i, err)
+					span.AddEvent("Failed calling GetAttestation for destinationID and index on the Destination contract", trace.WithAttributes(
+						attribute.Int("destinationID", int(domain.Config().DomainID)),
+						attribute.Int64("index", int64(i)),
+						attribute.String("err", err.Error()),
+					))
+					continue
+				}
+				if attestation == nil || attestation.Nonce() == 0 {
+					continue
+				}
+
+				isValidAttestation, err := g.summitDomain.Summit().IsValidAttestation(ctx, attestation)
+				if err != nil {
+					// TODO (joe): This could be very serious if we can't reach Summit for an extended period of time.
+					// We need to monitor and alert cases when an attestation can't be checked.
+					// If need be, we should manually pause the destination from using this attestation.
+					logger.Errorf("Failed calling IsValidAttestation for destinationID %d and index %d on the Summit contract: err = %v", domain.Config().DomainID, i, err)
+					span.AddEvent("Failed calling IsValidAttestation for destinationID and index on the Summit contract", trace.WithAttributes(
+						attribute.Int("destinationID", int(domain.Config().DomainID)),
+						attribute.Int64("index", int64(i)),
+						attribute.String("err", err.Error()),
+					))
+					continue
+				}
+				if isValidAttestation {
+					fmt.Printf("CRONIN Attestation is valid!!!\n")
+				} else {
+					// TODO (joe): Submit fraud report here
+					fmt.Printf("CRONIN Attestation is NOT valid!!! WE FOUND FRAUD!!!!!!\n")
+
+					// First thing is to call verify on Summit
+					attPayload, err := types.EncodeAttestation(attestation)
+					if err != nil {
+						logger.Errorf("Failed EncodeAttestation for destinationID %d and index %d: err = %v", domain.Config().DomainID, i, err)
+						span.AddEvent("Failed calling EncodeAttestation for destinationID and index", trace.WithAttributes(
+							attribute.Int("destinationID", int(domain.Config().DomainID)),
+							attribute.Int64("index", int64(i)),
+							attribute.String("err", err.Error()),
+						))
+						continue
+					}
+					attSignature, err := types.EncodeSignature(attestationSignature)
+					if err != nil {
+						logger.Errorf("Failed EncodeSignature for destinationID %d and index %d: err = %v", domain.Config().DomainID, i, err)
+						span.AddEvent("Failed calling EncodeSignature for destinationID and index", trace.WithAttributes(
+							attribute.Int("destinationID", int(domain.Config().DomainID)),
+							attribute.Int64("index", int64(i)),
+							attribute.String("err", err.Error()),
+						))
+						continue
+					}
+
+					err = g.summitDomain.Inbox().VerifyAttestation(ctx, g.unbondedSigner, attPayload, attSignature)
+					if err != nil {
+						logger.Errorf("Failed to call VerifyAttestation on Inbox: %v", err)
+						span.AddEvent("Failed to call VerifyAttestation on inbox", trace.WithAttributes(
+							attribute.String("err", err.Error()),
+						))
+						continue
+					}
+
+					// Then submit fraud report on destination
+				}
+			}
+		}
+
+		span.End()
+	}
+}
+
 // Start starts the guard.
 //
 //nolint:cyclop
@@ -212,6 +312,7 @@ func (g Guard) Start(ctx context.Context) error {
 		case <-time.After(g.refreshInterval):
 			g.loadOriginLatestStates(ctx)
 			g.submitLatestSnapshot(ctx)
+			g.loadNumAttestations(ctx)
 		}
 	}
 }

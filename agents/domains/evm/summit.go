@@ -95,3 +95,16 @@ func (a summitContract) WatchAttestationSaved(ctx context.Context, sink chan<- *
 
 	return sub, nil
 }
+
+func (a summitContract) IsValidAttestation(ctx context.Context, attestation types.Attestation) (bool, error) {
+	rawAttestation, err := types.EncodeAttestation(attestation)
+	if err != nil {
+		return false, fmt.Errorf("could not encode attestation: %w", err)
+	}
+	isValidAttestation, err := a.contract.IsValidAttestation(&bind.CallOpts{Context: ctx}, rawAttestation)
+	if err != nil {
+		return false, fmt.Errorf("could not check if attestation is valid: %w", err)
+	}
+
+	return isValidAttestation, nil
+}
