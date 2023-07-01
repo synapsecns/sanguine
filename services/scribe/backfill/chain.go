@@ -45,7 +45,7 @@ const (
 )
 
 // NewChainBackfiller creates a new backfiller for a chain. This is done by passing through all the function parameters
-// into the ChainBackfiller struct, as well as iterating through all the contracts in the chain config and creating
+// into the ChainBackfiller struct, as well as iterating through all the contracts in the chain config & creating
 // ContractBackfillers for each contract.
 func NewChainBackfiller(eventDB db.EventDB, client []ScribeBackend, chainConfig config.ChainConfig, refreshRate int, handler metrics.Handler) (*ChainBackfiller, error) {
 	var contractBackfillers []*ContractBackfiller
