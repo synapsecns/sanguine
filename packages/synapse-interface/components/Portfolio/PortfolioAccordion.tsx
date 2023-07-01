@@ -27,7 +27,7 @@ export const PortfolioAccordion = ({
         className="flex flex-row items-center"
         data-test-id="portfolio-accordion"
       >
-        <button onClick={handleToggle} className="mb-4 mr-2">
+        <button onClick={handleToggle} className="mb-3 mr-3">
           <AccordionIcon
             className={`
               ${isExpanded ? expanded : collapsed}

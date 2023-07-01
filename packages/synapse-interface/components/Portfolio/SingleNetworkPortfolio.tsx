@@ -67,7 +67,10 @@ export const SingleNetworkPortfolio = ({
             )
           )}
         {shouldShowDivider && (
-          <div className="border-b border-solid border-[#28282F] my-2" />
+          <div
+            data-test-id="divider"
+            className="border-b border-solid border-[#28282F] my-3"
+          />
         )}
         {sortedTokensWithoutAllowance.length > 0 &&
           sortedTokensWithoutAllowance.map(
@@ -109,7 +112,7 @@ const PortfolioTokenAsset = ({
     <div
       data-test-id="portfolio-token-asset"
       className={`
-        flex flex-row items-center my-2 text-white
+        flex flex-row items-center mb-3 text-white
         ${isDisabled && filteredOpacity}
         `}
     >
@@ -191,7 +194,7 @@ const PortfolioNetwork = ({
   return (
     <div
       data-test-id="portfolio-network"
-      className="flex flex-row justify-between flex-1 mb-4"
+      className="flex flex-row justify-between flex-1 mb-3"
     >
       <div className="flex flex-row items-center">
         <Image
