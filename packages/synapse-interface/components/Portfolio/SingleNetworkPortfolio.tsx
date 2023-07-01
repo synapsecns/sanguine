@@ -207,7 +207,7 @@ const PortfolioNetwork = ({
 
 const ConnectedButton = () => {
   const buttonClassName = `
-  h-8 flex items-center
+  h-9 flex items-center justify-center w-36
   text-base text-white px-4 py-2 rounded-3xl
   text-center transform-gpu transition-all duration-75
   border-2 border-[#D747FF] radial-gradient-bg
@@ -223,11 +223,11 @@ const ConnectButton = ({ chainId }: { chainId: number }) => {
   }
 
   const buttonClassName = `
-    h-8 flex items-center
-    text-base text-white px-4 py-2 rounded-3xl
-    text-center transform-gpu transition-all duration-75
-    border-2 border-[#101018]
-    hover:cursor-pointer
+  h-9 flex items-center justify-center w-36
+  text-base text-white px-4 py-2 rounded-3xl
+  text-center transform-gpu transition-all duration-75
+  border-2 border-[#101018]
+  hover:cursor-pointer
   `
 
   return (
