@@ -79,7 +79,6 @@ type CCTPRelayer struct {
 
 // NewCCTPRelayer creates a new CCTPRelayer.
 func NewCCTPRelayer(ctx context.Context, cfg config.Config, store db2.CCTPRelayerDB, scribeClient client.ScribeClient, omniRPCClient omniClient.RPCClient, handler metrics.Handler, attestationAPI api.AttestationAPI) (*CCTPRelayer, error) {
-	fmt.Printf("NewCCTPRelayer with cfg: %v\n", cfg)
 	conn, err := grpc.DialContext(ctx, fmt.Sprintf("%s:%d", scribeClient.URL, scribeClient.Port),
 		grpc.WithTransportCredentials(insecure.NewCredentials()),
 		grpc.WithUnaryInterceptor(otelgrpc.UnaryClientInterceptor(otelgrpc.WithTracerProvider(handler.GetTracerProvider()))),
@@ -88,17 +87,14 @@ func NewCCTPRelayer(ctx context.Context, cfg config.Config, store db2.CCTPRelaye
 	if err != nil {
 		return nil, fmt.Errorf("could not dial grpc: %w", err)
 	}
-	fmt.Println("dialed grpc")
 
 	grpcClient := pbscribe.NewScribeServiceClient(conn)
 
 	// Ensure that gRPC is up and running.
-	fmt.Printf("checking grpc")
 	healthCheck, err := grpcClient.Check(ctx, &pbscribe.HealthCheckRequest{}, grpc.WaitForReady(true))
 	if err != nil {
 		return nil, fmt.Errorf("could not check: %w", err)
 	}
-	fmt.Printf("checked grpc")
 	if healthCheck.Status != pbscribe.HealthCheckResponse_SERVING {
 		return nil, fmt.Errorf("not serving: %s", healthCheck.Status)
 	}
@@ -106,7 +102,6 @@ func NewCCTPRelayer(ctx context.Context, cfg config.Config, store db2.CCTPRelaye
 	// Build chainListeners and bound contracts.
 	chainListeners := make(map[uint32]*chainListener)
 	boundSynapseCCTPs := make(map[uint32]*cctp.SynapseCCTP)
-	fmt.Println("getting bound contracts")
 	for _, chain := range cfg.Chains {
 		chainListeners[chain.ChainID] = &chainListener{
 			chainID:         chain.ChainID,
@@ -114,25 +109,21 @@ func NewCCTPRelayer(ctx context.Context, cfg config.Config, store db2.CCTPRelaye
 			stopListenChan:  make(chan bool, 1),
 			// processChan is buffered to prevent blocking.
 		}
-		fmt.Printf("fetchConfirmationsClient for chain %d\n", chain.ChainID)
 		cl, err := omniRPCClient.GetConfirmationsClient(ctx, int(chain.ChainID), 1)
 		if err != nil {
 			return nil, fmt.Errorf("could not get client: %w", err)
 		}
-		fmt.Printf("fetched ConfirmationsClient for chain %d\n", chain.ChainID)
 		boundSynapseCCTPs[chain.ChainID], err = cctp.NewSynapseCCTP(chain.GetSynapseCCTPAddress(), cl)
 		if err != nil {
 			return nil, fmt.Errorf("could not build bound contract: %w", err)
 		}
 	}
 
-	fmt.Println("building signer config")
 	signer, err := signerConfig.SignerFromConfig(ctx, cfg.Signer)
 	if err != nil {
 		return nil, fmt.Errorf("could not make cctp signer: %w", err)
 	}
 
-	fmt.Println("building submitter")
 	txSubmitter := submitter.NewTransactionSubmitter(handler, signer, omniRPCClient, store.SubmitterDB(), &cfg.SubmitterConfig)
 
 	return &CCTPRelayer{
@@ -200,7 +191,6 @@ func (c *CCTPRelayer) runQueueSelector(ctx context.Context) (err error) {
 
 // nolint: cyclop
 func (c *CCTPRelayer) processQueue(parentCtx context.Context) (err error) {
-	fmt.Println("processQueue")
 	// TODO: this might be too short of a deadline depending on the number of pendingTxes in the queue
 	deadlineCtx, cancel := context.WithTimeout(parentCtx, time.Second*90)
 	defer cancel()
@@ -259,7 +249,6 @@ func (c *CCTPRelayer) processQueue(parentCtx context.Context) (err error) {
 
 // processMessage processes a message. Before each stage it checks if the current step is done.
 func (c *CCTPRelayer) processMessage(parentCtx context.Context, msg *relayTypes.Message) (err error) {
-	fmt.Printf("processMessage: %v\n", msg)
 	ctx, span := c.handler.Tracer().Start(parentCtx, "processMessage", trace.WithAttributes(
 		attribute.String(MessageHash, msg.MessageHash),
 		attribute.Int(metrics.Origin, int(msg.OriginChainID)),
@@ -320,7 +309,6 @@ func (c *CCTPRelayer) Run(parentCtx context.Context) error {
 }
 
 func (c *CCTPRelayer) RelaySingle(parentCtx context.Context, originChain uint32, txHash string) error {
-	fmt.Printf("relaySingle with originChain %d and txHash %s\n", originChain, txHash)
 	g, ctx := errgroup.WithContext(parentCtx)
 
 	g.Go(func() error {
@@ -332,7 +320,6 @@ func (c *CCTPRelayer) RelaySingle(parentCtx context.Context, originChain uint32,
 	})
 
 	// fetch logs for the given tx
-	fmt.Println("fetching logs")
 	client, err := c.omnirpcClient.GetClient(ctx, big.NewInt(int64(originChain)))
 	if err != nil {
 		return fmt.Errorf("could not get client: %w", err)
@@ -341,7 +328,6 @@ func (c *CCTPRelayer) RelaySingle(parentCtx context.Context, originChain uint32,
 	if err != nil {
 		return fmt.Errorf("could not get receipt: %w", err)
 	}
-	fmt.Printf("got receipt: %v\n", receipt)
 	if len(receipt.Logs) == 0 {
 		return fmt.Errorf("no logs found for tx %s", txHash)
 	}
@@ -430,7 +416,6 @@ func (c *CCTPRelayer) streamLogs(ctx context.Context, grpcClient pbscribe.Scribe
 // This takes in a log from the SynapseCCTP contract, determines the topic and then performs an action based on that topic.
 // Note that the log could correspond to a send or receive event.
 func (c *CCTPRelayer) handleLog(ctx context.Context, log *types.Log, originChain uint32) (err error) {
-	fmt.Printf("handleLog: %+v\n", log)
 	if log == nil {
 		return fmt.Errorf("log is nil")
 	}
@@ -565,7 +550,6 @@ func (c *CCTPRelayer) fetchAndStoreCircleRequestSent(parentCtx context.Context, 
 }
 
 func (c *CCTPRelayer) fetchAttestation(parentCtx context.Context, msg *relayTypes.Message) (_ *relayTypes.Message, err error) {
-	fmt.Printf("fetchAttestation: %+v\n", msg)
 	ctx, span := c.handler.Tracer().Start(parentCtx, "fetchAttestation", trace.WithAttributes(
 		attribute.String(MessageHash, msg.MessageHash),
 		attribute.Int(metrics.Origin, int(msg.OriginChainID)),
@@ -596,7 +580,6 @@ func (c *CCTPRelayer) fetchAttestation(parentCtx context.Context, msg *relayType
 }
 
 func (c *CCTPRelayer) submitReceiveCircleToken(parentCtx context.Context, msg *relayTypes.Message) (err error) {
-	fmt.Printf("submitReceiveCircleToken: %+v\n", msg)
 	ctx, span := c.handler.Tracer().Start(parentCtx, "submitReceiveCircleToken", trace.WithAttributes(
 		attribute.String(MessageHash, msg.MessageHash),
 		attribute.Int(metrics.Origin, int(msg.OriginChainID)),
@@ -643,7 +626,6 @@ func (c *CCTPRelayer) submitReceiveCircleToken(parentCtx context.Context, msg *r
 			return nil, fmt.Errorf("could not submit transaction: %w", err)
 		}
 
-		fmt.Printf("submitted tx with hash: %v\n", tx.Hash())
 		return tx, nil
 	})
 	if err != nil {

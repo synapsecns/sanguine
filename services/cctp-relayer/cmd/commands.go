@@ -142,16 +142,13 @@ var relaySingleCommand = &cli.Command{
 		omnirpcClient := omniClient.NewOmnirpcClient(cfg.BaseOmnirpcURL, metricsProvider, omniClient.WithCaptureReqRes())
 		attAPI := api.NewCircleAPI(c.String(cfg.CircleAPIURl))
 
-		fmt.Println("creating new relayer")
 		cctpRelayer, err := relayer.NewCCTPRelayer(c.Context, cfg, store, scribeClient, omnirpcClient, metricsProvider, attAPI)
 		if err != nil {
 			return fmt.Errorf("could not create cctp relayer: %w", err)
 		}
-		fmt.Printf("built relayer")
 
 		err = cctpRelayer.RelaySingle(c.Context, uint32(c.Uint(originFlag.Name)), c.String(txHashFlag.Name))
 		if err != nil {
-			fmt.Printf("relaysingle err: %v\n", err)
 			return fmt.Errorf("could not relay single message: %w", err)
 		}
 		return nil
