@@ -107,7 +107,7 @@ const PortfolioContent = ({
         <SingleNetworkPortfolio
           portfolioChainId={connectedChainId}
           connectedChainId={connectedChainId}
-          tokens={currentNetwork[connectedChainId]}
+          portfolioTokens={currentNetwork[connectedChainId]}
           initializeExpanded={true}
         />
       )}
@@ -119,7 +119,7 @@ const PortfolioContent = ({
             <SingleNetworkPortfolio
               portfolioChainId={Number(chainId)}
               connectedChainId={connectedChainId}
-              tokens={tokens}
+              portfolioTokens={tokens}
               initializeExpanded={isExpanded}
             />
           )

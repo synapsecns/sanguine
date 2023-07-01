@@ -14,7 +14,7 @@ import PortfolioAccordion from './PortfolioAccordion'
 type SingleNetworkPortfolioProps = {
   portfolioChainId: number
   connectedChainId: number
-  tokens: TokenWithBalanceAndAllowance[]
+  portfolioTokens: TokenWithBalanceAndAllowance[]
   initializeExpanded: boolean
 }
 
@@ -54,13 +54,13 @@ const PortfolioTokenVisualizer = ({
 export const SingleNetworkPortfolio = ({
   portfolioChainId,
   connectedChainId,
-  tokens,
+  portfolioTokens,
   initializeExpanded = false,
 }: SingleNetworkPortfolioProps) => {
   const currentChain: Chain = CHAINS_BY_ID[portfolioChainId]
 
   const [tokensWithAllowance, tokensWithoutAllowance] =
-    separateTokensByAllowance(tokens)
+    separateTokensByAllowance(portfolioTokens)
 
   const sortedTokensWithAllowance: TokenWithBalanceAndAllowance[] =
     sortByBalanceDescending(tokensWithAllowance)
@@ -86,7 +86,7 @@ export const SingleNetworkPortfolio = ({
           />
         }
       >
-        <PortfolioTokenVisualizer portfolioTokens={tokens} />
+        <PortfolioTokenVisualizer portfolioTokens={portfolioTokens} />
         <PortfolioAssetHeader />
         {sortedTokensWithAllowance.length > 0 &&
           sortedTokensWithAllowance.map(
