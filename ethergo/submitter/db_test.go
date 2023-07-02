@@ -2,9 +2,11 @@ package submitter_test
 
 import (
 	"errors"
+	"fmt"
 	"github.com/brianvoe/gofakeit/v6"
 	"github.com/ethereum/go-ethereum/core/types"
 	"github.com/synapsecns/sanguine/core/testsuite"
+	"github.com/synapsecns/sanguine/ethergo/mocks"
 	"github.com/synapsecns/sanguine/ethergo/signer/nonce"
 	"github.com/synapsecns/sanguine/ethergo/submitter/db"
 	"github.com/synapsecns/sanguine/ethergo/submitter/db/txdb"
@@ -112,5 +114,13 @@ func (t *TXSubmitterDBSuite) TestGetTransactionsWithLimitPerChainID() {
 				t.Require().Equal(txdb.MaxResultsPerChain*2, len(result))
 			}
 		}
+	})
+}
+
+func (t *TXSubmitterDBSuite) TestGetNonExistentNonceStatus() {
+	t.RunOnAllDBs(func(dbs db.Service) {
+		_, err := dbs.GetNonceStatus(t.GetTestContext(), mocks.MockAddress(), big.NewInt(1), 4)
+		fmt.Println(errors.Is(err, db.ErrNonceNotExist))
+		t.Require().ErrorIs(err, db.ErrNonceNotExist)
 	})
 }

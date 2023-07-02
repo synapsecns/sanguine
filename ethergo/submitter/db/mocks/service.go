@@ -83,6 +83,27 @@ func (_m *Service) GetNonceForChainID(ctx context.Context, fromAddress common.Ad
 	return r0, r1
 }
 
+// GetNonceStatus provides a mock function with given fields: ctx, fromAddress, chainID, nonce
+func (_m *Service) GetNonceStatus(ctx context.Context, fromAddress common.Address, chainID *big.Int, nonce uint64) (db.Status, error) {
+	ret := _m.Called(ctx, fromAddress, chainID, nonce)
+
+	var r0 db.Status
+	if rf, ok := ret.Get(0).(func(context.Context, common.Address, *big.Int, uint64) db.Status); ok {
+		r0 = rf(ctx, fromAddress, chainID, nonce)
+	} else {
+		r0 = ret.Get(0).(db.Status)
+	}
+
+	var r1 error
+	if rf, ok := ret.Get(1).(func(context.Context, common.Address, *big.Int, uint64) error); ok {
+		r1 = rf(ctx, fromAddress, chainID, nonce)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
 // GetTXS provides a mock function with given fields: ctx, fromAddress, chainID, statuses
 func (_m *Service) GetTXS(ctx context.Context, fromAddress common.Address, chainID *big.Int, statuses ...db.Status) ([]db.TX, error) {
 	_va := make([]interface{}, len(statuses))

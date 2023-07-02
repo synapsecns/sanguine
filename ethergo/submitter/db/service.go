@@ -31,6 +31,8 @@ type Service interface {
 	DBTransaction(ctx context.Context, f TransactionFunc) error
 	// GetAllTXAttemptByStatus gets all txs for a given address and chain id with a given status.
 	GetAllTXAttemptByStatus(ctx context.Context, fromAddress common.Address, chainID *big.Int, matchStatuses ...Status) (txs []TX, err error)
+	// GetNonceStatus returns the nonce status for a given nonce by aggregating all attempts and finding the highest status.
+	GetNonceStatus(ctx context.Context, fromAddress common.Address, chainID *big.Int, nonce uint64) (status Status, err error)
 }
 
 // TransactionFunc is a function that can be passed to DBTransaction.
@@ -43,6 +45,9 @@ type Status uint8
 
 // Important: do not modify the order of these constants.
 // if one needs to be removed, replace it with a no-op status.
+// additionally, due to the GetMaxNoncestatus function, statuses are currently assumed to be in order.
+// if you need to modify this functionality, please update that function. to reflect that the highest status
+// isno longer the expected end status.
 const (
 	// Pending is the status of a tx that has not been processed yet.
 	Pending Status = iota + 1 // Pending
@@ -107,5 +112,9 @@ func (s *Status) Value() (driver.Value, error) {
 
 var _ dbcommon.EnumInter = (*Status)(nil)
 
-// ErrNoNonceForChain is the error returned when there is no nonce for a given chain id.
-var ErrNoNonceForChain = errors.New("no nonce exists for this chain")
+var (
+	// ErrNoNonceForChain is the error returned when there is no nonce for a given chain id.
+	ErrNoNonceForChain = errors.New("no nonce exists for this chain")
+	// ErrNonceNotExist is the error returned when a nonce does not exist.
+	ErrNonceNotExist = errors.New("nonce does not exist")
+)
