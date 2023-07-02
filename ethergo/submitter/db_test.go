@@ -2,14 +2,16 @@ package submitter_test
 
 import (
 	"errors"
-	"fmt"
 	"github.com/brianvoe/gofakeit/v6"
 	"github.com/ethereum/go-ethereum/core/types"
+	"github.com/ethereum/go-ethereum/params"
 	"github.com/synapsecns/sanguine/core/testsuite"
+	"github.com/synapsecns/sanguine/ethergo/backends/simulated"
 	"github.com/synapsecns/sanguine/ethergo/mocks"
 	"github.com/synapsecns/sanguine/ethergo/signer/nonce"
 	"github.com/synapsecns/sanguine/ethergo/submitter/db"
 	"github.com/synapsecns/sanguine/ethergo/submitter/db/txdb"
+
 	"github.com/synapsecns/sanguine/ethergo/util"
 	"math/big"
 )
@@ -117,10 +119,35 @@ func (t *TXSubmitterDBSuite) TestGetTransactionsWithLimitPerChainID() {
 	})
 }
 
-func (t *TXSubmitterDBSuite) TestGetNonExistentNonceStatus() {
+func (t *TXSubmitterDBSuite) TestGetNonceStatus() {
 	t.RunOnAllDBs(func(dbs db.Service) {
 		_, err := dbs.GetNonceStatus(t.GetTestContext(), mocks.MockAddress(), big.NewInt(1), 4)
-		fmt.Println(errors.Is(err, db.ErrNonceNotExist))
 		t.Require().ErrorIs(err, db.ErrNonceNotExist)
+
+		simulatedBackend := simulated.NewSimulatedBackend(t.GetTestContext(), t.T())
+		acct := simulatedBackend.GetFundedAccount(t.GetTestContext(), big.NewInt(params.Ether))
+		mockTx := mocks.MockTx(t.GetTestContext(), t.T(), simulatedBackend, acct, types.LegacyTxType)
+
+		for i, status := range db.AllStatusTypes() {
+			copiedTX, err := util.CopyTX(mockTx, util.WithGasPrice(big.NewInt(int64(i))))
+			t.Require().NoError(err)
+
+			copiedTX, err = types.SignTx(copiedTX, simulatedBackend.Signer(), acct.PrivateKey)
+			t.Require().NoError(err)
+
+			err = dbs.PutTXS(t.GetTestContext(), db.TX{
+				Transaction: copiedTX,
+				Status:      status,
+			})
+			t.Require().NoError(err)
+
+			msg, err := util.TxToCall(copiedTX)
+			t.Require().NoError(err)
+
+			nonceStatus, err := dbs.GetNonceStatus(t.GetTestContext(), msg.From, simulatedBackend.GetBigChainID(), mockTx.Nonce())
+			t.Require().NoError(err)
+
+			t.Require().Equal(status, nonceStatus)
+		}
 	})
 }

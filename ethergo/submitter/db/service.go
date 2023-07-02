@@ -67,6 +67,14 @@ const (
 
 var allStatusTypes = []Status{Pending, Stored, Submitted, FailedSubmit, ReplacedOrConfirmed, Replaced, Confirmed}
 
+// AllStatusTypes returns all status types.
+// it is exported for testing purposes
+//
+// These are guaranteed to be in order.
+func AllStatusTypes() []Status {
+	return allStatusTypes
+}
+
 // check to make sure all statuses are included in all status types.
 func _() {
 	for i := 0; i < len(_Status_index); i++ {
@@ -74,6 +82,9 @@ func _() {
 		status := Status(statusNum)
 		if status.String() == "" {
 			panic(fmt.Sprintf("invalid status: %d", status))
+		}
+		if status.String() != AllStatusTypes()[i].String() {
+			panic(fmt.Sprintf("status string and all status types do not match: %s, %s", status.String(), AllStatusTypes()[i]))
 		}
 	}
 }
