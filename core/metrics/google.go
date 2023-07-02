@@ -12,7 +12,6 @@ import (
 	"go.opentelemetry.io/otel/sdk/resource"
 	sdktrace "go.opentelemetry.io/otel/sdk/trace"
 	semconv "go.opentelemetry.io/otel/semconv/v1.7.0"
-	"google.golang.org/api/gkehub/v1"
 	"net/http"
 	"os"
 )
@@ -48,21 +47,11 @@ func (h *googleHandler) Start(ctx context.Context) (err error) {
 		if err != nil {
 			return fmt.Errorf("could not get project ID from metadata server: %w. If you cannot get this to work, please set %s", err, googleProjectEnv)
 		}
-		fmt.Println(projectID)
-		svc, err := gkehub.NewService(ctx)
-		if err != nil {
-			return fmt.Errorf("could not create gkehub service: %w", err)
-		}
-
-		_, err = svc.Projects.Locations.Memberships.List("test").Do()
-		if err != nil {
-			return fmt.Errorf("could not list memberships: %w", err)
-		}
 	}
 
 	fmt.Println(projectID)
 
-	exporter, err := texporter.New()
+	exporter, err := texporter.New(texporter.WithProjectID(projectID))
 	if err != nil {
 		return fmt.Errorf("exporter could not be created: %w", err)
 	}
