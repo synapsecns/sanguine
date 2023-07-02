@@ -8,6 +8,7 @@ import (
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/core/types"
 	"github.com/imkira/go-interpol"
+	errorHelper "github.com/pkg/errors"
 	"github.com/synapsecns/sanguine/core/dbcommon"
 	"github.com/synapsecns/sanguine/core/metrics"
 	"github.com/synapsecns/sanguine/ethergo/submitter/db"
@@ -236,6 +237,7 @@ func (s *Store) GetNonceForChainID(ctx context.Context, fromAddress common.Addre
 			return 0, fmt.Errorf("error getting count on %T: %w", &ETHTX{}, dbTx.Error)
 		}
 
+		// TODO: we can use valid instead of count == 0 and save a sql query!
 		if count == 0 {
 			return 0, db.ErrNoNonceForChain
 		}
@@ -295,6 +297,54 @@ func (s Store) PutTXS(ctx context.Context, txs ...db.TX) error {
 		return fmt.Errorf("could not store tx: %w", dbTX.Error)
 	}
 	return nil
+}
+
+// GetNonceStatus gets the max nonce for the given address and chain id.
+func (s *Store) GetNonceStatus(ctx context.Context, fromAddress common.Address, chainID *big.Int, nonce uint64) (status db.Status, err error) {
+	var maxStatus sql.NullInt32
+
+	selectMaxStatus := fmt.Sprintf("max(`%s`)", statusFieldName)
+
+	dbTx := s.DB().WithContext(ctx).Model(&ETHTX{}).Select(selectMaxStatus).Where(ETHTX{
+		From:    fromAddress.String(),
+		ChainID: chainID.Uint64(),
+		Nonce:   nonce,
+	}).Scan(&maxStatus)
+
+	if dbTx.Error != nil {
+		return 0, fmt.Errorf("could not get nonce for chain id: %w", dbTx.Error)
+	}
+
+	// if no nonces, return the corresponding error.
+	if !maxStatus.Valid {
+		return db.Status(0), errorHelper.Wrapf(db.ErrNonceNotExist, "nonce %d does not exist for chain %d", nonce, chainID.Uint64())
+	}
+
+	return db.Status(maxStatus.Int32), nil
+}
+
+// GetNonceAttemptsByStatus gets the nonce attempts by status.
+func (s *Store) GetNonceAttemptsByStatus(ctx context.Context, fromAddress common.Address, chainID *big.Int, nonce uint64, matchStatuses ...db.Status) (txs []db.TX, err error) {
+	var dbTXs []ETHTX
+
+	dbTx := s.DB().WithContext(ctx).Model(&ETHTX{}).
+		Where(ETHTX{
+			From:    fromAddress.String(),
+			ChainID: chainID.Uint64(),
+			Nonce:   nonce,
+		}).Where(fmt.Sprintf("%s IN ?", statusFieldName), statusToArgs(matchStatuses...)).
+		Find(&dbTXs)
+
+	if dbTx.Error != nil {
+		return txs, fmt.Errorf("could not get nonce for chain id: %w", dbTx.Error)
+	}
+
+	txs, err = convertTXS(dbTXs)
+	if err != nil {
+		return nil, fmt.Errorf("could not convert txes: %w", err)
+	}
+
+	return txs, nil
 }
 
 // DB gets the database.
