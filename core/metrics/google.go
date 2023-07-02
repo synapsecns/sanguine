@@ -58,8 +58,9 @@ func (h *googleHandler) Start(ctx context.Context) (err error) {
 		if err != nil {
 			return fmt.Errorf("could not list memberships: %w", err)
 		}
-
 	}
+
+	fmt.Println(projectID)
 
 	exporter, err := texporter.New(texporter.WithProjectID(projectID))
 	if err != nil {
