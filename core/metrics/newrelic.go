@@ -20,7 +20,7 @@ type newRelicHandler struct {
 
 // see: https://docs.newrelic.com/docs/more-integrations/open-source-telemetry-integrations/opentelemetry/get-started/opentelemetry-set-up-your-app/
 const (
-	newRelicOTLPEndpoint = "https://otlp.nr-data.net"
+	newRelicOTLPEndpoint = "otlp.nr-data.net"
 	newrelicOtlpHeader   = "api-key"
 	newRelicLicenseEnv   = "NEW_RELIC_LICENSE_KEY"
 )
