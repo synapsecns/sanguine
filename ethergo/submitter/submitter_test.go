@@ -200,6 +200,12 @@ func (s *SubmitterSuite) TestCheckAndSetConfirmation() {
 			replacedCount++
 		case db.Confirmed:
 			s.Require().Equal(tx.Hash(), confirmedTx.Hash())
+			// make sure submission status is congruent
+			status, err := ts.GetSubmissionStatus(s.GetTestContext(), tb.GetBigChainID(), tx.Nonce())
+			s.Require().NoError(err)
+			s.Require().Equal(submitter.Confirmed, status.State())
+			s.Require().Equal(confirmedTx.Hash(), status.TxHash())
+
 		default:
 			s.Failf("unexpected status: %s", tx.Status.String())
 		}

@@ -323,6 +323,30 @@ func (s *Store) GetNonceStatus(ctx context.Context, fromAddress common.Address, 
 	return db.Status(maxStatus.Int32), nil
 }
 
+// GetNonceAttemptsByStatus gets the nonce attempts by status.
+func (s *Store) GetNonceAttemptsByStatus(ctx context.Context, fromAddress common.Address, chainID *big.Int, nonce uint64, matchStatuses ...db.Status) (txs []db.TX, err error) {
+	var dbTXs []ETHTX
+
+	dbTx := s.DB().WithContext(ctx).Model(&ETHTX{}).
+		Where(ETHTX{
+			From:    fromAddress.String(),
+			ChainID: chainID.Uint64(),
+			Nonce:   nonce,
+		}).Where(fmt.Sprintf("%s IN ?", statusFieldName), statusToArgs(matchStatuses...)).
+		Find(&dbTXs)
+
+	if dbTx.Error != nil {
+		return txs, fmt.Errorf("could not get nonce for chain id: %w", dbTx.Error)
+	}
+
+	txs, err = convertTXS(dbTXs)
+	if err != nil {
+		return nil, fmt.Errorf("could not convert txes: %w", err)
+	}
+
+	return txs, nil
+}
+
 // DB gets the database.
 func (s Store) DB() *gorm.DB {
 	return s.db

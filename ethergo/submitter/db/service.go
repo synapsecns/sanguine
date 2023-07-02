@@ -33,6 +33,8 @@ type Service interface {
 	GetAllTXAttemptByStatus(ctx context.Context, fromAddress common.Address, chainID *big.Int, matchStatuses ...Status) (txs []TX, err error)
 	// GetNonceStatus returns the nonce status for a given nonce by aggregating all attempts and finding the highest status.
 	GetNonceStatus(ctx context.Context, fromAddress common.Address, chainID *big.Int, nonce uint64) (status Status, err error)
+	// GetNonceAttemptsByStatus gets all txs for a given address and chain id with a given status and nonce.
+	GetNonceAttemptsByStatus(ctx context.Context, fromAddress common.Address, chainID *big.Int, nonce uint64, matchStatuses ...Status) (txs []TX, err error)
 }
 
 // TransactionFunc is a function that can be passed to DBTransaction.

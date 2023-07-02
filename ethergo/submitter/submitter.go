@@ -39,8 +39,8 @@ type TransactionSubmitter interface {
 	// the transaction is not guaranteed to be executed immediately, only at some point in the future.
 	// the nonce is returned, and can be used to track the status of the transaction.
 	SubmitTransaction(ctx context.Context, chainID *big.Int, call ContractCallType) (nonce uint64, err error)
-	// GetNonceStatus returns the status of a transaction and any metadata associated with it if it is complete.
-	GetNonceStatus(ctx context.Context, chainID *big.Int, nonce uint64) (status interface{}, err error)
+	// GetSubmissionStatus returns the status of a transaction and any metadata associated with it if it is complete.
+	GetSubmissionStatus(ctx context.Context, chainID *big.Int, nonce uint64) (status SubmissionStatus, err error)
 }
 
 // txSubmitterImpl is the implementation of the transaction submitter.
@@ -111,9 +111,43 @@ func (t *txSubmitterImpl) Start(ctx context.Context) error {
 	}
 }
 
-func (t *txSubmitterImpl) GetNonceStatus(ctx context.Context, chainID *big.Int, nonce uint64) (status interface{}, err error) {
-	// txhash, status := t.db.GetTxHash(ctx, chainID, nonce)
-	panic("not yet implemented")
+func (t *txSubmitterImpl) GetSubmissionStatus(ctx context.Context, chainID *big.Int, nonce uint64) (status SubmissionStatus, err error) {
+	nonceStatus, err := t.db.GetNonceStatus(ctx, t.signer.Address(), chainID, nonce)
+	if err != nil {
+		if errors.Is(err, db.ErrNonceNotExist) {
+			return submissionStatusImpl{
+				state: NotFound,
+			}, nil
+		}
+
+		return nil, fmt.Errorf("could not get nonce status: %w", err)
+	}
+
+	if nonceStatus == db.ReplacedOrConfirmed {
+		return submissionStatusImpl{
+			state: Confirming,
+		}, nil
+	}
+
+	if nonceStatus == db.Confirmed {
+		txs, err := t.db.GetNonceAttemptsByStatus(ctx, t.signer.Address(), chainID, nonce, db.Confirmed)
+		if err != nil {
+			return nil, fmt.Errorf("could not get nonce attempts by status: %w", err)
+		}
+
+		if len(txs) == 0 {
+			return nil, fmt.Errorf("unexpected error: no transactions found for nonce %d", nonce)
+		}
+
+		return submissionStatusImpl{
+			state:  Confirmed,
+			txHash: txs[0].Hash(),
+		}, nil
+	}
+
+	return submissionStatusImpl{
+		state: Pending,
+	}, nil
 }
 
 func (t *txSubmitterImpl) getNonce(parentCtx context.Context, chainID *big.Int, address common.Address) (_ uint64, err error) {

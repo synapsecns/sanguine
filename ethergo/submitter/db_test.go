@@ -148,6 +148,11 @@ func (t *TXSubmitterDBSuite) TestGetNonceStatus() {
 			t.Require().NoError(err)
 
 			t.Require().Equal(status, nonceStatus)
+
+			txs, err := dbs.GetNonceAttemptsByStatus(t.GetTestContext(), msg.From, simulatedBackend.GetBigChainID(), mockTx.Nonce(), status)
+			t.Require().NoError(err)
+
+			t.Require().Equal(1, len(txs))
 		}
 	})
 }
