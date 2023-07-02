@@ -38,7 +38,7 @@ type TransactionSubmitter interface {
 	// SubmitTransaction submits a transaction to the chain.
 	// the transaction is not guaranteed to be executed immediately, only at some point in the future.
 	// the nonce is returned, and can be used to track the status of the transaction.
-	SubmitTransaction(parentCtx context.Context, chainID *big.Int, call ContractCallType) (nonce uint64, err error)
+	SubmitTransaction(ctx context.Context, chainID *big.Int, call ContractCallType) (nonce uint64, err error)
 }
 
 // txSubmitterImpl is the implementation of the transaction submitter.
