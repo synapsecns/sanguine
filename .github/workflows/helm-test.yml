@@ -24,6 +24,7 @@ jobs:
   lint-test:
     runs-on: ubuntu-latest
     strategy:
+      fail-fast: false
       matrix:
         chart: [ 'agents_embedded', 'agents_remote', 'scribe', 'explorer', 'omnirpc' ]
     steps:
