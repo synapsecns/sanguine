@@ -125,6 +125,7 @@ jobs:
       actions: read
       contents: write
     strategy:
+      fail-fast: false
       matrix:
         # list of packages, if you update this update changes as well
         package: ${{ fromJSON(needs.changes.outputs.packages) }}
