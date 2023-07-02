@@ -5,7 +5,7 @@ import (
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/params"
 	"github.com/synapsecns/sanguine/agents/agents/executor/db"
-	executorsqllite "github.com/synapsecns/sanguine/agents/agents/executor/db/datastore/sql/sqlite"
+	executorsqllite "github.com/synapsecns/sanguine/agents/agents/executor/db/sql/sqlite"
 	executorMetadata "github.com/synapsecns/sanguine/agents/agents/executor/metadata"
 	guardMetadata "github.com/synapsecns/sanguine/agents/agents/guard/metadata"
 	notaryMetadata "github.com/synapsecns/sanguine/agents/agents/notary/metadata"

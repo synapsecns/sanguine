@@ -18,9 +18,10 @@ import (
 	"github.com/synapsecns/sanguine/agents/types"
 	"github.com/synapsecns/sanguine/core/merkle"
 	"github.com/synapsecns/sanguine/core/metrics"
-	ethergoChain "github.com/synapsecns/sanguine/ethergo/chain"
 	agentsConfig "github.com/synapsecns/sanguine/ethergo/signer/config"
 	"github.com/synapsecns/sanguine/ethergo/signer/signer"
+	"github.com/synapsecns/sanguine/ethergo/submitter"
+	omnirpcClient "github.com/synapsecns/sanguine/services/omnirpc/client"
 	"github.com/synapsecns/sanguine/services/scribe/client"
 	pbscribe "github.com/synapsecns/sanguine/services/scribe/grpc/types/types/v1"
 	"go.opentelemetry.io/contrib/instrumentation/google.golang.org/grpc/otelgrpc"
@@ -78,6 +79,8 @@ type Executor struct {
 	chainExecutors map[uint32]*chainExecutor
 	// handler is the metrics handler.
 	handler metrics.Handler
+	// txSubmitter is the transaction submitter.
+	txSubmitter submitter.TransactionSubmitter
 }
 
 // logOrderInfo is a struct to keep track of the order of a log.
@@ -122,7 +125,7 @@ func makeScribeClient(parentCtx context.Context, handler metrics.Handler, url st
 // NewExecutor creates a new executor agent.
 //
 //nolint:cyclop
-func NewExecutor(ctx context.Context, config executor.Config, executorDB db.ExecutorDB, scribeClient client.ScribeClient, clients map[uint32]Backend, handler metrics.Handler) (*Executor, error) {
+func NewExecutor(ctx context.Context, config executor.Config, executorDB db.ExecutorDB, scribeClient client.ScribeClient, omniRPCClient omnirpcClient.RPCClient, handler metrics.Handler) (*Executor, error) {
 	chainExecutors := make(map[uint32]*chainExecutor)
 
 	conn, grpcClient, err := makeScribeClient(ctx, handler, fmt.Sprintf("%s:%d", scribeClient.URL, scribeClient.Port))
@@ -134,6 +137,8 @@ func NewExecutor(ctx context.Context, config executor.Config, executorDB db.Exec
 	if err != nil {
 		return nil, fmt.Errorf("could not create signer: %w", err)
 	}
+
+	txSubmitter := submitter.NewTransactionSubmitter(handler, executorSigner, omniRPCClient, executorDB.SubmitterDB(), &config.SubmitterConfig)
 
 	if config.ExecuteInterval == 0 {
 		config.ExecuteInterval = 2
@@ -165,14 +170,12 @@ func NewExecutor(ctx context.Context, config executor.Config, executorDB db.Exec
 			inboxParser = nil
 		}
 
-		chainRPCURL := fmt.Sprintf("%s/confirmations/1/rpc/%d", config.BaseOmnirpcURL, chain.ChainID)
-
-		underlyingClient, err := ethergoChain.NewFromURL(ctx, chainRPCURL)
+		evmClient, err := omniRPCClient.GetConfirmationsClient(ctx, int(chain.ChainID), 1)
 		if err != nil {
-			return nil, fmt.Errorf("could not get evm: %w", err)
+			return nil, fmt.Errorf("could not get evm client: %w", err)
 		}
 
-		boundDestination, err := evm.NewDestinationContract(ctx, underlyingClient, common.HexToAddress(chain.DestinationAddress))
+		boundDestination, err := evm.NewDestinationContract(ctx, evmClient, common.HexToAddress(chain.DestinationAddress))
 		if err != nil {
 			return nil, fmt.Errorf("could not bind destination contract: %w", err)
 		}
@@ -195,7 +198,7 @@ func NewExecutor(ctx context.Context, config executor.Config, executorDB db.Exec
 			inboxParser:      inboxParser,
 			logChan:          make(chan *ethTypes.Log, logChanSize),
 			merkleTree:       tree,
-			rpcClient:        clients[chain.ChainID],
+			rpcClient:        evmClient,
 			boundDestination: boundDestination,
 		}
 	}
@@ -209,6 +212,7 @@ func NewExecutor(ctx context.Context, config executor.Config, executorDB db.Exec
 		signer:         executorSigner,
 		chainExecutors: chainExecutors,
 		handler:        handler,
+		txSubmitter:    txSubmitter,
 	}, nil
 }
 

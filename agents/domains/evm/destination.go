@@ -3,7 +3,7 @@ package evm
 import (
 	"context"
 	"fmt"
-	"github.com/synapsecns/sanguine/ethergo/chain"
+	"github.com/synapsecns/sanguine/ethergo/client"
 	"math/big"
 	"time"
 
@@ -20,13 +20,18 @@ import (
 // NewDestinationContract returns a bound destination contract.
 //
 //nolint:staticcheck
-func NewDestinationContract(ctx context.Context, client chain.Chain, destinationAddress common.Address) (domains.DestinationContract, error) {
+func NewDestinationContract(ctx context.Context, client client.EVM, destinationAddress common.Address) (domains.DestinationContract, error) {
 	boundCountract, err := destination.NewDestinationRef(destinationAddress, client)
 	if err != nil {
 		return nil, fmt.Errorf("could not create %T: %w", &destination.DestinationRef{}, err)
 	}
 
-	nonceManager := nonce.NewNonceManager(ctx, client, client.GetBigChainID())
+	clientChainID, err := client.ChainID(ctx)
+	if err != nil {
+		return nil, fmt.Errorf("could not get client chain id: %w", err)
+	}
+
+	nonceManager := nonce.NewNonceManager(ctx, client, clientChainID)
 	return destinationContract{
 		contract:     boundCountract,
 		client:       client,
@@ -39,7 +44,7 @@ type destinationContract struct {
 	contract *destination.DestinationRef
 	// client contains the evm client
 	//nolint: staticcheck
-	client chain.Chain
+	client client.EVM
 	// nonceManager is the nonce manager used for transacting with the chain
 	nonceManager nonce.Manager
 }
@@ -64,7 +69,12 @@ func (a destinationContract) Execute(ctx context.Context, signer signer.Signer, 
 }
 
 func (a destinationContract) transactOptsSetup(ctx context.Context, signer signer.Signer) (*bind.TransactOpts, error) {
-	transactor, err := signer.GetTransactor(ctx, a.client.GetBigChainID())
+	clientChainID, err := a.client.ChainID(ctx)
+	if err != nil {
+		return nil, fmt.Errorf("could not get client chain id: %w", err)
+	}
+
+	transactor, err := signer.GetTransactor(ctx, clientChainID)
 	if err != nil {
 		return nil, fmt.Errorf("could not sign tx: %w", err)
 	}

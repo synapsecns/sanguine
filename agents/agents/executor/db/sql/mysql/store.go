@@ -3,7 +3,7 @@ package mysql
 import (
 	"context"
 	"fmt"
-	"github.com/synapsecns/sanguine/agents/agents/executor/db/datastore/sql/base"
+	"github.com/synapsecns/sanguine/agents/agents/executor/db/sql/base"
 	common_base "github.com/synapsecns/sanguine/core/dbcommon"
 	"github.com/synapsecns/sanguine/core/metrics"
 	"gorm.io/gorm/schema"
@@ -65,7 +65,7 @@ func NewMysqlStore(parentCtx context.Context, dbURL string, handler metrics.Hand
 	if err != nil {
 		return nil, fmt.Errorf("could not migrate on mysql: %w", err)
 	}
-	return &Store{base.NewStore(gdb)}, nil
+	return &Store{base.NewStore(gdb, handler)}, nil
 }
 
 // var _ db.Service = &Store{}
