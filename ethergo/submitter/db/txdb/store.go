@@ -317,11 +317,10 @@ func (s *Store) GetNonceStatus(ctx context.Context, fromAddress common.Address, 
 
 	// if no nonces, return the corresponding error.
 	if !maxStatus.Valid {
-		return db.Status(0), errorHelper.Wrapf(db.ErrNonceNotExist, "nonce %d does not exist fo chain %d", chainID.Uint64())
+		return db.Status(0), errorHelper.Wrapf(db.ErrNonceNotExist, "nonce %d does not exist for chain %d", nonce, chainID.Uint64())
 	}
 
 	return db.Status(maxStatus.Int32), nil
-
 }
 
 // DB gets the database.

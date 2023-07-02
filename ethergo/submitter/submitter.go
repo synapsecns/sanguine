@@ -112,7 +112,7 @@ func (t *txSubmitterImpl) Start(ctx context.Context) error {
 }
 
 func (t *txSubmitterImpl) GetNonceStatus(ctx context.Context, chainID *big.Int, nonce uint64) (status interface{}, err error) {
-	//txhash, status := t.db.GetTxHash(ctx, chainID, nonce)
+	// txhash, status := t.db.GetTxHash(ctx, chainID, nonce)
 	panic("not yet implemented")
 }
 
