@@ -62,7 +62,7 @@ func (h *googleHandler) Start(ctx context.Context) (err error) {
 
 	fmt.Println(projectID)
 
-	exporter, err := texporter.New(texporter.WithProjectID(projectID))
+	exporter, err := texporter.New()
 	if err != nil {
 		return fmt.Errorf("exporter could not be created: %w", err)
 	}
