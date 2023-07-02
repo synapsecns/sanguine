@@ -38,7 +38,11 @@ type TransactionSubmitter interface {
 	// SubmitTransaction submits a transaction to the chain.
 	// the transaction is not guaranteed to be executed immediately, only at some point in the future.
 	// the nonce is returned, and can be used to track the status of the transaction.
-	SubmitTransaction(parentCtx context.Context, chainID *big.Int, call ContractCallType) (nonce uint64, err error)
+	SubmitTransaction(ctx context.Context, chainID *big.Int, call ContractCallType) (nonce uint64, err error)
+	// GetNonceStatus gets the status of a nonce on a given chain
+	// GetNonceStatus(ctx context.Context, chainID *big.Int, nonce uint64) (status core.NonceStatus, err error)
+	// GetTXHash gets the tx hash for a given chain and nonce.
+	//GetTXHash(ctx context.Context, chainID *big.Int, nonce uint64) (txHash common.Hash, err error)
 }
 
 // txSubmitterImpl is the implementation of the transaction submitter.
