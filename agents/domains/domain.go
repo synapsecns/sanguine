@@ -81,7 +81,7 @@ type InboxContract interface {
 // BondingManagerContract contains the interface for the bonding manager.
 type BondingManagerContract interface {
 	// GetAgentStatus returns the current agent status for the given agent.
-	GetAgentStatus(ctx context.Context, signer signer.Signer) (types.AgentStatus, error)
+	GetAgentStatus(ctx context.Context, address common.Address) (types.AgentStatus, error)
 	// GetAgentRoot gets the current agent root
 	GetAgentRoot(ctx context.Context) ([32]byte, error)
 	// GetProof gets the proof that the agent is in the Agent Merkle Tree
@@ -113,12 +113,23 @@ type LightInboxContract interface {
 		agentRoot [32]byte,
 		snapGas []*big.Int,
 	) error
+
+	// VerifyStateWithSnapshotProof is called by a Guard who finds an agent guilty of a fraudulent State. The result will be to
+	// slash the agent if it's in fact guilty.
+	VerifyStateWithSnapshotProof(
+		ctx context.Context,
+		signer signer.Signer,
+		index uint64,
+		state types.State,
+		snapProof [][]byte,
+		attPayload []byte,
+		attSignature types.Signature) error
 }
 
 // LightManagerContract contains the interface for the light manager.
 type LightManagerContract interface {
 	// GetAgentStatus returns the current agent status for the given agent.
-	GetAgentStatus(ctx context.Context, signer signer.Signer) (types.AgentStatus, error)
+	GetAgentStatus(ctx context.Context, address common.Address) (types.AgentStatus, error)
 	// GetAgentRoot gets the current agent root
 	GetAgentRoot(ctx context.Context) ([32]byte, error)
 	// UpdateAgentStatus updates the agent status on the remote chain.

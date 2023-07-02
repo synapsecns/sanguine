@@ -259,11 +259,11 @@ func (g Guard) runAttestationFraudDetection(parentCtx context.Context) {
 				continue
 			}
 
-			fmt.Printf("CRONIN Attestation is valid!!!\n")
 			// TODO (joe): First look up snapshot on Summit to get all states
 			// Then iterate through all states and check on the corresponding origin chains if it is ok
-			attPayload, err := types.EncodeAttestation(attestation)
+			attestationRaw, err := types.EncodeAttestation(attestation)
 			if err != nil {
+				fmt.Printf("CRONIN error encoding attestation\n")
 				logger.Errorf("Failed EncodeAttestation for destinationID %d and index %d: err = %v", domain.Config().DomainID, i, err)
 				span.AddEvent("Failed calling EncodeAttestation for destinationID and index", trace.WithAttributes(
 					attribute.Int("destinationID", int(domain.Config().DomainID)),
@@ -273,8 +273,34 @@ func (g Guard) runAttestationFraudDetection(parentCtx context.Context) {
 				continue
 			}
 
+			attestationSignatureRaw, err := types.EncodeSignature(attestationSignature)
+			if err != nil {
+				fmt.Printf("CRONIN error encoding attestation signature\n")
+				logger.Errorf("Failed EncodeSignature for attestation on destinationID %d and index %d: err = %v", domain.Config().DomainID, i, err)
+				span.AddEvent("Failed calling EncodeSignature for attestation on destinationID and index", trace.WithAttributes(
+					attribute.Int("destinationID", int(domain.Config().DomainID)),
+					attribute.Int64("index", int64(i)),
+					attribute.String("err", err.Error()),
+				))
+				continue
+			}
+
+			recoveredNotaryAddress, err := attestation.RecoverSignerAddress(ctx, attestationSignature)
+			if err != nil {
+				fmt.Printf("CRONIN error in RecoverSignerAddress %v\n", err)
+				logger.Errorf("Could not get pub key address from signature of bad attestation on destinationID %d and index %d: err = %v", domain.Config().DomainID, i, err)
+				span.AddEvent("Could not get pub key address from signature of bad attestation on destinationID and index", trace.WithAttributes(
+					attribute.Int("destinationID", int(domain.Config().DomainID)),
+					attribute.Int64("index", int64(i)),
+					attribute.String("err", err.Error()),
+				))
+				continue
+			}
+
 			if isValidAttestation {
-				snapshot /*snapshotSignature*/, _, err := g.summitDomain.Summit().GetNotarySnapshot(ctx, attPayload)
+				fmt.Printf("CRONIN Attestation is valid!!!\n")
+
+				snapshot /*snapshotSignature*/, _, err := g.summitDomain.Summit().GetNotarySnapshot(ctx, attestationRaw)
 				if err != nil {
 					logger.Errorf("Failed to GetNotarySnapshot on Summit: %v", err)
 					span.AddEvent("Failed to GetNotarySnapshot on Summit", trace.WithAttributes(
@@ -284,7 +310,7 @@ func (g Guard) runAttestationFraudDetection(parentCtx context.Context) {
 				}
 
 				fmt.Printf("CRONIN got Notary snapshot with this many states %v\n", len(snapshot.States()))
-				for i, state := range snapshot.States() {
+				for stateIndex, state := range snapshot.States() {
 					fmt.Printf("CRONIN notary snapshot state[%v]: origin(%v), nonce(%v), blockNumber(%v), timeStamp(%v)\n",
 						i, state.Origin(), state.Nonce(), state.BlockNumber(), state.Timestamp().Uint64())
 
@@ -312,6 +338,40 @@ func (g Guard) runAttestationFraudDetection(parentCtx context.Context) {
 					}
 					if !isValidState {
 						fmt.Printf("CRONIN state is NOT valid!!! We found a FRAUDULENT STATE!!!!\n")
+						// First do fraud report to Origin to initiate slashing
+						// Then notify summit of pending fraud
+
+						_, snapProofs, err := snapshot.SnapshotRootAndProofs()
+						if err != nil {
+							logger.Errorf("Failed getting snap root and proofs for bad state on origin %v, destinationID %d and index %d on the Origin contract: err = %v",
+								state.Origin(), domain.Config().DomainID, stateIndex, err)
+							span.AddEvent("Failed getting snap root and proofs for bad state on originID, destinationID and index on the Summit contract", trace.WithAttributes(
+								attribute.Int("originID", int(state.Origin())),
+								attribute.Int("destinationID", int(domain.Config().DomainID)),
+								attribute.Int64("index", int64(stateIndex)),
+								attribute.String("err", err.Error()),
+							))
+							continue
+						}
+
+						snapProof := snapProofs[stateIndex]
+
+						err = originDomain.LightInbox().VerifyStateWithSnapshotProof(
+							ctx,
+							g.unbondedSigner,
+							uint64(stateIndex),
+							state,
+							snapProof,
+							attestationRaw,
+							attestationSignature)
+						if err != nil {
+							logger.Errorf("Failed to call VerifyAttestation on Inbox: %v", err)
+							span.AddEvent("Failed to call VerifyStateWithSnapshotProof on inbox", trace.WithAttributes(
+								attribute.String("err", err.Error()),
+							))
+							continue
+						}
+
 					} else {
 						fmt.Printf("CRONIN state is valid!!!\n")
 					}
@@ -320,10 +380,11 @@ func (g Guard) runAttestationFraudDetection(parentCtx context.Context) {
 				// TODO (joe): Submit fraud report here
 				fmt.Printf("CRONIN Attestation is NOT valid!!! WE FOUND FRAUD!!!!!!\n")
 
-				attSignature, err := types.EncodeSignature(attestationSignature)
+				notaryAgentStatus, err := g.summitDomain.BondingManager().GetAgentStatus(ctx, recoveredNotaryAddress)
 				if err != nil {
-					logger.Errorf("Failed EncodeSignature for destinationID %d and index %d: err = %v", domain.Config().DomainID, i, err)
-					span.AddEvent("Failed calling EncodeSignature for destinationID and index", trace.WithAttributes(
+					fmt.Printf("CRONIN GetAgentStatus with attestationNotaryAddress got error %v\n", err)
+					logger.Errorf("Failed to GetAgentStatus for bad notary on destinationID %d and index %d: err = %v", domain.Config().DomainID, i, err)
+					span.AddEvent("Failed to GetAgentStatus for bad notary on destinationID and index", trace.WithAttributes(
 						attribute.Int("destinationID", int(domain.Config().DomainID)),
 						attribute.Int64("index", int64(i)),
 						attribute.String("err", err.Error()),
@@ -331,7 +392,13 @@ func (g Guard) runAttestationFraudDetection(parentCtx context.Context) {
 					continue
 				}
 
-				err = g.summitDomain.Inbox().VerifyAttestation(ctx, g.unbondedSigner, attPayload, attSignature)
+				if !(notaryAgentStatus.Flag() == uint8(types.AgentFlagActive) || notaryAgentStatus.Flag() == uint8(types.AgentFlagUnstaking)) {
+					fmt.Printf("CRONIN Notary has already been slashed on Summit and has a status of %v\n", notaryAgentStatus.Flag())
+					continue
+				}
+				fmt.Printf("CRONIN Notary has NOT been slashed on Summit and has a status of %v", notaryAgentStatus.Flag())
+
+				err = g.summitDomain.Inbox().VerifyAttestation(ctx, g.unbondedSigner, attestationRaw, attestationSignatureRaw)
 				if err != nil {
 					logger.Errorf("Failed to call VerifyAttestation on Inbox: %v", err)
 					span.AddEvent("Failed to call VerifyAttestation on inbox", trace.WithAttributes(
@@ -340,7 +407,7 @@ func (g Guard) runAttestationFraudDetection(parentCtx context.Context) {
 					continue
 				}
 
-				// Then submit fraud report on destination
+				// TODO (joe): Then submit fraud report on destination
 			}
 		}
 

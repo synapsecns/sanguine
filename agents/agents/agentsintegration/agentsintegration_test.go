@@ -630,6 +630,12 @@ func (u *AgentsIntegrationSuite) TestAgentsE2E() {
 	badNotary2AttestationRawSignature, err := types.EncodeSignature(badNotary2AttestationSignature)
 	Nil(u.T(), err)
 
+	originStateBeforeRaw, err := u.OriginContract.SuggestLatestState(&bind.CallOpts{Context: u.GetTestContext()})
+	Nil(u.T(), err)
+
+	originStateBefore, err := types.DecodeState(originStateBeforeRaw)
+	Nil(u.T(), err)
+
 	badNotary2Tx, err := u.LightInboxOnDestination.SubmitAttestation(
 		txContextDestination.TransactOpts,
 		latestNotaryBadAttestationRaw.AttPayload,
@@ -649,10 +655,44 @@ func (u *AgentsIntegrationSuite) TestAgentsE2E() {
 		return numAttestations.Uint64() >= uint64(4)
 	})
 
+	badIndex := big.NewInt(3)
+
+	maliciousAttestationReturned, err := u.DestinationContract.GetAttestation(&bind.CallOpts{Context: u.GetTestContext()}, badIndex)
+	Nil(u.T(), err)
+
+	maliciousNotarySnapshotRaw, err := u.SummitContract.GetNotarySnapshot(&bind.CallOpts{Context: u.GetTestContext()}, maliciousAttestationReturned.AttPayload)
+	Nil(u.T(), err)
+	NotNil(u.T(), maliciousNotarySnapshotRaw)
+
+	maliciousNotarySnapshot, err := types.DecodeSnapshot(maliciousNotarySnapshotRaw.SnapPayload)
+	Nil(u.T(), err)
+
+	Len(u.T(), maliciousNotarySnapshot.States(), 1)
+	maliciousStateFromNotarySnapshot := maliciousNotarySnapshot.States()[0]
+
+	rawMaliciousStateFromNotarySnapshot, err := types.EncodeState(maliciousStateFromNotarySnapshot)
+	Nil(u.T(), err)
+
+	isValidMaliciousState, err := u.OriginContract.IsValidState(&bind.CallOpts{Context: u.GetTestContext()}, rawMaliciousStateFromNotarySnapshot)
+
+	False(u.T(), isValidMaliciousState)
+
+	u.Eventually(func() bool {
+		_ = awsTime.SleepWithContext(u.GetTestContext(), time.Second*5)
+
+		latestStateRaw, err := u.OriginContract.SuggestLatestState(&bind.CallOpts{Context: u.GetTestContext()})
+		Nil(u.T(), err)
+
+		latestState, err := types.DecodeState(latestStateRaw)
+		Nil(u.T(), err)
+
+		return latestState.Nonce() >= originStateBefore.Nonce()
+	})
+
 	/*u.Eventually(func() bool {
 		_ = awsTime.SleepWithContext(u.GetTestContext(), time.Second*5)
 
-		notaryMalicious2Status, err := u.BondingManagerOnSummit.AgentStatus(&bind.CallOpts{Context: u.GetTestContext()}, u.NotaryMalicious2BondedSigner.Address())
+		notaryMalicious2Status, err := u.OriginContract.AgentStatus(&bind.CallOpts{Context: u.GetTestContext()}, u.NotaryMalicious2BondedSigner.Address())
 		Nil(u.T(), err)
 
 		//return err != nil

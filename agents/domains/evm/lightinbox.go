@@ -85,3 +85,44 @@ func (a lightInboxContract) SubmitAttestation(
 
 	return nil
 }
+
+func (a lightInboxContract) VerifyStateWithSnapshotProof(
+	ctx context.Context,
+	signer signer.Signer,
+	index uint64,
+	state types.State,
+	snapProof [][]byte,
+	attPayload []byte,
+	attSignature types.Signature,
+) error {
+	transactOpts, err := a.transactOptsSetup(ctx, signer)
+	if err != nil {
+		return fmt.Errorf("could not setup transact opts: %w", err)
+	}
+
+	transactOpts.GasLimit = uint64(10000000)
+
+	rawAttSig, err := types.EncodeSignature(attSignature)
+	if err != nil {
+		return fmt.Errorf("could not encode signature: %w", err)
+	}
+
+	indexBigInt := new(big.Int).SetUint64(index)
+
+	rawState, err := types.EncodeState(state)
+	if err != nil {
+		return fmt.Errorf("could not econde state: %w", err)
+	}
+
+	snapProofEVM := make([][32]byte, len(snapProof))
+	for i, snapProofNode := range snapProof {
+		copy(snapProofEVM[i][:], snapProofNode[:])
+	}
+
+	_, err = a.contract.VerifyStateWithSnapshotProof(transactOpts, indexBigInt, rawState, snapProofEVM, attPayload, rawAttSig)
+	if err != nil {
+		return fmt.Errorf("could not call VerifyStateWithSnapshotProof: %w", err)
+	}
+
+	return nil
+}

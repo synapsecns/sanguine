@@ -44,8 +44,8 @@ type bondingManagerContract struct {
 }
 
 //nolint:dupl
-func (a bondingManagerContract) GetAgentStatus(ctx context.Context, bondedAgentSigner signer.Signer) (types.AgentStatus, error) {
-	rawStatus, err := a.contract.AgentStatus(&bind.CallOpts{Context: ctx}, bondedAgentSigner.Address())
+func (a bondingManagerContract) GetAgentStatus(ctx context.Context, address common.Address) (types.AgentStatus, error) {
+	rawStatus, err := a.contract.AgentStatus(&bind.CallOpts{Context: ctx}, address)
 	if err != nil {
 		return nil, fmt.Errorf("could not retrieve agent status: %w", err)
 	}

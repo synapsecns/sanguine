@@ -33,6 +33,10 @@ type Attestation interface {
 	Timestamp() *big.Int
 	// SignAttestation signs the attestation
 	SignAttestation(ctx context.Context, signer signer.Signer) (signer.Signature, []byte, common.Hash, error)
+	// GetAttestationHash gets the hash that is signed when signing an Attestation
+	GetAttestationHash(ctx context.Context) ([]byte, common.Hash, error)
+	// RecoverSignerAddress recovers the signer address
+	RecoverSignerAddress(ctx context.Context, attestationSignature Signature) (common.Address, error)
 }
 
 type attestation struct {
@@ -75,9 +79,22 @@ func (a attestation) Timestamp() *big.Int {
 }
 
 func (a attestation) SignAttestation(ctx context.Context, signer signer.Signer) (signer.Signature, []byte, common.Hash, error) {
+	encodedAttestation, hashedAttestation, err := a.GetAttestationHash(ctx)
+	if err != nil {
+		return nil, nil, common.Hash{}, fmt.Errorf("could not encode attestation and get its hash: %w", err)
+	}
+
+	signature, err := signer.SignMessage(ctx, core.BytesToSlice(hashedAttestation), false)
+	if err != nil {
+		return nil, nil, common.Hash{}, fmt.Errorf("could not sign attestation: %w", err)
+	}
+	return signature, encodedAttestation, hashedAttestation, nil
+}
+
+func (a attestation) GetAttestationHash(ctx context.Context) ([]byte, common.Hash, error) {
 	encodedAttestation, err := EncodeAttestation(a)
 	if err != nil {
-		return nil, nil, common.Hash{}, fmt.Errorf("could not encode attestation: %w", err)
+		return nil, common.Hash{}, fmt.Errorf("could not encode attestation: %w", err)
 	}
 
 	attestationSalt := crypto.Keccak256Hash([]byte("ATTESTATION_VALID_SALT"))
@@ -87,12 +104,38 @@ func (a attestation) SignAttestation(ctx context.Context, signer signer.Signer) 
 
 	hashedAttestation, err := HashRawBytes(toSign)
 	if err != nil {
-		return nil, nil, common.Hash{}, fmt.Errorf("could not hash attestation: %w", err)
+		return nil, common.Hash{}, fmt.Errorf("could not hash attestation: %w", err)
 	}
 
-	signature, err := signer.SignMessage(ctx, core.BytesToSlice(hashedAttestation), false)
+	return encodedAttestation, hashedAttestation, nil
+}
+
+func (a attestation) RecoverSignerAddress(ctx context.Context, attestationSignature Signature) (common.Address, error) {
+	_, hashedAttestation, err := a.GetAttestationHash(ctx)
 	if err != nil {
-		return nil, nil, common.Hash{}, fmt.Errorf("could not sign attestation: %w", err)
+		return common.Address{}, fmt.Errorf("could not encode attestation and get its hash: %w", err)
 	}
-	return signature, encodedAttestation, hashedAttestation, nil
+
+	encodedSignature, err := EncodeSignature(attestationSignature)
+	if err != nil {
+		return common.Address{}, fmt.Errorf("could not encode attestation signature: %w", err)
+	}
+
+	encodedSignature[64] -= 27
+	sigPublicKey, err := crypto.Ecrecover(hashedAttestation.Bytes(), encodedSignature)
+	if err != nil {
+		return common.Address{}, fmt.Errorf("failed to Ecrecover attestation signature: %w", err)
+	}
+
+	unmarshalledPubKey, err := crypto.UnmarshalPubkey(sigPublicKey)
+	if err != nil {
+		return common.Address{}, fmt.Errorf("failed to UnmarshalPubkey attestation pub key: %w", err)
+	}
+	if unmarshalledPubKey == nil {
+		return common.Address{}, fmt.Errorf("failed to UnmarshalPubkey attestation pub key with no error but returned nil")
+	}
+
+	unmarshalledPubKeyAsAddress := crypto.PubkeyToAddress(*unmarshalledPubKey)
+
+	return unmarshalledPubKeyAsAddress, nil
 }
