@@ -354,19 +354,9 @@ func (c *CCTPRelayer) RelaySingle(parentCtx context.Context, originChain uint32,
 		return fmt.Errorf("could not process queue: %w", err)
 	}
 
-	// wait for the submitted transaction to be confirmed
-	err = retry.WithBackoff(ctx, func(ctx context.Context) error {
-		msg, err := c.db.GetMessageByOriginHash(ctx, receipt.TxHash)
-		if err != nil {
-			return err
-		}
-		if msg.State != relayTypes.Complete {
-			return fmt.Errorf("message not complete; state: %d", msg.State)
-		}
-		return nil
-	}, retry.WithMax(60*time.Second))
+	err = c.waitForComplete(ctx, receipt.TxHash)
 	if err != nil {
-		return err
+		return fmt.Errorf("could not wait for complete message: %w", err)
 	}
 
 	return nil
@@ -744,6 +734,24 @@ func (c *CCTPRelayer) submitReceiveCircleToken(parentCtx context.Context, msg *r
 	err = c.db.StoreMessage(ctx, *msg)
 	if err != nil {
 		return fmt.Errorf("could not store completed message: %w", err)
+	}
+	return nil
+}
+
+// wait for a given Message to be completed given an origin tx hash.
+func (c *CCTPRelayer) waitForComplete(ctx context.Context, originHash common.Hash) error {
+	err := retry.WithBackoff(ctx, func(ctx context.Context) error {
+		msg, err := c.db.GetMessageByOriginHash(ctx, originHash)
+		if err != nil {
+			return err
+		}
+		if msg.State != relayTypes.Complete {
+			return fmt.Errorf("message not complete; state: %d", msg.State)
+		}
+		return nil
+	}, retry.WithMax(60*time.Second))
+	if err != nil {
+		return err
 	}
 	return nil
 }
