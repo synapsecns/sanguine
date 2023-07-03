@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import { useAccount, useNetwork, Address } from 'wagmi'
 import { Zero } from '@ethersproject/constants'
 import { ConnectWalletButton } from './ConnectWalletButton'

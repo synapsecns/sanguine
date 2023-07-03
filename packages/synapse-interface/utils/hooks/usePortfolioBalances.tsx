@@ -94,7 +94,7 @@ export const usePortfolioBalancesAndAllowances =
         setBalancesAndAllowances(balanceRecord)
       }
       fetchBalancesAcrossNetworks()
-    }, [])
+    }, [address])
 
     return balancesAndAllowances
   }

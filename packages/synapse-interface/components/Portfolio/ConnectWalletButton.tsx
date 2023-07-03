@@ -17,30 +17,28 @@ export function ConnectWalletButton() {
   }
 
   return (
-    !address && (
-      <div data-test-id="connect-wallet-button">
-        <ConnectButton.Custom>
-          {({ account, chain, openConnectModal, mounted, openChainModal }) => {
-            return (
-              <>
-                {(() => {
-                  if (!mounted || !account || !chain) {
-                    return (
-                      <button
-                        className={buttonClassName}
-                        style={buttonStyle}
-                        onClick={openConnectModal}
-                      >
-                        Connect Wallet
-                      </button>
-                    )
-                  }
-                })()}
-              </>
-            )
-          }}
-        </ConnectButton.Custom>
-      </div>
-    )
+    <div data-test-id="connect-wallet-button">
+      <ConnectButton.Custom>
+        {({ account, chain, openConnectModal, mounted, openChainModal }) => {
+          return (
+            <>
+              {(() => {
+                if (!mounted || !account || !chain || !address) {
+                  return (
+                    <button
+                      className={buttonClassName}
+                      style={buttonStyle}
+                      onClick={openConnectModal}
+                    >
+                      Connect Wallet
+                    </button>
+                  )
+                }
+              })()}
+            </>
+          )
+        }}
+      </ConnectButton.Custom>
+    </div>
   )
 }
