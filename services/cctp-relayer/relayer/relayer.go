@@ -308,6 +308,7 @@ func (c *CCTPRelayer) Run(parentCtx context.Context) error {
 	return nil
 }
 
+// RelaySingle relays a single tx.
 func (c *CCTPRelayer) RelaySingle(parentCtx context.Context, originChain uint32, txHash string) error {
 	g, ctx := errgroup.WithContext(parentCtx)
 
@@ -341,9 +342,24 @@ func (c *CCTPRelayer) RelaySingle(parentCtx context.Context, originChain uint32,
 	}
 
 	// manually process the queue
-	err = c.processQueue(parentCtx)
+	err = c.processQueue(ctx)
 	if err != nil {
 		return fmt.Errorf("could not process queue: %w", err)
+	}
+
+	// wait for the submitted transaction to be confirmed
+	err = retry.WithBackoff(ctx, func(ctx context.Context) error {
+		msg, err := c.db.GetMessageByOriginHash(ctx, receipt.TxHash)
+		if err != nil {
+			return err
+		}
+		if msg.State != relayTypes.Complete {
+			return fmt.Errorf("message not complete; state: %d", msg.State)
+		}
+		return nil
+	}, retry.WithMax(60*time.Second))
+	if err != nil {
+		return err
 	}
 
 	return nil
