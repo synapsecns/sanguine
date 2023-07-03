@@ -125,7 +125,6 @@ func (s Store) GetMessageByOriginHash(ctx context.Context, originHash common.Has
 }
 
 // GetMessageByRequestID gets a message by its request id.
-// TODO: this is actually non-unique, but we only return 1.
 func (s Store) GetMessageByRequestID(ctx context.Context, requestID string) (*types.Message, error) {
 	var message types.Message
 
