@@ -53,7 +53,7 @@ const DestinationTx = (fromEvent: BridgeWatcherTx) => {
 
     const isCCTP = fromEvent.contractEmittedFrom.toLowerCase() === SYNAPSE_CCTP_CONTRACTS[fromEvent.chainId].toLowerCase() ? true : false
 
-    const iface = new Interface(isCCTP ? SYNASE_CCTP_ABI : SYNAPSE_BRIDGE_ABI)
+    const iface = new Interface(isCCTP ? SYNAPSE_CCTP_ABI : SYNAPSE_BRIDGE_ABI)
 
     let allToEvents = []
     let i = 0
