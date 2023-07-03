@@ -63,7 +63,8 @@ export const SingleNetworkPortfolio = ({
         }
       >
         <PortfolioAssetHeader />
-        {sortedTokensWithAllowance.length > 0 &&
+        {sortedTokensWithAllowance &&
+          sortedTokensWithAllowance.length > 0 &&
           sortedTokensWithAllowance.map(
             ({ token, balance }: TokenWithBalanceAndAllowance) => (
               <PortfolioTokenAsset
@@ -81,7 +82,8 @@ export const SingleNetworkPortfolio = ({
             className="border-b border-solid border-[#28282F] my-1"
           />
         )}
-        {sortedTokensWithoutAllowance.length > 0 &&
+        {sortedTokensWithoutAllowance &&
+          sortedTokensWithoutAllowance.length > 0 &&
           sortedTokensWithoutAllowance.map(
             ({ token, balance }: TokenWithBalanceAndAllowance) => (
               <PortfolioTokenAsset
@@ -239,10 +241,12 @@ const PortfolioTokenVisualizer = ({
 }: {
   portfolioTokens: TokenWithBalanceAndAllowance[]
 }) => {
-  const hasOneToken = portfolioTokens.length > 0
-  const hasTwoTokens = portfolioTokens.length > 1
+  const hasOneToken = portfolioTokens && portfolioTokens.length > 0
+  const hasTwoTokens = portfolioTokens && portfolioTokens.length > 1
   const numOverTwoTokens =
-    portfolioTokens.length - 2 > 0 ? portfolioTokens.length - 2 : 0
+    portfolioTokens && portfolioTokens.length - 2 > 0
+      ? portfolioTokens.length - 2
+      : 0
 
   return (
     <div data-test-id="portfolio-token-visualizer" className="flex flex-row">
@@ -342,16 +346,17 @@ function separateTokensByAllowance(
   const tokensWithAllowance: TokenWithBalanceAndAllowance[] = []
   const tokensWithoutAllowance: TokenWithBalanceAndAllowance[] = []
 
-  tokens.forEach((token) => {
-    // allowance is null for native gas tokens
-    if (token.allowance === null) {
-      tokensWithAllowance.push(token)
-    } else if (token.allowance.gt(Zero)) {
-      tokensWithAllowance.push(token)
-    } else {
-      tokensWithoutAllowance.push(token)
-    }
-  })
+  tokens &&
+    tokens.forEach((token) => {
+      // allowance is null for native gas tokens
+      if (token.allowance === null) {
+        tokensWithAllowance.push(token)
+      } else if (token.allowance.gt(Zero)) {
+        tokensWithAllowance.push(token)
+      } else {
+        tokensWithoutAllowance.push(token)
+      }
+    })
 
   return [tokensWithAllowance, tokensWithoutAllowance]
 }
@@ -359,8 +364,11 @@ function separateTokensByAllowance(
 function sortByBalanceDescending(
   tokens: TokenWithBalanceAndAllowance[]
 ): TokenWithBalanceAndAllowance[] {
-  return tokens.sort(
-    (a: TokenWithBalanceAndAllowance, b: TokenWithBalanceAndAllowance) =>
-      b.parsedBalance > a.parsedBalance ? 1 : -1
+  return (
+    tokens &&
+    tokens.sort(
+      (a: TokenWithBalanceAndAllowance, b: TokenWithBalanceAndAllowance) =>
+        b.parsedBalance > a.parsedBalance ? 1 : -1
+    )
   )
 }
