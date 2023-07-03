@@ -86,6 +86,7 @@ import { isAddress } from '@ethersproject/address'
 import { TransactionButton } from '@/components/buttons/TransactionButton'
 import { BridgeTransactionButton } from '@/components/StateManagedBridge/BridgeTransactionButton'
 import ExplorerToastLink from '@/components/ExplorerToastLink'
+import { Portfolio } from '@/components/Portfolio/Portfolio'
 
 // NOTE: These are idle utility functions that will be re-written to
 // support sorting by desired mechanism
@@ -460,8 +461,9 @@ const StateManagedBridge = () => {
         data-test-id="bridge-page"
         className="relative z-0 flex-1 h-full overflow-y-auto focus:outline-none"
       >
-        <div className="items-center px-4 py-20 mx-auto mt-4 2xl:w-3/4 sm:mt-6 sm:px-8 md:px-12">
-          <div className="flex flex-col items-center justify-center">
+        <div className="flex flex-col px-4 py-20 mx-auto mt-4 lg:flex-row 2xl:w-3/4 sm:mt-6 sm:px-8 md:px-12">
+          <Portfolio />
+          <div className="flex flex-col items-center px-2 py-2">
             <div className="flex items-center space-x-20">
               <PageHeader
                 title="Bridge"

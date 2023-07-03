@@ -49,7 +49,10 @@ export const Portfolio = () => {
   const { chain } = useNetwork()
 
   return (
-    <div data-test-id="portfolio" className="flex flex-col w-1/2">
+    <div
+      data-test-id="portfolio"
+      className="flex flex-col w-full px-2 py-2 lg:w-1/2"
+    >
       <PortfolioTabManager activeTab={tab} setTab={setTab} />
       <div className="border-t border-solid border-[#28282F] mt-4">
         {tab === PortfolioTabs.HOME && <HomeContent />}
