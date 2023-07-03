@@ -312,6 +312,16 @@ func (c *CCTPRelayer) Run(parentCtx context.Context) error {
 func (c *CCTPRelayer) RelaySingle(parentCtx context.Context, originChain uint32, txHash string) error {
 	g, ctx := errgroup.WithContext(parentCtx)
 
+	// verify the given tx is not already marked as Complete
+	msg, err := c.db.GetMessageByOriginHash(ctx, common.HexToHash(txHash))
+	if err != nil {
+		return fmt.Errorf("could not load message from db: %w", err)
+	}
+	if msg.State == relayTypes.Complete {
+		return fmt.Errorf("tx already marked as complete: %s", txHash)
+	}
+
+	// start the submitter
 	g.Go(func() error {
 		err := c.txSubmitter.Start(ctx)
 		if err != nil {
