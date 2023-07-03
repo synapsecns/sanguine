@@ -42,6 +42,9 @@ export const SingleNetworkPortfolio = ({
     sortedTokensWithAllowance.length > 0 &&
     sortedTokensWithoutAllowance.length > 0
 
+  const hasNoTokenBalance: boolean =
+    portfolioTokens && portfolioTokens.length === 0
+
   return (
     <div
       data-test-id="single-network-portfolio"
@@ -51,8 +54,8 @@ export const SingleNetworkPortfolio = ({
         initializeExpanded={initializeExpanded}
         header={
           <PortfolioNetwork
-            displayName={currentChain.name}
-            chainIcon={currentChain.chainImg}
+            displayName={currentChain?.name}
+            chainIcon={currentChain?.chainImg}
           />
         }
         expandedProps={<PortfolioConnectButton chainId={portfolioChainId} />}
@@ -274,8 +277,8 @@ const PortfolioTokenVisualizer = ({
 const PortfolioConnectButton = ({ chainId }: { chainId: number }) => {
   const { chain } = useNetwork()
   const isCurrentlyConnectedNetwork: boolean = useMemo(() => {
-    return chainId === chain.id
-  }, [chain.id])
+    return chainId === chain?.id
+  }, [chain?.id])
 
   return (
     <div data-test-id="portfolio-connect-button">

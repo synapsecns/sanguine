@@ -41,7 +41,7 @@ export const Portfolio = () => {
         {tab === PortfolioTabs.PORTFOLIO && (
           <PortfolioContent
             connectedAddress={address}
-            connectedChainId={chain.id}
+            connectedChainId={chain?.id}
             networkPortfolioWithBalances={filteredPortfolioDataForBalances}
           />
         )}
@@ -68,7 +68,7 @@ const PortfolioContent = ({
 
   return (
     <div data-test-id="portfolio-content">
-      {currentNetwork && (
+      {currentNetwork && connectedChainId && (
         <SingleNetworkPortfolio
           portfolioChainId={connectedChainId}
           connectedChainId={connectedChainId}
