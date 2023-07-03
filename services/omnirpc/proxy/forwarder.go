@@ -101,8 +101,8 @@ func (r *RPCProxy) Forward(c *gin.Context, chainID uint32, requiredConfirmations
 
 	forwarder := r.AcquireForwarder()
 	defer func() {
-		r.ReleaseForwarder(forwarder)
 		span.End()
+		r.ReleaseForwarder(forwarder)
 	}()
 
 	forwarder.c = c
