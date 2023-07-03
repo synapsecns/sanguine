@@ -2,15 +2,17 @@ import React, { useState } from 'react'
 import AccordionIcon from '../icons/AccordionIcon'
 
 type PortfolioAccordionProps = {
-  expandedHeader: React.ReactNode
-  collapsedHeader: React.ReactNode
+  header: React.ReactNode
+  expandedProps: React.ReactNode
+  collapsedProps: React.ReactNode
   children: React.ReactNode
   initializeExpanded: boolean
 }
 
 export const PortfolioAccordion = ({
-  expandedHeader,
-  collapsedHeader,
+  header,
+  expandedProps,
+  collapsedProps,
   children,
   initializeExpanded = false,
 }: PortfolioAccordionProps) => {
@@ -37,7 +39,7 @@ export const PortfolioAccordion = ({
             `}
           />
         </button>
-        {isExpanded ? expandedHeader : collapsedHeader}
+        {header} {isExpanded ? expandedProps : collapsedProps}
       </div>
       <div>{isExpanded && <React.Fragment>{children}</React.Fragment>}</div>
     </div>
