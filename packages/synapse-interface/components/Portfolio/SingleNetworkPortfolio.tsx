@@ -43,7 +43,7 @@ export const SingleNetworkPortfolio = ({
     sortedTokensWithoutAllowance.length > 0
 
   const hasNoTokenBalance: boolean =
-    portfolioTokens && portfolioTokens.length === 0
+    !portfolioTokens || portfolioTokens.length === 0
 
   return (
     <div
@@ -66,6 +66,7 @@ export const SingleNetworkPortfolio = ({
         }
       >
         <PortfolioAssetHeader />
+        {hasNoTokenBalance && <EmptyPortfolioContent />}
         {sortedTokensWithAllowance &&
           sortedTokensWithAllowance.length > 0 &&
           sortedTokensWithAllowance.map(
@@ -100,6 +101,21 @@ export const SingleNetworkPortfolio = ({
           )}
       </PortfolioAccordion>
     </div>
+  )
+}
+
+const EmptyPortfolioContent = () => {
+  return (
+    <>
+      <p
+        data-test-id="empty-portfolio-content"
+        className={`
+        text-[#CCCAD3BF] py-4
+        `}
+      >
+        No balances found.
+      </p>
+    </>
   )
 }
 
