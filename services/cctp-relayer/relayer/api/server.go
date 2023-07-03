@@ -1,0 +1,140 @@
+package api
+
+import (
+	"context"
+	"errors"
+	"fmt"
+	"net/http"
+	"strconv"
+
+	"github.com/ethereum/go-ethereum/common"
+	"github.com/gin-gonic/gin"
+	db2 "github.com/synapsecns/sanguine/services/cctp-relayer/db"
+	"golang.org/x/sync/errgroup"
+	"gorm.io/gorm"
+)
+
+type RelayerAPIServer struct {
+	port             uint16
+	host             string
+	db               db2.CCTPRelayerDB
+	relayRequestChan chan *RelayRequest
+}
+
+func NewRelayerAPIServer(port uint16, host string, db db2.CCTPRelayerDB, relayRequestChan chan *RelayRequest) *RelayerAPIServer {
+	return &RelayerAPIServer{
+		port:             port,
+		host:             host,
+		db:               db,
+		relayRequestChan: relayRequestChan,
+	}
+}
+
+func (r RelayerAPIServer) Start(ctx context.Context) error {
+	engine := gin.Default()
+	engine.GET("/push_tx", func(ctx *gin.Context) {
+		r.GetPushTx(ctx)
+	})
+	server := &http.Server{
+		Addr:    fmt.Sprintf(":%d", r.port),
+		Handler: engine,
+	}
+
+	g, ctx := errgroup.WithContext(ctx)
+
+	g.Go(func() error {
+		err := server.ListenAndServe()
+		if err != nil {
+			return fmt.Errorf("stopped serving: %w", err)
+		}
+		return nil
+	})
+
+	err := g.Wait()
+	if err != nil {
+		return fmt.Errorf("error while serving: %w", err)
+	}
+
+	return nil
+}
+
+type RelayRequest struct {
+	Origin uint32
+	TxHash common.Hash
+}
+
+func (r RelayerAPIServer) GetPushTx(ctx *gin.Context) {
+	var err error
+
+	// parse params
+	var origin int
+	originStr := ctx.Param("origin")
+	if originStr == "" {
+		err = fmt.Errorf("required param 'origin' is missing")
+	} else {
+		origin, err = strconv.Atoi(originStr)
+	}
+	if err != nil {
+		encodeError(ctx, http.StatusBadRequest, err)
+		return
+	}
+
+	hash := ctx.Param("hash")
+	if hash == "" {
+		err = fmt.Errorf("required param 'hash' is missing")
+	} else {
+		ok := common.IsHexAddress(hash)
+		if !ok {
+			err = fmt.Errorf("invalid hash: %s", hash)
+		}
+	}
+	if err != nil {
+		encodeError(ctx, http.StatusBadRequest, err)
+		return
+	}
+
+	// fetch corresponding hash from db
+	msg, err := r.db.GetMessageByOriginHash(ctx, common.HexToHash(hash))
+	if err == nil {
+		// return if found
+		resp := relayerResponse{
+			Success: true,
+			Result:  msg,
+		}
+		ctx.JSON(http.StatusOK, resp)
+		return
+	} else if errors.Is(err, gorm.ErrRecordNotFound) {
+		// enqueue new pending message if not found
+		r.relayRequestChan <- &RelayRequest{
+			Origin: uint32(origin),
+			TxHash: common.HexToHash(hash),
+		}
+		resp := relayerResponse{
+			Success: true,
+			Result:  fmt.Sprintf("Successfully queued relay request from chain %d: %s", origin, hash),
+		}
+		ctx.JSON(http.StatusOK, resp)
+		return
+	}
+
+	encodeError(ctx, http.StatusInternalServerError, err)
+}
+
+type relayerResponse struct {
+	Success bool        `json:"success"`
+	Result  interface{} `json:"result"`
+}
+
+type errorResult struct {
+	Reason string `json:"reason"`
+}
+
+func encodeError(ctx *gin.Context, status int, err error) {
+	resp := relayerResponse{
+		Success: false,
+		Result: errorResult{
+			Reason: err.Error(),
+		},
+	}
+	ctx.JSON(status, resp)
+}
