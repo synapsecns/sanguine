@@ -1,4 +1,5 @@
 import React, { useMemo, useCallback } from 'react'
+import { useDispatch } from 'react-redux'
 import { useNetwork, useAccount } from 'wagmi'
 import { switchNetwork } from '@wagmi/core'
 import { Zero } from '@ethersproject/constants'
@@ -11,7 +12,7 @@ import { BigNumber } from 'ethers'
 import { formatBNToString } from '@/utils/bignumber/format'
 import { approveToken } from '@/utils/approveToken'
 import PortfolioAccordion from './PortfolioAccordion'
-import { use } from 'chai'
+import { setFromToken } from '@/slices/bridgeSlice'
 
 type SingleNetworkPortfolioProps = {
   portfolioChainId: number
@@ -157,7 +158,12 @@ const PortfolioAssetActionButton = ({
   isApproved: boolean
 }) => {
   const { address } = useAccount()
+  const dispatch = useDispatch()
   const tokenAddress = token.addresses[connectedChainId]
+
+  const handleBridgeCallback = useCallback(() => {
+    dispatch(setFromToken(token))
+  }, [token])
 
   const handleApproveCallback = useCallback(() => {
     return approveToken(address, connectedChainId, tokenAddress)
@@ -178,6 +184,7 @@ const PortfolioAssetActionButton = ({
             ${buttonClassName}
             border-2 border-[#D747FF]
           `}
+          onClick={handleBridgeCallback}
         >
           Bridge
         </button>
