@@ -309,6 +309,8 @@ func (c *CCTPRelayer) Run(parentCtx context.Context) error {
 }
 
 // RelaySingle relays a single tx.
+//
+//nolint:cyclop
 func (c *CCTPRelayer) RelaySingle(parentCtx context.Context, originChain uint32, txHash string) error {
 	g, ctx := errgroup.WithContext(parentCtx)
 
@@ -365,7 +367,7 @@ func (c *CCTPRelayer) RelaySingle(parentCtx context.Context, originChain uint32,
 	}
 
 	// wait for the dest tx to be confirmed
-	err = c.waitForComplete(ctx, receipt.TxHash, time.Duration(60*time.Second))
+	err = c.waitForComplete(ctx, receipt.TxHash, 60*time.Second)
 	if err != nil {
 		return fmt.Errorf("could not wait for complete message: %w", err)
 	}
@@ -754,7 +756,7 @@ func (c *CCTPRelayer) waitForComplete(ctx context.Context, originHash common.Has
 	err := retry.WithBackoff(ctx, func(ctx context.Context) error {
 		msg, err := c.db.GetMessageByOriginHash(ctx, originHash)
 		if err != nil {
-			return err
+			return fmt.Errorf("could not get message by origin hash: %w", err)
 		}
 		if msg.State != relayTypes.Complete {
 			return fmt.Errorf("message not complete; state: %d", msg.State)
@@ -762,7 +764,7 @@ func (c *CCTPRelayer) waitForComplete(ctx context.Context, originHash common.Has
 		return nil
 	}, retry.WithMax(timeout))
 	if err != nil {
-		return err
+		return fmt.Errorf("waiting for complete message timed out: %w", err)
 	}
 	return nil
 }
