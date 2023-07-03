@@ -364,6 +364,6 @@ function sortByBalanceDescending(
 ): TokenWithBalanceAndAllowance[] {
   return tokens.sort(
     (a: TokenWithBalanceAndAllowance, b: TokenWithBalanceAndAllowance) =>
-      b.balance.gt(a.balance) ? 1 : -1
+      b.parsedBalance > a.parsedBalance ? 1 : -1
   )
 }

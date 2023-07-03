@@ -5,10 +5,12 @@ import { Zero, AddressZero } from '@ethersproject/constants'
 import multicallABI from '../constants/abis/multicall.json'
 import erc20ABI from '../constants/abis/erc20.json'
 import { Token } from '@/utils/types'
+import { formatBNToString } from './bignumber/format'
 
 export interface TokenAndBalance {
   token: Token
   balance: BigNumber
+  parsedBalance: string
 }
 
 export const sortByVisibilityRank = (tokens: Token[]) => {
@@ -88,6 +90,11 @@ export const sortByTokenBalance = async (
           (tokenBalance: BigNumber | undefined, index: number) => ({
             token: tokens[index],
             balance: tokenBalance,
+            parsedBalance: formatBNToString(
+              tokenBalance,
+              tokens[index].decimals[chainId],
+              4
+            ),
           })
         )
       )

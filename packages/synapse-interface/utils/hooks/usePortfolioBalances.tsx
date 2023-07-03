@@ -12,6 +12,7 @@ const ROUTER_ADDRESS = '0x7E7A0e201FD38d3ADAA9523Da6C109a07118C96a'
 export interface TokenAndBalance {
   token: Token
   balance: BigNumber
+  parsedBalance: string
 }
 export interface TokenAndAllowance {
   token: Token
@@ -35,7 +36,7 @@ export const getTokensByChainId = async (
 }
 
 function mergeBalancesAndAllowances(
-  balances: { token: Token; balance: BigNumber }[],
+  balances: { token: Token; balance: BigNumber; parsedBalance: string }[],
   allowances: { token: Token; allowance: BigNumber }[]
 ): TokenWithBalanceAndAllowance[] {
   return balances.map((balance) => {
@@ -46,6 +47,7 @@ function mergeBalancesAndAllowances(
       return {
         token: balance.token,
         balance: balance.balance,
+        parsedBalance: balance.parsedBalance,
         allowance: correspondingAllowance.allowance,
       }
     }
@@ -54,6 +56,7 @@ function mergeBalancesAndAllowances(
     return {
       token: balance.token,
       balance: balance.balance,
+      parsedBalance: balance.parsedBalance,
       allowance: null,
     }
   })
