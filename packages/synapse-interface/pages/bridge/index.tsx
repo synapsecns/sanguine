@@ -783,7 +783,6 @@ const BridgePage = ({
                   toChainId={toChainId}
                   address={address}
                   destinationAddress={destinationAddress}
-                  bridgeTxHash={bridgeTxHash}
                 />
               </div>
             </Grid>

@@ -595,10 +595,11 @@ class SynapseSDK {
     }
 
     const isCCTP =
+      this.synapseCCTPRouters[originChainId] &&
       originRouterAddress.toLowerCase() ===
-      this.synapseCCTPRouters[
-        originChainId
-      ].routerContract.address.toLowerCase()
+        this.synapseCCTPRouters[
+          originChainId
+        ].routerContract.address.toLowerCase()
 
     if (isCCTP) {
       // Call CCTP router bridge method

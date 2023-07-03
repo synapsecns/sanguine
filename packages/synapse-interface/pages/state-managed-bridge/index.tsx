@@ -357,15 +357,22 @@ const StateManagedBridge = () => {
   }
 
   const approveTxn = async () => {
-    approveToken(
-      bridgeQuote?.routerAddress,
-      fromChainId,
-      fromToken?.addresses[fromChainId]
-    )
-      .then(() => setIsApproved(true))
-      .catch((err) => {
-        console.log(err)
-      })
+    try {
+      const tx = approveToken(
+        bridgeQuote?.routerAddress,
+        fromChainId,
+        fromToken?.addresses[fromChainId]
+      )
+
+      try {
+        await tx
+        setIsApproved(true)
+      } catch (error) {
+        return txErrorHandler(error)
+      }
+    } catch (error) {
+      return txErrorHandler(error)
+    }
   }
 
   const executeBridge = async () => {
@@ -577,7 +584,6 @@ const StateManagedBridge = () => {
               toChainId={toChainId}
               address={address}
               destinationAddress={destinationAddress}
-              bridgeTxHash={bridgeTxHashes[bridgeTxHashes.length - 1]}
             />
           </div>
         </div>
