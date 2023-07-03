@@ -73,7 +73,7 @@ export const SingleNetworkPortfolio = ({
         {shouldShowDivider && (
           <div
             data-test-id="divider"
-            className="border-b border-solid border-[#28282F]"
+            className="border-b border-solid border-[#28282F] my-1"
           />
         )}
         {sortedTokensWithoutAllowance.length > 0 &&
@@ -116,7 +116,7 @@ const PortfolioTokenAsset = ({
     <div
       data-test-id="portfolio-token-asset"
       className={`
-        flex flex-row items-center text-white
+        flex flex-row items-center text-white py-1
         ${isDisabled && filteredOpacity}
         `}
     >
@@ -226,20 +226,20 @@ const PortfolioTokenVisualizer = ({
     <div className="flex flex-row">
       {hasOneToken && (
         <Image
-          className="w-6 h-6 mr-1 rounded-md"
+          className="w-6 h-6 rounded-md"
           alt={`${portfolioTokens[0].token.symbol} img`}
           src={portfolioTokens[0].token.icon}
         />
       )}
       {hasTwoTokens && (
         <Image
-          className="w-6 h-6 mr-1 rounded-md"
+          className="w-6 h-6 ml-1 rounded-md"
           alt={`${portfolioTokens[1].token.symbol} img`}
           src={portfolioTokens[1].token.icon}
         />
       )}
       {numOverTwoTokens > 0 && (
-        <div className="text-white">+ {numOverTwoTokens}</div>
+        <div className="ml-1 text-white">+ {numOverTwoTokens}</div>
       )}
     </div>
   )

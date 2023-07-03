@@ -26,7 +26,7 @@ export const PortfolioAccordion = ({
   const collapsed = '-rotate-90'
 
   return (
-    <div>
+    <div className={isExpanded && 'pb-2'}>
       <div
         className="flex flex-row items-center py-3"
         data-test-id="portfolio-accordion"
