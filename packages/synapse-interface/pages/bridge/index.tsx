@@ -45,8 +45,7 @@ import {
 } from '@/constants/bridge'
 import { CHAINS_BY_ID, AcceptedChainId } from '@/constants/chains'
 import { getSortedBridgableTokens } from '@/utils/actions/getSortedBridgableTokens'
-import { PortfolioPreview, Portfolio } from '@/components/Portfolio'
-import { Portfolio as NewPortfolio } from '@/components/Portfolio/Portfolio'
+
 /* TODO
   - look into getting rid of fromChainId state and just using wagmi hook (ran into problems when trying this but forgot why)
 */
@@ -741,8 +740,6 @@ const BridgePage = ({
             2xl:w-3/4 px-4 py-16 mx-auto
             mt-4 sm:mt-6 sm:px-8 md:px-12`}
         >
-          {/* {isConnected ? <Portfolio /> : <PortfolioPreview />} */}
-          <NewPortfolio />
           <div className="w-2/3">
             <Grid
               cols={{ xs: 1 }}
