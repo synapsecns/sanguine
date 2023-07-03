@@ -36,6 +36,8 @@ export const SingleNetworkPortfolio = ({
     sortByBalanceDescending(tokensWithAllowance)
   const sortedTokensWithoutAllowance: TokenWithBalanceAndAllowance[] =
     sortByBalanceDescending(tokensWithoutAllowance)
+  const sortedTokensForVisualizer: TokenWithBalanceAndAllowance[] =
+    sortByBalanceDescending(portfolioTokens)
 
   const shouldShowDivider: boolean =
     sortedTokensWithAllowance.length > 0 &&
@@ -57,7 +59,9 @@ export const SingleNetworkPortfolio = ({
         }
         expandedProps={<PortfolioConnectButton chainId={portfolioChainId} />}
         collapsedProps={
-          <PortfolioTokenVisualizer portfolioTokens={portfolioTokens} />
+          <PortfolioTokenVisualizer
+            portfolioTokens={sortedTokensForVisualizer}
+          />
         }
       >
         <PortfolioAssetHeader />
