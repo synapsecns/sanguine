@@ -135,15 +135,17 @@ const PortfolioTokenAsset = ({
       </div>
       <div className="flex flex-row items-center w-1/2 text-left">
         <div className={!isApproved && 'opacity-50'}>{parsedBalance}</div>
-        <PortfolioAssetActionButton isApproved={isApproved} />
+        <PortfolioAssetActionButton token={token} isApproved={isApproved} />
       </div>
     </div>
   )
 }
 
 const PortfolioAssetActionButton = ({
+  token,
   isApproved,
 }: {
+  token: Token
   isApproved: boolean
 }) => {
   const buttonClassName = `
@@ -223,7 +225,7 @@ const PortfolioTokenVisualizer = ({
     portfolioTokens.length - 2 > 0 ? portfolioTokens.length - 2 : 0
 
   return (
-    <div className="flex flex-row">
+    <div data-test-id="portfolio-token-visualizer" className="flex flex-row">
       {hasOneToken && (
         <Image
           className="w-6 h-6 rounded-md"
@@ -252,7 +254,7 @@ const PortfolioConnectButton = ({ chainId }: { chainId: number }) => {
   }, [chain.id])
 
   return (
-    <div>
+    <div data-test-id="portfolio-connect-button">
       {isCurrentlyConnectedNetwork ? (
         <ConnectedButton />
       ) : (
