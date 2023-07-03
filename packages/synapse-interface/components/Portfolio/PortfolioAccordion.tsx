@@ -28,10 +28,10 @@ export const PortfolioAccordion = ({
   return (
     <div>
       <div
-        className="flex flex-row items-center"
+        className="flex flex-row items-center py-3"
         data-test-id="portfolio-accordion"
       >
-        <button onClick={handleToggle} className="mb-3 mr-3">
+        <button onClick={handleToggle} className="mr-3">
           <AccordionIcon
             className={`
               ${isExpanded ? expanded : collapsed}

@@ -41,7 +41,7 @@ export const SingleNetworkPortfolio = ({
   return (
     <div
       data-test-id="single-network-portfolio"
-      className="flex flex-col border-b border-solid border-[#28282F] pt-2 mb-2 mt-2"
+      className="flex flex-col border-b border-solid border-[#28282F]"
     >
       <PortfolioAccordion
         initializeExpanded={initializeExpanded}
@@ -73,7 +73,7 @@ export const SingleNetworkPortfolio = ({
         {shouldShowDivider && (
           <div
             data-test-id="divider"
-            className="border-b border-solid border-[#28282F] my-3"
+            className="border-b border-solid border-[#28282F]"
           />
         )}
         {sortedTokensWithoutAllowance.length > 0 &&
@@ -116,7 +116,7 @@ const PortfolioTokenAsset = ({
     <div
       data-test-id="portfolio-token-asset"
       className={`
-        flex flex-row items-center mb-3 text-white
+        flex flex-row items-center text-white
         ${isDisabled && filteredOpacity}
         `}
     >
@@ -198,7 +198,7 @@ const PortfolioNetwork = ({
   return (
     <div
       data-test-id="portfolio-network"
-      className="flex flex-row justify-between flex-1 mb-3"
+      className="flex flex-row justify-between flex-1"
     >
       <div className="flex flex-row items-center">
         <Image
@@ -233,12 +233,12 @@ const PortfolioTokenVisualizer = ({
       )}
       {hasTwoTokens && (
         <Image
-          className="w-6 h-6 mr-2 rounded-md"
+          className="w-6 h-6 mr-1 rounded-md"
           alt={`${portfolioTokens[1].token.symbol} img`}
           src={portfolioTokens[1].token.icon}
         />
       )}
-      {numOverTwoTokens && (
+      {numOverTwoTokens > 0 && (
         <div className="text-white">+ {numOverTwoTokens}</div>
       )}
     </div>
