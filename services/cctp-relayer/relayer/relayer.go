@@ -15,11 +15,11 @@ import (
 	"github.com/ethereum/go-ethereum/crypto"
 	signerConfig "github.com/synapsecns/sanguine/ethergo/signer/config"
 	"github.com/synapsecns/sanguine/ethergo/submitter"
+	"github.com/synapsecns/sanguine/services/cctp-relayer/attestation"
 	db2 "github.com/synapsecns/sanguine/services/cctp-relayer/db"
 	relayTypes "github.com/synapsecns/sanguine/services/cctp-relayer/types"
 
 	"github.com/ethereum/go-ethereum/common"
-	"github.com/synapsecns/sanguine/services/cctp-relayer/api"
 	"github.com/synapsecns/sanguine/services/cctp-relayer/contracts/cctp"
 	"github.com/synapsecns/sanguine/services/cctp-relayer/contracts/mockmessagetransmitter"
 	"go.opentelemetry.io/otel/attribute"
@@ -63,7 +63,7 @@ type CCTPRelayer struct {
 	// handler is the metrics handler.
 	handler metrics.Handler
 	// attestationAPI is the client for Circle's REST API.
-	attestationAPI api.AttestationAPI
+	attestationAPI attestation.AttestationAPI
 	// txSubmitter is the tx submission service
 	txSubmitter submitter.TransactionSubmitter
 	// boundSynapseCCTPs is a map from chain ID -> SynapseCCTP.
@@ -78,7 +78,7 @@ type CCTPRelayer struct {
 }
 
 // NewCCTPRelayer creates a new CCTPRelayer.
-func NewCCTPRelayer(ctx context.Context, cfg config.Config, store db2.CCTPRelayerDB, scribeClient client.ScribeClient, omniRPCClient omniClient.RPCClient, handler metrics.Handler, attestationAPI api.AttestationAPI) (*CCTPRelayer, error) {
+func NewCCTPRelayer(ctx context.Context, cfg config.Config, store db2.CCTPRelayerDB, scribeClient client.ScribeClient, omniRPCClient omniClient.RPCClient, handler metrics.Handler, attestationAPI attestation.AttestationAPI) (*CCTPRelayer, error) {
 	conn, err := grpc.DialContext(ctx, fmt.Sprintf("%s:%d", scribeClient.URL, scribeClient.Port),
 		grpc.WithTransportCredentials(insecure.NewCredentials()),
 		grpc.WithUnaryInterceptor(otelgrpc.UnaryClientInterceptor(otelgrpc.WithTracerProvider(handler.GetTracerProvider()))),

@@ -1,12 +1,13 @@
-package api
+package attestation
 
 import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"github.com/ethereum/go-ethereum/common/hexutil"
 	"io"
 	"net/http"
+
+	"github.com/ethereum/go-ethereum/common/hexutil"
 )
 
 // CircleAPI is a wrapper for Circle's REST API..

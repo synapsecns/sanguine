@@ -9,7 +9,7 @@ import (
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/core/types"
 	"github.com/synapsecns/sanguine/ethergo/mocks"
-	"github.com/synapsecns/sanguine/services/cctp-relayer/api"
+	"github.com/synapsecns/sanguine/services/cctp-relayer/attestation"
 	"github.com/synapsecns/sanguine/services/cctp-relayer/contracts/cctp"
 	"github.com/synapsecns/sanguine/services/cctp-relayer/relayer"
 	relayTypes "github.com/synapsecns/sanguine/services/cctp-relayer/types"
@@ -41,7 +41,7 @@ func (s *CCTPRelayerSuite) TestHandleCircleRequestSent() {
 	_, originMockUsdc := s.deployManager.GetMockMintBurnTokenType(s.GetTestContext(), originChain)
 
 	// create a new relayer
-	mockAPI := api.NewMockCircleAPI()
+	mockAPI := attestation.NewMockCircleAPI()
 	omniRPCClient := omniClient.NewOmnirpcClient(s.testOmnirpc, s.metricsHandler, omniClient.WithCaptureReqRes())
 	relay, err := relayer.NewCCTPRelayer(s.GetTestContext(), s.GetTestConfig(), s.testStore, s.GetTestScribe(), omniRPCClient, s.metricsHandler, mockAPI)
 	s.Nil(err)
@@ -82,7 +82,7 @@ func (s *CCTPRelayerSuite) TestStoreCircleRequestFulfilled() {
 	destChain := s.testBackends[1]
 
 	// create a new relayer
-	mockAPI := api.NewMockCircleAPI()
+	mockAPI := attestation.NewMockCircleAPI()
 	omniRPCClient := omniClient.NewOmnirpcClient(s.testOmnirpc, s.metricsHandler, omniClient.WithCaptureReqRes())
 	relay, err := relayer.NewCCTPRelayer(s.GetTestContext(), s.GetTestConfig(), s.testStore, s.GetTestScribe(), omniRPCClient, s.metricsHandler, mockAPI)
 	s.Nil(err)
@@ -139,7 +139,7 @@ func (s *CCTPRelayerSuite) TestStoreCircleRequestFulfilled() {
 
 func (s *CCTPRelayerSuite) TestFetchAttestation() {
 	// create a new relayer
-	mockAPI := api.NewMockCircleAPI()
+	mockAPI := attestation.NewMockCircleAPI()
 	omniRPCClient := omniClient.NewOmnirpcClient(s.testOmnirpc, s.metricsHandler, omniClient.WithCaptureReqRes())
 	relay, err := relayer.NewCCTPRelayer(s.GetTestContext(), s.GetTestConfig(), s.testStore, s.GetTestScribe(), omniRPCClient, s.metricsHandler, mockAPI)
 	s.Nil(err)
@@ -173,7 +173,7 @@ func (s *CCTPRelayerSuite) TestFetchAttestation() {
 
 func (s *CCTPRelayerSuite) TestSubmitReceiveCircleToken() {
 	// create a new relayer
-	mockAPI := api.NewMockCircleAPI()
+	mockAPI := attestation.NewMockCircleAPI()
 	omniRPCClient := omniClient.NewOmnirpcClient(s.testOmnirpc, s.metricsHandler, omniClient.WithCaptureReqRes())
 	relay, err := relayer.NewCCTPRelayer(s.GetTestContext(), s.GetTestConfig(), s.testStore, s.GetTestScribe(), omniRPCClient, s.metricsHandler, mockAPI)
 	s.Nil(err)
@@ -210,7 +210,7 @@ func (s *CCTPRelayerSuite) TestSubmitReceiveCircleToken() {
 
 func (s *CCTPRelayerSuite) TestBridgeUSDC() {
 	// create a new relayer
-	mockAPI := api.NewMockCircleAPI()
+	mockAPI := attestation.NewMockCircleAPI()
 	omniRPCClient := omniClient.NewOmnirpcClient(s.testOmnirpc, s.metricsHandler, omniClient.WithCaptureReqRes())
 	relay, err := relayer.NewCCTPRelayer(s.GetTestContext(), s.GetTestConfig(), s.testStore, s.GetTestScribe(), omniRPCClient, s.metricsHandler, mockAPI)
 	s.Nil(err)
