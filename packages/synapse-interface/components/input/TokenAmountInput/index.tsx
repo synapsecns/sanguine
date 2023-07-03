@@ -1,9 +1,8 @@
-import { formatBNToString } from '@bignumber/format'
+import { formatBigIntToString } from '@/utils/bigint/format'
 import React, { useMemo } from 'react'
 import SwitchButton from '@components/buttons/SwitchButton'
 import MiniMaxButton from '@components/buttons/MiniMaxButton'
 import Spinner from '@/components/icons/Spinner'
-import { BigNumber } from '@ethersproject/bignumber'
 import { cleanNumberInput } from '@utils/cleanNumberInput'
 
 import { Token } from '@/utils/types'
@@ -37,12 +36,12 @@ const BridgeInputContainer = ({
   setDisplayType: (v: DisplayType) => void
   onChangeAmount?: (v: string) => void
   onChangeChain: (chainId: number, flip: boolean, type: 'from' | 'to') => void
-  fromTokenBalance?: BigNumber
+  fromTokenBalance?: bigint
   isQuoteLoading?: boolean
 }) => {
   const formattedBalance = useMemo(() => {
     if (!fromTokenBalance) return '0.0'
-    return formatBNToString(
+    return formatBigIntToString(
       fromTokenBalance,
       selectedToken?.decimals[chainId as keyof Token['decimals']],
       3

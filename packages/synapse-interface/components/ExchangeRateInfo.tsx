@@ -1,6 +1,4 @@
 import { useState, useMemo, useEffect } from 'react'
-import { BigNumber } from '@ethersproject/bignumber'
-import { formatBNToPercentString, formatBNToString } from '@bignumber/format'
 import { CHAINS_BY_ID } from '@constants/chains'
 import * as CHAINS from '@constants/chains/master'
 import { useCoingeckoPrice } from '@hooks/useCoingeckoPrice'
@@ -18,7 +16,7 @@ const ExchangeRateInfo = ({
   toChainId,
   showGasDrop,
 }: {
-  fromAmount: BigNumber
+  fromAmount: bigint
   toToken: Token
   exchangeRate: bigint
   toChainId: number
@@ -28,12 +26,12 @@ const ExchangeRateInfo = ({
   const { gasDrop: gasDropAmount, loading } = useGasDropAmount(toChainId)
 
   const safeExchangeRate = useMemo(() => exchangeRate ?? 0n, [exchangeRate]) // todo clean
-  const safeFromAmount = useMemo(() => fromAmount ?? Zero, [fromAmount]) // todo clean
+  const safeFromAmount = useMemo(() => fromAmount ?? 0n, [fromAmount]) // todo clean
   const formattedExchangeRate = formatBigIntToString(safeExchangeRate, 18, 4)
   const numExchangeRate = Number(formattedExchangeRate)
   const slippage = safeExchangeRate - 1000000000000000000n
   const formattedPercentSlippage = formatBigIntToPercentString(slippage, 18)
-  const underFee = safeExchangeRate === 0n && !safeFromAmount.eq(0)
+  const underFee = safeExchangeRate === 0n && safeFromAmount != 0n
 
   const textColor: string = useMemo(() => {
     if (numExchangeRate >= 1) {
@@ -84,7 +82,7 @@ const ExchangeRateInfo = ({
           {expectedToChain}
         </div>
         <span className="text-[#88818C]">
-          {!safeFromAmount.eq(0) ? (
+          {safeFromAmount != 0n ? (
             <>
               {formattedExchangeRate}{' '}
               <span className="text-white">{toToken.symbol}</span>
@@ -96,7 +94,7 @@ const ExchangeRateInfo = ({
       </div>
       <div className="flex justify-between">
         <p className="text-[#88818C] ">Slippage</p>
-        {!safeFromAmount.eq(0) && !underFee ? (
+        {safeFromAmount != 0n && !underFee ? (
           <span className={` ${textColor}`}>{formattedPercentSlippage}</span>
         ) : (
           <span className="text-[#88818C]">—</span>
@@ -110,7 +108,7 @@ const GasDropLabel = ({
   gasDropAmount,
   toChainId,
 }: {
-  gasDropAmount: BigNumber
+  gasDropAmount: bigint
   toChainId: number
 }) => {
   let decimalsToDisplay
@@ -126,7 +124,7 @@ const GasDropLabel = ({
     decimalsToDisplay = 4
   }
 
-  const formattedGasDropAmount = formatBNToString(
+  const formattedGasDropAmount = formatBigIntToString(
     gasDropAmount,
     18,
     decimalsToDisplay

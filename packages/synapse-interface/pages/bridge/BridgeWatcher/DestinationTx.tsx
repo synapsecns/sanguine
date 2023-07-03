@@ -152,7 +152,7 @@ const DestinationTx = (fromEvent: BridgeWatcherTx) => {
       const toSynapseContract = new Contract(
         BRIDGE_CONTRACTS[fromEvent.toChainId],
         SYNAPSE_BRIDGE_ABI,
-        toSigner as unknown as Signer
+        providerMap[fromEvent.toChainId]
       )
       setToSynapseContract(toSynapseContract)
 
@@ -189,7 +189,9 @@ const DestinationTx = (fromEvent: BridgeWatcherTx) => {
   }, [toSynapseContract, toCCTPContract])
 
   useEffect(() => {
-    setToSigner(toSignerRaw.account.address)
+    if (toSignerRaw != undefined) {
+      setToSigner(toSignerRaw.account.address)
+    }
   }, [toSignerRaw])
 
   return (

@@ -27,7 +27,7 @@ import { calculatePriceImpact } from '@/utils/priceImpact'
 import { formatBigIntToString } from '@/utils/bigint/format'
 
 const DEFAULT_WITHDRAW_QUOTE = {
-  priceImpact: Zero,
+  priceImpact: 0n,
   outputs: {},
   allowance: undefined,
   routerAddress: '',
@@ -54,7 +54,7 @@ const Withdraw = ({
   }>({ bn: Zero, str: '' })
 
   const [withdrawQuote, setWithdrawQuote] = useState<{
-    priceImpact: BigNumber
+    priceImpact: bigint
     outputs: Record<
       string,
       {
@@ -120,7 +120,7 @@ const Withdraw = ({
       const priceImpact = calculatePriceImpact(
         inputValue.bn,
         outputTokensSum,
-        BigNumber.from(virtualPrice.toString()),
+        BigInt(virtualPrice.toString()),
         true
       )
 

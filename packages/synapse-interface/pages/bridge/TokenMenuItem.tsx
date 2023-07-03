@@ -1,5 +1,3 @@
-import { BigNumber } from '@ethersproject/bignumber'
-import { Zero } from '@ethersproject/constants'
 import { CHAINS_BY_ID } from '@constants/chains'
 import Image from 'next/image'
 import { displaySymbol } from '@utils/displaySymbol'

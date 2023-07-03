@@ -40,12 +40,10 @@ import {
 } from '@/constants/bridge'
 
 import { useSynapseContext } from '@/utils/providers/SynapseProvider'
-import { AddressZero, Zero } from '@ethersproject/constants'
-import { BigNumber } from '@ethersproject/bignumber'
 import { getCurrentTokenAllowance } from '../../actions/getCurrentTokenAllowance'
 import { subtractSlippage } from '@/utils/slippage'
 import { commify } from '@ethersproject/units'
-import { formatBigIntToString } from '@/utils/bigint/format'
+import { formatBigIntToString, powBigInt } from '@/utils/bigint/format'
 import { calculateExchangeRate } from '@/utils/calculateExchangeRate'
 import { useEffect, useRef, useState } from 'react'
 import { Token } from '@/utils/types'
@@ -222,10 +220,10 @@ const StateManagedBridge = () => {
 
   // don't like this, rewrite: could be custom hook
   useEffect(() => {
-    if (fromToken?.addresses[fromChainId] === AddressZero) {
+    if (fromToken?.addresses[fromChainId] === "0x0000000000000000000000000000000000000000") {
       setIsApproved(true)
     } else {
-      if (bridgeQuote?.allowance && (BigNumber.from(fromValue)).lte(bridgeQuote.allowance)) {
+      if (bridgeQuote?.allowance && (BigInt(fromValue)) <= (bridgeQuote.allowance)) {
         setIsApproved(true)
       } else {
         setIsApproved(false)
@@ -235,7 +233,6 @@ const StateManagedBridge = () => {
 
   // Would like to move this into function outside of this component
   const getAndSetBridgeQuote = async () => {
-    console.log(BigNumber.from((fromValue)))
     currentSDKRequestID.current += 1
     const thisRequestId = currentSDKRequestID.current
     // will have to handle deadlineMinutes here at later time, gets passed as optional last arg in .bridgeQuote()
@@ -249,7 +246,7 @@ const StateManagedBridge = () => {
           toChainId,
           fromToken.addresses[fromChainId],
           toToken.addresses[toChainId],
-          BigNumber.from((fromValue))
+          BigInt(fromValue)
         )
 
       console.log(`[getAndSetQuote] fromChainId`, fromChainId)
@@ -270,7 +267,7 @@ const StateManagedBridge = () => {
       const originTokenDecimals = fromToken.decimals[fromChainId]
       const adjustedFeeAmount = feeAmount < ((fromValue))
         ? feeAmount
-        : feeAmount.div(BigNumber.from(10).pow(18 - originTokenDecimals))
+        : feeAmount / powBigInt(10n, BigInt(18 - originTokenDecimals));
 
       const isUnsupported = AcceptedChainId[fromChainId] ? false : true
 
@@ -393,7 +390,7 @@ const StateManagedBridge = () => {
         fromChainId,
         toChainId,
         fromToken.addresses[fromChainId as keyof Token['addresses']],
-        BigNumber.from((fromValue)),
+        BigInt(fromValue),
         bridgeQuote.quotes.originQuery,
         bridgeQuote.quotes.destQuery
       )

@@ -1,11 +1,3 @@
-import { Zero } from '@ethersproject/constants'
-
-import {
-  commifyBnToString,
-  commifyBnWithDefault,
-  bnPercentFormat,
-} from '@bignumber/format'
-
 import AugmentWithUnits from '../components/AugmentWithUnits'
 import { Token } from '@types'
 import InfoSectionCard from './InfoSectionCard'

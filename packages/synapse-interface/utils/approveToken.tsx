@@ -13,7 +13,7 @@ export const approveToken = async (
   address: string,
   chainId: number,
   tokenAddress: string,
-  amount?: BigNumber
+  amount?: bigint
 ) => {
   const currentChainName = CHAINS_BY_ID[chainId].name
   let pendingPopup: any

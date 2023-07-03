@@ -21,7 +21,7 @@ import { ChainSlideOver } from '@/components/misc/ChainSlideOver'
 import { TokenSlideOver } from '@/components/misc/TokenSlideOver'
 import { Token } from '@/utils/types'
 import { SWAP_PATH } from '@/constants/urls'
-import { stringToBigNum } from '@/utils/stringToBigNum'
+import { stringToBigInt, stringToBigNum } from '@/utils/stringToBigNum'
 import { useSynapseContext } from '@/utils/providers/SynapseProvider'
 import { checkStringIfOnlyZeroes } from '@/utils/regex'
 import { timeout } from '@/utils/timeout'
@@ -63,7 +63,7 @@ const SwapCard = ({
   const [time, setTime] = useState(Date.now())
   const [fromToken, setFromToken] = useState(DEFAULT_FROM_TOKEN)
   const [fromTokens, setFromTokens] = useState([])
-  const [fromInput, setFromInput] = useState({ string: '', bigNum: Zero })
+  const [fromInput, setFromInput] = useState({ string: '', bigNum: 0n })
   const [toToken, setToToken] = useState(DEFAULT_TO_TOKEN)
   const [toTokens, setToTokens] = useState<Token[]>([]) //add default
   const [isQuoteLoading, setIsQuoteLoading] = useState<boolean>(false)
@@ -71,7 +71,7 @@ const SwapCard = ({
   const [destinationAddress, setDestinationAddress] = useState('')
   const [swapQuote, setSwapQuote] = useState<SwapQuote>(EMPTY_SWAP_QUOTE)
   const [displayType, setDisplayType] = useState(undefined)
-  const [fromTokenBalance, setFromTokenBalance] = useState<BigNumber>(Zero)
+  const [fromTokenBalance, setFromTokenBalance] = useState<bigint>(0n)
   const [validChainId, setValidChainId] = useState(true)
   const [swapTxnHash, setSwapTxnHash] = useState<string>('')
   const [approveTx, setApproveTx] = useState<string>(null)
@@ -116,7 +116,7 @@ const SwapCard = ({
       setFromTokenBalance(
         fromTokens.filter((token) => token.token === fromToken)[0]?.balance.result
           ? fromTokens.filter((token) => token.token === fromToken)[0]?.balance.result
-          : Zero
+          : 0n
       )
     }
   }, [fromToken, fromTokens])
@@ -193,7 +193,7 @@ const SwapCard = ({
         connectedChainId &&
         String(fromToken.addresses[connectedChainId]) &&
         fromInput &&
-        fromInput.bigNum.gt(Zero)
+        fromInput.bigNum > 0n
       ) {
         // TODO this needs to be debounced or throttled somehow to prevent spam and lag in the ui
         getQuote()
@@ -236,7 +236,7 @@ const SwapCard = ({
   */
   const resetRates = () => {
     setSwapQuote(EMPTY_SWAP_QUOTE)
-    setFromInput({ string: '', bigNum: Zero })
+    setFromInput({ string: '', bigNum: 0n })
   }
 
   /*
@@ -252,7 +252,7 @@ const SwapCard = ({
       )
     ) {
       let bigNum =
-        stringToBigNum(value, fromToken.decimals[connectedChainId]) ?? Zero
+      stringToBigInt(value, fromToken.decimals[connectedChainId]) ?? 0n
       setFromInput({
         string: value,
         bigNum: bigNum,
@@ -518,7 +518,7 @@ const SwapCard = ({
       setSwapQuote({
         outputAmount: toValueBigNum,
         outputAmountString: commify(
-          formatBNToString(toValueBigNum, toToken.decimals[connectedChainId], 8)
+          formatBigIntToString(toValueBigNum, toToken.decimals[connectedChainId], 8)
         ),
         routerAddress,
         allowance,
@@ -625,7 +625,7 @@ const SwapCard = ({
     `,
   }
 
-  const isFromBalanceEnough = fromTokenBalance?.gte(fromInput.bigNum)
+  const isFromBalanceEnough = fromTokenBalance >= fromInput.bigNum
   let destAddrNotValid: boolean
 
   const getButtonProperties = () => {
@@ -646,7 +646,7 @@ const SwapCard = ({
       return properties
     }
 
-    if (isInputZero || fromInput?.bigNum?.eq(0)) {
+    if (isInputZero || fromInput?.bigNum === 0n) {
       properties.label = `Enter amount to swap`
       properties.disabled = true
       return properties
@@ -664,14 +664,14 @@ const SwapCard = ({
       return properties
     }
 
-    if (fromInput.bigNum.eq(0)) {
+    if (fromInput.bigNum === 0n) {
       properties.label = `Amount must be greater than fee`
       properties.disabled = true
       return properties
     }
 
     if (
-      !fromInput?.bigNum?.eq(0) &&
+      fromInput?.bigNum != 0n &&
       fromToken?.addresses[connectedChainId] !== '' &&
       fromToken?.addresses[connectedChainId] !== AddressZero &&
       swapQuote?.allowance &&
@@ -710,7 +710,7 @@ const SwapCard = ({
       : 0
 
     if (
-      !fromInput.bigNum.eq(0) &&
+      fromInput.bigNum != 0n &&
       numExchangeRate !== 0 &&
       (numExchangeRate < 0.95 || numExchangeRate > 1.05)
     ) {
@@ -842,7 +842,7 @@ const SwapCard = ({
         </Grid>
 
         <ExchangeRateInfo
-          fromAmount={fromInput.bigNum}
+          fromAmount={BigInt(fromInput.bigNum.toString())}
           toToken={toToken}
           exchangeRate={swapQuote.exchangeRate}
           toChainId={connectedChainId}

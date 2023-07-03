@@ -1,13 +1,10 @@
 import { useState, useMemo, useEffect } from 'react'
-import { BigNumber } from '@ethersproject/bignumber'
-import { formatBNToPercentString, formatBNToString } from '@bignumber/format'
 import  { formatBigIntToPercentString } from '@/utils/bigint/format'
 import { CHAINS_BY_ID } from '@constants/chains'
 import * as CHAINS from '@constants/chains/master'
 import { useCoingeckoPrice } from '@hooks/useCoingeckoPrice'
 import { useGasDropAmount } from '@/utils/hooks/useGasDropAmount'
 import Image from 'next/image'
-import { Zero } from '@ethersproject/constants'
 import { formatBigIntToString } from '@/utils/bigint/format'
 import { Token } from '@/utils/types'
 import { useDispatch, useSelector } from 'react-redux'
@@ -32,7 +29,6 @@ const BridgeExchangeRateInfo = ({
 
   const formattedExchangeRate = formatBigIntToString(safeExchangeRate, 18, 4)
   const numExchangeRate = Number(formattedExchangeRate)
-  // const slippage = safeExchangeRate.sub(BigNumber.from(10).pow(18))
   const slippage = safeExchangeRate - (1000000000000000000n);
   const formattedPercentSlippage = formatBigIntToPercentString(slippage, 18)
   const underFee = safeExchangeRate === 0n && safeFromAmount != "0"
@@ -112,7 +108,7 @@ const GasDropLabel = ({
   gasDropAmount,
   toChainId,
 }: {
-  gasDropAmount: BigNumber
+  gasDropAmount: bigint
   toChainId: number
 }) => {
   let decimalsToDisplay
@@ -128,7 +124,7 @@ const GasDropLabel = ({
     decimalsToDisplay = 4
   }
 
-  const formattedGasDropAmount = formatBNToString(
+  const formattedGasDropAmount = formatBigIntToString(
     gasDropAmount,
     18,
     decimalsToDisplay

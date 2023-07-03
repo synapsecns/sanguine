@@ -1,6 +1,6 @@
 import { InformationCircleIcon } from '@heroicons/react/outline'
 
-import { fixNumberToPercentageString } from '@/utils/bignumber/format'
+import { bigIntToFixed } from '@/utils/bigint/format'
 
 import Grid from '@tw/Grid'
 import Tooltip from '@tw/Tooltip'
@@ -86,13 +86,13 @@ function PercentageRow({ title, rewardApr, baseApr }) {
       <div className="text-sm font-normal text-gray-100 ">
         {title}{' '}
         <span className="inline-block float-right pl-4 font-medium">
-          {fixNumberToPercentageString(totalApr)}
+          {bigIntToFixed(totalApr)}
         </span>
       </div>
       {baseApr > 0 && (
         <small className="float-left italic font-normal text-gray-300">
-          {fixNumberToPercentageString(rewardApr)} reward +{' '}
-          {fixNumberToPercentageString(baseApr)} base
+          {bigIntToFixed(rewardApr)} reward +{' '}
+          {bigIntToFixed(baseApr)} base
         </small>
       )}
     </div>

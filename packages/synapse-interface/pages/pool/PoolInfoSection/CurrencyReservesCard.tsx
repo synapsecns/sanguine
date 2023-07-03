@@ -1,9 +1,10 @@
-import { commifyBnToString } from '@bignumber/format'
+
 import AugmentWithUnits from '../components/AugmentWithUnits'
 import InfoSectionCard from './InfoSectionCard'
 import { displaySymbol } from '@utils/displaySymbol'
 import { Token } from '@types'
 import LoadingRow from '@/components/loading/LoadingRow'
+import { commifyBigIntToString } from '@utils/bigint/format'
 
 const CurrencyReservesCard = ({
   chainId,
@@ -52,8 +53,8 @@ function CurrencyInfoListItem({ chainId, percent, balance, token }) {
       <div>{percent}</div>
       {balance && (
         <AugmentWithUnits
-          // content={commifyBnToString(balance, decimalsToDisplay)}
-          content={balance}
+          content={commifyBigIntToString(balance, decimalsToDisplay)}
+          // content={balance}
           label={symbol}
         />
       )}

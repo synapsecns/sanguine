@@ -1,5 +1,10 @@
-import { BigNumber } from '@ethersproject/bignumber'
-import { Zero } from '@ethersproject/constants'
+function powBigInt(base, exponent) {
+  let result = 1n;
+  for (let i = 0; i < exponent; i++) {
+      result *= base;
+  }
+  return result;
+}
 
 export const calculateExchangeRate = (
   amountFrom: bigint,
@@ -9,8 +14,8 @@ export const calculateExchangeRate = (
 ) => {
   if (amountFrom > 0n) {
     return (amountTo
-      * (10n ** BigInt(36 - tokenPrecisionTo))) // convert to standard 1e18 precision
-      / (amountFrom * (10n ** BigInt(18 - tokenPrecisionFrom)));
+      * powBigInt(10n, BigInt(36 - tokenPrecisionTo))) // convert to standard 1e18 precision
+      / (amountFrom * powBigInt(10n, BigInt(18 - tokenPrecisionFrom)));
   } else {
     return 0n;
   }

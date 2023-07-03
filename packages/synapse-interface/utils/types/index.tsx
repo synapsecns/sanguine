@@ -102,7 +102,7 @@ export type SwapQuote = {
 
 export type BridgeWatcherTx = {
   isFrom: boolean
-  amount: BigNumber
+  amount: bigint
   timestamp: number
   blockNumber: number
   chainId: number

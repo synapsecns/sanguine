@@ -1,6 +1,5 @@
-import { BigNumber } from '@ethersproject/bignumber'
-import { MaxUint256, Zero } from '@ethersproject/constants'
 import { Contract } from 'ethers'
+import { MAX_UINT256 } from './bigint/format'
 
 type TransactionCallbackFunctions = {
   onTransactionStart?: () => any
@@ -15,7 +14,7 @@ type TransactionCallbackFunctions = {
  * @param {Contract} srcTokenContract
  * @param {string} swapAddress
  * @param {string} spenderAddress
- * @param {BigNumber} spendingValue
+ * @param {bigint} spendingValue
  * @param {boolean} [infiniteApproval]
  * @param {{
  *  onTransactionStart:   function,
@@ -28,12 +27,12 @@ export async function checkAndApproveTokenForTrade(
   srcTokenContract: Contract,
   swapAddress: string,
   spenderAddress: string,
-  spendingValue: BigNumber, // max is MaxUint256
+  spendingValue: bigint,
   infiniteApproval: boolean = false,
   callbacks: TransactionCallbackFunctions = {}
 ) {
   if (srcTokenContract == null) return
-  if (spendingValue.eq(0)) return
+  if (spendingValue === 0n) return
 
   const [tokenName, existingAllowance] = await Promise.all([
     srcTokenContract.name(),
@@ -61,8 +60,10 @@ export async function checkAndApproveTokenForTrade(
   }
   if (existingAllowance.gt('0')) {
     // Reset to 0 before updating approval
-    await approve(Zero)
+    await approve(0n)
   }
-  await approve(infiniteApproval ? MaxUint256 : spendingValue)
+
+  // todo: create max uint256 bigint const
+  await approve(infiniteApproval ? MAX_UINT256 : spendingValue)
   console.debug(`Approving ${tokenName} spend of ${spendingValue.toString()}`)
 }

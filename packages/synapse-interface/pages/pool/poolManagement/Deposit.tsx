@@ -24,7 +24,7 @@ import { calculatePriceImpact } from '@/utils/priceImpact'
 import { transformCalculateLiquidityInput } from '@/utils/transformCalculateLiquidityInput'
 
 const DEFAULT_DEPOSIT_QUOTE = {
-  priceImpact: undefined,
+  priceImpact: 0n,
   allowances: {},
   routerAddress: '',
 }
@@ -56,7 +56,7 @@ const Deposit = ({
     str: Record<string, string>
   }>({ bn: {}, str: {} })
   const [depositQuote, setDepositQuote] = useState<{
-    priceImpact: BigNumber
+    priceImpact: bigint
     allowances: Record<string, BigNumber>
     routerAddress: string
   }>(DEFAULT_DEPOSIT_QUOTE)
@@ -141,7 +141,7 @@ const Deposit = ({
   useEffect(() => {
     if (
       depositQuote.priceImpact &&
-      !depositQuote.priceImpact?.eq(Zero) &&
+      depositQuote.priceImpact != 0n &&
       !inputSum.isZero()
     ) {
       setShowPriceImpact(true)
