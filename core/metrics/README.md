@@ -15,7 +15,8 @@ by passing in a comma seperated `DD_PROFILES` using the names [here](https://git
 
 ## OTLP
 
-Pass in the `OTLP_ENDPOINT` enviornment variable
+We do our best to support enviornment variables specified in the [Otel Spec](https://opentelemetry.io/docs/specs/otel/configuration/sdk-environment-variables/) and have added a few of our own. Key ones to note are:
+
 
 ## Jaeger
 

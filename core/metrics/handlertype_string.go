@@ -9,7 +9,7 @@ func _() {
 	// Re-run the stringer command to generate them again.
 	var x [1]struct{}
 	_ = x[DataDog-1]
-	_ = x[NewRelic-2]
+	_ = x[OTLP-2]
 	_ = x[Jaeger-3]
 	_ = x[Null-4]
 }
