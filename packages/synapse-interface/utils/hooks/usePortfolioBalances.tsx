@@ -7,7 +7,7 @@ import { sortByTokenBalance } from '../sortTokens'
 import { BigNumber } from 'ethers'
 import { AddressZero } from '@ethersproject/constants'
 
-const ROUTER_ADDRESS = '0x7E7A0e201FD38d3ADAA9523Da6C109a07118C96a'
+export const ROUTER_ADDRESS = '0x7E7A0e201FD38d3ADAA9523Da6C109a07118C96a'
 
 export interface TokenAndBalance {
   token: Token

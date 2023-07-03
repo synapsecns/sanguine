@@ -12,6 +12,7 @@ import { approveToken } from '@/utils/approveToken'
 import { formatBNToString } from '@/utils/bignumber/format'
 import { Chain, Token } from '@/utils/types'
 import PortfolioAccordion from './PortfolioAccordion'
+import { ROUTER_ADDRESS } from '@/utils/hooks/usePortfolioBalances'
 
 type SingleNetworkPortfolioProps = {
   portfolioChainId: number
@@ -38,6 +39,7 @@ export const SingleNetworkPortfolio = ({
   const sortedTokensForVisualizer: TokenWithBalanceAndAllowance[] =
     sortByBalanceDescending(portfolioTokens)
 
+  console.log('tokensWithoutAllowance: ', tokensWithoutAllowance)
   const shouldShowDivider: boolean =
     sortedTokensWithAllowance.length > 0 &&
     sortedTokensWithoutAllowance.length > 0
@@ -149,7 +151,7 @@ const PortfolioTokenAsset = ({
       <div
         className={`
           flex flex-row w-1/2 text-left
-          ${!isApproved && 'opacity-50'}
+          ${!isApproved ? 'opacity-50' : ''}
           `}
       >
         <Image
@@ -191,7 +193,7 @@ const PortfolioAssetActionButton = ({
   }, [token])
 
   const handleApproveCallback = useCallback(() => {
-    return approveToken(address, connectedChainId, tokenAddress)
+    return approveToken(ROUTER_ADDRESS, connectedChainId, tokenAddress)
   }, [connectedChainId, tokenAddress, address])
 
   const buttonClassName = `
