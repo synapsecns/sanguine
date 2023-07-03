@@ -171,7 +171,7 @@ const PortfolioAssetActionButton = ({
 
   const buttonClassName = `
     flex ml-auto justify-center
-    w-36 py-1 rounded-3xl
+    w-28 lg:w-36 py-1 rounded-3xl
     transform-gpu transition-all duration-75
     hover:cursor-pointer
   `

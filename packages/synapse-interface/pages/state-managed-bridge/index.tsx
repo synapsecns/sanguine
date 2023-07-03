@@ -494,10 +494,10 @@ const StateManagedBridge = () => {
             <Card
               divider={false}
               className={`
-            max-w-lg px-1 pb-0 mb-3 overflow-hidden
-            transition-all duration-100 transform rounded-xl
-            bg-bgBase md:px-6 lg:px-6 mt-5
-          `}
+                px-1 pb-0 mb-3 overflow-hidden
+                transition-all duration-100 transform rounded-xl
+                bg-bgBase md:px-6 lg:px-6 mt-5
+              `}
             >
               <div ref={bridgeDisplayRef}>
                 <Transition show={showFromTokenSlideOver} {...TRANSITION_PROPS}>
