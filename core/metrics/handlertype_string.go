@@ -14,9 +14,9 @@ func _() {
 	_ = x[Null-4]
 }
 
-const _HandlerType_name = "DatadogNewRelicJaegerNull"
+const _HandlerType_name = "DatadogOTLPJaegerNull"
 
-var _HandlerType_index = [...]uint8{0, 7, 15, 21, 25}
+var _HandlerType_index = [...]uint8{0, 7, 11, 17, 21}
 
 func (i HandlerType) String() string {
 	i -= 1
