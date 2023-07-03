@@ -45,7 +45,7 @@ func (n *otlpHandler) Start(ctx context.Context) (err error) {
 		return fmt.Errorf("failed to create otlp exporter: %w", err)
 	}
 
-	n.baseHandler = newBaseHandler(n.buildInfo, tracesdk.WithBatcher(exporter))
+	n.baseHandler = newBaseHandler(n.buildInfo, tracesdk.WithBatcher(exporter, tracesdk.WithMaxQueueSize(1000000), tracesdk.WithMaxExportBatchSize(2000)))
 
 	return nil
 }
