@@ -37,7 +37,7 @@ func (b *baseHandler) Start(ctx context.Context) error {
 }
 
 func (b *baseHandler) Gin() gin.HandlerFunc {
-	return otelgin.Middleware(b.name, otelgin.WithTracerProvider(b.tp))
+	return otelgin.Middleware(b.name, otelgin.WithTracerProvider(b.tp), otelgin.WithPropagators(b.propagator))
 }
 
 func (b *baseHandler) Propagator() propagation.TextMapPropagator {
