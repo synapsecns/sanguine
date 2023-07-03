@@ -321,11 +321,11 @@ func (c *CCTPRelayer) RelaySingle(parentCtx context.Context, originChain uint32,
 	})
 
 	// fetch logs for the given tx
-	client, err := c.omnirpcClient.GetClient(ctx, big.NewInt(int64(originChain)))
+	ethClient, err := c.omnirpcClient.GetConfirmationsClient(ctx, int(originChain), 1)
 	if err != nil {
 		return fmt.Errorf("could not get client: %w", err)
 	}
-	receipt, err := client.TransactionReceipt(ctx, common.HexToHash(txHash))
+	receipt, err := ethClient.TransactionReceipt(ctx, common.HexToHash(txHash))
 	if err != nil {
 		return fmt.Errorf("could not get receipt: %w", err)
 	}
@@ -333,12 +333,19 @@ func (c *CCTPRelayer) RelaySingle(parentCtx context.Context, originChain uint32,
 		return fmt.Errorf("no logs found for tx %s", txHash)
 	}
 
-	// handle each log and queue a CCTP message
+	// find the CircleRequestSent event and queue a corresponding Message
+	hasSentEvent := false
 	for _, log := range receipt.Logs {
-		err = c.handleLog(parentCtx, log, originChain)
-		if err != nil {
-			return err
+		if log.Topics[0] == cctp.CircleRequestSentTopic {
+			err = c.handleLog(parentCtx, log, originChain)
+			if err != nil {
+				return err
+			}
+			hasSentEvent = true
 		}
+	}
+	if !hasSentEvent {
+		return fmt.Errorf("no circle request sent event found for tx %s", txHash)
 	}
 
 	// manually process the queue
