@@ -70,6 +70,7 @@ export const usePortfolioBalancesAndAllowances =
     const availableChains = Object.keys(BRIDGABLE_TOKENS)
 
     useEffect(() => {
+      if (!address) return
       const fetchBalancesAcrossNetworks = async () => {
         const balanceRecord = {}
         availableChains.forEach(async (chainId) => {

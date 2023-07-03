@@ -9,8 +9,8 @@ export default function HomeSvg({ ...props }) {
       {...props}
     >
       <path
-        fill-rule="evenodd"
-        clip-rule="evenodd"
+        fillRule="evenodd"
+        clipRule="evenodd"
         d="M20 10H4V21.5C4 22.0523 4.44772 22.5 5 22.5H9V17.5C9 16.9477 9.44772 16.5 10 16.5H14C14.5523 16.5 15 16.9477 15 17.5V22.5H19C19.5523 22.5 20 22.0523 20 21.5V10Z"
         fill="#D9D9D9"
       />
