@@ -1,18 +1,17 @@
 import React, { useMemo, useCallback } from 'react'
+import Image from 'next/image'
+import { BigNumber } from 'ethers'
 import { useDispatch } from 'react-redux'
 import { useNetwork, useAccount } from 'wagmi'
 import { switchNetwork } from '@wagmi/core'
 import { Zero } from '@ethersproject/constants'
-import { TokenWithBalanceAndAllowance } from '@/utils/hooks/usePortfolioBalances'
-import { Chain } from '@/utils/types'
-import { CHAINS_BY_ID } from '@/constants/chains'
-import Image from 'next/image'
-import { Token } from '@/utils/types'
-import { BigNumber } from 'ethers'
-import { formatBNToString } from '@/utils/bignumber/format'
-import { approveToken } from '@/utils/approveToken'
-import PortfolioAccordion from './PortfolioAccordion'
 import { setFromToken } from '@/slices/bridgeSlice'
+import { CHAINS_BY_ID } from '@/constants/chains'
+import { TokenWithBalanceAndAllowance } from '@/utils/hooks/usePortfolioBalances'
+import { approveToken } from '@/utils/approveToken'
+import { formatBNToString } from '@/utils/bignumber/format'
+import { Chain, Token } from '@/utils/types'
+import PortfolioAccordion from './PortfolioAccordion'
 
 type SingleNetworkPortfolioProps = {
   portfolioChainId: number
@@ -54,7 +53,6 @@ export const SingleNetworkPortfolio = ({
           <PortfolioNetwork
             displayName={currentChain.name}
             chainIcon={currentChain.chainImg}
-            chainId={portfolioChainId}
           />
         }
         expandedProps={<PortfolioConnectButton chainId={portfolioChainId} />}
@@ -67,7 +65,7 @@ export const SingleNetworkPortfolio = ({
         <PortfolioAssetHeader />
         {sortedTokensWithAllowance.length > 0 &&
           sortedTokensWithAllowance.map(
-            ({ token, balance, allowance }: TokenWithBalanceAndAllowance) => (
+            ({ token, balance }: TokenWithBalanceAndAllowance) => (
               <PortfolioTokenAsset
                 token={token}
                 balance={balance}
@@ -85,7 +83,7 @@ export const SingleNetworkPortfolio = ({
         )}
         {sortedTokensWithoutAllowance.length > 0 &&
           sortedTokensWithoutAllowance.map(
-            ({ token, balance, allowance }: TokenWithBalanceAndAllowance) => (
+            ({ token, balance }: TokenWithBalanceAndAllowance) => (
               <PortfolioTokenAsset
                 token={token}
                 balance={balance}
@@ -152,15 +150,17 @@ const PortfolioTokenAsset = ({
   )
 }
 
+type PortfolioAssetActionButtonProps = {
+  connectedChainId: number
+  token: Token
+  isApproved: boolean
+}
+
 const PortfolioAssetActionButton = ({
   connectedChainId,
   token,
   isApproved,
-}: {
-  connectedChainId: number
-  token: Token
-  isApproved: boolean
-}) => {
+}: PortfolioAssetActionButtonProps) => {
   const { address } = useAccount()
   const dispatch = useDispatch()
   const tokenAddress = token.addresses[connectedChainId]
@@ -211,19 +211,12 @@ const PortfolioAssetActionButton = ({
 type PortfolioNetworkProps = {
   displayName: string
   chainIcon: string
-  chainId: number
 }
 
 const PortfolioNetwork = ({
   displayName,
   chainIcon,
-  chainId,
 }: PortfolioNetworkProps) => {
-  const { chain } = useNetwork()
-  const isCurrentlyConnectedNetwork: boolean = useMemo(() => {
-    return chainId === chain.id
-  }, [chain.id])
-
   return (
     <div
       data-test-id="portfolio-network"

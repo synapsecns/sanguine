@@ -1,5 +1,5 @@
 import React, { useState } from 'react'
-import AccordionIcon from '../icons/AccordionIcon'
+import AccordionIcon from '@icons/AccordionIcon'
 
 type PortfolioAccordionProps = {
   header: React.ReactNode

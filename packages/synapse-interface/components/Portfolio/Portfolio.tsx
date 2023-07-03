@@ -1,39 +1,21 @@
+import React, { useState } from 'react'
+import { useAccount, useNetwork, Address } from 'wagmi'
+import { Zero } from '@ethersproject/constants'
+import { ConnectWalletButton } from './ConnectWalletButton'
+import { PortfolioTabManager } from './PortfolioTabManager'
 import {
   usePortfolioBalancesAndAllowances,
   NetworkTokenBalancesAndAllowances,
   TokenWithBalanceAndAllowance,
 } from '@/utils/hooks/usePortfolioBalances'
-import { PortfolioTabManager } from './PortfolioTabManager'
 import {
   PortfolioAssetHeader,
   SingleNetworkPortfolio,
 } from './SingleNetworkPortfolio'
-import { useAccount, useNetwork, Address } from 'wagmi'
-import { Zero } from '@ethersproject/constants'
-import React, { useState } from 'react'
-import { ConnectWalletButton } from './ConnectWalletButton'
 
 export enum PortfolioTabs {
   HOME = 'home',
   PORTFOLIO = 'portfolio',
-}
-
-function filterPortfolioBalancesWithBalances(
-  balancesAndAllowances: NetworkTokenBalancesAndAllowances
-): NetworkTokenBalancesAndAllowances {
-  const filteredBalances: NetworkTokenBalancesAndAllowances = {}
-
-  Object.entries(balancesAndAllowances).forEach(([key, tokenWithBalances]) => {
-    const filteredTokenWithBalances = tokenWithBalances.filter(
-      (token: TokenWithBalanceAndAllowance) => token.balance > Zero
-    )
-
-    if (filteredTokenWithBalances.length > 0) {
-      filteredBalances[key] = filteredTokenWithBalances
-    }
-  })
-
-  return filteredBalances
 }
 
 export const Portfolio = () => {
@@ -72,26 +54,6 @@ type PortfolioContentProps = {
   connectedAddress: Address | string
   connectedChainId: number
   networkPortfolioWithBalances: NetworkTokenBalancesAndAllowances
-}
-
-function getCurrentNetworkPortfolio(
-  currentChainId: number,
-  networks: NetworkTokenBalancesAndAllowances
-): {
-  currentNetwork: NetworkTokenBalancesAndAllowances
-  remainingNetworks: NetworkTokenBalancesAndAllowances
-} {
-  const currentNetwork: NetworkTokenBalancesAndAllowances = {
-    [currentChainId]: networks[currentChainId],
-  }
-
-  const remainingNetworks = { ...networks }
-  delete remainingNetworks[currentChainId]
-
-  return {
-    currentNetwork,
-    remainingNetworks,
-  }
 }
 
 const PortfolioContent = ({
@@ -168,4 +130,42 @@ const HomeContent = () => {
       <ConnectWalletButton />
     </div>
   )
+}
+
+function filterPortfolioBalancesWithBalances(
+  balancesAndAllowances: NetworkTokenBalancesAndAllowances
+): NetworkTokenBalancesAndAllowances {
+  const filteredBalances: NetworkTokenBalancesAndAllowances = {}
+
+  Object.entries(balancesAndAllowances).forEach(([key, tokenWithBalances]) => {
+    const filteredTokenWithBalances = tokenWithBalances.filter(
+      (token: TokenWithBalanceAndAllowance) => token.balance > Zero
+    )
+
+    if (filteredTokenWithBalances.length > 0) {
+      filteredBalances[key] = filteredTokenWithBalances
+    }
+  })
+
+  return filteredBalances
+}
+
+function getCurrentNetworkPortfolio(
+  currentChainId: number,
+  networks: NetworkTokenBalancesAndAllowances
+): {
+  currentNetwork: NetworkTokenBalancesAndAllowances
+  remainingNetworks: NetworkTokenBalancesAndAllowances
+} {
+  const currentNetwork: NetworkTokenBalancesAndAllowances = {
+    [currentChainId]: networks[currentChainId],
+  }
+
+  const remainingNetworks = { ...networks }
+  delete remainingNetworks[currentChainId]
+
+  return {
+    currentNetwork,
+    remainingNetworks,
+  }
 }

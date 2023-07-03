@@ -1,5 +1,5 @@
 import { PortfolioTabs } from './Portfolio'
-import HomeSvg from '../icons/HomeIcon'
+import HomeSvg from '@icons/HomeIcon'
 
 type PortfolioTabManagerProps = {
   activeTab: PortfolioTabs
