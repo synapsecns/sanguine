@@ -463,7 +463,7 @@ const StateManagedBridge = () => {
       >
         <div className="flex flex-col px-4 py-20 mx-auto mt-4 lg:flex-row 2xl:w-3/4 sm:mt-6 sm:px-8 md:px-12">
           <Portfolio />
-          <div className="flex flex-col items-center px-2 py-2">
+          <div className="flex flex-col px-2 py-2">
             <div className="flex items-center space-x-20">
               <PageHeader
                 title="Bridge"
