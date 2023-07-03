@@ -99,7 +99,7 @@ func NewByType(ctx context.Context, buildInfo config.BuildInfo, ht HandlerType) 
 	case DataDog:
 		handler = NewDatadogMetricsHandler(buildInfo)
 	case NewRelic:
-		handler = NewRelicMetricsHandler(buildInfo)
+		handler = NewOTLPMetricsHandler(buildInfo)
 	case Jaeger:
 		handler = NewJaegerHandler(buildInfo)
 	case Null:

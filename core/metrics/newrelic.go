@@ -25,8 +25,8 @@ const (
 	newRelicLicenseEnv   = "NEW_RELIC_LICENSE_KEY"
 )
 
-// NewRelicMetricsHandler creates a new newrelic metrics handler.
-func NewRelicMetricsHandler(buildInfo config.BuildInfo) Handler {
+// NewOTLPMetricsHandler creates a new newrelic metrics handler.
+func NewOTLPMetricsHandler(buildInfo config.BuildInfo) Handler {
 	return &newRelicHandler{
 		buildInfo:   buildInfo,
 		baseHandler: newBaseHandler(buildInfo),
