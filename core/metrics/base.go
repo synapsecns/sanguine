@@ -81,6 +81,7 @@ func newBaseHandler(buildInfo config.BuildInfo, extraOpts ...tracesdk.TracerProv
 			attribute.String("ENVIRONMENT", "default"),
 			semconv.ServiceVersion(buildInfo.Version()),
 			attribute.String("commit", buildInfo.Commit()),
+			attribute.String("library.language", "go"),
 		))
 	// TODO: handle error or report
 	if err != nil {

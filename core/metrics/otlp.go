@@ -42,7 +42,7 @@ func (n *otlpHandler) Start(ctx context.Context) (err error) {
 
 	exporter, err := otlptrace.New(ctx, client)
 	if err != nil {
-		return fmt.Errorf("failed to create new relic otlp exporter: %w", err)
+		return fmt.Errorf("failed to create otlp exporter: %w", err)
 	}
 
 	n.baseHandler = newBaseHandler(n.buildInfo, tracesdk.WithBatcher(exporter))
@@ -62,17 +62,17 @@ const (
 type otlpTransportType uint8
 
 const (
-	otlpTransportHTTP otlpTransportType = iota + 1
-	otlpTransportGRPC
+	otlpTransportHTTP otlpTransportType = iota + 1 // http
+	otlpTransportGRPC                              // grpc
 )
 
 // transportFromString converts a string to a transport type.
 // Defaults to http if the string is not recognized.
 func transportFromString(transport string) otlpTransportType {
 	switch strings.ToLower(transport) {
-	case "http":
+	case otlpTransportHTTP.String():
 		return otlpTransportHTTP
-	case "grpc":
+	case otlpTransportGRPC.String():
 		return otlpTransportGRPC
 	}
 	// will be unknown since we use iota+1

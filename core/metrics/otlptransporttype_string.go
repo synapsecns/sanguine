@@ -12,9 +12,9 @@ func _() {
 	_ = x[otlpTransportGRPC-2]
 }
 
-const _otlpTransportType_name = "otlpTransportHTTPotlpTransportGRPC"
+const _otlpTransportType_name = "httpgrpc"
 
-var _otlpTransportType_index = [...]uint8{0, 17, 34}
+var _otlpTransportType_index = [...]uint8{0, 4, 8}
 
 func (i otlpTransportType) String() string {
 	i -= 1
