@@ -1,5 +1,5 @@
-import React, { useMemo } from 'react'
-import { useNetwork } from 'wagmi'
+import React, { useMemo, useCallback } from 'react'
+import { useNetwork, useAccount } from 'wagmi'
 import { switchNetwork } from '@wagmi/core'
 import { Zero } from '@ethersproject/constants'
 import { TokenWithBalanceAndAllowance } from '@/utils/hooks/usePortfolioBalances'
@@ -9,7 +9,9 @@ import Image from 'next/image'
 import { Token } from '@/utils/types'
 import { BigNumber } from 'ethers'
 import { formatBNToString } from '@/utils/bignumber/format'
+import { approveToken } from '@/utils/approveToken'
 import PortfolioAccordion from './PortfolioAccordion'
+import { use } from 'chai'
 
 type SingleNetworkPortfolioProps = {
   portfolioChainId: number
@@ -135,19 +137,32 @@ const PortfolioTokenAsset = ({
       </div>
       <div className="flex flex-row items-center w-1/2 text-left">
         <div className={!isApproved && 'opacity-50'}>{parsedBalance}</div>
-        <PortfolioAssetActionButton token={token} isApproved={isApproved} />
+        <PortfolioAssetActionButton
+          connectedChainId={connectedChainId}
+          token={token}
+          isApproved={isApproved}
+        />
       </div>
     </div>
   )
 }
 
 const PortfolioAssetActionButton = ({
+  connectedChainId,
   token,
   isApproved,
 }: {
+  connectedChainId: number
   token: Token
   isApproved: boolean
 }) => {
+  const { address } = useAccount()
+  const tokenAddress = token.addresses[connectedChainId]
+
+  const handleApproveCallback = useCallback(() => {
+    return approveToken(address, connectedChainId, tokenAddress)
+  }, [connectedChainId, tokenAddress, address])
+
   const buttonClassName = `
     flex ml-auto justify-center
     w-36 py-1 rounded-3xl
@@ -173,6 +188,7 @@ const PortfolioAssetActionButton = ({
             ${buttonClassName}
             border-2 border-[#28282F] border-opacity-50
           `}
+          onClick={handleApproveCallback}
         >
           Approve
         </button>
