@@ -28,12 +28,6 @@ export const Portfolio = () => {
   const filteredPortfolioDataForBalances: NetworkTokenBalancesAndAllowances =
     filterPortfolioBalancesWithBalances(portfolioData)
 
-  console.log(
-    'filteredPortfolioDataForBalances: ',
-    filteredPortfolioDataForBalances
-  )
-  // const filteredData = useFilteredPortfolioBalances(portfolioData)
-
   const { address } = useAccount()
   const { chain } = useNetwork()
 
@@ -49,7 +43,7 @@ export const Portfolio = () => {
           <PortfolioContent
             connectedAddress={address}
             connectedChainId={chain?.id}
-            networkPortfolioWithBalances={portfolioData}
+            networkPortfolioWithBalances={filteredPortfolioDataForBalances}
           />
         )}
       </div>
@@ -153,29 +147,6 @@ function filterPortfolioBalancesWithBalances(
       filteredBalances[key] = filteredTokenWithBalances
     }
   })
-
-  return filteredBalances
-}
-
-function useFilteredPortfolioBalances(
-  balancesAndAllowances: NetworkTokenBalancesAndAllowances
-): NetworkTokenBalancesAndAllowances {
-  const filteredBalances = useMemo(() => {
-    const filteredBalancesObj = {}
-
-    Object.entries(balancesAndAllowances).forEach(
-      ([key, tokenWithBalances]) => {
-        const filteredTokenWithBalances = tokenWithBalances.filter(
-          (token: TokenWithBalanceAndAllowance) => token.balance > Zero
-        )
-
-        if (filteredTokenWithBalances.length > 0) {
-          filteredBalancesObj[key] = filteredTokenWithBalances
-        }
-      }
-    )
-    return filteredBalancesObj
-  }, [balancesAndAllowances])
 
   return filteredBalances
 }
