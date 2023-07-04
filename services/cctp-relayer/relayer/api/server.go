@@ -81,9 +81,9 @@ func (r RelayerAPIServer) GetPushTx(ctx *gin.Context) {
 	msg, err := r.db.GetMessageByOriginHash(ctx, common.HexToHash(hash))
 	if err == nil {
 		// return if found
-		resp := relayerResponse{
+		resp := RelayerResponse{
 			Success: true,
-			Result: messageResult{
+			Result: MessageResult{
 				OriginHash:      hash,
 				DestinationHash: msg.DestTxHash,
 				Origin:          msg.OriginChainID,
@@ -100,7 +100,7 @@ func (r RelayerAPIServer) GetPushTx(ctx *gin.Context) {
 			Origin: uint32(origin),
 			TxHash: common.HexToHash(hash),
 		}
-		resp := relayerResponse{
+		resp := RelayerResponse{
 			Success: true,
 			Result:  fmt.Sprintf("Successfully queued relay request from chain %d: %s", origin, hash),
 		}
@@ -111,7 +111,7 @@ func (r RelayerAPIServer) GetPushTx(ctx *gin.Context) {
 	encodeError(ctx, http.StatusInternalServerError, err)
 }
 
-type messageResult struct {
+type MessageResult struct {
 	OriginHash      string `json:"origin_hash"`
 	DestinationHash string `json:"destination_hash"`
 	Origin          uint32 `json:"origin"`
@@ -120,7 +120,7 @@ type messageResult struct {
 	State           string `json:"state"`
 }
 
-type relayerResponse struct {
+type RelayerResponse struct {
 	Success bool        `json:"success"`
 	Result  interface{} `json:"result"`
 }
@@ -130,7 +130,7 @@ type errorResult struct {
 }
 
 func encodeError(ctx *gin.Context, status int, err error) {
-	resp := relayerResponse{
+	resp := RelayerResponse{
 		Success: false,
 		Result: errorResult{
 			Reason: err.Error(),
