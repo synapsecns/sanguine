@@ -84,8 +84,6 @@ type RelayRequest struct {
 // If the transaction is found in the db, return information about the transaction.
 // Otherwise, queue the corresponding Message for relay.
 func (r RelayerAPIServer) GetPushTx(ctx *gin.Context) {
-	var err error
-
 	// parse params
 	origin, err := getOriginParam(ctx)
 	if err != nil {
