@@ -37,8 +37,8 @@ func (s *RelayerAPISuite) mockMessage(originChainID uint32, state relayTypes.Mes
 }
 
 //nolint:gosec
-func getPushTx(ctx context.Context, hash string, origin uint32) (*http.Response, error) {
-	txURL := "http://localhost:8080/push_tx"
+func getTx(ctx context.Context, hash string, origin uint32) (*http.Response, error) {
+	txURL := "http://localhost:8080/tx"
 	params := url.Values{}
 	params.Set("hash", hash)
 	params.Set("origin", strconv.Itoa(int(origin)))
@@ -67,7 +67,7 @@ func (s *RelayerAPISuite) TestPendingTx() {
 	s.Nil(err)
 
 	// make api request
-	resp, err := getPushTx(s.GetTestContext(), msg.OriginTxHash, msg.OriginChainID)
+	resp, err := getTx(s.GetTestContext(), msg.OriginTxHash, msg.OriginChainID)
 	s.Nil(err)
 	defer func() {
 		err := resp.Body.Close()
@@ -116,7 +116,7 @@ func (s *RelayerAPISuite) TestMissingTx() {
 	msg := s.mockMessage(1, relayTypes.Pending)
 
 	// make api request
-	resp, err := getPushTx(s.GetTestContext(), msg.OriginTxHash, msg.OriginChainID)
+	resp, err := getTx(s.GetTestContext(), msg.OriginTxHash, msg.OriginChainID)
 	s.Nil(err)
 	defer func() {
 		err := resp.Body.Close()
@@ -159,7 +159,7 @@ func (s *RelayerAPISuite) TestBadRequest() {
 	s.Nil(err)
 
 	// make api request with no params
-	txURL := "http://localhost:8080/push_tx"
+	txURL := "http://localhost:8080/tx"
 	client := &http.Client{
 		Timeout: 5 * time.Second,
 	}

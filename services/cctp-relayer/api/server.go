@@ -35,7 +35,7 @@ func NewRelayerAPIServer(port uint16, host string, db db2.CCTPRelayerDB, relayRe
 // Start starts the RelayerAPIServer.
 func (r RelayerAPIServer) Start(ctx context.Context) error {
 	engine := gin.Default()
-	engine.GET("/push_tx", func(ctx *gin.Context) {
+	engine.GET("/tx", func(ctx *gin.Context) {
 		r.GetPushTx(ctx)
 	})
 	server := &http.Server{
@@ -80,7 +80,7 @@ type RelayRequest struct {
 	TxHash common.Hash
 }
 
-// GetPushTx handles the /push_tx endpoint.
+// GetPushTx handles the /tx endpoint.
 // If the transaction is found in the db, return information about the transaction.
 // Otherwise, queue the corresponding Message for relay.
 func (r RelayerAPIServer) GetPushTx(ctx *gin.Context) {
@@ -132,7 +132,7 @@ func (r RelayerAPIServer) GetPushTx(ctx *gin.Context) {
 	encodeError(ctx, http.StatusInternalServerError, err)
 }
 
-// MessageResult is the result of a successful /push_tx request.
+// MessageResult is the result of a successful /tx request.
 type MessageResult struct {
 	OriginHash      string `json:"origin_hash"`
 	DestinationHash string `json:"destination_hash"`
