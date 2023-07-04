@@ -83,6 +83,7 @@ import { isAddress } from '@ethersproject/address'
 import { TransactionButton } from '@/components/buttons/TransactionButton'
 import { BridgeTransactionButton } from '@/components/StateManagedBridge/BridgeTransactionButton'
 import ExplorerToastLink from '@/components/ExplorerToastLink'
+import { zeroAddress } from 'viem'
 
 // NOTE: These are idle utility functions that will be re-written to
 // support sorting by desired mechanism
@@ -210,7 +211,7 @@ const StateManagedBridge = () => {
     console.log(`[useEffect] toToken`, toToken.symbol)
     // TODO: Double serialization happening somewhere??
     if (BigInt(fromValue) > 0n) {
-      console.log("trying to set bridge quote")
+      console.log('trying to set bridge quote')
       getAndSetBridgeQuote()
     } else {
       dispatch(setBridgeQuote(EMPTY_BRIDGE_QUOTE_ZERO))
@@ -220,10 +221,13 @@ const StateManagedBridge = () => {
 
   // don't like this, rewrite: could be custom hook
   useEffect(() => {
-    if (fromToken?.addresses[fromChainId] === "0x0000000000000000000000000000000000000000") {
+    if (fromToken?.addresses[fromChainId] === zeroAddress) {
       setIsApproved(true)
     } else {
-      if (bridgeQuote?.allowance && (BigInt(fromValue)) <= (bridgeQuote.allowance)) {
+      if (
+        bridgeQuote?.allowance &&
+        BigInt(fromValue) <= bridgeQuote.allowance
+      ) {
         setIsApproved(true)
       } else {
         setIsApproved(false)
@@ -238,7 +242,6 @@ const StateManagedBridge = () => {
     // will have to handle deadlineMinutes here at later time, gets passed as optional last arg in .bridgeQuote()
     try {
       dispatch(setIsLoading(true))
-
 
       const { feeAmount, routerAddress, maxAmountOut, originQuery, destQuery } =
         await synapseSDK.bridgeQuote(
@@ -263,16 +266,17 @@ const StateManagedBridge = () => {
         return
       }
 
-      const toValueBigNum = maxAmountOut ?? Zero
+      const toValueBigNum = maxAmountOut ?? 0n
       const originTokenDecimals = fromToken.decimals[fromChainId]
-      const adjustedFeeAmount = feeAmount < ((fromValue))
-        ? feeAmount
-        : feeAmount / powBigInt(10n, BigInt(18 - originTokenDecimals));
+      const adjustedFeeAmount =
+        feeAmount < fromValue
+          ? feeAmount
+          : feeAmount / powBigInt(10n, BigInt(18 - originTokenDecimals))
 
       const isUnsupported = AcceptedChainId[fromChainId] ? false : true
 
       const allowance =
-        fromToken.addresses[fromChainId] === AddressZero ||
+        fromToken.addresses[fromChainId] === zeroAddress ||
         address === undefined ||
         isUnsupported
           ? 0n
@@ -284,12 +288,12 @@ const StateManagedBridge = () => {
             )
 
       const originMinWithSlippage = subtractSlippage(
-        originQuery?.minAmountOut ?? Zero,
+        originQuery?.minAmountOut ?? 0n,
         'ONE_TENTH',
         null
       )
       const destMinWithSlippage = subtractSlippage(
-        destQuery?.minAmountOut ?? Zero,
+        destQuery?.minAmountOut ?? 0n,
         'ONE_TENTH',
         null
       )
@@ -304,7 +308,11 @@ const StateManagedBridge = () => {
           setBridgeQuote({
             outputAmount: BigInt(toValueBigNum.toString()),
             outputAmountString: commify(
-              formatBigIntToString(toValueBigNum, toToken.decimals[toChainId], 8)
+              formatBigIntToString(
+                toValueBigNum,
+                toToken.decimals[toChainId],
+                8
+              )
             ),
             routerAddress,
             allowance,
@@ -396,7 +404,7 @@ const StateManagedBridge = () => {
       )
       const payload =
         fromToken.addresses[fromChainId as keyof Token['addresses']] ===
-          AddressZero ||
+          zeroAddress ||
         fromToken.addresses[fromChainId as keyof Token['addresses']] === ''
           ? { data: data.data, to: data.to, value: fromValue }
           : data
@@ -416,7 +424,7 @@ const StateManagedBridge = () => {
         dispatch(setBridgeQuote(EMPTY_BRIDGE_QUOTE_ZERO))
         dispatch(setDestinationAddress(null))
         dispatch(setShowDestinationAddress(false))
-        dispatch(updateFromValue(""))
+        dispatch(updateFromValue(''))
 
         const successToastContent = (
           <div>
@@ -425,7 +433,7 @@ const StateManagedBridge = () => {
               {originChainName} to {toToken.symbol} on {destinationChainName}
             </div>
             <ExplorerToastLink
-              transactionHash={tx ?? AddressZero}
+              transactionHash={tx ?? zeroAddress}
               chainId={fromChainId}
             />
           </div>
@@ -501,7 +509,9 @@ const StateManagedBridge = () => {
                     <TokenSlideOver
                       key="fromBlock"
                       isOrigin={true}
-                      tokens={separateAndSortTokensWithBalances(supportedFromTokenBalances)}
+                      tokens={separateAndSortTokensWithBalances(
+                        supportedFromTokenBalances
+                      )}
                       chainId={fromChainId}
                       selectedToken={fromToken}
                     />{' '}

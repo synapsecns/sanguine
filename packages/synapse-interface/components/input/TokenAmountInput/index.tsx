@@ -53,7 +53,7 @@ const BridgeInputContainer = ({
 
   const onClickBalance = () => {
     onChangeAmount(
-      formatBNToString(
+      formatBigIntToString(
         fromTokenBalance,
         selectedToken?.decimals[chainId as keyof Token['decimals']]
       )
