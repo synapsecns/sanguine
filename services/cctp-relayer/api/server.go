@@ -14,6 +14,7 @@ import (
 	"gorm.io/gorm"
 )
 
+// RelayerAPIServer exposes API endpoints that interact with CCTPRelayer.
 type RelayerAPIServer struct {
 	port             uint16
 	host             string
@@ -21,6 +22,7 @@ type RelayerAPIServer struct {
 	relayRequestChan chan *RelayRequest
 }
 
+// NewRelayerAPIServer creates a new RelayerAPIServer.
 func NewRelayerAPIServer(port uint16, host string, db db2.CCTPRelayerDB, relayRequestChan chan *RelayRequest) *RelayerAPIServer {
 	return &RelayerAPIServer{
 		port:             port,
@@ -30,6 +32,7 @@ func NewRelayerAPIServer(port uint16, host string, db db2.CCTPRelayerDB, relayRe
 	}
 }
 
+// Start starts the RelayerAPIServer.
 func (r RelayerAPIServer) Start(ctx context.Context) error {
 	engine := gin.Default()
 	engine.GET("/push_tx", func(ctx *gin.Context) {
@@ -70,11 +73,15 @@ func (r RelayerAPIServer) Start(ctx context.Context) error {
 	return nil
 }
 
+// RelayRequest is a request to relay a transaction.
 type RelayRequest struct {
 	Origin uint32
 	TxHash common.Hash
 }
 
+// GetPushTx handles the /push_tx endpoint.
+// If the transaction is found in the db, return information about the transaction.
+// Otherwise, queue the corresponding Message for relay.
 func (r RelayerAPIServer) GetPushTx(ctx *gin.Context) {
 	var err error
 
@@ -124,6 +131,7 @@ func (r RelayerAPIServer) GetPushTx(ctx *gin.Context) {
 	encodeError(ctx, http.StatusInternalServerError, err)
 }
 
+// MessageResult is the result of a successful /push_tx request.
 type MessageResult struct {
 	OriginHash      string `json:"origin_hash"`
 	DestinationHash string `json:"destination_hash"`
@@ -133,6 +141,7 @@ type MessageResult struct {
 	State           string `json:"state"`
 }
 
+// RelayerResponse is a wrapper struct for a relayer API response.
 type RelayerResponse struct {
 	Success bool        `json:"success"`
 	Result  interface{} `json:"result"`
