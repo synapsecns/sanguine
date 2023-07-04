@@ -13,7 +13,7 @@ import (
 
 	"github.com/brianvoe/gofakeit/v6"
 	"github.com/synapsecns/sanguine/ethergo/mocks"
-	"github.com/synapsecns/sanguine/services/cctp-relayer/relayer/api"
+	"github.com/synapsecns/sanguine/services/cctp-relayer/api"
 	relayTypes "github.com/synapsecns/sanguine/services/cctp-relayer/types"
 )
 
@@ -58,7 +58,7 @@ func (s *RelayerAPISuite) TestPendingTx(t *testing.T) {
 	defer cancel()
 
 	// store pending tx
-	msg := s.mockMessage(1, 2, 1)
+	msg := s.mockMessage(1, relayTypes.Pending)
 	err := s.testStore.StoreMessage(ctx, msg)
 	s.Nil(err)
 

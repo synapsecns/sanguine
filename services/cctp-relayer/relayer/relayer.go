@@ -15,9 +15,9 @@ import (
 	"github.com/ethereum/go-ethereum/crypto"
 	signerConfig "github.com/synapsecns/sanguine/ethergo/signer/config"
 	"github.com/synapsecns/sanguine/ethergo/submitter"
+	"github.com/synapsecns/sanguine/services/cctp-relayer/api"
 	"github.com/synapsecns/sanguine/services/cctp-relayer/attestation"
 	db2 "github.com/synapsecns/sanguine/services/cctp-relayer/db"
-	"github.com/synapsecns/sanguine/services/cctp-relayer/relayer/api"
 	relayTypes "github.com/synapsecns/sanguine/services/cctp-relayer/types"
 
 	"github.com/ethereum/go-ethereum/common"
@@ -69,7 +69,7 @@ type CCTPRelayer struct {
 	txSubmitter submitter.TransactionSubmitter
 	// boundSynapseCCTPs is a map from chain ID -> SynapseCCTP.
 	boundSynapseCCTPs map[uint32]*cctp.SynapseCCTP
-	relayerAPI        *api.RelayerApiServer
+	relayerAPI        *api.RelayerAPIServer
 	// relayRequestChan is a channel that is used to process relay requests from the api server.
 	relayRequestChan chan *api.RelayRequest
 	// retryNow is used to trigger a retry immediately.
@@ -131,7 +131,7 @@ func NewCCTPRelayer(ctx context.Context, cfg config.Config, store db2.CCTPRelaye
 	txSubmitter := submitter.NewTransactionSubmitter(handler, signer, omniRPCClient, store.SubmitterDB(), &cfg.SubmitterConfig)
 
 	relayerRequestChan := make(chan *api.RelayRequest, 1000)
-	relayerAPI := api.NewRelayerApiServer(cfg.Port, cfg.Host, store, relayerRequestChan)
+	relayerAPI := api.NewRelayerAPIServer(cfg.Port, cfg.Host, store, relayerRequestChan)
 
 	return &CCTPRelayer{
 		cfg:               cfg,
