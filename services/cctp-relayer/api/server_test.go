@@ -11,6 +11,7 @@ import (
 	"strings"
 
 	"github.com/brianvoe/gofakeit/v6"
+	"github.com/ethereum/go-ethereum/common"
 	"github.com/synapsecns/sanguine/ethergo/mocks"
 	"github.com/synapsecns/sanguine/services/cctp-relayer/api"
 	relayTypes "github.com/synapsecns/sanguine/services/cctp-relayer/types"
@@ -92,4 +93,40 @@ func (s *RelayerAPISuite) TestPendingTx() {
 		State:           msg.State.String(),
 	}
 	s.Equal(expectedResult, result)
+}
+
+func (s *RelayerAPISuite) TestMissingTx() {
+	reqChan := make(chan *api.RelayRequest, 1000)
+	server := api.NewRelayerAPIServer(8080, "localhost", s.testStore, reqChan)
+	ctx, cancel := context.WithCancel(s.GetTestContext())
+	go server.Start(ctx)
+	defer cancel()
+
+	// create mock message, but don't store it
+	msg := s.mockMessage(1, relayTypes.Pending)
+
+	// make api request
+	resp, err := getPushTx(msg.OriginTxHash, msg.OriginChainID)
+	s.Nil(err)
+	defer resp.Body.Close()
+
+	// verify response
+	body, err := ioutil.ReadAll(resp.Body)
+	s.Nil(err)
+	var relayerResp api.RelayerResponse
+	err = json.Unmarshal(body, &relayerResp)
+	s.Nil(err)
+	s.True(relayerResp.Success)
+	result, ok := relayerResp.Result.(string)
+	s.True(ok)
+	expectedResult := fmt.Sprintf("Successfully queued relay request from chain %d: %s", msg.OriginChainID, msg.OriginTxHash)
+	s.Equal(expectedResult, result)
+
+	// verify request was queued
+	relayReq := <-reqChan
+	expectedRelayReq := &api.RelayRequest{
+		Origin: msg.OriginChainID,
+		TxHash: common.HexToHash(msg.OriginTxHash),
+	}
+	s.Equal(expectedRelayReq, relayReq)
 }
