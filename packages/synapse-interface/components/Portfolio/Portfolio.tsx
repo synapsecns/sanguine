@@ -81,6 +81,7 @@ const PortfolioContent = ({
           connectedChainId={connectedChainId}
           portfolioTokens={currentNetwork[connectedChainId]}
           initializeExpanded={true}
+          fetchState={fetchState}
         />
       )}
       {connectedAddress ? (

@@ -13,12 +13,14 @@ import { formatBNToString } from '@/utils/bignumber/format'
 import { Chain, Token } from '@/utils/types'
 import PortfolioAccordion from './PortfolioAccordion'
 import { ROUTER_ADDRESS } from '@/utils/hooks/usePortfolioBalances'
+import { FetchState } from '@/utils/hooks/usePortfolioBalances'
 
 type SingleNetworkPortfolioProps = {
   portfolioChainId: number
   connectedChainId: number
   portfolioTokens: TokenWithBalanceAndAllowance[]
   initializeExpanded: boolean
+  fetchState: FetchState
 }
 
 export const SingleNetworkPortfolio = ({
@@ -26,6 +28,7 @@ export const SingleNetworkPortfolio = ({
   connectedChainId,
   portfolioTokens,
   initializeExpanded = false,
+  fetchState,
 }: SingleNetworkPortfolioProps) => {
   const currentChain: Chain = CHAINS_BY_ID[portfolioChainId]
 
@@ -45,6 +48,8 @@ export const SingleNetworkPortfolio = ({
 
   const hasNoTokenBalance: boolean =
     !portfolioTokens || portfolioTokens.length === 0
+
+  const isLoading: boolean = fetchState === FetchState.LOADING
 
   return (
     <div
@@ -67,7 +72,7 @@ export const SingleNetworkPortfolio = ({
         }
       >
         <PortfolioAssetHeader />
-        {hasNoTokenBalance && <EmptyPortfolioContent />}
+        {!isLoading && hasNoTokenBalance && <EmptyPortfolioContent />}
         {sortedTokensWithAllowance &&
           sortedTokensWithAllowance.length > 0 &&
           sortedTokensWithAllowance.map(
