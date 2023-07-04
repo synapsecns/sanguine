@@ -35,9 +35,9 @@ import {
   PLS,
   AGEUR,
   NOTE,
-  USDC
+  USDC,
 } from '@constants/tokens/master'
-import { parse } from 'path'
+
 export const getTransactionReceipt = async (
   txHash: string,
   provider: JsonRpcProvider
@@ -149,7 +149,11 @@ export const generateBridgeTx = (
       } else {
         tokenAddr = txReceipt.logs[txReceipt.logs.length - 2].address
       }
-    } else if(!isFrom && swapTokenAddr === USDC.addresses[chainId] && [CHAINS.ARBITRUM.id, CHAINS.ETH.id, CHAINS.AVALANCHE.id].includes(chainId)) {
+    } else if (
+      !isFrom &&
+      swapTokenAddr === USDC.addresses[chainId] &&
+      [CHAINS.ARBITRUM.id, CHAINS.ETH.id, CHAINS.AVALANCHE.id].includes(chainId)
+    ) {
       tokenAddr = txReceipt.logs[txReceipt.logs.length - 3].address
     } else {
       tokenAddr = txReceipt.logs[txReceipt.logs.length - 2].address
@@ -179,7 +183,9 @@ export const generateBridgeTx = (
     txHash: txReceipt.transactionHash,
     txReceipt,
     token,
-    kappa: parsedLog.requestID ? parsedLog.requestID : removePrefix(id(parsedLog.transactionHash)),
+    kappa: parsedLog.requestID
+      ? parsedLog.requestID
+      : removePrefix(id(parsedLog.transactionHash)),
     toChainId: isFrom ? Number(parsedLog.chainId.toString()) : chainId,
     toAddress: isAddress(destinationAddress) ? destinationAddress : address,
     contractEmittedFrom: parsedLog.contractEmittedFrom,

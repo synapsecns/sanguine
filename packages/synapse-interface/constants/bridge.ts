@@ -117,7 +117,7 @@ export const BRIDGE_CONTRACTS = {
 export const SYNAPSE_CCTP_CONTRACTS = {
   [CHAINS.ETH.id]: '0xfB2Bfc368a7edfD51aa2cbEC513ad50edEa74E84',
   [CHAINS.ARBITRUM.id]: '0xfB2Bfc368a7edfD51aa2cbEC513ad50edEa74E84',
-  [CHAINS.AVALANCHE.id]: '0xfB2Bfc368a7edfD51aa2cbEC513ad50edEa74E84'
+  [CHAINS.AVALANCHE.id]: '0xfB2Bfc368a7edfD51aa2cbEC513ad50edEa74E84',
 }
 
 export const ROLE_EVENTS = ['RoleGranted', 'RoleRevoked', 'RoleAdminChanged']
