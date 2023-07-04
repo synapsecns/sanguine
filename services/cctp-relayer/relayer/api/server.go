@@ -66,14 +66,12 @@ func (r RelayerAPIServer) GetPushTx(ctx *gin.Context) {
 	var err error
 
 	// parse params
-	originParam := OriginParam{}
-	origin, err := originParam.Parse(ctx)
+	origin, err := getOriginParam(ctx)
 	if err != nil {
 		encodeError(ctx, http.StatusBadRequest, err)
 		return
 	}
-	hashParam := HashParam{}
-	hash, err := hashParam.Parse(ctx)
+	hash, err := getHashParam(ctx)
 	if err != nil {
 		encodeError(ctx, http.StatusBadRequest, err)
 		return

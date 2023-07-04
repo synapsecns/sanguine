@@ -8,11 +8,6 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-type Param interface {
-	Name() string
-	Parse(ctx *gin.Context) (interface{}, error)
-}
-
 func getRawParam(name string, ctx *gin.Context) (string, error) {
 	value := ctx.Param(name)
 	if value == "" {
@@ -21,28 +16,11 @@ func getRawParam(name string, ctx *gin.Context) (string, error) {
 	return value, nil
 }
 
-type HashParam struct{}
+const originParamName = "origin"
+const hashParamName = "hash"
 
-func (h HashParam) Name() string { return "hash" }
-
-func (h HashParam) Parse(ctx *gin.Context) (interface{}, error) {
-	value, err := getRawParam(h.Name(), ctx)
-	if err != nil {
-		return "", err
-	}
-	ok := common.IsHexAddress(value)
-	if !ok {
-		return "", fmt.Errorf("invalid hash: %s", value)
-	}
-	return value, nil
-}
-
-type OriginParam struct{}
-
-func (o OriginParam) Name() string { return "origin" }
-
-func (o OriginParam) Parse(ctx *gin.Context) (interface{}, error) {
-	rawValue, err := getRawParam(o.Name(), ctx)
+func getOriginParam(ctx *gin.Context) (uint32, error) {
+	rawValue, err := getRawParam(originParamName, ctx)
 	if err != nil {
 		return 0, err
 	}
@@ -51,4 +29,16 @@ func (o OriginParam) Parse(ctx *gin.Context) (interface{}, error) {
 		return 0, fmt.Errorf("could not parse origin: %s", rawValue)
 	}
 	return uint32(value), nil
+}
+
+func getHashParam(ctx *gin.Context) (string, error) {
+	value, err := getRawParam(hashParamName, ctx)
+	if err != nil {
+		return "", err
+	}
+	ok := common.IsHexAddress(value)
+	if !ok {
+		return "", fmt.Errorf("invalid hash: %s", value)
+	}
+	return value, nil
 }
