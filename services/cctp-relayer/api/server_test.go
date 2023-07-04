@@ -9,7 +9,6 @@ import (
 	"net/url"
 	"strconv"
 	"strings"
-	"testing"
 
 	"github.com/brianvoe/gofakeit/v6"
 	"github.com/synapsecns/sanguine/ethergo/mocks"
@@ -50,7 +49,7 @@ func getPushTx(hash string, origin uint32) (*http.Response, error) {
 	return http.Get(reqURL)
 }
 
-func (s *RelayerAPISuite) TestPendingTx(t *testing.T) {
+func (s *RelayerAPISuite) TestPendingTx() {
 	reqChan := make(chan *api.RelayRequest, 1000)
 	server := api.NewRelayerAPIServer(8080, "localhost", s.testStore, reqChan)
 	ctx, cancel := context.WithCancel(s.GetTestContext())
@@ -73,16 +72,24 @@ func (s *RelayerAPISuite) TestPendingTx(t *testing.T) {
 	var relayerResp api.RelayerResponse
 	err = json.Unmarshal(body, &relayerResp)
 	s.Nil(err)
-	expectedResp := api.RelayerResponse{
-		Success: true,
-		Result: api.MessageResult{
-			OriginHash:      msg.OriginTxHash,
-			DestinationHash: msg.DestTxHash,
-			Origin:          msg.OriginChainID,
-			Destination:     msg.DestChainID,
-			RequestID:       msg.RequestID,
-			State:           msg.State.String(),
-		},
+	s.True(relayerResp.Success)
+	resultMap, ok := relayerResp.Result.(map[string]interface{})
+	s.True(ok)
+	result := api.MessageResult{
+		OriginHash:      resultMap["origin_hash"].(string),
+		DestinationHash: resultMap["destination_hash"].(string),
+		Origin:          uint32(resultMap["origin"].(float64)),
+		Destination:     uint32(resultMap["destination"].(float64)),
+		RequestID:       resultMap["request_id"].(string),
+		State:           resultMap["state"].(string),
 	}
-	s.Equal(expectedResp, relayerResp)
+	expectedResult := api.MessageResult{
+		OriginHash:      msg.OriginTxHash,
+		DestinationHash: msg.DestTxHash,
+		Origin:          msg.OriginChainID,
+		Destination:     msg.DestChainID,
+		RequestID:       msg.RequestID,
+		State:           msg.State.String(),
+	}
+	s.Equal(expectedResult, result)
 }

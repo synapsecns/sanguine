@@ -9,7 +9,7 @@ import (
 )
 
 func getRawParam(name string, ctx *gin.Context) (string, error) {
-	value := ctx.Param(name)
+	value := ctx.Query(name)
 	if value == "" {
 		return "", fmt.Errorf("required parameter '%s' is missing", name)
 	}
@@ -36,9 +36,6 @@ func getHashParam(ctx *gin.Context) (string, error) {
 	if err != nil {
 		return "", err
 	}
-	ok := common.IsHexAddress(value)
-	if !ok {
-		return "", fmt.Errorf("invalid hash: %s", value)
-	}
+	value = common.HexToHash(value).String()
 	return value, nil
 }
