@@ -5,7 +5,6 @@ import (
 	"errors"
 	"fmt"
 	"net/http"
-	"strconv"
 
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/gin-gonic/gin"
@@ -67,27 +66,14 @@ func (r RelayerAPIServer) GetPushTx(ctx *gin.Context) {
 	var err error
 
 	// parse params
-	var origin int
-	originStr := ctx.Param("origin")
-	if originStr == "" {
-		err = fmt.Errorf("required param 'origin' is missing")
-	} else {
-		origin, err = strconv.Atoi(originStr)
-	}
+	originParam := OriginParam{}
+	origin, err := originParam.Parse(ctx)
 	if err != nil {
 		encodeError(ctx, http.StatusBadRequest, err)
 		return
 	}
-
-	hash := ctx.Param("hash")
-	if hash == "" {
-		err = fmt.Errorf("required param 'hash' is missing")
-	} else {
-		ok := common.IsHexAddress(hash)
-		if !ok {
-			err = fmt.Errorf("invalid hash: %s", hash)
-		}
-	}
+	hashParam := HashParam{}
+	hash, err := hashParam.Parse(ctx)
 	if err != nil {
 		encodeError(ctx, http.StatusBadRequest, err)
 		return
