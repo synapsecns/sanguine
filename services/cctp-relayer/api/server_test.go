@@ -5,7 +5,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
-	"io/ioutil"
 	"net/http"
 	"net/url"
 	"strconv"
@@ -36,7 +35,7 @@ func (s *RelayerAPISuite) mockMessage(originChainID uint32, state relayTypes.Mes
 	}
 }
 
-//nolint:gosec
+//nolint:gosec,wrapcheck
 func getTx(ctx context.Context, hash string, origin uint32) (*http.Response, error) {
 	txURL := "http://localhost:8080/tx"
 	params := url.Values{}
@@ -46,7 +45,7 @@ func getTx(ctx context.Context, hash string, origin uint32) (*http.Response, err
 	client := &http.Client{
 		Timeout: 5 * time.Second,
 	}
-	req, err := http.NewRequestWithContext(ctx, "GET", reqURL, nil)
+	req, err := http.NewRequestWithContext(ctx, http.MethodGet, reqURL, nil)
 	if err != nil {
 		return nil, err
 	}
@@ -125,7 +124,7 @@ func (s *RelayerAPISuite) TestMissingTx() {
 	s.Equal(resp.StatusCode, http.StatusOK)
 
 	// verify response
-	body, err := ioutil.ReadAll(resp.Body)
+	body, err := io.ReadAll(resp.Body)
 	s.Nil(err)
 	var relayerResp api.RelayerResponse
 	err = json.Unmarshal(body, &relayerResp)
@@ -163,7 +162,7 @@ func (s *RelayerAPISuite) TestBadRequest() {
 	client := &http.Client{
 		Timeout: 5 * time.Second,
 	}
-	req, err := http.NewRequestWithContext(ctx, "GET", txURL, nil)
+	req, err := http.NewRequestWithContext(ctx, http.MethodGet, txURL, nil)
 	s.Nil(err)
 	resp, err := client.Do(req)
 	s.Nil(err)
@@ -174,7 +173,7 @@ func (s *RelayerAPISuite) TestBadRequest() {
 	s.Equal(resp.StatusCode, http.StatusBadRequest)
 
 	// verify response
-	body, err := ioutil.ReadAll(resp.Body)
+	body, err := io.ReadAll(resp.Body)
 	s.Nil(err)
 	var relayerResp api.RelayerResponse
 	err = json.Unmarshal(body, &relayerResp)
