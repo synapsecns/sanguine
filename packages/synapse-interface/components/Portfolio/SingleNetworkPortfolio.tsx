@@ -128,7 +128,7 @@ const EmptyPortfolioContent = () => {
 type PortfolioTokenAssetProps = {
   token: Token
   balance: BigNumber
-  chainId: number
+  portfolioChainId: number
   connectedChainId: number
   isApproved: boolean
 }
@@ -136,14 +136,18 @@ type PortfolioTokenAssetProps = {
 const PortfolioTokenAsset = ({
   token,
   balance,
-  chainId,
+  portfolioChainId,
   connectedChainId,
   isApproved,
 }: PortfolioTokenAssetProps) => {
   const { icon, symbol, decimals, addresses } = token
-  const parsedBalance = formatBNToString(balance, decimals[chainId], 3)
-  const isDisabled = chainId !== connectedChainId
-  const filteredOpacity = 'opacity-50 cursor-default'
+  const parsedBalance: string = formatBNToString(
+    balance,
+    decimals[portfolioChainId],
+    3
+  )
+  const isDisabled: boolean = portfolioChainId !== connectedChainId
+  const filteredOpacity: string = 'opacity-50 cursor-default'
   return (
     <div
       data-test-id="portfolio-token-asset"
@@ -171,6 +175,7 @@ const PortfolioTokenAsset = ({
           connectedChainId={connectedChainId}
           token={token}
           isApproved={isApproved}
+          isDisabled={isDisabled}
         />
       </div>
     </div>
@@ -181,24 +186,30 @@ type PortfolioAssetActionButtonProps = {
   connectedChainId: number
   token: Token
   isApproved: boolean
+  isDisabled: boolean
 }
 
 const PortfolioAssetActionButton = ({
   connectedChainId,
   token,
   isApproved,
+  isDisabled,
 }: PortfolioAssetActionButtonProps) => {
   const { address } = useAccount()
   const dispatch = useDispatch()
   const tokenAddress = token.addresses[connectedChainId]
 
   const handleBridgeCallback = useCallback(() => {
-    dispatch(setFromToken(token))
-  }, [token])
+    if (!isDisabled) {
+      dispatch(setFromToken(token))
+    }
+  }, [token, isDisabled])
 
   const handleApproveCallback = useCallback(() => {
-    return approveToken(ROUTER_ADDRESS, connectedChainId, tokenAddress)
-  }, [connectedChainId, tokenAddress, address])
+    if (!isDisabled) {
+      return approveToken(ROUTER_ADDRESS, connectedChainId, tokenAddress)
+    }
+  }, [connectedChainId, tokenAddress, address, isDisabled])
 
   const buttonClassName = `
     flex ml-auto justify-center
