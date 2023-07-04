@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useMemo } from 'react'
 import { useAccount } from 'wagmi'
 import { Address, multicall, erc20ABI, getAccount } from '@wagmi/core'
 import { BRIDGABLE_TOKENS } from '@/constants/tokens'
@@ -96,7 +96,14 @@ export const usePortfolioBalancesAndAllowances =
       fetchBalancesAcrossNetworks()
     }, [address])
 
-    return balancesAndAllowances
+    return useMemo(() => {
+      console.log(
+        'useMemo balancesAndAllowances: ',
+        balancesAndAllowances,
+        Object.keys(balancesAndAllowances).length
+      )
+      return balancesAndAllowances
+    }, [balancesAndAllowances])
   }
 
 const getTokensAllowance = async (

@@ -20,16 +20,31 @@ export enum PortfolioTabs {
 
 export const Portfolio = () => {
   const [tab, setTab] = useState<PortfolioTabs>(PortfolioTabs.HOME)
+  const [filtered, setFiltered] = useState<NetworkTokenBalancesAndAllowances>()
 
   const portfolioData: NetworkTokenBalancesAndAllowances =
     usePortfolioBalancesAndAllowances()
+
+  console.log('portfolioData: ', portfolioData)
+
+  useEffect(() => {
+    console.log('portfolioData: ', portfolioData)
+    console.log(
+      'Object.keys(portfolioData).length:',
+      Object.keys(portfolioData).length
+    )
+    if (Object.keys(portfolioData).length > 0) {
+      const filteredStuff = filterPortfolioBalancesWithBalances(portfolioData)
+      console.log('filteredStuff', filteredStuff)
+    }
+  }, [portfolioData])
 
   const filteredPortfolioDataForBalances: NetworkTokenBalancesAndAllowances =
     filterPortfolioBalancesWithBalances(portfolioData)
 
   const filteredData = useFilteredPortfolioBalances(portfolioData)
 
-  console.log('filteredData: ', filteredData)
+  console.log('filteredData: ', filteredData, Object.keys(filteredData).length)
   const { address } = useAccount()
   const { chain } = useNetwork()
 
@@ -45,7 +60,7 @@ export const Portfolio = () => {
           <PortfolioContent
             connectedAddress={address}
             connectedChainId={chain?.id}
-            networkPortfolioWithBalances={filteredPortfolioDataForBalances}
+            networkPortfolioWithBalances={portfolioData}
           />
         )}
       </div>
@@ -170,7 +185,6 @@ function useFilteredPortfolioBalances(
         }
       }
     )
-    console.log('filteredBalancesObj:', filteredBalancesObj)
     return filteredBalancesObj
   }, [balancesAndAllowances])
 
