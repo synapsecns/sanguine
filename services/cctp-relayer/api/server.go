@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"net/http"
+	"time"
 
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/gin-gonic/gin"
@@ -45,6 +46,18 @@ func (r RelayerAPIServer) Start(ctx context.Context) error {
 		err := server.ListenAndServe()
 		if err != nil {
 			return fmt.Errorf("stopped serving: %w", err)
+		}
+		return nil
+	})
+
+	g.Go(func() error {
+		// shutdown server if parent context is canceled
+		<-ctx.Done()
+		shutdownCtx, cancel := context.WithTimeout(context.Background(), 100*time.Millisecond)
+		defer cancel()
+		err := server.Shutdown(shutdownCtx)
+		if err != nil {
+			return fmt.Errorf("error during server shutdown: %w", err)
 		}
 		return nil
 	})
