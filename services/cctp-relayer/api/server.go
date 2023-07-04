@@ -39,8 +39,9 @@ func (r RelayerAPIServer) Start(ctx context.Context) error {
 		r.GetPushTx(ctx)
 	})
 	server := &http.Server{
-		Addr:    fmt.Sprintf(":%d", r.port),
-		Handler: engine,
+		Addr:              fmt.Sprintf(":%d", r.port),
+		ReadHeaderTimeout: 5 * time.Second,
+		Handler:           engine,
 	}
 
 	g, ctx := errgroup.WithContext(ctx)
@@ -117,7 +118,7 @@ func (r RelayerAPIServer) GetPushTx(ctx *gin.Context) {
 	} else if errors.Is(err, gorm.ErrRecordNotFound) {
 		// enqueue new pending message if not found
 		r.relayRequestChan <- &RelayRequest{
-			Origin: uint32(origin),
+			Origin: origin,
 			TxHash: common.HexToHash(hash),
 		}
 		resp := RelayerResponse{

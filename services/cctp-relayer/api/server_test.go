@@ -4,11 +4,13 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"io"
 	"io/ioutil"
 	"net/http"
 	"net/url"
 	"strconv"
 	"strings"
+	"time"
 
 	"github.com/brianvoe/gofakeit/v6"
 	"github.com/ethereum/go-ethereum/common"
@@ -35,13 +37,20 @@ func (s *RelayerAPISuite) mockMessage(originChainID uint32, state relayTypes.Mes
 }
 
 //nolint:gosec
-func getPushTx(hash string, origin uint32) (*http.Response, error) {
+func getPushTx(ctx context.Context, hash string, origin uint32) (*http.Response, error) {
 	txURL := "http://localhost:8080/push_tx"
 	params := url.Values{}
 	params.Set("hash", hash)
 	params.Set("origin", strconv.Itoa(int(origin)))
 	reqURL := fmt.Sprintf("%s?%s", txURL, params.Encode())
-	return http.Get(reqURL)
+	client := &http.Client{
+		Timeout: 5 * time.Second,
+	}
+	req, err := http.NewRequestWithContext(ctx, "GET", reqURL, nil)
+	if err != nil {
+		return nil, err
+	}
+	return client.Do(req)
 }
 
 func (s *RelayerAPISuite) TestPendingTx() {
@@ -58,7 +67,7 @@ func (s *RelayerAPISuite) TestPendingTx() {
 	s.Nil(err)
 
 	// make api request
-	resp, err := getPushTx(msg.OriginTxHash, msg.OriginChainID)
+	resp, err := getPushTx(s.GetTestContext(), msg.OriginTxHash, msg.OriginChainID)
 	s.Nil(err)
 	defer func() {
 		err := resp.Body.Close()
@@ -67,7 +76,7 @@ func (s *RelayerAPISuite) TestPendingTx() {
 	s.Equal(resp.StatusCode, http.StatusOK)
 
 	// verify response
-	body, err := ioutil.ReadAll(resp.Body)
+	body, err := io.ReadAll(resp.Body)
 	s.Nil(err)
 	var relayerResp api.RelayerResponse
 	err = json.Unmarshal(body, &relayerResp)
@@ -75,6 +84,7 @@ func (s *RelayerAPISuite) TestPendingTx() {
 	s.True(relayerResp.Success)
 	resultMap, ok := relayerResp.Result.(map[string]interface{})
 	s.True(ok)
+	//nolint:forcetypeassert
 	result := api.MessageResult{
 		OriginHash:      resultMap["origin_hash"].(string),
 		DestinationHash: resultMap["destination_hash"].(string),
@@ -106,7 +116,7 @@ func (s *RelayerAPISuite) TestMissingTx() {
 	msg := s.mockMessage(1, relayTypes.Pending)
 
 	// make api request
-	resp, err := getPushTx(msg.OriginTxHash, msg.OriginChainID)
+	resp, err := getPushTx(s.GetTestContext(), msg.OriginTxHash, msg.OriginChainID)
 	s.Nil(err)
 	defer func() {
 		err := resp.Body.Close()
@@ -150,7 +160,12 @@ func (s *RelayerAPISuite) TestBadRequest() {
 
 	// make api request with no params
 	txURL := "http://localhost:8080/push_tx"
-	resp, err := http.Get(txURL)
+	client := &http.Client{
+		Timeout: 5 * time.Second,
+	}
+	req, err := http.NewRequestWithContext(ctx, "GET", txURL, nil)
+	s.Nil(err)
+	resp, err := client.Do(req)
 	s.Nil(err)
 	defer func() {
 		err := resp.Body.Close()
@@ -167,7 +182,8 @@ func (s *RelayerAPISuite) TestBadRequest() {
 	s.False(relayerResp.Success)
 	resultMap, ok := relayerResp.Result.(map[string]interface{})
 	s.True(ok)
+	//nolint:forcetypeassert
 	reason := resultMap["reason"].(string)
-	expectedReason := fmt.Sprintf("required parameter 'origin' is missing")
+	expectedReason := "required parameter 'origin' is missing"
 	s.Equal(expectedReason, reason)
 }
