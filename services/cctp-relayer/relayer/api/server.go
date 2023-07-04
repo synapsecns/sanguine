@@ -83,7 +83,14 @@ func (r RelayerAPIServer) GetPushTx(ctx *gin.Context) {
 		// return if found
 		resp := relayerResponse{
 			Success: true,
-			Result:  msg,
+			Result: messageResult{
+				OriginHash:      hash,
+				DestinationHash: msg.DestTxHash,
+				Origin:          msg.OriginChainID,
+				Destination:     msg.DestChainID,
+				RequestID:       msg.RequestID,
+				State:           msg.State.String(),
+			},
 		}
 		ctx.JSON(http.StatusOK, resp)
 		return
@@ -102,6 +109,15 @@ func (r RelayerAPIServer) GetPushTx(ctx *gin.Context) {
 	}
 
 	encodeError(ctx, http.StatusInternalServerError, err)
+}
+
+type messageResult struct {
+	OriginHash      string `json:"origin_hash"`
+	DestinationHash string `json:"destination_hash"`
+	Origin          uint32 `json:"origin"`
+	Destination     uint32 `json:"destination"`
+	RequestID       string `json:"request_id"`
+	State           string `json:"state"`
 }
 
 type relayerResponse struct {
