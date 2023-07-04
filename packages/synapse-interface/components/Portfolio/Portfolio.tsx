@@ -20,10 +20,12 @@ export enum PortfolioTabs {
 
 export const Portfolio = () => {
   const [tab, setTab] = useState<PortfolioTabs>(PortfolioTabs.HOME)
-  const [filtered, setFiltered] = useState<NetworkTokenBalancesAndAllowances>()
 
-  const { balancesAndAllowances: portfolioData, fetchPortfolioBalances } =
-    usePortfolioBalancesAndAllowances()
+  const {
+    balancesAndAllowances: portfolioData,
+    fetchPortfolioBalances: refetch,
+    status: fetchState,
+  } = usePortfolioBalancesAndAllowances()
 
   const filteredPortfolioDataForBalances: NetworkTokenBalancesAndAllowances =
     filterPortfolioBalancesWithBalances(portfolioData)

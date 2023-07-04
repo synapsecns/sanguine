@@ -62,15 +62,25 @@ function mergeBalancesAndAllowances(
   })
 }
 
+export enum FetchState {
+  LOADING,
+  VALID,
+  INVALID,
+}
+
 export const usePortfolioBalancesAndAllowances = (): {
   balancesAndAllowances: NetworkTokenBalancesAndAllowances
   fetchPortfolioBalances: () => Promise<void>
+  status: FetchState
 } => {
   const [balancesAndAllowances, setBalancesAndAllowances] =
     useState<NetworkTokenBalancesAndAllowances>({})
+  const [status, setStatus] = useState<FetchState>(FetchState.LOADING)
+
   const { address } = getAccount()
   const availableChains = Object.keys(BRIDGABLE_TOKENS)
   const filteredChains = availableChains.filter((chain) => chain !== '2000') // need to figure out whats wrong with Dogechain
+
   const fetchPortfolioBalances = async () => {
     try {
       const balanceRecord: NetworkTokenBalancesAndAllowances = {}
@@ -95,8 +105,10 @@ export const usePortfolioBalancesAndAllowances = (): {
         balanceRecord[currentChainId] = mergedBalancesAndAllowances
       }
       setBalancesAndAllowances(balanceRecord)
+      setStatus(FetchState.VALID)
     } catch (error) {
       console.error('error from fetch:', error)
+      setStatus(FetchState.INVALID)
     }
   }
 
@@ -106,7 +118,7 @@ export const usePortfolioBalancesAndAllowances = (): {
   }, [address])
 
   return useMemo(() => {
-    return { balancesAndAllowances, fetchPortfolioBalances }
+    return { balancesAndAllowances, fetchPortfolioBalances, status }
   }, [balancesAndAllowances, fetchPortfolioBalances])
 }
 
