@@ -110,11 +110,6 @@ jobs:
         with:
           key: docker-test-${{ runner.os }}-${{ matrix.package }}
 
-      # todo: consider making this a service. You'd need another way to expose the private keys for the test.
-      - name: Run rinkeby
-        if:  ${{ contains( matrix.package, 'ethergo') }}
-        run: docker run -p 8045:8545 -d -v /tmp/keys/:/tmp/keys/  --name rinkeby --restart always trufflesuite/ganache-cli ganache-cli --accounts 10 --account_keys_path /tmp/keys/rinkeby --chainId 4 # --fork https://rinkeby-light.eth.linkpool.io (no need to actually fork)
-
       - name: Go modules cache
         uses: actions/cache@v3
         with:
@@ -181,8 +176,6 @@ jobs:
           MYSQL_ROOT_PASSWORD: password
           MYSQL_PORT: ${{ job.services.mariadb.ports[3306] }}
           GOMAXPROCS: 18
-          GANACHE_KEYS: /tmp/keys/rinkeby
-          GANACHE_RPC_URL: http://0.0.0.0:8045
           GOMEMLIMIT: 6GiB
           GOGC: -1
           ETHEREUM_RPC_URI: ${{ secrets.ETHEREUM_RPC_URI }}

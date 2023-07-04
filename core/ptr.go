@@ -10,6 +10,15 @@ func PtrTo[T any](v T) *T {
 	return &v
 }
 
+// PtrSlice converts every item in the slice to a pointer.
+func PtrSlice[T any](slice []T) []*T {
+	ptrSlice := make([]*T, len(slice))
+	for i, item := range slice {
+		ptrSlice[i] = PtrTo(item)
+	}
+	return ptrSlice
+}
+
 // ArePointersEqual returns true if the given pointers are equal.
 // Will return false if either of the given values are not pointers.
 // nolint: cyclop, forcetypeassert
