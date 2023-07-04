@@ -62,49 +62,53 @@ function mergeBalancesAndAllowances(
   })
 }
 
-export const usePortfolioBalancesAndAllowances =
-  (): NetworkTokenBalancesAndAllowances => {
-    const [balancesAndAllowances, setBalancesAndAllowances] =
-      useState<NetworkTokenBalancesAndAllowances>({})
-    const { address } = getAccount()
-    const availableChains = Object.keys(BRIDGABLE_TOKENS)
-
-    useEffect(() => {
-      if (!address) return
-      const fetchBalancesAcrossNetworks = async () => {
-        const balanceRecord = {}
-        availableChains.forEach(async (chainId) => {
-          const currentChainId = Number(chainId)
-          const currentChainTokens = BRIDGABLE_TOKENS[chainId]
-          const tokenBalances: TokenAndBalance[] = await getTokensByChainId(
-            address,
-            currentChainTokens,
-            currentChainId
-          )
-          const tokenAllowances: TokenAndAllowance[] = await getTokensAllowance(
-            address,
-            ROUTER_ADDRESS,
-            currentChainTokens,
-            currentChainId
-          )
-          const mergedBalancesAndAllowances: TokenWithBalanceAndAllowance[] =
-            mergeBalancesAndAllowances(tokenBalances, tokenAllowances)
-          balanceRecord[currentChainId] = mergedBalancesAndAllowances
-        })
-        setBalancesAndAllowances(balanceRecord)
+export const usePortfolioBalancesAndAllowances = (): {
+  balancesAndAllowances: NetworkTokenBalancesAndAllowances
+  fetchPortfolioBalances: () => Promise<void>
+} => {
+  const [balancesAndAllowances, setBalancesAndAllowances] =
+    useState<NetworkTokenBalancesAndAllowances>({})
+  const { address } = getAccount()
+  const availableChains = Object.keys(BRIDGABLE_TOKENS)
+  const filteredChains = availableChains.filter((chain) => chain !== '2000') // need to figure out whats wrong with Dogechain
+  const fetchPortfolioBalances = async () => {
+    try {
+      const balanceRecord: NetworkTokenBalancesAndAllowances = {}
+      const availableChainsLength = filteredChains.length
+      for (let index = 0; index < availableChainsLength; index++) {
+        const chainId = filteredChains[index]
+        const currentChainId = Number(chainId)
+        const currentChainTokens = BRIDGABLE_TOKENS[chainId]
+        const tokenBalances: TokenAndBalance[] = await getTokensByChainId(
+          address,
+          currentChainTokens,
+          currentChainId
+        )
+        const tokenAllowances: TokenAndAllowance[] = await getTokensAllowance(
+          address,
+          ROUTER_ADDRESS,
+          currentChainTokens,
+          currentChainId
+        )
+        const mergedBalancesAndAllowances: TokenWithBalanceAndAllowance[] =
+          mergeBalancesAndAllowances(tokenBalances, tokenAllowances)
+        balanceRecord[currentChainId] = mergedBalancesAndAllowances
       }
-      fetchBalancesAcrossNetworks()
-    }, [address])
-
-    return useMemo(() => {
-      console.log(
-        'useMemo balancesAndAllowances: ',
-        balancesAndAllowances,
-        Object.keys(balancesAndAllowances).length
-      )
-      return balancesAndAllowances
-    }, [balancesAndAllowances])
+      setBalancesAndAllowances(balanceRecord)
+    } catch (error) {
+      console.error('error from fetch:', error)
+    }
   }
+
+  useEffect(() => {
+    if (!address) return
+    fetchPortfolioBalances()
+  }, [address])
+
+  return useMemo(() => {
+    return { balancesAndAllowances, fetchPortfolioBalances }
+  }, [balancesAndAllowances, fetchPortfolioBalances])
+}
 
 const getTokensAllowance = async (
   owner: string,
