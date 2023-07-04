@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect, useMemo } from 'react'
 import { useAccount, useNetwork, Address } from 'wagmi'
 import { Zero } from '@ethersproject/constants'
 import { ConnectWalletButton } from './ConnectWalletButton'
@@ -27,6 +27,9 @@ export const Portfolio = () => {
   const filteredPortfolioDataForBalances: NetworkTokenBalancesAndAllowances =
     filterPortfolioBalancesWithBalances(portfolioData)
 
+  const filteredData = useFilteredPortfolioBalances(portfolioData)
+
+  console.log('filteredData: ', filteredData)
   const { address } = useAccount()
   const { chain } = useNetwork()
 
@@ -146,6 +149,30 @@ function filterPortfolioBalancesWithBalances(
       filteredBalances[key] = filteredTokenWithBalances
     }
   })
+
+  return filteredBalances
+}
+
+function useFilteredPortfolioBalances(
+  balancesAndAllowances: NetworkTokenBalancesAndAllowances
+): NetworkTokenBalancesAndAllowances {
+  const filteredBalances = useMemo(() => {
+    const filteredBalancesObj = {}
+
+    Object.entries(balancesAndAllowances).forEach(
+      ([key, tokenWithBalances]) => {
+        const filteredTokenWithBalances = tokenWithBalances.filter(
+          (token: TokenWithBalanceAndAllowance) => token.balance > Zero
+        )
+
+        if (filteredTokenWithBalances.length > 0) {
+          filteredBalancesObj[key] = filteredTokenWithBalances
+        }
+      }
+    )
+    console.log('filteredBalancesObj:', filteredBalancesObj)
+    return filteredBalancesObj
+  }, [balancesAndAllowances])
 
   return filteredBalances
 }
