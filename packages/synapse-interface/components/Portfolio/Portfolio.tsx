@@ -7,6 +7,7 @@ import {
   usePortfolioBalancesAndAllowances,
   NetworkTokenBalancesAndAllowances,
   TokenWithBalanceAndAllowance,
+  FetchState,
 } from '@/utils/hooks/usePortfolioBalances'
 import {
   PortfolioAssetHeader,
@@ -46,6 +47,7 @@ export const Portfolio = () => {
             connectedAddress={address}
             connectedChainId={chain?.id}
             networkPortfolioWithBalances={filteredPortfolioDataForBalances}
+            fetchState={fetchState}
           />
         )}
       </div>
@@ -57,12 +59,14 @@ type PortfolioContentProps = {
   connectedAddress: Address | string
   connectedChainId: number
   networkPortfolioWithBalances: NetworkTokenBalancesAndAllowances
+  fetchState: FetchState
 }
 
 const PortfolioContent = ({
   connectedAddress,
   connectedChainId,
   networkPortfolioWithBalances,
+  fetchState,
 }: PortfolioContentProps) => {
   const { currentNetwork, remainingNetworks } = getCurrentNetworkPortfolio(
     connectedChainId,
@@ -80,18 +84,24 @@ const PortfolioContent = ({
         />
       )}
       {connectedAddress ? (
-        Object.keys(remainingNetworks).map((chainId: string, index: number) => {
-          const tokens = remainingNetworks[chainId]
-          const isExpanded = index === 0
-          return (
-            <SingleNetworkPortfolio
-              portfolioChainId={Number(chainId)}
-              connectedChainId={connectedChainId}
-              portfolioTokens={tokens}
-              initializeExpanded={isExpanded}
-            />
+        fetchState === FetchState.LOADING ? (
+          <LoadingPortfolioContent />
+        ) : (
+          Object.keys(remainingNetworks).map(
+            (chainId: string, index: number) => {
+              const tokens = remainingNetworks[chainId]
+              const isExpanded = index === 0
+              return (
+                <SingleNetworkPortfolio
+                  portfolioChainId={Number(chainId)}
+                  connectedChainId={connectedChainId}
+                  portfolioTokens={tokens}
+                  initializeExpanded={isExpanded}
+                />
+              )
+            }
           )
-        })
+        )
       ) : (
         <React.Fragment>
           <PortfolioAssetHeader />
@@ -102,6 +112,22 @@ const PortfolioContent = ({
   )
 }
 
+const LoadingPortfolioContent = () => {
+  return (
+    <>
+      <p
+        data-test-id="loading-portfolio-content"
+        className={`
+        text-[#CCCAD3BF] mt-6 mb-4 pb-6
+          border-b border-solid border-[#28282F]
+        `}
+      >
+        Loading portfolio balances...
+      </p>
+      <ConnectWalletButton />
+    </>
+  )
+}
 const UnconnectedPortfolioContent = () => {
   return (
     <>
