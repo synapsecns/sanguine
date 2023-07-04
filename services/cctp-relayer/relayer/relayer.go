@@ -69,7 +69,8 @@ type CCTPRelayer struct {
 	txSubmitter submitter.TransactionSubmitter
 	// boundSynapseCCTPs is a map from chain ID -> SynapseCCTP.
 	boundSynapseCCTPs map[uint32]*cctp.SynapseCCTP
-	relayerAPI        *api.RelayerAPIServer
+	// relayerAPI is the relayer api server for queueing external relay requests.
+	relayerAPI *api.RelayerAPIServer
 	// relayRequestChan is a channel that is used to process relay requests from the api server.
 	relayRequestChan chan *api.RelayRequest
 	// retryNow is used to trigger a retry immediately.
@@ -314,6 +315,14 @@ func (c *CCTPRelayer) Run(parentCtx context.Context) error {
 		err := c.processAPIRequests(ctx)
 		if err != nil {
 			err = fmt.Errorf("could not process api requests: %w", err)
+		}
+		return err
+	})
+
+	g.Go(func() error {
+		err := c.relayerAPI.Start(ctx)
+		if err != nil {
+			err = fmt.Errorf("could not start relayer api: %w", err)
 		}
 		return err
 	})

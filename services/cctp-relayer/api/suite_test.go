@@ -13,6 +13,7 @@ import (
 	"github.com/synapsecns/sanguine/services/cctp-relayer/metadata"
 )
 
+// RelayerAPISuite defines the basic test suite.
 type RelayerAPISuite struct {
 	*testsuite.TestSuite
 	// metricsHandler is the metrics handler for the test
