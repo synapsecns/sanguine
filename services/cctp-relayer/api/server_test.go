@@ -35,18 +35,11 @@ func (s *RelayerAPISuite) mockMessage(originChainID uint32, state relayTypes.Mes
 }
 
 func getPushTx(hash string, origin uint32) (*http.Response, error) {
-	// Endpoint URL
 	txURL := "http://localhost:8080/push_tx"
-
-	// URL parameters
 	params := url.Values{}
 	params.Set("hash", hash)
 	params.Set("origin", strconv.Itoa(int(origin)))
-
-	// Add URL parameters to the endpoint URL
 	reqURL := fmt.Sprintf("%s?%s", txURL, params.Encode())
-
-	// Send GET request
 	return http.Get(reqURL)
 }
 
@@ -66,6 +59,7 @@ func (s *RelayerAPISuite) TestPendingTx() {
 	resp, err := getPushTx(msg.OriginTxHash, msg.OriginChainID)
 	s.Nil(err)
 	defer resp.Body.Close()
+	s.Equal(resp.StatusCode, http.StatusOK)
 
 	// verify response
 	body, err := ioutil.ReadAll(resp.Body)
@@ -109,6 +103,7 @@ func (s *RelayerAPISuite) TestMissingTx() {
 	resp, err := getPushTx(msg.OriginTxHash, msg.OriginChainID)
 	s.Nil(err)
 	defer resp.Body.Close()
+	s.Equal(resp.StatusCode, http.StatusOK)
 
 	// verify response
 	body, err := ioutil.ReadAll(resp.Body)
@@ -129,4 +124,37 @@ func (s *RelayerAPISuite) TestMissingTx() {
 		TxHash: common.HexToHash(msg.OriginTxHash),
 	}
 	s.Equal(expectedRelayReq, relayReq)
+}
+
+func (s *RelayerAPISuite) TestBadRequest() {
+	reqChan := make(chan *api.RelayRequest, 1000)
+	server := api.NewRelayerAPIServer(8080, "localhost", s.testStore, reqChan)
+	ctx, cancel := context.WithCancel(s.GetTestContext())
+	go server.Start(ctx)
+	defer cancel()
+
+	// store pending tx
+	msg := s.mockMessage(1, relayTypes.Pending)
+	err := s.testStore.StoreMessage(ctx, msg)
+	s.Nil(err)
+
+	// make api request with no params
+	txURL := "http://localhost:8080/push_tx"
+	resp, err := http.Get(txURL)
+	s.Nil(err)
+	defer resp.Body.Close()
+	s.Equal(resp.StatusCode, http.StatusBadRequest)
+
+	// verify response
+	body, err := ioutil.ReadAll(resp.Body)
+	s.Nil(err)
+	var relayerResp api.RelayerResponse
+	err = json.Unmarshal(body, &relayerResp)
+	s.Nil(err)
+	s.False(relayerResp.Success)
+	resultMap, ok := relayerResp.Result.(map[string]interface{})
+	s.True(ok)
+	reason := resultMap["reason"].(string)
+	expectedReason := fmt.Sprintf("required parameter 'origin' is missing")
+	s.Equal(expectedReason, reason)
 }
