@@ -34,6 +34,7 @@ func (s *RelayerAPISuite) mockMessage(originChainID uint32, state relayTypes.Mes
 	}
 }
 
+//nolint:gosec
 func getPushTx(hash string, origin uint32) (*http.Response, error) {
 	txURL := "http://localhost:8080/push_tx"
 	params := url.Values{}
@@ -47,6 +48,7 @@ func (s *RelayerAPISuite) TestPendingTx() {
 	reqChan := make(chan *api.RelayRequest, 1000)
 	server := api.NewRelayerAPIServer(8080, "localhost", s.testStore, reqChan)
 	ctx, cancel := context.WithCancel(s.GetTestContext())
+	//nolint:errcheck
 	go server.Start(ctx)
 	defer cancel()
 
@@ -58,7 +60,10 @@ func (s *RelayerAPISuite) TestPendingTx() {
 	// make api request
 	resp, err := getPushTx(msg.OriginTxHash, msg.OriginChainID)
 	s.Nil(err)
-	defer resp.Body.Close()
+	defer func() {
+		err := resp.Body.Close()
+		s.Nil(err)
+	}()
 	s.Equal(resp.StatusCode, http.StatusOK)
 
 	// verify response
@@ -93,6 +98,7 @@ func (s *RelayerAPISuite) TestMissingTx() {
 	reqChan := make(chan *api.RelayRequest, 1000)
 	server := api.NewRelayerAPIServer(8080, "localhost", s.testStore, reqChan)
 	ctx, cancel := context.WithCancel(s.GetTestContext())
+	//nolint:errcheck
 	go server.Start(ctx)
 	defer cancel()
 
@@ -102,7 +108,10 @@ func (s *RelayerAPISuite) TestMissingTx() {
 	// make api request
 	resp, err := getPushTx(msg.OriginTxHash, msg.OriginChainID)
 	s.Nil(err)
-	defer resp.Body.Close()
+	defer func() {
+		err := resp.Body.Close()
+		s.Nil(err)
+	}()
 	s.Equal(resp.StatusCode, http.StatusOK)
 
 	// verify response
@@ -130,6 +139,7 @@ func (s *RelayerAPISuite) TestBadRequest() {
 	reqChan := make(chan *api.RelayRequest, 1000)
 	server := api.NewRelayerAPIServer(8080, "localhost", s.testStore, reqChan)
 	ctx, cancel := context.WithCancel(s.GetTestContext())
+	//nolint:errcheck
 	go server.Start(ctx)
 	defer cancel()
 
@@ -142,7 +152,10 @@ func (s *RelayerAPISuite) TestBadRequest() {
 	txURL := "http://localhost:8080/push_tx"
 	resp, err := http.Get(txURL)
 	s.Nil(err)
-	defer resp.Body.Close()
+	defer func() {
+		err := resp.Body.Close()
+		s.Nil(err)
+	}()
 	s.Equal(resp.StatusCode, http.StatusBadRequest)
 
 	// verify response
