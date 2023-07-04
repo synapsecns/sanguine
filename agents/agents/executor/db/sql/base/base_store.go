@@ -36,8 +36,8 @@ func (s Store) SubmitterDB() submitterDB.Service {
 func GetAllModels() (allModels []interface{}) {
 	allModels = append(allModels,
 		&Message{}, &Attestation{}, &State{},
-		txdb.GetAllModels(),
 	)
+	allModels = append(allModels, txdb.GetAllModels()...)
 	return allModels
 }
 

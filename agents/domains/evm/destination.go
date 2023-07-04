@@ -3,7 +3,7 @@ package evm
 import (
 	"context"
 	"fmt"
-	"github.com/synapsecns/sanguine/ethergo/client"
+	"github.com/synapsecns/sanguine/ethergo/chain"
 	"math/big"
 	"time"
 
@@ -20,18 +20,13 @@ import (
 // NewDestinationContract returns a bound destination contract.
 //
 //nolint:staticcheck
-func NewDestinationContract(ctx context.Context, client client.EVM, destinationAddress common.Address) (domains.DestinationContract, error) {
+func NewDestinationContract(ctx context.Context, client chain.Chain, destinationAddress common.Address) (domains.DestinationContract, error) {
 	boundCountract, err := destination.NewDestinationRef(destinationAddress, client)
 	if err != nil {
 		return nil, fmt.Errorf("could not create %T: %w", &destination.DestinationRef{}, err)
 	}
 
-	clientChainID, err := client.ChainID(ctx)
-	if err != nil {
-		return nil, fmt.Errorf("could not get client chain id: %w", err)
-	}
-
-	nonceManager := nonce.NewNonceManager(ctx, client, clientChainID)
+	nonceManager := nonce.NewNonceManager(ctx, client, client.GetBigChainID())
 	return destinationContract{
 		contract:     boundCountract,
 		client:       client,
@@ -44,9 +39,13 @@ type destinationContract struct {
 	contract *destination.DestinationRef
 	// client contains the evm client
 	//nolint: staticcheck
-	client client.EVM
+	client chain.Chain
 	// nonceManager is the nonce manager used for transacting with the chain
 	nonceManager nonce.Manager
+}
+
+func (a destinationContract) GetContractRef() *destination.DestinationRef {
+	return a.contract
 }
 
 func (a destinationContract) Execute(ctx context.Context, signer signer.Signer, message types.Message, originProof [32][32]byte, snapshotProof [][32]byte, index *big.Int, gasLimit uint64) error {
@@ -69,12 +68,7 @@ func (a destinationContract) Execute(ctx context.Context, signer signer.Signer, 
 }
 
 func (a destinationContract) transactOptsSetup(ctx context.Context, signer signer.Signer) (*bind.TransactOpts, error) {
-	clientChainID, err := a.client.ChainID(ctx)
-	if err != nil {
-		return nil, fmt.Errorf("could not get client chain id: %w", err)
-	}
-
-	transactor, err := signer.GetTransactor(ctx, clientChainID)
+	transactor, err := signer.GetTransactor(ctx, a.client.GetBigChainID())
 	if err != nil {
 		return nil, fmt.Errorf("could not sign tx: %w", err)
 	}

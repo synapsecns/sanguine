@@ -3,6 +3,7 @@ package domains
 import (
 	"context"
 	"errors"
+	"github.com/synapsecns/sanguine/agents/contracts/destination"
 	"math/big"
 
 	"github.com/ethereum/go-ethereum/common"
@@ -81,6 +82,8 @@ type BondingManagerContract interface {
 
 // DestinationContract contains the interface for the destination.
 type DestinationContract interface {
+	// GetContractRef gets the destination contract ref.
+	GetContractRef() *destination.DestinationRef
 	// Execute executes a message on the destination.
 	Execute(ctx context.Context, signer signer.Signer, message types.Message, originProof [32][32]byte, snapshotProof [][32]byte, index *big.Int, gasLimit uint64) error
 	// AttestationsAmount retrieves the number of attestations submitted to the destination.

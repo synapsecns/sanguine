@@ -71,7 +71,7 @@ func NewExecutorInjectedBackend(ctx context.Context, config executor.Config, exe
 
 		underlyingClient, err := ethergoChain.NewFromURL(ctx, urls[chain.ChainID])
 		if err != nil {
-			return nil, fmt.Errorf("could not create underlying client: %w", err)
+			return nil, fmt.Errorf("could not create chain client: %w", err)
 		}
 
 		boundDestination, err := evm.NewDestinationContract(ctx, underlyingClient, common.HexToAddress(chain.DestinationAddress))

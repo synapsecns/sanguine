@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/common"
 	ethTypes "github.com/ethereum/go-ethereum/core/types"
 	"github.com/jpillora/backoff"
@@ -18,6 +19,7 @@ import (
 	"github.com/synapsecns/sanguine/agents/types"
 	"github.com/synapsecns/sanguine/core/merkle"
 	"github.com/synapsecns/sanguine/core/metrics"
+	ethergoChain "github.com/synapsecns/sanguine/ethergo/chain"
 	agentsConfig "github.com/synapsecns/sanguine/ethergo/signer/config"
 	"github.com/synapsecns/sanguine/ethergo/signer/signer"
 	"github.com/synapsecns/sanguine/ethergo/submitter"
@@ -175,7 +177,12 @@ func NewExecutor(ctx context.Context, config executor.Config, executorDB db.Exec
 			return nil, fmt.Errorf("could not get evm client: %w", err)
 		}
 
-		boundDestination, err := evm.NewDestinationContract(ctx, evmClient, common.HexToAddress(chain.DestinationAddress))
+		chainClient, err := ethergoChain.NewFromURL(ctx, omniRPCClient.GetEndpoint(int(chain.ChainID), 1))
+		if err != nil {
+			return nil, fmt.Errorf("could not create chain client: %w", err)
+		}
+
+		boundDestination, err := evm.NewDestinationContract(ctx, chainClient, common.HexToAddress(chain.DestinationAddress))
 		if err != nil {
 			return nil, fmt.Errorf("could not bind destination contract: %w", err)
 		}
@@ -361,39 +368,33 @@ func (e Executor) Execute(parentCtx context.Context, message types.Message) (_ b
 		snapshotProofB32 = append(snapshotProofB32, p32)
 	}
 
-	b := &backoff.Backoff{
-		Factor: 2,
-		Jitter: true,
-		Min:    30 * time.Millisecond,
-		Max:    3 * time.Second,
-	}
+	_, err = e.txSubmitter.SubmitTransaction(ctx, big.NewInt(int64(originDomain)), func(transactor *bind.TransactOpts) (tx *ethTypes.Transaction, err error) {
+		transactor.GasLimit = uint64(10000000)
 
-	timeout := time.Duration(0)
-
-	for {
-		select {
-		case <-ctx.Done():
-			return false, fmt.Errorf("context canceled: %w", ctx.Err())
-		case <-time.After(timeout):
-			if b.Attempt() >= rpcRetry {
-				return false, fmt.Errorf("could not execute message after %f attempts", b.Attempt())
-			}
-
-			// TODO (joe and lex): Set gas limit for now to be equal to what was set in the message
-			err = e.chainExecutors[message.DestinationDomain()].boundDestination.Execute(ctx, e.signer, message, originProof, snapshotProofB32, big.NewInt(int64(*stateIndex)), uint64(10000000))
-			if err != nil {
-				timeout = b.Duration()
-				span.AddEvent("error when executing", trace.WithAttributes(
-					attribute.Int(metrics.ChainID, int(message.DestinationDomain())),
-					attribute.String("error", err.Error()),
-					attribute.Float64("timeout", timeout.Seconds()),
-				))
-				continue
-			}
-
-			return true, nil
+		encodedMessage, err := types.EncodeMessage(message)
+		if err != nil {
+			return nil, fmt.Errorf("could not encode message: %w", err)
 		}
+
+		tx, err = e.chainExecutors[message.DestinationDomain()].boundDestination.GetContractRef().Execute(
+			transactor,
+			encodedMessage,
+			originProof[:],
+			snapshotProofB32,
+			big.NewInt(int64(*stateIndex)),
+			transactor.GasLimit,
+		)
+		if err != nil {
+			return nil, fmt.Errorf("could not execute message: %w", err)
+		}
+
+		return
+	})
+	if err != nil {
+		return false, fmt.Errorf("could not submit transaction: %w", err)
 	}
+
+	return true, nil
 }
 
 // verifyMessageMerkleProof verifies a message against the merkle tree at the state of the given nonce.
