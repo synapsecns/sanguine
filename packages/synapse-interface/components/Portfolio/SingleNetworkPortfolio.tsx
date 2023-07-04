@@ -5,7 +5,7 @@ import { useDispatch } from 'react-redux'
 import { useNetwork, useAccount } from 'wagmi'
 import { switchNetwork } from '@wagmi/core'
 import { Zero } from '@ethersproject/constants'
-import { setFromToken } from '@/slices/bridgeSlice'
+import { setFromToken, setFromChainId } from '@/slices/bridgeSlice'
 import { CHAINS_BY_ID } from '@/constants/chains'
 import { TokenWithBalanceAndAllowance } from '@/utils/hooks/usePortfolioBalances'
 import { approveToken } from '@/utils/approveToken'
@@ -39,7 +39,6 @@ export const SingleNetworkPortfolio = ({
   const sortedTokensForVisualizer: TokenWithBalanceAndAllowance[] =
     sortByBalanceDescending(portfolioTokens)
 
-  console.log('tokensWithoutAllowance: ', tokensWithoutAllowance)
   const shouldShowDivider: boolean =
     sortedTokensWithAllowance.length > 0 &&
     sortedTokensWithoutAllowance.length > 0
@@ -326,8 +325,12 @@ const ConnectedButton = () => {
 }
 
 const ConnectButton = ({ chainId }: { chainId: number }) => {
+  const dispatch = useDispatch()
+
   const handleConnectNetwork = async () => {
-    await switchNetwork({ chainId: chainId })
+    await switchNetwork({ chainId: chainId }).then((success) => {
+      success && dispatch(setFromChainId(chainId))
+    })
   }
 
   const buttonClassName = `
