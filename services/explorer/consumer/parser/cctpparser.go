@@ -3,14 +3,15 @@ package parser
 import (
 	"context"
 	"fmt"
+
 	"github.com/ethereum/go-ethereum/common"
 	ethTypes "github.com/ethereum/go-ethereum/core/types"
 	"github.com/synapsecns/sanguine/services/explorer/consumer/fetcher"
 	"github.com/synapsecns/sanguine/services/explorer/consumer/fetcher/tokenprice"
 	"github.com/synapsecns/sanguine/services/explorer/contracts/cctp"
 	"github.com/synapsecns/sanguine/services/explorer/db"
+	model "github.com/synapsecns/sanguine/services/explorer/db/sql"
 	cctpTypes "github.com/synapsecns/sanguine/services/explorer/types/cctp"
-	messageBusTypes "github.com/synapsecns/sanguine/services/explorer/types/messagebus"
 )
 
 // CCTPParser parses cctp logs.
@@ -27,6 +28,9 @@ type CCTPParser struct {
 	tokenPriceService tokenprice.Service
 }
 
+const usdcCoinGeckoID = "usd-coin"
+const usdcDecimals = 6
+
 // NewCCTPParser creates a new parser for a cctp event.
 func NewCCTPParser(consumerDB db.ConsumerDB, cctpAddress common.Address, consumerFetcher *fetcher.ScribeFetcher, tokenPriceService tokenprice.Service) (*CCTPParser, error) {
 	filterer, err := cctp.NewSynapseCCTPFilterer(cctpAddress, nil)
@@ -41,16 +45,16 @@ func NewCCTPParser(consumerDB db.ConsumerDB, cctpAddress common.Address, consume
 // nolint:gocognit,cyclop,dupl
 func (c *CCTPParser) Parse(ctx context.Context, log ethTypes.Log, chainID uint32) (interface{}, error) {
 	logTopic := log.Topics[0]
-	iFace, err := func(log ethTypes.Log) (messageBusTypes.EventLog, error) {
+	iFace, err := func(log ethTypes.Log) (cctpTypes.EventLog, error) {
 		switch logTopic {
 		case cctp.Topic(cctpTypes.CircleRequestSentEvent):
-			iFace, err := m.Filterer.ParseCircleRequestSent(log)
+			iFace, err := c.Filterer.ParseCircleRequestSent(log)
 			if err != nil {
 				return nil, fmt.Errorf("could not parse token : %w", err)
 			}
 			return iFace, nil
 		case cctp.Topic(cctpTypes.CircleRequestFulfilledEvent):
-			iFace, err := m.Filterer.ParseCircleRequestFulfilled(log)
+			iFace, err := c.Filterer.ParseCircleRequestFulfilled(log)
 			if err != nil {
 				return nil, fmt.Errorf("could not parse sent message: %w", err)
 			}
@@ -74,12 +78,10 @@ func (c *CCTPParser) Parse(ctx context.Context, log ethTypes.Log, chainID uint32
 	}
 
 	// populate cctp event type so following operations can mature the event data.
-
-	// TODO make eventToCCTPEvent. This function pulls all log data (using the EventLog interface) into the CCTPEvent type for database insertion
-	messageEvent := eventToCCTPEvent(iFace, chainID)
+	cctpEvent := eventToCCTPEvent(iFace, chainID)
 
 	// Get timestamp from consumer
-	timeStamp, err := m.consumerFetcher.FetchBlockTime(ctx, int(chainID), int(iFace.GetBlockNumber()))
+	timeStamp, err := c.consumerFetcher.FetchBlockTime(ctx, int(chainID), int(iFace.GetBlockNumber()))
 	if err != nil {
 		return nil, fmt.Errorf("could not get block time: %w", err)
 	}
@@ -88,17 +90,45 @@ func (c *CCTPParser) Parse(ctx context.Context, log ethTypes.Log, chainID uint32
 	timeStampBig := uint64(*timeStamp)
 	cctpEvent.TimeStamp = &timeStampBig
 
-	coinGeckoID := "usd-coin"
-	usdcTokenPrice := c.tokenPriceService.GetPriceData(ctx, int(timeStampBig), coinGeckoID)
-	if (usdcTokenPrice == nil) && coinGeckoID != noTokenID && coinGeckoID != noPrice {
-		// TODO exit
+	err = c.applyPriceData(ctx, &cctpEvent, usdcCoinGeckoID)
+	if err != nil {
+		return nil, fmt.Errorf("could not apply price data: %w", err)
 	}
 
-	// TODO get usd values for amount and fee (Add conditional for only when these values exist, aka on destination)
-	feePrice := GetAmountUSD(messageEvent.Fee, 18, tokenPrice)
-	amountPrice := GetAmountUSD(messageEvent.Fee, 18, tokenPrice)
+	return cctpEvent, nil
+}
 
-	messageEvent.FeeUSD = feeValue
+// applyPriceData applies price data to the cctp event, setting USD values.
+func (c *CCTPParser) applyPriceData(ctx context.Context, cctpEvent *model.CCTPEvent, coinGeckoID string) error {
+	tokenPrice := c.tokenPriceService.GetPriceData(ctx, int(*cctpEvent.TimeStamp), coinGeckoID)
+	if (tokenPrice == nil) && coinGeckoID != noTokenID && coinGeckoID != noPrice {
+		return fmt.Errorf("CCTP could not get token price for coingeckotoken:  %s txhash %s %d", coinGeckoID, cctpEvent.TxHash, cctpEvent.TimeStamp)
+	}
 
-	return messageEvent, nil
+	cctpEvent.SentAmountUSD = GetAmountUSD(cctpEvent.SentAmount, usdcDecimals, tokenPrice)
+	cctpEvent.FeeUSD = GetAmountUSD(cctpEvent.Fee, usdcDecimals, tokenPrice)
+	return nil
+}
+
+// eventToCCTPEvent stores a message event.
+func eventToCCTPEvent(event cctpTypes.EventLog, chainID uint32) model.CCTPEvent {
+	return model.CCTPEvent{
+		TxHash:             event.GetTxHash().String(),
+		ContractAddress:    event.GetContractAddress().String(),
+		BlockNumber:        event.GetBlockNumber(),
+		OriginChainID:      event.GetOriginChainID(),
+		DestinationChainID: event.GetDestinationChainID(),
+		Sender:             ToNullString(event.GetSender()),
+		Nonce:              ToNullInt64(event.GetNonce()),
+		BurnToken:          ToNullString(event.GetBurnToken()),
+		MintToken:          ToNullString(event.GetMintToken()),
+		SentAmount:         event.GetSentAmount(),
+		ReceivedAmount:     event.GetReceivedAmount(),
+		RequestVersion:     ToNullInt32(event.GetRequestVersion()),
+		FormattedRequest:   event.GetFormattedRequest(),
+		RequestID:          event.GetRequestID(),
+		Recipient:          ToNullString(event.GetRecipient()),
+		Fee:                event.GetFee(),
+		Token:              ToNullString(event.GetToken()),
+	}
 }
