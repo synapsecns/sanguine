@@ -6,7 +6,7 @@ import (
 	"github.com/ethereum/go-ethereum/core/vm"
 )
 
-// CCTPRef
+// CCTPRef is a reference to a deployed CCTP contract.
 //
 //nolint:golint
 type CCTPRef struct {
@@ -19,7 +19,7 @@ func (s CCTPRef) Address() common.Address {
 	return s.address
 }
 
-// NewCCTPRef
+// NewCCTPRef creates a new CCTPRef instance.
 //
 //nolint:golint
 func NewCCTPRef(address common.Address, backend bind.ContractBackend) (*CCTPRef, error) {
@@ -33,4 +33,4 @@ func NewCCTPRef(address common.Address, backend bind.ContractBackend) (*CCTPRef,
 	}, nil
 }
 
-var _ vm.ContractRef = &BridgeConfigRef{}
+var _ vm.ContractRef = &CCTPRef{}
