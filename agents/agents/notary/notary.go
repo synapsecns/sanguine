@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"github.com/synapsecns/sanguine/core/metrics"
+	omnirpcClient "github.com/synapsecns/sanguine/services/omnirpc/client"
 
 	signerConfig "github.com/synapsecns/sanguine/ethergo/signer/config"
 	"go.opentelemetry.io/otel/attribute"
@@ -41,7 +42,7 @@ type Notary struct {
 // NewNotary creates a new notary.
 //
 //nolint:cyclop
-func NewNotary(ctx context.Context, cfg config.AgentConfig, handler metrics.Handler) (_ Notary, err error) {
+func NewNotary(ctx context.Context, cfg config.AgentConfig, omniRPCClient omnirpcClient.RPCClient, handler metrics.Handler) (_ Notary, err error) {
 	notary := Notary{
 		refreshInterval: time.Second * time.Duration(cfg.RefreshIntervalSeconds),
 	}
@@ -60,7 +61,7 @@ func NewNotary(ctx context.Context, cfg config.AgentConfig, handler metrics.Hand
 	for domainName, domain := range cfg.Domains {
 		var domainClient domains.DomainClient
 
-		chainRPCURL := fmt.Sprintf("%s/confirmations/1/rpc/%d", cfg.BaseOmnirpcURL, domain.DomainID)
+		chainRPCURL := omniRPCClient.GetEndpoint(int(domain.DomainID), 1)
 		domainClient, err = evm.NewEVM(ctx, domainName, domain, chainRPCURL)
 		if err != nil {
 			return Notary{}, fmt.Errorf("failing to create evm for domain, could not create notary for: %w", err)

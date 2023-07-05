@@ -33,6 +33,7 @@ import (
 	"github.com/synapsecns/sanguine/ethergo/signer/signer"
 	"github.com/synapsecns/sanguine/ethergo/signer/signer/localsigner"
 	"github.com/synapsecns/sanguine/ethergo/signer/wallet"
+	omnirpcHelper "github.com/synapsecns/sanguine/services/omnirpc/testhelper"
 	scribedb "github.com/synapsecns/sanguine/services/scribe/db"
 	scribesqlite "github.com/synapsecns/sanguine/services/scribe/db/datastore/sql/sqlite"
 	scribeMetadata "github.com/synapsecns/sanguine/services/scribe/metadata"
@@ -115,6 +116,7 @@ type SimulatedBackendsTestSuite struct {
 	NotaryMetrics                       metrics.Handler
 	GuardMetrics                        metrics.Handler
 	ContractMetrics                     metrics.Handler
+	TestOmniRPC                         string
 }
 
 // NewSimulatedBackendsTestSuite creates an end-to-end test suite with simulated
@@ -335,6 +337,14 @@ func (a *SimulatedBackendsTestSuite) SetupTest() {
 	a.SetupSummit(a.TestDeployManager)
 	a.SetupDestination(a.TestDeployManager)
 	a.SetupOrigin(a.TestDeployManager)
+
+	testBackends := []backends.SimulatedTestBackend{
+		a.TestBackendOrigin,
+		a.TestBackendDestination,
+		a.TestBackendSummit,
+	}
+
+	a.TestOmniRPC = omnirpcHelper.NewOmnirpcServer(a.GetTestContext(), a.T(), testBackends...)
 
 	err := a.TestDeployManager.LoadHarnessContractsOnChains(
 		a.GetTestContext(),

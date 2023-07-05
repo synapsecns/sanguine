@@ -17,6 +17,8 @@ import (
 	"github.com/synapsecns/sanguine/core/metrics"
 	ethergoChain "github.com/synapsecns/sanguine/ethergo/chain"
 	agentsConfig "github.com/synapsecns/sanguine/ethergo/signer/config"
+	"github.com/synapsecns/sanguine/ethergo/submitter"
+	omnirpcClient "github.com/synapsecns/sanguine/services/omnirpc/client"
 	"github.com/synapsecns/sanguine/services/scribe/client"
 	"golang.org/x/sync/errgroup"
 )
@@ -26,7 +28,7 @@ import (
 // NewExecutorInjectedBackend creates a new Executor suitable for testing since it does not need a valid omnirpcURL.
 //
 //nolint:cyclop
-func NewExecutorInjectedBackend(ctx context.Context, config executor.Config, executorDB db.ExecutorDB, scribeClient client.ScribeClient, clients map[uint32]Backend, urls map[uint32]string, handler metrics.Handler) (*Executor, error) {
+func NewExecutorInjectedBackend(ctx context.Context, config executor.Config, executorDB db.ExecutorDB, scribeClient client.ScribeClient, omniRPCClient omnirpcClient.RPCClient, clients map[uint32]Backend, urls map[uint32]string, handler metrics.Handler) (*Executor, error) {
 	chainExecutors := make(map[uint32]*chainExecutor)
 
 	conn, grpcClient, err := makeScribeClient(ctx, handler, fmt.Sprintf("%s:%d", scribeClient.URL, scribeClient.Port))
@@ -38,6 +40,8 @@ func NewExecutorInjectedBackend(ctx context.Context, config executor.Config, exe
 	if err != nil {
 		return nil, fmt.Errorf("could not create signer: %w", err)
 	}
+
+	txSubmitter := submitter.NewTransactionSubmitter(handler, executorSigner, omniRPCClient, executorDB.SubmitterDB(), &config.SubmitterConfig)
 
 	if config.ExecuteInterval == 0 {
 		config.ExecuteInterval = 2
@@ -111,6 +115,7 @@ func NewExecutorInjectedBackend(ctx context.Context, config executor.Config, exe
 		signer:         executorSigner,
 		chainExecutors: chainExecutors,
 		handler:        handler,
+		txSubmitter:    txSubmitter,
 	}, nil
 }
 

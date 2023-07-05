@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"github.com/synapsecns/sanguine/core/metrics"
 	signerConfig "github.com/synapsecns/sanguine/ethergo/signer/config"
+	omnirpcClient "github.com/synapsecns/sanguine/services/omnirpc/client"
 	"go.opentelemetry.io/otel/attribute"
 	"go.opentelemetry.io/otel/trace"
 	"time"
@@ -32,7 +33,7 @@ type Guard struct {
 // NewGuard creates a new guard.
 //
 //nolint:cyclop
-func NewGuard(ctx context.Context, cfg config.AgentConfig, handler metrics.Handler) (_ Guard, err error) {
+func NewGuard(ctx context.Context, cfg config.AgentConfig, omniRPCClient omnirpcClient.RPCClient, handler metrics.Handler) (_ Guard, err error) {
 	guard := Guard{
 		refreshInterval: time.Second * time.Duration(cfg.RefreshIntervalSeconds),
 	}
@@ -51,7 +52,7 @@ func NewGuard(ctx context.Context, cfg config.AgentConfig, handler metrics.Handl
 	for domainName, domain := range cfg.Domains {
 		var domainClient domains.DomainClient
 
-		chainRPCURL := fmt.Sprintf("%s/confirmations/1/rpc/%d", cfg.BaseOmnirpcURL, domain.DomainID)
+		chainRPCURL := omniRPCClient.GetEndpoint(int(domain.DomainID), 1)
 		domainClient, err = evm.NewEVM(ctx, domainName, domain, chainRPCURL)
 		if err != nil {
 			return Guard{}, fmt.Errorf("failing to create evm for domain, could not create guard for: %w", err)

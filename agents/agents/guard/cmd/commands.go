@@ -3,6 +3,7 @@ package cmd
 import (
 	"github.com/synapsecns/sanguine/agents/agents/guard/metadata"
 	"github.com/synapsecns/sanguine/core/metrics"
+	omnirpcClient "github.com/synapsecns/sanguine/services/omnirpc/client"
 	"sync/atomic"
 	"time"
 
@@ -49,6 +50,11 @@ var configFlag = &cli.StringFlag{
 	Required:  true,
 }
 
+var debugFlag = &cli.BoolFlag{
+	Name:  "debug",
+	Usage: "--debug",
+}
+
 // GuardRunCommand runs the guard.
 var GuardRunCommand = &cli.Command{
 	Name:        "guard-run",
@@ -59,9 +65,17 @@ var GuardRunCommand = &cli.Command{
 		if err != nil {
 			return fmt.Errorf("failed to create metrics handler: %w", err)
 		}
+
 		guardConfig, err := config.DecodeAgentConfig(core.ExpandOrReturnPath(c.String(configFlag.Name)))
 		if err != nil {
 			return fmt.Errorf("failed to decode config: %w", err)
+		}
+
+		var baseOmniRPCClient omnirpcClient.RPCClient
+		if debugFlag.IsSet() {
+			baseOmniRPCClient = omnirpcClient.NewOmnirpcClient(guardConfig.BaseOmnirpcURL, handler, omnirpcClient.WithCaptureReqRes())
+		} else {
+			baseOmniRPCClient = omnirpcClient.NewOmnirpcClient(guardConfig.BaseOmnirpcURL, handler)
 		}
 
 		var shouldRetryAtomic atomic.Bool
@@ -72,7 +86,7 @@ var GuardRunCommand = &cli.Command{
 
 			g, _ := errgroup.WithContext(c.Context)
 
-			guard, err := guard.NewGuard(c.Context, guardConfig, handler)
+			guard, err := guard.NewGuard(c.Context, guardConfig, baseOmniRPCClient, handler)
 			if err != nil {
 				return fmt.Errorf("failed to create guard: %w", err)
 			}

@@ -3,6 +3,7 @@ package cmd
 import (
 	"github.com/synapsecns/sanguine/agents/agents/notary/metadata"
 	"github.com/synapsecns/sanguine/core/metrics"
+	omnirpcClient "github.com/synapsecns/sanguine/services/omnirpc/client"
 	"sync/atomic"
 	"time"
 
@@ -49,6 +50,11 @@ var configFlag = &cli.StringFlag{
 	Required:  true,
 }
 
+var debugFlag = &cli.BoolFlag{
+	Name:  "debug",
+	Usage: "--debug",
+}
+
 // NotaryRunCommand runs the notary.
 var NotaryRunCommand = &cli.Command{
 	Name:        "notary-run",
@@ -59,9 +65,17 @@ var NotaryRunCommand = &cli.Command{
 		if err != nil {
 			return fmt.Errorf("failed to create metrics handler: %w", err)
 		}
+
 		notaryConfig, err := config.DecodeAgentConfig(core.ExpandOrReturnPath(c.String(configFlag.Name)))
 		if err != nil {
 			return fmt.Errorf("failed to decode config: %w", err)
+		}
+
+		var baseOmniRPCClient omnirpcClient.RPCClient
+		if debugFlag.IsSet() {
+			baseOmniRPCClient = omnirpcClient.NewOmnirpcClient(notaryConfig.BaseOmnirpcURL, metricsProvider, omnirpcClient.WithCaptureReqRes())
+		} else {
+			baseOmniRPCClient = omnirpcClient.NewOmnirpcClient(notaryConfig.BaseOmnirpcURL, metricsProvider)
 		}
 
 		var shouldRetryAtomic atomic.Bool
@@ -72,7 +86,7 @@ var NotaryRunCommand = &cli.Command{
 
 			g, _ := errgroup.WithContext(c.Context)
 
-			notary, err := notary.NewNotary(c.Context, notaryConfig, metricsProvider)
+			notary, err := notary.NewNotary(c.Context, notaryConfig, baseOmniRPCClient, metricsProvider)
 			if err != nil {
 				return fmt.Errorf("failed to create notary: %w", err)
 			}

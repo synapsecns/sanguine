@@ -2,6 +2,7 @@ package guard_test
 
 import (
 	signerConfig "github.com/synapsecns/sanguine/ethergo/signer/config"
+	omniClient "github.com/synapsecns/sanguine/services/omnirpc/client"
 	"math/big"
 	"os"
 	"testing"
@@ -61,13 +62,8 @@ func (u GuardSuite) TestGuardE2E() {
 
 	Equal(u.T(), encodedTestConfig, decodedAgentConfigBackToEncodedBytes)
 
-	rpcURLs := map[uint32]string{
-		u.OriginDomainClient.Config().DomainID:      u.TestBackendOrigin.RPCAddress(),
-		u.DestinationDomainClient.Config().DomainID: u.TestBackendDestination.RPCAddress(),
-		u.SummitDomainClient.Config().DomainID:      u.TestBackendSummit.RPCAddress(),
-	}
-
-	guard, err := guard.NewGuardInjectedBackend(u.GetTestContext(), testConfig, u.GuardMetrics, rpcURLs)
+	omniRPCClient := omniClient.NewOmnirpcClient(u.TestOmniRPC, u.GuardMetrics, omniClient.WithCaptureReqRes())
+	guard, err := guard.NewGuard(u.GetTestContext(), testConfig, omniRPCClient, u.GuardMetrics)
 	Nil(u.T(), err)
 
 	tips := types.NewTips(big.NewInt(int64(0)), big.NewInt(int64(0)), big.NewInt(int64(0)), big.NewInt(int64(0)))
