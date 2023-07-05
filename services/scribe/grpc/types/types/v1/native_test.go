@@ -47,7 +47,7 @@ func TestLogsConversion(t *testing.T) {
 	Equal(t, mockLogs, reConvertedLogs)
 }
 
-// LogsPointer wraps logs in a pointer
+// LogsPointer wraps logs in a pointer.
 func LogsPointer(logs []types.Log) (res []*types.Log) {
 	for _, log := range logs {
 		res = append(res, core.PtrTo(log))
