@@ -77,6 +77,32 @@ var (
 // PageSize is the amount of entries per page of events.
 var PageSize = 100
 
+// CCTPEvent stores a cctp event.
+type CCTPEvent struct {
+	// ChainID is the chain id of the chain.
+	ChainID uint32 `gorm:"column:chain_id"`
+	// ContractAddress is the address of the contract that generated the event.
+	ContractAddress string `gorm:"column:contract_address"`
+	// BlockNumber is the timestamp.
+	BlockNumber uint64 `gorm:"column:block_number"`
+	// TODO add types
+	Sender
+	OriginChainID
+	DestinationChainID
+	Nonce
+	BurnToken
+	MintToken
+	Version
+	Request
+	RequestID
+	Fee
+	Amount
+	FeeUSD
+	AmountUSD
+	Recipient
+	IsOrigin
+}
+
 // BridgeEvent stores data for emitted events from the Bridge contract.
 type BridgeEvent struct {
 	// InsertTime is the time the event was inserted into the database.
@@ -436,34 +462,6 @@ type HybridBridgeEvent struct {
 
 // HybridMessageBusEvent stores data for emitted events from the message bus contract after joining origin and destination events.
 type HybridMessageBusEvent struct {
-	//// FChainID is the chain id of the contract that generated the event
-	// FChainID uint32 `gorm:"column:chain_id"`
-	//// FBlockNumber is the block number of the event
-	// FBlockNumber uint64 `gorm:"column:block_number"`
-	//// FTxHash is the transaction hash of the event
-	// FTxHash string `gorm:"column:tx_hash"`
-	//// ContractAddress is the address of the contract that generated the event
-	// FContractAddress string `gorm:"column:contract_address"`
-	//// MessageId is the message id of the event.
-	// FMessageID sql.NullString `gorm:"column:message_id"`
-	//// Message is the message.
-	// FMessage sql.NullString `gorm:"column:message"`
-	//// TimeStamp is the timestamp in which the record was inserted.
-	// FTimeStamp *uint64 `gorm:"column:timestamp"`
-	//// ChainID is the chain id of the contract that generated the event
-	// TChainID uint32 `gorm:"column:t.chain_id"`
-	//// BlockNumber is the block number of the event
-	// TBlockNumber uint64 `gorm:"column:t.block_number"`
-	//// TxHash is the transaction hash of the event
-	// TTxHash string `gorm:"column:t.tx_hash"`
-	//// ContractAddress is the address of the contract that generated the event
-	// TContractAddress string `gorm:"column:t.contract_address"`
-	//// MessageId is the message id of the event.
-	// TMessageID sql.NullString `gorm:"column:t.message_id"`
-	//// Message is the message.
-	// TMessage sql.NullString `gorm:"column:t.message"`
-	//// TimeStamp is the timestamp in which the record was inserted.
-	// TTimeStamp *uint64 `gorm:"column:t.timestamp"`
 	// InsertTime is the time the event was inserted into the database
 	FInsertTime uint64 `gorm:"column:insert_time"`
 	// ContractAddress is the address of the contract that generated the event
