@@ -72,9 +72,12 @@ export const SingleNetworkPortfolio = ({
         }
         expandedProps={<PortfolioConnectButton chainId={portfolioChainId} />}
         collapsedProps={
-          <PortfolioTokenVisualizer
-            portfolioTokens={sortedTokensForVisualizer}
-          />
+          <>
+            <PortfolioTokenVisualizer
+              portfolioTokens={sortedTokensForVisualizer}
+            />
+            <PortfolioConnectButton chainId={portfolioChainId} />
+          </>
         }
       >
         <PortfolioAssetHeader />
@@ -338,7 +341,7 @@ const PortfolioConnectButton = ({ chainId }: { chainId: number }) => {
   }, [chain?.id])
 
   return (
-    <div data-test-id="portfolio-connect-button">
+    <div data-test-id="portfolio-connect-button" className="ml-2">
       {isCurrentlyConnectedNetwork ? (
         <ConnectedButton />
       ) : (
