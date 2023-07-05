@@ -79,28 +79,40 @@ var PageSize = 100
 
 // CCTPEvent stores a cctp event.
 type CCTPEvent struct {
-	// ChainID is the chain id of the chain.
-	ChainID uint32 `gorm:"column:chain_id"`
+	// TxHash is the transaction hash of the event.
+	TxHash string `gorm:"column:tx_hash"`
 	// ContractAddress is the address of the contract that generated the event.
 	ContractAddress string `gorm:"column:contract_address"`
 	// BlockNumber is the timestamp.
 	BlockNumber uint64 `gorm:"column:block_number"`
-	// TODO add types
-	Sender
-	OriginChainID
-	DestinationChainID
-	Nonce
-	BurnToken
-	MintToken
-	Version
-	Request
-	RequestID
-	Fee
-	Amount
-	FeeUSD
-	AmountUSD
-	Recipient
-	IsOrigin
+	// OriginChainID is the chain ID of the CCTP transfer.
+	OriginChainID *big.Int `gorm:"column:origin_chain_id;type:UInt256"`
+	// DestinationChainID is the chain ID of the CCTP transfer.
+	DestinationChainID *big.Int `gorm:"column:destination_chain_id;type:UInt256"`
+	// Sender is the sender of the CCTP transfer.
+	Sender string `gorm:"column:sender"`
+	// Nonce is the nonce of the CCTP transfer.
+	Nonce uint64 `gorm:"column:nonce"`
+	// BurnToken is the burn token of the CCTP transfer.
+	BurnToken string `gorm:"column:burn_token"`
+	// MintToken is the mint token of the CCTP transfer.
+	MintToken string `gorm:"column:mint_token"`
+	// SentAmount is the sent amount of the CCTP transfer.
+	SentAmount *big.Int `gorm:"column:sent_amount;type:UInt256"`
+	// ReceivedAmount is the received amount of the CCTP transfer.
+	ReceivedAmount *big.Int `gorm:"column:received_amount;type:UInt256"`
+	// RequestVersion is the request version of the CCTP transfer.
+	RequestVersion uint32 `gorm:"column:request_version"`
+	// FormattedRequest is the formatted request of the CCTP transfer.
+	FormattedRequest []byte `gorm:"column:formatted_request"`
+	// RequestID is the request ID of the CCTP transfer.
+	RequestID [32]byte `gorm:"column:request_id"`
+	// Recipient is the recipient of the CCTP transfer.
+	Recipient string `gorm:"column:recipient"`
+	// Fee is the fee of the CCTP transfer.
+	Fee *big.Int `gorm:"column:fee;type:UInt256"`
+	// Token is the address of the received token.
+	Token string `gorm:"column:token"`
 }
 
 // BridgeEvent stores data for emitted events from the Bridge contract.
