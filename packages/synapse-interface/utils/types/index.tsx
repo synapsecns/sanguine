@@ -91,12 +91,12 @@ export type PoolTokenObject = {
 }
 
 export type SwapQuote = {
-  outputAmount: BigNumber
+  outputAmount: bigint
   outputAmountString: string
   routerAddress: string
-  allowance: BigNumber
+  allowance: bigint
   exchangeRate: bigint
-  delta: BigNumber
+  delta: bigint
   quote: any
 }
 

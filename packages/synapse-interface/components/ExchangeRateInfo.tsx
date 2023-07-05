@@ -7,7 +7,10 @@ import Image from 'next/image'
 import { Zero } from '@ethersproject/constants'
 
 import { Token } from '@/utils/types'
-import { formatBigIntToPercentString, formatBigIntToString } from '@/utils/bigint/format'
+import {
+  formatBigIntToPercentString,
+  formatBigIntToString,
+} from '@/utils/bigint/format'
 
 const ExchangeRateInfo = ({
   fromAmount,
@@ -27,7 +30,7 @@ const ExchangeRateInfo = ({
 
   const safeExchangeRate = useMemo(() => exchangeRate ?? 0n, [exchangeRate]) // todo clean
   const safeFromAmount = useMemo(() => fromAmount ?? 0n, [fromAmount]) // todo clean
-  const formattedExchangeRate = formatBigIntToString(safeExchangeRate, 18, 4)
+  const formattedExchangeRate = formatBigIntToString(safeExchangeRate, 18, 5)
   const numExchangeRate = Number(formattedExchangeRate)
   const slippage = safeExchangeRate - 1000000000000000000n
   const formattedPercentSlippage = formatBigIntToPercentString(slippage, 18)
