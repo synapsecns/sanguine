@@ -494,9 +494,9 @@ const StateManagedBridge = () => {
             <Card
               divider={false}
               className={`
-                px-1 pb-0 mb-3 overflow-hidden
+                pt-5 pb-3 mt-5 overflow-hidden
                 transition-all duration-100 transform rounded-xl
-                bg-bgBase md:px-6 lg:px-6 mt-5
+                bg-bgBase
               `}
             >
               <div ref={bridgeDisplayRef}>
