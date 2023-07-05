@@ -50,13 +50,13 @@ func (c *CCTPParser) Parse(ctx context.Context, log ethTypes.Log, chainID uint32
 		case cctp.Topic(cctpTypes.CircleRequestSentEvent):
 			iFace, err := c.Filterer.ParseCircleRequestSent(log)
 			if err != nil {
-				return nil, fmt.Errorf("could not parse token : %w", err)
+				return nil, fmt.Errorf("could not parse circle request sent : %w", err)
 			}
 			return iFace, nil
 		case cctp.Topic(cctpTypes.CircleRequestFulfilledEvent):
 			iFace, err := c.Filterer.ParseCircleRequestFulfilled(log)
 			if err != nil {
-				return nil, fmt.Errorf("could not parse sent message: %w", err)
+				return nil, fmt.Errorf("could not parse circle request fulfilled: %w", err)
 			}
 			return iFace, nil
 
