@@ -1,4 +1,4 @@
-import { useEffect, useState, useMemo } from 'react'
+import { useEffect, useState, useMemo, useRef } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
 import { Zero } from '@ethersproject/constants'
 import { RootState } from '@/store/store'
@@ -19,14 +19,26 @@ export const InputContainer = () => {
     fromChainIds,
     supportedFromTokenBalances,
     fromValue,
+    bridgeTxHashes,
   } = useSelector((state: RootState) => state.bridge)
   const [showValue, setShowValue] = useState('')
 
   const [hasMounted, setHasMounted] = useState(false)
+  const previousBridgeTxHashesRef = useRef<string[]>([])
 
   useEffect(() => {
     setHasMounted(true)
   }, [])
+
+  useEffect(() => {
+    const previousBridgeTxHashes = previousBridgeTxHashesRef.current
+
+    if (bridgeTxHashes.length !== previousBridgeTxHashes.length) {
+      setShowValue('')
+    }
+
+    previousBridgeTxHashesRef.current = bridgeTxHashes
+  }, [bridgeTxHashes])
 
   const { isConnected } = useAccount()
 

@@ -4,6 +4,7 @@ import (
 	"context"
 	"github.com/gin-gonic/gin"
 	"github.com/synapsecns/sanguine/core/config"
+	"github.com/synapsecns/sanguine/core/metrics/internal"
 	"github.com/uptrace/opentelemetry-go-extra/otelgorm"
 	"go.opentelemetry.io/contrib/instrumentation/github.com/gin-gonic/gin/otelgin"
 	"go.opentelemetry.io/contrib/instrumentation/net/http/otelhttp"
@@ -18,6 +19,8 @@ import (
 	"gorm.io/gorm"
 	"net/http"
 )
+
+const pyroscopeEndpoint = internal.PyroscopeEndpoint
 
 // baseHandler is a base metrics handler that implements the Handler interface.
 // this is used to reduce the amount of boilerplate code needed to implement opentracing methods.
@@ -34,7 +37,7 @@ func (b *baseHandler) Start(ctx context.Context) error {
 }
 
 func (b *baseHandler) Gin() gin.HandlerFunc {
-	return otelgin.Middleware(b.name, otelgin.WithTracerProvider(b.tp))
+	return otelgin.Middleware(b.name, otelgin.WithTracerProvider(b.tp), otelgin.WithPropagators(b.propagator))
 }
 
 func (b *baseHandler) Propagator() propagation.TextMapPropagator {
@@ -78,6 +81,7 @@ func newBaseHandler(buildInfo config.BuildInfo, extraOpts ...tracesdk.TracerProv
 			attribute.String("ENVIRONMENT", "default"),
 			semconv.ServiceVersion(buildInfo.Version()),
 			attribute.String("commit", buildInfo.Commit()),
+			attribute.String("library.language", "go"),
 		))
 	// TODO: handle error or report
 	if err != nil {
