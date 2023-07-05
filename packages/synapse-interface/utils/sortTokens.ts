@@ -46,6 +46,8 @@ export const sortByTokenBalance = async (
   const tokensWithBalances: any[] = []
   const multicallInputs = []
 
+  console.log('tokens:', tokens)
+  console.log('chainId:', chainId)
   if (chainId === undefined || !address) {
     tokens.forEach((token) => {
       tokensWithBalances.push({
@@ -58,7 +60,8 @@ export const sortByTokenBalance = async (
       // deterministic multicall3 address on all eth chains
       const multicallAddress: Address = `0xcA11bde05977b3631167028862bE2a173976CA11`
       const tokenAddress = token.addresses[chainId as keyof Token['addresses']]
-      if (tokenAddress === AddressZero || tokenAddress === '') {
+
+      if (tokenAddress === AddressZero || tokenAddress === undefined) {
         multicallInputs.push({
           address: multicallAddress,
           abi: multicallABI,
@@ -80,10 +83,12 @@ export const sortByTokenBalance = async (
 
   let multicallData: any[] | any
   if (multicallInputs.length > 0) {
+    console.log('before multicallData: ', multicallData)
     multicallData = await multicall({
       contracts: multicallInputs,
       chainId,
     })
+    console.log('multicallData: ', multicallData)
     return sortArrayByBalance(
       sortByVisibilityRank(
         multicallData.map(
