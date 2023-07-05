@@ -190,6 +190,7 @@ func (t *TXSubmitterDBSuite) SetupTest() {
 	t.TestSuite.SetupTest()
 
 	t.dbs = []db.Service{}
+	t.testBackends = []backends.SimulatedTestBackend{}
 
 	t.setupMysqlDB()
 

@@ -376,7 +376,7 @@ func (e Executor) Execute(parentCtx context.Context, message types.Message) (_ b
 		snapshotProofB32 = append(snapshotProofB32, p32)
 	}
 
-	//b := &backoff.Backoff{
+	// b := &backoff.Backoff{
 	//	Factor: 2,
 	//	Jitter: true,
 	//	Min:    30 * time.Millisecond,

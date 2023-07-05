@@ -338,7 +338,7 @@ func (u *AgentsIntegrationSuite) TestAgentsE2E() {
 	})
 
 	//// Send a second message.
-	//tx, err = u.OriginContract.SendBaseMessage(
+	// tx, err = u.OriginContract.SendBaseMessage(
 	//	txContextOrigin.TransactOpts,
 	//	uint32(u.TestBackendDestination.GetChainID()),
 	//	recipientDestination,
