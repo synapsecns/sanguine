@@ -239,7 +239,7 @@ const PortfolioAssetActionButton = ({
     flex ml-auto justify-center
     w-28 lg:w-36 py-1 rounded-3xl
     transform-gpu transition-all duration-75
-    hover:cursor-pointer
+    ${isDisabled ? 'hover:cursor-default' : 'hover:cursor-pointer'}
   `
   return (
     <React.Fragment>
