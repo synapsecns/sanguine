@@ -353,7 +353,7 @@ const PortfolioConnectButton = ({ chainId }: { chainId: number }) => {
 
 const ConnectedButton = () => {
   const buttonClassName = `
-  h-9 flex items-center justify-center w-36
+  h-9 flex items-center justify-end w-36
   text-base text-white px-4 py-2 rounded-3xl
   text-center transform-gpu transition-all duration-75
   hover:cursor-default
@@ -361,8 +361,14 @@ const ConnectedButton = () => {
 
   return (
     <button data-test-id="connected-button" className={buttonClassName}>
-      <div className="space-x-2 text-sm">
-        <span className="text-green-500">●</span> Connected
+      <div className="flex flex-row text-sm">
+        <div
+          className={`
+          my-auto ml-auto mr-2
+          w-2 h-2
+          bg-green-500 rounded-full`}
+        />
+        Connected
       </div>
     </button>
   )
@@ -378,12 +384,10 @@ const ConnectButton = ({ chainId }: { chainId: number }) => {
   }
 
   const buttonClassName = `
-  h-9 flex items-center justify-center w-36
-  text-base text-white px-4 py-2 rounded-3xl
-  text-center transform-gpu transition-all duration-75
-  border-2 border-[#101018]
-  hover:cursor-pointer
-  `
+    h-9 flex items-right justify-end w-36
+    text-base text-white px-4 py-2 rounded-3xl
+    text-center transform-gpu transition-all duration-75
+    `
 
   return (
     <button
@@ -391,7 +395,15 @@ const ConnectButton = ({ chainId }: { chainId: number }) => {
       className={buttonClassName}
       onClick={handleConnectNetwork}
     >
-      Connect
+      <div className="flex flex-row text-sm">
+        <div
+          className={`
+          my-auto ml-auto mr-2
+          text-transparent w-2 h-2
+          border border-indigo-300 border-solid rounded-full`}
+        />
+        Connect
+      </div>
     </button>
   )
 }

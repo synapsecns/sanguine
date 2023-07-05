@@ -10,6 +10,8 @@ import {
   FetchState,
 } from '@/utils/hooks/usePortfolioBalances'
 import { PortfolioContent, HomeContent } from './PortfolioContent'
+import { RootState } from '@/store/store'
+import { useSelector } from 'react-redux'
 
 export enum PortfolioTabs {
   HOME = 'home',
@@ -18,6 +20,8 @@ export enum PortfolioTabs {
 
 export const Portfolio = () => {
   const [tab, setTab] = useState<PortfolioTabs>(PortfolioTabs.HOME)
+
+  const { fromChainId } = useSelector((state: RootState) => state.bridge)
 
   const {
     balancesAndAllowances: portfolioData,
@@ -48,7 +52,7 @@ export const Portfolio = () => {
         {tab === PortfolioTabs.PORTFOLIO && (
           <PortfolioContent
             connectedAddress={address}
-            connectedChainId={chain?.id}
+            connectedChainId={fromChainId}
             networkPortfolioWithBalances={filteredPortfolioDataForBalances}
             fetchState={fetchState}
           />
