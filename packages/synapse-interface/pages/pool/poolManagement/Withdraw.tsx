@@ -1,10 +1,8 @@
 import _ from 'lodash'
 import { useEffect, useState, useMemo } from 'react'
 import Slider from 'react-input-slider'
-import { stringToBigNum } from '@/utils/stringToBigNum'
+import { stringToBigInt } from '@/utils/stringToBigNum'
 
-import { BigNumber } from '@ethersproject/bignumber'
-import { formatUnits } from '@ethersproject/units'
 import { useSynapseContext } from '@/utils/providers/SynapseProvider'
 
 import { getCoinTextColorCombined } from '@styles/tokens'
@@ -17,7 +15,6 @@ import PriceImpactDisplay from '../components/PriceImpactDisplay'
 
 import { Transition } from '@headlessui/react'
 import { TransactionButton } from '@/components/buttons/TransactionButton'
-import { Zero } from '@ethersproject/constants'
 import { Token } from '@types'
 import { approve, withdraw } from '@/utils/actions/approveAndWithdraw'
 import { getTokenAllowance } from '@/utils/actions/getTokenAllowance'
@@ -49,20 +46,20 @@ const Withdraw = ({
   refetchCallback: () => void
 }) => {
   const [inputValue, setInputValue] = useState<{
-    bn: BigNumber
+    bi: bigint
     str: string
-  }>({ bn: Zero, str: '' })
+  }>({ bi: 0n, str: '' })
 
   const [withdrawQuote, setWithdrawQuote] = useState<{
     priceImpact: bigint
     outputs: Record<
       string,
       {
-        value: BigNumber
+        value: bigint
         index: number
       }
     >
-    allowance: BigNumber
+    allowance: bigint
     routerAddress: string
   }>(DEFAULT_WITHDRAW_QUOTE)
 
@@ -73,7 +70,7 @@ const Withdraw = ({
   const [isApproved, setIsApproved] = useState(false)
 
   const resetInput = () => {
-    setInputValue({ bn: Zero, str: '' })
+    setInputValue({ bi: 0n, str: '' })
   }
   const { synapseSDK } = useSynapseContext()
 
@@ -88,7 +85,7 @@ const Withdraw = ({
       const outputs: Record<
         string,
         {
-          value: BigNumber
+          value: bigint
           index: number
         }
       > = {}
@@ -97,30 +94,34 @@ const Withdraw = ({
         const { amounts } = await synapseSDK.calculateRemoveLiquidity(
           chainId,
           poolAddress,
-          inputValue.bn
+          inputValue.bi
         )
-        outputs[withdrawType] = amounts
+        outputs[withdrawType] = amounts.map((amount) => {
+          return {
+            value: BigInt(amount.value.toString()),
+            index: amount.index,
+          }
+        })
       } else {
         const { amount } = await synapseSDK.calculateRemoveLiquidityOne(
           chainId,
           poolAddress,
-          inputValue.bn,
+          inputValue.bi,
           Number(withdrawType)
         )
-        outputs[withdrawType] = amount
+        outputs[withdrawType] = {
+          value: BigInt(amount.value.toString()),
+          index: amount.index,
+        }
       }
 
-      const outputTokensSum = sumBigNumbers(
-        pool,
-        outputs,
-        chainId,
-        withdrawType
-      )
+      const outputTokensSum = sumBigInts(pool, outputs, chainId, withdrawType)
 
       const priceImpact = calculatePriceImpact(
-        inputValue.bn,
+        inputValue.bi,
         outputTokensSum,
-        BigInt(virtualPrice.toString()),
+        // virtualPrice here is { result: bigint, success: boolean }
+        BigInt((virtualPrice as any).result.toString()),
         true
       )
 
@@ -142,7 +143,7 @@ const Withdraw = ({
   }
 
   useEffect(() => {
-    if (poolUserData && poolData && address && pool && inputValue.bn.gt(Zero)) {
+    if (poolUserData && poolData && address && pool && inputValue.bi > 0n) {
       calculateMaxWithdraw()
     }
   }, [inputValue, time, withdrawType])
@@ -154,28 +155,32 @@ const Withdraw = ({
     setPercentage(percent)
     const numericalOut = poolUserData.lpTokenBalance
       ? formatBigIntToString(
-          BigInt(poolUserData.lpTokenBalance.toString()) * (BigInt(percent)) / BigInt((100)),
+          (BigInt(poolUserData.lpTokenBalance.toString()) * BigInt(percent)) /
+            BigInt(100),
           pool.decimals[chainId]
         )
       : ''
-    const bigNum = stringToBigNum(numericalOut, pool.decimals[chainId])
-    setInputValue({ bn: bigNum, str: numericalOut })
+    const bigInt = stringToBigInt(numericalOut, pool.decimals[chainId])
+    setInputValue({ bi: bigInt, str: numericalOut })
   }
 
   const onChangeInputValue = (token: Token, value: string) => {
-    const bigNum = stringToBigNum(value, token.decimals[chainId])
+    const bigInt = stringToBigInt(value, token.decimals[chainId])
 
     if (poolUserData.lpTokenBalance === 0n) {
-      setInputValue({ bn: bigNum, str: value })
+      setInputValue({ bi: bigInt, str: value })
 
       setPercentage(0)
       return
     }
-    const pn = bigNum
-      ? bigNum.mul(100).div(BigNumber.from(poolUserData.lpTokenBalance.toString())).toNumber()
+    const pn = bigInt
+      ? Number(
+          (bigInt * BigInt(100)) /
+            BigInt(poolUserData.lpTokenBalance.toString())
+        )
       : 0
 
-    setInputValue({ bn: bigNum, str: value })
+    setInputValue({ bi: bigInt, str: value })
 
     if (pn > 100) {
       setPercentage(100)
@@ -198,7 +203,7 @@ const Withdraw = ({
           pool,
           'ONE_TENTH',
           null,
-          inputValue.bn,
+          stringToBigInt(inputValue.str, pool.decimals[chainId]),
           chainId,
           withdrawType,
           withdrawQuote.outputs
@@ -211,7 +216,7 @@ const Withdraw = ({
       },
     }
 
-    if (inputValue.bn.eq(0)) {
+    if (inputValue.bi === 0n) {
       properties.label = `Enter amount`
       properties.disabled = true
       return properties
@@ -229,7 +234,7 @@ const Withdraw = ({
       properties.className = 'from-[#feba06] to-[#FEC737]'
       properties.disabled = false
       properties.buttonAction = () =>
-        approve(pool, withdrawQuote, inputValue.bn, chainId).then((res) => {
+        approve(pool, withdrawQuote, inputValue.bi, chainId).then((res) => {
           if (res && res.data) {
             setIsApproved(true)
           }
@@ -243,15 +248,15 @@ const Withdraw = ({
 
   if (
     withdrawQuote.allowance &&
-    !inputValue.bn.isZero() &&
-    inputValue.bn.gt(withdrawQuote.allowance)
+    inputValue.bi !== 0n &&
+    inputValue.bi > withdrawQuote.allowance
   ) {
     isAllowanceEnough = false
   }
 
   if (
-    !inputValue.bn.isZero() &&
-    BigInt(inputValue.bn.toString()) > BigInt(poolUserData.lpTokenBalance.toString())
+    inputValue.bi !== 0n &&
+    inputValue.bi > BigInt(poolUserData.lpTokenBalance.toString())
   ) {
     isFromBalanceEnough = false
   }
@@ -396,7 +401,15 @@ const Withdraw = ({
         token={pool}
         key={pool?.symbol}
         inputValueStr={inputValue.str}
-        balanceStr={poolUserData?.lpTokenBalanceStr ?? '0.0000'}
+        balanceStr={
+          poolUserData?.lpTokenBalanceStr
+            ? formatBigIntToString(
+                BigInt(poolUserData?.lpTokenBalanceStr),
+                pool.decimals[chainId],
+                4
+              )
+            : '0.0000'
+        }
         onChange={(value) => onChangeInputValue(pool, value)}
         chainId={chainId}
         address={address}
@@ -406,7 +419,7 @@ const Withdraw = ({
       <Transition
         appear={true}
         unmount={false}
-        show={inputValue.bn.gt(0)}
+        show={inputValue.bi > 0n}
         enter="transition duration-100 ease-out"
         enterFrom="transform-gpu scale-y-0 "
         enterTo="transform-gpu scale-y-100 opacity-100"
@@ -438,28 +451,40 @@ const Withdraw = ({
   )
 }
 
-const sumBigNumbers = (
+const sumBigInts = (
   pool: Token,
-  bigNumMap: Record<string, { value: BigNumber; index: number }>,
+  bigIntMap: Record<string, { value: bigint; index: number }>,
   chainId: number,
   withdrawType: string
 ) => {
   if (!pool?.poolTokens) {
-    return Zero
+    return 0n // Zero equivalent in BigInt
   }
 
   const currentTokens =
-    withdrawType === ALL ? bigNumMap[withdrawType] : bigNumMap
+    withdrawType === ALL ? bigIntMap[withdrawType] : bigIntMap
 
   return pool.poolTokens.reduce((sum, token, index) => {
     if (!currentTokens[index]) {
       return sum
     }
-    const valueToAdd = currentTokens[index].value.mul(
-      BigNumber.from(10).pow(18 - token.decimals[chainId])
+
+    // Compute the power of 10 using pow10BigInt function
+    const scaleFactor = pow10BigInt(
+      BigInt(18) - BigInt(token.decimals[chainId])
     )
-    return sum.add(valueToAdd)
-  }, Zero)
+    const valueToAdd = currentTokens[index].value * scaleFactor
+
+    return sum + valueToAdd
+  }, 0n) // Zero equivalent in BigInt
+}
+
+function pow10BigInt(n) {
+  let result = 1n
+  for (let i = 0n; i < n; i++) {
+    result *= 10n
+  }
+  return result
 }
 
 export default Withdraw

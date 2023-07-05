@@ -22,6 +22,7 @@ import { formatBNToString } from '@/utils/bignumber/format'
 import { getSwapDepositContractFields } from '@/utils/hooks/useSwapDepositContract'
 import { calculatePriceImpact } from '@/utils/priceImpact'
 import { transformCalculateLiquidityInput } from '@/utils/transformCalculateLiquidityInput'
+import { formatBigIntToString } from '@/utils/bigint/format'
 
 const DEFAULT_DEPOSIT_QUOTE = {
   priceImpact: 0n,
@@ -77,7 +78,7 @@ const Deposit = ({
       }
       const { totalLocked, virtualPrice } = poolData
 
-      if (totalLocked > (0) && inputSum.gt(0)) {
+      if (totalLocked > 0 && inputSum.gt(0)) {
         const input = transformCalculateLiquidityInput(
           chainId,
           pool,
@@ -101,7 +102,11 @@ const Deposit = ({
           )
         }
 
-        const priceImpact = calculatePriceImpact(inputSum, amount, BigNumber.from(Number(virtualPrice)))
+        const priceImpact = calculatePriceImpact(
+          inputSum,
+          amount,
+          BigInt((virtualPrice as any).result.toString())
+        )
 
         setDepositQuote({
           priceImpact: priceImpact,
@@ -289,7 +294,6 @@ const Deposit = ({
     ]
   )
 
-  console.log(pool, poolUserData, poolData)
   return (
     <div className="flex-col">
       <div className="px-2 pt-1 pb-4 bg-bgLight rounded-xl">
@@ -355,7 +359,11 @@ const SerializedDepositInput = ({
         token={serializedToken}
         key={serializedToken.symbol}
         rawBalance={serializedToken.rawBalance}
-        balanceStr={String(serializedToken.balanceStr)}
+        balanceStr={formatBigIntToString(
+          serializedToken.rawBalance,
+          serializedToken.decimals[chainId],
+          4
+        )}
         inputValueStr={inputValue.str[serializedToken.addresses[chainId]]}
         onChange={(value) => onChangeInputValue(serializedToken, value)}
         chainId={chainId}

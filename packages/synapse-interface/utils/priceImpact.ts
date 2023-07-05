@@ -1,12 +1,12 @@
 function powBigInt(base, exponent) {
-  let result = 1n;
+  let result = 1n
   for (let i = 0; i < exponent; i++) {
-      result *= base;
+    result *= base
   }
-  return result;
+  return result
 }
 
-const BI_1E18 = powBigInt(10n, 18);
+const BI_1E18 = powBigInt(10n, 18)
 
 export const calculatePriceImpact = (
   tokenInputAmount, // assumed to be 18d precision
@@ -15,15 +15,14 @@ export const calculatePriceImpact = (
   isWithdraw = false
 ) => {
   if (tokenInputAmount <= 0n) {
-    return 0n;
+    return 0n
   }
 
   return isWithdraw
-    ? (tokenOutputAmount
-        * powBigInt(10n, 36))
-        / (tokenInputAmount * virtualPrice)
-        - BI_1E18
-    : (virtualPrice * tokenOutputAmount) / tokenInputAmount - BI_1E18;
+    ? (tokenOutputAmount * powBigInt(10n, 36)) /
+        (tokenInputAmount * virtualPrice) -
+        BI_1E18
+    : (virtualPrice * tokenOutputAmount) / tokenInputAmount - BI_1E18
 }
 
 export const calculatePriceImpactWithdraw = (
@@ -31,13 +30,13 @@ export const calculatePriceImpactWithdraw = (
   tokenOutputAmount,
   virtualPrice = powBigInt(10n, 18)
 ) => {
-  const baseSquared = powBigInt(10n, 36);
+  const baseSquared = powBigInt(10n, 36)
   if (lpTokenInputAmount > 0n) {
-    return (tokenOutputAmount
-      * baseSquared)
-      / (lpTokenInputAmount * virtualPrice)
-      - powBigInt(10n, 18);
+    return (
+      (tokenOutputAmount * baseSquared) / (lpTokenInputAmount * virtualPrice) -
+      powBigInt(10n, 18)
+    )
   } else {
-    return 0n;
+    return 0n
   }
 }

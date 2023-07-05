@@ -6,6 +6,8 @@ import LoadingSpinner from '@tw/LoadingSpinner'
 import { useEffect, useState } from 'react'
 import { getPoolFee } from '@utils/actions/getPoolFee'
 import { getSwapDepositContractFields } from '@/utils/hooks/useSwapDepositContract'
+import { formatBigIntToString } from '@/utils/bigint/format'
+
 const PoolInfoSection = ({
   pool,
   poolData,
@@ -41,7 +43,11 @@ const PoolInfoSection = ({
           content={
             poolData?.virtualPriceStr ? (
               <AugmentWithUnits
-                content={poolData.virtualPriceStr}
+                content={formatBigIntToString(
+                  BigInt(poolData.virtualPrice.result),
+                  18,
+                  6
+                )}
                 label={pool.priceUnits}
               />
             ) : (

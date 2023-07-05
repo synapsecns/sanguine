@@ -30,7 +30,10 @@ export const DepositTokenInput = ({
     (e: MouseEvent<HTMLButtonElement>) => {
       e.preventDefault()
 
-      const adjustedValue = formatBigIntToString(BigInt(rawBalance.toString()), token.decimals[chainId])
+      const adjustedValue = formatBigIntToString(
+        BigInt(rawBalance.toString()),
+        token.decimals[chainId]
+      )
 
       onChange(adjustedValue)
     },

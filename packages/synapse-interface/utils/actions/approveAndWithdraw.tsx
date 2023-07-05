@@ -4,7 +4,7 @@ import {
   useSwapDepositContract,
 } from '@hooks/useSwapDepositContract'
 import ExplorerToastLink from '@components/ExplorerToastLink'
-import { subtractSlippage } from '@utils/slippage'
+import { subtractSlippage, subtractSlippageBigInt } from '@utils/slippage'
 import { txErrorHandler } from '@utils/txErrorHandler'
 import { approveToken } from '@utils/approveToken'
 import { Token } from '@types'
@@ -15,10 +15,10 @@ import toast from 'react-hot-toast'
 export const approve = async (
   pool: Token,
   depositQuote: any,
-  inputValue: BigNumber,
+  inputValue: bigint,
   chainId: number
 ) => {
-  if (inputValue.isZero() || inputValue.lt(depositQuote.allowance)) {
+  if (inputValue === 0n || inputValue < depositQuote.allowance) {
     return
   }
 
@@ -36,13 +36,13 @@ export const withdraw = async (
   pool: Token,
   slippageSelected: any,
   slippageCustom: any,
-  inputAmount: BigNumber,
+  inputAmount: bigint,
   chainId: number,
   withdrawType: string,
   outputs: Record<
     string,
     {
-      value: BigNumber
+      value: any
       index: number
     }
   >
@@ -59,17 +59,15 @@ export const withdraw = async (
 
   try {
     if (withdrawType === ALL) {
-
-      console.log(outputs[withdrawType])
       spendTransaction = await poolContract.removeLiquidity(
         inputAmount,
-        pool.poolTokens?.map((t,index) =>
-          subtractSlippage(
+        pool.poolTokens?.map((t, index) =>
+          subtractSlippageBigInt(
             outputs[withdrawType][index].value,
             slippageSelected,
             slippageCustom
           )
-          ),
+        ),
         Math.round(new Date().getTime() / 1000 + 60 * 10)
       )
     } else {
@@ -79,7 +77,11 @@ export const withdraw = async (
       spendTransaction = await poolContract.removeLiquidityOneToken(
         inputAmount,
         poolTokenIndex,
-        subtractSlippage(outputAmount.value, slippageSelected, slippageCustom),
+        subtractSlippageBigInt(
+          outputAmount.value,
+          slippageSelected,
+          slippageCustom
+        ),
         Math.round(new Date().getTime() / 1000 + 60 * 10)
       )
     }
