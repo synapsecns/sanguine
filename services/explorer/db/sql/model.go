@@ -90,29 +90,35 @@ type CCTPEvent struct {
 	// DestinationChainID is the chain ID of the CCTP transfer.
 	DestinationChainID *big.Int `gorm:"column:destination_chain_id;type:UInt256"`
 	// Sender is the sender of the CCTP transfer.
-	Sender string `gorm:"column:sender"`
+	Sender sql.NullString `gorm:"column:sender"`
 	// Nonce is the nonce of the CCTP transfer.
-	Nonce uint64 `gorm:"column:nonce"`
+	Nonce sql.NullInt64 `gorm:"column:nonce"`
 	// BurnToken is the burn token of the CCTP transfer.
-	BurnToken string `gorm:"column:burn_token"`
+	BurnToken sql.NullString `gorm:"column:burn_token"`
 	// MintToken is the mint token of the CCTP transfer.
-	MintToken string `gorm:"column:mint_token"`
+	MintToken sql.NullString `gorm:"column:mint_token"`
 	// SentAmount is the sent amount of the CCTP transfer.
 	SentAmount *big.Int `gorm:"column:sent_amount;type:UInt256"`
+	// SentAmountUSD is the sent amount of the CCTP transfer in USD terms.
+	SentAmountUSD *float64 `gorm:"column:sent_amount_usd;type:Float64"`
 	// ReceivedAmount is the received amount of the CCTP transfer.
 	ReceivedAmount *big.Int `gorm:"column:received_amount;type:UInt256"`
 	// RequestVersion is the request version of the CCTP transfer.
-	RequestVersion uint32 `gorm:"column:request_version"`
+	RequestVersion sql.NullInt32 `gorm:"column:request_version"`
 	// FormattedRequest is the formatted request of the CCTP transfer.
 	FormattedRequest []byte `gorm:"column:formatted_request"`
 	// RequestID is the request ID of the CCTP transfer.
 	RequestID [32]byte `gorm:"column:request_id"`
 	// Recipient is the recipient of the CCTP transfer.
-	Recipient string `gorm:"column:recipient"`
+	Recipient sql.NullString `gorm:"column:recipient"`
 	// Fee is the fee of the CCTP transfer.
 	Fee *big.Int `gorm:"column:fee;type:UInt256"`
+	// FeeUSD is the fee of the CCTP transfer in USD terms.
+	FeeUSD *float64 `gorm:"column:fee_usd;type:Float64"`
 	// Token is the address of the received token.
-	Token string `gorm:"column:token"`
+	Token sql.NullString `gorm:"column:token"`
+	// TimeStamp is the timestamp in which the record was inserted.
+	TimeStamp *uint64 `gorm:"column:timestamp"`
 }
 
 // BridgeEvent stores data for emitted events from the Bridge contract.
