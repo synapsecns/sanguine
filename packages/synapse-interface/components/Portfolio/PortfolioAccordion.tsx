@@ -26,9 +26,6 @@ export const PortfolioAccordion = ({
     setIsExpanded((prevExpanded) => !prevExpanded)
   }
 
-  const expanded = 'rotate-0'
-  const collapsed = '-rotate-90'
-
   useEffect(() => {
     if (portfolioChainId === connectedChainId) {
       setIsExpanded(true)
@@ -38,18 +35,13 @@ export const PortfolioAccordion = ({
   return (
     <div className={isExpanded && 'pb-2'}>
       <div
-        className="flex flex-row items-center py-3"
+        className="flex flex-row items-center justify-between py-3"
         data-test-id="portfolio-accordion"
       >
-        <button onClick={handleToggle} className="mr-3">
-          <AccordionIcon
-            className={`
-              ${isExpanded ? expanded : collapsed}
-              w-4 h-4
-            `}
-          />
+        <button onClick={handleToggle} className="flex-1 mr-3 ">
+          {header}
         </button>
-        {header} {isExpanded ? expandedProps : collapsedProps}
+        {isExpanded ? expandedProps : collapsedProps}
       </div>
       <div>{isExpanded && <React.Fragment>{children}</React.Fragment>}</div>
     </div>
