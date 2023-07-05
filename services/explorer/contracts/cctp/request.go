@@ -32,8 +32,9 @@ func (s SynapseCCTPCircleRequestSent) GetDestinationChainID() *big.Int {
 }
 
 // GetSender gets the sender of the CCTP tokens on the origin chain.
-func (s SynapseCCTPCircleRequestSent) GetSender() *common.Address {
-	return &s.Sender
+func (s SynapseCCTPCircleRequestSent) GetSender() *string {
+	str := s.Sender.String()
+	return &str
 }
 
 // GetNonce gets the nonce of the CCTP message on the origin chain.
@@ -42,12 +43,13 @@ func (s SynapseCCTPCircleRequestSent) GetNonce() *uint64 {
 }
 
 // GetBurnToken gets the address of the Circle token that was burnt.
-func (s SynapseCCTPCircleRequestSent) GetBurnToken() *common.Address {
-	return &s.Token
+func (s SynapseCCTPCircleRequestSent) GetBurnToken() *string {
+	str := s.Token.String()
+	return &str
 }
 
 // GetMintToken gets the address of the minted Circle token.
-func (s SynapseCCTPCircleRequestSent) GetMintToken() *common.Address {
+func (s SynapseCCTPCircleRequestSent) GetMintToken() *string {
 	return nil
 }
 
@@ -77,7 +79,7 @@ func (s SynapseCCTPCircleRequestSent) GetRequestID() [32]byte {
 }
 
 // GetRecipient gets the end recipient of the tokens on this chain.
-func (s SynapseCCTPCircleRequestSent) GetRecipient() *common.Address {
+func (s SynapseCCTPCircleRequestSent) GetRecipient() *string {
 	return nil
 }
 
@@ -87,7 +89,7 @@ func (s SynapseCCTPCircleRequestSent) GetFee() *big.Int {
 }
 
 // GetToken gets the address of the token that the recipient received.
-func (s SynapseCCTPCircleRequestSent) GetToken() *common.Address {
+func (s SynapseCCTPCircleRequestSent) GetToken() *string {
 	return nil
 }
 
@@ -117,7 +119,7 @@ func (s SynapseCCTPCircleRequestFulfilled) GetDestinationChainID() *big.Int {
 }
 
 // GetSender gets the sender of the CCTP tokens on the origin chain.
-func (s SynapseCCTPCircleRequestFulfilled) GetSender() *common.Address {
+func (s SynapseCCTPCircleRequestFulfilled) GetSender() *string {
 	return nil
 }
 
@@ -127,13 +129,19 @@ func (s SynapseCCTPCircleRequestFulfilled) GetNonce() *uint64 {
 }
 
 // GetBurnToken gets the address of the Circle token that was burnt.
-func (s SynapseCCTPCircleRequestFulfilled) GetBurnToken() *common.Address {
+func (s SynapseCCTPCircleRequestFulfilled) GetBurnToken() *string {
 	return nil
 }
 
 // GetMintToken gets the address of the minted Circle token.
-func (s SynapseCCTPCircleRequestFulfilled) GetMintToken() *common.Address {
-	return &s.MintToken
+func (s SynapseCCTPCircleRequestFulfilled) GetMintToken() *string {
+	str := s.MintToken.String()
+	return &str
+}
+
+// GetSentAmount gets the amount of Circle tokens burnt.
+func (s SynapseCCTPCircleRequestFulfilled) GetSentAmount() *big.Int {
+	return nil
 }
 
 // GetReceivedAmount gets the received amount by the recipient.
@@ -157,8 +165,9 @@ func (s SynapseCCTPCircleRequestFulfilled) GetRequestID() [32]byte {
 }
 
 // GetRecipient gets the end recipient of the tokens on this chain.
-func (s SynapseCCTPCircleRequestFulfilled) GetRecipient() *common.Address {
-	return &s.Recipient
+func (s SynapseCCTPCircleRequestFulfilled) GetRecipient() *string {
+	str := s.Recipient.String()
+	return &str
 }
 
 // GetFee gets the fee paid for fulfilling the request, in minted tokens.
@@ -167,6 +176,7 @@ func (s SynapseCCTPCircleRequestFulfilled) GetFee() *big.Int {
 }
 
 // GetToken gets the address of the token that the recipient received.
-func (s SynapseCCTPCircleRequestFulfilled) GetToken() *common.Address {
-	return &s.Token
+func (s SynapseCCTPCircleRequestFulfilled) GetToken() *string {
+	str := s.Token.String()
+	return &str
 }
