@@ -125,7 +125,10 @@ export const TokenSlideOver = ({
   }
 
   return (
-    <div className="max-h-full pb-4 -mt-3 overflow-auto scrollbar-hide rounded-3xl">
+    <div
+      data-test-id="token-slide-over"
+      className="max-h-full pb-4 -mt-3 overflow-auto scrollbar-hide rounded-3xl"
+    >
       <div className="absolute z-10 w-full px-6 pt-3 bg-bgLight rounded-t-xl">
         <div className="flex items-center float-right mb-2 font-medium sm:float-none">
           <SlideSearchBox

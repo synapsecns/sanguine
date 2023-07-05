@@ -24,7 +24,8 @@ const SelectTokenDropdown = ({
 
   return (
     <button
-      className="sm:mt-[-1px] flex-shrink-0 mr-[-1px] w-[35%] cursor-pointer focus:outline-none"
+      data-test-id="select-token-dropdown"
+      className="flex-shrink-0 w-[35%] cursor-pointer focus:outline-none"
       onClick={onClick}
     >
       <div
@@ -45,6 +46,7 @@ const SelectTokenDropdown = ({
             items-center
             rounded-lg
             py-1.5 pl-2 h-14
+            md:min-w-[150px]
           `}
         >
           <div className="self-center flex-shrink-0 hidden mr-1 sm:block">
