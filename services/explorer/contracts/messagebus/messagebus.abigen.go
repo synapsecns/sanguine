@@ -4543,6 +4543,7 @@ func (_MessageBusUpgradeable *MessageBusUpgradeableFilterer) WatchExecuted(opts 
 // Solidity: event Executed(bytes32 indexed messageId, uint8 status, address indexed _dstAddress, uint64 srcChainId, uint64 srcNonce)
 func (_MessageBusUpgradeable *MessageBusUpgradeableFilterer) ParseExecuted(log types.Log) (*MessageBusUpgradeableExecuted, error) {
 	event := new(MessageBusUpgradeableExecuted)
+	event.GetSourceChainID()
 	if err := _MessageBusUpgradeable.contract.UnpackLog(event, "Executed", log); err != nil {
 		return nil, err
 	}
@@ -4715,6 +4716,7 @@ func (_MessageBusUpgradeable *MessageBusUpgradeableFilterer) WatchMessageSent(op
 // Solidity: event MessageSent(address indexed sender, uint256 srcChainID, bytes32 receiver, uint256 indexed dstChainId, bytes message, uint64 nonce, bytes options, uint256 fee, bytes32 indexed messageId)
 func (_MessageBusUpgradeable *MessageBusUpgradeableFilterer) ParseMessageSent(log types.Log) (*MessageBusUpgradeableMessageSent, error) {
 	event := new(MessageBusUpgradeableMessageSent)
+	event.GetSourceChainID()
 	if err := _MessageBusUpgradeable.contract.UnpackLog(event, "MessageSent", log); err != nil {
 		return nil, err
 	}
