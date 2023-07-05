@@ -73,6 +73,7 @@ export const InputContainer = () => {
 
   return (
     <div
+      data-test-id="input-container"
       className={`
         text-left px-2 sm:px-4 pt-2 pb-4 rounded-xl
         bg-bgLight
@@ -103,38 +104,37 @@ export const InputContainer = () => {
             isOrigin={true}
             onClick={() => dispatch(setShowFromTokenSlideOver(true))}
           />
-          <input
-            pattern="[0-9.]+"
-            disabled={false}
-            className={`
-              ml-4
-              ${isConnected ? '-mt-0 md:-mt-4' : '-mt-0'}
+          <div className="flex flex-col pt-2 ml-4">
+            <input
+              pattern="[0-9.]+"
+              disabled={false}
+              className={`
               focus:outline-none
               bg-transparent
-              pr-4
-              w-2/3
+              pr-4 max-w-[180px]
               placeholder:text-[#88818C]
               text-white text-opacity-80 text-lg md:text-2xl lg:text-2xl font-medium
             `}
-            placeholder="0.0000"
-            onChange={handleFromValueChange}
-            value={parsedFromValue}
-            name="inputRow"
-            autoComplete="off"
-          />
-          {hasMounted && isConnected && (
-            <label
-              htmlFor="inputRow"
-              className="absolute hidden pt-1 mt-10 ml-40 text-xs text-white transition-all duration-150 md:block transform-gpu hover:text-opacity-70 hover:cursor-pointer"
-              onClick={onClickBalance}
-            >
-              {formattedBalance}
-              <span className="text-opacity-50 text-secondaryTextColor">
-                {' '}
-                available
-              </span>
-            </label>
-          )}
+              placeholder="0.0000"
+              onChange={handleFromValueChange}
+              value={parsedFromValue}
+              name="inputRow"
+              autoComplete="off"
+            />
+            {hasMounted && isConnected && (
+              <label
+                htmlFor="inputRow"
+                className="hidden text-xs text-white transition-all duration-150 md:block transform-gpu hover:text-opacity-70 hover:cursor-pointer"
+                onClick={onClickBalance}
+              >
+                {formattedBalance}
+                <span className="text-opacity-50 text-secondaryTextColor">
+                  {' '}
+                  available
+                </span>
+              </label>
+            )}
+          </div>
           {hasMounted && isConnected && (
             <div className="hidden mr-2 sm:inline-block">
               <MiniMaxButton
