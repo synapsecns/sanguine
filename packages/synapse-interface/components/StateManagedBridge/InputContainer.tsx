@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useMemo } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
 import { Zero } from '@ethersproject/constants'
 import { RootState } from '@/store/store'
@@ -13,8 +13,13 @@ import { formatBNToString } from '@/utils/bignumber/format'
 import { OriginChainLabel } from './OriginChainLabel'
 
 export const InputContainer = () => {
-  const { fromChainId, fromToken, fromChainIds, supportedFromTokenBalances } =
-    useSelector((state: RootState) => state.bridge)
+  const {
+    fromChainId,
+    fromToken,
+    fromChainIds,
+    supportedFromTokenBalances,
+    fromValue,
+  } = useSelector((state: RootState) => state.bridge)
   const [showValue, setShowValue] = useState('')
 
   const [hasMounted, setHasMounted] = useState(false)
@@ -61,6 +66,10 @@ export const InputContainer = () => {
       formatBNToString(fromTokenBalance, fromToken.decimals[fromChainId])
     )
   }
+
+  const parsedFromValue = useMemo(() => {
+    return formatBNToString(fromValue, fromToken.decimals[fromChainId])
+  }, [fromValue, fromToken, fromChainId])
 
   return (
     <div
@@ -109,7 +118,7 @@ export const InputContainer = () => {
             `}
             placeholder="0.0000"
             onChange={handleFromValueChange}
-            value={showValue}
+            value={parsedFromValue}
             name="inputRow"
             autoComplete="off"
           />

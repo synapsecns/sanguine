@@ -5,7 +5,11 @@ import { useDispatch } from 'react-redux'
 import { useNetwork, useAccount } from 'wagmi'
 import { switchNetwork } from '@wagmi/core'
 import { Zero } from '@ethersproject/constants'
-import { setFromToken, setFromChainId } from '@/slices/bridgeSlice'
+import {
+  setFromToken,
+  setFromChainId,
+  updateFromValue,
+} from '@/slices/bridgeSlice'
 import { CHAINS_BY_ID } from '@/constants/chains'
 import { TokenWithBalanceAndAllowance } from '@/utils/hooks/usePortfolioBalances'
 import { approveToken } from '@/utils/approveToken'
@@ -80,7 +84,7 @@ export const SingleNetworkPortfolio = ({
               <PortfolioTokenAsset
                 token={token}
                 balance={balance}
-                chainId={portfolioChainId}
+                portfolioChainId={portfolioChainId}
                 connectedChainId={connectedChainId}
                 isApproved={true}
               />
@@ -99,7 +103,7 @@ export const SingleNetworkPortfolio = ({
               <PortfolioTokenAsset
                 token={token}
                 balance={balance}
-                chainId={portfolioChainId}
+                portfolioChainId={portfolioChainId}
                 connectedChainId={connectedChainId}
                 isApproved={false}
               />
@@ -140,6 +144,7 @@ const PortfolioTokenAsset = ({
   connectedChainId,
   isApproved,
 }: PortfolioTokenAssetProps) => {
+  const dispatch = useDispatch()
   const { icon, symbol, decimals, addresses } = token
   const parsedBalance: string = formatBNToString(
     balance,
@@ -148,6 +153,15 @@ const PortfolioTokenAsset = ({
   )
   const isDisabled: boolean = portfolioChainId !== connectedChainId
   const filteredOpacity: string = 'opacity-50 cursor-default'
+
+  const handleTotalBalanceInputCallback = useCallback(() => {
+    if (!isDisabled) {
+      dispatch(setFromToken(token))
+      dispatch(setFromChainId(portfolioChainId))
+      dispatch(updateFromValue(balance))
+    }
+  }, [isDisabled, token, balance])
+
   return (
     <div
       data-test-id="portfolio-token-asset"
@@ -170,7 +184,12 @@ const PortfolioTokenAsset = ({
         <div>{symbol}</div>
       </div>
       <div className="flex flex-row items-center w-1/2 text-left">
-        <div className={!isApproved && 'opacity-50'}>{parsedBalance}</div>
+        <div
+          onClick={handleTotalBalanceInputCallback}
+          className={!isApproved && 'opacity-50'}
+        >
+          {parsedBalance}
+        </div>
         <PortfolioAssetActionButton
           connectedChainId={connectedChainId}
           token={token}
