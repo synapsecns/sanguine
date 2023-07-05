@@ -61,6 +61,8 @@ export const SingleNetworkPortfolio = ({
       className="flex flex-col border-b border-solid border-[#28282F]"
     >
       <PortfolioAccordion
+        connectedChainId={connectedChainId}
+        portfolioChainId={portfolioChainId}
         initializeExpanded={initializeExpanded}
         header={
           <PortfolioNetwork

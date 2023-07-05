@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import AccordionIcon from '@icons/AccordionIcon'
 
 type PortfolioAccordionProps = {
@@ -7,6 +7,8 @@ type PortfolioAccordionProps = {
   collapsedProps: React.ReactNode
   children: React.ReactNode
   initializeExpanded: boolean
+  portfolioChainId: number
+  connectedChainId: number
 }
 
 export const PortfolioAccordion = ({
@@ -15,6 +17,8 @@ export const PortfolioAccordion = ({
   collapsedProps,
   children,
   initializeExpanded = false,
+  portfolioChainId,
+  connectedChainId,
 }: PortfolioAccordionProps) => {
   const [isExpanded, setIsExpanded] = useState(initializeExpanded)
 
@@ -24,6 +28,12 @@ export const PortfolioAccordion = ({
 
   const expanded = 'rotate-0'
   const collapsed = '-rotate-90'
+
+  useEffect(() => {
+    if (portfolioChainId === connectedChainId) {
+      setIsExpanded(true)
+    }
+  }, [portfolioChainId, connectedChainId])
 
   return (
     <div className={isExpanded && 'pb-2'}>
