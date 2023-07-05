@@ -133,6 +133,7 @@ func (s *DbSuite) TestGetModelName() {
 		s.Require().NoError(err)
 
 		for _, model := range getTestModels() {
+			// TODO: example for GetModelName
 			modelName, err := dbcommon.GetModelName(gdb, model)
 			s.Require().NoErrorf(err, "failed to get model name for %T %s", model, namingStrategy.strategyType)
 
@@ -180,4 +181,10 @@ func getNonConsistentModels() (allModels []interface{}) {
 		&NonConsistentModelName{}, &OtherNonConsistentModelName{},
 	)
 	return allModels
+}
+
+func ExampleNamer_GetConsistentName() {
+	namer := dbcommon.NewNamer(getTestModels())
+	fmt.Println(namer.GetConsistentName("CreatedAt"))
+	// output: created_at
 }
