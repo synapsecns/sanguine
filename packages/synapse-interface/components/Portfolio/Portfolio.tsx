@@ -31,6 +31,12 @@ export const Portfolio = () => {
   const { address } = useAccount()
   const { chain } = useNetwork()
 
+  useEffect(() => {
+    if (address) {
+      setTab(PortfolioTabs.PORTFOLIO)
+    }
+  }, [address])
+
   return (
     <div
       data-test-id="portfolio"
