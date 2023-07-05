@@ -169,7 +169,7 @@ const PortfolioTokenAsset = ({
       data-test-id="portfolio-token-asset"
       className={`
         flex flex-row items-center text-white py-1
-        ${isDisabled ? filteredOpacity : ''}
+        ${isDisabled ? filteredOpacity : 'opacity-100'}
         `}
     >
       <div
