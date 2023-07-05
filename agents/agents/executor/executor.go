@@ -7,9 +7,9 @@ import (
 	"github.com/ethereum/go-ethereum/common"
 	ethTypes "github.com/ethereum/go-ethereum/core/types"
 	"github.com/jpillora/backoff"
-	"github.com/synapsecns/sanguine/agents/agents/executor/config"
 	"github.com/synapsecns/sanguine/agents/agents/executor/db"
 	execTypes "github.com/synapsecns/sanguine/agents/agents/executor/types"
+	"github.com/synapsecns/sanguine/agents/config/executor"
 	"github.com/synapsecns/sanguine/agents/contracts/inbox"
 	"github.com/synapsecns/sanguine/agents/contracts/lightinbox"
 	"github.com/synapsecns/sanguine/agents/contracts/origin"
@@ -63,7 +63,7 @@ type chainExecutor struct {
 // Executor is the executor agent.
 type Executor struct {
 	// config is the executor agent config.
-	config config.Config
+	config executor.Config
 	// executorDB is the executor agent database.
 	executorDB db.ExecutorDB
 	// scribeClient is the client to the Scribe gRPC server.
@@ -122,7 +122,7 @@ func makeScribeClient(parentCtx context.Context, handler metrics.Handler, url st
 // NewExecutor creates a new executor agent.
 //
 //nolint:cyclop
-func NewExecutor(ctx context.Context, config config.Config, executorDB db.ExecutorDB, scribeClient client.ScribeClient, clients map[uint32]Backend, handler metrics.Handler) (*Executor, error) {
+func NewExecutor(ctx context.Context, config executor.Config, executorDB db.ExecutorDB, scribeClient client.ScribeClient, clients map[uint32]Backend, handler metrics.Handler) (*Executor, error) {
 	chainExecutors := make(map[uint32]*chainExecutor)
 
 	conn, grpcClient, err := makeScribeClient(ctx, handler, fmt.Sprintf("%s:%d", scribeClient.URL, scribeClient.Port))
@@ -165,7 +165,7 @@ func NewExecutor(ctx context.Context, config config.Config, executorDB db.Execut
 			inboxParser = nil
 		}
 
-		chainRPCURL := fmt.Sprintf("%s/1/rpc/%d", config.BaseOmnirpcURL, chain.ChainID)
+		chainRPCURL := fmt.Sprintf("%s/confirmations/1/rpc/%d", config.BaseOmnirpcURL, chain.ChainID)
 
 		underlyingClient, err := ethergoChain.NewFromURL(ctx, chainRPCURL)
 		if err != nil {
@@ -415,8 +415,6 @@ func (e Executor) verifyMessageMerkleProof(message types.Message) (bool, error) 
 }
 
 // verifyStateMerkleProof verifies that a state is in the snapshot merkle tree.
-//
-//nolint:unused
 func (e Executor) verifyStateMerkleProof(parentCtx context.Context, state types.State) (_ bool, err error) {
 	stateRoot := state.Root()
 	root := common.BytesToHash(stateRoot[:]).String()

@@ -54,10 +54,6 @@ type DomainConfig struct {
 	LightInboxAddress string `yaml:"light_inbox_address"`
 	// InboxAddress gets the inbox contract address
 	InboxAddress string `yaml:"inbox_address"`
-	// RPCUrl to use for the chain
-	RPCUrl string `yaml:"rpc_url"`
-	// Minimum start height
-	StartHeight uint32 `yaml:"start_height"`
 }
 
 // IsValid validates the domain config.
@@ -88,10 +84,6 @@ func (d DomainConfig) IsValid(_ context.Context) (ok bool, err error) {
 		if d.BondingManagerAddress == "" {
 			return false, fmt.Errorf("field BondingManagerAddress: %w", ErrRequiredField)
 		}
-	}
-
-	if d.RPCUrl == "" {
-		return false, fmt.Errorf("field RPCURL: %w", ErrRequiredField)
 	}
 
 	return true, nil

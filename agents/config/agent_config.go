@@ -9,7 +9,6 @@ import (
 
 	"github.com/davecgh/go-spew/spew"
 	"github.com/jftuga/ellipsis"
-	scribeConfig "github.com/synapsecns/sanguine/services/scribe/config"
 	"gopkg.in/yaml.v2"
 )
 
@@ -30,10 +29,10 @@ type AgentConfig struct {
 	BondedSigner config.SignerConfig `yaml:"bonded_signer"`
 	// RefreshIntervalSeconds is the refresh interval in seconds
 	RefreshIntervalSeconds uint32 `yaml:"refresh_interval_seconds,omitempty"`
-	// EmbeddedScribeConfig is the config for the embedded scribe. This only needs to be
-	// included if an embedded Scribe is being used. If a remote Scribe is being used,
-	// this can be left empty.
-	EmbeddedScribeConfig scribeConfig.Config `yaml:"embedded_scribe_config"`
+	// BaseOmnirpcURL is the base url for omnirpc.
+	// The format is "https://omnirpc.url". Notice the lack of "confirmations" on the URL
+	// in comparison to what `Scribe` uses.
+	BaseOmnirpcURL string `yaml:"base_omnirpc_url"`
 }
 
 // IsValid makes sure the config is valid. This is done by calling IsValid() on each
@@ -46,6 +45,10 @@ func (a *AgentConfig) IsValid(ctx context.Context) (ok bool, err error) {
 
 	if ok, err = a.Domains.IsValid(ctx); !ok {
 		return false, err
+	}
+
+	if a.BaseOmnirpcURL == "" {
+		return false, fmt.Errorf("rpc url cannot be empty")
 	}
 
 	hasAssignedDomain := (a.DomainID == uint32(0))

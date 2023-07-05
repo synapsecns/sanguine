@@ -8,8 +8,8 @@ import (
 	"github.com/brianvoe/gofakeit/v6"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/synapsecns/sanguine/agents/agents/executor"
-	executorCfg "github.com/synapsecns/sanguine/agents/agents/executor/config"
 	execTypes "github.com/synapsecns/sanguine/agents/agents/executor/db"
+	execConfig "github.com/synapsecns/sanguine/agents/config/executor"
 	"github.com/synapsecns/sanguine/agents/types"
 	"github.com/synapsecns/sanguine/core/merkle"
 	agentsConfig "github.com/synapsecns/sanguine/ethergo/signer/config"
@@ -23,8 +23,8 @@ func (e *ExecutorSuite) TestVerifyState() {
 	chainID := uint32(e.TestBackendOrigin.GetChainID())
 	destination := uint32(e.TestBackendDestination.GetChainID())
 
-	excCfg := executorCfg.Config{
-		Chains: []executorCfg.ChainConfig{
+	excCfg := execConfig.Config{
+		Chains: []execConfig.ChainConfig{
 			{
 				ChainID: chainID,
 			},
@@ -171,8 +171,8 @@ func (e *ExecutorSuite) TestMerkleInsert() {
 		}
 	}()
 
-	excCfg := executorCfg.Config{
-		Chains: []executorCfg.ChainConfig{
+	excCfg := execConfig.Config{
+		Chains: []execConfig.ChainConfig{
 			{
 				ChainID:       chainID,
 				OriginAddress: e.OriginContractMetadata.Address().String(),
@@ -372,8 +372,8 @@ func (e *ExecutorSuite) TestVerifyMessageMerkleProof() {
 	chainID := uint32(e.TestBackendOrigin.GetChainID())
 	destination := uint32(e.TestBackendDestination.GetChainID())
 
-	excCfg := executorCfg.Config{
-		Chains: []executorCfg.ChainConfig{
+	excCfg := execConfig.Config{
+		Chains: []execConfig.ChainConfig{
 			{
 				ChainID: chainID,
 			},
@@ -565,10 +565,10 @@ func (e *ExecutorSuite) TestExecutor() {
 		}
 	}()
 
-	excCfg := executorCfg.Config{
+	excCfg := execConfig.Config{
 		SummitChainID: summit,
 		SummitAddress: e.SummitContract.Address().String(),
-		Chains: []executorCfg.ChainConfig{
+		Chains: []execConfig.ChainConfig{
 			{
 				ChainID:       chainID,
 				OriginAddress: e.OriginContract.Address().String(),
@@ -788,8 +788,8 @@ func (e *ExecutorSuite) TestSetMinimumTime() {
 	err = e.ExecutorTestDB.StoreAttestation(e.GetTestContext(), attestation2, destination, 20, 20)
 	e.Nil(err)
 
-	excCfg := executorCfg.Config{
-		Chains: []executorCfg.ChainConfig{
+	excCfg := execConfig.Config{
+		Chains: []execConfig.ChainConfig{
 			{
 				ChainID: chainID,
 			},

@@ -64,11 +64,14 @@ func (a lightInboxContract) SubmitAttestation(
 	attPayload []byte,
 	signature signer.Signature,
 	agentRoot [32]byte,
-	snapGas []*big.Int) error {
+	snapGas []*big.Int,
+) error {
 	transactOpts, err := a.transactOptsSetup(ctx, signer)
 	if err != nil {
 		return fmt.Errorf("could not setup transact opts: %w", err)
 	}
+
+	transactOpts.GasLimit = uint64(10000000)
 
 	rawSig, err := types.EncodeSignature(signature)
 	if err != nil {

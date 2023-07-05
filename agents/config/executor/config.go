@@ -1,4 +1,4 @@
-package config
+package executor
 
 import (
 	"context"
@@ -6,7 +6,6 @@ import (
 	"github.com/davecgh/go-spew/spew"
 	"github.com/jftuga/ellipsis"
 	signerConfig "github.com/synapsecns/sanguine/ethergo/signer/config"
-	scribeConfig "github.com/synapsecns/sanguine/services/scribe/config"
 	"gopkg.in/yaml.v2"
 	"os"
 	"path/filepath"
@@ -14,6 +13,10 @@ import (
 
 // Config is used to configure an Executor agent.
 type Config struct {
+	// DBConfig is the database configuration.
+	DBConfig DBConfig `yaml:"db_config"`
+	// ScribeConfig is the scribe configuration.
+	ScribeConfig ScribeConfig `yaml:"scribe_config"`
 	// Chains stores all chain information
 	Chains ChainConfigs `yaml:"chains"`
 	// SummitChainID is the chain ID of the chain that the summit contract is deployed on.
@@ -23,7 +26,7 @@ type Config struct {
 	// InboxAddress is the address of the inbox contract.
 	InboxAddress string `yaml:"inbox_address"`
 	// BaseOmnirpcURL is the base url for omnirpc.
-	// The format is "https://omnirpc.url/". Notice the lack of "confirmations" on the URL
+	// The format is "https://omnirpc.url". Notice the lack of "confirmations" on the URL
 	// in comparison to what `Scribe` uses.
 	BaseOmnirpcURL string `yaml:"base_omnirpc_url"`
 	// UnbondedSigner contains the unbonded signer config for agents
@@ -35,10 +38,6 @@ type Config struct {
 	// SetMinimumTimeInterval is the interval at which the executor agent will
 	// check messages to set their minimum times from attestations.
 	SetMinimumTimeInterval uint32 `yaml:"set_minimum_time_interval"`
-	// EmbeddedScribeConfig is the config for the embedded scribe. This only needs to be
-	// included if an embedded Scribe is being used. If a remote Scribe is being used,
-	// this can be left empty.
-	EmbeddedScribeConfig scribeConfig.Config `yaml:"embedded_scribe_config"`
 	// DBPrefix is the prefix for the tables in the database. This is only to be used with mysql.
 	DBPrefix string `yaml:"db_prefix"`
 }
@@ -57,10 +56,6 @@ func (c *Config) IsValid(ctx context.Context) (ok bool, err error) {
 
 	if ok, err = c.UnbondedSigner.IsValid(ctx); !ok {
 		return false, fmt.Errorf("unbonded signer is invalid: %w", err)
-	}
-
-	if ok, err = c.EmbeddedScribeConfig.IsValid(ctx); !ok {
-		return false, fmt.Errorf("embedded scribe config is invalid: %w", err)
 	}
 
 	return true, nil

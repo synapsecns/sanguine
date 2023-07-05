@@ -31,8 +31,7 @@ func configFixture(c ConfigSuite) config.Config {
 			Type: ethConfig.FileType.String(),
 			File: filet.TmpFile(c.T(), "", testWallet.PrivateKeyHex()).Name(),
 		},
-		HTTPBackoffInitialIntervalMs: int(gofakeit.Int64()),
-		HTTPBackoffMaxElapsedTimeMs:  int(gofakeit.Int64()),
+		HTTPBackoffMaxElapsedTimeMs: int(gofakeit.Int64()),
 	}
 }
 
