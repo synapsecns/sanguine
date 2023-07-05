@@ -46,8 +46,6 @@ export const sortByTokenBalance = async (
   const tokensWithBalances: any[] = []
   const multicallInputs = []
 
-  console.log('tokens:', tokens)
-  console.log('chainId:', chainId)
   if (chainId === undefined || !address) {
     tokens.forEach((token) => {
       tokensWithBalances.push({
