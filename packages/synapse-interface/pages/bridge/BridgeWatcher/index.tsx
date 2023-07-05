@@ -161,7 +161,7 @@ const BridgeWatcher = ({
     bridgeInterface: Interface,
     synapseCCTPInterface: Interface,
     bridgeAddress: string,
-    synapseCCTPAddress: string
+    synapseCCTPAddress?: string
   ) => {
     return fromEvents
       .map((log) => {
@@ -240,7 +240,7 @@ const BridgeWatcher = ({
       bridgeInterface,
       synapseCCTPInterface,
       bridgeContract.address,
-      synapseCCTPContract.address
+      synapseCCTPContract?.address
     )
 
     const [inputTimestamps, transactionReceipts] =
