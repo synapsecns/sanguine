@@ -6,7 +6,7 @@ import (
 	"github.com/ethereum/go-ethereum/common"
 )
 
-// EventLog is the interface for all bridge events.
+// EventLog is the interface for all cctp events.
 //
 //nolint:interfacebloat
 type EventLog interface {
