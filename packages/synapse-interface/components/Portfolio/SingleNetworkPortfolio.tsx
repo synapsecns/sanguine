@@ -186,7 +186,10 @@ const PortfolioTokenAsset = ({
       <div className="flex flex-row items-center w-1/2 text-left">
         <div
           onClick={handleTotalBalanceInputCallback}
-          className={!isApproved && 'opacity-50'}
+          className={`
+          ${!isApproved && 'opacity-50'}
+          ${isDisabled ? 'cursor-default' : 'cursor-pointer'}
+          `}
         >
           {parsedBalance}
         </div>
