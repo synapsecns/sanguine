@@ -60,6 +60,7 @@ export const InputContainer = () => {
     event: React.ChangeEvent<HTMLInputElement>
   ) => {
     let fromValueString = event.target.value
+    console.log('fromValueString:', fromValueString)
     try {
       let fromValueBigNumber = stringToBigNum(
         fromValueString,

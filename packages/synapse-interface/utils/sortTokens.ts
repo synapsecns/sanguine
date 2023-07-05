@@ -81,12 +81,10 @@ export const sortByTokenBalance = async (
 
   let multicallData: any[] | any
   if (multicallInputs.length > 0) {
-    console.log('before multicallData: ', multicallData)
     multicallData = await multicall({
       contracts: multicallInputs,
       chainId,
     })
-    console.log('multicallData: ', multicallData)
     return sortArrayByBalance(
       sortByVisibilityRank(
         multicallData.map(
