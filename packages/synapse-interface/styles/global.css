@@ -195,12 +195,3 @@ body {
 .no-mt {
   margin-top: 0 !important;
 }
-
-.radial-gradient-underline {
-  border-image: linear-gradient(to right, rgba(255, 0, 255, 1), rgba(172, 143, 255, 1)) 1;
-}
-
-.radial-gradient-bg {
-  background: radial-gradient(249.66% 351.84% at -119.61% 97.91%, #FF00FF 0%, #AC8FFF 100%),
-  linear-gradient(90deg, rgba(128, 0, 255, 0.2) 0%, rgba(255, 0, 191, 0.2) 100%);
-}
