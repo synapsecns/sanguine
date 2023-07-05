@@ -14,7 +14,7 @@ const (
 
 // AllEventTypes is a list of the event types.
 func AllEventTypes() []EventType {
-	return []EventType{CircleRequestSentEvent,CircleRequestFulfilledEvent}
+	return []EventType{CircleRequestSentEvent, CircleRequestFulfilledEvent}
 }
 
 // Int gets the int value of the event type.

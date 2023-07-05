@@ -2,10 +2,11 @@ package cctp
 
 import (
 	"bytes"
+	"strings"
+
 	"github.com/ethereum/go-ethereum/accounts/abi"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/synapsecns/sanguine/services/explorer/types/cctp"
-	"strings"
 )
 
 func init() {
@@ -18,7 +19,6 @@ func init() {
 	CircleRequestSentTopic = parsedCCTPEvent.Events["CircleRequestSent"].ID
 
 	CircleRequestFulfilledTopic = parsedCCTPEvent.Events["CircleRequestFulfilled"].ID
-
 }
 
 // CircleRequestSentTopic is when a Circle token is sent with an attached action request.
