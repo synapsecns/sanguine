@@ -80,7 +80,8 @@ export const InputContainer = () => {
   }
 
   const parsedFromValue = useMemo(() => {
-    return formatBNToString(fromValue, fromToken.decimals[fromChainId])
+    if (fromValue === Zero) return showValue
+    else return formatBNToString(fromValue, fromToken.decimals[fromChainId])
   }, [fromValue, fromToken, fromChainId])
 
   return (
@@ -129,7 +130,7 @@ export const InputContainer = () => {
             `}
               placeholder="0.0000"
               onChange={handleFromValueChange}
-              value={parsedFromValue}
+              value={showValue}
               name="inputRow"
               autoComplete="off"
             />

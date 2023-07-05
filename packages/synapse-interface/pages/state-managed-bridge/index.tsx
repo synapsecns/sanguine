@@ -151,12 +151,6 @@ const StateManagedBridge = () => {
   const fromChainIds = Object.keys(CHAINS_BY_ID).map((id) => Number(id))
   const toChainIds = Object.keys(CHAINS_BY_ID).map((id) => Number(id))
 
-  useEffect(() => {
-    if (chain?.id && fromChainId !== chain?.id) {
-      dispatch(setFromChainId(chain.id))
-    }
-  }, [fromChainId, chain?.id])
-
   // Commenting out for a bit to debug, but basic issue is we need
   // a mapping for allowable routes/tokens, and how we set them on
   // init and state changes
