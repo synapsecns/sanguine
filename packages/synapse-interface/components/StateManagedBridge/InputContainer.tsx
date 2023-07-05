@@ -79,11 +79,6 @@ export const InputContainer = () => {
     )
   }
 
-  const parsedFromValue = useMemo(() => {
-    if (fromValue === Zero) return showValue
-    else return formatBNToString(fromValue, fromToken.decimals[fromChainId])
-  }, [fromValue, fromToken, fromChainId])
-
   return (
     <div
       data-test-id="input-container"
