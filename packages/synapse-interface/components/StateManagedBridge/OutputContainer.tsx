@@ -63,31 +63,31 @@ export const OutputContainer = ({}) => {
             isOrigin={false}
             onClick={() => dispatch(setShowToTokenSlideOver(true))}
           />
-          {isLoading ? (
-            <LoadingSpinner className="w-2/3 pr-4 ml-4 opacity-50" />
-          ) : (
-            <input
-              pattern="[0-9.]+"
-              disabled={true}
-              className={`
-                ml-4
+          <div className="flex ml-4 min-w-[190px]">
+            {isLoading ? (
+              <LoadingSpinner className="opacity-50" />
+            ) : (
+              <input
+                pattern="[0-9.]+"
+                disabled={true}
+                className={`
                 focus:outline-none
                 bg-transparent
-                pr-4
-                w-2/3
+                w-2/3 max-w-[190px]
                placeholder:text-[#88818C]
                text-white text-opacity-80 text-lg md:text-2xl lg:text-2xl font-medium
               `}
-              placeholder="0.0000"
-              value={
-                bridgeQuote.outputAmountString === '0'
-                ? ''
-                : bridgeQuote.outputAmountString
-              }
-              name="inputRow"
-              autoComplete="off"
-            />
-          )}
+                placeholder="0.0000"
+                value={
+                  bridgeQuote.outputAmountString === '0'
+                    ? ''
+                    : bridgeQuote.outputAmountString
+                }
+                name="inputRow"
+                autoComplete="off"
+              />
+            )}
+          </div>
         </div>
       </div>
     </div>
