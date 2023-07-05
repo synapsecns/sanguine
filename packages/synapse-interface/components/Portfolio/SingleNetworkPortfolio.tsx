@@ -353,20 +353,14 @@ const ConnectedButton = () => {
   h-9 flex items-center justify-center w-36
   text-base text-white px-4 py-2 rounded-3xl
   text-center transform-gpu transition-all duration-75
-  border-2 border-[#D747FF]
   hover:cursor-default
   `
 
   return (
-    <button
-      data-test-id="connected-button"
-      className={buttonClassName}
-      style={{
-        background:
-          'radial-gradient(249.66% 351.84% at -119.61% 97.91%, #FF00FF 0%, #AC8FFF 100%), linear-gradient(90deg, rgba(128, 0, 255, 0.2) 0%, rgba(255, 0, 191, 0.2) 100%)',
-      }}
-    >
-      Connected
+    <button data-test-id="connected-button" className={buttonClassName}>
+      <div className="space-x-2 text-sm">
+        <span className="text-green-500">●</span> Connected
+      </div>
     </button>
   )
 }
