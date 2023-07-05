@@ -5,8 +5,6 @@ package mocks
 import (
 	big "math/big"
 
-	chainwatcher "github.com/synapsecns/sanguine/ethergo/chain/chainwatcher"
-
 	common "github.com/ethereum/go-ethereum/common"
 
 	context "context"
@@ -426,22 +424,6 @@ func (_m *Chain) GetChainID() uint {
 		r0 = rf()
 	} else {
 		r0 = ret.Get(0).(uint)
-	}
-
-	return r0
-}
-
-// GetHeightWatcher provides a mock function with given fields:
-func (_m *Chain) GetHeightWatcher() chainwatcher.BlockHeightWatcher {
-	ret := _m.Called()
-
-	var r0 chainwatcher.BlockHeightWatcher
-	if rf, ok := ret.Get(0).(func() chainwatcher.BlockHeightWatcher); ok {
-		r0 = rf()
-	} else {
-		if ret.Get(0) != nil {
-			r0 = ret.Get(0).(chainwatcher.BlockHeightWatcher)
-		}
 	}
 
 	return r0

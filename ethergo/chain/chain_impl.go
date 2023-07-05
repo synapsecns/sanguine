@@ -9,10 +9,8 @@ import (
 	"github.com/ethereum/go-ethereum/params"
 	"github.com/pkg/errors"
 	"github.com/prometheus/client_golang/prometheus"
-	"github.com/synapsecns/sanguine/ethergo/chain/chainwatcher"
 	"github.com/synapsecns/sanguine/ethergo/chain/client"
 	"github.com/synapsecns/sanguine/ethergo/chain/gas"
-	"github.com/synapsecns/sanguine/ethergo/chain/watcher"
 )
 
 var _ Chain = &baseChain{}
@@ -31,10 +29,6 @@ type baseChain struct {
 	structMux sync.RWMutex
 	// chainConfig is the chain config
 	chainConfig *params.ChainConfig
-	// height watcher keeps track of the current chain tip height
-	heightWatcher chainwatcher.BlockHeightWatcher
-	// contractWatcher watches for events on the contract
-	contractWatcher chainwatcher.ContractWatcher
 	// chainID is the cached chain id
 	chainID uint
 	// cancel is used to close the session
@@ -55,8 +49,6 @@ func (b *baseChain) GasSetter() gas.Setter {
 // GetMetrics gets the metrics for the chain.
 func (b *baseChain) GetMetrics(labels map[string]string) (metrics []prometheus.Collector) {
 	allMetrics := [][]prometheus.Collector{
-		b.heightWatcher.GetMetrics(labels),
-		b.contractWatcher.GetMetrics(labels),
 		b.MeteredEVMClient.GetMetrics(labels),
 	}
 	for _, metricSlice := range allMetrics {
@@ -94,11 +86,6 @@ func (b *baseChain) Estimator() gas.PriceEstimator {
 	return b.estimator
 }
 
-// GetHeightWatcher gets a block height watcher.
-func (b *baseChain) GetHeightWatcher() chainwatcher.BlockHeightWatcher {
-	return b.heightWatcher
-}
-
 // SetChainConfig sets the chain config manually. This is used mostly for testing.
 func (b *baseChain) SetChainConfig(config *params.ChainConfig) {
 	b.structMux.Lock()
@@ -124,8 +111,6 @@ func NewFromMeteredClient(ctx context.Context, config *client.Config, meteredCli
 	b.chainConfig = client.ConfigFromID(b.GetBigChainID())
 	// initialize monitor/estimator
 
-	b.heightWatcher = watcher.NewBlockHeightWatcher(ctx, uint64(b.chainID), b.MeteredEVMClient)
-	b.contractWatcher = watcher.NewContractWatcher(ctx, &b, b.heightWatcher, b.cfg.RequiredConfirmations)
 	b.estimator = gas.NewGasPriceEstimator(ctx, &b)
 	b.setter = gas.NewGasSetter(ctx, &b)
 
@@ -191,15 +176,4 @@ func (b *baseChain) GetChainID() uint {
 // GetBigChainID gets the chain id as a big int.
 func (b *baseChain) GetBigChainID() *big.Int {
 	return big.NewInt(int64(b.chainID))
-}
-
-// ListenOnContract registers an event listener on a contract address
-// the events emitted by the a contractAddress after confirmations (defined in the config).
-func (b *baseChain) ListenOnContract(ctx context.Context, contractAddress string, eventLog chan interface{}) error {
-	err := b.contractWatcher.ListenOnContract(ctx, contractAddress, eventLog)
-	if err != nil {
-		return fmt.Errorf("could not listen on contract: %w", err)
-	}
-
-	return nil
 }

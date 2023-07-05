@@ -9,8 +9,6 @@ import (
 
 	bind "github.com/ethereum/go-ethereum/accounts/abi/bind"
 
-	chainwatcher "github.com/synapsecns/sanguine/ethergo/chain/chainwatcher"
-
 	common "github.com/ethereum/go-ethereum/common"
 
 	context "context"
@@ -493,22 +491,6 @@ func (_m *SimulatedTestBackend) GetFundedAccount(ctx context.Context, requestBal
 	} else {
 		if ret.Get(0) != nil {
 			r0 = ret.Get(0).(*keystore.Key)
-		}
-	}
-
-	return r0
-}
-
-// GetHeightWatcher provides a mock function with given fields:
-func (_m *SimulatedTestBackend) GetHeightWatcher() chainwatcher.BlockHeightWatcher {
-	ret := _m.Called()
-
-	var r0 chainwatcher.BlockHeightWatcher
-	if rf, ok := ret.Get(0).(func() chainwatcher.BlockHeightWatcher); ok {
-		r0 = rf()
-	} else {
-		if ret.Get(0) != nil {
-			r0 = ret.Get(0).(chainwatcher.BlockHeightWatcher)
 		}
 	}
 
