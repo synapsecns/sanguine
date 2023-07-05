@@ -1,9 +1,6 @@
 import { useState, useEffect, useMemo } from 'react'
-import { BigNumber } from '@ethersproject/bignumber'
-import { Zero } from '@ethersproject/constants'
 import { SYN } from '@constants/tokens/master'
 import { WETH } from '@constants/tokens/swapMaster'
-import { formatUnits } from '@ethersproject/units'
 import * as ALL_CHAINS from '@constants/chains/master'
 import CHAINLINK_AGGREGATOR_ABI from '@abis/chainlinkAggregator.json'
 import {
@@ -58,15 +55,14 @@ export const getEthPrice = async (): Promise<number> => {
     chainId: 1,
   })
 
-  const ethPriceBigInt = ethPriceResult ? BigInt(ethPriceResult) : BigInt('0');
+  const ethPriceBigInt = ethPriceResult ? BigInt(ethPriceResult) : BigInt('0')
   if (ethPriceBigInt === BigInt('0')) {
     return 0
   } else {
     // Note: BigInt to Number conversion happens here
-    return Number(ethPriceBigInt) / Math.pow(10, 8);
+    return Number(ethPriceBigInt) / Math.pow(10, 8)
   }
 }
-
 
 export const getAvaxPrice = async (): Promise<number> => {
   // the price result returned by latestAnswer is 8 decimals
@@ -77,12 +73,14 @@ export const getAvaxPrice = async (): Promise<number> => {
     chainId: 1,
   })
 
-  const avaxPriceBigInt = avaxPriceResult ? BigInt(avaxPriceResult) : BigInt('0');
+  const avaxPriceBigInt = avaxPriceResult
+    ? BigInt(avaxPriceResult)
+    : BigInt('0')
 
   if (avaxPriceBigInt === BigInt('0')) {
     return 0
   } else {
-    return Number(avaxPriceBigInt) / Math.pow(10, 8);
+    return Number(avaxPriceBigInt) / Math.pow(10, 8)
   }
 }
 
@@ -110,8 +108,8 @@ export const getSynPrices = async () => {
     )?.value ?? BigInt('0')
 
   // Assuming formatUnits(sushiEthBalance, 'ether') converts the balance to Ether (i.e., divides by 10**18)
-  const ethBalanceNumber = Number(sushiEthBalance) / Math.pow(10, 18);
-  const synBalanceNumber = Number(sushiSynBalance) / Math.pow(10, 18);
+  const ethBalanceNumber = Number(sushiEthBalance) / Math.pow(10, 18)
+  const synBalanceNumber = Number(sushiSynBalance) / Math.pow(10, 18)
 
   const synPerEth = synBalanceNumber / ethBalanceNumber
 

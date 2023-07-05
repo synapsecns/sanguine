@@ -1,9 +1,9 @@
-function powBigInt(base, exponent) {
-  let result = 1n;
+const powBigInt = (base, exponent) => {
+  let result = 1n
   for (let i = 0; i < exponent; i++) {
-      result *= base;
+    result *= base
   }
-  return result;
+  return result
 }
 
 export const calculateExchangeRate = (
@@ -13,10 +13,11 @@ export const calculateExchangeRate = (
   tokenPrecisionTo: number
 ) => {
   if (amountFrom > 0n) {
-    return (amountTo
-      * powBigInt(10n, BigInt(36 - tokenPrecisionTo))) // convert to standard 1e18 precision
-      / (amountFrom * powBigInt(10n, BigInt(18 - tokenPrecisionFrom)));
+    return (
+      (amountTo * powBigInt(10n, BigInt(36 - tokenPrecisionTo))) / // convert to standard 1e18 precision
+      (amountFrom * powBigInt(10n, BigInt(18 - tokenPrecisionFrom)))
+    )
   } else {
-    return 0n;
+    return 0n
   }
 }

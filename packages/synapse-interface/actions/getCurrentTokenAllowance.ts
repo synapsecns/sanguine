@@ -1,6 +1,7 @@
 import { getPublicClient } from '@wagmi/core'
 import { erc20ABI } from 'wagmi'
 import { Contract } from 'ethers'
+
 import { publicClientToProvider } from '@/ethers'
 
 export const getCurrentTokenAllowance = async (

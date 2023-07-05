@@ -1,6 +1,6 @@
 import { readContracts } from '@wagmi/core'
 import { Zero } from '@ethersproject/constants'
-import {SWAP_ABI} from '@abis/swap'
+import { SWAP_ABI } from '@abis/swap'
 import { bnPercentFormat } from '@bignumber/format'
 
 export const getPoolFee = async (poolAddress: string, chainId: number) => {

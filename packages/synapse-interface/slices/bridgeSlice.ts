@@ -1,5 +1,4 @@
 import { BigNumber } from 'ethers'
-import { Zero } from '@ethersproject/constants'
 import { createSlice, PayloadAction } from '@reduxjs/toolkit'
 import { Address } from 'wagmi'
 
@@ -36,7 +35,7 @@ const initialState: BridgeState = {
   supportedToTokens: [],
   fromToken: ETH,
   toToken: ETH,
-  fromValue: "" ,
+  fromValue: '',
   bridgeQuote: EMPTY_BRIDGE_QUOTE,
   fromChainIds: [],
   toChainIds: [],
@@ -111,7 +110,10 @@ export const tokenDecimalMiddleware =
       const currentState = getState()
 
       // if fromValue is 0, no need to adjust it
-      if (currentState.bridge.fromValue === "0" || currentState.bridge.fromValue === "") {
+      if (
+        currentState.bridge.fromValue === '0' ||
+        currentState.bridge.fromValue === ''
+      ) {
         next(action)
         return
       }

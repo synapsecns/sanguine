@@ -24,25 +24,27 @@ export const stringToBigNum = (rawVal, rawDecimals) => {
 }
 
 export const stringToBigInt = (rawVal, rawDecimals) => {
-  let value = rawVal.replace(/[$,]/g, '');
+  let value = rawVal.replace(/[$,]/g, '')
   if (['.', '0.', '', '.0'].includes(value)) {
-    return BigInt(0);
+    return BigInt(0)
   }
   if (value.startsWith('.')) {
-    value = `0${value}`;
+    value = `0${value}`
   }
 
   // Scale the decimal number up by the appropriate number of decimals.
-  const scaleFactor = BigInt(10 ** rawDecimals);
+  const scaleFactor = BigInt(10 ** rawDecimals)
 
   // Split the input into whole and fractional parts.
-  const [wholePart, fractionalPart = '0'] = value.split('.');
+  const [wholePart, fractionalPart = '0'] = value.split('.')
 
   // Convert the whole part directly to a BigInt.
-  const wholeBigInt = BigInt(wholePart) * scaleFactor;
+  const wholeBigInt = BigInt(wholePart) * scaleFactor
 
   // For the fractional part, first scale it up to the right size, then trim any excess decimal places.
-  const fractionalBigInt = BigInt(fractionalPart.padEnd(rawDecimals, '0').slice(0, rawDecimals));
+  const fractionalBigInt = BigInt(
+    fractionalPart.padEnd(rawDecimals, '0').slice(0, rawDecimals)
+  )
 
-  return wholeBigInt + fractionalBigInt;
-};
+  return wholeBigInt + fractionalBigInt
+}

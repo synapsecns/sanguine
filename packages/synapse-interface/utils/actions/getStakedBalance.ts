@@ -1,6 +1,6 @@
 import { readContracts, ReadContractResult, Address } from '@wagmi/core'
 import { Zero } from '@ethersproject/constants'
-import {MINICHEF_ABI} from '@abis/miniChef'
+import { MINICHEF_ABI } from '@abis/miniChef'
 
 import { MINICHEF_ADDRESSES } from '@/constants/minichef'
 

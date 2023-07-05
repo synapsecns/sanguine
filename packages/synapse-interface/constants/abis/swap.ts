@@ -995,4 +995,4 @@ export const SWAP_ABI = [
     stateMutability: 'nonpayable',
     type: 'function',
   },
-]  as const
+] as const

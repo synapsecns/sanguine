@@ -3,8 +3,6 @@ import { configureStore } from '@reduxjs/toolkit'
 import bridgeReducer, { tokenDecimalMiddleware } from '@/slices/bridgeSlice'
 import bridgeDisplayReducer from '@/slices/bridgeDisplaySlice'
 
-
-
 export const store = configureStore({
   reducer: {
     bridge: bridgeReducer,
@@ -13,7 +11,7 @@ export const store = configureStore({
   middleware: (getDefaultMiddleware) =>
     getDefaultMiddleware({
       serializableCheck: false,
-    }).concat(tokenDecimalMiddleware)
+    }).concat(tokenDecimalMiddleware),
 })
 
 export type RootState = ReturnType<typeof store.getState>

@@ -1,23 +1,24 @@
-import { Zero, One } from '@ethersproject/constants'
+// import { Zero, One } from '@ethersproject/constants'
 import { getEthPrice, getAvaxPrice } from '@utils/actions/getPrices'
+// import {
+//   commifyBnToString,
+//   commifyBnWithDefault,
+//   formatBNToString,
+// } from '@bignumber/format'
 import {
-  commifyBnToString,
-  commifyBnWithDefault,
-  formatBNToString,
-} from '@bignumber/format'
-import {
-  calcBnSum,
-  calcIfZero,
+  // calcBnSum,
+  // calcIfZero,
   getTokenBalanceInfo,
-  getPoolTokenInfoArr,
-  MAX_BN_POW,
+  // getPoolTokenInfoArr,
+  // MAX_BN_POW,
 } from '@utils/poolDataFuncs'
 import { fetchBalance, fetchToken } from '@wagmi/core'
 import { Token, PoolUserData, PoolData } from '@types'
-import { BigNumber } from 'ethers'
+// import { BigNumber } from 'ethers'
 
 import { getVirtualPrice } from './getPoolFee'
-import { formatBigIntToString } from '@/utils/bigint/format'
+// import { formatBigIntToString } from '@/utils/bigint/format'
+
 const getBalanceData = async ({
   pool,
   chainId,
@@ -44,18 +45,16 @@ const getBalanceData = async ({
   for (const token of tokens) {
     const isLP = token.addresses[chainId] === lpTokenAddress
 
-    const rawBalanceResult = (
-      await fetchBalance({
-        address: address as `0x${string}`,
-        chainId,
-        token: token.addresses[chainId] as `0x${string}`,
-      })
-    )
+    const rawBalanceResult = await fetchBalance({
+      address: address as `0x${string}`,
+      chainId,
+      token: token.addresses[chainId] as `0x${string}`,
+    })
     console.log(rawBalanceResult?.value)
     // add to balances
     tokenBalances.push({
       rawBalance: rawBalanceResult?.value ?? 0n,
-      balance: rawBalanceResult?.formatted ?? "0",
+      balance: rawBalanceResult?.formatted ?? '0',
       token,
       isLP,
     })
@@ -67,7 +66,8 @@ const getBalanceData = async ({
     }
     // running sum of all tokens in the pool
     if (rawBalanceResult?.formatted) {
-      poolTokenSum = poolTokenSum + BigInt(Math.round(Number(rawBalanceResult?.formatted)))
+      poolTokenSum =
+        poolTokenSum + BigInt(Math.round(Number(rawBalanceResult?.formatted)))
     }
   }
 
@@ -98,14 +98,16 @@ export const getPoolData = async (
 
   const lpTokenAddress = pool?.addresses[chainId]
 
-  const { tokenBalances, lpTokenBalance, lpTotalSupply } = await getBalanceData(
-    {
-      pool,
-      chainId,
-      address: user ? address : poolAddress,
-      lpTokenAddress,
-    }
-  )
+  const {
+    tokenBalances,
+    lpTokenBalance,
+    // , lpTotalSupply
+  } = await getBalanceData({
+    pool,
+    chainId,
+    address: user ? address : poolAddress,
+    lpTokenAddress,
+  })
 
   const virtualPrice = await getVirtualPrice(poolAddress, chainId)
 
@@ -136,9 +138,9 @@ export const getPoolData = async (
     // console.log("ebfore erorr")
     // console.log(base ** power);
 
-  // const userShare = (lpTokenBalance * MAX_BN_POW_BIGINT) / (lpTokenBalance === 0n ? 1n : lpTokenBalance);
-  // const userPoolTokenBalances = tokenBalances.map((token) => (userShare * token.rawBalance) / MAX_BN_POW_BIGINT);
-  // const userPoolTokenBalancesSum = userPoolTokenBalances.reduce((sum, b) => sum + b, 0n);
+    // const userShare = (lpTokenBalance * MAX_BN_POW_BIGINT) / (lpTokenBalance === 0n ? 1n : lpTokenBalance);
+    // const userPoolTokenBalances = tokenBalances.map((token) => (userShare * token.rawBalance) / MAX_BN_POW_BIGINT);
+    // const userPoolTokenBalancesSum = userPoolTokenBalances.reduce((sum, b) => sum + b, 0n);
 
     return {
       name: pool.name,
@@ -152,8 +154,9 @@ export const getPoolData = async (
     }
   }
 
-  const standardUnits = pool.priceUnits ?? ''
-  const displayDecimals = standardUnits === 'ETH' ? 3 : 0
+  // const standardUnits = pool.priceUnits ?? ''
+  // const displayDecimals = standardUnits === 'ETH' ? 3 : 0
+
   return {
     name: pool.name,
     tokens: poolTokensMatured,
@@ -165,6 +168,6 @@ export const getPoolData = async (
     totalLockedUSDStr: tokenBalancesUSD,
     virtualPrice,
     // virtualPriceStr: commifyBnToString(virtualPrice, 5),
-    virtualPriceStr: virtualPrice.toString()
+    virtualPriceStr: virtualPrice.toString(),
   }
 }

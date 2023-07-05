@@ -2,15 +2,14 @@ import { formatUnits } from '@ethersproject/units'
 import { SYN_ETH_SUSHI_TOKEN } from '@constants/tokens/sushiMaster'
 import { MINICHEF_ADDRESSES } from '@constants/minichef'
 import { Token } from '@types'
-import { BigNumber } from 'ethers'
-import { Zero, One } from '@ethersproject/constants'
 import { fetchBalance, readContracts, fetchToken } from '@wagmi/core'
-import Abi from 'viem'
-import {MINICHEF_ABI} from '@abis/miniChef'
-import { useContractReads } from 'wagmi'
-
-
+import { MINICHEF_ABI } from '@abis/miniChef'
 import { getSynPrices } from '@utils/actions/getPrices'
+// import { useContractReads } from 'wagmi'
+// import Abi from 'viem'
+// import { BigNumber } from 'ethers'
+// import { Zero, One } from '@ethersproject/constants'
+
 export const getPoolApyData = async (
   chainId: number,
   poolToken: Token,
@@ -44,7 +43,7 @@ export const getPoolApyData = async (
       },
       {
         address: minichefAddress,
-        abi: MINICHEF_ABI ,
+        abi: MINICHEF_ABI,
         functionName: 'poolInfo',
         chainId,
         args: [poolToken.poolId[chainId]],
@@ -96,9 +95,12 @@ export const getPoolApyData = async (
 
   const synValueInUsd = synPriceData.synBalanceNumber * synPriceData.synPrice
   const ethValueInUsd = synPriceData.ethBalanceNumber * synPriceData.ethPrice
-  const lpTokenSupplyNumber = Number(formatUnits(BigInt(lpTokenSupply), 'ether'))
-  const lpTokenBalanceNumber = Number(formatUnits(BigInt(lpTokenBalance), 'ether'))
-
+  const lpTokenSupplyNumber = Number(
+    formatUnits(BigInt(lpTokenSupply), 'ether')
+  )
+  const lpTokenBalanceNumber = Number(
+    formatUnits(BigInt(lpTokenBalance), 'ether')
+  )
 
   let stakedTvl
   if (SYN_ETH_SUSHI_TOKEN.symbol === poolToken.symbol) {

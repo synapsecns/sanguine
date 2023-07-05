@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react'
 import { readContracts, ReadContractResult, Address } from '@wagmi/core'
 import { useBlockNumber, useAccount } from 'wagmi'
 import { Contract, BigNumber } from 'ethers'
-import {MINICHEF_ABI} from '@abis/miniChef'
+import { MINICHEF_ABI } from '@abis/miniChef'
 import { Zero } from '@ethersproject/constants'
 
 import { useMiniChefContract } from '../contracts/useMiniChefContract'

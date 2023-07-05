@@ -1,4 +1,3 @@
-import { BigNumber } from 'ethers'
 import { multicall, Address } from '@wagmi/core'
 import { Zero, AddressZero } from '@ethersproject/constants'
 
@@ -122,14 +121,14 @@ export const separateAndSortTokensWithBalances = (
 ): Token[] => {
   const hasTokensAndBalances = Object.keys(tokensAndBalances).length > 0
   if (hasTokensAndBalances) {
-    const tokensWithBalances = (tokensAndBalances)
-      .filter((t) => !(t.balance == BigInt(0)))
+    const tokensWithBalances = tokensAndBalances
+      .filter((t) => !(t.balance === BigInt(0)))
       .map((t) => t.token)
 
     const a = sortTokensByPriorityRankAndAlpha(tokensWithBalances)
 
     const tokensWithNoBalances = tokensAndBalances
-      .filter((t) => (t.balance == BigInt(0)))
+      .filter((t) => t.balance === BigInt(0))
       .map((t) => t.token)
 
     const b = sortTokensByPriorityRankAndAlpha(tokensWithNoBalances)

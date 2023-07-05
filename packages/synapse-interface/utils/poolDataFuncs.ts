@@ -1,7 +1,9 @@
+/* eslint-disable */
 import { BigNumber } from '@ethersproject/bignumber'
 import { Zero, One, AddressZero } from '@ethersproject/constants'
 import { formatBNToPercentString, formatBNToString } from '@bignumber/format'
 import { formatBigIntToPercentString } from '@/utils/bigint/format'
+
 export const MAX_BN_POW = BigNumber.from(10).pow(18)
 
 export const getPriceMultiplier = ({ poolType, prices }) => {
@@ -47,30 +49,32 @@ export const getTokenBalanceInfo = ({ tokenBalances, poolType, prices }) => {
   }
 }
 
-import { formatUnits } from '@ethersproject/units'
-
-function formatBigIntUnits(value: bigint, decimals = 18) {
-  const stringValue = value.toString();
-  const decimalPointIndex = stringValue.length - decimals;
+const formatBigIntUnits = (value: bigint, decimals = 18) => {
+  const stringValue = value.toString()
+  const decimalPointIndex = stringValue.length - decimals
 
   if (decimalPointIndex <= 0) {
-    return '0.' + stringValue.padStart(decimals, '0');
+    return '0.' + stringValue.padStart(decimals, '0')
   }
 
   return (
     stringValue.slice(0, decimalPointIndex) +
     '.' +
     stringValue.slice(decimalPointIndex)
-  );
+  )
 }
-
 
 export const getPoolTokenInfoArr = ({
   tokenBalances,
   lpTotalSupply,
   tokenBalancesSum,
 }: {
-  tokenBalances: { rawBalance: bigint, balance: string, token: any, isLP: boolean }[]
+  tokenBalances: {
+    rawBalance: bigint
+    balance: string
+    token: any
+    isLP: boolean
+  }[]
   chainId: number
   lpTotalSupply: bigint
   tokenBalancesSum: bigint
@@ -93,4 +97,3 @@ export const getPoolTokenInfoArr = ({
     rawBalance: poolToken.rawBalance,
   }))
 }
-
