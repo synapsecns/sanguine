@@ -5,6 +5,7 @@ import (
 	"github.com/ethereum/go-ethereum/common"
 	ethTypes "github.com/ethereum/go-ethereum/core/types"
 	"github.com/ethereum/go-ethereum/params"
+	"github.com/synapsecns/sanguine/ethergo/chain/chainwatcher"
 	"github.com/synapsecns/sanguine/ethergo/chain/client"
 	"github.com/synapsecns/sanguine/ethergo/chain/gas"
 	"math/big"
@@ -24,6 +25,8 @@ type Chain interface {
 	GetChainID() uint
 	// RPCAddress gets the rpc address of the chain (if available)
 	RPCAddress() string
+	// GetHeightWatcher gets the block height watcher for the chain
+	GetHeightWatcher() chainwatcher.BlockHeightWatcher
 	// ChainID retrieves the current chain ID for transaction replay protection.
 	ChainID(ctx context.Context) (*big.Int, error)
 	// PendingNonceAt returns the account nonce of the given account in the pending state.
