@@ -1,6 +1,6 @@
 import Grid from '@tw/Grid'
 import { LandingPageWrapper } from '@/components/layouts/LandingPageWrapper'
-import { useAccount } from 'wagmi'
+import { useAccount, useNetwork } from 'wagmi'
 import { useDispatch, useSelector } from 'react-redux'
 import { RootState } from '../../store/store'
 import toast from 'react-hot-toast'
@@ -113,6 +113,7 @@ const sortToTokens = (tokens: Token[]) => {
 
 const StateManagedBridge = () => {
   const { address } = useAccount()
+  const { chain } = useNetwork()
   const { synapseSDK } = useSynapseContext()
   const bridgeDisplayRef = useRef(null)
   const currentSDKRequestID = useRef(0)
@@ -149,6 +150,12 @@ const StateManagedBridge = () => {
 
   const fromChainIds = Object.keys(CHAINS_BY_ID).map((id) => Number(id))
   const toChainIds = Object.keys(CHAINS_BY_ID).map((id) => Number(id))
+
+  useEffect(() => {
+    if (chain?.id && fromChainId !== chain?.id) {
+      dispatch(setFromChainId(chain.id))
+    }
+  }, [fromChainId, chain?.id])
 
   // Commenting out for a bit to debug, but basic issue is we need
   // a mapping for allowable routes/tokens, and how we set them on
