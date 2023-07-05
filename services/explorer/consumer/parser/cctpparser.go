@@ -77,8 +77,8 @@ func (c *CCTPParser) Parse(ctx context.Context, log ethTypes.Log, chainID uint32
 		return nil, fmt.Errorf("unknwn topic")
 	}
 
-	// populate cctp event type so following operations can mature the event data.
-	cctpEvent := eventToCCTPEvent(iFace, chainID)
+	// Populate cctp event type so following operations can mature the event data.
+	cctpEvent := eventToCCTPEvent(iFace)
 
 	// Get timestamp from consumer
 	timeStamp, err := c.consumerFetcher.FetchBlockTime(ctx, int(chainID), int(iFace.GetBlockNumber()))
@@ -111,7 +111,7 @@ func (c *CCTPParser) applyPriceData(ctx context.Context, cctpEvent *model.CCTPEv
 }
 
 // eventToCCTPEvent stores a message event.
-func eventToCCTPEvent(event cctpTypes.EventLog, chainID uint32) model.CCTPEvent {
+func eventToCCTPEvent(event cctpTypes.EventLog) model.CCTPEvent {
 	return model.CCTPEvent{
 		TxHash:             event.GetTxHash().String(),
 		ContractAddress:    event.GetContractAddress().String(),
