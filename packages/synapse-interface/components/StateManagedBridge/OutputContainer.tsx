@@ -73,7 +73,7 @@ export const OutputContainer = ({}) => {
                 className={`
                 focus:outline-none
                 bg-transparent
-                w-2/3 max-w-[190px]
+                max-w-[190px]
                placeholder:text-[#88818C]
                text-white text-opacity-80 text-lg md:text-2xl lg:text-2xl font-medium
               `}
