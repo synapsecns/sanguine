@@ -46,13 +46,12 @@ export const PortfolioContent = ({
           Object.keys(remainingNetworks).map(
             (chainId: string, index: number) => {
               const tokens = remainingNetworks[chainId]
-              const isExpanded = index === 0
               return (
                 <SingleNetworkPortfolio
                   portfolioChainId={Number(chainId)}
                   connectedChainId={connectedChainId}
                   portfolioTokens={tokens}
-                  initializeExpanded={isExpanded}
+                  initializeExpanded={false}
                   fetchState={fetchState}
                 />
               )
