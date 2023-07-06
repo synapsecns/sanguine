@@ -97,10 +97,6 @@ const (
 	scribeConnectTimeout = 30 * time.Second
 )
 
-func (e Executor) GetTxSubmitter() submitter.TransactionSubmitter {
-	return e.txSubmitter
-}
-
 func makeScribeClient(parentCtx context.Context, handler metrics.Handler, url string) (*grpc.ClientConn, pbscribe.ScribeServiceClient, error) {
 	ctx, cancel := context.WithTimeout(parentCtx, scribeConnectTimeout)
 	defer cancel()
@@ -380,43 +376,7 @@ func (e Executor) Execute(parentCtx context.Context, message types.Message) (_ b
 		snapshotProofB32 = append(snapshotProofB32, p32)
 	}
 
-	// b := &backoff.Backoff{
-	//	Factor: 2,
-	//	Jitter: true,
-	//	Min:    30 * time.Millisecond,
-	//	Max:    3 * time.Second,
-	//}
-	//
-	//timeout := time.Duration(0)
-	//
-	//for {
-	//	select {
-	//	case <-ctx.Done():
-	//		return false, fmt.Errorf("context canceled: %w", ctx.Err())
-	//	case <-time.After(timeout):
-	//		if b.Attempt() >= rpcRetry {
-	//			return false, fmt.Errorf("could not execute message after %f attempts", b.Attempt())
-	//		}
-	//
-	//		// TODO (joe and lex): Set gas limit for now to be equal to what was set in the message
-	//		err = e.chainExecutors[message.DestinationDomain()].boundDestination.Execute(ctx, e.signer, message, originProof, snapshotProofB32, big.NewInt(int64(*stateIndex)), uint64(10000000))
-	//		if err != nil {
-	//			timeout = b.Duration()
-	//			span.AddEvent("error when executing", trace.WithAttributes(
-	//				attribute.Int(metrics.ChainID, int(message.DestinationDomain())),
-	//				attribute.String("error", err.Error()),
-	//				attribute.Float64("timeout", timeout.Seconds()),
-	//			))
-	//			continue
-	//		}
-	//
-	//		return true, nil
-	//	}
-	//}
-
 	_, err = e.txSubmitter.SubmitTransaction(ctx, big.NewInt(int64(destinationDomain)), func(transactor *bind.TransactOpts) (tx *ethTypes.Transaction, err error) {
-		//transactor.GasLimit = uint64(10000000)
-
 		encodedMessage, err := types.EncodeMessage(message)
 		if err != nil {
 			return nil, fmt.Errorf("could not encode message: %w", err)
@@ -428,7 +388,7 @@ func (e Executor) Execute(parentCtx context.Context, message types.Message) (_ b
 			originProof[:],
 			snapshotProofB32,
 			big.NewInt(int64(*stateIndex)),
-			uint64(10000000),
+			uint64(1000000),
 		)
 		if err != nil {
 			return nil, fmt.Errorf("could not execute message: %w", err)

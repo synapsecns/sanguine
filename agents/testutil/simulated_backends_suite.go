@@ -334,15 +334,41 @@ func (a *SimulatedBackendsTestSuite) SetupTest() {
 	}()
 	wg.Wait()
 
-	a.SetupSummit(a.TestDeployManager)
-	a.SetupDestination(a.TestDeployManager)
-	a.SetupOrigin(a.TestDeployManager)
-
 	testBackends := []backends.SimulatedTestBackend{
 		a.TestBackendOrigin,
 		a.TestBackendDestination,
 		a.TestBackendSummit,
 	}
+
+	/*
+		a.TestDeployManager.BulkDeploy(a.GetTestContext(), testBackends,
+			InboxType,
+			BondingManagerHarnessType,
+			SummitHarnessType,
+			AgentsTestContractType,
+			DestinationHarnessType,
+			OriginHarnessType,
+			TestClientType,
+			PingPongClientType,
+			LightInboxType,
+			LightManagerHarnessType,
+		)
+	*/
+
+	wg.Add(3)
+	go func() {
+		defer wg.Done()
+		a.SetupSummit(a.TestDeployManager)
+	}()
+	go func() {
+		defer wg.Done()
+		a.SetupDestination(a.TestDeployManager)
+	}()
+	go func() {
+		defer wg.Done()
+		a.SetupOrigin(a.TestDeployManager)
+	}()
+	wg.Wait()
 
 	a.TestOmniRPC = omnirpcHelper.NewOmnirpcServer(a.GetTestContext(), a.T(), testBackends...)
 

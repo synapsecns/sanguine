@@ -1,7 +1,6 @@
 package agentsintegration_test
 
 import (
-	"fmt"
 	"github.com/Flaque/filet"
 	awsTime "github.com/aws/smithy-go/time"
 	"github.com/brianvoe/gofakeit/v6"
@@ -15,6 +14,7 @@ import (
 	execConfig "github.com/synapsecns/sanguine/agents/config/executor"
 	"github.com/synapsecns/sanguine/agents/types"
 	signerConfig "github.com/synapsecns/sanguine/ethergo/signer/config"
+	submitterConfig "github.com/synapsecns/sanguine/ethergo/submitter/config"
 	omniClient "github.com/synapsecns/sanguine/services/omnirpc/client"
 	"github.com/synapsecns/sanguine/services/scribe/backfill"
 	"github.com/synapsecns/sanguine/services/scribe/client"
@@ -132,6 +132,11 @@ func (u *AgentsIntegrationSuite) TestAgentsE2E() {
 			Type: signerConfig.FileType.String(),
 			File: filet.TmpFile(u.T(), "", u.ExecutorUnbondedWallet.PrivateKeyHex()).Name(),
 		},
+		SubmitterConfig: submitterConfig.Config{
+			ChainConfig: submitterConfig.ChainConfig{
+				GasEstimate: uint64(5000000),
+			},
+		},
 	}
 
 	omniRPCClient := omniClient.NewOmnirpcClient(u.TestOmniRPC, u.ExecutorMetrics, omniClient.WithCaptureReqRes())
@@ -245,7 +250,6 @@ func (u *AgentsIntegrationSuite) TestAgentsE2E() {
 	}()
 
 	u.Eventually(func() bool {
-		fmt.Println("AAAAAAAAAAAAA")
 		_ = awsTime.SleepWithContext(u.GetTestContext(), time.Second*5)
 
 		rawState, err := u.SummitContract.GetLatestAgentState(
@@ -264,7 +268,6 @@ func (u *AgentsIntegrationSuite) TestAgentsE2E() {
 	})
 
 	u.Eventually(func() bool {
-		fmt.Println("BBBBBBBBBBBBB")
 		_ = awsTime.SleepWithContext(u.GetTestContext(), time.Second*5)
 
 		rawState, err := u.SummitContract.GetLatestState(
@@ -290,7 +293,6 @@ func (u *AgentsIntegrationSuite) TestAgentsE2E() {
 	}()
 
 	u.Eventually(func() bool {
-		fmt.Println("CCCCCCCCCCCCC")
 		_ = awsTime.SleepWithContext(u.GetTestContext(), time.Second*5)
 
 		rawState, err := u.SummitContract.GetLatestAgentState(
@@ -311,11 +313,6 @@ func (u *AgentsIntegrationSuite) TestAgentsE2E() {
 	// Check that it was executed.
 	//nolint:dupl
 	u.Eventually(func() bool {
-		status, err := exec.GetTxSubmitter().GetSubmissionStatus(u.GetTestContext(), big.NewInt(97), 0)
-		Nil(u.T(), err)
-		fmt.Println("status", status)
-
-		fmt.Println("DDDDDDDDDDDDD")
 		executed, err := exec.CheckIfExecuted(u.GetTestContext(), message)
 		u.Nil(err)
 		if executed {
@@ -341,101 +338,97 @@ func (u *AgentsIntegrationSuite) TestAgentsE2E() {
 		return false
 	})
 
-	//// Send a second message.
-	// tx, err = u.OriginContract.SendBaseMessage(
-	//	txContextOrigin.TransactOpts,
-	//	uint32(u.TestBackendDestination.GetChainID()),
-	//	recipientDestination,
-	//	optimisticSeconds,
-	//	paddedRequest,
-	//	body,
-	//)
-	//
-	//u.Eventually(func() bool {
-	//	fmt.Println("EEEEEEEEEEEEEE")
-	//	_ = awsTime.SleepWithContext(u.GetTestContext(), time.Second*5)
-	//
-	//	rawState, err := u.SummitContract.GetLatestAgentState(
-	//		&bind.CallOpts{Context: u.GetTestContext()},
-	//		u.OriginDomainClient.Config().DomainID,
-	//		u.GuardBondedSigner.Address())
-	//	Nil(u.T(), err)
-	//
-	//	if len(rawState) == 0 {
-	//		return false
-	//	}
-	//
-	//	state, err := types.DecodeState(rawState)
-	//	Nil(u.T(), err)
-	//	return state.Nonce() >= uint32(2)
-	//})
-	//
-	//u.Eventually(func() bool {
-	//	fmt.Println("FFFFFFFFFFFFF")
-	//	_ = awsTime.SleepWithContext(u.GetTestContext(), time.Second*5)
-	//
-	//	rawState, err := u.SummitContract.GetLatestState(
-	//		&bind.CallOpts{Context: u.GetTestContext()},
-	//		u.OriginDomainClient.Config().DomainID)
-	//	Nil(u.T(), err)
-	//
-	//	if len(rawState) == 0 {
-	//		return false
-	//	}
-	//
-	//	state, err := types.DecodeState(rawState)
-	//	Nil(u.T(), err)
-	//	return state.Nonce() >= uint32(2)
-	//})
-	//
-	//u.Eventually(func() bool {
-	//	fmt.Println("GGGGGGGGGGGGGG")
-	//	_ = awsTime.SleepWithContext(u.GetTestContext(), time.Second*5)
-	//
-	//	rawState, err := u.SummitContract.GetLatestAgentState(
-	//		&bind.CallOpts{Context: u.GetTestContext()},
-	//		u.OriginDomainClient.Config().DomainID,
-	//		u.NotaryBondedSigner.Address())
-	//	Nil(u.T(), err)
-	//
-	//	if len(rawState) == 0 {
-	//		return false
-	//	}
-	//
-	//	state, err := types.DecodeState(rawState)
-	//	Nil(u.T(), err)
-	//	return state.Nonce() >= uint32(2)
-	//})
-	//
-	//header = types.NewHeader(types.MessageFlagBase, uint32(u.TestBackendOrigin.GetChainID()), nonce+1, uint32(u.TestBackendDestination.GetChainID()), optimisticSeconds)
-	//message, err = types.NewMessageFromBaseMessage(header, baseMessage)
-	//
-	//// Check that it was executed.
-	////nolint:dupl
-	//u.Eventually(func() bool {
-	//	fmt.Println("HHHHHHHHHHHHHH")
-	//	executed, err := exec.CheckIfExecuted(u.GetTestContext(), message)
-	//	u.Nil(err)
-	//	if executed {
-	//		return true
-	//	}
-	//
-	//	// This transaction is needed to get the simulated chain's block number to increase by 1, since StreamLogs will
-	//	// do lastBlockNumber - 1.
-	//	tx, err = u.TestContractOnOrigin.EmitAgentsEventA(txContextOrigin.TransactOpts, big.NewInt(gofakeit.Int64()), big.NewInt(gofakeit.Int64()), big.NewInt(gofakeit.Int64()))
-	//	u.Nil(err)
-	//	u.TestBackendOrigin.WaitForConfirmation(u.GetTestContext(), tx)
-	//
-	//	txContextDestination := u.TestBackendDestination.GetTxContext(u.GetTestContext(), u.DestinationContractMetadata.OwnerPtr())
-	//	txContextSummit := u.TestBackendSummit.GetTxContext(u.GetTestContext(), u.InboxMetadataOnSummit.OwnerPtr())
-	//
-	//	tx, err = u.TestContractOnSummit.EmitAgentsEventA(txContextSummit.TransactOpts, big.NewInt(gofakeit.Int64()), big.NewInt(gofakeit.Int64()), big.NewInt(gofakeit.Int64()))
-	//	u.Nil(err)
-	//	u.TestBackendSummit.WaitForConfirmation(u.GetTestContext(), tx)
-	//	tx, err = u.TestContractOnDestination.EmitAgentsEventA(txContextDestination.TransactOpts, big.NewInt(gofakeit.Int64()), big.NewInt(gofakeit.Int64()), big.NewInt(gofakeit.Int64()))
-	//	u.Nil(err)
-	//	u.TestBackendDestination.WaitForConfirmation(u.GetTestContext(), tx)
-	//
-	//	return false
-	//})
+	// Send a second message.
+	tx, err = u.OriginContract.SendBaseMessage(
+		txContextOrigin.TransactOpts,
+		uint32(u.TestBackendDestination.GetChainID()),
+		recipientDestination,
+		optimisticSeconds,
+		paddedRequest,
+		body,
+	)
+
+	u.Eventually(func() bool {
+		_ = awsTime.SleepWithContext(u.GetTestContext(), time.Second*5)
+
+		rawState, err := u.SummitContract.GetLatestAgentState(
+			&bind.CallOpts{Context: u.GetTestContext()},
+			u.OriginDomainClient.Config().DomainID,
+			u.GuardBondedSigner.Address())
+		Nil(u.T(), err)
+
+		if len(rawState) == 0 {
+			return false
+		}
+
+		state, err := types.DecodeState(rawState)
+		Nil(u.T(), err)
+		return state.Nonce() >= uint32(2)
+	})
+
+	u.Eventually(func() bool {
+		_ = awsTime.SleepWithContext(u.GetTestContext(), time.Second*5)
+
+		rawState, err := u.SummitContract.GetLatestState(
+			&bind.CallOpts{Context: u.GetTestContext()},
+			u.OriginDomainClient.Config().DomainID)
+		Nil(u.T(), err)
+
+		if len(rawState) == 0 {
+			return false
+		}
+
+		state, err := types.DecodeState(rawState)
+		Nil(u.T(), err)
+		return state.Nonce() >= uint32(2)
+	})
+
+	u.Eventually(func() bool {
+		_ = awsTime.SleepWithContext(u.GetTestContext(), time.Second*5)
+
+		rawState, err := u.SummitContract.GetLatestAgentState(
+			&bind.CallOpts{Context: u.GetTestContext()},
+			u.OriginDomainClient.Config().DomainID,
+			u.NotaryBondedSigner.Address())
+		Nil(u.T(), err)
+
+		if len(rawState) == 0 {
+			return false
+		}
+
+		state, err := types.DecodeState(rawState)
+		Nil(u.T(), err)
+		return state.Nonce() >= uint32(2)
+	})
+
+	header = types.NewHeader(types.MessageFlagBase, uint32(u.TestBackendOrigin.GetChainID()), nonce+1, uint32(u.TestBackendDestination.GetChainID()), optimisticSeconds)
+	message, err = types.NewMessageFromBaseMessage(header, baseMessage)
+
+	// Check that it was executed.
+	//nolint:dupl
+	u.Eventually(func() bool {
+		executed, err := exec.CheckIfExecuted(u.GetTestContext(), message)
+		u.Nil(err)
+		if executed {
+			return true
+		}
+
+		// This transaction is needed to get the simulated chain's block number to increase by 1, since StreamLogs will
+		// do lastBlockNumber - 1.
+		tx, err = u.TestContractOnOrigin.EmitAgentsEventA(txContextOrigin.TransactOpts, big.NewInt(gofakeit.Int64()), big.NewInt(gofakeit.Int64()), big.NewInt(gofakeit.Int64()))
+		u.Nil(err)
+		u.TestBackendOrigin.WaitForConfirmation(u.GetTestContext(), tx)
+
+		txContextDestination := u.TestBackendDestination.GetTxContext(u.GetTestContext(), u.DestinationContractMetadata.OwnerPtr())
+		txContextSummit := u.TestBackendSummit.GetTxContext(u.GetTestContext(), u.InboxMetadataOnSummit.OwnerPtr())
+
+		tx, err = u.TestContractOnSummit.EmitAgentsEventA(txContextSummit.TransactOpts, big.NewInt(gofakeit.Int64()), big.NewInt(gofakeit.Int64()), big.NewInt(gofakeit.Int64()))
+		u.Nil(err)
+		u.TestBackendSummit.WaitForConfirmation(u.GetTestContext(), tx)
+		tx, err = u.TestContractOnDestination.EmitAgentsEventA(txContextDestination.TransactOpts, big.NewInt(gofakeit.Int64()), big.NewInt(gofakeit.Int64()), big.NewInt(gofakeit.Int64()))
+		u.Nil(err)
+		u.TestBackendDestination.WaitForConfirmation(u.GetTestContext(), tx)
+
+		return false
+	})
 }
