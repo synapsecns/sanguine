@@ -3,7 +3,12 @@ import InfoSectionCard from './InfoSectionCard'
 import { displaySymbol } from '@utils/displaySymbol'
 import { Token } from '@types'
 import LoadingRow from '@/components/loading/LoadingRow'
-import { commifyBigIntToString } from '@utils/bigint/format'
+import {
+  commify,
+  commifyBigIntToString,
+  formatBigIntToString,
+} from '@utils/bigint/format'
+import { stringToBigInt } from '@/utils/stringToBigNum'
 
 const CurrencyReservesCard = ({
   chainId,
@@ -42,8 +47,6 @@ const CurrencyReservesCard = ({
 
 function CurrencyInfoListItem({ chainId, percent, balance, token }) {
   const symbol = displaySymbol(chainId, token)
-  let decimalsToDisplay = token.swapableType === 'USD' ? 0 : 2
-  decimalsToDisplay = 10
 
   return (
     <div className="flex items-center justify-between my-2 text-sm font-medium text-white">
@@ -54,10 +57,12 @@ function CurrencyInfoListItem({ chainId, percent, balance, token }) {
       <div>{percent}</div>
       {balance && (
         <AugmentWithUnits
-          content={commifyBigIntToString(
-            balance,
-            token.decimals[chainId],
-            decimalsToDisplay
+          content={commify(
+            formatBigIntToString(
+              stringToBigInt(`${balance}`, token.decimals[chainId]),
+              token.decimals[chainId],
+              2
+            )
           )}
           label={symbol}
         />
