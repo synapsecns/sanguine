@@ -16,6 +16,8 @@ type EventLog interface {
 	GetBlockNumber() uint64
 	// GetTxHash returns the transaction hash of the log.
 	GetTxHash() common.Hash
+	// GetRequestID returns the request id of the CCTP transfer.
+	GetRequestID() [32]byte
 	// GetOriginChainID returns the chain id of the CCTP transfer.
 	GetOriginChainID() *big.Int
 	// GetDestinationChainID returns the chain id of the CCTP transfer.
@@ -36,8 +38,6 @@ type EventLog interface {
 	GetRequestVersion() *uint32
 	// GetFormattedRequest returns the formatted request of the CCTP transfer.
 	GetFormattedRequest() []byte
-	// GetRequestID returns the request id of the CCTP transfer.
-	GetRequestID() [32]byte
 	// GetRecipient returns the receipient of the CCTP transfer.
 	GetRecipient() *string
 	// GetFee returns the fee of the CCTP transfer.

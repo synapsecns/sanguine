@@ -113,6 +113,7 @@ func (c *CCTPParser) applyPriceData(ctx context.Context, cctpEvent *model.CCTPEv
 
 // eventToCCTPEvent stores a message event.
 func eventToCCTPEvent(event cctpTypes.EventLog) model.CCTPEvent {
+	requestID := event.GetRequestID()
 	return model.CCTPEvent{
 		// TODO add event type to implementation of event log
 		InsertTime:         uint64(time.Now().UnixNano()),
@@ -129,7 +130,7 @@ func eventToCCTPEvent(event cctpTypes.EventLog) model.CCTPEvent {
 		ReceivedAmount:     event.GetReceivedAmount(),
 		RequestVersion:     ToNullInt32(event.GetRequestVersion()),
 		FormattedRequest:   event.GetFormattedRequest(),
-		RequestID:          event.GetRequestID(),
+		RequestID:          common.Bytes2Hex(requestID[:]),
 		Recipient:          ToNullString(event.GetRecipient()),
 		Fee:                event.GetFee(),
 		Token:              ToNullString(event.GetToken()),

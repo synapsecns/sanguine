@@ -21,6 +21,11 @@ func (s SynapseCCTPCircleRequestSent) GetTxHash() common.Hash {
 	return s.Raw.TxHash
 }
 
+// GetRequestID gets the unique identifier of the request.
+func (s SynapseCCTPCircleRequestSent) GetRequestID() [32]byte {
+	return s.RequestID
+}
+
 // GetOriginChainID gets the origin chain ID for the event.
 func (s SynapseCCTPCircleRequestSent) GetOriginChainID() *big.Int {
 	return nil
@@ -73,11 +78,6 @@ func (s SynapseCCTPCircleRequestSent) GetFormattedRequest() []byte {
 	return s.FormattedRequest
 }
 
-// GetRequestID gets the unique identifier of the request.
-func (s SynapseCCTPCircleRequestSent) GetRequestID() [32]byte {
-	return s.RequestID
-}
-
 // GetRecipient gets the end recipient of the tokens on this chain.
 func (s SynapseCCTPCircleRequestSent) GetRecipient() *string {
 	return nil
@@ -106,6 +106,11 @@ func (s SynapseCCTPCircleRequestFulfilled) GetBlockNumber() uint64 {
 // GetTxHash gets the unique identifier (txhash) for the event.
 func (s SynapseCCTPCircleRequestFulfilled) GetTxHash() common.Hash {
 	return s.Raw.TxHash
+}
+
+// GetRequestID gets the unique identifier of the request.
+func (s SynapseCCTPCircleRequestFulfilled) GetRequestID() [32]byte {
+	return [32]byte{}
 }
 
 // GetOriginChainID gets the origin chain ID for the event.
@@ -157,11 +162,6 @@ func (s SynapseCCTPCircleRequestFulfilled) GetRequestVersion() *uint32 {
 // GetFormattedRequest gets the formatted request for the action to take on the destination chain.
 func (s SynapseCCTPCircleRequestFulfilled) GetFormattedRequest() []byte {
 	return []byte{}
-}
-
-// GetRequestID gets the unique identifier of the request.
-func (s SynapseCCTPCircleRequestFulfilled) GetRequestID() [32]byte {
-	return [32]byte{}
 }
 
 // GetRecipient gets the end recipient of the tokens on this chain.
