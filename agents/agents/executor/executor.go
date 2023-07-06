@@ -97,6 +97,10 @@ const (
 	scribeConnectTimeout = 30 * time.Second
 )
 
+func (e Executor) GetTxSubmitter() submitter.TransactionSubmitter {
+	return e.txSubmitter
+}
+
 func makeScribeClient(parentCtx context.Context, handler metrics.Handler, url string) (*grpc.ClientConn, pbscribe.ScribeServiceClient, error) {
 	ctx, cancel := context.WithTimeout(parentCtx, scribeConnectTimeout)
 	defer cancel()
@@ -410,8 +414,8 @@ func (e Executor) Execute(parentCtx context.Context, message types.Message) (_ b
 	//	}
 	//}
 
-	_, err = e.txSubmitter.SubmitTransaction(ctx, big.NewInt(int64(originDomain)), func(transactor *bind.TransactOpts) (tx *ethTypes.Transaction, err error) {
-		transactor.GasLimit = uint64(10000000)
+	_, err = e.txSubmitter.SubmitTransaction(ctx, big.NewInt(int64(destinationDomain)), func(transactor *bind.TransactOpts) (tx *ethTypes.Transaction, err error) {
+		//transactor.GasLimit = uint64(10000000)
 
 		encodedMessage, err := types.EncodeMessage(message)
 		if err != nil {
@@ -424,7 +428,7 @@ func (e Executor) Execute(parentCtx context.Context, message types.Message) (_ b
 			originProof[:],
 			snapshotProofB32,
 			big.NewInt(int64(*stateIndex)),
-			transactor.GasLimit,
+			uint64(10000000),
 		)
 		if err != nil {
 			return nil, fmt.Errorf("could not execute message: %w", err)

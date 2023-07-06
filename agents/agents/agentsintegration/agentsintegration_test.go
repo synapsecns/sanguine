@@ -311,6 +311,10 @@ func (u *AgentsIntegrationSuite) TestAgentsE2E() {
 	// Check that it was executed.
 	//nolint:dupl
 	u.Eventually(func() bool {
+		status, err := exec.GetTxSubmitter().GetSubmissionStatus(u.GetTestContext(), big.NewInt(97), 0)
+		Nil(u.T(), err)
+		fmt.Println("status", status)
+
 		fmt.Println("DDDDDDDDDDDDD")
 		executed, err := exec.CheckIfExecuted(u.GetTestContext(), message)
 		u.Nil(err)
