@@ -3,12 +3,13 @@ package config
 import (
 	"context"
 	"fmt"
+	"os"
+	"path/filepath"
+
 	"github.com/davecgh/go-spew/spew"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/jftuga/ellipsis"
 	"gopkg.in/yaml.v2"
-	"os"
-	"path/filepath"
 )
 
 // TODO: these should be put into the contracts themselves and implement a custom type.
@@ -21,7 +22,8 @@ const (
 	MessageBusContractType = "messagebus"
 	// MetaSwapContractType is the type of a meta swap contract.
 	MetaSwapContractType = "metaswap"
-	// TODO add cctp type here
+	// CCTPContractType is the type of a CCTP contract.
+	CCTPContractType = "cctp"
 )
 
 // Config is used to configure the explorer's data consumption.

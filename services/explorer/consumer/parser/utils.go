@@ -18,7 +18,7 @@ const ErrUnknownTopic = "unknown topic"
 type Parser interface {
 	// ParseAndStore parses the logs and stores them in the database.
 	// Deprecated: use Parse
-	ParseAndStore(ctx context.Context, log ethTypes.Log, chainID uint32) error
+	// ParseAndStore(ctx context.Context, log ethTypes.Log, chainID uint32) error
 	// Parse parses the logs and returns the parsed data.
 	Parse(ctx context.Context, log ethTypes.Log, chainID uint32) (interface{}, error)
 }
