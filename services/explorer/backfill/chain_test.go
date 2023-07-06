@@ -3,11 +3,13 @@ package backfill_test
 import (
 	gosql "database/sql"
 	"fmt"
+	"math/big"
+
+	"github.com/synapsecns/sanguine/ethergo/mocks"
 	"github.com/synapsecns/sanguine/services/explorer/consumer/fetcher/tokenprice"
 	"github.com/synapsecns/sanguine/services/explorer/consumer/parser/tokendata"
 	"github.com/synapsecns/sanguine/services/explorer/static"
 	messageBusTypes "github.com/synapsecns/sanguine/services/explorer/types/messagebus"
-	"math/big"
 
 	"github.com/brianvoe/gofakeit/v6"
 	"github.com/ethereum/go-ethereum/common"
@@ -95,7 +97,7 @@ func (b *BackfillSuite) TestBackfill() {
 			RPCURL:              gofakeit.URL(),
 			FetchBlockIncrement: 2,
 			MaxGoroutines:       2,
-			Contracts:           []config.ContractConfig{contractConfigBridge, contractConfigSwap1, contractConfigSwap2, contractMessageBus, contractConfigMetaSwap},
+			Contracts:           []config.ContractConfig{contractConfigBridge, contractConfigSwap1, contractConfigSwap2, contractMessageBus, contractConfigMetaSwap, contractCCTP},
 		},
 	}
 	chainConfigsV1 := []config.ChainConfig{
@@ -296,7 +298,22 @@ func (b *BackfillSuite) TestBackfill() {
 	callRevertedLog, err := b.storeTestLog(messageTx, uint32(testChainID.Uint64()), 7)
 	Nil(b.T(), err)
 
-	// TODO add events for cctp
+	// Store every cctp event.
+	mockRequestID := func() [32]byte {
+		var requestID [32]byte
+		requestIDBytes := common.Hex2Bytes(mocks.NewMockHash(b.T()).String())
+		copy(requestID[:], requestIDBytes)
+		return requestID
+	}
+	requestTx, err := cctpRef.TestSendCircleToken(transactOpts.TransactOpts, testChainID, common.BigToAddress(big.NewInt(gofakeit.Int64())), 1, common.BigToAddress(big.NewInt(gofakeit.Int64())), big.NewInt(gofakeit.Int64()), 1, []byte(gofakeit.Paragraph(2, 5, 30, " ")), mockRequestID())
+	Nil(b.T(), err)
+	requestSentLog, err := b.storeTestLog(requestTx, uint32(testChainID.Uint64()), 8)
+	Nil(b.T(), err)
+
+	requestTx, err = cctpRef.TestReceiveCircleToken(transactOpts.TransactOpts, uint32(testChainID.Int64()), common.BigToAddress(big.NewInt(gofakeit.Int64())), common.BigToAddress(big.NewInt(gofakeit.Int64())), big.NewInt(gofakeit.Int64()), common.BigToAddress(big.NewInt(gofakeit.Int64())), big.NewInt(gofakeit.Int64()), mockRequestID())
+	Nil(b.T(), err)
+	requestFulfilledLog, err := b.storeTestLog(requestTx, uint32(testChainID.Uint64()), 8)
+	Nil(b.T(), err)
 
 	// Go through each contract and save the end height in scribe
 	for i := range chainConfigs[0].Contracts {
@@ -321,8 +338,6 @@ func (b *BackfillSuite) TestBackfill() {
 	tokenPriceService, err := tokenprice.NewPriceDataService()
 	Nil(b.T(), err)
 
-	// TODO Add cctp parser
-
 	bp, err := parser.NewBridgeParser(b.db, bridgeContract.Address(), tokenDataService, b.consumerFetcher, tokenPriceService)
 	Nil(b.T(), err)
 	bpv1, err := parser.NewBridgeParser(b.db, bridgeV1Contract.Address(), tokenDataService, b.consumerFetcher, tokenPriceService)
@@ -346,6 +361,10 @@ func (b *BackfillSuite) TestBackfill() {
 	msp, err := parser.NewSwapParser(b.db, metaSwapContract.Address(), true, b.consumerFetcher, &msr, tokenDataService, tokenPriceService)
 	Nil(b.T(), err)
 
+	// cp is the cctp ref for getting token data
+	cp, err := parser.NewCCTPParser(b.db, cctpRef.Address(), b.consumerFetcher, tokenPriceService)
+	Nil(b.T(), err)
+
 	spMap := map[common.Address]*parser.SwapParser{}
 	spMap[swapContractA.Address()] = spA
 	spMap[swapContractB.Address()] = spB
@@ -357,8 +376,8 @@ func (b *BackfillSuite) TestBackfill() {
 	Nil(b.T(), err)
 
 	// Test the first chain in the config file
-	chainBackfiller := backfill.NewChainBackfiller(b.db, bp, spMap, mbp, *f, chainConfigs[0])
-	chainBackfillerV1 := backfill.NewChainBackfiller(b.db, bpv1, spMap, mbp, *f, chainConfigsV1[0])
+	chainBackfiller := backfill.NewChainBackfiller(b.db, bp, spMap, mbp, cp, *f, chainConfigs[0])
+	chainBackfillerV1 := backfill.NewChainBackfiller(b.db, bpv1, spMap, mbp, cp, *f, chainConfigsV1[0])
 
 	// Backfill the blocks
 	var count int64
@@ -374,7 +393,11 @@ func (b *BackfillSuite) TestBackfill() {
 	Nil(b.T(), messageEvents.Error)
 	Equal(b.T(), int64(3), count)
 
-	// TODO test parity for cctp events (see todo on line 540)
+	// Test cctp parity
+	err = b.sendCircleTokenParity(requestSentLog, cp)
+	Nil(b.T(), err)
+	err = b.receiveCircleTokenParity(requestFulfilledLog, cp)
+	Nil(b.T(), err)
 
 	// Test bridge parity
 	err = b.depositParity(depositLog, bp, uint32(testChainID.Uint64()), false)
@@ -475,6 +498,93 @@ func (b *BackfillSuite) storeTestLog(tx *types.Transaction, chainID uint32, bloc
 }
 
 //nolint:dupl
+func (b *BackfillSuite) sendCircleTokenParity(log *types.Log, parser *parser.CCTPParser) error {
+	// parse the log
+	parsedLog, err := parser.Filterer.ParseCircleRequestSent(*log)
+	_ = parsedLog
+	if err != nil {
+		return fmt.Errorf("error parsing log: %w", err)
+	}
+	var count int64
+	sender := gosql.NullString{
+		String: parsedLog.Sender.String(),
+		Valid:  true,
+	}
+	nonce := gosql.NullInt64{
+		Int64: int64(parsedLog.Nonce),
+		Valid: true,
+	}
+	burnToken := gosql.NullString{
+		String: parsedLog.Token.String(),
+		Valid:  true,
+	}
+	requestVersion := gosql.NullInt32{
+		Int32: int32(parsedLog.RequestVersion),
+		Valid: true,
+	}
+	events := b.db.UNSAFE_DB().WithContext(b.GetTestContext()).Model(&sql.CCTPEvent{}).
+		Where(&sql.CCTPEvent{
+			ContractAddress:    log.Address.String(),
+			BlockNumber:        log.BlockNumber,
+			TxHash:             log.TxHash.String(),
+			RequestID:          common.Bytes2Hex(parsedLog.RequestID[:]),
+			DestinationChainID: parsedLog.ChainId,
+			Sender:             sender,
+			Nonce:              nonce,
+			BurnToken:          burnToken,
+			SentAmount:         parsedLog.Amount,
+			RequestVersion:     requestVersion,
+			FormattedRequest:   parsedLog.FormattedRequest,
+		}).Count(&count)
+	if events.Error != nil {
+		return fmt.Errorf("error querying for event: %w", events.Error)
+	}
+	Equal(b.T(), int64(1), count)
+	return nil
+}
+
+//nolint:dupl
+func (b *BackfillSuite) receiveCircleTokenParity(log *types.Log, parser *parser.CCTPParser) error {
+	// parse the log
+	parsedLog, err := parser.Filterer.ParseCircleRequestFulfilled(*log)
+	_ = parsedLog
+	if err != nil {
+		return fmt.Errorf("error parsing log: %w", err)
+	}
+	var count int64
+	mintToken := gosql.NullString{
+		String: parsedLog.Token.String(),
+		Valid:  true,
+	}
+	recipient := gosql.NullString{
+		String: parsedLog.Recipient.String(),
+		Valid:  true,
+	}
+	token := gosql.NullString{
+		String: parsedLog.Token.String(),
+		Valid:  true,
+	}
+	events := b.db.UNSAFE_DB().WithContext(b.GetTestContext()).Model(&sql.CCTPEvent{}).
+		Where(&sql.CCTPEvent{
+			ContractAddress: log.Address.String(),
+			BlockNumber:     log.BlockNumber,
+			TxHash:          log.TxHash.String(),
+			RequestID:       common.Bytes2Hex(parsedLog.RequestID[:]),
+			OriginChainID:   big.NewInt(int64(parsedLog.OriginDomain)),
+			MintToken:       mintToken,
+			ReceivedAmount:  parsedLog.Amount,
+			Recipient:       recipient,
+			Fee:             parsedLog.Fee,
+			Token:           token,
+		}).Count(&count)
+	if events.Error != nil {
+		return fmt.Errorf("error querying for event: %w", events.Error)
+	}
+	Equal(b.T(), int64(1), count)
+	return nil
+}
+
+//nolint:dupl
 func (b *BackfillSuite) depositParity(log *types.Log, parser *parser.BridgeParser, chainID uint32, useV1 bool) error {
 	// parse the log
 	if useV1 {
@@ -536,8 +646,6 @@ func (b *BackfillSuite) depositParity(log *types.Log, parser *parser.BridgeParse
 	Equal(b.T(), int64(1), count)
 	return nil
 }
-
-// TODO add parity checks for circle fufilled and sent cctp events here
 
 //nolint:dupl
 func (b *BackfillSuite) redeemParity(log *types.Log, parser *parser.BridgeParser, chainID uint32, useV1 bool) error {
