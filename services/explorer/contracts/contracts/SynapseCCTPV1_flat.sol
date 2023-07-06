@@ -1411,7 +1411,28 @@ abstract contract SynapseCCTPFees is SynapseCCTPFeesEvents, Ownable, ISynapseCCT
     }
 }
 
-
+contract MessageTransmitter {
+    function receiveMessage(bytes calldata message, bytes calldata signature) external returns (bool success){
+        return true;
+    }
+    function sendMessageWithCaller(
+        uint32 destinationDomain,
+        bytes32 recipient,
+        bytes32 destinationCaller,
+        bytes calldata messageBody
+    ) external returns (uint64){
+        return 1;
+    }
+    function localDomain() external view returns (uint32){
+        return 1;
+    }
+    function nextAvailableNonce() external view returns (uint64){
+        return 1;
+    }
+    function localMessageTransmitter() external view returns (address){
+        return address(this);
+    }
+}
 
 
 interface IMessageTransmitter {
