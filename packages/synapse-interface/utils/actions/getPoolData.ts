@@ -16,7 +16,7 @@ import { fetchBalance, fetchToken } from '@wagmi/core'
 import { Token, PoolUserData, PoolData } from '@types'
 // import { BigNumber } from 'ethers'
 
-import { getVirtualPrice } from './getPoolFee'
+import { getCorePoolData } from './getCorePoolData'
 // import { formatBigIntToString } from '@/utils/bigint/format'
 import { commifyBigIntToString } from '@utils/bigint/format'
 
@@ -108,7 +108,7 @@ export const getPoolData = async (
     }
   )
 
-  const virtualPrice = await getVirtualPrice(poolAddress, chainId)
+  const { swapFee, virtualPrice } = await getCorePoolData(poolAddress, chainId)
 
   const ethPrice = prices?.ethPrice ?? (await getEthPrice())
   const avaxPrice = prices?.avaxPrice ?? (await getAvaxPrice())
@@ -166,7 +166,7 @@ export const getPoolData = async (
     // totalLockedUSDStr: commifyBnToString(tokenBalancesUSD, 0),
     totalLockedUSDStr: tokenBalancesUSD,
     virtualPrice,
-    virtualPriceStr: commifyBigIntToString(virtualPrice, 18, 5),
+    swapFee,
   }
 }
 
@@ -192,7 +192,7 @@ export const getSinglePoolData = async (
     }
   )
 
-  const virtualPrice = await getVirtualPrice(poolAddress, chainId)
+  const { swapFee, virtualPrice } = await getCorePoolData(poolAddress, chainId)
 
   const ethPrice = prices?.ethPrice ?? (await getEthPrice())
   const avaxPrice = prices?.avaxPrice ?? (await getAvaxPrice())
@@ -232,8 +232,7 @@ export const getSinglePoolData = async (
     // totalLockedUSDStr: commifyBnToString(tokenBalancesUSD, 0),
     totalLockedUSDStr: tokenBalancesUSD,
     virtualPrice,
-    // virtualPriceStr: commifyBnToString(virtualPrice, 5),
-    virtualPriceStr: commifyBigIntToString(virtualPrice, 18, 5),
+    swapFee,
   }
 }
 
@@ -259,7 +258,7 @@ export const getPoolUserData = async (
     }
   )
 
-  const virtualPrice = await getVirtualPrice(poolAddress, chainId)
+  const { swapFee, virtualPrice } = await getCorePoolData(poolAddress, chainId)
 
   const ethPrice = prices?.ethPrice ?? (await getEthPrice())
   const avaxPrice = prices?.avaxPrice ?? (await getAvaxPrice())

@@ -52,8 +52,8 @@ export type PoolData = {
   totalLockedUSD: Number
   totalLockedUSDStr: number
   virtualPrice: bigint
-  virtualPriceStr: string
   nativeTokens?: any
+  swapFee: bigint
 }
 
 export type BridgeQuote = {

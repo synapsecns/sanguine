@@ -3,9 +3,6 @@ import { Token } from '@types'
 import InfoSectionCard from './InfoSectionCard'
 import CurrencyReservesCard from './CurrencyReservesCard'
 import LoadingSpinner from '@tw/LoadingSpinner'
-import { useEffect, useState } from 'react'
-import { getPoolFee } from '@utils/actions/getPoolFee'
-import { getSwapDepositContractFields } from '@/utils/hooks/useSwapDepositContract'
 import {
   formatBigIntToPercentString,
   formatBigIntToString,
@@ -20,20 +17,6 @@ const PoolInfoSection = ({
   poolData: any
   chainId: number
 }) => {
-  const [swapFee, setSwapFee] = useState<bigint>(0n)
-  const { poolAddress } = getSwapDepositContractFields(pool, chainId)
-  useEffect(() => {
-    if (pool && chainId) {
-      getPoolFee(poolAddress, chainId).then((res) => {
-        console.log(`res, get pool fee`, res?.swapFee)
-        setSwapFee(res?.swapFee)
-      })
-    }
-  }, [pool, chainId])
-
-  console.log(`sawpFee`, swapFee)
-  console.log(`pool`, pool)
-  console.log(`poolData`, poolData)
   return (
     <div className="space-y-4">
       <CurrencyReservesCard
@@ -45,9 +28,9 @@ const PoolInfoSection = ({
         <InfoListItem
           labelText="Trading Fee"
           content={
-            swapFee ? (
+            poolData && poolData.swapFee ? (
               // what decimals should this be?
-              formatBigIntToPercentString(swapFee, 8, 2)
+              formatBigIntToPercentString(poolData.swapFee, 8, 2)
             ) : (
               <LoadingSpinner />
             )
@@ -56,7 +39,7 @@ const PoolInfoSection = ({
         <InfoListItem
           labelText="Virtual Price"
           content={
-            poolData?.virtualPriceStr ? (
+            poolData && poolData?.virtualPrice ? (
               <AugmentWithUnits
                 content={formatBigIntToString(
                   BigInt(poolData.virtualPrice),
@@ -73,7 +56,7 @@ const PoolInfoSection = ({
         <InfoListItem
           labelText="Total Liquidity"
           content={
-            poolData?.totalLockedUSDStr ? (
+            poolData && poolData?.totalLockedUSDStr ? (
               <AugmentWithUnits
                 content={poolData.totalLockedUSDStr}
                 label={pool.priceUnits}
@@ -86,7 +69,7 @@ const PoolInfoSection = ({
         <InfoListItem
           labelText="Total Liquidity USD"
           content={
-            poolData?.totalLockedUSDStr ? (
+            poolData && poolData?.totalLockedUSDStr ? (
               `$${poolData.totalLockedUSDStr}`
             ) : (
               <LoadingSpinner />
@@ -97,7 +80,6 @@ const PoolInfoSection = ({
     </div>
   )
 }
-export default PoolInfoSection
 
 const InfoListItem = ({
   labelText,
@@ -117,3 +99,5 @@ const InfoListItem = ({
     </li>
   )
 }
+
+export default PoolInfoSection
