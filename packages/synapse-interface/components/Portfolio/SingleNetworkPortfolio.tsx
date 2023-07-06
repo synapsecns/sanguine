@@ -164,19 +164,21 @@ const PortfolioTokenAsset = ({
   const filteredOpacity: string = 'opacity-50 cursor-default'
 
   const handleTotalBalanceInputCallback = useCallback(() => {
-    if (!isDisabled) {
-      dispatch(setFromToken(token))
-      dispatch(setFromChainId(portfolioChainId))
-      dispatch(updateFromValue(balance))
-    }
+    // if (!isDisabled) {
+    //   dispatch(setFromToken(token))
+    //   dispatch(setFromChainId(portfolioChainId))
+    //   dispatch(updateFromValue(balance))
+    // }
   }, [isDisabled, token, balance])
 
+  // saved for after bridge store fromValue is updated
+  // ${isDisabled ? 'cursor-default' : 'cursor-pointer'}
+  // ${isDisabled ? filteredOpacity : 'opacity-100'}
   return (
     <div
       data-test-id="portfolio-token-asset"
       className={`
         flex flex-row items-center text-white py-1
-        ${isDisabled ? filteredOpacity : 'opacity-100'}
         `}
     >
       <div className="flex flex-row justify-between w-2/3">
@@ -191,7 +193,7 @@ const PortfolioTokenAsset = ({
         <div
           onClick={handleTotalBalanceInputCallback}
           className={`
-          ${isDisabled ? 'cursor-default' : 'cursor-pointer'}
+          cursor-default
           `}
         >
           {parsedBalance}
