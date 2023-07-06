@@ -22,6 +22,7 @@ const PoolInfoSection = ({
   useEffect(() => {
     if (pool && chainId) {
       getPoolFee(poolAddress, chainId).then((res) => {
+        console.log(`res, get pool fee`, res)
         setSwapFee(res?.swapFee)
       })
     }

@@ -3,7 +3,7 @@ import { AddressZero } from '@ethersproject/constants'
 import Link from 'next/link'
 import { Token } from '@types'
 import { ChevronLeftIcon } from '@heroicons/react/outline'
-import { getPoolData } from '@utils/actions/getPoolData'
+import { getSinglePoolData, getPoolUserData } from '@utils/actions/getPoolData'
 import { getPoolApyData } from '@utils/actions/getPoolApyData'
 import { STAKE_PATH, POOLS_PATH, POOL_PATH } from '@urls'
 import Card from '@tw/Card'
@@ -27,8 +27,8 @@ const PoolBody = ({
   const [poolUserData, setPoolUserData] = useState(undefined)
   const [poolAPYData, setPoolAPYData] = useState(undefined)
 
-  const handleGetPoolData = useCallback(() => {
-    getPoolData(poolChainId, pool, address ?? AddressZero, false)
+  const handleGetSinglePoolData = useCallback(() => {
+    getSinglePoolData(poolChainId, pool)
       .then((res) => {
         return setPoolData(res)
       })
@@ -38,9 +38,9 @@ const PoolBody = ({
       })
   }, [poolChainId, pool, address])
 
-  const handleGetUserPoolData = useCallback(() => {
+  const handleGetPoolUserData = useCallback(() => {
     if (address) {
-      getPoolData(poolChainId, pool, address, true)
+      getPoolUserData(poolChainId, pool, address)
         .then((res) => {
           return setPoolUserData(res)
         })
@@ -54,8 +54,8 @@ const PoolBody = ({
   useEffect(() => {
     if (connectedChainId && pool && poolChainId) {
       // TODO - separate the apy and tvl so they load async.
-      handleGetPoolData()
-      handleGetUserPoolData()
+      handleGetSinglePoolData()
+      handleGetPoolUserData()
       getPoolApyData(poolChainId, pool)
         .then((res) => {
           if (Object.keys(res).length > 0) {
@@ -125,7 +125,7 @@ const PoolBody = ({
               chainId={connectedChainId}
               poolData={poolData}
               poolUserData={poolUserData}
-              refetchCallback={handleGetUserPoolData}
+              refetchCallback={handleGetPoolUserData}
               // poolStakingLink={STAKE_PATH}
               // poolStakingLinkText="Stake" // check this
             />

@@ -2,7 +2,7 @@ import Link from 'next/link'
 import { getPoolUrl } from '@urls'
 import { switchNetwork } from '@wagmi/core'
 import { useEffect, useState } from 'react'
-import { getPoolData } from '@utils/actions/getPoolData'
+import { getSinglePoolData } from '@utils/actions/getPoolData'
 import { getPoolApyData } from '@utils/actions/getPoolApyData'
 import { Token } from '@types'
 import Card from '@tw/Card'
@@ -10,11 +10,10 @@ import Grid from '@tw/Grid'
 import { memo } from 'react'
 import { CHAINS_BY_ID } from '@constants/chains'
 import LoadingSpinner from '@tw/LoadingSpinner'
-import { AddressZero } from '@ethersproject/constants'
 import { useAccount } from 'wagmi'
 import { toast } from 'react-hot-toast'
 
-const PoolsListCard = memo(
+const PoolCard = memo(
   ({
     pool,
     chainId,
@@ -36,8 +35,9 @@ const PoolsListCard = memo(
     useEffect(() => {
       if (connectedChainId && chainId && pool) {
         // TODO - separate the apy and tvl so they load async.
-        getPoolData(chainId, pool, address ?? AddressZero, false, prices)
+        getSinglePoolData(chainId, pool, prices)
           .then((res) => {
+            console.log(`in getPoolData`, res)
             setPoolData(res)
           })
           .catch((err) => {
@@ -45,6 +45,7 @@ const PoolsListCard = memo(
           })
         getPoolApyData(chainId, pool, prices)
           .then((res) => {
+            console.log(`get pool apy data`, res)
             setPoolApyData(res)
           })
           .catch((err) => {
@@ -189,4 +190,4 @@ const CoinLabels = ({ coins }) => {
     </div>
   )
 }
-export default PoolsListCard
+export default PoolCard

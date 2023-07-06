@@ -18,6 +18,7 @@ import { Token, PoolUserData, PoolData } from '@types'
 
 import { getVirtualPrice } from './getPoolFee'
 // import { formatBigIntToString } from '@/utils/bigint/format'
+import { commifyBigIntToString } from '@utils/bigint/format'
 
 const getBalanceData = async ({
   pool,
@@ -50,7 +51,7 @@ const getBalanceData = async ({
       chainId,
       token: token.addresses[chainId] as `0x${string}`,
     })
-    console.log(rawBalanceResult?.value)
+    // console.log(rawBalanceResult?.value)
     // add to balances
     tokenBalances.push({
       rawBalance: rawBalanceResult?.value ?? 0n,
@@ -98,16 +99,14 @@ export const getPoolData = async (
 
   const lpTokenAddress = pool?.addresses[chainId]
 
-  const {
-    tokenBalances,
-    lpTokenBalance,
-    // , lpTotalSupply
-  } = await getBalanceData({
-    pool,
-    chainId,
-    address: user ? address : poolAddress,
-    lpTokenAddress,
-  })
+  const { tokenBalances, lpTokenBalance, lpTotalSupply } = await getBalanceData(
+    {
+      pool,
+      chainId,
+      address: user ? address : poolAddress,
+      lpTokenAddress,
+    }
+  )
 
   const virtualPrice = await getVirtualPrice(poolAddress, chainId)
 
@@ -130,7 +129,7 @@ export const getPoolData = async (
   //   },
   //   chainId,
   // })
-  const poolTokensMatured = tokenBalances
+  const poolTokensMatured = tokenBalances.filter((token) => !token.isLP)
   if (user) {
     // const MAX_BN_POW_BIGINT = 1000000000000000000n;
     // const power = 18n;
@@ -167,7 +166,141 @@ export const getPoolData = async (
     // totalLockedUSDStr: commifyBnToString(tokenBalancesUSD, 0),
     totalLockedUSDStr: tokenBalancesUSD,
     virtualPrice,
+    virtualPriceStr: commifyBigIntToString(virtualPrice.result, 18, 5),
+  }
+}
+
+export const getSinglePoolData = async (
+  chainId: number,
+  pool: Token,
+  prices?: any
+): Promise<PoolData> => {
+  const poolAddress = pool?.swapAddresses[chainId]
+
+  if (!pool || !poolAddress) {
+    return null
+  }
+
+  const lpTokenAddress = pool?.addresses[chainId]
+
+  const { tokenBalances, lpTokenBalance, lpTotalSupply } = await getBalanceData(
+    {
+      pool,
+      chainId,
+      address: poolAddress,
+      lpTokenAddress,
+    }
+  )
+
+  const virtualPrice = await getVirtualPrice(poolAddress, chainId)
+
+  const ethPrice = prices?.ethPrice ?? (await getEthPrice())
+  const avaxPrice = prices?.avaxPrice ?? (await getAvaxPrice())
+
+  const { tokenBalancesSum, tokenBalancesUSD } = getTokenBalanceInfo({
+    tokenBalances: tokenBalances.filter((t) => !t.isLP).map((t) => t.balance),
+    prices: {
+      ethPrice,
+      avaxPrice,
+    },
+    poolType: pool?.poolType,
+  })
+
+  // const poolTokensMatured = getPoolTokenInfoArr({
+  //   tokenBalances: tokenBalances.filter((t) => !t.isLP),
+  //   ...{
+  //     lpTotalSupply,
+  //     tokenBalancesSum,
+  //   },
+  //   chainId,
+  // })
+
+  // need to filter out lp tokens somewhere for display
+  const poolTokensMatured = tokenBalances
+
+  // console.log(`poolTokenMatured`, poolTokensMatured)
+  // const standardUnits = pool.priceUnits ?? ''
+  // const displayDecimals = standardUnits === 'ETH' ? 3 : 0
+
+  return {
+    name: pool.name,
+    tokens: poolTokensMatured,
+    totalLocked: tokenBalancesSum,
+    // totalLockedStr: commifyBnWithDefault(tokenBalancesSum, displayDecimals),
+    totalLockedStr: tokenBalancesSum,
+    totalLockedUSD: tokenBalancesUSD,
+    // totalLockedUSDStr: commifyBnToString(tokenBalancesUSD, 0),
+    totalLockedUSDStr: tokenBalancesUSD,
+    virtualPrice,
     // virtualPriceStr: commifyBnToString(virtualPrice, 5),
-    virtualPriceStr: virtualPrice.toString(),
+    virtualPriceStr: virtualPrice.result.toString(),
+  }
+}
+
+export const getPoolUserData = async (
+  chainId: number,
+  pool: Token,
+  address: string,
+  prices?: any
+): Promise<PoolUserData> => {
+  const poolAddress = pool?.swapAddresses[chainId]
+  if (!poolAddress || !pool || !address) {
+    return null
+  }
+
+  const lpTokenAddress = pool?.addresses[chainId]
+
+  const { tokenBalances, lpTokenBalance, lpTotalSupply } = await getBalanceData(
+    {
+      pool,
+      chainId,
+      address: address,
+      lpTokenAddress,
+    }
+  )
+
+  const virtualPrice = await getVirtualPrice(poolAddress, chainId)
+
+  const ethPrice = prices?.ethPrice ?? (await getEthPrice())
+  const avaxPrice = prices?.avaxPrice ?? (await getAvaxPrice())
+
+  const { tokenBalancesSum, tokenBalancesUSD } = getTokenBalanceInfo({
+    tokenBalances: tokenBalances.filter((t) => !t.isLP).map((t) => t.balance),
+    prices: {
+      ethPrice,
+      avaxPrice,
+    },
+    poolType: pool?.poolType,
+  })
+  // const poolTokensMatured = getPoolTokenInfoArr({
+  //   tokenBalances: tokenBalances.filter((t) => !t.isLP),
+  //   ...{
+  //     lpTotalSupply,
+  //     tokenBalancesSum,
+  //   },
+  //   chainId,
+  // })
+
+  // need to filter out LP tokens somewhere for display
+  const poolTokensMatured = tokenBalances
+  // const MAX_BN_POW_BIGINT = 1000000000000000000n;
+  // const power = 18n;
+  // const base = 10n;
+  // console.log("ebfore erorr")
+  // console.log(base ** power);
+
+  // const userShare = (lpTokenBalance * MAX_BN_POW_BIGINT) / (lpTokenBalance === 0n ? 1n : lpTokenBalance);
+  // const userPoolTokenBalances = tokenBalances.map((token) => (userShare * token.rawBalance) / MAX_BN_POW_BIGINT);
+  // const userPoolTokenBalancesSum = userPoolTokenBalances.reduce((sum, b) => sum + b, 0n);
+
+  return {
+    name: pool.name,
+    share: 0n,
+    value: 0n,
+    tokens: poolTokensMatured,
+    lpTokenBalance,
+    // lpTokenBalanceStr: formatBigIntToString(lpTokenBalance, 18, 4),
+    lpTokenBalanceStr: lpTokenBalance.toString(),
+    nativeTokens: pool.nativeTokens,
   }
 }

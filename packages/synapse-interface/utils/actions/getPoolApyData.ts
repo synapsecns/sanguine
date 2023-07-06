@@ -2,7 +2,7 @@ import { formatUnits } from '@ethersproject/units'
 import { SYN_ETH_SUSHI_TOKEN } from '@constants/tokens/sushiMaster'
 import { MINICHEF_ADDRESSES } from '@constants/minichef'
 import { Token } from '@types'
-import { fetchBalance, readContracts, fetchToken } from '@wagmi/core'
+import { fetchBalance, readContracts, fetchToken, Address } from '@wagmi/core'
 import { MINICHEF_ABI } from '@abis/miniChef'
 import { getSynPrices } from '@utils/actions/getPrices'
 // import { useContractReads } from 'wagmi'
@@ -23,9 +23,7 @@ export const getPoolApyData = async (
       yearlyAPRUnvested: 0,
     }
   }
-  const minichefAddress: `0x${string}` = `0x${MINICHEF_ADDRESSES[chainId].slice(
-    2
-  )}`
+  const minichefAddress: Address = MINICHEF_ADDRESSES[chainId]
 
   const data = await readContracts({
     contracts: [
@@ -59,14 +57,14 @@ export const getPoolApyData = async (
       await fetchBalance({
         address: minichefAddress,
         chainId,
-        token: `0x${poolToken.addresses[chainId].slice(2)}`,
+        token: poolToken.addresses[chainId] as Address,
       })
     )?.value ?? BigInt(0)
 
   const lpTokenSupplyResult =
     (
       await fetchToken({
-        address: `0x${poolToken.addresses[chainId].slice(2)}`,
+        address: poolToken.addresses[chainId] as Address,
         chainId,
       })
     )?.totalSupply?.value ?? BigInt(0)
@@ -116,6 +114,7 @@ export const getPoolApyData = async (
   }
 
   const usdPerWeek = poolRewardsPerWeek * synPriceData.synPrice
+  console.log(`usd per week`, usdPerWeek)
 
   const weeklyAPR = (usdPerWeek / stakedTvl) * 100
   const yearlyAPR = weeklyAPR * 52

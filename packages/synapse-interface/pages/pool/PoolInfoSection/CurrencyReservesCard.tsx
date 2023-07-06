@@ -1,4 +1,3 @@
-
 import AugmentWithUnits from '../components/AugmentWithUnits'
 import InfoSectionCard from './InfoSectionCard'
 import { displaySymbol } from '@utils/displaySymbol'
@@ -44,6 +43,8 @@ const CurrencyReservesCard = ({
 function CurrencyInfoListItem({ chainId, percent, balance, token }) {
   const symbol = displaySymbol(chainId, token)
   let decimalsToDisplay = token.swapableType === 'USD' ? 0 : 2
+  decimalsToDisplay = 10
+
   return (
     <div className="flex items-center justify-between my-2 text-sm font-medium text-white">
       <div className="flex items-center">
@@ -53,8 +54,11 @@ function CurrencyInfoListItem({ chainId, percent, balance, token }) {
       <div>{percent}</div>
       {balance && (
         <AugmentWithUnits
-          content={commifyBigIntToString(balance, decimalsToDisplay)}
-          // content={balance}
+          content={commifyBigIntToString(
+            balance,
+            token.decimals[chainId],
+            decimalsToDisplay
+          )}
           label={symbol}
         />
       )}

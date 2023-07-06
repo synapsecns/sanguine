@@ -135,8 +135,13 @@ export function commify(value: string | number): string {
   return negative + formatted.join(',') + suffix
 }
 
-export const commifyBigIntToString = (big: bigint, decimals = 2) => {
-  return commify(formatBNToString(big, 18, decimals))
+export const commifyBigIntToString = (
+  big: bigint,
+  precision: number,
+  decimals = 2
+) => {
+  console.log(`big`)
+  return commify(formatBNToString(big, precision, decimals))
 }
 
 export const commifyBigIntWithDefault = (big: bigint, decimals: number) => {
