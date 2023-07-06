@@ -60,9 +60,9 @@ const PoolInfoSection = ({
         <InfoListItem
           labelText="Total Liquidity"
           content={
-            poolData?.totalLockedUSDStr ? (
+            poolData?.totalLockedStr ? (
               <AugmentWithUnits
-                content={poolData.totalLockedUSDStr}
+                content={poolData.totalLockedStr}
                 label={pool.priceUnits}
               />
             ) : (
