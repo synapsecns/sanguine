@@ -24,6 +24,7 @@ import (
 	"github.com/synapsecns/sanguine/services/explorer/db/sql"
 	"github.com/synapsecns/sanguine/services/explorer/testutil/testcontracts"
 	bridgeTypes "github.com/synapsecns/sanguine/services/explorer/types/bridge"
+	cctpTypes "github.com/synapsecns/sanguine/services/explorer/types/cctp"
 	swapTypes "github.com/synapsecns/sanguine/services/explorer/types/swap"
 )
 
@@ -527,6 +528,7 @@ func (b *BackfillSuite) sendCircleTokenParity(log *types.Log, parser *parser.CCT
 			ContractAddress:    log.Address.String(),
 			BlockNumber:        log.BlockNumber,
 			TxHash:             log.TxHash.String(),
+			EventType:          cctpTypes.CircleRequestSentEvent.Int(),
 			RequestID:          common.Bytes2Hex(parsedLog.RequestID[:]),
 			DestinationChainID: parsedLog.ChainId,
 			Sender:             sender,
@@ -569,6 +571,7 @@ func (b *BackfillSuite) receiveCircleTokenParity(log *types.Log, parser *parser.
 			ContractAddress: log.Address.String(),
 			BlockNumber:     log.BlockNumber,
 			TxHash:          log.TxHash.String(),
+			EventType:       cctpTypes.CircleRequestFulfilledEvent.Int(),
 			RequestID:       common.Bytes2Hex(parsedLog.RequestID[:]),
 			OriginChainID:   big.NewInt(int64(parsedLog.OriginDomain)),
 			MintToken:       mintToken,
