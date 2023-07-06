@@ -44,7 +44,7 @@ export const Portfolio = () => {
   return (
     <div
       data-test-id="portfolio"
-      className="flex flex-col w-full px-4 py-2 lg:w-2/5"
+      className="flex flex-col w-full px-4 py-10 lg:py-2 lg:w-2/5"
     >
       <PortfolioTabManager activeTab={tab} setTab={setTab} />
       <div className="border-t border-solid border-[#28282F] mt-4">
