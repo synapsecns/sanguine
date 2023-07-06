@@ -98,6 +98,7 @@ export const SingleNetworkPortfolio = ({
                 balance={balance}
                 portfolioChainId={portfolioChainId}
                 connectedChainId={connectedChainId}
+                selectedFromChainId={selectedFromChainId}
                 isApproved={true}
               />
             )
@@ -111,6 +112,7 @@ export const SingleNetworkPortfolio = ({
                 balance={balance}
                 portfolioChainId={portfolioChainId}
                 connectedChainId={connectedChainId}
+                selectedFromChainId={selectedFromChainId}
                 isApproved={false}
               />
             )
@@ -140,6 +142,7 @@ type PortfolioTokenAssetProps = {
   balance: BigNumber
   portfolioChainId: number
   connectedChainId: number
+  selectedFromChainId: number
   isApproved: boolean
 }
 
@@ -157,7 +160,7 @@ const PortfolioTokenAsset = ({
     decimals[portfolioChainId],
     3
   )
-  const isDisabled: boolean = portfolioChainId !== connectedChainId
+  const isDisabled: boolean = false
   const filteredOpacity: string = 'opacity-50 cursor-default'
 
   const handleTotalBalanceInputCallback = useCallback(() => {

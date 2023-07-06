@@ -53,6 +53,7 @@ export const PortfolioContent = ({
                 <SingleNetworkPortfolio
                   portfolioChainId={Number(chainId)}
                   connectedChainId={connectedChainId}
+                  selectedFromChainId={selectedFromChainId}
                   portfolioTokens={tokens}
                   initializeExpanded={false}
                   fetchState={fetchState}
