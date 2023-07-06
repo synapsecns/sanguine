@@ -1,12 +1,14 @@
 import AugmentWithUnits from '../components/AugmentWithUnits'
-import { Token } from '@types'
+import { PoolData, Token } from '@types'
 import InfoSectionCard from './InfoSectionCard'
 import CurrencyReservesCard from './CurrencyReservesCard'
 import LoadingSpinner from '@tw/LoadingSpinner'
 import {
+  commify,
   formatBigIntToPercentString,
   formatBigIntToString,
 } from '@/utils/bigint/format'
+import { stringToBigInt } from '@/utils/stringToBigNum'
 
 const PoolInfoSection = ({
   pool,
@@ -14,7 +16,7 @@ const PoolInfoSection = ({
   chainId,
 }: {
   pool: Token
-  poolData: any
+  poolData: PoolData
   chainId: number
 }) => {
   return (
@@ -41,11 +43,7 @@ const PoolInfoSection = ({
           content={
             poolData && poolData?.virtualPrice ? (
               <AugmentWithUnits
-                content={formatBigIntToString(
-                  BigInt(poolData.virtualPrice),
-                  18,
-                  6
-                )}
+                content={formatBigIntToString(poolData.virtualPrice, 18, 6)}
                 label={pool.priceUnits}
               />
             ) : (
@@ -58,7 +56,16 @@ const PoolInfoSection = ({
           content={
             poolData && poolData?.totalLockedUSDStr ? (
               <AugmentWithUnits
-                content={poolData.totalLockedUSDStr}
+                content={commify(
+                  formatBigIntToString(
+                    stringToBigInt(
+                      `${poolData.totalLocked}`,
+                      pool.decimals[chainId]
+                    ),
+                    18,
+                    2
+                  )
+                )}
                 label={pool.priceUnits}
               />
             ) : (
@@ -70,7 +77,16 @@ const PoolInfoSection = ({
           labelText="Total Liquidity USD"
           content={
             poolData && poolData?.totalLockedUSDStr ? (
-              `$${poolData.totalLockedUSDStr}`
+              `$${commify(
+                formatBigIntToString(
+                  stringToBigInt(
+                    `${poolData.totalLockedUSDStr}`,
+                    pool.decimals[chainId]
+                  ),
+                  18,
+                  -1
+                )
+              )}`
             ) : (
               <LoadingSpinner />
             )

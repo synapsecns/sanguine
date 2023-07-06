@@ -137,7 +137,6 @@ export const commifyBigIntToString = (
   precision: number,
   decimals = 2
 ) => {
-  console.log(`big`)
   return commify(formatBNToString(big, precision, decimals))
 }
 

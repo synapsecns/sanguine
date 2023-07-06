@@ -12,6 +12,8 @@ import { CHAINS_BY_ID } from '@constants/chains'
 import LoadingSpinner from '@tw/LoadingSpinner'
 import { useAccount } from 'wagmi'
 import { toast } from 'react-hot-toast'
+import { commify, formatBigIntToString } from '@/utils/bigint/format'
+import { stringToBigInt } from '@/utils/stringToBigNum'
 
 const PoolCard = memo(
   ({
@@ -37,7 +39,7 @@ const PoolCard = memo(
         // TODO - separate the apy and tvl so they load async.
         getSinglePoolData(chainId, pool, prices)
           .then((res) => {
-            console.log(`in getPoolData`, res)
+            // console.log(`in getPoolData`, res)
             setPoolData(res)
           })
           .catch((err) => {
@@ -128,7 +130,16 @@ const PoolCard = memo(
                 </h3>
                 <div className={'mt-2 text-white '}>
                   {poolData?.totalLockedUSDStr ? (
-                    '$' + poolData?.totalLockedUSDStr
+                    `$${commify(
+                      formatBigIntToString(
+                        stringToBigInt(
+                          `${poolData.totalLockedUSDStr}`,
+                          pool.decimals[chainId]
+                        ),
+                        18,
+                        -1
+                      )
+                    )}`
                   ) : (
                     <LoadingSpinner shift={true} />
                   )}

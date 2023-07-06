@@ -39,13 +39,22 @@ export const getBalanceInfo = async ({ lpTokenContract, account }) => {
 }
 
 export const getTokenBalanceInfo = ({ tokenBalances, poolType, prices }) => {
-  // const tokenBalancesSum = tokenBalances.reduce((a, b) => Number(a) + Number(b), 0)
-  // const priceMultiplier = getPriceMultiplier({ prices, poolType })
-  // const tokenBalancesUSD = tokenBalancesSum * (priceMultiplier ?? 0)
+  console.log(`tokenBalances`, tokenBalances)
+  console.log(`poolType`, poolType)
+  console.log(`prices`, prices)
+
+  const tokenBalancesSum = tokenBalances.reduce(
+    (a, b) => Number(a) + Number(b),
+    0
+  )
+
+  console.log(`tokenBalancesSum`, tokenBalancesSum)
+  const priceMultiplier = getPriceMultiplier({ prices, poolType })
+  const tokenBalancesUSD = tokenBalancesSum * (priceMultiplier ?? 0)
 
   return {
-    tokenBalancesSum: 0,
-    tokenBalancesUSD: 0,
+    tokenBalancesSum,
+    tokenBalancesUSD,
   }
 }
 

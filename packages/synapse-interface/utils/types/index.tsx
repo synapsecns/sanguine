@@ -49,7 +49,7 @@ export type PoolData = {
   tokens: PoolToken[]
   totalLocked: number
   totalLockedStr: number
-  totalLockedUSD: Number
+  totalLockedUSD: number
   totalLockedUSDStr: number
   virtualPrice: bigint
   nativeTokens?: any

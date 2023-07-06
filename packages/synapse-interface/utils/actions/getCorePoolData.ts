@@ -1,15 +1,15 @@
 import { Address, readContracts } from '@wagmi/core'
 import { SWAP_ABI } from '@abis/swap'
 
-const list = {
-  0: 'initialA',
-  1: 'futureA',
-  2: 'initialAtTime',
-  3: 'futureAtTime',
-  4: 'swapFee',
-  5: 'adminFee',
-  6: 'lpToken',
-}
+// const list = {
+//   0: 'initialA',
+//   1: 'futureA',
+//   2: 'initialAtTime',
+//   3: 'futureAtTime',
+//   4: 'swapFee',
+//   5: 'adminFee',
+//   6: 'lpToken',
+// }
 
 type PoolFeeResponse = {
   result: [bigint, bigint, bigint, bigint, bigint, bigint, bigint]
