@@ -28,7 +28,7 @@ export const PortfolioAccordion = ({
   }
 
   useEffect(() => {
-    if (portfolioChainId === selectedFromChainId) {
+    if (portfolioChainId === connectedChainId) {
       setIsExpanded(true)
     } else {
       setIsExpanded(false)
