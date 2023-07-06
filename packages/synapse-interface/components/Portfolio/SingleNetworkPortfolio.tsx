@@ -185,18 +185,18 @@ const PortfolioTokenAsset = ({
     >
       <div
         className={`
-          flex flex-row w-1/2 text-left
+          flex flex-row w-2/3 justify-between
           ${!isApproved ? 'opacity-50' : ''}
           `}
       >
-        <Image
-          alt={`${symbol} img`}
-          className="w-6 h-6 mr-2 rounded-md"
-          src={icon}
-        />
-        <div>{symbol}</div>
-      </div>
-      <div className="flex flex-row items-center w-1/2 text-left">
+        <div className="flex flex-row">
+          <Image
+            alt={`${symbol} img`}
+            className="w-6 h-6 mr-2 rounded-md"
+            src={icon}
+          />
+          <div>{symbol}</div>
+        </div>
         <div
           onClick={handleTotalBalanceInputCallback}
           className={`
@@ -206,6 +206,8 @@ const PortfolioTokenAsset = ({
         >
           {parsedBalance}
         </div>
+      </div>
+      <div className="flex flex-row items-center w-1/3 text-left">
         <PortfolioAssetActionButton
           connectedChainId={connectedChainId}
           token={token}
@@ -429,8 +431,11 @@ export const PortfolioAssetHeader = () => {
       data-test-id="portfolio-asset-header"
       className="flex text-[#CCCAD3BF] my-2"
     >
-      <div className="w-1/2 text-left">Token</div>
-      <div className="w-1/2 text-left">Amount</div>
+      <div className="flex flex-row justify-between w-2/3 text-left">
+        <div>Token</div>
+        <div>Amount</div>
+      </div>
+      <div className="w-1/3 text-left" />
     </div>
   )
 }
