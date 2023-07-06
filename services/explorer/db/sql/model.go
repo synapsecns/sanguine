@@ -79,12 +79,16 @@ var PageSize = 100
 
 // CCTPEvent stores a cctp event.
 type CCTPEvent struct {
+	// InsertTime is the time the event was inserted into the database.
+	InsertTime uint64 `gorm:"column:insert_time"`
 	// TxHash is the transaction hash of the event.
 	TxHash string `gorm:"column:tx_hash"`
 	// ContractAddress is the address of the contract that generated the event.
 	ContractAddress string `gorm:"column:contract_address"`
 	// BlockNumber is the timestamp.
 	BlockNumber uint64 `gorm:"column:block_number"`
+	// EventType is the type of the event.
+	EventType uint8 `gorm:"column:event_type"`
 	// OriginChainID is the chain ID of the CCTP transfer.
 	OriginChainID *big.Int `gorm:"column:origin_chain_id;type:UInt256"`
 	// DestinationChainID is the chain ID of the CCTP transfer.
@@ -108,6 +112,7 @@ type CCTPEvent struct {
 	// FormattedRequest is the formatted request of the CCTP transfer.
 	FormattedRequest []byte `gorm:"column:formatted_request"`
 	// RequestID is the request ID of the CCTP transfer.
+	// TODO convert byte to string
 	RequestID [32]byte `gorm:"column:request_id"`
 	// Recipient is the recipient of the CCTP transfer.
 	Recipient sql.NullString `gorm:"column:recipient"`

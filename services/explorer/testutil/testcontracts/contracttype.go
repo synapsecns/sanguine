@@ -6,6 +6,7 @@ import (
 	"github.com/synapsecns/sanguine/services/explorer/contracts/bridge/testbridge"
 	"github.com/synapsecns/sanguine/services/explorer/contracts/bridge/testbridgev1"
 	"github.com/synapsecns/sanguine/services/explorer/contracts/bridgeconfig"
+	"github.com/synapsecns/sanguine/services/explorer/contracts/cctp/testcctp"
 	"github.com/synapsecns/sanguine/services/explorer/contracts/messagebus/testmessagebus"
 	"github.com/synapsecns/sanguine/services/explorer/contracts/metaswap/testmetaswap"
 	"github.com/synapsecns/sanguine/services/explorer/contracts/swap/testswap"
@@ -51,6 +52,8 @@ const (
 	TestMessageBusType
 	// TestMetaSwapType is the meta swap type.
 	TestMetaSwapType
+	// TestCCTPType is cctp contract type
+	TestCCTPType
 )
 
 // ID gets the contract type as an id.
@@ -83,6 +86,8 @@ func (c contractTypeImpl) ContractInfo() *compiler.Contract {
 		return testmessagebus.Contracts["/solidity/TestMessageBusUpgradeable.sol:TestMessageBusUpgradeable"]
 	case TestMetaSwapType:
 		return testmetaswap.Contracts["/solidity/TestMetaSwapV1.sol:TestMetaSwap"]
+	case TestCCTPType:
+		return testcctp.Contracts["/solidity/TestSynapseCCTPV1.sol:TestSynapseCCTP"]
 
 	default:
 		panic("not yet implemented")

@@ -3,7 +3,9 @@ package testutil
 import (
 	"context"
 	"fmt"
+	"github.com/brianvoe/gofakeit/v6"
 	"github.com/synapsecns/sanguine/services/explorer/contracts/metaswap"
+	"math/big"
 
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/common"
@@ -14,6 +16,7 @@ import (
 	"github.com/synapsecns/sanguine/services/explorer/contracts/bridge"
 	"github.com/synapsecns/sanguine/services/explorer/contracts/bridge/bridgev1"
 	"github.com/synapsecns/sanguine/services/explorer/contracts/bridgeconfig"
+	"github.com/synapsecns/sanguine/services/explorer/contracts/cctp"
 	"github.com/synapsecns/sanguine/services/explorer/contracts/messagebus"
 	"github.com/synapsecns/sanguine/services/explorer/contracts/swap"
 )
@@ -48,6 +51,11 @@ type MetaSwapDeployer struct {
 	*deployer.BaseDeployer
 }
 
+// CCTPDeployer is the type of the cctp deployer.
+type CCTPDeployer struct {
+	*deployer.BaseDeployer
+}
+
 // NewBridgeConfigV3Deployer creates a new bridge config v2 client.
 func NewBridgeConfigV3Deployer(registry deployer.GetOnlyContractRegistry, backend backends.SimulatedTestBackend) deployer.ContractDeployer {
 	return BridgeConfigV3Deployer{deployer.NewSimpleDeployer(registry, backend, BridgeConfigTypeV3)}
@@ -76,6 +84,11 @@ func NewMessageBusDeployer(registry deployer.GetOnlyContractRegistry, backend ba
 // NewMetaSwapDeployer creates a new meta swap client.
 func NewMetaSwapDeployer(registry deployer.GetOnlyContractRegistry, backend backends.SimulatedTestBackend) deployer.ContractDeployer {
 	return MetaSwapDeployer{deployer.NewSimpleDeployer(registry, backend, MetaSwapType)}
+}
+
+// NewCCTPDeployer creates a new cctp client.
+func NewCCTPDeployer(registry deployer.GetOnlyContractRegistry, backend backends.SimulatedTestBackend) deployer.ContractDeployer {
+	return CCTPDeployer{deployer.NewSimpleDeployer(registry, backend, CCTPType)}
 }
 
 // Deploy deploys bridge config v3 contract
@@ -168,8 +181,24 @@ func (n MetaSwapDeployer) Deploy(ctx context.Context) (contracts.DeployedContrac
 	})
 }
 
+// Deploy deploys CCTP contract
+//
+//nolint:dupl
+func (n CCTPDeployer) Deploy(ctx context.Context) (contracts.DeployedContract, error) {
+	return n.DeploySimpleContract(ctx, func(transactOps *bind.TransactOpts, backend bind.ContractBackend) (common.Address, *types.Transaction, interface{}, error) {
+		// Create mock tokenMessenger and owner
+		owner := common.BigToAddress(big.NewInt(gofakeit.Int64()))
+		tokenMessenger := common.BigToAddress(big.NewInt(gofakeit.Int64()))
+
+		return cctp.DeploySynapseCCTP(transactOps, backend, tokenMessenger, owner)
+	}, func(address common.Address, backend bind.ContractBackend) (interface{}, error) {
+		return cctp.NewCCTPRef(address, backend)
+	})
+}
+
 var _ deployer.ContractDeployer = &BridgeConfigV3Deployer{}
 var _ deployer.ContractDeployer = &SynapseBridgeDeployer{}
 var _ deployer.ContractDeployer = &SwapFlashLoanDeployer{}
 var _ deployer.ContractDeployer = &SynapseBridgeV1Deployer{}
 var _ deployer.ContractDeployer = &MetaSwapDeployer{}
+var _ deployer.ContractDeployer = &CCTPDeployer{}

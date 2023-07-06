@@ -3,6 +3,7 @@ package parser
 import (
 	"context"
 	"fmt"
+	"time"
 
 	"github.com/ethereum/go-ethereum/common"
 	ethTypes "github.com/ethereum/go-ethereum/core/types"
@@ -113,6 +114,8 @@ func (c *CCTPParser) applyPriceData(ctx context.Context, cctpEvent *model.CCTPEv
 // eventToCCTPEvent stores a message event.
 func eventToCCTPEvent(event cctpTypes.EventLog) model.CCTPEvent {
 	return model.CCTPEvent{
+		// TODO add event type to implementation of event log
+		InsertTime:         uint64(time.Now().UnixNano()),
 		TxHash:             event.GetTxHash().String(),
 		ContractAddress:    event.GetContractAddress().String(),
 		BlockNumber:        event.GetBlockNumber(),

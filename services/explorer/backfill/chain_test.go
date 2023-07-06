@@ -41,7 +41,9 @@ func (b *BackfillSuite) TestBackfill() {
 	swapContractA, swapRefA := b.testDeployManager.GetTestSwapFlashLoan(b.GetTestContext(), b.testBackend)
 	metaSwapContract, metaSwapRef := b.testDeployManager.GetTestMetaSwap(b.GetTestContext(), b.testBackend)
 	messageBusContract, messageBusRef := b.testDeployManager.GetTestMessageBusUpgradeable(b.GetTestContext(), b.testBackend)
+	cctpContract, cctpRef := b.testDeployManager.GetTestCCTP(b.GetTestContext(), b.testBackend)
 	testDeployManagerB := testcontracts.NewDeployManager(b.T())
+
 	swapContractB, swapRefB := testDeployManagerB.GetTestSwapFlashLoan(b.GetTestContext(), b.testBackend)
 
 	lastBlock := uint64(12)
@@ -76,6 +78,13 @@ func (b *BackfillSuite) TestBackfill() {
 	contractMessageBus := config.ContractConfig{
 		ContractType: "messagebus",
 		Address:      messageBusContract.Address().String(),
+		StartBlock:   0,
+	}
+
+	// CCTP config
+	contractCCTP := config.ContractConfig{
+		ContractType: "cctp",
+		Address:      cctpContract.Address().String(),
 		StartBlock:   0,
 	}
 
@@ -287,6 +296,8 @@ func (b *BackfillSuite) TestBackfill() {
 	callRevertedLog, err := b.storeTestLog(messageTx, uint32(testChainID.Uint64()), 7)
 	Nil(b.T(), err)
 
+	// TODO add events for cctp
+
 	// Go through each contract and save the end height in scribe
 	for i := range chainConfigs[0].Contracts {
 		//  the last block store per contract
@@ -309,6 +320,8 @@ func (b *BackfillSuite) TestBackfill() {
 	Nil(b.T(), err)
 	tokenPriceService, err := tokenprice.NewPriceDataService()
 	Nil(b.T(), err)
+
+	// TODO Add cctp parser
 
 	bp, err := parser.NewBridgeParser(b.db, bridgeContract.Address(), tokenDataService, b.consumerFetcher, tokenPriceService)
 	Nil(b.T(), err)
@@ -360,6 +373,8 @@ func (b *BackfillSuite) TestBackfill() {
 	messageEvents := b.db.UNSAFE_DB().WithContext(b.GetTestContext()).Find(&sql.MessageBusEvent{}).Count(&count)
 	Nil(b.T(), messageEvents.Error)
 	Equal(b.T(), int64(3), count)
+
+	// TODO test parity for cctp events (see todo on line 540)
 
 	// Test bridge parity
 	err = b.depositParity(depositLog, bp, uint32(testChainID.Uint64()), false)
@@ -521,6 +536,8 @@ func (b *BackfillSuite) depositParity(log *types.Log, parser *parser.BridgeParse
 	Equal(b.T(), int64(1), count)
 	return nil
 }
+
+// TODO add parity checks for circle fufilled and sent cctp events here
 
 //nolint:dupl
 func (b *BackfillSuite) redeemParity(log *types.Log, parser *parser.BridgeParser, chainID uint32, useV1 bool) error {
