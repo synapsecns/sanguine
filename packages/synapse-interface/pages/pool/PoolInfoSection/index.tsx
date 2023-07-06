@@ -6,7 +6,10 @@ import LoadingSpinner from '@tw/LoadingSpinner'
 import { useEffect, useState } from 'react'
 import { getPoolFee } from '@utils/actions/getPoolFee'
 import { getSwapDepositContractFields } from '@/utils/hooks/useSwapDepositContract'
-import { formatBigIntToString } from '@/utils/bigint/format'
+import {
+  formatBigIntToPercentString,
+  formatBigIntToString,
+} from '@/utils/bigint/format'
 
 const PoolInfoSection = ({
   pool,
@@ -17,16 +20,20 @@ const PoolInfoSection = ({
   poolData: any
   chainId: number
 }) => {
-  const [swapFee, setSwapFee] = useState('')
+  const [swapFee, setSwapFee] = useState<bigint>(0n)
   const { poolAddress } = getSwapDepositContractFields(pool, chainId)
   useEffect(() => {
     if (pool && chainId) {
       getPoolFee(poolAddress, chainId).then((res) => {
-        console.log(`res, get pool fee`, res)
+        console.log(`res, get pool fee`, res?.swapFee)
         setSwapFee(res?.swapFee)
       })
     }
   }, [pool, chainId])
+
+  console.log(`sawpFee`, swapFee)
+  console.log(`pool`, pool)
+  console.log(`poolData`, poolData)
   return (
     <div className="space-y-4">
       <CurrencyReservesCard
@@ -37,7 +44,14 @@ const PoolInfoSection = ({
       <InfoSectionCard title="Pool Info">
         <InfoListItem
           labelText="Trading Fee"
-          content={swapFee?.length > 0 ? swapFee : <LoadingSpinner />}
+          content={
+            swapFee ? (
+              // what decimals should this be?
+              formatBigIntToPercentString(swapFee, 8, 2)
+            ) : (
+              <LoadingSpinner />
+            )
+          }
         />
         <InfoListItem
           labelText="Virtual Price"
@@ -45,7 +59,7 @@ const PoolInfoSection = ({
             poolData?.virtualPriceStr ? (
               <AugmentWithUnits
                 content={formatBigIntToString(
-                  BigInt(poolData.virtualPrice.result),
+                  BigInt(poolData.virtualPrice),
                   18,
                   6
                 )}

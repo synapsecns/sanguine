@@ -166,7 +166,7 @@ export const getPoolData = async (
     // totalLockedUSDStr: commifyBnToString(tokenBalancesUSD, 0),
     totalLockedUSDStr: tokenBalancesUSD,
     virtualPrice,
-    virtualPriceStr: commifyBigIntToString(virtualPrice.result, 18, 5),
+    virtualPriceStr: commifyBigIntToString(virtualPrice, 18, 5),
   }
 }
 
@@ -233,7 +233,7 @@ export const getSinglePoolData = async (
     totalLockedUSDStr: tokenBalancesUSD,
     virtualPrice,
     // virtualPriceStr: commifyBnToString(virtualPrice, 5),
-    virtualPriceStr: virtualPrice.result.toString(),
+    virtualPriceStr: commifyBigIntToString(virtualPrice, 18, 5),
   }
 }
 

@@ -13,6 +13,11 @@ const list = {
   6: 'lpToken',
 }
 
+type VirtualPriceResponse = {
+  result: bigint
+  success: boolean
+}
+
 export const getPoolFee = async (poolAddress: string, chainId: number) => {
   const data: any = await readContracts({
     contracts: [
@@ -33,12 +38,11 @@ export const getPoolFee = async (poolAddress: string, chainId: number) => {
 
   console.log(`'think these are now returned as list elements vs named vars?`)
   console.log(`data get poolfee`, data)
+  console.log(`not working on arbitrumethpool`)
 
-  console.log(`swapFee`, data[0].result[4])
-
-  const swapFeeRaw = data[0]?.swapFee ?? Zero
-  const virtualPrice: { result: bigint; success: boolean } = data[1]
-  const swapFee = bnPercentFormat(swapFeeRaw)
+  const swapFee = data[0]?.result[4] ?? 0n
+  console.log(`swapFee`, swapFee)
+  const virtualPrice: VirtualPriceResponse = data[1].result
   return { swapFee, virtualPrice }
 }
 
@@ -54,6 +58,6 @@ export const getVirtualPrice = async (poolAddress: string, chainId: number) => {
     ],
   })
 
-  const virtualPrice: any = data[0]
-  return virtualPrice
+  const virtualPrice: VirtualPriceResponse = data[0]
+  return virtualPrice.result
 }

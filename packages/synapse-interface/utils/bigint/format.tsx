@@ -69,9 +69,6 @@ export const formatBigIntToPercentString = (
   // Convert the bigint to a floating-point number, preserving the requested number of decimal places
   let num = Number(bn) / Number(conversionFactor)
 
-  // Multiply by 100 to generate display percentage
-  num *= 100
-
   // Format the number as a percentage string
   return `${num.toFixed(decimalPlaces)}%`
 }
