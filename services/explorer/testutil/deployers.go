@@ -195,7 +195,7 @@ func (n CCTPDeployer) Deploy(ctx context.Context) (contracts.DeployedContract, e
 		return nil, fmt.Errorf("failed to deploy tokenMessengerContract %w", err)
 	}
 	return n.DeploySimpleContract(ctx, func(transactOps *bind.TransactOpts, backend bind.ContractBackend) (common.Address, *types.Transaction, interface{}, error) {
-		// Create mock tokenMessenger and owner
+		// Create mock owner
 		owner := common.BigToAddress(big.NewInt(gofakeit.Int64()))
 
 		return cctp.DeploySynapseCCTP(transactOps, backend, tokenMessengerContract.Address(), owner)
