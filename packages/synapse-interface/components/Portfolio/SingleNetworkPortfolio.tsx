@@ -46,10 +46,6 @@ export const SingleNetworkPortfolio = ({
   const sortedTokensForVisualizer: TokenWithBalanceAndAllowance[] =
     sortByBalanceDescending(portfolioTokens)
 
-  const shouldShowDivider: boolean =
-    sortedTokensWithAllowance.length > 0 &&
-    sortedTokensWithoutAllowance.length > 0
-
   const hasNoTokenBalance: boolean =
     !portfolioTokens || portfolioTokens.length === 0
 
@@ -103,12 +99,6 @@ export const SingleNetworkPortfolio = ({
               />
             )
           )}
-        {shouldShowDivider && (
-          <div
-            data-test-id="divider"
-            className="border-b border-solid border-[#28282F] my-1"
-          />
-        )}
         {sortedTokensWithoutAllowance &&
           sortedTokensWithoutAllowance.length > 0 &&
           sortedTokensWithoutAllowance.map(
@@ -183,12 +173,7 @@ const PortfolioTokenAsset = ({
         ${isDisabled ? filteredOpacity : 'opacity-100'}
         `}
     >
-      <div
-        className={`
-          flex flex-row w-2/3 justify-between
-          ${!isApproved ? 'opacity-50' : ''}
-          `}
-      >
+      <div className="flex flex-row justify-between w-2/3">
         <div className="flex flex-row">
           <Image
             alt={`${symbol} img`}
@@ -200,7 +185,6 @@ const PortfolioTokenAsset = ({
         <div
           onClick={handleTotalBalanceInputCallback}
           className={`
-          ${!isApproved && 'opacity-50'}
           ${isDisabled ? 'cursor-default' : 'cursor-pointer'}
           `}
         >
@@ -250,7 +234,7 @@ const PortfolioAssetActionButton = ({
 
   const buttonClassName = `
     flex ml-auto justify-center
-    w-28 lg:w-36 py-1 rounded-3xl
+    py-1 px-6 ml-2 rounded-3xl
     transform-gpu transition-all duration-75
     ${isDisabled ? 'hover:cursor-default' : 'hover:cursor-pointer'}
   `
@@ -265,7 +249,7 @@ const PortfolioAssetActionButton = ({
           `}
           onClick={handleBridgeCallback}
         >
-          Bridge
+          Send
         </button>
       ) : (
         <button
