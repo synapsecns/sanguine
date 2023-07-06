@@ -24,6 +24,12 @@ export const formatBigIntToString = (
   nativePrecision: number,
   decimalPlaces?: number
 ) => {
+  // Check if the input is negative
+  const isNegative = bn < 0n
+  if (isNegative) {
+    // Convert to positive for the calculation
+    bn = -bn
+  }
   // Convert to string and add padding zeros if necessary
   let str = bn.toString().padStart(nativePrecision, '0')
 
@@ -35,6 +41,11 @@ export const formatBigIntToString = (
   if (decimalPlaces !== undefined) {
     const decimalIdx = str.indexOf('.')
     str = str.slice(0, decimalIdx + decimalPlaces + 1)
+  }
+
+  // Add the negative sign back if necessary
+  if (isNegative) {
+    str = '-' + str
   }
 
   return str

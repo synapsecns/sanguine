@@ -18,7 +18,7 @@ import { Token, PoolUserData, PoolData } from '@types'
 
 import { getCorePoolData } from './getCorePoolData'
 // import { formatBigIntToString } from '@/utils/bigint/format'
-import { commifyBigIntToString } from '@utils/bigint/format'
+// import { commifyBigIntToString } from '@utils/bigint/format'
 
 const getBalanceData = async ({
   pool,
@@ -80,96 +80,6 @@ const getBalanceData = async ({
   }
 }
 
-export const getPoolData = async (
-  chainId: number,
-  pool: Token,
-  address: string,
-  user: boolean,
-  prices?: any
-): Promise<PoolData | PoolUserData> => {
-  const poolAddress = pool?.swapAddresses[chainId]
-  if (!poolAddress || !pool || (!address && user)) {
-    return null
-  }
-
-  // TODO: Check if we even need sdk call here since lp token is hardcoded
-  // const lpTokenAddress =
-  //   (await SynapseSDK.getPoolInfo(chainId, poolAddress))?.lpToken ??
-  //   pool?.addresses[chainId]
-
-  const lpTokenAddress = pool?.addresses[chainId]
-
-  const { tokenBalances, lpTokenBalance, lpTotalSupply } = await getBalanceData(
-    {
-      pool,
-      chainId,
-      address: user ? address : poolAddress,
-      lpTokenAddress,
-    }
-  )
-
-  const { swapFee, virtualPrice } = await getCorePoolData(poolAddress, chainId)
-
-  const ethPrice = prices?.ethPrice ?? (await getEthPrice())
-  const avaxPrice = prices?.avaxPrice ?? (await getAvaxPrice())
-
-  const { tokenBalancesSum, tokenBalancesUSD } = getTokenBalanceInfo({
-    tokenBalances: tokenBalances.filter((t) => !t.isLP).map((t) => t.balance),
-    prices: {
-      ethPrice,
-      avaxPrice,
-    },
-    poolType: pool?.poolType,
-  })
-  // const poolTokensMatured = getPoolTokenInfoArr({
-  //   tokenBalances: tokenBalances.filter((t) => !t.isLP),
-  //   ...{
-  //     lpTotalSupply,
-  //     tokenBalancesSum,
-  //   },
-  //   chainId,
-  // })
-  const poolTokensMatured = tokenBalances.filter((token) => !token.isLP)
-  if (user) {
-    // const MAX_BN_POW_BIGINT = 1000000000000000000n;
-    // const power = 18n;
-    // const base = 10n;
-    // console.log("ebfore erorr")
-    // console.log(base ** power);
-
-    // const userShare = (lpTokenBalance * MAX_BN_POW_BIGINT) / (lpTokenBalance === 0n ? 1n : lpTokenBalance);
-    // const userPoolTokenBalances = tokenBalances.map((token) => (userShare * token.rawBalance) / MAX_BN_POW_BIGINT);
-    // const userPoolTokenBalancesSum = userPoolTokenBalances.reduce((sum, b) => sum + b, 0n);
-
-    return {
-      name: pool.name,
-      share: 0n,
-      value: 0n,
-      tokens: poolTokensMatured,
-      lpTokenBalance,
-      // lpTokenBalanceStr: formatBigIntToString(lpTokenBalance, 18, 4),
-      lpTokenBalanceStr: lpTokenBalance.toString(),
-      nativeTokens: pool.nativeTokens,
-    }
-  }
-
-  // const standardUnits = pool.priceUnits ?? ''
-  // const displayDecimals = standardUnits === 'ETH' ? 3 : 0
-
-  return {
-    name: pool.name,
-    tokens: poolTokensMatured,
-    totalLocked: tokenBalancesSum,
-    // totalLockedStr: commifyBnWithDefault(tokenBalancesSum, displayDecimals),
-    totalLockedStr: tokenBalancesSum,
-    totalLockedUSD: tokenBalancesUSD,
-    // totalLockedUSDStr: commifyBnToString(tokenBalancesUSD, 0),
-    totalLockedUSDStr: tokenBalancesUSD,
-    virtualPrice,
-    swapFee,
-  }
-}
-
 export const getSinglePoolData = async (
   chainId: number,
   pool: Token,
@@ -216,7 +126,7 @@ export const getSinglePoolData = async (
   // })
 
   // need to filter out lp tokens somewhere for display
-  const poolTokensMatured = tokenBalances
+  const poolTokensMatured = tokenBalances.filter((token) => !token.isLP)
 
   // console.log(`poolTokenMatured`, poolTokensMatured)
   // const standardUnits = pool.priceUnits ?? ''
@@ -281,7 +191,7 @@ export const getPoolUserData = async (
   // })
 
   // need to filter out LP tokens somewhere for display
-  const poolTokensMatured = tokenBalances
+  const poolTokensMatured = tokenBalances.filter((token) => !token.isLP)
   // const MAX_BN_POW_BIGINT = 1000000000000000000n;
   // const power = 18n;
   // const base = 10n;

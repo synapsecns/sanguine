@@ -120,8 +120,7 @@ const Withdraw = ({
       const priceImpact = calculatePriceImpact(
         inputValue.bi,
         outputTokensSum,
-        // virtualPrice here is { result: bigint, success: boolean }
-        BigInt((virtualPrice as any).result.toString()),
+        virtualPrice,
         true
       )
 

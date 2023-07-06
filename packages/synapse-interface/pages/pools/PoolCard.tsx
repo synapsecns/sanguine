@@ -39,7 +39,6 @@ const PoolCard = memo(
         // TODO - separate the apy and tvl so they load async.
         getSinglePoolData(chainId, pool, prices)
           .then((res) => {
-            // console.log(`in getPoolData`, res)
             setPoolData(res)
           })
           .catch((err) => {

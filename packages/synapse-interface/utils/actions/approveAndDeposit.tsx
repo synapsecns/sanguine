@@ -21,7 +21,7 @@ import { Token } from '@types'
 export const approve = async (
   pool: Token,
   depositQuote: any,
-  inputValue: any,
+  inputValue: Record<string, bigint>,
   chainId: number
 ) => {
   const currentChainName = CHAINS_BY_ID[chainId].name
@@ -37,10 +37,11 @@ export const approve = async (
   )
 
   const handleApproval = async (token, tokenAddr) => {
+    console.log(`inputValue`, inputValue)
     if (
       inputValue[tokenAddr] &&
-      (inputValue[tokenAddr].isZero() ||
-        inputValue[tokenAddr].lte(depositQuote.allowances[tokenAddr]))
+      (inputValue[tokenAddr] === 0n ||
+        inputValue[tokenAddr] <= depositQuote.allowances[tokenAddr])
     )
       return
 

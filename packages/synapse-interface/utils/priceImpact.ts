@@ -9,11 +9,19 @@ const powBigInt = (base, exponent) => {
 const BI_1E18 = powBigInt(10n, 18)
 
 export const calculatePriceImpact = (
-  tokenInputAmount, // assumed to be 18d precision
-  tokenOutputAmount,
-  virtualPrice = BI_1E18,
-  isWithdraw = false
+  tokenInputAmount: bigint, // assumed to be 18d precision
+  tokenOutputAmount: bigint,
+  virtualPrice: bigint = BI_1E18,
+  isWithdraw: boolean = false
 ) => {
+  console.log(`virtualprce`, virtualPrice)
+  console.log(`tokenInputAmount`, tokenInputAmount)
+  console.log(`tokenOutputAmount`, tokenOutputAmount)
+
+  const x = virtualPrice * tokenOutputAmount
+  console.log(`x`, x)
+  console.log('x/', x / tokenInputAmount - BI_1E18)
+
   if (tokenInputAmount <= 0n) {
     return 0n
   }

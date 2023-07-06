@@ -1,13 +1,9 @@
 import AugmentWithUnits from '../components/AugmentWithUnits'
 import InfoSectionCard from './InfoSectionCard'
 import { displaySymbol } from '@utils/displaySymbol'
-import { Token } from '@types'
+import { PoolData, Token } from '@types'
 import LoadingRow from '@/components/loading/LoadingRow'
-import {
-  commify,
-  commifyBigIntToString,
-  formatBigIntToString,
-} from '@utils/bigint/format'
+import { commify, formatBigIntToString } from '@utils/bigint/format'
 import { stringToBigInt } from '@/utils/stringToBigNum'
 
 const CurrencyReservesCard = ({
@@ -17,7 +13,7 @@ const CurrencyReservesCard = ({
 }: {
   chainId: number
   title: string
-  poolData: any
+  poolData: PoolData
 }) => {
   return (
     <InfoSectionCard title={title}>
