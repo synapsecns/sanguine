@@ -89,6 +89,8 @@ type CCTPEvent struct {
 	BlockNumber uint64 `gorm:"column:block_number"`
 	// EventType is the type of the event.
 	EventType uint8 `gorm:"column:event_type"`
+	// RequestID is the request ID of the CCTP transfer.
+	RequestID string `gorm:"column:request_id"`
 	// OriginChainID is the chain ID of the CCTP transfer.
 	OriginChainID *big.Int `gorm:"column:origin_chain_id;type:UInt256"`
 	// DestinationChainID is the chain ID of the CCTP transfer.
@@ -111,9 +113,6 @@ type CCTPEvent struct {
 	RequestVersion sql.NullInt32 `gorm:"column:request_version"`
 	// FormattedRequest is the formatted request of the CCTP transfer.
 	FormattedRequest []byte `gorm:"column:formatted_request"`
-	// RequestID is the request ID of the CCTP transfer.
-	// TODO convert byte to string
-	RequestID [32]byte `gorm:"column:request_id"`
 	// Recipient is the recipient of the CCTP transfer.
 	Recipient sql.NullString `gorm:"column:recipient"`
 	// Fee is the fee of the CCTP transfer.
