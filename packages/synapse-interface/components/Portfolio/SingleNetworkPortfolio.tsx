@@ -200,6 +200,7 @@ const PortfolioTokenAsset = ({
       <div className="flex flex-row items-center w-1/3 text-left">
         <PortfolioAssetActionButton
           connectedChainId={connectedChainId}
+          portfolioChainId={portfolioChainId}
           token={token}
           isApproved={isApproved}
           isDisabled={isDisabled}
@@ -211,6 +212,7 @@ const PortfolioTokenAsset = ({
 
 type PortfolioAssetActionButtonProps = {
   connectedChainId: number
+  portfolioChainId: number
   token: Token
   isApproved: boolean
   isDisabled: boolean
@@ -218,6 +220,7 @@ type PortfolioAssetActionButtonProps = {
 
 const PortfolioAssetActionButton = ({
   connectedChainId,
+  portfolioChainId,
   token,
   isApproved,
   isDisabled,
@@ -228,15 +231,18 @@ const PortfolioAssetActionButton = ({
 
   const handleBridgeCallback = useCallback(() => {
     if (!isDisabled) {
+      dispatch(setFromChainId(portfolioChainId))
       dispatch(setFromToken(token))
     }
-  }, [token, isDisabled])
+  }, [token, isDisabled, portfolioChainId])
 
   const handleApproveCallback = useCallback(() => {
     if (!isDisabled) {
+      dispatch(setFromChainId(portfolioChainId))
+      dispatch(setFromToken(token))
       return approveToken(ROUTER_ADDRESS, connectedChainId, tokenAddress)
     }
-  }, [connectedChainId, tokenAddress, address, isDisabled])
+  }, [connectedChainId, tokenAddress, address, isDisabled, token])
 
   const buttonClassName = `
     flex ml-auto justify-center

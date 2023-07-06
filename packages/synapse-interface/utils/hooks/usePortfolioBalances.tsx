@@ -4,6 +4,7 @@ import { BRIDGABLE_TOKENS } from '@/constants/tokens'
 import { Token } from '../types'
 import { sortByTokenBalance } from '../sortTokens'
 import { BigNumber } from 'ethers'
+import { useNetwork } from 'wagmi'
 
 export const ROUTER_ADDRESS = '0x7E7A0e201FD38d3ADAA9523Da6C109a07118C96a'
 
@@ -75,6 +76,7 @@ export const usePortfolioBalancesAndAllowances = (): {
     useState<NetworkTokenBalancesAndAllowances>({})
   const [status, setStatus] = useState<FetchState>(FetchState.LOADING)
 
+  const { chain } = useNetwork()
   const { address } = getAccount()
   const availableChains = Object.keys(BRIDGABLE_TOKENS)
   const filteredChains = availableChains.filter((chain) => chain !== '2000') // need to figure out whats wrong with Dogechain
@@ -113,7 +115,7 @@ export const usePortfolioBalancesAndAllowances = (): {
   useEffect(() => {
     if (!address) return
     fetchPortfolioBalances()
-  }, [address])
+  }, [address, chain?.id])
 
   return useMemo(() => {
     return { balancesAndAllowances, fetchPortfolioBalances, status }
