@@ -52,7 +52,7 @@ export const Portfolio = () => {
         {tab === PortfolioTabs.PORTFOLIO && (
           <PortfolioContent
             connectedAddress={address}
-            connectedChainId={fromChainId}
+            connectedChainId={chain?.id}
             networkPortfolioWithBalances={filteredPortfolioDataForBalances}
             fetchState={fetchState}
           />

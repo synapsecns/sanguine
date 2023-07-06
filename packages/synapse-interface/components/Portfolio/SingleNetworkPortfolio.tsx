@@ -76,7 +76,10 @@ export const SingleNetworkPortfolio = ({
             <PortfolioTokenVisualizer
               portfolioTokens={sortedTokensForVisualizer}
             />
-            <PortfolioConnectButton chainId={portfolioChainId} />
+            <PortfolioConnectButton
+              portfolioChainId={portfolioChainId}
+              connectedChainId={connectedChainId}
+            />
           </>
         }
       >
@@ -334,18 +337,25 @@ const PortfolioTokenVisualizer = ({
   )
 }
 
-const PortfolioConnectButton = ({ chainId }: { chainId: number }) => {
-  const { chain } = useNetwork()
+type PortfolioConnectButton = {
+  portfolioChainId: number
+  connectedChainId: number
+}
+
+const PortfolioConnectButton = ({
+  portfolioChainId,
+  connectedChainId,
+}: PortfolioConnectButton) => {
   const isCurrentlyConnectedNetwork: boolean = useMemo(() => {
-    return chainId === chain?.id
-  }, [chain?.id])
+    return portfolioChainId === connectedChainId
+  }, [portfolioChainId, connectedChainId])
 
   return (
     <div data-test-id="portfolio-connect-button" className="ml-2">
       {isCurrentlyConnectedNetwork ? (
         <ConnectedButton />
       ) : (
-        <ConnectButton chainId={chainId} />
+        <ConnectButton chainId={portfolioChainId} />
       )}
     </div>
   )
