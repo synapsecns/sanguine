@@ -12,12 +12,14 @@ import {
 } from '@/slices/bridgeSlice'
 import { CHAINS_BY_ID } from '@/constants/chains'
 import { TokenWithBalanceAndAllowance } from '@/utils/hooks/usePortfolioBalances'
+import { usePortfolioBalancesAndAllowances } from '@/utils/hooks/usePortfolioBalances'
 import { approveToken } from '@/utils/approveToken'
 import { formatBNToString } from '@/utils/bignumber/format'
 import { Chain, Token } from '@/utils/types'
 import PortfolioAccordion from './PortfolioAccordion'
 import { ROUTER_ADDRESS } from '@/utils/hooks/usePortfolioBalances'
 import { FetchState } from '@/utils/hooks/usePortfolioBalances'
+import { toast } from 'react-hot-toast'
 
 type SingleNetworkPortfolioProps = {
   portfolioChainId: number
@@ -227,9 +229,11 @@ const PortfolioAssetActionButton = ({
   isApproved,
   isDisabled,
 }: PortfolioAssetActionButtonProps) => {
+  const { fetchPortfolioBalances } = usePortfolioBalancesAndAllowances()
   const { address } = useAccount()
   const dispatch = useDispatch()
-  const tokenAddress = token.addresses[connectedChainId]
+  const tokenAddress: string = token.addresses[connectedChainId]
+  const currentChainName: string = CHAINS_BY_ID[portfolioChainId].name
 
   const handleBridgeCallback = useCallback(() => {
     if (!isDisabled) {
@@ -238,13 +242,33 @@ const PortfolioAssetActionButton = ({
     }
   }, [token, isDisabled, portfolioChainId])
 
-  const handleApproveCallback = useCallback(() => {
-    if (!isDisabled) {
-      dispatch(setFromChainId(portfolioChainId))
+  const handleApproveCallback = useCallback(async () => {
+    if (!isDisabled && portfolioChainId === connectedChainId) {
       dispatch(setFromToken(token))
-      return approveToken(ROUTER_ADDRESS, connectedChainId, tokenAddress)
+      return await approveToken(
+        ROUTER_ADDRESS,
+        connectedChainId,
+        tokenAddress
+      ).then((success) => {
+        success && fetchPortfolioBalances()
+      })
+    } else {
+      toast.error(
+        `Connect to ${currentChainName} network to approve ${token.symbol} token`,
+        {
+          id: 'approve-in-progress-popup',
+          duration: Infinity,
+        }
+      )
     }
-  }, [connectedChainId, tokenAddress, address, isDisabled, token])
+  }, [
+    connectedChainId,
+    tokenAddress,
+    address,
+    isDisabled,
+    portfolioChainId,
+    token,
+  ])
 
   const buttonClassName = `
     flex ml-auto justify-center
