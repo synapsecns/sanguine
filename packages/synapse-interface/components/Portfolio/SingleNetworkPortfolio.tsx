@@ -22,6 +22,7 @@ import { FetchState } from '@/utils/hooks/usePortfolioBalances'
 type SingleNetworkPortfolioProps = {
   portfolioChainId: number
   connectedChainId: number
+  selectedFromChainId: number
   portfolioTokens: TokenWithBalanceAndAllowance[]
   initializeExpanded: boolean
   fetchState: FetchState
@@ -30,6 +31,7 @@ type SingleNetworkPortfolioProps = {
 export const SingleNetworkPortfolio = ({
   portfolioChainId,
   connectedChainId,
+  selectedFromChainId,
   portfolioTokens,
   initializeExpanded = false,
   fetchState,
@@ -59,6 +61,7 @@ export const SingleNetworkPortfolio = ({
       <PortfolioAccordion
         connectedChainId={connectedChainId}
         portfolioChainId={portfolioChainId}
+        selectedFromChainId={selectedFromChainId}
         initializeExpanded={initializeExpanded}
         header={
           <PortfolioNetwork

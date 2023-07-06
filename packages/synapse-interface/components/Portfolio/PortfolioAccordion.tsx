@@ -9,6 +9,7 @@ type PortfolioAccordionProps = {
   initializeExpanded: boolean
   portfolioChainId: number
   connectedChainId: number
+  selectedFromChainId: number
 }
 
 export const PortfolioAccordion = ({
@@ -19,6 +20,7 @@ export const PortfolioAccordion = ({
   initializeExpanded = false,
   portfolioChainId,
   connectedChainId,
+  selectedFromChainId,
 }: PortfolioAccordionProps) => {
   const [isExpanded, setIsExpanded] = useState(initializeExpanded)
 
@@ -27,8 +29,10 @@ export const PortfolioAccordion = ({
   }
 
   useEffect(() => {
-    if (portfolioChainId === connectedChainId) {
+    if (portfolioChainId === selectedFromChainId) {
       setIsExpanded(true)
+    } else {
+      setIsExpanded(false)
     }
   }, [portfolioChainId, connectedChainId])
 
