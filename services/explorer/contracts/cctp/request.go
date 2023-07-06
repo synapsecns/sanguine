@@ -4,6 +4,7 @@ import (
 	"math/big"
 
 	"github.com/ethereum/go-ethereum/common"
+	types "github.com/synapsecns/sanguine/services/explorer/types/cctp"
 )
 
 // GetContractAddress gets the contract address the event occurred on.
@@ -19,6 +20,11 @@ func (s SynapseCCTPCircleRequestSent) GetBlockNumber() uint64 {
 // GetTxHash gets the unique identifier (txhash) for the event.
 func (s SynapseCCTPCircleRequestSent) GetTxHash() common.Hash {
 	return s.Raw.TxHash
+}
+
+// GetEventType gets the event type for the event.
+func (s SynapseCCTPCircleRequestSent) GetEventType() types.EventType {
+	return types.CircleRequestSentEvent
 }
 
 // GetRequestID gets the unique identifier of the request.
@@ -106,6 +112,11 @@ func (s SynapseCCTPCircleRequestFulfilled) GetBlockNumber() uint64 {
 // GetTxHash gets the unique identifier (txhash) for the event.
 func (s SynapseCCTPCircleRequestFulfilled) GetTxHash() common.Hash {
 	return s.Raw.TxHash
+}
+
+// GetEventType gets the event type for the event.
+func (s SynapseCCTPCircleRequestFulfilled) GetEventType() types.EventType {
+	return types.CircleRequestFulfilledEvent
 }
 
 // GetRequestID gets the unique identifier of the request.
