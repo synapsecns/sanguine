@@ -464,7 +464,7 @@ const StateManagedBridge = () => {
     //   >
     //     <div className="flex flex-col justify-center px-4 py-20 mx-auto mt-4 lg:flex-row 2xl:w-3/4 sm:mt-6 sm:px-8 md:px-12">
     //       <Portfolio />
-    <>
+    <div className="flex flex-col">
       <div className="flex flex-col px-4 py-2">
         <div className="flex items-center justify-between">
           <PageHeader
@@ -590,7 +590,7 @@ const StateManagedBridge = () => {
           destinationAddress={destinationAddress}
         />
       </div>
-    </>
+    </div>
     // </div>
     //   </main>
     // </LandingPageWrapper>
