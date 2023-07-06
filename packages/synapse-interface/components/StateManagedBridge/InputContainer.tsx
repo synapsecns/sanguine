@@ -11,6 +11,7 @@ import { useAccount } from 'wagmi'
 import MiniMaxButton from '../buttons/MiniMaxButton'
 import { formatBNToString } from '@/utils/bignumber/format'
 import { OriginChainLabel } from './OriginChainLabel'
+import { BigNumber } from 'ethers'
 
 export const InputContainer = () => {
   const {
@@ -59,10 +60,9 @@ export const InputContainer = () => {
   const handleFromValueChange = (
     event: React.ChangeEvent<HTMLInputElement>
   ) => {
-    let fromValueString = event.target.value
-    console.log('fromValueString:', fromValueString)
+    const fromValueString: string = event.target.value
     try {
-      let fromValueBigNumber = stringToBigNum(
+      const fromValueBigNumber: BigNumber = stringToBigNum(
         fromValueString,
         fromToken.decimals[fromChainId]
       )
@@ -129,6 +129,8 @@ export const InputContainer = () => {
               value={showValue}
               name="inputRow"
               autoComplete="off"
+              minLength={1}
+              maxLength={79}
             />
             {hasMounted && isConnected && (
               <label
