@@ -185,12 +185,20 @@ func (n MetaSwapDeployer) Deploy(ctx context.Context) (contracts.DeployedContrac
 //
 //nolint:dupl
 func (n CCTPDeployer) Deploy(ctx context.Context) (contracts.DeployedContract, error) {
+
+	tokenMessengerContract, err := n.DeploySimpleContract(ctx, func(transactOps *bind.TransactOpts, backend bind.ContractBackend) (common.Address, *types.Transaction, interface{}, error) {
+		return cctp.DeployMessageTransmitter(transactOps, backend)
+	}, func(address common.Address, backend bind.ContractBackend) (interface{}, error) {
+		return cctp.NewMessageTransmitter(address, backend)
+	})
+	if err != nil {
+		return nil, fmt.Errorf("failed to deploy tokenMessengerContract %w", err)
+	}
 	return n.DeploySimpleContract(ctx, func(transactOps *bind.TransactOpts, backend bind.ContractBackend) (common.Address, *types.Transaction, interface{}, error) {
 		// Create mock tokenMessenger and owner
 		owner := common.BigToAddress(big.NewInt(gofakeit.Int64()))
-		tokenMessenger := common.BigToAddress(big.NewInt(gofakeit.Int64()))
 
-		return cctp.DeploySynapseCCTP(transactOps, backend, tokenMessenger, owner)
+		return cctp.DeploySynapseCCTP(transactOps, backend, tokenMessengerContract.Address(), owner)
 	}, func(address common.Address, backend bind.ContractBackend) (interface{}, error) {
 		return cctp.NewCCTPRef(address, backend)
 	})

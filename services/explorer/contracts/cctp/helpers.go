@@ -14,8 +14,21 @@ type CCTPRef struct {
 	address common.Address
 }
 
+// MessageTransmitterRef is a reference to a deployed message transmitter contract.
+//
+//nolint:golint
+type MessageTransmitterRef struct {
+	*MessageTransmitter
+	address common.Address
+}
+
 // Address is the contract address.
 func (s CCTPRef) Address() common.Address {
+	return s.address
+}
+
+// Address is the contract address.
+func (s MessageTransmitterRef) Address() common.Address {
 	return s.address
 }
 
@@ -33,4 +46,16 @@ func NewCCTPRef(address common.Address, backend bind.ContractBackend) (*CCTPRef,
 	}, nil
 }
 
+func NewMessageTransmitterRef(address common.Address, backend bind.ContractBackend) (*MessageTransmitterRef, error) {
+	messageTransmitter, err := NewMessageTransmitter(address, backend)
+	if err != nil {
+		return nil, err
+	}
+	return &MessageTransmitterRef{
+		MessageTransmitter: messageTransmitter,
+		address:            address,
+	}, nil
+}
+
 var _ vm.ContractRef = &CCTPRef{}
+var _ vm.ContractRef = &MessageTransmitterRef{}

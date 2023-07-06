@@ -173,6 +173,7 @@ func (t TestMetaSwapDeployer) Deploy(ctx context.Context) (contracts.DeployedCon
 //
 //nolint:dupl
 func (n TestCCTPDeployer) Deploy(ctx context.Context) (contracts.DeployedContract, error) {
+
 	return n.DeploySimpleContract(ctx, func(transactOps *bind.TransactOpts, backend bind.ContractBackend) (common.Address, *types.Transaction, interface{}, error) {
 		return testcctp.DeployTestSynapseCCTP(transactOps, backend)
 	}, func(address common.Address, backend bind.ContractBackend) (interface{}, error) {
