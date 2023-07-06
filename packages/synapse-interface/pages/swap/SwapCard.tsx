@@ -676,10 +676,10 @@ const SwapCard = ({
     }
 
     if (
-      fromInput?.bigInt != 0n &&
+      fromInput?.bigInt !== 0n &&
       fromToken?.addresses[connectedChainId] !== '' &&
       fromToken?.addresses[connectedChainId] !== zeroAddress &&
-      swapQuote?.allowance &&
+      !swapQuote?.allowance &&
       swapQuote?.allowance < fromInput.bigInt &&
       !approveTx
     ) {
