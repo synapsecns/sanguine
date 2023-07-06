@@ -13,6 +13,7 @@ import { ConnectWalletButton } from './ConnectWalletButton'
 type PortfolioContentProps = {
   connectedAddress: Address | string
   connectedChainId: number
+  selectedFromChainId: number
   networkPortfolioWithBalances: NetworkTokenBalancesAndAllowances
   fetchState: FetchState
 }
@@ -20,11 +21,12 @@ type PortfolioContentProps = {
 export const PortfolioContent = ({
   connectedAddress,
   connectedChainId,
+  selectedFromChainId,
   networkPortfolioWithBalances,
   fetchState,
 }: PortfolioContentProps) => {
   const { currentNetwork, remainingNetworks } = getCurrentNetworkPortfolio(
-    connectedChainId,
+    selectedFromChainId,
     networkPortfolioWithBalances
   )
 
@@ -32,9 +34,9 @@ export const PortfolioContent = ({
     <div data-test-id="portfolio-content">
       {currentNetwork && connectedChainId && (
         <SingleNetworkPortfolio
-          portfolioChainId={connectedChainId}
+          portfolioChainId={selectedFromChainId}
           connectedChainId={connectedChainId}
-          portfolioTokens={currentNetwork[connectedChainId]}
+          portfolioTokens={currentNetwork[selectedFromChainId]}
           initializeExpanded={true}
           fetchState={fetchState}
         />

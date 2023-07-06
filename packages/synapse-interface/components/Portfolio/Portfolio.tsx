@@ -53,6 +53,7 @@ export const Portfolio = () => {
           <PortfolioContent
             connectedAddress={address}
             connectedChainId={chain?.id}
+            selectedFromChainId={fromChainId}
             networkPortfolioWithBalances={filteredPortfolioDataForBalances}
             fetchState={fetchState}
           />
