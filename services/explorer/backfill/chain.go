@@ -18,6 +18,7 @@ import (
 	"golang.org/x/sync/errgroup"
 )
 
+// TODO add cctp parser to this struct
 // ChainBackfiller is an explorer backfiller for a chain.
 type ChainBackfiller struct {
 	// consumerDB is the database that the backfiller will use to store the events.
@@ -42,6 +43,7 @@ const (
 
 // NewChainBackfiller creates a new backfiller for a chain.
 func NewChainBackfiller(consumerDB db.ConsumerDB, bridgeParser *parser.BridgeParser, swapParsers map[common.Address]*parser.SwapParser, messageBusParser *parser.MessageBusParser, fetcher fetcher.ScribeFetcher, chainConfig config.ChainConfig) *ChainBackfiller {
+	// TODO add cctp as an arg to this function and then add to ChainBackfiller
 	return &ChainBackfiller{
 		consumerDB:       consumerDB,
 		bridgeParser:     bridgeParser,
@@ -103,11 +105,10 @@ func (c *ChainBackfiller) Backfill(ctx context.Context, livefill bool, refreshRa
 		}
 	}
 	if err := contractsGroup.Wait(); err != nil {
-		logger.Errorf("=-=-=-=-==-=-=-==--=-==-=-eeeerrbackfilling chain %d completed %v", c.chainConfig.ChainID, err)
+		logger.Errorf("error backfilling chain %d completed %v", c.chainConfig.ChainID, err)
 
 		return fmt.Errorf("error while backfilling chain %d: %w", c.chainConfig.ChainID, err)
 	}
-	logger.Errorf("=-=-=-=-==-=-=-==--=-==-=-backfilling chain %d completed", c.chainConfig.ChainID)
 	return nil
 }
 
@@ -123,6 +124,7 @@ func (c *ChainBackfiller) makeEventParser(contract config.ContractConfig) (event
 		eventParser = c.messageBusParser
 	case config.MetaSwapContractType:
 		eventParser = c.swapParsers[common.HexToAddress(contract.Address)]
+	// TODO add cctp type to config and then add to here.
 	default:
 		return nil, fmt.Errorf("could not create event parser for unknown contract type: %s", contract.ContractType)
 	}

@@ -161,8 +161,10 @@ func getChainBackfiller(consumerDB db.ConsumerDB, chainConfig config.ChainConfig
 				return nil, fmt.Errorf("could not create message bus parser: %w", err)
 			}
 		}
+		// TODO add case for cctp. This case will init the parser for cctp (in consumer/parser)
 	}
 
+	// TODO Add the cctp parser
 	chainBackfiller := backfill.NewChainBackfiller(consumerDB, bridgeParser, swapParsers, messageBusParser, *fetcher, chainConfig)
 
 	return chainBackfiller, nil
