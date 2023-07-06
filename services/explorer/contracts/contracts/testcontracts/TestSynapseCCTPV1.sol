@@ -2558,10 +2558,6 @@ contract TestSynapseCCTP is SynapseCCTP {
     ) external {
         emit CircleRequestFulfilled(originDomain, recipient, mintToken, fee, token, amount, requestID);
     }
-
-    function circleTokenPool(address token) external view returns (address pool);
-
-    function tokenMessenger() external view returns (ITokenMessenger);
 }
 
 
