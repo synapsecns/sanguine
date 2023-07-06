@@ -70,7 +70,12 @@ export const SingleNetworkPortfolio = ({
             chainIcon={currentChain?.chainImg}
           />
         }
-        expandedProps={<PortfolioConnectButton chainId={portfolioChainId} />}
+        expandedProps={
+          <PortfolioConnectButton
+            connectedChainId={connectedChainId}
+            portfolioChainId={portfolioChainId}
+          />
+        }
         collapsedProps={
           <>
             <PortfolioTokenVisualizer
