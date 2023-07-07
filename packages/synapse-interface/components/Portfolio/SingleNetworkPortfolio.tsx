@@ -1,9 +1,8 @@
-import React, { useMemo, useCallback, useState } from 'react'
+import React, { useCallback } from 'react'
 import Image from 'next/image'
 import { BigNumber } from 'ethers'
 import { useDispatch } from 'react-redux'
-import { useNetwork, useAccount } from 'wagmi'
-import { switchNetwork, disconnect } from '@wagmi/core'
+import { useAccount } from 'wagmi'
 import { Zero } from '@ethersproject/constants'
 import {
   setFromToken,
@@ -17,6 +16,7 @@ import { approveToken } from '@/utils/approveToken'
 import { formatBNToString } from '@/utils/bignumber/format'
 import { Chain, Token } from '@/utils/types'
 import PortfolioAccordion from './PortfolioAccordion'
+import { PortfolioConnectButton } from './PortfolioConnectButton'
 import { ROUTER_ADDRESS } from '@/utils/hooks/usePortfolioBalances'
 import { FetchState } from '@/utils/hooks/usePortfolioBalances'
 import { toast } from 'react-hot-toast'
@@ -371,134 +371,6 @@ const PortfolioTokenVisualizer = ({
         <div className="ml-1 text-white">+ {numOverTwoTokens}</div>
       )}
     </div>
-  )
-}
-
-type PortfolioConnectButton = {
-  portfolioChainId: number
-  connectedChainId: number
-}
-
-const PortfolioConnectButton = ({
-  portfolioChainId,
-  connectedChainId,
-}: PortfolioConnectButton) => {
-  const isCurrentlyConnectedNetwork: boolean = useMemo(() => {
-    return portfolioChainId === connectedChainId
-  }, [portfolioChainId, connectedChainId])
-
-  return (
-    <div data-test-id="portfolio-connect-button" className="ml-2">
-      {isCurrentlyConnectedNetwork ? (
-        <ConnectedButton />
-      ) : (
-        <ConnectButton chainId={portfolioChainId} />
-      )}
-    </div>
-  )
-}
-
-const ConnectedButton = () => {
-  const [isDisconnecting, setIsDisconnecting] = useState<boolean>(false)
-  const buttonClassName = `
-  flex items-center justify-center
-  text-base text-white px-3 py-1 rounded-3xl
-  text-center transform-gpu transition-all duration-75
-  border border-solid border-transparent
-  hover:border-[#3D3D5C]
-  `
-
-  const handleDisconnectNetwork = async () => {
-    setIsDisconnecting(true)
-    try {
-      await disconnect()
-    } catch (error) {
-      error && setIsDisconnecting(false)
-    }
-  }
-
-  return (
-    <button
-      data-test-id="connected-button"
-      className={buttonClassName}
-      onClick={handleDisconnectNetwork}
-    >
-      {isDisconnecting ? (
-        <div className="flex flex-row text-sm">
-          <div
-            className={`
-          my-auto ml-auto mr-2 text-transparent w-2 h-2
-          border border-red-300 border-solid rounded-full
-          `}
-          />
-          Disconnecting...
-        </div>
-      ) : (
-        <div className="flex flex-row text-sm">
-          <div
-            className={`
-          my-auto ml-auto mr-2
-          w-2 h-2
-          bg-green-500 rounded-full`}
-          />
-          Connected
-        </div>
-      )}
-    </button>
-  )
-}
-
-const ConnectButton = ({ chainId }: { chainId: number }) => {
-  const [isConnecting, setIsConnecting] = useState<boolean>(false)
-  const dispatch = useDispatch()
-
-  const handleConnectNetwork = async () => {
-    setIsConnecting(true)
-    try {
-      await switchNetwork({ chainId: chainId }).then((success) => {
-        success && dispatch(setFromChainId(chainId))
-      })
-    } catch (error) {
-      error && setIsConnecting(false)
-    }
-  }
-
-  const buttonClassName = `
-    flex items-right justify-center
-    text-base text-white px-3 py-1 rounded-3xl
-    text-center transform-gpu transition-all duration-75
-    border border-solid border-transparent
-    hover:border-[#3D3D5C]
-    `
-
-  return (
-    <button
-      data-test-id="connect-button"
-      className={buttonClassName}
-      onClick={handleConnectNetwork}
-    >
-      {isConnecting ? (
-        <div className="flex flex-row text-sm">
-          <div
-            className={`
-            my-auto ml-auto mr-2 text-transparent w-2 h-2
-            border border-green-300 border-solid rounded-full
-            `}
-          />
-          Connecting...
-        </div>
-      ) : (
-        <div className="flex flex-row text-sm">
-          <div
-            className={`
-            my-auto ml-auto mr-2 text-transparent w-2 h-2
-            border border-indigo-300 border-solid rounded-full
-            `}
-          />
-          Connect
-        </div>
-      )}
-    </button>
   )
 }
 
