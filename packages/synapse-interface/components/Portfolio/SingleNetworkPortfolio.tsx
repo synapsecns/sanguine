@@ -277,6 +277,8 @@ const PortfolioAssetActionButton = ({
     ${isDisabled ? 'hover:cursor-default' : 'hover:cursor-pointer'}
   `
 
+  const activeButtonClass = `active:opacity-[67%]`
+
   return (
     <React.Fragment>
       {isApproved ? (
@@ -284,9 +286,9 @@ const PortfolioAssetActionButton = ({
           data-test-id="portfolio-asset-action-button"
           className={`
             ${buttonClassName}
+            ${activeButtonClass}
             border border-[#D747FF]
-            hover:bg-[#292934]
-            active:opacity-[67%]
+            hover:bg-[#272731]
           `}
           onClick={handleBridgeCallback}
         >
@@ -297,7 +299,11 @@ const PortfolioAssetActionButton = ({
           data-test-id="portfolio-asset-action-button"
           className={`
             ${buttonClassName}
-            border-2 border-[#28282F] border-opacity-50
+            ${activeButtonClass}
+            border border-[#3D3D5C]
+          hover:border-[#A3A3C2]
+          hover:bg-[#272731]
+          active:border-[#A3A3C2]
           `}
           onClick={handleApproveCallback}
         >
