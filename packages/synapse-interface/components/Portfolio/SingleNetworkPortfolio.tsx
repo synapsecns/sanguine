@@ -322,7 +322,7 @@ const PortfolioNetwork = ({
   return (
     <div
       data-test-id="portfolio-network"
-      className="flex flex-row justify-between flex-1"
+      className="flex flex-row justify-between flex-1 py-4 pl-2"
     >
       <div className="flex flex-row items-center">
         <Image
