@@ -17,6 +17,7 @@ import { formatBNToString } from '@/utils/bignumber/format'
 import { Chain, Token } from '@/utils/types'
 import PortfolioAccordion from './PortfolioAccordion'
 import { PortfolioConnectButton } from './PortfolioConnectButton'
+import { EmptyPortfolioContent } from './PortfolioContent'
 import { ROUTER_ADDRESS } from '@/utils/hooks/usePortfolioBalances'
 import { FetchState } from '@/utils/hooks/usePortfolioBalances'
 import { toast } from 'react-hot-toast'
@@ -116,21 +117,6 @@ export const SingleNetworkPortfolio = ({
   )
 }
 
-const EmptyPortfolioContent = () => {
-  return (
-    <>
-      <p
-        data-test-id="empty-portfolio-content"
-        className={`
-        text-[#CCCAD3BF] py-4
-        `}
-      >
-        No balances found.
-      </p>
-    </>
-  )
-}
-
 type PortfolioTokenAssetProps = {
   token: Token
   balance: BigNumber
@@ -162,30 +148,34 @@ const PortfolioTokenAsset = ({
     allowance && formatBNToString(allowance, decimals[portfolioChainId], 3)
 
   const currentChainName: string = CHAINS_BY_ID[portfolioChainId].name
+
   const tokenAddress: string = addresses[connectedChainId]
+
   const isCurrentlyConnected: boolean = portfolioChainId === connectedChainId
+
   const hasAllowanceButLessThanBalance: boolean =
     allowance && balance.gt(allowance)
+
   const isDisabled: boolean = false
+
   const filteredOpacity: string = 'opacity-50 cursor-default'
 
   const handleTotalBalanceInputCallback = useCallback(() => {
-    // if (!isDisabled) {
-    //   dispatch(setFromToken(token))
-    //   dispatch(setFromChainId(portfolioChainId))
-    //   dispatch(updateFromValue(balance))
-    // }
+    return //remove this when callback is ready to implement
+    if (!isDisabled) {
+      dispatch(setFromToken(token))
+      dispatch(setFromChainId(portfolioChainId))
+      dispatch(updateFromValue(balance))
+    }
   }, [isDisabled, token, balance])
 
-  const handleSendCallback = useCallback(() => {
-    if (!isDisabled) {
-      dispatch(setFromChainId(portfolioChainId))
-      dispatch(setFromToken(token))
-    }
+  const handleSelectFromTokenCallback = useCallback(() => {
+    dispatch(setFromChainId(portfolioChainId))
+    dispatch(setFromToken(token))
   }, [token, isDisabled, portfolioChainId])
 
   const handleApproveCallback = useCallback(async () => {
-    if (!isDisabled && isCurrentlyConnected) {
+    if (isCurrentlyConnected) {
       dispatch(setFromToken(token))
       await approveToken(ROUTER_ADDRESS, connectedChainId, tokenAddress).then(
         (success) => {
@@ -214,10 +204,17 @@ const PortfolioTokenAsset = ({
   return (
     <div
       data-test-id="portfolio-token-asset"
-      className="flex flex-row flex-wrap items-center py-2 pl-2 text-white "
+      className="flex flex-row flex-wrap items-center py-2 text-white "
     >
       <div className="flex flex-row justify-between w-2/3">
-        <div className="flex flex-row">
+        <div
+          onClick={handleSelectFromTokenCallback}
+          className={`
+            flex flex-row px-2 py-2
+            hover:cursor-pointer
+            hover:bg-[#272731]
+          `}
+        >
           <Image
             alt={`${symbol} img`}
             className="w-6 h-6 mr-2 rounded-md"
@@ -227,7 +224,7 @@ const PortfolioTokenAsset = ({
         </div>
         <div
           onClick={handleTotalBalanceInputCallback}
-          className="cursor-default"
+          className="py-2 cursor-default"
         >
           {parsedBalance}
         </div>
@@ -237,7 +234,7 @@ const PortfolioTokenAsset = ({
           token={token}
           connectedChainId={connectedChainId}
           portfolioChainId={portfolioChainId}
-          sendCallback={handleSendCallback}
+          sendCallback={handleSelectFromTokenCallback}
           approveCallback={handleApproveCallback}
           isApproved={isApproved}
           isDisabled={isDisabled}
@@ -247,7 +244,7 @@ const PortfolioTokenAsset = ({
         <a
           onClick={handleApproveCallback}
           className={`
-            text-[#A3A3C2] text-xs pt-1
+            text-[#A3A3C2] text-xs pt-1 pl-2
             hover:text-[#75E6F0]
             hover:underline
             hover:cursor-pointer
