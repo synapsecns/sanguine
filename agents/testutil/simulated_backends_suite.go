@@ -7,7 +7,11 @@ import (
 	"github.com/synapsecns/sanguine/agents/agents/executor/db"
 	executorsqllite "github.com/synapsecns/sanguine/agents/agents/executor/db/sql/sqlite"
 	executorMetadata "github.com/synapsecns/sanguine/agents/agents/executor/metadata"
+	guarddb "github.com/synapsecns/sanguine/agents/agents/guard/db"
+	guardSqlite "github.com/synapsecns/sanguine/agents/agents/guard/db/sql/sqlite"
 	guardMetadata "github.com/synapsecns/sanguine/agents/agents/guard/metadata"
+	notarydb "github.com/synapsecns/sanguine/agents/agents/notary/db"
+	notarySqlite "github.com/synapsecns/sanguine/agents/agents/notary/db/sql/sqlite"
 	notaryMetadata "github.com/synapsecns/sanguine/agents/agents/notary/metadata"
 	"github.com/synapsecns/sanguine/agents/config"
 	"github.com/synapsecns/sanguine/agents/contracts/inbox"
@@ -111,6 +115,8 @@ type SimulatedBackendsTestSuite struct {
 	ScribeTestDB                        scribedb.EventDB
 	DBPath                              string
 	ExecutorTestDB                      db.ExecutorDB
+	NotaryTestDB                        notarydb.NotaryDB
+	GuardTestDB                         guarddb.GuardDB
 	ScribeMetrics                       metrics.Handler
 	ExecutorMetrics                     metrics.Handler
 	NotaryMetrics                       metrics.Handler
@@ -393,6 +399,16 @@ func (a *SimulatedBackendsTestSuite) SetupTest() {
 		a.T().Fatal(err)
 	}
 	a.ExecutorTestDB = sqliteStore
+	notarySqliteStore, err := notarySqlite.NewSqliteStore(a.GetTestContext(), a.DBPath, a.NotaryMetrics, false)
+	if err != nil {
+		a.T().Fatal(err)
+	}
+	a.NotaryTestDB = notarySqliteStore
+	guardSqliteStore, err := guardSqlite.NewSqliteStore(a.GetTestContext(), a.DBPath, a.GuardMetrics, false)
+	if err != nil {
+		a.T().Fatal(err)
+	}
+	a.GuardTestDB = guardSqliteStore
 }
 
 // cleanAfterTestSuite does cleanup after test suite is finished.

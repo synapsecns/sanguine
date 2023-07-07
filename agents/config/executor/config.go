@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"github.com/davecgh/go-spew/spew"
 	"github.com/jftuga/ellipsis"
+	"github.com/synapsecns/sanguine/agents/config"
 	signerConfig "github.com/synapsecns/sanguine/ethergo/signer/config"
 	submitterConfig "github.com/synapsecns/sanguine/ethergo/submitter/config"
 	"gopkg.in/yaml.v2"
@@ -15,7 +16,7 @@ import (
 // Config is used to configure an Executor agent.
 type Config struct {
 	// DBConfig is the database configuration.
-	DBConfig DBConfig `yaml:"db_config"`
+	DBConfig config.DBConfig `yaml:"db_config"`
 	// ScribeConfig is the scribe configuration.
 	ScribeConfig ScribeConfig `yaml:"scribe_config"`
 	// Chains stores all chain information

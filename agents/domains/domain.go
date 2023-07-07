@@ -4,6 +4,9 @@ import (
 	"context"
 	"errors"
 	"github.com/synapsecns/sanguine/agents/contracts/destination"
+	"github.com/synapsecns/sanguine/agents/contracts/inbox"
+	"github.com/synapsecns/sanguine/agents/contracts/lightinbox"
+	"github.com/synapsecns/sanguine/ethergo/signer/nonce"
 	"math/big"
 
 	"github.com/ethereum/go-ethereum/common"
@@ -66,6 +69,10 @@ type SummitContract interface {
 
 // InboxContract contains the interface for the inbox.
 type InboxContract interface {
+	// GetContractRef gets the inbox contract ref.
+	GetContractRef() *inbox.InboxRef
+	// GetNonceManager gets the nonce manager for the inbox.
+	GetNonceManager() nonce.Manager
 	// SubmitSnapshot submits a snapshot to the inbox (via the Inbox).
 	SubmitSnapshot(ctx context.Context, signer signer.Signer, encodedSnapshot []byte, signature signer.Signature) error
 }
@@ -96,6 +103,8 @@ type DestinationContract interface {
 
 // LightInboxContract contains the interface for the light inbox.
 type LightInboxContract interface {
+	// GetContractRef gets the light inbox contract ref.
+	GetContractRef() *lightinbox.LightInboxRef
 	// SubmitAttestation submits an attestation to the destination chain (via the light inbox contract)
 	SubmitAttestation(
 		ctx context.Context,

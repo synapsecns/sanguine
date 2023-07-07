@@ -40,6 +40,14 @@ type inboxContract struct {
 	nonceManager nonce.Manager
 }
 
+func (a inboxContract) GetContractRef() *inbox.InboxRef {
+	return a.contract
+}
+
+func (a inboxContract) GetNonceManager() nonce.Manager {
+	return a.nonceManager
+}
+
 func (a inboxContract) SubmitSnapshot(ctx context.Context, signer signer.Signer, encodedSnapshot []byte, signature signer.Signature) error {
 	transactor, err := signer.GetTransactor(ctx, a.client.GetBigChainID())
 	if err != nil {

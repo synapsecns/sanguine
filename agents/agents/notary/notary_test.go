@@ -84,7 +84,7 @@ func (u *NotarySuite) TestNotaryE2E() {
 	Equal(u.T(), encodedNotaryTestConfig, decodedAgentConfigBackToEncodedBytes)
 
 	omniRPCClient := omniClient.NewOmnirpcClient(u.TestOmniRPC, u.NotaryMetrics, omniClient.WithCaptureReqRes())
-	guard, err := guard.NewGuard(u.GetTestContext(), guardTestConfig, omniRPCClient, u.GuardMetrics)
+	guard, err := guard.NewGuard(u.GetTestContext(), guardTestConfig, omniRPCClient, u.GuardTestDB, u.GuardMetrics)
 	Nil(u.T(), err)
 
 	tips := types.NewTips(big.NewInt(int64(0)), big.NewInt(int64(0)), big.NewInt(int64(0)), big.NewInt(int64(0)))
@@ -153,7 +153,7 @@ func (u *NotarySuite) TestNotaryE2E() {
 		return state.Nonce() >= uint32(1)
 	})
 
-	notary, err := notary.NewNotary(u.GetTestContext(), notaryTestConfig, omniRPCClient, u.NotaryMetrics)
+	notary, err := notary.NewNotary(u.GetTestContext(), notaryTestConfig, omniRPCClient, u.NotaryTestDB, u.NotaryMetrics)
 	Nil(u.T(), err)
 
 	agentStatus, err := u.DestinationContract.AgentStatus(&bind.CallOpts{Context: u.GetTestContext()}, u.NotaryBondedSigner.Address())

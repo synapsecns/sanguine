@@ -63,7 +63,7 @@ func (u GuardSuite) TestGuardE2E() {
 	Equal(u.T(), encodedTestConfig, decodedAgentConfigBackToEncodedBytes)
 
 	omniRPCClient := omniClient.NewOmnirpcClient(u.TestOmniRPC, u.GuardMetrics, omniClient.WithCaptureReqRes())
-	guard, err := guard.NewGuard(u.GetTestContext(), testConfig, omniRPCClient, u.GuardMetrics)
+	guard, err := guard.NewGuard(u.GetTestContext(), testConfig, omniRPCClient, u.GuardTestDB, u.GuardMetrics)
 	Nil(u.T(), err)
 
 	tips := types.NewTips(big.NewInt(int64(0)), big.NewInt(int64(0)), big.NewInt(int64(0)), big.NewInt(int64(0)))

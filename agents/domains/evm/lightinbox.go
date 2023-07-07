@@ -58,6 +58,10 @@ func (a lightInboxContract) transactOptsSetup(ctx context.Context, signer signer
 	return transactOpts, nil
 }
 
+func (a lightInboxContract) GetContractRef() *lightinbox.LightInboxRef {
+	return a.contract
+}
+
 func (a lightInboxContract) SubmitAttestation(
 	ctx context.Context,
 	signer signer.Signer,
