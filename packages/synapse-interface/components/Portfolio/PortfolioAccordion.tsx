@@ -41,8 +41,8 @@ export const PortfolioAccordion = ({
         className={`
           flex flex-row items-center justify-between
           border border-transparent
-        hover:border-[#A3A3C2] hover:bg-[#272731]
-        active:border-[#A3A3C2]
+        hover:border-[#3D3D5C] hover:bg-[#272731]
+        active:border-[#3D3D5C] active:opacity-[67%]
         `}
         data-test-id="portfolio-accordion"
       >
