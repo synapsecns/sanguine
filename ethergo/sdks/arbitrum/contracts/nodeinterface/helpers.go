@@ -50,11 +50,11 @@ func NewNodeInterfaceRef(address common.Address, backend bind.ContractBackend) (
 
 // GetGasEstimateComponents returns the gas estimate components for a transaction.
 // this is necessary since, in order to properly support transactions that pass in msg.value, w/ custom msg.froms, etc
-// the contract interface specifies a mutable payable interface for hte GasEstimateComponents method.
+// the contract interface specifies a mutable payable interface for the GasEstimateComponents method.
 //
 // The problem is that even though this returns some values, the current version of abigen will not generate
-// retreival clalers so we need ot manually construct these here.
-func (n NodeInterfaceRef) GetGasEstimateComponents(opts *bind.TransactOpts, toAddress common.Address, contractCreation bool, data []byte) (gasEstimate uint64, gasEstimateForL1 uint64, baseFee *big.Int, l1BaseFeeEsimate *big.Int, err error) {
+// retrieval callers so we need ot manually construct these here.
+func (n NodeInterfaceRef) GetGasEstimateComponents(opts *bind.TransactOpts, toAddress common.Address, contractCreation bool, data []byte) (gasEstimate uint64, gasEstimateForL1 uint64, baseFee *big.Int, l1BaseFeeEstimate *big.Int, err error) {
 	// see: https://github.com/Tenderly/nitro/blob/7b1d0d334e358e8d837c883f12bbf26d1900003e/system_tests/estimation_test.go#L159 for details
 	estimateCallData := append([]byte{}, gasEstimateComponentsMethod.ID...)
 	packed, err := gasEstimateComponentsMethod.Inputs.Pack(toAddress, contractCreation, data)
@@ -99,7 +99,7 @@ func (n NodeInterfaceRef) GetGasEstimateComponents(opts *bind.TransactOpts, toAd
 	if !ok {
 		return 0, 0, nil, nil, fmt.Errorf("failed to convert output at index 2 to *big.Int")
 	}
-	l1BaseFeeEstimate, _ := outputs[3].(*big.Int)
+	l1BaseFeeEstimate, ok = outputs[3].(*big.Int)
 	if !ok {
 		return 0, 0, nil, nil, fmt.Errorf("failed to convert output at index 3 to *big.Int")
 	}
@@ -111,4 +111,6 @@ func (n NodeInterfaceRef) GetGasEstimateComponents(opts *bind.TransactOpts, toAd
 type INodeInterface interface {
 	INodeInterfaceCaller
 	vm.ContractRef
+	// GetGasEstimateComponents returns the gas estimate components for a transaction.
+	GetGasEstimateComponents(opts *bind.TransactOpts, toAddress common.Address, contractCreation bool, data []byte) (gasEstimate uint64, gasEstimateForL1 uint64, baseFee *big.Int, l1BaseFeeEsimate *big.Int, err error)
 }

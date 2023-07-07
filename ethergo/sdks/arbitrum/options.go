@@ -1,6 +1,9 @@
 package arbitrum
 
-import "github.com/ethereum/go-ethereum/common"
+import (
+	"github.com/ethereum/go-ethereum/common"
+	"github.com/synapsecns/sanguine/ethergo/sdks/arbitrum/internal"
+)
 
 type arbitrumOptions struct {
 	// gasInfoAddress is the address of the ArbGasInfo contract.
@@ -14,8 +17,8 @@ type arbitrumOptions struct {
 func defaultOptions() *arbitrumOptions {
 	return &arbitrumOptions{
 		// see: https://github.com/OffchainLabs/arbitrum-token-bridge/blob/75915c94e58aaf7bf59fb833a0a1b3be1ae461ec/packages/arb-token-bridge-ui/scripts/generateDenylist.ts#L63 and https://github.com/Tenderly/nitro/blob/master/go-ethereum/core/types/arbitrum_signer.go#L12
-		gasInfoAddress:       common.HexToAddress("0x6e"),
-		nodeInterfaceAddress: common.HexToAddress("0xc8"),
+		gasInfoAddress:       internal.GetGasInfoAddress(),
+		nodeInterfaceAddress: internal.GetNodeInterfaceAddress(),
 	}
 }
 
