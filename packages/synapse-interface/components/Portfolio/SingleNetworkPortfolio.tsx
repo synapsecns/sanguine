@@ -167,7 +167,7 @@ const PortfolioTokenAsset = ({
   return (
     <div
       data-test-id="portfolio-token-asset"
-      className="flex flex-row items-center py-2 text-white "
+      className="flex flex-row items-center py-2 pl-2 text-white "
     >
       <div className="flex flex-row justify-between w-2/3">
         <div className="flex flex-row">
@@ -316,7 +316,7 @@ const PortfolioNetwork = ({
     >
       <div className="flex flex-row items-center">
         <Image
-          className="mr-4 rounded-md w-7 h-7"
+          className="w-6 h-6 mr-3 rounded-md"
           alt={`${displayName} img`}
           src={chainIcon}
         />
@@ -368,7 +368,7 @@ export const PortfolioAssetHeader = () => {
   return (
     <div
       data-test-id="portfolio-asset-header"
-      className="flex text-[#CCCAD3BF] my-2"
+      className="flex text-[#CCCAD3BF] my-2 pl-2"
     >
       <div className="flex flex-row justify-between w-2/3 text-left">
         <div>Token</div>

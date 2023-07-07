@@ -22,10 +22,7 @@ export const PortfolioAccordion = ({
   selectedFromChainId,
 }: PortfolioAccordionProps) => {
   const [isExpanded, setIsExpanded] = useState(initializeExpanded)
-
-  const handleToggle = () => {
-    setIsExpanded((prevExpanded) => !prevExpanded)
-  }
+  const handleToggle = () => setIsExpanded((prevExpanded) => !prevExpanded)
 
   useEffect(() => {
     if (portfolioChainId === connectedChainId) {
@@ -39,9 +36,9 @@ export const PortfolioAccordion = ({
     <div>
       <div
         className={`
-          flex flex-row
-          items-center justify-between
-          border border-transparent
+        flex flex-row
+        items-center justify-between
+        border border-transparent
         hover:border-[#3D3D5C] hover:bg-[#272731]
         active:border-[#3D3D5C] active:opacity-[67%]
         `}
