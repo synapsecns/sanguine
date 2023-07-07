@@ -99,7 +99,7 @@ func (c *CCTPParser) Parse(ctx context.Context, log ethTypes.Log, chainID uint32
 // applyPriceData applies price data to the cctp event, setting USD values.
 func (c *CCTPParser) applyPriceData(ctx context.Context, cctpEvent *model.CCTPEvent, coinGeckoID string) {
 	tokenPrice := c.tokenPriceService.GetPriceData(ctx, int(*cctpEvent.TimeStamp), coinGeckoID)
-	if (tokenPrice == nil) && coinGeckoID != noTokenID && coinGeckoID != noPrice {
+	if tokenPrice == nil {
 		logger.Warnf("CCTP could not get token price for coingeckotoken; assuming price of 1:  %s txhash %s %d", coinGeckoID, cctpEvent.TxHash, cctpEvent.TimeStamp)
 		one := 1.0
 		tokenPrice = &one
