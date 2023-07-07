@@ -78,15 +78,9 @@ export const SingleNetworkPortfolio = ({
           />
         }
         collapsedProps={
-          <>
-            <PortfolioTokenVisualizer
-              portfolioTokens={sortedTokensForVisualizer}
-            />
-            <PortfolioConnectButton
-              portfolioChainId={portfolioChainId}
-              connectedChainId={connectedChainId}
-            />
-          </>
+          <PortfolioTokenVisualizer
+            portfolioTokens={sortedTokensForVisualizer}
+          />
         }
       >
         <PortfolioAssetHeader />

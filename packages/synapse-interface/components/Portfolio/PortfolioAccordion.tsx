@@ -42,9 +42,12 @@ export const PortfolioAccordion = ({
         data-test-id="portfolio-accordion"
       >
         <button onClick={handleToggle} className="flex-1 mr-3 ">
-          {header}
+          <div className="flex flex-row justify-between">
+            {header}
+            {!isExpanded && collapsedProps}
+          </div>
         </button>
-        {isExpanded ? expandedProps : collapsedProps}
+        {isExpanded && expandedProps}
       </div>
       <div>{isExpanded && <React.Fragment>{children}</React.Fragment>}</div>
     </div>
