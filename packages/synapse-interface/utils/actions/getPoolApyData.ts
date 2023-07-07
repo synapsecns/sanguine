@@ -6,6 +6,12 @@ import { fetchBalance, readContracts, fetchToken, Address } from '@wagmi/core'
 import { MINICHEF_ABI } from '@abis/miniChef'
 import { getSynPrices } from '@utils/actions/getPrices'
 
+type PoolInfoResult = readonly [
+  accSynapsePerShare: bigint,
+  lastRewardTime: bigint,
+  allocPoint: bigint
+]
+
 export const getPoolApyData = async (
   chainId: number,
   poolToken: Token,
@@ -47,7 +53,7 @@ export const getPoolApyData = async (
 
   const synapsePerSecondResult: bigint = data[0].result
   const totalAllocPointsResult: bigint = data[1].result
-  const poolInfoResult: [bigint, bigint, bigint] = [...data[2].result]
+  const poolInfoResult: PoolInfoResult = data[2].result
 
   const lpTokenBalanceResult =
     (
@@ -69,7 +75,7 @@ export const getPoolApyData = async (
   const synPriceData = prices?.synPrices ?? (await getSynPrices())
   const synapsePerSecond: bigint = BigInt(synapsePerSecondResult ?? 0n)
   const totalAllocPoints: bigint = BigInt(totalAllocPointsResult ?? 1n)
-  const allocPoints: bigint = BigInt(poolInfoResult[2] ?? 1n)
+  const allocPoints: bigint = BigInt(poolInfoResult?.[2] ?? 1n)
   const lpTokenBalance: bigint = BigInt(lpTokenBalanceResult ?? 0n)
   const lpTokenSupply: bigint = BigInt(lpTokenSupplyResult ?? 0n)
 

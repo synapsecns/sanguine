@@ -1,14 +1,13 @@
 import { readContracts, ReadContractResult, Address } from '@wagmi/core'
 import { MINICHEF_ABI } from '@abis/miniChef'
-
 import { MINICHEF_ADDRESSES } from '@/constants/minichef'
 
-type UserInfoResponse = {
-  result: [bigint, bigint]
+type UserInfoResult = {
+  result: [amount: bigint, rewardDebt: bigint]
   status: string
 }
 
-type PendingSynapseResponse = {
+type PendingSynapseResult = {
   result: bigint
   status: string
 }
@@ -37,10 +36,8 @@ export const getStakedBalance = async (
       ],
     })
 
-    console.log(`in get staked baalnce`, data)
-
-    const userInfo: UserInfoResponse = data[0]
-    const pendingSynapse: PendingSynapseResponse = data[1]
+    const userInfo: UserInfoResult = data[0]
+    const pendingSynapse: PendingSynapseResult = data[1]
 
     return {
       amount: userInfo?.result[0] ?? 0n,
