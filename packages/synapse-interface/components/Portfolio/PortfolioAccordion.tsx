@@ -36,12 +36,17 @@ export const PortfolioAccordion = ({
   }, [portfolioChainId, connectedChainId])
 
   return (
-    <div className={isExpanded && 'pb-2'}>
+    <div>
       <div
-        className="flex flex-row items-center justify-between py-3"
+        className={`
+          flex flex-row items-center justify-between
+          border border-transparent
+        hover:border-[#A3A3C2] hover:bg-[#272731]
+        active:border-[#A3A3C2]
+        `}
         data-test-id="portfolio-accordion"
       >
-        <button onClick={handleToggle} className="flex-1 mr-3 ">
+        <button onClick={handleToggle} className="flex-1 mr-3">
           <div className="flex flex-row justify-between">
             {header}
             {!isExpanded && collapsedProps}

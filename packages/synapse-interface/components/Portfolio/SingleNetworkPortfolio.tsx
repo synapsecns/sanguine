@@ -223,11 +223,12 @@ const PortfolioAssetActionButton = ({
   isApproved,
   isDisabled,
 }: PortfolioAssetActionButtonProps) => {
-  const { fetchPortfolioBalances } = usePortfolioBalancesAndAllowances()
-  const { address } = useAccount()
   const dispatch = useDispatch()
-  const tokenAddress: string = token.addresses[connectedChainId]
+  const { address } = useAccount()
+  const { fetchPortfolioBalances } = usePortfolioBalancesAndAllowances()
   const currentChainName: string = CHAINS_BY_ID[portfolioChainId].name
+  const isCurrentlyConnected: boolean = portfolioChainId === connectedChainId
+  const tokenAddress: string = token.addresses[connectedChainId]
 
   const handleBridgeCallback = useCallback(() => {
     if (!isDisabled) {
@@ -237,7 +238,7 @@ const PortfolioAssetActionButton = ({
   }, [token, isDisabled, portfolioChainId])
 
   const handleApproveCallback = useCallback(async () => {
-    if (!isDisabled && portfolioChainId === connectedChainId) {
+    if (!isDisabled && isCurrentlyConnected) {
       dispatch(setFromToken(token))
       return await approveToken(
         ROUTER_ADDRESS,
@@ -262,6 +263,7 @@ const PortfolioAssetActionButton = ({
     isDisabled,
     portfolioChainId,
     token,
+    isCurrentlyConnected,
   ])
 
   const buttonClassName = `
