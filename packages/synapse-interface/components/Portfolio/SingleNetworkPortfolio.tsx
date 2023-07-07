@@ -239,7 +239,10 @@ const PortfolioTokenAsset = ({
           onClick={handleApproveCallback}
           className={`
             text-[#A3A3C2] text-xs pt-1
+            hover:text-[#75E6F0]
+            hover:underline
             hover:cursor-pointer
+            active:opacity-[67%]
           `}
         >
           {parsedAllowance} approved ({parsedBalance} available)
