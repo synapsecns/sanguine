@@ -349,7 +349,10 @@ const PortfolioTokenVisualizer = ({
       : 0
 
   return (
-    <div data-test-id="portfolio-token-visualizer" className="flex flex-row">
+    <div
+      data-test-id="portfolio-token-visualizer"
+      className="flex flex-row items-center"
+    >
       {hasOneToken && (
         <Image
           className="w-6 h-6 rounded-md"
@@ -397,8 +400,8 @@ const PortfolioConnectButton = ({
 
 const ConnectedButton = () => {
   const buttonClassName = `
-  h-9 flex items-center justify-end w-36
-  text-base text-white px-4 py-2 rounded-3xl
+  flex items-center justify-end w-36
+  text-base text-white px-4 rounded-3xl
   text-center transform-gpu transition-all duration-75
   hover:cursor-default
   `
@@ -428,8 +431,8 @@ const ConnectButton = ({ chainId }: { chainId: number }) => {
   }
 
   const buttonClassName = `
-    h-9 flex items-right justify-end w-36
-    text-base text-white px-4 py-2 rounded-3xl
+    flex items-right justify-end w-36
+    text-base text-white px-4 rounded-3xl
     text-center transform-gpu transition-all duration-75
     `
 
