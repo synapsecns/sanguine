@@ -133,7 +133,7 @@ var NotaryRunCommand = &cli.Command{
 				if err != nil {
 					shouldRetryAtomic.Store(true)
 
-					log.Errorf("Error running guard, will sleep for a minute and retry: %v", err)
+					log.Errorf("Error running notary, will sleep for a minute and retry: %v", err)
 					time.Sleep(60 * time.Second)
 					return fmt.Errorf("failed to create notary: %w", err)
 				}
