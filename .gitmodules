@@ -11,3 +11,6 @@
 [submodule "services/cctp-relayer/external/synapse-contracts"]
 	path = services/cctp-relayer/external/synapse-contracts
 	url = https://github.com/synapsecns/synapse-contracts
+[submodule "ethergo/internal/nitro-contracts"]
+	path = ethergo/internal/nitro-contracts
+	url = https://github.com/OffchainLabs/nitro-contracts
