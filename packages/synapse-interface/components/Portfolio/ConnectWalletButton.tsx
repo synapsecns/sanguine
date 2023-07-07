@@ -1,8 +1,14 @@
+import { useState, useEffect } from 'react'
 import { useAccount } from 'wagmi'
 import { ConnectButton } from '@rainbow-me/rainbowkit'
 
 export function ConnectWalletButton() {
+  const [clientReady, setClientReady] = useState<boolean>(false)
   const { address } = useAccount()
+
+  useEffect(() => {
+    setClientReady(true)
+  }, [])
 
   const buttonClassName = `
     h-10 border-[#AC8FFF] flex items-center border
@@ -18,27 +24,29 @@ export function ConnectWalletButton() {
 
   return (
     <div data-test-id="connect-wallet-button">
-      <ConnectButton.Custom>
-        {({ account, chain, openConnectModal, mounted, openChainModal }) => {
-          return (
-            <>
-              {(() => {
-                if (!mounted || !account || !chain || !address) {
-                  return (
-                    <button
-                      className={buttonClassName}
-                      style={buttonStyle}
-                      onClick={openConnectModal}
-                    >
-                      Connect Wallet
-                    </button>
-                  )
-                }
-              })()}
-            </>
-          )
-        }}
-      </ConnectButton.Custom>
+      {clientReady && (
+        <ConnectButton.Custom>
+          {({ account, chain, openConnectModal, mounted, openChainModal }) => {
+            return (
+              <>
+                {(() => {
+                  if (!mounted || !account || !chain || !address) {
+                    return (
+                      <button
+                        className={buttonClassName}
+                        style={buttonStyle}
+                        onClick={openConnectModal}
+                      >
+                        Connect Wallet
+                      </button>
+                    )
+                  }
+                })()}
+              </>
+            )
+          }}
+        </ConnectButton.Custom>
+      )}
     </div>
   )
 }
