@@ -5,10 +5,6 @@ import { Token } from '@types'
 import { fetchBalance, readContracts, fetchToken, Address } from '@wagmi/core'
 import { MINICHEF_ABI } from '@abis/miniChef'
 import { getSynPrices } from '@utils/actions/getPrices'
-// import { useContractReads } from 'wagmi'
-// import Abi from 'viem'
-// import { BigNumber } from 'ethers'
-// import { Zero, One } from '@ethersproject/constants'
 
 export const getPoolApyData = async (
   chainId: number,
@@ -48,9 +44,10 @@ export const getPoolApyData = async (
       },
     ],
   })
-  const synapsePerSecondResult: any = data[0].result
-  const totalAllocPointsResult: any = data[1].result
-  const poolInfoResult: any = data[2].result ?? []
+
+  const synapsePerSecondResult: bigint = data[0].result
+  const totalAllocPointsResult: bigint = data[1].result
+  const poolInfoResult: [bigint, bigint, bigint] = [...data[2].result]
 
   const lpTokenBalanceResult =
     (
@@ -70,12 +67,11 @@ export const getPoolApyData = async (
     )?.totalSupply?.value ?? BigInt(0)
 
   const synPriceData = prices?.synPrices ?? (await getSynPrices())
-
-  const synapsePerSecond: bigint = BigInt(synapsePerSecondResult ?? 0)
-  const totalAllocPoints: bigint = BigInt(totalAllocPointsResult ?? 1)
-  const allocPoints: bigint = BigInt(poolInfoResult?.allocPoint ?? 1)
-  const lpTokenBalance: bigint = BigInt(lpTokenBalanceResult ?? 0)
-  const lpTokenSupply: bigint = BigInt(lpTokenSupplyResult ?? 0)
+  const synapsePerSecond: bigint = BigInt(synapsePerSecondResult ?? 0n)
+  const totalAllocPoints: bigint = BigInt(totalAllocPointsResult ?? 1n)
+  const allocPoints: bigint = BigInt(poolInfoResult[2] ?? 1n)
+  const lpTokenBalance: bigint = BigInt(lpTokenBalanceResult ?? 0n)
+  const lpTokenSupply: bigint = BigInt(lpTokenSupplyResult ?? 0n)
 
   let rewardsPerWeek
   try {
@@ -114,7 +110,6 @@ export const getPoolApyData = async (
   }
 
   const usdPerWeek = poolRewardsPerWeek * synPriceData.synPrice
-  console.log(`usd per week`, usdPerWeek)
 
   const weeklyAPR = (usdPerWeek / stakedTvl) * 100
   const yearlyAPR = weeklyAPR * 52
@@ -123,7 +118,7 @@ export const getPoolApyData = async (
   const fullCompoundedAPY = Math.round(yearlyCompoundedAPR * 100) / 100
   const fullCompoundedAPYStr = isFinite(fullCompoundedAPY)
     ? fullCompoundedAPY.toFixed(2)
-    : '-'
+    : '\u2212'
 
   return {
     fullCompoundedAPY,

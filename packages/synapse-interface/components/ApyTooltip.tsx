@@ -91,8 +91,7 @@ function PercentageRow({ title, rewardApr, baseApr }) {
       </div>
       {baseApr > 0 && (
         <small className="float-left italic font-normal text-gray-300">
-          {bigIntToFixed(rewardApr)} reward +{' '}
-          {bigIntToFixed(baseApr)} base
+          {bigIntToFixed(rewardApr)} reward + {bigIntToFixed(baseApr)} base
         </small>
       )}
     </div>
