@@ -1,4 +1,4 @@
-import React, { useMemo, useCallback } from 'react'
+import React, { useMemo, useCallback, useState } from 'react'
 import Image from 'next/image'
 import { BigNumber } from 'ethers'
 import { useDispatch } from 'react-redux'
@@ -423,12 +423,18 @@ const ConnectedButton = () => {
 }
 
 const ConnectButton = ({ chainId }: { chainId: number }) => {
+  const [isConnecting, setIsConnecting] = useState<boolean>(false)
   const dispatch = useDispatch()
 
   const handleConnectNetwork = async () => {
-    await switchNetwork({ chainId: chainId }).then((success) => {
-      success && dispatch(setFromChainId(chainId))
-    })
+    setIsConnecting(true)
+    try {
+      await switchNetwork({ chainId: chainId }).then((success) => {
+        success && dispatch(setFromChainId(chainId))
+      })
+    } catch (error) {
+      error && setIsConnecting(false)
+    }
   }
 
   const buttonClassName = `
@@ -445,15 +451,27 @@ const ConnectButton = ({ chainId }: { chainId: number }) => {
       className={buttonClassName}
       onClick={handleConnectNetwork}
     >
-      <div className="flex flex-row text-sm">
-        <div
-          className={`
-          my-auto ml-auto mr-2 text-transparent w-2 h-2
-          border border-indigo-300 border-solid rounded-full
-          `}
-        />
-        Connect
-      </div>
+      {isConnecting ? (
+        <div className="flex flex-row text-sm">
+          <div
+            className={`
+            my-auto ml-auto mr-2 text-transparent w-2 h-2
+            border border-green-300 border-solid rounded-full
+            `}
+          />
+          Connecting...
+        </div>
+      ) : (
+        <div className="flex flex-row text-sm">
+          <div
+            className={`
+            my-auto ml-auto mr-2 text-transparent w-2 h-2
+            border border-indigo-300 border-solid rounded-full
+            `}
+          />
+          Connect
+        </div>
+      )}
     </button>
   )
 }
