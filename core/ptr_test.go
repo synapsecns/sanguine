@@ -14,6 +14,12 @@ func ExamplePtrTo() {
 	// Output: *common.Hash
 }
 
+func ExamplePtrSlice() {
+	res := core.PtrSlice([]common.Hash{})
+	fmt.Println(reflect.TypeOf(res))
+	// Output: []*common.Hash
+}
+
 func TestArePointersEqual(t *testing.T) {
 	type TestData struct {
 		a    interface{}

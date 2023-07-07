@@ -25,6 +25,7 @@ var DefaultDate = time.Now().Format(time.RFC3339)
 const VendorName = "synapsecns"
 
 // BuildInfo will contains build info from https://goreleaser.com/cookbooks/using-main.version
+// it is set at compile time by default. If it cannot be, we attempt to derive it at runtime.
 type BuildInfo struct {
 	version string
 	commit  string

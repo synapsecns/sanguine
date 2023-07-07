@@ -1,5 +1,8 @@
 # Release Copier
 
+[![Go Reference](https://pkg.go.dev/badge/github.com/synapsecns/sanguine/contrib/release-copier-action.svg)](https://pkg.go.dev/github.com/synapsecns/sanguine/contrib/release-copier-action)
+[![Go Report Card](https://goreportcard.com/badge/github.com/synapsecns/sanguine/contrib/release-copier-action)](https://goreportcard.com/report/github.com/synapsecns/sanguine/contrib/release-copier-action)
+
 This is a tool to help with the release process. It copies the release from a tag to a new repository. This is used for terraform releases since terraform requires a separate repository for each provider in a specific format. It should be able to be used for any other release you want to copy.
 
 ## Usage
