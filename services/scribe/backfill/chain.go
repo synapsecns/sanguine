@@ -57,7 +57,7 @@ func NewChainBackfiller(eventDB db.EventDB, client []ScribeBackend, chainConfig 
 	}
 
 	if chainConfig.GetLogsBatchAmount == 0 {
-		chainConfig.GetLogsBatchAmount = 5
+		chainConfig.GetLogsBatchAmount = 2
 	}
 
 	if chainConfig.StoreConcurrency == 0 {
@@ -69,7 +69,7 @@ func NewChainBackfiller(eventDB db.EventDB, client []ScribeBackend, chainConfig 
 	}
 
 	if chainConfig.ConcurrencyThreshold == 0 {
-		chainConfig.ConcurrencyThreshold = 5000
+		chainConfig.ConcurrencyThreshold = 50000
 	}
 	minBlockHeight := uint64(math.MaxUint64)
 
