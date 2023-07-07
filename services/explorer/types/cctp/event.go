@@ -39,7 +39,7 @@ type EventLog interface {
 	// GetRequestVersion returns the request version of the CCTP transfer.
 	GetRequestVersion() *uint32
 	// GetFormattedRequest returns the formatted request of the CCTP transfer.
-	GetFormattedRequest() []byte
+	GetFormattedRequest() *[]byte
 	// GetRecipient returns the receipient of the CCTP transfer.
 	GetRecipient() *string
 	// GetFee returns the fee of the CCTP transfer.

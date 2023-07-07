@@ -2,6 +2,7 @@ package parser
 
 import (
 	"context"
+	"database/sql"
 	"fmt"
 	"time"
 
@@ -115,6 +116,15 @@ func (c *CCTPParser) applyPriceData(ctx context.Context, cctpEvent *model.CCTPEv
 // eventToCCTPEvent stores a message event.
 func eventToCCTPEvent(event cctpTypes.EventLog) model.CCTPEvent {
 	requestID := event.GetRequestID()
+
+	var formattedRequest sql.NullString
+	if event.GetFormattedRequest() != nil {
+		formattedRequest.Valid = true
+		formattedRequest.String = common.Bytes2Hex(*event.GetFormattedRequest())
+	} else {
+		formattedRequest.Valid = false
+	}
+
 	return model.CCTPEvent{
 		InsertTime:         uint64(time.Now().UnixNano()),
 		ContractAddress:    event.GetContractAddress().String(),
@@ -131,7 +141,7 @@ func eventToCCTPEvent(event cctpTypes.EventLog) model.CCTPEvent {
 		SentAmount:         event.GetSentAmount(),
 		ReceivedAmount:     event.GetReceivedAmount(),
 		RequestVersion:     ToNullInt32(event.GetRequestVersion()),
-		FormattedRequest:   event.GetFormattedRequest(),
+		FormattedRequest:   formattedRequest,
 		Recipient:          ToNullString(event.GetRecipient()),
 		Fee:                event.GetFee(),
 		Token:              ToNullString(event.GetToken()),
