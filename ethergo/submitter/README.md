@@ -12,10 +12,11 @@ One of the main goals of submitter is for you to be able to call `SubmitTransact
 The first thing you'll notice about the  `SubmitTransaction` method is it returns a nonce rather than a transaction hash. This is because once the transaction is submitted, it will be bumped (which requires changing the transaction hash) until the transaction is confirmed. The next nonce is generated in the following manner:
 
 ```mermaid
+%% Note: Style doesn't look as good in dark mode so isabled for now
 graph TB
-    style Locker fill:#f9f,stroke:#333,stroke-width:2px;
-    style Fetch DB, RPC, Stored, Unlock, Errored, C, D, E fill:#fff,stroke:#333,stroke-width:2px;
-    style A fill:#eee,stroke:#333,stroke-width:2px;
+    %% style Locker fill:#f9f,stroke:#333,stroke-width:2px;
+    %% style Fetch DB, RPC, Stored, Unlock, Errored, C, D, E fill:#fff,stroke:#333,stroke-width:2px;
+    %% style A fill:#eee,stroke:#333,stroke-width:2px;
 
     Locker[Lock Nonce Mutex] --> Fetch
     subgraph Fetch [External Fetches ]
@@ -24,13 +25,13 @@ graph TB
             direction TB
             B[Get last used nonce in database] --> F[Increment Database Nonce]
         end
-        style DB fill:#ccf,stroke:#333,stroke-width:2px;
-        style RPC fill:#cfc,stroke:#333,stroke-width:2px;
+        %% style DB fill:#ccf,stroke:#333,stroke-width:2px;
+        %% style RPC fill:#cfc,stroke:#333,stroke-width:2px;
         subgraph RPC
             A[Get last nonce on-chain]
         end
     end
-    style Fetch fill:#ddf,stroke:#333,stroke-width:2px;
+    %% style Fetch fill:#ddf,stroke:#333,stroke-width:2px;
     Fetch --> Errored
     Errored{Errored?} -- Yes -->  Unlock
     Errored{Errored?} -- No -->  C
@@ -38,9 +39,9 @@ graph TB
     D --> Stored
     Stored --> Unlock
     Stored[Store Association Between Database Nonce and Transaction]
-    style Stored fill:#ffc,stroke:#333,stroke-width:2px;
+    %% style Stored fill:#ffc,stroke:#333,stroke-width:2px;
     Unlock[Unlock Nonce Mutex]
-    style Unlock fill:#f9f,stroke:#333,stroke-width:2px;
+    %% style Unlock fill:#f9f,stroke:#333,stroke-width:2px;
     C{Is on-chain nonce > database nonce?} -- Yes --> D[Use on-chain nonce]
     C -- No --> E[Use database nonce]
 ```
