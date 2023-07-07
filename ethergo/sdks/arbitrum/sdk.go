@@ -7,8 +7,8 @@ import (
 	"github.com/synapsecns/sanguine/ethergo/sdks/arbitrum/contracts/nodeinterface"
 )
 
-// ArbitrumSDK is an interface for interacting with the Arbitrum SDK.
-type ArbitrumSDK interface {
+// SDK is an interface for interacting with the Arbitrum SDK.
+type SDK interface {
 	// TODO:
 }
 
@@ -18,8 +18,8 @@ type arbitrumSDKImpl struct {
 	gasInfo       arbgasinfo.IArbGasInfo
 }
 
-// NewArbitrumSDK creates a new ArbitrumSDK.
-func NewArbitrumSDK(client bind.ContractBackend, options ...ArbitrumOption) (ArbitrumSDK, error) {
+// NewArbitrumSDK creates a new SDK.
+func NewArbitrumSDK(client bind.ContractBackend, options ...Option) (SDK, error) {
 	opts := defaultOptions()
 	for _, option := range options {
 		option(opts)

@@ -19,18 +19,18 @@ func defaultOptions() *arbitrumOptions {
 	}
 }
 
-// ArbitrumOption is an option for the Arbitrum SDK.
-type ArbitrumOption func(*arbitrumOptions)
+// Option is an option for the Arbitrum SDK.
+type Option func(*arbitrumOptions)
 
 // WithGasInfoAddress sets the gas info address.
-func WithGasInfoAddress(address common.Address) ArbitrumOption {
+func WithGasInfoAddress(address common.Address) Option {
 	return func(o *arbitrumOptions) {
 		o.gasInfoAddress = address
 	}
 }
 
 // WithNodeInterfaceAddress sets the node interface address.
-func WithNodeInterfaceAddress(address common.Address) ArbitrumOption {
+func WithNodeInterfaceAddress(address common.Address) Option {
 	return func(o *arbitrumOptions) {
 		o.nodeInterfaceAddress = address
 	}
