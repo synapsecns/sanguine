@@ -164,15 +164,10 @@ const PortfolioTokenAsset = ({
     // }
   }, [isDisabled, token, balance])
 
-  // saved for after bridge store fromValue is updated
-  // ${isDisabled ? 'cursor-default' : 'cursor-pointer'}
-  // ${isDisabled ? filteredOpacity : 'opacity-100'}
   return (
     <div
       data-test-id="portfolio-token-asset"
-      className={`
-        flex flex-row items-center text-white py-1
-        `}
+      className="flex flex-row items-center py-2 text-white "
     >
       <div className="flex flex-row justify-between w-2/3">
         <div className="flex flex-row">
@@ -185,9 +180,7 @@ const PortfolioTokenAsset = ({
         </div>
         <div
           onClick={handleTotalBalanceInputCallback}
-          className={`
-          cursor-default
-          `}
+          className="cursor-default"
         >
           {parsedBalance}
         </div>
