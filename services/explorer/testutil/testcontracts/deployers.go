@@ -3,6 +3,7 @@ package testcontracts
 import (
 	"context"
 	"fmt"
+	"github.com/brianvoe/gofakeit/v6"
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/core/types"
@@ -17,6 +18,7 @@ import (
 	"github.com/synapsecns/sanguine/services/explorer/contracts/metaswap/testmetaswap"
 	"github.com/synapsecns/sanguine/services/explorer/contracts/swap/testswap"
 	"github.com/synapsecns/sanguine/services/explorer/testutil"
+	"math/big"
 )
 
 // TestSynapseBridgeDeployer is the type of the test bridge deployer.
@@ -174,8 +176,19 @@ func (t TestMetaSwapDeployer) Deploy(ctx context.Context) (contracts.DeployedCon
 //nolint:dupl
 func (n TestCCTPDeployer) Deploy(ctx context.Context) (contracts.DeployedContract, error) {
 
+	tokenMessengerContract, err := n.DeploySimpleContract(ctx, func(transactOps *bind.TransactOpts, backend bind.ContractBackend) (common.Address, *types.Transaction, interface{}, error) {
+		return testcctp.DeployMessageTransmitter(transactOps, backend)
+	}, func(address common.Address, backend bind.ContractBackend) (interface{}, error) {
+		return testcctp.NewMessageTransmitter(address, backend)
+	})
+	if err != nil {
+		return nil, fmt.Errorf("failed to deploy tokenMessengerContract %w", err)
+	}
 	return n.DeploySimpleContract(ctx, func(transactOps *bind.TransactOpts, backend bind.ContractBackend) (common.Address, *types.Transaction, interface{}, error) {
-		return testcctp.DeployTestSynapseCCTP(transactOps, backend)
+		// Create mock owner
+		owner := common.BigToAddress(big.NewInt(gofakeit.Int64()))
+
+		return testcctp.DeployTestSynapseCCTP(transactOps, backend, tokenMessengerContract.Address(), owner)
 	}, func(address common.Address, backend bind.ContractBackend) (interface{}, error) {
 		return testcctp.NewTestCCTPRef(address, backend)
 	})
