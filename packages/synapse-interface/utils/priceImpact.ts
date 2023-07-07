@@ -14,14 +14,6 @@ export const calculatePriceImpact = (
   virtualPrice: bigint = BI_1E18,
   isWithdraw: boolean = false
 ) => {
-  console.log(`virtualprce`, virtualPrice)
-  console.log(`tokenInputAmount`, tokenInputAmount)
-  console.log(`tokenOutputAmount`, tokenOutputAmount)
-
-  const x = virtualPrice * tokenOutputAmount
-  console.log(`x`, x)
-  console.log('x/', x / tokenInputAmount - BI_1E18)
-
   if (tokenInputAmount <= 0n) {
     return 0n
   }

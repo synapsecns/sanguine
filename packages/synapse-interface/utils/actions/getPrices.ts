@@ -1,4 +1,5 @@
 import { useState, useEffect, useMemo } from 'react'
+import { readContract, fetchBalance, Address } from '@wagmi/core'
 import { SYN } from '@constants/tokens/master'
 import { WETH } from '@constants/tokens/swapMaster'
 import * as ALL_CHAINS from '@constants/chains/master'
@@ -7,7 +8,6 @@ import {
   CHAINLINK_ETH_PRICE_ADDRESSES,
   CHAINLINK_AVAX_PRICE_ADDRESSES,
 } from '@constants/chainlink'
-import { readContract, fetchBalance } from '@wagmi/core'
 import { SYN_ETH_SUSHI_TOKEN } from '@constants/tokens/sushiMaster'
 
 export const usePrices = (connectedChainId: number) => {
@@ -55,8 +55,8 @@ export const getEthPrice = async (): Promise<number> => {
     chainId: 1,
   })
 
-  const ethPriceBigInt = ethPriceResult ? BigInt(ethPriceResult) : BigInt('0')
-  if (ethPriceBigInt === BigInt('0')) {
+  const ethPriceBigInt = ethPriceResult ? BigInt(ethPriceResult) : 0n
+  if (ethPriceBigInt === 0n) {
     return 0
   } else {
     // Note: BigInt to Number conversion happens here
@@ -67,17 +67,15 @@ export const getEthPrice = async (): Promise<number> => {
 export const getAvaxPrice = async (): Promise<number> => {
   // the price result returned by latestAnswer is 8 decimals
   const avaxPriceResult: any = await readContract({
-    address: `0x${CHAINLINK_AVAX_PRICE_ADDRESSES[ALL_CHAINS.ETH.id].slice(2)}`,
+    address: CHAINLINK_AVAX_PRICE_ADDRESSES[ALL_CHAINS.ETH.id] as Address,
     abi: CHAINLINK_AGGREGATOR_ABI,
     functionName: 'latestAnswer',
     chainId: 1,
   })
 
-  const avaxPriceBigInt = avaxPriceResult
-    ? BigInt(avaxPriceResult)
-    : BigInt('0')
+  const avaxPriceBigInt = avaxPriceResult ? BigInt(avaxPriceResult) : 0n
 
-  if (avaxPriceBigInt === BigInt('0')) {
+  if (avaxPriceBigInt === 0n) {
     return 0
   } else {
     return Number(avaxPriceBigInt) / Math.pow(10, 8)
@@ -89,31 +87,25 @@ export const getSynPrices = async () => {
   const sushiSynBalance =
     (
       await fetchBalance({
-        token: `0x${SYN.addresses[ALL_CHAINS.ETH.id].slice(2)}`,
+        token: SYN.addresses[ALL_CHAINS.ETH.id] as Address,
         chainId: ALL_CHAINS.ETH.id,
-        address: `0x${SYN_ETH_SUSHI_TOKEN.addresses[ALL_CHAINS.ETH.id].slice(
-          2
-        )}`,
+        address: SYN_ETH_SUSHI_TOKEN.addresses[ALL_CHAINS.ETH.id] as Address,
       })
-    )?.value ?? BigInt('0')
+    )?.value ?? 0n
+
   const sushiEthBalance =
     (
       await fetchBalance({
-        token: `0x${WETH.addresses[ALL_CHAINS.ETH.id].slice(2)}`,
+        token: WETH.addresses[ALL_CHAINS.ETH.id] as Address,
         chainId: ALL_CHAINS.ETH.id,
-        address: `0x${SYN_ETH_SUSHI_TOKEN.addresses[ALL_CHAINS.ETH.id].slice(
-          2
-        )}`,
+        address: SYN_ETH_SUSHI_TOKEN.addresses[ALL_CHAINS.ETH.id] as Address,
       })
-    )?.value ?? BigInt('0')
+    )?.value ?? 0n
 
-  // Assuming formatUnits(sushiEthBalance, 'ether') converts the balance to Ether (i.e., divides by 10**18)
-  const ethBalanceNumber = Number(sushiEthBalance) / Math.pow(10, 18)
   const synBalanceNumber = Number(sushiSynBalance) / Math.pow(10, 18)
-
+  const ethBalanceNumber = Number(sushiEthBalance) / Math.pow(10, 18)
   const synPerEth = synBalanceNumber / ethBalanceNumber
-
-  const synPrice: number = ethPrice * synPerEth
+  const synPrice: number = ethPrice * (1 / synPerEth)
 
   return {
     synBalanceNumber,
