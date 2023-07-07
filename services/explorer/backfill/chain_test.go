@@ -523,6 +523,10 @@ func (b *BackfillSuite) sendCircleTokenParity(log *types.Log, parser *parser.CCT
 		Int32: int32(parsedLog.RequestVersion),
 		Valid: true,
 	}
+	formattedRequest := gosql.NullString{
+		String: common.Bytes2Hex(parsedLog.FormattedRequest),
+		Valid:  true,
+	}
 	events := b.db.UNSAFE_DB().WithContext(b.GetTestContext()).Model(&sql.CCTPEvent{}).
 		Where(&sql.CCTPEvent{
 			ContractAddress:    log.Address.String(),
@@ -536,7 +540,7 @@ func (b *BackfillSuite) sendCircleTokenParity(log *types.Log, parser *parser.CCT
 			BurnToken:          burnToken,
 			SentAmount:         parsedLog.Amount,
 			RequestVersion:     requestVersion,
-			// FormattedRequest:   parsedLog.FormattedRequest,
+			FormattedRequest:   formattedRequest,
 		}).Count(&count)
 	if events.Error != nil {
 		return fmt.Errorf("error querying for event: %w", events.Error)

@@ -112,7 +112,7 @@ type CCTPEvent struct {
 	// RequestVersion is the request version of the CCTP transfer.
 	RequestVersion sql.NullInt32 `gorm:"column:request_version"`
 	// FormattedRequest is the formatted request of the CCTP transfer.
-	FormattedRequest []byte `gorm:"column:formatted_request"`
+	FormattedRequest sql.NullString `gorm:"column:formatted_request"`
 	// Recipient is the recipient of the CCTP transfer.
 	Recipient sql.NullString `gorm:"column:recipient"`
 	// Fee is the fee of the CCTP transfer.

@@ -80,8 +80,8 @@ func (s SynapseCCTPCircleRequestSent) GetRequestVersion() *uint32 {
 }
 
 // GetFormattedRequest gets the formatted request for the action to take on the destination chain.
-func (s SynapseCCTPCircleRequestSent) GetFormattedRequest() []byte {
-	return s.FormattedRequest
+func (s SynapseCCTPCircleRequestSent) GetFormattedRequest() *[]byte {
+	return &s.FormattedRequest
 }
 
 // GetRecipient gets the end recipient of the tokens on this chain.
@@ -171,8 +171,8 @@ func (s SynapseCCTPCircleRequestFulfilled) GetRequestVersion() *uint32 {
 }
 
 // GetFormattedRequest gets the formatted request for the action to take on the destination chain.
-func (s SynapseCCTPCircleRequestFulfilled) GetFormattedRequest() []byte {
-	return []byte{}
+func (s SynapseCCTPCircleRequestFulfilled) GetFormattedRequest() *[]byte {
+	return nil
 }
 
 // GetRecipient gets the end recipient of the tokens on this chain.
