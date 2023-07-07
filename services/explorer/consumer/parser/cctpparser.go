@@ -92,7 +92,6 @@ func (c *CCTPParser) Parse(ctx context.Context, log ethTypes.Log, chainID uint32
 	cctpEvent.TimeStamp = &timeStampBig
 	c.applyPriceData(ctx, &cctpEvent, usdcCoinGeckoID)
 
-	fmt.Printf("returning cctpEvent: %v\n", cctpEvent)
 	return cctpEvent, nil
 }
 
@@ -115,8 +114,6 @@ func (c *CCTPParser) applyPriceData(ctx context.Context, cctpEvent *model.CCTPEv
 
 // eventToCCTPEvent stores a message event.
 func eventToCCTPEvent(event cctpTypes.EventLog) model.CCTPEvent {
-	fmt.Printf("eventToCCTPEvent: %v\n", event)
-	fmt.Printf("origin chain id: %v\ndest chain id: %v\n", event.GetOriginChainID(), event.GetDestinationChainID())
 	requestID := event.GetRequestID()
 	return model.CCTPEvent{
 		InsertTime:         uint64(time.Now().UnixNano()),

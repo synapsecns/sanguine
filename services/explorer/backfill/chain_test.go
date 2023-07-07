@@ -10,7 +10,6 @@ import (
 	"github.com/synapsecns/sanguine/services/explorer/consumer/parser/tokendata"
 	"github.com/synapsecns/sanguine/services/explorer/static"
 	messageBusTypes "github.com/synapsecns/sanguine/services/explorer/types/messagebus"
-	"gorm.io/gorm/logger"
 
 	"github.com/brianvoe/gofakeit/v6"
 	"github.com/ethereum/go-ethereum/common"
@@ -524,38 +523,7 @@ func (b *BackfillSuite) sendCircleTokenParity(log *types.Log, parser *parser.CCT
 		Int32: int32(parsedLog.RequestVersion),
 		Valid: true,
 	}
-	db := b.db.UNSAFE_DB()
-	db.Logger = db.Logger.LogMode(logger.Info)
-	cctpEvents := []sql.CCTPEvent{}
-	err = db.WithContext(b.GetTestContext()).Find(&cctpEvents).Error
-	Nil(b.T(), err)
-	fmt.Printf("cctpEvents in db: %v\n", cctpEvents)
-	if len(cctpEvents) > 0 {
-		ev := cctpEvents[1]
-		fmt.Printf("InsertTime: %d\n", ev.InsertTime)
-		fmt.Printf("TxHash: %s\n", ev.TxHash)
-		fmt.Printf("ContractAddress: %s\n", ev.ContractAddress)
-		fmt.Printf("BlockNumber: %d\n", ev.BlockNumber)
-		fmt.Printf("evType: %d\n", ev.EventType)
-		fmt.Printf("RequestID: %s\n", ev.RequestID)
-		fmt.Printf("OriginChainID: %v\n", ev.OriginChainID)
-		fmt.Printf("DestinationChainID: %v\n", ev.DestinationChainID)
-		fmt.Printf("Sender: %v\n", ev.Sender)
-		fmt.Printf("Nonce: %v\n", ev.Nonce)
-		fmt.Printf("BurnToken: %v\n", ev.BurnToken)
-		fmt.Printf("MintToken: %v\n", ev.MintToken)
-		fmt.Printf("SentAmount: %v\n", ev.SentAmount)
-		fmt.Printf("SentAmountUSD: %v\n", ev.SentAmountUSD)
-		fmt.Printf("ReceivedAmount: %v\n", ev.ReceivedAmount)
-		fmt.Printf("RequestVersion: %v\n", ev.RequestVersion)
-		fmt.Printf("FormattedRequest: %v\n", ev.FormattedRequest)
-		fmt.Printf("Recipient: %v\n", ev.Recipient)
-		fmt.Printf("Fee: %v\n", ev.Fee)
-		fmt.Printf("FeeUSD: %v\n", ev.FeeUSD)
-		fmt.Printf("Token: %v\n", ev.Token)
-		fmt.Printf("TimeStamp: %v\n", ev.TimeStamp)
-	}
-	events := db.WithContext(b.GetTestContext()).Model(&sql.CCTPEvent{}).
+	events := b.db.UNSAFE_DB().WithContext(b.GetTestContext()).Model(&sql.CCTPEvent{}).
 		Where(&sql.CCTPEvent{
 			ContractAddress:    log.Address.String(),
 			BlockNumber:        log.BlockNumber,
@@ -570,8 +538,6 @@ func (b *BackfillSuite) sendCircleTokenParity(log *types.Log, parser *parser.CCT
 			RequestVersion:     requestVersion,
 			// FormattedRequest:   parsedLog.FormattedRequest,
 		}).Count(&count)
-	query := b.db.UNSAFE_DB().Dialector.Explain(events.Statement.SQL.String(), events.Statement.Vars...)
-	fmt.Printf("send query: %v\n", query)
 	if events.Error != nil {
 		return fmt.Errorf("error querying for event: %w", events.Error)
 	}
@@ -614,8 +580,6 @@ func (b *BackfillSuite) receiveCircleTokenParity(log *types.Log, parser *parser.
 			Fee:             parsedLog.Fee,
 			Token:           token,
 		}).Count(&count)
-	query := b.db.UNSAFE_DB().Dialector.Explain(events.Statement.SQL.String(), events.Statement.Vars...)
-	fmt.Printf("recv query: %v\n", query)
 	if events.Error != nil {
 		return fmt.Errorf("error querying for event: %w", events.Error)
 	}
