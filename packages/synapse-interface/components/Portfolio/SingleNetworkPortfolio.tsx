@@ -177,6 +177,13 @@ const PortfolioTokenAsset = ({
     // }
   }, [isDisabled, token, balance])
 
+  const handleSendCallback = useCallback(() => {
+    if (!isDisabled) {
+      dispatch(setFromChainId(portfolioChainId))
+      dispatch(setFromToken(token))
+    }
+  }, [token, isDisabled, portfolioChainId])
+
   const handleApproveCallback = useCallback(async () => {
     if (!isDisabled && isCurrentlyConnected) {
       dispatch(setFromToken(token))
@@ -227,9 +234,11 @@ const PortfolioTokenAsset = ({
       </div>
       <div className="flex flex-row items-center w-1/3 text-left">
         <PortfolioAssetActionButton
+          token={token}
           connectedChainId={connectedChainId}
           portfolioChainId={portfolioChainId}
-          token={token}
+          sendCallback={handleSendCallback}
+          approveCallback={handleApproveCallback}
           isApproved={isApproved}
           isDisabled={isDisabled}
         />
@@ -253,61 +262,24 @@ const PortfolioTokenAsset = ({
 }
 
 type PortfolioAssetActionButtonProps = {
+  token: Token
   connectedChainId: number
   portfolioChainId: number
-  token: Token
+  sendCallback: () => void
+  approveCallback: () => Promise<void>
   isApproved: boolean
   isDisabled: boolean
 }
 
 const PortfolioAssetActionButton = ({
+  token,
   connectedChainId,
   portfolioChainId,
-  token,
+  sendCallback,
+  approveCallback,
   isApproved,
   isDisabled,
 }: PortfolioAssetActionButtonProps) => {
-  const dispatch = useDispatch()
-  const { address } = useAccount()
-  const { fetchPortfolioBalances } = usePortfolioBalancesAndAllowances()
-  const tokenAddress: string = token.addresses[connectedChainId]
-  const currentChainName: string = CHAINS_BY_ID[portfolioChainId].name
-  const isCurrentlyConnected: boolean = portfolioChainId === connectedChainId
-
-  const handleBridgeCallback = useCallback(() => {
-    if (!isDisabled) {
-      dispatch(setFromChainId(portfolioChainId))
-      dispatch(setFromToken(token))
-    }
-  }, [token, isDisabled, portfolioChainId])
-
-  const handleApproveCallback = useCallback(async () => {
-    if (!isDisabled && isCurrentlyConnected) {
-      dispatch(setFromToken(token))
-      await approveToken(ROUTER_ADDRESS, connectedChainId, tokenAddress).then(
-        (success) => {
-          success && fetchPortfolioBalances()
-        }
-      )
-    } else {
-      toast.error(
-        `Connect to ${currentChainName} network to approve ${token.symbol} token`,
-        {
-          id: 'approve-in-progress-popup',
-          duration: Infinity,
-        }
-      )
-    }
-  }, [
-    token,
-    address,
-    tokenAddress,
-    connectedChainId,
-    portfolioChainId,
-    isCurrentlyConnected,
-    isDisabled,
-  ])
-
   const buttonClassName = `
     flex ml-auto justify-center
     py-1 px-6 ml-2 rounded-3xl
@@ -325,7 +297,7 @@ const PortfolioAssetActionButton = ({
             hover:bg-[#272731]
             active:opacity-[67%]
           `}
-          onClick={handleBridgeCallback}
+          onClick={sendCallback}
         >
           Send
         </button>
@@ -340,7 +312,7 @@ const PortfolioAssetActionButton = ({
             active:border-[#A3A3C2]
             active:opacity-[67%]
           `}
-          onClick={handleApproveCallback}
+          onClick={approveCallback}
         >
           Approve
         </button>
