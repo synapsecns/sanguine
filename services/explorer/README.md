@@ -1,5 +1,9 @@
 # Explorer
 
+[![Go Reference](https://pkg.go.dev/badge/github.com/synapsecns/sanguine/services/explorer.svg)](https://pkg.go.dev/github.com/synapsecns/sanguine/services/explorer)
+[![Go Report Card](https://goreportcard.com/badge/github.com/synapsecns/sanguine/services/explorer)](https://goreportcard.com/report/github.com/synapsecns/sanguine/services/explorer)
+
+
 <!-- TODO: explain the two parts: indexer and server, etc-->
 
 See [#167](https://github.com/synapsecns/sanguine/issues/167) to learn more.
