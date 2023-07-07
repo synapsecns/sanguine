@@ -1,4 +1,4 @@
-import { Contract, BigNumber } from 'ethers'
+import { Contract } from 'ethers'
 import { AddressZero } from '@ethersproject/constants'
 import { Address } from 'wagmi'
 import { getWalletClient } from '@wagmi/core'
@@ -15,14 +15,14 @@ import { walletClientToSigner } from '@/ethers'
 
 export const approve = async (
   pool: Token,
-  inputValue: BigNumber,
+  inputValue: bigint,
   chainId: number
 ) => {
   const currentChainName = CHAINS_BY_ID[chainId].name
   let pendingPopup: any
   let successPopup: any
 
-  if (inputValue.isZero()) {
+  if (inputValue === 0n) {
     return
   }
 
@@ -74,7 +74,7 @@ export const stake = async (
   address: Address,
   chainId: number,
   poolId: number,
-  inputValue: BigNumber
+  inputValue: bigint
 ) => {
   let pendingPopup: any
   let successPopup: any

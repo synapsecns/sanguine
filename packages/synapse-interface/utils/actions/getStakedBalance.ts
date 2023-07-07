@@ -44,7 +44,7 @@ export const getStakedBalance = async (
       reward: pendingSynapse?.result ?? 0n,
     }
   } catch (error) {
-    console.error('Error from useStakedBalance: ', error)
+    console.error('Error from getStakedBalance: ', error)
     return { amount: 0n, reward: 0n }
   }
 }

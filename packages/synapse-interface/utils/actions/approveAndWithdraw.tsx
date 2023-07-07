@@ -4,12 +4,10 @@ import {
   useSwapDepositContract,
 } from '@hooks/useSwapDepositContract'
 import ExplorerToastLink from '@components/ExplorerToastLink'
-import { subtractSlippage, subtractSlippageBigInt } from '@utils/slippage'
+import { subtractSlippageBigInt } from '@utils/slippage'
 import { txErrorHandler } from '@utils/txErrorHandler'
 import { approveToken } from '@utils/approveToken'
 import { Token } from '@types'
-import { BigNumber } from 'ethers'
-import { Zero } from '@ethersproject/constants'
 import toast from 'react-hot-toast'
 
 export const approve = async (

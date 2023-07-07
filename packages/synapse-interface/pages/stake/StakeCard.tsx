@@ -1,6 +1,4 @@
 import { useState, useEffect } from 'react'
-import { formatUnits } from '@ethersproject/units'
-import { Zero } from '@ethersproject/constants'
 import { Address } from '@wagmi/core'
 
 import { usePendingTxWrapper } from '@/utils/hooks/usePendingTxWrapper'
@@ -10,12 +8,9 @@ import { approve, stake } from '@/utils/actions/approveAndStake'
 import { useTokenBalance } from '@/utils/hooks/useTokenBalance'
 import { withdrawStake } from '@/utils/actions/withdrawStake'
 import { getTokenOnChain } from '@/utils/hooks/useTokenInfo'
-import { commifyBnToString } from '@/utils/bignumber/format'
 import { cleanNumberInput } from '@/utils/cleanNumberInput'
 import { claimStake } from '@/utils/actions/claimStake'
 import { usePrices } from '@/utils/actions/getPrices'
-import { smartParseUnits } from '@/utils/bignumber'
-import { BigNumber } from '@ethersproject/bignumber'
 import { Token } from '@/utils/types'
 
 import { MINICHEF_ADDRESSES } from '@/constants/minichef'
@@ -29,6 +24,7 @@ import Card from '@/components/ui/tailwind/Card'
 import InfoSection from '../pool/PoolInfoSection/InfoSection'
 import StakeCardTitle from './StakeCardTitle'
 import { formatBigIntToString } from '@/utils/bigint/format'
+import { stringToBigInt } from '@/utils/stringToBigNum'
 
 interface StakeCardProps {
   address: string
@@ -44,13 +40,14 @@ const StakeCard = ({ address, chainId, pool }: StakeCardProps) => {
 
   // TODO get rid of this hook
   const balance = useTokenBalance(pool)
-  const lpTokenBalance = balance?.data?.value ?? 0n
+
+  const lpTokenBalance = BigInt(balance?.data?.value) ?? 0n
 
   const prices = usePrices(chainId)
-  const [deposit, setDeposit] = useState({ str: '', bn: Zero })
-  const [withdraw, setWithdraw] = useState('')
-  const [showStake, setShowStake] = useState(true)
-  const [allowance, setAllowance] = useState(Zero)
+  const [deposit, setDeposit] = useState({ str: '', bi: 0n })
+  const [withdraw, setWithdraw] = useState<string>('')
+  const [showStake, setShowStake] = useState<boolean>(true)
+  const [allowance, setAllowance] = useState<bigint>(0n)
   const [isPending, pendingTxWrapFunc] = usePendingTxWrapper()
   const [isPendingStake, pendingStakeTxWrapFunc] = usePendingTxWrapper()
   const [isPendingUnstake, pendingUnstakeTxWrapFunc] = usePendingTxWrapper()
@@ -144,16 +141,16 @@ const StakeCard = ({ address, chainId, pool }: StakeCardProps) => {
           </div>
         </InfoSection>
       </Card>
-      {userStakeData.reward == BigInt(0) ? null : (
+      {userStakeData.reward === BigInt(0) ? null : (
         <Button
           disabled={userStakeData.reward === 0n}
           className={`
-          w-full  my-2 px-4 py-3 tracking-wide
-          hover:opacity-80 disabled:opacity-100
-          disabled:from-bgLight disabled:to-bgLight
-          bg-gradient-to-r from-[#CF52FE] to-[#AC8FFF]
-          ${isPending && 'from-[#622e71] to-[#564071]'}
-        `}
+            w-full  my-2 px-4 py-3 tracking-wide
+            hover:opacity-80 disabled:opacity-100
+            disabled:from-bgLight disabled:to-bgLight
+            bg-gradient-to-r from-[#CF52FE] to-[#AC8FFF]
+            ${isPending && 'from-[#622e71] to-[#564071]'}
+          `}
           onClick={() =>
             pendingTxWrapFunc(claimStake(chainId, address, stakingPoolId))
           }
@@ -194,14 +191,13 @@ const StakeCard = ({ address, chainId, pool }: StakeCardProps) => {
             buttonLabel={
               lpTokenBalance === 0n
                 ? 'Insufficient Balance'
-                : allowance.lt(deposit.bn)
+                : allowance < deposit.bi
                 ? `Approve ${pool?.symbol}`
                 : 'Stake'
             }
             buttonWidth="w-full"
             loadingLabel={isPendingApprove ? 'Approving' : 'Staking'}
             isConnected={Boolean(address)}
-            // balanceStr={commifyBnToString(lpTokenBalance, 2)}
             balanceStr={formatBigIntToString(
               lpTokenBalance,
               tokenInfo.decimals,
@@ -210,10 +206,10 @@ const StakeCard = ({ address, chainId, pool }: StakeCardProps) => {
             onClickBalance={() => {
               setDeposit({
                 str: lpTokenBalance.toString(),
-                bn: BigNumber.from(lpTokenBalance.toString()),
+                bi: lpTokenBalance,
               })
             }}
-            value={deposit.str}
+            value={formatBigIntToString(deposit.bi, tokenInfo.decimals)}
             placeholder={'0.0'}
             onChange={async (e) => {
               let val = cleanNumberInput(e.target.value)
@@ -226,16 +222,16 @@ const StakeCard = ({ address, chainId, pool }: StakeCardProps) => {
               setAllowance(tkAllowance)
               setDeposit({
                 str: val,
-                bn: smartParseUnits(val, pool.decimals[chainId]),
+                bi: stringToBigInt(val, pool.decimals[chainId]),
               })
             }}
             disabled={lpTokenBalance === 0n || deposit.str === ''}
             isPending={isPendingStake || isPendingApprove}
             onClickEnter={
-              allowance.lt(deposit.bn)
+              allowance < deposit.bi
                 ? async (e) => {
                     const tx = await pendingApproveTxWrapFunc(
-                      approve(pool, deposit.bn, chainId)
+                      approve(pool, deposit.bi, chainId)
                     )
 
                     setTx(tx?.hash)
@@ -246,11 +242,11 @@ const StakeCard = ({ address, chainId, pool }: StakeCardProps) => {
                         address as Address,
                         chainId,
                         stakingPoolId,
-                        deposit.bn
+                        deposit.bi
                       )
                     )
                     if (tx?.status === 1) {
-                      setDeposit({ bn: Zero, str: '' })
+                      setDeposit({ bi: 0n, str: '' })
                     }
                   }
             }
@@ -271,7 +267,13 @@ const StakeCard = ({ address, chainId, pool }: StakeCardProps) => {
               4
             )}
             onClickBalance={() => {
-              setWithdraw(userStakeData.amount.toString())
+              setWithdraw(
+                formatBigIntToString(
+                  userStakeData.amount,
+                  tokenInfo.decimals,
+                  4
+                )
+              )
             }}
             value={withdraw}
             placeholder={'0.0'}
@@ -279,7 +281,7 @@ const StakeCard = ({ address, chainId, pool }: StakeCardProps) => {
               let val = cleanNumberInput(e.target.value)
               setWithdraw(val)
             }}
-            disabled={userStakeData.amount === 0n || withdraw == ''}
+            disabled={userStakeData.amount === 0n || withdraw === ''}
             isPending={isPendingUnstake}
             onClickEnter={async () => {
               const tx = await pendingUnstakeTxWrapFunc(
@@ -287,7 +289,7 @@ const StakeCard = ({ address, chainId, pool }: StakeCardProps) => {
                   address as Address,
                   chainId,
                   stakingPoolId,
-                  smartParseUnits(withdraw, 18)
+                  stringToBigInt(withdraw, 18)
                 )
               )
               if (tx?.status === 1) {

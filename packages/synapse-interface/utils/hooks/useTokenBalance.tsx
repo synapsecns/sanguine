@@ -6,12 +6,10 @@ export const useTokenBalance = (token: Token) => {
   const { address } = useAccount()
 
   const tokenAddress = token && chain && token.addresses[chain.id]
-  const addressWithoutHex = tokenAddress && tokenAddress.substring(2)
-  const formattedAddress: Address = `0x${addressWithoutHex}`
 
   const balance = useBalance({
     address: address,
-    token: formattedAddress,
+    token: tokenAddress as Address,
     chainId: chain && chain.id,
     watch: true,
   })

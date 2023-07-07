@@ -2,7 +2,7 @@ import { Address } from 'wagmi'
 import toast from 'react-hot-toast'
 
 import { MINICHEF_ADDRESSES } from '@/constants/minichef'
-import {MINICHEF_ABI} from '@/constants/abis/miniChef'
+import { MINICHEF_ABI } from '@/constants/abis/miniChef'
 
 import { BigNumber, Contract } from 'ethers'
 import ExplorerToastLink from '@/components/ExplorerToastLink'
@@ -14,7 +14,7 @@ export const withdrawStake = async (
   address: Address,
   chainId: number,
   poolId: number,
-  inputValue: BigNumber
+  inputValue: bigint
 ) => {
   const wallet = await getWalletClient({
     chainId,
