@@ -33,4 +33,5 @@ func NewArbGasInfoRef(address common.Address, backend bind.ContractBackend) (IAr
 // IArbGasInfo is a thin wrapper around ArbGasInfoCaller that allows interfacing with the contract.
 type IArbGasInfo interface {
 	IArbGasInfoCaller
+	IArbGasInfoTransactor
 }
