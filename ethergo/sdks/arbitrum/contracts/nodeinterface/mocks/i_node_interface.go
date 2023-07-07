@@ -18,6 +18,22 @@ type INodeInterface struct {
 	mock.Mock
 }
 
+// Address provides a mock function with given fields:
+func (_m *INodeInterface) Address() common.Address {
+	ret := _m.Called()
+
+	var r0 common.Address
+	if rf, ok := ret.Get(0).(func() common.Address); ok {
+		r0 = rf()
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).(common.Address)
+		}
+	}
+
+	return r0
+}
+
 // ConstructOutboxProof provides a mock function with given fields: opts, size, leaf
 func (_m *INodeInterface) ConstructOutboxProof(opts *bind.CallOpts, size uint64, leaf uint64) (struct {
 	Send  [32]byte
