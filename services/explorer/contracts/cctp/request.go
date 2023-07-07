@@ -1,6 +1,7 @@
 package cctp
 
 import (
+	"fmt"
 	"math/big"
 
 	"github.com/ethereum/go-ethereum/common"
@@ -126,7 +127,9 @@ func (s SynapseCCTPCircleRequestFulfilled) GetRequestID() [32]byte {
 
 // GetOriginChainID gets the origin chain ID for the event.
 func (s SynapseCCTPCircleRequestFulfilled) GetOriginChainID() *big.Int {
-	return big.NewInt(int64(s.OriginDomain))
+	bi := big.NewInt(int64(s.OriginDomain))
+	fmt.Printf("get fulfilled origin chain id from raw %v, bigint: %v\n", s.OriginDomain, bi)
+	return bi
 }
 
 // GetDestinationChainID gets the destination chain ID for the event.

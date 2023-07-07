@@ -90,29 +90,33 @@ func (c *CCTPParser) Parse(ctx context.Context, log ethTypes.Log, chainID uint32
 	// If we have a timestamp, populate the following attributes of cctpEvent.
 	timeStampBig := uint64(*timeStamp)
 	cctpEvent.TimeStamp = &timeStampBig
+	c.applyPriceData(ctx, &cctpEvent, usdcCoinGeckoID)
 
-	err = c.applyPriceData(ctx, &cctpEvent, usdcCoinGeckoID)
-	if err != nil {
-		return nil, fmt.Errorf("could not apply price data: %w", err)
-	}
-
+	fmt.Printf("returning cctpEvent: %v\n", cctpEvent)
 	return cctpEvent, nil
 }
 
 // applyPriceData applies price data to the cctp event, setting USD values.
-func (c *CCTPParser) applyPriceData(ctx context.Context, cctpEvent *model.CCTPEvent, coinGeckoID string) error {
+func (c *CCTPParser) applyPriceData(ctx context.Context, cctpEvent *model.CCTPEvent, coinGeckoID string) {
 	tokenPrice := c.tokenPriceService.GetPriceData(ctx, int(*cctpEvent.TimeStamp), coinGeckoID)
 	if (tokenPrice == nil) && coinGeckoID != noTokenID && coinGeckoID != noPrice {
-		return fmt.Errorf("CCTP could not get token price for coingeckotoken:  %s txhash %s %d", coinGeckoID, cctpEvent.TxHash, cctpEvent.TimeStamp)
+		logger.Warnf("CCTP could not get token price for coingeckotoken; assuming price of 1:  %s txhash %s %d", coinGeckoID, cctpEvent.TxHash, cctpEvent.TimeStamp)
+		one := 1.0
+		tokenPrice = &one
 	}
 
-	cctpEvent.SentAmountUSD = GetAmountUSD(cctpEvent.SentAmount, usdcDecimals, tokenPrice)
-	cctpEvent.FeeUSD = GetAmountUSD(cctpEvent.Fee, usdcDecimals, tokenPrice)
-	return nil
+	if cctpEvent.SentAmount != nil {
+		cctpEvent.SentAmountUSD = GetAmountUSD(cctpEvent.SentAmount, usdcDecimals, tokenPrice)
+	}
+	if cctpEvent.Fee != nil {
+		cctpEvent.FeeUSD = GetAmountUSD(cctpEvent.Fee, usdcDecimals, tokenPrice)
+	}
 }
 
 // eventToCCTPEvent stores a message event.
 func eventToCCTPEvent(event cctpTypes.EventLog) model.CCTPEvent {
+	fmt.Printf("eventToCCTPEvent: %v\n", event)
+	fmt.Printf("origin chain id: %v\ndest chain id: %v\n", event.GetOriginChainID(), event.GetDestinationChainID())
 	requestID := event.GetRequestID()
 	return model.CCTPEvent{
 		InsertTime:         uint64(time.Now().UnixNano()),

@@ -10,6 +10,7 @@ import (
 	"github.com/synapsecns/sanguine/services/explorer/consumer/parser/tokendata"
 	"github.com/synapsecns/sanguine/services/explorer/static"
 	messageBusTypes "github.com/synapsecns/sanguine/services/explorer/types/messagebus"
+	"gorm.io/gorm/logger"
 
 	"github.com/brianvoe/gofakeit/v6"
 	"github.com/ethereum/go-ethereum/common"
@@ -300,20 +301,20 @@ func (b *BackfillSuite) TestBackfill() {
 	Nil(b.T(), err)
 
 	// Store every cctp event.
-	mockRequestID := func() [32]byte {
-		var requestID [32]byte
-		requestIDBytes := common.Hex2Bytes(mocks.NewMockHash(b.T()).String())
-		copy(requestID[:], requestIDBytes)
-		return requestID
-	}
-	requestTx, err := cctpRef.TestSendCircleToken(transactOpts.TransactOpts, testChainID, common.BigToAddress(big.NewInt(gofakeit.Int64())), 1, common.BigToAddress(big.NewInt(gofakeit.Int64())), big.NewInt(gofakeit.Int64()), 1, []byte(gofakeit.Paragraph(2, 5, 30, " ")), mockRequestID())
+	var requestID [32]byte
+	requestIDBytes := common.Hex2Bytes(mocks.NewMockHash(b.T()).String())
+	copy(requestID[:], requestIDBytes)
+
+	requestSentTx, err := cctpRef.TestSendCircleToken(transactOpts.TransactOpts, testChainID, common.BigToAddress(big.NewInt(gofakeit.Int64())), 1, common.BigToAddress(big.NewInt(gofakeit.Int64())), big.NewInt(gofakeit.Int64()), 1, []byte(gofakeit.Paragraph(2, 5, 30, " ")), requestID)
 	Nil(b.T(), err)
-	requestSentLog, err := b.storeTestLog(requestTx, uint32(testChainID.Uint64()), 8)
+	b.storeEthTx(requestSentTx, testChainID, big.NewInt(int64(5)), 5)
+	requestSentLog, err := b.storeTestLog(requestSentTx, uint32(testChainID.Uint64()), 5)
 	Nil(b.T(), err)
 
-	requestTx, err = cctpRef.TestReceiveCircleToken(transactOpts.TransactOpts, uint32(testChainID.Int64()), common.BigToAddress(big.NewInt(gofakeit.Int64())), common.BigToAddress(big.NewInt(gofakeit.Int64())), big.NewInt(gofakeit.Int64()), common.BigToAddress(big.NewInt(gofakeit.Int64())), big.NewInt(gofakeit.Int64()), mockRequestID())
+	requestFulfilledTx, err := cctpRef.TestReceiveCircleToken(transactOpts.TransactOpts, uint32(testChainID.Int64()), common.BigToAddress(big.NewInt(gofakeit.Int64())), common.BigToAddress(big.NewInt(gofakeit.Int64())), big.NewInt(gofakeit.Int64()), common.BigToAddress(big.NewInt(gofakeit.Int64())), big.NewInt(gofakeit.Int64()), requestID)
 	Nil(b.T(), err)
-	requestFulfilledLog, err := b.storeTestLog(requestTx, uint32(testChainID.Uint64()), 8)
+	b.storeEthTx(requestFulfilledTx, testChainID, big.NewInt(int64(6)), 6)
+	requestFulfilledLog, err := b.storeTestLog(requestFulfilledTx, uint32(testChainID.Uint64()), 6)
 	Nil(b.T(), err)
 
 	// Go through each contract and save the end height in scribe
@@ -523,7 +524,38 @@ func (b *BackfillSuite) sendCircleTokenParity(log *types.Log, parser *parser.CCT
 		Int32: int32(parsedLog.RequestVersion),
 		Valid: true,
 	}
-	events := b.db.UNSAFE_DB().WithContext(b.GetTestContext()).Model(&sql.CCTPEvent{}).
+	db := b.db.UNSAFE_DB()
+	db.Logger = db.Logger.LogMode(logger.Info)
+	cctpEvents := []sql.CCTPEvent{}
+	err = db.WithContext(b.GetTestContext()).Find(&cctpEvents).Error
+	Nil(b.T(), err)
+	fmt.Printf("cctpEvents in db: %v\n", cctpEvents)
+	if len(cctpEvents) > 0 {
+		ev := cctpEvents[1]
+		fmt.Printf("InsertTime: %d\n", ev.InsertTime)
+		fmt.Printf("TxHash: %s\n", ev.TxHash)
+		fmt.Printf("ContractAddress: %s\n", ev.ContractAddress)
+		fmt.Printf("BlockNumber: %d\n", ev.BlockNumber)
+		fmt.Printf("evType: %d\n", ev.EventType)
+		fmt.Printf("RequestID: %s\n", ev.RequestID)
+		fmt.Printf("OriginChainID: %v\n", ev.OriginChainID)
+		fmt.Printf("DestinationChainID: %v\n", ev.DestinationChainID)
+		fmt.Printf("Sender: %v\n", ev.Sender)
+		fmt.Printf("Nonce: %v\n", ev.Nonce)
+		fmt.Printf("BurnToken: %v\n", ev.BurnToken)
+		fmt.Printf("MintToken: %v\n", ev.MintToken)
+		fmt.Printf("SentAmount: %v\n", ev.SentAmount)
+		fmt.Printf("SentAmountUSD: %v\n", ev.SentAmountUSD)
+		fmt.Printf("ReceivedAmount: %v\n", ev.ReceivedAmount)
+		fmt.Printf("RequestVersion: %v\n", ev.RequestVersion)
+		fmt.Printf("FormattedRequest: %v\n", ev.FormattedRequest)
+		fmt.Printf("Recipient: %v\n", ev.Recipient)
+		fmt.Printf("Fee: %v\n", ev.Fee)
+		fmt.Printf("FeeUSD: %v\n", ev.FeeUSD)
+		fmt.Printf("Token: %v\n", ev.Token)
+		fmt.Printf("TimeStamp: %v\n", ev.TimeStamp)
+	}
+	events := db.WithContext(b.GetTestContext()).Model(&sql.CCTPEvent{}).
 		Where(&sql.CCTPEvent{
 			ContractAddress:    log.Address.String(),
 			BlockNumber:        log.BlockNumber,
@@ -536,8 +568,10 @@ func (b *BackfillSuite) sendCircleTokenParity(log *types.Log, parser *parser.CCT
 			BurnToken:          burnToken,
 			SentAmount:         parsedLog.Amount,
 			RequestVersion:     requestVersion,
-			FormattedRequest:   parsedLog.FormattedRequest,
+			// FormattedRequest:   parsedLog.FormattedRequest,
 		}).Count(&count)
+	query := b.db.UNSAFE_DB().Dialector.Explain(events.Statement.SQL.String(), events.Statement.Vars...)
+	fmt.Printf("send query: %v\n", query)
 	if events.Error != nil {
 		return fmt.Errorf("error querying for event: %w", events.Error)
 	}
@@ -555,7 +589,7 @@ func (b *BackfillSuite) receiveCircleTokenParity(log *types.Log, parser *parser.
 	}
 	var count int64
 	mintToken := gosql.NullString{
-		String: parsedLog.Token.String(),
+		String: parsedLog.MintToken.String(),
 		Valid:  true,
 	}
 	recipient := gosql.NullString{
@@ -580,6 +614,8 @@ func (b *BackfillSuite) receiveCircleTokenParity(log *types.Log, parser *parser.
 			Fee:             parsedLog.Fee,
 			Token:           token,
 		}).Count(&count)
+	query := b.db.UNSAFE_DB().Dialector.Explain(events.Statement.SQL.String(), events.Statement.Vars...)
+	fmt.Printf("recv query: %v\n", query)
 	if events.Error != nil {
 		return fmt.Errorf("error querying for event: %w", events.Error)
 	}
@@ -1694,3 +1730,5 @@ func (b *BackfillSuite) callRevertedParity(log *types.Log, parser *parser.Messag
 	Equal(b.T(), parsedLog.Reason, storedLog.RevertedReason.String)
 	return nil
 }
+
+// SELECT count(*) FROM `cctp_events` WHERE `cctp_events`.`tx_hash` = '0xd988e7ad73dc887ec02f21bf17be91453fbc4ff163013ba67f913489c2f8a19c' AND `cctp_events`.`contract_address` = '0xCE500B519b35e1d88Aa808b66e46C29666C077A4' AND `cctp_events`.`block_number` = 8 AND `cctp_events`.`request_id` = '0000000000000000000000000000000000000000000000000000000000000000' AND `cctp_events`.`destination_chain_id` = '1337' AND `cctp_events`.`sender` = '0x000000000000000000000000464014EcbB909ac1' AND `cctp_events`.`nonce` = 1 AND `cctp_events`.`burn_token` = '0x0000000000000000000000001F09eb3A494a6a2F' AND `cctp_events`.`sent_amount` = '115792089237316195423570985008687907853269984665640564039451770876818641476562' AND `cctp_events`.`request_version` = 1 AND `cctp_events`.`formatted_request` = 'Gas democracy rest suspect shoot election island measure culture name waste spring cope promise pound proceed passage tax approach switch seek score vision exclude have heat sir ride determine dare. Enter realize eat offer present conversation benefit significance time bank grant choose half spend collect complain voice succeed demand recall organise look court president difference present become faith kill implement. Treat employ satisfy couple empire treat beat green distinguish lady space speech comment find weather affect demand handle cancer run marry tend labour iron strike breath deliver motor addition cross. Overcome co section attention capital prefer quarter money dress touch reduction definition guarantee product ensure gas agency exercise right happen define spot mind agency begin extent glass village wall period. Passage expect plate factor mix avoid head finish claim duty majority intend bag avoid new borrow encourage text drive search design oxford property policy efficiency profit birth receive mass examine. Recognize thank worry reach operate live accommodate bob theatre select clean hang guy release welcome drive observe constitute close thing borrow unemployment mind dinner garden answer carry captain describe recognise. Maintenance lack borrow self construct sing committee assume art partner week improve promote contrast drink report of bother write hit drink revenue judge hole buy water drive desk other measure. Meat provision heat distinguish championship discover set cross exist east achieve name business stage focus discuss block worry stand impose last top hear act restore need background focus afternoon explain. Stick air assistance shoulder of surprise in receive put thing purpose boy prove property recognize force dare summer face open public step school stand co branch happen support achieve population. Husband feature teacher valley report hell exclude student difference dream fit mind stretch representation loan ability deserve president reader compete music trouble sex curriculum debt answer code win press hate.'
