@@ -28,6 +28,7 @@ import Card from '@/components/ui/tailwind/Card'
 
 import InfoSection from '../pool/PoolInfoSection/InfoSection'
 import StakeCardTitle from './StakeCardTitle'
+import { formatBigIntToString } from '@/utils/bigint/format'
 
 interface StakeCardProps {
   address: string
@@ -43,7 +44,7 @@ const StakeCard = ({ address, chainId, pool }: StakeCardProps) => {
 
   // TODO get rid of this hook
   const balance = useTokenBalance(pool)
-  const lpTokenBalance = balance?.data?.value ?? Zero
+  const lpTokenBalance = balance?.data?.value ?? 0n
 
   const prices = usePrices(chainId)
   const [deposit, setDeposit] = useState({ str: '', bn: Zero })
@@ -64,6 +65,7 @@ const StakeCard = ({ address, chainId, pool }: StakeCardProps) => {
     if (!address || !chainId || stakingPoolId === null) return
     getStakedBalance(address as Address, chainId, stakingPoolId)
       .then((data) => {
+        console.log(`user stake data`, data)
         setUserStakeData(data)
       })
       .catch((err) => {
@@ -107,7 +109,13 @@ const StakeCard = ({ address, chainId, pool }: StakeCardProps) => {
             <div className="flex items-center justify-between my-2 text-sm font-medium text-white">
               <div>Unstaked</div>
               <div>
-                {lpTokenBalance.toString()}{' '}
+                {lpTokenBalance === 0n
+                  ? '\u2212'
+                  : formatBigIntToString(
+                      lpTokenBalance,
+                      tokenInfo.decimals,
+                      4
+                    )}{' '}
                 <span className="text-[#88818C]">LP</span>
               </div>
             </div>
@@ -116,7 +124,11 @@ const StakeCard = ({ address, chainId, pool }: StakeCardProps) => {
             <div className="flex items-center justify-between my-2 text-sm font-medium text-white">
               <div>Staked</div>
               <div>
-                {userStakeData.amount.toString()}{' '}
+                {formatBigIntToString(
+                  userStakeData.amount,
+                  tokenInfo.decimals,
+                  4
+                )}{' '}
                 <span className="text-[#88818C]">LP</span>
               </div>
             </div>
@@ -125,7 +137,7 @@ const StakeCard = ({ address, chainId, pool }: StakeCardProps) => {
             <div className="flex items-center justify-between my-2 text-sm font-medium text-white">
               <div>SYN Earned</div>
               <div className="text-green-400">
-                {userStakeData.reward.toString()}{' '}
+                {formatBigIntToString(userStakeData.reward, 18, 8)}{' '}
                 <span className="text-[#88818C]">SYN</span>
               </div>
             </div>
@@ -180,7 +192,7 @@ const StakeCard = ({ address, chainId, pool }: StakeCardProps) => {
             showButton={true}
             title={pool?.symbol}
             buttonLabel={
-              lpTokenBalance == 0n
+              lpTokenBalance === 0n
                 ? 'Insufficient Balance'
                 : allowance.lt(deposit.bn)
                 ? `Approve ${pool?.symbol}`
@@ -190,7 +202,11 @@ const StakeCard = ({ address, chainId, pool }: StakeCardProps) => {
             loadingLabel={isPendingApprove ? 'Approving' : 'Staking'}
             isConnected={Boolean(address)}
             // balanceStr={commifyBnToString(lpTokenBalance, 2)}
-            balanceStr={lpTokenBalance.toString()}
+            balanceStr={formatBigIntToString(
+              lpTokenBalance,
+              tokenInfo.decimals,
+              4
+            )}
             onClickBalance={() => {
               setDeposit({
                 str: lpTokenBalance.toString(),
@@ -213,7 +229,7 @@ const StakeCard = ({ address, chainId, pool }: StakeCardProps) => {
                 bn: smartParseUnits(val, pool.decimals[chainId]),
               })
             }}
-            disabled={lpTokenBalance == 0n || deposit.str == ''}
+            disabled={lpTokenBalance === 0n || deposit.str === ''}
             isPending={isPendingStake || isPendingApprove}
             onClickEnter={
               allowance.lt(deposit.bn)
@@ -227,7 +243,7 @@ const StakeCard = ({ address, chainId, pool }: StakeCardProps) => {
                 : async (e) => {
                     const tx = await pendingStakeTxWrapFunc(
                       stake(
-                        `0x${address.slice(2)}`,
+                        address as Address,
                         chainId,
                         stakingPoolId,
                         deposit.bn
@@ -249,7 +265,11 @@ const StakeCard = ({ address, chainId, pool }: StakeCardProps) => {
             buttonWidth="w-full"
             loadingLabel="Unstaking"
             isConnected={Boolean(address)}
-            balanceStr={userStakeData.amount.toString()}
+            balanceStr={formatBigIntToString(
+              userStakeData.amount,
+              tokenInfo.decimals,
+              4
+            )}
             onClickBalance={() => {
               setWithdraw(userStakeData.amount.toString())
             }}
@@ -264,7 +284,7 @@ const StakeCard = ({ address, chainId, pool }: StakeCardProps) => {
             onClickEnter={async () => {
               const tx = await pendingUnstakeTxWrapFunc(
                 withdrawStake(
-                  `0x${address.slice(2)}`,
+                  address as Address,
                   chainId,
                   stakingPoolId,
                   smartParseUnits(withdraw, 18)

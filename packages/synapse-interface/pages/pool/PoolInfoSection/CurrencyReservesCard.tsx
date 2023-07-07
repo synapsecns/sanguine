@@ -57,7 +57,7 @@ function CurrencyInfoListItem({ chainId, percent, balance, token }) {
             formatBigIntToString(
               stringToBigInt(`${balance}`, token.decimals[chainId]),
               token.decimals[chainId],
-              2
+              -1
             )
           )}
           label={symbol}

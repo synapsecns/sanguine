@@ -63,7 +63,7 @@ const PoolInfoSection = ({
                       pool.decimals[chainId]
                     ),
                     18,
-                    2
+                    -1
                   )
                 )}
                 label={pool.priceUnits}

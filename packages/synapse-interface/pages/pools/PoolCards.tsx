@@ -3,7 +3,7 @@ import { Tab } from '@headlessui/react'
 import _ from 'lodash'
 import LoadingPoolCard from '@components/loading/LoadingPoolCard'
 
-import PoolsListCard from './PoolCard'
+import PoolCard from './PoolCard'
 import { PageHeader } from '@components/PageHeader'
 import { memo, useEffect, useState } from 'react'
 import {
@@ -12,6 +12,7 @@ import {
   getAvaxPrice,
 } from '@/utils/actions/getPrices'
 import { PoolCardInfo } from '@types'
+
 const PoolCards = memo(
   ({
     arr,
@@ -100,7 +101,7 @@ const PoolCards = memo(
                       poolsByChain[connectedChainId]?.length > 0 &&
                       poolsByChain[connectedChainId].map((pool) => {
                         return (
-                          <PoolsListCard
+                          <PoolCard
                             key={pool?.poolName}
                             pool={pool}
                             chainId={connectedChainId}
@@ -126,7 +127,7 @@ const PoolCards = memo(
                             poolsByChain[otherChainId]?.length > 0 &&
                             poolsByChain[otherChainId].map((pool) => {
                               return (
-                                <PoolsListCard
+                                <PoolCard
                                   key={pool?.poolName}
                                   pool={pool}
                                   chainId={Number(otherChainId)}

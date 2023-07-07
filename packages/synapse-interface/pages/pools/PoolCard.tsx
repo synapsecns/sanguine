@@ -46,7 +46,7 @@ const PoolCard = memo(
           })
         getPoolApyData(chainId, pool, prices)
           .then((res) => {
-            console.log(`get pool apy data`, res)
+            // console.log(`get pool apy data`, res)
             setPoolApyData(res)
           })
           .catch((err) => {

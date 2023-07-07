@@ -1,8 +1,17 @@
 import { readContracts, ReadContractResult, Address } from '@wagmi/core'
-import { Zero } from '@ethersproject/constants'
 import { MINICHEF_ABI } from '@abis/miniChef'
 
 import { MINICHEF_ADDRESSES } from '@/constants/minichef'
+
+type UserInfoResponse = {
+  result: [bigint, bigint]
+  status: string
+}
+
+type PendingSynapseResponse = {
+  result: bigint
+  status: string
+}
 
 export const getStakedBalance = async (
   address: Address,
@@ -28,9 +37,17 @@ export const getStakedBalance = async (
       ],
     })
 
-    return { amount: data[0]?.amount ?? Zero, reward: data[1] ?? Zero }
+    console.log(`in get staked baalnce`, data)
+
+    const userInfo: UserInfoResponse = data[0]
+    const pendingSynapse: PendingSynapseResponse = data[1]
+
+    return {
+      amount: userInfo?.result[0] ?? 0n,
+      reward: pendingSynapse?.result ?? 0n,
+    }
   } catch (error) {
     console.error('Error from useStakedBalance: ', error)
-    return { amount: Zero, reward: Zero }
+    return { amount: 0n, reward: 0n }
   }
 }
