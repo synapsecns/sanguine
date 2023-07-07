@@ -3,8 +3,6 @@ import InteractiveInputRow from './InteractiveInputRow'
 import { displaySymbol } from '@utils/displaySymbol'
 import { PoolToken, PoolUserData, Token } from '@types'
 import { cleanNumberInput } from '@utils/cleanNumberInput'
-import { formatUnits } from '@ethersproject/units'
-import { BigNumber } from '@ethersproject/bignumber'
 import { formatBigIntToString } from '@/utils/bigint/format'
 
 export const DepositTokenInput = ({
@@ -18,7 +16,7 @@ export const DepositTokenInput = ({
 }: {
   token: Token
   balanceStr: string
-  rawBalance: BigNumber
+  rawBalance: bigint
   inputValueStr: string
   onChange: (v: string) => void
   chainId: number
@@ -31,7 +29,7 @@ export const DepositTokenInput = ({
       e.preventDefault()
 
       const adjustedValue = formatBigIntToString(
-        BigInt(rawBalance.toString()),
+        rawBalance,
         token.decimals[chainId]
       )
 
@@ -87,7 +85,7 @@ export const WithdrawTokenInput = ({
     (e: MouseEvent<HTMLButtonElement>) => {
       e.preventDefault()
       const adjustedValue = formatBigIntToString(
-        BigInt(poolUserData?.lpTokenBalance.toString()),
+        poolUserData?.lpTokenBalance,
         token.decimals[chainId]
       )
 

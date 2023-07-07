@@ -14,7 +14,6 @@ import {
 } from '@utils/poolDataFuncs'
 import { fetchBalance, fetchToken } from '@wagmi/core'
 import { Token, PoolUserData, PoolData } from '@types'
-// import { BigNumber } from 'ethers'
 
 import { getCorePoolData } from './getCorePoolData'
 // import { formatBigIntToString } from '@/utils/bigint/format'

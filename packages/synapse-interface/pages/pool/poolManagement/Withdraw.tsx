@@ -154,8 +154,7 @@ const Withdraw = ({
     setPercentage(percent)
     const numericalOut = poolUserData.lpTokenBalance
       ? formatBigIntToString(
-          (BigInt(poolUserData.lpTokenBalance.toString()) * BigInt(percent)) /
-            BigInt(100),
+          (poolUserData.lpTokenBalance * BigInt(percent)) / BigInt(100),
           pool.decimals[chainId]
         )
       : ''
@@ -401,9 +400,9 @@ const Withdraw = ({
         key={pool?.symbol}
         inputValueStr={inputValue.str}
         balanceStr={
-          poolUserData?.lpTokenBalanceStr
+          poolUserData?.lpTokenBalance
             ? formatBigIntToString(
-                BigInt(poolUserData?.lpTokenBalanceStr),
+                poolUserData?.lpTokenBalance,
                 pool.decimals[chainId],
                 4
               )

@@ -4,7 +4,7 @@ import toast from 'react-hot-toast'
 import { MINICHEF_ADDRESSES } from '@/constants/minichef'
 import { MINICHEF_ABI } from '@/constants/abis/miniChef'
 
-import { BigNumber, Contract } from 'ethers'
+import { Contract } from 'ethers'
 import ExplorerToastLink from '@/components/ExplorerToastLink'
 import { txErrorHandler } from '@utils/txErrorHandler'
 import { getWalletClient } from '@wagmi/core'

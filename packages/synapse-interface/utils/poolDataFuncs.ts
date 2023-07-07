@@ -1,11 +1,5 @@
-/* eslint-disable */
-import { BigNumber } from '@ethersproject/bignumber'
 import { Zero, One } from '@ethersproject/constants'
-import { formatBNToPercentString, formatBNToString } from '@bignumber/format'
-import { formatBigIntToPercentString } from '@/utils/bigint/format'
 import { zeroAddress } from 'viem'
-
-export const MAX_BN_POW = BigNumber.from(10).pow(18)
 
 export const getPriceMultiplier = ({ poolType, prices }) => {
   switch (poolType) {

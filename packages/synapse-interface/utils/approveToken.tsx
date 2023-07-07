@@ -2,7 +2,6 @@ import { erc20ABI } from 'wagmi'
 import { getWalletClient } from '@wagmi/core'
 import { Contract } from 'ethers'
 import { MaxInt256, AddressZero } from '@ethersproject/constants'
-import { BigNumber } from '@ethersproject/bignumber'
 import { CHAINS_BY_ID } from '@/constants/chains'
 import { txErrorHandler } from './txErrorHandler'
 import toast from 'react-hot-toast'
@@ -29,7 +28,11 @@ export const approveToken = async (
     chainId,
   })
 
-  const erc20 = new Contract(tokenAddress, erc20ABI, walletClientToSigner(signer))
+  const erc20 = new Contract(
+    tokenAddress,
+    erc20ABI,
+    walletClientToSigner(signer)
+  )
   try {
     const approveTx = await erc20.approve(address, amount ?? MaxInt256)
     await approveTx.wait().then((successTx) => {
@@ -58,6 +61,6 @@ export const approveToken = async (
     toast.dismiss(pendingPopup)
     console.log(`Transaction failed with error: ${error}`)
     txErrorHandler(error)
-    throw error;
+    throw error
   }
 }
