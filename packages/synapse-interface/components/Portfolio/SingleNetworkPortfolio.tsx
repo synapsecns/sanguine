@@ -400,10 +400,11 @@ const PortfolioConnectButton = ({
 
 const ConnectedButton = () => {
   const buttonClassName = `
-  flex items-center justify-end w-36
-  text-base text-white px-4 rounded-3xl
+  flex items-center justify-center
+  text-base text-white px-3 py-1 rounded-3xl
   text-center transform-gpu transition-all duration-75
-  hover:cursor-default
+  border border-solid border-transparent
+  hover:border-[#3D3D5C]
   `
 
   return (
@@ -431,9 +432,11 @@ const ConnectButton = ({ chainId }: { chainId: number }) => {
   }
 
   const buttonClassName = `
-    flex items-right justify-end w-36
-    text-base text-white px-4 rounded-3xl
+    flex items-right justify-center
+    text-base text-white px-3 py-1 rounded-3xl
     text-center transform-gpu transition-all duration-75
+    border border-solid border-transparent
+    hover:border-[#3D3D5C]
     `
 
   return (
@@ -445,9 +448,9 @@ const ConnectButton = ({ chainId }: { chainId: number }) => {
       <div className="flex flex-row text-sm">
         <div
           className={`
-          my-auto ml-auto mr-2
-          text-transparent w-2 h-2
-          border border-indigo-300 border-solid rounded-full`}
+          my-auto ml-auto mr-2 text-transparent w-2 h-2
+          border border-indigo-300 border-solid rounded-full
+          `}
         />
         Connect
       </div>
