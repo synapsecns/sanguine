@@ -34,6 +34,6 @@ func NewNodeInterfaceRef(address common.Address, backend bind.ContractBackend) (
 // INodeInterface INodeInterfaceCaller is a thin wrapper around NodeInterface that allows interfacing with the contract.
 type INodeInterface interface {
 	INodeInterfaceCaller
-	INodeInterfaceTransactor
+	//INodeInterfaceTransactor
 	vm.ContractRef
 }
