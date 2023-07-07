@@ -7,6 +7,7 @@ import (
 	"github.com/synapsecns/sanguine/ethergo/sdks/arbitrum/contracts/nodeinterface"
 )
 
+// ArbitrumSDK is an interface for interacting with the Arbitrum SDK.
 type ArbitrumSDK interface {
 	// TODO:
 }
@@ -33,7 +34,7 @@ func NewArbitrumSDK(client bind.ContractBackend, options ...ArbitrumOption) (Arb
 	if err != nil {
 		return nil, fmt.Errorf("failed to create gas info: %w", err)
 	}
-	nodeInterface.GasEstimateComponents()
+
 	return &arbitrumSDKImpl{
 		client:        client,
 		nodeInterface: nodeInterface,

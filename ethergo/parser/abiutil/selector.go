@@ -2,6 +2,7 @@ package abiutil
 
 import (
 	"fmt"
+	"github.com/ethereum/go-ethereum/accounts/abi"
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/common"
 	"strings"
@@ -58,4 +59,19 @@ func GetStringSelectorByName(name string, metadata *bind.MetaData) (string, erro
 
 	// extract the function selector bytes from the only matching testContract
 	return matchingSigs[0], nil
+}
+
+// MustGetMethodByName gets all the method metadata.
+func MustGetMethodByName(name string, metadata *bind.MetaData) abi.Method {
+	cabi, err := metadata.GetAbi()
+	if err != nil {
+		panic(err)
+	}
+
+	method, ok := cabi.Methods[name]
+	if !ok {
+		panic(fmt.Errorf("no method with name %s", name))
+	}
+
+	return method
 }

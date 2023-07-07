@@ -27,6 +27,10 @@ func (a *AbiSuite) getSelectorSuccesful(name string, metadata *bind.MetaData) [4
 	selector2 := abiutil.MustGetSelectorByName(name, metadata)
 	a.Require().Equal(selector, selector2)
 
+	realMethod := abiutil.MustGetMethodByName(name, metadata)
+	a.Require().NoError(err)
+	a.Require().Equal(realMethod.ID, selector2[:])
+
 	return selector
 }
 

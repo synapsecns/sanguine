@@ -13,9 +13,9 @@ type arbitrumOptions struct {
 
 func defaultOptions() *arbitrumOptions {
 	return &arbitrumOptions{
-		// see: https://github.com/OffchainLabs/arbitrum-token-bridge/blob/75915c94e58aaf7bf59fb833a0a1b3be1ae461ec/packages/arb-token-bridge-ui/scripts/generateDenylist.ts#L63
-		gasInfoAddress:       common.HexToAddress("0x000000000000000000000000000000000000006C"),
-		nodeInterfaceAddress: common.HexToAddress("0x00000000000000000000000000000000000000C8"),
+		// see: https://github.com/OffchainLabs/arbitrum-token-bridge/blob/75915c94e58aaf7bf59fb833a0a1b3be1ae461ec/packages/arb-token-bridge-ui/scripts/generateDenylist.ts#L63 and https://github.com/Tenderly/nitro/blob/master/go-ethereum/core/types/arbitrum_signer.go#L12
+		gasInfoAddress:       common.HexToAddress("0x6e"),
+		nodeInterfaceAddress: common.HexToAddress("0xc8"),
 	}
 }
 
