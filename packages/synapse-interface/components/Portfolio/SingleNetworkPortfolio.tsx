@@ -276,6 +276,7 @@ const PortfolioAssetActionButton = ({
     transform-gpu transition-all duration-75
     ${isDisabled ? 'hover:cursor-default' : 'hover:cursor-pointer'}
   `
+
   return (
     <React.Fragment>
       {isApproved ? (
@@ -283,7 +284,9 @@ const PortfolioAssetActionButton = ({
           data-test-id="portfolio-asset-action-button"
           className={`
             ${buttonClassName}
-            border-2 border-[#D747FF]
+            border border-[#D747FF]
+            hover:bg-[#292934]
+            active:opacity-[67%]
           `}
           onClick={handleBridgeCallback}
         >
