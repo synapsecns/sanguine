@@ -98,7 +98,7 @@ const LoadingPortfolioContent = () => {
       <p
         data-test-id="loading-portfolio-content"
         className={`
-        text-[#CCCAD3BF] mt-6 mb-4 pb-6
+        text-[#CCCAD3BF] mt-6 mb-4 pb-6 pl-2
           border-b border-solid border-[#28282F]
         `}
       >
@@ -114,7 +114,7 @@ const UnconnectedPortfolioContent = () => {
       <p
         data-test-id="unconnected-portfolio-content"
         className={`
-        text-[#CCCAD3BF] mt-6 mb-4 pb-6
+        text-[#CCCAD3BF] mt-6 mb-4 pb-6 pl-2
           border-b border-solid border-[#28282F]
         `}
       >
@@ -129,7 +129,7 @@ export const HomeContent = () => {
   return (
     <div
       data-test-id="portfolio-home-content"
-      className="border-t border-solid border-[#28282F] text-white"
+      className="border-t border-solid border-[#28282F] text-white pl-2"
     >
       <p className="my-3">
         Synapse is the most widely used, extensible, and secure cross-chain

@@ -85,10 +85,11 @@ export const SingleNetworkPortfolio = ({
         {sortedTokensWithAllowance &&
           sortedTokensWithAllowance.length > 0 &&
           sortedTokensWithAllowance.map(
-            ({ token, balance }: TokenWithBalanceAndAllowance) => (
+            ({ token, balance, allowance }: TokenWithBalanceAndAllowance) => (
               <PortfolioTokenAsset
                 token={token}
                 balance={balance}
+                allowance={allowance}
                 portfolioChainId={portfolioChainId}
                 connectedChainId={connectedChainId}
                 selectedFromChainId={selectedFromChainId}
@@ -133,6 +134,7 @@ const EmptyPortfolioContent = () => {
 type PortfolioTokenAssetProps = {
   token: Token
   balance: BigNumber
+  allowance?: BigNumber
   portfolioChainId: number
   connectedChainId: number
   selectedFromChainId: number
@@ -142,17 +144,28 @@ type PortfolioTokenAssetProps = {
 const PortfolioTokenAsset = ({
   token,
   balance,
+  allowance,
   portfolioChainId,
   connectedChainId,
   isApproved,
 }: PortfolioTokenAssetProps) => {
   const dispatch = useDispatch()
+  const { address } = useAccount()
+  const { fetchPortfolioBalances } = usePortfolioBalancesAndAllowances()
   const { icon, symbol, decimals, addresses } = token
   const parsedBalance: string = formatBNToString(
     balance,
     decimals[portfolioChainId],
     3
   )
+  const parsedAllowance: string =
+    allowance && formatBNToString(allowance, decimals[portfolioChainId], 3)
+
+  const currentChainName: string = CHAINS_BY_ID[portfolioChainId].name
+  const tokenAddress: string = addresses[connectedChainId]
+  const isCurrentlyConnected: boolean = portfolioChainId === connectedChainId
+  const hasAllowanceButLessThanBalance: boolean =
+    allowance && balance.gt(allowance)
   const isDisabled: boolean = false
   const filteredOpacity: string = 'opacity-50 cursor-default'
 
@@ -164,10 +177,37 @@ const PortfolioTokenAsset = ({
     // }
   }, [isDisabled, token, balance])
 
+  const handleApproveCallback = useCallback(async () => {
+    if (!isDisabled && isCurrentlyConnected) {
+      dispatch(setFromToken(token))
+      await approveToken(ROUTER_ADDRESS, connectedChainId, tokenAddress).then(
+        (success) => {
+          success && fetchPortfolioBalances()
+        }
+      )
+    } else {
+      toast.error(
+        `Connect to ${currentChainName} network to approve ${token.symbol} token`,
+        {
+          id: 'approve-in-progress-popup',
+          duration: Infinity,
+        }
+      )
+    }
+  }, [
+    token,
+    address,
+    tokenAddress,
+    connectedChainId,
+    portfolioChainId,
+    isCurrentlyConnected,
+    isDisabled,
+  ])
+
   return (
     <div
       data-test-id="portfolio-token-asset"
-      className="flex flex-row items-center py-2 pl-2 text-white "
+      className="flex flex-row flex-wrap items-center py-2 pl-2 text-white "
     >
       <div className="flex flex-row justify-between w-2/3">
         <div className="flex flex-row">
@@ -194,6 +234,17 @@ const PortfolioTokenAsset = ({
           isDisabled={isDisabled}
         />
       </div>
+      {hasAllowanceButLessThanBalance && (
+        <a
+          onClick={handleApproveCallback}
+          className={`
+            text-[#A3A3C2] text-xs pt-1
+            hover:cursor-pointer
+          `}
+        >
+          {parsedAllowance} approved ({parsedBalance} available)
+        </a>
+      )}
     </div>
   )
 }
@@ -216,9 +267,9 @@ const PortfolioAssetActionButton = ({
   const dispatch = useDispatch()
   const { address } = useAccount()
   const { fetchPortfolioBalances } = usePortfolioBalancesAndAllowances()
+  const tokenAddress: string = token.addresses[connectedChainId]
   const currentChainName: string = CHAINS_BY_ID[portfolioChainId].name
   const isCurrentlyConnected: boolean = portfolioChainId === connectedChainId
-  const tokenAddress: string = token.addresses[connectedChainId]
 
   const handleBridgeCallback = useCallback(() => {
     if (!isDisabled) {
@@ -230,13 +281,11 @@ const PortfolioAssetActionButton = ({
   const handleApproveCallback = useCallback(async () => {
     if (!isDisabled && isCurrentlyConnected) {
       dispatch(setFromToken(token))
-      return await approveToken(
-        ROUTER_ADDRESS,
-        connectedChainId,
-        tokenAddress
-      ).then((success) => {
-        success && fetchPortfolioBalances()
-      })
+      await approveToken(ROUTER_ADDRESS, connectedChainId, tokenAddress).then(
+        (success) => {
+          success && fetchPortfolioBalances()
+        }
+      )
     } else {
       toast.error(
         `Connect to ${currentChainName} network to approve ${token.symbol} token`,
@@ -247,13 +296,13 @@ const PortfolioAssetActionButton = ({
       )
     }
   }, [
-    connectedChainId,
-    tokenAddress,
-    address,
-    isDisabled,
-    portfolioChainId,
     token,
+    address,
+    tokenAddress,
+    connectedChainId,
+    portfolioChainId,
     isCurrentlyConnected,
+    isDisabled,
   ])
 
   const buttonClassName = `
@@ -262,9 +311,6 @@ const PortfolioAssetActionButton = ({
     transform-gpu transition-all duration-75
     ${isDisabled ? 'hover:cursor-default' : 'hover:cursor-pointer'}
   `
-
-  const activeButtonClass = `active:opacity-[67%]`
-
   return (
     <React.Fragment>
       {isApproved ? (
@@ -272,9 +318,9 @@ const PortfolioAssetActionButton = ({
           data-test-id="portfolio-asset-action-button"
           className={`
             ${buttonClassName}
-            ${activeButtonClass}
             border border-[#D747FF]
             hover:bg-[#272731]
+            active:opacity-[67%]
           `}
           onClick={handleBridgeCallback}
         >
@@ -285,11 +331,11 @@ const PortfolioAssetActionButton = ({
           data-test-id="portfolio-asset-action-button"
           className={`
             ${buttonClassName}
-            ${activeButtonClass}
             border border-[#3D3D5C]
-          hover:border-[#A3A3C2]
-          hover:bg-[#272731]
-          active:border-[#A3A3C2]
+            hover:border-[#A3A3C2]
+            hover:bg-[#272731]
+            active:border-[#A3A3C2]
+            active:opacity-[67%]
           `}
           onClick={handleApproveCallback}
         >

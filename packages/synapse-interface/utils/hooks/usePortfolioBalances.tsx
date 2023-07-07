@@ -1,10 +1,10 @@
 import { useState, useEffect, useMemo } from 'react'
-import { multicall, erc20ABI, getAccount } from '@wagmi/core'
-import { BRIDGABLE_TOKENS } from '@/constants/tokens'
-import { Token } from '../types'
-import { sortByTokenBalance } from '../sortTokens'
 import { BigNumber } from 'ethers'
 import { useNetwork } from 'wagmi'
+import { multicall, erc20ABI, getAccount } from '@wagmi/core'
+import { sortByTokenBalance } from '../sortTokens'
+import { Token } from '../types'
+import { BRIDGABLE_TOKENS } from '@/constants/tokens'
 
 export const ROUTER_ADDRESS = '0x7E7A0e201FD38d3ADAA9523Da6C109a07118C96a'
 
