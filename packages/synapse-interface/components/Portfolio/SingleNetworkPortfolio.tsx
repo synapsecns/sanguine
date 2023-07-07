@@ -3,7 +3,7 @@ import Image from 'next/image'
 import { BigNumber } from 'ethers'
 import { useDispatch } from 'react-redux'
 import { useNetwork, useAccount } from 'wagmi'
-import { switchNetwork } from '@wagmi/core'
+import { switchNetwork, disconnect } from '@wagmi/core'
 import { Zero } from '@ethersproject/constants'
 import {
   setFromToken,
@@ -399,6 +399,7 @@ const PortfolioConnectButton = ({
 }
 
 const ConnectedButton = () => {
+  const [isDisconnecting, setIsDisconnecting] = useState<boolean>(false)
   const buttonClassName = `
   flex items-center justify-center
   text-base text-white px-3 py-1 rounded-3xl
@@ -407,17 +408,42 @@ const ConnectedButton = () => {
   hover:border-[#3D3D5C]
   `
 
+  const handleDisconnectNetwork = async () => {
+    setIsDisconnecting(true)
+    try {
+      await disconnect()
+    } catch (error) {
+      error && setIsDisconnecting(false)
+    }
+  }
+
   return (
-    <button data-test-id="connected-button" className={buttonClassName}>
-      <div className="flex flex-row text-sm">
-        <div
-          className={`
+    <button
+      data-test-id="connected-button"
+      className={buttonClassName}
+      onClick={handleDisconnectNetwork}
+    >
+      {isDisconnecting ? (
+        <div className="flex flex-row text-sm">
+          <div
+            className={`
+          my-auto ml-auto mr-2 text-transparent w-2 h-2
+          border border-red-300 border-solid rounded-full
+          `}
+          />
+          Disconnecting...
+        </div>
+      ) : (
+        <div className="flex flex-row text-sm">
+          <div
+            className={`
           my-auto ml-auto mr-2
           w-2 h-2
           bg-green-500 rounded-full`}
-        />
-        Connected
-      </div>
+          />
+          Connected
+        </div>
+      )}
     </button>
   )
 }
