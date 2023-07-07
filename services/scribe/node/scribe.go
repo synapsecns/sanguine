@@ -35,6 +35,10 @@ type Scribe struct {
 	reorgMeters map[uint32]otelMetrics.Int64Counter
 }
 
+// checkFinality checks if the block is final on the chain.
+// and deletes irrelevant blocks.
+const checkFinality = false
+
 // NewScribe creates a new scribe.
 func NewScribe(eventDB db.EventDB, clients map[uint32][]backfill.ScribeBackend, config config.Config, handler metrics.Handler) (*Scribe, error) {
 	scribeBackfiller, err := backfill.NewScribeBackfiller(eventDB, clients, config, handler)
@@ -91,6 +95,9 @@ func (s Scribe) Start(ctx context.Context) error {
 
 		// Check confirmations
 		g.Go(func() error {
+			if !checkFinality {
+				return nil
+			}
 			b := &backoff.Backoff{
 				Factor: 2,
 				Jitter: true,

@@ -35,7 +35,7 @@ type ChainConfig struct {
 	ConcurrencyThreshold uint64 `yaml:"concurrency_threshold"`
 	// GetBlockBatchSize is the amount of blocks to get at a time when doing confirmations.
 	GetBlockBatchAmount int `yaml:"get_block_batch_amount"`
-	// ConfirmationConfig holds config data for reorg protection
+	// ConfirmationConfig holds config data for reorg protection.
 	ConfirmationConfig ConfirmationConfig `yaml:"confirmation_config"`
 }
 
