@@ -47,7 +47,7 @@ export const Portfolio = () => {
       className="flex flex-col w-full px-4 py-10 lg:py-2 lg:w-2/5"
     >
       <PortfolioTabManager activeTab={tab} setTab={setTab} />
-      <div className="border-t border-solid border-[#28282F] mt-4">
+      <div className="mt-4">
         {tab === PortfolioTabs.HOME && <HomeContent />}
         {tab === PortfolioTabs.PORTFOLIO && (
           <PortfolioContent

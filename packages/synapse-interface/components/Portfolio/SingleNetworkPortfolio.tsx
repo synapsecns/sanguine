@@ -56,10 +56,7 @@ export const SingleNetworkPortfolio = ({
   const isLoading: boolean = fetchState === FetchState.LOADING
 
   return (
-    <div
-      data-test-id="single-network-portfolio"
-      className="flex flex-col border-b border-solid border-[#28282F]"
-    >
+    <div data-test-id="single-network-portfolio" className="flex flex-col">
       <PortfolioAccordion
         connectedChainId={connectedChainId}
         portfolioChainId={portfolioChainId}
