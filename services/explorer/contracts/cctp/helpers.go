@@ -46,6 +46,7 @@ func NewCCTPRef(address common.Address, backend bind.ContractBackend) (*CCTPRef,
 	}, nil
 }
 
+// NewMessageTransmitterRef creates a new MessageTransmitterRef instance.
 func NewMessageTransmitterRef(address common.Address, backend bind.ContractBackend) (*MessageTransmitterRef, error) {
 	messageTransmitter, err := NewMessageTransmitter(address, backend)
 	if err != nil {
