@@ -18,6 +18,9 @@ func init() {
 		AllContractTypes = append(AllContractTypes, contractType)
 		// assert type is correct
 		var _ contracts.ContractType = contractType
+
+		// Checks for discrepancies in contract reference. Will panic if contract is not properly configured.
+		contractType.ContractName()
 	}
 }
 
@@ -87,7 +90,7 @@ func (c contractTypeImpl) ContractInfo() *compiler.Contract {
 	case MetaSwapType:
 		return metaswap.Contracts["/solidity/MetaSwapV1_flat.sol:MetaSwap"]
 	case CCTPType:
-		return cctp.Contracts["/solidity/SynapseCCTPV1_flat.sol:SynapseCCTP"]
+		return cctp.Contracts["solidity/SynapseCCTPV1_flat.sol:SynapseCCTP"]
 	default:
 		panic("not yet implemented")
 	}
