@@ -3,8 +3,6 @@ package sql
 import (
 	"context"
 	"fmt"
-
-	"gorm.io/gorm/logger"
 )
 
 // StoreEvent stores a generic event that has the proper fields set by `eventToBridgeEvent`.
@@ -33,8 +31,6 @@ func (s *Store) StoreEvent(ctx context.Context, event interface{}) error {
 //
 //nolint:cyclop
 func (s *Store) StoreEvents(ctx context.Context, events []interface{}) error {
-	fmt.Printf("StoreEvents: %d events\n", len(events))
-	fmt.Printf("events: %v\n", events)
 	var bridgeEvents []BridgeEvent
 	var swapEvents []SwapEvent
 	var messageBusEvents []MessageBusEvent
@@ -54,7 +50,6 @@ func (s *Store) StoreEvents(ctx context.Context, events []interface{}) error {
 	}
 
 	// TODO: maybe switch this out with a generic
-	s.db.Logger = s.db.Logger.LogMode(logger.Info)
 	if len(bridgeEvents) > 0 {
 		dbTx := s.db.WithContext(ctx).Create(&bridgeEvents)
 		if dbTx.Error != nil {
