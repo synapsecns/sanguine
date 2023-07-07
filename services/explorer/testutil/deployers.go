@@ -3,9 +3,10 @@ package testutil
 import (
 	"context"
 	"fmt"
+	"math/big"
+
 	"github.com/brianvoe/gofakeit/v6"
 	"github.com/synapsecns/sanguine/services/explorer/contracts/metaswap"
-	"math/big"
 
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/common"
@@ -185,7 +186,6 @@ func (n MetaSwapDeployer) Deploy(ctx context.Context) (contracts.DeployedContrac
 //
 //nolint:dupl
 func (n CCTPDeployer) Deploy(ctx context.Context) (contracts.DeployedContract, error) {
-
 	tokenMessengerContract, err := n.DeploySimpleContract(ctx, func(transactOps *bind.TransactOpts, backend bind.ContractBackend) (common.Address, *types.Transaction, interface{}, error) {
 		return cctp.DeployMessageTransmitter(transactOps, backend)
 	}, func(address common.Address, backend bind.ContractBackend) (interface{}, error) {

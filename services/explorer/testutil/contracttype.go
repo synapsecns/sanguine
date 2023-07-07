@@ -55,7 +55,7 @@ const (
 	MessageBusType
 	// MetaSwapType is the metaswap contract type.
 	MetaSwapType
-	// CCTPType is cctp contract type
+	// CCTPType is cctp contract type.
 	CCTPType
 )
 

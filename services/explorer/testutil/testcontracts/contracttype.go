@@ -18,7 +18,7 @@ func init() {
 		AllContractTypes = append(AllContractTypes, contractType)
 		// assert type is correct
 		var _ contracts.ContractType = contractType
-		
+
 		// Checks for discrepancies in contract reference. Will panic if contract is not properly configured.
 		contractType.ContractName()
 	}
@@ -55,7 +55,7 @@ const (
 	TestMessageBusType
 	// TestMetaSwapType is the meta swap type.
 	TestMetaSwapType
-	// TestCCTPType is cctp contract type
+	// TestCCTPType is cctp contract type.
 	TestCCTPType
 )
 

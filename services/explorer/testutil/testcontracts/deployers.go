@@ -3,6 +3,8 @@ package testcontracts
 import (
 	"context"
 	"fmt"
+	"math/big"
+
 	"github.com/brianvoe/gofakeit/v6"
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/common"
@@ -18,7 +20,6 @@ import (
 	"github.com/synapsecns/sanguine/services/explorer/contracts/metaswap/testmetaswap"
 	"github.com/synapsecns/sanguine/services/explorer/contracts/swap/testswap"
 	"github.com/synapsecns/sanguine/services/explorer/testutil"
-	"math/big"
 )
 
 // TestSynapseBridgeDeployer is the type of the test bridge deployer.
@@ -175,7 +176,6 @@ func (t TestMetaSwapDeployer) Deploy(ctx context.Context) (contracts.DeployedCon
 //
 //nolint:dupl
 func (n TestCCTPDeployer) Deploy(ctx context.Context) (contracts.DeployedContract, error) {
-
 	tokenMessengerContract, err := n.DeploySimpleContract(ctx, func(transactOps *bind.TransactOpts, backend bind.ContractBackend) (common.Address, *types.Transaction, interface{}, error) {
 		return testcctp.DeployMessageTransmitter(transactOps, backend)
 	}, func(address common.Address, backend bind.ContractBackend) (interface{}, error) {

@@ -18,7 +18,6 @@ import (
 	"golang.org/x/sync/errgroup"
 )
 
-// TODO add cctp parser to this struct
 // ChainBackfiller is an explorer backfiller for a chain.
 type ChainBackfiller struct {
 	// consumerDB is the database that the backfiller will use to store the events.
