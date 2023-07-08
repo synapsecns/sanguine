@@ -338,7 +338,7 @@ const PortfolioNetwork = ({
           alt={`${displayName} img`}
           src={chainIcon}
         />
-        <div className="font-medium text-white text-18">{displayName}</div>
+        <div className="text-lg font-medium text-white">{displayName}</div>
       </div>
     </div>
   )

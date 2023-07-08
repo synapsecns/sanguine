@@ -33,7 +33,11 @@ export const PortfolioAccordion = ({
   }, [portfolioChainId, connectedChainId])
 
   return (
-    <div>
+    <div
+      className={
+        isExpanded ? 'border-b border-t border-solid border-[#28282F]' : ''
+      }
+    >
       <div
         className={`
         flex flex-row
