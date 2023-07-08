@@ -1,10 +1,10 @@
 import { Zero, One } from '@ethersproject/constants'
 import { zeroAddress } from 'viem'
-import {
-  bigIntToFixed,
-  formatBigIntToPercentString,
-  formatBigIntToString,
-} from './bigint/format'
+// import {
+//   bigIntToFixed,
+//   formatBigIntToPercentString,
+//   formatBigIntToString,
+// } from './bigint/format'
 
 export const getPriceMultiplier = ({ poolType, prices }) => {
   switch (poolType) {
@@ -53,20 +53,20 @@ export const getTokenBalanceInfo = ({ tokenBalances, poolType, prices }) => {
   }
 }
 
-const formatBigIntUnits = (value: bigint, decimals = 18) => {
-  const stringValue = value.toString()
-  const decimalPointIndex = stringValue.length - decimals
+// const formatBigIntUnits = (value: bigint, decimals = 18) => {
+//   const stringValue = value.toString()
+//   const decimalPointIndex = stringValue.length - decimals
 
-  if (decimalPointIndex <= 0) {
-    return '0.' + stringValue.padStart(decimals, '0')
-  }
+//   if (decimalPointIndex <= 0) {
+//     return '0.' + stringValue.padStart(decimals, '0')
+//   }
 
-  return (
-    stringValue.slice(0, decimalPointIndex) +
-    '.' +
-    stringValue.slice(decimalPointIndex)
-  )
-}
+//   return (
+//     stringValue.slice(0, decimalPointIndex) +
+//     '.' +
+//     stringValue.slice(decimalPointIndex)
+//   )
+// }
 
 export const getPoolTokenInfoArr = ({
   tokenBalances,

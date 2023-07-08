@@ -1,9 +1,9 @@
 import { multicall, Address } from '@wagmi/core'
+import { zeroAddress } from 'viem'
 
 import multicallABI from '../constants/abis/multicall.json'
 import erc20ABI from '../constants/abis/erc20.json'
 import { Token } from '@/utils/types'
-import { zeroAddress } from 'viem'
 
 interface TokenAndBalance {
   token: Token

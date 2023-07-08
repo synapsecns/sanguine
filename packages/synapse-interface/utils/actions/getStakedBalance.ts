@@ -1,5 +1,6 @@
 import { readContracts, ReadContractResult, Address } from '@wagmi/core'
 import { MINICHEF_ABI } from '@abis/miniChef'
+
 import { MINICHEF_ADDRESSES } from '@/constants/minichef'
 
 type UserInfoResult = {

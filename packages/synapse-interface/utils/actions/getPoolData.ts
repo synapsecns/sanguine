@@ -2,6 +2,7 @@ import { getEthPrice, getAvaxPrice } from '@utils/actions/getPrices'
 import { getPoolTokenInfoArr, getTokenBalanceInfo } from '@utils/poolDataFuncs'
 import { Address, fetchBalance, fetchToken } from '@wagmi/core'
 import { Token, PoolUserData, PoolData } from '@types'
+
 import { getCorePoolData } from './getCorePoolData'
 
 const getBalanceData = async ({
