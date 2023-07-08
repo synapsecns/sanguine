@@ -1,7 +1,6 @@
 import { useEffect, useState, useCallback } from 'react'
-import { AddressZero } from '@ethersproject/constants'
 import Link from 'next/link'
-import { Token } from '@types'
+import { PoolData, PoolUserData, Token } from '@types'
 import { ChevronLeftIcon } from '@heroicons/react/outline'
 import { getSinglePoolData, getPoolUserData } from '@utils/actions/getPoolData'
 import { getPoolApyData } from '@utils/actions/getPoolApyData'
@@ -11,6 +10,7 @@ import Grid from '@tw/Grid'
 import Button from '@tw/Button'
 import PoolInfoSection from './PoolInfoSection'
 import PoolManagement from './poolManagement'
+import { zeroAddress } from 'viem'
 
 const PoolBody = ({
   pool,
@@ -23,8 +23,8 @@ const PoolBody = ({
   poolChainId: number
   connectedChainId: number
 }) => {
-  const [poolData, setPoolData] = useState(undefined)
-  const [poolUserData, setPoolUserData] = useState(undefined)
+  const [poolData, setPoolData] = useState<PoolData>(undefined)
+  const [poolUserData, setPoolUserData] = useState<PoolUserData>(undefined)
   const [poolAPYData, setPoolAPYData] = useState(undefined)
 
   const handleGetSinglePoolData = useCallback(() => {
@@ -121,7 +121,7 @@ const PoolBody = ({
           <Card className="bg-bgBase rounded-3xl" divider={false}>
             <PoolManagement
               pool={pool}
-              address={address ?? AddressZero}
+              address={address ?? zeroAddress}
               chainId={connectedChainId}
               poolData={poolData}
               poolUserData={poolUserData}

@@ -4,7 +4,6 @@ import * as CHAINS from '@constants/chains/master'
 import { useCoingeckoPrice } from '@hooks/useCoingeckoPrice'
 import { useGasDropAmount } from '@/utils/hooks/useGasDropAmount'
 import Image from 'next/image'
-import { Zero } from '@ethersproject/constants'
 
 import { Token } from '@/utils/types'
 import {

@@ -1,5 +1,10 @@
 import { Zero, One } from '@ethersproject/constants'
 import { zeroAddress } from 'viem'
+import {
+  bigIntToFixed,
+  formatBigIntToPercentString,
+  formatBigIntToString,
+} from './bigint/format'
 
 export const getPriceMultiplier = ({ poolType, prices }) => {
   switch (poolType) {
@@ -65,7 +70,6 @@ const formatBigIntUnits = (value: bigint, decimals = 18) => {
 
 export const getPoolTokenInfoArr = ({
   tokenBalances,
-  lpTotalSupply,
   tokenBalancesSum,
 }: {
   tokenBalances: {
@@ -74,25 +78,28 @@ export const getPoolTokenInfoArr = ({
     token: any
     isLP: boolean
   }[]
-  chainId: number
-  lpTotalSupply: bigint
-  tokenBalancesSum: bigint
+  tokenBalancesSum: number
 }) => {
-  console.log(tokenBalances)
-  return tokenBalances.map((poolToken) => ({
-    symbol: poolToken.token.symbol,
-    // percent: poolToken.rawBalance === 0n
-    //   ? '0'
-    //   : formatBigIntToPercentString(
-    //       (poolToken.rawBalance * 10n ** 5n) /
-    //       (lpTotalSupply === 0n ? 1n : tokenBalancesSum),
-    //       5
-    //     ),
-    percent: 0,
-    balance: poolToken.balance,
-    balanceStr: poolToken.balance,
-    token: poolToken.token,
-    isLp: poolToken.isLP,
-    rawBalance: poolToken.rawBalance,
-  }))
+  return tokenBalances.map((poolToken) => {
+    const {
+      balance,
+      token,
+      token: { symbol },
+      isLP,
+      rawBalance,
+    } = poolToken
+
+    const rawPercent = Number(balance) / tokenBalancesSum
+    const percent = `${(100 * rawPercent).toFixed(2)}%`
+
+    return {
+      symbol,
+      percent,
+      balance,
+      balanceStr: balance,
+      token,
+      isLP,
+      rawBalance,
+    }
+  })
 }

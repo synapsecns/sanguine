@@ -46,7 +46,6 @@ const PoolCard = memo(
           })
         getPoolApyData(chainId, pool, prices)
           .then((res) => {
-            // console.log(`get pool apy data`, res)
             setPoolApyData(res)
           })
           .catch((err) => {
@@ -128,11 +127,11 @@ const PoolCard = memo(
                   TVL
                 </h3>
                 <div className={'mt-2 text-white '}>
-                  {poolData?.totalLockedUSDStr ? (
+                  {poolData?.totalLockedUSD ? (
                     `$${commify(
                       formatBigIntToString(
                         stringToBigInt(
-                          `${poolData.totalLockedUSDStr}`,
+                          `${poolData.totalLockedUSD}`,
                           pool.decimals[chainId]
                         ),
                         18,

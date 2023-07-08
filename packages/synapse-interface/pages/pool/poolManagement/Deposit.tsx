@@ -22,7 +22,6 @@ import { transformCalculateLiquidityInput } from '@/utils/transformCalculateLiqu
 import { formatBigIntToString } from '@/utils/bigint/format'
 
 import { getAddress } from '@ethersproject/address'
-import { Zero } from '@ethersproject/constants'
 import { BigNumber } from '@ethersproject/bignumber'
 
 const DEFAULT_DEPOSIT_QUOTE = {
@@ -409,7 +408,7 @@ const filterInputValues = (inputValues, pool, chainId) => {
   })
 
   let filteredObj = poolTokenAddresses.reduce((obj, key) => {
-    obj[key] = inputValues.bi.hasOwnProperty(key) ? inputValues.bi[key] : Zero
+    obj[key] = inputValues.bi.hasOwnProperty(key) ? inputValues.bi[key] : 0n
     return obj
   }, {})
 

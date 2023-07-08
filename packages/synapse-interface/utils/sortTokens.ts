@@ -1,9 +1,9 @@
 import { multicall, Address } from '@wagmi/core'
-import { Zero, AddressZero } from '@ethersproject/constants'
 
 import multicallABI from '../constants/abis/multicall.json'
 import erc20ABI from '../constants/abis/erc20.json'
 import { Token } from '@/utils/types'
+import { zeroAddress } from 'viem'
 
 interface TokenAndBalance {
   token: Token
@@ -48,7 +48,7 @@ export const sortByTokenBalance = async (
     tokens.map((token) => {
       tokensWithBalances.push({
         token,
-        balance: Zero,
+        balance: 0n,
       })
     })
   } else {
@@ -62,7 +62,7 @@ export const sortByTokenBalance = async (
         return
       }
 
-      if (tokenAddress === AddressZero || tokenAddress === '') {
+      if (tokenAddress === zeroAddress || tokenAddress === '') {
         multicallInputs.push({
           address: multicallAddress,
           abi: multicallABI,

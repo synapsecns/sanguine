@@ -1,12 +1,13 @@
 import { erc20ABI } from 'wagmi'
 import { getWalletClient } from '@wagmi/core'
 import { Contract } from 'ethers'
-import { MaxInt256, AddressZero } from '@ethersproject/constants'
+import { MaxInt256 } from '@ethersproject/constants'
 import { CHAINS_BY_ID } from '@/constants/chains'
 import { txErrorHandler } from './txErrorHandler'
 import toast from 'react-hot-toast'
 import ExplorerToastLink from '@components/ExplorerToastLink'
 import { walletClientToSigner } from '@/ethers'
+import { zeroAddress } from 'viem'
 
 export const approveToken = async (
   address: string,
@@ -43,7 +44,7 @@ export const approveToken = async (
           <div>
             <div>Successfully approved on {currentChainName}</div>
             <ExplorerToastLink
-              transactionHash={approveTx?.hash ?? AddressZero}
+              transactionHash={approveTx?.hash ?? zeroAddress}
               chainId={chainId}
             />
           </div>

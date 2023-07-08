@@ -10,13 +10,13 @@ import { subtractSlippage } from '@utils/slippage'
 
 import ExplorerToastLink from '@components/ExplorerToastLink'
 
-import { AddressZero } from '@ethersproject/constants'
 import { CHAINS_BY_ID } from '@/constants/chains'
 import { txErrorHandler } from '@utils/txErrorHandler'
 import { AVWETH, WETHE } from '@constants/tokens/master'
 import { WETH } from '@constants/tokens/swapMaster'
 import { approveToken } from '@utils/approveToken'
 import { Token } from '@types'
+import { zeroAddress } from 'viem'
 
 export const approve = async (
   pool: Token,
@@ -37,7 +37,6 @@ export const approve = async (
   )
 
   const handleApproval = async (token, tokenAddr) => {
-    console.log(`inputValue`, inputValue)
     if (
       inputValue[tokenAddr] &&
       (inputValue[tokenAddr] === 0n ||
@@ -66,7 +65,7 @@ export const approve = async (
       <div>
         <div>Successfully approved on {currentChainName}</div>
         <ExplorerToastLink
-          transactionHash={approveTx?.hash ?? AddressZero}
+          transactionHash={approveTx?.hash ?? zeroAddress}
           chainId={chainId}
         />
       </div>

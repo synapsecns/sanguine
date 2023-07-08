@@ -456,7 +456,7 @@ const sumBigInts = (
   withdrawType: string
 ) => {
   if (!pool?.poolTokens) {
-    return 0n // Zero equivalent in BigInt
+    return 0n
   }
 
   const currentTokens =
@@ -474,7 +474,7 @@ const sumBigInts = (
     const valueToAdd = currentTokens[index].value * scaleFactor
 
     return sum + valueToAdd
-  }, 0n) // Zero equivalent in BigInt
+  }, 0n)
 }
 
 function pow10BigInt(n) {

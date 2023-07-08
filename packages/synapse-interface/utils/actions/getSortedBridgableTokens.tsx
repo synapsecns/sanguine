@@ -1,12 +1,13 @@
 import { useState, useEffect, useMemo } from 'react'
 import { useAccount, useNetwork } from 'wagmi'
-import { AddressZero, Zero } from '@ethersproject/constants'
+import { Zero } from '@ethersproject/constants'
 import { multicall, Address } from '@wagmi/core'
 import { BRIDGABLE_TOKENS } from '@/constants/tokens'
 import multicallABI from '@/constants/abis/multicall.json'
 import erc20ABI from '@/constants/abis/erc20.json'
 import { Token } from '../types'
 import { Contract, BigNumber } from 'ethers'
+import { zeroAddress } from 'viem'
 
 interface TokenBalance {
   token: Token
@@ -69,7 +70,7 @@ export function useUserHeldTokens(bridgeTxHash: string): TokenBalance[] {
         const multicallAddress: Address = `0xcA11bde05977b3631167028862bE2a173976CA11` //deterministic multicall3 ethereum address
 
         if (tokenAddress === undefined) return
-        else if (tokenAddress == AddressZero) {
+        else if (tokenAddress == zeroAddress) {
           multicallInputs.push({
             address: multicallAddress,
             abi: multicallABI,

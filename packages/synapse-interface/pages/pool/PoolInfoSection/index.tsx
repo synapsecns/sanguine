@@ -54,12 +54,12 @@ const PoolInfoSection = ({
         <InfoListItem
           labelText="Total Liquidity"
           content={
-            poolData && poolData?.totalLockedStr ? (
+            poolData && poolData?.totalLocked ? (
               <AugmentWithUnits
                 content={commify(
                   formatBigIntToString(
                     stringToBigInt(
-                      `${poolData.totalLockedStr}`,
+                      `${poolData.totalLocked}`,
                       pool.decimals[chainId]
                     ),
                     18,
@@ -76,11 +76,11 @@ const PoolInfoSection = ({
         <InfoListItem
           labelText="Total Liquidity USD"
           content={
-            poolData && poolData?.totalLockedUSDStr ? (
+            poolData && poolData?.totalLockedUSD ? (
               `$${commify(
                 formatBigIntToString(
                   stringToBigInt(
-                    `${poolData.totalLockedUSDStr}`,
+                    `${poolData.totalLockedUSD}`,
                     pool.decimals[chainId]
                   ),
                   18,

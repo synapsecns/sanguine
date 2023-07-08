@@ -1,5 +1,4 @@
 import { Contract } from 'ethers'
-import { AddressZero } from '@ethersproject/constants'
 import { Address } from 'wagmi'
 import { getWalletClient } from '@wagmi/core'
 import toast from 'react-hot-toast'
@@ -12,6 +11,7 @@ import { MINICHEF_ADDRESSES } from '@/constants/minichef'
 import { MINICHEF_ABI } from '@/constants/abis/miniChef'
 import { Token } from '../types'
 import { walletClientToSigner } from '@/ethers'
+import { zeroAddress } from 'viem'
 
 export const approve = async (
   pool: Token,
@@ -47,7 +47,7 @@ export const approve = async (
           <div>
             <div>Successfully approved on {currentChainName}</div>
             <ExplorerToastLink
-              transactionHash={successTx?.hash ?? AddressZero}
+              transactionHash={successTx?.hash ?? zeroAddress}
               chainId={chainId}
             />
           </div>

@@ -21,11 +21,11 @@ export type Chain = {
 }
 export type PoolToken = {
   symbol: string
-  percent: number
+  percent: string
   balance: string
   balanceStr: string
   token: Token
-  isLp: boolean
+  isLP: boolean
   rawBalance: bigint
 }
 export type Query = [string, string, BigNumber, BigNumber, string] & {
@@ -37,20 +37,15 @@ export type Query = [string, string, BigNumber, BigNumber, string] & {
 }
 export type PoolUserData = {
   name: string
-  share: bigint
-  value: bigint
   tokens: PoolToken[]
   lpTokenBalance: bigint
-  lpTokenBalanceStr: string
   nativeTokens?: any
 }
 export type PoolData = {
   name: string
   tokens: PoolToken[]
   totalLocked: number
-  totalLockedStr: number
   totalLockedUSD: number
-  totalLockedUSDStr: number
   virtualPrice: bigint
   nativeTokens?: any
   swapFee: bigint
