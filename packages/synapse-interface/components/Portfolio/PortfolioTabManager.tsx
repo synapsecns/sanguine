@@ -14,7 +14,7 @@ export const PortfolioTabManager = ({
     setTab(newTab)
   }
   return (
-    <div data-test-id="portfolio-tab-manager" className="flex ml-2">
+    <div data-test-id="portfolio-tab-manager" className="flex">
       <Tab
         display={<HomeSvg />}
         activeTab={activeTab}
