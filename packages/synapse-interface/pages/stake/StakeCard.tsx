@@ -41,7 +41,7 @@ const StakeCard = ({ address, chainId, pool }: StakeCardProps) => {
   // TODO get rid of this hook
   const balance = useTokenBalance(pool)
 
-  const lpTokenBalance = BigInt(balance?.data?.value) ?? 0n
+  const lpTokenBalance = balance?.data ? BigInt(balance?.data?.value) : 0n
 
   const prices = usePrices(chainId)
   const [deposit, setDeposit] = useState({ str: '', bi: 0n })
