@@ -2,15 +2,16 @@ package chainmanager
 
 import (
 	"context"
-	"github.com/synapsecns/sanguine/services/omnirpc/config"
-	"github.com/synapsecns/sanguine/services/omnirpc/rpcinfo"
 	"sort"
 	"sync"
 	"time"
+
+	"github.com/synapsecns/sanguine/services/omnirpc/config"
+	"github.com/synapsecns/sanguine/services/omnirpc/rpcinfo"
 )
 
 // rpcTimeout is how long to wait for a response.
-const rpcTimeout = time.Second * 5
+const rpcTimeout = time.Second * 30
 
 // ChainManager manages chain context.
 type ChainManager interface {
