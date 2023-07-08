@@ -16,7 +16,7 @@ import { PoolData, PoolUserData } from '@types'
 import LoadingTokenInput from '@components/loading/LoadingTokenInput'
 import { Address, fetchBalance } from '@wagmi/core'
 import { formatBNToString } from '@/utils/bignumber/format'
-import { getSwapDepositContractFields } from '@/utils/hooks/useSwapDepositContract'
+import { getSwapDepositContractFields } from '@/utils/getSwapDepositContractFields'
 import { calculatePriceImpact } from '@/utils/priceImpact'
 import { transformCalculateLiquidityInput } from '@/utils/transformCalculateLiquidityInput'
 import { formatBigIntToString } from '@/utils/bigint/format'
@@ -105,8 +105,8 @@ const Deposit = ({
         )) {
           allowances[tokenAddress] = await getTokenAllowance(
             poolAddress,
-            tokenAddress,
-            address,
+            tokenAddress as Address,
+            address as Address,
             chainId
           )
         }

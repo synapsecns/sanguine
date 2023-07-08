@@ -2,13 +2,9 @@ import { Address } from 'wagmi'
 import toast from 'react-hot-toast'
 
 import { MINICHEF_ADDRESSES } from '@/constants/minichef'
-import { MINICHEF_ABI } from '@/constants/abis/miniChef'
-
-import { Contract } from 'ethers'
 import ExplorerToastLink from '@/components/ExplorerToastLink'
 import { txErrorHandler } from '@utils/txErrorHandler'
-import { getWalletClient } from '@wagmi/core'
-import { walletClientToSigner } from '@/ethers'
+import { unstakeLpToken } from '@/actions/unstakeLpToken'
 
 export const withdrawStake = async (
   address: Address,
@@ -16,24 +12,16 @@ export const withdrawStake = async (
   poolId: number,
   inputValue: bigint
 ) => {
-  const wallet = await getWalletClient({
-    chainId,
-  })
-  const miniChefContract = new Contract(
-    MINICHEF_ADDRESSES[chainId],
-    MINICHEF_ABI,
-    walletClientToSigner(wallet)
-  )
   try {
     if (!address) throw new Error('Wallet must be connected')
-    if (!miniChefContract) throw new Error('MMind contract is not loaded')
-    const withdrawTransactionArgs = [poolId, inputValue, address]
 
-    const stakeTransaction = await miniChefContract.withdraw(
-      ...withdrawTransactionArgs
-    )
-
-    const tx = await stakeTransaction.wait()
+    const tx = await unstakeLpToken({
+      address,
+      chainId,
+      poolId,
+      amount: inputValue,
+      lpAddress: MINICHEF_ADDRESSES[chainId],
+    })
 
     const toastContent = (
       <div>

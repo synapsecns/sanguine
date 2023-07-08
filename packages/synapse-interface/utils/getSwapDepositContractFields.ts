@@ -2,24 +2,6 @@ import { Token } from '@types'
 import { SWAP_ABI } from '@abis/swap'
 import AV_SWAP_WRAPPER_ABI from '@abis/avSwapWrapper.json'
 import SWAP_ETH_WRAPPER_ABI from '@abis/swapEthWrapper.json'
-import { Contract } from 'ethers'
-import { getWalletClient } from '@wagmi/core'
-
-import { walletClientToSigner } from '@/ethers'
-
-export const useSwapDepositContract = async (pool: Token, chainId: number) => {
-  const { abi, poolAddress } = getSwapDepositContractFields(pool, chainId)
-
-  const signer = await getWalletClient({ chainId })
-
-  const swapContract = new Contract(
-    poolAddress,
-    abi,
-    walletClientToSigner(signer)
-  )
-
-  return swapContract
-}
 
 export const getSwapDepositContractFields = (pool: Token, chainId: number) => {
   let poolAddress

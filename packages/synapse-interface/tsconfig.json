@@ -15,6 +15,8 @@
     "incremental": true,
     "paths": {
       "@/*": ["./*"],
+      "@actions": ["./actions"],
+      "@actions/*": ["./actions/*"],
       "@assets/": ["./assets"],
       "@assets/icons/": ["./assets/icons"],
       "@assets/networks/": ["./assets/networks"],

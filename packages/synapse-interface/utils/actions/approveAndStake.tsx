@@ -1,17 +1,14 @@
-import { Contract } from 'ethers'
 import { Address } from 'wagmi'
-import { getWalletClient } from '@wagmi/core'
 import toast from 'react-hot-toast'
 
 import { txErrorHandler } from '@utils/txErrorHandler'
-import { approveToken } from '@utils/approveToken'
 import ExplorerToastLink from '@components/ExplorerToastLink'
 import { CHAINS_BY_ID } from '@/constants/chains'
 import { MINICHEF_ADDRESSES } from '@/constants/minichef'
-import { MINICHEF_ABI } from '@/constants/abis/miniChef'
 import { Token } from '../types'
-import { walletClientToSigner } from '@/ethers'
-import { zeroAddress } from 'viem'
+import { TransactionReceipt, zeroAddress } from 'viem'
+import { getErc20TokenApproval } from '@/actions/getErc20TokenApproval'
+import { stakeLpToken } from '@/actions/stakeLpToken'
 
 export const approve = async (
   pool: Token,
@@ -32,37 +29,33 @@ export const approve = async (
   })
 
   try {
-    let tx
-
-    await approveToken(
-      MINICHEF_ADDRESSES[chainId],
+    const txReceipt: TransactionReceipt = await getErc20TokenApproval({
       chainId,
-      pool.addresses[chainId],
-      inputValue
-    ).then((successTx) => {
-      if (successTx) {
-        toast.dismiss(pendingPopup)
-
-        const successToastContent = (
-          <div>
-            <div>Successfully approved on {currentChainName}</div>
-            <ExplorerToastLink
-              transactionHash={successTx?.hash ?? zeroAddress}
-              chainId={chainId}
-            />
-          </div>
-        )
-
-        successPopup = toast.success(successToastContent, {
-          id: 'approve-success-popup',
-          duration: 10000,
-        })
-      }
-
-      tx = successTx
+      tokenAddress: pool.addresses[chainId] as Address,
+      spender: MINICHEF_ADDRESSES[chainId],
+      amount: inputValue,
     })
 
-    return tx
+    if (txReceipt.status === 'success') {
+      toast.dismiss(pendingPopup)
+
+      const successToastContent = (
+        <div>
+          <div>Successfully approved on {currentChainName}</div>
+          <ExplorerToastLink
+            transactionHash={txReceipt?.transactionHash ?? zeroAddress}
+            chainId={chainId}
+          />
+        </div>
+      )
+
+      successPopup = toast.success(successToastContent, {
+        id: 'approve-success-popup',
+        duration: 10000,
+      })
+    }
+
+    return txReceipt
   } catch (error) {
     toast.dismiss(pendingPopup)
     txErrorHandler(error)
@@ -79,16 +72,6 @@ export const stake = async (
   let pendingPopup: any
   let successPopup: any
 
-  const signer = await getWalletClient({
-    chainId,
-  })
-
-  const miniChefContract = new Contract(
-    MINICHEF_ADDRESSES[chainId],
-    MINICHEF_ABI,
-    walletClientToSigner(signer)
-  )
-
   pendingPopup = toast(`Starting your deposit...`, {
     id: 'deposit-in-progress-popup',
     duration: Infinity,
@@ -96,15 +79,14 @@ export const stake = async (
 
   try {
     if (!address) throw new Error('Wallet must be connected')
-    if (!miniChefContract) throw new Error('MMind contract is not loaded')
 
-    const stakeTransaction = await miniChefContract.deposit(
+    const tx: TransactionReceipt = await stakeLpToken({
+      address,
+      chainId,
       poolId,
-      inputValue,
-      address
-    )
-
-    const tx = await stakeTransaction.wait()
+      amount: inputValue,
+      lpAddress: MINICHEF_ADDRESSES[chainId],
+    })
 
     toast.dismiss(pendingPopup)
 

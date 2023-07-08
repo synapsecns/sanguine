@@ -40,7 +40,7 @@ import {
 } from '@/constants/bridge'
 
 import { useSynapseContext } from '@/utils/providers/SynapseProvider'
-import { getCurrentTokenAllowance } from '../../actions/getCurrentTokenAllowance'
+import { getErc20TokenAllowance } from '@/actions/getErc20TokenAllowance'
 import { subtractSlippage } from '@/utils/slippage'
 import { commify } from '@ethersproject/units'
 import { formatBigIntToString, powBigInt } from '@/utils/bigint/format'
@@ -83,7 +83,7 @@ import { isAddress } from '@ethersproject/address'
 import { TransactionButton } from '@/components/buttons/TransactionButton'
 import { BridgeTransactionButton } from '@/components/StateManagedBridge/BridgeTransactionButton'
 import ExplorerToastLink from '@/components/ExplorerToastLink'
-import { zeroAddress } from 'viem'
+import { Address, zeroAddress } from 'viem'
 
 // NOTE: These are idle utility functions that will be re-written to
 // support sorting by desired mechanism
@@ -280,12 +280,12 @@ const StateManagedBridge = () => {
         address === undefined ||
         isUnsupported
           ? 0n
-          : await getCurrentTokenAllowance(
+          : await getErc20TokenAllowance({
               address,
-              fromChainId,
-              fromToken,
-              routerAddress
-            )
+              chainId: fromChainId,
+              tokenAddress: fromToken.addresses[fromChainId] as Address,
+              spender: routerAddress,
+            })
 
       const originMinWithSlippage = subtractSlippage(
         originQuery?.minAmountOut ?? 0n,

@@ -19,9 +19,11 @@ import { Token } from '@types'
 import { approve, withdraw } from '@/utils/actions/approveAndWithdraw'
 import { getTokenAllowance } from '@/utils/actions/getTokenAllowance'
 import { PoolData, PoolUserData } from '@types'
-import { getSwapDepositContractFields } from '@/utils/hooks/useSwapDepositContract'
+import { getSwapDepositContractFields } from '@/utils/getSwapDepositContractFields'
 import { calculatePriceImpact } from '@/utils/priceImpact'
 import { formatBigIntToString } from '@/utils/bigint/format'
+
+import { Address } from '@wagmi/core'
 
 const DEFAULT_WITHDRAW_QUOTE = {
   priceImpact: 0n,
@@ -127,9 +129,10 @@ const Withdraw = ({
       const allowance = await getTokenAllowance(
         poolAddress,
         pool.addresses[chainId],
-        address,
+        address as Address,
         chainId
       )
+      console.log(`allowance`, allowance)
       setWithdrawQuote({
         priceImpact,
         allowance,
@@ -188,7 +191,7 @@ const Withdraw = ({
   }
 
   let isFromBalanceEnough = true
-  let isAllowanceEnough = true
+  let isAllowanceEnough = false
 
   const getButtonProperties = () => {
     let properties = {
@@ -226,6 +229,9 @@ const Withdraw = ({
       return properties
     }
 
+    console.log(`isallowanceneough`, isAllowanceEnough)
+    console.log(`isApproved`, isApproved)
+
     if (!isAllowanceEnough && !isApproved) {
       properties.label = `Approve Token(s)`
       properties.pendingLabel = `Approving Token(s)`
@@ -233,7 +239,7 @@ const Withdraw = ({
       properties.disabled = false
       properties.buttonAction = () =>
         approve(pool, withdrawQuote, inputValue.bi, chainId).then((res) => {
-          if (res && res.data) {
+          if (res && res.status === 'success') {
             setIsApproved(true)
           }
         })

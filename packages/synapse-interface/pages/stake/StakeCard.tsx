@@ -74,8 +74,8 @@ const StakeCard = ({ address, chainId, pool }: StakeCardProps) => {
       ;(async () => {
         const tkAllowance = await getTokenAllowance(
           MINICHEF_ADDRESSES[chainId],
-          pool.addresses[chainId],
-          address,
+          pool.addresses[chainId] as Address,
+          address as Address,
           chainId
         )
         setAllowance(tkAllowance)
@@ -151,7 +151,9 @@ const StakeCard = ({ address, chainId, pool }: StakeCardProps) => {
             ${isPending && 'from-[#622e71] to-[#564071]'}
           `}
           onClick={() =>
-            pendingTxWrapFunc(claimStake(chainId, address, stakingPoolId))
+            pendingTxWrapFunc(
+              claimStake(chainId, address as Address, stakingPoolId)
+            )
           }
         >
           {isPending ? (
@@ -214,8 +216,8 @@ const StakeCard = ({ address, chainId, pool }: StakeCardProps) => {
               let val = cleanNumberInput(e.target.value)
               const tkAllowance = await getTokenAllowance(
                 MINICHEF_ADDRESSES[chainId],
-                pool.addresses[chainId],
-                address,
+                pool.addresses[chainId] as Address,
+                address as Address,
                 chainId
               )
               setAllowance(tkAllowance)
@@ -233,7 +235,7 @@ const StakeCard = ({ address, chainId, pool }: StakeCardProps) => {
                       approve(pool, deposit.bi, chainId)
                     )
 
-                    setTx(tx?.hash)
+                    setTx(tx?.transactionHash)
                   }
                 : async (e) => {
                     const tx = await pendingStakeTxWrapFunc(

@@ -2,7 +2,7 @@ import Grid from '@tw/Grid'
 import { useEffect, useState, useMemo, useCallback } from 'react'
 import { useRouter } from 'next/router'
 import { getWalletClient, switchNetwork } from '@wagmi/core'
-import { useWatchPendingTransactions } from 'wagmi'
+import { Address } from 'wagmi'
 import { sortByTokenBalance, sortByVisibilityRank } from '@utils/sortTokens'
 import { calculateExchangeRate } from '@utils/calculateExchangeRate'
 import ExchangeRateInfo from '@components/ExchangeRateInfo'
@@ -11,8 +11,6 @@ import BridgeInputContainer from '../../components/input/TokenAmountInput/index'
 import { approveToken } from '@/utils/approveToken'
 import { validateAndParseAddress } from '@utils/validateAndParseAddress'
 import { commify } from '@ethersproject/units'
-import { erc20ABI } from 'wagmi'
-import { Contract } from 'ethers'
 import { subtractSlippage } from '@utils/slippage'
 import { ChainSlideOver } from '@/components/misc/ChainSlideOver'
 import { TokenSlideOver } from '@/components/misc/TokenSlideOver'
@@ -31,7 +29,6 @@ import { CHAINS_BY_ID } from '@constants/chains'
 import { toast } from 'react-hot-toast'
 import { txErrorHandler } from '@/utils/txErrorHandler'
 import ExplorerToastLink from '@/components/ExplorerToastLink'
-import { walletClientToSigner } from '@/ethers'
 import { zeroAddress } from 'viem'
 
 import {
@@ -48,6 +45,7 @@ import {
   tokenSymbolToToken,
 } from '@constants/tokens'
 import { formatBigIntToString } from '@/utils/bigint/format'
+import { getErc20TokenAllowance } from '@/actions/getErc20TokenAllowance'
 
 const SwapCard = ({
   address,
@@ -304,26 +302,6 @@ const SwapCard = ({
   }
 
   /*
-   Helper Function: getCurrentTokenAllowance
-  - Gets quote data from the Synapse SDK (from the imported provider)
-  - Calculates slippage by subtracting fee from input amount (checks to ensure proper num of decimals are in use - ask someone about stable swaps if you want to learn more)
-  TODO store this erc20 and signer retrieval in a state in a parent component? add to utils + use memo?
-  */
-  const getCurrentTokenAllowance = async (routerAddress: string) => {
-    const wallet = await getWalletClient({
-      chainId: connectedChainId,
-    })
-
-    const erc20 = new Contract(
-      fromToken.addresses[connectedChainId],
-      erc20ABI,
-      walletClientToSigner(wallet)
-    )
-    const allowance = await erc20.allowance(address, routerAddress)
-    return allowance
-  }
-
-  /*
   Function: handleNewFromToken
   - Handles all the changes that occur when selecting a new "from token", such as generating lists of potential chains/tokens
    to bridge to and handling if the current "to chain/token" are incompatible.
@@ -503,7 +481,12 @@ const SwapCard = ({
         fromToken.addresses[connectedChainId] === zeroAddress ||
         address === undefined
           ? 0n
-          : await getCurrentTokenAllowance(routerAddress)
+          : await getErc20TokenAllowance({
+              address,
+              chainId: connectedChainId,
+              tokenAddress: fromToken.addresses[connectedChainId] as Address,
+              spender: routerAddress,
+            })
 
       const minWithSlippage = subtractSlippage(
         query?.minAmountOut ?? 0n,
@@ -687,7 +670,8 @@ const SwapCard = ({
         approveToken(
           swapQuote.routerAddress,
           connectedChainId,
-          fromToken.addresses[connectedChainId]
+          fromToken.addresses[connectedChainId],
+          fromInput.bigInt
         )
       properties.label = `Approve ${fromToken.symbol}`
       properties.pendingLabel = `Approving ${fromToken.symbol}`

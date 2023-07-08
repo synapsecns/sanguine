@@ -1,13 +1,10 @@
-import { erc20ABI } from 'wagmi'
-import { getWalletClient } from '@wagmi/core'
-import { Contract } from 'ethers'
-import { MaxInt256 } from '@ethersproject/constants'
+import { Address } from '@wagmi/core'
 import { CHAINS_BY_ID } from '@/constants/chains'
 import { txErrorHandler } from './txErrorHandler'
 import toast from 'react-hot-toast'
 import ExplorerToastLink from '@components/ExplorerToastLink'
-import { walletClientToSigner } from '@/ethers'
 import { zeroAddress } from 'viem'
+import { getErc20TokenApproval } from '@/actions/getErc20TokenApproval'
 
 export const approveToken = async (
   address: string,
@@ -24,40 +21,34 @@ export const approveToken = async (
     duration: Infinity,
   })
 
-  // TODO store this erc20 and signer retrieval in a state in a parent component
-  const signer = await getWalletClient({
-    chainId,
-  })
-
-  const erc20 = new Contract(
-    tokenAddress,
-    erc20ABI,
-    walletClientToSigner(signer)
-  )
   try {
-    const approveTx = await erc20.approve(address, amount ?? MaxInt256)
-    await approveTx.wait().then((successTx) => {
-      if (successTx) {
-        toast.dismiss(pendingPopup)
-
-        const successToastContent = (
-          <div>
-            <div>Successfully approved on {currentChainName}</div>
-            <ExplorerToastLink
-              transactionHash={approveTx?.hash ?? zeroAddress}
-              chainId={chainId}
-            />
-          </div>
-        )
-
-        successPopup = toast.success(successToastContent, {
-          id: 'approve-success-popup',
-          duration: 10000,
-        })
-      }
+    const approveTx = await getErc20TokenApproval({
+      spender: address as Address,
+      chainId,
+      tokenAddress: tokenAddress as Address,
+      amount,
     })
 
-    return approveTx
+    if (approveTx.status === 'success') {
+      toast.dismiss(pendingPopup)
+
+      const successToastContent = (
+        <div>
+          <div>Successfully approved on {currentChainName}</div>
+          <ExplorerToastLink
+            transactionHash={approveTx?.transactionHash ?? zeroAddress}
+            chainId={chainId}
+          />
+        </div>
+      )
+
+      successPopup = toast.success(successToastContent, {
+        id: 'approve-success-popup',
+        duration: 10000,
+      })
+    }
+
+    return approveTx.transactionHash
   } catch (error) {
     toast.dismiss(pendingPopup)
     console.log(`Transaction failed with error: ${error}`)
