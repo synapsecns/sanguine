@@ -16,17 +16,33 @@ export const swapPoolAddLiquidity = async ({
   pool: any
   spendTransactionArgs: any
 }) => {
-  const { abi, poolAddress } = getSwapDepositContractFields(pool, chainId)
+  const { abi, poolAddress, swapType } = getSwapDepositContractFields(
+    pool,
+    chainId
+  )
 
-  console.log(`spendTransactionArgs`, spendTransactionArgs)
-
-  const config = await prepareWriteContract({
+  const pwcBaseConfig = {
     chainId,
     address: poolAddress,
     abi,
     functionName: 'addLiquidity',
-    args: [...spendTransactionArgs],
-  })
+    args: [...spendTransactionArgs].slice(0, 3),
+  }
+
+  let pwcConfig
+
+  if (swapType === 'SWAP') {
+    pwcConfig = pwcBaseConfig
+  } else if (swapType === 'SWAP_ETH') {
+    pwcConfig = {
+      ...pwcBaseConfig,
+      value: [...spendTransactionArgs][3].value,
+    }
+  } else if (swapType === 'AV_SWAP') {
+    pwcConfig = pwcBaseConfig
+  }
+
+  const config = await prepareWriteContract(pwcConfig)
 
   const { hash } = await writeContract(config)
   const txReceipt: TransactionReceipt = await waitForTransaction({ hash })
