@@ -3,6 +3,7 @@ package base
 import (
 	"context"
 	"fmt"
+	"golang.org/x/sync/errgroup"
 
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/synapsecns/sanguine/core/metrics"
@@ -80,4 +81,55 @@ func (s Store) RetrieveLastIndexed(ctx context.Context, contractAddress common.A
 		return 0, fmt.Errorf("could not retrieve last indexed info: %w", dbTx.Error)
 	}
 	return entry.BlockNumber, nil
+}
+
+// StoreLastIndexedMultiple stores the last indexed block numbers for numerous contracts.
+func (s Store) StoreLastIndexedMultiple(parentCtx context.Context, contractAddresses []common.Address, chainID uint32, blockNumber uint64) (err error) {
+	g, groupCtx := errgroup.WithContext(parentCtx)
+
+	for i := range contractAddresses {
+		index := i
+		g.Go(func() error {
+			s.StoreLastIndexed(groupCtx, contractAddresses[index], chainID, blockNumber)
+			if err != nil {
+				return fmt.Errorf("could not backfill: %w", err)
+			}
+			return nil
+		})
+	}
+	if err := g.Wait(); err != nil {
+		return fmt.Errorf("could not store last indexed: %w", err)
+	}
+
+	return nil
+}
+
+// RetrieveLastIndexedMultiple retrieves the last indexed block numbers for numerous contracts.
+func (s Store) RetrieveLastIndexedMultiple(ctx context.Context, contractAddresses []common.Address, chainID uint32) (map[common.Address]uint64, error) {
+	var entries []LastIndexedInfo
+	addrStrings := make([]string, len(contractAddresses))
+	for i, addr := range contractAddresses {
+		addrStrings[i] = addr.String()
+	}
+
+	dbTx := s.DB().WithContext(ctx).
+		Model(&LastIndexedInfo{}).
+		Where("contract_address in ? AND chain_id = ?", addrStrings, chainID).
+		Find(&entries)
+
+	if dbTx.Error != nil {
+		return nil, fmt.Errorf("could not retrieve last indexed info: %w", dbTx.Error)
+	}
+
+	result := make(map[common.Address]uint64)
+	for _, addr := range contractAddresses {
+		result[addr] = 0
+	}
+
+	for _, entry := range entries {
+		addr := common.HexToAddress(entry.ContractAddress)
+		result[addr] = entry.BlockNumber
+	}
+
+	return result, nil
 }

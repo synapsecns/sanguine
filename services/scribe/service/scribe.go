@@ -1,4 +1,4 @@
-package backfill
+package service
 
 import (
 	"context"
@@ -16,7 +16,7 @@ type ScribeBackfiller struct {
 	// clients is a mapping of chain IDs -> clients.
 	clients map[uint32][]ScribeBackend
 	// ChainBackfillers is a mapping of chain IDs -> chain backfillers.
-	ChainBackfillers map[uint32]*ChainBackfiller
+	ChainBackfillers map[uint32]*ChainIndexer
 	// config is the config for the backfiller.
 	config config.Config
 	// handler is the metrics handler for the scribe.
@@ -25,10 +25,10 @@ type ScribeBackfiller struct {
 
 // NewScribeBackfiller creates a new backfiller for the scribe.
 func NewScribeBackfiller(eventDB db.EventDB, clientsMap map[uint32][]ScribeBackend, config config.Config, handler metrics.Handler) (*ScribeBackfiller, error) {
-	chainBackfillers := map[uint32]*ChainBackfiller{}
+	chainBackfillers := map[uint32]*ChainIndexer{}
 
 	for _, chainConfig := range config.Chains {
-		chainBackfiller, err := NewChainBackfiller(eventDB, clientsMap[chainConfig.ChainID], chainConfig, 1, handler)
+		chainBackfiller, err := NewChainIndexer(eventDB, clientsMap[chainConfig.ChainID], chainConfig, 1, handler)
 		if err != nil {
 			return nil, fmt.Errorf("could not create chain backfiller: %w", err)
 		}
@@ -53,7 +53,7 @@ func (s ScribeBackfiller) Backfill(ctx context.Context) error {
 		chainBackfiller := s.ChainBackfillers[i]
 		g.Go(func() error {
 			LogEvent(InfoLevel, "Scribe backfilling chain", LogData{"cid": chainBackfiller.chainID})
-			err := chainBackfiller.Backfill(groupCtx, nil, false)
+			err := chainBackfiller.Index(groupCtx, nil, false)
 			if err != nil {
 				return fmt.Errorf("could not backfill chain: %w", err)
 			}

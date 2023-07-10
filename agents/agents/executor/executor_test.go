@@ -148,13 +148,13 @@ func (e *ExecutorSuite) TestMerkleInsert() {
 	scribeConfig := config.Config{
 		Chains: []config.ChainConfig{chainConfig},
 	}
-	simulatedClient, err := backfill.DialBackend(e.GetTestContext(), e.TestBackendOrigin.RPCAddress(), e.ScribeMetrics)
+	simulatedClient, err := index.DialBackend(e.GetTestContext(), e.TestBackendOrigin.RPCAddress(), e.ScribeMetrics)
 	e.Nil(err)
-	clients := map[uint32][]backfill.ScribeBackend{
+	clients := map[uint32][]index.ScribeBackend{
 		chainID: {simulatedClient, simulatedClient},
 	}
 
-	scribe, err := node.NewScribe(e.ScribeTestDB, clients, scribeConfig, e.ScribeMetrics)
+	scribe, err := scribe.NewScribe(e.ScribeTestDB, clients, scribeConfig, e.ScribeMetrics)
 	e.Nil(err)
 
 	scribeClient := client.NewEmbeddedScribe("sqlite", e.DBPath, e.ScribeMetrics)
@@ -484,11 +484,11 @@ func (e *ExecutorSuite) TestExecutor() {
 
 	testContractDest, _ := e.TestDeployManager.GetAgentsTestContract(e.GetTestContext(), e.TestBackendDestination)
 
-	originClient, err := backfill.DialBackend(e.GetTestContext(), e.TestBackendOrigin.RPCAddress(), e.ScribeMetrics)
+	originClient, err := index.DialBackend(e.GetTestContext(), e.TestBackendOrigin.RPCAddress(), e.ScribeMetrics)
 	e.Nil(err)
-	destinationClient, err := backfill.DialBackend(e.GetTestContext(), e.TestBackendDestination.RPCAddress(), e.ScribeMetrics)
+	destinationClient, err := index.DialBackend(e.GetTestContext(), e.TestBackendDestination.RPCAddress(), e.ScribeMetrics)
 	e.Nil(err)
-	summitClient, err := backfill.DialBackend(e.GetTestContext(), e.TestBackendSummit.RPCAddress(), e.ScribeMetrics)
+	summitClient, err := index.DialBackend(e.GetTestContext(), e.TestBackendSummit.RPCAddress(), e.ScribeMetrics)
 	e.Nil(err)
 
 	originConfig := config.ContractConfig{
@@ -542,13 +542,13 @@ func (e *ExecutorSuite) TestExecutor() {
 	scribeConfig := config.Config{
 		Chains: []config.ChainConfig{originChainConfig, destinationChainConfig, summitChainConfig},
 	}
-	clients := map[uint32][]backfill.ScribeBackend{
+	clients := map[uint32][]index.ScribeBackend{
 		chainID:     {originClient, originClient},
 		destination: {destinationClient, destinationClient},
 		summit:      {summitClient, summitClient},
 	}
 
-	scribe, err := node.NewScribe(e.ScribeTestDB, clients, scribeConfig, e.ScribeMetrics)
+	scribe, err := scribe.NewScribe(e.ScribeTestDB, clients, scribeConfig, e.ScribeMetrics)
 	e.Nil(err)
 
 	scribeClient := client.NewEmbeddedScribe("sqlite", e.DBPath, e.ScribeMetrics)

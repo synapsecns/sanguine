@@ -39,6 +39,8 @@ type EventDBWriter interface {
 
 	// StoreLastIndexed stores the last indexed for a contract address
 	StoreLastIndexed(ctx context.Context, contractAddress common.Address, chainID uint32, blockNumber uint64) error
+	// StoreLastIndexedMultiple stores the last indexed block numbers for numerous contracts.
+	StoreLastIndexedMultiple(ctx context.Context, contractAddresses []common.Address, chainID uint32, blockNumber uint64) error
 
 	// StoreLastConfirmedBlock stores the last block number that has been confirmed.
 	// It updates the value if there is a previous last block confirmed value, and creates a new
@@ -73,6 +75,8 @@ type EventDBReader interface {
 	// RetrieveLastIndexed retrieves the last indexed for a contract address
 	RetrieveLastIndexed(ctx context.Context, contractAddress common.Address, chainID uint32) (uint64, error)
 
+	// RetrieveLastIndexedMultiple retrieves the last indexed block numbers for numerous contracts.
+	RetrieveLastIndexedMultiple(ctx context.Context, contractAddresses []common.Address, chainID uint32) (map[common.Address]uint64, error)
 	// RetrieveLastConfirmedBlock retrieves the last block number that has been confirmed.
 	RetrieveLastConfirmedBlock(ctx context.Context, chainID uint32) (uint64, error)
 

@@ -1,4 +1,4 @@
-package backfill_test
+package service_test
 
 import (
 	"github.com/synapsecns/sanguine/ethergo/backends/geth"
@@ -8,7 +8,6 @@ import (
 	"github.com/brianvoe/gofakeit/v6"
 	. "github.com/stretchr/testify/assert"
 	"github.com/synapsecns/sanguine/ethergo/contracts"
-	"github.com/synapsecns/sanguine/services/scribe/backfill"
 	"github.com/synapsecns/sanguine/services/scribe/config"
 	"github.com/synapsecns/sanguine/services/scribe/db"
 	"github.com/synapsecns/sanguine/services/scribe/testutil"
@@ -26,7 +25,7 @@ func (b BackfillSuite) TestScribeBackfill() {
 	chains := []uint32{chainA, chainB, chainC}
 
 	simulatedBackends := make([]*geth.Backend, len(chains))
-	simulatedClients := make([]backfill.ScribeBackend, len(chains))
+	simulatedClients := make([]index.ScribeBackend, len(chains))
 
 	var wg sync.WaitGroup
 	var mux sync.Mutex
@@ -41,7 +40,7 @@ func (b BackfillSuite) TestScribeBackfill() {
 		go func() {
 			defer wg.Done()
 			simulatedBackend := geth.NewEmbeddedBackendForChainID(b.GetTestContext(), b.T(), big.NewInt(int64(chain)))
-			simulatedClient, err := backfill.DialBackend(b.GetTestContext(), simulatedBackend.RPCAddress(), b.metrics)
+			simulatedClient, err := index.DialBackend(b.GetTestContext(), simulatedBackend.RPCAddress(), b.metrics)
 			Nil(b.T(), err)
 
 			mux.Lock()
@@ -110,25 +109,25 @@ func (b BackfillSuite) TestScribeBackfill() {
 	}
 
 	// Set up all chain backfillers.
-	chainBackfillers := []*backfill.ChainBackfiller{}
+	chainBackfillers := []*index.ChainBackfiller{}
 	for i, chainConfig := range allChainConfigs {
-		simulatedChainArr := []backfill.ScribeBackend{simulatedClients[i], simulatedClients[i]}
-		chainBackfiller, err := backfill.NewChainBackfiller(b.testDB, simulatedChainArr, chainConfig, 1, b.metrics)
+		simulatedChainArr := []index.ScribeBackend{simulatedClients[i], simulatedClients[i]}
+		chainBackfiller, err := index.NewChainBackfiller(b.testDB, simulatedChainArr, chainConfig, 1, b.metrics)
 		Nil(b.T(), err)
 		chainBackfillers = append(chainBackfillers, chainBackfiller)
 	}
 
-	scribeBackends := make(map[uint32][]backfill.ScribeBackend)
+	scribeBackends := make(map[uint32][]index.ScribeBackend)
 	for i := range simulatedBackends {
 		client := simulatedClients[i]
 		backend := simulatedBackends[i]
 
-		simulatedChainArr := []backfill.ScribeBackend{client, client}
+		simulatedChainArr := []index.ScribeBackend{client, client}
 		scribeBackends[uint32(backend.GetChainID())] = simulatedChainArr
 	}
 
 	// Set up the scribe backfiller.
-	scribeBackfiller, err := backfill.NewScribeBackfiller(b.testDB, scribeBackends, scribeConfig, b.metrics)
+	scribeBackfiller, err := index.NewScribeBackfiller(b.testDB, scribeBackends, scribeConfig, b.metrics)
 	Nil(b.T(), err)
 
 	// Run the backfill test for each chain.

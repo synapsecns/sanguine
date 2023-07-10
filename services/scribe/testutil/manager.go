@@ -10,7 +10,8 @@ import (
 func NewDeployManager(t *testing.T) *DeployManager {
 	t.Helper()
 
-	parentManager := manager.NewDeployerManager(t, NewTestContractDeployer)
+	parentManager := manager.NewDeployerManager(t, NewTestContractDeployer, NewTestContract2Deployer)
+
 	return &DeployManager{parentManager}
 }
 

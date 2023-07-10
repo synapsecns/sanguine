@@ -143,11 +143,11 @@ var ExecutorRunCommand = &cli.Command{
 				return fmt.Errorf("failed to initialize database: %w", err)
 			}
 
-			scribeClients := make(map[uint32][]backfill.ScribeBackend)
+			scribeClients := make(map[uint32][]index.ScribeBackend)
 
 			for _, client := range executorConfig.ScribeConfig.EmbeddedScribeConfig.Chains {
 				for confNum := 1; confNum <= scribeCmd.MaxConfirmations; confNum++ {
-					backendClient, err := backfill.DialBackend(ctx, fmt.Sprintf("%s/%d/rpc/%d", executorConfig.BaseOmnirpcURL, confNum, client.ChainID), handler)
+					backendClient, err := index.DialBackend(ctx, fmt.Sprintf("%s/%d/rpc/%d", executorConfig.BaseOmnirpcURL, confNum, client.ChainID), handler)
 					if err != nil {
 						return fmt.Errorf("could not start client for %s", fmt.Sprintf("%s/1/rpc/%d", executorConfig.BaseOmnirpcURL, client.ChainID))
 					}
@@ -156,7 +156,7 @@ var ExecutorRunCommand = &cli.Command{
 				}
 			}
 
-			scribe, err := node.NewScribe(eventDB, scribeClients, executorConfig.ScribeConfig.EmbeddedScribeConfig, handler)
+			scribe, err := scribe.NewScribe(eventDB, scribeClients, executorConfig.ScribeConfig.EmbeddedScribeConfig, handler)
 			if err != nil {
 				return fmt.Errorf("failed to initialize scribe: %w", err)
 			}

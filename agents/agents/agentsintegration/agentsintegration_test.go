@@ -39,11 +39,11 @@ func (u *AgentsIntegrationSuite) TestAgentsE2E() {
 		testDone = true
 	}()
 
-	originClient, err := backfill.DialBackend(u.GetTestContext(), u.TestBackendOrigin.RPCAddress(), u.ScribeMetrics)
+	originClient, err := index.DialBackend(u.GetTestContext(), u.TestBackendOrigin.RPCAddress(), u.ScribeMetrics)
 	u.Nil(err)
-	destinationClient, err := backfill.DialBackend(u.GetTestContext(), u.TestBackendDestination.RPCAddress(), u.ScribeMetrics)
+	destinationClient, err := index.DialBackend(u.GetTestContext(), u.TestBackendDestination.RPCAddress(), u.ScribeMetrics)
 	u.Nil(err)
-	summitClient, err := backfill.DialBackend(u.GetTestContext(), u.TestBackendSummit.RPCAddress(), u.ScribeMetrics)
+	summitClient, err := index.DialBackend(u.GetTestContext(), u.TestBackendSummit.RPCAddress(), u.ScribeMetrics)
 	u.Nil(err)
 
 	originConfig := scribeConfig.ContractConfig{
@@ -97,13 +97,13 @@ func (u *AgentsIntegrationSuite) TestAgentsE2E() {
 	scribeConfig := scribeConfig.Config{
 		Chains: []scribeConfig.ChainConfig{originChainConfig, destinationChainConfig, summitChainConfig},
 	}
-	clients := map[uint32][]backfill.ScribeBackend{
+	clients := map[uint32][]index.ScribeBackend{
 		uint32(u.TestBackendOrigin.GetChainID()):      {originClient, originClient},
 		uint32(u.TestBackendDestination.GetChainID()): {destinationClient, destinationClient},
 		uint32(u.TestBackendSummit.GetChainID()):      {summitClient, summitClient},
 	}
 
-	scribe, err := node.NewScribe(u.ScribeTestDB, clients, scribeConfig, u.ScribeMetrics)
+	scribe, err := scribe.NewScribe(u.ScribeTestDB, clients, scribeConfig, u.ScribeMetrics)
 	u.Nil(err)
 
 	scribeClient := client.NewEmbeddedScribe("sqlite", u.DBPath, u.ScribeMetrics)

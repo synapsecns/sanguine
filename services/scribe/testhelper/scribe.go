@@ -39,7 +39,7 @@ func NewTestScribe(ctx context.Context, tb testing.TB, deployedContracts map[uin
 	eventDB, err := scribeAPI.InitDB(ctx, "sqlite", dbPath, metricsProvider, false)
 	assert.Nil(tb, err)
 
-	scribeClients := make(map[uint32][]backfill.ScribeBackend)
+	scribeClients := make(map[uint32][]index.ScribeBackend)
 
 	var chainConfigs []config.ChainConfig
 
@@ -48,11 +48,11 @@ func NewTestScribe(ctx context.Context, tb testing.TB, deployedContracts map[uin
 		chainID := uint32(backend.GetChainID())
 
 		// create the scribe backend client
-		backendClient, err := backfill.DialBackend(ctx, testhelper.GetURL(omnirpcURL, backend), metricsProvider)
+		backendClient, err := index.DialBackend(ctx, testhelper.GetURL(omnirpcURL, backend), metricsProvider)
 		assert.Nil(tb, err)
 
 		// creat ethe scribe client for this chain
-		scribeClients[chainID] = []backfill.ScribeBackend{backendClient}
+		scribeClients[chainID] = []index.ScribeBackend{backendClient}
 
 		// loop through all deployed contracts for this chainid adding them to our config
 		contractConfigs := getContractConfig(deployedContracts[chainID])
@@ -69,7 +69,7 @@ func NewTestScribe(ctx context.Context, tb testing.TB, deployedContracts map[uin
 		RPCURL: omnirpcURL,
 	}
 
-	scribe, err := node.NewScribe(eventDB, scribeClients, scribeConfig, metricsProvider)
+	scribe, err := scribe.NewScribe(eventDB, scribeClients, scribeConfig, metricsProvider)
 	assert.Nil(tb, err)
 
 	go func() {

@@ -4,6 +4,7 @@ import (
 	"github.com/ethereum/go-ethereum/common/compiler"
 	"github.com/synapsecns/sanguine/ethergo/contracts"
 	"github.com/synapsecns/sanguine/services/scribe/testutil/testcontract"
+	"github.com/synapsecns/sanguine/services/scribe/testutil/testcontract2"
 )
 
 // set all contact types.
@@ -36,7 +37,9 @@ type contractTypeImpl int
 
 const (
 	// TestContractType is the type of the test contract.
-	TestContractType contractTypeImpl = 0 // TestContract
+	TestContractType contractTypeImpl = iota
+	// TestContract2Type is a duplicate of test contract used for testing multiple contract addresses.
+	TestContract2Type
 )
 
 // ID gets the contract type as an id.
@@ -61,6 +64,8 @@ func (c contractTypeImpl) ContractInfo() *compiler.Contract {
 	switch c {
 	case TestContractType:
 		return testcontract.Contracts["solidity/TestContract.sol:TestContract"]
+	case TestContract2Type:
+		return testcontract2.Contracts["solidity/TestContract.sol:TestContract"]
 	default:
 		panic("not yet implemented")
 	}
