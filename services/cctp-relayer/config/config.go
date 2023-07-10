@@ -17,6 +17,10 @@ import (
 
 // Config is used to configure an Executor agent.
 type Config struct {
+	// Port is the RelayerAPIServer port
+	Port uint16 `yaml:"port"`
+	// Host is the RelayerAPIServer host
+	Host string `yaml:"host"`
 	// CircleAPIURl is the URL for the Circle API
 	CircleAPIURl string `yaml:"circle_api_url"`
 	// Chains stores all chain information

@@ -15,11 +15,12 @@ import (
 	"github.com/ethereum/go-ethereum/crypto"
 	signerConfig "github.com/synapsecns/sanguine/ethergo/signer/config"
 	"github.com/synapsecns/sanguine/ethergo/submitter"
+	"github.com/synapsecns/sanguine/services/cctp-relayer/api"
+	"github.com/synapsecns/sanguine/services/cctp-relayer/attestation"
 	db2 "github.com/synapsecns/sanguine/services/cctp-relayer/db"
 	relayTypes "github.com/synapsecns/sanguine/services/cctp-relayer/types"
 
 	"github.com/ethereum/go-ethereum/common"
-	"github.com/synapsecns/sanguine/services/cctp-relayer/api"
 	"github.com/synapsecns/sanguine/services/cctp-relayer/contracts/cctp"
 	"github.com/synapsecns/sanguine/services/cctp-relayer/contracts/mockmessagetransmitter"
 	"go.opentelemetry.io/otel/attribute"
@@ -63,11 +64,15 @@ type CCTPRelayer struct {
 	// handler is the metrics handler.
 	handler metrics.Handler
 	// attestationAPI is the client for Circle's REST API.
-	attestationAPI api.AttestationAPI
+	attestationAPI attestation.CCTPAPI
 	// txSubmitter is the tx submission service
 	txSubmitter submitter.TransactionSubmitter
 	// boundSynapseCCTPs is a map from chain ID -> SynapseCCTP.
 	boundSynapseCCTPs map[uint32]*cctp.SynapseCCTP
+	// relayerAPI is the relayer api server for queueing external relay requests.
+	relayerAPI *api.RelayerAPIServer
+	// relayRequestChan is a channel that is used to process relay requests from the api server.
+	relayRequestChan chan *api.RelayRequest
 	// retryNow is used to trigger a retry immediately.
 	// it circumvents the retry interval.
 	// to prevent memory leaks, this has a buffer of 1.
@@ -78,7 +83,7 @@ type CCTPRelayer struct {
 }
 
 // NewCCTPRelayer creates a new CCTPRelayer.
-func NewCCTPRelayer(ctx context.Context, cfg config.Config, store db2.CCTPRelayerDB, scribeClient client.ScribeClient, omniRPCClient omniClient.RPCClient, handler metrics.Handler, attestationAPI api.AttestationAPI) (*CCTPRelayer, error) {
+func NewCCTPRelayer(ctx context.Context, cfg config.Config, store db2.CCTPRelayerDB, scribeClient client.ScribeClient, omniRPCClient omniClient.RPCClient, handler metrics.Handler, attestationAPI attestation.CCTPAPI) (*CCTPRelayer, error) {
 	conn, err := grpc.DialContext(ctx, fmt.Sprintf("%s:%d", scribeClient.URL, scribeClient.Port),
 		grpc.WithTransportCredentials(insecure.NewCredentials()),
 		grpc.WithUnaryInterceptor(otelgrpc.UnaryClientInterceptor(otelgrpc.WithTracerProvider(handler.GetTracerProvider()))),
@@ -126,6 +131,9 @@ func NewCCTPRelayer(ctx context.Context, cfg config.Config, store db2.CCTPRelaye
 
 	txSubmitter := submitter.NewTransactionSubmitter(handler, signer, omniRPCClient, store.SubmitterDB(), &cfg.SubmitterConfig)
 
+	relayerRequestChan := make(chan *api.RelayRequest, 1000)
+	relayerAPI := api.NewRelayerAPIServer(cfg.Port, cfg.Host, store, relayerRequestChan)
+
 	return &CCTPRelayer{
 		cfg:               cfg,
 		db:                store,
@@ -134,6 +142,8 @@ func NewCCTPRelayer(ctx context.Context, cfg config.Config, store db2.CCTPRelaye
 		scribeClient:      scribeClient,
 		grpcClient:        grpcClient,
 		grpcConn:          conn,
+		relayerAPI:        relayerAPI,
+		relayRequestChan:  relayerRequestChan,
 		retryNow:          make(chan bool, 1),
 		handler:           handler,
 		attestationAPI:    attestationAPI,
@@ -301,6 +311,22 @@ func (c *CCTPRelayer) Run(parentCtx context.Context) error {
 		return err
 	})
 
+	g.Go(func() error {
+		err := c.processAPIRequests(ctx)
+		if err != nil {
+			err = fmt.Errorf("could not process api requests: %w", err)
+		}
+		return err
+	})
+
+	g.Go(func() error {
+		err := c.relayerAPI.Start(ctx)
+		if err != nil {
+			err = fmt.Errorf("could not start relayer api: %w", err)
+		}
+		return err
+	})
+
 	if err := g.Wait(); err != nil {
 		return fmt.Errorf("error in cctp relayer: %w", err)
 	}
@@ -367,6 +393,26 @@ func (c *CCTPRelayer) streamLogs(ctx context.Context, grpcClient pbscribe.Scribe
 			err = c.handleLog(ctx, response.Log.ToLog(), chainID)
 			if err != nil {
 				return err
+			}
+		}
+	}
+}
+
+// processAPIRequests processes requests from the API.
+func (c *CCTPRelayer) processAPIRequests(ctx context.Context) error {
+	for {
+		select {
+		case <-ctx.Done():
+			return fmt.Errorf("context done: %w", ctx.Err())
+		default:
+			relayRequest := <-c.relayRequestChan
+			msg, err := c.fetchAndStoreCircleRequestSent(ctx, relayRequest.TxHash, relayRequest.Origin)
+			if err != nil {
+				return fmt.Errorf("could not fetch and store circle request sent from api: %w", err)
+			}
+
+			if msg != nil {
+				c.triggerProcessQueue(ctx)
 			}
 		}
 	}
