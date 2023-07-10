@@ -25,7 +25,7 @@ export const Portfolio = () => {
 
   const {
     balancesAndAllowances: portfolioData,
-    fetchPortfolioBalances: refetch,
+    fetchPortfolioBalances,
     status: fetchState,
   } = usePortfolioBalancesAndAllowances()
 
@@ -40,6 +40,10 @@ export const Portfolio = () => {
       setTab(PortfolioTabs.PORTFOLIO)
     }
   }, [address])
+
+  useEffect(() => {
+    fetchPortfolioBalances()
+  }, [address, chain])
 
   return (
     <div

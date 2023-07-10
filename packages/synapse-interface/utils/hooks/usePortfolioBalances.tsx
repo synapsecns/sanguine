@@ -114,11 +114,6 @@ export const usePortfolioBalancesAndAllowances = (): {
     }
   }
 
-  useEffect(() => {
-    if (!address) return
-    fetchPortfolioBalances()
-  }, [address, chain?.id])
-
   return useMemo(() => {
     return { balancesAndAllowances, fetchPortfolioBalances, status }
   }, [balancesAndAllowances, fetchPortfolioBalances])
