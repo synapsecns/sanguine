@@ -457,14 +457,7 @@ const StateManagedBridge = () => {
   const springClass = 'fixed z-50 w-full h-full bg-opacity-50'
 
   return (
-    // <LandingPageWrapper>
-    //   <main
-    //     data-test-id="bridge-page"
-    //     className="relative z-0 flex-1 h-full overflow-y-auto focus:outline-none"
-    //   >
-    //     <div className="flex flex-col justify-center px-4 py-20 mx-auto mt-4 lg:flex-row 2xl:w-3/4 sm:mt-6 sm:px-8 md:px-12">
-    //       <Portfolio />
-    <div className="flex flex-col">
+    <div className="flex flex-col max-w-lg mx-auto lg:mx-0">
       <div className="flex flex-col px-4 py-2">
         <div className="flex items-center justify-between">
           <PageHeader
@@ -591,9 +584,6 @@ const StateManagedBridge = () => {
         />
       </div>
     </div>
-    // </div>
-    //   </main>
-    // </LandingPageWrapper>
   )
 }
 
