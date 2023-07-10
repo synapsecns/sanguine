@@ -227,6 +227,7 @@ const PortfolioTokenAsset = ({
           `}
         >
           <Image
+            loading="lazy"
             alt={`${symbol} img`}
             className="w-6 h-6 mr-2 rounded-md"
             src={icon}
@@ -374,6 +375,7 @@ const PortfolioTokenVisualizer = ({
     >
       {hasOneToken && (
         <Image
+          loading="lazy"
           className="w-6 h-6 rounded-md"
           alt={`${portfolioTokens[0].token.symbol} img`}
           src={portfolioTokens[0].token.icon}
@@ -381,6 +383,7 @@ const PortfolioTokenVisualizer = ({
       )}
       {hasTwoTokens && (
         <Image
+          loading="lazy"
           className="w-6 h-6 ml-1 rounded-md"
           alt={`${portfolioTokens[1].token.symbol} img`}
           src={portfolioTokens[1].token.icon}
