@@ -13,7 +13,7 @@ type Parser interface {
 	// EventType is the event type.
 	EventType(log ethTypes.Log) (_ EventType, ok bool)
 	// ParseSnapshotAccepted parses a SnapshotAccepted event.
-	ParseSnapshotAccepted(log ethTypes.Log) (_ types.Snapshot, domain uint32, ok bool)
+	ParseSnapshotAccepted(log ethTypes.Log) (_ types.Snapshot, domain uint32, agentSig []byte, ok bool)
 }
 
 type parserImpl struct {
@@ -45,18 +45,18 @@ func (p parserImpl) EventType(log ethTypes.Log) (_ EventType, ok bool) {
 }
 
 // ParseSnapshotAccepted parses a SnapshotAccepted event.
-func (p parserImpl) ParseSnapshotAccepted(log ethTypes.Log) (_ types.Snapshot, domain uint32, ok bool) {
+func (p parserImpl) ParseSnapshotAccepted(log ethTypes.Log) (_ types.Snapshot, domain uint32, agentSig []byte, ok bool) {
 	inboxSnapshot, err := p.filterer.ParseSnapshotAccepted(log)
 	if err != nil {
-		return nil, 0, false
+		return nil, 0, nil, false
 	}
 
 	snapshot, err := types.DecodeSnapshot(inboxSnapshot.SnapPayload)
 	if err != nil {
-		return nil, 0, false
+		return nil, 0, nil, false
 	}
 
-	return snapshot, inboxSnapshot.Domain, true
+	return snapshot, inboxSnapshot.Domain, inboxSnapshot.SnapSignature, true
 }
 
 // EventType is the type of the summit events

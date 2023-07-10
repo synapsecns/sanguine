@@ -3,9 +3,11 @@ package domains
 import (
 	"context"
 	"errors"
+	ethTypes "github.com/ethereum/go-ethereum/core/types"
 	"github.com/synapsecns/sanguine/agents/contracts/destination"
 	"github.com/synapsecns/sanguine/agents/contracts/inbox"
 	"github.com/synapsecns/sanguine/agents/contracts/lightinbox"
+	"github.com/synapsecns/sanguine/agents/contracts/origin"
 	"github.com/synapsecns/sanguine/ethergo/signer/nonce"
 	"math/big"
 
@@ -47,6 +49,10 @@ type DomainClient interface {
 
 // OriginContract represents the origin contract on a particular chain.
 type OriginContract interface {
+	// GetContractRef gets the origin contract ref.
+	GetContractRef() *origin.OriginRef
+	// IsValidState checks if the given state is valid on its origin.
+	IsValidState(ctx context.Context, statePayload []byte) (isValid bool, err error)
 	// FetchSortedMessages fetches all messages in order form lowest->highest in a given block range
 	FetchSortedMessages(ctx context.Context, from uint32, to uint32) (messages []types.Message, err error)
 	// SuggestLatestState gets the latest state on the origin
@@ -73,6 +79,8 @@ type InboxContract interface {
 	GetContractRef() *inbox.InboxRef
 	// GetNonceManager gets the nonce manager for the inbox.
 	GetNonceManager() nonce.Manager
+	// SubmitStateReportWithSnapshot reports to the inbox that a state within a snapshot is invalid.
+	SubmitStateReportWithSnapshot(ctx context.Context, signer signer.Signer, stateIndex int64, signature signer.Signature, snapPayload []byte, snapSignature []byte) (tx *ethTypes.Transaction, err error)
 	// SubmitSnapshot submits a snapshot to the inbox (via the Inbox).
 	SubmitSnapshot(ctx context.Context, signer signer.Signer, encodedSnapshot []byte, signature signer.Signature) error
 }

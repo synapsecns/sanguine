@@ -37,8 +37,8 @@ import (
 type Guard struct {
 	bondedSigner       signer.Signer
 	unbondedSigner     signer.Signer
-	domains            []domains.DomainClient
-	summitDomain       domains.DomainClient
+	domains            map[uint32]domains.DomainClient
+	summitDomainID     uint32
 	refreshInterval    time.Duration
 	summitLatestStates map[uint32]types.State
 	// TODO: change to metrics type
@@ -48,6 +48,7 @@ type Guard struct {
 	grpcConn           *grpc.ClientConn
 	logChans           map[uint32]chan *ethTypes.Log
 	inboxParser        inbox.Parser
+	boundInbox         *inbox.Inbox
 	boundOrigins       map[uint32]*origin.Origin
 	txSubmitter        submitter.TransactionSubmitter
 }
@@ -91,7 +92,7 @@ func NewGuard(ctx context.Context, cfg config.AgentConfig, omniRPCClient omnirpc
 	guard := Guard{
 		refreshInterval: time.Second * time.Duration(cfg.RefreshIntervalSeconds),
 	}
-	guard.domains = []domains.DomainClient{}
+	guard.domains = make(map[uint32]domains.DomainClient)
 
 	guard.grpcConn, guard.grpcClient, err = makeScribeClient(ctx, handler, fmt.Sprintf("%s:%d", scribeClient.URL, scribeClient.Port))
 	if err != nil {
@@ -108,7 +109,7 @@ func NewGuard(ctx context.Context, cfg config.AgentConfig, omniRPCClient omnirpc
 		return Guard{}, fmt.Errorf("error with unbondedSigner, could not create guard: %w", err)
 	}
 
-	for domainID, domain := range cfg.Domains {
+	for domainName, domain := range cfg.Domains {
 		var domainClient domains.DomainClient
 
 		omnirpcClient, err := omniRPCClient.GetConfirmationsClient(ctx, int(domain.DomainID), 1)
@@ -118,27 +119,35 @@ func NewGuard(ctx context.Context, cfg config.AgentConfig, omniRPCClient omnirpc
 
 		chainRPCURL := omniRPCClient.GetEndpoint(int(domain.DomainID), 1)
 
-		// TODO: Change the domain config to better suit the map[uint32]DomainConfig rather than map[string]DomainConfig.
-		domainClient, err = evm.NewEVM(ctx, strconv.Itoa(int(domainID)), domain, chainRPCURL)
+		domainClient, err = evm.NewEVM(ctx, domainName, domain, chainRPCURL)
 		if err != nil {
 			return Guard{}, fmt.Errorf("failing to create evm for domain, could not create guard for: %w", err)
 		}
-		guard.domains = append(guard.domains, domainClient)
-		if domain.DomainID == cfg.SummitDomainID {
-			guard.summitDomain = domainClient
-		}
+		guard.domains[domain.DomainID] = domainClient
 
 		guard.logChans[domain.DomainID] = make(chan *ethTypes.Log, logChanSize)
 		guard.boundOrigins[domain.DomainID], err = origin.NewOrigin(
 			common.HexToAddress(domain.OriginAddress),
 			omnirpcClient,
 		)
-	}
 
-	// Create a new inbox parser for the summit domain.
-	guard.inboxParser, err = inbox.NewParser(common.HexToAddress(cfg.Domains[cfg.SummitDomainID].InboxAddress))
-	if err != nil {
-		return Guard{}, fmt.Errorf("could not create inbox parser: %w", err)
+		// Initializations that only need to happen on the Summit domain.
+		if domain.DomainID == cfg.SummitDomainID {
+			guard.summitDomainID = domain.DomainID
+			// Create a new inbox parser for the summit domain.
+			guard.inboxParser, err = inbox.NewParser(common.HexToAddress(domain.InboxAddress))
+			if err != nil {
+				return Guard{}, fmt.Errorf("could not create inbox parser: %w", err)
+			}
+
+			guard.boundInbox, err = inbox.NewInbox(
+				common.HexToAddress(domain.InboxAddress),
+				omnirpcClient,
+			)
+			if err != nil {
+				return Guard{}, fmt.Errorf("could not create bonding manager: %w", err)
+			}
+		}
 	}
 
 	guard.summitLatestStates = make(map[uint32]types.State, len(guard.domains))
@@ -211,16 +220,16 @@ func (g Guard) receiveLogs(ctx context.Context, chainID uint32) error {
 				return fmt.Errorf("log is nil")
 			}
 
-			//err := g.processLog(ctx, *log, chainID)
-			//if err != nil {
-			//	return fmt.Errorf("could not process log: %w", err)
-			//}
+			err := g.processSnapshot(ctx, *log)
+			if err != nil {
+				return fmt.Errorf("could not process log: %w", err)
+			}
 		}
 	}
 }
 
 func (g Guard) processSnapshot(ctx context.Context, log ethTypes.Log) error {
-	snapshot, err := g.logToSnapshot(log)
+	snapshot, agentSig, err := g.logToSnapshot(log)
 	if err != nil {
 		return fmt.Errorf("could not convert log to snapshot: %w", err)
 	}
@@ -234,10 +243,7 @@ func (g Guard) processSnapshot(ctx context.Context, log ethTypes.Log) error {
 		return fmt.Errorf("could not encode snapshot: %w", err)
 	}
 
-	// Going to need this snapshotPayload for the `submitStateReportWithSnapshot`.
-	_ = snapshotPayload
-
-	for _, state := range snapshot.States() {
+	for stateIndex, state := range snapshot.States() {
 		// Check the validity of each state by calling `isValidState` on each state's origin domain.
 		statePayload, err := types.EncodeState(state)
 		if err != nil {
@@ -245,30 +251,53 @@ func (g Guard) processSnapshot(ctx context.Context, log ethTypes.Log) error {
 		}
 
 		// TODO: Have a way to retry failed RPC calls for this check.
-		valid, err := g.boundOrigins[state.Origin()].IsValidState(&bind.CallOpts{Context: ctx}, statePayload)
+		isValid, err := g.domains[state.Origin()].Origin().IsValidState(
+			ctx,
+			statePayload,
+		)
 		if err != nil {
 			return fmt.Errorf("could not check validity of state: %w", err)
 		}
 
-		if !valid {
+		if !isValid {
 			// Call submitStateReportWithSnapshot on (each?) destination domain.
+			err = g.submitStateReports(ctx, int64(stateIndex), snapshotPayload, agentSig)
 		}
 	}
+
+	return nil
+}
+
+func (g Guard) submitStateReports(ctx context.Context, stateIndex int64, snapshotPaylod, snapshotSig []byte) error {
+	// Call on the Summit's `BondingManager` contract.
+	signature, err := g.bondedSigner.SignMessage(ctx, snapshotPaylod, false)
+	if err != nil {
+		return fmt.Errorf("could not sign message: %w", err)
+	}
+
+	// TODO: What is signature here?
+	_, err = g.domains[g.summitDomainID].Inbox().SubmitStateReportWithSnapshot(ctx, g.bondedSigner, stateIndex, signature, snapshotPaylod, snapshotSig)
+	if err != nil {
+		return fmt.Errorf("could not submit state report with snapshot: %w", err)
+	}
+
+	return nil
 }
 
 // logToSnapshot converts the log to a snapshot.
-func (g Guard) logToSnapshot(log ethTypes.Log) (types.Snapshot, error) {
-	snapshot, domain, ok := g.inboxParser.ParseSnapshotAccepted(log)
+func (g Guard) logToSnapshot(log ethTypes.Log) (types.Snapshot, []byte, error) {
+	snapshot, domain, agentSig, ok := g.inboxParser.ParseSnapshotAccepted(log)
 	if !ok {
-		return nil, fmt.Errorf("could not parse snapshot")
+		return nil, nil, fmt.Errorf("could not parse snapshot")
 	}
 
-	if snapshot == nil || domain == 0 {
+	// Domain == 0 check here only qualifies Notary submitted snapshots.
+	if snapshot == nil || domain == 0 || agentSig == nil {
 		//nolint:nilnil
-		return nil, nil
+		return nil, nil, nil
 	}
 
-	return snapshot, nil
+	return snapshot, nil, nil
 }
 
 //nolint:cyclop
@@ -279,7 +308,7 @@ func (g Guard) loadSummitLatestStates(parentCtx context.Context) {
 		))
 
 		originID := domain.Config().DomainID
-		latestState, err := g.summitDomain.Summit().GetLatestAgentState(ctx, originID, g.bondedSigner)
+		latestState, err := g.domains[g.summitDomainID].Summit().GetLatestAgentState(ctx, originID, g.bondedSigner)
 		if err != nil {
 			latestState = nil
 			logger.Errorf("Failed calling GetLatestAgentState for originID %d on the Summit contract: err = %v", originID, err)
@@ -363,8 +392,10 @@ func (g Guard) getLatestSnapshot() (types.Snapshot, map[uint32]types.State) {
 
 //nolint:cyclop
 func (g Guard) submitLatestSnapshot(parentCtx context.Context) {
+	summitDomain := g.domains[g.summitDomainID]
+
 	ctx, span := g.handler.Tracer().Start(parentCtx, "submitLatestSnapshot", trace.WithAttributes(
-		attribute.Int("domain", int(g.summitDomain.Config().DomainID)),
+		attribute.Int("domain", int(g.summitDomainID)),
 	))
 
 	defer func() {
@@ -385,16 +416,16 @@ func (g Guard) submitLatestSnapshot(parentCtx context.Context) {
 			attribute.String("err", err.Error()),
 		))
 	} else {
-		_, err = g.txSubmitter.SubmitTransaction(ctx, big.NewInt(int64(g.summitDomain.Config().DomainID)), func(transactor *bind.TransactOpts) (tx *ethTypes.Transaction, err error) {
+		_, err = g.txSubmitter.SubmitTransaction(ctx, big.NewInt(int64(g.summitDomainID)), func(transactor *bind.TransactOpts) (tx *ethTypes.Transaction, err error) {
 			rawSig, err := types.EncodeSignature(snapshotSignature)
 			if err != nil {
 				return nil, fmt.Errorf("failed to encode signature: %w", err)
 			}
 
-			tx, err = g.summitDomain.Inbox().GetContractRef().SubmitSnapshot(transactor, encodedSnapshot, rawSig)
+			tx, err = summitDomain.Inbox().GetContractRef().SubmitSnapshot(transactor, encodedSnapshot, rawSig)
 			if err != nil {
 				if strings.Contains(err.Error(), "nonce too low") {
-					g.summitDomain.Inbox().GetNonceManager().ClearNonce(g.unbondedSigner.Address())
+					summitDomain.Inbox().GetNonceManager().ClearNonce(g.unbondedSigner.Address())
 				}
 				return nil, fmt.Errorf("failed to submit snapshot: %w", err)
 			}

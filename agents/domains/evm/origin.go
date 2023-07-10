@@ -36,12 +36,25 @@ func NewOriginContract(ctx context.Context, client chain.Chain, originAddress co
 // domains.OriginContract.
 type originContract struct {
 	// contract contains the contract handle
-	contract origin.IOrigin
+	contract *origin.OriginRef
 	// client is the client
 	//nolint: staticcheck
 	client chain.Chain
 	// nonceManager is the nonce manager used for transacting
 	nonceManager nonce.Manager
+}
+
+func (o originContract) GetContractRef() *origin.OriginRef {
+	return o.contract
+}
+
+func (o originContract) IsValidState(ctx context.Context, statePayload []byte) (isValid bool, err error) {
+	isValid, err = o.contract.IsValidState(&bind.CallOpts{Context: ctx}, statePayload)
+	if err != nil {
+		return false, fmt.Errorf("could not check if state is valid: %w", err)
+	}
+
+	return isValid, nil
 }
 
 func (o originContract) FetchSortedMessages(ctx context.Context, from uint32, to uint32) (messages []types.Message, err error) {
