@@ -457,7 +457,7 @@ const StateManagedBridge = () => {
 
   return (
     <div className="flex flex-col w-full max-w-lg mx-auto lg:mx-0">
-      <div className="flex flex-col py-2">
+      <div className="flex flex-col">
         <div className="flex items-center justify-between">
           <PageHeader
             title="Bridge"
