@@ -202,16 +202,19 @@ const StakeCard = ({ address, chainId, pool }: StakeCardProps) => {
             balanceStr={formatBigIntToString(
               lpTokenBalance,
               tokenInfo.decimals,
-              4
+              8
             )}
             onClickBalance={() => {
               setDeposit({
-                str: lpTokenBalance.toString(),
+                str:
+                  lpTokenBalance === 0n
+                    ? '0.0000'
+                    : formatBigIntToString(lpTokenBalance, tokenInfo.decimals),
                 bi: lpTokenBalance,
               })
             }}
-            value={formatBigIntToString(deposit.bi, tokenInfo.decimals)}
-            placeholder={'0.0'}
+            value={deposit.str}
+            placeholder={'0.0000'}
             onChange={async (e) => {
               let val = cleanNumberInput(e.target.value)
               const tkAllowance = await getTokenAllowance(
@@ -265,19 +268,20 @@ const StakeCard = ({ address, chainId, pool }: StakeCardProps) => {
             balanceStr={formatBigIntToString(
               userStakeData.amount,
               tokenInfo.decimals,
-              4
+              8
             )}
             onClickBalance={() => {
               setWithdraw(
-                formatBigIntToString(
-                  userStakeData.amount,
-                  tokenInfo.decimals,
-                  4
-                )
+                userStakeData.amount === 0n
+                  ? '0.0000'
+                  : formatBigIntToString(
+                      userStakeData.amount,
+                      tokenInfo.decimals
+                    )
               )
             }}
             value={withdraw}
-            placeholder={'0.0'}
+            placeholder={'0.0000'}
             onChange={(e) => {
               let val = cleanNumberInput(e.target.value)
               setWithdraw(val)

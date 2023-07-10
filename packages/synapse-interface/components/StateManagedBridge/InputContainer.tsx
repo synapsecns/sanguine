@@ -5,7 +5,7 @@ import { RootState } from '@/store/store'
 
 import { updateFromValue } from '@/slices/bridgeSlice'
 import { setShowFromTokenSlideOver } from '@/slices/bridgeDisplaySlice'
-import { stringToBigNum, stringToBigInt } from '@/utils/stringToBigNum'
+import { stringToBigInt } from '@/utils/stringToBigNum'
 import SelectTokenDropdown from '@/components/input/TokenAmountInput/SelectTokenDropdown'
 import { useAccount } from 'wagmi'
 import MiniMaxButton from '../buttons/MiniMaxButton'
@@ -31,7 +31,7 @@ export const InputContainer = () => {
 
   const fromTokenBalance =
     (hasBalances &&
-      (supportedFromTokenBalances).filter((token) => token.token === fromToken)[0]
+      supportedFromTokenBalances.filter((token) => token.token === fromToken)[0]
         ?.balance) ??
     Zero
   console.log('fromTokenBalance', fromTokenBalance)
@@ -44,15 +44,15 @@ export const InputContainer = () => {
   ) => {
     let fromValueString = event.target.value
     try {
-      let fromValueBigNumber = stringToBigInt(
+      let fromValueBigInteger = stringToBigInt(
         fromValueString,
         fromToken.decimals[fromChainId]
       )
-      console.log('fromValueBigNumber', fromValueBigNumber)
-      dispatch(updateFromValue(fromValueBigNumber as any))
+      console.log('fromValueBigInteger', fromValueBigInteger)
+      dispatch(updateFromValue(fromValueBigInteger as any))
       setShowValue(fromValueString)
     } catch (error) {
-      console.error('Invalid value for conversion to BigNumber')
+      console.error('Invalid value for conversion to BigInteger')
     }
   }
 
@@ -130,7 +130,7 @@ export const InputContainer = () => {
           {hasMounted && isConnected && (
             <div className="hidden mr-2 sm:inline-block">
               <MiniMaxButton
-                disabled={fromTokenBalance && (fromTokenBalance == 0)}
+                disabled={fromTokenBalance && fromTokenBalance == 0}
                 onClickBalance={onClickBalance}
               />
             </div>

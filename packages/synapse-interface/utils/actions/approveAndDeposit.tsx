@@ -40,8 +40,9 @@ export const approve = async (
       inputValue[tokenAddr] &&
       (inputValue[tokenAddr] === 0n ||
         inputValue[tokenAddr] <= depositQuote.allowances[tokenAddr])
-    )
+    ) {
       return
+    }
 
     if (token.symbol === WETH.symbol) return
 
@@ -80,7 +81,12 @@ export const approve = async (
 
   for (let token of pool.poolTokens) {
     try {
-      await handleApproval(token, token.addresses[chainId])
+      const value = inputValue[token.addresses[chainId]]
+      const hasNonZeroValue = !!value && value !== 0n
+
+      if (hasNonZeroValue) {
+        await handleApproval(token, token.addresses[chainId])
+      }
     } catch (error) {
       toast.dismiss(requestingApprovalPopup)
       txErrorHandler(error)

@@ -7,7 +7,7 @@ import { CHAINS_BY_ID } from '@/constants/chains'
 import { MINICHEF_ADDRESSES } from '@/constants/minichef'
 import { Token } from '../types'
 import { TransactionReceipt, zeroAddress } from 'viem'
-import { getErc20TokenApproval } from '@/actions/getErc20TokenApproval'
+import { approveErc20Token } from '@/actions/approveErc20Token'
 import { stakeLpToken } from '@/actions/stakeLpToken'
 
 export const approve = async (
@@ -29,7 +29,7 @@ export const approve = async (
   })
 
   try {
-    const txReceipt: TransactionReceipt = await getErc20TokenApproval({
+    const txReceipt: TransactionReceipt = await approveErc20Token({
       chainId,
       tokenAddress: pool.addresses[chainId] as Address,
       spender: MINICHEF_ADDRESSES[chainId],

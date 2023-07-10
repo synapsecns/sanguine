@@ -18,6 +18,8 @@ export const swapPoolAddLiquidity = async ({
 }) => {
   const { abi, poolAddress } = getSwapDepositContractFields(pool, chainId)
 
+  console.log(`spendTransactionArgs`, spendTransactionArgs)
+
   const config = await prepareWriteContract({
     chainId,
     address: poolAddress,

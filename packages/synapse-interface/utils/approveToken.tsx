@@ -4,7 +4,7 @@ import { txErrorHandler } from './txErrorHandler'
 import toast from 'react-hot-toast'
 import ExplorerToastLink from '@components/ExplorerToastLink'
 import { zeroAddress } from 'viem'
-import { getErc20TokenApproval } from '@/actions/getErc20TokenApproval'
+import { approveErc20Token } from '@/actions/approveErc20Token'
 
 export const approveToken = async (
   address: string,
@@ -22,7 +22,7 @@ export const approveToken = async (
   })
 
   try {
-    const approveTx = await getErc20TokenApproval({
+    const approveTx = await approveErc20Token({
       spender: address as Address,
       chainId,
       tokenAddress: tokenAddress as Address,

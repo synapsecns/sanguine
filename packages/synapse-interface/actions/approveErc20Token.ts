@@ -7,7 +7,7 @@ import {
 } from '@wagmi/core'
 import { TransactionReceipt } from 'viem'
 
-export const getErc20TokenApproval = async ({
+export const approveErc20Token = async ({
   chainId,
   amount,
   spender,

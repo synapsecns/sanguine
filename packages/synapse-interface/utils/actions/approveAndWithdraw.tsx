@@ -4,7 +4,7 @@ import { getSwapDepositContractFields } from '@/utils/getSwapDepositContractFiel
 import { txErrorHandler } from '@utils/txErrorHandler'
 import { Token } from '@types'
 import toast from 'react-hot-toast'
-import { getErc20TokenApproval } from '@/actions/getErc20TokenApproval'
+import { approveErc20Token } from '@/actions/approveErc20Token'
 
 import { Address } from 'wagmi'
 import { swapPoolRemoveLiquidity } from '@/actions/swapPoolRemoveLiquidity'
@@ -22,7 +22,7 @@ export const approve = async (
 
   const { poolAddress } = getSwapDepositContractFields(pool, chainId)
 
-  return await getErc20TokenApproval({
+  return await approveErc20Token({
     chainId,
     tokenAddress: pool.addresses[chainId] as Address,
     spender: poolAddress,
