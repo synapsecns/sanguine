@@ -42,7 +42,9 @@ export const Portfolio = () => {
   }, [address])
 
   useEffect(() => {
-    fetchPortfolioBalances()
+    if (address) {
+      fetchPortfolioBalances()
+    }
   }, [address, chain])
 
   return (
