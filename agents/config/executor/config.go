@@ -18,7 +18,7 @@ type Config struct {
 	// DBConfig is the database configuration.
 	DBConfig config.DBConfig `yaml:"db_config"`
 	// ScribeConfig is the scribe configuration.
-	ScribeConfig ScribeConfig `yaml:"scribe_config"`
+	ScribeConfig config.ScribeConfig `yaml:"scribe_config"`
 	// Chains stores all chain information
 	Chains ChainConfigs `yaml:"chains"`
 	// SummitChainID is the chain ID of the chain that the summit contract is deployed on.

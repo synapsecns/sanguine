@@ -21,7 +21,7 @@ func configFixture(c ConfigSuite) executor.Config {
 			Type:   "sqlite",
 			Source: gofakeit.Word(),
 		},
-		ScribeConfig: executor.ScribeConfig{
+		ScribeConfig: config.ScribeConfig{
 			Type: "embedded",
 			EmbeddedDBConfig: config.DBConfig{
 				Type:   "mysql",

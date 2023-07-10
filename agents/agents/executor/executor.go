@@ -69,8 +69,6 @@ type Executor struct {
 	config executor.Config
 	// executorDB is the executor agent database.
 	executorDB db.ExecutorDB
-	// scribeClient is the client to the Scribe gRPC server.
-	scribeClient client.ScribeClient
 	// grpcClient is the gRPC client.
 	grpcClient pbscribe.ScribeServiceClient
 	// grpcConn is the gRPC connection.
@@ -213,7 +211,6 @@ func NewExecutor(ctx context.Context, config executor.Config, executorDB db.Exec
 	return &Executor{
 		config:         config,
 		executorDB:     executorDB,
-		scribeClient:   scribeClient,
 		grpcConn:       conn,
 		grpcClient:     grpcClient,
 		signer:         executorSigner,

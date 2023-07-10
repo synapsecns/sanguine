@@ -9,7 +9,7 @@ import (
 )
 
 // DomainConfigs contains a map of name->domain config.
-type DomainConfigs map[string]DomainConfig
+type DomainConfigs map[uint32]DomainConfig
 
 // IsValid validates the domain configs by asserting no two domains appear twice
 // it also calls IsValid on each individual DomainConfig.

@@ -17,6 +17,8 @@ import (
 type AgentConfig struct {
 	// DBConfig is the database configuration.
 	DBConfig DBConfig `yaml:"db_config"`
+	// ScribeConfig is the scribe configuration.
+	ScribeConfig ScribeConfig `yaml:"scribe_config"`
 	// Domains stores all the domains
 	Domains DomainConfigs `yaml:"domains"`
 	// DomainID is the domain of the chain that this agent is assigned to.
