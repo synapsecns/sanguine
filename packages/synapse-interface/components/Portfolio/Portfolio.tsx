@@ -45,7 +45,7 @@ export const Portfolio = () => {
     if (address) {
       fetchPortfolioBalances()
     }
-  }, [address, chain])
+  }, [address])
 
   return (
     <div

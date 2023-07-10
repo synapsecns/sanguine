@@ -93,7 +93,6 @@ export const SingleNetworkPortfolio = ({
                 allowance={allowance}
                 portfolioChainId={portfolioChainId}
                 connectedChainId={connectedChainId}
-                selectedFromChainId={selectedFromChainId}
                 isApproved={true}
               />
             )
@@ -107,7 +106,6 @@ export const SingleNetworkPortfolio = ({
                 balance={balance}
                 portfolioChainId={portfolioChainId}
                 connectedChainId={connectedChainId}
-                selectedFromChainId={selectedFromChainId}
                 isApproved={false}
               />
             )
@@ -123,7 +121,6 @@ type PortfolioTokenAssetProps = {
   allowance?: BigNumber
   portfolioChainId: number
   connectedChainId: number
-  selectedFromChainId: number
   isApproved: boolean
 }
 
