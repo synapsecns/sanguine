@@ -124,8 +124,8 @@ const BridgeInputContainer = ({
                 ${isOrigin && isConnected ? '-mt-0 md:-mt-4' : '-mt-0'}
                 focus:outline-none bg-transparent
                placeholder:text-[#88818C]
-               text-white text-opacity-80 text-lg font-medium
-                md:w-2/3 md:text-2xl lg:text-2xl
+               text-white text-opacity-80 text-xl font-medium
+                md:text-2xl
               `}
               placeholder="0.0000"
               onChange={

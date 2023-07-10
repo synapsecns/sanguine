@@ -123,7 +123,7 @@ export const InputContainer = () => {
               max-w-[100px]
               md:max-w-[160px]
               placeholder:text-[#88818C]
-              text-white text-opacity-80 text-lg md:text-2xl lg:text-2xl font-medium
+              text-white text-opacity-80 text-lg md:text-2xl font-medium
             `}
               placeholder="0.0000"
               onChange={handleFromValueChange}
