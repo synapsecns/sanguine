@@ -84,7 +84,7 @@ export const CurrencyTooltip = ({
           {names.map((u, index) => {
             const name = names[index]
             const value = values[index]
-            if (value === 0 || name === 'total') {
+            if (name === 'total') {
               return null
             }
             return (
