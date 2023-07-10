@@ -187,6 +187,7 @@ const PortfolioTokenAsset = ({
 
   const handleApproveCallback = useCallback(async () => {
     if (isCurrentlyConnected) {
+      dispatch(setFromChainId(portfolioChainId))
       dispatch(setFromToken(token))
       await approveToken(ROUTER_ADDRESS, connectedChainId, tokenAddress).then(
         (success) => {
