@@ -456,8 +456,8 @@ const StateManagedBridge = () => {
   const springClass = 'fixed z-50 w-full h-full bg-opacity-50'
 
   return (
-    <div className="flex flex-col max-w-lg mx-auto lg:mx-0">
-      <div className="flex flex-col px-4 py-2">
+    <div className="flex flex-col w-full max-w-lg mx-auto lg:mx-0">
+      <div className="flex flex-col py-2">
         <div className="flex items-center justify-between">
           <PageHeader
             title="Bridge"
