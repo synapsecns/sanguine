@@ -82,28 +82,30 @@ export const usePortfolioBalancesAndAllowances = (): {
   const filteredChains = availableChains.filter((chain) => chain !== '2000') // need to figure out whats wrong with Dogechain
 
   const fetchPortfolioBalances = async () => {
+    const balanceRecord: NetworkTokenBalancesAndAllowances = {}
     try {
-      const balanceRecord: NetworkTokenBalancesAndAllowances = {}
-      const availableChainsLength = filteredChains.length
-      for (let index = 0; index < availableChainsLength; index++) {
-        const chainId = filteredChains[index]
+      const balancePromises = filteredChains.map(async (chainId) => {
         const currentChainId = Number(chainId)
         const currentChainTokens = BRIDGABLE_TOKENS[chainId]
-        const tokenBalances: TokenAndBalance[] = await getTokensByChainId(
-          address,
-          currentChainTokens,
-          currentChainId
+        const [tokenBalances, tokenAllowances] = await Promise.all([
+          getTokensByChainId(address, currentChainTokens, currentChainId),
+          getTokensAllowance(
+            address,
+            ROUTER_ADDRESS,
+            currentChainTokens,
+            currentChainId
+          ),
+        ])
+        const mergedBalancesAndAllowances = mergeBalancesAndAllowances(
+          tokenBalances,
+          tokenAllowances
         )
-        const tokenAllowances: TokenAndAllowance[] = await getTokensAllowance(
-          address,
-          ROUTER_ADDRESS,
-          currentChainTokens,
-          currentChainId
-        )
-        const mergedBalancesAndAllowances: TokenWithBalanceAndAllowance[] =
-          mergeBalancesAndAllowances(tokenBalances, tokenAllowances)
+        return { currentChainId, mergedBalancesAndAllowances }
+      })
+      const balances = await Promise.all(balancePromises)
+      balances.forEach(({ currentChainId, mergedBalancesAndAllowances }) => {
         balanceRecord[currentChainId] = mergedBalancesAndAllowances
-      }
+      })
       setBalancesAndAllowances(balanceRecord)
       setStatus(FetchState.VALID)
     } catch (error) {
