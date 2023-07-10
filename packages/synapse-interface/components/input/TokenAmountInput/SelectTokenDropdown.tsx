@@ -25,7 +25,7 @@ const SelectTokenDropdown = ({
   return (
     <button
       data-test-id="select-token-dropdown"
-      className="flex-shrink-0 w-[35%] cursor-pointer focus:outline-none"
+      className="flex-shrink-0 cursor-pointer focus:outline-none"
       onClick={onClick}
     >
       <div
@@ -58,7 +58,7 @@ const SelectTokenDropdown = ({
             </div>
           </div>
           <div className="text-left cursor-pointer">
-            <h4 className="text-lg font-medium text-white">
+            <h4 className="w-24 text-lg font-medium text-white">
               <span data-test-id={dataId}>{symbol}</span>
               <ChevronDownIcon
                 className={`
