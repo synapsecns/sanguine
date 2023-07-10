@@ -3,10 +3,20 @@ package guard
 import (
 	"context"
 	"fmt"
+	"github.com/ethereum/go-ethereum/common"
+	ethTypes "github.com/ethereum/go-ethereum/core/types"
+	"github.com/synapsecns/sanguine/agents/contracts/inbox"
+	"github.com/synapsecns/sanguine/agents/contracts/origin"
 	"github.com/synapsecns/sanguine/core/metrics"
 	signerConfig "github.com/synapsecns/sanguine/ethergo/signer/config"
+	"github.com/synapsecns/sanguine/services/scribe/client"
+	pbscribe "github.com/synapsecns/sanguine/services/scribe/grpc/types/types/v1"
+	"go.opentelemetry.io/contrib/instrumentation/google.golang.org/grpc/otelgrpc"
 	"go.opentelemetry.io/otel/attribute"
 	"go.opentelemetry.io/otel/trace"
+	"google.golang.org/grpc"
+	"google.golang.org/grpc/credentials/insecure"
+	"strconv"
 	"time"
 
 	"github.com/synapsecns/sanguine/agents/config"
@@ -27,16 +37,58 @@ type Guard struct {
 	// TODO: change to metrics type
 	originLatestStates map[uint32]types.State
 	handler            metrics.Handler
+	grpcClient         pbscribe.ScribeServiceClient
+	grpcConn           *grpc.ClientConn
+	logChans           map[uint32]chan *ethTypes.Log
+	inboxParser        inbox.Parser
+	boundOrigins       map[uint32]*origin.Origin
+}
+
+const (
+	logChanSize          = 1000
+	scribeConnectTimeout = 30 * time.Second
+)
+
+func makeScribeClient(parentCtx context.Context, handler metrics.Handler, url string) (*grpc.ClientConn, pbscribe.ScribeServiceClient, error) {
+	ctx, cancel := context.WithTimeout(parentCtx, scribeConnectTimeout)
+	defer cancel()
+
+	conn, err := grpc.DialContext(ctx, url,
+		grpc.WithTransportCredentials(insecure.NewCredentials()),
+		grpc.WithUnaryInterceptor(otelgrpc.UnaryClientInterceptor(otelgrpc.WithTracerProvider(handler.GetTracerProvider()))),
+		grpc.WithStreamInterceptor(otelgrpc.StreamClientInterceptor(otelgrpc.WithTracerProvider(handler.GetTracerProvider()))),
+	)
+	if err != nil {
+		return nil, nil, fmt.Errorf("could not dial grpc: %w", err)
+	}
+
+	scribeClient := pbscribe.NewScribeServiceClient(conn)
+
+	// Ensure that gRPC is up and running.
+	healthCheck, err := scribeClient.Check(ctx, &pbscribe.HealthCheckRequest{}, grpc.WaitForReady(true))
+	if err != nil {
+		return nil, nil, fmt.Errorf("could not check: %w", err)
+	}
+	if healthCheck.Status != pbscribe.HealthCheckResponse_SERVING {
+		return nil, nil, fmt.Errorf("not serving: %s", healthCheck.Status)
+	}
+
+	return conn, scribeClient, nil
 }
 
 // NewGuard creates a new guard.
 //
 //nolint:cyclop
-func NewGuard(ctx context.Context, cfg config.AgentConfig, handler metrics.Handler) (_ Guard, err error) {
+func NewGuard(ctx context.Context, cfg config.AgentConfig, scribeClient client.ScribeClient, handler metrics.Handler) (_ Guard, err error) {
 	guard := Guard{
 		refreshInterval: time.Second * time.Duration(cfg.RefreshIntervalSeconds),
 	}
 	guard.domains = []domains.DomainClient{}
+
+	guard.grpcConn, guard.grpcClient, err = makeScribeClient(ctx, handler, fmt.Sprintf("%s:%d", scribeClient.URL, scribeClient.Port))
+	if err != nil {
+		return Guard{}, fmt.Errorf("could not create scribe client: %w", err)
+	}
 
 	guard.bondedSigner, err = signerConfig.SignerFromConfig(ctx, cfg.BondedSigner)
 	if err != nil {
@@ -48,11 +100,13 @@ func NewGuard(ctx context.Context, cfg config.AgentConfig, handler metrics.Handl
 		return Guard{}, fmt.Errorf("error with unbondedSigner, could not create guard: %w", err)
 	}
 
-	for domainName, domain := range cfg.Domains {
+	for domainID, domain := range cfg.Domains {
 		var domainClient domains.DomainClient
 
 		chainRPCURL := fmt.Sprintf("%s/confirmations/1/rpc/%d", cfg.BaseOmnirpcURL, domain.DomainID)
-		domainClient, err = evm.NewEVM(ctx, domainName, domain, chainRPCURL)
+
+		// TODO: Change the domain config to better suit the map[uint32]DomainConfig rather than map[string]DomainConfig.
+		domainClient, err = evm.NewEVM(ctx, strconv.Itoa(int(domainID)), domain, chainRPCURL)
 		if err != nil {
 			return Guard{}, fmt.Errorf("failing to create evm for domain, could not create guard for: %w", err)
 		}
@@ -60,6 +114,18 @@ func NewGuard(ctx context.Context, cfg config.AgentConfig, handler metrics.Handl
 		if domain.DomainID == cfg.SummitDomainID {
 			guard.summitDomain = domainClient
 		}
+
+		guard.logChans[domain.DomainID] = make(chan *ethTypes.Log, logChanSize)
+		//guard.boundOrigins[domain.DomainID], err = origin.NewOrigin(
+		//	common.HexToAddress(domain.OriginAddress),
+		//	,
+		//	)
+	}
+
+	// Create a new inbox parser for the summit domain.
+	guard.inboxParser, err = inbox.NewParser(common.HexToAddress(cfg.Domains[cfg.SummitDomainID].InboxAddress))
+	if err != nil {
+		return Guard{}, fmt.Errorf("could not create inbox parser: %w", err)
 	}
 
 	guard.summitLatestStates = make(map[uint32]types.State, len(guard.domains))
@@ -68,6 +134,105 @@ func NewGuard(ctx context.Context, cfg config.AgentConfig, handler metrics.Handl
 	guard.handler = handler
 
 	return guard, nil
+}
+
+// streamLogs uses the grpcConnection to Scribe, with a chainID and address to get all logs from that address.
+func (g Guard) streamLogs(ctx context.Context, chainID uint32, address string) error {
+	// TODO: Get last block number to define starting point for streamLogs.
+	fromBlock := strconv.FormatUint(0, 16)
+
+	toBlock := "latest"
+
+	stream, err := g.grpcClient.StreamLogs(ctx, &pbscribe.StreamLogsRequest{
+		Filter: &pbscribe.LogFilter{
+			ContractAddress: &pbscribe.NullableString{Kind: &pbscribe.NullableString_Data{Data: address}},
+			ChainId:         chainID,
+		},
+		FromBlock: fromBlock,
+		ToBlock:   toBlock,
+	})
+	if err != nil {
+		return fmt.Errorf("could not stream logs: %w", err)
+	}
+
+	for {
+		select {
+		case <-ctx.Done():
+			err := stream.CloseSend()
+			if err != nil {
+				return fmt.Errorf("could not close stream: %w", err)
+			}
+
+			err = g.grpcConn.Close()
+			if err != nil {
+				return fmt.Errorf("could not close connection: %w", err)
+			}
+
+			return fmt.Errorf("context done: %w", ctx.Err())
+		default:
+			response, err := stream.Recv()
+			if err != nil {
+				return fmt.Errorf("could not receive: %w", err)
+			}
+
+			log := response.Log.ToLog()
+			if log == nil {
+				return fmt.Errorf("could not convert log")
+			}
+
+			g.logChans[chainID] <- log
+		}
+	}
+}
+
+// receiveLogs continuously receives logs from the log channel and processes them.
+func (g Guard) receiveLogs(ctx context.Context, chainID uint32) error {
+	for {
+		select {
+		case <-ctx.Done():
+			return fmt.Errorf("context canceled: %w", ctx.Err())
+		case log := <-g.logChans[chainID]:
+			if log == nil {
+				return fmt.Errorf("log is nil")
+			}
+
+			//err := g.processLog(ctx, *log, chainID)
+			//if err != nil {
+			//	return fmt.Errorf("could not process log: %w", err)
+			//}
+		}
+	}
+}
+
+func (g Guard) processSnapshot(ctx context.Context, log ethTypes.Log) error {
+	snapshot, err := g.logToSnapshot(log)
+	if err != nil {
+		return fmt.Errorf("could not convert log to snapshot: %w", err)
+	}
+
+	if snapshot == nil {
+		return nil
+	}
+
+	for _, state := range snapshot.States() {
+		// Check the validity of each state by calling `isValidState` on each state's origin domain.
+
+	}
+}
+
+// logToSnapshot converts the log to a snapshot.
+func (g Guard) logToSnapshot(log ethTypes.Log) (types.Snapshot, error) {
+	snapshot, domain, ok := g.inboxParser.ParseSnapshotAccepted(log)
+	if !ok {
+		return nil, fmt.Errorf("could not parse snapshot")
+	}
+
+	if snapshot == nil || domain == 0 {
+		//nolint:nilnil
+		return nil, nil
+	}
+
+	return snapshot, nil
 }
 
 //nolint:cyclop

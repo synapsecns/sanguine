@@ -14,6 +14,8 @@ import (
 
 // AgentConfig is used for configuring the guard.
 type AgentConfig struct {
+	// ScribeConfig is the scribe configuration.
+	ScribeConfig ScribeConfig `yaml:"scribe_config"`
 	// Domains stores all the domains
 	Domains DomainConfigs `yaml:"domains"`
 	// DomainID is the domain of the chain that this agent is assigned to.

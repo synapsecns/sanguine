@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"github.com/davecgh/go-spew/spew"
 	"github.com/jftuga/ellipsis"
+	"github.com/synapsecns/sanguine/agents/config"
 	signerConfig "github.com/synapsecns/sanguine/ethergo/signer/config"
 	"gopkg.in/yaml.v2"
 	"os"
@@ -16,7 +17,7 @@ type Config struct {
 	// DBConfig is the database configuration.
 	DBConfig DBConfig `yaml:"db_config"`
 	// ScribeConfig is the scribe configuration.
-	ScribeConfig ScribeConfig `yaml:"scribe_config"`
+	ScribeConfig config.ScribeConfig `yaml:"scribe_config"`
 	// Chains stores all chain information
 	Chains ChainConfigs `yaml:"chains"`
 	// SummitChainID is the chain ID of the chain that the summit contract is deployed on.

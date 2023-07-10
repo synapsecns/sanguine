@@ -4,6 +4,7 @@ import (
 	"github.com/Flaque/filet"
 	"github.com/brianvoe/gofakeit/v6"
 	. "github.com/stretchr/testify/assert"
+	"github.com/synapsecns/sanguine/agents/config"
 	"github.com/synapsecns/sanguine/agents/config/executor"
 	agentsConfig "github.com/synapsecns/sanguine/ethergo/signer/config"
 	"github.com/synapsecns/sanguine/ethergo/signer/wallet"
@@ -20,7 +21,7 @@ func configFixture(c ConfigSuite) executor.Config {
 			Type:   "sqlite",
 			Source: gofakeit.Word(),
 		},
-		ScribeConfig: executor.ScribeConfig{
+		ScribeConfig: config.ScribeConfig{
 			Type: "embedded",
 			EmbeddedDBConfig: executor.DBConfig{
 				Type:   "mysql",
