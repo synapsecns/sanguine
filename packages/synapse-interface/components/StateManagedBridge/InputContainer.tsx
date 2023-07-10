@@ -120,7 +120,8 @@ export const InputContainer = () => {
               className={`
               focus:outline-none
               bg-transparent
-              pr-4 max-w-[180px]
+              max-w-[100px]
+              md:max-w-[160px]
               placeholder:text-[#88818C]
               text-white text-opacity-80 text-lg md:text-2xl lg:text-2xl font-medium
             `}
@@ -147,7 +148,7 @@ export const InputContainer = () => {
             )}
           </div>
           {hasMounted && isConnected && (
-            <div className="hidden mr-2 sm:inline-block">
+            <div className="m-auto">
               <MiniMaxButton
                 disabled={fromTokenBalance && fromTokenBalance.eq(Zero)}
                 onClickBalance={onClickBalance}
