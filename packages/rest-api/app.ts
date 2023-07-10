@@ -123,9 +123,9 @@ app.get('/swap', async (req, res) => {
 
       // Add response field with adjusted maxAmountOutStr (to account for decimals)
       const payload: any = resp
-      payload.maxAmountOutStr = parseInt(
-        formatBNToString(resp.maxAmountOut, toTokenDecimals),
-        10
+      payload.maxAmountOutStr = formatBNToString(
+        resp.maxAmountOut,
+        toTokenDecimals
       )
       res.json(payload)
     })
@@ -200,9 +200,9 @@ app.get('/bridge', async (req, res) => {
 
       // Add response field with adjusted maxAmountOutStr (to account for decimals)
       const payload: any = resp
-      payload.maxAmountOutStr = parseInt(
-        formatBNToString(resp.maxAmountOut, toTokenDecimals),
-        10
+      payload.maxAmountOutStr = formatBNToString(
+        resp.maxAmountOut,
+        toTokenDecimals
       )
       res.json(payload)
     })
@@ -239,9 +239,8 @@ const formatBNToString = (
 
     if (rawNumber === 0) {
       return rawNumber.toFixed(1)
-    } else {
-      return rawNumber.toFixed(decimalPlaces)
     }
+    return rawNumber.toString()
   }
 }
 
