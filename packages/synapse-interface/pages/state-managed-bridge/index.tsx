@@ -86,7 +86,6 @@ import { isAddress } from '@ethersproject/address'
 import { TransactionButton } from '@/components/buttons/TransactionButton'
 import { BridgeTransactionButton } from '@/components/StateManagedBridge/BridgeTransactionButton'
 import ExplorerToastLink from '@/components/ExplorerToastLink'
-import { Portfolio } from '@/components/Portfolio/Portfolio'
 
 // NOTE: These are idle utility functions that will be re-written to
 // support sorting by desired mechanism

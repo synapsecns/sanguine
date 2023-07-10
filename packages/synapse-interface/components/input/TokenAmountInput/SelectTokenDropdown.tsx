@@ -46,7 +46,6 @@ const SelectTokenDropdown = ({
             items-center
             rounded-lg
             py-1.5 pl-2 h-14
-            md:min-w-[150px]
           `}
         >
           <div className="self-center flex-shrink-0 hidden mr-1 sm:block">
