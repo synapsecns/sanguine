@@ -1,4 +1,4 @@
-import React, { useCallback } from 'react'
+import React, { useCallback, useMemo } from 'react'
 import Image from 'next/image'
 import { BigNumber } from 'ethers'
 import { useDispatch } from 'react-redux'
@@ -139,11 +139,22 @@ const PortfolioTokenAsset = ({
   const { address } = useAccount()
   const { fetchPortfolioBalances } = usePortfolioBalancesAndAllowances()
   const { icon, symbol, decimals, addresses } = token
-  const parsedBalance: string = formatBNToString(
-    balance,
-    decimals[portfolioChainId],
-    3
-  )
+
+  function hasOnlyZeros(input: string): boolean {
+    return /^0+(\.0+)?$/.test(input)
+  }
+
+  const parsedBalance: string = useMemo(() => {
+    const formattedBalance = formatBNToString(
+      balance,
+      decimals[portfolioChainId],
+      3
+    )
+    return balance.gt(0) && hasOnlyZeros(formattedBalance)
+      ? '< 0.001'
+      : formattedBalance
+  }, [balance, portfolioChainId])
+
   const parsedAllowance: string =
     allowance && formatBNToString(allowance, decimals[portfolioChainId], 3)
 
