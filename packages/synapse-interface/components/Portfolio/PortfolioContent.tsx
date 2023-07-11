@@ -28,18 +28,18 @@ export const PortfolioContent = ({
   fetchState,
 }: PortfolioContentProps) => {
   const { currentNetwork, remainingNetworks } = getCurrentNetworkPortfolio(
-    connectedChainId,
+    selectedFromChainId,
     networkPortfolioWithBalances
   )
 
   return (
     <div data-test-id="portfolio-content">
-      {currentNetwork && connectedChainId && (
+      {currentNetwork && selectedFromChainId && (
         <SingleNetworkPortfolio
-          portfolioChainId={connectedChainId}
+          portfolioChainId={selectedFromChainId}
           connectedChainId={connectedChainId}
           selectedFromChainId={selectedFromChainId}
-          portfolioTokens={currentNetwork[connectedChainId]}
+          portfolioTokens={currentNetwork[selectedFromChainId]}
           initializeExpanded={true}
           fetchPortfolioBalancesCallback={fetchPortfolioBalancesCallback}
           fetchState={fetchState}
@@ -59,7 +59,9 @@ export const PortfolioContent = ({
                   selectedFromChainId={selectedFromChainId}
                   portfolioTokens={tokens}
                   initializeExpanded={false}
-                  fetchPortfolioBalancesCallback={fetchPortfolioBalancesCallback}
+                  fetchPortfolioBalancesCallback={
+                    fetchPortfolioBalancesCallback
+                  }
                   fetchState={fetchState}
                 />
               )

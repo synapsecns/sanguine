@@ -1,6 +1,9 @@
 import React, { useState, useEffect, useMemo } from 'react'
+import { useDispatch, useSelector } from 'react-redux'
 import { useAccount, useNetwork, Address } from 'wagmi'
 import { Zero } from '@ethersproject/constants'
+import { RootState } from '@/store/store'
+import { setFromChainId } from '@/slices/bridgeSlice'
 import { ConnectWalletButton } from './ConnectWalletButton'
 import { PortfolioTabManager } from './PortfolioTabManager'
 import {
@@ -10,8 +13,6 @@ import {
   FetchState,
 } from '@/utils/hooks/usePortfolioBalances'
 import { PortfolioContent, HomeContent } from './PortfolioContent'
-import { RootState } from '@/store/store'
-import { useSelector } from 'react-redux'
 
 export enum PortfolioTabs {
   HOME = 'home',
@@ -21,6 +22,7 @@ export enum PortfolioTabs {
 export const Portfolio = () => {
   const [tab, setTab] = useState<PortfolioTabs>(PortfolioTabs.HOME)
 
+  const dispatch = useDispatch()
   const { fromChainId, bridgeTxHashes } = useSelector(
     (state: RootState) => state.bridge
   )
@@ -44,9 +46,7 @@ export const Portfolio = () => {
   }, [address])
 
   useEffect(() => {
-    if (address) {
-      fetchPortfolioBalances()
-    }
+    if (address) fetchPortfolioBalances()
   }, [address, bridgeTxHashes])
 
   return (

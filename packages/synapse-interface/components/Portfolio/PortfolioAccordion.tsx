@@ -25,12 +25,12 @@ export const PortfolioAccordion = ({
   const handleToggle = () => setIsExpanded((prevExpanded) => !prevExpanded)
 
   useEffect(() => {
-    if (portfolioChainId === connectedChainId) {
+    if (portfolioChainId === selectedFromChainId) {
       setIsExpanded(true)
     } else {
       setIsExpanded(false)
     }
-  }, [portfolioChainId, connectedChainId])
+  }, [portfolioChainId, selectedFromChainId])
 
   return (
     <div
