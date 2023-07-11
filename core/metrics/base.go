@@ -2,6 +2,11 @@ package metrics
 
 import (
 	"context"
+	"net/http"
+	"os"
+	"strconv"
+	"time"
+
 	"github.com/gin-gonic/gin"
 	"github.com/synapsecns/sanguine/core/config"
 	"github.com/synapsecns/sanguine/core/metrics/internal"
@@ -11,13 +16,13 @@ import (
 	"go.opentelemetry.io/contrib/propagators/b3"
 	"go.opentelemetry.io/otel"
 	"go.opentelemetry.io/otel/attribute"
+	stdout "go.opentelemetry.io/otel/exporters/stdout/stdoutmetric"
 	"go.opentelemetry.io/otel/propagation"
 	"go.opentelemetry.io/otel/sdk/resource"
 	tracesdk "go.opentelemetry.io/otel/sdk/trace"
 	semconv "go.opentelemetry.io/otel/semconv/v1.17.0"
 	"go.opentelemetry.io/otel/trace"
 	"gorm.io/gorm"
-	"net/http"
 )
 
 const pyroscopeEndpoint = internal.PyroscopeEndpoint
@@ -29,6 +34,7 @@ type baseHandler struct {
 	tracer     trace.Tracer
 	name       string
 	propagator propagation.TextMapPropagator
+	meter      Meter
 }
 
 func (b *baseHandler) Start(ctx context.Context) error {
@@ -69,6 +75,10 @@ func (b *baseHandler) Type() HandlerType {
 	panic("must be overridden by children")
 }
 
+func (b *baseHandler) Meter() Meter {
+	return b.meter
+}
+
 // newBaseHandler creates a new baseHandler for otel.
 // this is exported for testing.
 func newBaseHandler(buildInfo config.BuildInfo, extraOpts ...tracesdk.TracerProviderOption) *baseHandler {
@@ -106,11 +116,28 @@ func newBaseHandlerWithTracerProvider(buildInfo config.BuildInfo, tracerProvider
 	tracer := tracerProvider.Tracer(buildInfo.Name())
 	otel.SetTextMapPropagator(propagator)
 
+	interval, err := strconv.Atoi(os.Getenv("OTEL_METER_INTERVAL"))
+	if err != nil {
+		// default interval
+		interval = 60
+	}
+
+	// TODO set up exporting the way we need here
+	metricExporter, err := stdout.New()
+	if err != nil {
+		return nil
+	}
+	mp, err := NewOtelMeter(buildInfo.Name(), time.Duration(interval)*time.Second, metricExporter)
+	if err != nil {
+		return nil
+	}
+
 	return &baseHandler{
 		tp:         tracerProvider,
 		tracer:     tracer,
 		name:       buildInfo.Name(),
 		propagator: propagator,
+		meter:      mp,
 	}
 }
 

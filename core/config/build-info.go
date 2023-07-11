@@ -20,6 +20,9 @@ const DefaultCommit = "none"
 // DefaultDate when not passed in by the compiler.
 var DefaultDate = time.Now().Format(time.RFC3339)
 
+// DefaultMetricInterval is the metric interval.
+const DefaultMetricInterval = time.Duration(1) * time.Minute
+
 // VendorName is the vendor named used for versioning schemes that depend on a vendor name
 // we use the github name for convince.
 const VendorName = "synapsecns"
@@ -27,10 +30,11 @@ const VendorName = "synapsecns"
 // BuildInfo will contains build info from https://goreleaser.com/cookbooks/using-main.version
 // it is set at compile time by default. If it cannot be, we attempt to derive it at runtime.
 type BuildInfo struct {
-	version string
-	commit  string
-	name    string
-	date    string
+	version        string
+	commit         string
+	name           string
+	date           string
+	metricInterval time.Duration
 }
 
 // NewBuildInfo creates a build info struct from buildtime data
@@ -88,6 +92,11 @@ func (b BuildInfo) Name() string {
 // Date the application was built.
 func (b BuildInfo) Date() string {
 	return b.date
+}
+
+// MetricInterval the interval to record metrics at.
+func (b BuildInfo) MetricInterval() time.Duration {
+	return b.metricInterval
 }
 
 // VersionString pretty prints a version string with the info above.
