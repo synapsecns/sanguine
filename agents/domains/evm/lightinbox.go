@@ -49,8 +49,6 @@ func (a lightInboxContract) SubmitAttestation(
 	agentRoot [32]byte,
 	snapGas []*big.Int,
 ) (tx *ethTypes.Transaction, err error) {
-	transactor.GasLimit = uint64(10000000)
-
 	rawSig, err := types.EncodeSignature(signature)
 	if err != nil {
 		return nil, fmt.Errorf("could not encode signature: %w", err)
