@@ -38,14 +38,12 @@ const Withdraw = ({
   address,
   poolData,
   poolUserData,
-  refetchCallback,
 }: {
   pool: any
   chainId: number
   address: string
   poolData: PoolData
   poolUserData: PoolUserData
-  refetchCallback: () => void
 }) => {
   const [inputValue, setInputValue] = useState<{
     bi: bigint
@@ -210,7 +208,7 @@ const Withdraw = ({
           withdrawQuote.outputs
         ),
       postButtonAction: () => {
-        refetchCallback()
+        // requery balances
         setPercentage(0)
         setWithdrawQuote(DEFAULT_WITHDRAW_QUOTE)
         resetInput()

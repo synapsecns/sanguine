@@ -1,11 +1,11 @@
 import { getEthPrice, getAvaxPrice } from '@utils/actions/getPrices'
 import { getPoolTokenInfoArr, getTokenBalanceInfo } from '@utils/poolDataFuncs'
 import { Address, fetchBalance, fetchToken } from '@wagmi/core'
-import { Token, PoolUserData, PoolData } from '@types'
+import { Token, PoolData } from '@types'
 
 import { getCorePoolData } from './getCorePoolData'
 
-const getBalanceData = async ({
+export const getBalanceData = async ({
   pool,
   chainId,
   address,
@@ -115,34 +115,5 @@ export const getSinglePoolData = async (
     totalLockedUSD: tokenBalancesUSD,
     virtualPrice,
     swapFee,
-  }
-}
-
-export const getPoolUserData = async (
-  chainId: number,
-  pool: Token,
-  address: string
-): Promise<PoolUserData> => {
-  const poolAddress = pool?.swapAddresses[chainId]
-  if (!poolAddress || !pool || !address) {
-    return null
-  }
-
-  const lpTokenAddress = pool?.addresses[chainId]
-
-  const { tokenBalances, lpTokenBalance } = await getBalanceData({
-    pool,
-    chainId,
-    address,
-    lpTokenAddress,
-  })
-
-  const tokens = tokenBalances.filter((token) => !token.isLP)
-
-  return {
-    name: pool.name,
-    tokens,
-    lpTokenBalance,
-    nativeTokens: pool.nativeTokens,
   }
 }

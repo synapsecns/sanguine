@@ -23,6 +23,8 @@ import { formatBigIntToString } from '@/utils/bigint/format'
 
 import { getAddress } from '@ethersproject/address'
 import { BigNumber } from '@ethersproject/bignumber'
+import { useSelector } from 'react-redux'
+import { RootState } from '@/store/store'
 
 const DEFAULT_DEPOSIT_QUOTE = {
   priceImpact: 0n,
@@ -33,19 +35,11 @@ const DEFAULT_DEPOSIT_QUOTE = {
 const DEFAULT_INPUT_VALUE = { bi: {}, str: {} }
 
 const Deposit = ({
-  pool,
   chainId,
   address,
-  poolData,
-  poolUserData,
-  refetchCallback,
 }: {
-  pool: Token
   chainId: number
   address: string
-  poolData: PoolData
-  poolUserData: PoolUserData
-  refetchCallback: () => void
 }) => {
   // todo store sum in here?
   const [inputValue, setInputValue] = useState<{
@@ -64,6 +58,9 @@ const Deposit = ({
   const [showPriceImpact, setShowPriceImpact] = useState(false)
   const [time, setTime] = useState(Date.now())
   const { synapseSDK } = useSynapseContext()
+
+  const { pool, poolData } = useSelector((state: RootState) => state.poolData)
+  const { poolUserData } = useSelector((state: RootState) => state.poolUserData)
 
   const { poolAddress } = getSwapDepositContractFields(pool, chainId)
 
@@ -216,7 +213,7 @@ const Deposit = ({
 
       postButtonAction: () => {
         console.log('Post Button Action')
-        refetchCallback()
+        // requery balances
         resetInputs()
       },
     }
@@ -309,7 +306,7 @@ const Deposit = ({
   return (
     <div className="flex-col">
       <div className="px-2 pt-1 pb-4 bg-bgLight rounded-xl">
-        {pool && poolUserData && poolData ? (
+        {pool && poolUserData.tokens && poolData ? (
           poolUserData.tokens.map((tokenObj, i) => {
             return (
               <SerializedDepositInput

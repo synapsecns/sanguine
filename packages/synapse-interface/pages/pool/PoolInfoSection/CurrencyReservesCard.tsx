@@ -1,22 +1,17 @@
 import AugmentWithUnits from '../components/AugmentWithUnits'
 import InfoSectionCard from './InfoSectionCard'
 import { displaySymbol } from '@utils/displaySymbol'
-import { PoolData } from '@types'
 import LoadingRow from '@/components/loading/LoadingRow'
 import { commify, formatBigIntToString } from '@utils/bigint/format'
 import { stringToBigInt } from '@/utils/stringToBigNum'
+import { useSelector } from 'react-redux'
+import { RootState } from '@/store/store'
 
-const CurrencyReservesCard = ({
-  chainId,
-  title,
-  poolData,
-}: {
-  chainId: number
-  title: string
-  poolData: PoolData
-}) => {
+const CurrencyReservesCard = ({ chainId }: { chainId: number }) => {
+  const { poolData } = useSelector((state: RootState) => state.poolData)
+
   return (
-    <InfoSectionCard title={title}>
+    <InfoSectionCard title="Currency Reserves">
       {poolData ? (
         poolData.tokens.map((tokenObj, idx) => {
           return (

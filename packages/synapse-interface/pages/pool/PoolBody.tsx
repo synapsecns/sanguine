@@ -1,9 +1,6 @@
-import { useEffect, useState, useCallback } from 'react'
+import { useEffect } from 'react'
 import Link from 'next/link'
-import { PoolData, PoolUserData, Token } from '@types'
 import { ChevronLeftIcon } from '@heroicons/react/outline'
-import { getSinglePoolData, getPoolUserData } from '@utils/actions/getPoolData'
-import { getPoolApyData } from '@utils/actions/getPoolApyData'
 import { STAKE_PATH, POOLS_PATH, POOL_PATH } from '@urls'
 import Card from '@tw/Card'
 import Grid from '@tw/Grid'
@@ -11,62 +8,31 @@ import Button from '@tw/Button'
 import PoolInfoSection from './PoolInfoSection'
 import PoolManagement from './poolManagement'
 import { zeroAddress } from 'viem'
+import { useDispatch, useSelector } from 'react-redux'
+import { RootState } from '@/store/store'
+import {
+  fetchPoolUserData,
+  resetPoolUserData,
+} from '@/slices/poolUserDataSlice'
+import { Address } from '@wagmi/core'
 
 const PoolBody = ({
-  pool,
   address,
-  poolChainId,
   connectedChainId,
 }: {
-  pool: Token
-  address: string
-  poolChainId: number
+  address: Address
   connectedChainId: number
 }) => {
-  const [poolData, setPoolData] = useState<PoolData>(undefined)
-  const [poolUserData, setPoolUserData] = useState<PoolUserData>(undefined)
-  const [poolAPYData, setPoolAPYData] = useState(undefined)
+  const { pool, poolAPYData } = useSelector(
+    (state: RootState) => state.poolData
+  )
 
-  const handleGetSinglePoolData = useCallback(() => {
-    getSinglePoolData(poolChainId, pool)
-      .then((res) => {
-        return setPoolData(res)
-      })
-      .catch((err) => {
-        console.log('Could not get pool data', err)
-        return err
-      })
-  }, [poolChainId, pool, address])
-
-  const handleGetPoolUserData = useCallback(() => {
-    if (address) {
-      getPoolUserData(poolChainId, pool, address)
-        .then((res) => {
-          return setPoolUserData(res)
-        })
-        .catch((err) => {
-          console.log('Could not get pool data', err)
-          return err
-        })
-    }
-  }, [poolChainId, pool, address])
+  const dispatch: any = useDispatch()
 
   useEffect(() => {
-    if (connectedChainId && pool && poolChainId) {
-      // TODO - separate the apy and tvl so they load async.
-      handleGetSinglePoolData()
-      handleGetPoolUserData()
-      getPoolApyData(poolChainId, pool)
-        .then((res) => {
-          if (Object.keys(res).length > 0) {
-            setPoolAPYData(res)
-          }
-        })
-        .catch((err) => {
-          console.log('Could not get pool data', err)
-        })
-    }
-  }, [connectedChainId, pool, poolChainId, address])
+    dispatch(resetPoolUserData())
+    dispatch(fetchPoolUserData({ pool, address }))
+  }, [pool, address])
 
   return (
     <>
@@ -123,19 +89,10 @@ const PoolBody = ({
               pool={pool}
               address={address ?? zeroAddress}
               chainId={connectedChainId}
-              poolData={poolData}
-              poolUserData={poolUserData}
-              refetchCallback={handleGetPoolUserData}
-              // poolStakingLink={STAKE_PATH}
-              // poolStakingLinkText="Stake" // check this
             />
           </Card>
           <div>
-            <PoolInfoSection
-              pool={pool}
-              poolData={poolData}
-              chainId={connectedChainId}
-            />
+            <PoolInfoSection chainId={connectedChainId} />
           </div>
         </Grid>
       </div>

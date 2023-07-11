@@ -155,6 +155,7 @@ export class Token {
   display = true // display token
   legacy = false // legacy token
   priorityRank: number // priority token ordering
+  chainId?: number // chain id of swap pool
   priorityPool?: boolean = false // priority pool
   color?:
     | 'gray'
@@ -202,6 +203,7 @@ export class Token {
     display,
     legacy,
     priorityRank,
+    chainId,
     priorityPool,
     color,
     priceUnits,
@@ -238,6 +240,7 @@ export class Token {
     display?: boolean
     legacy?: boolean
     priorityRank: number
+    chainId?: number
     priorityPool?: boolean
     color?:
       | 'gray'
@@ -288,6 +291,7 @@ export class Token {
     this.display = display ?? true
     this.legacy = legacy ?? false
     this.priorityRank = priorityRank
+    this.chainId = chainId
     this.priorityPool = priorityPool ?? false
     this.color = color ?? 'gray'
     this.priceUnits = priceUnits ?? 'USD'

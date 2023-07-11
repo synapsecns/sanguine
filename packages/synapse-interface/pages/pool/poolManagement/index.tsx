@@ -5,23 +5,23 @@ import Deposit from './Deposit'
 import Withdraw from './Withdraw'
 import { PoolData, PoolUserData } from '@types'
 import { Token } from '@types'
+import { useSelector } from 'react-redux'
+import { RootState } from '@/store/store'
 
 const PoolManagement = ({
   pool,
   address,
   chainId,
-  poolData,
-  poolUserData,
-  refetchCallback,
 }: {
   pool: Token
   address: string
   chainId: number
-  poolData: PoolData
-  poolUserData: PoolUserData
-  refetchCallback: () => void
 }) => {
   const [cardNav, setCardNav] = useState(getLiquidityMode('#addLiquidity')) // 'addLiquidity'
+
+  const { poolData } = useSelector((state: RootState) => state.poolData)
+  const { poolUserData } = useSelector((state: RootState) => state.poolUserData)
+
   return (
     <div>
       <div className="rounded-lg text-default">
@@ -33,15 +33,8 @@ const PoolManagement = ({
           }}
         />
         <div className="mt-4">
-          {cardNav === 'addLiquidity' && (
-            <Deposit
-              pool={pool}
-              address={address}
-              chainId={chainId}
-              poolData={poolData}
-              poolUserData={poolUserData}
-              refetchCallback={refetchCallback}
-            />
+          {cardNav === 'addLiquidity' && poolUserData.tokens && (
+            <Deposit address={address} chainId={chainId} />
           )}
           {cardNav === 'removeLiquidity' && (
             <Withdraw
@@ -50,7 +43,6 @@ const PoolManagement = ({
               address={address}
               poolData={poolData}
               poolUserData={poolUserData}
-              refetchCallback={refetchCallback}
             />
           )}
         </div>

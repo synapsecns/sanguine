@@ -1,5 +1,4 @@
 import AugmentWithUnits from '../components/AugmentWithUnits'
-import { PoolData, Token } from '@types'
 import InfoSectionCard from './InfoSectionCard'
 import CurrencyReservesCard from './CurrencyReservesCard'
 import LoadingSpinner from '@tw/LoadingSpinner'
@@ -9,29 +8,20 @@ import {
   formatBigIntToString,
 } from '@/utils/bigint/format'
 import { stringToBigInt } from '@/utils/stringToBigNum'
+import { useSelector } from 'react-redux'
+import { RootState } from '@/store/store'
 
-const PoolInfoSection = ({
-  pool,
-  poolData,
-  chainId,
-}: {
-  pool: Token
-  poolData: PoolData
-  chainId: number
-}) => {
+const PoolInfoSection = ({ chainId }: { chainId: number }) => {
+  const { pool, poolData } = useSelector((state: RootState) => state.poolData)
+
   return (
     <div className="space-y-4">
-      <CurrencyReservesCard
-        title="Currency Reserves"
-        chainId={chainId}
-        poolData={poolData}
-      />
+      <CurrencyReservesCard chainId={chainId} />
       <InfoSectionCard title="Pool Info">
         <InfoListItem
           labelText="Trading Fee"
           content={
             poolData && poolData.swapFee ? (
-              // what decimals should this be?
               formatBigIntToPercentString(poolData.swapFee, 8, 2)
             ) : (
               <LoadingSpinner />
