@@ -46,8 +46,13 @@ export const Portfolio = () => {
   }, [address])
 
   useEffect(() => {
-    if (address) fetchPortfolioBalances()
-  }, [address, bridgeTxHashes])
+    ;(async () => {
+      if (address && chain.id) {
+        await dispatch(setFromChainId(chain.id))
+        await fetchPortfolioBalances()
+      }
+    })()
+  }, [address, chain])
 
   return (
     <div
