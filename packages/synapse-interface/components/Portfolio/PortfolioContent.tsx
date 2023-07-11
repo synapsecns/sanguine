@@ -43,7 +43,7 @@ export const PortfolioContent = ({
 
   return (
     <div data-test-id="portfolio-content">
-      {currentNetwork && selectedFromChainId && (
+      {currentNetwork && connectedChainId && selectedFromChainId && (
         <SingleNetworkPortfolio
           portfolioChainId={selectedFromChainId}
           connectedChainId={connectedChainId}
