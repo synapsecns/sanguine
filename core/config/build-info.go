@@ -28,6 +28,7 @@ const DefaultMetricInterval = time.Duration(1) * time.Minute
 const VendorName = "synapsecns"
 
 // BuildInfo will contains build info from https://goreleaser.com/cookbooks/using-main.version
+// it is set at compile time by default. If it cannot be, we attempt to derive it at runtime.
 type BuildInfo struct {
 	version        string
 	commit         string

@@ -28,6 +28,8 @@ type ChainBackfiller struct {
 	swapParsers map[common.Address]*parser.SwapParser
 	// messageBusParser is the parser to use to parse message bus events.
 	messageBusParser *parser.MessageBusParser
+	// cctpParser is the parser to use to parse cctp events.
+	cctpParser *parser.CCTPParser
 	// Fetcher is the Fetcher to use to fetch logs.
 	Fetcher fetcher.ScribeFetcher
 	// chainConfig is the chain config for the chain.
@@ -41,12 +43,13 @@ const (
 )
 
 // NewChainBackfiller creates a new backfiller for a chain.
-func NewChainBackfiller(consumerDB db.ConsumerDB, bridgeParser *parser.BridgeParser, swapParsers map[common.Address]*parser.SwapParser, messageBusParser *parser.MessageBusParser, fetcher fetcher.ScribeFetcher, chainConfig config.ChainConfig) *ChainBackfiller {
+func NewChainBackfiller(consumerDB db.ConsumerDB, bridgeParser *parser.BridgeParser, swapParsers map[common.Address]*parser.SwapParser, messageBusParser *parser.MessageBusParser, cctpParser *parser.CCTPParser, fetcher fetcher.ScribeFetcher, chainConfig config.ChainConfig) *ChainBackfiller {
 	return &ChainBackfiller{
 		consumerDB:       consumerDB,
 		bridgeParser:     bridgeParser,
 		swapParsers:      swapParsers,
 		messageBusParser: messageBusParser,
+		cctpParser:       cctpParser,
 		Fetcher:          fetcher,
 		chainConfig:      chainConfig,
 	}
@@ -103,11 +106,10 @@ func (c *ChainBackfiller) Backfill(ctx context.Context, livefill bool, refreshRa
 		}
 	}
 	if err := contractsGroup.Wait(); err != nil {
-		logger.Errorf("=-=-=-=-==-=-=-==--=-==-=-eeeerrbackfilling chain %d completed %v", c.chainConfig.ChainID, err)
+		logger.Errorf("error backfilling chain %d completed %v", c.chainConfig.ChainID, err)
 
 		return fmt.Errorf("error while backfilling chain %d: %w", c.chainConfig.ChainID, err)
 	}
-	logger.Errorf("=-=-=-=-==-=-=-==--=-==-=-backfilling chain %d completed", c.chainConfig.ChainID)
 	return nil
 }
 
@@ -123,6 +125,8 @@ func (c *ChainBackfiller) makeEventParser(contract config.ContractConfig) (event
 		eventParser = c.messageBusParser
 	case config.MetaSwapContractType:
 		eventParser = c.swapParsers[common.HexToAddress(contract.Address)]
+	case config.CCTPContractType:
+		eventParser = c.cctpParser
 	default:
 		return nil, fmt.Errorf("could not create event parser for unknown contract type: %s", contract.ContractType)
 	}

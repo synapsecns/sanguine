@@ -1,5 +1,9 @@
 # Scribe
 
+[![Go Reference](https://pkg.go.dev/badge/github.com/synapsecns/sanguine/services/scribe.svg)](https://pkg.go.dev/github.com/synapsecns/sanguine/services/scribe)
+[![Go Report Card](https://goreportcard.com/badge/github.com/synapsecns/sanguine/services/scribe)](https://goreportcard.com/report/github.com/synapsecns/sanguine/services/scribe)
+
+
 Scribe is a service that goes through all chains and contracts specified in a config file and creates a database with logs, receipts, and transactions.
 
 ## Usage

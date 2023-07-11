@@ -1,5 +1,8 @@
 # Agents
 
+[![Go Reference](https://pkg.go.dev/badge/github.com/synapsecns/sanguine/agents.svg)](https://pkg.go.dev/github.com/synapsecns/sanguine/agents)
+[![Go Report Card](https://goreportcard.com/badge/github.com/synapsecns/sanguine/agents)](https://goreportcard.com/report/github.com/synapsecns/sanguine/agents)
+
 The Agents are the off-chain components of Sanguine. They are responsible for signing, reporting, verifying, and executing messages across chains.
 
 ## Use

@@ -1,5 +1,8 @@
 # Terraform Kubernetes IAP Proxy Provider
 
+[![Go Reference](https://pkg.go.dev/badge/github.com/synapsecns/sanguine/contrib/terraform-provider-kubeproxy.svg)](https://pkg.go.dev/github.com/synapsecns/sanguine/contrib/terraform-provider-kubeproxy)
+[![Go Report Card](https://goreportcard.com/badge/github.com/synapsecns/sanguine/contrib/terraform-provider-kubeproxy)](https://goreportcard.com/report/github.com/synapsecns/sanguine/contrib/terraform-provider-kubeproxy)
+
 This provider is a wrapper for the Kubernetes provider that allows for the use of an IAP (Identity-Aware Proxy) when interacting with GCP Kubernetes clusters. This is necessary because Terraform resources are short-lived, so spinning up the IAP proxy separately and having it provide access to the resources is not an option.
 
 ## Why use an IAP proxy?

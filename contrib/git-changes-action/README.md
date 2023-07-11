@@ -2,6 +2,8 @@
 
 This GitHub Action exports a variable that contains the list of Go modules changed in the current pull request, along with any dependent modules. This can be useful for automating build, test, or deployment workflows that involve Go projects.
 
+[![Go Reference](https://pkg.go.dev/badge/github.com/synapsecns/sanguine/contrib/git-changes-action.svg)](https://pkg.go.dev/github.com/synapsecns/sanguine/contrib/git-changes-action)
+[![Go Report Card](https://goreportcard.com/badge/github.com/synapsecns/sanguine/contrib/git-changes-action)](https://goreportcard.com/report/github.com/synapsecns/sanguine/contrib/git-changes-action)
 
 ## Usage:
 
