@@ -1,4 +1,4 @@
-import React, { useCallback, useMemo } from 'react'
+import React, { useCallback, useMemo, useRef } from 'react'
 import Image from 'next/image'
 import { BigNumber } from 'ethers'
 import { useDispatch } from 'react-redux'
@@ -31,6 +31,7 @@ type SingleNetworkPortfolioProps = {
   initializeExpanded: boolean
   fetchPortfolioBalancesCallback: () => Promise<void>
   fetchState: FetchState
+  portfolioRef: React.RefObject<HTMLDivElement>
 }
 
 export const SingleNetworkPortfolio = ({
@@ -41,6 +42,7 @@ export const SingleNetworkPortfolio = ({
   initializeExpanded = false,
   fetchPortfolioBalancesCallback,
   fetchState,
+  portfolioRef,
 }: SingleNetworkPortfolioProps) => {
   const currentChain: Chain = CHAINS_BY_ID[portfolioChainId]
 
@@ -98,6 +100,7 @@ export const SingleNetworkPortfolio = ({
                 connectedChainId={connectedChainId}
                 fetchPortfolioBalancesCallback={fetchPortfolioBalancesCallback}
                 isApproved={true}
+                portfolioRef={portfolioRef}
               />
             )
           )}
@@ -112,6 +115,7 @@ export const SingleNetworkPortfolio = ({
                 connectedChainId={connectedChainId}
                 fetchPortfolioBalancesCallback={fetchPortfolioBalancesCallback}
                 isApproved={false}
+                portfolioRef={portfolioRef}
               />
             )
           )}
@@ -128,6 +132,7 @@ type PortfolioTokenAssetProps = {
   connectedChainId: number
   isApproved: boolean
   fetchPortfolioBalancesCallback: () => Promise<void>
+  portfolioRef: React.RefObject<HTMLDivElement>
 }
 
 const PortfolioTokenAsset = ({
@@ -138,7 +143,14 @@ const PortfolioTokenAsset = ({
   connectedChainId,
   isApproved,
   fetchPortfolioBalancesCallback,
+  portfolioRef,
 }: PortfolioTokenAssetProps) => {
+  function scrollToRef() {
+    if (portfolioRef.current) {
+      portfolioRef.current.scrollIntoView({ behavior: 'smooth' })
+    }
+  }
+
   const dispatch = useDispatch()
   const { address } = useAccount()
   const { icon, symbol, decimals, addresses } = token
@@ -172,8 +184,6 @@ const PortfolioTokenAsset = ({
 
   const isDisabled: boolean = false
 
-  const filteredOpacity: string = 'opacity-50 cursor-default'
-
   const handleTotalBalanceInputCallback = useCallback(() => {
     return //remove this when callback is ready to implement
     if (!isDisabled) {
@@ -186,6 +196,7 @@ const PortfolioTokenAsset = ({
   const handleSelectFromTokenCallback = useCallback(() => {
     dispatch(setFromChainId(portfolioChainId))
     dispatch(setFromToken(token))
+    scrollToRef()
   }, [token, isDisabled, portfolioChainId])
 
   const handleApproveCallback = useCallback(async () => {
@@ -228,7 +239,7 @@ const PortfolioTokenAsset = ({
   return (
     <div
       data-test-id="portfolio-token-asset"
-      className="flex flex-row flex-wrap items-center py-2 text-white "
+      className="flex flex-row flex-wrap items-center py-2 text-white"
     >
       <div className="flex flex-row justify-between w-2/3">
         <div

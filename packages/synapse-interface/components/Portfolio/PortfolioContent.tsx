@@ -18,6 +18,7 @@ type PortfolioContentProps = {
   fetchPortfolioBalancesCallback: () => Promise<void>
   fetchState: FetchState
   bridgeTxHashes: string[]
+  portfolioRef: React.RefObject<HTMLDivElement>
 }
 
 export const PortfolioContent = ({
@@ -28,6 +29,7 @@ export const PortfolioContent = ({
   fetchPortfolioBalancesCallback,
   fetchState,
   bridgeTxHashes,
+  portfolioRef,
 }: PortfolioContentProps) => {
   const { currentNetwork, remainingNetworks } = getCurrentNetworkPortfolio(
     selectedFromChainId,
@@ -52,6 +54,7 @@ export const PortfolioContent = ({
           initializeExpanded={true}
           fetchPortfolioBalancesCallback={fetchPortfolioBalancesCallback}
           fetchState={fetchState}
+          portfolioRef={portfolioRef}
         />
       )}
       {connectedAddress ? (
@@ -72,6 +75,7 @@ export const PortfolioContent = ({
                     fetchPortfolioBalancesCallback
                   }
                   fetchState={fetchState}
+                  portfolioRef={portfolioRef}
                 />
               )
             }

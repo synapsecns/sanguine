@@ -1,10 +1,9 @@
-import React, { useState, useEffect, useMemo } from 'react'
+import React, { useState, useEffect, useRef } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
-import { useAccount, useNetwork, Address } from 'wagmi'
+import { useAccount, useNetwork } from 'wagmi'
 import { Zero } from '@ethersproject/constants'
 import { RootState } from '@/store/store'
 import { setFromChainId } from '@/slices/bridgeSlice'
-import { ConnectWalletButton } from './ConnectWalletButton'
 import { PortfolioTabManager } from './PortfolioTabManager'
 import {
   usePortfolioBalancesAndAllowances,
@@ -20,6 +19,7 @@ export enum PortfolioTabs {
 }
 
 export const Portfolio = () => {
+  const portfolioRef = useRef<HTMLDivElement>(null)
   const [tab, setTab] = useState<PortfolioTabs>(PortfolioTabs.HOME)
 
   const dispatch = useDispatch()
@@ -58,6 +58,7 @@ export const Portfolio = () => {
     <div
       data-test-id="portfolio"
       className="flex flex-col w-full max-w-lg mx-auto lg:mx-0"
+      ref={portfolioRef}
     >
       <PortfolioTabManager activeTab={tab} setTab={setTab} />
       <div className="mt-4">
@@ -71,6 +72,7 @@ export const Portfolio = () => {
             fetchPortfolioBalancesCallback={fetchPortfolioBalances}
             fetchState={fetchState}
             bridgeTxHashes={bridgeTxHashes}
+            portfolioRef={portfolioRef}
           />
         )}
       </div>
