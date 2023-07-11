@@ -10,6 +10,7 @@ import PoolBody from './PoolBody'
 import NoPoolBody from './NoPoolBody'
 import { fetchPoolData, resetPoolData } from '@/slices/poolDataSlice'
 import { RootState } from '@/store/store'
+import LoadingSpinner from '@/components/ui/tailwind/LoadingSpinner'
 
 const PoolPage = () => {
   const router = useRouter()
@@ -33,17 +34,17 @@ const PoolPage = () => {
     }
   }, [poolId, address])
 
-  if (!pool || isLoading) {
-    return <>isLoading</>
-  }
-
   return (
     <LandingPageWrapper>
       <StandardPageContainer
         connectedChainId={connectedChainId}
         address={address}
       >
-        {pool && connectedChainId === pool.chainId ? (
+        {!pool || isLoading ? (
+          <div className="flex items-center justify-center">
+            <LoadingSpinner />
+          </div>
+        ) : pool && connectedChainId === pool.chainId ? (
           <PoolBody address={address} connectedChainId={connectedChainId} />
         ) : (
           <NoPoolBody pool={pool} poolChainId={pool.chainId} />

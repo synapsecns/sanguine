@@ -13,7 +13,7 @@ const CurrencyReservesCard = ({ chainId }: { chainId: number }) => {
   return (
     <InfoSectionCard title="Currency Reserves">
       {poolData ? (
-        poolData.tokens.map((tokenObj, idx) => {
+        poolData.tokens?.map((tokenObj, idx) => {
           return (
             <div key={idx}>
               <CurrencyInfoListItem

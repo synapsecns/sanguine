@@ -30,8 +30,10 @@ const PoolBody = ({
   const dispatch: any = useDispatch()
 
   useEffect(() => {
-    dispatch(resetPoolUserData())
-    dispatch(fetchPoolUserData({ pool, address }))
+    if (pool && address) {
+      dispatch(resetPoolUserData())
+      dispatch(fetchPoolUserData({ pool, address }))
+    }
   }, [pool, address])
 
   return (
