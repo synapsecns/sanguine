@@ -70,6 +70,7 @@ export const Portfolio = () => {
             networkPortfolioWithBalances={filteredPortfolioDataForBalances}
             fetchPortfolioBalancesCallback={fetchPortfolioBalances}
             fetchState={fetchState}
+            bridgeTxHashes={bridgeTxHashes}
           />
         )}
       </div>

@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { useEffect } from 'react'
 import { Address } from 'wagmi'
 import {
   NetworkTokenBalancesAndAllowances,
@@ -17,6 +17,7 @@ type PortfolioContentProps = {
   networkPortfolioWithBalances: NetworkTokenBalancesAndAllowances
   fetchPortfolioBalancesCallback: () => Promise<void>
   fetchState: FetchState
+  bridgeTxHashes: string[]
 }
 
 export const PortfolioContent = ({
@@ -26,11 +27,19 @@ export const PortfolioContent = ({
   networkPortfolioWithBalances,
   fetchPortfolioBalancesCallback,
   fetchState,
+  bridgeTxHashes,
 }: PortfolioContentProps) => {
   const { currentNetwork, remainingNetworks } = getCurrentNetworkPortfolio(
     selectedFromChainId,
     networkPortfolioWithBalances
   )
+
+  useEffect(() => {
+    const txExists = bridgeTxHashes && bridgeTxHashes.length > 0
+    if (txExists) {
+      fetchPortfolioBalancesCallback()
+    }
+  }, [bridgeTxHashes])
 
   return (
     <div data-test-id="portfolio-content">
