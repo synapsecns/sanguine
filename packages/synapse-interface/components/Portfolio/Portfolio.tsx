@@ -19,7 +19,6 @@ export enum PortfolioTabs {
 }
 
 export const Portfolio = () => {
-  const portfolioRef = useRef<HTMLDivElement>(null)
   const [tab, setTab] = useState<PortfolioTabs>(PortfolioTabs.HOME)
 
   const dispatch = useDispatch()
@@ -58,7 +57,6 @@ export const Portfolio = () => {
     <div
       data-test-id="portfolio"
       className="flex flex-col w-full max-w-lg mx-auto lg:mx-0"
-      ref={portfolioRef}
     >
       <PortfolioTabManager activeTab={tab} setTab={setTab} />
       <div className="mt-4">
@@ -72,7 +70,6 @@ export const Portfolio = () => {
             fetchPortfolioBalancesCallback={fetchPortfolioBalances}
             fetchState={fetchState}
             bridgeTxHashes={bridgeTxHashes}
-            portfolioRef={portfolioRef}
           />
         )}
       </div>

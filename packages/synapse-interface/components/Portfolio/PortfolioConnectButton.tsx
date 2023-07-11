@@ -55,11 +55,16 @@ const ConnectButton = ({ chainId }: { chainId: number }) => {
   const [isConnecting, setIsConnecting] = useState<boolean>(false)
   const dispatch = useDispatch()
 
-  const handleConnectNetwork = async () => {
+  function scrollToTop(): void {
+    window.scrollTo({ top: 0, behavior: 'smooth' })
+  }
+
+  const handleConnectNetwork: () => Promise<void> = async () => {
     setIsConnecting(true)
     try {
       await switchNetwork({ chainId: chainId }).then((success) => {
         success && dispatch(setFromChainId(chainId))
+        scrollToTop()
       })
     } catch (error) {
       error && setIsConnecting(false)

@@ -31,7 +31,6 @@ type SingleNetworkPortfolioProps = {
   initializeExpanded: boolean
   fetchPortfolioBalancesCallback: () => Promise<void>
   fetchState: FetchState
-  portfolioRef: React.RefObject<HTMLDivElement>
 }
 
 export const SingleNetworkPortfolio = ({
@@ -42,7 +41,6 @@ export const SingleNetworkPortfolio = ({
   initializeExpanded = false,
   fetchPortfolioBalancesCallback,
   fetchState,
-  portfolioRef,
 }: SingleNetworkPortfolioProps) => {
   const currentChain: Chain = CHAINS_BY_ID[portfolioChainId]
 
@@ -100,7 +98,6 @@ export const SingleNetworkPortfolio = ({
                 connectedChainId={connectedChainId}
                 fetchPortfolioBalancesCallback={fetchPortfolioBalancesCallback}
                 isApproved={true}
-                portfolioRef={portfolioRef}
               />
             )
           )}
@@ -115,7 +112,6 @@ export const SingleNetworkPortfolio = ({
                 connectedChainId={connectedChainId}
                 fetchPortfolioBalancesCallback={fetchPortfolioBalancesCallback}
                 isApproved={false}
-                portfolioRef={portfolioRef}
               />
             )
           )}
@@ -132,7 +128,6 @@ type PortfolioTokenAssetProps = {
   connectedChainId: number
   isApproved: boolean
   fetchPortfolioBalancesCallback: () => Promise<void>
-  portfolioRef: React.RefObject<HTMLDivElement>
 }
 
 const PortfolioTokenAsset = ({
@@ -143,20 +138,17 @@ const PortfolioTokenAsset = ({
   connectedChainId,
   isApproved,
   fetchPortfolioBalancesCallback,
-  portfolioRef,
 }: PortfolioTokenAssetProps) => {
-  function scrollToRef() {
-    if (portfolioRef.current) {
-      portfolioRef.current.scrollIntoView({ behavior: 'smooth' })
-    }
-  }
-
   const dispatch = useDispatch()
   const { address } = useAccount()
   const { icon, symbol, decimals, addresses } = token
 
   function hasOnlyZeros(input: string): boolean {
     return /^0+(\.0+)?$/.test(input)
+  }
+
+  function scrollToTop() {
+    window.scrollTo({ top: 0, behavior: 'smooth' })
   }
 
   const parsedBalance: string = useMemo(() => {
@@ -196,7 +188,7 @@ const PortfolioTokenAsset = ({
   const handleSelectFromTokenCallback = useCallback(() => {
     dispatch(setFromChainId(portfolioChainId))
     dispatch(setFromToken(token))
-    scrollToRef()
+    scrollToTop()
   }, [token, isDisabled, portfolioChainId])
 
   const handleApproveCallback = useCallback(async () => {
@@ -267,9 +259,6 @@ const PortfolioTokenAsset = ({
       </div>
       <div className="flex flex-row items-center w-1/3 text-left">
         <PortfolioAssetActionButton
-          token={token}
-          connectedChainId={connectedChainId}
-          portfolioChainId={portfolioChainId}
           sendCallback={handleSelectFromTokenCallback}
           approveCallback={handleApproveCallback}
           isApproved={isApproved}
@@ -295,9 +284,6 @@ const PortfolioTokenAsset = ({
 }
 
 type PortfolioAssetActionButtonProps = {
-  token: Token
-  connectedChainId: number
-  portfolioChainId: number
   sendCallback: () => void
   approveCallback: () => Promise<void>
   isApproved: boolean
@@ -305,9 +291,6 @@ type PortfolioAssetActionButtonProps = {
 }
 
 const PortfolioAssetActionButton = ({
-  token,
-  connectedChainId,
-  portfolioChainId,
   sendCallback,
   approveCallback,
   isApproved,
