@@ -3,6 +3,8 @@ package testutil
 import (
 	"context"
 	"fmt"
+	"sync"
+
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/synapsecns/sanguine/agents/contracts/bondingmanager"
@@ -15,6 +17,7 @@ import (
 	"github.com/synapsecns/sanguine/agents/contracts/test/lightmanagerharness"
 	"github.com/synapsecns/sanguine/agents/contracts/test/requestharness"
 	"github.com/synapsecns/sanguine/ethergo/manager"
+	"golang.org/x/sync/errgroup"
 
 	"github.com/synapsecns/sanguine/agents/contracts/test/attestationharness"
 	"github.com/synapsecns/sanguine/agents/contracts/test/summitharness"
@@ -669,24 +672,36 @@ func (d *DeployManager) LoadHarnessContractsOnChains(
 		return fmt.Errorf("could not add agents to bonding manager harness on syn chain: %w", err)
 	}
 
-	for _, backend := range backends {
-		err := d.InitializeRemoteDeployedHarnessContracts(
-			ctx,
-			backend,
-			bondingManagerHarnessAgentRoot)
-		if err != nil {
-			return fmt.Errorf("could not initialize remote deplyed harness contracts: %w", err)
-		}
+	wg := sync.WaitGroup{}
+	g, ctx := errgroup.WithContext(ctx)
+	for _, b := range backends {
+		backend := b
+		wg.Add(1)
+		g.Go(func() error {
+			defer wg.Done()
+			err := d.InitializeRemoteDeployedHarnessContracts(
+				ctx,
+				backend,
+				bondingManagerHarnessAgentRoot)
+			if err != nil {
+				return fmt.Errorf("could not initialize remote deplyed harness contracts: %w", err)
+			}
 
-		err = d.AddAgentsToLightManagerHarnessContract(
-			ctx,
-			backend,
-			agents,
-			agentProofs,
-			agentStatuses)
-		if err != nil {
-			return fmt.Errorf("could not add agents to remote light manager harness contract: %w", err)
-		}
+			err = d.AddAgentsToLightManagerHarnessContract(
+				ctx,
+				backend,
+				agents,
+				agentProofs,
+				agentStatuses)
+			if err != nil {
+				return fmt.Errorf("could not add agents to remote light manager harness contract: %w", err)
+			}
+			return nil
+		})
+	}
+	err = g.Wait()
+	if err != nil {
+		return fmt.Errorf("could not initialize remote deplyed harness contracts: %w", err)
 	}
 
 	return nil

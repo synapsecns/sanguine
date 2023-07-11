@@ -1,6 +1,10 @@
 package testutil
 
 import (
+	"math/big"
+	"sync"
+	"testing"
+
 	"github.com/Flaque/filet"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/params"
@@ -41,9 +45,6 @@ import (
 	scribedb "github.com/synapsecns/sanguine/services/scribe/db"
 	scribesqlite "github.com/synapsecns/sanguine/services/scribe/db/datastore/sql/sqlite"
 	scribeMetadata "github.com/synapsecns/sanguine/services/scribe/metadata"
-	"math/big"
-	"sync"
-	"testing"
 )
 
 // SimulatedBackendsTestSuite can be used as the base for any test needing simulated backends
@@ -345,21 +346,6 @@ func (a *SimulatedBackendsTestSuite) SetupTest() {
 		a.TestBackendDestination,
 		a.TestBackendSummit,
 	}
-
-	/*
-		a.TestDeployManager.BulkDeploy(a.GetTestContext(), testBackends,
-			InboxType,
-			BondingManagerHarnessType,
-			SummitHarnessType,
-			AgentsTestContractType,
-			DestinationHarnessType,
-			OriginHarnessType,
-			TestClientType,
-			PingPongClientType,
-			LightInboxType,
-			LightManagerHarnessType,
-		)
-	*/
 
 	wg.Add(3)
 	go func() {
