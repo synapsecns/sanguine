@@ -1,4 +1,4 @@
-package service_test
+package backfill_test
 
 import (
 	"github.com/synapsecns/sanguine/core/metrics"

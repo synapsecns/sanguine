@@ -1,7 +1,8 @@
-package service_test
+package backfill_test
 
 import (
 	"context"
+	"github.com/synapsecns/sanguine/services/scribe/backfill"
 	"math/big"
 	"sync"
 	"testing"
@@ -13,7 +14,6 @@ import (
 	"github.com/synapsecns/sanguine/ethergo/backends/geth"
 	"github.com/synapsecns/sanguine/ethergo/util"
 	"github.com/synapsecns/sanguine/services/omnirpc/testhelper"
-	"github.com/synapsecns/sanguine/services/scribe/service"
 	"k8s.io/apimachinery/pkg/util/sets"
 )
 
@@ -138,7 +138,7 @@ func (b *BackfillSuite) TestLogsInRange() {
 
 	wg.Wait()
 
-	scribeBackend, err := service.DialBackend(b.GetTestContext(), host, b.metrics)
+	scribeBackend, err := backfill.DialBackend(b.GetTestContext(), host, b.metrics)
 	Nil(b.T(), err)
 
 	chainID, err := scribeBackend.ChainID(b.GetTestContext())
@@ -152,7 +152,7 @@ func (b *BackfillSuite) TestLogsInRange() {
 		blockRanges = append(blockRanges, blockRange)
 		blockRange = iterator.NextChunk()
 	}
-	res, err := service.GetLogsInRange(b.GetTestContext(), scribeBackend, []common.Address{commonAddress}, chainID.Uint64(), blockRanges)
+	res, err := backfill.GetLogsInRange(b.GetTestContext(), scribeBackend, []common.Address{commonAddress}, chainID.Uint64(), blockRanges)
 	Nil(b.T(), err)
 
 	// use to make sure we don't double use values
@@ -201,7 +201,7 @@ func (b *BackfillSuite) TestLogsInRangeWithMultipleContracts() {
 
 	wg.Wait()
 
-	scribeBackend, err := service.DialBackend(b.GetTestContext(), host, b.metrics)
+	scribeBackend, err := backfill.DialBackend(b.GetTestContext(), host, b.metrics)
 	Nil(b.T(), err)
 
 	chainID, err := scribeBackend.ChainID(b.GetTestContext())
@@ -215,7 +215,7 @@ func (b *BackfillSuite) TestLogsInRangeWithMultipleContracts() {
 		blockRanges = append(blockRanges, blockRange)
 		blockRange = iterator.NextChunk()
 	}
-	res, err := service.GetLogsInRange(b.GetTestContext(), scribeBackend, []common.Address{contractAddress1, contractAddress2}, chainID.Uint64(), blockRanges)
+	res, err := backfill.GetLogsInRange(b.GetTestContext(), scribeBackend, []common.Address{contractAddress1, contractAddress2}, chainID.Uint64(), blockRanges)
 	Nil(b.T(), err)
 
 	// use to make sure we don't double use values
@@ -244,10 +244,10 @@ func (b *BackfillSuite) TestLogsInRangeWithMultipleContracts() {
 }
 
 func TestMakeRange(t *testing.T) {
-	testIntRange := service.MakeRange(0, 4)
+	testIntRange := backfill.MakeRange(0, 4)
 	Equal(t, []int{0, 1, 2, 3, 4}, testIntRange)
 
-	testUintRange := service.MakeRange(uint16(10), uint16(12))
+	testUintRange := backfill.MakeRange(uint16(10), uint16(12))
 	Equal(t, testUintRange, []uint16{10, 11, 12})
 }
 
@@ -274,10 +274,10 @@ func (b *BackfillSuite) TestBlockHashesInRange() {
 
 	wg.Wait()
 
-	scribeBackend, err := service.DialBackend(b.GetTestContext(), host, b.metrics)
+	scribeBackend, err := backfill.DialBackend(b.GetTestContext(), host, b.metrics)
 	Nil(b.T(), err)
 
-	res, err := service.BlockHashesInRange(b.GetTestContext(), scribeBackend, 1, 10)
+	res, err := backfill.BlockHashesInRange(b.GetTestContext(), scribeBackend, 1, 10)
 	Nil(b.T(), err)
 
 	// use to make sure we don't double use values

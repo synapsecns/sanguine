@@ -3,8 +3,6 @@ package cmd
 import (
 	"github.com/synapsecns/sanguine/core/metrics"
 	"github.com/synapsecns/sanguine/services/scribe/scribe"
-	"github.com/synapsecns/sanguine/services/scribe/service"
-
 	// used to embed markdown.
 	_ "embed"
 	"fmt"
@@ -62,7 +60,7 @@ var pathFlag = &cli.StringFlag{
 	Required: true,
 }
 
-func createScribeParameters(c *cli.Context) (eventDB db.EventDB, clients map[uint32][]service.ScribeBackend, scribeConfig config.Config, err error) {
+func createScribeParameters(c *cli.Context) (eventDB db.EventDB, clients map[uint32][]backfill.ScribeBackend, scribeConfig config.Config, err error) {
 	scribeConfig, err = config.DecodeConfig(core.ExpandOrReturnPath(c.String(configFlag.Name)))
 	if err != nil {
 		return nil, nil, scribeConfig, fmt.Errorf("could not decode config: %w", err)
@@ -73,10 +71,10 @@ func createScribeParameters(c *cli.Context) (eventDB db.EventDB, clients map[uin
 		return nil, nil, scribeConfig, fmt.Errorf("could not initialize database: %w", err)
 	}
 
-	clients = make(map[uint32][]service.ScribeBackend)
+	clients = make(map[uint32][]backfill.ScribeBackend)
 	for _, client := range scribeConfig.Chains {
 		for confNum := 1; confNum <= MaxConfirmations; confNum++ {
-			backendClient, err := service.DialBackend(c.Context, fmt.Sprintf("%s/%d/rpc/%d", scribeConfig.RPCURL, confNum, client.ChainID), metrics.Get())
+			backendClient, err := backfill.DialBackend(c.Context, fmt.Sprintf("%s/%d/rpc/%d", scribeConfig.RPCURL, confNum, client.ChainID), metrics.Get())
 			if err != nil {
 				return nil, nil, scribeConfig, fmt.Errorf("could not start client for %s", fmt.Sprintf("%s/1/rpc/%d", scribeConfig.RPCURL, client.ChainID))
 			}

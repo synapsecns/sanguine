@@ -1,4 +1,4 @@
-package service
+package backfill
 
 import (
 	"context"
@@ -6,7 +6,7 @@ import (
 )
 
 // GetLogs exports logs for testing.
-func (c ContractBackfiller) GetLogs(ctx context.Context, startHeight, endHeight uint64) (<-chan types.Log, <-chan string) {
+func (c Indexer) GetLogs(ctx context.Context, startHeight, endHeight uint64) (<-chan types.Log, <-chan string) {
 	return c.getLogs(ctx, startHeight, endHeight)
 }
 
@@ -15,7 +15,7 @@ func (s *ScribeBackfiller) Clients() map[uint32][]ScribeBackend {
 	return s.clients
 }
 
-// ChainID exports chainID for testing.
-func (c ChainBackfiller) ChainID() uint32 {
-	return c.chainID
-}
+//// ChainID exports chainID for testing.
+//func (c ChainBackfiller) ChainID() uint32 {
+//	return c.chainID
+//}

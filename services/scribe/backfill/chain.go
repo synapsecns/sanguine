@@ -1,4 +1,4 @@
-package service
+package backfill
 
 import (
 	"context"
@@ -203,7 +203,7 @@ func (c ChainIndexer) Index(ctx context.Context, onlyOneBlock *uint64, livefill 
 			case newLivefillContract := <-readyToLivefill:
 				livefillContracts = append(livefillContracts, newLivefillContract)
 				// Update indxer's config to include new contract.
-				livefillIndexer.indexerConfig.contracts = getAddressesFromConfig(livefillContracts)
+				livefillIndexer.indexerConfig.Contracts = getAddressesFromConfig(livefillContracts)
 			case <-time.After(timeout):
 				var endHeight *uint64
 				var err error
@@ -305,12 +305,12 @@ func (c *ChainIndexer) indexToLivefill(parentContext context.Context, onlyOneBlo
 				if indexer.refreshRate > maxBackoff {
 					timeout = time.Duration(indexer.refreshRate) * time.Second
 				}
-				LogEvent(ErrorLevel, "Could not index contract, retrying", LogData{"cid": c.chainID, "ca": indexer.indexerConfig.contracts, "sh": startHeight, "bd": b.Duration(), "a": b.Attempt(), "e": err.Error()})
+				LogEvent(ErrorLevel, "Could not index contract, retrying", LogData{"cid": c.chainID, "ca": indexer.indexerConfig.Contracts, "sh": startHeight, "bd": b.Duration(), "a": b.Attempt(), "e": err.Error()})
 				continue
 			}
 
 			// get last indexed to check livefill threshold
-			lastBlockIndexed, err := c.eventDB.RetrieveLastIndexed(parentContext, indexer.indexerConfig.contracts[0], c.chainConfig.ChainID)
+			lastBlockIndexed, err := c.eventDB.RetrieveLastIndexed(parentContext, indexer.indexerConfig.Contracts[0], c.chainConfig.ChainID)
 			if err != nil {
 				return fmt.Errorf("could not get last indexed: %w", err)
 			}
@@ -323,7 +323,7 @@ func (c *ChainIndexer) indexToLivefill(parentContext context.Context, onlyOneBlo
 			}
 
 			timeout = time.Duration(indexer.refreshRate) * time.Second
-			LogEvent(InfoLevel, "Continuing to livefill contract", LogData{"t": timeout, "cid": c.chainID, "ca": indexer.indexerConfig.contracts, "sh": startHeight, "bd": b.Duration(), "a": b.Attempt()})
+			LogEvent(InfoLevel, "Continuing to livefill contract", LogData{"t": timeout, "cid": c.chainID, "ca": indexer.indexerConfig.Contracts, "sh": startHeight, "bd": b.Duration(), "a": b.Attempt()})
 		}
 	}
 }

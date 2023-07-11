@@ -1,4 +1,4 @@
-package service
+package backfill
 
 import (
 	"context"
@@ -26,14 +26,14 @@ import (
 )
 
 type IndexerConfig struct {
-	contracts            []common.Address
-	getLogsRange         uint64
-	getLogsBatchAmount   uint64
-	storeConcurrency     int
-	chainID              uint32
-	startHeight          uint64
-	endHeight            uint64
-	concurrencyThreshold uint64
+	Contracts            []common.Address
+	GetLogsRange         uint64
+	GetLogsBatchAmount   uint64
+	StoreConcurrency     int
+	ChainID              uint32
+	StartHeight          uint64
+	EndHeight            uint64
+	ConcurrencyThreshold uint64
 }
 
 // Indexer is a backfiller that fetches logs for a specific contract.
@@ -100,11 +100,11 @@ func NewIndexer(chainConfig config.ChainConfig, contractConfig []config.Contract
 	}
 
 	indexerConfig := IndexerConfig{
-		contracts:          contracts,
-		getLogsRange:       chainConfig.GetLogsRange,
-		getLogsBatchAmount: chainConfig.GetLogsBatchAmount,
-		storeConcurrency:   chainConfig.StoreConcurrency,
-		chainID:            chainConfig.ChainID,
+		Contracts:          contracts,
+		GetLogsRange:       chainConfig.GetLogsRange,
+		GetLogsBatchAmount: chainConfig.GetLogsBatchAmount,
+		StoreConcurrency:   chainConfig.StoreConcurrency,
+		ChainID:            chainConfig.ChainID,
 	}
 
 	return &Indexer{
@@ -128,8 +128,8 @@ func NewIndexer(chainConfig config.ChainConfig, contractConfig []config.Contract
 //nolint:gocognit, cyclop
 func (x *Indexer) Index(parentCtx context.Context, givenStart uint64, endHeight uint64) (err error) {
 	ctx, span := x.handler.Tracer().Start(parentCtx, "contract.Backfill", trace.WithAttributes(
-		attribute.Int("chain", int(x.indexerConfig.chainID)),
-		attribute.String("address", x.addressesToString(x.indexerConfig.contracts)),
+		attribute.Int("chain", int(x.indexerConfig.ChainID)),
+		attribute.String("address", x.addressesToString(x.indexerConfig.Contracts)),
 		attribute.Int("start", int(givenStart)),
 		attribute.Int("end", int(endHeight)),
 	))
@@ -152,7 +152,7 @@ func (x *Indexer) Index(parentCtx context.Context, givenStart uint64, endHeight 
 		for {
 			select {
 			case <-groupCtx.Done():
-				LogEvent(ErrorLevel, "Context canceled while storing and retrieving logs", LogData{"cid": x.indexerConfig.chainID, "ca": x.addressesToString(x.indexerConfig.contracts)})
+				LogEvent(ErrorLevel, "Context canceled while storing and retrieving logs", LogData{"cid": x.indexerConfig.ChainID, "ca": x.addressesToString(x.indexerConfig.Contracts)})
 
 				return fmt.Errorf("context canceled while storing and retrieving logs: %w", groupCtx.Err())
 			case log, ok := <-logsChan:
@@ -175,7 +175,7 @@ func (x *Indexer) Index(parentCtx context.Context, givenStart uint64, endHeight 
 
 					err := x.store(storeCtx, log)
 					if err != nil {
-						LogEvent(ErrorLevel, "Could not store log", LogData{"cid": x.indexerConfig.chainID, "ca": x.addressesToString(x.indexerConfig.contracts), "e": err.Error()})
+						LogEvent(ErrorLevel, "Could not store log", LogData{"cid": x.indexerConfig.ChainID, "ca": x.addressesToString(x.indexerConfig.Contracts), "e": err.Error()})
 
 						return fmt.Errorf("could not store log: %w", err)
 					}
@@ -184,7 +184,7 @@ func (x *Indexer) Index(parentCtx context.Context, givenStart uint64, endHeight 
 				})
 
 				// Stop spawning store threads and wait
-				if concurrentCalls >= x.indexerConfig.storeConcurrency || endHeight-log.BlockNumber < x.indexerConfig.concurrencyThreshold {
+				if concurrentCalls >= x.indexerConfig.StoreConcurrency || endHeight-log.BlockNumber < x.indexerConfig.ConcurrencyThreshold {
 					if err = gS.Wait(); err != nil {
 						return fmt.Errorf("error waiting for go routines: %w", err)
 					}
@@ -192,20 +192,20 @@ func (x *Indexer) Index(parentCtx context.Context, givenStart uint64, endHeight 
 					// Reset context TODO make this better
 					gS, storeCtx = errgroup.WithContext(ctx)
 					concurrentCalls = 0
-					err = x.eventDB.StoreLastIndexedMultiple(ctx, x.indexerConfig.contracts, x.indexerConfig.chainID, log.BlockNumber)
+					err = x.eventDB.StoreLastIndexedMultiple(ctx, x.indexerConfig.Contracts, x.indexerConfig.ChainID, log.BlockNumber)
 					if err != nil {
-						LogEvent(ErrorLevel, "Could not store last indexed block", LogData{"cid": x.indexerConfig.chainID, "bn": log.BlockNumber, "tx": log.TxHash.Hex(), "la": log.Address.String(), "ca": x.addressesToString(x.indexerConfig.contracts), "e": err.Error()})
+						LogEvent(ErrorLevel, "Could not store last indexed block", LogData{"cid": x.indexerConfig.ChainID, "bn": log.BlockNumber, "tx": log.TxHash.Hex(), "la": log.Address.String(), "ca": x.addressesToString(x.indexerConfig.Contracts), "e": err.Error()})
 
 						return fmt.Errorf("could not store last indexed block: %w", err)
 					}
 
 					x.blockMeter.Record(ctx, int64(log.BlockNumber), otelMetrics.WithAttributeSet(
-						attribute.NewSet(attribute.Int64("start_block", int64(startHeight)), attribute.Int64("chain_id", int64(x.indexerConfig.chainID)))),
+						attribute.NewSet(attribute.Int64("start_block", int64(startHeight)), attribute.Int64("chain_id", int64(x.indexerConfig.ChainID)))),
 					)
 				}
 
 			case errFromChan := <-errChan:
-				LogEvent(ErrorLevel, "Received errChan", LogData{"cid": x.indexerConfig.chainID, "ca": x.addressesToString(x.indexerConfig.contracts), "err": errFromChan})
+				LogEvent(ErrorLevel, "Received errChan", LogData{"cid": x.indexerConfig.ChainID, "ca": x.addressesToString(x.indexerConfig.Contracts), "err": errFromChan})
 
 				return fmt.Errorf("errChan returned an err %s", errFromChan)
 			}
@@ -215,17 +215,17 @@ func (x *Indexer) Index(parentCtx context.Context, givenStart uint64, endHeight 
 	err = g.Wait()
 
 	if err != nil {
-		return fmt.Errorf("could not backfill contract: %w \nChain: %d\nLog 's Contract Address: %s\n %s", err, x.indexerConfig.chainID, x.indexerConfig.contracts)
+		return fmt.Errorf("could not backfill contract: %w \nChain: %d\nLog 's Contract Address: %s\n %s", err, x.indexerConfig.ChainID, x.indexerConfig.Contracts)
 	}
 
-	err = x.eventDB.StoreLastIndexedMultiple(ctx, x.indexerConfig.contracts, x.indexerConfig.chainID, endHeight)
+	err = x.eventDB.StoreLastIndexedMultiple(ctx, x.indexerConfig.Contracts, x.indexerConfig.ChainID, endHeight)
 	if err != nil {
 		return fmt.Errorf("could not store last indexed block: %w", err)
 	}
 	x.blockMeter.Record(ctx, int64(endHeight), otelMetrics.WithAttributeSet(
-		attribute.NewSet(attribute.Int64("start_block", int64(startHeight)), attribute.Int64("chain_id", int64(x.indexerConfig.chainID)))),
+		attribute.NewSet(attribute.Int64("start_block", int64(startHeight)), attribute.Int64("chain_id", int64(x.indexerConfig.ChainID)))),
 	)
-	LogEvent(InfoLevel, "Finished backfilling contract", LogData{"cid": x.indexerConfig.chainID, "ca": x.addressesToString(x.indexerConfig.contracts)})
+	LogEvent(InfoLevel, "Finished backfilling contract", LogData{"cid": x.indexerConfig.ChainID, "ca": x.addressesToString(x.indexerConfig.Contracts)})
 
 	return nil
 }
@@ -236,7 +236,7 @@ func (x *Indexer) Index(parentCtx context.Context, givenStart uint64, endHeight 
 //nolint:cyclop,gocognit,maintidx
 func (x *Indexer) store(parentCtx context.Context, log types.Log) (err error) {
 	ctx, span := x.handler.Tracer().Start(parentCtx, "store", trace.WithAttributes(
-		attribute.String("contract", x.addressesToString(x.indexerConfig.contracts)),
+		attribute.String("contract", x.addressesToString(x.indexerConfig.Contracts)),
 		attribute.String("tx", log.TxHash.Hex()),
 		attribute.String("block", fmt.Sprintf("%d", log.BlockNumber)),
 	))
@@ -264,7 +264,7 @@ OUTER:
 	for {
 		select {
 		case <-ctx.Done():
-			LogEvent(ErrorLevel, "Context canceled while storing logs/receipts", LogData{"cid": x.indexerConfig.chainID, "bn": log.BlockNumber, "tx": log.TxHash.Hex(), "la": log.Address.String(), "ca": x.addressesToString(x.indexerConfig.contracts), "e": ctx.Err()})
+			LogEvent(ErrorLevel, "Context canceled while storing logs/receipts", LogData{"cid": x.indexerConfig.ChainID, "bn": log.BlockNumber, "tx": log.TxHash.Hex(), "la": log.Address.String(), "ca": x.addressesToString(x.indexerConfig.Contracts), "e": ctx.Err()})
 
 			return fmt.Errorf("context canceled while storing logs/receipts: %w", ctx.Err())
 		case <-time.After(timeout):
@@ -297,9 +297,9 @@ OUTER:
 
 	g.Go(func() error {
 		// Store receipt in the EventDB.
-		err = x.eventDB.StoreReceipt(groupCtx, x.indexerConfig.chainID, tx.receipt)
+		err = x.eventDB.StoreReceipt(groupCtx, x.indexerConfig.ChainID, tx.receipt)
 		if err != nil {
-			LogEvent(ErrorLevel, "Could not store receipt, retrying", LogData{"cid": x.indexerConfig.chainID, "bn": log.BlockNumber, "tx": log.TxHash.Hex(), "la": log.Address.String(), "ca": x.addressesToString(x.indexerConfig.contracts), "e": err.Error()})
+			LogEvent(ErrorLevel, "Could not store receipt, retrying", LogData{"cid": x.indexerConfig.ChainID, "bn": log.BlockNumber, "tx": log.TxHash.Hex(), "la": log.Address.String(), "ca": x.addressesToString(x.indexerConfig.Contracts), "e": err.Error()})
 
 			return fmt.Errorf("could not store receipt: %w", err)
 		}
@@ -308,7 +308,7 @@ OUTER:
 
 	if hasTX {
 		g.Go(func() error {
-			err = x.eventDB.StoreEthTx(groupCtx, &tx.transaction, x.indexerConfig.chainID, log.BlockHash, log.BlockNumber, uint64(log.TxIndex))
+			err = x.eventDB.StoreEthTx(groupCtx, &tx.transaction, x.indexerConfig.ChainID, log.BlockHash, log.BlockNumber, uint64(log.TxIndex))
 			if err != nil {
 				return fmt.Errorf("could not store tx: %w", err)
 			}
@@ -322,7 +322,7 @@ OUTER:
 			return err
 		}
 
-		err = x.eventDB.StoreLogs(groupCtx, x.indexerConfig.chainID, logs...)
+		err = x.eventDB.StoreLogs(groupCtx, x.indexerConfig.ChainID, logs...)
 		if err != nil {
 			return fmt.Errorf("could not store receipt logs: %w", err)
 		}
@@ -331,7 +331,7 @@ OUTER:
 	})
 
 	g.Go(func() error {
-		err := x.eventDB.StoreBlockTime(groupCtx, x.indexerConfig.chainID, tx.blockHeader.Number.Uint64(), tx.blockHeader.Time)
+		err := x.eventDB.StoreBlockTime(groupCtx, x.indexerConfig.ChainID, tx.blockHeader.Number.Uint64(), tx.blockHeader.Time)
 		if err != nil {
 			return fmt.Errorf("could not store receipt logs: %w", err)
 		}
@@ -340,13 +340,13 @@ OUTER:
 
 	err = g.Wait()
 	if err != nil {
-		LogEvent(ErrorLevel, "Could not store data", LogData{"cid": x.indexerConfig.chainID, "bn": log.BlockNumber, "tx": log.TxHash.Hex(), "la": log.Address.String(), "ca": x.addressesToString(x.indexerConfig.contracts), "e": err.Error()})
+		LogEvent(ErrorLevel, "Could not store data", LogData{"cid": x.indexerConfig.ChainID, "bn": log.BlockNumber, "tx": log.TxHash.Hex(), "la": log.Address.String(), "ca": x.addressesToString(x.indexerConfig.Contracts), "e": err.Error()})
 
-		return fmt.Errorf("could not store data: %w\n%s on chain %d from %d to %s", err, x.addressesToString(x.indexerConfig.contracts), x.indexerConfig.chainID, log.BlockNumber, log.TxHash.String())
+		return fmt.Errorf("could not store data: %w\n%s on chain %d from %d to %s", err, x.addressesToString(x.indexerConfig.Contracts), x.indexerConfig.ChainID, log.BlockNumber, log.TxHash.String())
 	}
 
 	x.cache.Add(log.TxHash, true)
-	LogEvent(InfoLevel, "Log, Receipt, and Tx stored", LogData{"cid": x.indexerConfig.chainID, "bn": log.BlockNumber, "tx": log.TxHash.Hex(), "la": log.Address.String(), "ca": x.addressesToString(x.indexerConfig.contracts), "ts": time.Since(startTime).Seconds()})
+	LogEvent(InfoLevel, "Log, Receipt, and Tx stored", LogData{"cid": x.indexerConfig.ChainID, "bn": log.BlockNumber, "tx": log.TxHash.Hex(), "la": log.Address.String(), "ca": x.addressesToString(x.indexerConfig.Contracts), "ts": time.Since(startTime).Seconds()})
 
 	return nil
 }
@@ -354,7 +354,7 @@ func (x *Indexer) getLogs(parentCtx context.Context, startHeight, endHeight uint
 	ctx, span := x.handler.Tracer().Start(parentCtx, "getLogs")
 	defer metrics.EndSpan(span)
 
-	logFetcher := NewLogFetcher(x.indexerConfig.contracts, x.client[0], big.NewInt(int64(startHeight)), big.NewInt(int64(endHeight)), &x.indexerConfig)
+	logFetcher := NewLogFetcher(x.indexerConfig.Contracts, x.client[0], big.NewInt(int64(startHeight)), big.NewInt(int64(endHeight)), &x.indexerConfig)
 	logsChan, errChan := make(chan types.Log), make(chan string)
 
 	go x.runFetcher(ctx, logFetcher, errChan)
@@ -403,9 +403,9 @@ func (x *Indexer) prunedReceiptLogs(receipt types.Receipt) (logs []types.Log, er
 	for i := range receipt.Logs {
 		log := receipt.Logs[i]
 		if log == nil {
-			LogEvent(ErrorLevel, "log is nil", LogData{"cid": x.indexerConfig.chainID, "bn": log.BlockNumber, "tx": log.TxHash.Hex(), "la": log.Address.String(), "ca": x.addressesToString(x.indexerConfig.contracts)})
+			LogEvent(ErrorLevel, "log is nil", LogData{"cid": x.indexerConfig.ChainID, "bn": log.BlockNumber, "tx": log.TxHash.Hex(), "la": log.Address.String(), "ca": x.addressesToString(x.indexerConfig.Contracts)})
 
-			return nil, fmt.Errorf("log is nil\nChain: %d\nTxHash: %s\nLog BlockNumber: %d\nLog 's Contract Address: %s\nContract Address: %s", x.indexerConfig.chainID, log.TxHash.String(), log.BlockNumber, log.Address.String(), x.addressesToString(x.indexerConfig.contracts))
+			return nil, fmt.Errorf("log is nil\nChain: %d\nTxHash: %s\nLog BlockNumber: %d\nLog 's Contract Address: %s\nContract Address: %s", x.indexerConfig.ChainID, log.TxHash.String(), log.BlockNumber, log.Address.String(), x.addressesToString(x.indexerConfig.Contracts))
 		}
 		logs = append(logs, *log)
 	}
@@ -457,7 +457,7 @@ OUTER:
 
 			if callErr[receiptIndex] != nil {
 				if callErr[receiptIndex].Error() == txNotFoundError {
-					LogEvent(InfoLevel, "Could not get tx for txHash, attempting with additional confirmations", LogData{"cid": x.indexerConfig.chainID, "tx": txhash, "ca": x.addressesToString(x.indexerConfig.contracts), "e": err.Error()})
+					LogEvent(InfoLevel, "Could not get tx for txHash, attempting with additional confirmations", LogData{"cid": x.indexerConfig.ChainID, "tx": txhash, "ca": x.addressesToString(x.indexerConfig.Contracts), "e": err.Error()})
 					continue OUTER
 				}
 			}
@@ -465,13 +465,13 @@ OUTER:
 			if callErr[txIndex] != nil {
 				switch callErr[txIndex].Error() {
 				case txNotSupportedError:
-					LogEvent(InfoLevel, "Invalid tx", LogData{"cid": x.indexerConfig.chainID, "tx": txhash, "ca": x.addressesToString(x.indexerConfig.contracts), "e": err.Error()})
+					LogEvent(InfoLevel, "Invalid tx", LogData{"cid": x.indexerConfig.ChainID, "tx": txhash, "ca": x.addressesToString(x.indexerConfig.Contracts), "e": err.Error()})
 					return tx, errNoTx
 				case invalidTxVRSError:
-					LogEvent(InfoLevel, "Could not get tx for txHash, attempting with additional confirmations", LogData{"cid": x.indexerConfig.chainID, "tx": txhash, "ca": x.addressesToString(x.indexerConfig.contracts), "e": err.Error()})
+					LogEvent(InfoLevel, "Could not get tx for txHash, attempting with additional confirmations", LogData{"cid": x.indexerConfig.ChainID, "tx": txhash, "ca": x.addressesToString(x.indexerConfig.Contracts), "e": err.Error()})
 					return tx, errNoTx
 				case txNotFoundError:
-					LogEvent(InfoLevel, "Could not get tx for txHash, attempting with additional confirmations", LogData{"cid": x.indexerConfig.chainID, "tx": txhash, "ca": x.addressesToString(x.indexerConfig.contracts), "e": err.Error()})
+					LogEvent(InfoLevel, "Could not get tx for txHash, attempting with additional confirmations", LogData{"cid": x.indexerConfig.ChainID, "tx": txhash, "ca": x.addressesToString(x.indexerConfig.Contracts), "e": err.Error()})
 					continue OUTER
 				}
 			}
