@@ -13,7 +13,9 @@
     "lint:check": "eslint . --max-warnings=0",
     "ci:lint": "npm run lint:check",
     "build:go": " ",
-    "build:slither": " "
+    "build:slither": " ",
+    "build": "tsc",
+    "postinstall": "npm run build"
   },
   "dependencies": {
     "@ethersproject/bignumber": "^5.7.0",
