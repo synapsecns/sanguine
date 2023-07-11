@@ -377,15 +377,10 @@ func (e Executor) Execute(parentCtx context.Context, message types.Message) (_ b
 	}
 
 	_, err = e.txSubmitter.SubmitTransaction(ctx, big.NewInt(int64(destinationDomain)), func(transactor *bind.TransactOpts) (tx *ethTypes.Transaction, err error) {
-		encodedMessage, err := types.EncodeMessage(message)
-		if err != nil {
-			return nil, fmt.Errorf("could not encode message: %w", err)
-		}
-
-		tx, err = e.chainExecutors[message.DestinationDomain()].boundDestination.GetContractRef().Execute(
+		tx, err = e.chainExecutors[message.DestinationDomain()].boundDestination.Execute(
 			transactor,
-			encodedMessage,
-			originProof[:],
+			message,
+			originProof,
 			snapshotProofB32,
 			big.NewInt(int64(*stateIndex)),
 			uint64(1000000),
