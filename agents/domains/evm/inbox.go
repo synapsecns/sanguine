@@ -3,6 +3,7 @@ package evm
 import (
 	"context"
 	"fmt"
+	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/common"
 	ethTypes "github.com/ethereum/go-ethereum/core/types"
 	"github.com/synapsecns/sanguine/agents/contracts/inbox"
@@ -42,14 +43,6 @@ type inboxContract struct {
 	nonceManager nonce.Manager
 }
 
-func (a inboxContract) GetContractRef() *inbox.InboxRef {
-	return a.contract
-}
-
-func (a inboxContract) GetNonceManager() nonce.Manager {
-	return a.nonceManager
-}
-
 func (a inboxContract) SubmitStateReportWithSnapshot(ctx context.Context, signer signer.Signer, stateIndex int64, signature signer.Signature, snapPayload []byte, snapSignature []byte) (tx *ethTypes.Transaction, err error) {
 	transactor, err := signer.GetTransactor(ctx, a.client.GetBigChainID())
 	if err != nil {
@@ -81,30 +74,19 @@ func (a inboxContract) SubmitStateReportWithSnapshot(ctx context.Context, signer
 	return tx, nil
 }
 
-func (a inboxContract) SubmitSnapshot(ctx context.Context, signer signer.Signer, encodedSnapshot []byte, signature signer.Signature) error {
-	transactor, err := signer.GetTransactor(ctx, a.client.GetBigChainID())
-	if err != nil {
-		return fmt.Errorf("could not sign tx: %w", err)
-	}
-
-	transactOpts, err := a.nonceManager.NewKeyedTransactor(transactor)
-	if err != nil {
-		return fmt.Errorf("could not create tx: %w", err)
-	}
-
-	transactOpts.Context = ctx
-
+func (a inboxContract) SubmitSnapshot(transactor *bind.TransactOpts, signer signer.Signer, encodedSnapshot []byte, signature signer.Signature) (tx *ethTypes.Transaction, err error) {
 	rawSig, err := types.EncodeSignature(signature)
 	if err != nil {
-		return fmt.Errorf("could not encode signature: %w", err)
+		return nil, fmt.Errorf("could not encode signature: %w", err)
 	}
-	_, err = a.contract.SubmitSnapshot(transactOpts, encodedSnapshot, rawSig)
+
+	tx, err = a.contract.SubmitSnapshot(transactor, encodedSnapshot, rawSig)
 	if err != nil {
 		if strings.Contains(err.Error(), "nonce too low") {
 			a.nonceManager.ClearNonce(signer.Address())
 		}
-		return fmt.Errorf("could not submit sanpshot: %w", err)
+		return nil, fmt.Errorf("could not submit sanpshot: %w", err)
 	}
 
-	return nil
+	return tx, nil
 }

@@ -3,12 +3,8 @@ package domains
 import (
 	"context"
 	"errors"
+	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	ethTypes "github.com/ethereum/go-ethereum/core/types"
-	"github.com/synapsecns/sanguine/agents/contracts/destination"
-	"github.com/synapsecns/sanguine/agents/contracts/inbox"
-	"github.com/synapsecns/sanguine/agents/contracts/lightinbox"
-	"github.com/synapsecns/sanguine/agents/contracts/origin"
-	"github.com/synapsecns/sanguine/ethergo/signer/nonce"
 	"math/big"
 
 	"github.com/ethereum/go-ethereum/common"
@@ -49,8 +45,6 @@ type DomainClient interface {
 
 // OriginContract represents the origin contract on a particular chain.
 type OriginContract interface {
-	// GetContractRef gets the origin contract ref.
-	GetContractRef() *origin.OriginRef
 	// IsValidState checks if the given state is valid on its origin.
 	IsValidState(ctx context.Context, statePayload []byte) (isValid bool, err error)
 	// FetchSortedMessages fetches all messages in order form lowest->highest in a given block range
@@ -75,14 +69,10 @@ type SummitContract interface {
 
 // InboxContract contains the interface for the inbox.
 type InboxContract interface {
-	// GetContractRef gets the inbox contract ref.
-	GetContractRef() *inbox.InboxRef
-	// GetNonceManager gets the nonce manager for the inbox.
-	GetNonceManager() nonce.Manager
 	// SubmitStateReportWithSnapshot reports to the inbox that a state within a snapshot is invalid.
 	SubmitStateReportWithSnapshot(ctx context.Context, signer signer.Signer, stateIndex int64, signature signer.Signature, snapPayload []byte, snapSignature []byte) (tx *ethTypes.Transaction, err error)
 	// SubmitSnapshot submits a snapshot to the inbox (via the Inbox).
-	SubmitSnapshot(ctx context.Context, signer signer.Signer, encodedSnapshot []byte, signature signer.Signature) error
+	SubmitSnapshot(transactor *bind.TransactOpts, signer signer.Signer, encodedSnapshot []byte, signature signer.Signature) (tx *ethTypes.Transaction, err error)
 }
 
 // BondingManagerContract contains the interface for the bonding manager.
@@ -97,10 +87,8 @@ type BondingManagerContract interface {
 
 // DestinationContract contains the interface for the destination.
 type DestinationContract interface {
-	// GetContractRef gets the destination contract ref.
-	GetContractRef() *destination.DestinationRef
 	// Execute executes a message on the destination.
-	Execute(ctx context.Context, signer signer.Signer, message types.Message, originProof [32][32]byte, snapshotProof [][32]byte, index *big.Int, gasLimit uint64) error
+	Execute(transactor *bind.TransactOpts, message types.Message, originProof [32][32]byte, snapshotProof [][32]byte, index *big.Int, gasLimit uint64) (tx *ethTypes.Transaction, err error) // AttestationsAmount retrieves the number of attestations submitted to the destination.
 	// AttestationsAmount retrieves the number of attestations submitted to the destination.
 	AttestationsAmount(ctx context.Context) (uint64, error)
 	// GetAttestationNonce gets the nonce of the attestation by snap root
@@ -111,17 +99,14 @@ type DestinationContract interface {
 
 // LightInboxContract contains the interface for the light inbox.
 type LightInboxContract interface {
-	// GetContractRef gets the light inbox contract ref.
-	GetContractRef() *lightinbox.LightInboxRef
 	// SubmitAttestation submits an attestation to the destination chain (via the light inbox contract)
 	SubmitAttestation(
-		ctx context.Context,
-		signer signer.Signer,
+		transactor *bind.TransactOpts,
 		attPayload []byte,
 		signature signer.Signature,
 		agentRoot [32]byte,
 		snapGas []*big.Int,
-	) error
+	) (tx *ethTypes.Transaction, err error)
 }
 
 // LightManagerContract contains the interface for the light manager.

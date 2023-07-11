@@ -7,14 +7,12 @@ import (
 	ethTypes "github.com/ethereum/go-ethereum/core/types"
 	"github.com/synapsecns/sanguine/agents/agents/notary/db"
 	"github.com/synapsecns/sanguine/core/metrics"
+	signerConfig "github.com/synapsecns/sanguine/ethergo/signer/config"
 	"github.com/synapsecns/sanguine/ethergo/submitter"
 	omnirpcClient "github.com/synapsecns/sanguine/services/omnirpc/client"
-	"math/big"
-	"strings"
-
-	signerConfig "github.com/synapsecns/sanguine/ethergo/signer/config"
 	"go.opentelemetry.io/otel/attribute"
 	"go.opentelemetry.io/otel/trace"
+	"math/big"
 	"time"
 
 	"github.com/ethereum/go-ethereum/common"
@@ -397,16 +395,8 @@ func (n *Notary) submitLatestSnapshot(parentCtx context.Context) {
 	} else {
 		logger.Infof("Notary submitting snapshot to summit")
 		_, err := n.txSubmitter.SubmitTransaction(ctx, big.NewInt(int64(n.summitDomain.Config().DomainID)), func(transactor *bind.TransactOpts) (tx *ethTypes.Transaction, err error) {
-			rawSig, err := types.EncodeSignature(snapshotSignature)
+			tx, err = n.summitDomain.Inbox().SubmitSnapshot(transactor, n.unbondedSigner, encodedSnapshot, snapshotSignature)
 			if err != nil {
-				return nil, fmt.Errorf("could not encode signature: %w", err)
-			}
-
-			tx, err = n.summitDomain.Inbox().GetContractRef().SubmitSnapshot(transactor, encodedSnapshot, rawSig)
-			if err != nil {
-				if strings.Contains(err.Error(), "nonce too low") {
-					n.summitDomain.Inbox().GetNonceManager().ClearNonce(n.unbondedSigner.Address())
-				}
 				return nil, fmt.Errorf("could not submit snapshot: %w", err)
 			}
 
@@ -482,15 +472,10 @@ func (n *Notary) submitMyLatestAttestation(parentCtx context.Context) {
 		))
 	} else {
 		_, err = n.txSubmitter.SubmitTransaction(ctx, big.NewInt(int64(n.destinationDomain.Config().DomainID)), func(transactor *bind.TransactOpts) (tx *ethTypes.Transaction, err error) {
-			rawSig, err := types.EncodeSignature(attestationSignature)
-			if err != nil {
-				return nil, fmt.Errorf("could not encode signature: %w", err)
-			}
-
-			tx, err = n.destinationDomain.LightInbox().GetContractRef().SubmitAttestation(
+			tx, err = n.destinationDomain.LightInbox().SubmitAttestation(
 				transactor,
 				n.myLatestNotaryAttestation.AttPayload(),
-				rawSig,
+				attestationSignature,
 				n.myLatestNotaryAttestation.AgentRoot(),
 				n.myLatestNotaryAttestation.SnapGas(),
 			)

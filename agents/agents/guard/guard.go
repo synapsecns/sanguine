@@ -23,7 +23,6 @@ import (
 	"google.golang.org/grpc/credentials/insecure"
 	"math/big"
 	"strconv"
-	"strings"
 	"time"
 
 	"github.com/synapsecns/sanguine/agents/config"
@@ -417,16 +416,8 @@ func (g Guard) submitLatestSnapshot(parentCtx context.Context) {
 		))
 	} else {
 		_, err = g.txSubmitter.SubmitTransaction(ctx, big.NewInt(int64(g.summitDomainID)), func(transactor *bind.TransactOpts) (tx *ethTypes.Transaction, err error) {
-			rawSig, err := types.EncodeSignature(snapshotSignature)
+			tx, err = summitDomain.Inbox().SubmitSnapshot(transactor, g.unbondedSigner, encodedSnapshot, snapshotSignature)
 			if err != nil {
-				return nil, fmt.Errorf("failed to encode signature: %w", err)
-			}
-
-			tx, err = summitDomain.Inbox().GetContractRef().SubmitSnapshot(transactor, encodedSnapshot, rawSig)
-			if err != nil {
-				if strings.Contains(err.Error(), "nonce too low") {
-					summitDomain.Inbox().GetNonceManager().ClearNonce(g.unbondedSigner.Address())
-				}
 				return nil, fmt.Errorf("failed to submit snapshot: %w", err)
 			}
 
