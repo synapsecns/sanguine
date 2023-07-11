@@ -61,6 +61,7 @@ export const Portfolio = () => {
             connectedChainId={chain?.id}
             selectedFromChainId={fromChainId}
             networkPortfolioWithBalances={filteredPortfolioDataForBalances}
+            fetchPortfolioBalancesCallback={fetchPortfolioBalances}
             fetchState={fetchState}
           />
         )}

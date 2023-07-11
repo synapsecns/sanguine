@@ -28,6 +28,7 @@ type SingleNetworkPortfolioProps = {
   selectedFromChainId: number
   portfolioTokens: TokenWithBalanceAndAllowance[]
   initializeExpanded: boolean
+  fetchPortfolioBalancesCallback: () => Promise<void>
   fetchState: FetchState
 }
 
@@ -37,6 +38,7 @@ export const SingleNetworkPortfolio = ({
   selectedFromChainId,
   portfolioTokens,
   initializeExpanded = false,
+  fetchPortfolioBalancesCallback,
   fetchState,
 }: SingleNetworkPortfolioProps) => {
   const currentChain: Chain = CHAINS_BY_ID[portfolioChainId]
@@ -93,6 +95,7 @@ export const SingleNetworkPortfolio = ({
                 allowance={allowance}
                 portfolioChainId={portfolioChainId}
                 connectedChainId={connectedChainId}
+                fetchPortfolioBalancesCallback={fetchPortfolioBalancesCallback}
                 isApproved={true}
               />
             )
@@ -106,6 +109,7 @@ export const SingleNetworkPortfolio = ({
                 balance={balance}
                 portfolioChainId={portfolioChainId}
                 connectedChainId={connectedChainId}
+                fetchPortfolioBalancesCallback={fetchPortfolioBalancesCallback}
                 isApproved={false}
               />
             )
@@ -122,6 +126,7 @@ type PortfolioTokenAssetProps = {
   portfolioChainId: number
   connectedChainId: number
   isApproved: boolean
+  fetchPortfolioBalancesCallback: () => Promise<void>
 }
 
 const PortfolioTokenAsset = ({
@@ -131,10 +136,10 @@ const PortfolioTokenAsset = ({
   portfolioChainId,
   connectedChainId,
   isApproved,
+  fetchPortfolioBalancesCallback,
 }: PortfolioTokenAssetProps) => {
   const dispatch = useDispatch()
   const { address } = useAccount()
-  const { fetchPortfolioBalances } = usePortfolioBalancesAndAllowances()
   const { icon, symbol, decimals, addresses } = token
 
   function hasOnlyZeros(input: string): boolean {
@@ -188,7 +193,7 @@ const PortfolioTokenAsset = ({
       dispatch(setFromToken(token))
       await approveToken(ROUTER_ADDRESS, connectedChainId, tokenAddress).then(
         (success) => {
-          success && fetchPortfolioBalances()
+          success && fetchPortfolioBalancesCallback()
         }
       )
     } else {

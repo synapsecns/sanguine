@@ -15,6 +15,7 @@ type PortfolioContentProps = {
   connectedChainId: number
   selectedFromChainId: number
   networkPortfolioWithBalances: NetworkTokenBalancesAndAllowances
+  fetchPortfolioBalancesCallback: () => Promise<void>
   fetchState: FetchState
 }
 
@@ -23,6 +24,7 @@ export const PortfolioContent = ({
   connectedChainId,
   selectedFromChainId,
   networkPortfolioWithBalances,
+  fetchPortfolioBalancesCallback,
   fetchState,
 }: PortfolioContentProps) => {
   const { currentNetwork, remainingNetworks } = getCurrentNetworkPortfolio(
@@ -39,6 +41,7 @@ export const PortfolioContent = ({
           selectedFromChainId={selectedFromChainId}
           portfolioTokens={currentNetwork[connectedChainId]}
           initializeExpanded={true}
+          fetchPortfolioBalancesCallback={fetchPortfolioBalancesCallback}
           fetchState={fetchState}
         />
       )}
@@ -56,6 +59,7 @@ export const PortfolioContent = ({
                   selectedFromChainId={selectedFromChainId}
                   portfolioTokens={tokens}
                   initializeExpanded={false}
+                  fetchPortfolioBalancesCallback={fetchPortfolioBalancesCallback}
                   fetchState={fetchState}
                 />
               )
