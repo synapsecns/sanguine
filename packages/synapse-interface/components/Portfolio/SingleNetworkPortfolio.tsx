@@ -3,6 +3,7 @@ import Image from 'next/image'
 import { BigNumber } from 'ethers'
 import { useDispatch } from 'react-redux'
 import { useAccount } from 'wagmi'
+import { switchNetwork } from '@wagmi/core'
 import { Zero } from '@ethersproject/constants'
 import {
   setFromToken,
@@ -162,7 +163,7 @@ const PortfolioTokenAsset = ({
 
   const currentChainName: string = CHAINS_BY_ID[portfolioChainId].name
 
-  const tokenAddress: string = addresses[connectedChainId]
+  const tokenAddress: string = addresses[portfolioChainId]
 
   const isCurrentlyConnected: boolean = portfolioChainId === connectedChainId
 
@@ -197,13 +198,22 @@ const PortfolioTokenAsset = ({
         }
       )
     } else {
-      toast.error(
-        `Connect to ${currentChainName} network to approve ${token.symbol} token`,
-        {
-          id: 'approve-in-progress-popup',
-          duration: Infinity,
-        }
-      )
+      try {
+        await switchNetwork({ chainId: portfolioChainId })
+        await approveToken(ROUTER_ADDRESS, portfolioChainId, tokenAddress).then(
+          (success) => {
+            success && fetchPortfolioBalancesCallback()
+          }
+        )
+      } catch (error) {
+        toast.error(
+          `Failed to approve ${token.symbol} token on ${currentChainName} network`,
+          {
+            id: 'approve-in-progress-popup',
+            duration: 5000,
+          }
+        )
+      }
     }
   }, [
     token,
