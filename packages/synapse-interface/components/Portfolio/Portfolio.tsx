@@ -21,7 +21,9 @@ export enum PortfolioTabs {
 export const Portfolio = () => {
   const [tab, setTab] = useState<PortfolioTabs>(PortfolioTabs.HOME)
 
-  const { fromChainId } = useSelector((state: RootState) => state.bridge)
+  const { fromChainId, bridgeTxHashes } = useSelector(
+    (state: RootState) => state.bridge
+  )
 
   const {
     balancesAndAllowances: portfolioData,
@@ -45,7 +47,7 @@ export const Portfolio = () => {
     if (address) {
       fetchPortfolioBalances()
     }
-  }, [address])
+  }, [address, bridgeTxHashes])
 
   return (
     <div
