@@ -206,7 +206,7 @@ func (g Guard) streamLogs(ctx context.Context, chainID uint32, address string) e
 
 			return fmt.Errorf("context done: %w", ctx.Err())
 		case g.logChans[chainID] <- log:
-			fmt.Println("GOT A LOG WITH TOPIC OF ", log.Topics[0].String())
+			logger.Info("Received log with topic: %s", log.Topics[0].String())
 		}
 	}
 }
@@ -218,14 +218,12 @@ func (g Guard) receiveLogs(ctx context.Context, chainID uint32) error {
 		case <-ctx.Done():
 			return fmt.Errorf("context canceled: %w", ctx.Err())
 		case log := <-g.logChans[chainID]:
-			fmt.Printf("received log on chain %d: %v\n", chainID, log)
 			if log == nil {
 				return fmt.Errorf("log is nil")
 			}
 
 			err := g.processSnapshot(ctx, *log)
 			if err != nil {
-				fmt.Printf("could not process log: %v\n", err)
 				return fmt.Errorf("could not process log: %w", err)
 			}
 		}
@@ -233,16 +231,11 @@ func (g Guard) receiveLogs(ctx context.Context, chainID uint32) error {
 }
 
 func (g Guard) processSnapshot(ctx context.Context, log ethTypes.Log) error {
-	fmt.Printf("processSnapshot: %+v\n", log)
 	snapshot, agentSig, err := g.logToSnapshot(log)
 	if err != nil {
-		fmt.Printf("Error converting log to snapshot: %v\n", err)
-		return nil
 		// TODO: This should be made to err once we have different log processing.
-		// return fmt.Errorf("could not convert log to snapshot: %w", err)
+		return nil
 	}
-	fmt.Printf("snapshot: %+v\n", snapshot)
-	fmt.Printf("agentSig: %+v\n", agentSig)
 
 	if snapshot == nil {
 		return nil
@@ -261,12 +254,10 @@ func (g Guard) processSnapshot(ctx context.Context, log ethTypes.Log) error {
 		}
 
 		// TODO: Have a way to retry failed RPC calls for this check.
-		fmt.Printf("Calling isValidState on domain %d with payload %v\n", state.Origin(), statePayload)
 		isValid, err := g.domains[state.Origin()].Origin().IsValidState(
 			ctx,
 			statePayload,
 		)
-		fmt.Printf("valid: %v\n", isValid)
 		if err != nil {
 			return fmt.Errorf("could not check validity of state: %w", err)
 		}
@@ -302,42 +293,33 @@ func (g Guard) processSnapshot(ctx context.Context, log ethTypes.Log) error {
 }
 
 func (g Guard) slashAccusedAgent(ctx context.Context, origin uint32, stateIndex int64, snapPayload, snapSignature []byte) error {
-	fmt.Printf("slashAccusedAgent called with origin %d, stateIndex: %d, snapPayload: %s, snapSignature: %s\n", origin, stateIndex, snapPayload, snapSignature)
-	fmt.Printf("sig hex: %v\n", common.Bytes2Hex(snapSignature))
 	signature, err := g.bondedSigner.SignMessage(ctx, snapPayload, true)
 	if err != nil {
 		return fmt.Errorf("could not sign message: %w", err)
 	}
 
-	tx, err := g.domains[origin].LightInbox().VerifyStateWithSnapshot(ctx, g.unbondedSigner, stateIndex, signature, snapPayload, snapSignature)
-	if tx != nil {
-		fmt.Printf("verifystatewithsnapshot hash: %v\n", tx.Hash())
-	}
+	_, err = g.domains[origin].LightInbox().VerifyStateWithSnapshot(ctx, g.unbondedSigner, stateIndex, signature, snapPayload, snapSignature)
 	if err != nil {
 		return fmt.Errorf("could not verify state with snapshot: %w", err)
 	}
 	return nil
 }
 
-func (g Guard) submitStateReports(ctx context.Context, stateIndex int64, snapshotPaylod, snapSignature []byte) error {
-	fmt.Printf("submitStateReports called with summitDomainID %d, stateIndex: %d, snapPayload: %s, snapSignature: %s\n", g.summitDomainID, stateIndex, snapshotPaylod, snapSignature)
-	// Call on the Summit's `BondingManager` contract.
-	signature, err := g.bondedSigner.SignMessage(ctx, snapshotPaylod, true)
-	if err != nil {
-		return fmt.Errorf("could not sign message: %w", err)
-	}
+// func (g Guard) submitStateReports(ctx context.Context, stateIndex int64, snapshotPaylod, snapSignature []byte) error {
+// 	// Call on the Summit's `BondingManager` contract.
+// 	signature, err := g.bondedSigner.SignMessage(ctx, snapshotPaylod, true)
+// 	if err != nil {
+// 		return fmt.Errorf("could not sign message: %w", err)
+// 	}
 
-	// TODO: What is signature here?
-	tx, err := g.domains[g.summitDomainID].Inbox().SubmitStateReportWithSnapshot(ctx, g.unbondedSigner, stateIndex, signature, snapshotPaylod, snapSignature)
-	if tx != nil {
-		fmt.Printf("submitstatereport hash: %v\n", tx.Hash())
-	}
-	if err != nil {
-		return fmt.Errorf("could not submit state report with snapshot: %w", err)
-	}
+// 	// TODO: What is signature here?
+// 	_, err = g.domains[g.summitDomainID].Inbox().SubmitStateReportWithSnapshot(ctx, g.unbondedSigner, stateIndex, signature, snapshotPaylod, snapSignature)
+// 	if err != nil {
+// 		return fmt.Errorf("could not submit state report with snapshot: %w", err)
+// 	}
 
-	return nil
-}
+// 	return nil
+// }
 
 // logToSnapshot converts the log to a snapshot.
 func (g Guard) logToSnapshot(log ethTypes.Log) (types.Snapshot, []byte, error) {
