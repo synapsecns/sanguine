@@ -48,7 +48,6 @@ const Deposit = ({
   chainId: number
   address: string
 }) => {
-  const [showPriceImpact, setShowPriceImpact] = useState(true)
   const { synapseSDK } = useSynapseContext()
   const dispatch = useDispatch()
 
@@ -130,18 +129,6 @@ const Deposit = ({
     calculateMaxDeposits()
   }, [inputValue, filteredInputValue, pool, chainId, address])
 
-  useEffect(() => {
-    if (
-      depositQuote.priceImpact &&
-      depositQuote.priceImpact != 0n &&
-      inputSum !== 0n
-    ) {
-      setShowPriceImpact(true)
-    } else {
-      setShowPriceImpact(false)
-    }
-  }, [depositQuote, inputSum])
-
   const onChangeInputValue = (token: Token, value: string) => {
     const bigInt = stringToBigInt(value, token.decimals[chainId]) ?? 0n
     if (chainId && token) {
@@ -218,9 +205,11 @@ const Deposit = ({
         )}
       </div>
       <DepositButton approveTxn={approveTxn} depositTxn={depositTxn} />
-      {showPriceImpact && (
-        <PriceImpactDisplay priceImpact={depositQuote.priceImpact} />
-      )}
+      {depositQuote.priceImpact &&
+        depositQuote.priceImpact !== 0n &&
+        inputSum !== 0n && (
+          <PriceImpactDisplay priceImpact={depositQuote.priceImpact} />
+        )}
     </div>
   )
 }

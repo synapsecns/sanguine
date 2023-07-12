@@ -20,7 +20,7 @@ const PriceImpactDisplay = ({ priceImpact }: { priceImpact: bigint }) => {
     if (!priceImpact) return 0
 
     let formattedPriceImpact = Number(
-      formatBigIntToString(priceImpact * 100n, 18, 2)
+      formatBigIntToString(priceImpact * 100n, 18, 18)
     )
 
     if (priceImpact > 0n && formattedPriceImpact === 0) {
@@ -34,7 +34,7 @@ const PriceImpactDisplay = ({ priceImpact }: { priceImpact: bigint }) => {
 
   const priceImpactDisplayValue: string = useMemo(() => {
     if (Math.abs(priceImpactValue) < 0.01) return '<0.01'
-    else return priceImpactValue.toString()
+    else return priceImpactValue.toFixed(2)
   }, [priceImpactValue])
 
   if (priceImpactValue > 0) {

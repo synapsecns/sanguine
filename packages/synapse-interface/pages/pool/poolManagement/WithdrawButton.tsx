@@ -51,6 +51,10 @@ const WithdrawButton = ({ approveTxn, withdrawTxn, isApproved }) => {
 
   let buttonProperties
 
+  if (!pool) {
+    return
+  }
+
   if (needsInput) {
     buttonProperties = {
       label: 'Enter amount',

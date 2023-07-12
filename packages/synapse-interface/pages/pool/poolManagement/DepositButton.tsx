@@ -74,6 +74,10 @@ const DepositButton = ({ approveTxn, depositTxn }) => {
 
   let buttonProperties
 
+  if (!pool) {
+    return
+  }
+
   if (!isBalanceEnough) {
     buttonProperties = {
       label: 'Insufficient Balance',

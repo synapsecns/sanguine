@@ -22,7 +22,7 @@ export const getBalanceData = async ({
   const lpTotalSupply =
     (
       await fetchToken({
-        address: lpTokenAddress as `0x${string}`,
+        address: lpTokenAddress as Address,
         chainId,
       })
     )?.totalSupply?.value ?? 0n

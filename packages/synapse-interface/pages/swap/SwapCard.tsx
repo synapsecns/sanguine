@@ -51,7 +51,7 @@ const SwapCard = ({
   address,
   connectedChainId,
 }: {
-  address: `0x${string}` | undefined
+  address: Address | undefined
   connectedChainId: number
 }) => {
   const router = useRouter()
