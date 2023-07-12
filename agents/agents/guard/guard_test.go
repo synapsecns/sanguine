@@ -1,13 +1,14 @@
 package guard_test
 
 import (
-	signerConfig "github.com/synapsecns/sanguine/ethergo/signer/config"
-	omniClient "github.com/synapsecns/sanguine/services/omnirpc/client"
-	"github.com/synapsecns/sanguine/services/scribe/client"
 	"math/big"
 	"os"
 	"testing"
 	"time"
+
+	signerConfig "github.com/synapsecns/sanguine/ethergo/signer/config"
+	omniClient "github.com/synapsecns/sanguine/services/omnirpc/client"
+	"github.com/synapsecns/sanguine/services/scribe/client"
 
 	"github.com/Flaque/filet"
 	awsTime "github.com/aws/smithy-go/time"
@@ -26,7 +27,6 @@ func RemoveGuardTempFile(t *testing.T, fileName string) {
 }
 
 func (g GuardSuite) TestGuardE2E() {
-	g.T().Skip()
 	testConfig := config.AgentConfig{
 		Domains: map[string]config.DomainConfig{
 			"origin_client":      g.OriginDomainClient.Config(),
