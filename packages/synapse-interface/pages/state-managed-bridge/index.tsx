@@ -707,9 +707,6 @@ const findSupportedChainsAndTokens = (
     filteredBridgeableTokens = bridgeableTokens
   }
 
-  console.log('bridgeableTokens: ', bridgeableTokens)
-  console.log('filteredBridgeableTokens: ', filteredBridgeableTokens)
-
   // Determine the specific token to be used for the swap.
   const bridgeableToken = getBridgeableToken(
     filteredBridgeableTokens,
