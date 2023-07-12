@@ -132,8 +132,14 @@ const StakeCard = ({ address, chainId, pool }: StakeCardProps) => {
           <div>
             <div className="flex items-center justify-between my-2 text-sm font-medium text-white">
               <div>SYN Earned</div>
-              <div className="text-green-400">
-                {formatBigIntToString(userStakeData.reward, 18, 8)}{' '}
+              <div
+                className={`${
+                  userStakeData.reward === 0n ? 'text-white' : 'text-green-400'
+                }`}
+              >
+                {userStakeData.reward === 0n
+                  ? '\u2212'
+                  : formatBigIntToString(userStakeData.reward, 18, 8)}{' '}
                 <span className="text-[#88818C]">SYN</span>
               </div>
             </div>
@@ -199,11 +205,11 @@ const StakeCard = ({ address, chainId, pool }: StakeCardProps) => {
             buttonWidth="w-full"
             loadingLabel={isPendingApprove ? 'Approving' : 'Staking'}
             isConnected={Boolean(address)}
-            balanceStr={formatBigIntToString(
-              lpTokenBalance,
-              tokenInfo.decimals,
-              8
-            )}
+            balanceStr={
+              lpTokenBalance === 0n
+                ? formatBigIntToString(lpTokenBalance, tokenInfo.decimals, 4)
+                : formatBigIntToString(lpTokenBalance, tokenInfo.decimals)
+            }
             onClickBalance={() => {
               setDeposit({
                 str:

@@ -31,7 +31,7 @@ import {
   setWithdrawType,
   setIsLoading,
 } from '@/slices/poolWithdrawSlice'
-import { WithdrawButton } from './WithdrawButton'
+import WithdrawButton from './WithdrawButton'
 import { txErrorHandler } from '@/utils/txErrorHandler'
 
 const Withdraw = ({

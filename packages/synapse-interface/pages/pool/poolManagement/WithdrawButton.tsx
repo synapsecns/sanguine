@@ -16,7 +16,7 @@ import {
 } from '@/slices/poolWithdrawSlice'
 import { fetchPoolUserData } from '@/slices/poolUserDataSlice'
 
-export const WithdrawButton = ({ approveTxn, withdrawTxn, isApproved }) => {
+const WithdrawButton = ({ approveTxn, withdrawTxn, isApproved }) => {
   const dispatch: any = useDispatch()
   const [isConnected, setIsConnected] = useState(false) // Initialize to false
   const { openConnectModal } = useConnectModal()
@@ -106,3 +106,5 @@ export const WithdrawButton = ({ approveTxn, withdrawTxn, isApproved }) => {
     )
   )
 }
+
+export default WithdrawButton

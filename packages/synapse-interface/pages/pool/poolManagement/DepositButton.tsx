@@ -15,7 +15,7 @@ import { resetPoolDeposit } from '@/slices/poolDepositSlice'
 import LoadingSpinner from '@/components/ui/tailwind/LoadingSpinner'
 import { fetchPoolUserData } from '@/slices/poolUserDataSlice'
 
-export const DepositButton = ({ approveTxn, depositTxn }) => {
+const DepositButton = ({ approveTxn, depositTxn }) => {
   const dispatch: any = useDispatch()
   const [isConnected, setIsConnected] = useState(false) // Initialize to false
   const { openConnectModal } = useConnectModal()
@@ -124,3 +124,5 @@ export const DepositButton = ({ approveTxn, depositTxn }) => {
     )
   )
 }
+
+export default DepositButton

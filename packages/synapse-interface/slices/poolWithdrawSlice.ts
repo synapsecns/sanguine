@@ -1,6 +1,6 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit'
+
 import { Token } from '@/utils/types'
-import { formatBNToString } from '@/utils/bigint/format'
 import { ALL } from '@/constants/withdrawTypes'
 
 type WithdrawQuote = {

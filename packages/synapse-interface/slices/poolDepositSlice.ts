@@ -1,4 +1,5 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit'
+
 import { Token } from '@/utils/types'
 import { formatBNToString } from '@/utils/bigint/format'
 
@@ -76,7 +77,7 @@ const filterInputValues = (inputValues, pool) => {
     poolTokenAddresses.push(nativeToken.addresses[chainId])
   })
 
-  let filteredObj = poolTokenAddresses.reduce((obj, key) => {
+  const filteredObj = poolTokenAddresses.reduce((obj, key) => {
     obj[key] = inputValues.bi.hasOwnProperty(key) ? inputValues.bi[key] : 0n
     return obj
   }, {})
@@ -131,7 +132,7 @@ const sumBigIntegers = (pool, filteredInputValue) => {
   }, 0n)
 }
 
-function pow10BigInt(n) {
+const pow10BigInt = (n) => {
   let result = 1n
   for (let i = 0n; i < n; i++) {
     result *= 10n

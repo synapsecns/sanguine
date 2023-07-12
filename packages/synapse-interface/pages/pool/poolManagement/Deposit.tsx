@@ -32,7 +32,7 @@ import {
 } from '@/slices/poolDepositSlice'
 
 import { useDispatch } from 'react-redux'
-import { DepositButton } from './DepositButton'
+import DepositButton from './DepositButton'
 import { txErrorHandler } from '@/utils/txErrorHandler'
 
 export const DEFAULT_DEPOSIT_QUOTE = {
