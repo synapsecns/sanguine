@@ -56,7 +56,7 @@ export function LandingNav() {
     <Popover className="relative px-8 pt-6">
       <div className="w-full md:flex-1 md:flex md:items-center md:justify-between">
         <div className="flex items-center w-full py-4 lg:px-20">
-          <div className="flex-1">
+          <div className="mr-auto">
             <SynapseTitleLogo showText={true} />
           </div>
           <div className="items-center justify-center -mr-2 sm:flex lg:hidden">
@@ -79,7 +79,7 @@ export function LandingNav() {
           >
             <TopBarButtons />
           </Popover.Group>
-          <div className="justify-end flex-1 hidden lg:flex">
+          <div className="justify-end hidden ml-auto lg:flex">
             <div className="flex items-center space-x-2">
               <Wallet />
               <Popover className="relative inline-block">
