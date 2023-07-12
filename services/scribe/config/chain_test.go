@@ -9,8 +9,7 @@ import (
 
 func chainConfigFixture() config.ChainConfig {
 	return config.ChainConfig{
-		ChainID:               gofakeit.Uint32(),
-		RequiredConfirmations: gofakeit.Uint32(),
+		ChainID: gofakeit.Uint32(),
 		Contracts: config.ContractConfigs{
 			config.ContractConfig{
 				Address:    mocks.MockAddress().String(),

@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useMemo, useRef } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
 import { Zero } from '@ethersproject/constants'
 import { RootState } from '@/store/store'
@@ -11,17 +11,35 @@ import { useAccount } from 'wagmi'
 import MiniMaxButton from '../buttons/MiniMaxButton'
 import { formatBNToString } from '@/utils/bignumber/format'
 import { OriginChainLabel } from './OriginChainLabel'
+import { BigNumber } from 'ethers'
 
 export const InputContainer = () => {
-  const { fromChainId, fromToken, fromChainIds, supportedFromTokenBalances } =
-    useSelector((state: RootState) => state.bridge)
+  const {
+    fromChainId,
+    fromToken,
+    fromChainIds,
+    supportedFromTokenBalances,
+    fromValue,
+    bridgeTxHashes,
+  } = useSelector((state: RootState) => state.bridge)
   const [showValue, setShowValue] = useState('')
 
   const [hasMounted, setHasMounted] = useState(false)
+  const previousBridgeTxHashesRef = useRef<string[]>([])
 
   useEffect(() => {
     setHasMounted(true)
   }, [])
+
+  useEffect(() => {
+    const previousBridgeTxHashes = previousBridgeTxHashesRef.current
+
+    if (bridgeTxHashes.length !== previousBridgeTxHashes.length) {
+      setShowValue('')
+    }
+
+    previousBridgeTxHashesRef.current = bridgeTxHashes
+  }, [bridgeTxHashes])
 
   const { isConnected } = useAccount()
 
@@ -42,9 +60,9 @@ export const InputContainer = () => {
   const handleFromValueChange = (
     event: React.ChangeEvent<HTMLInputElement>
   ) => {
-    let fromValueString = event.target.value
+    const fromValueString: string = event.target.value
     try {
-      let fromValueBigNumber = stringToBigNum(
+      const fromValueBigNumber: BigNumber = stringToBigNum(
         fromValueString,
         fromToken.decimals[fromChainId]
       )
@@ -64,6 +82,7 @@ export const InputContainer = () => {
 
   return (
     <div
+      data-test-id="input-container"
       className={`
         text-left px-2 sm:px-4 pt-2 pb-4 rounded-xl
         bg-bgLight
@@ -94,40 +113,42 @@ export const InputContainer = () => {
             isOrigin={true}
             onClick={() => dispatch(setShowFromTokenSlideOver(true))}
           />
-          <input
-            pattern="[0-9.]+"
-            disabled={false}
-            className={`
-              ml-4
-              ${isConnected ? '-mt-0 md:-mt-4' : '-mt-0'}
+          <div className="flex flex-col pt-2 ml-4">
+            <input
+              pattern="[0-9.]+"
+              disabled={false}
+              className={`
               focus:outline-none
               bg-transparent
-              pr-4
-              w-2/3
+              max-w-[100px]
+              md:max-w-[160px]
               placeholder:text-[#88818C]
-              text-white text-opacity-80 text-lg md:text-2xl lg:text-2xl font-medium
+              text-white text-opacity-80 text-lg md:text-2xl font-medium
             `}
-            placeholder="0.0000"
-            onChange={handleFromValueChange}
-            value={showValue}
-            name="inputRow"
-            autoComplete="off"
-          />
+              placeholder="0.0000"
+              onChange={handleFromValueChange}
+              value={showValue}
+              name="inputRow"
+              autoComplete="off"
+              minLength={1}
+              maxLength={79}
+            />
+            {hasMounted && isConnected && (
+              <label
+                htmlFor="inputRow"
+                className="hidden text-xs text-white transition-all duration-150 md:block transform-gpu hover:text-opacity-70 hover:cursor-pointer"
+                onClick={onClickBalance}
+              >
+                {formattedBalance}
+                <span className="text-opacity-50 text-secondaryTextColor">
+                  {' '}
+                  available
+                </span>
+              </label>
+            )}
+          </div>
           {hasMounted && isConnected && (
-            <label
-              htmlFor="inputRow"
-              className="absolute hidden pt-1 mt-10 ml-40 text-xs text-white transition-all duration-150 md:block transform-gpu hover:text-opacity-70 hover:cursor-pointer"
-              onClick={onClickBalance}
-            >
-              {formattedBalance}
-              <span className="text-opacity-50 text-secondaryTextColor">
-                {' '}
-                available
-              </span>
-            </label>
-          )}
-          {hasMounted && isConnected && (
-            <div className="hidden mr-2 sm:inline-block">
+            <div className="m-auto">
               <MiniMaxButton
                 disabled={fromTokenBalance && fromTokenBalance.eq(Zero)}
                 onClickBalance={onClickBalance}

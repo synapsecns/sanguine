@@ -49,23 +49,25 @@ function sortTokensArray(arr: TokenBalance[], chainId: number): TokenBalance[] {
  *  Returns an array of token balances held by current connected wallet
  *  based on specified chainId
  */
-export function useUserHeldTokens(bridgeTxHash: string): TokenBalance[] {
+export function useUserHeldTokens(
+  address: string,
+  chainId: number,
+  bridgeTxHash: string
+): TokenBalance[] {
   const [heldTokens, setHeldTokens] = useState<TokenBalance[]>([])
-  const { address } = useAccount()
-  const { chain } = useNetwork()
 
   useEffect(() => {
-    if (address === undefined || chain === undefined) return
+    if (address === undefined || chainId === undefined) return
 
     async function fetchUserHeldTokens() {
       let multicallInputs: any[] = []
       let multicallData: any
 
-      const currentChainBridgableTokens: Token[] = BRIDGABLE_TOKENS[chain?.id]
+      const currentChainBridgableTokens: Token[] = BRIDGABLE_TOKENS[chainId]
 
       currentChainBridgableTokens.forEach((token) => {
         const tokenAddress =
-          token.addresses[chain.id as keyof Token['addresses']]
+          token.addresses[chainId as keyof Token['addresses']]
         const multicallAddress: Address = `0xcA11bde05977b3631167028862bE2a173976CA11` //deterministic multicall3 ethereum address
 
         if (tokenAddress === undefined) return
@@ -82,7 +84,7 @@ export function useUserHeldTokens(bridgeTxHash: string): TokenBalance[] {
             address: formattedTokenAddress,
             abi: erc20ABI,
             functionName: 'balanceOf',
-            chainId: chain.id as number,
+            chainId: chainId as number,
             args: [address],
           } as Partial<Contract>)
         }
@@ -106,17 +108,22 @@ export function useUserHeldTokens(bridgeTxHash: string): TokenBalance[] {
     }
 
     fetchUserHeldTokens()
-  }, [address, chain, bridgeTxHash])
+  }, [address, chainId, bridgeTxHash])
 
   return heldTokens
 }
 
 /** Returns sorted array of tokens, ordered by Held / Unheld tokens */
 export function getSortedBridgableTokens(
+  address: string,
   chainId: number,
-  bridgeTxHash: string
+  bridgeTxHash?: string
 ): TokenBalance[] {
-  const userHeldTokens: TokenBalance[] = useUserHeldTokens(bridgeTxHash)
+  const userHeldTokens: TokenBalance[] = useUserHeldTokens(
+    address,
+    chainId,
+    bridgeTxHash
+  )
 
   if (chainId === undefined) return []
 

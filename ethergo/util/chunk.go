@@ -7,6 +7,7 @@ import (
 )
 
 // Chunk represents an individual chunk of startBlock-startBlock.
+// TODO: this needs to be moved to scribe.
 type Chunk struct {
 	// StartBlock for this chunk. It is less then end block in ascending txes and greater in descending.
 	StartBlock *big.Int

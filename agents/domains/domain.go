@@ -100,7 +100,8 @@ type LightInboxContract interface {
 		attPayload []byte,
 		signature signer.Signature,
 		agentRoot [32]byte,
-		snapGas []*big.Int) error
+		snapGas []*big.Int,
+	) error
 }
 
 // LightManagerContract contains the interface for the light manager.

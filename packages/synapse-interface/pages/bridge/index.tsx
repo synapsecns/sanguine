@@ -57,7 +57,7 @@ const BridgePage = ({
   address: `0x${string}`
   fromChainId: number
 }) => {
-  const { isDisconnected } = useAccount()
+  const { isConnected, isDisconnected } = useAccount()
   const router = useRouter()
   const { synapseSDK } = useSynapseContext()
   const [time, setTime] = useState(Date.now())
@@ -82,8 +82,13 @@ const BridgePage = ({
   let successPopup: any
   let errorPopup: string
 
-  const bridgableTokens = getSortedBridgableTokens(fromChainId, bridgeTxHash)
+  const bridgableTokens = getSortedBridgableTokens(
+    address,
+    fromChainId,
+    bridgeTxHash
+  )
 
+  // console.log('bridgableTokens: ', bridgableTokens)
   /*
   useEffect Trigger: onMount
   - Gets current network connected and sets it as the state.
@@ -728,12 +733,18 @@ const BridgePage = ({
         data-test-id="bridge-page"
         className="relative z-0 flex-1 h-full overflow-y-auto focus:outline-none"
       >
-        <div className="items-center px-4 py-8 mx-auto mt-4 2xl:w-3/4 sm:mt-6 sm:px-8 md:px-12">
-          <div>
+        <div
+          className={`
+            flex flex-col md:flex-row
+            items-start justify-center
+            2xl:w-3/4 px-4 py-16 mx-auto
+            mt-4 sm:mt-6 sm:px-8 md:px-12`}
+        >
+          <div className="w-2/3">
             <Grid
               cols={{ xs: 1 }}
               gap={6}
-              className="justify-center px-2 py-16 sm:px-6 md:px-8"
+              className="justify-center px-2 sm:px-6 md:px-8"
             >
               <Popup chainId={fromChainId} />
               <div className="flex justify-center">
@@ -769,7 +780,6 @@ const BridgePage = ({
                   toChainId={toChainId}
                   address={address}
                   destinationAddress={destinationAddress}
-                  bridgeTxHash={bridgeTxHash}
                 />
               </div>
             </Grid>

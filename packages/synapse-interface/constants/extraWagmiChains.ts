@@ -17,6 +17,12 @@ export const klaytn = {
     etherscan: { name: 'KlaytnScope', url: 'https://scope.klaytn.com/' },
     default: { name: 'KlaytnScope', url: 'https://scope.klaytn.com/' },
   },
+  contracts: {
+    multicall3: {
+      address: '0xca11bde05977b3631167028862be2a173976ca11',
+      blockCreated: 96002415,
+    },
+  },
 } as const satisfies Chain
 
 export const boba = {
@@ -96,6 +102,12 @@ export const dfk = {
       url: 'https://subnets.avax.network/defi-kingdoms',
     },
   },
+  contracts: {
+    multicall3: {
+      address: '0xca11bde05977b3631167028862be2a173976ca11',
+      blockCreated: 14790551,
+    },
+  },
 } as const satisfies Chain
 
 // export const moonbeam = {
@@ -169,6 +181,112 @@ export const dogechain = {
     default: {
       name: 'DogeChainExplorer',
       url: 'https://explorer.dogechain.dog',
+    },
+  },
+  contracts: {
+    multicall3: {
+      address: '0xca11bde05977b3631167028862be2a173976ca11',
+      blockCreated: 13882887,
+    },
+  },
+} as const satisfies Chain
+
+export const metis = {
+  id: 1088,
+  name: 'Metis',
+  network: 'andromeda',
+  nativeCurrency: {
+    decimals: 18,
+    name: 'Metis',
+    symbol: 'METIS',
+  },
+  rpcUrls: {
+    default: {
+      http: ['https://andromeda.metis.io/?owner=1088'],
+    },
+    public: {
+      http: ['https://andromeda.metis.io/?owner=1088'],
+    },
+  },
+  blockExplorers: {
+    default: {
+      name: 'Andromeda Explorer',
+      url: 'https://andromeda-explorer.metis.io',
+    },
+  },
+  contracts: {
+    multicall3: {
+      address: '0xca11bde05977b3631167028862be2a173976ca11',
+      blockCreated: 2338552,
+    },
+  },
+} as const satisfies Chain
+
+export const canto = {
+  id: 7700,
+  name: 'Canto',
+  network: 'canto',
+  nativeCurrency: {
+    decimals: 18,
+    name: 'Canto',
+    symbol: 'CANTO',
+  },
+  rpcUrls: {
+    default: {
+      http: ['https://canto.slingshot.finance'],
+    },
+    public: {
+      http: ['https://canto.slingshot.finance'],
+    },
+  },
+  blockExplorers: {
+    default: {
+      name: 'Canto EVM Explorer (Blockscout)',
+      url: 'https://evm.explorer.canto.io',
+    },
+  },
+  contracts: {
+    multicall3: {
+      address: '0xca11bde05977b3631167028862be2a173976ca11',
+      blockCreated: 4876481, //update this when cantoscan is working
+    },
+  },
+} as const satisfies Chain
+
+export const aurora = {
+  id: 1313161554,
+  name: 'Aurora',
+  network: 'aurora',
+  nativeCurrency: {
+    decimals: 18,
+    name: 'Ether',
+    symbol: 'ETH',
+  },
+  rpcUrls: {
+    infura: {
+      http: ['https://aurora-mainnet.infura.io/v3'],
+    },
+    default: {
+      http: ['https://mainnet.aurora.dev'],
+    },
+    public: {
+      http: ['https://mainnet.aurora.dev'],
+    },
+  },
+  blockExplorers: {
+    etherscan: {
+      name: 'Aurorascan',
+      url: 'https://aurorascan.dev',
+    },
+    default: {
+      name: 'Aurorascan',
+      url: 'https://aurorascan.dev',
+    },
+  },
+  contracts: {
+    multicall3: {
+      address: '0xca11bde05977b3631167028862be2a173976ca11',
+      blockCreated: 62907816,
     },
   },
 } as const satisfies Chain

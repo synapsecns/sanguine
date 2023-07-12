@@ -1,6 +1,8 @@
 package db_test
 
 import (
+	"strings"
+
 	"github.com/brianvoe/gofakeit/v6"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/synapsecns/sanguine/ethergo/mocks"
@@ -11,6 +13,7 @@ import (
 func (d *DBSuite) mockMessage(originChainID, destinationChainID, blockNumber uint32) types.Message {
 	return types.Message{
 		OriginTxHash:     mocks.NewMockHash(d.T()).String(),
+		DestTxHash:       mocks.NewMockHash(d.T()).String(),
 		OriginChainID:    originChainID,
 		DestChainID:      destinationChainID,
 		Message:          []byte(gofakeit.Paragraph(10, 10, 10, " ")),
@@ -18,6 +21,7 @@ func (d *DBSuite) mockMessage(originChainID, destinationChainID, blockNumber uin
 		Attestation:      []byte(gofakeit.Paragraph(10, 10, 10, " ")),
 		RequestVersion:   0,
 		FormattedRequest: []byte(gofakeit.Paragraph(10, 10, 10, " ")),
+		RequestID:        strings.TrimPrefix(mocks.NewMockHash(d.T()).String(), "0x"),
 		BlockNumber:      uint64(blockNumber),
 		State:            types.Pending,
 	}
@@ -35,6 +39,24 @@ func (d *DBSuite) TestGetMessageByHash() {
 		d.Nil(err)
 
 		message, err := testDB.GetMessageByOriginHash(d.GetTestContext(), common.HexToHash(message1.OriginTxHash))
+		d.Nil(err)
+
+		d.Equal(message1.MessageHash, message.MessageHash)
+	})
+}
+
+func (d *DBSuite) TestGetMessageByRequestID() {
+	d.RunOnAllDBs(func(testDB db.CCTPRelayerDB) {
+		message1 := d.mockMessage(gofakeit.Uint32(), gofakeit.Uint32(), gofakeit.Uint32())
+		message2 := d.mockMessage(gofakeit.Uint32(), gofakeit.Uint32(), gofakeit.Uint32())
+
+		err := testDB.StoreMessage(d.GetTestContext(), message1)
+		d.Nil(err)
+
+		err = testDB.StoreMessage(d.GetTestContext(), message2)
+		d.Nil(err)
+
+		message, err := testDB.GetMessageByRequestID(d.GetTestContext(), message1.RequestID)
 		d.Nil(err)
 
 		d.Equal(message1.MessageHash, message.MessageHash)
