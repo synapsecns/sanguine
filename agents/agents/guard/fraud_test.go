@@ -3,9 +3,11 @@ package guard_test
 import (
 	"crypto/rand"
 	"fmt"
+	"math/big"
+	"time"
+
 	"github.com/Flaque/filet"
 	"github.com/brianvoe/gofakeit/v6"
-	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/common"
 	. "github.com/stretchr/testify/assert"
 	"github.com/synapsecns/sanguine/agents/agents/guard"
@@ -18,8 +20,6 @@ import (
 	"github.com/synapsecns/sanguine/services/scribe/client"
 	scribeConfig "github.com/synapsecns/sanguine/services/scribe/config"
 	"github.com/synapsecns/sanguine/services/scribe/node"
-	"math/big"
-	"time"
 )
 
 func (g GuardSuite) TestReportFraudulentStateInSnapshot() {
@@ -207,7 +207,7 @@ func (g GuardSuite) TestReportFraudulentStateInSnapshot() {
 
 	fmt.Println("SNAPSHOT LENGTH FROM ENCODE: ", len(encodedFraudulentSnapshot))
 
-	snapshotSignature, encodedSnapshot, _, err := fraudulentSnapshot.SignSnapshot(g.GetTestContext(), g.NotaryBondedSigner)
+	snapshotSignature, encodedSnapshot, _, err := fraudulentSnapshot.SignSnapshot(g.GetTestContext(), g.GuardBondedSigner)
 	Nil(g.T(), err)
 
 	fmt.Println("SNAPSHOT LENGTH: ", len(encodedSnapshot))
@@ -220,9 +220,9 @@ func (g GuardSuite) TestReportFraudulentStateInSnapshot() {
 
 	txContextSummit := g.TestBackendSummit.GetTxContext(g.GetTestContext(), g.SummitMetadata.OwnerPtr())
 
-	transactOpts := bind.NewKeyedTransactor(g.NotaryUnbondedWallet.PrivateKey())
+	// transactOpts := bind.NewKeyedTransactor(g.NotaryUnbondedWallet.PrivateKey())
 
-	tx, err := g.SummitDomainClient.Inbox().SubmitSnapshot(transactOpts, g.NotaryUnbondedSigner, encodedSnapshot, snapshotSignature)
+	tx, err := g.SummitDomainClient.Inbox().SubmitSnapshot(txContextSummit.TransactOpts, g.NotaryBondedSigner, encodedSnapshot, snapshotSignature)
 	fmt.Printf("TXXXXXXXx: %v\n", tx)
 
 	Nil(g.T(), err)
@@ -238,17 +238,19 @@ func (g GuardSuite) TestReportFraudulentStateInSnapshot() {
 	fmt.Println("TXHASHHHHHHH", tx.Hash().String())
 
 	fmt.Println("STOP")
+	// time.Sleep(15 * time.Minute)
 
 	g.Eventually(func() bool {
 		time.Sleep(5 * time.Second)
 		// Maybe bonded address. tbd
-		status, err := g.SummitDomainClient.BondingManager().DisputeStatus(g.GetTestContext(), g.NotaryBondedSigner.Address())
+		status, err := g.SummitDomainClient.BondingManager().DisputeStatus(g.GetTestContext(), g.GuardBondedSigner.Address())
 		Nil(g.T(), err)
 
+		fmt.Printf("Dispute flag: %v\n", status.DisputeFlag)
 		if status.DisputeFlag == uint8(1) {
 			return true
 		} else {
-			bumpTx, err := g.TestContractOnSummit.EmitAgentsEventA(transactOpts, big.NewInt(gofakeit.Int64()), big.NewInt(gofakeit.Int64()), big.NewInt(gofakeit.Int64()))
+			bumpTx, err := g.TestContractOnSummit.EmitAgentsEventA(txContextSummit.TransactOpts, big.NewInt(gofakeit.Int64()), big.NewInt(gofakeit.Int64()), big.NewInt(gofakeit.Int64()))
 			Nil(g.T(), err)
 			g.TestBackendSummit.WaitForConfirmation(g.GetTestContext(), bumpTx)
 			fmt.Println("FALSE")

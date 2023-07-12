@@ -3,6 +3,10 @@ package guard
 import (
 	"context"
 	"fmt"
+	"math/big"
+	"strconv"
+	"time"
+
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/common"
 	ethTypes "github.com/ethereum/go-ethereum/core/types"
@@ -21,9 +25,6 @@ import (
 	"golang.org/x/sync/errgroup"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
-	"math/big"
-	"strconv"
-	"time"
 
 	"github.com/synapsecns/sanguine/agents/config"
 	"github.com/synapsecns/sanguine/agents/domains"
@@ -217,12 +218,14 @@ func (g Guard) receiveLogs(ctx context.Context, chainID uint32) error {
 		case <-ctx.Done():
 			return fmt.Errorf("context canceled: %w", ctx.Err())
 		case log := <-g.logChans[chainID]:
+			fmt.Printf("received log on chain %d: %v\n", chainID, log)
 			if log == nil {
 				return fmt.Errorf("log is nil")
 			}
 
 			err := g.processSnapshot(ctx, *log)
 			if err != nil {
+				fmt.Printf("could not process log: %v\n", err)
 				return fmt.Errorf("could not process log: %w", err)
 			}
 		}
@@ -230,12 +233,16 @@ func (g Guard) receiveLogs(ctx context.Context, chainID uint32) error {
 }
 
 func (g Guard) processSnapshot(ctx context.Context, log ethTypes.Log) error {
+	fmt.Printf("processSnapshot: %+v\n", log)
 	snapshot, agentSig, err := g.logToSnapshot(log)
-	if err == nil {
+	if err != nil {
+		fmt.Printf("Error converting log to snapshot: %v\n", err)
 		return nil
 		// TODO: This should be made to err once we have different log processing.
 		// return fmt.Errorf("could not convert log to snapshot: %w", err)
 	}
+	fmt.Printf("snapshot: %+v\n", snapshot)
+	fmt.Printf("agentSig: %+v\n", agentSig)
 
 	if snapshot == nil {
 		return nil
@@ -254,10 +261,12 @@ func (g Guard) processSnapshot(ctx context.Context, log ethTypes.Log) error {
 		}
 
 		// TODO: Have a way to retry failed RPC calls for this check.
+		fmt.Printf("Calling isValidState on domain %d with payload %v\n", state.Origin(), statePayload)
 		isValid, err := g.domains[state.Origin()].Origin().IsValidState(
 			ctx,
 			statePayload,
 		)
+		fmt.Printf("valid: %v\n", isValid)
 		if err != nil {
 			return fmt.Errorf("could not check validity of state: %w", err)
 		}
@@ -265,6 +274,9 @@ func (g Guard) processSnapshot(ctx context.Context, log ethTypes.Log) error {
 		if !isValid {
 			// Call submitStateReportWithSnapshot on (each?) destination domain.
 			err = g.submitStateReports(ctx, int64(stateIndex), snapshotPayload, agentSig)
+			if err != nil {
+				return fmt.Errorf("could not submit state reports: %w", err)
+			}
 		}
 	}
 
@@ -272,6 +284,7 @@ func (g Guard) processSnapshot(ctx context.Context, log ethTypes.Log) error {
 }
 
 func (g Guard) submitStateReports(ctx context.Context, stateIndex int64, snapshotPaylod, snapshotSig []byte) error {
+	fmt.Printf("submitStateReports called with stateIndex: %d, snapshotPayload: %s, snapshotSig: %s\n", stateIndex, snapshotPaylod, snapshotSig)
 	// Call on the Summit's `BondingManager` contract.
 	signature, err := g.bondedSigner.SignMessage(ctx, snapshotPaylod, false)
 	if err != nil {
