@@ -90,8 +90,10 @@ func makeScribeClient(parentCtx context.Context, handler metrics.Handler, url st
 func NewGuard(ctx context.Context, cfg config.AgentConfig, omniRPCClient omnirpcClient.RPCClient, scribeClient client.ScribeClient, txDB db.GuardDB, handler metrics.Handler) (_ Guard, err error) {
 	guard := Guard{
 		refreshInterval: time.Second * time.Duration(cfg.RefreshIntervalSeconds),
+		domains:         make(map[uint32]domains.DomainClient),
+		logChans:        make(map[uint32]chan *ethTypes.Log),
+		boundOrigins:    make(map[uint32]*origin.Origin),
 	}
-	guard.domains = make(map[uint32]domains.DomainClient)
 
 	guard.grpcConn, guard.grpcClient, err = makeScribeClient(ctx, handler, fmt.Sprintf("%s:%d", scribeClient.URL, scribeClient.Port))
 	if err != nil {
@@ -179,6 +181,16 @@ func (g Guard) streamLogs(ctx context.Context, chainID uint32, address string) e
 	}
 
 	for {
+		response, err := stream.Recv()
+		if err != nil {
+			return fmt.Errorf("could not receive: %w", err)
+		}
+
+		log := response.Log.ToLog()
+		if log == nil {
+			return fmt.Errorf("could not convert log")
+		}
+
 		select {
 		case <-ctx.Done():
 			err := stream.CloseSend()
@@ -192,18 +204,8 @@ func (g Guard) streamLogs(ctx context.Context, chainID uint32, address string) e
 			}
 
 			return fmt.Errorf("context done: %w", ctx.Err())
-		default:
-			response, err := stream.Recv()
-			if err != nil {
-				return fmt.Errorf("could not receive: %w", err)
-			}
-
-			log := response.Log.ToLog()
-			if log == nil {
-				return fmt.Errorf("could not convert log")
-			}
-
-			g.logChans[chainID] <- log
+		case g.logChans[chainID] <- log:
+			fmt.Println("GOT A LOG WITH TOPIC OF ", log.Topics[0].String())
 		}
 	}
 }
@@ -229,8 +231,10 @@ func (g Guard) receiveLogs(ctx context.Context, chainID uint32) error {
 
 func (g Guard) processSnapshot(ctx context.Context, log ethTypes.Log) error {
 	snapshot, agentSig, err := g.logToSnapshot(log)
-	if err != nil {
-		return fmt.Errorf("could not convert log to snapshot: %w", err)
+	if err == nil {
+		return nil
+		// TODO: This should be made to err once we have different log processing.
+		// return fmt.Errorf("could not convert log to snapshot: %w", err)
 	}
 
 	if snapshot == nil {
@@ -285,13 +289,13 @@ func (g Guard) submitStateReports(ctx context.Context, stateIndex int64, snapsho
 
 // logToSnapshot converts the log to a snapshot.
 func (g Guard) logToSnapshot(log ethTypes.Log) (types.Snapshot, []byte, error) {
-	snapshot, domain, agentSig, ok := g.inboxParser.ParseSnapshotAccepted(log)
+	snapshot, _, agentSig, ok := g.inboxParser.ParseSnapshotAccepted(log)
 	if !ok {
 		return nil, nil, fmt.Errorf("could not parse snapshot")
 	}
 
 	// Domain == 0 check here only qualifies Notary submitted snapshots.
-	if snapshot == nil || domain == 0 || agentSig == nil {
+	if snapshot == nil || agentSig == nil {
 		//nolint:nilnil
 		return nil, nil, nil
 	}
@@ -451,6 +455,14 @@ func (g Guard) Start(parentCtx context.Context) error {
 			err = fmt.Errorf("could not start tx submitter: %w", err)
 		}
 		return err
+	})
+
+	group.Go(func() error {
+		return g.streamLogs(ctx, g.summitDomainID, g.domains[g.summitDomainID].Config().InboxAddress)
+	})
+
+	group.Go(func() error {
+		return g.receiveLogs(ctx, g.summitDomainID)
 	})
 
 	group.Go(func() error {

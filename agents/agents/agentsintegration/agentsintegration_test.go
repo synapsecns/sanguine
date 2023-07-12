@@ -206,7 +206,7 @@ func (u *AgentsIntegrationSuite) TestAgentsE2E() {
 
 	Equal(u.T(), encodedNotaryTestConfig, decodedAgentConfigBackToEncodedBytes)
 
-	guard, err := guard.NewGuard(u.GetTestContext(), guardTestConfig, omniRPCClient, u.GuardTestDB, u.GuardMetrics)
+	guard, err := guard.NewGuard(u.GetTestContext(), guardTestConfig, omniRPCClient, scribeClient.ScribeClient, u.GuardTestDB, u.GuardMetrics)
 	Nil(u.T(), err)
 
 	tips := types.NewTips(big.NewInt(0), big.NewInt(0), big.NewInt(0), big.NewInt(0))

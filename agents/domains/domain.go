@@ -83,6 +83,8 @@ type BondingManagerContract interface {
 	GetAgentRoot(ctx context.Context) ([32]byte, error)
 	// GetProof gets the proof that the agent is in the Agent Merkle Tree
 	GetProof(ctx context.Context, bondedAgentSigner signer.Signer) ([][32]byte, error)
+	// DisputeStatus gets the dispute status for the given agent.
+	DisputeStatus(ctx context.Context, address common.Address) (disputeStatus DisputeStatus, err error)
 }
 
 // DestinationContract contains the interface for the destination.

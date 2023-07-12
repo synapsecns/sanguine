@@ -4,6 +4,7 @@ import (
 	"github.com/synapsecns/sanguine/agents/agents/notary"
 	signerConfig "github.com/synapsecns/sanguine/ethergo/signer/config"
 	omniClient "github.com/synapsecns/sanguine/services/omnirpc/client"
+	"github.com/synapsecns/sanguine/services/scribe/client"
 	"math/big"
 	"os"
 	"testing"
@@ -84,7 +85,14 @@ func (u *NotarySuite) TestNotaryE2E() {
 	Equal(u.T(), encodedNotaryTestConfig, decodedAgentConfigBackToEncodedBytes)
 
 	omniRPCClient := omniClient.NewOmnirpcClient(u.TestOmniRPC, u.NotaryMetrics, omniClient.WithCaptureReqRes())
-	guard, err := guard.NewGuard(u.GetTestContext(), guardTestConfig, omniRPCClient, u.GuardTestDB, u.GuardMetrics)
+
+	scribeClient := client.NewEmbeddedScribe("sqlite", u.DBPath, u.ScribeMetrics)
+	go func() {
+		scribeErr := scribeClient.Start(u.GetTestContext())
+		Nil(u.T(), scribeErr)
+	}()
+
+	guard, err := guard.NewGuard(u.GetTestContext(), guardTestConfig, omniRPCClient, scribeClient.ScribeClient, u.GuardTestDB, u.GuardMetrics)
 	Nil(u.T(), err)
 
 	tips := types.NewTips(big.NewInt(int64(0)), big.NewInt(int64(0)), big.NewInt(int64(0)), big.NewInt(int64(0)))

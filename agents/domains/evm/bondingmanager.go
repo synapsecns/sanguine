@@ -74,3 +74,17 @@ func (a bondingManagerContract) GetProof(ctx context.Context, bondedAgentSigner 
 
 	return proof, nil
 }
+
+func (a bondingManagerContract) DisputeStatus(ctx context.Context, address common.Address) (disputeStatus domains.DisputeStatus, err error) {
+	rawDispute, err := a.contract.DisputeStatus(&bind.CallOpts{Context: ctx}, address)
+	if err != nil {
+		return domains.DisputeStatus{}, fmt.Errorf("could not retrieve dispute status: %w", err)
+	}
+
+	return domains.DisputeStatus{
+		DisputeFlag: rawDispute.Flag,
+		Rival:       rawDispute.Rival,
+		FraudProver: rawDispute.FraudProver,
+		DisputePtr:  rawDispute.DisputePtr,
+	}, nil
+}

@@ -45,7 +45,7 @@ func (e Executor) logToAttestation(log ethTypes.Log, chainID uint32) (types.Atte
 
 // logToSnapshot converts the log to a snapshot.
 func (e Executor) logToSnapshot(log ethTypes.Log, chainID uint32) (types.Snapshot, error) {
-	snapshot, domain, ok := e.chainExecutors[chainID].inboxParser.ParseSnapshotAccepted(log)
+	snapshot, domain, _, ok := e.chainExecutors[chainID].inboxParser.ParseSnapshotAccepted(log)
 	if !ok {
 		return nil, fmt.Errorf("could not parse snapshot")
 	}

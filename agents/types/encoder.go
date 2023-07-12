@@ -111,14 +111,21 @@ func EncodeState(state State) ([]byte, error) {
 	b := make([]byte, 0)
 	originBytes := make([]byte, uint32Len)
 	nonceBytes := make([]byte, uint32Len)
+	//blockNumberBytes := make([]byte, uint40Len)
+	//timestampBytes := make([]byte, uint40Len)
 
 	binary.BigEndian.PutUint32(originBytes, state.Origin())
 	binary.BigEndian.PutUint32(nonceBytes, state.Nonce())
 	root := state.Root()
 
+	//PutUint40(blockNumberBytes, state.BlockNumber().Uint64())
+	//PutUint40(timestampBytes, state.Timestamp().Uint64())
+
 	b = append(b, root[:]...)
 	b = append(b, originBytes...)
 	b = append(b, nonceBytes...)
+	//b = append(b, blockNumberBytes...)
+	//b = append(b, timestampBytes...)
 	b = append(b, math.PaddedBigBytes(state.BlockNumber(), uint40Len)...)
 	b = append(b, math.PaddedBigBytes(state.Timestamp(), uint40Len)...)
 
@@ -130,6 +137,15 @@ func EncodeState(state State) ([]byte, error) {
 
 	return b, nil
 }
+
+//func PutUint40(b []byte, v uint64) {
+//	_ = b[4] // early bounds check to guarantee safety of writes below
+//	b[0] = byte(v >> 32)
+//	b[1] = byte(v >> 24)
+//	b[2] = byte(v >> 16)
+//	b[3] = byte(v >> 8)
+//	b[4] = byte(v)
+//}
 
 // DecodeState decodes a state.
 func DecodeState(toDecode []byte) (State, error) {
