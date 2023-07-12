@@ -1,5 +1,5 @@
 import _ from 'lodash'
-import { useEffect, useState, useMemo } from 'react'
+import { useEffect, useState } from 'react'
 import Slider from 'react-input-slider'
 import { stringToBigInt } from '@/utils/stringToBigNum'
 
@@ -14,73 +14,52 @@ import ReceivedTokenSection from '../components/ReceivedTokenSection'
 import PriceImpactDisplay from '../components/PriceImpactDisplay'
 
 import { Transition } from '@headlessui/react'
-import { TransactionButton } from '@/components/buttons/TransactionButton'
 import { Token } from '@types'
 import { approve, withdraw } from '@/utils/actions/approveAndWithdraw'
 import { getTokenAllowance } from '@/utils/actions/getTokenAllowance'
-import { PoolData, PoolUserData } from '@types'
 import { getSwapDepositContractFields } from '@/utils/getSwapDepositContractFields'
 import { calculatePriceImpact } from '@/utils/priceImpact'
 import { formatBigIntToString } from '@/utils/bigint/format'
 
 import { Address } from '@wagmi/core'
+import { useDispatch, useSelector } from 'react-redux'
+import { RootState } from '@/store/store'
 
-const DEFAULT_WITHDRAW_QUOTE = {
-  priceImpact: 0n,
-  outputs: {},
-  allowance: undefined,
-  routerAddress: '',
-}
+import {
+  setInputValue,
+  setWithdrawQuote,
+  setWithdrawType,
+  setIsLoading,
+} from '@/slices/poolWithdrawSlice'
+import { WithdrawButton } from './WithdrawButton'
+import { txErrorHandler } from '@/utils/txErrorHandler'
 
 const Withdraw = ({
-  pool,
   chainId,
   address,
-  poolData,
-  poolUserData,
 }: {
-  pool: any
   chainId: number
   address: string
-  poolData: PoolData
-  poolUserData: PoolUserData
 }) => {
-  const [inputValue, setInputValue] = useState<{
-    bi: bigint
-    str: string
-  }>({ bi: 0n, str: '' })
-
-  const [withdrawQuote, setWithdrawQuote] = useState<{
-    priceImpact: bigint
-    outputs: Record<
-      string,
-      {
-        value: bigint
-        index: number
-      }
-    >
-    allowance: bigint
-    routerAddress: string
-  }>(DEFAULT_WITHDRAW_QUOTE)
-
-  const [withdrawType, setWithdrawType] = useState(ALL)
   const [percentage, setPercentage] = useState(0)
-  const [time, setTime] = useState(Date.now())
-
-  const [isApproved, setIsApproved] = useState(false)
-
-  const resetInput = () => {
-    setInputValue({ bi: 0n, str: '' })
-  }
+  const [isApproved, setIsApproved] = useState<boolean>(false)
+  const { pool, poolData } = useSelector((state: RootState) => state.poolData)
+  const { poolUserData } = useSelector((state: RootState) => state.poolUserData)
+  const { withdrawQuote, inputValue, withdrawType } = useSelector(
+    (state: RootState) => state.poolWithdraw
+  )
+  const { poolAddress } = getSwapDepositContractFields(pool, chainId)
   const { synapseSDK } = useSynapseContext()
 
+  const dispatch = useDispatch()
+
   const showTokens = pool ? pool.nativeTokens ?? pool.poolTokens : []
-  const { poolAddress } = getSwapDepositContractFields(pool, chainId)
 
   const calculateMaxWithdraw = async () => {
-    if (poolUserData == null || address == null) {
+    if (poolUserData === null || address === null) {
       return
     }
+    dispatch(setIsLoading(true))
     try {
       const outputs: Record<
         string,
@@ -89,8 +68,10 @@ const Withdraw = ({
           index: number
         }
       > = {}
+
       const { virtualPrice } = poolData
-      if (withdrawType == ALL) {
+
+      if (withdrawType === ALL) {
         const { amounts } = await synapseSDK.calculateRemoveLiquidity(
           chainId,
           poolAddress,
@@ -115,7 +96,7 @@ const Withdraw = ({
         }
       }
 
-      const outputTokensSum = sumBigInts(pool, outputs, chainId, withdrawType)
+      const outputTokensSum = sumBigInts(pool, outputs, withdrawType)
 
       const priceImpact = calculatePriceImpact(
         inputValue.bi,
@@ -126,18 +107,22 @@ const Withdraw = ({
 
       const allowance = await getTokenAllowance(
         poolAddress,
-        pool.addresses[chainId],
+        pool.addresses[chainId] as Address,
         address as Address,
         chainId
       )
       console.log(`allowance`, allowance)
-      setWithdrawQuote({
-        priceImpact,
-        allowance,
-        outputs,
-        routerAddress: poolAddress,
-      })
+      dispatch(
+        setWithdrawQuote({
+          priceImpact,
+          allowance,
+          outputs,
+          routerAddress: poolAddress,
+        })
+      )
+      dispatch(setIsLoading(false))
     } catch (e) {
+      dispatch(setIsLoading(false))
       console.log(e)
     }
   }
@@ -146,7 +131,15 @@ const Withdraw = ({
     if (poolUserData && poolData && address && pool && inputValue.bi > 0n) {
       calculateMaxWithdraw()
     }
-  }, [inputValue, time, withdrawType])
+  }, [inputValue, withdrawType])
+
+  useEffect(() => {
+    if (withdrawQuote?.allowance && inputValue.bi <= withdrawQuote.allowance) {
+      setIsApproved(true)
+    } else {
+      setIsApproved(false)
+    }
+  }, [inputValue, withdrawQuote])
 
   const onPercentChange = (percent: number) => {
     if (percent > 100) {
@@ -160,14 +153,14 @@ const Withdraw = ({
         )
       : ''
     const bigInt = stringToBigInt(numericalOut, pool.decimals[chainId])
-    setInputValue({ bi: bigInt, str: numericalOut })
+    dispatch(setInputValue({ bi: bigInt, str: numericalOut }))
   }
 
   const onChangeInputValue = (token: Token, value: string) => {
     const bigInt = stringToBigInt(value, token.decimals[chainId])
 
     if (poolUserData.lpTokenBalance === 0n) {
-      setInputValue({ bi: bigInt, str: value })
+      dispatch(setInputValue({ bi: bigInt, str: value }))
 
       setPercentage(0)
       return
@@ -179,7 +172,7 @@ const Withdraw = ({
         )
       : 0
 
-    setInputValue({ bi: bigInt, str: value })
+    dispatch(setInputValue({ bi: bigInt, str: value }))
 
     if (pn > 100) {
       setPercentage(100)
@@ -188,119 +181,41 @@ const Withdraw = ({
     }
   }
 
-  let isFromBalanceEnough = true
-  let isAllowanceEnough = false
+  const approveTxn = async () => {
+    try {
+      const tx = approve(pool, withdrawQuote, inputValue.bi, chainId)
 
-  const getButtonProperties = () => {
-    let properties = {
-      label: 'Withdraw',
-      pendingLabel: 'Withdrawing funds...',
-      className: '',
-      disabled: false,
-      buttonAction: () =>
-        withdraw(
-          pool,
-          'ONE_TENTH',
-          null,
-          stringToBigInt(inputValue.str, pool.decimals[chainId]),
-          chainId,
-          withdrawType,
-          withdrawQuote.outputs
-        ),
-      postButtonAction: () => {
-        // requery balances
-        setPercentage(0)
-        setWithdrawQuote(DEFAULT_WITHDRAW_QUOTE)
-        resetInput()
-      },
+      try {
+        await tx
+      } catch (error) {
+        txErrorHandler(error)
+      }
+    } catch (error) {
+      txErrorHandler(error)
     }
-
-    if (inputValue.bi === 0n) {
-      properties.label = `Enter amount`
-      properties.disabled = true
-      return properties
-    }
-
-    if (!isFromBalanceEnough) {
-      properties.label = `Insufficient Balance`
-      properties.disabled = true
-      return properties
-    }
-
-    console.log(`isallowanceneough`, isAllowanceEnough)
-    console.log(`isApproved`, isApproved)
-
-    if (!isAllowanceEnough && !isApproved) {
-      properties.label = `Approve Token(s)`
-      properties.pendingLabel = `Approving Token(s)`
-      properties.className = 'from-[#feba06] to-[#FEC737]'
-      properties.disabled = false
-      properties.buttonAction = () =>
-        approve(pool, withdrawQuote, inputValue.bi, chainId).then((res) => {
-          if (res && res.status === 'success') {
-            setIsApproved(true)
-          }
-        })
-      properties.postButtonAction = () => setTime(0)
-      return properties
-    }
-
-    return properties
   }
 
-  if (
-    withdrawQuote.allowance &&
-    inputValue.bi !== 0n &&
-    inputValue.bi > withdrawQuote.allowance
-  ) {
-    isAllowanceEnough = false
+  const withdrawTxn = async () => {
+    try {
+      const tx = withdraw(
+        pool,
+        'ONE_TENTH',
+        null,
+        stringToBigInt(inputValue.str, pool.decimals[chainId]),
+        chainId,
+        withdrawType,
+        withdrawQuote.outputs
+      )
+
+      try {
+        await tx
+      } catch (error) {
+        txErrorHandler(error)
+      }
+    } catch (error) {
+      txErrorHandler(error)
+    }
   }
-
-  if (
-    inputValue.bi !== 0n &&
-    inputValue.bi > BigInt(poolUserData.lpTokenBalance.toString())
-  ) {
-    isFromBalanceEnough = false
-  }
-
-  const {
-    label: btnLabel,
-    pendingLabel,
-    className: btnClassName,
-    buttonAction,
-    postButtonAction,
-    disabled,
-  } = useMemo(getButtonProperties, [
-    isFromBalanceEnough,
-    isAllowanceEnough,
-    address,
-    inputValue,
-    withdrawQuote,
-    isApproved,
-  ])
-
-  const actionBtn = useMemo(
-    () => (
-      <TransactionButton
-        className={btnClassName}
-        disabled={disabled}
-        onClick={() => buttonAction()}
-        onSuccess={() => postButtonAction()}
-        label={btnLabel}
-        pendingLabel={pendingLabel}
-      />
-    ),
-    [
-      buttonAction,
-      postButtonAction,
-      btnLabel,
-      pendingLabel,
-      btnClassName,
-      isFromBalanceEnough,
-      isAllowanceEnough,
-      isApproved,
-    ]
-  )
 
   return (
     <div>
@@ -344,50 +259,27 @@ const Withdraw = ({
             }}
           />
         </div>
-        {/* {error && (
-          <div className="text-red-400 opacity-80">{error?.message}</div>
-        )} */}
       </div>
       <Grid gap={2} cols={{ xs: 1 }} className="mt-2">
         <RadioButton
           checked={withdrawType === ALL}
           onChange={() => {
-            setWithdrawType(ALL)
+            dispatch(setWithdrawType(ALL))
           }}
           label="Combo"
           labelClassName={withdrawType === ALL && 'text-indigo-500'}
         />
         {showTokens &&
-          showTokens.map((token) => {
-            // TODO: poolsToken.findIndex is too verbose and was a hacky solution to not have to refactor a lot of state passing. Needs to be fixed to handle indexes correctly.
-            const checked =
-              withdrawType ===
-              (pool.nativeTokens ? pool.nativeTokens : pool.poolTokens)
-                .findIndex(
-                  (poolToken) =>
-                    poolToken.addresses[chainId] === token.addresses[chainId]
-                )
-                .toString()
+          showTokens.map((token, index) => {
+            const checked = withdrawType === index.toString()
+
             return (
               <RadioButton
                 radioClassName={getCoinTextColorCombined(token.color)}
                 key={token?.symbol}
                 checked={checked}
                 onChange={() => {
-                  // Determine the tokens array
-                  const tokensArray = pool.nativeTokens
-                    ? pool.nativeTokens
-                    : pool.poolTokens
-
-                  // Find the index
-                  const index = tokensArray.findIndex(
-                    (poolToken) =>
-                      poolToken.addresses[chainId] === token.addresses[chainId]
-                  )
-
-                  // Convert the index to a string
-                  const indexString = index.toString()
-                  setWithdrawType(indexString)
+                  dispatch(setWithdrawType(index.toString()))
                 }}
                 labelClassName={
                   checked &&
@@ -416,7 +308,11 @@ const Withdraw = ({
         chainId={chainId}
         address={address}
       />
-      {actionBtn}
+      <WithdrawButton
+        approveTxn={approveTxn}
+        withdrawTxn={withdrawTxn}
+        isApproved={isApproved}
+      />
 
       <Transition
         appear={true}
@@ -456,12 +352,13 @@ const Withdraw = ({
 const sumBigInts = (
   pool: Token,
   bigIntMap: Record<string, { value: bigint; index: number }>,
-  chainId: number,
   withdrawType: string
 ) => {
   if (!pool?.poolTokens) {
     return 0n
   }
+
+  const chainId = pool.chainId
 
   const currentTokens =
     withdrawType === ALL ? bigIntMap[withdrawType] : bigIntMap

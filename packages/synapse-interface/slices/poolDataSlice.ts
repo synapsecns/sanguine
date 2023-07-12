@@ -133,4 +133,6 @@ export const poolDataSlice = createSlice({
 })
 
 export const { resetPoolData } = poolDataSlice.actions
+export const selectPool = (state) => state.poolData.pool
+
 export default poolDataSlice.reducer

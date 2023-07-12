@@ -7,8 +7,8 @@ import { stringToBigInt } from '@/utils/stringToBigNum'
 import { useSelector } from 'react-redux'
 import { RootState } from '@/store/store'
 
-const CurrencyReservesCard = ({ chainId }: { chainId: number }) => {
-  const { poolData } = useSelector((state: RootState) => state.poolData)
+const CurrencyReservesCard = () => {
+  const { pool, poolData } = useSelector((state: RootState) => state.poolData)
 
   return (
     <InfoSectionCard title="Currency Reserves">
@@ -17,7 +17,7 @@ const CurrencyReservesCard = ({ chainId }: { chainId: number }) => {
           return (
             <div key={idx}>
               <CurrencyInfoListItem
-                chainId={chainId}
+                chainId={pool.chainId}
                 key={tokenObj.symbol}
                 balance={tokenObj.balance}
                 token={tokenObj.token}

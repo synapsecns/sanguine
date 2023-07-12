@@ -16,7 +16,7 @@ const PoolInfoSection = ({ chainId }: { chainId: number }) => {
 
   return (
     <div className="space-y-4">
-      <CurrencyReservesCard chainId={chainId} />
+      <CurrencyReservesCard />
       <InfoSectionCard title="Pool Info">
         <InfoListItem
           labelText="Trading Fee"

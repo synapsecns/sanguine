@@ -40,11 +40,11 @@ const PoolPage = () => {
         connectedChainId={connectedChainId}
         address={address}
       >
-        {!pool || isLoading ? (
+        {!pool || isLoading || !poolId ? (
           <div className="flex items-center justify-center">
             <LoadingSpinner />
           </div>
-        ) : pool && connectedChainId === pool.chainId ? (
+        ) : pool ? (
           <PoolBody address={address} connectedChainId={connectedChainId} />
         ) : (
           <NoPoolBody pool={pool} poolChainId={pool.chainId} />

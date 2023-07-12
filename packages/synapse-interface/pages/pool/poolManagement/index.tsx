@@ -3,24 +3,80 @@ import { useState } from 'react'
 import LiquidityManagementTabs from '../components/LiquidityManagementTabs'
 import Deposit from './Deposit'
 import Withdraw from './Withdraw'
-import { PoolData, PoolUserData } from '@types'
-import { Token } from '@types'
 import { useSelector } from 'react-redux'
 import { RootState } from '@/store/store'
+import LoadingSpinner from '@/components/ui/tailwind/LoadingSpinner'
+import { useAccount, useNetwork, useSwitchNetwork } from 'wagmi'
+import { useConnectModal } from '@rainbow-me/rainbowkit'
+import { TransactionButton } from '@/components/buttons/TransactionButton'
 
 const PoolManagement = ({
-  pool,
   address,
   chainId,
 }: {
-  pool: Token
   address: string
   chainId: number
 }) => {
   const [cardNav, setCardNav] = useState(getLiquidityMode('#addLiquidity')) // 'addLiquidity'
+  const { isConnected } = useAccount()
+  const { chain } = useNetwork()
 
-  const { poolData } = useSelector((state: RootState) => state.poolData)
-  const { poolUserData } = useSelector((state: RootState) => state.poolUserData)
+  const { pool } = useSelector((state: RootState) => state.poolData)
+  const { poolUserData, isLoading } = useSelector(
+    (state: RootState) => state.poolUserData
+  )
+  const { openConnectModal } = useConnectModal()
+  const { chains, error, pendingChainId, switchNetwork } = useSwitchNetwork()
+
+  if (isConnected && chain.id !== pool.chainId) {
+    return (
+      <div className="flex flex-col justify-center h-full">
+        <TransactionButton
+          label={`Switch to ${chains.find((c) => c.id === pool.chainId).name}`}
+          pendingLabel="Switching chains"
+          onClick={() =>
+            new Promise((resolve, reject) => {
+              try {
+                switchNetwork(pool.chainId)
+                resolve(true)
+              } catch (e) {
+                reject(e)
+              }
+            })
+          }
+        />
+      </div>
+    )
+  }
+
+  if (!isConnected) {
+    return (
+      <div className="flex flex-col justify-center h-full">
+        <TransactionButton
+          label="Connect wallet"
+          pendingLabel="Connecting"
+          onClick={() =>
+            new Promise((resolve, reject) => {
+              try {
+                openConnectModal()
+                resolve(true)
+              } catch (e) {
+                reject(e)
+              }
+            })
+          }
+        />
+      </div>
+    )
+  }
+
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center">
+        <LoadingSpinner />
+      </div>
+    )
+  }
 
   return (
     <div>
@@ -28,7 +84,6 @@ const PoolManagement = ({
         <LiquidityManagementTabs
           cardNav={cardNav}
           setCardNav={(val) => {
-            // history.push(`#${val}`) TODO
             setCardNav(val)
           }}
         />
@@ -37,13 +92,7 @@ const PoolManagement = ({
             <Deposit address={address} chainId={chainId} />
           )}
           {cardNav === 'removeLiquidity' && (
-            <Withdraw
-              pool={pool}
-              chainId={chainId}
-              address={address}
-              poolData={poolData}
-              poolUserData={poolUserData}
-            />
+            <Withdraw chainId={chainId} address={address} />
           )}
         </div>
       </div>

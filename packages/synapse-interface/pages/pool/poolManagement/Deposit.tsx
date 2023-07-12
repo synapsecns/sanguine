@@ -6,13 +6,10 @@ import { stringToBigInt } from '@/utils/stringToBigNum'
 import { DepositTokenInput } from '@components/TokenInput'
 import PriceImpactDisplay from '../components/PriceImpactDisplay'
 import { useSynapseContext } from '@/utils/providers/SynapseProvider'
-import { TransactionButton } from '@/components/buttons/TransactionButton'
 import { Token } from '@types'
 import { useState, useEffect, useMemo } from 'react'
 import { getTokenAllowance } from '@/utils/actions/getTokenAllowance'
 import { approve, deposit } from '@/utils/actions/approveAndDeposit'
-import { QUOTE_POLLING_INTERVAL } from '@/constants/bridge' // TODO CHANGE
-import { PoolData, PoolUserData } from '@types'
 import LoadingTokenInput from '@components/loading/LoadingTokenInput'
 import { Address, fetchBalance } from '@wagmi/core'
 import { formatBNToString } from '@/utils/bignumber/format'
@@ -26,13 +23,23 @@ import { BigNumber } from '@ethersproject/bignumber'
 import { useSelector } from 'react-redux'
 import { RootState } from '@/store/store'
 
-const DEFAULT_DEPOSIT_QUOTE = {
+import {
+  resetPoolDeposit,
+  setDepositQuote,
+  setInputValue,
+  setIsLoading,
+  setPool,
+} from '@/slices/poolDepositSlice'
+
+import { useDispatch } from 'react-redux'
+import { DepositButton } from './DepositButton'
+import { txErrorHandler } from '@/utils/txErrorHandler'
+
+export const DEFAULT_DEPOSIT_QUOTE = {
   priceImpact: 0n,
   allowances: {},
   routerAddress: '',
 }
-
-const DEFAULT_INPUT_VALUE = { bi: {}, str: {} }
 
 const Deposit = ({
   chainId,
@@ -41,38 +48,25 @@ const Deposit = ({
   chainId: number
   address: string
 }) => {
-  // todo store sum in here?
-  const [inputValue, setInputValue] = useState<{
-    bi: Record<string, bigint>
-    str: Record<string, string>
-  }>({ bi: {}, str: {} })
-  const [filteredInputValue, setFilteredInputValue] = useState<{
-    bi: Record<string, bigint>
-    str: Record<string, string>
-  }>({ bi: {}, str: {} })
-  const [depositQuote, setDepositQuote] = useState<{
-    priceImpact: bigint
-    allowances: Record<string, bigint>
-    routerAddress: string
-  }>(DEFAULT_DEPOSIT_QUOTE)
-  const [showPriceImpact, setShowPriceImpact] = useState(false)
-  const [time, setTime] = useState(Date.now())
+  const [showPriceImpact, setShowPriceImpact] = useState(true)
   const { synapseSDK } = useSynapseContext()
+  const dispatch = useDispatch()
 
   const { pool, poolData } = useSelector((state: RootState) => state.poolData)
   const { poolUserData } = useSelector((state: RootState) => state.poolUserData)
+  const { depositQuote, inputValue, inputSum, filteredInputValue } =
+    useSelector((state: RootState) => state.poolDeposit)
 
   const { poolAddress } = getSwapDepositContractFields(pool, chainId)
 
-  const inputSum = useMemo(() => {
-    return sumBigIntegers(pool, filteredInputValue, chainId)
-  }, [pool, filteredInputValue, chainId])
+  dispatch(setPool(pool))
 
   const calculateMaxDeposits = async () => {
     try {
       if (poolUserData == null || address == null) {
         return
       }
+      dispatch(setIsLoading(true))
       const { totalLocked, virtualPrice } = poolData
 
       if (totalLocked > 0 && inputSum > 0n) {
@@ -114,36 +108,23 @@ const Deposit = ({
           virtualPrice
         )
 
-        setDepositQuote({
-          priceImpact: priceImpact,
-          allowances,
-          routerAddress: poolAddress,
-        })
+        dispatch(
+          setDepositQuote({
+            priceImpact: priceImpact,
+            allowances,
+            routerAddress: poolAddress,
+          })
+        )
+        dispatch(setIsLoading(false))
       } else {
-        setDepositQuote(DEFAULT_DEPOSIT_QUOTE)
+        dispatch(setDepositQuote(DEFAULT_DEPOSIT_QUOTE))
+        dispatch(setIsLoading(false))
       }
     } catch (e) {
+      dispatch(setIsLoading(false))
       console.log(e)
     }
   }
-
-  useEffect(() => {
-    const interval = setInterval(
-      () => setTime(Date.now()),
-      QUOTE_POLLING_INTERVAL
-    )
-    return () => {
-      clearInterval(interval)
-    }
-  }, [])
-
-  useEffect(() => {
-    const filteredVal = pool
-      ? filterAndSerializeInputValues(inputValue, pool, chainId)
-      : DEFAULT_INPUT_VALUE
-
-    setFilteredInputValue(filteredVal)
-  }, [inputValue, pool])
 
   useEffect(() => {
     calculateMaxDeposits()
@@ -164,16 +145,19 @@ const Deposit = ({
   const onChangeInputValue = (token: Token, value: string) => {
     const bigInt = stringToBigInt(value, token.decimals[chainId]) ?? 0n
     if (chainId && token) {
-      setInputValue({
-        bi: {
-          ...inputValue.bi,
-          [getAddress(token.addresses[chainId])]: bigInt,
-        },
-        str: {
-          ...inputValue.str,
-          [getAddress(token.addresses[chainId])]: value,
-        },
-      })
+      const tokenAddr = getAddress(token.addresses[chainId])
+      dispatch(
+        setInputValue({
+          bi: {
+            ...inputValue.bi,
+            [tokenAddr]: bigInt,
+          },
+          str: {
+            ...inputValue.str,
+            [tokenAddr]: value,
+          },
+        })
+      )
     }
   }
 
@@ -184,124 +168,31 @@ const Deposit = ({
   }, [poolUserData])
 
   const resetInputs = () => {
-    let initInputValue: {
-      bi: Record<string, bigint>
-      str: Record<string, string>
-    } = { bi: {}, str: {} }
-    poolUserData.tokens.map((tokenObj, i) => {
-      initInputValue.bi[tokenObj.token.addresses[chainId]] = 0n
-      initInputValue.str[tokenObj.token.addresses[chainId]] = ''
-    })
-    setInputValue(initInputValue)
-    setDepositQuote(DEFAULT_DEPOSIT_QUOTE)
+    dispatch(resetPoolDeposit())
   }
 
-  let isFromBalanceEnough = true
-  let isAllowanceEnough = true
-
-  const getButtonProperties = () => {
-    let properties = {
-      label: 'Deposit',
-      pendingLabel: 'Depositing funds...',
-      className: '',
-      disabled: false,
-      buttonAction: () => {
-        const filteredInputValues = filterInputValues(inputValue, pool, chainId)
-
-        return deposit(pool, 'ONE_TENTH', null, filteredInputValues, chainId)
-      },
-
-      postButtonAction: () => {
-        console.log('Post Button Action')
-        // requery balances
-        resetInputs()
-      },
+  const approveTxn = async () => {
+    try {
+      const tx = approve(pool, depositQuote, inputValue.bi, chainId)
+      // calc max deposits ?
+    } catch (error) {
+      return txErrorHandler(error)
     }
-
-    if (!isFromBalanceEnough) {
-      properties.label = `Insufficient Balance`
-      properties.disabled = true
-      return properties
-    }
-
-    if (!isAllowanceEnough) {
-      properties.label = `Approve Token(s)`
-      properties.pendingLabel = `Approving Token(s)`
-      properties.className = 'from-[#feba06] to-[#FEC737]'
-      properties.disabled = false
-      properties.buttonAction = () =>
-        approve(pool, depositQuote, inputValue.bi, chainId).then(() =>
-          calculateMaxDeposits()
-        )
-      properties.postButtonAction = () => setTime(0)
-      return properties
-    }
-
-    return properties
   }
 
-  for (const [tokenAddr, amount] of Object.entries(inputValue.bi)) {
-    if (
-      typeof amount !== 'undefined' &&
-      Object.keys(depositQuote.allowances).length > 0 &&
-      amount !== 0n &&
-      typeof depositQuote.allowances[tokenAddr] !== 'undefined' &&
-      amount > BigInt(depositQuote.allowances[tokenAddr])
-    ) {
-      isAllowanceEnough = false
+  const depositTxn = async () => {
+    try {
+      const tx = deposit(
+        pool,
+        'ONE_TENTH',
+        null,
+        filteredInputValue.bi,
+        chainId
+      )
+    } catch (error) {
+      txErrorHandler(error)
     }
-
-    poolUserData.tokens.map((tokenObj, i) => {
-      if (
-        tokenObj.token.addresses[chainId] === tokenAddr &&
-        amount >
-          stringToBigInt(
-            `${tokenObj.rawBalance}`,
-            tokenObj.token.decimals[chainId]
-          )
-      ) {
-        isFromBalanceEnough = false
-      }
-    })
   }
-
-  const {
-    label: btnLabel,
-    pendingLabel,
-    className: btnClassName,
-    buttonAction,
-    postButtonAction,
-    disabled,
-  } = useMemo(getButtonProperties, [
-    isFromBalanceEnough,
-    isAllowanceEnough,
-    address,
-    inputValue,
-    depositQuote,
-  ])
-
-  const actionBtn = useMemo(
-    () => (
-      <TransactionButton
-        className={btnClassName}
-        disabled={inputSum === 0n || disabled}
-        onClick={() => buttonAction()}
-        onSuccess={() => postButtonAction()}
-        label={btnLabel}
-        pendingLabel={pendingLabel}
-      />
-    ),
-    [
-      buttonAction,
-      postButtonAction,
-      btnLabel,
-      pendingLabel,
-      btnClassName,
-      isFromBalanceEnough,
-      isAllowanceEnough,
-      inputValue,
-    ]
-  )
 
   return (
     <div className="flex-col">
@@ -326,7 +217,7 @@ const Deposit = ({
           </>
         )}
       </div>
-      {actionBtn}
+      <DepositButton approveTxn={approveTxn} depositTxn={depositTxn} />
       {showPriceImpact && (
         <PriceImpactDisplay priceImpact={depositQuote.priceImpact} />
       )}
@@ -395,23 +286,6 @@ const correctToken = (token: Token) => {
   return balanceToken
 }
 
-const filterInputValues = (inputValues, pool, chainId) => {
-  const poolTokens = pool.nativeTokens ?? pool.poolTokens
-
-  const poolTokenAddresses = []
-
-  poolTokens.map((nativeToken) => {
-    poolTokenAddresses.push(nativeToken.addresses[chainId])
-  })
-
-  let filteredObj = poolTokenAddresses.reduce((obj, key) => {
-    obj[key] = inputValues.bi.hasOwnProperty(key) ? inputValues.bi[key] : 0n
-    return obj
-  }, {})
-
-  return filteredObj
-}
-
 const serializeToken = async (
   address: string,
   chainId: number,
@@ -454,58 +328,6 @@ const serializeToken = async (
       balanceStr: tokenObj.balanceStr,
     }
   }
-}
-
-const filterAndSerializeInputValues = (inputValues, pool, chainId) => {
-  const filteredInputValues = filterInputValues(inputValues, pool, chainId)
-  const showTokens = pool.nativeTokens ?? pool.poolTokens
-
-  const keys = Object.keys(filteredInputValues)
-
-  const serializedValues = { bi: {}, str: {} }
-
-  keys.map((key) => {
-    const token = showTokens.find((token) => token.addresses[chainId] === key)
-
-    serializedValues['bi'][key] = filteredInputValues[key]
-    serializedValues['str'][key] = formatBNToString(
-      filteredInputValues[key],
-      token.decimals[chainId],
-      8
-    )
-  })
-
-  return serializedValues
-}
-
-const sumBigIntegers = (pool, filteredInputValue, chainId) => {
-  if (!pool) {
-    return 0n
-  }
-
-  const showTokens = pool.nativeTokens ?? pool.poolTokens
-
-  return showTokens.reduce((sum, token) => {
-    if (Object.keys(filteredInputValue.bi).length === 0) {
-      return 0n
-    }
-    const scalarFactor = pow10BigInt(
-      BigInt(18) - BigInt(token.decimals[chainId])
-    )
-
-    const valueToAdd =
-      BigInt(filteredInputValue.bi[token.addresses[chainId]]) * scalarFactor
-
-    return sum + valueToAdd
-  }, 0n)
-}
-
-function pow10BigInt(n) {
-  let result = 1n
-  for (let i = 0n; i < n; i++) {
-    result *= 10n
-  }
-  return result
 }
 
 export default Deposit

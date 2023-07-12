@@ -20,8 +20,8 @@ const PoolBody = ({
   address,
   connectedChainId,
 }: {
-  address: Address
-  connectedChainId: number
+  address?: Address
+  connectedChainId?: number
 }) => {
   const { pool, poolAPYData } = useSelector(
     (state: RootState) => state.poolData
@@ -88,7 +88,6 @@ const PoolBody = ({
         <Grid cols={{ xs: 1, sm: 1, md: 1, lg: 2 }} gap={8}>
           <Card className="bg-bgBase rounded-3xl" divider={false}>
             <PoolManagement
-              pool={pool}
               address={address ?? zeroAddress}
               chainId={connectedChainId}
             />
