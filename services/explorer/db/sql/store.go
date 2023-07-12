@@ -3,10 +3,11 @@ package sql
 import (
 	"context"
 	"fmt"
+	"time"
+
 	gormClickhouse "gorm.io/driver/clickhouse"
 	"gorm.io/gorm"
 	gormLogger "gorm.io/gorm/logger"
-	"time"
 )
 
 // Store is the clickhouse store. It extends the base store for sqlite specific queries.
@@ -59,6 +60,12 @@ func OpenGormClickhouse(ctx context.Context, address string, readOnly bool) (*St
 		}
 		if (!clickhouseDB.WithContext(ctx).Migrator().HasTable(&LastBlock{})) {
 			err = clickhouseDB.WithContext(ctx).Set("gorm:table_options", "ENGINE=MergeTree ORDER BY (chain_id, contract_address)").AutoMigrate(&LastBlock{})
+			if err != nil {
+				return nil, fmt.Errorf("could not migrate last block number on clickhouse: %w", err)
+			}
+		}
+		if (!clickhouseDB.WithContext(ctx).Migrator().HasTable(&CCTPEvent{})) {
+			err = clickhouseDB.WithContext(ctx).Set("gorm:table_options", "ENGINE=ReplacingMergeTree(insert_time) ORDER BY (tx_hash, contract_address, block_number, event_type, request_id)").AutoMigrate(&CCTPEvent{})
 			if err != nil {
 				return nil, fmt.Errorf("could not migrate last block number on clickhouse: %w", err)
 			}

@@ -77,7 +77,6 @@ export const bridgeSlice = createSlice({
       state.supportedToTokens = action.payload
     },
     setSupportedFromTokenBalances: (state, action: PayloadAction<{}>) => {
-      console.log(action.payload)
       state.supportedFromTokenBalances = action.payload
     },
     setFromChainIds: (state, action: PayloadAction<number[]>) => {

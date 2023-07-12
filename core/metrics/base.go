@@ -2,22 +2,30 @@ package metrics
 
 import (
 	"context"
+	"net/http"
+	"os"
+	"strconv"
+	"time"
+
 	"github.com/gin-gonic/gin"
 	"github.com/synapsecns/sanguine/core/config"
+	"github.com/synapsecns/sanguine/core/metrics/internal"
 	"github.com/uptrace/opentelemetry-go-extra/otelgorm"
 	"go.opentelemetry.io/contrib/instrumentation/github.com/gin-gonic/gin/otelgin"
 	"go.opentelemetry.io/contrib/instrumentation/net/http/otelhttp"
 	"go.opentelemetry.io/contrib/propagators/b3"
 	"go.opentelemetry.io/otel"
 	"go.opentelemetry.io/otel/attribute"
+	stdout "go.opentelemetry.io/otel/exporters/stdout/stdoutmetric"
 	"go.opentelemetry.io/otel/propagation"
 	"go.opentelemetry.io/otel/sdk/resource"
 	tracesdk "go.opentelemetry.io/otel/sdk/trace"
 	semconv "go.opentelemetry.io/otel/semconv/v1.17.0"
 	"go.opentelemetry.io/otel/trace"
 	"gorm.io/gorm"
-	"net/http"
 )
+
+const pyroscopeEndpoint = internal.PyroscopeEndpoint
 
 // baseHandler is a base metrics handler that implements the Handler interface.
 // this is used to reduce the amount of boilerplate code needed to implement opentracing methods.
@@ -26,6 +34,7 @@ type baseHandler struct {
 	tracer     trace.Tracer
 	name       string
 	propagator propagation.TextMapPropagator
+	meter      Meter
 }
 
 func (b *baseHandler) Start(ctx context.Context) error {
@@ -34,7 +43,7 @@ func (b *baseHandler) Start(ctx context.Context) error {
 }
 
 func (b *baseHandler) Gin() gin.HandlerFunc {
-	return otelgin.Middleware(b.name, otelgin.WithTracerProvider(b.tp))
+	return otelgin.Middleware(b.name, otelgin.WithTracerProvider(b.tp), otelgin.WithPropagators(b.propagator))
 }
 
 func (b *baseHandler) Propagator() propagation.TextMapPropagator {
@@ -66,6 +75,10 @@ func (b *baseHandler) Type() HandlerType {
 	panic("must be overridden by children")
 }
 
+func (b *baseHandler) Meter() Meter {
+	return b.meter
+}
+
 // newBaseHandler creates a new baseHandler for otel.
 // this is exported for testing.
 func newBaseHandler(buildInfo config.BuildInfo, extraOpts ...tracesdk.TracerProviderOption) *baseHandler {
@@ -78,6 +91,7 @@ func newBaseHandler(buildInfo config.BuildInfo, extraOpts ...tracesdk.TracerProv
 			attribute.String("ENVIRONMENT", "default"),
 			semconv.ServiceVersion(buildInfo.Version()),
 			attribute.String("commit", buildInfo.Commit()),
+			attribute.String("library.language", "go"),
 		))
 	// TODO: handle error or report
 	if err != nil {
@@ -102,11 +116,28 @@ func newBaseHandlerWithTracerProvider(buildInfo config.BuildInfo, tracerProvider
 	tracer := tracerProvider.Tracer(buildInfo.Name())
 	otel.SetTextMapPropagator(propagator)
 
+	interval, err := strconv.Atoi(os.Getenv("OTEL_METER_INTERVAL"))
+	if err != nil {
+		// default interval
+		interval = 60
+	}
+
+	// TODO set up exporting the way we need here
+	metricExporter, err := stdout.New()
+	if err != nil {
+		return nil
+	}
+	mp, err := NewOtelMeter(buildInfo.Name(), time.Duration(interval)*time.Second, metricExporter)
+	if err != nil {
+		return nil
+	}
+
 	return &baseHandler{
 		tp:         tracerProvider,
 		tracer:     tracer,
 		name:       buildInfo.Name(),
 		propagator: propagator,
+		meter:      mp,
 	}
 }
 

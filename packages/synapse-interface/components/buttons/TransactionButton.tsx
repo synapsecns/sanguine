@@ -52,7 +52,7 @@ export const TransactionButton = ({
     >
       {isPending ? (
         <div className="inline-flex items-center justify-center">
-          <ButtonLoadingSpinner className="mr-2" />
+          <ButtonLoadingSpinner className="mr-8" />
           <span className="opacity-30">{pendingLabel}</span>{' '}
         </div>
       ) : (

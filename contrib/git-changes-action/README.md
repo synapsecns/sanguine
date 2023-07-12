@@ -2,6 +2,8 @@
 
 This GitHub Action exports a variable that contains the list of Go modules changed in the current pull request, along with any dependent modules. This can be useful for automating build, test, or deployment workflows that involve Go projects.
 
+[![Go Reference](https://pkg.go.dev/badge/github.com/synapsecns/sanguine/contrib/git-changes-action.svg)](https://pkg.go.dev/github.com/synapsecns/sanguine/contrib/git-changes-action)
+[![Go Report Card](https://goreportcard.com/badge/github.com/synapsecns/sanguine/contrib/git-changes-action)](https://goreportcard.com/report/github.com/synapsecns/sanguine/contrib/git-changes-action)
 
 ## Usage:
 
@@ -75,5 +77,50 @@ jobs:
 
 This workflow will run tests for all changed Go modules and their dependencies whenever a pull request is opened or synchronized.
 
+## How It Works
 
+First a change tree is calculated between the ref and the base (as passed in by the user or inferred by the event type) based on the flow described below and [here](https://github.com/dorny/paths-filter/blob/4067d885736b84de7c414f582ac45897079b0a78/README.md#supported-workflows). This is a file tree that contains all the files that have changed between two refs.
 
+```mermaid
+graph TB
+    A(Start) --> B{Check triggering workflow}
+    B -- pull request --> C[Calculate a list diff with the GitHub API]
+    B -- push --> D{Check base}
+    D -- Base same as head --> E[Changes detected against most recent commit]
+    D -- Base is a commit sha --> F[Changes detected against the sha]
+    C --> G(Generate Chagned File List)
+    E --> G
+    F --> G
+```
+
+Each module in the `go.work` is visited. If any changes were detected by the previous step, the module is added to the list of changed modules. If `include_dependencies` is on and the module has a dependency that is also in the `go.work`, the dependency is added to the list of changed modules as well. This process is repeated until all modules in the `go.work` have been visited.
+
+```mermaid
+sequenceDiagram
+    participant GW as go.work
+    participant M as Module
+    participant CML as Changed_Module_List
+    participant ID as include_dependencies
+    participant D as Dependency
+
+    GW->>M: Visit Module
+    Note over M: Check for changes
+    M-->>GW: Changes Detected?
+    alt Changes Detected
+        GW->>CML: Add Module to Changed_Module_List
+    else No Changes Detected
+        GW-->>M: Skip Module
+    end
+    GW->>ID: include_dependencies On?
+    alt include_dependencies On
+        M->>D: Has Dependency in go.work?
+        alt Has Dependency
+            GW->>CML: Add Dependency to Changed_Module_List
+        else No Dependency
+            M-->>GW: No Dependency to Add
+        end
+    else include_dependencies Off
+        GW-->>M: Skip Dependency Check
+    end
+    GW->>GW: Continue Until All Modules Visited
+```

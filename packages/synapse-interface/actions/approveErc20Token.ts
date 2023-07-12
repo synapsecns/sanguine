@@ -1,3 +1,7 @@
+const MAX_UINT256 = BigInt(
+  '0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff'
+)
+
 import {
   Address,
   erc20ABI,
@@ -23,7 +27,7 @@ export const approveErc20Token = async ({
     address: tokenAddress,
     abi: erc20ABI,
     functionName: 'approve',
-    args: [spender, amount],
+    args: [spender, amount ?? MAX_UINT256],
   })
 
   const { hash } = await writeContract(config)

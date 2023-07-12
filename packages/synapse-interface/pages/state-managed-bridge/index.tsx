@@ -1,6 +1,4 @@
-import Grid from '@tw/Grid'
-import { LandingPageWrapper } from '@/components/layouts/LandingPageWrapper'
-import { useAccount } from 'wagmi'
+import { useAccount, useNetwork } from 'wagmi'
 import { useDispatch, useSelector } from 'react-redux'
 import { RootState } from '../../store/store'
 import toast from 'react-hot-toast'
@@ -84,6 +82,9 @@ import { TransactionButton } from '@/components/buttons/TransactionButton'
 import { BridgeTransactionButton } from '@/components/StateManagedBridge/BridgeTransactionButton'
 import ExplorerToastLink from '@/components/ExplorerToastLink'
 import { Address, zeroAddress } from 'viem'
+import { Zero } from '@ethersproject/constants'
+import { stringToBigInt } from '@/utils/stringToBigNum'
+import { BigNumber } from 'ethers'
 
 // NOTE: These are idle utility functions that will be re-written to
 // support sorting by desired mechanism
@@ -110,6 +111,7 @@ const sortToTokens = (tokens: Token[]) => {
 
 const StateManagedBridge = () => {
   const { address } = useAccount()
+  const { chain } = useNetwork()
   const { synapseSDK } = useSynapseContext()
   const bridgeDisplayRef = useRef(null)
   const currentSDKRequestID = useRef(0)
@@ -257,7 +259,7 @@ const StateManagedBridge = () => {
       console.log(`[getAndSetQuote] fromToken.symbol`, fromToken.symbol)
       console.log(`[getAndSetQuote] toToken.symbol`, toToken.symbol)
       console.log(`[getAndSetQuote] fromValue`, fromValue)
-
+      console.log('feeAmount', feeAmount)
       console.log(`[getAndSetQuote] maxAmountOut`, maxAmountOut)
 
       if (!(originQuery && maxAmountOut && destQuery && feeAmount)) {
@@ -266,12 +268,14 @@ const StateManagedBridge = () => {
         return
       }
 
-      const toValueBigNum = maxAmountOut ?? 0n
+      const toValueBigInt = BigInt(maxAmountOut.toString()) ?? 0n
+
       const originTokenDecimals = fromToken.decimals[fromChainId]
       const adjustedFeeAmount =
-        feeAmount < fromValue
-          ? feeAmount
-          : feeAmount / powBigInt(10n, BigInt(18 - originTokenDecimals))
+        BigInt(feeAmount) <
+        stringToBigInt(`${fromValue}`, fromToken.decimals[fromChainId])
+          ? BigInt(feeAmount)
+          : BigInt(feeAmount) / powBigInt(10n, BigInt(18 - originTokenDecimals))
 
       const isUnsupported = AcceptedChainId[fromChainId] ? false : true
 
@@ -303,13 +307,14 @@ const StateManagedBridge = () => {
 
       let newDestQuery = { ...destQuery }
       newDestQuery.minAmountOut = destMinWithSlippage
+      console.log('here 4')
       if (thisRequestId === currentSDKRequestID.current) {
         dispatch(
           setBridgeQuote({
-            outputAmount: BigInt(toValueBigNum.toString()),
+            outputAmount: toValueBigInt,
             outputAmountString: commify(
               formatBigIntToString(
-                toValueBigNum,
+                toValueBigInt,
                 toToken.decimals[toChainId],
                 8
               )
@@ -319,7 +324,7 @@ const StateManagedBridge = () => {
             exchangeRate: calculateExchangeRate(
               BigInt(fromValue) - BigInt(adjustedFeeAmount),
               fromToken.decimals[fromChainId],
-              BigInt(toValueBigNum.toString()),
+              toValueBigInt,
               toToken.decimals[toChainId]
             ),
             feeAmount,
@@ -461,140 +466,133 @@ const StateManagedBridge = () => {
   const springClass = 'fixed z-50 w-full h-full bg-opacity-50'
 
   return (
-    <LandingPageWrapper>
-      <main
-        data-test-id="bridge-page"
-        className="relative z-0 flex-1 h-full overflow-y-auto focus:outline-none"
-      >
-        <div className="items-center px-4 py-20 mx-auto mt-4 2xl:w-3/4 sm:mt-6 sm:px-8 md:px-12">
-          <div className="flex flex-col items-center justify-center">
-            <div className="flex items-center space-x-20">
-              <PageHeader
-                title="Bridge"
-                subtitle="Send your assets across chains."
-              />
-              <div>
-                <Button
-                  className="flex items-center p-3 text-opacity-75 bg-bgLight hover:bg-bgLighter text-secondaryTextColor hover:text-white"
-                  onClick={() => {
-                    if (showSettingsSlideOver === true) {
-                      dispatch(setShowSettingsSlideOver(false))
-                    } else {
-                      dispatch(setShowSettingsSlideOver(true))
-                    }
-                  }}
-                >
-                  {!showSettingsSlideOver ? (
-                    <>
-                      <SettingsIcon className="w-5 h-5 mr-2" />
-                      <span>Settings</span>
-                    </>
-                  ) : (
-                    <span>Close</span>
-                  )}
-                </Button>
-              </div>
-            </div>
-            <Card
-              divider={false}
-              className={`
-            max-w-lg px-1 pb-0 mb-3 overflow-hidden
-            transition-all duration-100 transform rounded-xl
-            bg-bgBase md:px-6 lg:px-6 mt-5
-          `}
+    <div className="flex flex-col w-full max-w-lg mx-auto lg:mx-0">
+      <div className="flex flex-col">
+        <div className="flex items-center justify-between">
+          <PageHeader
+            title="Bridge"
+            subtitle="Send your assets across chains."
+          />
+          <div>
+            <Button
+              className="flex items-center p-3 text-opacity-75 bg-bgLight hover:bg-bgLighter text-secondaryTextColor hover:text-white"
+              onClick={() => {
+                if (showSettingsSlideOver === true) {
+                  dispatch(setShowSettingsSlideOver(false))
+                } else {
+                  dispatch(setShowSettingsSlideOver(true))
+                }
+              }}
             >
-              <div ref={bridgeDisplayRef}>
-                <Transition show={showFromTokenSlideOver} {...TRANSITION_PROPS}>
-                  <animated.div className={springClass}>
-                    <TokenSlideOver
-                      key="fromBlock"
-                      isOrigin={true}
-                      tokens={separateAndSortTokensWithBalances(
-                        supportedFromTokenBalances
-                      )}
-                      chainId={fromChainId}
-                      selectedToken={fromToken}
-                    />{' '}
-                  </animated.div>
-                </Transition>
-                <Transition show={showToTokenSlideOver} {...TRANSITION_PROPS}>
-                  <animated.div className={springClass}>
-                    <TokenSlideOver
-                      key="toBlock"
-                      isOrigin={false}
-                      tokens={supportedToTokens}
-                      chainId={toChainId}
-                      selectedToken={toToken}
-                    />{' '}
-                  </animated.div>
-                </Transition>
-                <Transition show={showFromChainSlideOver} {...TRANSITION_PROPS}>
-                  <animated.div className={springClass}>
-                    <ChainSlideOver
-                      key="fromChainBlock"
-                      isOrigin={true}
-                      chains={fromChainIds}
-                      chainId={fromChainId}
-                      setChain={setFromChainId}
-                      setShowSlideOver={setShowFromChainSlideOver}
-                    />
-                  </animated.div>
-                </Transition>
-                <Transition show={showToChainSlideOver} {...TRANSITION_PROPS}>
-                  <animated.div className={springClass}>
-                    <ChainSlideOver
-                      key="toChainBlock"
-                      isOrigin={false}
-                      chains={toChainIds}
-                      chainId={toChainId}
-                      setChain={setToChainId}
-                      setShowSlideOver={setShowToChainSlideOver}
-                    />
-                  </animated.div>
-                </Transition>
-                <Transition show={showSettingsSlideOver} {...TRANSITION_PROPS}>
-                  <animated.div>
-                    <SettingsSlideOver key="settings" />
-                  </animated.div>
-                </Transition>
-                <InputContainer />
-                <OutputContainer />
-                <Transition
-                  appear={true}
-                  unmount={false}
-                  show={true}
-                  {...SECTION_TRANSITION_PROPS}
-                >
-                  <BridgeExchangeRateInfo showGasDrop={true} />
-                </Transition>
-                {showDestinationAddress && (
-                  <DestinationAddressInput
-                    toChainId={toChainId}
-                    destinationAddress={destinationAddress}
-                  />
-                )}
-                <div className="mt-3 mb-3">
-                  <BridgeTransactionButton
-                    isApproved={isApproved}
-                    approveTxn={approveTxn}
-                    executeBridge={executeBridge}
-                  />
-                </div>
-              </div>
-            </Card>
-            {/* <ActionCardFooter link={HOW_TO_BRIDGE_URL} /> */}
-          </div>
-          <div className="mt-8">
-            <BridgeWatcher
-              fromChainId={fromChainId}
-              toChainId={toChainId}
-              address={address}
-              destinationAddress={destinationAddress}
-            />
+              {!showSettingsSlideOver ? (
+                <>
+                  <SettingsIcon className="w-5 h-5 mr-2" />
+                  <span>Settings</span>
+                </>
+              ) : (
+                <span>Close</span>
+              )}
+            </Button>
           </div>
         </div>
-      </main>
-    </LandingPageWrapper>
+        <Card
+          divider={false}
+          className={`
+                pt-5 pb-3 mt-5 overflow-hidden
+                transition-all duration-100 transform rounded-xl
+                bg-bgBase
+              `}
+        >
+          <div ref={bridgeDisplayRef}>
+            <Transition show={showFromTokenSlideOver} {...TRANSITION_PROPS}>
+              <animated.div className={springClass}>
+                <TokenSlideOver
+                  key="fromBlock"
+                  isOrigin={true}
+                  tokens={separateAndSortTokensWithBalances(
+                    supportedFromTokenBalances
+                  )}
+                  chainId={fromChainId}
+                  selectedToken={fromToken}
+                />{' '}
+              </animated.div>
+            </Transition>
+            <Transition show={showToTokenSlideOver} {...TRANSITION_PROPS}>
+              <animated.div className={springClass}>
+                <TokenSlideOver
+                  key="toBlock"
+                  isOrigin={false}
+                  tokens={supportedToTokens}
+                  chainId={toChainId}
+                  selectedToken={toToken}
+                />{' '}
+              </animated.div>
+            </Transition>
+            <Transition show={showFromChainSlideOver} {...TRANSITION_PROPS}>
+              <animated.div className={springClass}>
+                <ChainSlideOver
+                  key="fromChainBlock"
+                  isOrigin={true}
+                  chains={fromChainIds}
+                  chainId={fromChainId}
+                  setChain={setFromChainId}
+                  setShowSlideOver={setShowFromChainSlideOver}
+                />
+              </animated.div>
+            </Transition>
+            <Transition show={showToChainSlideOver} {...TRANSITION_PROPS}>
+              <animated.div className={springClass}>
+                <ChainSlideOver
+                  key="toChainBlock"
+                  isOrigin={false}
+                  chains={toChainIds}
+                  chainId={toChainId}
+                  setChain={setToChainId}
+                  setShowSlideOver={setShowToChainSlideOver}
+                />
+              </animated.div>
+            </Transition>
+            <Transition show={showSettingsSlideOver} {...TRANSITION_PROPS}>
+              <animated.div>
+                <SettingsSlideOver key="settings" />
+              </animated.div>
+            </Transition>
+            <InputContainer />
+            <OutputContainer />
+            <Transition
+              appear={true}
+              unmount={false}
+              show={true}
+              {...SECTION_TRANSITION_PROPS}
+            >
+              <BridgeExchangeRateInfo showGasDrop={true} />
+            </Transition>
+            {showDestinationAddress && (
+              <DestinationAddressInput
+                toChainId={toChainId}
+                destinationAddress={destinationAddress}
+              />
+            )}
+            <div className="mt-3 mb-3">
+              <BridgeTransactionButton
+                isApproved={isApproved}
+                approveTxn={approveTxn}
+                executeBridge={executeBridge}
+              />
+            </div>
+          </div>
+        </Card>
+        {/* <ActionCardFooter link={HOW_TO_BRIDGE_URL} /> */}
+      </div>
+      <div className="mt-8">
+        <BridgeWatcher
+          fromChainId={fromChainId}
+          toChainId={toChainId}
+          address={address}
+          destinationAddress={destinationAddress}
+        />
+      </div>
+    </div>
   )
 }
 

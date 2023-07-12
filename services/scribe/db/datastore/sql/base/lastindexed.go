@@ -3,6 +3,7 @@ package base
 import (
 	"context"
 	"fmt"
+
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/synapsecns/sanguine/core/metrics"
 	"go.opentelemetry.io/otel/attribute"
@@ -73,7 +74,6 @@ func (s Store) RetrieveLastIndexed(ctx context.Context, contractAddress common.A
 		}).
 		First(&entry)
 	if dbTx.RowsAffected == 0 {
-		logger.Warnf("no last indexed info found for contract %s on chain %d. Providing 0.", contractAddress.String(), chainID)
 		return 0, nil
 	}
 	if dbTx.Error != nil {

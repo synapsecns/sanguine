@@ -1,11 +1,11 @@
 import { useSelector } from 'react-redux'
 import { TransactionButton } from '@/components/buttons/TransactionButton'
 import { EMPTY_BRIDGE_QUOTE, EMPTY_BRIDGE_QUOTE_ZERO } from '@/constants/bridge'
-import { RootState } from '../../store/store'
+import { RootState } from '@/store/store'
 import { useAccount, useNetwork, useSwitchNetwork } from 'wagmi'
 import { useEffect, useState } from 'react'
 import { isAddress } from '@ethersproject/address'
-import {  } from 'wagmi'
+import {} from 'wagmi'
 
 import {
   useConnectModal,
@@ -27,13 +27,13 @@ export const BridgeTransactionButton = ({
 
   const { address, isConnected: isConnectedInit } = useAccount({
     onDisconnect() {
-      setIsConnected(false);
+      setIsConnected(false)
     },
-  });
+  })
 
   useEffect(() => {
     setIsConnected(isConnectedInit)
-  }, [isConnectedInit]);
+  }, [isConnectedInit])
 
   // Get state from Redux store
   const {
@@ -58,13 +58,12 @@ export const BridgeTransactionButton = ({
 
   let buttonProperties
 
-  console.log(fromValue)
   if (!isLoading && bridgeQuote?.feeAmount === 0n && BigInt(fromValue) > 0) {
     buttonProperties = {
       label: `Amount must be greater than fee`,
       onClick: null,
     }
-  } else if (!isConnected && BigInt((fromValue)) > 0) {
+  } else if (!isConnected && BigInt(fromValue) > 0) {
     buttonProperties = {
       label: `Connect Wallet to Bridge`,
       onClick: openConnectModal,
@@ -77,7 +76,7 @@ export const BridgeTransactionButton = ({
     buttonProperties = {
       label: 'Invalid destination address',
     }
-  } else if (chain?.id != fromChainId && BigInt((fromValue)) > 0) {
+  } else if (chain?.id != fromChainId && BigInt(fromValue) > 0) {
     buttonProperties = {
       label: `Switch to ${chains.find((c) => c.id === fromChainId).name}`,
       onClick: () => switchNetwork(fromChainId),
