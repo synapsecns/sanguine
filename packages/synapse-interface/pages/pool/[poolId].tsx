@@ -23,7 +23,17 @@ const PoolPage = () => {
 
   const dispatch: any = useDispatch()
 
-  // navigation issue to fix where going from one card to another card doesn't clear pool data unless refresh
+  useEffect(() => {
+    const handleRouteChange = () => {
+      dispatch(resetPoolData())
+    }
+
+    router.events.on('routeChangeStart', handleRouteChange)
+
+    return () => {
+      router.events.off('routeChangeStart', handleRouteChange)
+    }
+  }, [dispatch, router.events])
 
   useEffect(() => {
     setConnectedChainId(chain?.id ?? DEFAULT_FROM_CHAIN)

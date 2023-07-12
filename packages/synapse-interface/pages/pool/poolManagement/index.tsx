@@ -72,7 +72,7 @@ const PoolManagement = ({
 
   if (isLoading) {
     return (
-      <div className="flex items-center justify-center">
+      <div className="flex items-center justify-center h-full">
         <LoadingSpinner />
       </div>
     )

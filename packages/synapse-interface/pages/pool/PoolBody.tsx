@@ -68,7 +68,7 @@ const PoolBody = ({
             <div className="text-right">
               <div className="text-sm text-white text-opacity-60">APY</div>
               <div className="text-xl font-medium text-green-400">
-                {poolAPYData
+                {poolAPYData && Object.keys(poolAPYData).length > 0
                   ? `${String(poolAPYData.fullCompoundedAPYStr)}%`
                   : '-'}
               </div>
