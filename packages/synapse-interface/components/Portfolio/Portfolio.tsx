@@ -80,18 +80,19 @@ export const Portfolio = () => {
 function filterPortfolioBalancesWithBalances(
   balancesAndAllowances: NetworkTokenBalancesAndAllowances
 ): NetworkTokenBalancesAndAllowances {
-  const filteredEntries = Object.entries(balancesAndAllowances).map(
-    ([key, tokenWithBalances]) => {
+  return Object.entries(balancesAndAllowances).reduce(
+    (
+      filteredBalances: NetworkTokenBalancesAndAllowances,
+      [key, tokenWithBalances]
+    ) => {
       const filtered = tokenWithBalances.filter(
         (token: TokenWithBalanceAndAllowance) => token.balance > Zero
       )
-      return [key, filtered]
-    }
+      if (filtered.length > 0) {
+        filteredBalances[key] = filtered
+      }
+      return filteredBalances
+    },
+    {}
   )
-
-  const filteredEntriesWithValues = filteredEntries.filter(
-    ([_, filtered]) => filtered.length > 0
-  )
-
-  return Object.fromEntries(filteredEntriesWithValues)
 }
