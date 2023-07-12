@@ -2,11 +2,14 @@ package scribe_test
 
 import (
 	"fmt"
+	"github.com/brianvoe/gofakeit/v6"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/synapsecns/sanguine/ethergo/backends/geth"
+	"github.com/synapsecns/sanguine/ethergo/contracts"
 	"github.com/synapsecns/sanguine/services/scribe/backend"
 	"github.com/synapsecns/sanguine/services/scribe/scribe"
 	"github.com/synapsecns/sanguine/services/scribe/scribe/indexer"
+	"github.com/synapsecns/sanguine/services/scribe/testutil/testcontract"
 	"math/big"
 
 	"github.com/ethereum/go-ethereum/params"
@@ -104,57 +107,56 @@ func (s ScribeSuite) TestIndexToBlock() {
 	Equal(s.T(), txBlockNumber, lastIndexed)
 }
 
-//
-//// TestChainIndxer tests that the ChainIndxer can backfill events from a chain.
-//func (s ScribeSuite) TestChainIndxer() {
-//	// We need to set up multiple deploy managers, one for each contract. We will use
-//	// s.manager for the first contract, and create a new ones for the next two.
-//	managerA := testutil.NewDeployManager(s.T())
-//	managerB := testutil.NewDeployManager(s.T())
-//	managerC := testutil.NewDeployManager(s.T())
-//
-//	// Get simulated blockchain, deploy three test contracts, and set up test variables.
-//	chainID := gofakeit.Uint32()
-//
-//	simulatedChain := geth.NewEmbeddedBackendForChainID(s.GetTestContext(), s.T(), big.NewInt(int64(chainID)))
-//	simulatedClient, err := backend.DialBackend(s.GetTestContext(), simulatedChain.RPCAddress(), s.metrics)
-//	Nil(s.T(), err)
-//
-//	simulatedChain.FundAccount(s.GetTestContext(), s.wallet.Address(), *big.NewInt(params.Ether))
-//	testContractA, testRefA := s.manager.GetTestContract(s.GetTestContext(), simulatedChain)
-//	testContractB, testRefB := managerB.GetTestContract(s.GetTestContext(), simulatedChain)
-//	testContractC, testRefC := managerC.GetTestContract(s.GetTestContext(), simulatedChain)
-//
-//	contracts := []contracts.DeployedContract{testContractA, testContractB, testContractC}
-//	testRefs := []*testcontract.TestContractRef{testRefA, testRefB, testRefC}
-//	startBlocks := make([]uint64, len(contracts))
-//
-//	for i, contract := range contracts {
-//		deployTxHash := contract.DeployTx().Hash()
-//		receipt, err := simulatedChain.TransactionReceipt(s.GetTestContext(), deployTxHash)
-//		Nil(s.T(), err)
-//		startBlocks[i] = receipt.BlockNumber.Uint64()
-//	}
-//
-//	contractConfigs := config.ContractConfigs{}
-//
-//	for i, contract := range contracts {
-//		contractConfigs = append(contractConfigs, config.ContractConfig{
-//			Address:    contract.Address().String(),
-//			StartBlock: startBlocks[i],
-//		})
-//	}
-//
-//	chainConfig := config.ChainConfig{
-//		ChainID:       chainID,
-//		Contracts:     contractConfigs,
-//		Confirmations: 1,
-//	}
-//	simulatedChainArr := []backend.ScribeBackend{simulatedClient, simulatedClient}
-//	chainIndexer, err := scribe.NewChainIndexer(s.testDB, simulatedChainArr, chainConfig, s.metrics)
-//	Nil(s.T(), err)
-//	testutil.EmitEventsForAChain(contracts, testRefs, simulatedChain, chainIndexer, chainConfig, true)
-//}
+// TestChainIndxer tests that the ChainIndxer can backfill events from a chain.
+func (s ScribeSuite) TestChainIndxer() {
+	// We need to set up multiple deploy managers, one for each contract. We will use
+	// s.manager for the first contract, and create a new ones for the next two.
+	managerA := testutil.NewDeployManager(s.T())
+	managerB := testutil.NewDeployManager(s.T())
+	managerC := testutil.NewDeployManager(s.T())
+
+	// Get simulated blockchain, deploy three test contracts, and set up test variables.
+	chainID := gofakeit.Uint32()
+
+	simulatedChain := geth.NewEmbeddedBackendForChainID(s.GetTestContext(), s.T(), big.NewInt(int64(chainID)))
+	simulatedClient, err := backend.DialBackend(s.GetTestContext(), simulatedChain.RPCAddress(), s.metrics)
+	Nil(s.T(), err)
+
+	simulatedChain.FundAccount(s.GetTestContext(), s.wallet.Address(), *big.NewInt(params.Ether))
+	testContractA, testRefA := s.manager.GetTestContract(s.GetTestContext(), simulatedChain)
+	testContractB, testRefB := managerB.GetTestContract(s.GetTestContext(), simulatedChain)
+	testContractC, testRefC := managerC.GetTestContract(s.GetTestContext(), simulatedChain)
+
+	contracts := []contracts.DeployedContract{testContractA, testContractB, testContractC}
+	testRefs := []*testcontract.TestContractRef{testRefA, testRefB, testRefC}
+	startBlocks := make([]uint64, len(contracts))
+
+	for i, contract := range contracts {
+		deployTxHash := contract.DeployTx().Hash()
+		receipt, err := simulatedChain.TransactionReceipt(s.GetTestContext(), deployTxHash)
+		Nil(s.T(), err)
+		startBlocks[i] = receipt.BlockNumber.Uint64()
+	}
+
+	contractConfigs := config.ContractConfigs{}
+
+	for i, contract := range contracts {
+		contractConfigs = append(contractConfigs, config.ContractConfig{
+			Address:    contract.Address().String(),
+			StartBlock: startBlocks[i],
+		})
+	}
+
+	chainConfig := config.ChainConfig{
+		ChainID:       chainID,
+		Contracts:     contractConfigs,
+		Confirmations: 1,
+	}
+	simulatedChainArr := []backend.ScribeBackend{simulatedClient, simulatedClient}
+	chainIndexer, err := scribe.NewChainIndexer(s.testDB, simulatedChainArr, chainConfig, s.metrics)
+	Nil(s.T(), err)
+	testutil.EmitEventsForAChain(contracts, testRefs, simulatedChain, chainIndexer, chainConfig, true)
+}
 
 //// EmitEventsForAChain emits events for a chain. If `backfill` is set to true, the function will store the events
 //// whilst checking their existence in the database.

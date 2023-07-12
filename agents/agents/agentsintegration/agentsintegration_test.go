@@ -2,6 +2,8 @@ package agentsintegration_test
 
 import (
 	signerConfig "github.com/synapsecns/sanguine/ethergo/signer/config"
+	"github.com/synapsecns/sanguine/services/scribe/backend"
+	"github.com/synapsecns/sanguine/services/scribe/scribe"
 	"math/big"
 	"os"
 	"testing"
@@ -18,10 +20,8 @@ import (
 	"github.com/synapsecns/sanguine/agents/config"
 	execConfig "github.com/synapsecns/sanguine/agents/config/executor"
 	"github.com/synapsecns/sanguine/agents/types"
-	"github.com/synapsecns/sanguine/services/scribe/backfill"
 	"github.com/synapsecns/sanguine/services/scribe/client"
 	scribeConfig "github.com/synapsecns/sanguine/services/scribe/config"
-	"github.com/synapsecns/sanguine/services/scribe/node"
 
 	"github.com/Flaque/filet"
 )
@@ -39,11 +39,11 @@ func (u *AgentsIntegrationSuite) TestAgentsE2E() {
 		testDone = true
 	}()
 
-	originClient, err := index.DialBackend(u.GetTestContext(), u.TestBackendOrigin.RPCAddress(), u.ScribeMetrics)
+	originClient, err := backend.DialBackend(u.GetTestContext(), u.TestBackendOrigin.RPCAddress(), u.ScribeMetrics)
 	u.Nil(err)
-	destinationClient, err := index.DialBackend(u.GetTestContext(), u.TestBackendDestination.RPCAddress(), u.ScribeMetrics)
+	destinationClient, err := backend.DialBackend(u.GetTestContext(), u.TestBackendDestination.RPCAddress(), u.ScribeMetrics)
 	u.Nil(err)
-	summitClient, err := index.DialBackend(u.GetTestContext(), u.TestBackendSummit.RPCAddress(), u.ScribeMetrics)
+	summitClient, err := backend.DialBackend(u.GetTestContext(), u.TestBackendSummit.RPCAddress(), u.ScribeMetrics)
 	u.Nil(err)
 
 	originConfig := scribeConfig.ContractConfig{
@@ -55,12 +55,8 @@ func (u *AgentsIntegrationSuite) TestAgentsE2E() {
 		GetLogsBatchAmount: 1,
 		StoreConcurrency:   1,
 		GetLogsRange:       1,
-		ConfirmationConfig: scribeConfig.ConfirmationConfig{
-			RequiredConfirmations:   1,
-			ConfirmationThreshold:   1,
-			ConfirmationRefreshRate: 1,
-		},
-		Contracts: []scribeConfig.ContractConfig{originConfig},
+		Confirmations:      0,
+		Contracts:          []scribeConfig.ContractConfig{originConfig},
 	}
 	destinationConfig := scribeConfig.ContractConfig{
 		Address:    u.LightInboxOnDestination.Address().String(),
@@ -71,12 +67,8 @@ func (u *AgentsIntegrationSuite) TestAgentsE2E() {
 		GetLogsBatchAmount: 1,
 		StoreConcurrency:   1,
 		GetLogsRange:       1,
-		ConfirmationConfig: scribeConfig.ConfirmationConfig{
-			RequiredConfirmations:   1,
-			ConfirmationThreshold:   1,
-			ConfirmationRefreshRate: 1,
-		},
-		Contracts: []scribeConfig.ContractConfig{destinationConfig},
+		Confirmations:      0,
+		Contracts:          []scribeConfig.ContractConfig{destinationConfig},
 	}
 	summitConfig := scribeConfig.ContractConfig{
 		Address:    u.InboxOnSummit.Address().String(),
@@ -87,17 +79,14 @@ func (u *AgentsIntegrationSuite) TestAgentsE2E() {
 		GetLogsBatchAmount: 1,
 		StoreConcurrency:   1,
 		GetLogsRange:       1,
-		ConfirmationConfig: scribeConfig.ConfirmationConfig{
-			RequiredConfirmations:   1,
-			ConfirmationThreshold:   1,
-			ConfirmationRefreshRate: 1,
-		},
+		Confirmations:      0,
+
 		Contracts: []scribeConfig.ContractConfig{summitConfig},
 	}
 	scribeConfig := scribeConfig.Config{
 		Chains: []scribeConfig.ChainConfig{originChainConfig, destinationChainConfig, summitChainConfig},
 	}
-	clients := map[uint32][]index.ScribeBackend{
+	clients := map[uint32][]backend.ScribeBackend{
 		uint32(u.TestBackendOrigin.GetChainID()):      {originClient, originClient},
 		uint32(u.TestBackendDestination.GetChainID()): {destinationClient, destinationClient},
 		uint32(u.TestBackendSummit.GetChainID()):      {summitClient, summitClient},
