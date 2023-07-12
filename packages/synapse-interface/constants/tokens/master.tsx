@@ -431,7 +431,7 @@ export const USDC = new Token({
     [CHAINS.DOGE.id]: [CHAINS.ETH.id, CHAINS.DOGE.id],
   },
   symbol: 'USDC',
-  name: 'USD Circle',
+  name: 'USDC',
   logo: usdcLogo,
   description: `
     USD Coin (known by its ticker USDC) is a stablecoin that is pegged to the
