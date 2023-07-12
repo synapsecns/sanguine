@@ -4,6 +4,7 @@ import (
 	"context"
 	"github.com/synapsecns/sanguine/services/scribe/backend"
 	"github.com/synapsecns/sanguine/services/scribe/testutil"
+	scribeTypes "github.com/synapsecns/sanguine/services/scribe/types"
 
 	"math/big"
 	"sync"
@@ -20,7 +21,7 @@ import (
 )
 
 // TestFilterLogsMaxAttempts ensures after the maximum number of attempts, an error is returned.
-func (x IndexerSuite) TestFilterLogsMaxAttempts() {
+func (x *IndexerSuite) TestFilterLogsMaxAttempts() {
 	x.T().Skip("flake")
 	chainID := big.NewInt(int64(1))
 	simulatedChain := geth.NewEmbeddedBackendForChainID(x.GetTestContext(), x.T(), chainID)
@@ -28,7 +29,7 @@ func (x IndexerSuite) TestFilterLogsMaxAttempts() {
 	Nil(x.T(), err)
 	mockFilterer := new(mocks.EVMClient)
 	contractAddress := etherMocks.MockAddress()
-	config := &indexer.IndexerConfig{
+	config := &scribeTypes.IndexerConfig{
 		ChainID:            1,
 		GetLogsBatchAmount: 1,
 		GetLogsRange:       1,
@@ -50,13 +51,13 @@ func (x IndexerSuite) TestFilterLogsMaxAttempts() {
 }
 
 // TestGetChunkArr ensures that the batching orchestration function (collecting block range chunks into arrays) works properly.
-func (x IndexerSuite) TestGetChunkArr() {
+func (x *IndexerSuite) TestGetChunkArr() {
 	chainID := big.NewInt(int64(1))
 	simulatedChain := geth.NewEmbeddedBackendForChainID(x.GetTestContext(), x.T(), chainID)
 	simulatedClient, err := backend.DialBackend(x.GetTestContext(), simulatedChain.RPCAddress(), x.metrics)
 	Nil(x.T(), err)
 	contractAddress := etherMocks.MockAddress()
-	config := &indexer.IndexerConfig{
+	config := &scribeTypes.IndexerConfig{
 		ChainID:              1,
 		ConcurrencyThreshold: 1,
 		GetLogsBatchAmount:   1,
@@ -119,20 +120,20 @@ func (x IndexerSuite) TestGetChunkArr() {
 }
 
 // TestGetChunkArr ensures that the batching orchestration function (collecting block range chunks into arrays) works properly.
-func (x IndexerSuite) TestFetchLogs() {
+func (x *IndexerSuite) TestFetchLogs() {
 	testBackend := geth.NewEmbeddedBackend(x.GetTestContext(), x.T())
 	// start an omnirpc proxy and run 10 test transactions so we can batch call blocks 1-10
 	var wg sync.WaitGroup
+	var addresses []common.Address
+	var err error
 	wg.Add(2)
 
 	const desiredBlockHeight = 10
 
-	var contractAddress common.Address
 	go func() {
 		defer wg.Done()
-		newContract, err := testutil.PopulateWithLogs(x.GetTestContext(), testBackend, desiredBlockHeight, x.T(), x.manager)
+		addresses, _, err = testutil.PopulateWithLogs(x.GetTestContext(), testBackend, desiredBlockHeight, x.T(), []*testutil.DeployManager{x.manager})
 		Nil(x.T(), err)
-		contractAddress = *newContract
 	}()
 
 	var host string
@@ -170,13 +171,13 @@ func (x IndexerSuite) TestFetchLogs() {
 	}
 	chainID, err := scribeBackend.ChainID(x.GetTestContext())
 	Nil(x.T(), err)
-	config := &indexer.IndexerConfig{
+	config := &scribeTypes.IndexerConfig{
 		ChainID:              uint32(chainID.Uint64()),
 		ConcurrencyThreshold: 1,
 		GetLogsBatchAmount:   1,
 		GetLogsRange:         2,
 	}
-	rangeFilter := indexer.NewLogFetcher([]common.Address{contractAddress}, scribeBackend, big.NewInt(1), big.NewInt(desiredBlockHeight), config)
+	rangeFilter := indexer.NewLogFetcher(addresses, scribeBackend, big.NewInt(1), big.NewInt(desiredBlockHeight), config)
 	logs, err := rangeFilter.FetchLogs(x.GetTestContext(), chunks)
 	Nil(x.T(), err)
 	Equal(x.T(), 2, len(logs))

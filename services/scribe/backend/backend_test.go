@@ -16,19 +16,18 @@ import (
 )
 
 func (b *BackendSuite) TestLogsInRange() {
-	testBackend := geth.NewEmbeddedBackend(b.GetTestContext(), b.T())
-	// start an omnirpc proxy and run 10 test transactions so we can batch call blocks 1-10
-	var wg sync.WaitGroup
-	wg.Add(2)
-
 	const desiredBlockHeight = 10
 
-	var commonAddress common.Address
+	var addresses []common.Address
+	var err error
+	var wg sync.WaitGroup
+
+	wg.Add(2)
+	testBackend := geth.NewEmbeddedBackend(b.GetTestContext(), b.T())
 	go func() {
 		defer wg.Done()
-		newContract, err := testutil.PopulateWithLogs(b.GetTestContext(), testBackend, desiredBlockHeight, b.T(), b.manager)
+		addresses, _, err = testutil.PopulateWithLogs(b.GetTestContext(), testBackend, desiredBlockHeight, b.T(), []*testutil.DeployManager{b.manager})
 		Nil(b.T(), err)
-		commonAddress = *newContract
 	}()
 
 	var host string
@@ -53,7 +52,7 @@ func (b *BackendSuite) TestLogsInRange() {
 		blockRanges = append(blockRanges, blockRange)
 		blockRange = iterator.NextChunk()
 	}
-	res, err := backend.GetLogsInRange(b.GetTestContext(), scribeBackend, []common.Address{commonAddress}, chainID.Uint64(), blockRanges)
+	res, err := backend.GetLogsInRange(b.GetTestContext(), scribeBackend, addresses, chainID.Uint64(), blockRanges)
 	Nil(b.T(), err)
 
 	// use to make sure we don't double use values
@@ -78,22 +77,24 @@ func (b *BackendSuite) TestLogsInRange() {
 }
 
 func (b *BackendSuite) TestLogsInRangeWithMultipleContracts() {
-	testBackend := geth.NewEmbeddedBackend(b.GetTestContext(), b.T())
-	// start an omnirpc proxy and run 10 test transactions so we can batch call blocks 1-10
-	var wg sync.WaitGroup
-	wg.Add(2)
-
 	const desiredBlockHeight = 10
 
-	var contractAddress1 common.Address
-	var contractAddress2 common.Address
+	var addresses []common.Address
+	var err error
+	var wg sync.WaitGroup
+
+	wg.Add(2)
+	testBackend := geth.NewEmbeddedBackend(b.GetTestContext(), b.T())
+
+	managerB := testutil.NewDeployManager(b.T())
+	managerC := testutil.NewDeployManager(b.T())
+	managers := []*testutil.DeployManager{b.manager, managerB, managerC}
 
 	go func() {
 		defer wg.Done()
-		newContract1, newContract2, err := testutil.MultiContractPopulateWithLogs(b.GetTestContext(), testBackend, desiredBlockHeight, b.T(), b.manager)
+		addresses, _, err = testutil.PopulateWithLogs(b.GetTestContext(), testBackend, desiredBlockHeight, b.T(), managers)
 		Nil(b.T(), err)
-		contractAddress1 = *newContract1
-		contractAddress2 = *newContract2
+
 	}()
 
 	var host string
@@ -118,7 +119,7 @@ func (b *BackendSuite) TestLogsInRangeWithMultipleContracts() {
 		blockRanges = append(blockRanges, blockRange)
 		blockRange = iterator.NextChunk()
 	}
-	res, err := backend.GetLogsInRange(b.GetTestContext(), scribeBackend, []common.Address{contractAddress1, contractAddress2}, chainID.Uint64(), blockRanges)
+	res, err := backend.GetLogsInRange(b.GetTestContext(), scribeBackend, addresses, chainID.Uint64(), blockRanges)
 	Nil(b.T(), err)
 
 	// use to make sure we don't double use values
@@ -140,9 +141,12 @@ func (b *BackendSuite) TestLogsInRangeWithMultipleContracts() {
 			numLogs++
 		}
 	}
-	Equal(b.T(), 2, numLogs)
-	Equal(b.T(), 1, logs[contractAddress1.String()])
-	Equal(b.T(), 1, logs[contractAddress2.String()])
+	Equal(b.T(), len(managers), numLogs)
+
+	// Check if there's a log for each of the contracts
+	for i := range addresses {
+		Equal(b.T(), 1, logs[addresses[i].String()])
+	}
 
 }
 

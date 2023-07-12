@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"github.com/synapsecns/sanguine/services/scribe/backend"
+	"github.com/synapsecns/sanguine/services/scribe/logger"
 	"github.com/synapsecns/sanguine/services/scribe/scribe/indexer"
 
 	"math"
@@ -70,10 +71,6 @@ func NewChainIndexer(eventDB db.EventDB, client []backend.ScribeBackend, chainCo
 
 	if chainConfig.StoreConcurrency == 0 {
 		chainConfig.StoreConcurrency = 20
-	}
-
-	if chainConfig.Confirmations == 0 {
-		chainConfig.Confirmations = 2000
 	}
 
 	if chainConfig.ConcurrencyThreshold == 0 {
@@ -157,7 +154,7 @@ func (c ChainIndexer) Index(ctx context.Context, onlyOneBlock *uint64) error {
 			continue
 		}
 
-		// If current contract is not within the livefill threshold, start a indexer for it.
+		// If current contract is not within the livefill threshold, start an indexer for it.
 		contractIndexer, err := indexer.NewIndexer(c.chainConfig, []common.Address{contractAddress}, c.eventDB, c.client, c.handler, c.blockHeightMeters[contractAddress])
 		if err != nil {
 			return fmt.Errorf("could not create contract indexer: %w", err)
@@ -217,12 +214,12 @@ func (c ChainIndexer) Index(ctx context.Context, onlyOneBlock *uint64) error {
 				err = livefillIndexer.Index(indexCtx, startHeight, *endHeight)
 				if err != nil {
 					timeout = b.Duration()
-					//LogEvent(ErrorLevel, "Could not livefill contracts, retrying", LogData{"cid": c.chainID, "ca": livefillContracts, "sh": startHeight, "bd": b.Duration(), "a": b.Attempt(), "e": err.Error()})
+					logger.ReportIndexerError(err, livefillIndexer.GetIndexerConfig(), logger.LivefillIndexerError)
 					continue
 				}
 
+				// Default refresh rate for livefill is 1 second.
 				timeout = 1 * time.Second
-				//LogEvent(InfoLevel, "Continuing to livefill contracts", LogData{"t": timeout, "cid": c.chainID, "ca": livefillIndexer, "sh": startHeight, "bd": b.Duration(), "a": b.Attempt()})
 			}
 		}
 	})
@@ -255,11 +252,12 @@ func (c *ChainIndexer) getLatestBlock(ctx context.Context, confirmations bool) (
 
 			if err != nil {
 				timeout = b.Duration()
-				//LogEvent(InfoLevel, "Could not get block number, bad connection to rpc likely", LogData{"cid": c.chainID, "e": err.Error()})
+				logger.ReportScribeError(err, c.chainID, logger.GetBlockError)
 				continue
 			}
 			if confirmations {
 				currentBlock -= c.chainConfig.Confirmations
+				fmt.Println("currentBlock", currentBlock, c.chainConfig.Confirmations)
 			}
 		}
 
@@ -302,12 +300,12 @@ func (c *ChainIndexer) IndexToBlock(parentContext context.Context, onlyOneBlock 
 				if indexer.RefreshRate() > maxBackoff {
 					timeout = time.Duration(indexer.RefreshRate()) * time.Second
 				}
-				//LogEvent(ErrorLevel, "Could not index contract, retrying", LogData{"cid": c.chainID, "ca": indexer.indexerConfig.Contracts, "sh": startHeight, "bd": b.Duration(), "a": b.Attempt(), "e": err.Error()})
+				logger.ReportIndexerError(err, indexer.GetIndexerConfig(), logger.BackfillIndexerError)
 				continue
 			}
 
 			// get last indexed to check livefill threshold
-			lastBlockIndexed, err := c.eventDB.RetrieveLastIndexed(parentContext, indexer.IndexerConfig().Contracts[0], c.chainConfig.ChainID)
+			lastBlockIndexed, err := c.eventDB.RetrieveLastIndexed(parentContext, indexer.GetIndexerConfig().Contracts[0], c.chainConfig.ChainID)
 			if err != nil {
 				return fmt.Errorf("could not get last indexed: %w", err)
 			}
@@ -315,12 +313,11 @@ func (c *ChainIndexer) IndexToBlock(parentContext context.Context, onlyOneBlock 
 			if err != nil {
 				return fmt.Errorf("could not get current block number while indexing: %w", err)
 			}
-			if lastBlockIndexed > *endHeight-c.chainConfig.Confirmations {
+			if lastBlockIndexed >= *endHeight-c.chainConfig.Confirmations {
+				logger.ReportScribeState(c.chainID, lastBlockIndexed, indexer.GetIndexerConfig().Contracts[0], logger.InitiatingLivefill)
 				return nil
 			}
-
 			timeout = time.Duration(indexer.RefreshRate()) * time.Second
-			//LogEvent(InfoLevel, "Continuing to livefill contract", LogData{"t": timeout, "cid": c.chainID, "ca": indexer.indexerConfig.Contracts, "sh": startHeight, "bd": b.Duration(), "a": b.Attempt()})
 		}
 	}
 }

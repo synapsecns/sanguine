@@ -36,16 +36,16 @@ func NewIndexerSuite(tb testing.TB) *IndexerSuite {
 }
 
 // SetupTest sets up the test suite.
-func (b *IndexerSuite) SetupTest() {
-	b.TestSuite.SetupTest()
-	b.SetTestTimeout(time.Minute * 3)
-	sqliteStore, err := sqlite.NewSqliteStore(b.GetTestContext(), filet.TmpDir(b.T(), ""), b.metrics, false)
-	Nil(b.T(), err)
-	b.testDB = sqliteStore
-	b.manager = testutil.NewDeployManager(b.T())
-	b.wallet, err = wallet.FromRandom()
-	Nil(b.T(), err)
-	b.signer = localsigner.NewSigner(b.wallet.PrivateKey())
+func (x *IndexerSuite) SetupTest() {
+	x.TestSuite.SetupTest()
+	x.SetTestTimeout(time.Minute * 3)
+	sqliteStore, err := sqlite.NewSqliteStore(x.GetTestContext(), filet.TmpDir(x.T(), ""), x.metrics, false)
+	Nil(x.T(), err)
+	x.testDB = sqliteStore
+	x.manager = testutil.NewDeployManager(x.T())
+	x.wallet, err = wallet.FromRandom()
+	Nil(x.T(), err)
+	x.signer = localsigner.NewSigner(x.wallet.PrivateKey())
 }
 
 func (x *IndexerSuite) SetupSuite() {

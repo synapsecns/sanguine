@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"github.com/synapsecns/sanguine/services/scribe/backend"
+	scribeTypes "github.com/synapsecns/sanguine/services/scribe/types"
 	"math/big"
 	"time"
 
@@ -30,14 +31,14 @@ type LogFetcher struct {
 	// contractAddresses is the contractAddresses that logs are fetched for.
 	contractAddresses []ethCommon.Address
 	// indexerConfig holds the chain config (config data for the chain)
-	indexerConfig *IndexerConfig
+	indexerConfig *scribeTypes.IndexerConfig
 }
 
 // bufferSize is how many getLogs*batch amount chunks ahead should be fetched.
 const bufferSize = 3
 
 // NewLogFetcher creates a new filtering interface for a range of blocks. If reverse is not set, block heights are filtered from start->end.
-func NewLogFetcher(addresses []ethCommon.Address, backend backend.ScribeBackend, startBlock, endBlock *big.Int, indexerConfig *IndexerConfig) *LogFetcher {
+func NewLogFetcher(addresses []ethCommon.Address, backend backend.ScribeBackend, startBlock, endBlock *big.Int, indexerConfig *scribeTypes.IndexerConfig) *LogFetcher {
 	// The ChunkIterator is inclusive of the start and ending block resulting in potentially confusing behavior when
 	// setting the range size in the config. For example, setting a range of 1 would result in two blocks being queried
 	// instead of 1. This is accounted for by subtracting 1.

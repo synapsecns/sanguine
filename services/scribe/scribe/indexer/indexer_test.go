@@ -9,7 +9,6 @@ import (
 	"github.com/ethereum/go-ethereum/params"
 	. "github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
-	"github.com/synapsecns/sanguine/ethergo/backends"
 	"github.com/synapsecns/sanguine/ethergo/backends/geth"
 	"github.com/synapsecns/sanguine/services/scribe/backend"
 	"github.com/synapsecns/sanguine/services/scribe/config"
@@ -26,7 +25,7 @@ import (
 
 // TestFailedStore tests that the ChainBackfiller continues backfilling after a failed store.
 
-func (x IndexerSuite) TestFailedStore() {
+func (x *IndexerSuite) TestFailedStore() {
 	mockDB := new(mocks.EventDB)
 	mockDB.
 		// on a store receipt call
@@ -81,7 +80,7 @@ func (x IndexerSuite) TestFailedStore() {
 	simulatedChain.WaitForConfirmation(x.GetTestContext(), tx)
 
 	// Get the block that the last transaction was executed in.
-	txBlockNumber, err := x.getTxBlockNumber(simulatedChain, tx)
+	txBlockNumber, err := testutil.GetTxBlockNumber(x.GetTestContext(), simulatedChain, tx)
 	Nil(x.T(), err)
 	err = indexer.Index(x.GetTestContext(), contractConfig.StartBlock, txBlockNumber)
 	NotNil(x.T(), err)
@@ -93,7 +92,7 @@ func (x IndexerSuite) TestFailedStore() {
 // TestGetLogsSimulated tests the GetLogs function using a simulated blockchain.
 //
 //nolint:cyclop
-func (x IndexerSuite) TestGetLogsSimulated() {
+func (x *IndexerSuite) TestGetLogsSimulated() {
 	// Get simulated blockchain, deploy the test contract, and set up test variables.
 	simulatedChain := geth.NewEmbeddedBackendForChainID(x.GetSuiteContext(), x.T(), big.NewInt(3))
 	simulatedClient, err := backend.DialBackend(x.GetTestContext(), simulatedChain.RPCAddress(), x.metrics)
@@ -132,7 +131,7 @@ func (x IndexerSuite) TestGetLogsSimulated() {
 	simulatedChain.WaitForConfirmation(x.GetTestContext(), tx)
 
 	// Get the block that the second transaction was executed in.
-	txBlockNumberA, err := x.getTxBlockNumber(simulatedChain, tx)
+	txBlockNumberA, err := testutil.GetTxBlockNumber(x.GetTestContext(), simulatedChain, tx)
 	Nil(x.T(), err)
 
 	tx, err = testRef.EmitEventA(transactOpts.TransactOpts, big.NewInt(7), big.NewInt(8), big.NewInt(9))
@@ -146,7 +145,7 @@ func (x IndexerSuite) TestGetLogsSimulated() {
 	simulatedChain.WaitForConfirmation(x.GetTestContext(), tx)
 
 	// Get the block that the last transaction was executed in.
-	txBlockNumberB, err := x.getTxBlockNumber(simulatedChain, tx)
+	txBlockNumberB, err := testutil.GetTxBlockNumber(x.GetTestContext(), simulatedChain, tx)
 	Nil(x.T(), err)
 
 	// Get the logs for the first two events.
@@ -194,8 +193,7 @@ Done2:
 }
 
 // TestContractBackfill tests using a contractBackfiller for recording receipts and logs in a database.
-
-func (x IndexerSuite) TestContractBackfill() {
+func (x *IndexerSuite) TestContractBackfill() {
 	// Get simulated blockchain, deploy the test contract, and set up test variables.
 	simulatedChain := geth.NewEmbeddedBackendForChainID(x.GetSuiteContext(), x.T(), big.NewInt(142))
 	simulatedClient, err := backend.DialBackend(x.GetTestContext(), simulatedChain.RPCAddress(), x.metrics)
@@ -248,7 +246,7 @@ func (x IndexerSuite) TestContractBackfill() {
 	simulatedChain.WaitForConfirmation(x.GetTestContext(), tx)
 
 	// Get the block that the last transaction was executed in.
-	txBlockNumber, err := x.getTxBlockNumber(simulatedChain, tx)
+	txBlockNumber, err := testutil.GetTxBlockNumber(x.GetTestContext(), simulatedChain, tx)
 	Nil(x.T(), err)
 
 	// Backfill the events. The `0` will be replaced with the startBlock from the config.
@@ -278,98 +276,8 @@ func (x IndexerSuite) TestContractBackfill() {
 	Equal(x.T(), txBlockNumber, lastIndexed)
 }
 
-// // TestTxTypeNotSupported tests how the contract backfiller handles a transaction type that is not supported.
-// //
-// // nolint:dupl
-//
-//	func (x IndexerSuite) TestTxTypeNotSupported() {
-//		if os.Getenv("CI") != "" {
-//			x.T().Skip("Network test flake")
-//		}
-//
-//		var backendClient backend.ScribeBackend
-//		omnirpcURL := "https://rpc.interoperability.institute/confirmations/1/rpc/42161"
-//		backendClient, err := backend.DialBackend(x.GetTestContext(), omnirpcURL, x.metrics)
-//		Nil(x.T(), err)
-//
-//		// This config is using this block https://arbiscan.io/block/6262099
-//		// and this tx https://arbiscan.io/tx/0x8800222adf9578fb576db0bd7fb4860fe89932549be084a3313939c03e4d279d
-//		// with a unique Arbitrum type to verify that anomalous tx type is handled correctly.
-//		contractConfig := config.ContractConfig{
-//			Address:    "0xA67b7147DcE20D6F25Fd9ABfBCB1c3cA74E11f0B",
-//			StartBlock: 6262099,
-//		}
-//
-//		chainConfig := config.ChainConfig{
-//			ChainID:       42161,
-//			Confirmations: 1,
-//			Contracts:     []config.ContractConfig{contractConfig},
-//		}
-//		backendClientArr := []backend.ScribeBackend{backendClient, backendClient}
-//		chainBackfiller, err := backfill.NewChainIndexer(x.testDB, backendClientArr, chainConfig, 1, x.metrics)
-//		Nil(x.T(), err)
-//		err = chainBackfiller.Index(x.GetTestContext(), &contractConfig.StartBlock, false)
-//		Nil(x.T(), err)
-//
-//		logs, err := x.testDB.RetrieveLogsWithFilter(x.GetTestContext(), db.LogFilter{}, 1)
-//		Nil(x.T(), err)
-//		Equal(x.T(), 4, len(logs))
-//		receipts, err := x.testDB.RetrieveReceiptsWithFilter(x.GetTestContext(), db.ReceiptFilter{}, 1)
-//		Nil(x.T(), err)
-//		Equal(x.T(), 1, len(receipts))
-//	}
-//
-// // TestTxTypeNotSupported tests how the contract backfiller handles a transaction type that is not supported.
-// //
-// // nolint:dupl
-//
-//	func (x IndexerSuite) TestInvalidTxVRS() {
-//		if os.Getenv("CI") != "" {
-//			x.T().Skip("Network test flake")
-//		}
-//
-//		var backendClient backend.ScribeBackend
-//		omnirpcURL := "https://rpc.interoperability.institute/confirmations/1/rpc/1313161554"
-//		backendClient, err := backend.DialBackend(x.GetTestContext(), omnirpcURL, x.metrics)
-//		Nil(x.T(), err)
-//
-//		// This config is using this block https://aurorascan.dev/block/58621373
-//		// and this tx https://aurorascan.dev/tx/0x687282d7bd6c3d591f9ad79784e0983afabcac2a9074d368b7ca3d7caf4edee5
-//		// to test handling of the v,r,s tx not found error.
-//		contractConfig := config.ContractConfig{
-//			Address:    "0xaeD5b25BE1c3163c907a471082640450F928DDFE",
-//			StartBlock: 58621373,
-//		}
-//
-//		chainConfig := config.ChainConfig{
-//			ChainID:       1313161554,
-//			Confirmations: 1,
-//			Contracts:     []config.ContractConfig{contractConfig},
-//		}
-//		backendClientArr := []backend.ScribeBackend{backendClient, backendClient}
-//		chainBackfiller, err := backfill.NewChainIndexer(x.testDB, backendClientArr, chainConfig, 1, x.metrics)
-//		Nil(x.T(), err)
-//
-//		err = chainBackfiller.Index(x.GetTestContext(), &contractConfig.StartBlock, false)
-//		Nil(x.T(), err)
-//
-//		logs, err := x.testDB.RetrieveLogsWithFilter(x.GetTestContext(), db.LogFilter{}, 1)
-//		Nil(x.T(), err)
-//		Equal(x.T(), 9, len(logs))
-//		receipts, err := x.testDB.RetrieveReceiptsWithFilter(x.GetTestContext(), db.ReceiptFilter{}, 1)
-//		Nil(x.T(), err)
-//		Equal(x.T(), 1, len(receipts))
-//	}
-func (x IndexerSuite) getTxBlockNumber(chain backends.SimulatedTestBackend, tx *types.Transaction) (uint64, error) {
-	receipt, err := chain.TransactionReceipt(x.GetTestContext(), tx.Hash())
-	if err != nil {
-		return 0, fmt.Errorf("error getting receipt for tx: %w", err)
-	}
-	return receipt.BlockNumber.Uint64(), nil
-}
-
 // TestContractBackfill tests using a contractBackfiller for recording receipts and logs in a database.
-func (x IndexerSuite) TestContractBackfillFromPreIndexed() {
+func (x *IndexerSuite) TestContractBackfillFromPreIndexed() {
 	// Get simulated blockchain, deploy the test contract, and set up test variables.
 	simulatedChain := geth.NewEmbeddedBackendForChainID(x.GetSuiteContext(), x.T(), big.NewInt(142))
 	simulatedClient, err := backend.DialBackend(x.GetTestContext(), simulatedChain.RPCAddress(), x.metrics)
@@ -418,7 +326,7 @@ func (x IndexerSuite) TestContractBackfillFromPreIndexed() {
 	simulatedChain.WaitForConfirmation(x.GetTestContext(), tx)
 
 	// Get the block that the last transaction was executed in.
-	txBlockNumber, err := x.getTxBlockNumber(simulatedChain, tx)
+	txBlockNumber, err := testutil.GetTxBlockNumber(x.GetTestContext(), simulatedChain, tx)
 	Nil(x.T(), err)
 	err = x.testDB.StoreLastIndexed(x.GetTestContext(), common.HexToAddress(contractConfig.Address), chainConfig.ChainID, txBlockNumber)
 	Nil(x.T(), err)
@@ -444,7 +352,7 @@ func (x IndexerSuite) TestContractBackfillFromPreIndexed() {
 	simulatedChain.WaitForConfirmation(x.GetTestContext(), tx)
 
 	// Get the block that the last transaction was executed in.
-	txBlockNumber, err = x.getTxBlockNumber(simulatedChain, tx)
+	txBlockNumber, err = testutil.GetTxBlockNumber(x.GetTestContext(), simulatedChain, tx)
 	Nil(x.T(), err)
 
 	err = backfiller.Index(x.GetTestContext(), contractConfig.StartBlock, txBlockNumber)
@@ -470,18 +378,20 @@ func (x IndexerSuite) TestContractBackfillFromPreIndexed() {
 	Equal(x.T(), txBlockNumber, lastIndexed)
 }
 
-func (x IndexerSuite) TestGetLogs() {
-	testBackend := geth.NewEmbeddedBackend(x.GetTestContext(), x.T())
-	var wg sync.WaitGroup
-	wg.Add(2)
-
+func (x *IndexerSuite) TestGetLogs() {
 	const desiredBlockHeight = 10
-	var contractAddress common.Address
+
+	var addresses []common.Address
+	var err error
+	var wg sync.WaitGroup
+
+	wg.Add(2)
+	testBackend := geth.NewEmbeddedBackend(x.GetTestContext(), x.T())
+
 	go func() {
 		defer wg.Done()
-		newContract, err := testutil.PopulateWithLogs(x.GetTestContext(), testBackend, desiredBlockHeight, x.T(), x.manager)
+		addresses, _, err = testutil.PopulateWithLogs(x.GetTestContext(), testBackend, desiredBlockHeight, x.T(), []*testutil.DeployManager{x.manager})
 		Nil(x.T(), err)
-		contractAddress = *newContract
 	}()
 
 	var host string
@@ -499,22 +409,26 @@ func (x IndexerSuite) TestGetLogs() {
 	chainID, err := scribeBackend.ChainID(x.GetTestContext())
 	Nil(x.T(), err)
 
-	contractConfig := config.ContractConfig{
-		Address: contractAddress.Hex(),
+	var contractConfigs []config.ContractConfig
+	for _, address := range addresses {
+		contractConfig := config.ContractConfig{
+			Address: address.String(),
+		}
+		contractConfigs = append(contractConfigs, contractConfig)
 	}
+
 	chainConfig := config.ChainConfig{
 		ChainID:            uint32(chainID.Uint64()),
 		Confirmations:      1,
 		GetLogsBatchAmount: 1,
 		StoreConcurrency:   1,
 		GetLogsRange:       1,
-		Contracts:          []config.ContractConfig{contractConfig},
+		Contracts:          contractConfigs,
 	}
 	blockHeightMeter, err := x.metrics.Meter().NewHistogram(fmt.Sprint("scribe_block_meter", chainConfig.ChainID), "block_histogram", "a block height meter", "blocks")
 	Nil(x.T(), err)
 
-	contracts := []common.Address{common.HexToAddress(contractConfig.Address)}
-	contractBackfiller, err := indexer.NewIndexer(chainConfig, contracts, x.testDB, simulatedChainArr, x.metrics, blockHeightMeter)
+	contractBackfiller, err := indexer.NewIndexer(chainConfig, addresses, x.testDB, simulatedChainArr, x.metrics, blockHeightMeter)
 	Nil(x.T(), err)
 
 	startHeight, endHeight := uint64(1), uint64(10)

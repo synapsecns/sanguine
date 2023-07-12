@@ -5,6 +5,9 @@ import (
 	"errors"
 	"fmt"
 	"github.com/synapsecns/sanguine/services/scribe/backend"
+	scribeTypes "github.com/synapsecns/sanguine/services/scribe/types"
+
+	"github.com/synapsecns/sanguine/services/scribe/logger"
 	"math/big"
 	"time"
 
@@ -26,21 +29,10 @@ import (
 	"golang.org/x/sync/errgroup"
 )
 
-type IndexerConfig struct {
-	Contracts            []common.Address
-	GetLogsRange         uint64
-	GetLogsBatchAmount   uint64
-	StoreConcurrency     int
-	ChainID              uint32
-	StartHeight          uint64
-	EndHeight            uint64
-	ConcurrencyThreshold uint64
-}
-
 // Indexer is a backfiller that fetches logs for a specific contract.
 type Indexer struct {
 	// indexerConfig holds all the metadata needed for logging and indexing.
-	indexerConfig IndexerConfig
+	indexerConfig scribeTypes.IndexerConfig
 	// eventDB is the database to store event data in.
 	eventDB db.EventDB
 	// client is the client for filtering.
@@ -96,7 +88,7 @@ func NewIndexer(chainConfig config.ChainConfig, contracts []common.Address, even
 		refreshRate = contractConfigs[0].RefreshRate
 	}
 
-	indexerConfig := IndexerConfig{
+	indexerConfig := scribeTypes.IndexerConfig{
 		Contracts:          contracts,
 		GetLogsRange:       chainConfig.GetLogsRange,
 		GetLogsBatchAmount: chainConfig.GetLogsBatchAmount,
@@ -120,7 +112,7 @@ func (x *Indexer) UpdateAddress(addresses []common.Address) {
 	x.indexerConfig.Contracts = addresses
 }
 
-func (x *Indexer) IndexerConfig() IndexerConfig {
+func (x *Indexer) GetIndexerConfig() scribeTypes.IndexerConfig {
 	return x.indexerConfig
 }
 
@@ -151,7 +143,7 @@ func (x *Indexer) Index(parentCtx context.Context, startHeight uint64, endHeight
 
 	// For logging
 	x.indexerConfig.StartHeight = startHeight
-	x.indexerConfig.StartHeight = startHeight
+	x.indexerConfig.EndHeight = endHeight
 
 	// logsChain and errChan are used to pass logs from rangeFilter onto the next stage of the backfill process.
 	logsChan, errChan := x.getLogs(groupCtx, startHeight, endHeight)
@@ -164,8 +156,7 @@ func (x *Indexer) Index(parentCtx context.Context, startHeight uint64, endHeight
 		for {
 			select {
 			case <-groupCtx.Done():
-				//LogEvent(ErrorLevel, "Context canceled while storing and retrieving logs", LogData{"cid": x.indexerConfig.ChainID, "ca": x.addressesToString(x.indexerConfig.Contracts)})
-
+				logger.ReportIndexerError(ctx.Err(), x.indexerConfig, logger.ContextCancelled)
 				return fmt.Errorf("context canceled while storing and retrieving logs: %w", groupCtx.Err())
 			case log, ok := <-logsChan:
 				if !ok {
@@ -187,7 +178,7 @@ func (x *Indexer) Index(parentCtx context.Context, startHeight uint64, endHeight
 
 					err := x.store(storeCtx, log)
 					if err != nil {
-						//LogEvent(ErrorLevel, "Could not store log", LogData{"cid": x.indexerConfig.ChainID, "ca": x.addressesToString(x.indexerConfig.Contracts), "e": err.Error()})
+						logger.ReportIndexerError(err, x.indexerConfig, logger.StoreError)
 
 						return fmt.Errorf("could not store log: %w", err)
 					}
@@ -206,8 +197,7 @@ func (x *Indexer) Index(parentCtx context.Context, startHeight uint64, endHeight
 					concurrentCalls = 0
 					err = x.eventDB.StoreLastIndexedMultiple(ctx, x.indexerConfig.Contracts, x.indexerConfig.ChainID, log.BlockNumber)
 					if err != nil {
-						//LogEvent(ErrorLevel, "Could not store last indexed block", LogData{"cid": x.indexerConfig.ChainID, "bn": log.BlockNumber, "tx": log.TxHash.Hex(), "la": log.Address.String(), "ca": x.addressesToString(x.indexerConfig.Contracts), "e": err.Error()})
-
+						logger.ReportIndexerError(err, x.indexerConfig, logger.StoreError)
 						return fmt.Errorf("could not store last indexed block: %w", err)
 					}
 
@@ -217,8 +207,7 @@ func (x *Indexer) Index(parentCtx context.Context, startHeight uint64, endHeight
 				}
 
 			case errFromChan := <-errChan:
-				//LogEvent(ErrorLevel, "Received errChan", LogData{"cid": x.indexerConfig.ChainID, "ca": x.addressesToString(x.indexerConfig.Contracts), "err": errFromChan})
-
+				logger.ReportIndexerError(err, x.indexerConfig, logger.GetLogsError)
 				return fmt.Errorf("errChan returned an err %s", errFromChan)
 			}
 		}
