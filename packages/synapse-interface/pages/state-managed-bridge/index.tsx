@@ -663,7 +663,7 @@ const findSupportedChainsAndTokens = (
   const swapExceptionsArr: number[] =
     token?.swapExceptions?.[fromChainId as keyof Token['swapExceptions']]
   // Determine which chains are bridgeable.
-  const bridgeableChains = getBridgeableChains(
+  const bridgeableChains: string[] = getBridgeableChains(
     token,
     fromChainId,
     swapExceptionsArr
@@ -685,7 +685,7 @@ const findSupportedChainsAndTokens = (
     swapExceptionsArr
   )
 
-  let filteredBridgeableTokens: Token[]
+  let filteredBridgeableTokens: Token[] = []
 
   if (
     fromChainId === ChainId.ETH ||
@@ -703,7 +703,12 @@ const findSupportedChainsAndTokens = (
     } else {
       filteredBridgeableTokens = bridgeableTokens
     }
+  } else {
+    filteredBridgeableTokens = bridgeableTokens
   }
+
+  console.log('bridgeableTokens: ', bridgeableTokens)
+  console.log('filteredBridgeableTokens: ', filteredBridgeableTokens)
 
   // Determine the specific token to be used for the swap.
   const bridgeableToken = getBridgeableToken(
