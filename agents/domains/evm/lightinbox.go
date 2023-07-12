@@ -79,10 +79,6 @@ func (a lightInboxContract) VerifyStateWithSnapshot(ctx context.Context, signer 
 
 	// TODO: Is there a way to get a return value from a contractTransactor call?
 	tx, err = a.contract.VerifyStateWithSnapshot(transactOpts, big.NewInt(stateIndex), snapPayload, snapSignature)
-	fmt.Printf("TX: %v\n", tx)
-	if tx != nil {
-		fmt.Printf("state report hash: %v\n", tx.Hash())
-	}
 	if err != nil {
 		// TODO: Why is this done? And if it is necessary, we should functionalize it.
 		if strings.Contains(err.Error(), "nonce too low") {
