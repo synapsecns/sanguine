@@ -30,9 +30,11 @@ import {
   setWithdrawQuote,
   setWithdrawType,
   setIsLoading,
+  resetPoolWithdraw,
 } from '@/slices/poolWithdrawSlice'
 import WithdrawButton from './WithdrawButton'
 import { txErrorHandler } from '@/utils/txErrorHandler'
+import { fetchPoolUserData } from '@/slices/poolUserDataSlice'
 
 const Withdraw = ({
   chainId,
@@ -51,7 +53,7 @@ const Withdraw = ({
   const { poolAddress } = getSwapDepositContractFields(pool, chainId)
   const { synapseSDK } = useSynapseContext()
 
-  const dispatch = useDispatch()
+  const dispatch: any = useDispatch()
 
   const showTokens = pool ? pool.nativeTokens ?? pool.poolTokens : []
 
@@ -187,6 +189,7 @@ const Withdraw = ({
 
       try {
         await tx
+        calculateMaxWithdraw()
       } catch (error) {
         txErrorHandler(error)
       }
@@ -209,6 +212,8 @@ const Withdraw = ({
 
       try {
         await tx
+        dispatch(fetchPoolUserData({ pool, address: address as Address }))
+        dispatch(resetPoolWithdraw())
       } catch (error) {
         txErrorHandler(error)
       }

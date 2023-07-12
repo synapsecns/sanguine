@@ -67,7 +67,11 @@ const WithdrawButton = ({ approveTxn, withdrawTxn, isApproved }) => {
     }
   } else if (isLoading) {
     buttonProperties = {
-      label: <LoadingSpinner />,
+      label: (
+        <div className="flex items-center justify-center h-[24px]">
+          <LoadingSpinner />
+        </div>
+      ),
       onClick: null,
     }
   } else if (!isConnected) {
@@ -92,11 +96,6 @@ const WithdrawButton = ({ approveTxn, withdrawTxn, isApproved }) => {
       onClick: withdrawTxn,
       label: `Withdraw`,
       pendingLabel: 'Withdrawing...',
-      onSuccess: () => {
-        // need to refetch pool data
-        dispatch(fetchPoolUserData({ pool, address }))
-        dispatch(resetPoolWithdraw())
-      },
     }
   }
 

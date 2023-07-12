@@ -11,9 +11,7 @@ import {
 } from '@rainbow-me/rainbowkit'
 import { DEFAULT_DEPOSIT_QUOTE } from './Deposit'
 import { stringToBigInt } from '@/utils/stringToBigNum'
-import { resetPoolDeposit } from '@/slices/poolDepositSlice'
 import LoadingSpinner from '@/components/ui/tailwind/LoadingSpinner'
-import { fetchPoolUserData } from '@/slices/poolUserDataSlice'
 
 const DepositButton = ({ approveTxn, depositTxn }) => {
   const dispatch: any = useDispatch()
@@ -85,7 +83,11 @@ const DepositButton = ({ approveTxn, depositTxn }) => {
     }
   } else if (isLoading) {
     buttonProperties = {
-      label: <LoadingSpinner />,
+      label: (
+        <div className="flex items-center justify-center h-[24px]">
+          <LoadingSpinner />
+        </div>
+      ),
       onClick: null,
     }
   } else if (!isConnected) {
@@ -110,11 +112,6 @@ const DepositButton = ({ approveTxn, depositTxn }) => {
       onClick: depositTxn,
       label: `Deposit`,
       pendingLabel: 'Depositing',
-      onSuccess: () => {
-        // refresh pool data
-        dispatch(fetchPoolUserData({ pool, address }))
-        dispatch(resetPoolDeposit())
-      },
     }
   }
 

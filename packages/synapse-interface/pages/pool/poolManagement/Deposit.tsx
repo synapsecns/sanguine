@@ -34,6 +34,7 @@ import {
 import { useDispatch } from 'react-redux'
 import DepositButton from './DepositButton'
 import { txErrorHandler } from '@/utils/txErrorHandler'
+import { fetchPoolUserData } from '@/slices/poolUserDataSlice'
 
 export const DEFAULT_DEPOSIT_QUOTE = {
   priceImpact: 0n,
@@ -49,7 +50,7 @@ const Deposit = ({
   address: string
 }) => {
   const { synapseSDK } = useSynapseContext()
-  const dispatch = useDispatch()
+  const dispatch: any = useDispatch()
 
   const { pool, poolData } = useSelector((state: RootState) => state.poolData)
   const { poolUserData } = useSelector((state: RootState) => state.poolUserData)
@@ -161,7 +162,12 @@ const Deposit = ({
   const approveTxn = async () => {
     try {
       const tx = approve(pool, depositQuote, inputValue.bi, chainId)
-      // calc max deposits ?
+      try {
+        await tx
+        calculateMaxDeposits()
+      } catch (error) {
+        return txErrorHandler
+      }
     } catch (error) {
       return txErrorHandler(error)
     }
@@ -176,6 +182,14 @@ const Deposit = ({
         filteredInputValue.bi,
         chainId
       )
+
+      try {
+        await tx
+        dispatch(fetchPoolUserData({ pool, address: address as Address }))
+        dispatch(resetPoolDeposit())
+      } catch (error) {
+        txErrorHandler(error)
+      }
     } catch (error) {
       txErrorHandler(error)
     }
