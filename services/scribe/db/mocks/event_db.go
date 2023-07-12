@@ -317,6 +317,29 @@ func (_m *EventDB) RetrieveLastIndexed(ctx context.Context, contractAddress comm
 	return r0, r1
 }
 
+// RetrieveLastIndexedMultiple provides a mock function with given fields: ctx, contractAddresses, chainID
+func (_m *EventDB) RetrieveLastIndexedMultiple(ctx context.Context, contractAddresses []common.Address, chainID uint32) (map[common.Address]uint64, error) {
+	ret := _m.Called(ctx, contractAddresses, chainID)
+
+	var r0 map[common.Address]uint64
+	if rf, ok := ret.Get(0).(func(context.Context, []common.Address, uint32) map[common.Address]uint64); ok {
+		r0 = rf(ctx, contractAddresses, chainID)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).(map[common.Address]uint64)
+		}
+	}
+
+	var r1 error
+	if rf, ok := ret.Get(1).(func(context.Context, []common.Address, uint32) error); ok {
+		r1 = rf(ctx, contractAddresses, chainID)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
 // RetrieveLogCountForContract provides a mock function with given fields: ctx, contractAddress, chainID
 func (_m *EventDB) RetrieveLogCountForContract(ctx context.Context, contractAddress common.Address, chainID uint32) (int64, error) {
 	ret := _m.Called(ctx, contractAddress, chainID)
@@ -546,6 +569,20 @@ func (_m *EventDB) StoreLastIndexed(ctx context.Context, contractAddress common.
 	var r0 error
 	if rf, ok := ret.Get(0).(func(context.Context, common.Address, uint32, uint64) error); ok {
 		r0 = rf(ctx, contractAddress, chainID, blockNumber)
+	} else {
+		r0 = ret.Error(0)
+	}
+
+	return r0
+}
+
+// StoreLastIndexedMultiple provides a mock function with given fields: ctx, contractAddresses, chainID, blockNumber
+func (_m *EventDB) StoreLastIndexedMultiple(ctx context.Context, contractAddresses []common.Address, chainID uint32, blockNumber uint64) error {
+	ret := _m.Called(ctx, contractAddresses, chainID, blockNumber)
+
+	var r0 error
+	if rf, ok := ret.Get(0).(func(context.Context, []common.Address, uint32, uint64) error); ok {
+		r0 = rf(ctx, contractAddresses, chainID, blockNumber)
 	} else {
 		r0 = ret.Error(0)
 	}
