@@ -185,7 +185,7 @@ export const dogechain = {
   },
   contracts: {
     multicall3: {
-      address: '0xafc091536CB20C5B366a9B7c09b6d74fC2483671',
+      address: '0xca11bde05977b3631167028862be2a173976ca11',
       blockCreated: 13882887,
     },
   },

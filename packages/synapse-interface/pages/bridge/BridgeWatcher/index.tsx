@@ -12,7 +12,7 @@ import BridgeEvent from './BridgeEvent'
 import { BridgeWatcherTx } from '@types'
 import { GETLOGS_SIZE, GETLOGS_REQUEST_COUNT } from '@constants/bridgeWatcher'
 import { useSynapseContext } from '@/utils/providers/SynapseProvider'
-import { useSelector } from 'react-redux';
+import { useSelector } from 'react-redux'
 import { RootState } from '@/store/store'
 import SYNAPSE_CCTP_ABI from '@abis/synapseCCTP.json'
 import * as CHAINS from '@constants/chains/master'
@@ -46,45 +46,54 @@ const BridgeWatcher = ({
   const { providerMap } = useSynapseContext()
 
   const createContractsAndInterfaces = (chainId, provider) => {
-    const bridgeAddress = BRIDGE_CONTRACTS[chainId];
-    const synapseCCTPAddress = SYNAPSE_CCTP_CONTRACTS[chainId];
+    const bridgeAddress = BRIDGE_CONTRACTS[chainId]
+    const synapseCCTPAddress = SYNAPSE_CCTP_CONTRACTS[chainId]
 
     const validBridgeContract = BRIDGE_CONTRACTS[fromChainId]
-    ? BRIDGE_CONTRACTS[fromChainId]
-    : BRIDGE_CONTRACTS[CHAINS.ETH.id]
+      ? BRIDGE_CONTRACTS[fromChainId]
+      : BRIDGE_CONTRACTS[CHAINS.ETH.id]
     const bridgeContract = new Contract(
       validBridgeContract,
       SYNAPSE_BRIDGE_ABI,
       fromSigner
     )
 
-    const bridgeInterface = new Interface(SYNAPSE_BRIDGE_ABI);
+    const bridgeInterface = new Interface(SYNAPSE_BRIDGE_ABI)
 
     const synapseCCTPContract = synapseCCTPAddress
       ? new Contract(synapseCCTPAddress, SYNAPSE_CCTP_ABI, provider)
-      : null;
+      : null
 
     const synapseCCTPInterface = synapseCCTPAddress
       ? new Interface(SYNAPSE_CCTP_ABI)
-      : null;
+      : null
 
-
-      return { bridgeContract, bridgeInterface, synapseCCTPContract, synapseCCTPInterface };
+    return {
+      bridgeContract,
+      bridgeInterface,
+      synapseCCTPContract,
+      synapseCCTPInterface,
     }
+  }
 
   const fetchFromBridgeEvents = async (
     currentFromBlock: number,
     provider: any,
     adjustedAddress: string
   ) => {
-    const { bridgeContract, bridgeInterface, synapseCCTPContract, synapseCCTPInterface } = createContractsAndInterfaces(provider.network.chainId, provider);
+    const {
+      bridgeContract,
+      bridgeInterface,
+      synapseCCTPContract,
+      synapseCCTPInterface,
+    } = createContractsAndInterfaces(provider.network.chainId, provider)
     let allFromEvents = []
-    let retryCount = 0;
-    const maxRetries = 5; // Adjust this as needed
+    let retryCount = 0
+    const maxRetries = 5 // Adjust this as needed
 
     // fetch bridge logs
     for (let i = 0; i < GETLOGS_REQUEST_COUNT; i++) {
-      let successful = false;
+      let successful = false
       while (!successful && retryCount < maxRetries) {
         try {
           const fromEvents = await getLogs(
@@ -94,22 +103,26 @@ const BridgeWatcher = ({
             adjustedAddress
           )
           allFromEvents.push(fromEvents)
-          successful = true;
+          successful = true
         } catch (error) {
-          retryCount++;
-          console.log(`getLogs failed, retrying in ${Math.pow(2, retryCount)} seconds...`);
-          await new Promise(resolve => setTimeout(resolve, Math.pow(2, retryCount) * 1000));
+          retryCount++
+          console.log(
+            `getLogs failed, retrying in ${Math.pow(2, retryCount)} seconds...`
+          )
+          await new Promise((resolve) =>
+            setTimeout(resolve, Math.pow(2, retryCount) * 1000)
+          )
         }
       }
       if (retryCount === maxRetries) {
-        console.error("getLogs failed after maximum retries");
-        break;
+        console.error('getLogs failed after maximum retries')
+        break
       }
     }
     // fetch synapseCCTP logs if the contract exists for the chain
     if (synapseCCTPContract) {
       for (let i = 0; i < GETLOGS_REQUEST_COUNT; i++) {
-        let successful = false;
+        let successful = false
         while (!successful && retryCount < maxRetries) {
           try {
             const fromEvents = await getLogs(
@@ -119,16 +132,23 @@ const BridgeWatcher = ({
               adjustedAddress
             )
             allFromEvents.push(fromEvents)
-            successful = true;
+            successful = true
           } catch (error) {
-            retryCount++;
-            console.log(`getLogs failed, retrying in ${Math.pow(2, retryCount)} seconds...`);
-            await new Promise(resolve => setTimeout(resolve, Math.pow(2, retryCount) * 1000));
+            retryCount++
+            console.log(
+              `getLogs failed, retrying in ${Math.pow(
+                2,
+                retryCount
+              )} seconds...`
+            )
+            await new Promise((resolve) =>
+              setTimeout(resolve, Math.pow(2, retryCount) * 1000)
+            )
           }
         }
         if (retryCount === maxRetries) {
-          console.error("getLogs failed after maximum retries");
-          break;
+          console.error('getLogs failed after maximum retries')
+          break
         }
       }
     }
@@ -136,34 +156,32 @@ const BridgeWatcher = ({
     return _.flatten(allFromEvents)
   }
 
-
   const parseLogs = (
     fromEvents: any[],
     bridgeInterface: Interface,
     synapseCCTPInterface: Interface,
     bridgeAddress: string,
-    synapseCCTPAddress: string
+    synapseCCTPAddress?: string
   ) => {
     return fromEvents
       .map((log) => {
         // Select the correct interface based on the contract address
-        const iface = log.address.toLowerCase() === bridgeAddress.toLowerCase() ? bridgeInterface : synapseCCTPInterface;
+        const iface =
+          log.address.toLowerCase() === bridgeAddress.toLowerCase()
+            ? bridgeInterface
+            : synapseCCTPInterface
 
         return {
           ...iface.parseLog(log).args,
           transactionHash: log.transactionHash,
           blockNumber: Number(log.blockNumber),
-          contractEmittedFrom: log.address.toLowerCase()
+          contractEmittedFrom: log.address.toLowerCase(),
         }
       })
       .filter((log) => checkTxIn(log))
   }
 
-
-  const fetchTimestampsAndReceipts = (
-    parsedLogs: any[],
-    provider: any
-  ) => {
+  const fetchTimestampsAndReceipts = (parsedLogs: any[], provider: any) => {
     return Promise.all([
       Promise.all(parsedLogs.map((log) => getBlock(log.blockNumber, provider))),
       Promise.all(
@@ -203,13 +221,13 @@ const BridgeWatcher = ({
     const iface = new Interface(SYNAPSE_BRIDGE_ABI)
     const adjustedAddress = destinationAddress ? destinationAddress : address
 
-       // Define the contracts and interfaces here
-       const {
-        bridgeContract,
-        bridgeInterface,
-        synapseCCTPContract,
-        synapseCCTPInterface
-      } = createContractsAndInterfaces(provider.network.chainId, provider);
+    // Define the contracts and interfaces here
+    const {
+      bridgeContract,
+      bridgeInterface,
+      synapseCCTPContract,
+      synapseCCTPInterface,
+    } = createContractsAndInterfaces(provider.network.chainId, provider)
 
     const fromEvents = await fetchFromBridgeEvents(
       currentFromBlock,
@@ -222,13 +240,11 @@ const BridgeWatcher = ({
       bridgeInterface,
       synapseCCTPInterface,
       bridgeContract.address,
-      synapseCCTPContract.address
+      synapseCCTPContract?.address
     )
 
-    const [inputTimestamps, transactionReceipts] = await fetchTimestampsAndReceipts(
-      parsedLogs,
-      provider
-    )
+    const [inputTimestamps, transactionReceipts] =
+      await fetchTimestampsAndReceipts(parsedLogs, provider)
     const txObjects = generateBridgeTransactions(
       parsedLogs,
       inputTimestamps,

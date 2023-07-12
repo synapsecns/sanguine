@@ -1,86 +1,151 @@
-import { useState, useEffect } from 'react'
-import { useAccount } from 'wagmi'
-import { Address, multicall, erc20ABI } from '@wagmi/core'
-import { BRIDGABLE_TOKENS } from '@/constants/tokens'
+import { useState, useEffect, useMemo } from 'react'
+import { BigNumber } from 'ethers'
+import { useNetwork } from 'wagmi'
+import { multicall, erc20ABI, getAccount } from '@wagmi/core'
+import { sortByTokenBalance } from '../sortTokens'
 import { Token } from '../types'
-import { AddressZero } from '@ethersproject/constants'
-import multicallABI from '@/constants/abis/multicall.json'
+import { BRIDGABLE_TOKENS } from '@/constants/tokens'
 
-//move to constants file later
-const MULTICALL3_ADDRESS: Address = '0xcA11bde05977b3631167028862bE2a173976CA11'
+export const ROUTER_ADDRESS = '0x7E7A0e201FD38d3ADAA9523Da6C109a07118C96a'
 
-interface NetworkSpecificToken {
+export interface TokenAndBalance {
   token: Token
-  symbol: string
-  queryAddress: Address
-  chainId: number
+  balance: BigNumber
+  parsedBalance: string
+}
+export interface TokenAndAllowance {
+  token: Token
+  allowance: BigNumber
 }
 
-const getQueryableTokensByChain = (): NetworkSpecificToken[] => {
-  const tokens = []
-  const queryableNetworks = Object.keys(BRIDGABLE_TOKENS)
+export interface TokenWithBalanceAndAllowance
+  extends TokenAndBalance,
+    TokenAndAllowance {}
 
-  queryableNetworks.forEach((chainId: string) => {
-    BRIDGABLE_TOKENS[chainId].forEach((token: Token) => {
-      const transformedToken = {
-        token: token,
-        symbol: token.symbol,
-        queryAddress:
-          token.addresses[Number(chainId) as keyof Token['addresses']],
-        chainId: Number(chainId),
-      } as NetworkSpecificToken
-      tokens.push(transformedToken)
-    })
-  })
-
-  return tokens
+export interface NetworkTokenBalancesAndAllowances {
+  [index: number]: TokenWithBalanceAndAllowance[]
 }
 
-export const usePortfolioBalances = () => {}
-
-const useTokenBalances = (
-  address: Address,
+export const getTokensByChainId = async (
+  owner: string,
   tokens: Token[],
   chainId: number
-) => {
-  const [balances, setBalances] = useState([])
-
-  let calls = []
-
-  useEffect(() => {
-    if (!address || chainId === undefined) return
-    if (tokens.length === 0) return
-    ;(async () => {
-      tokens.forEach((token: Token) => {
-        const tokenAddress =
-          token.addresses[chainId as keyof Token['addresses']]
-
-        switch (tokenAddress) {
-          case undefined:
-            break
-          case AddressZero || '':
-            calls.push({
-              address: MULTICALL3_ADDRESS,
-              abi: multicallABI,
-              functionName: 'getEthBalance',
-              chainId,
-              args: [address],
-            })
-            break
-          default:
-            calls.push({
-              address: tokenAddress,
-              abi: multicallABI,
-              functionName: 'balanceOf',
-              chainId,
-              args: [address],
-            })
-        }
-      })
-
-      const multicallData = await multicall({ contracts: calls })
-    })()
-  }, [tokens])
+): Promise<TokenAndBalance[]> => {
+  return await sortByTokenBalance(tokens, chainId, owner)
 }
 
-const useTokenApprovals = () => {}
+function mergeBalancesAndAllowances(
+  balances: { token: Token; balance: BigNumber; parsedBalance: string }[],
+  allowances: { token: Token; allowance: BigNumber }[]
+): TokenWithBalanceAndAllowance[] {
+  return balances.map((balance) => {
+    const correspondingAllowance = allowances.find(
+      (item2) => item2.token === balance.token
+    )
+    if (correspondingAllowance) {
+      return {
+        token: balance.token,
+        balance: balance.balance,
+        parsedBalance: balance.parsedBalance,
+        allowance: correspondingAllowance.allowance,
+      }
+    }
+    // if no allowance is matched with corresponding balance
+    // e.g native gas tokens
+    return {
+      token: balance.token,
+      balance: balance.balance,
+      parsedBalance: balance.parsedBalance,
+      allowance: null,
+    }
+  })
+}
+
+export enum FetchState {
+  LOADING,
+  VALID,
+  INVALID,
+}
+
+export const usePortfolioBalancesAndAllowances = (): {
+  balancesAndAllowances: NetworkTokenBalancesAndAllowances
+  fetchPortfolioBalances: () => Promise<void>
+  status: FetchState
+} => {
+  const [balancesAndAllowances, setBalancesAndAllowances] =
+    useState<NetworkTokenBalancesAndAllowances>({})
+  const [status, setStatus] = useState<FetchState>(FetchState.LOADING)
+
+  const { chain } = useNetwork()
+  const { address } = getAccount()
+  const availableChains = Object.keys(BRIDGABLE_TOKENS)
+  const filteredChains = availableChains.filter((chain) => chain !== '2000') // need to figure out whats wrong with Dogechain
+
+  const fetchPortfolioBalances = async () => {
+    const balanceRecord: NetworkTokenBalancesAndAllowances = {}
+    try {
+      const balancePromises = filteredChains.map(async (chainId) => {
+        const currentChainId = Number(chainId)
+        const currentChainTokens = BRIDGABLE_TOKENS[chainId]
+        const [tokenBalances, tokenAllowances] = await Promise.all([
+          getTokensByChainId(address, currentChainTokens, currentChainId),
+          getTokensAllowance(
+            address,
+            ROUTER_ADDRESS,
+            currentChainTokens,
+            currentChainId
+          ),
+        ])
+        const mergedBalancesAndAllowances = mergeBalancesAndAllowances(
+          tokenBalances,
+          tokenAllowances
+        )
+        return { currentChainId, mergedBalancesAndAllowances }
+      })
+      const balances = await Promise.all(balancePromises)
+      balances.forEach(({ currentChainId, mergedBalancesAndAllowances }) => {
+        balanceRecord[currentChainId] = mergedBalancesAndAllowances
+      })
+      setBalancesAndAllowances(balanceRecord)
+      setStatus(FetchState.VALID)
+    } catch (error) {
+      console.error('error from fetch:', error)
+      setStatus(FetchState.INVALID)
+    }
+  }
+
+  return useMemo(() => {
+    return { balancesAndAllowances, fetchPortfolioBalances, status }
+  }, [balancesAndAllowances, fetchPortfolioBalances])
+}
+
+const getTokensAllowance = async (
+  owner: string,
+  spender: string,
+  tokens: Token[],
+  chainId: number
+): Promise<any> => {
+  const inputs = tokens.map((token: Token) => {
+    const tokenAddress = token.addresses[
+      chainId as keyof Token['addresses']
+    ] as `0x${string}`
+    return {
+      address: tokenAddress,
+      abi: erc20ABI,
+      functionName: 'allowance',
+      chainId,
+      args: [owner, spender],
+    }
+  })
+  const allowances: unknown[] = await multicall({
+    contracts: inputs,
+    chainId,
+  })
+
+  return tokens.map((token: Token, index: number) => {
+    return {
+      token,
+      allowance: allowances[index],
+    }
+  })
+}
