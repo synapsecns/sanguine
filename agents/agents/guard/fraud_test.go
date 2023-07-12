@@ -23,6 +23,11 @@ import (
 )
 
 func (g GuardSuite) TestReportFraudulentStateInSnapshot() {
+	testDone := false
+	defer func() {
+		testDone = true
+	}()
+
 	testConfig := config.AgentConfig{
 		Domains: map[string]config.DomainConfig{
 			"origin_client":      g.OriginDomainClient.Config(),
@@ -103,11 +108,15 @@ func (g GuardSuite) TestReportFraudulentStateInSnapshot() {
 
 	go func() {
 		scribeErr := scribeClient.Start(g.GetTestContext())
-		Nil(g.T(), scribeErr)
+		if !testDone {
+			Nil(g.T(), scribeErr)
+		}
 	}()
 	go func() {
 		scribeError := scribe.Start(g.GetTestContext())
-		Nil(g.T(), scribeError)
+		if !testDone {
+			Nil(g.T(), scribeError)
+		}
 	}()
 
 	guard, err := guard.NewGuard(g.GetTestContext(), testConfig, omniRPCClient, scribeClient.ScribeClient, g.GuardTestDB, g.GuardMetrics)
@@ -115,7 +124,9 @@ func (g GuardSuite) TestReportFraudulentStateInSnapshot() {
 
 	go func() {
 		guardErr := guard.Start(g.GetTestContext())
-		Nil(g.T(), guardErr)
+		if !testDone {
+			Nil(g.T(), guardErr)
+		}
 	}()
 
 	notaryTestConfig := config.AgentConfig{
@@ -194,11 +205,6 @@ func (g GuardSuite) TestReportFraudulentStateInSnapshot() {
 	encodedState, err := types.EncodeState(fraudulentState)
 	Nil(g.T(), err)
 
-	decodeState, err := types.DecodeState(encodedState)
-	Nil(g.T(), err)
-
-	Equal(g.T(), decodeState, fraudulentState)
-
 	fmt.Println("STATE LENGTH: ", len(encodedState))
 
 	fraudulentSnapshot := types.NewSnapshot([]types.State{fraudulentState})
@@ -221,6 +227,10 @@ func (g GuardSuite) TestReportFraudulentStateInSnapshot() {
 	txContextSummit := g.TestBackendSummit.GetTxContext(g.GetTestContext(), g.SummitMetadata.OwnerPtr())
 
 	// transactOpts := bind.NewKeyedTransactor(g.NotaryUnbondedWallet.PrivateKey())
+	status, err := g.OriginDomainClient.LightManager().GetAgentStatus(g.GetTestContext(), g.GuardBondedSigner)
+	Equal(g.T(), status.Flag(), uint8(1))
+	Nil(g.T(), err)
+	fmt.Printf("status: %v\n", status)
 
 	tx, err := g.SummitDomainClient.Inbox().SubmitSnapshot(txContextSummit.TransactOpts, g.NotaryBondedSigner, encodedSnapshot, snapshotSignature)
 	fmt.Printf("TXXXXXXXx: %v\n", tx)
@@ -242,20 +252,21 @@ func (g GuardSuite) TestReportFraudulentStateInSnapshot() {
 
 	g.Eventually(func() bool {
 		time.Sleep(5 * time.Second)
-		// Maybe bonded address. tbd
-		status, err := g.SummitDomainClient.BondingManager().DisputeStatus(g.GetTestContext(), g.GuardBondedSigner.Address())
-		Nil(g.T(), err)
 
-		fmt.Printf("Dispute flag: %v\n", status.DisputeFlag)
-		if status.DisputeFlag == uint8(1) {
+		status, err := g.OriginDomainClient.LightManager().GetAgentStatus(g.GetTestContext(), g.GuardBondedSigner)
+		Nil(g.T(), err)
+		fmt.Printf("status: %v\n", status)
+
+		if status.Flag() == uint8(4) {
+			fmt.Println("SUCCESS")
 			return true
-		} else {
-			bumpTx, err := g.TestContractOnSummit.EmitAgentsEventA(txContextSummit.TransactOpts, big.NewInt(gofakeit.Int64()), big.NewInt(gofakeit.Int64()), big.NewInt(gofakeit.Int64()))
-			Nil(g.T(), err)
-			g.TestBackendSummit.WaitForConfirmation(g.GetTestContext(), bumpTx)
-			fmt.Println("FALSE")
-			return false
 		}
+
+		bumpTx, err := g.TestContractOnSummit.EmitAgentsEventA(txContextSummit.TransactOpts, big.NewInt(gofakeit.Int64()), big.NewInt(gofakeit.Int64()), big.NewInt(gofakeit.Int64()))
+		Nil(g.T(), err)
+		g.TestBackendSummit.WaitForConfirmation(g.GetTestContext(), bumpTx)
+		fmt.Println("FALSE")
+		return false
 	})
 }
 

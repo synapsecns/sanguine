@@ -3,6 +3,9 @@ package evm
 import (
 	"context"
 	"fmt"
+	"math/big"
+	"strings"
+
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/common"
 	ethTypes "github.com/ethereum/go-ethereum/core/types"
@@ -12,7 +15,6 @@ import (
 	"github.com/synapsecns/sanguine/ethergo/chain"
 	"github.com/synapsecns/sanguine/ethergo/signer/nonce"
 	"github.com/synapsecns/sanguine/ethergo/signer/signer"
-	"math/big"
 )
 
 // NewLightInboxContract returns a bound light inbox contract.
@@ -57,6 +59,36 @@ func (a lightInboxContract) SubmitAttestation(
 	tx, err = a.contract.SubmitAttestation(transactor, attPayload, rawSig, agentRoot, snapGas)
 	if err != nil {
 		return nil, fmt.Errorf("could not submit attestation: %w", err)
+	}
+
+	return tx, nil
+}
+
+func (a lightInboxContract) VerifyStateWithSnapshot(ctx context.Context, signer signer.Signer, stateIndex int64, signature signer.Signature, snapPayload []byte, snapSignature []byte) (tx *ethTypes.Transaction, err error) {
+	transactor, err := signer.GetTransactor(ctx, a.client.GetBigChainID())
+	if err != nil {
+		return nil, fmt.Errorf("could not sign tx: %w", err)
+	}
+
+	transactOpts, err := a.nonceManager.NewKeyedTransactor(transactor)
+	if err != nil {
+		return nil, fmt.Errorf("could not create tx: %w", err)
+	}
+
+	transactOpts.Context = ctx
+
+	// TODO: Is there a way to get a return value from a contractTransactor call?
+	tx, err = a.contract.VerifyStateWithSnapshot(transactOpts, big.NewInt(stateIndex), snapPayload, snapSignature)
+	fmt.Printf("TX: %v\n", tx)
+	if tx != nil {
+		fmt.Printf("state report hash: %v\n", tx.Hash())
+	}
+	if err != nil {
+		// TODO: Why is this done? And if it is necessary, we should functionalize it.
+		if strings.Contains(err.Error(), "nonce too low") {
+			a.nonceManager.ClearNonce(signer.Address())
+		}
+		return nil, fmt.Errorf("could not submit state report: %w", err)
 	}
 
 	return tx, nil

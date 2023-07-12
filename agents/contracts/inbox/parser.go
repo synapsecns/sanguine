@@ -46,6 +46,7 @@ func (p parserImpl) EventType(log ethTypes.Log) (_ EventType, ok bool) {
 
 // ParseSnapshotAccepted parses a SnapshotAccepted event.
 func (p parserImpl) ParseSnapshotAccepted(log ethTypes.Log) (_ types.Snapshot, domain uint32, agentSig []byte, ok bool) {
+	fmt.Printf("ParseSnapshotAccepted: %v\n", log)
 	inboxSnapshot, err := p.filterer.ParseSnapshotAccepted(log)
 	if err != nil {
 		return nil, 0, nil, false
@@ -55,6 +56,8 @@ func (p parserImpl) ParseSnapshotAccepted(log ethTypes.Log) (_ types.Snapshot, d
 	if err != nil {
 		return nil, 0, nil, false
 	}
+	fmt.Printf("inboxSnapshot: %v\n", inboxSnapshot)
+	fmt.Printf("inboxSnapshot.Signature: %v\n", inboxSnapshot.SnapSignature)
 
 	return snapshot, inboxSnapshot.Domain, inboxSnapshot.SnapSignature, true
 }

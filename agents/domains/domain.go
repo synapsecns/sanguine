@@ -3,9 +3,10 @@ package domains
 import (
 	"context"
 	"errors"
+	"math/big"
+
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	ethTypes "github.com/ethereum/go-ethereum/core/types"
-	"math/big"
 
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/event"
@@ -69,6 +70,7 @@ type SummitContract interface {
 
 // InboxContract contains the interface for the inbox.
 type InboxContract interface {
+	LightInboxContract
 	// SubmitStateReportWithSnapshot reports to the inbox that a state within a snapshot is invalid.
 	SubmitStateReportWithSnapshot(ctx context.Context, signer signer.Signer, stateIndex int64, signature signer.Signature, snapPayload []byte, snapSignature []byte) (tx *ethTypes.Transaction, err error)
 	// SubmitSnapshot submits a snapshot to the inbox (via the Inbox).
@@ -109,6 +111,8 @@ type LightInboxContract interface {
 		agentRoot [32]byte,
 		snapGas []*big.Int,
 	) (tx *ethTypes.Transaction, err error)
+	// VerifyStateWithSnapshot verifies a state within a snapshot.
+	VerifyStateWithSnapshot(ctx context.Context, signer signer.Signer, stateIndex int64, signature signer.Signature, snapPayload []byte, snapSignature []byte) (tx *ethTypes.Transaction, err error)
 }
 
 // LightManagerContract contains the interface for the light manager.

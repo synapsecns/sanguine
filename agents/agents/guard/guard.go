@@ -271,28 +271,67 @@ func (g Guard) processSnapshot(ctx context.Context, log ethTypes.Log) error {
 			return fmt.Errorf("could not check validity of state: %w", err)
 		}
 
-		if !isValid {
-			// Call submitStateReportWithSnapshot on (each?) destination domain.
-			err = g.submitStateReports(ctx, int64(stateIndex), snapshotPayload, agentSig)
-			if err != nil {
-				return fmt.Errorf("could not submit state reports: %w", err)
-			}
+		if isValid {
+			continue
 		}
+
+		// First, call verifyStateWithSnapshot() to slash the accused agent on origin.
+		err = g.slashAccusedAgent(ctx, state.Origin(), int64(stateIndex), snapshotPayload, agentSig)
+		if err != nil {
+			return fmt.Errorf("could not slash accused agent: %w", err)
+		}
+
+		/*
+			TODO: per the docs:
+			Good guard alerts Synapse Chain
+			about pending fraud, so the Synapse Chain can
+			immediately pause all trust of Malicious Guard.
+
+			-> what function needs to be called to notify other chains of fraudulent guard?
+			for now just slash the agent and call it a day.
+		*/
+
+		// // Call submitStateReportWithSnapshot on (each?) destination domain.
+		// err = g.submitStateReports(ctx, int64(stateIndex), snapshotPayload, agentSig)
+		// if err != nil {
+		// 	return fmt.Errorf("could not submit state reports: %w", err)
+		// }
 	}
 
 	return nil
 }
 
-func (g Guard) submitStateReports(ctx context.Context, stateIndex int64, snapshotPaylod, snapshotSig []byte) error {
-	fmt.Printf("submitStateReports called with stateIndex: %d, snapshotPayload: %s, snapshotSig: %s\n", stateIndex, snapshotPaylod, snapshotSig)
+func (g Guard) slashAccusedAgent(ctx context.Context, origin uint32, stateIndex int64, snapPayload, snapSignature []byte) error {
+	fmt.Printf("slashAccusedAgent called with origin %d, stateIndex: %d, snapPayload: %s, snapSignature: %s\n", origin, stateIndex, snapPayload, snapSignature)
+	fmt.Printf("sig hex: %v\n", common.Bytes2Hex(snapSignature))
+	signature, err := g.bondedSigner.SignMessage(ctx, snapPayload, true)
+	if err != nil {
+		return fmt.Errorf("could not sign message: %w", err)
+	}
+
+	tx, err := g.domains[origin].LightInbox().VerifyStateWithSnapshot(ctx, g.unbondedSigner, stateIndex, signature, snapPayload, snapSignature)
+	if tx != nil {
+		fmt.Printf("verifystatewithsnapshot hash: %v\n", tx.Hash())
+	}
+	if err != nil {
+		return fmt.Errorf("could not verify state with snapshot: %w", err)
+	}
+	return nil
+}
+
+func (g Guard) submitStateReports(ctx context.Context, stateIndex int64, snapshotPaylod, snapSignature []byte) error {
+	fmt.Printf("submitStateReports called with summitDomainID %d, stateIndex: %d, snapPayload: %s, snapSignature: %s\n", g.summitDomainID, stateIndex, snapshotPaylod, snapSignature)
 	// Call on the Summit's `BondingManager` contract.
-	signature, err := g.bondedSigner.SignMessage(ctx, snapshotPaylod, false)
+	signature, err := g.bondedSigner.SignMessage(ctx, snapshotPaylod, true)
 	if err != nil {
 		return fmt.Errorf("could not sign message: %w", err)
 	}
 
 	// TODO: What is signature here?
-	_, err = g.domains[g.summitDomainID].Inbox().SubmitStateReportWithSnapshot(ctx, g.bondedSigner, stateIndex, signature, snapshotPaylod, snapshotSig)
+	tx, err := g.domains[g.summitDomainID].Inbox().SubmitStateReportWithSnapshot(ctx, g.unbondedSigner, stateIndex, signature, snapshotPaylod, snapSignature)
+	if tx != nil {
+		fmt.Printf("submitstatereport hash: %v\n", tx.Hash())
+	}
 	if err != nil {
 		return fmt.Errorf("could not submit state report with snapshot: %w", err)
 	}
@@ -313,7 +352,7 @@ func (g Guard) logToSnapshot(log ethTypes.Log) (types.Snapshot, []byte, error) {
 		return nil, nil, nil
 	}
 
-	return snapshot, nil, nil
+	return snapshot, agentSig, nil
 }
 
 //nolint:cyclop

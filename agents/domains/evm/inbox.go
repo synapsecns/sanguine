@@ -3,6 +3,9 @@ package evm
 import (
 	"context"
 	"fmt"
+	"math/big"
+	"strings"
+
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/common"
 	ethTypes "github.com/ethereum/go-ethereum/core/types"
@@ -12,8 +15,6 @@ import (
 	"github.com/synapsecns/sanguine/ethergo/chain"
 	"github.com/synapsecns/sanguine/ethergo/signer/nonce"
 	"github.com/synapsecns/sanguine/ethergo/signer/signer"
-	"math/big"
-	"strings"
 )
 
 // NewInboxContract returns a bound inbox contract.
@@ -34,6 +35,7 @@ func NewInboxContract(ctx context.Context, client chain.Chain, inboxAddress comm
 }
 
 type inboxContract struct {
+	lightInboxContract
 	// contract contains the conract handle
 	contract *inbox.InboxRef
 	// client contains the evm client
@@ -63,6 +65,10 @@ func (a inboxContract) SubmitStateReportWithSnapshot(ctx context.Context, signer
 
 	// TODO: Is there a way to get a return value from a contractTransactor call?
 	tx, err = a.contract.SubmitStateReportWithSnapshot(transactOpts, big.NewInt(stateIndex), rawSig, snapPayload, snapSignature)
+	fmt.Printf("TX: %v\n", tx)
+	if tx != nil {
+		fmt.Printf("state report hash: %v\n", tx.Hash())
+	}
 	if err != nil {
 		// TODO: Why is this done? And if it is necessary, we should functionalize it.
 		if strings.Contains(err.Error(), "nonce too low") {
