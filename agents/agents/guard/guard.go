@@ -610,6 +610,20 @@ func (g Guard) Start(parentCtx context.Context) error {
 		return g.receiveLogs(ctx, g.summitDomainID)
 	})
 
+	for _, domain := range g.domains {
+		if domain.Config().DomainID == g.summitDomainID {
+			continue
+		}
+
+		group.Go(func() error {
+			return g.streamLogs(ctx, domain.Config().DomainID, domain.Config().LightInboxAddress)
+		})
+
+		group.Go(func() error {
+			return g.receiveLogs(ctx, domain.Config().DomainID)
+		})
+	}
+
 	group.Go(func() error {
 		for {
 			select {

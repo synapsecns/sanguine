@@ -193,6 +193,10 @@ func (g GuardSuite) TestReportAttestationNotOnSummit() {
 
 	omniRPCClient := omniClient.NewOmnirpcClient(g.TestOmniRPC, g.GuardMetrics, omniClient.WithCaptureReqRes())
 
+	omnirpcDestination := omniRPCClient.GetEndpoint(int(g.DestinationDomainClient.Config().DomainID), 1)
+
+	fmt.Println("OMNIRPCDESTINATION", omnirpcDestination)
+
 	// Scribe setup.
 	originClient, err := backfill.DialBackend(g.GetTestContext(), g.TestBackendOrigin.RPCAddress(), g.ScribeMetrics)
 	Nil(g.T(), err)
@@ -294,7 +298,9 @@ func (g GuardSuite) TestReportAttestationNotOnSummit() {
 	tx, err := g.DestinationDomainClient.LightInbox().SubmitAttestation(txContextDest.TransactOpts, attEncoded, attSignature, agentRoot, encodeGasDataBigInt(snapGas))
 	Nil(g.T(), err)
 	NotNil(g.T(), tx)
-	g.TestBackendSummit.WaitForConfirmation(g.GetTestContext(), tx)
+	txHash := tx.Hash()
+	fmt.Printf("txHash: %+v\n", txHash.Hex())
+	g.TestBackendDestination.WaitForConfirmation(g.GetTestContext(), tx)
 
 	// Verify that the guard eventually marks the accused agent as Fraudulent
 	txContextSummit := g.TestBackendSummit.GetTxContext(g.GetTestContext(), g.SummitMetadata.OwnerPtr())
