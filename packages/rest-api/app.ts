@@ -2,12 +2,37 @@ import { JsonRpcProvider } from '@ethersproject/providers'
 import { SynapseSDK } from '@synapsecns/sdk-router'
 import { BigNumber } from '@ethersproject/bignumber'
 import { formatUnits } from '@ethersproject/units'
-import express from 'express'
+import * as express from 'express'
+// import express from 'express'
 
-import chains from './config/chains.json'
-import tokens from './config/tokens.json'
+import * as chainsData from './config/chains.json'
+import * as tokensData from './config/tokens.json'
+
+// import chains from './config/chains.json'
+// import tokens from './config/tokens.json'
 // To run locally you may need to add the "node --experimental-json-modules app.js" flag for the following jsons to be read
 
+interface Tokens {
+  [key: string]: {
+    addresses: {
+      [key: string]: string
+    }
+    decimals: {
+      [key: string]: number
+    }
+    description: string
+  }
+}
+
+const tokens: Tokens = tokensData as any
+
+interface Chains {
+  id: number
+  name: string
+  rpc: string
+}
+
+const chains: Chains[] = chainsData as any
 // Constants
 const TEN = BigNumber.from(10)
 const tokenHtml = Object.keys(tokens)
@@ -80,12 +105,14 @@ app.get('/swap', async (req, res) => {
   const toTokenSymbol = String(query.toToken)
 
   // Get Token Addresses
-  const fromTokenAddress = tokens[fromTokenSymbol]?.addresses?.[chainId]
-  const toTokenAddress = tokens[toTokenSymbol]?.addresses?.[chainId]
+  const fromTokenAddress =
+    tokens[fromTokenSymbol]?.addresses?.[chainId as string]
+  const toTokenAddress = tokens[toTokenSymbol]?.addresses?.[chainId as string]
 
   // Get Token Decimals
-  const fromTokenDecimals = tokens[fromTokenSymbol]?.decimals?.[chainId]
-  const toTokenDecimals = tokens[toTokenSymbol]?.decimals?.[chainId]
+  const fromTokenDecimals =
+    tokens[fromTokenSymbol]?.decimals?.[chainId as string]
+  const toTokenDecimals = tokens[toTokenSymbol]?.decimals?.[chainId as string]
 
   // Handle invalid params (either token symbols or chainIDs)
   // TODO: add error handling for missing params
@@ -157,12 +184,14 @@ app.get('/bridge', async (req, res) => {
   const toTokenSymbol = String(query.toToken)
 
   // Get Token Addresses
-  const fromTokenAddress = tokens[fromTokenSymbol]?.addresses?.[fromChain]
-  const toTokenAddress = tokens[toTokenSymbol]?.addresses?.[toChain]
+  const fromTokenAddress =
+    tokens[fromTokenSymbol]?.addresses?.[fromChain as string]
+  const toTokenAddress = tokens[toTokenSymbol]?.addresses?.[toChain as string]
 
   // Get Token Decimals
-  const fromTokenDecimals = tokens[fromTokenSymbol]?.decimals?.[fromChain]
-  const toTokenDecimals = tokens[toTokenSymbol]?.decimals?.[toChain]
+  const fromTokenDecimals =
+    tokens[fromTokenSymbol]?.decimals?.[fromChain as string]
+  const toTokenDecimals = tokens[toTokenSymbol]?.decimals?.[toChain as string]
 
   // Handle invalid params (either token symbols or chainIDs)
   // TODO: add error handling for missing params
