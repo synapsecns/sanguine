@@ -55,7 +55,7 @@ export const Warning = ({
   ) {
     return (
       <WarningMessage
-        header="USD Coin from Ethereum to Avalanche is not yet available."
+        header="USD Coin from Ethereum to Avalanche may not be available."
         message={
           <>
             <p className="mb-2">
