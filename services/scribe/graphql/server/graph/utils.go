@@ -3,6 +3,7 @@ package graph
 import (
 	"context"
 	"fmt"
+	"github.com/synapsecns/sanguine/services/scribe/backend"
 	"math/big"
 	"time"
 
@@ -133,8 +134,8 @@ func (r Resolver) getBlockTime(ctx context.Context, chainID uint32, blockNumber 
 	}
 
 	timeout := time.Duration(0)
-	var backendClient scribe.ScribeBackend
-	backendClient, err := scribe.DialBackend(ctx, fmt.Sprintf("%s/%d", r.OmniRPCURL, chainID), r.Metrics)
+	var backendClient backend.ScribeBackend
+	backendClient, err := backend.DialBackend(ctx, fmt.Sprintf("%s/%d", r.OmniRPCURL, chainID), r.Metrics)
 	if err != nil {
 		return nil, fmt.Errorf("could not create backend client: %w", err)
 	}
