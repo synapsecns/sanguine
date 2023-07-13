@@ -24,8 +24,18 @@ export const Warning = ({
     return (
       <WarningMessage
         header="USD Coin from Ethereum to Avalanche is not yet available."
-        message="Synapse is currently opening liquidity routes for the new USDC to USDC cross-chain transfer protocol.
-        Follow Twitter or Discord for updates when this route becomes available."
+        message={
+          <>
+            <p className="mb-2">
+              Synapse is currently opening liquidity routes for the new USDC to
+              USDC cross-chain transfer protocol.
+            </p>
+            <p>
+              Follow Twitter or Discord for updates when this route becomes
+              available.
+            </p>
+          </>
+        }
       />
     )
   }
@@ -37,12 +47,12 @@ const WarningMessage = ({
   message,
 }: {
   header: string
-  message: string
+  message: React.ReactNode
 }) => {
   return (
-    <div className="bg-[#353038] text-white text-m p-3">
-      <p>{header}</p>
-      <p>{message}</p>
+    <div className="flex flex-col bg-[#353038] text-white text-m p-3 rounded-md mt-4">
+      <div className="mb-2 font-bold">{header}</div>
+      <div>{message}</div>
     </div>
   )
 }
