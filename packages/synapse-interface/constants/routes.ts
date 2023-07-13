@@ -50,9 +50,9 @@ export const NAVIGATION: RouteObject = {
     text: 'Explorer',
     match: null,
   },
-  Contracts: {
-    path: CONTRACTS_PATH,
-    text: 'Contracts',
-    match: '/contracts',
-  },
+  // Contracts: {
+  //   path: CONTRACTS_PATH,
+  //   text: 'Contracts',
+  //   match: '/contracts',
+  // },
 }
