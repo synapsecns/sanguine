@@ -88,6 +88,39 @@ export const Warning = ({
         }
       />
     )
+  } else if (
+    originChainName === 'Harmony' ||
+    destinationChainName === 'Harmony'
+  ) {
+    return (
+      <WarningMessage
+        header="Warning! The Harmony bridge has been exploited."
+        message={
+          <>
+            <p>
+              Do not bridge via Harmony unless you understand the risks
+              involved.
+            </p>
+          </>
+        }
+      />
+    )
+  } else if (
+    originChainName === 'Fantom' ||
+    destinationChainName === 'Fantom'
+  ) {
+    return (
+      <WarningMessage
+        header="Warning! The Fantom bridge has been exploited."
+        message={
+          <>
+            <p>
+              Do not bridge via Fantom unless you understand the risks involved.
+            </p>
+          </>
+        }
+      />
+    )
   }
 }
 
