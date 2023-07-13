@@ -19,8 +19,31 @@ export const Warning = ({
 
   const { name: originChainName } = originChain
   const { name: destinationChainName } = destinationChain
+  const { symbol: originTokenSymbol } = originToken
+  const { symbol: destinationTokenSymbol } = destinationToken
 
-  if (originChainName === 'Ethereum' && destinationChainName === 'Avalanche') {
+  if (originTokenSymbol === 'USDC' && destinationTokenSymbol === 'USDCe') {
+    return (
+      <WarningMessage
+        header="USDC and USDC.e are incompatible."
+        message={
+          <>
+            <p className="mb-2">
+              USD Coin can currently only be bridged with itself, via the new
+              cross-chain transfer protocol.
+            </p>
+            <p>
+              Follow Twitter or Discord for updates as more CCTP routes become
+              available.
+            </p>
+          </>
+        }
+      />
+    )
+  } else if (
+    originChainName === 'Ethereum' &&
+    destinationChainName === 'Avalanche'
+  ) {
     return (
       <WarningMessage
         header="USD Coin from Ethereum to Avalanche is not yet available."
