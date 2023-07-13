@@ -38,8 +38,27 @@ export const Warning = ({
         }
       />
     )
+  } else if (
+    originChainName === 'Ethereum' &&
+    destinationChainName === 'Arbitrum'
+  ) {
+    return (
+      <WarningMessage
+        header="USD Coin now uses the free cross-chain transfer protocol."
+        message={
+          <>
+            <p className="mb-2">
+              CCTP transfers may take up to 20 minutes to complete.
+            </p>
+            <p>
+              Follow Twitter or Discord for updates as more CCTP routes become
+              available.
+            </p>
+          </>
+        }
+      />
+    )
   }
-  return <>{originChainName}</>
 }
 
 const WarningMessage = ({
