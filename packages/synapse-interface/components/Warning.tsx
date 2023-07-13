@@ -23,8 +23,12 @@ export const Warning = ({
   const { symbol: destinationTokenSymbol } = destinationToken
 
   if (
-    (originTokenSymbol === 'USDC' && destinationTokenSymbol === 'USDCe') ||
-    (originTokenSymbol === 'USDCe' && destinationTokenSymbol === 'USDC')
+    (originTokenSymbol === 'USDC' &&
+      destinationTokenSymbol === 'USDCe' &&
+      originChainName !== 'Ethereum') ||
+    (originTokenSymbol === 'USDCe' &&
+      destinationTokenSymbol === 'USDC' &&
+      destinationChainName !== 'Ethereum')
   ) {
     return (
       <WarningMessage
