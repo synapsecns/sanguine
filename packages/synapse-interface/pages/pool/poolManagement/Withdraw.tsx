@@ -1,29 +1,28 @@
 import _ from 'lodash'
-import { useEffect, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import Slider from 'react-input-slider'
-import { stringToBigInt } from '@/utils/stringToBigNum'
+import { Address } from '@wagmi/core'
+import { useDispatch, useSelector } from 'react-redux'
+import { Transition } from '@headlessui/react'
+import { Token } from '@types'
+import { RootState } from '@/store/store'
 
-import { useSynapseContext } from '@/utils/providers/SynapseProvider'
-
+import Grid from '@tw/Grid'
 import { getCoinTextColorCombined } from '@styles/tokens'
 import { ALL } from '@constants/withdrawTypes'
-import Grid from '@tw/Grid'
 import { WithdrawTokenInput } from '@components/TokenInput'
 import RadioButton from '@components/buttons/RadioButton'
 import ReceivedTokenSection from '../components/ReceivedTokenSection'
 import PriceImpactDisplay from '../components/PriceImpactDisplay'
 
-import { Transition } from '@headlessui/react'
-import { Token } from '@types'
 import { approve, withdraw } from '@/utils/actions/approveAndWithdraw'
 import { getTokenAllowance } from '@/utils/actions/getTokenAllowance'
 import { getSwapDepositContractFields } from '@/utils/getSwapDepositContractFields'
 import { calculatePriceImpact } from '@/utils/priceImpact'
 import { formatBigIntToString } from '@/utils/bigint/format'
-
-import { Address } from '@wagmi/core'
-import { useDispatch, useSelector } from 'react-redux'
-import { RootState } from '@/store/store'
+import { stringToBigInt } from '@/utils/stringToBigNum'
+import { useSynapseContext } from '@/utils/providers/SynapseProvider'
+import { txErrorHandler } from '@/utils/txErrorHandler'
 
 import {
   setInputValue,
@@ -32,30 +31,33 @@ import {
   setIsLoading,
   resetPoolWithdraw,
 } from '@/slices/poolWithdrawSlice'
-import WithdrawButton from './WithdrawButton'
-import { txErrorHandler } from '@/utils/txErrorHandler'
 import { fetchPoolUserData } from '@/slices/poolUserDataSlice'
 
-const Withdraw = ({
-  chainId,
-  address,
-}: {
-  chainId: number
-  address: string
-}) => {
+import WithdrawButton from './WithdrawButton'
+
+const Withdraw = ({ address }: { address: string }) => {
   const [percentage, setPercentage] = useState(0)
-  const [isApproved, setIsApproved] = useState<boolean>(false)
   const { pool, poolData } = useSelector((state: RootState) => state.poolData)
   const { poolUserData } = useSelector((state: RootState) => state.poolUserData)
   const { withdrawQuote, inputValue, withdrawType } = useSelector(
     (state: RootState) => state.poolWithdraw
   )
+  const chainId = pool?.chainId
+  const poolDecimals = pool?.decimals[pool?.chainId]
   const { poolAddress } = getSwapDepositContractFields(pool, chainId)
   const { synapseSDK } = useSynapseContext()
 
   const dispatch: any = useDispatch()
 
-  const showTokens = pool ? pool.nativeTokens ?? pool.poolTokens : []
+  // An ETH swap pool has nativeTokens vs. most other pools have poolTokens
+  const poolSpecificTokens = pool ? pool.nativeTokens ?? pool.poolTokens : []
+
+  const isApproved = useMemo(() => {
+    return (
+      withdrawQuote?.allowance &&
+      stringToBigInt(inputValue, poolDecimals) <= withdrawQuote.allowance
+    )
+  }, [inputValue, withdrawQuote])
 
   const calculateMaxWithdraw = async () => {
     if (poolUserData === null || address === null) {
@@ -77,31 +79,27 @@ const Withdraw = ({
         const { amounts } = await synapseSDK.calculateRemoveLiquidity(
           chainId,
           poolAddress,
-          inputValue.bi
+          stringToBigInt(inputValue, poolDecimals)
         )
-        outputs[withdrawType] = amounts.map((amount) => {
-          return {
-            value: BigInt(amount.value.toString()),
-            index: amount.index,
-          }
-        })
+
+        outputs[withdrawType] = amounts.map(transformAmount)
       } else {
         const { amount } = await synapseSDK.calculateRemoveLiquidityOne(
           chainId,
           poolAddress,
-          inputValue.bi,
+          stringToBigInt(inputValue, poolDecimals),
           Number(withdrawType)
         )
-        outputs[withdrawType] = {
-          value: BigInt(amount.value.toString()),
-          index: amount.index,
-        }
+
+        outputs[withdrawType] = transformAmount(amount)
       }
+
+      console.log(`outputs`, outputs)
 
       const outputTokensSum = sumBigInts(pool, outputs, withdrawType)
 
       const priceImpact = calculatePriceImpact(
-        inputValue.bi,
+        stringToBigInt(inputValue, poolDecimals),
         outputTokensSum,
         virtualPrice,
         true
@@ -119,7 +117,6 @@ const Withdraw = ({
           priceImpact,
           allowance,
           outputs,
-          routerAddress: poolAddress,
         })
       )
       dispatch(setIsLoading(false))
@@ -130,39 +127,37 @@ const Withdraw = ({
   }
 
   useEffect(() => {
-    if (poolUserData && poolData && address && pool && inputValue.bi > 0n) {
+    if (
+      poolUserData &&
+      poolData &&
+      address &&
+      pool &&
+      stringToBigInt(inputValue, poolDecimals) > 0n
+    ) {
       calculateMaxWithdraw()
     }
   }, [inputValue, withdrawType])
-
-  useEffect(() => {
-    if (withdrawQuote?.allowance && inputValue.bi <= withdrawQuote.allowance) {
-      setIsApproved(true)
-    } else {
-      setIsApproved(false)
-    }
-  }, [inputValue, withdrawQuote])
 
   const onPercentChange = (percent: number) => {
     if (percent > 100) {
       percent = 100
     }
     setPercentage(percent)
-    const numericalOut = poolUserData.lpTokenBalance
+    const numericalOut: string = poolUserData.lpTokenBalance
       ? formatBigIntToString(
           (poolUserData.lpTokenBalance * BigInt(percent)) / BigInt(100),
-          pool.decimals[chainId]
+          poolDecimals
         )
       : ''
-    const bigInt = stringToBigInt(numericalOut, pool.decimals[chainId])
-    dispatch(setInputValue({ bi: bigInt, str: numericalOut }))
+
+    dispatch(setInputValue(numericalOut))
   }
 
   const onChangeInputValue = (token: Token, value: string) => {
     const bigInt = stringToBigInt(value, token.decimals[chainId])
 
     if (poolUserData.lpTokenBalance === 0n) {
-      dispatch(setInputValue({ bi: bigInt, str: value }))
+      dispatch(setInputValue(value))
 
       setPercentage(0)
       return
@@ -174,7 +169,7 @@ const Withdraw = ({
         )
       : 0
 
-    dispatch(setInputValue({ bi: bigInt, str: value }))
+    dispatch(setInputValue(value))
 
     if (pn > 100) {
       setPercentage(100)
@@ -185,7 +180,12 @@ const Withdraw = ({
 
   const approveTxn = async () => {
     try {
-      const tx = approve(pool, withdrawQuote, inputValue.bi, chainId)
+      const tx = approve(
+        pool,
+        withdrawQuote,
+        stringToBigInt(inputValue, poolDecimals),
+        chainId
+      )
 
       try {
         await tx
@@ -204,7 +204,7 @@ const Withdraw = ({
         pool,
         'ONE_TENTH',
         null,
-        stringToBigInt(inputValue.str, pool.decimals[chainId]),
+        stringToBigInt(inputValue, poolDecimals),
         chainId,
         withdrawType,
         withdrawQuote.outputs
@@ -223,134 +223,125 @@ const Withdraw = ({
   }
 
   return (
-    <div>
-      <div className="percentage">
-        <span className="mr-2 text-white">Withdraw Percentage %</span>
-        <input
-          className={`
+    pool && (
+      <div>
+        <div className="percentage">
+          <span className="mr-2 text-white">Withdraw Percentage %</span>
+          <input
+            className={`
             px-2 py-1 w-1/5 rounded-md
             focus:ring-indigo-500 focus:outline-none focus:border-purple-700
             border border-transparent
             bg-[#111111]
             text-gray-300
           `}
-          placeholder="0"
-          onChange={(e) => onPercentChange(Number(e.currentTarget.value))}
-          onFocus={(e) => e.target.select()}
-          value={percentage ?? ''}
-        />
-        <div className="my-2">
-          {/* @ts-ignore */}
-          <Slider
-            axis="x"
-            xstep={10}
-            xmin={0}
-            xmax={100}
-            x={percentage ?? 100}
-            onChange={(i) => {
-              onPercentChange(i.x)
-            }}
-            styles={{
-              track: {
-                backgroundColor: '#E0E7FF',
-                width: '95%',
-              },
-              active: {
-                backgroundColor: '#B286FF',
-              },
-              thumb: {
-                backgroundColor: '#CE55FE',
-              },
-            }}
+            placeholder="0"
+            onChange={(e) => onPercentChange(Number(e.currentTarget.value))}
+            onFocus={(e) => e.target.select()}
+            value={percentage ?? ''}
           />
+          <div className="my-2">
+            {/* @ts-ignore */}
+            <Slider
+              axis="x"
+              xstep={10}
+              xmin={0}
+              xmax={100}
+              x={percentage ?? 100}
+              onChange={(i) => {
+                onPercentChange(i.x)
+              }}
+              styles={{
+                track: {
+                  backgroundColor: '#E0E7FF',
+                  width: '95%',
+                },
+                active: {
+                  backgroundColor: '#B286FF',
+                },
+                thumb: {
+                  backgroundColor: '#CE55FE',
+                },
+              }}
+            />
+          </div>
         </div>
-      </div>
-      <Grid gap={2} cols={{ xs: 1 }} className="mt-2">
-        <RadioButton
-          checked={withdrawType === ALL}
-          onChange={() => {
-            dispatch(setWithdrawType(ALL))
-          }}
-          label="Combo"
-          labelClassName={withdrawType === ALL && 'text-indigo-500'}
-        />
-        {showTokens &&
-          showTokens.map((token, index) => {
-            const checked = withdrawType === index.toString()
+        <Grid gap={2} cols={{ xs: 1 }} className="mt-2">
+          <RadioButton
+            checked={withdrawType === ALL}
+            onChange={() => {
+              dispatch(setWithdrawType(ALL))
+            }}
+            label="Combo"
+            labelClassName={withdrawType === ALL && 'text-indigo-500'}
+          />
+          {poolSpecificTokens &&
+            poolSpecificTokens.map((poolSpecificToken, index) => {
+              const checked = withdrawType === index.toString()
 
-            return (
-              <RadioButton
-                radioClassName={getCoinTextColorCombined(token.color)}
-                key={token?.symbol}
-                checked={checked}
-                onChange={() => {
-                  dispatch(setWithdrawType(index.toString()))
-                }}
-                labelClassName={
-                  checked &&
-                  `${getCoinTextColorCombined(token.color)} opacity-90`
-                }
-                label={token.name}
-              />
-            )
-          })}
-      </Grid>
-      <WithdrawTokenInput
-        poolUserData={poolUserData}
-        token={pool}
-        key={pool?.symbol}
-        inputValueStr={inputValue.str}
-        balanceStr={
-          poolUserData?.lpTokenBalance
-            ? formatBigIntToString(
-                poolUserData?.lpTokenBalance,
-                pool.decimals[chainId],
-                4
+              return (
+                <RadioButton
+                  radioClassName={getCoinTextColorCombined(
+                    poolSpecificToken.color
+                  )}
+                  key={poolSpecificToken?.symbol}
+                  checked={checked}
+                  onChange={() => {
+                    dispatch(setWithdrawType(index.toString()))
+                  }}
+                  labelClassName={
+                    checked &&
+                    `${getCoinTextColorCombined(
+                      poolSpecificToken.color
+                    )} opacity-90`
+                  }
+                  label={poolSpecificToken.name}
+                />
               )
-            : '0.0000'
-        }
-        onChange={(value) => onChangeInputValue(pool, value)}
-        chainId={chainId}
-        address={address}
-      />
-      <WithdrawButton
-        approveTxn={approveTxn}
-        withdrawTxn={withdrawTxn}
-        isApproved={isApproved}
-      />
+            })}
+        </Grid>
+        <WithdrawTokenInput
+          onChange={(value) => onChangeInputValue(pool, value)}
+        />
+        <WithdrawButton
+          approveTxn={approveTxn}
+          withdrawTxn={withdrawTxn}
+          isApproved={isApproved}
+        />
 
-      <Transition
-        appear={true}
-        unmount={false}
-        show={inputValue.bi > 0n}
-        enter="transition duration-100 ease-out"
-        enterFrom="transform-gpu scale-y-0 "
-        enterTo="transform-gpu scale-y-100 opacity-100"
-        leave="transition duration-75 ease-out "
-        leaveFrom="transform-gpu scale-y-100 opacity-100"
-        leaveTo="transform-gpu scale-y-0 "
-        className="-mx-6 origin-top "
-      >
-        <div
-          className={`py-3.5 pr-6 pl-6 mt-2 rounded-b-2xl bg-bgBase transition-all`}
+        <Transition
+          appear={true}
+          unmount={false}
+          show={stringToBigInt(inputValue, poolDecimals) > 0n}
+          enter="transition duration-100 ease-out"
+          enterFrom="transform-gpu scale-y-0 "
+          enterTo="transform-gpu scale-y-100 opacity-100"
+          leave="transition duration-75 ease-out "
+          leaveFrom="transform-gpu scale-y-100 opacity-100"
+          leaveTo="transform-gpu scale-y-0 "
+          className="-mx-6 origin-top "
         >
-          <Grid cols={{ xs: 2 }}>
-            <div>
-              <ReceivedTokenSection
-                poolTokens={showTokens}
-                withdrawQuote={withdrawQuote}
-                chainId={chainId}
-              />
-            </div>
-            <div>
-              {withdrawQuote.priceImpact && (
-                <PriceImpactDisplay priceImpact={withdrawQuote.priceImpact} />
-              )}
-            </div>
-          </Grid>
-        </div>
-      </Transition>
-    </div>
+          <div
+            className={`py-3.5 pr-6 pl-6 mt-2 rounded-b-2xl bg-bgBase transition-all`}
+          >
+            <Grid cols={{ xs: 2 }}>
+              <div>
+                <ReceivedTokenSection
+                  poolTokens={poolSpecificTokens}
+                  withdrawQuote={withdrawQuote}
+                  chainId={chainId}
+                />
+              </div>
+              <div>
+                {withdrawQuote.priceImpact && (
+                  <PriceImpactDisplay priceImpact={withdrawQuote.priceImpact} />
+                )}
+              </div>
+            </Grid>
+          </div>
+        </Transition>
+      </div>
+    )
   )
 }
 
@@ -383,12 +374,23 @@ const sumBigInts = (
   }, 0n)
 }
 
-function pow10BigInt(n) {
+const pow10BigInt = (n: bigint) => {
   let result = 1n
   for (let i = 0n; i < n; i++) {
     result *= 10n
   }
   return result
+}
+
+const transformAmount = (amount) => {
+  return {
+    value: BigInt(amount.value.toString()),
+    index: amount.index,
+  }
+}
+
+const poolTokenByIndex = (poolTokens: Token[], index: number) => {
+  return poolTokens.find((_poolToken, idx) => index === idx)
 }
 
 export default Withdraw

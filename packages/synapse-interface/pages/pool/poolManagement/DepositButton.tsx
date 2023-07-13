@@ -1,27 +1,22 @@
-import { useDispatch, useSelector } from 'react-redux'
-import { TransactionButton } from '@/components/buttons/TransactionButton'
-import { RootState } from '@/store/store'
+import { useSelector } from 'react-redux'
+import { useConnectModal } from '@rainbow-me/rainbowkit'
 import { useAccount, useNetwork, useSwitchNetwork } from 'wagmi'
 import { useEffect, useState } from 'react'
+import { RootState } from '@/store/store'
 
-import {
-  useConnectModal,
-  useAccountModal,
-  useChainModal,
-} from '@rainbow-me/rainbowkit'
+import LoadingSpinner from '@/components/ui/tailwind/LoadingSpinner'
+import { TransactionButton } from '@/components/buttons/TransactionButton'
 import { DEFAULT_DEPOSIT_QUOTE } from './Deposit'
 import { stringToBigInt } from '@/utils/stringToBigNum'
-import LoadingSpinner from '@/components/ui/tailwind/LoadingSpinner'
 
 const DepositButton = ({ approveTxn, depositTxn }) => {
-  const dispatch: any = useDispatch()
   const [isConnected, setIsConnected] = useState(false) // Initialize to false
   const { openConnectModal } = useConnectModal()
 
   const { chain } = useNetwork()
-  const { chains, error, pendingChainId, switchNetwork } = useSwitchNetwork()
+  const { chains, switchNetwork } = useSwitchNetwork()
 
-  const { address, isConnected: isConnectedInit } = useAccount({
+  const { isConnected: isConnectedInit } = useAccount({
     onDisconnect() {
       setIsConnected(false)
     },
@@ -72,10 +67,6 @@ const DepositButton = ({ approveTxn, depositTxn }) => {
 
   let buttonProperties
 
-  if (!pool) {
-    return
-  }
-
   if (!isBalanceEnough) {
     buttonProperties = {
       label: 'Insufficient Balance',
@@ -116,6 +107,7 @@ const DepositButton = ({ approveTxn, depositTxn }) => {
   }
 
   return (
+    pool &&
     buttonProperties && (
       <TransactionButton
         {...buttonProperties}

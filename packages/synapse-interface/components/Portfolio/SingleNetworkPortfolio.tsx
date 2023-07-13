@@ -1,10 +1,8 @@
 import React, { useCallback, useMemo, useRef } from 'react'
 import Image from 'next/image'
-import { BigNumber } from 'ethers'
 import { useDispatch } from 'react-redux'
 import { useAccount } from 'wagmi'
 import { switchNetwork } from '@wagmi/core'
-import { Zero } from '@ethersproject/constants'
 import {
   setFromToken,
   setFromChainId,
@@ -12,9 +10,7 @@ import {
 } from '@/slices/bridgeSlice'
 import { CHAINS_BY_ID } from '@/constants/chains'
 import { TokenWithBalanceAndAllowance } from '@/utils/hooks/usePortfolioBalances'
-import { usePortfolioBalancesAndAllowances } from '@/utils/hooks/usePortfolioBalances'
 import { approveToken } from '@/utils/approveToken'
-import { formatBNToString } from '@/utils/bignumber/format'
 import { Chain, Token } from '@/utils/types'
 import PortfolioAccordion from './PortfolioAccordion'
 import { PortfolioConnectButton } from './PortfolioConnectButton'

@@ -42,7 +42,6 @@ export const sortByTokenBalance = async (
   chainId: number,
   address: any
 ): Promise<TokenAndBalance[]> => {
-  console.log('here')
   const tokensWithBalances: any[] = []
   const multicallInputs = []
 

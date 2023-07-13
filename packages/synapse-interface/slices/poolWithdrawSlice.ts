@@ -13,35 +13,26 @@ type WithdrawQuote = {
     }
   >
   allowance: bigint
-  routerAddress: string
-}
-
-type InputValue = {
-  bi: bigint
-  str: string
 }
 
 export const DEFAULT_WITHDRAW_QUOTE: WithdrawQuote = {
   priceImpact: 0n,
   outputs: {},
   allowance: undefined,
-  routerAddress: '',
 }
 
-const DEFAULT_INPUT_VALUE = { bi: 0n, str: '' }
-
-export interface PoolDepositState {
+interface PoolWithdrawState {
   withdrawQuote: WithdrawQuote
   isLoading: boolean
-  inputValue: InputValue
+  inputValue: string
   pool: Token
   withdrawType: string
 }
 
-const initialState: PoolDepositState = {
+const initialState: PoolWithdrawState = {
   withdrawQuote: DEFAULT_WITHDRAW_QUOTE,
   isLoading: false,
-  inputValue: DEFAULT_INPUT_VALUE,
+  inputValue: '',
   pool: null,
   withdrawType: ALL,
 }
@@ -54,7 +45,7 @@ export const poolWithdrawSlice = createSlice({
     setWithdrawQuote: (state, action: PayloadAction<WithdrawQuote>) => {
       state.withdrawQuote = action.payload
     },
-    setInputValue: (state, action: PayloadAction<InputValue>) => {
+    setInputValue: (state, action: PayloadAction<string>) => {
       state.inputValue = action.payload
     },
     setIsLoading: (state, action: PayloadAction<boolean>) => {

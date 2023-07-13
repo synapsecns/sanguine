@@ -1,13 +1,13 @@
 import { useState } from 'react'
+import { useSelector } from 'react-redux'
+import { useAccount, useNetwork, useSwitchNetwork } from 'wagmi'
+import { useConnectModal } from '@rainbow-me/rainbowkit'
+import { RootState } from '@/store/store'
 
 import LiquidityManagementTabs from '../components/LiquidityManagementTabs'
 import Deposit from './Deposit'
 import Withdraw from './Withdraw'
-import { useSelector } from 'react-redux'
-import { RootState } from '@/store/store'
 import LoadingSpinner from '@/components/ui/tailwind/LoadingSpinner'
-import { useAccount, useNetwork, useSwitchNetwork } from 'wagmi'
-import { useConnectModal } from '@rainbow-me/rainbowkit'
 import { TransactionButton } from '@/components/buttons/TransactionButton'
 
 const PoolManagement = ({
@@ -91,9 +91,7 @@ const PoolManagement = ({
           {cardNav === 'addLiquidity' && poolUserData.tokens && (
             <Deposit address={address} chainId={chainId} />
           )}
-          {cardNav === 'removeLiquidity' && (
-            <Withdraw chainId={chainId} address={address} />
-          )}
+          {cardNav === 'removeLiquidity' && <Withdraw address={address} />}
         </div>
       </div>
     </div>

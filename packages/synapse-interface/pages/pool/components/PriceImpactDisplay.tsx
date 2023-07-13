@@ -33,8 +33,11 @@ const PriceImpactDisplay = ({ priceImpact }: { priceImpact: bigint }) => {
   }, [priceImpact])
 
   const priceImpactDisplayValue: string = useMemo(() => {
-    if (Math.abs(priceImpactValue) < 0.01) return '<0.01'
-    else return priceImpactValue.toFixed(2)
+    if (Math.abs(priceImpactValue) < 0.01) {
+      return '<0.01'
+    } else {
+      return priceImpactValue.toFixed(2)
+    }
   }, [priceImpactValue])
 
   if (priceImpactValue > 0) {

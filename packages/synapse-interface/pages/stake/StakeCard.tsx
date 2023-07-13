@@ -208,7 +208,7 @@ const StakeCard = ({ address, chainId, pool }: StakeCardProps) => {
             balanceStr={
               lpTokenBalance === 0n
                 ? formatBigIntToString(lpTokenBalance, tokenInfo.decimals, 4)
-                : formatBigIntToString(lpTokenBalance, tokenInfo.decimals)
+                : formatBigIntToString(lpTokenBalance, tokenInfo.decimals, 8)
             }
             onClickBalance={() => {
               setDeposit({

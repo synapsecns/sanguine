@@ -22,7 +22,7 @@ const DEFAULT_DEPOSIT_QUOTE = {
 
 const DEFAULT_INPUT_VALUE = { bi: {}, str: {} }
 
-export interface PoolDepositState {
+interface PoolDepositState {
   depositQuote: DepositQuote
   isLoading: boolean
   inputValue: InputValue
