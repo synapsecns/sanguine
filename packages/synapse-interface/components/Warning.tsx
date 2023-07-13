@@ -22,7 +22,10 @@ export const Warning = ({
   const { symbol: originTokenSymbol } = originToken
   const { symbol: destinationTokenSymbol } = destinationToken
 
-  if (originTokenSymbol === 'USDC' && destinationTokenSymbol === 'USDCe') {
+  if (
+    (originTokenSymbol === 'USDC' && destinationTokenSymbol === 'USDCe') ||
+    (originTokenSymbol === 'USDCe' && destinationTokenSymbol === 'USDC')
+  ) {
     return (
       <WarningMessage
         header="USDC and USDC.e are incompatible."
@@ -42,7 +45,9 @@ export const Warning = ({
     )
   } else if (
     originChainName === 'Ethereum' &&
-    destinationChainName === 'Avalanche'
+    destinationChainName === 'Avalanche' &&
+    originTokenSymbol === 'USDC' &&
+    destinationTokenSymbol === 'USDC'
   ) {
     return (
       <WarningMessage
@@ -63,7 +68,9 @@ export const Warning = ({
     )
   } else if (
     originChainName === 'Ethereum' &&
-    destinationChainName === 'Arbitrum'
+    destinationChainName === 'Arbitrum' &&
+    originTokenSymbol === 'USDC' &&
+    destinationTokenSymbol === 'USDC'
   ) {
     return (
       <WarningMessage
