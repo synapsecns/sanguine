@@ -1,6 +1,5 @@
-import Link from 'next/link'
 import { useRouter } from 'next/router'
-import { BASE_PATH } from '@/constants/urls'
+import Link from 'next/link'
 
 export function TopBarNavLink({
   labelText,
@@ -11,7 +10,7 @@ export function TopBarNavLink({
   labelText: string
   to: string
   className?: string
-  match?: string
+  match?: string | RegExp | { startsWith: string; endsWith: string }
 }) {
   const router = useRouter()
 
@@ -28,7 +27,13 @@ export function TopBarNavLink({
     group items-center px-2 my-2 font-normal tracking-wide
     transform-gpu transition-all duration-75
     text-white ${
-      match && router.asPath.includes(match)
+      match &&
+      (typeof match === 'string'
+        ? router.asPath.includes(match)
+        : match instanceof RegExp
+        ? match.test(router.asPath)
+        : router.asPath.startsWith(match.startsWith) &&
+          router.asPath.endsWith(match.endsWith))
         ? 'text-opacity-100'
         : 'text-opacity-30'
     }
