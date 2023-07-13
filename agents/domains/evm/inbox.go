@@ -92,3 +92,18 @@ func (a inboxContract) SubmitSnapshot(transactor *bind.TransactOpts, signer sign
 
 	return tx, nil
 }
+
+func (a inboxContract) VerifyAttestation(ctx context.Context, signer signer.Signer, attestation []byte, attSignature []byte) (tx *ethTypes.Transaction, err error) {
+	transactor, err := signer.GetTransactor(ctx, a.client.GetBigChainID())
+	if err != nil {
+		return nil, fmt.Errorf("could not sign tx: %w", err)
+	}
+
+	transactOpts, err := a.nonceManager.NewKeyedTransactor(transactor)
+	if err != nil {
+		return nil, fmt.Errorf("could not create tx: %w", err)
+	}
+
+	transactOpts.Context = ctx
+	return a.contract.VerifyAttestation(transactor, attestation, attSignature)
+}

@@ -66,6 +66,8 @@ type SummitContract interface {
 	GetLatestNotaryAttestation(ctx context.Context, notarySigner signer.Signer) (types.NotaryAttestation, error)
 	// WatchAttestationSaved looks for attesation saved events
 	WatchAttestationSaved(ctx context.Context, sink chan<- *summit.SummitAttestationSaved) (event.Subscription, error)
+	// IsValidAttestation checks if the given attestation is valid on the summit
+	IsValidAttestation(ctx context.Context, attestation []byte) (bool, error)
 }
 
 // InboxContract contains the interface for the inbox.
@@ -75,6 +77,8 @@ type InboxContract interface {
 	SubmitStateReportWithSnapshot(ctx context.Context, signer signer.Signer, stateIndex int64, signature signer.Signature, snapPayload []byte, snapSignature []byte) (tx *ethTypes.Transaction, err error)
 	// SubmitSnapshot submits a snapshot to the inbox (via the Inbox).
 	SubmitSnapshot(transactor *bind.TransactOpts, signer signer.Signer, encodedSnapshot []byte, signature signer.Signature) (tx *ethTypes.Transaction, err error)
+	// VerifySnapshot verifies a snapshot on the inbox.
+	VerifyAttestation(ctx context.Context, signer signer.Signer, attestation []byte, attSignature []byte) (tx *ethTypes.Transaction, err error)
 }
 
 // BondingManagerContract contains the interface for the bonding manager.
@@ -113,6 +117,8 @@ type LightInboxContract interface {
 	) (tx *ethTypes.Transaction, err error)
 	// VerifyStateWithSnapshot verifies a state within a snapshot.
 	VerifyStateWithSnapshot(ctx context.Context, signer signer.Signer, stateIndex int64, signature signer.Signature, snapPayload []byte, snapSignature []byte) (tx *ethTypes.Transaction, err error)
+	// SubmitAttestationReport submits an attestation report to the inbox (via the light inbox contract)
+	SubmitAttestationReport(ctx context.Context, signer signer.Signer, attestation, arSignature, attSignature []byte) (tx *ethTypes.Transaction, err error)
 }
 
 // LightManagerContract contains the interface for the light manager.

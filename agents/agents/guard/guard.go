@@ -12,6 +12,7 @@ import (
 	ethTypes "github.com/ethereum/go-ethereum/core/types"
 	"github.com/synapsecns/sanguine/agents/agents/guard/db"
 	"github.com/synapsecns/sanguine/agents/contracts/inbox"
+	"github.com/synapsecns/sanguine/agents/contracts/lightinbox"
 	"github.com/synapsecns/sanguine/agents/contracts/origin"
 	"github.com/synapsecns/sanguine/core/metrics"
 	signerConfig "github.com/synapsecns/sanguine/ethergo/signer/config"
@@ -48,7 +49,9 @@ type Guard struct {
 	grpcConn           *grpc.ClientConn
 	logChans           map[uint32]chan *ethTypes.Log
 	inboxParser        inbox.Parser
+	lightInboxParser   lightinbox.Parser
 	boundInbox         *inbox.Inbox
+	boundLightInbox    *lightinbox.LightInbox
 	boundOrigins       map[uint32]*origin.Origin
 	txSubmitter        submitter.TransactionSubmitter
 }
@@ -142,12 +145,26 @@ func NewGuard(ctx context.Context, cfg config.AgentConfig, omniRPCClient omnirpc
 				return Guard{}, fmt.Errorf("could not create inbox parser: %w", err)
 			}
 
+			// Create a new light inbox parser for the summit domain.
+			guard.lightInboxParser, err = lightinbox.NewParser(common.HexToAddress(domain.LightInboxAddress))
+			if err != nil {
+				return Guard{}, fmt.Errorf("could not create inbox parser: %w", err)
+			}
+
 			guard.boundInbox, err = inbox.NewInbox(
 				common.HexToAddress(domain.InboxAddress),
 				omnirpcClient,
 			)
 			if err != nil {
-				return Guard{}, fmt.Errorf("could not create bonding manager: %w", err)
+				return Guard{}, fmt.Errorf("could not create bound inbox: %w", err)
+			}
+
+			guard.boundLightInbox, err = lightinbox.NewLightInbox(
+				common.HexToAddress(domain.LightInboxAddress),
+				omnirpcClient,
+			)
+			if err != nil {
+				return Guard{}, fmt.Errorf("could not create bound light inbox: %w", err)
 			}
 		}
 	}
@@ -222,7 +239,7 @@ func (g Guard) receiveLogs(ctx context.Context, chainID uint32) error {
 				return fmt.Errorf("log is nil")
 			}
 
-			err := g.processSnapshot(ctx, *log)
+			err := g.handleLog(ctx, *log, chainID)
 			if err != nil {
 				return fmt.Errorf("could not process log: %w", err)
 			}
@@ -230,7 +247,7 @@ func (g Guard) receiveLogs(ctx context.Context, chainID uint32) error {
 	}
 }
 
-func (g Guard) processSnapshot(ctx context.Context, log ethTypes.Log) error {
+func (g Guard) handleSnapshot(ctx context.Context, log ethTypes.Log, chainID uint32) error {
 	snapshot, agentSig, err := g.logToSnapshot(log)
 	if err != nil {
 		// TODO: This should be made to err once we have different log processing.
@@ -292,6 +309,54 @@ func (g Guard) processSnapshot(ctx context.Context, log ethTypes.Log) error {
 	return nil
 }
 
+func (g Guard) handleAttestation(ctx context.Context, log ethTypes.Log, chainID uint32) error {
+	attestation, attSignature, err := g.logToAttestation(log)
+	if err != nil {
+		// TODO: This should be made to err once we have different log processing.
+		return nil
+	}
+
+	if attestation == nil {
+		return nil
+	}
+
+	// Check if the attestation is valid on summit
+	attestationEncoded, err := types.EncodeAttestation(attestation)
+	if err != nil {
+		return fmt.Errorf("could not encode attestation: %w", err)
+	}
+	isValid, err := g.domains[g.summitDomainID].Summit().IsValidAttestation(ctx, attestationEncoded)
+	if err != nil {
+		return fmt.Errorf("could not check validity of attestation: %w", err)
+	}
+
+	// If attestation is invalid, we need to slash the agent
+	// by calling `verifyAttestation()` on the summit domain.
+	if isValid {
+		return nil
+	}
+	_, err = g.domains[g.summitDomainID].Inbox().VerifyAttestation(ctx, g.unbondedSigner, attestationEncoded, attSignature)
+	if err != nil {
+		return fmt.Errorf("could not verify attestation: %w", err)
+	}
+
+	// Finally, we submit a fraud report by calling `submitAttestationReport()` on the remote chain.
+	arSignature, err := g.bondedSigner.SignMessage(ctx, attestationEncoded, true)
+	if err != nil {
+		return fmt.Errorf("could not sign attestation: %w", err)
+	}
+	arSignatureEncoded, err := types.EncodeSignature(arSignature)
+	if err != nil {
+		return fmt.Errorf("could not encode signature: %w", err)
+	}
+	_, err = g.domains[chainID].LightInbox().SubmitAttestationReport(ctx, g.unbondedSigner, attestationEncoded, arSignatureEncoded, attSignature)
+	if err != nil {
+		return fmt.Errorf("could not submit attestation report: %w", err)
+	}
+
+	return nil
+}
+
 func (g Guard) slashAccusedAgent(ctx context.Context, origin uint32, stateIndex int64, snapPayload, snapSignature []byte) error {
 	signature, err := g.bondedSigner.SignMessage(ctx, snapPayload, true)
 	if err != nil {
@@ -335,6 +400,51 @@ func (g Guard) logToSnapshot(log ethTypes.Log) (types.Snapshot, []byte, error) {
 	}
 
 	return snapshot, agentSig, nil
+}
+
+// logToAttestation converts the log to an attestation.
+func (g Guard) logToAttestation(log ethTypes.Log) (types.Attestation, []byte, error) {
+	attestation, attSignature, ok := g.lightInboxParser.ParseAttestationAccepted(log)
+	if !ok {
+		return nil, nil, fmt.Errorf("could not parse attestation")
+	}
+
+	if attestation == nil {
+		//nolint:nilnil
+		return nil, nil, nil
+	}
+
+	return attestation, attSignature, nil
+}
+
+func getEventType(log ethTypes.Log)
+
+func (g Guard) handleLog(ctx context.Context, log ethTypes.Log, chainID uint32) error {
+	switch {
+	case g.isSnapshotAcceptedEvent(log):
+		return g.handleSnapshot(ctx, log, chainID)
+	case g.isAttestationAcceptedEvent(log):
+		return g.handleAttestation(ctx, log, chainID)
+	}
+	return nil
+}
+
+func (g Guard) isSnapshotAcceptedEvent(log ethTypes.Log) bool {
+	if g.inboxParser == nil {
+		return false
+	}
+
+	inboxEvent, ok := g.inboxParser.EventType(log)
+	return ok && inboxEvent == inbox.SnapshotAcceptedEvent
+}
+
+func (g Guard) isAttestationAcceptedEvent(log ethTypes.Log) bool {
+	if g.lightInboxParser == nil {
+		return false
+	}
+
+	lightManagerEvent, ok := g.lightInboxParser.EventType(log)
+	return ok && lightManagerEvent == lightinbox.AttestationAcceptedEvent
 }
 
 //nolint:cyclop
