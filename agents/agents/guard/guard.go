@@ -241,6 +241,7 @@ func (g Guard) receiveLogs(ctx context.Context, chainID uint32) error {
 
 			err := g.handleLog(ctx, *log, chainID)
 			if err != nil {
+				fmt.Printf("could not process log: %v\n", err)
 				return fmt.Errorf("could not process log: %w", err)
 			}
 		}
@@ -310,6 +311,7 @@ func (g Guard) handleSnapshot(ctx context.Context, log ethTypes.Log, chainID uin
 }
 
 func (g Guard) handleAttestation(ctx context.Context, log ethTypes.Log, chainID uint32) error {
+	fmt.Printf("handleAttestation with log: %+v on chain %d\n", log, chainID)
 	attestation, attSignature, err := g.logToAttestation(log)
 	if err != nil {
 		// TODO: This should be made to err once we have different log processing.
@@ -417,9 +419,8 @@ func (g Guard) logToAttestation(log ethTypes.Log) (types.Attestation, []byte, er
 	return attestation, attSignature, nil
 }
 
-func getEventType(log ethTypes.Log)
-
 func (g Guard) handleLog(ctx context.Context, log ethTypes.Log, chainID uint32) error {
+	fmt.Printf("handleLog: %+v\n", log)
 	switch {
 	case g.isSnapshotAcceptedEvent(log):
 		return g.handleSnapshot(ctx, log, chainID)

@@ -1,7 +1,7 @@
 package guard_test
 
 import (
-	"crypto/rand"
+	"fmt"
 	"math/big"
 
 	"github.com/Flaque/filet"
@@ -166,16 +166,166 @@ func (g GuardSuite) TestReportFraudulentStateInSnapshot() {
 	})
 }
 
-func getNewUint40() *big.Int {
-	// Max random value, a 130-bits integer, i.e 2^96 - 1
-	max := new(big.Int)
-	max.Exp(big.NewInt(2), big.NewInt(40), nil).Sub(max, big.NewInt(1))
+func (g GuardSuite) TestReportAttestationNotOnSummit() {
+	testDone := false
+	defer func() {
+		testDone = true
+	}()
 
-	// Generate cryptographically strong pseudo-random between 0 - max
-	n, err := rand.Int(rand.Reader, max)
-	if err != nil {
-		panic(err)
+	testConfig := config.AgentConfig{
+		Domains: map[string]config.DomainConfig{
+			"origin_client":      g.OriginDomainClient.Config(),
+			"destination_client": g.DestinationDomainClient.Config(),
+			"summit_client":      g.SummitDomainClient.Config(),
+		},
+		DomainID:       uint32(0),
+		SummitDomainID: g.SummitDomainClient.Config().DomainID,
+		BondedSigner: signerConfig.SignerConfig{
+			Type: signerConfig.FileType.String(),
+			File: filet.TmpFile(g.T(), "", g.GuardBondedWallet.PrivateKeyHex()).Name(),
+		},
+		UnbondedSigner: signerConfig.SignerConfig{
+			Type: signerConfig.FileType.String(),
+			File: filet.TmpFile(g.T(), "", g.GuardUnbondedWallet.PrivateKeyHex()).Name(),
+		},
+		RefreshIntervalSeconds: 5,
 	}
 
-	return n
+	omniRPCClient := omniClient.NewOmnirpcClient(g.TestOmniRPC, g.GuardMetrics, omniClient.WithCaptureReqRes())
+
+	// Scribe setup.
+	originClient, err := backfill.DialBackend(g.GetTestContext(), g.TestBackendOrigin.RPCAddress(), g.ScribeMetrics)
+	Nil(g.T(), err)
+	destinationClient, err := backfill.DialBackend(g.GetTestContext(), g.TestBackendDestination.RPCAddress(), g.ScribeMetrics)
+	Nil(g.T(), err)
+	summitClient, err := backfill.DialBackend(g.GetTestContext(), g.TestBackendSummit.RPCAddress(), g.ScribeMetrics)
+	Nil(g.T(), err)
+
+	clients := map[uint32][]backfill.ScribeBackend{
+		uint32(g.TestBackendOrigin.GetChainID()):      {originClient, originClient},
+		uint32(g.TestBackendDestination.GetChainID()): {destinationClient, destinationClient},
+		uint32(g.TestBackendSummit.GetChainID()):      {summitClient, summitClient},
+	}
+	originConfig := scribeConfig.ContractConfig{
+		Address:    g.OriginContract.Address().String(),
+		StartBlock: 0,
+	}
+	originChainConfig := scribeConfig.ChainConfig{
+		ChainID:               uint32(g.TestBackendOrigin.GetChainID()),
+		BlockTimeChunkSize:    1,
+		ContractSubChunkSize:  1,
+		RequiredConfirmations: 0,
+		Contracts:             []scribeConfig.ContractConfig{originConfig},
+	}
+	destinationConfig := scribeConfig.ContractConfig{
+		Address:    g.LightInboxOnDestination.Address().String(),
+		StartBlock: 0,
+	}
+	destinationChainConfig := scribeConfig.ChainConfig{
+		ChainID:               uint32(g.TestBackendDestination.GetChainID()),
+		BlockTimeChunkSize:    1,
+		ContractSubChunkSize:  1,
+		RequiredConfirmations: 0,
+		Contracts:             []scribeConfig.ContractConfig{destinationConfig},
+	}
+	summitConfig := scribeConfig.ContractConfig{
+		Address:    g.InboxOnSummit.Address().String(),
+		StartBlock: 0,
+	}
+	summitChainConfig := scribeConfig.ChainConfig{
+		ChainID:               uint32(g.TestBackendSummit.GetChainID()),
+		BlockTimeChunkSize:    1,
+		ContractSubChunkSize:  1,
+		RequiredConfirmations: 0,
+		Contracts:             []scribeConfig.ContractConfig{summitConfig},
+	}
+	scribeConfig := scribeConfig.Config{
+		Chains: []scribeConfig.ChainConfig{originChainConfig, destinationChainConfig, summitChainConfig},
+	}
+
+	scribe, err := node.NewScribe(g.ScribeTestDB, clients, scribeConfig, g.ScribeMetrics)
+	Nil(g.T(), err)
+	scribeClient := client.NewEmbeddedScribe("sqlite", g.DBPath, g.ScribeMetrics)
+
+	go func() {
+		scribeErr := scribeClient.Start(g.GetTestContext())
+		if !testDone {
+			Nil(g.T(), scribeErr)
+		}
+	}()
+	go func() {
+		scribeError := scribe.Start(g.GetTestContext())
+		if !testDone {
+			Nil(g.T(), scribeError)
+		}
+	}()
+
+	guard, err := guard.NewGuard(g.GetTestContext(), testConfig, omniRPCClient, scribeClient.ScribeClient, g.GuardTestDB, g.GuardMetrics)
+	Nil(g.T(), err)
+
+	go func() {
+		guardErr := guard.Start(g.GetTestContext())
+		if !testDone {
+			Nil(g.T(), guardErr)
+		}
+	}()
+
+	// Verify that the agent is marked as Active
+	txContextDest := g.TestBackendDestination.GetTxContext(g.GetTestContext(), g.DestinationContractMetadata.OwnerPtr())
+	status, err := g.OriginDomainClient.LightManager().GetAgentStatus(g.GetTestContext(), g.GuardBondedSigner)
+	Equal(g.T(), status.Flag(), uint8(1))
+	Nil(g.T(), err)
+
+	// Create a fraudulent attestation
+	fraudAttestation := types.NewAttestation(
+		common.BigToHash(big.NewInt(gofakeit.Int64())),
+		common.BigToHash(big.NewInt(gofakeit.Int64())),
+		1,
+		big.NewInt(int64(gofakeit.Int32())),
+		big.NewInt(int64(gofakeit.Int32())),
+	)
+	attSignature, attEncoded, _, err := fraudAttestation.SignAttestation(g.GetTestContext(), g.NotaryBondedSigner)
+	Nil(g.T(), err)
+
+	// Submit the attestation
+	agentRoot := common.BigToHash(big.NewInt(gofakeit.Int64()))
+	snapGas := types.NewGasData(gofakeit.Uint16(), gofakeit.Uint16(), gofakeit.Uint16(), gofakeit.Uint16(), gofakeit.Uint16(), gofakeit.Uint16())
+	fmt.Printf("txContextDest.TransactOpts: %+v\n", txContextDest.TransactOpts)
+	tx, err := g.DestinationDomainClient.LightInbox().SubmitAttestation(txContextDest.TransactOpts, attEncoded, attSignature, agentRoot, encodeGasDataBigInt(snapGas))
+	Nil(g.T(), err)
+	NotNil(g.T(), tx)
+	g.TestBackendSummit.WaitForConfirmation(g.GetTestContext(), tx)
+
+	// Verify that the guard eventually marks the accused agent as Fraudulent
+	txContextSummit := g.TestBackendSummit.GetTxContext(g.GetTestContext(), g.SummitMetadata.OwnerPtr())
+	g.Eventually(func() bool {
+		status, err := g.OriginDomainClient.LightManager().GetAgentStatus(g.GetTestContext(), g.NotaryBondedSigner)
+		Nil(g.T(), err)
+		fmt.Printf("status: %+v\n", status)
+
+		if status.Flag() == uint8(4) {
+			fmt.Println("SUCCESS")
+			return true
+		}
+
+		// Make sure that scribe keeps producing new blocks
+		bumpTx, err := g.TestContractOnSummit.EmitAgentsEventA(txContextSummit.TransactOpts, big.NewInt(gofakeit.Int64()), big.NewInt(gofakeit.Int64()), big.NewInt(gofakeit.Int64()))
+		Nil(g.T(), err)
+		g.TestBackendSummit.WaitForConfirmation(g.GetTestContext(), bumpTx)
+		return false
+	})
+}
+
+func encodeGasDataBigInt(gasData types.GasData) []*big.Int {
+	encoded := []*big.Int{}
+	encode := func(num uint16) {
+		encoded = append(encoded, big.NewInt(int64(num)))
+	}
+	encode(gasData.AmortAttCost())
+	encode(gasData.DataPrice())
+	encode(gasData.EtherPrice())
+	encode(gasData.ExecBuffer())
+	encode(gasData.GasPrice())
+	encode(gasData.Markup())
+	return encoded
 }
