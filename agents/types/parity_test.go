@@ -338,15 +338,15 @@ func TestEncodeAttestationParity(t *testing.T) {
 	copy(agentRootB32[:], agentRoot[:])
 	copy(gasDataHashB32[:], gasDataHash[:])
 
-	dataHashAttestation := types.NewAttestationComputeHash([32]byte{1}, 1, big.NewInt(1), big.NewInt(1), agentRootB32, gasDataHashB32)
-	attestationDataHash := dataHashAttestation.DataHash()
+	attestationDataHash := types.GetAttestationDataHash(agentRootB32, gasDataHashB32)
+	attestation := types.NewAttestation([32]byte{1}, attestationDataHash, 1, big.NewInt(1), big.NewInt(1))
 
 	contractDataHashFromVals, err := attestationContract.DataHash(&bind.CallOpts{Context: ctx}, agentRootB32, gasDataHashB32)
 	Nil(t, err)
 
 	Equal(t, contractDataHashFromVals, attestationDataHash)
 
-	encodedDataHashAttestation, err := types.EncodeAttestation(dataHashAttestation)
+	encodedDataHashAttestation, err := types.EncodeAttestation(attestation)
 	Nil(t, err)
 
 	contractDataHashFromAtt, err := attestationContract.DataHash0(&bind.CallOpts{Context: ctx}, encodedDataHashAttestation)

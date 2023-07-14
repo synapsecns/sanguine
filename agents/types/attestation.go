@@ -3,11 +3,12 @@ package types
 import (
 	"context"
 	"fmt"
+	"math/big"
+
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/crypto"
 	"github.com/synapsecns/sanguine/core"
 	"github.com/synapsecns/sanguine/ethergo/signer/signer"
-	"math/big"
 )
 
 const (
@@ -45,17 +46,6 @@ type attestation struct {
 
 // NewAttestation creates a new attestation.
 func NewAttestation(snapshotRoot [32]byte, dataHash [32]byte, nonce uint32, blockNumber *big.Int, timestamp *big.Int) Attestation {
-	return &attestation{
-		snapshotRoot: snapshotRoot,
-		dataHash:     dataHash,
-		nonce:        nonce,
-		blockNumber:  blockNumber,
-		timestamp:    timestamp,
-	}
-}
-
-func NewAttestationComputeHash(snapshotRoot [32]byte, nonce uint32, blockNumber *big.Int, timestamp *big.Int, agentRoot [32]byte, snapGasHash [32]byte) Attestation {
-	dataHash := GetDataHash(agentRoot, snapGasHash)
 	return &attestation{
 		snapshotRoot: snapshotRoot,
 		dataHash:     dataHash,
@@ -108,8 +98,8 @@ func (a attestation) SignAttestation(ctx context.Context, signer signer.Signer) 
 	return signature, encodedAttestation, hashedAttestation, nil
 }
 
-// GetDataHash generates the data hash from the agent root and SnapGasHash.
-func GetDataHash(agentRoot [32]byte, snapGasHash [32]byte) [32]byte {
+// GetAttestationDataHash generates the data hash from the agent root and SnapGasHash.
+func GetAttestationDataHash(agentRoot [32]byte, snapGasHash [32]byte) [32]byte {
 	concatenatedBytes := append(agentRoot[:], snapGasHash[:]...)
 	dataHash := crypto.Keccak256(concatenatedBytes)
 
