@@ -15,6 +15,8 @@ import { BigNumber } from 'ethers'
 
 export const inputRef = React.createRef<HTMLInputElement>()
 
+const inputRegex = RegExp(`^\\d*(?:\\\\[.])?\\d*$`)
+
 export const InputContainer = () => {
   const {
     fromChainId,
@@ -59,19 +61,38 @@ export const InputContainer = () => {
     ? formatBNToString(fromTokenBalance, fromToken.decimals[fromChainId], 4)
     : '0'
 
+  useEffect(() => {}, [])
+
+  // const handleFromValueChange = (
+  //   event: React.ChangeEvent<HTMLInputElement>
+  // ) => {
+  //   const fromValueString: string = event.target.value
+  //   try {
+  //     const fromValueBigNumber: BigNumber = stringToBigNum(
+  //       fromValueString,
+  //       fromToken.decimals[fromChainId]
+  //     )
+  //     dispatch(updateFromValue(fromValueBigNumber))
+  //     setShowValue(fromValueString)
+  //   } catch (error) {
+  //     console.error('Invalid value for conversion to BigNumber')
+  //   }
+  // }
+
   const handleFromValueChange = (
     event: React.ChangeEvent<HTMLInputElement>
   ) => {
-    const fromValueString: string = event.target.value
-    try {
-      const fromValueBigNumber: BigNumber = stringToBigNum(
-        fromValueString,
-        fromToken.decimals[fromChainId]
-      )
+    const inputValue = event.target.value
+    const regex = /^[0-9]*[.,]?[0-9]*$/
+
+    const fromValueBigNumber: BigNumber = stringToBigNum(
+      inputValue,
+      fromToken.decimals[fromChainId]
+    )
+
+    if (regex.test(inputValue) || inputValue === '') {
       dispatch(updateFromValue(fromValueBigNumber))
-      setShowValue(fromValueString)
-    } catch (error) {
-      console.error('Invalid value for conversion to BigNumber')
+      setShowValue(inputValue)
     }
   }
 
@@ -118,7 +139,8 @@ export const InputContainer = () => {
           <div className="flex flex-col pt-2 ml-4">
             <input
               ref={inputRef}
-              pattern="[0-9.]+"
+              // pattern="[0-9.]+"
+              pattern="^[0-9]*[.,]?[0-9]*$"
               disabled={false}
               className={`
               focus:outline-none
@@ -135,6 +157,7 @@ export const InputContainer = () => {
               autoComplete="off"
               minLength={1}
               maxLength={79}
+              required={true}
             />
             {hasMounted && isConnected && (
               <label

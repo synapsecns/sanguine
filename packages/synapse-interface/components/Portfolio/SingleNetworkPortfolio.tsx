@@ -182,12 +182,9 @@ const PortfolioTokenAsset = ({
   const isDisabled: boolean = false
 
   const handleTotalBalanceInputCallback = useCallback(() => {
-    return //remove this when callback is ready to implement
-    if (!isDisabled) {
-      dispatch(setFromToken(token))
-      dispatch(setFromChainId(portfolioChainId))
-      dispatch(updateFromValue(balance))
-    }
+    dispatch(setFromToken(token))
+    dispatch(setFromChainId(portfolioChainId))
+    dispatch(updateFromValue(balance))
   }, [isDisabled, token, balance])
 
   const handleSelectFromTokenCallback = useCallback(() => {
@@ -259,7 +256,7 @@ const PortfolioTokenAsset = ({
         </div>
         <div
           onClick={handleTotalBalanceInputCallback}
-          className="py-2 cursor-default"
+          className="py-2 cursor-pointer"
         >
           {parsedBalance}
         </div>
