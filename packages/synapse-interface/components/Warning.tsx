@@ -41,8 +41,8 @@ export const Warning = ({
             </p>
             <p>
               Follow <a href={TWITTER_URL}>Twitter</a> or{' '}
-              <a href={DISCORD_URL}>Discord</a>
-              for updates as more CCTP routes become available.
+              <a href={DISCORD_URL}>Discord</a> for updates as more CCTP routes
+              become available.
             </p>
           </>
         }
@@ -65,8 +65,8 @@ export const Warning = ({
             </p>
             <p>
               Follow <a href={TWITTER_URL}>Twitter</a> or{' '}
-              <a href={DISCORD_URL}>Discord</a>
-              for updates when this route becomes available.
+              <a href={DISCORD_URL}>Discord</a> for updates when this route
+              becomes available.
             </p>
           </>
         }
