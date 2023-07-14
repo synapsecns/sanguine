@@ -22,6 +22,7 @@ import { EmptyPortfolioContent } from './PortfolioContent'
 import { ROUTER_ADDRESS } from '@/utils/hooks/usePortfolioBalances'
 import { FetchState } from '@/utils/hooks/usePortfolioBalances'
 import { toast } from 'react-hot-toast'
+import { inputRef } from '../StateManagedBridge/InputContainer'
 
 type SingleNetworkPortfolioProps = {
   portfolioChainId: number
@@ -151,6 +152,10 @@ const PortfolioTokenAsset = ({
     window.scrollTo({ top: 0, behavior: 'smooth' })
   }
 
+  const handleFocusOnInput = () => {
+    inputRef.current.focus()
+  }
+
   const parsedBalance: string = useMemo(() => {
     const formattedBalance = formatBNToString(
       balance,
@@ -189,6 +194,7 @@ const PortfolioTokenAsset = ({
     dispatch(setFromChainId(portfolioChainId))
     dispatch(setFromToken(token))
     scrollToTop()
+    handleFocusOnInput()
   }, [token, isDisabled, portfolioChainId])
 
   const handleApproveCallback = useCallback(async () => {
