@@ -2,8 +2,9 @@ package guard_test
 
 import (
 	"fmt"
-	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"math/big"
+
+	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 
 	"github.com/Flaque/filet"
 	"github.com/brianvoe/gofakeit/v6"
@@ -359,7 +360,8 @@ func (g GuardSuite) TestReportAttestationNotOnSummit() {
 	txContextSummit := g.TestBackendSummit.GetTxContext(g.GetTestContext(), g.SummitMetadata.OwnerPtr())
 	txContextDestination := g.TestBackendDestination.GetTxContext(g.GetTestContext(), g.LightInboxMetadataOnDestination.OwnerPtr())
 	g.Eventually(func() bool {
-		status, err := g.OriginDomainClient.LightManager().GetAgentStatus(g.GetTestContext(), g.NotaryBondedSigner)
+		fmt.Printf("summit light manager: %v\n", g.SummitDomainClient.LightManager())
+		status, err := g.SummitDomainClient.BondingManager().GetAgentStatus(g.GetTestContext(), g.NotaryBondedSigner)
 		Nil(g.T(), err)
 		fmt.Printf("status: %+v\n", status)
 
