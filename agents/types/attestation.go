@@ -54,6 +54,17 @@ func NewAttestation(snapshotRoot [32]byte, dataHash [32]byte, nonce uint32, bloc
 	}
 }
 
+func NewAttestationComputeHash(snapshotRoot [32]byte, nonce uint32, blockNumber *big.Int, timestamp *big.Int, agentRoot [32]byte, snapGasHash [32]byte) Attestation {
+	dataHash := GetDataHash(agentRoot, snapGasHash)
+	return &attestation{
+		snapshotRoot: snapshotRoot,
+		dataHash:     dataHash,
+		nonce:        nonce,
+		blockNumber:  blockNumber,
+		timestamp:    timestamp,
+	}
+}
+
 func (a attestation) SnapshotRoot() [32]byte {
 	return a.snapshotRoot
 }
@@ -95,4 +106,15 @@ func (a attestation) SignAttestation(ctx context.Context, signer signer.Signer) 
 		return nil, nil, common.Hash{}, fmt.Errorf("could not sign attestation: %w", err)
 	}
 	return signature, encodedAttestation, hashedAttestation, nil
+}
+
+// GetDataHash generates the data hash from the agent root and SnapGasHash.
+func GetDataHash(agentRoot [32]byte, snapGasHash [32]byte) [32]byte {
+	concatenatedBytes := append(agentRoot[:], snapGasHash[:]...)
+	dataHash := crypto.Keccak256(concatenatedBytes)
+
+	var dataHashB32 [32]byte
+	copy(dataHashB32[:], dataHash)
+
+	return dataHashB32
 }

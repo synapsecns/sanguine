@@ -2,6 +2,7 @@ package guard_test
 
 import (
 	"fmt"
+	"github.com/ethereum/go-ethereum/crypto"
 	"math/big"
 
 	"github.com/Flaque/filet"
@@ -280,21 +281,46 @@ func (g GuardSuite) TestReportAttestationNotOnSummit() {
 	Equal(g.T(), status.Flag(), uint8(1))
 	Nil(g.T(), err)
 
+	agentRoot := common.BigToHash(big.NewInt(gofakeit.Int64()))
+	//snapGas := types.NewGasData(gofakeit.Uint16(), gofakeit.Uint16(), gofakeit.Uint16(), gofakeit.Uint16(), gofakeit.Uint16(), gofakeit.Uint16())
+	snapGas := types.NewGasData(0, 0, 0, 0, 0, 0)
+
+	agentRootBytes := agentRoot.Bytes()
+	snapGasBytes, err := types.EncodeGasData(snapGas)
+	Nil(g.T(), err)
+
+	snapGasHash := crypto.Keccak256(snapGasBytes)
+
+	var agentRootB32, snapGasHashB32 [32]byte
+	copy(agentRootB32[:], agentRootBytes)
+	copy(snapGasHashB32[:], snapGasHash)
+
 	// Create a fraudulent attestation
-	fraudAttestation := types.NewAttestation(
-		common.BigToHash(big.NewInt(gofakeit.Int64())),
-		common.BigToHash(big.NewInt(gofakeit.Int64())),
+	fraudAttestation := types.NewAttestationComputeHash(
+		common.BigToHash(big.NewInt(int64(gofakeit.Int32()))),
 		1,
 		big.NewInt(int64(gofakeit.Int32())),
 		big.NewInt(int64(gofakeit.Int32())),
+		agentRootB32,
+		snapGasHashB32,
 	)
+
 	attSignature, attEncoded, _, err := fraudAttestation.SignAttestation(g.GetTestContext(), g.NotaryBondedSigner)
 	Nil(g.T(), err)
 
 	// Submit the attestation
-	agentRoot := common.BigToHash(big.NewInt(gofakeit.Int64()))
-	snapGas := types.NewGasData(gofakeit.Uint16(), gofakeit.Uint16(), gofakeit.Uint16(), gofakeit.Uint16(), gofakeit.Uint16(), gofakeit.Uint16())
 	fmt.Printf("txContextDest.TransactOpts: %+v\n", txContextDest.TransactOpts)
+	agentProof, err := g.SummitDomainClient.BondingManager().GetProof(g.GetTestContext(), g.NotaryBondedSigner)
+	Nil(g.T(), err)
+	agentStatus, err := g.SummitDomainClient.BondingManager().GetAgentStatus(g.GetTestContext(), g.NotaryBondedSigner)
+	Nil(g.T(), err)
+	err = g.DestinationDomainClient.LightManager().UpdateAgentStatus(
+		g.GetTestContext(),
+		g.NotaryUnbondedSigner,
+		g.NotaryBondedSigner,
+		agentStatus,
+		agentProof)
+	Nil(g.T(), err)
 	tx, err := g.DestinationDomainClient.LightInbox().SubmitAttestation(txContextDest.TransactOpts, attEncoded, attSignature, agentRoot, encodeGasDataBigInt(snapGas))
 	Nil(g.T(), err)
 	NotNil(g.T(), tx)
@@ -327,11 +353,12 @@ func encodeGasDataBigInt(gasData types.GasData) []*big.Int {
 	encode := func(num uint16) {
 		encoded = append(encoded, big.NewInt(int64(num)))
 	}
-	encode(gasData.AmortAttCost())
-	encode(gasData.DataPrice())
-	encode(gasData.EtherPrice())
-	encode(gasData.ExecBuffer())
-	encode(gasData.GasPrice())
 	encode(gasData.Markup())
+	encode(gasData.EtherPrice())
+	encode(gasData.AmortAttCost())
+	encode(gasData.ExecBuffer())
+	encode(gasData.DataPrice())
+	encode(gasData.GasPrice())
+
 	return encoded
 }

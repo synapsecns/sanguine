@@ -325,6 +325,34 @@ func TestEncodeAttestationParity(t *testing.T) {
 	Equal(t, nonce, attestationFromBytes.Nonce())
 	Equal(t, blockNumber, attestationFromBytes.BlockNumber())
 	Equal(t, timestamp, attestationFromBytes.Timestamp())
+
+	// Testing data hash.
+	gasData := types.NewGasData(gofakeit.Uint16(), gofakeit.Uint16(), gofakeit.Uint16(), gofakeit.Uint16(), gofakeit.Uint16(), gofakeit.Uint16())
+
+	gasDataBytes, err := types.EncodeGasData(gasData)
+	Nil(t, err)
+
+	gasDataHash := crypto.Keccak256Hash(gasDataBytes)
+
+	var agentRootB32, gasDataHashB32 [32]byte
+	copy(agentRootB32[:], agentRoot[:])
+	copy(gasDataHashB32[:], gasDataHash[:])
+
+	dataHashAttestation := types.NewAttestationComputeHash([32]byte{1}, 1, big.NewInt(1), big.NewInt(1), agentRootB32, gasDataHashB32)
+	attestationDataHash := dataHashAttestation.DataHash()
+
+	contractDataHashFromVals, err := attestationContract.DataHash(&bind.CallOpts{Context: ctx}, agentRootB32, gasDataHashB32)
+	Nil(t, err)
+
+	Equal(t, contractDataHashFromVals, attestationDataHash)
+
+	encodedDataHashAttestation, err := types.EncodeAttestation(dataHashAttestation)
+	Nil(t, err)
+
+	contractDataHashFromAtt, err := attestationContract.DataHash0(&bind.CallOpts{Context: ctx}, encodedDataHashAttestation)
+	Nil(t, err)
+
+	Equal(t, contractDataHashFromAtt, attestationDataHash)
 }
 
 func TestBaseMessageEncodeParity(t *testing.T) {
