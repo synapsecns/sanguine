@@ -86,6 +86,7 @@ import { isAddress } from '@ethersproject/address'
 import { TransactionButton } from '@/components/buttons/TransactionButton'
 import { BridgeTransactionButton } from '@/components/StateManagedBridge/BridgeTransactionButton'
 import ExplorerToastLink from '@/components/ExplorerToastLink'
+import { Warning } from '@/components/Warning'
 
 // NOTE: These are idle utility functions that will be re-written to
 // support sorting by desired mechanism
@@ -549,6 +550,12 @@ const StateManagedBridge = () => {
             </Transition>
             <InputContainer />
             <OutputContainer />
+            <Warning
+              originChainId={fromChainId}
+              destinationChainId={toChainId}
+              originToken={fromToken}
+              destinationToken={toToken}
+            />
             <Transition
               appear={true}
               unmount={false}
