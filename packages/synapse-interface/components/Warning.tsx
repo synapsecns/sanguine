@@ -1,6 +1,6 @@
 import { Chain, Token } from '@/utils/types'
 import { CHAINS_BY_ID } from '@/constants/chains'
-
+import { DISCORD_URL, TWITTER_URL } from '@/constants/urls'
 interface WarningProps {
   originChainId: number
   destinationChainId: number
@@ -40,8 +40,9 @@ export const Warning = ({
               cross-chain transfer protocol.
             </p>
             <p>
-              Follow Twitter or Discord for updates as more CCTP routes become
-              available.
+              Follow <a href={TWITTER_URL}>Twitter</a> or{' '}
+              <a href={DISCORD_URL}>Discord</a>
+              for updates as more CCTP routes become available.
             </p>
           </>
         }
@@ -63,8 +64,9 @@ export const Warning = ({
               USDC cross-chain transfer protocol.
             </p>
             <p>
-              Follow Twitter or Discord for updates when this route becomes
-              available.
+              Follow <a href={TWITTER_URL}>Twitter</a> or{' '}
+              <a href={DISCORD_URL}>Discord</a>
+              for updates when this route becomes available.
             </p>
           </>
         }
@@ -85,8 +87,9 @@ export const Warning = ({
               CCTP transfers may take up to 20 minutes to complete.
             </p>
             <p>
-              Follow Twitter or Discord for updates as more CCTP routes become
-              available.
+              Follow <a href={TWITTER_URL}>Twitter</a> or{' '}
+              <a href={DISCORD_URL}>Discord</a> for updates as more CCTP routes
+              become available.
             </p>
           </>
         }
@@ -136,7 +139,7 @@ const WarningMessage = ({
   message: React.ReactNode
 }) => {
   return (
-    <div className="flex flex-col bg-[#353038] text-white text-m p-3 rounded-md mt-4">
+    <div className="flex flex-col bg-[#353038] text-white text-sm p-3 rounded-md mt-4">
       <div className="mb-2 font-bold">{header}</div>
       <div>{message}</div>
     </div>
