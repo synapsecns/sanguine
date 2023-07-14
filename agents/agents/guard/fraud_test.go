@@ -1,7 +1,6 @@
 package guard_test
 
 import (
-	"fmt"
 	"math/big"
 
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
@@ -195,10 +194,6 @@ func (g GuardSuite) TestReportAttestationNotOnSummit() {
 
 	omniRPCClient := omniClient.NewOmnirpcClient(g.TestOmniRPC, g.GuardMetrics, omniClient.WithCaptureReqRes())
 
-	omnirpcDestination := omniRPCClient.GetEndpoint(int(g.DestinationDomainClient.Config().DomainID), 1)
-
-	fmt.Println("OMNIRPCDESTINATION", omnirpcDestination)
-
 	// Scribe setup.
 	originClient, err := backfill.DialBackend(g.GetTestContext(), g.TestBackendOrigin.RPCAddress(), g.ScribeMetrics)
 	Nil(g.T(), err)
@@ -276,6 +271,9 @@ func (g GuardSuite) TestReportAttestationNotOnSummit() {
 		}
 	}()
 
+	_, gasDataContract := g.TestDeployManager.GetGasDataHarness(g.GetTestContext(), g.TestBackendDestination)
+	_, attestationContract := g.TestDeployManager.GetAttestationHarness(g.GetTestContext(), g.TestBackendDestination)
+
 	// Verify that the agent is marked as Active
 	txContextDest := g.TestBackendDestination.GetTxContext(g.GetTestContext(), g.DestinationContractMetadata.OwnerPtr())
 	status, err := g.OriginDomainClient.LightManager().GetAgentStatus(g.GetTestContext(), g.GuardBondedSigner)
@@ -284,40 +282,17 @@ func (g GuardSuite) TestReportAttestationNotOnSummit() {
 
 	agentRoot := common.BigToHash(big.NewInt(gofakeit.Int64()))
 	gasData := types.NewGasData(gofakeit.Uint16(), gofakeit.Uint16(), gofakeit.Uint16(), gofakeit.Uint16(), gofakeit.Uint16(), gofakeit.Uint16())
-	//gasData := types.NewGasData(0, 0, 0, 0, 0, 0)
 	chainGas := types.NewChainGas(gasData, uint32(g.TestBackendOrigin.GetChainID()))
 	chainGasBytes, err := types.EncodeChainGas(chainGas)
 	Nil(g.T(), err)
 
-	_, gasDataContract := g.TestDeployManager.GetGasDataHarness(g.GetTestContext(), g.TestBackendDestination)
-	_, attestationContract := g.TestDeployManager.GetAttestationHarness(g.GetTestContext(), g.TestBackendDestination)
-
+	// Build and sign a fraudulent attestation
 	// TODO: SetBytes here might be surface area for an error. Maybe use harness to generate.
 	snapGas := []*big.Int{new(big.Int).SetBytes(chainGasBytes)}
-	//snapGasBytes := snapGas[0].Bytes()
-
 	snapGasHash, err := gasDataContract.SnapGasHash(&bind.CallOpts{Context: g.GetTestContext()}, snapGas)
 	Nil(g.T(), err)
-
 	dataHash, err := attestationContract.DataHash(&bind.CallOpts{Context: g.GetTestContext()}, agentRoot, snapGasHash)
 	Nil(g.T(), err)
-
-	//snapGasHash := crypto.Keccak256(snapGasBytes)
-
-	//var agentRootB32, snapGasHashB32 [32]byte
-	//copy(agentRootB32[:], agentRoot[:])
-	//copy(snapGasHashB32[:], snapGasHash)
-
-	//// Create a fraudulent attestation
-	//fraudAttestation := types.NewAttestationComputeHash(
-	//	common.BigToHash(big.NewInt(int64(gofakeit.Int32()))),
-	//	1,
-	//	big.NewInt(int64(gofakeit.Int32())),
-	//	big.NewInt(int64(gofakeit.Int32())),
-	//	agentRootB32,
-	//	snapGasHashB32,
-	//)
-
 	fraudAttestation := types.NewAttestation(
 		common.BigToHash(big.NewInt(int64(gofakeit.Int32()))),
 		dataHash,
@@ -325,12 +300,10 @@ func (g GuardSuite) TestReportAttestationNotOnSummit() {
 		big.NewInt(int64(gofakeit.Int32())),
 		big.NewInt(int64(gofakeit.Int32())),
 	)
-
 	attSignature, attEncoded, _, err := fraudAttestation.SignAttestation(g.GetTestContext(), g.NotaryBondedSigner)
 	Nil(g.T(), err)
 
 	// Submit the attestation
-	fmt.Printf("txContextDest.TransactOpts: %+v\n", txContextDest.TransactOpts)
 	agentProof, err := g.SummitDomainClient.BondingManager().GetProof(g.GetTestContext(), g.NotaryBondedSigner)
 	Nil(g.T(), err)
 	agentStatus, err := g.SummitDomainClient.BondingManager().GetAgentStatus(g.GetTestContext(), g.NotaryBondedSigner)
@@ -352,21 +325,15 @@ func (g GuardSuite) TestReportAttestationNotOnSummit() {
 	)
 	Nil(g.T(), err)
 	NotNil(g.T(), tx)
-	txHash := tx.Hash()
-	fmt.Printf("txHash: %+v\n", txHash.Hex())
 	g.TestBackendDestination.WaitForConfirmation(g.GetTestContext(), tx)
 
 	// Verify that the guard eventually marks the accused agent as Fraudulent
 	txContextSummit := g.TestBackendSummit.GetTxContext(g.GetTestContext(), g.SummitMetadata.OwnerPtr())
 	txContextDestination := g.TestBackendDestination.GetTxContext(g.GetTestContext(), g.LightInboxMetadataOnDestination.OwnerPtr())
 	g.Eventually(func() bool {
-		fmt.Printf("summit light manager: %v\n", g.SummitDomainClient.LightManager())
 		status, err := g.SummitDomainClient.BondingManager().GetAgentStatus(g.GetTestContext(), g.NotaryBondedSigner)
 		Nil(g.T(), err)
-		fmt.Printf("status: %+v\n", status)
-
 		if status.Flag() == uint8(4) {
-			fmt.Println("SUCCESS")
 			return true
 		}
 
