@@ -21,7 +21,8 @@ export const STAKE_PATH = '/stake'
 export const POOLS_PATH = '/pools'
 export const POOL_PATH = '/pool'
 export const BRIDGE_PATH = '/'
-export const CONTRACTS_PATH = '/contracts'
+export const CONTRACTS_PATH =
+  'https://docs.synapseprotocol.com/reference/contract-addresses'
 export const STATISTICS_PATH = '/statistics'
 export const LANDING_PATH = '/landing'
 export const TERMS_OF_SERVICE_PATH =

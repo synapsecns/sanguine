@@ -196,6 +196,7 @@ const PortfolioTokenAsset = ({
     } else {
       try {
         await switchNetwork({ chainId: portfolioChainId })
+        await scrollToTop()
         await approveToken(ROUTER_ADDRESS, portfolioChainId, tokenAddress).then(
           (success) => {
             success && fetchPortfolioBalancesCallback()

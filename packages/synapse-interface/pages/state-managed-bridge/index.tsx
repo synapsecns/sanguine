@@ -78,13 +78,11 @@ import Button from '@/components/ui/tailwind/Button'
 import { SettingsIcon } from '@/components/icons/SettingsIcon'
 import { DestinationAddressInput } from '@/components/StateManagedBridge/DestinationAddressInput'
 import { isAddress } from '@ethersproject/address'
-import { TransactionButton } from '@/components/buttons/TransactionButton'
 import { BridgeTransactionButton } from '@/components/StateManagedBridge/BridgeTransactionButton'
 import ExplorerToastLink from '@/components/ExplorerToastLink'
 import { Address, zeroAddress } from 'viem'
-import { Zero } from '@ethersproject/constants'
 import { stringToBigInt } from '@/utils/stringToBigNum'
-import { BigNumber } from 'ethers'
+import { Warning } from '@/components/Warning'
 
 // NOTE: These are idle utility functions that will be re-written to
 // support sorting by desired mechanism
@@ -343,7 +341,7 @@ const StateManagedBridge = () => {
         )
         const message = `Route found for bridging ${str} ${fromToken.symbol} on ${CHAINS_BY_ID[fromChainId]?.name} to ${toToken.symbol} on ${CHAINS_BY_ID[toChainId]?.name}`
         console.log(message)
-        toast(message)
+        toast(message, { duration: 2000 })
       }
     } catch (err) {
       console.log(err)
@@ -355,7 +353,7 @@ const StateManagedBridge = () => {
         )
         const message = `No route found for bridging ${str} ${fromToken.symbol} on ${CHAINS_BY_ID[fromChainId]?.name} to ${toToken.symbol} on ${CHAINS_BY_ID[toChainId]?.name}`
         console.log(message)
-        toast(message)
+        toast(message, { duration: 2000 })
 
         dispatch(setBridgeQuote(EMPTY_BRIDGE_QUOTE_ZERO))
         return
@@ -559,6 +557,12 @@ const StateManagedBridge = () => {
             </Transition>
             <InputContainer />
             <OutputContainer />
+            <Warning
+              originChainId={fromChainId}
+              destinationChainId={toChainId}
+              originToken={fromToken}
+              destinationToken={toToken}
+            />
             <Transition
               appear={true}
               unmount={false}
