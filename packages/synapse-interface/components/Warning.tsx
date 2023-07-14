@@ -73,10 +73,18 @@ export const Warning = ({
       />
     )
   } else if (
-    originChainName === 'Ethereum' &&
-    destinationChainName === 'Arbitrum' &&
-    originTokenSymbol === 'USDC' &&
-    destinationTokenSymbol === 'USDC'
+    (originChainName === 'Ethereum' &&
+      destinationChainName === 'Arbitrum' &&
+      originTokenSymbol === 'USDC' &&
+      destinationTokenSymbol === 'USDC') ||
+    (originChainName === 'Arbitrum' &&
+      destinationChainName === 'Avalanche' &&
+      originTokenSymbol === 'USDC' &&
+      destinationTokenSymbol === 'USDC') ||
+    (originChainName === 'Avalanche' &&
+      destinationChainName === 'Arbitrum' &&
+      originTokenSymbol === 'USDC' &&
+      destinationTokenSymbol === 'USDC')
   ) {
     return (
       <WarningMessage
