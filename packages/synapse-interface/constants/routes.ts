@@ -5,6 +5,7 @@ import {
   POOLS_PATH,
   LANDING_PATH,
   BRIDGE_PATH,
+  CONTRACTS_PATH,
 } from './urls'
 
 export interface RouteObject {
@@ -47,6 +48,11 @@ export const NAVIGATION: RouteObject = {
   Analytics: {
     path: ANALYTICS_PATH,
     text: 'Explorer',
+    match: null,
+  },
+  Contracts: {
+    path: CONTRACTS_PATH,
+    text: 'Contracts',
     match: null,
   },
 }
