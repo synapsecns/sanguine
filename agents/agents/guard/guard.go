@@ -284,9 +284,13 @@ func (g Guard) handleSnapshot(ctx context.Context, log ethTypes.Log, chainID uin
 		}
 
 		// First, call verifyStateWithSnapshot() to slash the accused agent on origin.
-		err = g.slashAccusedAgent(ctx, state.Origin(), int64(stateIndex), snapshotPayload, agentSig)
+		signature, err := g.bondedSigner.SignMessage(ctx, snapshotPayload, true)
 		if err != nil {
-			return fmt.Errorf("could not slash accused agent: %w", err)
+			return fmt.Errorf("could not sign snapshot message: %w", err)
+		}
+		_, err = g.domains[state.Origin()].LightInbox().VerifyStateWithSnapshot(ctx, g.unbondedSigner, int64(stateIndex), signature, snapshotPayload, agentSig)
+		if err != nil {
+			return fmt.Errorf("could not verify state with snapshot: %w", err)
 		}
 
 		/*
@@ -354,19 +358,6 @@ func (g Guard) handleAttestation(ctx context.Context, log ethTypes.Log, chainID 
 	// 	return fmt.Errorf("could not submit attestation report: %w", err)
 	// }
 
-	return nil
-}
-
-func (g Guard) slashAccusedAgent(ctx context.Context, origin uint32, stateIndex int64, snapPayload, snapSignature []byte) error {
-	signature, err := g.bondedSigner.SignMessage(ctx, snapPayload, true)
-	if err != nil {
-		return fmt.Errorf("could not sign message: %w", err)
-	}
-
-	_, err = g.domains[origin].LightInbox().VerifyStateWithSnapshot(ctx, g.unbondedSigner, stateIndex, signature, snapPayload, snapSignature)
-	if err != nil {
-		return fmt.Errorf("could not verify state with snapshot: %w", err)
-	}
 	return nil
 }
 
