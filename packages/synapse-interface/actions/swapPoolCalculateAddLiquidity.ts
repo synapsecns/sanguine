@@ -1,6 +1,5 @@
 import { readContract } from '@wagmi/core'
 
-import { getSwapDepositContractFields } from '@/utils/getSwapDepositContractFields'
 import { Token } from '@/utils/types'
 import { SYNAPSE_ROUTER_ABI } from '@/constants/abis/synapseRouter'
 
@@ -15,14 +14,12 @@ export const swapPoolCalculateAddLiquidity = async ({
   pool: Token
   inputs: bigint[]
 }) => {
-  const { poolAddress } = getSwapDepositContractFields(pool, chainId)
-
   const amount = await readContract({
     chainId,
     address: ROUTER_ADDRESS,
     abi: SYNAPSE_ROUTER_ABI,
     functionName: 'calculateAddLiquidity',
-    args: [poolAddress, inputs],
+    args: [pool.swapAddresses[chainId], inputs],
   })
 
   return amount

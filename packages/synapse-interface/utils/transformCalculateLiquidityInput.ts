@@ -10,9 +10,12 @@ const replaceKey = (
   newKey: string
 ) => {
   if (obj.hasOwnProperty(oldKey)) {
-    obj[newKey] = obj[oldKey]
-    delete obj[oldKey]
+    const newObj = { ...obj, [newKey]: obj[oldKey] }
+    delete newObj[oldKey]
+
+    return newObj
   }
+
   return obj
 }
 
@@ -26,13 +29,13 @@ export const transformCalculateLiquidityInput = (
     (t) => t.symbol === WETH.symbol
   )
   const poolHasWeth: boolean = wethIndex > 0
-  const nativeEthAddress = zeroAddress
+
   const wethAddress = poolHasWeth
     ? pool.poolTokens[wethIndex].addresses[chainId]
     : null
 
   const transformedInput = poolHasWeth
-    ? replaceKey(filteredInputValue, nativeEthAddress, wethAddress)
+    ? replaceKey(filteredInputValue, zeroAddress, wethAddress)
     : filteredInputValue
 
   return transformedInput
