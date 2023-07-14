@@ -22,91 +22,116 @@ export const Warning = ({
   const { symbol: originTokenSymbol } = originToken
   const { symbol: destinationTokenSymbol } = destinationToken
 
-  if (
-    (originTokenSymbol === 'USDC' &&
-      destinationTokenSymbol === 'USDCe' &&
-      originChainName !== 'Ethereum') ||
-    (originTokenSymbol === 'USDCe' &&
-      destinationTokenSymbol === 'USDC' &&
-      destinationChainName !== 'Ethereum')
-  ) {
+  const isTokenUSDCAndUSDCe =
+    (originTokenSymbol === 'USDC' && destinationTokenSymbol === 'USDCe') ||
+    (originTokenSymbol === 'USDCe' && destinationTokenSymbol === 'USDC')
+  const isChainAvalancheOrArbitrum =
+    originChainName == 'Avalanche' ||
+    originChainName == 'Arbitrum' ||
+    destinationChainName == 'Avalanche' ||
+    destinationChainName === 'Arbitrum'
+
+  const isTokenUSDC =
+    originTokenSymbol === 'USDC' && destinationTokenSymbol === 'USDC'
+  const isChainOtherThanAvalancheArbitrumEthereum =
+    (destinationChainName != 'Avalanche' &&
+      destinationChainName != 'Arbitrum' &&
+      destinationChainName != 'Ethereum') ||
+    (originChainName != 'Avalanche' &&
+      originChainName != 'Arbitrum' &&
+      originChainName != 'Ethereum')
+
+  const isTokenUSDCAndChainEthereumArbitrumAvalanche =
+    isTokenUSDC &&
+    ((originChainName === 'Ethereum' && destinationChainName === 'Arbitrum') ||
+      (originChainName === 'Arbitrum' &&
+        destinationChainName === 'Avalanche') ||
+      (originChainName === 'Avalanche' && destinationChainName === 'Arbitrum'))
+
+  const isChainHarmony =
+    originChainName === 'Harmony' || destinationChainName === 'Harmony'
+  const isChainFantom =
+    originChainName === 'Fantom' || destinationChainName === 'Fantom'
+
+  if (isTokenUSDCAndUSDCe && isChainAvalancheOrArbitrum) {
     return (
       <WarningMessage
         header="USDC and USDC.e are incompatible."
         message={
           <>
             <p className="mb-2">
-              USD Coin can currently only be bridged with itself, via the new
+              USDC can currently only be bridged with itself, via the new Circle
               cross-chain transfer protocol.
             </p>
             <p>
-              Follow <a href={TWITTER_URL}>Twitter</a> or{' '}
-              <a href={DISCORD_URL}>Discord</a> for updates as more CCTP routes
-              become available.
+              Follow{' '}
+              <a target="_blank" className="underline" href={TWITTER_URL}>
+                Twitter
+              </a>{' '}
+              or{' '}
+              <a target="_blank" className="underline" href={DISCORD_URL}>
+                Discord
+              </a>{' '}
+              for updates as more CCTP routes become available.
             </p>
           </>
         }
       />
     )
   } else if (
-    originChainName === 'Ethereum' &&
-    destinationChainName === 'Avalanche' &&
-    originTokenSymbol === 'USDC' &&
-    destinationTokenSymbol === 'USDC'
+    isTokenUSDC &&
+    isChainAvalancheOrArbitrum &&
+    isChainOtherThanAvalancheArbitrumEthereum
   ) {
     return (
       <WarningMessage
-        header="USD Coin from Ethereum to Avalanche may not be available."
+        header="Native USDC on Avalanche and Arbitrum may not be bridgeable to most chains, try another stablecoin instead."
         message={
           <>
             <p className="mb-2">
-              Synapse is currently opening liquidity routes for the new USDC to
-              USDC cross-chain transfer protocol.
+              Synapse is currently opening liquidity routes for Circle's Native
+              USDC to other chains.
             </p>
             <p>
-              Follow <a href={TWITTER_URL}>Twitter</a> or{' '}
-              <a href={DISCORD_URL}>Discord</a> for updates when this route
-              becomes available.
+              Follow{' '}
+              <a target="_blank" className="underline" href={TWITTER_URL}>
+                Twitter
+              </a>{' '}
+              or{' '}
+              <a target="_blank" className="underline" href={DISCORD_URL}>
+                Discord
+              </a>{' '}
+              for updates when this route becomes available.
             </p>
           </>
         }
       />
     )
-  } else if (
-    (originChainName === 'Ethereum' &&
-      destinationChainName === 'Arbitrum' &&
-      originTokenSymbol === 'USDC' &&
-      destinationTokenSymbol === 'USDC') ||
-    (originChainName === 'Arbitrum' &&
-      destinationChainName === 'Avalanche' &&
-      originTokenSymbol === 'USDC' &&
-      destinationTokenSymbol === 'USDC') ||
-    (originChainName === 'Avalanche' &&
-      destinationChainName === 'Arbitrum' &&
-      originTokenSymbol === 'USDC' &&
-      destinationTokenSymbol === 'USDC')
-  ) {
+  } else if (isTokenUSDCAndChainEthereumArbitrumAvalanche) {
     return (
       <WarningMessage
-        header="USD Coin now uses the free cross-chain transfer protocol."
+        header="USDC now uses the Circle cross-chain transfer protocol."
         message={
           <>
             <p className="mb-2">
               CCTP transfers may take up to 20 minutes to complete.
             </p>
             <p>
-              Follow <a href={TWITTER_URL}>Twitter</a> or{' '}
-              <a href={DISCORD_URL}>Discord</a> for updates as more CCTP routes
-              become available.
+              Follow{' '}
+              <a target="_blank" className="underline" href={TWITTER_URL}>
+                Twitter
+              </a>{' '}
+              or{' '}
+              <a target="_blank" className="underline" href={DISCORD_URL}>
+                Discord
+              </a>{' '}
+              for updates as more CCTP routes become available.
             </p>
           </>
         }
       />
     )
-  } else if (
-    originChainName === 'Harmony' ||
-    destinationChainName === 'Harmony'
-  ) {
+  } else if (isChainHarmony) {
     return (
       <WarningMessage
         header="Warning! The Harmony bridge has been exploited."
@@ -120,10 +145,7 @@ export const Warning = ({
         }
       />
     )
-  } else if (
-    originChainName === 'Fantom' ||
-    destinationChainName === 'Fantom'
-  ) {
+  } else if (isChainFantom) {
     return (
       <WarningMessage
         header="Warning! The Fantom bridge has been exploited."
