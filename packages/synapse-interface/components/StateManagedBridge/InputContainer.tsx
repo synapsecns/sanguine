@@ -1,4 +1,4 @@
-import { useEffect, useState, useMemo, useRef } from 'react'
+import React, { useEffect, useState, useMemo, useRef, createRef } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
 import { Zero } from '@ethersproject/constants'
 import { RootState } from '@/store/store'
@@ -12,6 +12,8 @@ import MiniMaxButton from '../buttons/MiniMaxButton'
 import { formatBNToString } from '@/utils/bignumber/format'
 import { OriginChainLabel } from './OriginChainLabel'
 import { BigNumber } from 'ethers'
+
+export const inputRef = React.createRef<HTMLInputElement>()
 
 export const InputContainer = () => {
   const {
@@ -115,6 +117,7 @@ export const InputContainer = () => {
           />
           <div className="flex flex-col pt-2 ml-4">
             <input
+              ref={inputRef}
               pattern="[0-9.]+"
               disabled={false}
               className={`
