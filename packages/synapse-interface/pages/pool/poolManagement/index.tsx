@@ -1,74 +1,39 @@
-import { useState } from 'react'
-import { useSelector } from 'react-redux'
-import { useAccount, useNetwork, useSwitchNetwork } from 'wagmi'
-import { useConnectModal } from '@rainbow-me/rainbowkit'
+import { useEffect, useState } from 'react'
+import { useDispatch, useSelector } from 'react-redux'
+import { Address } from 'wagmi'
 import { RootState } from '@/store/store'
 
 import LiquidityManagementTabs from '../components/LiquidityManagementTabs'
 import Deposit from './Deposit'
 import Withdraw from './Withdraw'
 import LoadingSpinner from '@/components/ui/tailwind/LoadingSpinner'
-import { TransactionButton } from '@/components/buttons/TransactionButton'
+import {
+  fetchPoolUserData,
+  resetPoolUserData,
+} from '@/slices/poolUserDataSlice'
 
 const PoolManagement = ({
   address,
   chainId,
 }: {
-  address: string
+  address: Address
   chainId: number
 }) => {
   const [cardNav, setCardNav] = useState(getLiquidityMode('#addLiquidity')) // 'addLiquidity'
-  const { isConnected } = useAccount()
-  const { chain } = useNetwork()
 
   const { pool } = useSelector((state: RootState) => state.poolData)
   const { poolUserData, isLoading } = useSelector(
     (state: RootState) => state.poolUserData
   )
-  const { openConnectModal } = useConnectModal()
-  const { chains, error, pendingChainId, switchNetwork } = useSwitchNetwork()
 
-  if (isConnected && chain.id !== pool.chainId) {
-    return (
-      <div className="flex flex-col justify-center h-full">
-        <TransactionButton
-          label={`Switch to ${chains.find((c) => c.id === pool.chainId).name}`}
-          pendingLabel="Switching chains"
-          onClick={() =>
-            new Promise((resolve, reject) => {
-              try {
-                switchNetwork(pool.chainId)
-                resolve(true)
-              } catch (e) {
-                reject(e)
-              }
-            })
-          }
-        />
-      </div>
-    )
-  }
+  const dispatch: any = useDispatch()
 
-  if (!isConnected) {
-    return (
-      <div className="flex flex-col justify-center h-full">
-        <TransactionButton
-          label="Connect wallet"
-          pendingLabel="Connecting"
-          onClick={() =>
-            new Promise((resolve, reject) => {
-              try {
-                openConnectModal()
-                resolve(true)
-              } catch (e) {
-                reject(e)
-              }
-            })
-          }
-        />
-      </div>
-    )
-  }
+  useEffect(() => {
+    if (pool && address) {
+      dispatch(resetPoolUserData())
+      dispatch(fetchPoolUserData({ pool, address }))
+    }
+  }, [pool, address])
 
   if (isLoading) {
     return (

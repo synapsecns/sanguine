@@ -22,6 +22,8 @@ const initialState: PoolDataState = {
 export const fetchPoolUserData = createAsyncThunk(
   'poolUserData/fetch',
   async ({ pool, address }: { pool: Token; address: Address }) => {
+    console.log('in here')
+
     const chainId = pool.chainId
     const poolAddress = pool?.swapAddresses[chainId]
 

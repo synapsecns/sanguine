@@ -1,6 +1,5 @@
 import Link from 'next/link'
 import { getPoolUrl } from '@urls'
-import { switchNetwork } from '@wagmi/core'
 import { useEffect, useState } from 'react'
 import { getSinglePoolData } from '@utils/actions/getPoolData'
 import { getPoolApyData } from '@utils/actions/getPoolApyData'
@@ -54,7 +53,6 @@ const PoolCard = memo(
       }
     }, [])
     const chain = CHAINS_BY_ID[chainId]
-    // const poolRouterIndex = POOL_INVERTED_ROUTER_INDEX[chainId][poolName]
 
     /*
   useEffect triggers: address, isDisconnected, popup
@@ -77,23 +75,8 @@ const PoolCard = memo(
               })
               return popup
             }
-            if (chainId != connectedChainId) {
-              const res = switchNetwork({ chainId: chainId })
-                .then((res) => {
-                  return res
-                })
-                .catch(() => {
-                  return undefined
-                })
-              if (res === undefined) {
-                console.log("can't switch chain, chainId: ", chainId)
-                return
-              }
-              // history.push(getPoolUrl({ poolRouterIndex }))
-            }
           }}
-          // href={getPoolUrl({ poolRouterIndex })}
-          href={getPoolUrl(pool)} // TODO: fix this
+          href={getPoolUrl(pool)}
         >
           <Card
             title={

@@ -10,7 +10,10 @@ import PoolBody from './PoolBody'
 import NoPoolBody from './NoPoolBody'
 import { fetchPoolData, resetPoolData } from '@/slices/poolDataSlice'
 import { RootState } from '@/store/store'
+import { resetPoolDeposit } from '@/slices/poolDepositSlice'
+import { resetPoolWithdraw } from '@/slices/poolWithdrawSlice'
 import LoadingSpinner from '@/components/ui/tailwind/LoadingSpinner'
+import { fetchPoolUserData } from '@/slices/poolUserDataSlice'
 
 const PoolPage = () => {
   const router = useRouter()
@@ -26,6 +29,8 @@ const PoolPage = () => {
   useEffect(() => {
     const handleRouteChange = () => {
       dispatch(resetPoolData())
+      dispatch(resetPoolDeposit())
+      dispatch(resetPoolWithdraw())
     }
 
     router.events.on('routeChangeStart', handleRouteChange)

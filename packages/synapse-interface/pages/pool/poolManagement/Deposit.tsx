@@ -5,9 +5,8 @@ import { AVWETH, ETH, WETHE } from '@constants/tokens/master'
 import { stringToBigInt } from '@/utils/stringToBigNum'
 import { DepositTokenInput } from '@components/TokenInput'
 import PriceImpactDisplay from '../components/PriceImpactDisplay'
-import { useSynapseContext } from '@/utils/providers/SynapseProvider'
 import { Token } from '@types'
-import { useState, useEffect, useMemo } from 'react'
+import { useState, useEffect } from 'react'
 import { getTokenAllowance } from '@/utils/actions/getTokenAllowance'
 import { approve, deposit } from '@/utils/actions/approveAndDeposit'
 import LoadingTokenInput from '@components/loading/LoadingTokenInput'
@@ -19,7 +18,6 @@ import { transformCalculateLiquidityInput } from '@/utils/transformCalculateLiqu
 import { formatBigIntToString } from '@/utils/bigint/format'
 
 import { getAddress } from '@ethersproject/address'
-import { BigNumber } from '@ethersproject/bignumber'
 import { useSelector } from 'react-redux'
 import { RootState } from '@/store/store'
 
@@ -35,6 +33,7 @@ import { useDispatch } from 'react-redux'
 import DepositButton from './DepositButton'
 import { txErrorHandler } from '@/utils/txErrorHandler'
 import { fetchPoolUserData } from '@/slices/poolUserDataSlice'
+import { swapPoolCalculateAddLiquidity } from '@/actions/swapPoolCalculateAddLiquidity'
 
 export const DEFAULT_DEPOSIT_QUOTE = {
   priceImpact: 0n,
@@ -49,7 +48,6 @@ const Deposit = ({
   chainId: number
   address: string
 }) => {
-  const { synapseSDK } = useSynapseContext()
   const dispatch: any = useDispatch()
 
   const { pool, poolData } = useSelector((state: RootState) => state.poolData)
@@ -76,19 +74,15 @@ const Deposit = ({
           filteredInputValue.bi
         )
 
-        // NOTE: Doing this as SDK requires BigNumber due to comparisons in
-        // calculateAddLiquidity()
-        // We can't fully remove BigNumber here until SDK supports
-        let convertedInput = {}
-        for (let key in input) {
-          convertedInput[key] = BigNumber.from(input[key].toString())
-        }
+        const inputs: bigint[] = []
 
-        const { amount } = await synapseSDK.calculateAddLiquidity(
+        Object.keys(input).forEach((key) => inputs.push(input[key]))
+
+        const amount = await swapPoolCalculateAddLiquidity({
           chainId,
-          pool.swapAddresses[chainId],
-          convertedInput
-        )
+          pool,
+          inputs,
+        })
 
         let allowances: Record<string, bigint> = {}
         for (const [tokenAddress, value] of Object.entries(
@@ -104,7 +98,7 @@ const Deposit = ({
 
         const priceImpact = calculatePriceImpact(
           inputSum,
-          BigInt(amount),
+          amount as bigint,
           virtualPrice
         )
 
