@@ -224,11 +224,22 @@ func EncodeAttestation(attestation Attestation) ([]byte, error) {
 	snapshotRoot := attestation.SnapshotRoot()
 	dataHash := attestation.DataHash()
 
+	// Note that since we are packing an 8 byte (int64) number into 5 bytes, we need to
+	// ensure that the result does not exceed the expected byte length for a valid Attestation.
+	blockNumberBytes := math.PaddedBigBytes(attestation.BlockNumber(), uint40Len)
+	if len(blockNumberBytes) != uint40Len {
+		return nil, fmt.Errorf("invalid block number length, expected %d, got %d", uint40Len, len(blockNumberBytes))
+	}
+	timestampBytes := math.PaddedBigBytes(attestation.Timestamp(), uint40Len)
+	if len(timestampBytes) != uint40Len {
+		return nil, fmt.Errorf("invalid timestamp length, expected %d, got %d", uint40Len, len(timestampBytes))
+	}
+
 	b = append(b, snapshotRoot[:]...)
 	b = append(b, dataHash[:]...)
 	b = append(b, nonceBytes...)
-	b = append(b, math.PaddedBigBytes(attestation.BlockNumber(), uint40Len)...)
-	b = append(b, math.PaddedBigBytes(attestation.Timestamp(), uint40Len)...)
+	b = append(b, blockNumberBytes...)
+	b = append(b, timestampBytes...)
 
 	return b, nil
 }

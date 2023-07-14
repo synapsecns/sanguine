@@ -611,6 +611,8 @@ func (g Guard) Start(parentCtx context.Context) error {
 	})
 
 	for _, domain := range g.domains {
+		domain := domain
+
 		if domain.Config().DomainID == g.summitDomainID {
 			continue
 		}

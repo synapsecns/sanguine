@@ -2,7 +2,7 @@ package guard_test
 
 import (
 	"fmt"
-	"github.com/ethereum/go-ethereum/crypto"
+	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"math/big"
 
 	"github.com/Flaque/filet"
@@ -282,27 +282,47 @@ func (g GuardSuite) TestReportAttestationNotOnSummit() {
 	Nil(g.T(), err)
 
 	agentRoot := common.BigToHash(big.NewInt(gofakeit.Int64()))
-	//snapGas := types.NewGasData(gofakeit.Uint16(), gofakeit.Uint16(), gofakeit.Uint16(), gofakeit.Uint16(), gofakeit.Uint16(), gofakeit.Uint16())
-	snapGas := types.NewGasData(0, 0, 0, 0, 0, 0)
-
-	agentRootBytes := agentRoot.Bytes()
-	snapGasBytes, err := types.EncodeGasData(snapGas)
+	gasData := types.NewGasData(gofakeit.Uint16(), gofakeit.Uint16(), gofakeit.Uint16(), gofakeit.Uint16(), gofakeit.Uint16(), gofakeit.Uint16())
+	//gasData := types.NewGasData(0, 0, 0, 0, 0, 0)
+	chainGas := types.NewChainGas(gasData, uint32(g.TestBackendOrigin.GetChainID()))
+	chainGasBytes, err := types.EncodeChainGas(chainGas)
 	Nil(g.T(), err)
 
-	snapGasHash := crypto.Keccak256(snapGasBytes)
+	_, gasDataContract := g.TestDeployManager.GetGasDataHarness(g.GetTestContext(), g.TestBackendDestination)
+	_, attestationContract := g.TestDeployManager.GetAttestationHarness(g.GetTestContext(), g.TestBackendDestination)
 
-	var agentRootB32, snapGasHashB32 [32]byte
-	copy(agentRootB32[:], agentRootBytes)
-	copy(snapGasHashB32[:], snapGasHash)
+	// TODO: SetBytes here might be surface area for an error. Maybe use harness to generate.
+	snapGas := []*big.Int{new(big.Int).SetBytes(chainGasBytes)}
+	//snapGasBytes := snapGas[0].Bytes()
 
-	// Create a fraudulent attestation
-	fraudAttestation := types.NewAttestationComputeHash(
+	snapGasHash, err := gasDataContract.SnapGasHash(&bind.CallOpts{Context: g.GetTestContext()}, snapGas)
+	Nil(g.T(), err)
+
+	dataHash, err := attestationContract.DataHash(&bind.CallOpts{Context: g.GetTestContext()}, agentRoot, snapGasHash)
+	Nil(g.T(), err)
+
+	//snapGasHash := crypto.Keccak256(snapGasBytes)
+
+	//var agentRootB32, snapGasHashB32 [32]byte
+	//copy(agentRootB32[:], agentRoot[:])
+	//copy(snapGasHashB32[:], snapGasHash)
+
+	//// Create a fraudulent attestation
+	//fraudAttestation := types.NewAttestationComputeHash(
+	//	common.BigToHash(big.NewInt(int64(gofakeit.Int32()))),
+	//	1,
+	//	big.NewInt(int64(gofakeit.Int32())),
+	//	big.NewInt(int64(gofakeit.Int32())),
+	//	agentRootB32,
+	//	snapGasHashB32,
+	//)
+
+	fraudAttestation := types.NewAttestation(
 		common.BigToHash(big.NewInt(int64(gofakeit.Int32()))),
+		dataHash,
 		1,
 		big.NewInt(int64(gofakeit.Int32())),
 		big.NewInt(int64(gofakeit.Int32())),
-		agentRootB32,
-		snapGasHashB32,
 	)
 
 	attSignature, attEncoded, _, err := fraudAttestation.SignAttestation(g.GetTestContext(), g.NotaryBondedSigner)
@@ -319,9 +339,16 @@ func (g GuardSuite) TestReportAttestationNotOnSummit() {
 		g.NotaryUnbondedSigner,
 		g.NotaryBondedSigner,
 		agentStatus,
-		agentProof)
+		agentProof,
+	)
 	Nil(g.T(), err)
-	tx, err := g.DestinationDomainClient.LightInbox().SubmitAttestation(txContextDest.TransactOpts, attEncoded, attSignature, agentRoot, encodeGasDataBigInt(snapGas))
+	tx, err := g.DestinationDomainClient.LightInbox().SubmitAttestation(
+		txContextDest.TransactOpts,
+		attEncoded,
+		attSignature,
+		agentRoot,
+		snapGas,
+	)
 	Nil(g.T(), err)
 	NotNil(g.T(), tx)
 	txHash := tx.Hash()
@@ -330,6 +357,7 @@ func (g GuardSuite) TestReportAttestationNotOnSummit() {
 
 	// Verify that the guard eventually marks the accused agent as Fraudulent
 	txContextSummit := g.TestBackendSummit.GetTxContext(g.GetTestContext(), g.SummitMetadata.OwnerPtr())
+	txContextDestination := g.TestBackendDestination.GetTxContext(g.GetTestContext(), g.LightInboxMetadataOnDestination.OwnerPtr())
 	g.Eventually(func() bool {
 		status, err := g.OriginDomainClient.LightManager().GetAgentStatus(g.GetTestContext(), g.NotaryBondedSigner)
 		Nil(g.T(), err)
@@ -344,21 +372,9 @@ func (g GuardSuite) TestReportAttestationNotOnSummit() {
 		bumpTx, err := g.TestContractOnSummit.EmitAgentsEventA(txContextSummit.TransactOpts, big.NewInt(gofakeit.Int64()), big.NewInt(gofakeit.Int64()), big.NewInt(gofakeit.Int64()))
 		Nil(g.T(), err)
 		g.TestBackendSummit.WaitForConfirmation(g.GetTestContext(), bumpTx)
+		bumpTx, err = g.TestContractOnDestination.EmitAgentsEventA(txContextDestination.TransactOpts, big.NewInt(gofakeit.Int64()), big.NewInt(gofakeit.Int64()), big.NewInt(gofakeit.Int64()))
+		Nil(g.T(), err)
+		g.TestBackendDestination.WaitForConfirmation(g.GetTestContext(), bumpTx)
 		return false
 	})
-}
-
-func encodeGasDataBigInt(gasData types.GasData) []*big.Int {
-	encoded := []*big.Int{}
-	encode := func(num uint16) {
-		encoded = append(encoded, big.NewInt(int64(num)))
-	}
-	encode(gasData.Markup())
-	encode(gasData.EtherPrice())
-	encode(gasData.AmortAttCost())
-	encode(gasData.ExecBuffer())
-	encode(gasData.DataPrice())
-	encode(gasData.GasPrice())
-
-	return encoded
 }

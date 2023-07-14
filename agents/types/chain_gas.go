@@ -1,5 +1,7 @@
 package types
 
+import "math/big"
+
 const (
 	chainGasOffsetDomain  = 0
 	chainGasOffsetGasData = 4
@@ -33,6 +35,20 @@ func (g chainGas) GasData() GasData {
 
 func (g chainGas) Domain() uint32 {
 	return g.domain
+}
+
+func ChainGassesToSnapGas(chainGasses []ChainGas) (snapGasses []*big.Int, err error) {
+	snapGasses = make([]*big.Int, len(chainGasses))
+	for i, chainGas := range chainGasses {
+		snapGas, err := EncodeChainGas(chainGas)
+		if err != nil {
+			return nil, err
+		}
+
+		snapGasses[i] = new(big.Int).SetBytes(snapGas)
+	}
+
+	return snapGasses, nil
 }
 
 var _ ChainGas = chainGas{}
