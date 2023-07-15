@@ -239,6 +239,7 @@ func (c ChainIndexer) Index(ctx context.Context, onlyOneBlock *uint64) error {
 	return nil
 }
 
+// nolint:unparam
 func (c *ChainIndexer) getLatestBlock(ctx context.Context, confirmations bool) (*uint64, error) {
 	var currentBlock uint64
 	var err error

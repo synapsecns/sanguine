@@ -48,7 +48,7 @@ func (s *ScribeSuite) TestSimulatedScribe() {
 		}
 	}
 
-	addressMap, chainBackendMap, err := testutil.PopulateChainsWithLogs(s.GetTestContext(), chainBackends, desiredBlockHeight, s.T(), managers, s.nullMetrics)
+	addressMap, chainBackendMap, err := testutil.PopulateChainsWithLogs(s.GetTestContext(), s.T(), chainBackends, desiredBlockHeight, managers, s.nullMetrics)
 	Nil(s.T(), err)
 
 	// Build scribe config
@@ -79,7 +79,8 @@ func (s *ScribeSuite) TestSimulatedScribe() {
 
 	scribe, err := scribe.NewScribe(s.testDB, chainBackendMap, scribeConfig, s.nullMetrics)
 	Nil(s.T(), err)
-	killableContext, _ := context.WithTimeout(s.GetTestContext(), 20*time.Second)
+	killableContext, cancel := context.WithTimeout(s.GetTestContext(), 20*time.Second)
+	defer cancel()
 	_ = scribe.Start(killableContext)
 
 	// Check that the events were recorded.
@@ -108,6 +109,8 @@ func (s *ScribeSuite) TestSimulatedScribe() {
 }
 
 // TestLivefillParity runs livefill on certain prod chains. Then it checks parity with that chain's block explorer API.
+//
+// nolint:gocognit,cyclop,maintidx
 func (s *ScribeSuite) TestLivefillParity() {
 	if os.Getenv("CI") != "" {
 		s.T().Skip("Network test flake")
@@ -345,8 +348,6 @@ func (s *ScribeSuite) TestLivefillParity() {
 
 				txLog := txs[logBlockNumber]
 				if dbLogs[k].TxHash.String() != txLog {
-					fmt.Println(fmt.Sprintf("mismatched TX\nchainid %d\nstart %d end %d\ndb txhash %s\nexplorer tx %s", chain.ChainID, contract.StartBlock, dbLogs[k].BlockNumber, dbLogs[k].TxHash.String(), txLog))
-
 					Error(s.T(), fmt.Errorf("mismatched TX\nchainid %d\nstart %d end %d\ndb txhash %s\nexplorer tx %s", chain.ChainID, contract.StartBlock, dbLogs[k].BlockNumber, dbLogs[k].TxHash.String(), txLog))
 				}
 			}
@@ -393,8 +394,15 @@ func processBatch(ctx context.Context, client *http.Client, url string, txs *map
 	}
 
 	for _, result := range resultSlice {
-		hexBlock := result["blockNumber"].(string)
-		txHashStr := result["transactionHash"].(string)
+		hexBlock, ok := result["blockNumber"].(string)
+		if !ok {
+			return 0, fmt.Errorf("error parsing block number: %w", err)
+		}
+
+		txHashStr, ok := result["transactionHash"].(string)
+		if !ok {
+			return 0, fmt.Errorf("error parsing transaction hash: %w", err)
+		}
 
 		key, err := strconv.ParseInt(strings.TrimPrefix(hexBlock, "0x"), 16, 64)
 		if err != nil {

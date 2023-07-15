@@ -51,7 +51,10 @@ type ErrorType int
 type StatusType int
 
 // ReportIndexerError reports an error that occurs in an indexer.
+//
+// nolint
 func ReportIndexerError(err error, indexerData scribeTypes.IndexerConfig, errorType ErrorType) {
+	// nolint:exhaustive
 	errStr := err.Error()
 
 	// Stop cloudflare error messages from nuking readablity of logs
@@ -60,31 +63,34 @@ func ReportIndexerError(err error, indexerData scribeTypes.IndexerConfig, errorT
 	}
 	switch errorType {
 	case ContextCancelled:
-		logger.Errorf("Context canceled for indexer. Error: %v\n%s", err, unpackIndexerConfig(indexerData))
+		logger.Errorf("Context canceled for indexer. Error: %v\n%s", errStr, unpackIndexerConfig(indexerData))
 	case LivefillIndexerError:
-		logger.Errorf("Livefill indexer failed. Error: %v\n%s", err, unpackIndexerConfig(indexerData))
+		logger.Errorf("Livefill indexer failed. Error: %v\n%s", errStr, unpackIndexerConfig(indexerData))
 	case GetLogsError:
-		logger.Errorf("Could not get logs. Error: %v\n%s", err, unpackIndexerConfig(indexerData))
+		logger.Errorf("Could not get logs. Error: %v\n%s", errStr, unpackIndexerConfig(indexerData))
 	case GetTxError:
-		logger.Errorf("Could not get tx. Error: %v\n%s", err, unpackIndexerConfig(indexerData))
+		logger.Errorf("Could not get tx. Error: %v\n%s", errStr, unpackIndexerConfig(indexerData))
 	case CouldNotGetReceiptError:
-		logger.Errorf("Could not get receipt. Error: %v\n%s", err, unpackIndexerConfig(indexerData))
+		logger.Errorf("Could not get receipt. Error: %v\n%s", errStr, unpackIndexerConfig(indexerData))
 	case GetBlockError:
-		logger.Errorf("Could not get head block. Error: %v\n%s", err, unpackIndexerConfig(indexerData))
+		logger.Errorf("Could not get head block. Error: %v\n%s", errStr, unpackIndexerConfig(indexerData))
 	case BlockByNumberError:
-		logger.Errorf("Could not get block header. Error: %v\n%s", err, unpackIndexerConfig(indexerData))
+		logger.Errorf("Could not get block header. Error: %v\n%s", errStr, unpackIndexerConfig(indexerData))
 	case StoreError:
-		logger.Errorf("Could not store data into database. Error: %v\n%s", err, unpackIndexerConfig(indexerData))
+		logger.Errorf("Could not store data into database. Error: %v\n%s", errStr, unpackIndexerConfig(indexerData))
 	case ReadError:
-		logger.Errorf("Could not read data from database. Error: %v\n%s", err, unpackIndexerConfig(indexerData))
+		logger.Errorf("Could not read data from database. Error: %v\n%s", errStr, unpackIndexerConfig(indexerData))
 	case EmptyGetLogsChunk:
 		logger.Warnf("Encountered empty getlogs chunk%s", unpackIndexerConfig(indexerData))
+
 	default:
-		logger.Errorf("Error: %v\n%s", err, unpackIndexerConfig(indexerData))
+		logger.Errorf("Error: %v\n%s", errStr, unpackIndexerConfig(indexerData))
 	}
 }
 
 // ReportScribeError reports an error that occurs anywhere in scribe.
+//
+// nolint:exhaustive
 func ReportScribeError(err error, chainID uint32, errorType ErrorType) {
 	switch errorType {
 	case ContextCancelled:
@@ -100,6 +106,7 @@ func ReportScribeError(err error, chainID uint32, errorType ErrorType) {
 
 // ReportScribeState reports a state that occurs anywhere in scribe.
 func ReportScribeState(chainID uint32, block uint64, addresses []common.Address, statusType StatusType) {
+	// nolint:exhaustive
 	switch statusType {
 	case InitiatingLivefill:
 		logger.Warnf("Initiating livefill on chain %d on block %d while interacting with contract %s", chainID, block, dumpAddresses(addresses))

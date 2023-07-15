@@ -26,14 +26,14 @@ func (b *BackendSuite) TestLogsInRange() {
 	testBackend := geth.NewEmbeddedBackend(b.GetTestContext(), b.T())
 	go func() {
 		defer wg.Done()
-		addresses, _, err = testutil.PopulateWithLogs(b.GetTestContext(), testBackend, desiredBlockHeight, b.T(), []*testutil.DeployManager{b.manager})
+		addresses, _, err = testutil.PopulateWithLogs(b.GetTestContext(), b.T(), testBackend, desiredBlockHeight, []*testutil.DeployManager{b.manager})
 		Nil(b.T(), err)
 	}()
 
 	var host string
 	go func() {
 		defer wg.Done()
-		host = testutil.StartOmnirpcServer(b.GetTestContext(), testBackend, b.T())
+		host = testutil.StartOmnirpcServer(b.GetTestContext(), b.T(), testBackend)
 	}()
 
 	wg.Wait()
@@ -91,14 +91,14 @@ func (b *BackendSuite) TestLogsInRangeWithMultipleContracts() {
 
 	go func() {
 		defer wg.Done()
-		addresses, _, err = testutil.PopulateWithLogs(b.GetTestContext(), testBackend, desiredBlockHeight, b.T(), managers)
+		addresses, _, err = testutil.PopulateWithLogs(b.GetTestContext(), b.T(), testBackend, desiredBlockHeight, managers)
 		Nil(b.T(), err)
 	}()
 
 	var host string
 	go func() {
 		defer wg.Done()
-		host = testutil.StartOmnirpcServer(b.GetTestContext(), testBackend, b.T())
+		host = testutil.StartOmnirpcServer(b.GetTestContext(), b.T(), testBackend)
 	}()
 
 	wg.Wait()
@@ -167,14 +167,14 @@ func (b *BackendSuite) TestBlockHashesInRange() {
 
 	go func() {
 		defer wg.Done()
-		err := testutil.ReachBlockHeight(b.GetTestContext(), testBackend, desiredBlockHeight, b.T())
+		err := testutil.ReachBlockHeight(b.GetTestContext(), b.T(), testBackend, desiredBlockHeight)
 		Nil(b.T(), err)
 	}()
 
 	var host string
 	go func() {
 		defer wg.Done()
-		host = testutil.StartOmnirpcServer(b.GetTestContext(), testBackend, b.T())
+		host = testutil.StartOmnirpcServer(b.GetTestContext(), b.T(), testBackend)
 	}()
 
 	wg.Wait()

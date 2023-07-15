@@ -391,14 +391,14 @@ func (x *IndexerSuite) TestGetLogs() {
 
 	go func() {
 		defer wg.Done()
-		addresses, _, err = testutil.PopulateWithLogs(x.GetTestContext(), testBackend, desiredBlockHeight, x.T(), []*testutil.DeployManager{x.manager})
+		addresses, _, err = testutil.PopulateWithLogs(x.GetTestContext(), x.T(), testBackend, desiredBlockHeight, []*testutil.DeployManager{x.manager})
 		Nil(x.T(), err)
 	}()
 
 	var host string
 	go func() {
 		defer wg.Done()
-		host = testutil.StartOmnirpcServer(x.GetTestContext(), testBackend, x.T())
+		host = testutil.StartOmnirpcServer(x.GetTestContext(), x.T(), testBackend)
 	}()
 
 	wg.Wait()

@@ -109,7 +109,7 @@ package scribe_test
 //	var host string
 //	go func() {
 //		defer wg.Done()
-//		host = testutil.StartOmnirpcServer(s.GetTestContext(), testBackend, s.T())
+//		host = testutil.StartOmnirpcServer(s.GetTestContext(), s.T(), testBackend)
 //	}()
 //
 //	wg.Wait()

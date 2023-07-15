@@ -30,7 +30,8 @@ type chainAddressPair struct {
 }
 
 // PopulateChainsWithLogs creates scribe backends for each chain backend and emits events from various contracts on each chain.
-func PopulateChainsWithLogs(ctx context.Context, chainBackends map[uint32]geth.Backend, desiredBlockHeight uint64, testingSuite *testing.T, managers []*DeployManager, handler metrics.Handler) (map[uint32][]common.Address, map[uint32][]backend.ScribeBackend, error) {
+func PopulateChainsWithLogs(ctx context.Context, t *testing.T, chainBackends map[uint32]geth.Backend, desiredBlockHeight uint64, managers []*DeployManager, handler metrics.Handler) (map[uint32][]common.Address, map[uint32][]backend.ScribeBackend, error) {
+	t.Helper()
 	addressChan := make(chan chainAddressPair, len(chainBackends))
 	scribeBackendChan := make(chan chainBackendPair, len(chainBackends))
 	g, groupCtx := errgroup.WithContext(ctx)
@@ -39,7 +40,7 @@ func PopulateChainsWithLogs(ctx context.Context, chainBackends map[uint32]geth.B
 		chainBackend := v
 
 		g.Go(func() error {
-			addresses, _, err := PopulateWithLogs(groupCtx, &chainBackend, desiredBlockHeight, testingSuite, managers)
+			addresses, _, err := PopulateWithLogs(groupCtx, t, &chainBackend, desiredBlockHeight, managers)
 
 			if err != nil {
 				return err
@@ -50,7 +51,7 @@ func PopulateChainsWithLogs(ctx context.Context, chainBackends map[uint32]geth.B
 			return nil
 		})
 		g.Go(func() error {
-			host := StartOmnirpcServer(groupCtx, &chainBackend, testingSuite)
+			host := StartOmnirpcServer(groupCtx, t, &chainBackend)
 			scribeBackend, err := backend.DialBackend(ctx, host, handler)
 
 			if err != nil {
@@ -64,7 +65,7 @@ func PopulateChainsWithLogs(ctx context.Context, chainBackends map[uint32]geth.B
 	}
 
 	if err := g.Wait(); err != nil {
-		return nil, nil, fmt.Errorf("error populating chains with logs: %v", err)
+		return nil, nil, fmt.Errorf("error populating chains with logs: %w", err)
 	}
 	close(addressChan) // Close the channels after writing to them
 	close(scribeBackendChan)
@@ -83,7 +84,10 @@ func PopulateChainsWithLogs(ctx context.Context, chainBackends map[uint32]geth.B
 }
 
 // PopulateWithLogs populates a backend with logs until it reaches a desired block height.
-func PopulateWithLogs(ctx context.Context, backend backends.SimulatedTestBackend, desiredBlockHeight uint64, testingSuite *testing.T, managers []*DeployManager) ([]common.Address, map[common.Address]uint64, error) {
+//
+// nolint:cyclop
+func PopulateWithLogs(ctx context.Context, t *testing.T, backend backends.SimulatedTestBackend, desiredBlockHeight uint64, managers []*DeployManager) ([]common.Address, map[common.Address]uint64, error) {
+	t.Helper()
 	i := 0
 	startBlocks := map[common.Address]uint64{}
 	contracts := map[common.Address]contracts.DeployedContract{}
@@ -110,7 +114,7 @@ func PopulateWithLogs(ctx context.Context, backend backends.SimulatedTestBackend
 	for {
 		select {
 		case <-ctx.Done():
-			testingSuite.Log(ctx.Err())
+			t.Log(ctx.Err())
 			return dumpAddresses(contracts), startBlocks, nil
 		default:
 		}
@@ -128,7 +132,7 @@ func PopulateWithLogs(ctx context.Context, backend backends.SimulatedTestBackend
 			g.Go(func() error {
 				tx, err := ref.EmitEventA(transactOpts.TransactOpts, big.NewInt(1), big.NewInt(2), big.NewInt(3))
 				if err != nil {
-					return fmt.Errorf("error emitting event a for contract %s: %v", address.String(), err)
+					return fmt.Errorf("error emitting event a for contract %s: %w", address.String(), err)
 				}
 				backend.WaitForConfirmation(groupCtx, tx)
 				return nil
@@ -136,11 +140,11 @@ func PopulateWithLogs(ctx context.Context, backend backends.SimulatedTestBackend
 		}
 		err := g.Wait()
 		if err != nil {
-			return nil, nil, fmt.Errorf("error emitting events: %v", err)
+			return nil, nil, fmt.Errorf("error emitting events: %w", err)
 		}
 		latestBlock, err := backend.BlockNumber(ctx)
 		if err != nil {
-			return nil, nil, fmt.Errorf("error getting latest block number: %v", err)
+			return nil, nil, fmt.Errorf("error getting latest block number: %w", err)
 		}
 
 		if latestBlock >= desiredBlockHeight {
@@ -159,18 +163,20 @@ func GetTxBlockNumber(ctx context.Context, chain backends.SimulatedTestBackend, 
 }
 
 // StartOmnirpcServer starts an omnirpc server and returns the url to it.
-func StartOmnirpcServer(ctx context.Context, backend backends.SimulatedTestBackend, testingSuite *testing.T) string {
-	baseHost := testhelper.NewOmnirpcServer(ctx, testingSuite, backend)
+func StartOmnirpcServer(ctx context.Context, t *testing.T, backend backends.SimulatedTestBackend) string {
+	t.Helper()
+	baseHost := testhelper.NewOmnirpcServer(ctx, t, backend)
 	return testhelper.GetURL(baseHost, backend)
 }
 
 // ReachBlockHeight reaches a block height on a backend.
-func ReachBlockHeight(ctx context.Context, backend backends.SimulatedTestBackend, desiredBlockHeight uint64, testingSuite *testing.T) error {
+func ReachBlockHeight(ctx context.Context, t *testing.T, backend backends.SimulatedTestBackend, desiredBlockHeight uint64) error {
+	t.Helper()
 	i := 0
 	for {
 		select {
 		case <-ctx.Done():
-			testingSuite.Log(ctx.Err())
+			t.Log(ctx.Err())
 			return nil
 		default:
 			// continue
@@ -180,7 +186,7 @@ func ReachBlockHeight(ctx context.Context, backend backends.SimulatedTestBackend
 
 		latestBlock, err := backend.BlockNumber(ctx)
 		if err != nil {
-			return fmt.Errorf("error getting latest block number: %v", err)
+			return fmt.Errorf("error getting latest block number: %w", err)
 		}
 
 		if latestBlock >= desiredBlockHeight {
