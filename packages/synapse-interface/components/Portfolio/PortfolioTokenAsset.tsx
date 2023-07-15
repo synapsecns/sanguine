@@ -139,7 +139,7 @@ export const PortfolioTokenAsset = ({
   return (
     <div
       data-test-id="portfolio-token-asset"
-      className="flex flex-row flex-wrap items-center py-2 text-white"
+      className="flex flex-row flex-wrap items-start py-2 text-white"
     >
       <div className="flex flex-row justify-between w-2/3">
         <div
@@ -189,7 +189,7 @@ export const PortfolioTokenAsset = ({
           )}
         </div>
       </div>
-      <div className="flex flex-row items-center w-1/3 text-left">
+      <div className="flex flex-row items-center w-1/3 pt-2 text-left">
         <PortfolioAssetActionButton
           selectCallback={handleSelectFromTokenCallback}
           approveCallback={handleApproveCallback}
