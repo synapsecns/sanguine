@@ -139,7 +139,7 @@ export const PortfolioTokenAsset = ({
   return (
     <div
       data-test-id="portfolio-token-asset"
-      className="flex flex-row items-start py-2 text-white"
+      className="flex flex-row items-center py-2 text-white"
     >
       {isTokenSelected ? (
         <div className="w-4 m-auto font-bold text-green-500"> ✓ </div>
@@ -150,7 +150,7 @@ export const PortfolioTokenAsset = ({
         <div
           onClick={handleSelectFromTokenCallback}
           className={`
-          flex flex-row px-2 py-2
+          flex flex-row px-2 py-2 mb-auto
           hover:cursor-pointer
           hover:bg-[#272731]
         `}
@@ -189,7 +189,7 @@ export const PortfolioTokenAsset = ({
           )}
         </div>
       </div>
-      <div className="flex flex-row items-center w-1/3 pt-2 text-left">
+      <div className="flex flex-row items-center w-1/3 py-2 mb-auto text-left">
         <PortfolioAssetActionButton
           selectCallback={handleSelectFromTokenCallback}
           approveCallback={handleApproveCallback}
