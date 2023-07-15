@@ -1,4 +1,4 @@
-import { useEffect, useState, useMemo, useRef } from 'react'
+import React, { useEffect, useState, useMemo, useRef, createRef } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
 import { Zero } from '@ethersproject/constants'
 import { RootState } from '@/store/store'
@@ -12,6 +12,8 @@ import MiniMaxButton from '../buttons/MiniMaxButton'
 import { formatBNToString } from '@/utils/bignumber/format'
 import { OriginChainLabel } from './OriginChainLabel'
 import { BigNumber } from 'ethers'
+
+export const inputRef = React.createRef<HTMLInputElement>()
 
 export const InputContainer = () => {
   const {
@@ -53,23 +55,33 @@ export const InputContainer = () => {
         ?.balance) ??
     Zero
 
-  const formattedBalance = hasBalances
+  const formattedBalance: string = hasBalances
     ? formatBNToString(fromTokenBalance, fromToken.decimals[fromChainId], 4)
     : '0'
+
+  useEffect(() => {
+    if (!fromValue.eq(Zero) && fromValue.eq(fromTokenBalance)) {
+      const fromValueString: string = formatBNToString(
+        fromValue,
+        fromToken.decimals[fromChainId]
+      )
+      setShowValue(fromValueString)
+    }
+  }, [fromValue, inputRef, fromChainId, fromToken, fromTokenBalance])
 
   const handleFromValueChange = (
     event: React.ChangeEvent<HTMLInputElement>
   ) => {
-    const fromValueString: string = event.target.value
-    try {
+    const inputValue = event.target.value
+    const regex = /^[0-9]*[.,]?[0-9]*$/
+
+    if (regex.test(inputValue) || inputValue === '') {
       const fromValueBigNumber: BigNumber = stringToBigNum(
-        fromValueString,
+        inputValue,
         fromToken.decimals[fromChainId]
       )
       dispatch(updateFromValue(fromValueBigNumber))
-      setShowValue(fromValueString)
-    } catch (error) {
-      console.error('Invalid value for conversion to BigNumber')
+      setShowValue(inputValue)
     }
   }
 
@@ -115,7 +127,8 @@ export const InputContainer = () => {
           />
           <div className="flex flex-col pt-2 ml-4">
             <input
-              pattern="[0-9.]+"
+              ref={inputRef}
+              pattern="^[0-9]*[.,]?[0-9]*$"
               disabled={false}
               className={`
               focus:outline-none

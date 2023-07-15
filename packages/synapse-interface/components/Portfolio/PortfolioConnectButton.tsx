@@ -17,7 +17,7 @@ export const PortfolioConnectButton = ({
   }, [portfolioChainId, connectedChainId])
 
   return (
-    <div data-test-id="portfolio-connect-button">
+    <div data-test-id="portfolio-connect-button" className="mr-1">
       {isCurrentlyConnectedNetwork ? (
         <ConnectedButton />
       ) : (
