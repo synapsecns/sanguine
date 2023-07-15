@@ -20,11 +20,12 @@ import (
 
 type ScribeSuite struct {
 	*testsuite.TestSuite
-	testDB  db.EventDB
-	manager *testutil.DeployManager
-	wallet  wallet.Wallet
-	signer  *localsigner.Signer
-	metrics metrics.Handler
+	testDB      db.EventDB
+	manager     *testutil.DeployManager
+	wallet      wallet.Wallet
+	signer      *localsigner.Signer
+	metrics     metrics.Handler
+	nullMetrics metrics.Handler
 }
 
 // NewScribeSuite creates a new backfill test suite.
@@ -54,6 +55,9 @@ func (s *ScribeSuite) SetupSuite() {
 
 	var err error
 	s.metrics, err = metrics.NewByType(s.GetSuiteContext(), metadata.BuildInfo(), metrics.Jaeger)
+	Nil(s.T(), err)
+
+	s.nullMetrics, err = metrics.NewByType(s.GetSuiteContext(), metadata.BuildInfo(), metrics.Null)
 	Nil(s.T(), err)
 }
 

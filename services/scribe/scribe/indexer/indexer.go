@@ -108,14 +108,17 @@ func NewIndexer(chainConfig config.ChainConfig, contracts []common.Address, even
 	}, nil
 }
 
+// UpdateAddress updates the address arrays for the indexer.
 func (x *Indexer) UpdateAddress(addresses []common.Address) {
 	x.indexerConfig.Contracts = addresses
 }
 
+// GetIndexerConfig returns the indexer config.
 func (x *Indexer) GetIndexerConfig() scribeTypes.IndexerConfig {
 	return x.indexerConfig
 }
 
+// RefreshRate returns the refresh rate for the indexer.
 func (x *Indexer) RefreshRate() uint64 {
 	return x.refreshRate
 }
@@ -158,10 +161,12 @@ func (x *Indexer) Index(parentCtx context.Context, startHeight uint64, endHeight
 			case <-groupCtx.Done():
 				logger.ReportIndexerError(ctx.Err(), x.indexerConfig, logger.ContextCancelled)
 				return fmt.Errorf("context canceled while storing and retrieving logs: %w", groupCtx.Err())
-			case log, ok := <-logsChan:
+			case log, ok := <-logsChan: // empty log passed when ok is false.
 				if !ok {
 					return nil
 				}
+				// fmt.Println("log++", x.indexerConfig.ChainID, log.BlockNumber, startHeight, endHeight, log.TxHash.String(), log.Address.String())
+
 				concurrentCalls++
 				gS.Go(func() error {
 					// another goroutine is already storing this receipt
@@ -187,7 +192,7 @@ func (x *Indexer) Index(parentCtx context.Context, startHeight uint64, endHeight
 				})
 
 				// Stop spawning store threads and wait
-				if concurrentCalls >= x.indexerConfig.StoreConcurrency || endHeight-log.BlockNumber < x.indexerConfig.ConcurrencyThreshold {
+				if concurrentCalls >= x.indexerConfig.StoreConcurrency || x.indexerConfig.ConcurrencyThreshold > endHeight-log.BlockNumber {
 					if err = gS.Wait(); err != nil {
 						return fmt.Errorf("error waiting for go routines: %w", err)
 					}
@@ -226,7 +231,7 @@ func (x *Indexer) Index(parentCtx context.Context, startHeight uint64, endHeight
 	x.blockMeter.Record(ctx, int64(endHeight), otelMetrics.WithAttributeSet(
 		attribute.NewSet(attribute.Int64("start_block", int64(startHeight)), attribute.Int64("chain_id", int64(x.indexerConfig.ChainID)))),
 	)
-	//LogEvent(InfoLevel, "Finished backfilling contract", LogData{"cid": x.indexerConfig.ChainID, "ca": x.addressesToString(x.indexerConfig.Contracts)})
+	// LogEvent(InfoLevel, "Finished backfilling contract", LogData{"cid": x.indexerConfig.ChainID, "ca": x.addressesToString(x.indexerConfig.Contracts)})
 
 	return nil
 }
@@ -263,7 +268,7 @@ OUTER:
 	for {
 		select {
 		case <-ctx.Done():
-			//LogEvent(ErrorLevel, "Context canceled while storing logs/receipts", LogData{"cid": x.indexerConfig.ChainID, "bn": log.BlockNumber, "tx": log.TxHash.Hex(), "la": log.Address.String(), "ca": x.addressesToString(x.indexerConfig.Contracts), "e": ctx.Err()})
+			// LogEvent(ErrorLevel, "Context canceled while storing logs/receipts", LogData{"cid": x.indexerConfig.ChainID, "bn": log.BlockNumber, "tx": log.TxHash.Hex(), "la": log.Address.String(), "ca": x.addressesToString(x.indexerConfig.Contracts), "e": ctx.Err()})
 
 			return fmt.Errorf("context canceled while storing logs/receipts: %w", ctx.Err())
 		case <-time.After(timeout):
@@ -298,7 +303,7 @@ OUTER:
 		// Store receipt in the EventDB.
 		err = x.eventDB.StoreReceipt(groupCtx, x.indexerConfig.ChainID, tx.receipt)
 		if err != nil {
-			//LogEvent(ErrorLevel, "Could not store receipt, retrying", LogData{"cid": x.indexerConfig.ChainID, "bn": log.BlockNumber, "tx": log.TxHash.Hex(), "la": log.Address.String(), "ca": x.addressesToString(x.indexerConfig.Contracts), "e": err.Error()})
+			// LogEvent(ErrorLevel, "Could not store receipt, retrying", LogData{"cid": x.indexerConfig.ChainID, "bn": log.BlockNumber, "tx": log.TxHash.Hex(), "la": log.Address.String(), "ca": x.addressesToString(x.indexerConfig.Contracts), "e": err.Error()})
 
 			return fmt.Errorf("could not store receipt: %w", err)
 		}
@@ -339,13 +344,13 @@ OUTER:
 
 	err = g.Wait()
 	if err != nil {
-		//LogEvent(ErrorLevel, "Could not store data", LogData{"cid": x.indexerConfig.ChainID, "bn": log.BlockNumber, "tx": log.TxHash.Hex(), "la": log.Address.String(), "ca": x.addressesToString(x.indexerConfig.Contracts), "e": err.Error()})
+		// LogEvent(ErrorLevel, "Could not store data", LogData{"cid": x.indexerConfig.ChainID, "bn": log.BlockNumber, "tx": log.TxHash.Hex(), "la": log.Address.String(), "ca": x.addressesToString(x.indexerConfig.Contracts), "e": err.Error()})
 
 		return fmt.Errorf("could not store data: %w\n%s on chain %d from %d to %s", err, x.addressesToString(x.indexerConfig.Contracts), x.indexerConfig.ChainID, log.BlockNumber, log.TxHash.String())
 	}
 
 	x.cache.Add(log.TxHash, true)
-	//LogEvent(InfoLevel, "Log, Receipt, and Tx stored", LogData{"cid": x.indexerConfig.ChainID, "bn": log.BlockNumber, "tx": log.TxHash.Hex(), "la": log.Address.String(), "ca": x.addressesToString(x.indexerConfig.Contracts), "ts": time.Since(startTime).Seconds()})
+	// LogEvent(InfoLevel, "Log, Receipt, and Tx stored", LogData{"cid": x.indexerConfig.ChainID, "bn": log.BlockNumber, "tx": log.TxHash.Hex(), "la": log.Address.String(), "ca": x.addressesToString(x.indexerConfig.Contracts), "ts": time.Since(startTime).Seconds()})
 
 	return nil
 }
@@ -402,7 +407,7 @@ func (x *Indexer) prunedReceiptLogs(receipt types.Receipt) (logs []types.Log, er
 	for i := range receipt.Logs {
 		log := receipt.Logs[i]
 		if log == nil {
-			//LogEvent(ErrorLevel, "log is nil", LogData{"cid": x.indexerConfig.ChainID, "bn": log.BlockNumber, "tx": log.TxHash.Hex(), "la": log.Address.String(), "ca": x.addressesToString(x.indexerConfig.Contracts)})
+			// LogEvent(ErrorLevel, "log is nil", LogData{"cid": x.indexerConfig.ChainID, "bn": log.BlockNumber, "tx": log.TxHash.Hex(), "la": log.Address.String(), "ca": x.addressesToString(x.indexerConfig.Contracts)})
 
 			return nil, fmt.Errorf("log is nil\nChain: %d\nTxHash: %s\nLog BlockNumber: %d\nLog 's Contract Address: %s\nContract Address: %s", x.indexerConfig.ChainID, log.TxHash.String(), log.BlockNumber, log.Address.String(), x.addressesToString(x.indexerConfig.Contracts))
 		}
@@ -456,7 +461,7 @@ OUTER:
 
 			if callErr[receiptIndex] != nil {
 				if callErr[receiptIndex].Error() == txNotFoundError {
-					//LogEvent(InfoLevel, "Could not get tx for txHash, attempting with additional confirmations", LogData{"cid": x.indexerConfig.ChainID, "tx": txhash, "ca": x.addressesToString(x.indexerConfig.Contracts), "e": err.Error()})
+					// LogEvent(InfoLevel, "Could not get tx for txHash, attempting with additional confirmations", LogData{"cid": x.indexerConfig.ChainID, "tx": txhash, "ca": x.addressesToString(x.indexerConfig.Contracts), "e": err.Error()})
 					continue OUTER
 				}
 			}
@@ -464,13 +469,13 @@ OUTER:
 			if callErr[txIndex] != nil {
 				switch callErr[txIndex].Error() {
 				case txNotSupportedError:
-					//LogEvent(InfoLevel, "Invalid tx", LogData{"cid": x.indexerConfig.ChainID, "tx": txhash, "ca": x.addressesToString(x.indexerConfig.Contracts), "e": err.Error()})
+					// LogEvent(InfoLevel, "Invalid tx", LogData{"cid": x.indexerConfig.ChainID, "tx": txhash, "ca": x.addressesToString(x.indexerConfig.Contracts), "e": err.Error()})
 					return tx, errNoTx
 				case invalidTxVRSError:
-					//LogEvent(InfoLevel, "Could not get tx for txHash, attempting with additional confirmations", LogData{"cid": x.indexerConfig.ChainID, "tx": txhash, "ca": x.addressesToString(x.indexerConfig.Contracts), "e": err.Error()})
+					// LogEvent(InfoLevel, "Could not get tx for txHash, attempting with additional confirmations", LogData{"cid": x.indexerConfig.ChainID, "tx": txhash, "ca": x.addressesToString(x.indexerConfig.Contracts), "e": err.Error()})
 					return tx, errNoTx
 				case txNotFoundError:
-					//LogEvent(InfoLevel, "Could not get tx for txHash, attempting with additional confirmations", LogData{"cid": x.indexerConfig.ChainID, "tx": txhash, "ca": x.addressesToString(x.indexerConfig.Contracts), "e": err.Error()})
+					// LogEvent(InfoLevel, "Could not get tx for txHash, attempting with additional confirmations", LogData{"cid": x.indexerConfig.ChainID, "tx": txhash, "ca": x.addressesToString(x.indexerConfig.Contracts), "e": err.Error()})
 					continue OUTER
 				}
 			}

@@ -84,13 +84,13 @@ func (s Store) RetrieveLastIndexed(ctx context.Context, contractAddress common.A
 }
 
 // StoreLastIndexedMultiple stores the last indexed block numbers for numerous contracts.
-func (s Store) StoreLastIndexedMultiple(parentCtx context.Context, contractAddresses []common.Address, chainID uint32, blockNumber uint64) (err error) {
+func (s Store) StoreLastIndexedMultiple(parentCtx context.Context, contractAddresses []common.Address, chainID uint32, blockNumber uint64) error {
 	g, groupCtx := errgroup.WithContext(parentCtx)
 
 	for i := range contractAddresses {
 		index := i
 		g.Go(func() error {
-			s.StoreLastIndexed(groupCtx, contractAddresses[index], chainID, blockNumber)
+			err := s.StoreLastIndexed(groupCtx, contractAddresses[index], chainID, blockNumber)
 			if err != nil {
 				return fmt.Errorf("could not backfill: %w", err)
 			}

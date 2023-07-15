@@ -872,6 +872,8 @@ github.com/leodido/go-urn v1.2.4 h1:XlAE/cm/ms7TE/VMVoduSpNBoyc2dOxHs5MZSwAN63Q=
 github.com/leodido/go-urn v1.2.4/go.mod h1:7ZrI8mTSeBSHl/UaRyKQW1qZeMgak41ANeCNaVckg+4=
 github.com/lib/pq v1.0.0/go.mod h1:5WUZQaWbwv1U+lTReE5YruASi9Al49XbQIvNi/34Woo=
 github.com/lib/pq v1.10.6 h1:jbk+ZieJ0D7EVGJYpL9QTz7/YW6UHbmdnZWYyK5cdBs=
+github.com/libs4go/crypto v0.0.1 h1:0IZGAInu+g9yoZPyP5m9lxoIbQIKMvRkEcR564c6CmE=
+github.com/libs4go/errors v0.0.3 h1:5piHKdU4ECqQylqKGdDTjs/vyzZ7SQcReA7qD+E7www=
 github.com/lmittmann/w3 v0.10.0 h1:AjQJKfcwHSDLr7cnRbS+0Jio9xt/h1JDBAP/jvLWC58=
 github.com/lmittmann/w3 v0.10.0/go.mod h1:AydD3eqJiyg7tubFve39JL025kZr8QWO1lemXllK+Sw=
 github.com/logrusorgru/aurora v0.0.0-20190803045625-94edacc10f9b/go.mod h1:7rIyQOR62GCctdiQpZ/zOJlFyk6y+94wXzv6RNZgaR4=
@@ -1244,6 +1246,7 @@ github.com/subosito/gotenv v1.4.0/go.mod h1:mZd6rFysKEcUhUHXJk0C/08wAgyDBFuwEYL7
 github.com/summerwind/h2spec v2.2.1+incompatible/go.mod h1:eP7IHGVDEe9cbCxRNtmGfII77lBvLgJLNfJjTaKa9sI=
 github.com/synapsecns/fasthttp-http2 v1.0.0 h1:G1/8AKgAzVImHpGbCGZo8w4c0kUBXb4eRKkMlWUW4eA=
 github.com/synapsecns/fasthttp-http2 v1.0.0/go.mod h1:QM9mQS/FygGB3PdvmW8a0/70FirWmEZVvj6Dlo1pisw=
+github.com/synapsecns/sanguine/agents v0.0.201 h1:34Um02aUxitbxePelklhW844ZkqdWa2DZhDcxy0yDaI=
 github.com/syndtr/gocapability v0.0.0-20200815063812-42c35b437635/go.mod h1:hkRG7XYTFWNJGYcbNJQlaLq0fg1yr4J4t/NcTQtrfww=
 github.com/syndtr/goleveldb v1.0.1-0.20190923125748-758128399b1d/go.mod h1:9OrXJhf154huy1nPWmuSrkgjPUtUNhA+Zmy+6AESzuA=
 github.com/syndtr/goleveldb v1.0.1-0.20210305035536-64b5b1c73954/go.mod h1:u2MKkTVTVJWe5D1rCvame8WqhBd88EuIwODJZ1VHCPM=

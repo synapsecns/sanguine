@@ -71,6 +71,5 @@ func (t *DBSuite) TestStoreRetrieveLastIndexedMultiple() {
 		Nil(t.T(), err)
 		Equal(t.T(), lastIndexed, retrievedLastIndexedMap[addressA])
 		Equal(t.T(), lastIndexed, retrievedLastIndexedMap[addressB])
-
 	})
 }

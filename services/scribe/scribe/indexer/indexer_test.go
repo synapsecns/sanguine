@@ -14,6 +14,7 @@ import (
 	"github.com/synapsecns/sanguine/services/scribe/config"
 	"github.com/synapsecns/sanguine/services/scribe/scribe/indexer"
 	"github.com/synapsecns/sanguine/services/scribe/testutil"
+	"os"
 
 	"sync"
 
@@ -465,4 +466,100 @@ loop2:
 		Contains(x.T(), errStr, "context canceled")
 		break loop2
 	}
+}
+
+// TestTxTypeNotSupported tests how the contract backfiller handles a transaction type that is not supported.
+//
+// nolint:dupl
+func (x *IndexerSuite) TestTxTypeNotSupported() {
+	if os.Getenv("CI") != "" {
+		x.T().Skip("Network test flake")
+	}
+
+	var backendClient backend.ScribeBackend
+	omnirpcURL := "https://rpc.interoperability.institute/confirmations/1/rpc/42161"
+	backendClient, err := backend.DialBackend(x.GetTestContext(), omnirpcURL, x.metrics)
+	Nil(x.T(), err)
+
+	// This config is using this block https://arbiscan.io/block/6262099
+	// and this tx https://arbiscan.io/tx/0x8800222adf9578fb576db0bd7fb4860fe89932549be084a3313939c03e4d279d
+	// with a unique Arbitrum type to verify that anomalous tx type is handled correctly.
+	contractConfig := config.ContractConfig{
+		Address:    "0xA67b7147DcE20D6F25Fd9ABfBCB1c3cA74E11f0B",
+		StartBlock: 6262099,
+	}
+
+	chainConfig := config.ChainConfig{
+		ChainID:            42161,
+		Confirmations:      1,
+		GetLogsRange:       1,
+		GetLogsBatchAmount: 1,
+		Contracts:          []config.ContractConfig{contractConfig},
+	}
+
+	addresses := []common.Address{common.HexToAddress(contractConfig.Address)}
+	backendClientArr := []backend.ScribeBackend{backendClient, backendClient}
+	blockHeightMeter, err := x.metrics.Meter().NewHistogram(fmt.Sprint("scribe_block_meter", chainConfig.ChainID), "block_histogram", "a block height meter", "blocks")
+	Nil(x.T(), err)
+
+	contractIndexer, err := indexer.NewIndexer(chainConfig, addresses, x.testDB, backendClientArr, x.metrics, blockHeightMeter)
+	Nil(x.T(), err)
+
+	err = contractIndexer.Index(x.GetTestContext(), contractConfig.StartBlock, contractConfig.StartBlock+1)
+	Nil(x.T(), err)
+
+	logs, err := x.testDB.RetrieveLogsWithFilter(x.GetTestContext(), db.LogFilter{}, 1)
+	Nil(x.T(), err)
+	Equal(x.T(), 4, len(logs))
+	receipts, err := x.testDB.RetrieveReceiptsWithFilter(x.GetTestContext(), db.ReceiptFilter{}, 1)
+	Nil(x.T(), err)
+	Equal(x.T(), 1, len(receipts))
+}
+
+// TestTxTypeNotSupported tests how the contract indexerer handles a transaction type that is not supported.
+//
+// nolint:dupl
+func (x IndexerSuite) TestInvalidTxVRS() {
+	if os.Getenv("CI") != "" {
+		x.T().Skip("Network test flake")
+	}
+
+	var backendClient backend.ScribeBackend
+	omnirpcURL := "https://rpc.interoperability.institute/confirmations/1/rpc/1313161554"
+	backendClient, err := backend.DialBackend(x.GetTestContext(), omnirpcURL, x.metrics)
+	Nil(x.T(), err)
+
+	// This config is using this block https://aurorascan.dev/block/58621373
+	// and this tx https://aurorascan.dev/tx/0x687282d7bd6c3d591f9ad79784e0983afabcac2a9074d368b7ca3d7caf4edee5
+	// to test handling of the v,r,s tx not found error.
+	contractConfig := config.ContractConfig{
+		Address:    "0xaeD5b25BE1c3163c907a471082640450F928DDFE",
+		StartBlock: 58621373,
+	}
+
+	chainConfig := config.ChainConfig{
+		ChainID:            1313161554,
+		Confirmations:      1,
+		GetLogsRange:       1,
+		GetLogsBatchAmount: 1,
+		Contracts:          []config.ContractConfig{contractConfig},
+	}
+	addresses := []common.Address{common.HexToAddress(contractConfig.Address)}
+
+	backendClientArr := []backend.ScribeBackend{backendClient, backendClient}
+	blockHeightMeter, err := x.metrics.Meter().NewHistogram(fmt.Sprint("scribe_block_meter", chainConfig.ChainID), "block_histogram", "a block height meter", "blocks")
+	Nil(x.T(), err)
+
+	contractIndexer, err := indexer.NewIndexer(chainConfig, addresses, x.testDB, backendClientArr, x.metrics, blockHeightMeter)
+	Nil(x.T(), err)
+
+	err = contractIndexer.Index(x.GetTestContext(), contractConfig.StartBlock, contractConfig.StartBlock+1)
+	Nil(x.T(), err)
+
+	logs, err := x.testDB.RetrieveLogsWithFilter(x.GetTestContext(), db.LogFilter{}, 1)
+	Nil(x.T(), err)
+	Equal(x.T(), 9, len(logs))
+	receipts, err := x.testDB.RetrieveReceiptsWithFilter(x.GetTestContext(), db.ReceiptFilter{}, 1)
+	Nil(x.T(), err)
+	Equal(x.T(), 1, len(receipts))
 }

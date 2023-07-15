@@ -2,6 +2,7 @@ package types
 
 import "github.com/ethereum/go-ethereum/common"
 
+// IndexerConfig holds metadata for the indexer. It is used to pass data uniformly and used in logging.
 type IndexerConfig struct {
 	Contracts            []common.Address
 	GetLogsRange         uint64

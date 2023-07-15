@@ -40,7 +40,7 @@ type SimulatedTestBackend interface {
 	ContractVerifier
 	// WaitForConfirmation waits for a tx confirmation
 	WaitForConfirmation(ctx context.Context, transaction *types.Transaction)
-	// FundAccount funds an account address with an amount amount
+	// FundAccount funds an account address with an amount
 	FundAccount(ctx context.Context, address common.Address, amount big.Int)
 	// GetTxContext gets a signed transaction. If the address is `nil`, will fund a new account.
 	GetTxContext(ctx context.Context, address *common.Address) (auth AuthType)

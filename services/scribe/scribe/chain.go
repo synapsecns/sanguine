@@ -76,6 +76,7 @@ func NewChainIndexer(eventDB db.EventDB, client []backend.ScribeBackend, chainCo
 	if chainConfig.ConcurrencyThreshold == 0 {
 		chainConfig.ConcurrencyThreshold = 50000
 	}
+
 	minBlockHeight := uint64(math.MaxUint64)
 
 	blockHeightMeterMap := make(map[common.Address]metric.Int64Histogram)
@@ -115,7 +116,7 @@ func NewChainIndexer(eventDB db.EventDB, client []backend.ScribeBackend, chainCo
 // Index iterates over each contract indexer and calls Index concurrently on each one.
 // If `onlyOneBlock` is true, the indexer will only index the block at `currentBlock`.
 //
-//nolint:gocognit,cyclop
+//nolint:gocognit,cyclop,unparam
 func (c ChainIndexer) Index(ctx context.Context, onlyOneBlock *uint64) error {
 	// Create a new context for the chain so all chains don't halt when indexing is completed.
 	chainCtx := context.WithValue(ctx, chainContextKey, fmt.Sprintf("%d-%d", c.chainID, c.minBlockHeight))
@@ -148,8 +149,10 @@ func (c ChainIndexer) Index(ctx context.Context, onlyOneBlock *uint64) error {
 			startHeight = lastIndexed + 1
 		}
 
-		// Does not consider if the config's start block is within the livefill threshold for simplicity. In this case, a indexer will bring the contract to head and it will be passed to livefill.
-		if *latestBlock-c.chainConfig.Confirmations > lastIndexed {
+		// Does not consider if the config's start block is within the livefill threshold for simplicity.
+		// In this case, a indexer will bring the contract to head and it will be passed to livefill.
+		// If there is no last indexed info for the contract, it will not be passed to livefill.
+		if *latestBlock-c.chainConfig.LivefillThreshold > lastIndexed && lastIndexed > 0 {
 			livefillContracts = append(livefillContracts, contract)
 			continue
 		}
@@ -175,12 +178,7 @@ func (c ChainIndexer) Index(ctx context.Context, onlyOneBlock *uint64) error {
 	// Livefill contracts that are within the livefill threshold.
 	indexGroup.Go(func() error {
 		timeout := time.Duration(0)
-		b := &backoff.Backoff{
-			Factor: 2,
-			Jitter: true,
-			Min:    1 * time.Second,
-			Max:    time.Duration(maxBackoff) * time.Second,
-		}
+		b := createBackoff()
 		livefillBlockMeter, err := c.handler.Meter().NewHistogram(fmt.Sprintf("scribe_block_meter_%d_livefill", c.chainConfig.ChainID), "block_histogram", "a block height meter", "blocks")
 		if err != nil {
 			return fmt.Errorf("error creating otel histogram %w", err)
@@ -199,17 +197,26 @@ func (c ChainIndexer) Index(ctx context.Context, onlyOneBlock *uint64) error {
 				// Update indxer's config to include new contract.
 				livefillIndexer.UpdateAddress(getAddressesFromConfig(livefillContracts))
 			case <-time.After(timeout):
+				if len(livefillContracts) == 0 {
+					timeout = b.Duration()
+					continue
+				}
 				var endHeight *uint64
 				var err error
 				livefillLastIndexed, err := c.eventDB.RetrieveLastIndexedMultiple(chainCtx, contractAddresses, c.chainConfig.ChainID)
 				if err != nil {
-					//LogEvent(ErrorLevel, "Could not get last indexed map", LogData{"cid": c.chainID, "e": err.Error()})
+					logger.ReportIndexerError(err, livefillIndexer.GetIndexerConfig(), logger.LivefillIndexerError)
 					timeout = b.Duration()
 					continue
 				}
-
 				startHeight := getMinFromMap(livefillLastIndexed)
+
 				endHeight, err = c.getLatestBlock(indexCtx, true)
+				if err != nil {
+					logger.ReportIndexerError(err, livefillIndexer.GetIndexerConfig(), logger.GetBlockError)
+					timeout = b.Duration()
+					continue
+				}
 
 				err = livefillIndexer.Index(indexCtx, startHeight, *endHeight)
 				if err != nil {
@@ -227,7 +234,7 @@ func (c ChainIndexer) Index(ctx context.Context, onlyOneBlock *uint64) error {
 	if err := indexGroup.Wait(); err != nil {
 		return fmt.Errorf("could not index: %w", err)
 	}
-	//LogEvent(WarnLevel, "Finished indexing blocktimes and contracts", LogData{"cid": c.chainID, "t": time.Since(startTime).Hours()})
+	// LogEvent(WarnLevel, "Finished indexing blocktimes and contracts", LogData{"cid": c.chainID, "t": time.Since(startTime).Hours()})
 
 	return nil
 }
@@ -235,12 +242,7 @@ func (c ChainIndexer) Index(ctx context.Context, onlyOneBlock *uint64) error {
 func (c *ChainIndexer) getLatestBlock(ctx context.Context, confirmations bool) (*uint64, error) {
 	var currentBlock uint64
 	var err error
-	b := &backoff.Backoff{
-		Factor: 2,
-		Jitter: true,
-		Min:    1 * time.Second,
-		Max:    time.Duration(maxBackoff) * time.Second,
-	}
+	b := createBackoff()
 	timeout := time.Duration(0)
 	for {
 		select {
@@ -257,7 +259,6 @@ func (c *ChainIndexer) getLatestBlock(ctx context.Context, confirmations bool) (
 			}
 			if confirmations {
 				currentBlock -= c.chainConfig.Confirmations
-				fmt.Println("currentBlock", currentBlock, c.chainConfig.Confirmations)
 			}
 		}
 
@@ -268,12 +269,7 @@ func (c *ChainIndexer) getLatestBlock(ctx context.Context, confirmations bool) (
 // IndexToBlock takes a contract indexer and indexs a contract up until it reaches the livefill threshold. This function should be generally used for calling a indexer with a single contract.
 func (c *ChainIndexer) IndexToBlock(parentContext context.Context, onlyOneBlock *uint64, startHeight uint64, indexer *indexer.Indexer) error {
 	timeout := time.Duration(0)
-	b := &backoff.Backoff{
-		Factor: 2,
-		Jitter: true,
-		Min:    1 * time.Second,
-		Max:    time.Duration(maxBackoff) * time.Second,
-	}
+	b := createBackoff()
 	for {
 		select {
 		case <-parentContext.Done():
@@ -292,7 +288,6 @@ func (c *ChainIndexer) IndexToBlock(parentContext context.Context, onlyOneBlock 
 					return fmt.Errorf("could not get current block number while indexing: %w", err)
 				}
 			}
-
 			err = indexer.Index(parentContext, startHeight, *endHeight)
 			if err != nil {
 				timeout = b.Duration()
@@ -303,20 +298,14 @@ func (c *ChainIndexer) IndexToBlock(parentContext context.Context, onlyOneBlock 
 				logger.ReportIndexerError(err, indexer.GetIndexerConfig(), logger.BackfillIndexerError)
 				continue
 			}
-
-			// get last indexed to check livefill threshold
-			lastBlockIndexed, err := c.eventDB.RetrieveLastIndexed(parentContext, indexer.GetIndexerConfig().Contracts[0], c.chainConfig.ChainID)
+			livefillReady, err := c.isReadyForLivefill(parentContext, indexer)
 			if err != nil {
 				return fmt.Errorf("could not get last indexed: %w", err)
 			}
-			endHeight, err = c.getLatestBlock(parentContext, true)
-			if err != nil {
-				return fmt.Errorf("could not get current block number while indexing: %w", err)
-			}
-			if lastBlockIndexed >= *endHeight-c.chainConfig.Confirmations {
-				logger.ReportScribeState(c.chainID, lastBlockIndexed, indexer.GetIndexerConfig().Contracts[0], logger.InitiatingLivefill)
+			if livefillReady {
 				return nil
 			}
+
 			timeout = time.Duration(indexer.RefreshRate()) * time.Second
 		}
 	}
@@ -342,4 +331,26 @@ func getAddressesFromConfig(contractConfigs []config.ContractConfig) []common.Ad
 	}
 
 	return addresses
+}
+
+func createBackoff() *backoff.Backoff {
+	return &backoff.Backoff{
+		Factor: 2,
+		Jitter: true,
+		Min:    1 * time.Second,
+		Max:    time.Duration(maxBackoff) * time.Second,
+	}
+}
+
+func (c *ChainIndexer) isReadyForLivefill(parentContext context.Context, indexer *indexer.Indexer) (bool, error) {
+	// get last indexed to check livefill threshold
+	lastBlockIndexed, err := c.eventDB.RetrieveLastIndexed(parentContext, indexer.GetIndexerConfig().Contracts[0], c.chainConfig.ChainID)
+	if err != nil {
+		return false, fmt.Errorf("could not get last indexed: %w", err)
+	}
+	endHeight, err := c.getLatestBlock(parentContext, true)
+	if err != nil {
+		return false, fmt.Errorf("could not get current block number while indexing: %w", err)
+	}
+	return lastBlockIndexed >= *endHeight-c.chainConfig.LivefillThreshold, nil
 }

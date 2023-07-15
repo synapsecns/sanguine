@@ -6,14 +6,88 @@ import (
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/core/types"
 	"github.com/ethereum/go-ethereum/params"
+	"github.com/synapsecns/sanguine/core/metrics"
 	"github.com/synapsecns/sanguine/ethergo/backends"
+	"github.com/synapsecns/sanguine/ethergo/backends/geth"
 	"github.com/synapsecns/sanguine/ethergo/contracts"
 	"github.com/synapsecns/sanguine/services/omnirpc/testhelper"
+	"github.com/synapsecns/sanguine/services/scribe/backend"
 	"github.com/synapsecns/sanguine/services/scribe/testutil/testcontract"
 	"golang.org/x/sync/errgroup"
 	"math/big"
 	"testing"
 )
+
+type chainBackendPair struct {
+	chainID uint32
+	backend backend.ScribeBackend
+}
+
+type chainAddressPair struct {
+	chainID   uint32
+	addresses []common.Address
+}
+
+// PopulateChainsWithLogs creates scribe backends for each chain backend and emits events from various contracts on each chain.
+func PopulateChainsWithLogs(ctx context.Context, chainBackends map[uint32]geth.Backend, desiredBlockHeight uint64, testingSuite *testing.T, managers []*DeployManager, handler metrics.Handler) (map[uint32][]common.Address, map[uint32][]backend.ScribeBackend, error) {
+	addressChan := make(chan chainAddressPair, len(chainBackends))
+	scribeBackendChan := make(chan chainBackendPair, len(chainBackends))
+	g, groupCtx := errgroup.WithContext(ctx)
+	fmt.Println("PopulateChainsWithLogs", chainBackends)
+	for k, v := range chainBackends {
+		chain := k
+		chainBackend := v
+
+		g.Go(func() error {
+			addresses, _, err := PopulateWithLogs(groupCtx, &chainBackend, desiredBlockHeight, testingSuite, managers)
+			fmt.Println("finished PopulateWithLogs", chain, err)
+
+			if err != nil {
+				return err
+			}
+			fmt.Println("finished PopulateWithLogs chan", chain, err)
+
+			addressChan <- chainAddressPair{chain, addresses}
+			fmt.Println("finished PopulateWithLogs post chan", chain, err)
+
+			return nil
+		})
+		g.Go(func() error {
+			host := StartOmnirpcServer(groupCtx, &chainBackend, testingSuite)
+			scribeBackend, err := backend.DialBackend(ctx, host, handler)
+			fmt.Println("finished scribeBackendChan", chain, err)
+
+			if err != nil {
+				return err
+			}
+			fmt.Println("finished scribeBackendChan chan", chain, err)
+
+			scribeBackendChan <- chainBackendPair{chain, scribeBackend}
+			fmt.Println("finished scribeBackendChan post chan", chain, err)
+
+			return nil
+		})
+	}
+
+	if err := g.Wait(); err != nil {
+		return nil, nil, fmt.Errorf("error populating chains with logs: %v", err)
+	}
+	fmt.Println("done scribeBackendChan")
+	close(addressChan) // Close the channels after writing to them
+	close(scribeBackendChan)
+	// Unpack channels
+	addressMap := make(map[uint32][]common.Address)
+	scribeBackendMap := make(map[uint32][]backend.ScribeBackend)
+	for pair := range addressChan {
+		addressMap[pair.chainID] = pair.addresses
+	}
+
+	for pair := range scribeBackendChan {
+		scribeBackendMap[pair.chainID] = []backend.ScribeBackend{pair.backend}
+	}
+
+	return addressMap, scribeBackendMap, nil
+}
 
 // PopulateWithLogs populates a backend with logs until it reaches a desired block height.
 func PopulateWithLogs(ctx context.Context, backend backends.SimulatedTestBackend, desiredBlockHeight uint64, testingSuite *testing.T, managers []*DeployManager) ([]common.Address, map[common.Address]uint64, error) {
@@ -21,7 +95,7 @@ func PopulateWithLogs(ctx context.Context, backend backends.SimulatedTestBackend
 	startBlocks := map[common.Address]uint64{}
 	contracts := map[common.Address]contracts.DeployedContract{}
 	contractRefs := map[common.Address]*testcontract.TestContractRef{}
-
+	fmt.Println("PopulateWithLogs", backend, desiredBlockHeight, len(managers))
 	// Get all the test contracts
 	for j := range managers {
 		manager := managers[j]
@@ -48,8 +122,10 @@ func PopulateWithLogs(ctx context.Context, backend backends.SimulatedTestBackend
 			return dumpAddresses(contracts), startBlocks, nil
 		default:
 		}
+
 		i++
-		backend.FundAccount(ctx, common.BigToAddress(big.NewInt(int64(i))), *big.NewInt(params.Wei))
+		randomAddress := common.BigToAddress(big.NewInt(int64(i)))
+		backend.FundAccount(ctx, randomAddress, *big.NewInt(params.Wei))
 
 		// Emit EventA for each contract
 		g, groupCtx := errgroup.WithContext(ctx)
@@ -62,16 +138,14 @@ func PopulateWithLogs(ctx context.Context, backend backends.SimulatedTestBackend
 				if err != nil {
 					return fmt.Errorf("error emitting event a for contract %s: %v", address.String(), err)
 				}
-				backend.WaitForConfirmation(ctx, tx)
+				backend.WaitForConfirmation(groupCtx, tx)
 				return nil
 			})
-
 		}
 		err := g.Wait()
 		if err != nil {
 			return nil, nil, fmt.Errorf("error emitting events: %v", err)
 		}
-
 		latestBlock, err := backend.BlockNumber(ctx)
 		if err != nil {
 			return nil, nil, fmt.Errorf("error getting latest block number: %v", err)
@@ -80,10 +154,10 @@ func PopulateWithLogs(ctx context.Context, backend backends.SimulatedTestBackend
 		if latestBlock >= desiredBlockHeight {
 			return dumpAddresses(contracts), startBlocks, nil
 		}
-
 	}
 }
 
+// GetTxBlockNumber gets the block number of a transaction.
 func GetTxBlockNumber(ctx context.Context, chain backends.SimulatedTestBackend, tx *types.Transaction) (uint64, error) {
 	receipt, err := chain.TransactionReceipt(ctx, tx.Hash())
 	if err != nil {
@@ -114,7 +188,7 @@ func ReachBlockHeight(ctx context.Context, backend backends.SimulatedTestBackend
 
 		latestBlock, err := backend.BlockNumber(ctx)
 		if err != nil {
-			fmt.Errorf("error getting latest block number: %v", err)
+			return fmt.Errorf("error getting latest block number: %v", err)
 		}
 
 		if latestBlock >= desiredBlockHeight {

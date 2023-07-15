@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"github.com/synapsecns/sanguine/services/scribe/backend"
+	"github.com/synapsecns/sanguine/services/scribe/logger"
 	scribeTypes "github.com/synapsecns/sanguine/services/scribe/types"
 	"math/big"
 	"time"
@@ -65,6 +66,7 @@ func (f *LogFetcher) GetChunkArr() (chunkArr []*util.Chunk) {
 
 		// Stop appending chunks if the max height of the current chunk exceeds the concurrency threshold
 		if chunk.EndBlock.Uint64() > f.endBlock.Uint64()-f.indexerConfig.ConcurrencyThreshold {
+			logger.ReportScribeState(f.indexerConfig.ChainID, chunk.EndBlock.Uint64(), f.contractAddresses, logger.ConcurrencyThresholdReached)
 			return chunkArr
 		}
 	}
@@ -127,9 +129,6 @@ func (f *LogFetcher) FetchLogs(ctx context.Context, chunks []*util.Chunk) ([]typ
 	attempt := 0
 	timeout := time.Duration(0)
 
-	startHeight := chunks[0].StartBlock.Uint64()
-	endHeight := chunks[len(chunks)-1].EndBlock.Uint64()
-
 	for {
 		select {
 		case <-ctx.Done():
@@ -140,9 +139,9 @@ func (f *LogFetcher) FetchLogs(ctx context.Context, chunks []*util.Chunk) ([]typ
 				return nil, fmt.Errorf("maximum number of filter attempts exceeded")
 			}
 
-			logs, err := f.getAndUnpackLogs(ctx, chunks, backoffConfig, startHeight, endHeight)
+			logs, err := f.getAndUnpackLogs(ctx, chunks, backoffConfig)
 			if err != nil {
-				// LogEvent(WarnLevel, "Could not get and unpack logs for range, retrying", LogData{"sh": startHeight, "ca": f.contractAddresses, "eh": endHeight, "cid": f.indexerConfig.ChainID, "e": err})
+				logger.ReportIndexerError(err, *f.indexerConfig, logger.GetLogsError)
 				continue
 			}
 
@@ -151,13 +150,13 @@ func (f *LogFetcher) FetchLogs(ctx context.Context, chunks []*util.Chunk) ([]typ
 	}
 }
 
-func (f *LogFetcher) getAndUnpackLogs(ctx context.Context, chunks []*util.Chunk, backoffConfig *backoff.Backoff, startHeight, endHeight uint64) ([]types.Log, error) {
+func (f *LogFetcher) getAndUnpackLogs(ctx context.Context, chunks []*util.Chunk, backoffConfig *backoff.Backoff) ([]types.Log, error) {
 	result, err := backend.GetLogsInRange(ctx, f.backend, f.contractAddresses, uint64(f.indexerConfig.ChainID), chunks)
 	if err != nil {
 		backoffConfig.Duration()
-		//LogEvent(WarnLevel, "Could not filter logs for range, retrying", LogData{"sh": startHeight, "ca": f.contractAddresses, "eh": endHeight, "cid": f.indexerConfig.ChainID, "e": err})
-		return nil, err
+		return nil, fmt.Errorf("could not get logs: %w", err)
 	}
+
 	var logs []types.Log
 	resultIterator := result.Iterator()
 	for !resultIterator.Done() {
@@ -167,7 +166,7 @@ func (f *LogFetcher) getAndUnpackLogs(ctx context.Context, chunks []*util.Chunk,
 		default:
 			_, logChunk := resultIterator.Next()
 			if logChunk == nil || len(*logChunk) == 0 {
-				//LogEvent(WarnLevel, "empty subchunk", LogData{"sh": startHeight, "ca": f.contractAddresses, "cid": f.indexerConfig.ChainID, "eh": endHeight})
+				logger.ReportIndexerError(err, *f.indexerConfig, logger.EmptyGetLogsChunk)
 				continue
 			}
 

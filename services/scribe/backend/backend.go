@@ -44,6 +44,8 @@ func GetLogsInRange(ctx context.Context, backend ScribeBackend, contractAddresse
 
 	maxHeight := new(big.Int)
 	calls[1] = eth.BlockNumber().Returns(maxHeight)
+	// chain, _ := backend.ChainID(ctx)
+	// fmt.Println("BACKEND maxHeight", chunks[0].StartBlock, chain, chunks[len(chunks)-1].EndBlock, contractAddresses)
 
 	for i := 0; i < len(chunks); i++ {
 		filter := ethereum.FilterQuery{

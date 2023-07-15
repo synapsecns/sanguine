@@ -27,6 +27,8 @@ type ChainConfig struct {
 	GetBlockBatchAmount int `yaml:"get_block_batch_amount"`
 	// Confirmations is the number of blocks away from the head to livefill to.
 	Confirmations uint64 `yaml:"confirmations"`
+	// LivefillThreshold is the number of blocks away from the head - confirmations to livefill to.
+	LivefillThreshold uint64 `yaml:"livefill_threshold"`
 }
 
 // ChainConfigs contains an array of ChainConfigs.

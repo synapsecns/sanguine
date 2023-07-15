@@ -73,7 +73,6 @@ func (b *BackendSuite) TestLogsInRange() {
 		}
 	}
 	Equal(b.T(), 4, numLogs)
-
 }
 
 func (b *BackendSuite) TestLogsInRangeWithMultipleContracts() {
@@ -94,7 +93,6 @@ func (b *BackendSuite) TestLogsInRangeWithMultipleContracts() {
 		defer wg.Done()
 		addresses, _, err = testutil.PopulateWithLogs(b.GetTestContext(), testBackend, desiredBlockHeight, b.T(), managers)
 		Nil(b.T(), err)
-
 	}()
 
 	var host string
@@ -137,7 +135,7 @@ func (b *BackendSuite) TestLogsInRangeWithMultipleContracts() {
 		NotNil(b.T(), chunk)
 		for i := range *chunk {
 			logAddr := (*chunk)[i].Address.String()
-			logs[logAddr] = logs[logAddr] + 1
+			logs[logAddr]++
 			numLogs++
 		}
 	}
@@ -147,7 +145,6 @@ func (b *BackendSuite) TestLogsInRangeWithMultipleContracts() {
 	for i := range addresses {
 		Equal(b.T(), 1, logs[addresses[i].String()])
 	}
-
 }
 
 func TestMakeRange(t *testing.T) {
@@ -170,7 +167,8 @@ func (b *BackendSuite) TestBlockHashesInRange() {
 
 	go func() {
 		defer wg.Done()
-		testutil.ReachBlockHeight(b.GetTestContext(), testBackend, desiredBlockHeight, b.T())
+		err := testutil.ReachBlockHeight(b.GetTestContext(), testBackend, desiredBlockHeight, b.T())
+		Nil(b.T(), err)
 	}()
 
 	var host string
@@ -195,6 +193,5 @@ func (b *BackendSuite) TestBlockHashesInRange() {
 	for !itr.Done() {
 		index, _, _ := itr.Next()
 		Falsef(b.T(), intSet.Has(int64(index)), "%d appears at least twice", index)
-
 	}
 }
