@@ -3,6 +3,8 @@ package backend
 import (
 	"context"
 	"fmt"
+	"math/big"
+
 	"github.com/benbjohnson/immutable"
 	"github.com/ethereum/go-ethereum"
 	"github.com/ethereum/go-ethereum/common"
@@ -13,7 +15,6 @@ import (
 	"github.com/synapsecns/sanguine/ethergo/client"
 	"github.com/synapsecns/sanguine/ethergo/util"
 	"golang.org/x/exp/constraints"
-	"math/big"
 )
 
 // ScribeBackend is the set of functions that the scribe needs from a client.
@@ -44,9 +45,6 @@ func GetLogsInRange(ctx context.Context, backend ScribeBackend, contractAddresse
 
 	maxHeight := new(big.Int)
 	calls[1] = eth.BlockNumber().Returns(maxHeight)
-	// chain, _ := backend.ChainID(ctx)
-	// fmt.Println("BACKEND maxHeight", chunks[0].StartBlock, chain, chunks[len(chunks)-1].EndBlock, contractAddresses)
-
 	for i := 0; i < len(chunks); i++ {
 		filter := ethereum.FilterQuery{
 			FromBlock: chunks[i].StartBlock,

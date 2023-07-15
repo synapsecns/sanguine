@@ -3,6 +3,9 @@ package testutil
 import (
 	"context"
 	"fmt"
+	"math/big"
+	"testing"
+
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/core/types"
 	"github.com/ethereum/go-ethereum/params"
@@ -14,8 +17,6 @@ import (
 	"github.com/synapsecns/sanguine/services/scribe/backend"
 	"github.com/synapsecns/sanguine/services/scribe/testutil/testcontract"
 	"golang.org/x/sync/errgroup"
-	"math/big"
-	"testing"
 )
 
 type chainBackendPair struct {
@@ -33,37 +34,30 @@ func PopulateChainsWithLogs(ctx context.Context, chainBackends map[uint32]geth.B
 	addressChan := make(chan chainAddressPair, len(chainBackends))
 	scribeBackendChan := make(chan chainBackendPair, len(chainBackends))
 	g, groupCtx := errgroup.WithContext(ctx)
-	fmt.Println("PopulateChainsWithLogs", chainBackends)
 	for k, v := range chainBackends {
 		chain := k
 		chainBackend := v
 
 		g.Go(func() error {
 			addresses, _, err := PopulateWithLogs(groupCtx, &chainBackend, desiredBlockHeight, testingSuite, managers)
-			fmt.Println("finished PopulateWithLogs", chain, err)
 
 			if err != nil {
 				return err
 			}
-			fmt.Println("finished PopulateWithLogs chan", chain, err)
 
 			addressChan <- chainAddressPair{chain, addresses}
-			fmt.Println("finished PopulateWithLogs post chan", chain, err)
 
 			return nil
 		})
 		g.Go(func() error {
 			host := StartOmnirpcServer(groupCtx, &chainBackend, testingSuite)
 			scribeBackend, err := backend.DialBackend(ctx, host, handler)
-			fmt.Println("finished scribeBackendChan", chain, err)
 
 			if err != nil {
 				return err
 			}
-			fmt.Println("finished scribeBackendChan chan", chain, err)
 
 			scribeBackendChan <- chainBackendPair{chain, scribeBackend}
-			fmt.Println("finished scribeBackendChan post chan", chain, err)
 
 			return nil
 		})
@@ -72,7 +66,6 @@ func PopulateChainsWithLogs(ctx context.Context, chainBackends map[uint32]geth.B
 	if err := g.Wait(); err != nil {
 		return nil, nil, fmt.Errorf("error populating chains with logs: %v", err)
 	}
-	fmt.Println("done scribeBackendChan")
 	close(addressChan) // Close the channels after writing to them
 	close(scribeBackendChan)
 	// Unpack channels
@@ -95,7 +88,6 @@ func PopulateWithLogs(ctx context.Context, backend backends.SimulatedTestBackend
 	startBlocks := map[common.Address]uint64{}
 	contracts := map[common.Address]contracts.DeployedContract{}
 	contractRefs := map[common.Address]*testcontract.TestContractRef{}
-	fmt.Println("PopulateWithLogs", backend, desiredBlockHeight, len(managers))
 	// Get all the test contracts
 	for j := range managers {
 		manager := managers[j]

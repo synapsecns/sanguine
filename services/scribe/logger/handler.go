@@ -2,6 +2,7 @@ package logger
 
 import (
 	"fmt"
+
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ipfs/go-log"
 	scribeTypes "github.com/synapsecns/sanguine/services/scribe/types"
@@ -55,7 +56,6 @@ func ReportIndexerError(err error, indexerData scribeTypes.IndexerConfig, errorT
 
 	// Stop cloudflare error messages from nuking readablity of logs
 	if len(errStr) > 1000 {
-		fmt.Println("Error too long", err)
 		errStr = errStr[:1000]
 	}
 	switch errorType {
