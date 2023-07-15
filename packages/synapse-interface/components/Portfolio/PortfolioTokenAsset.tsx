@@ -1,4 +1,4 @@
-import React, { useMemo, useCallback } from 'react'
+import React, { useMemo, useCallback, useState } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
 import { RootState } from '@/store/store'
 import { useAccount } from 'wagmi'
@@ -174,18 +174,23 @@ export const PortfolioTokenAsset = ({
             {parsedBalance}
           </div>
           {hasAllowanceButLessThanBalance && (
-            <div
-              onClick={handleApproveCallback}
-              className={`
-              text-[#A3A3C2] text-[14px] px-2
-              hover:text-[#75E6F0]
-              hover:underline
-              hover:cursor-pointer
-              active:opacity-[67%]
-            `}
-            >
-              {parsedAllowance} approved
-            </div>
+            // <div
+            //   onClick={handleApproveCallback}
+            //   className={`
+            //   text-[#A3A3C2] text-[14px] px-2
+            //   hover:text-[#75E6F0]
+            //   hover:underline
+            //   hover:cursor-pointer
+            //   active:opacity-[67%]
+            // `}
+            // >
+            //   {parsedAllowance} approved
+            <HoverClickableText
+              defaultText={`${parsedAllowance} approved`}
+              hoverText="Increase Limit"
+              callback={handleApproveCallback}
+            />
+            // </div>
           )}
         </div>
       </div>
@@ -197,6 +202,35 @@ export const PortfolioTokenAsset = ({
           isDisabled={isDisabled}
         />
       </div>
+    </div>
+  )
+}
+
+export const HoverClickableText = ({
+  defaultText,
+  hoverText,
+  callback,
+}: {
+  defaultText: string
+  hoverText: string
+  callback: () => void
+}) => {
+  const [isHovered, setIsHovered] = useState(false)
+  return (
+    <div
+      onMouseEnter={() => setIsHovered(true)}
+      onMouseLeave={() => setIsHovered(false)}
+      onClick={callback}
+      className={`
+      group px-2
+      text-[#A3A3C2]
+      hover:text-[#75E6F0]
+      hover:underline
+      hover:cursor-pointer
+      active:opacity-[67%]
+      `}
+    >
+      <div className="text-[14px]">{isHovered ? hoverText : defaultText}</div>
     </div>
   )
 }
