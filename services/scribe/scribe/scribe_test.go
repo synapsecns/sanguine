@@ -116,12 +116,11 @@ func (s *ScribeSuite) TestLivefillParity() {
 	const globalConfirmations = uint64(200)
 	// ethRPCURL := "https://1rpc.io/eth"
 	// arbRPCURL := "https://endpoints.omniatech.io/v1/arbitrum/one/public"
-	maticRPCURL := "https://ultra-hidden-ensemble.matic.quiknode.pro/883a1d016f24b86dc445b60261696497f1fe1128/"
 	// avaxRPCURL := "https://avalanche.public-rpc.com"
 
 	ethRPCURL := "https://rpc.interoperability.institute/confirmations/1/rpc/1"
 	arbRPCURL := "https://rpc.interoperability.institute/confirmations/1/rpc/42161"
-	// maticRPCURL := "https://rpc.interoperability.institute/confirmations/1/rpc/137"
+	maticRPCURL := "https://rpc.interoperability.institute/confirmations/1/rpc/137"
 	avaxRPCURL := "https://rpc.interoperability.institute/confirmations/1/rpc/43114"
 	bscRPCURL := "https://rpc.interoperability.institute/confirmations/1/rpc/56"
 
