@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { useState } from 'react'
 import Image from 'next/image'
 import { Zero } from '@ethersproject/constants'
 import { CHAINS_BY_ID } from '@/constants/chains'
@@ -138,6 +138,7 @@ const PortfolioTokenVisualizer = ({
 }: {
   portfolioTokens: TokenWithBalanceAndAllowance[]
 }) => {
+  const [isHovered, setIsHovered] = useState(false)
   const hasOneToken = portfolioTokens && portfolioTokens.length > 0
   const hasTwoTokens = portfolioTokens && portfolioTokens.length > 1
   const numOverTwoTokens =
@@ -145,10 +146,13 @@ const PortfolioTokenVisualizer = ({
       ? portfolioTokens.length - 2
       : 0
 
+  console.log('portfolioTokens: ', portfolioTokens)
   return (
     <div
       data-test-id="portfolio-token-visualizer"
-      className="flex flex-row items-center"
+      className="flex flex-row items-center hover-trigger"
+      onMouseEnter={() => setIsHovered(true)}
+      onMouseLeave={() => setIsHovered(false)}
     >
       {hasOneToken && (
         <Image
@@ -169,6 +173,18 @@ const PortfolioTokenVisualizer = ({
       {numOverTwoTokens > 0 && (
         <div className="ml-1 text-white">+ {numOverTwoTokens}</div>
       )}
+      <div className="relative inline-block">
+        {isHovered && (
+          <div
+            className={`
+            absolute hover-content p-2 text-white
+            border border-solid border-[#252537]
+            bg-[#101018] rounded-md`}
+          >
+            testing
+          </div>
+        )}
+      </div>
     </div>
   )
 }
