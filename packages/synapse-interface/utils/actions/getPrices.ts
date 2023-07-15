@@ -48,14 +48,14 @@ export const usePrices = (connectedChainId: number) => {
 
 export const getEthPrice = async (): Promise<number> => {
   // the price result returned by latestAnswer is 8 decimals
-  const ethPriceResult: any = await readContract({
+  const ethPriceResult: bigint = (await readContract({
     address: `0x${CHAINLINK_ETH_PRICE_ADDRESSES[ALL_CHAINS.ETH.id].slice(2)}`,
     abi: CHAINLINK_AGGREGATOR_ABI,
     functionName: 'latestAnswer',
     chainId: 1,
-  })
+  })) as bigint
 
-  const ethPriceBigInt = ethPriceResult ? BigInt(ethPriceResult) : 0n
+  const ethPriceBigInt = ethPriceResult ?? 0n
   if (ethPriceBigInt === 0n) {
     return 0
   } else {
@@ -66,14 +66,14 @@ export const getEthPrice = async (): Promise<number> => {
 
 export const getAvaxPrice = async (): Promise<number> => {
   // the price result returned by latestAnswer is 8 decimals
-  const avaxPriceResult: any = await readContract({
+  const avaxPriceResult: bigint = (await readContract({
     address: CHAINLINK_AVAX_PRICE_ADDRESSES[ALL_CHAINS.ETH.id] as Address,
     abi: CHAINLINK_AGGREGATOR_ABI,
     functionName: 'latestAnswer',
     chainId: 1,
-  })
+  })) as bigint
 
-  const avaxPriceBigInt = avaxPriceResult ? BigInt(avaxPriceResult) : 0n
+  const avaxPriceBigInt = avaxPriceResult ?? 0n
 
   if (avaxPriceBigInt === 0n) {
     return 0

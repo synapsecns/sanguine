@@ -2,7 +2,7 @@ import _ from 'lodash'
 
 import { WETH } from '@constants/tokens/swapMaster'
 import { AVWETH, ETH, WETHE } from '@constants/tokens/master'
-import { stringToBigInt } from '@/utils/stringToBigNum'
+import { stringToBigInt } from '@/utils/bigint/format'
 import { DepositTokenInput } from '@components/TokenInput'
 import PriceImpactDisplay from '../components/PriceImpactDisplay'
 import { Token } from '@types'
@@ -11,7 +11,6 @@ import { getTokenAllowance } from '@/utils/actions/getTokenAllowance'
 import { approve, deposit } from '@/utils/actions/approveAndDeposit'
 import LoadingTokenInput from '@components/loading/LoadingTokenInput'
 import { Address, fetchBalance } from '@wagmi/core'
-import { formatBNToString } from '@/utils/bignumber/format'
 import { getSwapDepositContractFields } from '@/utils/getSwapDepositContractFields'
 import { calculatePriceImpact } from '@/utils/priceImpact'
 import { transformCalculateLiquidityInput } from '@/utils/transformCalculateLiquidityInput'
@@ -297,10 +296,12 @@ const serializeToken = async (
       chainId,
     })
 
+    console.log(`fetchedBalance`, fetchedBalance)
+
     return {
       ...balanceToken,
       rawBalance: fetchedBalance.value,
-      balanceStr: formatBNToString(
+      balanceStr: formatBigIntToString(
         fetchedBalance.value,
         balanceToken.decimals[chainId],
         4

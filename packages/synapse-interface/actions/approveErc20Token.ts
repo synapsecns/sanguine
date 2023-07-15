@@ -1,7 +1,3 @@
-const MAX_UINT256 = BigInt(
-  '0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff'
-)
-
 import {
   Address,
   erc20ABI,
@@ -10,6 +6,8 @@ import {
   writeContract,
 } from '@wagmi/core'
 import { TransactionReceipt } from 'viem'
+
+import { MAX_UINT256 } from '@/constants'
 
 export const approveErc20Token = async ({
   chainId,

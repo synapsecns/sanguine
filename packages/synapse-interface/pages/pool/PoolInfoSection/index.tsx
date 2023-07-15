@@ -7,7 +7,7 @@ import {
   formatBigIntToPercentString,
   formatBigIntToString,
 } from '@/utils/bigint/format'
-import { stringToBigInt } from '@/utils/stringToBigNum'
+import { stringToBigInt } from '@/utils/bigint/format'
 import { useSelector } from 'react-redux'
 import { RootState } from '@/store/store'
 

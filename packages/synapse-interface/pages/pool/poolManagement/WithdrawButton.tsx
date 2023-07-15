@@ -4,7 +4,7 @@ import { RootState } from '@/store/store'
 import { useAccount, useNetwork, useSwitchNetwork } from 'wagmi'
 import { useEffect, useState } from 'react'
 import { useConnectModal } from '@rainbow-me/rainbowkit'
-import { stringToBigInt } from '@/utils/stringToBigNum'
+import { stringToBigInt } from '@/utils/bigint/format'
 import LoadingSpinner from '@/components/ui/tailwind/LoadingSpinner'
 import { DEFAULT_WITHDRAW_QUOTE } from '@/slices/poolWithdrawSlice'
 

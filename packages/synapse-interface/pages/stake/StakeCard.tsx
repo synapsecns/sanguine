@@ -24,7 +24,7 @@ import Card from '@/components/ui/tailwind/Card'
 import InfoSection from '../pool/PoolInfoSection/InfoSection'
 import StakeCardTitle from './StakeCardTitle'
 import { formatBigIntToString } from '@/utils/bigint/format'
-import { stringToBigInt } from '@/utils/stringToBigNum'
+import { stringToBigInt } from '@/utils/bigint/format'
 
 interface StakeCardProps {
   address: string
@@ -146,7 +146,7 @@ const StakeCard = ({ address, chainId, pool }: StakeCardProps) => {
           </div>
         </InfoSection>
       </Card>
-      {userStakeData.reward === BigInt(0) ? null : (
+      {userStakeData.reward === 0n ? null : (
         <Button
           disabled={userStakeData.reward === 0n}
           className={`

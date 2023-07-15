@@ -12,6 +12,7 @@ import {
   useAccountModal,
   useChainModal,
 } from '@rainbow-me/rainbowkit'
+import { stringToBigInt } from '@/utils/bigint/format'
 
 export const BridgeTransactionButton = ({
   approveTxn,
@@ -58,12 +59,17 @@ export const BridgeTransactionButton = ({
 
   let buttonProperties
 
-  if (!isLoading && bridgeQuote?.feeAmount === 0n && BigInt(fromValue) > 0) {
+  const fromValueBigInt = stringToBigInt(
+    fromValue,
+    fromToken.decimals[fromChainId]
+  )
+
+  if (!isLoading && bridgeQuote?.feeAmount === 0n && fromValueBigInt > 0) {
     buttonProperties = {
       label: `Amount must be greater than fee`,
       onClick: null,
     }
-  } else if (!isConnected && BigInt(fromValue) > 0) {
+  } else if (!isConnected && fromValueBigInt > 0) {
     buttonProperties = {
       label: `Connect Wallet to Bridge`,
       onClick: openConnectModal,
@@ -76,7 +82,7 @@ export const BridgeTransactionButton = ({
     buttonProperties = {
       label: 'Invalid destination address',
     }
-  } else if (chain?.id != fromChainId && BigInt(fromValue) > 0) {
+  } else if (chain?.id != fromChainId && fromValueBigInt > 0) {
     buttonProperties = {
       label: `Switch to ${chains.find((c) => c.id === fromChainId).name}`,
       onClick: () => switchNetwork(fromChainId),

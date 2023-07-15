@@ -24,8 +24,8 @@ export const sortByVisibilityRank = (tokens: Token[]) => {
 
 const sortArrayByBalance = (array) => {
   return array.sort((a, b) => {
-    const balanceA = BigInt(a.balance.result || '')
-    const balanceB = BigInt(b.balance.result || '')
+    const balanceA = BigInt(a.balance || '')
+    const balanceB = BigInt(b.balance || '')
 
     if (balanceA < balanceB) {
       return 1
@@ -129,13 +129,13 @@ export const separateAndSortTokensWithBalances = (
   const hasTokensAndBalances = Object.keys(tokensAndBalances).length > 0
   if (hasTokensAndBalances) {
     const tokensWithBalances = tokensAndBalances
-      .filter((t) => !(t.balance === BigInt(0)))
+      .filter((t) => !(t.balance === 0n))
       .map((t) => t.token)
 
     const a = sortTokensByPriorityRankAndAlpha(tokensWithBalances)
 
     const tokensWithNoBalances = tokensAndBalances
-      .filter((t) => t.balance === BigInt(0))
+      .filter((t) => t.balance === 0n)
       .map((t) => t.token)
 
     const b = sortTokensByPriorityRankAndAlpha(tokensWithNoBalances)

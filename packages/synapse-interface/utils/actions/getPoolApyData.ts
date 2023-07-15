@@ -62,7 +62,7 @@ export const getPoolApyData = async (
         chainId,
         token: poolToken.addresses[chainId] as Address,
       })
-    )?.value ?? BigInt(0)
+    )?.value ?? 0n
 
   const lpTokenSupplyResult =
     (
@@ -70,14 +70,14 @@ export const getPoolApyData = async (
         address: poolToken.addresses[chainId] as Address,
         chainId,
       })
-    )?.totalSupply?.value ?? BigInt(0)
+    )?.totalSupply?.value ?? 0n
 
   const synPriceData = prices?.synPrices ?? (await getSynPrices())
-  const synapsePerSecond: bigint = BigInt(synapsePerSecondResult ?? 0n)
-  const totalAllocPoints: bigint = BigInt(totalAllocPointsResult ?? 1n)
-  const allocPoints: bigint = BigInt(poolInfoResult?.[2] ?? 1n)
-  const lpTokenBalance: bigint = BigInt(lpTokenBalanceResult ?? 0n)
-  const lpTokenSupply: bigint = BigInt(lpTokenSupplyResult ?? 0n)
+  const synapsePerSecond: bigint = synapsePerSecondResult ?? 0n
+  const totalAllocPoints: bigint = totalAllocPointsResult ?? 1n
+  const allocPoints: bigint = poolInfoResult?.[2] ?? 1n
+  const lpTokenBalance: bigint = lpTokenBalanceResult ?? 0n
+  const lpTokenSupply: bigint = lpTokenSupplyResult ?? 0n
 
   let rewardsPerWeek
   try {

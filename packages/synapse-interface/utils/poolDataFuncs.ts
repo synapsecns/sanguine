@@ -1,12 +1,4 @@
-import { Zero, One } from '@ethersproject/constants'
-import { zeroAddress } from 'viem'
-// import {
-//   bigIntToFixed,
-//   formatBigIntToPercentString,
-//   formatBigIntToString,
-// } from './bigint/format'
-
-export const getPriceMultiplier = ({ poolType, prices }) => {
+const getPriceMultiplier = ({ poolType, prices }) => {
   switch (poolType) {
     case 'ETH':
       return prices.ethPrice
@@ -15,27 +7,6 @@ export const getPriceMultiplier = ({ poolType, prices }) => {
     default:
       return 1
   }
-}
-
-export const calcBnSum = (arr) => {
-  return arr.reduce((sum, b) => sum.add(b), Zero)
-}
-
-export const calcIfZero = (lpb) => {
-  if (lpb.isZero()) {
-    return One
-  } else {
-    return lpb
-  }
-}
-
-export const getBalanceInfo = async ({ lpTokenContract, account }) => {
-  const arr = Promise.all([
-    lpTokenContract.balanceOf(account || zeroAddress),
-    lpTokenContract.totalSupply(),
-  ])
-
-  return arr
 }
 
 export const getTokenBalanceInfo = ({ tokenBalances, poolType, prices }) => {
@@ -52,21 +23,6 @@ export const getTokenBalanceInfo = ({ tokenBalances, poolType, prices }) => {
     tokenBalancesUSD,
   }
 }
-
-// const formatBigIntUnits = (value: bigint, decimals = 18) => {
-//   const stringValue = value.toString()
-//   const decimalPointIndex = stringValue.length - decimals
-
-//   if (decimalPointIndex <= 0) {
-//     return '0.' + stringValue.padStart(decimals, '0')
-//   }
-
-//   return (
-//     stringValue.slice(0, decimalPointIndex) +
-//     '.' +
-//     stringValue.slice(decimalPointIndex)
-//   )
-// }
 
 export const getPoolTokenInfoArr = ({
   tokenBalances,

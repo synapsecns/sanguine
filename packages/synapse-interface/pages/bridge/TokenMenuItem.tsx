@@ -38,6 +38,8 @@ const TokenMenuItem = ({
     token?.color
   )
 
+  console.log(`tokenBalance, `, tokenBalance)
+
   return (
     <div
       tabIndex={active ? 1 : 0}
@@ -57,7 +59,7 @@ const TokenMenuItem = ({
       <ButtonContent
         token={token}
         chainId={chainId}
-        tokenBalance={tokenBalance ? BigInt(tokenBalance.toString()) : BigInt(0)}
+        tokenBalance={tokenBalance ? tokenBalance : 0n}
       />
     </div>
   )

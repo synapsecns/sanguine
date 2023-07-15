@@ -1,15 +1,13 @@
-import { useEffect, useState, useMemo, useRef } from 'react'
+import { useEffect, useState, useRef } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
-import { Zero } from '@ethersproject/constants'
+import { useAccount } from 'wagmi'
 import { RootState } from '@/store/store'
 
 import { updateFromValue } from '@/slices/bridgeSlice'
 import { setShowFromTokenSlideOver } from '@/slices/bridgeDisplaySlice'
-import { stringToBigInt } from '@/utils/stringToBigNum'
 import SelectTokenDropdown from '@/components/input/TokenAmountInput/SelectTokenDropdown'
-import { useAccount } from 'wagmi'
 import MiniMaxButton from '../buttons/MiniMaxButton'
-import { formatBNToString } from '@/utils/bigint/format'
+import { formatBigIntToString } from '@/utils/bigint/format'
 import { OriginChainLabel } from './OriginChainLabel'
 
 export const InputContainer = () => {
@@ -46,14 +44,14 @@ export const InputContainer = () => {
 
   const hasBalances = Object.keys(supportedFromTokenBalances).length > 0
 
-  const fromTokenBalance =
+  const fromTokenBalance: bigint =
     (hasBalances &&
       supportedFromTokenBalances.filter((token) => token.token === fromToken)[0]
         ?.balance) ??
-    Zero
-  // console.log('fromTokenBalance', fromTokenBalance)
+    0n
+
   const formattedBalance = hasBalances
-    ? formatBNToString(fromTokenBalance, fromToken.decimals[fromChainId], 4)
+    ? formatBigIntToString(fromTokenBalance, fromToken.decimals[fromChainId], 4)
     : '0'
 
   const handleFromValueChange = (
@@ -61,12 +59,7 @@ export const InputContainer = () => {
   ) => {
     const fromValueString: string = event.target.value
     try {
-      let fromValueBigInteger = stringToBigInt(
-        fromValueString,
-        fromToken.decimals[fromChainId]
-      )
-      console.log('fromValueBigInteger', fromValueBigInteger)
-      dispatch(updateFromValue(fromValueBigInteger as any))
+      dispatch(updateFromValue(fromValueString))
       setShowValue(fromValueString)
     } catch (error) {
       console.error('Invalid value for conversion to BigInteger')
@@ -74,9 +67,14 @@ export const InputContainer = () => {
   }
 
   const onClickBalance = () => {
-    dispatch(updateFromValue(fromTokenBalance))
+    const str = formatBigIntToString(
+      fromTokenBalance,
+      fromToken.decimals[fromChainId],
+      4
+    )
+    dispatch(updateFromValue(str))
     setShowValue(
-      formatBNToString(fromTokenBalance, fromToken.decimals[fromChainId])
+      formatBigIntToString(fromTokenBalance, fromToken.decimals[fromChainId])
     )
   }
 
@@ -150,7 +148,7 @@ export const InputContainer = () => {
           {hasMounted && isConnected && (
             <div className="m-auto">
               <MiniMaxButton
-                disabled={fromTokenBalance && fromTokenBalance == 0}
+                disabled={fromTokenBalance && fromTokenBalance === 0n}
                 onClickBalance={onClickBalance}
               />
             </div>

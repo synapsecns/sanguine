@@ -1,7 +1,7 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit'
 
 import { Token } from '@/utils/types'
-import { formatBNToString } from '@/utils/bigint/format'
+import { formatBigIntToString } from '@/utils/bigint/format'
 
 type DepositQuote = {
   priceImpact: any
@@ -98,7 +98,7 @@ const filterAndSerializeInputValues = (inputValues, pool) => {
     const token = showTokens.find((token) => token.addresses[chainId] === key)
 
     serializedValues['bi'][key] = filteredInputValues[key]
-    serializedValues['str'][key] = formatBNToString(
+    serializedValues['str'][key] = formatBigIntToString(
       filteredInputValues[key],
       token.decimals[chainId],
       8

@@ -12,7 +12,7 @@ import LoadingSpinner from '@tw/LoadingSpinner'
 import { useAccount } from 'wagmi'
 import { toast } from 'react-hot-toast'
 import { commify, formatBigIntToString } from '@/utils/bigint/format'
-import { stringToBigInt } from '@/utils/stringToBigNum'
+import { stringToBigInt } from '@/utils/bigint/format'
 
 const PoolCard = memo(
   ({

@@ -3,7 +3,7 @@ import InfoSectionCard from './InfoSectionCard'
 import { displaySymbol } from '@utils/displaySymbol'
 import LoadingRow from '@/components/loading/LoadingRow'
 import { commify, formatBigIntToString } from '@utils/bigint/format'
-import { stringToBigInt } from '@/utils/stringToBigNum'
+import { stringToBigInt } from '@/utils/bigint/format'
 import { useSelector } from 'react-redux'
 import { RootState } from '@/store/store'
 

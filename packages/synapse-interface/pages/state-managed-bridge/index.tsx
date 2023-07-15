@@ -81,7 +81,7 @@ import { isAddress } from '@ethersproject/address'
 import { BridgeTransactionButton } from '@/components/StateManagedBridge/BridgeTransactionButton'
 import ExplorerToastLink from '@/components/ExplorerToastLink'
 import { Address, zeroAddress } from 'viem'
-import { stringToBigInt } from '@/utils/stringToBigNum'
+import { stringToBigInt } from '@/utils/bigint/format'
 import { Warning } from '@/components/Warning'
 
 // NOTE: These are idle utility functions that will be re-written to
@@ -210,7 +210,7 @@ const StateManagedBridge = () => {
     console.log(`[useEffect] fromToken`, fromToken.symbol)
     console.log(`[useEffect] toToken`, toToken.symbol)
     // TODO: Double serialization happening somewhere??
-    if (BigInt(fromValue) > 0n) {
+    if (stringToBigInt(fromValue, fromToken.decimals[fromChainId]) > 0n) {
       console.log('trying to set bridge quote')
       getAndSetBridgeQuote()
     } else {
@@ -226,7 +226,8 @@ const StateManagedBridge = () => {
     } else {
       if (
         bridgeQuote?.allowance &&
-        BigInt(fromValue) <= bridgeQuote.allowance
+        stringToBigInt(fromValue, fromToken.decimals[fromChainId]) <=
+          bridgeQuote.allowance
       ) {
         setIsApproved(true)
       } else {
@@ -249,7 +250,7 @@ const StateManagedBridge = () => {
           toChainId,
           fromToken.addresses[fromChainId],
           toToken.addresses[toChainId],
-          BigInt(fromValue)
+          stringToBigInt(fromValue, fromToken.decimals[fromChainId])
         )
 
       console.log(`[getAndSetQuote] fromChainId`, fromChainId)
@@ -334,24 +335,14 @@ const StateManagedBridge = () => {
           })
         )
 
-        const str = formatBigIntToString(
-          BigInt(fromValue),
-          fromToken.decimals[fromChainId],
-          4
-        )
-        const message = `Route found for bridging ${str} ${fromToken.symbol} on ${CHAINS_BY_ID[fromChainId]?.name} to ${toToken.symbol} on ${CHAINS_BY_ID[toChainId]?.name}`
+        const message = `Route found for bridging ${fromValue} ${fromToken.symbol} on ${CHAINS_BY_ID[fromChainId]?.name} to ${toToken.symbol} on ${CHAINS_BY_ID[toChainId]?.name}`
         console.log(message)
         toast(message, { duration: 2000 })
       }
     } catch (err) {
       console.log(err)
       if (thisRequestId === currentSDKRequestID.current) {
-        const str = formatBigIntToString(
-          BigInt(fromValue),
-          fromToken.decimals[fromChainId],
-          4
-        )
-        const message = `No route found for bridging ${str} ${fromToken.symbol} on ${CHAINS_BY_ID[fromChainId]?.name} to ${toToken.symbol} on ${CHAINS_BY_ID[toChainId]?.name}`
+        const message = `No route found for bridging ${fromValue} ${fromToken.symbol} on ${CHAINS_BY_ID[fromChainId]?.name} to ${toToken.symbol} on ${CHAINS_BY_ID[toChainId]?.name}`
         console.log(message)
         toast(message, { duration: 2000 })
 
@@ -401,7 +392,7 @@ const StateManagedBridge = () => {
         fromChainId,
         toChainId,
         fromToken.addresses[fromChainId as keyof Token['addresses']],
-        BigInt(fromValue),
+        stringToBigInt(fromValue, fromToken.decimals[fromChainId]),
         bridgeQuote.quotes.originQuery,
         bridgeQuote.quotes.destQuery
       )
