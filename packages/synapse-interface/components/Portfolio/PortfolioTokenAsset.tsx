@@ -139,8 +139,13 @@ export const PortfolioTokenAsset = ({
   return (
     <div
       data-test-id="portfolio-token-asset"
-      className="flex flex-row flex-wrap items-start py-2 text-white"
+      className="flex flex-row items-start py-2 text-white"
     >
+      {isTokenSelected ? (
+        <div className="w-4 m-auto font-bold text-green-500"> ✓ </div>
+      ) : (
+        <div className="w-4" />
+      )}
       <div className="flex flex-row justify-between w-2/3">
         <div
           onClick={handleSelectFromTokenCallback}
@@ -150,11 +155,6 @@ export const PortfolioTokenAsset = ({
           hover:bg-[#272731]
         `}
         >
-          {isTokenSelected ? (
-            <div className="w-3"> ✓ </div>
-          ) : (
-            <div className="w-3" />
-          )}
           <Image
             loading="lazy"
             alt={`${symbol} img`}

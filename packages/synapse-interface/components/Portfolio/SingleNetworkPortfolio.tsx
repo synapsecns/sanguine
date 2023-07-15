@@ -180,7 +180,7 @@ export const PortfolioHeader = () => {
       className="flex text-[#CCCAD3BF] my-2 pl-2"
     >
       <div className="flex flex-row justify-between w-2/3 text-left">
-        <div>Token</div>
+        <div className="pl-4">Token</div>
         <div className="pr-2">Amount</div>
       </div>
       <div className="w-1/3 text-left" />
