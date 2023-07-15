@@ -67,7 +67,7 @@ export const InputContainer = () => {
       )
       setShowValue(fromValueString)
     }
-  }, [fromValue, inputRef])
+  }, [fromValue, inputRef, fromChainId, fromToken, fromTokenBalance])
 
   const handleFromValueChange = (
     event: React.ChangeEvent<HTMLInputElement>
