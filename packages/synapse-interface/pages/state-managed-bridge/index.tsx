@@ -236,6 +236,7 @@ const StateManagedBridge = () => {
     }
   }, [bridgeQuote, fromToken, fromValue, fromChainId, toChainId])
 
+  let quoteToast
   // Would like to move this into function outside of this component
   const getAndSetBridgeQuote = async () => {
     currentSDKRequestID.current += 1
@@ -332,9 +333,10 @@ const StateManagedBridge = () => {
           fromToken.decimals[fromChainId],
           4
         )
+        toast.dismiss(quoteToast)
         const message = `Route found for bridging ${str} ${fromToken.symbol} on ${CHAINS_BY_ID[fromChainId]?.name} to ${toToken.symbol} on ${CHAINS_BY_ID[toChainId]?.name}`
         console.log(message)
-        toast(message, {duration: 2000})
+        quoteToast = toast(message, { duration: 2000 })
       }
     } catch (err) {
       console.log(err)
@@ -344,9 +346,10 @@ const StateManagedBridge = () => {
           fromToken.decimals[fromChainId],
           4
         )
+        toast.dismiss(quoteToast)
         const message = `No route found for bridging ${str} ${fromToken.symbol} on ${CHAINS_BY_ID[fromChainId]?.name} to ${toToken.symbol} on ${CHAINS_BY_ID[toChainId]?.name}`
         console.log(message)
-        toast(message, {duration: 2000})
+        quoteToast = toast(message, { duration: 2000 })
 
         dispatch(setBridgeQuote(EMPTY_BRIDGE_QUOTE_ZERO))
         return
