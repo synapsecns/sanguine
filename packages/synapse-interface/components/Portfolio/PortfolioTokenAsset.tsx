@@ -1,5 +1,6 @@
 import React, { useMemo, useCallback } from 'react'
-import { useDispatch } from 'react-redux'
+import { useDispatch, useSelector } from 'react-redux'
+import { RootState } from '@/store/store'
 import { useAccount } from 'wagmi'
 import { BigNumber } from 'ethers'
 import {
@@ -49,6 +50,9 @@ export const PortfolioTokenAsset = ({
   fetchPortfolioBalancesCallback,
 }: PortfolioTokenAssetProps) => {
   const dispatch = useDispatch()
+  const { fromChainId, fromToken } = useSelector(
+    (state: RootState) => state.bridge
+  )
   const { address } = useAccount()
   const { icon, symbol, decimals, addresses } = token
 
@@ -71,6 +75,10 @@ export const PortfolioTokenAsset = ({
   const tokenAddress: string = addresses[portfolioChainId]
 
   const isCurrentlyConnected: boolean = portfolioChainId === connectedChainId
+
+  const isTokenSelected: boolean = useMemo(() => {
+    return fromToken === token && fromChainId === portfolioChainId
+  }, [fromChainId, fromToken, token, portfolioChainId])
 
   const hasAllowanceButLessThanBalance: boolean =
     allowance && balance.gt(allowance)
@@ -142,6 +150,11 @@ export const PortfolioTokenAsset = ({
             hover:bg-[#272731]
           `}
         >
+          {isTokenSelected ? (
+            <div className="w-3"> ✓ </div>
+          ) : (
+            <div className="w-3" />
+          )}
           <Image
             loading="lazy"
             alt={`${symbol} img`}
