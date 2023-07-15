@@ -142,7 +142,7 @@ export const PortfolioTokenAsset = ({
       className="flex flex-row items-center py-2 text-white"
     >
       {isTokenSelected ? (
-        <div className="w-4 m-auto font-bold text-green-500"> ✓ </div>
+        <div className="w-4 pt-3 mb-auto font-bold text-green-500"> ✓ </div>
       ) : (
         <div className="w-4" />
       )}
@@ -174,23 +174,11 @@ export const PortfolioTokenAsset = ({
             {parsedBalance}
           </div>
           {hasAllowanceButLessThanBalance && (
-            // <div
-            //   onClick={handleApproveCallback}
-            //   className={`
-            //   text-[#A3A3C2] text-[14px] px-2
-            //   hover:text-[#75E6F0]
-            //   hover:underline
-            //   hover:cursor-pointer
-            //   active:opacity-[67%]
-            // `}
-            // >
-            //   {parsedAllowance} approved
             <HoverClickableText
               defaultText={`${parsedAllowance} approved`}
               hoverText="Increase Limit"
               callback={handleApproveCallback}
             />
-            // </div>
           )}
         </div>
       </div>
