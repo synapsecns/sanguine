@@ -35,7 +35,7 @@ export const PortfolioAccordion = ({
   return (
     <div
       className={
-        isExpanded ? 'border-b border-t border-solid border-[#28282F]' : ''
+        isExpanded ? 'border-b border-t border-solid border-[#3D3D5C]' : ''
       }
     >
       <div
