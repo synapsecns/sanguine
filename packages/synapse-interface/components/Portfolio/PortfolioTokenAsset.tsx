@@ -177,7 +177,7 @@ export const PortfolioTokenAsset = ({
             <div
               onClick={handleApproveCallback}
               className={`
-              text-[#A3A3C2] text-xs pt-1 px-2
+              text-[#A3A3C2] text-[14px] px-2
               hover:text-[#75E6F0]
               hover:underline
               hover:cursor-pointer
