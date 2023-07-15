@@ -266,7 +266,7 @@ const PortfolioTokenAsset = ({
       </div>
       <div className="flex flex-row items-center w-1/3 text-left">
         <PortfolioAssetActionButton
-          sendCallback={handleSelectFromTokenCallback}
+          selectCallback={handleSelectFromTokenCallback}
           approveCallback={handleApproveCallback}
           isApproved={isApproved}
           isDisabled={isDisabled}
@@ -291,14 +291,14 @@ const PortfolioTokenAsset = ({
 }
 
 type PortfolioAssetActionButtonProps = {
-  sendCallback: () => void
+  selectCallback: () => void
   approveCallback: () => Promise<void>
   isApproved: boolean
   isDisabled: boolean
 }
 
 const PortfolioAssetActionButton = ({
-  sendCallback,
+  selectCallback,
   approveCallback,
   isApproved,
   isDisabled,
@@ -320,9 +320,9 @@ const PortfolioAssetActionButton = ({
             hover:bg-[#272731]
             active:opacity-[67%]
           `}
-          onClick={sendCallback}
+          onClick={selectCallback}
         >
-          Send
+          Select
         </button>
       ) : (
         <button
