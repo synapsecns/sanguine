@@ -134,13 +134,22 @@ const getTokensAllowance = async (
       args: [owner, spender],
     }
   })
-  const allowances: any[] = await multicall({
+  const allowancesResponse: {
+    error?: any
+    result?: any
+    status: 'success' | 'failure'
+  }[] = await multicall({
     contracts: inputs,
     chainId,
   })
 
   return tokens.map((token: Token, index: number) => {
-    const allowance = allowances[index].result
+    let allowance
+    if (allowancesResponse[index].status === 'success') {
+      allowance = allowancesResponse[index].result
+    } else {
+      allowance = null
+    }
     return {
       token,
       allowance,

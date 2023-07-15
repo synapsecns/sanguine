@@ -1,4 +1,4 @@
-import { useEffect, useState, useRef } from 'react'
+import React, { useEffect, useState, useRef } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
 import { useAccount } from 'wagmi'
 import { RootState } from '@/store/store'
@@ -7,8 +7,10 @@ import { updateFromValue } from '@/slices/bridgeSlice'
 import { setShowFromTokenSlideOver } from '@/slices/bridgeDisplaySlice'
 import SelectTokenDropdown from '@/components/input/TokenAmountInput/SelectTokenDropdown'
 import MiniMaxButton from '../buttons/MiniMaxButton'
-import { formatBigIntToString } from '@/utils/bigint/format'
+import { formatBigIntToString, stringToBigInt } from '@/utils/bigint/format'
 import { OriginChainLabel } from './OriginChainLabel'
+
+export const inputRef = React.createRef<HTMLInputElement>()
 
 export const InputContainer = () => {
   const {
@@ -54,6 +56,16 @@ export const InputContainer = () => {
     ? formatBigIntToString(fromTokenBalance, fromToken.decimals[fromChainId], 4)
     : '0'
 
+  useEffect(() => {
+    if (
+      stringToBigInt(fromValue, fromToken.decimals[fromChainId]) !== 0n &&
+      stringToBigInt(fromValue, fromToken.decimals[fromChainId]) ===
+        fromTokenBalance
+    ) {
+      setShowValue(fromValue)
+    }
+  }, [fromValue, inputRef, fromChainId, fromToken, fromTokenBalance])
+
   const handleFromValueChange = (
     event: React.ChangeEvent<HTMLInputElement>
   ) => {
@@ -63,6 +75,13 @@ export const InputContainer = () => {
       setShowValue(fromValueString)
     } catch (error) {
       console.error('Invalid value for conversion to BigInteger')
+      const inputValue = event.target.value
+      const regex = /^[0-9]*[.,]?[0-9]*$/
+
+      if (regex.test(inputValue) || inputValue === '') {
+        dispatch(updateFromValue(inputValue))
+        setShowValue(inputValue)
+      }
     }
   }
 
@@ -113,7 +132,8 @@ export const InputContainer = () => {
           />
           <div className="flex flex-col pt-2 ml-4">
             <input
-              pattern="[0-9.]+"
+              ref={inputRef}
+              pattern="^[0-9]*[.,]?[0-9]*$"
               disabled={false}
               className={`
               focus:outline-none
