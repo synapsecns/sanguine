@@ -131,6 +131,18 @@ type PortfolioTokenAssetProps = {
   fetchPortfolioBalancesCallback: () => Promise<void>
 }
 
+function hasOnlyZeros(input: string): boolean {
+  return /^0+(\.0+)?$/.test(input)
+}
+
+function scrollToTop() {
+  window.scrollTo({ top: 0, behavior: 'smooth' })
+}
+
+const handleFocusOnInput = () => {
+  inputRef.current.focus()
+}
+
 const PortfolioTokenAsset = ({
   token,
   balance,
@@ -143,18 +155,6 @@ const PortfolioTokenAsset = ({
   const dispatch = useDispatch()
   const { address } = useAccount()
   const { icon, symbol, decimals, addresses } = token
-
-  function hasOnlyZeros(input: string): boolean {
-    return /^0+(\.0+)?$/.test(input)
-  }
-
-  function scrollToTop() {
-    window.scrollTo({ top: 0, behavior: 'smooth' })
-  }
-
-  const handleFocusOnInput = () => {
-    inputRef.current.focus()
-  }
 
   const parsedBalance: string = useMemo(() => {
     const formattedBalance = formatBNToString(
@@ -256,7 +256,10 @@ const PortfolioTokenAsset = ({
         </div>
         <div
           onClick={handleTotalBalanceInputCallback}
-          className="py-2 cursor-pointer"
+          className={`
+            p-2 cursor-pointer
+            hover:bg-[#272731] active:opacity-[67%]
+          `}
         >
           {parsedBalance}
         </div>
