@@ -15,8 +15,6 @@ import { BigNumber } from 'ethers'
 
 export const inputRef = React.createRef<HTMLInputElement>()
 
-const inputRegex = RegExp(`^\\d*(?:\\\\[.])?\\d*$`)
-
 export const InputContainer = () => {
   const {
     fromChainId,
@@ -57,27 +55,19 @@ export const InputContainer = () => {
         ?.balance) ??
     Zero
 
-  const formattedBalance = hasBalances
+  const formattedBalance: string = hasBalances
     ? formatBNToString(fromTokenBalance, fromToken.decimals[fromChainId], 4)
     : '0'
 
-  useEffect(() => {}, [])
-
-  // const handleFromValueChange = (
-  //   event: React.ChangeEvent<HTMLInputElement>
-  // ) => {
-  //   const fromValueString: string = event.target.value
-  //   try {
-  //     const fromValueBigNumber: BigNumber = stringToBigNum(
-  //       fromValueString,
-  //       fromToken.decimals[fromChainId]
-  //     )
-  //     dispatch(updateFromValue(fromValueBigNumber))
-  //     setShowValue(fromValueString)
-  //   } catch (error) {
-  //     console.error('Invalid value for conversion to BigNumber')
-  //   }
-  // }
+  useEffect(() => {
+    if (!fromValue.eq(Zero) && fromValue.eq(fromTokenBalance)) {
+      const fromValueString: string = formatBNToString(
+        fromValue,
+        fromToken.decimals[fromChainId]
+      )
+      setShowValue(fromValueString)
+    }
+  }, [fromValue, inputRef])
 
   const handleFromValueChange = (
     event: React.ChangeEvent<HTMLInputElement>
@@ -138,7 +128,6 @@ export const InputContainer = () => {
           <div className="flex flex-col pt-2 ml-4">
             <input
               ref={inputRef}
-              // pattern="[0-9.]+"
               pattern="^[0-9]*[.,]?[0-9]*$"
               disabled={false}
               className={`
@@ -156,7 +145,6 @@ export const InputContainer = () => {
               autoComplete="off"
               minLength={1}
               maxLength={79}
-              required={true}
             />
             {hasMounted && isConnected && (
               <label
