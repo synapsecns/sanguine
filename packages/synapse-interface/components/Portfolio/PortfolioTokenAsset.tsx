@@ -227,7 +227,7 @@ const PortfolioAssetActionButton = ({
           data-test-id="portfolio-asset-action-button"
           className={`
             ${buttonClassName}
-            border border-[#D747FF]
+            border border-[#D747FF] mr-1
             hover:bg-[#272731]
             active:opacity-[67%]
           `}
