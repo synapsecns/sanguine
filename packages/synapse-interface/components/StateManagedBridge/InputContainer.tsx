@@ -85,12 +85,11 @@ export const InputContainer = () => {
     const inputValue = event.target.value
     const regex = /^[0-9]*[.,]?[0-9]*$/
 
-    const fromValueBigNumber: BigNumber = stringToBigNum(
-      inputValue,
-      fromToken.decimals[fromChainId]
-    )
-
     if (regex.test(inputValue) || inputValue === '') {
+      const fromValueBigNumber: BigNumber = stringToBigNum(
+        inputValue,
+        fromToken.decimals[fromChainId]
+      )
       dispatch(updateFromValue(fromValueBigNumber))
       setShowValue(inputValue)
     }
