@@ -145,10 +145,10 @@ export const PortfolioTokenAsset = ({
         <div
           onClick={handleSelectFromTokenCallback}
           className={`
-            flex flex-row px-2 py-2
-            hover:cursor-pointer
-            hover:bg-[#272731]
-          `}
+          flex flex-row px-2 py-2
+          hover:cursor-pointer
+          hover:bg-[#272731]
+        `}
         >
           {isTokenSelected ? (
             <div className="w-3"> ✓ </div>
@@ -163,14 +163,30 @@ export const PortfolioTokenAsset = ({
           />
           <div>{symbol}</div>
         </div>
-        <div
-          onClick={handleTotalBalanceInputCallback}
-          className={`
-            p-2 cursor-pointer
+        <div className="flex flex-col">
+          <div
+            onClick={handleTotalBalanceInputCallback}
+            className={`
+            p-2 ml-auto cursor-pointer
             hover:bg-[#272731] active:opacity-[67%]
           `}
-        >
-          {parsedBalance}
+          >
+            {parsedBalance}
+          </div>
+          {hasAllowanceButLessThanBalance && (
+            <div
+              onClick={handleApproveCallback}
+              className={`
+              text-[#A3A3C2] text-xs pt-1 px-2
+              hover:text-[#75E6F0]
+              hover:underline
+              hover:cursor-pointer
+              active:opacity-[67%]
+            `}
+            >
+              {parsedAllowance} approved
+            </div>
+          )}
         </div>
       </div>
       <div className="flex flex-row items-center w-1/3 text-left">
@@ -181,20 +197,6 @@ export const PortfolioTokenAsset = ({
           isDisabled={isDisabled}
         />
       </div>
-      {hasAllowanceButLessThanBalance && (
-        <a
-          onClick={handleApproveCallback}
-          className={`
-            text-[#A3A3C2] text-xs pt-1 pl-2
-            hover:text-[#75E6F0]
-            hover:underline
-            hover:cursor-pointer
-            active:opacity-[67%]
-          `}
-        >
-          {parsedAllowance} approved ({parsedBalance} available)
-        </a>
-      )}
     </div>
   )
 }
