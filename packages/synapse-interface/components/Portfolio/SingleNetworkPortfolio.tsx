@@ -177,11 +177,19 @@ const PortfolioTokenVisualizer = ({
         {isHovered && (
           <div
             className={`
-            absolute hover-content p-2 text-white
+            absolute z-50 hover-content p-2 text-white
             border border-solid border-[#252537]
             bg-[#101018] rounded-md`}
           >
-            testing
+            {portfolioTokens.map((token: TokenWithBalanceAndAllowance) => {
+              const tokenSymbol = token.token.symbol
+              const balance = token.parsedBalance
+              return (
+                <div className="whitespace-nowrap">
+                  {balance} {tokenSymbol}
+                </div>
+              )
+            })}
           </div>
         )}
       </div>
