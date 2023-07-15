@@ -146,7 +146,6 @@ const PortfolioTokenVisualizer = ({
       ? portfolioTokens.length - 2
       : 0
 
-  console.log('portfolioTokens: ', portfolioTokens)
   return (
     <div
       data-test-id="portfolio-token-visualizer"
