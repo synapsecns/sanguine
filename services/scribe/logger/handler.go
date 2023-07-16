@@ -119,7 +119,7 @@ func ReportScribeState(chainID uint32, block uint64, addresses []common.Address,
 
 func unpackIndexerConfig(indexerData scribeTypes.IndexerConfig) string {
 	return fmt.Sprintf("Contracts: %v, GetLogsRange: %d, GetLogsBatchAmount: %d, StoreConcurrency: %d, ChainID: %d, StartHeight: %d, EndHeight: %d, ConcurrencyThreshold: %d",
-		indexerData.Contracts, indexerData.GetLogsRange, indexerData.GetLogsBatchAmount, indexerData.StoreConcurrency, indexerData.ChainID, indexerData.StartHeight, indexerData.EndHeight, indexerData.ConcurrencyThreshold)
+		indexerData.Addresses, indexerData.GetLogsRange, indexerData.GetLogsBatchAmount, indexerData.StoreConcurrency, indexerData.ChainID, indexerData.StartHeight, indexerData.EndHeight, indexerData.ConcurrencyThreshold)
 }
 
 func dumpAddresses(addresses []common.Address) string {

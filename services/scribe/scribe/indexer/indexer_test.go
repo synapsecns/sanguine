@@ -382,7 +382,7 @@ func (x *IndexerSuite) TestContractBackfillFromPreIndexed() {
 func (x *IndexerSuite) TestGetLogs() {
 	const desiredBlockHeight = 10
 
-	var addresses []common.Address
+	var testChainHandler *testutil.TestChainHandler
 	var err error
 	var wg sync.WaitGroup
 
@@ -391,7 +391,7 @@ func (x *IndexerSuite) TestGetLogs() {
 
 	go func() {
 		defer wg.Done()
-		addresses, _, err = testutil.PopulateWithLogs(x.GetTestContext(), x.T(), testBackend, desiredBlockHeight, []*testutil.DeployManager{x.manager})
+		testChainHandler, err = testutil.PopulateWithLogs(x.GetTestContext(), x.T(), testBackend, desiredBlockHeight, []*testutil.DeployManager{x.manager})
 		Nil(x.T(), err)
 	}()
 
@@ -411,6 +411,7 @@ func (x *IndexerSuite) TestGetLogs() {
 	Nil(x.T(), err)
 
 	var contractConfigs []config.ContractConfig
+	addresses := testChainHandler.Addresses
 	for _, address := range addresses {
 		contractConfig := config.ContractConfig{
 			Address: address.String(),

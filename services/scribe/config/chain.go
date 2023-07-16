@@ -29,6 +29,8 @@ type ChainConfig struct {
 	Confirmations uint64 `yaml:"confirmations"`
 	// LivefillThreshold is the number of blocks away from the head - confirmations to livefill to.
 	LivefillThreshold uint64 `yaml:"livefill_threshold"`
+	// LivefillRange is the number of blocks that the livefill indexer with request for with get logs at once.
+	LivefillRange uint64 `yaml:"livefill_range"`
 }
 
 // ChainConfigs contains an array of ChainConfigs.

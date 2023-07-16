@@ -33,9 +33,10 @@ func (x *IndexerSuite) TestFilterLogsMaxAttempts() {
 		ChainID:            1,
 		GetLogsBatchAmount: 1,
 		GetLogsRange:       1,
+		Addresses:          []common.Address{contractAddress},
 	}
 
-	rangeFilter := indexer.NewLogFetcher([]common.Address{contractAddress}, simulatedClient, big.NewInt(1), big.NewInt(10), config)
+	rangeFilter := indexer.NewLogFetcher(simulatedClient, big.NewInt(1), big.NewInt(10), config)
 
 	// Use the range filterer created above to create a mock log filter.
 	mockFilterer.
@@ -62,12 +63,13 @@ func (x *IndexerSuite) TestGetChunkArr() {
 		ConcurrencyThreshold: 1,
 		GetLogsBatchAmount:   1,
 		GetLogsRange:         1,
+		Addresses:            []common.Address{contractAddress},
 	}
 
 	startBlock := int64(1)
 	endBlock := int64(10)
 
-	rangeFilter := indexer.NewLogFetcher([]common.Address{contractAddress}, simulatedClient, big.NewInt(startBlock), big.NewInt(endBlock), config)
+	rangeFilter := indexer.NewLogFetcher(simulatedClient, big.NewInt(startBlock), big.NewInt(endBlock), config)
 
 	numberOfRequests := int64(0)
 	for i := int64(0); i < endBlock; i++ {
@@ -82,7 +84,7 @@ func (x *IndexerSuite) TestGetChunkArr() {
 
 	// Test with a larger batch size
 	config.GetLogsBatchAmount = 4
-	rangeFilter = indexer.NewLogFetcher([]common.Address{contractAddress}, simulatedClient, big.NewInt(1), big.NewInt(10), config)
+	rangeFilter = indexer.NewLogFetcher(simulatedClient, big.NewInt(1), big.NewInt(10), config)
 	numberOfRequests = int64(0)
 	loopCount := endBlock/int64(config.GetLogsBatchAmount) + 1
 	for i := int64(0); i < loopCount; i++ {
@@ -101,7 +103,7 @@ func (x *IndexerSuite) TestGetChunkArr() {
 
 	// Test with a larger range size
 	config.GetLogsRange = 2
-	rangeFilter = indexer.NewLogFetcher([]common.Address{contractAddress}, simulatedClient, big.NewInt(1), big.NewInt(10), config)
+	rangeFilter = indexer.NewLogFetcher(simulatedClient, big.NewInt(1), big.NewInt(10), config)
 	numberOfRequests = int64(0)
 	loopCount = endBlock/int64(config.GetLogsBatchAmount*config.GetLogsRange) + 1
 	for i := int64(0); i < loopCount; i++ {
@@ -124,7 +126,7 @@ func (x *IndexerSuite) TestFetchLogs() {
 	testBackend := geth.NewEmbeddedBackend(x.GetTestContext(), x.T())
 	// start an omnirpc proxy and run 10 test transactions so we can batch call blocks 1-10
 	var wg sync.WaitGroup
-	var addresses []common.Address
+	var testChainHandler *testutil.TestChainHandler
 	var err error
 	wg.Add(2)
 
@@ -132,7 +134,7 @@ func (x *IndexerSuite) TestFetchLogs() {
 
 	go func() {
 		defer wg.Done()
-		addresses, _, err = testutil.PopulateWithLogs(x.GetTestContext(), x.T(), testBackend, desiredBlockHeight, []*testutil.DeployManager{x.manager})
+		testChainHandler, err = testutil.PopulateWithLogs(x.GetTestContext(), x.T(), testBackend, desiredBlockHeight, []*testutil.DeployManager{x.manager})
 		Nil(x.T(), err)
 	}()
 
@@ -176,8 +178,9 @@ func (x *IndexerSuite) TestFetchLogs() {
 		ConcurrencyThreshold: 1,
 		GetLogsBatchAmount:   1,
 		GetLogsRange:         2,
+		Addresses:            testChainHandler.Addresses,
 	}
-	rangeFilter := indexer.NewLogFetcher(addresses, scribeBackend, big.NewInt(1), big.NewInt(desiredBlockHeight), config)
+	rangeFilter := indexer.NewLogFetcher(scribeBackend, big.NewInt(1), big.NewInt(desiredBlockHeight), config)
 	logs, err := rangeFilter.FetchLogs(x.GetTestContext(), chunks)
 	Nil(x.T(), err)
 	Equal(x.T(), 2, len(logs))

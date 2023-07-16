@@ -8,7 +8,6 @@ import (
 	"sync"
 	"testing"
 
-	"github.com/ethereum/go-ethereum/common"
 	. "github.com/stretchr/testify/assert"
 	"github.com/synapsecns/sanguine/ethergo/backends/geth"
 	"github.com/synapsecns/sanguine/ethergo/util"
@@ -18,7 +17,7 @@ import (
 func (b *BackendSuite) TestLogsInRange() {
 	const desiredBlockHeight = 10
 
-	var addresses []common.Address
+	var testChainHandler *testutil.TestChainHandler
 	var err error
 	var wg sync.WaitGroup
 
@@ -26,7 +25,7 @@ func (b *BackendSuite) TestLogsInRange() {
 	testBackend := geth.NewEmbeddedBackend(b.GetTestContext(), b.T())
 	go func() {
 		defer wg.Done()
-		addresses, _, err = testutil.PopulateWithLogs(b.GetTestContext(), b.T(), testBackend, desiredBlockHeight, []*testutil.DeployManager{b.manager})
+		testChainHandler, err = testutil.PopulateWithLogs(b.GetTestContext(), b.T(), testBackend, desiredBlockHeight, []*testutil.DeployManager{b.manager})
 		Nil(b.T(), err)
 	}()
 
@@ -52,7 +51,7 @@ func (b *BackendSuite) TestLogsInRange() {
 		blockRanges = append(blockRanges, blockRange)
 		blockRange = iterator.NextChunk()
 	}
-	res, err := backend.GetLogsInRange(b.GetTestContext(), scribeBackend, addresses, chainID.Uint64(), blockRanges)
+	res, err := backend.GetLogsInRange(b.GetTestContext(), scribeBackend, testChainHandler.Addresses, chainID.Uint64(), blockRanges)
 	Nil(b.T(), err)
 
 	// use to make sure we don't double use values
@@ -78,7 +77,7 @@ func (b *BackendSuite) TestLogsInRange() {
 func (b *BackendSuite) TestLogsInRangeWithMultipleContracts() {
 	const desiredBlockHeight = 10
 
-	var addresses []common.Address
+	var testChainHandler *testutil.TestChainHandler
 	var err error
 	var wg sync.WaitGroup
 
@@ -91,7 +90,7 @@ func (b *BackendSuite) TestLogsInRangeWithMultipleContracts() {
 
 	go func() {
 		defer wg.Done()
-		addresses, _, err = testutil.PopulateWithLogs(b.GetTestContext(), b.T(), testBackend, desiredBlockHeight, managers)
+		testChainHandler, err = testutil.PopulateWithLogs(b.GetTestContext(), b.T(), testBackend, desiredBlockHeight, managers)
 		Nil(b.T(), err)
 	}()
 
@@ -117,7 +116,7 @@ func (b *BackendSuite) TestLogsInRangeWithMultipleContracts() {
 		blockRanges = append(blockRanges, blockRange)
 		blockRange = iterator.NextChunk()
 	}
-	res, err := backend.GetLogsInRange(b.GetTestContext(), scribeBackend, addresses, chainID.Uint64(), blockRanges)
+	res, err := backend.GetLogsInRange(b.GetTestContext(), scribeBackend, testChainHandler.Addresses, chainID.Uint64(), blockRanges)
 	Nil(b.T(), err)
 
 	// use to make sure we don't double use values
@@ -142,8 +141,8 @@ func (b *BackendSuite) TestLogsInRangeWithMultipleContracts() {
 	Equal(b.T(), len(managers), numLogs)
 
 	// Check if there's a log for each of the contracts
-	for i := range addresses {
-		Equal(b.T(), 1, logs[addresses[i].String()])
+	for i := range testChainHandler.Addresses {
+		Equal(b.T(), 1, logs[testChainHandler.Addresses[i].String()])
 	}
 }
 

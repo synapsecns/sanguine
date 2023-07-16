@@ -11,7 +11,6 @@ import (
 
 	"github.com/synapsecns/sanguine/ethergo/util"
 
-	ethCommon "github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/core/types"
 
 	"github.com/jpillora/backoff"
@@ -29,8 +28,6 @@ type LogFetcher struct {
 	fetchedLogsChan chan []types.Log
 	// backend is the ethereum backend used to fetch logs.
 	backend backend.ScribeBackend
-	// contractAddresses is the contractAddresses that logs are fetched for.
-	contractAddresses []ethCommon.Address
 	// indexerConfig holds the chain config (config data for the chain)
 	indexerConfig *scribeTypes.IndexerConfig
 }
@@ -39,19 +36,18 @@ type LogFetcher struct {
 const bufferSize = 3
 
 // NewLogFetcher creates a new filtering interface for a range of blocks. If reverse is not set, block heights are filtered from start->end.
-func NewLogFetcher(addresses []ethCommon.Address, backend backend.ScribeBackend, startBlock, endBlock *big.Int, indexerConfig *scribeTypes.IndexerConfig) *LogFetcher {
+func NewLogFetcher(backend backend.ScribeBackend, startBlock, endBlock *big.Int, indexerConfig *scribeTypes.IndexerConfig) *LogFetcher {
 	// The ChunkIterator is inclusive of the start and ending block resulting in potentially confusing behavior when
 	// setting the range size in the config. For example, setting a range of 1 would result in two blocks being queried
 	// instead of 1. This is accounted for by subtracting 1.
 	chunkSize := int(indexerConfig.GetLogsRange) - 1
 	return &LogFetcher{
-		iterator:          util.NewChunkIterator(startBlock, endBlock, chunkSize, true),
-		startBlock:        startBlock,
-		endBlock:          endBlock,
-		fetchedLogsChan:   make(chan []types.Log, bufferSize),
-		backend:           backend,
-		contractAddresses: addresses,
-		indexerConfig:     indexerConfig,
+		iterator:        util.NewChunkIterator(startBlock, endBlock, chunkSize, true),
+		startBlock:      startBlock,
+		endBlock:        endBlock,
+		fetchedLogsChan: make(chan []types.Log, bufferSize),
+		backend:         backend,
+		indexerConfig:   indexerConfig,
 	}
 }
 
@@ -66,7 +62,7 @@ func (f *LogFetcher) GetChunkArr() (chunkArr []*util.Chunk) {
 
 		// Stop appending chunks if the max height of the current chunk exceeds the concurrency threshold
 		if chunk.EndBlock.Uint64() > f.endBlock.Uint64()-f.indexerConfig.ConcurrencyThreshold {
-			logger.ReportScribeState(f.indexerConfig.ChainID, chunk.EndBlock.Uint64(), f.contractAddresses, logger.ConcurrencyThresholdReached)
+			logger.ReportScribeState(f.indexerConfig.ChainID, chunk.EndBlock.Uint64(), f.indexerConfig.Addresses, logger.ConcurrencyThresholdReached)
 			return chunkArr
 		}
 	}
@@ -88,7 +84,6 @@ func (f *LogFetcher) Start(ctx context.Context) error {
 		select {
 		case <-ctx.Done():
 			if ctx.Err() != nil {
-				//				LogEvent(WarnLevel, "could not finish filtering range", LogData{"ca": f.contractAddresses, "sh": f.startBlock.String(), "eh": f.endBlock.String(), "cid": &f.indexerConfig.ChainID})
 				return fmt.Errorf("could not finish filtering range: %w", ctx.Err())
 			}
 
@@ -151,7 +146,7 @@ func (f *LogFetcher) FetchLogs(ctx context.Context, chunks []*util.Chunk) ([]typ
 }
 
 func (f *LogFetcher) getAndUnpackLogs(ctx context.Context, chunks []*util.Chunk, backoffConfig *backoff.Backoff) ([]types.Log, error) {
-	result, err := backend.GetLogsInRange(ctx, f.backend, f.contractAddresses, uint64(f.indexerConfig.ChainID), chunks)
+	result, err := backend.GetLogsInRange(ctx, f.backend, f.indexerConfig.Addresses, uint64(f.indexerConfig.ChainID), chunks)
 	if err != nil {
 		backoffConfig.Duration()
 		return nil, fmt.Errorf("could not get logs: %w", err)

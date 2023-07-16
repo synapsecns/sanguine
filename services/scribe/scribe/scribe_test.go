@@ -8,11 +8,14 @@ import (
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/core/types"
 	"github.com/jpillora/backoff"
+	. "github.com/stretchr/testify/assert"
 	"github.com/synapsecns/sanguine/agents/agents/executor/db/datastore/sql/base"
 	"github.com/synapsecns/sanguine/ethergo/backends/geth"
 	"github.com/synapsecns/sanguine/services/scribe/backend"
+	"github.com/synapsecns/sanguine/services/scribe/config"
 	"github.com/synapsecns/sanguine/services/scribe/db"
 	"github.com/synapsecns/sanguine/services/scribe/logger"
+	"github.com/synapsecns/sanguine/services/scribe/scribe"
 	"github.com/synapsecns/sanguine/services/scribe/testutil"
 	"math/big"
 	"net/http"
@@ -20,10 +23,6 @@ import (
 	"strconv"
 	"strings"
 	"time"
-
-	. "github.com/stretchr/testify/assert"
-	"github.com/synapsecns/sanguine/services/scribe/config"
-	"github.com/synapsecns/sanguine/services/scribe/scribe"
 )
 
 // Spins up three chains with three contracts on each. Each contract emits events across a span of 20 blocks.
@@ -48,16 +47,16 @@ func (s *ScribeSuite) TestSimulatedScribe() {
 		}
 	}
 
-	addressMap, chainBackendMap, err := testutil.PopulateChainsWithLogs(s.GetTestContext(), s.T(), chainBackends, desiredBlockHeight, managers, s.nullMetrics)
+	testChainHandlerMap, chainBackendMap, err := testutil.PopulateChainsWithLogs(s.GetTestContext(), s.T(), chainBackends, desiredBlockHeight, managers, s.nullMetrics)
 	Nil(s.T(), err)
 
 	// Build scribe config
 	var chainConfigs []config.ChainConfig
-	for chainID, addresses := range addressMap {
+	for chainID, testChainHandler := range testChainHandlerMap {
 		contractConfigs := config.ContractConfigs{}
-		for i := range addresses {
+		for i := range testChainHandler.Addresses {
 			contractConfig := config.ContractConfig{
-				Address: addresses[i].String(),
+				Address: testChainHandler.Addresses[i].String(),
 			}
 			contractConfigs = append(contractConfigs, contractConfig)
 		}
