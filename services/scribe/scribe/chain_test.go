@@ -77,7 +77,7 @@ func (s *ScribeSuite) TestIndexToBlock() {
 	Nil(s.T(), err)
 
 	contracts := []common.Address{common.HexToAddress(contractConfig.Address)}
-	indexer, err := indexer.NewIndexer(chainConfig, contracts, s.testDB, simulatedChainArr, s.nullMetrics, blockHeightMeter)
+	indexer, err := indexer.NewIndexer(chainConfig, contracts, s.testDB, simulatedChainArr, s.nullMetrics, blockHeightMeter, false)
 	Nil(s.T(), err)
 
 	err = chainIndexer.IndexToBlock(s.GetTestContext(), nil, uint64(0), indexer)

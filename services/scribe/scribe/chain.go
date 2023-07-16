@@ -43,6 +43,7 @@ type ChainIndexer struct {
 // Used for handling logging of various context types.
 type contextKey int
 
+const tipLivefillFlushInterval = 12 * time.Hour
 const maxBackoff = uint64(10)
 
 const (
@@ -133,7 +134,7 @@ func (c *ChainIndexer) Index(ctx context.Context, onlyOneBlock *uint64) error {
 		}
 
 		// If current contract is not within the livefill threshold, start an indexer for it.
-		contractIndexer, err := indexer.NewIndexer(c.chainConfig, []common.Address{contractAddress}, c.eventDB, c.client, c.handler, c.blockHeightMeters[contractAddress])
+		contractIndexer, err := indexer.NewIndexer(c.chainConfig, []common.Address{contractAddress}, c.eventDB, c.client, c.handler, c.blockHeightMeters[contractAddress], false)
 		if err != nil {
 			return fmt.Errorf("could not create contract indexer: %w", err)
 		}
@@ -159,7 +160,7 @@ func (c *ChainIndexer) Index(ctx context.Context, onlyOneBlock *uint64) error {
 			return fmt.Errorf("error creating otel histogram %w", err)
 		}
 
-		livefillIndexer, err := indexer.NewIndexer(c.chainConfig, getAddressesFromConfig(c.livefillContracts), c.eventDB, c.client, c.handler, livefillBlockMeter)
+		livefillIndexer, err := indexer.NewIndexer(c.chainConfig, getAddressesFromConfig(c.livefillContracts), c.eventDB, c.client, c.handler, livefillBlockMeter, false)
 		if err != nil {
 			return fmt.Errorf("could not create contract indexer: %w", err)
 		}
@@ -357,4 +358,59 @@ func (c *ChainIndexer) getStartHeight(parentContext context.Context, onlyOneBloc
 	}
 
 	return startHeight, endHeight, nil
+}
+
+// LivefillToTip stores data for all contracts all the way to the tip in a separate table.
+//
+// nolint:cyclop
+func (c *ChainIndexer) LivefillToTip(parentContext context.Context) error {
+	timeout := time.Duration(0)
+	b := createBackoff()
+	addresses := getAddressesFromConfig(c.chainConfig.Contracts)
+	tipLivefillBlockMeter, err := c.handler.Meter().NewHistogram(fmt.Sprintf("scribe_block_meter_%d_tip_livefill", c.chainConfig.ChainID), "block_histogram", "a block height meter", "blocks")
+	if err != nil {
+		return fmt.Errorf("error creating otel histogram %w", err)
+	}
+
+	tipLivefillIndexer, err := indexer.NewIndexer(c.chainConfig, addresses, c.eventDB, c.client, c.handler, tipLivefillBlockMeter, true)
+	if err != nil {
+		return fmt.Errorf("could not create contract indexer: %w", err)
+	}
+	for {
+		select {
+		case <-parentContext.Done():
+			return fmt.Errorf("context canceled: %w", parentContext.Err())
+		case <-time.After(tipLivefillFlushInterval):
+			// TODO delete allr ecords fromt he tip livefill indexer db that are older than TipLivefillFlushInterval
+		case <-time.After(timeout):
+
+			endHeight, err := c.getLatestBlock(parentContext, false)
+			if err != nil {
+				logger.ReportIndexerError(err, tipLivefillIndexer.GetIndexerConfig(), logger.GetBlockError)
+				timeout = b.Duration()
+				continue
+			}
+
+			tipLivefillLastIndexed, err := c.eventDB.RetrieveLastIndexedMultiple(parentContext, addresses, c.chainConfig.ChainID)
+			if err != nil {
+				logger.ReportIndexerError(err, tipLivefillIndexer.GetIndexerConfig(), logger.LivefillIndexerError)
+				timeout = b.Duration()
+				continue
+			}
+			startHeight := getMinFromMap(tipLivefillLastIndexed)
+			if startHeight == 0 {
+				startHeight = *endHeight - c.chainConfig.Confirmations
+			}
+
+			err = tipLivefillIndexer.Index(parentContext, startHeight, *endHeight)
+			if err != nil {
+				timeout = b.Duration()
+				logger.ReportIndexerError(err, tipLivefillIndexer.GetIndexerConfig(), logger.LivefillIndexerError)
+				continue
+			}
+
+			// Default refresh rate for tip livefill is 1 second.
+			timeout = 1 * time.Second
+		}
+	}
 }

@@ -47,6 +47,8 @@ type Indexer struct {
 	blockMeter otelMetrics.Int64Histogram
 	// refreshRate is the rate at which the indexer will refresh when livefilling.
 	refreshRate uint64
+	// toTip is a boolean signifying if the indexer is livefilling to the tip.
+	toTip bool
 }
 
 // retryTolerance is the number of times to retry a failed operation before rerunning the entire Backfill function.
@@ -75,7 +77,7 @@ var errNoContinue = errors.New("encountered unreconcilable error, will not attem
 var errNoTx = errors.New("tx is not supported by the client")
 
 // NewIndexer creates a new backfiller for a contract.
-func NewIndexer(chainConfig config.ChainConfig, addresses []common.Address, eventDB db.EventDB, client []backend.ScribeBackend, handler metrics.Handler, blockMeter otelMetrics.Int64Histogram) (*Indexer, error) {
+func NewIndexer(chainConfig config.ChainConfig, addresses []common.Address, eventDB db.EventDB, client []backend.ScribeBackend, handler metrics.Handler, blockMeter otelMetrics.Int64Histogram, toTip bool) (*Indexer, error) {
 	cache, err := lru.New(500)
 	if err != nil {
 		return nil, fmt.Errorf("could not initialize cache: %w", err)
@@ -113,6 +115,7 @@ func NewIndexer(chainConfig config.ChainConfig, addresses []common.Address, even
 		handler:       handler,
 		blockMeter:    blockMeter,
 		refreshRate:   refreshRate,
+		toTip:         toTip,
 	}, nil
 }
 

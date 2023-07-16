@@ -73,7 +73,7 @@ func (x *IndexerSuite) TestFailedStore() {
 	Nil(x.T(), err)
 
 	contracts := []common.Address{common.HexToAddress(contractConfig.Address)}
-	indexer, err := indexer.NewIndexer(chainConfig, contracts, mockDB, simulatedChainArr, x.metrics, blockHeightMeter)
+	indexer, err := indexer.NewIndexer(chainConfig, contracts, mockDB, simulatedChainArr, x.metrics, blockHeightMeter, false)
 	Nil(x.T(), err)
 
 	tx, err := testRef.EmitEventA(transactOpts.TransactOpts, big.NewInt(1), big.NewInt(2), big.NewInt(3))
@@ -119,7 +119,7 @@ func (x *IndexerSuite) TestGetLogsSimulated() {
 	Nil(x.T(), err)
 
 	contracts := []common.Address{common.HexToAddress(contractConfig.Address)}
-	contractIndexer, err := indexer.NewIndexer(chainConfig, contracts, x.testDB, simulatedChainArr, x.metrics, blockHeightMeter)
+	contractIndexer, err := indexer.NewIndexer(chainConfig, contracts, x.testDB, simulatedChainArr, x.metrics, blockHeightMeter, false)
 	Nil(x.T(), err)
 
 	// Emit five events, and then fetch them with GetLogs. The first two will be fetched first,
@@ -224,7 +224,7 @@ func (x *IndexerSuite) TestContractBackfill() {
 	Nil(x.T(), err)
 	contracts := []common.Address{common.HexToAddress(contractConfig.Address)}
 	contractIndexer, err := indexer.NewIndexer(chainConfig, contracts,
-		x.testDB, simulatedChainArr, x.metrics, blockHeightMeter)
+		x.testDB, simulatedChainArr, x.metrics, blockHeightMeter, false)
 	x.Require().NoError(err)
 
 	// Emit events for the backfiller to read.
@@ -308,7 +308,7 @@ func (x *IndexerSuite) TestContractBackfillFromPreIndexed() {
 	Nil(x.T(), err)
 
 	contracts := []common.Address{common.HexToAddress(contractConfig.Address)}
-	backfiller, err := indexer.NewIndexer(chainConfig, contracts, x.testDB, simulatedChainArr, x.metrics, blockHeightMeter)
+	backfiller, err := indexer.NewIndexer(chainConfig, contracts, x.testDB, simulatedChainArr, x.metrics, blockHeightMeter, false)
 	Nil(x.T(), err)
 
 	// 1 log 1 receipt: r:1 l:1
@@ -430,7 +430,7 @@ func (x *IndexerSuite) TestGetLogs() {
 	blockHeightMeter, err := x.metrics.Meter().NewHistogram(fmt.Sprint("scribe_block_meter", chainConfig.ChainID), "block_histogram", "a block height meter", "blocks")
 	Nil(x.T(), err)
 
-	contractBackfiller, err := indexer.NewIndexer(chainConfig, addresses, x.testDB, simulatedChainArr, x.metrics, blockHeightMeter)
+	contractBackfiller, err := indexer.NewIndexer(chainConfig, addresses, x.testDB, simulatedChainArr, x.metrics, blockHeightMeter, false)
 	Nil(x.T(), err)
 
 	startHeight, endHeight := uint64(1), uint64(10)
@@ -503,7 +503,7 @@ func (x *IndexerSuite) TestTxTypeNotSupported() {
 	blockHeightMeter, err := x.metrics.Meter().NewHistogram(fmt.Sprint("scribe_block_meter", chainConfig.ChainID), "block_histogram", "a block height meter", "blocks")
 	Nil(x.T(), err)
 
-	contractIndexer, err := indexer.NewIndexer(chainConfig, addresses, x.testDB, backendClientArr, x.metrics, blockHeightMeter)
+	contractIndexer, err := indexer.NewIndexer(chainConfig, addresses, x.testDB, backendClientArr, x.metrics, blockHeightMeter, false)
 	Nil(x.T(), err)
 
 	err = contractIndexer.Index(x.GetTestContext(), contractConfig.StartBlock, contractConfig.StartBlock+1)
@@ -551,7 +551,7 @@ func (x IndexerSuite) TestInvalidTxVRS() {
 	blockHeightMeter, err := x.metrics.Meter().NewHistogram(fmt.Sprint("scribe_block_meter", chainConfig.ChainID), "block_histogram", "a block height meter", "blocks")
 	Nil(x.T(), err)
 
-	contractIndexer, err := indexer.NewIndexer(chainConfig, addresses, x.testDB, backendClientArr, x.metrics, blockHeightMeter)
+	contractIndexer, err := indexer.NewIndexer(chainConfig, addresses, x.testDB, backendClientArr, x.metrics, blockHeightMeter, false)
 	Nil(x.T(), err)
 
 	err = contractIndexer.Index(x.GetTestContext(), contractConfig.StartBlock, contractConfig.StartBlock+1)
