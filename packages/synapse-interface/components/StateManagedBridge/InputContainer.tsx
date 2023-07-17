@@ -9,6 +9,7 @@ import SelectTokenDropdown from '@/components/input/TokenAmountInput/SelectToken
 import MiniMaxButton from '../buttons/MiniMaxButton'
 import { formatBigIntToString, stringToBigInt } from '@/utils/bigint/format'
 import { OriginChainLabel } from './OriginChainLabel'
+import { cleanNumberInput } from '@/utils/cleanNumberInput'
 
 export const inputRef = React.createRef<HTMLInputElement>()
 
@@ -69,7 +70,7 @@ export const InputContainer = () => {
   const handleFromValueChange = (
     event: React.ChangeEvent<HTMLInputElement>
   ) => {
-    const fromValueString: string = event.target.value
+    const fromValueString: string = cleanNumberInput(event.target.value)
     try {
       dispatch(updateFromValue(fromValueString))
       setShowValue(fromValueString)
