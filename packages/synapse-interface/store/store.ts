@@ -1,6 +1,6 @@
 import { configureStore } from '@reduxjs/toolkit'
 
-import bridgeReducer, { tokenDecimalMiddleware } from '@/slices/bridgeSlice'
+import bridgeReducer from '@/slices/bridgeSlice'
 import bridgeDisplayReducer from '@/slices/bridgeDisplaySlice'
 import poolDataReducer from '@/slices/poolDataSlice'
 import poolUserDataReducer from '@/slices/poolUserDataSlice'
@@ -19,7 +19,7 @@ export const store = configureStore({
   middleware: (getDefaultMiddleware) =>
     getDefaultMiddleware({
       serializableCheck: false,
-    }).concat(tokenDecimalMiddleware),
+    }),
 })
 
 export type RootState = ReturnType<typeof store.getState>
