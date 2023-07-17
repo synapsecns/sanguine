@@ -321,6 +321,7 @@ const StateManagedBridge = () => {
 
       let newDestQuery = { ...destQuery }
       newDestQuery.minAmountOut = destMinWithSlippage
+      console.log('here 4')
       if (thisRequestId === currentSDKRequestID.current) {
         dispatch(
           setBridgeQuote({

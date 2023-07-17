@@ -2,7 +2,6 @@ import _ from 'lodash'
 import { configureStore } from '@reduxjs/toolkit'
 
 import bridgeReducer, {
-  segmentMiddleware,
   tokenDecimalMiddleware,
 } from '@/slices/bridgeSlice'
 import bridgeDisplayReducer from '@/slices/bridgeDisplaySlice'
