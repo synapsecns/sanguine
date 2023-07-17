@@ -52,7 +52,7 @@ const EventCard = memo((event: BridgeWatcherTx) => {
                 {event?.amount
                   ? commify(
                       formatBigIntToString(
-                        event.amount,
+                        BigInt(event.amount.toString()),
                         event.token?.decimals[event.chainId],
                         8
                       )
