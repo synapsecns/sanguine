@@ -92,6 +92,7 @@ export const PortfolioTokenAsset = ({
         formatBigIntToString(balance, token.decimals[fromChainId])
       )
     )
+    scrollToTop()
   }, [isDisabled, token, balance, fromChainId, portfolioChainId])
 
   const handleSelectFromTokenCallback = useCallback(() => {
