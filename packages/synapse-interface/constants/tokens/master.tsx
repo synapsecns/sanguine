@@ -33,7 +33,7 @@ import h2oLogo from '@assets/icons/h2o.svg'
 import gmxLogo from '@assets/icons/gmx.png'
 import ageurLogo from '@assets/icons/ageur.svg'
 import pepeLogo from '@assets/icons/pepe-token.webp'
-import { AddressZero } from '@ethersproject/constants'
+import { zeroAddress } from 'viem'
 
 import { Token } from '@/utils/types'
 import * as CHAINS from '@/constants/chains/master'
@@ -981,10 +981,10 @@ export const KLAYTN_WETH = new Token({
 
 export const ETH = new Token({
   addresses: {
-    [CHAINS.ETH.id]: AddressZero,
-    [CHAINS.BOBA.id]: AddressZero,
-    [CHAINS.ARBITRUM.id]: AddressZero,
-    [CHAINS.OPTIMISM.id]: AddressZero,
+    [CHAINS.ETH.id]: zeroAddress,
+    [CHAINS.BOBA.id]: zeroAddress,
+    [CHAINS.ARBITRUM.id]: zeroAddress,
+    [CHAINS.OPTIMISM.id]: zeroAddress,
   },
   decimals: 18,
   symbol: 'ETH',
@@ -1000,7 +1000,7 @@ export const ETH = new Token({
 
 export const MOVR = new Token({
   addresses: {
-    [CHAINS.MOONRIVER.id]: AddressZero,
+    [CHAINS.MOONRIVER.id]: zeroAddress,
   },
   decimals: 18,
   symbol: 'MOVR',
@@ -1015,7 +1015,7 @@ export const MOVR = new Token({
 
 export const AVAX = new Token({
   addresses: {
-    [CHAINS.AVALANCHE.id]: AddressZero,
+    [CHAINS.AVALANCHE.id]: zeroAddress,
   },
   decimals: 18,
   symbol: 'AVAX',
@@ -1093,7 +1093,7 @@ export const MULTIAVAX = new Token({
 
 export const JEWEL = new Token({
   addresses: {
-    [CHAINS.DFK.id]: AddressZero,
+    [CHAINS.DFK.id]: zeroAddress,
     [CHAINS.HARMONY.id]: '0x72cb10c6bfa5624dd07ef608027e366bd690048f', // from harmony jewel?
     [CHAINS.KLAYTN.id]: '0x30C103f8f5A3A732DFe2dCE1Cc9446f545527b43',
   },

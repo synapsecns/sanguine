@@ -1,30 +1,33 @@
-import { fetchBalance, fetchSigner, Address } from '@wagmi/core'
-import { erc20ABI } from 'wagmi'
-import { Contract } from 'ethers'
+import { fetchBalance, Address } from '@wagmi/core'
+import { zeroAddress } from 'viem'
+
+import { getErc20TokenAllowance } from '@/actions/getErc20TokenAllowance'
 
 export const getTokenAllowance = async (
-  routerAddress: string,
-  tokenAddress: string,
-  address: string,
+  routerAddress: Address,
+  tokenAddress: Address,
+  address: Address,
   chainId: number
 ) => {
   let fetchedBalance
   let allowance
 
-  const wallet = await fetchSigner({
-    chainId,
-  })
-
-  if (tokenAddress === '0x0000000000000000000000000000000000000000') {
+  if (tokenAddress === zeroAddress) {
     fetchedBalance = await fetchBalance({
-      address: address as Address,
+      address,
       chainId,
     })
 
     allowance = fetchedBalance.value
   } else {
-    const erc20 = new Contract(tokenAddress, erc20ABI, wallet)
-    allowance = await erc20.allowance(address, routerAddress)
+    const allowance = await getErc20TokenAllowance({
+      address,
+      chainId,
+      tokenAddress,
+      spender: routerAddress,
+    })
+
+    return allowance
   }
 
   return allowance

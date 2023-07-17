@@ -1,6 +1,8 @@
 import '@styles/global.css'
 import '@rainbow-me/rainbowkit/styles.css'
 import type { AppProps } from 'next/app'
+import '@/patch'
+
 import {
   boba,
   cronos,
@@ -11,7 +13,7 @@ import {
   aurora,
   canto,
 } from '@constants/extraWagmiChains'
-import { WagmiConfig, configureChains, createClient } from 'wagmi'
+import { WagmiConfig, configureChains, createConfig } from 'wagmi'
 import {
   arbitrum,
   avalanche,
@@ -28,6 +30,7 @@ import {
   RainbowKitProvider,
   darkTheme,
   getDefaultWallets,
+  connectorsForWallets
 } from '@rainbow-me/rainbowkit'
 import { JsonRpcProvider } from '@ethersproject/providers'
 import { jsonRpcProvider } from 'wagmi/providers/jsonRpc'
@@ -73,7 +76,7 @@ for (const chain of rawChains) {
   })
 }
 
-const { chains, provider } = configureChains(chainsMatured, [
+const { chains, publicClient, webSocketPublicClient } = configureChains(chainsMatured, [
   jsonRpcProvider({
     rpc: (chain) => ({
       http: chain['configRpc'],
@@ -81,20 +84,28 @@ const { chains, provider } = configureChains(chainsMatured, [
   }),
 ])
 
-const { connectors } = getDefaultWallets({
+const projectId = 'ab0a846bc693996606734d788cb6561d'
+
+const { wallets } = getDefaultWallets({
   appName: 'Synapse',
+  projectId,
   chains,
 })
 
-export const wagmiClient = createClient({
+const connectors = connectorsForWallets([
+  ...wallets,
+]);
+
+export const wagmiConfig = createConfig({
   autoConnect: true,
   connectors,
-  provider,
+  publicClient,
+  webSocketPublicClient
 })
 
 const App = ({ Component, pageProps }: AppProps) => {
   return (
-    <WagmiConfig client={wagmiClient}>
+    <WagmiConfig config={wagmiConfig}>
       <RainbowKitProvider chains={chains} theme={darkTheme()}>
         <SynapseProvider chains={chains}>
           <Provider store={store}>

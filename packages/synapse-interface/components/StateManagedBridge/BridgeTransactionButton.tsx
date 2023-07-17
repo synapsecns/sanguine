@@ -1,16 +1,18 @@
 import { useSelector } from 'react-redux'
 import { TransactionButton } from '@/components/buttons/TransactionButton'
 import { EMPTY_BRIDGE_QUOTE, EMPTY_BRIDGE_QUOTE_ZERO } from '@/constants/bridge'
-import { RootState } from '../../store/store'
+import { RootState } from '@/store/store'
 import { useAccount, useNetwork, useSwitchNetwork } from 'wagmi'
 import { useEffect, useState } from 'react'
 import { isAddress } from '@ethersproject/address'
+import {} from 'wagmi'
 
 import {
   useConnectModal,
   useAccountModal,
   useChainModal,
 } from '@rainbow-me/rainbowkit'
+import { stringToBigInt } from '@/utils/bigint/format'
 
 export const BridgeTransactionButton = ({
   approveTxn,
@@ -26,13 +28,13 @@ export const BridgeTransactionButton = ({
 
   const { address, isConnected: isConnectedInit } = useAccount({
     onDisconnect() {
-      setIsConnected(false);
+      setIsConnected(false)
     },
-  });
+  })
 
   useEffect(() => {
     setIsConnected(isConnectedInit)
-  }, [isConnectedInit]);
+  }, [isConnectedInit])
 
   // Get state from Redux store
   const {
@@ -57,12 +59,17 @@ export const BridgeTransactionButton = ({
 
   let buttonProperties
 
-  if (!isLoading && bridgeQuote?.feeAmount?.eq(0) && fromValue.gt(0)) {
+  const fromValueBigInt = stringToBigInt(
+    fromValue,
+    fromToken.decimals[fromChainId]
+  )
+
+  if (!isLoading && bridgeQuote?.feeAmount === 0n && fromValueBigInt > 0) {
     buttonProperties = {
       label: `Amount must be greater than fee`,
       onClick: null,
     }
-  } else if (!isConnected && fromValue.gt(0)) {
+  } else if (!isConnected && fromValueBigInt > 0) {
     buttonProperties = {
       label: `Connect Wallet to Bridge`,
       onClick: openConnectModal,
@@ -75,7 +82,7 @@ export const BridgeTransactionButton = ({
     buttonProperties = {
       label: 'Invalid destination address',
     }
-  } else if (chain?.id != fromChainId && fromValue.gt(0)) {
+  } else if (chain?.id != fromChainId && fromValueBigInt > 0) {
     buttonProperties = {
       label: `Switch to ${chains.find((c) => c.id === fromChainId).name}`,
       onClick: () => switchNetwork(fromChainId),

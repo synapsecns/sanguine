@@ -1,37 +1,31 @@
 import { Token } from '@types'
-import SWAP_ABI from '@abis/swap.json'
-import AV_SWAP_WRAPPER_ABI from '@abis/avSwapWrapper.json'
-import SWAP_ETH_WRAPPER_ABI from '@abis/swapEthWrapper.json'
-import { Contract } from 'ethers'
-import { fetchSigner } from '@wagmi/core'
+import { SWAP_ABI } from '@abis/swap'
+import { SWAP_ETH_WRAPPER_ABI } from '@abis/swapEthWrapper'
 
-export const useSwapDepositContract = async (pool: Token, chainId: number) => {
-  const { abi, poolAddress } = getSwapDepositContractFields(pool, chainId)
-
-  const signer = await fetchSigner({ chainId })
-
-  const swapContract = new Contract(poolAddress, abi, signer)
-
-  return swapContract
-}
+import { AV_SWAP_WRAPPER_ABI } from '@/constants/abis/avSwapWrapper'
 
 export const getSwapDepositContractFields = (pool: Token, chainId: number) => {
   let poolAddress
   let abi
+  let swapType
 
   if (pool?.swapEthAddresses?.[chainId]) {
     poolAddress = pool.swapEthAddresses[chainId]
     abi = SWAP_ETH_WRAPPER_ABI
+    swapType = 'SWAP_ETH'
   } else if (pool?.swapWrapperAddresses?.[chainId]) {
     poolAddress = pool.swapWrapperAddresses[chainId]
     abi = AV_SWAP_WRAPPER_ABI
+    swapType = 'AV_SWAP'
   } else if (pool?.swapAddresses?.[chainId]) {
     poolAddress = pool?.swapAddresses[chainId]
     abi = SWAP_ABI
+    swapType = 'SWAP'
   } else {
     poolAddress = undefined
     abi = undefined
+    swapType = undefined
   }
 
-  return { poolAddress, abi }
+  return { poolAddress, abi, swapType }
 }

@@ -5,7 +5,6 @@ import TokenMenuItem from '@pages/bridge/TokenMenuItem'
 import SlideSearchBox from '@pages/bridge/SlideSearchBox'
 import { DrawerButton } from '@components/buttons/DrawerButton'
 import { sortTokens } from '@constants/tokens'
-
 import { Token } from '@/utils/types'
 import { useDispatch, useSelector } from 'react-redux'
 import { RootState } from '@/store/store'
@@ -151,10 +150,10 @@ export const TokenSlideOver = ({
           let balance
 
           if (isOrigin) {
-            const tokenAndBalance = supportedFromTokenBalances.filter(
+            const tokenAndBalance = (supportedFromTokenBalances).filter(
               (t) => t.token === token
             )
-
+              console.log(tokenAndBalance)
             balance = tokenAndBalance[0]?.balance ?? Zero
           } else {
             balance = Zero
