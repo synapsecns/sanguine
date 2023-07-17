@@ -184,7 +184,7 @@ func (m *MessageBusParser) Parse(ctx context.Context, log ethTypes.Log, chainID 
 
 func (m *MessageBusParser) getFeeValue(ctx context.Context, messageEvent model.MessageBusEvent, coinGeckoID string) (*float64, error) {
 	tokenPrice := m.tokenPriceService.GetPriceData(ctx, int(*messageEvent.TimeStamp), coinGeckoID)
-	if (tokenPrice == nil) && coinGeckoID != noTokenID && coinGeckoID != noPrice {
+	if tokenPrice == nil {
 		return nil, fmt.Errorf("MESSAGEBUS could not get token price for coingeckotoken:  %s chain: %d txhash %s %d", coinGeckoID, messageEvent.ChainID, messageEvent.TxHash, messageEvent.TimeStamp)
 	}
 	price := GetAmountUSD(messageEvent.Fee, 18, tokenPrice)

@@ -5,7 +5,6 @@ import TokenMenuItem from '@pages/bridge/TokenMenuItem'
 import SlideSearchBox from '@pages/bridge/SlideSearchBox'
 import { DrawerButton } from '@components/buttons/DrawerButton'
 import { sortTokens } from '@constants/tokens'
-
 import { Token } from '@/utils/types'
 import { useDispatch, useSelector } from 'react-redux'
 import { RootState } from '@/store/store'
@@ -126,7 +125,10 @@ export const TokenSlideOver = ({
   }
 
   return (
-    <div className="max-h-full pb-4 -mt-3 overflow-auto scrollbar-hide rounded-3xl">
+    <div
+      data-test-id="token-slide-over"
+      className="max-h-full pb-4 -mt-3 overflow-auto scrollbar-hide rounded-3xl"
+    >
       <div className="absolute z-10 w-full px-6 pt-3 bg-bgLight rounded-t-xl">
         <div className="flex items-center float-right mb-2 font-medium sm:float-none">
           <SlideSearchBox
@@ -149,10 +151,10 @@ export const TokenSlideOver = ({
           let balance
 
           if (isOrigin) {
-            const tokenAndBalance = supportedFromTokenBalances.filter(
+            const tokenAndBalance = (supportedFromTokenBalances).filter(
               (t) => t.token === token
             )
-
+              console.log(tokenAndBalance)
             balance = tokenAndBalance[0]?.balance ?? Zero
           } else {
             balance = Zero

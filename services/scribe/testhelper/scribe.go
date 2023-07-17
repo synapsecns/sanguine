@@ -59,9 +59,8 @@ func NewTestScribe(ctx context.Context, tb testing.TB, deployedContracts map[uin
 
 		// add the chain config to the list
 		chainConfigs = append(chainConfigs, config.ChainConfig{
-			ChainID:               uint32(backend.GetChainID()),
-			RequiredConfirmations: 1,
-			Contracts:             contractConfigs,
+			ChainID:   uint32(backend.GetChainID()),
+			Contracts: contractConfigs,
 		})
 	}
 

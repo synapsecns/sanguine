@@ -1,6 +1,7 @@
 package backfill_test
 
 import (
+	"context"
 	"fmt"
 	"github.com/brianvoe/gofakeit/v6"
 	"github.com/ethereum/go-ethereum/common"
@@ -14,8 +15,10 @@ import (
 	"github.com/synapsecns/sanguine/services/scribe/config"
 	"github.com/synapsecns/sanguine/services/scribe/db"
 	"github.com/synapsecns/sanguine/services/scribe/db/mocks"
-	"math/big"
 	"os"
+	"sync"
+
+	"math/big"
 )
 
 // TestFailedStore tests that the ChainBackfiller continues backfilling after a failed store.
@@ -56,11 +59,15 @@ func (b BackfillSuite) TestFailedStore() {
 	}
 	simulatedChainArr := []backfill.ScribeBackend{simulatedClient, simulatedClient}
 	chainConfig := config.ChainConfig{
-		ChainID:              chainID,
-		ContractChunkSize:    1,
-		ContractSubChunkSize: 1,
+		ChainID:            chainID,
+		GetLogsBatchAmount: 1,
+		StoreConcurrency:   1,
+		GetLogsRange:       1,
 	}
-	backfiller, err := backfill.NewContractBackfiller(chainConfig, contractConfig, mockDB, simulatedChainArr, b.metrics)
+	blockHeightMeter, err := b.metrics.Meter().NewHistogram(fmt.Sprint("scribe_block_meter", chainConfig.ChainID), "block_histogram", "a block height meter", "blocks")
+	Nil(b.T(), err)
+
+	backfiller, err := backfill.NewContractBackfiller(chainConfig, contractConfig, mockDB, simulatedChainArr, b.metrics, blockHeightMeter)
 	Nil(b.T(), err)
 
 	tx, err := testRef.EmitEventA(transactOpts.TransactOpts, big.NewInt(1), big.NewInt(2), big.NewInt(3))
@@ -95,12 +102,15 @@ func (b BackfillSuite) TestGetLogsSimulated() {
 	}
 	simulatedChainArr := []backfill.ScribeBackend{simulatedClient, simulatedClient}
 	chainConfig := config.ChainConfig{
-		ChainID:              3,
-		ContractChunkSize:    1,
-		ContractSubChunkSize: 1,
+		ChainID:            3,
+		GetLogsBatchAmount: 1,
+		StoreConcurrency:   1,
+		GetLogsRange:       1,
 	}
+	blockHeightMeter, err := b.metrics.Meter().NewHistogram(fmt.Sprint("scribe_block_meter", chainConfig.ChainID), "block_histogram", "a block height meter", "blocks")
+	Nil(b.T(), err)
 
-	backfiller, err := backfill.NewContractBackfiller(chainConfig, contractConfig, b.testDB, simulatedChainArr, b.metrics)
+	backfiller, err := backfill.NewContractBackfiller(chainConfig, contractConfig, b.testDB, simulatedChainArr, b.metrics, blockHeightMeter)
 	Nil(b.T(), err)
 
 	// Emit five events, and then fetch them with GetLogs. The first two will be fetched first,
@@ -132,40 +142,43 @@ func (b BackfillSuite) TestGetLogsSimulated() {
 
 	// Get the logs for the first two events.
 	collectedLogs := []types.Log{}
-	logs, done := backfiller.GetLogs(b.GetTestContext(), contractConfig.StartBlock, txBlockNumberA)
+	logs, errChan := backfiller.GetLogs(b.GetTestContext(), contractConfig.StartBlock, txBlockNumberA)
 
 	for {
 		select {
 		case <-b.GetTestContext().Done():
 			b.T().Error("test timed out")
-		case log := <-logs:
+		case log, ok := <-logs:
+			if !ok {
+				goto Done
+			}
 			collectedLogs = append(collectedLogs, log)
-		case <-done:
-			goto Next
+		case errorFromChan := <-errChan:
+			Nil(b.T(), errorFromChan)
 		}
 	}
-
-Next:
-
+Done:
 	// Check to see if 2 logs were collected.
 	Equal(b.T(), 2, len(collectedLogs))
 
 	// Get the logs for the last three events.
 	collectedLogs = []types.Log{}
-	logs, done = backfiller.GetLogs(b.GetTestContext(), txBlockNumberA+1, txBlockNumberB)
+	logs, errChan = backfiller.GetLogs(b.GetTestContext(), txBlockNumberA+1, txBlockNumberB)
 
 	for {
 		select {
 		case <-b.GetTestContext().Done():
 			b.T().Error("test timed out")
-		case log := <-logs:
+		case log, ok := <-logs:
+			if !ok {
+				goto Done2
+			}
 			collectedLogs = append(collectedLogs, log)
-		case <-done:
-			goto Done
+		case errorFromChan := <-errChan:
+			Nil(b.T(), errorFromChan)
 		}
 	}
-
-Done:
+Done2:
 
 	// Check to see if 3 logs were collected.
 	Equal(b.T(), 3, len(collectedLogs))
@@ -191,11 +204,14 @@ func (b BackfillSuite) TestContractBackfill() {
 
 	simulatedChainArr := []backfill.ScribeBackend{simulatedClient, simulatedClient}
 	chainConfig := config.ChainConfig{
-		ChainID:              142,
-		ContractChunkSize:    1,
-		ContractSubChunkSize: 1,
+		ChainID:            142,
+		GetLogsBatchAmount: 1,
+		StoreConcurrency:   1,
+		GetLogsRange:       1,
 	}
-	backfiller, err := backfill.NewContractBackfiller(chainConfig, contractConfig, b.testDB, simulatedChainArr, b.metrics)
+	blockHeightMeter, err := b.metrics.Meter().NewHistogram(fmt.Sprint("scribe_block_meter", chainConfig.ChainID), "block_histogram", "a block height meter", "blocks")
+	Nil(b.T(), err)
+	backfiller, err := backfill.NewContractBackfiller(chainConfig, contractConfig, b.testDB, simulatedChainArr, b.metrics, blockHeightMeter)
 	b.Require().NoError(err)
 
 	// Emit events for the backfiller to read.
@@ -270,9 +286,8 @@ func (b BackfillSuite) TestTxTypeNotSupported() {
 	}
 
 	chainConfig := config.ChainConfig{
-		ChainID:               42161,
-		RequiredConfirmations: 0,
-		Contracts:             []config.ContractConfig{contractConfig},
+		ChainID:   42161,
+		Contracts: []config.ContractConfig{contractConfig},
 	}
 	backendClientArr := []backfill.ScribeBackend{backendClient, backendClient}
 	chainBackfiller, err := backfill.NewChainBackfiller(b.testDB, backendClientArr, chainConfig, 1, b.metrics)
@@ -310,9 +325,8 @@ func (b BackfillSuite) TestInvalidTxVRS() {
 	}
 
 	chainConfig := config.ChainConfig{
-		ChainID:               1313161554,
-		RequiredConfirmations: 0,
-		Contracts:             []config.ContractConfig{contractConfig},
+		ChainID:   1313161554,
+		Contracts: []config.ContractConfig{contractConfig},
 	}
 	backendClientArr := []backfill.ScribeBackend{backendClient, backendClient}
 	chainBackfiller, err := backfill.NewChainBackfiller(b.testDB, backendClientArr, chainConfig, 1, b.metrics)
@@ -355,11 +369,14 @@ func (b BackfillSuite) TestContractBackfillFromPreIndexed() {
 
 	simulatedChainArr := []backfill.ScribeBackend{simulatedClient, simulatedClient}
 	chainConfig := config.ChainConfig{
-		ChainID:              142,
-		ContractChunkSize:    1,
-		ContractSubChunkSize: 1,
+		ChainID:            142,
+		GetLogsBatchAmount: 1,
+		StoreConcurrency:   1,
+		GetLogsRange:       1,
 	}
-	backfiller, err := backfill.NewContractBackfiller(chainConfig, contractConfig, b.testDB, simulatedChainArr, b.metrics)
+	blockHeightMeter, err := b.metrics.Meter().NewHistogram(fmt.Sprint("scribe_block_meter", chainConfig.ChainID), "block_histogram", "a block height meter", "blocks")
+	Nil(b.T(), err)
+	backfiller, err := backfill.NewContractBackfiller(chainConfig, contractConfig, b.testDB, simulatedChainArr, b.metrics, blockHeightMeter)
 	Nil(b.T(), err)
 
 	// Emit events for the backfiller to read.
@@ -432,4 +449,81 @@ func (b BackfillSuite) TestContractBackfillFromPreIndexed() {
 	lastIndexed, err := b.testDB.RetrieveLastIndexed(b.GetTestContext(), testContract.Address(), uint32(testContract.ChainID().Uint64()))
 	Nil(b.T(), err)
 	Equal(b.T(), txBlockNumber, lastIndexed)
+}
+
+func (b BackfillSuite) TestGetLogs() {
+	testBackend := geth.NewEmbeddedBackend(b.GetTestContext(), b.T())
+	var wg sync.WaitGroup
+	wg.Add(2)
+
+	const desiredBlockHeight = 10
+	var contractAddress common.Address
+	go func() {
+		defer wg.Done()
+		contractAddress = b.PopuluateWithLogs(b.GetTestContext(), testBackend, desiredBlockHeight)
+	}()
+
+	var host string
+	go func() {
+		defer wg.Done()
+		host = b.startOmnirpcServer(b.GetTestContext(), testBackend)
+	}()
+
+	wg.Wait()
+
+	scribeBackend, err := backfill.DialBackend(b.GetTestContext(), host, b.metrics)
+	Nil(b.T(), err)
+	simulatedChainArr := []backfill.ScribeBackend{scribeBackend, scribeBackend}
+
+	chainID, err := scribeBackend.ChainID(b.GetTestContext())
+	Nil(b.T(), err)
+
+	contractConfig := &config.ContractConfig{
+		Address: contractAddress.Hex(),
+	}
+	chainConfig := config.ChainConfig{
+		ChainID:            uint32(chainID.Uint64()),
+		GetLogsBatchAmount: 1,
+		StoreConcurrency:   1,
+		GetLogsRange:       1,
+	}
+	blockHeightMeter, err := b.metrics.Meter().NewHistogram(fmt.Sprint("scribe_block_meter", chainConfig.ChainID), "block_histogram", "a block height meter", "blocks")
+	Nil(b.T(), err)
+	contractBackfiller, err := backfill.NewContractBackfiller(chainConfig, *contractConfig, b.testDB, simulatedChainArr, b.metrics, blockHeightMeter)
+	Nil(b.T(), err)
+
+	startHeight, endHeight := uint64(1), uint64(10)
+	logsChan, errChan := contractBackfiller.GetLogs(b.GetTestContext(), startHeight, endHeight)
+
+	var logs []types.Log
+	var errs []string
+loop:
+	for {
+		select {
+		case log, ok := <-logsChan:
+			if !ok {
+				break loop
+			}
+			logs = append(logs, log)
+		case err, ok := <-errChan:
+			if !ok {
+				break loop
+			}
+			errs = append(errs, err)
+		}
+	}
+
+	Equal(b.T(), 2, len(logs))
+	Equal(b.T(), 0, len(errs))
+
+	cancelCtx, cancel := context.WithCancel(b.GetTestContext())
+	cancel()
+
+	_, errChan = contractBackfiller.GetLogs(cancelCtx, startHeight, endHeight)
+loop2:
+	for {
+		errStr := <-errChan
+		Contains(b.T(), errStr, "context canceled")
+		break loop2
+	}
 }

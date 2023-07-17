@@ -33,7 +33,7 @@ import h2oLogo from '@assets/icons/h2o.svg'
 import gmxLogo from '@assets/icons/gmx.png'
 import ageurLogo from '@assets/icons/ageur.svg'
 import pepeLogo from '@assets/icons/pepe-token.webp'
-import { AddressZero } from '@ethersproject/constants'
+import { zeroAddress } from 'viem'
 
 import { Token } from '@/utils/types'
 import * as CHAINS from '@/constants/chains/master'
@@ -429,10 +429,9 @@ export const USDC = new Token({
   swapExceptions: {
     [CHAINS.KLAYTN.id]: [CHAINS.ETH.id, CHAINS.DOGE.id],
     [CHAINS.DOGE.id]: [CHAINS.ETH.id, CHAINS.DOGE.id],
-    [CHAINS.AVALANCHE.id]: [],
   },
   symbol: 'USDC',
-  name: 'USD Circle',
+  name: 'USD Coin',
   logo: usdcLogo,
   description: `
     USD Coin (known by its ticker USDC) is a stablecoin that is pegged to the
@@ -569,15 +568,18 @@ export const USDT = new Token({
   decimals: {
     [CHAINS.BNB.id]: 18,
     [CHAINS.ETH.id]: 6,
+    [CHAINS.CRONOS.id]: 6,
     [CHAINS.POLYGON.id]: 6,
-    [CHAINS.AVALANCHE.id]: 6,
+    // Commenting out as currently unsupported above
+    // [CHAINS.AVALANCHE.id]: 6,
     [CHAINS.ARBITRUM.id]: 6,
     [CHAINS.FANTOM.id]: 6,
     [CHAINS.HARMONY.id]: 6,
     [CHAINS.BOBA.id]: 6,
     [CHAINS.AURORA.id]: 6,
-    [CHAINS.CRONOS.id]: 6,
     [CHAINS.CANTO.id]: 6,
+    [CHAINS.KLAYTN.id]: 6,
+    [CHAINS.DOGE.id]: 6,
   },
   symbol: 'USDT',
   name: 'USD Tether',
@@ -979,10 +981,10 @@ export const KLAYTN_WETH = new Token({
 
 export const ETH = new Token({
   addresses: {
-    [CHAINS.ETH.id]: AddressZero,
-    [CHAINS.BOBA.id]: AddressZero,
-    [CHAINS.ARBITRUM.id]: AddressZero,
-    [CHAINS.OPTIMISM.id]: AddressZero,
+    [CHAINS.ETH.id]: zeroAddress,
+    [CHAINS.BOBA.id]: zeroAddress,
+    [CHAINS.ARBITRUM.id]: zeroAddress,
+    [CHAINS.OPTIMISM.id]: zeroAddress,
   },
   decimals: 18,
   symbol: 'ETH',
@@ -998,7 +1000,7 @@ export const ETH = new Token({
 
 export const MOVR = new Token({
   addresses: {
-    [CHAINS.MOONRIVER.id]: AddressZero,
+    [CHAINS.MOONRIVER.id]: zeroAddress,
   },
   decimals: 18,
   symbol: 'MOVR',
@@ -1013,7 +1015,7 @@ export const MOVR = new Token({
 
 export const AVAX = new Token({
   addresses: {
-    [CHAINS.AVALANCHE.id]: AddressZero,
+    [CHAINS.AVALANCHE.id]: zeroAddress,
   },
   decimals: 18,
   symbol: 'AVAX',
@@ -1091,7 +1093,7 @@ export const MULTIAVAX = new Token({
 
 export const JEWEL = new Token({
   addresses: {
-    [CHAINS.DFK.id]: AddressZero,
+    [CHAINS.DFK.id]: zeroAddress,
     [CHAINS.HARMONY.id]: '0x72cb10c6bfa5624dd07ef608027e366bd690048f', // from harmony jewel?
     [CHAINS.KLAYTN.id]: '0x30C103f8f5A3A732DFe2dCE1Cc9446f545527b43',
   },
@@ -1154,7 +1156,7 @@ export const XJEWEL = new Token({
 export const USDCe = new Token({
   addresses: {
     [CHAINS.AVALANCHE.id]: '0xA7D7079b0FEaD91F3e65f86E8915Cb59c1a4C664',
-    [CHAINS.ARBITRUM.id]: '0xff970a61a04b1ca14834a43f5de4533ebddb5cc8'
+    [CHAINS.ARBITRUM.id]: '0xff970a61a04b1ca14834a43f5de4533ebddb5cc8',
   },
   decimals: 6,
   symbol: 'USDCe',

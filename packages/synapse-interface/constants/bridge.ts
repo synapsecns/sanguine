@@ -1,29 +1,28 @@
 import { USDC } from '@constants/tokens/master'
-import { Zero } from '@ethersproject/constants'
 import { COIN_SLIDE_OVER_PROPS } from '@styles/transitions'
 import * as CHAINS from '@constants/chains/master'
 
 export const QUOTE_POLLING_INTERVAL = 10000
 
 export const EMPTY_BRIDGE_QUOTE = {
-  outputAmount: Zero,
+  outputAmount: 0n,
   outputAmountString: '',
   routerAddress: '',
-  allowance: Zero,
-  exchangeRate: Zero,
-  feeAmount: Zero,
-  delta: Zero,
+  allowance: 0n,
+  exchangeRate: 0n,
+  feeAmount: 0n,
+  delta: 0n,
   quotes: { originQuery: null, destQuery: null },
 }
 
 export const EMPTY_BRIDGE_QUOTE_ZERO = {
-  outputAmount: Zero,
+  outputAmount: 0n,
   outputAmountString: '0',
   routerAddress: '',
-  allowance: Zero,
-  exchangeRate: Zero,
-  feeAmount: Zero,
-  delta: Zero,
+  allowance: 0n,
+  exchangeRate: 0n,
+  feeAmount: 0n,
+  delta: 0n,
   quotes: { originQuery: null, destQuery: null },
 }
 /**
@@ -112,6 +111,12 @@ export const BRIDGE_CONTRACTS = {
   [CHAINS.HARMONY.id]: '0xAf41a65F786339e7911F4acDAD6BD49426F2Dc6b',
   [CHAINS.CANTO.id]: '0xDde5BEC4815E1CeCf336fb973Ca578e8D83606E0',
   [CHAINS.DOGE.id]: '0x9508BF380c1e6f751D97604732eF1Bae6673f299',
+}
+
+export const SYNAPSE_CCTP_CONTRACTS = {
+  [CHAINS.ETH.id]: '0xfB2Bfc368a7edfD51aa2cbEC513ad50edEa74E84',
+  [CHAINS.ARBITRUM.id]: '0xfB2Bfc368a7edfD51aa2cbEC513ad50edEa74E84',
+  [CHAINS.AVALANCHE.id]: '0xfB2Bfc368a7edfD51aa2cbEC513ad50edEa74E84',
 }
 
 export const ROLE_EVENTS = ['RoleGranted', 'RoleRevoked', 'RoleAdminChanged']

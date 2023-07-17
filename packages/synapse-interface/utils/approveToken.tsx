@@ -1,20 +1,17 @@
-import { erc20ABI } from 'wagmi'
-import { fetchSigner } from '@wagmi/core'
-import { Contract } from 'ethers'
-import { MaxInt256, AddressZero } from '@ethersproject/constants'
-import { BigNumber } from '@ethersproject/bignumber'
+import { Address } from '@wagmi/core'
 import { CHAINS_BY_ID } from '@/constants/chains'
 import { txErrorHandler } from './txErrorHandler'
 import toast from 'react-hot-toast'
 import ExplorerToastLink from '@components/ExplorerToastLink'
-import { shortenAddress } from './shortenAddress'
+import { zeroAddress } from 'viem'
+import { approveErc20Token } from '@/actions/approveErc20Token'
 import { segmentAnalyticsEvent } from '@/contexts/SegmentAnalyticsProvider'
 
 export const approveToken = async (
   address: string,
   chainId: number,
   tokenAddress: string,
-  amount?: BigNumber
+  amount?: bigint
 ) => {
   const currentChainName = CHAINS_BY_ID[chainId].name
   let pendingPopup: any
@@ -25,48 +22,44 @@ export const approveToken = async (
     duration: Infinity,
   })
 
-  // TODO store this erc20 and signer retrieval in a state in a parent component
-  const signer = await fetchSigner({
-    chainId,
-  })
-
-  const erc20 = new Contract(tokenAddress, erc20ABI, signer)
   try {
     segmentAnalyticsEvent(`[Approval] initiates approval`, {
       chainId,
       tokenAddress,
       amount,
     })
+    const approveTx = await approveErc20Token({
+      spender: address as Address,
+      chainId,
+      tokenAddress: tokenAddress as Address,
+      amount,
+    })
 
-    const approveTx = await erc20.approve(address, amount ?? MaxInt256)
-    await approveTx.wait().then((successTx) => {
-      if (successTx) {
-        toast.dismiss(pendingPopup)
+    if (approveTx.status === 'success') {
+      toast.dismiss(pendingPopup)
 
         segmentAnalyticsEvent(`[Approval] successfully approves token`, {
           chainId,
           tokenAddress,
           amount,
         })
+      const successToastContent = (
+        <div>
+          <div>Successfully approved on {currentChainName}</div>
+          <ExplorerToastLink
+            transactionHash={approveTx?.transactionHash ?? zeroAddress}
+            chainId={chainId}
+          />
+        </div>
+      )
 
-        const successToastContent = (
-          <div>
-            <div>Successfully approved on {currentChainName}</div>
-            <ExplorerToastLink
-              transactionHash={approveTx?.hash ?? AddressZero}
-              chainId={chainId}
-            />
-          </div>
-        )
+      successPopup = toast.success(successToastContent, {
+        id: 'approve-success-popup',
+        duration: 10000,
+      })
+    }
 
-        successPopup = toast.success(successToastContent, {
-          id: 'approve-success-popup',
-          duration: 10000,
-        })
-      }
-    })
-
-    return approveTx
+    return approveTx.transactionHash
   } catch (error) {
     segmentAnalyticsEvent(`[Approval] approval fails`, {
       chainId,

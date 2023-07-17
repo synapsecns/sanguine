@@ -1,15 +1,11 @@
 import { BigNumber } from 'ethers'
-import { getAccount } from '@wagmi/core'
-import { Zero } from '@ethersproject/constants'
 import { createSlice, PayloadAction } from '@reduxjs/toolkit'
 import { Address } from 'wagmi'
 
-import { segmentAnalyticsEvent } from '@/contexts/SegmentAnalyticsProvider'
 import { EMPTY_BRIDGE_QUOTE } from '@/constants/bridge'
 import { ETH } from '@/constants/tokens/master'
 import { ARBITRUM, ETH as ETHEREUM } from '@/constants/chains/master'
 import { BridgeQuote, Token } from '@/utils/types'
-import { formatBNToString } from '@/utils/bignumber/format'
 
 export interface BridgeState {
   fromChainId: number
@@ -19,7 +15,7 @@ export interface BridgeState {
   supportedToTokens: Token[]
   fromToken: Token
   toToken: Token
-  fromValue: BigNumber
+  fromValue: string
   bridgeQuote: BridgeQuote
   fromChainIds: number[]
   toChainIds: number[]
@@ -39,7 +35,7 @@ const initialState: BridgeState = {
   supportedToTokens: [],
   fromToken: ETH,
   toToken: ETH,
-  fromValue: Zero,
+  fromValue: '',
   bridgeQuote: EMPTY_BRIDGE_QUOTE,
   fromChainIds: [],
   toChainIds: [],
@@ -89,7 +85,7 @@ export const bridgeSlice = createSlice({
     setToChainIds: (state, action: PayloadAction<number[]>) => {
       state.toChainIds = action.payload
     },
-    updateFromValue: (state, action: PayloadAction<BigNumber>) => {
+    updateFromValue: (state, action: PayloadAction<string>) => {
       state.fromValue = action.payload
     },
     setDeadlineMinutes: (state, action: PayloadAction<number | null>) => {
@@ -113,7 +109,10 @@ export const tokenDecimalMiddleware =
       const currentState = getState()
 
       // if fromValue is 0, no need to adjust it
-      if (currentState.bridge.fromValue.isZero()) {
+      if (
+        currentState.bridge.fromValue === '0' ||
+        currentState.bridge.fromValue === ''
+      ) {
         next(action)
         return
       }
@@ -140,14 +139,16 @@ export const tokenDecimalMiddleware =
 
         if (decimalDifference > 0) {
           // if newDecimal is greater, multiply fromValue by the decimal difference
-          newFromValue = currentState.bridge.fromValue.mul(
+          newFromValue = BigNumber.from(currentState.bridge.fromValue).mul(
             BigNumber.from(10).pow(decimalDifference)
           )
+          newFromValue = BigInt(newFromValue.toString())
         } else {
           // if newDecimal is smaller, divide fromValue by the decimal difference
-          newFromValue = currentState.bridge.fromValue.div(
+          newFromValue = BigNumber.from(currentState.bridge.fromValue).div(
             BigNumber.from(10).pow(Math.abs(decimalDifference))
           )
+          newFromValue = BigInt(newFromValue.toString())
         }
 
         // dispatch updateFromValue action to set the new fromValue
@@ -157,71 +158,6 @@ export const tokenDecimalMiddleware =
 
     // call the next middleware in the line
     next(action)
-  }
-
-export const segmentMiddleware =
-  ({ getState }) =>
-  (next) =>
-  (action) => {
-    const account = getAccount()
-    const { address } = account
-
-    const currentState = getState()
-    const bridgeState = currentState.bridge
-
-    let eventTitle
-    let eventData
-
-    switch (action.type) {
-      case 'bridge/setBridgeQuote':
-        const { outputAmountString, routerAddress, exchangeRate } =
-          bridgeState.bridgeQuote
-        const { fromChainId, toChainId, fromToken, toToken, fromValue } =
-          bridgeState
-
-        eventTitle = `[Bridge System Action] Generate bridge quote`
-        eventData = {
-          address,
-          fromChainId,
-          toChainId,
-          fromToken: fromToken.symbol,
-          toToken: toToken.symbol,
-          inputAmountString: formatBNToString(
-            fromValue,
-            fromToken.decimals[fromChainId],
-            8
-          ),
-          outputAmountString,
-          routerAddress,
-          exchangeRate: formatBNToString(exchangeRate, 18, 8),
-        }
-        break
-      case 'bridgeDisplay/setShowDestinationAddress':
-        if (action.payload) {
-          eventTitle = `[Bridge User Action] Show destination address`
-          eventData = {}
-        } else {
-          eventTitle = `[Bridge User Action] Hide destination address`
-          eventData = {}
-        }
-        break
-      case 'bridgeDisplay/setShowSettingsSlideOver':
-        if (action.payload) {
-          eventTitle = `[Bridge User Action] Show Settings`
-          eventData = {}
-        } else {
-          eventTitle = `[Bridge User Action] Hide Settings`
-          eventData = {}
-        }
-      default:
-        break
-    }
-
-    if (eventTitle && eventData) {
-      segmentAnalyticsEvent(eventTitle, eventData)
-    }
-
-    return next(action)
   }
 
 export const {

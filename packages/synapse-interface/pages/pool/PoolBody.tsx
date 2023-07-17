@@ -1,88 +1,44 @@
-import { useEffect, useState, useCallback } from 'react'
-import { AddressZero } from '@ethersproject/constants'
 import Link from 'next/link'
-import { Token } from '@types'
 import { ChevronLeftIcon } from '@heroicons/react/outline'
-import { getPoolData } from '@utils/actions/getPoolData'
-import { getPoolApyData } from '@utils/actions/getPoolApyData'
-import { STAKE_PATH, POOLS_PATH, POOL_PATH } from '@urls'
+import { STAKE_PATH, POOLS_PATH } from '@urls'
 import Card from '@tw/Card'
 import Grid from '@tw/Grid'
 import Button from '@tw/Button'
 import PoolInfoSection from './PoolInfoSection'
 import PoolManagement from './poolManagement'
-import { useAccount } from 'wagmi'
-import { useRouter } from 'next/router'
+import { zeroAddress } from 'viem'
+import { useSelector } from 'react-redux'
+import { RootState } from '@/store/store'
+import { Address } from '@wagmi/core'
+import { useAccount, useSwitchNetwork } from 'wagmi'
+import { TransactionButton } from '@/components/buttons/TransactionButton'
+import { useConnectModal } from '@rainbow-me/rainbowkit'
 import { segmentAnalyticsEvent } from '@/contexts/SegmentAnalyticsProvider'
+import { useEffect } from 'react'
 
 const PoolBody = ({
-  pool,
   address,
-  poolChainId,
   connectedChainId,
 }: {
-  pool: Token
-  address: string
-  poolChainId: number
-  connectedChainId: number
+  address?: Address
+  connectedChainId?: number
 }) => {
-  const [poolData, setPoolData] = useState(undefined)
-  const [poolUserData, setPoolUserData] = useState(undefined)
-  const [poolAPYData, setPoolAPYData] = useState(undefined)
+  const { chains, switchNetwork } = useSwitchNetwork()
+  const { openConnectModal } = useConnectModal()
 
-  const router = useRouter()
-  const { query, pathname } = router
+  const { isConnected } = useAccount()
+
+  const { pool, poolAPYData } = useSelector(
+    (state: RootState) => state.poolData
+  )
 
   useEffect(() => {
-    if (pool?.name && query.poolId) {
-      segmentAnalyticsEvent(`[Pool] arrives at ${query.poolId}`, {
-        query,
-        pathname,
-        poolName: pool.name,
+    if (pool) {
+      segmentAnalyticsEvent(`[Pool] arrives at ${pool.name}`, {
+        poolName: pool.poolName,
       })
     }
   }, [])
-
-  const handleGetPoolData = useCallback(() => {
-    getPoolData(poolChainId, pool, address ?? AddressZero, false)
-      .then((res) => {
-        return setPoolData(res)
-      })
-      .catch((err) => {
-        console.log('Could not get pool data', err)
-        return err
-      })
-  }, [poolChainId, pool, address])
-
-  const handleGetUserPoolData = useCallback(() => {
-    if (address) {
-      getPoolData(poolChainId, pool, address, true)
-        .then((res) => {
-          return setPoolUserData(res)
-        })
-        .catch((err) => {
-          console.log('Could not get pool data', err)
-          return err
-        })
-    }
-  }, [poolChainId, pool, address])
-
-  useEffect(() => {
-    if (connectedChainId && pool && poolChainId) {
-      // TODO - separate the apy and tvl so they load async.
-      handleGetPoolData()
-      handleGetUserPoolData()
-      getPoolApyData(poolChainId, pool)
-        .then((res) => {
-          if (Object.keys(res).length > 0) {
-            setPoolAPYData(res)
-          }
-        })
-        .catch((err) => {
-          console.log('Could not get pool data', err)
-        })
-    }
-  }, [connectedChainId, pool, poolChainId, address])
 
   return (
     <>
@@ -94,29 +50,12 @@ const PoolBody = ({
           </div>
         </Link>
         <div className="flex justify-between">
-          <div className="mb-5">
-            <div className="inline-flex items-center mt-2">
-              <div className="items-center hidden mr-4 md:flex lg:flex">
-                {pool?.poolTokens &&
-                  pool.poolTokens.map((token) => (
-                    <img
-                      key={token.symbol}
-                      className="relative inline-block w-8 -mr-2 text-white shadow-solid"
-                      src={token.icon.src}
-                    />
-                  ))}
-              </div>
-              <h3 className="ml-2 mr-2 text-lg font-medium text-white md:ml-0 md:text-2xl">
-                {pool?.name}
-              </h3>
-            </div>
-          </div>
-
+          <PoolTitle pool={pool} />
           <div className="flex space-x-4">
             <div className="text-right">
               <div className="text-sm text-white text-opacity-60">APY</div>
               <div className="text-xl font-medium text-green-400">
-                {poolAPYData
+                {poolAPYData && Object.keys(poolAPYData).length > 0
                   ? `${String(poolAPYData.fullCompoundedAPYStr)}%`
                   : '-'}
               </div>
@@ -135,27 +74,79 @@ const PoolBody = ({
       <div className="px-0 md:px-24">
         <Grid cols={{ xs: 1, sm: 1, md: 1, lg: 2 }} gap={8}>
           <Card className="bg-bgBase rounded-3xl" divider={false}>
-            <PoolManagement
-              pool={pool}
-              address={address ?? AddressZero}
-              chainId={connectedChainId}
-              poolData={poolData}
-              poolUserData={poolUserData}
-              refetchCallback={handleGetUserPoolData}
-              // poolStakingLink={STAKE_PATH}
-              // poolStakingLinkText="Stake" // check this
-            />
+            {!isConnected && (
+              <div className="flex flex-col justify-center h-full">
+                <TransactionButton
+                  label="Connect wallet"
+                  pendingLabel="Connecting"
+                  onClick={() =>
+                    new Promise((resolve, reject) => {
+                      try {
+                        openConnectModal()
+                        resolve(true)
+                      } catch (e) {
+                        reject(e)
+                      }
+                    })
+                  }
+                />
+              </div>
+            )}
+            {isConnected && connectedChainId !== pool.chainId && (
+              <div className="flex flex-col justify-center h-full">
+                <TransactionButton
+                  label={`Switch to ${
+                    chains.find((c) => c.id === pool.chainId).name
+                  }`}
+                  pendingLabel="Switching chains"
+                  onClick={() =>
+                    new Promise((resolve, reject) => {
+                      try {
+                        switchNetwork(pool.chainId)
+                        resolve(true)
+                      } catch (e) {
+                        reject(e)
+                      }
+                    })
+                  }
+                />
+              </div>
+            )}
+            {isConnected && connectedChainId === pool.chainId && (
+              <PoolManagement
+                address={address ?? zeroAddress}
+                chainId={connectedChainId}
+              />
+            )}
           </Card>
           <div>
-            <PoolInfoSection
-              pool={pool}
-              poolData={poolData}
-              chainId={connectedChainId}
-            />
+            <PoolInfoSection chainId={connectedChainId} />
           </div>
         </Grid>
       </div>
     </>
+  )
+}
+
+const PoolTitle = ({ pool }) => {
+  return (
+    <div className="mb-5">
+      <div className="inline-flex items-center mt-2">
+        <div className="items-center hidden mr-4 md:flex lg:flex">
+          {pool?.poolTokens &&
+            pool.poolTokens.map((token) => (
+              <img
+                key={token.symbol}
+                className="relative inline-block w-8 -mr-2 text-white shadow-solid"
+                src={token.icon.src}
+              />
+            ))}
+        </div>
+        <h3 className="ml-2 mr-2 text-lg font-medium text-white md:ml-0 md:text-2xl">
+          {pool?.name}
+        </h3>
+      </div>
+    </div>
   )
 }
 

@@ -22,11 +22,11 @@ export type Chain = {
 export type PoolToken = {
   symbol: string
   percent: string
-  balance: BigNumber
+  balance: string
   balanceStr: string
   token: Token
-  isLp: boolean
-  rawBalance: BigNumber
+  isLP: boolean
+  rawBalance: bigint
 }
 export type Query = [string, string, BigNumber, BigNumber, string] & {
   swapAdapter: string
@@ -37,33 +37,28 @@ export type Query = [string, string, BigNumber, BigNumber, string] & {
 }
 export type PoolUserData = {
   name: string
-  share: BigNumber
-  value: BigNumber
   tokens: PoolToken[]
-  lpTokenBalance: BigNumber
-  lpTokenBalanceStr: string
+  lpTokenBalance: bigint
   nativeTokens?: any
 }
 export type PoolData = {
   name: string
   tokens: PoolToken[]
-  totalLocked: BigNumber
-  totalLockedStr: string
-  totalLockedUSD: BigNumber
-  totalLockedUSDStr: string
-  virtualPrice: BigNumber
-  virtualPriceStr: string
+  totalLocked: number
+  totalLockedUSD: number
+  virtualPrice: bigint
   nativeTokens?: any
+  swapFee: bigint
 }
 
 export type BridgeQuote = {
-  outputAmount: BigNumber
+  outputAmount: bigint
   outputAmountString: string
   routerAddress: string
-  allowance: BigNumber
-  exchangeRate: BigNumber
-  feeAmount: BigNumber
-  delta: BigNumber
+  allowance: bigint
+  exchangeRate: bigint
+  feeAmount: bigint
+  delta: bigint
   quotes: { originQuery: any; destQuery: any }
 }
 interface TokensByChain {
@@ -83,29 +78,26 @@ export interface IconProps {
   walletId?: string
   className?: string
 }
-export type PoolTokenObj = {
-  [x: string]: { token: Token; balance: BigNumber; rawBalance: BigNumber }
-}
 export type PoolTokenObject = {
   token: Token
-  balance: BigNumber
-  rawBalance: BigNumber
+  balance: string
+  rawBalance: bigint
   isLP: boolean
 }
 
 export type SwapQuote = {
-  outputAmount: BigNumber
+  outputAmount: bigint
   outputAmountString: string
   routerAddress: string
-  allowance: BigNumber
-  exchangeRate: BigNumber
-  delta: BigNumber
+  allowance: bigint
+  exchangeRate: bigint
+  delta: bigint
   quote: any
 }
 
 export type BridgeWatcherTx = {
   isFrom: boolean
-  amount: BigNumber
+  amount: bigint
   timestamp: number
   blockNumber: number
   chainId: number
@@ -116,6 +108,7 @@ export type BridgeWatcherTx = {
   kappa: string
   toChainId: number
   toAddress: string
+  contractEmittedFrom: string
 }
 
 // TODO
@@ -162,6 +155,7 @@ export class Token {
   display = true // display token
   legacy = false // legacy token
   priorityRank: number // priority token ordering
+  chainId?: number // chain id of swap pool
   priorityPool?: boolean = false // priority pool
   color?:
     | 'gray'
@@ -209,6 +203,7 @@ export class Token {
     display,
     legacy,
     priorityRank,
+    chainId,
     priorityPool,
     color,
     priceUnits,
@@ -245,6 +240,7 @@ export class Token {
     display?: boolean
     legacy?: boolean
     priorityRank: number
+    chainId?: number
     priorityPool?: boolean
     color?:
       | 'gray'
@@ -295,6 +291,7 @@ export class Token {
     this.display = display ?? true
     this.legacy = legacy ?? false
     this.priorityRank = priorityRank
+    this.chainId = chainId
     this.priorityPool = priorityPool ?? false
     this.color = color ?? 'gray'
     this.priceUnits = priceUnits ?? 'USD'

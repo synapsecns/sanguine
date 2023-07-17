@@ -2,12 +2,13 @@ package cmd
 
 import (
 	"fmt"
+
 	"github.com/synapsecns/sanguine/core/commandline"
 
 	"github.com/synapsecns/sanguine/core"
 	"github.com/synapsecns/sanguine/core/dbcommon"
 	"github.com/synapsecns/sanguine/core/metrics"
-	"github.com/synapsecns/sanguine/services/cctp-relayer/api"
+	"github.com/synapsecns/sanguine/services/cctp-relayer/attestation"
 	"github.com/synapsecns/sanguine/services/cctp-relayer/config"
 	"github.com/synapsecns/sanguine/services/cctp-relayer/db/sql"
 	"github.com/synapsecns/sanguine/services/cctp-relayer/relayer"
@@ -79,7 +80,7 @@ var runCommand = &cli.Command{
 
 		scribeClient := client.NewRemoteScribe(uint16(c.Uint(scribePortFlag.Name)), c.String(scribeURL.Name), metricsProvider).ScribeClient
 		omnirpcClient := omniClient.NewOmnirpcClient(cfg.BaseOmnirpcURL, metricsProvider, omniClient.WithCaptureReqRes())
-		attAPI := api.NewCircleAPI(c.String(cfg.CircleAPIURl))
+		attAPI := attestation.NewCircleAPI(c.String(cfg.CircleAPIURl))
 
 		cctpRelayer, err := relayer.NewCCTPRelayer(c.Context, cfg, store, scribeClient, omnirpcClient, metricsProvider, attAPI)
 		if err != nil {

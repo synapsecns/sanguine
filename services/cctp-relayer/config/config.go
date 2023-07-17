@@ -3,10 +3,11 @@ package config
 import (
 	"context"
 	"fmt"
-	"github.com/ImVexed/fasturl"
-	submitterConfig "github.com/synapsecns/sanguine/ethergo/submitter/config"
 	"os"
 	"path/filepath"
+
+	"github.com/ImVexed/fasturl"
+	submitterConfig "github.com/synapsecns/sanguine/ethergo/submitter/config"
 
 	"github.com/davecgh/go-spew/spew"
 	"github.com/jftuga/ellipsis"
@@ -16,6 +17,10 @@ import (
 
 // Config is used to configure an Executor agent.
 type Config struct {
+	// Port is the RelayerAPIServer port
+	Port uint16 `yaml:"port"`
+	// Host is the RelayerAPIServer host
+	Host string `yaml:"host"`
 	// CircleAPIURl is the URL for the Circle API
 	CircleAPIURl string `yaml:"circle_api_url"`
 	// Chains stores all chain information
@@ -27,8 +32,6 @@ type Config struct {
 	// Signer contains the unbonded signer config for agents
 	// (this is signer used to submit transactions)
 	Signer ethConfig.SignerConfig `yaml:"unbonded_signer"`
-	// HTTPBackoffInitialInterval is the initial interval for attestation request retries
-	HTTPBackoffInitialIntervalMs int `yaml:"http_backoff_initial_interval_ms"`
 	// RetryInterval is the interval for attestation request retries
 	RetryIntervalMS int `yaml:"retry_interval_ms"`
 	// HTTPBackoffMaxElapsedTime is the max elapsed time for attestation request retries

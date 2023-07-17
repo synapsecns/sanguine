@@ -103,9 +103,8 @@ func GenerateConfig(ctx context.Context, omniRPCUrl, deployPath string, required
 	config := Config{}
 	for chainID := range configList {
 		config.Chains = append(config.Chains, ChainConfig{
-			ChainID:               uint32(chainID),
-			RequiredConfirmations: requiredConfirmations,
-			Contracts:             configList.ContractsForChain(chainID),
+			ChainID:   uint32(chainID),
+			Contracts: configList.ContractsForChain(chainID),
 		})
 	}
 

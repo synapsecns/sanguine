@@ -73,6 +73,8 @@ export function AddToWalletMiniButton({
   )
 }
 
+import 'wagmi/window';
+
 export const addTokenToWallet = async ({ token, chainId, icon }) => {
   const provider = window.ethereum
 

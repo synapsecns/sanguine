@@ -30,9 +30,6 @@ import { Token } from '@/utils/types'
 
 // @dev: Reassign correct priorityRanking
 
-/**
- * Eth Stablecoin Swap
- */
 export const ETH_POOL_SWAP_TOKEN = new Token({
   addresses: {
     [CHAINS.ETH.id]: NUSD.addresses[CHAINS.ETH.id],
@@ -55,9 +52,9 @@ export const ETH_POOL_SWAP_TOKEN = new Token({
   color: 'gray',
   priceUnits: 'USD',
   priorityRank: 6,
+  chainId: CHAINS.ETH.id,
 })
 
-// Stablecoin Swap
 export const BSC_POOL_SWAP_TOKEN = new Token({
   addresses: {
     [CHAINS.BNB.id]: '0xa4b7Bc06EC817785170C2DbC1dD3ff86CDcdcc4C',
@@ -80,11 +77,9 @@ export const BSC_POOL_SWAP_TOKEN = new Token({
   color: 'purple',
   priceUnits: 'USD',
   priorityRank: 6,
+  chainId: CHAINS.BNB.id,
 })
 
-/**
- * Optimism Stablecoin Swap
- */
 export const OPTIMISM_POOL_SWAP_TOKEN = new Token({
   addresses: {
     [CHAINS.OPTIMISM.id]: '0x2c6d91accC5Aa38c84653F28A80AEC69325BDd12',
@@ -105,11 +100,9 @@ export const OPTIMISM_POOL_SWAP_TOKEN = new Token({
   display: true,
   priorityPool: true,
   priorityRank: 6,
+  chainId: CHAINS.OPTIMISM.id,
 })
 
-/**
- * Optimism Stablecoin Swap
- */
 export const CRONOS_POOL_SWAP_TOKEN = new Token({
   addresses: {
     [CHAINS.CRONOS.id]: '0xd5Da35646A79C42a0BAB148656192A22e8CBfad6', //'0x8415D4EB17F0949e2388fdF52909db4cC0a2B082',
@@ -130,11 +123,9 @@ export const CRONOS_POOL_SWAP_TOKEN = new Token({
   display: true,
   priorityPool: true,
   priorityRank: 6,
+  chainId: CHAINS.CRONOS.id,
 })
 
-/**
- * Polygon Stablecoin Swap
- */
 export const POLYGON_POOL_SWAP_TOKEN = new Token({
   addresses: {
     [CHAINS.POLYGON.id]: '0x7479e1bc2f2473f9e78c89b4210eb6d55d33b645',
@@ -157,11 +148,9 @@ export const POLYGON_POOL_SWAP_TOKEN = new Token({
   color: 'purple',
   priceUnits: 'USD',
   priorityRank: 6,
+  chainId: CHAINS.POLYGON.id,
 })
 
-/**
- * Avalanche Stablecoin Swap
- */
 export const AVALANCHE_POOL_SWAP_TOKEN = new Token({
   addresses: {
     [CHAINS.AVALANCHE.id]: '0xa5C7E254b77e9401639Bd5f261dae6D5E4441A8F',
@@ -183,10 +172,9 @@ export const AVALANCHE_POOL_SWAP_TOKEN = new Token({
   poolTokens: [NUSD, SwapUSDC, SwapUSDT],
   description: "Synapse's 3pool stableswap LP token on Avalanche",
   priorityRank: 6,
+  chainId: CHAINS.AVALANCHE.id,
 })
-/**
- * Avalanche Stablecoin Swap
- */
+
 export const LEGACY_AVALANCHE_POOL_SWAP_TOKEN = new Token({
   addresses: {
     [CHAINS.AVALANCHE.id]: '0xCA87BF3ec55372D9540437d7a86a7750B42C02f4',
@@ -205,11 +193,9 @@ export const LEGACY_AVALANCHE_POOL_SWAP_TOKEN = new Token({
   poolTokens: [NUSD, DAI, USDCe, USDTe],
   description: "Synapse's 4pool stableswap LP token on Avalanche",
   priorityRank: 6,
+  chainId: CHAINS.AVALANCHE.id,
 })
 
-/**
- * Avalanche Stablecoin Swap
- */
 export const ARBITRUM_POOL_SWAP_TOKEN = new Token({
   addresses: {
     [CHAINS.ARBITRUM.id]: '0xADeac0343C2Ac62DFE5A5f51E896AefFF5Ab513E',
@@ -232,11 +218,9 @@ export const ARBITRUM_POOL_SWAP_TOKEN = new Token({
   color: 'purple',
   priceUnits: 'USD',
   priorityRank: 6,
+  chainId: CHAINS.ARBITRUM.id,
 })
 
-/**
- * Fantom Stablecoin Swap
- */
 export const FANTOM_POOL_SWAP_TOKEN = new Token({
   addresses: {
     [CHAINS.FANTOM.id]: '0x464d121D3cA63cEEfd390D76f19364D3Bd024cD2',
@@ -259,11 +243,9 @@ export const FANTOM_POOL_SWAP_TOKEN = new Token({
   color: 'blue',
   priceUnits: 'USD',
   priorityRank: 6,
+  chainId: CHAINS.FANTOM.id,
 })
 
-/**
- * Harmony Stablecoin Swap
- */
 export const HARMONY_POOL_SWAP_TOKEN = new Token({
   addresses: {
     [CHAINS.HARMONY.id]: '0xE269abBFAF52b26D2632F55B6b223A5223088B96',
@@ -286,11 +268,9 @@ export const HARMONY_POOL_SWAP_TOKEN = new Token({
   color: 'purple',
   priceUnits: 'USD',
   priorityRank: 6,
+  chainId: CHAINS.HARMONY.id,
 })
 
-/**
- * Boba Stablecoin Swap
- */
 export const BOBA_POOL_SWAP_TOKEN = new Token({
   addresses: {
     [CHAINS.BOBA.id]: '0x9D7283A6AeeD9BCd4Ac70876fEA2b69a63DD8cb9',
@@ -313,11 +293,9 @@ export const BOBA_POOL_SWAP_TOKEN = new Token({
   color: 'green',
   priceUnits: 'USD',
   priorityRank: 6,
+  chainId: CHAINS.BOBA.id,
 })
 
-/**
- * Aurora Stablecoin Swap
- */
 export const AURORA_POOL_SWAP_TOKEN = new Token({
   addresses: {
     [CHAINS.AURORA.id]: '0xEAdC3524f3F007cdC5104BF28663b1141D3e3127',
@@ -338,11 +316,9 @@ export const AURORA_POOL_SWAP_TOKEN = new Token({
   display: true,
   legacy: true,
   priorityRank: 6,
+  chainId: CHAINS.AURORA.id,
 })
 
-/**
- * Aurora Stablecoin Swap (Trisolaris)
- */
 export const AURORA_TS_POOL_SWAP_TOKEN = new Token({
   addresses: {
     [CHAINS.AURORA.id]: '0xffb69779f14E851A8c550Bf5bB1933c44BBDE129',
@@ -364,11 +340,9 @@ export const AURORA_TS_POOL_SWAP_TOKEN = new Token({
   priorityPool: true,
   priceUnits: 'USD',
   priorityRank: 6,
+  chainId: CHAINS.AURORA.id,
 })
 
-/**
- * Avalanche Stablecoin Swap
- */
 export const ARBITRUM_3POOL_SWAP_TOKEN = new Token({
   addresses: {
     [CHAINS.ARBITRUM.id]: '0xcFd72be67Ee69A0dd7cF0f846Fc0D98C33d60F16',
@@ -390,11 +364,9 @@ export const ARBITRUM_3POOL_SWAP_TOKEN = new Token({
   priorityPool: true,
   priceUnits: 'USD',
   priorityRank: 6,
+  chainId: CHAINS.ARBITRUM.id,
 })
 
-/**
- * Fantom Stablecoin Swap
- */
 export const FANTOM_3POOL_SWAP_TOKEN = new Token({
   addresses: {
     [CHAINS.FANTOM.id]: '0x2DC777ff99058a12844A33D9B1AE6c8AB4701F66',
@@ -416,11 +388,9 @@ export const FANTOM_3POOL_SWAP_TOKEN = new Token({
   priorityPool: true,
   priceUnits: 'USD',
   priorityRank: 6,
+  chainId: CHAINS.FANTOM.id,
 })
 
-/**
- * Metis Stablecoin Swap
- */
 export const METIS_POOL_SWAP_TOKEN = new Token({
   addresses: {
     [CHAINS.METIS.id]: '0xC6f684aE516480A35f337a4dA8b40EB6550e07E0',
@@ -441,11 +411,9 @@ export const METIS_POOL_SWAP_TOKEN = new Token({
   display: true,
   priorityPool: true,
   priorityRank: 6,
+  chainId: CHAINS.METIS.id,
 })
 
-/**
- * Metis Stablecoin Swap
- */
 export const CANTO_POOL_SWAP_TOKEN = new Token({
   addresses: {
     [CHAINS.CANTO.id]: '0x830c377036a61911aaE49D61c70cb2926823d292',
@@ -465,6 +433,7 @@ export const CANTO_POOL_SWAP_TOKEN = new Token({
   description: "Synapse's nUSD & NOTE stableswap LP token on Canto",
   display: true,
   priorityRank: 6,
+  chainId: CHAINS.CANTO.id,
 })
 
 export const CANTO_USDC_SWAP_TOKEN = new Token({
@@ -486,11 +455,9 @@ export const CANTO_USDC_SWAP_TOKEN = new Token({
   description: "Synapse's nUSD & USDC stableswap LP token on Canto",
   display: true,
   priorityRank: 6,
+  chainId: CHAINS.CANTO.id,
 })
 
-/**
- * Metis Stablecoin Swap
- */
 export const CANTO_WRAPPER_POOL_SWAP_TOKEN = new Token({
   addresses: {
     [CHAINS.CANTO.id]: '0x0271984e4cfA2A0f02664baACD551CcFCC9920E8',
@@ -512,11 +479,9 @@ export const CANTO_WRAPPER_POOL_SWAP_TOKEN = new Token({
   display: false,
   priorityPool: true,
   priorityRank: 6,
+  chainId: CHAINS.CANTO.id,
 })
 
-/**
- * Klaytn Stablecoin Swap
- */
 export const KLAYTN_ORBIT_SWAP_TOKEN = new Token({
   addresses: {
     [CHAINS.KLAYTN.id]: '0x656757eb1e04011f6862688957ebA9eA12881244',
@@ -537,6 +502,7 @@ export const KLAYTN_ORBIT_SWAP_TOKEN = new Token({
   display: true,
   priorityPool: true,
   priorityRank: 6,
+  chainId: CHAINS.KLAYTN.id,
 })
 
 export const HARMONY_AVAX_SWAP_TOKEN = new Token({
@@ -561,6 +527,7 @@ export const HARMONY_AVAX_SWAP_TOKEN = new Token({
   color: 'red',
   priceUnits: 'AVAX',
   priorityRank: 6,
+  chainId: CHAINS.HARMONY.id,
 })
 
 export const ARBITRUM_ETH_SWAP_TOKEN = new Token({
@@ -589,11 +556,9 @@ export const ARBITRUM_ETH_SWAP_TOKEN = new Token({
   color: 'sky',
   priceUnits: 'ETH',
   priorityRank: 6,
+  chainId: CHAINS.ARBITRUM.id,
 })
 
-/**
- * Avalanche Stablecoin Swap
- */
 export const OPTIMISM_ETH_SWAP_TOKEN = new Token({
   addresses: {
     [CHAINS.OPTIMISM.id]: '0x4619a06ddd3b8f0f951354ec5e75c09cd1cd1aef',
@@ -620,11 +585,9 @@ export const OPTIMISM_ETH_SWAP_TOKEN = new Token({
   color: 'sky',
   priceUnits: 'ETH',
   priorityRank: 6,
+  chainId: CHAINS.OPTIMISM.id,
 })
 
-/**
- * Avalanche Stablecoin Swap
- */
 export const BOBA_ETH_SWAP_TOKEN = new Token({
   addresses: {
     [CHAINS.BOBA.id]: '0x498657f2AF18D525049dE520dD86ee376Db9c67c',
@@ -651,11 +614,9 @@ export const BOBA_ETH_SWAP_TOKEN = new Token({
   color: 'sky',
   priceUnits: 'ETH',
   priorityRank: 6,
+  chainId: CHAINS.BOBA.id,
 })
 
-/**
- * Avalanche Stablecoin Swap
- */
 export const AVALANCHE_AVETH_SWAP_TOKEN = new Token({
   addresses: {
     [CHAINS.AVALANCHE.id]: '0x5dF1dB940dd8fEE0e0eB0C8917cb50b4dfaDF98c',
@@ -686,11 +647,9 @@ export const AVALANCHE_AVETH_SWAP_TOKEN = new Token({
   color: 'sky',
   priceUnits: 'ETH',
   priorityRank: 6,
+  chainId: CHAINS.AVALANCHE.id,
 })
 
-/**
- * Harmony ETH Swap
- */
 export const HARMONY_ONEETH_SWAP_TOKEN = new Token({
   addresses: {
     [CHAINS.HARMONY.id]: '0x464d121D3cA63cEEfd390D76f19364D3Bd024cD2',
@@ -712,6 +671,7 @@ export const HARMONY_ONEETH_SWAP_TOKEN = new Token({
   priorityPool: true,
   priceUnits: 'ETH',
   priorityRank: 6,
+  chainId: CHAINS.HARMONY.id,
 })
 
 export const FANTOM_WETH_SWAP_TOKEN = new Token({
@@ -735,6 +695,7 @@ export const FANTOM_WETH_SWAP_TOKEN = new Token({
   priorityPool: true,
   priceUnits: 'ETH',
   priorityRank: 6,
+  chainId: CHAINS.FANTOM.id,
 })
 
 export const METIS_WETH_SWAP_TOKEN = new Token({
@@ -758,6 +719,7 @@ export const METIS_WETH_SWAP_TOKEN = new Token({
   priorityPool: true,
   priceUnits: 'ETH',
   priorityRank: 6,
+  chainId: CHAINS.METIS.id,
 })
 
 export const CANTO_WETH_SWAP_TOKEN = new Token({
@@ -781,11 +743,9 @@ export const CANTO_WETH_SWAP_TOKEN = new Token({
   priorityPool: true,
   priceUnits: 'ETH',
   priorityRank: 6,
+  chainId: CHAINS.CANTO.id,
 })
 
-/**
- * Harmony AVAX Swap
- */
 export const HARMONY_JEWEL_SWAP_TOKEN = new Token({
   addresses: {
     [CHAINS.HARMONY.id]: '0x0000000000000000000000000000000000000000',
@@ -806,4 +766,5 @@ export const HARMONY_JEWEL_SWAP_TOKEN = new Token({
   display: false,
   priorityPool: true,
   priorityRank: 6,
+  chainId: CHAINS.HARMONY.id,
 })

@@ -10,12 +10,13 @@ import SwapCard from './SwapCard'
 import NoSwapCard from './NoSwapCard'
 import { useRouter } from 'next/router'
 import { segmentAnalyticsEvent } from '@/contexts/SegmentAnalyticsProvider'
+import { Address } from 'wagmi'
 
 const SwapPage = () => {
   const { address: currentAddress } = useAccount()
   const { chain } = useNetwork()
   const [connectedChainId, setConnectedChainId] = useState<number>(0)
-  const [address, setAddress] = useState<`0x${string}` | undefined>(undefined)
+  const [address, setAddress] = useState<Address | undefined>(undefined)
   const router = useRouter()
 
   useEffect(() => {

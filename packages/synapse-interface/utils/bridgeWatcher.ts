@@ -35,7 +35,9 @@ import {
   PLS,
   AGEUR,
   NOTE,
+  USDC,
 } from '@constants/tokens/master'
+
 export const getTransactionReceipt = async (
   txHash: string,
   provider: JsonRpcProvider
@@ -53,11 +55,11 @@ export const getBlock = async (
 export const getLogs = async (
   currentBlock: number,
   provider: JsonRpcProvider,
-  fromSynapseContract: Contract,
+  contract: Contract,
   address: string
 ) => {
   const filter = {
-    address: fromSynapseContract.address,
+    address: contract?.address,
     topics: [null, hexZeroPad(address, 32)],
     fromBlock: toHexStr(currentBlock - GETLOGS_SIZE),
     toBlock: toHexStr(currentBlock),
@@ -70,6 +72,7 @@ export const getLogs = async (
     return []
   }
 }
+
 export const checkTxIn = (tx) => {
   return tx?.chainId ? true : false
 }
@@ -146,11 +149,16 @@ export const generateBridgeTx = (
       } else {
         tokenAddr = txReceipt.logs[txReceipt.logs.length - 2].address
       }
+    } else if (
+      !isFrom &&
+      swapTokenAddr === USDC.addresses[chainId] &&
+      [CHAINS.ARBITRUM.id, CHAINS.ETH.id, CHAINS.AVALANCHE.id].includes(chainId)
+    ) {
+      tokenAddr = txReceipt.logs[txReceipt.logs.length - 3].address
     } else {
       tokenAddr = txReceipt.logs[txReceipt.logs.length - 2].address
     }
   }
-
   const token = TOKEN_HASH_MAP[chainId][tokenAddr]
 
   let inputTokenAmount
@@ -175,9 +183,12 @@ export const generateBridgeTx = (
     txHash: txReceipt.transactionHash,
     txReceipt,
     token,
-    kappa: removePrefix(id(parsedLog.transactionHash)),
+    kappa: parsedLog.requestID
+      ? parsedLog.requestID
+      : removePrefix(id(parsedLog.transactionHash)),
     toChainId: isFrom ? Number(parsedLog.chainId.toString()) : chainId,
     toAddress: isAddress(destinationAddress) ? destinationAddress : address,
+    contractEmittedFrom: parsedLog.contractEmittedFrom,
   }
 }
 

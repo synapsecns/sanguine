@@ -39,6 +39,7 @@ jobs:
     needs: changes
     if: ${{ needs.changes.outputs.package_count > 0 }}
     strategy:
+      fail-fast: false
       matrix:
         package: ${{ fromJson(needs.changes.outputs.packages) }}
     env:
