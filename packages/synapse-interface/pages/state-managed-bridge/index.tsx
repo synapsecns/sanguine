@@ -322,7 +322,8 @@ const StateManagedBridge = () => {
             routerAddress,
             allowance,
             exchangeRate: calculateExchangeRate(
-              BigInt(fromValue) - BigInt(adjustedFeeAmount),
+              stringToBigInt(fromValue, fromToken.decimals[fromChainId]) -
+                BigInt(adjustedFeeAmount),
               fromToken.decimals[fromChainId],
               toValueBigInt,
               toToken.decimals[toChainId]
