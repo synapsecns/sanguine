@@ -2,9 +2,6 @@ import Button from '@tw/Button'
 import ButtonLoadingSpinner from '@components/buttons/ButtonLoadingSpinner'
 import { usePendingTxWrapper } from '@hooks/usePendingTxWrapper'
 import { TransactionResponse } from '@ethersproject/providers'
-import ExplorerToastLink from '@components/ExplorerToastLink'
-import toast from 'react-hot-toast'
-import { AddressZero } from '@ethersproject/constants'
 
 const BASE_PROPERTIES = `
     w-full rounded-lg my-2 px-4 py-3

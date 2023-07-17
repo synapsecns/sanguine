@@ -1,10 +1,8 @@
 import Grid from '@tw/Grid'
 import { useEffect, useState, useMemo, useCallback } from 'react'
 import { useRouter } from 'next/router'
-import { AddressZero, Zero } from '@ethersproject/constants'
-import { BigNumber } from '@ethersproject/bignumber'
-import { fetchSigner, switchNetwork } from '@wagmi/core'
-import { useWatchPendingTransactions } from 'wagmi'
+import { getWalletClient, switchNetwork } from '@wagmi/core'
+import { Address } from 'wagmi'
 import { sortByTokenBalance, sortByVisibilityRank } from '@utils/sortTokens'
 import { calculateExchangeRate } from '@utils/calculateExchangeRate'
 import ExchangeRateInfo from '@components/ExchangeRateInfo'
@@ -12,16 +10,13 @@ import { TransactionButton } from '@/components/buttons/TransactionButton'
 import BridgeInputContainer from '../../components/input/TokenAmountInput/index'
 import { approveToken } from '@/utils/approveToken'
 import { validateAndParseAddress } from '@utils/validateAndParseAddress'
-import { formatBNToString } from '@utils/bignumber/format'
 import { commify } from '@ethersproject/units'
-import { erc20ABI } from 'wagmi'
-import { Contract } from 'ethers'
 import { subtractSlippage } from '@utils/slippage'
 import { ChainSlideOver } from '@/components/misc/ChainSlideOver'
 import { TokenSlideOver } from '@/components/misc/TokenSlideOver'
 import { Token } from '@/utils/types'
 import { SWAP_PATH } from '@/constants/urls'
-import { stringToBigNum } from '@/utils/stringToBigNum'
+import { stringToBigInt } from '@/utils/bigint/format'
 import { useSynapseContext } from '@/utils/providers/SynapseProvider'
 import { checkStringIfOnlyZeroes } from '@/utils/regex'
 import { timeout } from '@/utils/timeout'
@@ -34,6 +29,7 @@ import { CHAINS_BY_ID } from '@constants/chains'
 import { toast } from 'react-hot-toast'
 import { txErrorHandler } from '@/utils/txErrorHandler'
 import ExplorerToastLink from '@/components/ExplorerToastLink'
+import { zeroAddress } from 'viem'
 
 import {
   DEFAULT_FROM_TOKEN,
@@ -48,12 +44,14 @@ import {
   SWAPABLE_TOKENS_BY_TYPE,
   tokenSymbolToToken,
 } from '@constants/tokens'
+import { formatBigIntToString } from '@/utils/bigint/format'
+import { getErc20TokenAllowance } from '@/actions/getErc20TokenAllowance'
 
 const SwapCard = ({
   address,
   connectedChainId,
 }: {
-  address: `0x${string}` | undefined
+  address: Address | undefined
   connectedChainId: number
 }) => {
   const router = useRouter()
@@ -61,7 +59,7 @@ const SwapCard = ({
   const [time, setTime] = useState(Date.now())
   const [fromToken, setFromToken] = useState(DEFAULT_FROM_TOKEN)
   const [fromTokens, setFromTokens] = useState([])
-  const [fromInput, setFromInput] = useState({ string: '', bigNum: Zero })
+  const [fromInput, setFromInput] = useState({ string: '', bigInt: 0n })
   const [toToken, setToToken] = useState(DEFAULT_TO_TOKEN)
   const [toTokens, setToTokens] = useState<Token[]>([]) //add default
   const [isQuoteLoading, setIsQuoteLoading] = useState<boolean>(false)
@@ -69,7 +67,7 @@ const SwapCard = ({
   const [destinationAddress, setDestinationAddress] = useState('')
   const [swapQuote, setSwapQuote] = useState<SwapQuote>(EMPTY_SWAP_QUOTE)
   const [displayType, setDisplayType] = useState(undefined)
-  const [fromTokenBalance, setFromTokenBalance] = useState<BigNumber>(Zero)
+  const [fromTokenBalance, setFromTokenBalance] = useState<bigint>(0n)
   const [validChainId, setValidChainId] = useState(true)
   const [swapTxnHash, setSwapTxnHash] = useState<string>('')
   const [approveTx, setApproveTx] = useState<string>(null)
@@ -114,7 +112,7 @@ const SwapCard = ({
       setFromTokenBalance(
         fromTokens.filter((token) => token.token === fromToken)[0]?.balance
           ? fromTokens.filter((token) => token.token === fromToken)[0]?.balance
-          : Zero
+          : 0n
       )
     }
   }, [fromToken, fromTokens])
@@ -191,7 +189,7 @@ const SwapCard = ({
         connectedChainId &&
         String(fromToken.addresses[connectedChainId]) &&
         fromInput &&
-        fromInput.bigNum.gt(Zero)
+        fromInput.bigInt > 0n
       ) {
         // TODO this needs to be debounced or throttled somehow to prevent spam and lag in the ui
         getQuote()
@@ -234,7 +232,7 @@ const SwapCard = ({
   */
   const resetRates = () => {
     setSwapQuote(EMPTY_SWAP_QUOTE)
-    setFromInput({ string: '', bigNum: Zero })
+    setFromInput({ string: '', bigInt: 0n })
   }
 
   /*
@@ -249,11 +247,11 @@ const SwapCard = ({
         fromToken[connectedChainId as keyof Token['decimals']]
       )
     ) {
-      let bigNum =
-        stringToBigNum(value, fromToken.decimals[connectedChainId]) ?? Zero
+      let bigInt =
+        stringToBigInt(value, fromToken.decimals[connectedChainId]) ?? 0n
       setFromInput({
         string: value,
-        bigNum: bigNum,
+        bigInt: bigInt,
       })
     }
   }
@@ -301,26 +299,6 @@ const SwapCard = ({
       undefined,
       { shallow: true }
     )
-  }
-
-  /*
-   Helper Function: getCurrentTokenAllowance
-  - Gets quote data from the Synapse SDK (from the imported provider)
-  - Calculates slippage by subtracting fee from input amount (checks to ensure proper num of decimals are in use - ask someone about stable swaps if you want to learn more)
-  TODO store this erc20 and signer retrieval in a state in a parent component? add to utils + use memo?
-  */
-  const getCurrentTokenAllowance = async (routerAddress: string) => {
-    const wallet = await fetchSigner({
-      chainId: connectedChainId,
-    })
-
-    const erc20 = new Contract(
-      fromToken.addresses[connectedChainId],
-      erc20ABI,
-      wallet
-    )
-    const allowance = await erc20.allowance(address, routerAddress)
-    return allowance
   }
 
   /*
@@ -489,23 +467,29 @@ const SwapCard = ({
         connectedChainId,
         fromToken.addresses[connectedChainId],
         toToken.addresses[connectedChainId],
-        fromInput.bigNum
+        fromInput.bigInt
       )
       if (!(query && maxAmountOut)) {
         setSwapQuote(EMPTY_SWAP_QUOTE_ZERO)
         setIsQuoteLoading(false)
         return
       }
-      const toValueBigNum = maxAmountOut ?? Zero
+
+      const toValueBigInt = BigInt(maxAmountOut.toString()) ?? 0n
 
       const allowance =
-        fromToken.addresses[connectedChainId] === AddressZero ||
+        fromToken.addresses[connectedChainId] === zeroAddress ||
         address === undefined
-          ? Zero
-          : await getCurrentTokenAllowance(routerAddress)
+          ? 0n
+          : await getErc20TokenAllowance({
+              address,
+              chainId: connectedChainId,
+              tokenAddress: fromToken.addresses[connectedChainId] as Address,
+              spender: routerAddress,
+            })
 
       const minWithSlippage = subtractSlippage(
-        query?.minAmountOut ?? Zero,
+        query?.minAmountOut ?? 0n,
         'ONE_TENTH',
         null
       )
@@ -514,19 +498,23 @@ const SwapCard = ({
       newOriginQuery.minAmountOut = minWithSlippage
 
       setSwapQuote({
-        outputAmount: toValueBigNum,
+        outputAmount: toValueBigInt,
         outputAmountString: commify(
-          formatBNToString(toValueBigNum, toToken.decimals[connectedChainId], 8)
+          formatBigIntToString(
+            toValueBigInt,
+            toToken.decimals[connectedChainId],
+            8
+          )
         ),
         routerAddress,
-        allowance,
+        allowance: BigInt(allowance.toString()),
         exchangeRate: calculateExchangeRate(
-          fromInput.bigNum.sub(Zero), // this needs to be changed once we can get fee data from router.
+          fromInput.bigInt - 0n, // this needs to be changed once we can get fee data from router.
           fromToken.decimals[connectedChainId],
-          toValueBigNum,
+          toValueBigInt,
           toToken.decimals[connectedChainId]
         ),
-        delta: maxAmountOut,
+        delta: toValueBigInt,
         quote: newOriginQuery,
       })
       setIsQuoteLoading(false)
@@ -551,33 +539,35 @@ const SwapCard = ({
     )
 
     try {
-      const wallet = await fetchSigner({
+      const wallet = await getWalletClient({
         chainId: connectedChainId,
       })
 
       const data = await synapseSDK.swap(
         connectedChainId,
         address,
-        fromToken.addresses[connectedChainId as keyof Token['addresses']],
-        fromInput.bigNum,
+        fromToken.addresses[connectedChainId],
+        fromInput.bigInt,
         swapQuote.quote
       )
+
       const payload =
         fromToken.addresses[connectedChainId as keyof Token['addresses']] ===
-          AddressZero ||
+          zeroAddress ||
         fromToken.addresses[connectedChainId as keyof Token['addresses']] === ''
-          ? { data: data.data, to: data.to, value: fromInput.bigNum }
+          ? { data: data.data, to: data.to, value: fromInput.bigInt }
           : data
+
       const tx = await wallet.sendTransaction(payload)
 
       try {
-        const successTx = await tx.wait()
+        const successTx = await tx
 
-        setSwapTxnHash(successTx?.transactionHash)
+        setSwapTxnHash(successTx)
 
         toast.dismiss(pendingPopup)
 
-        console.log(`Transaction mined successfully: ${tx.hash}`)
+        console.log(`Transaction mined successfully: ${tx}`)
 
         const successToastContent = (
           <div>
@@ -586,7 +576,7 @@ const SwapCard = ({
               on {currentChainName}
             </div>
             <ExplorerToastLink
-              transactionHash={tx?.hash ?? AddressZero}
+              transactionHash={tx ?? zeroAddress}
               chainId={connectedChainId}
             />
           </div>
@@ -623,7 +613,7 @@ const SwapCard = ({
     `,
   }
 
-  const isFromBalanceEnough = fromTokenBalance?.gte(fromInput.bigNum)
+  const isFromBalanceEnough = fromTokenBalance >= fromInput.bigInt
   let destAddrNotValid: boolean
 
   const getButtonProperties = () => {
@@ -644,7 +634,7 @@ const SwapCard = ({
       return properties
     }
 
-    if (isInputZero || fromInput?.bigNum?.eq(0)) {
+    if (isInputZero || fromInput?.bigInt === 0n) {
       properties.label = `Enter amount to swap`
       properties.disabled = true
       return properties
@@ -662,25 +652,26 @@ const SwapCard = ({
       return properties
     }
 
-    if (fromInput.bigNum.eq(0)) {
+    if (fromInput.bigInt === 0n) {
       properties.label = `Amount must be greater than fee`
       properties.disabled = true
       return properties
     }
 
     if (
-      !fromInput?.bigNum?.eq(0) &&
+      fromInput?.bigInt !== 0n &&
       fromToken?.addresses[connectedChainId] !== '' &&
-      fromToken?.addresses[connectedChainId] !== AddressZero &&
-      swapQuote?.allowance &&
-      swapQuote?.allowance?.lt(fromInput.bigNum) &&
+      fromToken?.addresses[connectedChainId] !== zeroAddress &&
+      !swapQuote?.allowance &&
+      swapQuote?.allowance < fromInput.bigInt &&
       !approveTx
     ) {
       properties.buttonAction = () =>
         approveToken(
           swapQuote.routerAddress,
           connectedChainId,
-          fromToken.addresses[connectedChainId]
+          fromToken.addresses[connectedChainId],
+          fromInput.bigInt
         )
       properties.label = `Approve ${fromToken.symbol}`
       properties.pendingLabel = `Approving ${fromToken.symbol}`
@@ -704,11 +695,11 @@ const SwapCard = ({
     properties.disabled = false
 
     const numExchangeRate = swapQuote?.exchangeRate
-      ? Number(formatBNToString(swapQuote.exchangeRate, 18, 4))
+      ? Number(formatBigIntToString(swapQuote.exchangeRate, 18, 4))
       : 0
 
     if (
-      !fromInput.bigNum.eq(0) &&
+      fromInput.bigInt !== 0n &&
       numExchangeRate !== 0 &&
       (numExchangeRate < 0.95 || numExchangeRate > 1.05)
     ) {
@@ -760,7 +751,7 @@ const SwapCard = ({
   - isQuoteLoading state is set to true for loading state interactions
   */
   useEffect(() => {
-    const { string, bigNum } = fromInput
+    const { string, bigInt } = fromInput
     const isInvalid = checkStringIfOnlyZeroes(string)
     isInvalid ? () => null : setIsQuoteLoading(true)
 
@@ -840,7 +831,7 @@ const SwapCard = ({
         </Grid>
 
         <ExchangeRateInfo
-          fromAmount={fromInput.bigNum}
+          fromAmount={fromInput.bigInt}
           toToken={toToken}
           exchangeRate={swapQuote.exchangeRate}
           toChainId={connectedChainId}

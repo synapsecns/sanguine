@@ -1,5 +1,3 @@
-import Grid from '@tw/Grid'
-import { LandingPageWrapper } from '@/components/layouts/LandingPageWrapper'
 import { useAccount, useNetwork } from 'wagmi'
 import { useDispatch, useSelector } from 'react-redux'
 import { RootState } from '../../store/store'
@@ -8,7 +6,6 @@ import { useSpring, animated } from 'react-spring'
 import { ActionCardFooter } from '@components/ActionCardFooter'
 import { BRIDGE_PATH, HOW_TO_BRIDGE_URL } from '@/constants/urls'
 import BridgeWatcher from '@/pages/bridge/BridgeWatcher'
-
 import {
   setFromToken,
   setToToken,
@@ -41,16 +38,14 @@ import {
 } from '@/constants/bridge'
 
 import { useSynapseContext } from '@/utils/providers/SynapseProvider'
-import { AddressZero, Zero } from '@ethersproject/constants'
-import { BigNumber } from '@ethersproject/bignumber'
-import { getCurrentTokenAllowance } from '../../actions/getCurrentTokenAllowance'
+import { getErc20TokenAllowance } from '@/actions/getErc20TokenAllowance'
 import { subtractSlippage } from '@/utils/slippage'
 import { commify } from '@ethersproject/units'
-import { formatBNToString } from '@/utils/bignumber/format'
+import { formatBigIntToString, powBigInt } from '@/utils/bigint/format'
 import { calculateExchangeRate } from '@/utils/calculateExchangeRate'
 import { useEffect, useRef, useState } from 'react'
 import { Token } from '@/utils/types'
-import { fetchSigner } from '@wagmi/core'
+import { getWalletClient } from '@wagmi/core'
 import { txErrorHandler } from '@/utils/txErrorHandler'
 import {
   BRIDGABLE_TOKENS,
@@ -83,9 +78,10 @@ import Button from '@/components/ui/tailwind/Button'
 import { SettingsIcon } from '@/components/icons/SettingsIcon'
 import { DestinationAddressInput } from '@/components/StateManagedBridge/DestinationAddressInput'
 import { isAddress } from '@ethersproject/address'
-import { TransactionButton } from '@/components/buttons/TransactionButton'
 import { BridgeTransactionButton } from '@/components/StateManagedBridge/BridgeTransactionButton'
 import ExplorerToastLink from '@/components/ExplorerToastLink'
+import { Address, zeroAddress } from 'viem'
+import { stringToBigInt } from '@/utils/bigint/format'
 import { Warning } from '@/components/Warning'
 
 // NOTE: These are idle utility functions that will be re-written to
@@ -213,22 +209,26 @@ const StateManagedBridge = () => {
 
     console.log(`[useEffect] fromToken`, fromToken.symbol)
     console.log(`[useEffect] toToken`, toToken.symbol)
-
-    if (fromValue.gt(0)) {
+    // TODO: Double serialization happening somewhere??
+    if (stringToBigInt(fromValue, fromToken.decimals[fromChainId]) > 0n) {
+      console.log('trying to set bridge quote')
       getAndSetBridgeQuote()
     } else {
       dispatch(setBridgeQuote(EMPTY_BRIDGE_QUOTE_ZERO))
       dispatch(setIsLoading(false))
-      console.log(bridgeQuote)
     }
   }, [fromChainId, toChainId, fromToken, toToken, fromValue, address])
 
   // don't like this, rewrite: could be custom hook
   useEffect(() => {
-    if (fromToken?.addresses[fromChainId] === AddressZero) {
+    if (fromToken?.addresses[fromChainId] === zeroAddress) {
       setIsApproved(true)
     } else {
-      if (bridgeQuote?.allowance && fromValue.lte(bridgeQuote.allowance)) {
+      if (
+        bridgeQuote?.allowance &&
+        stringToBigInt(fromValue, fromToken.decimals[fromChainId]) <=
+          bridgeQuote.allowance
+      ) {
         setIsApproved(true)
       } else {
         setIsApproved(false)
@@ -251,7 +251,7 @@ const StateManagedBridge = () => {
           toChainId,
           fromToken.addresses[fromChainId],
           toToken.addresses[toChainId],
-          fromValue
+          stringToBigInt(fromValue, fromToken.decimals[fromChainId])
         )
 
       console.log(`[getAndSetQuote] fromChainId`, fromChainId)
@@ -259,7 +259,7 @@ const StateManagedBridge = () => {
       console.log(`[getAndSetQuote] fromToken.symbol`, fromToken.symbol)
       console.log(`[getAndSetQuote] toToken.symbol`, toToken.symbol)
       console.log(`[getAndSetQuote] fromValue`, fromValue)
-
+      console.log('feeAmount', feeAmount)
       console.log(`[getAndSetQuote] maxAmountOut`, maxAmountOut)
 
       if (!(originQuery && maxAmountOut && destQuery && feeAmount)) {
@@ -268,33 +268,36 @@ const StateManagedBridge = () => {
         return
       }
 
-      const toValueBigNum = maxAmountOut ?? Zero
+      const toValueBigInt = BigInt(maxAmountOut.toString()) ?? 0n
+
       const originTokenDecimals = fromToken.decimals[fromChainId]
-      const adjustedFeeAmount = feeAmount.lt(fromValue)
-        ? feeAmount
-        : feeAmount.div(BigNumber.from(10).pow(18 - originTokenDecimals))
+      const adjustedFeeAmount =
+        BigInt(feeAmount) <
+        stringToBigInt(`${fromValue}`, fromToken.decimals[fromChainId])
+          ? BigInt(feeAmount)
+          : BigInt(feeAmount) / powBigInt(10n, BigInt(18 - originTokenDecimals))
 
       const isUnsupported = AcceptedChainId[fromChainId] ? false : true
 
       const allowance =
-        fromToken.addresses[fromChainId] === AddressZero ||
+        fromToken.addresses[fromChainId] === zeroAddress ||
         address === undefined ||
         isUnsupported
-          ? Zero
-          : await getCurrentTokenAllowance(
+          ? 0n
+          : await getErc20TokenAllowance({
               address,
-              fromChainId,
-              fromToken,
-              routerAddress
-            )
+              chainId: fromChainId,
+              tokenAddress: fromToken.addresses[fromChainId] as Address,
+              spender: routerAddress,
+            })
 
       const originMinWithSlippage = subtractSlippage(
-        originQuery?.minAmountOut ?? Zero,
+        originQuery?.minAmountOut ?? 0n,
         'ONE_TENTH',
         null
       )
       const destMinWithSlippage = subtractSlippage(
-        destQuery?.minAmountOut ?? Zero,
+        destQuery?.minAmountOut ?? 0n,
         'ONE_TENTH',
         null
       )
@@ -304,23 +307,28 @@ const StateManagedBridge = () => {
 
       let newDestQuery = { ...destQuery }
       newDestQuery.minAmountOut = destMinWithSlippage
+      console.log('here 4')
       if (thisRequestId === currentSDKRequestID.current) {
         dispatch(
           setBridgeQuote({
-            outputAmount: toValueBigNum,
+            outputAmount: toValueBigInt,
             outputAmountString: commify(
-              formatBNToString(toValueBigNum, toToken.decimals[toChainId], 8)
+              formatBigIntToString(
+                toValueBigInt,
+                toToken.decimals[toChainId],
+                8
+              )
             ),
             routerAddress,
             allowance,
             exchangeRate: calculateExchangeRate(
-              fromValue.sub(adjustedFeeAmount),
+              BigInt(fromValue) - BigInt(adjustedFeeAmount),
               fromToken.decimals[fromChainId],
-              toValueBigNum,
+              toValueBigInt,
               toToken.decimals[toChainId]
             ),
             feeAmount,
-            delta: maxAmountOut,
+            delta: BigInt(maxAmountOut.toString()),
             quotes: {
               originQuery: newOriginQuery,
               destQuery: newDestQuery,
@@ -328,26 +336,16 @@ const StateManagedBridge = () => {
           })
         )
 
-        const str = formatBNToString(
-          fromValue,
-          fromToken.decimals[fromChainId],
-          4
-        )
         toast.dismiss(quoteToast)
-        const message = `Route found for bridging ${str} ${fromToken.symbol} on ${CHAINS_BY_ID[fromChainId]?.name} to ${toToken.symbol} on ${CHAINS_BY_ID[toChainId]?.name}`
+        const message = `Route found for bridging ${fromValue} ${fromToken.symbol} on ${CHAINS_BY_ID[fromChainId]?.name} to ${toToken.symbol} on ${CHAINS_BY_ID[toChainId]?.name}`
         console.log(message)
         quoteToast = toast(message, { duration: 2000 })
       }
     } catch (err) {
       console.log(err)
       if (thisRequestId === currentSDKRequestID.current) {
-        const str = formatBNToString(
-          fromValue,
-          fromToken.decimals[fromChainId],
-          4
-        )
         toast.dismiss(quoteToast)
-        const message = `No route found for bridging ${str} ${fromToken.symbol} on ${CHAINS_BY_ID[fromChainId]?.name} to ${toToken.symbol} on ${CHAINS_BY_ID[toChainId]?.name}`
+        const message = `No route found for bridging ${fromValue} ${fromToken.symbol} on ${CHAINS_BY_ID[fromChainId]?.name} to ${toToken.symbol} on ${CHAINS_BY_ID[toChainId]?.name}`
         console.log(message)
         quoteToast = toast(message, { duration: 2000 })
 
@@ -382,7 +380,7 @@ const StateManagedBridge = () => {
 
   const executeBridge = async () => {
     try {
-      const wallet = await fetchSigner({
+      const wallet = await getWalletClient({
         chainId: fromChainId,
       })
 
@@ -397,13 +395,13 @@ const StateManagedBridge = () => {
         fromChainId,
         toChainId,
         fromToken.addresses[fromChainId as keyof Token['addresses']],
-        fromValue,
+        stringToBigInt(fromValue, fromToken.decimals[fromChainId]),
         bridgeQuote.quotes.originQuery,
         bridgeQuote.quotes.destQuery
       )
       const payload =
         fromToken.addresses[fromChainId as keyof Token['addresses']] ===
-          AddressZero ||
+          zeroAddress ||
         fromToken.addresses[fromChainId as keyof Token['addresses']] === ''
           ? { data: data.data, to: data.to, value: fromValue }
           : data
@@ -417,13 +415,13 @@ const StateManagedBridge = () => {
       )
 
       try {
-        await tx.wait()
-        dispatch(addBridgeTxHash(tx.hash))
+        // await tx.wait()
+        dispatch(addBridgeTxHash(tx))
 
         dispatch(setBridgeQuote(EMPTY_BRIDGE_QUOTE_ZERO))
         dispatch(setDestinationAddress(null))
         dispatch(setShowDestinationAddress(false))
-        dispatch(updateFromValue(Zero))
+        dispatch(updateFromValue(''))
 
         const successToastContent = (
           <div>
@@ -432,7 +430,7 @@ const StateManagedBridge = () => {
               {originChainName} to {toToken.symbol} on {destinationChainName}
             </div>
             <ExplorerToastLink
-              transactionHash={tx?.hash ?? AddressZero}
+              transactionHash={tx ?? zeroAddress}
               chainId={fromChainId}
             />
           </div>

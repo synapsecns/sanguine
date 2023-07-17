@@ -1,8 +1,7 @@
 import Link from 'next/link'
 import { getPoolUrl } from '@urls'
-import { switchNetwork } from '@wagmi/core'
 import { useEffect, useState } from 'react'
-import { getPoolData } from '@utils/actions/getPoolData'
+import { getSinglePoolData } from '@utils/actions/getPoolData'
 import { getPoolApyData } from '@utils/actions/getPoolApyData'
 import { Token } from '@types'
 import Card from '@tw/Card'
@@ -10,11 +9,12 @@ import Grid from '@tw/Grid'
 import { memo } from 'react'
 import { CHAINS_BY_ID } from '@constants/chains'
 import LoadingSpinner from '@tw/LoadingSpinner'
-import { AddressZero } from '@ethersproject/constants'
 import { useAccount } from 'wagmi'
 import { toast } from 'react-hot-toast'
+import { commify, formatBigIntToString } from '@/utils/bigint/format'
+import { stringToBigInt } from '@/utils/bigint/format'
 
-const PoolsListCard = memo(
+const PoolCard = memo(
   ({
     pool,
     chainId,
@@ -36,7 +36,7 @@ const PoolsListCard = memo(
     useEffect(() => {
       if (connectedChainId && chainId && pool) {
         // TODO - separate the apy and tvl so they load async.
-        getPoolData(chainId, pool, address ?? AddressZero, false, prices)
+        getSinglePoolData(chainId, pool, prices)
           .then((res) => {
             setPoolData(res)
           })
@@ -53,7 +53,6 @@ const PoolsListCard = memo(
       }
     }, [])
     const chain = CHAINS_BY_ID[chainId]
-    // const poolRouterIndex = POOL_INVERTED_ROUTER_INDEX[chainId][poolName]
 
     /*
   useEffect triggers: address, isDisconnected, popup
@@ -76,23 +75,8 @@ const PoolsListCard = memo(
               })
               return popup
             }
-            if (chainId != connectedChainId) {
-              const res = switchNetwork({ chainId: chainId })
-                .then((res) => {
-                  return res
-                })
-                .catch(() => {
-                  return undefined
-                })
-              if (res === undefined) {
-                console.log("can't switch chain, chainId: ", chainId)
-                return
-              }
-              // history.push(getPoolUrl({ poolRouterIndex }))
-            }
           }}
-          // href={getPoolUrl({ poolRouterIndex })}
-          href={getPoolUrl(pool)} // TODO: fix this
+          href={getPoolUrl(pool)}
         >
           <Card
             title={
@@ -126,8 +110,17 @@ const PoolsListCard = memo(
                   TVL
                 </h3>
                 <div className={'mt-2 text-white '}>
-                  {poolData?.totalLockedUSDStr ? (
-                    '$' + poolData?.totalLockedUSDStr
+                  {poolData?.totalLockedUSD ? (
+                    `$${commify(
+                      formatBigIntToString(
+                        stringToBigInt(
+                          `${poolData.totalLockedUSD}`,
+                          pool.decimals[chainId]
+                        ),
+                        18,
+                        -1
+                      )
+                    )}`
                   ) : (
                     <LoadingSpinner shift={true} />
                   )}
@@ -189,4 +182,4 @@ const CoinLabels = ({ coins }) => {
     </div>
   )
 }
-export default PoolsListCard
+export default PoolCard

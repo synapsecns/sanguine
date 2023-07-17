@@ -1,7 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
 import { useAccount, useNetwork } from 'wagmi'
-import { Zero } from '@ethersproject/constants'
 import { RootState } from '@/store/store'
 import { setFromChainId } from '@/slices/bridgeSlice'
 import { PortfolioTabManager } from './PortfolioTabManager'
@@ -86,7 +85,7 @@ function filterPortfolioBalancesWithBalances(
       [key, tokenWithBalances]
     ) => {
       const filtered = tokenWithBalances.filter(
-        (token: TokenWithBalanceAndAllowance) => token.balance > Zero
+        (token: TokenWithBalanceAndAllowance) => token.balance > 0n
       )
       if (filtered.length > 0) {
         filteredBalances[key] = filtered

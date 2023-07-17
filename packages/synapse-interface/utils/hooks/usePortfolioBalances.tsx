@@ -1,7 +1,6 @@
-import { useState, useEffect, useMemo } from 'react'
-import { BigNumber } from 'ethers'
+import { useState, useMemo } from 'react'
 import { useNetwork } from 'wagmi'
-import { multicall, erc20ABI, getAccount } from '@wagmi/core'
+import { multicall, erc20ABI, getAccount, Address } from '@wagmi/core'
 import { sortByTokenBalance } from '../sortTokens'
 import { Token } from '../types'
 import { BRIDGABLE_TOKENS } from '@/constants/tokens'
@@ -10,12 +9,12 @@ export const ROUTER_ADDRESS = '0x7E7A0e201FD38d3ADAA9523Da6C109a07118C96a'
 
 export interface TokenAndBalance {
   token: Token
-  balance: BigNumber
+  balance: bigint
   parsedBalance: string
 }
 export interface TokenAndAllowance {
   token: Token
-  allowance: BigNumber
+  allowance: bigint
 }
 
 export interface TokenWithBalanceAndAllowance
@@ -35,8 +34,8 @@ export const getTokensByChainId = async (
 }
 
 function mergeBalancesAndAllowances(
-  balances: { token: Token; balance: BigNumber; parsedBalance: string }[],
-  allowances: { token: Token; allowance: BigNumber }[]
+  balances: { token: Token; balance: bigint; parsedBalance: string }[],
+  allowances: { token: Token; allowance: bigint }[]
 ): TokenWithBalanceAndAllowance[] {
   return balances.map((balance) => {
     const correspondingAllowance = allowances.find(
@@ -126,9 +125,7 @@ const getTokensAllowance = async (
   chainId: number
 ): Promise<any> => {
   const inputs = tokens.map((token: Token) => {
-    const tokenAddress = token.addresses[
-      chainId as keyof Token['addresses']
-    ] as `0x${string}`
+    const tokenAddress = token.addresses[chainId] as Address
     return {
       address: tokenAddress,
       abi: erc20ABI,
@@ -137,15 +134,25 @@ const getTokensAllowance = async (
       args: [owner, spender],
     }
   })
-  const allowances: unknown[] = await multicall({
+  const allowancesResponse: {
+    error?: any
+    result?: any
+    status: 'success' | 'failure'
+  }[] = await multicall({
     contracts: inputs,
     chainId,
   })
 
   return tokens.map((token: Token, index: number) => {
+    let allowance
+    if (allowancesResponse[index].status === 'success') {
+      allowance = allowancesResponse[index].result
+    } else {
+      allowance = null
+    }
     return {
       token,
-      allowance: allowances[index],
+      allowance,
     }
   })
 }

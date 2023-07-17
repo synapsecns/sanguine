@@ -2,26 +2,25 @@ import _ from 'lodash'
 
 import toast from 'react-hot-toast'
 
-import {
-  getSwapDepositContractFields,
-  useSwapDepositContract,
-} from '@hooks/useSwapDepositContract'
-import { subtractSlippage } from '@utils/slippage'
+import { subtractSlippageBigInt } from '@utils/slippage'
+import { getSwapDepositContractFields } from '@/utils/getSwapDepositContractFields'
 
 import ExplorerToastLink from '@components/ExplorerToastLink'
 
-import { AddressZero } from '@ethersproject/constants'
 import { CHAINS_BY_ID } from '@/constants/chains'
 import { txErrorHandler } from '@utils/txErrorHandler'
 import { AVWETH, WETHE } from '@constants/tokens/master'
 import { WETH } from '@constants/tokens/swapMaster'
 import { approveToken } from '@utils/approveToken'
 import { Token } from '@types'
+import { zeroAddress } from 'viem'
+import { swapPoolCalculateTokenAmount } from '@/actions/swapPoolCalculateTokenAmount'
+import { swapPoolAddLiquidity } from '@/actions/swapPoolAddLiquidity'
 
 export const approve = async (
   pool: Token,
   depositQuote: any,
-  inputValue: any,
+  inputValue: Record<string, bigint>,
   chainId: number
 ) => {
   const currentChainName = CHAINS_BY_ID[chainId].name
@@ -39,10 +38,11 @@ export const approve = async (
   const handleApproval = async (token, tokenAddr) => {
     if (
       inputValue[tokenAddr] &&
-      (inputValue[tokenAddr].isZero() ||
-        inputValue[tokenAddr].lte(depositQuote.allowances[tokenAddr]))
-    )
+      (inputValue[tokenAddr] === 0n ||
+        inputValue[tokenAddr] <= depositQuote.allowances[tokenAddr])
+    ) {
       return
+    }
 
     if (token.symbol === WETH.symbol) return
 
@@ -65,7 +65,7 @@ export const approve = async (
       <div>
         <div>Successfully approved on {currentChainName}</div>
         <ExplorerToastLink
-          transactionHash={approveTx?.hash ?? AddressZero}
+          transactionHash={approveTx ?? zeroAddress}
           chainId={chainId}
         />
       </div>
@@ -81,7 +81,12 @@ export const approve = async (
 
   for (let token of pool.poolTokens) {
     try {
-      await handleApproval(token, token.addresses[chainId])
+      const value = inputValue[token.addresses[chainId]]
+      const hasNonZeroValue = !!value && value !== 0n
+
+      if (hasNonZeroValue) {
+        await handleApproval(token, token.addresses[chainId])
+      }
     } catch (error) {
       toast.dismiss(requestingApprovalPopup)
       txErrorHandler(error)
@@ -97,7 +102,6 @@ export const deposit = async (
   inputAmounts: any,
   chainId: number
 ) => {
-  const poolContract = await useSwapDepositContract(pool, chainId)
   let pendingPopup: any
   let successPopup: any
 
@@ -108,11 +112,17 @@ export const deposit = async (
 
   try {
     // get this from quote?
-    let minToMint = await poolContract.calculateTokenAmount(
-      Object.values(inputAmounts),
-      true
+    let minToMint: any = await swapPoolCalculateTokenAmount({
+      chainId,
+      pool,
+      inputAmounts,
+    })
+
+    minToMint = subtractSlippageBigInt(
+      minToMint,
+      slippageSelected,
+      slippageCustom
     )
-    minToMint = subtractSlippage(minToMint, slippageSelected, slippageCustom)
 
     const result = Array.from(Object.values(inputAmounts), (value) => value)
 
@@ -133,11 +143,11 @@ export const deposit = async (
       spendTransactionArgs.push({ value: liquidityAmounts[wethIndex] })
     }
 
-    const spendTransaction = await poolContract.addLiquidity(
-      ...spendTransactionArgs
-    )
-
-    const tx = await spendTransaction.wait()
+    const tx = await swapPoolAddLiquidity({
+      chainId,
+      pool,
+      spendTransactionArgs,
+    })
 
     toast.dismiss(pendingPopup)
 

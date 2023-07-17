@@ -2,14 +2,13 @@ import React, { useMemo, useCallback, useState } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
 import { RootState } from '@/store/store'
 import { useAccount } from 'wagmi'
-import { BigNumber } from 'ethers'
 import {
   setFromChainId,
   setFromToken,
   updateFromValue,
 } from '@/slices/bridgeSlice'
 import { Token } from '@/utils/types'
-import { formatBNToString } from '@/utils/bignumber/format'
+import { formatBigIntToString } from '@/utils/bigint/format'
 import { CHAINS_BY_ID } from '@/constants/chains'
 import { inputRef } from '../StateManagedBridge/InputContainer'
 import { approveToken } from '@/utils/approveToken'
@@ -20,8 +19,8 @@ import { ROUTER_ADDRESS } from '@/utils/hooks/usePortfolioBalances'
 
 type PortfolioTokenAssetProps = {
   token: Token
-  balance: BigNumber
-  allowance?: BigNumber
+  balance: bigint
+  allowance?: bigint
   portfolioChainId: number
   connectedChainId: number
   isApproved: boolean
@@ -57,18 +56,18 @@ export const PortfolioTokenAsset = ({
   const { icon, symbol, decimals, addresses } = token
 
   const parsedBalance: string = useMemo(() => {
-    const formattedBalance = formatBNToString(
+    const formattedBalance = formatBigIntToString(
       balance,
       decimals[portfolioChainId],
       3
     )
-    return balance.gt(0) && hasOnlyZeros(formattedBalance)
+    return balance > 0n && hasOnlyZeros(formattedBalance)
       ? '< 0.001'
       : formattedBalance
   }, [balance, portfolioChainId])
 
   const parsedAllowance: string =
-    allowance && formatBNToString(allowance, decimals[portfolioChainId], 3)
+    allowance && formatBigIntToString(allowance, decimals[portfolioChainId], 3)
 
   const currentChainName: string = CHAINS_BY_ID[portfolioChainId].name
 
@@ -81,14 +80,18 @@ export const PortfolioTokenAsset = ({
   }, [fromChainId, fromToken, token, portfolioChainId])
 
   const hasAllowanceButLessThanBalance: boolean =
-    allowance && balance.gt(allowance)
+    allowance && balance > allowance
 
   const isDisabled: boolean = false
 
   const handleTotalBalanceInputCallback = useCallback(() => {
     dispatch(setFromToken(token))
     dispatch(setFromChainId(portfolioChainId))
-    dispatch(updateFromValue(balance))
+    dispatch(
+      updateFromValue(
+        formatBigIntToString(balance, token.decimals[fromChainId])
+      )
+    )
   }, [isDisabled, token, balance])
 
   const handleSelectFromTokenCallback = useCallback(() => {

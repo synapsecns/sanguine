@@ -52,15 +52,15 @@ const BlockCountdown = memo(
           return
         }
         // get number of blocks since from event blocknumber
-        const blockDifference = newestBlockNumber - fromEvent.blockNumber
+        const blockDifference = newestBlockNumber - BigInt(fromEvent.blockNumber)
 
         // get number of blocks since event block number - required confirmations
         const blocksSinceConfirmed =
-          blockDifference - BRIDGE_REQUIRED_CONFIRMATIONS[fromEvent?.chainId]
+          blockDifference - BigInt(BRIDGE_REQUIRED_CONFIRMATIONS[fromEvent?.chainId])
 
         // if blocks since confirmed is less than 0, thats how many blocks left to confirm
         setConfirmationDelta(
-          blocksSinceConfirmed >= 0 ? 0 : blocksSinceConfirmed * -1
+          blocksSinceConfirmed >= 0 ? 0 : Number(blocksSinceConfirmed) * -1
         )
         if (blocksSinceConfirmed >= 0) {
           setCompletedConf(true)

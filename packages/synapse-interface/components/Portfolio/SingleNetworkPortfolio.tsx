@@ -1,6 +1,5 @@
 import React, { useState } from 'react'
 import Image from 'next/image'
-import { Zero } from '@ethersproject/constants'
 import { CHAINS_BY_ID } from '@/constants/chains'
 import { TokenWithBalanceAndAllowance } from '@/utils/hooks/usePortfolioBalances'
 import { Chain } from '@/utils/types'
@@ -222,7 +221,7 @@ function separateTokensByAllowance(
       // allowance is null for native gas tokens
       if (token.allowance === null) {
         tokensWithAllowance.push(token)
-      } else if (token.allowance.gt(Zero)) {
+      } else if (token.allowance > 0n) {
         tokensWithAllowance.push(token)
       } else {
         tokensWithoutAllowance.push(token)
