@@ -1,15 +1,13 @@
 import _ from 'lodash'
 import { configureStore } from '@reduxjs/toolkit'
+import { getAccount } from '@wagmi/core'
 
-import bridgeReducer, {
-  tokenDecimalMiddleware,
-} from '@/slices/bridgeSlice'
+import bridgeReducer, { tokenDecimalMiddleware } from '@/slices/bridgeSlice'
 import bridgeDisplayReducer from '@/slices/bridgeDisplaySlice'
 import poolDataReducer from '@/slices/poolDataSlice'
 import poolUserDataReducer from '@/slices/poolUserDataSlice'
 import poolDepositReducer from '@/slices/poolDepositSlice'
 import poolWithdrawReducer from '@/slices/poolWithdrawSlice'
-import { getAccount } from '@wagmi/core'
 import { segmentAnalyticsEvent } from '@/contexts/SegmentAnalyticsProvider'
 
 export const store = configureStore({
