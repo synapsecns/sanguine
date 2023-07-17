@@ -1,16 +1,21 @@
 export const formatBigIntToString = (
-  bn: bigint,
+  bi: bigint,
   nativePrecision: number,
   decimalPlaces?: number
 ) => {
+  // Check if input is zero
+  if (bi === 0n) {
+    return '0.0'
+  }
+
   // Check if the input is negative
-  const isNegative = bn < 0n
+  const isNegative = bi < 0n
   if (isNegative) {
     // Convert to positive for the calculation
-    bn = -bn
+    bi = -bi
   }
   // Convert to string and add padding zeros if necessary
-  let str = bn.toString().padStart(nativePrecision, '0')
+  let str = bi.toString().padStart(nativePrecision, '0')
 
   // Insert decimal point
   const idx = str.length - nativePrecision
