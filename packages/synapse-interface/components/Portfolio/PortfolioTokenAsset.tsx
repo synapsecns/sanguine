@@ -84,15 +84,15 @@ export const PortfolioTokenAsset = ({
 
   const isDisabled: boolean = false
 
-  const handleTotalBalanceInputCallback = useCallback(() => {
-    dispatch(setFromToken(token))
-    dispatch(setFromChainId(portfolioChainId))
-    dispatch(
-      updateFromValue(
+  const handleTotalBalanceInputCallback = useCallback(async () => {
+    await dispatch(setFromChainId(portfolioChainId))
+    await dispatch(setFromToken(token))
+    await dispatch(
+      await updateFromValue(
         formatBigIntToString(balance, token.decimals[fromChainId])
       )
     )
-  }, [isDisabled, token, balance])
+  }, [isDisabled, token, balance, fromChainId, portfolioChainId])
 
   const handleSelectFromTokenCallback = useCallback(() => {
     dispatch(setFromChainId(portfolioChainId))

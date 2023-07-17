@@ -134,26 +134,40 @@ export const tokenDecimalMiddleware =
       // calculate the decimal difference
       const decimalDifference = newDecimal - currentDecimal
 
-      if (decimalDifference !== 0) {
-        let newFromValue
+      // if (decimalDifference !== 0) {
+      //   let newFromValue
+      //   const fromValueMultipliedBy1e18: BigNumber = utils.parseUnits(
+      //     currentState.bridge.fromValue
+      //   )
 
-        if (decimalDifference > 0) {
-          // if newDecimal is greater, multiply fromValue by the decimal difference
-          newFromValue = BigNumber.from(currentState.bridge.fromValue).mul(
-            BigNumber.from(10).pow(decimalDifference)
-          )
-          newFromValue = BigInt(newFromValue.toString())
-        } else {
-          // if newDecimal is smaller, divide fromValue by the decimal difference
-          newFromValue = BigNumber.from(currentState.bridge.fromValue).div(
-            BigNumber.from(10).pow(Math.abs(decimalDifference))
-          )
-          newFromValue = BigInt(newFromValue.toString())
-        }
+      //   // let newFromValue =
+      //   //   BigInt(currentState.bridge.fromValue) *
+      //   //   BigInt(10) ** BigInt(decimalDifference)
+      //   // newFromValue = BigInt(newFromValue.toString())
 
-        // dispatch updateFromValue action to set the new fromValue
-        dispatch(updateFromValue(newFromValue))
-      }
+      //   if (decimalDifference > 0) {
+      //     // if newDecimal is greater, multiply fromValue by the decimal difference
+      //     // newFromValue = BigNumber.from(currentState.bridge.fromValue).mul(
+      //     //   BigNumber.from(10).pow(decimalDifference)
+      //     // )
+      //     newFromValue = fromValueMultipliedBy1e18.mul(
+      //       BigNumber.from(10).pow(decimalDifference)
+      //     )
+      //     newFromValue = BigInt(newFromValue.toString())
+      //   } else {
+      //     // if newDecimal is smaller, divide fromValue by the decimal difference
+      //     // newFromValue = BigNumber.from(currentState.bridge.fromValue).div(
+      //     //   BigNumber.from(10).pow(Math.abs(decimalDifference))
+      //     // )
+      //     newFromValue = fromValueMultipliedBy1e18.div(
+      //       BigNumber.from(10).pow(Math.abs(decimalDifference))
+      //     )
+      //     newFromValue = BigInt(newFromValue.toString())
+      //   }
+
+      //   // dispatch updateFromValue action to set the new fromValue
+      //   dispatch(updateFromValue(newFromValue))
+      // }
     }
 
     // call the next middleware in the line
