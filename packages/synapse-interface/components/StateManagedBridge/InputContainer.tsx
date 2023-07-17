@@ -69,19 +69,14 @@ export const InputContainer = () => {
   const handleFromValueChange = (
     event: React.ChangeEvent<HTMLInputElement>
   ) => {
-    const fromValueString: string = event.target.value
-    try {
-      dispatch(updateFromValue(fromValueString))
-      setShowValue(fromValueString)
-    } catch (error) {
-      console.error('Invalid value for conversion to BigInteger')
-      const inputValue = event.target.value
-      const regex = /^[0-9]*[.,]?[0-9]*$/
+    const inputValue: string = event.target.value
+    const regex = /^[0-9]*[.,]?[0-9]*$/
 
-      if (regex.test(inputValue) || inputValue === '') {
-        dispatch(updateFromValue(inputValue))
-        setShowValue(inputValue)
-      }
+    if (regex.test(inputValue) || inputValue === '') {
+      dispatch(updateFromValue(inputValue))
+      setShowValue(inputValue)
+    } else {
+      console.error('Invalid value for conversion to BigInteger')
     }
   }
 
