@@ -52,13 +52,6 @@ export const Portfolio = () => {
     })()
   }, [address, chain])
 
-  useEffect(() => {
-    const newTransactions: boolean = bridgeTxHashes.length > 0
-    ;(async () => {
-      if (newTransactions) await fetchPortfolioBalances()
-    })()
-  }, [bridgeTxHashes])
-
   return (
     <div
       data-test-id="portfolio"

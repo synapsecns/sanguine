@@ -81,6 +81,7 @@ export const usePortfolioBalancesAndAllowances = (): {
   const filteredChains = availableChains.filter((chain) => chain !== '2000') // need to figure out whats wrong with Dogechain
 
   const fetchPortfolioBalances = async () => {
+    console.log('getting called')
     const balanceRecord: NetworkTokenBalancesAndAllowances = {}
     try {
       const balancePromises = filteredChains.map(async (chainId) => {
