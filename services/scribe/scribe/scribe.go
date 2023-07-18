@@ -17,7 +17,7 @@ type Scribe struct {
 	// eventDB is the database to store event data in.
 	eventDB db.EventDB
 	// clients is a mapping of chain IDs -> clients.
-	clients map[uint32][]ScribeBackend
+	clients map[uint32][]backend.ScribeBackend
 	// chainIndexers are the indexers for the scribe.
 	chainIndexers map[uint32]*ChainIndexer
 	// config is the config for the scribe.
@@ -29,7 +29,7 @@ type Scribe struct {
 }
 
 // NewScribe creates a new scribe.
-func NewScribe(eventDB db.EventDB, clients map[uint32][]ScribeBackend, config config.Config, handler metrics.Handler) (*Scribe, error) {
+func NewScribe(eventDB db.EventDB, clients map[uint32][]backend.ScribeBackend, config config.Config, handler metrics.Handler) (*Scribe, error) {
 	chainIndexers := make(map[uint32]*ChainIndexer)
 	for i := range config.Chains {
 		chainConfig := config.Chains[i]
@@ -77,13 +77,3 @@ func (s Scribe) Start(ctx context.Context) error {
 
 	return nil
 }
-
-// Exports for other packages
-
-// DialBackend returns a scribe backend.
-func DialBackend(ctx context.Context, url string, handler metrics.Handler) (backend.ScribeBackend, error) {
-	//nolint:wrapcheck
-	return backend.DialBackend(ctx, url, handler)
-}
-
-type ScribeBackend = backend.ScribeBackend
