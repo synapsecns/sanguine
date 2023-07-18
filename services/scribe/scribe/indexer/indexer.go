@@ -221,7 +221,7 @@ func (x *Indexer) Index(parentCtx context.Context, startHeight uint64, endHeight
 				}
 
 			case errFromChan := <-errChan:
-				logger.ReportIndexerError(err, x.indexerConfig, logger.GetLogsError)
+				logger.ReportIndexerError(fmt.Errorf("errChan returned an err %s", errFromChan), x.indexerConfig, logger.GetLogsError)
 				return fmt.Errorf("errChan returned an err %s", errFromChan)
 			}
 		}

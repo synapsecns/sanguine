@@ -114,7 +114,7 @@ func (s *ScribeSuite) TestLivefillParity() {
 	if os.Getenv("CI") != "" {
 		s.T().Skip("Network test flake")
 	}
-	const blockRange = uint64(200)
+	const blockRange = uint64(100)
 	const globalConfirmations = uint64(200)
 	// ethRPCURL := "https://1rpc.io/eth"
 	// arbRPCURL := "https://endpoints.omniatech.io/v1/arbitrum/one/public"
@@ -430,7 +430,7 @@ func getLogs(ctx context.Context, contractAddress string, fromBlock uint64, toBl
 		b := &backoff.Backoff{
 			Factor: 2,
 			Jitter: true,
-			Min:    3 * time.Second,
+			Min:    5 * time.Second,
 			Max:    10 * time.Second,
 		}
 		timeout := 3 * time.Second

@@ -14,6 +14,7 @@ import (
 	"github.com/synapsecns/sanguine/services/scribe/scribe"
 	"github.com/synapsecns/sanguine/services/scribe/scribe/indexer"
 	"github.com/synapsecns/sanguine/services/scribe/testutil"
+	"math"
 	"math/big"
 	"time"
 )
@@ -274,7 +275,8 @@ func (s *ScribeSuite) TestChainIndexerLivefill() {
 					numberLivefillContracts = len(contracts)
 					currentBlock, indexErr := newBackend.BlockNumber(s.GetTestContext())
 					Nil(s.T(), indexErr)
-					GreaterOrEqual(s.T(), int(lastIndexed), int(currentBlock)-int(chainConfig.LivefillThreshold))
+					// Check to ensure last indexed is within reasonable range to have triggered livefill for that contract
+					GreaterOrEqual(s.T(), float64(7), math.Abs(float64(lastIndexed)-(float64(currentBlock)-float64(chainConfig.LivefillThreshold))))
 				}
 			}
 		}

@@ -12,7 +12,6 @@ import (
 	"github.com/synapsecns/sanguine/ethergo/contracts"
 	"github.com/synapsecns/sanguine/services/omnirpc/testhelper"
 	scribeAPI "github.com/synapsecns/sanguine/services/scribe/api"
-	"github.com/synapsecns/sanguine/services/scribe/backend"
 	"github.com/synapsecns/sanguine/services/scribe/client"
 	"github.com/synapsecns/sanguine/services/scribe/config"
 	"github.com/synapsecns/sanguine/services/scribe/metadata"
@@ -39,7 +38,7 @@ func NewTestScribe(ctx context.Context, tb testing.TB, deployedContracts map[uin
 	eventDB, err := scribeAPI.InitDB(ctx, "sqlite", dbPath, metricsProvider, false)
 	assert.Nil(tb, err)
 
-	scribeClients := make(map[uint32][]backend.ScribeBackend)
+	scribeClients := make(map[uint32][]scribe.ScribeBackend)
 
 	var chainConfigs []config.ChainConfig
 
@@ -48,11 +47,11 @@ func NewTestScribe(ctx context.Context, tb testing.TB, deployedContracts map[uin
 		chainID := uint32(backends[i].GetChainID())
 
 		// create the scribe backend client
-		backendClient, err := backend.DialBackend(ctx, testhelper.GetURL(omnirpcURL, backends[i]), metricsProvider)
+		backendClient, err := scribe.DialBackend(ctx, testhelper.GetURL(omnirpcURL, backends[i]), metricsProvider)
 		assert.Nil(tb, err)
 
 		// creat ethe scribe client for this chain
-		scribeClients[chainID] = []backend.ScribeBackend{backendClient}
+		scribeClients[chainID] = []scribe.ScribeBackend{backendClient}
 
 		// loop through all deployed contracts for this chainid adding them to our config
 		contractConfigs := getContractConfig(deployedContracts[chainID])

@@ -2,7 +2,6 @@ package agentsintegration_test
 
 import (
 	signerConfig "github.com/synapsecns/sanguine/ethergo/signer/config"
-	"github.com/synapsecns/sanguine/services/scribe/backend"
 	"github.com/synapsecns/sanguine/services/scribe/scribe"
 	"math/big"
 	"os"
@@ -39,11 +38,11 @@ func (u *AgentsIntegrationSuite) TestAgentsE2E() {
 		testDone = true
 	}()
 
-	originClient, err := backend.DialBackend(u.GetTestContext(), u.TestBackendOrigin.RPCAddress(), u.ScribeMetrics)
+	originClient, err := scribe.DialBackend(u.GetTestContext(), u.TestBackendOrigin.RPCAddress(), u.ScribeMetrics)
 	u.Nil(err)
-	destinationClient, err := backend.DialBackend(u.GetTestContext(), u.TestBackendDestination.RPCAddress(), u.ScribeMetrics)
+	destinationClient, err := scribe.DialBackend(u.GetTestContext(), u.TestBackendDestination.RPCAddress(), u.ScribeMetrics)
 	u.Nil(err)
-	summitClient, err := backend.DialBackend(u.GetTestContext(), u.TestBackendSummit.RPCAddress(), u.ScribeMetrics)
+	summitClient, err := scribe.DialBackend(u.GetTestContext(), u.TestBackendSummit.RPCAddress(), u.ScribeMetrics)
 	u.Nil(err)
 
 	originConfig := scribeConfig.ContractConfig{
@@ -86,7 +85,7 @@ func (u *AgentsIntegrationSuite) TestAgentsE2E() {
 	scribeConfig := scribeConfig.Config{
 		Chains: []scribeConfig.ChainConfig{originChainConfig, destinationChainConfig, summitChainConfig},
 	}
-	clients := map[uint32][]backend.ScribeBackend{
+	clients := map[uint32][]scribe.ScribeBackend{
 		uint32(u.TestBackendOrigin.GetChainID()):      {originClient, originClient},
 		uint32(u.TestBackendDestination.GetChainID()): {destinationClient, destinationClient},
 		uint32(u.TestBackendSummit.GetChainID()):      {summitClient, summitClient},

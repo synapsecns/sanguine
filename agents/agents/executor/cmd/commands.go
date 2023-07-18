@@ -15,7 +15,6 @@ import (
 	"github.com/synapsecns/sanguine/core/metrics"
 	omnirpcClient "github.com/synapsecns/sanguine/services/omnirpc/client"
 	scribeAPI "github.com/synapsecns/sanguine/services/scribe/api"
-	"github.com/synapsecns/sanguine/services/scribe/backend"
 	"github.com/synapsecns/sanguine/services/scribe/client"
 	scribeCmd "github.com/synapsecns/sanguine/services/scribe/cmd"
 	"github.com/synapsecns/sanguine/services/scribe/scribe"
@@ -143,11 +142,11 @@ var ExecutorRunCommand = &cli.Command{
 				return fmt.Errorf("failed to initialize database: %w", err)
 			}
 
-			scribeClients := make(map[uint32][]backend.ScribeBackend)
+			scribeClients := make(map[uint32][]scribe.ScribeBackend)
 
 			for _, client := range executorConfig.ScribeConfig.EmbeddedScribeConfig.Chains {
 				for confNum := 1; confNum <= scribeCmd.MaxConfirmations; confNum++ {
-					backendClient, err := backend.DialBackend(ctx, fmt.Sprintf("%s/%d/rpc/%d", executorConfig.BaseOmnirpcURL, confNum, client.ChainID), handler)
+					backendClient, err := scribe.DialBackend(ctx, fmt.Sprintf("%s/%d/rpc/%d", executorConfig.BaseOmnirpcURL, confNum, client.ChainID), handler)
 					if err != nil {
 						return fmt.Errorf("could not start client for %s", fmt.Sprintf("%s/1/rpc/%d", executorConfig.BaseOmnirpcURL, client.ChainID))
 					}

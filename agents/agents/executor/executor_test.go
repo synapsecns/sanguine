@@ -1,7 +1,6 @@
 package executor_test
 
 import (
-	"github.com/synapsecns/sanguine/services/scribe/backend"
 	"github.com/synapsecns/sanguine/services/scribe/scribe"
 	"math/big"
 	"time"
@@ -144,9 +143,9 @@ func (e *ExecutorSuite) TestMerkleInsert() {
 	scribeConfig := config.Config{
 		Chains: []config.ChainConfig{chainConfig},
 	}
-	simulatedClient, err := backend.DialBackend(e.GetTestContext(), e.TestBackendOrigin.RPCAddress(), e.ScribeMetrics)
+	simulatedClient, err := scribe.DialBackend(e.GetTestContext(), e.TestBackendOrigin.RPCAddress(), e.ScribeMetrics)
 	e.Nil(err)
-	clients := map[uint32][]backend.ScribeBackend{
+	clients := map[uint32][]scribe.ScribeBackend{
 		chainID: {simulatedClient, simulatedClient},
 	}
 
@@ -480,11 +479,11 @@ func (e *ExecutorSuite) TestExecutor() {
 
 	testContractDest, _ := e.TestDeployManager.GetAgentsTestContract(e.GetTestContext(), e.TestBackendDestination)
 
-	originClient, err := backend.DialBackend(e.GetTestContext(), e.TestBackendOrigin.RPCAddress(), e.ScribeMetrics)
+	originClient, err := scribe.DialBackend(e.GetTestContext(), e.TestBackendOrigin.RPCAddress(), e.ScribeMetrics)
 	e.Nil(err)
-	destinationClient, err := backend.DialBackend(e.GetTestContext(), e.TestBackendDestination.RPCAddress(), e.ScribeMetrics)
+	destinationClient, err := scribe.DialBackend(e.GetTestContext(), e.TestBackendDestination.RPCAddress(), e.ScribeMetrics)
 	e.Nil(err)
-	summitClient, err := backend.DialBackend(e.GetTestContext(), e.TestBackendSummit.RPCAddress(), e.ScribeMetrics)
+	summitClient, err := scribe.DialBackend(e.GetTestContext(), e.TestBackendSummit.RPCAddress(), e.ScribeMetrics)
 	e.Nil(err)
 
 	originConfig := config.ContractConfig{
@@ -528,7 +527,7 @@ func (e *ExecutorSuite) TestExecutor() {
 	scribeConfig := config.Config{
 		Chains: []config.ChainConfig{originChainConfig, destinationChainConfig, summitChainConfig},
 	}
-	clients := map[uint32][]backend.ScribeBackend{
+	clients := map[uint32][]scribe.ScribeBackend{
 		chainID:     {originClient, originClient},
 		destination: {destinationClient, destinationClient},
 		summit:      {summitClient, summitClient},
