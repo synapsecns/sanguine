@@ -42,7 +42,6 @@ require (
 	github.com/richardwilkes/toolbox v1.74.0
 	github.com/soheilhy/cmux v0.1.5
 	github.com/stretchr/testify v1.8.3
-	github.com/synapsecns/sanguine/agents v0.0.201
 	github.com/synapsecns/sanguine/core v0.0.0-00010101000000-000000000000
 	github.com/synapsecns/sanguine/ethergo v0.0.2
 	github.com/synapsecns/sanguine/services/omnirpc v0.0.0-00010101000000-000000000000
