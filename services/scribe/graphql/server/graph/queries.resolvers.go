@@ -176,7 +176,7 @@ func (r *queryResolver) TxSender(ctx context.Context, txHash string, chainID int
 
 // LastIndexed is the resolver for the lastIndexed field.
 func (r *queryResolver) LastIndexed(ctx context.Context, contractAddress string, chainID int) (*int, error) {
-	blockNumber, err := r.DB.RetrieveLastIndexed(ctx, common.HexToAddress(contractAddress), uint32(chainID))
+	blockNumber, err := r.DB.RetrieveLastIndexed(ctx, common.HexToAddress(contractAddress), uint32(chainID), false)
 	if err != nil {
 		return nil, fmt.Errorf("error retrieving contract last block: %w", err)
 	}

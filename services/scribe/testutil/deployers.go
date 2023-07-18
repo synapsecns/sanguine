@@ -2,7 +2,6 @@ package testutil
 
 import (
 	"context"
-
 	"github.com/synapsecns/sanguine/ethergo/contracts"
 
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"

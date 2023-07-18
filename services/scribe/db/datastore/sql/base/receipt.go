@@ -5,9 +5,8 @@ import (
 	"errors"
 	"fmt"
 	"github.com/synapsecns/sanguine/core/dbcommon"
-	"math/big"
-
 	"github.com/synapsecns/sanguine/services/scribe/db"
+	"math/big"
 
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/core/types"

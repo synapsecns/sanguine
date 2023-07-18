@@ -5,15 +5,14 @@ import (
 	"errors"
 	"fmt"
 	"github.com/ethereum/go-ethereum/common"
-	"github.com/synapsecns/sanguine/core/dbcommon"
-	"gorm.io/gorm/clause"
-
 	"github.com/ethereum/go-ethereum/core/types"
+	"github.com/synapsecns/sanguine/core/dbcommon"
 	"github.com/synapsecns/sanguine/services/scribe/db"
 	"gorm.io/gorm"
+	"gorm.io/gorm/clause"
 )
 
-// StoreEthTx stores a processed text.
+// StoreEthTx stores a processed tx.
 func (s Store) StoreEthTx(ctx context.Context, tx *types.Transaction, chainID uint32, blockHash common.Hash, blockNumber uint64, transactionIndex uint64) error {
 	marshalledTx, err := tx.MarshalBinary()
 	if err != nil {
