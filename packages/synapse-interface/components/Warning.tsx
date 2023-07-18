@@ -21,6 +21,10 @@ export const Warning = ({
   originToken,
   destinationToken,
 }: WarningProps) => {
+  if (!originToken || !destinationToken) {
+    return null
+  }
+
   const { symbol: originTokenSymbol } = originToken
   const { symbol: destinationTokenSymbol } = destinationToken
 

@@ -77,6 +77,7 @@ export const SingleNetworkPortfolio = ({
           sortedTokensWithAllowance.map(
             ({ token, balance, allowance }: TokenWithBalanceAndAllowance) => (
               <PortfolioTokenAsset
+                key={token.symbol}
                 token={token}
                 balance={balance}
                 allowance={allowance}
@@ -92,6 +93,7 @@ export const SingleNetworkPortfolio = ({
           sortedTokensWithoutAllowance.map(
             ({ token, balance }: TokenWithBalanceAndAllowance) => (
               <PortfolioTokenAsset
+                key={token.symbol}
                 token={token}
                 balance={balance}
                 portfolioChainId={portfolioChainId}

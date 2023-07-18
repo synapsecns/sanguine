@@ -8,8 +8,9 @@ import { setShowFromTokenSlideOver } from '@/slices/bridgeDisplaySlice'
 import SelectTokenDropdown from '@/components/input/TokenAmountInput/SelectTokenDropdown'
 import MiniMaxButton from '../buttons/MiniMaxButton'
 import { formatBigIntToString, stringToBigInt } from '@/utils/bigint/format'
-import { OriginChainLabel } from './OriginChainLabel'
 import { cleanNumberInput } from '@/utils/cleanNumberInput'
+import FromChainSelect from './FromChainSelect'
+import FromTokenSelect from './FromTokenSelect'
 
 export const inputRef = React.createRef<HTMLInputElement>()
 
@@ -54,11 +55,16 @@ export const InputContainer = () => {
     0n
 
   const formattedBalance = hasBalances
-    ? formatBigIntToString(fromTokenBalance, fromToken.decimals[fromChainId], 4)
+    ? formatBigIntToString(
+        fromTokenBalance,
+        fromToken?.decimals[fromChainId],
+        4
+      )
     : '0'
 
   useEffect(() => {
     if (
+      fromToken &&
       fromToken.decimals[fromChainId] &&
       stringToBigInt(fromValue, fromToken.decimals[fromChainId]) !== 0n &&
       stringToBigInt(fromValue, fromToken.decimals[fromChainId]) ===
@@ -103,35 +109,22 @@ export const InputContainer = () => {
     <div
       data-test-id="input-container"
       className={`
-        text-left px-2 sm:px-4 pt-2 pb-4 rounded-xl
+        text-left px-2 sm:px-4 pt-4 pb-1 rounded-xl
         bg-bgLight
       `}
     >
-      <div>
-        <div className="pt-1 pb-3">
-          <OriginChainLabel
-            chainId={fromChainId}
-            chains={fromChainIds}
-            connectedChainId={fromChainId}
-          />
-        </div>
-      </div>
-      <div className="flex h-16 mb-4 space-x-2">
+      <FromChainSelect />
+      <div className="flex h-16 mb-2 space-x-2">
         <div
           className={`
             flex flex-grow items-center
             pl-3 sm:pl-4
-            w-full h-20
+            w-full h-16
             rounded-xl
             border border-white border-opacity-20
           `}
         >
-          <SelectTokenDropdown
-            chainId={fromChainId}
-            selectedToken={fromToken}
-            isOrigin={true}
-            onClick={() => dispatch(setShowFromTokenSlideOver(true))}
-          />
+          <FromTokenSelect />
           <div className="flex flex-col pt-2 ml-4">
             <input
               ref={inputRef}
