@@ -163,10 +163,10 @@ const StakeCard = ({ address, chainId, pool }: StakeCardProps) => {
           }
         >
           {isPending ? (
-            <>
+            <div className="flex items-center justify-center space-x-5">
               <ButtonLoadingSpinner className="mr-2" />
               <span className="animate-pulse">Claiming SYN</span>{' '}
-            </>
+            </div>
           ) : (
             <>Claim SYN</>
           )}
