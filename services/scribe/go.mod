@@ -184,7 +184,6 @@ require (
 	github.com/huin/goupnp v1.0.3 // indirect
 	github.com/iancoleman/orderedmap v0.0.0-20190318233801-ac98e3ecb4b0 // indirect
 	github.com/imdario/mergo v0.3.13 // indirect
-	github.com/imkira/go-interpol v1.1.0 // indirect
 	github.com/inconshreveable/mousetrap v1.1.0 // indirect
 	github.com/influxdata/influxdb v1.8.3 // indirect
 	github.com/influxdata/influxdb-client-go/v2 v2.5.1 // indirect
@@ -205,8 +204,6 @@ require (
 	github.com/klauspost/cpuid/v2 v2.2.4 // indirect
 	github.com/kyokomi/emoji/v2 v2.2.8 // indirect
 	github.com/leodido/go-urn v1.2.4 // indirect
-	github.com/libs4go/crypto v0.0.1 // indirect
-	github.com/libs4go/errors v0.0.3 // indirect
 	github.com/logrusorgru/aurora v2.0.3+incompatible // indirect
 	github.com/lucasb-eyer/go-colorful v1.0.3 // indirect
 	github.com/lunixbochs/vtclean v1.0.0 // indirect
