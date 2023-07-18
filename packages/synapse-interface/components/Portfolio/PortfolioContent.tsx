@@ -6,7 +6,7 @@ import {
 } from '@/utils/hooks/usePortfolioBalances'
 import {
   SingleNetworkPortfolio,
-  PortfolioAssetHeader,
+  PortfolioHeader,
 } from './SingleNetworkPortfolio'
 import { ConnectWalletButton } from './ConnectWalletButton'
 
@@ -79,7 +79,7 @@ export const PortfolioContent = ({
         )
       ) : (
         <React.Fragment>
-          <PortfolioAssetHeader />
+          <PortfolioHeader />
           <UnconnectedPortfolioContent />
         </React.Fragment>
       )}
@@ -114,7 +114,7 @@ const LoadingPortfolioContent = () => {
         data-test-id="loading-portfolio-content"
         className={`
         text-[#CCCAD3BF] mt-6 mb-4 pb-6 pl-2
-          border-b border-solid border-[#28282F]
+          border-b border-solid border-[#3D3D5C]
         `}
       >
         Loading portfolio balances...
@@ -131,7 +131,7 @@ const UnconnectedPortfolioContent = () => {
         data-test-id="unconnected-portfolio-content"
         className={`
         text-[#CCCAD3BF] mt-6 mb-4 pb-6 pl-2
-          border-b border-solid border-[#28282F]
+          border-b border-solid border-[#3D3D5C]
         `}
       >
         Your bridgable assets appear here when your wallet is connected.
@@ -160,7 +160,7 @@ export const HomeContent = () => {
   return (
     <div
       data-test-id="portfolio-home-content"
-      className="border-t border-solid border-[#28282F] text-white pl-2"
+      className="border-t border-solid border-[#3D3D5C] text-white pl-2"
     >
       <p className="my-3">
         Synapse is the most widely used, extensible, and secure cross-chain

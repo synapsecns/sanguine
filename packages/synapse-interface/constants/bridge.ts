@@ -1,29 +1,28 @@
 import { USDC } from '@constants/tokens/master'
-import { Zero } from '@ethersproject/constants'
 import { COIN_SLIDE_OVER_PROPS } from '@styles/transitions'
 import * as CHAINS from '@constants/chains/master'
 
 export const QUOTE_POLLING_INTERVAL = 10000
 
 export const EMPTY_BRIDGE_QUOTE = {
-  outputAmount: Zero,
+  outputAmount: 0n,
   outputAmountString: '',
   routerAddress: '',
-  allowance: Zero,
-  exchangeRate: Zero,
-  feeAmount: Zero,
-  delta: Zero,
+  allowance: 0n,
+  exchangeRate: 0n,
+  feeAmount: 0n,
+  delta: 0n,
   quotes: { originQuery: null, destQuery: null },
 }
 
 export const EMPTY_BRIDGE_QUOTE_ZERO = {
-  outputAmount: Zero,
+  outputAmount: 0n,
   outputAmountString: '0',
   routerAddress: '',
-  allowance: Zero,
-  exchangeRate: Zero,
-  feeAmount: Zero,
-  delta: Zero,
+  allowance: 0n,
+  exchangeRate: 0n,
+  feeAmount: 0n,
+  delta: 0n,
   quotes: { originQuery: null, destQuery: null },
 }
 /**

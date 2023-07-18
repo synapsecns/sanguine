@@ -53,6 +53,7 @@ const SettingsSlideOver = () => {
           <DeadlineInput deadlineMinutes={deadlineMinutes} /> */}
         </div>
         <div className="text-sm font-light text-white">Options</div>
+        {/* @ts-ignore */}
         <Switch.Group>
           <div className="flex items-center justify-between w-full">
             <Switch.Label className="flex items-center mr-4 text-white">

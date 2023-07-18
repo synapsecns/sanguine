@@ -8,12 +8,13 @@ import StandardPageContainer from '@layouts/StandardPageContainer'
 import Grid from '@tw/Grid'
 import SwapCard from './SwapCard'
 import NoSwapCard from './NoSwapCard'
+import { Address } from 'wagmi'
 
 const SwapPage = () => {
   const { address: currentAddress } = useAccount()
   const { chain } = useNetwork()
   const [connectedChainId, setConnectedChainId] = useState<number>(0)
-  const [address, setAddress] = useState<`0x${string}` | undefined>(undefined)
+  const [address, setAddress] = useState<Address | undefined>(undefined)
 
   useEffect(() => {
     setConnectedChainId(chain?.id ?? DEFAULT_FROM_CHAIN)

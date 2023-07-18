@@ -1,5 +1,5 @@
 import { fetchBlockNumber } from '@wagmi/core'
-import { useSigner } from 'wagmi'
+import { useWalletClient, useAccount } from 'wagmi'
 import SYNAPSE_BRIDGE_ABI from '@abis/synapseBridge.json'
 import { Contract, Signer } from 'ethers'
 import { BRIDGE_CONTRACTS, SYNAPSE_CCTP_CONTRACTS } from '@constants/bridge'
@@ -14,6 +14,8 @@ import { GETLOGS_SIZE, GETLOGS_REQUEST_COUNT } from '@constants/bridgeWatcher'
 import { useSynapseContext } from '@/utils/providers/SynapseProvider'
 import { useSelector } from 'react-redux'
 import { RootState } from '@/store/store'
+import { Address } from "viem"
+import { walletClientToSigner } from "@/ethers"
 import SYNAPSE_CCTP_ABI from '@abis/synapseCCTP.json'
 import * as CHAINS from '@constants/chains/master'
 
@@ -41,8 +43,8 @@ const BridgeWatcher = ({
   const [fromSynapseContract, setFromSynapseContract] = useState<Contract>()
   const [fromCCTPContract, setFromCCTPContract] = useState<Contract>()
 
-  const [fromSigner, setFromSigner] = useState<Signer>()
-  const { data: fromSignerRaw } = useSigner({ chainId: fromChainId })
+  const [fromSigner, setFromSigner] = useState<string>()
+  const { address: fromSignerRaw, isConnecting, isDisconnected } = useAccount()
   const { providerMap } = useSynapseContext()
 
   const createContractsAndInterfaces = (chainId, provider) => {
@@ -55,7 +57,7 @@ const BridgeWatcher = ({
     const bridgeContract = new Contract(
       validBridgeContract,
       SYNAPSE_BRIDGE_ABI,
-      fromSigner
+      provider
     )
 
     const bridgeInterface = new Interface(SYNAPSE_BRIDGE_ABI)
@@ -230,7 +232,7 @@ const BridgeWatcher = ({
     } = createContractsAndInterfaces(provider.network.chainId, provider)
 
     const fromEvents = await fetchFromBridgeEvents(
-      currentFromBlock,
+      Number(currentFromBlock),
       provider,
       adjustedAddress
     )
@@ -265,7 +267,7 @@ const BridgeWatcher = ({
       const fromSynapseContract = new Contract(
         validBridgeContract,
         SYNAPSE_BRIDGE_ABI,
-        fromSigner
+        providerMap[fromChainId]
       )
       setFromSynapseContract(fromSynapseContract)
     }
@@ -282,6 +284,7 @@ const BridgeWatcher = ({
   }, [fromSynapseContract, bridgeTxHashes])
 
   useEffect(() => {
+    console.log(fromSignerRaw)
     setFromSigner(fromSignerRaw)
   }, [fromSignerRaw])
 
