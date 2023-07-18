@@ -340,7 +340,7 @@ const StateManagedBridge = () => {
         toast.dismiss(quoteToast)
         const message = `Route found for bridging ${fromValue} ${fromToken.symbol} on ${CHAINS_BY_ID[fromChainId]?.name} to ${toToken.symbol} on ${CHAINS_BY_ID[toChainId]?.name}`
         console.log(message)
-        quoteToast = toast(message, { duration: 2000 })
+        quoteToast = toast(message, { duration: 3000 })
       }
     } catch (err) {
       console.log(err)
@@ -348,7 +348,7 @@ const StateManagedBridge = () => {
         toast.dismiss(quoteToast)
         const message = `No route found for bridging ${fromValue} ${fromToken.symbol} on ${CHAINS_BY_ID[fromChainId]?.name} to ${toToken.symbol} on ${CHAINS_BY_ID[toChainId]?.name}`
         console.log(message)
-        quoteToast = toast(message, { duration: 2000 })
+        quoteToast = toast(message, { duration: 3000 })
 
         dispatch(setBridgeQuote(EMPTY_BRIDGE_QUOTE_ZERO))
         return
