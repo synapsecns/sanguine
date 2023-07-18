@@ -422,12 +422,18 @@ const StateManagedBridge = () => {
         bridgeQuote.quotes.originQuery,
         bridgeQuote.quotes.destQuery
       )
+
       const payload =
         fromToken.addresses[fromChainId as keyof Token['addresses']] ===
           zeroAddress ||
         fromToken.addresses[fromChainId as keyof Token['addresses']] === ''
-          ? { data: data.data, to: data.to, value: fromValue }
+          ? {
+              data: data.data,
+              to: data.to,
+              value: stringToBigInt(fromValue, fromToken.decimals[fromChainId]),
+            }
           : data
+
       const tx = await wallet.sendTransaction(payload)
 
       const originChainName = CHAINS_BY_ID[fromChainId]?.name
