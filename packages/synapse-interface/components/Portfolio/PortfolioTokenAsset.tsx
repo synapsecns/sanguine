@@ -89,11 +89,11 @@ export const PortfolioTokenAsset = ({
     await dispatch(setFromToken(token))
     await dispatch(
       await updateFromValue(
-        formatBigIntToString(balance, token.decimals[fromChainId])
+        formatBigIntToString(balance, token.decimals[portfolioChainId])
       )
     )
     scrollToTop()
-  }, [isDisabled, token, balance, fromChainId, portfolioChainId])
+  }, [isDisabled, token, balance, portfolioChainId])
 
   const handleSelectFromTokenCallback = useCallback(() => {
     dispatch(setFromChainId(portfolioChainId))
