@@ -17,34 +17,34 @@ func (t *DBSuite) TestStoreRetrieveLastIndexed() {
 		lastIndexed := gofakeit.Uint64()
 
 		// Before storing, ensure that the last indexed block is 0.
-		retrievedLastIndexed, err := testDB.RetrieveLastIndexed(t.GetTestContext(), addressA, chainID)
+		retrievedLastIndexed, err := testDB.RetrieveLastIndexed(t.GetTestContext(), addressA, chainID, false)
 		Nil(t.T(), err)
 		Equal(t.T(), retrievedLastIndexed, uint64(0))
 
 		// Store a new contract address and last indexed.
-		err = testDB.StoreLastIndexed(t.GetTestContext(), addressA, chainID, lastIndexed)
+		err = testDB.StoreLastIndexed(t.GetTestContext(), addressA, chainID, lastIndexed, false)
 		Nil(t.T(), err)
 
 		// Ensure the last indexed for the contract address matches the one stored.
-		retrievedLastIndexed, err = testDB.RetrieveLastIndexed(t.GetTestContext(), addressA, chainID)
+		retrievedLastIndexed, err = testDB.RetrieveLastIndexed(t.GetTestContext(), addressA, chainID, false)
 		Nil(t.T(), err)
 		Equal(t.T(), retrievedLastIndexed, lastIndexed)
 
 		// Update addressA's last indexed to a new value.
-		err = testDB.StoreLastIndexed(t.GetTestContext(), addressA, chainID, lastIndexed+1)
+		err = testDB.StoreLastIndexed(t.GetTestContext(), addressA, chainID, lastIndexed+1, false)
 		Nil(t.T(), err)
 
 		// Ensure the last indexed for the contract address matches the one stored.
-		retrievedLastIndexed, err = testDB.RetrieveLastIndexed(t.GetTestContext(), addressA, chainID)
+		retrievedLastIndexed, err = testDB.RetrieveLastIndexed(t.GetTestContext(), addressA, chainID, false)
 		Nil(t.T(), err)
 		Equal(t.T(), retrievedLastIndexed, lastIndexed+1)
 
 		// Store a second contract address and last indexed.
-		err = testDB.StoreLastIndexed(t.GetTestContext(), addressB, chainID+1, lastIndexed)
+		err = testDB.StoreLastIndexed(t.GetTestContext(), addressB, chainID+1, lastIndexed, false)
 		Nil(t.T(), err)
 
 		// Ensure the last indexed for the contract address matches the one stored.
-		retrievedLastIndexed, err = testDB.RetrieveLastIndexed(t.GetTestContext(), addressB, chainID+1)
+		retrievedLastIndexed, err = testDB.RetrieveLastIndexed(t.GetTestContext(), addressB, chainID+1, false)
 		Nil(t.T(), err)
 		Equal(t.T(), retrievedLastIndexed, lastIndexed)
 	})
@@ -58,7 +58,7 @@ func (t *DBSuite) TestStoreRetrieveLastIndexedMultiple() {
 		lastIndexed := gofakeit.Uint64()
 
 		// Before storing, ensure that the last indexed block is 0.
-		retrievedLastIndexed, err := testDB.RetrieveLastIndexed(t.GetTestContext(), addressA, chainID)
+		retrievedLastIndexed, err := testDB.RetrieveLastIndexed(t.GetTestContext(), addressA, chainID, false)
 		Nil(t.T(), err)
 		Equal(t.T(), uint64(0), retrievedLastIndexed)
 

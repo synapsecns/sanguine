@@ -12,10 +12,12 @@ import (
 	"gorm.io/gorm/clause"
 )
 
+const lastIndexedLivefillKey = "LIVEFILL_LAST_INDEXED"
+
 // StoreLastIndexed stores the last indexed block number for a contract.
 // It updates the value if there is a previous last indexed value, and creates a new
 // entry if there is no previous value.
-func (s Store) StoreLastIndexed(parentCtx context.Context, contractAddress common.Address, chainID uint32, blockNumber uint64) (err error) {
+func (s Store) StoreLastIndexed(parentCtx context.Context, contractAddress common.Address, chainID uint32, blockNumber uint64, livefill bool) (err error) {
 	ctx, span := s.metrics.Tracer().Start(parentCtx, "StoreLastIndexed", trace.WithAttributes(
 		attribute.String("contractAddress", contractAddress.String()),
 		attribute.Int("chainID", int(chainID)),
@@ -25,6 +27,11 @@ func (s Store) StoreLastIndexed(parentCtx context.Context, contractAddress commo
 	defer func() {
 		metrics.EndSpanWithErr(span, err)
 	}()
+
+	address := contractAddress.String()
+	if livefill {
+		address = lastIndexedLivefillKey
+	}
 
 	dbTx := s.DB().WithContext(ctx).
 		Clauses(clause.OnConflict{
@@ -37,7 +44,7 @@ func (s Store) StoreLastIndexed(parentCtx context.Context, contractAddress commo
 							Exprs: []clause.Expression{
 								clause.Eq{
 									Column: clause.Column{Name: ContractAddressFieldName},
-									Value:  contractAddress.String(),
+									Value:  address,
 								},
 								clause.Eq{
 									Column: clause.Column{Name: ChainIDFieldName},
@@ -54,7 +61,7 @@ func (s Store) StoreLastIndexed(parentCtx context.Context, contractAddress commo
 			},
 		}).
 		Create(&LastIndexedInfo{
-			ContractAddress: contractAddress.String(),
+			ContractAddress: address,
 			ChainID:         chainID,
 			BlockNumber:     blockNumber,
 		})
@@ -65,12 +72,17 @@ func (s Store) StoreLastIndexed(parentCtx context.Context, contractAddress commo
 }
 
 // RetrieveLastIndexed retrieves the last indexed block number for a contract.
-func (s Store) RetrieveLastIndexed(ctx context.Context, contractAddress common.Address, chainID uint32) (uint64, error) {
+func (s Store) RetrieveLastIndexed(ctx context.Context, contractAddress common.Address, chainID uint32, livefill bool) (uint64, error) {
 	entry := LastIndexedInfo{}
+	address := contractAddress.String()
+	if livefill {
+		address = lastIndexedLivefillKey
+	}
+
 	dbTx := s.DB().WithContext(ctx).
 		Model(&LastIndexedInfo{}).
 		Where(&LastIndexedInfo{
-			ContractAddress: contractAddress.String(),
+			ContractAddress: address,
 			ChainID:         chainID,
 		}).
 		First(&entry)
@@ -90,7 +102,7 @@ func (s Store) StoreLastIndexedMultiple(parentCtx context.Context, contractAddre
 	for i := range contractAddresses {
 		index := i
 		g.Go(func() error {
-			err := s.StoreLastIndexed(groupCtx, contractAddresses[index], chainID, blockNumber)
+			err := s.StoreLastIndexed(groupCtx, contractAddresses[index], chainID, blockNumber, false)
 			if err != nil {
 				return fmt.Errorf("could not backfill: %w", err)
 			}

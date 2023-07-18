@@ -31,6 +31,8 @@ type ChainConfig struct {
 	LivefillThreshold uint64 `yaml:"livefill_threshold"`
 	// LivefillRange is the number of blocks that the livefill indexer with request for with get logs at once.
 	LivefillRange uint64 `yaml:"livefill_range"`
+	// LivefillFlushInterval is how long to wait before flushing the livefill indexer db (in seconds)
+	LivefillFlushInterval uint64 `yaml:"livefill_flush_interval"`
 }
 
 // ChainConfigs contains an array of ChainConfigs.

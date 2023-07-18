@@ -12,6 +12,8 @@ import (
 type EventDBWriter interface {
 	// StoreLogs stores a log
 	StoreLogs(ctx context.Context, chainID uint32, log ...types.Log) error
+	// StoreLogsAtHead stores a log at the tip.
+	StoreLogsAtHead(ctx context.Context, chainID uint32, log ...types.Log) error
 	// ConfirmLogsForBlockHash confirms logs for a given block hash.
 	ConfirmLogsForBlockHash(ctx context.Context, chainID uint32, blockHash common.Hash) error
 	// ConfirmLogsInRange confirms logs in a range.
@@ -21,6 +23,8 @@ type EventDBWriter interface {
 
 	// StoreReceipt stores a receipt
 	StoreReceipt(ctx context.Context, chainID uint32, receipt types.Receipt) error
+	// StoreReceiptAtHead stores a receipt to the tip
+	StoreReceiptAtHead(ctx context.Context, chainID uint32, receipt types.Receipt) error
 	// ConfirmReceiptsForBlockHash confirms receipts for a given block hash.
 	ConfirmReceiptsForBlockHash(ctx context.Context, chainID uint32, blockHash common.Hash) error
 	// ConfirmReceiptsInRange confirms receipts in a range.
@@ -30,6 +34,8 @@ type EventDBWriter interface {
 
 	// StoreEthTx stores a processed transaction
 	StoreEthTx(ctx context.Context, tx *types.Transaction, chainID uint32, blockHash common.Hash, blockNumber uint64, transactionIndex uint64) error
+	// StoreEthTxAtHead stores a processed transaction at the tip.
+	StoreEthTxAtHead(ctx context.Context, tx *types.Transaction, chainID uint32, blockHash common.Hash, blockNumber uint64, transactionIndex uint64) error
 	// ConfirmEthTxsForBlockHash confirms eth txs for a given block hash.
 	ConfirmEthTxsForBlockHash(ctx context.Context, blockHash common.Hash, chainID uint32) error
 	// ConfirmEthTxsInRange confirms eth txs in a range.
@@ -38,7 +44,7 @@ type EventDBWriter interface {
 	DeleteEthTxsForBlockHash(ctx context.Context, blockHash common.Hash, chainID uint32) error
 
 	// StoreLastIndexed stores the last indexed for a contract address
-	StoreLastIndexed(ctx context.Context, contractAddress common.Address, chainID uint32, blockNumber uint64) error
+	StoreLastIndexed(ctx context.Context, contractAddress common.Address, chainID uint32, blockNumber uint64, livefill bool) error
 	// StoreLastIndexedMultiple stores the last indexed block numbers for numerous contracts.
 	StoreLastIndexedMultiple(ctx context.Context, contractAddresses []common.Address, chainID uint32, blockNumber uint64) error
 
@@ -73,7 +79,7 @@ type EventDBReader interface {
 	RetrieveEthTxsInRange(ctx context.Context, ethTxFilter EthTxFilter, startBlock, endBlock uint64, page int) ([]TxWithBlockNumber, error)
 
 	// RetrieveLastIndexed retrieves the last indexed for a contract address
-	RetrieveLastIndexed(ctx context.Context, contractAddress common.Address, chainID uint32) (uint64, error)
+	RetrieveLastIndexed(ctx context.Context, contractAddress common.Address, chainID uint32, livefill bool) (uint64, error)
 
 	// RetrieveLastIndexedMultiple retrieves the last indexed block numbers for numerous contracts.
 	RetrieveLastIndexedMultiple(ctx context.Context, contractAddresses []common.Address, chainID uint32) (map[common.Address]uint64, error)
@@ -94,6 +100,11 @@ type EventDBReader interface {
 	RetrieveBlockTimesCountForChain(ctx context.Context, chainID uint32) (int64, error)
 	// RetrieveReceiptsWithStaleBlockHash gets receipts that are from a reorged/stale block.
 	RetrieveReceiptsWithStaleBlockHash(ctx context.Context, chainID uint32, blockHashes []string, startBlock uint64, endBlock uint64) ([]types.Receipt, error)
+
+	// RetrieveLogsFromHeadRangeQuery gets unconfirmed logs from the head in a range.
+	RetrieveLogsFromHeadRangeQuery(ctx context.Context, logFilter LogFilter, startBlock uint64, endBlock uint64, page int) (logs []*types.Log, err error)
+	// FlushLogsFromHead flushes unconfirmed logs from the head.
+	FlushLogsFromHead(ctx context.Context, time int64) error
 }
 
 // EventDB stores events.

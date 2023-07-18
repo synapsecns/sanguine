@@ -1,6 +1,7 @@
 package db_test
 
 import (
+	"fmt"
 	"math/big"
 
 	"github.com/synapsecns/sanguine/services/scribe/db"
@@ -77,8 +78,12 @@ func (t *DBSuite) TestStoreAndRetrieveEthTx() {
 			signedTx, err := transactor.Signer(signer.Address(), testTx)
 			Nil(t.T(), err)
 
+			// Store same tx with different blockhash
 			err = testDB.StoreEthTx(t.GetTestContext(), signedTx, uint32(testTx.ChainId().Uint64()), common.BigToHash(big.NewInt(gofakeit.Int64())), gofakeit.Uint64(), gofakeit.Uint64())
 			Nil(t.T(), err)
+
+			// err = testDB.StoreEthTxAtHead(t.GetTestContext(), signedTx, uint32(testTx.ChainId().Uint64()), common.BigToHash(big.NewInt(gofakeit.Int64())), gofakeit.Uint64(), gofakeit.Uint64())
+			// Nil(t.T(), err)
 
 			ethTxFilter := db.EthTxFilter{
 				ChainID: uint32(testTx.ChainId().Uint64()),
@@ -120,6 +125,8 @@ func (t *DBSuite) TestConfirmEthTxsInRange() {
 			signedTx, err := transactor.Signer(signer.Address(), testTx)
 			Nil(t.T(), err)
 
+			fake := gofakeit.Uint64()
+			fmt.Println(t.GetTestContext(), signedTx, chainID, common.BigToHash(big.NewInt(gofakeit.Int64())), uint64(i), fake)
 			err = testDB.StoreEthTx(t.GetTestContext(), signedTx, chainID, common.BigToHash(big.NewInt(gofakeit.Int64())), uint64(i), gofakeit.Uint64())
 			Nil(t.T(), err)
 		}

@@ -6,6 +6,7 @@ import (
 	"github.com/synapsecns/sanguine/services/scribe/backend"
 	"github.com/synapsecns/sanguine/services/scribe/logger"
 	"github.com/synapsecns/sanguine/services/scribe/scribe/indexer"
+	"math/big"
 
 	"math"
 	"time"
@@ -43,7 +44,6 @@ type ChainIndexer struct {
 // Used for handling logging of various context types.
 type contextKey int
 
-const tipLivefillFlushInterval = 12 * time.Hour
 const maxBackoff = uint64(10)
 
 const (
@@ -71,6 +71,10 @@ func NewChainIndexer(eventDB db.EventDB, client []backend.ScribeBackend, chainCo
 	}
 	if chainConfig.LivefillRange == 0 {
 		chainConfig.LivefillRange = 100
+	}
+
+	if chainConfig.LivefillFlushInterval == 0 {
+		chainConfig.LivefillFlushInterval = 10800
 	}
 
 	blockHeightMeterMap := make(map[common.Address]metric.Int64Histogram)
@@ -322,7 +326,7 @@ func createBackoff() *backoff.Backoff {
 
 func (c *ChainIndexer) isReadyForLivefill(parentContext context.Context, indexer *indexer.Indexer) (bool, error) {
 	// get last indexed to check livefill threshold
-	lastBlockIndexed, err := c.eventDB.RetrieveLastIndexed(parentContext, indexer.GetIndexerConfig().Addresses[0], c.chainConfig.ChainID)
+	lastBlockIndexed, err := c.eventDB.RetrieveLastIndexed(parentContext, indexer.GetIndexerConfig().Addresses[0], c.chainConfig.ChainID, false)
 	if err != nil {
 		return false, fmt.Errorf("could not get last indexed: %w", err)
 	}
@@ -334,7 +338,7 @@ func (c *ChainIndexer) isReadyForLivefill(parentContext context.Context, indexer
 }
 
 func (c *ChainIndexer) getStartHeight(parentContext context.Context, onlyOneBlock *uint64, givenStart uint64, indexer *indexer.Indexer) (uint64, *uint64, error) {
-	lastIndexed, err := c.eventDB.RetrieveLastIndexed(parentContext, indexer.GetIndexerConfig().Addresses[0], c.chainConfig.ChainID)
+	lastIndexed, err := c.eventDB.RetrieveLastIndexed(parentContext, indexer.GetIndexerConfig().Addresses[0], c.chainConfig.ChainID, false)
 	if err != nil {
 		return 0, nil, fmt.Errorf("could not get last block indexed: %w", err)
 	}
@@ -376,12 +380,17 @@ func (c *ChainIndexer) LivefillToTip(parentContext context.Context) error {
 	if err != nil {
 		return fmt.Errorf("could not create contract indexer: %w", err)
 	}
+	flushDuration := time.Duration(c.chainConfig.LivefillFlushInterval) * time.Second
 	for {
 		select {
 		case <-parentContext.Done():
 			return fmt.Errorf("context canceled: %w", parentContext.Err())
-		case <-time.After(tipLivefillFlushInterval):
-			// TODO delete allr ecords fromt he tip livefill indexer db that are older than TipLivefillFlushInterval
+		case <-time.After(flushDuration):
+			deleteBefore := time.Now().Add(-flushDuration).UnixNano()
+			err := c.eventDB.FlushLogsFromHead(parentContext, deleteBefore)
+			if err != nil {
+				return fmt.Errorf("could not flush logs from head: %w", err)
+			}
 		case <-time.After(timeout):
 
 			endHeight, err := c.getLatestBlock(parentContext, false)
@@ -391,13 +400,13 @@ func (c *ChainIndexer) LivefillToTip(parentContext context.Context) error {
 				continue
 			}
 
-			tipLivefillLastIndexed, err := c.eventDB.RetrieveLastIndexedMultiple(parentContext, addresses, c.chainConfig.ChainID)
+			tipLivefillLastIndexed, err := c.eventDB.RetrieveLastIndexed(parentContext, common.BigToAddress(big.NewInt(0)), c.chainConfig.ChainID, false)
 			if err != nil {
 				logger.ReportIndexerError(err, tipLivefillIndexer.GetIndexerConfig(), logger.LivefillIndexerError)
 				timeout = b.Duration()
 				continue
 			}
-			startHeight := getMinFromMap(tipLivefillLastIndexed)
+			startHeight := tipLivefillLastIndexed
 			if startHeight == 0 {
 				startHeight = *endHeight - c.chainConfig.Confirmations
 			}

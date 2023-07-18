@@ -168,12 +168,12 @@ type LastBlockTime struct {
 	BlockNumber uint64 `gorm:"column:block_number"`
 }
 
-// LogAtTip stores the log of an event that occurred near the tip of the chain.
-type LogAtTip struct {
+// LogAtHead stores the log of an event that occurred near the tip of the chain.
+type LogAtHead struct {
 	// ContractAddress is the address of the contract that generated the event
-	ContractAddress string `gorm:"column:contract_address;primaryKey;index:idx_address,priority:1,sort:desc"`
+	ContractAddress string `gorm:"column:contract_address;primaryKey;index:idx_head_address,priority:1,sort:desc"`
 	// ChainID is the chain id of the contract that generated the event
-	ChainID uint32 `gorm:"column:chain_id;primaryKey;index:idx_address,priority:2,sort:desc"`
+	ChainID uint32 `gorm:"column:chain_id;primaryKey;index:idx_head_address,priority:2,sort:desc"`
 	// PrimaryTopic is the primary topic of the event. Topics[0]
 	PrimaryTopic sql.NullString `gorm:"primary_topic"`
 	// TopicA is the first topic. Topics[1]
@@ -185,15 +185,15 @@ type LogAtTip struct {
 	// Data is the data provided by the contract
 	Data []byte `gorm:"data"`
 	// BlockNumber is the block in which the transaction was included
-	BlockNumber uint64 `gorm:"column:block_number;index:idx_block_number,priority:1,sort:desc"`
+	BlockNumber uint64 `gorm:"column:block_number;index:idx_head_block_number,priority:1,sort:desc"`
 	// TxHash is the hash of the transaction
-	TxHash string `gorm:"column:tx_hash;primaryKey;index:idx_tx_hash,priority:1,sort:desc"`
+	TxHash string `gorm:"column:tx_hash;primaryKey;index:idx_head_tx_hash,priority:1,sort:desc"`
 	// TxIndex is the index of the transaction in the block
 	TxIndex uint64 `gorm:"tx_index"`
 	// BlockHash is the hash of the block in which the transaction was included
-	BlockHash string `gorm:"column:block_hash;index:idx_block_hash,priority:1,sort:desc"`
+	BlockHash string `gorm:"column:block_hash;index:idx_head_block_hash,priority:1,sort:desc"`
 	// Index is the index of the log in the block
-	BlockIndex uint64 `gorm:"column:block_index;primaryKey;index:idx_block_number,priority:2,sort:desc"`
+	BlockIndex uint64 `gorm:"column:block_index;primaryKey;index:idx_head_block_number,priority:2,sort:desc"`
 	// Removed is true if this log was reverted due to a chain re-organization
 	Removed bool `gorm:"removed"`
 	// Confirmed is true if this log has been confirmed by the chain
@@ -202,8 +202,8 @@ type LogAtTip struct {
 	InsertTime uint64 `gorm:"column:insert_time"`
 }
 
-// ReceiptAtTip stores the receipt of a transaction at the tip.
-type ReceiptAtTip struct {
+// ReceiptAtHead stores the receipt of a transaction at the tip.
+type ReceiptAtHead struct {
 	// ChainID is the chain id of the receipt
 	ChainID uint32 `gorm:"column:chain_id;primaryKey"`
 	// Type is the type
@@ -225,25 +225,25 @@ type ReceiptAtTip struct {
 	// BlockHash is the hash of the block in which this transaction was included
 	BlockHash string `gorm:"column:block_hash"`
 	// BlockNumber is the block in which this transaction was included
-	BlockNumber uint64 `gorm:"column:block_number;index:idx_block_number_receipt,priority:1,sort:desc"`
+	BlockNumber uint64 `gorm:"column:block_number;index:idx_head_block_number_receipt,priority:1,sort:desc"`
 	// TransactionIndex is the index of the transaction in the block
-	TransactionIndex uint64 `gorm:"column:transaction_index;index:idx_block_number_receipt,priority:2,sort:desc"`
+	TransactionIndex uint64 `gorm:"column:transaction_index;index:idx_head_block_number_receipt,priority:2,sort:desc"`
 	// Confirmed is true if this log has been confirmed by the chain
 	Confirmed bool `gorm:"column:confirmed"`
 	// InsertTime is the time at which this receipt was inserted
 	InsertTime uint64 `gorm:"column:insert_time"`
 }
 
-// EthTxAtTip contains a processed ethereum transaction at the tip of the chain.
-type EthTxAtTip struct {
+// EthTxAtHead contains a processed ethereum transaction at the tip of the chain.
+type EthTxAtHead struct {
 	// TxHash is the hash of the transaction
 	TxHash string `gorm:"column:tx_hash;primaryKey"`
 	// ChainID is the chain id of the transaction
 	ChainID uint32 `gorm:"column:chain_id;primaryKey"`
 	// BlockHash is the hash of the block in which the transaction was included
-	BlockHash string `gorm:"column:block_hash;index:idx_tx_block_hash,priority:1,sort:desc"`
+	BlockHash string `gorm:"column:block_hash;index:idx_head_tx_block_hash,priority:1,sort:desc"`
 	// BlockNumber is the block in which the transaction was included
-	BlockNumber uint64 `gorm:"column:block_number;index:idx_block_number_tx,priority:1,sort:desc"`
+	BlockNumber uint64 `gorm:"column:block_number;index:idx_head_block_number_tx,priority:1,sort:desc"`
 	// RawTx is the raw serialized transaction
 	RawTx []byte `gorm:"column:raw_tx"`
 	// GasFeeCap contains the gas fee cap stored in wei
@@ -253,7 +253,7 @@ type EthTxAtTip struct {
 	// Confirmed is true if this log has been confirmed by the chain
 	Confirmed bool `gorm:"column:confirmed"`
 	// TransactionIndex is the index of the transaction in the block
-	TransactionIndex uint64 `gorm:"column:transaction_index;index:idx_block_number_tx,priority:2,sort:desc"`
+	TransactionIndex uint64 `gorm:"column:transaction_index;index:idx_head_block_number_tx,priority:2,sort:desc"`
 	// InsertTime is the time at which this tx was inserted
 	InsertTime uint64 `gorm:"column:insert_time"`
 }

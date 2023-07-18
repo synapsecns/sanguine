@@ -283,7 +283,7 @@ func (g APISuite) TestLastContractIndexed() {
 	contractAddress := common.BigToAddress(big.NewInt(gofakeit.Int64()))
 
 	// store last indexed
-	err := g.db.StoreLastIndexed(g.GetTestContext(), contractAddress, chainID, blockNumber)
+	err := g.db.StoreLastIndexed(g.GetTestContext(), contractAddress, chainID, blockNumber, false)
 	Nil(g.T(), err)
 
 	// retrieve last indexed

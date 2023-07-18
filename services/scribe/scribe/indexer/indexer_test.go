@@ -272,7 +272,7 @@ func (x *IndexerSuite) TestContractBackfill() {
 	Equal(x.T(), 2, len(receipts[0].Logs))
 
 	// Ensure last indexed block is correct.
-	lastIndexed, err := x.testDB.RetrieveLastIndexed(x.GetTestContext(), testContract.Address(), uint32(testContract.ChainID().Uint64()))
+	lastIndexed, err := x.testDB.RetrieveLastIndexed(x.GetTestContext(), testContract.Address(), uint32(testContract.ChainID().Uint64()), false)
 	Nil(x.T(), err)
 	Equal(x.T(), txBlockNumber, lastIndexed)
 }
@@ -329,7 +329,7 @@ func (x *IndexerSuite) TestContractBackfillFromPreIndexed() {
 	// Get the block that the last transaction was executed in.
 	txBlockNumber, err := testutil.GetTxBlockNumber(x.GetTestContext(), simulatedChain, tx)
 	Nil(x.T(), err)
-	err = x.testDB.StoreLastIndexed(x.GetTestContext(), common.HexToAddress(contractConfig.Address), chainConfig.ChainID, txBlockNumber)
+	err = x.testDB.StoreLastIndexed(x.GetTestContext(), common.HexToAddress(contractConfig.Address), chainConfig.ChainID, txBlockNumber, false)
 	Nil(x.T(), err)
 
 	// 1 log 1 receipt: r:4 l:5
@@ -374,7 +374,7 @@ func (x *IndexerSuite) TestContractBackfillFromPreIndexed() {
 	Equal(x.T(), 2, len(receipts[0].Logs))
 
 	// Ensure last indexed block is correct.
-	lastIndexed, err := x.testDB.RetrieveLastIndexed(x.GetTestContext(), testContract.Address(), uint32(testContract.ChainID().Uint64()))
+	lastIndexed, err := x.testDB.RetrieveLastIndexed(x.GetTestContext(), testContract.Address(), uint32(testContract.ChainID().Uint64()), false)
 	Nil(x.T(), err)
 	Equal(x.T(), txBlockNumber, lastIndexed)
 }

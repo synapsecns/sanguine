@@ -145,6 +145,20 @@ func (_m *EventDB) DeleteReceiptsForBlockHash(ctx context.Context, chainID uint3
 	return r0
 }
 
+// FlushLogsFromHead provides a mock function with given fields: ctx, time
+func (_m *EventDB) FlushLogsFromHead(ctx context.Context, time int64) error {
+	ret := _m.Called(ctx, time)
+
+	var r0 error
+	if rf, ok := ret.Get(0).(func(context.Context, int64) error); ok {
+		r0 = rf(ctx, time)
+	} else {
+		r0 = ret.Error(0)
+	}
+
+	return r0
+}
+
 // RetrieveBlockTime provides a mock function with given fields: ctx, chainID, blockNumber
 func (_m *EventDB) RetrieveBlockTime(ctx context.Context, chainID uint32, blockNumber uint64) (uint64, error) {
 	ret := _m.Called(ctx, chainID, blockNumber)
@@ -296,20 +310,20 @@ func (_m *EventDB) RetrieveLastConfirmedBlock(ctx context.Context, chainID uint3
 	return r0, r1
 }
 
-// RetrieveLastIndexed provides a mock function with given fields: ctx, contractAddress, chainID
-func (_m *EventDB) RetrieveLastIndexed(ctx context.Context, contractAddress common.Address, chainID uint32) (uint64, error) {
-	ret := _m.Called(ctx, contractAddress, chainID)
+// RetrieveLastIndexed provides a mock function with given fields: ctx, contractAddress, chainID, livefill
+func (_m *EventDB) RetrieveLastIndexed(ctx context.Context, contractAddress common.Address, chainID uint32, livefill bool) (uint64, error) {
+	ret := _m.Called(ctx, contractAddress, chainID, livefill)
 
 	var r0 uint64
-	if rf, ok := ret.Get(0).(func(context.Context, common.Address, uint32) uint64); ok {
-		r0 = rf(ctx, contractAddress, chainID)
+	if rf, ok := ret.Get(0).(func(context.Context, common.Address, uint32, bool) uint64); ok {
+		r0 = rf(ctx, contractAddress, chainID, livefill)
 	} else {
 		r0 = ret.Get(0).(uint64)
 	}
 
 	var r1 error
-	if rf, ok := ret.Get(1).(func(context.Context, common.Address, uint32) error); ok {
-		r1 = rf(ctx, contractAddress, chainID)
+	if rf, ok := ret.Get(1).(func(context.Context, common.Address, uint32, bool) error); ok {
+		r1 = rf(ctx, contractAddress, chainID, livefill)
 	} else {
 		r1 = ret.Error(1)
 	}
@@ -354,6 +368,29 @@ func (_m *EventDB) RetrieveLogCountForContract(ctx context.Context, contractAddr
 	var r1 error
 	if rf, ok := ret.Get(1).(func(context.Context, common.Address, uint32) error); ok {
 		r1 = rf(ctx, contractAddress, chainID)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
+// RetrieveLogsFromHeadRangeQuery provides a mock function with given fields: ctx, logFilter, startBlock, endBlock, page
+func (_m *EventDB) RetrieveLogsFromHeadRangeQuery(ctx context.Context, logFilter db.LogFilter, startBlock uint64, endBlock uint64, page int) ([]*types.Log, error) {
+	ret := _m.Called(ctx, logFilter, startBlock, endBlock, page)
+
+	var r0 []*types.Log
+	if rf, ok := ret.Get(0).(func(context.Context, db.LogFilter, uint64, uint64, int) []*types.Log); ok {
+		r0 = rf(ctx, logFilter, startBlock, endBlock, page)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).([]*types.Log)
+		}
+	}
+
+	var r1 error
+	if rf, ok := ret.Get(1).(func(context.Context, db.LogFilter, uint64, uint64, int) error); ok {
+		r1 = rf(ctx, logFilter, startBlock, endBlock, page)
 	} else {
 		r1 = ret.Error(1)
 	}
@@ -548,6 +585,20 @@ func (_m *EventDB) StoreEthTx(ctx context.Context, tx *types.Transaction, chainI
 	return r0
 }
 
+// StoreEthTxAtHead provides a mock function with given fields: ctx, tx, chainID, blockHash, blockNumber, transactionIndex
+func (_m *EventDB) StoreEthTxAtHead(ctx context.Context, tx *types.Transaction, chainID uint32, blockHash common.Hash, blockNumber uint64, transactionIndex uint64) error {
+	ret := _m.Called(ctx, tx, chainID, blockHash, blockNumber, transactionIndex)
+
+	var r0 error
+	if rf, ok := ret.Get(0).(func(context.Context, *types.Transaction, uint32, common.Hash, uint64, uint64) error); ok {
+		r0 = rf(ctx, tx, chainID, blockHash, blockNumber, transactionIndex)
+	} else {
+		r0 = ret.Error(0)
+	}
+
+	return r0
+}
+
 // StoreLastConfirmedBlock provides a mock function with given fields: ctx, chainID, blockNumber
 func (_m *EventDB) StoreLastConfirmedBlock(ctx context.Context, chainID uint32, blockNumber uint64) error {
 	ret := _m.Called(ctx, chainID, blockNumber)
@@ -562,13 +613,13 @@ func (_m *EventDB) StoreLastConfirmedBlock(ctx context.Context, chainID uint32, 
 	return r0
 }
 
-// StoreLastIndexed provides a mock function with given fields: ctx, contractAddress, chainID, blockNumber
-func (_m *EventDB) StoreLastIndexed(ctx context.Context, contractAddress common.Address, chainID uint32, blockNumber uint64) error {
-	ret := _m.Called(ctx, contractAddress, chainID, blockNumber)
+// StoreLastIndexed provides a mock function with given fields: ctx, contractAddress, chainID, blockNumber, livefill
+func (_m *EventDB) StoreLastIndexed(ctx context.Context, contractAddress common.Address, chainID uint32, blockNumber uint64, livefill bool) error {
+	ret := _m.Called(ctx, contractAddress, chainID, blockNumber, livefill)
 
 	var r0 error
-	if rf, ok := ret.Get(0).(func(context.Context, common.Address, uint32, uint64) error); ok {
-		r0 = rf(ctx, contractAddress, chainID, blockNumber)
+	if rf, ok := ret.Get(0).(func(context.Context, common.Address, uint32, uint64, bool) error); ok {
+		r0 = rf(ctx, contractAddress, chainID, blockNumber, livefill)
 	} else {
 		r0 = ret.Error(0)
 	}
@@ -611,8 +662,43 @@ func (_m *EventDB) StoreLogs(ctx context.Context, chainID uint32, log ...types.L
 	return r0
 }
 
+// StoreLogsAtHead provides a mock function with given fields: ctx, chainID, log
+func (_m *EventDB) StoreLogsAtHead(ctx context.Context, chainID uint32, log ...types.Log) error {
+	_va := make([]interface{}, len(log))
+	for _i := range log {
+		_va[_i] = log[_i]
+	}
+	var _ca []interface{}
+	_ca = append(_ca, ctx, chainID)
+	_ca = append(_ca, _va...)
+	ret := _m.Called(_ca...)
+
+	var r0 error
+	if rf, ok := ret.Get(0).(func(context.Context, uint32, ...types.Log) error); ok {
+		r0 = rf(ctx, chainID, log...)
+	} else {
+		r0 = ret.Error(0)
+	}
+
+	return r0
+}
+
 // StoreReceipt provides a mock function with given fields: ctx, chainID, receipt
 func (_m *EventDB) StoreReceipt(ctx context.Context, chainID uint32, receipt types.Receipt) error {
+	ret := _m.Called(ctx, chainID, receipt)
+
+	var r0 error
+	if rf, ok := ret.Get(0).(func(context.Context, uint32, types.Receipt) error); ok {
+		r0 = rf(ctx, chainID, receipt)
+	} else {
+		r0 = ret.Error(0)
+	}
+
+	return r0
+}
+
+// StoreReceiptAtHead provides a mock function with given fields: ctx, chainID, receipt
+func (_m *EventDB) StoreReceiptAtHead(ctx context.Context, chainID uint32, receipt types.Receipt) error {
 	ret := _m.Called(ctx, chainID, receipt)
 
 	var r0 error

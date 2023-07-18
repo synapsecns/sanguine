@@ -101,7 +101,7 @@ func (s *ScribeSuite) TestIndexToBlock() {
 	Equal(s.T(), 2, len(receipts[0].Logs))
 
 	// Ensure last indexed block is correct.
-	lastIndexed, err := s.testDB.RetrieveLastIndexed(s.GetTestContext(), testContract.Address(), uint32(testContract.ChainID().Uint64()))
+	lastIndexed, err := s.testDB.RetrieveLastIndexed(s.GetTestContext(), testContract.Address(), uint32(testContract.ChainID().Uint64()), false)
 	Nil(s.T(), err)
 	Equal(s.T(), txBlockNumber, lastIndexed)
 }
@@ -269,7 +269,7 @@ func (s *ScribeSuite) TestChainIndexerLivefill() {
 					currentLength = len(contracts)
 					newContract := contracts[currentLength-1]
 
-					lastIndexed, indexErr := s.testDB.RetrieveLastIndexed(s.GetTestContext(), common.HexToAddress(newContract.Address), chainID)
+					lastIndexed, indexErr := s.testDB.RetrieveLastIndexed(s.GetTestContext(), common.HexToAddress(newContract.Address), chainID, false)
 					Nil(s.T(), indexErr)
 					numberLivefillContracts = len(contracts)
 					currentBlock, indexErr := newBackend.BlockNumber(s.GetTestContext())

@@ -307,10 +307,13 @@ OUTER:
 	}
 
 	g, groupCtx := errgroup.WithContext(ctx)
-
 	g.Go(func() error {
 		// Store receipt in the EventDB.
-		err = x.eventDB.StoreReceipt(groupCtx, x.indexerConfig.ChainID, tx.receipt)
+		if x.toTip {
+			err = x.eventDB.StoreReceiptAtHead(groupCtx, x.indexerConfig.ChainID, tx.receipt)
+		} else {
+			err = x.eventDB.StoreReceipt(groupCtx, x.indexerConfig.ChainID, tx.receipt)
+		}
 		if err != nil {
 			// LogEvent(ErrorLevel, "Could not store receipt, retrying", LogData{"cid": x.indexerConfig.ChainID, "bn": log.BlockNumber, "tx": log.TxHash.Hex(), "la": log.Address.String(), "ca": x.addressesToString(x.indexerConfig.Addresses), "e": err.Error()})
 
@@ -321,7 +324,11 @@ OUTER:
 
 	if hasTX {
 		g.Go(func() error {
-			err = x.eventDB.StoreEthTx(groupCtx, &tx.transaction, x.indexerConfig.ChainID, log.BlockHash, log.BlockNumber, uint64(log.TxIndex))
+			if x.toTip {
+				err = x.eventDB.StoreEthTxAtHead(groupCtx, &tx.transaction, x.indexerConfig.ChainID, log.BlockHash, log.BlockNumber, uint64(log.TxIndex))
+			} else {
+				err = x.eventDB.StoreEthTx(groupCtx, &tx.transaction, x.indexerConfig.ChainID, log.BlockHash, log.BlockNumber, uint64(log.TxIndex))
+			}
 			if err != nil {
 				return fmt.Errorf("could not store tx: %w", err)
 			}
@@ -334,8 +341,11 @@ OUTER:
 		if err != nil {
 			return err
 		}
-
-		err = x.eventDB.StoreLogs(groupCtx, x.indexerConfig.ChainID, logs...)
+		if x.toTip {
+			err = x.eventDB.StoreLogsAtHead(groupCtx, x.indexerConfig.ChainID, logs...)
+		} else {
+			err = x.eventDB.StoreLogs(groupCtx, x.indexerConfig.ChainID, logs...)
+		}
 		if err != nil {
 			return fmt.Errorf("could not store receipt logs: %w", err)
 		}

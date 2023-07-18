@@ -9,12 +9,11 @@ func _() {
 	// Re-run the stringer command to generate them again.
 	var x [1]struct{}
 	_ = x[TestContractType-0]
-	_ = x[TestContract2Type-1]
 }
 
-const _contractTypeImpl_name = "TestContractTypeTestContract2Type"
+const _contractTypeImpl_name = "TestContractType"
 
-var _contractTypeImpl_index = [...]uint8{0, 16, 33}
+var _contractTypeImpl_index = [...]uint8{0, 16}
 
 func (i contractTypeImpl) String() string {
 	if i < 0 || i >= contractTypeImpl(len(_contractTypeImpl_index)-1) {
