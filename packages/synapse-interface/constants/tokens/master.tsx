@@ -357,8 +357,10 @@ export const AGEUR = new Token({
 
 export const UNIDX = new Token({
   addresses: {
-    [CHAINS.ETH.id]: '0x95b3497bbcccc46a8f45f5cf54b0878b39f8d96c', // deposit
+    [CHAINS.ETH.id]: '0xf0655dcee37e5c0b70fffd70d85f88f8edf0aff6', // deposit
     [CHAINS.ARBITRUM.id]: '0x5429706887FCb58a595677B73E9B0441C25d993D', // redeem
+    [CHAINS.FANTOM.id]: '0x0483a76D80D0aFEC6bd2afd12C1AD865b9DF1471',
+    [CHAINS.OPTIMISM.id]: '0x28b42698Caf46B4B012CF38b6C75867E0762186D',
   },
   decimals: 18,
   symbol: 'UNIDX',
