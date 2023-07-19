@@ -60,11 +60,6 @@ export const BridgeTransactionButton = ({
 
   let buttonProperties
 
-  // const fromValueBigInt = stringToBigInt(
-  //   fromValue,
-  //   fromToken.decimals[fromChainId]
-  // )
-
   const fromTokenDecimals: number | undefined = fromToken.decimals[fromChainId]
 
   const fromValueBigInt = useMemo(() => {
