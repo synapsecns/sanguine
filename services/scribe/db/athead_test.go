@@ -112,7 +112,7 @@ func (t *DBSuite) TestFlushLogs() {
 		Nil(t.T(), err)
 		Equal(t.T(), 90, len(logs))
 		// Check that the earliest log has a timestamp of 110
-		//Equal(t.T(), uint(0), logs[0].Index)
-		//Equal(t.T(), uint64(desiredBlockHeight), logs[0].BlockNumber)
+		// Equal(t.T(), uint(0), logs[0].Index)
+		// Equal(t.T(), uint64(desiredBlockHeight), logs[0].BlockNumber)
 	})
 }
