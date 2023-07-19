@@ -7,8 +7,10 @@ import {
   TokenWithBalanceAndAllowance,
 } from '@/utils/hooks/usePortfolioBalances'
 import { PortfolioContent, HomeContent } from './PortfolioContent'
-import { useFetchPortfolioBalances } from '@/slices/portfolio/hooks'
-import { fetchAndStorePortfolioBalances } from '@/slices/portfolio/reducer'
+import {
+  useFetchPortfolioBalances,
+  fetchAndStorePortfolioBalances,
+} from '@/slices/portfolio/hooks'
 import { useAppDispatch } from '@/store/hooks'
 import { useBridgeState } from '@/slices/bridge/hooks'
 
@@ -23,12 +25,6 @@ export const Portfolio = () => {
   const { address } = useAccount()
   const { chain } = useNetwork()
   const dispatch = useAppDispatch()
-
-  useEffect(() => {
-    if (address) {
-      dispatch(fetchAndStorePortfolioBalances(address))
-    }
-  }, [address])
 
   const {
     balancesAndAllowances: portfolioData,
@@ -52,7 +48,7 @@ export const Portfolio = () => {
         await dispatch(fetchAndStorePortfolioBalances(address))
       }
     })()
-  }, [address, chain])
+  }, [address])
 
   return (
     <div

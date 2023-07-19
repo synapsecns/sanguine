@@ -35,6 +35,7 @@ export const PortfolioContent = ({
   useEffect(() => {
     const txExists = bridgeTxHashes && bridgeTxHashes.length > 0
     if (txExists) {
+      console.log('txExists callback got hit')
       fetchPortfolioBalancesCallback()
     }
   }, [bridgeTxHashes])

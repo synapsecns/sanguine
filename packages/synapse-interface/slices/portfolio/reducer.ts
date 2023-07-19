@@ -1,5 +1,6 @@
-import { createSlice } from '@reduxjs/toolkit'
+import { createSlice, PayloadAction } from '@reduxjs/toolkit'
 
+import { PortfolioTabs } from './actions'
 import { fetchAndStorePortfolioBalances } from './hooks'
 import { NetworkTokenBalancesAndAllowances } from '@/utils/hooks/usePortfolioBalances'
 
@@ -11,12 +12,14 @@ export enum FetchState {
 }
 
 export interface PortfolioState {
+  activeTab: PortfolioTabs
   balancesAndAllowances: NetworkTokenBalancesAndAllowances
   status: FetchState
   error?: string
 }
 
 const initialState: PortfolioState = {
+  activeTab: PortfolioTabs.HOME,
   balancesAndAllowances: {},
   status: FetchState.IDLE,
   error: null,
@@ -25,7 +28,11 @@ const initialState: PortfolioState = {
 export const portfolioSlice = createSlice({
   name: 'portfolio',
   initialState,
-  reducers: {},
+  reducers: {
+    setActiveTab: (state, action: PayloadAction<PortfolioTabs>) => {
+      state.activeTab = action.payload
+    },
+  },
   extraReducers: (builder) => {
     builder
       .addCase(fetchAndStorePortfolioBalances.pending, (state) => {
