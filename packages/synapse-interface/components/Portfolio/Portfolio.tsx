@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
 import { useAccount, useNetwork } from 'wagmi'
-import { RootState } from '@/store/store'
+import { RootState, AppDispatch } from '@/store/store'
 import { setFromChainId } from '@/slices/bridgeSlice'
 import { PortfolioTabManager } from './PortfolioTabManager'
 import {
@@ -11,6 +11,8 @@ import {
   FetchState,
 } from '@/utils/hooks/usePortfolioBalances'
 import { PortfolioContent, HomeContent } from './PortfolioContent'
+import { useFetchPortfolioBalances } from '@/slices/portfolio/hooks'
+import { fetchAndStorePortfolioBalances } from '@/slices/portfolio/reducer'
 
 export enum PortfolioTabs {
   HOME = 'home',
@@ -19,11 +21,26 @@ export enum PortfolioTabs {
 
 export const Portfolio = () => {
   const [tab, setTab] = useState<PortfolioTabs>(PortfolioTabs.HOME)
-
-  const dispatch = useDispatch()
+  const { address } = useAccount()
+  const { chain } = useNetwork()
+  const dispatch = useDispatch<AppDispatch>()
   const { fromChainId, bridgeTxHashes } = useSelector(
     (state: RootState) => state.bridge
   )
+
+  const {
+    balancesAndAllowances: portfolioStoreData,
+    fetchPortfolioBalances: fetchPortfolioStoreBalances,
+    status,
+    error,
+  } = useFetchPortfolioBalances()
+
+  useEffect(() => {
+    if (address) {
+      console.log('this got hit')
+      dispatch(fetchAndStorePortfolioBalances(address))
+    }
+  }, [address])
 
   const {
     balancesAndAllowances: portfolioData,
@@ -33,9 +50,6 @@ export const Portfolio = () => {
 
   const filteredPortfolioDataForBalances: NetworkTokenBalancesAndAllowances =
     filterPortfolioBalancesWithBalances(portfolioData)
-
-  const { address } = useAccount()
-  const { chain } = useNetwork()
 
   useEffect(() => {
     if (address) {

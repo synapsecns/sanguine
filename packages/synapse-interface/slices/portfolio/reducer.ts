@@ -1,14 +1,23 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit'
 
-import { fetchPortfolioBalances } from '@/utils/hooks/usePortfolioBalances'
+import {
+  fetchPortfolioBalances,
+  NetworkTokenBalancesAndAllowances,
+} from '@/utils/hooks/usePortfolioBalances'
 
 export const fetchAndStorePortfolioBalances = createAsyncThunk(
   'portfolio/fetchAndStorePortfolioBalances',
-  async (address, { dispatch, getState }) => {
+  async (address: string) => {
+    console.log('this got hit 2')
     const portfolioData = await fetchPortfolioBalances(address)
+    console.log('portfolioData: ', portfolioData)
     return portfolioData
   }
 )
+
+export interface PortfolioState {
+  balancesAndAllowances: NetworkTokenBalancesAndAllowances
+}
 
 export const portfolioSlice = createSlice({
   name: 'portfolio',
