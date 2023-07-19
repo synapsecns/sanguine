@@ -5,7 +5,7 @@ import Image from 'next/image'
 import Tooltip from '@tw/Tooltip'
 import { useEffect, useState } from 'react'
 import { useDispatch } from 'react-redux'
-import { setFromChainId } from '@/slices/bridge/bridgeSlice'
+import { setFromChainId } from '@/slices/bridge/reducer'
 import { setShowFromChainSlideOver } from '@/slices/bridgeDisplaySlice'
 
 export const OriginChainLabel = ({

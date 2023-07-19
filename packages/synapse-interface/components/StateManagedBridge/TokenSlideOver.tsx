@@ -9,7 +9,7 @@ import { Token } from '@/utils/types'
 import { useDispatch, useSelector } from 'react-redux'
 import { RootState } from '@/store/store'
 import { Zero } from '@ethersproject/constants'
-import { setFromToken, setToToken } from '@/slices/bridge/bridgeSlice'
+import { setFromToken, setToToken } from '@/slices/bridge/reducer'
 import {
   setShowFromTokenSlideOver,
   setShowToTokenSlideOver,

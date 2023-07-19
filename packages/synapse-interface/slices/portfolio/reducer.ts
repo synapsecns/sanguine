@@ -1,17 +1,7 @@
-import { createSlice, createAsyncThunk } from '@reduxjs/toolkit'
+import { createSlice } from '@reduxjs/toolkit'
 
-import {
-  fetchPortfolioBalances,
-  NetworkTokenBalancesAndAllowances,
-} from '@/utils/hooks/usePortfolioBalances'
-
-export const fetchAndStorePortfolioBalances = createAsyncThunk(
-  'portfolio/fetchAndStorePortfolioBalances',
-  async (address: string) => {
-    const portfolioData = await fetchPortfolioBalances(address)
-    return portfolioData
-  }
-)
+import { fetchAndStorePortfolioBalances } from './hooks'
+import { NetworkTokenBalancesAndAllowances } from '@/utils/hooks/usePortfolioBalances'
 
 export enum FetchState {
   IDLE = 'idle',

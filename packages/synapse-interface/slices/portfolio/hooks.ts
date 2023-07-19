@@ -1,14 +1,26 @@
 import { useDispatch, useSelector } from 'react-redux'
+import { createAsyncThunk } from '@reduxjs/toolkit'
 import { getAccount } from '@wagmi/core'
 
 import { AppDispatch, RootState } from '@/store/store'
 import { useAppSelector } from '@/store/hooks'
-import { fetchAndStorePortfolioBalances, FetchState } from './reducer'
-import { NetworkTokenBalancesAndAllowances } from '@/utils/hooks/usePortfolioBalances'
+import { FetchState } from './reducer'
+import {
+  fetchPortfolioBalances,
+  NetworkTokenBalancesAndAllowances,
+} from '@/utils/hooks/usePortfolioBalances'
 
 export const usePortfolioBalances = (): NetworkTokenBalancesAndAllowances => {
   return useAppSelector((state) => state.portfolio.balancesAndAllowances)
 }
+
+export const fetchAndStorePortfolioBalances = createAsyncThunk(
+  'portfolio/fetchAndStorePortfolioBalances',
+  async (address: string) => {
+    const portfolioData = await fetchPortfolioBalances(address)
+    return portfolioData
+  }
+)
 
 export const useFetchPortfolioBalances = (): {
   balancesAndAllowances: NetworkTokenBalancesAndAllowances

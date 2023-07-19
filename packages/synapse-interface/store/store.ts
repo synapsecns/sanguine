@@ -1,6 +1,6 @@
 import { configureStore } from '@reduxjs/toolkit'
 
-import bridgeReducer, { tokenDecimalMiddleware } from '@/slices/bridge/bridgeSlice'
+import bridgeReducer, { tokenDecimalMiddleware } from '@/slices/bridge/reducer'
 import bridgeDisplayReducer from '@/slices/bridgeDisplaySlice'
 import poolDataReducer from '@/slices/poolDataSlice'
 import poolUserDataReducer from '@/slices/poolUserDataSlice'

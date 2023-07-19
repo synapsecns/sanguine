@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react'
 import { useAccount, useNetwork } from 'wagmi'
-import { setFromChainId } from '@/slices/bridge/bridgeSlice'
+import { setFromChainId } from '@/slices/bridge/reducer'
 import { PortfolioTabManager } from './PortfolioTabManager'
 import {
   NetworkTokenBalancesAndAllowances,

@@ -1,7 +1,7 @@
 import { useMemo, useState } from 'react'
 import { useDispatch } from 'react-redux'
 import { disconnect, switchNetwork } from '@wagmi/core'
-import { setFromChainId } from '@/slices/bridge/bridgeSlice'
+import { setFromChainId } from '@/slices/bridge/reducer'
 
 type PortfolioConnectButton = {
   portfolioChainId: number
