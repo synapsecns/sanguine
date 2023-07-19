@@ -10,6 +10,10 @@ import {
   NetworkTokenBalancesAndAllowances,
 } from '@/utils/hooks/usePortfolioBalances'
 
+export const usePortfolioState = (): RootState['portfolio'] => {
+  return useAppSelector((state) => state.portfolio)
+}
+
 export const usePortfolioBalances = (): NetworkTokenBalancesAndAllowances => {
   return useAppSelector((state) => state.portfolio.balancesAndAllowances)
 }
@@ -17,6 +21,7 @@ export const usePortfolioBalances = (): NetworkTokenBalancesAndAllowances => {
 export const fetchAndStorePortfolioBalances = createAsyncThunk(
   'portfolio/fetchAndStorePortfolioBalances',
   async (address: string) => {
+    console.log('got hit')
     const portfolioData = await fetchPortfolioBalances(address)
     return portfolioData
   }

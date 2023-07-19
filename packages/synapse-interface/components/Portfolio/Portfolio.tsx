@@ -1,5 +1,6 @@
-import React, { useState, useEffect } from 'react'
+import React, { useEffect } from 'react'
 import { useAccount, useNetwork } from 'wagmi'
+import { useAppDispatch } from '@/store/hooks'
 import { setFromChainId } from '@/slices/bridge/reducer'
 import { PortfolioTabManager } from './PortfolioTabManager'
 import {
@@ -10,19 +11,21 @@ import { PortfolioContent, HomeContent } from './PortfolioContent'
 import {
   useFetchPortfolioBalances,
   fetchAndStorePortfolioBalances,
+  usePortfolioState,
 } from '@/slices/portfolio/hooks'
-import { useAppDispatch } from '@/store/hooks'
+import { PortfolioTabs, setActiveTab } from '@/slices/portfolio/actions'
+import { PortfolioState } from '@/slices/portfolio/reducer'
 import { useBridgeState } from '@/slices/bridge/hooks'
-
-export enum PortfolioTabs {
-  HOME = 'home',
-  PORTFOLIO = 'portfolio',
-}
+import { BridgeState } from '@/slices/bridge/reducer'
 
 export const Portfolio = () => {
-  const [tab, setTab] = useState<PortfolioTabs>(PortfolioTabs.HOME)
-  const { fromChainId, bridgeTxHashes } = useBridgeState()
-  const { address } = useAccount()
+  const { fromChainId, bridgeTxHashes }: BridgeState = useBridgeState()
+  const { activeTab }: PortfolioState = usePortfolioState()
+  const { address } = useAccount({
+    onConnect({ address, connector, isReconnected }) {
+      dispatch(setActiveTab(PortfolioTabs.PORTFOLIO))
+    },
+  })
   const { chain } = useNetwork()
   const dispatch = useAppDispatch()
 
@@ -34,12 +37,6 @@ export const Portfolio = () => {
 
   const filteredPortfolioDataForBalances: NetworkTokenBalancesAndAllowances =
     filterPortfolioBalancesWithBalances(portfolioData)
-
-  useEffect(() => {
-    if (address) {
-      setTab(PortfolioTabs.PORTFOLIO)
-    }
-  }, [address])
 
   useEffect(() => {
     ;(async () => {
@@ -55,10 +52,10 @@ export const Portfolio = () => {
       data-test-id="portfolio"
       className="flex flex-col w-full max-w-lg mx-auto lg:mx-0"
     >
-      <PortfolioTabManager activeTab={tab} setTab={setTab} />
+      <PortfolioTabManager />
       <div className="mt-4">
-        {tab === PortfolioTabs.HOME && <HomeContent />}
-        {tab === PortfolioTabs.PORTFOLIO && (
+        {activeTab === PortfolioTabs.HOME && <HomeContent />}
+        {activeTab === PortfolioTabs.PORTFOLIO && (
           <PortfolioContent
             connectedAddress={address}
             connectedChainId={chain?.id}
