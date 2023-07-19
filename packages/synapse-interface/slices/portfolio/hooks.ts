@@ -5,7 +5,7 @@ import { AppDispatch, RootState } from '@/store/store'
 import { fetchAndStorePortfolioBalances } from './reducer'
 
 export const useFetchPortfolioBalances = () => {
-  const dispatch: AppDispatch = useDispatch() // use AppDispatch type instead of generic dispatch
+  const dispatch: AppDispatch = useDispatch()
   const { address } = getAccount()
   const { balancesAndAllowances, status, error } = useSelector(
     (state: RootState) => state.portfolio

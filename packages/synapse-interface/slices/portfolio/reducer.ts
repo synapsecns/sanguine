@@ -19,6 +19,7 @@ export enum FetchState {
   VALID = 'valid',
   INVALID = 'invalid',
 }
+
 export interface PortfolioState {
   balancesAndAllowances: NetworkTokenBalancesAndAllowances
   status: FetchState
