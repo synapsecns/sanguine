@@ -22,7 +22,7 @@ import {
   setDeadlineMinutes,
   setDestinationAddress,
   addBridgeTxHash,
-} from '@/slices/bridgeSlice'
+} from '@/slices/bridge/bridgeSlice'
 
 import {
   setShowDestinationAddress,

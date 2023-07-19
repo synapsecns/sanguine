@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
 import { useAccount, useNetwork } from 'wagmi'
 import { RootState, AppDispatch } from '@/store/store'
-import { setFromChainId } from '@/slices/bridgeSlice'
+import { setFromChainId } from '@/slices/bridge/bridgeSlice'
 import { PortfolioTabManager } from './PortfolioTabManager'
 import {
   usePortfolioBalancesAndAllowances,

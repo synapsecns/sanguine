@@ -1,4 +1,4 @@
-import { setDestinationAddress } from '@/slices/bridgeSlice'
+import { setDestinationAddress } from '@/slices/bridge/bridgeSlice'
 import { CHAINS_BY_ID } from '@constants/chains'
 import { useDispatch } from 'react-redux'
 import { Address } from 'wagmi'

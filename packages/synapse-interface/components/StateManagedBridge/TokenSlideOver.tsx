@@ -9,7 +9,7 @@ import { Token } from '@/utils/types'
 import { useDispatch, useSelector } from 'react-redux'
 import { RootState } from '@/store/store'
 import { Zero } from '@ethersproject/constants'
-import { setFromToken, setToToken } from '@/slices/bridgeSlice'
+import { setFromToken, setToToken } from '@/slices/bridge/bridgeSlice'
 import {
   setShowFromTokenSlideOver,
   setShowToTokenSlideOver,
@@ -150,10 +150,10 @@ export const TokenSlideOver = ({
           let balance
 
           if (isOrigin) {
-            const tokenAndBalance = (supportedFromTokenBalances).filter(
+            const tokenAndBalance = supportedFromTokenBalances.filter(
               (t) => t.token === token
             )
-              console.log(tokenAndBalance)
+            console.log(tokenAndBalance)
             balance = tokenAndBalance[0]?.balance ?? Zero
           } else {
             balance = Zero

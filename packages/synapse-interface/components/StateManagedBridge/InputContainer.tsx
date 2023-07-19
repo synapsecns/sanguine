@@ -3,7 +3,7 @@ import { useDispatch, useSelector } from 'react-redux'
 import { useAccount } from 'wagmi'
 import { RootState } from '@/store/store'
 
-import { updateFromValue } from '@/slices/bridgeSlice'
+import { updateFromValue } from '@/slices/bridge/bridgeSlice'
 import { setShowFromTokenSlideOver } from '@/slices/bridgeDisplaySlice'
 import SelectTokenDropdown from '@/components/input/TokenAmountInput/SelectTokenDropdown'
 import MiniMaxButton from '../buttons/MiniMaxButton'

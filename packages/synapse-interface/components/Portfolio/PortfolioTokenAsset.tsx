@@ -6,7 +6,7 @@ import {
   setFromChainId,
   setFromToken,
   updateFromValue,
-} from '@/slices/bridgeSlice'
+} from '@/slices/bridge/bridgeSlice'
 import { Token } from '@/utils/types'
 import { formatBigIntToString } from '@/utils/bigint/format'
 import { CHAINS_BY_ID } from '@/constants/chains'
