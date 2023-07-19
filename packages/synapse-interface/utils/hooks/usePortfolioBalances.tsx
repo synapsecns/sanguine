@@ -4,6 +4,7 @@ import { multicall, erc20ABI, getAccount, Address } from '@wagmi/core'
 import { sortByTokenBalance } from '../sortTokens'
 import { Token } from '../types'
 import { BRIDGABLE_TOKENS } from '@/constants/tokens'
+import { FetchState } from '@/slices/portfolio/reducer'
 
 export const ROUTER_ADDRESS = '0x7E7A0e201FD38d3ADAA9523Da6C109a07118C96a'
 
@@ -58,12 +59,6 @@ function mergeBalancesAndAllowances(
       allowance: null,
     }
   })
-}
-
-export enum FetchState {
-  LOADING,
-  VALID,
-  INVALID,
 }
 
 // export const usePortfolioBalancesAndAllowances = (): {
@@ -186,10 +181,10 @@ export const fetchPortfolioBalances = async (address) => {
       balanceRecord[currentChainId] = mergedBalancesAndAllowances
     })
 
-    return { balancesAndAllowances: balanceRecord, status: 'succeeded' }
+    return { balancesAndAllowances: balanceRecord, status: FetchState.VALID }
   } catch (error) {
     console.error('error from fetch:', error)
-    return { balancesAndAllowances: {}, status: 'failed', error }
+    return { balancesAndAllowances: {}, status: FetchState.INVALID, error }
   }
 }
 
@@ -207,7 +202,9 @@ export const usePortfolioBalancesAndAllowances = (): {
     fetchPortfolioBalances(address).then((result) => {
       setBalancesAndAllowances(result.balancesAndAllowances)
       setStatus(
-        result.status === 'succeeded' ? FetchState.VALID : FetchState.INVALID
+        result.status === FetchState.VALID
+          ? FetchState.VALID
+          : FetchState.INVALID
       )
     })
   }
