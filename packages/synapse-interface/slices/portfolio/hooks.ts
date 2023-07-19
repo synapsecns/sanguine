@@ -13,7 +13,7 @@ export const useFetchPortfolioBalances = () => {
 
   const fetch = () => {
     if (address) {
-      dispatch(fetchAndStorePortfolioBalances())
+      dispatch(fetchAndStorePortfolioBalances(address))
     }
   }
 

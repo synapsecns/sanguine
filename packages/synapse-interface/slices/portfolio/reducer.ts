@@ -8,9 +8,7 @@ import {
 export const fetchAndStorePortfolioBalances = createAsyncThunk(
   'portfolio/fetchAndStorePortfolioBalances',
   async (address: string) => {
-    console.log('this got hit 2')
     const portfolioData = await fetchPortfolioBalances(address)
-    console.log('portfolioData: ', portfolioData)
     return portfolioData
   }
 )

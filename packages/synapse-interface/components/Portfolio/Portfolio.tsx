@@ -28,16 +28,8 @@ export const Portfolio = () => {
     (state: RootState) => state.bridge
   )
 
-  const {
-    balancesAndAllowances: portfolioStoreData,
-    fetchPortfolioBalances: fetchPortfolioStoreBalances,
-    status,
-    error,
-  } = useFetchPortfolioBalances()
-
   useEffect(() => {
     if (address) {
-      console.log('this got hit')
       dispatch(fetchAndStorePortfolioBalances(address))
     }
   }, [address])
