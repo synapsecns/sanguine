@@ -31,6 +31,12 @@ export const PortfolioContent = ({
     selectedFromChainId,
     networkPortfolioWithBalances
   )
+  const portfolioExists: boolean =
+    Object.keys(networkPortfolioWithBalances).length > 0
+
+  const isInitialFetchLoading: boolean =
+    !portfolioExists && fetchState === FetchState.LOADING
+
   return (
     <div data-test-id="portfolio-content">
       {currentNetwork && connectedChainId && selectedFromChainId && (
@@ -45,7 +51,7 @@ export const PortfolioContent = ({
         />
       )}
       {connectedAddress ? (
-        fetchState === FetchState.LOADING ? (
+        isInitialFetchLoading ? (
           <LoadingPortfolioContent />
         ) : (
           Object.keys(remainingNetworks).map(
