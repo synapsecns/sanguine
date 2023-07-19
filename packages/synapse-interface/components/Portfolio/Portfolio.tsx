@@ -1,18 +1,16 @@
-import React, { useState, useEffect, useRef } from 'react'
-import { useDispatch, useSelector } from 'react-redux'
+import React, { useState, useEffect } from 'react'
 import { useAccount, useNetwork } from 'wagmi'
-import { RootState, AppDispatch } from '@/store/store'
 import { setFromChainId } from '@/slices/bridge/bridgeSlice'
 import { PortfolioTabManager } from './PortfolioTabManager'
 import {
-  usePortfolioBalancesAndAllowances,
   NetworkTokenBalancesAndAllowances,
   TokenWithBalanceAndAllowance,
 } from '@/utils/hooks/usePortfolioBalances'
-import { FetchState } from '@/slices/portfolio/reducer'
 import { PortfolioContent, HomeContent } from './PortfolioContent'
 import { useFetchPortfolioBalances } from '@/slices/portfolio/hooks'
 import { fetchAndStorePortfolioBalances } from '@/slices/portfolio/reducer'
+import { useAppDispatch } from '@/store/hooks'
+import { useBridgeState } from '@/slices/bridge/hooks'
 
 export enum PortfolioTabs {
   HOME = 'home',
@@ -21,12 +19,10 @@ export enum PortfolioTabs {
 
 export const Portfolio = () => {
   const [tab, setTab] = useState<PortfolioTabs>(PortfolioTabs.HOME)
+  const { fromChainId, bridgeTxHashes } = useBridgeState()
   const { address } = useAccount()
   const { chain } = useNetwork()
-  const dispatch = useDispatch<AppDispatch>()
-  const { fromChainId, bridgeTxHashes } = useSelector(
-    (state: RootState) => state.bridge
-  )
+  const dispatch = useAppDispatch()
 
   useEffect(() => {
     if (address) {
@@ -38,7 +34,7 @@ export const Portfolio = () => {
     balancesAndAllowances: portfolioData,
     fetchPortfolioBalances,
     status: fetchState,
-  } = usePortfolioBalancesAndAllowances()
+  } = useFetchPortfolioBalances()
 
   const filteredPortfolioDataForBalances: NetworkTokenBalancesAndAllowances =
     filterPortfolioBalancesWithBalances(portfolioData)
@@ -53,7 +49,7 @@ export const Portfolio = () => {
     ;(async () => {
       if (address && chain.id) {
         await dispatch(setFromChainId(chain.id))
-        await fetchPortfolioBalances()
+        await dispatch(fetchAndStorePortfolioBalances(address))
       }
     })()
   }, [address, chain])

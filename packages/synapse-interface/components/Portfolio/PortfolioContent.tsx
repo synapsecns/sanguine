@@ -13,7 +13,7 @@ type PortfolioContentProps = {
   connectedChainId: number
   selectedFromChainId: number
   networkPortfolioWithBalances: NetworkTokenBalancesAndAllowances
-  fetchPortfolioBalancesCallback: () => Promise<void>
+  fetchPortfolioBalancesCallback: () => void
   fetchState: FetchState
   bridgeTxHashes: string[]
 }

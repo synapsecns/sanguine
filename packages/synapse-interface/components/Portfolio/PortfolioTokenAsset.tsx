@@ -24,7 +24,7 @@ type PortfolioTokenAssetProps = {
   portfolioChainId: number
   connectedChainId: number
   isApproved: boolean
-  fetchPortfolioBalancesCallback: () => Promise<void>
+  fetchPortfolioBalancesCallback: () => void
 }
 
 function hasOnlyZeros(input: string): boolean {

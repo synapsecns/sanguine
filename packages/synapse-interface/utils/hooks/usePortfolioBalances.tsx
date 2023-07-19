@@ -61,58 +61,6 @@ function mergeBalancesAndAllowances(
   })
 }
 
-// export const usePortfolioBalancesAndAllowances = (): {
-//   balancesAndAllowances: NetworkTokenBalancesAndAllowances
-//   fetchPortfolioBalances: () => Promise<void>
-//   status: FetchState
-// } => {
-//   const [balancesAndAllowances, setBalancesAndAllowances] =
-//     useState<NetworkTokenBalancesAndAllowances>({})
-//   const [status, setStatus] = useState<FetchState>(FetchState.LOADING)
-
-//   const { chain } = useNetwork()
-//   const { address } = getAccount()
-//   const availableChains = Object.keys(BRIDGABLE_TOKENS)
-//   const filteredChains = availableChains.filter((chain) => chain !== '2000') // need to figure out whats wrong with Dogechain
-
-//   const fetchPortfolioBalances = async () => {
-//     const balanceRecord: NetworkTokenBalancesAndAllowances = {}
-//     try {
-//       const balancePromises = filteredChains.map(async (chainId) => {
-//         const currentChainId = Number(chainId)
-//         const currentChainTokens = BRIDGABLE_TOKENS[chainId]
-//         const [tokenBalances, tokenAllowances] = await Promise.all([
-//           getTokensByChainId(address, currentChainTokens, currentChainId),
-//           getTokensAllowance(
-//             address,
-//             ROUTER_ADDRESS,
-//             currentChainTokens,
-//             currentChainId
-//           ),
-//         ])
-//         const mergedBalancesAndAllowances = mergeBalancesAndAllowances(
-//           tokenBalances,
-//           tokenAllowances
-//         )
-//         return { currentChainId, mergedBalancesAndAllowances }
-//       })
-//       const balances = await Promise.all(balancePromises)
-//       balances.forEach(({ currentChainId, mergedBalancesAndAllowances }) => {
-//         balanceRecord[currentChainId] = mergedBalancesAndAllowances
-//       })
-//       setBalancesAndAllowances(balanceRecord)
-//       setStatus(FetchState.VALID)
-//     } catch (error) {
-//       console.error('error from fetch:', error)
-//       setStatus(FetchState.INVALID)
-//     }
-//   }
-
-//   return useMemo(() => {
-//     return { balancesAndAllowances, fetchPortfolioBalances, status }
-//   }, [balancesAndAllowances, fetchPortfolioBalances])
-// }
-
 const getTokensAllowance = async (
   owner: string,
   spender: string,

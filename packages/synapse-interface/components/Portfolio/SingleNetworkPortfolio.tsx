@@ -15,7 +15,7 @@ type SingleNetworkPortfolioProps = {
   selectedFromChainId: number
   portfolioTokens: TokenWithBalanceAndAllowance[]
   initializeExpanded: boolean
-  fetchPortfolioBalancesCallback: () => Promise<void>
+  fetchPortfolioBalancesCallback: () => void
   fetchState: FetchState
 }
 
