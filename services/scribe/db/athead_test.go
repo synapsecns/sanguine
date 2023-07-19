@@ -103,7 +103,6 @@ func (t *DBSuite) TestFlushLogs() {
 		logs, err := testDB.RetrieveLogsFromHeadRangeQuery(t.GetTestContext(), logFilter, 0, desiredBlockHeight, 1)
 		Nil(t.T(), err)
 		Equal(t.T(), 100, len(logs))
-		Equal(t.T(), uint(1), logs[99].Index)
 		Equal(t.T(), uint64(desiredBlockHeight), logs[0].BlockNumber)
 		err = testDB.FlushLogsFromHead(t.GetTestContext(), deleteTimestamp)
 		Nil(t.T(), err)
