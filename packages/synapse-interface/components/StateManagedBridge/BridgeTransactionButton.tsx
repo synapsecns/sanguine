@@ -1,4 +1,5 @@
 import { useSelector } from 'react-redux'
+import { useMemo } from 'react'
 import { TransactionButton } from '@/components/buttons/TransactionButton'
 import { EMPTY_BRIDGE_QUOTE, EMPTY_BRIDGE_QUOTE_ZERO } from '@/constants/bridge'
 import { RootState } from '@/store/store'
@@ -59,10 +60,16 @@ export const BridgeTransactionButton = ({
 
   let buttonProperties
 
-  const fromValueBigInt = stringToBigInt(
-    fromValue,
-    fromToken.decimals[fromChainId]
-  )
+  // const fromValueBigInt = stringToBigInt(
+  //   fromValue,
+  //   fromToken.decimals[fromChainId]
+  // )
+
+  const fromTokenDecimals: number | undefined = fromToken.decimals[fromChainId]
+
+  const fromValueBigInt = useMemo(() => {
+    return fromTokenDecimals ? stringToBigInt(fromValue, fromTokenDecimals) : 0
+  }, [fromValue, fromTokenDecimals])
 
   if (!isLoading && bridgeQuote?.feeAmount === 0n && fromValueBigInt > 0) {
     buttonProperties = {
