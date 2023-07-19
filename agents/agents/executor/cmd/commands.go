@@ -18,7 +18,7 @@ import (
 	"github.com/synapsecns/sanguine/services/scribe/backend"
 	"github.com/synapsecns/sanguine/services/scribe/client"
 	scribeCmd "github.com/synapsecns/sanguine/services/scribe/cmd"
-	"github.com/synapsecns/sanguine/services/scribe/scribe"
+	"github.com/synapsecns/sanguine/services/scribe/service"
 	"go.opentelemetry.io/otel/attribute"
 	"go.opentelemetry.io/otel/trace"
 	"golang.org/x/sync/errgroup"
@@ -156,7 +156,7 @@ var ExecutorRunCommand = &cli.Command{
 				}
 			}
 
-			scribe, err := scribe.NewScribe(eventDB, scribeClients, executorConfig.ScribeConfig.EmbeddedScribeConfig, handler)
+			scribe, err := service.NewScribe(eventDB, scribeClients, executorConfig.ScribeConfig.EmbeddedScribeConfig, handler)
 			if err != nil {
 				return fmt.Errorf("failed to initialize scribe: %w", err)
 			}

@@ -16,7 +16,7 @@ import (
 	"github.com/synapsecns/sanguine/services/scribe/client"
 	"github.com/synapsecns/sanguine/services/scribe/config"
 	"github.com/synapsecns/sanguine/services/scribe/metadata"
-	"github.com/synapsecns/sanguine/services/scribe/scribe"
+	"github.com/synapsecns/sanguine/services/scribe/service"
 	"testing"
 )
 
@@ -69,7 +69,7 @@ func NewTestScribe(ctx context.Context, tb testing.TB, deployedContracts map[uin
 		RPCURL: omnirpcURL,
 	}
 
-	scribe, err := scribe.NewScribe(eventDB, scribeClients, scribeConfig, metricsProvider)
+	scribe, err := service.NewScribe(eventDB, scribeClients, scribeConfig, metricsProvider)
 	assert.Nil(tb, err)
 
 	go func() {

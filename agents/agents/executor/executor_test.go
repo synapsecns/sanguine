@@ -2,7 +2,6 @@ package executor_test
 
 import (
 	"github.com/synapsecns/sanguine/services/scribe/backend"
-	"github.com/synapsecns/sanguine/services/scribe/scribe"
 	"math/big"
 	"time"
 
@@ -16,6 +15,8 @@ import (
 	"github.com/synapsecns/sanguine/core/merkle"
 	agentsConfig "github.com/synapsecns/sanguine/ethergo/signer/config"
 	"github.com/synapsecns/sanguine/services/scribe/client"
+	"github.com/synapsecns/sanguine/services/scribe/service"
+
 	"github.com/synapsecns/sanguine/services/scribe/config"
 )
 
@@ -150,7 +151,7 @@ func (e *ExecutorSuite) TestMerkleInsert() {
 		chainID: {simulatedClient, simulatedClient},
 	}
 
-	scribe, err := scribe.NewScribe(e.ScribeTestDB, clients, scribeConfig, e.ScribeMetrics)
+	scribe, err := service.NewScribe(e.ScribeTestDB, clients, scribeConfig, e.ScribeMetrics)
 	e.Nil(err)
 
 	scribeClient := client.NewEmbeddedScribe("sqlite", e.DBPath, e.ScribeMetrics)
@@ -534,7 +535,7 @@ func (e *ExecutorSuite) TestExecutor() {
 		summit:      {summitClient, summitClient},
 	}
 
-	scribe, err := scribe.NewScribe(e.ScribeTestDB, clients, scribeConfig, e.ScribeMetrics)
+	scribe, err := service.NewScribe(e.ScribeTestDB, clients, scribeConfig, e.ScribeMetrics)
 	e.Nil(err)
 
 	scribeClient := client.NewEmbeddedScribe("sqlite", e.DBPath, e.ScribeMetrics)

@@ -3,7 +3,7 @@ package cmd
 import (
 	"github.com/synapsecns/sanguine/core/metrics"
 	"github.com/synapsecns/sanguine/services/scribe/backend"
-	"github.com/synapsecns/sanguine/services/scribe/scribe"
+	"github.com/synapsecns/sanguine/services/scribe/service"
 	// used to embed markdown.
 	_ "embed"
 	"fmt"
@@ -95,7 +95,7 @@ var scribeCommand = &cli.Command{
 		if err != nil {
 			return err
 		}
-		scribe, err := scribe.NewScribe(db, clients, decodeConfig, metrics.Get())
+		scribe, err := service.NewScribe(db, clients, decodeConfig, metrics.Get())
 		if err != nil {
 			return fmt.Errorf("could not create scribe: %w", err)
 		}

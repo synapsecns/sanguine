@@ -3,13 +3,12 @@ package agentsintegration_test
 import (
 	signerConfig "github.com/synapsecns/sanguine/ethergo/signer/config"
 	"github.com/synapsecns/sanguine/services/scribe/backend"
-	"github.com/synapsecns/sanguine/services/scribe/scribe"
-
 	"math/big"
 	"os"
 	"testing"
 	"time"
 
+	"github.com/Flaque/filet"
 	awsTime "github.com/aws/smithy-go/time"
 	"github.com/brianvoe/gofakeit/v6"
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
@@ -23,8 +22,7 @@ import (
 	"github.com/synapsecns/sanguine/agents/types"
 	"github.com/synapsecns/sanguine/services/scribe/client"
 	scribeConfig "github.com/synapsecns/sanguine/services/scribe/config"
-
-	"github.com/Flaque/filet"
+	"github.com/synapsecns/sanguine/services/scribe/service"
 )
 
 func RemoveAgentsTempFile(t *testing.T, fileName string) {
@@ -93,7 +91,7 @@ func (u *AgentsIntegrationSuite) TestAgentsE2E() {
 		uint32(u.TestBackendSummit.GetChainID()):      {summitClient, summitClient},
 	}
 
-	scribe, err := scribe.NewScribe(u.ScribeTestDB, clients, scribeConfig, u.ScribeMetrics)
+	scribe, err := service.NewScribe(u.ScribeTestDB, clients, scribeConfig, u.ScribeMetrics)
 	u.Nil(err)
 
 	scribeClient := client.NewEmbeddedScribe("sqlite", u.DBPath, u.ScribeMetrics)
