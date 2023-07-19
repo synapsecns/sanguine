@@ -1,3 +1,4 @@
+// Package main contains the command line interface for running cctp-relayer
 package main
 
 import (
