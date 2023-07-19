@@ -22,8 +22,9 @@ export const Portfolio = () => {
   const { fromChainId, bridgeTxHashes }: BridgeState = useBridgeState()
   const { activeTab }: PortfolioState = usePortfolioState()
   const { address } = useAccount({
-    onConnect({ address, connector, isReconnected }) {
-      dispatch(setActiveTab(PortfolioTabs.PORTFOLIO))
+    async onConnect() {
+      await dispatch(setActiveTab(PortfolioTabs.PORTFOLIO))
+      await dispatch(fetchAndStorePortfolioBalances(address))
     },
   })
   const { chain } = useNetwork()
@@ -38,14 +39,14 @@ export const Portfolio = () => {
   const filteredPortfolioDataForBalances: NetworkTokenBalancesAndAllowances =
     filterPortfolioBalancesWithBalances(portfolioData)
 
-  useEffect(() => {
-    ;(async () => {
-      if (address && chain.id) {
-        await dispatch(setFromChainId(chain.id))
-        await dispatch(fetchAndStorePortfolioBalances(address))
-      }
-    })()
-  }, [address])
+  // useEffect(() => {
+  //   ;(async () => {
+  //     if (address && chain.id) {
+  //       await dispatch(setFromChainId(chain.id))
+  //       await dispatch(fetchAndStorePortfolioBalances(address))
+  //     }
+  //   })()
+  // }, [address])
 
   return (
     <div
