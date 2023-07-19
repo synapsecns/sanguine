@@ -83,6 +83,8 @@ import ExplorerToastLink from '@/components/ExplorerToastLink'
 import { Address, zeroAddress } from 'viem'
 import { stringToBigInt } from '@/utils/bigint/format'
 import { Warning } from '@/components/Warning'
+import { useAppDispatch } from '@/store/hooks'
+import { fetchAndStorePortfolioBalances } from '@/slices/portfolio/hooks'
 
 // NOTE: These are idle utility functions that will be re-written to
 // support sorting by desired mechanism
@@ -142,7 +144,7 @@ const StateManagedBridge = () => {
 
   const [isApproved, setIsApproved] = useState(false)
 
-  const dispatch = useDispatch()
+  const dispatch = useAppDispatch()
 
   const fromChainIds = Object.keys(CHAINS_BY_ID).map((id) => Number(id))
   const toChainIds = Object.keys(CHAINS_BY_ID).map((id) => Number(id))
@@ -443,6 +445,10 @@ const StateManagedBridge = () => {
         })
 
         toast.dismiss(pendingPopup)
+
+        setTimeout(async () => {
+          await dispatch(fetchAndStorePortfolioBalances(address))
+        }, 2000)
 
         return tx
       } catch (error) {
