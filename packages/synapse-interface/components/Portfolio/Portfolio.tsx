@@ -24,6 +24,7 @@ export const Portfolio = () => {
   const { address } = useAccount({
     async onConnect() {
       await dispatch(setActiveTab(PortfolioTabs.PORTFOLIO))
+      await dispatch(setFromChainId(chain.id))
       await dispatch(fetchAndStorePortfolioBalances(address))
     },
   })
@@ -38,15 +39,6 @@ export const Portfolio = () => {
 
   const filteredPortfolioDataForBalances: NetworkTokenBalancesAndAllowances =
     filterPortfolioBalancesWithBalances(portfolioData)
-
-  // useEffect(() => {
-  //   ;(async () => {
-  //     if (address && chain.id) {
-  //       await dispatch(setFromChainId(chain.id))
-  //       await dispatch(fetchAndStorePortfolioBalances(address))
-  //     }
-  //   })()
-  // }, [address])
 
   return (
     <div
