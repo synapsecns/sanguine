@@ -6,7 +6,7 @@ import { Chain } from '@/utils/types'
 import PortfolioAccordion from './PortfolioAccordion'
 import { PortfolioConnectButton } from './PortfolioConnectButton'
 import { EmptyPortfolioContent } from './PortfolioContent'
-import { FetchState } from '@/utils/hooks/usePortfolioBalances'
+import { FetchState } from '@/slices/portfolio/reducer'
 import { PortfolioTokenAsset } from './PortfolioTokenAsset'
 
 type SingleNetworkPortfolioProps = {

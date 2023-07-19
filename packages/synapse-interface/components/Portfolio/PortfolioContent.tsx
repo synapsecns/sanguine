@@ -1,13 +1,11 @@
 import React, { useEffect } from 'react'
 import { Address } from 'wagmi'
-import {
-  NetworkTokenBalancesAndAllowances,
-  FetchState,
-} from '@/utils/hooks/usePortfolioBalances'
+import { NetworkTokenBalancesAndAllowances } from '@/utils/hooks/usePortfolioBalances'
 import {
   SingleNetworkPortfolio,
   PortfolioHeader,
 } from './SingleNetworkPortfolio'
+import { FetchState } from '@/slices/portfolio/reducer'
 import { ConnectWalletButton } from './ConnectWalletButton'
 
 type PortfolioContentProps = {

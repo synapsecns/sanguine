@@ -8,8 +8,8 @@ import {
   usePortfolioBalancesAndAllowances,
   NetworkTokenBalancesAndAllowances,
   TokenWithBalanceAndAllowance,
-  FetchState,
 } from '@/utils/hooks/usePortfolioBalances'
+import { FetchState } from '@/slices/portfolio/reducer'
 import { PortfolioContent, HomeContent } from './PortfolioContent'
 import { useFetchPortfolioBalances } from '@/slices/portfolio/hooks'
 import { fetchAndStorePortfolioBalances } from '@/slices/portfolio/reducer'
