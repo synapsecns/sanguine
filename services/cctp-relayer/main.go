@@ -1,4 +1,4 @@
-// Package main contains the command line interface for running cctp-relayer
+// Package main is the entry point for the cctp relayer
 package main
 
 import (
