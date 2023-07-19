@@ -235,24 +235,24 @@ export const NEWO = new Token({
   priorityRank: 6,
 })
 
-// export const USDB = new Token({
-//  addresses: {
-//    [CHAINS.ETH.id]: '0x02b5453d92b730f29a86a0d5ef6e930c4cf8860b',
-//    [CHAINS.BNB.id]: '0xc8699abbba90c7479dedccef19ef78969a2fc608',
-//    [CHAINS.POLYGON.id]: '0xfa1fbb8ef55a4855e5688c0ee13ac3f202486286',
-//    [CHAINS.FANTOM.id]: '0x6fc9383486c163fa48becdec79d6058f984f62ca',
-//    [CHAINS.AVALANCHE.id]: '0x5ab7084cb9d270c2cb052dd30dbecbca42f8620c',
-//    [CHAINS.MOONRIVER.id]: '0x3e193c39626bafb41ebe8bdd11ec7cca9b3ec0b2',
-//  },
-//  decimals: 18,
-//  symbol: 'USDB',
-//  name: 'USDB',
-//  logo: usdbLogo,
-//  description: 'USDB',
-//  docUrl: '',
-//  swapableType: 'USDB',
-//  priorityRank: 6,
-// })
+export const USDB = new Token({
+  addresses: {
+    [CHAINS.ETH.id]: '0x02b5453d92b730f29a86a0d5ef6e930c4cf8860b',
+    [CHAINS.BNB.id]: '0xc8699abbba90c7479dedccef19ef78969a2fc608',
+    [CHAINS.POLYGON.id]: '0xfa1fbb8ef55a4855e5688c0ee13ac3f202486286',
+    [CHAINS.FANTOM.id]: '0x6fc9383486c163fa48becdec79d6058f984f62ca',
+    [CHAINS.AVALANCHE.id]: '0x5ab7084cb9d270c2cb052dd30dbecbca42f8620c',
+    [CHAINS.MOONRIVER.id]: '0x3e193c39626bafb41ebe8bdd11ec7cca9b3ec0b2',
+  },
+  decimals: 18,
+  symbol: 'USDB',
+  name: 'USDB',
+  logo: usdbLogo,
+  description: 'USDB',
+  docUrl: '',
+  swapableType: 'USDB',
+  priorityRank: 6,
+})
 
 export const PEPE = new Token({
   addresses: {
@@ -357,8 +357,10 @@ export const AGEUR = new Token({
 
 export const UNIDX = new Token({
   addresses: {
-    [CHAINS.ETH.id]: '0x95b3497bbcccc46a8f45f5cf54b0878b39f8d96c', // deposit
+    [CHAINS.ETH.id]: '0xf0655dcee37e5c0b70fffd70d85f88f8edf0aff6', // deposit
     [CHAINS.ARBITRUM.id]: '0x5429706887FCb58a595677B73E9B0441C25d993D', // redeem
+    [CHAINS.FANTOM.id]: '0x0483a76D80D0aFEC6bd2afd12C1AD865b9DF1471',
+    [CHAINS.OPTIMISM.id]: '0x28b42698Caf46B4B012CF38b6C75867E0762186D',
   },
   decimals: 18,
   symbol: 'UNIDX',
