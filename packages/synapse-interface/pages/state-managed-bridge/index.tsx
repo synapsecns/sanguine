@@ -210,7 +210,10 @@ const StateManagedBridge = () => {
     console.log(`[useEffect] fromToken`, fromToken.symbol)
     console.log(`[useEffect] toToken`, toToken.symbol)
     // TODO: Double serialization happening somewhere??
-    if (stringToBigInt(fromValue, fromToken.decimals[fromChainId]) > 0n) {
+    if (
+      fromToken.decimals[fromChainId] &&
+      stringToBigInt(fromValue, fromToken.decimals[fromChainId]) > 0n
+    ) {
       console.log('trying to set bridge quote')
       getAndSetBridgeQuote()
     } else {
