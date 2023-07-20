@@ -57,10 +57,9 @@ export const portfolioSlice = createSlice({
           // Update the existing balancesAndAllowances object
           Object.entries(balancesAndAllowances).forEach(
             ([chainId, mergedBalancesAndAllowances]) => {
-              state.balancesAndAllowances[chainId] = {
-                ...state.balancesAndAllowances[chainId],
+              state.balancesAndAllowances[chainId] = [
                 ...mergedBalancesAndAllowances,
-              }
+              ]
             }
           )
 

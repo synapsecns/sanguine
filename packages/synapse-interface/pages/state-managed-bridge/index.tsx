@@ -84,7 +84,10 @@ import { Address, zeroAddress } from 'viem'
 import { stringToBigInt } from '@/utils/bigint/format'
 import { Warning } from '@/components/Warning'
 import { useAppDispatch } from '@/store/hooks'
-import { fetchAndStorePortfolioBalances } from '@/slices/portfolio/hooks'
+import {
+  fetchAndStorePortfolioBalances,
+  fetchAndStoreSingleNetworkPortfolioBalances,
+} from '@/slices/portfolio/hooks'
 
 // NOTE: These are idle utility functions that will be re-written to
 // support sorting by desired mechanism
@@ -447,7 +450,12 @@ const StateManagedBridge = () => {
         toast.dismiss(pendingPopup)
 
         setTimeout(async () => {
-          await dispatch(fetchAndStorePortfolioBalances(address))
+          await dispatch(
+            fetchAndStoreSingleNetworkPortfolioBalances({
+              address: address,
+              chainId: fromChainId,
+            })
+          )
         }, 2000)
 
         return tx
