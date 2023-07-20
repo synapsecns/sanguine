@@ -112,8 +112,12 @@ export const fetchPortfolioBalances = async (
   chainId?: number | undefined | null
 ) => {
   const balanceRecord = {}
-  const availableChains = Object.keys(BRIDGABLE_TOKENS)
-  const filteredChains = availableChains.filter((chain) => chain !== '2000') // need to figure out whats wrong with Dogechain
+  const availableChains: string[] = Object.keys(BRIDGABLE_TOKENS)
+  const isSingleNetworkCall: boolean = typeof chainId === 'number'
+
+  const filteredChains: string[] = availableChains.filter((chain: string) => {
+    return isSingleNetworkCall ? Number(chain) === chainId : chain !== '2000' // need to figure out whats wrong with Dogechain
+  })
 
   try {
     const balancePromises = filteredChains.map(async (chainId) => {
