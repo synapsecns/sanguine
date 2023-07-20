@@ -2,7 +2,7 @@ import _ from 'lodash'
 import { configureStore } from '@reduxjs/toolkit'
 import { getAccount } from '@wagmi/core'
 
-import bridgeReducer, { tokenDecimalMiddleware } from '@/slices/bridgeSlice'
+import bridgeReducer from '@/slices/bridgeSlice'
 import bridgeDisplayReducer from '@/slices/bridgeDisplaySlice'
 import poolDataReducer from '@/slices/poolDataSlice'
 import poolUserDataReducer from '@/slices/poolUserDataSlice'
@@ -22,7 +22,7 @@ export const store = configureStore({
   middleware: (getDefaultMiddleware) =>
     getDefaultMiddleware({
       serializableCheck: false,
-    }).concat(tokenDecimalMiddleware),
+    }),
 })
 
 let previousState = store.getState()

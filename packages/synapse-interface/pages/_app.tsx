@@ -1,6 +1,7 @@
 import '@styles/global.css'
 import '@rainbow-me/rainbowkit/styles.css'
 import type { AppProps } from 'next/app'
+import Head from 'next/head'
 import '@/patch'
 
 import {
@@ -30,7 +31,7 @@ import {
   RainbowKitProvider,
   darkTheme,
   getDefaultWallets,
-  connectorsForWallets
+  connectorsForWallets,
 } from '@rainbow-me/rainbowkit'
 import { JsonRpcProvider } from '@ethersproject/providers'
 import { jsonRpcProvider } from 'wagmi/providers/jsonRpc'
@@ -78,13 +79,16 @@ for (const chain of rawChains) {
   })
 }
 
-const { chains, publicClient, webSocketPublicClient } = configureChains(chainsMatured, [
-  jsonRpcProvider({
-    rpc: (chain) => ({
-      http: chain['configRpc'],
+const { chains, publicClient, webSocketPublicClient } = configureChains(
+  chainsMatured,
+  [
+    jsonRpcProvider({
+      rpc: (chain) => ({
+        http: chain['configRpc'],
+      }),
     }),
-  }),
-])
+  ]
+)
 
 const projectId = 'ab0a846bc693996606734d788cb6561d'
 
@@ -94,33 +98,36 @@ const { wallets } = getDefaultWallets({
   chains,
 })
 
-const connectors = connectorsForWallets([
-  ...wallets,
-]);
+const connectors = connectorsForWallets([...wallets])
 
 export const wagmiConfig = createConfig({
   autoConnect: true,
   connectors,
   publicClient,
-  webSocketPublicClient
+  webSocketPublicClient,
 })
 
 const App = ({ Component, pageProps }: AppProps) => {
   return (
-    <WagmiConfig config={wagmiConfig}>
-      <RainbowKitProvider chains={chains} theme={darkTheme()}>
-        <SynapseProvider chains={chains}>
-          <SegmentAnalyticsProvider>
-            <WalletAnalyticsProvider>
-              <Provider store={store}>
-                <Component {...pageProps} />
-                <CustomToaster />
-              </Provider>
-            </WalletAnalyticsProvider>
-          </SegmentAnalyticsProvider>
-        </SynapseProvider>
-      </RainbowKitProvider>
-    </WagmiConfig>
+    <>
+      <Head>
+        <title>Synapse Protocol</title>
+      </Head>
+      <WagmiConfig config={wagmiConfig}>
+        <RainbowKitProvider chains={chains} theme={darkTheme()}>
+          <SynapseProvider chains={chains}>
+            <SegmentAnalyticsProvider>
+              <WalletAnalyticsProvider>
+                <Provider store={store}>
+                  <Component {...pageProps} />
+                  <CustomToaster />
+                </Provider>
+              </WalletAnalyticsProvider>
+            </SegmentAnalyticsProvider>
+          </SynapseProvider>
+        </RainbowKitProvider>
+      </WagmiConfig>
+    </>
   )
 }
 
