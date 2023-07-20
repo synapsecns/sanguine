@@ -15,7 +15,6 @@ type SingleNetworkPortfolioProps = {
   selectedFromChainId: number
   portfolioTokens: TokenWithBalanceAndAllowance[]
   initializeExpanded: boolean
-  fetchPortfolioBalancesCallback: () => void
   fetchState: FetchState
 }
 
@@ -25,7 +24,6 @@ export const SingleNetworkPortfolio = ({
   selectedFromChainId,
   portfolioTokens,
   initializeExpanded = false,
-  fetchPortfolioBalancesCallback,
   fetchState,
 }: SingleNetworkPortfolioProps) => {
   const currentChain: Chain = CHAINS_BY_ID[portfolioChainId]
@@ -82,7 +80,6 @@ export const SingleNetworkPortfolio = ({
                 allowance={allowance}
                 portfolioChainId={portfolioChainId}
                 connectedChainId={connectedChainId}
-                fetchPortfolioBalancesCallback={fetchPortfolioBalancesCallback}
                 isApproved={true}
               />
             )
@@ -96,7 +93,6 @@ export const SingleNetworkPortfolio = ({
                 balance={balance}
                 portfolioChainId={portfolioChainId}
                 connectedChainId={connectedChainId}
-                fetchPortfolioBalancesCallback={fetchPortfolioBalancesCallback}
                 isApproved={false}
               />
             )

@@ -26,7 +26,6 @@ type PortfolioTokenAssetProps = {
   portfolioChainId: number
   connectedChainId: number
   isApproved: boolean
-  fetchPortfolioBalancesCallback: () => void
 }
 
 function hasOnlyZeros(input: string): boolean {
@@ -48,7 +47,6 @@ export const PortfolioTokenAsset = ({
   portfolioChainId,
   connectedChainId,
   isApproved,
-  fetchPortfolioBalancesCallback,
 }: PortfolioTokenAssetProps) => {
   const dispatch = useAppDispatch()
   const { fromChainId, fromToken } = useBridgeState()
