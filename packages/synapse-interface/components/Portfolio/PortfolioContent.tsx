@@ -25,10 +25,11 @@ export const PortfolioContent = ({
   fetchState,
   bridgeTxHashes,
 }: PortfolioContentProps) => {
-  const { currentNetwork, remainingNetworks } = getCurrentNetworkPortfolio(
-    selectedFromChainId,
-    networkPortfolioWithBalances
-  )
+  const { currentNetworkPortfolio, remainingNetworksPortfolios } =
+    getCurrentNetworkPortfolio(
+      selectedFromChainId,
+      networkPortfolioWithBalances
+    )
   const portfolioExists: boolean =
     Object.keys(networkPortfolioWithBalances).length > 0
 
@@ -37,12 +38,12 @@ export const PortfolioContent = ({
 
   return (
     <div data-test-id="portfolio-content">
-      {currentNetwork && connectedChainId && selectedFromChainId && (
+      {currentNetworkPortfolio && connectedChainId && selectedFromChainId && (
         <SingleNetworkPortfolio
           portfolioChainId={selectedFromChainId}
           connectedChainId={connectedChainId}
           selectedFromChainId={selectedFromChainId}
-          portfolioTokens={currentNetwork[selectedFromChainId]}
+          portfolioTokens={currentNetworkPortfolio[selectedFromChainId]}
           initializeExpanded={true}
           fetchState={fetchState}
         />
@@ -51,9 +52,9 @@ export const PortfolioContent = ({
         isInitialFetchLoading ? (
           <LoadingPortfolioContent />
         ) : (
-          Object.keys(remainingNetworks).map(
+          Object.keys(remainingNetworksPortfolios).map(
             (chainId: string, index: number) => {
-              const tokens = remainingNetworks[chainId]
+              const tokens = remainingNetworksPortfolios[chainId]
               return (
                 <SingleNetworkPortfolio
                   portfolioChainId={Number(chainId)}
@@ -81,19 +82,19 @@ function getCurrentNetworkPortfolio(
   currentChainId: number,
   networks: NetworkTokenBalancesAndAllowances
 ): {
-  currentNetwork: NetworkTokenBalancesAndAllowances
-  remainingNetworks: NetworkTokenBalancesAndAllowances
+  currentNetworkPortfolio: NetworkTokenBalancesAndAllowances
+  remainingNetworksPortfolios: NetworkTokenBalancesAndAllowances
 } {
-  const currentNetwork: NetworkTokenBalancesAndAllowances = {
+  const currentNetworkPortfolio: NetworkTokenBalancesAndAllowances = {
     [currentChainId]: networks[currentChainId],
   }
 
-  const remainingNetworks = { ...networks }
-  delete remainingNetworks[currentChainId]
+  const remainingNetworksPortfolios = { ...networks }
+  delete remainingNetworksPortfolios[currentChainId]
 
   return {
-    currentNetwork,
-    remainingNetworks,
+    currentNetworkPortfolio,
+    remainingNetworksPortfolios,
   }
 }
 
