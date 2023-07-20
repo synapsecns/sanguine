@@ -1,7 +1,11 @@
 package types
 
 import (
+	"context"
+	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/crypto"
+	"github.com/synapsecns/sanguine/core"
+	"github.com/synapsecns/sanguine/ethergo/signer/signer"
 	"math/big"
 )
 
@@ -34,6 +38,8 @@ type State interface {
 	Hash() ([32]byte, error)
 	// SubLeaves returns the left and right sub-leaves of the state.
 	SubLeaves() (leftLeaf, rightLeaf [32]byte, err error)
+	// SignState returns the signature of the state payload signed by the signer.
+	SignState(ctx context.Context, signer signer.Signer) (signer.Signature, []byte, common.Hash, error)
 }
 
 type state struct {
@@ -101,6 +107,30 @@ func (s state) SubLeaves() (leftLeaf, rightLeaf [32]byte, err error) {
 	leftLeaf = crypto.Keccak256Hash(encodedState[stateOffsetRoot:stateOffsetNonce])
 	rightLeaf = crypto.Keccak256Hash(encodedState[stateOffsetNonce:stateSize])
 	return
+}
+
+func (s state) SignState(ctx context.Context, signer signer.Signer) (signer.Signature, []byte, common.Hash, error) {
+	encodedState, err := EncodeState(s)
+	if err != nil {
+		return nil, nil, common.Hash{}, err
+	}
+
+	stateSalt := crypto.Keccak256Hash([]byte("STATE_INVALID_SALT"))
+
+	hashedEncodedState := crypto.Keccak256Hash(encodedState).Bytes()
+	toSign := append(stateSalt.Bytes(), hashedEncodedState...)
+
+	hashedState, err := HashRawBytes(toSign)
+	if err != nil {
+		return nil, nil, common.Hash{}, err
+	}
+
+	signature, err := signer.SignMessage(ctx, core.BytesToSlice(hashedState), true)
+	if err != nil {
+		return nil, nil, common.Hash{}, err
+	}
+
+	return signature, encodedState, hashedState, nil
 }
 
 var _ State = state{}

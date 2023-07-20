@@ -20,6 +20,7 @@ import (
 	"github.com/synapsecns/sanguine/services/scribe/node"
 )
 
+// TODO: Add a test for exiting the report logic early when the snapshot submitter is a guard.
 func (g GuardSuite) TestReportFraudulentStateInSnapshot() {
 	testDone := false
 	defer func() {
@@ -46,6 +47,10 @@ func (g GuardSuite) TestReportFraudulentStateInSnapshot() {
 	}
 
 	omniRPCClient := omniClient.NewOmnirpcClient(g.TestOmniRPC, g.GuardMetrics, omniClient.WithCaptureReqRes())
+
+	omnirpcDest := omniRPCClient.GetEndpoint(int(g.SummitDomainClient.Config().DomainID), 1)
+
+	fmt.Println("OMNIIIIII", omnirpcDest)
 
 	// Scribe setup.
 	originClient, err := backfill.DialBackend(g.GetTestContext(), g.TestBackendOrigin.RPCAddress(), g.ScribeMetrics)
@@ -124,11 +129,29 @@ func (g GuardSuite) TestReportFraudulentStateInSnapshot() {
 		}
 	}()
 
+	// Update the agent status on Origin.
+	notaryStatus, err := g.SummitDomainClient.BondingManager().GetAgentStatus(g.GetTestContext(), g.NotaryBondedSigner.Address())
+	Nil(g.T(), err)
+	notaryProof, err := g.SummitDomainClient.BondingManager().GetProof(g.GetTestContext(), g.NotaryBondedSigner)
+	Nil(g.T(), err)
+	err = g.OriginDomainClient.LightManager().UpdateAgentStatus(
+		g.GetTestContext(),
+		g.NotaryUnbondedSigner,
+		g.NotaryBondedSigner,
+		notaryStatus,
+		notaryProof,
+	)
+	Nil(g.T(), err)
+
 	// Verify that the agent is marked as Active
 	txContextSummit := g.TestBackendSummit.GetTxContext(g.GetTestContext(), g.SummitMetadata.OwnerPtr())
-	status, err := g.OriginDomainClient.LightManager().GetAgentStatus(g.GetTestContext(), g.GuardBondedSigner.Address())
+	status, err := g.OriginDomainClient.LightManager().GetAgentStatus(g.GetTestContext(), g.NotaryBondedSigner.Address())
 	Equal(g.T(), status.Flag(), uint8(1))
 	Nil(g.T(), err)
+
+	// Before submitting the attestation, ensure that there are no disputes opened.
+	err = g.DestinationDomainClient.LightManager().GetDispute(g.GetTestContext(), big.NewInt(0))
+	NotNil(g.T(), err)
 
 	// Create a fraudulent snapshot
 	gasData := types.NewGasData(gofakeit.Uint16(), gofakeit.Uint16(), gofakeit.Uint16(), gofakeit.Uint16(), gofakeit.Uint16(), gofakeit.Uint16())
@@ -141,18 +164,25 @@ func (g GuardSuite) TestReportFraudulentStateInSnapshot() {
 		gasData,
 	)
 	fraudulentSnapshot := types.NewSnapshot([]types.State{fraudulentState})
-	snapshotSignature, encodedSnapshot, _, err := fraudulentSnapshot.SignSnapshot(g.GetTestContext(), g.GuardBondedSigner)
-	Nil(g.T(), err)
 
-	// Submit the snapshot
-	tx, err := g.SummitDomainClient.Inbox().SubmitSnapshot(txContextSummit.TransactOpts, g.NotaryBondedSigner, encodedSnapshot, snapshotSignature)
+	// Submit the snapshot with a guard then notary
+	guardSnapshotSignature, encodedSnapshot, _, err := fraudulentSnapshot.SignSnapshot(g.GetTestContext(), g.GuardBondedSigner)
+	Nil(g.T(), err)
+	tx, err := g.SummitDomainClient.Inbox().SubmitSnapshotCtx(g.GetTestContext(), g.GuardUnbondedSigner, encodedSnapshot, guardSnapshotSignature)
+	Nil(g.T(), err)
+	NotNil(g.T(), tx)
+	g.TestBackendSummit.WaitForConfirmation(g.GetTestContext(), tx)
+
+	notarySnapshotSignature, encodedSnapshot, _, err := fraudulentSnapshot.SignSnapshot(g.GetTestContext(), g.NotaryBondedSigner)
+	Nil(g.T(), err)
+	tx, err = g.SummitDomainClient.Inbox().SubmitSnapshotCtx(g.GetTestContext(), g.NotaryUnbondedSigner, encodedSnapshot, notarySnapshotSignature)
 	Nil(g.T(), err)
 	NotNil(g.T(), tx)
 	g.TestBackendSummit.WaitForConfirmation(g.GetTestContext(), tx)
 
 	// Verify that the guard eventually marks the accused agent as Fraudulent
 	g.Eventually(func() bool {
-		status, err := g.OriginDomainClient.LightManager().GetAgentStatus(g.GetTestContext(), g.GuardBondedSigner.Address())
+		status, err := g.OriginDomainClient.LightManager().GetAgentStatus(g.GetTestContext(), g.NotaryBondedSigner.Address())
 		Nil(g.T(), err)
 
 		if status.Flag() == uint8(4) {
@@ -165,9 +195,19 @@ func (g GuardSuite) TestReportFraudulentStateInSnapshot() {
 		g.TestBackendSummit.WaitForConfirmation(g.GetTestContext(), bumpTx)
 		return false
 	})
+
+	// Verify that a report has been submitted by the Guard by checking that a Dispute is now open.
+	g.Eventually(func() bool {
+		err := g.DestinationDomainClient.LightManager().GetDispute(g.GetTestContext(), big.NewInt(0))
+		if err != nil {
+			return false
+		}
+
+		return true
+	})
 }
 
-func (g GuardSuite) TestReportAttestationNotOnSummit() {
+func (g GuardSuite) TestZZZZZZ() {
 	testDone := false
 	defer func() {
 		testDone = true
@@ -193,10 +233,6 @@ func (g GuardSuite) TestReportAttestationNotOnSummit() {
 	}
 
 	omniRPCClient := omniClient.NewOmnirpcClient(g.TestOmniRPC, g.GuardMetrics, omniClient.WithCaptureReqRes())
-
-	omnirpcDest := omniRPCClient.GetEndpoint(int(g.DestinationDomainClient.Config().DomainID), 1)
-
-	fmt.Println("OMNIIIIII", omnirpcDest)
 
 	// Scribe setup.
 	originClient, err := backfill.DialBackend(g.GetTestContext(), g.TestBackendOrigin.RPCAddress(), g.ScribeMetrics)
@@ -312,6 +348,7 @@ func (g GuardSuite) TestReportAttestationNotOnSummit() {
 	NotNil(g.T(), err)
 
 	// Update the agent status of the Guard and Notary.
+	// TODO: Some of the calls are unnecessary. Figure out which ones and nuke them.
 	guardStatus, err := g.DestinationDomainClient.LightManager().GetAgentStatus(g.GetTestContext(), g.GuardBondedSigner.Address())
 	Nil(g.T(), err)
 	guardStatus, err = g.SummitDomainClient.BondingManager().GetAgentStatus(g.GetTestContext(), g.GuardBondedSigner.Address())

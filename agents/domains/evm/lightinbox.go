@@ -64,6 +64,39 @@ func (a lightInboxContract) SubmitAttestation(
 	return tx, nil
 }
 
+func (a lightInboxContract) SubmitStateReportWithSnapshot(ctx context.Context, signer signer.Signer, stateIndex int64, signature signer.Signature, snapPayload []byte, snapSignature []byte) (tx *ethTypes.Transaction, err error) {
+	transactor, err := signer.GetTransactor(ctx, a.client.GetBigChainID())
+	if err != nil {
+		return nil, fmt.Errorf("could not sign tx: %w", err)
+	}
+
+	transactOpts, err := a.nonceManager.NewKeyedTransactor(transactor)
+	if err != nil {
+		return nil, fmt.Errorf("could not create tx: %w", err)
+	}
+
+	transactOpts.Context = ctx
+
+	transactOpts.GasLimit = 5000000
+
+	rawSig, err := types.EncodeSignature(signature)
+	if err != nil {
+		return nil, fmt.Errorf("could not encode signature: %w", err)
+	}
+
+	// TODO: Is there a way to get a return value from a contractTransactor call?
+	tx, err = a.contract.SubmitStateReportWithSnapshot(transactOpts, big.NewInt(stateIndex), rawSig, snapPayload, snapSignature)
+	if err != nil {
+		// TODO: Why is this done? And if it is necessary, we should functionalize it.
+		if strings.Contains(err.Error(), "nonce too low") {
+			a.nonceManager.ClearNonce(signer.Address())
+		}
+		return nil, fmt.Errorf("could not submit state report: %w", err)
+	}
+
+	return tx, nil
+}
+
 func (a lightInboxContract) VerifyStateWithSnapshot(ctx context.Context, signer signer.Signer, stateIndex int64, signature signer.Signature, snapPayload []byte, snapSignature []byte) (tx *ethTypes.Transaction, err error) {
 	transactor, err := signer.GetTransactor(ctx, a.client.GetBigChainID())
 	if err != nil {

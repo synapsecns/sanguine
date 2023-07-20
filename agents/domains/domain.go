@@ -77,6 +77,8 @@ type InboxContract interface {
 	SubmitStateReportWithSnapshot(ctx context.Context, signer signer.Signer, stateIndex int64, signature signer.Signature, snapPayload []byte, snapSignature []byte) (tx *ethTypes.Transaction, err error)
 	// SubmitSnapshot submits a snapshot to the inbox (via the Inbox).
 	SubmitSnapshot(transactor *bind.TransactOpts, signer signer.Signer, encodedSnapshot []byte, signature signer.Signature) (tx *ethTypes.Transaction, err error)
+	// SubmitSnapshotCtx
+	SubmitSnapshotCtx(ctx context.Context, signer signer.Signer, encodedSnapshot []byte, signature signer.Signature) (tx *ethTypes.Transaction, err error)
 	// VerifyAttestation verifies a snapshot on the inbox.
 	VerifyAttestation(ctx context.Context, signer signer.Signer, attestation []byte, attSignature []byte) (tx *ethTypes.Transaction, err error)
 }
@@ -107,6 +109,8 @@ type DestinationContract interface {
 
 // LightInboxContract contains the interface for the light inbox.
 type LightInboxContract interface {
+	// SubmitStateReportWithSnapshot reports to the inbox that a state within a snapshot is invalid.
+	SubmitStateReportWithSnapshot(ctx context.Context, signer signer.Signer, stateIndex int64, signature signer.Signature, snapPayload []byte, snapSignature []byte) (tx *ethTypes.Transaction, err error)
 	// SubmitAttestation submits an attestation to the destination chain (via the light inbox contract)
 	SubmitAttestation(
 		transactor *bind.TransactOpts,

@@ -4,7 +4,10 @@ package summit
 import (
 	_ "embed"
 	"encoding/json"
+	"fmt"
+	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/common/compiler"
+	"github.com/ethereum/go-ethereum/crypto"
 )
 
 // rawContracts are the json we use to dervive the processed contracts
@@ -21,5 +24,38 @@ func init() {
 	err = json.Unmarshal(rawContracts, &Contracts)
 	if err != nil {
 		panic(err)
+	}
+
+	for _, contract := range Contracts {
+
+		yo, ok := contract.Info.AbiDefinition.([]interface{})
+		if !ok {
+			continue
+		}
+		for _, lilYo := range yo {
+			theMap := lilYo.(map[string]interface{})
+
+			// TODO: convrt this whole thing into a map instead of this key, value attribute array
+			for key, val := range theMap {
+				if key == "type" {
+					valAsString, ok := val.(string)
+					if ok {
+						if valAsString == "error" {
+							// again, use a fucking dictionary here instead of reloopnig
+							for newKey, newVal := range theMap {
+								if newKey == "name" {
+									newValAsString, _ := newVal.(string)
+									// TODO: figure out how to get the input params in here
+									newValAsString = fmt.Sprintf("%s()", newValAsString)
+									fmt.Println("EASILYSEARCHABLESTRING")
+									fmt.Println(newValAsString)
+									fmt.Println(common.BytesToHash(crypto.Keccak256([]byte(newValAsString))))
+								}
+							}
+						}
+					}
+				}
+			}
+		}
 	}
 }

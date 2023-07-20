@@ -263,7 +263,7 @@ func (g Guard) handleSnapshot(ctx context.Context, log ethTypes.Log, chainID uin
 		if err != nil {
 			return fmt.Errorf("could not sign snapshot message: %w", err)
 		}
-		_, err = g.domains[state.Origin()].LightInbox().VerifyStateWithSnapshot(
+		tx, err := g.domains[state.Origin()].LightInbox().VerifyStateWithSnapshot(
 			ctx,
 			g.unbondedSigner,
 			int64(stateIndex),
@@ -274,6 +274,38 @@ func (g Guard) handleSnapshot(ctx context.Context, log ethTypes.Log, chainID uin
 		if err != nil {
 			return fmt.Errorf("could not verify state with snapshot: %w", err)
 		}
+		fmt.Println("TXHASHA: ", tx.Hash().String())
+
+		// If the agent who submitted the fraudulent snapshot is a guard, we only need to call `VerifyStateWithSnapshot`.
+		if fraudSnapshot.Domain == 0 {
+			return nil
+		}
+
+		//srSignature, _, _, err := fraudSnapshot.Snapshot.SignSnapshot(ctx, g.bondedSigner)
+		//if err != nil {
+		//	return fmt.Errorf("could not sign snapshot: %w", err)
+		//}
+
+		srSignature, _, _, err := state.SignState(ctx, g.bondedSigner)
+		if err != nil {
+			return fmt.Errorf("could not sign state: %w", err)
+		}
+
+		tx, err = g.domains[fraudSnapshot.Domain].LightInbox().SubmitStateReportWithSnapshot(
+			ctx,
+			g.unbondedSigner,
+			int64(stateIndex),
+			srSignature,
+			fraudSnapshot.Payload,
+			fraudSnapshot.Signature,
+		)
+		if err != nil {
+			return fmt.Errorf("could not submit state report with snapshot: %w", err)
+		}
+		fmt.Println("TXHASHB: ", tx.Hash().String())
+
+		// TODO: Ensure we do not need to report each state if there are multiple invalid states.
+		return nil
 
 		/*
 			TODO: per the docs:
@@ -290,8 +322,6 @@ func (g Guard) handleSnapshot(ctx context.Context, log ethTypes.Log, chainID uin
 		// if err != nil {
 		// 	return fmt.Errorf("could not submit state reports: %w", err)
 		// }
-
-		// If Notary: report on Summit and its remote domain.
 	}
 
 	return nil
