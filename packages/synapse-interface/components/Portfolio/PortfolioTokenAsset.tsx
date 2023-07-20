@@ -1,5 +1,5 @@
 import React, { useMemo, useCallback, useState } from 'react'
-import { useDispatch, useSelector } from 'react-redux'
+import { useAppDispatch } from '@/store/hooks'
 import { RootState } from '@/store/store'
 import { useAccount } from 'wagmi'
 import {
@@ -16,6 +16,8 @@ import { switchNetwork } from '@wagmi/core'
 import Image from 'next/image'
 import { toast } from 'react-hot-toast'
 import { ROUTER_ADDRESS } from '@/utils/hooks/usePortfolioBalances'
+import { useBridgeState } from '@/slices/bridge/hooks'
+import { fetchAndStoreSingleNetworkPortfolioBalances } from '@/slices/portfolio/hooks'
 
 type PortfolioTokenAssetProps = {
   token: Token
@@ -48,10 +50,8 @@ export const PortfolioTokenAsset = ({
   isApproved,
   fetchPortfolioBalancesCallback,
 }: PortfolioTokenAssetProps) => {
-  const dispatch = useDispatch()
-  const { fromChainId, fromToken } = useSelector(
-    (state: RootState) => state.bridge
-  )
+  const dispatch = useAppDispatch()
+  const { fromChainId, fromToken } = useBridgeState()
   const { address } = useAccount()
   const { icon, symbol, decimals, addresses } = token
 
@@ -107,7 +107,12 @@ export const PortfolioTokenAsset = ({
       dispatch(setFromToken(token))
       await approveToken(ROUTER_ADDRESS, connectedChainId, tokenAddress).then(
         (success) => {
-          success && fetchPortfolioBalancesCallback()
+          dispatch(
+            fetchAndStoreSingleNetworkPortfolioBalances({
+              address: address,
+              chainId: portfolioChainId,
+            })
+          )
         }
       )
     } else {
@@ -116,7 +121,13 @@ export const PortfolioTokenAsset = ({
         await scrollToTop()
         await approveToken(ROUTER_ADDRESS, portfolioChainId, tokenAddress).then(
           (success) => {
-            success && fetchPortfolioBalancesCallback()
+            success &&
+              dispatch(
+                fetchAndStoreSingleNetworkPortfolioBalances({
+                  address: address,
+                  chainId: portfolioChainId,
+                })
+              )
           }
         )
       } catch (error) {
