@@ -36,7 +36,9 @@ const DestinationTx = (fromEvent: BridgeWatcherTx) => {
     useState<Contract>(undefined)
   const [toCCTPContract, setToCCTPContract] = useState<Contract>(undefined)
   const [toSigner, setToSigner] = useState<Address>()
-  const { data: toSignerRaw } = useWalletClient({ chainId: fromEvent.toChainId })
+  const { data: toSignerRaw } = useWalletClient({
+    chainId: fromEvent.toChainId,
+  })
   const [completedConf, setCompletedConf] = useState(false)
   const [attempted, setAttempted] = useState(false)
   const { providerMap } = useSynapseContext()
@@ -52,7 +54,13 @@ const DestinationTx = (fromEvent: BridgeWatcherTx) => {
     })
     const provider = providerMap[fromEvent.toChainId]
 
-    const isCCTP = fromEvent.contractEmittedFrom.toLowerCase() === SYNAPSE_CCTP_CONTRACTS[fromEvent.chainId].toLowerCase() ? true : false
+    const isCCTP =
+      typeof fromEvent.contractEmittedFrom === 'string' &&
+      typeof SYNAPSE_CCTP_CONTRACTS[fromEvent.chainId] === 'string' &&
+      fromEvent.contractEmittedFrom.toLowerCase() ===
+        SYNAPSE_CCTP_CONTRACTS[fromEvent.chainId].toLowerCase()
+        ? true
+        : false
 
     const iface = new Interface(isCCTP ? SYNAPSE_CCTP_ABI : SYNAPSE_BRIDGE_ABI)
 
@@ -97,31 +105,30 @@ const DestinationTx = (fromEvent: BridgeWatcherTx) => {
     let parsedLogs
     if (!isCCTP) {
       parsedLogs = flattendEvents
-      .map((log) => {
-        return {
-          ...iface.parseLog(log).args,
-          transactionHash: log.transactionHash,
-          blockNumber: Number(log.blockNumber),
-        }
-      })
-      .filter((log: any) => {
-        const convertedKappa = remove0xPrefix(log.kappa)
-        return !checkTxIn(log) && convertedKappa === fromEvent.kappa
-      })}
-      else {
-        parsedLogs = flattendEvents
         .map((log) => {
           return {
             ...iface.parseLog(log).args,
             transactionHash: log.transactionHash,
             blockNumber: Number(log.blockNumber),
           }
-        }).filter((log: any) => {
+        })
+        .filter((log: any) => {
+          const convertedKappa = remove0xPrefix(log.kappa)
+          return !checkTxIn(log) && convertedKappa === fromEvent.kappa
+        })
+    } else {
+      parsedLogs = flattendEvents
+        .map((log) => {
+          return {
+            ...iface.parseLog(log).args,
+            transactionHash: log.transactionHash,
+            blockNumber: Number(log.blockNumber),
+          }
+        })
+        .filter((log: any) => {
           return log.requestID === fromEvent.kappa
         })
-
-
-      }
+    }
 
     const parsedLog = parsedLogs?.[0]
     if (parsedLog) {
