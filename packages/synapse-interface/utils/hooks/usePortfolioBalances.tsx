@@ -100,7 +100,17 @@ const getTokensAllowance = async (
   })
 }
 
-export const fetchPortfolioBalances = async (address) => {
+/**
+ * @param address: wallet address to fetch balance of
+ * @param chainId?: specific network to fetch balances from
+ * @returns addresses' token balances and allowances
+ * If specifying chainId parameter, function will only fetch from single network
+ * If chainId is undefined, function will fetch from all supported networks
+ */
+export const fetchPortfolioBalances = async (
+  address: string,
+  chainId?: number | undefined | null
+) => {
   const balanceRecord = {}
   const availableChains = Object.keys(BRIDGABLE_TOKENS)
   const filteredChains = availableChains.filter((chain) => chain !== '2000') // need to figure out whats wrong with Dogechain
