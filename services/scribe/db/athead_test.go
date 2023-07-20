@@ -50,19 +50,23 @@ func (t *DBSuite) TestUnconfirmedQuery() {
 		logs, err := testDB.RetrieveLogsFromHeadRangeQuery(t.GetTestContext(), logFilter, 0, headBlock, 1)
 		Nil(t.T(), err)
 		Equal(t.T(), 100, len(logs))
-		Equal(t.T(), uint(0), logs[0].Index)
-		// Check block range
-		Equal(t.T(), uint64(110), logs[0].BlockNumber)
-		Equal(t.T(), uint64(11), logs[99].BlockNumber)
-		// check threshold of confirmed vs unconfirmed
-		Equal(t.T(), uint(1), logs[10].Index)
-		Equal(t.T(), uint(0), logs[9].Index)
-
+		if len(logs) >= 99 {
+			Equal(t.T(), uint(0), logs[0].Index)
+			// Check block range
+			Equal(t.T(), uint64(110), logs[0].BlockNumber)
+			Equal(t.T(), uint64(11), logs[99].BlockNumber)
+			// check threshold of confirmed vs unconfirmed
+			Equal(t.T(), uint(1), logs[10].Index)
+			Equal(t.T(), uint(0), logs[9].Index)
+		}
 		logs, err = testDB.RetrieveLogsFromHeadRangeQuery(t.GetTestContext(), logFilter, 0, headBlock, 2)
 		Nil(t.T(), err)
+
 		Equal(t.T(), 10, len(logs))
-		// Check that these are confirmed logs
-		Equal(t.T(), uint(1), logs[0].Index)
+		if len(logs) == 10 {
+			// Check that these are confirmed logs
+			Equal(t.T(), uint(1), logs[0].Index)
+		}
 	})
 }
 
