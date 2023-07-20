@@ -194,7 +194,7 @@ func (n *Notary) shouldNotaryRegisteredOnDestination(parentCtx context.Context) 
 		return false, false
 	}
 
-	agentStatus, err := n.destinationDomain.LightManager().GetAgentStatus(ctx, n.bondedSigner)
+	agentStatus, err := n.destinationDomain.LightManager().GetAgentStatus(ctx, n.bondedSigner.Address())
 	if err != nil {
 		span.AddEvent("GetAgentStatus failed", trace.WithAttributes(
 			attribute.String("err", err.Error()),
@@ -464,7 +464,7 @@ func (n *Notary) submitMyLatestAttestation(parentCtx context.Context) {
 		return
 	}
 
-	attestationSignature, _, _, err := n.myLatestNotaryAttestation.Attestation().SignAttestation(ctx, n.bondedSigner)
+	attestationSignature, _, _, err := n.myLatestNotaryAttestation.Attestation().SignAttestation(ctx, n.bondedSigner, true)
 	if err != nil {
 		logger.Errorf("Error signing attestation: %v", err)
 		span.AddEvent("Error signing attestation", trace.WithAttributes(

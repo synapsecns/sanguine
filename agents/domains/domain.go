@@ -77,7 +77,7 @@ type InboxContract interface {
 	SubmitStateReportWithSnapshot(ctx context.Context, signer signer.Signer, stateIndex int64, signature signer.Signature, snapPayload []byte, snapSignature []byte) (tx *ethTypes.Transaction, err error)
 	// SubmitSnapshot submits a snapshot to the inbox (via the Inbox).
 	SubmitSnapshot(transactor *bind.TransactOpts, signer signer.Signer, encodedSnapshot []byte, signature signer.Signature) (tx *ethTypes.Transaction, err error)
-	// VerifySnapshot verifies a snapshot on the inbox.
+	// VerifyAttestation verifies a snapshot on the inbox.
 	VerifyAttestation(ctx context.Context, signer signer.Signer, attestation []byte, attSignature []byte) (tx *ethTypes.Transaction, err error)
 }
 
@@ -124,7 +124,7 @@ type LightInboxContract interface {
 // LightManagerContract contains the interface for the light manager.
 type LightManagerContract interface {
 	// GetAgentStatus returns the current agent status for the given agent.
-	GetAgentStatus(ctx context.Context, signer signer.Signer) (types.AgentStatus, error)
+	GetAgentStatus(ctx context.Context, address common.Address) (types.AgentStatus, error)
 	// GetAgentRoot gets the current agent root
 	GetAgentRoot(ctx context.Context) ([32]byte, error)
 	// UpdateAgentStatus updates the agent status on the remote chain.
@@ -134,6 +134,9 @@ type LightManagerContract interface {
 		bondedSigner signer.Signer,
 		agentStatus types.AgentStatus,
 		agentProof [][32]byte) error
+	// GetDispute gets the dispute for a given dispute index.
+	// TODO: Add more returned values here as needed.
+	GetDispute(ctx context.Context, index *big.Int) (err error)
 }
 
 // TestClientContract contains the interface for the test client.

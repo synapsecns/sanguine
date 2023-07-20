@@ -3,9 +3,8 @@ package guard_test
 import (
 	"fmt"
 	"github.com/brianvoe/gofakeit/v6"
-	"math/big"
-
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
+	"math/big"
 
 	"github.com/Flaque/filet"
 	"github.com/ethereum/go-ethereum/common"
@@ -127,7 +126,7 @@ func (g GuardSuite) TestReportFraudulentStateInSnapshot() {
 
 	// Verify that the agent is marked as Active
 	txContextSummit := g.TestBackendSummit.GetTxContext(g.GetTestContext(), g.SummitMetadata.OwnerPtr())
-	status, err := g.OriginDomainClient.LightManager().GetAgentStatus(g.GetTestContext(), g.GuardBondedSigner)
+	status, err := g.OriginDomainClient.LightManager().GetAgentStatus(g.GetTestContext(), g.GuardBondedSigner.Address())
 	Equal(g.T(), status.Flag(), uint8(1))
 	Nil(g.T(), err)
 
@@ -153,7 +152,7 @@ func (g GuardSuite) TestReportFraudulentStateInSnapshot() {
 
 	// Verify that the guard eventually marks the accused agent as Fraudulent
 	g.Eventually(func() bool {
-		status, err := g.OriginDomainClient.LightManager().GetAgentStatus(g.GetTestContext(), g.GuardBondedSigner)
+		status, err := g.OriginDomainClient.LightManager().GetAgentStatus(g.GetTestContext(), g.GuardBondedSigner.Address())
 		Nil(g.T(), err)
 
 		if status.Flag() == uint8(4) {
@@ -281,7 +280,7 @@ func (g GuardSuite) TestReportAttestationNotOnSummit() {
 
 	// Verify that the agent is marked as Active
 	txContextDest := g.TestBackendDestination.GetTxContext(g.GetTestContext(), g.DestinationContractMetadata.OwnerPtr())
-	status, err := g.OriginDomainClient.LightManager().GetAgentStatus(g.GetTestContext(), g.GuardBondedSigner)
+	status, err := g.OriginDomainClient.LightManager().GetAgentStatus(g.GetTestContext(), g.GuardBondedSigner.Address())
 	Equal(g.T(), status.Flag(), uint8(1))
 	Nil(g.T(), err)
 
@@ -292,7 +291,7 @@ func (g GuardSuite) TestReportAttestationNotOnSummit() {
 	Nil(g.T(), err)
 
 	// Build and sign a fraudulent attestation
-	// TODO: SetBytes here might be surface area for an error. Maybe use harness to generate.
+	// TODO: Change from using a harness to using the Go code.
 	snapGas := []*big.Int{new(big.Int).SetBytes(chainGasBytes)}
 	snapGasHash, err := gasDataContract.SnapGasHash(&bind.CallOpts{Context: g.GetTestContext()}, snapGas)
 	Nil(g.T(), err)
@@ -305,22 +304,47 @@ func (g GuardSuite) TestReportAttestationNotOnSummit() {
 		big.NewInt(int64(gofakeit.Int32())),
 		big.NewInt(int64(gofakeit.Int32())),
 	)
-	attSignature, attEncoded, _, err := fraudAttestation.SignAttestation(g.GetTestContext(), g.NotaryBondedSigner)
+	attSignature, attEncoded, _, err := fraudAttestation.SignAttestation(g.GetTestContext(), g.NotaryBondedSigner, true)
 	Nil(g.T(), err)
 
-	// Submit the attestation
-	agentProof, err := g.SummitDomainClient.BondingManager().GetProof(g.GetTestContext(), g.NotaryBondedSigner)
+	// Before submitting the attestation, ensure that there are no disputes opened.
+	err = g.DestinationDomainClient.LightManager().GetDispute(g.GetTestContext(), big.NewInt(0))
+	NotNil(g.T(), err)
+
+	// Update the agent status of the Guard and Notary.
+	guardStatus, err := g.DestinationDomainClient.LightManager().GetAgentStatus(g.GetTestContext(), g.GuardBondedSigner.Address())
 	Nil(g.T(), err)
-	agentStatus, err := g.SummitDomainClient.BondingManager().GetAgentStatus(g.GetTestContext(), g.NotaryBondedSigner.Address())
+	guardStatus, err = g.SummitDomainClient.BondingManager().GetAgentStatus(g.GetTestContext(), g.GuardBondedSigner.Address())
+	Nil(g.T(), err)
+	guardProof, err := g.SummitDomainClient.BondingManager().GetProof(g.GetTestContext(), g.GuardBondedSigner)
+	Nil(g.T(), err)
+	err = g.DestinationDomainClient.LightManager().UpdateAgentStatus(
+		g.GetTestContext(),
+		g.GuardUnbondedSigner,
+		g.GuardBondedSigner,
+		guardStatus,
+		guardProof,
+	)
+	Nil(g.T(), err)
+	guardStatus, err = g.DestinationDomainClient.LightManager().GetAgentStatus(g.GetTestContext(), g.GuardBondedSigner.Address())
+	Nil(g.T(), err)
+
+	notaryStatus, err := g.SummitDomainClient.BondingManager().GetAgentStatus(g.GetTestContext(), g.NotaryBondedSigner.Address())
+	Nil(g.T(), err)
+	notaryProof, err := g.SummitDomainClient.BondingManager().GetProof(g.GetTestContext(), g.NotaryBondedSigner)
 	Nil(g.T(), err)
 	err = g.DestinationDomainClient.LightManager().UpdateAgentStatus(
 		g.GetTestContext(),
 		g.NotaryUnbondedSigner,
 		g.NotaryBondedSigner,
-		agentStatus,
-		agentProof,
+		notaryStatus,
+		notaryProof,
 	)
 	Nil(g.T(), err)
+	notaryStatus, err = g.DestinationDomainClient.LightManager().GetAgentStatus(g.GetTestContext(), g.NotaryBondedSigner.Address())
+	Nil(g.T(), err)
+
+	// Submit the attestation
 	tx, err := g.DestinationDomainClient.LightInbox().SubmitAttestation(
 		txContextDest.TransactOpts,
 		attEncoded,
@@ -350,5 +374,15 @@ func (g GuardSuite) TestReportAttestationNotOnSummit() {
 		Nil(g.T(), err)
 		g.TestBackendDestination.WaitForConfirmation(g.GetTestContext(), bumpTx)
 		return false
+	})
+
+	// Verify that a report has been submitted by the Guard by checking that a Dispute is now open.
+	g.Eventually(func() bool {
+		err := g.DestinationDomainClient.LightManager().GetDispute(g.GetTestContext(), big.NewInt(0))
+		if err != nil {
+			return false
+		}
+
+		return true
 	})
 }

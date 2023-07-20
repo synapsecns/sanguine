@@ -323,26 +323,25 @@ func (g Guard) handleAttestation(ctx context.Context, log ethTypes.Log, chainID 
 		return fmt.Errorf("could not verify attestation: %w", err)
 	}
 
-	// Finally, we submit a fraud report by calling `submitAttestationReport()` on the remote chain.
-	arSignature, err := g.bondedSigner.SignMessage(ctx, fraudAttestation.Payload, true)
+	arSignature, _, _, err := fraudAttestation.Attestation.SignAttestation(ctx, g.bondedSigner, false)
 	if err != nil {
 		return fmt.Errorf("could not sign attestation: %w", err)
 	}
 
+	// Finally, we submit a fraud report by calling `submitAttestationReport()` on the remote chain.
 	arSignatureEncoded, err := types.EncodeSignature(arSignature)
 	if err != nil {
 		return fmt.Errorf("could not encode signature: %w", err)
 	}
 
 	// Call `submitAttestationReport` on the notary's associated remote domain.
-	tx, err := g.domains[fraudAttestation.Domain].LightInbox().SubmitAttestationReport(
+	_, err = g.domains[fraudAttestation.Domain].LightInbox().SubmitAttestationReport(
 		ctx,
 		g.unbondedSigner,
 		fraudAttestation.Payload,
 		arSignatureEncoded,
 		fraudAttestation.Signature,
 	)
-	fmt.Println("tx", tx.Hash())
 	if err != nil {
 		return fmt.Errorf("could not submit attestation report: %w", err)
 	}

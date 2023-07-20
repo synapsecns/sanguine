@@ -14,6 +14,7 @@ import (
 	"github.com/synapsecns/sanguine/ethergo/chain"
 	"github.com/synapsecns/sanguine/ethergo/signer/nonce"
 	"github.com/synapsecns/sanguine/ethergo/signer/signer"
+	"math/big"
 )
 
 // NewLightManagerContract returns a bound light manager contract.
@@ -61,8 +62,8 @@ func (a lightManagerContract) transactOptsSetup(ctx context.Context, signer sign
 }
 
 //nolint:dupl
-func (a lightManagerContract) GetAgentStatus(ctx context.Context, bondedAgentSigner signer.Signer) (types.AgentStatus, error) {
-	rawStatus, err := a.contract.AgentStatus(&bind.CallOpts{Context: ctx}, bondedAgentSigner.Address())
+func (a lightManagerContract) GetAgentStatus(ctx context.Context, address common.Address) (types.AgentStatus, error) {
+	rawStatus, err := a.contract.AgentStatus(&bind.CallOpts{Context: ctx}, address)
 	if err != nil {
 		return nil, fmt.Errorf("could not retrieve agent status: %w", err)
 	}
@@ -101,6 +102,15 @@ func (a lightManagerContract) UpdateAgentStatus(
 	_, err = a.contract.UpdateAgentStatus(transactOpts, bondedSigner.Address(), lightManagerAgentStatus, agentProof)
 	if err != nil {
 		return fmt.Errorf("could not submit attestation: %w", err)
+	}
+
+	return nil
+}
+
+func (a lightManagerContract) GetDispute(ctx context.Context, index *big.Int) (err error) {
+	_, err = a.contract.GetDispute(&bind.CallOpts{Context: ctx}, index)
+	if err != nil {
+		return fmt.Errorf("could not retrieve dispute: %w", err)
 	}
 
 	return nil

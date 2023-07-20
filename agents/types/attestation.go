@@ -33,7 +33,7 @@ type Attestation interface {
 	// Timestamp is the timestamp when the attestation was created in Summit.
 	Timestamp() *big.Int
 	// SignAttestation signs the attestation
-	SignAttestation(ctx context.Context, signer signer.Signer) (signer.Signature, []byte, common.Hash, error)
+	SignAttestation(ctx context.Context, signer signer.Signer, valid bool) (signer.Signature, []byte, common.Hash, error)
 }
 
 type attestation struct {
@@ -75,13 +75,18 @@ func (a attestation) Timestamp() *big.Int {
 	return a.timestamp
 }
 
-func (a attestation) SignAttestation(ctx context.Context, signer signer.Signer) (signer.Signature, []byte, common.Hash, error) {
+func (a attestation) SignAttestation(ctx context.Context, signer signer.Signer, valid bool) (signer.Signature, []byte, common.Hash, error) {
 	encodedAttestation, err := EncodeAttestation(a)
 	if err != nil {
 		return nil, nil, common.Hash{}, fmt.Errorf("could not encode attestation: %w", err)
 	}
 
-	attestationSalt := crypto.Keccak256Hash([]byte("ATTESTATION_VALID_SALT"))
+	var attestationSalt common.Hash
+	if valid {
+		attestationSalt = crypto.Keccak256Hash([]byte("ATTESTATION_VALID_SALT"))
+	} else {
+		attestationSalt = crypto.Keccak256Hash([]byte("ATTESTATION_INVALID_SALT"))
+	}
 
 	hashedEncodedAttestation := crypto.Keccak256Hash(encodedAttestation).Bytes()
 	toSign := append(attestationSalt.Bytes(), hashedEncodedAttestation...)
