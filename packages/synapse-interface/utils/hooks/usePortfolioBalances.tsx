@@ -15,6 +15,7 @@ export interface TokenAndBalance {
 }
 export interface TokenAndAllowance {
   token: Token
+  spender: Address
   allowance: bigint
 }
 
@@ -36,7 +37,7 @@ export const getTokensByChainId = async (
 
 function mergeBalancesAndAllowances(
   balances: { token: Token; balance: bigint; parsedBalance: string }[],
-  allowances: { token: Token; allowance: bigint }[]
+  allowances: { token: Token; spender: Address; allowance: bigint }[]
 ): TokenWithBalanceAndAllowance[] {
   return balances.map((balance) => {
     const correspondingAllowance = allowances.find(
@@ -47,6 +48,7 @@ function mergeBalancesAndAllowances(
         token: balance.token,
         balance: balance.balance,
         parsedBalance: balance.parsedBalance,
+        spender: correspondingAllowance.spender,
         allowance: correspondingAllowance.allowance,
       }
     }
@@ -56,6 +58,7 @@ function mergeBalancesAndAllowances(
       token: balance.token,
       balance: balance.balance,
       parsedBalance: balance.parsedBalance,
+      spender: correspondingAllowance.spender,
       allowance: null,
     }
   })
@@ -95,6 +98,7 @@ const getTokensAllowance = async (
     }
     return {
       token,
+      spender,
       allowance,
     }
   })
