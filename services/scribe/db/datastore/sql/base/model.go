@@ -44,6 +44,7 @@ var (
 // PageSize is the amount of entries per page of logs.
 var PageSize = 100
 
+// LogColumns are all of the columns of the Log table.
 const LogColumns = "contract_address,chain_id,primary_topic,topic_a,topic_b,topic_c,data,block_number,tx_hash,tx_index,block_hash,block_index,removed,confirmed"
 
 // Log stores the log of an event.
