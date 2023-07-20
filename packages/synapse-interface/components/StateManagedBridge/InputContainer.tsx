@@ -59,6 +59,7 @@ export const InputContainer = () => {
 
   useEffect(() => {
     if (
+      fromToken.decimals[fromChainId] &&
       stringToBigInt(fromValue, fromToken.decimals[fromChainId]) !== 0n &&
       stringToBigInt(fromValue, fromToken.decimals[fromChainId]) ===
         fromTokenBalance

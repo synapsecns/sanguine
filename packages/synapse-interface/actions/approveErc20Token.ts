@@ -8,6 +8,9 @@ import {
 import { TransactionReceipt } from 'viem'
 
 import { MAX_UINT256 } from '@/constants'
+import { USDT } from '@/constants/tokens/master'
+import { USDT_ABI } from '@/constants/abis/usdtAbi'
+import { ETH as Ethereum } from '@/constants/chains/master'
 
 export const approveErc20Token = async ({
   chainId,
@@ -20,10 +23,18 @@ export const approveErc20Token = async ({
   spender: Address
   tokenAddress: Address
 }) => {
+  let abi
+
+  if (tokenAddress === USDT.addresses[Ethereum.id]) {
+    abi = USDT_ABI
+  } else {
+    abi = erc20ABI
+  }
+
   const config = await prepareWriteContract({
     chainId,
     address: tokenAddress,
-    abi: erc20ABI,
+    abi,
     functionName: 'approve',
     args: [spender, amount ?? MAX_UINT256],
   })

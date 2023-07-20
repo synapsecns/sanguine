@@ -215,7 +215,10 @@ const StateManagedBridge = () => {
     console.log(`[useEffect] fromToken`, fromToken.symbol)
     console.log(`[useEffect] toToken`, toToken.symbol)
     // TODO: Double serialization happening somewhere??
-    if (stringToBigInt(fromValue, fromToken.decimals[fromChainId]) > 0n) {
+    if (
+      fromToken.decimals[fromChainId] &&
+      stringToBigInt(fromValue, fromToken.decimals[fromChainId]) > 0n
+    ) {
       console.log('trying to set bridge quote')
       getAndSetBridgeQuote()
     } else {
@@ -312,7 +315,6 @@ const StateManagedBridge = () => {
 
       let newDestQuery = { ...destQuery }
       newDestQuery.minAmountOut = destMinWithSlippage
-      console.log('here 4')
       if (thisRequestId === currentSDKRequestID.current) {
         dispatch(
           setBridgeQuote({
@@ -345,7 +347,7 @@ const StateManagedBridge = () => {
         toast.dismiss(quoteToast)
         const message = `Route found for bridging ${fromValue} ${fromToken.symbol} on ${CHAINS_BY_ID[fromChainId]?.name} to ${toToken.symbol} on ${CHAINS_BY_ID[toChainId]?.name}`
         console.log(message)
-        quoteToast = toast(message, { duration: 2000 })
+        quoteToast = toast(message, { duration: 3000 })
       }
     } catch (err) {
       console.log(err)
@@ -353,7 +355,7 @@ const StateManagedBridge = () => {
         toast.dismiss(quoteToast)
         const message = `No route found for bridging ${fromValue} ${fromToken.symbol} on ${CHAINS_BY_ID[fromChainId]?.name} to ${toToken.symbol} on ${CHAINS_BY_ID[toChainId]?.name}`
         console.log(message)
-        quoteToast = toast(message, { duration: 2000 })
+        quoteToast = toast(message, { duration: 3000 })
 
         dispatch(setBridgeQuote(EMPTY_BRIDGE_QUOTE_ZERO))
         return
@@ -405,12 +407,18 @@ const StateManagedBridge = () => {
         bridgeQuote.quotes.originQuery,
         bridgeQuote.quotes.destQuery
       )
+
       const payload =
         fromToken.addresses[fromChainId as keyof Token['addresses']] ===
           zeroAddress ||
         fromToken.addresses[fromChainId as keyof Token['addresses']] === ''
-          ? { data: data.data, to: data.to, value: fromValue }
+          ? {
+              data: data.data,
+              to: data.to,
+              value: stringToBigInt(fromValue, fromToken.decimals[fromChainId]),
+            }
           : data
+
       const tx = await wallet.sendTransaction(payload)
 
       const originChainName = CHAINS_BY_ID[fromChainId]?.name
