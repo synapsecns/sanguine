@@ -50,7 +50,7 @@ func (t *DBSuite) TestUnconfirmedQuery() {
 		logs, err := testDB.RetrieveLogsFromHeadRangeQuery(t.GetTestContext(), logFilter, 0, headBlock, 1)
 		Nil(t.T(), err)
 		Equal(t.T(), 100, len(logs))
-		if len(logs) >= 99 {
+		if len(logs) == 100 {
 			Equal(t.T(), uint(0), logs[0].Index)
 			// Check block range
 			Equal(t.T(), uint64(110), logs[0].BlockNumber)

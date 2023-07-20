@@ -47,8 +47,8 @@ type Indexer struct {
 	blockMeter otelMetrics.Int64Histogram
 	// refreshRate is the rate at which the indexer will refresh when livefilling.
 	refreshRate uint64
-	// toTip is a boolean signifying if the indexer is livefilling to the tip.
-	toTip bool
+	// toHead is a boolean signifying if the indexer is livefilling to the head.
+	toHead bool
 }
 
 // retryTolerance is the number of times to retry a failed operation before rerunning the entire Backfill function.
@@ -77,7 +77,7 @@ var errNoContinue = errors.New("encountered unreconcilable error, will not attem
 var errNoTx = errors.New("tx is not supported by the client")
 
 // NewIndexer creates a new backfiller for a contract.
-func NewIndexer(chainConfig config.ChainConfig, addresses []common.Address, eventDB db.EventDB, client []backend.ScribeBackend, handler metrics.Handler, blockMeter otelMetrics.Int64Histogram, toTip bool) (*Indexer, error) {
+func NewIndexer(chainConfig config.ChainConfig, addresses []common.Address, eventDB db.EventDB, client []backend.ScribeBackend, handler metrics.Handler, blockMeter otelMetrics.Int64Histogram, toHead bool) (*Indexer, error) {
 	cache, err := lru.New(500)
 	if err != nil {
 		return nil, fmt.Errorf("could not initialize cache: %w", err)
@@ -115,7 +115,7 @@ func NewIndexer(chainConfig config.ChainConfig, addresses []common.Address, even
 		handler:       handler,
 		blockMeter:    blockMeter,
 		refreshRate:   refreshRate,
-		toTip:         toTip,
+		toHead:        toHead,
 	}, nil
 }
 
@@ -309,7 +309,7 @@ OUTER:
 	g, groupCtx := errgroup.WithContext(ctx)
 	g.Go(func() error {
 		// Store receipt in the EventDB.
-		if x.toTip {
+		if x.toHead {
 			err = x.eventDB.StoreReceiptAtHead(groupCtx, x.indexerConfig.ChainID, tx.receipt)
 		} else {
 			err = x.eventDB.StoreReceipt(groupCtx, x.indexerConfig.ChainID, tx.receipt)
@@ -324,7 +324,7 @@ OUTER:
 
 	if hasTX {
 		g.Go(func() error {
-			if x.toTip {
+			if x.toHead {
 				err = x.eventDB.StoreEthTxAtHead(groupCtx, &tx.transaction, x.indexerConfig.ChainID, log.BlockHash, log.BlockNumber, uint64(log.TxIndex))
 			} else {
 				err = x.eventDB.StoreEthTx(groupCtx, &tx.transaction, x.indexerConfig.ChainID, log.BlockHash, log.BlockNumber, uint64(log.TxIndex))
@@ -341,7 +341,7 @@ OUTER:
 		if err != nil {
 			return err
 		}
-		if x.toTip {
+		if x.toHead {
 			err = x.eventDB.StoreLogsAtHead(groupCtx, x.indexerConfig.ChainID, logs...)
 		} else {
 			err = x.eventDB.StoreLogs(groupCtx, x.indexerConfig.ChainID, logs...)

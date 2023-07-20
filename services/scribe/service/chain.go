@@ -364,10 +364,10 @@ func (c *ChainIndexer) getStartHeight(parentContext context.Context, onlyOneBloc
 	return startHeight, endHeight, nil
 }
 
-// LivefillToTip stores data for all contracts all the way to the tip in a separate table.
+// LivefillUnconfirmed stores data for all contracts all the way to the head in a separate table.
 //
 // nolint:cyclop
-func (c *ChainIndexer) LivefillToTip(parentContext context.Context) error {
+func (c *ChainIndexer) LivefillUnconfirmed(parentContext context.Context) error {
 	timeout := time.Duration(0)
 	b := createBackoff()
 	addresses := getAddressesFromConfig(c.chainConfig.Contracts)
