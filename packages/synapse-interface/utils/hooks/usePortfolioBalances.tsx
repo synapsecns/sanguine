@@ -110,7 +110,18 @@ const getTokensAllowance = async (
 export const fetchPortfolioBalances = async (
   address: string,
   chainId?: number | undefined | null
-) => {
+): Promise<
+  | {
+      balancesAndAllowances: NetworkTokenBalancesAndAllowances
+      status: FetchState
+      error?: undefined
+    }
+  | {
+      balancesAndAllowances: NetworkTokenBalancesAndAllowances
+      status: FetchState
+      error: any
+    }
+> => {
   const balanceRecord = {}
   const availableChains: string[] = Object.keys(BRIDGABLE_TOKENS)
   const isSingleNetworkCall: boolean = typeof chainId === 'number'

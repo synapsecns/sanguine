@@ -1,7 +1,10 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit'
 
 import { PortfolioTabs } from './actions'
-import { fetchAndStorePortfolioBalances } from './hooks'
+import {
+  fetchAndStorePortfolioBalances,
+  fetchAndStoreSingleNetworkPortfolioBalances,
+} from './hooks'
 import { NetworkTokenBalancesAndAllowances } from '@/utils/hooks/usePortfolioBalances'
 
 export enum FetchState {
@@ -46,6 +49,24 @@ export const portfolioSlice = createSlice({
         state.status = FetchState.INVALID
         state.error = action.error.message
       })
+      .addCase(
+        fetchAndStoreSingleNetworkPortfolioBalances.fulfilled,
+        (state, action) => {
+          const { balancesAndAllowances } = action.payload
+
+          // Update the existing balancesAndAllowances object
+          Object.entries(balancesAndAllowances).forEach(
+            ([chainId, mergedBalancesAndAllowances]) => {
+              state.balancesAndAllowances[chainId] = {
+                ...state.balancesAndAllowances[chainId],
+                ...mergedBalancesAndAllowances,
+              }
+            }
+          )
+
+          state.status = FetchState.VALID
+        }
+      )
   },
 })
 
