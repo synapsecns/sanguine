@@ -18,10 +18,17 @@ export interface TokenAndAllowance {
   spender: Address
   allowance: bigint
 }
-
 export interface TokenWithBalanceAndAllowance
   extends TokenAndBalance,
     TokenAndAllowance {}
+
+export interface Allowances {
+  [spender: string]: bigint
+}
+
+export interface TokenWithBalanceAndAllowances extends TokenAndBalance {
+  allowances: Allowances[]
+}
 
 export interface NetworkTokenBalancesAndAllowances {
   [index: number]: TokenWithBalanceAndAllowance[]
