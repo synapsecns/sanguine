@@ -84,7 +84,7 @@ type InboxContract interface {
 // BondingManagerContract contains the interface for the bonding manager.
 type BondingManagerContract interface {
 	// GetAgentStatus returns the current agent status for the given agent.
-	GetAgentStatus(ctx context.Context, signer signer.Signer) (types.AgentStatus, error)
+	GetAgentStatus(ctx context.Context, address common.Address) (types.AgentStatus, error)
 	// GetAgentRoot gets the current agent root
 	GetAgentRoot(ctx context.Context) ([32]byte, error)
 	// GetProof gets the proof that the agent is in the Agent Merkle Tree

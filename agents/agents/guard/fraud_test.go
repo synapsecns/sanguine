@@ -1,12 +1,13 @@
 package guard_test
 
 import (
+	"fmt"
+	"github.com/brianvoe/gofakeit/v6"
 	"math/big"
 
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 
 	"github.com/Flaque/filet"
-	"github.com/brianvoe/gofakeit/v6"
 	"github.com/ethereum/go-ethereum/common"
 	. "github.com/stretchr/testify/assert"
 	"github.com/synapsecns/sanguine/agents/agents/guard"
@@ -194,6 +195,10 @@ func (g GuardSuite) TestReportAttestationNotOnSummit() {
 
 	omniRPCClient := omniClient.NewOmnirpcClient(g.TestOmniRPC, g.GuardMetrics, omniClient.WithCaptureReqRes())
 
+	omnirpcDest := omniRPCClient.GetEndpoint(int(g.DestinationDomainClient.Config().DomainID), 1)
+
+	fmt.Println("OMNIIIIII", omnirpcDest)
+
 	// Scribe setup.
 	originClient, err := backfill.DialBackend(g.GetTestContext(), g.TestBackendOrigin.RPCAddress(), g.ScribeMetrics)
 	Nil(g.T(), err)
@@ -306,7 +311,7 @@ func (g GuardSuite) TestReportAttestationNotOnSummit() {
 	// Submit the attestation
 	agentProof, err := g.SummitDomainClient.BondingManager().GetProof(g.GetTestContext(), g.NotaryBondedSigner)
 	Nil(g.T(), err)
-	agentStatus, err := g.SummitDomainClient.BondingManager().GetAgentStatus(g.GetTestContext(), g.NotaryBondedSigner)
+	agentStatus, err := g.SummitDomainClient.BondingManager().GetAgentStatus(g.GetTestContext(), g.NotaryBondedSigner.Address())
 	Nil(g.T(), err)
 	err = g.DestinationDomainClient.LightManager().UpdateAgentStatus(
 		g.GetTestContext(),
@@ -331,7 +336,7 @@ func (g GuardSuite) TestReportAttestationNotOnSummit() {
 	txContextSummit := g.TestBackendSummit.GetTxContext(g.GetTestContext(), g.SummitMetadata.OwnerPtr())
 	txContextDestination := g.TestBackendDestination.GetTxContext(g.GetTestContext(), g.LightInboxMetadataOnDestination.OwnerPtr())
 	g.Eventually(func() bool {
-		status, err := g.SummitDomainClient.BondingManager().GetAgentStatus(g.GetTestContext(), g.NotaryBondedSigner)
+		status, err := g.SummitDomainClient.BondingManager().GetAgentStatus(g.GetTestContext(), g.NotaryBondedSigner.Address())
 		Nil(g.T(), err)
 		if status.Flag() == uint8(4) {
 			return true

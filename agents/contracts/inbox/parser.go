@@ -13,7 +13,7 @@ type Parser interface {
 	// EventType is the event type.
 	EventType(log ethTypes.Log) (_ EventType, ok bool)
 	// ParseSnapshotAccepted parses a SnapshotAccepted event.
-	ParseSnapshotAccepted(log ethTypes.Log) (_ types.Snapshot, domain uint32, agentSig []byte, ok bool)
+	ParseSnapshotAccepted(log ethTypes.Log) (_ *types.FraudSnapshot, err error)
 }
 
 type parserImpl struct {
@@ -45,18 +45,18 @@ func (p parserImpl) EventType(log ethTypes.Log) (_ EventType, ok bool) {
 }
 
 // ParseSnapshotAccepted parses a SnapshotAccepted event.
-func (p parserImpl) ParseSnapshotAccepted(log ethTypes.Log) (_ types.Snapshot, domain uint32, agentSig []byte, ok bool) {
+func (p parserImpl) ParseSnapshotAccepted(log ethTypes.Log) (_ *types.FraudSnapshot, err error) {
 	inboxSnapshot, err := p.filterer.ParseSnapshotAccepted(log)
 	if err != nil {
-		return nil, 0, nil, false
+		return nil, fmt.Errorf("could not parse snapshot accepted event: %w", err)
 	}
 
-	snapshot, err := types.DecodeSnapshot(inboxSnapshot.SnapPayload)
+	fraudSnapshot, err := types.NewFraudSnapshotFromPayload(inboxSnapshot.SnapPayload, inboxSnapshot.Domain, inboxSnapshot.Agent, inboxSnapshot.SnapSignature)
 	if err != nil {
-		return nil, 0, nil, false
+		return nil, fmt.Errorf("could not create fraud snapshot from payload: %w", err)
 	}
 
-	return snapshot, inboxSnapshot.Domain, inboxSnapshot.SnapSignature, true
+	return fraudSnapshot, nil
 }
 
 // EventType is the type of the summit events

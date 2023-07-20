@@ -50,8 +50,6 @@ type Guard struct {
 	logChans           map[uint32]chan *ethTypes.Log
 	inboxParser        inbox.Parser
 	lightInboxParser   lightinbox.Parser
-	boundInbox         *inbox.Inbox
-	boundLightInbox    *lightinbox.LightInbox
 	boundOrigins       map[uint32]*origin.Origin
 	txSubmitter        submitter.TransactionSubmitter
 }
@@ -135,6 +133,9 @@ func NewGuard(ctx context.Context, cfg config.AgentConfig, omniRPCClient omnirpc
 			common.HexToAddress(domain.OriginAddress),
 			omnirpcClient,
 		)
+		if err != nil {
+			return Guard{}, fmt.Errorf("could not create origin: %w", err)
+		}
 
 		// Initializations that only need to happen on the Summit domain.
 		if domain.DomainID == cfg.SummitDomainID {
@@ -149,22 +150,6 @@ func NewGuard(ctx context.Context, cfg config.AgentConfig, omniRPCClient omnirpc
 			guard.lightInboxParser, err = lightinbox.NewParser(common.HexToAddress(domain.LightInboxAddress))
 			if err != nil {
 				return Guard{}, fmt.Errorf("could not create inbox parser: %w", err)
-			}
-
-			guard.boundInbox, err = inbox.NewInbox(
-				common.HexToAddress(domain.InboxAddress),
-				omnirpcClient,
-			)
-			if err != nil {
-				return Guard{}, fmt.Errorf("could not create bound inbox: %w", err)
-			}
-
-			guard.boundLightInbox, err = lightinbox.NewLightInbox(
-				common.HexToAddress(domain.LightInboxAddress),
-				omnirpcClient,
-			)
-			if err != nil {
-				return Guard{}, fmt.Errorf("could not create bound light inbox: %w", err)
 			}
 		}
 	}
@@ -248,22 +233,12 @@ func (g Guard) receiveLogs(ctx context.Context, chainID uint32) error {
 }
 
 func (g Guard) handleSnapshot(ctx context.Context, log ethTypes.Log, chainID uint32) error {
-	snapshot, agentSig, err := g.logToSnapshot(log)
+	fraudSnapshot, err := g.inboxParser.ParseSnapshotAccepted(log)
 	if err != nil {
-		// TODO: This should be made to err once we have different log processing.
-		return nil
+		return fmt.Errorf("could not parse snapshot accepted: %w", err)
 	}
 
-	if snapshot == nil {
-		return nil
-	}
-
-	snapshotPayload, err := types.EncodeSnapshot(snapshot)
-	if err != nil {
-		return fmt.Errorf("could not encode snapshot: %w", err)
-	}
-
-	for stateIndex, state := range snapshot.States() {
+	for stateIndex, state := range fraudSnapshot.Snapshot.States() {
 		// Check the validity of each state by calling `isValidState` on each state's origin domain.
 		statePayload, err := types.EncodeState(state)
 		if err != nil {
@@ -284,11 +259,18 @@ func (g Guard) handleSnapshot(ctx context.Context, log ethTypes.Log, chainID uin
 		}
 
 		// First, call verifyStateWithSnapshot() to slash the accused agent on origin.
-		signature, err := g.bondedSigner.SignMessage(ctx, snapshotPayload, true)
+		signature, err := g.bondedSigner.SignMessage(ctx, fraudSnapshot.Payload, true)
 		if err != nil {
 			return fmt.Errorf("could not sign snapshot message: %w", err)
 		}
-		_, err = g.domains[state.Origin()].LightInbox().VerifyStateWithSnapshot(ctx, g.unbondedSigner, int64(stateIndex), signature, snapshotPayload, agentSig)
+		_, err = g.domains[state.Origin()].LightInbox().VerifyStateWithSnapshot(
+			ctx,
+			g.unbondedSigner,
+			int64(stateIndex),
+			signature,
+			fraudSnapshot.Payload,
+			fraudSnapshot.Signature,
+		)
 		if err != nil {
 			return fmt.Errorf("could not verify state with snapshot: %w", err)
 		}
@@ -308,28 +290,20 @@ func (g Guard) handleSnapshot(ctx context.Context, log ethTypes.Log, chainID uin
 		// if err != nil {
 		// 	return fmt.Errorf("could not submit state reports: %w", err)
 		// }
+
+		// If Notary: report on Summit and its remote domain.
 	}
 
 	return nil
 }
 
 func (g Guard) handleAttestation(ctx context.Context, log ethTypes.Log, chainID uint32) error {
-	attestation, attSignature, err := g.logToAttestation(log)
+	fraudAttestation, err := g.lightInboxParser.ParseAttestationAccepted(log)
 	if err != nil {
-		// TODO: This should be made to err once we have different log processing.
-		return nil
+		return fmt.Errorf("could not parse attestation accepted: %w", err)
 	}
 
-	if attestation == nil {
-		return nil
-	}
-
-	// Check if the attestation is valid on summit
-	attestationEncoded, err := types.EncodeAttestation(attestation)
-	if err != nil {
-		return fmt.Errorf("could not encode attestation: %w", err)
-	}
-	isValid, err := g.domains[g.summitDomainID].Summit().IsValidAttestation(ctx, attestationEncoded)
+	isValid, err := g.domains[g.summitDomainID].Summit().IsValidAttestation(ctx, fraudAttestation.Payload)
 	if err != nil {
 		return fmt.Errorf("could not check validity of attestation: %w", err)
 	}
@@ -339,24 +313,39 @@ func (g Guard) handleAttestation(ctx context.Context, log ethTypes.Log, chainID 
 	if isValid {
 		return nil
 	}
-	_, err = g.domains[g.summitDomainID].Inbox().VerifyAttestation(ctx, g.unbondedSigner, attestationEncoded, attSignature)
+	_, err = g.domains[g.summitDomainID].Inbox().VerifyAttestation(
+		ctx,
+		g.unbondedSigner,
+		fraudAttestation.Payload,
+		fraudAttestation.Signature,
+	)
 	if err != nil {
 		return fmt.Errorf("could not verify attestation: %w", err)
 	}
 
 	// Finally, we submit a fraud report by calling `submitAttestationReport()` on the remote chain.
-	// arSignature, err := g.bondedSigner.SignMessage(ctx, attestationEncoded, true)
-	// if err != nil {
-	// 	return fmt.Errorf("could not sign attestation: %w", err)
-	// }
-	// arSignatureEncoded, err := types.EncodeSignature(arSignature)
-	// if err != nil {
-	// 	return fmt.Errorf("could not encode signature: %w", err)
-	// }
-	// _, err = g.domains[chainID].LightInbox().SubmitAttestationReport(ctx, g.unbondedSigner, attestationEncoded, arSignatureEncoded, attSignature)
-	// if err != nil {
-	// 	return fmt.Errorf("could not submit attestation report: %w", err)
-	// }
+	arSignature, err := g.bondedSigner.SignMessage(ctx, fraudAttestation.Payload, true)
+	if err != nil {
+		return fmt.Errorf("could not sign attestation: %w", err)
+	}
+
+	arSignatureEncoded, err := types.EncodeSignature(arSignature)
+	if err != nil {
+		return fmt.Errorf("could not encode signature: %w", err)
+	}
+
+	// Call `submitAttestationReport` on the notary's associated remote domain.
+	tx, err := g.domains[fraudAttestation.Domain].LightInbox().SubmitAttestationReport(
+		ctx,
+		g.unbondedSigner,
+		fraudAttestation.Payload,
+		arSignatureEncoded,
+		fraudAttestation.Signature,
+	)
+	fmt.Println("tx", tx.Hash())
+	if err != nil {
+		return fmt.Errorf("could not submit attestation report: %w", err)
+	}
 
 	return nil
 }
@@ -376,37 +365,6 @@ func (g Guard) handleAttestation(ctx context.Context, log ethTypes.Log, chainID 
 
 // 	return nil
 // }
-
-// logToSnapshot converts the log to a snapshot.
-func (g Guard) logToSnapshot(log ethTypes.Log) (types.Snapshot, []byte, error) {
-	snapshot, _, agentSig, ok := g.inboxParser.ParseSnapshotAccepted(log)
-	if !ok {
-		return nil, nil, fmt.Errorf("could not parse snapshot")
-	}
-
-	// Domain == 0 check here only qualifies Notary submitted snapshots.
-	if snapshot == nil || agentSig == nil {
-		//nolint:nilnil
-		return nil, nil, nil
-	}
-
-	return snapshot, agentSig, nil
-}
-
-// logToAttestation converts the log to an attestation.
-func (g Guard) logToAttestation(log ethTypes.Log) (types.Attestation, []byte, error) {
-	attestation, attSignature, ok := g.lightInboxParser.ParseAttestationAccepted(log)
-	if !ok {
-		return nil, nil, fmt.Errorf("could not parse attestation")
-	}
-
-	if attestation == nil {
-		//nolint:nilnil
-		return nil, nil, nil
-	}
-
-	return attestation, attSignature, nil
-}
 
 func (g Guard) handleLog(ctx context.Context, log ethTypes.Log, chainID uint32) error {
 	switch {

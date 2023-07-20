@@ -28,44 +28,24 @@ func (e Executor) logToMessage(log ethTypes.Log, chainID uint32) (types.Message,
 	return message, nil
 }
 
-// logToAttestation converts the log to an attestation.
-func (e Executor) logToAttestation(log ethTypes.Log, chainID uint32) (types.Attestation, error) {
-	attestation, ok := e.chainExecutors[chainID].lightInboxParser.ParseAttestationAccepted(log)
-	if !ok {
-		return nil, fmt.Errorf("could not parse attestation")
-	}
-
-	if attestation == nil {
-		//nolint:nilnil
-		return nil, nil
-	}
-
-	return attestation, nil
-}
-
-// logToSnapshot converts the log to a snapshot.
-func (e Executor) logToSnapshot(log ethTypes.Log, chainID uint32) (types.Snapshot, error) {
-	snapshot, domain, _, ok := e.chainExecutors[chainID].inboxParser.ParseSnapshotAccepted(log)
-	if !ok {
-		return nil, fmt.Errorf("could not parse snapshot")
-	}
-
-	if snapshot == nil || domain == 0 {
-		//nolint:nilnil
-		return nil, nil
-	}
-
-	return snapshot, nil
-}
-
 func (e Executor) logToInterface(log ethTypes.Log, chainID uint32) (any, error) {
 	switch {
 	case e.isSnapshotAcceptedEvent(log, chainID):
-		return e.logToSnapshot(log, chainID)
+		wrappedSnapshot, err := e.chainExecutors[chainID].inboxParser.ParseSnapshotAccepted(log)
+		if err != nil {
+			return nil, fmt.Errorf("could not parse snapshot: %w", err)
+		}
+
+		return wrappedSnapshot.Snapshot, nil
 	case e.isSentEvent(log, chainID):
 		return e.logToMessage(log, chainID)
 	case e.isAttestationAcceptedEvent(log, chainID):
-		return e.logToAttestation(log, chainID)
+		wrappedAttestation, err := e.chainExecutors[chainID].lightInboxParser.ParseAttestationAccepted(log)
+		if err != nil {
+			return nil, fmt.Errorf("could not parse attestation: %w", err)
+		}
+
+		return wrappedAttestation.Attestation, nil
 	default:
 		//nolint:nilnil
 		return nil, nil

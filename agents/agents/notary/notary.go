@@ -429,7 +429,7 @@ func (n *Notary) registerNotaryOnDestination(parentCtx context.Context) bool {
 		))
 		return false
 	}
-	agentStatus, err := n.summitDomain.BondingManager().GetAgentStatus(ctx, n.bondedSigner)
+	agentStatus, err := n.summitDomain.BondingManager().GetAgentStatus(ctx, n.bondedSigner.Address())
 	if err != nil {
 		span.AddEvent("GetAgentStatus on bonding manager failed", trace.WithAttributes(
 			attribute.String("err", err.Error()),

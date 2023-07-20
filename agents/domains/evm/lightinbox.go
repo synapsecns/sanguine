@@ -101,7 +101,7 @@ func (a lightInboxContract) SubmitAttestationReport(ctx context.Context, signer 
 		return nil, fmt.Errorf("could not create tx: %w", err)
 	}
 
-	transactOpts.Context = ctx
+	transactOpts.Context = context.Background()
 	// TODO: Is there a way to get a return value from a contractTransactor call?
 	tx, err = a.contract.SubmitAttestationReport(transactOpts, attestation, arSignature, attSignature)
 	if err != nil {
