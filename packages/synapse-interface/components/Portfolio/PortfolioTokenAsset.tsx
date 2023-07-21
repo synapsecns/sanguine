@@ -67,10 +67,6 @@ export const PortfolioTokenAsset = ({
       : formattedBalance
   }, [balance, portfolioChainId])
 
-  console.log('portfolioChainId:', portfolioChainId)
-  console.log('token: ', token)
-  console.log('allowances: ', allowances)
-
   const bridgeAllowance = allowances && allowances[ROUTER_ADDRESS]
 
   const parsedAllowance: string =
