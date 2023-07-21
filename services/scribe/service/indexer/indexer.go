@@ -71,6 +71,7 @@ type txData struct {
 	success     bool
 }
 
+// errNoContinue indicates an error that is not recoverable, and should not be retried.
 var errNoContinue = errors.New("encountered unreconcilable error, will not attempt to store tx")
 
 // errNoTx indicates a tx cannot be parsed, this is only returned when the tx doesn't match our data model.
@@ -245,7 +246,6 @@ func (x *Indexer) Index(parentCtx context.Context, startHeight uint64, endHeight
 	x.blockMeter.Record(ctx, int64(endHeight), otelMetrics.WithAttributeSet(
 		attribute.NewSet(attribute.Int64("start_block", int64(startHeight)), attribute.Int64("chain_id", int64(x.indexerConfig.ChainID)))),
 	)
-	// LogEvent(InfoLevel, "Finished backfilling contract", LogData{"cid": x.indexerConfig.ChainID, "ca": x.addressesToString(x.indexerConfig.Addresses)})
 
 	return nil
 }
@@ -282,8 +282,6 @@ OUTER:
 	for {
 		select {
 		case <-ctx.Done():
-			// LogEvent(ErrorLevel, "Context canceled while storing logs/receipts", LogData{"cid": x.indexerConfig.ChainID, "bn": log.BlockNumber, "tx": log.TxHash.Hex(), "la": log.Address.String(), "ca": x.addressesToString(x.indexerConfig.Addresses), "e": ctx.Err()})
-
 			return fmt.Errorf("context canceled while storing logs/receipts: %w", ctx.Err())
 		case <-time.After(timeout):
 			tryCount++
@@ -291,6 +289,7 @@ OUTER:
 			tx, err = x.fetchEventData(ctx, log.TxHash, log.BlockNumber)
 			if err != nil {
 				if errors.Is(err, errNoContinue) {
+					logger.ReportIndexerError(err, x.indexerConfig, logger.GetTxError)
 					return nil
 				}
 
@@ -320,8 +319,6 @@ OUTER:
 			err = x.eventDB.StoreReceipt(groupCtx, x.indexerConfig.ChainID, tx.receipt)
 		}
 		if err != nil {
-			// LogEvent(ErrorLevel, "Could not store receipt, retrying", LogData{"cid": x.indexerConfig.ChainID, "bn": log.BlockNumber, "tx": log.TxHash.Hex(), "la": log.Address.String(), "ca": x.addressesToString(x.indexerConfig.Addresses), "e": err.Error()})
-
 			return fmt.Errorf("could not store receipt: %w", err)
 		}
 		return nil
@@ -368,14 +365,10 @@ OUTER:
 
 	err = g.Wait()
 	if err != nil {
-		// LogEvent(ErrorLevel, "Could not store data", LogData{"cid": x.indexerConfig.ChainID, "bn": log.BlockNumber, "tx": log.TxHash.Hex(), "la": log.Address.String(), "ca": x.addressesToString(x.indexerConfig.Addresses), "e": err.Error()})
-
 		return fmt.Errorf("could not store data: %w\n%s on chain %d from %d to %s", err, x.addressesToString(x.indexerConfig.Addresses), x.indexerConfig.ChainID, log.BlockNumber, log.TxHash.String())
 	}
 
 	x.cache.Add(log.TxHash, true)
-	// LogEvent(InfoLevel, "Log, Receipt, and Tx stored", LogData{"cid": x.indexerConfig.ChainID, "bn": log.BlockNumber, "tx": log.TxHash.Hex(), "la": log.Address.String(), "ca": x.addressesToString(x.indexerConfig.Addresses), "ts": time.Since(startTime).Seconds()})
-
 	return nil
 }
 
@@ -384,8 +377,6 @@ func (x *Indexer) prunedReceiptLogs(receipt types.Receipt) (logs []types.Log, er
 	for i := range receipt.Logs {
 		log := receipt.Logs[i]
 		if log == nil {
-			// LogEvent(ErrorLevel, "log is nil", LogData{"cid": x.indexerConfig.ChainID, "bn": log.BlockNumber, "tx": log.TxHash.Hex(), "la": log.Address.String(), "ca": x.addressesToString(x.indexerConfig.Addresses)})
-
 			return nil, fmt.Errorf("log is nil\nChain: %d\nTxHash: %s\nLog BlockNumber: %d\nLog 's Contract Address: %s\nContract Address: %s", x.indexerConfig.ChainID, log.TxHash.String(), log.BlockNumber, log.Address.String(), x.addressesToString(x.indexerConfig.Addresses))
 		}
 		logs = append(logs, *log)
@@ -438,7 +429,7 @@ OUTER:
 
 			if callErr[receiptIndex] != nil {
 				if callErr[receiptIndex].Error() == txNotFoundError {
-					// LogEvent(InfoLevel, "Could not get tx for txHash, attempting with additional confirmations", LogData{"cid": x.indexerConfig.ChainID, "tx": txhash, "ca": x.addressesToString(x.indexerConfig.Addresses), "e": err.Error()})
+					logger.ReportIndexerError(fmt.Errorf(txNotFoundError), x.indexerConfig, logger.GetTxError)
 					continue OUTER
 				}
 			}
@@ -446,13 +437,13 @@ OUTER:
 			if callErr[txIndex] != nil {
 				switch callErr[txIndex].Error() {
 				case txNotSupportedError:
-					// LogEvent(InfoLevel, "Invalid tx", LogData{"cid": x.indexerConfig.ChainID, "tx": txhash, "ca": x.addressesToString(x.indexerConfig.Addresses), "e": err.Error()})
+					logger.ReportIndexerError(fmt.Errorf(txNotSupportedError), x.indexerConfig, logger.GetTxError)
 					return tx, errNoTx
 				case invalidTxVRSError:
-					// LogEvent(InfoLevel, "Could not get tx for txHash, attempting with additional confirmations", LogData{"cid": x.indexerConfig.ChainID, "tx": txhash, "ca": x.addressesToString(x.indexerConfig.Addresses), "e": err.Error()})
+					logger.ReportIndexerError(fmt.Errorf(invalidTxVRSError), x.indexerConfig, logger.GetTxError)
 					return tx, errNoTx
 				case txNotFoundError:
-					// LogEvent(InfoLevel, "Could not get tx for txHash, attempting with additional confirmations", LogData{"cid": x.indexerConfig.ChainID, "tx": txhash, "ca": x.addressesToString(x.indexerConfig.Addresses), "e": err.Error()})
+					logger.ReportIndexerError(fmt.Errorf(txNotFoundError), x.indexerConfig, logger.GetTxError)
 					continue OUTER
 				}
 			}
@@ -470,6 +461,7 @@ OUTER:
 	return tx, nil
 }
 
+// addressesToString is a helper function for logging events.
 func (x *Indexer) addressesToString(addresses []common.Address) string {
 	var output string
 	for i := range addresses {
