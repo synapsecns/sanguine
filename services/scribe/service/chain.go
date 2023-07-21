@@ -109,7 +109,7 @@ func (c *ChainIndexer) Index(ctx context.Context, onlyOneBlock *uint64) error {
 	// var livefillContracts []config.ContractConfig
 	readyToLivefill := make(chan config.ContractConfig)
 
-	latestBlock, err := c.getLatestBlock(indexCtx, scribeTypes.Indexing)
+	latestBlock, err := c.getLatestBlock(indexCtx, scribeTypes.IndexingConfirmed)
 	if err != nil {
 		return fmt.Errorf("could not get current block number while indexing: %w", err)
 	}
@@ -139,7 +139,7 @@ func (c *ChainIndexer) Index(ctx context.Context, onlyOneBlock *uint64) error {
 		}
 
 		// If current contract is not within the livefill threshold, start an indexer for it.
-		contractIndexer, err := indexer.NewIndexer(c.chainConfig, []common.Address{contractAddress}, c.eventDB, c.client, c.handler, c.blockHeightMeters[contractAddress], false)
+		contractIndexer, err := indexer.NewIndexer(c.chainConfig, []common.Address{contractAddress}, c.eventDB, c.client, c.handler, c.blockHeightMeters[contractAddress], scribeTypes.IndexingConfirmed)
 		if err != nil {
 			return fmt.Errorf("could not create contract indexer: %w", err)
 		}
@@ -165,7 +165,7 @@ func (c *ChainIndexer) Index(ctx context.Context, onlyOneBlock *uint64) error {
 			return fmt.Errorf("error creating otel histogram %w", err)
 		}
 
-		livefillIndexer, err := indexer.NewIndexer(c.chainConfig, getAddressesFromConfig(c.livefillContracts), c.eventDB, c.client, c.handler, livefillBlockMeter, false)
+		livefillIndexer, err := indexer.NewIndexer(c.chainConfig, getAddressesFromConfig(c.livefillContracts), c.eventDB, c.client, c.handler, livefillBlockMeter, scribeTypes.IndexingConfirmed)
 		if err != nil {
 			return fmt.Errorf("could not create contract indexer: %w", err)
 		}
@@ -335,11 +335,11 @@ func createBackoff() *backoff.Backoff {
 
 func (c *ChainIndexer) isReadyForLivefill(parentContext context.Context, indexer *indexer.Indexer) (bool, error) {
 	// get last indexed to check livefill threshold
-	lastBlockIndexed, err := c.eventDB.RetrieveLastIndexed(parentContext, indexer.GetIndexerConfig().Addresses[0], c.chainConfig.ChainID, scribeTypes.Indexing)
+	lastBlockIndexed, err := c.eventDB.RetrieveLastIndexed(parentContext, indexer.GetIndexerConfig().Addresses[0], c.chainConfig.ChainID, scribeTypes.IndexingConfirmed)
 	if err != nil {
 		return false, fmt.Errorf("could not get last indexed: %w", err)
 	}
-	endHeight, err := c.getLatestBlock(parentContext, scribeTypes.Indexing)
+	endHeight, err := c.getLatestBlock(parentContext, scribeTypes.IndexingConfirmed)
 	if err != nil {
 		return false, fmt.Errorf("could not get current block number while indexing: %w", err)
 	}
@@ -347,7 +347,7 @@ func (c *ChainIndexer) isReadyForLivefill(parentContext context.Context, indexer
 }
 
 func (c *ChainIndexer) getStartHeight(parentContext context.Context, onlyOneBlock *uint64, givenStart uint64, indexer *indexer.Indexer) (uint64, *uint64, error) {
-	lastIndexed, err := c.eventDB.RetrieveLastIndexed(parentContext, indexer.GetIndexerConfig().Addresses[0], c.chainConfig.ChainID, scribeTypes.Indexing)
+	lastIndexed, err := c.eventDB.RetrieveLastIndexed(parentContext, indexer.GetIndexerConfig().Addresses[0], c.chainConfig.ChainID, scribeTypes.IndexingConfirmed)
 	if err != nil {
 		return 0, nil, fmt.Errorf("could not get last block indexed: %w", err)
 	}
@@ -364,7 +364,7 @@ func (c *ChainIndexer) getStartHeight(parentContext context.Context, onlyOneBloc
 		startHeight = *onlyOneBlock
 		endHeight = onlyOneBlock
 	} else {
-		endHeight, err = c.getLatestBlock(parentContext, scribeTypes.Indexing)
+		endHeight, err = c.getLatestBlock(parentContext, scribeTypes.IndexingConfirmed)
 		if err != nil {
 			return 0, nil, fmt.Errorf("could not get current block number while indexing: %w", err)
 		}
@@ -409,7 +409,7 @@ func (c *ChainIndexer) LivefillAtHead(parentContext context.Context) error {
 				continue
 			}
 
-			tipLivefillLastIndexed, err := c.eventDB.RetrieveLastIndexed(parentContext, common.BigToAddress(big.NewInt(0)), c.chainConfig.ChainID, scribeTypes.Indexing)
+			tipLivefillLastIndexed, err := c.eventDB.RetrieveLastIndexed(parentContext, common.BigToAddress(big.NewInt(0)), c.chainConfig.ChainID, scribeTypes.LivefillAtHead)
 			if err != nil {
 				logger.ReportIndexerError(err, tipLivefillIndexer.GetIndexerConfig(), logger.LivefillIndexerError)
 				timeout = b.Duration()

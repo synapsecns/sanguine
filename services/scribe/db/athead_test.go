@@ -27,7 +27,7 @@ func (t *DBSuite) TestUnconfirmedQuery() {
 			err := testDB.StoreLogs(t.GetTestContext(), chainID, log)
 			Nil(t.T(), err)
 		}
-		err := testDB.StoreLastIndexed(t.GetTestContext(), contractAddress, chainID, confirmedBlockHeight, scribeTypes.Indexing)
+		err := testDB.StoreLastIndexed(t.GetTestContext(), contractAddress, chainID, confirmedBlockHeight, scribeTypes.IndexingConfirmed)
 		Nil(t.T(), err)
 
 		// For testing, having the same txhash for all unconfirmed blocks.

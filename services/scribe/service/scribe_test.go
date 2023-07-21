@@ -95,7 +95,7 @@ func (s *ScribeSuite) TestSimulatedScribe() {
 			logs, err := s.testDB.RetrieveLogsWithFilter(s.GetTestContext(), logFilter, 1)
 			Nil(s.T(), err)
 			Equal(s.T(), 4, len(logs))
-			lastIndexed, err := s.testDB.RetrieveLastIndexed(s.GetTestContext(), common.HexToAddress(contractConfig.Address), chainConfig.ChainID, scribeTypes.Indexing)
+			lastIndexed, err := s.testDB.RetrieveLastIndexed(s.GetTestContext(), common.HexToAddress(contractConfig.Address), chainConfig.ChainID, scribeTypes.IndexingConfirmed)
 			Nil(s.T(), err)
 			LessOrEqual(s.T(), desiredBlockHeight, int(lastIndexed))
 		}
@@ -303,7 +303,7 @@ func (s *ScribeSuite) TestLivefillParity() {
 				allContractsBackfilled := true
 				chain := scribeConfig.Chains[index]
 				for _, contract := range chain.Contracts {
-					currentBlock, err := s.testDB.RetrieveLastIndexed(s.GetTestContext(), common.HexToAddress(contract.Address), chain.ChainID, scribeTypes.Indexing)
+					currentBlock, err := s.testDB.RetrieveLastIndexed(s.GetTestContext(), common.HexToAddress(contract.Address), chain.ChainID, scribeTypes.IndexingConfirmed)
 
 					Nil(s.T(), err)
 					if currentBlock <= latestBlocks[chain.ChainID] {

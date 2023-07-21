@@ -283,7 +283,7 @@ func (x *IndexerSuite) TestContractBackfill() {
 	Equal(x.T(), 2, len(receipts[0].Logs))
 
 	// Ensure last indexed block is correct.
-	lastIndexed, err := x.testDB.RetrieveLastIndexed(x.GetTestContext(), testContract.Address(), uint32(testContract.ChainID().Uint64()), scribeTypes.Indexing)
+	lastIndexed, err := x.testDB.RetrieveLastIndexed(x.GetTestContext(), testContract.Address(), uint32(testContract.ChainID().Uint64()), scribeTypes.IndexingConfirmed)
 	Nil(x.T(), err)
 	Equal(x.T(), txBlockNumber, lastIndexed)
 }
@@ -385,7 +385,7 @@ func (x *IndexerSuite) TestContractBackfillFromPreIndexed() {
 	Equal(x.T(), 2, len(receipts[0].Logs))
 
 	// Ensure last indexed block is correct.
-	lastIndexed, err := x.testDB.RetrieveLastIndexed(x.GetTestContext(), testContract.Address(), uint32(testContract.ChainID().Uint64()), scribeTypes.Indexing)
+	lastIndexed, err := x.testDB.RetrieveLastIndexed(x.GetTestContext(), testContract.Address(), uint32(testContract.ChainID().Uint64()), scribeTypes.IndexingConfirmed)
 	Nil(x.T(), err)
 	Equal(x.T(), txBlockNumber, lastIndexed)
 }
