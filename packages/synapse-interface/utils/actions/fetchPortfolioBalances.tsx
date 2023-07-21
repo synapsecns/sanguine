@@ -64,7 +64,7 @@ function mergeBalancesAndAllowances(
   })
 }
 
-const getTokensAllowance = async (
+const getTokensAllowances = async (
   owner: string,
   spender: string,
   tokens: Token[],
@@ -133,7 +133,7 @@ export const fetchPortfolioBalances = async (
       const currentChainTokens = BRIDGABLE_TOKENS[chainId]
       const [tokenBalances, tokenAllowances] = await Promise.all([
         getTokenBalances(address, currentChainTokens, currentChainId),
-        getTokensAllowance(
+        getTokensAllowances(
           address,
           ROUTER_ADDRESS,
           currentChainTokens,
