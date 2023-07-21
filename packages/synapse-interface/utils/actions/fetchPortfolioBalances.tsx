@@ -32,7 +32,7 @@ export interface NetworkTokenBalancesAndAllowances {
   [index: number]: TokenWithBalanceAndAllowances[]
 }
 
-export const getTokensByChainId = async (
+export const getTokenBalances = async (
   owner: string,
   tokens: Token[],
   chainId: number
@@ -132,7 +132,7 @@ export const fetchPortfolioBalances = async (
       const currentChainId = Number(chainId)
       const currentChainTokens = BRIDGABLE_TOKENS[chainId]
       const [tokenBalances, tokenAllowances] = await Promise.all([
-        getTokensByChainId(address, currentChainTokens, currentChainId),
+        getTokenBalances(address, currentChainTokens, currentChainId),
         getTokensAllowance(
           address,
           ROUTER_ADDRESS,
