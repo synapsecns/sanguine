@@ -1,7 +1,11 @@
 import React, { useState } from 'react'
 import Image from 'next/image'
 import { CHAINS_BY_ID } from '@/constants/chains'
-import { TokenWithBalanceAndAllowance } from '@/utils/actions/fetchPortfolioBalances'
+import {
+  ROUTER_ADDRESS,
+  TokenWithBalanceAndAllowance,
+  TokenWithBalanceAndAllowances,
+} from '@/utils/actions/fetchPortfolioBalances'
 import { Chain } from '@/utils/types'
 import PortfolioAccordion from './PortfolioAccordion'
 import { PortfolioConnectButton } from './PortfolioConnectButton'
@@ -13,7 +17,7 @@ type SingleNetworkPortfolioProps = {
   portfolioChainId: number
   connectedChainId: number
   selectedFromChainId: number
-  portfolioTokens: TokenWithBalanceAndAllowance[]
+  portfolioTokens: TokenWithBalanceAndAllowances[]
   initializeExpanded: boolean
   fetchState: FetchState
 }
@@ -207,17 +211,19 @@ export const PortfolioHeader = () => {
 }
 
 function separateTokensByAllowance(
-  tokens: TokenWithBalanceAndAllowance[]
-): [TokenWithBalanceAndAllowance[], TokenWithBalanceAndAllowance[]] {
-  const tokensWithAllowance: TokenWithBalanceAndAllowance[] = []
-  const tokensWithoutAllowance: TokenWithBalanceAndAllowance[] = []
+  tokens: TokenWithBalanceAndAllowances[]
+): [TokenWithBalanceAndAllowances[], TokenWithBalanceAndAllowances[]] {
+  const tokensWithAllowance: TokenWithBalanceAndAllowances[] = []
+  const tokensWithoutAllowance: TokenWithBalanceAndAllowances[] = []
 
   tokens &&
-    tokens.forEach((token) => {
-      // allowance is null for native gas tokens
-      if (token.allowance === null) {
+    tokens.forEach((token: TokenWithBalanceAndAllowances) => {
+      // currently separating by bridge allowance
+      // update this when incorporating other allowances to order by
+      const bridgeAllowance: bigint | null = token.allowances[ROUTER_ADDRESS]
+      if (bridgeAllowance === null) {
         tokensWithAllowance.push(token)
-      } else if (token.allowance > 0n) {
+      } else if (bridgeAllowance > 0n) {
         tokensWithAllowance.push(token)
       } else {
         tokensWithoutAllowance.push(token)
