@@ -1,6 +1,6 @@
 import React, { useEffect } from 'react'
 import { Address } from 'wagmi'
-import { NetworkTokenBalancesAndAllowances } from '@/utils/hooks/fetchPortfolioBalances'
+import { NetworkTokenBalancesAndAllowances } from '@/utils/actions/fetchPortfolioBalances'
 import {
   SingleNetworkPortfolio,
   PortfolioHeader,
