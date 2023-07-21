@@ -8,6 +8,8 @@ import StandardPageContainer from '@layouts/StandardPageContainer'
 import Grid from '@tw/Grid'
 import SwapCard from './SwapCard'
 import NoSwapCard from './NoSwapCard'
+import { useRouter } from 'next/router'
+import { segmentAnalyticsEvent } from '@/contexts/SegmentAnalyticsProvider'
 import { Address } from 'wagmi'
 
 const SwapPage = () => {
@@ -15,6 +17,15 @@ const SwapPage = () => {
   const { chain } = useNetwork()
   const [connectedChainId, setConnectedChainId] = useState<number>(0)
   const [address, setAddress] = useState<Address | undefined>(undefined)
+  const router = useRouter()
+
+  useEffect(() => {
+    segmentAnalyticsEvent(`[Swap] arrives`, {
+      fromChainId: chain?.id,
+      query: router.query,
+      pathname: router.pathname,
+    })
+  }, [])
 
   useEffect(() => {
     setConnectedChainId(chain?.id ?? DEFAULT_FROM_CHAIN)

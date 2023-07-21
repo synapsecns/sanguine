@@ -114,7 +114,7 @@ export const {
   setDeadlineMinutes,
   setDestinationAddress,
   setIsLoading,
-  addBridgeTxHash, // new action
+  addBridgeTxHash,
 } = bridgeSlice.actions
 
 export default bridgeSlice.reducer
