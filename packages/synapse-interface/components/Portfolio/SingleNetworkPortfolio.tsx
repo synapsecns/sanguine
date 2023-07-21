@@ -81,7 +81,7 @@ export const SingleNetworkPortfolio = ({
               <PortfolioTokenAsset
                 token={token}
                 balance={balance}
-                allowance={allowance}
+                allowances={allowances}
                 portfolioChainId={portfolioChainId}
                 connectedChainId={connectedChainId}
                 isApproved={true}

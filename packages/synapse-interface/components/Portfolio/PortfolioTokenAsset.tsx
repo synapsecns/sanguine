@@ -15,14 +15,17 @@ import { approveToken } from '@/utils/approveToken'
 import { switchNetwork } from '@wagmi/core'
 import Image from 'next/image'
 import { toast } from 'react-hot-toast'
-import { ROUTER_ADDRESS } from '@/utils/actions/fetchPortfolioBalances'
+import {
+  ROUTER_ADDRESS,
+  Allowances,
+} from '@/utils/actions/fetchPortfolioBalances'
 import { useBridgeState } from '@/slices/bridge/hooks'
 import { fetchAndStoreSingleNetworkPortfolioBalances } from '@/slices/portfolio/hooks'
 
 type PortfolioTokenAssetProps = {
   token: Token
   balance: bigint
-  allowance?: bigint
+  allowances?: Allowances
   portfolioChainId: number
   connectedChainId: number
   isApproved: boolean
@@ -43,7 +46,7 @@ const handleFocusOnInput = () => {
 export const PortfolioTokenAsset = ({
   token,
   balance,
-  allowance,
+  allowances,
   portfolioChainId,
   connectedChainId,
   isApproved,
@@ -64,8 +67,11 @@ export const PortfolioTokenAsset = ({
       : formattedBalance
   }, [balance, portfolioChainId])
 
+  const bridgeAllowance = allowances[ROUTER_ADDRESS]
+
   const parsedAllowance: string =
-    allowance && formatBigIntToString(allowance, decimals[portfolioChainId], 3)
+    bridgeAllowance &&
+    formatBigIntToString(bridgeAllowance, decimals[portfolioChainId], 3)
 
   const currentChainName: string = CHAINS_BY_ID[portfolioChainId].name
 
@@ -78,7 +84,7 @@ export const PortfolioTokenAsset = ({
   }, [fromChainId, fromToken, token, portfolioChainId])
 
   const hasAllowanceButLessThanBalance: boolean =
-    allowance && balance > allowance
+    bridgeAllowance && balance > bridgeAllowance
 
   const isDisabled: boolean = false
 
