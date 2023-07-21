@@ -377,7 +377,7 @@ const StateManagedBridge = () => {
       ).then(() => {
         dispatch(
           fetchAndStoreSingleTokenAllowance({
-            routerAddress: bridgeQuote?.routerAddress,
+            routerAddress: bridgeQuote?.routerAddress as Address,
             tokenAddress: fromToken?.addresses[fromChainId] as Address,
             address: address,
             chainId: fromChainId,
