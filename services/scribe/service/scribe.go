@@ -50,9 +50,8 @@ func NewScribe(eventDB db.EventDB, clients map[uint32][]backend.ScribeBackend, c
 	}, nil
 }
 
-// Start starts the scribe. This works by starting a backfill and recording what the
-// current block, which it will backfill to. Then, each chain will listen for new block
-// heights and backfill to that height.
+// Start starts the scribe. A chain indexer is spun up for each chain, and a indexer is spun up for
+// each contract on that chain. There is an indexer for livefillingall contracts and indexer for livefilling at the tip as well.
 //
 //nolint:cyclop
 func (s Scribe) Start(ctx context.Context) error {
@@ -66,7 +65,7 @@ func (s Scribe) Start(ctx context.Context) error {
 		g.Go(func() error {
 			err := s.chainIndexers[chainID].Index(groupCtx, nil)
 			if err != nil {
-				return fmt.Errorf("could not backfill: %w", err)
+				return fmt.Errorf("could not index: %w", err)
 			}
 			return nil
 		})

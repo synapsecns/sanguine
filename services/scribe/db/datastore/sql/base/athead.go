@@ -13,6 +13,8 @@ import (
 	"time"
 )
 
+// TODO support more filtering options
+
 // StoreLogsAtHead stores a log at the Head of the chain.
 func (s Store) StoreLogsAtHead(ctx context.Context, chainID uint32, logs ...types.Log) error {
 	var storeLogs []LogAtHead
@@ -154,8 +156,8 @@ func (s Store) StoreEthTxAtHead(ctx context.Context, tx *types.Transaction, chai
 	return nil
 }
 
-// RetrieveLogsFromHeadRangeQuery retrieves logs all logs (including unconfirmed) for a given contract address and chain ID.
-func (s Store) RetrieveLogsFromHeadRangeQuery(ctx context.Context, logFilter db.LogFilter, startBlock uint64, endBlock uint64, page int) (logs []*types.Log, err error) {
+// RetrieveLogsFromHeadRangeQuery retrieves all logs (including unconfirmed) for a given contract address, chain ID, and range.
+func (s Store) RetrieveLogsFromHeadRangeQuery(ctx context.Context, logFilter db.LogFilter, startBlock uint64, endBlock uint64, page int) ([]*types.Log, error) {
 	if logFilter.ContractAddress == "" || logFilter.ChainID == 0 {
 		return nil, fmt.Errorf("contract address and chain ID must be passed")
 	}
@@ -169,13 +171,13 @@ func (s Store) RetrieveLogsFromHeadRangeQuery(ctx context.Context, logFilter db.
 	}
 
 	var dbLogs []Log
-	subquery1 := s.DB().WithContext(ctx).ToSQL(func(tx *gorm.DB) *gorm.DB {
+	subQuery1 := s.DB().WithContext(ctx).ToSQL(func(tx *gorm.DB) *gorm.DB {
 		return tx.Model(Log{}).Select("*").Where("block_number BETWEEN ? AND ?", startBlock, lastIndexed).Find(&[]Log{})
 	})
-	subquery2 := s.DB().WithContext(ctx).ToSQL(func(tx *gorm.DB) *gorm.DB {
+	subQuery2 := s.DB().WithContext(ctx).ToSQL(func(tx *gorm.DB) *gorm.DB {
 		return tx.Model(LogAtHead{}).Select(LogColumns).Where("block_number BETWEEN ? AND ?", lastIndexed+1, endBlock).Find(&[]Log{})
 	})
-	query := fmt.Sprintf("SELECT * FROM (%s UNION %s) ORDER BY %s DESC, %s DESC LIMIT %d OFFSET %d", subquery1, subquery2, BlockNumberFieldName, BlockIndexFieldName, PageSize, (page-1)*PageSize)
+	query := fmt.Sprintf("SELECT * FROM (%s UNION %s) ORDER BY %s DESC, %s DESC LIMIT %d OFFSET %d", subQuery1, subQuery2, BlockNumberFieldName, BlockIndexFieldName, PageSize, (page-1)*PageSize)
 	dbTx := s.DB().WithContext(ctx).Raw(query).Scan(&dbLogs)
 
 	if dbTx.Error != nil {
@@ -184,31 +186,86 @@ func (s Store) RetrieveLogsFromHeadRangeQuery(ctx context.Context, logFilter db.
 	return buildLogsFromDBLogs(dbLogs), nil
 }
 
-// FlushLogsFromHead deletes all logs from the head table that are older than the given time.
-func (s Store) FlushLogsFromHead(ctx context.Context, time int64) error {
-	return s.DB().WithContext(ctx).Model(&LogAtHead{}).Where("insert_time < ?", time).Delete(&LogAtHead{}).Error
+// RetrieveReceiptsFromHeadRangeQuery retrieves all receipts (including unconfirmed) for a given contract address, chain ID, and range.
+func (s Store) RetrieveReceiptsFromHeadRangeQuery(ctx context.Context, receiptFilter db.ReceiptFilter, startBlock uint64, endBlock uint64, page int) ([]types.Receipt, error) {
+	if receiptFilter.ContractAddress == "" || receiptFilter.ChainID == 0 {
+		return nil, fmt.Errorf("contract address and chain ID must be passed")
+	}
+	if page < 1 {
+		page = 1
+	}
+
+	lastIndexed, err := s.RetrieveLastIndexed(ctx, common.HexToAddress(receiptFilter.ContractAddress), receiptFilter.ChainID, false)
+	if err != nil {
+		return nil, fmt.Errorf("could not get last block indexed: %w", err)
+	}
+
+	var dbReceipts []Receipt
+	subQuery1 := s.DB().WithContext(ctx).ToSQL(func(tx *gorm.DB) *gorm.DB {
+		return tx.Model(Receipt{}).Select("*").Where("block_number BETWEEN ? AND ?", startBlock, lastIndexed).Find(&[]Receipt{})
+	})
+	subQuery2 := s.DB().WithContext(ctx).ToSQL(func(tx *gorm.DB) *gorm.DB {
+		return tx.Model(ReceiptAtHead{}).Select(ReceiptColumns).Where("block_number BETWEEN ? AND ?", lastIndexed+1, endBlock).Find(&[]Receipt{})
+	})
+	query := fmt.Sprintf("SELECT * FROM (%s UNION %s) ORDER BY %s DESC, %s DESC LIMIT %d OFFSET %d", subQuery1, subQuery2, BlockNumberFieldName, TransactionIndexFieldName, PageSize, (page-1)*PageSize)
+	dbTx := s.DB().WithContext(ctx).Raw(query).Scan(&dbReceipts)
+
+	if dbTx.Error != nil {
+		return nil, fmt.Errorf("error getting newly confirmed data %w", dbTx.Error)
+	}
+	receipts, err := s.buildReceiptsFromDBReceipts(ctx, dbReceipts, receiptFilter.ChainID)
+	if err != nil {
+		return nil, fmt.Errorf("error building receipts from db receipts: %w", err)
+	}
+	return receipts, nil
 }
 
-//
-// func (s Store) RetrieveEthTxsWithFilterAndCleanHead(ctx context.Context, ethTxFilter db.EthTxFilter, page int) ([]db.TxWithBlockNumber, error) {
-//	if page < 1 {
-//		page = 1
-//	}
-//	var ethTxs []EthTx
-//
-//	result := s.DB().Table("EthTx").
-//		Joins("JOIN EthTxAtHead ON EthTx.TransactionHash = EthTxAtHead.TransactionHash AND EthTx.ChainId = EthTxAtHead.ChainId").
-//		Where("EthTx.BlockHash <> EthTxAtHead.BlockHash").
-//		Find(&ethTxs)
-//
-//	if result.Error != nil {
-//		return nil, fmt.Errorf("error getting newly confirmed data %v", result.Error)
-//	}
-//
-//	parsedEthTxs, err := buildEthTxsFromDBEthTxs(ethTxs)
-//	if err != nil {
-//		return []db.TxWithBlockNumber{}, fmt.Errorf("could not build eth txs: %w", err)
-//	}
-//
-//	return parsedEthTxs, nil
-//}
+// TODO make a query for getting latest tx
+
+// RetrieveUnconfirmedEthTxsFromHeadRangeQuery retrieves all unconfirmed ethTx for a given chain ID and range.
+func (s Store) RetrieveUnconfirmedEthTxsFromHeadRangeQuery(ctx context.Context, ethTxFilter db.EthTxFilter, startBlock uint64, endBlock uint64, page int) ([]db.TxWithBlockNumber, error) {
+	if ethTxFilter.ChainID == 0 {
+		return nil, fmt.Errorf("chain ID must be passed")
+	}
+	if page < 1 {
+		page = 1
+	}
+
+	var dbEthTxs []EthTx
+	query := ethTxFilterToQuery(ethTxFilter)
+	rangeQuery := fmt.Sprintf("%s BETWEEN ? AND ?", BlockNumberFieldName)
+
+	dbTx := s.DB().WithContext(ctx).Model(EthTxAtHead{}).
+		Where(&query).
+		Where(rangeQuery, startBlock, endBlock).
+		Order(fmt.Sprintf("%s DESC, %s DESC", BlockNumberFieldName, TransactionIndexFieldName)).
+		Offset((page - 1) * PageSize).
+		Limit(PageSize).
+		Find(&dbEthTxs)
+
+	if dbTx.Error != nil {
+		return nil, fmt.Errorf("error getting unconfirmed txs %w", dbTx.Error)
+	}
+	receipts, err := buildEthTxsFromDBEthTxs(dbEthTxs)
+	if err != nil {
+		return nil, fmt.Errorf("could not build ethtxs from dbethtxs: %w", err)
+	}
+	return receipts, nil
+}
+
+// FlushFromHeadTables deletes all logs, receipts, and txs from the head table that are older than the given time.
+func (s Store) FlushFromHeadTables(ctx context.Context, time int64) error {
+	err := s.DB().WithContext(ctx).Model(&LogAtHead{}).Where("insert_time < ?", time).Delete(&LogAtHead{}).Error
+	if err != nil {
+		return fmt.Errorf("error flushing logs from head: %w", err)
+	}
+	err = s.DB().WithContext(ctx).Model(&EthTxAtHead{}).Where("insert_time < ?", time).Delete(&EthTxAtHead{}).Error
+	if err != nil {
+		return fmt.Errorf("error flushing eth_txes from head: %w", err)
+	}
+	err = s.DB().WithContext(ctx).Model(&ReceiptAtHead{}).Where("insert_time < ?", time).Delete(&ReceiptAtHead{}).Error
+	if err != nil {
+		return fmt.Errorf("error flushing receipts from head: %w", err)
+	}
+	return nil
+}

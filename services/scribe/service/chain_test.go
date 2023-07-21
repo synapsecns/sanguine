@@ -21,7 +21,7 @@ import (
 	"time"
 )
 
-// TestIndexToBlock tests using a contractBackfiller for recording receipts and logs in a database.
+// TestIndexToBlock tests using an indexer for recording receipts and logs in a database.
 func (s *ScribeSuite) TestIndexToBlock() {
 	// Get simulated blockchain, deploy the test contract, and set up test variables.
 	simulatedChain := geth.NewEmbeddedBackendForChainID(s.GetSuiteContext(), s.T(), big.NewInt(142))
@@ -52,7 +52,7 @@ func (s *ScribeSuite) TestIndexToBlock() {
 	chainIndexer, err := service.NewChainIndexer(s.testDB, simulatedChainArr, chainConfig, s.nullMetrics)
 	Nil(s.T(), err)
 
-	// Emit events for the backfiller to read.
+	// Emit events for the indexer to read.
 	tx, err := testRef.EmitEventA(transactOpts.TransactOpts, big.NewInt(1), big.NewInt(2), big.NewInt(3))
 	Nil(s.T(), err)
 	simulatedChain.WaitForConfirmation(s.GetTestContext(), tx)
@@ -104,12 +104,12 @@ func (s *ScribeSuite) TestIndexToBlock() {
 	Equal(s.T(), 2, len(receipts[0].Logs))
 
 	// Ensure last indexed block is correct.
-	lastIndexed, err := s.testDB.RetrieveLastIndexed(s.GetTestContext(), testContract.Address(), uint32(testContract.ChainID().Uint64()), scribeTypes.Indexing)
+	lastIndexed, err := s.testDB.RetrieveLastIndexed(s.GetTestContext(), testContract.Address(), uint32(testContract.ChainID().Uint64()), scribeTypes.IndexingConfirmed)
 	Nil(s.T(), err)
 	Equal(s.T(), txBlockNumber, lastIndexed)
 }
 
-// TestChainIndexer tests that the ChainIndexer can backfill events from a chain.
+// TestChainIndexer tests that the ChainIndexer can index events from a chain.
 func (s *ScribeSuite) TestChainIndexer() {
 	const numberOfContracts = 3
 	const desiredBlockHeight = 20
@@ -162,7 +162,7 @@ func (s *ScribeSuite) TestChainIndexer() {
 	Equal(s.T(), sum, uint64(len(receipts)))
 }
 
-// TestChainIndexerLivefill tests a ChainIndexer's ablity to livefill and handle passing events from backfill to livefill.
+// TestChainIndexerLivefill tests a ChainIndexer's ablity to livefill and handle passing events from index to livefill.
 //
 // nolint:cyclop
 func (s *ScribeSuite) TestChainIndexerLivefill() {
@@ -238,7 +238,7 @@ func (s *ScribeSuite) TestChainIndexerLivefill() {
 	emittingContext, cancelEmitting := context.WithTimeout(s.GetTestContext(), 60*time.Second)
 	defer cancelEmitting()
 
-	// Emit an event for every contract every second. This will terminate 10 seconds before indexing terminates.
+	// Emit an event for every contract every second. This will terminate 20 seconds before indexing terminates.
 	go func() {
 		for {
 			select {
@@ -252,9 +252,9 @@ func (s *ScribeSuite) TestChainIndexerLivefill() {
 		}
 	}()
 
-	<-time.After(40 * time.Second) // wait for 200 seconds before indexing to get some events on chain before indexing.
+	<-time.After(40 * time.Second) // wait for 40 seconds before indexing to get some events on chain before indexing.
 
-	// Cap indexing for 60 seconds.
+	// Cap indexing for 30 seconds.
 	indexingContext, cancelIndexing := context.WithTimeout(s.GetTestContext(), 30*time.Second)
 	defer cancelIndexing()
 
@@ -272,7 +272,7 @@ func (s *ScribeSuite) TestChainIndexerLivefill() {
 					currentLength = len(contracts)
 					newContract := contracts[currentLength-1]
 
-					lastIndexed, indexErr := s.testDB.RetrieveLastIndexed(s.GetTestContext(), common.HexToAddress(newContract.Address), chainID, scribeTypes.Indexing)
+					lastIndexed, indexErr := s.testDB.RetrieveLastIndexed(s.GetTestContext(), common.HexToAddress(newContract.Address), chainID, scribeTypes.IndexingConfirmed)
 					Nil(s.T(), indexErr)
 					numberLivefillContracts = len(contracts)
 					currentBlock, indexErr := newBackend.BlockNumber(s.GetTestContext())
@@ -344,10 +344,15 @@ func (s *ScribeSuite) TestLargeVolume() {
 	go func() {
 		for {
 			// repeat until emittingContext is canceled
-			desiredBlockHeight += 1000
-			err = testutil.EmitEvents(emittingContext, s.T(), newBackend, desiredBlockHeight, testChainHandlerMap[chainID])
-			if err != nil {
+			select {
+			case <-emittingContext.Done():
 				return
+			default:
+				desiredBlockHeight += 1000
+				err = testutil.EmitEvents(emittingContext, s.T(), newBackend, desiredBlockHeight, testChainHandlerMap[chainID])
+				if err != nil {
+					return
+				}
 			}
 		}
 	}()
@@ -368,4 +373,113 @@ func (s *ScribeSuite) TestLargeVolume() {
 	receipts, err := testutil.GetReceiptsUntilNoneLeft(s.GetTestContext(), s.testDB, db.ReceiptFilter{})
 	Nil(s.T(), err)
 	Equal(s.T(), sum, uint64(len(receipts)))
+}
+
+// TestChainIndexerLivfillToTip tests that the ChainIndexer can livefill events to the head.
+func (s *ScribeSuite) TestChainIndexerLivfillToTip() {
+	const numberOfContracts = 3
+	currentBlockHeight := uint64(10) // starting with zero to emit events while indexing.
+	chainID := gofakeit.Uint32()
+	chainBackends := make(map[uint32]geth.Backend)
+	newBackend := geth.NewEmbeddedBackendForChainID(s.GetTestContext(), s.T(), big.NewInt(int64(chainID)))
+	chainBackends[chainID] = *newBackend
+
+	// Create contract managers
+	deployManagers := []*testutil.DeployManager{s.manager}
+	if numberOfContracts > 1 {
+		for i := 1; i < numberOfContracts; i++ {
+			deployManagers = append(deployManagers, testutil.NewDeployManager(s.T()))
+		}
+	}
+
+	testChainHandlerMap, chainBackendMap, err := testutil.PopulateChainsWithLogs(s.GetTestContext(), s.T(), chainBackends, currentBlockHeight, deployManagers, s.nullMetrics)
+	Nil(s.T(), err)
+	addresses := testChainHandlerMap[chainID].Addresses
+	// Differing start blocks and refresh rates to test contracts reaching livefill at different times.
+	contractConfig1 := config.ContractConfig{
+		Address:     addresses[0].String(),
+		StartBlock:  0,
+		RefreshRate: 4,
+	}
+	contractConfig2 := config.ContractConfig{
+		Address:     addresses[1].String(),
+		StartBlock:  25,
+		RefreshRate: 1,
+	}
+	contractConfig3 := config.ContractConfig{
+		Address:     addresses[2].String(),
+		StartBlock:  30,
+		RefreshRate: 3,
+	}
+
+	contractConfigs := []config.ContractConfig{contractConfig1, contractConfig2, contractConfig3}
+	chainConfig := config.ChainConfig{
+		ChainID:            chainID,
+		Confirmations:      30,
+		GetLogsBatchAmount: 1,
+		StoreConcurrency:   1,
+		GetLogsRange:       1,
+		LivefillThreshold:  0,
+		Contracts:          contractConfigs,
+	}
+
+	// Update start blocks
+	for i := range contractConfigs {
+		contract := contractConfigs[i]
+		contractAddress := common.HexToAddress(contract.Address)
+		testChainHandlerMap[chainID].ContractStartBlocks[contractAddress] = contract.StartBlock
+	}
+
+	chainIndexer, err := service.NewChainIndexer(s.testDB, chainBackendMap[chainID], chainConfig, s.nullMetrics)
+	Nil(s.T(), err)
+
+	currentBlockHeight = 30
+	emittingContext, cancelEmitting := context.WithTimeout(s.GetTestContext(), 30*time.Second)
+	defer cancelEmitting()
+
+	// Emit an event for every contract every second. This will terminate 10 seconds before indexing terminates.
+	go func() {
+		for {
+			select {
+			case <-emittingContext.Done():
+				return
+			case <-time.After(1 * time.Second):
+				currentBlockHeight += 2
+				emitErr := testutil.EmitEvents(s.GetTestContext(), s.T(), newBackend, currentBlockHeight, testChainHandlerMap[chainID])
+				Nil(s.T(), emitErr)
+			}
+		}
+	}()
+
+	<-time.After(20 * time.Second) // wait for 20 seconds before indexing to get some events on chain before indexing.
+
+	// Cap indexing for 30 seconds.
+	indexingContext, cancelIndexing := context.WithTimeout(s.GetTestContext(), 20*time.Second)
+	defer cancelIndexing()
+	// Index events
+	_ = chainIndexer.Index(indexingContext, nil)
+
+	<-indexingContext.Done()
+	sum := uint64(0)
+	for _, value := range testChainHandlerMap[chainID].EventsEmitted {
+		sum += value
+	}
+
+	currentBlock, indexErr := newBackend.BlockNumber(s.GetTestContext())
+	Nil(s.T(), indexErr)
+	logs, err := testutil.GetLogsUntilNoneLeft(s.GetTestContext(), s.testDB, db.LogFilter{})
+	Nil(s.T(), err)
+	GreaterOrEqual(s.T(), sum, uint64(len(logs)))
+	receipts, err := testutil.GetReceiptsUntilNoneLeft(s.GetTestContext(), s.testDB, db.ReceiptFilter{})
+	Nil(s.T(), err)
+	GreaterOrEqual(s.T(), sum, uint64(len(receipts)))
+	for _, contract := range contractConfigs {
+		unconfirmedLogs, err := s.testDB.RetrieveLogsFromHeadRangeQuery(s.GetTestContext(), db.LogFilter{ChainID: chainID, ContractAddress: contract.Address}, 1, currentBlock, 1)
+		Nil(s.T(), err)
+		GreaterOrEqual(s.T(), sum, uint64(len(unconfirmedLogs)))
+		unconfirmedReceipts, err := s.testDB.RetrieveReceiptsFromHeadRangeQuery(s.GetTestContext(), db.ReceiptFilter{ChainID: chainID, ContractAddress: contract.Address}, 1, currentBlock, 1)
+		Nil(s.T(), err)
+		GreaterOrEqual(s.T(), sum, uint64(len(unconfirmedReceipts)))
+	}
+
 }

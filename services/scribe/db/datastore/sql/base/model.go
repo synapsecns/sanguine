@@ -79,6 +79,9 @@ type Log struct {
 	Confirmed bool `gorm:"confirmed"`
 }
 
+// ReceiptColumns are all of the columns of the Receipt table.
+const ReceiptColumns = "chain_id,receipt_type,post_state,status,cumulative_gas_used,bloom,tx_hash,contract_address,gas_used,block_hash,block_number,transaction_index,confirmed"
+
 // Receipt stores the receipt of a transaction.
 type Receipt struct {
 	// ChainID is the chain id of the receipt

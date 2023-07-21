@@ -145,8 +145,8 @@ func (_m *EventDB) DeleteReceiptsForBlockHash(ctx context.Context, chainID uint3
 	return r0
 }
 
-// FlushLogsFromHead provides a mock function with given fields: ctx, time
-func (_m *EventDB) FlushLogsFromHead(ctx context.Context, time int64) error {
+// FlushFromHeadTables provides a mock function with given fields: ctx, time
+func (_m *EventDB) FlushFromHeadTables(ctx context.Context, time int64) error {
 	ret := _m.Called(ctx, time)
 
 	var r0 error
@@ -488,6 +488,29 @@ func (_m *EventDB) RetrieveReceiptCountForChain(ctx context.Context, chainID uin
 	return r0, r1
 }
 
+// RetrieveReceiptsFromHeadRangeQuery provides a mock function with given fields: ctx, receiptFilter, startBlock, endBlock, page
+func (_m *EventDB) RetrieveReceiptsFromHeadRangeQuery(ctx context.Context, receiptFilter db.ReceiptFilter, startBlock uint64, endBlock uint64, page int) ([]types.Receipt, error) {
+	ret := _m.Called(ctx, receiptFilter, startBlock, endBlock, page)
+
+	var r0 []types.Receipt
+	if rf, ok := ret.Get(0).(func(context.Context, db.ReceiptFilter, uint64, uint64, int) []types.Receipt); ok {
+		r0 = rf(ctx, receiptFilter, startBlock, endBlock, page)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).([]types.Receipt)
+		}
+	}
+
+	var r1 error
+	if rf, ok := ret.Get(1).(func(context.Context, db.ReceiptFilter, uint64, uint64, int) error); ok {
+		r1 = rf(ctx, receiptFilter, startBlock, endBlock, page)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
 // RetrieveReceiptsInRange provides a mock function with given fields: ctx, receiptFilter, startBlock, endBlock, page
 func (_m *EventDB) RetrieveReceiptsInRange(ctx context.Context, receiptFilter db.ReceiptFilter, startBlock uint64, endBlock uint64, page int) ([]types.Receipt, error) {
 	ret := _m.Called(ctx, receiptFilter, startBlock, endBlock, page)
@@ -550,6 +573,29 @@ func (_m *EventDB) RetrieveReceiptsWithStaleBlockHash(ctx context.Context, chain
 	var r1 error
 	if rf, ok := ret.Get(1).(func(context.Context, uint32, []string, uint64, uint64) error); ok {
 		r1 = rf(ctx, chainID, blockHashes, startBlock, endBlock)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
+// RetrieveUnconfirmedEthTxsFromHeadRangeQuery provides a mock function with given fields: ctx, receiptFilter, startBlock, endBlock, page
+func (_m *EventDB) RetrieveUnconfirmedEthTxsFromHeadRangeQuery(ctx context.Context, receiptFilter db.EthTxFilter, startBlock uint64, endBlock uint64, page int) ([]db.TxWithBlockNumber, error) {
+	ret := _m.Called(ctx, receiptFilter, startBlock, endBlock, page)
+
+	var r0 []db.TxWithBlockNumber
+	if rf, ok := ret.Get(0).(func(context.Context, db.EthTxFilter, uint64, uint64, int) []db.TxWithBlockNumber); ok {
+		r0 = rf(ctx, receiptFilter, startBlock, endBlock, page)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).([]db.TxWithBlockNumber)
+		}
+	}
+
+	var r1 error
+	if rf, ok := ret.Get(1).(func(context.Context, db.EthTxFilter, uint64, uint64, int) error); ok {
+		r1 = rf(ctx, receiptFilter, startBlock, endBlock, page)
 	} else {
 		r1 = ret.Error(1)
 	}

@@ -29,7 +29,7 @@ type ScribeSuite struct {
 	runVolumeTest bool
 }
 
-// NewScribeSuite creates a new backfill test suite.
+// NewScribeSuite creates a new scribe test suite.
 func NewScribeSuite(tb testing.TB) *ScribeSuite {
 	tb.Helper()
 	return &ScribeSuite{
@@ -63,7 +63,7 @@ func (s *ScribeSuite) SetupSuite() {
 	Nil(s.T(), err)
 }
 
-// TestScribeSuite tests the backfill suite.
+// TestScribeSuite tests the scribe suite.
 func TestScribeSuite(t *testing.T) {
 	suite.Run(t, NewScribeSuite(t))
 }

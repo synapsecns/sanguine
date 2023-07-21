@@ -1,7 +1,6 @@
 package db_test
 
 import (
-	"fmt"
 	"github.com/brianvoe/gofakeit/v6"
 	"github.com/ethereum/go-ethereum/common"
 	. "github.com/stretchr/testify/assert"
@@ -11,7 +10,7 @@ import (
 	"time"
 )
 
-func (t *DBSuite) TestUnconfirmedQuery() {
+func (t *DBSuite) TestUnconfirmedLogsQuery() {
 	t.RunOnAllDBs(func(testDB db.EventDB) {
 		chainID := gofakeit.Uint32()
 		contractAddress := common.BigToAddress(big.NewInt(gofakeit.Int64()))
@@ -38,7 +37,7 @@ func (t *DBSuite) TestUnconfirmedQuery() {
 			log.BlockNumber = uint64(i)
 			log.TxHash = common.BigToHash(big.NewInt(gofakeit.Int64()))
 			log.Address = contractAddress
-			// For testing, all confirmed txs will have an index of 0
+			// For testing, all unconfirmed txs will have an index of 0
 			log.Index = 0
 			err := testDB.StoreLogsAtHead(t.GetTestContext(), chainID, log)
 			Nil(t.T(), err)
@@ -71,7 +70,7 @@ func (t *DBSuite) TestUnconfirmedQuery() {
 	})
 }
 
-func (t *DBSuite) TestFlushLogs() {
+func (t *DBSuite) TestFlushsLog() {
 	t.RunOnAllDBs(func(testDB db.EventDB) {
 		chainID := gofakeit.Uint32()
 		contractAddress := common.BigToAddress(big.NewInt(gofakeit.Int64()))
@@ -109,15 +108,77 @@ func (t *DBSuite) TestFlushLogs() {
 		logs, err := testDB.RetrieveLogsFromHeadRangeQuery(t.GetTestContext(), logFilter, 0, desiredBlockHeight, 1)
 		Nil(t.T(), err)
 		Equal(t.T(), 100, len(logs))
-		fmt.Println(logs)
-		// Equal(t.T(), uint64(desiredBlockHeight), logs[0].BlockNumber)
-		err = testDB.FlushLogsFromHead(t.GetTestContext(), deleteTimestamp)
+		if 100 == len(logs) {
+			Equal(t.T(), uint64(desiredBlockHeight), logs[0].BlockNumber)
+		}
+		err = testDB.FlushFromHeadTables(t.GetTestContext(), deleteTimestamp)
 		Nil(t.T(), err)
 		logs, err = testDB.RetrieveLogsFromHeadRangeQuery(t.GetTestContext(), logFilter, 0, desiredBlockHeight, 1)
 		Nil(t.T(), err)
 		Equal(t.T(), 90, len(logs))
-		// Check that the earliest log has a timestamp of 110
-		// Equal(t.T(), uint(0), logs[0].Index)
-		// Equal(t.T(), uint64(desiredBlockHeight), logs[0].BlockNumber)
+		if len(logs) == 90 {
+			// Check that the earliest log has a timestamp of 110
+			Equal(t.T(), uint(0), logs[0].Index)
+			Equal(t.T(), uint64(desiredBlockHeight), logs[0].BlockNumber)
+		}
+	})
+}
+
+func (t *DBSuite) TestUnconfirmedReceiptsQuery() {
+	t.RunOnAllDBs(func(testDB db.EventDB) {
+		chainID := gofakeit.Uint32()
+		contractAddress := common.BigToAddress(big.NewInt(gofakeit.Int64()))
+		const confirmedBlockHeight = 100
+		const headBlock = 110
+		for i := 1; i <= confirmedBlockHeight; i++ {
+			txHash := common.BigToHash(big.NewInt(gofakeit.Int64()))
+			receipt := t.MakeRandomReceipt(txHash)
+			receipt.BlockNumber = big.NewInt(int64(i))
+			receipt.ContractAddress = contractAddress
+			// For testing, all confirmed receipts will have a status of 1
+			receipt.Status = 1
+			err := testDB.StoreReceipt(t.GetTestContext(), chainID, receipt)
+			Nil(t.T(), err)
+		}
+		err := testDB.StoreLastIndexed(t.GetTestContext(), contractAddress, chainID, confirmedBlockHeight, scribeTypes.IndexingConfirmed)
+		Nil(t.T(), err)
+
+		// For testing, having the same txhash for all unconfirmed blocks.
+		for i := confirmedBlockHeight + 1; i <= headBlock; i++ {
+			txHash := common.BigToHash(big.NewInt(gofakeit.Int64()))
+
+			receipt := t.MakeRandomReceipt(txHash)
+			receipt.BlockNumber = big.NewInt(int64(i))
+			receipt.ContractAddress = contractAddress
+			// For testing, all confirmed receipts will have a status of 1
+			receipt.Status = 0
+			err := testDB.StoreReceiptAtHead(t.GetTestContext(), chainID, receipt)
+			Nil(t.T(), err)
+		}
+
+		receiptFilter := db.ReceiptFilter{
+			ChainID:         chainID,
+			ContractAddress: contractAddress.String(),
+		}
+		receipts, err := testDB.RetrieveReceiptsFromHeadRangeQuery(t.GetTestContext(), receiptFilter, 0, headBlock, 1)
+		Nil(t.T(), err)
+		Equal(t.T(), 100, len(receipts))
+		if len(receipts) == 100 {
+			Equal(t.T(), uint64(0), receipts[0].Status)
+			// Check block range
+			Equal(t.T(), uint64(110), receipts[0].BlockNumber.Uint64())
+			Equal(t.T(), uint64(11), receipts[99].BlockNumber.Uint64())
+			// check threshold of confirmed vs unconfirmed
+			Equal(t.T(), uint64(1), receipts[10].Status)
+			Equal(t.T(), uint64(0), receipts[9].Status)
+		}
+		receipts, err = testDB.RetrieveReceiptsFromHeadRangeQuery(t.GetTestContext(), receiptFilter, 0, headBlock, 2)
+		Nil(t.T(), err)
+
+		Equal(t.T(), 10, len(receipts))
+		if len(receipts) == 10 {
+			// Check that these are confirmed logs
+			Equal(t.T(), uint64(1), receipts[0].Status)
+		}
 	})
 }

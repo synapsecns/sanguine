@@ -103,8 +103,13 @@ type EventDBReader interface {
 
 	// RetrieveLogsFromHeadRangeQuery gets unconfirmed logs from the head in a range.
 	RetrieveLogsFromHeadRangeQuery(ctx context.Context, logFilter LogFilter, startBlock uint64, endBlock uint64, page int) (logs []*types.Log, err error)
-	// FlushLogsFromHead flushes unconfirmed logs from the head.
-	FlushLogsFromHead(ctx context.Context, time int64) error
+	// RetrieveReceiptsFromHeadRangeQuery gets unconfirmed receipts from the head in a range.
+	RetrieveReceiptsFromHeadRangeQuery(ctx context.Context, receiptFilter ReceiptFilter, startBlock uint64, endBlock uint64, page int) ([]types.Receipt, error)
+	// RetrieveUnconfirmedEthTxsFromHeadRangeQuery retrieves all unconfirmed ethTx for a given chain ID and range.
+	RetrieveUnconfirmedEthTxsFromHeadRangeQuery(ctx context.Context, receiptFilter EthTxFilter, startBlock uint64, endBlock uint64, page int) ([]TxWithBlockNumber, error)
+
+	// FlushFromHeadTables flushes unconfirmed logs, receipts, and txs from the head.
+	FlushFromHeadTables(ctx context.Context, time int64) error
 }
 
 // EventDB stores events.

@@ -396,7 +396,7 @@ func (c *ChainIndexer) LivefillAtHead(parentContext context.Context) error {
 			return fmt.Errorf("context canceled: %w", parentContext.Err())
 		case <-time.After(flushDuration):
 			deleteBefore := time.Now().Add(-flushDuration).UnixNano()
-			err := c.eventDB.FlushLogsFromHead(parentContext, deleteBefore)
+			err := c.eventDB.FlushFromHeadTables(parentContext, deleteBefore)
 			if err != nil {
 				return fmt.Errorf("could not flush logs from head: %w", err)
 			}

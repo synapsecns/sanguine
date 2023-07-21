@@ -147,9 +147,6 @@ func (s Store) RetrieveLogsWithFilter(ctx context.Context, logFilter db.LogFilte
 	dbLogs := []Log{}
 	queryFilter := logFilterToQuery(logFilter)
 
-	// TODO DELETE
-	logger.Infof("RetrieveLogsWithFilter query: %v", queryFilter)
-
 	dbTx := s.DB().WithContext(ctx).
 		Model(&Log{}).
 		Where(&queryFilter).
