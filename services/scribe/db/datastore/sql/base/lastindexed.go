@@ -17,7 +17,7 @@ const lastIndexedLivefillKey = "LIVEFILL_LAST_INDEXED"
 // StoreLastIndexed stores the last indexed block number for a contract.
 // It updates the value if there is a previous last indexed value, and creates a new
 // entry if there is no previous value.
-func (s Store) StoreLastIndexed(parentCtx context.Context, contractAddress common.Address, chainID uint32, blockNumber uint64, livefill bool) (err error) {
+func (s Store) StoreLastIndexed(parentCtx context.Context, contractAddress common.Address, chainID uint32, blockNumber uint64, livefillAtHead bool) (err error) {
 	ctx, span := s.metrics.Tracer().Start(parentCtx, "StoreLastIndexed", trace.WithAttributes(
 		attribute.String("contractAddress", contractAddress.String()),
 		attribute.Int("chainID", int(chainID)),
@@ -29,7 +29,7 @@ func (s Store) StoreLastIndexed(parentCtx context.Context, contractAddress commo
 	}()
 
 	address := contractAddress.String()
-	if livefill {
+	if livefillAtHead {
 		address = lastIndexedLivefillKey
 	}
 

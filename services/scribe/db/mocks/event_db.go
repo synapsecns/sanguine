@@ -310,20 +310,20 @@ func (_m *EventDB) RetrieveLastConfirmedBlock(ctx context.Context, chainID uint3
 	return r0, r1
 }
 
-// RetrieveLastIndexed provides a mock function with given fields: ctx, contractAddress, chainID, livefill
-func (_m *EventDB) RetrieveLastIndexed(ctx context.Context, contractAddress common.Address, chainID uint32, livefill bool) (uint64, error) {
-	ret := _m.Called(ctx, contractAddress, chainID, livefill)
+// RetrieveLastIndexed provides a mock function with given fields: ctx, contractAddress, chainID, livefillAtHead
+func (_m *EventDB) RetrieveLastIndexed(ctx context.Context, contractAddress common.Address, chainID uint32, livefillAtHead bool) (uint64, error) {
+	ret := _m.Called(ctx, contractAddress, chainID, livefillAtHead)
 
 	var r0 uint64
 	if rf, ok := ret.Get(0).(func(context.Context, common.Address, uint32, bool) uint64); ok {
-		r0 = rf(ctx, contractAddress, chainID, livefill)
+		r0 = rf(ctx, contractAddress, chainID, livefillAtHead)
 	} else {
 		r0 = ret.Get(0).(uint64)
 	}
 
 	var r1 error
 	if rf, ok := ret.Get(1).(func(context.Context, common.Address, uint32, bool) error); ok {
-		r1 = rf(ctx, contractAddress, chainID, livefill)
+		r1 = rf(ctx, contractAddress, chainID, livefillAtHead)
 	} else {
 		r1 = ret.Error(1)
 	}
@@ -613,13 +613,13 @@ func (_m *EventDB) StoreLastConfirmedBlock(ctx context.Context, chainID uint32, 
 	return r0
 }
 
-// StoreLastIndexed provides a mock function with given fields: ctx, contractAddress, chainID, blockNumber, livefill
-func (_m *EventDB) StoreLastIndexed(ctx context.Context, contractAddress common.Address, chainID uint32, blockNumber uint64, livefill bool) error {
-	ret := _m.Called(ctx, contractAddress, chainID, blockNumber, livefill)
+// StoreLastIndexed provides a mock function with given fields: ctx, contractAddress, chainID, blockNumber, livefillAtHead
+func (_m *EventDB) StoreLastIndexed(ctx context.Context, contractAddress common.Address, chainID uint32, blockNumber uint64, livefillAtHead bool) error {
+	ret := _m.Called(ctx, contractAddress, chainID, blockNumber, livefillAtHead)
 
 	var r0 error
 	if rf, ok := ret.Get(0).(func(context.Context, common.Address, uint32, uint64, bool) error); ok {
-		r0 = rf(ctx, contractAddress, chainID, blockNumber, livefill)
+		r0 = rf(ctx, contractAddress, chainID, blockNumber, livefillAtHead)
 	} else {
 		r0 = ret.Error(0)
 	}

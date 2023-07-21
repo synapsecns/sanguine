@@ -6,6 +6,7 @@ import (
 	"github.com/ethereum/go-ethereum/common"
 	. "github.com/stretchr/testify/assert"
 	"github.com/synapsecns/sanguine/services/scribe/db"
+	scribeTypes "github.com/synapsecns/sanguine/services/scribe/types"
 	"math/big"
 	"time"
 )
@@ -26,7 +27,7 @@ func (t *DBSuite) TestUnconfirmedQuery() {
 			err := testDB.StoreLogs(t.GetTestContext(), chainID, log)
 			Nil(t.T(), err)
 		}
-		err := testDB.StoreLastIndexed(t.GetTestContext(), contractAddress, chainID, confirmedBlockHeight, false)
+		err := testDB.StoreLastIndexed(t.GetTestContext(), contractAddress, chainID, confirmedBlockHeight, scribeTypes.Indexing)
 		Nil(t.T(), err)
 
 		// For testing, having the same txhash for all unconfirmed blocks.

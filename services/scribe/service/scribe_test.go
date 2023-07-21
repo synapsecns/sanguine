@@ -14,6 +14,7 @@ import (
 	"github.com/synapsecns/sanguine/services/scribe/config"
 	"github.com/synapsecns/sanguine/services/scribe/db"
 	"github.com/synapsecns/sanguine/services/scribe/service"
+	scribeTypes "github.com/synapsecns/sanguine/services/scribe/types"
 
 	"github.com/synapsecns/sanguine/services/scribe/db/datastore/sql/base"
 	"github.com/synapsecns/sanguine/services/scribe/logger"
@@ -94,7 +95,7 @@ func (s *ScribeSuite) TestSimulatedScribe() {
 			logs, err := s.testDB.RetrieveLogsWithFilter(s.GetTestContext(), logFilter, 1)
 			Nil(s.T(), err)
 			Equal(s.T(), 4, len(logs))
-			lastIndexed, err := s.testDB.RetrieveLastIndexed(s.GetTestContext(), common.HexToAddress(contractConfig.Address), chainConfig.ChainID, false)
+			lastIndexed, err := s.testDB.RetrieveLastIndexed(s.GetTestContext(), common.HexToAddress(contractConfig.Address), chainConfig.ChainID, scribeTypes.Indexing)
 			Nil(s.T(), err)
 			LessOrEqual(s.T(), desiredBlockHeight, int(lastIndexed))
 		}
@@ -302,7 +303,7 @@ func (s *ScribeSuite) TestLivefillParity() {
 				allContractsBackfilled := true
 				chain := scribeConfig.Chains[index]
 				for _, contract := range chain.Contracts {
-					currentBlock, err := s.testDB.RetrieveLastIndexed(s.GetTestContext(), common.HexToAddress(contract.Address), chain.ChainID, false)
+					currentBlock, err := s.testDB.RetrieveLastIndexed(s.GetTestContext(), common.HexToAddress(contract.Address), chain.ChainID, scribeTypes.Indexing)
 
 					Nil(s.T(), err)
 					if currentBlock <= latestBlocks[chain.ChainID] {

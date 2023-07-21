@@ -14,6 +14,7 @@ import (
 	"github.com/synapsecns/sanguine/services/scribe/config"
 	"github.com/synapsecns/sanguine/services/scribe/service/indexer"
 	"github.com/synapsecns/sanguine/services/scribe/testutil"
+	scribeTypes "github.com/synapsecns/sanguine/services/scribe/types"
 	"os"
 	"time"
 
@@ -282,7 +283,7 @@ func (x *IndexerSuite) TestContractBackfill() {
 	Equal(x.T(), 2, len(receipts[0].Logs))
 
 	// Ensure last indexed block is correct.
-	lastIndexed, err := x.testDB.RetrieveLastIndexed(x.GetTestContext(), testContract.Address(), uint32(testContract.ChainID().Uint64()), false)
+	lastIndexed, err := x.testDB.RetrieveLastIndexed(x.GetTestContext(), testContract.Address(), uint32(testContract.ChainID().Uint64()), scribeTypes.Indexing)
 	Nil(x.T(), err)
 	Equal(x.T(), txBlockNumber, lastIndexed)
 }
@@ -384,7 +385,7 @@ func (x *IndexerSuite) TestContractBackfillFromPreIndexed() {
 	Equal(x.T(), 2, len(receipts[0].Logs))
 
 	// Ensure last indexed block is correct.
-	lastIndexed, err := x.testDB.RetrieveLastIndexed(x.GetTestContext(), testContract.Address(), uint32(testContract.ChainID().Uint64()), false)
+	lastIndexed, err := x.testDB.RetrieveLastIndexed(x.GetTestContext(), testContract.Address(), uint32(testContract.ChainID().Uint64()), scribeTypes.Indexing)
 	Nil(x.T(), err)
 	Equal(x.T(), txBlockNumber, lastIndexed)
 }

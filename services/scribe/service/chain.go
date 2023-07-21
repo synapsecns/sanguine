@@ -6,6 +6,7 @@ import (
 	"github.com/synapsecns/sanguine/services/scribe/backend"
 	"github.com/synapsecns/sanguine/services/scribe/logger"
 	"github.com/synapsecns/sanguine/services/scribe/service/indexer"
+	scribeTypes "github.com/synapsecns/sanguine/services/scribe/types"
 	"math/big"
 
 	"math"
@@ -217,6 +218,11 @@ func (c *ChainIndexer) Index(ctx context.Context, onlyOneBlock *uint64) error {
 		}
 	})
 
+	// Index unconfirmed events right at the head.
+	indexGroup.Go(func() error {
+		return c.LivefillUnconfirmed(indexCtx)
+	})
+
 	if err := indexGroup.Wait(); err != nil {
 		return fmt.Errorf("could not index: %w", err)
 	}
@@ -326,7 +332,7 @@ func createBackoff() *backoff.Backoff {
 
 func (c *ChainIndexer) isReadyForLivefill(parentContext context.Context, indexer *indexer.Indexer) (bool, error) {
 	// get last indexed to check livefill threshold
-	lastBlockIndexed, err := c.eventDB.RetrieveLastIndexed(parentContext, indexer.GetIndexerConfig().Addresses[0], c.chainConfig.ChainID, false)
+	lastBlockIndexed, err := c.eventDB.RetrieveLastIndexed(parentContext, indexer.GetIndexerConfig().Addresses[0], c.chainConfig.ChainID, scribeTypes.Indexing)
 	if err != nil {
 		return false, fmt.Errorf("could not get last indexed: %w", err)
 	}
@@ -338,7 +344,7 @@ func (c *ChainIndexer) isReadyForLivefill(parentContext context.Context, indexer
 }
 
 func (c *ChainIndexer) getStartHeight(parentContext context.Context, onlyOneBlock *uint64, givenStart uint64, indexer *indexer.Indexer) (uint64, *uint64, error) {
-	lastIndexed, err := c.eventDB.RetrieveLastIndexed(parentContext, indexer.GetIndexerConfig().Addresses[0], c.chainConfig.ChainID, false)
+	lastIndexed, err := c.eventDB.RetrieveLastIndexed(parentContext, indexer.GetIndexerConfig().Addresses[0], c.chainConfig.ChainID, scribeTypes.Indexing)
 	if err != nil {
 		return 0, nil, fmt.Errorf("could not get last block indexed: %w", err)
 	}
@@ -400,7 +406,7 @@ func (c *ChainIndexer) LivefillUnconfirmed(parentContext context.Context) error 
 				continue
 			}
 
-			tipLivefillLastIndexed, err := c.eventDB.RetrieveLastIndexed(parentContext, common.BigToAddress(big.NewInt(0)), c.chainConfig.ChainID, false)
+			tipLivefillLastIndexed, err := c.eventDB.RetrieveLastIndexed(parentContext, common.BigToAddress(big.NewInt(0)), c.chainConfig.ChainID, scribeTypes.Indexing)
 			if err != nil {
 				logger.ReportIndexerError(err, tipLivefillIndexer.GetIndexerConfig(), logger.LivefillIndexerError)
 				timeout = b.Duration()

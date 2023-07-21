@@ -1,6 +1,7 @@
 package api_test
 
 import (
+	scribeTypes "github.com/synapsecns/sanguine/services/scribe/types"
 	"math/big"
 
 	"github.com/brianvoe/gofakeit/v6"
@@ -283,7 +284,7 @@ func (g APISuite) TestLastContractIndexed() {
 	contractAddress := common.BigToAddress(big.NewInt(gofakeit.Int64()))
 
 	// store last indexed
-	err := g.db.StoreLastIndexed(g.GetTestContext(), contractAddress, chainID, blockNumber, false)
+	err := g.db.StoreLastIndexed(g.GetTestContext(), contractAddress, chainID, blockNumber, scribeTypes.Indexing)
 	Nil(g.T(), err)
 
 	// retrieve last indexed

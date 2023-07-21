@@ -44,7 +44,7 @@ type EventDBWriter interface {
 	DeleteEthTxsForBlockHash(ctx context.Context, blockHash common.Hash, chainID uint32) error
 
 	// StoreLastIndexed stores the last indexed for a contract address
-	StoreLastIndexed(ctx context.Context, contractAddress common.Address, chainID uint32, blockNumber uint64, livefill bool) error
+	StoreLastIndexed(ctx context.Context, contractAddress common.Address, chainID uint32, blockNumber uint64, livefillAtHead bool) error
 	// StoreLastIndexedMultiple stores the last indexed block numbers for numerous contracts.
 	StoreLastIndexedMultiple(ctx context.Context, contractAddresses []common.Address, chainID uint32, blockNumber uint64) error
 
@@ -79,7 +79,7 @@ type EventDBReader interface {
 	RetrieveEthTxsInRange(ctx context.Context, ethTxFilter EthTxFilter, startBlock, endBlock uint64, page int) ([]TxWithBlockNumber, error)
 
 	// RetrieveLastIndexed retrieves the last indexed for a contract address
-	RetrieveLastIndexed(ctx context.Context, contractAddress common.Address, chainID uint32, livefill bool) (uint64, error)
+	RetrieveLastIndexed(ctx context.Context, contractAddress common.Address, chainID uint32, livefillAtHead bool) (uint64, error)
 
 	// RetrieveLastIndexedMultiple retrieves the last indexed block numbers for numerous contracts.
 	RetrieveLastIndexedMultiple(ctx context.Context, contractAddresses []common.Address, chainID uint32) (map[common.Address]uint64, error)
