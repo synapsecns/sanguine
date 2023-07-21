@@ -9,6 +9,7 @@ import { approveErc20Token } from '@/actions/approveErc20Token'
 import { Address } from 'wagmi'
 import { swapPoolRemoveLiquidity } from '@/actions/swapPoolRemoveLiquidity'
 import { swapPoolRemoveLiquidityOneToken } from '@/actions/swapPoolRemoveLiquidityOneToken'
+import { segmentAnalyticsEvent } from '@/contexts/SegmentAnalyticsProvider'
 
 export const approve = async (
   pool: Token,
@@ -55,6 +56,9 @@ export const withdraw = async (
   })
 
   try {
+    segmentAnalyticsEvent(`[Pool Withdrawal] Attempt for ${pool?.name}`, {
+      inputAmount,
+    })
     if (withdrawType === ALL) {
       spendTransaction = await swapPoolRemoveLiquidity({
         chainId,
@@ -81,6 +85,9 @@ export const withdraw = async (
 
     if (spendTransaction.status === 'success') {
       toast.dismiss(pendingPopup)
+    segmentAnalyticsEvent(`[Pool Withdrawal] Success for ${pool?.name}`, {
+      inputAmount,
+    })
 
       const successToastContent = (
         <div>
@@ -101,6 +108,10 @@ export const withdraw = async (
     return spendTransaction
   } catch (error) {
     toast.dismiss(pendingPopup)
+    segmentAnalyticsEvent(`[Pool Withdrawal] Failure for ${pool?.name}`, {
+      inputAmount,
+      errorCode: error.code,
+    })
     txErrorHandler(error)
     return error
   }

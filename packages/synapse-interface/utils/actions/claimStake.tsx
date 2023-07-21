@@ -5,6 +5,7 @@ import { MINICHEF_ADDRESSES } from '@/constants/minichef'
 import ExplorerToastLink from '@/components/ExplorerToastLink'
 import { txErrorHandler } from '@utils/txErrorHandler'
 import { harvestLpPool } from '@/actions/harvestLpPool'
+import { segmentAnalyticsEvent } from '@/contexts/SegmentAnalyticsProvider'
 
 export const claimStake = async (
   chainId: number,
@@ -21,6 +22,9 @@ export const claimStake = async (
 
   try {
     if (!address) throw new Error('Wallet must be connected')
+    segmentAnalyticsEvent(`[Claim Stake] Attempt`, {
+      poolId,
+    })
     const tx = await harvestLpPool({
       address,
       chainId,
@@ -44,9 +48,15 @@ export const claimStake = async (
       id: 'claim-success-popup',
       duration: 10000,
     })
+    segmentAnalyticsEvent(`[Claim Stake] Success`, {
+      poolId,
+    })
 
     return tx
   } catch (err) {
+    segmentAnalyticsEvent(`[Claim Stake] Failure`, {
+      errorCode: err.code,
+    })
     toast.dismiss(pendingPopup)
     txErrorHandler(err)
   }
