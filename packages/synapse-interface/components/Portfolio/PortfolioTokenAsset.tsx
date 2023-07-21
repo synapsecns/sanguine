@@ -12,7 +12,7 @@ import { formatBigIntToString } from '@/utils/bigint/format'
 import { CHAINS_BY_ID } from '@/constants/chains'
 import { inputRef } from '../StateManagedBridge/InputContainer'
 import { approveToken } from '@/utils/approveToken'
-import { switchNetwork } from '@wagmi/core'
+import { Address, switchNetwork } from '@wagmi/core'
 import Image from 'next/image'
 import { toast } from 'react-hot-toast'
 import {
@@ -20,7 +20,10 @@ import {
   Allowances,
 } from '@/utils/actions/fetchPortfolioBalances'
 import { useBridgeState } from '@/slices/bridge/hooks'
-import { fetchAndStoreSingleNetworkPortfolioBalances } from '@/slices/portfolio/hooks'
+import {
+  fetchAndStoreSingleNetworkPortfolioBalances,
+  fetchAndStoreSingleTokenAllowance,
+} from '@/slices/portfolio/hooks'
 
 type PortfolioTokenAssetProps = {
   token: Token
@@ -113,7 +116,9 @@ export const PortfolioTokenAsset = ({
       await approveToken(ROUTER_ADDRESS, connectedChainId, tokenAddress).then(
         (success) => {
           dispatch(
-            fetchAndStoreSingleNetworkPortfolioBalances({
+            fetchAndStoreSingleTokenAllowance({
+              routerAddress: ROUTER_ADDRESS,
+              tokenAddress: tokenAddress as Address,
               address: address,
               chainId: portfolioChainId,
             })
@@ -128,7 +133,9 @@ export const PortfolioTokenAsset = ({
           (success) => {
             success &&
               dispatch(
-                fetchAndStoreSingleNetworkPortfolioBalances({
+                fetchAndStoreSingleTokenAllowance({
+                  routerAddress: ROUTER_ADDRESS,
+                  tokenAddress: tokenAddress as Address,
                   address: address,
                   chainId: portfolioChainId,
                 })
