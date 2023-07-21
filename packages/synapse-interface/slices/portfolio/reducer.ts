@@ -62,8 +62,6 @@ export const portfolioSlice = createSlice({
               ]
             }
           )
-
-          state.status = FetchState.VALID
         }
       )
   },
