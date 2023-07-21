@@ -31,7 +31,7 @@ export interface TokenWithBalanceAndAllowances extends TokenAndBalance {
 }
 
 export interface NetworkTokenBalancesAndAllowances {
-  [index: number]: TokenWithBalanceAndAllowance[]
+  [index: number]: TokenWithBalanceAndAllowances[]
 }
 
 export const getTokensByChainId = async (
@@ -63,16 +63,6 @@ function mergeBalancesAndAllowances(
       parsedBalance: balance.parsedBalance,
       allowances: tokenAllowances,
     }
-
-    // if no allowance is matched with corresponding balance
-    // e.g native gas tokens
-    // return {
-    //   token: balance.token,
-    //   balance: balance.balance,
-    //   parsedBalance: balance.parsedBalance,
-    //   spender: correspondingAllowance.spender,
-    //   allowance: null,
-    // }
   })
 }
 
