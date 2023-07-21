@@ -1,6 +1,4 @@
-import { useState, useMemo } from 'react'
-import { useNetwork } from 'wagmi'
-import { multicall, erc20ABI, getAccount, Address } from '@wagmi/core'
+import { multicall, erc20ABI, Address } from '@wagmi/core'
 import { sortByTokenBalance } from '../sortTokens'
 import { Token } from '../types'
 import { BRIDGABLE_TOKENS } from '@/constants/tokens'
