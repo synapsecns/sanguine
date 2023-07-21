@@ -87,6 +87,7 @@ import { useAppDispatch } from '@/store/hooks'
 import {
   fetchAndStorePortfolioBalances,
   fetchAndStoreSingleNetworkPortfolioBalances,
+  fetchAndStoreSingleTokenAllowance,
 } from '@/slices/portfolio/hooks'
 
 // NOTE: These are idle utility functions that will be re-written to
@@ -373,7 +374,16 @@ const StateManagedBridge = () => {
         bridgeQuote?.routerAddress,
         fromChainId,
         fromToken?.addresses[fromChainId]
-      )
+      ).then(() => {
+        dispatch(
+          fetchAndStoreSingleTokenAllowance({
+            routerAddress: bridgeQuote?.routerAddress,
+            tokenAddress: fromToken?.addresses[fromChainId] as Address,
+            address: address,
+            chainId: fromChainId,
+          })
+        )
+      })
 
       try {
         await tx

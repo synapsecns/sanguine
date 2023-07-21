@@ -20,10 +20,7 @@ import {
   Allowances,
 } from '@/utils/actions/fetchPortfolioBalances'
 import { useBridgeState } from '@/slices/bridge/hooks'
-import {
-  fetchAndStoreSingleNetworkPortfolioBalances,
-  fetchAndStoreSingleTokenAllowance,
-} from '@/slices/portfolio/hooks'
+import { fetchAndStoreSingleTokenAllowance } from '@/slices/portfolio/hooks'
 
 type PortfolioTokenAssetProps = {
   token: Token
