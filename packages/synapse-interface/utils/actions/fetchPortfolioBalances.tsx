@@ -1,16 +1,11 @@
 import { multicall, erc20ABI, Address } from '@wagmi/core'
-import { sortByTokenBalance } from '../sortTokens'
+import { sortByTokenBalance, TokenAndBalance } from '../sortTokens'
 import { Token } from '../types'
 import { BRIDGABLE_TOKENS } from '@/constants/tokens'
 import { FetchState } from '@/slices/portfolio/reducer'
 
 export const ROUTER_ADDRESS = '0x7E7A0e201FD38d3ADAA9523Da6C109a07118C96a'
 
-export interface TokenAndBalance {
-  token: Token
-  balance: bigint
-  parsedBalance: string
-}
 export interface TokenAndAllowance {
   token: Token
   spender: string
@@ -41,8 +36,8 @@ export const getTokenBalances = async (
 }
 
 function mergeBalancesAndAllowances(
-  balances: { token: Token; balance: bigint; parsedBalance: string }[],
-  allowances: { token: Token; spender: Address; allowance: bigint }[]
+  balances: TokenAndBalance[],
+  allowances: TokenAndAllowance[]
 ): TokenWithBalanceAndAllowances[] {
   return balances.map((balance) => {
     const tokenAllowances = {}
@@ -57,6 +52,7 @@ function mergeBalancesAndAllowances(
 
     return {
       token: balance.token,
+      tokenAddress: balance.tokenAddress,
       balance: balance.balance,
       parsedBalance: balance.parsedBalance,
       allowances: tokenAllowances,
