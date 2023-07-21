@@ -4,8 +4,12 @@ import { PortfolioTabs } from './actions'
 import {
   fetchAndStorePortfolioBalances,
   fetchAndStoreSingleNetworkPortfolioBalances,
+  fetchAndStoreSingleTokenAllowance,
 } from './hooks'
-import { NetworkTokenBalancesAndAllowances } from '@/utils/actions/fetchPortfolioBalances'
+import {
+  NetworkTokenBalancesAndAllowances,
+  TokenWithBalanceAndAllowances,
+} from '@/utils/actions/fetchPortfolioBalances'
 
 export enum FetchState {
   IDLE = 'idle',
@@ -64,6 +68,18 @@ export const portfolioSlice = createSlice({
           )
         }
       )
+      .addCase(fetchAndStoreSingleTokenAllowance.fulfilled, (state, action) => {
+        const { routerAddress, chainId, tokenAddress, allowance } =
+          action.payload
+
+        state.balancesAndAllowances[chainId].forEach(
+          (token: TokenWithBalanceAndAllowances) => {
+            if (token.tokenAddress === tokenAddress) {
+              token.allowances[routerAddress] = allowance
+            }
+          }
+        )
+      })
   },
 })
 

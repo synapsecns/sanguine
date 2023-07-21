@@ -38,7 +38,7 @@ export const fetchAndStoreSingleTokenAllowance = createAsyncThunk(
       address,
       chainId
     )
-    return { chainId, tokenAddress, allowance }
+    return { routerAddress, chainId, tokenAddress, allowance }
   }
 )
 
