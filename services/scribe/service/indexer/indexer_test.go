@@ -151,19 +151,21 @@ func (x *IndexerSuite) TestGetLogsSimulated() {
 
 	// Get the logs for the first two events.
 	collectedLogs := []types.Log{}
-	logs, errChan := contractIndexer.GetLogs(x.GetTestContext(), contractConfig.StartBlock, txBlockNumberA)
-
+	indexerConfig := contractIndexer.GetIndexerConfig()
+	logFetcher := indexer.NewLogFetcher(simulatedChainArr[0], big.NewInt(int64(contractConfig.StartBlock)), big.NewInt(int64(txBlockNumberA)), &indexerConfig)
+	logsChan := logFetcher.GetFetchedLogsChan()
+	go func() error {
+		return logFetcher.Start(x.GetTestContext())
+	}()
 	for {
 		select {
 		case <-x.GetTestContext().Done():
 			x.T().Error("test timed out")
-		case log, ok := <-logs:
+		case log, ok := <-*logsChan:
 			if !ok {
 				goto Done
 			}
 			collectedLogs = append(collectedLogs, log)
-		case errorFromChan := <-errChan:
-			Nil(x.T(), errorFromChan)
 		}
 	}
 Done:
@@ -172,19 +174,20 @@ Done:
 
 	// Get the logs for the last three events.
 	collectedLogs = []types.Log{}
-	logs, errChan = contractIndexer.GetLogs(x.GetTestContext(), txBlockNumberA+1, txBlockNumberB)
-
+	logFetcher = indexer.NewLogFetcher(simulatedChainArr[0], big.NewInt(int64(txBlockNumberA+1)), big.NewInt(int64(txBlockNumberB)), &indexerConfig)
+	logsChan = logFetcher.GetFetchedLogsChan()
+	go func() error {
+		return logFetcher.Start(x.GetTestContext())
+	}()
 	for {
 		select {
 		case <-x.GetTestContext().Done():
 			x.T().Error("test timed out")
-		case log, ok := <-logs:
+		case log, ok := <-*logsChan:
 			if !ok {
 				goto Done2
 			}
 			collectedLogs = append(collectedLogs, log)
-		case errorFromChan := <-errChan:
-			Nil(x.T(), errorFromChan)
 		}
 	}
 Done2:
@@ -434,39 +437,17 @@ func (x *IndexerSuite) TestGetLogs() {
 	Nil(x.T(), err)
 
 	startHeight, endHeight := uint64(1), uint64(10)
-	logsChan, errChan := contractBackfiller.GetLogs(x.GetTestContext(), startHeight, endHeight)
+	err = contractBackfiller.Index(x.GetTestContext(), startHeight, endHeight)
+	Nil(x.T(), err)
 
-	var logs []types.Log
-	var errs []string
-loop:
-	for {
-		select {
-		case log, ok := <-logsChan:
-			if !ok {
-				break loop
-			}
-			logs = append(logs, log)
-		case err, ok := <-errChan:
-			if !ok {
-				break loop
-			}
-			errs = append(errs, err)
-		}
-	}
-
+	logs, err := x.testDB.RetrieveLogsWithFilter(x.GetTestContext(), db.LogFilter{}, 1)
 	Equal(x.T(), 2, len(logs))
-	Equal(x.T(), 0, len(errs))
 
+	// test error handling
 	cancelCtx, cancel := context.WithCancel(x.GetTestContext())
 	cancel()
-
-	_, errChan = contractBackfiller.GetLogs(cancelCtx, startHeight, endHeight)
-loop2:
-	for {
-		errStr := <-errChan
-		Contains(x.T(), errStr, "context canceled")
-		break loop2
-	}
+	err = contractBackfiller.Index(cancelCtx, endHeight, endHeight+10)
+	NotNil(x.T(), err)
 }
 
 // TestTxTypeNotSupported tests how the contract backfiller handles a transaction type that is not supported.
@@ -563,4 +544,66 @@ func (x IndexerSuite) TestInvalidTxVRS() {
 	receipts, err := x.testDB.RetrieveReceiptsWithFilter(x.GetTestContext(), db.ReceiptFilter{}, 1)
 	Nil(x.T(), err)
 	Equal(x.T(), 1, len(receipts))
+}
+
+func (x *IndexerSuite) TestLargeVolumeIndexer() {
+	if os.Getenv("CI") != "" {
+		x.T().Skip("Long running test")
+	}
+	const desiredBlockHeight = 20
+	var testChainHandler *testutil.TestChainHandler
+	var err error
+	var wg sync.WaitGroup
+
+	wg.Add(2)
+	testBackend := geth.NewEmbeddedBackend(x.GetTestContext(), x.T())
+
+	go func() {
+		defer wg.Done()
+		testChainHandler, err = testutil.PopulateWithLogs(x.GetTestContext(), x.T(), testBackend, desiredBlockHeight, []*testutil.DeployManager{x.manager})
+		Nil(x.T(), err)
+	}()
+
+	var host string
+	go func() {
+		defer wg.Done()
+		host = testutil.StartOmnirpcServer(x.GetTestContext(), x.T(), testBackend)
+	}()
+
+	wg.Wait()
+
+	scribeBackend, err := backend.DialBackend(x.GetTestContext(), host, x.metrics)
+	Nil(x.T(), err)
+	simulatedChainArr := []backend.ScribeBackend{scribeBackend, scribeBackend}
+
+	chainID, err := scribeBackend.ChainID(x.GetTestContext())
+	Nil(x.T(), err)
+
+	contractAddress := testChainHandler.Addresses[0]
+	contractConfigs := []config.ContractConfig{
+		{Address: contractAddress.String()},
+	}
+	addresses := testChainHandler.Addresses
+
+	chainConfig := config.ChainConfig{
+		ChainID:            uint32(chainID.Uint64()),
+		Confirmations:      1,
+		GetLogsBatchAmount: 1,
+		StoreConcurrency:   1,
+		GetLogsRange:       1,
+		Contracts:          contractConfigs,
+	}
+	blockHeightMeter, err := x.metrics.Meter().NewHistogram(fmt.Sprint("scribe_block_meter", chainConfig.ChainID), "block_histogram", "a block height meter", "blocks")
+	Nil(x.T(), err)
+
+	contractBackfiller, err := indexer.NewIndexer(chainConfig, addresses, x.testDB, simulatedChainArr, x.metrics, blockHeightMeter, false)
+	Nil(x.T(), err)
+
+	endHeight, err := scribeBackend.BlockNumber(x.GetTestContext())
+	Nil(x.T(), err)
+	err = contractBackfiller.Index(x.GetTestContext(), uint64(1), endHeight)
+	Nil(x.T(), err)
+
+	logs, err := testutil.GetLogsUntilNoneLeft(x.GetTestContext(), x.testDB, db.LogFilter{})
+	Equal(x.T(), int(testChainHandler.EventsEmitted[contractAddress]), len(logs))
 }

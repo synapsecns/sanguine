@@ -87,6 +87,8 @@ func NewIndexer(chainConfig config.ChainConfig, addresses []common.Address, even
 	if len(addresses) > 1 || len(addresses) == 0 { // livefill settings
 		chainConfig.GetLogsRange = chainConfig.LivefillRange
 		chainConfig.GetLogsBatchAmount = 1
+		chainConfig.StoreConcurrency = 1
+		chainConfig.ConcurrencyThreshold = 10000
 	} else {
 		for i := range chainConfig.Contracts { // get the refresh rate for the contract
 			contract := chainConfig.Contracts[i]
@@ -160,8 +162,13 @@ func (x *Indexer) Index(parentCtx context.Context, startHeight uint64, endHeight
 	x.indexerConfig.EndHeight = endHeight
 
 	// logsChain and errChan are used to pass logs from rangeFilter onto the next stage of the backfill process.
-	logsChan, errChan := x.getLogs(groupCtx, startHeight, endHeight)
+	// logsChan, errChan := x.getLogs(groupCtx, startHeight, endHeight)
 
+	logFetcher := NewLogFetcher(x.client[0], big.NewInt(int64(startHeight)), big.NewInt(int64(endHeight)), &x.indexerConfig)
+	logsChan := logFetcher.GetFetchedLogsChan()
+	g.Go(func() error {
+		return logFetcher.Start(groupCtx)
+	})
 	// Reads from the local logsChan and stores the logs and associated receipts / txs.
 	g.Go(func() error {
 		concurrentCalls := 0
@@ -172,7 +179,7 @@ func (x *Indexer) Index(parentCtx context.Context, startHeight uint64, endHeight
 			case <-groupCtx.Done():
 				logger.ReportIndexerError(ctx.Err(), x.indexerConfig, logger.ContextCancelled)
 				return fmt.Errorf("context canceled while storing and retrieving logs: %w", groupCtx.Err())
-			case log, ok := <-logsChan: // empty log passed when ok is false.
+			case log, ok := <-*logsChan: // empty log passed when ok is false.
 				if !ok {
 					return nil
 				}
@@ -200,13 +207,15 @@ func (x *Indexer) Index(parentCtx context.Context, startHeight uint64, endHeight
 					return nil
 				})
 
-				// Stop spawning store threads and wait
+				// Checks if:
+				// 1. The number of concurrent calls is greater than the concurrency threshold.
+				// 2. The indexer's distance from the chaintip is within the concurrency ending threshold.
+				// If so, all the go routines are waited on and the last indexed block is stored.
 				if concurrentCalls >= x.indexerConfig.StoreConcurrency || x.indexerConfig.ConcurrencyThreshold > endHeight-log.BlockNumber {
 					if err = gS.Wait(); err != nil {
 						return fmt.Errorf("error waiting for go routines: %w", err)
 					}
 
-					// Reset context TODO make this better
 					gS, storeCtx = errgroup.WithContext(ctx)
 					concurrentCalls = 0
 					err = x.eventDB.StoreLastIndexedMultiple(ctx, x.indexerConfig.Addresses, x.indexerConfig.ChainID, log.BlockNumber)
@@ -219,10 +228,6 @@ func (x *Indexer) Index(parentCtx context.Context, startHeight uint64, endHeight
 						attribute.NewSet(attribute.Int64("start_block", int64(startHeight)), attribute.Int64("chain_id", int64(x.indexerConfig.ChainID)))),
 					)
 				}
-
-			case errFromChan := <-errChan:
-				logger.ReportIndexerError(fmt.Errorf("errChan returned an err %s", errFromChan), x.indexerConfig, logger.GetLogsError)
-				return fmt.Errorf("errChan returned an err %s", errFromChan)
 			}
 		}
 	})
@@ -373,54 +378,55 @@ OUTER:
 
 	return nil
 }
-func (x *Indexer) getLogs(parentCtx context.Context, startHeight, endHeight uint64) (<-chan types.Log, <-chan string) {
-	ctx, span := x.handler.Tracer().Start(parentCtx, "getLogs")
-	defer metrics.EndSpan(span)
 
-	logFetcher := NewLogFetcher(x.client[0], big.NewInt(int64(startHeight)), big.NewInt(int64(endHeight)), &x.indexerConfig)
-	logsChan, errChan := make(chan types.Log), make(chan string)
+//func (x *Indexer) getLogs(parentCtx context.Context, startHeight, endHeight uint64) (<-chan types.Log, <-chan string) {
+//	ctx, span := x.handler.Tracer().Start(parentCtx, "getLogs")
+//	defer metrics.EndSpan(span)
+//
+//	logFetcher := NewLogFetcher(x.client[0], big.NewInt(int64(startHeight)), big.NewInt(int64(endHeight)), &x.indexerConfig)
+//	logsChan, errChan := make(chan types.Log), make(chan string)
+//
+//	go x.runFetcher(ctx, logFetcher, errChan)
+//	go x.processLogs(ctx, logFetcher, logsChan, errChan)
+//
+//	return logsChan, errChan
+//}
 
-	go x.runFetcher(ctx, logFetcher, errChan)
-	go x.processLogs(ctx, logFetcher, logsChan, errChan)
-
-	return logsChan, errChan
-}
-
-func (x *Indexer) runFetcher(ctx context.Context, logFetcher *LogFetcher, errChan chan<- string) {
-	if err := logFetcher.Start(ctx); err != nil {
-		select {
-		case <-ctx.Done():
-			errChan <- fmt.Sprintf("context canceled while appending log to channel %v", ctx.Err())
-			return
-		case errChan <- err.Error():
-			return
-		}
-	}
-}
-
-func (x *Indexer) processLogs(ctx context.Context, logFetcher *LogFetcher, logsChan chan<- types.Log, errChan chan<- string) {
-	for {
-		select {
-		case <-ctx.Done():
-			errChan <- fmt.Sprintf("context canceled %v", ctx.Err())
-			return
-		case logChunks, ok := <-logFetcher.fetchedLogsChan:
-			if !ok {
-				close(logsChan)
-				return
-			}
-			for _, log := range logChunks {
-				select {
-				case <-ctx.Done():
-					errChan <- fmt.Sprintf("context canceled while loading log chunks to log %v", ctx.Err())
-					return
-				case logsChan <- log:
-				}
-			}
-		}
-	}
-}
-
+//	func (x *Indexer) runFetcher(ctx context.Context, logFetcher *LogFetcher, errChan chan<- string) {
+//		if err := logFetcher.Start(ctx); err != nil {
+//			select {
+//			case <-ctx.Done():
+//				errChan <- fmt.Sprintf("context canceled while appending log to channel %v", ctx.Err())
+//				return
+//			case errChan <- err.Error():
+//				return
+//			}
+//		}
+//	}
+//
+//	func (x *Indexer) processLogs(ctx context.Context, logFetcher *LogFetcher, logsChan chan<- types.Log, errChan chan<- string) {
+//		for {
+//			select {
+//			case <-ctx.Done():
+//				errChan <- fmt.Sprintf("context canceled %v", ctx.Err())
+//				return
+//			case logChunks, ok := <-logFetcher.fetchedLogsChan:
+//				if !ok {
+//					close(logsChan)
+//					return
+//				}
+//				for _, log := range logChunks {
+//					select {
+//					case <-ctx.Done():
+//						errChan <- fmt.Sprintf("context canceled while loading log chunks to log %v", ctx.Err())
+//						return
+//					case logsChan <- log:
+//					}
+//				}
+//			}
+//		}
+//	}
+//
 // prunedReceiptLogs gets all logs from a receipt and prunes null logs.
 func (x *Indexer) prunedReceiptLogs(receipt types.Receipt) (logs []types.Log, err error) {
 	for i := range receipt.Logs {

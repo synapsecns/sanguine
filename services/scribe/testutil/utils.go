@@ -3,6 +3,7 @@ package testutil
 import (
 	"context"
 	"fmt"
+	"github.com/brianvoe/gofakeit/v6"
 	"github.com/synapsecns/sanguine/services/scribe/db"
 	"math/big"
 	"testing"
@@ -163,13 +164,11 @@ func EmitEvents(ctx context.Context, t *testing.T, backend backends.SimulatedTes
 			for k, v := range testChainHandler.ContractRefs {
 				address := k
 				ref := v
-
 				// Pass if the contract's specified start block is greater than the current block height.
 				// Used for testing livefill passing.
 				if latestBlock <= testChainHandler.ContractStartBlocks[address] {
 					continue
 				}
-
 				// Update number of events emitted
 				testChainHandler.EventsEmitted[address]++
 
@@ -179,6 +178,7 @@ func EmitEvents(ctx context.Context, t *testing.T, backend backends.SimulatedTes
 						return fmt.Errorf("error emitting event a for contract %s: %w", address.String(), err)
 					}
 					backend.WaitForConfirmation(groupCtx, tx)
+
 					return nil
 				})
 			}
@@ -272,5 +272,20 @@ func GetReceiptsUntilNoneLeft(ctx context.Context, testDB db.EventDB, filter db.
 			return receipts, nil
 		}
 		receipts = append(receipts, newReceipts...)
+	}
+}
+
+// MakeRandomLog makes a random log
+func MakeRandomLog(txHash common.Hash) types.Log {
+	return types.Log{
+		Address:     common.BigToAddress(big.NewInt(gofakeit.Int64())),
+		Topics:      []common.Hash{common.BigToHash(big.NewInt(gofakeit.Int64())), common.BigToHash(big.NewInt(gofakeit.Int64())), common.BigToHash(big.NewInt(gofakeit.Int64()))},
+		Data:        []byte(gofakeit.Sentence(10)),
+		BlockNumber: gofakeit.Uint64(),
+		TxHash:      txHash,
+		TxIndex:     uint(gofakeit.Uint64()),
+		BlockHash:   common.BigToHash(big.NewInt(gofakeit.Int64())),
+		Index:       uint(gofakeit.Uint64()),
+		Removed:     gofakeit.Bool(),
 	}
 }

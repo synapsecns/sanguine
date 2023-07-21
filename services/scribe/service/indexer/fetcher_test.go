@@ -2,9 +2,13 @@ package indexer_test
 
 import (
 	"context"
+	"fmt"
+	"github.com/brianvoe/gofakeit/v6"
+	"github.com/ethereum/go-ethereum/core/types"
 	"github.com/synapsecns/sanguine/services/scribe/backend"
 	"github.com/synapsecns/sanguine/services/scribe/testutil"
 	scribeTypes "github.com/synapsecns/sanguine/services/scribe/types"
+	"time"
 
 	"math/big"
 	"sync"
@@ -191,4 +195,68 @@ func (x *IndexerSuite) TestFetchLogs() {
 	_, err = rangeFilter.FetchLogs(cancelCtx, chunks)
 	NotNil(x.T(), err)
 	Contains(x.T(), err.Error(), "context was canceled")
+}
+
+// TestFetchLogsHighVolume tests the behavior of populating and consuming logs from the log fetcher in block ranges with many logs
+func (x *IndexerSuite) TestFetchLogsHighVolume() {
+	testBackend := geth.NewEmbeddedBackend(x.GetTestContext(), x.T())
+	// start an omnirpc proxy and run 10 test transactions so we can batch call blocks 1-10
+	var err error
+	host := testutil.StartOmnirpcServer(x.GetTestContext(), x.T(), testBackend)
+
+	scribeBackend, err := backend.DialBackend(x.GetTestContext(), host, x.metrics)
+	Nil(x.T(), err)
+
+	chainID, err := scribeBackend.ChainID(x.GetTestContext())
+	Nil(x.T(), err)
+	config := &scribeTypes.IndexerConfig{
+		ChainID:              uint32(chainID.Uint64()),
+		ConcurrencyThreshold: 1,
+		GetLogsBatchAmount:   1,
+		GetLogsRange:         2,
+		StoreConcurrency:     6,
+		Addresses:            []common.Address{common.BigToAddress(big.NewInt(1))},
+	}
+	logFetcher := indexer.NewLogFetcher(scribeBackend, big.NewInt(1), big.NewInt(1000), config)
+
+	logsChan := logFetcher.GetFetchedLogsChan()
+
+	addContext, addCancel := context.WithTimeout(x.GetTestContext(), 20*time.Second)
+	defer addCancel()
+	numLogs := 0
+	go func() error {
+		for {
+			select {
+			case <-addContext.Done():
+				// test done
+				close(*logsChan)
+				return nil
+
+			case <-time.After(10 * time.Millisecond):
+				// add a log
+				randomTxHash := common.BigToHash(big.NewInt(gofakeit.Int64()))
+				randomLog := testutil.MakeRandomLog(randomTxHash)
+				*logsChan <- randomLog
+				numLogs++
+				// check buffer
+				GreaterOrEqual(x.T(), config.StoreConcurrency, len(*logsChan))
+			}
+		}
+	}()
+	var collectedLogs []types.Log
+	for {
+		select {
+		case <-x.GetTestContext().Done():
+			Error(x.T(), fmt.Errorf("test context was canceled"))
+		case <-time.After(1000 * time.Millisecond):
+			log, ok := <-*logsChan
+			if !ok {
+				goto Done
+			}
+			collectedLogs = append(collectedLogs, log)
+
+		}
+	}
+Done:
+	Equal(x.T(), numLogs, len(collectedLogs))
 }

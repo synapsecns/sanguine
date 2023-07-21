@@ -38,7 +38,7 @@ func NewIndexerSuite(tb testing.TB) *IndexerSuite {
 // SetupTest sets up the test suite.
 func (x *IndexerSuite) SetupTest() {
 	x.TestSuite.SetupTest()
-	x.SetTestTimeout(time.Minute * 3)
+	x.SetTestTimeout(time.Minute * 10)
 	sqliteStore, err := sqlite.NewSqliteStore(x.GetTestContext(), filet.TmpDir(x.T(), ""), x.metrics, false)
 	Nil(x.T(), err)
 	x.testDB = sqliteStore

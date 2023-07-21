@@ -16,6 +16,7 @@ import (
 	"github.com/synapsecns/sanguine/services/scribe/testutil"
 	"math"
 	"math/big"
+	"os"
 	"time"
 )
 
@@ -298,4 +299,72 @@ func (s *ScribeSuite) TestChainIndexerLivefill() {
 	Nil(s.T(), err)
 	Equal(s.T(), sum, uint64(len(receipts)))
 	Equal(s.T(), numberOfContracts, numberLivefillContracts)
+}
+
+// TestLargeVolume tests that the ChainIndexer can index a large volume of events from a chain.
+func (s *ScribeSuite) TestLargeVolume() {
+	if os.Getenv("CI") != "" || !s.runVolumeTest {
+		s.T().Skip("This is a long running test")
+	}
+	const runtime = 100
+	desiredBlockHeight := uint64(1)
+	chainID := gofakeit.Uint32()
+	chainBackends := make(map[uint32]geth.Backend)
+	newBackend := geth.NewEmbeddedBackendForChainID(s.GetTestContext(), s.T(), big.NewInt(int64(chainID)))
+	chainBackends[chainID] = *newBackend
+
+	// Create contract managers
+	managers := []*testutil.DeployManager{s.manager}
+
+	testChainHandlerMap, chainBackendMap, err := testutil.PopulateChainsWithLogs(s.GetTestContext(), s.T(), chainBackends, desiredBlockHeight, managers, s.nullMetrics)
+	Nil(s.T(), err)
+
+	var contractConfigs []config.ContractConfig
+	addresses := testChainHandlerMap[chainID].Addresses
+	for i := range addresses {
+		contractConfig := config.ContractConfig{
+			Address: addresses[i].String(),
+		}
+		contractConfigs = append(contractConfigs, contractConfig)
+	}
+	chainConfig := config.ChainConfig{
+		ChainID:            chainID,
+		Confirmations:      0,
+		GetLogsBatchAmount: 1,
+		StoreConcurrency:   1,
+		GetLogsRange:       2000,
+		Contracts:          contractConfigs,
+	}
+
+	// emit events for <runtime> seconds
+	emittingContext, cancelEmitting := context.WithTimeout(s.GetTestContext(), runtime*time.Second)
+	defer cancelEmitting()
+
+	go func() {
+		for {
+			// repeat until emittingContext is cancelled
+			desiredBlockHeight += 1000
+			err = testutil.EmitEvents(emittingContext, s.T(), newBackend, desiredBlockHeight, testChainHandlerMap[chainID])
+			if err != nil {
+				return
+			}
+		}
+	}()
+	// wait until done emitting
+	<-emittingContext.Done()
+	indexingContext, cancelIndexing := context.WithTimeout(s.GetTestContext(), 20*time.Second)
+	defer cancelIndexing()
+	chainIndexer, err := service.NewChainIndexer(s.testDB, chainBackendMap[chainID], chainConfig, s.nullMetrics)
+	Nil(s.T(), err)
+	_ = chainIndexer.Index(indexingContext, nil)
+	sum := uint64(0)
+	for _, value := range testChainHandlerMap[chainID].EventsEmitted {
+		sum += value
+	}
+	logs, err := testutil.GetLogsUntilNoneLeft(s.GetTestContext(), s.testDB, db.LogFilter{})
+	Nil(s.T(), err)
+	Equal(s.T(), sum, uint64(len(logs)))
+	receipts, err := testutil.GetReceiptsUntilNoneLeft(s.GetTestContext(), s.testDB, db.ReceiptFilter{})
+	Nil(s.T(), err)
+	Equal(s.T(), sum, uint64(len(receipts)))
 }

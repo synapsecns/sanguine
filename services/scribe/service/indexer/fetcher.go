@@ -25,15 +25,14 @@ type LogFetcher struct {
 	// for logging
 	endBlock *big.Int
 	// fetchedLogsChan is a channel with the fetched chunks of logs.
-	fetchedLogsChan chan []types.Log
+	fetchedLogsChan chan types.Log
 	// backend is the ethereum backend used to fetch logs.
 	backend backend.ScribeBackend
 	// indexerConfig holds the chain config (config data for the chain)
 	indexerConfig *scribeTypes.IndexerConfig
+	// bufferSize prevents from overloading the scribe indexer with too many logs as well as upstream RPCs with too many requests.
+	bufferSize int
 }
-
-// bufferSize is how many getLogs*batch amount chunks ahead should be fetched.
-const bufferSize = 3
 
 // NewLogFetcher creates a new filtering interface for a range of blocks. If reverse is not set, block heights are filtered from start->end.
 func NewLogFetcher(backend backend.ScribeBackend, startBlock, endBlock *big.Int, indexerConfig *scribeTypes.IndexerConfig) *LogFetcher {
@@ -41,13 +40,23 @@ func NewLogFetcher(backend backend.ScribeBackend, startBlock, endBlock *big.Int,
 	// setting the range size in the config. For example, setting a range of 1 would result in two blocks being queried
 	// instead of 1. This is accounted for by subtracting 1.
 	chunkSize := int(indexerConfig.GetLogsRange) - 1
+
+	// Using the specified StoreConcurrency value from the config, as the buffer size for the fetchedLogsChan
+	bufferSize := indexerConfig.StoreConcurrency
+	if bufferSize > 100 {
+		bufferSize = 100
+	}
+	if bufferSize == 0 {
+		bufferSize = 3 // default buffer size
+	}
 	return &LogFetcher{
 		iterator:        util.NewChunkIterator(startBlock, endBlock, chunkSize, true),
 		startBlock:      startBlock,
 		endBlock:        endBlock,
-		fetchedLogsChan: make(chan []types.Log, bufferSize),
+		fetchedLogsChan: make(chan types.Log, bufferSize),
 		backend:         backend,
 		indexerConfig:   indexerConfig,
+		bufferSize:      bufferSize,
 	}
 }
 
@@ -103,7 +112,12 @@ func (f *LogFetcher) Start(ctx context.Context) error {
 			select {
 			case <-ctx.Done():
 				return fmt.Errorf("context canceled while adding log to chan %w", ctx.Err())
-			case f.fetchedLogsChan <- logs:
+
+			default:
+				// insert logs into channel
+				for i := range logs {
+					f.fetchedLogsChan <- logs[i]
+				}
 			}
 		}
 	}
@@ -161,7 +175,7 @@ func (f *LogFetcher) getAndUnpackLogs(ctx context.Context, chunks []*util.Chunk,
 		default:
 			_, logChunk := resultIterator.Next()
 			if logChunk == nil || len(*logChunk) == 0 {
-				logger.ReportIndexerError(err, *f.indexerConfig, logger.EmptyGetLogsChunk)
+				logger.ReportIndexerError(fmt.Errorf("empty log chunk"), *f.indexerConfig, logger.EmptyGetLogsChunk)
 				continue
 			}
 
@@ -170,4 +184,7 @@ func (f *LogFetcher) getAndUnpackLogs(ctx context.Context, chunks []*util.Chunk,
 	}
 
 	return logs, nil
+}
+func (f LogFetcher) GetFetchedLogsChan() *chan types.Log {
+	return &f.fetchedLogsChan
 }

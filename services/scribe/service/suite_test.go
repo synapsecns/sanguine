@@ -20,26 +20,28 @@ import (
 
 type ScribeSuite struct {
 	*testsuite.TestSuite
-	testDB      db.EventDB
-	manager     *testutil.DeployManager
-	wallet      wallet.Wallet
-	signer      *localsigner.Signer
-	metrics     metrics.Handler
-	nullMetrics metrics.Handler
+	testDB        db.EventDB
+	manager       *testutil.DeployManager
+	wallet        wallet.Wallet
+	signer        *localsigner.Signer
+	metrics       metrics.Handler
+	nullMetrics   metrics.Handler
+	runVolumeTest bool
 }
 
 // NewScribeSuite creates a new backfill test suite.
 func NewScribeSuite(tb testing.TB) *ScribeSuite {
 	tb.Helper()
 	return &ScribeSuite{
-		TestSuite: testsuite.NewTestSuite(tb),
+		TestSuite:     testsuite.NewTestSuite(tb),
+		runVolumeTest: true,
 	}
 }
 
 // SetupTest sets up the test suite.
 func (s *ScribeSuite) SetupTest() {
 	s.TestSuite.SetupTest()
-	s.SetTestTimeout(time.Minute * 6)
+	s.SetTestTimeout(time.Minute * 20)
 	sqliteStore, err := sqlite.NewSqliteStore(s.GetTestContext(), filet.TmpDir(s.T(), ""), s.metrics, false)
 	Nil(s.T(), err)
 	s.testDB = sqliteStore

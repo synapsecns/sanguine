@@ -175,7 +175,8 @@ func (s Store) RetrieveLogsFromHeadRangeQuery(ctx context.Context, logFilter db.
 	subquery2 := s.DB().WithContext(ctx).ToSQL(func(tx *gorm.DB) *gorm.DB {
 		return tx.Model(LogAtHead{}).Select(LogColumns).Where("block_number BETWEEN ? AND ?", lastIndexed+1, endBlock).Find(&[]Log{})
 	})
-	dbTx := s.DB().WithContext(ctx).Raw(fmt.Sprintf("SELECT * FROM (%s UNION %s) ORDER BY %s DESC, %s DESC LIMIT ? OFFSET ?", subquery1, subquery2, BlockNumberFieldName, BlockIndexFieldName), PageSize, (page-1)*PageSize).Scan(&dbLogs)
+	query := fmt.Sprintf("SELECT * FROM (%s UNION %s) ORDER BY %s DESC, %s DESC LIMIT %d OFFSET %d", subquery1, subquery2, BlockNumberFieldName, BlockIndexFieldName, PageSize, (page-1)*PageSize)
+	dbTx := s.DB().WithContext(ctx).Raw(query).Scan(&dbLogs)
 
 	if dbTx.Error != nil {
 		return nil, fmt.Errorf("error getting newly confirmed data %w", dbTx.Error)
