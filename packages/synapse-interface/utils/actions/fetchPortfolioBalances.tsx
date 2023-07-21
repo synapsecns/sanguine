@@ -27,7 +27,7 @@ export interface Allowances {
 }
 
 export interface TokenWithBalanceAndAllowances extends TokenAndBalance {
-  allowances: Allowances[]
+  allowances: Allowances
 }
 
 export interface NetworkTokenBalancesAndAllowances {
@@ -45,29 +45,34 @@ export const getTokensByChainId = async (
 function mergeBalancesAndAllowances(
   balances: { token: Token; balance: bigint; parsedBalance: string }[],
   allowances: { token: Token; spender: Address; allowance: bigint }[]
-): TokenWithBalanceAndAllowance[] {
+): TokenWithBalanceAndAllowances[] {
   return balances.map((balance) => {
-    const correspondingAllowance = allowances.find(
-      (item2) => item2.token === balance.token
+    const tokenAllowances = {}
+    const matchedAllowancesByToken: TokenAndAllowance[] = allowances.filter(
+      (allowance) => allowance.token === balance.token
     )
-    if (correspondingAllowance) {
-      return {
-        token: balance.token,
-        balance: balance.balance,
-        parsedBalance: balance.parsedBalance,
-        spender: correspondingAllowance.spender,
-        allowance: correspondingAllowance.allowance,
-      }
-    }
-    // if no allowance is matched with corresponding balance
-    // e.g native gas tokens
+
+    matchedAllowancesByToken.forEach((spenderAllowance: TokenAndAllowance) => {
+      const { spender, allowance } = spenderAllowance
+      tokenAllowances[spender] = allowance
+    })
+
     return {
       token: balance.token,
       balance: balance.balance,
       parsedBalance: balance.parsedBalance,
-      spender: correspondingAllowance.spender,
-      allowance: null,
+      allowances: tokenAllowances,
     }
+
+    // if no allowance is matched with corresponding balance
+    // e.g native gas tokens
+    // return {
+    //   token: balance.token,
+    //   balance: balance.balance,
+    //   parsedBalance: balance.parsedBalance,
+    //   spender: correspondingAllowance.spender,
+    //   allowance: null,
+    // }
   })
 }
 
