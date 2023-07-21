@@ -15,6 +15,7 @@ import (
 	"github.com/synapsecns/sanguine/services/scribe/service/indexer"
 	"github.com/synapsecns/sanguine/services/scribe/testutil"
 	"os"
+	"time"
 
 	"sync"
 
@@ -154,8 +155,11 @@ func (x *IndexerSuite) TestGetLogsSimulated() {
 	indexerConfig := contractIndexer.GetIndexerConfig()
 	logFetcher := indexer.NewLogFetcher(simulatedChainArr[0], big.NewInt(int64(contractConfig.StartBlock)), big.NewInt(int64(txBlockNumberA)), &indexerConfig)
 	logsChan := logFetcher.GetFetchedLogsChan()
-	go func() error {
-		return logFetcher.Start(x.GetTestContext())
+
+	fetchingContext, cancelFetching := context.WithTimeout(x.GetTestContext(), 10*time.Second)
+
+	go func() {
+		_ = logFetcher.Start(fetchingContext)
 	}()
 	for {
 		select {
@@ -169,6 +173,7 @@ func (x *IndexerSuite) TestGetLogsSimulated() {
 		}
 	}
 Done:
+	cancelFetching()
 	// Check to see if 2 logs were collected.
 	Equal(x.T(), 2, len(collectedLogs))
 
@@ -176,8 +181,10 @@ Done:
 	collectedLogs = []types.Log{}
 	logFetcher = indexer.NewLogFetcher(simulatedChainArr[0], big.NewInt(int64(txBlockNumberA+1)), big.NewInt(int64(txBlockNumberB)), &indexerConfig)
 	logsChan = logFetcher.GetFetchedLogsChan()
-	go func() error {
-		return logFetcher.Start(x.GetTestContext())
+
+	fetchingContext, cancelFetching = context.WithTimeout(x.GetTestContext(), 10*time.Second)
+	go func() {
+		_ = logFetcher.Start(fetchingContext)
 	}()
 	for {
 		select {
@@ -191,7 +198,7 @@ Done:
 		}
 	}
 Done2:
-
+	cancelFetching()
 	// Check to see if 3 logs were collected.
 	Equal(x.T(), 3, len(collectedLogs))
 }

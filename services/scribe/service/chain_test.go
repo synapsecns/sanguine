@@ -342,7 +342,7 @@ func (s *ScribeSuite) TestLargeVolume() {
 
 	go func() {
 		for {
-			// repeat until emittingContext is cancelled
+			// repeat until emittingContext is canceled
 			desiredBlockHeight += 1000
 			err = testutil.EmitEvents(emittingContext, s.T(), newBackend, desiredBlockHeight, testChainHandlerMap[chainID])
 			if err != nil {

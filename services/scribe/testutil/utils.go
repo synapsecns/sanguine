@@ -275,7 +275,7 @@ func GetReceiptsUntilNoneLeft(ctx context.Context, testDB db.EventDB, filter db.
 	}
 }
 
-// MakeRandomLog makes a random log
+// MakeRandomLog makes a random log.
 func MakeRandomLog(txHash common.Hash) types.Log {
 	return types.Log{
 		Address:     common.BigToAddress(big.NewInt(gofakeit.Int64())),

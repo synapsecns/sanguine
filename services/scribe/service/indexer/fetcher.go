@@ -185,6 +185,8 @@ func (f *LogFetcher) getAndUnpackLogs(ctx context.Context, chunks []*util.Chunk,
 
 	return logs, nil
 }
-func (f LogFetcher) GetFetchedLogsChan() *chan types.Log {
+
+// GetFetchedLogsChan returns the fetchedLogsChan channel as a pointer for access by the indexer and tests.
+func (f *LogFetcher) GetFetchedLogsChan() *chan types.Log {
 	return &f.fetchedLogsChan
 }

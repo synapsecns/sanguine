@@ -197,7 +197,7 @@ func (x *IndexerSuite) TestFetchLogs() {
 	Contains(x.T(), err.Error(), "context was canceled")
 }
 
-// TestFetchLogsHighVolume tests the behavior of populating and consuming logs from the log fetcher in block ranges with many logs
+// TestFetchLogsHighVolume tests the behavior of populating and consuming logs from the log fetcher in block ranges with many logs.
 func (x *IndexerSuite) TestFetchLogsHighVolume() {
 	testBackend := geth.NewEmbeddedBackend(x.GetTestContext(), x.T())
 	// start an omnirpc proxy and run 10 test transactions so we can batch call blocks 1-10
@@ -224,13 +224,13 @@ func (x *IndexerSuite) TestFetchLogsHighVolume() {
 	addContext, addCancel := context.WithTimeout(x.GetTestContext(), 20*time.Second)
 	defer addCancel()
 	numLogs := 0
-	go func() error {
+	go func() {
 		for {
 			select {
 			case <-addContext.Done():
 				// test done
 				close(*logsChan)
-				return nil
+				return
 
 			case <-time.After(10 * time.Millisecond):
 				// add a log
@@ -254,7 +254,6 @@ func (x *IndexerSuite) TestFetchLogsHighVolume() {
 				goto Done
 			}
 			collectedLogs = append(collectedLogs, log)
-
 		}
 	}
 Done:
