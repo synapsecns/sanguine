@@ -109,7 +109,7 @@ func (c *ChainIndexer) Index(ctx context.Context, onlyOneBlock *uint64) error {
 	// var livefillContracts []config.ContractConfig
 	readyToLivefill := make(chan config.ContractConfig)
 
-	latestBlock, err := c.getLatestBlock(indexCtx, true)
+	latestBlock, err := c.getLatestBlock(indexCtx, scribeTypes.Indexing)
 	if err != nil {
 		return fmt.Errorf("could not get current block number while indexing: %w", err)
 	}
@@ -156,7 +156,7 @@ func (c *ChainIndexer) Index(ctx context.Context, onlyOneBlock *uint64) error {
 		})
 	}
 
-	// Livefill contracts that are within the livefill threshold.
+	// Livefill contracts that are within the livefill threshold and before the confirmation threshold.
 	indexGroup.Go(func() error {
 		timeout := time.Duration(0)
 		b := createBackoff()
@@ -213,15 +213,18 @@ func (c *ChainIndexer) Index(ctx context.Context, onlyOneBlock *uint64) error {
 				}
 
 				// Default refresh rate for livefill is 1 second.
+				// TODO add to config
 				timeout = 1 * time.Second
 			}
 		}
 	})
 
-	// Index unconfirmed events right at the head.
-	indexGroup.Go(func() error {
-		return c.LivefillUnconfirmed(indexCtx)
-	})
+	// Index unconfirmed events to the head.
+	if c.chainConfig.Confirmations > 0 {
+		indexGroup.Go(func() error {
+			return c.LivefillAtHead(indexCtx)
+		})
+	}
 
 	if err := indexGroup.Wait(); err != nil {
 		return fmt.Errorf("could not index: %w", err)
@@ -230,7 +233,7 @@ func (c *ChainIndexer) Index(ctx context.Context, onlyOneBlock *uint64) error {
 }
 
 // nolint:unparam
-func (c *ChainIndexer) getLatestBlock(ctx context.Context, confirmations bool) (*uint64, error) {
+func (c *ChainIndexer) getLatestBlock(ctx context.Context, atHead bool) (*uint64, error) {
 	var currentBlock uint64
 	var err error
 	b := createBackoff()
@@ -248,7 +251,7 @@ func (c *ChainIndexer) getLatestBlock(ctx context.Context, confirmations bool) (
 				logger.ReportScribeError(err, c.chainID, logger.GetBlockError)
 				continue
 			}
-			if confirmations {
+			if !atHead {
 				currentBlock -= c.chainConfig.Confirmations
 			}
 		}
@@ -336,7 +339,7 @@ func (c *ChainIndexer) isReadyForLivefill(parentContext context.Context, indexer
 	if err != nil {
 		return false, fmt.Errorf("could not get last indexed: %w", err)
 	}
-	endHeight, err := c.getLatestBlock(parentContext, true)
+	endHeight, err := c.getLatestBlock(parentContext, scribeTypes.Indexing)
 	if err != nil {
 		return false, fmt.Errorf("could not get current block number while indexing: %w", err)
 	}
@@ -361,7 +364,7 @@ func (c *ChainIndexer) getStartHeight(parentContext context.Context, onlyOneBloc
 		startHeight = *onlyOneBlock
 		endHeight = onlyOneBlock
 	} else {
-		endHeight, err = c.getLatestBlock(parentContext, true)
+		endHeight, err = c.getLatestBlock(parentContext, scribeTypes.Indexing)
 		if err != nil {
 			return 0, nil, fmt.Errorf("could not get current block number while indexing: %w", err)
 		}
@@ -370,10 +373,10 @@ func (c *ChainIndexer) getStartHeight(parentContext context.Context, onlyOneBloc
 	return startHeight, endHeight, nil
 }
 
-// LivefillUnconfirmed stores data for all contracts all the way to the head in a separate table.
+// LivefillAtHead stores data for all contracts all the way to the head in a separate table.
 //
 // nolint:cyclop
-func (c *ChainIndexer) LivefillUnconfirmed(parentContext context.Context) error {
+func (c *ChainIndexer) LivefillAtHead(parentContext context.Context) error {
 	timeout := time.Duration(0)
 	b := createBackoff()
 	addresses := getAddressesFromConfig(c.chainConfig.Contracts)
@@ -399,7 +402,7 @@ func (c *ChainIndexer) LivefillUnconfirmed(parentContext context.Context) error 
 			}
 		case <-time.After(timeout):
 
-			endHeight, err := c.getLatestBlock(parentContext, false)
+			endHeight, err := c.getLatestBlock(parentContext, scribeTypes.LivefillAtHead)
 			if err != nil {
 				logger.ReportIndexerError(err, tipLivefillIndexer.GetIndexerConfig(), logger.GetBlockError)
 				timeout = b.Duration()
