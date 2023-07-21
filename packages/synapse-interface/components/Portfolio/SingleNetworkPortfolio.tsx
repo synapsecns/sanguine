@@ -35,11 +35,11 @@ export const SingleNetworkPortfolio = ({
   const [tokensWithAllowance, tokensWithoutAllowance] =
     separateTokensByAllowance(portfolioTokens)
 
-  const sortedTokensWithAllowance: TokenWithBalanceAndAllowance[] =
+  const sortedTokensWithAllowance: TokenWithBalanceAndAllowances[] =
     sortByBalanceDescending(tokensWithAllowance)
-  const sortedTokensWithoutAllowance: TokenWithBalanceAndAllowance[] =
+  const sortedTokensWithoutAllowance: TokenWithBalanceAndAllowances[] =
     sortByBalanceDescending(tokensWithoutAllowance)
-  const sortedTokensForVisualizer: TokenWithBalanceAndAllowance[] =
+  const sortedTokensForVisualizer: TokenWithBalanceAndAllowances[] =
     sortByBalanceDescending(portfolioTokens)
 
   const hasNoTokenBalance: boolean =
@@ -77,7 +77,7 @@ export const SingleNetworkPortfolio = ({
         {sortedTokensWithAllowance &&
           sortedTokensWithAllowance.length > 0 &&
           sortedTokensWithAllowance.map(
-            ({ token, balance, allowance }: TokenWithBalanceAndAllowance) => (
+            ({ token, balance, allowances }: TokenWithBalanceAndAllowances) => (
               <PortfolioTokenAsset
                 token={token}
                 balance={balance}
@@ -91,7 +91,7 @@ export const SingleNetworkPortfolio = ({
         {sortedTokensWithoutAllowance &&
           sortedTokensWithoutAllowance.length > 0 &&
           sortedTokensWithoutAllowance.map(
-            ({ token, balance }: TokenWithBalanceAndAllowance) => (
+            ({ token, balance }: TokenWithBalanceAndAllowances) => (
               <PortfolioTokenAsset
                 token={token}
                 balance={balance}
@@ -135,7 +135,7 @@ const PortfolioNetwork = ({
 const PortfolioTokenVisualizer = ({
   portfolioTokens,
 }: {
-  portfolioTokens: TokenWithBalanceAndAllowance[]
+  portfolioTokens: TokenWithBalanceAndAllowances[]
 }) => {
   const [isHovered, setIsHovered] = useState(false)
   const hasOneToken = portfolioTokens && portfolioTokens.length > 0
@@ -179,7 +179,7 @@ const PortfolioTokenVisualizer = ({
             border border-solid border-[#252537]
             bg-[#101018] rounded-md`}
           >
-            {portfolioTokens.map((token: TokenWithBalanceAndAllowance) => {
+            {portfolioTokens.map((token: TokenWithBalanceAndAllowances) => {
               const tokenSymbol = token.token.symbol
               const balance = token.parsedBalance
               return (
@@ -234,12 +234,12 @@ function separateTokensByAllowance(
 }
 
 function sortByBalanceDescending(
-  tokens: TokenWithBalanceAndAllowance[]
-): TokenWithBalanceAndAllowance[] {
+  tokens: TokenWithBalanceAndAllowances[]
+): TokenWithBalanceAndAllowances[] {
   return (
     tokens &&
     tokens.sort(
-      (a: TokenWithBalanceAndAllowance, b: TokenWithBalanceAndAllowance) =>
+      (a: TokenWithBalanceAndAllowances, b: TokenWithBalanceAndAllowances) =>
         b.parsedBalance > a.parsedBalance ? 1 : -1
     )
   )
