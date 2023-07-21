@@ -6,7 +6,7 @@ import { PortfolioTabManager } from './PortfolioTabManager'
 import {
   NetworkTokenBalancesAndAllowances,
   TokenWithBalanceAndAllowance,
-} from '@/utils/hooks/usePortfolioBalances'
+} from '@/utils/actions/fetchPortfolioBalances'
 import { PortfolioContent, HomeContent } from './PortfolioContent'
 import {
   useFetchPortfolioBalances,

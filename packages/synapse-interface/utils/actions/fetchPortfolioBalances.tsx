@@ -15,7 +15,7 @@ export interface TokenAndBalance {
 }
 export interface TokenAndAllowance {
   token: Token
-  spender: Address
+  spender: string
   allowance: bigint
 }
 export interface TokenWithBalanceAndAllowance
@@ -163,30 +163,4 @@ export const fetchPortfolioBalances = async (
     console.error('error from fetch:', error)
     return { balancesAndAllowances: {}, status: FetchState.INVALID, error }
   }
-}
-
-export const usePortfolioBalancesAndAllowances = (): {
-  balancesAndAllowances: NetworkTokenBalancesAndAllowances
-  fetchPortfolioBalances: () => void
-  status: FetchState
-} => {
-  const [balancesAndAllowances, setBalancesAndAllowances] =
-    useState<NetworkTokenBalancesAndAllowances>({})
-  const [status, setStatus] = useState<FetchState>(FetchState.LOADING)
-  const { address } = getAccount()
-
-  const fetch = () => {
-    fetchPortfolioBalances(address).then((result) => {
-      setBalancesAndAllowances(result.balancesAndAllowances)
-      setStatus(
-        result.status === FetchState.VALID
-          ? FetchState.VALID
-          : FetchState.INVALID
-      )
-    })
-  }
-
-  return useMemo(() => {
-    return { balancesAndAllowances, fetchPortfolioBalances: fetch, status }
-  }, [balancesAndAllowances, fetch])
 }

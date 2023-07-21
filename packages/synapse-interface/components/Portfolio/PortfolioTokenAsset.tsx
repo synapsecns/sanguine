@@ -15,7 +15,7 @@ import { approveToken } from '@/utils/approveToken'
 import { switchNetwork } from '@wagmi/core'
 import Image from 'next/image'
 import { toast } from 'react-hot-toast'
-import { ROUTER_ADDRESS } from '@/utils/hooks/usePortfolioBalances'
+import { ROUTER_ADDRESS } from '@/utils/actions/fetchPortfolioBalances'
 import { useBridgeState } from '@/slices/bridge/hooks'
 import { fetchAndStoreSingleNetworkPortfolioBalances } from '@/slices/portfolio/hooks'
 

@@ -1,7 +1,7 @@
 import React, { useState } from 'react'
 import Image from 'next/image'
 import { CHAINS_BY_ID } from '@/constants/chains'
-import { TokenWithBalanceAndAllowance } from '@/utils/hooks/usePortfolioBalances'
+import { TokenWithBalanceAndAllowance } from '@/utils/actions/fetchPortfolioBalances'
 import { Chain } from '@/utils/types'
 import PortfolioAccordion from './PortfolioAccordion'
 import { PortfolioConnectButton } from './PortfolioConnectButton'

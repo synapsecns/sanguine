@@ -5,7 +5,7 @@ import {
   fetchAndStorePortfolioBalances,
   fetchAndStoreSingleNetworkPortfolioBalances,
 } from './hooks'
-import { NetworkTokenBalancesAndAllowances } from '@/utils/hooks/usePortfolioBalances'
+import { NetworkTokenBalancesAndAllowances } from '@/utils/actions/fetchPortfolioBalances'
 
 export enum FetchState {
   IDLE = 'idle',

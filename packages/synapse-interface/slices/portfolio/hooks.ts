@@ -8,7 +8,7 @@ import { FetchState } from './reducer'
 import {
   fetchPortfolioBalances,
   NetworkTokenBalancesAndAllowances,
-} from '@/utils/hooks/usePortfolioBalances'
+} from '@/utils/actions/fetchPortfolioBalances'
 
 export const usePortfolioState = (): RootState['portfolio'] => {
   return useAppSelector((state) => state.portfolio)
