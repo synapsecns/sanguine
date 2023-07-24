@@ -35,6 +35,8 @@ const (
 	TestError
 	// EmptyGetLogsChunk is returned when a getLogs chunk is empty.
 	EmptyGetLogsChunk
+	// FatalScribeError is for when something goes wrong with scribe
+	FatalScribeError
 )
 
 const (
@@ -99,7 +101,9 @@ func ReportScribeError(err error, chainID uint32, errorType ErrorType) {
 		logger.Errorf("Could not get head block on chain %d. Error: %v", chainID, err)
 	case TestError:
 		logger.Errorf("Test error on chain %d. Error: %v", chainID, err)
+
 	default:
+
 		logger.Errorf("Error on chain %d: %v", chainID, err)
 	}
 }

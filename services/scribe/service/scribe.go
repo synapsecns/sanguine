@@ -3,11 +3,14 @@ package service
 import (
 	"context"
 	"fmt"
+	"github.com/jpillora/backoff"
 	"github.com/synapsecns/sanguine/core/metrics"
 	"github.com/synapsecns/sanguine/services/scribe/backend"
 	"github.com/synapsecns/sanguine/services/scribe/config"
 	"github.com/synapsecns/sanguine/services/scribe/db"
+	"github.com/synapsecns/sanguine/services/scribe/logger"
 	otelMetrics "go.opentelemetry.io/otel/metric"
+	"time"
 
 	"golang.org/x/sync/errgroup"
 )
@@ -51,27 +54,52 @@ func NewScribe(eventDB db.EventDB, clients map[uint32][]backend.ScribeBackend, c
 }
 
 // Start starts the scribe. A chain indexer is spun up for each chain, and a indexer is spun up for
-// each contract on that chain. There is an indexer for livefillingall contracts and indexer for livefilling at the tip as well.
+// each contract on that chain. There is an indexer for livefilling all contracts and indexer for livefilling at the tip as well.
 //
 //nolint:cyclop
 func (s Scribe) Start(ctx context.Context) error {
 	g, groupCtx := errgroup.WithContext(ctx)
-
+	b := backoff.Backoff{
+		Factor: 2,
+		Jitter: true,
+		Min:    1 * time.Second,
+		Max:    10 * time.Second,
+	}
+	retryRate := time.Second * 0
 	for i := range s.config.Chains {
 		chainConfig := s.config.Chains[i]
 		chainID := chainConfig.ChainID
 
-		// Livefill the chains
+		// Run chain indexer for each chain
 		g.Go(func() error {
-			err := s.chainIndexers[chainID].Index(groupCtx, nil)
-			if err != nil {
-				return fmt.Errorf("could not index: %w", err)
+			// Each chain gets its own context so it can retry on its own if there is a fatal error.
+			// If the global scribe context fails, all chains will fail.
+			chainCtx, cancelChain := context.WithCancel(ctx)
+			defer cancelChain()
+			for {
+				select {
+				case <-groupCtx.Done(): // Global context cancel, destroy all chain indexers.
+					cancelChain() // redundant, but clean.
+					return fmt.Errorf("global scribe context cancel %w", groupCtx.Err())
+				case <-chainCtx.Done(): // Chain level context cancel, retry and recreate context.
+					logger.ReportScribeError(fmt.Errorf("chain level scribe context cancel"), chainID, logger.ContextCancelled)
+					chainCtx, cancelChain = context.WithCancel(ctx)
+					retryRate = b.Duration()
+					continue
+				case <-time.After(retryRate):
+					err := s.chainIndexers[chainID].Index(groupCtx, nil)
+					if err != nil {
+						logger.ReportScribeError(fmt.Errorf("error running chain indexer"), chainID, logger.FatalScribeError)
+						retryRate = b.Duration()
+						continue
+					}
+					return nil // This shouldn't really ever be hit
+				}
 			}
-			return nil
 		})
 	}
 	if err := g.Wait(); err != nil {
-		return fmt.Errorf("livefill failed: %w", err)
+		return fmt.Errorf("scribe failed: %w", err)
 	}
 
 	return nil

@@ -101,10 +101,8 @@ func NewChainIndexer(eventDB db.EventDB, client []backend.ScribeBackend, chainCo
 // If `onlyOneBlock` is true, the indexer will only index the block at `currentBlock`.
 //
 //nolint:gocognit,cyclop,unparam
-func (c *ChainIndexer) Index(ctx context.Context, onlyOneBlock *uint64) error {
-	// Create a new context for the chain so all chains don't halt when indexing is completed.
-	chainCtx := context.WithValue(ctx, chainContextKey, fmt.Sprintf("%d", c.chainID))
-	indexGroup, indexCtx := errgroup.WithContext(chainCtx)
+func (c *ChainIndexer) Index(parentContext context.Context, onlyOneBlock *uint64) error {
+	indexGroup, indexCtx := errgroup.WithContext(parentContext)
 
 	// var livefillContracts []config.ContractConfig
 	readyToLivefill := make(chan config.ContractConfig)
@@ -120,7 +118,7 @@ func (c *ChainIndexer) Index(ctx context.Context, onlyOneBlock *uint64) error {
 	}
 
 	// Gets all last indexed infos for the contracts on the current chain to determine which contracts need to be initially livefilled.
-	lastIndexedMap, err := c.eventDB.RetrieveLastIndexedMultiple(chainCtx, contractAddresses, c.chainConfig.ChainID)
+	lastIndexedMap, err := c.eventDB.RetrieveLastIndexedMultiple(parentContext, contractAddresses, c.chainConfig.ChainID)
 	if err != nil {
 		return fmt.Errorf("could not get last indexed map: %w", err)
 	}
@@ -184,7 +182,7 @@ func (c *ChainIndexer) Index(ctx context.Context, onlyOneBlock *uint64) error {
 				}
 				var endHeight *uint64
 				var err error
-				livefillLastIndexed, err := c.eventDB.RetrieveLastIndexedMultiple(chainCtx, contractAddresses, c.chainConfig.ChainID)
+				livefillLastIndexed, err := c.eventDB.RetrieveLastIndexedMultiple(parentContext, contractAddresses, c.chainConfig.ChainID)
 				if err != nil {
 					logger.ReportIndexerError(err, livefillIndexer.GetIndexerConfig(), logger.LivefillIndexerError)
 					timeout = b.Duration()
@@ -229,7 +227,7 @@ func (c *ChainIndexer) Index(ctx context.Context, onlyOneBlock *uint64) error {
 	if err := indexGroup.Wait(); err != nil {
 		return fmt.Errorf("could not index: %w", err)
 	}
-	return nil
+	return nil // This shouldn't really ever be hit.
 }
 
 // nolint:unparam

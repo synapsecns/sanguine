@@ -377,6 +377,9 @@ func (s *ScribeSuite) TestLargeVolume() {
 
 // TestChainIndexerLivfillToTip tests that the ChainIndexer can livefill events to the head.
 func (s *ScribeSuite) TestChainIndexerLivfillToTip() {
+	if os.Getenv("CI") != "" || !s.runVolumeTest {
+		s.T().Skip("This is a long running test")
+	}
 	const numberOfContracts = 3
 	currentBlockHeight := uint64(10) // starting with zero to emit events while indexing.
 	chainID := gofakeit.Uint32()

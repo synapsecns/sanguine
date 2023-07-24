@@ -148,7 +148,7 @@ func (s Store) RetrieveReceiptsInRange(ctx context.Context, receiptFilter db.Rec
 	if page < 1 {
 		page = 1
 	}
-	dbReceipts := []Receipt{}
+	var dbReceipts []Receipt
 	query := receiptFilterToQuery(receiptFilter)
 	rangeQuery := fmt.Sprintf("%s BETWEEN ? AND ?", BlockNumberFieldName)
 	dbTx := s.DB().WithContext(ctx).
