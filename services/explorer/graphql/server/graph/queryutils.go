@@ -1461,6 +1461,14 @@ func (r *queryResolver) getDateResultByChainMv(ctx context.Context, chainID *int
 	g, groupCtx := errgroup.WithContext(ctx)
 	switch *platform {
 	case model.PlatformBridge:
+		// change chainID filter to destination as thats where fees are collected.
+		if *typeArg == model.DailyStatisticTypeFee {
+			chainIDSpecifierMv = generateSingleSpecifierI32SQL(chainID, sql.ChainIDFieldName, &firstFilter, "t")
+			compositeFiltersMv = fmt.Sprintf(
+				`%s%s`,
+				timestampSpecifierMv, chainIDSpecifierMv,
+			)
+		}
 		query, err = GenerateDailyStatisticByChainBridgeSQLMv(typeArg, compositeFiltersMv)
 		if err != nil {
 			return nil, err
