@@ -87,13 +87,11 @@ export const fetchAndStoreSingleTokenBalance = createAsyncThunk(
   async ({
     token,
     routerAddress,
-    tokenAddress,
     address,
     chainId,
   }: {
     token: Token
     routerAddress: Address
-    tokenAddress: Address
     address: Address
     chainId: number
   }) => {
@@ -103,6 +101,7 @@ export const fetchAndStoreSingleTokenBalance = createAsyncThunk(
       chainId
     )
     const { balance, parsedBalance }: TokenAndBalance = data[0]
+    const tokenAddress = token.addresses[chainId] as Address
     const allowance = await getTokenAllowance(
       routerAddress,
       tokenAddress,

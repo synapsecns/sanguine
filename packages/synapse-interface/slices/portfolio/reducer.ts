@@ -5,6 +5,7 @@ import {
   fetchAndStorePortfolioBalances,
   fetchAndStoreSingleNetworkPortfolioBalances,
   fetchAndStoreSingleTokenAllowance,
+  fetchAndStoreSingleTokenBalance,
 } from './hooks'
 import {
   NetworkTokenBalancesAndAllowances,
@@ -69,6 +70,18 @@ export const portfolioSlice = createSlice({
         }
       )
       .addCase(fetchAndStoreSingleTokenAllowance.fulfilled, (state, action) => {
+        const { routerAddress, chainId, tokenAddress, allowance } =
+          action.payload
+
+        state.balancesAndAllowances[chainId].forEach(
+          (token: TokenWithBalanceAndAllowances) => {
+            if (token.tokenAddress === tokenAddress) {
+              token.allowances[routerAddress] = allowance
+            }
+          }
+        )
+      })
+      .addCase(fetchAndStoreSingleTokenBalance.fulfilled, (state, action) => {
         const { routerAddress, chainId, tokenAddress, allowance } =
           action.payload
 
