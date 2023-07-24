@@ -82,13 +82,21 @@ export const portfolioSlice = createSlice({
         )
       })
       .addCase(fetchAndStoreSingleTokenBalance.fulfilled, (state, action) => {
-        const { routerAddress, chainId, tokenAddress, allowance } =
-          action.payload
+        const {
+          routerAddress,
+          chainId,
+          tokenAddress,
+          allowance,
+          balance,
+          parsedBalance,
+        } = action.payload
 
         state.balancesAndAllowances[chainId].forEach(
           (token: TokenWithBalanceAndAllowances) => {
             if (token.tokenAddress === tokenAddress) {
               token.allowances[routerAddress] = allowance
+              token.balance = balance
+              token.parsedBalance = parsedBalance
             }
           }
         )
