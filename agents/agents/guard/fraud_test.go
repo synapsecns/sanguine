@@ -22,7 +22,7 @@ import (
 )
 
 // TODO: Add a test for exiting the report logic early when the snapshot submitter is a guard.
-func (g GuardSuite) TestReportFraudulentStateInSnapshot() {
+func (g GuardSuite) TestZ() {
 	testDone := false
 	defer func() {
 		testDone = true
@@ -613,7 +613,17 @@ func (g GuardSuite) TestReportFraudulentStateInAttestation() {
 		notaryProof,
 	)
 	Nil(g.T(), err)
+	err = g.OriginDomainClient.LightManager().UpdateAgentStatus(
+		g.GetTestContext(),
+		g.NotaryUnbondedSigner,
+		g.NotaryBondedSigner,
+		notaryStatus,
+		notaryProof,
+	)
+	Nil(g.T(), err)
 	notaryStatus, err = g.DestinationDomainClient.LightManager().GetAgentStatus(g.GetTestContext(), g.NotaryBondedSigner.Address())
+	Nil(g.T(), err)
+	notaryStatus, err = g.OriginDomainClient.LightManager().GetAgentStatus(g.GetTestContext(), g.NotaryBondedSigner.Address())
 	Nil(g.T(), err)
 
 	// Submit the snapshot with a guard then notary
@@ -647,7 +657,7 @@ func (g GuardSuite) TestReportFraudulentStateInAttestation() {
 	txContextSummit := g.TestBackendSummit.GetTxContext(g.GetTestContext(), g.SummitMetadata.OwnerPtr())
 	txContextDestination := g.TestBackendDestination.GetTxContext(g.GetTestContext(), g.LightInboxMetadataOnDestination.OwnerPtr())
 	g.Eventually(func() bool {
-		status, err := g.SummitDomainClient.BondingManager().GetAgentStatus(g.GetTestContext(), g.NotaryBondedSigner.Address())
+		status, err := g.OriginDomainClient.LightManager().GetAgentStatus(g.GetTestContext(), g.NotaryBondedSigner.Address())
 		Nil(g.T(), err)
 		if status.Flag() == uint8(4) {
 			return true
@@ -665,7 +675,37 @@ func (g GuardSuite) TestReportFraudulentStateInAttestation() {
 
 	// Verify that a report has been submitted by the Guard by checking that a Dispute is now open.
 	g.Eventually(func() bool {
-		err := g.DestinationDomainClient.LightManager().GetDispute(g.GetTestContext(), big.NewInt(0))
+		err := g.SummitDomainClient.BondingManager().GetDispute(g.GetTestContext(), big.NewInt(0))
+		if err != nil {
+			return false
+		}
+
+		return true
+	})
+
+	// Verify that a report has been submitted by the Guard by checking that a Dispute is now open.
+	g.Eventually(func() bool {
+		err := g.SummitDomainClient.BondingManager().GetDispute(g.GetTestContext(), big.NewInt(1))
+		if err != nil {
+			return false
+		}
+
+		return true
+	})
+
+	// Verify that a report has been submitted by the Guard by checking that a Dispute is now open.
+	g.Eventually(func() bool {
+		err := g.SummitDomainClient.BondingManager().GetDispute(g.GetTestContext(), big.NewInt(2))
+		if err != nil {
+			return false
+		}
+
+		return true
+	})
+
+	// Verify that a report has been submitted by the Guard by checking that a Dispute is now open.
+	g.Eventually(func() bool {
+		err := g.SummitDomainClient.BondingManager().GetDispute(g.GetTestContext(), big.NewInt(3))
 		if err != nil {
 			return false
 		}

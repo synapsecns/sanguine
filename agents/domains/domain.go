@@ -99,6 +99,9 @@ type BondingManagerContract interface {
 	GetProof(ctx context.Context, bondedAgentSigner signer.Signer) ([][32]byte, error)
 	// DisputeStatus gets the dispute status for the given agent.
 	DisputeStatus(ctx context.Context, address common.Address) (disputeStatus DisputeStatus, err error)
+	// GetDispute gets the dispute for a given dispute index.
+	// TODO: Add more returned values here as needed.
+	GetDispute(ctx context.Context, index *big.Int) (err error)
 }
 
 // DestinationContract contains the interface for the destination.

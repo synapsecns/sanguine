@@ -14,6 +14,7 @@ import (
 	"github.com/synapsecns/sanguine/ethergo/chain"
 	"github.com/synapsecns/sanguine/ethergo/signer/nonce"
 	"github.com/synapsecns/sanguine/ethergo/signer/signer"
+	"math/big"
 )
 
 // NewBondingManagerContract returns a bound bonding manager contract.
@@ -87,4 +88,13 @@ func (a bondingManagerContract) DisputeStatus(ctx context.Context, address commo
 		FraudProver: rawDispute.FraudProver,
 		DisputePtr:  rawDispute.DisputePtr,
 	}, nil
+}
+
+func (a bondingManagerContract) GetDispute(ctx context.Context, index *big.Int) (err error) {
+	_, err = a.contract.GetDispute(&bind.CallOpts{Context: ctx}, index)
+	if err != nil {
+		return fmt.Errorf("could not retrieve dispute: %w", err)
+	}
+
+	return nil
 }
