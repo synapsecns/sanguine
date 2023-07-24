@@ -87,6 +87,7 @@ import { Address, zeroAddress } from 'viem'
 import { stringToBigInt } from '@/utils/bigint/format'
 import { Warning } from '@/components/Warning'
 import { useAppDispatch } from '@/store/hooks'
+import { sortTokensByBalanceDescending } from '@/utils/actions/fetchPortfolioBalances'
 import {
   fetchAndStorePortfolioBalances,
   fetchAndStoreSingleNetworkPortfolioBalances,
@@ -217,13 +218,9 @@ const StateManagedBridge = () => {
 
     dispatch(setSupportedToTokens(sortToTokens(bridgeableTokens)))
     dispatch(setToToken(bridgeableToken))
-
-    sortByTokenBalance(fromTokens, fromChainId, address).then((res) => {
-      const t = res.map((tokenAndBalances) => tokenAndBalances.token)
-      dispatch(setSupportedFromTokenBalances(res))
-      dispatch(setSupportedFromTokens(t))
-    })
-
+    dispatch(
+      setSupportedFromTokenBalances(portfolioBalances[fromChainId] ?? {})
+    )
     dispatch(setFromChainIds(fromChainIds))
     dispatch(setToChainIds(bridgeableChainIds))
 
@@ -244,7 +241,15 @@ const StateManagedBridge = () => {
       dispatch(setBridgeQuote(EMPTY_BRIDGE_QUOTE_ZERO))
       dispatch(setIsLoading(false))
     }
-  }, [fromChainId, toChainId, fromToken, toToken, fromValue, address])
+  }, [
+    fromChainId,
+    toChainId,
+    fromToken,
+    toToken,
+    fromValue,
+    address,
+    portfolioBalances,
+  ])
 
   // don't like this, rewrite: could be custom hook
   useEffect(() => {
