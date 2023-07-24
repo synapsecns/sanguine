@@ -168,3 +168,19 @@ func (a lightInboxContract) VerifyStateWithAttestation(ctx context.Context, sign
 	transactOpts.GasLimit = 5000000
 	return a.contract.VerifyStateWithAttestation(transactOpts, big.NewInt(stateIndex), snapPayload, attPayload, attSignature)
 }
+
+func (a lightInboxContract) VerifyReceipt(ctx context.Context, signer signer.Signer, rcptPayload []byte, rcptSignature []byte) (tx *ethTypes.Transaction, err error) {
+	transactor, err := signer.GetTransactor(ctx, a.client.GetBigChainID())
+	if err != nil {
+		return nil, fmt.Errorf("could not sign tx: %w", err)
+	}
+
+	transactOpts, err := a.nonceManager.NewKeyedTransactor(transactor)
+	if err != nil {
+		return nil, fmt.Errorf("could not create tx: %w", err)
+	}
+
+	transactOpts.Context = ctx
+	transactOpts.GasLimit = 5000000
+	return a.contract.VerifyReceipt(transactOpts, rcptPayload, rcptSignature)
+}

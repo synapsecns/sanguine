@@ -636,3 +636,189 @@ func (g GuardSuite) TestReportFraudulentStateInAttestation() {
 		return true
 	})
 }
+
+func (g GuardSuite) TestInvalidReceipt() {
+	testDone := false
+	defer func() {
+		testDone = true
+	}()
+
+	testConfig := config.AgentConfig{
+		Domains: map[string]config.DomainConfig{
+			"origin_client":      g.OriginDomainClient.Config(),
+			"destination_client": g.DestinationDomainClient.Config(),
+			"summit_client":      g.SummitDomainClient.Config(),
+		},
+		DomainID:       uint32(0),
+		SummitDomainID: g.SummitDomainClient.Config().DomainID,
+		BondedSigner: signerConfig.SignerConfig{
+			Type: signerConfig.FileType.String(),
+			File: filet.TmpFile(g.T(), "", g.GuardBondedWallet.PrivateKeyHex()).Name(),
+		},
+		UnbondedSigner: signerConfig.SignerConfig{
+			Type: signerConfig.FileType.String(),
+			File: filet.TmpFile(g.T(), "", g.GuardUnbondedWallet.PrivateKeyHex()).Name(),
+		},
+		RefreshIntervalSeconds: 5,
+	}
+
+	omniRPCClient := omniClient.NewOmnirpcClient(g.TestOmniRPC, g.GuardMetrics, omniClient.WithCaptureReqRes())
+
+	// Scribe setup.
+	originClient, err := backfill.DialBackend(g.GetTestContext(), g.TestBackendOrigin.RPCAddress(), g.ScribeMetrics)
+	Nil(g.T(), err)
+	destinationClient, err := backfill.DialBackend(g.GetTestContext(), g.TestBackendDestination.RPCAddress(), g.ScribeMetrics)
+	Nil(g.T(), err)
+	summitClient, err := backfill.DialBackend(g.GetTestContext(), g.TestBackendSummit.RPCAddress(), g.ScribeMetrics)
+	Nil(g.T(), err)
+
+	clients := map[uint32][]backfill.ScribeBackend{
+		uint32(g.TestBackendOrigin.GetChainID()):      {originClient, originClient},
+		uint32(g.TestBackendDestination.GetChainID()): {destinationClient, destinationClient},
+		uint32(g.TestBackendSummit.GetChainID()):      {summitClient, summitClient},
+	}
+	originConfig := scribeConfig.ContractConfig{
+		Address:    g.OriginContract.Address().String(),
+		StartBlock: 0,
+	}
+	originChainConfig := scribeConfig.ChainConfig{
+		ChainID:               uint32(g.TestBackendOrigin.GetChainID()),
+		BlockTimeChunkSize:    1,
+		ContractSubChunkSize:  1,
+		RequiredConfirmations: 0,
+		Contracts:             []scribeConfig.ContractConfig{originConfig},
+	}
+	destinationConfig := scribeConfig.ContractConfig{
+		Address:    g.LightInboxOnDestination.Address().String(),
+		StartBlock: 0,
+	}
+	destinationChainConfig := scribeConfig.ChainConfig{
+		ChainID:               uint32(g.TestBackendDestination.GetChainID()),
+		BlockTimeChunkSize:    1,
+		ContractSubChunkSize:  1,
+		RequiredConfirmations: 0,
+		Contracts:             []scribeConfig.ContractConfig{destinationConfig},
+	}
+	summitConfig := scribeConfig.ContractConfig{
+		Address:    g.InboxOnSummit.Address().String(),
+		StartBlock: 0,
+	}
+	summitChainConfig := scribeConfig.ChainConfig{
+		ChainID:               uint32(g.TestBackendSummit.GetChainID()),
+		BlockTimeChunkSize:    1,
+		ContractSubChunkSize:  1,
+		RequiredConfirmations: 0,
+		Contracts:             []scribeConfig.ContractConfig{summitConfig},
+	}
+	scribeConfig := scribeConfig.Config{
+		Chains: []scribeConfig.ChainConfig{originChainConfig, destinationChainConfig, summitChainConfig},
+	}
+
+	scribe, err := node.NewScribe(g.ScribeTestDB, clients, scribeConfig, g.ScribeMetrics)
+	Nil(g.T(), err)
+	scribeClient := client.NewEmbeddedScribe("sqlite", g.DBPath, g.ScribeMetrics)
+
+	go func() {
+		scribeErr := scribeClient.Start(g.GetTestContext())
+		if !testDone {
+			Nil(g.T(), scribeErr)
+		}
+	}()
+	go func() {
+		scribeError := scribe.Start(g.GetTestContext())
+		if !testDone {
+			Nil(g.T(), scribeError)
+		}
+	}()
+
+	guard, err := guard.NewGuard(g.GetTestContext(), testConfig, omniRPCClient, scribeClient.ScribeClient, g.GuardTestDB, g.GuardMetrics)
+	Nil(g.T(), err)
+
+	go func() {
+		guardErr := guard.Start(g.GetTestContext())
+		if !testDone {
+			Nil(g.T(), guardErr)
+		}
+	}()
+
+	// Submit the snapshot with a guard then notary
+	gasData := types.NewGasData(gofakeit.Uint16(), gofakeit.Uint16(), gofakeit.Uint16(), gofakeit.Uint16(), gofakeit.Uint16(), gofakeit.Uint16())
+	fraudulentState := types.NewState(
+		common.BigToHash(big.NewInt(gofakeit.Int64())),
+		g.OriginDomainClient.Config().DomainID,
+		1,
+		big.NewInt(int64(gofakeit.Int32())),
+		big.NewInt(int64(gofakeit.Int32())),
+		gasData,
+	)
+	fraudulentSnapshot := types.NewSnapshot([]types.State{fraudulentState})
+	guardSnapshotSignature, encodedSnapshot, _, err := fraudulentSnapshot.SignSnapshot(g.GetTestContext(), g.GuardBondedSigner)
+	Nil(g.T(), err)
+	tx, err := g.SummitDomainClient.Inbox().SubmitSnapshotCtx(g.GetTestContext(), g.GuardUnbondedSigner, encodedSnapshot, guardSnapshotSignature)
+	Nil(g.T(), err)
+	NotNil(g.T(), tx)
+	g.TestBackendSummit.WaitForConfirmation(g.GetTestContext(), tx)
+
+	notarySnapshotSignature, encodedSnapshot, _, err := fraudulentSnapshot.SignSnapshot(g.GetTestContext(), g.NotaryBondedSigner)
+	Nil(g.T(), err)
+	tx, err = g.SummitDomainClient.Inbox().SubmitSnapshotCtx(g.GetTestContext(), g.NotaryUnbondedSigner, encodedSnapshot, notarySnapshotSignature)
+	Nil(g.T(), err)
+	NotNil(g.T(), tx)
+	g.TestBackendSummit.WaitForConfirmation(g.GetTestContext(), tx)
+
+	notaryAttestation, err := g.SummitDomainClient.Summit().GetAttestation(g.GetTestContext(), 1)
+	Nil(g.T(), err)
+
+	attSignature, attEncoded, _, err := notaryAttestation.Attestation().SignAttestation(g.GetTestContext(), g.NotaryBondedSigner, true)
+	Nil(g.T(), err)
+
+	// Submit the attestation
+	txContextDest := g.TestBackendDestination.GetTxContext(g.GetTestContext(), g.DestinationContractMetadata.OwnerPtr())
+	tx, err = g.DestinationDomainClient.LightInbox().SubmitAttestation(
+		txContextDest.TransactOpts,
+		attEncoded,
+		attSignature,
+		notaryAttestation.AgentRoot(),
+		notaryAttestation.SnapGas(),
+	)
+	Nil(g.T(), err)
+	NotNil(g.T(), tx)
+	g.TestBackendDestination.WaitForConfirmation(g.GetTestContext(), tx)
+
+	// Build a receipt
+	baseMessage := types.NewBaseMessage(
+		common.BigToHash(big.NewInt(gofakeit.Int64())),
+		common.BigToHash(big.NewInt(gofakeit.Int64())),
+		types.NewTips(big.NewInt(gofakeit.Int64()), big.NewInt(gofakeit.Int64()), big.NewInt(gofakeit.Int64()), big.NewInt(gofakeit.Int64())),
+		types.NewRequest(gofakeit.Uint32(), gofakeit.Uint64(), big.NewInt(gofakeit.Int64())),
+		[]byte{gofakeit.Uint8()},
+	)
+	header := types.NewHeader(types.MessageFlagBase, g.OriginDomainClient.Config().DomainID, 1, g.DestinationDomainClient.Config().DomainID, 1)
+	message, err := types.NewMessageFromBaseMessage(header, baseMessage)
+	Nil(g.T(), err)
+
+	messageHash, err := message.ToLeaf()
+	Nil(g.T(), err)
+
+	receipt := types.NewReceipt(
+		g.OriginDomainClient.Config().DomainID,
+		g.DestinationDomainClient.Config().DomainID,
+		messageHash,
+		notaryAttestation.Attestation().SnapshotRoot(),
+		0,
+		g.NotaryBondedWallet.Address(),
+		common.BigToAddress(big.NewInt(gofakeit.Int64())),
+		common.BigToAddress(big.NewInt(gofakeit.Int64())),
+	)
+
+	rcptSignature, rcptPayload, _, err := receipt.SignReceipt(g.GetTestContext(), g.NotaryBondedSigner, false)
+	Nil(g.T(), err)
+
+	// Submit the receipt
+	headerHash, err := header.Leaf()
+	Nil(g.T(), err)
+	tx, err = g.SummitDomainClient.Inbox().SubmitReceipt(g.GetTestContext(), g.NotaryUnbondedSigner, rcptPayload, rcptSignature, big.NewInt(0), headerHash, messageHash)
+	Nil(g.T(), err)
+	NotNil(g.T(), tx)
+	g.TestBackendSummit.WaitForConfirmation(g.GetTestContext(), tx)
+}

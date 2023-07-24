@@ -3,10 +3,11 @@ package evm
 import (
 	"context"
 	"fmt"
+	"math/big"
+
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	ethTypes "github.com/ethereum/go-ethereum/core/types"
 	"github.com/synapsecns/sanguine/ethergo/chain"
-	"math/big"
 
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/synapsecns/sanguine/agents/contracts/destination"
@@ -92,4 +93,8 @@ func (a destinationContract) MessageStatus(ctx context.Context, message types.Me
 	fmt.Println("status: ", status)
 
 	return status, nil
+}
+
+func (a destinationContract) IsValidReceipt(ctx context.Context, rcptPayload []byte) (bool, error) {
+	return a.contract.IsValidReceipt(&bind.CallOpts{Context: ctx}, rcptPayload)
 }

@@ -189,3 +189,80 @@ func (a inboxContract) SubmitStateReportWithAttestation(ctx context.Context, sig
 
 	return tx, nil
 }
+
+func (a inboxContract) SubmitReceipt(ctx context.Context, signer signer.Signer, rcptPayload []byte, rcptSignature signer.Signature, paddedTips *big.Int, headerHash [32]byte, bodyHash [32]byte) (tx *ethTypes.Transaction, err error) {
+	transactor, err := signer.GetTransactor(ctx, a.client.GetBigChainID())
+	if err != nil {
+		return nil, fmt.Errorf("could not sign tx: %w", err)
+	}
+
+	transactOpts, err := a.nonceManager.NewKeyedTransactor(transactor)
+	if err != nil {
+		return nil, fmt.Errorf("could not create tx: %w", err)
+	}
+
+	transactOpts.Context = ctx
+
+	transactOpts.GasLimit = 5000000
+
+	rawSig, err := types.EncodeSignature(rcptSignature)
+	if err != nil {
+		return nil, fmt.Errorf("could not encode signature: %w", err)
+	}
+
+	// TODO: Is there a way to get a return value from a contractTransactor call?
+	tx, err = a.contract.SubmitReceipt(transactOpts, rcptPayload, rawSig, paddedTips, headerHash, bodyHash)
+	if err != nil {
+		// TODO: Why is this done? And if it is necessary, we should functionalize it.
+		if strings.Contains(err.Error(), "nonce too low") {
+			a.nonceManager.ClearNonce(signer.Address())
+		}
+		return nil, fmt.Errorf("could not submit state report: %w", err)
+	}
+
+	return tx, nil
+}
+
+func (a inboxContract) VerifyReceipt(ctx context.Context, signer signer.Signer, rcptPayload []byte, rcptSignature []byte) (tx *ethTypes.Transaction, err error) {
+	transactor, err := signer.GetTransactor(ctx, a.client.GetBigChainID())
+	if err != nil {
+		return nil, fmt.Errorf("could not sign tx: %w", err)
+	}
+
+	transactOpts, err := a.nonceManager.NewKeyedTransactor(transactor)
+	if err != nil {
+		return nil, fmt.Errorf("could not create tx: %w", err)
+	}
+
+	transactOpts.Context = ctx
+	transactOpts.GasLimit = 5000000
+	return a.contract.VerifyReceipt(transactOpts, rcptPayload, rcptSignature)
+}
+
+func (a inboxContract) SubmitReceiptReport(ctx context.Context, signer signer.Signer, rcptPayload []byte, rcptSignature []byte, rrSignature []byte) (tx *ethTypes.Transaction, err error) {
+	transactor, err := signer.GetTransactor(ctx, a.client.GetBigChainID())
+	if err != nil {
+		return nil, fmt.Errorf("could not sign tx: %w", err)
+	}
+
+	transactOpts, err := a.nonceManager.NewKeyedTransactor(transactor)
+	if err != nil {
+		return nil, fmt.Errorf("could not create tx: %w", err)
+	}
+
+	transactOpts.Context = ctx
+
+	transactOpts.GasLimit = 5000000
+
+	// TODO: Is there a way to get a return value from a contractTransactor call?
+	tx, err = a.contract.SubmitReceiptReport(transactOpts, rcptPayload, rcptSignature, rrSignature)
+	if err != nil {
+		// TODO: Why is this done? And if it is necessary, we should functionalize it.
+		if strings.Contains(err.Error(), "nonce too low") {
+			a.nonceManager.ClearNonce(signer.Address())
+		}
+		return nil, fmt.Errorf("could not submit state report: %w", err)
+	}
+
+	return tx, nil
+}

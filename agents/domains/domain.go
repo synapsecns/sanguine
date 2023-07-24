@@ -89,6 +89,12 @@ type InboxContract interface {
 	VerifyStateWithAttestation(ctx context.Context, signer signer.Signer, stateIndex int64, snapPayload []byte, attPayload []byte, attSignature []byte) (tx *ethTypes.Transaction, err error)
 	// SubmitStateReportWithAttestation submits a state report corresponding to an attesation for an invalid state.
 	SubmitStateReportWithAttestation(ctx context.Context, signer signer.Signer, stateIndex int64, signature signer.Signature, snapPayload, attPayload, attSignature []byte) (tx *ethTypes.Transaction, err error)
+	// SubmitReceipt submits a receipt to the inbox.
+	SubmitReceipt(ctx context.Context, signer signer.Signer, rcptPayload []byte, rcptSignature signer.Signature, paddedTips *big.Int, headerHash [32]byte, bodyHash [32]byte) (tx *ethTypes.Transaction, err error)
+	// VerifyReceipt verifies a receipt on the inbox.
+	VerifyReceipt(ctx context.Context, signer signer.Signer, rcptPayload []byte, rcptSignature []byte) (tx *ethTypes.Transaction, err error)
+	// SubmitReceiptReport submits a receipt report to the inbox.
+	SubmitReceiptReport(ctx context.Context, signer signer.Signer, rcptPayload []byte, rcptSignature []byte, rrSignature []byte) (tx *ethTypes.Transaction, err error)
 }
 
 // BondingManagerContract contains the interface for the bonding manager.
@@ -116,6 +122,8 @@ type DestinationContract interface {
 	GetAttestationNonce(ctx context.Context, snapRoot [32]byte) (uint32, error)
 	// MessageStatus takes a message and returns whether it has been executed or not. 0: None, 1: Failed, 2: Success.
 	MessageStatus(ctx context.Context, message types.Message) (uint8, error)
+	// IsValidReceipt checks if the given receipt is valid on the destination
+	IsValidReceipt(ctx context.Context, rcptPayload []byte) (bool, error)
 }
 
 // LightInboxContract contains the interface for the light inbox.
@@ -136,6 +144,8 @@ type LightInboxContract interface {
 	SubmitAttestationReport(ctx context.Context, signer signer.Signer, attestation, arSignature, attSignature []byte) (tx *ethTypes.Transaction, err error)
 	// VerifyStateWithAttestation verifies a state with attestation.
 	VerifyStateWithAttestation(ctx context.Context, signer signer.Signer, stateIndex int64, snapPayload []byte, attPayload []byte, attSignature []byte) (tx *ethTypes.Transaction, err error)
+	// VerifyReceipt verifies a receipt on the inbox.
+	VerifyReceipt(ctx context.Context, signer signer.Signer, rcptPayload []byte, rcptSignature []byte) (tx *ethTypes.Transaction, err error)
 }
 
 // LightManagerContract contains the interface for the light manager.

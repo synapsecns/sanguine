@@ -436,21 +436,50 @@ func (g Guard) handleAttestation(ctx context.Context, log ethTypes.Log, chainID 
 	return nil
 }
 
-// func (g Guard) submitStateReports(ctx context.Context, stateIndex int64, snapshotPaylod, snapSignature []byte) error {
-// 	// Call on the Summit's `BondingManager` contract.
-// 	signature, err := g.bondedSigner.SignMessage(ctx, snapshotPaylod, true)
-// 	if err != nil {
-// 		return fmt.Errorf("could not sign message: %w", err)
-// 	}
+func (g Guard) handleReceipt(ctx context.Context, log ethTypes.Log, chainID uint32) error {
+	fraudReceipt, err := g.inboxParser.ParseReceiptAccepted(log)
+	if err != nil {
+		return fmt.Errorf("could not parse receipt accepted: %w", err)
+	}
 
-// 	// TODO: What is signature here?
-// 	_, err = g.domains[g.summitDomainID].Inbox().SubmitStateReportWithSnapshot(ctx, g.unbondedSigner, stateIndex, signature, snapshotPaylod, snapSignature)
-// 	if err != nil {
-// 		return fmt.Errorf("could not submit state report with snapshot: %w", err)
-// 	}
+	isValid, err := g.domains[g.summitDomainID].Destination().IsValidReceipt(ctx, fraudReceipt.RcptPayload)
+	if err != nil {
+		return fmt.Errorf("could not check validity of attestation: %w", err)
+	}
 
-// 	return nil
-// }
+	if !isValid {
+		receipt, err := types.DecodeReceipt(fraudReceipt.RcptPayload)
+		if err != nil {
+			return fmt.Errorf("could not decode receipt: %w", err)
+		}
+		// TODO: merge this logic once solidity interfaces are de-duped
+		if receipt.Destination() == g.summitDomainID {
+			_, err = g.domains[receipt.Destination()].Inbox().VerifyReceipt(ctx, g.unbondedSigner, fraudReceipt.RcptPayload, fraudReceipt.RcptSignature)
+			if err != nil {
+				return fmt.Errorf("could not verify receipt: %w", err)
+			}
+		} else {
+			_, err = g.domains[receipt.Destination()].LightInbox().VerifyReceipt(ctx, g.unbondedSigner, fraudReceipt.RcptPayload, fraudReceipt.RcptSignature)
+			if err != nil {
+				return fmt.Errorf("could not verify receipt: %w", err)
+			}
+			rrReceipt, _, _, err := receipt.SignReceipt(ctx, g.bondedSigner, false)
+			if err != nil {
+				return fmt.Errorf("could not sign receipt: %w", err)
+			}
+			rrReceiptBytes, err := types.EncodeSignature(rrReceipt)
+			if err != nil {
+				return fmt.Errorf("could not encode receipt: %w", err)
+			}
+			_, err = g.domains[g.summitDomainID].Inbox().SubmitReceiptReport(ctx, g.unbondedSigner, fraudReceipt.RcptPayload, fraudReceipt.RcptSignature, rrReceiptBytes)
+			if err != nil {
+				return fmt.Errorf("could not submit receipt report: %w", err)
+			}
+		}
+	}
+
+	return nil
+}
 
 func (g Guard) handleLog(ctx context.Context, log ethTypes.Log, chainID uint32) error {
 	switch {
@@ -458,6 +487,8 @@ func (g Guard) handleLog(ctx context.Context, log ethTypes.Log, chainID uint32) 
 		return g.handleSnapshot(ctx, log, chainID)
 	case g.isAttestationAcceptedEvent(log):
 		return g.handleAttestation(ctx, log, chainID)
+	case g.isReceiptAcceptedEvent(log):
+		return g.handleReceipt(ctx, log, chainID)
 	}
 	return nil
 }
@@ -478,6 +509,15 @@ func (g Guard) isAttestationAcceptedEvent(log ethTypes.Log) bool {
 
 	lightManagerEvent, ok := g.lightInboxParser.EventType(log)
 	return ok && lightManagerEvent == lightinbox.AttestationAcceptedEvent
+}
+
+func (g Guard) isReceiptAcceptedEvent(log ethTypes.Log) bool {
+	if g.inboxParser == nil {
+		return false
+	}
+
+	inboxEvent, ok := g.inboxParser.EventType(log)
+	return ok && inboxEvent == inbox.ReceiptAcceptedEvent
 }
 
 //nolint:cyclop
