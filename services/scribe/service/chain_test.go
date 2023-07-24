@@ -162,10 +162,13 @@ func (s *ScribeSuite) TestChainIndexer() {
 	Equal(s.T(), sum, uint64(len(receipts)))
 }
 
-// TestChainIndexerLivefill tests a ChainIndexer's ablity to livefill and handle passing events from index to livefill.
+// TestChainIndexerLivefill tests a ChainIndexer's ability to livefill and handle passing events from index to livefill.
 //
 // nolint:cyclop
 func (s *ScribeSuite) TestChainIndexerLivefill() {
+	if os.Getenv("CI") != "" || !s.runVolumeTest {
+		s.T().Skip("This is a long running test")
+	}
 	const numberOfContracts = 5
 	currentBlockHeight := uint64(0) // starting with zero to emit events while indexing.
 	chainID := gofakeit.Uint32()
