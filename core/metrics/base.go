@@ -2,6 +2,9 @@ package metrics
 
 import (
 	"context"
+	"go.opentelemetry.io/otel/sdk/metric"
+	"go.opentelemetry.io/otel/sdk/metric/aggregation"
+	"go.opentelemetry.io/otel/sdk/metric/metricdata"
 	"net/http"
 	"os"
 	"strconv"
@@ -16,7 +19,6 @@ import (
 	"go.opentelemetry.io/contrib/propagators/b3"
 	"go.opentelemetry.io/otel"
 	"go.opentelemetry.io/otel/attribute"
-	stdout "go.opentelemetry.io/otel/exporters/stdout/stdoutmetric"
 	"go.opentelemetry.io/otel/propagation"
 	"go.opentelemetry.io/otel/sdk/resource"
 	tracesdk "go.opentelemetry.io/otel/sdk/trace"
@@ -123,10 +125,8 @@ func newBaseHandlerWithTracerProvider(buildInfo config.BuildInfo, tracerProvider
 	}
 
 	// TODO set up exporting the way we need here
-	metricExporter, err := stdout.New()
-	if err != nil {
-		return nil
-	}
+	metricExporter := noOpExporter{}
+
 	mp, err := NewOtelMeter(buildInfo.Name(), time.Duration(interval)*time.Second, metricExporter)
 	if err != nil {
 		return nil
@@ -142,3 +142,28 @@ func newBaseHandlerWithTracerProvider(buildInfo config.BuildInfo, tracerProvider
 }
 
 var _ Handler = &baseHandler{}
+
+type noOpExporter struct {
+}
+
+func (n noOpExporter) Temporality(kind metric.InstrumentKind) metricdata.Temporality {
+	return metric.DefaultTemporalitySelector(kind)
+}
+
+func (n noOpExporter) Aggregation(kind metric.InstrumentKind) aggregation.Aggregation {
+	return metric.DefaultAggregationSelector(kind)
+}
+
+func (n noOpExporter) Export(ctx context.Context, metrics *metricdata.ResourceMetrics) error {
+	return nil
+}
+
+func (n noOpExporter) ForceFlush(ctx context.Context) error {
+	return nil
+}
+
+func (n noOpExporter) Shutdown(ctx context.Context) error {
+	return nil
+}
+
+var _ metric.Exporter = &noOpExporter{}
