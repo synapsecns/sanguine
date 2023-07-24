@@ -376,6 +376,8 @@ func (s *ScribeSuite) TestLargeVolume() {
 }
 
 // TestChainIndexerLivfillToTip tests that the ChainIndexer can livefill events to the head.
+//
+// nolint:cyclop
 func (s *ScribeSuite) TestChainIndexerLivfillToTip() {
 	if os.Getenv("CI") != "" || !s.runVolumeTest {
 		s.T().Skip("This is a long running test")

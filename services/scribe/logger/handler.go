@@ -35,7 +35,7 @@ const (
 	TestError
 	// EmptyGetLogsChunk is returned when a getLogs chunk is empty.
 	EmptyGetLogsChunk
-	// FatalScribeError is for when something goes wrong with scribe
+	// FatalScribeError is for when something goes wrong with scribe.
 	FatalScribeError
 )
 

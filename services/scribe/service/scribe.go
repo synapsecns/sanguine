@@ -93,6 +93,7 @@ func (s Scribe) Start(ctx context.Context) error {
 						retryRate = b.Duration()
 						continue
 					}
+					cancelChain()
 					return nil // This shouldn't really ever be hit
 				}
 			}
