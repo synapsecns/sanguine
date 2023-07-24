@@ -78,10 +78,11 @@ func (g *APISuite) SetupTest() {
 
 	go func() {
 		Nil(g.T(), api.Start(g.GetSuiteContext(), api.Config{
-			Port:       uint16(port),
-			Database:   "sqlite",
-			Path:       g.dbPath,
-			OmniRPCURL: "https://rpc.omnirpc.io/confirmations/1/rpc",
+			Port:           uint16(port),
+			Database:       "sqlite",
+			Path:           g.dbPath,
+			OmniRPCURL:     "https://rpc.omnirpc.io/confirmations/1/rpc",
+			SkipMigrations: true,
 		}, g.metrics))
 	}()
 
