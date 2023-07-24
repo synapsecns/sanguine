@@ -542,3 +542,58 @@ func DecodeAgentStatus(toDecode []byte) (AgentStatus, error) {
 		index:  index,
 	}, nil
 }
+
+// EncodeReceipt encodes an receipt.
+func EncodeReceipt(receipt Receipt) ([]byte, error) {
+	b := make([]byte, 0)
+	originBytes := make([]byte, uint32Len)
+	binary.BigEndian.PutUint32(originBytes, receipt.Origin())
+
+	destBytes := make([]byte, uint32Len)
+	binary.BigEndian.PutUint32(destBytes, receipt.Destination())
+
+	messageHashBytes := receipt.MessageHash()
+	snapshotRootBytes := receipt.MessageHash()
+
+	b = append(b, originBytes...)
+	b = append(b, destBytes...)
+	b = append(b, messageHashBytes[:]...)
+	b = append(b, snapshotRootBytes[:]...)
+	b = append(b, []byte{receipt.StateIndex()}...)
+	b = append(b, receipt.AttestationNotary().Bytes()...)
+	b = append(b, receipt.FirstExecutor().Bytes()...)
+	b = append(b, receipt.FinalExecutor().Bytes()...)
+
+	return b, nil
+}
+
+// DecodeReceipt decodes an receipt.
+func DecodeReceipt(toDecode []byte) (Receipt, error) {
+	if len(toDecode) != receiptSize {
+		return nil, fmt.Errorf("invalid receipt length, expected %d, got %d", receiptSize, len(toDecode))
+	}
+
+	origin := binary.BigEndian.Uint32(toDecode[receiptOffsetOrigin:receiptOffsetDestination])
+	destination := binary.BigEndian.Uint32(toDecode[receiptOffsetDestination:receiptOffsetMessageHash])
+	messageHash := toDecode[receiptOffsetMessageHash:receiptOffsetSnapshotRoot]
+	snapshotRoot := toDecode[receiptOffsetSnapshotRoot:receiptOffsetStateIndex]
+	stateIndex := uint8(toDecode[receiptOffsetStateIndex:receiptOffsetAttNotary][0])
+	attestationNotary := toDecode[receiptOffsetAttNotary:receiptOffsetFirstExecutor]
+	firstExecutor := toDecode[receiptOffsetFirstExecutor:receiptOffsetFinalExecutor]
+	finalExecutor := toDecode[receiptOffsetFinalExecutor:receiptSize]
+
+	var messageHashB32, snapshotRootB32 [32]byte
+	copy(messageHashB32[:], messageHash)
+	copy(snapshotRootB32[:], snapshotRoot)
+
+	return receipt{
+		origin:            origin,
+		destination:       destination,
+		messageHash:       messageHashB32,
+		snapshotRoot:      snapshotRootB32,
+		stateIndex:        stateIndex,
+		attestationNotary: common.BytesToAddress(attestationNotary),
+		firstExecutor:     common.BytesToAddress(firstExecutor),
+		finalExecutor:     common.BytesToAddress(finalExecutor),
+	}, nil
+}
