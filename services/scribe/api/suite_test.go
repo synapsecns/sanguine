@@ -66,6 +66,7 @@ func (g *APISuite) TearDownSuite() {
 func (g *APISuite) SetupTest() {
 	g.TestSuite.SetupTest()
 	g.dbPath = filet.TmpDir(g.T(), "")
+	g.SetTestTimeout(time.Minute * 3)
 
 	sqliteStore, err := sqlite.NewSqliteStore(g.GetTestContext(), g.dbPath, g.metrics, false)
 	Nil(g.T(), err)
@@ -100,8 +101,6 @@ func (g *APISuite) SetupTest() {
 	g.NoError(err)
 
 	g.grpcClient = pbscribe.NewScribeServiceClient(rawGrpcClient)
-
-	g.SetTestTimeout(time.Minute * 3)
 
 	// var request *http.Request
 	g.Eventually(func() bool {

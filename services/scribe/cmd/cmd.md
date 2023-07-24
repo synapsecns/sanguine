@@ -112,8 +112,8 @@ The Scribe indexer is composed of three components
 specified livefill block range are put into individual indexers (backfill). All other contracts are collected into a single indexer (livefill).
 4. A contract in an individual indexer (backfill) reaches the livefill threshold, it is passed into a channel where it will be picked up by the go routine running the
 indexer for the livefill contracts.
-5. While contracts are being livefilled, there is another indexer with all inputted chains. This indexer is used to livefill the unconfirmed range at the chain tip. This range is set by the config
-and stores data in seperate tables than the other indexers. This table has stale rows (old rows) deleted every few hours (set in config).
+5. While contracts are being livefilled, there is another indexer with all contracts listed on the given chain. This indexer is used to livefill the unconfirmed range at the chain tip. This range is set by the config
+and stores data in separate tables than the other indexers. This table has stale rows (old rows) deleted every few hours (set in config).
 
 
 ### Indexer level flow
