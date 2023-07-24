@@ -21,15 +21,22 @@ import { BridgeState } from '@/slices/bridge/reducer'
 export const Portfolio = () => {
   const { fromChainId, bridgeTxHashes }: BridgeState = useBridgeState()
   const { activeTab }: PortfolioState = usePortfolioState()
+  const { chain } = useNetwork()
   const { address } = useAccount({
-    async onConnect() {
-      await dispatch(setActiveTab(PortfolioTabs.PORTFOLIO))
-      await dispatch(setFromChainId(chain.id))
-      await dispatch(fetchAndStorePortfolioBalances(address))
+    onConnect() {
+      dispatch(setActiveTab(PortfolioTabs.PORTFOLIO))
     },
   })
-  const { chain } = useNetwork()
   const dispatch = useAppDispatch()
+
+  useEffect(() => {
+    ;(async () => {
+      if (address && chain?.id) {
+        await dispatch(setFromChainId(chain.id))
+        await dispatch(fetchAndStorePortfolioBalances(address))
+      }
+    })()
+  }, [chain, address])
 
   const {
     balancesAndAllowances: portfolioData,

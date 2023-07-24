@@ -469,13 +469,6 @@ const StateManagedBridge = () => {
         toast.dismiss(pendingPopup)
 
         setTimeout(async () => {
-          // await dispatch(
-          //   fetchAndStoreSingleNetworkPortfolioBalances({
-          //     address: address,
-          //     chainId: fromChainId,
-          //   })
-          // )
-
           await dispatch(
             fetchAndStoreSingleTokenBalance({
               token: fromToken,
