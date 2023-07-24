@@ -8,6 +8,8 @@ import { useDispatch } from 'react-redux'
 import { setToChainId } from '@/slices/bridge/reducer'
 import { setShowToChainSlideOver } from '@/slices/bridgeDisplaySlice'
 import { getOrderedChains } from '@/utils/getOrderedChains'
+import { RootState } from '@/store/store'
+import { segmentAnalyticsEvent } from '@/contexts/SegmentAnalyticsProvider'
 
 export const DestinationChainLabel = ({
   chains,
@@ -55,10 +57,17 @@ export const DestinationChainLabel = ({
 
 const PossibleChain = ({ chainId }: { chainId: number }) => {
   const chain = CHAINS_BY_ID[chainId]
+  const { toChainId } = useSelector((state: RootState) => state.bridge)
 
   const dispatch = useDispatch()
 
   const onChangeChain = () => {
+    const eventTitle = `[Bridge User Action] Change Origin Chain`
+    const eventData = {
+      previousToChain: toChainId,
+      newToChainId: chainId,
+    }
+    segmentAnalyticsEvent(eventTitle, eventData)
     dispatch(setToChainId(chainId))
   }
   return chain ? (

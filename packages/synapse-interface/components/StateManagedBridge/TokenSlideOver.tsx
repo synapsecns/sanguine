@@ -14,6 +14,7 @@ import {
   setShowFromTokenSlideOver,
   setShowToTokenSlideOver,
 } from '@/slices/bridgeDisplaySlice'
+import { segmentAnalyticsEvent } from '@/contexts/SegmentAnalyticsProvider'
 
 export const TokenSlideOver = ({
   isOrigin,
@@ -168,6 +169,19 @@ export const TokenSlideOver = ({
               active={idx === currentIdx}
               tokenBalance={balance}
               onClick={() => {
+                const eventTitle = isOrigin
+                  ? '[Bridge User Action] Sets new fromToken'
+                  : `[Bridge User Action] Sets new toToken`
+                const eventData = isOrigin
+                  ? {
+                      previousFromToken: selectedToken.symbol,
+                      newFromToken: token.symbol,
+                    }
+                  : {
+                      previousToToken: selectedToken.symbol,
+                      newToToken: token.symbol,
+                    }
+                segmentAnalyticsEvent(eventTitle, eventData)
                 onMenuItemClick(token)
               }}
             />

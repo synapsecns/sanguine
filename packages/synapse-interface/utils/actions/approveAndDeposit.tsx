@@ -16,6 +16,7 @@ import { Token } from '@types'
 import { zeroAddress } from 'viem'
 import { swapPoolCalculateTokenAmount } from '@/actions/swapPoolCalculateTokenAmount'
 import { swapPoolAddLiquidity } from '@/actions/swapPoolAddLiquidity'
+import { segmentAnalyticsEvent } from '@/contexts/SegmentAnalyticsProvider'
 
 export const approve = async (
   pool: Token,
@@ -75,6 +76,7 @@ export const approve = async (
       id: 'approve-success-popup',
       duration: 10000,
     })
+    segmentAnalyticsEvent(`[Pool Approval] Successful for ${pool?.name}`, {})
 
     return approveTx
   }
@@ -112,6 +114,7 @@ export const deposit = async (
 
   try {
     // get this from quote?
+    segmentAnalyticsEvent(`[Pool Deposit] Attempt for ${pool?.name}`, {})
     let minToMint: any = await swapPoolCalculateTokenAmount({
       chainId,
       pool,
@@ -165,11 +168,18 @@ export const deposit = async (
       id: 'deposit-success-popup',
       duration: 10000,
     })
+    segmentAnalyticsEvent(`[Pool Deposit] Success for ${pool?.name}`, {
+      inputAmounts,
+    })
 
     return tx
   } catch (error) {
     console.log('error from deposit: ', error)
     toast.dismiss(pendingPopup)
+    segmentAnalyticsEvent(`[Pool Deposit] Failure for ${pool?.name}`, {
+      inputAmounts,
+      errorCode: error.code,
+    })
     txErrorHandler(error)
     return error
   }
