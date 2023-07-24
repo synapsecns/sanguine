@@ -81,7 +81,7 @@ func (g *APISuite) SetupTest() {
 			Port:       uint16(port),
 			Database:   "sqlite",
 			Path:       g.dbPath,
-			OmniRPCURL: "https://rpc.interoperability.institute/confirmations/1/rpc",
+			OmniRPCURL: "https://rpc.omnirpc.io/confirmations/1/rpc",
 		}, g.metrics))
 	}()
 

@@ -130,7 +130,7 @@ func (r Resolver) getBlockTime(ctx context.Context, chainID uint32, blockNumber 
 		Factor: 2,
 		Jitter: true,
 		Min:    30 * time.Millisecond,
-		Max:    3 * time.Second,
+		Max:    5 * time.Second,
 	}
 
 	timeout := time.Duration(0)
