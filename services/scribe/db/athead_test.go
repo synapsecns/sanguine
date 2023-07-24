@@ -70,7 +70,7 @@ func (t *DBSuite) TestUnconfirmedLogsQuery() {
 	})
 }
 
-func (t *DBSuite) TestFlushsLog() {
+func (t *DBSuite) TestFlushLog() {
 	t.RunOnAllDBs(func(testDB db.EventDB) {
 		chainID := gofakeit.Uint32()
 		contractAddress := common.BigToAddress(big.NewInt(gofakeit.Int64()))
