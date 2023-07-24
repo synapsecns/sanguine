@@ -144,8 +144,7 @@ func newBaseHandlerWithTracerProvider(buildInfo config.BuildInfo, tracerProvider
 var _ Handler = &baseHandler{}
 
 // noOpExporter is a no-op metric exporter that prevents any metrics from being exported.
-type noOpMetricExporter struct {
-}
+type noOpMetricExporter struct{}
 
 func (n noOpMetricExporter) Temporality(kind metric.InstrumentKind) metricdata.Temporality {
 	return metric.DefaultTemporalitySelector(kind)
