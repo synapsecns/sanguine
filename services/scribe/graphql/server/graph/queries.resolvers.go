@@ -93,6 +93,7 @@ func (r *queryResolver) TransactionsRange(ctx context.Context, txHash *string, c
 func (r *queryResolver) BlockTime(ctx context.Context, chainID int, blockNumber int) (*int, error) {
 	blockTime, err := r.DB.RetrieveBlockTime(ctx, uint32(chainID), uint64(blockNumber))
 	if err != nil {
+		fmt.Println(err, "TESTING")
 		blockTimeRaw, err := r.getBlockTime(ctx, uint32(chainID), uint64(blockNumber))
 		if err != nil {
 			return nil, fmt.Errorf("error retrieving block time: %w", err)

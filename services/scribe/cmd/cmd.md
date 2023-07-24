@@ -32,7 +32,8 @@ specified start of the contract from the config. Scribe stores every log, receip
 it reaches the specified livefill thereshold where it will then continue to index events as they occur in real time.
 For reorg protection, Scribe does not store any events that are more than the specified number of confirmations from the chain tip
 into its primary tables. Scribe stores "unconfirmed" events near the tip of the chain in separate and transient tables.
-Scribe server has built in queries to query both the primary (confirmed) and transient (unconfirmed) tables at the same time if needed.
+Scribe server has built in queries to query both the primary (confirmed) and transient (unconfirmed) tables at the same time if
+realtime data needed for quering or streaming.
 
 
 ## Usage
@@ -94,8 +95,8 @@ chains:
 
 
 
-## Understanding Scribe Indexer
-Scribe indexer is composed of three components
+## Understanding the Scribe Indexer
+The Scribe indexer is composed of three components
 1. `Fetcher`: Takes a list of contracts, a block range, and fetches and feeds logs into a channel to be consumed by an indexer.
 2. `Indexer`: Takes a list of contracts, a block range, and a config and stores logs, receipts, and txs for all events in that range.
 3. `ChainIndexer`: Runs 2+ indexers per chain.

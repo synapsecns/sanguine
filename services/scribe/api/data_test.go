@@ -1,10 +1,6 @@
 package api_test
 
 import (
-	scribeTypes "github.com/synapsecns/sanguine/services/scribe/types"
-	"math/big"
-	"os"
-
 	"github.com/brianvoe/gofakeit/v6"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/core/types"
@@ -12,6 +8,8 @@ import (
 	"github.com/synapsecns/sanguine/services/scribe/db"
 	"github.com/synapsecns/sanguine/services/scribe/graphql"
 	"github.com/synapsecns/sanguine/services/scribe/grpc/client/rest"
+	scribeTypes "github.com/synapsecns/sanguine/services/scribe/types"
+	"math/big"
 )
 
 func (g APISuite) TestRetrieveData() {
@@ -201,13 +199,13 @@ func (g APISuite) TestTransactionDataEquality() {
 }
 
 func (g APISuite) TestBlockTimeDataEquality() {
-	if os.Getenv("CI") != "" {
-		g.T().Skip("Network flake")
-	}
+	//if os.Getenv("CI") != "" {
+	//	g.T().Skip("Network flake")
+	//}
 	// create data for storing a block time
-	chainID := gofakeit.Uint32()
-	blockNumber := uint64(gofakeit.Uint32())
-	blockTime := uint64(gofakeit.Uint32())
+	chainID := uint32(1)
+	blockNumber := uint64(1000000)
+	blockTime := uint64(1455404053)
 
 	// store block time
 	err := g.db.StoreBlockTime(g.GetTestContext(), chainID, blockNumber, blockTime)

@@ -150,6 +150,8 @@ func (r Resolver) getBlockTime(ctx context.Context, chainID uint32, blockNumber 
 
 			if err != nil {
 				timeout = b.Duration()
+				fmt.Println("TESTING--", fmt.Sprintf("%s/%d", r.OmniRPCURL, chainID), err)
+
 				continue
 			}
 			blockTime := block.Time
