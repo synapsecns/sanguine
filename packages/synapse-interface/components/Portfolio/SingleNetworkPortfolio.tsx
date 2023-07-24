@@ -5,6 +5,8 @@ import {
   ROUTER_ADDRESS,
   TokenWithBalanceAndAllowance,
   TokenWithBalanceAndAllowances,
+  separateTokensByAllowance,
+  sortByBalanceDescending,
 } from '@/utils/actions/fetchPortfolioBalances'
 import { Chain } from '@/utils/types'
 import PortfolioAccordion from './PortfolioAccordion'
@@ -207,40 +209,5 @@ export const PortfolioHeader = () => {
       </div>
       <div className="w-1/3 text-left" />
     </div>
-  )
-}
-
-function separateTokensByAllowance(
-  tokens: TokenWithBalanceAndAllowances[]
-): [TokenWithBalanceAndAllowances[], TokenWithBalanceAndAllowances[]] {
-  const tokensWithAllowance: TokenWithBalanceAndAllowances[] = []
-  const tokensWithoutAllowance: TokenWithBalanceAndAllowances[] = []
-
-  tokens &&
-    tokens.forEach((token: TokenWithBalanceAndAllowances) => {
-      // currently separating by bridge allowance
-      // update this when incorporating other allowances to order by
-      const bridgeAllowance: bigint | null = token.allowances[ROUTER_ADDRESS]
-      if (bridgeAllowance === null) {
-        tokensWithAllowance.push(token)
-      } else if (bridgeAllowance > 0n) {
-        tokensWithAllowance.push(token)
-      } else {
-        tokensWithoutAllowance.push(token)
-      }
-    })
-
-  return [tokensWithAllowance, tokensWithoutAllowance]
-}
-
-function sortByBalanceDescending(
-  tokens: TokenWithBalanceAndAllowances[]
-): TokenWithBalanceAndAllowances[] {
-  return (
-    tokens &&
-    tokens.sort(
-      (a: TokenWithBalanceAndAllowances, b: TokenWithBalanceAndAllowances) =>
-        b.parsedBalance > a.parsedBalance ? 1 : -1
-    )
   )
 }

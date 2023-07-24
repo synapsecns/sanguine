@@ -93,6 +93,7 @@ import {
   fetchAndStoreSingleTokenAllowance,
   fetchAndStoreSingleTokenBalance,
 } from '@/slices/portfolio/hooks'
+import { usePortfolioBalances } from '@/slices/portfolio/hooks'
 
 // NOTE: These are idle utility functions that will be re-written to
 // support sorting by desired mechanism
@@ -125,6 +126,8 @@ const StateManagedBridge = () => {
   const currentSDKRequestID = useRef(0)
   const router = useRouter()
   const { query, pathname } = router
+
+  const portfolioBalances = usePortfolioBalances()
 
   const {
     fromChainId,
