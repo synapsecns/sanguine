@@ -8,8 +8,11 @@ import { FetchState } from './reducer'
 import {
   fetchPortfolioBalances,
   NetworkTokenBalancesAndAllowances,
+  getTokenBalances,
 } from '@/utils/actions/fetchPortfolioBalances'
 import { getTokenAllowance } from './../../utils/actions/getTokenAllowance'
+import { TokenAndBalance } from '@/utils/sortTokens'
+import { Token } from '@/utils/types'
 
 export const usePortfolioState = (): RootState['portfolio'] => {
   return useAppSelector((state) => state.portfolio)
@@ -39,6 +42,44 @@ export const fetchAndStoreSingleTokenAllowance = createAsyncThunk(
       chainId
     )
     return { routerAddress, chainId, tokenAddress, allowance }
+  }
+)
+
+export const fetchAndStoreSingleTokenBalance = createAsyncThunk(
+  'portfolio/fetchAndStoreSingleTokenBalance',
+  async ({
+    token,
+    routerAddress,
+    tokenAddress,
+    address,
+    chainId,
+  }: {
+    token: Token
+    routerAddress: Address
+    tokenAddress: Address
+    address: Address
+    chainId: number
+  }) => {
+    const data: TokenAndBalance[] = await getTokenBalances(
+      address,
+      [token],
+      chainId
+    )
+    const { balance, parsedBalance }: TokenAndBalance = data[0]
+    const allowance = await getTokenAllowance(
+      routerAddress,
+      tokenAddress,
+      address,
+      chainId
+    )
+    return {
+      routerAddress,
+      chainId,
+      tokenAddress,
+      allowance,
+      balance,
+      parsedBalance,
+    }
   }
 )
 
