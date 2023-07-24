@@ -341,6 +341,7 @@ func (g Guard) handleAttestation(ctx context.Context, log ethTypes.Log, chainID 
 	// If attestation is invalid, we need to slash the agent
 	// by calling `verifyAttestation()` on the summit domain.
 	if isValid {
+		fmt.Println("checking invalid attestation")
 		// The attestation has a state not matching Origin.
 		// Fetch the snapshot, then verify each individual state with the attestation.
 

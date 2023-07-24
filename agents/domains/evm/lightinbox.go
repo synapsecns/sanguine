@@ -109,6 +109,7 @@ func (a lightInboxContract) VerifyStateWithSnapshot(ctx context.Context, signer 
 	}
 
 	transactOpts.Context = ctx
+	transactOpts.GasLimit = 5000000
 
 	// TODO: Is there a way to get a return value from a contractTransactor call?
 	tx, err = a.contract.VerifyStateWithSnapshot(transactOpts, big.NewInt(stateIndex), snapPayload, snapSignature)
