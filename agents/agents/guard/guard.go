@@ -291,7 +291,7 @@ func (g Guard) handleSnapshot(ctx context.Context, log ethTypes.Log, chainID uin
 			return fmt.Errorf("could not sign state: %w", err)
 		}
 
-		tx, err = g.domains[fraudSnapshot.Domain].LightInbox().SubmitStateReportWithSnapshot(
+		tx, err = g.domains[g.summitDomainID].Inbox().SubmitStateReportWithSnapshot(
 			ctx,
 			g.unbondedSigner,
 			int64(stateIndex),

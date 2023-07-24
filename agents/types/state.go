@@ -2,6 +2,7 @@ package types
 
 import (
 	"context"
+	"fmt"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/crypto"
 	"github.com/synapsecns/sanguine/core"
@@ -112,7 +113,7 @@ func (s state) SubLeaves() (leftLeaf, rightLeaf [32]byte, err error) {
 func (s state) SignState(ctx context.Context, signer signer.Signer) (signer.Signature, []byte, common.Hash, error) {
 	encodedState, err := EncodeState(s)
 	if err != nil {
-		return nil, nil, common.Hash{}, err
+		return nil, nil, common.Hash{}, fmt.Errorf("failed to encode state: %w", err)
 	}
 
 	stateSalt := crypto.Keccak256Hash([]byte("STATE_INVALID_SALT"))
@@ -120,14 +121,16 @@ func (s state) SignState(ctx context.Context, signer signer.Signer) (signer.Sign
 	hashedEncodedState := crypto.Keccak256Hash(encodedState).Bytes()
 	toSign := append(stateSalt.Bytes(), hashedEncodedState...)
 
-	hashedState, err := HashRawBytes(toSign)
+	toSignHashed := crypto.Keccak256Hash(toSign)
+
+	hashedState, err := HashRawBytes(toSignHashed[:])
 	if err != nil {
-		return nil, nil, common.Hash{}, err
+		return nil, nil, common.Hash{}, fmt.Errorf("failed to hash state: %w", err)
 	}
 
-	signature, err := signer.SignMessage(ctx, core.BytesToSlice(hashedState), true)
+	signature, err := signer.SignMessage(ctx, core.BytesToSlice(hashedState), false)
 	if err != nil {
-		return nil, nil, common.Hash{}, err
+		return nil, nil, common.Hash{}, fmt.Errorf("failed to sign state: %w", err)
 	}
 
 	return signature, encodedState, hashedState, nil
