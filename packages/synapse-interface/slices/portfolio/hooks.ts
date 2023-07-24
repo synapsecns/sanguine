@@ -22,6 +22,43 @@ export const usePortfolioBalances = (): NetworkTokenBalancesAndAllowances => {
   return useAppSelector((state) => state.portfolio.balancesAndAllowances)
 }
 
+export const fetchAndStorePortfolioBalances = createAsyncThunk(
+  'portfolio/fetchAndStorePortfolioBalances',
+  async (address: string) => {
+    const portfolioData = await fetchPortfolioBalances(address)
+    return portfolioData
+  }
+)
+
+export const fetchAndStoreSingleNetworkPortfolioBalances = createAsyncThunk(
+  'portfolio/fetchAndStoreSingleNetworkPortfolioBalances',
+  async ({ address, chainId }: { address: string; chainId: number }) => {
+    const portfolioData = await fetchPortfolioBalances(address, chainId)
+    return portfolioData
+  }
+)
+
+export const useFetchPortfolioBalances = (): {
+  balancesAndAllowances: NetworkTokenBalancesAndAllowances
+  fetchPortfolioBalances: () => void
+  status: FetchState
+  error: string
+} => {
+  const dispatch: AppDispatch = useDispatch()
+  const { address } = getAccount()
+  const { balancesAndAllowances, status, error } = useSelector(
+    (state: RootState) => state.portfolio
+  )
+
+  const fetch = () => {
+    if (address) {
+      dispatch(fetchAndStorePortfolioBalances(address))
+    }
+  }
+
+  return { balancesAndAllowances, fetchPortfolioBalances: fetch, status, error }
+}
+
 export const fetchAndStoreSingleTokenAllowance = createAsyncThunk(
   'portfolio/fetchAndStoreSingleTokenAllowance',
   async ({
@@ -82,40 +119,3 @@ export const fetchAndStoreSingleTokenBalance = createAsyncThunk(
     }
   }
 )
-
-export const fetchAndStorePortfolioBalances = createAsyncThunk(
-  'portfolio/fetchAndStorePortfolioBalances',
-  async (address: string) => {
-    const portfolioData = await fetchPortfolioBalances(address)
-    return portfolioData
-  }
-)
-
-export const fetchAndStoreSingleNetworkPortfolioBalances = createAsyncThunk(
-  'portfolio/fetchAndStoreSingleNetworkPortfolioBalances',
-  async ({ address, chainId }: { address: string; chainId: number }) => {
-    const portfolioData = await fetchPortfolioBalances(address, chainId)
-    return portfolioData
-  }
-)
-
-export const useFetchPortfolioBalances = (): {
-  balancesAndAllowances: NetworkTokenBalancesAndAllowances
-  fetchPortfolioBalances: () => void
-  status: FetchState
-  error: string
-} => {
-  const dispatch: AppDispatch = useDispatch()
-  const { address } = getAccount()
-  const { balancesAndAllowances, status, error } = useSelector(
-    (state: RootState) => state.portfolio
-  )
-
-  const fetch = () => {
-    if (address) {
-      dispatch(fetchAndStorePortfolioBalances(address))
-    }
-  }
-
-  return { balancesAndAllowances, fetchPortfolioBalances: fetch, status, error }
-}
