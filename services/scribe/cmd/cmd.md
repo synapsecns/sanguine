@@ -27,49 +27,75 @@ A full list can be found at graphql/server/graph/schema/queries.graphql
 
 
 ### Scribe Indexer
-The scribe indexer supports indexing on any number of contracts on any chain. With a list of contracts Scribe indexes from the
-specified start of the contract (from the config)
-## Schema
-The schema for each table in the database can be found at db/datastore/sql/base
+Scribe indexer supports indexing on any number of contracts on any chain. For each contract Scribe indexes from the
+specified start of the contract from the config. Scribe stores every log, receipt, tx, and timestamp for every event until
+it reaches the specified livefill thereshold where it will then continue to index events as they occur in real time.
+For reorg protection, Scribe does not store any events that are more than the specified number of confirmations from the chain tip
+into its primary tables. Scribe stores "unconfirmed" events near the tip of the chain in separate and transient tables.
+Scribe server has built in queries to query both the primary (confirmed) and transient (unconfirmed) tables at the same time if needed.
 
 
 ## Usage
 
-Run the following command to start the Scribe:
+Run the following command to start Scribe:
 
 ```bash
 $ go run main.go
 ```
-Then the Scribe command line will be exposed. You can use the following commands:
+Then Scribe command line will be exposed. You can use the following commands:
 
 ```bash
-# Start the Scribe
-$ scribe --config </Full/Path/To/Config.yaml> --db <sqlite or mysql> --path <path/to/database or database url>
-# Call a single backfill with the scribe
-$ backfill --config </Full/Path/To/Config.yaml> --db <sqlite or mysql> --path <path/to/database or database url>
-# Start the Scribe server
+# Start Scribe indexer
+$ Scribe --config </Full/Path/To/Config.yaml> --db <sqlite or mysql> --path <path/to/database or database url>
+# Start Scribe server
 $ server --port <port> --db <sqlite or mysql> --path <path/to/database or database url>
 ```
 
 ### Deploy
-See /charts/scribe for the deployment helm chart for this service
+See <a href="../../charts/scribe">/charts/scribe</a> for the deployment helm chart for this service
 
 ### Configuration
-````
-chain_id: The ID of the chain
-required_confirmations: the number of confirmations required for a block to be finalized
-contracts: stores all the contract information for the chain.
-get_logs_range: is the number of blocks to request in a single getLogs request.
-get_logs_batch_amount: is the number of getLogs requests to include in a single batch request.
-store_concurrency: is the number of goroutines to use when storing data.
-concurrency_threshold: is the max number of block from head in which concurrent operations (store, getlogs) is allowed.
-````
+There are many ways to augment Scribe's behavior. Before running Scribe, please take a look at the different parameters.
+```
+rpc_url: The url of the rpc aggregator
+chains: A list of chains to index
+  chain_id: The ID of the chain
+  get_logs_range: is the number of blocks to request in a single getLogs request.
+  get_logs_batch_amount: is the number of getLogs requests to include in a single batch request.
+  store_concurrency: is the number of goroutines to use when storing data.
+  concurrency_threshold: is the max number of block from head in which concurrent operations (store, getlogs) is allowed.
+  livefill_threshold: number of blocks away from the head to start livefilling (see "Understanding Scribe Indexer" to understand this better)
+  livefill_range: range in whcih the getLogs request for the livefill contracts will be requesting.
+  livefill_flush_interval: the interval in which the unconfirmed livefill table will be flushed.
+  confirmations: the number of blocks from head that the livefiller will livefill up to (and where the unconfirmed livefill indexer will begin)
+  contracts: stores all the contract information for the chain
+    address: address of the contract
+    start_block: block to start indexing the contract from (block with the first tx)
+```
 
+
+#### Example Config
+```yaml
+rpc_url: <omnirpc>
+chains:
+- chain_id: 1
+  get_logs_range: 500
+  get_block_batch_amount: 1
+  store_concurrency: 100
+  concurrency_threshold: 50000
+  livefill_threshold: 300
+  livefill_range: 200
+  livefill_flush_interval: 10000
+  confirmations: 200
+  contracts:
+    - address: 0xAf41a65F786339e7911F4acDAD6BD49426F2Dc6b
+      start_block: 18646320
+```
 
 
 
 ## Understanding Scribe Indexer
-The scribe indexer is composed of three components
+Scribe indexer is composed of three components
 1. `Fetcher`: Takes a list of contracts, a block range, and fetches and feeds logs into a channel to be consumed by an indexer.
 2. `Indexer`: Takes a list of contracts, a block range, and a config and stores logs, receipts, and txs for all events in that range.
 3. `ChainIndexer`: Runs 2+ indexers per chain.
@@ -78,7 +104,7 @@ The scribe indexer is composed of three components
    3. 1 indexer for every contract within the specified "unconfirmed" range at the chain tip. (unconfirmed livefill)
 
 
-### Flow
+### Chain level flow
 1. Scribe initializes with config
 2. Each chain has a `ChainIndexer` spun up and runs it in a go routine
 3. The `ChainIndexer` checks all contracts for their `lastIndexed` block. Contracts without a `lastIndexed` or with a `lastIndexed` block outside the
@@ -89,34 +115,51 @@ indexer for the livefill contracts.
 and stores data in seperate tables than the other indexers. This table has stale rows (old rows) deleted every few hours (set in config).
 
 
+### Indexer level flow
+1. `Indexer` is initialized with config and a list of contracts
+2. `Indexer` is started with a block range
+3. The indexer creates a `Fetcher` that feeds logs into a channel that is then consumed by the indexer. The fetcher retrieves logs in chunks specified in the config
+(`get_logs_range` and `get_logs_batch_amount`).
+4. When a new log is retrieved the indexer gets the tx, block header (timestamp), and receipt (and all of its logs) for that log and the stores them in the database. Depending on the concurrency
+settings, Scribe will spin up multiple concurrent processes for retrieving this data and storing. It is recommended that concurrency (`concurrency_threshold`) is set to at least a couple hours
+from the head to ensure that data is inserted into the database in order (if streaming).
+5. The indexer will continue to fetch and store data until it reaches the end of the block range.
+
 
 ### Directory Structure
 
 <pre>
-scribe
+Scribe
 ├── <a href="./api">api</a>: Contains the Swagger API definition and GQL Client tests.
-├── <a href="./backend">backend</a>: The backend implementation for the Scribe
+├── <a href="./backend">backend</a>: The backend implementation for Scribe
 ├── <a href="./client">client</a>: Client implementation for Scribe (embedded/remote)
-├── <a href="./cmd">cmd</a>: The command line interface functions for running the Scribe and GraphQL server
+├── <a href="./cmd">cmd</a>: The command line interface functions for running Scribe and GraphQL server
 ├── <a href="./config">config</a>: Configuration files for Scribe
 ├── <a href="./db">db</a>: The database schema and functions for interacting with the database
-├── <a href="./graphql">graphql</a>: GraphQL implementation for the Scribe's recorded data
+├── <a href="./graphql">graphql</a>: GraphQL implementation for Scribe's recorded data
 │   ├── <a href="./graphql/client">client</a>: The client interface for the GraphQL server
-│   ├── <a href="./graphql/contrib">contrib</a>: The GraphQL generators for the Scribe
+│   ├── <a href="./graphql/contrib">contrib</a>: The GraphQL generators for Scribe
 │   └── <a href="./graphql/server">server</a>: The server implementation for GraphQL
 │       └── <a href="./graphql/server/graph">graph</a>: The server's models, resolvers, and schemas
-├── <a href="./grpc">grpc</a>: The gRPC client implementation for the Scribe
-├── <a href="./internal">internal</a>: Internal packages for the Scribe
+├── <a href="./grpc">grpc</a>: The gRPC client implementation for Scribe
+├── <a href="./internal">internal</a>: Internal packages for Scribe
 ├── <a href="./logger">logger</a>: Handles logging for various events in Scribe.
 ├── <a href="./metadata">metadata</a>: Provides metadata for building .
 ├── <a href="./scripts">scripts</a>: Scripts for Scribe
-└── <a href="./testutil">testutil</a>: Test utilities for the Scribe
+├── <a href="./service">service</a>: Service holds Scribe indexer code (Fetcher, Indexer, ChainIndexer)
+├── <a href="./testhelper">testhelper</a>: Assists testing in downstream services.
+├── <a href="./testutil">testutil</a>: Test utilities suite for Scribe
+└── <a href="./types">types</a>: Holds various custom types for Scribe
 </pre>
+
+
+
+### Schema
+The schema for each table in the database can be found at <a href="./db/datastore/sql/base">db/datastore/sql/base</a>
 
 ## Regenerating protobuf definitions:
 
 `make generate`
 
 
-## Flow
 

@@ -1,5 +1,6 @@
 package cmd
 
+// TODO update this to match new commands + migrate flags to config.
 import (
 	"github.com/synapsecns/sanguine/core/metrics"
 	"github.com/synapsecns/sanguine/services/scribe/backend"
