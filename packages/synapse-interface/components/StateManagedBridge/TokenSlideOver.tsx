@@ -46,9 +46,6 @@ export const TokenSlideOver = ({
   let tokenList: any[] = []
 
   const portfolioBalances = usePortfolioBalances()
-  const { supportedFromTokenBalances } = useSelector(
-    (state: RootState) => state.bridge
-  )
 
   tokenList = tokens
 
