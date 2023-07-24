@@ -3,7 +3,6 @@ package main
 import (
 	"flag"
 	"fmt"
-	"io/ioutil"
 	"os"
 	"path/filepath"
 	"regexp"
@@ -28,7 +27,7 @@ func keccak256Hash(input string) string {
 }
 
 func processFile(file string, filter string) {
-	content, err := ioutil.ReadFile(file)
+	content, err := os.ReadFile(file)
 	if err != nil {
 		fmt.Printf("Error reading file %s: %s\n", file, err)
 		return
@@ -70,7 +69,7 @@ func main() {
 	flag.StringVar(&path, "p", "", "path to search recursively")
 	flag.StringVar(&filter, "f", "", "revert hash filter [optional]")
 	flag.Parse()
-	if len(path) <= 0 {
+	if len(path) == 0 {
 		panic("expected path to be set (use -p flag)")
 	}
 
