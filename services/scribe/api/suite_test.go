@@ -100,6 +100,8 @@ func (g *APISuite) SetupTest() {
 
 	g.grpcClient = pbscribe.NewScribeServiceClient(rawGrpcClient)
 
+	g.SetTestTimeout(time.Minute * 3)
+
 	// var request *http.Request
 	g.Eventually(func() bool {
 		request, err := http.NewRequestWithContext(g.GetTestContext(), http.MethodGet, fmt.Sprintf("%s%s", baseURL, server.GraphiqlEndpoint), nil)

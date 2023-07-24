@@ -41,7 +41,7 @@ func NewScribeSuite(tb testing.TB) *ScribeSuite {
 // SetupTest sets up the test suite.
 func (s *ScribeSuite) SetupTest() {
 	s.TestSuite.SetupTest()
-	s.SetTestTimeout(time.Minute * 20)
+	s.SetTestTimeout(time.Minute * 10)
 	sqliteStore, err := sqlite.NewSqliteStore(s.GetTestContext(), filet.TmpDir(s.T(), ""), s.metrics, false)
 	Nil(s.T(), err)
 	s.testDB = sqliteStore

@@ -23,17 +23,17 @@ Scribe comes with a graphql/iql endpoint with various queries to make interactin
 - `txSender(tx_hash, chain_id)`
 
 
-A full list can be found at graphql/server/graph/schema/queries.graphql
+A full list can be found at <a href="./graphql/server/graph/schema/queries.graphql">graphql/server/graph/schema/queries.graphql</a>
 
 
 ### Scribe Indexer
 Scribe indexer supports indexing on any number of contracts on any chain. For each contract Scribe indexes from the
 specified start of the contract from the config. Scribe stores every log, receipt, tx, and timestamp for every event until
-it reaches the specified livefill thereshold where it will then continue to index events as they occur in real time.
+it reaches the specified livefill threshold where it will then continue to index events as they occur in real time.
 For reorg protection, Scribe does not store any events that are more than the specified number of confirmations from the chain tip
 into its primary tables. Scribe stores "unconfirmed" events near the tip of the chain in separate and transient tables.
-Scribe server has built in queries to query both the primary (confirmed) and transient (unconfirmed) tables at the same time if
-realtime data needed for quering or streaming.
+The Scribe server has built in queries to query both the primary (confirmed) and transient (unconfirmed) tables at the same time if
+realtime data needed for querying or streaming.
 
 
 ## Usage
@@ -62,7 +62,7 @@ rpc_url: The url of the rpc aggregator
 chains: A list of chains to index
   chain_id: The ID of the chain
   get_logs_range: is the number of blocks to request in a single getLogs request.
-  get_logs_batch_amount: is the number of getLogs requests to include in a single batch request.
+  get_logs_batch_amount: is the number of getLogs requests to include in a batch request.
   store_concurrency: is the number of goroutines to use when storing data.
   concurrency_threshold: is the max number of block from head in which concurrent operations (store, getlogs) is allowed.
   livefill_threshold: number of blocks away from the head to start livefilling (see "Understanding Scribe Indexer" to understand this better)
