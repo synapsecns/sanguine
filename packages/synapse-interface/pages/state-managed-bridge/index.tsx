@@ -88,6 +88,7 @@ import {
   fetchAndStorePortfolioBalances,
   fetchAndStoreSingleNetworkPortfolioBalances,
   fetchAndStoreSingleTokenAllowance,
+  fetchAndStoreSingleTokenBalance,
 } from '@/slices/portfolio/hooks'
 
 // NOTE: These are idle utility functions that will be re-written to
@@ -468,8 +469,17 @@ const StateManagedBridge = () => {
         toast.dismiss(pendingPopup)
 
         setTimeout(async () => {
+          // await dispatch(
+          //   fetchAndStoreSingleNetworkPortfolioBalances({
+          //     address: address,
+          //     chainId: fromChainId,
+          //   })
+          // )
+
           await dispatch(
-            fetchAndStoreSingleNetworkPortfolioBalances({
+            fetchAndStoreSingleTokenBalance({
+              token: fromToken,
+              routerAddress: bridgeQuote?.routerAddress as Address,
               address: address,
               chainId: fromChainId,
             })
