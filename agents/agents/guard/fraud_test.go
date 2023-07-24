@@ -2,9 +2,10 @@ package guard_test
 
 import (
 	"fmt"
+	"math/big"
+
 	"github.com/brianvoe/gofakeit/v6"
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
-	"math/big"
 
 	"github.com/Flaque/filet"
 	"github.com/ethereum/go-ethereum/common"

@@ -341,8 +341,65 @@ func (g Guard) handleAttestation(ctx context.Context, log ethTypes.Log, chainID 
 	// If attestation is invalid, we need to slash the agent
 	// by calling `verifyAttestation()` on the summit domain.
 	if isValid {
+		// The attestation has a state not matching Origin.
+		// Fetch the snapshot, then verify each individual state with the attestation.
+
+		snapshot, err := g.domains[g.summitDomainID].Summit().GetNotarySnapshot(ctx, fraudAttestation.Payload)
+		if err != nil {
+			return fmt.Errorf("could not get snapshot: %w", err)
+		}
+
+		for i, state := range snapshot.States() {
+			snapPayload, err := types.EncodeSnapshot(snapshot)
+			if err != nil {
+				return fmt.Errorf("could not encode snapshot: %w", err)
+			}
+
+			statePayload, err := types.EncodeState(state)
+			if err != nil {
+				return fmt.Errorf("could not encode state: %w", err)
+			}
+			isValid, err := g.domains[state.Origin()].Origin().IsValidState(
+				ctx,
+				statePayload,
+			)
+			if err != nil {
+				return fmt.Errorf("could not check validity of state: %w", err)
+			}
+			if isValid {
+				continue
+			}
+
+			tx, err := g.domains[state.Origin()].Inbox().VerifyStateWithAttestation(
+				ctx,
+				g.unbondedSigner,
+				int64(i),
+				snapPayload,
+				fraudAttestation.Payload,
+				fraudAttestation.Signature,
+			)
+			if err != nil {
+				return fmt.Errorf("could not verify state with attestation: %w", err)
+			}
+			fmt.Printf("verifystatewithattestation hash: %s\n", tx.Hash().String())
+
+			srSignature, _, _, err := state.SignState(ctx, g.bondedSigner)
+			if err != nil {
+				return fmt.Errorf("could not sign state: %w", err)
+			}
+			tx, err = g.domains[g.summitDomainID].Inbox().SubmitStateReportWithAttestation(
+				ctx,
+				g.unbondedSigner,
+				int64(i),
+				srSignature,
+				snapPayload,
+				fraudAttestation.Payload,
+				fraudAttestation.Signature,
+			)
+		}
 		return nil
 	}
+
 	_, err = g.domains[g.summitDomainID].Inbox().VerifyAttestation(
 		ctx,
 		g.unbondedSigner,

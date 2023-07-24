@@ -100,3 +100,17 @@ func (a summitContract) WatchAttestationSaved(ctx context.Context, sink chan<- *
 func (a summitContract) IsValidAttestation(ctx context.Context, attestation []byte) (bool, error) {
 	return a.contract.IsValidAttestation(&bind.CallOpts{Context: ctx}, attestation)
 }
+
+func (a summitContract) GetNotarySnapshot(ctx context.Context, attPayload []byte) (types.Snapshot, error) {
+	rawSnapshot, err := a.contract.GetNotarySnapshot(&bind.CallOpts{Context: ctx}, attPayload)
+	if err != nil {
+		return nil, fmt.Errorf("could not retrieve notary snapshot: %w", err)
+	}
+
+	snapshot, err := types.DecodeSnapshot(rawSnapshot.SnapPayload)
+	if err != nil {
+		return nil, fmt.Errorf("could not decode snapshot: %w", err)
+	}
+
+	return snapshot, nil
+}

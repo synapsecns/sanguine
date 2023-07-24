@@ -68,6 +68,8 @@ type SummitContract interface {
 	WatchAttestationSaved(ctx context.Context, sink chan<- *summit.SummitAttestationSaved) (event.Subscription, error)
 	// IsValidAttestation checks if the given attestation is valid on the summit
 	IsValidAttestation(ctx context.Context, attestation []byte) (bool, error)
+	// GetNotarySnapshot gets the snapshot payload corresponding to a given attestation
+	GetNotarySnapshot(ctx context.Context, attPayload []byte) (types.Snapshot, error)
 }
 
 // InboxContract contains the interface for the inbox.
@@ -81,6 +83,10 @@ type InboxContract interface {
 	SubmitSnapshotCtx(ctx context.Context, signer signer.Signer, encodedSnapshot []byte, signature signer.Signature) (tx *ethTypes.Transaction, err error)
 	// VerifyAttestation verifies a snapshot on the inbox.
 	VerifyAttestation(ctx context.Context, signer signer.Signer, attestation []byte, attSignature []byte) (tx *ethTypes.Transaction, err error)
+	// VerifyStateWithAttestation verifies a state with attestation.
+	VerifyStateWithAttestation(ctx context.Context, signer signer.Signer, stateIndex int64, snapPayload []byte, attPayload []byte, attSignature []byte) (tx *ethTypes.Transaction, err error)
+	// SubmitStateReportWithAttestation submits a state report corresponding to an attesation for an invalid state.
+	SubmitStateReportWithAttestation(ctx context.Context, signer signer.Signer, stateIndex int64, signature signer.Signature, snapPayload, attPayload, attSignature []byte) (tx *ethTypes.Transaction, err error)
 }
 
 // BondingManagerContract contains the interface for the bonding manager.
