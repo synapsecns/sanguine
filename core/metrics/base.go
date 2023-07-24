@@ -125,7 +125,7 @@ func newBaseHandlerWithTracerProvider(buildInfo config.BuildInfo, tracerProvider
 	}
 
 	// TODO set up exporting the way we need here
-	metricExporter := noOpExporter{}
+	metricExporter := noOpMetricExporter{}
 
 	mp, err := NewOtelMeter(buildInfo.Name(), time.Duration(interval)*time.Second, metricExporter)
 	if err != nil {
@@ -143,27 +143,28 @@ func newBaseHandlerWithTracerProvider(buildInfo config.BuildInfo, tracerProvider
 
 var _ Handler = &baseHandler{}
 
-type noOpExporter struct {
+// noOpExporter is a no-op metric exporter that prevents any metrics from being exported.
+type noOpMetricExporter struct {
 }
 
-func (n noOpExporter) Temporality(kind metric.InstrumentKind) metricdata.Temporality {
+func (n noOpMetricExporter) Temporality(kind metric.InstrumentKind) metricdata.Temporality {
 	return metric.DefaultTemporalitySelector(kind)
 }
 
-func (n noOpExporter) Aggregation(kind metric.InstrumentKind) aggregation.Aggregation {
+func (n noOpMetricExporter) Aggregation(kind metric.InstrumentKind) aggregation.Aggregation {
 	return metric.DefaultAggregationSelector(kind)
 }
 
-func (n noOpExporter) Export(ctx context.Context, metrics *metricdata.ResourceMetrics) error {
+func (n noOpMetricExporter) Export(ctx context.Context, metrics *metricdata.ResourceMetrics) error {
 	return nil
 }
 
-func (n noOpExporter) ForceFlush(ctx context.Context) error {
+func (n noOpMetricExporter) ForceFlush(ctx context.Context) error {
 	return nil
 }
 
-func (n noOpExporter) Shutdown(ctx context.Context) error {
+func (n noOpMetricExporter) Shutdown(ctx context.Context) error {
 	return nil
 }
 
-var _ metric.Exporter = &noOpExporter{}
+var _ metric.Exporter = &noOpMetricExporter{}
