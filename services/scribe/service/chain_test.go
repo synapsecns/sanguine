@@ -481,5 +481,4 @@ func (s *ScribeSuite) TestChainIndexerLivfillToTip() {
 		Nil(s.T(), err)
 		GreaterOrEqual(s.T(), sum, uint64(len(unconfirmedReceipts)))
 	}
-
 }
