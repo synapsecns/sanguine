@@ -6,7 +6,7 @@ import {
   TokenWithBalanceAndAllowance,
   TokenWithBalanceAndAllowances,
   separateTokensByAllowance,
-  sortByBalanceDescending,
+  sortTokensByBalanceDescending,
 } from '@/utils/actions/fetchPortfolioBalances'
 import { Chain } from '@/utils/types'
 import PortfolioAccordion from './PortfolioAccordion'
@@ -38,11 +38,11 @@ export const SingleNetworkPortfolio = ({
     separateTokensByAllowance(portfolioTokens)
 
   const sortedTokensWithAllowance: TokenWithBalanceAndAllowances[] =
-    sortByBalanceDescending(tokensWithAllowance)
+    sortTokensByBalanceDescending(tokensWithAllowance)
   const sortedTokensWithoutAllowance: TokenWithBalanceAndAllowances[] =
-    sortByBalanceDescending(tokensWithoutAllowance)
+    sortTokensByBalanceDescending(tokensWithoutAllowance)
   const sortedTokensForVisualizer: TokenWithBalanceAndAllowances[] =
-    sortByBalanceDescending(portfolioTokens)
+    sortTokensByBalanceDescending(portfolioTokens)
 
   const hasNoTokenBalance: boolean =
     !portfolioTokens || portfolioTokens.length === 0

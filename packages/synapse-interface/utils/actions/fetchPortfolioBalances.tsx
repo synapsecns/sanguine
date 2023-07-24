@@ -177,7 +177,7 @@ export function separateTokensByAllowance(
   return [tokensWithAllowance, tokensWithoutAllowance]
 }
 
-export function sortByBalanceDescending(
+export function sortTokensByBalanceDescending(
   tokens: TokenWithBalanceAndAllowances[]
 ): TokenWithBalanceAndAllowances[] {
   return (
