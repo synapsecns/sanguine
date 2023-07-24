@@ -1,7 +1,6 @@
 package guard_test
 
 import (
-	"fmt"
 	"math/big"
 
 	"github.com/brianvoe/gofakeit/v6"
@@ -22,7 +21,7 @@ import (
 )
 
 // TODO: Add a test for exiting the report logic early when the snapshot submitter is a guard.
-func (g GuardSuite) TestZ() {
+func (g GuardSuite) TestFraudulentStateInSnapshot() {
 	testDone := false
 	defer func() {
 		testDone = true
@@ -48,10 +47,6 @@ func (g GuardSuite) TestZ() {
 	}
 
 	omniRPCClient := omniClient.NewOmnirpcClient(g.TestOmniRPC, g.GuardMetrics, omniClient.WithCaptureReqRes())
-
-	omnirpcDest := omniRPCClient.GetEndpoint(int(g.SummitDomainClient.Config().DomainID), 1)
-
-	fmt.Println("OMNIIIIII", omnirpcDest)
 
 	// Scribe setup.
 	originClient, err := backfill.DialBackend(g.GetTestContext(), g.TestBackendOrigin.RPCAddress(), g.ScribeMetrics)
@@ -199,7 +194,7 @@ func (g GuardSuite) TestZ() {
 
 	// Verify that a report has been submitted by the Guard by checking that a Dispute is now open.
 	g.Eventually(func() bool {
-		err := g.DestinationDomainClient.LightManager().GetDispute(g.GetTestContext(), big.NewInt(0))
+		err := g.SummitDomainClient.BondingManager().GetDispute(g.GetTestContext(), big.NewInt(0))
 		if err != nil {
 			return false
 		}
@@ -208,7 +203,7 @@ func (g GuardSuite) TestZ() {
 	})
 }
 
-func (g GuardSuite) TestZZZZZZ() {
+func (g GuardSuite) TestFraudulentAttestationOnDestination() {
 	testDone := false
 	defer func() {
 		testDone = true
@@ -452,10 +447,6 @@ func (g GuardSuite) TestReportFraudulentStateInAttestation() {
 
 	omniRPCClient := omniClient.NewOmnirpcClient(g.TestOmniRPC, g.GuardMetrics, omniClient.WithCaptureReqRes())
 
-	omnirpcDest := omniRPCClient.GetEndpoint(int(g.SummitDomainClient.Config().DomainID), 1)
-
-	fmt.Println("OMNIIIIII", omnirpcDest)
-
 	// Scribe setup.
 	originClient, err := backfill.DialBackend(g.GetTestContext(), g.TestBackendOrigin.RPCAddress(), g.ScribeMetrics)
 	Nil(g.T(), err)
@@ -469,17 +460,6 @@ func (g GuardSuite) TestReportFraudulentStateInAttestation() {
 		uint32(g.TestBackendDestination.GetChainID()): {destinationClient, destinationClient},
 		uint32(g.TestBackendSummit.GetChainID()):      {summitClient, summitClient},
 	}
-	originConfig := scribeConfig.ContractConfig{
-		Address:    g.OriginContract.Address().String(),
-		StartBlock: 0,
-	}
-	originChainConfig := scribeConfig.ChainConfig{
-		ChainID:               uint32(g.TestBackendOrigin.GetChainID()),
-		BlockTimeChunkSize:    1,
-		ContractSubChunkSize:  1,
-		RequiredConfirmations: 0,
-		Contracts:             []scribeConfig.ContractConfig{originConfig},
-	}
 	destinationConfig := scribeConfig.ContractConfig{
 		Address:    g.LightInboxOnDestination.Address().String(),
 		StartBlock: 0,
@@ -491,19 +471,12 @@ func (g GuardSuite) TestReportFraudulentStateInAttestation() {
 		RequiredConfirmations: 0,
 		Contracts:             []scribeConfig.ContractConfig{destinationConfig},
 	}
-	summitConfig := scribeConfig.ContractConfig{
-		Address:    g.InboxOnSummit.Address().String(),
-		StartBlock: 0,
-	}
-	summitChainConfig := scribeConfig.ChainConfig{
-		ChainID:               uint32(g.TestBackendSummit.GetChainID()),
-		BlockTimeChunkSize:    1,
-		ContractSubChunkSize:  1,
-		RequiredConfirmations: 0,
-		Contracts:             []scribeConfig.ContractConfig{summitConfig},
-	}
+
+	// This scribe config omits the Summit and Origin chains, since we do not want to pick up the fraud coming from the
+	// fraudulent snapshots, only from the Attestation submitted on the Destination that is associated with a fraudulent
+	// snapshot.
 	scribeConfig := scribeConfig.Config{
-		Chains: []scribeConfig.ChainConfig{originChainConfig, destinationChainConfig, summitChainConfig},
+		Chains: []scribeConfig.ChainConfig{destinationChainConfig},
 	}
 
 	scribe, err := node.NewScribe(g.ScribeTestDB, clients, scribeConfig, g.ScribeMetrics)
@@ -533,20 +506,13 @@ func (g GuardSuite) TestReportFraudulentStateInAttestation() {
 		}
 	}()
 
-	_, gasDataContract := g.TestDeployManager.GetGasDataHarness(g.GetTestContext(), g.TestBackendDestination)
-	_, attestationContract := g.TestDeployManager.GetAttestationHarness(g.GetTestContext(), g.TestBackendDestination)
-
 	// Verify that the agent is marked as Active
 	txContextDest := g.TestBackendDestination.GetTxContext(g.GetTestContext(), g.DestinationContractMetadata.OwnerPtr())
 	status, err := g.OriginDomainClient.LightManager().GetAgentStatus(g.GetTestContext(), g.GuardBondedSigner.Address())
 	Equal(g.T(), status.Flag(), uint8(1))
 	Nil(g.T(), err)
 
-	agentRoot := common.BigToHash(big.NewInt(gofakeit.Int64()))
 	gasData := types.NewGasData(gofakeit.Uint16(), gofakeit.Uint16(), gofakeit.Uint16(), gofakeit.Uint16(), gofakeit.Uint16(), gofakeit.Uint16())
-	chainGas := types.NewChainGas(gasData, uint32(g.TestBackendOrigin.GetChainID()))
-	chainGasBytes, err := types.EncodeChainGas(chainGas)
-	Nil(g.T(), err)
 
 	// Create a fraudulent snapshot
 	fraudulentState := types.NewState(
@@ -558,25 +524,6 @@ func (g GuardSuite) TestReportFraudulentStateInAttestation() {
 		gasData,
 	)
 	fraudulentSnapshot := types.NewSnapshot([]types.State{fraudulentState})
-
-	// Build and sign a legit attestation for the fraudulent snapshot
-	// TODO: Change from using a harness to using the Go code.
-	snapGas := []*big.Int{new(big.Int).SetBytes(chainGasBytes)}
-	snapGasHash, err := gasDataContract.SnapGasHash(&bind.CallOpts{Context: g.GetTestContext()}, snapGas)
-	Nil(g.T(), err)
-	dataHash, err := attestationContract.DataHash(&bind.CallOpts{Context: g.GetTestContext()}, agentRoot, snapGasHash)
-	Nil(g.T(), err)
-	snapshotRoot, _, err := fraudulentSnapshot.SnapshotRootAndProofs()
-	Nil(g.T(), err)
-	fraudAttestation := types.NewAttestation(
-		snapshotRoot,
-		dataHash,
-		1,
-		big.NewInt(int64(gofakeit.Int32())),
-		big.NewInt(int64(gofakeit.Int32())),
-	)
-	attSignature, attEncoded, _, err := fraudAttestation.SignAttestation(g.GetTestContext(), g.NotaryBondedSigner, true)
-	Nil(g.T(), err)
 
 	// Before submitting the attestation, ensure that there are no disputes opened.
 	err = g.DestinationDomainClient.LightManager().GetDispute(g.GetTestContext(), big.NewInt(0))
@@ -641,13 +588,19 @@ func (g GuardSuite) TestReportFraudulentStateInAttestation() {
 	NotNil(g.T(), tx)
 	g.TestBackendSummit.WaitForConfirmation(g.GetTestContext(), tx)
 
+	notaryAttestation, err := g.SummitDomainClient.Summit().GetAttestation(g.GetTestContext(), 1)
+	Nil(g.T(), err)
+
+	attSignature, attEncoded, _, err := notaryAttestation.Attestation().SignAttestation(g.GetTestContext(), g.NotaryBondedSigner, true)
+	Nil(g.T(), err)
+
 	// Submit the attestation
 	tx, err = g.DestinationDomainClient.LightInbox().SubmitAttestation(
 		txContextDest.TransactOpts,
 		attEncoded,
 		attSignature,
-		agentRoot,
-		snapGas,
+		notaryAttestation.AgentRoot(),
+		notaryAttestation.SnapGas(),
 	)
 	Nil(g.T(), err)
 	NotNil(g.T(), tx)
@@ -676,36 +629,6 @@ func (g GuardSuite) TestReportFraudulentStateInAttestation() {
 	// Verify that a report has been submitted by the Guard by checking that a Dispute is now open.
 	g.Eventually(func() bool {
 		err := g.SummitDomainClient.BondingManager().GetDispute(g.GetTestContext(), big.NewInt(0))
-		if err != nil {
-			return false
-		}
-
-		return true
-	})
-
-	// Verify that a report has been submitted by the Guard by checking that a Dispute is now open.
-	g.Eventually(func() bool {
-		err := g.SummitDomainClient.BondingManager().GetDispute(g.GetTestContext(), big.NewInt(1))
-		if err != nil {
-			return false
-		}
-
-		return true
-	})
-
-	// Verify that a report has been submitted by the Guard by checking that a Dispute is now open.
-	g.Eventually(func() bool {
-		err := g.SummitDomainClient.BondingManager().GetDispute(g.GetTestContext(), big.NewInt(2))
-		if err != nil {
-			return false
-		}
-
-		return true
-	})
-
-	// Verify that a report has been submitted by the Guard by checking that a Dispute is now open.
-	g.Eventually(func() bool {
-		err := g.SummitDomainClient.BondingManager().GetDispute(g.GetTestContext(), big.NewInt(3))
 		if err != nil {
 			return false
 		}

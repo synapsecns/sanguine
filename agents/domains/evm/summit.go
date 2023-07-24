@@ -114,3 +114,22 @@ func (a summitContract) GetNotarySnapshot(ctx context.Context, attPayload []byte
 
 	return snapshot, nil
 }
+
+func (a summitContract) GetAttestation(ctx context.Context, attNonce uint32) (types.NotaryAttestation, error) {
+	rawAttestation, err := a.contract.GetAttestation(&bind.CallOpts{Context: ctx}, attNonce)
+	if err != nil {
+		return nil, fmt.Errorf("could not retrieve attestation: %w", err)
+	}
+
+	if len(rawAttestation.AttPayload) == 0 {
+		//nolint:nil,nil
+		return nil, nil
+	}
+
+	attestation, err := types.NewNotaryAttestation(rawAttestation.AttPayload, rawAttestation.AgentRoot, rawAttestation.SnapGas)
+	if err != nil {
+		return nil, fmt.Errorf("could not decode attestation: %w", err)
+	}
+
+	return attestation, nil
+}

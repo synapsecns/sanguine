@@ -138,7 +138,7 @@ func (a inboxContract) VerifyAttestation(ctx context.Context, signer signer.Sign
 	}
 
 	transactOpts.Context = ctx
-	return a.contract.VerifyAttestation(transactor, attestation, attSignature)
+	return a.contract.VerifyAttestation(transactOpts, attestation, attSignature)
 }
 
 func (a inboxContract) VerifyStateWithAttestation(ctx context.Context, signer signer.Signer, stateIndex int64, snapPayload []byte, attPayload []byte, attSignature []byte) (tx *ethTypes.Transaction, err error) {
@@ -154,7 +154,7 @@ func (a inboxContract) VerifyStateWithAttestation(ctx context.Context, signer si
 
 	transactOpts.Context = ctx
 	transactOpts.GasLimit = 5000000
-	return a.contract.VerifyStateWithAttestation(transactor, big.NewInt(stateIndex), snapPayload, attPayload, attSignature)
+	return a.contract.VerifyStateWithAttestation(transactOpts, big.NewInt(stateIndex), snapPayload, attPayload, attSignature)
 }
 
 func (a inboxContract) SubmitStateReportWithAttestation(ctx context.Context, signer signer.Signer, stateIndex int64, signature signer.Signature, snapPayload, attPayload, attSignature []byte) (tx *ethTypes.Transaction, err error) {

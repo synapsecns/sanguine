@@ -121,9 +121,9 @@ func (s state) SignState(ctx context.Context, signer signer.Signer) (signer.Sign
 	hashedEncodedState := crypto.Keccak256Hash(encodedState).Bytes()
 	toSign := append(stateSalt.Bytes(), hashedEncodedState...)
 
-	toSignHashed := crypto.Keccak256Hash(toSign)
+	//toSignHashed := crypto.Keccak256Hash(toSign)
 
-	hashedState, err := HashRawBytes(toSignHashed[:])
+	hashedState, err := HashRawBytes(toSign[:])
 	if err != nil {
 		return nil, nil, common.Hash{}, fmt.Errorf("failed to hash state: %w", err)
 	}

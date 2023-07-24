@@ -263,7 +263,7 @@ func (g Guard) handleSnapshot(ctx context.Context, log ethTypes.Log, chainID uin
 		if err != nil {
 			return fmt.Errorf("could not sign snapshot message: %w", err)
 		}
-		tx, err := g.domains[state.Origin()].LightInbox().VerifyStateWithSnapshot(
+		_, err = g.domains[state.Origin()].LightInbox().VerifyStateWithSnapshot(
 			ctx,
 			g.unbondedSigner,
 			int64(stateIndex),
@@ -274,7 +274,6 @@ func (g Guard) handleSnapshot(ctx context.Context, log ethTypes.Log, chainID uin
 		if err != nil {
 			return fmt.Errorf("could not verify state with snapshot: %w", err)
 		}
-		fmt.Println("TXHASHA: ", tx.Hash().String())
 
 		// If the agent who submitted the fraudulent snapshot is a guard, we only need to call `VerifyStateWithSnapshot`.
 		if fraudSnapshot.Domain == 0 {
@@ -291,7 +290,7 @@ func (g Guard) handleSnapshot(ctx context.Context, log ethTypes.Log, chainID uin
 			return fmt.Errorf("could not sign state: %w", err)
 		}
 
-		tx, err = g.domains[g.summitDomainID].Inbox().SubmitStateReportWithSnapshot(
+		_, err = g.domains[g.summitDomainID].Inbox().SubmitStateReportWithSnapshot(
 			ctx,
 			g.unbondedSigner,
 			int64(stateIndex),
@@ -302,7 +301,6 @@ func (g Guard) handleSnapshot(ctx context.Context, log ethTypes.Log, chainID uin
 		if err != nil {
 			return fmt.Errorf("could not submit state report with snapshot: %w", err)
 		}
-		fmt.Println("TXHASHB: ", tx.Hash().String())
 
 		// TODO: Ensure we do not need to report each state if there are multiple invalid states.
 		return nil
@@ -341,7 +339,6 @@ func (g Guard) handleAttestation(ctx context.Context, log ethTypes.Log, chainID 
 	// If attestation is invalid, we need to slash the agent
 	// by calling `verifyAttestation()` on the summit domain.
 	if isValid {
-		fmt.Println("checking invalid attestation")
 		// The attestation has a state not matching Origin.
 		// Fetch the snapshot, then verify each individual state with the attestation.
 
@@ -371,7 +368,7 @@ func (g Guard) handleAttestation(ctx context.Context, log ethTypes.Log, chainID 
 				continue
 			}
 
-			tx, err := g.domains[state.Origin()].Inbox().VerifyStateWithAttestation(
+			_, err = g.domains[state.Origin()].LightInbox().VerifyStateWithAttestation(
 				ctx,
 				g.unbondedSigner,
 				int64(i),
@@ -382,13 +379,12 @@ func (g Guard) handleAttestation(ctx context.Context, log ethTypes.Log, chainID 
 			if err != nil {
 				return fmt.Errorf("could not verify state with attestation: %w", err)
 			}
-			fmt.Printf("verifystatewithattestation hash: %s\n", tx.Hash().String())
 
 			srSignature, _, _, err := state.SignState(ctx, g.bondedSigner)
 			if err != nil {
 				return fmt.Errorf("could not sign state: %w", err)
 			}
-			tx, err = g.domains[g.summitDomainID].Inbox().SubmitStateReportWithAttestation(
+			_, err = g.domains[g.summitDomainID].Inbox().SubmitStateReportWithAttestation(
 				ctx,
 				g.unbondedSigner,
 				int64(i),
@@ -397,6 +393,9 @@ func (g Guard) handleAttestation(ctx context.Context, log ethTypes.Log, chainID 
 				fraudAttestation.Payload,
 				fraudAttestation.Signature,
 			)
+			if err != nil {
+				return fmt.Errorf("could not submit state report with attestation: %w", err)
+			}
 		}
 		return nil
 	}

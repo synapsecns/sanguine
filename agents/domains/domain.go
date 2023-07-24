@@ -70,6 +70,8 @@ type SummitContract interface {
 	IsValidAttestation(ctx context.Context, attestation []byte) (bool, error)
 	// GetNotarySnapshot gets the snapshot payload corresponding to a given attestation
 	GetNotarySnapshot(ctx context.Context, attPayload []byte) (types.Snapshot, error)
+	// GetAttestation gets an attestation for a given attestationNonce.
+	GetAttestation(ctx context.Context, attNonce uint32) (types.NotaryAttestation, error)
 }
 
 // InboxContract contains the interface for the inbox.
@@ -132,6 +134,8 @@ type LightInboxContract interface {
 	VerifyStateWithSnapshot(ctx context.Context, signer signer.Signer, stateIndex int64, signature signer.Signature, snapPayload []byte, snapSignature []byte) (tx *ethTypes.Transaction, err error)
 	// SubmitAttestationReport submits an attestation report to the inbox (via the light inbox contract)
 	SubmitAttestationReport(ctx context.Context, signer signer.Signer, attestation, arSignature, attSignature []byte) (tx *ethTypes.Transaction, err error)
+	// VerifyStateWithAttestation verifies a state with attestation.
+	VerifyStateWithAttestation(ctx context.Context, signer signer.Signer, stateIndex int64, snapPayload []byte, attPayload []byte, attSignature []byte) (tx *ethTypes.Transaction, err error)
 }
 
 // LightManagerContract contains the interface for the light manager.
