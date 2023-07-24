@@ -110,14 +110,14 @@ func newBaseHandler(buildInfo config.BuildInfo, extraOpts ...tracesdk.TracerProv
 
 // newBaseHandlerWithTracerProvider creates a new baseHandler for any opentelemtry tracer.
 func newBaseHandlerWithTracerProvider(buildInfo config.BuildInfo, tracerProvider trace.TracerProvider, propagator propagation.TextMapPropagator) *baseHandler {
-	// default tracer for server
+	// default tracer for server.
 	otel.SetTracerProvider(tracerProvider)
 	tracer := tracerProvider.Tracer(buildInfo.Name())
 	otel.SetTextMapPropagator(propagator)
 
 	interval, err := strconv.Atoi(os.Getenv("OTEL_METER_INTERVAL"))
 	if err != nil {
-		// default interval
+		// default interval.
 		interval = 60
 	}
 

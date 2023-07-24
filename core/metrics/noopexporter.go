@@ -24,18 +24,18 @@ func (n noOpMetricExporter) Aggregation(kind metric.InstrumentKind) aggregation.
 	return metric.DefaultAggregationSelector(kind)
 }
 
-// Export exporter (no-op)
-func (n noOpMetricExporter) Export(ctx context.Context, metrics *metricdata.ResourceMetrics) error {
+// Export exporter (no-op).
+func (n noOpMetricExporter) Export(_ context.Context, _ *metricdata.ResourceMetrics) error {
 	return nil
 }
 
-// ForceFlush exporter (no-op)
-func (n noOpMetricExporter) ForceFlush(ctx context.Context) error {
+// ForceFlush exporter (no-op).
+func (n noOpMetricExporter) ForceFlush(_ context.Context) error {
 	return nil
 }
 
-// Shutdown exporter (no-op)
-func (n noOpMetricExporter) Shutdown(ctx context.Context) error {
+// Shutdown exporter (no-op).
+func (n noOpMetricExporter) Shutdown(_ context.Context) error {
 	return nil
 }
 
