@@ -85,14 +85,14 @@ func (g *APISuite) SetupTest() {
 		}, g.metrics))
 	}()
 
-	hostName := fmt.Sprintf("127.0.0.1:%d", port)
+	hostName := fmt.Sprintf("localhost:%d", port)
 	baseURL := fmt.Sprintf("http://%s", hostName)
 
 	g.gqlClient = client.NewClient(http.DefaultClient, fmt.Sprintf("%s%s", baseURL, server.GraphqlEndpoint))
 
 	config := rest.NewConfiguration()
 	config.BasePath = baseURL
-	config.Host = baseURL
+	config.Host = hostName
 
 	g.grpcRestClient = rest.NewAPIClient(config)
 	rawGrpcClient, err := grpc.DialContext(g.GetTestContext(), hostName, grpc.WithTransportCredentials(insecure.NewCredentials()))
@@ -115,11 +115,9 @@ func (g *APISuite) SetupTest() {
 	})
 
 	g.Eventually(func() bool {
-		fmt.Println("Checking health")
 		res, realRes, err := g.grpcRestClient.ScribeServiceApi.ScribeServiceCheck(g.GetTestContext(), rest.V1HealthCheckRequest{
 			Service: "any",
 		})
-		fmt.Println("Checked health")
 
 		if err == nil {
 			defer func() {

@@ -160,13 +160,6 @@ jobs:
           PYROSCOPE_PATH: '${{ steps.pyroscope-path.outputs.PYROSCOPE_PATH }}'
           APPLICATION_NAME: ${{ steps.coverage.outputs.flag }}
 
-      # delete
-      - name: Setup upterm session
-        uses: lhotari/action-upterm@v1
-        with:
-          ## limits ssh access and adds the ssh public key for the user which triggered the workflow
-          limit-access-to-actor: true
-
       - name: Test
         uses: nick-fields/retry@v2
         with:
