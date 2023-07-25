@@ -97,6 +97,7 @@ import {
   fetchAndStoreSingleTokenBalance,
 } from '@/slices/portfolio/hooks'
 import { usePortfolioBalances } from '@/slices/portfolio/hooks'
+import { updateSingleTokenAllowance } from '@/slices/portfolio/actions'
 
 // NOTE: These are idle utility functions that will be re-written to
 // support sorting by desired mechanism
@@ -321,6 +322,15 @@ const StateManagedBridge = () => {
               chainId: fromChainId,
               tokenAddress: fromToken.addresses[fromChainId] as Address,
               spender: routerAddress,
+            }).then((allowance) => {
+              dispatch(
+                updateSingleTokenAllowance({
+                  chainId: fromChainId,
+                  allowance: allowance,
+                  spender: routerAddress,
+                  token: fromToken,
+                })
+              )
             })
 
       const originMinWithSlippage = subtractSlippage(
