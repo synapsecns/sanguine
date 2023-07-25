@@ -1,4 +1,5 @@
 import Link from 'next/link'
+import { useRouter } from 'next/router'
 import { getPoolUrl } from '@urls'
 import { useEffect, useState } from 'react'
 import { getSinglePoolData } from '@utils/actions/getPoolData'

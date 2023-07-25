@@ -9,6 +9,7 @@ import { Token } from '../types'
 import { TransactionReceipt, zeroAddress } from 'viem'
 import { approveErc20Token } from '@/actions/approveErc20Token'
 import { stakeLpToken } from '@/actions/stakeLpToken'
+import { segmentAnalyticsEvent } from '@/contexts/SegmentAnalyticsProvider'
 
 export const approve = async (
   pool: Token,
@@ -79,6 +80,11 @@ export const stake = async (
 
   try {
     if (!address) throw new Error('Wallet must be connected')
+    
+    segmentAnalyticsEvent(`[Stake] Attempt`, {
+      poolId,
+      inputValue,
+    })
 
     const tx: TransactionReceipt = await stakeLpToken({
       address,
@@ -104,10 +110,19 @@ export const stake = async (
       id: 'stake-success-popup',
       duration: 10000,
     })
+    segmentAnalyticsEvent(`[Stake] Success`, {
+      poolId,
+      inputValue,
+    })
 
     return tx
   } catch (err) {
     toast.dismiss(pendingPopup)
+    segmentAnalyticsEvent(`[Stake] Error`, {
+      poolId,
+      inputValue,
+      errorCode: err.code,
+    })
     txErrorHandler(err)
     return err
   }
