@@ -1,5 +1,7 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit'
+import { Address } from 'viem'
 
+import { Token } from '@/utils/types'
 import { PortfolioTabs } from './actions'
 import {
   fetchAndStorePortfolioBalances,
@@ -43,12 +45,22 @@ export const portfolioSlice = createSlice({
     updateSingleTokenAllowance: (
       state,
       action: PayloadAction<{
+        chainId: number
         allowance: bigint
         spender: Address
-        owner: Address
         token: Token
       }>
-    ) => {},
+    ) => {
+      const { chainId, allowance, spender, token } = action.payload
+
+      state.balancesAndAllowances[chainId].forEach(
+        (t: TokenWithBalanceAndAllowances) => {
+          if (t.tokenAddress === token.addresses[chainId]) {
+            t.allowances[spender] = allowance
+          }
+        }
+      )
+    },
   },
   extraReducers: (builder) => {
     builder

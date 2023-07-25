@@ -12,8 +12,8 @@ export const setActiveTab = createAction<PortfolioTabs>(
   'portfolio/setActiveTab'
 )
 export const updateSingleTokenAllowance = createAction<{
+  chainId: number
   allowance: bigint
   spender: Address
-  owner: Address
   token: Token
 }>('portfolio/updateSingleTokenAllowance')
