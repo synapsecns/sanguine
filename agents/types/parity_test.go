@@ -31,10 +31,10 @@ func TestEncodeTipsParity(t *testing.T) {
 	_, handle := deployManager.GetTipsHarness(ctx, testBackend)
 
 	// we want to make sure we can deal w/ overflows
-	summitTip := randomUint64BigInt(t)
-	attestationTip := randomUint64BigInt(t)
-	executionTip := randomUint64BigInt(t)
-	deliveryTip := randomUint64BigInt(t)
+	summitTip := big.NewInt(int64(gofakeit.Uint32()))
+	attestationTip := big.NewInt(int64(gofakeit.Uint32()))
+	executionTip := big.NewInt(int64(gofakeit.Uint32()))
+	deliveryTip := big.NewInt(int64(gofakeit.Uint32()))
 
 	solidityFormattedTips, err := handle.EncodeTips(&bind.CallOpts{Context: ctx},
 		summitTip.Uint64(), attestationTip.Uint64(), executionTip.Uint64(), deliveryTip.Uint64())
@@ -52,6 +52,15 @@ func TestEncodeTipsParity(t *testing.T) {
 	Equal(t, decodedTips.AttestationTip(), attestationTip)
 	Equal(t, decodedTips.ExecutionTip(), executionTip)
 	Equal(t, decodedTips.DeliveryTip(), deliveryTip)
+
+	// Check the conversion into a big.Int
+	goTipsBigInt, err := types.EncodeTipsBigInt(types.NewTips(summitTip, attestationTip, executionTip, deliveryTip))
+	Nil(t, err)
+
+	solidityTipsBigInt, err := handle.EncodeTips(&bind.CallOpts{Context: ctx}, summitTip.Uint64(), attestationTip.Uint64(), executionTip.Uint64(), deliveryTip.Uint64())
+	Nil(t, err)
+
+	Equal(t, goTipsBigInt.Bytes(), solidityTipsBigInt.Bytes())
 }
 
 func randomUint40BigInt(tb testing.TB) *big.Int {
@@ -180,6 +189,47 @@ func TestEncodeStateParity(t *testing.T) {
 	Equal(t, amortAttCost, stateFromBytes.GasData().AmortAttCost())
 	Equal(t, etherPrice, stateFromBytes.GasData().EtherPrice())
 	Equal(t, markup, stateFromBytes.GasData().Markup())
+}
+
+func TestEncodeReceiptParity(t *testing.T) {
+	ctx, cancel := context.WithTimeout(context.Background(), time.Second*10)
+	defer cancel()
+
+	testBackend := simulated.NewSimulatedBackend(ctx, t)
+	deployManager := testutil.NewDeployManager(t)
+
+	_, receiptHarness := deployManager.GetReceiptHarness(ctx, testBackend)
+
+	origin := gofakeit.Uint32()
+	destination := gofakeit.Uint32()
+	messageHash := common.BigToHash(big.NewInt(gofakeit.Int64()))
+	snapshotRoot := common.BigToHash(big.NewInt(gofakeit.Int64()))
+	stateIndex := gofakeit.Uint8()
+	attNotary := common.BigToAddress(big.NewInt(gofakeit.Int64()))
+	firstExecutor := common.BigToAddress(big.NewInt(gofakeit.Int64()))
+	finalExecutor := common.BigToAddress(big.NewInt(gofakeit.Int64()))
+
+	receipt := types.NewReceipt(origin, destination, messageHash, snapshotRoot, stateIndex, attNotary, firstExecutor, finalExecutor)
+
+	encodedReceipt, err := types.EncodeReceipt(receipt)
+	Nil(t, err)
+
+	solEncodedReceipt, err := receiptHarness.FormatReceipt(&bind.CallOpts{Context: ctx}, origin, destination, messageHash, snapshotRoot, stateIndex, attNotary, firstExecutor, finalExecutor)
+	Nil(t, err)
+
+	Equal(t, encodedReceipt, solEncodedReceipt)
+
+	decodedReceipt, err := types.DecodeReceipt(encodedReceipt)
+	Nil(t, err)
+
+	Equal(t, receipt.Origin(), decodedReceipt.Origin())
+	Equal(t, receipt.Destination(), decodedReceipt.Destination())
+	Equal(t, receipt.MessageHash(), decodedReceipt.MessageHash())
+	Equal(t, receipt.SnapshotRoot(), decodedReceipt.SnapshotRoot())
+	Equal(t, receipt.StateIndex(), decodedReceipt.StateIndex())
+	Equal(t, receipt.AttestationNotary(), decodedReceipt.AttestationNotary())
+	Equal(t, receipt.FirstExecutor(), decodedReceipt.FirstExecutor())
+	Equal(t, receipt.FinalExecutor(), decodedReceipt.FinalExecutor())
 }
 
 func TestEncodeSnapshotParity(t *testing.T) {
@@ -507,4 +557,12 @@ func TestHeaderEncodeParity(t *testing.T) {
 	Nil(t, err)
 
 	Equal(t, goHeader, solHeader.Bytes())
+
+	goHeaderHash, err := types.NewHeader(flag, origin, nonce, destination, optimisticSeconds).Leaf()
+	Nil(t, err)
+
+	solHeaderHash, err := headerHarnessContract.Leaf(&bind.CallOpts{Context: ctx}, solHeader)
+	Nil(t, err)
+
+	Equal(t, goHeaderHash, solHeaderHash)
 }

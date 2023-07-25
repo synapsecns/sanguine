@@ -20,6 +20,7 @@ import (
 	"github.com/synapsecns/sanguine/agents/contracts/test/messageharness"
 	"github.com/synapsecns/sanguine/agents/contracts/test/originharness"
 	"github.com/synapsecns/sanguine/agents/contracts/test/pingpongclient"
+	"github.com/synapsecns/sanguine/agents/contracts/test/receiptharness"
 	"github.com/synapsecns/sanguine/agents/contracts/test/requestharness"
 	"github.com/synapsecns/sanguine/agents/contracts/test/snapshotharness"
 	"github.com/synapsecns/sanguine/agents/contracts/test/stateharness"
@@ -69,6 +70,8 @@ const (
 	MessageHarnessType // MessageHarness
 	// BaseMessageHarnessType is the type of the base message harness contract.
 	BaseMessageHarnessType // BaseMessageHarness
+	// ReceiptHarnessType is the type of the receipt harness contract.
+	ReceiptHarnessType // ReceiptHarness
 	// RequestHarnessType is the type of the request harness contract.
 	RequestHarnessType // RequestHarness
 	// OriginHarnessType is the origin harness type.
@@ -141,6 +144,8 @@ func (c contractTypeImpl) ContractInfo() *compiler.Contract {
 		return messageharness.Contracts["solidity/MessageHarness.t.sol:MessageHarness"]
 	case BaseMessageHarnessType:
 		return basemessageharness.Contracts["solidity/BaseMessageHarness.t.sol:BaseMessageHarness"]
+	case ReceiptHarnessType:
+		return receiptharness.Contracts["solidity/ReceiptHarness.t.sol:ReceiptHarness"]
 	case RequestHarnessType:
 		return requestharness.Contracts["solidity/RequestHarness.t.sol:RequestHarness"]
 	case OriginHarnessType:

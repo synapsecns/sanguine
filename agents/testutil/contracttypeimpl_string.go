@@ -11,33 +11,34 @@ func _() {
 	_ = x[OriginType-0]
 	_ = x[MessageHarnessType-1]
 	_ = x[BaseMessageHarnessType-2]
-	_ = x[RequestHarnessType-3]
-	_ = x[OriginHarnessType-4]
-	_ = x[StateHarnessType-5]
-	_ = x[SnapshotHarnessType-6]
-	_ = x[AttestationHarnessType-7]
-	_ = x[TipsHarnessType-8]
-	_ = x[HeaderHarnessType-9]
-	_ = x[DestinationHarnessType-10]
-	_ = x[SummitHarnessType-11]
-	_ = x[SummitType-12]
-	_ = x[DestinationType-13]
-	_ = x[AgentsTestContractType-14]
-	_ = x[TestClientType-15]
-	_ = x[PingPongClientType-16]
-	_ = x[LightManagerHarnessType-17]
-	_ = x[BondingManagerHarnessType-18]
-	_ = x[LightManagerType-19]
-	_ = x[BondingManagerType-20]
-	_ = x[GasDataHarnessType-21]
-	_ = x[GasOracleType-22]
-	_ = x[InboxType-23]
-	_ = x[LightInboxType-24]
+	_ = x[ReceiptHarnessType-3]
+	_ = x[RequestHarnessType-4]
+	_ = x[OriginHarnessType-5]
+	_ = x[StateHarnessType-6]
+	_ = x[SnapshotHarnessType-7]
+	_ = x[AttestationHarnessType-8]
+	_ = x[TipsHarnessType-9]
+	_ = x[HeaderHarnessType-10]
+	_ = x[DestinationHarnessType-11]
+	_ = x[SummitHarnessType-12]
+	_ = x[SummitType-13]
+	_ = x[DestinationType-14]
+	_ = x[AgentsTestContractType-15]
+	_ = x[TestClientType-16]
+	_ = x[PingPongClientType-17]
+	_ = x[LightManagerHarnessType-18]
+	_ = x[BondingManagerHarnessType-19]
+	_ = x[LightManagerType-20]
+	_ = x[BondingManagerType-21]
+	_ = x[GasDataHarnessType-22]
+	_ = x[GasOracleType-23]
+	_ = x[InboxType-24]
+	_ = x[LightInboxType-25]
 }
 
-const _contractTypeImpl_name = "OriginMessageHarnessBaseMessageHarnessRequestHarnessOriginHarnessStateHarnessTypeSnapshotHarnessTypeAttestationHarnessTypeTipsHarnessTypeHeaderHarnessTypeDestinationHarnessSummitHarnessSummitDestinationAgentsTestContractTestClientPingPongClientLightManagerHarnessBondingManagerHarnessLightManagerBondingManagerGasDataHarnessTypeGasOracleInboxLightInbox"
+const _contractTypeImpl_name = "OriginMessageHarnessBaseMessageHarnessReceiptHarnessRequestHarnessOriginHarnessStateHarnessTypeSnapshotHarnessTypeAttestationHarnessTypeTipsHarnessTypeHeaderHarnessTypeDestinationHarnessSummitHarnessSummitDestinationAgentsTestContractTestClientPingPongClientLightManagerHarnessBondingManagerHarnessLightManagerBondingManagerGasDataHarnessTypeGasOracleInboxLightInbox"
 
-var _contractTypeImpl_index = [...]uint16{0, 6, 20, 38, 52, 65, 81, 100, 122, 137, 154, 172, 185, 191, 202, 220, 230, 244, 263, 284, 296, 310, 328, 337, 342, 352}
+var _contractTypeImpl_index = [...]uint16{0, 6, 20, 38, 52, 66, 79, 95, 114, 136, 151, 168, 186, 199, 205, 216, 234, 244, 258, 277, 298, 310, 324, 342, 351, 356, 366}
 
 func (i contractTypeImpl) String() string {
 	if i < 0 || i >= contractTypeImpl(len(_contractTypeImpl_index)-1) {

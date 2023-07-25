@@ -3,6 +3,7 @@ package testutil
 import (
 	"context"
 	"fmt"
+	"github.com/synapsecns/sanguine/agents/contracts/test/receiptharness"
 	"sync"
 
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
@@ -152,6 +153,14 @@ func (d *DeployManager) GetSnapshotHarness(ctx context.Context, backend backends
 	d.T().Helper()
 
 	return manager.GetContract[*snapshotharness.SnapshotHarnessRef](ctx, d.T(), d, backend, SnapshotHarnessType)
+}
+
+// GetReceiptHarness gets the receipt harness.
+// nolint:dupl
+func (d *DeployManager) GetReceiptHarness(ctx context.Context, backend backends.SimulatedTestBackend) (contract contracts.DeployedContract, handle *receiptharness.ReceiptHarnessRef) {
+	d.T().Helper()
+
+	return manager.GetContract[*receiptharness.ReceiptHarnessRef](ctx, d.T(), d, backend, ReceiptHarnessType)
 }
 
 // GetAttestationHarness gets the attestation harness.

@@ -311,6 +311,37 @@ func EncodeTips(tips Tips) ([]byte, error) {
 	return b, nil
 }
 
+// EncodeTipsBigInt encodes a list of tips into a big int.
+func EncodeTipsBigInt(tips Tips) (*big.Int, error) {
+	//summitTip := new(big.Int).Lsh(tips.SummitTip(), ShiftSummitTip)
+	//attestationTip := new(big.Int).Lsh(tips.AttestationTip(), ShiftAttestationTip)
+	//executionTip := new(big.Int).Lsh(tips.ExecutionTip(), ShiftExecutionTip)
+	//deliveryTip := new(big.Int).Set(tips.DeliveryTip())
+	//
+	//result := new(big.Int)
+	//
+	//result.Or(summitTip, attestationTip)
+	//result.Or(result, executionTip)
+	//result.Or(result, deliveryTip)
+	//
+	//padding := []byte{0, 0, 0, 0}
+	//
+	//result = result.SetBytes(append(padding, result.Bytes()...))
+	//
+	//result = result.SetBytes([]byte{0, 0, 1, 0})
+
+	//out0 := *abi.ConvertType(out[0], new(*big.Int)).(**big.Int)
+
+	encodedTips, err := EncodeTips(tips)
+	if err != nil {
+		return nil, err
+	}
+
+	result := new(big.Int).SetBytes(encodedTips)
+
+	return result, nil
+}
+
 // DecodeTips decodes a tips typed mem view.
 func DecodeTips(toDecode []byte) (Tips, error) {
 	summitTip := new(big.Int).SetBytes(toDecode[0:8])
@@ -553,7 +584,7 @@ func EncodeReceipt(receipt Receipt) ([]byte, error) {
 	binary.BigEndian.PutUint32(destBytes, receipt.Destination())
 
 	messageHashBytes := receipt.MessageHash()
-	snapshotRootBytes := receipt.MessageHash()
+	snapshotRootBytes := receipt.SnapshotRoot()
 
 	b = append(b, originBytes...)
 	b = append(b, destBytes...)
