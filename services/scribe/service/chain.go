@@ -142,8 +142,14 @@ func (c *ChainIndexer) Index(parentContext context.Context, onlyOneBlock *uint64
 			return fmt.Errorf("could not create contract indexer: %w", err)
 		}
 
+		// Check if a explicit backfill range has been set.
+		var configEnd *uint64
+		if contract.EndBlock > contract.StartBlock {
+			configEnd = &contract.EndBlock
+		}
+
 		indexGroup.Go(func() error {
-			err := c.IndexToBlock(indexCtx, onlyOneBlock, contract.StartBlock, contractIndexer)
+			err := c.IndexToBlock(indexCtx, contract.StartBlock, configEnd, contractIndexer)
 			if err != nil {
 				return fmt.Errorf("could not index to livefill: %w", err)
 			}
@@ -259,7 +265,7 @@ func (c *ChainIndexer) getLatestBlock(ctx context.Context, atHead bool) (*uint64
 }
 
 // IndexToBlock takes a contract indexer and indexs a contract up until it reaches the livefill threshold. This function should be generally used for calling a indexer with a single contract.
-func (c *ChainIndexer) IndexToBlock(parentContext context.Context, onlyOneBlock *uint64, contractStartBlock uint64, indexer *indexer.Indexer) error {
+func (c *ChainIndexer) IndexToBlock(parentContext context.Context, configStart uint64, configEnd *uint64, indexer *indexer.Indexer) error {
 	timeout := time.Duration(0)
 	b := createBackoff()
 	for {
@@ -267,13 +273,13 @@ func (c *ChainIndexer) IndexToBlock(parentContext context.Context, onlyOneBlock 
 		case <-parentContext.Done():
 			return fmt.Errorf("%s chain context canceled: %w", parentContext.Value(chainContextKey), parentContext.Err())
 		case <-time.After(timeout):
-			var endHeight *uint64
+			var endHeight uint64
 			var err error
-			startHeight, endHeight, err := c.getStartHeight(parentContext, onlyOneBlock, contractStartBlock, indexer)
+			startHeight, endHeight, err := c.getIndexingRange(parentContext, configStart, configEnd, indexer)
 			if err != nil {
 				return err
 			}
-			err = indexer.Index(parentContext, startHeight, *endHeight)
+			err = indexer.Index(parentContext, startHeight, endHeight)
 			if err != nil {
 				timeout = b.Duration()
 				// if the config has set the contract to refresh at a slower rate than the timeout, use the refresh rate instead.
@@ -283,7 +289,7 @@ func (c *ChainIndexer) IndexToBlock(parentContext context.Context, onlyOneBlock 
 				logger.ReportIndexerError(err, indexer.GetIndexerConfig(), logger.BackfillIndexerError)
 				continue
 			}
-			if onlyOneBlock != nil {
+			if configEnd != nil {
 				return nil
 			}
 
@@ -344,29 +350,28 @@ func (c *ChainIndexer) isReadyForLivefill(parentContext context.Context, indexer
 	return int64(lastBlockIndexed) >= int64(*endHeight)-int64(c.chainConfig.LivefillThreshold), nil
 }
 
-func (c *ChainIndexer) getStartHeight(parentContext context.Context, onlyOneBlock *uint64, givenStart uint64, indexer *indexer.Indexer) (uint64, *uint64, error) {
-	lastIndexed, err := c.eventDB.RetrieveLastIndexed(parentContext, indexer.GetIndexerConfig().Addresses[0], c.chainConfig.ChainID, scribeTypes.IndexingConfirmed)
-	if err != nil {
-		return 0, nil, fmt.Errorf("could not get last block indexed: %w", err)
+func (c *ChainIndexer) getIndexingRange(parentContext context.Context, configStart uint64, configEnd *uint64, indexer *indexer.Indexer) (uint64, uint64, error) {
+	var endHeight uint64
+	startHeight := configStart
+	// If a range is set in the config, respect those values,
+	if configEnd != nil {
+		endHeight = *configEnd
+		return startHeight, endHeight, nil
 	}
 
-	// If the last indexed block is greater than the contract start block, start indexing from the last indexed block.
-	startHeight := givenStart
+	// otherwise, get the last indexed block and start from the last indexed block
+	lastIndexed, err := c.eventDB.RetrieveLastIndexed(parentContext, indexer.GetIndexerConfig().Addresses[0], c.chainConfig.ChainID, scribeTypes.IndexingConfirmed)
+	if err != nil {
+		return 0, 0, fmt.Errorf("could not get last block indexed: %w", err)
+	}
 	if lastIndexed > startHeight {
 		startHeight = lastIndexed + 1
 	}
-
-	var endHeight *uint64
-	// onlyOneBlock is used for amending single blocks with a blockhash discrepancies or for testing.
-	if onlyOneBlock != nil {
-		startHeight = *onlyOneBlock
-		endHeight = onlyOneBlock
-	} else {
-		endHeight, err = c.getLatestBlock(parentContext, scribeTypes.IndexingConfirmed)
-		if err != nil {
-			return 0, nil, fmt.Errorf("could not get current block number while indexing: %w", err)
-		}
+	latestBlock, err := c.getLatestBlock(parentContext, scribeTypes.IndexingConfirmed)
+	if err != nil {
+		return 0, 0, fmt.Errorf("could not get current block number while indexing: %w", err)
 	}
+	endHeight = *latestBlock
 
 	return startHeight, endHeight, nil
 }

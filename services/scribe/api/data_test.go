@@ -10,7 +10,6 @@ import (
 	"github.com/synapsecns/sanguine/services/scribe/grpc/client/rest"
 	scribeTypes "github.com/synapsecns/sanguine/services/scribe/types"
 	"math/big"
-	"os"
 )
 
 func (g APISuite) TestRetrieveData() {
@@ -200,9 +199,6 @@ func (g APISuite) TestTransactionDataEquality() {
 }
 
 func (g APISuite) TestBlockTimeDataEquality() {
-	if os.Getenv("CI") != "" {
-		g.T().Skip("Network flake")
-	}
 	// create data for storing a block time
 	chainID := uint32(1)
 	blockNumber := uint64(1000000)

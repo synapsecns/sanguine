@@ -83,7 +83,7 @@ func (s *ScribeSuite) TestIndexToBlock() {
 	indexer, err := indexer.NewIndexer(chainConfig, contracts, s.testDB, simulatedChainArr, s.nullMetrics, blockHeightMeter, false)
 	Nil(s.T(), err)
 
-	err = chainIndexer.IndexToBlock(s.GetTestContext(), nil, uint64(0), indexer)
+	err = chainIndexer.IndexToBlock(s.GetTestContext(), uint64(0), nil, indexer)
 	Nil(s.T(), err)
 
 	// Get all receipts.
@@ -381,10 +381,7 @@ func (s *ScribeSuite) TestLargeVolume() {
 // TestChainIndexerLivfillToTip tests that the ChainIndexer can livefill events to the head.
 //
 // nolint:cyclop
-func (s *ScribeSuite) TestChainIndexerLivfillToTip() {
-	if os.Getenv("CI") != "" || !s.runVolumeTest {
-		s.T().Skip("This is a long running test")
-	}
+func (s *ScribeSuite) TestChainIndexerLivefillToTip() {
 	const numberOfContracts = 3
 	currentBlockHeight := uint64(10) // starting with zero to emit events while indexing.
 	chainID := gofakeit.Uint32()
