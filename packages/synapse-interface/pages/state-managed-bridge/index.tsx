@@ -322,16 +322,18 @@ const StateManagedBridge = () => {
               chainId: fromChainId,
               tokenAddress: fromToken.addresses[fromChainId] as Address,
               spender: routerAddress,
-            }).then((allowance) => {
-              dispatch(
-                updateSingleTokenAllowance({
-                  chainId: fromChainId,
-                  allowance: allowance,
-                  spender: routerAddress,
-                  token: fromToken,
-                })
-              )
             })
+
+      if (fromToken.addresses[fromChainId] !== zeroAddress) {
+        dispatch(
+          updateSingleTokenAllowance({
+            chainId: fromChainId,
+            allowance: allowance,
+            spender: routerAddress,
+            token: fromToken,
+          })
+        )
+      }
 
       const originMinWithSlippage = subtractSlippage(
         originQuery?.minAmountOut ?? 0n,
