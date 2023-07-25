@@ -10,6 +10,7 @@ package rest
 
 import (
 	"context"
+	"fmt"
 	"io/ioutil"
 	"net/http"
 	"net/url"
@@ -38,7 +39,7 @@ func (a *ScribeServiceApiService) ScribeServiceCheck(ctx context.Context, body V
 		localVarFileBytes   []byte
 		localVarReturnValue V1HealthCheckResponse
 	)
-
+	fmt.Println("ScribeServiceApiService.ScribeServiceCheck", body)
 	// create path and map variables
 	localVarPath := a.client.cfg.BasePath + "/grpc/v1/health_check"
 
@@ -69,8 +70,10 @@ func (a *ScribeServiceApiService) ScribeServiceCheck(ctx context.Context, body V
 	if err != nil {
 		return localVarReturnValue, nil, err
 	}
-
+	fmt.Println("ScribeServiceApiService.ScribeServiceCheck", r)
 	localVarHttpResponse, err := a.client.callAPI(r)
+	fmt.Println("callAPIcallAPIcallAPIScribeServiceApiService.ScribeServiceCheck", localVarHttpResponse, localVarHttpResponse.StatusCode, err)
+
 	if err != nil || localVarHttpResponse == nil {
 		return localVarReturnValue, localVarHttpResponse, err
 	}

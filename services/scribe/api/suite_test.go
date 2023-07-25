@@ -115,9 +115,12 @@ func (g *APISuite) SetupTest() {
 	})
 
 	g.Eventually(func() bool {
+		fmt.Println("Checking health")
 		res, realRes, err := g.grpcRestClient.ScribeServiceApi.ScribeServiceCheck(g.GetTestContext(), rest.V1HealthCheckRequest{
 			Service: "any",
 		})
+		fmt.Println("Checked health")
+
 		if err == nil {
 			defer func() {
 				_ = realRes.Body.Close()
