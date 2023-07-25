@@ -421,7 +421,7 @@ func (n *Notary) registerNotaryOnDestination(parentCtx context.Context) bool {
 	ctx, span := n.handler.Tracer().Start(parentCtx, "registerNotaryOnDestination")
 	defer span.End()
 
-	agentProof, err := n.summitDomain.BondingManager().GetProof(ctx, n.bondedSigner)
+	agentProof, err := n.summitDomain.BondingManager().GetProof(ctx, n.bondedSigner.Address())
 	if err != nil {
 		logger.Errorf("Error getting agent proof: %v", err)
 		span.AddEvent("Error getting agent proof", trace.WithAttributes(

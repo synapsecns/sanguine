@@ -8,6 +8,7 @@ import (
 	"fmt"
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/common"
+	ethTypes "github.com/ethereum/go-ethereum/core/types"
 	"github.com/synapsecns/sanguine/agents/contracts/bondingmanager"
 	"github.com/synapsecns/sanguine/agents/domains"
 	"github.com/synapsecns/sanguine/agents/types"
@@ -15,6 +16,7 @@ import (
 	"github.com/synapsecns/sanguine/ethergo/signer/nonce"
 	"github.com/synapsecns/sanguine/ethergo/signer/signer"
 	"math/big"
+	"strings"
 )
 
 // NewBondingManagerContract returns a bound bonding manager contract.
@@ -67,8 +69,8 @@ func (a bondingManagerContract) GetAgentRoot(ctx context.Context) ([32]byte, err
 }
 
 //nolint:dupl
-func (a bondingManagerContract) GetProof(ctx context.Context, bondedAgentSigner signer.Signer) ([][32]byte, error) {
-	proof, err := a.contract.GetProof(&bind.CallOpts{Context: ctx}, bondedAgentSigner.Address())
+func (a bondingManagerContract) GetProof(ctx context.Context, address common.Address) ([][32]byte, error) {
+	proof, err := a.contract.GetProof(&bind.CallOpts{Context: ctx}, address)
 	if err != nil {
 		return nil, fmt.Errorf("could not retrieve agent proof: %w", err)
 	}
@@ -97,4 +99,31 @@ func (a bondingManagerContract) GetDispute(ctx context.Context, index *big.Int) 
 	}
 
 	return nil
+}
+
+func (a bondingManagerContract) CompleteSlashing(ctx context.Context, signer signer.Signer, domain uint32, agent common.Address, proof [][32]byte) (tx *ethTypes.Transaction, err error) {
+	transactor, err := signer.GetTransactor(ctx, a.client.GetBigChainID())
+	if err != nil {
+		return nil, fmt.Errorf("could not sign tx: %w", err)
+	}
+
+	transactOpts, err := a.nonceManager.NewKeyedTransactor(transactor)
+	if err != nil {
+		return nil, fmt.Errorf("could not create tx: %w", err)
+	}
+
+	transactOpts.Context = ctx
+
+	transactOpts.GasLimit = 5000000
+
+	tx, err = a.contract.CompleteSlashing(transactOpts, domain, agent, proof)
+	if err != nil {
+		// TODO: Why is this done? And if it is necessary, we should functionalize it.
+		if strings.Contains(err.Error(), "nonce too low") {
+			a.nonceManager.ClearNonce(signer.Address())
+		}
+		return nil, fmt.Errorf("could not submit state report: %w", err)
+	}
+
+	return tx, nil
 }

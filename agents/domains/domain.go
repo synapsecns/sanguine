@@ -104,12 +104,14 @@ type BondingManagerContract interface {
 	// GetAgentRoot gets the current agent root
 	GetAgentRoot(ctx context.Context) ([32]byte, error)
 	// GetProof gets the proof that the agent is in the Agent Merkle Tree
-	GetProof(ctx context.Context, bondedAgentSigner signer.Signer) ([][32]byte, error)
+	GetProof(ctx context.Context, address common.Address) ([][32]byte, error)
 	// DisputeStatus gets the dispute status for the given agent.
 	DisputeStatus(ctx context.Context, address common.Address) (disputeStatus DisputeStatus, err error)
 	// GetDispute gets the dispute for a given dispute index.
 	// TODO: Add more returned values here as needed.
 	GetDispute(ctx context.Context, index *big.Int) (err error)
+	// CompleteSlashing completes the slashing of an agent.
+	CompleteSlashing(ctx context.Context, signer signer.Signer, domain uint32, agent common.Address, proof [][32]byte) (tx *ethTypes.Transaction, err error)
 }
 
 // DestinationContract contains the interface for the destination.

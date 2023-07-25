@@ -3,6 +3,7 @@ package guard
 import (
 	"context"
 	"fmt"
+	"github.com/synapsecns/sanguine/agents/contracts/bondingmanager"
 	"math/big"
 	"strconv"
 	"time"
@@ -43,15 +44,17 @@ type Guard struct {
 	refreshInterval    time.Duration
 	summitLatestStates map[uint32]types.State
 	// TODO: change to metrics type
-	originLatestStates map[uint32]types.State
-	handler            metrics.Handler
-	grpcClient         pbscribe.ScribeServiceClient
-	grpcConn           *grpc.ClientConn
-	logChans           map[uint32]chan *ethTypes.Log
-	inboxParser        inbox.Parser
-	lightInboxParser   lightinbox.Parser
-	boundOrigins       map[uint32]*origin.Origin
-	txSubmitter        submitter.TransactionSubmitter
+	originLatestStates   map[uint32]types.State
+	handler              metrics.Handler
+	grpcClient           pbscribe.ScribeServiceClient
+	grpcConn             *grpc.ClientConn
+	logChans             map[uint32]chan *ethTypes.Log
+	inboxParser          inbox.Parser
+	lightInboxParser     lightinbox.Parser
+	bondingManagerParser bondingmanager.Parser
+	//lightManagerParser   lightmanager.Parser
+	boundOrigins map[uint32]*origin.Origin
+	txSubmitter  submitter.TransactionSubmitter
 }
 
 const (
@@ -151,6 +154,11 @@ func NewGuard(ctx context.Context, cfg config.AgentConfig, omniRPCClient omnirpc
 			if err != nil {
 				return Guard{}, fmt.Errorf("could not create inbox parser: %w", err)
 			}
+
+			guard.bondingManagerParser, err = bondingmanager.NewParser(common.HexToAddress(domain.BondingManagerAddress))
+			if err != nil {
+				return Guard{}, fmt.Errorf("could not create bonding manager parser: %w", err)
+			}
 		}
 	}
 
@@ -224,7 +232,7 @@ func (g Guard) receiveLogs(ctx context.Context, chainID uint32) error {
 				return fmt.Errorf("log is nil")
 			}
 
-			err := g.handleLog(ctx, *log, chainID)
+			err := g.handleLog(ctx, *log)
 			if err != nil {
 				return fmt.Errorf("could not process log: %w", err)
 			}
@@ -232,7 +240,7 @@ func (g Guard) receiveLogs(ctx context.Context, chainID uint32) error {
 	}
 }
 
-func (g Guard) handleSnapshot(ctx context.Context, log ethTypes.Log, chainID uint32) error {
+func (g Guard) handleSnapshot(ctx context.Context, log ethTypes.Log) error {
 	fraudSnapshot, err := g.inboxParser.ParseSnapshotAccepted(log)
 	if err != nil {
 		return fmt.Errorf("could not parse snapshot accepted: %w", err)
@@ -325,7 +333,7 @@ func (g Guard) handleSnapshot(ctx context.Context, log ethTypes.Log, chainID uin
 	return nil
 }
 
-func (g Guard) handleAttestation(ctx context.Context, log ethTypes.Log, chainID uint32) error {
+func (g Guard) handleAttestation(ctx context.Context, log ethTypes.Log) error {
 	fraudAttestation, err := g.lightInboxParser.ParseAttestationAccepted(log)
 	if err != nil {
 		return fmt.Errorf("could not parse attestation accepted: %w", err)
@@ -436,7 +444,7 @@ func (g Guard) handleAttestation(ctx context.Context, log ethTypes.Log, chainID 
 	return nil
 }
 
-func (g Guard) handleReceipt(ctx context.Context, log ethTypes.Log, chainID uint32) error {
+func (g Guard) handleReceipt(ctx context.Context, log ethTypes.Log) error {
 	fraudReceipt, err := g.inboxParser.ParseReceiptAccepted(log)
 	if err != nil {
 		return fmt.Errorf("could not parse receipt accepted: %w", err)
@@ -485,14 +493,50 @@ func (g Guard) handleReceipt(ctx context.Context, log ethTypes.Log, chainID uint
 	return nil
 }
 
-func (g Guard) handleLog(ctx context.Context, log ethTypes.Log, chainID uint32) error {
+func (g Guard) handleStatusUpdated(ctx context.Context, log ethTypes.Log) error {
+	statusUpdated, err := g.bondingManagerParser.ParseStatusUpdated(log)
+	if err != nil {
+		return fmt.Errorf("could not parse status updated: %w", err)
+	}
+
+	// TODO: Change this to an enum.
+	if statusUpdated.Flag != 4 {
+		return nil
+	}
+
+	agentProof, err := g.domains[g.summitDomainID].BondingManager().GetProof(ctx, statusUpdated.Agent)
+	if err != nil {
+		return fmt.Errorf("could not get proof: %w", err)
+	}
+
+	tx, err := g.domains[g.summitDomainID].BondingManager().CompleteSlashing(
+		ctx,
+		g.unbondedSigner,
+		statusUpdated.Domain,
+		statusUpdated.Agent,
+		agentProof,
+	)
+	if err != nil {
+		return fmt.Errorf("could not complete slashing: %w", err)
+	}
+
+	fmt.Println("TXHASHC", tx.Hash().String())
+
+	time.Sleep(10 * time.Second)
+
+	return nil
+}
+
+func (g Guard) handleLog(ctx context.Context, log ethTypes.Log) error {
 	switch {
 	case g.isSnapshotAcceptedEvent(log):
-		return g.handleSnapshot(ctx, log, chainID)
+		return g.handleSnapshot(ctx, log)
 	case g.isAttestationAcceptedEvent(log):
-		return g.handleAttestation(ctx, log, chainID)
+		return g.handleAttestation(ctx, log)
 	case g.isReceiptAcceptedEvent(log):
-		return g.handleReceipt(ctx, log, chainID)
+		return g.handleReceipt(ctx, log)
+	case g.isStatusUpdatedEvent(log):
+		return g.handleStatusUpdated(ctx, log)
 	}
 	return nil
 }
@@ -522,6 +566,15 @@ func (g Guard) isReceiptAcceptedEvent(log ethTypes.Log) bool {
 
 	inboxEvent, ok := g.inboxParser.EventType(log)
 	return ok && inboxEvent == inbox.ReceiptAcceptedEvent
+}
+
+func (g Guard) isStatusUpdatedEvent(log ethTypes.Log) bool {
+	if g.bondingManagerParser == nil {
+		return false
+	}
+
+	bondingManagerEvent, ok := g.bondingManagerParser.EventType(log)
+	return ok && bondingManagerEvent == bondingmanager.StatusUpdatedEvent
 }
 
 //nolint:cyclop
@@ -680,6 +733,10 @@ func (g Guard) Start(parentCtx context.Context) error {
 
 	group.Go(func() error {
 		return g.streamLogs(ctx, g.summitDomainID, g.domains[g.summitDomainID].Config().InboxAddress)
+	})
+
+	group.Go(func() error {
+		return g.streamLogs(ctx, g.summitDomainID, g.domains[g.summitDomainID].Config().BondingManagerAddress)
 	})
 
 	group.Go(func() error {
