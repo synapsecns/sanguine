@@ -14,7 +14,6 @@ type PortfolioContentProps = {
   selectedFromChainId: number
   networkPortfolioWithBalances: NetworkTokenBalancesAndAllowances
   fetchState: FetchState
-  bridgeTxHashes: string[]
 }
 
 export const PortfolioContent = ({
@@ -23,7 +22,6 @@ export const PortfolioContent = ({
   selectedFromChainId,
   networkPortfolioWithBalances,
   fetchState,
-  bridgeTxHashes,
 }: PortfolioContentProps) => {
   const { currentNetworkPortfolio, remainingNetworksPortfolios } =
     getCurrentNetworkPortfolio(

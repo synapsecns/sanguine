@@ -19,7 +19,8 @@ import { useBridgeState } from '@/slices/bridge/hooks'
 import { BridgeState } from '@/slices/bridge/reducer'
 
 export const Portfolio = () => {
-  const { fromChainId, bridgeTxHashes }: BridgeState = useBridgeState()
+  const dispatch = useAppDispatch()
+  const { fromChainId }: BridgeState = useBridgeState()
   const { activeTab }: PortfolioState = usePortfolioState()
   const { chain } = useNetwork()
   const { address } = useAccount({
@@ -27,7 +28,12 @@ export const Portfolio = () => {
       dispatch(setActiveTab(PortfolioTabs.PORTFOLIO))
     },
   })
-  const dispatch = useAppDispatch()
+
+  const { balancesAndAllowances: portfolioData, status: fetchState } =
+    useFetchPortfolioBalances()
+
+  const filteredPortfolioDataForBalances: NetworkTokenBalancesAndAllowances =
+    filterPortfolioBalancesWithBalances(portfolioData)
 
   useEffect(() => {
     ;(async () => {
@@ -37,15 +43,6 @@ export const Portfolio = () => {
       }
     })()
   }, [chain, address])
-
-  const {
-    balancesAndAllowances: portfolioData,
-    fetchPortfolioBalances,
-    status: fetchState,
-  } = useFetchPortfolioBalances()
-
-  const filteredPortfolioDataForBalances: NetworkTokenBalancesAndAllowances =
-    filterPortfolioBalancesWithBalances(portfolioData)
 
   return (
     <div
@@ -62,7 +59,6 @@ export const Portfolio = () => {
             selectedFromChainId={fromChainId}
             networkPortfolioWithBalances={filteredPortfolioDataForBalances}
             fetchState={fetchState}
-            bridgeTxHashes={bridgeTxHashes}
           />
         )}
       </div>
