@@ -686,7 +686,7 @@ SELECT date,
 FROM (
          SELECT date,
                 maxMap(map(chain_id, sumTotal)) AS results
-            FROM (SELECT toString(toDate(FROM_UNIXTIME(ftimestamp, '%Y/%m/%d')))                                                as date,
+            FROM (SELECT toString(toDate(FROM_UNIXTIME(ttimestamp, '%Y/%m/%d')))                                                as date,
                          tchain_id AS chain_id,
 `
 
