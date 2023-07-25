@@ -40,6 +40,15 @@ export const portfolioSlice = createSlice({
     setActiveTab: (state, action: PayloadAction<PortfolioTabs>) => {
       state.activeTab = action.payload
     },
+    updateSingleTokenAllowance: (
+      state,
+      action: PayloadAction<{
+        allowance: bigint
+        spender: Address
+        owner: Address
+        token: Token
+      }>
+    ) => {},
   },
   extraReducers: (builder) => {
     builder

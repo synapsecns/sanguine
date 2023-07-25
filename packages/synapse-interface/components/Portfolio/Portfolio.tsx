@@ -28,7 +28,6 @@ export const Portfolio = () => {
       dispatch(setActiveTab(PortfolioTabs.PORTFOLIO))
     },
   })
-
   const { balancesAndAllowances: portfolioData, status: fetchState } =
     useFetchPortfolioBalances()
 
