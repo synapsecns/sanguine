@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"github.com/synapsecns/sanguine/agents/contracts/bondingmanager"
+	"github.com/synapsecns/sanguine/agents/contracts/lightmanager"
 	"math/big"
 	"strconv"
 	"time"
@@ -52,9 +53,9 @@ type Guard struct {
 	inboxParser          inbox.Parser
 	lightInboxParser     lightinbox.Parser
 	bondingManagerParser bondingmanager.Parser
-	//lightManagerParser   lightmanager.Parser
-	boundOrigins map[uint32]*origin.Origin
-	txSubmitter  submitter.TransactionSubmitter
+	lightManagerParser   lightmanager.Parser
+	boundOrigins         map[uint32]*origin.Origin
+	txSubmitter          submitter.TransactionSubmitter
 }
 
 const (
@@ -158,6 +159,11 @@ func NewGuard(ctx context.Context, cfg config.AgentConfig, omniRPCClient omnirpc
 			guard.bondingManagerParser, err = bondingmanager.NewParser(common.HexToAddress(domain.BondingManagerAddress))
 			if err != nil {
 				return Guard{}, fmt.Errorf("could not create bonding manager parser: %w", err)
+			}
+
+			guard.lightManagerParser, err = lightmanager.NewParser(common.HexToAddress(domain.LightManagerAddress))
+			if err != nil {
+				return Guard{}, fmt.Errorf("could not create light manager parser: %w", err)
 			}
 		}
 	}
@@ -509,7 +515,7 @@ func (g Guard) handleStatusUpdated(ctx context.Context, log ethTypes.Log) error 
 		return fmt.Errorf("could not get proof: %w", err)
 	}
 
-	tx, err := g.domains[g.summitDomainID].BondingManager().CompleteSlashing(
+	_, err = g.domains[g.summitDomainID].BondingManager().CompleteSlashing(
 		ctx,
 		g.unbondedSigner,
 		statusUpdated.Domain,
@@ -520,9 +526,16 @@ func (g Guard) handleStatusUpdated(ctx context.Context, log ethTypes.Log) error 
 		return fmt.Errorf("could not complete slashing: %w", err)
 	}
 
-	fmt.Println("TXHASHC", tx.Hash().String())
+	return nil
+}
 
-	time.Sleep(10 * time.Second)
+func (g Guard) handleDisputeOpened(ctx context.Context, log ethTypes.Log) error {
+	disputeOpened, err := g.lightManagerParser.ParseDisputeOpened(log)
+	if err != nil {
+		return fmt.Errorf("could not parse dispute opened: %w", err)
+	}
+
+	_ = disputeOpened
 
 	return nil
 }
@@ -537,6 +550,8 @@ func (g Guard) handleLog(ctx context.Context, log ethTypes.Log) error {
 		return g.handleReceipt(ctx, log)
 	case g.isStatusUpdatedEvent(log):
 		return g.handleStatusUpdated(ctx, log)
+	case g.isDisputeOpenedEvent(log):
+		return g.handleDisputeOpened(ctx, log)
 	}
 	return nil
 }
@@ -575,6 +590,15 @@ func (g Guard) isStatusUpdatedEvent(log ethTypes.Log) bool {
 
 	bondingManagerEvent, ok := g.bondingManagerParser.EventType(log)
 	return ok && bondingManagerEvent == bondingmanager.StatusUpdatedEvent
+}
+
+func (g Guard) isDisputeOpenedEvent(log ethTypes.Log) bool {
+	if g.lightManagerParser == nil {
+		return false
+	}
+
+	lightManagerEvent, ok := g.lightManagerParser.EventType(log)
+	return ok && lightManagerEvent == lightmanager.DisputeOpenedEvent
 }
 
 //nolint:cyclop
@@ -752,6 +776,10 @@ func (g Guard) Start(parentCtx context.Context) error {
 
 		group.Go(func() error {
 			return g.streamLogs(ctx, domain.Config().DomainID, domain.Config().LightInboxAddress)
+		})
+
+		group.Go(func() error {
+			return g.streamLogs(ctx, domain.Config().DomainID, domain.Config().LightManagerAddress)
 		})
 
 		group.Go(func() error {
