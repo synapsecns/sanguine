@@ -184,7 +184,7 @@ export function sortTokensByBalanceDescending(
     tokens &&
     tokens.sort(
       (a: TokenWithBalanceAndAllowances, b: TokenWithBalanceAndAllowances) =>
-        b.parsedBalance > a.parsedBalance ? 1 : -1
+        Number(b.parsedBalance) > Number(a.parsedBalance) ? 1 : -1
     )
   )
 }
