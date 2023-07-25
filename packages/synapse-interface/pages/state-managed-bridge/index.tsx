@@ -87,7 +87,10 @@ import { Address, zeroAddress } from 'viem'
 import { stringToBigInt } from '@/utils/bigint/format'
 import { Warning } from '@/components/Warning'
 import { useAppDispatch } from '@/store/hooks'
-import { sortTokensByBalanceDescending } from '@/utils/actions/fetchPortfolioBalances'
+import {
+  NetworkTokenBalancesAndAllowances,
+  sortTokensByBalanceDescending,
+} from '@/utils/actions/fetchPortfolioBalances'
 import {
   fetchAndStorePortfolioBalances,
   fetchAndStoreSingleNetworkPortfolioBalances,
@@ -128,7 +131,8 @@ const StateManagedBridge = () => {
   const router = useRouter()
   const { query, pathname } = router
 
-  const portfolioBalances = usePortfolioBalances()
+  const portfolioBalances: NetworkTokenBalancesAndAllowances =
+    usePortfolioBalances()
 
   const {
     fromChainId,
