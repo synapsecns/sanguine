@@ -122,7 +122,7 @@ func newBaseHandlerWithTracerProvider(buildInfo config.BuildInfo, tracerProvider
 	}
 
 	// TODO set up exporting the way we need here
-	metricExporter := newNoOpExporter()
+	metricExporter := NewNoOpExporter()
 
 	mp, err := NewOtelMeter(buildInfo.Name(), time.Duration(interval)*time.Second, metricExporter)
 	if err != nil {

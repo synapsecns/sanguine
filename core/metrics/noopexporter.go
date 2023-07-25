@@ -10,7 +10,8 @@ import (
 // noOpExporter is a no-op metric exporter that prevents any metrics from being exported.
 type noOpMetricExporter struct{}
 
-func newNoOpExporter() metric.Exporter {
+// NewNoOpExporter creates a new no-op metric exporter.
+func NewNoOpExporter() metric.Exporter {
 	return noOpMetricExporter{}
 }
 
