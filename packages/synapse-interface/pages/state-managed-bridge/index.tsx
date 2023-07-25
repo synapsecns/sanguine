@@ -17,10 +17,10 @@ import {
   setIsLoading,
   setFromChainId,
   setToChainId,
+  setSupportedFromTokens,
   setSupportedToTokens,
   setFromChainIds,
   setToChainIds,
-  setSupportedFromTokenBalances,
   setDeadlineMinutes,
   setDestinationAddress,
   addBridgeTxHash,
@@ -141,7 +141,7 @@ const StateManagedBridge = () => {
     bridgeQuote,
     fromValue,
     isLoading,
-    supportedFromTokenBalances,
+    supportedFromTokens,
     supportedToTokens,
     destinationAddress,
     bridgeTxHashes,
@@ -220,9 +220,7 @@ const StateManagedBridge = () => {
 
     dispatch(setSupportedToTokens(sortToTokens(bridgeableTokens)))
     dispatch(setToToken(bridgeableToken))
-    dispatch(
-      setSupportedFromTokenBalances(portfolioBalances[fromChainId] ?? [])
-    )
+    dispatch(setSupportedFromTokens(portfolioBalances[fromChainId] ?? []))
     dispatch(setFromChainIds(fromChainIds))
     dispatch(setToChainIds(bridgeableChainIds))
 
@@ -584,7 +582,7 @@ const StateManagedBridge = () => {
                   key="fromBlock"
                   isOrigin={true}
                   tokens={separateAndSortTokensWithBalances(
-                    supportedFromTokenBalances
+                    supportedFromTokens
                   )}
                   chainId={fromChainId}
                   selectedToken={fromToken}

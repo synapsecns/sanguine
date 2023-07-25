@@ -9,7 +9,7 @@ import { TokenWithBalanceAndAllowances } from '@/utils/actions/fetchPortfolioBal
 
 export interface BridgeState {
   fromChainId: number
-  supportedFromTokenBalances: TokenWithBalanceAndAllowances[]
+  supportedFromTokens: TokenWithBalanceAndAllowances[]
   toChainId: number
   supportedToTokens: Token[]
   fromToken: Token
@@ -28,7 +28,7 @@ export interface BridgeState {
 // Additionally how do we set query params based on user input updates?
 const initialState: BridgeState = {
   fromChainId: ETHEREUM.id,
-  supportedFromTokenBalances: [],
+  supportedFromTokens: [],
   toChainId: ARBITRUM.id,
   supportedToTokens: [],
   fromToken: ETH,
@@ -68,17 +68,14 @@ export const bridgeSlice = createSlice({
     setBridgeQuote: (state, action: PayloadAction<BridgeQuote>) => {
       state.bridgeQuote = action.payload
     },
-    setSupportedFromTokens: (state, action: PayloadAction<Token[]>) => {
+    setSupportedFromTokens: (
+      state,
+      action: PayloadAction<TokenWithBalanceAndAllowances[]>
+    ) => {
       state.supportedFromTokens = action.payload
     },
     setSupportedToTokens: (state, action: PayloadAction<Token[]>) => {
       state.supportedToTokens = action.payload
-    },
-    setSupportedFromTokenBalances: (
-      state,
-      action: PayloadAction<TokenWithBalanceAndAllowances[]>
-    ) => {
-      state.supportedFromTokenBalances = action.payload
     },
     setFromChainIds: (state, action: PayloadAction<number[]>) => {
       state.fromChainIds = action.payload
@@ -110,7 +107,6 @@ export const {
   updateFromValue,
   setSupportedFromTokens,
   setSupportedToTokens,
-  setSupportedFromTokenBalances,
   setFromChainIds,
   setToChainIds,
   setDeadlineMinutes,

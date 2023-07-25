@@ -18,7 +18,7 @@ export const InputContainer = () => {
     fromChainId,
     fromToken,
     fromChainIds,
-    supportedFromTokenBalances,
+    supportedFromTokens,
     fromValue,
     bridgeTxHashes,
   } = useSelector((state: RootState) => state.bridge)
@@ -45,11 +45,11 @@ export const InputContainer = () => {
 
   const dispatch = useDispatch()
 
-  const hasBalances = Object.keys(supportedFromTokenBalances).length > 0
+  const hasBalances = Object.keys(supportedFromTokens).length > 0
 
   const fromTokenBalance: bigint =
     (hasBalances &&
-      supportedFromTokenBalances.filter((token) => token.token === fromToken)[0]
+      supportedFromTokens.filter((token) => token.token === fromToken)[0]
         ?.balance) ??
     0n
 
