@@ -219,7 +219,7 @@ const StateManagedBridge = () => {
     dispatch(setSupportedToTokens(sortToTokens(bridgeableTokens)))
     dispatch(setToToken(bridgeableToken))
     dispatch(
-      setSupportedFromTokenBalances(portfolioBalances[fromChainId] ?? {})
+      setSupportedFromTokenBalances(portfolioBalances[fromChainId] ?? [])
     )
     dispatch(setFromChainIds(fromChainIds))
     dispatch(setToChainIds(bridgeableChainIds))
