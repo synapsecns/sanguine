@@ -16,7 +16,6 @@ import (
 	"go.opentelemetry.io/contrib/propagators/b3"
 	"go.opentelemetry.io/otel"
 	"go.opentelemetry.io/otel/attribute"
-	stdout "go.opentelemetry.io/otel/exporters/stdout/stdoutmetric"
 	"go.opentelemetry.io/otel/propagation"
 	"go.opentelemetry.io/otel/sdk/resource"
 	tracesdk "go.opentelemetry.io/otel/sdk/trace"
@@ -111,22 +110,20 @@ func newBaseHandler(buildInfo config.BuildInfo, extraOpts ...tracesdk.TracerProv
 
 // newBaseHandlerWithTracerProvider creates a new baseHandler for any opentelemtry tracer.
 func newBaseHandlerWithTracerProvider(buildInfo config.BuildInfo, tracerProvider trace.TracerProvider, propagator propagation.TextMapPropagator) *baseHandler {
-	// default tracer for server
+	// default tracer for server.
 	otel.SetTracerProvider(tracerProvider)
 	tracer := tracerProvider.Tracer(buildInfo.Name())
 	otel.SetTextMapPropagator(propagator)
 
 	interval, err := strconv.Atoi(os.Getenv("OTEL_METER_INTERVAL"))
 	if err != nil {
-		// default interval
+		// default interval.
 		interval = 60
 	}
 
 	// TODO set up exporting the way we need here
-	metricExporter, err := stdout.New()
-	if err != nil {
-		return nil
-	}
+	metricExporter := NewNoOpExporter()
+
 	mp, err := NewOtelMeter(buildInfo.Name(), time.Duration(interval)*time.Second, metricExporter)
 	if err != nil {
 		return nil
