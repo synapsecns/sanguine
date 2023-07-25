@@ -9,7 +9,6 @@ import { TokenWithBalanceAndAllowances } from '@/utils/actions/fetchPortfolioBal
 
 export interface BridgeState {
   fromChainId: number
-  supportedFromTokens: Token[]
   supportedFromTokenBalances: TokenWithBalanceAndAllowances[]
   toChainId: number
   supportedToTokens: Token[]
@@ -29,7 +28,6 @@ export interface BridgeState {
 // Additionally how do we set query params based on user input updates?
 const initialState: BridgeState = {
   fromChainId: ETHEREUM.id,
-  supportedFromTokens: [],
   supportedFromTokenBalances: [],
   toChainId: ARBITRUM.id,
   supportedToTokens: [],
