@@ -4,7 +4,7 @@ go 1.19
 
 require (
 	github.com/Flaque/filet v0.0.0-20201012163910-45f684403088
-	github.com/ImVexed/fasturl v0.0.0-20200730185836-b0c0fbead04e
+	github.com/ImVexed/fasturl v0.0.0-20230304231329-4e41488060f3
 	github.com/brianvoe/gofakeit/v6 v6.20.1
 	github.com/davecgh/go-spew v1.1.1
 	github.com/ethereum/go-ethereum v1.10.26
