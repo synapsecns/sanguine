@@ -26,7 +26,6 @@ type ScribeFetcher interface {
 	FetchTx(ctx context.Context, tx string, chainID int, blockNumber int) (*uint64, *string, error)
 }
 
-// ScribeFetcher is the fetcher for the events. It uses GQL.
 type scribeFetcherImpl struct {
 	underlyingClient *client.Client
 }
