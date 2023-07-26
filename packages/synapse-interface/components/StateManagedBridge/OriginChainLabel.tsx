@@ -29,7 +29,10 @@ export const OriginChainLabel = ({
   const dispatch = useDispatch()
 
   return (
-    <div className="flex items-center justify-between">
+    <div
+      data-test-id="origin-chain-label"
+      className="flex items-center justify-between"
+    >
       <div className={`text-gray-400 block text-sm mr-2`}>Origin</div>
       <div className="flex items-center space-x-3">
         {orderedChains.map((id) =>
@@ -71,6 +74,7 @@ const PossibleChain = ({ chainId }: { chainId: number }) => {
   }
   return chain ? (
     <button
+      data-test-id="origin-chain-label"
       className="
         w-7 h-7
         md:w-7
@@ -95,7 +99,7 @@ const SelectedChain = ({ chainId }: { chainId: number }) => {
   const chain = CHAINS_BY_ID[chainId]
   return chain ? (
     <div
-      data-test-id="selected-chain"
+      data-test-id="origin-selected-chain"
       className={`
         px-1
         flex items-center
