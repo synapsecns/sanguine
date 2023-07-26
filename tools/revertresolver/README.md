@@ -15,3 +15,5 @@ UnformattedAttestation(): 0xeb92662c687ecb0d91cd0350e030a511efe609e0ecfff5618dd8
 ```
 
 Note that the `-f` flag is optional; if unspecified, the script will yield all revert reasons as output (with their corresponding hashes).
+
+This tool is currently limited to error emits that don't take any parameters. A future version will use the abigen'd info.
