@@ -43,28 +43,17 @@ export const portfolioSlice = createSlice({
       .addCase(setActiveTab, (state, action: PayloadAction<PortfolioTabs>) => {
         state.activeTab = action.payload
       })
-      .addCase(
-        updateSingleTokenAllowance,
-        (
-          state,
-          action: PayloadAction<{
-            chainId: number
-            allowance: bigint
-            spender: Address
-            token: Token
-          }>
-        ) => {
-          const { chainId, allowance, spender, token } = action.payload
+      .addCase(updateSingleTokenAllowance, (state, action) => {
+        const { chainId, allowance, spender, token } = action.payload
 
-          state.balancesAndAllowances[chainId].forEach(
-            (t: TokenWithBalanceAndAllowances) => {
-              if (t.tokenAddress === token.addresses[chainId]) {
-                t.allowances[spender] = allowance
-              }
+        state.balancesAndAllowances[chainId].forEach(
+          (t: TokenWithBalanceAndAllowances) => {
+            if (t.tokenAddress === token.addresses[chainId]) {
+              t.allowances[spender] = allowance
             }
-          )
-        }
-      )
+          }
+        )
+      })
       .addCase(fetchAndStorePortfolioBalances.pending, (state) => {
         state.status = FetchState.LOADING
       })
@@ -81,7 +70,6 @@ export const portfolioSlice = createSlice({
         (state, action) => {
           const { balancesAndAllowances } = action.payload
 
-          // Update the existing balancesAndAllowances object
           Object.entries(balancesAndAllowances).forEach(
             ([chainId, mergedBalancesAndAllowances]) => {
               state.balancesAndAllowances[chainId] = [
