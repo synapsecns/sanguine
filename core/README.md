@@ -23,7 +23,6 @@ root
 ├── <a href="./mocktesting">mocktesting</a>: Provides a mocked tester for use with `testing.TB`
 ├── <a href="./observer">observer</a>: Provides an interface for adding/removing listeners.
 ├── <a href="./processlog">processlog</a>: Provides a way to interact with detatched processes as streams.
-├── <a href="./prom">prom</a>: Provides a set of utilities for working with Prometheus. This is deprected and will be removed in a future verison
 ├── <a href="./retry">retry</a>: Retries a function until it succeeds or the timeout is reached. This comes with a set of backoff strategies/options.
 ├── <a href="./server">server</a>: Provides a context-safe server that can be used to start/stop a server.
 ├── <a href="./testsuite">testsuite</a>: Provides a wrapper around testify/suite.
