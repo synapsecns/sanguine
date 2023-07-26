@@ -33,7 +33,7 @@ export const DestinationChainLabel = ({
       className="flex items-center justify-between"
     >
       <div className={`text-gray-400 block text-sm mr-2`}>Dest.</div>
-      <div className="flex items-center space-x-4 md:space-x-3">
+      <div className="flex items-center space-x-3">
         {orderedChains.map((id) =>
           id === chainId ? (
             <SelectedChain chainId={id} key={id} />
