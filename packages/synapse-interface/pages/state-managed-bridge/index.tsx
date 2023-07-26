@@ -535,7 +535,7 @@ const StateManagedBridge = () => {
         <Card
           divider={false}
           className={`
-                pt-5 pb-3 mt-5 overflow-hidden
+                px-2 md:px-6 pt-5 pb-3 mt-5 overflow-hidden
                 transition-all duration-100 transform rounded-xl
                 bg-bgBase
               `}
