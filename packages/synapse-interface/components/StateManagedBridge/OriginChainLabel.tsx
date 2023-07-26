@@ -94,6 +94,7 @@ const SelectedChain = ({ chainId }: { chainId: number }) => {
   const chain = CHAINS_BY_ID[chainId]
   return chain ? (
     <div
+      data-test-id="selected-chain"
       className={`
         px-1
         flex items-center
