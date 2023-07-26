@@ -100,8 +100,10 @@ import {
   usePortfolioBalances,
   useFetchPortfolioBalances,
 } from '@/slices/portfolio/hooks'
-import { FetchState } from '@/slices/portfolio/reducer'
-import { updateSingleTokenAllowance } from '@/slices/portfolio/actions'
+import {
+  updateSingleTokenAllowance,
+  FetchState,
+} from '@/slices/portfolio/actions'
 
 // NOTE: These are idle utility functions that will be re-written to
 // support sorting by desired mechanism
@@ -168,7 +170,6 @@ const StateManagedBridge = () => {
 
   const dispatch = useAppDispatch()
 
-  const fromTokens = BRIDGABLE_TOKENS[fromChainId]
   const fromChainIds = Object.keys(CHAINS_BY_ID).map((id) => Number(id))
   const toChainIds = Object.keys(CHAINS_BY_ID).map((id) => Number(id))
 
@@ -598,11 +599,9 @@ const StateManagedBridge = () => {
                 <TokenSlideOver
                   key="fromBlock"
                   isOrigin={true}
-                  tokens={
-                    portfolioStatus === FetchState.VALID
-                      ? separateAndSortTokensWithBalances(supportedFromTokens)
-                      : sortByVisibilityRank(fromTokens)
-                  }
+                  tokens={separateAndSortTokensWithBalances(
+                    supportedFromTokens
+                  )}
                   chainId={fromChainId}
                   selectedToken={fromToken}
                 />{' '}

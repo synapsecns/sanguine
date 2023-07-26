@@ -5,7 +5,7 @@ import {
   SingleNetworkPortfolio,
   PortfolioHeader,
 } from './SingleNetworkPortfolio'
-import { FetchState } from '@/slices/portfolio/reducer'
+import { FetchState } from '@/slices/portfolio/actions'
 import { ConnectWalletButton } from './ConnectWalletButton'
 
 type PortfolioContentProps = {

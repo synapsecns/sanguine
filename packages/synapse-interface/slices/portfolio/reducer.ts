@@ -2,7 +2,7 @@ import { createSlice, PayloadAction } from '@reduxjs/toolkit'
 import { Address } from 'viem'
 
 import { Token } from '@/utils/types'
-import { PortfolioTabs } from './actions'
+import { PortfolioTabs, FetchState } from './actions'
 import {
   fetchAndStorePortfolioBalances,
   fetchAndStoreSingleNetworkPortfolioBalances,
@@ -13,13 +13,6 @@ import {
   NetworkTokenBalancesAndAllowances,
   TokenWithBalanceAndAllowances,
 } from '@/utils/actions/fetchPortfolioBalances'
-
-export enum FetchState {
-  IDLE = 'idle',
-  LOADING = 'loading',
-  VALID = 'valid',
-  INVALID = 'invalid',
-}
 
 export interface PortfolioState {
   activeTab: PortfolioTabs

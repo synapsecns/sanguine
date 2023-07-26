@@ -2,7 +2,7 @@ import { multicall, erc20ABI, Address } from '@wagmi/core'
 import { sortByTokenBalance, TokenAndBalance } from '../sortTokens'
 import { Token } from '../types'
 import { BRIDGABLE_TOKENS } from '@/constants/tokens'
-import { FetchState } from '@/slices/portfolio/reducer'
+import { FetchState } from '@/slices/portfolio/actions'
 
 export const ROUTER_ADDRESS = '0x7E7A0e201FD38d3ADAA9523Da6C109a07118C96a'
 
