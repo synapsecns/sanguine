@@ -29,10 +29,8 @@ export const OriginChainLabel = ({
 
   return (
     <div className="flex items-center justify-center md:justify-between">
-      <div className={`text-gray-400 hidden md:block lg:block text-sm mr-2`}>
-        Origin
-      </div>
-      <div className="flex items-center space-x-4 md:space-x-3">
+      <div className={`text-gray-400 block text-sm mr-2`}>Origin</div>
+      <div className="flex items-center space-x-3">
         {orderedChains.map((id) =>
           Number(id) === chainId ? (
             <SelectedChain chainId={Number(id)} key={id} />
