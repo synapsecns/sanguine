@@ -2,48 +2,6 @@ import _ from 'lodash'
 
 import { EXISTING_BRIDGE_ROUTES } from '@/constants/existing-bridge-routes'
 
-// const defaultTokensByChainId = {
-//   '1': 'USDC-1',
-//   '10': 'USDC-10',
-//   '25': 'USDC-25',
-//   '56': 'USDC-56',
-//   '137': 'USDC-137',
-//   '250': 'USDC-250',
-//   '288': 'USDC-288',
-//   '1088': 'USDC-1088',
-//   '1284': 'NETH-1284',
-//   '1285': 'SYN-1285',
-//   '2000': 'SYN-2000',
-//   '7700': 'USDC-7700',
-//   '8217': 'USDC-8217',
-//   '42161': 'NUSD-42161',
-//   '43114': 'NUSD-43114',
-//   '53935': 'NUSD-53935',
-//   '1313161554': 'USDC-131316554',
-//   '1666600000': 'USDC-1666600000',
-// }
-
-// const defaultToChainsByFromChainId = {
-//   1: 10,
-//   10: 1,
-//   25: 1,
-//   56: 1,
-//   137: 1,
-//   250: 1,
-//   288: 1,
-//   1088: 1,
-//   1284: 1,
-//   1285: 1,
-//   2000: 1,
-//   7700: 1,
-//   8217: 1,
-//   42161: 1,
-//   43114: 1,
-//   53935: 1,
-//   1313161554: 1,
-//   1666600000: 1,
-// }
-
 const getTokenAndChainId = (tokenAndChainId: string) => {
   const [symbol, chainId] = tokenAndChainId.split('-')
 
@@ -97,7 +55,7 @@ const getPossibleFromTokens = () => {
   return Object.keys(EXISTING_BRIDGE_ROUTES)
 }
 
-const getPossibleFromTokensByFromChainId = (fromChainId: number) => {
+export const getPossibleFromTokensByFromChainId = (fromChainId: number) => {
   return Object.keys(EXISTING_BRIDGE_ROUTES).filter((token) =>
     token.endsWith(`-${fromChainId}`)
   )
@@ -164,7 +122,7 @@ const getPossibleToChainIdsByFromChainId = (fromChainId: number) => {
     .value()
 }
 
-const getPossibleToChainIdsByFromToken = (fromToken: string) => {
+export const getPossibleToChainIdsByFromToken = (fromToken: string) => {
   return _.uniq(
     EXISTING_BRIDGE_ROUTES[fromToken].map(
       (token) => getTokenAndChainId(token).chainId
@@ -193,7 +151,7 @@ const getPossibleToTokensByFromToken = (fromToken: string) => {
   return EXISTING_BRIDGE_ROUTES[fromToken]
 }
 
-const getPossibleToTokensByFromTokenAndToChainId = (
+export const getPossibleToTokensByFromTokenAndToChainId = (
   fromToken: string,
   toChainId: number
 ) => {

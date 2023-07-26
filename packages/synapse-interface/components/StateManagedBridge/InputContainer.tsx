@@ -1,32 +1,27 @@
 import React, { useEffect, useState, useRef } from 'react'
-import { useDispatch, useSelector } from 'react-redux'
+import { useDispatch } from 'react-redux'
 import { useAccount } from 'wagmi'
-import { RootState } from '@/store/store'
 
 import { updateFromValue } from '@/slices/bridge/reducer'
-import { setShowFromTokenSlideOver } from '@/slices/bridgeDisplaySlice'
-import SelectTokenDropdown from '@/components/input/TokenAmountInput/SelectTokenDropdown'
 import MiniMaxButton from '../buttons/MiniMaxButton'
 import { formatBigIntToString, stringToBigInt } from '@/utils/bigint/format'
 import { cleanNumberInput } from '@/utils/cleanNumberInput'
 import FromChainSelect from './FromChainSelect'
 import FromTokenSelect from './FromTokenSelect'
+import { useAppSelector } from '@/store/hooks'
 
 export const inputRef = React.createRef<HTMLInputElement>()
 
 export const InputContainer = () => {
-  const {
-    fromChainId,
-    fromToken,
-    fromChainIds,
-    supportedFromTokens,
-    fromValue,
-    bridgeTxHashes,
-  } = useSelector((state: RootState) => state.bridge)
+  const { fromChainId, fromToken, fromValue, bridgeTxHashes } = useAppSelector(
+    (state) => state.bridge
+  )
   const [showValue, setShowValue] = useState('')
 
   const [hasMounted, setHasMounted] = useState(false)
   const previousBridgeTxHashesRef = useRef<string[]>([])
+
+  const { balancesAndAllowances } = useAppSelector((state) => state.portfolio)
 
   useEffect(() => {
     setHasMounted(true)
@@ -46,33 +41,21 @@ export const InputContainer = () => {
 
   const dispatch = useDispatch()
 
-  const hasBalances = Object.keys(supportedFromTokens).length > 0
-
-  const fromTokenBalance: bigint =
-    (hasBalances &&
-      supportedFromTokens.filter((token) => token.token === fromToken)[0]
-        ?.balance) ??
-    0n
-
-  const formattedBalance = hasBalances
-    ? formatBigIntToString(
-        fromTokenBalance,
-        fromToken?.decimals[fromChainId],
-        4
-      )
-    : '0'
+  const parsedBalance = balancesAndAllowances[fromChainId]?.find(
+    (token) => token.tokenAddress === fromToken?.addresses[fromChainId]
+  )?.parsedBalance
 
   useEffect(() => {
     if (
       fromToken &&
       fromToken.decimals[fromChainId] &&
-      stringToBigInt(fromValue, fromToken.decimals[fromChainId]) !== 0n &&
-      stringToBigInt(fromValue, fromToken.decimals[fromChainId]) ===
-        fromTokenBalance
+      stringToBigInt(fromValue, fromToken.decimals[fromChainId]) !== 0n
+      // stringToBigInt(fromValue, fromToken.decimals[fromChainId]) ===
+      //   fromTokenBalance
     ) {
       setShowValue(fromValue)
     }
-  }, [fromValue, inputRef, fromChainId, fromToken, fromTokenBalance])
+  }, [fromValue, inputRef, fromChainId, fromToken])
 
   const handleFromValueChange = (
     event: React.ChangeEvent<HTMLInputElement>
@@ -94,15 +77,8 @@ export const InputContainer = () => {
   }
 
   const onClickBalance = () => {
-    const str = formatBigIntToString(
-      fromTokenBalance,
-      fromToken.decimals[fromChainId],
-      4
-    )
-    dispatch(updateFromValue(str))
-    setShowValue(
-      formatBigIntToString(fromTokenBalance, fromToken.decimals[fromChainId])
-    )
+    dispatch(updateFromValue(parsedBalance))
+    setShowValue(parsedBalance)
   }
 
   return (
@@ -152,7 +128,7 @@ export const InputContainer = () => {
                 className="hidden text-xs text-white transition-all duration-150 md:block transform-gpu hover:text-opacity-70 hover:cursor-pointer"
                 onClick={onClickBalance}
               >
-                {formattedBalance}
+                {parsedBalance}
                 <span className="text-opacity-50 text-secondaryTextColor">
                   {' '}
                   available
@@ -163,7 +139,7 @@ export const InputContainer = () => {
           {hasMounted && isConnected && (
             <div className="m-auto">
               <MiniMaxButton
-                disabled={fromTokenBalance && fromTokenBalance === 0n}
+                disabled={parsedBalance === '0.0'}
                 onClickBalance={onClickBalance}
               />
             </div>

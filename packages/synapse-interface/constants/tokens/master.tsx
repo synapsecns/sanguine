@@ -64,6 +64,7 @@ export const GOHM = new Token({
   color: 'gray',
   visibilityRank: 40,
   priorityRank: 6,
+  routeSymbol: 'GOHM',
 })
 
 export const LINK = new Token({
@@ -79,6 +80,7 @@ export const LINK = new Token({
   swapableType: 'LINK',
   color: 'blue',
   priorityRank: 6,
+  routeSymbol: 'LINK',
 })
 
 export const HIGHSTREET = new Token({
@@ -94,6 +96,7 @@ export const HIGHSTREET = new Token({
   swapableType: 'HIGHSTREET',
   color: 'cyan',
   priorityRank: 6,
+  routeSymbol: 'HIGHSTREET',
 })
 
 export const JUMP = new Token({
@@ -111,6 +114,7 @@ export const JUMP = new Token({
   swapableType: 'JUMP',
   color: 'cyan',
   priorityRank: 6,
+  routeSymbol: 'JUMP',
 })
 
 export const SFI = new Token({
@@ -127,6 +131,7 @@ export const SFI = new Token({
   swapableType: 'SFI',
   color: 'red',
   priorityRank: 6,
+  routeSymbol: 'SFI',
 })
 
 export const DOG = new Token({
@@ -145,6 +150,7 @@ export const DOG = new Token({
   swapableType: 'DOG',
   color: 'yellow',
   priorityRank: 6,
+  routeSymbol: 'DOG',
 })
 
 export const NFD = new Token({
@@ -163,6 +169,7 @@ export const NFD = new Token({
   swapableType: 'NFD',
   color: 'yellow',
   priorityRank: 6,
+  routeSymbol: 'NFD',
 })
 
 export const SOLAR = new Token({
@@ -179,6 +186,7 @@ export const SOLAR = new Token({
   swapableType: 'SOLAR',
   color: 'orange',
   priorityRank: 6,
+  routeSymbol: 'SOLAR',
 })
 
 export const GMX = new Token({
@@ -197,6 +205,7 @@ export const GMX = new Token({
   docUrl: '',
   swapableType: 'GMX',
   priorityRank: 6,
+  routeSymbol: 'GMX',
 })
 
 export const SDT = new Token({
@@ -216,6 +225,7 @@ export const SDT = new Token({
   swapableType: 'SDT',
   color: 'gray',
   priorityRank: 6,
+  routeSymbol: 'SDT',
 })
 
 export const NEWO = new Token({
@@ -233,6 +243,7 @@ export const NEWO = new Token({
   swapableType: 'NEWO',
   color: 'yellow',
   priorityRank: 6,
+  routeSymbol: 'NEWO',
 })
 
 export const USDB = new Token({
@@ -252,6 +263,7 @@ export const USDB = new Token({
   docUrl: '',
   swapableType: 'USDB',
   priorityRank: 6,
+  routeSymbol: 'USDB',
 })
 
 export const PEPE = new Token({
@@ -266,6 +278,7 @@ export const PEPE = new Token({
   description: 'PEPE',
   swapableType: 'PEPE',
   priorityRank: 6,
+  routeSymbol: 'PEPE',
 })
 
 export const VSTA = new Token({
@@ -282,6 +295,7 @@ export const VSTA = new Token({
   swapableType: 'VSTA',
   color: 'gray',
   priorityRank: 6,
+  routeSymbol: 'VSTA',
 })
 
 export const H2O = new Token({
@@ -304,6 +318,7 @@ export const H2O = new Token({
   swapableType: 'H2O',
   color: 'cyan',
   priorityRank: 6,
+  routeSymbol: 'H2O',
 })
 
 export const L2DAO = new Token({
@@ -320,6 +335,7 @@ export const L2DAO = new Token({
   swapableType: 'L2DAO',
   color: 'cyan',
   priorityRank: 6,
+  routeSymbol: 'L2DAO',
 })
 
 export const PLS = new Token({
@@ -336,6 +352,7 @@ export const PLS = new Token({
   swapableType: 'PLS',
   color: 'green',
   priorityRank: 6,
+  routeSymbol: 'PLS',
 })
 
 export const AGEUR = new Token({
@@ -353,6 +370,7 @@ export const AGEUR = new Token({
   swapableType: 'AGEUR',
   color: 'yellow',
   priorityRank: 6,
+  routeSymbol: 'AGEUR',
 })
 
 export const UNIDX = new Token({
@@ -371,6 +389,7 @@ export const UNIDX = new Token({
   swapableType: 'UNIDX',
   color: 'gray',
   priorityRank: 6,
+  routeSymbol: 'UNIDX',
 })
 
 // BASIC TOKENS
@@ -391,6 +410,7 @@ export const BUSD = new Token({
   swapableOn: [CHAINS.BNB.id],
   color: 'yellow',
   priorityRank: 2,
+  routeSymbol: 'BUSD',
 })
 
 export const USDC = new Token({
@@ -458,6 +478,7 @@ export const USDC = new Token({
   ],
   color: 'blue',
   priorityRank: 1,
+  routeSymbol: 'USDC',
 })
 
 export const KLAYTN_USDC = new Token({
@@ -481,6 +502,7 @@ export const KLAYTN_USDC = new Token({
     `,
   swapableType: 'KLAYTN_USDC',
   priorityRank: 10,
+  routeSymbol: 'KLAYTN_USDC',
 })
 
 export const KLAYTN_USDT = new Token({
@@ -499,6 +521,7 @@ export const KLAYTN_USDT = new Token({
   logo: usdtLogo,
   swapableType: 'KLAYTN_USDT',
   priorityRank: 10,
+  routeSymbol: 'KLAYTN_USDT',
 })
 
 export const KLAYTN_oUSDT = new Token({
@@ -514,6 +537,7 @@ export const KLAYTN_oUSDT = new Token({
   swapableType: 'KLAYTN_USDT',
   swapableOn: [CHAINS.KLAYTN.id],
   priorityRank: 6,
+  routeSymbol: 'KLAYTN_oUSDT',
 })
 
 export const KLAYTN_DAI = new Token({
@@ -532,6 +556,7 @@ export const KLAYTN_DAI = new Token({
   logo: daiLogo,
   swapableType: 'KLAYTN_DAI',
   priorityRank: 10,
+  routeSymbol: 'KLAYTN_DAI',
 })
 
 export const DOGECHAIN_BUSD = new Token({
@@ -548,6 +573,7 @@ export const DOGECHAIN_BUSD = new Token({
   logo: busdLogo,
   swapableType: 'DOGECHAIN_BUSD',
   priorityRank: 10,
+  routeSymbol: 'DOGECHAIN_BUSD',
 })
 
 export const USDT = new Token({
@@ -611,6 +637,7 @@ export const USDT = new Token({
   ],
   visibilityRank: 100,
   priorityRank: 1,
+  routeSymbol: 'USDT',
 })
 
 export const DAI = new Token({
@@ -645,6 +672,7 @@ export const DAI = new Token({
   color: 'orange',
   visibilityRank: 100,
   priorityRank: 1,
+  routeSymbol: 'DAI',
 })
 
 export const WBTC = new Token({
@@ -664,19 +692,8 @@ export const WBTC = new Token({
   swapableType: 'WBTC',
   color: 'yellow',
   priorityRank: 3,
+  routeSymbol: 'WBTC',
 })
-
-// export const MIM = new Token({
-//   addresses: {
-//     [CHAINS.FANTOM.id]: '0x82f0b8b456c1a451378467398982d4834b6829c1',
-//     [CHAINS.ARBITRUM.id]: '0xfea7a6a0b346362bf88a9e4a88416b77a57d6c2a',
-//   },
-//   decimals: 18,
-//   symbol: 'MIM',
-//   name: 'Magic Internet Money',
-//   logo: mimLogo,
-//   swapableType: 'USD',
-// })
 
 export const WETHE = new Token({
   addresses: {
@@ -691,6 +708,7 @@ export const WETHE = new Token({
   swapableOn: [CHAINS.AVALANCHE.id],
   color: 'sky',
   priorityRank: 2,
+  routeSymbol: 'WETHE',
 })
 
 /**
@@ -709,6 +727,7 @@ export const WETHBEAM = new Token({
   swapableType: 'ETH',
   color: 'sky',
   priorityRank: 2,
+  routeSymbol: 'WETHBEAM',
 })
 
 export const AVWETH = new Token({
@@ -723,6 +742,7 @@ export const AVWETH = new Token({
   swapableType: 'ETH',
   color: 'cyan',
   priorityRank: 2,
+  routeSymbol: 'AVWETH',
 })
 
 export const ONEETH = new Token({
@@ -738,6 +758,7 @@ export const ONEETH = new Token({
   swapableOn: [CHAINS.HARMONY.id],
   color: 'sky',
   priorityRank: 2,
+  routeSymbol: 'ONEETH',
 })
 
 export const FTMETH = new Token({
@@ -753,6 +774,7 @@ export const FTMETH = new Token({
   swapableOn: [CHAINS.FANTOM.id],
   color: 'sky',
   priorityRank: 2,
+  routeSymbol: 'FTMETH',
 })
 
 export const CANTOETH = new Token({
@@ -769,6 +791,7 @@ export const CANTOETH = new Token({
   color: 'sky',
   visibilityRank: 100,
   priorityRank: 2,
+  routeSymbol: 'CANTOETH',
 })
 
 export const METISETH = new Token({
@@ -784,6 +807,7 @@ export const METISETH = new Token({
   swapableOn: [CHAINS.METIS.id],
   color: 'sky',
   priorityRank: 2,
+  routeSymbol: 'METISETH',
 })
 
 export const SYN = new Token({
@@ -814,6 +838,7 @@ export const SYN = new Token({
   color: 'purple',
   visibilityRank: 90,
   priorityRank: 2,
+  routeSymbol: 'SYN',
 })
 
 export const FRAX = new Token({
@@ -835,6 +860,7 @@ export const FRAX = new Token({
   // swapableOn: [CHAINS.MOONRIVER.id, CHAINS.MOONBEAM.id],
   color: 'gray',
   priorityRank: 6,
+  routeSymbol: 'FRAX',
 })
 
 export const SYN_FRAX = new Token({
@@ -851,6 +877,7 @@ export const SYN_FRAX = new Token({
   description: 'Frax',
   swapableType: 'FRAX',
   priorityRank: 4,
+  routeSymbol: 'SYN_FRAX',
 })
 
 /**
@@ -896,6 +923,7 @@ export const NUSD = new Token({
   color: 'purple',
   visibilityRank: 50,
   priorityRank: 5,
+  routeSymbol: 'NUSD',
 })
 
 export const NOTE = new Token({
@@ -912,6 +940,7 @@ export const NOTE = new Token({
   color: 'green',
   visibilityRank: 90,
   priorityRank: 3,
+  routeSymbol: 'NOTE',
 })
 
 export const DFK_USDC = new Token({
@@ -929,6 +958,7 @@ export const DFK_USDC = new Token({
   color: 'blue',
   visibilityRank: 100,
   priorityRank: 1,
+  routeSymbol: 'DFK_USDC',
 })
 
 /**
@@ -966,6 +996,7 @@ export const NETH = new Token({
   color: 'purple',
   visibilityRank: 50,
   priorityRank: 5,
+  routeSymbol: 'NETH',
 })
 
 export const KLAYTN_WETH = new Token({
@@ -983,6 +1014,7 @@ export const KLAYTN_WETH = new Token({
   description: '',
   swapableType: 'ETH',
   priorityRank: 3,
+  routeSymbol: 'KLAYTN_WETH',
 })
 
 export const ETH = new Token({
@@ -1002,6 +1034,7 @@ export const ETH = new Token({
   color: 'sky',
   visibilityRank: 101,
   priorityRank: 2,
+  routeSymbol: 'ETH',
 })
 
 export const MOVR = new Token({
@@ -1017,6 +1050,7 @@ export const MOVR = new Token({
   swapableType: 'MOVR',
   color: 'purple',
   priorityRank: 3,
+  routeSymbol: 'MOVR',
 })
 
 export const AVAX = new Token({
@@ -1032,6 +1066,7 @@ export const AVAX = new Token({
   swapableType: 'AVAX',
   color: 'red',
   priorityRank: 3,
+  routeSymbol: 'AVAX',
 })
 
 export const WMOVR = new Token({
@@ -1047,6 +1082,7 @@ export const WMOVR = new Token({
   swapableType: 'MOVR',
   color: 'purple',
   priorityRank: 3,
+  routeSymbol: 'WMOVR',
 })
 
 export const WAVAX = new Token({
@@ -1065,6 +1101,7 @@ export const WAVAX = new Token({
   color: 'red',
   visibilityRank: 90,
   priorityRank: 3,
+  routeSymbol: 'WAVAX',
 })
 
 export const SYNAVAX = new Token({
@@ -1080,6 +1117,7 @@ export const SYNAVAX = new Token({
   swapableOn: [CHAINS.HARMONY.id],
   color: 'red',
   priorityRank: 4,
+  routeSymbol: 'SYNAVAX',
 })
 
 export const MULTIAVAX = new Token({
@@ -1095,6 +1133,7 @@ export const MULTIAVAX = new Token({
   swapableOn: [CHAINS.HARMONY.id],
   color: 'red',
   priorityRank: 3,
+  routeSymbol: 'MULTIAVAX',
 })
 
 export const JEWEL = new Token({
@@ -1111,6 +1150,7 @@ export const JEWEL = new Token({
   isNative: true,
   swapableType: 'JEWEL',
   priorityRank: 3,
+  routeSymbol: 'JEWEL',
 })
 
 export const WJEWEL = new Token({
@@ -1126,6 +1166,7 @@ export const WJEWEL = new Token({
   swapableOn: [CHAINS.HARMONY.id],
   color: 'lime',
   priorityRank: 3,
+  routeSymbol: 'WJEWEL',
 })
 
 export const SYNJEWEL = new Token({
@@ -1142,6 +1183,7 @@ export const SYNJEWEL = new Token({
   swapableOn: [CHAINS.HARMONY.id],
   color: 'lime',
   priorityRank: 4,
+  routeSymbol: 'SYNJEWEL',
 })
 
 export const XJEWEL = new Token({
@@ -1157,6 +1199,7 @@ export const XJEWEL = new Token({
   swapableType: 'XJEWEL',
   color: 'lime',
   priorityRank: 3,
+  routeSymbol: 'XJEWEL',
 })
 
 export const USDCe = new Token({
@@ -1177,6 +1220,7 @@ export const USDCe = new Token({
   swapableOn: [CHAINS.AVALANCHE.id, CHAINS.ARBITRUM.id],
   visibilityRank: 100,
   priorityRank: 1,
+  routeSymbol: 'USDCe',
 })
 
 export const USDTe = new Token({
@@ -1196,4 +1240,5 @@ export const USDTe = new Token({
   swapableOn: [CHAINS.AVALANCHE.id],
   visibilityRank: 100,
   priorityRank: 1,
+  routeSymbol: 'USDTe',
 })

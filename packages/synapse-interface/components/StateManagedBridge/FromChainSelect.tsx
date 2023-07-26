@@ -3,7 +3,6 @@ import Select from 'react-select'
 import { useAccount } from 'wagmi'
 
 import { CHAINS_BY_ID } from '@/constants/chains'
-import { setSelectFromChainId } from '@/slices/tokenSelectorSlice'
 import { RootState } from '@/store/store'
 
 import { setFromChainId } from '@/slices/bridge/reducer'
@@ -12,7 +11,7 @@ import { useEffect, useId, useState } from 'react'
 
 const FromChainSelect = () => {
   const { fromChainId, fromChainIds } = useSelector(
-    (state: RootState) => state.tokenSelector
+    (state: RootState) => state.bridge
   )
 
   const dispatch = useDispatch()
@@ -37,10 +36,9 @@ const FromChainSelect = () => {
 
   const handleFromChainChange = (selectedOption) => {
     if (selectedOption) {
-      dispatch(setSelectFromChainId(Number(selectedOption.value)))
       dispatch(setFromChainId(Number(selectedOption.value)))
     } else {
-      dispatch(setSelectFromChainId(null))
+      dispatch(setFromChainId(null))
     }
   }
 

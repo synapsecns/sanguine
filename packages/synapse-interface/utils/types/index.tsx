@@ -171,6 +171,7 @@ export class Token {
     | 'red'
   priceUnits?: string
   notStake?: boolean
+  routeSymbol?: string
   constructor({
     addresses,
     wrapperAddresses,
@@ -208,6 +209,7 @@ export class Token {
     color,
     priceUnits,
     notStake,
+    routeSymbol,
   }: {
     addresses: { [x: number]: string }
     wrapperAddresses?: Record<number, string>
@@ -256,6 +258,7 @@ export class Token {
       | 'red'
     priceUnits?: string
     notStake?: boolean
+    routeSymbol?: string
   }) {
     const isMetaVar = Boolean(swapDepositAddresses || forceMeta)
     this.addresses = validateAddresses(addresses)
@@ -296,6 +299,7 @@ export class Token {
     this.color = color ?? 'gray'
     this.priceUnits = priceUnits ?? 'USD'
     this.notStake = notStake ?? false
+    this.routeSymbol = routeSymbol
   }
 }
 

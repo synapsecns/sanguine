@@ -4,7 +4,6 @@ import { Address, useAccount } from 'wagmi'
 
 import { CHAINS_BY_ID } from '@/constants/chains'
 import { setToChainId } from '@/slices/bridge/reducer'
-import { setSelectToChainId } from '@/slices/tokenSelectorSlice'
 import { RootState } from '@/store/store'
 import { networkSelectStyles } from './styles/networkSelectStyles'
 import { shortenAddress } from '@/utils/shortenAddress'
@@ -12,7 +11,7 @@ import { useEffect, useId, useState } from 'react'
 
 const ToChainSelect = () => {
   const { toChainId, toChainIds } = useSelector(
-    (state: RootState) => state.tokenSelector
+    (state: RootState) => state.bridge
   )
 
   const { address: isConnectedAddress } = useAccount()
@@ -38,10 +37,9 @@ const ToChainSelect = () => {
 
   const handleToChainChange = (selectedOption) => {
     if (selectedOption) {
-      dispatch(setSelectToChainId(Number(selectedOption.value)))
       dispatch(setToChainId(Number(selectedOption.value)))
     } else {
-      dispatch(setSelectToChainId(null))
+      dispatch(setToChainId(null))
     }
   }
 

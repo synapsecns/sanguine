@@ -1,47 +1,96 @@
+import _ from 'lodash'
 import { createSlice, PayloadAction } from '@reduxjs/toolkit'
 import { Address } from 'wagmi'
+import * as ALL_TOKENS from '@constants/tokens/master'
 
+import { USDC } from '@/constants/tokens/master'
 import { EMPTY_BRIDGE_QUOTE } from '@/constants/bridge'
-import { ETH } from '@/constants/tokens/master'
 import { ARBITRUM, ETH as ETHEREUM } from '@/constants/chains/master'
 import { BridgeQuote, Token } from '@/utils/types'
-import { TokenWithBalanceAndAllowances } from '@/utils/actions/fetchPortfolioBalances'
+import {
+  generateRoutePossibilities,
+  getPossibleFromTokensByFromChainId,
+  getPossibleToTokensByFromTokenAndToChainId,
+} from '@/utils/generateRoutePossibilities'
+
+const getToken = (tokenAndChainId: string) => {
+  if (tokenAndChainId) {
+    const symbol = tokenAndChainId.split('-')[0]
+    return ALL_TOKENS[symbol]
+  } else {
+    return null
+  }
+}
+
+const getSymbol = (tokenAndChainId: string) => {
+  if (tokenAndChainId) {
+    return tokenAndChainId.split('-')[0]
+  }
+}
 
 export interface BridgeState {
   fromChainId: number
-  supportedFromTokens: TokenWithBalanceAndAllowances[]
-  toChainId: number
-  supportedToTokens: Token[]
   fromToken: Token
+  toChainId: number
   toToken: Token
-  fromValue: string
-  bridgeQuote: BridgeQuote
   fromChainIds: number[]
   toChainIds: number[]
+  fromTokens: Token[]
+  toTokens: Token[]
+
+  fromValue: string
+  bridgeQuote: BridgeQuote
   isLoading: boolean
   deadlineMinutes: number | null
   destinationAddress: Address | null
   bridgeTxHashes: string[] | null
 }
 
+const initialFromTokens = _.uniq(
+  getPossibleFromTokensByFromChainId(ETHEREUM.id).map(getSymbol)
+).map((symbol) => ALL_TOKENS[symbol])
+
+const initialToTokens = _.uniq(
+  getPossibleToTokensByFromTokenAndToChainId('USDC-1', ARBITRUM.id).map(
+    getSymbol
+  )
+).map((symbol) => ALL_TOKENS[symbol])
+
 // How do we update query params based on initial state?
 // Additionally how do we set query params based on user input updates?
 const initialState: BridgeState = {
   fromChainId: ETHEREUM.id,
-  supportedFromTokens: [],
+  fromToken: USDC,
   toChainId: ARBITRUM.id,
-  supportedToTokens: [],
-  fromToken: ETH,
-  toToken: ETH,
-  fromValue: '',
-  bridgeQuote: EMPTY_BRIDGE_QUOTE,
+  toToken: USDC,
   fromChainIds: [],
   toChainIds: [],
+  fromTokens: initialFromTokens,
+  toTokens: initialToTokens,
+
+  fromValue: '',
+  bridgeQuote: EMPTY_BRIDGE_QUOTE,
   isLoading: false,
   deadlineMinutes: null,
   destinationAddress: null,
   bridgeTxHashes: [],
 }
+
+/*
+
+Notes on default sorting
+
+fromTokens: separateAndSortTokensWithBalances, sortTokensByBalanceDescending
+toTokens: sortTokensByPriorityRankAndAlpha
+fromChainIds: 
+toChainIds: 
+
+handling default toChain, toToken
+
+are swapExceptions still vaild?
+
+
+*/
 
 export const bridgeSlice = createSlice({
   name: 'bridge',
@@ -51,37 +100,115 @@ export const bridgeSlice = createSlice({
       state.isLoading = action.payload
     },
     setFromChainId: (state, action: PayloadAction<number>) => {
-      if (state.toChainId === action.payload) {
-        state.toChainId = state.fromChainId
-      }
-      state.fromChainId = action.payload
-    },
-    setToChainId: (state, action: PayloadAction<number>) => {
-      state.toChainId = action.payload
+      const incomingFromChainId = action.payload
+      const {
+        fromChainId,
+        fromToken,
+        toChainId,
+        toToken,
+        fromChainIds,
+        fromTokens,
+        toChainIds,
+        toTokens,
+      } = generateRoutePossibilities({
+        fromChainId: incomingFromChainId,
+        fromToken: null,
+        toChainId: null,
+        toToken: null,
+      })
+
+      state.fromChainId = fromChainId
+      state.fromToken = getToken(fromToken)
+      state.toChainId = toChainId
+      state.toToken = getToken(toToken)
+      state.fromChainIds = fromChainIds
+      state.fromTokens = _.uniq(fromTokens.map(getToken))
+      state.toChainIds = toChainIds
+      state.toTokens = _.uniq(toTokens.map(getToken))
     },
     setFromToken: (state, action: PayloadAction<Token>) => {
-      state.fromToken = action.payload
+      const incomingFromToken = action.payload
+      const {
+        fromChainId,
+        fromToken,
+        toChainId,
+        toToken,
+        fromChainIds,
+        fromTokens,
+        toChainIds,
+        toTokens,
+      } = generateRoutePossibilities({
+        fromChainId: state.fromChainId,
+        fromToken: `${incomingFromToken.routeSymbol}-${state.fromChainId}`,
+        toChainId: state.toChainId,
+        toToken: null,
+      })
+
+      state.fromChainId = fromChainId
+      state.fromToken = getToken(fromToken)
+      state.toChainId = toChainId
+      state.toToken = getToken(toToken)
+      state.fromChainIds = fromChainIds
+      state.fromTokens = _.uniq(fromTokens.map(getToken))
+      state.toChainIds = toChainIds
+      state.toTokens = _.uniq(toTokens.map(getToken))
+    },
+    setToChainId: (state, action: PayloadAction<number>) => {
+      const incomingToChainId = action.payload
+      const {
+        fromChainId,
+        fromToken,
+        toChainId,
+        toToken,
+        fromChainIds,
+        fromTokens,
+        toChainIds,
+        toTokens,
+      } = generateRoutePossibilities({
+        fromChainId: state.fromChainId,
+        fromToken: `${state.fromToken.routeSymbol}-${state.fromChainId}`,
+        toChainId: incomingToChainId,
+        toToken: null,
+      })
+
+      state.fromChainId = fromChainId
+      state.fromToken = getToken(fromToken)
+      state.toChainId = toChainId
+      state.toToken = getToken(toToken)
+      state.fromChainIds = fromChainIds
+      state.fromTokens = _.uniq(fromTokens.map(getToken))
+      state.toChainIds = toChainIds
+      state.toTokens = _.uniq(toTokens.map(getToken))
     },
     setToToken: (state, action: PayloadAction<Token>) => {
-      state.toToken = action.payload
+      const incomingToToken = action.payload
+      const {
+        fromChainId,
+        fromToken,
+        toChainId,
+        toToken,
+        fromChainIds,
+        fromTokens,
+        toChainIds,
+        toTokens,
+      } = generateRoutePossibilities({
+        fromChainId: state.fromChainId,
+        fromToken: `${state.fromToken.routeSymbol}-${state.fromChainId}`,
+        toChainId: state.toChainId,
+        toToken: `${incomingToToken.routeSymbol}-${state.toChainId}`,
+      })
+
+      state.fromChainId = fromChainId
+      state.fromToken = getToken(fromToken)
+      state.toChainId = toChainId
+      state.toToken = getToken(toToken)
+      state.fromChainIds = fromChainIds
+      state.fromTokens = _.uniq(fromTokens.map(getToken))
+      state.toChainIds = toChainIds
+      state.toTokens = _.uniq(toTokens.map(getToken))
     },
     setBridgeQuote: (state, action: PayloadAction<BridgeQuote>) => {
       state.bridgeQuote = action.payload
-    },
-    setSupportedFromTokens: (
-      state,
-      action: PayloadAction<TokenWithBalanceAndAllowances[]>
-    ) => {
-      state.supportedFromTokens = action.payload
-    },
-    setSupportedToTokens: (state, action: PayloadAction<Token[]>) => {
-      state.supportedToTokens = action.payload
-    },
-    setFromChainIds: (state, action: PayloadAction<number[]>) => {
-      state.fromChainIds = action.payload
-    },
-    setToChainIds: (state, action: PayloadAction<number[]>) => {
-      state.toChainIds = action.payload
     },
     updateFromValue: (state, action: PayloadAction<string>) => {
       state.fromValue = action.payload
@@ -105,10 +232,6 @@ export const {
   setFromToken,
   setToToken,
   updateFromValue,
-  setSupportedFromTokens,
-  setSupportedToTokens,
-  setFromChainIds,
-  setToChainIds,
   setDeadlineMinutes,
   setDestinationAddress,
   setIsLoading,

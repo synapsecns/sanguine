@@ -1,65 +1,78 @@
 import _ from 'lodash'
-import { setSelectFromToken } from '@/slices/tokenSelectorSlice'
-import { RootState } from '@/store/store'
-import { useSelector } from 'react-redux'
 import { useDispatch } from 'react-redux'
 import Select from 'react-select'
 
-import * as ALL_TOKENS from '@/constants/tokens/master'
 import { Token } from '@/utils/types'
 import { setFromToken } from '@/slices/bridge/reducer'
 import { coinSelectStyles } from './styles/coinSelectStyles'
 import { useId } from 'react'
-import { flattenPausedTokens } from '@/utils/flattenPausedTokens'
 
-const ImageAndCoin = ({ symbol }) => {
-  const { icon } = ALL_TOKENS[symbol]
+import { useAppSelector } from '@/store/hooks'
+
+const ImageAndCoin = ({ option }: { option: Token }) => {
+  const { fromChainId } = useAppSelector((state) => state.bridge)
+  const { balancesAndAllowances } = useAppSelector((state) => state.portfolio)
+
+  const { icon, symbol } = option
+  const parsedBalance = balancesAndAllowances[fromChainId]?.find(
+    (token) => token.tokenAddress === option.addresses[fromChainId]
+  )?.parsedBalance
+
   return (
-    <div className="flex items-center space-x-2" key={symbol}>
-      <img src={icon.src} className="w-6 h-6" />
-      <div className="text-xl">{symbol}</div>
+    <div className="flex items-center justify-between">
+      <div className="flex items-center space-x-2" key={option.symbol}>
+        <img src={icon.src} className="w-6 h-6" />
+        <div className="text-xl">{symbol}</div>
+      </div>
+      <div className="select-hidden">
+        {parsedBalance !== '0.0' ? parsedBalance : ''}
+      </div>
     </div>
   )
 }
 
 const FromTokenSelect = () => {
-  const { fromToken, fromTokens } = useSelector(
-    (state: RootState) => state.tokenSelector
+  const { fromChainId, fromToken, fromTokens } = useAppSelector(
+    (state) => state.bridge
   )
 
   const dispatch = useDispatch()
 
-  const fromTokenOptions = _.difference(fromTokens, flattenPausedTokens()).map(
-    (option) => {
-      const symbol = option.split('-')[0]
-      return {
-        label: <ImageAndCoin symbol={symbol} />,
-        value: option,
-      }
+  const fromTokenOptions = fromTokens.map((option, i) => {
+    return {
+      label: <ImageAndCoin option={option} />,
+      value: option,
     }
-  )
+  })
 
   const handleFromTokenChange = (selectedOption) => {
     if (selectedOption) {
-      dispatch(setSelectFromToken(selectedOption.value))
-
-      const symbol = selectedOption.value.split('-')[0]
-
-      const token: Token = ALL_TOKENS[symbol]
-
-      dispatch(setFromToken(token))
+      dispatch(setFromToken(selectedOption.value))
     } else {
       dispatch(setFromToken(null))
-      dispatch(setSelectFromToken(null))
     }
+  }
+
+  const customFilter = (option, searchInput) => {
+    if (searchInput) {
+      const searchTerm = searchInput.toLowerCase()
+      return (
+        option.value.symbol.toLowerCase().includes(searchTerm) ||
+        option.value.name.toLowerCase().includes(searchTerm) ||
+        option.value.addresses[fromChainId].toLowerCase().includes(searchTerm)
+      )
+    }
+    return true
   }
 
   return (
     <Select
-      instanceId={useId()}
       styles={coinSelectStyles}
-      key={fromToken}
+      classNamePrefix="mySelect"
+      instanceId={useId()}
+      key={fromToken?.symbol}
       options={fromTokenOptions}
+      filterOption={customFilter}
       onChange={handleFromTokenChange}
       isSearchable={true}
       placeholder={<span className="text-xl text-white">In</span>}
