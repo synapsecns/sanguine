@@ -49,7 +49,7 @@ export const OutputContainer = ({}) => {
         </div>
       </div>
       <div className="flex pb-1 ml-3 text-xs text-white md:hidden">
-        Destination: {CHAINS_BY_ID[fromChainId]?.name}
+        Destination: {CHAINS_BY_ID[toChainId]?.name}
       </div>
       <div
         data-test-id="destination-output"
