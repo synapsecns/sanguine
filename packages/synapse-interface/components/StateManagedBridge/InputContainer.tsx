@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useRef } from 'react'
+import React, { useEffect, useState, useRef, useCallback } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
 import { useAccount } from 'wagmi'
 import { RootState } from '@/store/store'
@@ -87,17 +87,13 @@ export const InputContainer = () => {
     }
   }
 
-  const onClickBalance = () => {
-    const str = formatBigIntToString(
-      fromTokenBalance,
-      fromToken.decimals[fromChainId],
-      4
+  const onMaxBalance = useCallback(() => {
+    dispatch(
+      updateFromValue(
+        formatBigIntToString(fromTokenBalance, fromToken.decimals[fromChainId])
+      )
     )
-    dispatch(updateFromValue(str))
-    setShowValue(
-      formatBigIntToString(fromTokenBalance, fromToken.decimals[fromChainId])
-    )
-  }
+  }, [fromTokenBalance, fromChainId, fromToken])
 
   return (
     <div
@@ -157,7 +153,7 @@ export const InputContainer = () => {
               <label
                 htmlFor="inputRow"
                 className="hidden text-xs text-white transition-all duration-150 md:block transform-gpu hover:text-opacity-70 hover:cursor-pointer"
-                onClick={onClickBalance}
+                onClick={onMaxBalance}
               >
                 {formattedBalance}
                 <span className="text-opacity-50 text-secondaryTextColor">
@@ -171,7 +167,7 @@ export const InputContainer = () => {
             <div className="m-auto">
               <MiniMaxButton
                 disabled={fromTokenBalance && fromTokenBalance === 0n}
-                onClickBalance={onClickBalance}
+                onClickBalance={onMaxBalance}
               />
             </div>
           )}
