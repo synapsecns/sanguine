@@ -2,7 +2,13 @@ import { createSlice, PayloadAction } from '@reduxjs/toolkit'
 import { Address } from 'viem'
 
 import { Token } from '@/utils/types'
-import { PortfolioTabs, FetchState } from './actions'
+import {
+  PortfolioTabs,
+  FetchState,
+  setActiveTab,
+  updateSingleTokenAllowance,
+  resetPortfolioState,
+} from './actions'
 import {
   fetchAndStorePortfolioBalances,
   fetchAndStoreSingleNetworkPortfolioBalances,
@@ -31,32 +37,34 @@ const initialState: PortfolioState = {
 export const portfolioSlice = createSlice({
   name: 'portfolio',
   initialState,
-  reducers: {
-    setActiveTab: (state, action: PayloadAction<PortfolioTabs>) => {
-      state.activeTab = action.payload
-    },
-    updateSingleTokenAllowance: (
-      state,
-      action: PayloadAction<{
-        chainId: number
-        allowance: bigint
-        spender: Address
-        token: Token
-      }>
-    ) => {
-      const { chainId, allowance, spender, token } = action.payload
-
-      state.balancesAndAllowances[chainId].forEach(
-        (t: TokenWithBalanceAndAllowances) => {
-          if (t.tokenAddress === token.addresses[chainId]) {
-            t.allowances[spender] = allowance
-          }
-        }
-      )
-    },
-  },
+  reducers: {},
   extraReducers: (builder) => {
     builder
+      .addCase(setActiveTab, (state, action: PayloadAction<PortfolioTabs>) => {
+        state.activeTab = action.payload
+      })
+      .addCase(
+        updateSingleTokenAllowance,
+        (
+          state,
+          action: PayloadAction<{
+            chainId: number
+            allowance: bigint
+            spender: Address
+            token: Token
+          }>
+        ) => {
+          const { chainId, allowance, spender, token } = action.payload
+
+          state.balancesAndAllowances[chainId].forEach(
+            (t: TokenWithBalanceAndAllowances) => {
+              if (t.tokenAddress === token.addresses[chainId]) {
+                t.allowances[spender] = allowance
+              }
+            }
+          )
+        }
+      )
       .addCase(fetchAndStorePortfolioBalances.pending, (state) => {
         state.status = FetchState.LOADING
       })
@@ -114,6 +122,12 @@ export const portfolioSlice = createSlice({
             }
           }
         )
+      })
+      .addCase(resetPortfolioState, (state) => {
+        state.activeTab = initialState.activeTab
+        state.balancesAndAllowances = initialState.balancesAndAllowances
+        state.status = initialState.status
+        state.error = initialState.error
       })
   },
 })
