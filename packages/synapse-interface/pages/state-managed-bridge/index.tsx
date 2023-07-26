@@ -96,7 +96,11 @@ import {
   fetchAndStoreSingleTokenAllowance,
   fetchAndStoreSingleTokenBalance,
 } from '@/slices/portfolio/hooks'
-import { usePortfolioBalances } from '@/slices/portfolio/hooks'
+import {
+  usePortfolioBalances,
+  useFetchPortfolioBalances,
+} from '@/slices/portfolio/hooks'
+import { FetchState } from '@/slices/portfolio/reducer'
 import { updateSingleTokenAllowance } from '@/slices/portfolio/actions'
 
 // NOTE: These are idle utility functions that will be re-written to
@@ -131,8 +135,8 @@ const StateManagedBridge = () => {
   const router = useRouter()
   const { query, pathname } = router
 
-  const portfolioBalances: NetworkTokenBalancesAndAllowances =
-    usePortfolioBalances()
+  const { balancesAndAllowances: portfolioBalances, status: portfolioStatus } =
+    useFetchPortfolioBalances()
 
   const {
     fromChainId,
@@ -164,6 +168,7 @@ const StateManagedBridge = () => {
 
   const dispatch = useAppDispatch()
 
+  const fromTokens = BRIDGABLE_TOKENS[fromChainId]
   const fromChainIds = Object.keys(CHAINS_BY_ID).map((id) => Number(id))
   const toChainIds = Object.keys(CHAINS_BY_ID).map((id) => Number(id))
 
@@ -593,9 +598,11 @@ const StateManagedBridge = () => {
                 <TokenSlideOver
                   key="fromBlock"
                   isOrigin={true}
-                  tokens={separateAndSortTokensWithBalances(
-                    supportedFromTokens
-                  )}
+                  tokens={
+                    portfolioStatus === FetchState.VALID
+                      ? separateAndSortTokensWithBalances(supportedFromTokens)
+                      : sortByVisibilityRank(fromTokens)
+                  }
                   chainId={fromChainId}
                   selectedToken={fromToken}
                 />{' '}
