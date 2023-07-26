@@ -8,7 +8,6 @@ import (
 
 	"github.com/ethereum/go-ethereum/params"
 	"github.com/pkg/errors"
-	"github.com/prometheus/client_golang/prometheus"
 	"github.com/synapsecns/sanguine/ethergo/chain/chainwatcher"
 	"github.com/synapsecns/sanguine/ethergo/chain/client"
 	"github.com/synapsecns/sanguine/ethergo/chain/gas"
@@ -50,19 +49,6 @@ type baseChain struct {
 
 func (b *baseChain) GasSetter() gas.Setter {
 	return b.setter
-}
-
-// GetMetrics gets the metrics for the chain.
-func (b *baseChain) GetMetrics(labels map[string]string) (metrics []prometheus.Collector) {
-	allMetrics := [][]prometheus.Collector{
-		b.heightWatcher.GetMetrics(labels),
-		b.contractWatcher.GetMetrics(labels),
-		b.MeteredEVMClient.GetMetrics(labels),
-	}
-	for _, metricSlice := range allMetrics {
-		metrics = append(metrics, metricSlice...)
-	}
-	return metrics
 }
 
 // Name is the name of the chain.
