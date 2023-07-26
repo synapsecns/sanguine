@@ -5,7 +5,6 @@ import (
 	"fmt"
 	keepRate "github.com/keep-network/keep-common/pkg/rate"
 	"github.com/prometheus/client_golang/prometheus"
-	"github.com/synapsecns/sanguine/core/prom"
 	"golang.org/x/sync/semaphore"
 	"golang.org/x/time/rate"
 	"math/big"
@@ -18,7 +17,6 @@ import (
 //go:generate go run github.com/vektra/mockery/v2 --name MeteredEVMClient --output ./mocks --case=underscore
 type MeteredEVMClient interface {
 	EVMClient
-	prom.Instrumentable
 	// RequestCount gets the request count from the metered evm client
 	RequestCount() int64
 	// ConcurrencyCount gets the request concurrency on the meterd client

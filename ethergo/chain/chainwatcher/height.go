@@ -6,7 +6,6 @@ import (
 	"time"
 
 	"github.com/pkg/errors"
-	"github.com/synapsecns/sanguine/core/prom"
 )
 
 // BlockSubscriberClient defines a method for getting a subscription to the chain-tip height on geth based rpc clients.
@@ -24,7 +23,6 @@ type ConditionCheck func(blockHeight uint64) bool
 //
 //go:generate go run github.com/vektra/mockery/v2 --name BlockHeightWatcher --output ./mocks --case=underscore
 type BlockHeightWatcher interface {
-	prom.Instrumentable
 	// Subscribe creates a new block height subscriber.
 	Subscribe() <-chan uint64
 	// Unsubscribe removes a block height subscriber.
