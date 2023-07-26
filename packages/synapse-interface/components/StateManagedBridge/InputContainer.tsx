@@ -1,15 +1,16 @@
 import React, { useEffect, useState, useRef } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
 import { useAccount } from 'wagmi'
-import { RootState } from '@/store/store'
 
-import { updateFromValue } from '@/slices/bridgeSlice'
-import { setShowFromTokenSlideOver } from '@/slices/bridgeDisplaySlice'
-import SelectTokenDropdown from '@/components/input/TokenAmountInput/SelectTokenDropdown'
-import MiniMaxButton from '../buttons/MiniMaxButton'
 import { formatBigIntToString, stringToBigInt } from '@/utils/bigint/format'
-import { OriginChainLabel } from './OriginChainLabel'
+import SelectTokenDropdown from '@/components/input/TokenAmountInput/SelectTokenDropdown'
+import { OriginChainLabel } from '@/components/StateManagedBridge/OriginChainLabel'
+import MiniMaxButton from '@/components/buttons/MiniMaxButton'
+import { RootState } from '@/store/store'
+import { setShowFromTokenSlideOver } from '@/slices/bridgeDisplaySlice'
+import { updateFromValue } from '@/slices/bridgeSlice'
 import { cleanNumberInput } from '@/utils/cleanNumberInput'
+import { CHAINS_BY_ID } from '@/constants/chains'
 
 export const inputRef = React.createRef<HTMLInputElement>()
 
@@ -23,9 +24,9 @@ export const InputContainer = () => {
     bridgeTxHashes,
   } = useSelector((state: RootState) => state.bridge)
   const [showValue, setShowValue] = useState('')
-
   const [hasMounted, setHasMounted] = useState(false)
   const previousBridgeTxHashesRef = useRef<string[]>([])
+  // const currentChainName = CHAINS_BY_ID[fromChainId]?.name
 
   useEffect(() => {
     setHasMounted(true)
@@ -116,7 +117,10 @@ export const InputContainer = () => {
           />
         </div>
       </div>
-      <div data-test-id="origin-input" className="flex h-16 mb-4 space-x-2">
+      <div className="flex pb-1 ml-3 text-xs text-white md:hidden">
+        Origin: {CHAINS_BY_ID[fromChainId]?.name}
+      </div>
+      <div data-test-id="origin-input" className="flex mb-4 space-x-2">
         <div
           className={`
             flex flex-grow items-center
