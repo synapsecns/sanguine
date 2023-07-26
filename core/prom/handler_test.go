@@ -3,6 +3,7 @@ package prom_test
 import (
 	"context"
 	"fmt"
+	"github.com/Flaque/filet"
 	"github.com/asaskevich/govalidator"
 	"github.com/grafana-tools/sdk"
 	"github.com/ipfs/go-log"
@@ -16,6 +17,7 @@ import (
 	"github.com/prometheus/pushgateway/handler"
 	"github.com/prometheus/pushgateway/storage"
 	. "github.com/stretchr/testify/assert"
+	"github.com/synapsecns/sanguine/core"
 	"github.com/synapsecns/sanguine/core/prom"
 	"k8s.io/apimachinery/pkg/util/wait"
 	"net"
@@ -103,7 +105,9 @@ func NewMockGateway(ctx context.Context, tb testing.TB) string {
 		//nolint: gosec
 		err = web.Serve(l, &http.Server{Addr: hostname, Handler: mux, BaseContext: func(listener net.Listener) context.Context {
 			return ctx
-		}}, "", promLogger)
+		}}, &web.FlagConfig{
+			WebConfigFile: core.PtrTo(filet.TmpFile(tb, "", "").Name()),
+		}, promLogger)
 	}()
 
 	url := fmt.Sprintf("http://%s", hostname)
