@@ -28,10 +28,11 @@ export const DestinationChainLabel = ({
   }, [chainId, connectedChainId, chains])
 
   return (
-    <div className="flex items-center justify-center md:justify-between">
-      <div className={`text-gray-400 hidden md:block lg:block text-sm mr-2`}>
-        Dest.
-      </div>
+    <div
+      data-test-id="destination-chain-label"
+      className="flex items-center justify-between"
+    >
+      <div className={`text-gray-400 block text-sm mr-2`}>Dest.</div>
       <div className="flex items-center space-x-4 md:space-x-3">
         {orderedChains.map((id) =>
           id === chainId ? (
@@ -72,6 +73,7 @@ const PossibleChain = ({ chainId }: { chainId: number }) => {
   }
   return chain ? (
     <button
+      data-test-id="destination-possible-chain"
       className="
         w-7 h-7
         md:w-7
@@ -96,6 +98,7 @@ const SelectedChain = ({ chainId }: { chainId: number }) => {
   const chain = CHAINS_BY_ID[chainId]
   return chain ? (
     <div
+      data-test-id="destination-selected-chain"
       className={`
         px-1
         flex items-center
@@ -110,7 +113,7 @@ const SelectedChain = ({ chainId }: { chainId: number }) => {
         src={chain.chainImg}
         className="w-5 h-5 my-1 mr-0 rounded-full md:mr-1 opacity-80"
       />
-      <div className="hidden md:inline-block lg:inline-block">
+      <div className="inline-block">
         <div className="mr-2 text-sm text-white">
           {chain.name === 'Boba Network' ? 'Boba' : chain.name}
         </div>
