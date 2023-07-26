@@ -14,7 +14,7 @@
     "ci:lint": "npm run lint:check",
     "build:go": " ",
     "build:slither": " ",
-    "build": "tsc app.ts",
+    "build": "tsc app.ts --resolveJsonModule --skipLibCheck",
     "postinstall": "npm run build"
   },
   "dependencies": {

@@ -163,7 +163,7 @@ app.get('/swap', async (req, res) => {
       <h1>Invalid Request</h1>
       <code>${err}</code>
       <hr/>
-      <b>Ensure that your request matches the following format: /swap?chain=1&fromToken=UƒSDC&toToken=DAI&amount=100</b>
+      <b>Ensure that your request matches the following format: /swap?chain=1&fromToken=USDC&toToken=DAI&amount=100</b>
       <h2>Available Tokens (symbols to use)</h2>
       ${tokenHtml}`
       )
@@ -249,6 +249,169 @@ app.get('/bridge', async (req, res) => {
     })
 })
 
+// Beginning of txInfo functions --> These return the txInfo to actually bridge
+app.get('/swapTxInfo', async (req, res) => {
+  // Access query params
+  const query = req.query
+
+  // Chain
+  const chainId = query.chain
+
+  // Symbols
+  const fromTokenSymbol = String(query.fromToken)
+  const toTokenSymbol = String(query.toToken)
+
+  // Get Token Addresses
+  const fromTokenAddress =
+    tokens[fromTokenSymbol]?.addresses?.[chainId as string]
+  const toTokenAddress = tokens[toTokenSymbol]?.addresses?.[chainId as string]
+
+  // Get Token Decimals
+  const fromTokenDecimals =
+    tokens[fromTokenSymbol]?.decimals?.[chainId as string]
+  const toTokenDecimals = tokens[toTokenSymbol]?.decimals?.[chainId as string]
+
+  // Handle invalid params (either token symbols or chainIDs)
+  // TODO: add error handling for missing params
+  if (
+    !fromTokenAddress ||
+    !toTokenAddress ||
+    !fromTokenDecimals ||
+    !toTokenDecimals
+  ) {
+    res.send(
+      `
+      <h1>Invalid Params</h1>
+      <hr/>
+      <b>Ensure that your request matches the following format: /swap?chain=1&fromToken=USDC&toToken=DAI&amount=100</b>
+      <h2>Available Tokens (symbols to use)</h2>
+      ${tokenHtml}`
+    )
+    return
+  }
+
+  // Handle amount
+  const amount = BigNumber.from(query.amount).mul(TEN.pow(fromTokenDecimals))
+
+  // Send request w/Synapse SDK
+  Synapse.swapQuote(
+    Number(chainId),
+    fromTokenAddress,
+    toTokenAddress,
+    BigNumber.from(amount)
+  )
+    .then((resp) => {
+      Synapse.swap(
+        Number(chainId),
+        fromTokenAddress,
+        toTokenAddress,
+        BigNumber.from(amount),
+        resp.query
+      ).then((txInfo) => {
+        res.json(txInfo)
+      })
+    })
+    .catch((err) => {
+      // TODO: do a better return here
+      res.send(
+        `
+      <h1>Invalid Request</h1>
+      <code>${err}</code>
+      <hr/>
+      <b>Ensure that your request matches the following format: /swapTxInfo?chain=1&fromToken=USDC&toToken=DAI&amount=100</b>
+      <h2>Available Tokens (symbols to use)</h2>
+      ${tokenHtml}`
+      )
+    })
+})
+
+//BridgeTxInfo
+app.get('/bridgeTxInfo', async (req, res) => {
+  // Access query params
+  const query = req.query
+
+  // Chains
+  const fromChain = query.fromChain
+  const toChain = query.toChain
+
+  // Symbols
+  const fromTokenSymbol = String(query.fromToken)
+  const toTokenSymbol = String(query.toToken)
+
+  // Get Token Addresses
+  const fromTokenAddress =
+    tokens[fromTokenSymbol]?.addresses?.[fromChain as string]
+  const toTokenAddress = tokens[toTokenSymbol]?.addresses?.[toChain as string]
+
+  // Get Token Decimals
+  const fromTokenDecimals =
+    tokens[fromTokenSymbol]?.decimals?.[fromChain as string]
+  const toTokenDecimals = tokens[toTokenSymbol]?.decimals?.[toChain as string]
+
+  //Get to Address on destination chain
+  const destAddress = String(query.destAddress)
+
+  //Router Address:
+  const routerAddress = '0x7e7a0e201fd38d3adaa9523da6c109a07118c96a'
+
+  // Handle invalid params (either token symbols or chainIDs)
+  // TODO: add error handling for missing params
+  if (
+    !fromTokenAddress ||
+    !toTokenAddress ||
+    !fromTokenDecimals ||
+    !toTokenDecimals
+  ) {
+    res.send(
+      `
+        <h1>Invalid Request</h1>
+        <hr/>
+        <b>Ensure that your request matches the following format: /bridgeTxInfo?fromChain=1&toChain=42161&fromToken=USDC&toToken=USDC&amount=1000000&destAddress=0xcc78d2f004c9de9694ff6a9bbdee4793d30f3842</b>
+        <h2>Available Tokens (symbols to use)</h2>
+        ${tokenHtml}`
+    )
+    return
+  }
+
+  // Handle amount
+  const amount = BigNumber.from(query.amount).mul(TEN.pow(fromTokenDecimals))
+
+  // Send request w/Synapse SDK
+  Synapse.bridgeQuote(
+    Number(fromChain),
+    Number(toChain),
+    fromTokenAddress,
+    toTokenAddress,
+    BigNumber.from(amount)
+  )
+    .then((resp) => {
+      Synapse.bridge(
+        destAddress,
+        routerAddress,
+        Number(fromChain),
+        Number(toChain),
+        fromTokenAddress,
+        BigNumber.from(amount),
+        resp.originQuery,
+        resp.destQuery
+      ).then((txInfo) => {
+        res.json(txInfo)
+      })
+    })
+    .catch((err) => {
+      // TODO: do a better return here
+      res.send(
+        `
+        <h1>Invalid Request</h1>
+        <code>${err}</code>
+        <hr/>
+        <b>Ensure that your request matches the following format: /bridgeTxInfo?fromChain=1&toChain=42161&fromToken=USDC&toToken=USDC&amount=1000000&destAddress=0xcc78d2f004c9de9694ff6a9bbdee4793d30f3842</b>
+        <h2>Available Tokens (symbols to use)</h2>
+        ${tokenHtml}`
+      )
+    })
+})
+
 export const server = app.listen(port, () => {
   console.log(`Server listening at ${port}`)
 })
@@ -272,144 +435,3 @@ const formatBNToString = (
     return rawNumber.toString()
   }
 }
-
-// TODO @Defi-Moses, need to add these endpoints
-
-// //Swap Transaction Get
-// app.get('/swap', async (req, res) => {
-//   // Access query params
-//   const query = req.query
-
-//   // Chain
-//   const chainId = query.chain
-
-//   // Symbols
-//   const fromTokenSymbol = String(query.fromToken)
-//   const toTokenSymbol = String(query.toToken)
-
-//   // Get Token Addresses
-//   const fromTokenAddress = tokens[fromTokenSymbol]?.addresses?.[chainId]
-//   const toTokenAddress = tokens[toTokenSymbol]?.addresses?.[chainId]
-
-//   // Get Token Decimals
-//   const fromTokenDecimals = tokens[fromTokenSymbol]?.decimals?.[chainId]
-//   const toTokenDecimals = tokens[toTokenSymbol]?.decimals?.[chainId]
-
-//   // Handle invalid params (either token symbols or chainIDs)
-//   // TODO: add error handling for missing params
-//   if (!fromTokenAddress || !toTokenAddress || !fromTokenDecimals || !toTokenDecimals) {
-//     res.send(
-//       `
-//       <h1>Invalid Params</h1>
-//       <hr/>
-//       <b>Ensure that your request matches the following format: /swap?chain=1&fromToken=USDC&toToken=DAI&amount=100</b>
-//       <h2>Available Tokens (symbols to use)</h2>
-//       ${tokenHtml}`)
-//     return
-//   }
-
-//   // Handle amount
-//   const amount = BigNumber.from(query.amount).mul(TEN.pow(fromTokenDecimals))
-
-//   // Send request w/Synapse SDK
-//   Synapse.swap(
-//     Number(chainId),
-//     fromTokenAddress,
-//     toTokenAddress,
-//     BigNumber.from(amount)
-//   ).then((resp) => {
-//     Synapse.swap(
-//       Number(chainId),
-//       fromTokenAddress, //these are wrong
-//       toTokenAddress, // also wrong
-//       BigNumber.from(amount),
-//       resp.query
-//     ).then((txInfo) => {
-//       res.json(txInfo)
-//     })
-//   }).catch((err) => {
-//     // TODO: do a better return here
-//     res.send(
-//       `
-//       <h1>Invalid Request</h1>
-//       <code>${err}</code>
-//       <hr/>
-//       <b>Ensure that your request matches the following format: /swap?chain=1&fromToken=UƒSDC&toToken=DAI&amount=100</b>
-//       <h2>Available Tokens (symbols to use)</h2>
-//       ${tokenHtml}`)
-//   })
-// })
-
-// //Bridge Transaction Get
-// app.get(
-//   '/bridgeQuote',
-//   async (req, res) => {
-//     // Access query params
-//     const query = req.query
-
-//     // Chains
-//     const fromChain = query.fromChain
-//     const toChain = query.toChain
-
-//     // Symbols
-//     const fromTokenSymbol = String(query.fromToken)
-//     const toTokenSymbol = String(query.toToken)
-
-//     // Get Token Addresses
-//     const fromTokenAddress = tokens[fromTokenSymbol]?.addresses?.[fromChain]
-//     const toTokenAddress = tokens[toTokenSymbol]?.addresses?.[toChain]
-
-//     // Get Token Decimals
-//     const fromTokenDecimals = tokens[fromTokenSymbol]?.decimals?.[fromChain]
-//     const toTokenDecimals = tokens[toTokenSymbol]?.decimals?.[toChain]
-
-//     const destAddress = query.destAddress
-
-//     // Handle invalid params (either token symbols or chainIDs)
-//     // TODO: add error handling for missing params
-//     if (!fromTokenAddress || !toTokenAddress || !fromTokenDecimals || !toTokenDecimals) {
-//       res.send(
-//         `
-//         <h1>Invalid Request</h1>
-//         <hr/>
-//         <b>Ensure that your request matches the following format: /bridge?fromChain=1&toChain=42161&fromToken=USDC&toToken=USDC&amount=1000000&destAddress=0x0AF91FA049A7e1894F480bFE5bBa20142C6c29a9</b>
-//         <h2>Available Tokens (symbols to use)</h2>
-//         ${tokenHtml}`)
-//       return
-//     }
-
-//     // Handle amount
-//     const amount = BigNumber.from(query.amount).mul(TEN.pow(fromTokenDecimals))
-
-//     // Send request w/Synapse SDK
-//     Synapse.bridge(
-//       Number(fromChain),
-//       Number(toChain),
-//       fromTokenAddress,
-//       toTokenAddress,
-//       BigNumber.from(amount)
-//     ).then((resp) => {
-//       Synapse.bridgeQuote(
-//         destAddress, // Need to edit
-//         Number(fromChain),
-//         Number(toChain),
-//         toTokenAddress,
-//         BigNumber.from(amount),
-//         resp.originQuery,
-//         resp.destQuery
-//       ).then((txInfo) => {
-//         res.json(txInfo)
-//       })
-//     }).catch((err) => {
-//       // TODO: do a better return here
-//       res.send(
-//         `
-//         <h1>Invalid Request</h1>
-//         <code>${err}</code>
-//         <hr/>
-//         <b>Ensure that your request matches the following format: /bridge?fromChain=1&toChain=42161&fromToken=USDC&toToken=USDC&amount=1000000</b>
-//         <h2>Available Tokens (symbols to use)</h2>
-//         ${tokenHtml}`)
-//     })
-//   }
-// )
