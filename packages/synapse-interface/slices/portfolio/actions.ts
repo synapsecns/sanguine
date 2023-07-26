@@ -24,3 +24,6 @@ export const updateSingleTokenAllowance = createAction<{
   spender: Address
   token: Token
 }>('portfolio/updateSingleTokenAllowance')
+export const resetPortfolioState = createAction<void>(
+  'portfolio/resetPortfolioState'
+)
