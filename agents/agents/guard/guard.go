@@ -258,46 +258,26 @@ func (g Guard) handleLog(ctx context.Context, log ethTypes.Log) error {
 }
 
 func (g Guard) isSnapshotAcceptedEvent(log ethTypes.Log) bool {
-	if g.inboxParser == nil {
-		return false
-	}
-
 	inboxEvent, ok := g.inboxParser.EventType(log)
 	return ok && inboxEvent == inbox.SnapshotAcceptedEvent
 }
 
 func (g Guard) isAttestationAcceptedEvent(log ethTypes.Log) bool {
-	if g.lightInboxParser == nil {
-		return false
-	}
-
 	lightManagerEvent, ok := g.lightInboxParser.EventType(log)
 	return ok && lightManagerEvent == lightinbox.AttestationAcceptedEvent
 }
 
 func (g Guard) isReceiptAcceptedEvent(log ethTypes.Log) bool {
-	if g.inboxParser == nil {
-		return false
-	}
-
 	inboxEvent, ok := g.inboxParser.EventType(log)
 	return ok && inboxEvent == inbox.ReceiptAcceptedEvent
 }
 
 func (g Guard) isStatusUpdatedEvent(log ethTypes.Log) bool {
-	if g.bondingManagerParser == nil {
-		return false
-	}
-
 	bondingManagerEvent, ok := g.bondingManagerParser.EventType(log)
 	return ok && bondingManagerEvent == bondingmanager.StatusUpdatedEvent
 }
 
 func (g Guard) isDisputeOpenedEvent(log ethTypes.Log) bool {
-	if g.lightManagerParser == nil {
-		return false
-	}
-
 	lightManagerEvent, ok := g.lightManagerParser.EventType(log)
 	return ok && lightManagerEvent == lightmanager.DisputeOpenedEvent
 }
