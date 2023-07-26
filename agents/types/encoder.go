@@ -303,12 +303,24 @@ const (
 func EncodeTips(tips Tips) ([]byte, error) {
 	b := make([]byte, 0)
 
-	b = append(b, math.PaddedBigBytes(tips.SummitTip(), uint64Len)...)
-	b = append(b, math.PaddedBigBytes(tips.AttestationTip(), uint64Len)...)
-	b = append(b, math.PaddedBigBytes(tips.ExecutionTip(), uint64Len)...)
-	b = append(b, math.PaddedBigBytes(tips.DeliveryTip(), uint64Len)...)
+	b = append(b, wrap64(tips.SummitTip())...)
+	b = append(b, wrap64(tips.AttestationTip())...)
+	b = append(b, wrap64(tips.ExecutionTip())...)
+	b = append(b, wrap64(tips.DeliveryTip())...)
+	//
+	//b = append(b, math.PaddedBigBytes(tips.SummitTip(), uint64Len)...)
+	//b = append(b, math.PaddedBigBytes(tips.AttestationTip(), uint64Len)...)
+	//b = append(b, math.PaddedBigBytes(tips.ExecutionTip(), uint64Len)...)
+	//b = append(b, math.PaddedBigBytes(tips.DeliveryTip(), uint64Len)...)
+	//
+	return b[4:], nil
+}
 
-	return b, nil
+func wrap64(wrappable *big.Int) []byte {
+	wrapper := make([]byte, uint64Len)
+	binary.BigEndian.PutUint64(wrapper, wrappable.Uint64())
+
+	return wrapper
 }
 
 // EncodeTipsBigInt encodes a list of tips into a big int.
