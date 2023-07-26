@@ -4,6 +4,7 @@ import { useKeyPress } from '@hooks/useKeyPress'
 import TokenMenuItem from '@pages/bridge/TokenMenuItem'
 import SlideSearchBox from '@pages/bridge/SlideSearchBox'
 import { DrawerButton } from '@components/buttons/DrawerButton'
+import { useAccount } from 'wagmi'
 import { sortTokens } from '@constants/tokens'
 import { Token } from '@/utils/types'
 import { useDispatch, useSelector } from 'react-redux'
@@ -29,6 +30,7 @@ export const TokenSlideOver = ({
   chainId: number
   selectedToken: Token
 }) => {
+  const { address } = useAccount()
   let setToken
   let setShowSlideOver
 
@@ -149,6 +151,7 @@ export const TokenSlideOver = ({
       >
         {tokenList.map((token, idx) => {
           const tokenBalanceAndAllowance =
+            address &&
             portfolioBalances[chainId] &&
             portfolioBalances[chainId].filter(
               (t: TokenWithBalanceAndAllowances) => t.token === token
