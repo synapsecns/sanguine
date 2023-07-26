@@ -21,14 +21,15 @@ export const OriginChainLabel = ({
   connectedChainId: number
 }) => {
   const [orderedChains, setOrderedChains] = useState<number[]>([])
+
   useEffect(() => {
-    setOrderedChains(chainOrderBySwapSide(chainId))
+    setOrderedChains(chainOrderBySwapSide(chainId, 4))
   }, [chainId, connectedChainId, chains])
 
   const dispatch = useDispatch()
 
   return (
-    <div className="flex items-center justify-center md:justify-between">
+    <div className="flex items-center justify-between">
       <div className={`text-gray-400 block text-sm mr-2`}>Origin</div>
       <div className="flex items-center space-x-3">
         {orderedChains.map((id) =>
@@ -107,7 +108,7 @@ const SelectedChain = ({ chainId }: { chainId: number }) => {
       <Image
         alt="chain image"
         src={chain.chainImg}
-        className="w-5 h-5 my-1 mr-0 rounded-full md:mr-1 opacity-80"
+        className="w-5 h-5 my-1 mr-1 rounded-full opacity-80"
       />
       <div className="inline-block">
         <div className="mr-2 text-sm text-white">
@@ -118,10 +119,10 @@ const SelectedChain = ({ chainId }: { chainId: number }) => {
   ) : null
 }
 
-const chainOrderBySwapSide = (chainId: number) => {
+const chainOrderBySwapSide = (chainId: number, count?: number) => {
   let orderedChains
   orderedChains = ORDERED_CHAINS_BY_ID.filter((e) => e !== String(chainId))
-  orderedChains = orderedChains.slice(0, 5)
+  orderedChains = orderedChains.slice(0, count ?? 5)
   orderedChains.unshift(chainId)
 
   return orderedChains
