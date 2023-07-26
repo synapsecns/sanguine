@@ -13,7 +13,11 @@ import {
   fetchAndStorePortfolioBalances,
   usePortfolioState,
 } from '@/slices/portfolio/hooks'
-import { PortfolioTabs, setActiveTab } from '@/slices/portfolio/actions'
+import {
+  PortfolioTabs,
+  resetPortfolioState,
+  setActiveTab,
+} from '@/slices/portfolio/actions'
 import { PortfolioState } from '@/slices/portfolio/reducer'
 import { useBridgeState } from '@/slices/bridge/hooks'
 import { BridgeState } from '@/slices/bridge/reducer'
@@ -26,6 +30,9 @@ export const Portfolio = () => {
   const { address } = useAccount({
     onConnect() {
       dispatch(setActiveTab(PortfolioTabs.PORTFOLIO))
+    },
+    onDisconnect() {
+      dispatch(resetPortfolioState())
     },
   })
   const { balancesAndAllowances: portfolioData, status: fetchState } =
