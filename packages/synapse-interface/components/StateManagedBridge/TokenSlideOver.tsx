@@ -148,10 +148,14 @@ export const TokenSlideOver = ({
         `}
       >
         {tokenList.map((token, idx) => {
-          const tokenBalanceAndAllowance = portfolioBalances[chainId].filter(
-            (t: TokenWithBalanceAndAllowances) => t.token === token
-          )
-          const balance = tokenBalanceAndAllowance[0]?.balance ?? 0n
+          const tokenBalanceAndAllowance =
+            portfolioBalances[chainId] &&
+            portfolioBalances[chainId].filter(
+              (t: TokenWithBalanceAndAllowances) => t.token === token
+            )
+          const balance = tokenBalanceAndAllowance
+            ? tokenBalanceAndAllowance[0]?.balance
+            : 0n
 
           return (
             <TokenMenuItem
