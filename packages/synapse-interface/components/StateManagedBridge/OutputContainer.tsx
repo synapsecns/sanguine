@@ -8,6 +8,7 @@ import LoadingSpinner from '../ui/tailwind/LoadingSpinner'
 import { DestinationChainLabel } from './DestinationChainLabel'
 import SwitchButton from '../buttons/SwitchButton'
 import { setFromChainId, setToChainId } from '@/slices/bridgeSlice'
+import { CHAINS_BY_ID } from '@/constants/chains'
 
 export const OutputContainer = ({}) => {
   const dispatch = useDispatch()
@@ -47,7 +48,13 @@ export const OutputContainer = ({}) => {
           />
         </div>
       </div>
-      <div className="flex h-16 mb-4 space-x-2">
+      <div className="flex pb-1 ml-3 text-xs text-white md:hidden">
+        Destination: {CHAINS_BY_ID[fromChainId]?.name}
+      </div>
+      <div
+        data-test-id="destination-output"
+        className="flex h-16 mb-4 space-x-2"
+      >
         <div
           className={`
             flex flex-grow items-center
