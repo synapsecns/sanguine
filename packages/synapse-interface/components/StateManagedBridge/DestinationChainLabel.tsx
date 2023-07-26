@@ -4,11 +4,11 @@ import { getNetworkButtonBorder } from '@/styles/chains'
 import Image from 'next/image'
 import Tooltip from '@tw/Tooltip'
 import { useEffect, useState } from 'react'
-import { useDispatch, useSelector } from 'react-redux'
-import { setToChainId } from '@/slices/bridgeSlice'
+import { useDispatch } from 'react-redux'
+import { useBridgeState } from '@/slices/bridge/hooks'
+import { setToChainId } from '@/slices/bridge/reducer'
 import { setShowToChainSlideOver } from '@/slices/bridgeDisplaySlice'
 import { getOrderedChains } from '@/utils/getOrderedChains'
-import { RootState } from '@/store/store'
 import { segmentAnalyticsEvent } from '@/contexts/SegmentAnalyticsProvider'
 
 export const DestinationChainLabel = ({
@@ -57,7 +57,7 @@ export const DestinationChainLabel = ({
 
 const PossibleChain = ({ chainId }: { chainId: number }) => {
   const chain = CHAINS_BY_ID[chainId]
-  const { toChainId } = useSelector((state: RootState) => state.bridge)
+  const { toChainId } = useBridgeState()
 
   const dispatch = useDispatch()
 

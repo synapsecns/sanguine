@@ -1,74 +1,63 @@
-import React, { useState, useEffect, useRef } from 'react'
-import { useDispatch, useSelector } from 'react-redux'
+import React, { useEffect } from 'react'
 import { useAccount, useNetwork } from 'wagmi'
-import { RootState } from '@/store/store'
-import { setFromChainId } from '@/slices/bridgeSlice'
+import { useAppDispatch } from '@/store/hooks'
+import { setFromChainId } from '@/slices/bridge/reducer'
 import { PortfolioTabManager } from './PortfolioTabManager'
 import {
-  usePortfolioBalancesAndAllowances,
   NetworkTokenBalancesAndAllowances,
   TokenWithBalanceAndAllowance,
-  FetchState,
-} from '@/utils/hooks/usePortfolioBalances'
+} from '@/utils/actions/fetchPortfolioBalances'
 import { PortfolioContent, HomeContent } from './PortfolioContent'
-
-export enum PortfolioTabs {
-  HOME = 'home',
-  PORTFOLIO = 'portfolio',
-}
+import {
+  useFetchPortfolioBalances,
+  fetchAndStorePortfolioBalances,
+  usePortfolioState,
+} from '@/slices/portfolio/hooks'
+import { PortfolioTabs, setActiveTab } from '@/slices/portfolio/actions'
+import { PortfolioState } from '@/slices/portfolio/reducer'
+import { useBridgeState } from '@/slices/bridge/hooks'
+import { BridgeState } from '@/slices/bridge/reducer'
 
 export const Portfolio = () => {
-  const [tab, setTab] = useState<PortfolioTabs>(PortfolioTabs.HOME)
-
-  const dispatch = useDispatch()
-  const { fromChainId, bridgeTxHashes } = useSelector(
-    (state: RootState) => state.bridge
-  )
-
-  const {
-    balancesAndAllowances: portfolioData,
-    fetchPortfolioBalances,
-    status: fetchState,
-  } = usePortfolioBalancesAndAllowances()
+  const dispatch = useAppDispatch()
+  const { fromChainId }: BridgeState = useBridgeState()
+  const { activeTab }: PortfolioState = usePortfolioState()
+  const { chain } = useNetwork()
+  const { address } = useAccount({
+    onConnect() {
+      dispatch(setActiveTab(PortfolioTabs.PORTFOLIO))
+    },
+  })
+  const { balancesAndAllowances: portfolioData, status: fetchState } =
+    useFetchPortfolioBalances()
 
   const filteredPortfolioDataForBalances: NetworkTokenBalancesAndAllowances =
     filterPortfolioBalancesWithBalances(portfolioData)
 
-  const { address } = useAccount()
-  const { chain } = useNetwork()
-
-  useEffect(() => {
-    if (address) {
-      setTab(PortfolioTabs.PORTFOLIO)
-    }
-  }, [address])
-
   useEffect(() => {
     ;(async () => {
-      if (address && chain.id) {
+      if (address && chain?.id) {
         await dispatch(setFromChainId(chain.id))
-        await fetchPortfolioBalances()
+        await dispatch(fetchAndStorePortfolioBalances(address))
       }
     })()
-  }, [address, chain])
+  }, [chain, address])
 
   return (
     <div
       data-test-id="portfolio"
       className="flex flex-col w-full max-w-lg mx-auto lg:mx-0"
     >
-      <PortfolioTabManager activeTab={tab} setTab={setTab} />
+      <PortfolioTabManager />
       <div className="mt-4">
-        {tab === PortfolioTabs.HOME && <HomeContent />}
-        {tab === PortfolioTabs.PORTFOLIO && (
+        {activeTab === PortfolioTabs.HOME && <HomeContent />}
+        {activeTab === PortfolioTabs.PORTFOLIO && (
           <PortfolioContent
             connectedAddress={address}
             connectedChainId={chain?.id}
             selectedFromChainId={fromChainId}
             networkPortfolioWithBalances={filteredPortfolioDataForBalances}
-            fetchPortfolioBalancesCallback={fetchPortfolioBalances}
             fetchState={fetchState}
-            bridgeTxHashes={bridgeTxHashes}
           />
         )}
       </div>

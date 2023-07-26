@@ -1,30 +1,34 @@
 import React, { useMemo, useCallback, useState } from 'react'
-import { useDispatch, useSelector } from 'react-redux'
+import { useAppDispatch } from '@/store/hooks'
 import { RootState } from '@/store/store'
 import { useAccount } from 'wagmi'
 import {
   setFromChainId,
   setFromToken,
   updateFromValue,
-} from '@/slices/bridgeSlice'
+} from '@/slices/bridge/reducer'
 import { Token } from '@/utils/types'
 import { formatBigIntToString } from '@/utils/bigint/format'
 import { CHAINS_BY_ID } from '@/constants/chains'
 import { inputRef } from '../StateManagedBridge/InputContainer'
 import { approveToken } from '@/utils/approveToken'
-import { switchNetwork } from '@wagmi/core'
+import { Address, switchNetwork } from '@wagmi/core'
 import Image from 'next/image'
 import { toast } from 'react-hot-toast'
-import { ROUTER_ADDRESS } from '@/utils/hooks/usePortfolioBalances'
+import {
+  ROUTER_ADDRESS,
+  Allowances,
+} from '@/utils/actions/fetchPortfolioBalances'
+import { useBridgeState } from '@/slices/bridge/hooks'
+import { fetchAndStoreSingleTokenAllowance } from '@/slices/portfolio/hooks'
 
 type PortfolioTokenAssetProps = {
   token: Token
   balance: bigint
-  allowance?: bigint
+  allowances?: Allowances
   portfolioChainId: number
   connectedChainId: number
   isApproved: boolean
-  fetchPortfolioBalancesCallback: () => Promise<void>
 }
 
 function hasOnlyZeros(input: string): boolean {
@@ -42,16 +46,13 @@ const handleFocusOnInput = () => {
 export const PortfolioTokenAsset = ({
   token,
   balance,
-  allowance,
+  allowances,
   portfolioChainId,
   connectedChainId,
   isApproved,
-  fetchPortfolioBalancesCallback,
 }: PortfolioTokenAssetProps) => {
-  const dispatch = useDispatch()
-  const { fromChainId, fromToken } = useSelector(
-    (state: RootState) => state.bridge
-  )
+  const dispatch = useAppDispatch()
+  const { fromChainId, fromToken } = useBridgeState()
   const { address } = useAccount()
   const { icon, symbol, decimals, addresses } = token
 
@@ -66,8 +67,11 @@ export const PortfolioTokenAsset = ({
       : formattedBalance
   }, [balance, portfolioChainId])
 
+  const bridgeAllowance = allowances && allowances[ROUTER_ADDRESS]
+
   const parsedAllowance: string =
-    allowance && formatBigIntToString(allowance, decimals[portfolioChainId], 3)
+    bridgeAllowance &&
+    formatBigIntToString(bridgeAllowance, decimals[portfolioChainId], 3)
 
   const currentChainName: string = CHAINS_BY_ID[portfolioChainId].name
 
@@ -80,7 +84,7 @@ export const PortfolioTokenAsset = ({
   }, [fromChainId, fromToken, token, portfolioChainId])
 
   const hasAllowanceButLessThanBalance: boolean =
-    allowance && balance > allowance
+    bridgeAllowance && balance > bridgeAllowance
 
   const isDisabled: boolean = false
 
@@ -108,7 +112,14 @@ export const PortfolioTokenAsset = ({
       dispatch(setFromToken(token))
       await approveToken(ROUTER_ADDRESS, connectedChainId, tokenAddress).then(
         (success) => {
-          success && fetchPortfolioBalancesCallback()
+          dispatch(
+            fetchAndStoreSingleTokenAllowance({
+              routerAddress: ROUTER_ADDRESS,
+              tokenAddress: tokenAddress as Address,
+              address: address,
+              chainId: portfolioChainId,
+            })
+          )
         }
       )
     } else {
@@ -117,7 +128,15 @@ export const PortfolioTokenAsset = ({
         await scrollToTop()
         await approveToken(ROUTER_ADDRESS, portfolioChainId, tokenAddress).then(
           (success) => {
-            success && fetchPortfolioBalancesCallback()
+            success &&
+              dispatch(
+                fetchAndStoreSingleTokenAllowance({
+                  routerAddress: ROUTER_ADDRESS,
+                  tokenAddress: tokenAddress as Address,
+                  address: address,
+                  chainId: portfolioChainId,
+                })
+              )
           }
         )
       } catch (error) {

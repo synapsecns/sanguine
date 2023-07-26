@@ -4,6 +4,9 @@ import { RootState } from '@/store/store'
 import LoadingSpinner from '../ui/tailwind/LoadingSpinner'
 import ToChainSelect from './ToChainSelect'
 import ToTokenSelect from './ToTokenSelect'
+import { DestinationChainLabel } from './DestinationChainLabel'
+import SwitchButton from '../buttons/SwitchButton'
+import { setFromChainId, setToChainId } from '@/slices/bridge/reducer'
 
 export const OutputContainer = ({}) => {
   const { bridgeQuote, isLoading } = useSelector(

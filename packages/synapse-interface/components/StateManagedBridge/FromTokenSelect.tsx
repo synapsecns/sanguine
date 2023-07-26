@@ -7,7 +7,7 @@ import Select from 'react-select'
 
 import * as ALL_TOKENS from '@/constants/tokens/master'
 import { Token } from '@/utils/types'
-import { setFromToken } from '@/slices/bridgeSlice'
+import { setFromToken } from '@/slices/bridge/reducer'
 import { coinSelectStyles } from './styles/coinSelectStyles'
 import { useId } from 'react'
 import { flattenPausedTokens } from '@/utils/flattenPausedTokens'

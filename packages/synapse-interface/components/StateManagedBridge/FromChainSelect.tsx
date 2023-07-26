@@ -6,7 +6,7 @@ import { CHAINS_BY_ID } from '@/constants/chains'
 import { setSelectFromChainId } from '@/slices/tokenSelectorSlice'
 import { RootState } from '@/store/store'
 
-import { setFromChainId } from '@/slices/bridgeSlice'
+import { setFromChainId } from '@/slices/bridge/reducer'
 import { networkSelectStyles } from './styles/networkSelectStyles'
 import { useEffect, useId, useState } from 'react'
 

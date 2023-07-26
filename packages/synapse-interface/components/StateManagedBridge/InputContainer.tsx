@@ -3,7 +3,7 @@ import { useDispatch, useSelector } from 'react-redux'
 import { useAccount } from 'wagmi'
 import { RootState } from '@/store/store'
 
-import { updateFromValue } from '@/slices/bridgeSlice'
+import { updateFromValue } from '@/slices/bridge/reducer'
 import { setShowFromTokenSlideOver } from '@/slices/bridgeDisplaySlice'
 import SelectTokenDropdown from '@/components/input/TokenAmountInput/SelectTokenDropdown'
 import MiniMaxButton from '../buttons/MiniMaxButton'
@@ -19,7 +19,7 @@ export const InputContainer = () => {
     fromChainId,
     fromToken,
     fromChainIds,
-    supportedFromTokenBalances,
+    supportedFromTokens,
     fromValue,
     bridgeTxHashes,
   } = useSelector((state: RootState) => state.bridge)
@@ -46,11 +46,11 @@ export const InputContainer = () => {
 
   const dispatch = useDispatch()
 
-  const hasBalances = Object.keys(supportedFromTokenBalances).length > 0
+  const hasBalances = Object.keys(supportedFromTokens).length > 0
 
   const fromTokenBalance: bigint =
     (hasBalances &&
-      supportedFromTokenBalances.filter((token) => token.token === fromToken)[0]
+      supportedFromTokens.filter((token) => token.token === fromToken)[0]
         ?.balance) ??
     0n
 

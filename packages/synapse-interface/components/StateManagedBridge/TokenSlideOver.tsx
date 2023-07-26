@@ -9,12 +9,14 @@ import { Token } from '@/utils/types'
 import { useDispatch, useSelector } from 'react-redux'
 import { RootState } from '@/store/store'
 import { Zero } from '@ethersproject/constants'
-import { setFromToken, setToToken } from '@/slices/bridgeSlice'
+import { setFromToken, setToToken } from '@/slices/bridge/reducer'
 import {
   setShowFromTokenSlideOver,
   setShowToTokenSlideOver,
 } from '@/slices/bridgeDisplaySlice'
 import { segmentAnalyticsEvent } from '@/contexts/SegmentAnalyticsProvider'
+import { usePortfolioBalances } from '@/slices/portfolio/hooks'
+import { TokenWithBalanceAndAllowances } from '@/utils/actions/fetchPortfolioBalances'
 
 export const TokenSlideOver = ({
   isOrigin,
@@ -43,9 +45,7 @@ export const TokenSlideOver = ({
   const dispatch = useDispatch()
   let tokenList: any[] = []
 
-  const { supportedFromTokenBalances } = useSelector(
-    (state: RootState) => state.bridge
-  )
+  const portfolioBalances = usePortfolioBalances()
 
   tokenList = tokens
 
@@ -148,17 +148,10 @@ export const TokenSlideOver = ({
         `}
       >
         {tokenList.map((token, idx) => {
-          let balance
-
-          if (isOrigin) {
-            const tokenAndBalance = (supportedFromTokenBalances).filter(
-              (t) => t.token === token
-            )
-              console.log(tokenAndBalance)
-            balance = tokenAndBalance[0]?.balance ?? Zero
-          } else {
-            balance = Zero
-          }
+          const tokenBalanceAndAllowance = portfolioBalances[chainId].filter(
+            (t: TokenWithBalanceAndAllowances) => t.token === token
+          )
+          const balance = tokenBalanceAndAllowance[0]?.balance ?? 0n
 
           return (
             <TokenMenuItem

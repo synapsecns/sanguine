@@ -3,7 +3,7 @@ import Select from 'react-select'
 import { Address, useAccount } from 'wagmi'
 
 import { CHAINS_BY_ID } from '@/constants/chains'
-import { setToChainId } from '@/slices/bridgeSlice'
+import { setToChainId } from '@/slices/bridge/reducer'
 import { setSelectToChainId } from '@/slices/tokenSelectorSlice'
 import { RootState } from '@/store/store'
 import { networkSelectStyles } from './styles/networkSelectStyles'

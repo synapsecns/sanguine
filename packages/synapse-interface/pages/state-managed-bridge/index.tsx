@@ -21,11 +21,10 @@ import {
   setSupportedToTokens,
   setFromChainIds,
   setToChainIds,
-  setSupportedFromTokenBalances,
   setDeadlineMinutes,
   setDestinationAddress,
   addBridgeTxHash,
-} from '@/slices/bridgeSlice'
+} from '@/slices/bridge/reducer'
 
 import {
   setShowDestinationAddress,
@@ -90,6 +89,19 @@ import FromChainSelect from '@/components/StateManagedBridge/FromChainSelect'
 import ToChainSelect from '@/components/StateManagedBridge/ToChainSelect'
 import FromTokenSelect from '@/components/StateManagedBridge/FromTokenSelect'
 import ToTokenSelect from '@/components/StateManagedBridge/ToTokenSelect'
+import { useAppDispatch } from '@/store/hooks'
+import {
+  NetworkTokenBalancesAndAllowances,
+  sortTokensByBalanceDescending,
+} from '@/utils/actions/fetchPortfolioBalances'
+import {
+  fetchAndStorePortfolioBalances,
+  fetchAndStoreSingleNetworkPortfolioBalances,
+  fetchAndStoreSingleTokenAllowance,
+  fetchAndStoreSingleTokenBalance,
+} from '@/slices/portfolio/hooks'
+import { usePortfolioBalances } from '@/slices/portfolio/hooks'
+import { updateSingleTokenAllowance } from '@/slices/portfolio/actions'
 
 // NOTE: These are idle utility functions that will be re-written to
 // support sorting by desired mechanism
@@ -123,6 +135,9 @@ const StateManagedBridge = () => {
   const router = useRouter()
   const { query, pathname } = router
 
+  const portfolioBalances: NetworkTokenBalancesAndAllowances =
+    usePortfolioBalances()
+
   const {
     fromChainId,
     toChainId,
@@ -132,7 +147,6 @@ const StateManagedBridge = () => {
     fromValue,
     isLoading,
     supportedFromTokens,
-    supportedFromTokenBalances,
     supportedToTokens,
     destinationAddress,
     bridgeTxHashes,
@@ -152,7 +166,7 @@ const StateManagedBridge = () => {
 
   const [isApproved, setIsApproved] = useState(false)
 
-  const dispatch = useDispatch()
+  const dispatch = useAppDispatch()
 
   const fromChainIds = Object.keys(CHAINS_BY_ID).map((id) => Number(id))
   const toChainIds = Object.keys(CHAINS_BY_ID).map((id) => Number(id))
@@ -211,13 +225,7 @@ const StateManagedBridge = () => {
 
     dispatch(setSupportedToTokens(sortToTokens(bridgeableTokens)))
     dispatch(setToToken(bridgeableToken))
-
-    sortByTokenBalance(fromTokens, fromChainId, address).then((res) => {
-      const t = res.map((tokenAndBalances) => tokenAndBalances.token)
-      dispatch(setSupportedFromTokenBalances(res))
-      dispatch(setSupportedFromTokens(t))
-    })
-
+    dispatch(setSupportedFromTokens(portfolioBalances[fromChainId] ?? []))
     dispatch(setFromChainIds(fromChainIds))
     dispatch(setToChainIds(bridgeableChainIds))
 
@@ -238,7 +246,15 @@ const StateManagedBridge = () => {
       dispatch(setBridgeQuote(EMPTY_BRIDGE_QUOTE_ZERO))
       dispatch(setIsLoading(false))
     }
-  }, [fromChainId, toChainId, fromToken, toToken, fromValue, address])
+  }, [
+    fromChainId,
+    toChainId,
+    fromToken,
+    toToken,
+    fromValue,
+    address,
+    portfolioBalances,
+  ])
 
   // don't like this, rewrite: could be custom hook
   useEffect(() => {
@@ -311,6 +327,17 @@ const StateManagedBridge = () => {
               tokenAddress: fromToken.addresses[fromChainId] as Address,
               spender: routerAddress,
             })
+
+      if (fromToken.addresses[fromChainId] !== zeroAddress) {
+        dispatch(
+          updateSingleTokenAllowance({
+            chainId: fromChainId,
+            allowance: allowance,
+            spender: routerAddress,
+            token: fromToken,
+          })
+        )
+      }
 
       const originMinWithSlippage = subtractSlippage(
         originQuery?.minAmountOut ?? 0n,
@@ -386,7 +413,16 @@ const StateManagedBridge = () => {
         bridgeQuote?.routerAddress,
         fromChainId,
         fromToken?.addresses[fromChainId]
-      )
+      ).then(() => {
+        dispatch(
+          fetchAndStoreSingleTokenAllowance({
+            routerAddress: bridgeQuote?.routerAddress as Address,
+            tokenAddress: fromToken?.addresses[fromChainId] as Address,
+            address: address,
+            chainId: fromChainId,
+          })
+        )
+      })
 
       try {
         await tx
@@ -484,6 +520,17 @@ const StateManagedBridge = () => {
 
         toast.dismiss(pendingPopup)
 
+        setTimeout(async () => {
+          await dispatch(
+            fetchAndStoreSingleTokenBalance({
+              token: fromToken,
+              routerAddress: bridgeQuote?.routerAddress as Address,
+              address: address,
+              chainId: fromChainId,
+            })
+          )
+        }, 2000)
+
         return tx
       } catch (error) {
         segmentAnalyticsEvent(`[Bridge] error bridging`, {
@@ -551,7 +598,7 @@ const StateManagedBridge = () => {
                   key="fromBlock"
                   isOrigin={true}
                   tokens={separateAndSortTokensWithBalances(
-                    supportedFromTokenBalances
+                    supportedFromTokens
                   )}
                   chainId={fromChainId}
                   selectedToken={fromToken}
