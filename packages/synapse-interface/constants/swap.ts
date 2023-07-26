@@ -1,25 +1,24 @@
 import { USDC, DAI } from '@constants/tokens/master'
-import { Zero } from '@ethersproject/constants'
 import { COIN_SLIDE_OVER_PROPS } from '@styles/transitions'
 import * as CHAINS from '@constants/chains/master'
 import { SwapQuote } from '@types'
 export const QUOTE_POLLING_INTERVAL = 10000
 export const EMPTY_SWAP_QUOTE: SwapQuote = {
-  outputAmount: Zero,
+  outputAmount: 0n,
   outputAmountString: '',
   routerAddress: '',
-  allowance: Zero,
-  exchangeRate: Zero,
-  delta: Zero,
+  allowance: 0n,
+  exchangeRate: 0n,
+  delta: 0n,
   quote: null,
 }
 export const EMPTY_SWAP_QUOTE_ZERO: SwapQuote = {
-  outputAmount: Zero,
+  outputAmount: 0n,
   outputAmountString: '0',
   routerAddress: '',
-  allowance: Zero,
-  exchangeRate: Zero,
-  delta: Zero,
+  allowance: 0n,
+  exchangeRate: 0n,
+  delta: 0n,
   quote: null,
 }
 /**

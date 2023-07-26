@@ -5,6 +5,7 @@ import (
 	"github.com/synapsecns/sanguine/core/metrics/localmetrics"
 	"github.com/synapsecns/sanguine/services/scribe/metadata"
 	"testing"
+	"time"
 
 	"github.com/Flaque/filet"
 	. "github.com/stretchr/testify/assert"
@@ -45,13 +46,11 @@ func (l *LiveSuite) SetupSuite() {
 
 func (l *LiveSuite) SetupTest() {
 	l.TestSuite.SetupTest()
-
-	var err error
-	l.testDB, err = sqlite.NewSqliteStore(l.GetTestContext(), filet.TmpDir(l.T(), ""), l.metrics, false)
+	l.SetTestTimeout(time.Minute * 3)
+	sqliteStore, err := sqlite.NewSqliteStore(l.GetTestContext(), filet.TmpDir(l.T(), ""), l.metrics, false)
 	Nil(l.T(), err)
-
+	l.testDB = sqliteStore
 	l.manager = testutil.NewDeployManager(l.T())
-
 	l.wallet, err = wallet.FromRandom()
 	Nil(l.T(), err)
 	l.signer = localsigner.NewSigner(l.wallet.PrivateKey())

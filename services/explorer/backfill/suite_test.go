@@ -36,7 +36,7 @@ type BackfillSuite struct {
 	deployManager        *testutil.DeployManager
 	testDeployManager    *testcontracts.DeployManager
 	bridgeConfigContract *bridgeconfig.BridgeConfigRef
-	consumerFetcher      *fetcher.ScribeFetcher
+	consumerFetcher      fetcher.ScribeFetcher
 	metrics              metrics.Handler
 }
 

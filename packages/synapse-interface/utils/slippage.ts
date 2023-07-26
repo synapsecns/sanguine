@@ -83,3 +83,66 @@ export const formatSlippageToString = (slippageSelected, slippageCustom) => {
     return 'N/A'
   }
 }
+
+// Below functions are dupes of above functions except with input and output values of bigint
+// When app completely removes need for BigNumber, we can deprecate the BigNumber versions
+
+// TODO Unit test below
+
+/**
+ * Given an input value and slippage redux state values, do the math.
+ *
+ * @param {bigint} inputValue
+ * @param {Slippages} slippageSelected
+ * @param {NumberInputState} slippageCustom
+ * @param {boolean} add
+ * @return {bigint}
+ */
+export const _applySlippageBigInt = (
+  inputValue,
+  slippageSelected,
+  slippageCustom,
+  add = false
+) => {
+  let numerator
+  let denominator
+  if (slippageSelected === Slippages.Custom && !!slippageCustom) {
+    denominator = 10n ** BigInt(slippageCustom.precision + 2)
+    numerator = add
+      ? denominator + slippageCustom.valueSafe
+      : denominator - slippageCustom.valueSafe
+  } else if (slippageSelected === Slippages.OneTenth) {
+    denominator = 1000n
+    numerator = add ? denominator + 1n : denominator - 1n
+  } else if (slippageSelected === Slippages.OneHundredth) {
+    denominator = 10000n
+    numerator = add ? denominator + 1n : denominator - 1n
+  } else if (slippageSelected === Slippages.TwoTenth) {
+    denominator = 500n
+    numerator = add ? denominator + 1n : denominator - 1n
+  } else if (slippageSelected === Slippages.Quarter) {
+    denominator = 400n
+    numerator = add ? denominator + 1n : denominator - 1n
+  } else if (slippageSelected === Slippages.OnePercent) {
+    denominator = 100n
+    numerator = add ? denominator + 1n : denominator - 1n
+  } else {
+    // default to 1%
+    denominator = 100n
+    numerator = add ? denominator + 1n : denominator - 1n
+  }
+  return (inputValue * numerator) / denominator
+}
+
+export const subtractSlippageBigInt = (
+  inputValue,
+  slippageSelected,
+  slippageCustom
+) => {
+  return _applySlippageBigInt(
+    inputValue,
+    slippageSelected,
+    slippageCustom,
+    false
+  )
+}

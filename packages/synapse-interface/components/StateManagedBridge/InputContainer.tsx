@@ -1,16 +1,17 @@
-import { useEffect, useRef, useState } from 'react'
+import React, { useEffect, useState, useRef } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
-import { Zero } from '@ethersproject/constants'
+import { useAccount } from 'wagmi'
 import { RootState } from '@/store/store'
 
 import { updateFromValue } from '@/slices/bridgeSlice'
 import { setShowFromTokenSlideOver } from '@/slices/bridgeDisplaySlice'
-import { stringToBigNum } from '@/utils/stringToBigNum'
 import SelectTokenDropdown from '@/components/input/TokenAmountInput/SelectTokenDropdown'
-import { useAccount } from 'wagmi'
 import MiniMaxButton from '../buttons/MiniMaxButton'
-import { formatBNToString } from '@/utils/bignumber/format'
+import { formatBigIntToString, stringToBigInt } from '@/utils/bigint/format'
 import { OriginChainLabel } from './OriginChainLabel'
+import { cleanNumberInput } from '@/utils/cleanNumberInput'
+
+export const inputRef = React.createRef<HTMLInputElement>()
 
 export const InputContainer = () => {
   const {
@@ -18,6 +19,7 @@ export const InputContainer = () => {
     fromToken,
     fromChainIds,
     supportedFromTokenBalances,
+    fromValue,
     bridgeTxHashes,
   } = useSelector((state: RootState) => state.bridge)
   const [showValue, setShowValue] = useState('')
@@ -45,41 +47,61 @@ export const InputContainer = () => {
 
   const hasBalances = Object.keys(supportedFromTokenBalances).length > 0
 
-  const fromTokenBalance =
+  const fromTokenBalance: bigint =
     (hasBalances &&
       supportedFromTokenBalances.filter((token) => token.token === fromToken)[0]
         ?.balance) ??
-    Zero
+    0n
 
   const formattedBalance = hasBalances
-    ? formatBNToString(fromTokenBalance, fromToken.decimals[fromChainId], 4)
+    ? formatBigIntToString(fromTokenBalance, fromToken.decimals[fromChainId], 4)
     : '0'
+
+  useEffect(() => {
+    if (
+      fromToken.decimals[fromChainId] &&
+      stringToBigInt(fromValue, fromToken.decimals[fromChainId]) !== 0n &&
+      stringToBigInt(fromValue, fromToken.decimals[fromChainId]) ===
+        fromTokenBalance
+    ) {
+      setShowValue(fromValue)
+    }
+  }, [fromValue, inputRef, fromChainId, fromToken, fromTokenBalance])
 
   const handleFromValueChange = (
     event: React.ChangeEvent<HTMLInputElement>
   ) => {
-    let fromValueString = event.target.value
+    const fromValueString: string = cleanNumberInput(event.target.value)
     try {
-      let fromValueBigNumber = stringToBigNum(
-        fromValueString,
-        fromToken.decimals[fromChainId]
-      )
-      dispatch(updateFromValue(fromValueBigNumber))
+      dispatch(updateFromValue(fromValueString))
       setShowValue(fromValueString)
     } catch (error) {
-      console.error('Invalid value for conversion to BigNumber')
+      console.error('Invalid value for conversion to BigInteger')
+      const inputValue = event.target.value
+      const regex = /^[0-9]*[.,]?[0-9]*$/
+
+      if (regex.test(inputValue) || inputValue === '') {
+        dispatch(updateFromValue(inputValue))
+        setShowValue(inputValue)
+      }
     }
   }
 
   const onClickBalance = () => {
-    dispatch(updateFromValue(fromTokenBalance))
+    const str = formatBigIntToString(
+      fromTokenBalance,
+      fromToken.decimals[fromChainId],
+      4
+    )
+    dispatch(updateFromValue(str))
     setShowValue(
-      formatBNToString(fromTokenBalance, fromToken.decimals[fromChainId])
+      formatBigIntToString(fromTokenBalance, fromToken.decimals[fromChainId])
     )
   }
 
   return (
     <div
+      data-test-id="input-container"
       className={`
         text-left px-2 sm:px-4 pt-2 pb-4 rounded-xl
         bg-bgLight
@@ -110,42 +132,45 @@ export const InputContainer = () => {
             isOrigin={true}
             onClick={() => dispatch(setShowFromTokenSlideOver(true))}
           />
-          <input
-            pattern="[0-9.]+"
-            disabled={false}
-            className={`
-              ml-4
-              ${isConnected ? '-mt-0 md:-mt-4' : '-mt-0'}
+          <div className="flex flex-col pt-2 ml-4">
+            <input
+              ref={inputRef}
+              pattern="^[0-9]*[.,]?[0-9]*$"
+              disabled={false}
+              className={`
               focus:outline-none
               bg-transparent
-              pr-4
-              w-2/3
+              max-w-[100px]
+              md:max-w-[160px]
               placeholder:text-[#88818C]
-              text-white text-opacity-80 text-lg md:text-2xl lg:text-2xl font-medium
+              text-white text-opacity-80 text-lg md:text-2xl font-medium
             `}
-            placeholder="0.0000"
-            onChange={handleFromValueChange}
-            value={showValue}
-            name="inputRow"
-            autoComplete="off"
-          />
+              placeholder="0.0000"
+              onChange={handleFromValueChange}
+              value={showValue}
+              name="inputRow"
+              autoComplete="off"
+              minLength={1}
+              maxLength={79}
+            />
+            {hasMounted && isConnected && (
+              <label
+                htmlFor="inputRow"
+                className="hidden text-xs text-white transition-all duration-150 md:block transform-gpu hover:text-opacity-70 hover:cursor-pointer"
+                onClick={onClickBalance}
+              >
+                {formattedBalance}
+                <span className="text-opacity-50 text-secondaryTextColor">
+                  {' '}
+                  available
+                </span>
+              </label>
+            )}
+          </div>
           {hasMounted && isConnected && (
-            <label
-              htmlFor="inputRow"
-              className="absolute hidden pt-1 mt-10 ml-40 text-xs text-white transition-all duration-150 md:block transform-gpu hover:text-opacity-70 hover:cursor-pointer"
-              onClick={onClickBalance}
-            >
-              {formattedBalance}
-              <span className="text-opacity-50 text-secondaryTextColor">
-                {' '}
-                available
-              </span>
-            </label>
-          )}
-          {hasMounted && isConnected && (
-            <div className="hidden mr-2 sm:inline-block">
+            <div className="m-auto">
               <MiniMaxButton
-                disabled={fromTokenBalance && fromTokenBalance.eq(Zero)}
+                disabled={fromTokenBalance && fromTokenBalance === 0n}
                 onClickBalance={onClickBalance}
               />
             </div>

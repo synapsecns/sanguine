@@ -56,7 +56,7 @@ export function LandingNav() {
     <Popover className="relative px-8 pt-6">
       <div className="w-full md:flex-1 md:flex md:items-center md:justify-between">
         <div className="flex items-center w-full py-4 lg:px-20">
-          <div className="flex-1">
+          <div className="mr-auto">
             <SynapseTitleLogo showText={true} />
           </div>
           <div className="items-center justify-center -mr-2 sm:flex lg:hidden">
@@ -79,7 +79,7 @@ export function LandingNav() {
           >
             <TopBarButtons />
           </Popover.Group>
-          <div className="justify-end flex-1 hidden lg:flex">
+          <div className="justify-end hidden ml-auto lg:flex">
             <div className="flex items-center space-x-2">
               <Wallet />
               <Popover className="relative inline-block">
@@ -196,41 +196,17 @@ function PopoverPanelContainer({
 }
 
 function TopBarButtons() {
-  return (
-    <>
-      <TopBarNavLink
-        to={NAVIGATION.About.path}
-        labelText={NAVIGATION.About.text}
-        match={NAVIGATION.About.match}
-      />
-      <TopBarNavLink
-        to={NAVIGATION.Bridge.path}
-        labelText={NAVIGATION.Bridge.text}
-        match={NAVIGATION.Bridge.match}
-      />
-      <TopBarNavLink
-        to={NAVIGATION.Swap.path}
-        labelText={NAVIGATION.Swap.text}
-        match={NAVIGATION.Swap.match}
-      />
-      <TopBarNavLink
-        to={NAVIGATION.Pools.path}
-        labelText={NAVIGATION.Pools.text}
-        match={NAVIGATION.Pools.match}
-      />
-      <TopBarNavLink
-        to={NAVIGATION.Stake.path}
-        labelText={NAVIGATION.Stake.text}
-        match={NAVIGATION.Stake.match}
-      />
-      <TopBarNavLink
-        className="hidden mdl:block"
-        to={NAVIGATION.Analytics.path}
-        labelText={NAVIGATION.Analytics.text}
-        match={NAVIGATION.Analytics.match}
-      />
-    </>
-  )
+  const topBarNavLinks = Object.entries(NAVIGATION).map(([key, value]) => (
+    <TopBarNavLink
+      key={key}
+      to={value.path}
+      labelText={value.text}
+      match={value.match}
+      className={key === 'Analytics' ? 'hidden mdl:block' : ''}
+    />
+  ))
+
+  return <>{topBarNavLinks}</>
 }
 
 function MoreInfoButtons() {
@@ -284,34 +260,11 @@ function SocialButtons() {
 }
 
 function MobileBarButtons() {
-  return (
-    <>
-      <MobileBarItem
-        to={NAVIGATION.About.path}
-        labelText={NAVIGATION.About.text}
-      />
-      <MobileBarItem
-        to={NAVIGATION.Bridge.path}
-        labelText={NAVIGATION.Bridge.text}
-      />
-      <MobileBarItem
-        to={NAVIGATION.Swap.path}
-        labelText={NAVIGATION.Swap.text}
-      />
-      <MobileBarItem
-        to={NAVIGATION.Pools.path}
-        labelText={NAVIGATION.Pools.text}
-      />
-      <MobileBarItem
-        to={NAVIGATION.Stake.path}
-        labelText={NAVIGATION.Stake.text}
-      />
-      <MobileBarItem
-        to={NAVIGATION.Analytics.path}
-        labelText={NAVIGATION.Analytics.text}
-      />
-    </>
-  )
+  const mobileBarItems = Object.entries(NAVIGATION).map(([key, value]) => (
+    <MobileBarItem key={key} to={value.path} labelText={value.text} />
+  ))
+
+  return <>{mobileBarItems}</>
 }
 
 function MobileBarItem({ to, labelText }: { to: string; labelText: string }) {

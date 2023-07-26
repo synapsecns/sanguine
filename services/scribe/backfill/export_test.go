@@ -6,7 +6,7 @@ import (
 )
 
 // GetLogs exports logs for testing.
-func (c ContractBackfiller) GetLogs(ctx context.Context, startHeight, endHeight uint64) (<-chan types.Log, <-chan bool) {
+func (c ContractBackfiller) GetLogs(ctx context.Context, startHeight, endHeight uint64) (<-chan types.Log, <-chan string) {
 	return c.getLogs(ctx, startHeight, endHeight)
 }
 

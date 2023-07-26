@@ -62,7 +62,6 @@ func (t *DBSuite) SetupSuite() {
 
 func (t *DBSuite) setupMysqlDB() {
 	// skip if mysql test disabled, this really only needs to be run in ci
-
 	// skip if mysql test disabled
 	if os.Getenv(dbcommon.EnableMysqlTestVar) == "" {
 		return

@@ -1,22 +1,19 @@
 import { useState, useEffect, useMemo } from 'react'
-import { BigNumber } from '@ethersproject/bignumber'
-import { Zero } from '@ethersproject/constants'
+import { readContract, fetchBalance, Address } from '@wagmi/core'
 import { SYN } from '@constants/tokens/master'
 import { WETH } from '@constants/tokens/swapMaster'
-import { formatUnits } from '@ethersproject/units'
 import * as ALL_CHAINS from '@constants/chains/master'
 import CHAINLINK_AGGREGATOR_ABI from '@abis/chainlinkAggregator.json'
 import {
   CHAINLINK_ETH_PRICE_ADDRESSES,
   CHAINLINK_AVAX_PRICE_ADDRESSES,
 } from '@constants/chainlink'
-import { readContract, fetchBalance } from '@wagmi/core'
 import { SYN_ETH_SUSHI_TOKEN } from '@constants/tokens/sushiMaster'
 
 export const usePrices = (connectedChainId: number) => {
   const [synPrices, setSynPrices] = useState<any>(undefined)
-  const [ethPrice, setEthPrice] = useState<BigNumber>(undefined)
-  const [avaxPrice, setAvaxPrice] = useState<BigNumber>(undefined)
+  const [ethPrice, setEthPrice] = useState<number>(undefined)
+  const [avaxPrice, setAvaxPrice] = useState<number>(undefined)
 
   useEffect(() => {
     ;(async () => {
@@ -49,66 +46,71 @@ export const usePrices = (connectedChainId: number) => {
   }, [synPrices, ethPrice, avaxPrice])
 }
 
-export const getEthPrice = async (): Promise<BigNumber> => {
+export const getEthPrice = async (): Promise<number> => {
   // the price result returned by latestAnswer is 8 decimals
-  const ethPriceResult: any = await readContract({
+  const ethPriceResult: bigint = (await readContract({
     address: `0x${CHAINLINK_ETH_PRICE_ADDRESSES[ALL_CHAINS.ETH.id].slice(2)}`,
     abi: CHAINLINK_AGGREGATOR_ABI,
     functionName: 'latestAnswer',
     chainId: 1,
-  })
-  const ethPriceBigNumber = BigNumber.from(ethPriceResult?._hex) ?? Zero
+  })) as bigint
 
-  return ethPriceBigNumber.div(BigNumber.from(10).pow(8))
+  const ethPriceBigInt = ethPriceResult ?? 0n
+  if (ethPriceBigInt === 0n) {
+    return 0
+  } else {
+    // Note: BigInt to Number conversion happens here
+    return Number(ethPriceBigInt) / Math.pow(10, 8)
+  }
 }
 
-export const getAvaxPrice = async (): Promise<BigNumber> => {
+export const getAvaxPrice = async (): Promise<number> => {
   // the price result returned by latestAnswer is 8 decimals
-  const avaxPriceResult: any = await readContract({
-    address: `0x${CHAINLINK_AVAX_PRICE_ADDRESSES[ALL_CHAINS.ETH.id].slice(2)}`,
+  const avaxPriceResult: bigint = (await readContract({
+    address: CHAINLINK_AVAX_PRICE_ADDRESSES[ALL_CHAINS.ETH.id] as Address,
     abi: CHAINLINK_AGGREGATOR_ABI,
     functionName: 'latestAnswer',
     chainId: 1,
-  })
-  const avaxPriceBigNumber = BigNumber.from(avaxPriceResult?._hex) ?? Zero
+  })) as bigint
 
-  return avaxPriceBigNumber.div(BigNumber.from(10).pow(8))
+  const avaxPriceBigInt = avaxPriceResult ?? 0n
+
+  if (avaxPriceBigInt === 0n) {
+    return 0
+  } else {
+    return Number(avaxPriceBigInt) / Math.pow(10, 8)
+  }
 }
 
 export const getSynPrices = async () => {
-  const ethPrice: BigNumber = await getEthPrice()
+  const ethPrice: number = await getEthPrice()
   const sushiSynBalance =
     (
       await fetchBalance({
-        token: `0x${SYN.addresses[ALL_CHAINS.ETH.id].slice(2)}`,
+        token: SYN.addresses[ALL_CHAINS.ETH.id] as Address,
         chainId: ALL_CHAINS.ETH.id,
-        address: `0x${SYN_ETH_SUSHI_TOKEN.addresses[ALL_CHAINS.ETH.id].slice(
-          2
-        )}`,
+        address: SYN_ETH_SUSHI_TOKEN.addresses[ALL_CHAINS.ETH.id] as Address,
       })
-    )?.value ?? Zero
+    )?.value ?? 0n
+
   const sushiEthBalance =
     (
       await fetchBalance({
-        token: `0x${WETH.addresses[ALL_CHAINS.ETH.id].slice(2)}`,
+        token: WETH.addresses[ALL_CHAINS.ETH.id] as Address,
         chainId: ALL_CHAINS.ETH.id,
-        address: `0x${SYN_ETH_SUSHI_TOKEN.addresses[ALL_CHAINS.ETH.id].slice(
-          2
-        )}`,
+        address: SYN_ETH_SUSHI_TOKEN.addresses[ALL_CHAINS.ETH.id] as Address,
       })
-    )?.value ?? Zero
+    )?.value ?? 0n
 
-  const ethBalanceNumber = Number(formatUnits(sushiEthBalance, 'ether'))
-  const synBalanceNumber = Number(formatUnits(sushiSynBalance, 'ether'))
-
+  const synBalanceNumber = Number(sushiSynBalance) / Math.pow(10, 18)
+  const ethBalanceNumber = Number(sushiEthBalance) / Math.pow(10, 18)
   const synPerEth = synBalanceNumber / ethBalanceNumber
-
-  const synPrice: number = ethPrice.toNumber() / synPerEth
+  const synPrice: number = ethPrice * (1 / synPerEth)
 
   return {
     synBalanceNumber,
     ethBalanceNumber,
     synPrice,
-    ethPrice: ethPrice.toNumber(),
+    ethPrice,
   }
 }
