@@ -43,7 +43,11 @@ func TestEncodeTipsParity(t *testing.T) {
 	goTips, err := types.EncodeTips(types.NewTips(summitTip, attestationTip, executionTip, deliveryTip))
 	Nil(t, err)
 
-	Equal(t, solidityFormattedTips.Bytes(), goTips)
+	// use fillbytes to prev
+	solidityTipsEncoded := make([]byte, len(goTips))
+	solidityFormattedTips.FillBytes(solidityTipsEncoded)
+
+	Equal(t, solidityTipsEncoded, goTips)
 
 	decodedTips, err := types.DecodeTips(goTips)
 	Nil(t, err)

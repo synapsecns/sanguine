@@ -313,7 +313,7 @@ func EncodeTips(tips Tips) ([]byte, error) {
 	//b = append(b, math.PaddedBigBytes(tips.ExecutionTip(), uint64Len)...)
 	//b = append(b, math.PaddedBigBytes(tips.DeliveryTip(), uint64Len)...)
 	//
-	return b[4:], nil
+	return b, nil
 }
 
 func wrap64(wrappable *big.Int) []byte {
