@@ -68,7 +68,7 @@ func NewClient(clientType ClientType) Client {
 	case Resty:
 		return NewRestyClient()
 	default:
-		return NewFastHTTPClient()
+		return NewRestyClient()
 	}
 }
 
