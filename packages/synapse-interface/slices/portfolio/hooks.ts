@@ -23,7 +23,7 @@ export const usePortfolioBalances = (): NetworkTokenBalancesAndAllowances => {
 }
 
 export const fetchAndStorePortfolioBalances = createAsyncThunk(
-  'portfolio/fetchAndStortePortfolioBalances',
+  'portfolio/fetchAndStorePortfolioBalances',
   async (address: string) => {
     const portfolioData = await fetchPortfolioBalances(address)
     return portfolioData
