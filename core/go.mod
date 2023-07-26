@@ -63,7 +63,7 @@ require (
 	golang.ngrok.com/ngrok v1.0.0
 	golang.org/x/crypto v0.9.0
 	golang.org/x/exp v0.0.0-20230127193734-31bee513bff7
-	golang.org/x/sync v0.1.0
+	golang.org/x/sync v0.3.0
 	gopkg.in/DataDog/dd-trace-go.v1 v1.52.0
 	gorm.io/driver/sqlite v1.4.3
 	gorm.io/gorm v1.24.6
