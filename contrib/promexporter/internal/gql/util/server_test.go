@@ -5,7 +5,7 @@ import (
 	"github.com/ipfs/go-log"
 	"github.com/phayes/freeport"
 	"github.com/stretchr/testify/suite"
-	"github.com/synapsecns/sanguine/contrib/promexporter/internal/util"
+	"github.com/synapsecns/sanguine/contrib/promexporter/internal/gql/util"
 	"github.com/synapsecns/sanguine/core/ginhelper"
 	baseServer "github.com/synapsecns/sanguine/core/server"
 	"github.com/synapsecns/sanguine/core/testsuite"

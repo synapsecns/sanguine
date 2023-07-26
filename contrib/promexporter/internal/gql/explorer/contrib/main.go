@@ -7,7 +7,7 @@ import (
 	"fmt"
 	"github.com/ipfs/go-log"
 	"github.com/phayes/freeport"
-	"github.com/synapsecns/sanguine/contrib/promexporter/internal/util"
+	util2 "github.com/synapsecns/sanguine/contrib/promexporter/internal/gql/util"
 	"github.com/synapsecns/sanguine/core/ginhelper"
 	baseServer "github.com/synapsecns/sanguine/core/server"
 	"github.com/synapsecns/sanguine/services/explorer/consumer/fetcher"
@@ -48,7 +48,7 @@ func main() {
 		}
 	}()
 
-	err = util.WaitForStart(ctx, tmpPort)
+	err = util2.WaitForStart(ctx, tmpPort)
 	if err != nil {
 		panic(err)
 	}
@@ -57,10 +57,10 @@ func main() {
 	// GQLGenc  Generation:
 	// ********************
 
-	const configURL = "contrib/promexporter/internal/explorer/.gqlgenc.yaml"
+	const configURL = "contrib/promexporter/internal/gql/explorer/.gqlgenc.yaml"
 	endpointURL := fmt.Sprintf("http://localhost:%d%s", tmpPort, gqlServer.GraphqlEndpoint)
 
-	err = util.GenerateGQLFromLocalServer(ctx, configURL, endpointURL)
+	err = util2.GenerateGQLFromLocalServer(ctx, configURL, endpointURL)
 	if err != nil {
 		_, _ = fmt.Fprintln(os.Stderr, err.Error())
 		//nolint: gocritic
