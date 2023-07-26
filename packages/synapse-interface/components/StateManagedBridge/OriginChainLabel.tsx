@@ -109,7 +109,7 @@ const SelectedChain = ({ chainId }: { chainId: number }) => {
         src={chain.chainImg}
         className="w-5 h-5 my-1 mr-0 rounded-full md:mr-1 opacity-80"
       />
-      <div className="hidden md:inline-block lg:inline-block">
+      <div className="inline-block">
         <div className="mr-2 text-sm text-white">
           {chain.name === 'Boba Network' ? 'Boba' : chain.name}
         </div>
