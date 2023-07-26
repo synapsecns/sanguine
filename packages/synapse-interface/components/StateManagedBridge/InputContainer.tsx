@@ -116,7 +116,7 @@ export const InputContainer = () => {
           />
         </div>
       </div>
-      <div className="flex h-16 mb-4 space-x-2">
+      <div data-test-id="origin-input" className="flex h-16 mb-4 space-x-2">
         <div
           className={`
             flex flex-grow items-center

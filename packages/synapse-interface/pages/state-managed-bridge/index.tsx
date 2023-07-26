@@ -540,7 +540,7 @@ const StateManagedBridge = () => {
                 bg-bgBase
               `}
         >
-          <div ref={bridgeDisplayRef}>
+          <div data-test-id="bridge-display" ref={bridgeDisplayRef}>
             <Transition show={showFromTokenSlideOver} {...TRANSITION_PROPS}>
               <animated.div className={springClass}>
                 <TokenSlideOver
