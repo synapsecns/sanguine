@@ -10,6 +10,7 @@ import { setShowToChainSlideOver } from '@/slices/bridgeDisplaySlice'
 import { getOrderedChains } from '@/utils/getOrderedChains'
 import { RootState } from '@/store/store'
 import { segmentAnalyticsEvent } from '@/contexts/SegmentAnalyticsProvider'
+import useIsMobileScreen from '@/utils/hooks/useIsMobileScreen'
 
 export const DestinationChainLabel = ({
   chains,
@@ -21,6 +22,7 @@ export const DestinationChainLabel = ({
   connectedChainId: number
 }) => {
   const [orderedChains, setOrderedChains] = useState<number[]>([])
+  const isMobile = useIsMobileScreen()
   const dispatch = useDispatch()
 
   useEffect(() => {
@@ -34,13 +36,14 @@ export const DestinationChainLabel = ({
     >
       <div className={`text-gray-400 block text-sm mr-2`}>Dest.</div>
       <div className="flex items-center space-x-3">
-        {orderedChains.map((id) =>
-          id === chainId ? (
+        {orderedChains.map((id: number, key: number) => {
+          const hide: boolean = isMobile && orderedChains.length + 1 === key
+          return id === chainId ? (
             <SelectedChain chainId={id} key={id} />
           ) : (
-            <PossibleChain chainId={id} key={id} />
+            !hide && <PossibleChain chainId={id} key={id} />
           )
-        )}
+        })}
         <button
           onClick={() => {
             dispatch(setShowToChainSlideOver(true))
