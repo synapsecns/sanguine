@@ -10,7 +10,6 @@ import (
 	util2 "github.com/synapsecns/sanguine/contrib/promexporter/internal/gql/util"
 	"github.com/synapsecns/sanguine/core/ginhelper"
 	baseServer "github.com/synapsecns/sanguine/core/server"
-	"github.com/synapsecns/sanguine/services/explorer/consumer/fetcher"
 	gqlServer "github.com/synapsecns/sanguine/services/explorer/graphql/server"
 	"os"
 	"time"
@@ -32,7 +31,7 @@ func main() {
 
 	// prepare the server
 	router := ginhelper.New(logger)
-	gqlServer.EnableGraphql(router, nil, fetcher.ScribeFetcher{}, nil)
+	gqlServer.EnableGraphql(router, nil, nil, nil)
 
 	tmpPort, err := freeport.GetFreePort()
 	if err != nil {
