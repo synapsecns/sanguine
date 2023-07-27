@@ -19,8 +19,6 @@ import (
 
 	params "github.com/ethereum/go-ethereum/params"
 
-	prometheus "github.com/prometheus/client_golang/prometheus"
-
 	rpc "github.com/ethereum/go-ethereum/rpc"
 
 	time "time"
@@ -265,13 +263,13 @@ func (_m *Chain) ClientID() string {
 	return r0
 }
 
-// CodeAt provides a mock function with given fields: ctx, account, blockNumber
-func (_m *Chain) CodeAt(ctx context.Context, account common.Address, blockNumber *big.Int) ([]byte, error) {
-	ret := _m.Called(ctx, account, blockNumber)
+// CodeAt provides a mock function with given fields: ctx, contract, blockNumber
+func (_m *Chain) CodeAt(ctx context.Context, contract common.Address, blockNumber *big.Int) ([]byte, error) {
+	ret := _m.Called(ctx, contract, blockNumber)
 
 	var r0 []byte
 	if rf, ok := ret.Get(0).(func(context.Context, common.Address, *big.Int) []byte); ok {
-		r0 = rf(ctx, account, blockNumber)
+		r0 = rf(ctx, contract, blockNumber)
 	} else {
 		if ret.Get(0) != nil {
 			r0 = ret.Get(0).([]byte)
@@ -280,7 +278,7 @@ func (_m *Chain) CodeAt(ctx context.Context, account common.Address, blockNumber
 
 	var r1 error
 	if rf, ok := ret.Get(1).(func(context.Context, common.Address, *big.Int) error); ok {
-		r1 = rf(ctx, account, blockNumber)
+		r1 = rf(ctx, contract, blockNumber)
 	} else {
 		r1 = ret.Error(1)
 	}
@@ -441,22 +439,6 @@ func (_m *Chain) GetHeightWatcher() chainwatcher.BlockHeightWatcher {
 	} else {
 		if ret.Get(0) != nil {
 			r0 = ret.Get(0).(chainwatcher.BlockHeightWatcher)
-		}
-	}
-
-	return r0
-}
-
-// GetMetrics provides a mock function with given fields: labels
-func (_m *Chain) GetMetrics(labels map[string]string) []prometheus.Collector {
-	ret := _m.Called(labels)
-
-	var r0 []prometheus.Collector
-	if rf, ok := ret.Get(0).(func(map[string]string) []prometheus.Collector); ok {
-		r0 = rf(labels)
-	} else {
-		if ret.Get(0) != nil {
-			r0 = ret.Get(0).([]prometheus.Collector)
 		}
 	}
 
