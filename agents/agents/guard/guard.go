@@ -470,16 +470,16 @@ func (g Guard) handleReceipt(ctx context.Context, log ethTypes.Log) error {
 		return fmt.Errorf("could not parse receipt accepted: %w", err)
 	}
 
-	isValid, err := g.domains[g.summitDomainID].Destination().IsValidReceipt(ctx, fraudReceipt.RcptPayload)
+	receipt, err := types.DecodeReceipt(fraudReceipt.RcptPayload)
+	if err != nil {
+		return fmt.Errorf("could not decode receipt: %w", err)
+	}
+	isValid, err := g.domains[receipt.Destination()].Destination().IsValidReceipt(ctx, fraudReceipt.RcptPayload)
 	if err != nil {
 		return fmt.Errorf("could not check validity of attestation: %w", err)
 	}
 
 	if !isValid {
-		receipt, err := types.DecodeReceipt(fraudReceipt.RcptPayload)
-		if err != nil {
-			return fmt.Errorf("could not decode receipt: %w", err)
-		}
 		// TODO: merge this logic once solidity interfaces are de-duped
 		if receipt.Destination() == g.summitDomainID {
 			_, err = g.domains[receipt.Destination()].Inbox().VerifyReceipt(ctx, g.unbondedSigner, fraudReceipt.RcptPayload, fraudReceipt.RcptSignature)
