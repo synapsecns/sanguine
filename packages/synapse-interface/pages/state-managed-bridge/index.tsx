@@ -503,7 +503,12 @@ const StateManagedBridge = () => {
             </div>
           </div>
         </Card>
-        {/* <ActionCardFooter link={HOW_TO_BRIDGE_URL} /> */}
+      </div>
+      <div className="text-white" id="temporary-removing">
+        <div>fromChainId: {fromChainId}</div>
+        <div>fromToken: {fromToken?.routeSymbol}</div>
+        <div>toChainId: {toChainId}</div>
+        <div>toToken: {toToken?.routeSymbol}</div>
       </div>
       <div className="mt-8">
         <BridgeWatcher

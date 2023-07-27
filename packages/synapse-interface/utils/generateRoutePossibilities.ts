@@ -1,6 +1,7 @@
 import _ from 'lodash'
 
 import { EXISTING_BRIDGE_ROUTES } from '@/constants/existing-bridge-routes'
+import { flattenPausedTokens } from './flattenPausedTokens'
 
 const getTokenAndChainId = (tokenAndChainId: string) => {
   const [symbol, chainId] = tokenAndChainId.split('-')
@@ -164,7 +165,7 @@ export const getPossibleToTokensByFromTokenAndToChainId = (
   )
 }
 
-export const getPossibleToTokensByToChainId = (toChainId) => {
+export const getPossibleToTokensByToChainId = (toChainId: number) => {
   return _(EXISTING_BRIDGE_ROUTES)
     .values()
     .flatten()
@@ -174,7 +175,7 @@ export const getPossibleToTokensByToChainId = (toChainId) => {
 }
 
 // is this right??
-export const getPossibleToTokensByToToken = (toToken) => {
+export const getPossibleToTokensByToToken = (toToken: string) => {
   const chainId = getTokenAndChainId(toToken).chainId
 
   return getPossibleToTokensByToChainId(chainId)
@@ -221,7 +222,7 @@ export const generateRoutePossibilities = ({
     fromChainIds = getPossibleFromChainIdsByToToken(toToken)
     fromTokens = getPossibleFromTokensByToToken(toToken)
     toChainIds = getPossibleToChainIdsByToToken(toToken)
-    toTokens = getPossibleToTokensByToChainId(toToken)
+    toTokens = getPossibleToTokensByToChainId(toChainId)
 
     newFromChainId = null
     newFromToken = null
@@ -361,6 +362,7 @@ export const generateRoutePossibilities = ({
       fromChainId,
       toChainId
     )
+
     toChainIds = getPossibleToChainIdsByToToken(toToken)
     toTokens = getPossibleToTokensByToToken(toToken)
 
@@ -387,31 +389,21 @@ export const generateRoutePossibilities = ({
     newToToken = null
   }
 
-  if (
-    fromChainId === null &&
-    fromToken === null &&
-    toChainId &&
-    toToken === null
-  ) {
-    fromChainIds = getPossibleFromChainIdsByToChainId(toChainId)
-    fromTokens = getPossibleFromTokensByToChainId(toChainId)
-    toChainIds = getPossibleToChainIds()
-    toTokens = getPossibleToTokensByToChainId(toToken)
-
-    newFromChainId = null
-    newFromToken = null
-    newToChainId = toChainId
-    newToToken = null
-  }
-
   return {
     fromChainId: newFromChainId,
     fromToken: newFromToken,
     toChainId: newToChainId,
     toToken: newToToken,
     fromChainIds,
-    fromTokens,
+    fromTokens: _.difference(fromTokens, flattenPausedTokens()),
     toChainIds,
-    toTokens,
+    toTokens: _.difference(toTokens, flattenPausedTokens()),
   }
 }
+
+/*NOTES
+
+  * Set intelligent defaults when fromTokens/toTokens change
+  * check if from/to token is allowed in list
+
+*/

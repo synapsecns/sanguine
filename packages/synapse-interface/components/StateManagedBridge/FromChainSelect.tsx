@@ -3,16 +3,14 @@ import Select from 'react-select'
 import { useAccount } from 'wagmi'
 
 import { CHAINS_BY_ID } from '@/constants/chains'
-import { RootState } from '@/store/store'
 
 import { setFromChainId } from '@/slices/bridge/reducer'
 import { networkSelectStyles } from './styles/networkSelectStyles'
 import { useEffect, useId, useState } from 'react'
+import { useBridgeState } from '@/slices/bridge/hooks'
 
 const FromChainSelect = () => {
-  const { fromChainId, fromChainIds } = useSelector(
-    (state: RootState) => state.bridge
-  )
+  const { fromChainId, fromChainIds } = useBridgeState()
 
   const dispatch = useDispatch()
   const { isConnected: isConnectedOriginal } = useAccount()

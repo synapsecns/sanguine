@@ -110,9 +110,15 @@ export const bridgeSlice = createSlice({
         toTokens,
       } = generateRoutePossibilities({
         fromChainId: incomingFromChainId,
-        fromToken: null,
-        toChainId: null,
-        toToken: null,
+        fromToken:
+          state.fromToken &&
+          state.fromChainId &&
+          `${state.fromToken.routeSymbol}-${state.fromChainId}`,
+        toChainId: state.toChainId,
+        toToken:
+          state.toToken &&
+          state.toChainId &&
+          `${state.toToken.routeSymbol}-${state.toChainId}`,
       })
 
       state.fromChainId = fromChainId
@@ -157,7 +163,7 @@ export const bridgeSlice = createSlice({
         (symbol: string) => ALL_TOKENS[symbol]
       )
       state.toChainIds = toChainIds
-      state.toTokens = _.uniq(toTokens.map(getToken)).map(
+      state.toTokens = _.uniq(toTokens.map(getSymbol)).map(
         (symbol: string) => ALL_TOKENS[symbol]
       )
     },

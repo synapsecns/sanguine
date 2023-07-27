@@ -103,7 +103,7 @@ module.exports = {
     'guard-for-in': 'error',
     'id-blacklist': 'off',
     'id-match': 'off',
-    'import/no-extraneous-dependencies': ['error'],
+    'import/no-extraneous-dependencies': 'off',
     'import/no-internal-modules': 'off',
     'import/order': [
       'error',
