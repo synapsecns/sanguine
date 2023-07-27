@@ -10,8 +10,8 @@ import (
 type FraudSnapshot struct {
 	// Snapshot is the underlying snapshot.
 	Snapshot Snapshot
-	// Domain is the domain of the snapshot.
-	Domain uint32
+	// AgentDomain is the domain of the agent that submitted the snapshot.
+	AgentDomain uint32
 	// Agent is the agent that signed the snapshot.
 	Agent common.Address
 	// Payload is the snapshot payload.
@@ -21,17 +21,17 @@ type FraudSnapshot struct {
 }
 
 // NewFraudSnapshotFromPayload returns a new FraudSnapshot from a Snapshot payload and other metadata.
-func NewFraudSnapshotFromPayload(snapshotPayload []byte, domain uint32, agent common.Address, snapSignature []byte) (*FraudSnapshot, error) {
+func NewFraudSnapshotFromPayload(snapshotPayload []byte, agentDomain uint32, agent common.Address, snapSignature []byte) (*FraudSnapshot, error) {
 	decodedSnapshot, err := DecodeSnapshot(snapshotPayload)
 	if err != nil {
 		return nil, fmt.Errorf("could not decode snapshot: %w", err)
 	}
 
 	return &FraudSnapshot{
-		Snapshot:  decodedSnapshot,
-		Domain:    domain,
-		Agent:     agent,
-		Payload:   snapshotPayload,
-		Signature: snapSignature,
+		Snapshot:    decodedSnapshot,
+		AgentDomain: agentDomain,
+		Agent:       agent,
+		Payload:     snapshotPayload,
+		Signature:   snapSignature,
 	}, nil
 }

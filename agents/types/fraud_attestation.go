@@ -6,9 +6,8 @@ import "github.com/ethereum/go-ethereum/common"
 type FraudAttestation struct {
 	// Attestation is the underlying attestation.
 	Attestation Attestation
-
-	// Domain is the domain of the Notary who signed the attestation.
-	Domain uint32
+	// AgentDomain is the domain of the Notary who signed the attestation.
+	AgentDomain uint32
 	// Notary is the Notary who signed and submitted the attestation.
 	Notary common.Address
 	// Payload is the attestation payload.
@@ -18,7 +17,7 @@ type FraudAttestation struct {
 }
 
 // NewFraudAttestationFromPayload creates a new FraudAttestation from the attestation payload, domain, notary and attestation signature.
-func NewFraudAttestationFromPayload(attestationPayload []byte, domain uint32, notary common.Address, attSignature []byte) (*FraudAttestation, error) {
+func NewFraudAttestationFromPayload(attestationPayload []byte, agentDomain uint32, notary common.Address, attSignature []byte) (*FraudAttestation, error) {
 	decodedAttestation, err := DecodeAttestation(attestationPayload)
 	if err != nil {
 		return nil, err
@@ -26,7 +25,7 @@ func NewFraudAttestationFromPayload(attestationPayload []byte, domain uint32, no
 
 	return &FraudAttestation{
 		Attestation: decodedAttestation,
-		Domain:      domain,
+		AgentDomain: agentDomain,
 		Notary:      notary,
 		Payload:     attestationPayload,
 		Signature:   attSignature,

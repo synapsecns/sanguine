@@ -326,7 +326,7 @@ func (g Guard) handleSnapshot(ctx context.Context, log ethTypes.Log) error {
 		}
 
 		// If the agent who submitted the fraudulent snapshot is a guard, we only need to call `VerifyStateWithSnapshot`.
-		if fraudSnapshot.Domain == 0 {
+		if fraudSnapshot.AgentDomain == 0 {
 			return nil
 		}
 
@@ -457,7 +457,7 @@ func (g Guard) handleAttestation(ctx context.Context, log ethTypes.Log) error {
 	}
 
 	// Call `submitAttestationReport` on the notary's associated remote domain.
-	_, err = g.domains[fraudAttestation.Domain].LightInbox().SubmitAttestationReport(
+	_, err = g.domains[fraudAttestation.AgentDomain].LightInbox().SubmitAttestationReport(
 		ctx,
 		g.unbondedSigner,
 		fraudAttestation.Payload,
