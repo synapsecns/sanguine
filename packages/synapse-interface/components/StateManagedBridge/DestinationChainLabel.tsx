@@ -39,7 +39,7 @@ export const DestinationChainLabel = ({
       <div className="flex items-center space-x-3">
         {orderedChains.map((id: number, key: number) => {
           const hide: boolean = isMobile && orderedChainsLength === key + 1
-          return !hide && id === chainId ? (
+          return id === chainId ? (
             <SelectedChain chainId={id} key={id} />
           ) : (
             <PossibleChain chainId={id} key={id} hidden={hide} />

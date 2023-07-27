@@ -38,11 +38,13 @@ export const OriginChainLabel = ({
       <div className={`text-gray-400 block text-sm mr-2`}>Origin</div>
       <div className="flex items-center space-x-3">
         {orderedChains.map((id: number, key: number) => {
-          const hide: boolean = isMobile && orderedChains.length + 1 === key
+          const hide: boolean = isMobile && orderedChains.length === key + 1
           return Number(id) === chainId ? (
             <SelectedChain chainId={Number(id)} key={id} />
           ) : (
-            !hide && <PossibleChain chainId={Number(id)} key={id} />
+            !hide && (
+              <PossibleChain chainId={Number(id)} key={id} hidden={hide} />
+            )
           )
         })}
         <button
@@ -60,7 +62,13 @@ export const OriginChainLabel = ({
   )
 }
 
-const PossibleChain = ({ chainId }: { chainId: number }) => {
+const PossibleChain = ({
+  chainId,
+  hidden = false,
+}: {
+  chainId: number
+  hidden?: boolean
+}) => {
   const chain = CHAINS_BY_ID[chainId]
   const { fromChainId } = useSelector((state: RootState) => state.bridge)
 
@@ -75,7 +83,7 @@ const PossibleChain = ({ chainId }: { chainId: number }) => {
     segmentAnalyticsEvent(eventTitle, eventData)
     dispatch(setFromChainId(chainId))
   }
-  return chain ? (
+  return !hidden && chain ? (
     <button
       data-test-id="origin-chain-label"
       className="
