@@ -562,7 +562,7 @@ func EncodeAgentStatus(agentStatus AgentStatus) ([]byte, error) {
 	binary.BigEndian.PutUint32(domainBytes, agentStatus.Domain())
 	binary.BigEndian.PutUint32(indexBytes, agentStatus.Index())
 
-	b = append(b, agentStatus.Flag())
+	b = append(b, uint8(agentStatus.Flag()))
 	b = append(b, domainBytes...)
 	b = append(b, indexBytes...)
 
@@ -580,7 +580,7 @@ func DecodeAgentStatus(toDecode []byte) (AgentStatus, error) {
 	index := binary.BigEndian.Uint32(toDecode[agentStatusOffsetDomain:agentStatusSize])
 
 	return agentStatus{
-		flag:   flagBytes[0],
+		flag:   AgentFlagType(flagBytes[0]),
 		domain: domain,
 		index:  index,
 	}, nil

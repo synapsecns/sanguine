@@ -146,7 +146,7 @@ func (g GuardSuite) TestFraudulentStateInSnapshot() {
 	// Verify that the agent is marked as Active
 	txContextSummit := g.TestBackendSummit.GetTxContext(g.GetTestContext(), g.SummitMetadata.OwnerPtr())
 	status, err := g.OriginDomainClient.LightManager().GetAgentStatus(g.GetTestContext(), g.NotaryBondedSigner.Address())
-	Equal(g.T(), status.Flag(), uint8(1))
+	Equal(g.T(), status.Flag(), types.AgentFlagActive)
 	Nil(g.T(), err)
 
 	// Before submitting the attestation, ensure that there are no disputes opened.
@@ -185,7 +185,7 @@ func (g GuardSuite) TestFraudulentStateInSnapshot() {
 		status, err := g.OriginDomainClient.LightManager().GetAgentStatus(g.GetTestContext(), g.NotaryBondedSigner.Address())
 		Nil(g.T(), err)
 
-		if status.Flag() == uint8(4) {
+		if status.Flag() == types.AgentFlagFraudulent {
 			return true
 		}
 
@@ -322,7 +322,7 @@ func (g GuardSuite) TestFraudulentAttestationOnDestination() {
 	// Verify that the agent is marked as Active
 	txContextDest := g.TestBackendDestination.GetTxContext(g.GetTestContext(), g.DestinationContractMetadata.OwnerPtr())
 	status, err := g.OriginDomainClient.LightManager().GetAgentStatus(g.GetTestContext(), g.GuardBondedSigner.Address())
-	Equal(g.T(), status.Flag(), uint8(1))
+	Equal(g.T(), status.Flag(), types.AgentFlagActive)
 	Nil(g.T(), err)
 
 	agentRoot := common.BigToHash(big.NewInt(gofakeit.Int64()))
@@ -404,7 +404,7 @@ func (g GuardSuite) TestFraudulentAttestationOnDestination() {
 	g.Eventually(func() bool {
 		status, err := g.SummitDomainClient.BondingManager().GetAgentStatus(g.GetTestContext(), g.NotaryBondedSigner.Address())
 		Nil(g.T(), err)
-		if status.Flag() == uint8(5) {
+		if status.Flag() == types.AgentFlagSlashed {
 			return true
 		}
 
@@ -514,7 +514,7 @@ func (g GuardSuite) TestReportFraudulentStateInAttestation() {
 	// Verify that the agent is marked as Active
 	txContextDest := g.TestBackendDestination.GetTxContext(g.GetTestContext(), g.DestinationContractMetadata.OwnerPtr())
 	status, err := g.OriginDomainClient.LightManager().GetAgentStatus(g.GetTestContext(), g.GuardBondedSigner.Address())
-	Equal(g.T(), status.Flag(), uint8(1))
+	Equal(g.T(), status.Flag(), types.AgentFlagActive)
 	Nil(g.T(), err)
 
 	gasData := types.NewGasData(gofakeit.Uint16(), gofakeit.Uint16(), gofakeit.Uint16(), gofakeit.Uint16(), gofakeit.Uint16(), gofakeit.Uint16())
@@ -617,7 +617,7 @@ func (g GuardSuite) TestReportFraudulentStateInAttestation() {
 	g.Eventually(func() bool {
 		status, err := g.OriginDomainClient.LightManager().GetAgentStatus(g.GetTestContext(), g.NotaryBondedSigner.Address())
 		Nil(g.T(), err)
-		if status.Flag() == uint8(4) {
+		if status.Flag() == types.AgentFlagFraudulent {
 			return true
 		}
 
@@ -862,7 +862,7 @@ func (g GuardSuite) TestAAAInvalidReceipt() {
 	g.Eventually(func() bool {
 		status, err := g.DestinationDomainClient.LightManager().GetAgentStatus(g.GetTestContext(), g.NotaryBondedSigner.Address())
 		Nil(g.T(), err)
-		if status.Flag() == uint8(4) {
+		if status.Flag() == types.AgentFlagFraudulent {
 			return true
 		}
 
@@ -875,7 +875,7 @@ func (g GuardSuite) TestAAAInvalidReceipt() {
 	//g.Eventually(func() bool {
 	//	status, err := g.SummitDomainClient.BondingManager().GetAgentStatus(g.GetTestContext(), g.NotaryBondedSigner.Address())
 	//	Nil(g.T(), err)
-	//	if status.Flag() == uint8(5) {
+	//	if status.Flag() == types.AgentFlagSlashed {
 	//		return true
 	//	}
 	//

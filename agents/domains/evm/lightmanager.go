@@ -6,6 +6,8 @@ package evm
 import (
 	"context"
 	"fmt"
+	"math/big"
+
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/synapsecns/sanguine/agents/contracts/lightmanager"
@@ -14,7 +16,6 @@ import (
 	"github.com/synapsecns/sanguine/ethergo/chain"
 	"github.com/synapsecns/sanguine/ethergo/signer/nonce"
 	"github.com/synapsecns/sanguine/ethergo/signer/signer"
-	"math/big"
 )
 
 // NewLightManagerContract returns a bound light manager contract.
@@ -68,7 +69,7 @@ func (a lightManagerContract) GetAgentStatus(ctx context.Context, address common
 		return nil, fmt.Errorf("could not retrieve agent status: %w", err)
 	}
 
-	agentStatus := types.NewAgentStatus(rawStatus.Flag, rawStatus.Domain, rawStatus.Index)
+	agentStatus := types.NewAgentStatus(types.AgentFlagType(rawStatus.Flag), rawStatus.Domain, rawStatus.Index)
 
 	return agentStatus, nil
 }
@@ -95,7 +96,7 @@ func (a lightManagerContract) UpdateAgentStatus(
 	}
 
 	lightManagerAgentStatus := lightmanager.AgentStatus{
-		Flag:   agentStatus.Flag(),
+		Flag:   uint8(agentStatus.Flag()),
 		Domain: agentStatus.Domain(),
 		Index:  agentStatus.Index(),
 	}

@@ -2,6 +2,7 @@ package types
 
 import (
 	"fmt"
+
 	"github.com/ethereum/go-ethereum/common"
 )
 
@@ -9,7 +10,6 @@ import (
 type FraudSnapshot struct {
 	// Snapshot is the underlying snapshot.
 	Snapshot Snapshot
-
 	// Domain is the domain of the snapshot.
 	Domain uint32
 	// Agent is the agent that signed the snapshot.
