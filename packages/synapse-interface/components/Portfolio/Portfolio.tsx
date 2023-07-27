@@ -65,7 +65,7 @@ export const Portfolio = () => {
   )
 }
 
-function filterPortfolioBalancesWithBalances(
+export function filterPortfolioBalancesWithBalances(
   balancesAndAllowances: NetworkTokenBalancesAndAllowances
 ): NetworkTokenBalancesAndAllowances {
   return Object.entries(balancesAndAllowances).reduce(

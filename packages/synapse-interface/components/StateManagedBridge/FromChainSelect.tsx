@@ -1,4 +1,5 @@
-import { useDispatch, useSelector } from 'react-redux'
+import _ from 'lodash'
+import { useDispatch } from 'react-redux'
 import Select from 'react-select'
 import { useAccount } from 'wagmi'
 
@@ -8,6 +9,8 @@ import { setFromChainId } from '@/slices/bridge/reducer'
 import { networkSelectStyles } from './styles/networkSelectStyles'
 import { useEffect, useId, useState } from 'react'
 import { useBridgeState } from '@/slices/bridge/hooks'
+import { usePortfolioBalances } from '@/slices/portfolio/hooks'
+import { filterPortfolioBalancesWithBalances } from '../Portfolio/Portfolio'
 
 const FromChainSelect = () => {
   const { fromChainId, fromChainIds } = useBridgeState()
@@ -16,21 +19,60 @@ const FromChainSelect = () => {
   const { isConnected: isConnectedOriginal } = useAccount()
   const [isConnected, setIsConnected] = useState(false)
 
+  const balancesAndAllowances = usePortfolioBalances()
+
+  const chainIdsWithBalances = Object.keys(
+    filterPortfolioBalancesWithBalances(balancesAndAllowances)
+  ).map(Number)
+
+  const sortedFromChainIds = _.orderBy(fromChainIds, [
+    (id) => !chainIdsWithBalances.includes(id),
+  ])
+
   useEffect(() => {
     setIsConnected(isConnectedOriginal)
   }, [isConnectedOriginal])
 
-  const fromChainOptions = fromChainIds.map((option) => ({
-    label: (
-      <span className="flex items-center space-x-1">
-        <img src={CHAINS_BY_ID[option].chainImg.src} className="w-5 h-5" />
-        <div>
-          {CHAINS_BY_ID[option].name} [{option}]
-        </div>
-      </span>
-    ),
-    value: option,
-  }))
+  const fromChainOptions = [
+    {
+      label: 'Wallet',
+      options: sortedFromChainIds
+        .filter((option) => chainIdsWithBalances.includes(option))
+        .map((option) => ({
+          label: (
+            <span className="flex items-center space-x-1">
+              <img
+                src={CHAINS_BY_ID[option].chainImg.src}
+                className="w-5 h-5"
+              />
+              <div>
+                {CHAINS_BY_ID[option].name} [{option}]
+              </div>
+            </span>
+          ),
+          value: option,
+        })),
+    },
+    {
+      label: 'All chains',
+      options: sortedFromChainIds
+        .filter((option) => !chainIdsWithBalances.includes(option))
+        .map((option) => ({
+          label: (
+            <span className="flex items-center space-x-1">
+              <img
+                src={CHAINS_BY_ID[option].chainImg.src}
+                className="w-5 h-5"
+              />
+              <div>
+                {CHAINS_BY_ID[option].name} [{option}]
+              </div>
+            </span>
+          ),
+          value: option,
+        })),
+    },
+  ]
 
   const handleFromChainChange = (selectedOption) => {
     if (selectedOption) {
@@ -65,9 +107,9 @@ const FromChainSelect = () => {
           isSearchable={true}
           filterOption={customFilterOption}
           placeholder={<div className="text-secondaryTextColor">Network</div>}
-          value={fromChainOptions.find(
-            (option) => Number(option.value) === fromChainId
-          )}
+          value={fromChainOptions
+            .flatMap((group) => group.options)
+            .find((option) => Number(option.value) === fromChainId)}
         />
       </div>
       <div>

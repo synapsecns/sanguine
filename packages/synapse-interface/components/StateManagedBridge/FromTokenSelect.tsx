@@ -8,15 +8,17 @@ import { coinSelectStyles } from './styles/coinSelectStyles'
 import { useId } from 'react'
 
 import { useAppSelector } from '@/store/hooks'
+import { usePortfolioBalances } from '@/slices/portfolio/hooks'
 
 const ImageAndCoin = ({ option }: { option: Token }) => {
   const { fromChainId } = useAppSelector((state) => state.bridge)
-  const { balancesAndAllowances } = useAppSelector((state) => state.portfolio)
+
+  const balancesAndAllowances = usePortfolioBalances()
 
   if (!option) {
     return null
   }
-  const { icon, symbol, routeSymbol } = option
+  const { icon, routeSymbol } = option
   const parsedBalance = balancesAndAllowances[fromChainId]?.find(
     (token) => token.tokenAddress === option.addresses[fromChainId]
   )?.parsedBalance
@@ -24,8 +26,8 @@ const ImageAndCoin = ({ option }: { option: Token }) => {
   return (
     <div className="flex items-center justify-between">
       <div className="flex items-center space-x-2" key={option.symbol}>
-        <img src={icon.src} className="w-6 h-6" />
-        <div className="text-xl">{routeSymbol}</div>
+        <img src={icon.src} className="w-5 h-5" />
+        <div className="">{routeSymbol}</div>
       </div>
       <div className="select-hidden">
         {parsedBalance !== '0.0' ? parsedBalance : ''}
@@ -38,15 +40,42 @@ const FromTokenSelect = () => {
   const { fromChainId, fromToken, fromTokens } = useAppSelector(
     (state) => state.bridge
   )
+  const balancesAndAllowances = usePortfolioBalances()
 
   const dispatch = useDispatch()
 
-  const fromTokenOptions = fromTokens.map((option, i) => {
-    return {
-      label: <ImageAndCoin option={option} />,
-      value: option,
-    }
-  })
+  const fromTokenOptions = [
+    {
+      label: 'Wallet',
+      options: fromTokens
+        .filter(
+          (token) =>
+            balancesAndAllowances[fromChainId]?.find(
+              (tokenBalance) =>
+                tokenBalance.tokenAddress === token.addresses[fromChainId]
+            )?.balance !== 0n
+        )
+        .map((token) => ({
+          label: <ImageAndCoin option={token} />,
+          value: token,
+        })),
+    },
+    {
+      label: 'All tokens',
+      options: fromTokens
+        .filter(
+          (token) =>
+            balancesAndAllowances[fromChainId]?.find(
+              (tokenBalance) =>
+                tokenBalance.tokenAddress === token.addresses[fromChainId]
+            )?.balance === 0n
+        )
+        .map((token) => ({
+          label: <ImageAndCoin option={token} />,
+          value: token,
+        })),
+    },
+  ]
 
   const handleFromTokenChange = (selectedOption) => {
     if (selectedOption) {
@@ -83,7 +112,9 @@ const FromTokenSelect = () => {
       onChange={handleFromTokenChange}
       isSearchable={true}
       placeholder={<span className="text-xl text-white">In</span>}
-      value={fromTokenOptions.find((option) => option.value === fromToken)}
+      value={fromTokenOptions
+        .flatMap((group) => group.options)
+        .find((option) => option.value === fromToken)}
     />
   )
 }
