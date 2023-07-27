@@ -87,8 +87,8 @@ const PossibleChain = ({
     <button
       data-test-id="origin-chain-label"
       className="
-        w-7 h-7
-        md:w-7
+        min-w-[1.75rem] min-h-[1.75rem]
+        max-w-[1.75rem] max-h-[1.75rem]
         px-0.5 py-0.5
         border border-gray-500 rounded-full
       "
