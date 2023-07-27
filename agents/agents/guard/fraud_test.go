@@ -21,13 +21,7 @@ import (
 	"github.com/synapsecns/sanguine/services/scribe/node"
 )
 
-// TODO: Add a test for exiting the report logic early when the snapshot submitter is a guard.
-func (g GuardSuite) TestFraudulentStateInSnapshot() {
-	testDone := false
-	defer func() {
-		testDone = true
-	}()
-
+func (g GuardSuite) getTestGuard(scribeConfig scribeConfig.Config) (*guard.Guard, error) {
 	testConfig := config.AgentConfig{
 		Domains: map[string]config.DomainConfig{
 			"origin_client":      g.OriginDomainClient.Config(),
@@ -47,9 +41,8 @@ func (g GuardSuite) TestFraudulentStateInSnapshot() {
 		RefreshIntervalSeconds: 5,
 	}
 
-	omniRPCClient := omniClient.NewOmnirpcClient(g.TestOmniRPC, g.GuardMetrics, omniClient.WithCaptureReqRes())
-
 	// Scribe setup.
+	omniRPCClient := omniClient.NewOmnirpcClient(g.TestOmniRPC, g.GuardMetrics, omniClient.WithCaptureReqRes())
 	originClient, err := backfill.DialBackend(g.GetTestContext(), g.TestBackendOrigin.RPCAddress(), g.ScribeMetrics)
 	Nil(g.T(), err)
 	destinationClient, err := backfill.DialBackend(g.GetTestContext(), g.TestBackendDestination.RPCAddress(), g.ScribeMetrics)
@@ -62,6 +55,23 @@ func (g GuardSuite) TestFraudulentStateInSnapshot() {
 		uint32(g.TestBackendDestination.GetChainID()): {destinationClient, destinationClient},
 		uint32(g.TestBackendSummit.GetChainID()):      {summitClient, summitClient},
 	}
+
+	scribe, err := node.NewScribe(g.ScribeTestDB, clients, scribeConfig, g.ScribeMetrics)
+	Nil(g.T(), err)
+	scribeClient := client.NewEmbeddedScribe("sqlite", g.DBPath, g.ScribeMetrics)
+	go scribeClient.Start(g.GetTestContext())
+	go scribe.Start(g.GetTestContext())
+
+	return guard.NewGuard(g.GetTestContext(), testConfig, omniRPCClient, scribeClient.ScribeClient, g.GuardTestDB, g.GuardMetrics)
+}
+
+// TODO: Add a test for exiting the report logic early when the snapshot submitter is a guard.
+func (g GuardSuite) TestFraudulentStateInSnapshot() {
+	testDone := false
+	defer func() {
+		testDone = true
+	}()
+
 	originConfig := scribeConfig.ContractConfig{
 		Address:    g.OriginContract.Address().String(),
 		StartBlock: 0,
@@ -99,24 +109,8 @@ func (g GuardSuite) TestFraudulentStateInSnapshot() {
 		Chains: []scribeConfig.ChainConfig{originChainConfig, destinationChainConfig, summitChainConfig},
 	}
 
-	scribe, err := node.NewScribe(g.ScribeTestDB, clients, scribeConfig, g.ScribeMetrics)
-	Nil(g.T(), err)
-	scribeClient := client.NewEmbeddedScribe("sqlite", g.DBPath, g.ScribeMetrics)
-
-	go func() {
-		scribeErr := scribeClient.Start(g.GetTestContext())
-		if !testDone {
-			Nil(g.T(), scribeErr)
-		}
-	}()
-	go func() {
-		scribeError := scribe.Start(g.GetTestContext())
-		if !testDone {
-			Nil(g.T(), scribeError)
-		}
-	}()
-
-	guard, err := guard.NewGuard(g.GetTestContext(), testConfig, omniRPCClient, scribeClient.ScribeClient, g.GuardTestDB, g.GuardMetrics)
+	// guard, err := guard.NewGuard(g.GetTestContext(), testConfig, omniRPCClient, scribeClient.ScribeClient, g.GuardTestDB, g.GuardMetrics)
+	guard, err := g.getTestGuard(scribeConfig)
 	Nil(g.T(), err)
 
 	go func() {
