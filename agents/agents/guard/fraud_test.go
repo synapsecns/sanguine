@@ -2,16 +2,19 @@ package guard_test
 
 import (
 	"fmt"
+	"math/big"
+
 	"github.com/brianvoe/gofakeit/v6"
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
-	"math/big"
 
 	"github.com/Flaque/filet"
 	"github.com/ethereum/go-ethereum/common"
 	. "github.com/stretchr/testify/assert"
 	"github.com/synapsecns/sanguine/agents/agents/guard"
 	"github.com/synapsecns/sanguine/agents/config"
+	"github.com/synapsecns/sanguine/agents/testutil/agentstestcontract"
 	"github.com/synapsecns/sanguine/agents/types"
+	"github.com/synapsecns/sanguine/ethergo/backends"
 	signerConfig "github.com/synapsecns/sanguine/ethergo/signer/config"
 	omniClient "github.com/synapsecns/sanguine/services/omnirpc/client"
 	"github.com/synapsecns/sanguine/services/scribe/backfill"
@@ -62,6 +65,13 @@ func (g GuardSuite) getTestGuard(scribeConfig scribeConfig.Config) (*guard.Guard
 	go scribe.Start(g.GetTestContext())
 
 	return guard.NewGuard(g.GetTestContext(), testConfig, omniRPCClient, scribeClient.ScribeClient, g.GuardTestDB, g.GuardMetrics)
+}
+
+// Helper to get the test backend to emit expected events.
+func (g GuardSuite) bumpBackend(backend backends.SimulatedTestBackend, contract *agentstestcontract.AgentsTestContractRef, txOpts *bind.TransactOpts) {
+	bumpTx, err := contract.EmitAgentsEventA(txOpts, big.NewInt(gofakeit.Int64()), big.NewInt(gofakeit.Int64()), big.NewInt(gofakeit.Int64()))
+	Nil(g.T(), err)
+	backend.WaitForConfirmation(g.GetTestContext(), bumpTx)
 }
 
 // TODO: Add a test for exiting the report logic early when the snapshot submitter is a guard.
@@ -179,10 +189,7 @@ func (g GuardSuite) TestFraudulentStateInSnapshot() {
 			return true
 		}
 
-		// Make sure that scribe keeps producing new blocks
-		bumpTx, err := g.TestContractOnSummit.EmitAgentsEventA(txContextSummit.TransactOpts, big.NewInt(gofakeit.Int64()), big.NewInt(gofakeit.Int64()), big.NewInt(gofakeit.Int64()))
-		Nil(g.T(), err)
-		g.TestBackendSummit.WaitForConfirmation(g.GetTestContext(), bumpTx)
+		g.bumpBackend(g.TestBackendSummit, g.TestContractOnSummit, txContextSummit.TransactOpts)
 		return false
 	})
 
@@ -402,12 +409,8 @@ func (g GuardSuite) TestFraudulentAttestationOnDestination() {
 		}
 
 		// Make sure that scribe keeps producing new blocks
-		bumpTx, err := g.TestContractOnSummit.EmitAgentsEventA(txContextSummit.TransactOpts, big.NewInt(gofakeit.Int64()), big.NewInt(gofakeit.Int64()), big.NewInt(gofakeit.Int64()))
-		Nil(g.T(), err)
-		g.TestBackendSummit.WaitForConfirmation(g.GetTestContext(), bumpTx)
-		bumpTx, err = g.TestContractOnDestination.EmitAgentsEventA(txContextDestination.TransactOpts, big.NewInt(gofakeit.Int64()), big.NewInt(gofakeit.Int64()), big.NewInt(gofakeit.Int64()))
-		Nil(g.T(), err)
-		g.TestBackendDestination.WaitForConfirmation(g.GetTestContext(), bumpTx)
+		g.bumpBackend(g.TestBackendSummit, g.TestContractOnSummit, txContextSummit.TransactOpts)
+		g.bumpBackend(g.TestBackendDestination, g.TestContractOnDestination, txContextDestination.TransactOpts)
 		return false
 	})
 
@@ -618,13 +621,8 @@ func (g GuardSuite) TestReportFraudulentStateInAttestation() {
 			return true
 		}
 
-		// Make sure that scribe keeps producing new blocks
-		bumpTx, err := g.TestContractOnSummit.EmitAgentsEventA(txContextSummit.TransactOpts, big.NewInt(gofakeit.Int64()), big.NewInt(gofakeit.Int64()), big.NewInt(gofakeit.Int64()))
-		Nil(g.T(), err)
-		g.TestBackendSummit.WaitForConfirmation(g.GetTestContext(), bumpTx)
-		bumpTx, err = g.TestContractOnDestination.EmitAgentsEventA(txContextDestination.TransactOpts, big.NewInt(gofakeit.Int64()), big.NewInt(gofakeit.Int64()), big.NewInt(gofakeit.Int64()))
-		Nil(g.T(), err)
-		g.TestBackendDestination.WaitForConfirmation(g.GetTestContext(), bumpTx)
+		g.bumpBackend(g.TestBackendSummit, g.TestContractOnSummit, txContextSummit.TransactOpts)
+		g.bumpBackend(g.TestBackendDestination, g.TestContractOnDestination, txContextDestination.TransactOpts)
 		return false
 	})
 
@@ -868,13 +866,8 @@ func (g GuardSuite) TestAAAInvalidReceipt() {
 			return true
 		}
 
-		// Make sure that scribe keeps producing new blocks
-		bumpTx, err := g.TestContractOnDestination.EmitAgentsEventA(txContextDestination.TransactOpts, big.NewInt(gofakeit.Int64()), big.NewInt(gofakeit.Int64()), big.NewInt(gofakeit.Int64()))
-		Nil(g.T(), err)
-		g.TestBackendDestination.WaitForConfirmation(g.GetTestContext(), bumpTx)
-		bumpTx, err = g.TestContractOnSummit.EmitAgentsEventA(txContextSummit.TransactOpts, big.NewInt(gofakeit.Int64()), big.NewInt(gofakeit.Int64()), big.NewInt(gofakeit.Int64()))
-		Nil(g.T(), err)
-		g.TestBackendSummit.WaitForConfirmation(g.GetTestContext(), bumpTx)
+		g.bumpBackend(g.TestBackendSummit, g.TestContractOnSummit, txContextSummit.TransactOpts)
+		g.bumpBackend(g.TestBackendDestination, g.TestContractOnDestination, txContextDestination.TransactOpts)
 		return false
 	})
 
