@@ -40,12 +40,12 @@ const FromChainSelect = () => {
         .filter((option) => chainIdsWithBalances.includes(option))
         .map((option) => ({
           label: (
-            <span className="flex items-center space-x-1">
+            <span className="flex items-center space-x-2">
               <img
                 src={CHAINS_BY_ID[option].chainImg.src}
                 className="w-5 h-5"
               />
-              <div>
+              <div className="text-primaryTextColor">
                 {CHAINS_BY_ID[option].name} [{option}]
               </div>
             </span>
@@ -54,17 +54,17 @@ const FromChainSelect = () => {
         })),
     },
     {
-      label: 'All chains',
+      label: 'All other chains',
       options: sortedFromChainIds
         .filter((option) => !chainIdsWithBalances.includes(option))
         .map((option) => ({
           label: (
-            <span className="flex items-center space-x-1">
+            <span className="flex items-center space-x-2">
               <img
                 src={CHAINS_BY_ID[option].chainImg.src}
                 className="w-5 h-5"
               />
-              <div>
+              <div className="text-primaryTextColor">
                 {CHAINS_BY_ID[option].name} [{option}]
               </div>
             </span>
