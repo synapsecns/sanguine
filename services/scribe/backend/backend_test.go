@@ -42,7 +42,11 @@ func (b *BackendSuite) TestLogsInRange() {
 
 	chainID, err := scribeBackend.ChainID(b.GetTestContext())
 	Nil(b.T(), err)
-	iterator := util.NewChunkIterator(big.NewInt(int64(1)), big.NewInt(int64(desiredBlockHeight)), 1, true)
+
+	lastBlock, err := testBackend.BlockNumber(b.GetTestContext())
+	Nil(b.T(), err)
+
+	iterator := util.NewChunkIterator(big.NewInt(int64(1)), big.NewInt(int64(lastBlock)), 1, true)
 
 	var blockRanges []*util.Chunk
 	blockRange := iterator.NextChunk()
@@ -50,7 +54,9 @@ func (b *BackendSuite) TestLogsInRange() {
 	for blockRange != nil {
 		blockRanges = append(blockRanges, blockRange)
 		blockRange = iterator.NextChunk()
+
 	}
+
 	res, err := backend.GetLogsInRange(b.GetTestContext(), scribeBackend, testChainHandler.Addresses, chainID.Uint64(), blockRanges)
 	Nil(b.T(), err)
 
@@ -61,7 +67,6 @@ func (b *BackendSuite) TestLogsInRange() {
 
 	numLogs := 0
 	for !itr.Done() {
-		numLogs++
 		index, chunk := itr.Next()
 
 		Falsef(b.T(), intSet.Has(int64(index)), "%d appears at least twice", index)
@@ -71,7 +76,7 @@ func (b *BackendSuite) TestLogsInRange() {
 			numLogs++
 		}
 	}
-	Equal(b.T(), 4, numLogs)
+	Equal(b.T(), int(testChainHandler.EventsEmitted[testChainHandler.Addresses[0]]), numLogs)
 }
 
 func (b *BackendSuite) TestLogsInRangeWithMultipleContracts() {
@@ -142,7 +147,7 @@ func (b *BackendSuite) TestLogsInRangeWithMultipleContracts() {
 
 	// Check if there's a log for each of the contracts
 	for i := range testChainHandler.Addresses {
-		Equal(b.T(), 1, logs[testChainHandler.Addresses[i].String()])
+		Equal(b.T(), int(testChainHandler.EventsEmitted[testChainHandler.Addresses[i]]), logs[testChainHandler.Addresses[i].String()])
 	}
 }
 
