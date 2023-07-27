@@ -29,7 +29,6 @@ export const DestinationChainLabel = ({
     setOrderedChains(chainOrderBySwapSide(connectedChainId, chainId, chains))
   }, [chainId, connectedChainId, chains])
 
-  const orderedChainsLength = orderedChains.length
   return (
     <div
       data-test-id="destination-chain-label"
@@ -38,7 +37,7 @@ export const DestinationChainLabel = ({
       <div className={`text-gray-400 block text-sm mr-2`}>Dest.</div>
       <div className="flex items-center space-x-3">
         {orderedChains.map((id: number, key: number) => {
-          const hide: boolean = isMobile && orderedChainsLength === key + 1
+          const hide: boolean = isMobile && orderedChains.length === key + 1
           return id === chainId ? (
             <SelectedChain chainId={id} key={id} />
           ) : (
