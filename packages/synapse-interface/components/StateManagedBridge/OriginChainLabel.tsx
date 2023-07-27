@@ -10,6 +10,7 @@ import { setFromChainId } from '@/slices/bridgeSlice'
 import { setShowFromChainSlideOver } from '@/slices/bridgeDisplaySlice'
 import { RootState } from '@/store/store'
 import { segmentAnalyticsEvent } from '@/contexts/SegmentAnalyticsProvider'
+import useIsMobileScreen from '@/utils/hooks/useIsMobileScreen'
 
 export const OriginChainLabel = ({
   chains,
@@ -21,9 +22,10 @@ export const OriginChainLabel = ({
   connectedChainId: number
 }) => {
   const [orderedChains, setOrderedChains] = useState<number[]>([])
+  const isMobile = useIsMobileScreen()
 
   useEffect(() => {
-    setOrderedChains(chainOrderBySwapSide(chainId, 4))
+    setOrderedChains(chainOrderBySwapSide(chainId))
   }, [chainId, connectedChainId, chains])
 
   const dispatch = useDispatch()
@@ -35,13 +37,14 @@ export const OriginChainLabel = ({
     >
       <div className={`text-gray-400 block text-sm mr-2`}>Origin</div>
       <div className="flex items-center space-x-3">
-        {orderedChains.map((id) =>
-          Number(id) === chainId ? (
+        {orderedChains.map((id: number, key: number) => {
+          const hide: boolean = isMobile && orderedChains.length + 1 === key
+          return Number(id) === chainId ? (
             <SelectedChain chainId={Number(id)} key={id} />
           ) : (
-            <PossibleChain chainId={Number(id)} key={id} />
+            !hide && <PossibleChain chainId={Number(id)} key={id} />
           )
-        )}
+        })}
         <button
           onClick={() => {
             dispatch(setShowFromChainSlideOver(true))

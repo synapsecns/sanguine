@@ -1,20 +1,25 @@
 import React, { useEffect, useState } from 'react'
 
-const useIsMobileScreen = (): boolean => {
-  const [width, setWidth] = useState<number>(window.innerWidth)
+const isClient = typeof window === 'object'
+
+export default function useIsMobileScreen(): boolean {
+  const [width, setWidth] = useState<number>(
+    isClient ? window.innerWidth : 1000
+  )
 
   const handleWindowSizeChange = () => {
     setWidth(window.innerWidth)
   }
 
   useEffect(() => {
-    window.addEventListener('resize', handleWindowSizeChange)
-    return () => {
-      window.removeEventListener('resize', handleWindowSizeChange)
+    if (isClient) {
+      window.addEventListener('resize', handleWindowSizeChange)
+
+      return () => {
+        window.removeEventListener('resize', handleWindowSizeChange)
+      }
     }
   }, [])
 
-  return width <= 768
+  return isClient ? width <= 768 : false
 }
-
-export default useIsMobileScreen
