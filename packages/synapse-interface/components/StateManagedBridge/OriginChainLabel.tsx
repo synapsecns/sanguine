@@ -37,7 +37,7 @@ export const OriginChainLabel = ({
     >
       <div className={`text-gray-400 block text-sm mr-2`}>Origin</div>
       <div className="relative flex">
-        <div className="flex items-center space-x-3 overflow-x-auto overflow-y-hidden w-[200px]">
+        <div className="flex items-center space-x-3 overflow-x-auto overflow-y-hidden w-[200px] sm:w-full">
           {orderedChains.map((id: number, key: number) => {
             const hide: boolean = isMobile && orderedChains.length === key + 1
             return Number(id) === chainId ? (
