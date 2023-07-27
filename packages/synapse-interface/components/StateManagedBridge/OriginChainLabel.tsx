@@ -36,17 +36,18 @@ export const OriginChainLabel = ({
       className="flex items-center justify-between"
     >
       <div className={`text-gray-400 block text-sm mr-2`}>Origin</div>
-      <div className="flex items-center space-x-3">
-        {orderedChains.map((id: number, key: number) => {
-          const hide: boolean = isMobile && orderedChains.length === key + 1
-          return Number(id) === chainId ? (
-            <SelectedChain chainId={Number(id)} key={id} />
-          ) : (
-            !hide && (
-              <PossibleChain chainId={Number(id)} key={id} hidden={hide} />
+      <div className="relative flex">
+        <div className="flex items-center space-x-3 overflow-x-auto overflow-y-hidden w-[200px]">
+          {orderedChains.map((id: number, key: number) => {
+            const hide: boolean = isMobile && orderedChains.length === key + 1
+            return Number(id) === chainId ? (
+              <SelectedChain chainId={Number(id)} key={id} />
+            ) : (
+              <PossibleChain chainId={Number(id)} key={id} />
             )
-          )
-        })}
+          })}
+        </div>
+
         <button
           onClick={() => {
             dispatch(setShowFromChainSlideOver(true))
@@ -118,6 +119,7 @@ const SelectedChain = ({ chainId }: { chainId: number }) => {
         text-white
         border ${getNetworkButtonBorder(chain.color)}
         rounded-full
+        min-w-fit
       `}
     >
       <Image
@@ -125,7 +127,7 @@ const SelectedChain = ({ chainId }: { chainId: number }) => {
         src={chain.chainImg}
         className="w-5 h-5 my-1 mr-1 rounded-full opacity-80"
       />
-      <div className="inline-block">
+      <div className="flex">
         <div className="mr-2 text-sm text-white">
           {chain.name === 'Boba Network' ? 'Boba' : chain.name}
         </div>
