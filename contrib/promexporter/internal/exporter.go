@@ -6,5 +6,5 @@ type Exporter struct {
 }
 
 func NewExporter(handler metrics.Handler) {
-	//handler.Meter().NewCounter()
+	//handler.Metrics().NewCounter()
 }

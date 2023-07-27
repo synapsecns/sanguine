@@ -6,6 +6,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/synapsecns/sanguine/core/config"
 	"go.opentelemetry.io/contrib/instrumentation/net/http/otelhttp"
+	"go.opentelemetry.io/otel/metric"
 	"go.opentelemetry.io/otel/propagation"
 	"go.opentelemetry.io/otel/trace"
 	"gorm.io/gorm"
@@ -31,8 +32,14 @@ type Handler interface {
 	Propagator() propagation.TextMapPropagator
 	// Type returns the handler type.
 	Type() HandlerType
-	// Meter returns an otel meter provider
-	Meter() Meter
+	// Metrics returns a metric provider
+	// Deprecated: Will be removed in a future version please use meter.
+	Metrics() Meter
+	// Meter returns a metric provider
+	Meter(name string, options ...metric.MeterOption) metric.Meter
+	// Handler returns the http handler for the metrics endpoint.
+	// right now, this supports only a single routeb
+	Handler() http.Handler
 }
 
 // HandlerType is the handler type to use

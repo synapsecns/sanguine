@@ -73,7 +73,14 @@ func (d *datadogHandler) Start(ctx context.Context) error {
 	tracerProvider := opentelemetry.NewTracerProvider(tracer.WithRuntimeMetrics(), tracer.WithProfilerEndpoints(true), tracer.WithAnalytics(true),
 		tracer.WithPropagator(ddPrpopgator), tracer.WithEnv(core.GetEnv(ddEnvTag, defaultEnv)), tracer.WithService(d.buildInfo.Name()), tracer.WithServiceVersion(d.buildInfo.Version()))
 
-	d.baseHandler = newBaseHandlerWithTracerProvider(d.buildInfo, tracerProvider, propagator)
+	// Ensure default SDK resources and the required service name are set.
+	rsr, err := makeResource(d.buildInfo)
+	// TODO: handle error or report
+	if err != nil {
+		return fmt.Errorf("could not create resource: %w", err)
+	}
+
+	d.baseHandler = newBaseHandlerWithTracerProvider(rsr, d.buildInfo, tracerProvider, propagator)
 
 	// stop on context cancellation
 	go func() {

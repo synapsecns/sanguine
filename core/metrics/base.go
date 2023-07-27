@@ -2,12 +2,9 @@ package metrics
 
 import (
 	"context"
-	"net/http"
-	"os"
-	"strconv"
-	"time"
-
+	"fmt"
 	"github.com/gin-gonic/gin"
+	"github.com/prometheus/client_golang/prometheus/promhttp"
 	"github.com/synapsecns/sanguine/core/config"
 	"github.com/synapsecns/sanguine/core/metrics/internal"
 	"github.com/uptrace/opentelemetry-go-extra/otelgorm"
@@ -16,12 +13,16 @@ import (
 	"go.opentelemetry.io/contrib/propagators/b3"
 	"go.opentelemetry.io/otel"
 	"go.opentelemetry.io/otel/attribute"
+	"go.opentelemetry.io/otel/exporters/prometheus"
+	"go.opentelemetry.io/otel/metric"
 	"go.opentelemetry.io/otel/propagation"
+	sdkmetric "go.opentelemetry.io/otel/sdk/metric"
 	"go.opentelemetry.io/otel/sdk/resource"
 	tracesdk "go.opentelemetry.io/otel/sdk/trace"
 	semconv "go.opentelemetry.io/otel/semconv/v1.17.0"
 	"go.opentelemetry.io/otel/trace"
 	"gorm.io/gorm"
+	"net/http"
 )
 
 const pyroscopeEndpoint = internal.PyroscopeEndpoint
@@ -33,7 +34,18 @@ type baseHandler struct {
 	tracer     trace.Tracer
 	name       string
 	propagator propagation.TextMapPropagator
-	meter      Meter
+	meter      MeterProvider
+	// handler is an integrated handler for everything exported over http. This includes prometheus
+	// or http-based sampling methods for other providers.
+	handler http.Handler
+}
+
+func (b *baseHandler) Handler() http.Handler {
+	return b.handler
+}
+
+func (b *baseHandler) Meter(name string, options ...metric.MeterOption) metric.Meter {
+	return b.meter.Meter(name, options...)
 }
 
 func (b *baseHandler) Start(ctx context.Context) error {
@@ -74,14 +86,11 @@ func (b *baseHandler) Type() HandlerType {
 	panic("must be overridden by children")
 }
 
-func (b *baseHandler) Meter() Meter {
-	return b.meter
+func (b *baseHandler) Metrics() Meter {
+	return NewOtelMeter(b.meter)
 }
 
-// newBaseHandler creates a new baseHandler for otel.
-// this is exported for testing.
-func newBaseHandler(buildInfo config.BuildInfo, extraOpts ...tracesdk.TracerProviderOption) *baseHandler {
-	// Ensure default SDK resources and the required service name are set.
+func makeResource(buildInfo config.BuildInfo) (*resource.Resource, error) {
 	rsr, err := resource.Merge(
 		resource.Default(),
 		resource.NewWithAttributes(
@@ -92,6 +101,18 @@ func newBaseHandler(buildInfo config.BuildInfo, extraOpts ...tracesdk.TracerProv
 			attribute.String("commit", buildInfo.Commit()),
 			attribute.String("library.language", "go"),
 		))
+	// TODO: handle error or report
+	if err != nil {
+		return nil, fmt.Errorf("could not merge resources: %w", err)
+	}
+	return rsr, nil
+}
+
+// newBaseHandler creates a new baseHandler for otel.
+// this is exported for testing.
+func newBaseHandler(buildInfo config.BuildInfo, extraOpts ...tracesdk.TracerProviderOption) *baseHandler {
+	// Ensure default SDK resources and the required service name are set.
+	rsr, err := makeResource(buildInfo)
 	// TODO: handle error or report
 	if err != nil {
 		logger.Warn("could not merge resources", "error", err)
@@ -105,29 +126,27 @@ func newBaseHandler(buildInfo config.BuildInfo, extraOpts ...tracesdk.TracerProv
 	StartPyroscope(buildInfo)
 
 	propagator := b3.New(b3.WithInjectEncoding(b3.B3MultipleHeader | b3.B3SingleHeader))
-	return newBaseHandlerWithTracerProvider(buildInfo, tp, propagator)
+	return newBaseHandlerWithTracerProvider(rsr, buildInfo, tp, propagator)
 }
 
 // newBaseHandlerWithTracerProvider creates a new baseHandler for any opentelemtry tracer.
-func newBaseHandlerWithTracerProvider(buildInfo config.BuildInfo, tracerProvider trace.TracerProvider, propagator propagation.TextMapPropagator) *baseHandler {
+func newBaseHandlerWithTracerProvider(rsr *resource.Resource, buildInfo config.BuildInfo, tracerProvider trace.TracerProvider, propagator propagation.TextMapPropagator) *baseHandler {
 	// default tracer for server.
 	otel.SetTracerProvider(tracerProvider)
 	tracer := tracerProvider.Tracer(buildInfo.Name())
 	otel.SetTextMapPropagator(propagator)
 
-	interval, err := strconv.Atoi(os.Getenv("OTEL_METER_INTERVAL"))
+	// TODO: allow this to be customizable, separate from the tracer provider.
+	// in a way that's still usable.
+	reader, err := prometheus.New()
 	if err != nil {
-		// default interval.
-		interval = 60
+		logger.Warnf("could not initialize prometheus exporter: %v, using no-op provider", err)
 	}
 
-	// TODO set up exporting the way we need here
-	metricExporter := NewNoOpExporter()
-
-	mp, err := NewOtelMeter(buildInfo.Name(), time.Duration(interval)*time.Second, metricExporter)
-	if err != nil {
-		return nil
-	}
+	mp := sdkmetric.NewMeterProvider(
+		sdkmetric.WithResource(rsr),
+		sdkmetric.WithReader(reader),
+	)
 
 	return &baseHandler{
 		tp:         tracerProvider,
@@ -135,6 +154,7 @@ func newBaseHandlerWithTracerProvider(buildInfo config.BuildInfo, tracerProvider
 		name:       buildInfo.Name(),
 		propagator: propagator,
 		meter:      mp,
+		handler:    promhttp.Handler(),
 	}
 }
 
