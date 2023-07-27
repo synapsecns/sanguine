@@ -22,10 +22,8 @@ const getToken = (tokenAndChainId: string) => {
   }
 }
 
-const getSymbol = (tokenAndChainId: string) => {
-  if (tokenAndChainId) {
-    return tokenAndChainId.split('-')[0]
-  }
+const getSymbol = (tokenAndChainId: string): string => {
+  return tokenAndChainId.split('-')[0]
 }
 
 export interface BridgeState {
@@ -122,9 +120,13 @@ export const bridgeSlice = createSlice({
       state.toChainId = toChainId
       state.toToken = getToken(toToken)
       state.fromChainIds = fromChainIds
-      state.fromTokens = _.uniq(fromTokens.map(getToken))
+      state.fromTokens = _.uniq(fromTokens.map(getSymbol)).map(
+        (symbol: string) => ALL_TOKENS[symbol]
+      )
       state.toChainIds = toChainIds
-      state.toTokens = _.uniq(toTokens.map(getToken))
+      state.toTokens = _.uniq(toTokens.map(getSymbol)).map(
+        (symbol: string) => ALL_TOKENS[symbol]
+      )
     },
     setFromToken: (state, action: PayloadAction<Token>) => {
       const incomingFromToken = action.payload
@@ -139,7 +141,9 @@ export const bridgeSlice = createSlice({
         toTokens,
       } = generateRoutePossibilities({
         fromChainId: state.fromChainId,
-        fromToken: `${incomingFromToken.routeSymbol}-${state.fromChainId}`,
+        fromToken:
+          state.fromChainId &&
+          `${incomingFromToken.routeSymbol}-${state.fromChainId}`,
         toChainId: state.toChainId,
         toToken: null,
       })
@@ -149,9 +153,13 @@ export const bridgeSlice = createSlice({
       state.toChainId = toChainId
       state.toToken = getToken(toToken)
       state.fromChainIds = fromChainIds
-      state.fromTokens = _.uniq(fromTokens.map(getToken))
+      state.fromTokens = _.uniq(fromTokens.map(getSymbol)).map(
+        (symbol: string) => ALL_TOKENS[symbol]
+      )
       state.toChainIds = toChainIds
-      state.toTokens = _.uniq(toTokens.map(getToken))
+      state.toTokens = _.uniq(toTokens.map(getToken)).map(
+        (symbol: string) => ALL_TOKENS[symbol]
+      )
     },
     setToChainId: (state, action: PayloadAction<number>) => {
       const incomingToChainId = action.payload
@@ -166,7 +174,9 @@ export const bridgeSlice = createSlice({
         toTokens,
       } = generateRoutePossibilities({
         fromChainId: state.fromChainId,
-        fromToken: `${state.fromToken.routeSymbol}-${state.fromChainId}`,
+        fromToken:
+          state.fromToken &&
+          `${state.fromToken.routeSymbol}-${state.fromChainId}`,
         toChainId: incomingToChainId,
         toToken: null,
       })
@@ -176,9 +186,13 @@ export const bridgeSlice = createSlice({
       state.toChainId = toChainId
       state.toToken = getToken(toToken)
       state.fromChainIds = fromChainIds
-      state.fromTokens = _.uniq(fromTokens.map(getToken))
+      state.fromTokens = _.uniq(fromTokens.map(getSymbol)).map(
+        (symbol: string) => ALL_TOKENS[symbol]
+      )
       state.toChainIds = toChainIds
-      state.toTokens = _.uniq(toTokens.map(getToken))
+      state.toTokens = _.uniq(toTokens.map(getSymbol)).map(
+        (symbol: string) => ALL_TOKENS[symbol]
+      )
     },
     setToToken: (state, action: PayloadAction<Token>) => {
       const incomingToToken = action.payload
@@ -193,7 +207,9 @@ export const bridgeSlice = createSlice({
         toTokens,
       } = generateRoutePossibilities({
         fromChainId: state.fromChainId,
-        fromToken: `${state.fromToken.routeSymbol}-${state.fromChainId}`,
+        fromToken:
+          state.fromToken &&
+          `${state.fromToken.routeSymbol}-${state.fromChainId}`,
         toChainId: state.toChainId,
         toToken: `${incomingToToken.routeSymbol}-${state.toChainId}`,
       })
@@ -203,9 +219,13 @@ export const bridgeSlice = createSlice({
       state.toChainId = toChainId
       state.toToken = getToken(toToken)
       state.fromChainIds = fromChainIds
-      state.fromTokens = _.uniq(fromTokens.map(getToken))
+      state.fromTokens = _.uniq(fromTokens.map(getSymbol)).map(
+        (symbol: string) => ALL_TOKENS[symbol]
+      )
       state.toChainIds = toChainIds
-      state.toTokens = _.uniq(toTokens.map(getToken))
+      state.toTokens = _.uniq(toTokens.map(getSymbol)).map(
+        (symbol: string) => ALL_TOKENS[symbol]
+      )
     },
     setBridgeQuote: (state, action: PayloadAction<BridgeQuote>) => {
       state.bridgeQuote = action.payload

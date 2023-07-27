@@ -13,7 +13,10 @@ const ImageAndCoin = ({ option }: { option: Token }) => {
   const { fromChainId } = useAppSelector((state) => state.bridge)
   const { balancesAndAllowances } = useAppSelector((state) => state.portfolio)
 
-  const { icon, symbol } = option
+  if (!option) {
+    return null
+  }
+  const { icon, symbol, routeSymbol } = option
   const parsedBalance = balancesAndAllowances[fromChainId]?.find(
     (token) => token.tokenAddress === option.addresses[fromChainId]
   )?.parsedBalance
@@ -22,7 +25,7 @@ const ImageAndCoin = ({ option }: { option: Token }) => {
     <div className="flex items-center justify-between">
       <div className="flex items-center space-x-2" key={option.symbol}>
         <img src={icon.src} className="w-6 h-6" />
-        <div className="text-xl">{symbol}</div>
+        <div className="text-xl">{routeSymbol}</div>
       </div>
       <div className="select-hidden">
         {parsedBalance !== '0.0' ? parsedBalance : ''}

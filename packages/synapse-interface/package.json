@@ -17,7 +17,8 @@
     "lint:check": "eslint . --max-warnings=0",
     "ci:lint": "npm run lint:check",
     "build:go": " ",
-    "build:slither": " "
+    "build:slither": " ",
+    "test": "jest --watch"
   },
   "dependencies": {
     "@depay/web3-mock": "^14.0.0",
@@ -99,5 +100,11 @@
   "main": ".eslintrc.js",
   "author": "",
   "license": "ISC",
-  "keywords": []
+  "keywords": [],
+  "devDependencies": {
+    "@testing-library/jest-dom": "^5.17.0",
+    "@testing-library/react": "^14.0.0",
+    "jest": "^29.6.1",
+    "jest-environment-jsdom": "^29.6.1"
+  }
 }

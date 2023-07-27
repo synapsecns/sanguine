@@ -9,7 +9,7 @@ const getTokenAndChainId = (tokenAndChainId: string) => {
 }
 
 // get fromChainIds
-const getPossibleFromChainIds = () => {
+export const getPossibleFromChainIds = () => {
   return _.uniq(
     Object.keys(EXISTING_BRIDGE_ROUTES).map(
       (token) => getTokenAndChainId(token).chainId
@@ -17,7 +17,7 @@ const getPossibleFromChainIds = () => {
   )
 }
 
-const getPossibleFromChainIdsByFromToken = (fromToken: string) => {
+export const getPossibleFromChainIdsByFromToken = (fromToken: string) => {
   const symbol = getTokenAndChainId(fromToken).symbol
 
   return _.uniq(
@@ -27,7 +27,7 @@ const getPossibleFromChainIdsByFromToken = (fromToken: string) => {
   )
 }
 
-const getPossibleFromChainIdsByToChainId = (toChainId: number) => {
+export const getPossibleFromChainIdsByToChainId = (toChainId: number) => {
   return _.uniq(
     Object.keys(EXISTING_BRIDGE_ROUTES)
       .filter((key) =>
@@ -39,7 +39,7 @@ const getPossibleFromChainIdsByToChainId = (toChainId: number) => {
   )
 }
 
-const getPossibleFromChainIdsByToToken = (toToken: string) => {
+export const getPossibleFromChainIdsByToToken = (toToken: string) => {
   return _.uniq(
     Object.entries(EXISTING_BRIDGE_ROUTES)
       .filter(([, values]) => values.includes(toToken))
@@ -51,7 +51,7 @@ const getPossibleFromChainIdsByToToken = (toToken: string) => {
 }
 
 // get fromTokens
-const getPossibleFromTokens = () => {
+export const getPossibleFromTokens = () => {
   return Object.keys(EXISTING_BRIDGE_ROUTES)
 }
 
@@ -61,13 +61,13 @@ export const getPossibleFromTokensByFromChainId = (fromChainId: number) => {
   )
 }
 
-const getPossibleFromTokensByFromToken = (fromToken: string) => {
+export const getPossibleFromTokensByFromToken = (fromToken: string) => {
   const chainId = getTokenAndChainId(fromToken).chainId
 
   return getPossibleFromTokensByFromChainId(chainId)
 }
 
-const getPossibleFromTokensByFromChainIdAndToChainId = (
+export const getPossibleFromTokensByFromChainIdAndToChainId = (
   fromChainId: number,
   toChainId: number
 ) => {
@@ -84,7 +84,7 @@ const getPossibleFromTokensByFromChainIdAndToChainId = (
   )
 }
 
-const getPossibleFromTokensByToChainId = (toChainId: number) => {
+export const getPossibleFromTokensByToChainId = (toChainId: number) => {
   return _.uniq(
     Object.keys(EXISTING_BRIDGE_ROUTES).filter((key) =>
       EXISTING_BRIDGE_ROUTES[key].some((value) =>
@@ -94,7 +94,7 @@ const getPossibleFromTokensByToChainId = (toChainId: number) => {
   )
 }
 
-const getPossibleFromTokensByToToken = (toToken) => {
+export const getPossibleFromTokensByToToken = (toToken) => {
   return _.uniq(
     Object.entries(EXISTING_BRIDGE_ROUTES)
       .filter(([, values]) => values.includes(toToken))
@@ -103,7 +103,7 @@ const getPossibleFromTokensByToToken = (toToken) => {
 }
 
 // get toChainIds
-const getPossibleToChainIds = () => {
+export const getPossibleToChainIds = () => {
   return _(EXISTING_BRIDGE_ROUTES)
     .values()
     .flatten()
@@ -112,7 +112,7 @@ const getPossibleToChainIds = () => {
     .value()
 }
 
-const getPossibleToChainIdsByFromChainId = (fromChainId: number) => {
+export const getPossibleToChainIdsByFromChainId = (fromChainId: number) => {
   return _(EXISTING_BRIDGE_ROUTES)
     .pickBy((_value, key) => key.endsWith(`-${fromChainId}`))
     .values()
@@ -130,16 +130,20 @@ export const getPossibleToChainIdsByFromToken = (fromToken: string) => {
   )
 }
 
-const getPossibleToChainIdsByToToken = (toToken: string) => {
-  return getPossibleToChainIds()
+export const getPossibleToChainIdsByToToken = (toToken: string) => {
+  return _.uniq(
+    Object.entries(EXISTING_BRIDGE_ROUTES)
+      .filter(([, values]) => values.includes(toToken))
+      .map(([key]) => Number(key.split('-')[1]))
+  )
 }
 
 // get toTokens
-const getPossibleToTokens = () => {
+export const getPossibleToTokens = () => {
   return _(EXISTING_BRIDGE_ROUTES).values().flatten().uniq().value()
 }
 
-const getPossibleToTokensByFromChainId = (fromChainId: number) => {
+export const getPossibleToTokensByFromChainId = (fromChainId: number) => {
   return _(EXISTING_BRIDGE_ROUTES)
     .pickBy((_value, key) => key.endsWith(`-${fromChainId}`))
     .values()
@@ -147,7 +151,7 @@ const getPossibleToTokensByFromChainId = (fromChainId: number) => {
     .value()
 }
 
-const getPossibleToTokensByFromToken = (fromToken: string) => {
+export const getPossibleToTokensByFromToken = (fromToken: string) => {
   return EXISTING_BRIDGE_ROUTES[fromToken]
 }
 
@@ -160,7 +164,7 @@ export const getPossibleToTokensByFromTokenAndToChainId = (
   )
 }
 
-const getPossibleToTokensByToChainId = (toChainId) => {
+export const getPossibleToTokensByToChainId = (toChainId) => {
   return _(EXISTING_BRIDGE_ROUTES)
     .values()
     .flatten()
@@ -169,7 +173,8 @@ const getPossibleToTokensByToChainId = (toChainId) => {
     .value()
 }
 
-const getPossibleToTokensByToToken = (toToken) => {
+// is this right??
+export const getPossibleToTokensByToToken = (toToken) => {
   const chainId = getTokenAndChainId(toToken).chainId
 
   return getPossibleToTokensByToChainId(chainId)

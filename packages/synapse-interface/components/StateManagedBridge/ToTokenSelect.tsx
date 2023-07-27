@@ -10,11 +10,11 @@ import { coinSelectStyles } from './styles/coinSelectStyles'
 import { useId } from 'react'
 
 const ImageAndCoin = ({ option }: { option: Token }) => {
-  const { icon, symbol } = option
+  const { icon, symbol, routeSymbol } = option
   return (
     <div className="flex items-center space-x-2" key={option.symbol}>
       <img src={icon.src} className="w-6 h-6" />
-      <div className="text-xl">{symbol}</div>
+      <div className="text-xl">{routeSymbol}</div>
     </div>
   )
 }
