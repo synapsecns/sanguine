@@ -303,8 +303,16 @@ func (g Guard) handleSnapshot(ctx context.Context, log ethTypes.Log) error {
 		if err != nil {
 			return fmt.Errorf("could not check validity of state: %w", err)
 		}
-
 		if isValid {
+			continue
+		}
+
+		// Verify that the agent is slashable
+		agentStatus, err := g.domains[state.Origin()].LightManager().GetAgentStatus(ctx, fraudSnapshot.Agent)
+		if err != nil {
+			return fmt.Errorf("could not get agent status: %w", err)
+		}
+		if !isSlashable(agentStatus.Flag()) {
 			continue
 		}
 
@@ -355,10 +363,13 @@ func (g Guard) handleSnapshot(ctx context.Context, log ethTypes.Log) error {
 		if err != nil {
 			return fmt.Errorf("could not submit state report with snapshot: %w", err)
 		}
-		break
 	}
 
 	return nil
+}
+
+func isSlashable(agentFlag types.AgentFlagType) bool {
+	return agentFlag == types.AgentFlagActive || agentFlag == types.AgentFlagUnstaking
 }
 
 func (g Guard) handleAttestation(ctx context.Context, log ethTypes.Log) error {

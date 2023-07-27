@@ -179,7 +179,7 @@ func (g GuardSuite) TestFraudulentStateInSnapshot() {
 	NotNil(g.T(), tx)
 	g.TestBackendSummit.WaitForConfirmation(g.GetTestContext(), tx)
 
-	// Verify that the guard eventually marks the accused agent as Fraudulent
+	// Verify that the guard eventually marks the accused agent as Fraudulent on Origin
 	g.Eventually(func() bool {
 		status, err := g.OriginDomainClient.LightManager().GetAgentStatus(g.GetTestContext(), g.NotaryBondedSigner.Address())
 		Nil(g.T(), err)
@@ -192,9 +192,22 @@ func (g GuardSuite) TestFraudulentStateInSnapshot() {
 		return false
 	})
 
+	// Verify that the guard eventually marks the accused agent as Fraudulent on Summit
+	g.Eventually(func() bool {
+		status, err := g.SummitDomainClient.BondingManager().GetAgentStatus(g.GetTestContext(), g.NotaryBondedSigner.Address())
+		Nil(g.T(), err)
+
+		if status.Flag() == types.AgentFlagSlashed {
+			return true
+		}
+
+		g.bumpBackend(g.TestBackendSummit, g.TestContractOnSummit, txContextSummit.TransactOpts)
+		return false
+	})
+
 	// Verify that a report has been submitted by the Guard by checking that a Dispute is now open.
 	g.Eventually(func() bool {
-		err := g.SummitDomainClient.BondingManager().GetDispute(g.GetTestContext(), big.NewInt(0))
+		err = g.SummitDomainClient.BondingManager().GetDispute(g.GetTestContext(), big.NewInt(0))
 		if err != nil {
 			return false
 		}
