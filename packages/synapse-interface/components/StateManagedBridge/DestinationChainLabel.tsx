@@ -42,7 +42,7 @@ export const DestinationChainLabel = ({
           return !hide && id === chainId ? (
             <SelectedChain chainId={id} key={id} />
           ) : (
-            <PossibleChain chainId={id} key={id} />
+            <PossibleChain chainId={id} key={id} hidden={hide} />
           )
         })}
         <button
@@ -60,7 +60,13 @@ export const DestinationChainLabel = ({
   )
 }
 
-const PossibleChain = ({ chainId }: { chainId: number }) => {
+const PossibleChain = ({
+  chainId,
+  hidden = false,
+}: {
+  chainId: number
+  hidden?: boolean
+}) => {
   const chain = CHAINS_BY_ID[chainId]
   const { toChainId } = useSelector((state: RootState) => state.bridge)
 
@@ -75,7 +81,7 @@ const PossibleChain = ({ chainId }: { chainId: number }) => {
     segmentAnalyticsEvent(eventTitle, eventData)
     dispatch(setToChainId(chainId))
   }
-  return chain ? (
+  return !hidden && chain ? (
     <button
       data-test-id="destination-possible-chain"
       className="
