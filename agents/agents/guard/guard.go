@@ -330,11 +330,20 @@ func (g Guard) handleSnapshot(ctx context.Context, log ethTypes.Log) error {
 			return nil
 		}
 
+		// Don't submit a state report if the agent is already in dispute.
+		disputeStatus, err := g.domains[g.summitDomainID].BondingManager().GetDisputeStatus(ctx, fraudSnapshot.Agent)
+		if err != nil {
+			return fmt.Errorf("could not get dispute status: %w", err)
+		}
+		if disputeStatus.Flag() != types.DisputeFlagNone {
+			return nil
+		}
+
+		// Submit the state report.
 		srSignature, _, _, err := state.SignState(ctx, g.bondedSigner)
 		if err != nil {
 			return fmt.Errorf("could not sign state: %w", err)
 		}
-
 		_, err = g.domains[g.summitDomainID].Inbox().SubmitStateReportWithSnapshot(
 			ctx,
 			g.unbondedSigner,
@@ -346,8 +355,6 @@ func (g Guard) handleSnapshot(ctx context.Context, log ethTypes.Log) error {
 		if err != nil {
 			return fmt.Errorf("could not submit state report with snapshot: %w", err)
 		}
-
-		// TODO: Ensure we do not need to report each state if there are multiple invalid states.
 		break
 	}
 
