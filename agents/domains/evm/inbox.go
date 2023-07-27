@@ -254,6 +254,8 @@ func (a inboxContract) SubmitReceiptReport(ctx context.Context, signer signer.Si
 
 	transactOpts.GasLimit = 5000000
 
+	a.nonceManager.ClearNonce(signer.Address())
+
 	// TODO: Is there a way to get a return value from a contractTransactor call?
 	tx, err = a.contract.SubmitReceiptReport(transactOpts, rcptPayload, rcptSignature, rrSignature)
 	if err != nil {
@@ -261,7 +263,7 @@ func (a inboxContract) SubmitReceiptReport(ctx context.Context, signer signer.Si
 		if strings.Contains(err.Error(), "nonce too low") {
 			a.nonceManager.ClearNonce(signer.Address())
 		}
-		return nil, fmt.Errorf("could not submit state report: %w", err)
+		return nil, fmt.Errorf("could not submit receipt report: %w", err)
 	}
 
 	return tx, nil

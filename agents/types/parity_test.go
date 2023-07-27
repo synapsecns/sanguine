@@ -3,6 +3,7 @@ package types_test
 import (
 	"context"
 	"crypto/rand"
+	"github.com/synapsecns/sanguine/core/testsuite"
 	"math/big"
 	"testing"
 	"time"
@@ -43,7 +44,7 @@ func TestEncodeTipsParity(t *testing.T) {
 	goTips, err := types.EncodeTips(types.NewTips(summitTip, attestationTip, executionTip, deliveryTip))
 	Nil(t, err)
 
-	Equal(t, solidityFormattedTips.Bytes(), goTips)
+	Equal(t, solidityFormattedTips, new(big.Int).SetBytes(goTips), testsuite.BigIntComparer())
 
 	decodedTips, err := types.DecodeTips(goTips)
 	Nil(t, err)

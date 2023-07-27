@@ -76,7 +76,6 @@ type SummitContract interface {
 
 // InboxContract contains the interface for the inbox.
 type InboxContract interface {
-	LightInboxContract
 	// SubmitStateReportWithSnapshot reports to the inbox that a state within a snapshot is invalid.
 	SubmitStateReportWithSnapshot(ctx context.Context, signer signer.Signer, stateIndex int64, signature signer.Signature, snapPayload []byte, snapSignature []byte) (tx *ethTypes.Transaction, err error)
 	// SubmitSnapshot submits a snapshot to the inbox (via the Inbox).
@@ -110,6 +109,8 @@ type BondingManagerContract interface {
 	// GetDispute gets the dispute for a given dispute index.
 	// TODO: Add more returned values here as needed.
 	GetDispute(ctx context.Context, index *big.Int) (err error)
+	// GetDisputeStatus gets the dispute status for the given agent.
+	GetDisputeStatus(ctx context.Context, agent common.Address) (disputeStatus types.DisputeStatus, err error)
 	// CompleteSlashing completes the slashing of an agent.
 	CompleteSlashing(ctx context.Context, signer signer.Signer, domain uint32, agent common.Address, proof [][32]byte) (tx *ethTypes.Transaction, err error)
 }

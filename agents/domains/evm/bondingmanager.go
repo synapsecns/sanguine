@@ -6,6 +6,9 @@ package evm
 import (
 	"context"
 	"fmt"
+	"math/big"
+	"strings"
+
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/common"
 	ethTypes "github.com/ethereum/go-ethereum/core/types"
@@ -15,8 +18,6 @@ import (
 	"github.com/synapsecns/sanguine/ethergo/chain"
 	"github.com/synapsecns/sanguine/ethergo/signer/nonce"
 	"github.com/synapsecns/sanguine/ethergo/signer/signer"
-	"math/big"
-	"strings"
 )
 
 // NewBondingManagerContract returns a bound bonding manager contract.
@@ -53,7 +54,7 @@ func (a bondingManagerContract) GetAgentStatus(ctx context.Context, address comm
 		return nil, fmt.Errorf("could not retrieve agent status: %w", err)
 	}
 
-	agentStatus := types.NewAgentStatus(rawStatus.Flag, rawStatus.Domain, rawStatus.Index)
+	agentStatus := types.NewAgentStatus(types.AgentFlagType(rawStatus.Flag), rawStatus.Domain, rawStatus.Index)
 
 	return agentStatus, nil
 }
@@ -126,4 +127,14 @@ func (a bondingManagerContract) CompleteSlashing(ctx context.Context, signer sig
 	}
 
 	return tx, nil
+}
+
+func (a bondingManagerContract) GetDisputeStatus(ctx context.Context, agent common.Address) (disputeStatus types.DisputeStatus, err error) {
+	rawStatus, err := a.contract.DisputeStatus(&bind.CallOpts{Context: ctx}, agent)
+	if err != nil {
+		return nil, fmt.Errorf("could not retrieve dispute status: %w", err)
+	}
+
+	disputeStatus = types.NewDisputeStatus(types.DisputeFlagType(rawStatus.Flag), rawStatus.Rival, rawStatus.FraudProver, rawStatus.DisputePtr)
+	return disputeStatus, nil
 }

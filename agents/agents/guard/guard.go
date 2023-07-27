@@ -3,11 +3,12 @@ package guard
 import (
 	"context"
 	"fmt"
-	"github.com/synapsecns/sanguine/agents/contracts/bondingmanager"
-	"github.com/synapsecns/sanguine/agents/contracts/lightmanager"
 	"math/big"
 	"strconv"
 	"time"
+
+	"github.com/synapsecns/sanguine/agents/contracts/bondingmanager"
+	"github.com/synapsecns/sanguine/agents/contracts/lightmanager"
 
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/common"
@@ -93,8 +94,8 @@ func makeScribeClient(parentCtx context.Context, handler metrics.Handler, url st
 // NewGuard creates a new guard.
 //
 //nolint:cyclop
-func NewGuard(ctx context.Context, cfg config.AgentConfig, omniRPCClient omnirpcClient.RPCClient, scribeClient client.ScribeClient, txDB db.GuardDB, handler metrics.Handler) (_ Guard, err error) {
-	guard := Guard{
+func NewGuard(ctx context.Context, cfg config.AgentConfig, omniRPCClient omnirpcClient.RPCClient, scribeClient client.ScribeClient, txDB db.GuardDB, handler metrics.Handler) (guard *Guard, err error) {
+	guard = &Guard{
 		refreshInterval: time.Second * time.Duration(cfg.RefreshIntervalSeconds),
 		domains:         make(map[uint32]domains.DomainClient),
 		logChans:        make(map[uint32]chan *ethTypes.Log),
@@ -103,32 +104,30 @@ func NewGuard(ctx context.Context, cfg config.AgentConfig, omniRPCClient omnirpc
 
 	guard.grpcConn, guard.grpcClient, err = makeScribeClient(ctx, handler, fmt.Sprintf("%s:%d", scribeClient.URL, scribeClient.Port))
 	if err != nil {
-		return Guard{}, fmt.Errorf("could not create scribe client: %w", err)
+		return nil, fmt.Errorf("could not create scribe client: %w", err)
 	}
 
 	guard.bondedSigner, err = signerConfig.SignerFromConfig(ctx, cfg.BondedSigner)
 	if err != nil {
-		return Guard{}, fmt.Errorf("error with bondedSigner, could not create guard: %w", err)
+		return nil, fmt.Errorf("error with bondedSigner, could not create guard: %w", err)
 	}
 
 	guard.unbondedSigner, err = signerConfig.SignerFromConfig(ctx, cfg.UnbondedSigner)
 	if err != nil {
-		return Guard{}, fmt.Errorf("error with unbondedSigner, could not create guard: %w", err)
+		return nil, fmt.Errorf("error with unbondedSigner, could not create guard: %w", err)
 	}
 
+	// Set up evm utilities for each domain
 	for domainName, domain := range cfg.Domains {
-		var domainClient domains.DomainClient
-
 		omnirpcClient, err := omniRPCClient.GetConfirmationsClient(ctx, int(domain.DomainID), 1)
 		if err != nil {
-			return Guard{}, fmt.Errorf("error with omniRPCClient, could not create guard: %w", err)
+			return nil, fmt.Errorf("error with omniRPCClient, could not create guard: %w", err)
 		}
 
 		chainRPCURL := omniRPCClient.GetEndpoint(int(domain.DomainID), 1)
-
-		domainClient, err = evm.NewEVM(ctx, domainName, domain, chainRPCURL)
+		domainClient, err := evm.NewEVM(ctx, domainName, domain, chainRPCURL)
 		if err != nil {
-			return Guard{}, fmt.Errorf("failing to create evm for domain, could not create guard for: %w", err)
+			return nil, fmt.Errorf("failing to create evm for domain, could not create guard for: %w", err)
 		}
 		guard.domains[domain.DomainID] = domainClient
 
@@ -138,41 +137,39 @@ func NewGuard(ctx context.Context, cfg config.AgentConfig, omniRPCClient omnirpc
 			omnirpcClient,
 		)
 		if err != nil {
-			return Guard{}, fmt.Errorf("could not create origin: %w", err)
+			return nil, fmt.Errorf("could not create origin: %w", err)
 		}
 
-		// Initializations that only need to happen on the Summit domain.
+		// Initializations that only need to happen on the Summit domain
 		if domain.DomainID == cfg.SummitDomainID {
 			guard.summitDomainID = domain.DomainID
 			// Create a new inbox parser for the summit domain.
 			guard.inboxParser, err = inbox.NewParser(common.HexToAddress(domain.InboxAddress))
 			if err != nil {
-				return Guard{}, fmt.Errorf("could not create inbox parser: %w", err)
+				return nil, fmt.Errorf("could not create inbox parser: %w", err)
 			}
 
 			// Create a new light inbox parser for the summit domain.
 			guard.lightInboxParser, err = lightinbox.NewParser(common.HexToAddress(domain.LightInboxAddress))
 			if err != nil {
-				return Guard{}, fmt.Errorf("could not create inbox parser: %w", err)
+				return nil, fmt.Errorf("could not create inbox parser: %w", err)
 			}
 
 			guard.bondingManagerParser, err = bondingmanager.NewParser(common.HexToAddress(domain.BondingManagerAddress))
 			if err != nil {
-				return Guard{}, fmt.Errorf("could not create bonding manager parser: %w", err)
+				return nil, fmt.Errorf("could not create bonding manager parser: %w", err)
 			}
 
 			guard.lightManagerParser, err = lightmanager.NewParser(common.HexToAddress(domain.LightManagerAddress))
 			if err != nil {
-				return Guard{}, fmt.Errorf("could not create light manager parser: %w", err)
+				return nil, fmt.Errorf("could not create light manager parser: %w", err)
 			}
 		}
 	}
 
 	guard.summitLatestStates = make(map[uint32]types.State, len(guard.domains))
 	guard.originLatestStates = make(map[uint32]types.State, len(guard.domains))
-
 	guard.handler = handler
-
 	guard.txSubmitter = submitter.NewTransactionSubmitter(handler, guard.unbondedSigner, omniRPCClient, txDB.SubmitterDB(), &cfg.SubmitterConfig)
 
 	return guard, nil
@@ -182,9 +179,7 @@ func NewGuard(ctx context.Context, cfg config.AgentConfig, omniRPCClient omnirpc
 func (g Guard) streamLogs(ctx context.Context, chainID uint32, address string) error {
 	// TODO: Get last block number to define starting point for streamLogs.
 	fromBlock := strconv.FormatUint(0, 16)
-
 	toBlock := "latest"
-
 	stream, err := g.grpcClient.StreamLogs(ctx, &pbscribe.StreamLogsRequest{
 		Filter: &pbscribe.LogFilter{
 			ContractAddress: &pbscribe.NullableString{Kind: &pbscribe.NullableString_Data{Data: address}},
@@ -246,14 +241,55 @@ func (g Guard) receiveLogs(ctx context.Context, chainID uint32) error {
 	}
 }
 
+func (g Guard) handleLog(ctx context.Context, log ethTypes.Log) error {
+	switch {
+	case g.isSnapshotAcceptedEvent(log):
+		return g.handleSnapshot(ctx, log)
+	case g.isAttestationAcceptedEvent(log):
+		return g.handleAttestation(ctx, log)
+	case g.isReceiptAcceptedEvent(log):
+		return g.handleReceipt(ctx, log)
+	case g.isStatusUpdatedEvent(log):
+		return g.handleStatusUpdated(ctx, log)
+	case g.isDisputeOpenedEvent(log):
+		return g.handleDisputeOpened(ctx, log)
+	}
+	return nil
+}
+
+func (g Guard) isSnapshotAcceptedEvent(log ethTypes.Log) bool {
+	inboxEvent, ok := g.inboxParser.EventType(log)
+	return ok && inboxEvent == inbox.SnapshotAcceptedEvent
+}
+
+func (g Guard) isAttestationAcceptedEvent(log ethTypes.Log) bool {
+	lightManagerEvent, ok := g.lightInboxParser.EventType(log)
+	return ok && lightManagerEvent == lightinbox.AttestationAcceptedEvent
+}
+
+func (g Guard) isReceiptAcceptedEvent(log ethTypes.Log) bool {
+	inboxEvent, ok := g.inboxParser.EventType(log)
+	return ok && inboxEvent == inbox.ReceiptAcceptedEvent
+}
+
+func (g Guard) isStatusUpdatedEvent(log ethTypes.Log) bool {
+	bondingManagerEvent, ok := g.bondingManagerParser.EventType(log)
+	return ok && bondingManagerEvent == bondingmanager.StatusUpdatedEvent
+}
+
+func (g Guard) isDisputeOpenedEvent(log ethTypes.Log) bool {
+	lightManagerEvent, ok := g.lightManagerParser.EventType(log)
+	return ok && lightManagerEvent == lightmanager.DisputeOpenedEvent
+}
+
 func (g Guard) handleSnapshot(ctx context.Context, log ethTypes.Log) error {
 	fraudSnapshot, err := g.inboxParser.ParseSnapshotAccepted(log)
 	if err != nil {
 		return fmt.Errorf("could not parse snapshot accepted: %w", err)
 	}
 
+	// Check the validity of each state by calling `isValidState` on each state's origin domain.
 	for stateIndex, state := range fraudSnapshot.Snapshot.States() {
-		// Check the validity of each state by calling `isValidState` on each state's origin domain.
 		statePayload, err := types.EncodeState(state)
 		if err != nil {
 			return fmt.Errorf("could not encode state: %w", err)
@@ -267,8 +303,16 @@ func (g Guard) handleSnapshot(ctx context.Context, log ethTypes.Log) error {
 		if err != nil {
 			return fmt.Errorf("could not check validity of state: %w", err)
 		}
-
 		if isValid {
+			continue
+		}
+
+		// Verify that the agent is slashable
+		agentStatus, err := g.domains[state.Origin()].LightManager().GetAgentStatus(ctx, fraudSnapshot.Agent)
+		if err != nil {
+			return fmt.Errorf("could not get agent status: %w", err)
+		}
+		if !isSlashable(agentStatus.Flag()) {
 			continue
 		}
 
@@ -290,20 +334,24 @@ func (g Guard) handleSnapshot(ctx context.Context, log ethTypes.Log) error {
 		}
 
 		// If the agent who submitted the fraudulent snapshot is a guard, we only need to call `VerifyStateWithSnapshot`.
-		if fraudSnapshot.Domain == 0 {
+		if fraudSnapshot.AgentDomain == 0 {
 			return nil
 		}
 
-		//srSignature, _, _, err := fraudSnapshot.Snapshot.SignSnapshot(ctx, g.bondedSigner)
-		//if err != nil {
-		//	return fmt.Errorf("could not sign snapshot: %w", err)
-		//}
+		// Don't submit a state report if the agent is already in dispute.
+		disputeStatus, err := g.domains[g.summitDomainID].BondingManager().GetDisputeStatus(ctx, fraudSnapshot.Agent)
+		if err != nil {
+			return fmt.Errorf("could not get dispute status: %w", err)
+		}
+		if disputeStatus.Flag() != types.DisputeFlagNone {
+			return nil
+		}
 
+		// Submit the state report.
 		srSignature, _, _, err := state.SignState(ctx, g.bondedSigner)
 		if err != nil {
 			return fmt.Errorf("could not sign state: %w", err)
 		}
-
 		_, err = g.domains[g.summitDomainID].Inbox().SubmitStateReportWithSnapshot(
 			ctx,
 			g.unbondedSigner,
@@ -315,28 +363,13 @@ func (g Guard) handleSnapshot(ctx context.Context, log ethTypes.Log) error {
 		if err != nil {
 			return fmt.Errorf("could not submit state report with snapshot: %w", err)
 		}
-
-		// TODO: Ensure we do not need to report each state if there are multiple invalid states.
-		return nil
-
-		/*
-			TODO: per the docs:
-			Good guard alerts Synapse Chain
-			about pending fraud, so the Synapse Chain can
-			immediately pause all trust of Malicious Guard.
-
-			-> what function needs to be called to notify other chains of fraudulent guard?
-			for now just slash the agent and call it a day.
-		*/
-
-		// // Call submitStateReportWithSnapshot on (each?) destination domain.
-		// err = g.submitStateReports(ctx, int64(stateIndex), snapshotPayload, agentSig)
-		// if err != nil {
-		// 	return fmt.Errorf("could not submit state reports: %w", err)
-		// }
 	}
 
 	return nil
+}
+
+func isSlashable(agentFlag types.AgentFlagType) bool {
+	return agentFlag == types.AgentFlagActive || agentFlag == types.AgentFlagUnstaking
 }
 
 func (g Guard) handleAttestation(ctx context.Context, log ethTypes.Log) error {
@@ -350,12 +383,9 @@ func (g Guard) handleAttestation(ctx context.Context, log ethTypes.Log) error {
 		return fmt.Errorf("could not check validity of attestation: %w", err)
 	}
 
-	// If attestation is invalid, we need to slash the agent
-	// by calling `verifyAttestation()` on the summit domain.
 	if isValid {
 		// The attestation has a state not matching Origin.
 		// Fetch the snapshot, then verify each individual state with the attestation.
-
 		snapshot, err := g.domains[g.summitDomainID].Summit().GetNotarySnapshot(ctx, fraudAttestation.Payload)
 		if err != nil {
 			return fmt.Errorf("could not get snapshot: %w", err)
@@ -414,6 +444,8 @@ func (g Guard) handleAttestation(ctx context.Context, log ethTypes.Log) error {
 		return nil
 	}
 
+	// If attestation is invalid, we need to slash the agent
+	// by calling `verifyAttestation()` on the summit domain.
 	_, err = g.domains[g.summitDomainID].Inbox().VerifyAttestation(
 		ctx,
 		g.unbondedSigner,
@@ -436,7 +468,7 @@ func (g Guard) handleAttestation(ctx context.Context, log ethTypes.Log) error {
 	}
 
 	// Call `submitAttestationReport` on the notary's associated remote domain.
-	_, err = g.domains[fraudAttestation.Domain].LightInbox().SubmitAttestationReport(
+	_, err = g.domains[fraudAttestation.AgentDomain].LightInbox().SubmitAttestationReport(
 		ctx,
 		g.unbondedSigner,
 		fraudAttestation.Payload,
@@ -456,16 +488,16 @@ func (g Guard) handleReceipt(ctx context.Context, log ethTypes.Log) error {
 		return fmt.Errorf("could not parse receipt accepted: %w", err)
 	}
 
-	isValid, err := g.domains[g.summitDomainID].Destination().IsValidReceipt(ctx, fraudReceipt.RcptPayload)
+	receipt, err := types.DecodeReceipt(fraudReceipt.RcptPayload)
+	if err != nil {
+		return fmt.Errorf("could not decode receipt: %w", err)
+	}
+	isValid, err := g.domains[receipt.Destination()].Destination().IsValidReceipt(ctx, fraudReceipt.RcptPayload)
 	if err != nil {
 		return fmt.Errorf("could not check validity of attestation: %w", err)
 	}
 
 	if !isValid {
-		receipt, err := types.DecodeReceipt(fraudReceipt.RcptPayload)
-		if err != nil {
-			return fmt.Errorf("could not decode receipt: %w", err)
-		}
 		// TODO: merge this logic once solidity interfaces are de-duped
 		if receipt.Destination() == g.summitDomainID {
 			_, err = g.domains[receipt.Destination()].Inbox().VerifyReceipt(ctx, g.unbondedSigner, fraudReceipt.RcptPayload, fraudReceipt.RcptSignature)
@@ -473,12 +505,10 @@ func (g Guard) handleReceipt(ctx context.Context, log ethTypes.Log) error {
 				return fmt.Errorf("could not verify receipt: %w", err)
 			}
 		} else {
-			tx, err := g.domains[receipt.Destination()].LightInbox().VerifyReceipt(ctx, g.unbondedSigner, fraudReceipt.RcptPayload, fraudReceipt.RcptSignature)
+			_, err = g.domains[receipt.Destination()].LightInbox().VerifyReceipt(ctx, g.unbondedSigner, fraudReceipt.RcptPayload, fraudReceipt.RcptSignature)
 			if err != nil {
 				return fmt.Errorf("could not verify receipt: %w", err)
 			}
-			fmt.Println("TXHASHA", tx.Hash().String())
-			time.Sleep(10 * time.Second)
 			rrReceipt, _, _, err := receipt.SignReceipt(ctx, g.bondedSigner, false)
 			if err != nil {
 				return fmt.Errorf("could not sign receipt: %w", err)
@@ -487,12 +517,10 @@ func (g Guard) handleReceipt(ctx context.Context, log ethTypes.Log) error {
 			if err != nil {
 				return fmt.Errorf("could not encode receipt: %w", err)
 			}
-			tx, err = g.domains[g.summitDomainID].Inbox().SubmitReceiptReport(ctx, g.unbondedSigner, fraudReceipt.RcptPayload, fraudReceipt.RcptSignature, rrReceiptBytes)
+			_, err = g.domains[g.summitDomainID].Inbox().SubmitReceiptReport(ctx, g.unbondedSigner, fraudReceipt.RcptPayload, fraudReceipt.RcptSignature, rrReceiptBytes)
 			if err != nil {
 				return fmt.Errorf("could not submit receipt report: %w", err)
 			}
-			fmt.Println("TXHASHB", tx.Hash().String())
-			time.Sleep(10 * time.Second)
 		}
 	}
 
@@ -538,67 +566,6 @@ func (g Guard) handleDisputeOpened(ctx context.Context, log ethTypes.Log) error 
 	_ = disputeOpened
 
 	return nil
-}
-
-func (g Guard) handleLog(ctx context.Context, log ethTypes.Log) error {
-	switch {
-	case g.isSnapshotAcceptedEvent(log):
-		return g.handleSnapshot(ctx, log)
-	case g.isAttestationAcceptedEvent(log):
-		return g.handleAttestation(ctx, log)
-	case g.isReceiptAcceptedEvent(log):
-		return g.handleReceipt(ctx, log)
-	case g.isStatusUpdatedEvent(log):
-		return g.handleStatusUpdated(ctx, log)
-	case g.isDisputeOpenedEvent(log):
-		return g.handleDisputeOpened(ctx, log)
-	}
-	return nil
-}
-
-func (g Guard) isSnapshotAcceptedEvent(log ethTypes.Log) bool {
-	if g.inboxParser == nil {
-		return false
-	}
-
-	inboxEvent, ok := g.inboxParser.EventType(log)
-	return ok && inboxEvent == inbox.SnapshotAcceptedEvent
-}
-
-func (g Guard) isAttestationAcceptedEvent(log ethTypes.Log) bool {
-	if g.lightInboxParser == nil {
-		return false
-	}
-
-	lightManagerEvent, ok := g.lightInboxParser.EventType(log)
-	return ok && lightManagerEvent == lightinbox.AttestationAcceptedEvent
-}
-
-func (g Guard) isReceiptAcceptedEvent(log ethTypes.Log) bool {
-	if g.inboxParser == nil {
-		return false
-	}
-
-	inboxEvent, ok := g.inboxParser.EventType(log)
-	return ok && inboxEvent == inbox.ReceiptAcceptedEvent
-}
-
-func (g Guard) isStatusUpdatedEvent(log ethTypes.Log) bool {
-	if g.bondingManagerParser == nil {
-		return false
-	}
-
-	bondingManagerEvent, ok := g.bondingManagerParser.EventType(log)
-	return ok && bondingManagerEvent == bondingmanager.StatusUpdatedEvent
-}
-
-func (g Guard) isDisputeOpenedEvent(log ethTypes.Log) bool {
-	if g.lightManagerParser == nil {
-		return false
-	}
-
-	lightManagerEvent, ok := g.lightManagerParser.EventType(log)
-	return ok && lightManagerEvent == lightmanager.DisputeOpenedEvent
 }
 
 //nolint:cyclop
@@ -768,22 +735,21 @@ func (g Guard) Start(parentCtx context.Context) error {
 	})
 
 	for _, domain := range g.domains {
-		domain := domain
-
-		if domain.Config().DomainID == g.summitDomainID {
+		domainCfg := domain.Config()
+		if domainCfg.DomainID == g.summitDomainID {
 			continue
 		}
 
 		group.Go(func() error {
-			return g.streamLogs(ctx, domain.Config().DomainID, domain.Config().LightInboxAddress)
+			return g.streamLogs(ctx, domainCfg.DomainID, domainCfg.LightInboxAddress)
 		})
 
 		group.Go(func() error {
-			return g.streamLogs(ctx, domain.Config().DomainID, domain.Config().LightManagerAddress)
+			return g.streamLogs(ctx, domainCfg.DomainID, domainCfg.LightManagerAddress)
 		})
 
 		group.Go(func() error {
-			return g.receiveLogs(ctx, domain.Config().DomainID)
+			return g.receiveLogs(ctx, domainCfg.DomainID)
 		})
 	}
 
