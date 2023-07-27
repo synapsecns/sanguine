@@ -14,8 +14,8 @@ import { GETLOGS_SIZE, GETLOGS_REQUEST_COUNT } from '@constants/bridgeWatcher'
 import { useSynapseContext } from '@/utils/providers/SynapseProvider'
 import { useSelector } from 'react-redux'
 import { RootState } from '@/store/store'
-import { Address } from "viem"
-import { walletClientToSigner } from "@/ethers"
+import { Address } from 'viem'
+import { walletClientToSigner } from '@/ethers'
 import SYNAPSE_CCTP_ABI from '@abis/synapseCCTP.json'
 import * as CHAINS from '@constants/chains/master'
 
@@ -219,7 +219,7 @@ const BridgeWatcher = ({
 
   const getFromBridgeEvents = async (): Promise<BridgeWatcherTx[]> => {
     const currentFromBlock = await fetchBlockNumber({ chainId: fromChainId })
-    const provider = providerMap[fromChainId]
+    const provider = providerMap[fromChainId] ?? providerMap[CHAINS.ETH.id]
     const iface = new Interface(SYNAPSE_BRIDGE_ABI)
     const adjustedAddress = destinationAddress ? destinationAddress : address
 

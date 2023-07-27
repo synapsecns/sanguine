@@ -9,6 +9,21 @@ const getTokenAndChainId = (tokenAndChainId: string) => {
   return { symbol, chainId: Number(chainId) }
 }
 
+// generates object that matches each bridgeable fromToken to
+// the first chainId that shows up in existing bridge routes
+export const extractFirstChainIdBySymbol = () => {
+  return _.chain(EXISTING_BRIDGE_ROUTES)
+    .keys()
+    .reduce((result, key) => {
+      const [symbol, chainId] = key.split('-')
+      if (!result[symbol]) {
+        result[symbol] = Number(chainId)
+      }
+      return result
+    }, {})
+    .value()
+}
+
 // get fromChainIds
 export const getPossibleFromChainIds = () => {
   return _.uniq(
@@ -21,11 +36,12 @@ export const getPossibleFromChainIds = () => {
 export const getPossibleFromChainIdsByFromToken = (fromToken: string) => {
   const symbol = getTokenAndChainId(fromToken).symbol
 
-  return _.uniq(
-    Object.keys(EXISTING_BRIDGE_ROUTES)
-      .filter((key) => key.startsWith(symbol))
-      .map((token) => getTokenAndChainId(token).chainId)
-  )
+  return _.chain(EXISTING_BRIDGE_ROUTES)
+    .keys()
+    .filter((key) => _.startsWith(key, symbol))
+    .map((token) => getTokenAndChainId(token).chainId)
+    .uniq()
+    .value()
 }
 
 export const getPossibleFromChainIdsByToChainId = (toChainId: number) => {
@@ -405,5 +421,10 @@ export const generateRoutePossibilities = ({
 
   * Set intelligent defaults when fromTokens/toTokens change
   * check if from/to token is allowed in list
+
+
+  -- To strip out --
+  * paused tokens
+  * swap exceptions?
 
 */

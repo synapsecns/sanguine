@@ -943,6 +943,9 @@ export const NOTE = new Token({
   routeSymbol: 'NOTE',
 })
 
+// NOTE: USERS on DFK expect USDC (when it's really nUSD under the hood)
+// Consider adding displayExpections field to Token NUSD with USDC symbol/logo
+// And then remove DFK_USDC
 export const DFK_USDC = new Token({
   addresses: {
     [CHAINS.DFK.id]: NUSD.addresses[CHAINS.DFK.id],

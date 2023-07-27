@@ -128,7 +128,7 @@ export const InputContainer = () => {
                 className="hidden text-xs text-white transition-all duration-150 md:block transform-gpu hover:text-opacity-70 hover:cursor-pointer"
                 onClick={onClickBalance}
               >
-                {parsedBalance}
+                {parsedBalance ?? '0.0'}
                 <span className="text-opacity-50 text-secondaryTextColor">
                   {' '}
                   available

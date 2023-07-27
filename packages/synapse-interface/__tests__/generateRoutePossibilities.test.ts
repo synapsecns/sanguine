@@ -153,6 +153,33 @@ describe('generateRoutePossibilities', () => {
   })
 })
 
+it('has only fromToken', () => {
+  const {
+    fromChainId,
+    fromToken,
+    toChainId,
+    toToken,
+    fromChainIds,
+    fromTokens,
+    toChainIds,
+    toTokens,
+  } = generateRoutePossibilities({
+    fromChainId: null,
+    fromToken: 'XYZ-50',
+    toChainId: null,
+    toToken: null,
+  })
+
+  expect(fromChainId).toEqual(null)
+  expect(fromToken).toEqual('XYZ-50')
+  expect(toChainId).toEqual(null)
+  expect(toToken).toEqual(null)
+  expect(fromChainIds).toEqual([50, 1])
+  expect(fromTokens).toEqual(['XYZ-50'])
+  expect(toChainIds).toEqual([1])
+  expect(toTokens).toEqual(['XYZ-1'])
+})
+
 it('has all inputs', () => {
   const {
     fromChainId,
@@ -207,6 +234,33 @@ it('no toToken', () => {
   expect(toTokens).toEqual(['USDC-25'])
 })
 
+it('no fromToken', () => {
+  const {
+    fromChainId,
+    fromToken,
+    toChainId,
+    toToken,
+    fromChainIds,
+    fromTokens,
+    toChainIds,
+    toTokens,
+  } = generateRoutePossibilities({
+    fromChainId: 1,
+    fromToken: null,
+    toChainId: 50,
+    toToken: 'XYZ-50',
+  })
+
+  expect(fromChainId).toEqual(1)
+  expect(fromToken).toEqual(null)
+  expect(toChainId).toEqual(50)
+  expect(toToken).toEqual('XYZ-50')
+  expect(fromChainIds).toEqual([1])
+  expect(fromTokens).toEqual(['XYZ-1'])
+  expect(toChainIds).toEqual([1])
+  expect(toTokens).toEqual(['XYZ-50'])
+})
+
 it('only toChainId and toToken', () => {
   const {
     fromChainId,
@@ -243,7 +297,13 @@ describe('getPossibleFromChainIds()', () => {
 })
 
 describe('getPossibleFromChainIdsByFromToken', () => {
-  it('returns from chain ids that the fromToken can be sent from', () => {
+  it('returns from chain ids that the fromToken can be sent from, single', () => {
+    const fromChainIds = getPossibleFromChainIdsByFromToken('XYZ-50')
+
+    expect(fromChainIds).toEqual([50, 1])
+  })
+
+  it('returns from chain ids that the fromToken can be sent from, multiple', () => {
     const fromChainIds = getPossibleFromChainIdsByFromToken('USDC-25')
 
     expect(fromChainIds).toEqual([1, 10, 25, 56])

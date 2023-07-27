@@ -8,10 +8,13 @@ import { EMPTY_BRIDGE_QUOTE } from '@/constants/bridge'
 import { ARBITRUM, ETH as ETHEREUM } from '@/constants/chains/master'
 import { BridgeQuote, Token } from '@/utils/types'
 import {
+  extractFirstChainIdBySymbol,
   generateRoutePossibilities,
   getPossibleFromTokensByFromChainId,
   getPossibleToTokensByFromTokenAndToChainId,
 } from '@/utils/generateRoutePossibilities'
+
+const fromTokenDefaults = extractFirstChainIdBySymbol()
 
 const getToken = (tokenAndChainId: string) => {
   if (tokenAndChainId) {
@@ -111,11 +114,12 @@ export const bridgeSlice = createSlice({
       } = generateRoutePossibilities({
         fromChainId: incomingFromChainId,
         fromToken:
+          incomingFromChainId &&
           state.fromToken &&
-          state.fromChainId &&
-          `${state.fromToken.routeSymbol}-${state.fromChainId}`,
-        toChainId: state.toChainId,
+          `${state.fromToken.routeSymbol}-${incomingFromChainId}`,
+        toChainId: incomingFromChainId && state.toChainId,
         toToken:
+          incomingFromChainId &&
           state.toToken &&
           state.toChainId &&
           `${state.toToken.routeSymbol}-${state.toChainId}`,
@@ -136,6 +140,13 @@ export const bridgeSlice = createSlice({
     },
     setFromToken: (state, action: PayloadAction<Token>) => {
       const incomingFromToken = action.payload
+
+      const stringifiedFromToken = state.fromChainId
+        ? `${incomingFromToken.routeSymbol}-${state.fromChainId}`
+        : `${incomingFromToken.routeSymbol}-${
+            fromTokenDefaults[incomingFromToken.routeSymbol]
+          }`
+
       const {
         fromChainId,
         fromToken,
@@ -147,9 +158,7 @@ export const bridgeSlice = createSlice({
         toTokens,
       } = generateRoutePossibilities({
         fromChainId: state.fromChainId,
-        fromToken:
-          state.fromChainId &&
-          `${incomingFromToken.routeSymbol}-${state.fromChainId}`,
+        fromToken: stringifiedFromToken,
         toChainId: state.toChainId,
         toToken: null,
       })
@@ -169,6 +178,7 @@ export const bridgeSlice = createSlice({
     },
     setToChainId: (state, action: PayloadAction<number>) => {
       const incomingToChainId = action.payload
+
       const {
         fromChainId,
         fromToken,

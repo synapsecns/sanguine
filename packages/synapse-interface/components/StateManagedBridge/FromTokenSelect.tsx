@@ -60,9 +60,13 @@ const FromTokenSelect = () => {
     if (searchInput) {
       const searchTerm = searchInput.toLowerCase()
       return (
-        option.value.symbol.toLowerCase().includes(searchTerm) ||
-        option.value.name.toLowerCase().includes(searchTerm) ||
-        option.value.addresses[fromChainId].toLowerCase().includes(searchTerm)
+        option.value?.symbol.toLowerCase().includes(searchTerm) ||
+        option.value?.name.toLowerCase().includes(searchTerm) ||
+        option.value?.routeSymbol.toLowerCase().includes(searchTerm) ||
+        (fromChainId &&
+          option.value.addresses[fromChainId]
+            .toLowerCase()
+            .includes(searchTerm))
       )
     }
     return true
