@@ -118,10 +118,9 @@ func (g GuardSuite) TestFraudulentStateInSnapshot() {
 		Chains: []scribeConfig.ChainConfig{originChainConfig, destinationChainConfig, summitChainConfig},
 	}
 
-	// guard, err := guard.NewGuard(g.GetTestContext(), testConfig, omniRPCClient, scribeClient.ScribeClient, g.GuardTestDB, g.GuardMetrics)
+	// Start a new Guard.
 	guard, err := g.getTestGuard(scribeConfig)
 	Nil(g.T(), err)
-
 	go func() {
 		guardErr := guard.Start(g.GetTestContext())
 		if !testDone {
@@ -210,44 +209,6 @@ func (g GuardSuite) TestFraudulentAttestationOnDestination() {
 		testDone = true
 	}()
 
-	testConfig := config.AgentConfig{
-		Domains: map[string]config.DomainConfig{
-			"origin_client":      g.OriginDomainClient.Config(),
-			"destination_client": g.DestinationDomainClient.Config(),
-			"summit_client":      g.SummitDomainClient.Config(),
-		},
-		DomainID:       uint32(0),
-		SummitDomainID: g.SummitDomainClient.Config().DomainID,
-		BondedSigner: signerConfig.SignerConfig{
-			Type: signerConfig.FileType.String(),
-			File: filet.TmpFile(g.T(), "", g.GuardBondedWallet.PrivateKeyHex()).Name(),
-		},
-		UnbondedSigner: signerConfig.SignerConfig{
-			Type: signerConfig.FileType.String(),
-			File: filet.TmpFile(g.T(), "", g.GuardUnbondedWallet.PrivateKeyHex()).Name(),
-		},
-		RefreshIntervalSeconds: 5,
-	}
-
-	omniRPCClient := omniClient.NewOmnirpcClient(g.TestOmniRPC, g.GuardMetrics, omniClient.WithCaptureReqRes())
-
-	omnirpcSummit := omniRPCClient.GetEndpoint(int(g.SummitDomainClient.Config().DomainID), 1)
-
-	fmt.Println("OMNIIIIIIIIIIII", omnirpcSummit)
-
-	// Scribe setup.
-	originClient, err := backfill.DialBackend(g.GetTestContext(), g.TestBackendOrigin.RPCAddress(), g.ScribeMetrics)
-	Nil(g.T(), err)
-	destinationClient, err := backfill.DialBackend(g.GetTestContext(), g.TestBackendDestination.RPCAddress(), g.ScribeMetrics)
-	Nil(g.T(), err)
-	summitClient, err := backfill.DialBackend(g.GetTestContext(), g.TestBackendSummit.RPCAddress(), g.ScribeMetrics)
-	Nil(g.T(), err)
-
-	clients := map[uint32][]backfill.ScribeBackend{
-		uint32(g.TestBackendOrigin.GetChainID()):      {originClient, originClient},
-		uint32(g.TestBackendDestination.GetChainID()): {destinationClient, destinationClient},
-		uint32(g.TestBackendSummit.GetChainID()):      {summitClient, summitClient},
-	}
 	originConfig := scribeConfig.ContractConfig{
 		Address:    g.OriginContract.Address().String(),
 		StartBlock: 0,
@@ -289,26 +250,9 @@ func (g GuardSuite) TestFraudulentAttestationOnDestination() {
 		Chains: []scribeConfig.ChainConfig{originChainConfig, destinationChainConfig, summitChainConfig},
 	}
 
-	scribe, err := node.NewScribe(g.ScribeTestDB, clients, scribeConfig, g.ScribeMetrics)
+	// Start a new Guard.
+	guard, err := g.getTestGuard(scribeConfig)
 	Nil(g.T(), err)
-	scribeClient := client.NewEmbeddedScribe("sqlite", g.DBPath, g.ScribeMetrics)
-
-	go func() {
-		scribeErr := scribeClient.Start(g.GetTestContext())
-		if !testDone {
-			Nil(g.T(), scribeErr)
-		}
-	}()
-	go func() {
-		scribeError := scribe.Start(g.GetTestContext())
-		if !testDone {
-			Nil(g.T(), scribeError)
-		}
-	}()
-
-	guard, err := guard.NewGuard(g.GetTestContext(), testConfig, omniRPCClient, scribeClient.ScribeClient, g.GuardTestDB, g.GuardMetrics)
-	Nil(g.T(), err)
-
 	go func() {
 		guardErr := guard.Start(g.GetTestContext())
 		if !testDone {
@@ -431,40 +375,9 @@ func (g GuardSuite) TestReportFraudulentStateInAttestation() {
 		testDone = true
 	}()
 
-	testConfig := config.AgentConfig{
-		Domains: map[string]config.DomainConfig{
-			"origin_client":      g.OriginDomainClient.Config(),
-			"destination_client": g.DestinationDomainClient.Config(),
-			"summit_client":      g.SummitDomainClient.Config(),
-		},
-		DomainID:       uint32(0),
-		SummitDomainID: g.SummitDomainClient.Config().DomainID,
-		BondedSigner: signerConfig.SignerConfig{
-			Type: signerConfig.FileType.String(),
-			File: filet.TmpFile(g.T(), "", g.GuardBondedWallet.PrivateKeyHex()).Name(),
-		},
-		UnbondedSigner: signerConfig.SignerConfig{
-			Type: signerConfig.FileType.String(),
-			File: filet.TmpFile(g.T(), "", g.GuardUnbondedWallet.PrivateKeyHex()).Name(),
-		},
-		RefreshIntervalSeconds: 5,
-	}
-
-	omniRPCClient := omniClient.NewOmnirpcClient(g.TestOmniRPC, g.GuardMetrics, omniClient.WithCaptureReqRes())
-
-	// Scribe setup.
-	originClient, err := backfill.DialBackend(g.GetTestContext(), g.TestBackendOrigin.RPCAddress(), g.ScribeMetrics)
-	Nil(g.T(), err)
-	destinationClient, err := backfill.DialBackend(g.GetTestContext(), g.TestBackendDestination.RPCAddress(), g.ScribeMetrics)
-	Nil(g.T(), err)
-	summitClient, err := backfill.DialBackend(g.GetTestContext(), g.TestBackendSummit.RPCAddress(), g.ScribeMetrics)
-	Nil(g.T(), err)
-
-	clients := map[uint32][]backfill.ScribeBackend{
-		uint32(g.TestBackendOrigin.GetChainID()):      {originClient, originClient},
-		uint32(g.TestBackendDestination.GetChainID()): {destinationClient, destinationClient},
-		uint32(g.TestBackendSummit.GetChainID()):      {summitClient, summitClient},
-	}
+	// This scribe config omits the Summit and Origin chains, since we do not want to pick up the fraud coming from the
+	// fraudulent snapshots, only from the Attestation submitted on the Destination that is associated with a fraudulent
+	// snapshot.
 	destinationConfig := scribeConfig.ContractConfig{
 		Address:    g.LightInboxOnDestination.Address().String(),
 		StartBlock: 0,
@@ -476,34 +389,13 @@ func (g GuardSuite) TestReportFraudulentStateInAttestation() {
 		RequiredConfirmations: 0,
 		Contracts:             []scribeConfig.ContractConfig{destinationConfig},
 	}
-
-	// This scribe config omits the Summit and Origin chains, since we do not want to pick up the fraud coming from the
-	// fraudulent snapshots, only from the Attestation submitted on the Destination that is associated with a fraudulent
-	// snapshot.
 	scribeConfig := scribeConfig.Config{
 		Chains: []scribeConfig.ChainConfig{destinationChainConfig},
 	}
 
-	scribe, err := node.NewScribe(g.ScribeTestDB, clients, scribeConfig, g.ScribeMetrics)
+	// Start a new Guard.
+	guard, err := g.getTestGuard(scribeConfig)
 	Nil(g.T(), err)
-	scribeClient := client.NewEmbeddedScribe("sqlite", g.DBPath, g.ScribeMetrics)
-
-	go func() {
-		scribeErr := scribeClient.Start(g.GetTestContext())
-		if !testDone {
-			Nil(g.T(), scribeErr)
-		}
-	}()
-	go func() {
-		scribeError := scribe.Start(g.GetTestContext())
-		if !testDone {
-			Nil(g.T(), scribeError)
-		}
-	}()
-
-	guard, err := guard.NewGuard(g.GetTestContext(), testConfig, omniRPCClient, scribeClient.ScribeClient, g.GuardTestDB, g.GuardMetrics)
-	Nil(g.T(), err)
-
 	go func() {
 		guardErr := guard.Start(g.GetTestContext())
 		if !testDone {
@@ -517,9 +409,8 @@ func (g GuardSuite) TestReportFraudulentStateInAttestation() {
 	Equal(g.T(), status.Flag(), types.AgentFlagActive)
 	Nil(g.T(), err)
 
-	gasData := types.NewGasData(gofakeit.Uint16(), gofakeit.Uint16(), gofakeit.Uint16(), gofakeit.Uint16(), gofakeit.Uint16(), gofakeit.Uint16())
-
 	// Create a fraudulent snapshot
+	gasData := types.NewGasData(gofakeit.Uint16(), gofakeit.Uint16(), gofakeit.Uint16(), gofakeit.Uint16(), gofakeit.Uint16(), gofakeit.Uint16())
 	fraudulentState := types.NewState(
 		common.BigToHash(big.NewInt(gofakeit.Int64())),
 		g.OriginDomainClient.Config().DomainID,
@@ -637,46 +528,12 @@ func (g GuardSuite) TestReportFraudulentStateInAttestation() {
 	})
 }
 
-func (g GuardSuite) TestAAAInvalidReceipt() {
+func (g GuardSuite) TestInvalidReceipt() {
 	testDone := false
 	defer func() {
 		testDone = true
 	}()
 
-	testConfig := config.AgentConfig{
-		Domains: map[string]config.DomainConfig{
-			"origin_client":      g.OriginDomainClient.Config(),
-			"destination_client": g.DestinationDomainClient.Config(),
-			"summit_client":      g.SummitDomainClient.Config(),
-		},
-		DomainID:       uint32(0),
-		SummitDomainID: g.SummitDomainClient.Config().DomainID,
-		BondedSigner: signerConfig.SignerConfig{
-			Type: signerConfig.FileType.String(),
-			File: filet.TmpFile(g.T(), "", g.GuardBondedWallet.PrivateKeyHex()).Name(),
-		},
-		UnbondedSigner: signerConfig.SignerConfig{
-			Type: signerConfig.FileType.String(),
-			File: filet.TmpFile(g.T(), "", g.GuardUnbondedWallet.PrivateKeyHex()).Name(),
-		},
-		RefreshIntervalSeconds: 5,
-	}
-
-	omniRPCClient := omniClient.NewOmnirpcClient(g.TestOmniRPC, g.GuardMetrics, omniClient.WithCaptureReqRes())
-
-	// Scribe setup.
-	originClient, err := backfill.DialBackend(g.GetTestContext(), g.TestBackendOrigin.RPCAddress(), g.ScribeMetrics)
-	Nil(g.T(), err)
-	destinationClient, err := backfill.DialBackend(g.GetTestContext(), g.TestBackendDestination.RPCAddress(), g.ScribeMetrics)
-	Nil(g.T(), err)
-	summitClient, err := backfill.DialBackend(g.GetTestContext(), g.TestBackendSummit.RPCAddress(), g.ScribeMetrics)
-	Nil(g.T(), err)
-
-	clients := map[uint32][]backfill.ScribeBackend{
-		uint32(g.TestBackendOrigin.GetChainID()):      {originClient, originClient},
-		uint32(g.TestBackendDestination.GetChainID()): {destinationClient, destinationClient},
-		uint32(g.TestBackendSummit.GetChainID()):      {summitClient, summitClient},
-	}
 	originConfig := scribeConfig.ContractConfig{
 		Address:    g.OriginContract.Address().String(),
 		StartBlock: 0,
@@ -718,26 +575,9 @@ func (g GuardSuite) TestAAAInvalidReceipt() {
 		Chains: []scribeConfig.ChainConfig{originChainConfig, destinationChainConfig, summitChainConfig},
 	}
 
-	scribe, err := node.NewScribe(g.ScribeTestDB, clients, scribeConfig, g.ScribeMetrics)
+	// Start a new Guard.
+	guard, err := g.getTestGuard(scribeConfig)
 	Nil(g.T(), err)
-	scribeClient := client.NewEmbeddedScribe("sqlite", g.DBPath, g.ScribeMetrics)
-
-	go func() {
-		scribeErr := scribeClient.Start(g.GetTestContext())
-		if !testDone {
-			Nil(g.T(), scribeErr)
-		}
-	}()
-	go func() {
-		scribeError := scribe.Start(g.GetTestContext())
-		if !testDone {
-			Nil(g.T(), scribeError)
-		}
-	}()
-
-	guard, err := guard.NewGuard(g.GetTestContext(), testConfig, omniRPCClient, scribeClient.ScribeClient, g.GuardTestDB, g.GuardMetrics)
-	Nil(g.T(), err)
-
 	go func() {
 		guardErr := guard.Start(g.GetTestContext())
 		if !testDone {
