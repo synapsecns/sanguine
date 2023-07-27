@@ -128,3 +128,13 @@ func (a bondingManagerContract) CompleteSlashing(ctx context.Context, signer sig
 
 	return tx, nil
 }
+
+func (a bondingManagerContract) GetDisputeStatus(ctx context.Context, agent common.Address) (disputeStatus types.DisputeStatus, err error) {
+	rawStatus, err := a.contract.DisputeStatus(&bind.CallOpts{Context: ctx}, agent)
+	if err != nil {
+		return nil, fmt.Errorf("could not retrieve dispute status: %w", err)
+	}
+
+	disputeStatus = types.NewDisputeStatus(types.DisputeFlagType(rawStatus.Flag), rawStatus.Rival, rawStatus.FraudProver, rawStatus.DisputePtr)
+	return disputeStatus, nil
+}
