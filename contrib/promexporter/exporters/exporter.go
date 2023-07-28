@@ -1,3 +1,4 @@
+// Package exporters contains the exporters for the prometheus exporter.
 package exporters
 
 import (
@@ -54,7 +55,8 @@ func StartExporterServer(ctx context.Context, handler metrics.Handler, cfg confi
 		return fmt.Errorf("could not listen on port %d", cfg.Port)
 	}
 
-	g, ctx := errgroup.WithContext(ctx)
+	// TODO: this can probably be removed
+	g, _ := errgroup.WithContext(ctx)
 
 	g.Go(func() error {
 		//nolint: gosec

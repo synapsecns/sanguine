@@ -1,3 +1,4 @@
+// Package config contains the config for the prom exporter.
 package config
 
 import (
