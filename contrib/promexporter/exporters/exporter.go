@@ -21,7 +21,7 @@ import (
 
 var logger = log.Logger("proxy-logger")
 
-// makeHTTPClient makes a tracing http client
+// makeHTTPClient makes a tracing http client.
 func makeHTTPClient(handler metrics.Handler) *http.Client {
 	httpClient := new(http.Client)
 	handler.ConfigureHTTPClient(httpClient)
