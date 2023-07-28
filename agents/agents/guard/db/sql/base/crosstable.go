@@ -26,14 +26,31 @@ func (s Store) GetUpdateAgentStatusParameters(ctx context.Context) ([]agentTypes
 	if err != nil {
 		return nil, fmt.Errorf("failed to get disputes table name: %w", err)
 	}
+	// q, e := interpol.WithMap(
+	// 	`
+	// 		SELECT * FROM {agentTreesTable} AS aTable
+	// 		JOIN
+	// 		(SELECT {notaryAddress} FROM {disputesTable} WHERE {disputeProcessedStatus} = ?) as dTable
+	// 		ON aTable.{agentAddress} = dTable.{notaryAddress}
+	// 	`,
+	// 	map[string]string{
+	// 		"agentTreesTable":        agentTreesTableName,
+	// 		"disputesTable":          disputesTableName,
+	// 		"agentAddress":           AgentAddressFieldName,
+	// 		"notaryAddress":          NotaryAddressFieldName,
+	// 		"disputeProcessedStatus": DisputeProcessedStatusFieldName,
+	// 	})
+	// if e != nil {
+	// 	return nil, fmt.Errorf("failed to interpolate query: %w", e)
+	// }
 
 	query, err := interpol.WithMap(
 		`
-SELECT * FROM {agentTreesTable}
-OUTER JOIN {disputesTable}
-ON {agentTreesTable}.{agentAddress} = {disputesTable}.{notaryAddress}
-WHERE dTable.{disputeProcessedStatus} = {resolved}
-`,
+	SELECT * FROM {agentTreesTable} AS aTable
+	JOIN {disputesTable} AS dTable
+	ON aTable.{agentAddress} = dTable.{notaryAddress}
+	WHERE dTable.{disputeProcessedStatus} = {resolved}
+	`,
 		map[string]string{
 			"agentTreesTable":        agentTreesTableName,
 			"disputesTable":          disputesTableName,

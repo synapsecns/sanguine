@@ -48,7 +48,7 @@ func (t *DBSuite) TestGetUpdateAgentStatusParameters() {
 		)
 		Nil(t.T(), err)
 
-		// Insert two rows into `Dispute`, one will have matching agent address to a `AgentTree` row and with status `Resolved`.
+		// Insert three rows into `Dispute`, two will have matching agent address to `AgentTree` rows and with status `Resolved`.
 		err = testDB.StoreDispute(
 			t.GetTestContext(),
 			big.NewInt(gofakeit.Int64()),
@@ -61,10 +61,19 @@ func (t *DBSuite) TestGetUpdateAgentStatusParameters() {
 		err = testDB.StoreDispute(
 			t.GetTestContext(),
 			big.NewInt(gofakeit.Int64()),
-			types.Opened,
+			types.Resolved,
 			guardAddress,
 			gofakeit.Uint32(),
 			addressB,
+		)
+		Nil(t.T(), err)
+		err = testDB.StoreDispute(
+			t.GetTestContext(),
+			big.NewInt(gofakeit.Int64()),
+			types.Opened,
+			guardAddress,
+			gofakeit.Uint32(),
+			addressC,
 		)
 		Nil(t.T(), err)
 
@@ -72,6 +81,6 @@ func (t *DBSuite) TestGetUpdateAgentStatusParameters() {
 		agentTrees, err := testDB.GetUpdateAgentStatusParameters(t.GetTestContext())
 		Nil(t.T(), err)
 
-		Equal(t.T(), 1, len(agentTrees))
+		Equal(t.T(), 2, len(agentTrees))
 	})
 }

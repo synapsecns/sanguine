@@ -22,7 +22,7 @@ func (s Store) StoreDispute(
 	dbTx := s.DB().WithContext(ctx).
 		Clauses(clause.OnConflict{
 			Columns: []clause.Column{
-				{Name: AgentRootFieldName}, {Name: DisputeIndexFieldName},
+				{Name: DisputeIndexFieldName},
 			},
 			DoNothing: true,
 		}).
