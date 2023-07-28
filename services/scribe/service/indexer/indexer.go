@@ -176,7 +176,7 @@ func (x *Indexer) Index(parentCtx context.Context, startHeight uint64, endHeight
 		for {
 			select {
 			case <-groupCtx.Done():
-				logger.ReportIndexerError(ctx.Err(), x.indexerConfig, logger.ContextCancelled)
+				logger.ReportIndexerError(groupCtx.Err(), x.indexerConfig, logger.ContextCancelled)
 				return fmt.Errorf("context canceled while storing and retrieving logs: %w", groupCtx.Err())
 			case log, ok := <-*logsChan: // empty log passed when ok is false.
 				if !ok {

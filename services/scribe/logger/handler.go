@@ -57,6 +57,11 @@ type StatusType int
 // nolint
 func ReportIndexerError(err error, indexerData scribeTypes.IndexerConfig, errorType ErrorType) {
 	// nolint:exhaustive
+	if err == nil {
+		logger.Errorf("Error, @DEV: NIL ERROR\n%s", unpackIndexerConfig(indexerData))
+		return
+	}
+	
 	errStr := err.Error()
 
 	// Stop cloudflare error messages from nuking readablity of logs
