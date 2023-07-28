@@ -12,7 +12,7 @@ export const coinSelectStyles = {
     backgroundColor: colors.bgLightest,
     border: 'none',
     height: '40px',
-    width: '150px',
+    width: '135px',
   }),
   menu: (provided) => ({
     ...provided,

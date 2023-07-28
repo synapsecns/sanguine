@@ -11,7 +11,7 @@ export const networkSelectStyles = {
     ...baseStyles,
     backgroundColor: 'none',
     border: 'none',
-    width: state.hasValue ? '250px' : '150px',
+    width: state.hasValue ? '205px' : '150px',
   }),
   menu: (provided) => ({
     ...provided,

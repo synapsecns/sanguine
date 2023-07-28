@@ -62,7 +62,7 @@ const ToTokenSelect = () => {
   return (
     <Select
       instanceId={useId()}
-      classNamePrefix="mySelect"
+      classNamePrefix="mySelect ToTokenSelect"
       styles={coinSelectStyles}
       key={toToken?.symbol}
       options={toTokenOptions}

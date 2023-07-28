@@ -10,6 +10,7 @@ import { BridgeQuote, Token } from '@/utils/types'
 import {
   extractFirstChainIdBySymbol,
   generateRoutePossibilities,
+  getPossibleFromChainIds,
   getPossibleFromTokensByFromChainId,
   getPossibleToTokensByFromTokenAndToChainId,
 } from '@/utils/generateRoutePossibilities'
@@ -57,6 +58,9 @@ const initialToTokens = _.uniq(
   )
 ).map((symbol) => ALL_TOKENS[symbol])
 
+const initialFromChainIds = getPossibleFromChainIds()
+const initialToChainIds = getPossibleFromChainIds()
+
 // How do we update query params based on initial state?
 // Additionally how do we set query params based on user input updates?
 const initialState: BridgeState = {
@@ -64,8 +68,8 @@ const initialState: BridgeState = {
   fromToken: USDC,
   toChainId: ARBITRUM.id,
   toToken: USDC,
-  fromChainIds: [],
-  toChainIds: [],
+  fromChainIds: initialFromChainIds,
+  toChainIds: initialToChainIds,
   fromTokens: initialFromTokens,
   toTokens: initialToTokens,
 

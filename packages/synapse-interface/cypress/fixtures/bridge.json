@@ -1,6 +1,6 @@
 {
-  "defaultOriginToken": "ETH",
-  "defaultDestinationToken": "ETH",
+  "defaultOriginToken": "USDC",
+  "defaultDestinationToken": "USDC",
   "totalAvailableNetworks": 18,
   "availableNetworks": [
     "Arbitrum",

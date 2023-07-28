@@ -27,9 +27,7 @@ const ToChainSelect = () => {
     label: (
       <span className="flex items-center space-x-2">
         <img src={CHAINS_BY_ID[option].chainImg.src} className="w-5 h-5" />
-        <div className="text-primaryTextColor">
-          {CHAINS_BY_ID[option].name} [{option}]
-        </div>
+        <div className="text-primaryTextColor">{CHAINS_BY_ID[option].name}</div>
       </span>
     ),
     value: option,
@@ -44,13 +42,13 @@ const ToChainSelect = () => {
   }
 
   const customFilterOption = (option, rawInput) => {
+    const chainId = option.value
+    const name = CHAINS_BY_ID[chainId].name
     const searchTerm = rawInput.toLowerCase()
 
     return (
-      option.data.label.props.children[1].props.children[0]
-        .toLowerCase()
-        .includes(searchTerm) ||
-      option.value.toString().toLowerCase().includes(searchTerm)
+      name.toLowerCase().includes(searchTerm) ||
+      chainId.toString().includes(searchTerm)
     )
   }
 
@@ -81,7 +79,7 @@ const ToChainSelect = () => {
 const DisplayAddress = ({ address }) => {
   return (
     <div className="border-[0.5px] border-secondaryTextColor rounded-xl pt-1 pb-1 pl-3 pr-3 text-secondaryTextColor text-xxs">
-      {shortenAddress(address, 4)}
+      {shortenAddress(address, 3)}
     </div>
   )
 }

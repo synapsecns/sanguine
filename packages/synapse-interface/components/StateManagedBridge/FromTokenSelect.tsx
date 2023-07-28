@@ -9,6 +9,7 @@ import { useId } from 'react'
 
 import { useAppSelector } from '@/store/hooks'
 import { usePortfolioBalances } from '@/slices/portfolio/hooks'
+import { useAccount } from 'wagmi'
 
 const ImageAndCoin = ({ option }: { option: Token }) => {
   const { fromChainId } = useAppSelector((state) => state.bridge)
@@ -35,13 +36,16 @@ const ImageAndCoin = ({ option }: { option: Token }) => {
         </div>
       </div>
       <div className="select-hidden text-primaryTextColor">
-        {parsedBalance !== '0.0' ? `${parsedBalance} ${symbol}` : ''}
+        {parsedBalance && parsedBalance !== '0.0'
+          ? `${parsedBalance} ${symbol}`
+          : ''}
       </div>
     </div>
   )
 }
 
 const FromTokenSelect = () => {
+  const { isConnected } = useAccount()
   const { fromChainId, fromToken, fromTokens } = useAppSelector(
     (state) => state.bridge
   )
@@ -49,38 +53,52 @@ const FromTokenSelect = () => {
 
   const dispatch = useDispatch()
 
-  const fromTokenOptions = [
-    {
-      label: 'Wallet',
-      options: fromTokens
-        .filter(
-          (token) =>
-            balancesAndAllowances[fromChainId]?.find(
-              (tokenBalance) =>
-                tokenBalance.tokenAddress === token.addresses[fromChainId]
-            )?.balance !== 0n
-        )
-        .map((token) => ({
+  let fromTokenOptions
+
+  if (isConnected) {
+    fromTokenOptions = [
+      {
+        label: 'Wallet',
+        options: fromTokens
+          .filter(
+            (token) =>
+              balancesAndAllowances[fromChainId]?.find(
+                (tokenBalance) =>
+                  tokenBalance.tokenAddress === token.addresses[fromChainId]
+              )?.balance !== 0n
+          )
+          .map((token) => ({
+            label: <ImageAndCoin option={token} />,
+            value: token,
+          })),
+      },
+      {
+        label: 'All tokens',
+        options: fromTokens
+          .filter(
+            (token) =>
+              balancesAndAllowances[fromChainId]?.find(
+                (tokenBalance) =>
+                  tokenBalance.tokenAddress === token.addresses[fromChainId]
+              )?.balance === 0n
+          )
+          .map((token) => ({
+            label: <ImageAndCoin option={token} />,
+            value: token,
+          })),
+      },
+    ]
+  } else {
+    fromTokenOptions = [
+      {
+        label: 'All tokens',
+        options: fromTokens.map((token) => ({
           label: <ImageAndCoin option={token} />,
           value: token,
         })),
-    },
-    {
-      label: 'All tokens',
-      options: fromTokens
-        .filter(
-          (token) =>
-            balancesAndAllowances[fromChainId]?.find(
-              (tokenBalance) =>
-                tokenBalance.tokenAddress === token.addresses[fromChainId]
-            )?.balance === 0n
-        )
-        .map((token) => ({
-          label: <ImageAndCoin option={token} />,
-          value: token,
-        })),
-    },
-  ]
+      },
+    ]
+  }
 
   const handleFromTokenChange = (selectedOption) => {
     if (selectedOption) {
@@ -109,7 +127,7 @@ const FromTokenSelect = () => {
   return (
     <Select
       styles={coinSelectStyles}
-      classNamePrefix="mySelect"
+      classNamePrefix="mySelect FromTokenSelect"
       instanceId={useId()}
       key={fromToken?.symbol}
       options={fromTokenOptions}

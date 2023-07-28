@@ -46,7 +46,7 @@ const FromChainSelect = () => {
                 className="w-5 h-5"
               />
               <div className="text-primaryTextColor">
-                {CHAINS_BY_ID[option].name} [{option}]
+                {CHAINS_BY_ID[option].name}
               </div>
             </span>
           ),
@@ -65,7 +65,7 @@ const FromChainSelect = () => {
                 className="w-5 h-5"
               />
               <div className="text-primaryTextColor">
-                {CHAINS_BY_ID[option].name} [{option}]
+                {CHAINS_BY_ID[option].name}
               </div>
             </span>
           ),
@@ -83,13 +83,13 @@ const FromChainSelect = () => {
   }
 
   const customFilterOption = (option, rawInput) => {
+    const chainId = option.value
+    const name = CHAINS_BY_ID[chainId].name
     const searchTerm = rawInput.toLowerCase()
 
     return (
-      option.data.label.props.children[1].props.children[0]
-        .toLowerCase()
-        .includes(searchTerm) ||
-      option.value.toString().toLowerCase().includes(searchTerm)
+      name.toLowerCase().includes(searchTerm) ||
+      chainId.toString().includes(searchTerm)
     )
   }
 
@@ -99,6 +99,7 @@ const FromChainSelect = () => {
         <div className="pl-2 -mb-1 text-xs text-secondaryTextColor">From</div>
         <Select
           instanceId={useId()}
+          classNamePrefix="react-select"
           styles={networkSelectStyles}
           key={fromChainId}
           options={fromChainOptions}
