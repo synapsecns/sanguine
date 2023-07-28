@@ -47,17 +47,19 @@ export const OriginChainLabel = ({
           <div className="hidden sticky min-w-[15px] h-full left-[-3px] bg-gradient-to-l from-transparent to-bgLight max-[475px]:block">
             &nbsp;
           </div>
-          {orderedChains.map((id: number, key: number) => {
-            return Number(id) === chainId ? (
-              <SelectedChain chainId={Number(id)} key={id} />
-            ) : (
-              <PossibleChain
-                chainId={Number(id)}
-                key={id}
-                resetScrollPosition={resetScrollPosition}
-              />
-            )
-          })}
+          <div className="flex items-center last:ml-0">
+            {orderedChains.map((id: number, key: number) => {
+              return Number(id) === chainId ? (
+                <SelectedChain chainId={Number(id)} key={id} />
+              ) : (
+                <PossibleChain
+                  chainId={Number(id)}
+                  key={id}
+                  resetScrollPosition={resetScrollPosition}
+                />
+              )
+            })}
+          </div>
           <div className="ml-0 sticky min-w-[15px] h-full right-[-3px] bg-gradient-to-r from-transparent to-bgLight">
             &nbsp;
           </div>
@@ -111,7 +113,7 @@ const PossibleChain = ({
         max-w-[1.75rem] max-h-[1.75rem]
         px-0.5 py-0.5
         border border-gray-500 rounded-full
-        ml-3
+        mr-3
       "
       tabIndex={0}
       onClick={onChangeChain}
@@ -134,7 +136,7 @@ const SelectedChain = ({ chainId }: { chainId: number }) => {
     <div
       data-test-id="origin-selected-chain"
       className={`
-        px-1 ml-3
+        px-1 mr-3
         flex items-center
         bg-bgLight
         text-white
