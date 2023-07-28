@@ -40,6 +40,8 @@ type ChainIndexer struct {
 	blockHeightMeters map[common.Address]metric.Int64Histogram
 	// livefillContracts is a map from address -> livefill contract.
 	livefillContracts []config.ContractConfig
+	// readyForLivefill is a chan
+	readyForLivefill chan config.ContractConfig
 }
 
 // Used for handling logging of various context types.
@@ -94,6 +96,7 @@ func NewChainIndexer(eventDB db.EventDB, client []backend.ScribeBackend, chainCo
 		blockHeightMeters: blockHeightMeterMap,
 		chainConfig:       chainConfig,
 		handler:           handler,
+		readyForLivefill:  make(chan config.ContractConfig),
 	}, nil
 }
 
@@ -101,11 +104,8 @@ func NewChainIndexer(eventDB db.EventDB, client []backend.ScribeBackend, chainCo
 // If `onlyOneBlock` is true, the indexer will only index the block at `currentBlock`.
 //
 //nolint:gocognit,cyclop,unparam
-func (c *ChainIndexer) Index(parentContext context.Context, onlyOneBlock *uint64) error {
+func (c *ChainIndexer) Index(parentContext context.Context) error {
 	indexGroup, indexCtx := errgroup.WithContext(parentContext)
-
-	// var livefillContracts []config.ContractConfig
-	readyToLivefill := make(chan config.ContractConfig)
 
 	latestBlock, err := c.getLatestBlock(indexCtx, scribeTypes.IndexingConfirmed)
 	if err != nil {
@@ -153,7 +153,7 @@ func (c *ChainIndexer) Index(parentContext context.Context, onlyOneBlock *uint64
 			if err != nil {
 				return fmt.Errorf("could not index to livefill: %w", err)
 			}
-			readyToLivefill <- contract
+			c.readyForLivefill <- contract
 
 			// TODO make sure metrics are killed when indexing is done
 			return nil
@@ -162,71 +162,13 @@ func (c *ChainIndexer) Index(parentContext context.Context, onlyOneBlock *uint64
 
 	// Livefill contracts that are within the livefill threshold and before the confirmation threshold.
 	indexGroup.Go(func() error {
-		timeout := time.Duration(0)
-		b := createBackoff()
-		livefillBlockMeter, err := c.handler.Meter().NewHistogram(fmt.Sprintf("scribe_block_meter_%d_livefill", c.chainConfig.ChainID), "block_histogram", "a block height meter", "blocks")
-		if err != nil {
-			return fmt.Errorf("error creating otel histogram %w", err)
-		}
-
-		livefillIndexer, err := indexer.NewIndexer(c.chainConfig, getAddressesFromConfig(c.livefillContracts), c.eventDB, c.client, c.handler, livefillBlockMeter, scribeTypes.IndexingConfirmed)
-		if err != nil {
-			return fmt.Errorf("could not create contract indexer: %w", err)
-		}
-		for {
-			select {
-			case <-indexCtx.Done():
-				return fmt.Errorf("%s chain context canceled: %w", indexCtx.Value(chainContextKey), indexCtx.Err())
-			case newLivefillContract := <-readyToLivefill:
-				c.livefillContracts = append(c.livefillContracts, newLivefillContract)
-				// Update indexer's config to include new contract.
-				livefillIndexer.UpdateAddress(getAddressesFromConfig(c.livefillContracts))
-			case <-time.After(timeout):
-				if len(c.livefillContracts) == 0 {
-					timeout = b.Duration()
-					continue
-				}
-				var endHeight *uint64
-				var err error
-				livefillLastIndexed, err := c.eventDB.RetrieveLastIndexedMultiple(parentContext, contractAddresses, c.chainConfig.ChainID)
-				if err != nil {
-					logger.ReportIndexerError(err, livefillIndexer.GetIndexerConfig(), logger.LivefillIndexerError)
-					timeout = b.Duration()
-					continue
-				}
-				startHeight := getMinFromMap(livefillLastIndexed)
-
-				endHeight, err = c.getLatestBlock(indexCtx, true)
-				if err != nil {
-					logger.ReportIndexerError(err, livefillIndexer.GetIndexerConfig(), logger.GetBlockError)
-					timeout = b.Duration()
-					continue
-				}
-
-				// Don't reindex the head block.
-				if startHeight == *endHeight {
-					timeout = 1 * time.Second
-					continue
-				}
-
-				err = livefillIndexer.Index(indexCtx, startHeight, *endHeight)
-				if err != nil {
-					timeout = b.Duration()
-					logger.ReportIndexerError(err, livefillIndexer.GetIndexerConfig(), logger.LivefillIndexerError)
-					continue
-				}
-
-				// Default refresh rate for livefill is 1 second.
-				// TODO add to config
-				timeout = 1 * time.Second
-			}
-		}
+		return c.livefill(indexCtx)
 	})
 
 	// Index unconfirmed events to the head.
 	if c.chainConfig.Confirmations > 0 {
 		indexGroup.Go(func() error {
-			return c.LivefillAtHead(indexCtx)
+			return c.livefillAtHead(indexCtx)
 		})
 	}
 
@@ -379,7 +321,7 @@ func (c *ChainIndexer) getIndexingRange(parentContext context.Context, configSta
 // LivefillAtHead stores data for all contracts all the way to the head in a separate table.
 //
 // nolint:cyclop
-func (c *ChainIndexer) LivefillAtHead(parentContext context.Context) error {
+func (c *ChainIndexer) livefillAtHead(parentContext context.Context) error {
 	timeout := time.Duration(0)
 	b := createBackoff()
 	addresses := getAddressesFromConfig(c.chainConfig.Contracts)
@@ -431,6 +373,69 @@ func (c *ChainIndexer) LivefillAtHead(parentContext context.Context) error {
 			}
 
 			// Default refresh rate for tip livefill is 1 second.
+			timeout = 1 * time.Second
+		}
+	}
+}
+
+// nolint:cyclop
+func (c *ChainIndexer) livefill(parentContext context.Context) error {
+	timeout := time.Duration(0)
+	b := createBackoff()
+	livefillBlockMeter, err := c.handler.Meter().NewHistogram(fmt.Sprintf("scribe_block_meter_%d_livefill", c.chainConfig.ChainID), "block_histogram", "a block height meter", "blocks")
+	if err != nil {
+		return fmt.Errorf("error creating otel histogram %w", err)
+	}
+
+	livefillIndexer, err := indexer.NewIndexer(c.chainConfig, getAddressesFromConfig(c.livefillContracts), c.eventDB, c.client, c.handler, livefillBlockMeter, scribeTypes.IndexingConfirmed)
+	if err != nil {
+		return fmt.Errorf("could not create contract indexer: %w", err)
+	}
+	for {
+		select {
+		case <-parentContext.Done():
+			return fmt.Errorf("%s chain context canceled: %w", parentContext.Value(chainContextKey), parentContext.Err())
+		case newLivefillContract := <-c.readyForLivefill:
+			c.livefillContracts = append(c.livefillContracts, newLivefillContract)
+			// Update indexer's config to include new contract.
+			livefillIndexer.UpdateAddress(getAddressesFromConfig(c.livefillContracts))
+		case <-time.After(timeout):
+			if len(c.livefillContracts) == 0 {
+				timeout = b.Duration()
+				continue
+			}
+			var endHeight *uint64
+			var err error
+			livefillLastIndexed, err := c.eventDB.RetrieveLastIndexedMultiple(parentContext, getAddressesFromConfig(c.livefillContracts), c.chainConfig.ChainID)
+			if err != nil {
+				logger.ReportIndexerError(err, livefillIndexer.GetIndexerConfig(), logger.LivefillIndexerError)
+				timeout = b.Duration()
+				continue
+			}
+			startHeight := getMinFromMap(livefillLastIndexed)
+
+			endHeight, err = c.getLatestBlock(parentContext, true)
+			if err != nil {
+				logger.ReportIndexerError(err, livefillIndexer.GetIndexerConfig(), logger.GetBlockError)
+				timeout = b.Duration()
+				continue
+			}
+
+			// Don't reindex the head block.
+			if startHeight == *endHeight {
+				timeout = 1 * time.Second
+				continue
+			}
+
+			err = livefillIndexer.Index(parentContext, startHeight, *endHeight)
+			if err != nil {
+				timeout = b.Duration()
+				logger.ReportIndexerError(err, livefillIndexer.GetIndexerConfig(), logger.LivefillIndexerError)
+				continue
+			}
+
+			// Default refresh rate for livefill is 1 second.
+			// TODO add to config
 			timeout = 1 * time.Second
 		}
 	}

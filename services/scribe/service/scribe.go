@@ -87,7 +87,7 @@ func (s Scribe) Start(ctx context.Context) error {
 					retryRate = b.Duration()
 					continue
 				case <-time.After(retryRate):
-					err := s.chainIndexers[chainID].Index(groupCtx, nil)
+					err := s.chainIndexers[chainID].Index(groupCtx)
 					if err != nil {
 						logger.ReportScribeError(fmt.Errorf("error running chain indexer"), chainID, logger.FatalScribeError)
 						retryRate = b.Duration()

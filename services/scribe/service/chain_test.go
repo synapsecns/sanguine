@@ -149,7 +149,7 @@ func (s *ScribeSuite) TestChainIndexer() {
 	defer cancel()
 	chainIndexer, err := service.NewChainIndexer(s.testDB, chainBackendMap[chainID], chainConfig, s.nullMetrics)
 	Nil(s.T(), err)
-	_ = chainIndexer.Index(killableContext, nil)
+	_ = chainIndexer.Index(killableContext)
 	sum := uint64(0)
 	for _, value := range testChainHandlerMap[chainID].EventsEmitted {
 		sum += value
@@ -288,7 +288,7 @@ func (s *ScribeSuite) TestChainIndexerLivefill() {
 	}()
 
 	// Index events
-	_ = chainIndexer.Index(indexingContext, nil)
+	_ = chainIndexer.Index(indexingContext)
 
 	<-indexingContext.Done()
 	sum := uint64(0)
@@ -365,7 +365,7 @@ func (s *ScribeSuite) TestLargeVolume() {
 	defer cancelIndexing()
 	chainIndexer, err := service.NewChainIndexer(s.testDB, chainBackendMap[chainID], chainConfig, s.nullMetrics)
 	Nil(s.T(), err)
-	_ = chainIndexer.Index(indexingContext, nil)
+	_ = chainIndexer.Index(indexingContext)
 	sum := uint64(0)
 	for _, value := range testChainHandlerMap[chainID].EventsEmitted {
 		sum += value
@@ -462,7 +462,7 @@ func (s *ScribeSuite) TestChainIndexerLivefillToTip() {
 	indexingContext, cancelIndexing := context.WithTimeout(s.GetTestContext(), 20*time.Second)
 	defer cancelIndexing()
 	// Index events
-	_ = chainIndexer.Index(indexingContext, nil)
+	_ = chainIndexer.Index(indexingContext)
 
 	<-indexingContext.Done()
 	sum := uint64(0)

@@ -54,7 +54,6 @@ func (b *BackendSuite) TestLogsInRange() {
 	for blockRange != nil {
 		blockRanges = append(blockRanges, blockRange)
 		blockRange = iterator.NextChunk()
-
 	}
 
 	res, err := backend.GetLogsInRange(b.GetTestContext(), scribeBackend, testChainHandler.Addresses, chainID.Uint64(), blockRanges)
