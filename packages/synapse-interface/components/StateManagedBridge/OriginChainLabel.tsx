@@ -42,7 +42,7 @@ export const OriginChainLabel = ({
       <div className="relative flex ml-auto">
         <div
           ref={scrollableRef}
-          className="flex items-center relative overflow-x-auto overflow-y-hidden w-[220px] min-[475px]:w-full scrollbar-hide"
+          className="flex items-center relative overflow-x-auto overflow-y-hidden w-[230px] min-[475px]:w-full scrollbar-hide"
         >
           <div className="hidden sticky min-w-[15px] h-full left-[-3px] bg-gradient-to-l from-transparent to-bgLight max-[475px]:block">
             &nbsp;
@@ -63,16 +63,18 @@ export const OriginChainLabel = ({
           </div>
         </div>
 
-        <button
-          onClick={() => {
-            dispatch(setShowFromChainSlideOver(true))
-          }}
-          tabIndex={0}
-          data-test-id="bridge-origin-chain-list-button"
-          className="w-8 h-8 px-1.5 py-1.5 bg-[#C4C4C4] bg-opacity-10 rounded-full hover:cursor-pointer group"
-        >
-          <ChevronDownIcon className="text-gray-300 transition transform-gpu group-hover:opacity-50 group-active:rotate-180" />
-        </button>
+        <div className="max-[475px]:pl-1">
+          <button
+            onClick={() => {
+              dispatch(setShowFromChainSlideOver(true))
+            }}
+            tabIndex={0}
+            data-test-id="bridge-origin-chain-list-button"
+            className="w-8 h-8 px-1.5 py-1.5 bg-[#C4C4C4] bg-opacity-10 rounded-full hover:cursor-pointer group"
+          >
+            <ChevronDownIcon className="text-gray-300 transition transform-gpu group-hover:opacity-50 group-active:rotate-180" />
+          </button>
+        </div>
       </div>
     </div>
   )
