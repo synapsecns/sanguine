@@ -26,16 +26,19 @@ type captureTransport struct {
 }
 
 const (
-	requestSpanName   = "http.request"
-	requestEventName  = "http.request.body"
-	responseEventName = "http.response.body"
+	// RequestSpanName is the name of the span created for each request.
+	RequestSpanName = "http.request"
+	// RequestEventName is the name of the event created for each request body.
+	RequestEventName = "http.request.body"
+	// ResponseEventName is the name of the event created for each response body.
+	ResponseEventName = "http.response.body"
 )
 
 // nolint: cyclop
 func (t *captureTransport) RoundTrip(req *http.Request) (_ *http.Response, err error) {
 	var response string
 
-	_, span := t.metrics.Tracer().Start(req.Context(), requestSpanName)
+	_, span := t.metrics.Tracer().Start(req.Context(), RequestSpanName)
 	defer func() {
 		metrics.EndSpanWithErr(span, err)
 	}()
@@ -94,10 +97,10 @@ func (t *captureTransport) RoundTrip(req *http.Request) (_ *http.Response, err e
 
 	// Add the request/response body as events to the span
 	if requestBody.Len() > 0 {
-		span.AddEvent(requestEventName, trace.WithAttributes(attribute.String("body", requestBody.String())))
+		span.AddEvent(RequestEventName, trace.WithAttributes(attribute.String("body", requestBody.String())))
 	}
 	if len(response) > 0 {
-		span.AddEvent(responseEventName, trace.WithAttributes(attribute.String("body", response)))
+		span.AddEvent(ResponseEventName, trace.WithAttributes(attribute.String("body", response)))
 	}
 
 	//nolint: wrapcheck

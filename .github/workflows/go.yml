@@ -291,7 +291,7 @@ jobs:
           # Optional: version of golangci-lint to use in form of v1.2 or v1.2.3 or `latest` to use the latest version
           version: v1.48.0
           # see: https://github.com/golangci/golangci-lint/issues/2654
-          args: --timeout=150m # --build-tags=codeanalysis
+          args: --timeout=150m # --build-tags=codeanalysis # temporarily disabling on failing, todo fix
         env:
           # GitHub token for annotations (optional)
           GITHUB_TOKEN: ${{ secrets.WORKFLOW_PAT }}
