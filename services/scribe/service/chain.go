@@ -372,7 +372,7 @@ func (c *ChainIndexer) livefillAtHead(parentContext context.Context) error {
 				continue
 			}
 
-			// Default refresh rate for tip livefill is 1 second.
+			// Default refresh rate for livefill to tip is 1 second.
 			timeout = 1 * time.Second
 		}
 	}
