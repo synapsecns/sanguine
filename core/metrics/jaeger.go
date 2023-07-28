@@ -32,12 +32,6 @@ const (
 )
 
 func (j *jaegerHandler) Start(ctx context.Context) (err error) {
-	// start the parent
-	err = j.baseHandler.Start(ctx)
-	if err != nil {
-		return fmt.Errorf("could not start base handler: %w", err)
-	}
-
 	endpoint := os.Getenv(jaegerEnv)
 	if endpoint == "" {
 		return fmt.Errorf("could not get jaeger endpoint from env")
