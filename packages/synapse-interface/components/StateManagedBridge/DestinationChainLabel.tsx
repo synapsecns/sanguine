@@ -1,4 +1,4 @@
-import { useRef } from 'react'
+import { createRef } from 'react'
 import { ChevronDownIcon } from '@heroicons/react/outline'
 import { CHAINS_BY_ID } from '@constants/chains'
 import { getNetworkButtonBorder } from '@/styles/chains'
@@ -13,6 +13,8 @@ import { RootState } from '@/store/store'
 import { segmentAnalyticsEvent } from '@/contexts/SegmentAnalyticsProvider'
 import useIsMobileScreen from '@/utils/hooks/useIsMobileScreen'
 
+const scrollableRef = createRef<HTMLDivElement>()
+
 export const DestinationChainLabel = ({
   chains,
   chainId,
@@ -22,7 +24,6 @@ export const DestinationChainLabel = ({
   chainId: number
   connectedChainId: number
 }) => {
-  const scrollableRef = useRef<HTMLDivElement>(null)
   const [orderedChains, setOrderedChains] = useState<number[]>([])
   const isMobile = useIsMobileScreen()
   const dispatch = useDispatch()
@@ -44,17 +45,14 @@ export const DestinationChainLabel = ({
     >
       <div className={`text-gray-400 block text-sm mr-2`}>Dest.</div>
       <div className="relative flex">
-        <div
-          ref={scrollableRef}
-          className="flex items-center space-x-3 overflow-x-auto overflow-y-hidden w-[200px] sm:w-full"
-        >
+        <div className="flex items-center space-x-3 overflow-x-auto overflow-y-hidden w-[200px] sm:w-full">
           {orderedChains.map((id: number, key: number) => {
             const hide: boolean = isMobile && orderedChains.length === key + 1
-            return id === chainId ? (
+            return Number(id) === chainId ? (
               <SelectedChain chainId={id} key={id} />
             ) : (
               <PossibleChain
-                chainId={id}
+                chainId={Number(id)}
                 key={id}
                 hidden={hide}
                 resetScrollPosition={resetScrollPosition}
@@ -129,6 +127,7 @@ const SelectedChain = ({ chainId }: { chainId: number }) => {
   const chain = CHAINS_BY_ID[chainId]
   return chain ? (
     <div
+      ref={scrollableRef}
       data-test-id="destination-selected-chain"
       className={`
         px-1
