@@ -12,10 +12,12 @@ const useElementWidth = (ref) => {
   useEffect(() => {
     updateElementWidth() // Initial update
     window.addEventListener('resize', updateElementWidth)
+    window.addEventListener('click', updateElementWidth)
 
     // Clean up the event listener on component unmount
     return () => {
       window.removeEventListener('resize', updateElementWidth)
+      window.removeEventListener('click', updateElementWidth)
     }
   }, [ref])
 
