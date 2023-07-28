@@ -45,7 +45,6 @@ export const OriginChainLabel = ({
     }
   }
 
-  // w-[220px] min-[400px]:w-[260px] min-[475px]:w-full
   return (
     <div
       ref={chainContainerRef}

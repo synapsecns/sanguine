@@ -11,6 +11,7 @@ import { setShowToChainSlideOver } from '@/slices/bridgeDisplaySlice'
 import { getOrderedChains } from '@/utils/getOrderedChains'
 import { RootState } from '@/store/store'
 import { segmentAnalyticsEvent } from '@/contexts/SegmentAnalyticsProvider'
+import useElementWidth from '@/utils/hooks/useElementWidth'
 
 const scrollableRef = createRef<HTMLDivElement>()
 
@@ -23,6 +24,14 @@ export const DestinationChainLabel = ({
   chainId: number
   connectedChainId: number
 }) => {
+  const chainContainerRef = useRef<HTMLDivElement>(null)
+  const leftRef = useRef<HTMLDivElement>(null)
+  const rightRef = useRef<HTMLDivElement>(null)
+
+  const containerLength = useElementWidth(chainContainerRef)
+  const leftLength = useElementWidth(leftRef)
+  const rightLength = useElementWidth(rightRef)
+
   const [orderedChains, setOrderedChains] = useState<number[]>([])
 
   const dispatch = useDispatch()
@@ -38,13 +47,25 @@ export const DestinationChainLabel = ({
   }
 
   return (
-    <div data-test-id="destination-chain-label" className="flex items-center">
-      <div className={`text-gray-400 block text-sm mr-2 min-w-[40px]`}>
+    <div
+      ref={chainContainerRef}
+      data-test-id="destination-chain-label"
+      className="flex items-center"
+    >
+      <div
+        ref={leftRef}
+        className={`text-gray-400 block text-sm mr-2 min-w-[40px]`}
+      >
         Dest.
       </div>
       <div className="relative flex w-full">
-        <div className="flex items-center relative overflow-x-auto overflow-y-hidden w-[220px] min-[400px]:w-[260px] min-[475px]:w-full scrollbar-hide">
-          <div className="block sticky min-w-[15px] h-full left-[-3px] max-[475px]:bg-gradient-to-l from-transparent to-bgLight ">
+        <div
+          className="relative flex items-center overflow-x-auto overflow-y-hidden scrollbar-hide"
+          style={{
+            width: `${containerLength - leftLength - rightLength - 20}px`,
+          }}
+        >
+          <div className="block sticky min-w-[5px] h-full left-[-3px] max-[475px]:bg-gradient-to-l from-transparent to-bgLight ">
             &nbsp;
           </div>
           <div className="flex items-center">
@@ -65,7 +86,7 @@ export const DestinationChainLabel = ({
           </div>
         </div>
 
-        <div className="max-[475px]:pl-1 ml-auto">
+        <div ref={rightRef} className="max-[475px]:pl-1 ml-auto">
           <button
             onClick={() => {
               dispatch(setShowToChainSlideOver(true))
