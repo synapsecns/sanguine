@@ -45,8 +45,11 @@ export const OriginChainLabel = ({
       <div className="relative flex">
         <div
           ref={scrollableRef}
-          className="flex items-center space-x-3 overflow-x-auto overflow-y-hidden w-[200px] min-[475px]:w-full scrollbar-hide"
+          className="flex items-center relative space-x-3 overflow-x-auto overflow-y-hidden w-[200px] min-[475px]:w-full scrollbar-hide"
         >
+          <div className="sticky min-w-[15px] h-full left-0 bg-gradient-to-l from-transparent to-bgLight max-[475px]:block hidden">
+            &nbsp;
+          </div>
           {orderedChains.map((id: number, key: number) => {
             return Number(id) === chainId ? (
               <SelectedChain chainId={Number(id)} key={id} />
@@ -58,6 +61,9 @@ export const OriginChainLabel = ({
               />
             )
           })}
+          <div className="hidden sticky min-w-[15px] h-full right-0 bg-gradient-to-r from-transparent to-bgLight max-[475px]:block">
+            &nbsp;
+          </div>
         </div>
 
         <button
