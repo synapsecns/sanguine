@@ -39,9 +39,11 @@ export const DestinationChainLabel = ({
 
   return (
     <div data-test-id="destination-chain-label" className="flex items-center">
-      <div className={`text-gray-400 block text-sm mr-2`}>Dest.</div>
+      <div className={`text-gray-400 block text-sm mr-2 min-w-[40px]`}>
+        Dest.
+      </div>
       <div className="relative flex w-full">
-        <div className="flex items-center relative overflow-x-auto overflow-y-hidden w-[200px] min-[400px]:w-[260px] min-[475px]:w-full scrollbar-hide">
+        <div className="flex items-center relative overflow-x-auto overflow-y-hidden w-[220px] min-[400px]:w-[260px] min-[475px]:w-full scrollbar-hide">
           <div className="block sticky min-w-[15px] h-full left-[-3px] max-[475px]:bg-gradient-to-l from-transparent to-bgLight ">
             &nbsp;
           </div>
