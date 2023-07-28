@@ -47,12 +47,9 @@ export const OriginChainLabel = ({
         leftRef.current,
         rightRef.current
       )
-      console.log('distance: ', distance)
       setChainListWidth(distance)
     }
   }, [width])
-
-  console.log('chainListWidth: ', chainListWidth)
 
   return (
     <div data-test-id="origin-chain-label" className="flex items-center">
@@ -70,7 +67,7 @@ export const OriginChainLabel = ({
           <div className="hidden sticky min-w-[15px] h-full left-[-3px] bg-gradient-to-l from-transparent to-bgLight max-[475px]:block">
             &nbsp;
           </div>
-          <div className="flex items-center last:ml-0">
+          <div className="flex items-center [&>*:last-child]:mr-0">
             {orderedChains.map((id: number, key: number) => {
               return Number(id) === chainId ? (
                 <SelectedChain chainId={Number(id)} key={id} />
