@@ -28,9 +28,9 @@ export const DestinationChainLabel = ({
   const leftRef = useRef<HTMLDivElement>(null)
   const rightRef = useRef<HTMLDivElement>(null)
 
-  const containerLength = useElementWidth(chainContainerRef)
-  const leftLength = useElementWidth(leftRef)
-  const rightLength = useElementWidth(rightRef)
+  // const containerLength = useElementWidth(chainContainerRef)
+  // const leftLength = useElementWidth(leftRef)
+  // const rightLength = useElementWidth(rightRef)
 
   const [orderedChains, setOrderedChains] = useState<number[]>([])
 
@@ -61,14 +61,22 @@ export const DestinationChainLabel = ({
       <div className="relative flex w-full">
         <div
           className="relative flex items-center overflow-x-auto overflow-y-hidden scrollbar-hide"
-          style={{
-            width: `${containerLength - leftLength - 52}px`,
-          }}
+          // style={{
+          //   width: `${containerLength - leftLength - 52}px`,
+          // }}
         >
-          <div className="block sticky min-w-[5px] h-full left-[-3px] max-[475px]:bg-gradient-to-l from-transparent to-bgLight ">
+          {/* <div className="block sticky min-w-[5px] h-full left-[-3px] max-[475px]:bg-gradient-to-l from-transparent to-bgLight ">
             &nbsp;
-          </div>
-          <div className="flex items-center">
+          </div> */}
+          <div
+            className={`
+            flex items-center
+            [&>*:nth-child(2)]:hidden [&>*:nth-child(2)]:min-[360px]:block
+            [&>*:nth-child(3)]:hidden [&>*:nth-child(3)]:min-[390px]:block
+            [&>*:nth-child(4)]:hidden [&>*:nth-child(4)]:min-[420px]:block
+            [&>*:nth-child(5)]:hidden [&>*:nth-child(5)]:min-[450px]:block
+            `}
+          >
             {orderedChains.map((id: number, key: number) => {
               return Number(id) === chainId ? (
                 <SelectedChain chainId={id} key={id} />

@@ -27,9 +27,9 @@ export const OriginChainLabel = ({
   const rightRef = useRef<HTMLDivElement>(null)
   const scrollableRef = useRef<HTMLDivElement>(null)
 
-  const containerLength = useElementWidth(chainContainerRef)
-  const leftLength = useElementWidth(leftRef)
-  const rightLength = useElementWidth(rightRef)
+  // const containerLength = useElementWidth(chainContainerRef)
+  // const leftLength = useElementWidth(leftRef)
+  // const rightLength = useElementWidth(rightRef)
 
   const [orderedChains, setOrderedChains] = useState<number[]>([])
 
@@ -68,14 +68,14 @@ export const OriginChainLabel = ({
           //   width: `${containerLength - leftLength - rightLength - 20}px`,
           // }}
         >
-          <div className="block sticky min-w-[5px] h-full left-[-2px] max-[475px]:bg-gradient-to-l from-transparent to-bgLight ">
+          {/* <div className="block sticky min-w-[5px] h-full left-[-2px] max-[475px]:bg-gradient-to-l from-transparent to-bgLight ">
             &nbsp;
-          </div>
+          </div> */}
           <div
             className={`
             flex items-center
             [&>*:nth-child(2)]:hidden [&>*:nth-child(2)]:min-[360px]:block
-            [&>*:nth-child(3)]:hidden [&>*:nth-child(3)]:min-[390px]:block
+            [&>*:nth-child(3)]:hidden [&>*:nth-child(3)]:min-[375px]:block
             [&>*:nth-child(4)]:hidden [&>*:nth-child(4)]:min-[420px]:block
             [&>*:nth-child(5)]:hidden [&>*:nth-child(5)]:min-[450px]:block
             `}
