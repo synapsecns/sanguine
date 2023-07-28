@@ -42,7 +42,7 @@ export const DestinationChainLabel = ({
       <div className={`text-gray-400 block text-sm mr-2`}>Dest.</div>
       <div className="relative flex w-full">
         <div className="flex items-center relative overflow-x-auto overflow-y-hidden w-[200px] min-[400px]:w-[260px] min-[475px]:w-full scrollbar-hide">
-          <div className="hidden sticky min-w-[15px] h-full left-[-3px] bg-gradient-to-l from-transparent to-bgLight max-[475px]:block">
+          <div className="block sticky min-w-[15px] h-full left-[-3px] max-[475px]:bg-gradient-to-l from-transparent to-bgLight ">
             &nbsp;
           </div>
           <div className="flex items-center">
@@ -58,7 +58,7 @@ export const DestinationChainLabel = ({
               )
             })}
           </div>
-          <div className="ml-0 sticky min-w-[15px] h-full right-[-3px] bg-gradient-to-r from-transparent to-bgLight">
+          <div className="ml-0 sticky min-w-[15px] h-full right-[-3px] max-[475px]:bg-gradient-to-r from-transparent to-bgLight">
             &nbsp;
           </div>
         </div>
