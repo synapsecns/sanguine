@@ -38,12 +38,9 @@ export const DestinationChainLabel = ({
   }
 
   return (
-    <div
-      data-test-id="destination-chain-label"
-      className="flex items-center justify-between"
-    >
+    <div data-test-id="destination-chain-label" className="flex items-center">
       <div className={`text-gray-400 block text-sm mr-2`}>Dest.</div>
-      <div className="relative flex ml-auto">
+      <div className="relative flex w-full">
         <div className="flex items-center relative overflow-x-auto overflow-y-hidden w-[200px] min-[400px]:w-[260px] min-[475px]:w-full scrollbar-hide">
           <div className="hidden sticky min-w-[15px] h-full left-[-3px] bg-gradient-to-l from-transparent to-bgLight max-[475px]:block">
             &nbsp;
@@ -66,7 +63,7 @@ export const DestinationChainLabel = ({
           </div>
         </div>
 
-        <div className="max-[475px]:pl-1">
+        <div className="max-[475px]:pl-1 ml-auto">
           <button
             onClick={() => {
               dispatch(setShowToChainSlideOver(true))
