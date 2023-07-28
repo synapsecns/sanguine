@@ -60,6 +60,8 @@ func (b *baseHandler) Start(ctx context.Context) error {
 	b.meter = sdkmetric.NewMeterProvider(
 		sdkmetric.WithResource(b.resource),
 		// TODO: figure out how to provide a sample interval here
+		// see: https://github.com/open-telemetry/opentelemetry-go/issues/3244
+		// for more on the trade-off space
 		sdkmetric.WithReader(reader),
 	)
 	otel.SetMeterProvider(b.meter)

@@ -11,7 +11,7 @@ import (
 )
 
 // NewCaptureTransport returns a new http.Transport that captures requests and responses.
-// TODO: add tests
+// TODO: add tests.
 func NewCaptureTransport(underlyingTransport http.RoundTripper, handler metrics.Handler) http.RoundTripper {
 	return &captureTransport{
 		transport: underlyingTransport,
@@ -19,7 +19,7 @@ func NewCaptureTransport(underlyingTransport http.RoundTripper, handler metrics.
 	}
 }
 
-// captures requests and responses
+// captures requests and responses.
 type captureTransport struct {
 	transport http.RoundTripper
 	metrics   metrics.Handler

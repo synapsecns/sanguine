@@ -71,14 +71,13 @@ func StartExporterServer(ctx context.Context, handler metrics.Handler, cfg confi
 		cfg:     cfg,
 	}
 
-	// heroes on both chains
-	err = exp.stuckHeroCount(common.HexToAddress("0x739B1666c2956f601f095298132773074c3E184b"), "dfk")
-	if err != nil {
-		return fmt.Errorf("could setup metric: %w", err)
-	}
-	err = exp.stuckHeroCount(common.HexToAddress("0xEE258eF5F4338B37E9BA9dE6a56382AdB32056E2"), "klatyn")
-	if err != nil {
-		return fmt.Errorf("could setup metric: %w", err)
+	// register dfk metrics
+	for _, pending := range cfg.DFKPending {
+		// heroes on both chains
+		err = exp.stuckHeroCount(common.HexToAddress(pending.Owner), pending.ChainName)
+		if err != nil {
+			return fmt.Errorf("could setup metric: %w", err)
+		}
 	}
 
 	if err := g.Wait(); err != nil {
