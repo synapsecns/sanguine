@@ -105,7 +105,7 @@ const PossibleChain = ({
 
   return !hidden && chain ? (
     <button
-      data-test-id="origin-chain-label"
+      data-test-id="origin-possible-chain"
       className="
         min-w-[1.75rem] min-h-[1.75rem]
         max-w-[1.75rem] max-h-[1.75rem]

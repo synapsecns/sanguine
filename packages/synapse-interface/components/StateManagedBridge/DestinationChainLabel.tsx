@@ -1,3 +1,4 @@
+import { useRef } from 'react'
 import { ChevronDownIcon } from '@heroicons/react/outline'
 import { CHAINS_BY_ID } from '@constants/chains'
 import { getNetworkButtonBorder } from '@/styles/chains'
@@ -21,6 +22,7 @@ export const DestinationChainLabel = ({
   chainId: number
   connectedChainId: number
 }) => {
+  const scrollableRef = useRef<HTMLDivElement>(null)
   const [orderedChains, setOrderedChains] = useState<number[]>([])
   const isMobile = useIsMobileScreen()
   const dispatch = useDispatch()
@@ -29,28 +31,45 @@ export const DestinationChainLabel = ({
     setOrderedChains(chainOrderBySwapSide(connectedChainId, chainId, chains))
   }, [chainId, connectedChainId, chains])
 
+  const resetScrollPosition = () => {
+    if (scrollableRef.current) {
+      scrollableRef.current.scrollLeft = 0
+    }
+  }
+
   return (
     <div
       data-test-id="destination-chain-label"
       className="flex items-center justify-between"
     >
       <div className={`text-gray-400 block text-sm mr-2`}>Dest.</div>
-      <div className="flex items-center space-x-3">
-        {orderedChains.map((id: number, key: number) => {
-          const hide: boolean = isMobile && orderedChains.length === key + 1
-          return id === chainId ? (
-            <SelectedChain chainId={id} key={id} />
-          ) : (
-            <PossibleChain chainId={id} key={id} hidden={hide} />
-          )
-        })}
+      <div className="relative flex">
+        <div
+          ref={scrollableRef}
+          className="flex items-center space-x-3 overflow-x-auto overflow-y-hidden w-[200px] sm:w-full"
+        >
+          {orderedChains.map((id: number, key: number) => {
+            const hide: boolean = isMobile && orderedChains.length === key + 1
+            return id === chainId ? (
+              <SelectedChain chainId={id} key={id} />
+            ) : (
+              <PossibleChain
+                chainId={id}
+                key={id}
+                hidden={hide}
+                resetScrollPosition={resetScrollPosition}
+              />
+            )
+          })}
+        </div>
+
         <button
           onClick={() => {
             dispatch(setShowToChainSlideOver(true))
           }}
           tabIndex={0}
           data-test-id="bridge-destination-chain-list-button"
-          className="w-8 h-8 px-1.5 py-1.5 bg-[#C4C4C4] bg-opacity-10 rounded-full hover:cursor-pointer group"
+          className="w-8 h-8 px-1.5 py-1.5 ml-3 bg-[#C4C4C4] bg-opacity-10 rounded-full hover:cursor-pointer group"
         >
           <ChevronDownIcon className="text-gray-300 transition transform-gpu group-hover:opacity-50 group-active:rotate-180" />
         </button>
@@ -62,9 +81,11 @@ export const DestinationChainLabel = ({
 const PossibleChain = ({
   chainId,
   hidden = false,
+  resetScrollPosition,
 }: {
   chainId: number
   hidden?: boolean
+  resetScrollPosition: () => void
 }) => {
   const chain = CHAINS_BY_ID[chainId]
   const { toChainId } = useSelector((state: RootState) => state.bridge)
@@ -79,6 +100,7 @@ const PossibleChain = ({
     }
     segmentAnalyticsEvent(eventTitle, eventData)
     dispatch(setToChainId(chainId))
+    resetScrollPosition()
   }
   return !hidden && chain ? (
     <button
