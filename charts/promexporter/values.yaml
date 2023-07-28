@@ -8,7 +8,7 @@ image:
   repository: ghcr.io/synapsecns/sanguine/promexporter
   pullPolicy: Always
   # Overrides the image tag whose default is the chart appVersion.
-  tag: 1a97a1bb7f4fdefd7c459081d06a2ccef2d0d50b
+  tag: 3d874c1f1b5089bbea67987a925b1fcad3d597ee
 
 imagePullSecrets: []
 nameOverride: ""
@@ -25,6 +25,10 @@ env:
   value: otlp
 - name: OTEL_EXPORTER_OTLP_ENDPOINT
   value: http://signoz-otel-collector.monitoring:4317
+- name: GOLOG_LOG_FMT
+  value: json
+- name: GOLOG_LOG_LEVEL
+  value: debug
 
 serviceAccount:
   # Specifies whether a service account should be created
