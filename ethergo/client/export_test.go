@@ -14,4 +14,3 @@ func ParseCalls(calls []w3types.Caller) attribute.KeyValue {
 func (c *clientImpl) GetMetrics() metrics.Handler {
 	return c.tracing
 }
-& git

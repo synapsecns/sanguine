@@ -92,7 +92,7 @@ func (c *ClientSuite) checkRequest(makeReq func(client TestEVM)) {
 	// make sure the span has an exception
 	c.Require().True(spanHasException(span), "expected exception event, got none")
 	Equal(c.T(), spanAttributeByName(span, "endpoint").AsString(), server.URL)
-	Equal(c.T(), spanEventByName(requestSpan, instrumentation.ResponseEventName).AsString(), string(body))
+	Equal(c.T(), spanEventByName(requestSpan, instrumentation.RequestEventName).AsString(), string(body))
 }
 
 func spanEventByName(stub tracetest.SpanStub, name string) *attribute.Value {
