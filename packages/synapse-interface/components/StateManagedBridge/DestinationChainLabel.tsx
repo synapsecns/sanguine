@@ -11,7 +11,6 @@ import { setShowToChainSlideOver } from '@/slices/bridgeDisplaySlice'
 import { getOrderedChains } from '@/utils/getOrderedChains'
 import { RootState } from '@/store/store'
 import { segmentAnalyticsEvent } from '@/contexts/SegmentAnalyticsProvider'
-import useIsMobileScreen from '@/utils/hooks/useIsMobileScreen'
 
 const scrollableRef = createRef<HTMLDivElement>()
 
@@ -25,7 +24,6 @@ export const DestinationChainLabel = ({
   connectedChainId: number
 }) => {
   const [orderedChains, setOrderedChains] = useState<number[]>([])
-  const isMobile = useIsMobileScreen()
   const dispatch = useDispatch()
 
   useEffect(() => {
@@ -45,16 +43,14 @@ export const DestinationChainLabel = ({
     >
       <div className={`text-gray-400 block text-sm mr-2`}>Dest.</div>
       <div className="relative flex">
-        <div className="flex items-center space-x-3 overflow-x-auto overflow-y-hidden w-[200px] sm:w-full scrollbar-hide">
+        <div className="flex items-center space-x-3 overflow-x-auto overflow-y-hidden w-[200px] min-[400px]:w-full scrollbar-hide">
           {orderedChains.map((id: number, key: number) => {
-            const hide: boolean = isMobile && orderedChains.length === key + 1
             return Number(id) === chainId ? (
               <SelectedChain chainId={id} key={id} />
             ) : (
               <PossibleChain
                 chainId={Number(id)}
                 key={id}
-                hidden={hide}
                 resetScrollPosition={resetScrollPosition}
               />
             )
@@ -78,11 +74,9 @@ export const DestinationChainLabel = ({
 
 const PossibleChain = ({
   chainId,
-  hidden = false,
   resetScrollPosition,
 }: {
   chainId: number
-  hidden?: boolean
   resetScrollPosition: () => void
 }) => {
   const chain = CHAINS_BY_ID[chainId]
@@ -100,7 +94,7 @@ const PossibleChain = ({
     dispatch(setToChainId(chainId))
     resetScrollPosition()
   }
-  return !hidden && chain ? (
+  return chain ? (
     <button
       data-test-id="destination-possible-chain"
       className="

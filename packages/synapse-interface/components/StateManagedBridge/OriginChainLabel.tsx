@@ -11,7 +11,6 @@ import { setFromChainId } from '@/slices/bridgeSlice'
 import { setShowFromChainSlideOver } from '@/slices/bridgeDisplaySlice'
 import { RootState } from '@/store/store'
 import { segmentAnalyticsEvent } from '@/contexts/SegmentAnalyticsProvider'
-import useIsMobileScreen from '@/utils/hooks/useIsMobileScreen'
 
 export const OriginChainLabel = ({
   chains,
@@ -24,7 +23,6 @@ export const OriginChainLabel = ({
 }) => {
   const scrollableRef = useRef<HTMLDivElement>(null)
   const [orderedChains, setOrderedChains] = useState<number[]>([])
-  const isMobile = useIsMobileScreen()
 
   useEffect(() => {
     setOrderedChains(chainOrderBySwapSide(chainId))
@@ -47,10 +45,9 @@ export const OriginChainLabel = ({
       <div className="relative flex">
         <div
           ref={scrollableRef}
-          className="flex items-center space-x-3 overflow-x-auto overflow-y-hidden w-[200px] sm:w-full scrollbar-hide"
+          className="flex items-center space-x-3 overflow-x-auto overflow-y-hidden w-[200px] min-[400px]:w-full scrollbar-hide"
         >
           {orderedChains.map((id: number, key: number) => {
-            const hide: boolean = isMobile && orderedChains.length === key + 1
             return Number(id) === chainId ? (
               <SelectedChain chainId={Number(id)} key={id} />
             ) : (
@@ -80,11 +77,9 @@ export const OriginChainLabel = ({
 
 const PossibleChain = ({
   chainId,
-  hidden = false,
   resetScrollPosition,
 }: {
   chainId: number
-  hidden?: boolean
   resetScrollPosition: () => void
 }) => {
   const chain = CHAINS_BY_ID[chainId]
@@ -103,7 +98,7 @@ const PossibleChain = ({
     resetScrollPosition()
   }
 
-  return !hidden && chain ? (
+  return chain ? (
     <button
       data-test-id="origin-possible-chain"
       className="
