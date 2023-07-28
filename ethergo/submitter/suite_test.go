@@ -182,7 +182,7 @@ func (t *TXSubmitterDBSuite) SetupSuite() {
 	t.TestSuite.SetupSuite()
 	localmetrics.SetupTestJaeger(t.GetSuiteContext(), t.T())
 	var err error
-	t.metrics, err = metrics.NewByType(t.GetTestContext(), buildInfo, metrics.Jaeger)
+	t.metrics, err = metrics.NewByType(t.GetSuiteContext()[gor], buildInfo, metrics.Jaeger)
 	t.Require().NoError(err)
 }
 
