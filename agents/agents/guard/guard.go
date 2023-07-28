@@ -2,6 +2,7 @@ package guard
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"math/big"
 	"strconv"
@@ -572,6 +573,7 @@ func (g Guard) handleStatusUpdated(ctx context.Context, log ethTypes.Log) error 
 			ctx,
 			agentRoot,
 			statusUpdated.Agent,
+			log.BlockNumber,
 			agentProof,
 		)
 		if err != nil {
@@ -643,7 +645,49 @@ func (g Guard) handleRootUpdated(ctx context.Context, log ethTypes.Log, chainID 
 }
 
 func (g Guard) updateAgentStatus(ctx context.Context, chainID uint32) error {
+	eligibleAgentTrees, err := g.guardDB.GetUpdateAgentStatusParameters(ctx)
+	if err != nil {
+		return fmt.Errorf("could not get update agent status parameters: %w", err)
+	}
 
+	if len(eligibleAgentTrees) == 0 {
+		return nil
+	}
+
+	blockNumber, err := g.guardDB.GetLatestConfirmedSummitBlockNumber(ctx, chainID)
+	if err != nil {
+		return fmt.Errorf("could not get latest confirmed summit block number: %w", err)
+	}
+
+	// Filter the eligible agent roots by the given block number and call updateAgentStatus()
+	for _, tree := range eligibleAgentTrees {
+		if tree.BlockNumber >= blockNumber {
+			agentAddr := common.HexToAddress(tree.AgentAddress)
+			agentStatus, err := g.domains[g.summitDomainID].BondingManager().GetAgentStatus(ctx, agentAddr)
+			if err != nil {
+				return fmt.Errorf("could not get agent status: %w", err)
+			}
+
+			var proofBytes [][32]byte
+			err = json.Unmarshal(tree.Proof, proofBytes)
+			if err != nil {
+				return fmt.Errorf("could not unmarshal proof: %w", err)
+			}
+
+			_, err = g.domains[chainID].LightManager().UpdateAgentStatus(
+				ctx,
+				g.unbondedSigner,
+				common.HexToAddress(tree.AgentAddress),
+				agentStatus,
+				proofBytes,
+			)
+			if err != nil {
+				return fmt.Errorf("could not update agent status: %w", err)
+			}
+		}
+	}
+
+	return nil
 }
 
 //nolint:cyclop

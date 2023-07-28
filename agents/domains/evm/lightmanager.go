@@ -10,6 +10,7 @@ import (
 
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/common"
+	ethTypes "github.com/ethereum/go-ethereum/core/types"
 	"github.com/synapsecns/sanguine/agents/contracts/lightmanager"
 	"github.com/synapsecns/sanguine/agents/domains"
 	"github.com/synapsecns/sanguine/agents/types"
@@ -87,12 +88,12 @@ func (a lightManagerContract) GetAgentRoot(ctx context.Context) ([32]byte, error
 func (a lightManagerContract) UpdateAgentStatus(
 	ctx context.Context,
 	unbondedSigner signer.Signer,
-	bondedSigner signer.Signer,
+	agentAddress common.Address,
 	agentStatus types.AgentStatus,
-	agentProof [][32]byte) error {
+	agentProof [][32]byte) (*ethTypes.Transaction, error) {
 	transactOpts, err := a.transactOptsSetup(ctx, unbondedSigner)
 	if err != nil {
-		return fmt.Errorf("could not setup transact opts: %w", err)
+		return nil, fmt.Errorf("could not setup transact opts: %w", err)
 	}
 
 	lightManagerAgentStatus := lightmanager.AgentStatus{
@@ -100,12 +101,12 @@ func (a lightManagerContract) UpdateAgentStatus(
 		Domain: agentStatus.Domain(),
 		Index:  agentStatus.Index(),
 	}
-	_, err = a.contract.UpdateAgentStatus(transactOpts, bondedSigner.Address(), lightManagerAgentStatus, agentProof)
+	tx, err := a.contract.UpdateAgentStatus(transactOpts, agentAddress, lightManagerAgentStatus, agentProof)
 	if err != nil {
-		return fmt.Errorf("could not submit attestation: %w", err)
+		return nil, fmt.Errorf("could not submit attestation: %w", err)
 	}
 
-	return nil
+	return tx, nil
 }
 
 func (a lightManagerContract) GetDispute(ctx context.Context, index *big.Int) (err error) {

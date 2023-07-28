@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/synapsecns/sanguine/agents/agents/guard/db"
 	"gorm.io/gorm/clause"
@@ -14,6 +15,7 @@ func (s Store) StoreAgentTree(
 	ctx context.Context,
 	agentRoot [32]byte,
 	agentAddress common.Address,
+	blockNumber uint64,
 	proof [][32]byte,
 ) error {
 	dbAgentRoot := common.BytesToHash(agentRoot[:]).String()
@@ -33,6 +35,7 @@ func (s Store) StoreAgentTree(
 		Create(&db.AgentTree{
 			AgentRoot:    dbAgentRoot,
 			AgentAddress: agentAddress.String(),
+			BlockNumber:  blockNumber,
 			Proof:        proofJSON,
 		})
 
@@ -42,5 +45,3 @@ func (s Store) StoreAgentTree(
 
 	return nil
 }
-
-// SeenLaterAgentRoot

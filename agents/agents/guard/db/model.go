@@ -2,6 +2,7 @@ package db
 
 import (
 	"encoding/json"
+
 	"github.com/synapsecns/sanguine/agents/agents/guard"
 	"github.com/synapsecns/sanguine/agents/agents/guard/db/sql/base"
 	"github.com/synapsecns/sanguine/core/dbcommon"
@@ -18,6 +19,7 @@ func init() {
 	AgentAddressFieldName = namer.GetConsistentName("AgentAddress")
 	BlockNumberFieldName = namer.GetConsistentName("BlockNumber")
 	DisputeProcessedStatusFieldName = namer.GetConsistentName("DisputeProcessedStatus")
+	NotaryAddressFieldName = namer.GetConsistentName("NotaryAddress")
 }
 
 var (
@@ -33,6 +35,8 @@ var (
 	BlockNumberFieldName string
 	// DisputeProcessedStatusFieldName gets the dispute processed status field name.
 	DisputeProcessedStatusFieldName string
+	// NotaryAddressFieldName gets the notary address field name.
+	NotaryAddressFieldName string
 )
 
 /*
@@ -71,12 +75,14 @@ type AgentTree struct {
 	AgentRoot string `gorm:"column:agent_root;primaryKey"`
 	// AgentAddress is the address of the agent for the Merkle proof.
 	AgentAddress string `gorm:"column:agent_address;primaryKey"`
+	// BlockNumber is the block number that the agent tree was updated (on summit).
+	BlockNumber uint64 `gorm:"column:block_number"`
 	// TODO: Check compatability with [][32]byte.
 	// Proof is the agent tree proof.
 	Proof json.RawMessage `gorm:"column:proof"`
 }
 
-// AgentRoot is the state of the agent roots on Summit.
+// AgentRoot is the state of the agent roots on each chain.
 type AgentRoot struct {
 	// AgentRoot is the root of the agent tree.
 	AgentRoot string `gorm:"column:agent_root;primaryKey"`

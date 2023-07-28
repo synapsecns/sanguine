@@ -163,9 +163,9 @@ type LightManagerContract interface {
 	UpdateAgentStatus(
 		ctx context.Context,
 		unbondedSigner signer.Signer,
-		bondedSigner signer.Signer,
+		agentAddress common.Address,
 		agentStatus types.AgentStatus,
-		agentProof [][32]byte) error
+		agentProof [][32]byte) (tx *ethTypes.Transaction, err error)
 	// GetDispute gets the dispute for a given dispute index.
 	// TODO: Add more returned values here as needed.
 	GetDispute(ctx context.Context, index *big.Int) (err error)
