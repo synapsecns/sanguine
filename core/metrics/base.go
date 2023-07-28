@@ -30,6 +30,7 @@ const pyroscopeEndpoint = internal.PyroscopeEndpoint
 // baseHandler is a base metrics handler that implements the Handler interface.
 // this is used to reduce the amount of boilerplate code needed to implement opentracing methods.
 type baseHandler struct {
+	resource   *resource.Resource
 	tp         trace.TracerProvider
 	tracer     trace.Tracer
 	name       string
@@ -49,7 +50,26 @@ func (b *baseHandler) Meter(name string, options ...metric.MeterOption) metric.M
 }
 
 func (b *baseHandler) Start(ctx context.Context) error {
-	// do nothing
+	reader, err := prometheus.New()
+	if err != nil {
+		logger.Warnf("could not initialize prometheus exporter: %v, using no-op provider", err)
+	}
+
+	// TODO: allow this to be customizable, separate from the tracer provider.
+	// in a way that's still usable.
+	b.meter = sdkmetric.NewMeterProvider(
+		sdkmetric.WithResource(b.resource),
+		// TODO: figure out how to provide a sample interval here
+		sdkmetric.WithReader(reader),
+	)
+	otel.SetMeterProvider(b.meter)
+
+	go func() {
+		<-ctx.Done()
+		// shutting down this way will not flush.
+		_ = b.meter.Shutdown(ctx)
+	}()
+
 	return nil
 }
 
@@ -136,24 +156,13 @@ func newBaseHandlerWithTracerProvider(rsr *resource.Resource, buildInfo config.B
 	tracer := tracerProvider.Tracer(buildInfo.Name())
 	otel.SetTextMapPropagator(propagator)
 
-	// TODO: allow this to be customizable, separate from the tracer provider.
-	// in a way that's still usable.
-	reader, err := prometheus.New()
-	if err != nil {
-		logger.Warnf("could not initialize prometheus exporter: %v, using no-op provider", err)
-	}
-
-	mp := sdkmetric.NewMeterProvider(
-		sdkmetric.WithResource(rsr),
-		sdkmetric.WithReader(reader),
-	)
-
+	// note: meter purposely is not registered until startup.
 	return &baseHandler{
+		resource:   rsr,
 		tp:         tracerProvider,
 		tracer:     tracer,
 		name:       buildInfo.Name(),
 		propagator: propagator,
-		meter:      mp,
 		handler:    promhttp.Handler(),
 	}
 }

@@ -18,6 +18,7 @@ replace (
 require (
 	github.com/99designs/gqlgen v0.17.20
 	github.com/Yamashou/gqlgenc v0.10.0
+	github.com/creasty/defaults v1.7.0
 	github.com/ethereum/go-ethereum v1.10.26
 	github.com/gin-gonic/gin v1.9.1
 	github.com/integralist/go-findroot v0.0.0-20160518114804-ac90681525dc

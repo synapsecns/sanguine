@@ -41,7 +41,7 @@ type exporter struct {
 func StartExporterServer(ctx context.Context, handler metrics.Handler, cfg config.Config) error {
 	router := ginhelper.New(logger)
 	router.Use(handler.Gin())
-	router.POST("/metrics", gin.WrapH(handler.Handler()))
+	router.GET("/metrics", gin.WrapH(handler.Handler()))
 
 	var lc net.ListenConfig
 	listener, err := lc.Listen(ctx, "tcp", fmt.Sprintf(":%d", cfg.Port))
@@ -87,8 +87,6 @@ func StartExporterServer(ctx context.Context, handler metrics.Handler, cfg confi
 
 	return nil
 }
-
-type metricCallback func(ctx context.Context, meter metric.Meter)
 
 const stuckHeroMetric = "stuck_heroes_"
 

@@ -62,7 +62,13 @@ func (d *datadogHandler) Gin() gin.HandlerFunc {
 
 // Start starts the handler and stops it when context is canceled.
 func (d *datadogHandler) Start(ctx context.Context) error {
-	err := profiler.Start(d.profilerOptions...)
+	// start the parent
+	err := d.baseHandler.Start(ctx)
+	if err != nil {
+		return fmt.Errorf("could not start base handler: %w", err)
+	}
+
+	err = profiler.Start(d.profilerOptions...)
 	if err != nil {
 		return fmt.Errorf("could not start profiler: %w", err)
 	}
