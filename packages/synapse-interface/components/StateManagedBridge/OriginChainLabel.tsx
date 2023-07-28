@@ -47,7 +47,7 @@ export const OriginChainLabel = ({
       <div className="relative flex">
         <div
           ref={scrollableRef}
-          className="flex items-center space-x-3 overflow-x-auto overflow-y-hidden w-[200px] sm:w-full"
+          className="flex items-center space-x-3 overflow-x-auto overflow-y-hidden w-[200px] sm:w-full scrollbar-hide"
         >
           {orderedChains.map((id: number, key: number) => {
             const hide: boolean = isMobile && orderedChains.length === key + 1
