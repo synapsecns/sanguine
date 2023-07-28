@@ -4,6 +4,7 @@ const useElementWidth = (ref) => {
   const [elementWidth, setElementWidth] = useState(0)
 
   const updateElementWidth = () => {
+    console.log('got hit')
     if (ref.current) {
       setElementWidth(ref.current.clientWidth)
     }

@@ -64,14 +64,22 @@ export const OriginChainLabel = ({
             flex items-center relative
             overflow-x-auto overflow-y-hidden
             scrollbar-hide`}
-          style={{
-            width: `${containerLength - leftLength - rightLength - 20}px`,
-          }}
+          // style={{
+          //   width: `${containerLength - leftLength - rightLength - 20}px`,
+          // }}
         >
           <div className="block sticky min-w-[5px] h-full left-[-2px] max-[475px]:bg-gradient-to-l from-transparent to-bgLight ">
             &nbsp;
           </div>
-          <div className="flex items-center">
+          <div
+            className={`
+            flex items-center
+            [&>*:nth-child(2)]:hidden [&>*:nth-child(2)]:min-[360px]:block
+            [&>*:nth-child(3)]:hidden [&>*:nth-child(3)]:min-[390px]:block
+            [&>*:nth-child(4)]:hidden [&>*:nth-child(4)]:min-[420px]:block
+            [&>*:nth-child(5)]:hidden [&>*:nth-child(5)]:min-[450px]:block
+            `}
+          >
             {orderedChains.map((id: number, key: number) => {
               return Number(id) === chainId ? (
                 <SelectedChain chainId={Number(id)} key={id} />

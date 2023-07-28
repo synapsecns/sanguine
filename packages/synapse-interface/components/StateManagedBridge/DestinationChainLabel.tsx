@@ -62,7 +62,7 @@ export const DestinationChainLabel = ({
         <div
           className="relative flex items-center overflow-x-auto overflow-y-hidden scrollbar-hide"
           style={{
-            width: `${containerLength - leftLength - rightLength - 20}px`,
+            width: `${containerLength - leftLength - 52}px`,
           }}
         >
           <div className="block sticky min-w-[5px] h-full left-[-3px] max-[475px]:bg-gradient-to-l from-transparent to-bgLight ">
