@@ -61,7 +61,7 @@ export const OriginChainLabel = ({
           ref={scrollableRef}
           className="relative flex items-center overflow-x-auto overflow-y-hidden scrollbar-hide"
           style={{
-            maxWidth: chainListWidth ? `${chainListWidth - 30}px` : 'full',
+            maxWidth: chainListWidth ? `${chainListWidth - 60}px` : 'full',
           }}
         >
           <div className="hidden sticky min-w-[15px] h-full left-[-3px] bg-gradient-to-l from-transparent to-bgLight max-[475px]:block">
@@ -80,12 +80,15 @@ export const OriginChainLabel = ({
               )
             })}
           </div>
-          <div className="ml-0 sticky min-w-[15px] h-full right-[-3px] bg-gradient-to-r from-transparent to-bgLight">
+          <div
+            ref={rightRef}
+            className="ml-0 sticky min-w-[15px] h-full right-[-3px] bg-gradient-to-r from-transparent to-bgLight"
+          >
             &nbsp;
           </div>
         </div>
 
-        <div ref={rightRef} className="max-[475px]:pl-1">
+        <div className="max-[475px]:pl-1">
           <button
             onClick={() => {
               dispatch(setShowFromChainSlideOver(true))
