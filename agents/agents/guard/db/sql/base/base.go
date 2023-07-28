@@ -1,7 +1,6 @@
 package base
 
 import (
-	"github.com/synapsecns/sanguine/agents/agents/guard/db"
 	"github.com/synapsecns/sanguine/core/metrics"
 	submitterDB "github.com/synapsecns/sanguine/ethergo/submitter/db"
 	"github.com/synapsecns/sanguine/ethergo/submitter/db/txdb"
@@ -34,7 +33,7 @@ func (s Store) SubmitterDB() submitterDB.Service {
 // GetAllModels gets all models to migrate.
 // see: https://medium.com/@SaifAbid/slice-interfaces-8c78f8b6345d for an explanation of why we can't do this at initialization time
 func GetAllModels() (allModels []interface{}) {
-	allModels = append(allModels, &db.Dispute{}, &db.AgentTree{})
+	allModels = append(allModels, &Dispute{}, &AgentTree{})
 	allModels = append(allModels, txdb.GetAllModels()...)
 	return allModels
 }

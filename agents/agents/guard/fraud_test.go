@@ -2,9 +2,10 @@ package guard_test
 
 import (
 	"fmt"
+	"math/big"
+
 	"github.com/brianvoe/gofakeit/v6"
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
-	"math/big"
 
 	"github.com/Flaque/filet"
 	"github.com/ethereum/go-ethereum/common"
@@ -132,10 +133,10 @@ func (g GuardSuite) TestFraudulentStateInSnapshot() {
 	Nil(g.T(), err)
 	notaryProof, err := g.SummitDomainClient.BondingManager().GetProof(g.GetTestContext(), g.NotaryBondedSigner.Address())
 	Nil(g.T(), err)
-	err = g.OriginDomainClient.LightManager().UpdateAgentStatus(
+	_, err = g.OriginDomainClient.LightManager().UpdateAgentStatus(
 		g.GetTestContext(),
 		g.NotaryUnbondedSigner,
-		g.NotaryBondedSigner,
+		g.NotaryBondedSigner.Address(),
 		notaryStatus,
 		notaryProof,
 	)
@@ -320,10 +321,10 @@ func (g GuardSuite) TestFraudulentAttestationOnDestination() {
 	Nil(g.T(), err)
 	guardProof, err := g.SummitDomainClient.BondingManager().GetProof(g.GetTestContext(), g.GuardBondedSigner.Address())
 	Nil(g.T(), err)
-	err = g.DestinationDomainClient.LightManager().UpdateAgentStatus(
+	_, err = g.DestinationDomainClient.LightManager().UpdateAgentStatus(
 		g.GetTestContext(),
 		g.GuardUnbondedSigner,
-		g.GuardBondedSigner,
+		g.GuardBondedSigner.Address(),
 		guardStatus,
 		guardProof,
 	)
@@ -333,10 +334,10 @@ func (g GuardSuite) TestFraudulentAttestationOnDestination() {
 	Nil(g.T(), err)
 	notaryProof, err := g.SummitDomainClient.BondingManager().GetProof(g.GetTestContext(), g.NotaryBondedSigner.Address())
 	Nil(g.T(), err)
-	err = g.DestinationDomainClient.LightManager().UpdateAgentStatus(
+	_, err = g.DestinationDomainClient.LightManager().UpdateAgentStatus(
 		g.GetTestContext(),
 		g.NotaryUnbondedSigner,
-		g.NotaryBondedSigner,
+		g.NotaryBondedSigner.Address(),
 		notaryStatus,
 		notaryProof,
 	)
@@ -442,10 +443,10 @@ func (g GuardSuite) TestReportFraudulentStateInAttestation() {
 	Nil(g.T(), err)
 	guardProof, err := g.SummitDomainClient.BondingManager().GetProof(g.GetTestContext(), g.GuardBondedSigner.Address())
 	Nil(g.T(), err)
-	err = g.DestinationDomainClient.LightManager().UpdateAgentStatus(
+	_, err = g.DestinationDomainClient.LightManager().UpdateAgentStatus(
 		g.GetTestContext(),
 		g.GuardUnbondedSigner,
-		g.GuardBondedSigner,
+		g.GuardBondedSigner.Address(),
 		guardStatus,
 		guardProof,
 	)
@@ -455,18 +456,18 @@ func (g GuardSuite) TestReportFraudulentStateInAttestation() {
 	Nil(g.T(), err)
 	notaryProof, err := g.SummitDomainClient.BondingManager().GetProof(g.GetTestContext(), g.NotaryBondedSigner.Address())
 	Nil(g.T(), err)
-	err = g.DestinationDomainClient.LightManager().UpdateAgentStatus(
+	_, err = g.DestinationDomainClient.LightManager().UpdateAgentStatus(
 		g.GetTestContext(),
 		g.NotaryUnbondedSigner,
-		g.NotaryBondedSigner,
+		g.NotaryBondedSigner.Address(),
 		notaryStatus,
 		notaryProof,
 	)
 	Nil(g.T(), err)
-	err = g.OriginDomainClient.LightManager().UpdateAgentStatus(
+	_, err = g.OriginDomainClient.LightManager().UpdateAgentStatus(
 		g.GetTestContext(),
 		g.NotaryUnbondedSigner,
-		g.NotaryBondedSigner,
+		g.NotaryBondedSigner.Address(),
 		notaryStatus,
 		notaryProof,
 	)
@@ -645,10 +646,10 @@ func (g GuardSuite) TestInvalidReceipt() {
 	Nil(g.T(), err)
 	notaryProof, err := g.SummitDomainClient.BondingManager().GetProof(g.GetTestContext(), g.NotaryBondedSigner.Address())
 	Nil(g.T(), err)
-	err = g.DestinationDomainClient.LightManager().UpdateAgentStatus(
+	_, err = g.DestinationDomainClient.LightManager().UpdateAgentStatus(
 		g.GetTestContext(),
 		g.NotaryUnbondedSigner,
-		g.NotaryBondedSigner,
+		g.NotaryBondedSigner.Address(),
 		notaryStatus,
 		notaryProof,
 	)

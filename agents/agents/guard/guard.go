@@ -2,7 +2,6 @@ package guard
 
 import (
 	"context"
-	"encoding/json"
 	"fmt"
 	"math/big"
 	"strconv"
@@ -254,8 +253,8 @@ func (g Guard) handleLog(ctx context.Context, log ethTypes.Log, chainID uint32) 
 		return g.handleReceipt(ctx, log)
 	case g.isDisputeOpenedEvent(log):
 		return g.handleDisputeOpened(ctx, log)
-	case chainID == g.summitDomainID && g.isStatusUpdatedEvent(log):
-		return g.handleStatusUpdated(ctx, log)
+	case g.isStatusUpdatedEvent(log):
+		return g.handleStatusUpdated(ctx, log, chainID)
 	}
 	return nil
 }
@@ -535,7 +534,7 @@ func (g Guard) handleReceipt(ctx context.Context, log ethTypes.Log) error {
 	return nil
 }
 
-func (g Guard) handleStatusUpdated(ctx context.Context, log ethTypes.Log) error {
+func (g Guard) handleStatusUpdated(ctx context.Context, log ethTypes.Log, chainID uint32) error {
 	statusUpdated, err := g.bondingManagerParser.ParseStatusUpdated(log)
 	if err != nil {
 		return fmt.Errorf("could not parse status updated: %w", err)
@@ -583,6 +582,7 @@ func (g Guard) handleStatusUpdated(ctx context.Context, log ethTypes.Log) error 
 		err = g.guardDB.StoreAgentRoot(
 			ctx,
 			agentRoot,
+			chainID,
 			log.BlockNumber,
 		)
 		if err != nil {
@@ -613,7 +613,7 @@ func (g Guard) handleDisputeOpened(ctx context.Context, log ethTypes.Log) error 
 	err = g.guardDB.StoreDispute(
 		ctx,
 		disputeOpened.DisputeIndex,
-		Opened,
+		types.Opened,
 		guardAddress,
 		disputeOpened.NotaryIndex,
 		notaryAddress,
@@ -662,24 +662,16 @@ func (g Guard) updateAgentStatus(ctx context.Context, chainID uint32) error {
 	// Filter the eligible agent roots by the given block number and call updateAgentStatus()
 	for _, tree := range eligibleAgentTrees {
 		if tree.BlockNumber >= blockNumber {
-			agentAddr := common.HexToAddress(tree.AgentAddress)
-			agentStatus, err := g.domains[g.summitDomainID].BondingManager().GetAgentStatus(ctx, agentAddr)
+			agentStatus, err := g.domains[g.summitDomainID].BondingManager().GetAgentStatus(ctx, tree.AgentAddress)
 			if err != nil {
 				return fmt.Errorf("could not get agent status: %w", err)
 			}
-
-			var proofBytes [][32]byte
-			err = json.Unmarshal(tree.Proof, proofBytes)
-			if err != nil {
-				return fmt.Errorf("could not unmarshal proof: %w", err)
-			}
-
 			_, err = g.domains[chainID].LightManager().UpdateAgentStatus(
 				ctx,
 				g.unbondedSigner,
-				common.HexToAddress(tree.AgentAddress),
+				tree.AgentAddress,
 				agentStatus,
-				proofBytes,
+				tree.Proof,
 			)
 			if err != nil {
 				return fmt.Errorf("could not update agent status: %w", err)

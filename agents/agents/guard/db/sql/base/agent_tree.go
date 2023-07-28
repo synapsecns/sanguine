@@ -6,7 +6,6 @@ import (
 	"fmt"
 
 	"github.com/ethereum/go-ethereum/common"
-	"github.com/synapsecns/sanguine/agents/agents/guard/db"
 	"gorm.io/gorm/clause"
 )
 
@@ -28,11 +27,11 @@ func (s Store) StoreAgentTree(
 	dbTx := s.DB().WithContext(ctx).
 		Clauses(clause.OnConflict{
 			Columns: []clause.Column{
-				{Name: db.AgentRootFieldName}, {Name: db.AgentAddressFieldName},
+				{Name: AgentRootFieldName}, {Name: AgentAddressFieldName},
 			},
 			DoNothing: true,
 		}).
-		Create(&db.AgentTree{
+		Create(&AgentTree{
 			AgentRoot:    dbAgentRoot,
 			AgentAddress: agentAddress.String(),
 			BlockNumber:  blockNumber,

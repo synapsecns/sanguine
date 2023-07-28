@@ -2,9 +2,11 @@ package base
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"strconv"
 
+	"github.com/ethereum/go-ethereum/common"
 	"github.com/imkira/go-interpol"
 	agentTypes "github.com/synapsecns/sanguine/agents/types"
 	"github.com/synapsecns/sanguine/core/dbcommon"
@@ -38,16 +40,32 @@ WHERE dTable.{disputeProcessedStatus} = {resolved}
 			"agentAddress":           AgentAddressFieldName,
 			"notaryAddress":          NotaryAddressFieldName,
 			"disputeProcessedStatus": DisputeProcessedStatusFieldName,
-			"resolved":               strconv.Itoa(int(Resolved)),
+			"resolved":               strconv.Itoa(int(agentTypes.Resolved)),
 		})
 	if err != nil {
 		return nil, fmt.Errorf("failed to interpolate query: %w", err)
 	}
 
-	var agentTrees []agentTypes.AgentTree
-	err = s.DB().WithContext(ctx).Raw(query).Scan(&agentTrees).Error
+	var dbAgentTrees []AgentTree
+	err = s.DB().WithContext(ctx).Raw(query).Scan(&dbAgentTrees).Error
 	if err != nil {
 		return nil, fmt.Errorf("failed to get agent trees: %w", err)
+	}
+
+	// Convert DB fields to agent types.
+	agentTrees := []agentTypes.AgentTree{}
+	for _, tree := range dbAgentTrees {
+		var proofBytes [][32]byte
+		err = json.Unmarshal(tree.Proof, &proofBytes)
+		if err != nil {
+			return nil, fmt.Errorf("could not unmarshal proof: %w", err)
+		}
+		agentTrees = append(agentTrees, agentTypes.AgentTree{
+			AgentRoot:    tree.AgentRoot,
+			AgentAddress: common.HexToAddress(tree.AgentAddress),
+			BlockNumber:  tree.BlockNumber,
+			Proof:        proofBytes,
+		})
 	}
 	return agentTrees, nil
 }
