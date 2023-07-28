@@ -49,6 +49,8 @@ type Indexer struct {
 	refreshRate uint64
 	// toHead is a boolean signifying if the indexer is livefilling to the head.
 	toHead bool
+	// isBackfill is a boolean signifying if the indexer is backfilling (prevents last indexed from running)
+	isBackfill bool
 }
 
 // retryTolerance is the number of times to retry a failed operation before rerunning the entire Backfill function.
@@ -119,12 +121,18 @@ func NewIndexer(chainConfig config.ChainConfig, addresses []common.Address, even
 		blockMeter:    blockMeter,
 		refreshRate:   refreshRate,
 		toHead:        toHead,
+		isBackfill:    false,
 	}, nil
 }
 
 // UpdateAddress updates the address arrays for the indexer.
 func (x *Indexer) UpdateAddress(addresses []common.Address) {
 	x.indexerConfig.Addresses = addresses
+}
+
+// SetToBackfill sets the indexer to backfill (will not update last indexed).
+func (x *Indexer) SetToBackfill() {
+	x.isBackfill = true
 }
 
 // GetIndexerConfig returns the indexer config.
@@ -218,13 +226,13 @@ func (x *Indexer) Index(parentCtx context.Context, startHeight uint64, endHeight
 					// reset group context and concurrent calls
 					gS, storeCtx = errgroup.WithContext(ctx)
 					concurrentCalls = 0
-
-					err = x.eventDB.StoreLastIndexedMultiple(ctx, x.indexerConfig.Addresses, x.indexerConfig.ChainID, log.BlockNumber)
-					if err != nil {
-						logger.ReportIndexerError(err, x.indexerConfig, logger.StoreError)
-						return fmt.Errorf("could not store last indexed block: %w", err)
+					if !x.isBackfill {
+						err = x.eventDB.StoreLastIndexedMultiple(ctx, x.indexerConfig.Addresses, x.indexerConfig.ChainID, log.BlockNumber)
+						if err != nil {
+							logger.ReportIndexerError(err, x.indexerConfig, logger.StoreError)
+							return fmt.Errorf("could not store last indexed block: %w", err)
+						}
 					}
-
 					x.blockMeter.Record(ctx, int64(log.BlockNumber), otelMetrics.WithAttributeSet(
 						attribute.NewSet(attribute.Int64("start_block", int64(startHeight)), attribute.Int64("chain_id", int64(x.indexerConfig.ChainID)))),
 					)
@@ -238,10 +246,11 @@ func (x *Indexer) Index(parentCtx context.Context, startHeight uint64, endHeight
 	if err != nil {
 		return fmt.Errorf("could not backfill contract: %w \nChain: %d\nLog 's Contract Address: %s\n ", err, x.indexerConfig.ChainID, x.indexerConfig.Addresses)
 	}
-
-	err = x.eventDB.StoreLastIndexedMultiple(ctx, x.indexerConfig.Addresses, x.indexerConfig.ChainID, endHeight)
-	if err != nil {
-		return fmt.Errorf("could not store last indexed block: %w", err)
+	if !x.isBackfill {
+		err = x.eventDB.StoreLastIndexedMultiple(ctx, x.indexerConfig.Addresses, x.indexerConfig.ChainID, endHeight)
+		if err != nil {
+			return fmt.Errorf("could not store last indexed block: %w", err)
+		}
 	}
 	x.blockMeter.Record(ctx, int64(endHeight), otelMetrics.WithAttributeSet(
 		attribute.NewSet(attribute.Int64("start_block", int64(startHeight)), attribute.Int64("chain_id", int64(x.indexerConfig.ChainID)))),

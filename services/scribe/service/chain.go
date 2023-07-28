@@ -295,9 +295,11 @@ func (c *ChainIndexer) isReadyForLivefill(parentContext context.Context, indexer
 func (c *ChainIndexer) getIndexingRange(parentContext context.Context, configStart uint64, configEnd *uint64, indexer *indexer.Indexer) (uint64, uint64, error) {
 	var endHeight uint64
 	startHeight := configStart
+
 	// If a range is set in the config, respect those values,
 	if configEnd != nil {
 		endHeight = *configEnd
+		indexer.SetToBackfill()
 		return startHeight, endHeight, nil
 	}
 

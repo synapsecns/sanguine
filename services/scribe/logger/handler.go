@@ -61,7 +61,7 @@ func ReportIndexerError(err error, indexerData scribeTypes.IndexerConfig, errorT
 		logger.Errorf("Error, @DEV: NIL ERROR\n%s", unpackIndexerConfig(indexerData))
 		return
 	}
-	
+
 	errStr := err.Error()
 
 	// Stop cloudflare error messages from nuking readablity of logs
