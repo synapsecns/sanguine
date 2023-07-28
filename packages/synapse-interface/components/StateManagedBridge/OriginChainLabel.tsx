@@ -37,17 +37,14 @@ export const OriginChainLabel = ({
   }
 
   return (
-    <div
-      data-test-id="origin-chain-label"
-      className="flex items-center justify-between"
-    >
+    <div data-test-id="origin-chain-label" className="flex items-center">
       <div className={`text-gray-400 block text-sm mr-2`}>Origin</div>
-      <div className="relative flex">
+      <div className="relative flex ml-auto">
         <div
           ref={scrollableRef}
-          className="flex items-center relative overflow-x-auto overflow-y-hidden w-[200px] min-[475px]:w-full scrollbar-hide"
+          className="flex items-center relative overflow-x-auto overflow-y-hidden w-[220px] min-[475px]:w-full scrollbar-hide"
         >
-          <div className="sticky min-w-[15px] h-full left-0 bg-gradient-to-l from-transparent to-bgLight max-[475px]:block hidden">
+          <div className="hidden sticky min-w-[15px] h-full left-[-3px] bg-gradient-to-l from-transparent to-bgLight max-[475px]:block">
             &nbsp;
           </div>
           {orderedChains.map((id: number, key: number) => {
@@ -61,7 +58,7 @@ export const OriginChainLabel = ({
               />
             )
           })}
-          <div className="ml-0 sticky min-w-[15px] h-full right-0 bg-gradient-to-r from-transparent to-bgLight">
+          <div className="ml-0 sticky min-w-[15px] h-full right-[-3px] bg-gradient-to-r from-transparent to-bgLight">
             &nbsp;
           </div>
         </div>
