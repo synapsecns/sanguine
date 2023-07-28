@@ -1,5 +1,7 @@
-package guard
+package types
 
+// DisputeProcessedStatus is the status of a dispute on Summit.
+// This enum is used for tracking the status of disputes in the Dispute db model.
 type DisputeProcessedStatus uint8
 
 const (

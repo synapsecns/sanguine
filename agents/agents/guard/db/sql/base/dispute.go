@@ -3,18 +3,18 @@ package base
 import (
 	"context"
 	"fmt"
-	"github.com/ethereum/go-ethereum/common"
-	"github.com/synapsecns/sanguine/agents/agents/guard"
-	"github.com/synapsecns/sanguine/agents/agents/guard/db"
-	"gorm.io/gorm/clause"
 	"math/big"
+
+	"github.com/ethereum/go-ethereum/common"
+	agentTypes "github.com/synapsecns/sanguine/agents/types"
+	"gorm.io/gorm/clause"
 )
 
 // StoreDispute stores an dispute.
 func (s Store) StoreDispute(
 	ctx context.Context,
 	disputeIndex *big.Int,
-	disputeProcessedStatus guard.DisputeProcessedStatus,
+	disputeProcessedStatus agentTypes.DisputeProcessedStatus,
 	guardAddress common.Address,
 	notaryIndex uint32,
 	notaryAddress common.Address,
@@ -22,11 +22,11 @@ func (s Store) StoreDispute(
 	dbTx := s.DB().WithContext(ctx).
 		Clauses(clause.OnConflict{
 			Columns: []clause.Column{
-				{Name: db.AgentRootFieldName}, {Name: db.DisputeIndexFieldName},
+				{Name: AgentRootFieldName}, {Name: DisputeIndexFieldName},
 			},
 			DoNothing: true,
 		}).
-		Create(&db.Dispute{
+		Create(&Dispute{
 			DisputeIndex:           disputeIndex.Uint64(),
 			DisputeProcessedStatus: disputeProcessedStatus,
 			GuardAddress:           guardAddress.String(),
@@ -39,20 +39,4 @@ func (s Store) StoreDispute(
 	}
 
 	return nil
-}
-
-// GetDisputesToPropagate returns disputes with `DisputeProcessStatus` equal to `Resolved`.
-func (s Store) GetDisputesToPropagate(
-	ctx context.Context,
-) ([]db.Dispute, error) {
-	var disputes []db.Dispute
-	dbTx := s.DB().WithContext(ctx).
-		Where(fmt.Sprintf("%s = ?", db.DisputeProcessedStatusFieldName), guard.Resolved).
-		Find(&disputes)
-
-	if dbTx.Error != nil {
-		return nil, fmt.Errorf("failed to get disputes to propagate: %w", dbTx.Error)
-	}
-
-	return disputes, nil
 }

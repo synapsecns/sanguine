@@ -1,10 +1,9 @@
-package db
+package base
 
 import (
 	"encoding/json"
 
-	"github.com/synapsecns/sanguine/agents/agents/guard"
-	"github.com/synapsecns/sanguine/agents/agents/guard/db/sql/base"
+	agentTypes "github.com/synapsecns/sanguine/agents/types"
 	"github.com/synapsecns/sanguine/core/dbcommon"
 )
 
@@ -12,7 +11,7 @@ import (
 // note: some models share names. In cases where they do, we run the check against all names.
 // This is cheap because it's only done at startup.
 func init() {
-	namer := dbcommon.NewNamer(base.GetAllModels())
+	namer := dbcommon.NewNamer(GetAllModels())
 	AgentRootFieldName = namer.GetConsistentName("AgentRoot")
 	DisputeIndexFieldName = namer.GetConsistentName("DisputeIndex")
 	ChainIDFieldName = namer.GetConsistentName("ChainID")
@@ -56,7 +55,7 @@ type Dispute struct {
 	// DisputeIndex is the index of the dispute on the BondingManager.
 	DisputeIndex uint64 `gorm:"column:dispute_index;primaryKey"`
 	// DisputeProcessedStatus indicates the status of the dispute.
-	DisputeProcessedStatus guard.DisputeProcessedStatus `gorm:"column:dispute_processed_status"`
+	DisputeProcessedStatus agentTypes.DisputeProcessedStatus `gorm:"column:dispute_processed_status"`
 
 	// DisputeFlag indicates the status of the dispute.
 	//DisputeFlag uint8 `gorm:"column:dispute_flag"`
