@@ -47,7 +47,7 @@ export const OriginChainLabel = ({
           <div className="hidden sticky min-w-[15px] h-full left-[-3px] bg-gradient-to-l from-transparent to-bgLight max-[475px]:block">
             &nbsp;
           </div>
-          <div className="flex items-center [&>*:last-child]:mr-0">
+          <div className="flex items-center">
             {orderedChains.map((id: number, key: number) => {
               return Number(id) === chainId ? (
                 <SelectedChain chainId={Number(id)} key={id} />
