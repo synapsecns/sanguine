@@ -1,3 +1,4 @@
+import { useRef } from 'react'
 import { useSelector } from 'react-redux'
 import { ChevronDownIcon } from '@heroicons/react/outline'
 import { CHAINS_BY_ID, ORDERED_CHAINS_BY_ID } from '@constants/chains'
@@ -21,6 +22,7 @@ export const OriginChainLabel = ({
   chainId: number
   connectedChainId: number
 }) => {
+  const scrollableRef = useRef<HTMLDivElement>(null)
   const [orderedChains, setOrderedChains] = useState<number[]>([])
   const isMobile = useIsMobileScreen()
 
@@ -30,6 +32,12 @@ export const OriginChainLabel = ({
 
   const dispatch = useDispatch()
 
+  const resetScrollPosition = () => {
+    if (scrollableRef.current) {
+      scrollableRef.current.scrollLeft = 0
+    }
+  }
+
   return (
     <div
       data-test-id="origin-chain-label"
@@ -37,13 +45,20 @@ export const OriginChainLabel = ({
     >
       <div className={`text-gray-400 block text-sm mr-2`}>Origin</div>
       <div className="relative flex">
-        <div className="flex items-center space-x-3 overflow-x-auto overflow-y-hidden w-[200px] sm:w-full">
+        <div
+          ref={scrollableRef}
+          className="flex items-center space-x-3 overflow-x-auto overflow-y-hidden w-[200px] sm:w-full"
+        >
           {orderedChains.map((id: number, key: number) => {
             const hide: boolean = isMobile && orderedChains.length === key + 1
             return Number(id) === chainId ? (
               <SelectedChain chainId={Number(id)} key={id} />
             ) : (
-              <PossibleChain chainId={Number(id)} key={id} />
+              <PossibleChain
+                chainId={Number(id)}
+                key={id}
+                resetScrollPosition={resetScrollPosition}
+              />
             )
           })}
         </div>
@@ -66,9 +81,11 @@ export const OriginChainLabel = ({
 const PossibleChain = ({
   chainId,
   hidden = false,
+  resetScrollPosition,
 }: {
   chainId: number
   hidden?: boolean
+  resetScrollPosition: () => void
 }) => {
   const chain = CHAINS_BY_ID[chainId]
   const { fromChainId } = useSelector((state: RootState) => state.bridge)
@@ -83,7 +100,9 @@ const PossibleChain = ({
     }
     segmentAnalyticsEvent(eventTitle, eventData)
     dispatch(setFromChainId(chainId))
+    resetScrollPosition()
   }
+
   return !hidden && chain ? (
     <button
       data-test-id="origin-chain-label"
@@ -109,6 +128,7 @@ const PossibleChain = ({
 
 const SelectedChain = ({ chainId }: { chainId: number }) => {
   const chain = CHAINS_BY_ID[chainId]
+
   return chain ? (
     <div
       data-test-id="origin-selected-chain"
