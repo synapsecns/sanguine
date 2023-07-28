@@ -43,7 +43,7 @@ export const DestinationChainLabel = ({
     >
       <div className={`text-gray-400 block text-sm mr-2`}>Dest.</div>
       <div className="relative flex">
-        <div className="flex items-center space-x-3 overflow-x-auto overflow-y-hidden w-[200px] min-[400px]:w-full scrollbar-hide">
+        <div className="flex items-center space-x-3 overflow-x-auto overflow-y-hidden w-[200px] min-[475px]:w-full scrollbar-hide">
           {orderedChains.map((id: number, key: number) => {
             return Number(id) === chainId ? (
               <SelectedChain chainId={id} key={id} />

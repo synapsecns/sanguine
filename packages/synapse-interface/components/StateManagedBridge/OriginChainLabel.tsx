@@ -45,7 +45,7 @@ export const OriginChainLabel = ({
       <div className="relative flex">
         <div
           ref={scrollableRef}
-          className="flex items-center space-x-3 overflow-x-auto overflow-y-hidden w-[200px] min-[400px]:w-full scrollbar-hide"
+          className="flex items-center space-x-3 overflow-x-auto overflow-y-hidden w-[200px] min-[475px]:w-full scrollbar-hide"
         >
           {orderedChains.map((id: number, key: number) => {
             return Number(id) === chainId ? (
