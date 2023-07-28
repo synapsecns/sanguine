@@ -26,6 +26,8 @@ var exporterCommand = &cli.Command{
 			return fmt.Errorf("could not decode config: %w", err)
 		}
 
+		fmt.Println("starting server")
+
 		err = exporters.StartExporterServer(c.Context, metrics.Get(), exporterConfig)
 		if err != nil {
 			return fmt.Errorf("could not start exporter server: %w", err)

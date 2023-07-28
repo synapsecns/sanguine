@@ -3,7 +3,6 @@ package config
 import (
 	"fmt"
 	"github.com/creasty/defaults"
-	_ "github.com/creasty/defaults"
 	"github.com/jftuga/ellipsis"
 	"gopkg.in/yaml.v2"
 	"os"
@@ -19,10 +18,11 @@ type Config struct {
 	// DFKPending is the list of pending heroes
 	DFKPending []DFKPending `yaml:"dfk_pending"`
 	// GasChecks is the list of gas checks
-	GasChecks []GasChecks `yaml:"gas_checks"`
+	GasChecks  []GasChecks `yaml:"gas_checks"`
+	OmnirpcURL string      `yaml:"omnirpc_url" default:"https://rpc.omnirpc.io"`
 }
 
-// DFKPending contains the config for the DFK pending metric
+// DFKPending contains the config for the DFK pending metric.
 type DFKPending struct {
 	// Owner is the owner of the pending heroes
 	Owner string `yaml:"owner"`
@@ -30,7 +30,7 @@ type DFKPending struct {
 	ChainName string `yaml:"chain_name"`
 }
 
-// GasChecks contains the config for the gas checks
+// GasChecks contains the config for the gas checks.
 type GasChecks struct {
 	// ChainID is the chain id
 	ChainIDs []int `yaml:"chain_ids"`
@@ -40,6 +40,7 @@ type GasChecks struct {
 	Name string `yaml:"name"`
 }
 
+// DecodeConfig decodes the config from the given file path.
 func DecodeConfig(filePath string) (_ Config, err error) {
 	cfg := &Config{}
 	input, err := os.ReadFile(filepath.Clean(filePath))
@@ -52,7 +53,7 @@ func DecodeConfig(filePath string) (_ Config, err error) {
 		panic(err)
 	}
 
-	//set some other defaults that can't be set w/ default
+	// set some other defaults that can't be set w/ default
 	cfg.DFKPending = []DFKPending{
 		{
 			Owner:     "0x739B1666c2956f601f095298132773074c3E184b",

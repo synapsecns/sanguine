@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"github.com/ethereum/go-ethereum/common"
+	"github.com/ethereum/go-ethereum/params"
 	"github.com/gin-gonic/gin"
 	"github.com/ipfs/go-log"
 	"github.com/synapsecns/sanguine/contrib/promexporter/config"
@@ -12,8 +13,10 @@ import (
 	"github.com/synapsecns/sanguine/core/ginhelper"
 	"github.com/synapsecns/sanguine/core/metrics"
 	"github.com/synapsecns/sanguine/core/metrics/instrumentation"
+	omnirpcClient "github.com/synapsecns/sanguine/services/omnirpc/client"
 	"go.opentelemetry.io/otel/metric"
 	"golang.org/x/sync/errgroup"
+	"math/big"
 	"net"
 	"net/http"
 	"time"
@@ -32,12 +35,14 @@ func makeHTTPClient(handler metrics.Handler) *http.Client {
 }
 
 type exporter struct {
-	client  *http.Client
-	metrics metrics.Handler
-	meter   metric.Meter
-	cfg     config.Config
+	client        *http.Client
+	metrics       metrics.Handler
+	meter         metric.Meter
+	cfg           config.Config
+	omnirpcClient omnirpcClient.RPCClient
 }
 
+// StartExporterServer starts the exporter server.
 func StartExporterServer(ctx context.Context, handler metrics.Handler, cfg config.Config) error {
 	router := ginhelper.New(logger)
 	router.Use(handler.Gin())
@@ -65,10 +70,11 @@ func StartExporterServer(ctx context.Context, handler metrics.Handler, cfg confi
 	metermaid := handler.Meter("github.com/synapsecns/sanguine/contrib/promexporter/exporters")
 
 	exp := exporter{
-		client:  makeHTTPClient(handler),
-		metrics: handler,
-		meter:   metermaid,
-		cfg:     cfg,
+		client:        makeHTTPClient(handler),
+		metrics:       handler,
+		meter:         metermaid,
+		cfg:           cfg,
+		omnirpcClient: omnirpcClient.NewOmnirpcClient(cfg.OmnirpcURL, handler, omnirpcClient.WithCaptureReqRes()),
 	}
 
 	// register dfk metrics
@@ -77,6 +83,16 @@ func StartExporterServer(ctx context.Context, handler metrics.Handler, cfg confi
 		err = exp.stuckHeroCount(common.HexToAddress(pending.Owner), pending.ChainName)
 		if err != nil {
 			return fmt.Errorf("could setup metric: %w", err)
+		}
+	}
+
+	// register gas check metrics
+	for _, gasCheck := range cfg.GasChecks {
+		for _, chainID := range gasCheck.ChainIDs {
+			err := exp.gasBalance(common.HexToAddress(gasCheck.Address), chainID, gasCheck.Name)
+			if err != nil {
+				return fmt.Errorf("could setup metric: %w", err)
+			}
 		}
 	}
 
@@ -111,7 +127,38 @@ func (e *exporter) stuckHeroCount(owner common.Address, chainName string) error 
 
 		return nil
 	}, stuckCount); err != nil {
-		return fmt.Errorf("registering callback on instruments: %s", err)
+		return fmt.Errorf("registering callback on instruments: %w", err)
+	}
+
+	return nil
+}
+
+const gasBalance = "gas_balance"
+
+func (e *exporter) gasBalance(address common.Address, chainID int, name string) error {
+	balanceGauge, err := e.meter.Float64ObservableGauge(fmt.Sprintf("%s_%s_%d", gasBalance, name, chainID))
+	if err != nil {
+		return fmt.Errorf("could not create gauge: %w", err)
+	}
+
+	if _, err := e.meter.RegisterCallback(func(ctx context.Context, o metric.Observer) error {
+		client, err := e.omnirpcClient.GetConfirmationsClient(ctx, chainID, 1)
+		if err != nil {
+			return fmt.Errorf("could not get confirmations client: %w", err)
+		}
+
+		balance, err := client.BalanceAt(ctx, address, nil)
+		if err != nil {
+			return fmt.Errorf("could not get balance: %w", err)
+		}
+
+		ethBalance := new(big.Float).Quo(new(big.Float).SetInt(balance), new(big.Float).SetInt64(params.Ether))
+		truncEthBalance, _ := ethBalance.Float64()
+		o.ObserveFloat64(balanceGauge, truncEthBalance)
+
+		return nil
+	}, balanceGauge); err != nil {
+		return fmt.Errorf("registering callback on instruments: %w", err)
 	}
 
 	return nil
