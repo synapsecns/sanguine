@@ -22,12 +22,8 @@ export const OriginChainLabel = ({
   chainId: number
   connectedChainId: number
 }) => {
-  const leftRef = useRef<HTMLDivElement>(null)
-  const rightRef = useRef<HTMLDivElement>(null)
   const scrollableRef = useRef<HTMLDivElement>(null)
   const [orderedChains, setOrderedChains] = useState<number[]>([])
-  const [chainListWidth, setChainListWidth] = useState<number>(0)
-  const [width, height] = useWindowSize()
 
   useEffect(() => {
     setOrderedChains(chainOrderBySwapSide(chainId))
@@ -41,28 +37,13 @@ export const OriginChainLabel = ({
     }
   }
 
-  useEffect(() => {
-    if (width && leftRef.current && rightRef.current) {
-      const distance = getDistanceBetweenElements(
-        leftRef.current,
-        rightRef.current
-      )
-      setChainListWidth(distance)
-    }
-  }, [width])
-
   return (
     <div data-test-id="origin-chain-label" className="flex items-center">
-      <div ref={leftRef} className={`text-gray-400 block text-sm mr-2`}>
-        Origin
-      </div>
+      <div className={`text-gray-400 block text-sm mr-2`}>Origin</div>
       <div className="relative flex ml-auto">
         <div
           ref={scrollableRef}
-          className="relative flex items-center overflow-x-auto overflow-y-hidden scrollbar-hide"
-          style={{
-            maxWidth: chainListWidth ? `${chainListWidth - 60}px` : 'full',
-          }}
+          className="flex items-center relative overflow-x-auto overflow-y-hidden w-[200px] min-[400px]:w-[260px] min-[475px]:w-full scrollbar-hide"
         >
           <div className="hidden sticky min-w-[15px] h-full left-[-3px] bg-gradient-to-l from-transparent to-bgLight max-[475px]:block">
             &nbsp;
@@ -80,10 +61,7 @@ export const OriginChainLabel = ({
               )
             })}
           </div>
-          <div
-            ref={rightRef}
-            className="ml-0 sticky min-w-[15px] h-full right-[-3px] bg-gradient-to-r from-transparent to-bgLight"
-          >
+          <div className="ml-0 sticky min-w-[15px] h-full right-[-3px] bg-gradient-to-r from-transparent to-bgLight">
             &nbsp;
           </div>
         </div>
