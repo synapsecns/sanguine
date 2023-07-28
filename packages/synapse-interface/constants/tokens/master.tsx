@@ -866,7 +866,6 @@ export const NUSD = new Token({
     [CHAINS.BOBA.id]: '0x6B4712AE9797C199edd44F897cA09BC57628a1CF',
     [CHAINS.AURORA.id]: '0x07379565cD8B0CaE7c60Dc78e7f601b34AF2A21c',
     [CHAINS.METIS.id]: '0x961318Fc85475E125B99Cc9215f62679aE5200aB',
-    [CHAINS.DFK.id]: '0x3AD9DFE640E1A9Cc1D9B0948620820D975c3803a',
     [CHAINS.CANTO.id]: '0xD8836aF2e565D3Befce7D906Af63ee45a57E8f80',
   },
   decimals: 18,
@@ -912,7 +911,7 @@ export const NOTE = new Token({
 
 export const DFK_USDC = new Token({
   addresses: {
-    [CHAINS.DFK.id]: NUSD.addresses[CHAINS.DFK.id],
+    [CHAINS.DFK.id]: '0x3AD9DFE640E1A9Cc1D9B0948620820D975c3803a',
   },
   decimals: {
     [CHAINS.DFK.id]: 18,

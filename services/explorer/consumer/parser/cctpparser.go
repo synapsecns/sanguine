@@ -25,7 +25,7 @@ type CCTPParser struct {
 	// messageAddress is the address of the message
 	cctpAddress common.Address
 	// consumerFetcher is the Fetcher for sender and timestamp
-	consumerFetcher *fetcher.ScribeFetcher
+	consumerFetcher fetcher.ScribeFetcher
 	// tokenPriceService contains the token price service/cache
 	tokenPriceService tokenprice.Service
 }
@@ -34,7 +34,7 @@ const usdcCoinGeckoID = "usd-coin"
 const usdcDecimals = 6
 
 // NewCCTPParser creates a new parser for a cctp event.
-func NewCCTPParser(consumerDB db.ConsumerDB, cctpAddress common.Address, consumerFetcher *fetcher.ScribeFetcher, tokenPriceService tokenprice.Service) (*CCTPParser, error) {
+func NewCCTPParser(consumerDB db.ConsumerDB, cctpAddress common.Address, consumerFetcher fetcher.ScribeFetcher, tokenPriceService tokenprice.Service) (*CCTPParser, error) {
 	filterer, err := cctp.NewSynapseCCTPFilterer(cctpAddress, nil)
 	if err != nil {
 		return nil, fmt.Errorf("could not create %T: %w", cctp.SynapseCCTPFilterer{}, err)
