@@ -32,7 +32,7 @@ export const DestinationChainLabel = ({
 
   const resetScrollPosition = () => {
     if (scrollableRef.current) {
-      scrollableRef.current.scrollLeft = 0
+      scrollableRef.current.scroll({ left: 0, behavior: 'smooth' })
     }
   }
 
@@ -42,8 +42,11 @@ export const DestinationChainLabel = ({
       className="flex items-center justify-between"
     >
       <div className={`text-gray-400 block text-sm mr-2`}>Dest.</div>
-      <div className="relative flex">
-        <div className="flex items-center space-x-3 overflow-x-auto overflow-y-hidden w-[200px] min-[475px]:w-full scrollbar-hide">
+      <div className="relative flex ml-auto">
+        <div className="flex items-center relative overflow-x-auto overflow-y-hidden w-[230px] min-[475px]:w-full scrollbar-hide">
+          <div className="hidden sticky min-w-[15px] h-full left-[-3px] bg-gradient-to-l from-transparent to-bgLight max-[475px]:block">
+            &nbsp;
+          </div>
           {orderedChains.map((id: number, key: number) => {
             return Number(id) === chainId ? (
               <SelectedChain chainId={id} key={id} />
@@ -55,18 +58,23 @@ export const DestinationChainLabel = ({
               />
             )
           })}
+          <div className="ml-0 sticky min-w-[15px] h-full right-[-3px] bg-gradient-to-r from-transparent to-bgLight">
+            &nbsp;
+          </div>
         </div>
 
-        <button
-          onClick={() => {
-            dispatch(setShowToChainSlideOver(true))
-          }}
-          tabIndex={0}
-          data-test-id="bridge-destination-chain-list-button"
-          className="w-8 h-8 px-1.5 py-1.5 ml-3 bg-[#C4C4C4] bg-opacity-10 rounded-full hover:cursor-pointer group"
-        >
-          <ChevronDownIcon className="text-gray-300 transition transform-gpu group-hover:opacity-50 group-active:rotate-180" />
-        </button>
+        <div className="max-[475px]:pl-1">
+          <button
+            onClick={() => {
+              dispatch(setShowToChainSlideOver(true))
+            }}
+            tabIndex={0}
+            data-test-id="bridge-destination-chain-list-button"
+            className="w-8 h-8 px-1.5 py-1.5 bg-[#C4C4C4] bg-opacity-10 rounded-full hover:cursor-pointer group"
+          >
+            <ChevronDownIcon className="text-gray-300 transition transform-gpu group-hover:opacity-50 group-active:rotate-180" />
+          </button>
+        </div>
       </div>
     </div>
   )
@@ -102,6 +110,7 @@ const PossibleChain = ({
         max-w-[1.75rem] max-h-[1.75rem]
         px-0.5 py-0.5
         border border-gray-500 rounded-full
+        ml-3
       "
       tabIndex={0}
       onClick={onChangeChain}
@@ -124,7 +133,7 @@ const SelectedChain = ({ chainId }: { chainId: number }) => {
       ref={scrollableRef}
       data-test-id="destination-selected-chain"
       className={`
-        px-1
+        px-1 ml-3
         flex items-center
         bg-bgLight
         text-white
