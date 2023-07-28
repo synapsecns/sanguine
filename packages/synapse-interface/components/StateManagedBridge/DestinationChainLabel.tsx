@@ -11,7 +11,6 @@ import { setShowToChainSlideOver } from '@/slices/bridgeDisplaySlice'
 import { getOrderedChains } from '@/utils/getOrderedChains'
 import { RootState } from '@/store/store'
 import { segmentAnalyticsEvent } from '@/contexts/SegmentAnalyticsProvider'
-import useWindowSize from '@/utils/hooks/useWindowSize'
 
 const scrollableRef = createRef<HTMLDivElement>()
 
@@ -24,11 +23,7 @@ export const DestinationChainLabel = ({
   chainId: number
   connectedChainId: number
 }) => {
-  const leftRef = useRef<HTMLDivElement>(null)
-  const rightRef = useRef<HTMLDivElement>(null)
   const [orderedChains, setOrderedChains] = useState<number[]>([])
-  const [chainListWidth, setChainListWidth] = useState<number>(0)
-  const [width, height] = useWindowSize()
 
   const dispatch = useDispatch()
 
@@ -42,24 +37,12 @@ export const DestinationChainLabel = ({
     }
   }
 
-  useEffect(() => {
-    if (width && leftRef.current && rightRef.current) {
-      const distance = getDistanceBetweenElements(
-        leftRef.current,
-        rightRef.current
-      )
-      setChainListWidth(distance)
-    }
-  }, [width])
-
   return (
     <div
       data-test-id="destination-chain-label"
       className="flex items-center justify-between"
     >
-      <div ref={leftRef} className={`text-gray-400 block text-sm mr-2`}>
-        Dest.
-      </div>
+      <div className={`text-gray-400 block text-sm mr-2`}>Dest.</div>
       <div className="relative flex ml-auto">
         <div className="flex items-center relative overflow-x-auto overflow-y-hidden w-[200px] min-[400px]:w-[260px] min-[475px]:w-full scrollbar-hide">
           <div className="hidden sticky min-w-[15px] h-full left-[-3px] bg-gradient-to-l from-transparent to-bgLight max-[475px]:block">
@@ -83,7 +66,7 @@ export const DestinationChainLabel = ({
           </div>
         </div>
 
-        <div ref={rightRef} className="max-[475px]:pl-1">
+        <div className="max-[475px]:pl-1">
           <button
             onClick={() => {
               dispatch(setShowToChainSlideOver(true))
@@ -186,16 +169,4 @@ const chainOrderBySwapSide = (
     chainId,
     chains.map((id) => `${id}`)
   )
-}
-
-export function getDistanceBetweenElements(
-  element1: HTMLElement,
-  element2: HTMLElement
-): number {
-  const rect1 = element1.getBoundingClientRect()
-  const rect2 = element2.getBoundingClientRect()
-
-  const distance = Math.abs(rect2.left - rect1.right)
-
-  return distance
 }

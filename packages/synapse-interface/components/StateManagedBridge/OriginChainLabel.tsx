@@ -11,7 +11,6 @@ import { setFromChainId } from '@/slices/bridgeSlice'
 import { setShowFromChainSlideOver } from '@/slices/bridgeDisplaySlice'
 import { RootState } from '@/store/store'
 import { segmentAnalyticsEvent } from '@/contexts/SegmentAnalyticsProvider'
-import useWindowSize from '@/utils/hooks/useWindowSize'
 
 export const OriginChainLabel = ({
   chains,
@@ -167,16 +166,4 @@ const chainOrderBySwapSide = (chainId: number, count?: number) => {
   orderedChains.unshift(chainId)
 
   return orderedChains
-}
-
-export function getDistanceBetweenElements(
-  element1: HTMLElement,
-  element2: HTMLElement
-): number {
-  const rect1 = element1.getBoundingClientRect()
-  const rect2 = element2.getBoundingClientRect()
-
-  const distance = Math.abs(rect2.left - rect1.right)
-
-  return distance
 }
