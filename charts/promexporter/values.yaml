@@ -18,7 +18,8 @@ command:
 - "/app/promexporter"
 
 args:
-- "start --config /config/config.yaml"
+- "start"
+- "--config=/config/config.yaml"
 
 env:
 - name: METRICS_HANDLER

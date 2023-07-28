@@ -107,6 +107,8 @@ require (
 )
 
 replace (
+	github.com/kr/pretty => github.com/kr/pretty v0.3.1
+	github.com/rogpeppe/go-internal => github.com/rogpeppe/go-internal v1.9.0
 	golang.org/x/oauth2 => golang.org/x/oauth2 v0.0.0-20221014153046-6fdb5e3db783
 	google.golang.org/api => google.golang.org/api v0.86.0
 )
