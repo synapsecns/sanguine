@@ -18,6 +18,7 @@ func init() {
 	}
 
 	DisputeOpenedTopic = parsedLightManager.Events["DisputeOpened"].ID
+	RootUpdatedTopic = parsedLightManager.Events["RootUpdated"].ID
 
 	if DisputeOpenedTopic == (common.Hash{}) {
 		panic("DisputeOpenedTopic is nil")
@@ -27,11 +28,15 @@ func init() {
 // DisputeOpenedTopic is the topic that gets emitted when the DisputeOpened event is called.
 var DisputeOpenedTopic common.Hash
 
+// RootUpdatedTopic is the topic that gets emitted when the RootUpdates event is called.
+var RootUpdatedTopic common.Hash
+
 // topicMap maps events to topics.
 // this is returned as a function to assert immutability.
 func topicMap() map[EventType]common.Hash {
 	return map[EventType]common.Hash{
 		DisputeOpenedEvent: DisputeOpenedTopic,
+		RootUpdatedEvent:   RootUpdatedTopic,
 	}
 }
 

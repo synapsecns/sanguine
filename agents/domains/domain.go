@@ -113,6 +113,8 @@ type BondingManagerContract interface {
 	GetDisputeStatus(ctx context.Context, agent common.Address) (disputeStatus types.DisputeStatus, err error)
 	// CompleteSlashing completes the slashing of an agent.
 	CompleteSlashing(ctx context.Context, signer signer.Signer, domain uint32, agent common.Address, proof [][32]byte) (tx *ethTypes.Transaction, err error)
+	// GetAgent gets an agent status and address for a given agent index.
+	GetAgent(ctx context.Context, index *big.Int) (types.AgentStatus, common.Address, error)
 }
 
 // DestinationContract contains the interface for the destination.

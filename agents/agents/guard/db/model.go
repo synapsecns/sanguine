@@ -1,7 +1,9 @@
-package base
+package db
 
 import (
 	"encoding/json"
+	"github.com/synapsecns/sanguine/agents/agents/guard"
+	"github.com/synapsecns/sanguine/agents/agents/guard/db/sql/base"
 	"github.com/synapsecns/sanguine/core/dbcommon"
 )
 
@@ -9,10 +11,13 @@ import (
 // note: some models share names. In cases where they do, we run the check against all names.
 // This is cheap because it's only done at startup.
 func init() {
-	namer := dbcommon.NewNamer(GetAllModels())
+	namer := dbcommon.NewNamer(base.GetAllModels())
 	AgentRootFieldName = namer.GetConsistentName("AgentRoot")
 	DisputeIndexFieldName = namer.GetConsistentName("DisputeIndex")
 	ChainIDFieldName = namer.GetConsistentName("ChainID")
+	AgentAddressFieldName = namer.GetConsistentName("AgentAddress")
+	BlockNumberFieldName = namer.GetConsistentName("BlockNumber")
+	DisputeProcessedStatusFieldName = namer.GetConsistentName("DisputeProcessedStatus")
 }
 
 var (
@@ -22,19 +27,36 @@ var (
 	DisputeIndexFieldName string
 	// ChainIDFieldName gets the chain id field name.
 	ChainIDFieldName string
+	// AgentAddressFieldName gets the agent address field name.
+	AgentAddressFieldName string
+	// BlockNumberFieldName gets the agent block number field name.
+	BlockNumberFieldName string
+	// DisputeProcessedStatusFieldName gets the dispute processed status field name.
+	DisputeProcessedStatusFieldName string
 )
+
+/*
+   address guard,
+   address notary,
+   address slashedAgent,
+   address fraudProver,
+   bytes memory reportPayload,
+   bytes memory reportSignature
+
+also need indexes, also need agentRoot. slashedAgent could be checked for nilstring for if we saw it get slashed
+*/
 
 // Dispute is a dispute between two agents.
 // TODO: Change guard index and notary index to addresses? Requires an additional call.
 type Dispute struct {
-	// AgentRoot is the root of the agent tree.
-	AgentRoot string `gorm:"column:agent_root;primaryKey"`
 	// DisputeIndex is the index of the dispute on the BondingManager.
 	DisputeIndex uint64 `gorm:"column:dispute_index;primaryKey"`
-	// Resolved is if the dispute has been resolved.
-	Resolved bool `gorm:"column:resolved"`
-	// GuardIndex is the index of the guard on the BondingManager.
-	GuardIndex uint64 `gorm:"column:guard_index"`
+	// DisputeProcessedStatus indicates the status of the dispute.
+	DisputeProcessedStatus guard.DisputeProcessedStatus `gorm:"column:dispute_processed_status"`
+
+	// DisputeFlag indicates the status of the dispute.
+	//DisputeFlag uint8 `gorm:"column:dispute_flag"`
+
 	// GuardAddress is the address of the guard.
 	GuardAddress string `gorm:"column:guard_address"`
 	//NotaryIndex is the index of the notary on the BondingManager.
@@ -47,16 +69,19 @@ type Dispute struct {
 type AgentTree struct {
 	// AgentRoot is the root of the agent tree.
 	AgentRoot string `gorm:"column:agent_root;primaryKey"`
-	// BlockNumber is the block number that the agent tree was updated on Summit.
-	BlockNumber uint64 `gorm:"column:block_number"`
+	// AgentAddress is the address of the agent for the Merkle proof.
+	AgentAddress string `gorm:"column:agent_address;primaryKey"`
+	// TODO: Check compatability with [][32]byte.
 	// Proof is the agent tree proof.
 	Proof json.RawMessage `gorm:"column:proof"`
 }
 
-// RemoteAgentRoot is the state of an agent tree on a remote chain.
-type RemoteAgentRoot struct {
-	// AgentRoot is the root of the agent tree accepted on the remote chain.
+// AgentRoot is the state of the agent roots on Summit.
+type AgentRoot struct {
+	// AgentRoot is the root of the agent tree.
 	AgentRoot string `gorm:"column:agent_root;primaryKey"`
-	// ChainID is the chain id of the remote chain that has seen the agent root.
+	// ChainID is the chain id of the chain where we see the `RootUpdated` event.
 	ChainID uint32 `gorm:"column:chain_id;primaryKey"`
+	// BlockNumber is the block number that the agent tree was updated.
+	BlockNumber uint64 `gorm:"column:block_number"`
 }

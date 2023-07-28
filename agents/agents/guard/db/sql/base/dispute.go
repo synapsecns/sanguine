@@ -4,6 +4,8 @@ import (
 	"context"
 	"fmt"
 	"github.com/ethereum/go-ethereum/common"
+	"github.com/synapsecns/sanguine/agents/agents/guard"
+	"github.com/synapsecns/sanguine/agents/agents/guard/db"
 	"gorm.io/gorm/clause"
 	"math/big"
 )
@@ -11,31 +13,25 @@ import (
 // StoreDispute stores an dispute.
 func (s Store) StoreDispute(
 	ctx context.Context,
-	agentRoot [32]byte,
 	disputeIndex *big.Int,
-	resolved bool,
-	guardIndex *big.Int,
+	disputeProcessedStatus guard.DisputeProcessedStatus,
 	guardAddress common.Address,
-	notaryIndex *big.Int,
+	notaryIndex uint32,
 	notaryAddress common.Address,
 ) error {
-	dbAgentRoot := common.BytesToHash(agentRoot[:]).String()
-
 	dbTx := s.DB().WithContext(ctx).
 		Clauses(clause.OnConflict{
 			Columns: []clause.Column{
-				{Name: AgentRootFieldName}, {Name: DisputeIndexFieldName},
+				{Name: db.AgentRootFieldName}, {Name: db.DisputeIndexFieldName},
 			},
 			DoNothing: true,
 		}).
-		Create(&Dispute{
-			AgentRoot:     dbAgentRoot,
-			DisputeIndex:  disputeIndex.Uint64(),
-			Resolved:      resolved,
-			GuardIndex:    guardIndex.Uint64(),
-			GuardAddress:  guardAddress.String(),
-			NotaryIndex:   notaryIndex.Uint64(),
-			NotaryAddress: notaryAddress.String(),
+		Create(&db.Dispute{
+			DisputeIndex:           disputeIndex.Uint64(),
+			DisputeProcessedStatus: disputeProcessedStatus,
+			GuardAddress:           guardAddress.String(),
+			NotaryIndex:            uint64(notaryIndex),
+			NotaryAddress:          notaryAddress.String(),
 		})
 
 	if dbTx.Error != nil {
@@ -43,4 +39,20 @@ func (s Store) StoreDispute(
 	}
 
 	return nil
+}
+
+// GetDisputesToPropagate returns disputes with `DisputeProcessStatus` equal to `Resolved`.
+func (s Store) GetDisputesToPropagate(
+	ctx context.Context,
+) ([]db.Dispute, error) {
+	var disputes []db.Dispute
+	dbTx := s.DB().WithContext(ctx).
+		Where(fmt.Sprintf("%s = ?", db.DisputeProcessedStatusFieldName), guard.Resolved).
+		Find(&disputes)
+
+	if dbTx.Error != nil {
+		return nil, fmt.Errorf("failed to get disputes to propagate: %w", dbTx.Error)
+	}
+
+	return disputes, nil
 }

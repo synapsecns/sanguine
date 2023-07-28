@@ -138,3 +138,14 @@ func (a bondingManagerContract) GetDisputeStatus(ctx context.Context, agent comm
 	disputeStatus = types.NewDisputeStatus(types.DisputeFlagType(rawStatus.Flag), rawStatus.Rival, rawStatus.FraudProver, rawStatus.DisputePtr)
 	return disputeStatus, nil
 }
+
+func (a bondingManagerContract) GetAgent(ctx context.Context, index *big.Int) (types.AgentStatus, common.Address, error) {
+	rawStatus, err := a.contract.GetAgent(&bind.CallOpts{Context: ctx}, index)
+	if err != nil {
+		return nil, common.Address{}, fmt.Errorf("could not retrieve agent status: %w", err)
+	}
+
+	agentStatus := types.NewAgentStatus(types.AgentFlagType(rawStatus.Status.Flag), rawStatus.Status.Domain, rawStatus.Status.Index)
+
+	return agentStatus, rawStatus.Agent, nil
+}

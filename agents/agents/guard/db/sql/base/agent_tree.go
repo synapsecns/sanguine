@@ -5,11 +5,17 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/ethereum/go-ethereum/common"
+	"github.com/synapsecns/sanguine/agents/agents/guard/db"
 	"gorm.io/gorm/clause"
 )
 
 // StoreAgentTree stores an agent tree.
-func (s Store) StoreAgentTree(ctx context.Context, agentRoot [32]byte, blockNumber uint64, proof [][32]byte) error {
+func (s Store) StoreAgentTree(
+	ctx context.Context,
+	agentRoot [32]byte,
+	agentAddress common.Address,
+	proof [][32]byte,
+) error {
 	dbAgentRoot := common.BytesToHash(agentRoot[:]).String()
 
 	proofJSON, err := json.Marshal(proof)
@@ -20,14 +26,14 @@ func (s Store) StoreAgentTree(ctx context.Context, agentRoot [32]byte, blockNumb
 	dbTx := s.DB().WithContext(ctx).
 		Clauses(clause.OnConflict{
 			Columns: []clause.Column{
-				{Name: AgentRootFieldName},
+				{Name: db.AgentRootFieldName}, {Name: db.AgentAddressFieldName},
 			},
 			DoNothing: true,
 		}).
-		Create(&AgentTree{
-			AgentRoot:   dbAgentRoot,
-			BlockNumber: blockNumber,
-			Proof:       proofJSON,
+		Create(&db.AgentTree{
+			AgentRoot:    dbAgentRoot,
+			AgentAddress: agentAddress.String(),
+			Proof:        proofJSON,
 		})
 
 	if dbTx.Error != nil {
@@ -36,3 +42,5 @@ func (s Store) StoreAgentTree(ctx context.Context, agentRoot [32]byte, blockNumb
 
 	return nil
 }
+
+// SeenLaterAgentRoot

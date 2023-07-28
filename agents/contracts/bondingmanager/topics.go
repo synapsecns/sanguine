@@ -18,6 +18,8 @@ func init() {
 	}
 
 	StatusUpdatedTopic = parsedBondingManager.Events["StatusUpdated"].ID
+	DisputeOpenedTopic = parsedBondingManager.Events["DisputeOpened"].ID
+	RootUpdatedTopic = parsedBondingManager.Events["RootUpdated"].ID
 
 	if StatusUpdatedTopic == (common.Hash{}) {
 		panic("StatusUpdatedTopic is nil")
@@ -27,11 +29,19 @@ func init() {
 // StatusUpdatedTopic is the topic that gets emitted when the StatusUpdated event is called.
 var StatusUpdatedTopic common.Hash
 
+// DisputeOpenedTopic is the topic that gets emitted when the DisputeOpened event is called.
+var DisputeOpenedTopic common.Hash
+
+// RootUpdatedTopic is the topic that gets emitted when the RootUpdated event is called.
+var RootUpdatedTopic common.Hash
+
 // topicMap maps events to topics.
 // this is returned as a function to assert immutability.
 func topicMap() map[EventType]common.Hash {
 	return map[EventType]common.Hash{
 		StatusUpdatedEvent: StatusUpdatedTopic,
+		DisputeOpenedEvent: DisputeOpenedTopic,
+		RootUpdatedEvent:   RootUpdatedTopic,
 	}
 }
 

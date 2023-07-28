@@ -12,6 +12,8 @@ type Parser interface {
 	EventType(log ethTypes.Log) (_ EventType, ok bool)
 	// ParseDisputeOpened parses a DisputeOpened event
 	ParseDisputeOpened(log ethTypes.Log) (_ *LightManagerDisputeOpened, err error)
+	// ParseRootUpdated parses a RootUpdated event
+	ParseRootUpdated(log ethTypes.Log) (_ *[32]byte, err error)
 }
 
 type parserImpl struct {
@@ -38,6 +40,15 @@ func (p parserImpl) ParseDisputeOpened(log ethTypes.Log) (_ *LightManagerDispute
 	return lightManagerDisputeOpened, nil
 }
 
+func (p parserImpl) ParseRootUpdated(log ethTypes.Log) (_ *[32]byte, err error) {
+	lightManagerRootUpdated, err := p.filterer.ParseRootUpdated(log)
+	if err != nil {
+		return nil, fmt.Errorf("could not parse status updated: %w", err)
+	}
+
+	return &lightManagerRootUpdated.NewRoot, nil
+}
+
 func (p parserImpl) EventType(log ethTypes.Log) (_ EventType, ok bool) {
 	for _, logTopic := range log.Topics {
 		eventType := eventTypeFromTopic(logTopic)
@@ -58,7 +69,9 @@ type EventType uint
 
 const (
 	// DisputeOpenedEvent is an DisputeOpened event.
-	DisputeOpenedEvent EventType = 0
+	DisputeOpenedEvent EventType = iota
+	// RootUpdatedEvent is an RootUpdated event.
+	RootUpdatedEvent
 )
 
 // Int gets the int for an event type.

@@ -57,6 +57,7 @@ type Guard struct {
 	lightManagerParser   lightmanager.Parser
 	boundOrigins         map[uint32]*origin.Origin
 	txSubmitter          submitter.TransactionSubmitter
+	guardDB              db.GuardDB
 }
 
 const (
@@ -94,7 +95,7 @@ func makeScribeClient(parentCtx context.Context, handler metrics.Handler, url st
 // NewGuard creates a new guard.
 //
 //nolint:cyclop
-func NewGuard(ctx context.Context, cfg config.AgentConfig, omniRPCClient omnirpcClient.RPCClient, scribeClient client.ScribeClient, txDB db.GuardDB, handler metrics.Handler) (guard *Guard, err error) {
+func NewGuard(ctx context.Context, cfg config.AgentConfig, omniRPCClient omnirpcClient.RPCClient, scribeClient client.ScribeClient, guardDB db.GuardDB, handler metrics.Handler) (guard *Guard, err error) {
 	guard = &Guard{
 		refreshInterval: time.Second * time.Duration(cfg.RefreshIntervalSeconds),
 		domains:         make(map[uint32]domains.DomainClient),
@@ -170,7 +171,8 @@ func NewGuard(ctx context.Context, cfg config.AgentConfig, omniRPCClient omnirpc
 	guard.summitLatestStates = make(map[uint32]types.State, len(guard.domains))
 	guard.originLatestStates = make(map[uint32]types.State, len(guard.domains))
 	guard.handler = handler
-	guard.txSubmitter = submitter.NewTransactionSubmitter(handler, guard.unbondedSigner, omniRPCClient, txDB.SubmitterDB(), &cfg.SubmitterConfig)
+	guard.txSubmitter = submitter.NewTransactionSubmitter(handler, guard.unbondedSigner, omniRPCClient, guardDB.SubmitterDB(), &cfg.SubmitterConfig)
+	guard.guardDB = guardDB
 
 	return guard, nil
 }
@@ -233,7 +235,7 @@ func (g Guard) receiveLogs(ctx context.Context, chainID uint32) error {
 				return fmt.Errorf("log is nil")
 			}
 
-			err := g.handleLog(ctx, *log)
+			err := g.handleLog(ctx, *log, chainID)
 			if err != nil {
 				return fmt.Errorf("could not process log: %w", err)
 			}
@@ -241,7 +243,7 @@ func (g Guard) receiveLogs(ctx context.Context, chainID uint32) error {
 	}
 }
 
-func (g Guard) handleLog(ctx context.Context, log ethTypes.Log) error {
+func (g Guard) handleLog(ctx context.Context, log ethTypes.Log, chainID uint32) error {
 	switch {
 	case g.isSnapshotAcceptedEvent(log):
 		return g.handleSnapshot(ctx, log)
@@ -249,10 +251,10 @@ func (g Guard) handleLog(ctx context.Context, log ethTypes.Log) error {
 		return g.handleAttestation(ctx, log)
 	case g.isReceiptAcceptedEvent(log):
 		return g.handleReceipt(ctx, log)
-	case g.isStatusUpdatedEvent(log):
-		return g.handleStatusUpdated(ctx, log)
 	case g.isDisputeOpenedEvent(log):
 		return g.handleDisputeOpened(ctx, log)
+	case chainID == g.summitDomainID && g.isStatusUpdatedEvent(log):
+		return g.handleStatusUpdated(ctx, log)
 	}
 	return nil
 }
@@ -280,6 +282,11 @@ func (g Guard) isStatusUpdatedEvent(log ethTypes.Log) bool {
 func (g Guard) isDisputeOpenedEvent(log ethTypes.Log) bool {
 	lightManagerEvent, ok := g.lightManagerParser.EventType(log)
 	return ok && lightManagerEvent == lightmanager.DisputeOpenedEvent
+}
+
+func (g Guard) isRootUpdatedEvent(log ethTypes.Log) bool {
+	bondingManagerEvent, ok := g.bondingManagerParser.EventType(log)
+	return ok && bondingManagerEvent == bondingmanager.RootUpdatedEvent
 }
 
 func (g Guard) handleSnapshot(ctx context.Context, log ethTypes.Log) error {
@@ -533,25 +540,52 @@ func (g Guard) handleStatusUpdated(ctx context.Context, log ethTypes.Log) error 
 		return fmt.Errorf("could not parse status updated: %w", err)
 	}
 
-	// TODO: Change this to an enum.
-	if statusUpdated.Flag != 4 {
-		return nil
-	}
+	switch types.AgentFlagType(statusUpdated.Flag) {
+	case types.AgentFlagFraudulent:
+		agentProof, err := g.domains[g.summitDomainID].BondingManager().GetProof(ctx, statusUpdated.Agent)
+		if err != nil {
+			return fmt.Errorf("could not get proof: %w", err)
+		}
 
-	agentProof, err := g.domains[g.summitDomainID].BondingManager().GetProof(ctx, statusUpdated.Agent)
-	if err != nil {
-		return fmt.Errorf("could not get proof: %w", err)
-	}
+		_, err = g.domains[g.summitDomainID].BondingManager().CompleteSlashing(
+			ctx,
+			g.unbondedSigner,
+			statusUpdated.Domain,
+			statusUpdated.Agent,
+			agentProof,
+		)
+		if err != nil {
+			return fmt.Errorf("could not complete slashing: %w", err)
+		}
+	case types.AgentFlagSlashed:
+		agentRoot, err := g.domains[g.summitDomainID].BondingManager().GetAgentRoot(ctx)
+		if err != nil {
+			return fmt.Errorf("could not get agent root: %w", err)
+		}
 
-	_, err = g.domains[g.summitDomainID].BondingManager().CompleteSlashing(
-		ctx,
-		g.unbondedSigner,
-		statusUpdated.Domain,
-		statusUpdated.Agent,
-		agentProof,
-	)
-	if err != nil {
-		return fmt.Errorf("could not complete slashing: %w", err)
+		agentProof, err := g.domains[g.summitDomainID].BondingManager().GetProof(ctx, statusUpdated.Agent)
+		if err != nil {
+			return fmt.Errorf("could not get proof: %w", err)
+		}
+
+		err = g.guardDB.StoreAgentTree(
+			ctx,
+			agentRoot,
+			statusUpdated.Agent,
+			agentProof,
+		)
+		if err != nil {
+			return fmt.Errorf("could not store agent tree: %w", err)
+		}
+
+		err = g.guardDB.StoreAgentRoot(
+			ctx,
+			agentRoot,
+			log.BlockNumber,
+		)
+		if err != nil {
+			return fmt.Errorf("could not store agent root: %w", err)
+		}
 	}
 
 	return nil
@@ -563,9 +597,53 @@ func (g Guard) handleDisputeOpened(ctx context.Context, log ethTypes.Log) error 
 		return fmt.Errorf("could not parse dispute opened: %w", err)
 	}
 
-	_ = disputeOpened
+	_, guardAddress, err := g.domains[g.summitDomainID].BondingManager().GetAgent(ctx, big.NewInt(int64(disputeOpened.GuardIndex)))
+	if err != nil {
+		return fmt.Errorf("could not get agent: %w", err)
+	}
+
+	_, notaryAddress, err := g.domains[g.summitDomainID].BondingManager().GetAgent(ctx, big.NewInt(int64(disputeOpened.NotaryIndex)))
+	if err != nil {
+		return fmt.Errorf("could not get agent: %w", err)
+	}
+
+	// Store the dispute in the database.
+	err = g.guardDB.StoreDispute(
+		ctx,
+		disputeOpened.DisputeIndex,
+		Opened,
+		guardAddress,
+		disputeOpened.NotaryIndex,
+		notaryAddress,
+	)
+	if err != nil {
+		return fmt.Errorf("could not store dispute: %w", err)
+	}
 
 	return nil
+}
+
+func (g Guard) handleRootUpdated(ctx context.Context, log ethTypes.Log, chainID uint32) error {
+	newRoot, err := g.bondingManagerParser.ParseRootUpdated(log)
+	if err != nil || newRoot == nil {
+		return fmt.Errorf("could not parse root updated: %w", err)
+	}
+
+	err = g.guardDB.StoreAgentRoot(
+		ctx,
+		*newRoot,
+		chainID,
+		log.BlockNumber,
+	)
+	if err != nil {
+		return fmt.Errorf("could not store agent root: %w", err)
+	}
+
+	return nil
+}
+
+func (g Guard) updateAgentStatus(ctx context.Context, chainID uint32) error {
+
 }
 
 //nolint:cyclop
