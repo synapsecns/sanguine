@@ -45,6 +45,8 @@ var logger = log.Logger("scribe-api")
 // Start starts the api server.
 func Start(ctx context.Context, cfg Config, handler metrics.Handler) error {
 	router := ginhelper.New(logger)
+	// wrap gin with metrics
+	router.GET(ginhelper.MetricsEndpoint, gin.WrapH(handler.Handler()))
 
 	eventDB, err := InitDB(ctx, cfg.Database, cfg.Path, handler, cfg.SkipMigrations)
 	if err != nil {
