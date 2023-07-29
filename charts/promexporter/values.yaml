@@ -8,7 +8,7 @@ image:
   repository: ghcr.io/synapsecns/sanguine/promexporter
   pullPolicy: Always
   # Overrides the image tag whose default is the chart appVersion.
-  tag: 1a97a1bb7f4fdefd7c459081d06a2ccef2d0d50b
+  tag: 4a9aad096c2bd1160e56e5472ddac77fa0cde2e9
 
 imagePullSecrets: []
 nameOverride: ""
