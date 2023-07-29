@@ -261,3 +261,56 @@ query GetLeaderboard($duration: Duration, $chainID: Int, $useMv: Boolean, $page:
     avgVolumeUSD
   }
 }
+
+
+query GetOriginBridgeTx($chainID: Int, $txnHash: String) {
+  response: getOriginBridgeTx(
+    chainID: $chainID
+    txnHash: $txnHash
+  ) {
+    bridgeTx {
+      chainID
+      destinationChainID
+      address
+      txnHash
+      value
+      formattedValue
+      USDValue
+      tokenAddress
+      tokenSymbol
+      blockNumber
+      time
+      formattedTime
+    }
+    pending
+    type
+    kappa
+  }
+}
+query GetDestinationBridgeTx($chainID: Int, $kappa: String, $address: String, $timestamp: Int) {
+  response: getDestinationBridgeTx(
+    chainID: $chainID
+    address: $address
+    kappa: $kappa
+    timestamp: $timestamp
+
+  ) {
+    bridgeTx {
+      chainID
+      destinationChainID
+      address
+      txnHash
+      value
+      formattedValue
+      USDValue
+      tokenAddress
+      tokenSymbol
+      blockNumber
+      time
+      formattedTime
+    }
+    pending
+    type
+    kappa
+  }
+}

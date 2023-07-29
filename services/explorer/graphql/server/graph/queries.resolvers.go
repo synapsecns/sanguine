@@ -395,6 +395,30 @@ func (r *queryResolver) Leaderboard(ctx context.Context, duration *model.Duratio
 	return leaderboardRes, nil
 }
 
+// GetOriginBridgeTx is the resolver for the getOriginBridgeTx field.
+func (r *queryResolver) GetOriginBridgeTx(ctx context.Context, chainID *int, txnHash *string) (*model.BridgeWatcherTx, error) {
+	if chainID == nil || txnHash == nil {
+		return nil, fmt.Errorf("chainID and txnHash must be provided")
+	}
+	results, err := r.GetOriginBridgeTxBW(ctx, *chainID, *txnHash)
+	if err != nil {
+		return nil, fmt.Errorf("could not get message bus transactions %w", err)
+	}
+	return results, nil
+}
+
+// GetDestinationBridgeTx is the resolver for the getDestinationBridgeTx field.
+func (r *queryResolver) GetDestinationBridgeTx(ctx context.Context, chainID *int, address *string, kappa *string, timestamp *int) (*model.BridgeWatcherTx, error) {
+	if chainID == nil || address == nil || kappa == nil || timestamp == nil {
+		return nil, fmt.Errorf("chainID, txnHash, kappa, and timestamp must be provided")
+	}
+	results, err := r.GetDestinationBridgeTxBW(ctx, *chainID, *address, *kappa, *timestamp)
+	if err != nil {
+		return nil, fmt.Errorf("could not get message bus transactions %w", err)
+	}
+	return results, nil
+}
+
 // Query returns resolvers.QueryResolver implementation.
 func (r *Resolver) Query() resolvers.QueryResolver { return &queryResolver{r} }
 
