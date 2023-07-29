@@ -84,3 +84,55 @@ func (t *DBSuite) TestGetUpdateAgentStatusParameters() {
 		Equal(t.T(), 2, len(agentTrees))
 	})
 }
+
+func (t *DBSuite) TestGetLatestConfirmedSummitBlockNumber() {
+	t.RunOnAllDBs(func(testDB db.GuardDB) {
+		chainIDA := gofakeit.Uint32()
+		chainIDB := gofakeit.Uint32()
+
+		agentRootA := common.BigToHash(big.NewInt(gofakeit.Int64()))
+		agentRootB := common.BigToHash(big.NewInt(gofakeit.Int64()))
+
+		err := testDB.StoreAgentRoot(
+			t.GetTestContext(),
+			agentRootA,
+			chainIDA,
+			gofakeit.Uint64(),
+		)
+		Nil(t.T(), err)
+		err = testDB.StoreAgentRoot(
+			t.GetTestContext(),
+			agentRootB,
+			chainIDB,
+			gofakeit.Uint64(),
+		)
+		Nil(t.T(), err)
+
+		err = testDB.StoreAgentTree(
+			t.GetTestContext(),
+			agentRootA,
+			common.BigToAddress(big.NewInt(gofakeit.Int64())),
+			5,
+			[][32]byte{{gofakeit.Uint8()}},
+		)
+		Nil(t.T(), err)
+		err = testDB.StoreAgentTree(
+			t.GetTestContext(),
+			agentRootB,
+			common.BigToAddress(big.NewInt(gofakeit.Int64())),
+			10,
+			[][32]byte{{gofakeit.Uint8()}},
+		)
+		Nil(t.T(), err)
+
+		blockNumberA, err := testDB.GetLatestConfirmedSummitBlockNumber(t.GetTestContext(), chainIDA)
+		Nil(t.T(), err)
+
+		Equal(t.T(), uint64(5), blockNumberA)
+
+		blockNumberB, err := testDB.GetLatestConfirmedSummitBlockNumber(t.GetTestContext(), chainIDB)
+		Nil(t.T(), err)
+
+		Equal(t.T(), uint64(10), blockNumberB)
+	})
+}

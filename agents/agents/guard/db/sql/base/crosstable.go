@@ -97,20 +97,20 @@ func (s Store) GetLatestConfirmedSummitBlockNumber(ctx context.Context, chainID 
 		return blockNumber, fmt.Errorf("failed to get agnet trees table name: %w", err)
 	}
 
-	agentRootsTableName, err := dbcommon.GetModelName(s.DB(), &Dispute{})
+	agentRootsTableName, err := dbcommon.GetModelName(s.DB(), &AgentRoot{})
 	if err != nil {
 		return blockNumber, fmt.Errorf("failed to get agent roots table name: %w", err)
 	}
 
 	query, err := interpol.WithMap(
 		`
-SELECT {blockNumber} FROM {agentTreesTable}
-OUTER JOIN {agentRootsTable}
-ON {agentTreesTable}.{agentRoot} = {agentRootsTable}.{agentRoot}
-WHERE {agentRootsTable}.{chainID} = {chainID}
-ORDER BY {agentTreesTable}.{blockNumber} DESC
-LIMIT 1
-`,
+		SELECT MAX({agentTreesTable}.{blockNumber})
+		FROM {agentTreesTable}
+		INNER JOIN (
+		    SELECT * FROM {agentRootsTable} WHERE {chainID} = ?
+		) AS filteredAgentRoot
+		ON {agentTreesTable}.{agentRoot} = filteredAgentRoot.{agentRoot}
+		`,
 		map[string]string{
 			"agentTreesTable": agentTreesTableName,
 			"agentRootsTable": agentRootsTableName,
