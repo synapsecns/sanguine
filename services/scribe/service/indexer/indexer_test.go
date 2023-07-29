@@ -71,7 +71,7 @@ func (x *IndexerSuite) TestFailedStore() {
 		GetLogsRange:       1,
 		Contracts:          []config.ContractConfig{contractConfig},
 	}
-	blockHeightMeter, err := x.metrics.Meter().NewHistogram(fmt.Sprint("scribe_block_meter", chainConfig.ChainID), "block_histogram", "a block height meter", "blocks")
+	blockHeightMeter, err := x.metrics.Metrics().NewHistogram(fmt.Sprint("scribe_block_meter", chainConfig.ChainID), "block_histogram", "a block height meter", "blocks")
 	Nil(x.T(), err)
 
 	contracts := []common.Address{common.HexToAddress(contractConfig.Address)}
@@ -117,7 +117,7 @@ func (x *IndexerSuite) TestGetLogsSimulated() {
 		GetLogsRange:       1,
 		Contracts:          []config.ContractConfig{contractConfig},
 	}
-	blockHeightMeter, err := x.metrics.Meter().NewHistogram(fmt.Sprint("scribe_block_meter", chainConfig.ChainID), "block_histogram", "a block height meter", "blocks")
+	blockHeightMeter, err := x.metrics.Metrics().NewHistogram(fmt.Sprint("scribe_block_meter", chainConfig.ChainID), "block_histogram", "a block height meter", "blocks")
 	Nil(x.T(), err)
 
 	contracts := []common.Address{common.HexToAddress(contractConfig.Address)}
@@ -231,7 +231,7 @@ func (x *IndexerSuite) TestContractBackfill() {
 		ConcurrencyThreshold: 100,
 		Contracts:            []config.ContractConfig{contractConfig},
 	}
-	blockHeightMeter, err := x.metrics.Meter().NewHistogram(fmt.Sprint("scribe_block_meter", chainConfig.ChainID), "block_histogram", "a block height meter", "blocks")
+	blockHeightMeter, err := x.metrics.Metrics().NewHistogram(fmt.Sprint("scribe_block_meter", chainConfig.ChainID), "block_histogram", "a block height meter", "blocks")
 	Nil(x.T(), err)
 	contracts := []common.Address{common.HexToAddress(contractConfig.Address)}
 	contractIndexer, err := indexer.NewIndexer(chainConfig, contracts,
@@ -315,7 +315,7 @@ func (x *IndexerSuite) TestContractBackfillFromPreIndexed() {
 		ConcurrencyThreshold: 1,
 		Contracts:            []config.ContractConfig{contractConfig},
 	}
-	blockHeightMeter, err := x.metrics.Meter().NewHistogram(fmt.Sprint("scribe_block_meter", chainConfig.ChainID), "block_histogram", "a block height meter", "blocks")
+	blockHeightMeter, err := x.metrics.Metrics().NewHistogram(fmt.Sprint("scribe_block_meter", chainConfig.ChainID), "block_histogram", "a block height meter", "blocks")
 	Nil(x.T(), err)
 
 	contracts := []common.Address{common.HexToAddress(contractConfig.Address)}
@@ -438,7 +438,7 @@ func (x *IndexerSuite) TestGetLogs() {
 		GetLogsRange:       1,
 		Contracts:          contractConfigs,
 	}
-	blockHeightMeter, err := x.metrics.Meter().NewHistogram(fmt.Sprint("scribe_block_meter", chainConfig.ChainID), "block_histogram", "a block height meter", "blocks")
+	blockHeightMeter, err := x.metrics.Metrics().NewHistogram(fmt.Sprint("scribe_block_meter", chainConfig.ChainID), "block_histogram", "a block height meter", "blocks")
 	Nil(x.T(), err)
 
 	contractBackfiller, err := indexer.NewIndexer(chainConfig, addresses, x.testDB, simulatedChainArr, x.metrics, blockHeightMeter, false)
@@ -489,7 +489,7 @@ func (x *IndexerSuite) TestTxTypeNotSupported() {
 
 	addresses := []common.Address{common.HexToAddress(contractConfig.Address)}
 	backendClientArr := []backend.ScribeBackend{backendClient, backendClient}
-	blockHeightMeter, err := x.metrics.Meter().NewHistogram(fmt.Sprint("scribe_block_meter", chainConfig.ChainID), "block_histogram", "a block height meter", "blocks")
+	blockHeightMeter, err := x.metrics.Metrics().NewHistogram(fmt.Sprint("scribe_block_meter", chainConfig.ChainID), "block_histogram", "a block height meter", "blocks")
 	Nil(x.T(), err)
 
 	contractIndexer, err := indexer.NewIndexer(chainConfig, addresses, x.testDB, backendClientArr, x.metrics, blockHeightMeter, false)
@@ -537,7 +537,7 @@ func (x IndexerSuite) TestInvalidTxVRS() {
 	addresses := []common.Address{common.HexToAddress(contractConfig.Address)}
 
 	backendClientArr := []backend.ScribeBackend{backendClient, backendClient}
-	blockHeightMeter, err := x.metrics.Meter().NewHistogram(fmt.Sprint("scribe_block_meter", chainConfig.ChainID), "block_histogram", "a block height meter", "blocks")
+	blockHeightMeter, err := x.metrics.Metrics().NewHistogram(fmt.Sprint("scribe_block_meter", chainConfig.ChainID), "block_histogram", "a block height meter", "blocks")
 	Nil(x.T(), err)
 
 	contractIndexer, err := indexer.NewIndexer(chainConfig, addresses, x.testDB, backendClientArr, x.metrics, blockHeightMeter, false)
@@ -601,7 +601,7 @@ func (x *IndexerSuite) TestLargeVolumeIndexer() {
 		GetLogsRange:       1,
 		Contracts:          contractConfigs,
 	}
-	blockHeightMeter, err := x.metrics.Meter().NewHistogram(fmt.Sprint("scribe_block_meter", chainConfig.ChainID), "block_histogram", "a block height meter", "blocks")
+	blockHeightMeter, err := x.metrics.Metrics().NewHistogram(fmt.Sprint("scribe_block_meter", chainConfig.ChainID), "block_histogram", "a block height meter", "blocks")
 	Nil(x.T(), err)
 
 	contractBackfiller, err := indexer.NewIndexer(chainConfig, addresses, x.testDB, simulatedChainArr, x.metrics, blockHeightMeter, false)

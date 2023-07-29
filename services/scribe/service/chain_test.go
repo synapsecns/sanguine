@@ -76,7 +76,7 @@ func (s *ScribeSuite) TestIndexToBlock() {
 	Nil(s.T(), err)
 
 	// TODO use no-op meter
-	blockHeightMeter, err := s.nullMetrics.Meter().NewHistogram(fmt.Sprint("scribe_block_meter", chainConfig.ChainID), "block_histogram", "a block height meter", "blocks")
+	blockHeightMeter, err := s.nullMetrics.Metrics().NewHistogram(fmt.Sprint("scribe_block_meter", chainConfig.ChainID), "block_histogram", "a block height meter", "blocks")
 	Nil(s.T(), err)
 
 	contracts := []common.Address{common.HexToAddress(contractConfig.Address)}
