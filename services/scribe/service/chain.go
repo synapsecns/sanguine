@@ -179,7 +179,7 @@ func (c *ChainIndexer) Index(parentContext context.Context) error {
 }
 
 // nolint:unparam
-func (c *ChainIndexer) getLatestBlock(ctx context.Context, atHead bool) (*uint64, error) {
+func (c *ChainIndexer) getLatestBlock(ctx context.Context, indexingUnconfirmed bool) (*uint64, error) {
 	var currentBlock uint64
 	var err error
 	b := createBackoff()
@@ -197,7 +197,7 @@ func (c *ChainIndexer) getLatestBlock(ctx context.Context, atHead bool) (*uint64
 				logger.ReportScribeError(err, c.chainID, logger.GetBlockError)
 				continue
 			}
-			if !atHead {
+			if !indexingUnconfirmed {
 				currentBlock -= c.chainConfig.Confirmations
 			}
 		}
@@ -417,7 +417,7 @@ func (c *ChainIndexer) livefill(parentContext context.Context) error {
 			}
 			startHeight := getMinFromMap(livefillLastIndexed)
 
-			endHeight, err = c.getLatestBlock(parentContext, true)
+			endHeight, err = c.getLatestBlock(parentContext, scribeTypes.IndexingConfirmed)
 			if err != nil {
 				logger.ReportIndexerError(err, livefillIndexer.GetIndexerConfig(), logger.GetBlockError)
 				timeout = b.Duration()
