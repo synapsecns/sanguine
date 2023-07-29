@@ -10,6 +10,7 @@ import (
 	"github.com/jftuga/termsize"
 	"github.com/phayes/freeport"
 	"github.com/synapsecns/sanguine/core"
+	"github.com/synapsecns/sanguine/core/metrics"
 	"github.com/synapsecns/sanguine/services/explorer/api"
 	"github.com/synapsecns/sanguine/services/explorer/config"
 	"github.com/synapsecns/sanguine/services/explorer/node"
@@ -69,7 +70,7 @@ var serverCommand = &cli.Command{
 			HTTPPort:  uint16(c.Uint(portFlag.Name)),
 			Address:   c.String(addressFlag.Name),
 			ScribeURL: c.String(scribeURL.Name),
-		})
+		}, metrics.Get())
 		if err != nil {
 			return fmt.Errorf("could not start server: %w", err)
 		}
@@ -89,7 +90,7 @@ var backfillCommand = &cli.Command{
 			return fmt.Errorf("could not decode config: %w", err)
 
 		}
-		db, err := api.InitDB(c.Context, c.String(clickhouseAddressFlag.Name), false)
+		db, err := api.InitDB(c.Context, c.String(clickhouseAddressFlag.Name), false, metrics.Get())
 		if err != nil {
 			return fmt.Errorf("could not initialize database: %w", err)
 		}
@@ -124,7 +125,7 @@ var livefillCommand = &cli.Command{
 			return fmt.Errorf("could not decode config: %w", err)
 
 		}
-		db, err := api.InitDB(c.Context, c.String(clickhouseAddressFlag.Name), false)
+		db, err := api.InitDB(c.Context, c.String(clickhouseAddressFlag.Name), false, metrics.Get())
 		if err != nil {
 			return fmt.Errorf("could not initialize database: %w", err)
 		}

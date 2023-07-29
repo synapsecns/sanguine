@@ -10,11 +10,12 @@ import (
 	"github.com/synapsecns/sanguine/services/explorer/api"
 	explorerclient "github.com/synapsecns/sanguine/services/explorer/consumer/client"
 	"github.com/synapsecns/sanguine/services/explorer/db/sql"
+	"github.com/synapsecns/sanguine/services/explorer/metadata"
 	"github.com/synapsecns/sanguine/services/explorer/testutil"
 	"github.com/synapsecns/sanguine/services/explorer/testutil/clickhouse"
 	scribedb "github.com/synapsecns/sanguine/services/scribe/db"
 	gqlServer "github.com/synapsecns/sanguine/services/scribe/graphql/server"
-	"github.com/synapsecns/sanguine/services/scribe/metadata"
+	scribeMetadata "github.com/synapsecns/sanguine/services/scribe/metadata"
 	"math/big"
 	"net/http"
 	"testing"
@@ -160,14 +161,15 @@ type APISuite struct {
 	db     db.ConsumerDB
 	client *client.Client
 	// grpcClient *rest.APIClient
-	eventDB       scribedb.EventDB
-	gqlClient     *explorerclient.Client
-	logIndex      atomic.Int64
-	cleanup       func()
-	testBackend   backends.SimulatedTestBackend
-	deployManager *testutil.DeployManager
-	chainIDs      []uint32
-	scribeMetrics metrics.Handler
+	eventDB         scribedb.EventDB
+	gqlClient       *explorerclient.Client
+	logIndex        atomic.Int64
+	cleanup         func()
+	testBackend     backends.SimulatedTestBackend
+	deployManager   *testutil.DeployManager
+	chainIDs        []uint32
+	scribeMetrics   metrics.Handler
+	explorerMetrics metrics.Handler
 }
 
 // NewTestSuite creates a new test suite and performs some basic checks afterward.
@@ -185,7 +187,9 @@ func (g *APISuite) SetupSuite() {
 	localmetrics.SetupTestJaeger(g.GetSuiteContext(), g.T())
 
 	var err error
-	g.scribeMetrics, err = metrics.NewByType(g.GetSuiteContext(), metadata.BuildInfo(), metrics.Jaeger)
+	g.scribeMetrics, err = metrics.NewByType(g.GetSuiteContext(), scribeMetadata.BuildInfo(), metrics.Jaeger)
+	g.Require().Nil(err)
+	g.explorerMetrics, err = metrics.NewByType(g.GetSuiteContext(), metadata.BuildInfo(), metrics.Jaeger)
 	g.Require().Nil(err)
 }
 
@@ -216,7 +220,7 @@ func (g *APISuite) SetupTest() {
 			HTTPPort:  uint16(httpport),
 			Address:   address,
 			ScribeURL: g.gqlClient.Client.BaseURL,
-		}))
+		}, g.explorerMetrics))
 	}()
 
 	baseURL := fmt.Sprintf("http://127.0.0.1:%d", httpport)

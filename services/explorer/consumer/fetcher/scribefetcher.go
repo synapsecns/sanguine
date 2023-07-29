@@ -3,6 +3,7 @@ package fetcher
 import (
 	"context"
 	"fmt"
+	"github.com/synapsecns/sanguine/core/metrics"
 	"time"
 
 	"github.com/ethereum/go-ethereum/common"
@@ -28,14 +29,16 @@ type ScribeFetcher interface {
 
 type scribeFetcherImpl struct {
 	underlyingClient *client.Client
+	handler          metrics.Handler
 }
 
 const retryThreshold = 5
 
 // NewFetcher creates a new fetcher.
-func NewFetcher(fetchClient *client.Client) ScribeFetcher {
+func NewFetcher(fetchClient *client.Client, handler metrics.Handler) ScribeFetcher {
 	return &scribeFetcherImpl{
 		underlyingClient: fetchClient,
+		handler:          handler,
 	}
 }
 

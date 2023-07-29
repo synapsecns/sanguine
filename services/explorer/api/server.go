@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"github.com/synapsecns/sanguine/core/metrics"
 	"net"
 	"os"
 	"time"
@@ -43,27 +44,34 @@ var logger = log.Logger("explorer-api")
 // Start starts the api server.
 //
 // nolint:cyclop
-func Start(ctx context.Context, cfg Config) error {
+func Start(ctx context.Context, cfg Config, handler metrics.Handler) error {
 	router := ginhelper.New(logger)
+	router.Use(handler.Gin())
+
 	hostname, err := os.Hostname()
 	if err != nil {
 		return fmt.Errorf("could not get hostname %w", err)
 	}
 	// initialize the database
-	consumerDB, err := InitDB(ctx, cfg.Address, true)
+	consumerDB, err := InitDB(ctx, cfg.Address, true, handler)
 	if err != nil {
 		return fmt.Errorf("could not initialize database: %w", err)
 	}
 
-	// get the fetcher
-	fetcher := fetcher.NewFetcher(client.NewClient(http.DefaultClient, cfg.ScribeURL))
+	// configure the http client
+	httpClient := http.DefaultClient
+	handler.ConfigureHTTPClient(httpClient)
+
+	//  get the fetcher
+	fetcher := fetcher.NewFetcher(client.NewClient(httpClient, cfg.ScribeURL), handler)
 
 	// response cache
 	responseCache, err := cache.NewAPICacheService()
 	if err != nil {
 		return fmt.Errorf("error creating api cache service, %w", err)
 	}
-	gqlServer.EnableGraphql(router, consumerDB, fetcher, responseCache)
+
+	gqlServer.EnableGraphql(router, consumerDB, fetcher, responseCache, handler)
 
 	fmt.Printf("started graphiql gqlServer on port: http://%s:%d/graphiql\n", hostname, cfg.HTTPPort)
 
@@ -73,7 +81,7 @@ func Start(ctx context.Context, cfg Config) error {
 	first <- true
 	g, ctx := errgroup.WithContext(ctx)
 	url := fmt.Sprintf("http://%s/graphql", net.JoinHostPort(hostname, fmt.Sprintf("%d", cfg.HTTPPort)))
-	client := gqlClient.NewClient(http.DefaultClient, url)
+	client := gqlClient.NewClient(httpClient, url)
 
 	// refill cache
 	go func() {
@@ -83,14 +91,14 @@ func Start(ctx context.Context, cfg Config) error {
 				ticker.Stop()
 				return
 			case <-ticker.C:
-				err = RehydrateCache(ctx, client, responseCache)
+				err = RehydrateCache(ctx, client, responseCache, handler)
 				if err != nil {
 					logger.Warnf("rehydration failed: %s", err)
 				}
 			case <-first:
 				// buffer to wait for everything to get initialized
 				time.Sleep(10 * time.Second)
-				err = RehydrateCache(ctx, client, responseCache)
+				err = RehydrateCache(ctx, client, responseCache, handler)
 				if err != nil {
 					logger.Errorf("initial rehydration failed: %s", err)
 				}
@@ -116,7 +124,7 @@ func Start(ctx context.Context, cfg Config) error {
 }
 
 // InitDB initializes a database given a database type and path.
-func InitDB(ctx context.Context, address string, readOnly bool) (db.ConsumerDB, error) {
+func InitDB(ctx context.Context, address string, readOnly bool, handler metrics.Handler) (db.ConsumerDB, error) {
 	if address == "default" {
 		cleanup, port, err := clickhouse.NewClickhouseStore("explorer")
 		if cleanup == nil {
@@ -128,7 +136,7 @@ func InitDB(ctx context.Context, address string, readOnly bool) (db.ConsumerDB, 
 		}
 		address = "clickhouse://clickhouse_test:clickhouse_test@localhost:" + fmt.Sprintf("%d", *port) + "/clickhouse_test"
 	}
-	clickhouseDB, err := sql.OpenGormClickhouse(ctx, address, readOnly)
+	clickhouseDB, err := sql.OpenGormClickhouse(ctx, address, readOnly, handler)
 	if err != nil {
 		return nil, fmt.Errorf("could not open database: %w", err)
 	}
@@ -141,7 +149,12 @@ func InitDB(ctx context.Context, address string, readOnly bool) (db.ConsumerDB, 
 // RehydrateCache rehydrates the cache.
 //
 // nolint:dupl,gocognit,cyclop,maintidx
-func RehydrateCache(parentCtx context.Context, client *gqlClient.Client, service cache.Service) error {
+func RehydrateCache(parentCtx context.Context, client *gqlClient.Client, service cache.Service, handler metrics.Handler) (err error) {
+	traceCtx, span := handler.Tracer().Start(parentCtx, "RehydrateCache")
+	defer func() {
+		metrics.EndSpanWithErr(span, err)
+	}()
+
 	fmt.Println("rehydrating Cache")
 	totalVolumeType := model.StatisticTypeTotalVolumeUsd
 	totalFeeType := model.StatisticTypeTotalFeeUsd
@@ -166,7 +179,7 @@ func RehydrateCache(parentCtx context.Context, client *gqlClient.Client, service
 	// dontUseMv := false
 	useMv := true
 
-	g, ctx := errgroup.WithContext(parentCtx)
+	g, ctx := errgroup.WithContext(traceCtx)
 	g.Go(func() error {
 		statsVolAll, err := client.GetAmountStatistic(ctx, totalVolumeType, &allPlatformType, &allTimeType, nil, nil, nil, &useMv)
 		if err != nil {
