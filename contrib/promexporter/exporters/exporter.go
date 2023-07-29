@@ -47,7 +47,7 @@ type exporter struct {
 func StartExporterServer(ctx context.Context, handler metrics.Handler, cfg config.Config) error {
 	router := ginhelper.New(logger)
 	router.Use(handler.Gin())
-	router.GET("/metrics", gin.WrapH(handler.Handler()))
+	router.GET(ginhelper.MetricsEndpoint, gin.WrapH(handler.Handler()))
 
 	var lc net.ListenConfig
 	listener, err := lc.Listen(ctx, "tcp", fmt.Sprintf(":%d", cfg.Port))
