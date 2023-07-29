@@ -4,7 +4,9 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"github.com/gin-gonic/gin"
 	"github.com/synapsecns/sanguine/core/metrics"
+	"github.com/synapsecns/sanguine/core/metrics/instrumentation"
 	"net"
 	"os"
 	"time"
@@ -47,6 +49,7 @@ var logger = log.Logger("explorer-api")
 func Start(ctx context.Context, cfg Config, handler metrics.Handler) error {
 	router := ginhelper.New(logger)
 	router.Use(handler.Gin())
+	router.GET(ginhelper.MetricsEndpoint, gin.WrapH(handler.Handler()))
 
 	hostname, err := os.Hostname()
 	if err != nil {
@@ -60,6 +63,8 @@ func Start(ctx context.Context, cfg Config, handler metrics.Handler) error {
 
 	// configure the http client
 	httpClient := http.DefaultClient
+	// TODO: add an option for full capture instead of keeping on by default
+	httpClient.Transport = instrumentation.NewCaptureTransport(httpClient.Transport, handler)
 	handler.ConfigureHTTPClient(httpClient)
 
 	//  get the fetcher
