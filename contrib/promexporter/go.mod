@@ -16,7 +16,7 @@ replace (
 )
 
 require (
-	github.com/99designs/gqlgen v0.17.20
+	github.com/99designs/gqlgen v0.17.31
 	github.com/Yamashou/gqlgenc v0.10.0
 	github.com/creasty/defaults v1.7.0
 	github.com/ethereum/go-ethereum v1.10.26
@@ -25,11 +25,11 @@ require (
 	github.com/ipfs/go-log v1.0.5
 	github.com/jftuga/ellipsis v1.0.0
 	github.com/phayes/freeport v0.0.0-20220201140144-74d24b5ae9f5
-	github.com/stretchr/testify v1.8.3
+	github.com/stretchr/testify v1.8.4
 	github.com/synapsecns/sanguine/core v0.0.0-00010101000000-000000000000
 	github.com/synapsecns/sanguine/services/explorer v0.0.0-00010101000000-000000000000
 	github.com/synapsecns/sanguine/services/omnirpc v0.0.0-00010101000000-000000000000
-	github.com/urfave/cli/v2 v2.16.3
+	github.com/urfave/cli/v2 v2.24.4
 	go.opentelemetry.io/otel/metric v1.16.0
 	golang.org/x/sync v0.3.0
 	gopkg.in/yaml.v2 v2.4.0
@@ -179,6 +179,7 @@ require (
 	github.com/pyroscope-io/client v0.7.0 // indirect
 	github.com/pyroscope-io/godeltaprof v0.1.0 // indirect
 	github.com/pyroscope-io/otel-profiling-go v0.4.0 // indirect
+	github.com/ravilushqa/otelgqlgen v0.13.1 // indirect
 	github.com/richardartoul/molecule v1.0.1-0.20221107223329-32cfee06a052 // indirect
 	github.com/rivo/uniseg v0.2.0 // indirect
 	github.com/rjeczalik/notify v0.9.2 // indirect
@@ -218,6 +219,7 @@ require (
 	github.com/xanzy/ssh-agent v0.3.3 // indirect
 	github.com/xrash/smetrics v0.0.0-20201216005158-039620a65673 // indirect
 	github.com/yusufpapurcu/wmi v1.2.2 // indirect
+	go.opentelemetry.io/contrib v1.16.1 // indirect
 	go.opentelemetry.io/contrib/instrumentation/github.com/gin-gonic/gin/otelgin v0.40.0 // indirect
 	go.opentelemetry.io/contrib/instrumentation/net/http/otelhttp v0.42.0 // indirect
 	go.opentelemetry.io/contrib/propagators/b3 v1.15.0 // indirect

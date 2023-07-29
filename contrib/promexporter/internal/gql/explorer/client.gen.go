@@ -27,4 +27,6 @@ type Query struct {
 	RankedChainIDsByVolume []*VolumeByChainID        "json:\"rankedChainIDsByVolume\" graphql:\"rankedChainIDsByVolume\""
 	AddressData            *AddressData              "json:\"addressData\" graphql:\"addressData\""
 	Leaderboard            []*Leaderboard            "json:\"leaderboard\" graphql:\"leaderboard\""
+	GetOriginBridgeTx      *BridgeWatcherTx          "json:\"getOriginBridgeTx\" graphql:\"getOriginBridgeTx\""
+	GetDestinationBridgeTx *BridgeWatcherTx          "json:\"getDestinationBridgeTx\" graphql:\"getDestinationBridgeTx\""
 }
