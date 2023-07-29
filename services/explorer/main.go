@@ -2,7 +2,7 @@
 package main
 
 import (
-	"github.com/synapsecns/sanguine/services/scribe/metadata"
+	"github.com/synapsecns/sanguine/services/explorer/metadata"
 	"os"
 
 	"github.com/synapsecns/sanguine/services/explorer/cmd"
