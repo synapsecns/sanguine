@@ -209,7 +209,7 @@ func (g *APISuite) SetupTest() {
 	}
 
 	address := "clickhouse://clickhouse_test:clickhouse_test@localhost:" + fmt.Sprintf("%d", *port) + "/clickhouse_test"
-	g.db, err = sql.OpenGormClickhouse(g.GetTestContext(), address, false)
+	g.db, err = sql.OpenGormClickhouse(g.GetTestContext(), address, false, g.explorerMetrics)
 	Nil(g.T(), err)
 	err = g.db.UNSAFE_DB().WithContext(g.GetTestContext()).Set("gorm:table_options", "ENGINE=ReplacingMergeTree(finsert_time) ORDER BY (fevent_index, fblock_number, fevent_type, ftx_hash, fchain_id, fcontract_address)").AutoMigrate(&MvBridgeEvent{})
 	Nil(g.T(), err)

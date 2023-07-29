@@ -718,7 +718,7 @@ func RehydrateCache(parentCtx context.Context, client *gqlClient.Client, service
 		return nil
 	})
 
-	err := g.Wait()
+	err = g.Wait()
 	if err != nil {
 		return fmt.Errorf("error rehyrdrating cache, %w", err)
 	}

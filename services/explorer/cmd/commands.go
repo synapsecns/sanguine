@@ -102,7 +102,7 @@ var backfillCommand = &cli.Command{
 			}
 			clients[client.ChainID] = backendClient
 		}
-		explorerBackfiller, err := node.NewExplorerBackfiller(db, decodeConfig, clients)
+		explorerBackfiller, err := node.NewExplorerBackfiller(db, decodeConfig, clients, metrics.Get())
 		if err != nil {
 			return fmt.Errorf("could not create explorer backfiller: %w", err)
 		}
@@ -137,7 +137,7 @@ var livefillCommand = &cli.Command{
 			}
 			clients[client.ChainID] = backendClient
 		}
-		explorerBackfiller, err := node.NewExplorerBackfiller(db, decodeConfig, clients)
+		explorerBackfiller, err := node.NewExplorerBackfiller(db, decodeConfig, clients, metrics.Get())
 		if err != nil {
 			return fmt.Errorf("could not create explorer backfiller: %w", err)
 		}
