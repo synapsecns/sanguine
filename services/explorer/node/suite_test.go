@@ -91,6 +91,7 @@ func (c *NodeSuite) SetupSuite() {
 	c.scribeMetrics, err = metrics.NewByType(c.GetSuiteContext(), scribeMetadata.BuildInfo(), metrics.Jaeger)
 	c.Require().Nil(err)
 	c.explorerMetrics, err = metrics.NewByType(c.GetSuiteContext(), metadata.BuildInfo(), metrics.Jaeger)
+	c.Require().Nil(err)
 }
 
 // TestConsumerSuite runs the integration test suite.
