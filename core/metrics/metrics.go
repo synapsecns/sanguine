@@ -38,7 +38,7 @@ type Handler interface {
 	// Meter returns a metric provider
 	Meter(name string, options ...metric.MeterOption) metric.Meter
 	// Handler returns the http handler for the metrics endpoint.
-	// right now, this supports only a single routeb
+	// right now, this supports only a single route
 	Handler() http.Handler
 }
 

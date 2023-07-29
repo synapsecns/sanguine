@@ -65,6 +65,7 @@ func (b *baseHandler) Start(ctx context.Context) error {
 		sdkmetric.WithReader(reader),
 	)
 	otel.SetMeterProvider(b.meter)
+	b.handler = promhttp.Handler()
 
 	go func() {
 		<-ctx.Done()
