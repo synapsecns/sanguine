@@ -1,0 +1,19 @@
+client:
+  package: dfk
+  filename: ./client.gen.go # Where should any generated client go?
+
+model:
+  package: dfk
+  filename: ./models.gen.go # Where should any generated models go?
+
+models:
+  Int:
+    model: github.com/99designs/gqlgen/graphql.Int64
+  Date:
+    model: github.com/99designs/gqlgen/graphql.Time
+
+query:
+  - 'queries/*.graphql' # Where are all the query files located?
+
+endpoint:
+  url: https://defi-kingdoms-community-api-gateway-co06z8vi.uc.gateway.dev/graphql
