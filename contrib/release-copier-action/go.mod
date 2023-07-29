@@ -23,9 +23,10 @@ require (
 	github.com/gorilla/mux v1.8.0 // indirect
 	github.com/ipfs/go-log v1.0.5 // indirect
 	github.com/ipfs/go-log/v2 v2.1.3 // indirect
-	github.com/kr/pretty v0.3.0 // indirect
+	github.com/kr/pretty v0.3.1 // indirect
 	github.com/opentracing/opentracing-go v1.2.0 // indirect
 	github.com/pmezard/go-difflib v1.0.0 // indirect
+	github.com/rogpeppe/go-internal v1.10.0 // indirect
 	github.com/sethvargo/go-envconfig v0.8.0 // indirect
 	go.uber.org/atomic v1.10.0 // indirect
 	go.uber.org/goleak v1.2.1 // indirect

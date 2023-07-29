@@ -1,0 +1,9 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "promexporter.fullname" . }}
+  labels:
+    {{- include "promexporter.labels" . | nindent 4 }}
+data:
+  config.yaml: |-
+    {{ .Values.config | nindent 4 }}

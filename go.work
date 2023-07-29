@@ -4,6 +4,7 @@ go 1.19
 use (
 	./agents
 	./contrib/git-changes-action
+	./contrib/promexporter
 	./contrib/release-copier-action
 	./contrib/terraform-provider-helmproxy
 	./contrib/terraform-provider-iap
