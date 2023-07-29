@@ -44,6 +44,8 @@ const (
 	InitiatingLivefill StatusType = iota
 	// ConcurrencyThresholdReached is returned when the concurrency threshold is reached.
 	ConcurrencyThresholdReached
+	// FlushingLivefillAtHead is returned when a livefill indexer is flushing at the head.
+	FlushingLivefillAtHead
 )
 
 // ErrorType is a type of error.
@@ -121,6 +123,8 @@ func ReportScribeState(chainID uint32, block uint64, addresses []common.Address,
 		logger.Warnf("Initiating livefill on chain %d on block %d while interacting with contract %s", chainID, block, dumpAddresses(addresses))
 	case ConcurrencyThresholdReached:
 		logger.Warnf("Concurrency threshold reached on chain %d on block %d while interacting with contract %s", chainID, block, dumpAddresses(addresses))
+	case FlushingLivefillAtHead:
+		logger.Warnf("Flushing logs at head on chain %d", chainID)
 	default:
 		logger.Warnf("Event on chain %d on block %d while interacting with contract %s", chainID, block, dumpAddresses(addresses))
 	}

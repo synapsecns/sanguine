@@ -342,6 +342,7 @@ func (c *ChainIndexer) livefillAtHead(parentContext context.Context) error {
 		case <-parentContext.Done():
 			return fmt.Errorf("context canceled: %w", parentContext.Err())
 		case <-time.After(flushDuration):
+			logger.ReportScribeState(c.chainID, 0, addresses, logger.FlushingLivefillAtHead)
 			deleteBefore := time.Now().Add(-flushDuration).UnixNano()
 			err := c.eventDB.FlushFromHeadTables(parentContext, deleteBefore)
 			if err != nil {
