@@ -21,6 +21,7 @@ args:
 - "start"
 - "--config=/config/config.yaml"
 
+# TODO: jaeger example
 env:
 - name: METRICS_HANDLER
   value: otlp
