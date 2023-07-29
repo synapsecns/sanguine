@@ -226,7 +226,7 @@ func (x *Indexer) Index(parentCtx context.Context, startHeight uint64, endHeight
 					// reset group context and concurrent calls
 					gS, storeCtx = errgroup.WithContext(ctx)
 					concurrentCalls = 0
-					if !x.isBackfill {
+					if !x.isBackfill && !x.toHead {
 						err = x.eventDB.StoreLastIndexedMultiple(ctx, x.indexerConfig.Addresses, x.indexerConfig.ChainID, log.BlockNumber)
 						if err != nil {
 							logger.ReportIndexerError(err, x.indexerConfig, logger.StoreError)
@@ -246,7 +246,7 @@ func (x *Indexer) Index(parentCtx context.Context, startHeight uint64, endHeight
 	if err != nil {
 		return fmt.Errorf("could not backfill contract: %w \nChain: %d\nLog 's Contract Address: %s\n ", err, x.indexerConfig.ChainID, x.indexerConfig.Addresses)
 	}
-	if !x.isBackfill {
+	if !x.isBackfill && !x.toHead {
 		err = x.eventDB.StoreLastIndexedMultiple(ctx, x.indexerConfig.Addresses, x.indexerConfig.ChainID, endHeight)
 		if err != nil {
 			return fmt.Errorf("could not store last indexed block: %w", err)
