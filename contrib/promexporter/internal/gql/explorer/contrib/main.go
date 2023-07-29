@@ -9,8 +9,10 @@ import (
 	"github.com/phayes/freeport"
 	util2 "github.com/synapsecns/sanguine/contrib/promexporter/internal/gql/util"
 	"github.com/synapsecns/sanguine/core/ginhelper"
+	"github.com/synapsecns/sanguine/core/metrics"
 	baseServer "github.com/synapsecns/sanguine/core/server"
 	gqlServer "github.com/synapsecns/sanguine/services/explorer/graphql/server"
+	"github.com/synapsecns/sanguine/services/explorer/metadata"
 	"os"
 	"time"
 )
@@ -31,7 +33,12 @@ func main() {
 
 	// prepare the server
 	router := ginhelper.New(logger)
-	gqlServer.EnableGraphql(router, nil, nil, nil)
+
+	nullHandler, err := metrics.NewByType(ctx, metadata.BuildInfo(), metrics.Null)
+	if err != nil {
+		panic(fmt.Errorf("error creating null handler, %w", err))
+	}
+	gqlServer.EnableGraphql(router, nil, nil, nil, nullHandler)
 
 	tmpPort, err := freeport.GetFreePort()
 	if err != nil {
