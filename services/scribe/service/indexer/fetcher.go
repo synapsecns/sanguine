@@ -132,7 +132,7 @@ func (f *LogFetcher) FetchLogs(ctx context.Context, chunks []*util.Chunk) ([]typ
 		Factor: 2,
 		Jitter: true,
 		Min:    1 * time.Second,
-		Max:    10 * time.Second,
+		Max:    8 * time.Second,
 	}
 
 	attempt := 0
