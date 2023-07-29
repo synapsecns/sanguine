@@ -4,10 +4,6 @@ metadata:
   name: {{ include "promexporter.fullname" . }}
   labels:
     {{- include "promexporter.labels" . | nindent 4 }}
-  annotations:
-    prometheus.io/scrape: 'true'
-    prometheus.io/path: '/metrics'
-    prometheus.io/port: '80'
 spec:
   type: {{ .Values.service.type }}
   ports:
