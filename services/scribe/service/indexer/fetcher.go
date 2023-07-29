@@ -151,6 +151,7 @@ func (f *LogFetcher) FetchLogs(ctx context.Context, chunks []*util.Chunk) ([]typ
 			logs, err := f.getAndUnpackLogs(ctx, chunks, backoffConfig)
 			if err != nil {
 				logger.ReportIndexerError(err, *f.indexerConfig, logger.GetLogsError)
+				timeout = backoffConfig.Duration()
 				continue
 			}
 
