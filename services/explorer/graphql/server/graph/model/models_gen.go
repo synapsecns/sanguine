@@ -53,6 +53,14 @@ type BridgeTransaction struct {
 	SwapSuccess *bool        `json:"swapSuccess"`
 }
 
+// BridgeWatcherTx represents a single sided bridge transaction specifically for the bridge watcher.
+type BridgeWatcherTx struct {
+	BridgeTx *PartialInfo  `json:"bridgeTx"`
+	Pending  *bool         `json:"pending"`
+	Type     *BridgeTxType `json:"type"`
+	Kappa    *string       `json:"kappa"`
+}
+
 // DateResult is a given statistic for a given date.
 type DateResult struct {
 	Date  *string  `json:"date"`
@@ -186,6 +194,47 @@ type ValueResult struct {
 type VolumeByChainID struct {
 	ChainID *int     `json:"chainID"`
 	Total   *float64 `json:"total"`
+}
+
+type BridgeTxType string
+
+const (
+	BridgeTxTypeOrigin      BridgeTxType = "ORIGIN"
+	BridgeTxTypeDestination BridgeTxType = "DESTINATION"
+)
+
+var AllBridgeTxType = []BridgeTxType{
+	BridgeTxTypeOrigin,
+	BridgeTxTypeDestination,
+}
+
+func (e BridgeTxType) IsValid() bool {
+	switch e {
+	case BridgeTxTypeOrigin, BridgeTxTypeDestination:
+		return true
+	}
+	return false
+}
+
+func (e BridgeTxType) String() string {
+	return string(e)
+}
+
+func (e *BridgeTxType) UnmarshalGQL(v interface{}) error {
+	str, ok := v.(string)
+	if !ok {
+		return fmt.Errorf("enums must be strings")
+	}
+
+	*e = BridgeTxType(str)
+	if !e.IsValid() {
+		return fmt.Errorf("%s is not a valid BridgeTxType", str)
+	}
+	return nil
+}
+
+func (e BridgeTxType) MarshalGQL(w io.Writer) {
+	fmt.Fprint(w, strconv.Quote(e.String()))
 }
 
 type DailyStatisticType string
