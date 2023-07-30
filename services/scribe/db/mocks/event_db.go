@@ -33,20 +33,6 @@ func (_m *EventDB) ConfirmEthTxsForBlockHash(ctx context.Context, blockHash comm
 	return r0
 }
 
-// ConfirmEthTxsInRange provides a mock function with given fields: ctx, startBlock, endBlock, chainID
-func (_m *EventDB) ConfirmEthTxsInRange(ctx context.Context, startBlock uint64, endBlock uint64, chainID uint32) error {
-	ret := _m.Called(ctx, startBlock, endBlock, chainID)
-
-	var r0 error
-	if rf, ok := ret.Get(0).(func(context.Context, uint64, uint64, uint32) error); ok {
-		r0 = rf(ctx, startBlock, endBlock, chainID)
-	} else {
-		r0 = ret.Error(0)
-	}
-
-	return r0
-}
-
 // ConfirmLogsForBlockHash provides a mock function with given fields: ctx, chainID, blockHash
 func (_m *EventDB) ConfirmLogsForBlockHash(ctx context.Context, chainID uint32, blockHash common.Hash) error {
 	ret := _m.Called(ctx, chainID, blockHash)
@@ -54,48 +40,6 @@ func (_m *EventDB) ConfirmLogsForBlockHash(ctx context.Context, chainID uint32, 
 	var r0 error
 	if rf, ok := ret.Get(0).(func(context.Context, uint32, common.Hash) error); ok {
 		r0 = rf(ctx, chainID, blockHash)
-	} else {
-		r0 = ret.Error(0)
-	}
-
-	return r0
-}
-
-// ConfirmLogsInRange provides a mock function with given fields: ctx, startBlock, endBlock, chainID
-func (_m *EventDB) ConfirmLogsInRange(ctx context.Context, startBlock uint64, endBlock uint64, chainID uint32) error {
-	ret := _m.Called(ctx, startBlock, endBlock, chainID)
-
-	var r0 error
-	if rf, ok := ret.Get(0).(func(context.Context, uint64, uint64, uint32) error); ok {
-		r0 = rf(ctx, startBlock, endBlock, chainID)
-	} else {
-		r0 = ret.Error(0)
-	}
-
-	return r0
-}
-
-// ConfirmReceiptsForBlockHash provides a mock function with given fields: ctx, chainID, blockHash
-func (_m *EventDB) ConfirmReceiptsForBlockHash(ctx context.Context, chainID uint32, blockHash common.Hash) error {
-	ret := _m.Called(ctx, chainID, blockHash)
-
-	var r0 error
-	if rf, ok := ret.Get(0).(func(context.Context, uint32, common.Hash) error); ok {
-		r0 = rf(ctx, chainID, blockHash)
-	} else {
-		r0 = ret.Error(0)
-	}
-
-	return r0
-}
-
-// ConfirmReceiptsInRange provides a mock function with given fields: ctx, startBlock, endBlock, chainID
-func (_m *EventDB) ConfirmReceiptsInRange(ctx context.Context, startBlock uint64, endBlock uint64, chainID uint32) error {
-	ret := _m.Called(ctx, startBlock, endBlock, chainID)
-
-	var r0 error
-	if rf, ok := ret.Get(0).(func(context.Context, uint64, uint64, uint32) error); ok {
-		r0 = rf(ctx, startBlock, endBlock, chainID)
 	} else {
 		r0 = ret.Error(0)
 	}
@@ -580,13 +524,13 @@ func (_m *EventDB) RetrieveReceiptsWithStaleBlockHash(ctx context.Context, chain
 	return r0, r1
 }
 
-// RetrieveUnconfirmedEthTxsFromHeadRangeQuery provides a mock function with given fields: ctx, receiptFilter, startBlock, endBlock, page
-func (_m *EventDB) RetrieveUnconfirmedEthTxsFromHeadRangeQuery(ctx context.Context, receiptFilter db.EthTxFilter, startBlock uint64, endBlock uint64, page int) ([]db.TxWithBlockNumber, error) {
-	ret := _m.Called(ctx, receiptFilter, startBlock, endBlock, page)
+// RetrieveUnconfirmedEthTxsFromHeadRangeQuery provides a mock function with given fields: ctx, receiptFilter, startBlock, endBlock, lastIndexed, page
+func (_m *EventDB) RetrieveUnconfirmedEthTxsFromHeadRangeQuery(ctx context.Context, receiptFilter db.EthTxFilter, startBlock uint64, endBlock uint64, lastIndexed uint64, page int) ([]db.TxWithBlockNumber, error) {
+	ret := _m.Called(ctx, receiptFilter, startBlock, endBlock, lastIndexed, page)
 
 	var r0 []db.TxWithBlockNumber
-	if rf, ok := ret.Get(0).(func(context.Context, db.EthTxFilter, uint64, uint64, int) []db.TxWithBlockNumber); ok {
-		r0 = rf(ctx, receiptFilter, startBlock, endBlock, page)
+	if rf, ok := ret.Get(0).(func(context.Context, db.EthTxFilter, uint64, uint64, uint64, int) []db.TxWithBlockNumber); ok {
+		r0 = rf(ctx, receiptFilter, startBlock, endBlock, lastIndexed, page)
 	} else {
 		if ret.Get(0) != nil {
 			r0 = ret.Get(0).([]db.TxWithBlockNumber)
@@ -594,8 +538,8 @@ func (_m *EventDB) RetrieveUnconfirmedEthTxsFromHeadRangeQuery(ctx context.Conte
 	}
 
 	var r1 error
-	if rf, ok := ret.Get(1).(func(context.Context, db.EthTxFilter, uint64, uint64, int) error); ok {
-		r1 = rf(ctx, receiptFilter, startBlock, endBlock, page)
+	if rf, ok := ret.Get(1).(func(context.Context, db.EthTxFilter, uint64, uint64, uint64, int) error); ok {
+		r1 = rf(ctx, receiptFilter, startBlock, endBlock, lastIndexed, page)
 	} else {
 		r1 = ret.Error(1)
 	}

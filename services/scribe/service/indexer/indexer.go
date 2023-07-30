@@ -226,6 +226,8 @@ func (x *Indexer) Index(parentCtx context.Context, startHeight uint64, endHeight
 					// reset group context and concurrent calls
 					gS, storeCtx = errgroup.WithContext(ctx)
 					concurrentCalls = 0
+
+					// TODO add livefill at head save last indexed
 					if !x.isBackfill && !x.toHead {
 						err = x.eventDB.StoreLastIndexedMultiple(ctx, x.indexerConfig.Addresses, x.indexerConfig.ChainID, log.BlockNumber)
 						if err != nil {

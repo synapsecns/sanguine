@@ -73,37 +73,6 @@ func (t *DBSuite) TestStoreRetrieveLog() {
 	})
 }
 
-func (t *DBSuite) TestConfirmLogsInRange() {
-	t.RunOnAllDBs(func(testDB db.EventDB) {
-		chainID := gofakeit.Uint32()
-
-		mostRecentBlock := 4
-		// Store five logs.
-		for i := mostRecentBlock; i >= 0; i-- {
-			txHash := common.BigToHash(big.NewInt(gofakeit.Int64()))
-			log := t.MakeRandomLog(txHash)
-			log.BlockNumber = uint64(i)
-			err := testDB.StoreLogs(t.GetTestContext(), chainID, log)
-			Nil(t.T(), err)
-		}
-
-		// Confirm the first two logs.
-		err := testDB.ConfirmLogsInRange(t.GetTestContext(), 0, 1, chainID)
-		Nil(t.T(), err)
-
-		// Ensure the first two logs are confirmed.
-		logFilter := db.LogFilter{
-			ChainID:   chainID,
-			Confirmed: true,
-		}
-		retrievedLogs, err := testDB.RetrieveLogsWithFilter(t.GetTestContext(), logFilter, 1)
-		Nil(t.T(), err)
-		Equal(t.T(), 2, len(retrievedLogs))
-		Equal(t.T(), uint64(1), retrievedLogs[0].BlockNumber)
-		Equal(t.T(), uint64(0), retrievedLogs[1].BlockNumber)
-	})
-}
-
 func (t *DBSuite) TestDeleteLogsForBlockHash() {
 	t.RunOnAllDBs(func(testDB db.EventDB) {
 		chainID := gofakeit.Uint32()

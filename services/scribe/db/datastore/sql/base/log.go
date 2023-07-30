@@ -53,7 +53,7 @@ func (s Store) StoreLogs(ctx context.Context, chainID uint32, logs ...types.Log)
 			BlockHash:       log.BlockHash.String(),
 			BlockIndex:      uint64(log.Index),
 			Removed:         log.Removed,
-			Confirmed:       false,
+			Confirmed:       true,
 		}
 
 		storeLogs = append(storeLogs, newLog)
@@ -89,23 +89,6 @@ func (s Store) ConfirmLogsForBlockHash(ctx context.Context, chainID uint32, bloc
 
 	if dbTx.Error != nil {
 		return fmt.Errorf("could not confirm log: %w", dbTx.Error)
-	}
-
-	return nil
-}
-
-// ConfirmLogsInRange confirms logs in a range.
-func (s Store) ConfirmLogsInRange(ctx context.Context, startBlock, endBlock uint64, chainID uint32) error {
-	rangeQuery := fmt.Sprintf("%s BETWEEN ? AND ?", BlockNumberFieldName)
-	dbTx := s.DB().WithContext(ctx).
-		Model(&Log{}).
-		Order(BlockNumberFieldName+" desc").
-		Where(rangeQuery, startBlock, endBlock).
-		Where(&Log{ChainID: chainID}).
-		Update(ConfirmedFieldName, true)
-
-	if dbTx.Error != nil {
-		return fmt.Errorf("could not confirm logs: %w", dbTx.Error)
 	}
 
 	return nil

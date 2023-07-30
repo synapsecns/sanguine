@@ -225,7 +225,9 @@ func (s Store) RetrieveReceiptsFromHeadRangeQuery(ctx context.Context, receiptFi
 // TODO make a query for getting latest tx
 
 // RetrieveUnconfirmedEthTxsFromHeadRangeQuery retrieves all unconfirmed ethTx for a given chain ID and range.
-func (s Store) RetrieveUnconfirmedEthTxsFromHeadRangeQuery(ctx context.Context, ethTxFilter db.EthTxFilter, startBlock uint64, endBlock uint64, page int) ([]db.TxWithBlockNumber, error) {
+// lastIndexed is passed because the ethtx table does not have contract addresses, thus the last indexed for that contract
+// cannot be determined for the join. Pass last indexed for the log that you are trying to mature with data.
+func (s Store) RetrieveUnconfirmedEthTxsFromHeadRangeQuery(ctx context.Context, ethTxFilter db.EthTxFilter, startBlock uint64, endBlock uint64, lastIndexed uint64, page int) ([]db.TxWithBlockNumber, error) {
 	if ethTxFilter.ChainID == 0 {
 		return nil, fmt.Errorf("chain ID must be passed")
 	}
@@ -233,26 +235,26 @@ func (s Store) RetrieveUnconfirmedEthTxsFromHeadRangeQuery(ctx context.Context, 
 		page = 1
 	}
 
+	queryFilter := ethTxFilterToQuery(ethTxFilter)
 	var dbEthTxs []EthTx
-	query := ethTxFilterToQuery(ethTxFilter)
-	rangeQuery := fmt.Sprintf("%s BETWEEN ? AND ?", BlockNumberFieldName)
-
-	dbTx := s.DB().WithContext(ctx).Model(EthTxAtHead{}).
-		Where(&query).
-		Where(rangeQuery, startBlock, endBlock).
-		Order(fmt.Sprintf("%s DESC, %s DESC", BlockNumberFieldName, TransactionIndexFieldName)).
-		Offset((page - 1) * PageSize).
-		Limit(PageSize).
-		Find(&dbEthTxs)
+	subQuery1 := s.DB().WithContext(ctx).ToSQL(func(tx *gorm.DB) *gorm.DB {
+		return tx.Model(EthTx{}).Select("*").Where("block_number BETWEEN ? AND ?", startBlock, lastIndexed).Where(queryFilter).Find(&[]EthTx{})
+	})
+	subQuery2 := s.DB().WithContext(ctx).ToSQL(func(tx *gorm.DB) *gorm.DB {
+		return tx.Model(EthTxAtHead{}).Select(EthTxColumns).Where("block_number BETWEEN ? AND ?", lastIndexed+1, endBlock).Where(queryFilter).Find(&[]EthTx{})
+	})
+	query := fmt.Sprintf("SELECT * FROM (%s UNION %s) AS unionedTable ORDER BY %s DESC, %s DESC LIMIT %d OFFSET %d", subQuery1, subQuery2, BlockNumberFieldName, TransactionIndexFieldName, PageSize, (page-1)*PageSize)
+	dbTx := s.DB().WithContext(ctx).Raw(query).Scan(&dbEthTxs)
 
 	if dbTx.Error != nil {
-		return nil, fmt.Errorf("error getting unconfirmed txs %w", dbTx.Error)
+		return nil, fmt.Errorf("error getting newly confirmed data %w", dbTx.Error)
 	}
-	receipts, err := buildEthTxsFromDBEthTxs(dbEthTxs)
+	txs, err := buildEthTxsFromDBEthTxs(dbEthTxs)
 	if err != nil {
-		return nil, fmt.Errorf("could not build ethtxs from dbethtxs: %w", err)
+		return nil, fmt.Errorf("error building receipts from db receipts: %w", err)
 	}
-	return receipts, nil
+	return txs, nil
+
 }
 
 // FlushFromHeadTables deletes all logs, receipts, and txs from the head table that are older than the given time.

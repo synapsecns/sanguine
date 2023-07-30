@@ -112,6 +112,9 @@ type Receipt struct {
 	Confirmed bool `gorm:"column:confirmed"`
 }
 
+// EthTxColumns are all of the columns of the EthTx table.
+const EthTxColumns = "tx_hash,chain_id,block_hash,block_number,raw_tx,gas_fee_cap,gas_tip_cap,confirmed,transaction_index"
+
 // EthTx contains a processed ethereum transaction.
 type EthTx struct {
 	// TxHash is the hash of the transaction

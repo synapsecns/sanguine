@@ -16,8 +16,6 @@ type EventDBWriter interface {
 	StoreLogsAtHead(ctx context.Context, chainID uint32, log ...types.Log) error
 	// ConfirmLogsForBlockHash confirms logs for a given block hash.
 	ConfirmLogsForBlockHash(ctx context.Context, chainID uint32, blockHash common.Hash) error
-	// ConfirmLogsInRange confirms logs in a range.
-	ConfirmLogsInRange(ctx context.Context, startBlock, endBlock uint64, chainID uint32) error
 	// DeleteLogsForBlockHash deletes logs with a given block hash.
 	DeleteLogsForBlockHash(ctx context.Context, blockHash common.Hash, chainID uint32) error
 
@@ -25,10 +23,6 @@ type EventDBWriter interface {
 	StoreReceipt(ctx context.Context, chainID uint32, receipt types.Receipt) error
 	// StoreReceiptAtHead stores a receipt to the tip
 	StoreReceiptAtHead(ctx context.Context, chainID uint32, receipt types.Receipt) error
-	// ConfirmReceiptsForBlockHash confirms receipts for a given block hash.
-	ConfirmReceiptsForBlockHash(ctx context.Context, chainID uint32, blockHash common.Hash) error
-	// ConfirmReceiptsInRange confirms receipts in a range.
-	ConfirmReceiptsInRange(ctx context.Context, startBlock, endBlock uint64, chainID uint32) error
 	// DeleteReceiptsForBlockHash deletes receipts with a given block hash.
 	DeleteReceiptsForBlockHash(ctx context.Context, chainID uint32, blockHash common.Hash) error
 
@@ -38,8 +32,6 @@ type EventDBWriter interface {
 	StoreEthTxAtHead(ctx context.Context, tx *types.Transaction, chainID uint32, blockHash common.Hash, blockNumber uint64, transactionIndex uint64) error
 	// ConfirmEthTxsForBlockHash confirms eth txs for a given block hash.
 	ConfirmEthTxsForBlockHash(ctx context.Context, blockHash common.Hash, chainID uint32) error
-	// ConfirmEthTxsInRange confirms eth txs in a range.
-	ConfirmEthTxsInRange(ctx context.Context, startBlock, endBlock uint64, chainID uint32) error
 	// DeleteEthTxsForBlockHash deletes eth txs with a given block hash.
 	DeleteEthTxsForBlockHash(ctx context.Context, blockHash common.Hash, chainID uint32) error
 
@@ -106,7 +98,7 @@ type EventDBReader interface {
 	// RetrieveReceiptsFromHeadRangeQuery gets unconfirmed receipts from the head in a range.
 	RetrieveReceiptsFromHeadRangeQuery(ctx context.Context, receiptFilter ReceiptFilter, startBlock uint64, endBlock uint64, page int) ([]types.Receipt, error)
 	// RetrieveUnconfirmedEthTxsFromHeadRangeQuery retrieves all unconfirmed ethTx for a given chain ID and range.
-	RetrieveUnconfirmedEthTxsFromHeadRangeQuery(ctx context.Context, receiptFilter EthTxFilter, startBlock uint64, endBlock uint64, page int) ([]TxWithBlockNumber, error)
+	RetrieveUnconfirmedEthTxsFromHeadRangeQuery(ctx context.Context, receiptFilter EthTxFilter, startBlock uint64, endBlock uint64, lastIndexed uint64, page int) ([]TxWithBlockNumber, error)
 
 	// FlushFromHeadTables flushes unconfirmed logs, receipts, and txs from the head.
 	FlushFromHeadTables(ctx context.Context, time int64) error

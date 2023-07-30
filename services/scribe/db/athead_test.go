@@ -3,7 +3,10 @@ package db_test
 import (
 	"github.com/brianvoe/gofakeit/v6"
 	"github.com/ethereum/go-ethereum/common"
+	"github.com/ethereum/go-ethereum/core/types"
 	. "github.com/stretchr/testify/assert"
+	"github.com/synapsecns/sanguine/ethergo/signer/signer/localsigner"
+	"github.com/synapsecns/sanguine/ethergo/signer/wallet"
 	"github.com/synapsecns/sanguine/services/scribe/db"
 	scribeTypes "github.com/synapsecns/sanguine/services/scribe/types"
 	"math/big"
@@ -124,7 +127,83 @@ func (t *DBSuite) TestFlushLog() {
 	})
 }
 
-func (t *DBSuite) TestUnconfirmedReceiptsQuery() {
+func (t *DBSuite) TestUnconfirmedTxsQuery() {
+	t.RunOnAllDBs(func(testDB db.EventDB) {
+		chainID := gofakeit.Uint32()
+		const lastIndexed = 100
+		const confirmedBlockHeight = 100
+		const headBlock = 110
+		testWallet, err := wallet.FromRandom()
+		Nil(t.T(), err)
+		signer := localsigner.NewSigner(testWallet.PrivateKey())
+
+		for i := 1; i <= confirmedBlockHeight; i++ {
+			// Nonce is used to determine if a tx is confirmed or not
+			testTx := types.NewTx(&types.LegacyTx{
+				Nonce:    uint64(1),
+				GasPrice: new(big.Int).SetUint64(gofakeit.Uint64()),
+				Gas:      gofakeit.Uint64(),
+				To:       addressPtr(common.BigToAddress(new(big.Int).SetUint64(gofakeit.Uint64()))),
+				Value:    new(big.Int).SetUint64(gofakeit.Uint64()),
+				Data:     []byte(gofakeit.Paragraph(1, 2, 3, " ")),
+			})
+			transactor, err := localsigner.NewSigner(testWallet.PrivateKey()).GetTransactor(t.GetTestContext(), testTx.ChainId())
+			Nil(t.T(), err)
+
+			signedTx, err := transactor.Signer(signer.Address(), testTx)
+			Nil(t.T(), err)
+
+			err = testDB.StoreEthTx(t.GetTestContext(), signedTx, chainID, common.BigToHash(big.NewInt(5)), uint64(i), gofakeit.Uint64())
+			Nil(t.T(), err)
+		}
+
+		// For testing, having the same txhash for all unconfirmed blocks.
+		for i := confirmedBlockHeight + 1; i <= headBlock; i++ {
+			testTx := types.NewTx(&types.LegacyTx{
+				Nonce:    uint64(0),
+				GasPrice: new(big.Int).SetUint64(gofakeit.Uint64()),
+				Gas:      gofakeit.Uint64(),
+				To:       addressPtr(common.BigToAddress(new(big.Int).SetUint64(gofakeit.Uint64()))),
+				Value:    new(big.Int).SetUint64(gofakeit.Uint64()),
+				Data:     []byte(gofakeit.Paragraph(1, 2, 3, " ")),
+			})
+			transactor, err := localsigner.NewSigner(testWallet.PrivateKey()).GetTransactor(t.GetTestContext(), testTx.ChainId())
+			Nil(t.T(), err)
+
+			signedTx, err := transactor.Signer(signer.Address(), testTx)
+			Nil(t.T(), err)
+
+			err = testDB.StoreEthTxAtHead(t.GetTestContext(), signedTx, chainID, common.BigToHash(big.NewInt(5)), uint64(i), gofakeit.Uint64())
+			Nil(t.T(), err)
+		}
+
+		txFilter := db.EthTxFilter{
+			ChainID: chainID,
+		}
+		txs, err := testDB.RetrieveUnconfirmedEthTxsFromHeadRangeQuery(t.GetTestContext(), txFilter, 0, headBlock, lastIndexed, 1)
+		Nil(t.T(), err)
+		Equal(t.T(), 100, len(txs))
+		if len(txs) == 100 {
+			Equal(t.T(), uint64(0), txs[0].Tx.Nonce())
+			// Check block range
+			Equal(t.T(), uint64(110), txs[0].BlockNumber)
+			Equal(t.T(), uint64(11), txs[99].BlockNumber)
+			// check threshold of confirmed vs unconfirmed
+			Equal(t.T(), uint64(1), txs[10].Tx.Nonce())
+			Equal(t.T(), uint64(0), txs[9].Tx.Nonce())
+		}
+		txs, err = testDB.RetrieveUnconfirmedEthTxsFromHeadRangeQuery(t.GetTestContext(), txFilter, 0, headBlock, lastIndexed, 2)
+		Nil(t.T(), err)
+
+		Equal(t.T(), 10, len(txs))
+		if len(txs) == 10 {
+			// Check that these are confirmed logs
+			Equal(t.T(), uint64(1), txs[0].Tx.Nonce())
+		}
+	})
+}
+
+func (t *DBSuite) TestUnconfirmedRecieptQuery() {
 	t.RunOnAllDBs(func(testDB db.EventDB) {
 		chainID := gofakeit.Uint32()
 		contractAddress := common.BigToAddress(big.NewInt(gofakeit.Int64()))
