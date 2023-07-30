@@ -109,17 +109,24 @@ func StartExporterServer(ctx context.Context, handler metrics.Handler, cfg confi
 	return nil
 }
 
-const stuckHeroMetric = "stuck_heroes_"
-
 func (e *exporter) stuckHeroCount(owner common.Address, chainName string) error {
-	meter := e.metrics.Meter(meterName, metric.WithInstrumentationAttributes(attribute.String("chain_name", chainName)))
+	meter := e.metrics.Meter(meterName)
+	attributes := attribute.NewSet(attribute.String("chain_name", chainName))
 
 	stuckCount, err := meter.Int64ObservableGauge(fmt.Sprintf("%s%s", stuckHeroMetric, chainName))
 	if err != nil {
 		return fmt.Errorf("could not create gauge: %w", err)
 	}
 
-	if _, err := meter.RegisterCallback(func(ctx context.Context, o metric.Observer) error {
+	if _, err := meter.RegisterCallback(func(parentCtx context.Context, o metric.Observer) (err error) {
+		ctx, span := e.metrics.Tracer().Start(parentCtx, "dfk_stats", trace.WithAttributes(
+			attribute.String("chain_name", chainName),
+		))
+
+		defer func() {
+			metrics.EndSpanWithErr(span, err)
+		}()
+
 		ctx, cancel := context.WithTimeout(ctx, time.Minute)
 		defer cancel()
 
@@ -131,7 +138,7 @@ func (e *exporter) stuckHeroCount(owner common.Address, chainName string) error 
 		}
 
 		// TODO: this maxes out at 100 now. Need binary search or something.
-		o.ObserveInt64(stuckCount, int64(len(stuckHeroes.Heroes)))
+		o.ObserveInt64(stuckCount, int64(len(stuckHeroes.Heroes)), metric.WithAttributeSet(attributes))
 
 		return nil
 	}, stuckCount); err != nil {
@@ -141,6 +148,7 @@ func (e *exporter) stuckHeroCount(owner common.Address, chainName string) error 
 	return nil
 }
 
+const stuckHeroMetric = "dfk_pending_heroes"
 const gasBalance = "gas_balance"
 const nonce = "nonce"
 
