@@ -9,7 +9,7 @@ import (
 )
 
 // CombinedSchema returns the combined schema of only
-// schema, metaSchema, resourceMaps and dataSourceMaps
+// schema, metaSchema, resourceMaps and dataSourceMaps.
 type CombinedSchema struct {
 	Schema     map[string]*schema.Schema
 	MetaSchema map[string]*schema.Schema
@@ -92,9 +92,7 @@ func CombineProtoSchemas(ctx context.Context, googleSchema *schema.Provider, pro
 		protoSchema.Provider.Block.Attributes = append(protoSchema.Provider.Block.Attributes, attribute)
 	}
 
-	for _, blockType := range tfProviderSchema.Provider.Block.BlockTypes {
-		protoSchema.Provider.Block.BlockTypes = append(protoSchema.Provider.Block.BlockTypes, blockType)
-	}
+	protoSchema.Provider.Block.BlockTypes = append(protoSchema.Provider.Block.BlockTypes, tfProviderSchema.Provider.Block.BlockTypes...)
 
 	return protoSchema.Provider, nil
 }
