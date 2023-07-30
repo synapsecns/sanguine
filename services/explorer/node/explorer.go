@@ -3,6 +3,9 @@ package node
 import (
 	"context"
 	"fmt"
+	"net/http"
+	"time"
+
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/synapsecns/sanguine/services/explorer/backfill"
@@ -16,8 +19,6 @@ import (
 	"github.com/synapsecns/sanguine/services/explorer/db"
 	"github.com/synapsecns/sanguine/services/explorer/static"
 	"golang.org/x/sync/errgroup"
-	"net/http"
-	"time"
 )
 
 // ExplorerBackfiller is a backfiller that aggregates all backfilling from ChainBackfillers.
@@ -117,10 +118,11 @@ func (e ExplorerBackfiller) Backfill(ctx context.Context, livefill bool) error {
 }
 
 // nolint gocognit,cyclop
-func getChainBackfiller(consumerDB db.ConsumerDB, chainConfig config.ChainConfig, fetcher *fetcherpkg.ScribeFetcher, client bind.ContractBackend, tokenDataService tokendata.Service, priceDataService tokenprice.Service) (*backfill.ChainBackfiller, error) {
+func getChainBackfiller(consumerDB db.ConsumerDB, chainConfig config.ChainConfig, fetcher fetcherpkg.ScribeFetcher, client bind.ContractBackend, tokenDataService tokendata.Service, priceDataService tokenprice.Service) (*backfill.ChainBackfiller, error) {
 	var err error
 	var bridgeParser *parser.BridgeParser
 	var messageBusParser *parser.MessageBusParser
+	var cctpParser *parser.CCTPParser
 	var swapService fetcherpkg.SwapService
 	swapParsers := make(map[common.Address]*parser.SwapParser)
 
@@ -136,7 +138,7 @@ func getChainBackfiller(consumerDB db.ConsumerDB, chainConfig config.ChainConfig
 			if err != nil || swapService == nil {
 				return nil, fmt.Errorf("could not create swapService: %w", err)
 			}
-			swapParser, err := parser.NewSwapParser(consumerDB, common.HexToAddress(chainConfig.Contracts[i].Address), false, fetcher, &swapService, tokenDataService, priceDataService)
+			swapParser, err := parser.NewSwapParser(consumerDB, common.HexToAddress(chainConfig.Contracts[i].Address), false, fetcher, swapService, tokenDataService, priceDataService)
 			if err != nil || swapParser == nil {
 				return nil, fmt.Errorf("could not create swap parser: %w", err)
 			}
@@ -149,7 +151,7 @@ func getChainBackfiller(consumerDB db.ConsumerDB, chainConfig config.ChainConfig
 					return nil, fmt.Errorf("could not create swapService: %w", err)
 				}
 			}
-			swapParser, err := parser.NewSwapParser(consumerDB, common.HexToAddress(chainConfig.Contracts[i].Address), true, fetcher, &swapService, tokenDataService, priceDataService)
+			swapParser, err := parser.NewSwapParser(consumerDB, common.HexToAddress(chainConfig.Contracts[i].Address), true, fetcher, swapService, tokenDataService, priceDataService)
 			if err != nil || swapParser == nil {
 				return nil, fmt.Errorf("could not create swap parser: %w", err)
 			}
@@ -160,10 +162,16 @@ func getChainBackfiller(consumerDB db.ConsumerDB, chainConfig config.ChainConfig
 			if err != nil || messageBusParser == nil {
 				return nil, fmt.Errorf("could not create message bus parser: %w", err)
 			}
+		case "cctp":
+			cctpParser, err = parser.NewCCTPParser(consumerDB, common.HexToAddress(chainConfig.Contracts[i].Address), fetcher, priceDataService)
+			if err != nil || cctpParser == nil {
+				return nil, fmt.Errorf("could not create message bus parser: %w", err)
+			}
 		}
 	}
 
-	chainBackfiller := backfill.NewChainBackfiller(consumerDB, bridgeParser, swapParsers, messageBusParser, *fetcher, chainConfig)
+	// TODO Add the cctp parser
+	chainBackfiller := backfill.NewChainBackfiller(consumerDB, bridgeParser, swapParsers, messageBusParser, cctpParser, fetcher, chainConfig)
 
 	return chainBackfiller, nil
 }

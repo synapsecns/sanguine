@@ -8,11 +8,11 @@ import {
   CONTRACTS_PATH,
 } from './urls'
 
-interface RouteObject {
-  [name: string]: {
+export interface RouteObject {
+  [key: string]: {
     path: string
     text: string
-    match: string | null
+    match: string | RegExp | { startsWith: string; endsWith: string }
   }
 }
 
@@ -25,7 +25,10 @@ export const NAVIGATION: RouteObject = {
   Bridge: {
     path: BRIDGE_PATH,
     text: 'Bridge',
-    match: '/?outputChain',
+    match: {
+      startsWith: '/',
+      endsWith: '/',
+    },
   },
   Swap: {
     path: SWAP_PATH,
@@ -50,6 +53,6 @@ export const NAVIGATION: RouteObject = {
   Contracts: {
     path: CONTRACTS_PATH,
     text: 'Contracts',
-    match: '/contracts',
+    match: null,
   },
 }

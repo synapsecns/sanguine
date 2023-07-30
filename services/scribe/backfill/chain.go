@@ -3,9 +3,10 @@ package backfill
 import (
 	"context"
 	"fmt"
-	"github.com/synapsecns/sanguine/core/metrics"
 	"math"
 	"time"
+
+	"github.com/synapsecns/sanguine/core/metrics"
 
 	"github.com/jpillora/backoff"
 	"github.com/synapsecns/sanguine/services/scribe/config"
@@ -44,19 +45,19 @@ const (
 )
 
 // NewChainBackfiller creates a new backfiller for a chain. This is done by passing through all the function parameters
-// into the ChainBackfiller struct, as well as iterating through all the contracts in the chain config and creating
+// into the ChainBackfiller struct, as well as iterating through all the contracts in the chain config & creating
 // ContractBackfillers for each contract.
 func NewChainBackfiller(eventDB db.EventDB, client []ScribeBackend, chainConfig config.ChainConfig, refreshRate int, handler metrics.Handler) (*ChainBackfiller, error) {
 	var contractBackfillers []*ContractBackfiller
 
 	startHeights := make(map[string]uint64)
 
-	if chainConfig.ContractSubChunkSize == 0 {
-		chainConfig.ContractSubChunkSize = 600
+	if chainConfig.GetLogsRange == 0 {
+		chainConfig.GetLogsRange = 600
 	}
 
-	if chainConfig.ContractChunkSize == 0 {
-		chainConfig.ContractChunkSize = 30000
+	if chainConfig.GetLogsBatchAmount == 0 {
+		chainConfig.GetLogsBatchAmount = 2
 	}
 
 	if chainConfig.StoreConcurrency == 0 {
@@ -67,13 +68,17 @@ func NewChainBackfiller(eventDB db.EventDB, client []ScribeBackend, chainConfig 
 		refreshRate = 1
 	}
 
-	if chainConfig.StoreConcurrencyThreshold == 0 {
-		chainConfig.StoreConcurrencyThreshold = 500
+	if chainConfig.ConcurrencyThreshold == 0 {
+		chainConfig.ConcurrencyThreshold = 50000
 	}
 	minBlockHeight := uint64(math.MaxUint64)
 
 	for _, contract := range chainConfig.Contracts {
-		contractBackfiller, err := NewContractBackfiller(chainConfig, contract, eventDB, client, handler)
+		blockHeightMeter, err := handler.Metrics().NewHistogram(fmt.Sprintf("scribe_block_meter_%d_%s", chainConfig.ChainID, contract.Address), "block_histogram", "a block height meter", "blocks")
+		if err != nil {
+			return nil, fmt.Errorf("error creating otel histogram %w", err)
+		}
+		contractBackfiller, err := NewContractBackfiller(chainConfig, contract, eventDB, client, handler, blockHeightMeter)
 		if err != nil {
 			return nil, fmt.Errorf("could not create contract backfiller: %w", err)
 		}

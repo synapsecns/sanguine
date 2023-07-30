@@ -38,10 +38,12 @@ const sortedTokens = Object.values(all).sort(
 
 // This should be an object where keys are chain IDs and values are arrays of token keys that you want to pause on each chain
 const PAUSED_TOKENS_BY_CHAIN = {
-  [CHAINS.ETH.id]: ['UNIDX'],
-  [CHAINS.ARBITRUM.id]: ['UNIDX'],
-  [CHAINS.FANTOM.id]: ['USDC', 'USDT', 'FTMETH'],
-  [CHAINS.AVALANCHE.id]: ['AVWETH'],
+  [CHAINS.ETH.id]: ['USDB'],
+  [CHAINS.BNB.id]: ['USDB'],
+  [CHAINS.POLYGON.id]: ['USDB'],
+  [CHAINS.FANTOM.id]: ['USDC', 'USDT', 'FTMETH', 'USDB'],
+  [CHAINS.AVALANCHE.id]: ['AVWETH', 'USDB'],
+  [CHAINS.MOONRIVER.id]: ['USDB'],
 }
 
 const getBridgeableTokens = (): TokensByChain => {

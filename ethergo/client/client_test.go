@@ -9,6 +9,7 @@ import (
 	"github.com/lmittmann/w3/w3types"
 	. "github.com/stretchr/testify/assert"
 	"github.com/synapsecns/sanguine/core/metrics"
+	"github.com/synapsecns/sanguine/core/metrics/instrumentation"
 	"github.com/synapsecns/sanguine/ethergo/client"
 	"github.com/synapsecns/sanguine/ethergo/mocks"
 	"github.com/synapsecns/sanguine/ethergo/parser/rpc"
@@ -80,7 +81,7 @@ func (c *ClientSuite) checkRequest(makeReq func(client TestEVM)) {
 	<-doneChan
 
 	spans := mockTracer.GetSpansByName(rpcRequest.Method())
-	requestSpans := mockTracer.GetSpansByName(client.RequestSpanName)
+	requestSpans := mockTracer.GetSpansByName(instrumentation.RequestSpanName)
 	// make sure we got at most 1 span
 	c.Require().Equal(len(spans), 1, "expected 1 span, got %d", len(spans))
 	span := spans[0]
@@ -91,7 +92,7 @@ func (c *ClientSuite) checkRequest(makeReq func(client TestEVM)) {
 	// make sure the span has an exception
 	c.Require().True(spanHasException(span), "expected exception event, got none")
 	Equal(c.T(), spanAttributeByName(span, "endpoint").AsString(), server.URL)
-	Equal(c.T(), spanEventByName(requestSpan, client.RequestBodyEventName).AsString(), string(body))
+	Equal(c.T(), spanEventByName(requestSpan, instrumentation.RequestEventName).AsString(), string(body))
 }
 
 func spanEventByName(stub tracetest.SpanStub, name string) *attribute.Value {

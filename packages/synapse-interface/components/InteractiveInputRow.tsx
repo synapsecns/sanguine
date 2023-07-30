@@ -150,10 +150,10 @@ const InteractiveInputRow = ({
             {isPending ? (
               <>
                 {loadingLabel ? (
-                  <span className="animate-pulse">
+                  <div className="flex items-center justify-center space-x-5 animate-pulse">
                     <ButtonLoadingSpinner className="mr-2" />
-                    {loadingLabel}
-                  </span>
+                    <span>{loadingLabel}</span>
+                  </div>
                 ) : (
                   <ButtonLoadingSpinner />
                 )}

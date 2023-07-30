@@ -1,27 +1,23 @@
-import { commifyBnToString } from '@bignumber/format'
 import AugmentWithUnits from '../components/AugmentWithUnits'
 import InfoSectionCard from './InfoSectionCard'
 import { displaySymbol } from '@utils/displaySymbol'
-import { PoolTokenObject, Token } from '@types'
 import LoadingRow from '@/components/loading/LoadingRow'
+import { commify, formatBigIntToString } from '@utils/bigint/format'
+import { stringToBigInt } from '@/utils/bigint/format'
+import { useSelector } from 'react-redux'
+import { RootState } from '@/store/store'
 
-const CurrencyReservesCard = ({
-  chainId,
-  title,
-  poolData,
-}: {
-  chainId: number
-  title: string
-  poolData: any
-}) => {
+const CurrencyReservesCard = () => {
+  const { pool, poolData } = useSelector((state: RootState) => state.poolData)
+
   return (
-    <InfoSectionCard title={title}>
+    <InfoSectionCard title="Currency Reserves">
       {poolData ? (
-        poolData.tokens.map((tokenObj, idx) => {
+        poolData.tokens?.map((tokenObj, idx) => {
           return (
             <div key={idx}>
               <CurrencyInfoListItem
-                chainId={chainId}
+                chainId={pool.chainId}
                 key={tokenObj.symbol}
                 balance={tokenObj.balance}
                 token={tokenObj.token}
@@ -42,17 +38,23 @@ const CurrencyReservesCard = ({
 
 function CurrencyInfoListItem({ chainId, percent, balance, token }) {
   const symbol = displaySymbol(chainId, token)
-  let decimalsToDisplay = token.swapableType === 'USD' ? 0 : 2
+
   return (
     <div className="flex items-center justify-between my-2 text-sm font-medium text-white">
-      <div className="flex items-center">
+      <div className="flex items-center w-30">
         <img className="relative mr-2 w-7" src={token.icon.src} />
         <div>{symbol}</div>
       </div>
-      <div>{percent}</div>
+      <div className="text-right">{percent}</div>
       {balance && (
         <AugmentWithUnits
-          content={commifyBnToString(balance, decimalsToDisplay)}
+          content={commify(
+            formatBigIntToString(
+              stringToBigInt(`${balance}`, token.decimals[chainId]),
+              token.decimals[chainId],
+              -1
+            )
+          )}
           label={symbol}
         />
       )}

@@ -13,3 +13,17 @@ const (
 	// Complete indicates the USDC transfer has been completed on the destination chain.
 	Complete
 )
+
+func (m MessageState) String() string {
+	switch m {
+	case Pending:
+		return "Pending"
+	case Attested:
+		return "Attested"
+	case Submitted:
+		return "Submitted"
+	case Complete:
+		return "Complete"
+	}
+	return ""
+}

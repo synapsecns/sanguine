@@ -291,7 +291,7 @@ jobs:
           # Optional: version of golangci-lint to use in form of v1.2 or v1.2.3 or `latest` to use the latest version
           version: v1.48.0
           # see: https://github.com/golangci/golangci-lint/issues/2654
-          args: --timeout=60m --build-tags=codeanalysis
+          args: --timeout=60m  --build-tags=codeanalysis # temporarily disabling on failing, todo fix
         env:
           # GitHub token for annotations (optional)
           GITHUB_TOKEN: ${{ secrets.WORKFLOW_PAT }}
@@ -392,6 +392,11 @@ jobs:
         with:
           files: |
             *.go
+
+      - name: List all changed files tracked and untracked files
+        if: steps.verify-changed-files.outputs.files_changed == 'true'
+        run: |
+          echo "Changed files: ${{ steps.verify-changed-files.outputs.changed_files }}"
 
         # Fail if files need regeneration
       - name: Add Label
@@ -528,6 +533,11 @@ jobs:
         with:
           files: |
             *.go
+
+      - name: List all changed files tracked and untracked files
+        if: steps.verify-changed-files.outputs.files_changed == 'true'
+        run: |
+          echo "Changed files: ${{ steps.verify-changed-files.outputs.changed_files }}"
 
         # Fail if files need regeneration
       - name: Add Label

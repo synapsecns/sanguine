@@ -63,7 +63,7 @@ func Start(ctx context.Context, cfg Config) error {
 	if err != nil {
 		return fmt.Errorf("error creating api cache service, %w", err)
 	}
-	gqlServer.EnableGraphql(router, consumerDB, *fetcher, responseCache)
+	gqlServer.EnableGraphql(router, consumerDB, fetcher, responseCache)
 
 	fmt.Printf("started graphiql gqlServer on port: http://%s:%d/graphiql\n", hostname, cfg.HTTPPort)
 
