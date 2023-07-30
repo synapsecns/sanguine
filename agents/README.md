@@ -26,5 +26,5 @@ root
 ├── <a href="./indexer">indexer</a>: Periodically reads from the db and stores data in the db
 ├── <a href="./internal">internal</a>: Dev dependencies
 ├── <a href="./testutil">testutil</a>: Contains mock deployers for interacting with the mock backend
-└── <a href="./types">types</a>: Common agents types.
+└── <a href="./types">types</a>: Common agents types
 </pre>
