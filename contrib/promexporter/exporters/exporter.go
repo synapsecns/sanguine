@@ -193,7 +193,7 @@ func (e *exporter) submitterStats(address common.Address, chainID int, name stri
 		o.ObserveInt64(nonceGauge, int64(nonce), metric.WithAttributeSet(attributes))
 
 		return nil
-	}, balanceGauge); err != nil {
+	}, balanceGauge, nonceGauge); err != nil {
 		return fmt.Errorf("registering callback on instruments: %w", err)
 	}
 
