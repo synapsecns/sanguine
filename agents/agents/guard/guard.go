@@ -644,6 +644,21 @@ func (g Guard) handleRootUpdated(ctx context.Context, log ethTypes.Log, chainID 
 	return nil
 }
 
+func (g Guard) updateAgentStatuses(ctx context.Context) error {
+	for _, domain := range g.domains {
+		chainID := domain.Config().DomainID
+		if chainID == g.summitDomainID {
+			continue
+		}
+
+		err := g.updateAgentStatus(ctx, chainID)
+		if err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
 func (g Guard) updateAgentStatus(ctx context.Context, chainID uint32) error {
 	eligibleAgentTrees, err := g.guardDB.GetUpdateAgentStatusParameters(ctx)
 	if err != nil {
@@ -877,6 +892,10 @@ func (g Guard) Start(parentCtx context.Context) error {
 			case <-time.After(g.refreshInterval):
 				g.loadOriginLatestStates(ctx)
 				g.submitLatestSnapshot(ctx)
+				err := g.updateAgentStatuses(ctx)
+				if err != nil {
+					return err
+				}
 			}
 		}
 	})
