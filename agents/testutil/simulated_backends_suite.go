@@ -36,7 +36,8 @@ import (
 	"github.com/synapsecns/sanguine/core/metrics/localmetrics"
 	"github.com/synapsecns/sanguine/core/testsuite"
 	"github.com/synapsecns/sanguine/ethergo/backends"
-	"github.com/synapsecns/sanguine/ethergo/backends/preset"
+	"github.com/synapsecns/sanguine/ethergo/backends/anvil"
+	"github.com/synapsecns/sanguine/ethergo/chain/client"
 	"github.com/synapsecns/sanguine/ethergo/contracts"
 	"github.com/synapsecns/sanguine/ethergo/signer/signer"
 	"github.com/synapsecns/sanguine/ethergo/signer/signer/localsigner"
@@ -333,15 +334,21 @@ func (a *SimulatedBackendsTestSuite) SetupTest() {
 	wg.Add(3)
 	go func() {
 		defer wg.Done()
-		a.TestBackendOrigin = preset.GetRinkeby().Geth(a.GetTestContext(), a.T())
+		anvilOpts := anvil.NewAnvilOptionBuilder()
+		anvilOpts.SetChainID(uint64(params.RinkebyChainConfig.ChainID.Int64()))
+		a.TestBackendOrigin = anvil.NewAnvilBackend(a.GetTestContext(), a.T(), anvilOpts)
 	}()
 	go func() {
 		defer wg.Done()
-		a.TestBackendDestination = preset.GetBSCTestnet().Geth(a.GetTestContext(), a.T())
+		anvilOpts := anvil.NewAnvilOptionBuilder()
+		anvilOpts.SetChainID(uint64(client.ChapelChainConfig.ChainID.Int64()))
+		a.TestBackendDestination = anvil.NewAnvilBackend(a.GetTestContext(), a.T(), anvilOpts)
 	}()
 	go func() {
 		defer wg.Done()
-		a.TestBackendSummit = preset.GetMaticMumbaiFakeSynDomain().Geth(a.GetTestContext(), a.T())
+		anvilOpts := anvil.NewAnvilOptionBuilder()
+		anvilOpts.SetChainID(uint64(10))
+		a.TestBackendSummit = anvil.NewAnvilBackend(a.GetTestContext(), a.T(), anvilOpts)
 	}()
 	wg.Wait()
 
