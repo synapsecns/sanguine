@@ -9,17 +9,17 @@ import (
 )
 
 type Auction struct {
-	ID            *string  `json:"id"`
-	Seller        *Profile `json:"seller"`
-	TokenID       *Hero    `json:"tokenId"`
-	StartingPrice *string  `json:"startingPrice"`
-	EndingPrice   *string  `json:"endingPrice"`
-	Duration      *int64   `json:"duration"`
-	StartedAt     *int64   `json:"startedAt"`
-	Winner        *Profile `json:"winner"`
-	EndedAt       *int64   `json:"endedAt"`
+	ID            *string  `json:"id,omitempty"`
+	Seller        *Profile `json:"seller,omitempty"`
+	TokenID       *Hero    `json:"tokenId,omitempty"`
+	StartingPrice *string  `json:"startingPrice,omitempty"`
+	EndingPrice   *string  `json:"endingPrice,omitempty"`
+	Duration      *int64   `json:"duration,omitempty"`
+	StartedAt     *int64   `json:"startedAt,omitempty"`
+	Winner        *Profile `json:"winner,omitempty"`
+	EndedAt       *int64   `json:"endedAt,omitempty"`
 	Open          bool     `json:"open"`
-	PurchasePrice *string  `json:"purchasePrice"`
+	PurchasePrice *string  `json:"purchasePrice,omitempty"`
 }
 
 type AuctionFilter struct {
@@ -128,12 +128,12 @@ type AuctionFilter struct {
 }
 
 type Hero struct {
-	ID                    *string  `json:"id"`
-	NumberID              *string  `json:"numberId"`
-	NormalizedID          *string  `json:"normalizedId"`
-	Owner                 *Profile `json:"owner"`
-	PreviousOwner         *Profile `json:"previousOwner"`
-	Creator               *Profile `json:"creator"`
+	ID                    *string  `json:"id,omitempty"`
+	NumberID              *string  `json:"numberId,omitempty"`
+	NormalizedID          *string  `json:"normalizedId,omitempty"`
+	Owner                 *Profile `json:"owner,omitempty"`
+	PreviousOwner         *Profile `json:"previousOwner,omitempty"`
+	Creator               *Profile `json:"creator,omitempty"`
 	StatGenes             string   `json:"statGenes"`
 	VisualGenes           string   `json:"visualGenes"`
 	Rarity                int64    `json:"rarity"`
@@ -144,8 +144,8 @@ type Hero struct {
 	ShinyStyle            int64    `json:"shinyStyle"`
 	SummonedTime          int64    `json:"summonedTime"`
 	NextSummonTime        int64    `json:"nextSummonTime"`
-	SummonerID            *Hero    `json:"summonerId"`
-	AssistantID           *Hero    `json:"assistantId"`
+	SummonerID            *Hero    `json:"summonerId,omitempty"`
+	AssistantID           *Hero    `json:"assistantId,omitempty"`
 	Summons               int64    `json:"summons"`
 	MaxSummons            int64    `json:"maxSummons"`
 	StaminaFullAt         int64    `json:"staminaFullAt"`
@@ -193,7 +193,7 @@ type Hero struct {
 	Gardening             int64    `json:"gardening"`
 	Foraging              int64    `json:"foraging"`
 	Fishing               int64    `json:"fishing"`
-	MainClass             *int64   `json:"mainClass"`
+	MainClass             *int64   `json:"mainClass,omitempty"`
 	SubClass              int64    `json:"subClass"`
 	Class                 int64    `json:"class"`
 	Profession            int64    `json:"profession"`
@@ -218,25 +218,25 @@ type Hero struct {
 	AppendageColor        int64    `json:"appendageColor"`
 	BackAppendageColor    int64    `json:"backAppendageColor"`
 	VisualUnknown2        int64    `json:"visualUnknown2"`
-	AssistingAuction      *Auction `json:"assistingAuction"`
-	AssistingPrice        *string  `json:"assistingPrice"`
-	SaleAuction           *Auction `json:"saleAuction"`
-	SalePrice             *string  `json:"salePrice"`
-	PrivateAuctionProfile *Profile `json:"privateAuctionProfile"`
+	AssistingAuction      *Auction `json:"assistingAuction,omitempty"`
+	AssistingPrice        *string  `json:"assistingPrice,omitempty"`
+	SaleAuction           *Auction `json:"saleAuction,omitempty"`
+	SalePrice             *string  `json:"salePrice,omitempty"`
+	PrivateAuctionProfile *Profile `json:"privateAuctionProfile,omitempty"`
 	SummonsRemaining      int64    `json:"summonsRemaining"`
-	PjStatus              *string  `json:"pjStatus"`
-	PjLevel               *int64   `json:"pjLevel"`
-	PjOwner               *Profile `json:"pjOwner"`
-	PjClaimStamp          *int64   `json:"pjClaimStamp"`
-	Network               *string  `json:"network"`
-	OriginRealm           *string  `json:"originRealm"`
-	DarkSummoned          *bool    `json:"darkSummoned"`
-	DarkSummonLevels      *int64   `json:"darkSummonLevels"`
-	HasValidCraftingGenes *bool    `json:"hasValidCraftingGenes"`
+	PjStatus              *string  `json:"pjStatus,omitempty"`
+	PjLevel               *int64   `json:"pjLevel,omitempty"`
+	PjOwner               *Profile `json:"pjOwner,omitempty"`
+	PjClaimStamp          *int64   `json:"pjClaimStamp,omitempty"`
+	Network               *string  `json:"network,omitempty"`
+	OriginRealm           *string  `json:"originRealm,omitempty"`
+	DarkSummoned          *bool    `json:"darkSummoned,omitempty"`
+	DarkSummonLevels      *int64   `json:"darkSummonLevels,omitempty"`
+	HasValidCraftingGenes *bool    `json:"hasValidCraftingGenes,omitempty"`
 	MainClassStr          string   `json:"mainClassStr"`
 	SubClassStr           string   `json:"subClassStr"`
 	ProfessionStr         string   `json:"professionStr"`
-	Pet                   *Pet     `json:"pet"`
+	Pet                   *Pet     `json:"pet,omitempty"`
 }
 
 type HeroFilter struct {
@@ -1310,10 +1310,10 @@ type HeroFilter struct {
 }
 
 type Pet struct {
-	ID                    *string     `json:"id"`
-	NormalizedID          *string     `json:"normalizedId"`
+	ID                    *string     `json:"id,omitempty"`
+	NormalizedID          *string     `json:"normalizedId,omitempty"`
 	Owner                 Profile     `json:"owner"`
-	PreviousOwner         *Profile    `json:"previousOwner"`
+	PreviousOwner         *Profile    `json:"previousOwner,omitempty"`
 	OriginID              int64       `json:"originId"`
 	Name                  string      `json:"name"`
 	Season                int64       `json:"season"`
@@ -1332,30 +1332,30 @@ type Pet struct {
 	Shiny                 bool        `json:"shiny"`
 	HungryAt              int64       `json:"hungryAt"`
 	EquippableAt          int64       `json:"equippableAt"`
-	EquippedTo            *Hero       `json:"equippedTo"`
-	SaleAuction           *PetAuction `json:"saleAuction"`
-	SalePrice             *string     `json:"salePrice"`
-	Creator               *Profile    `json:"creator"`
-	PrivateAuctionProfile *Profile    `json:"privateAuctionProfile"`
-	CurrentRealm          *string     `json:"currentRealm"`
-	OriginRealm           *string     `json:"originRealm"`
+	EquippedTo            *Hero       `json:"equippedTo,omitempty"`
+	SaleAuction           *PetAuction `json:"saleAuction,omitempty"`
+	SalePrice             *string     `json:"salePrice,omitempty"`
+	Creator               *Profile    `json:"creator,omitempty"`
+	PrivateAuctionProfile *Profile    `json:"privateAuctionProfile,omitempty"`
+	CurrentRealm          *string     `json:"currentRealm,omitempty"`
+	OriginRealm           *string     `json:"originRealm,omitempty"`
 	CreatedAt             int64       `json:"createdAt"`
-	FoodType              *int64      `json:"foodType"`
-	FedBy                 *Profile    `json:"fedBy"`
+	FoodType              *int64      `json:"foodType,omitempty"`
+	FedBy                 *Profile    `json:"fedBy,omitempty"`
 }
 
 type PetAuction struct {
-	ID            *string  `json:"id"`
-	Seller        *Profile `json:"seller"`
-	TokenID       *Pet     `json:"tokenId"`
-	StartingPrice *string  `json:"startingPrice"`
-	EndingPrice   *string  `json:"endingPrice"`
-	Duration      *int64   `json:"duration"`
-	StartedAt     *int64   `json:"startedAt"`
-	Winner        *Profile `json:"winner"`
-	EndedAt       *int64   `json:"endedAt"`
+	ID            *string  `json:"id,omitempty"`
+	Seller        *Profile `json:"seller,omitempty"`
+	TokenID       *Pet     `json:"tokenId,omitempty"`
+	StartingPrice *string  `json:"startingPrice,omitempty"`
+	EndingPrice   *string  `json:"endingPrice,omitempty"`
+	Duration      *int64   `json:"duration,omitempty"`
+	StartedAt     *int64   `json:"startedAt,omitempty"`
+	Winner        *Profile `json:"winner,omitempty"`
+	EndedAt       *int64   `json:"endedAt,omitempty"`
 	Open          bool     `json:"open"`
-	PurchasePrice *string  `json:"purchasePrice"`
+	PurchasePrice *string  `json:"purchasePrice,omitempty"`
 }
 
 type PetFilter struct {
@@ -1674,15 +1674,15 @@ type PetFilter struct {
 }
 
 type Profile struct {
-	ID           *string `json:"id"`
-	Owner        *string `json:"owner"`
-	Name         *string `json:"name"`
-	Created      *int64  `json:"created"`
-	PicID        *int64  `json:"picId"`
-	NftID        *int64  `json:"nftId"`
-	CollectionID *int64  `json:"collectionId"`
-	HeroID       *int64  `json:"heroId"`
-	PicURI       *string `json:"picUri"`
+	ID           *string `json:"id,omitempty"`
+	Owner        *string `json:"owner,omitempty"`
+	Name         *string `json:"name,omitempty"`
+	Created      *int64  `json:"created,omitempty"`
+	PicID        *int64  `json:"picId,omitempty"`
+	NftID        *int64  `json:"nftId,omitempty"`
+	CollectionID *int64  `json:"collectionId,omitempty"`
+	HeroID       *int64  `json:"heroId,omitempty"`
+	PicURI       *string `json:"picUri,omitempty"`
 }
 
 type ProfileFilter struct {

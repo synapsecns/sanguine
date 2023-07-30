@@ -33,11 +33,11 @@ require (
 	github.com/puzpuzpuz/xsync v1.4.3
 	github.com/rbretecher/go-postman-collection v0.9.0
 	github.com/richardwilkes/toolbox v1.74.0
-	github.com/stretchr/testify v1.8.3
+	github.com/stretchr/testify v1.8.4
 	github.com/synapsecns/fasthttp-http2 v1.0.0
 	github.com/synapsecns/sanguine/core v0.0.0-00010101000000-000000000000
 	github.com/synapsecns/sanguine/ethergo v0.0.2
-	github.com/urfave/cli/v2 v2.16.3
+	github.com/urfave/cli/v2 v2.24.4
 	github.com/valyala/fasthttp v1.41.0
 	go.opentelemetry.io/otel v1.16.0
 	go.opentelemetry.io/otel/trace v1.16.0
