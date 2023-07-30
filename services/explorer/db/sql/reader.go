@@ -229,8 +229,8 @@ func (s *Store) GetLeaderboard(ctx context.Context, query string) ([]*model.Lead
 // TODO: test this
 func (s *Store) GetPendingByChain(ctx context.Context) (res *immutable.Map[int, int], err error) {
 	const query = `SELECT
-		destination_chain_id,
-		COUNTDistinct(destination_kappa) AS distinct_count
+		toInt64(destination_chain_id) as destination_chain_id,
+		toInt64(COUNTDistinct(destination_kappa)) AS distinct_count
 	FROM bridge_events
 	WHERE destination_kappa NOT IN (
 		SELECT kappa
@@ -239,12 +239,12 @@ func (s *Store) GetPendingByChain(ctx context.Context) (res *immutable.Map[int, 
 	)
 	GROUP BY destination_chain_id`
 
-	type pendingByChain struct {
-		DestinationChainID *int `gorm:"column:destination_chain_id"`
-		DistinctCount      *int `gorm:"column:distinct_count"`
+	type PendingByChain struct {
+		DestinationChainID *int64 `gorm:"column:destination_chain_id"`
+		DistinctCount      *int64 `gorm:"column:distinct_count"`
 	}
 
-	var pending []*pendingByChain
+	var pending []*PendingByChain
 
 	dbTx := s.db.WithContext(ctx).Raw(query).Scan(&pending)
 	if dbTx.Error != nil {
