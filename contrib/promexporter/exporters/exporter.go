@@ -152,6 +152,7 @@ const stuckHeroMetric = "dfk_pending_heroes"
 const gasBalance = "gas_balance"
 const nonce = "nonce"
 
+// note: this kind of check should be deprecated in favor of submitter metrics once everything has been moved over.
 func (e *exporter) submitterStats(address common.Address, chainID int, name string) error {
 	meter := e.metrics.Meter(fmt.Sprintf("%s_%d", meterName, chainID))
 

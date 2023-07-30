@@ -76,6 +76,27 @@ func DecodeConfig(filePath string) (_ Config, err error) {
 			},
 			Name: "validators",
 		},
+		{
+			Address: "0xaee80e4b92ba497af1378bc799687fbf816ab87b",
+			ChainIDs: []int{
+				53935, 8217, 1666600000,
+			},
+			Name: "messenger",
+		},
+		{
+			Address: "0xaee80e4b92ba497af1378bc799687fbf816ab87b",
+			ChainIDs: []int{
+				53935, 8217, 1666600000,
+			},
+			Name: "messenger",
+		},
+		{
+			Address: "0x0a1e1d0eb6a1cef79e46f0e2d35b7bf2e958a26a",
+			Name:    "cctp",
+			ChainIDs: []int{
+				1, 42161, 43114,
+			},
+		},
 	}
 
 	err = yaml.Unmarshal(input, cfg)
