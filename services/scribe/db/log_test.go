@@ -26,12 +26,14 @@ func (t *DBSuite) TestStoreRetrieveLog() {
 		logB := t.MakeRandomLog(txHashA)
 		logB.BlockNumber = 2
 		err = testDB.StoreLogs(t.GetTestContext(), chainID, logB)
+
 		Nil(t.T(), err)
 
 		txHashC := common.BigToHash(big.NewInt(txHashRandom + 1))
 		logC := t.MakeRandomLog(txHashC)
 		logC.BlockNumber = 1
 		err = testDB.StoreLogs(t.GetTestContext(), chainID+1, logC)
+
 		Nil(t.T(), err)
 
 		// Ensure the logs from the database match the ones stored.

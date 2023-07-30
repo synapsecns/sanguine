@@ -3,6 +3,7 @@ package node
 import (
 	"context"
 	"fmt"
+	"github.com/synapsecns/sanguine/core/metrics"
 	"net/http"
 	"time"
 
@@ -36,7 +37,7 @@ type ExplorerBackfiller struct {
 // NewExplorerBackfiller creates a new backfiller for the explorer.
 //
 // nolint:gocognit
-func NewExplorerBackfiller(consumerDB db.ConsumerDB, config config.Config, clients map[uint32]bind.ContractBackend) (*ExplorerBackfiller, error) {
+func NewExplorerBackfiller(consumerDB db.ConsumerDB, config config.Config, clients map[uint32]bind.ContractBackend, handler metrics.Handler) (*ExplorerBackfiller, error) {
 	chainBackfillers := make(map[uint32]*backfill.ChainBackfiller)
 	httpClient := http.Client{
 		Timeout: 10 * time.Second,
@@ -44,7 +45,7 @@ func NewExplorerBackfiller(consumerDB db.ConsumerDB, config config.Config, clien
 			ResponseHeaderTimeout: 10 * time.Second,
 		},
 	}
-	fetcher := fetcherpkg.NewFetcher(gqlClient.NewClient(&httpClient, config.ScribeURL))
+	fetcher := fetcherpkg.NewFetcher(gqlClient.NewClient(&httpClient, config.ScribeURL), handler)
 	bridgeConfigRef, err := bridgeconfig.NewBridgeConfigRef(common.HexToAddress(config.BridgeConfigAddress), clients[config.BridgeConfigChainID])
 	if err != nil || bridgeConfigRef == nil {
 		return nil, fmt.Errorf("could not create bridge config ScribeFetcher: %w", err)

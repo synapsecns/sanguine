@@ -157,6 +157,6 @@ func (g APISuite) TestRehydrateCache() {
 		TTimeStamp:          nil,
 	})
 	Nil(g.T(), err)
-	err = api.RehydrateCache(g.GetTestContext(), g.client, responseCache)
+	err = api.RehydrateCache(g.GetTestContext(), g.client, responseCache, g.explorerMetrics)
 	Nil(g.T(), err)
 }

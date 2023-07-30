@@ -1,16 +1,17 @@
-package backfill
+package indexer
 
 import (
 	"context"
 	"fmt"
+	"github.com/synapsecns/sanguine/services/scribe/backend"
+	"github.com/synapsecns/sanguine/services/scribe/logger"
+	scribeTypes "github.com/synapsecns/sanguine/services/scribe/types"
 	"math/big"
 	"time"
 
 	"github.com/synapsecns/sanguine/ethergo/util"
 
-	ethCommon "github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/core/types"
-	"github.com/synapsecns/sanguine/services/scribe/config"
 
 	"github.com/jpillora/backoff"
 )
@@ -24,38 +25,44 @@ type LogFetcher struct {
 	// for logging
 	endBlock *big.Int
 	// fetchedLogsChan is a channel with the fetched chunks of logs.
-	fetchedLogsChan chan []types.Log
+	fetchedLogsChan chan types.Log
 	// backend is the ethereum backend used to fetch logs.
-	backend ScribeBackend
-	// contractAddress is the contractAddress that logs are fetched for.
-	contractAddress ethCommon.Address
-	// chainConfig holds the chain config (config data for the chain)
-	chainConfig *config.ChainConfig
+	backend backend.ScribeBackend
+	// indexerConfig holds the chain config (config data for the chain)
+	indexerConfig *scribeTypes.IndexerConfig
+	// bufferSize prevents from overloading the scribe indexer with too many logs as well as upstream RPCs with too many requests.
+	bufferSize int
 }
 
-// bufferSize is how many getLogs*batch amount chunks ahead should be fetched.
-const bufferSize = 3
-
 // NewLogFetcher creates a new filtering interface for a range of blocks. If reverse is not set, block heights are filtered from start->end.
-func NewLogFetcher(address ethCommon.Address, backend ScribeBackend, startBlock, endBlock *big.Int, chainConfig *config.ChainConfig) *LogFetcher {
+func NewLogFetcher(backend backend.ScribeBackend, startBlock, endBlock *big.Int, indexerConfig *scribeTypes.IndexerConfig) *LogFetcher {
 	// The ChunkIterator is inclusive of the start and ending block resulting in potentially confusing behavior when
 	// setting the range size in the config. For example, setting a range of 1 would result in two blocks being queried
 	// instead of 1. This is accounted for by subtracting 1.
-	chunkSize := int(chainConfig.GetLogsRange) - 1
+	chunkSize := int(indexerConfig.GetLogsRange) - 1
+
+	// Using the specified StoreConcurrency value from the config, as the buffer size for the fetchedLogsChan
+	bufferSize := indexerConfig.StoreConcurrency
+	if bufferSize > 100 {
+		bufferSize = 100
+	}
+	if bufferSize == 0 {
+		bufferSize = 3 // default buffer size
+	}
 	return &LogFetcher{
 		iterator:        util.NewChunkIterator(startBlock, endBlock, chunkSize, true),
 		startBlock:      startBlock,
 		endBlock:        endBlock,
-		fetchedLogsChan: make(chan []types.Log, bufferSize),
+		fetchedLogsChan: make(chan types.Log, bufferSize),
 		backend:         backend,
-		contractAddress: address,
-		chainConfig:     chainConfig,
+		indexerConfig:   indexerConfig,
+		bufferSize:      bufferSize,
 	}
 }
 
 // GetChunkArr gets the appropriate amount of block chunks (getLogs ranges).
 func (f *LogFetcher) GetChunkArr() (chunkArr []*util.Chunk) {
-	for i := uint64(0); i < f.chainConfig.GetLogsBatchAmount; i++ {
+	for i := uint64(0); i < f.indexerConfig.GetLogsBatchAmount; i++ {
 		chunk := f.iterator.NextChunk()
 		if chunk == nil {
 			return chunkArr
@@ -63,7 +70,8 @@ func (f *LogFetcher) GetChunkArr() (chunkArr []*util.Chunk) {
 		chunkArr = append(chunkArr, chunk)
 
 		// Stop appending chunks if the max height of the current chunk exceeds the concurrency threshold
-		if chunk.EndBlock.Uint64() > f.endBlock.Uint64()-f.chainConfig.ConcurrencyThreshold {
+		if chunk.EndBlock.Uint64() > f.endBlock.Uint64()-f.indexerConfig.ConcurrencyThreshold {
+			logger.ReportScribeState(f.indexerConfig.ChainID, chunk.EndBlock.Uint64(), f.indexerConfig.Addresses, logger.ConcurrencyThresholdReached)
 			return chunkArr
 		}
 	}
@@ -85,7 +93,6 @@ func (f *LogFetcher) Start(ctx context.Context) error {
 		select {
 		case <-ctx.Done():
 			if ctx.Err() != nil {
-				LogEvent(WarnLevel, "could not finish filtering range", LogData{"ca": f.contractAddress, "sh": f.startBlock.String(), "eh": f.endBlock.String(), "cid": &f.chainConfig.ChainID})
 				return fmt.Errorf("could not finish filtering range: %w", ctx.Err())
 			}
 
@@ -105,7 +112,12 @@ func (f *LogFetcher) Start(ctx context.Context) error {
 			select {
 			case <-ctx.Done():
 				return fmt.Errorf("context canceled while adding log to chan %w", ctx.Err())
-			case f.fetchedLogsChan <- logs:
+
+			default:
+				// insert logs into channel
+				for i := range logs {
+					f.fetchedLogsChan <- logs[i]
+				}
 			}
 		}
 	}
@@ -120,14 +132,11 @@ func (f *LogFetcher) FetchLogs(ctx context.Context, chunks []*util.Chunk) ([]typ
 		Factor: 2,
 		Jitter: true,
 		Min:    1 * time.Second,
-		Max:    10 * time.Second,
+		Max:    8 * time.Second,
 	}
 
 	attempt := 0
 	timeout := time.Duration(0)
-
-	startHeight := chunks[0].StartBlock.Uint64()
-	endHeight := chunks[len(chunks)-1].EndBlock.Uint64()
 
 	for {
 		select {
@@ -139,9 +148,10 @@ func (f *LogFetcher) FetchLogs(ctx context.Context, chunks []*util.Chunk) ([]typ
 				return nil, fmt.Errorf("maximum number of filter attempts exceeded")
 			}
 
-			logs, err := f.getAndUnpackLogs(ctx, chunks, backoffConfig, startHeight, endHeight)
+			logs, err := f.getAndUnpackLogs(ctx, chunks, backoffConfig)
 			if err != nil {
-				LogEvent(WarnLevel, "Could not get and unpack logs for range, retrying", LogData{"sh": startHeight, "ca": f.contractAddress, "eh": endHeight, "cid": f.chainConfig.ChainID, "e": err})
+				logger.ReportIndexerError(err, *f.indexerConfig, logger.GetLogsError)
+				timeout = backoffConfig.Duration()
 				continue
 			}
 
@@ -150,13 +160,13 @@ func (f *LogFetcher) FetchLogs(ctx context.Context, chunks []*util.Chunk) ([]typ
 	}
 }
 
-func (f *LogFetcher) getAndUnpackLogs(ctx context.Context, chunks []*util.Chunk, backoffConfig *backoff.Backoff, startHeight, endHeight uint64) ([]types.Log, error) {
-	result, err := GetLogsInRange(ctx, f.backend, f.contractAddress, uint64(f.chainConfig.ChainID), chunks)
+func (f *LogFetcher) getAndUnpackLogs(ctx context.Context, chunks []*util.Chunk, backoffConfig *backoff.Backoff) ([]types.Log, error) {
+	result, err := backend.GetLogsInRange(ctx, f.backend, f.indexerConfig.Addresses, uint64(f.indexerConfig.ChainID), chunks)
 	if err != nil {
 		backoffConfig.Duration()
-		LogEvent(WarnLevel, "Could not filter logs for range, retrying", LogData{"sh": startHeight, "ca": f.contractAddress, "eh": endHeight, "cid": f.chainConfig.ChainID, "e": err})
-		return nil, err
+		return nil, fmt.Errorf("could not get logs: %w", err)
 	}
+
 	var logs []types.Log
 	resultIterator := result.Iterator()
 	for !resultIterator.Done() {
@@ -166,7 +176,7 @@ func (f *LogFetcher) getAndUnpackLogs(ctx context.Context, chunks []*util.Chunk,
 		default:
 			_, logChunk := resultIterator.Next()
 			if logChunk == nil || len(*logChunk) == 0 {
-				LogEvent(WarnLevel, "empty subchunk", LogData{"sh": startHeight, "ca": f.contractAddress, "cid": f.chainConfig.ChainID, "eh": endHeight})
+				logger.ReportIndexerError(fmt.Errorf("empty log chunk"), *f.indexerConfig, logger.EmptyGetLogsChunk)
 				continue
 			}
 
@@ -175,4 +185,9 @@ func (f *LogFetcher) getAndUnpackLogs(ctx context.Context, chunks []*util.Chunk,
 	}
 
 	return logs, nil
+}
+
+// GetFetchedLogsChan returns the fetchedLogsChan channel as a pointer for access by the indexer and tests.
+func (f *LogFetcher) GetFetchedLogsChan() *chan types.Log {
+	return &f.fetchedLogsChan
 }

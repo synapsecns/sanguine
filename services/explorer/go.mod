@@ -33,6 +33,7 @@ require (
 	github.com/jpillora/backoff v1.0.0
 	github.com/ory/dockertest/v3 v3.9.1
 	github.com/phayes/freeport v0.0.0-20220201140144-74d24b5ae9f5
+	github.com/ravilushqa/otelgqlgen v0.13.1
 	github.com/richardwilkes/toolbox v1.74.0
 	github.com/stretchr/testify v1.8.4
 	github.com/synapsecns/sanguine/core v0.0.0-00010101000000-000000000000
@@ -49,7 +50,6 @@ require (
 )
 
 require (
-	bitbucket.org/tentontrain/math v0.0.0-20220519191623-a4e86beba92a // indirect
 	github.com/Azure/go-ansiterm v0.0.0-20210617225240-d185dfc1b5a1 // indirect
 	github.com/ClickHouse/ch-go v0.47.3 // indirect
 	github.com/DataDog/appsec-internal-go v1.0.0 // indirect
@@ -71,7 +71,6 @@ require (
 	github.com/agnivade/levenshtein v1.1.1 // indirect
 	github.com/alecthomas/chroma v0.7.1 // indirect
 	github.com/andybalholm/brotli v1.0.4 // indirect
-	github.com/aws/smithy-go v1.13.5 // indirect
 	github.com/badoux/checkmail v0.0.0-20181210160741-9661bd69e9ad // indirect
 	github.com/benbjohnson/immutable v0.4.3 // indirect
 	github.com/beorn7/perks v1.0.1 // indirect

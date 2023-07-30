@@ -14,7 +14,7 @@ type ConsumerDBWriter interface {
 	StoreEvent(ctx context.Context, event interface{}) error
 	// StoreEvents stores a list of events.
 	StoreEvents(ctx context.Context, events []interface{}) error
-	// StoreLastBlock stores the last block number that has been backfilled for a given chain.
+	// StoreLastBlock stores the last block number that has been indexed for a given chain.
 	StoreLastBlock(ctx context.Context, chainID uint32, blockNumber uint64, contractAddress string) error
 	// StoreTokenIndex stores the token index data.
 	StoreTokenIndex(ctx context.Context, chainID uint32, tokenIndex uint8, tokenAddress string, contractAddress string) error

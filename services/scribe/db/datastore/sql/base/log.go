@@ -6,7 +6,6 @@ import (
 	"errors"
 	"fmt"
 	"github.com/synapsecns/sanguine/core/dbcommon"
-
 	"github.com/synapsecns/sanguine/services/scribe/db"
 
 	"github.com/ethereum/go-ethereum/common"
@@ -40,7 +39,7 @@ func (s Store) StoreLogs(ctx context.Context, chainID uint32, logs ...types.Log)
 			}
 		}
 
-		storeLogs = append(storeLogs, Log{
+		newLog := Log{
 			ContractAddress: log.Address.String(),
 			ChainID:         chainID,
 			PrimaryTopic:    topics[0],
@@ -55,7 +54,9 @@ func (s Store) StoreLogs(ctx context.Context, chainID uint32, logs ...types.Log)
 			BlockIndex:      uint64(log.Index),
 			Removed:         log.Removed,
 			Confirmed:       false,
-		})
+		}
+
+		storeLogs = append(storeLogs, newLog)
 	}
 
 	dbTx := s.DB().WithContext(ctx)
@@ -145,9 +146,6 @@ func (s Store) RetrieveLogsWithFilter(ctx context.Context, logFilter db.LogFilte
 	}
 	dbLogs := []Log{}
 	queryFilter := logFilterToQuery(logFilter)
-
-	// TODO DELETE
-	logger.Infof("RetrieveLogsWithFilter query: %v", queryFilter)
 
 	dbTx := s.DB().WithContext(ctx).
 		Model(&Log{}).

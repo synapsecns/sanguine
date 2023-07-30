@@ -5,9 +5,8 @@ import (
 	"errors"
 	"fmt"
 	"github.com/synapsecns/sanguine/core/dbcommon"
-	"math/big"
-
 	"github.com/synapsecns/sanguine/services/scribe/db"
+	"math/big"
 
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/core/types"
@@ -149,7 +148,7 @@ func (s Store) RetrieveReceiptsInRange(ctx context.Context, receiptFilter db.Rec
 	if page < 1 {
 		page = 1
 	}
-	dbReceipts := []Receipt{}
+	var dbReceipts []Receipt
 	query := receiptFilterToQuery(receiptFilter)
 	rangeQuery := fmt.Sprintf("%s BETWEEN ? AND ?", BlockNumberFieldName)
 	dbTx := s.DB().WithContext(ctx).
@@ -177,14 +176,14 @@ func (s Store) RetrieveReceiptsInRange(ctx context.Context, receiptFilter db.Rec
 }
 
 func (s Store) buildReceiptsFromDBReceipts(ctx context.Context, dbReceipts []Receipt, chainID uint32) ([]types.Receipt, error) {
-	receipts := []types.Receipt{}
+	var receipts []types.Receipt
 	for i := range dbReceipts {
 		dbReceipt := dbReceipts[i]
 		// Retrieve Logs that match the receipt's tx hash in order to add them to the Receipt.
 		logFilter := db.BuildLogFilter(nil, nil, &dbReceipt.TxHash, nil, nil, nil, nil)
 		logFilter.ChainID = chainID
 
-		logs := []*types.Log{}
+		var logs []*types.Log
 		page := 1
 		for {
 			logGroup, err := s.RetrieveLogsWithFilter(ctx, logFilter, page)
