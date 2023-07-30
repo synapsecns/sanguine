@@ -77,7 +77,7 @@ func DecodeConfig(filePath string) (_ Config, err error) {
 			Name: "validators",
 		},
 		{
-			Address: "0xaee80e4b92ba497af1378bc799687fbf816ab87b",
+			Address: "0xaa920f7b9039e556d2442113f1fd339e4927dd9a",
 			ChainIDs: []int{
 				53935, 8217, 1666600000,
 			},
