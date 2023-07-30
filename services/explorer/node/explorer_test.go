@@ -108,7 +108,7 @@ func (c NodeSuite) TestLive() {
 		Chains:              chainConfigs,
 	}
 
-	explorerBackfiller, err := node.NewExplorerBackfiller(c.db, explorerConfig, backends)
+	explorerBackfiller, err := node.NewExplorerBackfiller(c.db, explorerConfig, backends, c.explorerMetrics)
 	c.Nil(err)
 	c.NotNil(explorerBackfiller)
 	err = explorerBackfiller.Backfill(c.GetTestContext(), false)

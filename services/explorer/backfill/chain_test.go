@@ -371,7 +371,7 @@ func (b *BackfillSuite) TestBackfill() {
 	spMap[swapContractA.Address()] = spA
 	spMap[swapContractB.Address()] = spB
 	spMap[metaSwapContract.Address()] = msp
-	f := fetcher.NewFetcher(b.gqlClient)
+	f := fetcher.NewFetcher(b.gqlClient, b.metrics)
 
 	// Set up message bus parser
 	mbp, err := parser.NewMessageBusParser(b.db, messageBusContract.Address(), b.consumerFetcher, tokenPriceService)
