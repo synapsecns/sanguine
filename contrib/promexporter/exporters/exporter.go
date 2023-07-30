@@ -113,7 +113,7 @@ func (e *exporter) stuckHeroCount(owner common.Address, chainName string) error 
 	meter := e.metrics.Meter(meterName)
 	attributes := attribute.NewSet(attribute.String("chain_name", chainName))
 
-	stuckCount, err := meter.Int64ObservableGauge(fmt.Sprintf("%s%s", stuckHeroMetric, chainName))
+	stuckCount, err := meter.Int64ObservableGauge(stuckHeroMetric)
 	if err != nil {
 		return fmt.Errorf("could not create gauge: %w", err)
 	}
