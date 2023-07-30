@@ -18,9 +18,9 @@ type Config struct {
 	DFKUrl string `yaml:"dfk_url" default:"https://defi-kingdoms-community-api-gateway-co06z8vi.uc.gateway.dev/graphql"`
 	// DFKPending is the list of pending heroes
 	DFKPending []DFKPending `yaml:"dfk_pending"`
-	// GasChecks is the list of gas checks
-	GasChecks  []GasChecks `yaml:"gas_checks"`
-	OmnirpcURL string      `yaml:"omnirpc_url" default:"https://rpc.omnirpc.io"`
+	// SubmitterChecks is the list of gas checks
+	SubmitterChecks []SubmitterChecks `yaml:"gas_checks"`
+	OmnirpcURL      string            `yaml:"omnirpc_url" default:"https://rpc.omnirpc.io"`
 }
 
 // DFKPending contains the config for the DFK pending metric.
@@ -31,8 +31,8 @@ type DFKPending struct {
 	ChainName string `yaml:"chain_name"`
 }
 
-// GasChecks contains the config for the gas checks.
-type GasChecks struct {
+// SubmitterChecks contains the config for the gas checks.
+type SubmitterChecks struct {
 	// ChainID is the chain id
 	ChainIDs []int `yaml:"chain_ids"`
 	// Address is the address of the contract
@@ -68,7 +68,7 @@ func DecodeConfig(filePath string) (_ Config, err error) {
 
 	// note: when you want to add bridges, you can use the router to look up bridge addresses
 	// and get the gas limit from there
-	cfg.GasChecks = []GasChecks{
+	cfg.SubmitterChecks = []SubmitterChecks{
 		{
 			Address: "0x230a1ac45690b9ae1176389434610b9526d2f21b",
 			ChainIDs: []int{
