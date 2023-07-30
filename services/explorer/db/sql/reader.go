@@ -226,7 +226,7 @@ func (s *Store) GetLeaderboard(ctx context.Context, query string) ([]*model.Lead
 
 // GetPendingByChain gets the bridge leaderboard by chain.
 // returns chainid, count
-// TODO: test this
+// TODO: test this.
 func (s *Store) GetPendingByChain(ctx context.Context) (res *immutable.Map[int, int], err error) {
 	const query = `SELECT
 		toInt64(destination_chain_id) as destination_chain_id,
