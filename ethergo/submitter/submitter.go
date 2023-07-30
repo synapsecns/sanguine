@@ -106,6 +106,7 @@ func (t *txSubmitterImpl) Start(ctx context.Context) error {
 			logger.Warn(err)
 		}
 		if shouldExit {
+			logger.Warn("exiting transaction submitter")
 			return nil
 		}
 	}
