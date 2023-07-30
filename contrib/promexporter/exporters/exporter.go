@@ -142,14 +142,22 @@ func (e *exporter) stuckHeroCount(owner common.Address, chainName string) error 
 }
 
 const gasBalance = "gas_balance"
+const nonce = "nonce"
 
 func (e *exporter) submitterStats(address common.Address, chainID int, name string) error {
-	meter := e.metrics.Meter(fmt.Sprintf("%s_%d", meterName, chainID), metric.WithInstrumentationAttributes(attribute.Int(metrics.ChainID, chainID), attribute.String(metrics.EOAAddress, address.String()), attribute.String("name", name)))
+	meter := e.metrics.Meter(fmt.Sprintf("%s_%d", meterName, chainID))
 
-	balanceGauge, err := meter.Float64ObservableGauge(fmt.Sprintf("%s_%s", gasBalance, name))
+	balanceGauge, err := meter.Float64ObservableGauge(gasBalance)
 	if err != nil {
 		return fmt.Errorf("could not create gauge: %w", err)
 	}
+
+	nonceGauge, err := meter.Int64ObservableGauge(nonce)
+	if err != nil {
+		return fmt.Errorf("could not create gauge: %w", err)
+	}
+
+	attributes := attribute.NewSet(attribute.Int(metrics.ChainID, chainID), attribute.String(metrics.EOAAddress, address.String()), attribute.String("name", name))
 
 	if _, err := meter.RegisterCallback(func(parentCtx context.Context, o metric.Observer) (err error) {
 		ctx, span := e.metrics.Tracer().Start(parentCtx, "relayer_stats", trace.WithAttributes(
@@ -181,7 +189,8 @@ func (e *exporter) submitterStats(address common.Address, chainID int, name stri
 		ethBalance := new(big.Float).Quo(new(big.Float).SetInt(&balance), new(big.Float).SetInt64(params.Ether))
 		truncEthBalance, _ := ethBalance.Float64()
 
-		o.ObserveFloat64(balanceGauge, truncEthBalance)
+		o.ObserveFloat64(balanceGauge, truncEthBalance, metric.WithAttributeSet(attributes))
+		o.ObserveInt64(nonceGauge, int64(nonce), metric.WithAttributeSet(attributes))
 
 		return nil
 	}, balanceGauge); err != nil {
