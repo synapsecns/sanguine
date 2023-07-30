@@ -144,7 +144,7 @@ func (e *exporter) stuckHeroCount(owner common.Address, chainName string) error 
 const gasBalance = "gas_balance"
 
 func (e *exporter) submitterStats(address common.Address, chainID int, name string) error {
-	meter := e.metrics.Meter(meterName, metric.WithInstrumentationAttributes(attribute.Int(metrics.ChainID, chainID), attribute.String(metrics.EOAAddress, address.String()), attribute.String("name", name)))
+	meter := e.metrics.Meter(fmt.Sprintf("%s_%d", meterName, chainID), metric.WithInstrumentationAttributes(attribute.Int(metrics.ChainID, chainID), attribute.String(metrics.EOAAddress, address.String()), attribute.String("name", name)))
 
 	balanceGauge, err := meter.Float64ObservableGauge(fmt.Sprintf("%s_%s", gasBalance, name))
 	if err != nil {
