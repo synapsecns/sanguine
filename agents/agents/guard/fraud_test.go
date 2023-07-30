@@ -15,6 +15,7 @@ import (
 	"github.com/synapsecns/sanguine/agents/testutil/agentstestcontract"
 	"github.com/synapsecns/sanguine/agents/types"
 	"github.com/synapsecns/sanguine/ethergo/backends"
+	"github.com/synapsecns/sanguine/ethergo/backends/anvil"
 	signerConfig "github.com/synapsecns/sanguine/ethergo/signer/config"
 	omniClient "github.com/synapsecns/sanguine/services/omnirpc/client"
 	"github.com/synapsecns/sanguine/services/scribe/backfill"
@@ -505,7 +506,7 @@ func (g GuardSuite) TestReportFraudulentStateInAttestation() {
 	NotNil(g.T(), tx)
 	g.TestBackendDestination.WaitForConfirmation(g.GetTestContext(), tx)
 
-	// Verify that the guard eventually marks the accused agent as Slashed
+	// Verify that the guard eventually marks the accused agent as Fraudulent
 	txContextSummit := g.TestBackendSummit.GetTxContext(g.GetTestContext(), g.SummitMetadata.OwnerPtr())
 	txContextDestination := g.TestBackendDestination.GetTxContext(g.GetTestContext(), g.LightInboxMetadataOnDestination.OwnerPtr())
 	g.Eventually(func() bool {
@@ -529,6 +530,28 @@ func (g GuardSuite) TestReportFraudulentStateInAttestation() {
 
 		return true
 	})
+
+	// Increase EVM time to allow agent status to be updated to Slashed on origin.
+	anvilClient, err := anvil.Dial(g.GetTestContext(), g.TestBackendOrigin.RPCAddress())
+	Nil(g.T(), err)
+	optimisticPeriodSeconds := 86400
+	err = anvilClient.IncreaseTime(g.GetTestContext(), int64(optimisticPeriodSeconds))
+	Nil(g.T(), err)
+
+	// Verify that the guard eventuall marks the accused agent as Slashed.
+	g.Eventually(func() bool {
+		status, err := g.OriginDomainClient.LightManager().GetAgentStatus(g.GetTestContext(), g.NotaryBondedSigner.Address())
+		Nil(g.T(), err)
+		fmt.Printf("status after increase time: %v\n", status)
+		if status.Flag() == types.AgentFlagSlashed {
+			return true
+		}
+
+		g.bumpBackend(g.TestBackendSummit, g.TestContractOnSummit, txContextSummit.TransactOpts)
+		g.bumpBackend(g.TestBackendDestination, g.TestContractOnDestination, txContextDestination.TransactOpts)
+		return false
+	})
+
 }
 
 func (g GuardSuite) TestInvalidReceipt() {
@@ -688,7 +711,6 @@ func (g GuardSuite) TestInvalidReceipt() {
 	)
 	Nil(g.T(), err)
 	NotNil(g.T(), tx)
-	fmt.Println("submitReceiptTx: ", tx.Hash().String())
 	g.TestBackendSummit.WaitForConfirmation(g.GetTestContext(), tx)
 
 	// Verify that the guard eventually marks the accused agent as Fraudulent
