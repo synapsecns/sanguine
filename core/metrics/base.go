@@ -5,8 +5,11 @@ import (
 	"fmt"
 	"github.com/gin-gonic/gin"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
+	"github.com/synapsecns/sanguine/core"
 	"github.com/synapsecns/sanguine/core/config"
+	"github.com/synapsecns/sanguine/core/ginhelper"
 	"github.com/synapsecns/sanguine/core/metrics/internal"
+	baseServer "github.com/synapsecns/sanguine/core/server"
 	"github.com/uptrace/opentelemetry-go-extra/otelgorm"
 	"go.opentelemetry.io/contrib/instrumentation/github.com/gin-gonic/gin/otelgin"
 	"go.opentelemetry.io/contrib/instrumentation/net/http/otelhttp"
@@ -73,7 +76,46 @@ func (b *baseHandler) Start(ctx context.Context) error {
 		_ = b.meter.Shutdown(ctx)
 	}()
 
+	go func() {
+		b.startMetricsServer(ctx)
+	}()
+
 	return nil
+}
+
+const (
+	metricsPortEnabledEnv = "METRICS_PORT_ENABLED"
+	metricsPortEnv        = "METRICS_PORT"
+	metricsPath           = "METRICS_PATH"
+	metricsPortDefault    = 8080
+	metricsPathDefault    = "/metrics"
+)
+
+// startMetricsServer starts the metrics server on the given port.
+// this should be run in a separate goroutine.
+func (b *baseHandler) startMetricsServer(ctx context.Context) {
+	if !core.GetEnvBool(metricsPortEnabledEnv, true) {
+		return
+	}
+
+	port := core.GetEnvInt(metricsPortEnv, metricsPortDefault)
+	path := core.GetEnv(metricsPath, metricsPathDefault)
+
+	logger.Infof("starting metrics server on port %d at path %s", port, path)
+
+	// create the metrics server
+	server := ginhelper.New(logger)
+	// note: this is a global setter, so it will affect all gin servers.
+	// this is probably not wise, but a better workaround is required.
+	gin.SetMode(gin.ReleaseMode)
+	server.Use(b.Gin())
+	server.GET(path, gin.WrapH(b.handler))
+
+	connection := baseServer.Server{}
+	err := connection.ListenAndServe(ctx, fmt.Sprintf(":%d", port), server)
+	if err != nil {
+		logger.Warnf("running metrics server failed: %v", err)
+	}
 }
 
 func (b *baseHandler) Gin() gin.HandlerFunc {

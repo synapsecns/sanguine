@@ -25,3 +25,15 @@ Pass in the `JAEGER_ENDPOINT` enviornment variable
 ## Pyroscope
 
 Pass in the `PYROSCOPE_ENDPOINT` environment variable
+
+## Metrics Endpoint
+
+The metrics endpoint is exposed on `/metrics` on port 9000 by default and is compatible with prometheus. The following options control the metrics endpoint:
+
+| Enviornment Variable   | Description                                   | Default    |
+|------------------------|-----------------------------------------------|------------|
+| `METRICS_PORT_ENABLED` | Wether or not to enable the metrics endpoint. | `true`     |
+| `METRICS_PORT`         | Port to serve metrics on.                     | `8080`     |
+| `METRICS_PATH`         | Path to serve metrics on                      | `/metrics` |
+
+**Note: this server failing to bind to `METRICS_PORT` will not cause the application to fail to start. The error will be logged.**
