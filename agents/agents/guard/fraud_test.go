@@ -207,17 +207,17 @@ func (g GuardSuite) TestFraudulentStateInSnapshot() {
 
 	// TODO: Once we add updating agent statuses fully, uncomment this.
 	// Verify that the guard eventually marks the accused agent as Fraudulent on Summit
-	//g.Eventually(func() bool {
-	//	status, err := g.SummitDomainClient.BondingManager().GetAgentStatus(g.GetTestContext(), g.NotaryBondedSigner.Address())
-	//	Nil(g.T(), err)
-	//
-	//	if status.Flag() == types.AgentFlagSlashed {
-	//		return true
-	//	}
-	//
+	// g.Eventually(func() bool {
+	// 	status, err := g.SummitDomainClient.BondingManager().GetAgentStatus(g.GetTestContext(), g.NotaryBondedSigner.Address())
+	// 	Nil(g.T(), err)
+
+	// 	if status.Flag() == types.AgentFlagSlashed {
+	// 		return true
+	// 	}
+
 	//  g.bumpBackends()
-	//	return false
-	//})
+	// 	return false
+	// })
 
 	// Verify that a report has been submitted by the Guard by checking that a Dispute is now open.
 	g.Eventually(func() bool {
@@ -730,16 +730,16 @@ func (g GuardSuite) TestInvalidReceipt() {
 	})
 
 	// TODO: Uncomment once updating agent status is implemented.
-	//g.Eventually(func() bool {
-	//	status, err := g.SummitDomainClient.BondingManager().GetAgentStatus(g.GetTestContext(), g.NotaryBondedSigner.Address())
-	//	Nil(g.T(), err)
-	//	if status.Flag() == types.AgentFlagSlashed {
-	//		return true
-	//	}
-	//
+	// g.Eventually(func() bool {
+	// 	status, err := g.SummitDomainClient.BondingManager().GetAgentStatus(g.GetTestContext(), g.NotaryBondedSigner.Address())
+	// 	Nil(g.T(), err)
+	// 	if status.Flag() == types.AgentFlagSlashed {
+	// 		return true
+	// 	}
+
 	//  g.bumpBackends()
-	//	return false
-	//})
+	// 	return false
+	// })
 
 	// Verify that a report has been submitted by the Guard by checking that a Dispute is now open.
 	g.Eventually(func() bool {

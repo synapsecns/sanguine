@@ -620,7 +620,7 @@ func DecodeReceipt(toDecode []byte) (Receipt, error) {
 	destination := binary.BigEndian.Uint32(toDecode[receiptOffsetDestination:receiptOffsetMessageHash])
 	messageHash := toDecode[receiptOffsetMessageHash:receiptOffsetSnapshotRoot]
 	snapshotRoot := toDecode[receiptOffsetSnapshotRoot:receiptOffsetStateIndex]
-	stateIndex := uint8(toDecode[receiptOffsetStateIndex:receiptOffsetAttNotary][0])
+	stateIndex := toDecode[receiptOffsetStateIndex:receiptOffsetAttNotary][0]
 	attestationNotary := toDecode[receiptOffsetAttNotary:receiptOffsetFirstExecutor]
 	firstExecutor := toDecode[receiptOffsetFirstExecutor:receiptOffsetFinalExecutor]
 	finalExecutor := toDecode[receiptOffsetFinalExecutor:receiptSize]

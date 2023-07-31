@@ -387,6 +387,7 @@ func isSlashable(agentFlag types.AgentFlagType) bool {
 }
 
 //nolint:gocognit
+//nolint:cyclop
 func (g Guard) handleAttestation(ctx context.Context, log ethTypes.Log) error {
 	fraudAttestation, err := g.lightInboxParser.ParseAttestationAccepted(log)
 	if err != nil {
@@ -398,6 +399,7 @@ func (g Guard) handleAttestation(ctx context.Context, log ethTypes.Log) error {
 		return fmt.Errorf("could not check validity of attestation: %w", err)
 	}
 
+	//nolint:nestif
 	if isValid {
 		// The attestation is valid, but may have a state not matching that of Origin.
 		// Fetch the snapshot, then verify each individual state with the attestation.
