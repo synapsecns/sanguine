@@ -128,7 +128,7 @@ func (r *RPCProxy) startProxyLoop(ctx context.Context) {
 	}
 }
 
-// benchmarkProxies benchmarks all proxies
+// benchmarkProxies benchmarks all proxies.
 func (r *RPCProxy) benchmarkProxies(parentCtx context.Context) {
 	ctx, span := r.handler.Tracer().Start(parentCtx, "benchmarkProxies")
 	defer func() {
@@ -148,7 +148,6 @@ func (r *RPCProxy) benchmarkProxies(parentCtx context.Context) {
 	}
 
 	wg.Wait()
-
 }
 
 // Port gets the port the proxy is running on.
