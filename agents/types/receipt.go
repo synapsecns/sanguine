@@ -56,7 +56,7 @@ type receipt struct {
 }
 
 // NewReceipt creates a new receipt.
-func NewReceipt(origin uint32, destination uint32, messageHash [32]byte, snapshotRoot [32]byte, stateIndex uint8, attestationNotary common.Address, firstExecutor common.Address, finalExecutor common.Address) *receipt {
+func NewReceipt(origin uint32, destination uint32, messageHash [32]byte, snapshotRoot [32]byte, stateIndex uint8, attestationNotary common.Address, firstExecutor common.Address, finalExecutor common.Address) Receipt {
 	return &receipt{
 		origin:            origin,
 		destination:       destination,
@@ -101,6 +101,7 @@ func (r receipt) FinalExecutor() common.Address {
 	return r.finalExecutor
 }
 
+//nolint:dupl
 func (r receipt) SignReceipt(ctx context.Context, signer signer.Signer, valid bool) (signer.Signature, []byte, common.Hash, error) {
 	encodedReceipt, err := EncodeReceipt(r)
 	if err != nil {

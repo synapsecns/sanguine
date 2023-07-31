@@ -3,8 +3,9 @@ package types
 import (
 	"context"
 	"fmt"
-	"github.com/ethereum/go-ethereum/crypto"
 	"math"
+
+	"github.com/ethereum/go-ethereum/crypto"
 
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/synapsecns/sanguine/core"
@@ -75,6 +76,7 @@ func (s snapshot) TreeHeight() uint32 {
 	return uint32(math.Log2(float64(len(s.states) * 2)))
 }
 
+//nolint:dupl
 func (s snapshot) SignSnapshot(ctx context.Context, signer signer.Signer) (signer.Signature, []byte, common.Hash, error) {
 	encodedSnapshot, err := EncodeSnapshot(s)
 	if err != nil {

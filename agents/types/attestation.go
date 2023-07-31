@@ -75,6 +75,7 @@ func (a attestation) Timestamp() *big.Int {
 	return a.timestamp
 }
 
+//nolint:dupl
 func (a attestation) SignAttestation(ctx context.Context, signer signer.Signer, valid bool) (signer.Signature, []byte, common.Hash, error) {
 	encodedAttestation, err := EncodeAttestation(a)
 	if err != nil {

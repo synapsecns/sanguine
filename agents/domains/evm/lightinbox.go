@@ -64,6 +64,7 @@ func (a lightInboxContract) SubmitAttestation(
 	return tx, nil
 }
 
+//nolint:dupl
 func (a lightInboxContract) SubmitStateReportWithSnapshot(ctx context.Context, signer signer.Signer, stateIndex int64, signature signer.Signature, snapPayload []byte, snapSignature []byte) (tx *ethTypes.Transaction, err error) {
 	transactor, err := signer.GetTransactor(ctx, a.client.GetBigChainID())
 	if err != nil {

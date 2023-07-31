@@ -45,6 +45,7 @@ type inboxContract struct {
 	nonceManager nonce.Manager
 }
 
+//nolint:dupl
 func (a inboxContract) SubmitStateReportWithSnapshot(ctx context.Context, signer signer.Signer, stateIndex int64, signature signer.Signature, snapPayload []byte, snapSignature []byte) (tx *ethTypes.Transaction, err error) {
 	transactor, err := signer.GetTransactor(ctx, a.client.GetBigChainID())
 	if err != nil {

@@ -56,11 +56,13 @@ func (g GuardSuite) getTestGuard(scribeConfig scribeConfig.Config) (*guard.Guard
 		uint32(g.TestBackendDestination.GetChainID()): {destinationClient, destinationClient},
 		uint32(g.TestBackendSummit.GetChainID()):      {summitClient, summitClient},
 	}
-
 	scribe, err := node.NewScribe(g.ScribeTestDB, clients, scribeConfig, g.ScribeMetrics)
 	Nil(g.T(), err)
 	scribeClient := client.NewEmbeddedScribe("sqlite", g.DBPath, g.ScribeMetrics)
+
+	//nolint:errcheck
 	go scribeClient.Start(g.GetTestContext())
+	//nolint:errcheck
 	go scribe.Start(g.GetTestContext())
 
 	return guard.NewGuard(g.GetTestContext(), testConfig, omniRPCClient, scribeClient.ScribeClient, g.GuardTestDB, g.GuardMetrics)
@@ -708,7 +710,7 @@ func (g GuardSuite) TestInvalidReceipt() {
 	// Submit the receipt
 	bodyHash, err := baseMessage.BodyLeaf()
 	var bodyHashB32 [32]byte
-	copy(bodyHashB32[:], bodyHash[:])
+	copy(bodyHashB32[:], bodyHash)
 	headerHash, err := header.Leaf()
 	Nil(g.T(), err)
 	paddedTips, err := types.EncodeTipsBigInt(tips)

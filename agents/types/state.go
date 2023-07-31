@@ -3,11 +3,12 @@ package types
 import (
 	"context"
 	"fmt"
+	"math/big"
+
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/crypto"
 	"github.com/synapsecns/sanguine/core"
 	"github.com/synapsecns/sanguine/ethergo/signer/signer"
-	"math/big"
 )
 
 const (
@@ -110,6 +111,7 @@ func (s state) SubLeaves() (leftLeaf, rightLeaf [32]byte, err error) {
 	return
 }
 
+//nolint:dupl
 func (s state) SignState(ctx context.Context, signer signer.Signer) (signer.Signature, []byte, common.Hash, error) {
 	encodedState, err := EncodeState(s)
 	if err != nil {
@@ -121,9 +123,7 @@ func (s state) SignState(ctx context.Context, signer signer.Signer) (signer.Sign
 	hashedEncodedState := crypto.Keccak256Hash(encodedState).Bytes()
 	toSign := append(stateSalt.Bytes(), hashedEncodedState...)
 
-	//toSignHashed := crypto.Keccak256Hash(toSign)
-
-	hashedState, err := HashRawBytes(toSign[:])
+	hashedState, err := HashRawBytes(toSign)
 	if err != nil {
 		return nil, nil, common.Hash{}, fmt.Errorf("failed to hash state: %w", err)
 	}

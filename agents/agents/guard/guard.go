@@ -255,6 +255,8 @@ func (g Guard) handleLog(ctx context.Context, log ethTypes.Log, chainID uint32) 
 		return g.handleDisputeOpened(ctx, log)
 	case g.isStatusUpdatedEvent(log):
 		return g.handleStatusUpdated(ctx, log, chainID)
+	case g.isRootUpdatedEvent(log):
+		return g.handleRootUpdated(ctx, log, chainID)
 	}
 	return nil
 }
@@ -296,6 +298,7 @@ func (g Guard) isRootUpdatedEvent(log ethTypes.Log) bool {
 	return ok && bondingManagerEvent == bondingmanager.RootUpdatedEvent
 }
 
+//nolint:cyclop
 func (g Guard) handleSnapshot(ctx context.Context, log ethTypes.Log) error {
 	fraudSnapshot, err := g.inboxParser.ParseSnapshotAccepted(log)
 	if err != nil {
@@ -317,6 +320,8 @@ func (g Guard) handleSnapshot(ctx context.Context, log ethTypes.Log) error {
 		if err != nil {
 			return fmt.Errorf("could not check validity of state: %w", err)
 		}
+
+		//nolint:nestif
 		if isValid {
 			continue
 		}
@@ -496,6 +501,7 @@ func (g Guard) handleAttestation(ctx context.Context, log ethTypes.Log) error {
 	return nil
 }
 
+//nolint:cyclop
 func (g Guard) handleReceipt(ctx context.Context, log ethTypes.Log) error {
 	fraudReceipt, err := g.inboxParser.ParseReceiptAccepted(log)
 	if err != nil {
@@ -511,6 +517,7 @@ func (g Guard) handleReceipt(ctx context.Context, log ethTypes.Log) error {
 		return fmt.Errorf("could not check validity of attestation: %w", err)
 	}
 
+	//nolint:nestif
 	if !isValid {
 		// TODO: merge this logic once solidity interfaces are de-duped
 		if receipt.Destination() == g.summitDomainID {
@@ -595,6 +602,8 @@ func (g Guard) handleStatusUpdated(ctx context.Context, log ethTypes.Log, chainI
 		if err != nil {
 			return fmt.Errorf("could not store agent root: %w", err)
 		}
+	default:
+		logger.Infof("Witnessed agent status updated, but not handling [status=%d, agent=%s]", statusUpdated.Flag, statusUpdated.Agent)
 	}
 
 	return nil
