@@ -141,11 +141,13 @@ func (f *LogFetcher) FetchLogs(ctx context.Context, chunks []*util.Chunk) ([]typ
 	for {
 		select {
 		case <-ctx.Done():
-			return nil, fmt.Errorf("context was canceled before logs could be filtered")
+			logger.ReportIndexerError(ctx.Err(), *f.indexerConfig, logger.GetLogsError)
+			return nil, fmt.Errorf("context was canceled before logs could be fetched")
 		case <-time.After(timeout):
 			attempt++
 			if attempt > retryTolerance {
-				return nil, fmt.Errorf("maximum number of filter attempts exceeded")
+				logger.ReportIndexerError(fmt.Errorf("retry max reached"), *f.indexerConfig, logger.GetLogsError)
+				return nil, fmt.Errorf("maximum number of fetch logs attempts exceeded")
 			}
 
 			logs, err := f.getAndUnpackLogs(ctx, chunks, backoffConfig)
@@ -172,6 +174,7 @@ func (f *LogFetcher) getAndUnpackLogs(ctx context.Context, chunks []*util.Chunk,
 	for !resultIterator.Done() {
 		select {
 		case <-ctx.Done():
+			logger.ReportIndexerError(ctx.Err(), *f.indexerConfig, logger.GetLogsError)
 			return nil, fmt.Errorf("context canceled while unpacking logs from request: %w", ctx.Err())
 		default:
 			_, logChunk := resultIterator.Next()

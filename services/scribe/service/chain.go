@@ -340,6 +340,7 @@ func (c *ChainIndexer) livefillAtHead(parentContext context.Context) error {
 	for {
 		select {
 		case <-parentContext.Done():
+			logger.ReportScribeError(parentContext.Err(), c.chainID, logger.ContextCancelled)
 			return fmt.Errorf("context canceled: %w", parentContext.Err())
 		case <-time.After(flushDuration):
 			logger.ReportScribeState(c.chainID, 0, addresses, logger.FlushingLivefillAtHead)
@@ -397,6 +398,7 @@ func (c *ChainIndexer) livefill(parentContext context.Context) error {
 	for {
 		select {
 		case <-parentContext.Done():
+			logger.ReportScribeError(parentContext.Err(), c.chainID, logger.ContextCancelled)
 			return fmt.Errorf("%s chain context canceled: %w", parentContext.Value(chainContextKey), parentContext.Err())
 		case newLivefillContract := <-c.readyForLivefill:
 			c.livefillContracts = append(c.livefillContracts, newLivefillContract)

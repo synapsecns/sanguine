@@ -104,11 +104,12 @@ func NewIndexer(chainConfig config.ChainConfig, addresses []common.Address, even
 	}
 
 	indexerConfig := scribeTypes.IndexerConfig{
-		Addresses:          addresses,
-		GetLogsRange:       chainConfig.GetLogsRange,
-		GetLogsBatchAmount: chainConfig.GetLogsBatchAmount,
-		StoreConcurrency:   chainConfig.StoreConcurrency,
-		ChainID:            chainConfig.ChainID,
+		Addresses:            addresses,
+		GetLogsRange:         chainConfig.GetLogsRange,
+		GetLogsBatchAmount:   chainConfig.GetLogsBatchAmount,
+		StoreConcurrency:     chainConfig.StoreConcurrency,
+		ChainID:              chainConfig.ChainID,
+		ConcurrencyThreshold: chainConfig.ConcurrencyThreshold,
 	}
 
 	return &Indexer{
@@ -304,6 +305,7 @@ OUTER:
 				}
 
 				if errors.Is(err, errNoTx) {
+					logger.ReportIndexerError(err, x.indexerConfig, logger.GetTxError)
 					hasTX = false
 					break OUTER
 				}
