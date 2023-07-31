@@ -12,7 +12,7 @@ import (
 	"gorm.io/gorm/clause"
 )
 
-const lastIndexedLivefillKey = "LIVEFILL_LAST_INDEXED"
+const lastIndexedLivefillKey = "0x0000000000000000000000000000000000000000"
 
 // StoreLastIndexed stores the last indexed block number for a contract.
 // It updates the value if there is a previous last indexed value, and creates a new
