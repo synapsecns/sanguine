@@ -4,7 +4,6 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"strconv"
 
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/imkira/go-interpol"
@@ -46,25 +45,25 @@ func (s Store) GetUpdateAgentStatusParameters(ctx context.Context) ([]agentTypes
 
 	query, err := interpol.WithMap(
 		`
-	SELECT * FROM {agentTreesTable} AS aTable
-	JOIN {disputesTable} AS dTable
-	ON aTable.{agentAddress} = dTable.{notaryAddress}
-	WHERE dTable.{disputeProcessedStatus} = {resolved}
-	`,
+		SELECT * FROM {agentTreesTable} AS aTable
+		JOIN (
+			SELECT * FROM {disputesTable} WHERE {disputeProcessedStatus} = ?
+		) AS dTable
+		ON aTable.{agentAddress} = dTable.{notaryAddress}
+		`,
 		map[string]string{
 			"agentTreesTable":        agentTreesTableName,
 			"disputesTable":          disputesTableName,
 			"agentAddress":           AgentAddressFieldName,
 			"notaryAddress":          NotaryAddressFieldName,
 			"disputeProcessedStatus": DisputeProcessedStatusFieldName,
-			"resolved":               strconv.Itoa(int(agentTypes.Resolved)),
 		})
 	if err != nil {
 		return nil, fmt.Errorf("failed to interpolate query: %w", err)
 	}
 
 	var dbAgentTrees []AgentTree
-	err = s.DB().WithContext(ctx).Raw(query).Scan(&dbAgentTrees).Error
+	err = s.DB().WithContext(ctx).Raw(query, agentTypes.Resolved).Scan(&dbAgentTrees).Error
 	if err != nil {
 		return nil, fmt.Errorf("failed to get agent trees: %w", err)
 	}
@@ -97,20 +96,20 @@ func (s Store) GetLatestConfirmedSummitBlockNumber(ctx context.Context, chainID 
 		return blockNumber, fmt.Errorf("failed to get agnet trees table name: %w", err)
 	}
 
-	agentRootsTableName, err := dbcommon.GetModelName(s.DB(), &Dispute{})
+	agentRootsTableName, err := dbcommon.GetModelName(s.DB(), &AgentRoot{})
 	if err != nil {
 		return blockNumber, fmt.Errorf("failed to get agent roots table name: %w", err)
 	}
 
 	query, err := interpol.WithMap(
 		`
-SELECT {blockNumber} FROM {agentTreesTable}
-OUTER JOIN {agentRootsTable}
-ON {agentTreesTable}.{agentRoot} = {agentRootsTable}.{agentRoot}
-WHERE {agentRootsTable}.{chainID} = {chainID}
-ORDER BY {agentTreesTable}.{blockNumber} DESC
-LIMIT 1
-`,
+		SELECT MAX({agentTreesTable}.{blockNumber})
+		FROM {agentTreesTable}
+		INNER JOIN (
+		    SELECT * FROM {agentRootsTable} WHERE {chainID} = ?
+		) AS filteredAgentRoot
+		ON {agentTreesTable}.{agentRoot} = filteredAgentRoot.{agentRoot}
+		`,
 		map[string]string{
 			"agentTreesTable": agentTreesTableName,
 			"agentRootsTable": agentRootsTableName,
