@@ -5,7 +5,7 @@ import { useAccount } from 'wagmi'
 
 import { CHAINS_BY_ID } from '@/constants/chains'
 
-import { setFromChainId } from '@/slices/bridge/reducer'
+import { setFromChainId, setFromToken } from '@/slices/bridge/reducer'
 import { networkSelectStyles } from './styles/networkSelectStyles'
 import { useEffect, useId, useState } from 'react'
 import { useBridgeState } from '@/slices/bridge/hooks'
@@ -79,6 +79,7 @@ const FromChainSelect = () => {
       dispatch(setFromChainId(Number(selectedOption.value)))
     } else {
       dispatch(setFromChainId(null))
+      dispatch(setFromToken(null))
     }
   }
 

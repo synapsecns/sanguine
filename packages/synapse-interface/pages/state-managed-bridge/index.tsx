@@ -62,6 +62,7 @@ import {
 } from '@/slices/portfolio/hooks'
 import { usePortfolioBalances } from '@/slices/portfolio/hooks'
 import { updateSingleTokenAllowance } from '@/slices/portfolio/actions'
+import FromTokenSelect from '@/components/StateManagedBridge/FromTokenSelect'
 
 const StateManagedBridge = () => {
   const { address } = useAccount()
@@ -83,6 +84,11 @@ const StateManagedBridge = () => {
     bridgeQuote,
     fromValue,
     destinationAddress,
+
+    fromChainIds,
+    toChainIds,
+    fromTokens,
+    toTokens,
   } = useSelector((state: RootState) => state.bridge)
 
   const { showSettingsSlideOver, showDestinationAddress } = useSelector(
@@ -105,11 +111,6 @@ const StateManagedBridge = () => {
   }, [query])
 
   useEffect(() => {
-    console.log(`[useEffect] fromChainId`, fromChainId)
-    console.log(`[useEffect] fromToken`, fromToken?.symbol)
-    console.log(`[useEffect] toChainId`, toChainId)
-    console.log(`[useEffect] toToken`, toToken?.symbol)
-
     if (
       fromToken &&
       toToken &&
@@ -168,13 +169,13 @@ const StateManagedBridge = () => {
           stringToBigInt(fromValue, fromToken.decimals[fromChainId])
         )
 
-      console.log(`[getAndSetQuote] fromChainId`, fromChainId)
-      console.log(`[getAndSetQuote] toChainId`, toChainId)
-      console.log(`[getAndSetQuote] fromToken.symbol`, fromToken.symbol)
-      console.log(`[getAndSetQuote] toToken.symbol`, toToken.symbol)
-      console.log(`[getAndSetQuote] fromValue`, fromValue)
-      console.log('feeAmount', feeAmount)
-      console.log(`[getAndSetQuote] maxAmountOut`, maxAmountOut)
+      // console.log(`[getAndSetQuote] fromChainId`, fromChainId)
+      // console.log(`[getAndSetQuote] toChainId`, toChainId)
+      // console.log(`[getAndSetQuote] fromToken.symbol`, fromToken.symbol)
+      // console.log(`[getAndSetQuote] toToken.symbol`, toToken.symbol)
+      // console.log(`[getAndSetQuote] fromValue`, fromValue)
+      // console.log('feeAmount', feeAmount)
+      // console.log(`[getAndSetQuote] maxAmountOut`, maxAmountOut)
 
       if (!(originQuery && maxAmountOut && destQuery && feeAmount)) {
         dispatch(setBridgeQuote(EMPTY_BRIDGE_QUOTE_ZERO))
@@ -509,6 +510,14 @@ const StateManagedBridge = () => {
         <div>fromToken: {fromToken?.routeSymbol}</div>
         <div>toChainId: {toChainId}</div>
         <div>toToken: {toToken?.routeSymbol}</div>
+        <div>
+          fromTokens: {fromTokens && fromTokens.map((t) => t?.symbol).join(',')}
+        </div>
+        <div>
+          toTokens: {toTokens && toTokens.map((t) => t?.symbol).join(',')}
+        </div>
+        <div>fromChainIds: {fromChainIds?.join(', ')}</div>
+        <div>toChainIds: {toChainIds?.join(', ')}</div>
       </div>
       <div className="mt-8">
         <BridgeWatcher

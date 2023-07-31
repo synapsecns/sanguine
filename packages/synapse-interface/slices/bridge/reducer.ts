@@ -1,34 +1,12 @@
 import _ from 'lodash'
 import { createSlice, PayloadAction } from '@reduxjs/toolkit'
 import { Address } from 'wagmi'
-import * as ALL_TOKENS from '@constants/tokens/master'
 
-import { USDC } from '@/constants/tokens/master'
+import { NUSD, USDC, USDT } from '@/constants/tokens/master'
 import { EMPTY_BRIDGE_QUOTE } from '@/constants/bridge'
 import { ARBITRUM, ETH as ETHEREUM } from '@/constants/chains/master'
 import { BridgeQuote, Token } from '@/utils/types'
-import {
-  extractFirstChainIdBySymbol,
-  generateRoutePossibilities,
-  getPossibleFromChainIds,
-  getPossibleFromTokensByFromChainId,
-  getPossibleToTokensByFromTokenAndToChainId,
-} from '@/utils/generateRoutePossibilities'
-
-const fromTokenDefaults = extractFirstChainIdBySymbol()
-
-const getToken = (tokenAndChainId: string) => {
-  if (tokenAndChainId) {
-    const symbol = tokenAndChainId.split('-')[0]
-    return ALL_TOKENS[symbol]
-  } else {
-    return null
-  }
-}
-
-const getSymbol = (tokenAndChainId: string): string => {
-  return tokenAndChainId.split('-')[0]
-}
+import { getRoutePossibilities } from '@/utils/generateRoutePossibilities'
 
 export interface BridgeState {
   fromChainId: number
@@ -48,30 +26,33 @@ export interface BridgeState {
   bridgeTxHashes: string[] | null
 }
 
-const initialFromTokens = _.uniq(
-  getPossibleFromTokensByFromChainId(ETHEREUM.id).map(getSymbol)
-).map((symbol) => ALL_TOKENS[symbol])
-
-const initialToTokens = _.uniq(
-  getPossibleToTokensByFromTokenAndToChainId('USDC-1', ARBITRUM.id).map(
-    getSymbol
-  )
-).map((symbol) => ALL_TOKENS[symbol])
-
-const initialFromChainIds = getPossibleFromChainIds()
-const initialToChainIds = getPossibleFromChainIds()
+const {
+  fromChainId,
+  fromToken,
+  toChainId,
+  toToken,
+  fromChainIds,
+  fromTokens,
+  toChainIds,
+  toTokens,
+} = getRoutePossibilities({
+  fromChainId: ETHEREUM.id,
+  fromToken: NUSD,
+  toChainId: ARBITRUM.id,
+  toToken: USDT,
+})
 
 // How do we update query params based on initial state?
 // Additionally how do we set query params based on user input updates?
 const initialState: BridgeState = {
-  fromChainId: ETHEREUM.id,
-  fromToken: USDC,
-  toChainId: ARBITRUM.id,
-  toToken: USDC,
-  fromChainIds: initialFromChainIds,
-  toChainIds: initialToChainIds,
-  fromTokens: initialFromTokens,
-  toTokens: initialToTokens,
+  fromChainId,
+  fromToken,
+  toChainId,
+  toToken,
+  fromChainIds,
+  toChainIds,
+  fromTokens,
+  toTokens,
 
   fromValue: '',
   bridgeQuote: EMPTY_BRIDGE_QUOTE,
@@ -94,7 +75,6 @@ handling default toChain, toToken
 
 are swapExceptions still vaild?
 
-
 */
 
 export const bridgeSlice = createSlice({
@@ -115,41 +95,24 @@ export const bridgeSlice = createSlice({
         fromTokens,
         toChainIds,
         toTokens,
-      } = generateRoutePossibilities({
+      } = getRoutePossibilities({
         fromChainId: incomingFromChainId,
-        fromToken:
-          incomingFromChainId &&
-          state.fromToken &&
-          `${state.fromToken.routeSymbol}-${incomingFromChainId}`,
-        toChainId: incomingFromChainId && state.toChainId,
-        toToken:
-          incomingFromChainId &&
-          state.toToken &&
-          state.toChainId &&
-          `${state.toToken.routeSymbol}-${state.toChainId}`,
+        fromToken: state.fromToken,
+        toChainId: state.toChainId,
+        toToken: state.toToken,
       })
 
       state.fromChainId = fromChainId
-      state.fromToken = getToken(fromToken)
+      state.fromToken = fromToken
       state.toChainId = toChainId
-      state.toToken = getToken(toToken)
+      state.toToken = toToken
       state.fromChainIds = fromChainIds
-      state.fromTokens = _.uniq(fromTokens.map(getSymbol)).map(
-        (symbol: string) => ALL_TOKENS[symbol]
-      )
+      state.fromTokens = fromTokens
       state.toChainIds = toChainIds
-      state.toTokens = _.uniq(toTokens.map(getSymbol)).map(
-        (symbol: string) => ALL_TOKENS[symbol]
-      )
+      state.toTokens = toTokens
     },
     setFromToken: (state, action: PayloadAction<Token>) => {
       const incomingFromToken = action.payload
-
-      const stringifiedFromToken = state.fromChainId
-        ? `${incomingFromToken.routeSymbol}-${state.fromChainId}`
-        : `${incomingFromToken.routeSymbol}-${
-            fromTokenDefaults[incomingFromToken.routeSymbol]
-          }`
 
       const {
         fromChainId,
@@ -160,25 +123,21 @@ export const bridgeSlice = createSlice({
         fromTokens,
         toChainIds,
         toTokens,
-      } = generateRoutePossibilities({
+      } = getRoutePossibilities({
         fromChainId: state.fromChainId,
-        fromToken: stringifiedFromToken,
+        fromToken: incomingFromToken,
         toChainId: state.toChainId,
-        toToken: null,
+        toToken: state.toToken,
       })
 
       state.fromChainId = fromChainId
-      state.fromToken = getToken(fromToken)
+      state.fromToken = fromToken
       state.toChainId = toChainId
-      state.toToken = getToken(toToken)
+      state.toToken = toToken
       state.fromChainIds = fromChainIds
-      state.fromTokens = _.uniq(fromTokens.map(getSymbol)).map(
-        (symbol: string) => ALL_TOKENS[symbol]
-      )
+      state.fromTokens = fromTokens
       state.toChainIds = toChainIds
-      state.toTokens = _.uniq(toTokens.map(getSymbol)).map(
-        (symbol: string) => ALL_TOKENS[symbol]
-      )
+      state.toTokens = toTokens
     },
     setToChainId: (state, action: PayloadAction<number>) => {
       const incomingToChainId = action.payload
@@ -192,30 +151,25 @@ export const bridgeSlice = createSlice({
         fromTokens,
         toChainIds,
         toTokens,
-      } = generateRoutePossibilities({
+      } = getRoutePossibilities({
         fromChainId: state.fromChainId,
-        fromToken:
-          state.fromToken &&
-          `${state.fromToken.routeSymbol}-${state.fromChainId}`,
+        fromToken: state.fromToken,
         toChainId: incomingToChainId,
-        toToken: null,
+        toToken: state.toToken,
       })
 
       state.fromChainId = fromChainId
-      state.fromToken = getToken(fromToken)
+      state.fromToken = fromToken
       state.toChainId = toChainId
-      state.toToken = getToken(toToken)
+      state.toToken = toToken
       state.fromChainIds = fromChainIds
-      state.fromTokens = _.uniq(fromTokens.map(getSymbol)).map(
-        (symbol: string) => ALL_TOKENS[symbol]
-      )
+      state.fromTokens = fromTokens
       state.toChainIds = toChainIds
-      state.toTokens = _.uniq(toTokens.map(getSymbol)).map(
-        (symbol: string) => ALL_TOKENS[symbol]
-      )
+      state.toTokens = toTokens
     },
     setToToken: (state, action: PayloadAction<Token>) => {
       const incomingToToken = action.payload
+
       const {
         fromChainId,
         fromToken,
@@ -225,27 +179,21 @@ export const bridgeSlice = createSlice({
         fromTokens,
         toChainIds,
         toTokens,
-      } = generateRoutePossibilities({
+      } = getRoutePossibilities({
         fromChainId: state.fromChainId,
-        fromToken:
-          state.fromToken &&
-          `${state.fromToken.routeSymbol}-${state.fromChainId}`,
+        fromToken: state.fromToken,
         toChainId: state.toChainId,
-        toToken: `${incomingToToken.routeSymbol}-${state.toChainId}`,
+        toToken: incomingToToken,
       })
 
       state.fromChainId = fromChainId
-      state.fromToken = getToken(fromToken)
+      state.fromToken = fromToken
       state.toChainId = toChainId
-      state.toToken = getToken(toToken)
+      state.toToken = toToken
       state.fromChainIds = fromChainIds
-      state.fromTokens = _.uniq(fromTokens.map(getSymbol)).map(
-        (symbol: string) => ALL_TOKENS[symbol]
-      )
+      state.fromTokens = fromTokens
       state.toChainIds = toChainIds
-      state.toTokens = _.uniq(toTokens.map(getSymbol)).map(
-        (symbol: string) => ALL_TOKENS[symbol]
-      )
+      state.toTokens = toTokens
     },
     setBridgeQuote: (state, action: PayloadAction<BridgeQuote>) => {
       state.bridgeQuote = action.payload

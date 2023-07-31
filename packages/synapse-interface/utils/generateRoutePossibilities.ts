@@ -2,6 +2,8 @@ import _ from 'lodash'
 
 import { EXISTING_BRIDGE_ROUTES } from '@/constants/existing-bridge-routes'
 import { flattenPausedTokens } from './flattenPausedTokens'
+import { Token } from './types'
+import * as ALL_TOKENS from '@constants/tokens/master'
 
 const getTokenAndChainId = (tokenAndChainId: string) => {
   const [symbol, chainId] = tokenAndChainId.split('-')
@@ -9,412 +11,293 @@ const getTokenAndChainId = (tokenAndChainId: string) => {
   return { symbol, chainId: Number(chainId) }
 }
 
-// generates object that matches each bridgeable fromToken to
-// the first chainId that shows up in existing bridge routes
-export const extractFirstChainIdBySymbol = () => {
+interface RouteQueryFields {
+  fromChainId?: number
+  fromTokenRouteSymbol?: string
+  toChainId?: number
+  toTokenRouteSymbol?: string
+}
+
+export const getFromChainIds = ({
+  fromChainId,
+  fromTokenRouteSymbol,
+  toChainId,
+  toTokenRouteSymbol,
+}: RouteQueryFields) => {
   return _.chain(EXISTING_BRIDGE_ROUTES)
     .keys()
-    .reduce((result, key) => {
-      const [symbol, chainId] = key.split('-')
-      if (!result[symbol]) {
-        result[symbol] = Number(chainId)
-      }
-      return result
-    }, {})
-    .value()
-}
+    .filter((key) => {
+      const tokenAndChainId = getTokenAndChainId(key)
+      const keySymbol = tokenAndChainId.symbol
+      const keyChainId = tokenAndChainId.chainId
 
-// get fromChainIds
-export const getPossibleFromChainIds = () => {
-  return _.uniq(
-    Object.keys(EXISTING_BRIDGE_ROUTES).map(
-      (token) => getTokenAndChainId(token).chainId
-    )
-  )
-}
+      // Check the key against fromChainId and fromToken
+      if (fromTokenRouteSymbol && keySymbol !== fromTokenRouteSymbol)
+        return false
+      if (fromChainId && keyChainId === fromChainId) return true
 
-export const getPossibleFromChainIdsByFromToken = (fromToken: string) => {
-  const symbol = getTokenAndChainId(fromToken).symbol
+      // If toChainId or toToken is provided, check the values for the key
+      if (toChainId || toTokenRouteSymbol) {
+        const values = EXISTING_BRIDGE_ROUTES[key]
 
-  return _.chain(EXISTING_BRIDGE_ROUTES)
-    .keys()
-    .filter((key) => _.startsWith(key, symbol))
-    .map((token) => getTokenAndChainId(token).chainId)
-    .uniq()
-    .value()
-}
+        // Check the values against toChainId and toToken
+        if (
+          !values.some((value) => {
+            const valueTokenAndChainId = getTokenAndChainId(value)
+            const valueSymbol = valueTokenAndChainId.symbol
+            const valueChainId = valueTokenAndChainId.chainId
 
-export const getPossibleFromChainIdsByToChainId = (toChainId: number) => {
-  return _.uniq(
-    Object.keys(EXISTING_BRIDGE_ROUTES)
-      .filter((key) =>
-        EXISTING_BRIDGE_ROUTES[key].some((value) =>
-          value.endsWith(`-${toChainId}`)
+            if (toChainId && valueChainId !== toChainId) return false
+            if (toTokenRouteSymbol && valueSymbol !== toTokenRouteSymbol)
+              return false
+
+            return true
+          })
         )
-      )
-      .map((token) => getTokenAndChainId(token).chainId)
-  )
+          return false
+      }
+
+      return true
+    })
+    .map((token) => getTokenAndChainId(token).chainId)
+    .uniq()
+    .value()
 }
 
-export const getPossibleFromChainIdsByToToken = (toToken: string) => {
-  return _.uniq(
-    Object.entries(EXISTING_BRIDGE_ROUTES)
-      .filter(([, values]) => values.includes(toToken))
-      .map(([key]) => {
-        const chainId = getTokenAndChainId(key).chainId
-        return Number(chainId)
+export const getFromTokens = ({
+  fromChainId,
+  fromTokenRouteSymbol,
+  toChainId,
+  toTokenRouteSymbol,
+}: RouteQueryFields) => {
+  return _.chain(EXISTING_BRIDGE_ROUTES)
+    .keys()
+    .filter((key) => {
+      const tokenAndChainId = getTokenAndChainId(key)
+      const keySymbol = tokenAndChainId.symbol
+      const keyChainId = tokenAndChainId.chainId
+
+      // Check the key against fromChainId and fromToken
+      if (fromChainId && keyChainId !== fromChainId) return false
+
+      // If toChainId or toToken is provided, check the values for the key
+      if (toChainId || toTokenRouteSymbol) {
+        const values = EXISTING_BRIDGE_ROUTES[key]
+
+        // Check the values against toChainId and toToken
+        return values.some((value) => {
+          const valueTokenAndChainId = getTokenAndChainId(value)
+          const valueSymbol = valueTokenAndChainId.symbol
+          const valueChainId = valueTokenAndChainId.chainId
+
+          if (toTokenRouteSymbol && valueSymbol !== toTokenRouteSymbol)
+            return false
+          if (toChainId && valueChainId !== toChainId) return false
+
+          return true
+        })
+      }
+
+      return true
+    })
+    .uniq()
+    .value()
+}
+
+export const getToChainIds = ({
+  fromChainId,
+  fromTokenRouteSymbol,
+  toChainId,
+  toTokenRouteSymbol,
+}: RouteQueryFields) => {
+  if (!fromChainId && !fromTokenRouteSymbol) {
+    if (toTokenRouteSymbol) {
+      // Find keys with matching toTokenRouteSymbol and return their associated chainIds
+      return _.chain(EXISTING_BRIDGE_ROUTES)
+        .keys()
+        .filter((key) => {
+          const keySymbol = getTokenAndChainId(key).symbol
+          return keySymbol === toTokenRouteSymbol
+        })
+        .map((key) => {
+          // Include the chainId from the key
+          return getTokenAndChainId(key).chainId
+        })
+        .uniq()
+        .value()
+    }
+
+    if (toChainId) {
+      return _.chain(EXISTING_BRIDGE_ROUTES)
+        .values()
+        .flatten()
+        .filter((value) => {
+          const valueChainId = getTokenAndChainId(value).chainId
+          return valueChainId === toChainId
+        })
+        .map((value) => {
+          const keyChainId = getTokenAndChainId(value).chainId
+          return keyChainId
+        })
+        .uniq()
+        .value()
+    }
+  }
+
+  return _.chain(EXISTING_BRIDGE_ROUTES)
+    .entries()
+    .filter(([key, values]) => {
+      const tokenAndChainId = getTokenAndChainId(key)
+      const keySymbol = tokenAndChainId.symbol
+      const keyChainId = tokenAndChainId.chainId
+
+      // Check the key against fromChainId and fromToken
+      if (fromTokenRouteSymbol && keySymbol !== fromTokenRouteSymbol)
+        return false
+      if (fromChainId && keyChainId !== fromChainId) return false
+
+      // Check the values against toChainId and toToken
+      if (
+        !values.some((value) => {
+          const valueTokenAndChainId = getTokenAndChainId(value)
+          const valueSymbol = valueTokenAndChainId.symbol
+          const valueChainId = valueTokenAndChainId.chainId
+
+          if (toChainId && valueChainId !== toChainId) return false
+          if (toTokenRouteSymbol && valueSymbol !== toTokenRouteSymbol)
+            return false
+
+          return true
+        })
+      )
+        return false
+
+      return true
+    })
+    .map(([_, values]) =>
+      values.map((value) => getTokenAndChainId(value).chainId)
+    )
+    .flatten()
+    .uniq()
+    .value()
+}
+
+export const getToTokens = ({
+  fromChainId,
+  fromTokenRouteSymbol,
+  toChainId,
+  toTokenRouteSymbol,
+}: RouteQueryFields) => {
+  return _.chain(EXISTING_BRIDGE_ROUTES)
+    .flatMap((values, key) => {
+      const keyTokenAndChainId = getTokenAndChainId(key)
+      const keySymbol = keyTokenAndChainId.symbol
+      const keyChainId = keyTokenAndChainId.chainId
+
+      // only consider the combination of fromToken and fromChainId if both are provided
+      if (fromChainId && fromTokenRouteSymbol) {
+        if (`${fromTokenRouteSymbol}-${fromChainId}` !== key) return []
+      } else if (fromTokenRouteSymbol && keySymbol !== fromTokenRouteSymbol)
+        return []
+      else if (fromChainId && keyChainId !== fromChainId) return []
+
+      // Filter out the destinations based on toChainId and toToken
+      return values.filter((value) => {
+        const valueTokenAndChainId = getTokenAndChainId(value)
+        const valueSymbol = valueTokenAndChainId.symbol
+        const valueChainId = valueTokenAndChainId.chainId
+
+        // only consider the combination of toToken and toChainId if both are provided
+        if (toChainId && toTokenRouteSymbol) {
+          if (`${toTokenRouteSymbol}-${toChainId}` !== value) return false
+        } else if (
+          toTokenRouteSymbol &&
+          toChainId &&
+          valueSymbol !== toTokenRouteSymbol &&
+          valueChainId !== toChainId
+        )
+          return false
+        else if (toChainId && valueChainId !== toChainId) return false
+
+        return true
       })
-  )
-}
-
-// get fromTokens
-export const getPossibleFromTokens = () => {
-  return Object.keys(EXISTING_BRIDGE_ROUTES)
-}
-
-export const getPossibleFromTokensByFromChainId = (fromChainId: number) => {
-  return Object.keys(EXISTING_BRIDGE_ROUTES).filter((token) =>
-    token.endsWith(`-${fromChainId}`)
-  )
-}
-
-export const getPossibleFromTokensByFromToken = (fromToken: string) => {
-  const chainId = getTokenAndChainId(fromToken).chainId
-
-  return getPossibleFromTokensByFromChainId(chainId)
-}
-
-export const getPossibleFromTokensByFromChainIdAndToChainId = (
-  fromChainId: number,
-  toChainId: number
-) => {
-  const fromOptions = Object.keys(EXISTING_BRIDGE_ROUTES).filter((token) =>
-    token.endsWith(`-${fromChainId}`)
-  )
-
-  return _.uniq(
-    fromOptions.filter((key) =>
-      EXISTING_BRIDGE_ROUTES[key].some((value) =>
-        value.endsWith(`-${toChainId}`)
-      )
-    )
-  )
-}
-
-export const getPossibleFromTokensByToChainId = (toChainId: number) => {
-  return _.uniq(
-    Object.keys(EXISTING_BRIDGE_ROUTES).filter((key) =>
-      EXISTING_BRIDGE_ROUTES[key].some((value) =>
-        value.endsWith(`-${toChainId}`)
-      )
-    )
-  )
-}
-
-export const getPossibleFromTokensByToToken = (toToken) => {
-  return _.uniq(
-    Object.entries(EXISTING_BRIDGE_ROUTES)
-      .filter(([, values]) => values.includes(toToken))
-      .map(([key]) => key)
-  )
-}
-
-// get toChainIds
-export const getPossibleToChainIds = () => {
-  return _(EXISTING_BRIDGE_ROUTES)
-    .values()
-    .flatten()
-    .map((token) => getTokenAndChainId(token).chainId)
+    })
     .uniq()
     .value()
 }
 
-export const getPossibleToChainIdsByFromChainId = (fromChainId: number) => {
-  return _(EXISTING_BRIDGE_ROUTES)
-    .pickBy((_value, key) => key.endsWith(`-${fromChainId}`))
-    .values()
-    .flatten()
-    .map((token) => getTokenAndChainId(token).chainId)
-    .uniq()
-    .value()
-}
+// isBridgeableTo(fromToken, toChainId): true or false
+// isBridgeableFrom(toToken, fromChainId): true or false
 
-export const getPossibleToChainIdsByFromToken = (fromToken: string) => {
-  return _.uniq(
-    EXISTING_BRIDGE_ROUTES[fromToken].map(
-      (token) => getTokenAndChainId(token).chainId
-    )
-  )
-}
-
-export const getPossibleToChainIdsByToToken = (toToken: string) => {
-  return _.uniq(
-    Object.entries(EXISTING_BRIDGE_ROUTES)
-      .filter(([, values]) => values.includes(toToken))
-      .map(([key]) => Number(key.split('-')[1]))
-  )
-}
-
-// get toTokens
-export const getPossibleToTokens = () => {
-  return _(EXISTING_BRIDGE_ROUTES).values().flatten().uniq().value()
-}
-
-export const getPossibleToTokensByFromChainId = (fromChainId: number) => {
-  return _(EXISTING_BRIDGE_ROUTES)
-    .pickBy((_value, key) => key.endsWith(`-${fromChainId}`))
-    .values()
-    .flatten()
-    .value()
-}
-
-export const getPossibleToTokensByFromToken = (fromToken: string) => {
-  return EXISTING_BRIDGE_ROUTES[fromToken]
-}
-
-export const getPossibleToTokensByFromTokenAndToChainId = (
-  fromToken: string,
-  toChainId: number
-) => {
-  return getPossibleToTokensByFromToken(fromToken).filter((token) =>
-    token.endsWith(`-${toChainId}`)
-  )
-}
-
-export const getPossibleToTokensByToChainId = (toChainId: number) => {
-  return _(EXISTING_BRIDGE_ROUTES)
-    .values()
-    .flatten()
-    .filter((value) => value.endsWith(`-${toChainId}`))
-    .uniq()
-    .value()
-}
-
-// is this right??
-export const getPossibleToTokensByToToken = (toToken: string) => {
-  const chainId = getTokenAndChainId(toToken).chainId
-
-  return getPossibleToTokensByToChainId(chainId)
-}
-
-export const generateRoutePossibilities = ({
+export const getRoutePossibilities = ({
   fromChainId,
   fromToken,
   toChainId,
   toToken,
 }: {
   fromChainId: number
-  fromToken: string
+  fromToken: Token
   toChainId: number
-  toToken: string
+  toToken: Token
 }) => {
-  let newFromChainId
-  let newFromToken
-  let newToChainId
-  let newToToken
-  let fromChainIds
-  let fromTokens
-  let toChainIds
-  let toTokens
+  // check if fromToken is allowed in fromTokens
+  // check if toToken is allowed in toTokens
 
-  if (
-    fromChainId === null &&
-    fromToken === null &&
-    toChainId === null &&
-    toToken === null
-  ) {
-    fromChainIds = getPossibleFromChainIds()
-    fromTokens = getPossibleFromTokens()
-    toChainIds = getPossibleToChainIds()
-    toTokens = getPossibleToTokens()
+  const fromTokenRouteSymbol = fromToken && fromToken.routeSymbol
+  const toTokenRouteSymbol = toToken && toToken.routeSymbol
 
-    newFromChainId = null
-    newFromToken = null
-    newToChainId = null
-    newToToken = null
-  }
+  const fromChainIds = getFromChainIds({
+    fromChainId,
+    fromTokenRouteSymbol,
+    toChainId,
+    toTokenRouteSymbol,
+  }).filter((chainId) => chainId !== toChainId)
 
-  if (fromChainId === null && fromToken === null && toChainId && toToken) {
-    fromChainIds = getPossibleFromChainIdsByToToken(toToken)
-    fromTokens = getPossibleFromTokensByToToken(toToken)
-    toChainIds = getPossibleToChainIdsByToToken(toToken)
-    toTokens = getPossibleToTokensByToChainId(toChainId)
+  const fromTokens = _.uniq(
+    _.difference(
+      getFromTokens({
+        fromChainId,
+        fromTokenRouteSymbol,
+        toChainId,
+        toTokenRouteSymbol,
+      }),
+      flattenPausedTokens()
+    ).map(getSymbol)
+  ).map((symbol) => ALL_TOKENS[symbol])
 
-    newFromChainId = null
-    newFromToken = null
-    newToChainId = toChainId
-    newToToken = toToken
-  }
+  const toChainIds = getToChainIds({
+    fromChainId,
+    fromTokenRouteSymbol,
+    toChainId,
+    toTokenRouteSymbol,
+  }).filter((chainId) => chainId !== fromChainId)
 
-  if (
-    fromChainId === null &&
-    fromToken === null &&
-    toChainId &&
-    toToken === null
-  ) {
-    fromChainIds = getPossibleFromChainIdsByToChainId(toChainId)
-    fromTokens = getPossibleFromTokensByToChainId(toChainId)
-    toChainIds = getPossibleToChainIds()
-    toTokens = getPossibleToTokensByToChainId(toChainId)
-
-    newFromChainId = null
-    newFromToken = null
-    newToChainId = toChainId
-    newToToken = null
-  }
-
-  if (
-    fromChainId === null &&
-    fromToken === null &&
-    toChainId === null &&
-    toToken
-  ) {
-    fromChainIds = getPossibleFromChainIdsByToToken(toToken)
-    fromTokens = getPossibleFromTokensByToToken(toToken)
-    toChainIds = getPossibleToChainIdsByToToken(toToken)
-    toTokens = getPossibleToTokensByToToken(toToken)
-
-    newFromChainId = null
-    newFromToken = null
-    newToChainId = null
-    newToToken = toToken
-  }
-
-  if (fromChainId && fromToken && toChainId === null && toToken === null) {
-    fromChainIds = getPossibleFromChainIdsByFromToken(fromToken)
-    fromTokens = getPossibleFromTokensByFromToken(fromToken)
-    toChainIds = getPossibleToChainIdsByFromToken(fromToken)
-    toTokens = getPossibleToTokensByFromToken(fromToken)
-
-    newFromChainId = fromChainId
-    newFromToken = fromToken
-    newToChainId = null
-    newToToken = null
-  }
-
-  if (fromChainId && fromToken && toChainId && toToken) {
-    fromChainIds = getPossibleFromChainIds()
-    fromTokens = getPossibleFromTokensByFromChainId(fromChainId)
-    toChainIds = getPossibleToChainIdsByFromToken(fromToken)
-    toTokens = getPossibleToTokensByFromTokenAndToChainId(fromToken, toChainId)
-
-    newFromChainId = fromChainId
-    newFromToken = fromToken
-    newToChainId = toChainId
-    newToToken = toToken
-  }
-
-  if (fromChainId && fromToken && toChainId && toToken === null) {
-    fromChainIds = getPossibleFromChainIds()
-    fromTokens = getPossibleFromTokensByFromChainId(fromChainId)
-    toChainIds = getPossibleToChainIdsByFromToken(fromToken)
-    toTokens = getPossibleToTokensByFromTokenAndToChainId(fromToken, toChainId)
-
-    newFromChainId = fromChainId
-    newFromToken = fromToken
-    newToChainId = toChainId
-    newToToken = null
-  }
-
-  if (fromChainId === null && fromToken && toChainId && toToken) {
-    fromChainIds = getPossibleFromChainIds()
-    fromTokens = getPossibleFromTokensByFromToken(fromToken)
-    toChainIds = getPossibleToChainIdsByFromToken(fromToken)
-    toTokens = getPossibleToTokensByFromTokenAndToChainId(fromToken, toChainId)
-
-    newFromChainId = null
-    newFromToken = fromToken
-    newToChainId = toChainId
-    newToToken = toToken
-  }
-
-  if (
-    fromChainId &&
-    fromToken === null &&
-    toChainId === null &&
-    toToken === null
-  ) {
-    fromChainIds = getPossibleFromChainIds()
-    fromTokens = getPossibleFromTokensByFromChainId(fromChainId)
-    toChainIds = getPossibleToChainIdsByFromChainId(fromChainId)
-    toTokens = getPossibleToTokensByFromChainId(fromChainId)
-
-    newFromChainId = fromChainId
-    newFromToken = null
-    newToChainId = null
-    newToToken = null
-  }
-
-  if (fromChainId && fromToken === null && toChainId === null && toToken) {
-    fromChainIds = getPossibleFromChainIdsByToToken(toToken)
-    fromTokens = getPossibleFromTokensByToToken(toToken)
-    toChainIds = getPossibleToChainIdsByToToken(toToken)
-    toTokens = getPossibleToTokensByToToken(toToken)
-
-    newFromChainId = fromChainId
-    newFromToken = null
-    newToChainId = null
-    newToToken = toToken
-  }
-
-  if (fromChainId && fromToken === null && toChainId && toToken === null) {
-    fromChainIds = getPossibleFromChainIdsByToChainId(toChainId)
-    fromTokens = getPossibleFromTokensByFromChainIdAndToChainId(
-      fromChainId,
-      toChainId
-    )
-    toChainIds = getPossibleToChainIdsByFromChainId(fromChainId)
-    toTokens = getPossibleToTokensByToChainId(toChainId)
-
-    newFromChainId = fromChainId
-    newFromToken = null
-    newToChainId = toChainId
-    newToToken = null
-  }
-
-  if (fromChainId && fromToken === null && toChainId && toToken) {
-    fromChainIds = getPossibleFromChainIdsByToToken(toToken)
-    fromTokens = getPossibleFromTokensByFromChainIdAndToChainId(
-      fromChainId,
-      toChainId
-    )
-
-    toChainIds = getPossibleToChainIdsByToToken(toToken)
-    toTokens = getPossibleToTokensByToToken(toToken)
-
-    newFromChainId = fromChainId
-    newFromToken = null
-    newToChainId = toChainId
-    newToToken = toToken
-  }
-
-  if (
-    fromChainId === null &&
-    fromToken &&
-    toChainId === null &&
-    toToken === null
-  ) {
-    fromChainIds = getPossibleFromChainIdsByFromToken(fromToken)
-    fromTokens = getPossibleFromTokensByFromToken(fromToken)
-    toChainIds = getPossibleToChainIdsByFromToken(fromToken)
-    toTokens = getPossibleToTokensByFromToken(fromToken)
-
-    newFromChainId = null
-    newFromToken = fromToken
-    newToChainId = null
-    newToToken = null
-  }
+  const toTokens = _.uniq(
+    _.difference(
+      getToTokens({
+        fromChainId,
+        fromTokenRouteSymbol,
+        toChainId,
+        toTokenRouteSymbol,
+      }),
+      flattenPausedTokens()
+    ).map(getSymbol)
+  ).map((symbol) => ALL_TOKENS[symbol])
 
   return {
-    fromChainId: newFromChainId,
-    fromToken: newFromToken,
-    toChainId: newToChainId,
-    toToken: newToToken,
+    fromChainId,
+    fromToken,
+    toChainId,
+    toToken,
     fromChainIds,
-    fromTokens: _.difference(fromTokens, flattenPausedTokens()),
+    fromTokens,
     toChainIds,
-    toTokens: _.difference(toTokens, flattenPausedTokens()),
+    toTokens,
   }
+}
+
+const getSymbol = (tokenAndChainId: string): string => {
+  return tokenAndChainId.split('-')[0]
 }
 
 /*NOTES
@@ -424,7 +307,7 @@ export const generateRoutePossibilities = ({
 
 
   -- To strip out --
-  * paused tokens
+  * paused tokens [x]
   * swap exceptions?
 
 */

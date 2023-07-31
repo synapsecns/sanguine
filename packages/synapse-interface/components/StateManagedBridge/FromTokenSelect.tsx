@@ -116,8 +116,8 @@ const FromTokenSelect = () => {
         option.value?.name.toLowerCase().includes(searchTerm) ||
         option.value?.routeSymbol.toLowerCase().includes(searchTerm) ||
         (fromChainId &&
-          option.value.addresses[fromChainId]
-            .toLowerCase()
+          option.value?.addresses[fromChainId]
+            ?.toLowerCase()
             .includes(searchTerm))
       )
     }

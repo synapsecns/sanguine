@@ -38,6 +38,7 @@ const ToTokenSelect = () => {
   }))
 
   const handleToTokenChange = (selectedOption) => {
+    console.log(`selected option`, selectedOption)
     if (selectedOption) {
       dispatch(setToToken(selectedOption.value))
     } else {

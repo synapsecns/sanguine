@@ -3,7 +3,7 @@ import Select from 'react-select'
 import { Address, useAccount } from 'wagmi'
 
 import { CHAINS_BY_ID } from '@/constants/chains'
-import { setToChainId } from '@/slices/bridge/reducer'
+import { setToChainId, setToToken } from '@/slices/bridge/reducer'
 import { RootState } from '@/store/store'
 import { networkSelectStyles } from './styles/networkSelectStyles'
 import { shortenAddress } from '@/utils/shortenAddress'
@@ -23,7 +23,7 @@ const ToChainSelect = () => {
 
   const dispatch = useDispatch()
 
-  const toChainOptions = toChainIds.map((option) => ({
+  const toChainOptions = toChainIds?.map((option) => ({
     label: (
       <span className="flex items-center space-x-2">
         <img src={CHAINS_BY_ID[option].chainImg.src} className="w-5 h-5" />
@@ -38,6 +38,7 @@ const ToChainSelect = () => {
       dispatch(setToChainId(Number(selectedOption.value)))
     } else {
       dispatch(setToChainId(null))
+      dispatch(setToToken(null))
     }
   }
 
@@ -68,7 +69,7 @@ const ToChainSelect = () => {
           isClearable={true}
           isSearchable={true}
           placeholder={<div className="text-secondaryTextColor">Network</div>}
-          value={toChainOptions.find((option) => option.value === toChainId)}
+          value={toChainOptions?.find((option) => option.value === toChainId)}
         />
       </div>
       {address && <DisplayAddress address={address} />}
