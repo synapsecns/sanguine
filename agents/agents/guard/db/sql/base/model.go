@@ -47,7 +47,7 @@ type Dispute struct {
 	DisputeProcessedStatus agentTypes.DisputeProcessedStatus `gorm:"column:dispute_processed_status"`
 	// GuardAddress is the address of the guard.
 	GuardAddress string `gorm:"column:guard_address"`
-	//NotaryIndex is the index of the notary on the BondingManager.
+	// NotaryIndex is the index of the notary on the BondingManager.
 	NotaryIndex uint64 `gorm:"column:notary_index"`
 	// NotaryAddress is the address of the notary.
 	NotaryAddress string `gorm:"column:notary_address"`

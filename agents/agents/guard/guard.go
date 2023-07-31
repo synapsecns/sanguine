@@ -386,6 +386,7 @@ func isSlashable(agentFlag types.AgentFlagType) bool {
 	return agentFlag == types.AgentFlagActive || agentFlag == types.AgentFlagUnstaking
 }
 
+//nolint:gocognit
 func (g Guard) handleAttestation(ctx context.Context, log ethTypes.Log) error {
 	fraudAttestation, err := g.lightInboxParser.ParseAttestationAccepted(log)
 	if err != nil {
