@@ -55,7 +55,7 @@ export const DestinationChainLabel = ({
             [&>*:nth-child(2)]:hidden [&>*:nth-child(2)]:min-[360px]:flex
             [&>*:nth-child(3)]:hidden [&>*:nth-child(3)]:min-[390px]:flex
             [&>*:nth-child(4)]:hidden [&>*:nth-child(4)]:min-[420px]:flex
-            [&>*:nth-child(5)]:hidden [&>*:nth-child(5)]:min-[450px]:bloflexck
+            [&>*:nth-child(5)]:hidden [&>*:nth-child(5)]:min-[450px]:flex
             `}
           >
             {orderedChains.map((id: number, key: number) => {
