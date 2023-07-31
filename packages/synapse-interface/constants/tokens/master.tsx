@@ -942,6 +942,7 @@ export const NETH = new Token({
     [CHAINS.KLAYTN.id]: '0xCD6f29dC9Ca217d0973d3D21bF58eDd3CA871a86',
     [CHAINS.DOGE.id]: '0x9F4614E4Ea4A0D7c4B1F946057eC030beE416cbB',
     [CHAINS.CANTO.id]: '0x09fEC30669d63A13c666d2129230dD5588E2e240',
+    [CHAINS.BASE.id]: '0x3ea9B0ab55F34Fb188824Ee288CeaEfC63cf908e', // NOT A REAL ADDRESS, JUST PLACEHOLDER
   },
   decimals: 18,
   symbol: 'nETH',
@@ -986,6 +987,7 @@ export const ETH = new Token({
     [CHAINS.BOBA.id]: zeroAddress,
     [CHAINS.ARBITRUM.id]: zeroAddress,
     [CHAINS.OPTIMISM.id]: zeroAddress,
+    [CHAINS.BASE.id]: zeroAddress,
   },
   decimals: 18,
   symbol: 'ETH',

@@ -768,3 +768,32 @@ export const HARMONY_JEWEL_SWAP_TOKEN = new Token({
   priorityRank: 6,
   chainId: CHAINS.HARMONY.id,
 })
+
+export const BASE_ETH_SWAP_TOKEN = new Token({
+  addresses: {
+    [CHAINS.BASE.id]: '0xD70A52248e546A3B260849386410C7170c7BD1E9', // PLACEHOLDER ADDRESS
+  },
+  decimals: 18,
+  symbol: 'nETH-LP',
+  name: 'Synapse Eth LP Token Base',
+  logo: synapseLogo,
+  poolName: 'Base ETH Pool',
+  routerIndex: 'baseethpool',
+  poolId: 0,
+  poolType: 'ETH',
+  swapAddresses: {
+    [CHAINS.BASE.id]: '0xa067668661C84476aFcDc6fA5D758C4c01C34352', // PLACEHOLDER ADDRESS
+  },
+  swapEthAddresses: {
+    [CHAINS.BASE.id]: '0x1c3fe783a7c06bfAbd124F2708F5Cc51fA42E102', // PLACEHOLDER ADDRESS
+  },
+  poolTokens: [NETH, WETH],
+  nativeTokens: [NETH, ETH],
+  description: "Synapse's eth swap LP token on Base",
+  display: true,
+  priorityPool: true,
+  color: 'sky',
+  priceUnits: 'ETH',
+  priorityRank: 6,
+  chainId: CHAINS.BASE.id,
+})

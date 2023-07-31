@@ -20,6 +20,7 @@ export enum SupportedChainId {
   DFK = 53935,
   AURORA = 1313161554,
   HARMONY = 1666600000,
+  BASE = 8453,
 }
 
 export const CCTP_ROUTER_ADDRESS: { [chainId: number]: string } = {
@@ -47,6 +48,7 @@ export const ROUTER_ADDRESS: { [chainId: number]: string } = {
   [SupportedChainId.KLAYTN]: '0x7E7A0e201FD38d3ADAA9523Da6C109a07118C96a',
   [SupportedChainId.DOGECHAIN]: '0x7E7A0e201FD38d3ADAA9523Da6C109a07118C96a',
   [SupportedChainId.CANTO]: '0x7E7A0e201FD38d3ADAA9523Da6C109a07118C96a',
+  [SupportedChainId.BASE]: '0x7E7A0e201FD38d3ADAA9523Da6C109a07118C96a', // PLACEHOLDER BUT COULD BE ACCURATE
 }
 
 // exports for external consumption
