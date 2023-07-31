@@ -27,8 +27,6 @@ func NewOTLPMetricsHandler(buildInfo config.BuildInfo) Handler {
 }
 
 func (n *otlpHandler) Start(ctx context.Context) (err error) {
-	// TODO: consider grpc
-
 	var client otlptrace.Client
 	transport := transportFromString(core.GetEnv(otlpTransportEnv, otlpTransportGRPC.String()))
 	switch transport {
@@ -46,6 +44,12 @@ func (n *otlpHandler) Start(ctx context.Context) (err error) {
 	}
 
 	n.baseHandler = newBaseHandler(n.buildInfo, tracesdk.WithBatcher(exporter, tracesdk.WithMaxQueueSize(1000000), tracesdk.WithMaxExportBatchSize(2000)), tracesdk.WithSampler(tracesdk.AlwaysSample()))
+
+	// start the new parent
+	err = n.baseHandler.Start(ctx)
+	if err != nil {
+		return fmt.Errorf("could not start base handler: %w", err)
+	}
 
 	return nil
 }
