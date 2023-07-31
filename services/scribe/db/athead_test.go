@@ -157,7 +157,7 @@ func (t *DBSuite) TestUnconfirmedTxsQuery() {
 			Nil(t.T(), err)
 		}
 
-		// For testing, having the same txhash for all unconfirmed blocks.
+		// For testing, have the same txhash for all unconfirmed blocks.
 		for i := confirmedBlockHeight + 1; i <= headBlock; i++ {
 			testTx := types.NewTx(&types.LegacyTx{
 				Nonce:    uint64(0),
