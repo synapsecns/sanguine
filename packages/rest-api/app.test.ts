@@ -6,8 +6,8 @@ describe('Server Endpoints', () => {
   describe('/swap endpoint', () => {
     it('should respond with Invalid Params for invalid request', async () => {
       const res = await request(server).get('/swap')
-      expect(res.statusCode).toEqual(200)
-      expect(res.text).toContain('<h1>Invalid Params</h1>')
+      expect(res.statusCode).equal(200)
+      expect(res.text).contain('<h1>Invalid Params</h1>')
     })
 
     // Add more tests to check valid swap
@@ -21,8 +21,8 @@ describe('Server Endpoints', () => {
   describe('/bridge endpoint', () => {
     it('should respond with Invalid Request for invalid request', async () => {
       const res = await request(server).get('/bridge')
-      expect(res.statusCode).toEqual(200)
-      expect(res.text).toContain('<h1>Invalid Request</h1>')
+      expect(res.statusCode).equal(200)
+      expect(res.text).contain('<h1>Invalid Request</h1>')
     })
 
     // Add more tests to check valid bridge
