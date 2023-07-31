@@ -254,7 +254,6 @@ func (s Store) RetrieveUnconfirmedEthTxsFromHeadRangeQuery(ctx context.Context, 
 		return nil, fmt.Errorf("error building receipts from db receipts: %w", err)
 	}
 	return txs, nil
-
 }
 
 // FlushFromHeadTables deletes all logs, receipts, and txs from the head table that are older than the given time.

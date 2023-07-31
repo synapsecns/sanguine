@@ -28,9 +28,6 @@ func (s Store) StoreLastIndexed(parentCtx context.Context, contractAddress commo
 		metrics.EndSpanWithErr(span, err)
 	}()
 
-	// TODO add livefill at head save last indexed
-	// Create key (address)
-
 	address := contractAddress.String()
 	if livefillAtHead {
 		address = lastIndexedLivefillKey

@@ -46,6 +46,8 @@ const (
 	ConcurrencyThresholdReached
 	// FlushingLivefillAtHead is returned when a livefill indexer is flushing at the head.
 	FlushingLivefillAtHead
+	// CreatingSQLStore is returned when a SQL store is being created.
+	CreatingSQLStore
 )
 
 // ErrorType is a type of error.
@@ -91,7 +93,6 @@ func ReportIndexerError(err error, indexerData scribeTypes.IndexerConfig, errorT
 		logger.Errorf("Could not read data from database. Error: %v\n%s", errStr, unpackIndexerConfig(indexerData))
 	case EmptyGetLogsChunk:
 		logger.Warnf("Encountered empty getlogs chunk%s", unpackIndexerConfig(indexerData))
-
 	default:
 		logger.Errorf("Error: %v\n%s", errStr, unpackIndexerConfig(indexerData))
 	}
@@ -125,6 +126,8 @@ func ReportScribeState(chainID uint32, block uint64, addresses []common.Address,
 		logger.Warnf("Concurrency threshold reached on chain %d on block %d while interacting with contract %s", chainID, block, dumpAddresses(addresses))
 	case FlushingLivefillAtHead:
 		logger.Warnf("Flushing logs at head on chain %d", chainID)
+	case CreatingSQLStore:
+		logger.Warnf("Creating SQL store")
 	default:
 		logger.Warnf("Event on chain %d on block %d while interacting with contract %s", chainID, block, dumpAddresses(addresses))
 	}

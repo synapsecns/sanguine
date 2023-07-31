@@ -351,7 +351,7 @@ func (s *ScribeSuite) TestLargeVolume() {
 			case <-emittingContext.Done():
 				return
 			default:
-				desiredBlockHeight += 1000
+				desiredBlockHeight += 10
 				err = testutil.EmitEvents(emittingContext, s.T(), newBackend, desiredBlockHeight, testChainHandlerMap[chainID])
 				if err != nil {
 					return

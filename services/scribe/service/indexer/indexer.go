@@ -227,14 +227,12 @@ func (x *Indexer) Index(parentCtx context.Context, startHeight uint64, endHeight
 					gS, storeCtx = errgroup.WithContext(ctx)
 					concurrentCalls = 0
 
-					// TODO add livefill at head save last indexed
-					if !x.isBackfill && !x.toHead {
-						err = x.eventDB.StoreLastIndexedMultiple(ctx, x.indexerConfig.Addresses, x.indexerConfig.ChainID, log.BlockNumber)
-						if err != nil {
-							logger.ReportIndexerError(err, x.indexerConfig, logger.StoreError)
-							return fmt.Errorf("could not store last indexed block: %w", err)
-						}
+					err = x.saveLastIndexed(storeCtx, log.BlockNumber)
+					if err != nil {
+						logger.ReportIndexerError(err, x.indexerConfig, logger.StoreError)
+						return fmt.Errorf("could not store last indexed: %w", err)
 					}
+
 					x.blockMeter.Record(ctx, int64(log.BlockNumber), otelMetrics.WithAttributeSet(
 						attribute.NewSet(attribute.Int64("start_block", int64(startHeight)), attribute.Int64("chain_id", int64(x.indexerConfig.ChainID)))),
 					)
@@ -248,12 +246,13 @@ func (x *Indexer) Index(parentCtx context.Context, startHeight uint64, endHeight
 	if err != nil {
 		return fmt.Errorf("could not backfill contract: %w \nChain: %d\nLog 's Contract Address: %s\n ", err, x.indexerConfig.ChainID, x.indexerConfig.Addresses)
 	}
-	if !x.isBackfill && !x.toHead {
-		err = x.eventDB.StoreLastIndexedMultiple(ctx, x.indexerConfig.Addresses, x.indexerConfig.ChainID, endHeight)
-		if err != nil {
-			return fmt.Errorf("could not store last indexed block: %w", err)
-		}
+
+	err = x.saveLastIndexed(ctx, endHeight)
+	if err != nil {
+		logger.ReportIndexerError(err, x.indexerConfig, logger.StoreError)
+		return fmt.Errorf("could not store last indexed: %w", err)
 	}
+
 	x.blockMeter.Record(ctx, int64(endHeight), otelMetrics.WithAttributeSet(
 		attribute.NewSet(attribute.Int64("start_block", int64(startHeight)), attribute.Int64("chain_id", int64(x.indexerConfig.ChainID)))),
 	)
@@ -483,4 +482,25 @@ func (x *Indexer) addressesToString(addresses []common.Address) string {
 		}
 	}
 	return output
+}
+
+func (x *Indexer) saveLastIndexed(parentCtx context.Context, blockNumber uint64) error {
+	if !x.isBackfill {
+		var err error
+		if x.toHead {
+			err = x.eventDB.StoreLastIndexed(parentCtx, common.Address{}, x.indexerConfig.ChainID, blockNumber, scribeTypes.LivefillAtHead)
+			if err != nil {
+				logger.ReportIndexerError(err, x.indexerConfig, logger.StoreError)
+				return fmt.Errorf("could not store last indexed block for livefill at head: %w", err)
+			}
+		} else {
+			err = x.eventDB.StoreLastIndexedMultiple(parentCtx, x.indexerConfig.Addresses, x.indexerConfig.ChainID, blockNumber)
+			if err != nil {
+				logger.ReportIndexerError(err, x.indexerConfig, logger.StoreError)
+				return fmt.Errorf("could not store last indexed block: %w", err)
+			}
+		}
+
+	}
+	return nil
 }

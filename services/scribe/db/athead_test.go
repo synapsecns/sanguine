@@ -127,6 +127,7 @@ func (t *DBSuite) TestFlushLog() {
 	})
 }
 
+// nolint:dupl
 func (t *DBSuite) TestUnconfirmedTxsQuery() {
 	t.RunOnAllDBs(func(testDB db.EventDB) {
 		chainID := gofakeit.Uint32()
