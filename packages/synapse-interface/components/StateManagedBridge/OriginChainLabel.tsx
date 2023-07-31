@@ -11,7 +11,6 @@ import { setFromChainId } from '@/slices/bridgeSlice'
 import { setShowFromChainSlideOver } from '@/slices/bridgeDisplaySlice'
 import { RootState } from '@/store/store'
 import { segmentAnalyticsEvent } from '@/contexts/SegmentAnalyticsProvider'
-import useElementWidth from '@/utils/hooks/useElementWidth'
 
 export const OriginChainLabel = ({
   chains,
@@ -22,15 +21,7 @@ export const OriginChainLabel = ({
   chainId: number
   connectedChainId: number
 }) => {
-  const chainContainerRef = useRef<HTMLDivElement>(null)
-  const leftRef = useRef<HTMLDivElement>(null)
-  const rightRef = useRef<HTMLDivElement>(null)
   const scrollableRef = useRef<HTMLDivElement>(null)
-
-  // const containerLength = useElementWidth(chainContainerRef)
-  // const leftLength = useElementWidth(leftRef)
-  // const rightLength = useElementWidth(rightRef)
-
   const [orderedChains, setOrderedChains] = useState<number[]>([])
 
   useEffect(() => {
@@ -46,15 +37,8 @@ export const OriginChainLabel = ({
   }
 
   return (
-    <div
-      ref={chainContainerRef}
-      data-test-id="origin-chain-label"
-      className="flex items-center"
-    >
-      <div
-        ref={leftRef}
-        className={`text-gray-400 block text-sm mr-2 min-w-[40px]`}
-      >
+    <div data-test-id="origin-chain-label" className="flex items-center">
+      <div className={`text-gray-400 block text-sm mr-2 min-w-[40px]`}>
         Origin
       </div>
       <div className="relative flex w-full">
@@ -64,13 +48,7 @@ export const OriginChainLabel = ({
             flex items-center relative
             overflow-x-auto overflow-y-hidden
             scrollbar-hide`}
-          // style={{
-          //   width: `${containerLength - leftLength - rightLength - 20}px`,
-          // }}
         >
-          {/* <div className="block sticky min-w-[5px] h-full left-[-2px] max-[475px]:bg-gradient-to-l from-transparent to-bgLight ">
-            &nbsp;
-          </div> */}
           <div
             className={`
             flex items-center
@@ -97,7 +75,7 @@ export const OriginChainLabel = ({
           </div>
         </div>
 
-        <div ref={rightRef} className="max-[475px]:pl-1 ml-auto">
+        <div className="max-[475px]:pl-1 ml-auto">
           <button
             onClick={() => {
               dispatch(setShowFromChainSlideOver(true))
