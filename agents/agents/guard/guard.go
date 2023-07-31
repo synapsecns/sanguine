@@ -281,7 +281,14 @@ func (g Guard) isStatusUpdatedEvent(log ethTypes.Log) bool {
 
 func (g Guard) isDisputeOpenedEvent(log ethTypes.Log) bool {
 	lightManagerEvent, ok := g.lightManagerParser.EventType(log)
-	return ok && lightManagerEvent == lightmanager.DisputeOpenedEvent
+	if ok && lightManagerEvent == lightmanager.DisputeOpenedEvent {
+		return true
+	}
+	bondingManagerEvent, ok := g.bondingManagerParser.EventType(log)
+	if ok && bondingManagerEvent == bondingmanager.DisputeOpenedEvent {
+		return true
+	}
+	return false
 }
 
 func (g Guard) isRootUpdatedEvent(log ethTypes.Log) bool {
@@ -419,7 +426,7 @@ func (g Guard) handleAttestation(ctx context.Context, log ethTypes.Log) error {
 				continue
 			}
 
-			_, err = g.domains[state.Origin()].LightInbox().VerifyStateWithAttestation(
+			tx, err := g.domains[state.Origin()].LightInbox().VerifyStateWithAttestation(
 				ctx,
 				g.unbondedSigner,
 				int64(i),
@@ -430,12 +437,13 @@ func (g Guard) handleAttestation(ctx context.Context, log ethTypes.Log) error {
 			if err != nil {
 				return fmt.Errorf("could not verify state with attestation: %w", err)
 			}
+			fmt.Printf("verifyStateWithAttestation tx: %s\n", tx.Hash().Hex())
 
 			srSignature, _, _, err := state.SignState(ctx, g.bondedSigner)
 			if err != nil {
 				return fmt.Errorf("could not sign state: %w", err)
 			}
-			_, err = g.domains[g.summitDomainID].Inbox().SubmitStateReportWithAttestation(
+			tx, err = g.domains[g.summitDomainID].Inbox().SubmitStateReportWithAttestation(
 				ctx,
 				g.unbondedSigner,
 				int64(i),
@@ -447,6 +455,7 @@ func (g Guard) handleAttestation(ctx context.Context, log ethTypes.Log) error {
 			if err != nil {
 				return fmt.Errorf("could not submit state report with attestation: %w", err)
 			}
+			fmt.Printf("submitStateReportWithAttestation tx: %s\n", tx.Hash().Hex())
 		}
 		return nil
 	}
@@ -594,17 +603,17 @@ func (g Guard) handleStatusUpdated(ctx context.Context, log ethTypes.Log, chainI
 }
 
 func (g Guard) handleDisputeOpened(ctx context.Context, log ethTypes.Log) error {
-	disputeOpened, err := g.lightManagerParser.ParseDisputeOpened(log)
+	disputeOpened, err := g.parseDisputeOpened(log)
 	if err != nil {
 		return fmt.Errorf("could not parse dispute opened: %w", err)
 	}
 
-	_, guardAddress, err := g.domains[g.summitDomainID].BondingManager().GetAgent(ctx, big.NewInt(int64(disputeOpened.GuardIndex)))
+	_, guardAddress, err := g.domains[g.summitDomainID].BondingManager().GetAgent(ctx, big.NewInt(int64(disputeOpened.guardIndex)))
 	if err != nil {
 		return fmt.Errorf("could not get agent: %w", err)
 	}
 
-	_, notaryAddress, err := g.domains[g.summitDomainID].BondingManager().GetAgent(ctx, big.NewInt(int64(disputeOpened.NotaryIndex)))
+	_, notaryAddress, err := g.domains[g.summitDomainID].BondingManager().GetAgent(ctx, big.NewInt(int64(disputeOpened.notaryIndex)))
 	if err != nil {
 		return fmt.Errorf("could not get agent: %w", err)
 	}
@@ -612,10 +621,10 @@ func (g Guard) handleDisputeOpened(ctx context.Context, log ethTypes.Log) error 
 	// Store the dispute in the database.
 	err = g.guardDB.StoreDispute(
 		ctx,
-		disputeOpened.DisputeIndex,
+		disputeOpened.disputeIndex,
 		types.Opened,
 		guardAddress,
-		disputeOpened.NotaryIndex,
+		disputeOpened.notaryIndex,
 		notaryAddress,
 	)
 	if err != nil {
@@ -623,6 +632,34 @@ func (g Guard) handleDisputeOpened(ctx context.Context, log ethTypes.Log) error 
 	}
 
 	return nil
+}
+
+// disputeOpened is a wrapper struct used to merge the
+// lightmanager.DisputeOpened and bondingmangaer.DisputeOpened structs.
+type disputeOpened struct {
+	disputeIndex *big.Int
+	guardIndex   uint32
+	notaryIndex  uint32
+}
+
+func (g Guard) parseDisputeOpened(log ethTypes.Log) (*disputeOpened, error) {
+	disputeOpenedLight, err := g.lightManagerParser.ParseDisputeOpened(log)
+	if err == nil {
+		return &disputeOpened{
+			disputeIndex: disputeOpenedLight.DisputeIndex,
+			guardIndex:   disputeOpenedLight.GuardIndex,
+			notaryIndex:  disputeOpenedLight.NotaryIndex,
+		}, nil
+	}
+	disputeOpenedBonding, err := g.bondingManagerParser.ParseDisputeOpened(log)
+	if err == nil {
+		return &disputeOpened{
+			disputeIndex: disputeOpenedBonding.DisputeIndex,
+			guardIndex:   disputeOpenedBonding.GuardIndex,
+			notaryIndex:  disputeOpenedBonding.NotaryIndex,
+		}, nil
+	}
+	return nil, err
 }
 
 func (g Guard) handleRootUpdated(ctx context.Context, log ethTypes.Log, chainID uint32) error {
