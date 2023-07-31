@@ -426,7 +426,7 @@ func (g Guard) handleAttestation(ctx context.Context, log ethTypes.Log) error {
 				continue
 			}
 
-			tx, err := g.domains[state.Origin()].LightInbox().VerifyStateWithAttestation(
+			_, err = g.domains[state.Origin()].LightInbox().VerifyStateWithAttestation(
 				ctx,
 				g.unbondedSigner,
 				int64(i),
@@ -442,7 +442,7 @@ func (g Guard) handleAttestation(ctx context.Context, log ethTypes.Log) error {
 			if err != nil {
 				return fmt.Errorf("could not sign state: %w", err)
 			}
-			tx, err = g.domains[g.summitDomainID].Inbox().SubmitStateReportWithAttestation(
+			_, err = g.domains[g.summitDomainID].Inbox().SubmitStateReportWithAttestation(
 				ctx,
 				g.unbondedSigner,
 				int64(i),

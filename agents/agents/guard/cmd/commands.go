@@ -2,6 +2,10 @@ package cmd
 
 import (
 	"context"
+	"os"
+	"sync/atomic"
+	"time"
+
 	"github.com/synapsecns/sanguine/agents/agents/guard/db"
 	"github.com/synapsecns/sanguine/agents/agents/guard/db/sql/mysql"
 	"github.com/synapsecns/sanguine/agents/agents/guard/db/sql/sqlite"
@@ -9,12 +13,10 @@ import (
 	"github.com/synapsecns/sanguine/core/dbcommon"
 	"github.com/synapsecns/sanguine/core/metrics"
 	omnirpcClient "github.com/synapsecns/sanguine/services/omnirpc/client"
+	"github.com/synapsecns/sanguine/services/scribe/client"
 	"go.opentelemetry.io/otel/attribute"
 	"go.opentelemetry.io/otel/trace"
 	"gorm.io/gorm/schema"
-	"os"
-	"sync/atomic"
-	"time"
 
 	markdown "github.com/MichaelMure/go-term-markdown"
 	"github.com/hedzr/log"
@@ -122,7 +124,22 @@ var GuardRunCommand = &cli.Command{
 
 			g, _ := errgroup.WithContext(c.Context)
 
-			guard, err := guard.NewGuard(c.Context, guardConfig, baseOmniRPCClient, guardDB, handler)
+			embedded := client.NewEmbeddedScribe(
+				guardConfig.ScribeConfig.EmbeddedDBConfig.Type,
+				guardConfig.ScribeConfig.EmbeddedDBConfig.Source,
+				handler,
+			)
+
+			g.Go(func() error {
+				err := embedded.Start(c.Context)
+				if err != nil {
+					return fmt.Errorf("failed to start embedded scribe: %w", err)
+				}
+
+				return nil
+			})
+
+			guard, err := guard.NewGuard(c.Context, guardConfig, baseOmniRPCClient, embedded.ScribeClient, guardDB, handler)
 			if err != nil {
 				return fmt.Errorf("failed to create guard: %w", err)
 			}

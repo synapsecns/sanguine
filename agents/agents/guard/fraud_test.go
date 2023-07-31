@@ -762,3 +762,192 @@ func (g GuardSuite) TestInvalidReceipt() {
 		return true
 	})
 }
+
+func (g GuardSuite) TestUpdateAgentStatusOnRemote() {
+	testDone := false
+	defer func() {
+		testDone = true
+	}()
+
+	// This scribe config omits the Summit and Origin chains, since we do not want to pick up the fraud coming from the
+	// fraudulent snapshots, only from the Attestation submitted on the Destination that is associated with a fraudulent
+	// snapshot.
+	destinationConfig := scribeConfig.ContractConfig{
+		Address:    g.LightInboxOnDestination.Address().String(),
+		StartBlock: 0,
+	}
+	destinationChainConfig := scribeConfig.ChainConfig{
+		ChainID:               uint32(g.TestBackendDestination.GetChainID()),
+		BlockTimeChunkSize:    1,
+		ContractSubChunkSize:  1,
+		RequiredConfirmations: 0,
+		Contracts:             []scribeConfig.ContractConfig{destinationConfig},
+	}
+	inboxConfig := scribeConfig.ContractConfig{
+		Address:    g.InboxOnSummit.Address().String(),
+		StartBlock: 0,
+	}
+	bondingManagerConfig := scribeConfig.ContractConfig{
+		Address:    g.BondingManagerOnSummit.Address().String(),
+		StartBlock: 0,
+	}
+	summitChainConfig := scribeConfig.ChainConfig{
+		ChainID:               uint32(g.TestBackendSummit.GetChainID()),
+		BlockTimeChunkSize:    1,
+		ContractSubChunkSize:  1,
+		RequiredConfirmations: 0,
+		Contracts:             []scribeConfig.ContractConfig{inboxConfig, bondingManagerConfig},
+	}
+	scribeConfig := scribeConfig.Config{
+		Chains: []scribeConfig.ChainConfig{destinationChainConfig, summitChainConfig},
+	}
+
+	/*
+		Test plan:
+
+		-
+		- call setAgentRoot() on remote to emit RootUpdated event
+		- updateAgentStatus() on remote (requires agent proof that includes a root emitted in RootUpdated event)
+	*/
+
+	// Start a new Guard.
+	guard, err := g.getTestGuard(scribeConfig)
+	Nil(g.T(), err)
+	go func() {
+		guardErr := guard.Start(g.GetTestContext())
+		if !testDone {
+			Nil(g.T(), guardErr)
+		}
+	}()
+
+	// Verify that the agent is marked as Active
+	txContextDest := g.TestBackendDestination.GetTxContext(g.GetTestContext(), g.DestinationContractMetadata.OwnerPtr())
+	status, err := g.OriginDomainClient.LightManager().GetAgentStatus(g.GetTestContext(), g.GuardBondedSigner.Address())
+	Equal(g.T(), status.Flag(), types.AgentFlagActive)
+	Nil(g.T(), err)
+
+	// Create a fraudulent snapshot
+	gasData := types.NewGasData(gofakeit.Uint16(), gofakeit.Uint16(), gofakeit.Uint16(), gofakeit.Uint16(), gofakeit.Uint16(), gofakeit.Uint16())
+	fraudulentState := types.NewState(
+		common.BigToHash(big.NewInt(gofakeit.Int64())),
+		g.OriginDomainClient.Config().DomainID,
+		1,
+		big.NewInt(int64(gofakeit.Int32())),
+		big.NewInt(int64(gofakeit.Int32())),
+		gasData,
+	)
+	fraudulentSnapshot := types.NewSnapshot([]types.State{fraudulentState})
+
+	// Before submitting the attestation, ensure that there are no disputes opened.
+	err = g.DestinationDomainClient.LightManager().GetDispute(g.GetTestContext(), big.NewInt(0))
+	NotNil(g.T(), err)
+
+	// Update the agent status of the Guard and Notary.
+	guardStatus, err := g.SummitDomainClient.BondingManager().GetAgentStatus(g.GetTestContext(), g.GuardBondedSigner.Address())
+	Nil(g.T(), err)
+	guardProof, err := g.SummitDomainClient.BondingManager().GetProof(g.GetTestContext(), g.GuardBondedSigner.Address())
+	Nil(g.T(), err)
+	_, err = g.DestinationDomainClient.LightManager().UpdateAgentStatus(
+		g.GetTestContext(),
+		g.GuardUnbondedSigner,
+		g.GuardBondedSigner.Address(),
+		guardStatus,
+		guardProof,
+	)
+	Nil(g.T(), err)
+
+	notaryStatus, err := g.SummitDomainClient.BondingManager().GetAgentStatus(g.GetTestContext(), g.NotaryBondedSigner.Address())
+	Nil(g.T(), err)
+	notaryProof, err := g.SummitDomainClient.BondingManager().GetProof(g.GetTestContext(), g.NotaryBondedSigner.Address())
+	Nil(g.T(), err)
+	_, err = g.DestinationDomainClient.LightManager().UpdateAgentStatus(
+		g.GetTestContext(),
+		g.NotaryUnbondedSigner,
+		g.NotaryBondedSigner.Address(),
+		notaryStatus,
+		notaryProof,
+	)
+	Nil(g.T(), err)
+	_, err = g.OriginDomainClient.LightManager().UpdateAgentStatus(
+		g.GetTestContext(),
+		g.NotaryUnbondedSigner,
+		g.NotaryBondedSigner.Address(),
+		notaryStatus,
+		notaryProof,
+	)
+	Nil(g.T(), err)
+
+	// Submit the snapshot with a guard
+	guardSnapshotSignature, encodedSnapshot, _, err := fraudulentSnapshot.SignSnapshot(g.GetTestContext(), g.GuardBondedSigner)
+	Nil(g.T(), err)
+	tx, err := g.SummitDomainClient.Inbox().SubmitSnapshotCtx(g.GetTestContext(), g.GuardUnbondedSigner, encodedSnapshot, guardSnapshotSignature)
+	Nil(g.T(), err)
+	NotNil(g.T(), tx)
+	g.TestBackendSummit.WaitForConfirmation(g.GetTestContext(), tx)
+
+	// Submit the snapshot with a notary
+	notarySnapshotSignature, encodedSnapshot, _, err := fraudulentSnapshot.SignSnapshot(g.GetTestContext(), g.NotaryBondedSigner)
+	Nil(g.T(), err)
+	tx, err = g.SummitDomainClient.Inbox().SubmitSnapshotCtx(g.GetTestContext(), g.NotaryUnbondedSigner, encodedSnapshot, notarySnapshotSignature)
+	Nil(g.T(), err)
+	NotNil(g.T(), tx)
+	g.TestBackendSummit.WaitForConfirmation(g.GetTestContext(), tx)
+
+	// Submit the attestation
+	notaryAttestation, err := g.SummitDomainClient.Summit().GetAttestation(g.GetTestContext(), 1)
+	Nil(g.T(), err)
+	attSignature, attEncoded, _, err := notaryAttestation.Attestation().SignAttestation(g.GetTestContext(), g.NotaryBondedSigner, true)
+	Nil(g.T(), err)
+	tx, err = g.DestinationDomainClient.LightInbox().SubmitAttestation(
+		txContextDest.TransactOpts,
+		attEncoded,
+		attSignature,
+		notaryAttestation.AgentRoot(),
+		notaryAttestation.SnapGas(),
+	)
+	Nil(g.T(), err)
+	NotNil(g.T(), tx)
+	g.TestBackendDestination.WaitForConfirmation(g.GetTestContext(), tx)
+
+	// Verify that the guard eventually marks the accused agent as Fraudulent
+	g.Eventually(func() bool {
+		status, err := g.OriginDomainClient.LightManager().GetAgentStatus(g.GetTestContext(), g.NotaryBondedSigner.Address())
+		Nil(g.T(), err)
+		if status.Flag() == types.AgentFlagFraudulent {
+			return true
+		}
+
+		g.bumpBackends()
+		return false
+	})
+
+	// Verify that a report has been submitted by the Guard by checking that a Dispute is now open.
+	g.Eventually(func() bool {
+		err := g.SummitDomainClient.BondingManager().GetDispute(g.GetTestContext(), big.NewInt(0))
+		if err != nil {
+			return false
+		}
+
+		return true
+	})
+
+	// TODO: uncomment the following case once manager messages can be executed.
+	// // Increase EVM time to allow agent status to be updated to Slashed on origin.
+	// anvilClient, err := anvil.Dial(g.GetTestContext(), g.TestBackendOrigin.RPCAddress())
+	// Nil(g.T(), err)
+	// optimisticPeriodSeconds := 86400
+	// err = anvilClient.IncreaseTime(g.GetTestContext(), int64(optimisticPeriodSeconds))
+	// Nil(g.T(), err)
+
+	// // Verify that the guard eventually marks the accused agent as Slashed.
+	// g.Eventually(func() bool {
+	// 	status, err := g.OriginDomainClient.LightManager().GetAgentStatus(g.GetTestContext(), g.NotaryBondedSigner.Address())
+	// 	Nil(g.T(), err)
+	// 	if status.Flag() == types.AgentFlagSlashed {
+	// 		return true
+	// 	}
+
+	// 	g.bumpBackends()
+	// 	return false
+	// })
+}

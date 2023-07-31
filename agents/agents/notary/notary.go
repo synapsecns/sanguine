@@ -3,6 +3,9 @@ package notary
 import (
 	"context"
 	"fmt"
+	"math/big"
+	"time"
+
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	ethTypes "github.com/ethereum/go-ethereum/core/types"
 	"github.com/synapsecns/sanguine/agents/agents/notary/db"
@@ -12,8 +15,6 @@ import (
 	omnirpcClient "github.com/synapsecns/sanguine/services/omnirpc/client"
 	"go.opentelemetry.io/otel/attribute"
 	"go.opentelemetry.io/otel/trace"
-	"math/big"
-	"time"
 
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/synapsecns/sanguine/agents/config"
@@ -436,10 +437,10 @@ func (n *Notary) registerNotaryOnDestination(parentCtx context.Context) bool {
 		))
 		return false
 	}
-	err = n.destinationDomain.LightManager().UpdateAgentStatus(
+	_, err = n.destinationDomain.LightManager().UpdateAgentStatus(
 		ctx,
 		n.unbondedSigner,
-		n.bondedSigner,
+		n.bondedSigner.Address(),
 		agentStatus,
 		agentProof)
 	if err != nil {
