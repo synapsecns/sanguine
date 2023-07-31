@@ -28,7 +28,12 @@ export const DestinationChainLabel = ({
   const dispatch = useDispatch()
 
   useEffect(() => {
-    setOrderedChains(chainOrderBySwapSide(connectedChainId, chainId, chains))
+    setOrderedChains(
+      reorderArrayWithChainIdFirst(
+        chainId,
+        chainOrderBySwapSide(connectedChainId, chainId, chains)
+      )
+    )
   }, [chainId, connectedChainId, chains])
 
   const resetScrollPosition = () => {
@@ -173,4 +178,19 @@ const chainOrderBySwapSide = (
     chainId,
     chains.map((id) => `${id}`)
   )
+}
+
+const reorderArrayWithChainIdFirst = (
+  chainId: number,
+  orderedChains: number[]
+): number[] => {
+  const chainIndex = orderedChains.indexOf(chainId)
+
+  if (chainIndex !== -1) {
+    orderedChains.splice(chainIndex, 1)
+  }
+
+  orderedChains.unshift(chainId)
+
+  return orderedChains
 }
