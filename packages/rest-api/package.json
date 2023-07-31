@@ -30,6 +30,7 @@
   "description": "A node.js project exposing a rest api for synapse sdk quotes",
   "devDependencies": {
     "@types/express": "^4.17.17",
+    "@types/supertest": "^2.0.12",
     "typescript": "^5.1.6"
   }
 }
