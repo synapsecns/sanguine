@@ -64,7 +64,7 @@ func (g GuardSuite) getTestGuard(scribeConfig scribeConfig.Config) (*guard.Guard
 	go scribeClient.Start(g.GetTestContext())
 	//nolint:errcheck
 	go scribe.Start(g.GetTestContext())
-
+	//nolint:wrapcheck
 	return guard.NewGuard(g.GetTestContext(), testConfig, omniRPCClient, scribeClient.ScribeClient, g.GuardTestDB, g.GuardMetrics)
 }
 
@@ -222,11 +222,7 @@ func (g GuardSuite) TestFraudulentStateInSnapshot() {
 	// Verify that a report has been submitted by the Guard by checking that a Dispute is now open.
 	g.Eventually(func() bool {
 		err = g.SummitDomainClient.BondingManager().GetDispute(g.GetTestContext(), big.NewInt(0))
-		if err != nil {
-			return false
-		}
-
-		return true
+		return err == nil
 	})
 	// TODO: Add a unit test for testing the case where multiple states are in the same snapshot to ensure they are
 	// handled correctly.
@@ -380,11 +376,7 @@ func (g GuardSuite) TestFraudulentAttestationOnDestination() {
 	// Verify that a report has been submitted by the Guard by checking that a Dispute is now open.
 	g.Eventually(func() bool {
 		err := g.DestinationDomainClient.LightManager().GetDispute(g.GetTestContext(), big.NewInt(0))
-		if err != nil {
-			return false
-		}
-
-		return true
+		return err == nil
 	})
 }
 
@@ -541,11 +533,7 @@ func (g GuardSuite) TestReportFraudulentStateInAttestation() {
 	// Verify that a report has been submitted by the Guard by checking that a Dispute is now open.
 	g.Eventually(func() bool {
 		err := g.SummitDomainClient.BondingManager().GetDispute(g.GetTestContext(), big.NewInt(0))
-		if err != nil {
-			return false
-		}
-
-		return true
+		return err == nil
 	})
 
 	// TODO: uncomment the following case once manager messages can be executed.
@@ -709,6 +697,7 @@ func (g GuardSuite) TestInvalidReceipt() {
 
 	// Submit the receipt
 	bodyHash, err := baseMessage.BodyLeaf()
+	Nil(g.T(), err)
 	var bodyHashB32 [32]byte
 	copy(bodyHashB32[:], bodyHash)
 	headerHash, err := header.Leaf()
@@ -748,20 +737,14 @@ func (g GuardSuite) TestInvalidReceipt() {
 	//		return true
 	//	}
 	//
-	//	bumpTx, err := g.TestContractOnSummit.EmitAgentsEventA(txContextSummit.TransactOpts, big.NewInt(gofakeit.Int64()), big.NewInt(gofakeit.Int64()), big.NewInt(gofakeit.Int64()))
-	//	Nil(g.T(), err)
-	//	g.TestBackendSummit.WaitForConfirmation(g.GetTestContext(), bumpTx)
+	//  g.bumpBackends()
 	//	return false
 	//})
 
 	// Verify that a report has been submitted by the Guard by checking that a Dispute is now open.
 	g.Eventually(func() bool {
 		err := g.SummitDomainClient.BondingManager().GetDispute(g.GetTestContext(), big.NewInt(0))
-		if err != nil {
-			return false
-		}
-
-		return true
+		return err == nil
 	})
 }
 
@@ -926,11 +909,7 @@ func (g GuardSuite) TestUpdateAgentStatusOnRemote() {
 	// Verify that a report has been submitted by the Guard by checking that a Dispute is now open.
 	g.Eventually(func() bool {
 		err := g.SummitDomainClient.BondingManager().GetDispute(g.GetTestContext(), big.NewInt(0))
-		if err != nil {
-			return false
-		}
-
-		return true
+		return err == nil
 	})
 
 	// TODO: uncomment the following case once manager messages can be executed.

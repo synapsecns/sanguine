@@ -202,10 +202,10 @@ func (n *Notary) shouldNotaryRegisteredOnDestination(parentCtx context.Context) 
 		))
 		return false, false
 	}
-	if types.AgentFlagType(agentStatus.Flag()) == types.AgentFlagUnknown {
+	if agentStatus.Flag() == types.AgentFlagUnknown {
 		// Here we want to add the Notary and proceed with sending to destination
 		return true, true
-	} else if types.AgentFlagType(agentStatus.Flag()) == types.AgentFlagActive {
+	} else if agentStatus.Flag() == types.AgentFlagActive {
 		// Here we already added the Notary and can proceed with sending to destination
 		return false, true
 	}

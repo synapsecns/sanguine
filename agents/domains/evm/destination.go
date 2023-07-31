@@ -95,6 +95,7 @@ func (a destinationContract) MessageStatus(ctx context.Context, message types.Me
 	return status, nil
 }
 
+//nolint:wrapcheck
 func (a destinationContract) IsValidReceipt(ctx context.Context, rcptPayload []byte) (bool, error) {
 	return a.contract.IsValidReceipt(&bind.CallOpts{Context: ctx}, rcptPayload)
 }

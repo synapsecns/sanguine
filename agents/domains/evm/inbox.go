@@ -127,6 +127,7 @@ func (a inboxContract) SubmitSnapshotCtx(ctx context.Context, signer signer.Sign
 	return tx, nil
 }
 
+//nolint:wrapcheck
 func (a inboxContract) VerifyAttestation(ctx context.Context, signer signer.Signer, attestation []byte, attSignature []byte) (tx *ethTypes.Transaction, err error) {
 	transactor, err := signer.GetTransactor(ctx, a.client.GetBigChainID())
 	if err != nil {
@@ -142,6 +143,7 @@ func (a inboxContract) VerifyAttestation(ctx context.Context, signer signer.Sign
 	return a.contract.VerifyAttestation(transactOpts, attestation, attSignature)
 }
 
+//nolint:wrapcheck
 func (a inboxContract) VerifyStateWithAttestation(ctx context.Context, signer signer.Signer, stateIndex int64, snapPayload []byte, attPayload []byte, attSignature []byte) (tx *ethTypes.Transaction, err error) {
 	transactor, err := signer.GetTransactor(ctx, a.client.GetBigChainID())
 	if err != nil {
@@ -224,6 +226,7 @@ func (a inboxContract) SubmitReceipt(ctx context.Context, signer signer.Signer, 
 	return tx, nil
 }
 
+//nolint:wrapcheck
 func (a inboxContract) VerifyReceipt(ctx context.Context, signer signer.Signer, rcptPayload []byte, rcptSignature []byte) (tx *ethTypes.Transaction, err error) {
 	transactor, err := signer.GetTransactor(ctx, a.client.GetBigChainID())
 	if err != nil {

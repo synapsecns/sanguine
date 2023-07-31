@@ -548,12 +548,14 @@ func (g Guard) handleReceipt(ctx context.Context, log ethTypes.Log) error {
 	return nil
 }
 
+//nolint:cyclop
 func (g Guard) handleStatusUpdated(ctx context.Context, log ethTypes.Log, chainID uint32) error {
 	statusUpdated, err := g.bondingManagerParser.ParseStatusUpdated(log)
 	if err != nil {
 		return fmt.Errorf("could not parse status updated: %w", err)
 	}
 
+	//nolint:exhaustive
 	switch types.AgentFlagType(statusUpdated.Flag) {
 	case types.AgentFlagFraudulent:
 		agentProof, err := g.domains[g.summitDomainID].BondingManager().GetProof(ctx, statusUpdated.Agent)
@@ -666,7 +668,7 @@ func (g Guard) parseDisputeOpened(log ethTypes.Log) (*disputeOpened, error) {
 			notaryIndex:  disputeOpenedBonding.NotaryIndex,
 		}, nil
 	}
-	return nil, err
+	return nil, fmt.Errorf("could not parse dispute opened: %w", err)
 }
 
 func (g Guard) handleRootUpdated(ctx context.Context, log ethTypes.Log, chainID uint32) error {

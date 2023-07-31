@@ -154,6 +154,7 @@ func (a lightInboxContract) SubmitAttestationReport(ctx context.Context, signer 
 	return tx, nil
 }
 
+//nolint:wrapcheck
 func (a lightInboxContract) VerifyStateWithAttestation(ctx context.Context, signer signer.Signer, stateIndex int64, snapPayload []byte, attPayload []byte, attSignature []byte) (tx *ethTypes.Transaction, err error) {
 	transactor, err := signer.GetTransactor(ctx, a.client.GetBigChainID())
 	if err != nil {
@@ -170,6 +171,7 @@ func (a lightInboxContract) VerifyStateWithAttestation(ctx context.Context, sign
 	return a.contract.VerifyStateWithAttestation(transactOpts, big.NewInt(stateIndex), snapPayload, attPayload, attSignature)
 }
 
+//nolint:wrapcheck
 func (a lightInboxContract) VerifyReceipt(ctx context.Context, signer signer.Signer, rcptPayload []byte, rcptSignature []byte) (tx *ethTypes.Transaction, err error) {
 	transactor, err := signer.GetTransactor(ctx, a.client.GetBigChainID())
 	if err != nil {

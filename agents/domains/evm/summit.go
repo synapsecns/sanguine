@@ -97,6 +97,7 @@ func (a summitContract) WatchAttestationSaved(ctx context.Context, sink chan<- *
 	return sub, nil
 }
 
+//nolint:wrapcheck
 func (a summitContract) IsValidAttestation(ctx context.Context, attestation []byte) (bool, error) {
 	return a.contract.IsValidAttestation(&bind.CallOpts{Context: ctx}, attestation)
 }
