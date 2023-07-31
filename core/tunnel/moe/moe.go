@@ -17,15 +17,21 @@ import (
 var logger = log.Logger("moe")
 
 type moeProvider struct {
+	// serverURL is the URL of the moe server.
+	serverURL string
 	// checkPath is a path we override the backend with to check if the tunnel is up.
 	checkPath string
 	// checkChan is a channel that is closed when the checkPath is hit.
 	checkChan chan bool
+	cfg       *config
 }
 
 // New returns a new moe provider.
-func New() types.Provider {
+func New(opts ...Option) types.Provider {
+	cfg := makeConfig(opts)
+
 	return &moeProvider{
+		cfg:       cfg,
 		checkPath: fmt.Sprintf("/%s", gofakeit.UUID()),
 		checkChan: make(chan bool, 1),
 	}
@@ -45,10 +51,6 @@ func (m *moeProvider) makeListener() hostInfo {
 	}
 }
 
-// moeServer is the remote moe server.
-const moeServer = "remote.moe"
-const remotePort = 80
-
 // nolint: cyclop
 func (m *moeProvider) Start(ctx context.Context, backendURL string) (_ string, err error) {
 	var lc net.ListenConfig
@@ -65,7 +67,7 @@ func (m *moeProvider) Start(ctx context.Context, backendURL string) (_ string, e
 	})
 
 	// make the backend proxy and listener
-	host, err := createTunnel(context.Background(), moeServer, verifiableProxy.port, remotePort)
+	host, err := createTunnel(ctx, m.serverURL, verifiableProxy.port, m.cfg.remotePort)
 	if err != nil {
 		return "", fmt.Errorf("could not get tunnel")
 	}

@@ -20,7 +20,7 @@ func StartTunnel(ctx context.Context, backendURL string, opts ...Option) (string
 
 	switch cfg.provider {
 	case Moe:
-		provider = moe.New()
+		provider = moe.New(cfg.moeOptions...)
 	case Ngrok:
 		provider = ngrok.New(cfg.ngrokOptions...)
 	}

@@ -2,12 +2,14 @@ package tunnel
 
 import (
 	"fmt"
+	"github.com/synapsecns/sanguine/core/tunnel/moe"
 	"golang.ngrok.com/ngrok"
 )
 
 type config struct {
 	provider     Provider
 	ngrokOptions []ngrok.ConnectOption
+	moeOptions   []moe.Option
 }
 
 func (c *config) Validate() error {
@@ -31,6 +33,12 @@ func WithNgrokOptions(opts ...ngrok.ConnectOption) Option {
 func WithProvider(provider Provider) Option {
 	return func(c *config) {
 		c.provider = provider
+	}
+}
+
+func WithMoeOptions(opts ...moe.Option) Option {
+	return func(c *config) {
+		c.moeOptions = opts
 	}
 }
 

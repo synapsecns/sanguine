@@ -20,7 +20,8 @@ import (
 // A PR has been made to fix this: https://github.com/fasmide/remotemoe/pull/18 and this module will be ready when that's merged
 // should the PR be unmergable for an extended period of time, we can intercept the requests in the net.Conn through a reverse ssh proxy.
 func (n *TunnelSuite) TestMoe() {
-	n.T().Skip("moe is currently broken, waiting on https://github.com/fasmide/remotemoe/pull/18")
+	n.startMoe()
+	//n.T().Skip("moe is currently broken, waiting on https://github.com/fasmide/remotemoe/pull/18")
 	remoteURL, err := tunnel.StartTunnel(n.GetTestContext(), n.testServer, tunnel.WithProvider(tunnel.Moe))
 	time.Sleep(time.Hour)
 	n.Require().NoError(err)
