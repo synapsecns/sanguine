@@ -7,13 +7,15 @@
   },
   "scripts": {
     "test": "tsdx test",
-    "start": " node app.js",
+    "start": "node app.js",
     "test:coverage": "echo 'No tests defined.'",
     "lint:fix": "npm run lint -- --fix",
     "lint:check": "eslint . --max-warnings=0",
     "ci:lint": "npm run lint:check",
     "build:go": " ",
-    "build:slither": " "
+    "build:slither": " ",
+    "build": "tsc app.ts --resolveJsonModule --skipLibCheck",
+    "postinstall": "npm run build"
   },
   "dependencies": {
     "@ethersproject/bignumber": "^5.7.0",
@@ -25,5 +27,8 @@
     "express": "^4.18.2",
     "supertest": "^6.3.3"
   },
-  "description": "A node.js project exposing a rest api for synapse sdk quotes"
+  "description": "A node.js project exposing a rest api for synapse sdk quotes",
+  "devDependencies": {
+    "typescript": "^5.1.6"
+  }
 }
