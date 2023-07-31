@@ -26,6 +26,19 @@ func GetEnv(name, defaultVal string) string {
 	return val
 }
 
+// GetEnvBool gets an environment variable as a bool. If not found the default value is used.
+func GetEnvBool(name string, defaultVal bool) bool {
+	val := os.Getenv(name)
+	if val == name {
+		return defaultVal
+	}
+	res, err := strconv.ParseBool(val)
+	if err != nil {
+		return defaultVal
+	}
+	return res
+}
+
 // HasEnv checks if an environment variable is set.
 func HasEnv(name string) bool {
 	val := os.Getenv(name)
