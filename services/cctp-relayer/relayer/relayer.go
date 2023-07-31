@@ -329,7 +329,7 @@ func (c *CCTPRelayer) Run(parentCtx context.Context) error {
 
 	g.Go(func() error {
 		<-ctx.Done()
-		panic(fmt.Sprintf("context cancelled with error: %v", ctx.Err()))
+		panic(fmt.Sprintf("context canceled with error: %v", ctx.Err()))
 	})
 
 	if err := g.Wait(); err != nil {
