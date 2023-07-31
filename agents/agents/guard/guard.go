@@ -437,7 +437,6 @@ func (g Guard) handleAttestation(ctx context.Context, log ethTypes.Log) error {
 			if err != nil {
 				return fmt.Errorf("could not verify state with attestation: %w", err)
 			}
-			fmt.Printf("verifyStateWithAttestation tx: %s\n", tx.Hash().Hex())
 
 			srSignature, _, _, err := state.SignState(ctx, g.bondedSigner)
 			if err != nil {
@@ -455,7 +454,6 @@ func (g Guard) handleAttestation(ctx context.Context, log ethTypes.Log) error {
 			if err != nil {
 				return fmt.Errorf("could not submit state report with attestation: %w", err)
 			}
-			fmt.Printf("submitStateReportWithAttestation tx: %s\n", tx.Hash().Hex())
 		}
 		return nil
 	}

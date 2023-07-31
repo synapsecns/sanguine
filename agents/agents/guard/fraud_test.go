@@ -1,7 +1,6 @@
 package guard_test
 
 import (
-	"fmt"
 	"math/big"
 
 	"github.com/brianvoe/gofakeit/v6"
@@ -45,7 +44,6 @@ func (g GuardSuite) getTestGuard(scribeConfig scribeConfig.Config) (*guard.Guard
 
 	// Scribe setup.
 	omniRPCClient := omniClient.NewOmnirpcClient(g.TestOmniRPC, g.GuardMetrics, omniClient.WithCaptureReqRes())
-	fmt.Printf("OMNIIIII: %v", omniRPCClient.GetEndpoint(int(g.TestBackendSummit.GetChainID()), 1))
 	originClient, err := backfill.DialBackend(g.GetTestContext(), g.TestBackendOrigin.RPCAddress(), g.ScribeMetrics)
 	Nil(g.T(), err)
 	destinationClient, err := backfill.DialBackend(g.GetTestContext(), g.TestBackendDestination.RPCAddress(), g.ScribeMetrics)
@@ -560,7 +558,6 @@ func (g GuardSuite) TestReportFraudulentStateInAttestation() {
 	// g.Eventually(func() bool {
 	// 	status, err := g.OriginDomainClient.LightManager().GetAgentStatus(g.GetTestContext(), g.NotaryBondedSigner.Address())
 	// 	Nil(g.T(), err)
-	// 	fmt.Printf("status after increase time: %v\n", status)
 	// 	if status.Flag() == types.AgentFlagSlashed {
 	// 		return true
 	// 	}
