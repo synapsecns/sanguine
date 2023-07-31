@@ -28,7 +28,7 @@ Pass in the `PYROSCOPE_ENDPOINT` environment variable
 
 ## Metrics Endpoint
 
-The metrics endpoint is exposed on `/metrics` on port 9000 by default and is compatible with prometheus. The following options control the metrics endpoint:
+The metrics endpoint is exposed on `/metrics` on port `8080` by default and is compatible with prometheus. The following options control the metrics endpoint:
 
 | Enviornment Variable   | Description                                   | Default    |
 |------------------------|-----------------------------------------------|------------|

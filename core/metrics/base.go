@@ -84,22 +84,25 @@ func (b *baseHandler) Start(ctx context.Context) error {
 }
 
 const (
-	metricsPortEnabledEnv = "METRICS_PORT_ENABLED"
+	// MetricsPortEnabledEnv is the environment variable that controls whether the metrics server is enabled.
+	MetricsPortEnabledEnv = "METRICS_PORT_ENABLED"
 	metricsPortEnv        = "METRICS_PORT"
-	metricsPath           = "METRICS_PATH"
-	metricsPortDefault    = 8080
-	metricsPathDefault    = "/metrics"
+	// MetricsPath is the environment variable that controls the path for the metrics server.
+	MetricsPath        = "METRICS_PATH"
+	metricsPortDefault = 8080
+	// MetricsPathDefault is the default path for the metrics server.
+	MetricsPathDefault = "/metrics"
 )
 
 // startMetricsServer starts the metrics server on the given port.
 // this should be run in a separate goroutine.
 func (b *baseHandler) startMetricsServer(ctx context.Context) {
-	if !core.GetEnvBool(metricsPortEnabledEnv, true) {
+	if !core.GetEnvBool(MetricsPortEnabledEnv, true) {
 		return
 	}
 
 	port := core.GetEnvInt(metricsPortEnv, metricsPortDefault)
-	path := core.GetEnv(metricsPath, metricsPathDefault)
+	path := core.GetEnv(MetricsPath, MetricsPathDefault)
 
 	logger.Infof("starting metrics server on port %d at path %s", port, path)
 

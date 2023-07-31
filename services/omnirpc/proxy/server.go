@@ -60,7 +60,6 @@ func (r *RPCProxy) Run(ctx context.Context) {
 
 	router := ginhelper.New(logger)
 	router.Use(r.handler.Gin())
-	router.GET(ginhelper.MetricsEndpoint, gin.WrapH(r.handler.Handler()))
 
 	router.POST("/rpc/:id", func(c *gin.Context) {
 		chainID, err := strconv.Atoi(c.Param("id"))
