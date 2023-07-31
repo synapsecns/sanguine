@@ -391,7 +391,7 @@ func (g Guard) handleAttestation(ctx context.Context, log ethTypes.Log) error {
 	}
 
 	if isValid {
-		// The attestation has a state not matching Origin.
+		// The attestation is valid, but may have a state not matching that of Origin.
 		// Fetch the snapshot, then verify each individual state with the attestation.
 		snapshot, err := g.domains[g.summitDomainID].Summit().GetNotarySnapshot(ctx, fraudAttestation.Payload)
 		if err != nil {

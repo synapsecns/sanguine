@@ -68,6 +68,15 @@ func (g GuardSuite) getTestGuard(scribeConfig scribeConfig.Config) (*guard.Guard
 	return guard.NewGuard(g.GetTestContext(), testConfig, omniRPCClient, scribeClient.ScribeClient, g.GuardTestDB, g.GuardMetrics)
 }
 
+func (g GuardSuite) bumpBackends() {
+	txContextSummit := g.TestBackendSummit.GetTxContext(g.GetTestContext(), g.SummitMetadata.OwnerPtr())
+	txContextOrigin := g.TestBackendOrigin.GetTxContext(g.GetTestContext(), g.OriginContractMetadata.OwnerPtr())
+	txContextDestination := g.TestBackendDestination.GetTxContext(g.GetTestContext(), g.DestinationContractMetadata.OwnerPtr())
+	g.bumpBackend(g.TestBackendSummit, g.TestContractOnSummit, txContextSummit.TransactOpts)
+	g.bumpBackend(g.TestBackendOrigin, g.TestContractOnOrigin, txContextOrigin.TransactOpts)
+	g.bumpBackend(g.TestBackendDestination, g.TestContractOnDestination, txContextDestination.TransactOpts)
+}
+
 // Helper to get the test backend to emit expected events.
 func (g GuardSuite) bumpBackend(backend backends.SimulatedTestBackend, contract *agentstestcontract.AgentsTestContractRef, txOpts *bind.TransactOpts) {
 	bumpTx, err := contract.EmitAgentsEventA(txOpts, big.NewInt(gofakeit.Int64()), big.NewInt(gofakeit.Int64()), big.NewInt(gofakeit.Int64()))
@@ -144,7 +153,6 @@ func (g GuardSuite) TestFraudulentStateInSnapshot() {
 	Nil(g.T(), err)
 
 	// Verify that the agent is marked as Active
-	txContextSummit := g.TestBackendSummit.GetTxContext(g.GetTestContext(), g.SummitMetadata.OwnerPtr())
 	status, err := g.OriginDomainClient.LightManager().GetAgentStatus(g.GetTestContext(), g.NotaryBondedSigner.Address())
 	Equal(g.T(), status.Flag(), types.AgentFlagActive)
 	Nil(g.T(), err)
@@ -193,7 +201,7 @@ func (g GuardSuite) TestFraudulentStateInSnapshot() {
 			return true
 		}
 
-		g.bumpBackend(g.TestBackendSummit, g.TestContractOnSummit, txContextSummit.TransactOpts)
+		g.bumpBackends()
 		return false
 	})
 
@@ -207,7 +215,7 @@ func (g GuardSuite) TestFraudulentStateInSnapshot() {
 	//		return true
 	//	}
 	//
-	//	g.bumpBackend(g.TestBackendSummit, g.TestContractOnSummit, txContextSummit.TransactOpts)
+	//  g.bumpBackends()
 	//	return false
 	//})
 
@@ -357,8 +365,6 @@ func (g GuardSuite) TestFraudulentAttestationOnDestination() {
 	g.TestBackendDestination.WaitForConfirmation(g.GetTestContext(), tx)
 
 	// Verify that the guard eventually marks the accused agent as Slashed
-	txContextSummit := g.TestBackendSummit.GetTxContext(g.GetTestContext(), g.SummitMetadata.OwnerPtr())
-	txContextDestination := g.TestBackendDestination.GetTxContext(g.GetTestContext(), g.LightInboxMetadataOnDestination.OwnerPtr())
 	g.Eventually(func() bool {
 		status, err := g.SummitDomainClient.BondingManager().GetAgentStatus(g.GetTestContext(), g.NotaryBondedSigner.Address())
 		Nil(g.T(), err)
@@ -367,8 +373,7 @@ func (g GuardSuite) TestFraudulentAttestationOnDestination() {
 		}
 
 		// Make sure that scribe keeps producing new blocks
-		g.bumpBackend(g.TestBackendSummit, g.TestContractOnSummit, txContextSummit.TransactOpts)
-		g.bumpBackend(g.TestBackendDestination, g.TestContractOnDestination, txContextDestination.TransactOpts)
+		g.bumpBackends()
 		return false
 	})
 
@@ -507,8 +512,6 @@ func (g GuardSuite) TestReportFraudulentStateInAttestation() {
 	g.TestBackendDestination.WaitForConfirmation(g.GetTestContext(), tx)
 
 	// Verify that the guard eventually marks the accused agent as Fraudulent
-	txContextSummit := g.TestBackendSummit.GetTxContext(g.GetTestContext(), g.SummitMetadata.OwnerPtr())
-	txContextDestination := g.TestBackendDestination.GetTxContext(g.GetTestContext(), g.LightInboxMetadataOnDestination.OwnerPtr())
 	g.Eventually(func() bool {
 		status, err := g.OriginDomainClient.LightManager().GetAgentStatus(g.GetTestContext(), g.NotaryBondedSigner.Address())
 		Nil(g.T(), err)
@@ -516,8 +519,7 @@ func (g GuardSuite) TestReportFraudulentStateInAttestation() {
 			return true
 		}
 
-		g.bumpBackend(g.TestBackendSummit, g.TestContractOnSummit, txContextSummit.TransactOpts)
-		g.bumpBackend(g.TestBackendDestination, g.TestContractOnDestination, txContextDestination.TransactOpts)
+		g.bumpBackends()
 		return false
 	})
 
@@ -538,7 +540,7 @@ func (g GuardSuite) TestReportFraudulentStateInAttestation() {
 	err = anvilClient.IncreaseTime(g.GetTestContext(), int64(optimisticPeriodSeconds))
 	Nil(g.T(), err)
 
-	// Verify that the guard eventuall marks the accused agent as Slashed.
+	// Verify that the guard eventually marks the accused agent as Slashed.
 	g.Eventually(func() bool {
 		status, err := g.OriginDomainClient.LightManager().GetAgentStatus(g.GetTestContext(), g.NotaryBondedSigner.Address())
 		Nil(g.T(), err)
@@ -547,11 +549,9 @@ func (g GuardSuite) TestReportFraudulentStateInAttestation() {
 			return true
 		}
 
-		g.bumpBackend(g.TestBackendSummit, g.TestContractOnSummit, txContextSummit.TransactOpts)
-		g.bumpBackend(g.TestBackendDestination, g.TestContractOnDestination, txContextDestination.TransactOpts)
+		g.bumpBackends()
 		return false
 	})
-
 }
 
 func (g GuardSuite) TestInvalidReceipt() {
@@ -714,8 +714,6 @@ func (g GuardSuite) TestInvalidReceipt() {
 	g.TestBackendSummit.WaitForConfirmation(g.GetTestContext(), tx)
 
 	// Verify that the guard eventually marks the accused agent as Fraudulent
-	txContextSummit := g.TestBackendSummit.GetTxContext(g.GetTestContext(), g.SummitMetadata.OwnerPtr())
-	txContextDestination := g.TestBackendDestination.GetTxContext(g.GetTestContext(), g.LightInboxMetadataOnDestination.OwnerPtr())
 	g.Eventually(func() bool {
 		status, err := g.DestinationDomainClient.LightManager().GetAgentStatus(g.GetTestContext(), g.NotaryBondedSigner.Address())
 		Nil(g.T(), err)
@@ -723,8 +721,7 @@ func (g GuardSuite) TestInvalidReceipt() {
 			return true
 		}
 
-		g.bumpBackend(g.TestBackendSummit, g.TestContractOnSummit, txContextSummit.TransactOpts)
-		g.bumpBackend(g.TestBackendDestination, g.TestContractOnDestination, txContextDestination.TransactOpts)
+		g.bumpBackends()
 		return false
 	})
 
