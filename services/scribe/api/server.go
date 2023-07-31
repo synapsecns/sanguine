@@ -44,6 +44,7 @@ var logger = log.Logger("scribe-api")
 
 // Start starts the api server.
 func Start(ctx context.Context, cfg Config, handler metrics.Handler) error {
+	logger.Warnf("starting api server")
 	router := ginhelper.New(logger)
 	// wrap gin with metrics
 	router.GET(ginhelper.MetricsEndpoint, gin.WrapH(handler.Handler()))
@@ -107,6 +108,7 @@ func Start(ctx context.Context, cfg Config, handler metrics.Handler) error {
 		<-ctx.Done()
 		grpcServer.Stop()
 		m.Close()
+		logger.Errorf("grpc server stopped")
 
 		return nil
 	})
@@ -122,6 +124,8 @@ func Start(ctx context.Context, cfg Config, handler metrics.Handler) error {
 // InitDB initializes a database given a database type and path.
 // TODO: use enum for database type.
 func InitDB(ctx context.Context, databaseType string, path string, metrics metrics.Handler, skipMigrations bool) (db.EventDB, error) {
+	logger.Warnf("Starting database connection from api")
+
 	switch {
 	case databaseType == "sqlite":
 		sqliteStore, err := sqlite.NewSqliteStore(ctx, path, metrics, skipMigrations)
