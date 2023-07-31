@@ -40,7 +40,16 @@ securityContext: {}
 
 service:
   type: ClusterIP
-  port: 80
+  ingressPort: 80
+  ports:
+  - containerPort: 5080
+    port: 80
+    protocol: TCP
+    name: http
+  - containerPort: 8080
+    port: 8080
+    protocol: TCP
+    name: prometheus
 
 ingress:
   enabled: false

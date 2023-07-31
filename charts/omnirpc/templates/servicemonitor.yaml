@@ -2,21 +2,19 @@
 apiVersion: monitoring.coreos.com/v1
 kind: ServiceMonitor
 metadata:
-  name: {{ include "promexporter.fullname" . }}
+  name: {{ include "omnirpc.fullname" . }}
   labels:
-    {{- include "promexporter.labels" . | nindent 4 }}
+    {{- include "omnirpc.labels" . | nindent 4 }}
 spec:
   selector:
     matchLabels:
-      {{- include "promexporter.selectorLabels" . | nindent 6 }}
+      {{- include "omnirpc.selectorLabels" . | nindent 6 }}
   endpoints:
-    {{- range .Values.service.ports }}
-    - port: {{ .name }}
+    - port: prometheus
       path: /metrics
       scrapeTimeout: 30s
-    {{- end }}
   namespaceSelector:
     matchNames:
       - {{ .Release.Namespace }}
-  jobLabel: promexporter
+  jobLabel: omnirpc
 {{- end }}
