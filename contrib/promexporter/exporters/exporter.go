@@ -8,6 +8,7 @@ import (
 	"github.com/ethereum/go-ethereum/params"
 	"github.com/gin-gonic/gin"
 	"github.com/ipfs/go-log"
+	"github.com/lmittmann/w3/module/eth"
 	"github.com/synapsecns/sanguine/contrib/promexporter/config"
 	"github.com/synapsecns/sanguine/contrib/promexporter/internal/gql/dfk"
 	"github.com/synapsecns/sanguine/core"
@@ -15,7 +16,9 @@ import (
 	"github.com/synapsecns/sanguine/core/metrics"
 	"github.com/synapsecns/sanguine/core/metrics/instrumentation"
 	omnirpcClient "github.com/synapsecns/sanguine/services/omnirpc/client"
+	"go.opentelemetry.io/otel/attribute"
 	"go.opentelemetry.io/otel/metric"
+	"go.opentelemetry.io/otel/trace"
 	"golang.org/x/sync/errgroup"
 	"math/big"
 	"net"
@@ -24,6 +27,11 @@ import (
 )
 
 var logger = log.Logger("proxy-logger")
+
+// meterName is the name of the meter used by this package.
+// TODO: figure out how to autoset
+
+const meterName = "github.com/synapsecns/sanguine/contrib/promexporter/exporters"
 
 // makeHTTPClient makes a tracing http client.
 func makeHTTPClient(handler metrics.Handler) *http.Client {
@@ -38,7 +46,6 @@ func makeHTTPClient(handler metrics.Handler) *http.Client {
 type exporter struct {
 	client        *http.Client
 	metrics       metrics.Handler
-	meter         metric.Meter
 	cfg           config.Config
 	omnirpcClient omnirpcClient.RPCClient
 }
@@ -69,12 +76,9 @@ func StartExporterServer(ctx context.Context, handler metrics.Handler, cfg confi
 		return nil
 	})
 
-	metermaid := handler.Meter("github.com/synapsecns/sanguine/contrib/promexporter/exporters")
-
 	exp := exporter{
 		client:        makeHTTPClient(handler),
 		metrics:       handler,
-		meter:         metermaid,
 		cfg:           cfg,
 		omnirpcClient: omnirpcClient.NewOmnirpcClient(cfg.OmnirpcURL, handler, omnirpcClient.WithCaptureReqRes()),
 	}
@@ -89,9 +93,9 @@ func StartExporterServer(ctx context.Context, handler metrics.Handler, cfg confi
 	}
 
 	// register gas check metrics
-	for _, gasCheck := range cfg.GasChecks {
+	for _, gasCheck := range cfg.SubmitterChecks {
 		for _, chainID := range gasCheck.ChainIDs {
-			err := exp.gasBalance(common.HexToAddress(gasCheck.Address), chainID, gasCheck.Name)
+			err := exp.submitterStats(common.HexToAddress(gasCheck.Address), chainID, gasCheck.Name)
 			if err != nil {
 				return fmt.Errorf("could setup metric: %w", err)
 			}
@@ -105,15 +109,24 @@ func StartExporterServer(ctx context.Context, handler metrics.Handler, cfg confi
 	return nil
 }
 
-const stuckHeroMetric = "stuck_heroes_"
-
 func (e *exporter) stuckHeroCount(owner common.Address, chainName string) error {
-	stuckCount, err := e.meter.Int64ObservableGauge(fmt.Sprintf("%s%s", stuckHeroMetric, chainName))
+	meter := e.metrics.Meter(meterName)
+	attributes := attribute.NewSet(attribute.String("chain_name", chainName))
+
+	stuckCount, err := meter.Int64ObservableGauge(stuckHeroMetric)
 	if err != nil {
 		return fmt.Errorf("could not create gauge: %w", err)
 	}
 
-	if _, err := e.meter.RegisterCallback(func(ctx context.Context, o metric.Observer) error {
+	if _, err := meter.RegisterCallback(func(parentCtx context.Context, o metric.Observer) (err error) {
+		ctx, span := e.metrics.Tracer().Start(parentCtx, "dfk_stats", trace.WithAttributes(
+			attribute.String("chain_name", chainName),
+		))
+
+		defer func() {
+			metrics.EndSpanWithErr(span, err)
+		}()
+
 		ctx, cancel := context.WithTimeout(ctx, time.Minute)
 		defer cancel()
 
@@ -125,7 +138,7 @@ func (e *exporter) stuckHeroCount(owner common.Address, chainName string) error 
 		}
 
 		// TODO: this maxes out at 100 now. Need binary search or something.
-		o.ObserveInt64(stuckCount, int64(len(stuckHeroes.Heroes)))
+		o.ObserveInt64(stuckCount, int64(len(stuckHeroes.Heroes)), metric.WithAttributeSet(attributes))
 
 		return nil
 	}, stuckCount); err != nil {
@@ -135,31 +148,61 @@ func (e *exporter) stuckHeroCount(owner common.Address, chainName string) error 
 	return nil
 }
 
+const stuckHeroMetric = "dfk_pending_heroes"
 const gasBalance = "gas_balance"
+const nonce = "nonce"
 
-func (e *exporter) gasBalance(address common.Address, chainID int, name string) error {
-	balanceGauge, err := e.meter.Float64ObservableGauge(fmt.Sprintf("%s_%s_%d", gasBalance, name, chainID))
+// note: this kind of check should be deprecated in favor of submitter metrics once everything has been moved over.
+func (e *exporter) submitterStats(address common.Address, chainID int, name string) error {
+	meter := e.metrics.Meter(fmt.Sprintf("%s_%d", meterName, chainID))
+
+	balanceGauge, err := meter.Float64ObservableGauge(gasBalance)
 	if err != nil {
 		return fmt.Errorf("could not create gauge: %w", err)
 	}
 
-	if _, err := e.meter.RegisterCallback(func(ctx context.Context, o metric.Observer) error {
+	nonceGauge, err := meter.Int64ObservableGauge(nonce)
+	if err != nil {
+		return fmt.Errorf("could not create gauge: %w", err)
+	}
+
+	attributes := attribute.NewSet(attribute.Int(metrics.ChainID, chainID), attribute.String(metrics.EOAAddress, address.String()), attribute.String("name", name))
+
+	if _, err := meter.RegisterCallback(func(parentCtx context.Context, o metric.Observer) (err error) {
+		ctx, span := e.metrics.Tracer().Start(parentCtx, "relayer_stats", trace.WithAttributes(
+			attribute.Int(metrics.ChainID, chainID),
+			attribute.String(metrics.EOAAddress, address.String()),
+		))
+
+		defer func() {
+			metrics.EndSpanWithErr(span, err)
+		}()
+
 		client, err := e.omnirpcClient.GetConfirmationsClient(ctx, chainID, 1)
 		if err != nil {
 			return fmt.Errorf("could not get confirmations client: %w", err)
 		}
 
-		balance, err := client.BalanceAt(ctx, address, nil)
+		var nonce uint64
+		var balance big.Int
+
+		err = client.BatchWithContext(ctx,
+			eth.Nonce(address, nil).Returns(&nonce),
+			eth.Balance(address, nil).Returns(&balance),
+		)
+
 		if err != nil {
 			return fmt.Errorf("could not get balance: %w", err)
 		}
 
-		ethBalance := new(big.Float).Quo(new(big.Float).SetInt(balance), new(big.Float).SetInt64(params.Ether))
+		ethBalance := new(big.Float).Quo(new(big.Float).SetInt(&balance), new(big.Float).SetInt64(params.Ether))
 		truncEthBalance, _ := ethBalance.Float64()
-		o.ObserveFloat64(balanceGauge, truncEthBalance)
+
+		o.ObserveFloat64(balanceGauge, truncEthBalance, metric.WithAttributeSet(attributes))
+		o.ObserveInt64(nonceGauge, int64(nonce), metric.WithAttributeSet(attributes))
 
 		return nil
-	}, balanceGauge); err != nil {
+	}, balanceGauge, nonceGauge); err != nil {
 		return fmt.Errorf("registering callback on instruments: %w", err)
 	}
 
