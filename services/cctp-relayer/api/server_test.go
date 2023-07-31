@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"github.com/phayes/freeport"
 	"io"
 	"net/http"
 	"net/url"
@@ -36,8 +37,8 @@ func (s *RelayerAPISuite) mockMessage(originChainID uint32, state relayTypes.Mes
 }
 
 //nolint:gosec,wrapcheck
-func getTx(ctx context.Context, hash string, origin uint32) (*http.Response, error) {
-	txURL := "http://localhost:8080/tx"
+func getTx(ctx context.Context, hash string, origin uint32, port int) (*http.Response, error) {
+	txURL := fmt.Sprintf("http://localhost:%d/tx", port)
 	params := url.Values{}
 	params.Set("hash", hash)
 	params.Set("origin", strconv.Itoa(int(origin)))
@@ -54,7 +55,11 @@ func getTx(ctx context.Context, hash string, origin uint32) (*http.Response, err
 
 func (s *RelayerAPISuite) TestPendingTx() {
 	reqChan := make(chan *api.RelayRequest, 1000)
-	server := api.NewRelayerAPIServer(8080, "localhost", s.testStore, reqChan)
+
+	port, err := freeport.GetFreePort()
+	s.Nil(err)
+
+	server := api.NewRelayerAPIServer(uint16(port), "localhost", s.testStore, reqChan)
 	ctx, cancel := context.WithCancel(s.GetTestContext())
 	//nolint:errcheck
 	go server.Start(ctx)
@@ -62,11 +67,11 @@ func (s *RelayerAPISuite) TestPendingTx() {
 
 	// store pending tx
 	msg := s.mockMessage(1, relayTypes.Pending)
-	err := s.testStore.StoreMessage(ctx, msg)
+	err = s.testStore.StoreMessage(ctx, msg)
 	s.Nil(err)
 
 	// make api request
-	resp, err := getTx(s.GetTestContext(), msg.OriginTxHash, msg.OriginChainID)
+	resp, err := getTx(s.GetTestContext(), msg.OriginTxHash, msg.OriginChainID, port)
 	s.Nil(err)
 	defer func() {
 		err := resp.Body.Close()
@@ -105,7 +110,11 @@ func (s *RelayerAPISuite) TestPendingTx() {
 
 func (s *RelayerAPISuite) TestMissingTx() {
 	reqChan := make(chan *api.RelayRequest, 1000)
-	server := api.NewRelayerAPIServer(8080, "localhost", s.testStore, reqChan)
+
+	port, err := freeport.GetFreePort()
+	s.Nil(err)
+
+	server := api.NewRelayerAPIServer(uint16(port), "localhost", s.testStore, reqChan)
 	ctx, cancel := context.WithCancel(s.GetTestContext())
 	//nolint:errcheck
 	go server.Start(ctx)
@@ -115,7 +124,7 @@ func (s *RelayerAPISuite) TestMissingTx() {
 	msg := s.mockMessage(1, relayTypes.Pending)
 
 	// make api request
-	resp, err := getTx(s.GetTestContext(), msg.OriginTxHash, msg.OriginChainID)
+	resp, err := getTx(s.GetTestContext(), msg.OriginTxHash, msg.OriginChainID, port)
 	s.Nil(err)
 	defer func() {
 		err := resp.Body.Close()
@@ -146,7 +155,11 @@ func (s *RelayerAPISuite) TestMissingTx() {
 
 func (s *RelayerAPISuite) TestBadRequest() {
 	reqChan := make(chan *api.RelayRequest, 1000)
-	server := api.NewRelayerAPIServer(8080, "localhost", s.testStore, reqChan)
+
+	port, err := freeport.GetFreePort()
+	s.Nil(err)
+
+	server := api.NewRelayerAPIServer(uint16(port), "localhost", s.testStore, reqChan)
 	ctx, cancel := context.WithCancel(s.GetTestContext())
 	//nolint:errcheck
 	go server.Start(ctx)
@@ -154,11 +167,11 @@ func (s *RelayerAPISuite) TestBadRequest() {
 
 	// store pending tx
 	msg := s.mockMessage(1, relayTypes.Pending)
-	err := s.testStore.StoreMessage(ctx, msg)
+	err = s.testStore.StoreMessage(ctx, msg)
 	s.Nil(err)
 
 	// make api request with no params
-	txURL := "http://localhost:8080/tx"
+	txURL := fmt.Sprintf("http://localhost:%d/tx", port)
 	client := &http.Client{
 		Timeout: 5 * time.Second,
 	}
