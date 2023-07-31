@@ -71,10 +71,10 @@ export const DestinationChainLabel = ({
           <div
             className={`
             flex items-center
-            [&>*:nth-child(2)]:hidden [&>*:nth-child(2)]:min-[360px]:block
-            [&>*:nth-child(3)]:hidden [&>*:nth-child(3)]:min-[390px]:block
-            [&>*:nth-child(4)]:hidden [&>*:nth-child(4)]:min-[420px]:block
-            [&>*:nth-child(5)]:hidden [&>*:nth-child(5)]:min-[450px]:block
+            [&>*:nth-child(2)]:hidden [&>*:nth-child(2)]:min-[360px]:flex
+            [&>*:nth-child(3)]:hidden [&>*:nth-child(3)]:min-[390px]:flex
+            [&>*:nth-child(4)]:hidden [&>*:nth-child(4)]:min-[420px]:flex
+            [&>*:nth-child(5)]:hidden [&>*:nth-child(5)]:min-[450px]:bloflexck
             `}
           >
             {orderedChains.map((id: number, key: number) => {
@@ -178,7 +178,7 @@ const SelectedChain = ({ chainId }: { chainId: number }) => {
         src={chain.chainImg}
         className="w-5 h-5 my-1 mr-1 rounded-full opacity-80"
       />
-      <div className="inline-block">
+      <div className="flex">
         <div className="mr-2 text-sm text-white">
           {chain.name === 'Boba Network' ? 'Boba' : chain.name}
         </div>
