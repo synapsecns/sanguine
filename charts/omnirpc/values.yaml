@@ -128,4 +128,7 @@ env:
   - name: GOLOG_LOG_FMT
     value: "json"
 
+serviceMonitor:
+  enabled: false
+
 labels: {}
