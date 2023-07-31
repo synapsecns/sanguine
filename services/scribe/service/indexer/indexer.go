@@ -487,20 +487,18 @@ func (x *Indexer) addressesToString(addresses []common.Address) string {
 func (x *Indexer) saveLastIndexed(parentCtx context.Context, blockNumber uint64) error {
 	if !x.isBackfill {
 		var err error
+		var errMessage string
 		if x.toHead {
 			err = x.eventDB.StoreLastIndexed(parentCtx, common.Address{}, x.indexerConfig.ChainID, blockNumber, scribeTypes.LivefillAtHead)
-			if err != nil {
-				logger.ReportIndexerError(err, x.indexerConfig, logger.StoreError)
-				return fmt.Errorf("could not store last indexed block for livefill at head: %w", err)
-			}
+			errMessage = "could not store last indexed block while livefilling at head"
 		} else {
 			err = x.eventDB.StoreLastIndexedMultiple(parentCtx, x.indexerConfig.Addresses, x.indexerConfig.ChainID, blockNumber)
-			if err != nil {
-				logger.ReportIndexerError(err, x.indexerConfig, logger.StoreError)
-				return fmt.Errorf("could not store last indexed block: %w", err)
-			}
+			errMessage = "could not store last indexed blocks"
 		}
-
+		if err != nil {
+			logger.ReportIndexerError(err, x.indexerConfig, logger.StoreError)
+			return fmt.Errorf("%s: %w", errMessage, err)
+		}
 	}
 	return nil
 }
