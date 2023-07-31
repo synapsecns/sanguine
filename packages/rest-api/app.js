@@ -44,9 +44,6 @@ var units_1 = require("@ethersproject/units");
 var express = require("express");
 var chainsData = require("./config/chains.json");
 var tokensData = require("./config/tokens.json");
-// Set up express server
-var app = express();
-var port = process.env.PORT || 3000;
 var tokens = tokensData;
 var chains = chainsData;
 // Constants
@@ -78,6 +75,9 @@ for (var _i = 0, chains_1 = chains; _i < chains_1.length; _i++) {
 }
 // Define the sdk
 var Synapse = new sdk_router_1.SynapseSDK(chainIds, providers);
+// Set up express server
+var app = express();
+var port = process.env.PORT || 3000;
 //Intro Message for UI
 app.get('/', function (req, res) {
     res.send("\n    <h1>Welcome to the Synapse Rest API for swap and bridge quotes</h1>\n    <hr/>\n    <h2>Available Chains</h2>\n    <ul>\n     ".concat(chains

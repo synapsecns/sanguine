@@ -2,7 +2,7 @@ import { JsonRpcProvider } from '@ethersproject/providers'
 import { SynapseSDK } from '@synapsecns/sdk-router'
 import { BigNumber } from '@ethersproject/bignumber'
 import { formatUnits } from '@ethersproject/units'
-import express from 'express'
+import * as express from 'express'
 
 import * as chainsData from './config/chains.json'
 import * as tokensData from './config/tokens.json'
