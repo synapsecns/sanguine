@@ -3,6 +3,7 @@ package rpcinfo_test
 import (
 	"context"
 	. "github.com/stretchr/testify/assert"
+	"github.com/synapsecns/sanguine/core/metrics"
 	"github.com/synapsecns/sanguine/ethergo/backends/geth"
 	"github.com/synapsecns/sanguine/ethergo/backends/preset"
 	"github.com/synapsecns/sanguine/services/omnirpc/rpcinfo"
@@ -26,7 +27,7 @@ func (r *LatencySuite) TestRPCLatency() {
 	})
 	Nil(r.T(), g.Wait())
 
-	latencySlice := rpcinfo.GetRPCLatency(r.GetTestContext(), time.Second*3, []string{bsc.HTTPEndpoint(), avalanche.HTTPEndpoint()})
+	latencySlice := rpcinfo.GetRPCLatency(r.GetTestContext(), time.Second*3, []string{bsc.HTTPEndpoint(), avalanche.HTTPEndpoint()}, metrics.NewNullHandler())
 	NotEqual(r.T(), latencySlice[0].URL, latencySlice[1].URL)
 	for _, latencyData := range latencySlice {
 		False(r.T(), latencyData.HasError)

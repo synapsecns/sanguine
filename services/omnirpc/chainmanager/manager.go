@@ -2,6 +2,7 @@ package chainmanager
 
 import (
 	"context"
+	"github.com/synapsecns/sanguine/core/metrics"
 	"github.com/synapsecns/sanguine/services/omnirpc/config"
 	"github.com/synapsecns/sanguine/services/omnirpc/rpcinfo"
 	"sort"
@@ -25,19 +26,22 @@ type ChainManager interface {
 }
 
 // NewChainManager creates a new chain manager.
-func NewChainManager() ChainManager {
+func NewChainManager(handler metrics.Handler) ChainManager {
 	return &chainManager{
 		chainList: make(map[uint32]*chain),
 		// mux is used to prevent parallel manipulations to the map
 		mux: sync.RWMutex{},
+		// handler is the metrics handler
+		handler: handler,
 	}
 }
 
 // NewChainManagerFromConfig creates a new chain manager.
-func NewChainManagerFromConfig(configuration config.Config) ChainManager {
+func NewChainManagerFromConfig(configuration config.Config, handler metrics.Handler) ChainManager {
 	cm := &chainManager{
 		chainList: make(map[uint32]*chain),
 		mux:       sync.RWMutex{},
+		handler:   handler,
 	}
 
 	for chainID, chn := range configuration.Chains {
@@ -71,6 +75,7 @@ func NewChainManagerFromConfig(configuration config.Config) ChainManager {
 type chainManager struct {
 	chainList map[uint32]*chain
 	mux       sync.RWMutex
+	handler   metrics.Handler
 }
 
 func (c *chainManager) GetChain(chainID uint32) Chain {
@@ -129,7 +134,7 @@ func (c *chainManager) RefreshRPCInfo(ctx context.Context, chainID uint32) {
 	}
 	rpcURLS := chainList.URLs()
 
-	rpcInfoList := sortInfoList(rpcinfo.GetRPCLatency(ctx, rpcTimeout, rpcURLS))
+	rpcInfoList := sortInfoList(rpcinfo.GetRPCLatency(ctx, rpcTimeout, rpcURLS, c.handler))
 
 	c.mux.Lock()
 	c.chainList[chainID].rpcs = rpcInfoList
