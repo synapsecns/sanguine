@@ -134,7 +134,8 @@ export const InputContainer = () => {
               pattern="^[0-9]*[.,]?[0-9]*$"
               disabled={false}
               className={`
-              focus:outline-none
+              border-none
+              focus:ring-0
               bg-transparent
               max-w-[100px]
               md:max-w-[160px]
