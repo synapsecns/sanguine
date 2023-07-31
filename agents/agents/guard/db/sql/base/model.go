@@ -38,17 +38,6 @@ var (
 	NotaryAddressFieldName string
 )
 
-/*
-   address guard,
-   address notary,
-   address slashedAgent,
-   address fraudProver,
-   bytes memory reportPayload,
-   bytes memory reportSignature
-
-also need indexes, also need agentRoot. slashedAgent could be checked for nilstring for if we saw it get slashed
-*/
-
 // Dispute is a dispute between two agents.
 // TODO: Change guard index and notary index to addresses? Requires an additional call.
 type Dispute struct {
@@ -56,10 +45,6 @@ type Dispute struct {
 	DisputeIndex uint64 `gorm:"column:dispute_index;primaryKey"`
 	// DisputeProcessedStatus indicates the status of the dispute.
 	DisputeProcessedStatus agentTypes.DisputeProcessedStatus `gorm:"column:dispute_processed_status"`
-
-	// DisputeFlag indicates the status of the dispute.
-	//DisputeFlag uint8 `gorm:"column:dispute_flag"`
-
 	// GuardAddress is the address of the guard.
 	GuardAddress string `gorm:"column:guard_address"`
 	//NotaryIndex is the index of the notary on the BondingManager.
