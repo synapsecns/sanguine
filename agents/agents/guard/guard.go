@@ -336,15 +336,10 @@ func (g Guard) handleSnapshot(ctx context.Context, log ethTypes.Log) error {
 		}
 
 		// First, call verifyStateWithSnapshot() to slash the accused agent on origin.
-		signature, err := g.bondedSigner.SignMessage(ctx, fraudSnapshot.Payload, true)
-		if err != nil {
-			return fmt.Errorf("could not sign snapshot message: %w", err)
-		}
 		_, err = g.domains[state.Origin()].LightInbox().VerifyStateWithSnapshot(
 			ctx,
 			g.unbondedSigner,
 			int64(stateIndex),
-			signature,
 			fraudSnapshot.Payload,
 			fraudSnapshot.Signature,
 		)

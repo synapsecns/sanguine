@@ -144,7 +144,7 @@ type LightInboxContract interface {
 		snapGas []*big.Int,
 	) (tx *ethTypes.Transaction, err error)
 	// VerifyStateWithSnapshot verifies a state within a snapshot.
-	VerifyStateWithSnapshot(ctx context.Context, signer signer.Signer, stateIndex int64, signature signer.Signature, snapPayload []byte, snapSignature []byte) (tx *ethTypes.Transaction, err error)
+	VerifyStateWithSnapshot(ctx context.Context, signer signer.Signer, stateIndex int64, snapPayload []byte, snapSignature []byte) (tx *ethTypes.Transaction, err error)
 	// SubmitAttestationReport submits an attestation report to the inbox (via the light inbox contract)
 	SubmitAttestationReport(ctx context.Context, signer signer.Signer, attestation, arSignature, attSignature []byte) (tx *ethTypes.Transaction, err error)
 	// VerifyStateWithAttestation verifies a state with attestation.

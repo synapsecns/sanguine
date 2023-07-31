@@ -98,7 +98,7 @@ func (a lightInboxContract) SubmitStateReportWithSnapshot(ctx context.Context, s
 	return tx, nil
 }
 
-func (a lightInboxContract) VerifyStateWithSnapshot(ctx context.Context, signer signer.Signer, stateIndex int64, signature signer.Signature, snapPayload []byte, snapSignature []byte) (tx *ethTypes.Transaction, err error) {
+func (a lightInboxContract) VerifyStateWithSnapshot(ctx context.Context, signer signer.Signer, stateIndex int64, snapPayload []byte, snapSignature []byte) (tx *ethTypes.Transaction, err error) {
 	transactor, err := signer.GetTransactor(ctx, a.client.GetBigChainID())
 	if err != nil {
 		return nil, fmt.Errorf("could not sign tx: %w", err)
