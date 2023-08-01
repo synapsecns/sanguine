@@ -112,11 +112,7 @@ export default function BridgeTransaction({ queryResult }) {
                 : pendingContent}{' '}
             </p>
           </div>
-          {/* Check for cctp */}
-          {fromInfo.eventType === 10 ? (
-            <div className="flex gap-x-[1.1rem] py-1">
-              <p className="text-white text-opacity-60">Bridged using Circle's Cross-Chain Transfer Protocol.</p>
-            </div>) : null}
+
           < br />
 
           <div className="flex gap-y-2 flex-col">
