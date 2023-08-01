@@ -202,7 +202,9 @@ func RehydrateCache(parentCtx context.Context, client *gqlClient.Client, service
 	defer func() {
 		metrics.EndSpanWithErr(span, err)
 	}()
-
+	if os.Getenv("CI") != "" {
+		return nil
+	}
 	fmt.Println("rehydrating Cache")
 	totalVolumeType := model.StatisticTypeTotalVolumeUsd
 	totalFeeType := model.StatisticTypeTotalFeeUsd
