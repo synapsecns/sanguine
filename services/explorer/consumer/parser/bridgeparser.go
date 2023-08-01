@@ -187,6 +187,11 @@ func eventToBridgeEvent(event bridgeTypes.EventLog, chainID uint32) model.Bridge
 	}
 }
 
+// ParserType returns the type of parser.
+func (p *BridgeParser) ParserType() string {
+	return "bridge"
+}
+
 // ParseAndStore parses the bridge logs and returns a model that can be stored
 // Deprecated: use Parse and store separately.
 func (p *BridgeParser) ParseAndStore(ctx context.Context, log ethTypes.Log, chainID uint32) error {
@@ -393,8 +398,9 @@ func (p *BridgeParser) Parse(ctx context.Context, log ethTypes.Log, chainID uint
 
 	if tokenData.TokenID() == fetcher.NoTokenID {
 		logger.Errorf("could not get token data token id chain: %d address %s", chainID, log.Address.Hex())
+		fmt.Println("GOODBYE")
 		// handle an inauthentic token.
-		return &bridgeEvent, nil
+		return bridgeEvent, nil
 	}
 
 	realDecimals := tokenData.Decimals()
@@ -428,5 +434,6 @@ func (p *BridgeParser) Parse(ctx context.Context, log ethTypes.Log, chainID uint
 			bridgeEvent.FeeUSD = GetAmountUSD(bridgeEvent.Fee, tokenData.Decimals(), tokenPrice)
 		}
 	}
+	fmt.Println("bridgeEvent DONE", bridgeEvent)
 	return bridgeEvent, nil
 }

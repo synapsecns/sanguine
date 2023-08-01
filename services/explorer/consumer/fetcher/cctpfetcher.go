@@ -23,7 +23,7 @@ type cctpFetcher struct {
 
 // NewCCTPFetcher creates a new cctp fetcher.
 func NewCCTPFetcher(cctpAddress common.Address, backend bind.ContractBackend) (CCTPService, error) {
-	cctpRef, err := cctp.NewSynapseCCTP(cctpAddress, nil)
+	cctpRef, err := cctp.NewSynapseCCTP(cctpAddress, backend)
 	if err != nil {
 		return nil, fmt.Errorf("could not bind cctp contract: %w", err)
 	}
@@ -37,5 +37,11 @@ func (c *cctpFetcher) GetTokenSymbol(ctx context.Context, tokenAddress common.Ad
 	if err != nil {
 		return nil, fmt.Errorf("could not get cctp token symbol: %w", err)
 	}
+
+	if symbol == "" {
+		payload := NoTokenID
+		return &payload, nil
+	}
+
 	return &symbol, nil
 }

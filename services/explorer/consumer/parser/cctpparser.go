@@ -49,6 +49,11 @@ func NewCCTPParser(consumerDB db.ConsumerDB, cctpAddress common.Address, consume
 	return &CCTPParser{consumerDB, filterer, cctpAddress, consumerFetcher, cctpService, tokenDataService, tokenPriceService}, nil
 }
 
+// ParserType returns the type of parser.
+func (c *CCTPParser) ParserType() string {
+	return "cctp"
+}
+
 // Parse parses the cctp logs.
 //
 // nolint:gocognit,cyclop,dupl
@@ -108,7 +113,6 @@ func (c *CCTPParser) Parse(ctx context.Context, log ethTypes.Log, chainID uint32
 	cctpEvent.TokenSymbol = tokenData.TokenID()
 	cctpEvent.TokenDecimal = &decimals
 	c.applyPriceData(ctx, &cctpEvent, usdcCoinGeckoID)
-
 	// Store into bridge database with a new goroutine.
 	go func() {
 		bridgeEvent := cctpEventToBridgeEvent(cctpEvent)
@@ -185,7 +189,8 @@ func cctpEventToBridgeEvent(cctpEvent model.CCTPEvent) model.BridgeEvent {
 	if cctpEvent.EventType == cctpTypes.CircleRequestFulfilledEvent.Int() {
 		bridgeType = bridgeTypes.CircleRequestFulfilledEvent
 		destinationKappa = ""
-		*kappa = fmt.Sprintf("cctp_%s", cctpEvent.RequestID)
+		kappaStr := fmt.Sprintf("cctp_%s", cctpEvent.RequestID)
+		kappa = &kappaStr
 	}
 	return model.BridgeEvent{
 		InsertTime:       cctpEvent.InsertTime,
@@ -236,7 +241,7 @@ func (c *CCTPParser) storeBridgeEvent(ctx context.Context, bridgeEvent model.Bri
 		case <-ctx.Done():
 			return fmt.Errorf("%w while retrying", ctx.Err())
 		case <-time.After(timeout):
-			err := c.consumerDB.StoreEvent(ctx, bridgeEvent)
+			err := c.consumerDB.StoreEvent(ctx, &bridgeEvent)
 			if err != nil {
 				timeout = b.Duration()
 				continue

@@ -15,11 +15,10 @@ const ErrUnknownTopic = "unknown topic"
 
 // Parser parses events and stores them.
 type Parser interface {
-	// ParseAndStore parses the logs and stores them in the database.
-	// Deprecated: use Parse
-	// ParseAndStore(ctx context.Context, log ethTypes.Log, chainID uint32) error
 	// Parse parses the logs and returns the parsed data.
 	Parse(ctx context.Context, log ethTypes.Log, chainID uint32) (interface{}, error)
+	// ParserType returns the type of the parser.
+	ParserType() string
 }
 
 // BoolToUint8 is a helper function to handle bool to uint8 conversion for clickhouse.

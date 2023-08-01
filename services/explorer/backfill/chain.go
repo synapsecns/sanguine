@@ -212,6 +212,7 @@ func (c *ChainBackfiller) backfillContractLogs(parentCtx context.Context, contra
 							logger.Warnf("could not process logs for chain %d: %s", c.chainConfig.ChainID, err)
 							continue
 						}
+
 						if len(parsedLogs) > 0 {
 							g.Go(func() error {
 								return c.storeParsedLogs(groupCtx, parsedLogs)
@@ -227,7 +228,6 @@ func (c *ChainBackfiller) backfillContractLogs(parentCtx context.Context, contra
 			return fmt.Errorf("error while backfilling chain %d: %w", c.chainConfig.ChainID, err)
 		}
 		logger.Infof("backfilling contract %s chunk completed, %d to %d", contract.Address, chunkStart, chunkEnd)
-
 		// Store the last block in clickhouse
 		err = c.retryWithBackoff(parentCtx, func(ctx context.Context) error {
 			err = c.consumerDB.StoreLastBlock(parentCtx, c.chainConfig.ChainID, chunkEnd, contract.Address)
@@ -242,6 +242,7 @@ func (c *ChainBackfiller) backfillContractLogs(parentCtx context.Context, contra
 		}
 		currentHeight = chunkEnd + 1
 	}
+
 	return nil
 }
 
@@ -252,8 +253,8 @@ func (c *ChainBackfiller) processLogs(ctx context.Context, logs []ethTypes.Log, 
 	b := &backoff.Backoff{
 		Factor: 2,
 		Jitter: true,
-		Min:    30 * time.Millisecond,
-		Max:    3 * time.Second,
+		Min:    1 * time.Second,
+		Max:    10 * time.Second,
 	}
 
 	timeout := time.Duration(0)
@@ -264,17 +265,21 @@ func (c *ChainBackfiller) processLogs(ctx context.Context, logs []ethTypes.Log, 
 			return parsedLogs, fmt.Errorf("context canceled: %w", ctx.Err())
 		case <-time.After(timeout):
 			if logIdx >= len(logs) {
+
 				return parsedLogs, nil
 			}
 			parsedLog, err := eventParser.Parse(ctx, logs[logIdx], c.chainConfig.ChainID)
-			if err != nil && err.Error() != parser.ErrUnknownTopic {
-				logger.Errorf("could not parse and store log %d, %s blocknumber: %d, %s", c.chainConfig.ChainID, logs[logIdx].Address, logs[logIdx].BlockNumber, err)
+			if err != nil || parsedLog == nil {
+				if err.Error() != parser.ErrUnknownTopic {
+					logger.Errorf("could not parse log (ErrUnknownTopic) %d, %s blocknumber: %d, %s", c.chainConfig.ChainID, logs[logIdx].Address, logs[logIdx].BlockNumber, err)
+				} else {
+					logger.Errorf("could not parse log %d, %s blocknumber: %d, %s", c.chainConfig.ChainID, logs[logIdx].Address, logs[logIdx].BlockNumber, err)
+				}
 				timeout = b.Duration()
 				continue
 			}
-			if parsedLog != nil {
-				parsedLogs = append(parsedLogs, parsedLog)
-			}
+
+			parsedLogs = append(parsedLogs, parsedLog)
 
 			logIdx++
 

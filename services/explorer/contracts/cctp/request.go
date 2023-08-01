@@ -130,6 +130,9 @@ func (s SynapseCCTPCircleRequestFulfilled) GetRequestID() [32]byte {
 func (s SynapseCCTPCircleRequestFulfilled) GetOriginChainID() *big.Int {
 	// domain to chain mapping TODO move to static mapping
 	domainToChain := []int64{1, 43114, 10, 42161}
+	if s.OriginDomain >= uint32(len(domainToChain)) { // Catch if the domain is not in the mapping (explorer lagging behind addition of new chains)
+		return big.NewInt(int64(s.OriginDomain))
+	}
 	return big.NewInt(domainToChain[s.OriginDomain])
 }
 
