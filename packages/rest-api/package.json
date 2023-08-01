@@ -10,7 +10,7 @@
     "start": "node ./dist/app.js",
     "dev": "concurrently \"npx tsc --watch\" \"nodemon -q dist/app.js\"",
     "test:coverage": "echo 'No tests defined.'",
-    "lint:fix": "npm run lint -- --fix",
+    "lint:fix": "eslint src/**.ts --fix",
     "lint:check": "eslint . --max-warnings=0",
     "ci:lint": "npm run lint:check",
     "build:go": " ",

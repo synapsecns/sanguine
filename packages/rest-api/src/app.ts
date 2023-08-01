@@ -82,11 +82,11 @@ app.get('/', ({ res }) => {
     <h2>Available Chains</h2>
     <ul>
      ${chains
-      .map(
-        (chain) =>
-          '<li>' + String(chain.name) + ' (' + String(chain.id) + ')' + '</li>'
-      )
-      .join('')}
+       .map(
+         (chain) =>
+           '<li>' + String(chain.name) + ' (' + String(chain.id) + ')' + '</li>'
+       )
+       .join('')}
     </ul>
     <h2>Available Tokens (symbols to use)</h2>
     ${tokenHtml}`
