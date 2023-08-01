@@ -298,44 +298,23 @@ func (g Guard) isRootUpdatedEvent(log ethTypes.Log) bool {
 	return ok && bondingManagerEvent == bondingmanager.RootUpdatedEvent
 }
 
-//nolint:cyclop
 func (g Guard) handleSnapshot(ctx context.Context, log ethTypes.Log) error {
 	fraudSnapshot, err := g.inboxParser.ParseSnapshotAccepted(log)
 	if err != nil {
 		return fmt.Errorf("could not parse snapshot accepted: %w", err)
 	}
 
-	// Check the validity of each state by calling `isValidState` on each state's origin domain.
+	// Handle each state in the snapshot
 	for stateIndex, state := range fraudSnapshot.Snapshot.States() {
-		statePayload, err := types.EncodeState(state)
+		isSlashable, err := g.isStateSlashable(ctx, state, fraudSnapshot.Agent, stateIndex)
 		if err != nil {
-			return fmt.Errorf("could not encode state: %w", err)
+			return fmt.Errorf("could not handle state: %w", err)
 		}
-
-		// TODO: Have a way to retry failed RPC calls for this check.
-		isValid, err := g.domains[state.Origin()].Origin().IsValidState(
-			ctx,
-			statePayload,
-		)
-		if err != nil {
-			return fmt.Errorf("could not check validity of state: %w", err)
-		}
-
-		//nolint:nestif
-		if isValid {
+		if !isSlashable {
 			continue
 		}
 
-		// Verify that the agent is slashable
-		agentStatus, err := g.domains[state.Origin()].LightManager().GetAgentStatus(ctx, fraudSnapshot.Agent)
-		if err != nil {
-			return fmt.Errorf("could not get agent status: %w", err)
-		}
-		if !isSlashable(agentStatus.Flag()) {
-			continue
-		}
-
-		// First, call verifyStateWithSnapshot() to slash the accused agent on origin.
+		// Initiate slashing on origin.
 		_, err = g.domains[state.Origin()].LightInbox().VerifyStateWithSnapshot(
 			ctx,
 			g.unbondedSigner,
@@ -347,21 +326,16 @@ func (g Guard) handleSnapshot(ctx context.Context, log ethTypes.Log) error {
 			return fmt.Errorf("could not verify state with snapshot: %w", err)
 		}
 
-		// If the agent who submitted the fraudulent snapshot is a guard, we only need to call `VerifyStateWithSnapshot`.
-		if fraudSnapshot.AgentDomain == 0 {
-			return nil
-		}
-
-		// Don't submit a state report if the agent is already in dispute.
-		disputeStatus, err := g.domains[g.summitDomainID].BondingManager().GetDisputeStatus(ctx, fraudSnapshot.Agent)
+		// Check if we should submit the state report
+		shouldSubmit, err := g.shouldSubmitStateReport(ctx, fraudSnapshot, state, stateIndex)
 		if err != nil {
-			return fmt.Errorf("could not get dispute status: %w", err)
+			return fmt.Errorf("could not check if should submit state report: %w", err)
 		}
-		if disputeStatus.Flag() != types.DisputeFlagNone {
-			return nil
+		if !shouldSubmit {
+			continue
 		}
 
-		// Submit the state report.
+		// Submit the state report
 		srSignature, _, _, err := state.SignState(ctx, g.bondedSigner)
 		if err != nil {
 			return fmt.Errorf("could not sign state: %w", err)
@@ -380,6 +354,34 @@ func (g Guard) handleSnapshot(ctx context.Context, log ethTypes.Log) error {
 	}
 
 	return nil
+}
+
+// Verify a state against a snapshot.
+// If invalid, submit a state report on summit.
+func (g Guard) isStateSlashable(ctx context.Context, state types.State, agent common.Address, stateIndex int) (bool, error) {
+	statePayload, err := types.EncodeState(state)
+	if err != nil {
+		return false, fmt.Errorf("could not encode state: %w", err)
+	}
+
+	// Verify that the state is valid w.r.t. Origin
+	isValid, err := g.domains[state.Origin()].Origin().IsValidState(
+		ctx,
+		statePayload,
+	)
+	if err != nil {
+		return false, fmt.Errorf("could not check validity of state: %w", err)
+	}
+	if isValid {
+		return true, nil
+	}
+
+	// Verify that the agent is slashable
+	agentStatus, err := g.domains[state.Origin()].LightManager().GetAgentStatus(ctx, agent)
+	if err != nil {
+		return false, fmt.Errorf("could not get agent status: %w", err)
+	}
+	return isSlashable(agentStatus.Flag()), nil
 }
 
 func isSlashable(agentFlag types.AgentFlagType) bool {
@@ -407,31 +409,25 @@ func (g Guard) handleAttestation(ctx context.Context, log ethTypes.Log) error {
 			return fmt.Errorf("could not get snapshot: %w", err)
 		}
 
-		for i, state := range snapshot.States() {
+		for stateIndex, state := range snapshot.States() {
 			snapPayload, err := types.EncodeSnapshot(snapshot)
 			if err != nil {
 				return fmt.Errorf("could not encode snapshot: %w", err)
 			}
 
-			statePayload, err := types.EncodeState(state)
+			isSlashable, err := g.isStateSlashable(ctx, state, fraudAttestation.Notary, stateIndex)
 			if err != nil {
-				return fmt.Errorf("could not encode state: %w", err)
+				return fmt.Errorf("could not check if state is slashable: %w", err)
 			}
-			isValid, err := g.domains[state.Origin()].Origin().IsValidState(
-				ctx,
-				statePayload,
-			)
-			if err != nil {
-				return fmt.Errorf("could not check validity of state: %w", err)
-			}
-			if isValid {
+			if !isSlashable {
 				continue
 			}
 
+			// Initiate slashing on origin.
 			_, err = g.domains[state.Origin()].LightInbox().VerifyStateWithAttestation(
 				ctx,
 				g.unbondedSigner,
-				int64(i),
+				int64(stateIndex),
 				snapPayload,
 				fraudAttestation.Payload,
 				fraudAttestation.Signature,
@@ -440,6 +436,7 @@ func (g Guard) handleAttestation(ctx context.Context, log ethTypes.Log) error {
 				return fmt.Errorf("could not verify state with attestation: %w", err)
 			}
 
+			// Submit the state report.
 			srSignature, _, _, err := state.SignState(ctx, g.bondedSigner)
 			if err != nil {
 				return fmt.Errorf("could not sign state: %w", err)
@@ -447,7 +444,7 @@ func (g Guard) handleAttestation(ctx context.Context, log ethTypes.Log) error {
 			_, err = g.domains[g.summitDomainID].Inbox().SubmitStateReportWithAttestation(
 				ctx,
 				g.unbondedSigner,
-				int64(i),
+				int64(stateIndex),
 				srSignature,
 				snapPayload,
 				fraudAttestation.Payload,
@@ -472,12 +469,11 @@ func (g Guard) handleAttestation(ctx context.Context, log ethTypes.Log) error {
 		return fmt.Errorf("could not verify attestation: %w", err)
 	}
 
+	// Finally, we submit a fraud report by calling `submitAttestationReport()` on the remote chain.
 	arSignature, _, _, err := fraudAttestation.Attestation.SignAttestation(ctx, g.bondedSigner, false)
 	if err != nil {
 		return fmt.Errorf("could not sign attestation: %w", err)
 	}
-
-	// Finally, we submit a fraud report by calling `submitAttestationReport()` on the remote chain.
 	arSignatureEncoded, err := types.EncodeSignature(arSignature)
 	if err != nil {
 		return fmt.Errorf("could not encode signature: %w", err)
@@ -638,6 +634,20 @@ func (g Guard) handleDisputeOpened(ctx context.Context, log ethTypes.Log) error 
 	}
 
 	return nil
+}
+
+// Only submit a state report if we are not on Summit, and the snapshot
+// agent is not currently in dispute.
+func (g Guard) shouldSubmitStateReport(ctx context.Context, snapshot *types.FraudSnapshot, state types.State, stateIndex int) (bool, error) {
+	disputeStatus, err := g.domains[g.summitDomainID].BondingManager().GetDisputeStatus(ctx, snapshot.Agent)
+	if err != nil {
+		return false, fmt.Errorf("could not get dispute status: %w", err)
+	}
+
+	isNotSummit := snapshot.AgentDomain != 0
+	isNotInDispute := disputeStatus.Flag() == types.DisputeFlagNone
+	shouldSubmit := isNotSummit && isNotInDispute
+	return shouldSubmit, nil
 }
 
 // disputeOpened is a wrapper struct used to merge the
