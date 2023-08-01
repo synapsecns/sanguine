@@ -485,9 +485,7 @@ func generateKappaSpecifierSQLMv(value *string, field string, firstFilter *bool,
 
 // generateCCTPSpecifierSQLMv generates a where function with event type to filter only cctp events.
 func generateCCTPSpecifierSQLMv(onlyCctp *bool, to bool, field string, firstFilter *bool, firstInLocale *bool, tablePrefix string) string {
-
 	if onlyCctp != nil && *onlyCctp {
-
 		// From explorer/types/bridge/eventtypes.go
 		eventType := 10
 		if to {
@@ -637,6 +635,7 @@ func GetPartialInfoFromBridgeEventHybrid(bridgeEvent sql.HybridBridgeEvent, incl
 		if bridgeEvent.FEventType == bridge.CircleRequestFulfilledEvent.Int() {
 			tAddress = bridgeEvent.TSender
 		}
+
 		toInfos = &model.PartialInfo{
 			ChainID:            &toChainID,
 			Address:            &tAddress,

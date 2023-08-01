@@ -46,6 +46,8 @@ func AllEventTypes() []EventType {
 }
 
 // GetEventType gets the str/clear text event type from EventType.
+//
+// nolint:cyclop
 func GetEventType(eventType uint8) string {
 	switch eventType {
 	case 0:
