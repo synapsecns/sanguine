@@ -2,8 +2,7 @@ import { JsonRpcProvider } from '@ethersproject/providers'
 import { SynapseSDK } from '@synapsecns/sdk-router'
 import { BigNumber } from '@ethersproject/bignumber'
 import { formatUnits } from '@ethersproject/units'
-import * as express from 'express'
-// import express from 'express'
+import express from 'express'
 
 import * as chainsData from './config/chains.json'
 import * as tokensData from './config/tokens.json'
@@ -32,10 +31,12 @@ interface Chains {
   rpc: string
 }
 
-const chains: Chains[] = chainsData as any
+// @ts-ignore
+const chains: Chains[] = chainsData.default as any
 // Constants
 const TEN = BigNumber.from(10)
 const tokenHtml = Object.keys(tokens)
+  .filter((symbol) => tokens[symbol].addresses !== undefined)
   .map(
     (symbol) =>
       '<b>' +
@@ -61,19 +62,19 @@ const tokenHtml = Object.keys(tokens)
 const providers = []
 const chainIds = []
 
-for (const chain of chains) {
+chains.map((chain) => {
   providers.push(new JsonRpcProvider(chain.rpc))
   chainIds.push(chain.id)
-}
+})
 // Define the sdk
 const Synapse = new SynapseSDK(chainIds, providers)
 
 // Set up express server
 const app = express()
-const port = process.env.PORT || 3000
+const port = process.env.PORT || 4090
 
 //Intro Message for UI
-app.get('/', (req, res) => {
+app.get('/', ({ res }) => {
   res.send(
     `
     <h1>Welcome to the Synapse Rest API for swap and bridge quotes</h1>

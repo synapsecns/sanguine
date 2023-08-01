@@ -21,7 +21,7 @@
     "ci:lint": "npm run lint:check",
     "lint:fix": "eslint . --fix --max-warnings=0 --ext ts --ext tsx --ext js --ext jsx",
     "test:coverage": "tsdx test --coverage",
-    "prepare": "tsdx build",
+    "postinstall": "tsdx build",
     "size": "size-limit",
     "analyze": "size-limit --why",
     "build:go": " ",
