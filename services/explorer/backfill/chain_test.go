@@ -362,8 +362,10 @@ func (b *BackfillSuite) TestBackfill() {
 	msp, err := parser.NewSwapParser(b.db, metaSwapContract.Address(), true, b.consumerFetcher, msr, tokenDataService, tokenPriceService)
 	Nil(b.T(), err)
 
-	// cp is the cctp ref for getting token data
-	cp, err := parser.NewCCTPParser(b.db, cctpRef.Address(), b.consumerFetcher, tokenPriceService)
+	// msr is the meta swap ref for getting token data
+	cr, err := fetcher.NewCCTPFetcher(cctpRef.Address(), b.testBackend)
+	Nil(b.T(), err)
+	cp, err := parser.NewCCTPParser(b.db, cctpRef.Address(), b.consumerFetcher, cr, tokenDataService, tokenPriceService)
 	Nil(b.T(), err)
 
 	spMap := map[common.Address]*parser.SwapParser{}
@@ -515,10 +517,7 @@ func (b *BackfillSuite) sendCircleTokenParity(log *types.Log, parser *parser.CCT
 		Int64: int64(parsedLog.Nonce),
 		Valid: true,
 	}
-	burnToken := gosql.NullString{
-		String: parsedLog.Token.String(),
-		Valid:  true,
-	}
+
 	requestVersion := gosql.NullInt32{
 		Int32: int32(parsedLog.RequestVersion),
 		Valid: true,
@@ -537,8 +536,8 @@ func (b *BackfillSuite) sendCircleTokenParity(log *types.Log, parser *parser.CCT
 			DestinationChainID: parsedLog.ChainId,
 			Sender:             sender,
 			Nonce:              nonce,
-			BurnToken:          burnToken,
-			SentAmount:         parsedLog.Amount,
+			Token:              parsedLog.Token.String(),
+			Amount:             parsedLog.Amount,
 			RequestVersion:     requestVersion,
 			FormattedRequest:   formattedRequest,
 		}).Count(&count)
@@ -566,10 +565,7 @@ func (b *BackfillSuite) receiveCircleTokenParity(log *types.Log, parser *parser.
 		String: parsedLog.Recipient.String(),
 		Valid:  true,
 	}
-	token := gosql.NullString{
-		String: parsedLog.Token.String(),
-		Valid:  true,
-	}
+
 	events := b.db.UNSAFE_DB().WithContext(b.GetTestContext()).Model(&sql.CCTPEvent{}).
 		Where(&sql.CCTPEvent{
 			ContractAddress: log.Address.String(),
@@ -579,10 +575,10 @@ func (b *BackfillSuite) receiveCircleTokenParity(log *types.Log, parser *parser.
 			RequestID:       common.Bytes2Hex(parsedLog.RequestID[:]),
 			OriginChainID:   big.NewInt(int64(parsedLog.OriginDomain)),
 			MintToken:       mintToken,
-			ReceivedAmount:  parsedLog.Amount,
+			Amount:          parsedLog.Amount,
 			Recipient:       recipient,
 			Fee:             parsedLog.Fee,
-			Token:           token,
+			Token:           parsedLog.Token.String(),
 		}).Count(&count)
 	if events.Error != nil {
 		return fmt.Errorf("error querying for event: %w", events.Error)

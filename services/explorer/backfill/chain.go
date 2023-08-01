@@ -154,6 +154,7 @@ func (c *ChainBackfiller) backfillContractLogs(parentCtx context.Context, contra
 	}
 	var endHeight uint64
 	err = c.retryWithBackoff(parentCtx, func(ctx context.Context) error {
+		// TODO change to get last unconfirmed block
 		endHeight, err = c.Fetcher.FetchLastIndexed(parentCtx, c.chainConfig.ChainID, contract.Address)
 		if err != nil {
 			return fmt.Errorf("could not get last indexed height, %w", err)
@@ -183,7 +184,7 @@ func (c *ChainBackfiller) backfillContractLogs(parentCtx context.Context, contra
 				b := &backoff.Backoff{
 					Factor: 2,
 					Jitter: true,
-					Min:    30 * time.Millisecond,
+					Min:    1 * time.Second,
 					Max:    3 * time.Second,
 				}
 

@@ -4,11 +4,10 @@ import (
 	"context"
 	"database/sql"
 	"fmt"
-	"math/big"
-	"strconv"
-
 	ethTypes "github.com/ethereum/go-ethereum/core/types"
 	"gopkg.in/yaml.v2"
+	"math/big"
+	"strconv"
 )
 
 // ErrUnknownTopic is returned when the topic is unknown.

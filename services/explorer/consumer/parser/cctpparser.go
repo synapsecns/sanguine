@@ -4,6 +4,8 @@ import (
 	"context"
 	"database/sql"
 	"fmt"
+	"github.com/jpillora/backoff"
+	"github.com/synapsecns/sanguine/services/explorer/consumer/parser/tokendata"
 	"time"
 
 	"github.com/ethereum/go-ethereum/common"
@@ -13,6 +15,7 @@ import (
 	"github.com/synapsecns/sanguine/services/explorer/contracts/cctp"
 	"github.com/synapsecns/sanguine/services/explorer/db"
 	model "github.com/synapsecns/sanguine/services/explorer/db/sql"
+	bridgeTypes "github.com/synapsecns/sanguine/services/explorer/types/bridge"
 	cctpTypes "github.com/synapsecns/sanguine/services/explorer/types/cctp"
 )
 
@@ -26,6 +29,10 @@ type CCTPParser struct {
 	cctpAddress common.Address
 	// consumerFetcher is the Fetcher for sender and timestamp
 	consumerFetcher fetcher.ScribeFetcher
+	// cctpService is the cctp service for getting token symbol information
+	cctpService fetcher.CCTPService
+	// tokenDataService contains the token data service/cache
+	tokenDataService tokendata.Service
 	// tokenPriceService contains the token price service/cache
 	tokenPriceService tokenprice.Service
 }
@@ -34,12 +41,12 @@ const usdcCoinGeckoID = "usd-coin"
 const usdcDecimals = 6
 
 // NewCCTPParser creates a new parser for a cctp event.
-func NewCCTPParser(consumerDB db.ConsumerDB, cctpAddress common.Address, consumerFetcher fetcher.ScribeFetcher, tokenPriceService tokenprice.Service) (*CCTPParser, error) {
+func NewCCTPParser(consumerDB db.ConsumerDB, cctpAddress common.Address, consumerFetcher fetcher.ScribeFetcher, cctpService fetcher.CCTPService, tokenDataService tokendata.Service, tokenPriceService tokenprice.Service) (*CCTPParser, error) {
 	filterer, err := cctp.NewSynapseCCTPFilterer(cctpAddress, nil)
 	if err != nil {
 		return nil, fmt.Errorf("could not create %T: %w", cctp.SynapseCCTPFilterer{}, err)
 	}
-	return &CCTPParser{consumerDB, filterer, cctpAddress, consumerFetcher, tokenPriceService}, nil
+	return &CCTPParser{consumerDB, filterer, cctpAddress, consumerFetcher, cctpService, tokenDataService, tokenPriceService}, nil
 }
 
 // Parse parses the cctp logs.
@@ -80,7 +87,7 @@ func (c *CCTPParser) Parse(ctx context.Context, log ethTypes.Log, chainID uint32
 	}
 
 	// Populate cctp event type so following operations can mature the event data.
-	cctpEvent := eventToCCTPEvent(iFace)
+	cctpEvent := eventToCCTPEvent(iFace, chainID)
 
 	// Get timestamp from consumer
 	timeStamp, err := c.consumerFetcher.FetchBlockTime(ctx, int(chainID), int(iFace.GetBlockNumber()))
@@ -91,7 +98,25 @@ func (c *CCTPParser) Parse(ctx context.Context, log ethTypes.Log, chainID uint32
 	// If we have a timestamp, populate the following attributes of cctpEvent.
 	timeStampBig := uint64(*timeStamp)
 	cctpEvent.TimeStamp = &timeStampBig
+
+	tokenData, err := c.tokenDataService.GetCCTPTokenData(ctx, chainID, common.HexToAddress(cctpEvent.Token), c.cctpService)
+	if err != nil {
+		logger.Errorf("could not get token data: %v", err)
+		return nil, fmt.Errorf("could not get pool token data: %w", err)
+	}
+	decimals := uint8(usdcDecimals)
+	cctpEvent.TokenSymbol = tokenData.TokenID()
+	cctpEvent.TokenDecimal = &decimals
 	c.applyPriceData(ctx, &cctpEvent, usdcCoinGeckoID)
+
+	// Store into bridge database with a new goroutine.
+	go func() {
+		bridgeEvent := cctpEventToBridgeEvent(cctpEvent)
+		err := c.storeBridgeEvent(ctx, bridgeEvent)
+		if err != nil {
+			logger.Errorf("could not store cctp event into bridge database: %v", err)
+		}
+	}()
 
 	return cctpEvent, nil
 }
@@ -105,8 +130,11 @@ func (c *CCTPParser) applyPriceData(ctx context.Context, cctpEvent *model.CCTPEv
 		tokenPrice = &one
 	}
 
-	if cctpEvent.SentAmount != nil {
-		cctpEvent.SentAmountUSD = GetAmountUSD(cctpEvent.SentAmount, usdcDecimals, tokenPrice)
+	if cctpEvent.Amount != nil {
+		amountUSD := GetAmountUSD(cctpEvent.Amount, usdcDecimals, tokenPrice)
+		if amountUSD != nil {
+			cctpEvent.AmountUSD = *amountUSD
+		}
 	}
 	if cctpEvent.Fee != nil {
 		cctpEvent.FeeUSD = GetAmountUSD(cctpEvent.Fee, usdcDecimals, tokenPrice)
@@ -114,7 +142,7 @@ func (c *CCTPParser) applyPriceData(ctx context.Context, cctpEvent *model.CCTPEv
 }
 
 // eventToCCTPEvent stores a message event.
-func eventToCCTPEvent(event cctpTypes.EventLog) model.CCTPEvent {
+func eventToCCTPEvent(event cctpTypes.EventLog, chainID uint32) model.CCTPEvent {
 	requestID := event.GetRequestID()
 
 	var formattedRequest sql.NullString
@@ -126,24 +154,94 @@ func eventToCCTPEvent(event cctpTypes.EventLog) model.CCTPEvent {
 	}
 
 	return model.CCTPEvent{
-		InsertTime:         uint64(time.Now().UnixNano()),
-		ContractAddress:    event.GetContractAddress().String(),
-		BlockNumber:        event.GetBlockNumber(),
-		TxHash:             event.GetTxHash().String(),
-		EventType:          event.GetEventType().Int(),
-		RequestID:          common.Bytes2Hex(requestID[:]),
+		InsertTime:      uint64(time.Now().UnixNano()),
+		ChainID:         chainID,
+		TxHash:          event.GetTxHash().String(),
+		ContractAddress: event.GetContractAddress().String(),
+		BlockNumber:     event.GetBlockNumber(),
+		EventType:       event.GetEventType().Int(),
+		RequestID:       common.Bytes2Hex(requestID[:]),
+
+		Token:              event.GetToken(),
+		Amount:             event.GetAmount(),
+		EventIndex:         event.GetEventIndex(),
 		OriginChainID:      event.GetOriginChainID(),
 		DestinationChainID: event.GetDestinationChainID(),
 		Sender:             ToNullString(event.GetSender()),
 		Nonce:              ToNullInt64(event.GetNonce()),
-		BurnToken:          ToNullString(event.GetBurnToken()),
 		MintToken:          ToNullString(event.GetMintToken()),
-		SentAmount:         event.GetSentAmount(),
-		ReceivedAmount:     event.GetReceivedAmount(),
 		RequestVersion:     ToNullInt32(event.GetRequestVersion()),
 		FormattedRequest:   formattedRequest,
 		Recipient:          ToNullString(event.GetRecipient()),
 		Fee:                event.GetFee(),
-		Token:              ToNullString(event.GetToken()),
+	}
+}
+
+func cctpEventToBridgeEvent(cctpEvent model.CCTPEvent) model.BridgeEvent {
+	bridgeType := bridgeTypes.CircleRequestSentEvent
+
+	destinationKappa := fmt.Sprintf("cctp_%s", cctpEvent.RequestID)
+	var kappa *string
+	if cctpEvent.EventType == cctpTypes.CircleRequestFulfilledEvent.Int() {
+		bridgeType = bridgeTypes.CircleRequestFulfilledEvent
+		destinationKappa = ""
+		*kappa = fmt.Sprintf("cctp_%s", cctpEvent.RequestID)
+	}
+	return model.BridgeEvent{
+		InsertTime:       cctpEvent.InsertTime,
+		ContractAddress:  cctpEvent.ContractAddress,
+		ChainID:          cctpEvent.ChainID,
+		EventType:        bridgeType.Int(),
+		BlockNumber:      cctpEvent.BlockNumber,
+		TxHash:           cctpEvent.TxHash,
+		Token:            cctpEvent.Token,
+		Amount:           cctpEvent.Amount,
+		EventIndex:       cctpEvent.EventIndex,
+		DestinationKappa: destinationKappa,
+		Sender:           cctpEvent.Sender.String,
+
+		Recipient:          cctpEvent.Recipient,
+		RecipientBytes:     sql.NullString{},
+		DestinationChainID: cctpEvent.DestinationChainID,
+		Fee:                cctpEvent.Fee,
+		Kappa:              ToNullString(kappa),
+		TokenIndexFrom:     nil,
+		TokenIndexTo:       nil,
+		MinDy:              nil,
+		Deadline:           nil,
+
+		SwapSuccess:    nil,
+		SwapTokenIndex: nil,
+		SwapMinAmount:  nil,
+		SwapDeadline:   nil,
+		AmountUSD:      &cctpEvent.AmountUSD,
+		FeeUSD:         cctpEvent.FeeUSD,
+		TokenDecimal:   cctpEvent.TokenDecimal,
+		TokenSymbol:    ToNullString(&cctpEvent.TokenSymbol),
+		TimeStamp:      cctpEvent.TimeStamp,
+	}
+}
+
+func (c *CCTPParser) storeBridgeEvent(ctx context.Context, bridgeEvent model.BridgeEvent) error {
+	b := &backoff.Backoff{
+		Factor: 2,
+		Jitter: true,
+		Min:    1 * time.Second,
+		Max:    300 * time.Second,
+	}
+
+	timeout := time.Duration(0)
+	for {
+		select {
+		case <-ctx.Done():
+			return fmt.Errorf("%w while retrying", ctx.Err())
+		case <-time.After(timeout):
+			err := c.consumerDB.StoreEvent(ctx, bridgeEvent)
+			if err != nil {
+				timeout = b.Duration()
+				continue
+			}
+			return nil
+		}
 	}
 }

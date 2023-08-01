@@ -1,10 +1,11 @@
 package cctp
 
+import "C"
 import (
+	"github.com/synapsecns/sanguine/services/explorer/types/cctp"
 	"math/big"
 
 	"github.com/ethereum/go-ethereum/common"
-	types "github.com/synapsecns/sanguine/services/explorer/types/cctp"
 )
 
 // GetContractAddress gets the contract address the event occurred on.
@@ -23,8 +24,8 @@ func (s SynapseCCTPCircleRequestSent) GetTxHash() common.Hash {
 }
 
 // GetEventType gets the event type for the event.
-func (s SynapseCCTPCircleRequestSent) GetEventType() types.EventType {
-	return types.CircleRequestSentEvent
+func (s SynapseCCTPCircleRequestSent) GetEventType() cctp.EventType {
+	return cctp.CircleRequestSentEvent
 }
 
 // GetRequestID gets the unique identifier of the request.
@@ -53,12 +54,6 @@ func (s SynapseCCTPCircleRequestSent) GetNonce() *uint64 {
 	return &s.Nonce
 }
 
-// GetBurnToken gets the address of the Circle token that was burnt.
-func (s SynapseCCTPCircleRequestSent) GetBurnToken() *string {
-	str := s.Token.String()
-	return &str
-}
-
 // GetMintToken gets the address of the minted Circle token.
 func (s SynapseCCTPCircleRequestSent) GetMintToken() *string {
 	return nil
@@ -69,9 +64,9 @@ func (s SynapseCCTPCircleRequestSent) GetSentAmount() *big.Int {
 	return s.Amount
 }
 
-// GetReceivedAmount gets the received amount by the recipient.
-func (s SynapseCCTPCircleRequestSent) GetReceivedAmount() *big.Int {
-	return nil
+// GetAmount gets the amount from the transfer.
+func (s SynapseCCTPCircleRequestSent) GetAmount() *big.Int {
+	return s.Amount
 }
 
 // GetRequestVersion gets the version of the request format.
@@ -95,9 +90,16 @@ func (s SynapseCCTPCircleRequestSent) GetFee() *big.Int {
 }
 
 // GetToken gets the address of the token that the recipient received.
-func (s SynapseCCTPCircleRequestSent) GetToken() *string {
-	return nil
+func (s SynapseCCTPCircleRequestSent) GetToken() string {
+	return s.Token.String()
 }
+
+// GetEventIndex gets the tx index of the event in the block it was executed in.
+func (s SynapseCCTPCircleRequestSent) GetEventIndex() uint64 {
+	return uint64(s.Raw.TxIndex)
+}
+
+var _ cctp.EventLog = &SynapseCCTPCircleRequestSent{}
 
 // GetContractAddress gets the contract address the event occurred on.
 func (s SynapseCCTPCircleRequestFulfilled) GetContractAddress() common.Address {
@@ -115,8 +117,8 @@ func (s SynapseCCTPCircleRequestFulfilled) GetTxHash() common.Hash {
 }
 
 // GetEventType gets the event type for the event.
-func (s SynapseCCTPCircleRequestFulfilled) GetEventType() types.EventType {
-	return types.CircleRequestFulfilledEvent
+func (s SynapseCCTPCircleRequestFulfilled) GetEventType() cctp.EventType {
+	return cctp.CircleRequestFulfilledEvent
 }
 
 // GetRequestID gets the unique identifier of the request.
@@ -126,7 +128,9 @@ func (s SynapseCCTPCircleRequestFulfilled) GetRequestID() [32]byte {
 
 // GetOriginChainID gets the origin chain ID for the event.
 func (s SynapseCCTPCircleRequestFulfilled) GetOriginChainID() *big.Int {
-	return big.NewInt(int64(s.OriginDomain))
+	// domain to chain mapping TODO move to static mapping
+	domainToChain := []int64{1, 43114, 10, 42161}
+	return big.NewInt(domainToChain[s.OriginDomain])
 }
 
 // GetDestinationChainID gets the destination chain ID for the event.
@@ -144,24 +148,14 @@ func (s SynapseCCTPCircleRequestFulfilled) GetNonce() *uint64 {
 	return nil
 }
 
-// GetBurnToken gets the address of the Circle token that was burnt.
-func (s SynapseCCTPCircleRequestFulfilled) GetBurnToken() *string {
-	return nil
-}
-
 // GetMintToken gets the address of the minted Circle token.
 func (s SynapseCCTPCircleRequestFulfilled) GetMintToken() *string {
 	str := s.MintToken.String()
 	return &str
 }
 
-// GetSentAmount gets the amount of Circle tokens burnt.
-func (s SynapseCCTPCircleRequestFulfilled) GetSentAmount() *big.Int {
-	return nil
-}
-
-// GetReceivedAmount gets the received amount by the recipient.
-func (s SynapseCCTPCircleRequestFulfilled) GetReceivedAmount() *big.Int {
+// GetAmount is the amount from the transfer.
+func (s SynapseCCTPCircleRequestFulfilled) GetAmount() *big.Int {
 	return s.Amount
 }
 
@@ -187,7 +181,13 @@ func (s SynapseCCTPCircleRequestFulfilled) GetFee() *big.Int {
 }
 
 // GetToken gets the address of the token that the recipient received.
-func (s SynapseCCTPCircleRequestFulfilled) GetToken() *string {
-	str := s.Token.String()
-	return &str
+func (s SynapseCCTPCircleRequestFulfilled) GetToken() string {
+	return s.Token.String()
 }
+
+// GetEventIndex gets the tx index of the event in the block it was executed in.
+func (s SynapseCCTPCircleRequestFulfilled) GetEventIndex() uint64 {
+	return uint64(s.Raw.TxIndex)
+}
+
+var _ cctp.EventLog = &SynapseCCTPCircleRequestFulfilled{}
