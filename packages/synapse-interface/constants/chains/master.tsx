@@ -294,7 +294,7 @@ export const BASE: Chain = {
   codeName: 'base',
   chainImg: baseImg,
   layer: 2,
-  rpc: 'https://mainnet.base.org', // rate limited, need real rpc
+  rpc: 'https://developer-access-mainnet.base.org',
   explorerUrl: 'https://basescan.org',
   blockTime: 5000,
   nativeCurrency: {
