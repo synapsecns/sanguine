@@ -3,7 +3,7 @@ export const getTimeMinutesFromNow = (minutesFromNow) => {
 
   return Math.round(currentTimeSeconds + 60 * minutesFromNow)
 }
-export const formatDate = (date) => {
+export  const formatDate = (date) => {
   return new Intl.DateTimeFormat('en-US', {
     year: 'numeric',
     month: 'short',
