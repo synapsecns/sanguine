@@ -196,35 +196,35 @@ RETRY:
 	}
 }
 
-//// FetchLogsInRange fetches logs in a range with the GQL client.
-// func (s scribeFetcherImpl) FetchLogsInRange(ctx context.Context, chainID uint32, startBlock, endBlock uint64, contractAddress common.Address) ([]ethTypes.Log, error) {
-//	logs := &client.GetLogsRange{}
-//	page := 1
-//	contractAddressString := contractAddress.String()
-//
-//	for {
-//		paginatedLogs, err := s.underlyingClient.GetLogsRange(ctx, int(chainID), int(startBlock), int(endBlock), page, &contractAddressString)
-//		if err != nil {
-//			return nil, fmt.Errorf("could not get logs: %w", err)
-//		}
-//		if len(paginatedLogs.Response) == 0 {
-//			break
-//		}
-//
-//		logs.Response = append(logs.Response, paginatedLogs.Response...)
-//		page++
-//	}
-//
-//	var parsedLogs []ethTypes.Log
-//
-//	for _, log := range logs.Response {
-//		parsedLog, err := graphql.ParseLog(*log)
-//		if err != nil {
-//			return nil, fmt.Errorf("could not parse log: %w", err)
-//		}
-//
-//		parsedLogs = append(parsedLogs, *parsedLog)
-//	}
-//
-//	return parsedLogs, nil
-//}
+// FetchUnconfirmedLogsInRange fetches both confirmed and unconfirmed logs in a range with the GQL client.
+func (s scribeFetcherImpl) FetchUnconfirmedLogsInRange(ctx context.Context, chainID uint32, startBlock, endBlock uint64, contractAddress common.Address) ([]ethTypes.Log, error) {
+	logs := &client.GetLogsRange{}
+	page := 1
+	contractAddressString := contractAddress.String()
+
+	for {
+		paginatedLogs, err := s.underlyingClient.GetLogsRange(ctx, int(chainID), int(startBlock), int(endBlock), page, &contractAddressString)
+		if err != nil {
+			return nil, fmt.Errorf("could not get logs: %w", err)
+		}
+		if len(paginatedLogs.Response) == 0 {
+			break
+		}
+
+		logs.Response = append(logs.Response, paginatedLogs.Response...)
+		page++
+	}
+
+	var parsedLogs []ethTypes.Log
+
+	for _, log := range logs.Response {
+		parsedLog, err := graphql.ParseLog(*log)
+		if err != nil {
+			return nil, fmt.Errorf("could not parse log: %w", err)
+		}
+
+		parsedLogs = append(parsedLogs, *parsedLog)
+	}
+
+	return parsedLogs, nil
+}
