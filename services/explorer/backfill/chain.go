@@ -276,7 +276,6 @@ func (c *ChainBackfiller) processLogs(ctx context.Context, logs []ethTypes.Log, 
 					timeout = b.Duration()
 					continue
 				}
-
 			}
 
 			parsedLogs = append(parsedLogs, parsedLog)
