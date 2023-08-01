@@ -219,6 +219,27 @@ func generateEqualitySpecifierSQL(value *int, field string, firstFilter *bool, t
 	return ""
 }
 
+// generateCCTPSpecifierSQLMv generates a where function with event type to filter only cctp events.
+func generateCCTPSpecifierSQL(onlyCctp *bool, to bool, field string, firstFilter *bool, tablePrefix string) string {
+	if onlyCctp != nil && *onlyCctp {
+		// From explorer/types/bridge/eventtypes.go
+		eventType := 10
+		if to {
+			eventType = 11
+		}
+
+		if *firstFilter {
+			*firstFilter = false
+
+			return fmt.Sprintf(" WHERE %s%s =  %d", tablePrefix, field, eventType)
+		}
+
+		return fmt.Sprintf(" AND %s%s = %d", tablePrefix, field, eventType)
+	}
+
+	return ""
+}
+
 // generateEqualitySpecifierSQL generates a where function with an equality.
 //
 // nolint:unparam
@@ -707,7 +728,7 @@ func generateMessageBusQuery(chainID []*int, address *string, startTime *int, en
 	}
 	return finalQuery
 }
-func generateAllBridgeEventsQueryFromDestination(chainIDTo []*int, chainIDFrom []*int, addressFrom *string, addressTo *string, maxAmount *int, minAmount *int, maxAmountUsd *int, minAmountUsd *int, startTime *int, endTime *int, tokenAddressFrom []*string, tokenAddressTo []*string, kappa *string, txHash *string, page int, in bool) string {
+func generateAllBridgeEventsQueryFromDestination(chainIDTo []*int, chainIDFrom []*int, addressFrom *string, addressTo *string, maxAmount *int, minAmount *int, maxAmountUsd *int, minAmountUsd *int, startTime *int, endTime *int, tokenAddressFrom []*string, tokenAddressTo []*string, kappa *string, txHash *string, onlyCctp *bool, page int, in bool) string {
 	firstFilter := true
 	chainIDToFilter := generateSingleSpecifierI32ArrSQL(chainIDTo, sql.ChainIDFieldName, &firstFilter, "")
 	minTimeFilter := generateEqualitySpecifierSQL(startTime, sql.TimeStampFieldName, &firstFilter, "", true)
@@ -716,8 +737,9 @@ func generateAllBridgeEventsQueryFromDestination(chainIDTo []*int, chainIDFrom [
 	kappaFilter := generateKappaSpecifierSQL(kappa, sql.KappaFieldName, &firstFilter, "")
 	txHashFilter := generateSingleSpecifierStringSQL(txHash, sql.TxHashFieldName, &firstFilter, "")
 	directionFilter := generateDirectionSpecifierSQL(in, &firstFilter, "")
+	cctpFilter := generateCCTPSpecifierSQL(onlyCctp, true, sql.EventTypeFieldName, &firstFilter, "")
 
-	toFilters := chainIDToFilter + minTimeFilter + maxTimeFilter + addressToFilter + kappaFilter + txHashFilter + directionFilter
+	toFilters := chainIDToFilter + minTimeFilter + maxTimeFilter + addressToFilter + kappaFilter + txHashFilter + directionFilter + cctpFilter
 
 	firstFilter = false
 	chainIDFromFilter := generateSingleSpecifierI32ArrSQL(chainIDFrom, sql.ChainIDFieldName, &firstFilter, "")
@@ -790,7 +812,7 @@ func generateAllBridgeEventsQueryFromDestinationMv(chainIDTo []*int, addressTo *
 // generateAllBridgeEventsQueryFromOrigin gets all the filters for query from origin.
 //
 // nolint:dupl
-func generateAllBridgeEventsQueryFromOrigin(chainIDFrom []*int, chainIDTo []*int, addressFrom *string, addressTo *string, maxAmount *int, minAmount *int, maxAmountUsd *int, minAmountUsd *int, startTime *int, endTime *int, tokenAddressFrom []*string, tokenAddressTo []*string, txHash *string, pending *bool, page int, in bool) string {
+func generateAllBridgeEventsQueryFromOrigin(chainIDFrom []*int, chainIDTo []*int, addressFrom *string, addressTo *string, maxAmount *int, minAmount *int, maxAmountUsd *int, minAmountUsd *int, startTime *int, endTime *int, tokenAddressFrom []*string, tokenAddressTo []*string, txHash *string, pending *bool, onlyCctp *bool, page int, in bool) string {
 	firstFilter := true
 	chainIDFromFilter := generateSingleSpecifierI32ArrSQL(chainIDFrom, sql.ChainIDFieldName, &firstFilter, "")
 	minTimeFilter := generateEqualitySpecifierSQL(startTime, sql.TimeStampFieldName, &firstFilter, "", true)
@@ -798,8 +820,8 @@ func generateAllBridgeEventsQueryFromOrigin(chainIDFrom []*int, chainIDTo []*int
 	addressFromFilter := generateAddressSpecifierSQL(addressFrom, &firstFilter, "")
 	txHashFilter := generateSingleSpecifierStringSQL(txHash, sql.TxHashFieldName, &firstFilter, "")
 	directionFilter := generateDirectionSpecifierSQL(in, &firstFilter, "")
-
-	fromFilters := chainIDFromFilter + minTimeFilter + maxTimeFilter + addressFromFilter + txHashFilter + directionFilter
+	cctpFilter := generateCCTPSpecifierSQL(onlyCctp, false, sql.EventTypeFieldName, &firstFilter, "")
+	fromFilters := chainIDFromFilter + minTimeFilter + maxTimeFilter + addressFromFilter + txHashFilter + directionFilter + cctpFilter
 
 	firstFilter = false
 	chainIDToFilter := generateSingleSpecifierI32ArrSQL(chainIDTo, sql.ChainIDFieldName, &firstFilter, "")
@@ -924,7 +946,7 @@ func generateAllBridgeEventsQueryMv(chainIDFrom []*int, chainIDTo []*int, addres
 }
 
 // nolint:cyclop
-func (r *queryResolver) GetBridgeTxsFromDestination(ctx context.Context, useMv *bool, chainIDFrom []*int, chainIDTo []*int, addressFrom *string, addressTo *string, maxAmount *int, minAmount *int, maxAmountUsd *int, minAmountUsd *int, startTime *int, endTime *int, txHash *string, kappa *string, tokenAddressFrom []*string, tokenAddressTo []*string, page *int, pending *bool) ([]*model.BridgeTransaction, error) {
+func (r *queryResolver) GetBridgeTxsFromDestination(ctx context.Context, useMv *bool, chainIDFrom []*int, chainIDTo []*int, addressFrom *string, addressTo *string, maxAmount *int, minAmount *int, maxAmountUsd *int, minAmountUsd *int, startTime *int, endTime *int, txHash *string, kappa *string, tokenAddressFrom []*string, tokenAddressTo []*string, onlyCctp *bool, page *int, pending *bool) ([]*model.BridgeTransaction, error) {
 	var err error
 	var results []*model.BridgeTransaction
 	var query string
@@ -934,7 +956,7 @@ func (r *queryResolver) GetBridgeTxsFromDestination(ctx context.Context, useMv *
 		}
 		query = generateAllBridgeEventsQueryFromDestinationMv(chainIDTo, addressTo, minAmount, minAmountUsd, startTime, endTime, tokenAddressTo, kappa, txHash, pending, *page)
 	} else {
-		query = generateAllBridgeEventsQueryFromDestination(chainIDFrom, chainIDTo, addressFrom, addressTo, maxAmount, minAmount, minAmountUsd, maxAmountUsd, startTime, endTime, tokenAddressFrom, tokenAddressTo, kappa, txHash, *page, false)
+		query = generateAllBridgeEventsQueryFromDestination(chainIDFrom, chainIDTo, addressFrom, addressTo, maxAmount, minAmount, minAmountUsd, maxAmountUsd, startTime, endTime, tokenAddressFrom, tokenAddressTo, kappa, txHash, onlyCctp, *page, false)
 	}
 	allBridgeEvents, err := r.DB.GetAllBridgeEvents(ctx, query)
 
@@ -958,11 +980,11 @@ func (r *queryResolver) GetBridgeTxsFromDestination(ctx context.Context, useMv *
 	return results, nil
 }
 
-func (r *queryResolver) GetBridgeTxsFromOrigin(ctx context.Context, useMv *bool, chainIDFrom []*int, chainIDTo []*int, addressFrom *string, addressTo *string, maxAmount *int, minAmount *int, maxAmountUsd *int, minAmountUsd *int, startTime *int, endTime *int, txHash *string, tokenAddressTo []*string, tokenAddressFrom []*string, kappa *string, pending *bool, page *int, latest bool) ([]*model.BridgeTransaction, error) {
+func (r *queryResolver) GetBridgeTxsFromOrigin(ctx context.Context, useMv *bool, chainIDFrom []*int, chainIDTo []*int, addressFrom *string, addressTo *string, maxAmount *int, minAmount *int, maxAmountUsd *int, minAmountUsd *int, startTime *int, endTime *int, txHash *string, tokenAddressTo []*string, tokenAddressFrom []*string, kappa *string, pending *bool, onlyCctp *bool, page *int, latest bool) ([]*model.BridgeTransaction, error) {
 	var err error
 	var chainMap = make(map[uint32]bool)
 	var results []*model.BridgeTransaction
-	query := generateAllBridgeEventsQueryFromOrigin(chainIDFrom, chainIDTo, addressFrom, addressTo, maxAmount, minAmount, maxAmountUsd, minAmountUsd, startTime, endTime, tokenAddressFrom, tokenAddressTo, txHash, pending, *page, true)
+	query := generateAllBridgeEventsQueryFromOrigin(chainIDFrom, chainIDTo, addressFrom, addressTo, maxAmount, minAmount, maxAmountUsd, minAmountUsd, startTime, endTime, tokenAddressFrom, tokenAddressTo, txHash, pending, onlyCctp, *page, true)
 	if useMv != nil && *useMv {
 		query = generateAllBridgeEventsQueryFromOriginMv(chainIDFrom, addressFrom, maxAmount, maxAmountUsd, startTime, endTime, tokenAddressFrom, txHash, kappa, pending, *page)
 	}
