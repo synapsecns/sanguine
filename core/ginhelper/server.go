@@ -26,7 +26,8 @@ var robots []byte
 // - request-ids (used for stack tracing)
 // - cors (used for requests from the frontend)
 // - health-checks
-// restrictive robots.txt.
+// - restrictive robots.txt.
+// TODO: optionally include metrics.
 func New(logger *log.ZapEventLogger) *gin.Engine {
 	server := gin.New()
 	// required for opentracing.
@@ -98,3 +99,6 @@ const RequestIDHeader = "X-Request-ID"
 
 // bootTime is used for the mod-time of the robots.txt.
 var bootTime = time.Now()
+
+// MetricsEndpoint is used for prometheus metrics.
+const MetricsEndpoint string = "/metrics"

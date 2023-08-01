@@ -2,6 +2,7 @@ package db
 
 import (
 	"context"
+	"github.com/benbjohnson/immutable"
 
 	"github.com/synapsecns/sanguine/services/explorer/db/sql"
 	"github.com/synapsecns/sanguine/services/explorer/graphql/server/graph/model"
@@ -65,6 +66,8 @@ type ConsumerDBReader interface {
 	GetAddressChainRanking(ctx context.Context, query string) ([]*model.AddressChainRanking, error)
 	// GetLeaderboard gets the bridge leaderboard.
 	GetLeaderboard(ctx context.Context, query string) ([]*model.Leaderboard, error)
+	// GetPendingByChain gets the pending txs by chain.
+	GetPendingByChain(ctx context.Context) (res *immutable.Map[int, int], err error)
 }
 
 // ConsumerDB is the interface for the ConsumerDB.
