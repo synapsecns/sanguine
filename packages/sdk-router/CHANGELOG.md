@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [0.2.6](https://github.com/synapsecns/sanguine/compare/@synapsecns/sdk-router@0.2.5...@synapsecns/sdk-router@0.2.6) (2023-08-01)
+
+
+### Reverts
+
+* Revert "try to fix router install (#1201)" ([67d6ef5](https://github.com/synapsecns/sanguine/commit/67d6ef5f1d7c1307b603ebe916cadb7eea7fe0bc)), closes [#1201](https://github.com/synapsecns/sanguine/issues/1201)
+
+
+
+
+
 ## [0.2.5](https://github.com/synapsecns/sanguine/compare/@synapsecns/sdk-router@0.2.4...@synapsecns/sdk-router@0.2.5) (2023-08-01)
 
 **Note:** Version bump only for package @synapsecns/sdk-router
