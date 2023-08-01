@@ -195,7 +195,7 @@ const StateManagedBridge = () => {
     const toTokens = BRIDGABLE_TOKENS[toChainId]
 
     // Checking whether the selected fromToken exists in the BRIDGABLE_TOKENS for the chosen chain
-    if (!fromTokens.some((token) => token.symbol === fromToken.symbol)) {
+    if (!fromTokens.some((token) => token.symbol === fromToken?.symbol)) {
       // Sort the tokens based on priorityRank in ascending order
       const sortedTokens = fromTokens.sort(
         (a, b) => a.priorityRank - b.priorityRank
@@ -210,7 +210,7 @@ const StateManagedBridge = () => {
       findSupportedChainsAndTokens(
         fromToken,
         toChainId,
-        toToken.symbol,
+        toToken?.symbol,
         fromChainId
       )
 
