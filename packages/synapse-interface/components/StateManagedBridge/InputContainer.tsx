@@ -90,7 +90,7 @@ export const InputContainer = () => {
   const onMaxBalance = useCallback(() => {
     dispatch(
       updateFromValue(
-        formatBigIntToString(fromTokenBalance, fromToken.decimals[fromChainId])
+        formatBigIntToString(fromTokenBalance, fromToken?.decimals[fromChainId])
       )
     )
   }, [fromTokenBalance, fromChainId, fromToken])
