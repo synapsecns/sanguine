@@ -193,6 +193,7 @@ const StateManagedBridge = () => {
   useEffect(() => {
     let fromTokens = BRIDGABLE_TOKENS[fromChainId]
     const toTokens = BRIDGABLE_TOKENS[toChainId]
+    let test
 
     // Checking whether the selected fromToken exists in the BRIDGABLE_TOKENS for the chosen chain
     if (!fromTokens.some((token) => token.symbol === fromToken.symbol)) {
