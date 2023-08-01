@@ -3,6 +3,25 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [0.1.74](https://github.com/synapsecns/sanguine/compare/@synapsecns/synapse-interface@0.1.73...@synapsecns/synapse-interface@0.1.74) (2023-08-01)
+
+**Note:** Version bump only for package @synapsecns/synapse-interface
+
+
+
+
+
+## [0.1.73](https://github.com/synapsecns/sanguine/compare/@synapsecns/synapse-interface@0.1.72...@synapsecns/synapse-interface@0.1.73) (2023-08-01)
+
+
+### Reverts
+
+* Revert "Revert "try to fix router install (#1201)"" (#1210) ([84d7cbb](https://github.com/synapsecns/sanguine/commit/84d7cbb0d8913c33ce91d8f380591fb401594c82)), closes [#1201](https://github.com/synapsecns/sanguine/issues/1201) [#1210](https://github.com/synapsecns/sanguine/issues/1210)
+
+
+
+
+
 ## [0.1.72](https://github.com/synapsecns/sanguine/compare/@synapsecns/synapse-interface@0.1.71...@synapsecns/synapse-interface@0.1.72) (2023-08-01)
 
 
