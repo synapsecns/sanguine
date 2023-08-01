@@ -123,7 +123,7 @@ func (s SynapseCCTPCircleRequestFulfilled) GetEventType() cctp.EventType {
 
 // GetRequestID gets the unique identifier of the request.
 func (s SynapseCCTPCircleRequestFulfilled) GetRequestID() [32]byte {
-	return [32]byte{}
+	return s.RequestID
 }
 
 // GetOriginChainID gets the origin chain ID for the event.
