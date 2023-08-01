@@ -587,10 +587,14 @@ func GetPartialInfoFromBridgeEventHybrid(bridgeEvent sql.HybridBridgeEvent, incl
 		return nil, fmt.Errorf("timestamp is not valid")
 	}
 
+	fAddress := bridgeEvent.FRecipient.String
+	if bridgeEvent.FEventType == bridge.CircleRequestSentEvent.Int() {
+		fAddress = bridgeEvent.FSender
+	}
 	fromInfos := &model.PartialInfo{
 		ChainID:            &fromChainID,
 		DestinationChainID: &fromDestinationChainID,
-		Address:            &bridgeEvent.FRecipient.String,
+		Address:            &fAddress,
 		TxnHash:            &bridgeEvent.FTxHash,
 		Value:              &fromValue,
 		FormattedValue:     fromFormattedValue,
@@ -628,9 +632,14 @@ func GetPartialInfoFromBridgeEventHybrid(bridgeEvent sql.HybridBridgeEvent, incl
 		}
 		toEventTypeFormatted := bridge.GetEventType(bridgeEvent.TEventType)
 		toEventType := int(bridgeEvent.TEventType)
+
+		tAddress := bridgeEvent.TRecipient.String
+		if bridgeEvent.FEventType == bridge.CircleRequestFulfilledEvent.Int() {
+			tAddress = bridgeEvent.TSender
+		}
 		toInfos = &model.PartialInfo{
 			ChainID:            &toChainID,
-			Address:            &bridgeEvent.TRecipient.String,
+			Address:            &tAddress,
 			TxnHash:            &bridgeEvent.TTxHash,
 			Value:              &toValue,
 			FormattedValue:     toFormattedValue,
