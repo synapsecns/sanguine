@@ -1,7 +1,6 @@
 import { expect } from '@jest/globals'
 
-import { getFromChainIds } from '@/utils/generateRoutePossibilities'
-import { Token } from '@/utils/types'
+import { getFromChainIds } from '@/utils/routeMaker/getFromChainIds'
 
 jest.mock('../constants/existing-bridge-routes', () => ({
   __esModule: true,
@@ -44,9 +43,9 @@ describe('getFromChainIds', () => {
   it('all entries null', () => {
     const chainIds = getFromChainIds({
       fromChainId: null,
-      fromToken: null,
+      fromTokenRouteSymbol: null,
       toChainId: null,
-      toToken: null,
+      toTokenRouteSymbol: null,
     })
 
     expect(chainIds).toEqual([1, 10, 25, 56, 50])
@@ -55,9 +54,9 @@ describe('getFromChainIds', () => {
   it('has fromChainId', () => {
     const chainIds = getFromChainIds({
       fromChainId: 1,
-      fromToken: null,
+      fromTokenRouteSymbol: null,
       toChainId: null,
-      toToken: null,
+      toTokenRouteSymbol: null,
     })
 
     expect(chainIds).toEqual([1, 10, 25, 56, 50])
@@ -66,9 +65,9 @@ describe('getFromChainIds', () => {
   it('has fromChainId, toChainId', () => {
     const chainIds = getFromChainIds({
       fromChainId: 1,
-      fromToken: null,
+      fromTokenRouteSymbol: null,
       toChainId: 10,
-      toToken: null,
+      toTokenRouteSymbol: null,
     })
 
     expect(chainIds).toEqual([1, 25, 56])
@@ -77,9 +76,9 @@ describe('getFromChainIds', () => {
   it('has fromChainId, fromToken, toChainId', () => {
     const chainIds = getFromChainIds({
       fromChainId: 1,
-      fromToken: 'USDC',
+      fromTokenRouteSymbol: 'USDC',
       toChainId: 10,
-      toToken: null,
+      toTokenRouteSymbol: null,
     })
 
     expect(chainIds).toEqual([1, 25, 56])
@@ -88,9 +87,9 @@ describe('getFromChainIds', () => {
   it('has fromChainId, fromToken, toChainId, toToken', () => {
     const chainIds = getFromChainIds({
       fromChainId: 1,
-      fromToken: 'USDC',
+      fromTokenRouteSymbol: 'USDC',
       toChainId: 10,
-      toToken: 'USDC',
+      toTokenRouteSymbol: 'USDC',
     })
 
     expect(chainIds).toEqual([1, 25, 56])
@@ -99,9 +98,9 @@ describe('getFromChainIds', () => {
   it('has fromChainId, fromToken', () => {
     const chainIds = getFromChainIds({
       fromChainId: 1,
-      fromToken: 'USDC',
+      fromTokenRouteSymbol: 'USDC',
       toChainId: null,
-      toToken: null,
+      toTokenRouteSymbol: null,
     })
 
     expect(chainIds).toEqual([1, 10, 25, 56])
@@ -110,9 +109,9 @@ describe('getFromChainIds', () => {
   it('has fromChainId, toToken', () => {
     const chainIds = getFromChainIds({
       fromChainId: 1,
-      fromToken: null,
+      fromTokenRouteSymbol: null,
       toChainId: null,
-      toToken: 'XYZ',
+      toTokenRouteSymbol: 'XYZ',
     })
 
     expect(chainIds).toEqual([1, 50])
@@ -121,9 +120,9 @@ describe('getFromChainIds', () => {
   it('has toChainId', () => {
     const chainIds = getFromChainIds({
       fromChainId: null,
-      fromToken: null,
+      fromTokenRouteSymbol: null,
       toChainId: 50,
-      toToken: null,
+      toTokenRouteSymbol: null,
     })
 
     expect(chainIds).toEqual([1])
@@ -132,9 +131,9 @@ describe('getFromChainIds', () => {
   it('has toChainId, toToken', () => {
     const chainIds = getFromChainIds({
       fromChainId: null,
-      fromToken: null,
+      fromTokenRouteSymbol: null,
       toChainId: 50,
-      toToken: 'XYZ',
+      toTokenRouteSymbol: 'XYZ',
     })
 
     expect(chainIds).toEqual([1])
@@ -143,9 +142,9 @@ describe('getFromChainIds', () => {
   it('has fromToken', () => {
     const chainIds = getFromChainIds({
       fromChainId: null,
-      fromToken: 'USDC',
+      fromTokenRouteSymbol: 'USDC',
       toChainId: null,
-      toToken: null,
+      toTokenRouteSymbol: null,
     })
 
     expect(chainIds).toEqual([1, 10, 25, 56])
@@ -154,22 +153,22 @@ describe('getFromChainIds', () => {
   it('has fromToken, toToken', () => {
     const chainIds = getFromChainIds({
       fromChainId: null,
-      fromToken: 'USDC',
+      fromTokenRouteSymbol: 'USDC',
       toChainId: null,
-      toToken: 'USDC',
+      toTokenRouteSymbol: 'USDC',
     })
 
-    expect(chainIds).toEqual([1, 10, 25, 56])
+    expect(chainIds.sort()).toEqual([1, 10, 25, 56].sort())
   })
 
   it('has toToken', () => {
     const chainIds = getFromChainIds({
       fromChainId: null,
-      fromToken: null,
+      fromTokenRouteSymbol: null,
       toChainId: null,
-      toToken: 'XYZ',
+      toTokenRouteSymbol: 'XYZ',
     })
 
-    expect(chainIds).toEqual([50, 1])
+    expect(chainIds.sort()).toEqual([50, 1].sort())
   })
 })

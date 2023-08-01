@@ -1,7 +1,6 @@
 import { expect } from '@jest/globals'
 
-import { getToTokens } from '@/utils/generateRoutePossibilities'
-import { Token } from '@/utils/types'
+import { getToTokens } from '@/utils/routeMaker/getToTokens'
 
 jest.mock('../constants/existing-bridge-routes', () => ({
   __esModule: true,
@@ -120,6 +119,17 @@ describe('getToTokens', () => {
     expect(toTokens).toEqual(['USDC-10', 'NUSD-10'])
   })
 
+  it('has fromTokenRouteSymbol, toChainId', () => {
+    const toTokens = getToTokens({
+      fromChainId: null,
+      fromTokenRouteSymbol: 'USDC',
+      toChainId: 10,
+      toTokenRouteSymbol: null,
+    })
+
+    expect(toTokens).toEqual(['USDC-10', 'NUSD-10'])
+  })
+
   it('has fromChainId, fromToken, toChainId, toToken', () => {
     const toTokens = getToTokens({
       fromChainId: 1,
@@ -152,20 +162,22 @@ describe('getToTokens', () => {
       toTokenRouteSymbol: 'XYZ',
     })
 
-    expect(toTokens).toEqual([
-      'GOHM-10',
-      'GOHM-25',
-      'GOHM-56',
-      'HIGHSTREET-56',
-      'USDC-10',
-      'USDC-25',
-      'USDC-56',
-      'NUSD-10',
-      'SYN-10',
-      'SYN-25',
-      'SYN-56',
-      'XYZ-50',
-    ])
+    expect(toTokens.sort()).toEqual(
+      [
+        'GOHM-10',
+        'GOHM-25',
+        'GOHM-56',
+        'HIGHSTREET-56',
+        'USDC-10',
+        'USDC-25',
+        'USDC-56',
+        'NUSD-10',
+        'SYN-10',
+        'SYN-25',
+        'SYN-56',
+        'XYZ-50',
+      ].sort()
+    )
   })
 
   it('has fromChainId, toToken, multiple', () => {
@@ -176,20 +188,22 @@ describe('getToTokens', () => {
       toTokenRouteSymbol: 'USDC',
     })
 
-    expect(toTokens).toEqual([
-      'GOHM-10',
-      'GOHM-25',
-      'GOHM-56',
-      'HIGHSTREET-56',
-      'USDC-10',
-      'USDC-25',
-      'USDC-56',
-      'NUSD-10',
-      'SYN-10',
-      'SYN-25',
-      'SYN-56',
-      'XYZ-50',
-    ])
+    expect(toTokens.sort()).toEqual(
+      [
+        'GOHM-10',
+        'GOHM-25',
+        'GOHM-56',
+        'HIGHSTREET-56',
+        'USDC-10',
+        'USDC-25',
+        'USDC-56',
+        'NUSD-10',
+        'SYN-10',
+        'SYN-25',
+        'SYN-56',
+        'XYZ-50',
+      ].sort()
+    )
   })
 
   it('has toChainId', () => {

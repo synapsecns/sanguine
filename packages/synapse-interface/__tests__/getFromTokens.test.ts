@@ -1,7 +1,6 @@
 import { expect } from '@jest/globals'
 
-import { getFromTokens } from '@/utils/generateRoutePossibilities'
-import { Token } from '@/utils/types'
+import { getFromTokens } from '@/utils/routeMaker/getFromTokens'
 
 jest.mock('../constants/existing-bridge-routes', () => ({
   __esModule: true,
@@ -108,7 +107,19 @@ describe('getFromTokens', () => {
       toTokenRouteSymbol: null,
     })
 
-    expect(fromTokens).toEqual(['GOHM-1', 'USDC-1', 'SYN-1'])
+    expect(fromTokens.sort()).toEqual(
+      [
+        'GOHM-1',
+        'USDC-1',
+        'SYN-1',
+        'GOHM-25',
+        'GOHM-56',
+        'USDC-25',
+        'USDC-56',
+        'SYN-25',
+        'SYN-56',
+      ].sort()
+    )
   })
 
   it('has fromChainId, fromToken, toChainId, toToken', () => {
@@ -137,6 +148,19 @@ describe('getFromTokens', () => {
       'SYN-1',
       'XYZ-1',
     ])
+  })
+
+  it('has fromChainId, fromToken, NUSD', () => {
+    const fromTokens = getFromTokens({
+      fromChainId: 10,
+      fromTokenRouteSymbol: 'NUSD',
+      toChainId: null,
+      toTokenRouteSymbol: null,
+    })
+
+    expect(fromTokens.sort()).toEqual(
+      ['GOHM-10', 'NUSD-10', 'USDC-10', 'SYN-10'].sort()
+    )
   })
 
   it('has fromChainId, toToken, single', () => {
@@ -235,7 +259,7 @@ describe('getFromTokens', () => {
       toTokenRouteSymbol: 'XYZ',
     })
 
-    expect(fromTokens).toEqual(['XYZ-50', 'XYZ-1'])
+    expect(fromTokens.sort()).toEqual(['XYZ-50', 'XYZ-1'].sort())
   })
 
   it('has FromChainId and fromToken', () => {

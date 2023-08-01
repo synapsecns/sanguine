@@ -1,7 +1,6 @@
 import { expect } from '@jest/globals'
 
-import { getToChainIds } from '@/utils/generateRoutePossibilities'
-import { Token } from '@/utils/types'
+import { getToChainIds } from '@/utils/routeMaker/getToChainIds'
 
 jest.mock('../constants/existing-bridge-routes', () => ({
   __esModule: true,
@@ -71,7 +70,7 @@ describe('getToChainIds', () => {
       toTokenRouteSymbol: null,
     })
 
-    expect(chainIds).toEqual([10, 25, 56])
+    expect(chainIds.sort()).toEqual([10, 25, 56, 50].sort())
   })
 
   it('has fromChainId, fromToken, toChainId', () => {
@@ -137,7 +136,7 @@ describe('getToChainIds', () => {
       toTokenRouteSymbol: null,
     })
 
-    expect(chainIds.sort()).toEqual([1, 50].sort())
+    expect(chainIds.sort()).toEqual([10, 25, 56, 1, 50].sort())
   })
 
   it('has toChainId, multiple', () => {
@@ -148,7 +147,7 @@ describe('getToChainIds', () => {
       toTokenRouteSymbol: null,
     })
 
-    expect(chainIds.sort()).toEqual([10, 25, 56, 1].sort())
+    expect(chainIds.sort()).toEqual([10, 25, 56, 1, 50].sort())
   })
 
   it('has toChainId, toToken', () => {

@@ -1,12 +1,11 @@
-import _ from 'lodash'
 import { createSlice, PayloadAction } from '@reduxjs/toolkit'
 import { Address } from 'wagmi'
 
-import { NUSD, USDC, USDT } from '@/constants/tokens/master'
+import { NUSD, USDT } from '@/constants/tokens/master'
 import { EMPTY_BRIDGE_QUOTE } from '@/constants/bridge'
 import { ARBITRUM, ETH as ETHEREUM } from '@/constants/chains/master'
 import { BridgeQuote, Token } from '@/utils/types'
-import { getRoutePossibilities } from '@/utils/generateRoutePossibilities'
+import { getRoutePossibilities } from '@/utils/routeMaker/generateRoutePossibilities'
 
 export interface BridgeState {
   fromChainId: number
