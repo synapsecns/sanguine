@@ -38,6 +38,7 @@ type Query {
     reverted:       Boolean = false
     page:           Int = 1
   ): [MessageBusTransaction]
+  
 
   """
   Returns the COUNT of bridged transactions for a given chain. If direction of bridge transactions

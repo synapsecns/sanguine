@@ -484,22 +484,28 @@ func generateKappaSpecifierSQLMv(value *string, field string, firstFilter *bool,
 }
 
 // generateCCTPSpecifierSQLMv generates a where function with event type to filter only cctp events.
-func generateCCTPSpecifierSQLMv(onlyCctp *bool, field string, firstFilter *bool, firstInLocale *bool, tablePrefix string) string {
+func generateCCTPSpecifierSQLMv(onlyCctp *bool, to bool, field string, firstFilter *bool, firstInLocale *bool, tablePrefix string) string {
 
 	if onlyCctp != nil && *onlyCctp {
-		condition := fmt.Sprintf(" (%s%s = 10 OR %s%s = 11)", tablePrefix, field, tablePrefix, field) // from types/bridge/eventtypes.go
+
+		// From explorer/types/bridge/eventtypes.go
+		eventType := 10
+		if to {
+			eventType = 11
+		}
+
 		if *firstInLocale {
 			*firstFilter = false
 			*firstInLocale = false
-			return fmt.Sprintf(" %s", condition)
+			return fmt.Sprintf(" %s%s = %d", tablePrefix, field, eventType)
 		}
 		if *firstFilter {
 			*firstFilter = false
 
-			return fmt.Sprintf(" WHERE %s", condition)
+			return fmt.Sprintf(" WHERE %s%s =  %d", tablePrefix, field, eventType)
 		}
 
-		return fmt.Sprintf(" AND %s", condition)
+		return fmt.Sprintf(" AND %s%s = %d", tablePrefix, field, eventType)
 	}
 
 	return ""
@@ -865,7 +871,7 @@ func generateAllBridgeEventsQueryMv(chainIDFrom []*int, chainIDTo []*int, addres
 	maxAmountFilter := generateEqualitySpecifierSQLMv(maxAmount, sql.AmountFieldName, &firstFilter, &firstInLocale, "f", false)
 	maxAmountFilterUsd := generateEqualitySpecifierSQLMv(maxAmountUsd, sql.AmountUSDFieldName, &firstFilter, &firstInLocale, "f", false)
 	kappaFromFilter := generateKappaSpecifierSQLMv(kappa, sql.DestinationKappaFieldName, &firstFilter, &firstInLocale, "f")
-	onlyCCTPFromFilter := generateCCTPSpecifierSQLMv(onlyCctp, sql.DestinationKappaFieldName, &firstFilter, &firstInLocale, "f")
+	onlyCCTPFromFilter := generateCCTPSpecifierSQLMv(onlyCctp, false, sql.EventTypeFieldName, &firstFilter, &firstInLocale, "f")
 
 	// firstFilter = false
 	firstInLocale = true
@@ -876,7 +882,7 @@ func generateAllBridgeEventsQueryMv(chainIDFrom []*int, chainIDTo []*int, addres
 	minAmountFilter := generateEqualitySpecifierSQLMv(minAmount, sql.AmountFieldName, &firstFilter, &firstInLocale, "t", true)
 	minAmountFilterUsd := generateEqualitySpecifierSQLMv(minAmountUsd, sql.AmountUSDFieldName, &firstFilter, &firstInLocale, "t", true)
 	kappaToFilter := generateKappaSpecifierSQLMv(kappa, sql.KappaFieldName, &firstFilter, &firstInLocale, "t")
-	onlyCCTPToFilter := generateCCTPSpecifierSQLMv(onlyCctp, sql.DestinationKappaFieldName, &firstFilter, &firstInLocale, "f")
+	onlyCCTPToFilter := generateCCTPSpecifierSQLMv(onlyCctp, true, sql.EventTypeFieldName, &firstFilter, &firstInLocale, "t")
 
 	toFilters := chainIDFromFilter + addressFromFilter + txHashFromFilter + tokenAddressFromFilter + maxAmountFilter + maxAmountFilterUsd + kappaFromFilter + onlyCCTPFromFilter
 	fromFilters := chainIDToFilter + addressToFilter + txHashToFilter + tokenAddressToFilter + minAmountFilter + minAmountFilterUsd + kappaToFilter + onlyCCTPToFilter
