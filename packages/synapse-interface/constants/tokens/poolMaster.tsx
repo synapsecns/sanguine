@@ -771,7 +771,7 @@ export const HARMONY_JEWEL_SWAP_TOKEN = new Token({
 
 export const BASE_ETH_SWAP_TOKEN = new Token({
   addresses: {
-    [CHAINS.BASE.id]: '0xD70A52248e546A3B260849386410C7170c7BD1E9', // PLACEHOLDER ADDRESS
+    [CHAINS.BASE.id]: '0xC35b09c8fdefc90ec580B327d32DeAAda4f581Da',
   },
   decimals: 18,
   symbol: 'nETH-LP',
@@ -782,10 +782,10 @@ export const BASE_ETH_SWAP_TOKEN = new Token({
   poolId: 0,
   poolType: 'ETH',
   swapAddresses: {
-    [CHAINS.BASE.id]: '0xa067668661C84476aFcDc6fA5D758C4c01C34352', // PLACEHOLDER ADDRESS
+    [CHAINS.BASE.id]: '0x6223bD82010E2fB69F329933De20897e7a4C225f',
   },
   swapEthAddresses: {
-    [CHAINS.BASE.id]: '0x1c3fe783a7c06bfAbd124F2708F5Cc51fA42E102', // PLACEHOLDER ADDRESS
+    [CHAINS.BASE.id]: '0xa9E90579eb086bcdA910dD94041ffE041Fb4aC89',
   },
   poolTokens: [NETH, WETH],
   nativeTokens: [NETH, ETH],
