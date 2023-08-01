@@ -172,7 +172,7 @@ const StateManagedBridge = () => {
   // Can be smarter about breaking out which calls happen assoc with which
   // dependencies (like some stuff should only change on fromChainId changes)
   useEffect(() => {
-    let fromTokens = BRIDGABLE_TOKENS[fromChainId]
+    let fromTokens = BRIDGABLE_TOKENS[fromChainId] ?? []
     const toTokens = BRIDGABLE_TOKENS[toChainId]
 
     // Checking whether the selected fromToken exists in the BRIDGABLE_TOKENS for the chosen chain
@@ -191,18 +191,18 @@ const StateManagedBridge = () => {
       findSupportedChainsAndTokens(
         fromToken,
         toChainId,
-        toToken.symbol,
+        toToken?.symbol,
         fromChainId
       )
 
     let bridgeableToChainId = toChainId
-    if (!bridgeableChainIds.includes(toChainId)) {
-      const sortedChainIds = bridgeableChainIds.sort((a, b) => {
+    if (!bridgeableChainIds?.includes(toChainId)) {
+      const sortedChainIds = bridgeableChainIds?.sort((a, b) => {
         const chainA = CHAINS_ARR.find((chain) => chain.id === a)
         const chainB = CHAINS_ARR.find((chain) => chain.id === b)
         return chainB.priorityRank - chainA.priorityRank
       })
-      bridgeableToChainId = sortedChainIds[0]
+      bridgeableToChainId = sortedChainIds?.[0]
     }
 
     dispatch(setSupportedToTokens(sortToTokens(bridgeableTokens)))
@@ -221,11 +221,11 @@ const StateManagedBridge = () => {
       dispatch(setToChainId(bridgeableToChainId))
     }
 
-    console.log(`[useEffect] fromToken`, fromToken.symbol)
-    console.log(`[useEffect] toToken`, toToken.symbol)
+    console.log(`[useEffect] fromToken`, fromToken?.symbol)
+    console.log(`[useEffect] toToken`, toToken?.symbol)
     // TODO: Double serialization happening somewhere??
     if (
-      fromToken.decimals[fromChainId] &&
+      fromToken?.decimals[fromChainId] &&
       stringToBigInt(fromValue, fromToken.decimals[fromChainId]) > 0n
     ) {
       console.log('trying to set bridge quote')
@@ -652,11 +652,11 @@ const getNewToChain = (positedToChain, fromChainId, bridgeableChains) => {
       : DEFAULT_TO_CHAIN
   // If newToChain is not a part of bridgeableChains, select a chain from bridgeableChains
   // that is different from fromChainId.
-  if (!bridgeableChains.includes(String(newToChain))) {
+  if (!bridgeableChains?.includes(String(newToChain))) {
     newToChain =
-      Number(bridgeableChains[0]) === fromChainId
-        ? Number(bridgeableChains[1])
-        : Number(bridgeableChains[0])
+      Number(bridgeableChains?.[0]) === fromChainId
+        ? Number(bridgeableChains?.[1])
+        : Number(bridgeableChains?.[0])
   }
   return newToChain
 }
@@ -665,8 +665,8 @@ const getNewToChain = (positedToChain, fromChainId, bridgeableChains) => {
 const getBridgeableChains = (token, fromChainId, swapExceptionsArr) => {
   // Filter out chains that are not bridgeable for the given token type.
   let bridgeableChains = BRIDGE_CHAINS_BY_TYPE[
-    String(token.swapableType)
-  ].filter((chainId) => Number(chainId) !== fromChainId)
+    String(token?.swapableType)
+  ]?.filter((chainId) => Number(chainId) !== fromChainId)
   // If there are swap exceptions, replace bridgeableChains with the chains from exceptions.
   if (swapExceptionsArr?.length > 0) {
     bridgeableChains = swapExceptionsArr.map((chainId) => String(chainId))
@@ -678,7 +678,7 @@ const getBridgeableChains = (token, fromChainId, swapExceptionsArr) => {
 const getBridgeableTokens = (newToChain, token, swapExceptionsArr) => {
   // Get tokens that are bridgeable on the new chain and of the same type as the given token.
   let bridgeableTokens: Token[] = sortToTokens(
-    BRIDGE_SWAPABLE_TOKENS_BY_TYPE[newToChain][String(token.swapableType)]
+    BRIDGE_SWAPABLE_TOKENS_BY_TYPE[newToChain]?.[String(token?.swapableType)]
   )
   // If there are swap exceptions, filter out tokens that have a different symbol from the given token.
   if (swapExceptionsArr?.length > 0) {
@@ -694,8 +694,8 @@ const getBridgeableToken = (bridgeableTokens, positedToToken) => {
   // If positedToToken is a part of bridgeableTokens, use it.
   // Otherwise, use the first token from bridgeableTokens.
   let bridgeableToken: Token = positedToToken
-  if (!bridgeableTokens.includes(positedToToken)) {
-    bridgeableToken = bridgeableTokens[0]
+  if (!bridgeableTokens?.includes(positedToToken)) {
+    bridgeableToken = bridgeableTokens?.[0]
   }
   return bridgeableToken
 }
@@ -725,7 +725,7 @@ const findSupportedChainsAndTokens = (
   // Determine the token to be used for the swap based on the posited symbol or the symbol of the given token.
   const positedToToken = positedToSymbol
     ? tokenSymbolToToken(newToChain, positedToSymbol)
-    : tokenSymbolToToken(newToChain, token.symbol)
+    : tokenSymbolToToken(newToChain, token?.symbol)
   // Determine which tokens are bridgeable on the new chain.
   const bridgeableTokens = getBridgeableTokens(
     newToChain,
@@ -737,7 +737,7 @@ const findSupportedChainsAndTokens = (
 
   // Return the bridgeable chains, bridgeable tokens, and the specific bridgeable token.
   return {
-    bridgeableChainIds: bridgeableChains.map((chainId: string) =>
+    bridgeableChainIds: bridgeableChains?.map((chainId: string) =>
       Number(chainId)
     ),
     bridgeableTokens,

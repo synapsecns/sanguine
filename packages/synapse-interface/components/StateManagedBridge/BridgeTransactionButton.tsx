@@ -60,7 +60,8 @@ export const BridgeTransactionButton = ({
 
   let buttonProperties
 
-  const fromTokenDecimals: number | undefined = fromToken.decimals[fromChainId]
+  const fromTokenDecimals: number | undefined =
+    fromToken && fromToken.decimals[fromChainId]
 
   const fromValueBigInt = useMemo(() => {
     return fromTokenDecimals ? stringToBigInt(fromValue, fromTokenDecimals) : 0
@@ -93,13 +94,13 @@ export const BridgeTransactionButton = ({
   } else if (!isApproved) {
     buttonProperties = {
       onClick: approveTxn,
-      label: `Approve ${fromToken.symbol}`,
+      label: `Approve ${fromToken?.symbol}`,
       pendingLabel: 'Approving',
     }
   } else {
     buttonProperties = {
       onClick: executeBridge,
-      label: `Bridge ${fromToken.symbol}`,
+      label: `Bridge ${fromToken?.symbol}`,
       pendingLabel: 'Bridging',
     }
   }

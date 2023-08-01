@@ -56,7 +56,7 @@ export const sortByTokenBalance = async (
     tokens.forEach((token) => {
       // deterministic multicall3 address on all eth chains
       const multicallAddress: Address = `0xcA11bde05977b3631167028862bE2a173976CA11`
-      const tokenAddress = token.addresses[chainId as keyof Token['addresses']]
+      const tokenAddress = token?.addresses[chainId as keyof Token['addresses']]
 
       if (tokenAddress === zeroAddress || tokenAddress === undefined) {
         multicallInputs.push({
@@ -110,9 +110,9 @@ export const sortByTokenBalance = async (
 // Function to sort the tokens by priorityRank and alphabetically
 export const sortTokensByPriorityRankAndAlpha = (arr: Token[]): Token[] => {
   // Create a copy of the array to prevent modifying the original one
-  const sortedArr = [...arr]
+  const sortedArr = arr && [...arr]
 
-  return sortedArr.sort((a, b) => {
+  return sortedArr?.sort((a, b) => {
     // Sort by priorityRank first
     if (a.priorityRank !== b.priorityRank) {
       return a.priorityRank - b.priorityRank

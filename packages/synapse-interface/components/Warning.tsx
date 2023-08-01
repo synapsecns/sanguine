@@ -11,7 +11,7 @@ import {
 interface WarningProps {
   originChainId: number
   destinationChainId: number
-  originToken: Token
+  originToken: Token | undefined
   destinationToken: Token
 }
 
@@ -21,8 +21,10 @@ export const Warning = ({
   originToken,
   destinationToken,
 }: WarningProps) => {
-  const { symbol: originTokenSymbol } = originToken
-  const { symbol: destinationTokenSymbol } = destinationToken
+  // const { symbol: originTokenSymbol } = originToken
+  const originTokenSymbol = originToken && originToken.symbol
+  const destinationTokenSymbol = destinationToken && destinationToken.symbol
+  // const { symbol: destinationTokenSymbol } = destinationToken
 
   const isTokenUSDCAndUSDCe =
     (originTokenSymbol === 'USDC' && destinationTokenSymbol === 'USDCe') ||
