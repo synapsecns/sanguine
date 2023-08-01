@@ -3,6 +3,41 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [1.0.10](https://github.com/synapsecns/sanguine/compare/@synapsecns/rest-api@1.0.9...@synapsecns/rest-api@1.0.10) (2023-08-01)
+
+**Note:** Version bump only for package @synapsecns/rest-api
+
+
+
+
+
+## [1.0.9](https://github.com/synapsecns/sanguine/compare/@synapsecns/rest-api@1.0.8...@synapsecns/rest-api@1.0.9) (2023-08-01)
+
+**Note:** Version bump only for package @synapsecns/rest-api
+
+
+
+
+
+## [1.0.8](https://github.com/synapsecns/sanguine/compare/@synapsecns/rest-api@1.0.7...@synapsecns/rest-api@1.0.8) (2023-08-01)
+
+**Note:** Version bump only for package @synapsecns/rest-api
+
+
+
+
+
+## [1.0.7](https://github.com/synapsecns/sanguine/compare/@synapsecns/rest-api@1.0.6...@synapsecns/rest-api@1.0.7) (2023-08-01)
+
+
+### Reverts
+
+* Revert "Feat/rest api upgrade (#1167)" (#1197) ([95d7e90](https://github.com/synapsecns/sanguine/commit/95d7e903fcc324949fe4c734e5a66f256bcf48dd)), closes [#1167](https://github.com/synapsecns/sanguine/issues/1167) [#1197](https://github.com/synapsecns/sanguine/issues/1197)
+
+
+
+
+
 ## [1.0.6](https://github.com/synapsecns/sanguine/compare/@synapsecns/rest-api@1.0.5...@synapsecns/rest-api@1.0.6) (2023-07-10)
 
 **Note:** Version bump only for package @synapsecns/rest-api

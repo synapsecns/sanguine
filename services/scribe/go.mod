@@ -17,7 +17,7 @@ replace (
 
 require (
 	bitbucket.org/tentontrain/math v0.0.0-20220519191623-a4e86beba92a
-	github.com/99designs/gqlgen v0.17.20
+	github.com/99designs/gqlgen v0.17.31
 	github.com/Flaque/filet v0.0.0-20201012163910-45f684403088
 	github.com/MichaelMure/go-term-markdown v0.1.4
 	github.com/Yamashou/gqlgenc v0.10.0
@@ -41,13 +41,13 @@ require (
 	github.com/pkg/errors v0.9.1
 	github.com/richardwilkes/toolbox v1.74.0
 	github.com/soheilhy/cmux v0.1.5
-	github.com/stretchr/testify v1.8.3
+	github.com/stretchr/testify v1.8.4
 	github.com/synapsecns/sanguine/core v0.0.0-00010101000000-000000000000
 	github.com/synapsecns/sanguine/ethergo v0.0.2
 	github.com/synapsecns/sanguine/services/omnirpc v0.0.0-00010101000000-000000000000
 	github.com/synapsecns/sanguine/tools v0.0.0-00010101000000-000000000000
 	github.com/tenderly/tenderly-cli v1.4.6
-	github.com/urfave/cli/v2 v2.16.3
+	github.com/urfave/cli/v2 v2.24.4
 	github.com/vektah/gqlparser/v2 v2.5.1
 	github.com/vektra/mockery/v2 v2.14.0
 	go.opentelemetry.io/contrib/instrumentation/google.golang.org/grpc/otelgrpc v0.42.0
@@ -57,7 +57,7 @@ require (
 	go.uber.org/atomic v1.10.0
 	golang.org/x/exp v0.0.0-20230127193734-31bee513bff7
 	golang.org/x/oauth2 v0.7.0
-	golang.org/x/sync v0.1.0
+	golang.org/x/sync v0.3.0
 	google.golang.org/genproto v0.0.0-20230410155749-daa745c078e1
 	google.golang.org/grpc v1.55.0
 	google.golang.org/protobuf v1.30.0
@@ -171,6 +171,7 @@ require (
 	github.com/hashicorp/go-bexpr v0.1.10 // indirect
 	github.com/hashicorp/go-multierror v1.1.1 // indirect
 	github.com/hashicorp/go-version v1.6.0 // indirect
+	github.com/hashicorp/golang-lru/v2 v2.0.1 // indirect
 	github.com/hashicorp/hcl v1.0.0 // indirect
 	github.com/hedzr/cmdr v1.10.49 // indirect
 	github.com/hedzr/log v1.6.3 // indirect
@@ -239,10 +240,10 @@ require (
 	github.com/pjbgf/sha1cd v0.2.3 // indirect
 	github.com/pkg/term v1.2.0-beta.2 // indirect
 	github.com/pmezard/go-difflib v1.0.0 // indirect
-	github.com/prometheus/client_golang v1.13.0 // indirect
-	github.com/prometheus/client_model v0.3.0 // indirect
-	github.com/prometheus/common v0.37.0 // indirect
-	github.com/prometheus/procfs v0.8.0 // indirect
+	github.com/prometheus/client_golang v1.15.1 // indirect
+	github.com/prometheus/client_model v0.4.0 // indirect
+	github.com/prometheus/common v0.42.0 // indirect
+	github.com/prometheus/procfs v0.9.0 // indirect
 	github.com/prometheus/tsdb v0.10.0 // indirect
 	github.com/puzpuzpuz/xsync v1.4.3 // indirect
 	github.com/pyroscope-io/client v0.7.0 // indirect
@@ -301,6 +302,7 @@ require (
 	go.opentelemetry.io/otel/exporters/otlp/otlptrace v1.16.0 // indirect
 	go.opentelemetry.io/otel/exporters/otlp/otlptrace/otlptracegrpc v1.16.0 // indirect
 	go.opentelemetry.io/otel/exporters/otlp/otlptrace/otlptracehttp v1.16.0 // indirect
+	go.opentelemetry.io/otel/exporters/prometheus v0.39.0 // indirect
 	go.opentelemetry.io/otel/sdk v1.16.0 // indirect
 	go.opentelemetry.io/otel/sdk/metric v0.39.0 // indirect
 	go.opentelemetry.io/proto/otlp v0.19.0 // indirect

@@ -4,6 +4,11 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"github.com/gin-gonic/gin"
+	"github.com/synapsecns/sanguine/core/metrics"
+	"github.com/synapsecns/sanguine/core/metrics/instrumentation"
+	"go.opentelemetry.io/otel/attribute"
+	"go.opentelemetry.io/otel/metric"
 	"net"
 	"os"
 	"time"
@@ -43,27 +48,37 @@ var logger = log.Logger("explorer-api")
 // Start starts the api server.
 //
 // nolint:cyclop
-func Start(ctx context.Context, cfg Config) error {
+func Start(ctx context.Context, cfg Config, handler metrics.Handler) error {
 	router := ginhelper.New(logger)
+	router.Use(handler.Gin())
+	router.GET(ginhelper.MetricsEndpoint, gin.WrapH(handler.Handler()))
+
 	hostname, err := os.Hostname()
 	if err != nil {
 		return fmt.Errorf("could not get hostname %w", err)
 	}
 	// initialize the database
-	consumerDB, err := InitDB(ctx, cfg.Address, true)
+	consumerDB, err := InitDB(ctx, cfg.Address, true, handler)
 	if err != nil {
 		return fmt.Errorf("could not initialize database: %w", err)
 	}
 
-	// get the fetcher
-	fetcher := fetcher.NewFetcher(client.NewClient(http.DefaultClient, cfg.ScribeURL))
+	// configure the http client
+	httpClient := http.DefaultClient
+	// TODO: add an option for full capture instead of keeping on by default
+	httpClient.Transport = instrumentation.NewCaptureTransport(httpClient.Transport, handler)
+	handler.ConfigureHTTPClient(httpClient)
+
+	//  get the fetcher
+	fetcher := fetcher.NewFetcher(client.NewClient(httpClient, cfg.ScribeURL), handler)
 
 	// response cache
 	responseCache, err := cache.NewAPICacheService()
 	if err != nil {
 		return fmt.Errorf("error creating api cache service, %w", err)
 	}
-	gqlServer.EnableGraphql(router, consumerDB, fetcher, responseCache)
+
+	gqlServer.EnableGraphql(router, consumerDB, fetcher, responseCache, handler)
 
 	fmt.Printf("started graphiql gqlServer on port: http://%s:%d/graphiql\n", hostname, cfg.HTTPPort)
 
@@ -73,7 +88,12 @@ func Start(ctx context.Context, cfg Config) error {
 	first <- true
 	g, ctx := errgroup.WithContext(ctx)
 	url := fmt.Sprintf("http://%s/graphql", net.JoinHostPort(hostname, fmt.Sprintf("%d", cfg.HTTPPort)))
-	client := gqlClient.NewClient(http.DefaultClient, url)
+	client := gqlClient.NewClient(httpClient, url)
+
+	err = registerObservableMetrics(handler, consumerDB)
+	if err != nil {
+		return fmt.Errorf("could not register observable metrics: %w", err)
+	}
 
 	// refill cache
 	go func() {
@@ -83,14 +103,14 @@ func Start(ctx context.Context, cfg Config) error {
 				ticker.Stop()
 				return
 			case <-ticker.C:
-				err = RehydrateCache(ctx, client, responseCache)
+				err = RehydrateCache(ctx, client, responseCache, handler)
 				if err != nil {
 					logger.Warnf("rehydration failed: %s", err)
 				}
 			case <-first:
 				// buffer to wait for everything to get initialized
 				time.Sleep(10 * time.Second)
-				err = RehydrateCache(ctx, client, responseCache)
+				err = RehydrateCache(ctx, client, responseCache, handler)
 				if err != nil {
 					logger.Errorf("initial rehydration failed: %s", err)
 				}
@@ -115,8 +135,44 @@ func Start(ctx context.Context, cfg Config) error {
 	return nil
 }
 
+const meterName = "github.com/synapsecns/sanguine/services/explorer/api"
+const pendingName = "pending_bridges"
+
+func registerObservableMetrics(handler metrics.Handler, conn db.ConsumerDBReader) error {
+	meter := handler.Meter(meterName)
+	pendingGauge, err := meter.Int64ObservableGauge(pendingName)
+
+	if err != nil {
+		return fmt.Errorf("could not create pending bridges gauge: %w", err)
+	}
+
+	if _, err := meter.RegisterCallback(func(parentCtx context.Context, o metric.Observer) (err error) {
+		ctx, span := handler.Tracer().Start(parentCtx, "pending_bridge_stats")
+		defer func() {
+			metrics.EndSpanWithErr(span, err)
+		}()
+
+		pendingCount, err := conn.GetPendingByChain(ctx)
+		if err != nil {
+			return fmt.Errorf("could not get pending bridges: %w", err)
+		}
+
+		itr := pendingCount.Iterator()
+		for !itr.Done() {
+			chainID, count, _ := itr.Next()
+			o.ObserveInt64(pendingGauge, int64(count), metric.WithAttributes(attribute.Int(metrics.ChainID, chainID)))
+		}
+
+		return nil
+	}, pendingGauge); err != nil {
+		return fmt.Errorf("could not register callback for pending bridges gauge: %w", err)
+	}
+
+	return nil
+}
+
 // InitDB initializes a database given a database type and path.
-func InitDB(ctx context.Context, address string, readOnly bool) (db.ConsumerDB, error) {
+func InitDB(ctx context.Context, address string, readOnly bool, handler metrics.Handler) (db.ConsumerDB, error) {
 	if address == "default" {
 		cleanup, port, err := clickhouse.NewClickhouseStore("explorer")
 		if cleanup == nil {
@@ -128,7 +184,7 @@ func InitDB(ctx context.Context, address string, readOnly bool) (db.ConsumerDB, 
 		}
 		address = "clickhouse://clickhouse_test:clickhouse_test@localhost:" + fmt.Sprintf("%d", *port) + "/clickhouse_test"
 	}
-	clickhouseDB, err := sql.OpenGormClickhouse(ctx, address, readOnly)
+	clickhouseDB, err := sql.OpenGormClickhouse(ctx, address, readOnly, handler)
 	if err != nil {
 		return nil, fmt.Errorf("could not open database: %w", err)
 	}
@@ -141,7 +197,12 @@ func InitDB(ctx context.Context, address string, readOnly bool) (db.ConsumerDB, 
 // RehydrateCache rehydrates the cache.
 //
 // nolint:dupl,gocognit,cyclop,maintidx
-func RehydrateCache(parentCtx context.Context, client *gqlClient.Client, service cache.Service) error {
+func RehydrateCache(parentCtx context.Context, client *gqlClient.Client, service cache.Service, handler metrics.Handler) (err error) {
+	traceCtx, span := handler.Tracer().Start(parentCtx, "RehydrateCache")
+	defer func() {
+		metrics.EndSpanWithErr(span, err)
+	}()
+
 	fmt.Println("rehydrating Cache")
 	totalVolumeType := model.StatisticTypeTotalVolumeUsd
 	totalFeeType := model.StatisticTypeTotalFeeUsd
@@ -166,7 +227,7 @@ func RehydrateCache(parentCtx context.Context, client *gqlClient.Client, service
 	// dontUseMv := false
 	useMv := true
 
-	g, ctx := errgroup.WithContext(parentCtx)
+	g, ctx := errgroup.WithContext(traceCtx)
 	g.Go(func() error {
 		statsVolAll, err := client.GetAmountStatistic(ctx, totalVolumeType, &allPlatformType, &allTimeType, nil, nil, nil, &useMv)
 		if err != nil {
@@ -700,7 +761,7 @@ func RehydrateCache(parentCtx context.Context, client *gqlClient.Client, service
 		return nil
 	})
 
-	err := g.Wait()
+	err = g.Wait()
 	if err != nil {
 		return fmt.Errorf("error rehyrdrating cache, %w", err)
 	}

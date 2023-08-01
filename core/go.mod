@@ -5,7 +5,7 @@ go 1.19
 replace github.com/gogo/protobuf => github.com/regen-network/protobuf v1.3.3-alpha.regen.1
 
 require (
-	github.com/BurntSushi/toml v1.2.0
+	github.com/BurntSushi/toml v1.2.1
 	github.com/Flaque/filet v0.0.0-20201012163910-45f684403088
 	github.com/ImVexed/fasturl v0.0.0-20200730185836-b0c0fbead04e
 	github.com/LK4d4/trylock v0.0.0-20191027065348-ff7e133a5c54
@@ -31,14 +31,15 @@ require (
 	github.com/ory/dockertest/v3 v3.9.1
 	github.com/phayes/freeport v0.0.0-20220201140144-74d24b5ae9f5
 	github.com/pkg/errors v0.9.1
+	github.com/prometheus/client_golang v1.15.1
 	github.com/pyroscope-io/client v0.7.0
 	github.com/pyroscope-io/otel-profiling-go v0.4.0
 	github.com/rung/go-safecast v1.0.1
 	github.com/shibukawa/configdir v0.0.0-20170330084843-e180dbdc8da0
-	github.com/stretchr/testify v1.8.3
+	github.com/stretchr/testify v1.8.4
 	github.com/temoto/robotstxt v1.1.2
 	github.com/uptrace/opentelemetry-go-extra/otelgorm v0.1.21
-	github.com/urfave/cli/v2 v2.16.3
+	github.com/urfave/cli/v2 v2.24.4
 	go.opentelemetry.io/contrib/instrumentation/github.com/gin-gonic/gin/otelgin v0.40.0
 	go.opentelemetry.io/contrib/instrumentation/net/http/otelhttp v0.42.0
 	go.opentelemetry.io/contrib/propagators/b3 v1.15.0
@@ -47,6 +48,7 @@ require (
 	go.opentelemetry.io/otel/exporters/otlp/otlptrace v1.16.0
 	go.opentelemetry.io/otel/exporters/otlp/otlptrace/otlptracegrpc v1.16.0
 	go.opentelemetry.io/otel/exporters/otlp/otlptrace/otlptracehttp v1.16.0
+	go.opentelemetry.io/otel/exporters/prometheus v0.39.0
 	go.opentelemetry.io/otel/metric v1.16.0
 	go.opentelemetry.io/otel/sdk v1.16.0
 	go.opentelemetry.io/otel/sdk/metric v0.39.0
@@ -55,7 +57,7 @@ require (
 	golang.ngrok.com/ngrok v1.0.0
 	golang.org/x/crypto v0.9.0
 	golang.org/x/exp v0.0.0-20230127193734-31bee513bff7
-	golang.org/x/sync v0.1.0
+	golang.org/x/sync v0.3.0
 	gopkg.in/DataDog/dd-trace-go.v1 v1.52.0
 	gorm.io/driver/sqlite v1.4.3
 	gorm.io/gorm v1.24.6
@@ -77,6 +79,7 @@ require (
 	github.com/Nvveen/Gotty v0.0.0-20120604004816-cd527374f1e5 // indirect
 	github.com/ProtonMail/go-crypto v0.0.0-20221026131551-cf6655e29de4 // indirect
 	github.com/acomagu/bufpipe v1.0.3 // indirect
+	github.com/beorn7/perks v1.0.1 // indirect
 	github.com/btcsuite/btcd/btcec/v2 v2.3.0 // indirect
 	github.com/bytedance/sonic v1.9.1 // indirect
 	github.com/cenkalti/backoff/v4 v4.2.1 // indirect
@@ -133,6 +136,7 @@ require (
 	github.com/mattn/go-runewidth v0.0.13 // indirect
 	github.com/mattn/go-sqlite3 v2.0.3+incompatible // indirect
 	github.com/mattn/go-tty v0.0.3 // indirect
+	github.com/matttproud/golang_protobuf_extensions v1.0.4 // indirect
 	github.com/mitchellh/mapstructure v1.5.0 // indirect
 	github.com/moby/term v0.0.0-20221205130635-1aeaba878587 // indirect
 	github.com/modern-go/concurrent v0.0.0-20180306012644-bacd9c7ef1dd // indirect
@@ -147,10 +151,12 @@ require (
 	github.com/pjbgf/sha1cd v0.2.3 // indirect
 	github.com/pkg/term v1.2.0-beta.2 // indirect
 	github.com/pmezard/go-difflib v1.0.0 // indirect
+	github.com/prometheus/client_model v0.4.0 // indirect
+	github.com/prometheus/common v0.42.0 // indirect
+	github.com/prometheus/procfs v0.9.0 // indirect
 	github.com/pyroscope-io/godeltaprof v0.1.0 // indirect
 	github.com/richardartoul/molecule v1.0.1-0.20221107223329-32cfee06a052 // indirect
 	github.com/rivo/uniseg v0.2.0 // indirect
-	github.com/rogpeppe/go-internal v1.9.0 // indirect
 	github.com/russross/blackfriday/v2 v2.1.0 // indirect
 	github.com/secure-systems-lab/go-securesystemslib v0.6.0 // indirect
 	github.com/sergi/go-diff v1.2.0 // indirect
