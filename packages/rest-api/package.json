@@ -8,14 +8,14 @@
   "scripts": {
     "test": "tsdx test",
     "start": "node ./dist/app.js",
-    "dev": "concurrently \"npx tsc --watch\" \"nodemon -q dist/app.js\"",
+    "dev": "yarn add @synapsecns/sdk-router && concurrently \"npx tsc --watch\" \"nodemon -q dist/app.js\"",
     "test:coverage": "echo 'No tests defined.'",
     "lint:fix": "eslint src/**.ts --fix",
     "lint:check": "eslint . --max-warnings=0",
     "ci:lint": "npm run lint:check",
     "build:go": " ",
     "build:slither": " ",
-    "build": "tsc",
+    "build": "yarn add @synapsecns/sdk-router && tsc",
     "postinstall": "npm run build"
   },
   "dependencies": {
