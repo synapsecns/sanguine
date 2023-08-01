@@ -1636,48 +1636,7 @@ func (r *queryResolver) GetOriginBridgeTxBW(ctx context.Context, chainID int, tx
 			Kappa:    &kappa,
 		}, nil
 	}
-	isPending = false
-	destinationChainID := int(bridgeEvent.DestinationChainID.Uint64())
-	blockNumber := int(bridgeEvent.BlockNumber)
-	value := bridgeEvent.Amount.String()
-	var timestamp int
-	var formattedValue *float64
-	var timeStampFormatted string
-
-	if bridgeEvent.TokenDecimal != nil {
-		formattedValue = getAdjustedValue(bridgeEvent.Amount, *bridgeEvent.TokenDecimal)
-	} else {
-		return nil, fmt.Errorf("token decimal is not valid")
-	}
-	if bridgeEvent.TimeStamp != nil {
-		timestamp = int(*bridgeEvent.TimeStamp)
-		timeStampFormatted = time.Unix(int64(*bridgeEvent.TimeStamp), 0).String()
-	} else {
-		return nil, fmt.Errorf("timestamp is not valid")
-	}
-
-	bridgeTx = model.PartialInfo{
-		ChainID:            &chainID,
-		DestinationChainID: &destinationChainID,
-		Address:            &bridgeEvent.Recipient.String,
-		TxnHash:            &bridgeEvent.TxHash,
-		Value:              &value,
-		FormattedValue:     formattedValue,
-		USDValue:           bridgeEvent.AmountUSD,
-		TokenAddress:       &bridgeEvent.Token,
-		TokenSymbol:        &bridgeEvent.TokenSymbol.String,
-		BlockNumber:        &blockNumber,
-		Time:               &timestamp,
-		FormattedTime:      &timeStampFormatted,
-	}
-
-	result := &model.BridgeWatcherTx{
-		BridgeTx: &bridgeTx,
-		Pending:  &isPending,
-		Type:     &txType,
-		Kappa:    &bridgeEvent.DestinationKappa,
-	}
-	return result, nil
+	return bwOriginBridgeToBWTx(bridgeEvent, txType)
 }
 
 // GetDestinationBridgeTxBW returns the destination bridge transaction for the bridgewatcher.
@@ -1743,4 +1702,51 @@ func (r *queryResolver) GetDestinationBridgeTxBW(ctx context.Context, chainID in
 		Kappa:    &bridgeEvent.Kappa.String,
 	}
 	return result, nil
+}
+
+func bwOriginBridgeToBWTx(bridgeEvent *sql.BridgeEvent, txType model.BridgeTxType) (*model.BridgeWatcherTx, error) {
+	isPending := false
+	chainID := int(bridgeEvent.ChainID)
+	destinationChainID := int(bridgeEvent.DestinationChainID.Uint64())
+	blockNumber := int(bridgeEvent.BlockNumber)
+	value := bridgeEvent.Amount.String()
+	var timestamp int
+	var formattedValue *float64
+	var timeStampFormatted string
+
+	if bridgeEvent.TokenDecimal != nil {
+		formattedValue = getAdjustedValue(bridgeEvent.Amount, *bridgeEvent.TokenDecimal)
+	} else {
+		return nil, fmt.Errorf("token decimal is not valid")
+	}
+	if bridgeEvent.TimeStamp != nil {
+		timestamp = int(*bridgeEvent.TimeStamp)
+		timeStampFormatted = time.Unix(int64(*bridgeEvent.TimeStamp), 0).String()
+	} else {
+		return nil, fmt.Errorf("timestamp is not valid")
+	}
+
+	bridgeTx := model.PartialInfo{
+		ChainID:            &chainID,
+		DestinationChainID: &destinationChainID,
+		Address:            &bridgeEvent.Recipient.String,
+		TxnHash:            &bridgeEvent.TxHash,
+		Value:              &value,
+		FormattedValue:     formattedValue,
+		USDValue:           bridgeEvent.AmountUSD,
+		TokenAddress:       &bridgeEvent.Token,
+		TokenSymbol:        &bridgeEvent.TokenSymbol.String,
+		BlockNumber:        &blockNumber,
+		Time:               &timestamp,
+		FormattedTime:      &timeStampFormatted,
+	}
+
+	result := &model.BridgeWatcherTx{
+		BridgeTx: &bridgeTx,
+		Pending:  &isPending,
+		Type:     &txType,
+		Kappa:    &bridgeEvent.DestinationKappa,
+	}
+	return result, nil
+
 }

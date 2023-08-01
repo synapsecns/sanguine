@@ -14,7 +14,8 @@ import (
 //
 //go:generate go run github.com/synapsecns/sanguine/services/explorer/graphql/contrib/client
 type Resolver struct {
-	DB      db.ConsumerDB
-	Fetcher fetcher.ScribeFetcher
-	Cache   cache.Service
+	DB         db.ConsumerDB
+	Fetcher    fetcher.ScribeFetcher
+	OmniRPCURL string
+	Cache      cache.Service
 }

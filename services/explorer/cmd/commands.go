@@ -48,6 +48,12 @@ var scribeURL = &cli.StringFlag{
 	Usage:    "--scribe-url <scribe-url>",
 	Required: true,
 }
+
+var omniRPCURL = &cli.StringFlag{
+	Name:     "omnirpc-url",
+	Usage:    "--omnirpc-url <omnirpc-url>",
+	Required: true,
+}
 var clickhouseAddressFlag = &cli.StringFlag{
 	Name:     "address",
 	Usage:    "--address pass 'default' to use the default clickhouse address",
@@ -63,13 +69,14 @@ var configFlag = &cli.StringFlag{
 var serverCommand = &cli.Command{
 	Name:        "server",
 	Description: "starts a graphql server",
-	Flags:       []cli.Flag{portFlag, addressFlag, scribeURL},
+	Flags:       []cli.Flag{portFlag, addressFlag, scribeURL, omniRPCURL},
 	Action: func(c *cli.Context) error {
 		fmt.Println("port", c.Uint("port"))
 		err := api.Start(c.Context, api.Config{
-			HTTPPort:  uint16(c.Uint(portFlag.Name)),
-			Address:   c.String(addressFlag.Name),
-			ScribeURL: c.String(scribeURL.Name),
+			HTTPPort:   uint16(c.Uint(portFlag.Name)),
+			Address:    c.String(addressFlag.Name),
+			ScribeURL:  c.String(scribeURL.Name),
+			OmniRPCURL: c.String(omniRPCURL.Name),
 		}, metrics.Get())
 		if err != nil {
 			return fmt.Errorf("could not start server: %w", err)
