@@ -71,7 +71,7 @@ const Synapse = new SynapseSDK(chainIds, providers)
 
 // Set up express server
 const app = express()
-const port = process.env.PORT || 4090
+const port = process.env.PORT || 3000
 
 //Intro Message for UI
 app.get('/', ({ res }) => {
