@@ -127,6 +127,6 @@ const chainOrderBySwapSide = (
   return getOrderedChains(
     connectedChainId,
     chainId,
-    chains.map((id) => `${id}`)
+    chains?.map((id) => `${id}`)
   )
 }
