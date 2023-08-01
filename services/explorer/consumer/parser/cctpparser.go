@@ -239,7 +239,7 @@ func (c *CCTPParser) storeBridgeEvent(ctx context.Context, bridgeEvent model.Bri
 	for {
 		select {
 		case <-ctx.Done():
-			return fmt.Errorf("%w while retrying", ctx.Err())
+			return fmt.Errorf("%w while retrying store cctp converted bridge event", ctx.Err())
 		case <-time.After(timeout):
 			err := c.consumerDB.StoreEvent(ctx, &bridgeEvent)
 			if err != nil {
