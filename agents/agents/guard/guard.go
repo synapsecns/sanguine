@@ -245,57 +245,20 @@ func (g Guard) receiveLogs(ctx context.Context, chainID uint32) error {
 
 func (g Guard) handleLog(ctx context.Context, log ethTypes.Log, chainID uint32) error {
 	switch {
-	case g.isSnapshotAcceptedEvent(log):
+	case isSnapshotAcceptedEvent(g.inboxParser, log):
 		return g.handleSnapshot(ctx, log)
-	case g.isAttestationAcceptedEvent(log):
+	case isAttestationAcceptedEvent(g.lightInboxParser, log):
 		return g.handleAttestation(ctx, log)
-	case g.isReceiptAcceptedEvent(log):
+	case isReceiptAcceptedEvent(g.inboxParser, log):
 		return g.handleReceipt(ctx, log)
-	case g.isDisputeOpenedEvent(log):
+	case isDisputeOpenedEvent(g.lightManagerParser, g.bondingManagerParser, log):
 		return g.handleDisputeOpened(ctx, log)
-	case g.isStatusUpdatedEvent(log):
+	case isStatusUpdatedEvent(g.bondingManagerParser, log):
 		return g.handleStatusUpdated(ctx, log, chainID)
-	case g.isRootUpdatedEvent(log):
+	case isRootUpdatedEvent(g.bondingManagerParser, log):
 		return g.handleRootUpdated(ctx, log, chainID)
 	}
 	return nil
-}
-
-func (g Guard) isSnapshotAcceptedEvent(log ethTypes.Log) bool {
-	inboxEvent, ok := g.inboxParser.EventType(log)
-	return ok && inboxEvent == inbox.SnapshotAcceptedEvent
-}
-
-func (g Guard) isAttestationAcceptedEvent(log ethTypes.Log) bool {
-	lightManagerEvent, ok := g.lightInboxParser.EventType(log)
-	return ok && lightManagerEvent == lightinbox.AttestationAcceptedEvent
-}
-
-func (g Guard) isReceiptAcceptedEvent(log ethTypes.Log) bool {
-	inboxEvent, ok := g.inboxParser.EventType(log)
-	return ok && inboxEvent == inbox.ReceiptAcceptedEvent
-}
-
-func (g Guard) isStatusUpdatedEvent(log ethTypes.Log) bool {
-	bondingManagerEvent, ok := g.bondingManagerParser.EventType(log)
-	return ok && bondingManagerEvent == bondingmanager.StatusUpdatedEvent
-}
-
-func (g Guard) isDisputeOpenedEvent(log ethTypes.Log) bool {
-	lightManagerEvent, ok := g.lightManagerParser.EventType(log)
-	if ok && lightManagerEvent == lightmanager.DisputeOpenedEvent {
-		return true
-	}
-	bondingManagerEvent, ok := g.bondingManagerParser.EventType(log)
-	if ok && bondingManagerEvent == bondingmanager.DisputeOpenedEvent {
-		return true
-	}
-	return false
-}
-
-func (g Guard) isRootUpdatedEvent(log ethTypes.Log) bool {
-	bondingManagerEvent, ok := g.bondingManagerParser.EventType(log)
-	return ok && bondingManagerEvent == bondingmanager.RootUpdatedEvent
 }
 
 func (g Guard) handleSnapshot(ctx context.Context, log ethTypes.Log) error {
