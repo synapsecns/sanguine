@@ -17,6 +17,7 @@ import Image from 'next/image'
 import { toast } from 'react-hot-toast'
 import {
   ROUTER_ADDRESS,
+  CCTP_ROUTER_ADDRESS,
   Allowances,
 } from '@/utils/actions/fetchPortfolioBalances'
 import { useBridgeState } from '@/slices/bridge/hooks'
@@ -44,7 +45,10 @@ const handleFocusOnInput = () => {
   inputRef.current.focus()
 }
 
-function checkCCTPConditions(fromChainId: number, toChainId: number): boolean {
+function checkCCTPChainConditions(
+  fromChainId: number,
+  toChainId: number
+): boolean {
   switch (true) {
     case fromChainId === 1 && toChainId === 42161:
       return true
@@ -79,7 +83,7 @@ function checkIfUsingCCTP({
 
   const isTokensUSDC: boolean =
     originTokenSymbol === 'USDC' && destinationTokenSymbol === 'USDC'
-  const isSupportedCCTPChains: boolean = checkCCTPConditions(
+  const isSupportedCCTPChains: boolean = checkCCTPChainConditions(
     fromChainId,
     toChainId
   )
@@ -111,7 +115,16 @@ export const PortfolioTokenAsset = ({
       : formattedBalance
   }, [balance, portfolioChainId])
 
-  const bridgeAllowance = allowances && allowances[ROUTER_ADDRESS]
+  const isCCTP: boolean = checkIfUsingCCTP({
+    fromChainId,
+    fromToken,
+    toChainId,
+    toToken,
+  })
+
+  const bridgeAllowance = isCCTP
+    ? allowances?.[CCTP_ROUTER_ADDRESS]
+    : allowances?.[ROUTER_ADDRESS]
 
   const parsedAllowance: string =
     bridgeAllowance &&
