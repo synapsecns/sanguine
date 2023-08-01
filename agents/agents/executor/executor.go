@@ -383,7 +383,7 @@ func (e Executor) Execute(parentCtx context.Context, message types.Message) (_ b
 			originProof,
 			snapshotProofB32,
 			big.NewInt(int64(*stateIndex)),
-			uint64(5000000),
+			uint64(1000000),
 		)
 		if err != nil {
 			return nil, fmt.Errorf("could not execute message: %w", err)
