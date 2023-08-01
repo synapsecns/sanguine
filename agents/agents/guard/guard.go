@@ -306,7 +306,7 @@ func (g Guard) handleSnapshot(ctx context.Context, log ethTypes.Log) error {
 
 	// Handle each state in the snapshot
 	for stateIndex, state := range fraudSnapshot.Snapshot.States() {
-		isSlashable, err := g.isStateSlashable(ctx, state, fraudSnapshot.Agent, stateIndex)
+		isSlashable, err := g.isStateSlashable(ctx, state, fraudSnapshot.Agent)
 		if err != nil {
 			return fmt.Errorf("could not handle state: %w", err)
 		}
@@ -327,7 +327,7 @@ func (g Guard) handleSnapshot(ctx context.Context, log ethTypes.Log) error {
 		}
 
 		// Check if we should submit the state report
-		shouldSubmit, err := g.shouldSubmitStateReport(ctx, fraudSnapshot, state, stateIndex)
+		shouldSubmit, err := g.shouldSubmitStateReport(ctx, fraudSnapshot, stateIndex)
 		if err != nil {
 			return fmt.Errorf("could not check if should submit state report: %w", err)
 		}
@@ -358,7 +358,7 @@ func (g Guard) handleSnapshot(ctx context.Context, log ethTypes.Log) error {
 
 // Verify a state against a snapshot.
 // If invalid, submit a state report on summit.
-func (g Guard) isStateSlashable(ctx context.Context, state types.State, agent common.Address, stateIndex int) (bool, error) {
+func (g Guard) isStateSlashable(ctx context.Context, state types.State, agent common.Address) (bool, error) {
 	statePayload, err := types.EncodeState(state)
 	if err != nil {
 		return false, fmt.Errorf("could not encode state: %w", err)
@@ -415,7 +415,7 @@ func (g Guard) handleAttestation(ctx context.Context, log ethTypes.Log) error {
 				return fmt.Errorf("could not encode snapshot: %w", err)
 			}
 
-			isSlashable, err := g.isStateSlashable(ctx, state, fraudAttestation.Notary, stateIndex)
+			isSlashable, err := g.isStateSlashable(ctx, state, fraudAttestation.Notary)
 			if err != nil {
 				return fmt.Errorf("could not check if state is slashable: %w", err)
 			}
@@ -638,7 +638,7 @@ func (g Guard) handleDisputeOpened(ctx context.Context, log ethTypes.Log) error 
 
 // Only submit a state report if we are not on Summit, and the snapshot
 // agent is not currently in dispute.
-func (g Guard) shouldSubmitStateReport(ctx context.Context, snapshot *types.FraudSnapshot, state types.State, stateIndex int) (bool, error) {
+func (g Guard) shouldSubmitStateReport(ctx context.Context, snapshot *types.FraudSnapshot, stateIndex int) (bool, error) {
 	disputeStatus, err := g.domains[g.summitDomainID].BondingManager().GetDisputeStatus(ctx, snapshot.Agent)
 	if err != nil {
 		return false, fmt.Errorf("could not get dispute status: %w", err)
