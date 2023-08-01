@@ -21,6 +21,7 @@ import {
 } from '@/utils/actions/fetchPortfolioBalances'
 import { useBridgeState } from '@/slices/bridge/hooks'
 import { fetchAndStoreSingleTokenAllowance } from '@/slices/portfolio/hooks'
+import { ChainId } from '@/constants/chains'
 
 type PortfolioTokenAssetProps = {
   token: Token
@@ -43,6 +44,49 @@ const handleFocusOnInput = () => {
   inputRef.current.focus()
 }
 
+function checkCCTPConditions(fromChainId: number, toChainId: number): boolean {
+  switch (true) {
+    case fromChainId === 1 && toChainId === 42161:
+      return true
+    case fromChainId === 42161 && toChainId === 1:
+      return true
+    case fromChainId === 1 && toChainId === 43114:
+      return true
+    case fromChainId === 43114 && toChainId === 1:
+      return true
+    case fromChainId === 42161 && toChainId === 43114:
+      return true
+    case fromChainId === 43114 && toChainId === 42161:
+      return true
+    default:
+      return false
+  }
+}
+
+function checkIfUsingCCTP({
+  fromChainId,
+  fromToken,
+  toChainId,
+  toToken,
+}: {
+  fromChainId: number
+  fromToken: Token
+  toChainId: number
+  toToken: Token
+}): boolean {
+  const originTokenSymbol = fromToken?.symbol
+  const destinationTokenSymbol = toToken?.symbol
+
+  const isTokensUSDC: boolean =
+    originTokenSymbol === 'USDC' && destinationTokenSymbol === 'USDC'
+  const isSupportedCCTPChains: boolean = checkCCTPConditions(
+    fromChainId,
+    toChainId
+  )
+
+  return isTokensUSDC && isSupportedCCTPChains
+}
+
 export const PortfolioTokenAsset = ({
   token,
   balance,
@@ -52,7 +96,7 @@ export const PortfolioTokenAsset = ({
   isApproved,
 }: PortfolioTokenAssetProps) => {
   const dispatch = useAppDispatch()
-  const { fromChainId, fromToken } = useBridgeState()
+  const { fromChainId, fromToken, toChainId, toToken } = useBridgeState()
   const { address } = useAccount()
   const { icon, symbol, decimals, addresses } = token
 
