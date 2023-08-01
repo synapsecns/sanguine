@@ -2,7 +2,6 @@ name: Clear all Github actions caches
 on:
   # must be manually triggered
   workflow_dispatch:
-  push:
 
 jobs:
   my-job:
