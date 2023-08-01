@@ -59,7 +59,6 @@ export default function BridgeTransaction({ queryResult }) {
   const pendingContent = handlePending(fromInfo?.time)
 
   if (!!transaction) {
-    console.log(fromInfo)
     content = (
       <>
         <div className=" mt-5 mb-1">
