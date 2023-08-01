@@ -3,14 +3,15 @@ package executor
 import (
 	"context"
 	"fmt"
+	"os"
+	"path/filepath"
+
 	"github.com/davecgh/go-spew/spew"
 	"github.com/jftuga/ellipsis"
 	"github.com/synapsecns/sanguine/agents/config"
 	signerConfig "github.com/synapsecns/sanguine/ethergo/signer/config"
 	submitterConfig "github.com/synapsecns/sanguine/ethergo/submitter/config"
 	"gopkg.in/yaml.v2"
-	"os"
-	"path/filepath"
 )
 
 // Config is used to configure an Executor agent.
