@@ -327,7 +327,7 @@ func (g Guard) handleSnapshot(ctx context.Context, log ethTypes.Log) error {
 		}
 
 		// Check if we should submit the state report
-		shouldSubmit, err := g.shouldSubmitStateReport(ctx, fraudSnapshot, stateIndex)
+		shouldSubmit, err := g.shouldSubmitStateReport(ctx, fraudSnapshot)
 		if err != nil {
 			return fmt.Errorf("could not check if should submit state report: %w", err)
 		}
@@ -638,7 +638,7 @@ func (g Guard) handleDisputeOpened(ctx context.Context, log ethTypes.Log) error 
 
 // Only submit a state report if we are not on Summit, and the snapshot
 // agent is not currently in dispute.
-func (g Guard) shouldSubmitStateReport(ctx context.Context, snapshot *types.FraudSnapshot, stateIndex int) (bool, error) {
+func (g Guard) shouldSubmitStateReport(ctx context.Context, snapshot *types.FraudSnapshot) (bool, error) {
 	disputeStatus, err := g.domains[g.summitDomainID].BondingManager().GetDisputeStatus(ctx, snapshot.Agent)
 	if err != nil {
 		return false, fmt.Errorf("could not get dispute status: %w", err)
