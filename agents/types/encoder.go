@@ -302,17 +302,10 @@ const (
 //nolint:makezero
 func EncodeTips(tips Tips) ([]byte, error) {
 	b := make([]byte, 0)
-
 	b = append(b, wrap64(tips.SummitTip())...)
 	b = append(b, wrap64(tips.AttestationTip())...)
 	b = append(b, wrap64(tips.ExecutionTip())...)
 	b = append(b, wrap64(tips.DeliveryTip())...)
-	//
-	//b = append(b, math.PaddedBigBytes(tips.SummitTip(), uint64Len)...)
-	//b = append(b, math.PaddedBigBytes(tips.AttestationTip(), uint64Len)...)
-	//b = append(b, math.PaddedBigBytes(tips.ExecutionTip(), uint64Len)...)
-	//b = append(b, math.PaddedBigBytes(tips.DeliveryTip(), uint64Len)...)
-	//
 	return b, nil
 }
 
@@ -325,32 +318,11 @@ func wrap64(wrappable *big.Int) []byte {
 
 // EncodeTipsBigInt encodes a list of tips into a big int.
 func EncodeTipsBigInt(tips Tips) (*big.Int, error) {
-	//summitTip := new(big.Int).Lsh(tips.SummitTip(), ShiftSummitTip)
-	//attestationTip := new(big.Int).Lsh(tips.AttestationTip(), ShiftAttestationTip)
-	//executionTip := new(big.Int).Lsh(tips.ExecutionTip(), ShiftExecutionTip)
-	//deliveryTip := new(big.Int).Set(tips.DeliveryTip())
-	//
-	//result := new(big.Int)
-	//
-	//result.Or(summitTip, attestationTip)
-	//result.Or(result, executionTip)
-	//result.Or(result, deliveryTip)
-	//
-	//padding := []byte{0, 0, 0, 0}
-	//
-	//result = result.SetBytes(append(padding, result.Bytes()...))
-	//
-	//result = result.SetBytes([]byte{0, 0, 1, 0})
-
-	//out0 := *abi.ConvertType(out[0], new(*big.Int)).(**big.Int)
-
 	encodedTips, err := EncodeTips(tips)
 	if err != nil {
 		return nil, err
 	}
-
 	result := new(big.Int).SetBytes(encodedTips)
-
 	return result, nil
 }
 
