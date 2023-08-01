@@ -197,7 +197,7 @@ RETRY:
 }
 
 //// FetchLogsInRange fetches logs in a range with the GQL client.
-//func (s scribeFetcherImpl) FetchLogsInRange(ctx context.Context, chainID uint32, startBlock, endBlock uint64, contractAddress common.Address) ([]ethTypes.Log, error) {
+// func (s scribeFetcherImpl) FetchLogsInRange(ctx context.Context, chainID uint32, startBlock, endBlock uint64, contractAddress common.Address) ([]ethTypes.Log, error) {
 //	logs := &client.GetLogsRange{}
 //	page := 1
 //	contractAddressString := contractAddress.String()

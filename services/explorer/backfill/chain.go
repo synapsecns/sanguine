@@ -265,7 +265,6 @@ func (c *ChainBackfiller) processLogs(ctx context.Context, logs []ethTypes.Log, 
 			return parsedLogs, fmt.Errorf("context canceled: %w", ctx.Err())
 		case <-time.After(timeout):
 			if logIdx >= len(logs) {
-
 				return parsedLogs, nil
 			}
 			parsedLog, err := eventParser.Parse(ctx, logs[logIdx], c.chainConfig.ChainID)
