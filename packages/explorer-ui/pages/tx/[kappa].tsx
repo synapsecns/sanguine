@@ -53,6 +53,7 @@ export default function BridgeTransaction({ queryResult }) {
   const pendingContent = handlePending(fromInfo?.time)
 
   if (!!transaction) {
+    console.log(fromInfo)
     content = (
       <>
         <div className=" mt-5 mb-1">
@@ -109,7 +110,7 @@ export default function BridgeTransaction({ queryResult }) {
           {/* Check for cctp */}
           {fromInfo.eventType === 10 ? (
             <div className="flex gap-x-[1.1rem] py-1">
-              <p className="text-white text-opacity-60">Bridged with Circle's Cross-Chain Transfer Protocol.</p>
+              <p className="text-white text-opacity-60">Bridged using Circle's Cross-Chain Transfer Protocol.</p>
             </div>) : null}
           < br />
 

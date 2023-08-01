@@ -102,7 +102,26 @@ export const USDC = new Token({
     `,
   swapableType: 'USD',
 })
-
+export const CCTP_USDC = new Token({
+  addresses: {
+    [ChainId.AVALANCHE]: '0xB97EF9Ef8734C71904D8002F8b6Bc66Dd9c48a6E',
+    [ChainId.ARBITRUM]: '0xaf88d065e77c8cC2239327C5EDb3A432268e5831',
+  },
+  decimals: {
+    [ChainId.ETH]: 6,
+    [ChainId.AVALANCHE]: 6,
+    [ChainId.ARBITRUM]: 6,
+  },
+  symbol: 'USDC',
+  name: 'USD Circle',
+  logo: usdcLogo,
+  description: `
+    USD Coin (known by its ticker USDC) is a stablecoin that is pegged to the
+    U.S. dollar on a 1:1 basis. Every unit of this cryptocurrency in circulation
+    is backed up by $1 that is held in reserve
+    `,
+  swapableType: 'USD',
+})
 export const KLAYTN_USDC = new Token({
   addresses: {
     [ChainId.ETH]: '0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48',
@@ -931,6 +950,7 @@ export const BASIC_TOKENS_BY_CHAIN = {
   [ChainId.ARBITRUM]: [
     NETH,
     SYN,
+    CCTP_USDC,
     WETH,
     ETH,
     USDC,
@@ -954,6 +974,7 @@ export const BASIC_TOKENS_BY_CHAIN = {
   [ChainId.AVALANCHE]: [
     USDC,
     USDT,
+    CCTP_USDC,
     DAI,
     WETHE,
     NETH,
