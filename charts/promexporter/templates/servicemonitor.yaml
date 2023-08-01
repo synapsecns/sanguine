@@ -13,7 +13,10 @@ spec:
     {{- range .Values.service.ports }}
     - port: {{ .name }}
       path: /metrics
-      interval: 30s
-      scrapeTimeout: 20s
+      scrapeTimeout: 30s
     {{- end }}
+  namespaceSelector:
+    matchNames:
+      - {{ .Release.Namespace }}
+  jobLabel: promexporter
 {{- end }}
