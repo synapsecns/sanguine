@@ -2,10 +2,13 @@ import { JsonRpcProvider } from '@ethersproject/providers'
 import { SynapseSDK } from '@synapsecns/sdk-router'
 import { BigNumber } from '@ethersproject/bignumber'
 import { formatUnits } from '@ethersproject/units'
-import express from 'express'
+import * as e from 'express'
 
 import * as chainsData from './config/chains.json'
 import * as tokensData from './config/tokens.json'
+
+//@ts-ignore
+const app = e()
 
 // import chains from './config/chains.json'
 // import tokens from './config/tokens.json'
@@ -68,7 +71,6 @@ for (const chain of chains) {
 const Synapse = new SynapseSDK(chainIds, providers)
 
 // Set up express server
-const app = express()
 const port = process.env.PORT || 3000
 
 //Intro Message for UI
