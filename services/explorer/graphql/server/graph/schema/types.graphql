@@ -26,6 +26,8 @@ type PartialInfo {
   blockNumber:    Int
   time:           Int
   formattedTime: String
+  formattedEventType: String
+  eventType: Int
 }
 
 enum BridgeTxType {

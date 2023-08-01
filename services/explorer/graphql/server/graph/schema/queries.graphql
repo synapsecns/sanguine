@@ -21,6 +21,7 @@ type Query {
     page:           Int = 1
     tokenAddressFrom:   [String]
     tokenAddressTo:   [String]
+    onlyCCTP:           Boolean = false
   ): [BridgeTransaction]
 
   """

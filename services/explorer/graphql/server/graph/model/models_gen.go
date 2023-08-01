@@ -135,6 +135,8 @@ type PartialInfo struct {
 	BlockNumber        *int     `json:"blockNumber,omitempty"`
 	Time               *int     `json:"time,omitempty"`
 	FormattedTime      *string  `json:"formattedTime,omitempty"`
+	FormattedEventType *string  `json:"formattedEventType,omitempty"`
+	EventType          *int     `json:"eventType,omitempty"`
 }
 
 type PartialMessageBusInfo struct {
