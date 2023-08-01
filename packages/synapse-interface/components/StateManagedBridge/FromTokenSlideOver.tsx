@@ -1,14 +1,10 @@
 import { useEffect, useState } from 'react'
 import Fuse from 'fuse.js'
 import { useKeyPress } from '@hooks/useKeyPress'
-import TokenMenuItem from '@pages/bridge/TokenMenuItem'
 import SlideSearchBox from '@pages/bridge/SlideSearchBox'
-import { DrawerButton } from '@components/buttons/DrawerButton'
 import { sortTokens } from '@constants/tokens'
 import { Token } from '@/utils/types'
-import { useDispatch, useSelector } from 'react-redux'
-import { RootState } from '@/store/store'
-import { Zero } from '@ethersproject/constants'
+import { useDispatch } from 'react-redux'
 import { setFromToken, setToToken } from '@/slices/bridge/reducer'
 import {
   setShowFromTokenSlideOver,
@@ -17,20 +13,22 @@ import {
 import { segmentAnalyticsEvent } from '@/contexts/SegmentAnalyticsProvider'
 import { usePortfolioBalances } from '@/slices/portfolio/hooks'
 import { TokenWithBalanceAndAllowances } from '@/utils/actions/fetchPortfolioBalances'
+import { useBridgeState } from '@/slices/bridge/hooks'
+import SelectSpecificTokenButton from './components/SelectSpecificTokenButton'
 
-export const TokenSlideOver = ({
-  isOrigin,
-  tokens = [],
-  chainId,
-  selectedToken,
-}: {
-  isOrigin: boolean
-  tokens: Token[]
-  chainId: number
-  selectedToken: Token
-}) => {
+export const FromTokenSlideOver = ({}: {}) => {
   let setToken
   let setShowSlideOver
+
+  const { fromTokens, fromChainId, fromToken } = useBridgeState()
+
+  const isOrigin = true
+
+  const tokens = fromTokens
+
+  const chainId = fromChainId
+
+  const selectedToken = fromToken
 
   if (isOrigin) {
     setToken = setFromToken
@@ -127,34 +125,31 @@ export const TokenSlideOver = ({
   return (
     <div
       data-test-id="token-slide-over"
-      className="max-h-full pb-4 -mt-3 overflow-auto scrollbar-hide rounded-3xl"
+      className="max-h-full pb-4 -mt-3 overflow-auto scrollbar-hide"
     >
-      <div className="absolute z-10 w-full px-6 pt-3 bg-bgLight rounded-t-xl">
-        <div className="flex items-center float-right mb-2 font-medium sm:float-none">
+      <div className="absolute z-10 w-full px-2 pt-3 ">
+        <div className="flex items-center mb-2 font-medium justfiy-between sm:float-none">
           <SlideSearchBox
-            placeholder="Search by symbol, contract, or name..."
+            placeholder="Filter by symbol, contract, or name..."
             searchStr={searchStr}
             onSearch={onSearch}
           />
-          <DrawerButton onClick={onClose} isOrigin={isOrigin} />
         </div>
       </div>
-      <div
-        className={`
-          bg-bgLighter
-          space-y-4
-          pt-20 pb-8 px-2 md:px-6
-          rounded-3xl
-        `}
-      >
+      <div className="px-2 pt-14 pb-8 bg-[#343036] md:px-2">
         {tokenList.map((token, idx) => {
-          const tokenBalanceAndAllowance = portfolioBalances[chainId].filter(
-            (t: TokenWithBalanceAndAllowances) => t.token === token
-          )
-          const balance = tokenBalanceAndAllowance[0]?.balance ?? 0n
+          const tokenBalanceAndAllowance =
+            chainId &&
+            portfolioBalances[chainId]?.filter(
+              (t: TokenWithBalanceAndAllowances) => t.token === token
+            )
+          const balance = tokenBalanceAndAllowance
+            ? tokenBalanceAndAllowance[0]?.balance
+            : 0n
 
           return (
-            <TokenMenuItem
+            <SelectSpecificTokenButton
+              isOrigin={true}
               key={idx}
               chainId={chainId}
               token={token}
@@ -182,14 +177,11 @@ export const TokenSlideOver = ({
         })}
 
         {searchStr && (
-          <div className="px-12 py-4 text-xl text-center text-white">
+          <div className="px-12 py-4 text-center text-white text-md">
             No other results found for{' '}
             <i className="text-white text-opacity-60">{searchStr}</i>.
-            <div className="pt-4 text-lg text-white text-opacity-50 align-bottom text-medium">
-              Want to see a token supported on Synapse? Submit a request{' '}
-              <span className="text-white text-opacity-70 hover:underline hover:cursor-pointer">
-                here
-              </span>
+            <div className="pt-2 text-white text-opacity-50 align-bottom text-md">
+              Want to see a token supported on Synapse? Let us know!
             </div>
           </div>
         )}

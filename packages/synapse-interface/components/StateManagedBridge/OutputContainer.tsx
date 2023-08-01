@@ -1,14 +1,32 @@
+import { useEffect, useState } from 'react'
 import { useSelector } from 'react-redux'
+import { Address, useAccount } from 'wagmi'
+
 import { RootState } from '@/store/store'
 
 import LoadingSpinner from '../ui/tailwind/LoadingSpinner'
-import ToChainSelect from './ToChainSelect'
-import ToTokenSelect from './ToTokenSelect'
+import ToTokenSelect from './temp/ToTokenSelect'
+import { ToChainSelector } from './ToChainSelector'
+import { shortenAddress } from '@/utils/shortenAddress'
+import { ToTokenSelector } from './ToTokenSelector'
+import { useDispatch } from 'react-redux'
+import { setToChainId, setToToken } from '@/slices/bridge/reducer'
 
 export const OutputContainer = ({}) => {
-  const { bridgeQuote, isLoading } = useSelector(
+  const { bridgeQuote, isLoading, toChainId } = useSelector(
     (state: RootState) => state.bridge
   )
+
+  const { address: isConnectedAddress } = useAccount()
+  const [address, setAddress] = useState<Address>()
+
+  const dispatch = useDispatch()
+
+  useEffect(() => {
+    setAddress(isConnectedAddress)
+  }, [isConnectedAddress])
+
+  // update address for destination address if we have a destination address
 
   return (
     <div
@@ -18,7 +36,28 @@ export const OutputContainer = ({}) => {
         bg-bgLight
       `}
     >
-      <ToChainSelect />
+      <div className="flex items-center justify-between mb-3">
+        <div className="flex items-center space-x-2">
+          <ToChainSelector />
+          {toChainId && (
+            <button
+              className="bg-bgLight text-primaryTextColor border-[1px] p-1 rounded-md text-xxs"
+              onClick={() => {
+                dispatch(setToChainId(null))
+                dispatch(setToToken(null))
+              }}
+            >
+              clear
+            </button>
+          )}
+        </div>
+        {address && (
+          <div className="h-5">
+            <DisplayAddress address={address} />
+          </div>
+        )}
+      </div>
+
       <div className="flex h-16 mb-2 space-x-2">
         <div
           className={`
@@ -29,7 +68,8 @@ export const OutputContainer = ({}) => {
             border border-white border-opacity-20
           `}
         >
-          <ToTokenSelect />
+          {/* <ToTokenSelect /> */}
+          <ToTokenSelector />
           <div className="flex ml-4 min-w-[190px]">
             {isLoading ? (
               <LoadingSpinner className="opacity-50" />
@@ -57,6 +97,14 @@ export const OutputContainer = ({}) => {
           </div>
         </div>
       </div>
+    </div>
+  )
+}
+
+const DisplayAddress = ({ address }) => {
+  return (
+    <div className="border-[0.5px] border-secondaryTextColor rounded-xl pt-1 pb-1 pl-3 pr-3 text-secondaryTextColor text-xxs">
+      {shortenAddress(address, 3)}
     </div>
   )
 }

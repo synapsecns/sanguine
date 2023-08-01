@@ -74,6 +74,9 @@ handling default toChain, toToken
 
 are swapExceptions still vaild?
 
+
+If the state.toToken exists and it's not in the possible lists of toToken set it to null and the user can select
+
 */
 
 export const bridgeSlice = createSlice({

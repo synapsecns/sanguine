@@ -2,13 +2,18 @@ import React, { useEffect, useState, useRef } from 'react'
 import { useDispatch } from 'react-redux'
 import { useAccount } from 'wagmi'
 
-import { updateFromValue } from '@/slices/bridge/reducer'
+import {
+  setFromChainId,
+  setFromToken,
+  updateFromValue,
+} from '@/slices/bridge/reducer'
 import MiniMaxButton from '../buttons/MiniMaxButton'
 import { formatBigIntToString, stringToBigInt } from '@/utils/bigint/format'
 import { cleanNumberInput } from '@/utils/cleanNumberInput'
-import FromChainSelect from './FromChainSelect'
-import FromTokenSelect from './FromTokenSelect'
 import { useAppSelector } from '@/store/hooks'
+import { ConnectedIndicator } from './ConnectedIndicator'
+import { FromChainSelector } from './FromChainSelector'
+import { FromTokenSelector } from './FromTokenSelector'
 
 export const inputRef = React.createRef<HTMLInputElement>()
 
@@ -89,7 +94,23 @@ export const InputContainer = () => {
         bg-bgLight
       `}
     >
-      <FromChainSelect />
+      <div className="flex justify-between mb-3">
+        <div className="flex items-center space-x-2">
+          <FromChainSelector />
+          {fromChainId && (
+            <button
+              className="bg-bgLight text-primaryTextColor border-[1px] p-1 rounded-md text-xxs"
+              onClick={() => {
+                dispatch(setFromChainId(null))
+                dispatch(setFromToken(null))
+              }}
+            >
+              clear
+            </button>
+          )}
+        </div>
+        {hasMounted && isConnected && <ConnectedIndicator />}
+      </div>
       <div className="flex h-16 mb-2 space-x-2">
         <div
           className={`
@@ -100,7 +121,7 @@ export const InputContainer = () => {
             border border-white border-opacity-20
           `}
         >
-          <FromTokenSelect />
+          <FromTokenSelector />
           <div className="flex flex-col pt-2 ml-4">
             <input
               ref={inputRef}

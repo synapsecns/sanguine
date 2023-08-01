@@ -21,9 +21,9 @@ export default function SlideSearchBox({
         hidden sm:inline-block
         flex-grow
         h-full min-w-[70%]
-        py-2 pr-2
-        rounded
-        bg-transparent
+        py-2 p-2
+        rounded bg-[#252226] custom-shadow
+       font-normal
        placeholder-white placeholder-opacity-40
       `}
       placeholder={placeholder}

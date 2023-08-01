@@ -2,27 +2,20 @@ import { useCallback, useEffect, useState } from 'react'
 import Fuse from 'fuse.js'
 import { useKeyPress } from '@hooks/useKeyPress'
 import * as CHAINS from '@constants/chains/master'
-import { SelectSpecificNetworkButton } from '@components/buttons/SelectSpecificNetworkButton'
 import SlideSearchBox from '@pages/bridge/SlideSearchBox'
 import { DrawerButton } from '@components/buttons/DrawerButton'
 import { useNetwork } from 'wagmi'
 import { sortChains } from '@constants/chains'
 import { useDispatch } from 'react-redux'
 import { segmentAnalyticsEvent } from '@/contexts/SegmentAnalyticsProvider'
+import { useBridgeState } from '@/slices/bridge/hooks'
+import { setFromChainId } from '@/slices/bridge/reducer'
+import { setShowFromChainSlideOver } from '@/slices/bridgeDisplaySlice'
+import { SelectSpecificNetworkButton } from './components/SelectSpecificNetworkButton'
 
-export const ChainSlideOver = ({
-  isOrigin,
-  chains,
-  chainId,
-  setChain,
-  setShowSlideOver,
-}: {
-  isOrigin: boolean
-  chains: number[]
-  chainId: number
-  setChain: any
-  setShowSlideOver: any
-}) => {
+export const FromChainSlideOver = () => {
+  const { fromChainIds, fromChainId } = useBridgeState()
+  const isOrigin = true
   const { chain } = useNetwork()
   const [currentIdx, setCurrentIdx] = useState(-1)
   const [searchStr, setSearchStr] = useState('')
@@ -49,7 +42,7 @@ export const ChainSlideOver = ({
   useEffect(() => {
     let tempNetworks = []
     Object.values(CHAINS).map((chain) => {
-      if (isOrigin || (!isOrigin && chains?.includes(chain.id))) {
+      if (isOrigin || (!isOrigin && fromChainIds?.includes(chain.id))) {
         tempNetworks.push(chain)
       }
     })
@@ -68,8 +61,8 @@ export const ChainSlideOver = ({
   const onClose = useCallback(() => {
     setCurrentIdx(-1)
     setSearchStr('')
-    dispatch(setShowSlideOver(false))
-  }, [setShowSlideOver])
+    dispatch(setShowFromChainSlideOver(false))
+  }, [setShowFromChainSlideOver])
 
   const escFunc = () => {
     if (escPressed) {
@@ -93,7 +86,7 @@ export const ChainSlideOver = ({
   const enterPressedFunc = () => {
     if (enterPressed && currentIdx > -1) {
       const currentChain = networks[currentIdx]
-      dispatch(setChain(currentChain.chainId))
+      dispatch(setFromChainId(currentChain.chainId))
       onClose()
     }
   }
@@ -110,42 +103,41 @@ export const ChainSlideOver = ({
   return (
     <div
       data-test-id="chain-slide-over"
-      className="max-h-full pb-4 -mt-3 overflow-auto scrollbar-hide rounded-3xl"
+      className="max-h-full pb-4 -mt-3 overflow-auto scrollbar-hide"
     >
-      <div className="absolute z-10 w-full px-6 pt-3 bg-bgLight rounded-t-xl">
-        <div className="flex items-center float-right mb-2 font-medium sm:float-none">
+      <div className="absolute z-10 w-full px-2 pt-3 ">
+        <div className="flex items-center mb-2 font-medium justfiy-between sm:float-none">
           <SlideSearchBox
-            placeholder="Search by asset, name, or chainID..."
+            placeholder="Filter"
             searchStr={searchStr}
             onSearch={onSearch}
           />
-          <DrawerButton onClick={onClose} isOrigin={isOrigin} />
         </div>
       </div>
       <div
         data-test-id={dataId}
-        className="px-3 pt-20 pb-8 space-y-4 bg-bgLighter md:px-6"
+        className="px-2 pt-14 pb-8 bg-[#343036] md:px-2"
       >
+        <div className="mb-2 text-sm font-normal text-white">
+          Bridge from...
+        </div>
         {networks.map(({ id: mapChainId }, idx) => {
           let onClickSpecificNetwork
-          if (chainId === mapChainId) {
-            onClickSpecificNetwork = () => {}
+          if (fromChainId === mapChainId) {
+            onClickSpecificNetwork = () => {
+              onClose()
+            }
           } else {
             onClickSpecificNetwork = () => {
               const eventTitle = isOrigin
                 ? `[Bridge User Action] Sets new fromChainId`
                 : `[Bridge User Action] Sets new toChainId`
-              const eventData = isOrigin
-                ? {
-                    previousFromChainId: chainId,
-                    newFromChainId: mapChainId,
-                  }
-                : {
-                    previousToChainId: chainId,
-                    newToChainId: mapChainId,
-                  }
+              const eventData = {
+                previousFromChainId: fromChainId,
+                newFromChainId: mapChainId,
+              }
               segmentAnalyticsEvent(eventTitle, eventData)
-              dispatch(setChain(mapChainId))
+              dispatch(setFromChainId(mapChainId))
               onClose()
             }
           }
@@ -153,7 +145,7 @@ export const ChainSlideOver = ({
             <SelectSpecificNetworkButton
               key={idx}
               itemChainId={mapChainId}
-              isCurrentChain={chainId === mapChainId}
+              isCurrentChain={fromChainId === mapChainId}
               active={idx === currentIdx}
               onClick={onClickSpecificNetwork}
               dataId={dataId}
@@ -161,14 +153,11 @@ export const ChainSlideOver = ({
           )
         })}
         {searchStr && (
-          <div className="px-12 py-4 text-xl text-center text-white">
+          <div className="px-12 py-4 text-center text-white text-md">
             No other results found for{' '}
             <i className="text-white text-opacity-60">{searchStr}</i>.
-            <div className="pt-4 text-lg text-white text-opacity-50 align-bottom text-medium">
-              Want to see a chain supported on Synapse? Submit a request{' '}
-              <span className="text-white text-opacity-70 hover:underline hover:cursor-pointer">
-                here
-              </span>
+            <div className="pt-2 text-white text-opacity-50 align-bottom text-md">
+              Want to see a chain supported on Synapse? Let us know!
             </div>
           </div>
         )}

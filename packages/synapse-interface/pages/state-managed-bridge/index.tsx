@@ -17,6 +17,7 @@ import {
 
 import {
   setShowDestinationAddress,
+  setShowFromTokenSlideOver,
   setShowSettingsSlideOver,
 } from '@/slices/bridgeDisplaySlice'
 
@@ -62,7 +63,11 @@ import {
 } from '@/slices/portfolio/hooks'
 import { usePortfolioBalances } from '@/slices/portfolio/hooks'
 import { updateSingleTokenAllowance } from '@/slices/portfolio/actions'
-import FromTokenSelect from '@/components/StateManagedBridge/FromTokenSelect'
+import FromTokenSelect from '@/components/StateManagedBridge/temp/FromTokenSelect'
+import { FromChainSlideOver } from '@/components/StateManagedBridge/FromChainSlideOver'
+import { ToChainSlideOver } from '@/components/StateManagedBridge/ToChainSlideOver'
+import { FromTokenSlideOver } from '@/components/StateManagedBridge/FromTokenSlideOver'
+import { ToTokenSlideOver } from '@/components/StateManagedBridge/ToTokenSlideOver'
 
 const StateManagedBridge = () => {
   const { address } = useAccount()
@@ -91,9 +96,14 @@ const StateManagedBridge = () => {
     toTokens,
   } = useSelector((state: RootState) => state.bridge)
 
-  const { showSettingsSlideOver, showDestinationAddress } = useSelector(
-    (state: RootState) => state.bridgeDisplay
-  )
+  const {
+    showSettingsSlideOver,
+    showDestinationAddress,
+    showFromChainSlideOver,
+    showToChainSlideOver,
+    showFromTokenSlideOver,
+    showToTokenSlideOver,
+  } = useSelector((state: RootState) => state.bridgeDisplay)
 
   let pendingPopup
   let successPopup
@@ -429,6 +439,8 @@ const StateManagedBridge = () => {
     }
   }
 
+  const springClass = 'fixed z-50 w-full h-full bg-opacity-50'
+
   return (
     <div className="flex flex-col w-full max-w-lg mx-auto lg:mx-0">
       <div className="flex flex-col">
@@ -471,6 +483,26 @@ const StateManagedBridge = () => {
             <Transition show={showSettingsSlideOver} {...TRANSITION_PROPS}>
               <animated.div>
                 <SettingsSlideOver key="settings" />
+              </animated.div>
+            </Transition>
+            <Transition show={showFromChainSlideOver} {...TRANSITION_PROPS}>
+              <animated.div className={springClass}>
+                <FromChainSlideOver />
+              </animated.div>
+            </Transition>
+            <Transition show={showFromTokenSlideOver} {...TRANSITION_PROPS}>
+              <animated.div className={springClass}>
+                <FromTokenSlideOver />
+              </animated.div>
+            </Transition>
+            <Transition show={showToChainSlideOver} {...TRANSITION_PROPS}>
+              <animated.div className={springClass}>
+                <ToChainSlideOver />
+              </animated.div>
+            </Transition>
+            <Transition show={showToTokenSlideOver} {...TRANSITION_PROPS}>
+              <animated.div className={springClass}>
+                <ToTokenSlideOver />
               </animated.div>
             </Transition>
             <InputContainer />
