@@ -122,9 +122,11 @@ export const PortfolioTokenAsset = ({
     toToken,
   })
 
-  const bridgeAllowance = isCCTP
-    ? allowances?.[CCTP_ROUTER_ADDRESS]
-    : allowances?.[ROUTER_ADDRESS]
+  const tokenRouterAddress: string = isCCTP
+    ? CCTP_ROUTER_ADDRESS
+    : ROUTER_ADDRESS
+
+  const bridgeAllowance: bigint = allowances?.[tokenRouterAddress]
 
   const parsedAllowance: string =
     bridgeAllowance &&
@@ -167,35 +169,39 @@ export const PortfolioTokenAsset = ({
     if (isCurrentlyConnected) {
       dispatch(setFromChainId(portfolioChainId))
       dispatch(setFromToken(token))
-      await approveToken(ROUTER_ADDRESS, connectedChainId, tokenAddress).then(
-        (success) => {
-          dispatch(
-            fetchAndStoreSingleTokenAllowance({
-              routerAddress: ROUTER_ADDRESS,
-              tokenAddress: tokenAddress as Address,
-              address: address,
-              chainId: portfolioChainId,
-            })
-          )
-        }
-      )
+      await approveToken(
+        tokenRouterAddress,
+        connectedChainId,
+        tokenAddress
+      ).then((success) => {
+        dispatch(
+          fetchAndStoreSingleTokenAllowance({
+            routerAddress: tokenRouterAddress as Address,
+            tokenAddress: tokenAddress as Address,
+            address: address,
+            chainId: portfolioChainId,
+          })
+        )
+      })
     } else {
       try {
         await switchNetwork({ chainId: portfolioChainId })
         await scrollToTop()
-        await approveToken(ROUTER_ADDRESS, portfolioChainId, tokenAddress).then(
-          (success) => {
-            success &&
-              dispatch(
-                fetchAndStoreSingleTokenAllowance({
-                  routerAddress: ROUTER_ADDRESS,
-                  tokenAddress: tokenAddress as Address,
-                  address: address,
-                  chainId: portfolioChainId,
-                })
-              )
-          }
-        )
+        await approveToken(
+          tokenRouterAddress,
+          portfolioChainId,
+          tokenAddress
+        ).then((success) => {
+          success &&
+            dispatch(
+              fetchAndStoreSingleTokenAllowance({
+                routerAddress: tokenRouterAddress as Address,
+                tokenAddress: tokenAddress as Address,
+                address: address,
+                chainId: portfolioChainId,
+              })
+            )
+        })
       } catch (error) {
         toast.error(
           `Failed to approve ${token.symbol} token on ${currentChainName} network`,
@@ -214,6 +220,7 @@ export const PortfolioTokenAsset = ({
     portfolioChainId,
     isCurrentlyConnected,
     isDisabled,
+    tokenRouterAddress,
   ])
 
   return (
