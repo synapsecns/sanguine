@@ -395,7 +395,7 @@ func (b *BackfillSuite) TestBackfill() {
 
 	bridgeEvents := b.db.UNSAFE_DB().WithContext(b.GetTestContext()).Find(&sql.BridgeEvent{}).Count(&count)
 	Nil(b.T(), bridgeEvents.Error)
-	LessOrEqual(b.T(), int64(10), count) // less or equal because there is a chance that the cctp event bridge event inserts havn't completed yet.
+	Equal(b.T(), int64(12), count) // 10 + 2 cctp events
 
 	messageEvents := b.db.UNSAFE_DB().WithContext(b.GetTestContext()).Find(&sql.MessageBusEvent{}).Count(&count)
 	Nil(b.T(), messageEvents.Error)
@@ -487,7 +487,7 @@ func (b *BackfillSuite) TestBackfill() {
 	bridgeEvents = b.db.UNSAFE_DB().WithContext(b.GetTestContext()).Find(&sql.BridgeEvent{}).Count(&count)
 
 	Nil(b.T(), bridgeEvents.Error)
-	LessOrEqual(b.T(), int64(16), count) // less or equal because there is a chance that the cctp event bridge event inserts havn't completed yet.
+	Equal(b.T(), int64(18), count) // 16 + 2 cctp events
 
 	lastBlockStored, err := b.db.GetLastStoredBlock(b.GetTestContext(), uint32(testChainID.Uint64()), chainConfigsV1[0].Contracts[0].Address)
 

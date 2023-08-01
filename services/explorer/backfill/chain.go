@@ -269,13 +269,14 @@ func (c *ChainBackfiller) processLogs(ctx context.Context, logs []ethTypes.Log, 
 			}
 			parsedLog, err := eventParser.Parse(ctx, logs[logIdx], c.chainConfig.ChainID)
 			if err != nil || parsedLog == nil {
-				if err.Error() != parser.ErrUnknownTopic {
-					logger.Errorf("could not parse log (ErrUnknownTopic) %d, %s blocknumber: %d, %s", c.chainConfig.ChainID, logs[logIdx].Address, logs[logIdx].BlockNumber, err)
-				} else {
+				if err.Error() == parser.ErrUnknownTopic {
+					logger.Warnf("could not parse log (ErrUnknownTopic) %d, %s %s blocknumber: %d, %s", c.chainConfig.ChainID, logs[logIdx].TxHash, logs[logIdx].Address, logs[logIdx].BlockNumber, err)
+				} else { // retry
 					logger.Errorf("could not parse log %d, %s blocknumber: %d, %s", c.chainConfig.ChainID, logs[logIdx].Address, logs[logIdx].BlockNumber, err)
+					timeout = b.Duration()
+					continue
 				}
-				timeout = b.Duration()
-				continue
+
 			}
 
 			parsedLogs = append(parsedLogs, parsedLog)

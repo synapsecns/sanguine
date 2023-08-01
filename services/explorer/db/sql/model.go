@@ -97,11 +97,11 @@ type CCTPEvent struct {
 	// Token is either the address of the received token on destination or the address of the token burnt on origin.
 	Token string `gorm:"column:token"`
 	// Amount is the amount of the CCTP transfer.
-	Amount *big.Int `gorm:"column:sent_amount;type:UInt256"`
+	Amount *big.Int `gorm:"column:amount;type:UInt256"`
 	// EventIndex is the index of the log.
 	EventIndex uint64 `gorm:"column:event_index"`
 	// AmountUSD is the amount of the CCTP transfer in USD.
-	AmountUSD float64 `gorm:"column:sent_amount_usd;type:Float64"`
+	AmountUSD float64 `gorm:"column:amount_usd;type:Float64"`
 	// OriginChainID is the chain ID of the CCTP transfer.
 	OriginChainID *big.Int `gorm:"column:origin_chain_id;type:UInt256"`
 	// DestinationChainID is the chain ID of the CCTP transfer.

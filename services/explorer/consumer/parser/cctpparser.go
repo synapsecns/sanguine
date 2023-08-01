@@ -113,14 +113,14 @@ func (c *CCTPParser) Parse(ctx context.Context, log ethTypes.Log, chainID uint32
 	cctpEvent.TokenSymbol = tokenData.TokenID()
 	cctpEvent.TokenDecimal = &decimals
 	c.applyPriceData(ctx, &cctpEvent, usdcCoinGeckoID)
-	// Store into bridge database with a new goroutine.
-	go func() {
-		bridgeEvent := cctpEventToBridgeEvent(cctpEvent)
-		err := c.storeBridgeEvent(ctx, bridgeEvent)
-		if err != nil {
-			logger.Errorf("could not store cctp event into bridge database: %v", err)
-		}
-	}()
+
+	// Would store into bridge database with a new goroutine but saw unreliable storage of events w/parent context cancellation.
+
+	bridgeEvent := cctpEventToBridgeEvent(cctpEvent)
+	err = c.storeBridgeEvent(ctx, bridgeEvent)
+	if err != nil {
+		logger.Errorf("could not store cctp event into bridge database: %v", err)
+	}
 
 	return cctpEvent, nil
 }

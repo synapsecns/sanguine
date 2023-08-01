@@ -398,7 +398,6 @@ func (p *BridgeParser) Parse(ctx context.Context, log ethTypes.Log, chainID uint
 
 	if tokenData.TokenID() == fetcher.NoTokenID {
 		logger.Errorf("could not get token data token id chain: %d address %s", chainID, log.Address.Hex())
-		fmt.Println("GOODBYE")
 		// handle an inauthentic token.
 		return bridgeEvent, nil
 	}
@@ -434,6 +433,5 @@ func (p *BridgeParser) Parse(ctx context.Context, log ethTypes.Log, chainID uint
 			bridgeEvent.FeeUSD = GetAmountUSD(bridgeEvent.Fee, tokenData.Decimals(), tokenPrice)
 		}
 	}
-	fmt.Println("bridgeEvent DONE", bridgeEvent)
 	return bridgeEvent, nil
 }
