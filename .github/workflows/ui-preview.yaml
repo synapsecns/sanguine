@@ -26,7 +26,6 @@ jobs:
             explorer-ui: 'packages/explorer-ui/**'
             docs: 'packages/docs/**'
             synapse-interface: 'packages/synapse-interface/**'
-            rest-api: 'packages/rest-api/**'
       - id: length
         run: |
           export FILTER_LENGTH=$(echo $FILTERED_PATHS | jq '. | length')
@@ -65,8 +64,7 @@ jobs:
           {
             "explorer-ui": "${{ secrets.VERCEL_PROJECT_ID}}",
             "docs": "${{ secrets.DOCS_VERCEL_PROJECT_ID }}",
-            "synapse-interface": "${{ secrets.SYNAPSE_INTERFACE_PROJECT_ID }}",
-            "rest-api": "${{ secrets.SYNAPSE_REST_API_PROJECT_ID }}"
+            "synapse-interface": "${{ secrets.SYNAPSE_INTERFACE_PROJECT_ID }}"
           }
           END
           )
@@ -102,4 +100,3 @@ jobs:
               pull_number: context.issue.number,
               body: newBody
             });
-
