@@ -16,7 +16,7 @@ chains:
         start_block: -1
       - contract_type: cctp
         address: '0xfB2Bfc368a7edfD51aa2cbEC513ad50edEa74E84'
-        start_block: 17559791
+        start_block: -1
   - chain_id: 42161
     fetch_block_increment: 30000
     max_goroutines: 2
@@ -32,7 +32,7 @@ chains:
         start_block: -1
       - contract_type: cctp
         address: '0xfB2Bfc368a7edfD51aa2cbEC513ad50edEa74E84'
-        start_block: 104920110
+        start_block: -1
   - chain_id: 1313161554
     fetch_block_increment: 10000
     max_goroutines: 2
@@ -64,7 +64,7 @@ chains:
         start_block: -1
       - contract_type: cctp
         address: '0xfB2Bfc368a7edfD51aa2cbEC513ad50edEa74E84'
-        start_block: 31804348
+        start_block: -1
   - chain_id: 288
     fetch_block_increment: 10000
     max_goroutines: 2
