@@ -11,6 +11,7 @@ const SINGLE_SIDE_INFO_FRAGMENT = gql`
     tokenAddress
     tokenSymbol
     time
+    eventType
   }
 `
 

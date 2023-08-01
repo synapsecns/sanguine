@@ -70,6 +70,7 @@ export default function BridgeTransaction({ queryResult }) {
         </div>
         <br />
         <HorizontalDivider />
+
         {/* <UniversalSearch placeholder={`txid: ${kappa}`} /> */}
         <BridgeTransactionTable queryResult={queryResult.bridgeTransactions} />
 
@@ -105,7 +106,12 @@ export default function BridgeTransaction({ queryResult }) {
                 : pendingContent}{' '}
             </p>
           </div>
-          <br />
+          {/* Check for cctp */}
+          {fromInfo.eventType === 10 ? (
+            <div className="flex gap-x-[1.1rem] py-1">
+              <p className="text-white text-opacity-60">Bridged with Circle's Cross-Chain Transfer Protocol.</p>
+            </div>) : null}
+          < br />
 
           <div className="flex gap-y-2 flex-col">
             <HorizontalDivider />
@@ -237,15 +243,15 @@ export default function BridgeTransaction({ queryResult }) {
                     className="text-white break-all text-sm underline"
                     href={
                       CHAIN_EXPLORER_URLS[
-                        toInfo?.chainID
-                          ? toInfo.chainID
-                          : fromInfo.destinationChainID
+                      toInfo?.chainID
+                        ? toInfo.chainID
+                        : fromInfo.destinationChainID
                       ] +
                       '/address/' +
                       BRIDGE_CONTRACTS[
-                        toInfo?.chainID
-                          ? toInfo.chainID
-                          : fromInfo.destinationChainID
+                      toInfo?.chainID
+                        ? toInfo.chainID
+                        : fromInfo.destinationChainID
                       ]
                     }
                   >
