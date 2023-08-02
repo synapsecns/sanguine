@@ -15,7 +15,7 @@ func signEncoder(ctx context.Context, signer signer.Signer, encoder Encoder, sal
 	// Encode the given type.
 	encoded, err := encoder.Encode()
 	if err != nil {
-		return nil, nil, common.Hash{}, err
+		return nil, nil, common.Hash{}, fmt.Errorf("could not encode: %w", err)
 	}
 
 	// Hash the encoded type, and concatenate with hashed salt.
