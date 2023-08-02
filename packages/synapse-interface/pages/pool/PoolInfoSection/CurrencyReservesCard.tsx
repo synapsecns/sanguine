@@ -45,7 +45,7 @@ function CurrencyInfoListItem({ chainId, percent, balance, token }) {
           formatBigIntToString(
             stringToBigInt(`${balance}`, token.decimals[chainId]),
             token.decimals[chainId],
-            -1
+            2
           )
         )
       : '-'
