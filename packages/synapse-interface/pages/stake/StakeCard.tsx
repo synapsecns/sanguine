@@ -38,7 +38,6 @@ const StakeCard = ({ address, chainId, pool }: StakeCardProps) => {
   const stakingPoolTokens: Token[] = tokenInfo?.poolTokens
   const stakingPoolId: number = tokenInfo?.poolId
 
-  // TODO get rid of this hook
   const balance = useTokenBalance(pool)
 
   const lpTokenBalance = balance?.data ? BigInt(balance?.data?.value) : 0n
@@ -70,25 +69,23 @@ const StakeCard = ({ address, chainId, pool }: StakeCardProps) => {
   }, [address, chainId, stakingPoolId])
 
   useEffect(() => {
-    if (tx !== undefined) {
-      ;(async () => {
-        const tkAllowance = await getTokenAllowance(
-          MINICHEF_ADDRESSES[chainId],
-          pool.addresses[chainId] as Address,
-          address as Address,
-          chainId
-        )
-        setAllowance(tkAllowance)
-        getStakedBalance(address as Address, chainId, stakingPoolId)
-          .then((data) => {
-            setUserStakeData(data)
-          })
-          .catch((err) => {
-            console.log(err)
-          })
-      })()
-    }
-  }, [tx])
+    ;(async () => {
+      const tkAllowance = await getTokenAllowance(
+        MINICHEF_ADDRESSES[chainId],
+        pool.addresses[chainId] as Address,
+        address as Address,
+        chainId
+      )
+      setAllowance(tkAllowance)
+      getStakedBalance(address as Address, chainId, stakingPoolId)
+        .then((data) => {
+          setUserStakeData(data)
+        })
+        .catch((err) => {
+          console.log(err)
+        })
+    })()
+  }, [lpTokenBalance])
 
   return (
     <div className="flex-wrap space-y-2">
@@ -99,7 +96,7 @@ const StakeCard = ({ address, chainId, pool }: StakeCardProps) => {
         poolTokens={stakingPoolTokens}
         poolLabel={stakingPoolLabel}
         prices={prices}
-        tx={tx}
+        lpTokenBalance={lpTokenBalance}
       />
       <Card
         title="Your balances"
