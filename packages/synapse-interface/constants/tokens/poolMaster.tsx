@@ -1,5 +1,4 @@
 import * as CHAINS from '@constants/chains/master'
-
 import synapseLogo from '@assets/icons/synapse.svg'
 import {
   BUSD,
