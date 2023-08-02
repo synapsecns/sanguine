@@ -57,6 +57,7 @@ export const BRIDGE_REQUIRED_CONFIRMATIONS = {
   [CHAINS.DOGE.id]: 33,
   [CHAINS.CANTO.id]: 20,
   [CHAINS.BASE.id]: 750,
+  [CHAINS.KLAYTN.id]: 20,
 }
 
 export const DEFAULT_FROM_TOKEN_SYMBOL = 'USDC'
