@@ -60,7 +60,6 @@ export const BRIDGE_REQUIRED_CONFIRMATIONS = {
   [CHAINS.KLAYTN.id]: 20,
 }
 
-
 export const DEFAULT_FROM_TOKEN_SYMBOL = 'USDC'
 export const DEFAULT_TO_TOKEN_SYMBOL = 'USDC'
 export const DEFAULT_FROM_TOKEN = USDC
