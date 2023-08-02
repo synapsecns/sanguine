@@ -27,6 +27,7 @@ interface StakeCardTitleProps {
   poolTokens: Token[]
   poolLabel: string
   prices: any
+  tx: any
 }
 
 const StakeCardTitle = ({
@@ -36,6 +37,7 @@ const StakeCardTitle = ({
   poolTokens,
   poolLabel,
   prices,
+  tx,
 }: StakeCardTitleProps) => {
   const [poolApyData, setPoolApyData] = useState<any>(null)
   const [baseApyData, setBaseApyData] = useState<any>(null)
@@ -50,7 +52,7 @@ const StakeCardTitle = ({
           console.log('Could not get pool data', err)
         })
     }
-  }, [connectedChainId, address, prices])
+  }, [connectedChainId, address, prices, tx])
 
   useEffect(() => {
     null

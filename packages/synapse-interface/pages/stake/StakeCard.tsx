@@ -81,7 +81,6 @@ const StakeCard = ({ address, chainId, pool }: StakeCardProps) => {
         setAllowance(tkAllowance)
         getStakedBalance(address as Address, chainId, stakingPoolId)
           .then((data) => {
-            console.log('fetchedStakedData: ', data)
             setUserStakeData(data)
           })
           .catch((err) => {
@@ -100,6 +99,7 @@ const StakeCard = ({ address, chainId, pool }: StakeCardProps) => {
         poolTokens={stakingPoolTokens}
         poolLabel={stakingPoolLabel}
         prices={prices}
+        tx={tx}
       />
       <Card
         title="Your balances"
