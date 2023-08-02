@@ -141,16 +141,15 @@ func NewGuard(ctx context.Context, cfg config.AgentConfig, omniRPCClient omnirpc
 			return nil, fmt.Errorf("could not create origin: %w", err)
 		}
 
-		// Initializations that only need to happen on the Summit domain
+		// Initialize contract parsers for the summit domain.
 		if domain.DomainID == cfg.SummitDomainID {
 			guard.summitDomainID = domain.DomainID
-			// Create a new inbox parser for the summit domain.
+
 			guard.inboxParser, err = inbox.NewParser(common.HexToAddress(domain.InboxAddress))
 			if err != nil {
 				return nil, fmt.Errorf("could not create inbox parser: %w", err)
 			}
 
-			// Create a new light inbox parser for the summit domain.
 			guard.lightInboxParser, err = lightinbox.NewParser(common.HexToAddress(domain.LightInboxAddress))
 			if err != nil {
 				return nil, fmt.Errorf("could not create inbox parser: %w", err)

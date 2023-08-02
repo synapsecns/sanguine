@@ -247,6 +247,7 @@ func (g Guard) handleReceipt(ctx context.Context, log ethTypes.Log) error {
 	}
 
 	// Initiate slashing for an invalid receipt, and optionally submit a fraud report.
+	//nolint:nestif
 	if receipt.Destination() == g.summitDomainID {
 		_, err = g.domains[receipt.Destination()].Inbox().VerifyReceipt(ctx, g.unbondedSigner, fraudReceipt.RcptPayload, fraudReceipt.RcptSignature)
 		if err != nil {
@@ -400,6 +401,7 @@ func (g Guard) parseDisputeOpened(log ethTypes.Log) (*disputeOpened, error) {
 	return nil, fmt.Errorf("could not parse dispute opened: %w", err)
 }
 
+// handleRootUpdated stores models related to a RootUpdated event.
 func (g Guard) handleRootUpdated(ctx context.Context, log ethTypes.Log, chainID uint32) error {
 	newRoot, err := g.bondingManagerParser.ParseRootUpdated(log)
 	if err != nil || newRoot == nil {
@@ -436,6 +438,7 @@ func (g Guard) updateAgentStatuses(ctx context.Context) error {
 }
 
 // updateAgentStatus updates the status for each agent with a pending agent tree model,
+// and open dispute on remote chain.
 func (g Guard) updateAgentStatus(ctx context.Context, chainID uint32) error {
 	eligibleAgentTrees, err := g.guardDB.GetUpdateAgentStatusParameters(ctx)
 	if err != nil {

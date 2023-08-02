@@ -39,7 +39,6 @@ var (
 )
 
 // Dispute is a dispute between two agents.
-// TODO: Change guard index and notary index to addresses? Requires an additional call.
 type Dispute struct {
 	// DisputeIndex is the index of the dispute on the BondingManager.
 	DisputeIndex uint64 `gorm:"column:dispute_index;primaryKey"`
