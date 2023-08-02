@@ -39,7 +39,7 @@ type BridgeParser struct {
 	// tokenPriceService contains the token price service/cache
 	tokenPriceService tokenprice.Service
 	// consumerFetcher is the ScribeFetcher for sender and timestamp.
-	consumerFetcher *fetcher.ScribeFetcher
+	consumerFetcher fetcher.ScribeFetcher
 	// coinGeckoIDs is the mapping of token id to coin gecko ID
 	coinGeckoIDs map[string]string
 }
@@ -48,7 +48,7 @@ const noTokenID = "NO_TOKEN"
 const noPrice = "NO_PRICE"
 
 // NewBridgeParser creates a new parser for a given bridge.
-func NewBridgeParser(consumerDB db.ConsumerDB, bridgeAddress common.Address, tokenDataService tokendata.Service, consumerFetcher *fetcher.ScribeFetcher, tokenPriceService tokenprice.Service) (*BridgeParser, error) {
+func NewBridgeParser(consumerDB db.ConsumerDB, bridgeAddress common.Address, tokenDataService tokendata.Service, consumerFetcher fetcher.ScribeFetcher, tokenPriceService tokenprice.Service) (*BridgeParser, error) {
 	filterer, err := bridge.NewSynapseBridgeFilterer(bridgeAddress, nil)
 	if err != nil {
 		return nil, fmt.Errorf("could not create %T: %w", bridge.SynapseBridgeFilterer{}, err)

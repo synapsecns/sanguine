@@ -19,8 +19,6 @@ import (
 
 	params "github.com/ethereum/go-ethereum/params"
 
-	prometheus "github.com/prometheus/client_golang/prometheus"
-
 	rpc "github.com/ethereum/go-ethereum/rpc"
 
 	time "time"
@@ -441,22 +439,6 @@ func (_m *Chain) GetHeightWatcher() chainwatcher.BlockHeightWatcher {
 	} else {
 		if ret.Get(0) != nil {
 			r0 = ret.Get(0).(chainwatcher.BlockHeightWatcher)
-		}
-	}
-
-	return r0
-}
-
-// GetMetrics provides a mock function with given fields: labels
-func (_m *Chain) GetMetrics(labels map[string]string) []prometheus.Collector {
-	ret := _m.Called(labels)
-
-	var r0 []prometheus.Collector
-	if rf, ok := ret.Get(0).(func(map[string]string) []prometheus.Collector); ok {
-		r0 = rf(labels)
-	} else {
-		if ret.Get(0) != nil {
-			r0 = ret.Get(0).([]prometheus.Collector)
 		}
 	}
 

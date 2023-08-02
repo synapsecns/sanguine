@@ -5,6 +5,9 @@ export const formatBigIntToString = (
   nativePrecision: number,
   decimalPlaces?: number
 ) => {
+  if (!bi) {
+    return
+  }
   try {
     // Check if input is zero
     if (bi === 0n) {

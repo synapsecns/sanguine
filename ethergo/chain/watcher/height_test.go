@@ -7,7 +7,6 @@ import (
 	"github.com/ethereum/go-ethereum/core/types"
 	"github.com/ethereum/go-ethereum/params"
 	"github.com/pkg/errors"
-	"github.com/prometheus/client_golang/prometheus/testutil"
 	. "github.com/stretchr/testify/assert"
 	"github.com/synapsecns/sanguine/core"
 	"github.com/synapsecns/sanguine/core/observer"
@@ -72,8 +71,6 @@ OUTER:
 		}
 	}
 
-	metricHeight := subscriber.GetMetrics(map[string]string{})[0]
-	Equal(s.T(), testutil.ToFloat64(metricHeight), float64(initialHeight.Uint64()+testIterationCount-1))
 	True(s.T(), reachedLastIteration)
 
 	// wait for catch up if needed

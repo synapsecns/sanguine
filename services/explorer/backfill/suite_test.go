@@ -36,7 +36,7 @@ type BackfillSuite struct {
 	deployManager        *testutil.DeployManager
 	testDeployManager    *testcontracts.DeployManager
 	bridgeConfigContract *bridgeconfig.BridgeConfigRef
-	consumerFetcher      *fetcher.ScribeFetcher
+	consumerFetcher      fetcher.ScribeFetcher
 	metrics              metrics.Handler
 }
 
@@ -96,7 +96,7 @@ func (b *BackfillSuite) SetupTest() {
 	b.db, b.eventDB, b.gqlClient, b.logIndex, b.cleanup, b.testBackend, b.deployManager = testutil.NewTestEnvDB(b.GetTestContext(), b.T(), b.metrics)
 
 	b.testDeployManager = testcontracts.NewDeployManager(b.T())
-	b.consumerFetcher = fetcher.NewFetcher(b.gqlClient)
+	b.consumerFetcher = fetcher.NewFetcher(b.gqlClient, b.metrics)
 	var deployInfo contracts.DeployedContract
 	deployInfo, b.bridgeConfigContract = b.testDeployManager.GetBridgeConfigV3(b.GetTestContext(), b.testBackend)
 

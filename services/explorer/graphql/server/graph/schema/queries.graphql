@@ -120,6 +120,26 @@ Ranked chainIDs by volume
     page:           Int = 1
   ): [Leaderboard]
 
+
+  """
+  GetOriginBridgeTx is the bridge watcher endpoint for getting an origin bridge tx (BETA).
+  """
+  getOriginBridgeTx(
+    chainID:      Int
+    txnHash:       String
+  ): BridgeWatcherTx
+
+
+  """
+  GetDestinationBridgeTx is the bridge watcher endpoint for getting an destination bridge tx (BETA).
+  """
+  getDestinationBridgeTx(
+    chainID:      Int
+    address:     String
+    kappa:      String
+    timestamp:   Int
+  ): BridgeWatcherTx
+
 }
 
 
