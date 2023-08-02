@@ -3,6 +3,116 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [0.1.83](https://github.com/synapsecns/sanguine/compare/@synapsecns/synapse-interface@0.1.82...@synapsecns/synapse-interface@0.1.83) (2023-08-02)
+
+**Note:** Version bump only for package @synapsecns/synapse-interface
+
+
+
+
+
+## [0.1.82](https://github.com/synapsecns/sanguine/compare/@synapsecns/synapse-interface@0.1.81...@synapsecns/synapse-interface@0.1.82) (2023-08-02)
+
+**Note:** Version bump only for package @synapsecns/synapse-interface
+
+
+
+
+
+## [0.1.81](https://github.com/synapsecns/sanguine/compare/@synapsecns/synapse-interface@0.1.80...@synapsecns/synapse-interface@0.1.81) (2023-08-02)
+
+**Note:** Version bump only for package @synapsecns/synapse-interface
+
+
+
+
+
+## [0.1.80](https://github.com/synapsecns/sanguine/compare/@synapsecns/synapse-interface@0.1.79...@synapsecns/synapse-interface@0.1.80) (2023-08-02)
+
+**Note:** Version bump only for package @synapsecns/synapse-interface
+
+
+
+
+
+## [0.1.79](https://github.com/synapsecns/sanguine/compare/@synapsecns/synapse-interface@0.1.78...@synapsecns/synapse-interface@0.1.79) (2023-08-02)
+
+**Note:** Version bump only for package @synapsecns/synapse-interface
+
+
+
+
+
+## [0.1.78](https://github.com/synapsecns/sanguine/compare/@synapsecns/synapse-interface@0.1.77...@synapsecns/synapse-interface@0.1.78) (2023-08-02)
+
+**Note:** Version bump only for package @synapsecns/synapse-interface
+
+
+
+
+
+## [0.1.77](https://github.com/synapsecns/sanguine/compare/@synapsecns/synapse-interface@0.1.76...@synapsecns/synapse-interface@0.1.77) (2023-08-02)
+
+**Note:** Version bump only for package @synapsecns/synapse-interface
+
+
+
+
+
+## [0.1.76](https://github.com/synapsecns/sanguine/compare/@synapsecns/synapse-interface@0.1.75...@synapsecns/synapse-interface@0.1.76) (2023-08-02)
+
+**Note:** Version bump only for package @synapsecns/synapse-interface
+
+
+
+
+
+## [0.1.75](https://github.com/synapsecns/sanguine/compare/@synapsecns/synapse-interface@0.1.74...@synapsecns/synapse-interface@0.1.75) (2023-08-01)
+
+**Note:** Version bump only for package @synapsecns/synapse-interface
+
+
+
+
+
+## [0.1.74](https://github.com/synapsecns/sanguine/compare/@synapsecns/synapse-interface@0.1.73...@synapsecns/synapse-interface@0.1.74) (2023-08-01)
+
+**Note:** Version bump only for package @synapsecns/synapse-interface
+
+
+
+
+
+## [0.1.73](https://github.com/synapsecns/sanguine/compare/@synapsecns/synapse-interface@0.1.72...@synapsecns/synapse-interface@0.1.73) (2023-08-01)
+
+
+### Reverts
+
+* Revert "Revert "try to fix router install (#1201)"" (#1210) ([84d7cbb](https://github.com/synapsecns/sanguine/commit/84d7cbb0d8913c33ce91d8f380591fb401594c82)), closes [#1201](https://github.com/synapsecns/sanguine/issues/1201) [#1210](https://github.com/synapsecns/sanguine/issues/1210)
+
+
+
+
+
+## [0.1.72](https://github.com/synapsecns/sanguine/compare/@synapsecns/synapse-interface@0.1.71...@synapsecns/synapse-interface@0.1.72) (2023-08-01)
+
+
+### Reverts
+
+* Revert "try to fix router install (#1201)" ([67d6ef5](https://github.com/synapsecns/sanguine/commit/67d6ef5f1d7c1307b603ebe916cadb7eea7fe0bc)), closes [#1201](https://github.com/synapsecns/sanguine/issues/1201)
+
+
+
+
+
+## [0.1.71](https://github.com/synapsecns/sanguine/compare/@synapsecns/synapse-interface@0.1.70...@synapsecns/synapse-interface@0.1.71) (2023-08-01)
+
+**Note:** Version bump only for package @synapsecns/synapse-interface
+
+
+
+
+
 ## [0.1.70](https://github.com/synapsecns/sanguine/compare/@synapsecns/synapse-interface@0.1.69...@synapsecns/synapse-interface@0.1.70) (2023-07-28)
 
 **Note:** Version bump only for package @synapsecns/synapse-interface

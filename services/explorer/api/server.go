@@ -7,6 +7,8 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/synapsecns/sanguine/core/metrics"
 	"github.com/synapsecns/sanguine/core/metrics/instrumentation"
+	"go.opentelemetry.io/otel/attribute"
+	"go.opentelemetry.io/otel/metric"
 	"net"
 	"os"
 	"time"
@@ -88,6 +90,11 @@ func Start(ctx context.Context, cfg Config, handler metrics.Handler) error {
 	url := fmt.Sprintf("http://%s/graphql", net.JoinHostPort(hostname, fmt.Sprintf("%d", cfg.HTTPPort)))
 	client := gqlClient.NewClient(httpClient, url)
 
+	err = registerObservableMetrics(handler, consumerDB)
+	if err != nil {
+		return fmt.Errorf("could not register observable metrics: %w", err)
+	}
+
 	// refill cache
 	go func() {
 		for {
@@ -123,6 +130,42 @@ func Start(ctx context.Context, cfg Config, handler metrics.Handler) error {
 	err = g.Wait()
 	if err != nil {
 		return fmt.Errorf("server error: %w", err)
+	}
+
+	return nil
+}
+
+const meterName = "github.com/synapsecns/sanguine/services/explorer/api"
+const pendingName = "pending_bridges"
+
+func registerObservableMetrics(handler metrics.Handler, conn db.ConsumerDBReader) error {
+	meter := handler.Meter(meterName)
+	pendingGauge, err := meter.Int64ObservableGauge(pendingName)
+
+	if err != nil {
+		return fmt.Errorf("could not create pending bridges gauge: %w", err)
+	}
+
+	if _, err := meter.RegisterCallback(func(parentCtx context.Context, o metric.Observer) (err error) {
+		ctx, span := handler.Tracer().Start(parentCtx, "pending_bridge_stats")
+		defer func() {
+			metrics.EndSpanWithErr(span, err)
+		}()
+
+		pendingCount, err := conn.GetPendingByChain(ctx)
+		if err != nil {
+			return fmt.Errorf("could not get pending bridges: %w", err)
+		}
+
+		itr := pendingCount.Iterator()
+		for !itr.Done() {
+			chainID, count, _ := itr.Next()
+			o.ObserveInt64(pendingGauge, int64(count), metric.WithAttributes(attribute.Int(metrics.ChainID, chainID)))
+		}
+
+		return nil
+	}, pendingGauge); err != nil {
+		return fmt.Errorf("could not register callback for pending bridges gauge: %w", err)
 	}
 
 	return nil

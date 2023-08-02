@@ -34,7 +34,11 @@ securityContext: {}
 
 service:
   type: ClusterIP
+  ingressPort: 80
   port: 80
+
+serviceMonitor:
+  enabled: false
 
 initialDelaySeconds: 20
 
@@ -178,6 +182,7 @@ server:
   ports:
     - name: http
       containerPort: 5080
+      port: 80
       protocol: TCP
   # TODO: this should be in extraValues for testing
   extraInitContainers:
