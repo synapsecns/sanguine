@@ -161,15 +161,6 @@ export const PortfolioTokenAsset = ({
   const handleSelectFromTokenCallback = useCallback(() => {
     dispatch(setFromChainId(portfolioChainId))
     dispatch(setFromToken(token))
-    isCCTP &&
-      dispatch(
-        fetchAndStoreSingleTokenAllowance({
-          routerAddress: tokenRouterAddress as Address,
-          tokenAddress: tokenAddress as Address,
-          address: address,
-          chainId: portfolioChainId,
-        })
-      )
     scrollToTop()
     handleFocusOnInput()
   }, [token, isDisabled, portfolioChainId])
@@ -271,7 +262,9 @@ export const PortfolioTokenAsset = ({
           </div>
           {hasAllowanceButLessThanBalance && (
             <HoverClickableText
-              defaultText={`${parsedAllowance} approved`}
+              defaultText={`${parsedAllowance} ${
+                isCCTP ? 'approved (CCTP)' : 'approved'
+              }`}
               hoverText="Increase Limit"
               callback={handleApproveCallback}
             />
