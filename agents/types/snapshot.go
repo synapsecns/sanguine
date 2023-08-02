@@ -74,9 +74,8 @@ func (s snapshot) TreeHeight() uint32 {
 	return uint32(math.Log2(float64(len(s.states) * 2)))
 }
 
-//nolint:dupl
 func (s snapshot) SignSnapshot(ctx context.Context, signer signer.Signer) (signer.Signature, []byte, common.Hash, error) {
-	return SignEncoder(ctx, signer, s, []byte("SNAPSHOT_VALID_SALT"))
+	return signEncoder(ctx, signer, s, SnapshotValidSalt)
 }
 
 var _ Snapshot = &snapshot{}

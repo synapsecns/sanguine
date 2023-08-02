@@ -74,15 +74,14 @@ func (a attestation) Timestamp() *big.Int {
 	return a.timestamp
 }
 
-//nolint:dupl
 func (a attestation) SignAttestation(ctx context.Context, signer signer.Signer, valid bool) (signer.Signature, []byte, common.Hash, error) {
-	var attestationSalt []byte
+	var attestationSalt string
 	if valid {
-		attestationSalt = []byte("ATTESTATION_VALID_SALT")
+		attestationSalt = AttestationValidSalt
 	} else {
-		attestationSalt = []byte("ATTESTATION_INVALID_SALT")
+		attestationSalt = AttestationInvalidSalt
 	}
-	return SignEncoder(ctx, signer, a, attestationSalt)
+	return signEncoder(ctx, signer, a, attestationSalt)
 }
 
 // GetAttestationDataHash generates the data hash from the agent root and SnapGasHash.

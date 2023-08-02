@@ -11,7 +11,7 @@ import (
 )
 
 // SignEncoder encodes a type, and signs it with the given salt.
-func SignEncoder(ctx context.Context, signer signer.Signer, encoder Encoder, salt []byte) (signer.Signature, []byte, common.Hash, error) {
+func signEncoder(ctx context.Context, signer signer.Signer, encoder Encoder, salt string) (signer.Signature, []byte, common.Hash, error) {
 	// Encode the given type.
 	encoded, err := encoder.Encode()
 	if err != nil {
@@ -20,7 +20,7 @@ func SignEncoder(ctx context.Context, signer signer.Signer, encoder Encoder, sal
 
 	// Hash the encoded type, and concatenate with hashed salt.
 	hashedEncoded := crypto.Keccak256Hash(encoded).Bytes()
-	toSign := append(crypto.Keccak256Hash(salt).Bytes(), hashedEncoded...)
+	toSign := append(crypto.Keccak256Hash([]byte(salt)).Bytes(), hashedEncoded...)
 	hashedDigest, err := HashRawBytes(toSign)
 	if err != nil {
 		return nil, nil, common.Hash{}, fmt.Errorf("could not hash receipt: %w", err)

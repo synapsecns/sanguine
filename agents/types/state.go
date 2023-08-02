@@ -110,9 +110,8 @@ func (s state) SubLeaves() (leftLeaf, rightLeaf [32]byte, err error) {
 	return
 }
 
-//nolint:dupl
 func (s state) SignState(ctx context.Context, signer signer.Signer) (signer.Signature, []byte, common.Hash, error) {
-	return SignEncoder(ctx, signer, s, []byte("STATE_INVALID_SALT"))
+	return signEncoder(ctx, signer, s, StateInvalidSalt)
 }
 
 var _ State = state{}

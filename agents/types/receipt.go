@@ -99,13 +99,12 @@ func (r receipt) FinalExecutor() common.Address {
 	return r.finalExecutor
 }
 
-//nolint:dupl
 func (r receipt) SignReceipt(ctx context.Context, signer signer.Signer, valid bool) (signer.Signature, []byte, common.Hash, error) {
-	var receiptSalt []byte
+	var receiptSalt string
 	if valid {
-		receiptSalt = []byte("RECEIPT_VALID_SALT")
+		receiptSalt = ReceiptValidSalt
 	} else {
-		receiptSalt = []byte("RECEIPT_INVALID_SALT")
+		receiptSalt = ReceiptInvalidSalt
 	}
-	return SignEncoder(ctx, signer, r, receiptSalt)
+	return signEncoder(ctx, signer, r, receiptSalt)
 }
