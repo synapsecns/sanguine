@@ -53,7 +53,7 @@ const StakeCardTitle = ({
   }, [connectedChainId, address, prices])
 
   useEffect(() => {
-    setPoolApyData(null)
+    null
     setBaseApyData(null)
   }, [connectedChainId])
 

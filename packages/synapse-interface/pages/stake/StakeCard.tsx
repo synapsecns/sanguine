@@ -41,8 +41,6 @@ const StakeCard = ({ address, chainId, pool }: StakeCardProps) => {
   // TODO get rid of this hook
   const balance = useTokenBalance(pool)
 
-  console.log('balance:', balance)
-
   const lpTokenBalance = balance?.data ? BigInt(balance?.data?.value) : 0n
 
   const prices = usePrices(chainId)
@@ -81,6 +79,14 @@ const StakeCard = ({ address, chainId, pool }: StakeCardProps) => {
           chainId
         )
         setAllowance(tkAllowance)
+        getStakedBalance(address as Address, chainId, stakingPoolId)
+          .then((data) => {
+            console.log('fetchedStakedData: ', data)
+            setUserStakeData(data)
+          })
+          .catch((err) => {
+            console.log(err)
+          })
       })()
     }
   }, [tx])
@@ -260,6 +266,7 @@ const StakeCard = ({ address, chainId, pool }: StakeCardProps) => {
                     if (tx?.status === 1) {
                       setDeposit({ bi: 0n, str: '' })
                     }
+                    setTx(tx?.transactionHash)
                   }
             }
             token={pool}
