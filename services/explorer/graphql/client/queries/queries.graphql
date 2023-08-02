@@ -140,6 +140,7 @@ query GetDailyStatisticsByChain($chainID: Int, $type: DailyStatisticType, $durat
     harmony
     canto
     dogechain
+    base
     total
   }
 }
