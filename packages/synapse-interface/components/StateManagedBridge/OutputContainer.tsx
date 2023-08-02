@@ -5,7 +5,6 @@ import { Address, useAccount } from 'wagmi'
 import { RootState } from '@/store/store'
 
 import LoadingSpinner from '../ui/tailwind/LoadingSpinner'
-import ToTokenSelect from './temp/ToTokenSelect'
 import { ToChainSelector } from './ToChainSelector'
 import { shortenAddress } from '@/utils/shortenAddress'
 import { ToTokenSelector } from './ToTokenSelector'
@@ -13,7 +12,7 @@ import { useDispatch } from 'react-redux'
 import { setToChainId, setToToken } from '@/slices/bridge/reducer'
 
 export const OutputContainer = ({}) => {
-  const { bridgeQuote, isLoading, toChainId } = useSelector(
+  const { bridgeQuote, isLoading, toChainId, toToken } = useSelector(
     (state: RootState) => state.bridge
   )
 
@@ -39,7 +38,7 @@ export const OutputContainer = ({}) => {
       <div className="flex items-center justify-between mb-3">
         <div className="flex items-center space-x-2">
           <ToChainSelector />
-          {toChainId && (
+          {(toChainId || toToken) && (
             <button
               className="bg-bgLight text-primaryTextColor border-[1px] p-1 rounded-md text-xxs"
               onClick={() => {

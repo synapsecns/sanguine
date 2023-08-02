@@ -1,4 +1,6 @@
-import { useEffect, useState } from 'react'
+import _ from 'lodash'
+
+import { useEffect, useMemo, useState } from 'react'
 import Fuse from 'fuse.js'
 import { useKeyPress } from '@hooks/useKeyPress'
 import SlideSearchBox from '@pages/bridge/SlideSearchBox'
@@ -12,9 +14,10 @@ import {
 } from '@/slices/bridgeDisplaySlice'
 import { segmentAnalyticsEvent } from '@/contexts/SegmentAnalyticsProvider'
 import { usePortfolioBalances } from '@/slices/portfolio/hooks'
-import { TokenWithBalanceAndAllowances } from '@/utils/actions/fetchPortfolioBalances'
 import { useBridgeState } from '@/slices/bridge/hooks'
 import SelectSpecificTokenButton from './components/SelectSpecificTokenButton'
+import { useAccount } from 'wagmi'
+import { CHAINS_BY_ID } from '@/constants/chains'
 
 export const FromTokenSlideOver = ({}: {}) => {
   let setToken
@@ -38,17 +41,17 @@ export const FromTokenSlideOver = ({}: {}) => {
     setShowSlideOver = setShowToTokenSlideOver
   }
 
+  const [hasMounted, setHasMounted] = useState(false)
+
   const [currentIdx, setCurrentIdx] = useState(-1)
   const [searchStr, setSearchStr] = useState('')
   const dispatch = useDispatch()
   let tokenList: any[] = []
 
   const portfolioBalances = usePortfolioBalances()
+  const { isConnected } = useAccount()
 
   tokenList = tokens
-
-  // Hiding this below for now bc its conflicting with tokens w/ balances
-  // tokenList = sortTokens(tokenList)
 
   const fuse = new Fuse(tokenList, {
     includeScore: true,
@@ -66,6 +69,27 @@ export const FromTokenSlideOver = ({}: {}) => {
   if (searchStr?.length > 0) {
     tokenList = fuse.search(searchStr).map((i) => i.item)
   }
+
+  const tokenListWithBalances = tokenList.filter((t) => {
+    const pb = portfolioBalances[fromChainId]
+    const token = _(pb)
+      .pickBy((value, _key) => value.token === t)
+      .value()
+
+    const tokenWithPb = Object.values(token)[0]
+
+    if (tokenWithPb && tokenWithPb.parsedBalance !== '0.0') {
+      return true
+    } else {
+      return false
+    }
+  })
+
+  const tokenListWithoutBalances = _.difference(
+    tokenList,
+    tokenListWithBalances
+  )
+
   const escPressed = useKeyPress('Escape')
   const arrowUp = useKeyPress('ArrowUp')
   const arrowDown = useKeyPress('ArrowDown')
@@ -122,13 +146,21 @@ export const FromTokenSlideOver = ({}: {}) => {
     setCurrentIdx(-1)
   }
 
+  useEffect(() => {
+    setHasMounted(true)
+  }, [])
+
+  const fromChainName = useMemo(() => {
+    return CHAINS_BY_ID[fromChainId]?.name
+  }, [fromChainId])
+
   return (
     <div
       data-test-id="token-slide-over"
-      className="max-h-full pb-4 -mt-3 overflow-auto scrollbar-hide"
+      className="max-h-full pb-4 overflow-auto scrollbar-hide"
     >
-      <div className="absolute z-10 w-full px-2 pt-3 ">
-        <div className="flex items-center mb-2 font-medium justfiy-between sm:float-none">
+      <div className="z-10 w-full px-2 ">
+        <div className="flex items-center mt-2 mb-2 font-medium justfiy-between sm:float-none">
           <SlideSearchBox
             placeholder="Filter by symbol, contract, or name..."
             searchStr={searchStr}
@@ -136,38 +168,32 @@ export const FromTokenSlideOver = ({}: {}) => {
           />
         </div>
       </div>
-      <div className="px-2 pt-14 pb-8 bg-[#343036] md:px-2">
-        {tokenList.map((token, idx) => {
-          const tokenBalanceAndAllowance =
-            chainId &&
-            portfolioBalances[chainId]?.filter(
-              (t: TokenWithBalanceAndAllowances) => t.token === token
-            )
-          const balance = tokenBalanceAndAllowance
-            ? tokenBalanceAndAllowance[0]?.balance
-            : 0n
-
+      {hasMounted && isConnected && fromChainId && (
+        <div className="px-2 pt-4 pb-2 text-secondaryTextColor text-sm bg-[#343036]">
+          Wallet
+        </div>
+      )}
+      <div className="px-2 pb-2 bg-[#343036] md:px-2">
+        {tokenListWithBalances.map((token, idx) => {
           return (
             <SelectSpecificTokenButton
               isOrigin={true}
               key={idx}
-              chainId={chainId}
               token={token}
               selectedToken={selectedToken}
               active={idx === currentIdx}
-              tokenBalance={balance}
               onClick={() => {
                 const eventTitle = isOrigin
                   ? '[Bridge User Action] Sets new fromToken'
                   : `[Bridge User Action] Sets new toToken`
                 const eventData = isOrigin
                   ? {
-                      previousFromToken: selectedToken.symbol,
-                      newFromToken: token.symbol,
+                      previousFromToken: selectedToken?.symbol,
+                      newFromToken: token?.symbol,
                     }
                   : {
-                      previousToToken: selectedToken.symbol,
-                      newToToken: token.symbol,
+                      previousToToken: selectedToken?.symbol,
+                      newToToken: token?.symbol,
                     }
                 segmentAnalyticsEvent(eventTitle, eventData)
                 onMenuItemClick(token)
@@ -175,7 +201,40 @@ export const FromTokenSlideOver = ({}: {}) => {
             />
           )
         })}
-
+      </div>
+      <div className="px-2 pb-2 pt-2 text-secondaryTextColor text-sm bg-[#343036]">
+        {fromChainName ? `${fromChainName} tokens` : `All tokens`}
+      </div>
+      <div className="px-2 pb-8 bg-[#343036] md:px-2 ">
+        {tokenListWithoutBalances.map((token, idx) => {
+          return (
+            <SelectSpecificTokenButton
+              isOrigin={true}
+              key={idx}
+              token={token}
+              selectedToken={selectedToken}
+              active={idx === currentIdx}
+              onClick={() => {
+                const eventTitle = isOrigin
+                  ? '[Bridge User Action] Sets new fromToken'
+                  : `[Bridge User Action] Sets new toToken`
+                const eventData = isOrigin
+                  ? {
+                      previousFromToken: selectedToken?.symbol,
+                      newFromToken: token?.symbol,
+                    }
+                  : {
+                      previousToToken: selectedToken?.symbol,
+                      newToToken: token?.symbol,
+                    }
+                segmentAnalyticsEvent(eventTitle, eventData)
+                onMenuItemClick(token)
+              }}
+            />
+          )
+        })}
+      </div>
+      <div>
         {searchStr && (
           <div className="px-12 py-4 text-center text-white text-md">
             No other results found for{' '}

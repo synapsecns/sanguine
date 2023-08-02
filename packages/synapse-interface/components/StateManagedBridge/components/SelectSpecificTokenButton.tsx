@@ -1,5 +1,3 @@
-import { CHAINS_BY_ID } from '@constants/chains'
-import Image from 'next/image'
 import { displaySymbol } from '@utils/displaySymbol'
 import {
   getBorderStyleForCoinHover,
@@ -7,24 +5,26 @@ import {
 } from '@styles/tokens'
 import { memo } from 'react'
 import { Token } from '@/utils/types'
-import TokenBalance from '@components/TokenBalance'
+import { usePortfolioBalances } from '@/slices/portfolio/hooks'
+import { useBridgeState } from '@/slices/bridge/hooks'
 
 const SelectSpecificTokenButton = ({
   isOrigin,
   token,
   active,
   selectedToken,
-  tokenBalance,
   onClick,
 }: {
   isOrigin: boolean
   token: Token
   active: boolean
   selectedToken: Token
-  tokenBalance: bigint | undefined
   onClick: () => void
 }) => {
   const isCurrentlySelected = selectedToken?.symbol === token?.symbol
+  const { fromChainId, toChainId } = useBridgeState()
+
+  const chainId = isOrigin ? fromChainId : toChainId
 
   let bgClassName
 
@@ -47,7 +47,7 @@ const SelectSpecificTokenButton = ({
       flex items-center
       transition-all duration-75
       w-full
-      px-2 py-4
+      px-2 py-1
       cursor-pointer
       border-[1px] border-[#423F44]
       ${bgClassName}
@@ -55,63 +55,70 @@ const SelectSpecificTokenButton = ({
       ${classNameForMenuItemStyle}
         `}
     >
-      <ButtonContent
-        token={token}
-        chainId={chainId}
-        tokenBalance={tokenBalance ? tokenBalance : 0n}
-      />
+      <ButtonContent token={token} chainId={chainId} />
     </div>
   )
 }
 
 const ButtonContent = memo(
-  ({
-    token,
-    chainId,
-    tokenBalance,
-  }: {
-    token: Token
-    chainId: number
-    tokenBalance: bigint
-  }) => {
+  ({ token, chainId }: { token: Token; chainId: number }) => {
+    const portfolioBalances = usePortfolioBalances()
+
+    const parsedBalance = portfolioBalances[chainId]?.find(
+      (tb) => tb.token === token
+    )?.parsedBalance
+
     return (
       <div className="flex items-center w-full">
         <img
           alt="token image"
-          className="w-10 h-10 ml-2 mr-4 rounded-full"
+          className="w-8 h-8 ml-2 mr-4 rounded-full"
           src={token?.icon?.src}
         />
-        <CoinOnChain token={token} chainId={chainId} />
+        <Coin token={token} />
         <TokenBalance
           token={token}
           chainId={chainId}
-          tokenBalance={tokenBalance}
+          parsedBalance={parsedBalance}
         />
       </div>
     )
   }
 )
 
-const CoinOnChain = ({ token, chainId }: { token: Token; chainId: number }) => {
-  const chain = CHAINS_BY_ID?.[chainId]
-
-  return chain ? (
+const Coin = ({ token }: { token }) => {
+  return (
     <div className="flex-col text-left">
-      <div className="text-lg font-medium text-white">
-        {token ? displaySymbol(chainId, token) : ''}
-      </div>
-      <div className="flex items-center text-sm text-white">
-        <div className="mr-1 opacity-70">{token?.name}</div>
-        <div className="opacity-60">on</div>
-        <Image
-          src={chain?.chainImg}
-          alt={chain?.name}
-          className="w-4 h-4 ml-2 mr-2 rounded-full"
-        />
-        <div className="hidden md:inline-block opacity-70">{chain?.name}</div>
+      <div className="text-lg text-primaryTextColor">{token?.symbol}</div>
+      <div className="flex items-center text-xs text-secondaryTextColor">
+        {token?.name}
       </div>
     </div>
-  ) : null
+  )
+}
+
+const TokenBalance = ({
+  token,
+  chainId,
+  parsedBalance,
+}: {
+  token: Token
+  chainId: number
+  parsedBalance?: string
+}) => {
+  return (
+    <div className="ml-auto mr-5 text-md text-primaryTextColor">
+      {parsedBalance && parsedBalance !== '0.0' && (
+        <div>
+          {parsedBalance}
+          <span className="text-md text-secondaryTextColor">
+            {' '}
+            {token ? displaySymbol(chainId, token) : ''}
+          </span>
+        </div>
+      )}
+    </div>
+  )
 }
 
 export default SelectSpecificTokenButton

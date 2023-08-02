@@ -3,7 +3,6 @@ import Fuse from 'fuse.js'
 import { useKeyPress } from '@hooks/useKeyPress'
 import * as CHAINS from '@constants/chains/master'
 import SlideSearchBox from '@pages/bridge/SlideSearchBox'
-import { DrawerButton } from '@components/buttons/DrawerButton'
 import { useNetwork } from 'wagmi'
 import { sortChains } from '@constants/chains'
 import { useDispatch } from 'react-redux'
@@ -103,9 +102,9 @@ export const FromChainSlideOver = () => {
   return (
     <div
       data-test-id="chain-slide-over"
-      className="max-h-full pb-4 -mt-3 overflow-auto scrollbar-hide"
+      className="max-h-full pb-4 mt-2 overflow-auto scrollbar-hide"
     >
-      <div className="absolute z-10 w-full px-2 pt-3 ">
+      <div className="z-10 w-full px-2 ">
         <div className="flex items-center mb-2 font-medium justfiy-between sm:float-none">
           <SlideSearchBox
             placeholder="Filter"
@@ -116,7 +115,7 @@ export const FromChainSlideOver = () => {
       </div>
       <div
         data-test-id={dataId}
-        className="px-2 pt-14 pb-8 bg-[#343036] md:px-2"
+        className="px-2 pt-2 pb-8 bg-[#343036] md:px-2"
       >
         <div className="mb-2 text-sm font-normal text-white">
           Bridge from...

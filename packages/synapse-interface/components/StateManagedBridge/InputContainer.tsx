@@ -90,14 +90,14 @@ export const InputContainer = () => {
     <div
       data-test-id="input-container"
       className={`
-        text-left px-2 sm:px-4 pt-4 pb-1 rounded-xl
+        text-left px-2 sm:px-4 pt-4 mt-2 pb-1 rounded-xl
         bg-bgLight
       `}
     >
       <div className="flex justify-between mb-3">
         <div className="flex items-center space-x-2">
           <FromChainSelector />
-          {fromChainId && (
+          {(fromChainId || fromToken) && (
             <button
               className="bg-bgLight text-primaryTextColor border-[1px] p-1 rounded-md text-xxs"
               onClick={() => {

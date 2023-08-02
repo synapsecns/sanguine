@@ -63,7 +63,6 @@ import {
 } from '@/slices/portfolio/hooks'
 import { usePortfolioBalances } from '@/slices/portfolio/hooks'
 import { updateSingleTokenAllowance } from '@/slices/portfolio/actions'
-import FromTokenSelect from '@/components/StateManagedBridge/temp/FromTokenSelect'
 import { FromChainSlideOver } from '@/components/StateManagedBridge/FromChainSlideOver'
 import { ToChainSlideOver } from '@/components/StateManagedBridge/ToChainSlideOver'
 import { FromTokenSlideOver } from '@/components/StateManagedBridge/FromTokenSlideOver'
@@ -439,7 +438,8 @@ const StateManagedBridge = () => {
     }
   }
 
-  const springClass = 'fixed z-50 w-full h-full bg-opacity-50'
+  const springClass =
+    '-mt-4 fixed z-50 w-full h-full bg-opacity-50 bg-[#343036]'
 
   return (
     <div className="flex flex-col w-full max-w-lg mx-auto lg:mx-0">
@@ -474,7 +474,7 @@ const StateManagedBridge = () => {
         <Card
           divider={false}
           className={`
-                pt-5 pb-3 mt-5 overflow-hidden
+                 pb-3 mt-5 overflow-hidden
                 transition-all duration-100 transform rounded-xl
                 bg-bgBase
               `}

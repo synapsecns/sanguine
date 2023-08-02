@@ -102,9 +102,9 @@ export const ToChainSlideOver = () => {
   return (
     <div
       data-test-id="chain-slide-over"
-      className="max-h-full pb-4 -mt-3 overflow-auto scrollbar-hide"
+      className="max-h-full pb-4 mt-2 overflow-auto scrollbar-hide"
     >
-      <div className="absolute z-10 w-full px-2 pt-3 ">
+      <div className="z-10 w-full px-2 ">
         <div className="flex items-center mb-2 font-medium justfiy-between sm:float-none">
           <SlideSearchBox
             placeholder="Filter"
@@ -115,7 +115,7 @@ export const ToChainSlideOver = () => {
       </div>
       <div
         data-test-id={dataId}
-        className="px-2 pt-14 pb-8 bg-[#343036] md:px-2"
+        className="px-2 pt-2 pb-8 bg-[#343036] md:px-2"
       >
         <div className="mb-2 text-sm font-normal text-white">Bridge to...</div>
         {networks.map(({ id: mapChainId }, idx) => {
