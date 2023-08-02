@@ -88,6 +88,7 @@ type DateResultByChain struct {
 	Harmony   *float64 `json:"harmony,omitempty"`
 	Canto     *float64 `json:"canto,omitempty"`
 	Dogechain *float64 `json:"dogechain,omitempty"`
+	Base      *float64 `json:"base,omitempty"`
 	Total     *float64 `json:"total,omitempty"`
 }
 
