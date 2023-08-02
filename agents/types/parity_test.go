@@ -3,10 +3,11 @@ package types_test
 import (
 	"context"
 	"crypto/rand"
-	"github.com/synapsecns/sanguine/core/testsuite"
 	"math/big"
 	"testing"
 	"time"
+
+	"github.com/synapsecns/sanguine/core/testsuite"
 
 	"github.com/brianvoe/gofakeit/v6"
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
@@ -173,7 +174,7 @@ func TestEncodeStateParity(t *testing.T) {
 
 	gasData := types.NewGasData(gasPrice, dataPrice, execBuffer, amortAttCost, etherPrice, markup)
 
-	goFormattedData, err := types.EncodeState(types.NewState(rootB32, origin, nonce, blockNumber, timestamp, gasData))
+	goFormattedData, err := types.NewState(rootB32, origin, nonce, blockNumber, timestamp, gasData).Encode()
 	Nil(t, err)
 	Equal(t, contractData, goFormattedData)
 
@@ -212,7 +213,7 @@ func TestEncodeReceiptParity(t *testing.T) {
 
 	receipt := types.NewReceipt(origin, destination, messageHash, snapshotRoot, stateIndex, attNotary, firstExecutor, finalExecutor)
 
-	encodedReceipt, err := types.EncodeReceipt(receipt)
+	encodedReceipt, err := receipt.Encode()
 	Nil(t, err)
 
 	solEncodedReceipt, err := receiptHarness.FormatReceipt(&bind.CallOpts{Context: ctx}, origin, destination, messageHash, snapshotRoot, stateIndex, attNotary, firstExecutor, finalExecutor)
@@ -273,17 +274,17 @@ func TestEncodeSnapshotParity(t *testing.T) {
 	stateB := types.NewState(rootB, originB, nonceB, blockNumberB, timestampB, gasDataB)
 
 	var statesAB [][]byte
-	stateABytes, err := types.EncodeState(stateA)
+	stateABytes, err := stateA.Encode()
 	Nil(t, err)
 	statesAB = append(statesAB, stateABytes)
-	stateBBytes, err := types.EncodeState(stateB)
+	stateBBytes, err := stateB.Encode()
 	Nil(t, err)
 	statesAB = append(statesAB, stateBBytes)
 
 	contractData, err := snapshotContract.FormatSnapshot(&bind.CallOpts{Context: ctx}, statesAB)
 	Nil(t, err)
 
-	goFormattedData, err := types.EncodeSnapshot(types.NewSnapshot([]types.State{stateA, stateB}))
+	goFormattedData, err := types.NewSnapshot([]types.State{stateA, stateB}).Encode()
 	Nil(t, err)
 
 	Equal(t, contractData, goFormattedData)
@@ -364,7 +365,7 @@ func TestEncodeAttestationParity(t *testing.T) {
 	contractData, err := attestationContract.FormatAttestation(&bind.CallOpts{Context: ctx}, rootB32, dataHashB32, nonce, blockNumber, timestamp)
 	Nil(t, err)
 
-	goFormattedData, err := types.EncodeAttestation(types.NewAttestation(rootB32, dataHashB32, nonce, blockNumber, timestamp))
+	goFormattedData, err := types.NewAttestation(rootB32, dataHashB32, nonce, blockNumber, timestamp).Encode()
 	Nil(t, err)
 
 	Equal(t, contractData, goFormattedData)
@@ -397,7 +398,7 @@ func TestEncodeAttestationParity(t *testing.T) {
 
 	Equal(t, contractDataHashFromVals, attestationDataHash)
 
-	encodedDataHashAttestation, err := types.EncodeAttestation(attestation)
+	encodedDataHashAttestation, err := attestation.Encode()
 	Nil(t, err)
 
 	contractDataHashFromAtt, err := attestationContract.DataHash0(&bind.CallOpts{Context: ctx}, encodedDataHashAttestation)
