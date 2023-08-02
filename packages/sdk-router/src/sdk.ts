@@ -20,7 +20,7 @@ import {
   SynapseCCTPRouterQuery,
   SynapseRouterQuery,
 } from './utils/types'
-import {TEN_MINUTES, ONE_WEEK, calculateDeadline} from './utils/deadlines'
+import { TEN_MINUTES, ONE_WEEK, calculateDeadline } from './utils/deadlines'
 import { SynapseCCTPRouter } from './SynapseCCTPRouter'
 
 type SynapseRouters = {
