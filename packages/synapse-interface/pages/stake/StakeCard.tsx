@@ -260,7 +260,7 @@ const StakeCard = ({ address, chainId, pool }: StakeCardProps) => {
                         deposit.bi
                       )
                     )
-                    if (tx?.status === 1) {
+                    if (tx?.status === 'success') {
                       setDeposit({ bi: 0n, str: '' })
                     }
                     setTx(tx?.transactionHash)
