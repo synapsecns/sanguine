@@ -312,6 +312,7 @@ export const WETH = new Token({
     [ChainId.ARBITRUM]: '0x82af49447d8a07e3bd95bd0d56f35241523fbab1',
     [ChainId.BOBA]: '0xd203De32170130082896b4111eDF825a4774c18E',
     [ChainId.OPTIMISM]: '0x121ab82b49B2BC4c7901CA46B8277962b4350204',
+    [ChainId.BASE]: '0x4200000000000000000000000000000000000006',
     // [ChainId.AVALANCHE]: '0x49d5c2bdffac6ce2bfdb6640f4f80f226bc10bab'
   },
   decimals: 18,
@@ -428,6 +429,7 @@ export const SYN = new Token({
     [ChainId.AURORA]: '0xd80d8688b02B3FD3afb81cDb124F188BB5aD0445',
     [ChainId.DOGECHAIN]: '0xDfA53EeBA61D69E1D2b56b36d78449368F0265c1',
     [ChainId.CANTO]: '0x555982d2E211745b96736665e19D9308B615F78e',
+    [ChainId.BASE]: '0x432036208d2717394d2614d6697c46DF3Ed69540',
   },
   decimals: 18,
   symbol: 'SYN',
@@ -537,6 +539,7 @@ export const NETH = new Token({
     [ChainId.KLAYTN]: '0xCD6f29dC9Ca217d0973d3D21bF58eDd3CA871a86',
     [ChainId.DOGECHAIN]: '0x9F4614E4Ea4A0D7c4B1F946057eC030beE416cbB',
     [ChainId.CANTO]: '0x09fEC30669d63A13c666d2129230dD5588E2e240',
+    [ChainId.BASE]: '0xb554A55358fF0382Fb21F0a478C3546d1106Be8c',
   },
   decimals: 18,
   symbol: 'nETH',
@@ -568,6 +571,7 @@ export const ETH = new Token({
     [ChainId.BOBA]: '',
     [ChainId.ARBITRUM]: '',
     [ChainId.OPTIMISM]: '',
+    [ChainId.BASE]: '',
   },
   decimals: 18,
   symbol: 'ETH',
@@ -687,6 +691,7 @@ export const WJEWEL = new Token({
 export const KLAY = new Token({
   addresses: {
     [ChainId.KLAYTN]: '',
+    [ChainId.DFK]: '0x97855Ba65aa7ed2F65Ed832a776537268158B78a',
   },
   decimals: 18,
   symbol: 'KLAY',
@@ -974,7 +979,7 @@ export const BASIC_TOKENS_BY_CHAIN = {
 
     SYNJEWEL,
   ],
-  [ChainId.DFK]: [JEWEL, WJEWEL, XJEWEL, WAVAX, DFK_USDC, UST],
+  [ChainId.DFK]: [JEWEL, WJEWEL, XJEWEL, WAVAX, DFK_USDC, UST, KLAY],
   [ChainId.AURORA]: [
     USDC,
     USDT,
@@ -1049,6 +1054,12 @@ export const BASIC_TOKENS_BY_CHAIN = {
     WBTC,
     DOGECHAIN_BUSD,
     NFD,
+  ],
+  [ChainId.BASE]: [
+    SYN,
+    ETH,
+    NETH,
+    WETH,
   ],
   [ChainId.CANTO]: [SYN, NUSD, CANTOETH, NETH, NOTE, USDC, USDT],
 }
