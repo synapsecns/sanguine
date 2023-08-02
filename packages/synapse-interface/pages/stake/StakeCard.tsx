@@ -83,6 +83,18 @@ const StakeCard = ({ address, chainId, pool }: StakeCardProps) => {
     }
   }, [tx])
 
+  useEffect(() => {
+    ;(async () => {
+      const tkAllowance = await getTokenAllowance(
+        MINICHEF_ADDRESSES[chainId],
+        pool.addresses[chainId] as Address,
+        address as Address,
+        chainId
+      )
+      setAllowance(tkAllowance)
+    })()
+  }, [deposit])
+
   return (
     <div className="flex-wrap space-y-2">
       <StakeCardTitle
@@ -223,13 +235,6 @@ const StakeCard = ({ address, chainId, pool }: StakeCardProps) => {
             placeholder={'0.0000'}
             onChange={async (e) => {
               let val = cleanNumberInput(e.target.value)
-              const tkAllowance = await getTokenAllowance(
-                MINICHEF_ADDRESSES[chainId],
-                pool.addresses[chainId] as Address,
-                address as Address,
-                chainId
-              )
-              setAllowance(tkAllowance)
               setDeposit({
                 str: val,
                 bi: stringToBigInt(val, pool.decimals[chainId]),
