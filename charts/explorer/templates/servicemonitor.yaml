@@ -9,7 +9,6 @@ spec:
   selector:
     matchLabels:
       {{- include "explorer.selectorLabels" . | nindent 6 }}
-      explorer-type: server
   endpoints:
     - port: http
       path: /metrics
