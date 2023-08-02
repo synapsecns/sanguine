@@ -959,6 +959,7 @@ export const NETH = new Token({
     CHAINS.OPTIMISM.id,
     CHAINS.METIS.id,
     CHAINS.CANTO.id,
+    CHAINS.BASE.id,
   ],
   color: 'purple',
   visibilityRank: 50,
@@ -1000,6 +1001,7 @@ export const ETH = new Token({
   color: 'sky',
   visibilityRank: 101,
   priorityRank: 2,
+  swapableOn: [CHAINS.BASE.id],
 })
 
 export const MOVR = new Token({
