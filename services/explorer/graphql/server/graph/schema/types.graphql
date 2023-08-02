@@ -175,6 +175,7 @@ type DateResultByChain {
   harmony: Float
   canto: Float
   dogechain: Float
+  base: Float
   total:  Float
 }
 
