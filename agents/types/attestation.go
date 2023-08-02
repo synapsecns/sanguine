@@ -7,7 +7,6 @@ import (
 
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/crypto"
-	"github.com/synapsecns/sanguine/core"
 	"github.com/synapsecns/sanguine/ethergo/signer/signer"
 )
 
@@ -82,25 +81,18 @@ func (a attestation) SignAttestation(ctx context.Context, signer signer.Signer, 
 		return nil, nil, common.Hash{}, fmt.Errorf("could not encode attestation: %w", err)
 	}
 
-	var attestationSalt common.Hash
+	var attestationSalt []byte
 	if valid {
-		attestationSalt = crypto.Keccak256Hash([]byte("ATTESTATION_VALID_SALT"))
+		attestationSalt = []byte("ATTESTATION_VALID_SALT")
 	} else {
-		attestationSalt = crypto.Keccak256Hash([]byte("ATTESTATION_INVALID_SALT"))
+		attestationSalt = []byte("ATTESTATION_INVALID_SALT")
 	}
 
-	hashedEncodedAttestation := crypto.Keccak256Hash(encodedAttestation).Bytes()
-	toSign := append(attestationSalt.Bytes(), hashedEncodedAttestation...)
-
-	hashedAttestation, err := HashRawBytes(toSign)
-	if err != nil {
-		return nil, nil, common.Hash{}, fmt.Errorf("could not hash attestation: %w", err)
-	}
-
-	signature, err := signer.SignMessage(ctx, core.BytesToSlice(hashedAttestation), false)
+	signature, hashedAttestation, err := sign(ctx, signer, encodedAttestation, attestationSalt)
 	if err != nil {
 		return nil, nil, common.Hash{}, fmt.Errorf("could not sign attestation: %w", err)
 	}
+
 	return signature, encodedAttestation, hashedAttestation, nil
 }
 

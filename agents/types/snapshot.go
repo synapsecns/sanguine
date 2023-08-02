@@ -5,10 +5,7 @@ import (
 	"fmt"
 	"math"
 
-	"github.com/ethereum/go-ethereum/crypto"
-
 	"github.com/ethereum/go-ethereum/common"
-	"github.com/synapsecns/sanguine/core"
 	"github.com/synapsecns/sanguine/core/merkle"
 	"github.com/synapsecns/sanguine/ethergo/signer/signer"
 )
@@ -83,20 +80,11 @@ func (s snapshot) SignSnapshot(ctx context.Context, signer signer.Signer) (signe
 		return nil, nil, common.Hash{}, fmt.Errorf("could not encode snapshot: %w", err)
 	}
 
-	snapshotSalt := crypto.Keccak256Hash([]byte("SNAPSHOT_VALID_SALT"))
-
-	hashedEncodedSnapshot := crypto.Keccak256Hash(encodedSnapshot).Bytes()
-	toSign := append(snapshotSalt.Bytes(), hashedEncodedSnapshot...)
-
-	hashedSnapshot, err := HashRawBytes(toSign)
-	if err != nil {
-		return nil, nil, common.Hash{}, fmt.Errorf("could not hash snapshot: %w", err)
-	}
-
-	signature, err := signer.SignMessage(ctx, core.BytesToSlice(hashedSnapshot), false)
+	signature, hashedSnapshot, err := sign(ctx, signer, encodedSnapshot, []byte("SNAPSHOT_VALID_SALT"))
 	if err != nil {
 		return nil, nil, common.Hash{}, fmt.Errorf("could not sign snapshot: %w", err)
 	}
+
 	return signature, encodedSnapshot, hashedSnapshot, nil
 }
 

@@ -5,8 +5,6 @@ import (
 	"fmt"
 
 	"github.com/ethereum/go-ethereum/common"
-	"github.com/ethereum/go-ethereum/crypto"
-	"github.com/synapsecns/sanguine/core"
 	"github.com/synapsecns/sanguine/ethergo/signer/signer"
 )
 
@@ -108,24 +106,17 @@ func (r receipt) SignReceipt(ctx context.Context, signer signer.Signer, valid bo
 		return nil, nil, common.Hash{}, fmt.Errorf("could not encode receipt: %w", err)
 	}
 
-	var receiptSalt common.Hash
+	var receiptSalt []byte
 	if valid {
-		receiptSalt = crypto.Keccak256Hash([]byte("RECEIPT_VALID_SALT"))
+		receiptSalt = []byte("RECEIPT_VALID_SALT")
 	} else {
-		receiptSalt = crypto.Keccak256Hash([]byte("RECEIPT_INVALID_SALT"))
+		receiptSalt = []byte("RECEIPT_INVALID_SALT")
 	}
 
-	hashedEncodedReceipt := crypto.Keccak256Hash(encodedReceipt).Bytes()
-	toSign := append(receiptSalt.Bytes(), hashedEncodedReceipt...)
-
-	hashedReceipt, err := HashRawBytes(toSign)
-	if err != nil {
-		return nil, nil, common.Hash{}, fmt.Errorf("could not hash receipt: %w", err)
-	}
-
-	signature, err := signer.SignMessage(ctx, core.BytesToSlice(hashedReceipt), false)
+	signature, hashedReceipt, err := sign(ctx, signer, encodedReceipt, receiptSalt)
 	if err != nil {
 		return nil, nil, common.Hash{}, fmt.Errorf("could not sign receipt: %w", err)
 	}
+
 	return signature, encodedReceipt, hashedReceipt, nil
 }

@@ -7,7 +7,6 @@ import (
 
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/crypto"
-	"github.com/synapsecns/sanguine/core"
 	"github.com/synapsecns/sanguine/ethergo/signer/signer"
 )
 
@@ -118,19 +117,9 @@ func (s state) SignState(ctx context.Context, signer signer.Signer) (signer.Sign
 		return nil, nil, common.Hash{}, fmt.Errorf("failed to encode state: %w", err)
 	}
 
-	stateSalt := crypto.Keccak256Hash([]byte("STATE_INVALID_SALT"))
-
-	hashedEncodedState := crypto.Keccak256Hash(encodedState).Bytes()
-	toSign := append(stateSalt.Bytes(), hashedEncodedState...)
-
-	hashedState, err := HashRawBytes(toSign)
+	signature, hashedState, err := sign(ctx, signer, encodedState, []byte("STATE_INVALID_SALT"))
 	if err != nil {
-		return nil, nil, common.Hash{}, fmt.Errorf("failed to hash state: %w", err)
-	}
-
-	signature, err := signer.SignMessage(ctx, core.BytesToSlice(hashedState), false)
-	if err != nil {
-		return nil, nil, common.Hash{}, fmt.Errorf("failed to sign state: %w", err)
+		return nil, nil, common.Hash{}, fmt.Errorf("could not sign state: %w", err)
 	}
 
 	return signature, encodedState, hashedState, nil
