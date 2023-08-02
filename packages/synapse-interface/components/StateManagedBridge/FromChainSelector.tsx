@@ -44,6 +44,7 @@ export const FromChainSelector = () => {
 
   return (
     <button
+      data-test-id="bridge-origin-chain-list-button"
       className=""
       onClick={() => dispatch(setShowFromChainSlideOver(true))}
     >

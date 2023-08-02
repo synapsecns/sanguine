@@ -6,10 +6,12 @@ describe('Bridge without wallet connected', () => {
   beforeEach(() => cy.visit('/'))
 
   it('should initially load total # of origin networks', () => {
-    cy.get('.react-select__control').click()
+    cy.get('[data-test-id="bridge-origin-chain-list-button"]')
+      .should('be.visible')
+      .click()
 
     cy.fixture(BRIDGE_CONSTANTS).then((fixture) => {
-      cy.get('.react-select__option').should(
+      cy.get('button[data-test-id="bridge-origin-chain-list-item"]').should(
         'have.length',
         fixture.totalAvailableNetworks
       )
@@ -17,12 +19,21 @@ describe('Bridge without wallet connected', () => {
   })
 
   it('network dropdown should correct list all origin network names', () => {
-    cy.get('.react-select__control').click()
+    cy.get('[data-test-id="bridge-origin-chain-list-button"]')
+      .should('be.visible')
+      .click()
+
+    cy.get('[data-test-id="bridge-origin-chain-list"]')
+      .its('0.offsetHeight')
+      .should('be.gt', 0)
 
     cy.fixture(BRIDGE_CONSTANTS).then((fixture) => {
       const networksArray = fixture.availableNetworks
       networksArray.forEach((network) => {
-        cy.get('.react-select__option').should('contain', network)
+        cy.get('button[data-test-id="bridge-origin-chain-list-item"]').should(
+          'contain',
+          network
+        )
       })
     })
   })

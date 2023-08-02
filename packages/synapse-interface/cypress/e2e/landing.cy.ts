@@ -36,20 +36,16 @@ describe('Landing (/)', () => {
   })
 
   it('initially loads default origin token', () => {
-    cy.get('.FromTokenSelect__control').click()
-
     cy.fixture(BRIDGE_CONSTANTS).then((fixture) => {
-      cy.get('.FromTokenSelect__option')
+      cy.get('[data-test-id="bridge-origin-token"]')
         .should('be.visible')
         .and('contain.text', fixture.defaultOriginToken)
     })
   })
 
   it('initially loads default destination token', () => {
-    cy.get('.ToTokenSelect__control').click({ force: true })
-
     cy.fixture(BRIDGE_CONSTANTS).then((fixture) => {
-      cy.get('.ToTokenSelect__option')
+      cy.get('[data-test-id="bridge-destination-token"]')
         .should('be.visible')
         .and('contain.text', fixture.defaultDestinationToken)
     })

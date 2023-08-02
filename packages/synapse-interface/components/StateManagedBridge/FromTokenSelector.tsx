@@ -40,6 +40,7 @@ export const FromTokenSelector = () => {
 
   return (
     <button
+      data-test-id="bridge-origin-token"
       className="bg-[#565058] pl-2 pr-2 pt-1 pb-1 rounded-sm min-w-[70px]"
       onClick={() => dispatch(setShowFromTokenSlideOver(true))}
     >
