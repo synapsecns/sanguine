@@ -23,8 +23,7 @@ export const WETH = new Token({
   swapableOn: [
     CHAINS.ARBITRUM.id,
     CHAINS.BOBA.id,
-    CHAINS.OPTIMISM.id,
-    CHAINS.BASE.id,
+    CHAINS.OPTIMISM.id
   ],
   color: 'sky',
   priorityRank: 3,
