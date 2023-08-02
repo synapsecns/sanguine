@@ -48,7 +48,7 @@ export const ROUTER_ADDRESS: { [chainId: number]: string } = {
   [SupportedChainId.KLAYTN]: '0x7E7A0e201FD38d3ADAA9523Da6C109a07118C96a',
   [SupportedChainId.DOGECHAIN]: '0x7E7A0e201FD38d3ADAA9523Da6C109a07118C96a',
   [SupportedChainId.CANTO]: '0x7E7A0e201FD38d3ADAA9523Da6C109a07118C96a',
-  [SupportedChainId.BASE]: '0x6C8c6E68604e78B549C96907bfe9EBdaaC04e3B3',
+  [SupportedChainId.BASE]: '0x7E7A0e201FD38d3ADAA9523Da6C109a07118C96a',
 }
 
 // exports for external consumption
