@@ -1,7 +1,7 @@
 {
   "defaultOriginToken": "ETH",
   "defaultDestinationToken": "ETH",
-  "totalAvailableNetworks": 19,
+  "totalAvailableNetworks": 20,
   "availableNetworks": [
     "Arbitrum",
     "Aurora",
@@ -21,6 +21,7 @@
     "Moonriver",
     "Optimism",
     "Polygon",
-    "Base"
+    "Base",
+    "Polygon zkEVM"
   ]
 }

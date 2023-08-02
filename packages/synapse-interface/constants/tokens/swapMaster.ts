@@ -13,14 +13,20 @@ export const WETH = new Token({
     [CHAINS.OPTIMISM.id]: '0x121ab82b49B2BC4c7901CA46B8277962b4350204',
     [CHAINS.AVALANCHE.id]: '0x49d5c2bdffac6ce2bfdb6640f4f80f226bc10bab',
     [CHAINS.BASE.id]: '0x4200000000000000000000000000000000000006',
+    [CHAINS.ZKEVM.id]: '0x4200000000000000000000000000000000000006', // PLACEHOLDER
   },
   decimals: 18,
-  symbol: 'WETH', // SHOULD BE WETH
+  symbol: 'WETH',
   name: 'Wrapped ETH',
   logo: wethLogo,
   description: 'ERC-20 Wrapped form of ETH',
   swapableType: 'ETH',
-  swapableOn: [CHAINS.ARBITRUM.id, CHAINS.BOBA.id, CHAINS.OPTIMISM.id],
+  swapableOn: [
+    CHAINS.ARBITRUM.id,
+    CHAINS.BOBA.id,
+    CHAINS.OPTIMISM.id,
+    CHAINS.ZKEVM.id,
+  ],
   color: 'sky',
   priorityRank: 3,
 })

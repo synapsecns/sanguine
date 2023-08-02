@@ -796,3 +796,32 @@ export const BASE_ETH_SWAP_TOKEN = new Token({
   priorityRank: 6,
   chainId: CHAINS.BASE.id,
 })
+
+export const ZKEVM_ETH_SWAP_TOKEN = new Token({
+  addresses: {
+    [CHAINS.ZKEVM.id]: '0xC35b09c8fdefc90ec580B327d32DeAAda4f581Da', // PLACEHOLDER
+  },
+  decimals: 18,
+  symbol: 'nETH-LP',
+  name: 'Synapse Eth LP Token zkEVM',
+  logo: synapseLogo,
+  poolName: 'zkEVM ETH Pool',
+  routerIndex: 'zkevmethpool',
+  poolId: 0,
+  poolType: 'ETH',
+  swapAddresses: {
+    [CHAINS.ZKEVM.id]: '0x6223bD82010E2fB69F329933De20897e7a4C225f', // PLACEHOLDER
+  },
+  swapEthAddresses: {
+    [CHAINS.ZKEVM.id]: '0xa9E90579eb086bcdA910dD94041ffE041Fb4aC89', // PLACEHOLDER
+  },
+  poolTokens: [NETH, WETH],
+  nativeTokens: [NETH, ETH],
+  description: "Synapse's ETH swap LP token on zkEVM",
+  display: true,
+  priorityPool: true,
+  color: 'purple',
+  priceUnits: 'ETH',
+  priorityRank: 6,
+  chainId: CHAINS.ZKEVM.id,
+})

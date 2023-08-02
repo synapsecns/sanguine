@@ -7,12 +7,10 @@ export type Chain = {
   chainSymbol: string
   name: string
   altName?: string
-  codeName: string
   chainImg: any
   layer: number
   rpc: string
   explorerUrl: string
-  blockTime: number
   nativeCurrency: { name: string; symbol: string; decimals: number }
   priorityRank?: number
   color?: string

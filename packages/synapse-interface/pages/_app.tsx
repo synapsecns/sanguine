@@ -14,6 +14,7 @@ import {
   aurora,
   canto,
   base,
+  polygonZkEvm,
 } from '@constants/extraWagmiChains'
 import { WagmiConfig, configureChains, createConfig } from 'wagmi'
 import {
@@ -65,6 +66,7 @@ const rawChains = [
   dfk,
   dogechain,
   boba,
+  polygonZkEvm,
 ]
 
 // Add custom icons

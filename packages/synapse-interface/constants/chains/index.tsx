@@ -11,14 +11,6 @@ export const CHAINS_ARR = Object.values(all).sort(
   (a, b) => b.priorityRank - a.priorityRank
 )
 
-const getChainEnumById = () => {
-  const outObj: Record<number, string> = {}
-  CHAINS_ARR.map((chain) => {
-    outObj[chain.id] = chain.codeName
-  })
-  return outObj
-}
-
 const getids = () => {
   const outObj = {}
   CHAINS_ARR.map((chain) => {
@@ -34,7 +26,6 @@ const getChainsByID = (): ChainsByChainID => {
   return outObj
 }
 
-export const CHAIN_ENUM_BY_ID = getChainEnumById()
 export const CHAIN_IDS = getids() // used to be ids
 export const CHAINS_BY_ID = getChainsByID()
 export const ORDERED_CHAINS_BY_ID = CHAINS_ARR.map((chain) => String(chain.id))
@@ -60,6 +51,7 @@ export const ChainId = {
   HARDHAT: 31337,
   ARBITRUM: 42161,
   BASE: 8453,
+  ZKEVM: 1101,
   AVALANCHE: 43114,
   DFK: 53935,
   AURORA: 1313161554,
