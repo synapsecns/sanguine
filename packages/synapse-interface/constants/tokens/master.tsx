@@ -1001,6 +1001,7 @@ export const ETH = new Token({
   color: 'sky',
   visibilityRank: 101,
   priorityRank: 2,
+  swapableOn: [CHAINS.BASE.id],
 })
 
 export const MOVR = new Token({
