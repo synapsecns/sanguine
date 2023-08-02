@@ -39,6 +39,17 @@ const CurrencyReservesCard = () => {
 function CurrencyInfoListItem({ chainId, percent, balance, token }) {
   const symbol = displaySymbol(chainId, token)
 
+  const showContent =
+    balance !== '0'
+      ? commify(
+          formatBigIntToString(
+            stringToBigInt(`${balance}`, token.decimals[chainId]),
+            token.decimals[chainId],
+            2
+          )
+        )
+      : '-'
+
   return (
     <div className="flex items-center justify-between my-2 text-sm font-medium text-white">
       <div className="flex items-center w-30">
@@ -46,18 +57,7 @@ function CurrencyInfoListItem({ chainId, percent, balance, token }) {
         <div>{symbol}</div>
       </div>
       <div className="text-right">{percent}</div>
-      {balance && (
-        <AugmentWithUnits
-          content={commify(
-            formatBigIntToString(
-              stringToBigInt(`${balance}`, token.decimals[chainId]),
-              token.decimals[chainId],
-              -1
-            )
-          )}
-          label={symbol}
-        />
-      )}
+      {balance && <AugmentWithUnits content={showContent} label={symbol} />}
     </div>
   )
 }

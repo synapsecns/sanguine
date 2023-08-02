@@ -46,7 +46,8 @@ export const getPoolTokenInfoArr = ({
     } = poolToken
 
     const rawPercent = Number(balance) / tokenBalancesSum
-    const percent = `${(100 * rawPercent).toFixed(2)}%`
+    const percent =
+      tokenBalancesSum !== 0 ? `${(100 * rawPercent).toFixed(2)}%` : '-'
 
     return {
       symbol,
