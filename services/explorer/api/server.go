@@ -39,6 +39,8 @@ type Config struct {
 	Address string
 	// ScribeURL is the url of the scribe service
 	ScribeURL string
+	// HydrateCache is whether or not to hydrate the cache
+	HydrateCache bool
 }
 
 const cacheRehydrationInterval = 1800
@@ -95,29 +97,30 @@ func Start(ctx context.Context, cfg Config, handler metrics.Handler) error {
 		return fmt.Errorf("could not register observable metrics: %w", err)
 	}
 
-	// refill cache
-	go func() {
-		for {
-			select {
-			case <-ctx.Done():
-				ticker.Stop()
-				return
-			case <-ticker.C:
-				err = RehydrateCache(ctx, client, responseCache, handler)
-				if err != nil {
-					logger.Warnf("rehydration failed: %s", err)
-				}
-			case <-first:
-				// buffer to wait for everything to get initialized
-				time.Sleep(10 * time.Second)
-				err = RehydrateCache(ctx, client, responseCache, handler)
-				if err != nil {
-					logger.Errorf("initial rehydration failed: %s", err)
+	if cfg.HydrateCache {
+		// refill cache
+		go func() {
+			for {
+				select {
+				case <-ctx.Done():
+					ticker.Stop()
+					return
+				case <-ticker.C:
+					err = RehydrateCache(ctx, client, responseCache, handler)
+					if err != nil {
+						logger.Warnf("rehydration failed: %s", err)
+					}
+				case <-first:
+					// buffer to wait for everything to get initialized
+					time.Sleep(10 * time.Second)
+					err = RehydrateCache(ctx, client, responseCache, handler)
+					if err != nil {
+						logger.Errorf("initial rehydration failed: %s", err)
+					}
 				}
 			}
-		}
-	}()
-
+		}()
+	}
 	g.Go(func() error {
 		connection := baseServer.Server{}
 		err = connection.ListenAndServe(ctx, fmt.Sprintf(":%d", cfg.HTTPPort), router)
@@ -202,9 +205,7 @@ func RehydrateCache(parentCtx context.Context, client *gqlClient.Client, service
 	defer func() {
 		metrics.EndSpanWithErr(span, err)
 	}()
-	if os.Getenv("CI") != "" {
-		return nil
-	}
+
 	fmt.Println("rehydrating Cache")
 	totalVolumeType := model.StatisticTypeTotalVolumeUsd
 	totalFeeType := model.StatisticTypeTotalFeeUsd

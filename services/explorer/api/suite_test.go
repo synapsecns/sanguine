@@ -198,7 +198,6 @@ func (g *APISuite) SetupTest() {
 
 	g.db, g.eventDB, g.gqlClient, g.logIndex, g.cleanup, g.testBackend, g.deployManager = testutil.NewTestEnvDB(g.GetTestContext(), g.T(), g.scribeMetrics)
 
-	httpport := freeport.GetPort()
 	cleanup, port, err := clickhouse.NewClickhouseStore("explorer")
 	NotNil(g.T(), cleanup)
 	NotNil(g.T(), port)
@@ -215,11 +214,14 @@ func (g *APISuite) SetupTest() {
 	Nil(g.T(), err)
 
 	g.chainIDs = []uint32{1, 10, 25, 56, 137}
+	httpport := freeport.GetPort()
+
 	go func() {
 		Nil(g.T(), api.Start(g.GetSuiteContext(), api.Config{
-			HTTPPort:  uint16(httpport),
-			Address:   address,
-			ScribeURL: g.gqlClient.Client.BaseURL,
+			HTTPPort:     uint16(httpport),
+			Address:      address,
+			ScribeURL:    g.gqlClient.Client.BaseURL,
+			HydrateCache: false,
 		}, g.explorerMetrics))
 	}()
 
