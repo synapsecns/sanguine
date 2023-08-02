@@ -2,7 +2,6 @@ package types
 
 import (
 	"context"
-	"fmt"
 
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/synapsecns/sanguine/ethergo/signer/signer"
@@ -22,6 +21,7 @@ const (
 
 // Receipt is the receipt interface.
 type Receipt interface {
+	Encoder
 	// Origin is the origin of the receipt.
 	Origin() uint32
 	// Destination is the destination of the receipt.
@@ -101,22 +101,11 @@ func (r receipt) FinalExecutor() common.Address {
 
 //nolint:dupl
 func (r receipt) SignReceipt(ctx context.Context, signer signer.Signer, valid bool) (signer.Signature, []byte, common.Hash, error) {
-	encodedReceipt, err := EncodeReceipt(r)
-	if err != nil {
-		return nil, nil, common.Hash{}, fmt.Errorf("could not encode receipt: %w", err)
-	}
-
 	var receiptSalt []byte
 	if valid {
 		receiptSalt = []byte("RECEIPT_VALID_SALT")
 	} else {
 		receiptSalt = []byte("RECEIPT_INVALID_SALT")
 	}
-
-	signature, hashedReceipt, err := sign(ctx, signer, encodedReceipt, receiptSalt)
-	if err != nil {
-		return nil, nil, common.Hash{}, fmt.Errorf("could not sign receipt: %w", err)
-	}
-
-	return signature, encodedReceipt, hashedReceipt, nil
+	return SignEncoder(ctx, signer, r, receiptSalt)
 }

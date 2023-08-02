@@ -12,6 +12,7 @@ import (
 
 // Snapshot is the snapshot interface.
 type Snapshot interface {
+	Encoder
 	// States are the states of the snapshot.
 	States() []State
 
@@ -75,17 +76,7 @@ func (s snapshot) TreeHeight() uint32 {
 
 //nolint:dupl
 func (s snapshot) SignSnapshot(ctx context.Context, signer signer.Signer) (signer.Signature, []byte, common.Hash, error) {
-	encodedSnapshot, err := EncodeSnapshot(s)
-	if err != nil {
-		return nil, nil, common.Hash{}, fmt.Errorf("could not encode snapshot: %w", err)
-	}
-
-	signature, hashedSnapshot, err := sign(ctx, signer, encodedSnapshot, []byte("SNAPSHOT_VALID_SALT"))
-	if err != nil {
-		return nil, nil, common.Hash{}, fmt.Errorf("could not sign snapshot: %w", err)
-	}
-
-	return signature, encodedSnapshot, hashedSnapshot, nil
+	return SignEncoder(ctx, signer, s, []byte("SNAPSHOT_VALID_SALT"))
 }
 
 var _ Snapshot = &snapshot{}

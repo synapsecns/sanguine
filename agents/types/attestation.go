@@ -2,7 +2,6 @@ package types
 
 import (
 	"context"
-	"fmt"
 	"math/big"
 
 	"github.com/ethereum/go-ethereum/common"
@@ -21,6 +20,7 @@ const (
 
 // Attestation is the attestation interface.
 type Attestation interface {
+	Encoder
 	// SnapshotRoot is the root of the Snapshot Merkle Tree.
 	SnapshotRoot() [32]byte
 	// DataHash is the agent root and SnapGasHash combined into a single hash.
@@ -76,24 +76,13 @@ func (a attestation) Timestamp() *big.Int {
 
 //nolint:dupl
 func (a attestation) SignAttestation(ctx context.Context, signer signer.Signer, valid bool) (signer.Signature, []byte, common.Hash, error) {
-	encodedAttestation, err := EncodeAttestation(a)
-	if err != nil {
-		return nil, nil, common.Hash{}, fmt.Errorf("could not encode attestation: %w", err)
-	}
-
 	var attestationSalt []byte
 	if valid {
 		attestationSalt = []byte("ATTESTATION_VALID_SALT")
 	} else {
 		attestationSalt = []byte("ATTESTATION_INVALID_SALT")
 	}
-
-	signature, hashedAttestation, err := sign(ctx, signer, encodedAttestation, attestationSalt)
-	if err != nil {
-		return nil, nil, common.Hash{}, fmt.Errorf("could not sign attestation: %w", err)
-	}
-
-	return signature, encodedAttestation, hashedAttestation, nil
+	return SignEncoder(ctx, signer, a, attestationSalt)
 }
 
 // GetAttestationDataHash generates the data hash from the agent root and SnapGasHash.

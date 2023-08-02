@@ -87,7 +87,7 @@ func (g Guard) shouldSubmitStateReport(ctx context.Context, snapshot *types.Frau
 // isStateSlashable checks if a state is slashable, i.e. if the state is valid on the
 // Origin, and if the agent is in a slashable status.
 func (g Guard) isStateSlashable(ctx context.Context, state types.State, agent common.Address) (bool, error) {
-	statePayload, err := types.EncodeState(state)
+	statePayload, err := state.Encode()
 	if err != nil {
 		return false, fmt.Errorf("could not encode state: %w", err)
 	}
@@ -142,7 +142,7 @@ func (g Guard) handleValidAttestation(ctx context.Context, fraudAttestation *typ
 
 	// Verify each state in the snapshot.
 	for stateIndex, state := range snapshot.States() {
-		snapPayload, err := types.EncodeSnapshot(snapshot)
+		snapPayload, err := snapshot.Encode()
 		if err != nil {
 			return fmt.Errorf("could not encode snapshot: %w", err)
 		}

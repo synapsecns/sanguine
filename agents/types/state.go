@@ -2,7 +2,6 @@ package types
 
 import (
 	"context"
-	"fmt"
 	"math/big"
 
 	"github.com/ethereum/go-ethereum/common"
@@ -22,6 +21,7 @@ const (
 
 // State is the state interface.
 type State interface {
+	Encoder
 	// Root is the root of the Origin Merkle Tree.
 	Root() [32]byte
 	// Origin is the domain where Origin is located.
@@ -100,7 +100,7 @@ func (s state) Hash() ([32]byte, error) {
 }
 
 func (s state) SubLeaves() (leftLeaf, rightLeaf [32]byte, err error) {
-	encodedState, err := EncodeState(s)
+	encodedState, err := s.Encode()
 	if err != nil {
 		return
 	}
@@ -112,17 +112,7 @@ func (s state) SubLeaves() (leftLeaf, rightLeaf [32]byte, err error) {
 
 //nolint:dupl
 func (s state) SignState(ctx context.Context, signer signer.Signer) (signer.Signature, []byte, common.Hash, error) {
-	encodedState, err := EncodeState(s)
-	if err != nil {
-		return nil, nil, common.Hash{}, fmt.Errorf("failed to encode state: %w", err)
-	}
-
-	signature, hashedState, err := sign(ctx, signer, encodedState, []byte("STATE_INVALID_SALT"))
-	if err != nil {
-		return nil, nil, common.Hash{}, fmt.Errorf("could not sign state: %w", err)
-	}
-
-	return signature, encodedState, hashedState, nil
+	return SignEncoder(ctx, signer, s, []byte("STATE_INVALID_SALT"))
 }
 
 var _ State = state{}
