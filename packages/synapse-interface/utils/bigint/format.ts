@@ -6,12 +6,10 @@ export const formatBigIntToString = (
   decimalPlaces?: number
 ) => {
   if (typeof bi !== 'bigint' && !bi) {
-    console.log('bi: ', bi)
     return
   }
   try {
     // Check if input is zero
-    console.log('bi1: ', bi)
     if (bi === 0n) {
       return '0.0'
     }

@@ -85,17 +85,6 @@ const StakeCard = ({ address, chainId, pool }: StakeCardProps) => {
     }
   }, [tx])
 
-  console.log('lpBalance: ', lpTokenBalance)
-  console.log('tokenInfo:', tokenInfo)
-
-  console.log(
-    'formatBigIntToString(lpTokenBalance, tokenInfo.decimals, 4):',
-    formatBigIntToString(lpTokenBalance, tokenInfo.decimals, 4)
-  )
-  console.log(
-    'formatBigIntToString(lpTokenBalance, tokenInfo.decimals, 8): ',
-    formatBigIntToString(lpTokenBalance, tokenInfo.decimals, 8)
-  )
   return (
     <div className="flex-wrap space-y-2">
       <StakeCardTitle
