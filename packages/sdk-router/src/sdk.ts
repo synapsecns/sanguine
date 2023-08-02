@@ -538,7 +538,7 @@ class SynapseSDK {
         ) {
           bestQuote = quote
           if (bestQuote) {
-            bestQuote.routerAddress = originRouter.routerContract.address;
+            bestQuote.routerAddress = originRouter.routerContract.address
           }
         }
       } catch (error) {
