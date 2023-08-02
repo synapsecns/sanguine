@@ -14,12 +14,12 @@ export const swapPoolCalculateAddLiquidity = async ({
   pool: Token
   inputs: bigint[]
 }) => {
-    const amount = await readContract({
-      chainId,
-      address: ROUTER_ADDRESS,
-      abi: SYNAPSE_ROUTER_ABI,
-      functionName: 'calculateAddLiquidity',
-      args: [pool.swapAddresses[chainId], inputs],
-    })
-    return amount
+  const amount = await readContract({
+    chainId,
+    address: ROUTER_ADDRESS,
+    abi: SYNAPSE_ROUTER_ABI,
+    functionName: 'calculateAddLiquidity',
+    args: [pool.swapAddresses[chainId], inputs],
+  })
+  return amount
 }
