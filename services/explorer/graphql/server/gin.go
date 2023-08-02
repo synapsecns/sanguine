@@ -25,14 +25,13 @@ const (
 )
 
 // EnableGraphql enables the scribe graphql service.
-func EnableGraphql(engine *gin.Engine, consumerDB db.ConsumerDB, fetcher fetcher.ScribeFetcher, apiCache cache.Service, omniRPCURL string, handler metrics.Handler) {
+func EnableGraphql(engine *gin.Engine, consumerDB db.ConsumerDB, fetcher fetcher.ScribeFetcher, apiCache cache.Service, handler metrics.Handler) {
 	server := createServer(
 		resolvers.NewExecutableSchema(
 			resolvers.Config{Resolvers: &graph.Resolver{
-				DB:         consumerDB,
-				Fetcher:    fetcher,
-				OmniRPCURL: omniRPCURL,
-				Cache:      apiCache,
+				DB:      consumerDB,
+				Fetcher: fetcher,
+				Cache:   apiCache,
 			}},
 		),
 	)

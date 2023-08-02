@@ -37,10 +37,8 @@ type Config struct {
 	HTTPPort uint16
 	// Address is the address of the database
 	Address string
-	// ScribeURL is the url of the scribe graphql server
+	// ScribeURL is the url of the scribe service
 	ScribeURL string
-	// OmniRPCURL is the omnirpc url - used for bridgewatcher fallback
-	OmniRPCURL string
 }
 
 const cacheRehydrationInterval = 1800
@@ -80,7 +78,7 @@ func Start(ctx context.Context, cfg Config, handler metrics.Handler) error {
 		return fmt.Errorf("error creating api cache service, %w", err)
 	}
 
-	gqlServer.EnableGraphql(router, consumerDB, fetcher, responseCache, cfg.OmniRPCURL, handler)
+	gqlServer.EnableGraphql(router, consumerDB, fetcher, responseCache, handler)
 
 	fmt.Printf("started graphiql gqlServer on port: http://%s:%d/graphiql\n", hostname, cfg.HTTPPort)
 
@@ -205,9 +203,6 @@ func RehydrateCache(parentCtx context.Context, client *gqlClient.Client, service
 		metrics.EndSpanWithErr(span, err)
 	}()
 
-	if os.Getenv("CI") != "" {
-		return nil
-	}
 	fmt.Println("rehydrating Cache")
 	totalVolumeType := model.StatisticTypeTotalVolumeUsd
 	totalFeeType := model.StatisticTypeTotalFeeUsd

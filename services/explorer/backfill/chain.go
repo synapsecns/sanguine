@@ -206,7 +206,7 @@ func (c *ChainBackfiller) backfillContractLogs(parentCtx context.Context, contra
 							continue
 						}
 
-						parsedLogs, err := ProcessLogs(groupCtx, logs, c.chainConfig.ChainID, eventParser)
+						parsedLogs, err := c.processLogs(groupCtx, logs, eventParser)
 						if err != nil {
 							timeout = b.Duration()
 							logger.Warnf("could not process logs for chain %d: %s", c.chainConfig.ChainID, err)
@@ -246,10 +246,10 @@ func (c *ChainBackfiller) backfillContractLogs(parentCtx context.Context, contra
 	return nil
 }
 
-// ProcessLogs processes the logs and stores them in the consumer database.
+// processLogs processes the logs and stores them in the consumer database.
 //
 //nolint:gocognit,cyclop
-func ProcessLogs(ctx context.Context, logs []ethTypes.Log, chainID uint32, eventParser parser.Parser) (parsedLogs []interface{}, _ error) {
+func (c *ChainBackfiller) processLogs(ctx context.Context, logs []ethTypes.Log, eventParser parser.Parser) (parsedLogs []interface{}, _ error) {
 	b := &backoff.Backoff{
 		Factor: 2,
 		Jitter: true,
@@ -267,12 +267,12 @@ func ProcessLogs(ctx context.Context, logs []ethTypes.Log, chainID uint32, event
 			if logIdx >= len(logs) {
 				return parsedLogs, nil
 			}
-			parsedLog, err := eventParser.Parse(ctx, logs[logIdx], chainID)
+			parsedLog, err := eventParser.Parse(ctx, logs[logIdx], c.chainConfig.ChainID)
 			if err != nil || parsedLog == nil {
 				if err.Error() == parser.ErrUnknownTopic {
-					logger.Warnf("could not parse log (ErrUnknownTopic) %d, %s %s blocknumber: %d, %s", chainID, logs[logIdx].TxHash, logs[logIdx].Address, logs[logIdx].BlockNumber, err)
+					logger.Warnf("could not parse log (ErrUnknownTopic) %d, %s %s blocknumber: %d, %s", c.chainConfig.ChainID, logs[logIdx].TxHash, logs[logIdx].Address, logs[logIdx].BlockNumber, err)
 				} else { // retry
-					logger.Errorf("could not parse log %d, %s blocknumber: %d, %s", chainID, logs[logIdx].Address, logs[logIdx].BlockNumber, err)
+					logger.Errorf("could not parse log %d, %s blocknumber: %d, %s", c.chainConfig.ChainID, logs[logIdx].Address, logs[logIdx].BlockNumber, err)
 					timeout = b.Duration()
 					continue
 				}
