@@ -215,7 +215,7 @@ const StateManagedBridge = () => {
               spender: routerAddress,
             })
 
-      if (fromToken.addresses[fromChainId] !== zeroAddress) {
+      if (fromToken.addresses[fromChainId] !== zeroAddress && address) {
         dispatch(
           updateSingleTokenAllowance({
             chainId: fromChainId,
