@@ -537,6 +537,9 @@ class SynapseSDK {
           quote.maxAmountOut.gt(bestQuote.maxAmountOut ?? BigNumber.from(0))
         ) {
           bestQuote = quote
+          if (bestQuote) {
+            bestQuote.routerAddress = originRouter.routerContract.address;
+          }
         }
       } catch (error) {
         console.error(
