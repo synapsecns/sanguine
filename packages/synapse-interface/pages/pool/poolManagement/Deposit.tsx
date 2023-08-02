@@ -8,7 +8,11 @@ import PriceImpactDisplay from '../components/PriceImpactDisplay'
 import { Token } from '@types'
 import { useState, useEffect } from 'react'
 import { getTokenAllowance } from '@/utils/actions/getTokenAllowance'
-import { approve, deposit } from '@/utils/actions/approveAndDeposit'
+import {
+  approve,
+  deposit,
+  emptyPoolDeposit,
+} from '@/utils/actions/approveAndDeposit'
 import LoadingTokenInput from '@components/loading/LoadingTokenInput'
 import { Address, fetchBalance } from '@wagmi/core'
 import { getSwapDepositContractFields } from '@/utils/getSwapDepositContractFields'
@@ -168,13 +172,13 @@ const Deposit = ({
 
   const depositTxn = async () => {
     try {
-      const tx = deposit(
-        pool,
-        'ONE_TENTH',
-        null,
-        filteredInputValue.bi,
-        chainId
-      )
+      let tx
+
+      if (poolData.totalLocked === 0) {
+        tx = emptyPoolDeposit(pool, filteredInputValue.bi, chainId)
+      } else {
+        tx = deposit(pool, 'ONE_TENTH', null, filteredInputValue.bi, chainId)
+      }
 
       try {
         await tx

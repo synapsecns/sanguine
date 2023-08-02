@@ -87,7 +87,7 @@ function generateNetworkCardHref(chainId) {
   return `/?inputCurrency=${inputCurrency}&outputCurrency=${outputCurrency}&outputChain=${chainId}`
 }
 
-function ChainLogo({ src }: { src: string }) {
+function ChainImg({ src }: { src: string }) {
   return (
     <div className="overflow-visible sm:px-1 md:px-2 lg:px-4">
       <img src={src} className="w-12 overflow-visible rounded-full" />
@@ -125,7 +125,7 @@ function NetworkCard({
         divider={false}
       >
         <div className="flex justify-center mt-2 mb-2">
-          <ChainLogo src={chainImg} />
+          <ChainImg src={chainImg} />
         </div>
         <div className="inline-block ">
           <div className="text-lg font-medium text-white">{chainName}</div>
