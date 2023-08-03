@@ -67,7 +67,16 @@ export const BridgeTransactionButton = ({
     return fromTokenDecimals ? stringToBigInt(fromValue, fromTokenDecimals) : 0
   }, [fromValue, fromTokenDecimals])
 
-  if (!isLoading && bridgeQuote?.feeAmount === 0n && fromValueBigInt > 0) {
+  if (!fromToken) {
+    buttonProperties = {
+      label: `Unsupported Network`,
+      onClick: null,
+    }
+  } else if (
+    !isLoading &&
+    bridgeQuote?.feeAmount === 0n &&
+    fromValueBigInt > 0
+  ) {
     buttonProperties = {
       label: `Amount must be greater than fee`,
       onClick: null,
