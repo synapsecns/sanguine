@@ -1,57 +1,35 @@
 import _ from 'lodash'
 
 import { useEffect, useMemo, useState } from 'react'
+import { useDispatch } from 'react-redux'
 import Fuse from 'fuse.js'
+import { useAccount } from 'wagmi'
+
 import { useKeyPress } from '@hooks/useKeyPress'
 import SlideSearchBox from '@pages/bridge/SlideSearchBox'
 import { sortTokens } from '@constants/tokens'
 import { Token } from '@/utils/types'
-import { useDispatch } from 'react-redux'
-import { setFromToken, setToToken } from '@/slices/bridge/reducer'
-import {
-  setShowFromTokenSlideOver,
-  setShowToTokenSlideOver,
-} from '@/slices/bridgeDisplaySlice'
+import { setFromToken } from '@/slices/bridge/reducer'
+import { setShowFromTokenListOverlay } from '@/slices/bridgeDisplaySlice'
 import { segmentAnalyticsEvent } from '@/contexts/SegmentAnalyticsProvider'
 import { usePortfolioBalances } from '@/slices/portfolio/hooks'
 import { useBridgeState } from '@/slices/bridge/hooks'
 import SelectSpecificTokenButton from './components/SelectSpecificTokenButton'
-import { useAccount } from 'wagmi'
 import { CHAINS_BY_ID } from '@/constants/chains'
 
-export const FromTokenSlideOver = ({}: {}) => {
-  let setToken
-  let setShowSlideOver
-
-  const { fromTokens, fromChainId, fromToken } = useBridgeState()
-
-  const isOrigin = true
-
-  const tokens = fromTokens
-
-  const chainId = fromChainId
-
-  const selectedToken = fromToken
-
-  if (isOrigin) {
-    setToken = setFromToken
-    setShowSlideOver = setShowFromTokenSlideOver
-  } else {
-    setToken = setToToken
-    setShowSlideOver = setShowToTokenSlideOver
-  }
-
+export const FromTokenListOverlay = () => {
   const [hasMounted, setHasMounted] = useState(false)
 
   const [currentIdx, setCurrentIdx] = useState(-1)
   const [searchStr, setSearchStr] = useState('')
   const dispatch = useDispatch()
-  let tokenList: any[] = []
 
+  const { fromTokens, fromChainId, fromToken, toChainId, toToken } =
+    useBridgeState()
   const portfolioBalances = usePortfolioBalances()
   const { isConnected } = useAccount()
 
-  tokenList = tokens
+  let tokenList = sortTokens(fromTokens)
 
   const fuse = new Fuse(tokenList, {
     includeScore: true,
@@ -61,7 +39,7 @@ export const FromTokenSlideOver = ({}: {}) => {
         name: 'symbol',
         weight: 2,
       },
-      `addresses.${chainId}`,
+      `addresses.${fromChainId}`,
       'name',
     ],
   })
@@ -78,7 +56,7 @@ export const FromTokenSlideOver = ({}: {}) => {
 
     const tokenWithPb = Object.values(token)[0]
 
-    if (tokenWithPb && tokenWithPb.parsedBalance !== '0.0') {
+    if (Object.keys(token).length > 0 && tokenWithPb?.balance !== 0n) {
       return true
     } else {
       return false
@@ -98,12 +76,12 @@ export const FromTokenSlideOver = ({}: {}) => {
   function onClose() {
     setCurrentIdx(-1)
     setSearchStr('')
-    dispatch(setShowSlideOver(false))
+    dispatch(setShowFromTokenListOverlay(false))
   }
 
   function onMenuItemClick(token: Token) {
-    dispatch(setToken(token))
-    dispatch(setShowSlideOver(false))
+    dispatch(setFromToken(token))
+    dispatch(setShowFromTokenListOverlay(false))
     onClose()
   }
 
@@ -154,6 +132,26 @@ export const FromTokenSlideOver = ({}: {}) => {
     return CHAINS_BY_ID[fromChainId]?.name
   }, [fromChainId])
 
+  const toChainName = useMemo(() => {
+    return CHAINS_BY_ID[toChainId]?.name
+  }, [toChainId])
+
+  const tokensWithoutBalancesText = useMemo(() => {
+    if (fromChainName && toChainName && toToken) {
+      return `Other ${fromChainName} tokens bridgeable to ${toToken.name} on ${toChainName}`
+    } else if (fromChainName && toChainName) {
+      return `Other ${fromChainName} tokens bridgeable to ${toChainName}`
+    } else if (fromChainName && (!toChainName || !toToken)) {
+      return `${fromChainName} tokens`
+    } else if (!fromChainName && toChainName && toToken) {
+      return `Tokens bridgeable to ${toToken.name} on ${toChainName}`
+    } else if (!fromChainName && !toChainName && toToken) {
+      return `Tokens bridgeable to ${toToken.name}`
+    } else {
+      return 'All tokens'
+    }
+  }, [fromChainId, toChainId, toToken])
+
   return (
     <div
       data-test-id="token-slide-over"
@@ -180,21 +178,15 @@ export const FromTokenSlideOver = ({}: {}) => {
               isOrigin={true}
               key={idx}
               token={token}
-              selectedToken={selectedToken}
+              selectedToken={fromToken}
               active={idx === currentIdx}
               onClick={() => {
-                const eventTitle = isOrigin
-                  ? '[Bridge User Action] Sets new fromToken'
-                  : `[Bridge User Action] Sets new toToken`
-                const eventData = isOrigin
-                  ? {
-                      previousFromToken: selectedToken?.symbol,
-                      newFromToken: token?.symbol,
-                    }
-                  : {
-                      previousToToken: selectedToken?.symbol,
-                      newToToken: token?.symbol,
-                    }
+                const eventTitle = '[Bridge User Action] Sets new fromToken'
+                const eventData = {
+                  previousFromToken: fromToken?.symbol,
+                  newFromToken: token?.symbol,
+                }
+
                 segmentAnalyticsEvent(eventTitle, eventData)
                 onMenuItemClick(token)
               }}
@@ -203,7 +195,7 @@ export const FromTokenSlideOver = ({}: {}) => {
         })}
       </div>
       <div className="px-2 pb-2 pt-2 text-secondaryTextColor text-sm bg-[#343036]">
-        {fromChainName ? `${fromChainName} tokens` : `All tokens`}
+        {tokensWithoutBalancesText}
       </div>
       <div className="px-2 pb-8 bg-[#343036] md:px-2 ">
         {tokenListWithoutBalances.map((token, idx) => {
@@ -212,21 +204,14 @@ export const FromTokenSlideOver = ({}: {}) => {
               isOrigin={true}
               key={idx}
               token={token}
-              selectedToken={selectedToken}
+              selectedToken={fromToken}
               active={idx === currentIdx}
               onClick={() => {
-                const eventTitle = isOrigin
-                  ? '[Bridge User Action] Sets new fromToken'
-                  : `[Bridge User Action] Sets new toToken`
-                const eventData = isOrigin
-                  ? {
-                      previousFromToken: selectedToken?.symbol,
-                      newFromToken: token?.symbol,
-                    }
-                  : {
-                      previousToToken: selectedToken?.symbol,
-                      newToToken: token?.symbol,
-                    }
+                const eventTitle = '[Bridge User Action] Sets new fromToken'
+                const eventData = {
+                  previousFromToken: fromToken?.symbol,
+                  newFromToken: token?.symbol,
+                }
                 segmentAnalyticsEvent(eventTitle, eventData)
                 onMenuItemClick(token)
               }}

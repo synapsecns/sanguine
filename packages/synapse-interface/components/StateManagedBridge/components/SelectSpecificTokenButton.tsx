@@ -1,6 +1,8 @@
 import { displaySymbol } from '@utils/displaySymbol'
 import {
   getBorderStyleForCoinHover,
+  getMenuItemBgForCoin,
+  getMenuItemStyleForCoin,
   getMenuItemStyleForCoinCombined,
 } from '@styles/tokens'
 import { memo } from 'react'
@@ -28,32 +30,32 @@ const SelectSpecificTokenButton = ({
 
   let bgClassName
 
-  if (isCurrentlySelected) {
-    bgClassName = `bg-bgLight hover:bg-bgLight active:bg-bgLight`
-  } else {
-    bgClassName = 'bg-transparent hover:bg-transparent active:bg-transparent'
-  }
-
   const classNameForBorderStyle = getBorderStyleForCoinHover(token?.color)
   const classNameForMenuItemStyle = getMenuItemStyleForCoinCombined(
     token?.color
   )
+
+  if (isCurrentlySelected) {
+    bgClassName = getMenuItemBgForCoin(token?.color)
+  } else {
+    bgClassName = 'bg-transparent hover:bg-transparent active:bg-transparent'
+  }
 
   return (
     <div
       tabIndex={active ? 1 : 0}
       onClick={onClick}
       className={`
-      flex items-center
-      transition-all duration-75
-      w-full
-      px-2 py-1
-      cursor-pointer
-      border-[1px] border-[#423F44]
-      ${bgClassName}
-      ${classNameForBorderStyle}
-      ${classNameForMenuItemStyle}
-        `}
+        flex items-center
+        transition-all duration-75
+        w-full
+        px-2 py-1
+        cursor-pointer
+        border-[1px] border-[#423F44]
+        ${bgClassName}
+        ${classNameForBorderStyle}
+        ${classNameForMenuItemStyle}
+      `}
     >
       <ButtonContent token={token} chainId={chainId} />
     </div>

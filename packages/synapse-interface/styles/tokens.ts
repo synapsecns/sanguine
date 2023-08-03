@@ -100,8 +100,9 @@ export const getMenuItemStyleForCoinDark = (tokenColor: string): string => {
 }
 
 export const getMenuItemStyleForCoinCombined = (tokenColor: string): string => {
-  return `${getMenuItemStyleForCoin(tokenColor)}
-  ${getMenuItemStyleForCoinDark(tokenColor)}`
+  return `${getMenuItemStyleForCoin(tokenColor)} ${getMenuItemStyleForCoinDark(
+    tokenColor
+  )}`
 }
 
 export const getSwapHoverStyleForCoin = (tokenColor: string): string => {

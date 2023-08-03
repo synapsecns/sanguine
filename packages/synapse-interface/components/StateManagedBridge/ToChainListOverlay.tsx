@@ -8,13 +8,12 @@ import { sortChains } from '@constants/chains'
 import { useDispatch } from 'react-redux'
 import { segmentAnalyticsEvent } from '@/contexts/SegmentAnalyticsProvider'
 import { useBridgeState } from '@/slices/bridge/hooks'
-import { setFromChainId } from '@/slices/bridge/reducer'
-import { setShowFromChainSlideOver } from '@/slices/bridgeDisplaySlice'
+import { setToChainId } from '@/slices/bridge/reducer'
+import { setShowToChainListOverlay } from '@/slices/bridgeDisplaySlice'
 import { SelectSpecificNetworkButton } from './components/SelectSpecificNetworkButton'
 
-export const FromChainSlideOver = () => {
-  const { fromChainIds, fromChainId } = useBridgeState()
-  const isOrigin = true
+export const ToChainListOverlay = () => {
+  const { toChainIds, toChainId } = useBridgeState()
   const { chain } = useNetwork()
   const [currentIdx, setCurrentIdx] = useState(-1)
   const [searchStr, setSearchStr] = useState('')
@@ -34,14 +33,12 @@ export const FromChainSlideOver = () => {
     ],
   })
 
-  const dataId = isOrigin
-    ? 'bridge-origin-chain-list'
-    : 'bridge-destination-chain-list'
+  const dataId = 'bridge-destination-chain-list'
 
   useEffect(() => {
     let tempNetworks = []
     Object.values(CHAINS).map((chain) => {
-      if (isOrigin || (!isOrigin && fromChainIds?.includes(chain.id))) {
+      if (toChainIds?.includes(chain.id)) {
         tempNetworks.push(chain)
       }
     })
@@ -60,8 +57,8 @@ export const FromChainSlideOver = () => {
   const onClose = useCallback(() => {
     setCurrentIdx(-1)
     setSearchStr('')
-    dispatch(setShowFromChainSlideOver(false))
-  }, [setShowFromChainSlideOver])
+    dispatch(setShowToChainListOverlay(false))
+  }, [setShowToChainListOverlay])
 
   const escFunc = () => {
     if (escPressed) {
@@ -85,7 +82,7 @@ export const FromChainSlideOver = () => {
   const enterPressedFunc = () => {
     if (enterPressed && currentIdx > -1) {
       const currentChain = networks[currentIdx]
-      dispatch(setFromChainId(currentChain.chainId))
+      dispatch(setToChainId(currentChain.chainId))
       onClose()
     }
   }
@@ -117,26 +114,23 @@ export const FromChainSlideOver = () => {
         data-test-id={dataId}
         className="px-2 pt-2 pb-8 bg-[#343036] md:px-2"
       >
-        <div className="mb-2 text-sm font-normal text-white">
-          Bridge from...
-        </div>
+        <div className="mb-2 text-sm font-normal text-white">Bridge to...</div>
         {networks.map(({ id: mapChainId }, idx) => {
           let onClickSpecificNetwork
-          if (fromChainId === mapChainId) {
+          if (toChainId === mapChainId) {
             onClickSpecificNetwork = () => {
               onClose()
             }
           } else {
             onClickSpecificNetwork = () => {
-              const eventTitle = isOrigin
-                ? `[Bridge User Action] Sets new fromChainId`
-                : `[Bridge User Action] Sets new toChainId`
+              const eventTitle = `[Bridge User Action] Sets new toChainId`
               const eventData = {
-                previousFromChainId: fromChainId,
-                newFromChainId: mapChainId,
+                previousToChainId: toChainId,
+                newToChainId: mapChainId,
               }
+
               segmentAnalyticsEvent(eventTitle, eventData)
-              dispatch(setFromChainId(mapChainId))
+              dispatch(setToChainId(mapChainId))
               onClose()
             }
           }
@@ -144,7 +138,7 @@ export const FromChainSlideOver = () => {
             <SelectSpecificNetworkButton
               key={idx}
               itemChainId={mapChainId}
-              isCurrentChain={fromChainId === mapChainId}
+              isCurrentChain={toChainId === mapChainId}
               active={idx === currentIdx}
               onClick={onClickSpecificNetwork}
               dataId={dataId}

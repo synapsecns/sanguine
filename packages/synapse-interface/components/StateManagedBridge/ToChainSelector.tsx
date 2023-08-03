@@ -1,7 +1,7 @@
 import React from 'react'
 import { useDispatch } from 'react-redux'
 
-import { setShowToChainSlideOver } from '@/slices/bridgeDisplaySlice'
+import { setShowToChainListOverlay } from '@/slices/bridgeDisplaySlice'
 import { useBridgeState } from '@/slices/bridge/hooks'
 import { CHAINS_BY_ID } from '@/constants/chains'
 import { DropDownArrowSvg } from './components/DropDownArrowSvg'
@@ -44,7 +44,7 @@ export const ToChainSelector = () => {
   return (
     <button
       className=""
-      onClick={() => dispatch(setShowToChainSlideOver(true))}
+      onClick={() => dispatch(setShowToChainListOverlay(true))}
     >
       {buttonContent}
     </button>

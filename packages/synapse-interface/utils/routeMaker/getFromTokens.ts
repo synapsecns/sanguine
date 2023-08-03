@@ -107,6 +107,7 @@ export const getFromTokens = ({
   ) {
     return _(EXISTING_BRIDGE_ROUTES)
       .pickBy((values, _key) => values.some((v) => v.endsWith(`-${toChainId}`)))
+      .pickBy((_values, key) => key.endsWith(`-${fromChainId}`))
       .keys()
       .uniq()
       .value()
@@ -120,12 +121,9 @@ export const getFromTokens = ({
   ) {
     return _(EXISTING_BRIDGE_ROUTES)
       .chain()
-      .filter((values, _key) => {
-        return values.some((v) => {
-          const { symbol } = getTokenAndChainId(v)
-          return symbol === toTokenRouteSymbol
-        })
-      })
+      .filter((values, _key) =>
+        values.some((v) => getTokenAndChainId(v).symbol === toTokenRouteSymbol)
+      )
       .flatten()
       .uniq()
       .value()

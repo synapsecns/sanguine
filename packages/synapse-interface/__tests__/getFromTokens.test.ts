@@ -107,19 +107,7 @@ describe('getFromTokens', () => {
       toTokenRouteSymbol: null,
     })
 
-    expect(fromTokens.sort()).toEqual(
-      [
-        'GOHM-1',
-        'USDC-1',
-        'SYN-1',
-        'GOHM-25',
-        'GOHM-56',
-        'USDC-25',
-        'USDC-56',
-        'SYN-25',
-        'SYN-56',
-      ].sort()
-    )
+    expect(fromTokens.sort()).toEqual(['GOHM-1', 'USDC-1', 'SYN-1'].sort())
   })
 
   it('has fromChainId, fromToken, toChainId, toToken', () => {

@@ -17,7 +17,7 @@ import {
 
 import {
   setShowDestinationAddress,
-  setShowFromTokenSlideOver,
+  setShowFromTokenListOverlay,
   setShowSettingsSlideOver,
 } from '@/slices/bridgeDisplaySlice'
 
@@ -63,10 +63,10 @@ import {
 } from '@/slices/portfolio/hooks'
 import { usePortfolioBalances } from '@/slices/portfolio/hooks'
 import { updateSingleTokenAllowance } from '@/slices/portfolio/actions'
-import { FromChainSlideOver } from '@/components/StateManagedBridge/FromChainSlideOver'
-import { ToChainSlideOver } from '@/components/StateManagedBridge/ToChainSlideOver'
-import { FromTokenSlideOver } from '@/components/StateManagedBridge/FromTokenSlideOver'
-import { ToTokenSlideOver } from '@/components/StateManagedBridge/ToTokenSlideOver'
+import { FromChainListOverlay } from '@/components/StateManagedBridge/FromChainListOverlay'
+import { ToChainListOverlay } from '@/components/StateManagedBridge/ToChainListOverlay'
+import { FromTokenListOverlay } from '@/components/StateManagedBridge/FromTokenListOverlay'
+import { ToTokenListOverlay } from '@/components/StateManagedBridge/ToTokenListOverlay'
 
 const StateManagedBridge = () => {
   const { address } = useAccount()
@@ -98,10 +98,10 @@ const StateManagedBridge = () => {
   const {
     showSettingsSlideOver,
     showDestinationAddress,
-    showFromChainSlideOver,
-    showToChainSlideOver,
-    showFromTokenSlideOver,
-    showToTokenSlideOver,
+    showFromChainListOverlay,
+    showToChainListOverlay,
+    showFromTokenListOverlay,
+    showToTokenListOverlay,
   } = useSelector((state: RootState) => state.bridgeDisplay)
 
   let pendingPopup
@@ -485,24 +485,24 @@ const StateManagedBridge = () => {
                 <SettingsSlideOver key="settings" />
               </animated.div>
             </Transition>
-            <Transition show={showFromChainSlideOver} {...TRANSITION_PROPS}>
+            <Transition show={showFromChainListOverlay} {...TRANSITION_PROPS}>
               <animated.div className={springClass}>
-                <FromChainSlideOver />
+                <FromChainListOverlay />
               </animated.div>
             </Transition>
-            <Transition show={showFromTokenSlideOver} {...TRANSITION_PROPS}>
+            <Transition show={showFromTokenListOverlay} {...TRANSITION_PROPS}>
               <animated.div className={springClass}>
-                <FromTokenSlideOver />
+                <FromTokenListOverlay />
               </animated.div>
             </Transition>
-            <Transition show={showToChainSlideOver} {...TRANSITION_PROPS}>
+            <Transition show={showToChainListOverlay} {...TRANSITION_PROPS}>
               <animated.div className={springClass}>
-                <ToChainSlideOver />
+                <ToChainListOverlay />
               </animated.div>
             </Transition>
-            <Transition show={showToTokenSlideOver} {...TRANSITION_PROPS}>
+            <Transition show={showToTokenListOverlay} {...TRANSITION_PROPS}>
               <animated.div className={springClass}>
-                <ToTokenSlideOver />
+                <ToTokenListOverlay />
               </animated.div>
             </Transition>
             <InputContainer />
