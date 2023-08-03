@@ -29,6 +29,7 @@ export const SingleNetworkPortfolio = ({
   fetchState,
 }: SingleNetworkPortfolioProps) => {
   const currentChain: Chain = CHAINS_BY_ID[portfolioChainId]
+  const isUnsupportedChain: boolean = currentChain ? false : true
 
   const [tokensWithAllowance, tokensWithoutAllowance] =
     separateTokensByAllowance(portfolioTokens)
@@ -56,6 +57,7 @@ export const SingleNetworkPortfolio = ({
           <PortfolioNetwork
             displayName={currentChain?.name}
             chainIcon={currentChain?.chainImg}
+            isUnsupportedChain={isUnsupportedChain}
           />
         }
         expandedProps={
@@ -109,11 +111,13 @@ export const SingleNetworkPortfolio = ({
 type PortfolioNetworkProps = {
   displayName: string
   chainIcon: string
+  isUnsupportedChain: boolean
 }
 
 const PortfolioNetwork = ({
   displayName,
   chainIcon,
+  isUnsupportedChain,
 }: PortfolioNetworkProps) => {
   return (
     <div
@@ -126,7 +130,9 @@ const PortfolioNetwork = ({
           alt={`${displayName} img`}
           src={chainIcon}
         />
-        <div className="text-lg font-medium text-white">{displayName}</div>
+        <div className="text-lg font-medium text-white">
+          {isUnsupportedChain ? 'Unsupported Network' : displayName}
+        </div>
       </div>
     </div>
   )
