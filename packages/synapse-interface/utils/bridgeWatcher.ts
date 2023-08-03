@@ -59,7 +59,7 @@ export const getLogs = async (
   address: string
 ) => {
   const filter = {
-    address: contract.address,
+    address: contract?.address,
     topics: [null, hexZeroPad(address, 32)],
     fromBlock: toHexStr(currentBlock - GETLOGS_SIZE),
     toBlock: toHexStr(currentBlock),

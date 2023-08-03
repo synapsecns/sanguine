@@ -1,6 +1,9 @@
 import '@styles/global.css'
 import '@rainbow-me/rainbowkit/styles.css'
 import type { AppProps } from 'next/app'
+import Head from 'next/head'
+import '@/patch'
+
 import {
   boba,
   cronos,
@@ -10,8 +13,9 @@ import {
   metis,
   aurora,
   canto,
+  base,
 } from '@constants/extraWagmiChains'
-import { WagmiConfig, configureChains, createClient } from 'wagmi'
+import { WagmiConfig, configureChains, createConfig } from 'wagmi'
 import {
   arbitrum,
   avalanche,
@@ -28,21 +32,25 @@ import {
   RainbowKitProvider,
   darkTheme,
   getDefaultWallets,
+  connectorsForWallets,
 } from '@rainbow-me/rainbowkit'
 import { JsonRpcProvider } from '@ethersproject/providers'
 import { jsonRpcProvider } from 'wagmi/providers/jsonRpc'
 import * as CHAINS from '@constants/chains/master'
 import { SynapseProvider } from '@/utils/providers/SynapseProvider'
 import CustomToaster from '@/components/toast'
+import { SegmentAnalyticsProvider } from '@/contexts/SegmentAnalyticsProvider'
 
 import { Provider } from 'react-redux'
 import { store } from '@/store/store'
+import { WalletAnalyticsProvider } from '@/contexts/WalletAnalyticsProvider'
 
 const rawChains = [
   mainnet,
   arbitrum,
   aurora,
   avalanche,
+  base,
   bsc,
   canto,
   fantom,
@@ -73,37 +81,55 @@ for (const chain of rawChains) {
   })
 }
 
-const { chains, provider } = configureChains(chainsMatured, [
-  jsonRpcProvider({
-    rpc: (chain) => ({
-      http: chain['configRpc'],
+const { chains, publicClient, webSocketPublicClient } = configureChains(
+  chainsMatured,
+  [
+    jsonRpcProvider({
+      rpc: (chain) => ({
+        http: chain['configRpc'],
+      }),
     }),
-  }),
-])
+  ]
+)
 
-const { connectors } = getDefaultWallets({
+const projectId = 'ab0a846bc693996606734d788cb6561d'
+
+const { wallets } = getDefaultWallets({
   appName: 'Synapse',
+  projectId,
   chains,
 })
 
-export const wagmiClient = createClient({
+const connectors = connectorsForWallets([...wallets])
+
+export const wagmiConfig = createConfig({
   autoConnect: true,
   connectors,
-  provider,
+  publicClient,
+  webSocketPublicClient,
 })
 
 const App = ({ Component, pageProps }: AppProps) => {
   return (
-    <WagmiConfig client={wagmiClient}>
-      <RainbowKitProvider chains={chains} theme={darkTheme()}>
-        <SynapseProvider chains={chains}>
-          <Provider store={store}>
-            <Component {...pageProps} />
-            <CustomToaster />
-          </Provider>
-        </SynapseProvider>
-      </RainbowKitProvider>
-    </WagmiConfig>
+    <>
+      <Head>
+        <title>Synapse Protocol</title>
+      </Head>
+      <WagmiConfig config={wagmiConfig}>
+        <RainbowKitProvider chains={chains} theme={darkTheme()}>
+          <SynapseProvider chains={chains}>
+            <SegmentAnalyticsProvider>
+              <WalletAnalyticsProvider>
+                <Provider store={store}>
+                  <Component {...pageProps} />
+                  <CustomToaster />
+                </Provider>
+              </WalletAnalyticsProvider>
+            </SegmentAnalyticsProvider>
+          </SynapseProvider>
+        </RainbowKitProvider>
+      </WagmiConfig>
+    </>
   )
 }
 

@@ -8,7 +8,7 @@ import { DrawerButton } from '@components/buttons/DrawerButton'
 import { sortTokens } from '@constants/tokens'
 
 import { Token } from '@/utils/types'
-import { DisplayType } from '@/pages/bridge/BridgeCard'
+import { DisplayType } from '@/pages/bridge/DisplayType'
 
 export const TokenSlideOver = ({
   isOrigin,
@@ -134,7 +134,7 @@ export const TokenSlideOver = ({
             token={token.token}
             selectedToken={selectedToken}
             active={idx === currentIdx}
-            tokenBalance={token.balance}
+            tokenBalance={token.balance.result}
             onClick={() => {
               onMenuItemClick(token.token)
             }}

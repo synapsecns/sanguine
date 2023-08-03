@@ -4,6 +4,8 @@ import (
 	"context"
 	"github.com/gin-gonic/gin"
 	"go.opentelemetry.io/contrib/instrumentation/net/http/otelhttp"
+	"go.opentelemetry.io/otel/metric"
+	"go.opentelemetry.io/otel/metric/noop"
 	"go.opentelemetry.io/otel/propagation"
 	"go.opentelemetry.io/otel/trace"
 	"gorm.io/gorm"
@@ -15,6 +17,15 @@ import (
 type nullHandler struct {
 	tracer     trace.Tracer
 	propagator nullPropogator
+	meter      Meter
+}
+
+func (n nullHandler) Meter(name string, options ...metric.MeterOption) metric.Meter {
+	return noop.Meter{}
+}
+
+func (n nullHandler) Handler() http.Handler {
+	return noopHandler{}
 }
 
 func (n nullHandler) Type() HandlerType {
@@ -50,12 +61,16 @@ func (n nullHandler) Gin() gin.HandlerFunc {
 func (n nullHandler) Start(_ context.Context) error {
 	return nil
 }
+func (n nullHandler) Metrics() Meter {
+	return n.meter
+}
 
 // NewNullHandler creates a new null transaction handler.
 func NewNullHandler() Handler {
 	return &nullHandler{
 		tracer:     trace.NewNoopTracerProvider().Tracer(""),
 		propagator: nullPropogator{},
+		meter:      &NullMeterImpl{},
 	}
 }
 
@@ -76,3 +91,12 @@ func (n nullPropogator) Fields() []string {
 }
 
 var _ propagation.TextMapPropagator = &nullPropogator{}
+
+// noopHandler is an http handler that does nothing.
+type noopHandler struct{}
+
+func (n noopHandler) ServeHTTP(_ http.ResponseWriter, _ *http.Request) {
+	// Do nothing
+}
+
+var _ http.Handler = noopHandler{}

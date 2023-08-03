@@ -33,7 +33,7 @@ import h2oLogo from '@assets/icons/h2o.svg'
 import gmxLogo from '@assets/icons/gmx.png'
 import ageurLogo from '@assets/icons/ageur.svg'
 import pepeLogo from '@assets/icons/pepe-token.webp'
-import { AddressZero } from '@ethersproject/constants'
+import { zeroAddress } from 'viem'
 
 import { Token } from '@/utils/types'
 import * as CHAINS from '@/constants/chains/master'
@@ -357,8 +357,10 @@ export const AGEUR = new Token({
 
 export const UNIDX = new Token({
   addresses: {
-    [CHAINS.ETH.id]: '0x95b3497bbcccc46a8f45f5cf54b0878b39f8d96c', // deposit
+    [CHAINS.ETH.id]: '0xf0655dcee37e5c0b70fffd70d85f88f8edf0aff6', // deposit
     [CHAINS.ARBITRUM.id]: '0x5429706887FCb58a595677B73E9B0441C25d993D', // redeem
+    [CHAINS.FANTOM.id]: '0x0483a76D80D0aFEC6bd2afd12C1AD865b9DF1471',
+    [CHAINS.OPTIMISM.id]: '0x28b42698Caf46B4B012CF38b6C75867E0762186D',
   },
   decimals: 18,
   symbol: 'UNIDX',
@@ -431,7 +433,7 @@ export const USDC = new Token({
     [CHAINS.DOGE.id]: [CHAINS.ETH.id, CHAINS.DOGE.id],
   },
   symbol: 'USDC',
-  name: 'USD Circle',
+  name: 'USD Coin',
   logo: usdcLogo,
   description: `
     USD Coin (known by its ticker USDC) is a stablecoin that is pegged to the
@@ -798,6 +800,7 @@ export const SYN = new Token({
     [CHAINS.AURORA.id]: '0xd80d8688b02B3FD3afb81cDb124F188BB5aD0445',
     [CHAINS.DOGE.id]: '0xDfA53EeBA61D69E1D2b56b36d78449368F0265c1',
     [CHAINS.CANTO.id]: '0x555982d2E211745b96736665e19D9308B615F78e',
+    [CHAINS.BASE.id]: '0x432036208d2717394d2614d6697c46DF3Ed69540',
   },
   decimals: 18,
   symbol: 'SYN',
@@ -864,7 +867,6 @@ export const NUSD = new Token({
     [CHAINS.BOBA.id]: '0x6B4712AE9797C199edd44F897cA09BC57628a1CF',
     [CHAINS.AURORA.id]: '0x07379565cD8B0CaE7c60Dc78e7f601b34AF2A21c',
     [CHAINS.METIS.id]: '0x961318Fc85475E125B99Cc9215f62679aE5200aB',
-    [CHAINS.DFK.id]: '0x3AD9DFE640E1A9Cc1D9B0948620820D975c3803a',
     [CHAINS.CANTO.id]: '0xD8836aF2e565D3Befce7D906Af63ee45a57E8f80',
   },
   decimals: 18,
@@ -910,7 +912,7 @@ export const NOTE = new Token({
 
 export const DFK_USDC = new Token({
   addresses: {
-    [CHAINS.DFK.id]: NUSD.addresses[CHAINS.DFK.id],
+    [CHAINS.DFK.id]: '0x3AD9DFE640E1A9Cc1D9B0948620820D975c3803a',
   },
   decimals: {
     [CHAINS.DFK.id]: 18,
@@ -941,6 +943,7 @@ export const NETH = new Token({
     [CHAINS.KLAYTN.id]: '0xCD6f29dC9Ca217d0973d3D21bF58eDd3CA871a86',
     [CHAINS.DOGE.id]: '0x9F4614E4Ea4A0D7c4B1F946057eC030beE416cbB',
     [CHAINS.CANTO.id]: '0x09fEC30669d63A13c666d2129230dD5588E2e240',
+    [CHAINS.BASE.id]: '0xb554A55358fF0382Fb21F0a478C3546d1106Be8c',
   },
   decimals: 18,
   symbol: 'nETH',
@@ -956,6 +959,7 @@ export const NETH = new Token({
     CHAINS.OPTIMISM.id,
     CHAINS.METIS.id,
     CHAINS.CANTO.id,
+    CHAINS.BASE.id,
   ],
   color: 'purple',
   visibilityRank: 50,
@@ -981,10 +985,11 @@ export const KLAYTN_WETH = new Token({
 
 export const ETH = new Token({
   addresses: {
-    [CHAINS.ETH.id]: AddressZero,
-    [CHAINS.BOBA.id]: AddressZero,
-    [CHAINS.ARBITRUM.id]: AddressZero,
-    [CHAINS.OPTIMISM.id]: AddressZero,
+    [CHAINS.ETH.id]: zeroAddress,
+    [CHAINS.BOBA.id]: zeroAddress,
+    [CHAINS.ARBITRUM.id]: zeroAddress,
+    [CHAINS.OPTIMISM.id]: zeroAddress,
+    [CHAINS.BASE.id]: zeroAddress,
   },
   decimals: 18,
   symbol: 'ETH',
@@ -996,11 +1001,12 @@ export const ETH = new Token({
   color: 'sky',
   visibilityRank: 101,
   priorityRank: 2,
+  swapableOn: [CHAINS.BASE.id],
 })
 
 export const MOVR = new Token({
   addresses: {
-    [CHAINS.MOONRIVER.id]: AddressZero,
+    [CHAINS.MOONRIVER.id]: zeroAddress,
   },
   decimals: 18,
   symbol: 'MOVR',
@@ -1015,7 +1021,7 @@ export const MOVR = new Token({
 
 export const AVAX = new Token({
   addresses: {
-    [CHAINS.AVALANCHE.id]: AddressZero,
+    [CHAINS.AVALANCHE.id]: zeroAddress,
   },
   decimals: 18,
   symbol: 'AVAX',
@@ -1093,7 +1099,7 @@ export const MULTIAVAX = new Token({
 
 export const JEWEL = new Token({
   addresses: {
-    [CHAINS.DFK.id]: AddressZero,
+    [CHAINS.DFK.id]: zeroAddress,
     [CHAINS.HARMONY.id]: '0x72cb10c6bfa5624dd07ef608027e366bd690048f', // from harmony jewel?
     [CHAINS.KLAYTN.id]: '0x30C103f8f5A3A732DFe2dCE1Cc9446f545527b43',
   },

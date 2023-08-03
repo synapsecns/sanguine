@@ -35,7 +35,7 @@ type SwapParser struct {
 	// Filterer is the swap Filterer we use to parse events.
 	Filterer *swap.SwapFlashLoanFilterer
 	// consumerFetcher is the ScribeFetcher for sender and timestamp.
-	consumerFetcher *fetcher.ScribeFetcher
+	consumerFetcher fetcher.ScribeFetcher
 	// tokenDataService contains the token data service/cache
 	tokenDataService tokendata.Service
 	// poolTokenDataService get the token address from the token index
@@ -43,7 +43,7 @@ type SwapParser struct {
 	// tokenPriceService get the token price from the coingecko id
 	tokenPriceService tokenprice.Service
 	// swapService is the swap service
-	swapService *fetcher.SwapService
+	swapService fetcher.SwapService
 	// FiltererMetaSwap is the meta swap Filterer we use to parse events.
 	FiltererMetaSwap *metaswap.MetaSwapFilterer
 	// coinGeckoIDs is a mapping from coin token symbol to coin gecko ID
@@ -51,7 +51,7 @@ type SwapParser struct {
 }
 
 // NewSwapParser creates a new parser for a given bridge.
-func NewSwapParser(consumerDB db.ConsumerDB, swapAddress common.Address, metaSwap bool, consumerFetcher *fetcher.ScribeFetcher, swapService *fetcher.SwapService, tokenDataService tokendata.Service, tokenPriceService tokenprice.Service) (*SwapParser, error) {
+func NewSwapParser(consumerDB db.ConsumerDB, swapAddress common.Address, metaSwap bool, consumerFetcher fetcher.ScribeFetcher, swapService fetcher.SwapService, tokenDataService tokendata.Service, tokenPriceService tokenprice.Service) (*SwapParser, error) {
 	var filterer *swap.SwapFlashLoanFilterer
 	var filtererMetaSwap *metaswap.MetaSwapFilterer
 	var err error
@@ -69,7 +69,7 @@ func NewSwapParser(consumerDB db.ConsumerDB, swapAddress common.Address, metaSwa
 		filtererMetaSwap = nil
 	}
 
-	poolTokenDataService, err := tokenpool.NewPoolTokenDataService(*swapService, consumerDB)
+	poolTokenDataService, err := tokenpool.NewPoolTokenDataService(swapService, consumerDB)
 	if err != nil {
 		return nil, fmt.Errorf("could not create token data service: %w", err)
 	}
@@ -372,7 +372,7 @@ func (p *SwapParser) Parse(ctx context.Context, log ethTypes.Log, chainID uint32
 					logger.Errorf("token with index %d not in pool: %v, %d, %s, %v %s, %d, %v", tokenIndex, err, chainID, swapEvent.ContractAddress, swapEvent.Amount, swapEvent.TxHash, swapEvent.EventType, p.FiltererMetaSwap)
 					return fmt.Errorf("token with index %d not in pool: %w, %d, %s, %v %s, %d, %v", tokenIndex, err, chainID, swapEvent.ContractAddress, swapEvent.Amount, swapEvent.TxHash, swapEvent.EventType, p.FiltererMetaSwap)
 				}
-				tokenData, err = p.tokenDataService.GetPoolTokenData(groupCtx, chainID, *tokenAddress, *p.swapService)
+				tokenData, err = p.tokenDataService.GetPoolTokenData(groupCtx, chainID, *tokenAddress, p.swapService)
 				if err != nil {
 					logger.Errorf("could not get token data: %v", err)
 					return fmt.Errorf("could not get pool token data: %w", err)

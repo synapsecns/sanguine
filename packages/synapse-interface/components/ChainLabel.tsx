@@ -6,7 +6,7 @@ import { getOrderedChains } from '@utils/getOrderedChains'
 import Image from 'next/image'
 import Tooltip from '@tw/Tooltip'
 import { useEffect, useState } from 'react'
-import { DisplayType } from '@/pages/bridge/BridgeCard'
+import { DisplayType } from '@/pages/bridge/DisplayType'
 
 export const ChainLabel = ({
   isOrigin,

@@ -2,7 +2,6 @@ package db
 
 import (
 	"context"
-
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/core/types"
 )
@@ -89,6 +88,8 @@ type EventDBReader interface {
 	RetrieveReceiptCountForChain(ctx context.Context, chainID uint32) (int64, error)
 	// RetrieveBlockTimesCountForChain retrieves the number of block times stored for a chain.
 	RetrieveBlockTimesCountForChain(ctx context.Context, chainID uint32) (int64, error)
+	// RetrieveReceiptsWithStaleBlockHash gets receipts that are from a reorged/stale block.
+	RetrieveReceiptsWithStaleBlockHash(ctx context.Context, chainID uint32, blockHashes []string, startBlock uint64, endBlock uint64) ([]types.Receipt, error)
 }
 
 // EventDB stores events.

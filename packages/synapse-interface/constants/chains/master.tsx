@@ -1,16 +1,3 @@
-import bscLogo from '@assets/icons/binance.svg'
-import ethLogo from '@assets/icons/eth.svg'
-import polygonLogo from '@assets/icons/polygon.svg'
-import fantomLogo from '@assets/icons/fantom.svg'
-import arbitrumLogo from '@assets/icons/arbitrum.svg'
-import avalancheLogo from '@assets/icons/avalanche.svg'
-import auroraLogo from '@assets/icons/aurora.svg'
-import harmonyLogo from '@assets/icons/harmonyone.svg'
-import optimismLogo from '@assets/icons/optimism.svg'
-import bobaLogo from '@assets/icons/boba.svg'
-import cronosLogo from '@assets/icons/cronos.svg'
-import metisLogo from '@assets/icons/metis.svg'
-
 import ethImg from '@assets/chains/eth.jpg'
 import bscImg from '@assets/chains/bsc.jpg'
 import polygonImg from '@assets/chains/polygon.jpg'
@@ -29,6 +16,7 @@ import metisImg from '@assets/chains/metis.png'
 import klaytnImg from '@assets/chains/klaytn.jpeg'
 import dogechainImg from '@assets/chains/dogechain.png'
 import cantoImg from '@assets/chains/canto.svg'
+import baseImg from '@assets/chains/base.svg'
 
 import { Chain } from '@types'
 
@@ -38,11 +26,9 @@ export const ETH: Chain = {
   chainSymbol: 'ETH',
   name: 'Ethereum',
   codeName: 'Optimism',
-  chainLogo: ethLogo,
   chainImg: ethImg,
   layer: 1,
   rpc: 'https://rpc.ankr.com/eth',
-  writeRpc: 'https://mainnet.infura.io/v3/9aa3d95b3bc440fa88ea12eaa4456161',
   explorerUrl: 'https://etherscan.com',
   blockTime: 10000,
   nativeCurrency: {
@@ -52,28 +38,28 @@ export const ETH: Chain = {
   },
   color: 'eth',
 }
+
 export const ARBITRUM: Chain = {
   priorityRank: 90,
   id: 42161,
   chainSymbol: 'ARBITRUM',
   name: 'Arbitrum',
-  chainLogo: arbitrumLogo,
   chainImg: arbitrumImg,
   layer: 2,
   codeName: 'arbitrum',
   blockTime: 5000,
-  rpc: 'https://arbitrum.blockpi.network/v1/rpc/public',
+  rpc: 'https://arb1.arbitrum.io/rpc',
   nativeCurrency: { name: 'Ethereum', symbol: 'ETH', decimals: 18 },
   explorerUrl: 'https://arbiscan.io',
   color: 'gray',
 }
+
 export const BNB: Chain = {
   priorityRank: 90,
   id: 56,
   chainSymbol: 'BNB',
   name: 'BNB Chain',
   chainImg: bscImg,
-  chainLogo: bscLogo,
   altName: 'BNB',
   layer: 1,
   codeName: 'bsc',
@@ -88,7 +74,6 @@ export const AVALANCHE: Chain = {
   id: 43114,
   chainSymbol: 'AVALANCHE',
   name: 'Avalanche',
-  chainLogo: avalancheLogo,
   chainImg: avalancheImg,
   layer: 1,
   codeName: 'avalanche',
@@ -118,7 +103,6 @@ export const OPTIMISM: Chain = {
   id: 10,
   chainSymbol: 'OPTIMISM',
   name: 'Optimism',
-  chainLogo: optimismLogo,
   chainImg: optimismImg,
   layer: 2,
   codeName: 'optimism',
@@ -134,7 +118,6 @@ export const POLYGON: Chain = {
   id: 137,
   chainSymbol: 'POLYGON',
   name: 'Polygon',
-  chainLogo: polygonLogo,
   chainImg: polygonImg,
   layer: 2,
   codeName: 'polygon',
@@ -179,7 +162,6 @@ export const FANTOM: Chain = {
   id: 250,
   chainSymbol: 'FANTOM',
   name: 'Fantom',
-  chainLogo: fantomLogo,
   chainImg: fantomImg,
   layer: 1,
   codeName: 'fantom',
@@ -194,7 +176,6 @@ export const CRONOS: Chain = {
   id: 25,
   chainSymbol: 'CRONOS',
   name: 'Cronos',
-  chainLogo: cronosLogo,
   chainImg: cronosImg,
   layer: 1,
   codeName: 'cronos',
@@ -209,13 +190,11 @@ export const BOBA: Chain = {
   id: 288,
   chainSymbol: 'BOBA',
   name: 'Boba Chain',
-  chainLogo: bobaLogo,
   chainImg: bobaImg,
   layer: 2,
   codeName: 'boba',
   blockTime: 20000,
   rpc: 'https://mainnet.boba.network',
-  writeRpc: 'https://mainnet.boba.network',
   nativeCurrency: { name: 'Ethereum', symbol: 'ETH', decimals: 18 },
   explorerUrl: 'https://blockexplorer.boba.network',
   color: 'lime',
@@ -225,7 +204,6 @@ export const METIS: Chain = {
   id: 1088,
   chainSymbol: 'METIS',
   name: 'Metis',
-  chainLogo: metisLogo,
   chainImg: metisImg,
   layer: 2,
   codeName: 'metis',
@@ -241,7 +219,6 @@ export const AURORA: Chain = {
   id: 1313161554,
   chainSymbol: 'AURORA',
   name: 'Aurora',
-  chainLogo: auroraLogo,
   chainImg: auroraImg,
   layer: 1,
   codeName: 'aurora',
@@ -256,7 +233,6 @@ export const HARMONY: Chain = {
   id: 1666600000,
   chainSymbol: 'HARMONY',
   name: 'Harmony',
-  chainLogo: harmonyLogo,
   chainImg: harmonyImg,
   layer: 1,
   codeName: 'harmony',
@@ -308,4 +284,23 @@ export const DOGE: Chain = {
   nativeCurrency: { name: 'DOGE', symbol: 'DOGE', decimals: 18 },
   explorerUrl: 'https://explorer.dogechain.dog',
   color: 'purple',
+}
+
+export const BASE: Chain = {
+  priorityRank: 1,
+  id: 8453,
+  chainSymbol: 'ETH',
+  name: 'Base',
+  codeName: 'base',
+  chainImg: baseImg,
+  layer: 2,
+  rpc: 'https://developer-access-mainnet.base.org',
+  explorerUrl: 'https://basescan.org',
+  blockTime: 5000,
+  nativeCurrency: {
+    name: 'Ether',
+    symbol: 'ETH',
+    decimals: 18,
+  },
+  color: 'blue',
 }

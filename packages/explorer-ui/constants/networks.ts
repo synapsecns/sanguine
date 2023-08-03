@@ -31,6 +31,8 @@ import klaytnImg from '@assets/networks/klaytn.jpeg'
 import cantoImg from '@assets/networks/canto.png'
 import dogeImg from '@assets/networks/doge.png'
 import terraImg from '@assets/networks/terra.png'
+import baseImg from '@assets/networks/base.svg'
+
 import { toHexStr } from '@utils/toHexStr'
 
 export const NetworkContextName = 'DEFAULT_NETWORK'
@@ -59,7 +61,7 @@ export const ChainId = {
   HARMONY: 1666600000,
   CANTO: 7700,
   DOGECHAIN: 2000,
-
+  BASE: 8453,
   TERRA: 121014925, //"columbus-5", the day columbus reportedly landed in america followed by 5
 }
 
@@ -213,6 +215,14 @@ export const CHAIN_INFO_MAP = {
     chainImg: dogeImg,
     layer: 2,
   },
+  [ChainId.BASE]: {
+    chainId: ChainId.BASE,
+    chainSymbol: 'BASE',
+    chainName: 'Base',
+    chainLogo: baseImg,
+    chainImg: baseImg,
+    layer: 2,
+  },
   // NON_EVM
   [ChainId.TERRA]: {
     chainId: ChainId.TERRA,
@@ -233,6 +243,7 @@ export const CHAIN_ID_DISPLAY_ORDER = [
   ChainId.ARBITRUM,
   ChainId.AURORA,
   ChainId.BSC,
+  ChainId.BASE,
   ChainId.BOBA,
   ChainId.CRONOS,
   ChainId.KLAYTN,
@@ -265,6 +276,7 @@ export const CHAIN_RPC = {
   [ChainId.CRONOS]: 'https://evm-cronos.crypto.org',
   [ChainId.METIS]: 'https://andromeda.metis.io/?owner=1088',
   [ChainId.KLAYTN]: 'https://cypress.chain.thebifrost.io/',
+  [ChainId.BASE]: 'https://mainnet.base.org',
 
   // [ChainId.XDAI]: 'https://rpc.xdaichain.com',
 }
@@ -294,6 +306,7 @@ export const CHAIN_EXPLORER_URLS = {
   [ChainId.TERRA]: 'https://terrasco.pe/mainnet', //'https://finder.terra.money/mainnet',
   [ChainId.DOGECHAIN]: 'https://explorer.dogechain.dog',
   [ChainId.CANTO]: 'https://evm.explorer.canto.io',
+  [ChainId.BASE]: 'https://basescan.org',
 }
 
 /** write rpcs */
@@ -494,6 +507,13 @@ export const CHAIN_PARAMS = {
     rpcUrls: [CHAIN_RPC[ChainId.DOGECHAIN]],
     blockExplorerUrls: [CHAIN_EXPLORER_URLS[ChainId.DOGECHAIN]],
   },
+  [ChainId.BASE]: {
+    chainId: toHexStr(ChainId.BASE),
+    chainName: CHAIN_INFO_MAP[ChainId.BASE].chainName,
+    nativeCurrency: ETH_NATIVE_CURRENCY,
+    rpcUrls: [CHAIN_RPC[ChainId.BASE]],
+    blockExplorerUrls: [CHAIN_EXPLORER_URLS[ChainId.BASE]],
+  },
   [ChainId.TERRA]: {
     chainId: toHexStr(ChainId.TERRA),
     chainName: CHAIN_INFO_MAP[ChainId.TERRA].chainName,
@@ -529,6 +549,8 @@ export const CHAIN_BLOCK_TIME = {
   [ChainId.AURORA]: 10000,
   [ChainId.HARMONY]: 10000,
   [ChainId.KLAYTN]: 10000,
+  [ChainId.BASE]: 10000,
+
 }
 
 export const CHAIN_ENUM_BY_ID = {
@@ -550,6 +572,8 @@ export const CHAIN_ENUM_BY_ID = {
   [ChainId.HARMONY]: 'harmony',
   [ChainId.CANTO]: 'canto',
   [ChainId.DOGECHAIN]: 'dogechain',
+  [ChainId.BASE]: 'base',
+
 }
 
 export const CHAIN_ID_NAMES_REVERSE = Object.fromEntries(
@@ -575,4 +599,5 @@ export const BRIDGE_CONTRACTS = {
   [ChainId.HARMONY]: '0xAf41a65F786339e7911F4acDAD6BD49426F2Dc6b',
   [ChainId.CANTO]: '0xDde5BEC4815E1CeCf336fb973Ca578e8D83606E0',
   [ChainId.DOGECHAIN]: '0x9508BF380c1e6f751D97604732eF1Bae6673f299',
+  [ChainId.BASE]: '0xf07d1C752fAb503E47FEF309bf14fbDD3E867089',
 }

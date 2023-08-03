@@ -1,6 +1,7 @@
 package db_test
 
 import (
+	"fmt"
 	"math/big"
 
 	"github.com/brianvoe/gofakeit/v6"
@@ -185,4 +186,34 @@ func (t *DBSuite) MakeRandomReceipt(txHash common.Hash) types.Receipt {
 		BlockNumber:       big.NewInt(int64(gofakeit.Uint32())),
 		TransactionIndex:  uint(gofakeit.Uint64()),
 	}
+}
+
+func (t *DBSuite) TestRetrieveReceiptsWithStaleBlockHash() {
+	t.RunOnAllDBs(func(testDB db.EventDB) {
+		chainID := gofakeit.Uint32()
+		startBlock := 2
+		hash1 := common.BigToHash(big.NewInt(1))
+		hash2 := common.BigToHash(big.NewInt(2))
+		hash3 := common.BigToHash(big.NewInt(3))
+		newHash2 := common.BigToHash(big.NewInt(22))
+		blockHashes := []common.Hash{hash1, hash2, hash3}
+		blockHashesStr := []string{hash1.String(), newHash2.String(), hash3.String()}
+
+		for i := 0; i < 10; i++ {
+			receipt := t.MakeRandomReceipt(common.BigToHash(big.NewInt(gofakeit.Int64())))
+			receipt.BlockNumber = big.NewInt(int64(i))
+			fmt.Println("SSS", i, blockHashes[i%3])
+			receipt.BlockHash = blockHashes[i%3]
+			err := testDB.StoreReceipt(t.GetTestContext(), chainID, receipt)
+			Nil(t.T(), err)
+		}
+
+		// Retrieve the receipts
+		retrievedReceipts, err := testDB.RetrieveReceiptsWithStaleBlockHash(t.GetTestContext(), chainID, blockHashesStr, uint64(startBlock), 10)
+		Nil(t.T(), err)
+
+		// Ensure the correct receipts (all the ones with hash 2) were retrieved
+		Equal(t.T(), 2, len(retrievedReceipts))
+		Equal(t.T(), hash2, retrievedReceipts[0].BlockHash)
+	})
 }

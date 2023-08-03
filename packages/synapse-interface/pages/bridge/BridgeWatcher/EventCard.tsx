@@ -1,15 +1,13 @@
 import { BridgeWatcherTx } from '@types'
 import { CHAINS_BY_ID } from '@constants/chains'
 import { ETH } from '@constants/tokens/master'
-import { commify } from '@ethersproject/units'
-import { formatBNToString } from '@bignumber/format'
-import { BigNumber } from '@ethersproject/bignumber'
 import ExplorerLink from './ExplorerLink'
 import { getNetworkLinkTextColor } from '@styles/chains'
 import { AddToWalletMiniButton } from '@components/buttons/AddToWalletButton'
 import { getCoinTextColorCombined } from '@styles/tokens'
 import { memo } from 'react'
 import { formatTimestampToDate } from '@utils/time'
+import { commify, formatBigIntToString } from '@/utils/bigint/format'
 
 const EventCard = memo((event: BridgeWatcherTx) => {
   const chain = CHAINS_BY_ID[event.chainId]
@@ -53,9 +51,9 @@ const EventCard = memo((event: BridgeWatcherTx) => {
               <span className="font-medium text-gray-400">
                 {event?.amount
                   ? commify(
-                      formatBNToString(
-                        event.amount,
-                        event.token?.decimals[event.chainId] ?? 18,
+                      formatBigIntToString(
+                        BigInt(event.amount.toString()),
+                        event.token?.decimals[event.chainId],
                         8
                       )
                     )
