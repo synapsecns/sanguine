@@ -1,6 +1,4 @@
 import React, { useState, useEffect } from 'react'
-import { WarningMessage } from '../Warning'
-import { TWITTER_URL, DISCORD_URL } from '@/constants/urls'
 
 type PortfolioAccordionProps = {
   header: React.ReactNode
@@ -11,7 +9,6 @@ type PortfolioAccordionProps = {
   portfolioChainId: number
   connectedChainId: number
   selectedFromChainId: number
-  isUnsupportedChain: boolean
 }
 
 export const PortfolioAccordion = ({
@@ -23,7 +20,6 @@ export const PortfolioAccordion = ({
   portfolioChainId,
   connectedChainId,
   selectedFromChainId,
-  isUnsupportedChain,
 }: PortfolioAccordionProps) => {
   const [isExpanded, setIsExpanded] = useState(initializeExpanded)
   const handleToggle = () => setIsExpanded((prevExpanded) => !prevExpanded)
@@ -61,24 +57,6 @@ export const PortfolioAccordion = ({
         {isExpanded && expandedProps}
       </div>
       <div className="flex flex-col">
-        {isExpanded && isUnsupportedChain && (
-          <WarningMessage
-            message={
-              <p>
-                This chain is not yet supported. New chain or token support can
-                be discussed on{' '}
-                <a target="_blank" className="underline" href={TWITTER_URL}>
-                  Twitter
-                </a>{' '}
-                or{' '}
-                <a target="_blank" className="underline" href={DISCORD_URL}>
-                  Discord
-                </a>{' '}
-                .
-              </p>
-            }
-          />
-        )}
         {isExpanded && <React.Fragment>{children}</React.Fragment>}
       </div>
     </div>

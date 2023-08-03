@@ -9,6 +9,8 @@ import { EmptyPortfolioContent } from './PortfolioContent'
 import { FetchState } from '@/utils/hooks/usePortfolioBalances'
 import { PortfolioTokenAsset } from './PortfolioTokenAsset'
 import { QuestionMarkCircleIcon } from '@heroicons/react/outline'
+import { WarningMessage } from '../Warning'
+import { TWITTER_URL, DISCORD_URL } from '@/constants/urls'
 
 type SingleNetworkPortfolioProps = {
   portfolioChainId: number
@@ -54,7 +56,6 @@ export const SingleNetworkPortfolio = ({
         portfolioChainId={portfolioChainId}
         selectedFromChainId={selectedFromChainId}
         initializeExpanded={initializeExpanded}
-        isUnsupportedChain={isUnsupportedChain}
         header={
           <PortfolioNetwork
             displayName={currentChain?.name}
@@ -74,6 +75,24 @@ export const SingleNetworkPortfolio = ({
           />
         }
       >
+        {isUnsupportedChain && (
+          <WarningMessage
+            message={
+              <p>
+                This chain is not yet supported. New chain or token support can
+                be discussed on{' '}
+                <a target="_blank" className="underline" href={TWITTER_URL}>
+                  Twitter
+                </a>{' '}
+                or{' '}
+                <a target="_blank" className="underline" href={DISCORD_URL}>
+                  Discord
+                </a>{' '}
+                .
+              </p>
+            }
+          />
+        )}
         <PortfolioHeader />
         {!isLoading && hasNoTokenBalance && <EmptyPortfolioContent />}
         {sortedTokensWithAllowance &&
