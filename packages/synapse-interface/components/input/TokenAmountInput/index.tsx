@@ -119,9 +119,14 @@ const BridgeInputContainer = ({
               pattern="[0-9.]+"
               disabled={!isOrigin} // may cause issues idk goal is to prevent to result from being selectable
               className={`
+                focus:outline-none
+                focus:ring-0
+                focus:border-none
+                border-none
+                p-0
                 ml-4 pr-4 w-5/6
                 ${isOrigin && isConnected ? '-mt-0 md:-mt-4' : '-mt-0'}
-                focus:outline-none bg-transparent
+                bg-transparent
                placeholder:text-[#88818C]
                text-white text-opacity-80 text-xl font-medium
                 md:text-2xl
