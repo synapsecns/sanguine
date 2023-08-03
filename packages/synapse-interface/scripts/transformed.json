@@ -1,4 +1,92 @@
 {
+  "ETH-1": [
+    "ETH-10",
+    "ETH-288",
+    "ETH-42161",
+    "WETHE-43114",
+    "WETHBEAM-1284",
+    "ONEETH-1666600000",
+    "FTMETH-250",
+    "CANTOETH-7700",
+    "METISETH-1088",
+    "NETH-10",
+    "NETH-250",
+    "NETH-288",
+    "NETH-1088",
+    "NETH-1284",
+    "NETH-2000",
+    "NETH-7700",
+    "NETH-8217",
+    "NETH-42161",
+    "NETH-43114",
+    "NETH-1666600000"
+  ],
+  "ETH-10": [
+    "ETH-1",
+    "ETH-288",
+    "ETH-42161",
+    "WETHE-43114",
+    "WETHBEAM-1284",
+    "ONEETH-1666600000",
+    "FTMETH-250",
+    "CANTOETH-7700",
+    "METISETH-1088",
+    "NETH-10",
+    "NETH-250",
+    "NETH-288",
+    "NETH-1088",
+    "NETH-1284",
+    "NETH-2000",
+    "NETH-7700",
+    "NETH-8217",
+    "NETH-42161",
+    "NETH-43114",
+    "NETH-1666600000"
+  ],
+  "ETH-288": [
+    "ETH-1",
+    "ETH-10",
+    "ETH-42161",
+    "WETHE-43114",
+    "WETHBEAM-1284",
+    "ONEETH-1666600000",
+    "FTMETH-250",
+    "CANTOETH-7700",
+    "METISETH-1088",
+    "NETH-10",
+    "NETH-250",
+    "NETH-288",
+    "NETH-1088",
+    "NETH-1284",
+    "NETH-2000",
+    "NETH-7700",
+    "NETH-8217",
+    "NETH-42161",
+    "NETH-43114",
+    "NETH-1666600000"
+  ],
+  "ETH-42161": [
+    "ETH-1",
+    "ETH-10",
+    "ETH-288",
+    "WETHE-43114",
+    "WETHBEAM-1284",
+    "ONEETH-1666600000",
+    "FTMETH-250",
+    "CANTOETH-7700",
+    "METISETH-1088",
+    "NETH-10",
+    "NETH-250",
+    "NETH-288",
+    "NETH-1088",
+    "NETH-1284",
+    "NETH-2000",
+    "NETH-7700",
+    "NETH-8217",
+    "NETH-42161",
+    "NETH-43114",
+    "NETH-1666600000"
+  ],
   "GOHM-1": [
     "GOHM-10",
     "GOHM-25",
@@ -297,48 +385,7 @@
     "NEWO-1",
     "NEWO-42161"
   ],
-  "USDB-1": [
-    "USDB-56",
-    "USDB-137",
-    "USDB-250",
-    "USDB-1285",
-    "USDB-43114"
-  ],
-  "USDB-56": [
-    "USDB-1",
-    "USDB-137",
-    "USDB-250",
-    "USDB-1285",
-    "USDB-43114"
-  ],
-  "USDB-137": [
-    "USDB-1",
-    "USDB-56",
-    "USDB-250",
-    "USDB-1285",
-    "USDB-43114"
-  ],
-  "USDB-250": [
-    "USDB-1",
-    "USDB-56",
-    "USDB-137",
-    "USDB-1285",
-    "USDB-43114"
-  ],
-  "USDB-1285": [
-    "USDB-1",
-    "USDB-56",
-    "USDB-137",
-    "USDB-250",
-    "USDB-43114"
-  ],
-  "USDB-43114": [
-    "USDB-1",
-    "USDB-56",
-    "USDB-137",
-    "USDB-250",
-    "USDB-1285"
-  ],
+  "USDB-56": [],
   "PEPE-1": [
     "PEPE-42161"
   ],
@@ -447,12 +494,7 @@
     "AGEUR-1",
     "AGEUR-10"
   ],
-  "UNIDX-1": [
-    "UNIDX-42161"
-  ],
-  "UNIDX-42161": [
-    "UNIDX-1"
-  ],
+  "UNIDX-42161": [],
   "BUSD-56": [
     "USDC-1",
     "USDC-10",
@@ -2109,6 +2151,10 @@
     "WBTC-2000"
   ],
   "WETHE-43114": [
+    "ETH-1",
+    "ETH-10",
+    "ETH-288",
+    "ETH-42161",
     "WETHBEAM-1284",
     "ONEETH-1666600000",
     "FTMETH-250",
@@ -2127,6 +2173,10 @@
     "NETH-1666600000"
   ],
   "WETHBEAM-1284": [
+    "ETH-1",
+    "ETH-10",
+    "ETH-288",
+    "ETH-42161",
     "WETHE-43114",
     "ONEETH-1666600000",
     "FTMETH-250",
@@ -2145,6 +2195,10 @@
     "NETH-1666600000"
   ],
   "ONEETH-1666600000": [
+    "ETH-1",
+    "ETH-10",
+    "ETH-288",
+    "ETH-42161",
     "WETHE-43114",
     "WETHBEAM-1284",
     "FTMETH-250",
@@ -2163,6 +2217,10 @@
     "NETH-1666600000"
   ],
   "FTMETH-250": [
+    "ETH-1",
+    "ETH-10",
+    "ETH-288",
+    "ETH-42161",
     "WETHE-43114",
     "WETHBEAM-1284",
     "ONEETH-1666600000",
@@ -2181,6 +2239,10 @@
     "NETH-1666600000"
   ],
   "CANTOETH-7700": [
+    "ETH-1",
+    "ETH-10",
+    "ETH-288",
+    "ETH-42161",
     "WETHE-43114",
     "WETHBEAM-1284",
     "ONEETH-1666600000",
@@ -2199,6 +2261,10 @@
     "NETH-1666600000"
   ],
   "METISETH-1088": [
+    "ETH-1",
+    "ETH-10",
+    "ETH-288",
+    "ETH-42161",
     "WETHE-43114",
     "WETHBEAM-1284",
     "ONEETH-1666600000",
@@ -3269,6 +3335,10 @@
     "USDTe-43114"
   ],
   "NETH-10": [
+    "ETH-1",
+    "ETH-10",
+    "ETH-288",
+    "ETH-42161",
     "WETHE-43114",
     "WETHBEAM-1284",
     "ONEETH-1666600000",
@@ -3287,6 +3357,10 @@
     "NETH-1666600000"
   ],
   "NETH-250": [
+    "ETH-1",
+    "ETH-10",
+    "ETH-288",
+    "ETH-42161",
     "WETHE-43114",
     "WETHBEAM-1284",
     "ONEETH-1666600000",
@@ -3305,6 +3379,10 @@
     "NETH-1666600000"
   ],
   "NETH-288": [
+    "ETH-1",
+    "ETH-10",
+    "ETH-288",
+    "ETH-42161",
     "WETHE-43114",
     "WETHBEAM-1284",
     "ONEETH-1666600000",
@@ -3323,6 +3401,10 @@
     "NETH-1666600000"
   ],
   "NETH-1088": [
+    "ETH-1",
+    "ETH-10",
+    "ETH-288",
+    "ETH-42161",
     "WETHE-43114",
     "WETHBEAM-1284",
     "ONEETH-1666600000",
@@ -3341,6 +3423,10 @@
     "NETH-1666600000"
   ],
   "NETH-1284": [
+    "ETH-1",
+    "ETH-10",
+    "ETH-288",
+    "ETH-42161",
     "WETHE-43114",
     "WETHBEAM-1284",
     "ONEETH-1666600000",
@@ -3359,6 +3445,10 @@
     "NETH-1666600000"
   ],
   "NETH-2000": [
+    "ETH-1",
+    "ETH-10",
+    "ETH-288",
+    "ETH-42161",
     "WETHE-43114",
     "WETHBEAM-1284",
     "ONEETH-1666600000",
@@ -3377,6 +3467,10 @@
     "NETH-1666600000"
   ],
   "NETH-7700": [
+    "ETH-1",
+    "ETH-10",
+    "ETH-288",
+    "ETH-42161",
     "WETHE-43114",
     "WETHBEAM-1284",
     "ONEETH-1666600000",
@@ -3395,6 +3489,10 @@
     "NETH-1666600000"
   ],
   "NETH-8217": [
+    "ETH-1",
+    "ETH-10",
+    "ETH-288",
+    "ETH-42161",
     "WETHE-43114",
     "WETHBEAM-1284",
     "ONEETH-1666600000",
@@ -3413,6 +3511,10 @@
     "NETH-1666600000"
   ],
   "NETH-42161": [
+    "ETH-1",
+    "ETH-10",
+    "ETH-288",
+    "ETH-42161",
     "WETHE-43114",
     "WETHBEAM-1284",
     "ONEETH-1666600000",
@@ -3431,6 +3533,10 @@
     "NETH-1666600000"
   ],
   "NETH-43114": [
+    "ETH-1",
+    "ETH-10",
+    "ETH-288",
+    "ETH-42161",
     "WETHE-43114",
     "WETHBEAM-1284",
     "ONEETH-1666600000",
@@ -3449,6 +3555,10 @@
     "NETH-1666600000"
   ],
   "NETH-1666600000": [
+    "ETH-1",
+    "ETH-10",
+    "ETH-288",
+    "ETH-42161",
     "WETHE-43114",
     "WETHBEAM-1284",
     "ONEETH-1666600000",
@@ -3466,13 +3576,28 @@
     "NETH-42161",
     "NETH-43114"
   ],
+  "MOVR-1285": [
+    "WMOVR-1284",
+    "WMOVR-1285"
+  ],
+  "AVAX-43114": [
+    "WAVAX-1284",
+    "WAVAX-43114",
+    "WAVAX-53935",
+    "WAVAX-1666600000",
+    "SYNAVAX-1666600000",
+    "MULTIAVAX-1666600000"
+  ],
   "WMOVR-1284": [
+    "MOVR-1285",
     "WMOVR-1285"
   ],
   "WMOVR-1285": [
+    "MOVR-1285",
     "WMOVR-1284"
   ],
   "WAVAX-1284": [
+    "AVAX-43114",
     "WAVAX-43114",
     "WAVAX-53935",
     "WAVAX-1666600000",
@@ -3480,6 +3605,7 @@
     "MULTIAVAX-1666600000"
   ],
   "WAVAX-43114": [
+    "AVAX-43114",
     "WAVAX-1284",
     "WAVAX-53935",
     "WAVAX-1666600000",
@@ -3487,6 +3613,7 @@
     "MULTIAVAX-1666600000"
   ],
   "WAVAX-53935": [
+    "AVAX-43114",
     "WAVAX-1284",
     "WAVAX-43114",
     "WAVAX-1666600000",
@@ -3494,6 +3621,7 @@
     "MULTIAVAX-1666600000"
   ],
   "WAVAX-1666600000": [
+    "AVAX-43114",
     "WAVAX-1284",
     "WAVAX-43114",
     "WAVAX-53935",
@@ -3501,6 +3629,7 @@
     "MULTIAVAX-1666600000"
   ],
   "SYNAVAX-1666600000": [
+    "AVAX-43114",
     "WAVAX-1284",
     "WAVAX-43114",
     "WAVAX-53935",
@@ -3508,6 +3637,7 @@
     "MULTIAVAX-1666600000"
   ],
   "MULTIAVAX-1666600000": [
+    "AVAX-43114",
     "WAVAX-1284",
     "WAVAX-43114",
     "WAVAX-53935",
@@ -3515,6 +3645,14 @@
     "SYNAVAX-1666600000"
   ],
   "JEWEL-8217": [
+    "JEWEL-53935",
+    "JEWEL-1666600000",
+    "WJEWEL-53935",
+    "SYNJEWEL-43114",
+    "SYNJEWEL-1666600000"
+  ],
+  "JEWEL-53935": [
+    "JEWEL-8217",
     "JEWEL-1666600000",
     "WJEWEL-53935",
     "SYNJEWEL-43114",
@@ -3522,24 +3660,28 @@
   ],
   "JEWEL-1666600000": [
     "JEWEL-8217",
+    "JEWEL-53935",
     "WJEWEL-53935",
     "SYNJEWEL-43114",
     "SYNJEWEL-1666600000"
   ],
   "WJEWEL-53935": [
     "JEWEL-8217",
+    "JEWEL-53935",
     "JEWEL-1666600000",
     "SYNJEWEL-43114",
     "SYNJEWEL-1666600000"
   ],
   "SYNJEWEL-43114": [
     "JEWEL-8217",
+    "JEWEL-53935",
     "JEWEL-1666600000",
     "WJEWEL-53935",
     "SYNJEWEL-1666600000"
   ],
   "SYNJEWEL-1666600000": [
     "JEWEL-8217",
+    "JEWEL-53935",
     "JEWEL-1666600000",
     "WJEWEL-53935",
     "SYNJEWEL-43114"

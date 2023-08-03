@@ -80,6 +80,12 @@ for (let chainName in providers) {
 
 // Your token mapping from earlier
 const tokens = {
+  ETH: {
+    1: '0x0000000000000000000000000000000000000000',
+    10: '0x0000000000000000000000000000000000000000',
+    288: '0x0000000000000000000000000000000000000000',
+    42161: '0x0000000000000000000000000000000000000000',
+  },
   GOHM: {
     1: '0x0ab87046fBb341D058F17CBC4c1133F25a20a52f',
     10: '0x0b5740c6b4a97f90eF2F0220651Cca420B868FfB',
@@ -334,8 +340,12 @@ const tokens = {
   },
   KLAYTN_WETH: {},
   1: {},
-  MOVR: {},
-  AVAX: {},
+  MOVR: {
+    1285: '0x0000000000000000000000000000000000000000',
+  },
+  AVAX: {
+    43114: '0x0000000000000000000000000000000000000000',
+  },
   WMOVR: {
     1284: '0x1d4C2a246311bB9f827F4C768e277FF5787B7D7E',
     1285: '0x98878b06940ae243284ca214f92bb71a2b032b8a',
@@ -349,6 +359,7 @@ const tokens = {
   SYNAVAX: { 1666600000: '0xD9eAA386cCD65F30b77FF175F6b52115FE454fD6' },
   MULTIAVAX: { 1666600000: '0xb12c13e66ade1f72f71834f2fc5082db8c091358' },
   JEWEL: {
+    53935: '0x0000000000000000000000000000000000000000',
     1666600000: '0x72cb10c6bfa5624dd07ef608027e366bd690048f',
     8217: '0x30C103f8f5A3A732DFe2dCE1Cc9446f545527b43',
   },
@@ -381,7 +392,11 @@ let connectedTokensList = {}
 async function getConnectedTokens() {
   for (let tokenName in tokens) {
     for (let chainId in tokens[tokenName]) {
-      const tokenAddress = tokens[tokenName][chainId]
+      let tokenAddress = tokens[tokenName][chainId]
+
+      if (tokenAddress === '0x0000000000000000000000000000000000000000') {
+        tokenAddress = '0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE'
+      }
 
       if (!tokenAddress) {
         console.error(
