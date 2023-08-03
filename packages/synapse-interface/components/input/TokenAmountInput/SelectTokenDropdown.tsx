@@ -27,7 +27,6 @@ const SelectTokenDropdown = ({
   const symbol = selectedToken ? displaySymbol(chainId, selectedToken) : ''
   const dataId = isOrigin ? 'bridge-origin-token' : 'bridge-destination-token'
 
-  console.log('selectedToken?.icon:', selectedToken?.icon)
   return (
     <button
       data-test-id="select-token-dropdown"
