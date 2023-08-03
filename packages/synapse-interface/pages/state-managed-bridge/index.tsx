@@ -527,7 +527,7 @@ const StateManagedBridge = () => {
                 destinationAddress={destinationAddress}
               />
             )}
-            <div className="mt-3 mb-3">
+            <div className="md:my-3">
               <BridgeTransactionButton
                 isApproved={isApproved}
                 approveTxn={approveTxn}

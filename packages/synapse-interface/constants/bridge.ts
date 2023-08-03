@@ -84,13 +84,13 @@ export const TRANSITIONS_PROPS = {
 export const SETTINGS_TRANSITIONS_PROPS = {
   ...COIN_SLIDE_OVER_PROPS,
   className: `
-    origin-bottom absolute
-    w-full h-full
-    md:w-[95%]
-    -ml-0 md:-ml-3
-    md:-mt-3
-    bg-bgBase
-    z-20 rounded-3xl
+  origin-bottom absolute
+  w-full h-full
+  md:w-[95%]
+  -ml-0 md:-ml-3
+  md:-mt-3
+  bg-bgBase
+  z-20 rounded-3xl
   `,
 }
 

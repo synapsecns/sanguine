@@ -122,19 +122,22 @@ export const InputContainer = () => {
           `}
         >
           <FromTokenSelector />
-          <div className="flex flex-col pt-2 ml-4">
+          <div className="flex flex-col ml-4">
             <input
               ref={inputRef}
               pattern="^[0-9]*[.,]?[0-9]*$"
               disabled={false}
               className={`
-              focus:outline-none
-              bg-transparent
-              max-w-[100px]
-              md:max-w-[160px]
-              placeholder:text-[#88818C]
-              text-white text-opacity-80 text-lg md:text-2xl font-medium
-            `}
+                focus:outline-none
+                focus:ring-0
+                focus:border-none
+                border-none
+                bg-transparent
+                max-w-[100px]
+                md:max-w-[160px]
+                placeholder:text-[#88818C]
+                text-white text-opacity-80 text-lg md:text-2xl font-medium
+              `}
               placeholder="0.0000"
               onChange={handleFromValueChange}
               value={showValue}
@@ -146,7 +149,7 @@ export const InputContainer = () => {
             {hasMounted && isConnected && (
               <label
                 htmlFor="inputRow"
-                className="hidden text-xs text-white transition-all duration-150 md:block transform-gpu hover:text-opacity-70 hover:cursor-pointer"
+                className="hidden ml-3 -mt-2 text-xs text-white transition-all duration-150 md:block transform-gpu hover:text-opacity-70 hover:cursor-pointer"
                 onClick={onClickBalance}
               >
                 {parsedBalance ?? '0.0'}
