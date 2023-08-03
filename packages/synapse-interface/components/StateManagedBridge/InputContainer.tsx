@@ -144,6 +144,9 @@ export const InputContainer = () => {
               disabled={false}
               className={`
               focus:outline-none
+              focus:ring-0
+              focus:border-none
+              border-none
               bg-transparent
               max-w-[100px]
               md:max-w-[160px]

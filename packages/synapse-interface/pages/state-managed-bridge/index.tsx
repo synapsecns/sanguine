@@ -538,7 +538,7 @@ const StateManagedBridge = () => {
         <Card
           divider={false}
           className={`
-                pt-5 pb-3 mt-5 overflow-hidden
+                px-2 pb-2 pt-2 md:px-6 md:pt-5 mt-5 overflow-hidden
                 transition-all duration-100 transform rounded-xl
                 bg-bgBase
               `}
@@ -619,7 +619,7 @@ const StateManagedBridge = () => {
                 destinationAddress={destinationAddress}
               />
             )}
-            <div className="mt-3 mb-3">
+            <div className="md:my-3">
               <BridgeTransactionButton
                 isApproved={isApproved}
                 approveTxn={approveTxn}
