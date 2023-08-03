@@ -54,7 +54,11 @@ export const InputContainer = () => {
     0n
 
   const formattedBalance = hasBalances
-    ? formatBigIntToString(fromTokenBalance, fromToken.decimals[fromChainId], 4)
+    ? formatBigIntToString(
+        fromTokenBalance,
+        fromToken?.decimals[fromChainId],
+        4
+      )
     : '0'
 
   useEffect(() => {

@@ -208,11 +208,14 @@ const StateManagedBridge = () => {
     dispatch(setSupportedToTokens(sortToTokens(bridgeableTokens)))
     dispatch(setToToken(bridgeableToken))
 
-    sortByTokenBalance(fromTokens, fromChainId, address).then((res) => {
-      const t = res.map((tokenAndBalances) => tokenAndBalances.token)
-      dispatch(setSupportedFromTokenBalances(res))
-      dispatch(setSupportedFromTokens(t))
-    })
+    const isSupportedChain: boolean = CHAINS_BY_ID[fromChainId] ? true : false
+
+    isSupportedChain &&
+      sortByTokenBalance(fromTokens, fromChainId, address).then((res) => {
+        const t = res.map((tokenAndBalances) => tokenAndBalances.token)
+        dispatch(setSupportedFromTokenBalances(res))
+        dispatch(setSupportedFromTokens(t))
+      })
 
     dispatch(setFromChainIds(fromChainIds))
     dispatch(setToChainIds(bridgeableChainIds))
