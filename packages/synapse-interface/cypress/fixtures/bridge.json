@@ -1,7 +1,7 @@
 {
   "defaultOriginToken": "nUSD",
   "defaultDestinationToken": "USDT",
-  "totalAvailableNetworks": 19,
+  "totalAvailableNetworks": 18,
   "availableNetworks": [
     "Arbitrum",
     "Aurora",
@@ -20,7 +20,6 @@
     "Moonbeam",
     "Moonriver",
     "Optimism",
-    "Polygon",
-    "Base"
+    "Polygon"
   ]
 }
