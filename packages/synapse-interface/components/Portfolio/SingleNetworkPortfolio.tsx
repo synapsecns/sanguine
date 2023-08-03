@@ -1,4 +1,5 @@
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
+import { useDispatch } from 'react-redux'
 import Image from 'next/image'
 import { CHAINS_BY_ID } from '@/constants/chains'
 import { TokenWithBalanceAndAllowance } from '@/utils/hooks/usePortfolioBalances'
@@ -11,6 +12,11 @@ import { PortfolioTokenAsset } from './PortfolioTokenAsset'
 import { QuestionMarkCircleIcon } from '@heroicons/react/outline'
 import { WarningMessage } from '../Warning'
 import { TWITTER_URL, DISCORD_URL } from '@/constants/urls'
+import {
+  setFromChainId,
+  setToChainId,
+  initialState,
+} from '@/slices/bridgeSlice'
 
 type SingleNetworkPortfolioProps = {
   portfolioChainId: number
@@ -31,6 +37,8 @@ export const SingleNetworkPortfolio = ({
   fetchPortfolioBalancesCallback,
   fetchState,
 }: SingleNetworkPortfolioProps) => {
+  const dispatch = useDispatch()
+
   const currentChain: Chain = CHAINS_BY_ID[portfolioChainId]
   const isUnsupportedChain: boolean = currentChain ? false : true
 
@@ -48,6 +56,13 @@ export const SingleNetworkPortfolio = ({
     !portfolioTokens || portfolioTokens.length === 0
 
   const isLoading: boolean = fetchState === FetchState.LOADING
+
+  useEffect(() => {
+    if (isUnsupportedChain) {
+      dispatch(setFromChainId(initialState.fromChainId))
+      dispatch(setToChainId(initialState.toChainId))
+    }
+  }, [isUnsupportedChain])
 
   return (
     <div data-test-id="single-network-portfolio" className="flex flex-col">
