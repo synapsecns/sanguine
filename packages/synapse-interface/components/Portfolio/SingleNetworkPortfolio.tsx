@@ -8,6 +8,7 @@ import { PortfolioConnectButton } from './PortfolioConnectButton'
 import { EmptyPortfolioContent } from './PortfolioContent'
 import { FetchState } from '@/utils/hooks/usePortfolioBalances'
 import { PortfolioTokenAsset } from './PortfolioTokenAsset'
+import { QuestionMarkCircleIcon } from '@heroicons/react/outline'
 
 type SingleNetworkPortfolioProps = {
   portfolioChainId: number
@@ -125,11 +126,15 @@ const PortfolioNetwork = ({
       className="flex flex-row justify-between flex-1 py-4 pl-2"
     >
       <div className="flex flex-row items-center">
-        <Image
-          className="w-6 h-6 mr-3 rounded-md"
-          alt={`${displayName} img`}
-          src={chainIcon}
-        />
+        {isUnsupportedChain ? (
+          <QuestionMarkCircleIcon className="w-6 h-6 mr-3 text-white rounded-md" />
+        ) : (
+          <Image
+            className="w-6 h-6 mr-3 rounded-md"
+            alt={`${displayName} img`}
+            src={chainIcon}
+          />
+        )}
         <div className="text-lg font-medium text-white">
           {isUnsupportedChain ? 'Unsupported Network' : displayName}
         </div>
