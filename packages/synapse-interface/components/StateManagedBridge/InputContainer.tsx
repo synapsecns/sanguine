@@ -148,6 +148,7 @@ export const InputContainer = () => {
               focus:border-none
               border-none
               bg-transparent
+              p-0
               max-w-[100px]
               md:max-w-[160px]
               placeholder:text-[#88818C]
