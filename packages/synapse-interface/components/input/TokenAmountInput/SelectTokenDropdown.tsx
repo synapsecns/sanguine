@@ -7,6 +7,7 @@ import {
   getMenuItemHoverBgForCoin,
 } from '@styles/tokens'
 import { Token } from '@/utils/types'
+import { QuestionMarkCircleIcon } from '@heroicons/react/outline'
 
 const SelectTokenDropdown = ({
   chainId,
@@ -22,6 +23,7 @@ const SelectTokenDropdown = ({
   const symbol = selectedToken ? displaySymbol(chainId, selectedToken) : ''
   const dataId = isOrigin ? 'bridge-origin-token' : 'bridge-destination-token'
 
+  console.log('selectedToken?.icon:', selectedToken?.icon)
   return (
     <button
       data-test-id="select-token-dropdown"
@@ -50,11 +52,15 @@ const SelectTokenDropdown = ({
         >
           <div className="self-center flex-shrink-0 block mr-1">
             <div className="relative flex p-1 rounded-full">
-              <Image
-                alt="token image"
-                className="rounded-md w-7 h-7"
-                src={selectedToken?.icon}
-              />
+              {selectedToken?.icon ? (
+                <Image
+                  alt="token image"
+                  className="rounded-md w-7 h-7"
+                  src={selectedToken?.icon}
+                />
+              ) : (
+                <QuestionMarkCircleIcon className="w-6 h-6 mr-3 text-white rounded-md" />
+              )}
             </div>
           </div>
           <div className="text-left cursor-pointer">

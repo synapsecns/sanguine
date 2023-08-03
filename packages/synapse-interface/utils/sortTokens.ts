@@ -95,7 +95,7 @@ export const sortByTokenBalance = async (
             balance: tokenBalance.result,
             parsedBalance: formatBigIntToString(
               tokenBalance.result,
-              tokens[index].decimals[chainId],
+              tokens[index]?.decimals[chainId],
               4
             ),
           })

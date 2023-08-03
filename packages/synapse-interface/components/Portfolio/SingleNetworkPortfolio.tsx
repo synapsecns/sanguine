@@ -59,7 +59,6 @@ export const SingleNetworkPortfolio = ({
 
   useEffect(() => {
     if (isUnsupportedChain) {
-      dispatch(setFromChainId(initialState.fromChainId))
       dispatch(setToChainId(initialState.toChainId))
     }
   }, [isUnsupportedChain])
