@@ -48,7 +48,7 @@ const SelectTokenDropdown = ({
             py-1.5 pl-2 h-14
           `}
         >
-          <div className="self-center flex-shrink-0 hidden mr-1 sm:block">
+          <div className="self-center flex-shrink-0 block mr-1">
             <div className="relative flex p-1 rounded-full">
               <Image
                 alt="token image"
