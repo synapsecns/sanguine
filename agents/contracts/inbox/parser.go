@@ -14,8 +14,6 @@ type Parser interface {
 	EventType(log ethTypes.Log) (_ EventType, ok bool)
 	// ParseSnapshotAccepted parses a SnapshotAccepted event.
 	ParseSnapshotAccepted(log ethTypes.Log) (_ types.Snapshot, domain uint32, ok bool)
-	// ParseAttestationAccepted parses an AttestationAccepted event
-	ParseAttestationAccepted(log ethTypes.Log) (_ types.Attestation, ok bool)
 }
 
 type parserImpl struct {
@@ -61,21 +59,6 @@ func (p parserImpl) ParseSnapshotAccepted(log ethTypes.Log) (_ types.Snapshot, d
 	return snapshot, inboxSnapshot.Domain, true
 }
 
-// ParseAttestationAccepted parses an AttestationAccepted event.
-func (p parserImpl) ParseAttestationAccepted(log ethTypes.Log) (_ types.Attestation, ok bool) {
-	inboxAttestationAccepted, err := p.filterer.ParseAttestationAccepted(log)
-	if err != nil {
-		return nil, false
-	}
-
-	attestation, err := types.DecodeAttestation(inboxAttestationAccepted.AttPayload)
-	if err != nil {
-		return nil, false
-	}
-
-	return attestation, true
-}
-
 // EventType is the type of the summit events
 //
 //go:generate go run golang.org/x/tools/cmd/stringer -type=EventType
@@ -84,8 +67,6 @@ type EventType uint
 const (
 	// SnapshotAcceptedEvent is a SnapshotAccepted event.
 	SnapshotAcceptedEvent EventType = iota
-	// AttestationAcceptedEvent is an AttestationAccepted event.
-	AttestationAcceptedEvent
 )
 
 // Int gets the int for an event type.
@@ -94,4 +75,4 @@ func (i EventType) Int() uint8 {
 }
 
 // AllEventTypes contains all event types.
-var AllEventTypes = []EventType{SnapshotAcceptedEvent, AttestationAcceptedEvent}
+var AllEventTypes = []EventType{SnapshotAcceptedEvent}

@@ -3,15 +3,14 @@ package executor
 import (
 	"context"
 	"fmt"
-	"math/big"
-	"time"
-
 	ethTypes "github.com/ethereum/go-ethereum/core/types"
 	"github.com/jpillora/backoff"
 	"github.com/synapsecns/sanguine/agents/contracts/inbox"
 	"github.com/synapsecns/sanguine/agents/contracts/lightinbox"
 	"github.com/synapsecns/sanguine/agents/contracts/origin"
 	"github.com/synapsecns/sanguine/agents/types"
+	"math/big"
+	"time"
 )
 
 // logToMessage converts the log to a leaf data.
@@ -31,14 +30,7 @@ func (e Executor) logToMessage(log ethTypes.Log, chainID uint32) (types.Message,
 
 // logToAttestation converts the log to an attestation.
 func (e Executor) logToAttestation(log ethTypes.Log, chainID uint32) (types.Attestation, error) {
-	var attestation types.Attestation
-	var ok bool
-
-	if chainID == e.config.SummitChainID {
-		attestation, ok = e.chainExecutors[chainID].inboxParser.ParseAttestationAccepted(log)
-	} else {
-		attestation, ok = e.chainExecutors[chainID].lightInboxParser.ParseAttestationAccepted(log)
-	}
+	attestation, ok := e.chainExecutors[chainID].lightInboxParser.ParseAttestationAccepted(log)
 	if !ok {
 		return nil, fmt.Errorf("could not parse attestation")
 	}
@@ -104,20 +96,7 @@ func (e Executor) isAttestationAcceptedEvent(log ethTypes.Log, chainID uint32) b
 	}
 
 	lightManagerEvent, ok := e.chainExecutors[chainID].lightInboxParser.EventType(log)
-	if ok && lightManagerEvent == lightinbox.AttestationAcceptedEvent {
-		return true
-	}
-
-	if e.chainExecutors[chainID].inboxParser == nil {
-		return false
-	}
-
-	inboxEvent, ok := e.chainExecutors[chainID].inboxParser.EventType(log)
-	if ok && inboxEvent == inbox.AttestationAcceptedEvent {
-		return true
-	}
-
-	return false
+	return ok && lightManagerEvent == lightinbox.AttestationAcceptedEvent
 }
 
 // processMessage processes and stores a message.

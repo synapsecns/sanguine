@@ -18,14 +18,9 @@ func init() {
 	}
 
 	SnapshotAcceptedTopic = parsedInbox.Events["SnapshotAccepted"].ID
-	AttestationAcceptedTopic = parsedInbox.Events["AttestationAccepted"].ID
 
 	if SnapshotAcceptedTopic == (common.Hash{}) {
 		panic("SnapshotAcceptedTopic is nil")
-	}
-
-	if AttestationAcceptedTopic == (common.Hash{}) {
-		panic("AttestationAcceptedTopic is nil")
 	}
 }
 
@@ -33,16 +28,11 @@ func init() {
 // when the SnapshotAccepted event is called.
 var SnapshotAcceptedTopic common.Hash
 
-// AttestationAcceptedTopic is the topic that gets emitted
-// when the AttestationAccepted event is called.
-var AttestationAcceptedTopic common.Hash
-
 // topicMap maps events to topics.
 // this is returned as a function to assert immutability.
 func topicMap() map[EventType]common.Hash {
 	return map[EventType]common.Hash{
-		SnapshotAcceptedEvent:    SnapshotAcceptedTopic,
-		AttestationAcceptedEvent: AttestationAcceptedTopic,
+		SnapshotAcceptedEvent: SnapshotAcceptedTopic,
 	}
 }
 

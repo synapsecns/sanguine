@@ -4,10 +4,6 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"math/big"
-	"strconv"
-	"time"
-
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/common"
 	ethTypes "github.com/ethereum/go-ethereum/core/types"
@@ -36,6 +32,9 @@ import (
 	"golang.org/x/sync/errgroup"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
+	"math/big"
+	"strconv"
+	"time"
 )
 
 // chainExecutor is a struct that contains the necessary information for each chain level executor.
@@ -228,7 +227,7 @@ func NewExecutor(ctx context.Context, config executor.Config, executorDB db.Exec
 func (e Executor) Run(parentCtx context.Context) error {
 	g, ctx := errgroup.WithContext(parentCtx)
 
-	// Listen for snapshotAcceptedEvents and attestationAcceptedEvents on the Inbox.
+	// Listen for snapshotAcceptedEvents on bonding manager.
 	g.Go(func() error {
 		return e.streamLogs(ctx, e.grpcClient, e.grpcConn, e.config.SummitChainID, e.config.InboxAddress, execTypes.InboxContract)
 	})
@@ -249,7 +248,7 @@ func (e Executor) Run(parentCtx context.Context) error {
 			return e.streamLogs(ctx, e.grpcClient, e.grpcConn, chain.ChainID, chain.OriginAddress, execTypes.OriginContract)
 		})
 
-		// Listen for attestationAcceptedEvents on the LightInbox.
+		// Listen for attestationAcceptedEvents on destination.
 		g.Go(func() error {
 			return e.streamLogs(ctx, e.grpcClient, e.grpcConn, chain.ChainID, chain.LightInboxAddress, execTypes.LightInboxContract)
 		})

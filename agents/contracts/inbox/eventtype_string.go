@@ -9,12 +9,11 @@ func _() {
 	// Re-run the stringer command to generate them again.
 	var x [1]struct{}
 	_ = x[SnapshotAcceptedEvent-0]
-	_ = x[AttestationAcceptedEvent-1]
 }
 
-const _EventType_name = "SnapshotAcceptedEventAttestationAcceptedEvent"
+const _EventType_name = "SnapshotAcceptedEvent"
 
-var _EventType_index = [...]uint8{0, 21, 45}
+var _EventType_index = [...]uint8{0, 21}
 
 func (i EventType) String() string {
 	if i >= EventType(len(_EventType_index)-1) {
