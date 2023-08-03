@@ -14,7 +14,8 @@ import SelectSpecificTokenButton from './components/SelectSpecificTokenButton'
 import { CHAINS_BY_ID } from '@/constants/chains'
 
 export const ToTokenListOverlay = ({}: {}) => {
-  const { fromChainId, toTokens, toChainId, toToken } = useBridgeState()
+  const { fromChainId, fromToken, toTokens, toChainId, toToken } =
+    useBridgeState()
 
   const [currentIdx, setCurrentIdx] = useState(-1)
   const [searchStr, setSearchStr] = useState('')
@@ -103,10 +104,14 @@ export const ToTokenListOverlay = ({}: {}) => {
   }, [toChainId])
 
   const toTokensText = useMemo(() => {
-    if (fromChainName && toChainName) {
-      return `Tokens bridgeable ${fromChainName} to ${toChainName}`
+    if (fromChainName && toChainName && fromToken) {
+      return `Tokens you can receive on ${toChainName} from ${fromToken.symbol} on ${fromChainName}`
+    } else if (!fromChainName && fromToken && toChainName && toToken) {
+      return `Tokens you can receive on ${toChainName} from ${fromToken.symbol} on other chains`
+    } else if (fromChainName && toChainName) {
+      return `Tokens you can receive on ${toChainName} from ${fromChainName}`
     } else if (toChainName) {
-      return `All tokens bridgeable to ${toChainName}`
+      return `All tokens you can receive on ${toChainName}`
     } else {
       return `All tokens`
     }

@@ -139,6 +139,8 @@ export const FromTokenListOverlay = () => {
   const tokensWithoutBalancesText = useMemo(() => {
     if (fromChainName && toChainName && toToken) {
       return `Other ${fromChainName} tokens bridgeable to ${toToken.name} on ${toChainName}`
+    } else if (!fromChainName && !fromToken && toChainName && !toToken) {
+      return `All tokens you can bridge to ${toChainName}`
     } else if (fromChainName && toChainName) {
       return `Other ${fromChainName} tokens bridgeable to ${toChainName}`
     } else if (fromChainName && (!toChainName || !toToken)) {

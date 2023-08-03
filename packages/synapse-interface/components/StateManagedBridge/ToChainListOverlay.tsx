@@ -114,7 +114,7 @@ export const ToChainListOverlay = () => {
         data-test-id={dataId}
         className="px-2 pt-2 pb-8 bg-[#343036] md:px-2"
       >
-        <div className="mb-2 text-sm font-normal text-white">Bridge to...</div>
+        <div className="mb-2 text-sm font-normal text-white">Receive on...</div>
         {networks.map(({ id: mapChainId }, idx) => {
           let onClickSpecificNetwork
           if (toChainId === mapChainId) {
