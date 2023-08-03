@@ -54,6 +54,7 @@ export const SingleNetworkPortfolio = ({
         portfolioChainId={portfolioChainId}
         selectedFromChainId={selectedFromChainId}
         initializeExpanded={initializeExpanded}
+        isUnsupportedChain={isUnsupportedChain}
         header={
           <PortfolioNetwork
             displayName={currentChain?.name}
