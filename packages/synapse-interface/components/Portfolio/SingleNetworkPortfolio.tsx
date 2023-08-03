@@ -77,8 +77,9 @@ export const SingleNetworkPortfolio = ({
       >
         {isUnsupportedChain && (
           <WarningMessage
+            twClassName="!p-2 !mt-0"
             message={
-              <p>
+              <p className="leading-6">
                 This chain is not yet supported. New chain or token support can
                 be discussed on{' '}
                 <a target="_blank" className="underline" href={TWITTER_URL}>
@@ -87,7 +88,7 @@ export const SingleNetworkPortfolio = ({
                 or{' '}
                 <a target="_blank" className="underline" href={DISCORD_URL}>
                   Discord
-                </a>{' '}
+                </a>
                 .
               </p>
             }
