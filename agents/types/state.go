@@ -2,12 +2,10 @@ package types
 
 import (
 	"context"
-	"fmt"
 	"math/big"
 
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/crypto"
-	"github.com/synapsecns/sanguine/core"
 	"github.com/synapsecns/sanguine/ethergo/signer/signer"
 )
 
@@ -23,6 +21,7 @@ const (
 
 // State is the state interface.
 type State interface {
+	Encoder
 	// Root is the root of the Origin Merkle Tree.
 	Root() [32]byte
 	// Origin is the domain where Origin is located.
@@ -101,7 +100,7 @@ func (s state) Hash() ([32]byte, error) {
 }
 
 func (s state) SubLeaves() (leftLeaf, rightLeaf [32]byte, err error) {
-	encodedState, err := EncodeState(s)
+	encodedState, err := s.Encode()
 	if err != nil {
 		return
 	}
@@ -111,29 +110,8 @@ func (s state) SubLeaves() (leftLeaf, rightLeaf [32]byte, err error) {
 	return
 }
 
-//nolint:dupl
 func (s state) SignState(ctx context.Context, signer signer.Signer) (signer.Signature, []byte, common.Hash, error) {
-	encodedState, err := EncodeState(s)
-	if err != nil {
-		return nil, nil, common.Hash{}, fmt.Errorf("failed to encode state: %w", err)
-	}
-
-	stateSalt := crypto.Keccak256Hash([]byte("STATE_INVALID_SALT"))
-
-	hashedEncodedState := crypto.Keccak256Hash(encodedState).Bytes()
-	toSign := append(stateSalt.Bytes(), hashedEncodedState...)
-
-	hashedState, err := HashRawBytes(toSign)
-	if err != nil {
-		return nil, nil, common.Hash{}, fmt.Errorf("failed to hash state: %w", err)
-	}
-
-	signature, err := signer.SignMessage(ctx, core.BytesToSlice(hashedState), false)
-	if err != nil {
-		return nil, nil, common.Hash{}, fmt.Errorf("failed to sign state: %w", err)
-	}
-
-	return signature, encodedState, hashedState, nil
+	return signEncoder(ctx, signer, s, StateInvalidSalt)
 }
 
 var _ State = state{}

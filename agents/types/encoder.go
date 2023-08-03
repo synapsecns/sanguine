@@ -20,6 +20,11 @@ const (
 	uint40Len = 5
 )
 
+// Encoder encodes a type to bytes.
+type Encoder interface {
+	Encode() ([]byte, error)
+}
+
 // EncodeGasData encodes a gasdata.
 func EncodeGasData(gasData GasData) ([]byte, error) {
 	b := make([]byte, 0)
@@ -106,23 +111,23 @@ func DecodeChainGas(toDecode []byte) (ChainGas, error) {
 	}, nil
 }
 
-// EncodeState encodes a state.
-func EncodeState(state State) ([]byte, error) {
+// Encode encodes a state.
+func (s state) Encode() ([]byte, error) {
 	b := make([]byte, 0)
 	originBytes := make([]byte, uint32Len)
 	nonceBytes := make([]byte, uint32Len)
 
-	binary.BigEndian.PutUint32(originBytes, state.Origin())
-	binary.BigEndian.PutUint32(nonceBytes, state.Nonce())
-	root := state.Root()
+	binary.BigEndian.PutUint32(originBytes, s.Origin())
+	binary.BigEndian.PutUint32(nonceBytes, s.Nonce())
+	root := s.Root()
 
 	// Note that since we are packing an 8 byte (int64) number into 5 bytes, we need to
-	// ensure that the result does not exceed the expected byte length for a valid State.
-	blockNumberBytes := math.PaddedBigBytes(state.BlockNumber(), uint40Len)
+	// ensure that the result does not exceed the expected byte length for a valid s.
+	blockNumberBytes := math.PaddedBigBytes(s.BlockNumber(), uint40Len)
 	if len(blockNumberBytes) != uint40Len {
 		return nil, fmt.Errorf("invalid block number length, expected %d, got %d", uint40Len, len(blockNumberBytes))
 	}
-	timestampBytes := math.PaddedBigBytes(state.Timestamp(), uint40Len)
+	timestampBytes := math.PaddedBigBytes(s.Timestamp(), uint40Len)
 	if len(timestampBytes) != uint40Len {
 		return nil, fmt.Errorf("invalid timestamp length, expected %d, got %d", uint40Len, len(timestampBytes))
 	}
@@ -133,7 +138,7 @@ func EncodeState(state State) ([]byte, error) {
 	b = append(b, blockNumberBytes...)
 	b = append(b, timestampBytes...)
 
-	gasDataEncoded, err := EncodeGasData(state.GasData())
+	gasDataEncoded, err := EncodeGasData(s.GasData())
 	if err != nil {
 		return nil, fmt.Errorf("failed to encode gas data for state %w", err)
 	}
@@ -173,9 +178,9 @@ func DecodeState(toDecode []byte) (State, error) {
 	}, nil
 }
 
-// EncodeSnapshot encodes a snapshot.
-func EncodeSnapshot(snapshot Snapshot) ([]byte, error) {
-	states := snapshot.States()
+// Encode encodes a snapshot.
+func (s snapshot) Encode() ([]byte, error) {
+	states := s.States()
 
 	if len(states) == 0 {
 		return nil, fmt.Errorf("no states to encode")
@@ -184,7 +189,7 @@ func EncodeSnapshot(snapshot Snapshot) ([]byte, error) {
 	encodedStates := make([]byte, 0)
 
 	for _, state := range states {
-		encodedState, err := EncodeState(state)
+		encodedState, err := state.Encode()
 		if err != nil {
 			return nil, fmt.Errorf("could not encode state: %w", err)
 		}
@@ -215,22 +220,22 @@ func DecodeSnapshot(toDecode []byte) (Snapshot, error) {
 	}, nil
 }
 
-// EncodeAttestation encodes an attestation.
-func EncodeAttestation(attestation Attestation) ([]byte, error) {
+// Encode encodes an attestation.
+func (a attestation) Encode() ([]byte, error) {
 	b := make([]byte, 0)
 	nonceBytes := make([]byte, uint32Len)
 
-	binary.BigEndian.PutUint32(nonceBytes, attestation.Nonce())
-	snapshotRoot := attestation.SnapshotRoot()
-	dataHash := attestation.DataHash()
+	binary.BigEndian.PutUint32(nonceBytes, a.Nonce())
+	snapshotRoot := a.SnapshotRoot()
+	dataHash := a.DataHash()
 
 	// Note that since we are packing an 8 byte (int64) number into 5 bytes, we need to
-	// ensure that the result does not exceed the expected byte length for a valid Attestation.
-	blockNumberBytes := math.PaddedBigBytes(attestation.BlockNumber(), uint40Len)
+	// ensure that the result does not exceed the expected byte length for a valid a.
+	blockNumberBytes := math.PaddedBigBytes(a.BlockNumber(), uint40Len)
 	if len(blockNumberBytes) != uint40Len {
 		return nil, fmt.Errorf("invalid block number length, expected %d, got %d", uint40Len, len(blockNumberBytes))
 	}
-	timestampBytes := math.PaddedBigBytes(attestation.Timestamp(), uint40Len)
+	timestampBytes := math.PaddedBigBytes(a.Timestamp(), uint40Len)
 	if len(timestampBytes) != uint40Len {
 		return nil, fmt.Errorf("invalid timestamp length, expected %d, got %d", uint40Len, len(timestampBytes))
 	}
@@ -558,26 +563,26 @@ func DecodeAgentStatus(toDecode []byte) (AgentStatus, error) {
 	}, nil
 }
 
-// EncodeReceipt encodes an receipt.
-func EncodeReceipt(receipt Receipt) ([]byte, error) {
+// Encode encodes an receipt.
+func (r receipt) Encode() ([]byte, error) {
 	b := make([]byte, 0)
 	originBytes := make([]byte, uint32Len)
-	binary.BigEndian.PutUint32(originBytes, receipt.Origin())
+	binary.BigEndian.PutUint32(originBytes, r.Origin())
 
 	destBytes := make([]byte, uint32Len)
-	binary.BigEndian.PutUint32(destBytes, receipt.Destination())
+	binary.BigEndian.PutUint32(destBytes, r.Destination())
 
-	messageHashBytes := receipt.MessageHash()
-	snapshotRootBytes := receipt.SnapshotRoot()
+	messageHashBytes := r.MessageHash()
+	snapshotRootBytes := r.SnapshotRoot()
 
 	b = append(b, originBytes...)
 	b = append(b, destBytes...)
 	b = append(b, messageHashBytes[:]...)
 	b = append(b, snapshotRootBytes[:]...)
-	b = append(b, []byte{receipt.StateIndex()}...)
-	b = append(b, receipt.AttestationNotary().Bytes()...)
-	b = append(b, receipt.FirstExecutor().Bytes()...)
-	b = append(b, receipt.FinalExecutor().Bytes()...)
+	b = append(b, []byte{r.StateIndex()}...)
+	b = append(b, r.AttestationNotary().Bytes()...)
+	b = append(b, r.FirstExecutor().Bytes()...)
+	b = append(b, r.FinalExecutor().Bytes()...)
 
 	return b, nil
 }

@@ -2,11 +2,8 @@ package types
 
 import (
 	"context"
-	"fmt"
 
 	"github.com/ethereum/go-ethereum/common"
-	"github.com/ethereum/go-ethereum/crypto"
-	"github.com/synapsecns/sanguine/core"
 	"github.com/synapsecns/sanguine/ethergo/signer/signer"
 )
 
@@ -24,6 +21,7 @@ const (
 
 // Receipt is the receipt interface.
 type Receipt interface {
+	Encoder
 	// Origin is the origin of the receipt.
 	Origin() uint32
 	// Destination is the destination of the receipt.
@@ -101,31 +99,12 @@ func (r receipt) FinalExecutor() common.Address {
 	return r.finalExecutor
 }
 
-//nolint:dupl
 func (r receipt) SignReceipt(ctx context.Context, signer signer.Signer, valid bool) (signer.Signature, []byte, common.Hash, error) {
-	encodedReceipt, err := EncodeReceipt(r)
-	if err != nil {
-		return nil, nil, common.Hash{}, fmt.Errorf("could not encode receipt: %w", err)
-	}
-
-	var receiptSalt common.Hash
+	var receiptSalt string
 	if valid {
-		receiptSalt = crypto.Keccak256Hash([]byte("RECEIPT_VALID_SALT"))
+		receiptSalt = ReceiptValidSalt
 	} else {
-		receiptSalt = crypto.Keccak256Hash([]byte("RECEIPT_INVALID_SALT"))
+		receiptSalt = ReceiptInvalidSalt
 	}
-
-	hashedEncodedReceipt := crypto.Keccak256Hash(encodedReceipt).Bytes()
-	toSign := append(receiptSalt.Bytes(), hashedEncodedReceipt...)
-
-	hashedReceipt, err := HashRawBytes(toSign)
-	if err != nil {
-		return nil, nil, common.Hash{}, fmt.Errorf("could not hash receipt: %w", err)
-	}
-
-	signature, err := signer.SignMessage(ctx, core.BytesToSlice(hashedReceipt), false)
-	if err != nil {
-		return nil, nil, common.Hash{}, fmt.Errorf("could not sign receipt: %w", err)
-	}
-	return signature, encodedReceipt, hashedReceipt, nil
+	return signEncoder(ctx, signer, r, receiptSalt)
 }

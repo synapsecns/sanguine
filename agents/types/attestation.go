@@ -2,12 +2,10 @@ package types
 
 import (
 	"context"
-	"fmt"
 	"math/big"
 
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/crypto"
-	"github.com/synapsecns/sanguine/core"
 	"github.com/synapsecns/sanguine/ethergo/signer/signer"
 )
 
@@ -22,6 +20,7 @@ const (
 
 // Attestation is the attestation interface.
 type Attestation interface {
+	Encoder
 	// SnapshotRoot is the root of the Snapshot Merkle Tree.
 	SnapshotRoot() [32]byte
 	// DataHash is the agent root and SnapGasHash combined into a single hash.
@@ -75,33 +74,14 @@ func (a attestation) Timestamp() *big.Int {
 	return a.timestamp
 }
 
-//nolint:dupl
 func (a attestation) SignAttestation(ctx context.Context, signer signer.Signer, valid bool) (signer.Signature, []byte, common.Hash, error) {
-	encodedAttestation, err := EncodeAttestation(a)
-	if err != nil {
-		return nil, nil, common.Hash{}, fmt.Errorf("could not encode attestation: %w", err)
-	}
-
-	var attestationSalt common.Hash
+	var attestationSalt string
 	if valid {
-		attestationSalt = crypto.Keccak256Hash([]byte("ATTESTATION_VALID_SALT"))
+		attestationSalt = AttestationValidSalt
 	} else {
-		attestationSalt = crypto.Keccak256Hash([]byte("ATTESTATION_INVALID_SALT"))
+		attestationSalt = AttestationInvalidSalt
 	}
-
-	hashedEncodedAttestation := crypto.Keccak256Hash(encodedAttestation).Bytes()
-	toSign := append(attestationSalt.Bytes(), hashedEncodedAttestation...)
-
-	hashedAttestation, err := HashRawBytes(toSign)
-	if err != nil {
-		return nil, nil, common.Hash{}, fmt.Errorf("could not hash attestation: %w", err)
-	}
-
-	signature, err := signer.SignMessage(ctx, core.BytesToSlice(hashedAttestation), false)
-	if err != nil {
-		return nil, nil, common.Hash{}, fmt.Errorf("could not sign attestation: %w", err)
-	}
-	return signature, encodedAttestation, hashedAttestation, nil
+	return signEncoder(ctx, signer, a, attestationSalt)
 }
 
 // GetAttestationDataHash generates the data hash from the agent root and SnapGasHash.
