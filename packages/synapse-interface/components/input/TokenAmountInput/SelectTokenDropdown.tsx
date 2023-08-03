@@ -8,6 +8,8 @@ import {
 } from '@styles/tokens'
 import { Token } from '@/utils/types'
 import { QuestionMarkCircleIcon } from '@heroicons/react/outline'
+import { CHAINS_BY_ID } from '@/constants/chains'
+import { Chain } from '@/utils/types'
 
 const SelectTokenDropdown = ({
   chainId,
@@ -20,6 +22,8 @@ const SelectTokenDropdown = ({
   onClick: () => void
   isOrigin: boolean
 }) => {
+  const currentChain: Chain = CHAINS_BY_ID[chainId]
+  const isUnsupportedChain: boolean = currentChain ? false : true
   const symbol = selectedToken ? displaySymbol(chainId, selectedToken) : ''
   const dataId = isOrigin ? 'bridge-origin-token' : 'bridge-destination-token'
 
@@ -28,7 +32,7 @@ const SelectTokenDropdown = ({
     <button
       data-test-id="select-token-dropdown"
       className="flex-shrink-0 cursor-pointer focus:outline-none"
-      onClick={onClick}
+      onClick={isUnsupportedChain ? () => null : onClick}
     >
       <div
         className={`

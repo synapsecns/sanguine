@@ -95,12 +95,12 @@ export const InputContainer = () => {
   const onClickBalance = () => {
     const str = formatBigIntToString(
       fromTokenBalance,
-      fromToken.decimals[fromChainId],
+      fromToken?.decimals[fromChainId],
       4
     )
     dispatch(updateFromValue(str))
     setShowValue(
-      formatBigIntToString(fromTokenBalance, fromToken.decimals[fromChainId])
+      formatBigIntToString(fromTokenBalance, fromToken?.decimals[fromChainId])
     )
   }
 

@@ -13,7 +13,8 @@ import { QuestionMarkCircleIcon } from '@heroicons/react/outline'
 import { WarningMessage } from '../Warning'
 import { TWITTER_URL, DISCORD_URL } from '@/constants/urls'
 import {
-  setFromChainId,
+  setSupportedFromTokens,
+  setSupportedToTokens,
   setToChainId,
   initialState,
 } from '@/slices/bridgeSlice'
@@ -59,7 +60,8 @@ export const SingleNetworkPortfolio = ({
 
   useEffect(() => {
     if (isUnsupportedChain) {
-      dispatch(setToChainId(initialState.toChainId))
+      dispatch(setSupportedFromTokens([]))
+      dispatch(setSupportedToTokens(initialState.supportedToTokens))
     }
   }, [isUnsupportedChain])
 
