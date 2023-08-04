@@ -8,6 +8,7 @@ import { formatBigIntToString } from './bigint/format'
 
 export interface TokenAndBalance {
   token: Token
+  tokenAddress: string
   balance: bigint
   parsedBalance: string
 }
@@ -92,6 +93,7 @@ export const sortByTokenBalance = async (
             index: number
           ) => ({
             token: tokens[index],
+            tokenAddress: tokens[index].addresses[chainId],
             balance: tokenBalance.result,
             parsedBalance: formatBigIntToString(
               tokenBalance.result,
@@ -126,7 +128,7 @@ export const sortTokensByPriorityRankAndAlpha = (arr: Token[]): Token[] => {
 export const separateAndSortTokensWithBalances = (
   tokensAndBalances: TokenAndBalance[]
 ): Token[] => {
-  const hasTokensAndBalances = Object.keys(tokensAndBalances).length > 0
+  const hasTokensAndBalances = tokensAndBalances.length > 0
   if (hasTokensAndBalances) {
     const tokensWithBalances = tokensAndBalances
       .filter((t) => !(t.balance === 0n))
