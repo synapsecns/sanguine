@@ -22,7 +22,8 @@ import {
 } from '@/utils/actions/fetchPortfolioBalances'
 import { useBridgeState } from '@/slices/bridge/hooks'
 import { fetchAndStoreSingleTokenAllowance } from '@/slices/portfolio/hooks'
-import { ChainId } from '@/constants/chains'
+import { AVALANCHE, ETH, ARBITRUM } from '@/constants/chains/master'
+import { USDC } from '@/constants/tokens/master'
 
 type PortfolioTokenAssetProps = {
   token: Token
@@ -49,22 +50,16 @@ function checkCCTPChainConditions(
   fromChainId: number,
   toChainId: number
 ): boolean {
-  switch (true) {
-    case fromChainId === 1 && toChainId === 42161:
-      return true
-    case fromChainId === 42161 && toChainId === 1:
-      return true
-    case fromChainId === 1 && toChainId === 43114:
-      return true
-    case fromChainId === 43114 && toChainId === 1:
-      return true
-    case fromChainId === 42161 && toChainId === 43114:
-      return true
-    case fromChainId === 43114 && toChainId === 42161:
-      return true
-    default:
-      return false
-  }
+  const CctpPairs = new Set([
+    `${ETH.id}-${ARBITRUM.id}`,
+    `${ARBITRUM.id}-${ETH.id}`,
+    `${ETH.id}-${AVALANCHE.id}`,
+    `${AVALANCHE.id}-${ETH.id}`,
+    `${ARBITRUM.id}-${AVALANCHE.id}`,
+    `${AVALANCHE.id}-${ARBITRUM.id}`,
+  ])
+
+  return CctpPairs.has(`${fromChainId}-${toChainId}`)
 }
 
 function checkIfUsingCCTP({
@@ -78,11 +73,7 @@ function checkIfUsingCCTP({
   toChainId: number
   toToken: Token
 }): boolean {
-  const originTokenSymbol = fromToken?.symbol
-  const destinationTokenSymbol = toToken?.symbol
-
-  const isTokensUSDC: boolean =
-    originTokenSymbol === 'USDC' && destinationTokenSymbol === 'USDC'
+  const isTokensUSDC: boolean = fromToken === USDC && toToken === USDC
   const isSupportedCCTPChains: boolean = checkCCTPChainConditions(
     fromChainId,
     toChainId

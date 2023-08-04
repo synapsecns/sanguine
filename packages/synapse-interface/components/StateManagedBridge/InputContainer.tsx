@@ -103,7 +103,7 @@ export const InputContainer = () => {
       <div className="flex justify-between mb-3">
         <div className="flex items-center space-x-2">
           <FromChainSelector />
-          {(fromChainId || fromToken) && (
+          {/* {(fromChainId || fromToken) && (
             <button
               className="bg-bgLight text-primaryTextColor border-[1px] p-1 rounded-md text-xxs"
               onClick={() => {
@@ -113,7 +113,7 @@ export const InputContainer = () => {
             >
               clear
             </button>
-          )}
+          )} */}
         </div>
         {hasMounted && isConnected && <ConnectedIndicator />}
       </div>
