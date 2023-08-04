@@ -239,17 +239,17 @@ func NewExecutor(ctx context.Context, config executor.Config, executorDB db.Exec
 func (e Executor) Run(parentCtx context.Context) error {
 	g, ctx := errgroup.WithContext(parentCtx)
 
-	// Listen for snapshotAcceptedEvents on bonding manager.
-	g.Go(func() error {
-		return e.streamLogs(ctx, e.grpcClient, e.grpcConn, e.config.SummitChainID, e.config.InboxAddress, execTypes.InboxContract)
-	})
-
 	g.Go(func() error {
 		err := e.txSubmitter.Start(ctx)
 		if err != nil {
 			err = fmt.Errorf("could not start tx submitter: %w", err)
 		}
 		return err
+	})
+
+	// Listen for snapshotAcceptedEvents on bonding manager.
+	g.Go(func() error {
+		return e.streamLogs(ctx, e.grpcClient, e.grpcConn, e.config.SummitChainID, e.config.InboxAddress, execTypes.InboxContract)
 	})
 
 	for _, chain := range e.config.Chains {

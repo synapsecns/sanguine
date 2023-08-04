@@ -166,6 +166,17 @@ func (e Executor) processSnapshot(ctx context.Context, snapshot types.Snapshot, 
 
 // processAttestation processes and stores an attestation.
 func (e Executor) processAttestation(ctx context.Context, attestation types.Attestation, chainID uint32, logBlockNumber uint64) error {
+	// If the attestation is on the SynChain, we can directly use its block number and timestamp.
+	if chainID == e.config.SummitChainID {
+		err := e.executorDB.StoreAttestation(ctx, attestation, chainID, attestation.BlockNumber().Uint64(), attestation.Timestamp().Uint64())
+		if err != nil {
+			return fmt.Errorf("could not store attestation: %w", err)
+		}
+
+		return nil
+	}
+
+	// If the attestation is on a remote chain, we need to fetch the timestamp via an RPC call.
 	b := &backoff.Backoff{
 		Factor: 2,
 		Jitter: true,
