@@ -23,6 +23,7 @@ import {
 import { useBridgeState } from '@/slices/bridge/hooks'
 import { fetchAndStoreSingleTokenAllowance } from '@/slices/portfolio/hooks'
 import { AVALANCHE, ETH, ARBITRUM } from '@/constants/chains/master'
+import { USDC } from '@/constants/tokens/master'
 
 type PortfolioTokenAssetProps = {
   token: Token
@@ -72,18 +73,12 @@ function checkIfUsingCCTP({
   toChainId: number
   toToken: Token
 }): boolean {
-  const originTokenSymbol = fromToken?.symbol
-  const destinationTokenSymbol = toToken?.symbol
-
-  const isTokensUSDC: boolean =
-    originTokenSymbol === 'USDC' && destinationTokenSymbol === 'USDC'
+  const isTokensUSDC: boolean = fromToken === USDC && toToken === USDC
   const isSupportedCCTPChains: boolean = checkCCTPChainConditions(
     fromChainId,
     toChainId
   )
 
-  console.log('isTokensUSDC: ', isTokensUSDC)
-  console.log('isSupportedCCTPChains:', isSupportedCCTPChains)
   return isTokensUSDC && isSupportedCCTPChains
 }
 
