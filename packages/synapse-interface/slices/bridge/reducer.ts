@@ -5,11 +5,11 @@ import { EMPTY_BRIDGE_QUOTE } from '@/constants/bridge'
 import { ETH } from '@/constants/tokens/master'
 import { ARBITRUM, ETH as ETHEREUM } from '@/constants/chains/master'
 import { BridgeQuote, Token } from '@/utils/types'
+import { TokenWithBalanceAndAllowances } from '@/utils/actions/fetchPortfolioBalances'
 
 export interface BridgeState {
   fromChainId: number
-  supportedFromTokens: Token[]
-  supportedFromTokenBalances: any
+  supportedFromTokens: TokenWithBalanceAndAllowances[]
   toChainId: number
   supportedToTokens: Token[]
   fromToken: Token
@@ -29,7 +29,6 @@ export interface BridgeState {
 export const initialState: BridgeState = {
   fromChainId: ETHEREUM.id,
   supportedFromTokens: [],
-  supportedFromTokenBalances: {},
   toChainId: ARBITRUM.id,
   supportedToTokens: [],
   fromToken: ETH,
@@ -69,14 +68,14 @@ export const bridgeSlice = createSlice({
     setBridgeQuote: (state, action: PayloadAction<BridgeQuote>) => {
       state.bridgeQuote = action.payload
     },
-    setSupportedFromTokens: (state, action: PayloadAction<Token[]>) => {
+    setSupportedFromTokens: (
+      state,
+      action: PayloadAction<TokenWithBalanceAndAllowances[]>
+    ) => {
       state.supportedFromTokens = action.payload
     },
     setSupportedToTokens: (state, action: PayloadAction<Token[]>) => {
       state.supportedToTokens = action.payload
-    },
-    setSupportedFromTokenBalances: (state, action: PayloadAction<{}>) => {
-      state.supportedFromTokenBalances = action.payload
     },
     setFromChainIds: (state, action: PayloadAction<number[]>) => {
       state.fromChainIds = action.payload
@@ -108,7 +107,6 @@ export const {
   updateFromValue,
   setSupportedFromTokens,
   setSupportedToTokens,
-  setSupportedFromTokenBalances,
   setFromChainIds,
   setToChainIds,
   setDeadlineMinutes,
