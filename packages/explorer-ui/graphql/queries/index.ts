@@ -207,6 +207,7 @@ export const DAILY_STATISTICS_BY_CHAIN = gql`
       harmony
       canto
       dogechain
+      base
       total
     }
   }

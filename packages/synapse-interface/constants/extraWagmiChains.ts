@@ -110,56 +110,6 @@ export const dfk = {
   },
 } as const satisfies Chain
 
-// export const moonbeam = {
-//   id: 1284,
-//   name: 'Moonbeam',
-//   network: 'moonbeam',
-//   nativeCurrency: {
-//     decimals: 18,
-//     name: 'Moonbeam',
-//     symbol: 'GLMR',
-//   },
-//   rpcUrls: {
-//     default: { http: ['https://rpc.api.moonbeam.network'] },
-//     public: { http: ['https://rpc.api.moonbeam.network'] },
-//   },
-//   blockExplorers: {
-//     etherscan: { name: 'MoonBeamMoonScan', url: 'https://moonbeam.moonscan.io/' },
-//     default: { name: 'MoonBeamMoonScan', url: 'https://moonbeam.moonscan.io/' },
-//   },
-//   contracts: {
-//     multicall3: {
-//       address: '0xcA11bde05977b3631167028862bE2a173976CA11',
-//       blockCreated: 609002,
-//     },
-//   },
-// } as const satisfies Chain
-
-// export const moonriver = {
-//   id: 1285,
-//   name: 'Moonriver',
-//   network: 'moonriver',
-//   nativeCurrency: {
-//     decimals: 18,
-//     name: 'Moonriver',
-//     symbol: 'MOVR',
-//   },
-//   rpcUrls: {
-//     default: { http: ['https://rpc.api.moonriver.moonbeam.network'] },
-//     public: { http: ['https://rpc.api.moonriver.moonbeam.network'] },
-//   },
-//   blockExplorers: {
-//     etherscan: { name: 'MoonRiverMoonScan', url: 'https://moonriver.moonscan.io/' },
-//     default: { name: 'MoonRiverMoonScan', url: 'https://moonriver.moonscan.io/' },
-//   },
-//   contracts: {
-//     multicall3: {
-//       address: '0xcA11bde05977b3631167028862bE2a173976CA11',
-//       blockCreated: 1597904,
-//     },
-//   },
-// } as const satisfies Chain
-
 export const dogechain = {
   id: 2000,
   name: 'Dogechain',
@@ -287,6 +237,45 @@ export const aurora = {
     multicall3: {
       address: '0xca11bde05977b3631167028862be2a173976ca11',
       blockCreated: 62907816,
+    },
+  },
+} as const satisfies Chain
+
+export const base = {
+  id: 8453,
+  name: 'Base',
+  network: 'base',
+  nativeCurrency: {
+    decimals: 18,
+    name: 'Ether',
+    symbol: 'ETH',
+  },
+  rpcUrls: {
+    default: {
+      http: ['https://developer-access-mainnet.base.org'],
+    },
+    public: {
+      http: ['https://developer-access-mainnet.base.org'],
+    },
+  },
+  blockExplorers: {
+    blockscout: {
+      name: 'Basescout',
+      url: 'https://base.blockscout.com',
+    },
+    default: {
+      name: 'Basescan',
+      url: 'https://basescan.org',
+    },
+    etherscan: {
+      name: 'Basescan',
+      url: 'https://basescan.org',
+    },
+  },
+  contracts: {
+    multicall3: {
+      address: '0xca11bde05977b3631167028862be2a173976ca11',
+      blockCreated: 5022,
     },
   },
 } as const satisfies Chain

@@ -1,7 +1,7 @@
 {
   "name": "@synapsecns/sdk-router",
   "description": "An SDK for interacting with the Synapse Protocol",
-  "version": "0.2.5",
+  "version": "0.2.12",
   "license": "MIT",
   "main": "dist/index.js",
   "typings": "dist/index.d.ts",
@@ -21,7 +21,8 @@
     "ci:lint": "npm run lint:check",
     "lint:fix": "eslint . --fix --max-warnings=0 --ext ts --ext tsx --ext js --ext jsx",
     "test:coverage": "tsdx test --coverage",
-    "preinstall": "tsdx build",
+    "prepare": "tsdx build",
+    "preinstall": "command -v tsdx >/dev/null 2>&1 && tsdx build || echo 'tsdx not found'",
     "size": "size-limit",
     "analyze": "size-limit --why",
     "build:go": " ",

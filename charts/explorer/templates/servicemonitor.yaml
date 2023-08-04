@@ -2,17 +2,16 @@
 apiVersion: monitoring.coreos.com/v1
 kind: ServiceMonitor
 metadata:
-  name: {{ include "omnirpc.fullname" . }}
+  name: {{ include "explorer.fullname" . }}
   labels:
-    {{- include "omnirpc.labels" . | nindent 4 }}
+    {{- include "explorer.labels" . | nindent 4 }}
 spec:
   selector:
     matchLabels:
-      {{- include "omnirpc.selectorLabels" . | nindent 6 }}
+      {{- include "explorer.selectorLabels" . | nindent 6 }}
   endpoints:
-    - port: prometheus
+    - port: http
       path: /metrics
-      scrapeTimeout: 30s
   namespaceSelector:
     matchNames:
       - {{ .Release.Namespace }}

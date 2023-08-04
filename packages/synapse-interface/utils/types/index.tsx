@@ -8,11 +8,9 @@ export type Chain = {
   name: string
   altName?: string
   codeName: string
-  chainLogo?: any
   chainImg: any
   layer: number
   rpc: string
-  writeRpc?: string
   explorerUrl: string
   blockTime: number
   nativeCurrency: { name: string; symbol: string; decimals: number }

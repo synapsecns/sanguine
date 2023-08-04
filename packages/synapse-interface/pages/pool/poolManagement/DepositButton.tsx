@@ -1,7 +1,7 @@
 import { useSelector } from 'react-redux'
 import { useConnectModal } from '@rainbow-me/rainbowkit'
 import { useAccount, useNetwork, useSwitchNetwork } from 'wagmi'
-import { useEffect, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { RootState } from '@/store/store'
 
 import LoadingSpinner from '@/components/ui/tailwind/LoadingSpinner'
@@ -26,7 +26,7 @@ const DepositButton = ({ approveTxn, depositTxn }) => {
     setIsConnected(isConnectedInit)
   }, [isConnectedInit])
 
-  const { pool } = useSelector((state: RootState) => state.poolData)
+  const { pool, poolData } = useSelector((state: RootState) => state.poolData)
 
   const { depositQuote, inputValue, isLoading, inputSum } = useSelector(
     (state: RootState) => state.poolDeposit
@@ -58,12 +58,17 @@ const DepositButton = ({ approveTxn, depositTxn }) => {
     }
   )
 
+  const isEmptyPool = useMemo(() => {
+    return poolData.totalLocked === 0
+  }, [poolData])
+
   const isButtonDisabled =
-    isLoading ||
-    !isBalanceEnough ||
-    depositQuote === DEFAULT_DEPOSIT_QUOTE ||
-    inputSum === 0 ||
-    inputSum === 0n
+    (isLoading ||
+      !isBalanceEnough ||
+      depositQuote === DEFAULT_DEPOSIT_QUOTE ||
+      inputSum === 0 ||
+      inputSum === 0n) &&
+    !isEmptyPool
 
   let buttonProperties
 

@@ -3,6 +3,68 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [0.2.12](https://github.com/synapsecns/sanguine/compare/@synapsecns/sdk-router@0.2.11...@synapsecns/sdk-router@0.2.12) (2023-08-02)
+
+**Note:** Version bump only for package @synapsecns/sdk-router
+
+
+
+
+
+## [0.2.11](https://github.com/synapsecns/sanguine/compare/@synapsecns/sdk-router@0.2.10...@synapsecns/sdk-router@0.2.11) (2023-08-02)
+
+**Note:** Version bump only for package @synapsecns/sdk-router
+
+
+
+
+
+## [0.2.10](https://github.com/synapsecns/sanguine/compare/@synapsecns/sdk-router@0.2.9...@synapsecns/sdk-router@0.2.10) (2023-08-02)
+
+**Note:** Version bump only for package @synapsecns/sdk-router
+
+
+
+
+
+## [0.2.9](https://github.com/synapsecns/sanguine/compare/@synapsecns/sdk-router@0.2.8...@synapsecns/sdk-router@0.2.9) (2023-08-01)
+
+**Note:** Version bump only for package @synapsecns/sdk-router
+
+
+
+
+
+## [0.2.8](https://github.com/synapsecns/sanguine/compare/@synapsecns/sdk-router@0.2.7...@synapsecns/sdk-router@0.2.8) (2023-08-01)
+
+**Note:** Version bump only for package @synapsecns/sdk-router
+
+
+
+
+
+## [0.2.7](https://github.com/synapsecns/sanguine/compare/@synapsecns/sdk-router@0.2.6...@synapsecns/sdk-router@0.2.7) (2023-08-01)
+
+
+### Reverts
+
+* Revert "Revert "try to fix router install (#1201)"" (#1210) ([84d7cbb](https://github.com/synapsecns/sanguine/commit/84d7cbb0d8913c33ce91d8f380591fb401594c82)), closes [#1201](https://github.com/synapsecns/sanguine/issues/1201) [#1210](https://github.com/synapsecns/sanguine/issues/1210)
+
+
+
+
+
+## [0.2.6](https://github.com/synapsecns/sanguine/compare/@synapsecns/sdk-router@0.2.5...@synapsecns/sdk-router@0.2.6) (2023-08-01)
+
+
+### Reverts
+
+* Revert "try to fix router install (#1201)" ([67d6ef5](https://github.com/synapsecns/sanguine/commit/67d6ef5f1d7c1307b603ebe916cadb7eea7fe0bc)), closes [#1201](https://github.com/synapsecns/sanguine/issues/1201)
+
+
+
+
+
 ## [0.2.5](https://github.com/synapsecns/sanguine/compare/@synapsecns/sdk-router@0.2.4...@synapsecns/sdk-router@0.2.5) (2023-08-01)
 
 **Note:** Version bump only for package @synapsecns/sdk-router
