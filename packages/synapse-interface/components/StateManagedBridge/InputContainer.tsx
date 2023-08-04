@@ -54,11 +54,16 @@ export const InputContainer = () => {
     0n
 
   const formattedBalance = hasBalances
-    ? formatBigIntToString(fromTokenBalance, fromToken.decimals[fromChainId], 4)
+    ? formatBigIntToString(
+        fromTokenBalance,
+        fromToken?.decimals[fromChainId],
+        4
+      )
     : '0'
 
   useEffect(() => {
     if (
+      fromToken &&
       fromToken.decimals[fromChainId] &&
       stringToBigInt(fromValue, fromToken.decimals[fromChainId]) !== 0n &&
       stringToBigInt(fromValue, fromToken.decimals[fromChainId]) ===
@@ -90,12 +95,12 @@ export const InputContainer = () => {
   const onClickBalance = () => {
     const str = formatBigIntToString(
       fromTokenBalance,
-      fromToken.decimals[fromChainId],
+      fromToken?.decimals[fromChainId],
       4
     )
     dispatch(updateFromValue(str))
     setShowValue(
-      formatBigIntToString(fromTokenBalance, fromToken.decimals[fromChainId])
+      formatBigIntToString(fromTokenBalance, fromToken?.decimals[fromChainId])
     )
   }
 
@@ -143,6 +148,7 @@ export const InputContainer = () => {
               focus:border-none
               border-none
               bg-transparent
+              p-0
               max-w-[100px]
               md:max-w-[160px]
               placeholder:text-[#88818C]
