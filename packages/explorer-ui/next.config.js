@@ -3,12 +3,6 @@ const nextConfig = {
   reactStrictMode: true,
   webpack: (config, { isServer }) => {
     config.resolve.extensions = ['.js', '.jsx', '.ts', '.tsx', '.json']
-    config.stats = {
-      warnings: true,
-      errors: true,
-      errorDetails: true,
-      modules: true,
-    }
     return config
   },
   eslint: {
