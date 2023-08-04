@@ -20,10 +20,9 @@ import { getFromTokens } from '@/utils/routeMaker/getFromTokens'
 import { getSymbol } from '@/utils/routeMaker/generateRoutePossibilities'
 
 import * as ALL_TOKENS from '@constants/tokens/master'
+import { sortByBalances } from './helpers/sortByBalance'
 
 export const FromTokenListOverlay = () => {
-  const [hasMounted, setHasMounted] = useState(false)
-
   const [currentIdx, setCurrentIdx] = useState(-1)
   const [searchStr, setSearchStr] = useState('')
   const dispatch = useDispatch()
@@ -31,11 +30,13 @@ export const FromTokenListOverlay = () => {
   const { fromTokens, fromChainId, fromToken, toChainId, toToken } =
     useBridgeState()
   const portfolioBalances = usePortfolioBalances()
-  const { isConnected } = useAccount()
 
-  let tokenList = sortTokens(fromTokens)
+  let tokenList = sortTokens(fromTokens).sort((t) =>
+    sortByBalances(t, fromChainId, portfolioBalances)
+  )
 
   const fuse = new Fuse(tokenList, {
+    ignoreLocation: true,
     includeScore: true,
     threshold: 0.0,
     keys: [
@@ -43,6 +44,7 @@ export const FromTokenListOverlay = () => {
         name: 'symbol',
         weight: 2,
       },
+      'routeSymbol',
       `addresses.${fromChainId}`,
       'name',
     ],
@@ -63,26 +65,8 @@ export const FromTokenListOverlay = () => {
       .map((symbol) => ALL_TOKENS[symbol])
   )
 
-  const remainingTokens = _.difference(allFromTokens, fromTokens)
-
-  const tokenListWithBalances = tokenList.filter((t) => {
-    const pb = portfolioBalances[fromChainId]
-    const token = _(pb)
-      .pickBy((value, _key) => value.token === t)
-      .value()
-
-    const tokenWithPb = Object.values(token)[0]
-
-    if (Object.keys(token).length > 0 && tokenWithPb?.balance !== 0n) {
-      return true
-    } else {
-      return false
-    }
-  })
-
-  const tokenListWithoutBalances = _.difference(
-    tokenList,
-    tokenListWithBalances
+  const remainingTokens = _.difference(allFromTokens, fromTokens).sort((t) =>
+    sortByBalances(t, fromChainId, portfolioBalances)
   )
 
   const escPressed = useKeyPress('Escape')
@@ -141,17 +125,9 @@ export const FromTokenListOverlay = () => {
     setCurrentIdx(-1)
   }
 
-  useEffect(() => {
-    setHasMounted(true)
-  }, [])
-
-  const tokensWithoutBalancesText = useMemo(() => {
+  const fromTokensText = useMemo(() => {
     return fromTokenText({ fromChainId, fromToken, toChainId, toToken })
   }, [fromChainId, fromToken, toChainId, toToken])
-
-  const remainingTokensText = useMemo(() => {
-    return 'Other tokens'
-  }, [])
 
   return (
     <div
@@ -167,39 +143,11 @@ export const FromTokenListOverlay = () => {
           />
         </div>
       </div>
-      {hasMounted && isConnected && fromChainId && (
-        <div className="px-2 pt-4 pb-2 text-secondaryTextColor text-sm bg-[#343036]">
-          Wallet
-        </div>
-      )}
-      <div className="px-2 pb-2 bg-[#343036] md:px-2">
-        {tokenListWithBalances.map((token, idx) => {
-          return (
-            <SelectSpecificTokenButton
-              isOrigin={true}
-              key={idx}
-              token={token}
-              selectedToken={fromToken}
-              active={idx === currentIdx}
-              onClick={() => {
-                const eventTitle = '[Bridge User Action] Sets new fromToken'
-                const eventData = {
-                  previousFromToken: fromToken?.symbol,
-                  newFromToken: token?.symbol,
-                }
-
-                segmentAnalyticsEvent(eventTitle, eventData)
-                onMenuItemClick(token)
-              }}
-            />
-          )
-        })}
-      </div>
       <div className="px-2 pb-2 pt-2 text-secondaryTextColor text-sm bg-[#343036]">
-        {tokensWithoutBalancesText}
+        {fromTokensText}
       </div>
       <div className="px-2 pb-4 bg-[#343036] md:px-2 ">
-        {tokenListWithoutBalances.map((token, idx) => {
+        {tokenList.map((token, idx) => {
           return (
             <SelectSpecificTokenButton
               isOrigin={true}
@@ -223,7 +171,7 @@ export const FromTokenListOverlay = () => {
       {remainingTokens && (
         <>
           <div className="px-2 pb-2 text-secondaryTextColor text-sm bg-[#343036]">
-            {remainingTokensText}
+            Other tokens
           </div>
           <div className="px-2 pb-2 bg-[#343036] md:px-2">
             {remainingTokens.map((token, idx) => {

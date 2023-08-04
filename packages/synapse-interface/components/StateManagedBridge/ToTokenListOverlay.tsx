@@ -12,24 +12,29 @@ import { setShowToTokenListOverlay } from '@/slices/bridgeDisplaySlice'
 import { segmentAnalyticsEvent } from '@/contexts/SegmentAnalyticsProvider'
 import { useBridgeState } from '@/slices/bridge/hooks'
 import SelectSpecificTokenButton from './components/SelectSpecificTokenButton'
-import { CHAINS_BY_ID } from '@/constants/chains'
 import { getToTokens } from '@/utils/routeMaker/getToTokens'
 import { getSymbol } from '@/utils/routeMaker/generateRoutePossibilities'
 
 import * as ALL_TOKENS from '@constants/tokens/master'
 import { toTokenText } from './helpers/toTokensText'
+import { sortByBalances } from './helpers/sortByBalance'
+import { usePortfolioBalances } from '@/slices/portfolio/hooks'
 
 export const ToTokenListOverlay = () => {
   const { fromChainId, fromToken, toTokens, toChainId, toToken } =
     useBridgeState()
+  const portfolioBalances = usePortfolioBalances()
 
   const [currentIdx, setCurrentIdx] = useState(-1)
   const [searchStr, setSearchStr] = useState('')
   const dispatch = useDispatch()
 
-  let tokenList = sortTokens(toTokens)
+  let tokenList = sortTokens(toTokens).sort((t) =>
+    sortByBalances(t, toChainId, portfolioBalances)
+  )
 
   const fuse = new Fuse(tokenList, {
+    ignoreLocation: true,
     includeScore: true,
     threshold: 0.0,
     keys: [
@@ -37,6 +42,7 @@ export const ToTokenListOverlay = () => {
         name: 'symbol',
         weight: 2,
       },
+      'routeSymbol',
       `addresses.${toChainId}`,
       'name',
     ],
@@ -57,7 +63,9 @@ export const ToTokenListOverlay = () => {
       .map((symbol) => ALL_TOKENS[symbol])
   )
 
-  const remainingTokens = _.difference(allToTokens, toTokens)
+  const remainingTokens = _.difference(allToTokens, toTokens).sort((t) =>
+    sortByBalances(t, toChainId, portfolioBalances)
+  )
 
   const escPressed = useKeyPress('Escape')
   const arrowUp = useKeyPress('ArrowUp')

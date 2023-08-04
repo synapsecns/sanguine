@@ -8,14 +8,13 @@ interface Fields {
   toToken?: Token
 }
 
-export const fromTokenText = ({
+export const toChainText = ({
   fromChainId,
   fromToken,
   toChainId,
   toToken,
 }: Fields) => {
   const fromChainName = CHAINS_BY_ID[fromChainId]?.name
-  const toChainName = CHAINS_BY_ID[toChainId]?.name
 
   if (
     fromChainId === null &&
@@ -23,7 +22,7 @@ export const fromTokenText = ({
     toChainId === null &&
     toToken === null
   ) {
-    return 'All bridgeable tokens'
+    return `Chains you can receive at`
   }
 
   if (
@@ -32,7 +31,7 @@ export const fromTokenText = ({
     toChainId === null &&
     toToken === null
   ) {
-    return `All ${fromChainName} tokens you can send`
+    return `Chains you can receive at from ${fromChainName}`
   }
 
   if (
@@ -41,11 +40,11 @@ export const fromTokenText = ({
     toChainId === null &&
     toToken === null
   ) {
-    return 'All bridgeable tokens'
+    return `Chains you can receive ${fromToken.symbol}`
   }
 
   if (fromChainId && fromToken && toChainId === null && toToken === null) {
-    return `${fromChainName} tokens you can send`
+    return `Chains you can receive ${fromToken.symbol} on ${fromChainName}`
   }
 
   if (
@@ -54,19 +53,19 @@ export const fromTokenText = ({
     toChainId &&
     toToken === null
   ) {
-    return `All tokens you can send to ${toChainName}`
+    return `Chains you can receive at`
   }
 
   if (fromChainId && fromToken === null && toChainId && toToken === null) {
-    return `${fromChainName} tokens you can send to ${toChainName}`
+    return `Chains you can receive from ${fromChainName}`
   }
 
   if (fromChainId === null && fromToken && toChainId && toToken === null) {
-    return `All tokens you can send to ${toChainName}`
+    return `Chains you can receive ${fromToken.symbol} at`
   }
 
   if (fromChainId && fromToken && toChainId && toToken === null) {
-    return `${fromChainName} tokens you can send to ${toChainName}`
+    return `Chains you can receive ${fromToken.symbol} on ${fromChainName}`
   }
 
   if (
@@ -75,30 +74,30 @@ export const fromTokenText = ({
     toChainId === null &&
     toToken
   ) {
-    return `All tokens you can send and receive ${toToken.symbol}`
+    return `Chains you can receive ${toToken.symbol}`
   }
 
   if (fromChainId && fromToken === null && toChainId === null && toToken) {
-    return `${fromChainName} tokens you can send and receive ${toToken.symbol}`
+    return `Chains you can receive ${toToken.symbol} from ${fromChainName}`
   }
 
   if (fromChainId === null && fromToken && toChainId === null && toToken) {
-    return `Tokens you send and receive ${toToken.symbol}`
+    return `Chains you can receive ${toToken.symbol} by ${fromToken.symbol}`
   }
 
   if (fromChainId === null && fromToken === null && toChainId && toToken) {
-    return `Tokens you can send and receive ${toToken.symbol} on ${toChainName}`
+    return `Chains you can receive ${toToken.symbol}`
   }
 
   if (fromChainId && fromToken === null && toChainId && toToken) {
-    return `${fromChainName} tokens you can send and receive ${toToken.symbol} on ${toChainName}`
+    return `Chains you can receive ${toToken.symbol} from ${fromChainName}`
   }
 
   if (fromChainId === null && fromToken && toChainId && toToken) {
-    return `Tokens you can send and receive ${toToken.symbol} on ${toChainName}`
+    return `Chains you can receive ${toToken.symbol} from ${fromToken.symbol}`
   }
 
   if (fromChainId && fromToken && toChainId && toToken) {
-    return `${fromChainName} tokens you can send and receieve ${toToken.symbol} on ${toChainName}`
+    return `Chains you can receive ${toToken.symbol} by ${fromToken.symbol} on ${fromChainName}`
   }
 }

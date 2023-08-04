@@ -199,6 +199,7 @@ export const getFromTokens = ({
     toTokenRouteSymbol
   ) {
     return _(EXISTING_BRIDGE_ROUTES)
+      .pickBy((_values, key) => key.endsWith(`-${fromChainId}`))
       .pickBy((values, _key) => {
         return _.includes(values, `${toTokenRouteSymbol}-${toChainId}`)
       })

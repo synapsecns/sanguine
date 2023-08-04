@@ -15,7 +15,7 @@ import {
   setDeadlineMinutes,
   setDestinationAddress,
 } from '@/slices/bridge/reducer'
-import { RootState } from '@/store/store'
+import { useBridgeState } from '@/slices/bridge/hooks'
 
 const SettingsSlideOver = () => {
   const dispatch = useDispatch()
@@ -23,7 +23,7 @@ const SettingsSlideOver = () => {
 
   const [expertMode, setExpertMode] = useState(false)
 
-  const { deadlineMinutes } = useSelector((state: RootState) => state.bridge)
+  const { deadlineMinutes } = useBridgeState()
 
   function onClose() {
     dispatch(setShowSettingsSlideOver(false))

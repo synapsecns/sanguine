@@ -1,7 +1,7 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit'
 import { Address } from 'wagmi'
 
-import { NUSD, USDT } from '@/constants/tokens/master'
+import { ETH } from '@/constants/tokens/master'
 import { EMPTY_BRIDGE_QUOTE } from '@/constants/bridge'
 import { ARBITRUM, ETH as ETHEREUM } from '@/constants/chains/master'
 import { BridgeQuote, Token } from '@/utils/types'
@@ -36,9 +36,9 @@ const {
   toTokens,
 } = getRoutePossibilities({
   fromChainId: ETHEREUM.id,
-  fromToken: NUSD,
+  fromToken: ETH,
   toChainId: ARBITRUM.id,
-  toToken: USDT,
+  toToken: ETH,
 })
 
 // How do we update query params based on initial state?

@@ -14,6 +14,7 @@ import {
   useChainModal,
 } from '@rainbow-me/rainbowkit'
 import { stringToBigInt } from '@/utils/bigint/format'
+import { useBridgeState } from '@/slices/bridge/hooks'
 
 export const BridgeTransactionButton = ({
   approveTxn,
@@ -46,7 +47,7 @@ export const BridgeTransactionButton = ({
     fromChainId,
     isLoading,
     bridgeQuote,
-  } = useSelector((state: RootState) => state.bridge)
+  } = useBridgeState()
 
   const { showDestinationAddress } = useSelector(
     (state: RootState) => state.bridgeDisplay

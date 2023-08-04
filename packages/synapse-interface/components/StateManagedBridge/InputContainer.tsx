@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useRef, useCallback } from 'react'
-import { useDispatch, useSelector } from 'react-redux'
+import { useDispatch } from 'react-redux'
 import { useAccount } from 'wagmi'
 
 import {
@@ -10,23 +10,22 @@ import {
 import MiniMaxButton from '../buttons/MiniMaxButton'
 import { formatBigIntToString, stringToBigInt } from '@/utils/bigint/format'
 import { cleanNumberInput } from '@/utils/cleanNumberInput'
-import { useAppSelector } from '@/store/hooks'
 import { ConnectedIndicator } from './ConnectedIndicator'
 import { FromChainSelector } from './FromChainSelector'
 import { FromTokenSelector } from './FromTokenSelector'
+import { useBridgeState } from '@/slices/bridge/hooks'
+import { usePortfolioState } from '@/slices/portfolio/hooks'
 
 export const inputRef = React.createRef<HTMLInputElement>()
 
 export const InputContainer = () => {
-  const { fromChainId, fromToken, fromValue, bridgeTxHashes } = useAppSelector(
-    (state) => state.bridge
-  )
+  const { fromChainId, fromToken, fromValue, bridgeTxHashes } = useBridgeState()
   const [showValue, setShowValue] = useState('')
 
   const [hasMounted, setHasMounted] = useState(false)
   const previousBridgeTxHashesRef = useRef<string[]>([])
 
-  const { balancesAndAllowances } = useAppSelector((state) => state.portfolio)
+  const { balancesAndAllowances } = usePortfolioState()
 
   useEffect(() => {
     setHasMounted(true)

@@ -1,19 +1,23 @@
-import { useCallback, useEffect, useState } from 'react'
+import _ from 'lodash'
+import { useCallback, useEffect, useMemo, useState } from 'react'
+import { useDispatch } from 'react-redux'
 import Fuse from 'fuse.js'
 import { useKeyPress } from '@hooks/useKeyPress'
+import { useNetwork } from 'wagmi'
+
 import * as CHAINS from '@constants/chains/master'
 import SlideSearchBox from '@pages/bridge/SlideSearchBox'
-import { useNetwork } from 'wagmi'
-import { sortChains } from '@constants/chains'
-import { useDispatch } from 'react-redux'
+import { CHAINS_BY_ID, sortChains } from '@constants/chains'
 import { segmentAnalyticsEvent } from '@/contexts/SegmentAnalyticsProvider'
 import { useBridgeState } from '@/slices/bridge/hooks'
 import { setToChainId } from '@/slices/bridge/reducer'
 import { setShowToChainListOverlay } from '@/slices/bridgeDisplaySlice'
 import { SelectSpecificNetworkButton } from './components/SelectSpecificNetworkButton'
+import { toChainText } from './helpers/toChainText'
 
 export const ToChainListOverlay = () => {
-  const { toChainIds, toChainId } = useBridgeState()
+  const { fromChainId, fromToken, toChainIds, toChainId, toToken } =
+    useBridgeState()
   const { chain } = useNetwork()
   const [currentIdx, setCurrentIdx] = useState(-1)
   const [searchStr, setSearchStr] = useState('')
@@ -48,6 +52,11 @@ export const ToChainListOverlay = () => {
     }
     setNetworks(tempNetworks)
   }, [chain, searchStr])
+
+  const remainingChains = _.difference(
+    Object.keys(CHAINS_BY_ID).map((id) => CHAINS_BY_ID[id]),
+    toChainIds.map((id) => CHAINS_BY_ID[id])
+  )
 
   const escPressed = useKeyPress('Escape')
   const arrowUp = useKeyPress('ArrowUp')
@@ -96,6 +105,15 @@ export const ToChainListOverlay = () => {
   useEffect(arrowUpFunc, [arrowUp])
   useEffect(enterPressedFunc, [enterPressed])
 
+  const toChainsText = useMemo(() => {
+    return toChainText({
+      fromChainId,
+      fromToken,
+      toChainId,
+      toToken,
+    })
+  }, [fromChainId, fromToken, toChainId, toToken])
+
   return (
     <div
       data-test-id="chain-slide-over"
@@ -114,8 +132,43 @@ export const ToChainListOverlay = () => {
         data-test-id={dataId}
         className="px-2 pt-2 pb-8 bg-[#343036] md:px-2"
       >
-        <div className="mb-2 text-sm font-normal text-white">Receive on...</div>
+        <div className="mb-2 text-sm font-normal text-white">
+          {toChainsText}
+        </div>
         {networks.map(({ id: mapChainId }, idx) => {
+          let onClickSpecificNetwork
+          if (toChainId === mapChainId) {
+            onClickSpecificNetwork = () => {
+              onClose()
+            }
+          } else {
+            onClickSpecificNetwork = () => {
+              const eventTitle = `[Bridge User Action] Sets new toChainId`
+              const eventData = {
+                previousToChainId: toChainId,
+                newToChainId: mapChainId,
+              }
+
+              segmentAnalyticsEvent(eventTitle, eventData)
+              dispatch(setToChainId(mapChainId))
+              onClose()
+            }
+          }
+          return (
+            <SelectSpecificNetworkButton
+              key={idx}
+              itemChainId={mapChainId}
+              isCurrentChain={toChainId === mapChainId}
+              active={idx === currentIdx}
+              onClick={onClickSpecificNetwork}
+              dataId={dataId}
+            />
+          )
+        })}
+        <div className="pt-2 mb-2 text-sm font-normal text-white">
+          Other chains
+        </div>
+        {remainingChains.map(({ id: mapChainId }, idx) => {
           let onClickSpecificNetwork
           if (toChainId === mapChainId) {
             onClickSpecificNetwork = () => {

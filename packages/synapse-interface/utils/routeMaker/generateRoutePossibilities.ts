@@ -4,7 +4,7 @@ import * as ALL_TOKENS from '@constants/tokens/master'
 import { flattenPausedTokens } from '../flattenPausedTokens'
 import { Token } from '../types'
 import { getToChainIds } from './getToChainIds'
-import { getAllFromChainIds } from './getFromChainIds'
+import { getFromChainIds } from './getFromChainIds'
 import { getFromTokens } from './getFromTokens'
 import { getToTokens } from './getToTokens'
 
@@ -29,7 +29,12 @@ export const getRoutePossibilities = ({
   const fromTokenRouteSymbol = fromToken && fromToken.routeSymbol
   const toTokenRouteSymbol = toToken && toToken.routeSymbol
 
-  const fromChainIds = getAllFromChainIds()
+  const fromChainIds = getFromChainIds({
+    fromChainId,
+    fromTokenRouteSymbol,
+    toChainId,
+    toTokenRouteSymbol,
+  })
 
   const fromTokens = _.uniq(
     _.difference(

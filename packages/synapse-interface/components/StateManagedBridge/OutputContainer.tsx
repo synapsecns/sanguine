@@ -1,8 +1,5 @@
 import { useEffect, useState } from 'react'
-import { useSelector } from 'react-redux'
 import { Address, useAccount } from 'wagmi'
-
-import { RootState } from '@/store/store'
 
 import LoadingSpinner from '../ui/tailwind/LoadingSpinner'
 import { ToChainSelector } from './ToChainSelector'
@@ -10,11 +7,10 @@ import { shortenAddress } from '@/utils/shortenAddress'
 import { ToTokenSelector } from './ToTokenSelector'
 import { useDispatch } from 'react-redux'
 import { setToChainId, setToToken } from '@/slices/bridge/reducer'
+import { useBridgeState } from '@/slices/bridge/hooks'
 
 export const OutputContainer = ({}) => {
-  const { bridgeQuote, isLoading, toChainId, toToken } = useSelector(
-    (state: RootState) => state.bridge
-  )
+  const { bridgeQuote, isLoading, toChainId, toToken } = useBridgeState()
 
   const { address: isConnectedAddress } = useAccount()
   const [address, setAddress] = useState<Address>()
