@@ -54,7 +54,9 @@ export const PortfolioAccordion = ({
         </button>
         {isExpanded && expandedProps}
       </div>
-      <div>{isExpanded && <React.Fragment>{children}</React.Fragment>}</div>
+      <div className="flex flex-col">
+        {isExpanded && <React.Fragment>{children}</React.Fragment>}
+      </div>
     </div>
   )
 }
