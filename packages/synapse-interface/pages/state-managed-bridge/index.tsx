@@ -102,6 +102,7 @@ import {
 } from '@/slices/portfolio/hooks'
 import { FetchState } from '@/slices/portfolio/actions'
 import { updateSingleTokenAllowance } from '@/slices/portfolio/actions'
+import { sortTokens } from '@/constants/tokens'
 
 // NOTE: These are idle utility functions that will be re-written to
 // support sorting by desired mechanism
@@ -194,12 +195,16 @@ const StateManagedBridge = () => {
     let fromTokens = BRIDGABLE_TOKENS[fromChainId] ?? []
     const toTokens = BRIDGABLE_TOKENS[toChainId]
 
+    console.log('fromTokens: ', fromTokens)
+    console.log('fromToken.symbol: ', fromToken.symbol)
+    console.log('toTokens: ', toTokens)
     // Checking whether the selected fromToken exists in the BRIDGABLE_TOKENS for the chosen chain
     if (!fromTokens.some((token) => token.symbol === fromToken?.symbol)) {
       // Sort the tokens based on priorityRank in ascending order
       const sortedTokens = fromTokens.sort(
         (a, b) => a.priorityRank - b.priorityRank
       )
+      console.log('sortedTokens: ', sortedTokens)
       // Select the token with the highest priority rank
       dispatch(setFromToken(sortedTokens[0]))
       // Update fromTokens for the selected fromToken
@@ -214,10 +219,22 @@ const StateManagedBridge = () => {
         fromChainId
       )
 
+    console.log('bridgeableToken', bridgeableToken)
+    console.log('bridgeableTokens: ', bridgeableTokens)
+    console.log('bridgeableChainIds:', bridgeableChainIds)
+    console.log('toChainId: ', toChainId)
+
+    const sortedFromTokens = sortTokens(fromTokens).filter(
+      (token) => token !== fromToken
+    )
+
+    console.log('sortedFromTokens: ', sortedFromTokens)
     let bridgeableToChainId = toChainId
     if (!bridgeableChainIds.includes(toChainId)) {
-      dispatch(setToChainId(toChainId))
-      dispatch(setToToken(toToken))
+      console.log('sortedFromTokens[0]: ', sortedFromTokens[0])
+      dispatch(setFromToken(sortedFromTokens[0]))
+      // dispatch(setToChainId(toChainId))
+      // dispatch(setToToken(toToken))
       const sortedChainIds = bridgeableChainIds?.sort((a, b) => {
         const chainA = CHAINS_ARR.find((chain) => chain.id === a)
         const chainB = CHAINS_ARR.find((chain) => chain.id === b)
