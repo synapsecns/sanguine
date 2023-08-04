@@ -5,8 +5,10 @@ import {
   SingleNetworkPortfolio,
   PortfolioHeader,
 } from './SingleNetworkPortfolio'
-import { FetchState } from '@/slices/portfolio/reducer'
+import { FetchState } from '@/slices/portfolio/actions'
 import { ConnectWalletButton } from './ConnectWalletButton'
+import { CHAINS_BY_ID } from '@/constants/chains'
+import { Chain } from '@/utils/types'
 
 type PortfolioContentProps = {
   connectedAddress: Address | string
@@ -28,8 +30,11 @@ export const PortfolioContent = ({
       selectedFromChainId,
       networkPortfolioWithBalances
     )
+
   const portfolioExists: boolean =
     Object.keys(networkPortfolioWithBalances).length > 0
+  const currentChain: Chain = CHAINS_BY_ID[selectedFromChainId]
+  const isUnsupportedChain: boolean = currentChain ? false : true
 
   const isInitialFetchLoading: boolean =
     !portfolioExists && fetchState === FetchState.LOADING

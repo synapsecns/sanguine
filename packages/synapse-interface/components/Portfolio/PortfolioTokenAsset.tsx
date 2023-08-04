@@ -17,10 +17,12 @@ import Image from 'next/image'
 import { toast } from 'react-hot-toast'
 import {
   ROUTER_ADDRESS,
+  CCTP_ROUTER_ADDRESS,
   Allowances,
 } from '@/utils/actions/fetchPortfolioBalances'
 import { useBridgeState } from '@/slices/bridge/hooks'
 import { fetchAndStoreSingleTokenAllowance } from '@/slices/portfolio/hooks'
+import { ChainId } from '@/constants/chains'
 
 type PortfolioTokenAssetProps = {
   token: Token
@@ -43,6 +45,52 @@ const handleFocusOnInput = () => {
   inputRef.current.focus()
 }
 
+function checkCCTPChainConditions(
+  fromChainId: number,
+  toChainId: number
+): boolean {
+  switch (true) {
+    case fromChainId === 1 && toChainId === 42161:
+      return true
+    case fromChainId === 42161 && toChainId === 1:
+      return true
+    case fromChainId === 1 && toChainId === 43114:
+      return true
+    case fromChainId === 43114 && toChainId === 1:
+      return true
+    case fromChainId === 42161 && toChainId === 43114:
+      return true
+    case fromChainId === 43114 && toChainId === 42161:
+      return true
+    default:
+      return false
+  }
+}
+
+function checkIfUsingCCTP({
+  fromChainId,
+  fromToken,
+  toChainId,
+  toToken,
+}: {
+  fromChainId: number
+  fromToken: Token
+  toChainId: number
+  toToken: Token
+}): boolean {
+  const originTokenSymbol = fromToken?.symbol
+  const destinationTokenSymbol = toToken?.symbol
+
+  const isTokensUSDC: boolean =
+    originTokenSymbol === 'USDC' && destinationTokenSymbol === 'USDC'
+  const isSupportedCCTPChains: boolean = checkCCTPChainConditions(
+    fromChainId,
+    toChainId
+  )
+
+  return isTokensUSDC && isSupportedCCTPChains
+}
+
 export const PortfolioTokenAsset = ({
   token,
   balance,
@@ -52,7 +100,7 @@ export const PortfolioTokenAsset = ({
   isApproved,
 }: PortfolioTokenAssetProps) => {
   const dispatch = useAppDispatch()
-  const { fromChainId, fromToken } = useBridgeState()
+  const { fromChainId, fromToken, toChainId, toToken } = useBridgeState()
   const { address } = useAccount()
   const { icon, symbol, decimals, addresses } = token
 
@@ -67,7 +115,18 @@ export const PortfolioTokenAsset = ({
       : formattedBalance
   }, [balance, portfolioChainId])
 
-  const bridgeAllowance = allowances && allowances[ROUTER_ADDRESS]
+  const isCCTP: boolean = checkIfUsingCCTP({
+    fromChainId,
+    fromToken,
+    toChainId,
+    toToken,
+  })
+
+  const tokenRouterAddress: string = isCCTP
+    ? CCTP_ROUTER_ADDRESS
+    : ROUTER_ADDRESS
+
+  const bridgeAllowance: bigint = allowances?.[tokenRouterAddress]
 
   const parsedAllowance: string =
     bridgeAllowance &&
@@ -110,35 +169,39 @@ export const PortfolioTokenAsset = ({
     if (isCurrentlyConnected) {
       dispatch(setFromChainId(portfolioChainId))
       dispatch(setFromToken(token))
-      await approveToken(ROUTER_ADDRESS, connectedChainId, tokenAddress).then(
-        (success) => {
-          dispatch(
-            fetchAndStoreSingleTokenAllowance({
-              routerAddress: ROUTER_ADDRESS,
-              tokenAddress: tokenAddress as Address,
-              address: address,
-              chainId: portfolioChainId,
-            })
-          )
-        }
-      )
+      await approveToken(
+        tokenRouterAddress,
+        connectedChainId,
+        tokenAddress
+      ).then((success) => {
+        dispatch(
+          fetchAndStoreSingleTokenAllowance({
+            routerAddress: tokenRouterAddress as Address,
+            tokenAddress: tokenAddress as Address,
+            address: address,
+            chainId: portfolioChainId,
+          })
+        )
+      })
     } else {
       try {
         await switchNetwork({ chainId: portfolioChainId })
         await scrollToTop()
-        await approveToken(ROUTER_ADDRESS, portfolioChainId, tokenAddress).then(
-          (success) => {
-            success &&
-              dispatch(
-                fetchAndStoreSingleTokenAllowance({
-                  routerAddress: ROUTER_ADDRESS,
-                  tokenAddress: tokenAddress as Address,
-                  address: address,
-                  chainId: portfolioChainId,
-                })
-              )
-          }
-        )
+        await approveToken(
+          tokenRouterAddress,
+          portfolioChainId,
+          tokenAddress
+        ).then((success) => {
+          success &&
+            dispatch(
+              fetchAndStoreSingleTokenAllowance({
+                routerAddress: tokenRouterAddress as Address,
+                tokenAddress: tokenAddress as Address,
+                address: address,
+                chainId: portfolioChainId,
+              })
+            )
+        })
       } catch (error) {
         toast.error(
           `Failed to approve ${token.symbol} token on ${currentChainName} network`,
@@ -157,6 +220,7 @@ export const PortfolioTokenAsset = ({
     portfolioChainId,
     isCurrentlyConnected,
     isDisabled,
+    tokenRouterAddress,
   ])
 
   return (
@@ -198,7 +262,9 @@ export const PortfolioTokenAsset = ({
           </div>
           {hasAllowanceButLessThanBalance && (
             <HoverClickableText
-              defaultText={`${parsedAllowance} approved`}
+              defaultText={`${parsedAllowance} ${
+                isCCTP ? 'approved (CCTP)' : 'approved'
+              }`}
               hoverText="Increase Limit"
               callback={handleApproveCallback}
             />

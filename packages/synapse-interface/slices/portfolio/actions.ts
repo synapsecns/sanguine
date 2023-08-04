@@ -8,6 +8,13 @@ export enum PortfolioTabs {
   PORTFOLIO = 'portfolio',
 }
 
+export enum FetchState {
+  IDLE = 'idle',
+  LOADING = 'loading',
+  VALID = 'valid',
+  INVALID = 'invalid',
+}
+
 export const setActiveTab = createAction<PortfolioTabs>(
   'portfolio/setActiveTab'
 )
@@ -17,3 +24,6 @@ export const updateSingleTokenAllowance = createAction<{
   spender: Address
   token: Token
 }>('portfolio/updateSingleTokenAllowance')
+export const resetPortfolioState = createAction<void>(
+  'portfolio/resetPortfolioState'
+)

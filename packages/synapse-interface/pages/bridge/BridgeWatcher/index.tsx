@@ -18,6 +18,7 @@ import { Address } from 'viem'
 import { walletClientToSigner } from '@/ethers'
 import SYNAPSE_CCTP_ABI from '@abis/synapseCCTP.json'
 import * as CHAINS from '@constants/chains/master'
+import { ChainId } from '@/constants/chains'
 
 import {
   getLogs,
@@ -219,7 +220,7 @@ const BridgeWatcher = ({
 
   const getFromBridgeEvents = async (): Promise<BridgeWatcherTx[]> => {
     const currentFromBlock = await fetchBlockNumber({ chainId: fromChainId })
-    const provider = providerMap[fromChainId] ?? providerMap[CHAINS.ETH.id]
+    const provider = providerMap[fromChainId] ?? providerMap[ChainId.ETH]
     const iface = new Interface(SYNAPSE_BRIDGE_ABI)
     const adjustedAddress = destinationAddress ? destinationAddress : address
 
@@ -229,7 +230,7 @@ const BridgeWatcher = ({
       bridgeInterface,
       synapseCCTPContract,
       synapseCCTPInterface,
-    } = createContractsAndInterfaces(provider.network.chainId, provider)
+    } = createContractsAndInterfaces(provider?.network?.chainId, provider)
 
     const fromEvents = await fetchFromBridgeEvents(
       Number(currentFromBlock),

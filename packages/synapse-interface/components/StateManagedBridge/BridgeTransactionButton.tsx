@@ -61,15 +61,16 @@ export const BridgeTransactionButton = ({
 
   let buttonProperties
 
-  const fromTokenDecimals: number | undefined = fromToken?.decimals[fromChainId]
+  const fromTokenDecimals: number | undefined =
+    fromToken && fromToken.decimals[fromChainId]
 
   const fromValueBigInt = useMemo(() => {
     return fromTokenDecimals ? stringToBigInt(fromValue, fromTokenDecimals) : 0
   }, [fromValue, fromTokenDecimals])
 
-  if (!fromToken || !toToken) {
+  if (!fromToken) {
     buttonProperties = {
-      label: 'Select token to bridge',
+      label: `Unsupported Network`,
       onClick: null,
     }
   } else if (
@@ -103,13 +104,13 @@ export const BridgeTransactionButton = ({
   } else if (!isApproved) {
     buttonProperties = {
       onClick: approveTxn,
-      label: `Approve ${fromToken.symbol}`,
+      label: `Approve ${fromToken?.symbol}`,
       pendingLabel: 'Approving',
     }
   } else {
     buttonProperties = {
       onClick: executeBridge,
-      label: `Bridge ${fromToken.symbol}`,
+      label: `Bridge ${fromToken?.symbol}`,
       pendingLabel: 'Bridging',
     }
   }

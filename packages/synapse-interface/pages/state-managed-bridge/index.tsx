@@ -61,7 +61,11 @@ import {
   fetchAndStoreSingleTokenAllowance,
   fetchAndStoreSingleTokenBalance,
 } from '@/slices/portfolio/hooks'
-import { usePortfolioBalances } from '@/slices/portfolio/hooks'
+import {
+  usePortfolioBalances,
+  useFetchPortfolioBalances,
+} from '@/slices/portfolio/hooks'
+import { FetchState } from '@/slices/portfolio/actions'
 import { updateSingleTokenAllowance } from '@/slices/portfolio/actions'
 import { FromChainListOverlay } from '@/components/StateManagedBridge/FromChainListOverlay'
 import { ToChainListOverlay } from '@/components/StateManagedBridge/ToChainListOverlay'
@@ -77,8 +81,8 @@ const StateManagedBridge = () => {
   const router = useRouter()
   const { query, pathname } = router
 
-  const portfolioBalances: NetworkTokenBalancesAndAllowances =
-    usePortfolioBalances()
+  const { balancesAndAllowances: portfolioBalances, status: portfolioStatus } =
+    useFetchPortfolioBalances()
 
   const {
     fromChainId,

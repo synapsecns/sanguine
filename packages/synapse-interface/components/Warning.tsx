@@ -11,7 +11,7 @@ import {
 interface WarningProps {
   originChainId: number
   destinationChainId: number
-  originToken: Token
+  originToken: Token | undefined
   destinationToken: Token
 }
 
@@ -25,8 +25,8 @@ export const Warning = ({
     return null
   }
 
-  const { symbol: originTokenSymbol } = originToken
-  const { symbol: destinationTokenSymbol } = destinationToken
+  const originTokenSymbol = originToken && originToken.symbol
+  const destinationTokenSymbol = destinationToken && destinationToken.symbol
 
   const isTokenUSDCAndUSDCe =
     (originTokenSymbol === 'USDC' && destinationTokenSymbol === 'USDCe') ||
@@ -169,17 +169,21 @@ export const Warning = ({
   }
 }
 
-const WarningMessage = ({
+export const WarningMessage = ({
   header,
   message,
+  twClassName,
 }: {
-  header: string
-  message: React.ReactNode
+  header?: string
+  message?: React.ReactNode
+  twClassName?: string
 }) => {
   return (
-    <div className="flex flex-col bg-[#353038] text-white text-sm p-3 rounded-md mt-4">
-      <div className="mb-2 font-bold">{header}</div>
-      <div>{message}</div>
+    <div
+      className={`flex flex-col bg-[#353038] text-white text-sm p-3 rounded-md mt-4 ${twClassName}`}
+    >
+      {header && <div className="mb-2 font-bold">{header}</div>}
+      {message && <div>{message}</div>}
     </div>
   )
 }

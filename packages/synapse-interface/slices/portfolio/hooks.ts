@@ -3,8 +3,8 @@ import { createAsyncThunk } from '@reduxjs/toolkit'
 import { getAccount, Address } from '@wagmi/core'
 
 import { AppDispatch, RootState } from '@/store/store'
+import { FetchState } from './actions'
 import { useAppSelector } from '@/store/hooks'
-import { FetchState } from './reducer'
 import {
   fetchPortfolioBalances,
   NetworkTokenBalancesAndAllowances,
@@ -23,7 +23,7 @@ export const usePortfolioBalances = (): NetworkTokenBalancesAndAllowances => {
 }
 
 export const fetchAndStorePortfolioBalances = createAsyncThunk(
-  'portfolio/fetchAndStortePortfolioBalances',
+  'portfolio/fetchAndStorePortfolioBalances',
   async (address: string) => {
     const portfolioData = await fetchPortfolioBalances(address)
     return portfolioData

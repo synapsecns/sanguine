@@ -1,4 +1,5 @@
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
+import { useDispatch } from 'react-redux'
 import Image from 'next/image'
 import { CHAINS_BY_ID } from '@/constants/chains'
 import {
@@ -12,8 +13,17 @@ import { Chain } from '@/utils/types'
 import PortfolioAccordion from './PortfolioAccordion'
 import { PortfolioConnectButton } from './PortfolioConnectButton'
 import { EmptyPortfolioContent } from './PortfolioContent'
-import { FetchState } from '@/slices/portfolio/reducer'
+import { FetchState } from '@/slices/portfolio/actions'
 import { PortfolioTokenAsset } from './PortfolioTokenAsset'
+import { QuestionMarkCircleIcon } from '@heroicons/react/outline'
+import { WarningMessage } from '../Warning'
+import { TWITTER_URL, DISCORD_URL } from '@/constants/urls'
+import {
+  setSupportedFromTokens,
+  setSupportedToTokens,
+  setToChainId,
+  initialState,
+} from '@/slices/bridge/reducer'
 
 type SingleNetworkPortfolioProps = {
   portfolioChainId: number
@@ -32,7 +42,10 @@ export const SingleNetworkPortfolio = ({
   initializeExpanded = false,
   fetchState,
 }: SingleNetworkPortfolioProps) => {
+  const dispatch = useDispatch()
+
   const currentChain: Chain = CHAINS_BY_ID[portfolioChainId]
+  const isUnsupportedChain: boolean = currentChain ? false : true
 
   const [tokensWithAllowance, tokensWithoutAllowance] =
     separateTokensByAllowance(portfolioTokens)
@@ -49,6 +62,13 @@ export const SingleNetworkPortfolio = ({
 
   const isLoading: boolean = fetchState === FetchState.LOADING
 
+  useEffect(() => {
+    if (isUnsupportedChain) {
+      dispatch(setSupportedFromTokens([]))
+      dispatch(setSupportedToTokens(initialState.supportedToTokens))
+    }
+  }, [isUnsupportedChain])
+
   return (
     <div data-test-id="single-network-portfolio" className="flex flex-col">
       <PortfolioAccordion
@@ -60,6 +80,7 @@ export const SingleNetworkPortfolio = ({
           <PortfolioNetwork
             displayName={currentChain?.name}
             chainIcon={currentChain?.chainImg}
+            isUnsupportedChain={isUnsupportedChain}
           />
         }
         expandedProps={
@@ -74,6 +95,25 @@ export const SingleNetworkPortfolio = ({
           />
         }
       >
+        {isUnsupportedChain && (
+          <WarningMessage
+            twClassName="!p-2 !mt-0"
+            message={
+              <p className="leading-6">
+                This chain is not yet supported. New chain or token support can
+                be discussed on{' '}
+                <a target="_blank" className="underline" href={TWITTER_URL}>
+                  Twitter
+                </a>{' '}
+                or{' '}
+                <a target="_blank" className="underline" href={DISCORD_URL}>
+                  Discord
+                </a>
+                .
+              </p>
+            }
+          />
+        )}
         <PortfolioHeader />
         {!isLoading && hasNoTokenBalance && <EmptyPortfolioContent />}
         {sortedTokensWithAllowance &&
@@ -113,11 +153,13 @@ export const SingleNetworkPortfolio = ({
 type PortfolioNetworkProps = {
   displayName: string
   chainIcon: string
+  isUnsupportedChain: boolean
 }
 
 const PortfolioNetwork = ({
   displayName,
   chainIcon,
+  isUnsupportedChain,
 }: PortfolioNetworkProps) => {
   return (
     <div
@@ -125,12 +167,18 @@ const PortfolioNetwork = ({
       className="flex flex-row justify-between flex-1 py-4 pl-2"
     >
       <div className="flex flex-row items-center">
-        <Image
-          className="w-6 h-6 mr-3 rounded-md"
-          alt={`${displayName} img`}
-          src={chainIcon}
-        />
-        <div className="text-lg font-medium text-white">{displayName}</div>
+        {isUnsupportedChain ? (
+          <QuestionMarkCircleIcon className="w-6 h-6 mr-3 text-white rounded-md" />
+        ) : (
+          <Image
+            className="w-6 h-6 mr-3 rounded-md"
+            alt={`${displayName} img`}
+            src={chainIcon}
+          />
+        )}
+        <div className="text-lg font-medium text-white">
+          {isUnsupportedChain ? 'Unsupported Network' : displayName}
+        </div>
       </div>
     </div>
   )

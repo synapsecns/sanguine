@@ -1,5 +1,5 @@
-import React, { useEffect, useState, useRef } from 'react'
-import { useDispatch } from 'react-redux'
+import React, { useEffect, useState, useRef, useCallback } from 'react'
+import { useDispatch, useSelector } from 'react-redux'
 import { useAccount } from 'wagmi'
 
 import {
@@ -50,6 +50,10 @@ export const InputContainer = () => {
     (token) => token.tokenAddress === fromToken?.addresses[fromChainId]
   )?.parsedBalance
 
+  const balance = balancesAndAllowances[fromChainId]?.find(
+    (token) => token.tokenAddress === fromToken?.addresses[fromChainId]
+  )?.balance
+
   useEffect(() => {
     if (
       fromToken &&
@@ -81,10 +85,13 @@ export const InputContainer = () => {
     }
   }
 
-  const onClickBalance = () => {
-    dispatch(updateFromValue(parsedBalance))
-    setShowValue(parsedBalance)
-  }
+  const onMaxBalance = useCallback(() => {
+    dispatch(
+      updateFromValue(
+        formatBigIntToString(balance, fromToken.decimals[fromChainId])
+      )
+    )
+  }, [balance, fromChainId, fromToken])
 
   return (
     <div
@@ -128,16 +135,17 @@ export const InputContainer = () => {
               pattern="^[0-9]*[.,]?[0-9]*$"
               disabled={false}
               className={`
-                focus:outline-none
-                focus:ring-0
-                focus:border-none
-                border-none
-                bg-transparent
-                max-w-[100px]
-                md:max-w-[160px]
-                placeholder:text-[#88818C]
-                text-white text-opacity-80 text-lg md:text-2xl font-medium
-              `}
+              focus:outline-none
+              focus:ring-0
+              focus:border-none
+              border-none
+              bg-transparent
+              p-0
+              max-w-[100px]
+              md:max-w-[160px]
+              placeholder:text-[#88818C]
+              text-white text-opacity-80 text-lg md:text-2xl font-medium
+            `}
               placeholder="0.0000"
               onChange={handleFromValueChange}
               value={showValue}
@@ -149,8 +157,8 @@ export const InputContainer = () => {
             {hasMounted && isConnected && (
               <label
                 htmlFor="inputRow"
-                className="hidden ml-3 -mt-2 text-xs text-white transition-all duration-150 md:block transform-gpu hover:text-opacity-70 hover:cursor-pointer"
-                onClick={onClickBalance}
+                className="hidden text-xs text-white transition-all duration-150 md:block transform-gpu hover:text-opacity-70 hover:cursor-pointer"
+                onClick={onMaxBalance}
               >
                 {parsedBalance ?? '0.0'}
                 <span className="text-opacity-50 text-secondaryTextColor">
@@ -163,8 +171,8 @@ export const InputContainer = () => {
           {hasMounted && isConnected && (
             <div className="m-auto">
               <MiniMaxButton
-                disabled={parsedBalance === '0.0'}
-                onClickBalance={onClickBalance}
+                disabled={balance && balance === 0n}
+                onClickBalance={onMaxBalance}
               />
             </div>
           )}
