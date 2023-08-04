@@ -22,7 +22,7 @@ import {
 } from '@/utils/actions/fetchPortfolioBalances'
 import { useBridgeState } from '@/slices/bridge/hooks'
 import { fetchAndStoreSingleTokenAllowance } from '@/slices/portfolio/hooks'
-import { ChainId } from '@/constants/chains'
+import { AVALANCHE, ETH, ARBITRUM } from '@/constants/chains/master'
 
 type PortfolioTokenAssetProps = {
   token: Token
@@ -50,17 +50,17 @@ function checkCCTPChainConditions(
   toChainId: number
 ): boolean {
   switch (true) {
-    case fromChainId === 1 && toChainId === 42161:
+    case fromChainId === ETH.id && toChainId === ARBITRUM.id:
       return true
-    case fromChainId === 42161 && toChainId === 1:
+    case fromChainId === ARBITRUM.id && toChainId === ETH.id:
       return true
-    case fromChainId === 1 && toChainId === 43114:
+    case fromChainId === ETH.id && toChainId === AVALANCHE.id:
       return true
-    case fromChainId === 43114 && toChainId === 1:
+    case fromChainId === AVALANCHE.id && toChainId === ETH.id:
       return true
-    case fromChainId === 42161 && toChainId === 43114:
+    case fromChainId === ARBITRUM.id && toChainId === AVALANCHE.id:
       return true
-    case fromChainId === 43114 && toChainId === 42161:
+    case fromChainId === AVALANCHE.id && toChainId === ARBITRUM.id:
       return true
     default:
       return false
