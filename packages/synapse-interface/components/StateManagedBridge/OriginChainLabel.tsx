@@ -47,7 +47,9 @@ export const OriginChainLabel = ({
           className={`
             flex items-center relative
             overflow-x-auto overflow-y-hidden
-            scrollbar-hide`}
+            scrollbar-hide
+            md:ml-auto
+            `}
         >
           <div
             className={`
@@ -75,7 +77,7 @@ export const OriginChainLabel = ({
           </div>
         </div>
 
-        <div className="max-[475px]:pl-1 ml-auto">
+        <div className="max-[475px]:pl-1 ml-auto md:ml-0">
           <button
             onClick={() => {
               dispatch(setShowFromChainSlideOver(true))

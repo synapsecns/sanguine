@@ -9,6 +9,8 @@ import {
   PortfolioHeader,
 } from './SingleNetworkPortfolio'
 import { ConnectWalletButton } from './ConnectWalletButton'
+import { CHAINS_BY_ID } from '@/constants/chains'
+import { Chain } from '@/utils/types'
 
 type PortfolioContentProps = {
   connectedAddress: Address | string
@@ -29,6 +31,9 @@ export const PortfolioContent = ({
   fetchState,
   bridgeTxHashes,
 }: PortfolioContentProps) => {
+  const currentChain: Chain = CHAINS_BY_ID[selectedFromChainId]
+  const isUnsupportedChain: boolean = currentChain ? false : true
+
   const { currentNetwork, remainingNetworks } = getCurrentNetworkPortfolio(
     selectedFromChainId,
     networkPortfolioWithBalances
@@ -43,17 +48,30 @@ export const PortfolioContent = ({
 
   return (
     <div data-test-id="portfolio-content">
-      {currentNetwork && connectedChainId && selectedFromChainId && (
-        <SingleNetworkPortfolio
-          portfolioChainId={selectedFromChainId}
-          connectedChainId={connectedChainId}
-          selectedFromChainId={selectedFromChainId}
-          portfolioTokens={currentNetwork[selectedFromChainId]}
-          initializeExpanded={true}
-          fetchPortfolioBalancesCallback={fetchPortfolioBalancesCallback}
-          fetchState={fetchState}
-        />
-      )}
+      {currentNetwork &&
+        connectedChainId &&
+        selectedFromChainId &&
+        (isUnsupportedChain ? (
+          <SingleNetworkPortfolio
+            portfolioChainId={selectedFromChainId}
+            connectedChainId={connectedChainId}
+            selectedFromChainId={selectedFromChainId}
+            portfolioTokens={currentNetwork[selectedFromChainId]}
+            initializeExpanded={true}
+            fetchPortfolioBalancesCallback={fetchPortfolioBalancesCallback}
+            fetchState={fetchState}
+          />
+        ) : (
+          <SingleNetworkPortfolio
+            portfolioChainId={selectedFromChainId}
+            connectedChainId={connectedChainId}
+            selectedFromChainId={selectedFromChainId}
+            portfolioTokens={currentNetwork[selectedFromChainId]}
+            initializeExpanded={true}
+            fetchPortfolioBalancesCallback={fetchPortfolioBalancesCallback}
+            fetchState={fetchState}
+          />
+        ))}
       {connectedAddress ? (
         fetchState === FetchState.LOADING ? (
           <LoadingPortfolioContent />
