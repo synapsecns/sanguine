@@ -663,9 +663,6 @@ const getNewToChain = (positedToChain, fromChainId, bridgeableChains) => {
 // Determines which chains are bridgeable based on the swapableType of the token.
 const getBridgeableChains = (token, fromChainId, swapExceptionsArr) => {
   // Filter out chains that are not bridgeable for the given token type.
-  console.log('token: ', token)
-  console.log('fromChainId:', fromChainId)
-  console.log('BRIDGE_CHAINS_BY_TYPE: ', BRIDGE_CHAINS_BY_TYPE)
   let bridgeableChains = BRIDGE_CHAINS_BY_TYPE[
     String(token.swapableType)
   ].filter((chainId) => Number(chainId) !== fromChainId)
