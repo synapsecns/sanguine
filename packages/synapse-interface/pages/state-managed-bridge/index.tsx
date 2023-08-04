@@ -217,9 +217,10 @@ const StateManagedBridge = () => {
     dispatch(setFromChainIds(fromChainIds))
     dispatch(setToChainIds(bridgeableChainIds))
 
-    if (bridgeableToChainId && bridgeableToChainId !== toChainId) {
-      dispatch(setToChainId(bridgeableToChainId))
-    }
+    // if (bridgeableToChainId && bridgeableToChainId !== toChainId) {
+    //   dispatch(setToChainId(bridgeableToChainId))
+    // }
+    dispatch(setToChainId(toChainId))
 
     console.log(`[useEffect] fromToken`, fromToken.symbol)
     console.log(`[useEffect] toToken`, toToken.symbol)
