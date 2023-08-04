@@ -49,22 +49,16 @@ function checkCCTPChainConditions(
   fromChainId: number,
   toChainId: number
 ): boolean {
-  switch (true) {
-    case fromChainId === ETH.id && toChainId === ARBITRUM.id:
-      return true
-    case fromChainId === ARBITRUM.id && toChainId === ETH.id:
-      return true
-    case fromChainId === ETH.id && toChainId === AVALANCHE.id:
-      return true
-    case fromChainId === AVALANCHE.id && toChainId === ETH.id:
-      return true
-    case fromChainId === ARBITRUM.id && toChainId === AVALANCHE.id:
-      return true
-    case fromChainId === AVALANCHE.id && toChainId === ARBITRUM.id:
-      return true
-    default:
-      return false
-  }
+  const CctpPairs = new Set([
+    `${ETH.id}-${ARBITRUM.id}`,
+    `${ARBITRUM.id}-${ETH.id}`,
+    `${ETH.id}-${AVALANCHE.id}`,
+    `${AVALANCHE.id}-${ETH.id}`,
+    `${ARBITRUM.id}-${AVALANCHE.id}`,
+    `${AVALANCHE.id}-${ARBITRUM.id}`,
+  ])
+
+  return CctpPairs.has(`${fromChainId}-${toChainId}`)
 }
 
 function checkIfUsingCCTP({
@@ -88,6 +82,8 @@ function checkIfUsingCCTP({
     toChainId
   )
 
+  console.log('isTokensUSDC: ', isTokensUSDC)
+  console.log('isSupportedCCTPChains:', isSupportedCCTPChains)
   return isTokensUSDC && isSupportedCCTPChains
 }
 
