@@ -23,7 +23,7 @@ import {
   setSupportedToTokens,
   setToChainId,
   initialState,
-} from '@/slices/bridgeSlice'
+} from '@/slices/bridge/reducer'
 
 type SingleNetworkPortfolioProps = {
   portfolioChainId: number
