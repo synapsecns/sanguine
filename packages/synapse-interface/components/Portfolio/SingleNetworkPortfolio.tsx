@@ -2,12 +2,18 @@ import React, { useState, useEffect } from 'react'
 import { useDispatch } from 'react-redux'
 import Image from 'next/image'
 import { CHAINS_BY_ID } from '@/constants/chains'
-import { TokenWithBalanceAndAllowance } from '@/utils/hooks/usePortfolioBalances'
+import {
+  ROUTER_ADDRESS,
+  TokenWithBalanceAndAllowance,
+  TokenWithBalanceAndAllowances,
+  separateTokensByAllowance,
+  sortTokensByBalanceDescending,
+} from '@/utils/actions/fetchPortfolioBalances'
 import { Chain } from '@/utils/types'
 import PortfolioAccordion from './PortfolioAccordion'
 import { PortfolioConnectButton } from './PortfolioConnectButton'
 import { EmptyPortfolioContent } from './PortfolioContent'
-import { FetchState } from '@/utils/hooks/usePortfolioBalances'
+import { FetchState } from '@/slices/portfolio/actions'
 import { PortfolioTokenAsset } from './PortfolioTokenAsset'
 import { QuestionMarkCircleIcon } from '@heroicons/react/outline'
 import { WarningMessage } from '../Warning'
@@ -17,15 +23,14 @@ import {
   setSupportedToTokens,
   setToChainId,
   initialState,
-} from '@/slices/bridgeSlice'
+} from '@/slices/bridge/reducer'
 
 type SingleNetworkPortfolioProps = {
   portfolioChainId: number
   connectedChainId: number
   selectedFromChainId: number
-  portfolioTokens: TokenWithBalanceAndAllowance[]
+  portfolioTokens: TokenWithBalanceAndAllowances[]
   initializeExpanded: boolean
-  fetchPortfolioBalancesCallback: () => Promise<void>
   fetchState: FetchState
 }
 
@@ -35,7 +40,6 @@ export const SingleNetworkPortfolio = ({
   selectedFromChainId,
   portfolioTokens,
   initializeExpanded = false,
-  fetchPortfolioBalancesCallback,
   fetchState,
 }: SingleNetworkPortfolioProps) => {
   const dispatch = useDispatch()
@@ -46,12 +50,12 @@ export const SingleNetworkPortfolio = ({
   const [tokensWithAllowance, tokensWithoutAllowance] =
     separateTokensByAllowance(portfolioTokens)
 
-  const sortedTokensWithAllowance: TokenWithBalanceAndAllowance[] =
-    sortByBalanceDescending(tokensWithAllowance)
-  const sortedTokensWithoutAllowance: TokenWithBalanceAndAllowance[] =
-    sortByBalanceDescending(tokensWithoutAllowance)
-  const sortedTokensForVisualizer: TokenWithBalanceAndAllowance[] =
-    sortByBalanceDescending(portfolioTokens)
+  const sortedTokensWithAllowance: TokenWithBalanceAndAllowances[] =
+    sortTokensByBalanceDescending(tokensWithAllowance)
+  const sortedTokensWithoutAllowance: TokenWithBalanceAndAllowances[] =
+    sortTokensByBalanceDescending(tokensWithoutAllowance)
+  const sortedTokensForVisualizer: TokenWithBalanceAndAllowances[] =
+    sortTokensByBalanceDescending(portfolioTokens)
 
   const hasNoTokenBalance: boolean =
     !portfolioTokens || portfolioTokens.length === 0
@@ -115,14 +119,13 @@ export const SingleNetworkPortfolio = ({
         {sortedTokensWithAllowance &&
           sortedTokensWithAllowance.length > 0 &&
           sortedTokensWithAllowance.map(
-            ({ token, balance, allowance }: TokenWithBalanceAndAllowance) => (
+            ({ token, balance, allowances }: TokenWithBalanceAndAllowances) => (
               <PortfolioTokenAsset
                 token={token}
                 balance={balance}
-                allowance={allowance}
+                allowances={allowances}
                 portfolioChainId={portfolioChainId}
                 connectedChainId={connectedChainId}
-                fetchPortfolioBalancesCallback={fetchPortfolioBalancesCallback}
                 isApproved={true}
               />
             )
@@ -130,13 +133,12 @@ export const SingleNetworkPortfolio = ({
         {sortedTokensWithoutAllowance &&
           sortedTokensWithoutAllowance.length > 0 &&
           sortedTokensWithoutAllowance.map(
-            ({ token, balance }: TokenWithBalanceAndAllowance) => (
+            ({ token, balance }: TokenWithBalanceAndAllowances) => (
               <PortfolioTokenAsset
                 token={token}
                 balance={balance}
                 portfolioChainId={portfolioChainId}
                 connectedChainId={connectedChainId}
-                fetchPortfolioBalancesCallback={fetchPortfolioBalancesCallback}
                 isApproved={false}
               />
             )
@@ -183,7 +185,7 @@ const PortfolioNetwork = ({
 const PortfolioTokenVisualizer = ({
   portfolioTokens,
 }: {
-  portfolioTokens: TokenWithBalanceAndAllowance[]
+  portfolioTokens: TokenWithBalanceAndAllowances[]
 }) => {
   const [isHovered, setIsHovered] = useState(false)
   const hasOneToken = portfolioTokens && portfolioTokens.length > 0
@@ -227,7 +229,7 @@ const PortfolioTokenVisualizer = ({
             border border-solid border-[#252537]
             bg-[#101018] rounded-md`}
           >
-            {portfolioTokens.map((token: TokenWithBalanceAndAllowance) => {
+            {portfolioTokens.map((token: TokenWithBalanceAndAllowances) => {
               const tokenSymbol = token.token.symbol
               const balance = token.parsedBalance
               return (
@@ -255,38 +257,5 @@ export const PortfolioHeader = () => {
       </div>
       <div className="w-1/3 text-left" />
     </div>
-  )
-}
-
-function separateTokensByAllowance(
-  tokens: TokenWithBalanceAndAllowance[]
-): [TokenWithBalanceAndAllowance[], TokenWithBalanceAndAllowance[]] {
-  const tokensWithAllowance: TokenWithBalanceAndAllowance[] = []
-  const tokensWithoutAllowance: TokenWithBalanceAndAllowance[] = []
-
-  tokens &&
-    tokens.forEach((token) => {
-      // allowance is null for native gas tokens
-      if (token.allowance === null) {
-        tokensWithAllowance.push(token)
-      } else if (token.allowance > 0n) {
-        tokensWithAllowance.push(token)
-      } else {
-        tokensWithoutAllowance.push(token)
-      }
-    })
-
-  return [tokensWithAllowance, tokensWithoutAllowance]
-}
-
-function sortByBalanceDescending(
-  tokens: TokenWithBalanceAndAllowance[]
-): TokenWithBalanceAndAllowance[] {
-  return (
-    tokens &&
-    tokens.sort(
-      (a: TokenWithBalanceAndAllowance, b: TokenWithBalanceAndAllowance) =>
-        b.parsedBalance > a.parsedBalance ? 1 : -1
-    )
   )
 }

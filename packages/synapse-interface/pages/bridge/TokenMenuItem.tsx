@@ -38,8 +38,6 @@ const TokenMenuItem = ({
     token?.color
   )
 
-  console.log(`tokenBalance, `, tokenBalance)
-
   return (
     <div
       tabIndex={active ? 1 : 0}
