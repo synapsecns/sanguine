@@ -197,16 +197,19 @@ const StateManagedBridge = () => {
 
     let bridgeableToChainId = toChainId
     if (!bridgeableChainIds.includes(toChainId)) {
+      dispatch(setToChainId(toChainId))
+      dispatch(setToToken(toToken))
       const sortedChainIds = bridgeableChainIds.sort((a, b) => {
         const chainA = CHAINS_ARR.find((chain) => chain.id === a)
         const chainB = CHAINS_ARR.find((chain) => chain.id === b)
         return chainB.priorityRank - chainA.priorityRank
       })
       bridgeableToChainId = sortedChainIds[0]
+    } else {
+      dispatch(setToToken(bridgeableToken))
     }
 
     dispatch(setSupportedToTokens(sortToTokens(bridgeableTokens)))
-    dispatch(setToToken(bridgeableToken))
 
     sortByTokenBalance(fromTokens, fromChainId, address).then((res) => {
       const t = res.map((tokenAndBalances) => tokenAndBalances.token)
@@ -216,11 +219,6 @@ const StateManagedBridge = () => {
 
     dispatch(setFromChainIds(fromChainIds))
     dispatch(setToChainIds(bridgeableChainIds))
-
-    // if (bridgeableToChainId && bridgeableToChainId !== toChainId) {
-    //   dispatch(setToChainId(bridgeableToChainId))
-    // }
-    dispatch(setToChainId(toChainId))
 
     console.log(`[useEffect] fromToken`, fromToken.symbol)
     console.log(`[useEffect] toToken`, toToken.symbol)
@@ -665,6 +663,9 @@ const getNewToChain = (positedToChain, fromChainId, bridgeableChains) => {
 // Determines which chains are bridgeable based on the swapableType of the token.
 const getBridgeableChains = (token, fromChainId, swapExceptionsArr) => {
   // Filter out chains that are not bridgeable for the given token type.
+  console.log('token: ', token)
+  console.log('fromChainId:', fromChainId)
+  console.log('BRIDGE_CHAINS_BY_TYPE: ', BRIDGE_CHAINS_BY_TYPE)
   let bridgeableChains = BRIDGE_CHAINS_BY_TYPE[
     String(token.swapableType)
   ].filter((chainId) => Number(chainId) !== fromChainId)
