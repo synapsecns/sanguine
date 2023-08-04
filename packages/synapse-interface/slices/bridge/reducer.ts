@@ -43,7 +43,7 @@ const {
 
 // How do we update query params based on initial state?
 // Additionally how do we set query params based on user input updates?
-const initialState: BridgeState = {
+export const initialState: BridgeState = {
   fromChainId,
   fromToken,
   toChainId,
