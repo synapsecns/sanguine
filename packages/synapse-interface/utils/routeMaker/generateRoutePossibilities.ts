@@ -48,7 +48,7 @@ export const getRoutePossibilities = ({
     fromTokenRouteSymbol,
     toChainId,
     toTokenRouteSymbol,
-  }).filter((chainId) => chainId !== fromChainId)
+  })?.filter((chainId) => chainId !== fromChainId)
 
   const toTokens = _.uniq(
     _.difference(

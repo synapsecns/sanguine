@@ -37,6 +37,7 @@ export const MIM = new Token({
   swapableType: 'USD',
   color: 'indigo',
   priorityRank: 6,
+  routeSymbol: 'MIM',
 })
 
 export const SwapUSDC = new Token({

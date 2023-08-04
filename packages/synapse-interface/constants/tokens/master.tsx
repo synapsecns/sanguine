@@ -1041,6 +1041,7 @@ export const ETH = new Token({
   visibilityRank: 101,
   priorityRank: 2,
   swapableOn: [CHAINS.BASE.id],
+  routeSymbol: 'ETH',
 })
 
 export const MOVR = new Token({
