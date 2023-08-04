@@ -15,7 +15,11 @@ import { segmentAnalyticsEvent } from '@/contexts/SegmentAnalyticsProvider'
 import { usePortfolioBalances } from '@/slices/portfolio/hooks'
 import { useBridgeState } from '@/slices/bridge/hooks'
 import SelectSpecificTokenButton from './components/SelectSpecificTokenButton'
-import { CHAINS_BY_ID } from '@/constants/chains'
+import { fromTokenText } from './helpers/fromTokenText'
+import { getFromTokens } from '@/utils/routeMaker/getFromTokens'
+import { getSymbol } from '@/utils/routeMaker/generateRoutePossibilities'
+
+import * as ALL_TOKENS from '@constants/tokens/master'
 
 export const FromTokenListOverlay = () => {
   const [hasMounted, setHasMounted] = useState(false)
@@ -47,6 +51,19 @@ export const FromTokenListOverlay = () => {
   if (searchStr?.length > 0) {
     tokenList = fuse.search(searchStr).map((i) => i.item)
   }
+
+  const allFromTokens = _.uniq(
+    getFromTokens({
+      fromChainId,
+      fromTokenRouteSymbol: null,
+      toChainId: null,
+      toTokenRouteSymbol: null,
+    })
+      .map(getSymbol)
+      .map((symbol) => ALL_TOKENS[symbol])
+  )
+
+  const remainingTokens = _.difference(allFromTokens, fromTokens)
 
   const tokenListWithBalances = tokenList.filter((t) => {
     const pb = portfolioBalances[fromChainId]
@@ -128,31 +145,13 @@ export const FromTokenListOverlay = () => {
     setHasMounted(true)
   }, [])
 
-  const fromChainName = useMemo(() => {
-    return CHAINS_BY_ID[fromChainId]?.name
-  }, [fromChainId])
-
-  const toChainName = useMemo(() => {
-    return CHAINS_BY_ID[toChainId]?.name
-  }, [toChainId])
-
   const tokensWithoutBalancesText = useMemo(() => {
-    if (fromChainName && toChainName && toToken) {
-      return `Other ${fromChainName} tokens bridgeable to ${toToken.name} on ${toChainName}`
-    } else if (!fromChainName && !fromToken && toChainName && !toToken) {
-      return `All tokens you can bridge to ${toChainName}`
-    } else if (fromChainName && toChainName) {
-      return `Other ${fromChainName} tokens bridgeable to ${toChainName}`
-    } else if (fromChainName && (!toChainName || !toToken)) {
-      return `${fromChainName} tokens`
-    } else if (!fromChainName && toChainName && toToken) {
-      return `Tokens bridgeable to ${toToken.name} on ${toChainName}`
-    } else if (!fromChainName && !toChainName && toToken) {
-      return `Tokens bridgeable to ${toToken.name}`
-    } else {
-      return 'All tokens'
-    }
-  }, [fromChainId, toChainId, toToken])
+    return fromTokenText({ fromChainId, fromToken, toChainId, toToken })
+  }, [fromChainId, fromToken, toChainId, toToken])
+
+  const remainingTokensText = useMemo(() => {
+    return 'Other tokens'
+  }, [])
 
   return (
     <div
@@ -199,7 +198,7 @@ export const FromTokenListOverlay = () => {
       <div className="px-2 pb-2 pt-2 text-secondaryTextColor text-sm bg-[#343036]">
         {tokensWithoutBalancesText}
       </div>
-      <div className="px-2 pb-8 bg-[#343036] md:px-2 ">
+      <div className="px-2 pb-4 bg-[#343036] md:px-2 ">
         {tokenListWithoutBalances.map((token, idx) => {
           return (
             <SelectSpecificTokenButton
@@ -221,6 +220,35 @@ export const FromTokenListOverlay = () => {
           )
         })}
       </div>
+      {remainingTokens && (
+        <>
+          <div className="px-2 pb-2 text-secondaryTextColor text-sm bg-[#343036]">
+            {remainingTokensText}
+          </div>
+          <div className="px-2 pb-2 bg-[#343036] md:px-2">
+            {remainingTokens.map((token, idx) => {
+              return (
+                <SelectSpecificTokenButton
+                  isOrigin={true}
+                  key={idx}
+                  token={token}
+                  selectedToken={fromToken}
+                  active={idx === currentIdx}
+                  onClick={() => {
+                    const eventTitle = '[Bridge User Action] Sets new fromToken'
+                    const eventData = {
+                      previousFromToken: fromToken?.symbol,
+                      newFromToken: token?.symbol,
+                    }
+                    segmentAnalyticsEvent(eventTitle, eventData)
+                    onMenuItemClick(token)
+                  }}
+                />
+              )
+            })}
+          </div>
+        </>
+      )}
       <div>
         {searchStr && (
           <div className="px-12 py-4 text-center text-white text-md">

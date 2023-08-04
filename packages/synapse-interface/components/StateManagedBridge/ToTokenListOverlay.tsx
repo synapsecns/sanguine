@@ -1,3 +1,4 @@
+import _ from 'lodash'
 import { useEffect, useMemo, useState } from 'react'
 import { useDispatch } from 'react-redux'
 import Fuse from 'fuse.js'
@@ -12,8 +13,13 @@ import { segmentAnalyticsEvent } from '@/contexts/SegmentAnalyticsProvider'
 import { useBridgeState } from '@/slices/bridge/hooks'
 import SelectSpecificTokenButton from './components/SelectSpecificTokenButton'
 import { CHAINS_BY_ID } from '@/constants/chains'
+import { getToTokens } from '@/utils/routeMaker/getToTokens'
+import { getSymbol } from '@/utils/routeMaker/generateRoutePossibilities'
 
-export const ToTokenListOverlay = ({}: {}) => {
+import * as ALL_TOKENS from '@constants/tokens/master'
+import { toTokenText } from './helpers/toTokensText'
+
+export const ToTokenListOverlay = () => {
   const { fromChainId, fromToken, toTokens, toChainId, toToken } =
     useBridgeState()
 
@@ -39,6 +45,20 @@ export const ToTokenListOverlay = ({}: {}) => {
   if (searchStr?.length > 0) {
     tokenList = fuse.search(searchStr).map((i) => i.item)
   }
+
+  const allToTokens = _.uniq(
+    getToTokens({
+      fromChainId,
+      fromTokenRouteSymbol: null,
+      toChainId,
+      toTokenRouteSymbol: null,
+    })
+      .map(getSymbol)
+      .map((symbol) => ALL_TOKENS[symbol])
+  )
+
+  const remainingTokens = _.difference(allToTokens, toTokens)
+
   const escPressed = useKeyPress('Escape')
   const arrowUp = useKeyPress('ArrowUp')
   const arrowDown = useKeyPress('ArrowDown')
@@ -95,26 +115,12 @@ export const ToTokenListOverlay = ({}: {}) => {
     setCurrentIdx(-1)
   }
 
-  const fromChainName = useMemo(() => {
-    return CHAINS_BY_ID[fromChainId]?.name
-  }, [fromChainId])
-
-  const toChainName = useMemo(() => {
-    return CHAINS_BY_ID[toChainId]?.name
-  }, [toChainId])
-
   const toTokensText = useMemo(() => {
-    if (fromChainName && toChainName && fromToken) {
-      return `Tokens you can receive on ${toChainName} from ${fromToken.symbol} on ${fromChainName}`
-    } else if (!fromChainName && fromToken && toChainName && toToken) {
-      return `Tokens you can receive on ${toChainName} from ${fromToken.symbol} on other chains`
-    } else if (fromChainName && toChainName) {
-      return `Tokens you can receive on ${toChainName} from ${fromChainName}`
-    } else if (toChainName) {
-      return `All tokens you can receive on ${toChainName}`
-    } else {
-      return `All tokens`
-    }
+    return toTokenText({ fromChainId, fromToken, toChainId, toToken })
+  }, [fromChainId, fromToken, toChainId, toToken])
+
+  const remainingTokensText = useMemo(() => {
+    return 'Other tokens'
   }, [])
 
   return (
@@ -155,7 +161,38 @@ export const ToTokenListOverlay = ({}: {}) => {
             />
           )
         })}
+      </div>
+      {remainingTokens && (
+        <>
+          <div className="px-2 pb-2 pt-2 text-secondaryTextColor text-sm bg-[#343036]">
+            {remainingTokensText}
+          </div>
+          <div className="px-2 pb-2 bg-[#343036] md:px-2">
+            {remainingTokens.map((token, idx) => {
+              return (
+                <SelectSpecificTokenButton
+                  isOrigin={false}
+                  key={idx}
+                  token={token}
+                  selectedToken={toToken}
+                  active={idx === currentIdx}
+                  onClick={() => {
+                    const eventTitle = `[Bridge User Action] Sets new toToken`
+                    const eventData = {
+                      previousToToken: toToken?.symbol,
+                      newToToken: token?.symbol,
+                    }
+                    segmentAnalyticsEvent(eventTitle, eventData)
+                    onMenuItemClick(token)
+                  }}
+                />
+              )
+            })}
+          </div>
+        </>
+      )}
 
+      <div>
         {searchStr && (
           <div className="px-12 py-4 text-xl text-center text-white">
             No other results found for{' '}
