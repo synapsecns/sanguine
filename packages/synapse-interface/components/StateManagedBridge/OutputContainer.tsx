@@ -72,6 +72,10 @@ export const OutputContainer = ({}) => {
                 disabled={true}
                 className={`
                 focus:outline-none
+                focus:ring-0
+                focus:border-none
+                border-none
+                p-0
                 bg-transparent
                 max-w-[190px]
                placeholder:text-[#88818C]

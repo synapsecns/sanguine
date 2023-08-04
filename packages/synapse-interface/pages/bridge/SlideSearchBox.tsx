@@ -18,6 +18,9 @@ export default function SlideSearchBox({
       className={`
         text-white
         focus:outline-none
+        focus:ring-0
+        focus:border-none
+        border-none
         hidden sm:inline-block
         flex-grow
         h-full min-w-[70%]
