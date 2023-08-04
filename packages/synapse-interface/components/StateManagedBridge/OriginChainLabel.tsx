@@ -1,4 +1,4 @@
-import { useRef } from 'react'
+import { useRef, useMemo } from 'react'
 import { useSelector } from 'react-redux'
 import { ChevronDownIcon } from '@heroicons/react/outline'
 import { CHAINS_BY_ID, ORDERED_CHAINS_BY_ID } from '@constants/chains'
@@ -22,11 +22,9 @@ export const OriginChainLabel = ({
   connectedChainId: number
 }) => {
   const scrollableRef = useRef<HTMLDivElement>(null)
-  const [orderedChains, setOrderedChains] = useState<number[]>([])
+  // const [orderedChains, setOrderedChains] = useState<number[]>([])
 
-  useEffect(() => {
-    setOrderedChains(chainOrderBySwapSide(chainId))
-  }, [chainId, connectedChainId, chains])
+  const orderedChains = useMemo(() => chainOrderBySwapSide(chainId), [chainId])
 
   const dispatch = useDispatch()
 

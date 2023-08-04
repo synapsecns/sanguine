@@ -4,7 +4,7 @@ import { CHAINS_BY_ID } from '@constants/chains'
 import { getNetworkButtonBorder } from '@/styles/chains'
 import Image from 'next/image'
 import Tooltip from '@tw/Tooltip'
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useMemo } from 'react'
 import { useDispatch } from 'react-redux'
 import { useBridgeState } from '@/slices/bridge/hooks'
 import { setToChainId } from '@/slices/bridge/reducer'
@@ -23,16 +23,14 @@ export const DestinationChainLabel = ({
   chainId: number
   connectedChainId: number
 }) => {
-  const [orderedChains, setOrderedChains] = useState<number[]>([])
+  // const [orderedChains, setOrderedChains] = useState<number[]>([])
 
   const dispatch = useDispatch()
 
-  useEffect(() => {
-    setOrderedChains(
-      reorderArrayWithChainIdFirst(
-        chainId,
-        chainOrderBySwapSide(connectedChainId, chainId, chains)
-      )
+  const orderedChains = useMemo(() => {
+    return reorderArrayWithChainIdFirst(
+      chainId,
+      chainOrderBySwapSide(connectedChainId, chainId, chains)
     )
   }, [chainId, connectedChainId, chains])
 

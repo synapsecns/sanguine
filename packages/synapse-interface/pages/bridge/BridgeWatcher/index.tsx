@@ -280,8 +280,6 @@ const BridgeWatcher = ({
         setFromTransactions(txs)
       })
     }
-
-    return () => setFromTransactions([...fromTransactions])
   }, [fromSynapseContract, bridgeTxHashes])
 
   useEffect(() => {

@@ -219,22 +219,25 @@ const StateManagedBridge = () => {
         fromChainId
       )
 
-    console.log('bridgeableToken', bridgeableToken)
-    console.log('bridgeableTokens: ', bridgeableTokens)
-    console.log('bridgeableChainIds:', bridgeableChainIds)
-    console.log('toChainId: ', toChainId)
+    // console.log('bridgeableToken', bridgeableToken)
+    // console.log('bridgeableTokens: ', bridgeableTokens)
+    // console.log('bridgeableChainIds:', bridgeableChainIds)
+    // console.log('toChainId: ', toChainId)
 
     const sortedFromTokens = sortTokens(fromTokens).filter(
       (token) => token !== fromToken
     )
 
-    console.log('sortedFromTokens: ', sortedFromTokens)
-    let bridgeableToChainId = toChainId
+    let bridgeableToChainId: number = toChainId
+    let bridgeableNextFromTokenByPriority: Token = sortedFromTokens[0]
+
     if (!bridgeableChainIds.includes(toChainId)) {
-      console.log('sortedFromTokens[0]: ', sortedFromTokens[0])
-      dispatch(setFromToken(sortedFromTokens[0]))
       // dispatch(setToChainId(toChainId))
       // dispatch(setToToken(toToken))
+      console.log('switching from: ', fromToken)
+      console.log('switching to: ', bridgeableNextFromTokenByPriority)
+      console.log('toChain: ', toChainId)
+      dispatch(setFromToken(bridgeableNextFromTokenByPriority))
       const sortedChainIds = bridgeableChainIds?.sort((a, b) => {
         const chainA = CHAINS_ARR.find((chain) => chain.id === a)
         const chainB = CHAINS_ARR.find((chain) => chain.id === b)
@@ -243,10 +246,10 @@ const StateManagedBridge = () => {
       bridgeableToChainId = sortedChainIds[0]
     } else {
       dispatch(setToToken(bridgeableToken))
+      dispatch(setSupportedToTokens(sortToTokens(bridgeableTokens)))
     }
 
-    dispatch(setSupportedToTokens(sortToTokens(bridgeableTokens)))
-    dispatch(setToToken(bridgeableToken))
+    // dispatch(setToToken(bridgeableToken))
     dispatch(setSupportedFromTokens(portfolioBalances[fromChainId] ?? []))
     dispatch(setFromChainIds(fromChainIds))
     dispatch(setToChainIds(bridgeableChainIds))
