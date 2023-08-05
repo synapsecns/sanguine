@@ -134,6 +134,8 @@ const StateManagedBridge = () => {
   const bridgeDisplayRef = useRef(null)
   const currentSDKRequestID = useRef(0)
   const fromTokenAttemptRef = useRef(0)
+  const isFromTokenCompatible = useRef(false)
+
   const router = useRouter()
   const { query, pathname } = router
 
@@ -194,7 +196,8 @@ const StateManagedBridge = () => {
   // Ref used to track potential combos between origin + dest token + network
   useEffect(() => {
     fromTokenAttemptRef.current = 0
-  }, [fromChainId])
+    isFromTokenCompatible.current = false
+  }, [fromChainId, toChainId])
 
   // Can be smarter about breaking out which calls happen assoc with which
   // dependencies (like some stuff should only change on fromChainId changes)
@@ -202,16 +205,12 @@ const StateManagedBridge = () => {
     let fromTokens = BRIDGABLE_TOKENS[fromChainId] ?? []
     const toTokens = BRIDGABLE_TOKENS[toChainId]
 
-    console.log('fromTokens: ', fromTokens)
-    console.log('fromToken.symbol: ', fromToken?.symbol)
-    console.log('toTokens: ', toTokens)
     // Checking whether the selected fromToken exists in the BRIDGABLE_TOKENS for the chosen chain
     if (!fromTokens.some((token) => token.symbol === fromToken?.symbol)) {
       // Sort the tokens based on priorityRank in ascending order
       const sortedTokens = fromTokens.sort(
         (a, b) => a.priorityRank - b.priorityRank
       )
-      console.log('sortedTokens: ', sortedTokens)
       // Select the token with the highest priority rank
       dispatch(setFromToken(sortedTokens[0]))
       // Update fromTokens for the selected fromToken
@@ -226,14 +225,32 @@ const StateManagedBridge = () => {
         fromChainId
       )
 
-    console.log('bridgeableToken', bridgeableToken)
-    console.log('bridgeableTokens: ', bridgeableTokens)
-    console.log('bridgeableChainIds:', bridgeableChainIds)
-    console.log('toChainId: ', toChainId)
-
     const sortedFromTokens = sortTokens(fromTokens).filter(
       (token) => token !== fromToken
     )
+
+    if (bridgeableChainIds?.includes(toChainId)) {
+      console.log('bridgeableChainIds: ', bridgeableChainIds)
+      console.log('toChainId: ', toChainId)
+      isFromTokenCompatible.current = true
+    }
+
+    console.log('sortedFromTokens.length: ', sortedFromTokens.length)
+    console.log(
+      'fromTokenAttemptRef.current + 1: ',
+      fromTokenAttemptRef.current + 1
+    )
+    console.log(
+      'isFromTokenCompatible.current: ',
+      isFromTokenCompatible.current
+    )
+    if (
+      fromTokenAttemptRef.current >= sortedFromTokens.length &&
+      isFromTokenCompatible.current === false
+    ) {
+      console.log('got hit:')
+      dispatch(setToChainId(bridgeableChainIds[0]))
+    }
 
     if (fromTokenAttemptRef.current + 1 > sortedFromTokens.length) {
       fromTokenAttemptRef.current = 0
@@ -243,16 +260,7 @@ const StateManagedBridge = () => {
     let bridgeableNextFromTokenByPriority: Token =
       sortedFromTokens[fromTokenAttemptRef.current]
 
-    // console.log('Number(fromTokenAttemptRef):', Number(fromTokenAttemptRef))
-    // console.log('fromTokenAttemptRef.current]:', fromTokenAttemptRef.current)
-    // console.log(
-    //   'bridgeableNextFromTokenByPriority:',
-    //   bridgeableNextFromTokenByPriority
-    // )
     if (!bridgeableChainIds?.includes(toChainId)) {
-      console.log('switching from: ', fromToken)
-      console.log('switching to: ', bridgeableNextFromTokenByPriority)
-      console.log('toChain: ', toChainId)
       dispatch(setFromToken(bridgeableNextFromTokenByPriority))
       fromTokenAttemptRef.current++
       const sortedChainIds = bridgeableChainIds?.sort((a, b) => {
