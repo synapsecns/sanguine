@@ -4,6 +4,10 @@ import { useDispatch } from 'react-redux'
 import { setShowToTokenListOverlay } from '@/slices/bridgeDisplaySlice'
 import { useBridgeState } from '@/slices/bridge/hooks'
 import { DropDownArrowSvg } from './components/DropDownArrowSvg'
+import {
+  getBorderStyleForCoinHover,
+  getMenuItemHoverBgForCoin,
+} from '@/styles/tokens'
 
 export const ToTokenSelector = () => {
   const dispatch = useDispatch()
@@ -41,7 +45,13 @@ export const ToTokenSelector = () => {
   return (
     <button
       data-test-id="bridge-destination-token"
-      className="bg-[#565058] pl-2 pr-2 pt-1 pb-1 rounded-md min-w-[80px]"
+      className={`
+        pl-2 pr-2 pt-1 pb-1 rounded-md min-w-[80px]
+        bg-[#565058]
+        ${getMenuItemHoverBgForCoin(toToken?.color)}
+        border border-transparent
+        ${getBorderStyleForCoinHover(toToken?.color)}
+      `}
       onClick={() => dispatch(setShowToTokenListOverlay(true))}
     >
       {buttonContent}

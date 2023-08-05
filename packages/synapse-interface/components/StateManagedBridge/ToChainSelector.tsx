@@ -5,26 +5,33 @@ import { setShowToChainListOverlay } from '@/slices/bridgeDisplaySlice'
 import { useBridgeState } from '@/slices/bridge/hooks'
 import { CHAINS_BY_ID } from '@/constants/chains'
 import { DropDownArrowSvg } from './components/DropDownArrowSvg'
+import {
+  getNetworkButtonBgClassNameActive,
+  getNetworkButtonBorderActive,
+  getNetworkButtonBorderHover,
+  getNetworkHover,
+} from '@/styles/chains'
 
 export const ToChainSelector = () => {
   const dispatch = useDispatch()
-
   const { toChainId } = useBridgeState()
+  const toChain = CHAINS_BY_ID[toChainId]
 
   let buttonContent
 
   if (toChainId) {
-    const src = CHAINS_BY_ID[toChainId].chainImg.src
-    const name = CHAINS_BY_ID[toChainId].name
-
     buttonContent = (
       <div className="flex items-center space-x-3">
         <div className="">
-          <img src={src} alt={name} className="w-5 h-5" />
+          <img
+            src={toChain.chainImg.src}
+            alt={toChain.name}
+            className="w-5 h-5"
+          />
         </div>
         <div className="text-left">
           <div className="text-xs text-secondaryTextColor">To</div>
-          <div className="text-md text-primaryTextColor">{name}</div>
+          <div className="text-md text-primaryTextColor">{toChain.name}</div>
         </div>
         <DropDownArrowSvg />
       </div>
@@ -43,7 +50,16 @@ export const ToChainSelector = () => {
 
   return (
     <button
-      className=""
+      className={`
+        bg-transparent
+        p-1
+        ${getNetworkHover(toChain?.color)}
+        ${getNetworkButtonBgClassNameActive(toChain?.color)}
+        border border-transparent
+        ${getNetworkButtonBorderActive(toChain?.color)}
+        ${getNetworkButtonBorderHover(toChain?.color)}
+        rounded-md
+      `}
       onClick={() => dispatch(setShowToChainListOverlay(true))}
     >
       {buttonContent}
