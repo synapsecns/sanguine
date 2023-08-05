@@ -8,10 +8,14 @@ import { CHAINS_BY_ID, sortChains } from '@constants/chains'
 import { useDispatch } from 'react-redux'
 import { segmentAnalyticsEvent } from '@/contexts/SegmentAnalyticsProvider'
 import { useBridgeState } from '@/slices/bridge/hooks'
-import { setFromChainId } from '@/slices/bridge/reducer'
+import { resetState, setFromChainId } from '@/slices/bridge/reducer'
 import { setShowFromChainListOverlay } from '@/slices/bridgeDisplaySlice'
 import { SelectSpecificNetworkButton } from './components/SelectSpecificNetworkButton'
 import { fromChainText } from './helpers/fromChainText'
+import { getFromTokens } from '@/utils/routeMaker/getFromTokens'
+import { getSymbol } from '@/utils/routeMaker/generateRoutePossibilities'
+
+import * as ALL_TOKENS from '@constants/tokens/master'
 
 export const FromChainListOverlay = () => {
   const { fromChainIds, fromChainId, fromToken, toChainId, toToken } =
@@ -82,6 +86,11 @@ export const FromChainListOverlay = () => {
     dispatch(setShowFromChainListOverlay(false))
   }, [setShowFromChainListOverlay])
 
+  function onMenuItemClick(chainId: number) {
+    dispatch(resetState())
+    dispatch(setFromChainId(chainId))
+  }
+
   const escFunc = () => {
     if (escPressed) {
       onClose()
@@ -149,31 +158,25 @@ export const FromChainListOverlay = () => {
           {fromChainsText}
         </div>
         {possibleChains.map(({ id: mapChainId }, idx) => {
-          let onClickSpecificNetwork
-          if (fromChainId === mapChainId) {
-            onClickSpecificNetwork = () => {
-              onClose()
-            }
-          } else {
-            onClickSpecificNetwork = () => {
-              const eventTitle = `[Bridge User Action] Sets new fromChainId`
-              const eventData = {
-                previousFromChainId: fromChainId,
-                newFromChainId: mapChainId,
-              }
-
-              segmentAnalyticsEvent(eventTitle, eventData)
-              dispatch(setFromChainId(mapChainId))
-              onClose()
-            }
-          }
           return (
             <SelectSpecificNetworkButton
               key={idx}
               itemChainId={mapChainId}
               isCurrentChain={fromChainId === mapChainId}
               active={idx === currentIdx}
-              onClick={onClickSpecificNetwork}
+              onClick={() => {
+                if (fromChainId !== mapChainId) {
+                  const eventTitle = `[Bridge User Action] Sets new fromChainId`
+                  const eventData = {
+                    previousFromChainId: fromChainId,
+                    newFromChainId: mapChainId,
+                  }
+
+                  segmentAnalyticsEvent(eventTitle, eventData)
+                  onMenuItemClick(mapChainId)
+                }
+                onClose()
+              }}
               dataId={dataId}
             />
           )

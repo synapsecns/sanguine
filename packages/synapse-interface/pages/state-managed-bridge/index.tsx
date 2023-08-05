@@ -541,7 +541,7 @@ const StateManagedBridge = () => {
           </div>
         </Card>
       </div>
-      <div className="text-white" id="temporary-removing">
+      {/* <div className="text-white" id="temporary-removing">
         <div>fromChainId: {fromChainId}</div>
         <div>fromToken: {fromToken?.routeSymbol}</div>
         <div>toChainId: {toChainId}</div>
@@ -554,7 +554,7 @@ const StateManagedBridge = () => {
         </div>
         <div>fromChainIds: {fromChainIds?.join(', ')}</div>
         <div>toChainIds: {toChainIds?.join(', ')}</div>
-      </div>
+      </div> */}
       <div className="mt-8">
         <BridgeWatcher
           fromChainId={fromChainId}

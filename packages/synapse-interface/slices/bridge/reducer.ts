@@ -114,6 +114,7 @@ export const bridgeSlice = createSlice({
     },
     setFromChainId: (state, action: PayloadAction<number>) => {
       const incomingFromChainId = action.payload
+
       const {
         fromChainId,
         fromToken,
@@ -141,13 +142,6 @@ export const bridgeSlice = createSlice({
     },
     setFromToken: (state, action: PayloadAction<Token>) => {
       const incomingFromToken = action.payload
-
-      console.log(`fromTokens`, state.fromTokens)
-      console.log(`incomingToken`, incomingFromToken)
-
-      if (!state.fromTokens.includes(incomingFromToken)) {
-        console.log('in here')
-      }
 
       const {
         fromChainId,

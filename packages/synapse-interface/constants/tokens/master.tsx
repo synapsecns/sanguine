@@ -906,6 +906,7 @@ export const NUSD = new Token({
     [CHAINS.AURORA.id]: '0x07379565cD8B0CaE7c60Dc78e7f601b34AF2A21c',
     [CHAINS.METIS.id]: '0x961318Fc85475E125B99Cc9215f62679aE5200aB',
     [CHAINS.CANTO.id]: '0xD8836aF2e565D3Befce7D906Af63ee45a57E8f80',
+    [CHAINS.DFK.id]: '0x3AD9DFE640E1A9Cc1D9B0948620820D975c3803a',
   },
   decimals: 18,
   symbol: 'nUSD',
@@ -953,23 +954,23 @@ export const NOTE = new Token({
 // NOTE: USERS on DFK expect USDC (when it's really nUSD under the hood)
 // Consider adding displayExpections field to Token NUSD with USDC symbol/logo
 // And then remove DFK_USDC
-export const DFK_USDC = new Token({
-  addresses: {
-    [CHAINS.DFK.id]: '0x3AD9DFE640E1A9Cc1D9B0948620820D975c3803a',
-  },
-  decimals: {
-    [CHAINS.DFK.id]: 18,
-  },
-  symbol: 'USDC ', // SPACE VERY IMPORTANT
-  name: 'USD Circle',
-  logo: usdcLogo,
-  description: '',
-  swapableType: 'USD',
-  color: 'blue',
-  visibilityRank: 100,
-  priorityRank: 1,
-  routeSymbol: 'DFK_USDC',
-})
+// export const DFK_USDC = new Token({
+//   addresses: {
+//     [CHAINS.DFK.id]: '0x3AD9DFE640E1A9Cc1D9B0948620820D975c3803a',
+//   },
+//   decimals: {
+//     [CHAINS.DFK.id]: 18,
+//   },
+//   symbol: 'USDC ', // SPACE VERY IMPORTANT
+//   name: 'USD Circle',
+//   logo: usdcLogo,
+//   description: '',
+//   swapableType: 'USD',
+//   color: 'blue',
+//   visibilityRank: 100,
+//   priorityRank: 1,
+//   routeSymbol: 'DFK_USDC',
+// })
 
 /**
  * nETH is the token involved in the bridge. it is backed by internet monies...
