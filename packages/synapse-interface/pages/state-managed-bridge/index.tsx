@@ -190,6 +190,12 @@ const StateManagedBridge = () => {
   //   .filter((chainId) => Number(chainId) !== fromChainId)
   //   .map((chainId) => Number(chainId))
 
+  // Reset count ref when fromChainId switches
+  // Ref used to track potential combos between origin + dest token + network
+  useEffect(() => {
+    fromTokenAttemptRef.current = 0
+  }, [fromChainId])
+
   // Can be smarter about breaking out which calls happen assoc with which
   // dependencies (like some stuff should only change on fromChainId changes)
   useEffect(() => {
@@ -231,8 +237,13 @@ const StateManagedBridge = () => {
 
     let bridgeableToChainId: number = toChainId
     let bridgeableNextFromTokenByPriority: Token =
-      sortedFromTokens[Number(fromTokenAttemptRef)]
-
+      sortedFromTokens[fromTokenAttemptRef.current]
+    // console.log('Number(fromTokenAttemptRef):', Number(fromTokenAttemptRef))
+    console.log('fromTokenAttemptRef.current]:', fromTokenAttemptRef.current)
+    // console.log(
+    //   'bridgeableNextFromTokenByPriority:',
+    //   bridgeableNextFromTokenByPriority
+    // )
     if (!bridgeableChainIds?.includes(toChainId)) {
       console.log('switching from: ', fromToken)
       console.log('switching to: ', bridgeableNextFromTokenByPriority)
