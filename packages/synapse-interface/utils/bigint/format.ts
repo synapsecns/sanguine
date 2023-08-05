@@ -5,7 +5,7 @@ export const formatBigIntToString = (
   nativePrecision: number,
   decimalPlaces?: number
 ) => {
-  if (!bi) {
+  if (typeof bi !== 'bigint' && !bi) {
     return
   }
   try {
