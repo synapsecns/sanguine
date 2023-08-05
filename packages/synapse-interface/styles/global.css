@@ -4,6 +4,8 @@
 
 body {
   text-rendering: optimizeLegibility;
+  overscroll-behavior-y: none;
+  overscroll-behavior-x: none;
 }
 
 @font-face {

@@ -205,6 +205,7 @@ export const GMX = new Token({
   docUrl: '',
   swapableType: 'GMX',
   priorityRank: 6,
+  color: 'blue',
   routeSymbol: 'GMX',
 })
 
@@ -279,6 +280,7 @@ export const PEPE = new Token({
   swapableType: 'PEPE',
   priorityRank: 6,
   routeSymbol: 'PEPE',
+  color: 'green',
 })
 
 export const VSTA = new Token({
@@ -501,6 +503,7 @@ export const KLAYTN_USDC = new Token({
     is backed up by $1 that is held in reserve
     `,
   swapableType: 'KLAYTN_USDC',
+  color: 'blue',
   priorityRank: 10,
   routeSymbol: 'KLAYTN_USDC',
 })
@@ -521,6 +524,7 @@ export const KLAYTN_USDT = new Token({
   logo: usdtLogo,
   swapableType: 'KLAYTN_USDT',
   priorityRank: 10,
+  color: 'lime',
   routeSymbol: 'KLAYTN_USDT',
 })
 
@@ -556,6 +560,7 @@ export const KLAYTN_DAI = new Token({
   logo: daiLogo,
   swapableType: 'KLAYTN_DAI',
   priorityRank: 10,
+  color: 'yellow',
   routeSymbol: 'KLAYTN_DAI',
 })
 
@@ -573,6 +578,7 @@ export const DOGECHAIN_BUSD = new Token({
   logo: busdLogo,
   swapableType: 'DOGECHAIN_BUSD',
   priorityRank: 10,
+  color: 'yellow',
   routeSymbol: 'DOGECHAIN_BUSD',
 })
 
@@ -669,7 +675,7 @@ export const DAI = new Token({
     CHAINS.HARMONY.id,
     CHAINS.BOBA.id,
   ],
-  color: 'orange',
+  color: 'yellow',
   visibilityRank: 100,
   priorityRank: 1,
   routeSymbol: 'DAI',
@@ -690,7 +696,7 @@ export const WBTC = new Token({
   name: 'Wrapped BTC',
   logo: wbtcLogo,
   swapableType: 'WBTC',
-  color: 'yellow',
+  color: 'orange',
   priorityRank: 3,
   routeSymbol: 'WBTC',
 })
@@ -877,6 +883,7 @@ export const SYN_FRAX = new Token({
   logo: synapseLogo,
   description: 'Frax',
   swapableType: 'FRAX',
+  color: 'gray',
   priorityRank: 4,
   routeSymbol: 'SYN_FRAX',
 })
@@ -1017,6 +1024,7 @@ export const KLAYTN_WETH = new Token({
   name: 'Wrapped ETH',
   logo: ethLogo,
   description: '',
+  color: 'gray',
   swapableType: 'ETH',
   priorityRank: 3,
   routeSymbol: 'KLAYTN_WETH',
@@ -1153,6 +1161,7 @@ export const JEWEL = new Token({
   symbol: 'JEWEL',
   name: 'JEWEL',
   logo: jewelLogo,
+  color: 'lime',
   description: 'JEWEL',
   isNative: true,
   swapableType: 'JEWEL',
@@ -1224,6 +1233,7 @@ export const USDCe = new Token({
     is backed up by $1 that is held in reserve
   `,
   swapableType: 'USD',
+  color: 'blue',
   swapableOn: [CHAINS.AVALANCHE.id, CHAINS.ARBITRUM.id],
   visibilityRank: 100,
   priorityRank: 1,
@@ -1246,6 +1256,7 @@ export const USDTe = new Token({
   swapableType: 'USD',
   swapableOn: [CHAINS.AVALANCHE.id],
   visibilityRank: 100,
+  color: 'green',
   priorityRank: 1,
   routeSymbol: 'USDTe',
 })

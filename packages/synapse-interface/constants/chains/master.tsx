@@ -95,7 +95,7 @@ export const CANTO: Chain = {
   rpc: 'https://mainnode.plexnode.org:8545',
   nativeCurrency: { name: 'Canto', symbol: 'CANTO', decimals: 18 },
   explorerUrl: 'https://evm.explorer.canto.io',
-  color: 'teal',
+  color: 'green',
 }
 
 export const OPTIMISM: Chain = {
@@ -183,7 +183,7 @@ export const CRONOS: Chain = {
   rpc: 'https://evm-cronos.crypto.org',
   nativeCurrency: { name: 'Cronos', symbol: 'CRO', decimals: 18 },
   explorerUrl: 'https://cronoscan.com',
-  color: 'blue',
+  color: 'gray',
 }
 export const BOBA: Chain = {
   priorityRank: 10,
