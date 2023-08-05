@@ -5,6 +5,7 @@ import (
 	"time"
 
 	"github.com/Flaque/filet"
+	"github.com/ava-labs/coreth/accounts/abi/bind"
 	"github.com/brianvoe/gofakeit/v6"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/synapsecns/sanguine/agents/agents/executor"
@@ -807,4 +808,194 @@ func (e *ExecutorSuite) TestSetMinimumTime() {
 			e.Equal(*minTime, uint64(20+(i)))
 		}
 	}
+}
+
+func (e *ExecutorSuite) TestSendManagerMessage() {
+	testDone := false
+	defer func() {
+		testDone = true
+	}()
+	chainID := uint32(e.TestBackendOrigin.GetChainID())
+	destination := uint32(e.TestBackendDestination.GetChainID())
+	summit := uint32(e.TestBackendSummit.GetChainID())
+
+	testContractSummit, _ := e.TestDeployManager.GetAgentsTestContract(e.GetTestContext(), e.TestBackendSummit)
+
+	originClient, err := backfill.DialBackend(e.GetTestContext(), e.TestBackendOrigin.RPCAddress(), e.ScribeMetrics)
+	e.Nil(err)
+	destinationClient, err := backfill.DialBackend(e.GetTestContext(), e.TestBackendDestination.RPCAddress(), e.ScribeMetrics)
+	e.Nil(err)
+	summitClient, err := backfill.DialBackend(e.GetTestContext(), e.TestBackendSummit.RPCAddress(), e.ScribeMetrics)
+	e.Nil(err)
+
+	originConfig := config.ContractConfig{
+		Address:    e.OriginContract.Address().String(),
+		StartBlock: 0,
+	}
+	originChainConfig := config.ChainConfig{
+		ChainID:            chainID,
+		GetLogsBatchAmount: 1,
+		StoreConcurrency:   1,
+		GetLogsRange:       1,
+		ConfirmationConfig: config.ConfirmationConfig{
+			RequiredConfirmations:   1,
+			ConfirmationThreshold:   1,
+			ConfirmationRefreshRate: 1,
+		},
+		Contracts: []config.ContractConfig{originConfig},
+	}
+	destinationConfig := config.ContractConfig{
+		Address:    e.DestinationContract.Address().String(),
+		StartBlock: 0,
+	}
+	destinationChainConfig := config.ChainConfig{
+		ChainID:            destination,
+		GetLogsBatchAmount: 1,
+		StoreConcurrency:   1,
+		GetLogsRange:       1,
+		ConfirmationConfig: config.ConfirmationConfig{
+			RequiredConfirmations:   1,
+			ConfirmationThreshold:   1,
+			ConfirmationRefreshRate: 1,
+		},
+		Contracts: []config.ContractConfig{destinationConfig},
+	}
+	summitConfig := config.ContractConfig{
+		Address:    e.SummitContract.Address().String(),
+		StartBlock: 0,
+	}
+	summitChainConfig := config.ChainConfig{
+		ChainID:            summit,
+		GetLogsBatchAmount: 1,
+		StoreConcurrency:   1,
+		GetLogsRange:       1,
+		ConfirmationConfig: config.ConfirmationConfig{
+			RequiredConfirmations:   1,
+			ConfirmationThreshold:   1,
+			ConfirmationRefreshRate: 1,
+		},
+		Contracts: []config.ContractConfig{summitConfig},
+	}
+	scribeConfig := config.Config{
+		Chains: []config.ChainConfig{originChainConfig, destinationChainConfig, summitChainConfig},
+	}
+	clients := map[uint32][]backfill.ScribeBackend{
+		chainID:     {originClient, originClient},
+		destination: {destinationClient, destinationClient},
+		summit:      {summitClient, summitClient},
+	}
+
+	scribe, err := node.NewScribe(e.ScribeTestDB, clients, scribeConfig, e.ScribeMetrics)
+	e.Nil(err)
+
+	scribeClient := client.NewEmbeddedScribe("sqlite", e.DBPath, e.ScribeMetrics)
+	go func() {
+		scribeErr := scribeClient.Start(e.GetTestContext())
+		e.Nil(scribeErr)
+	}()
+
+	// Start the Scribe.
+	go func() {
+		scribeError := scribe.Start(e.GetTestContext())
+		if !testDone {
+			e.Nil(scribeError)
+		}
+	}()
+
+	excCfg := execConfig.Config{
+		SummitChainID: summit,
+		SummitAddress: e.SummitContract.Address().String(),
+		Chains: []execConfig.ChainConfig{
+			{
+				ChainID:       chainID,
+				OriginAddress: e.OriginContract.Address().String(),
+			},
+			{
+				ChainID:            destination,
+				DestinationAddress: e.DestinationContract.Address().String(),
+			},
+			{
+				ChainID: summit,
+			},
+		},
+		BaseOmnirpcURL: e.TestBackendOrigin.RPCAddress(),
+		UnbondedSigner: agentsConfig.SignerConfig{
+			Type: agentsConfig.FileType.String(),
+			File: filet.TmpFile(e.T(), "", e.ExecutorUnbondedWallet.PrivateKeyHex()).Name(),
+		},
+	}
+
+	omniRPCClient := omniClient.NewOmnirpcClient(e.TestOmniRPC, e.ExecutorMetrics, omniClient.WithCaptureReqRes())
+	exec, err := executor.NewExecutor(e.GetTestContext(), excCfg, e.ExecutorTestDB, scribeClient.ScribeClient, omniRPCClient, e.ExecutorMetrics)
+	e.Nil(err)
+
+	go func() {
+		execErr := exec.Run(e.GetTestContext())
+		if !testDone {
+			e.Nil(execErr)
+		}
+	}()
+	// Create and send a manager message.
+
+	// tips := types.NewTips(big.NewInt(0), big.NewInt(0), big.NewInt(0), big.NewInt(0))
+	// optimisticSeconds := uint32(1)
+	// recipientDestination := e.TestClientMetadataOnDestination.Address().Hash()
+	// nonce := uint32(1)
+	// body := []byte{byte(gofakeit.Uint32())}
+	// txContextOrigin := e.TestBackendOrigin.GetTxContext(e.GetTestContext(), e.OriginContractMetadata.OwnerPtr())
+	// txContextOrigin.Value = types.TotalTips(tips)
+	// paddedRequest := big.NewInt(0)
+
+	// msgSender := common.BytesToHash(txContextOrigin.TransactOpts.From.Bytes())
+	// header := types.NewHeader(types.MessageFlagBase, uint32(e.TestBackendOrigin.GetChainID()), nonce, uint32(e.TestBackendDestination.GetChainID()), optimisticSeconds)
+	// msgRequest := types.NewRequest(uint32(0), uint64(0), big.NewInt(0))
+	// baseMessage := types.NewBaseMessage(msgSender, recipientDestination, tips, msgRequest, body)
+	// message, err := types.NewMessageFromBaseMessage(header, baseMessage)
+	// e.Nil(err)
+
+	// managerMessage, err := types.NewMessageFromManagerMessage(header, []byte{gofakeit.Uint8()})
+	// e.Nil(err)
+
+	// tx, err := e.OriginContract.SendManagerMessage(
+	// 	txContextOrigin,
+	// 	uint32(e.TestBackendSummit.GetChainID()),
+	// 	optimisticSeconds,
+	// 	[]byte{gofakeit.Uint8()},
+	// )
+
+	// e.Nil(err)
+
+	// Get the origin state so we can submit it on the Summit.
+	originState, err := e.OriginDomainClient.Origin().SuggestLatestState(&bind.CallOpts{Context: e.GetTestContext()})
+	e.Nil(err)
+
+	snapshot := types.NewSnapshot([]types.State{originState})
+	guardSnapshotSignature, encodedSnapshot, _, err := snapshot.SignSnapshot(e.GetTestContext(), e.GuardBondedSigner)
+
+	// Submit snapshot with Guard.
+	tx, err = e.SummitDomainClient.Inbox().SubmitSnapshot(
+		txContext,
+		e.GuardBondedSigner,
+		encodedSnapshot,
+		guardSnapshotSignature,
+	)
+	e.Nil(err)
+	e.TestBackendSummit.WaitForConfirmation(e.GetTestContext(), tx)
+
+	notarySnapshotSignature, encodedSnapshot, _, err := snapshot.SignSnapshot(e.GetTestContext(), e.NotaryBondedSigner)
+
+	// Submit snapshot with Notary.
+	tx, err = e.SummitDomainClient.Inbox().SubmitSnapshot(
+		txContext,
+		e.NotaryBondedSigner,
+		encodedSnapshot,
+		notarySnapshotSignature,
+	)
+
+	// Check that the message is eventually executed.
+	e.Eventually(func() bool {
+		executed, err := exec.CheckIfExecuted(e.GetTestContext(), message)
+		e.Nil(err)
+
+	})
 }
