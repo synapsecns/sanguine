@@ -33,7 +33,34 @@ export const ToTokenListOverlay = () => {
     sortByBalances(t, toChainId, portfolioBalances)
   )
 
-  const fuse = new Fuse(tokenList, {
+  const allToTokens = _.uniq(
+    getToTokens({
+      fromChainId,
+      fromTokenRouteSymbol: null,
+      toChainId,
+      toTokenRouteSymbol: null,
+    })
+      .map(getSymbol)
+      .map((symbol) => ALL_TOKENS[symbol])
+  )
+
+  let remainingTokens = _.difference(allToTokens, toTokens).sort((t) =>
+    sortByBalances(t, toChainId, portfolioBalances)
+  )
+
+  const tokenListwithSource = tokenList.map((token) => ({
+    ...token,
+    source: 'tokenList',
+  }))
+
+  const remainingTokensWithSource = remainingTokens.map((token) => ({
+    ...token,
+    source: 'remainingTokens',
+  }))
+
+  const masterList = [...tokenListwithSource, ...remainingTokensWithSource]
+
+  const fuseOptions = {
     ignoreLocation: true,
     includeScore: true,
     threshold: 0.0,
@@ -46,26 +73,17 @@ export const ToTokenListOverlay = () => {
       `addresses.${toChainId}`,
       'name',
     ],
-  })
+  }
+  const fuse = new Fuse(masterList, fuseOptions)
 
   if (searchStr?.length > 0) {
-    tokenList = fuse.search(searchStr).map((i) => i.item)
+    const results = fuse.search(searchStr).map((i) => i.item)
+
+    tokenList = results.filter((item) => item.source === 'tokenList')
+    remainingTokens = results.filter(
+      (item) => item.source === 'remainingTokens'
+    )
   }
-
-  const allToTokens = _.uniq(
-    getToTokens({
-      fromChainId,
-      fromTokenRouteSymbol: null,
-      toChainId,
-      toTokenRouteSymbol: null,
-    })
-      .map(getSymbol)
-      .map((symbol) => ALL_TOKENS[symbol])
-  )
-
-  const remainingTokens = _.difference(allToTokens, toTokens).sort((t) =>
-    sortByBalances(t, toChainId, portfolioBalances)
-  )
 
   const escPressed = useKeyPress('Escape')
   const arrowUp = useKeyPress('ArrowUp')
@@ -80,7 +98,6 @@ export const ToTokenListOverlay = () => {
 
   function onMenuItemClick(token: Token) {
     dispatch(setToToken(token))
-    dispatch(setShowToTokenListOverlay(false))
     onClose()
   }
 
@@ -94,7 +111,7 @@ export const ToTokenListOverlay = () => {
 
   function arrowDownFunc() {
     const nextIdx = currentIdx + 1
-    if (arrowDown && nextIdx < tokenList.length) {
+    if (arrowDown && nextIdx < masterList.length) {
       setCurrentIdx(nextIdx)
     }
   }
@@ -112,7 +129,7 @@ export const ToTokenListOverlay = () => {
 
   function enterPressedFunc() {
     if (enterPressed && currentIdx > -1) {
-      onMenuItemClick(tokenList[currentIdx])
+      onMenuItemClick(masterList[currentIdx])
     }
   }
 

@@ -3,13 +3,17 @@ import _ from 'lodash'
 import { useEffect, useMemo, useState } from 'react'
 import { useDispatch } from 'react-redux'
 import Fuse from 'fuse.js'
-import { useAccount } from 'wagmi'
 
 import { useKeyPress } from '@hooks/useKeyPress'
 import SlideSearchBox from '@pages/bridge/SlideSearchBox'
 import { sortTokens } from '@constants/tokens'
 import { Token } from '@/utils/types'
-import { setFromToken } from '@/slices/bridge/reducer'
+import {
+  resetState,
+  setFromChainId,
+  setFromToken,
+  setToToken,
+} from '@/slices/bridge/reducer'
 import { setShowFromTokenListOverlay } from '@/slices/bridgeDisplaySlice'
 import { segmentAnalyticsEvent } from '@/contexts/SegmentAnalyticsProvider'
 import { usePortfolioBalances } from '@/slices/portfolio/hooks'
@@ -17,7 +21,10 @@ import { useBridgeState } from '@/slices/bridge/hooks'
 import SelectSpecificTokenButton from './components/SelectSpecificTokenButton'
 import { fromTokenText } from './helpers/fromTokenText'
 import { getFromTokens } from '@/utils/routeMaker/getFromTokens'
-import { getSymbol } from '@/utils/routeMaker/generateRoutePossibilities'
+import {
+  getRoutePossibilities,
+  getSymbol,
+} from '@/utils/routeMaker/generateRoutePossibilities'
 
 import * as ALL_TOKENS from '@constants/tokens/master'
 import { sortByBalances } from './helpers/sortByBalance'
@@ -35,7 +42,50 @@ export const FromTokenListOverlay = () => {
     sortByBalances(t, fromChainId, portfolioBalances)
   )
 
-  const fuse = new Fuse(tokenList, {
+  const allFromChainTokens = _.uniq(
+    getFromTokens({
+      fromChainId,
+      fromTokenRouteSymbol: null,
+      toChainId: null,
+      toTokenRouteSymbol: null,
+    })
+      .map(getSymbol)
+      .map((symbol) => ALL_TOKENS[symbol])
+  )
+
+  let remainingFromChainTokens = _.difference(
+    allFromChainTokens,
+    fromTokens
+  ).sort((t) => sortByBalances(t, fromChainId, portfolioBalances))
+
+  const { fromTokens: allTokens } = getRoutePossibilities({
+    fromChainId: null,
+    fromToken: null,
+    toChainId: null,
+    toToken: null,
+  })
+
+  let allOtherTokens = _.difference(allTokens, allFromChainTokens)
+
+  const tokenListWithSource = tokenList.map((token) => ({
+    ...token,
+    source: 'tokenList',
+  }))
+  const remainingFromChainTokensWithSource = remainingFromChainTokens.map(
+    (token) => ({ ...token, source: 'remainingFromChainTokens' })
+  )
+  const allOtherTokensWithSource = allOtherTokens.map((token) => ({
+    ...token,
+    source: 'allOtherTokens',
+  }))
+
+  const masterList = [
+    ...tokenListWithSource,
+    ...remainingFromChainTokensWithSource,
+    ...allOtherTokensWithSource,
+  ]
+
+  const fuseOptions = {
     ignoreLocation: true,
     includeScore: true,
     threshold: 0.0,
@@ -48,26 +98,18 @@ export const FromTokenListOverlay = () => {
       `addresses.${fromChainId}`,
       'name',
     ],
-  })
-
-  if (searchStr?.length > 0) {
-    tokenList = fuse.search(searchStr).map((i) => i.item)
   }
 
-  const allFromTokens = _.uniq(
-    getFromTokens({
-      fromChainId,
-      fromTokenRouteSymbol: null,
-      toChainId: null,
-      toTokenRouteSymbol: null,
-    })
-      .map(getSymbol)
-      .map((symbol) => ALL_TOKENS[symbol])
-  )
+  const fuse = new Fuse(masterList, fuseOptions)
 
-  const remainingTokens = _.difference(allFromTokens, fromTokens).sort((t) =>
-    sortByBalances(t, fromChainId, portfolioBalances)
-  )
+  if (searchStr?.length > 0) {
+    const results = fuse.search(searchStr).map((i) => i.item)
+    tokenList = results.filter((item) => item.source === 'tokenList')
+    remainingFromChainTokens = results.filter(
+      (item) => item.source === 'remainingFromChainTokens'
+    )
+    allOtherTokens = results.filter((item) => item.source === 'allOtherTokens')
+  }
 
   const escPressed = useKeyPress('Escape')
   const arrowUp = useKeyPress('ArrowUp')
@@ -81,9 +123,17 @@ export const FromTokenListOverlay = () => {
   }
 
   function onMenuItemClick(token: Token) {
-    dispatch(setFromToken(token))
-    dispatch(setShowFromTokenListOverlay(false))
-    onClose()
+    if (allFromChainTokens.includes(token)) {
+      dispatch(setFromToken(token))
+      onClose()
+    } else {
+      dispatch(resetState())
+      dispatch(setFromToken(token))
+      const fromChainId = Object.keys(token.addresses)[0]
+      dispatch(setFromChainId(Number(fromChainId)))
+      dispatch(setToToken(token))
+      onClose()
+    }
   }
 
   function escFunc() {
@@ -96,7 +146,7 @@ export const FromTokenListOverlay = () => {
 
   function arrowDownFunc() {
     const nextIdx = currentIdx + 1
-    if (arrowDown && nextIdx < tokenList.length) {
+    if (arrowDown && nextIdx < masterList.length) {
       setCurrentIdx(nextIdx)
     }
   }
@@ -114,7 +164,7 @@ export const FromTokenListOverlay = () => {
 
   function enterPressedFunc() {
     if (enterPressed && currentIdx > -1) {
-      onMenuItemClick(tokenList[currentIdx])
+      onMenuItemClick(masterList[currentIdx])
     }
   }
 
@@ -168,13 +218,13 @@ export const FromTokenListOverlay = () => {
           )
         })}
       </div>
-      {remainingTokens && (
+      {remainingFromChainTokens && (
         <>
           <div className="px-2 pb-2 text-secondaryTextColor text-sm bg-[#343036]">
             Other tokens
           </div>
           <div className="px-2 pb-2 bg-[#343036] md:px-2">
-            {remainingTokens.map((token, idx) => {
+            {remainingFromChainTokens.map((token, idx) => {
               return (
                 <SelectSpecificTokenButton
                   isOrigin={true}
@@ -197,6 +247,31 @@ export const FromTokenListOverlay = () => {
           </div>
         </>
       )}
+      <div className="px-2 pb-2 text-secondaryTextColor text-sm bg-[#343036]">
+        All other tokens
+      </div>
+      <div className="px-2 pb-2 bg-[#343036] md:px-2">
+        {allOtherTokens.map((token, idx) => {
+          return (
+            <SelectSpecificTokenButton
+              isOrigin={true}
+              key={idx}
+              token={token}
+              selectedToken={fromToken}
+              active={idx === currentIdx}
+              onClick={() => {
+                const eventTitle = '[Bridge User Action] Sets new fromToken'
+                const eventData = {
+                  previousFromToken: fromToken?.symbol,
+                  newFromToken: token?.symbol,
+                }
+                segmentAnalyticsEvent(eventTitle, eventData)
+                onMenuItemClick(token)
+              }}
+            />
+          )
+        })}
+      </div>
       <div>
         {searchStr && (
           <div className="px-12 py-4 text-center text-white text-md">

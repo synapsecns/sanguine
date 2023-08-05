@@ -37,8 +37,6 @@ const SelectSpecificTokenButton = ({
 
   if (isCurrentlySelected) {
     bgClassName = getMenuItemBgForCoin(token?.color)
-  } else {
-    bgClassName = 'bg-transparent hover:bg-transparent active:bg-transparent'
   }
 
   return (
@@ -52,6 +50,7 @@ const SelectSpecificTokenButton = ({
         px-2 py-1
         cursor-pointer
         border-[1px] border-[#423F44]
+        mb-1
         ${bgClassName}
         ${classNameForBorderStyle}
         ${classNameForMenuItemStyle}

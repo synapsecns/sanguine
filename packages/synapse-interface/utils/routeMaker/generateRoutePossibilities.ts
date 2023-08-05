@@ -21,10 +21,10 @@ export const getRoutePossibilities = ({
   toChainId,
   toToken,
 }: {
-  fromChainId: number
-  fromToken: Token
-  toChainId: number
-  toToken: Token
+  fromChainId?: number
+  fromToken?: Token
+  toChainId?: number
+  toToken?: Token
 }) => {
   const fromTokenRouteSymbol = fromToken && fromToken.routeSymbol
   const toTokenRouteSymbol = toToken && toToken.routeSymbol

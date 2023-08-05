@@ -5,7 +5,7 @@ import Fuse from 'fuse.js'
 import { useKeyPress } from '@hooks/useKeyPress'
 import { useNetwork } from 'wagmi'
 
-import * as CHAINS from '@constants/chains/master'
+import * as ALL_CHAINS from '@constants/chains/master'
 import SlideSearchBox from '@pages/bridge/SlideSearchBox'
 import { CHAINS_BY_ID, sortChains } from '@constants/chains'
 import { segmentAnalyticsEvent } from '@/contexts/SegmentAnalyticsProvider'
@@ -18,12 +18,39 @@ import { toChainText } from './helpers/toChainText'
 export const ToChainListOverlay = () => {
   const { fromChainId, fromToken, toChainIds, toChainId, toToken } =
     useBridgeState()
-  const { chain } = useNetwork()
   const [currentIdx, setCurrentIdx] = useState(-1)
   const [searchStr, setSearchStr] = useState('')
-  const [networks, setNetworks] = useState([])
   const dispatch = useDispatch()
-  const fuse = new Fuse(networks, {
+
+  const dataId = 'bridge-destination-chain-list'
+
+  let possibleChains = _(ALL_CHAINS)
+    .pickBy((value) => _.includes(toChainIds, value.id))
+    .values()
+    .value()
+
+  possibleChains = sortChains(possibleChains)
+
+  let remainingChains = sortChains(
+    _.difference(
+      Object.keys(CHAINS_BY_ID).map((id) => CHAINS_BY_ID[id]),
+      toChainIds.map((id) => CHAINS_BY_ID[id])
+    )
+  )
+
+  const possibleChainsWithSource = possibleChains.map((chain) => ({
+    ...chain,
+    source: 'possibleChains',
+  }))
+
+  const remainingChainsWithSource = remainingChains.map((chain) => ({
+    ...chain,
+    source: 'remainingChains',
+  }))
+
+  const masterList = [...possibleChainsWithSource, ...remainingChainsWithSource]
+
+  const fuseOptions = {
     includeScore: true,
     threshold: 0.0,
     keys: [
@@ -31,32 +58,21 @@ export const ToChainListOverlay = () => {
         name: 'name',
         weight: 2,
       },
-      'chainShortName',
-      'chainId',
-      'nativeCurrency',
+      'id',
+      'nativeCurrency.symbol',
     ],
-  })
+  }
 
-  const dataId = 'bridge-destination-chain-list'
+  const fuse = new Fuse(masterList, fuseOptions)
 
-  useEffect(() => {
-    let tempNetworks = []
-    Object.values(CHAINS).map((chain) => {
-      if (toChainIds?.includes(chain.id)) {
-        tempNetworks.push(chain)
-      }
-    })
-    tempNetworks = sortChains(tempNetworks)
-    if (searchStr?.length > 0) {
-      tempNetworks = fuse.search(searchStr).map((i) => i.item)
-    }
-    setNetworks(tempNetworks)
-  }, [chain, searchStr])
+  if (searchStr?.length > 0) {
+    const results = fuse.search(searchStr).map((i) => i.item)
 
-  const remainingChains = _.difference(
-    Object.keys(CHAINS_BY_ID).map((id) => CHAINS_BY_ID[id]),
-    toChainIds.map((id) => CHAINS_BY_ID[id])
-  )
+    possibleChains = results.filter((item) => item.source === 'possibleChains')
+    remainingChains = results.filter(
+      (item) => item.source === 'remainingChains'
+    )
+  }
 
   const escPressed = useKeyPress('Escape')
   const arrowUp = useKeyPress('ArrowUp')
@@ -76,7 +92,7 @@ export const ToChainListOverlay = () => {
   }
   const arrowDownFunc = () => {
     const nextIdx = currentIdx + 1
-    if (arrowDown && nextIdx < networks.length) {
+    if (arrowDown && nextIdx < masterList.length) {
       setCurrentIdx(nextIdx)
     }
   }
@@ -90,8 +106,8 @@ export const ToChainListOverlay = () => {
 
   const enterPressedFunc = () => {
     if (enterPressed && currentIdx > -1) {
-      const currentChain = networks[currentIdx]
-      dispatch(setToChainId(currentChain.chainId))
+      const chain = masterList[currentIdx]
+      dispatch(setToChainId(chain.id))
       onClose()
     }
   }
@@ -122,7 +138,7 @@ export const ToChainListOverlay = () => {
       <div className="z-10 w-full px-2 ">
         <div className="flex items-center mb-2 font-medium justfiy-between sm:float-none">
           <SlideSearchBox
-            placeholder="Filter"
+            placeholder="Filter by chain name, id, or native currency"
             searchStr={searchStr}
             onSearch={onSearch}
           />
@@ -135,7 +151,7 @@ export const ToChainListOverlay = () => {
         <div className="mb-2 text-sm font-normal text-white">
           {toChainsText}
         </div>
-        {networks.map(({ id: mapChainId }, idx) => {
+        {possibleChains.map(({ id: mapChainId }, idx) => {
           let onClickSpecificNetwork
           if (toChainId === mapChainId) {
             onClickSpecificNetwork = () => {

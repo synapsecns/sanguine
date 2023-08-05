@@ -18,7 +18,7 @@ export const FromTokenSelector = () => {
 
     buttonContent = (
       <div className="flex items-center space-x-2">
-        <div className="hidden md:inline-block">
+        <div className="flex-none hidden md:inline-block">
           <img src={src} alt={symbol} className="w-5 h-5" />
         </div>
         <div className="text-left">
@@ -41,7 +41,7 @@ export const FromTokenSelector = () => {
   return (
     <button
       data-test-id="bridge-origin-token"
-      className="bg-[#565058] pl-2 pr-2 pt-1 pb-1 rounded-sm min-w-[80px]"
+      className="bg-[#565058] pl-2 pr-2 pt-1 pb-1 rounded-md min-w-[80px]"
       onClick={() => dispatch(setShowFromTokenListOverlay(true))}
     >
       {buttonContent}

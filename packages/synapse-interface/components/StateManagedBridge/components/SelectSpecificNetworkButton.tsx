@@ -40,8 +40,6 @@ export const SelectSpecificNetworkButton = ({
       ${getNetworkButtonBorder(chain.color)}
       bg-opacity-30
     `
-  } else {
-    bgClassName = 'bg-transparent hover:bg-transparent active:bg-transparent'
   }
 
   return (
@@ -55,6 +53,7 @@ export const SelectSpecificNetworkButton = ({
         px-2 py-4
         cursor-pointer
         border-[1px] border-[#423F44]
+        mb-1
         ${bgClassName}
         ${getNetworkButtonBorderHover(chain.color)}
         ${getNetworkHover(chain.color)}
