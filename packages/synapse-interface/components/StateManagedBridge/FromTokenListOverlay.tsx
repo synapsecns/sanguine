@@ -38,7 +38,7 @@ export const FromTokenListOverlay = () => {
     useBridgeState()
   const portfolioBalances = usePortfolioBalances()
 
-  let tokenList = sortTokens(fromTokens).sort((t) =>
+  let possibleTokens = sortTokens(fromTokens).sort((t) =>
     sortByBalances(t, fromChainId, portfolioBalances)
   )
 
@@ -53,10 +53,9 @@ export const FromTokenListOverlay = () => {
       .map((symbol) => ALL_TOKENS[symbol])
   )
 
-  let remainingFromChainTokens = _.difference(
-    allFromChainTokens,
-    fromTokens
-  ).sort((t) => sortByBalances(t, fromChainId, portfolioBalances))
+  let remainingTokens = _.difference(allFromChainTokens, fromTokens).sort((t) =>
+    sortByBalances(t, fromChainId, portfolioBalances)
+  )
 
   const { fromTokens: allTokens } = getRoutePossibilities({
     fromChainId: null,
@@ -65,24 +64,25 @@ export const FromTokenListOverlay = () => {
     toToken: null,
   })
 
-  let allOtherTokens = _.difference(allTokens, allFromChainTokens)
+  let allOtherFromTokens = _.difference(allTokens, allFromChainTokens)
 
-  const tokenListWithSource = tokenList.map((token) => ({
+  const possibleTokensWithSource = possibleTokens.map((token) => ({
     ...token,
-    source: 'tokenList',
+    source: 'possibleTokens',
   }))
-  const remainingFromChainTokensWithSource = remainingFromChainTokens.map(
-    (token) => ({ ...token, source: 'remainingFromChainTokens' })
-  )
-  const allOtherTokensWithSource = allOtherTokens.map((token) => ({
+  const remainingTokensWithSource = remainingTokens.map((token) => ({
     ...token,
-    source: 'allOtherTokens',
+    source: 'remainingTokens',
+  }))
+  const allOtherFromTokensWithSource = allOtherFromTokens.map((token) => ({
+    ...token,
+    source: 'allOtherFromTokens',
   }))
 
   const masterList = [
-    ...tokenListWithSource,
-    ...remainingFromChainTokensWithSource,
-    ...allOtherTokensWithSource,
+    ...possibleTokensWithSource,
+    ...remainingTokensWithSource,
+    ...allOtherFromTokensWithSource,
   ]
 
   const fuseOptions = {
@@ -104,11 +104,13 @@ export const FromTokenListOverlay = () => {
 
   if (searchStr?.length > 0) {
     const results = fuse.search(searchStr).map((i) => i.item)
-    tokenList = results.filter((item) => item.source === 'tokenList')
-    remainingFromChainTokens = results.filter(
-      (item) => item.source === 'remainingFromChainTokens'
+    possibleTokens = results.filter((item) => item.source === 'possibleTokens')
+    remainingTokens = results.filter(
+      (item) => item.source === 'remainingTokens'
     )
-    allOtherTokens = results.filter((item) => item.source === 'allOtherTokens')
+    allOtherFromTokens = results.filter(
+      (item) => item.source === 'allOtherFromTokens'
+    )
   }
 
   const escPressed = useKeyPress('Escape')
@@ -197,7 +199,7 @@ export const FromTokenListOverlay = () => {
         {fromTokensText}
       </div>
       <div className="px-2 pb-4 bg-[#343036] md:px-2 ">
-        {tokenList.map((token, idx) => {
+        {possibleTokens.map((token, idx) => {
           return (
             <SelectSpecificTokenButton
               isOrigin={true}
@@ -218,13 +220,13 @@ export const FromTokenListOverlay = () => {
           )
         })}
       </div>
-      {remainingFromChainTokens && (
+      {remainingTokens && (
         <>
           <div className="px-2 pb-2 text-secondaryTextColor text-sm bg-[#343036]">
             Other tokens
           </div>
           <div className="px-2 pb-2 bg-[#343036] md:px-2">
-            {remainingFromChainTokens.map((token, idx) => {
+            {remainingTokens.map((token, idx) => {
               return (
                 <SelectSpecificTokenButton
                   isOrigin={true}
@@ -248,10 +250,10 @@ export const FromTokenListOverlay = () => {
         </>
       )}
       <div className="px-2 pb-2 text-secondaryTextColor text-sm bg-[#343036]">
-        All other tokens
+        All other sendable tokens
       </div>
       <div className="px-2 pb-2 bg-[#343036] md:px-2">
-        {allOtherTokens.map((token, idx) => {
+        {allOtherFromTokens.map((token, idx) => {
           return (
             <SelectSpecificTokenButton
               isOrigin={true}

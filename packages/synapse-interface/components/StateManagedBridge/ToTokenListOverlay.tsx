@@ -13,7 +13,10 @@ import { segmentAnalyticsEvent } from '@/contexts/SegmentAnalyticsProvider'
 import { useBridgeState } from '@/slices/bridge/hooks'
 import SelectSpecificTokenButton from './components/SelectSpecificTokenButton'
 import { getToTokens } from '@/utils/routeMaker/getToTokens'
-import { getSymbol } from '@/utils/routeMaker/generateRoutePossibilities'
+import {
+  getRoutePossibilities,
+  getSymbol,
+} from '@/utils/routeMaker/generateRoutePossibilities'
 
 import * as ALL_TOKENS from '@constants/tokens/master'
 import { toTokenText } from './helpers/toTokensText'
@@ -29,11 +32,11 @@ export const ToTokenListOverlay = () => {
   const [searchStr, setSearchStr] = useState('')
   const dispatch = useDispatch()
 
-  let tokenList = sortTokens(toTokens).sort((t) =>
+  let possibleTokens = sortTokens(toTokens).sort((t) =>
     sortByBalances(t, toChainId, portfolioBalances)
   )
 
-  const allToTokens = _.uniq(
+  const allToChainTokens = _.uniq(
     getToTokens({
       fromChainId,
       fromTokenRouteSymbol: null,
@@ -44,21 +47,39 @@ export const ToTokenListOverlay = () => {
       .map((symbol) => ALL_TOKENS[symbol])
   )
 
-  let remainingTokens = _.difference(allToTokens, toTokens).sort((t) =>
-    sortByBalances(t, toChainId, portfolioBalances)
+  let remainingChainTokens = _.difference(allToChainTokens, toTokens).sort(
+    (t) => sortByBalances(t, toChainId, portfolioBalances)
   )
 
-  const tokenListwithSource = tokenList.map((token) => ({
+  const { toTokens: allTokens } = getRoutePossibilities({
+    fromChainId: null,
+    fromToken: null,
+    toChainId: null,
+    toToken: null,
+  })
+
+  let allOtherToTokens = _.difference(allTokens, allToChainTokens)
+
+  const possibleTokenswithSource = possibleTokens.map((token) => ({
     ...token,
-    source: 'tokenList',
+    source: 'possibleTokens',
   }))
 
-  const remainingTokensWithSource = remainingTokens.map((token) => ({
+  const remainingChainTokensWithSource = remainingChainTokens.map((token) => ({
     ...token,
-    source: 'remainingTokens',
+    source: 'remainingChainTokens',
   }))
 
-  const masterList = [...tokenListwithSource, ...remainingTokensWithSource]
+  const allOtherToTokensWithSource = allOtherToTokens.map((token) => ({
+    ...token,
+    source: 'allOtherToTokens',
+  }))
+
+  const masterList = [
+    ...possibleTokenswithSource,
+    ...remainingChainTokensWithSource,
+    ...allOtherToTokensWithSource,
+  ]
 
   const fuseOptions = {
     ignoreLocation: true,
@@ -79,9 +100,9 @@ export const ToTokenListOverlay = () => {
   if (searchStr?.length > 0) {
     const results = fuse.search(searchStr).map((i) => i.item)
 
-    tokenList = results.filter((item) => item.source === 'tokenList')
-    remainingTokens = results.filter(
-      (item) => item.source === 'remainingTokens'
+    possibleTokens = results.filter((item) => item.source === 'possibleTokens')
+    remainingChainTokens = results.filter(
+      (item) => item.source === 'remainingChainTokens'
     )
   }
 
@@ -144,10 +165,6 @@ export const ToTokenListOverlay = () => {
     return toTokenText({ fromChainId, fromToken, toChainId, toToken })
   }, [fromChainId, fromToken, toChainId, toToken])
 
-  const remainingTokensText = useMemo(() => {
-    return 'Other tokens'
-  }, [])
-
   return (
     <div
       data-test-id="token-slide-over"
@@ -166,7 +183,7 @@ export const ToTokenListOverlay = () => {
         {toTokensText}
       </div>
       <div className="px-2 pb-2 bg-[#343036] md:px-2">
-        {tokenList.map((token, idx) => {
+        {possibleTokens.map((token, idx) => {
           return (
             <SelectSpecificTokenButton
               isOrigin={false}
@@ -187,13 +204,13 @@ export const ToTokenListOverlay = () => {
           )
         })}
       </div>
-      {remainingTokens && (
+      {remainingChainTokens && (
         <>
           <div className="px-2 pb-2 pt-2 text-secondaryTextColor text-sm bg-[#343036]">
-            {remainingTokensText}
+            Other tokens
           </div>
           <div className="px-2 pb-2 bg-[#343036] md:px-2">
-            {remainingTokens.map((token, idx) => {
+            {remainingChainTokens.map((token, idx) => {
               return (
                 <SelectSpecificTokenButton
                   isOrigin={false}
@@ -216,6 +233,32 @@ export const ToTokenListOverlay = () => {
           </div>
         </>
       )}
+
+      <div className="px-2 pb-2 pt-2 text-secondaryTextColor text-sm bg-[#343036]">
+        All Other receivable tokens
+      </div>
+      <div className="px-2 pb-2 bg-[#343036] md:px-2">
+        {allOtherToTokens.map((token, idx) => {
+          return (
+            <SelectSpecificTokenButton
+              isOrigin={false}
+              key={idx}
+              token={token}
+              selectedToken={toToken}
+              active={idx === currentIdx}
+              onClick={() => {
+                const eventTitle = `[Bridge User Action] Sets new toToken`
+                const eventData = {
+                  previousToToken: toToken?.symbol,
+                  newToToken: token?.symbol,
+                }
+                segmentAnalyticsEvent(eventTitle, eventData)
+                onMenuItemClick(token)
+              }}
+            />
+          )
+        })}
+      </div>
 
       <div>
         {searchStr && (

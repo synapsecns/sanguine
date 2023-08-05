@@ -36,17 +36,20 @@ export const getRoutePossibilities = ({
     toTokenRouteSymbol,
   })
 
-  const fromTokens = _.uniq(
-    _.difference(
-      getFromTokens({
-        fromChainId,
-        fromTokenRouteSymbol,
-        toChainId,
-        toTokenRouteSymbol,
-      }),
-      flattenPausedTokens()
-    ).map(getSymbol)
-  ).map((symbol) => ALL_TOKENS[symbol])
+  const fromTokens = _(
+    getFromTokens({
+      fromChainId,
+      fromTokenRouteSymbol,
+      toChainId,
+      toTokenRouteSymbol,
+    })
+  )
+    .difference(flattenPausedTokens())
+    .map(getSymbol)
+    .uniq()
+    .map((symbol) => ALL_TOKENS[symbol])
+    .compact()
+    .value()
 
   const toChainIds = getToChainIds({
     fromChainId,
@@ -55,17 +58,20 @@ export const getRoutePossibilities = ({
     toTokenRouteSymbol,
   })?.filter((chainId) => chainId !== fromChainId)
 
-  const toTokens = _.uniq(
-    _.difference(
-      getToTokens({
-        fromChainId,
-        fromTokenRouteSymbol,
-        toChainId,
-        toTokenRouteSymbol,
-      }),
-      flattenPausedTokens()
-    ).map(getSymbol)
-  ).map((symbol) => ALL_TOKENS[symbol])
+  const toTokens = _(
+    getToTokens({
+      fromChainId,
+      fromTokenRouteSymbol,
+      toChainId,
+      toTokenRouteSymbol,
+    })
+  )
+    .difference(flattenPausedTokens())
+    .map(getSymbol)
+    .uniq()
+    .map((symbol) => ALL_TOKENS[symbol])
+    .compact()
+    .value()
 
   return {
     fromChainId,
