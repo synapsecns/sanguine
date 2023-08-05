@@ -174,11 +174,11 @@ export const TokenSlideOver = ({
                   : `[Bridge User Action] Sets new toToken`
                 const eventData = isOrigin
                   ? {
-                      previousFromToken: selectedToken.symbol,
+                      previousFromToken: selectedToken?.symbol,
                       newFromToken: token.symbol,
                     }
                   : {
-                      previousToToken: selectedToken.symbol,
+                      previousToToken: selectedToken?.symbol,
                       newToToken: token.symbol,
                     }
                 segmentAnalyticsEvent(eventTitle, eventData)

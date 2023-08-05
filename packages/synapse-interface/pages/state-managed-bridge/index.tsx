@@ -133,6 +133,7 @@ const StateManagedBridge = () => {
   const { synapseSDK } = useSynapseContext()
   const bridgeDisplayRef = useRef(null)
   const currentSDKRequestID = useRef(0)
+  const fromTokenAttemptRef = useRef(0)
   const router = useRouter()
   const { query, pathname } = router
 
@@ -196,7 +197,7 @@ const StateManagedBridge = () => {
     const toTokens = BRIDGABLE_TOKENS[toChainId]
 
     console.log('fromTokens: ', fromTokens)
-    console.log('fromToken.symbol: ', fromToken.symbol)
+    console.log('fromToken.symbol: ', fromToken?.symbol)
     console.log('toTokens: ', toTokens)
     // Checking whether the selected fromToken exists in the BRIDGABLE_TOKENS for the chosen chain
     if (!fromTokens.some((token) => token.symbol === fromToken?.symbol)) {
@@ -219,31 +220,31 @@ const StateManagedBridge = () => {
         fromChainId
       )
 
-    // console.log('bridgeableToken', bridgeableToken)
-    // console.log('bridgeableTokens: ', bridgeableTokens)
-    // console.log('bridgeableChainIds:', bridgeableChainIds)
-    // console.log('toChainId: ', toChainId)
+    console.log('bridgeableToken', bridgeableToken)
+    console.log('bridgeableTokens: ', bridgeableTokens)
+    console.log('bridgeableChainIds:', bridgeableChainIds)
+    console.log('toChainId: ', toChainId)
 
     const sortedFromTokens = sortTokens(fromTokens).filter(
       (token) => token !== fromToken
     )
 
     let bridgeableToChainId: number = toChainId
-    let bridgeableNextFromTokenByPriority: Token = sortedFromTokens[0]
+    let bridgeableNextFromTokenByPriority: Token =
+      sortedFromTokens[Number(fromTokenAttemptRef)]
 
-    if (!bridgeableChainIds.includes(toChainId)) {
-      // dispatch(setToChainId(toChainId))
-      // dispatch(setToToken(toToken))
+    if (!bridgeableChainIds?.includes(toChainId)) {
       console.log('switching from: ', fromToken)
       console.log('switching to: ', bridgeableNextFromTokenByPriority)
       console.log('toChain: ', toChainId)
       dispatch(setFromToken(bridgeableNextFromTokenByPriority))
+      fromTokenAttemptRef.current++
       const sortedChainIds = bridgeableChainIds?.sort((a, b) => {
         const chainA = CHAINS_ARR.find((chain) => chain.id === a)
         const chainB = CHAINS_ARR.find((chain) => chain.id === b)
         return chainB.priorityRank - chainA.priorityRank
       })
-      bridgeableToChainId = sortedChainIds[0]
+      bridgeableToChainId = sortedChainIds?.[0]
     } else {
       dispatch(setToToken(bridgeableToken))
       dispatch(setSupportedToTokens(sortToTokens(bridgeableTokens)))
@@ -254,7 +255,7 @@ const StateManagedBridge = () => {
     dispatch(setFromChainIds(fromChainIds))
     dispatch(setToChainIds(bridgeableChainIds))
 
-    console.log(`[useEffect] fromToken`, fromToken.symbol)
+    console.log(`[useEffect] fromToken`, fromToken?.symbol)
     console.log(`[useEffect] toToken`, toToken.symbol)
     // TODO: Double serialization happening somewhere??
     if (
