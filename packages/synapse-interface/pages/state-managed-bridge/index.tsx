@@ -230,25 +230,16 @@ const StateManagedBridge = () => {
     )
 
     if (bridgeableChainIds?.includes(toChainId)) {
-      console.log('bridgeableChainIds: ', bridgeableChainIds)
-      console.log('toChainId: ', toChainId)
       isFromTokenCompatible.current = true
+    } else {
+      dispatch(setToChainId(bridgeableChainIds[0]))
+      dispatch(setToToken(bridgeableToken))
     }
 
-    console.log('sortedFromTokens.length: ', sortedFromTokens.length)
-    console.log(
-      'fromTokenAttemptRef.current + 1: ',
-      fromTokenAttemptRef.current + 1
-    )
-    console.log(
-      'isFromTokenCompatible.current: ',
-      isFromTokenCompatible.current
-    )
     if (
       fromTokenAttemptRef.current >= sortedFromTokens.length &&
       isFromTokenCompatible.current === false
     ) {
-      console.log('got hit:')
       dispatch(setToChainId(bridgeableChainIds[0]))
     }
 
