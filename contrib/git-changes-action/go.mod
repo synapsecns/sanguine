@@ -18,7 +18,7 @@ require (
 	github.com/migueleliasweb/go-github-mock v0.0.16
 	github.com/otiai10/copy v1.9.0
 	github.com/sethvargo/go-githubactions v1.1.0
-	github.com/stretchr/testify v1.8.3
+	github.com/stretchr/testify v1.8.4
 	github.com/synapsecns/sanguine/core v0.0.0-00010101000000-000000000000
 	github.com/vishalkuo/bimap v0.0.0-20220726225509-e0b4f20de28b
 	github.com/xlab/treeprint v1.1.0
@@ -50,11 +50,12 @@ require (
 	github.com/ipfs/go-log/v2 v2.1.3 // indirect
 	github.com/jbenet/go-context v0.0.0-20150711004518-d14ea06fba99 // indirect
 	github.com/kevinburke/ssh_config v1.2.0 // indirect
-	github.com/kr/pretty v0.3.0 // indirect
+	github.com/kr/pretty v0.3.1 // indirect
 	github.com/mitchellh/go-homedir v1.1.0 // indirect
 	github.com/opentracing/opentracing-go v1.2.0 // indirect
 	github.com/pjbgf/sha1cd v0.2.3 // indirect
 	github.com/pmezard/go-difflib v1.0.0 // indirect
+	github.com/rogpeppe/go-internal v1.10.0 // indirect
 	github.com/sergi/go-diff v1.2.0 // indirect
 	github.com/sethvargo/go-envconfig v0.8.0 // indirect
 	github.com/skeema/knownhosts v1.1.0 // indirect

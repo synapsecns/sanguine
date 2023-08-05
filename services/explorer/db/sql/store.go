@@ -3,6 +3,7 @@ package sql
 import (
 	"context"
 	"fmt"
+	"github.com/synapsecns/sanguine/core/metrics"
 	"time"
 
 	gormClickhouse "gorm.io/driver/clickhouse"
@@ -25,7 +26,7 @@ func (s *Store) UNSAFE_DB() *gorm.DB {
 // OpenGormClickhouse opens a gorm connection to clickhouse.
 //
 //nolint:cyclop
-func OpenGormClickhouse(ctx context.Context, address string, readOnly bool) (*Store, error) {
+func OpenGormClickhouse(ctx context.Context, address string, readOnly bool, handler metrics.Handler) (*Store, error) {
 	clickhouseDB, err := gorm.Open(gormClickhouse.New(gormClickhouse.Config{
 		DSN: address,
 	}), &gorm.Config{
@@ -78,5 +79,7 @@ func OpenGormClickhouse(ctx context.Context, address string, readOnly bool) (*St
 	}
 	db.SetConnMaxIdleTime(1 * time.Second)
 	db.SetConnMaxLifetime(30 * time.Second)
+	handler.AddGormCallbacks(clickhouseDB)
+
 	return &Store{clickhouseDB}, nil
 }

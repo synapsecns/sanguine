@@ -16,6 +16,7 @@ import { Token } from '@types'
 import { zeroAddress } from 'viem'
 import { swapPoolCalculateTokenAmount } from '@/actions/swapPoolCalculateTokenAmount'
 import { swapPoolAddLiquidity } from '@/actions/swapPoolAddLiquidity'
+import { segmentAnalyticsEvent } from '@/contexts/SegmentAnalyticsProvider'
 
 export const approve = async (
   pool: Token,
@@ -75,6 +76,7 @@ export const approve = async (
       id: 'approve-success-popup',
       duration: 10000,
     })
+    segmentAnalyticsEvent(`[Pool Approval] Successful for ${pool?.name}`, {})
 
     return approveTx
   }
@@ -112,6 +114,8 @@ export const deposit = async (
 
   try {
     // get this from quote?
+    segmentAnalyticsEvent(`[Pool Deposit] Attempt for ${pool?.name}`, {})
+
     let minToMint: any = await swapPoolCalculateTokenAmount({
       chainId,
       pool,
@@ -165,11 +169,92 @@ export const deposit = async (
       id: 'deposit-success-popup',
       duration: 10000,
     })
+    segmentAnalyticsEvent(`[Pool Deposit] Success for ${pool?.name}`, {
+      inputAmounts,
+    })
 
     return tx
   } catch (error) {
     console.log('error from deposit: ', error)
     toast.dismiss(pendingPopup)
+    segmentAnalyticsEvent(`[Pool Deposit] Failure for ${pool?.name}`, {
+      inputAmounts,
+      errorCode: error.code,
+    })
+    txErrorHandler(error)
+    return error
+  }
+}
+
+export const emptyPoolDeposit = async (
+  pool: Token,
+  inputAmounts: any,
+  chainId: number
+) => {
+  let pendingPopup: any
+  let successPopup: any
+
+  pendingPopup = toast(`Starting your deposit...`, {
+    id: 'deposit-in-progress-popup',
+    duration: Infinity,
+  })
+
+  try {
+    segmentAnalyticsEvent(`[Empty Pool Deposit] Attempt for ${pool?.name}`, {})
+
+    const result = Array.from(Object.values(inputAmounts), (value) => value)
+
+    const wethIndex = _.findIndex(
+      pool.poolTokens,
+      (t) => t.symbol == WETH.symbol
+    )
+
+    let spendTransactionArgs = [
+      result,
+      0n as any,
+      Math.round(new Date().getTime() / 1000 + 60 * 10),
+    ]
+
+    const liquidityAmounts = Object.values(inputAmounts)
+
+    if (wethIndex >= 0) {
+      spendTransactionArgs.push({ value: liquidityAmounts[wethIndex] })
+    }
+
+    const tx = await swapPoolAddLiquidity({
+      chainId,
+      pool,
+      spendTransactionArgs,
+    })
+
+    toast.dismiss(pendingPopup)
+
+    const successToastContent = (
+      <div>
+        <div>Liquidity added!</div>
+        <ExplorerToastLink
+          transactionHash={tx?.transactionHash}
+          chainId={chainId}
+        />
+      </div>
+    )
+
+    successPopup = toast.success(successToastContent, {
+      id: 'deposit-success-popup',
+      duration: 10000,
+    })
+    segmentAnalyticsEvent(`[Empty Pool Deposit] Success for ${pool?.name}`, {
+      inputAmounts,
+    })
+
+    return tx
+  } catch (error) {
+    console.log('error from deposit: ', error)
+    toast.dismiss(pendingPopup)
+    segmentAnalyticsEvent(`[Empty Pool Deposit] Failure for ${pool?.name}`, {
+      inputAmounts,
+      errorCode: error.code,
+    })
     txErrorHandler(error)
     return error
   }

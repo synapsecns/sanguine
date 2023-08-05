@@ -12,6 +12,7 @@ export const WETH = new Token({
     [CHAINS.BOBA.id]: '0xd203De32170130082896b4111eDF825a4774c18E',
     [CHAINS.OPTIMISM.id]: '0x121ab82b49B2BC4c7901CA46B8277962b4350204',
     [CHAINS.AVALANCHE.id]: '0x49d5c2bdffac6ce2bfdb6640f4f80f226bc10bab',
+    [CHAINS.BASE.id]: '0x4200000000000000000000000000000000000006',
   },
   decimals: 18,
   symbol: 'WETH', // SHOULD BE WETH
@@ -23,6 +24,7 @@ export const WETH = new Token({
   color: 'sky',
   priorityRank: 3,
 })
+
 export const MIM = new Token({
   addresses: {
     [CHAINS.FANTOM.id]: '0x82f0b8b456c1a451378467398982d4834b6829c1',

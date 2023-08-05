@@ -4,7 +4,6 @@ import (
 	"context"
 	"sync"
 
-	"github.com/prometheus/client_golang/prometheus"
 	"golang.org/x/sync/semaphore"
 )
 
@@ -49,19 +48,6 @@ func NewBlockBroadcaster(ctx context.Context, chainID uint64) *BlockBroadcaster 
 		blockChan:     make(chan uint64),
 		firstSet:      true,
 	}
-}
-
-// GetMetrics gets metrics associated with block height watcher.
-func (b *BlockBroadcaster) GetMetrics(labels map[string]string) []prometheus.Collector {
-	return []prometheus.Collector{prometheus.NewCounterFunc(prometheus.CounterOpts{
-		Name:        HeightCounterMetricName,
-		Help:        "the current height of the chain",
-		ConstLabels: labels,
-	}, func() float64 {
-		b.lastHeightMux.RLock()
-		defer b.lastHeightMux.RUnlock()
-		return float64(b.lastHeight)
-	})}
 }
 
 // Emit emits a new block height to all listeners.

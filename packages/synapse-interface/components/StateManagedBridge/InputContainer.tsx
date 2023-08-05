@@ -1,9 +1,9 @@
-import React, { useEffect, useState, useRef } from 'react'
+import React, { useEffect, useState, useRef, useCallback } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
 import { useAccount } from 'wagmi'
 import { RootState } from '@/store/store'
 
-import { updateFromValue } from '@/slices/bridgeSlice'
+import { updateFromValue } from '@/slices/bridge/reducer'
 import { setShowFromTokenSlideOver } from '@/slices/bridgeDisplaySlice'
 import SelectTokenDropdown from '@/components/input/TokenAmountInput/SelectTokenDropdown'
 import MiniMaxButton from '../buttons/MiniMaxButton'
@@ -18,7 +18,7 @@ export const InputContainer = () => {
     fromChainId,
     fromToken,
     fromChainIds,
-    supportedFromTokenBalances,
+    supportedFromTokens,
     fromValue,
     bridgeTxHashes,
   } = useSelector((state: RootState) => state.bridge)
@@ -45,20 +45,26 @@ export const InputContainer = () => {
 
   const dispatch = useDispatch()
 
-  const hasBalances = Object.keys(supportedFromTokenBalances).length > 0
+  const hasBalances = Object.keys(supportedFromTokens).length > 0
 
   const fromTokenBalance: bigint =
     (hasBalances &&
-      supportedFromTokenBalances.filter((token) => token.token === fromToken)[0]
+      supportedFromTokens.filter((token) => token.token === fromToken)[0]
         ?.balance) ??
     0n
 
   const formattedBalance = hasBalances
-    ? formatBigIntToString(fromTokenBalance, fromToken.decimals[fromChainId], 4)
+    ? formatBigIntToString(
+        fromTokenBalance,
+        fromToken?.decimals[fromChainId],
+        4
+      )
     : '0'
 
   useEffect(() => {
     if (
+      fromToken &&
+      fromToken.decimals[fromChainId] &&
       stringToBigInt(fromValue, fromToken.decimals[fromChainId]) !== 0n &&
       stringToBigInt(fromValue, fromToken.decimals[fromChainId]) ===
         fromTokenBalance
@@ -86,17 +92,13 @@ export const InputContainer = () => {
     }
   }
 
-  const onClickBalance = () => {
-    const str = formatBigIntToString(
-      fromTokenBalance,
-      fromToken.decimals[fromChainId],
-      4
+  const onMaxBalance = useCallback(() => {
+    dispatch(
+      updateFromValue(
+        formatBigIntToString(fromTokenBalance, fromToken.decimals[fromChainId])
+      )
     )
-    dispatch(updateFromValue(str))
-    setShowValue(
-      formatBigIntToString(fromTokenBalance, fromToken.decimals[fromChainId])
-    )
-  }
+  }, [fromTokenBalance, fromChainId, fromToken])
 
   return (
     <div
@@ -138,7 +140,11 @@ export const InputContainer = () => {
               disabled={false}
               className={`
               focus:outline-none
+              focus:ring-0
+              focus:border-none
+              border-none
               bg-transparent
+              p-0
               max-w-[100px]
               md:max-w-[160px]
               placeholder:text-[#88818C]
@@ -156,7 +162,7 @@ export const InputContainer = () => {
               <label
                 htmlFor="inputRow"
                 className="hidden text-xs text-white transition-all duration-150 md:block transform-gpu hover:text-opacity-70 hover:cursor-pointer"
-                onClick={onClickBalance}
+                onClick={onMaxBalance}
               >
                 {formattedBalance}
                 <span className="text-opacity-50 text-secondaryTextColor">
@@ -170,7 +176,7 @@ export const InputContainer = () => {
             <div className="m-auto">
               <MiniMaxButton
                 disabled={fromTokenBalance && fromTokenBalance === 0n}
-                onClickBalance={onClickBalance}
+                onClickBalance={onMaxBalance}
               />
             </div>
           )}

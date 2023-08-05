@@ -9,7 +9,7 @@ import (
 	"gorm.io/gorm"
 )
 
-// Store is is a store that implements an underlying gorm db.
+// Store is a store that implements an underlying gorm db.
 type Store struct {
 	db             *gorm.DB
 	metrics        metrics.Handler

@@ -20,9 +20,8 @@ import {
   SynapseCCTPRouterQuery,
   SynapseRouterQuery,
 } from './utils/types'
+import { TEN_MINUTES, ONE_WEEK, calculateDeadline } from './utils/deadlines'
 import { SynapseCCTPRouter } from './SynapseCCTPRouter'
-const ONE_WEEK_DEADLINE = BigNumber.from(Math.floor(Date.now() / 1000) + 604800) // one week in the future
-const TEN_MIN_DEADLINE = BigNumber.from(Math.floor(Date.now() / 1000) + 600) // ten minutes in the future
 
 type SynapseRouters = {
   [key: number]: SynapseRouter
@@ -311,7 +310,7 @@ class SynapseSDK {
     } else {
       formattedOriginQuery = { ...(originQuery as SynapseRouterQuery) }
     }
-    formattedOriginQuery.deadline = deadline ?? TEN_MIN_DEADLINE
+    formattedOriginQuery.deadline = deadline ?? calculateDeadline(TEN_MINUTES)
 
     let isSwap = false
     if ((destQuery as SynapseCCTPRouterQuery).routerAdapter) {
@@ -320,7 +319,7 @@ class SynapseSDK {
     } else {
       formattedDestQuery = { ...(destQuery as SynapseRouterQuery) }
     }
-    formattedDestQuery.deadline = ONE_WEEK_DEADLINE
+    formattedDestQuery.deadline = calculateDeadline(ONE_WEEK)
 
     let feeAmount!: BigNumber
     let feeConfig!: FeeConfig
@@ -387,6 +386,10 @@ class SynapseSDK {
     amountIn: BigintIsh,
     deadline?: BigNumber
   ): Promise<BridgeQuote | undefined> {
+    invariant(
+      originChainId !== destChainId,
+      'Origin chainId cannot be equal to destination chainId'
+    )
     tokenOut = handleNativeToken(tokenOut)
     tokenIn = handleNativeToken(tokenIn)
 
@@ -537,6 +540,9 @@ class SynapseSDK {
           quote.maxAmountOut.gt(bestQuote.maxAmountOut ?? BigNumber.from(0))
         ) {
           bestQuote = quote
+          if (bestQuote) {
+            bestQuote.routerAddress = originRouter.routerContract.address
+          }
         }
       } catch (error) {
         console.error(
@@ -577,6 +583,10 @@ class SynapseSDK {
     originQuery: Query,
     destQuery: Query
   ): Promise<PopulatedTransaction> {
+    invariant(
+      originChainId !== destChainId,
+      'Origin chainId cannot be equal to destination chainId'
+    )
     token = handleNativeToken(token)
 
     // Create new query objects and check the correct subtype to avoid type errors
@@ -667,7 +677,7 @@ class SynapseSDK {
     }
 
     const query = { ...(rawQuery as SynapseRouterQuery) }
-    query.deadline = deadline ?? TEN_MIN_DEADLINE
+    query.deadline = deadline ?? calculateDeadline(TEN_MINUTES)
     const maxAmountOut = query.minAmountOut
 
     return {

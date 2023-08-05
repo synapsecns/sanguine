@@ -38,7 +38,6 @@ const StakeCard = ({ address, chainId, pool }: StakeCardProps) => {
   const stakingPoolTokens: Token[] = tokenInfo?.poolTokens
   const stakingPoolId: number = tokenInfo?.poolId
 
-  // TODO get rid of this hook
   const balance = useTokenBalance(pool)
 
   const lpTokenBalance = balance?.data ? BigInt(balance?.data?.value) : 0n
@@ -70,18 +69,35 @@ const StakeCard = ({ address, chainId, pool }: StakeCardProps) => {
   }, [address, chainId, stakingPoolId])
 
   useEffect(() => {
-    if (tx !== undefined) {
-      ;(async () => {
-        const tkAllowance = await getTokenAllowance(
-          MINICHEF_ADDRESSES[chainId],
-          pool.addresses[chainId] as Address,
-          address as Address,
-          chainId
-        )
-        setAllowance(tkAllowance)
-      })()
-    }
-  }, [tx])
+    ;(async () => {
+      const tkAllowance = await getTokenAllowance(
+        MINICHEF_ADDRESSES[chainId],
+        pool.addresses[chainId] as Address,
+        address as Address,
+        chainId
+      )
+      setAllowance(tkAllowance)
+      getStakedBalance(address as Address, chainId, stakingPoolId)
+        .then((data) => {
+          setUserStakeData(data)
+        })
+        .catch((err) => {
+          console.log(err)
+        })
+    })()
+  }, [lpTokenBalance])
+
+  useEffect(() => {
+    ;(async () => {
+      const tkAllowance = await getTokenAllowance(
+        MINICHEF_ADDRESSES[chainId],
+        pool.addresses[chainId] as Address,
+        address as Address,
+        chainId
+      )
+      setAllowance(tkAllowance)
+    })()
+  }, [deposit])
 
   return (
     <div className="flex-wrap space-y-2">
@@ -92,6 +108,7 @@ const StakeCard = ({ address, chainId, pool }: StakeCardProps) => {
         poolTokens={stakingPoolTokens}
         poolLabel={stakingPoolLabel}
         prices={prices}
+        lpTokenBalance={lpTokenBalance}
       />
       <Card
         title="Your balances"
@@ -163,10 +180,10 @@ const StakeCard = ({ address, chainId, pool }: StakeCardProps) => {
           }
         >
           {isPending ? (
-            <>
+            <div className="flex items-center justify-center space-x-5">
               <ButtonLoadingSpinner className="mr-2" />
               <span className="animate-pulse">Claiming SYN</span>{' '}
-            </>
+            </div>
           ) : (
             <>Claim SYN</>
           )}
@@ -223,13 +240,6 @@ const StakeCard = ({ address, chainId, pool }: StakeCardProps) => {
             placeholder={'0.0000'}
             onChange={async (e) => {
               let val = cleanNumberInput(e.target.value)
-              const tkAllowance = await getTokenAllowance(
-                MINICHEF_ADDRESSES[chainId],
-                pool.addresses[chainId] as Address,
-                address as Address,
-                chainId
-              )
-              setAllowance(tkAllowance)
               setDeposit({
                 str: val,
                 bi: stringToBigInt(val, pool.decimals[chainId]),
@@ -255,9 +265,10 @@ const StakeCard = ({ address, chainId, pool }: StakeCardProps) => {
                         deposit.bi
                       )
                     )
-                    if (tx?.status === 1) {
+                    if (tx?.status === 'success') {
                       setDeposit({ bi: 0n, str: '' })
                     }
+                    setTx(tx?.transactionHash)
                   }
             }
             token={pool}

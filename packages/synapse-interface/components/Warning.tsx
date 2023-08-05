@@ -1,10 +1,17 @@
-import { Chain, Token } from '@/utils/types'
-import { CHAINS_BY_ID } from '@/constants/chains'
+import { Token } from '@/utils/types'
 import { DISCORD_URL, TWITTER_URL } from '@/constants/urls'
+import {
+  ARBITRUM,
+  AVALANCHE,
+  ETH,
+  FANTOM,
+  HARMONY,
+} from '@/constants/chains/master'
+
 interface WarningProps {
   originChainId: number
   destinationChainId: number
-  originToken: Token
+  originToken: Token | undefined
   destinationToken: Token
 }
 
@@ -14,54 +21,53 @@ export const Warning = ({
   originToken,
   destinationToken,
 }: WarningProps) => {
-  const originChain: Chain = CHAINS_BY_ID[originChainId]
-  const destinationChain: Chain = CHAINS_BY_ID[destinationChainId]
-
-  const { name: originChainName } = originChain
-  const { name: destinationChainName } = destinationChain
-  const { symbol: originTokenSymbol } = originToken
-  const { symbol: destinationTokenSymbol } = destinationToken
+  // const { symbol: originTokenSymbol } = originToken
+  const originTokenSymbol = originToken && originToken.symbol
+  const destinationTokenSymbol = destinationToken && destinationToken.symbol
+  // const { symbol: destinationTokenSymbol } = destinationToken
 
   const isTokenUSDCAndUSDCe =
     (originTokenSymbol === 'USDC' && destinationTokenSymbol === 'USDCe') ||
     (originTokenSymbol === 'USDCe' && destinationTokenSymbol === 'USDC')
+
   const isChainAvalancheOrArbitrum =
-    originChainName == 'Avalanche' ||
-    originChainName == 'Arbitrum' ||
-    destinationChainName == 'Avalanche' ||
-    destinationChainName === 'Arbitrum'
+    originChainId === AVALANCHE.id ||
+    originChainId === ARBITRUM.id ||
+    destinationChainId === AVALANCHE.id ||
+    destinationChainId === ARBITRUM.id
 
   const isTokenUSDC =
     originTokenSymbol === 'USDC' && destinationTokenSymbol === 'USDC'
+
   const isChainOtherThanAvalancheArbitrumEthereum =
-    (destinationChainName != 'Avalanche' &&
-      destinationChainName != 'Arbitrum' &&
-      destinationChainName != 'Ethereum') ||
-    (originChainName != 'Avalanche' &&
-      originChainName != 'Arbitrum' &&
-      originChainName != 'Ethereum')
+    (destinationChainId != AVALANCHE.id &&
+      destinationChainId != ARBITRUM.id &&
+      destinationChainId != ETH.id) ||
+    (originChainId != AVALANCHE.id &&
+      originChainId != ARBITRUM.id &&
+      originChainId != ETH.id)
 
   const isTokenUSDCAndChainEthereumArbitrumAvalanche =
     isTokenUSDC &&
-    ((originChainName === 'Ethereum' && destinationChainName === 'Arbitrum') ||
-      (originChainName === 'Arbitrum' &&
-        destinationChainName === 'Avalanche') ||
-      (originChainName === 'Avalanche' && destinationChainName === 'Arbitrum'))
+    ((originChainId === ETH.id && destinationChainId === ARBITRUM.id) ||
+      (originChainId === ARBITRUM.id && destinationChainId === AVALANCHE.id) ||
+      (originChainId === AVALANCHE.id && destinationChainId === ARBITRUM.id))
 
   const isChainHarmony =
-    originChainName === 'Harmony' || destinationChainName === 'Harmony'
+    originChainId === HARMONY.id || destinationChainId === HARMONY.id
   const isChainFantom =
-    originChainName === 'Fantom' || destinationChainName === 'Fantom'
+    originChainId === FANTOM.id || destinationChainId === FANTOM.id
 
   if (isTokenUSDCAndUSDCe && isChainAvalancheOrArbitrum) {
     return (
       <WarningMessage
-        header="USDC and USDC.e are incompatible."
+        header="USDC and USDC.e are incompatible on some routes."
         message={
           <>
             <p className="mb-2">
-              USDC can currently only be bridged with itself, via the new Circle
-              cross-chain transfer protocol.
+              If you don't see an output, try bridging to another stablecoin.
+              For example, on some routes, USDC can currently only be bridged
+              with itself, via the new Circle cross-chain transfer protocol.
             </p>
             <p>
               Follow{' '}
@@ -161,17 +167,21 @@ export const Warning = ({
   }
 }
 
-const WarningMessage = ({
+export const WarningMessage = ({
   header,
   message,
+  twClassName,
 }: {
-  header: string
-  message: React.ReactNode
+  header?: string
+  message?: React.ReactNode
+  twClassName?: string
 }) => {
   return (
-    <div className="flex flex-col bg-[#353038] text-white text-sm p-3 rounded-md mt-4">
-      <div className="mb-2 font-bold">{header}</div>
-      <div>{message}</div>
+    <div
+      className={`flex flex-col bg-[#353038] text-white text-sm p-3 rounded-md mt-4 ${twClassName}`}
+    >
+      {header && <div className="mb-2 font-bold">{header}</div>}
+      {message && <div>{message}</div>}
     </div>
   )
 }

@@ -1,30 +1,37 @@
 import React, { useMemo, useCallback, useState } from 'react'
-import { useDispatch, useSelector } from 'react-redux'
+import { useAppDispatch } from '@/store/hooks'
 import { RootState } from '@/store/store'
 import { useAccount } from 'wagmi'
 import {
   setFromChainId,
   setFromToken,
   updateFromValue,
-} from '@/slices/bridgeSlice'
+} from '@/slices/bridge/reducer'
 import { Token } from '@/utils/types'
 import { formatBigIntToString } from '@/utils/bigint/format'
 import { CHAINS_BY_ID } from '@/constants/chains'
 import { inputRef } from '../StateManagedBridge/InputContainer'
 import { approveToken } from '@/utils/approveToken'
-import { switchNetwork } from '@wagmi/core'
+import { Address, switchNetwork } from '@wagmi/core'
 import Image from 'next/image'
 import { toast } from 'react-hot-toast'
-import { ROUTER_ADDRESS } from '@/utils/hooks/usePortfolioBalances'
+import {
+  ROUTER_ADDRESS,
+  CCTP_ROUTER_ADDRESS,
+  Allowances,
+} from '@/utils/actions/fetchPortfolioBalances'
+import { useBridgeState } from '@/slices/bridge/hooks'
+import { fetchAndStoreSingleTokenAllowance } from '@/slices/portfolio/hooks'
+import { AVALANCHE, ETH, ARBITRUM } from '@/constants/chains/master'
+import { USDC } from '@/constants/tokens/master'
 
 type PortfolioTokenAssetProps = {
   token: Token
   balance: bigint
-  allowance?: bigint
+  allowances?: Allowances
   portfolioChainId: number
   connectedChainId: number
   isApproved: boolean
-  fetchPortfolioBalancesCallback: () => Promise<void>
 }
 
 function hasOnlyZeros(input: string): boolean {
@@ -39,19 +46,52 @@ const handleFocusOnInput = () => {
   inputRef.current.focus()
 }
 
+function checkCCTPChainConditions(
+  fromChainId: number,
+  toChainId: number
+): boolean {
+  const CctpPairs = new Set([
+    `${ETH.id}-${ARBITRUM.id}`,
+    `${ARBITRUM.id}-${ETH.id}`,
+    `${ETH.id}-${AVALANCHE.id}`,
+    `${AVALANCHE.id}-${ETH.id}`,
+    `${ARBITRUM.id}-${AVALANCHE.id}`,
+    `${AVALANCHE.id}-${ARBITRUM.id}`,
+  ])
+
+  return CctpPairs.has(`${fromChainId}-${toChainId}`)
+}
+
+function checkIfUsingCCTP({
+  fromChainId,
+  fromToken,
+  toChainId,
+  toToken,
+}: {
+  fromChainId: number
+  fromToken: Token
+  toChainId: number
+  toToken: Token
+}): boolean {
+  const isTokensUSDC: boolean = fromToken === USDC && toToken === USDC
+  const isSupportedCCTPChains: boolean = checkCCTPChainConditions(
+    fromChainId,
+    toChainId
+  )
+
+  return isTokensUSDC && isSupportedCCTPChains
+}
+
 export const PortfolioTokenAsset = ({
   token,
   balance,
-  allowance,
+  allowances,
   portfolioChainId,
   connectedChainId,
   isApproved,
-  fetchPortfolioBalancesCallback,
 }: PortfolioTokenAssetProps) => {
-  const dispatch = useDispatch()
-  const { fromChainId, fromToken } = useSelector(
-    (state: RootState) => state.bridge
-  )
+  const dispatch = useAppDispatch()
+  const { fromChainId, fromToken, toChainId, toToken } = useBridgeState()
   const { address } = useAccount()
   const { icon, symbol, decimals, addresses } = token
 
@@ -66,8 +106,22 @@ export const PortfolioTokenAsset = ({
       : formattedBalance
   }, [balance, portfolioChainId])
 
+  const isCCTP: boolean = checkIfUsingCCTP({
+    fromChainId,
+    fromToken,
+    toChainId,
+    toToken,
+  })
+
+  const tokenRouterAddress: string = isCCTP
+    ? CCTP_ROUTER_ADDRESS
+    : ROUTER_ADDRESS
+
+  const bridgeAllowance: bigint = allowances?.[tokenRouterAddress]
+
   const parsedAllowance: string =
-    allowance && formatBigIntToString(allowance, decimals[portfolioChainId], 3)
+    bridgeAllowance &&
+    formatBigIntToString(bridgeAllowance, decimals[portfolioChainId], 3)
 
   const currentChainName: string = CHAINS_BY_ID[portfolioChainId].name
 
@@ -80,19 +134,20 @@ export const PortfolioTokenAsset = ({
   }, [fromChainId, fromToken, token, portfolioChainId])
 
   const hasAllowanceButLessThanBalance: boolean =
-    allowance && balance > allowance
+    bridgeAllowance && balance > bridgeAllowance
 
   const isDisabled: boolean = false
 
-  const handleTotalBalanceInputCallback = useCallback(() => {
-    dispatch(setFromToken(token))
-    dispatch(setFromChainId(portfolioChainId))
-    dispatch(
-      updateFromValue(
-        formatBigIntToString(balance, token.decimals[fromChainId])
+  const handleTotalBalanceInputCallback = useCallback(async () => {
+    await dispatch(setFromChainId(portfolioChainId))
+    await dispatch(setFromToken(token))
+    await dispatch(
+      await updateFromValue(
+        formatBigIntToString(balance, token.decimals[portfolioChainId])
       )
     )
-  }, [isDisabled, token, balance])
+    scrollToTop()
+  }, [isDisabled, token, balance, portfolioChainId])
 
   const handleSelectFromTokenCallback = useCallback(() => {
     dispatch(setFromChainId(portfolioChainId))
@@ -105,20 +160,39 @@ export const PortfolioTokenAsset = ({
     if (isCurrentlyConnected) {
       dispatch(setFromChainId(portfolioChainId))
       dispatch(setFromToken(token))
-      await approveToken(ROUTER_ADDRESS, connectedChainId, tokenAddress).then(
-        (success) => {
-          success && fetchPortfolioBalancesCallback()
-        }
-      )
+      await approveToken(
+        tokenRouterAddress,
+        connectedChainId,
+        tokenAddress
+      ).then((success) => {
+        dispatch(
+          fetchAndStoreSingleTokenAllowance({
+            routerAddress: tokenRouterAddress as Address,
+            tokenAddress: tokenAddress as Address,
+            address: address,
+            chainId: portfolioChainId,
+          })
+        )
+      })
     } else {
       try {
         await switchNetwork({ chainId: portfolioChainId })
         await scrollToTop()
-        await approveToken(ROUTER_ADDRESS, portfolioChainId, tokenAddress).then(
-          (success) => {
-            success && fetchPortfolioBalancesCallback()
-          }
-        )
+        await approveToken(
+          tokenRouterAddress,
+          portfolioChainId,
+          tokenAddress
+        ).then((success) => {
+          success &&
+            dispatch(
+              fetchAndStoreSingleTokenAllowance({
+                routerAddress: tokenRouterAddress as Address,
+                tokenAddress: tokenAddress as Address,
+                address: address,
+                chainId: portfolioChainId,
+              })
+            )
+        })
       } catch (error) {
         toast.error(
           `Failed to approve ${token.symbol} token on ${currentChainName} network`,
@@ -137,6 +211,7 @@ export const PortfolioTokenAsset = ({
     portfolioChainId,
     isCurrentlyConnected,
     isDisabled,
+    tokenRouterAddress,
   ])
 
   return (
@@ -178,7 +253,9 @@ export const PortfolioTokenAsset = ({
           </div>
           {hasAllowanceButLessThanBalance && (
             <HoverClickableText
-              defaultText={`${parsedAllowance} approved`}
+              defaultText={`${parsedAllowance} ${
+                isCCTP ? 'approved (CCTP)' : 'approved'
+              }`}
               hoverText="Increase Limit"
               callback={handleApproveCallback}
             />

@@ -25,13 +25,13 @@ type MessageBusParser struct {
 	// messageAddress is the address of the message
 	messageBusAddress common.Address
 	// consumerFetcher is the Fetcher for sender and timestamp
-	consumerFetcher *fetcher.ScribeFetcher
+	consumerFetcher fetcher.ScribeFetcher
 	// tokenPriceService contains the token price service/cache
 	tokenPriceService tokenprice.Service
 }
 
 // NewMessageBusParser creates a new parser for a given message.
-func NewMessageBusParser(consumerDB db.ConsumerDB, messageBusAddress common.Address, consumerFetcher *fetcher.ScribeFetcher, tokenPriceService tokenprice.Service) (*MessageBusParser, error) {
+func NewMessageBusParser(consumerDB db.ConsumerDB, messageBusAddress common.Address, consumerFetcher fetcher.ScribeFetcher, tokenPriceService tokenprice.Service) (*MessageBusParser, error) {
 	filterer, err := messagebus.NewMessageBusUpgradeableFilterer(messageBusAddress, nil)
 	if err != nil {
 		return nil, fmt.Errorf("could not create %T: %w", messagebus.MessageBusReceiverUpgradeableFilterer{}, err)

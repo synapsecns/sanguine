@@ -7,6 +7,8 @@ import (
 	"github.com/99designs/gqlgen/graphql/handler/lru"
 	"github.com/99designs/gqlgen/graphql/handler/transport"
 	"github.com/gin-gonic/gin"
+	"github.com/ravilushqa/otelgqlgen"
+	"github.com/synapsecns/sanguine/core/metrics"
 	"github.com/synapsecns/sanguine/services/explorer/api/cache"
 	"github.com/synapsecns/sanguine/services/explorer/consumer/fetcher"
 	"github.com/synapsecns/sanguine/services/explorer/db"
@@ -23,7 +25,7 @@ const (
 )
 
 // EnableGraphql enables the scribe graphql service.
-func EnableGraphql(engine *gin.Engine, consumerDB db.ConsumerDB, fetcher fetcher.ScribeFetcher, apiCache cache.Service) {
+func EnableGraphql(engine *gin.Engine, consumerDB db.ConsumerDB, fetcher fetcher.ScribeFetcher, apiCache cache.Service, handler metrics.Handler) {
 	server := createServer(
 		resolvers.NewExecutableSchema(
 			resolvers.Config{Resolvers: &graph.Resolver{
@@ -33,6 +35,9 @@ func EnableGraphql(engine *gin.Engine, consumerDB db.ConsumerDB, fetcher fetcher
 			}},
 		),
 	)
+	// TODO; investigate WithCreateSpanFromFields(predicate)
+	server.Use(otelgqlgen.Middleware(otelgqlgen.WithTracerProvider(handler.GetTracerProvider())))
+
 	engine.GET(GraphqlEndpoint, graphqlHandler(server))
 	engine.POST(GraphqlEndpoint, graphqlHandler(server))
 	engine.GET(GraphiqlEndpoint, graphiqlHandler())

@@ -347,19 +347,19 @@ func (b *BackfillSuite) TestBackfill() {
 	// srB is the swap ref for getting token data
 	srA, err := fetcher.NewSwapFetcher(swapContractA.Address(), b.testBackend, false)
 	Nil(b.T(), err)
-	spA, err := parser.NewSwapParser(b.db, swapContractA.Address(), false, b.consumerFetcher, &srA, tokenDataService, tokenPriceService)
+	spA, err := parser.NewSwapParser(b.db, swapContractA.Address(), false, b.consumerFetcher, srA, tokenDataService, tokenPriceService)
 	Nil(b.T(), err)
 
 	// srB is the swap ref for getting token data
 	srB, err := fetcher.NewSwapFetcher(swapContractB.Address(), b.testBackend, false)
 	Nil(b.T(), err)
-	spB, err := parser.NewSwapParser(b.db, swapContractB.Address(), false, b.consumerFetcher, &srB, tokenDataService, tokenPriceService)
+	spB, err := parser.NewSwapParser(b.db, swapContractB.Address(), false, b.consumerFetcher, srB, tokenDataService, tokenPriceService)
 	Nil(b.T(), err)
 
 	// msr is the meta swap ref for getting token data
 	msr, err := fetcher.NewSwapFetcher(metaSwapContract.Address(), b.testBackend, true)
 	Nil(b.T(), err)
-	msp, err := parser.NewSwapParser(b.db, metaSwapContract.Address(), true, b.consumerFetcher, &msr, tokenDataService, tokenPriceService)
+	msp, err := parser.NewSwapParser(b.db, metaSwapContract.Address(), true, b.consumerFetcher, msr, tokenDataService, tokenPriceService)
 	Nil(b.T(), err)
 
 	// cp is the cctp ref for getting token data
@@ -370,15 +370,15 @@ func (b *BackfillSuite) TestBackfill() {
 	spMap[swapContractA.Address()] = spA
 	spMap[swapContractB.Address()] = spB
 	spMap[metaSwapContract.Address()] = msp
-	f := fetcher.NewFetcher(b.gqlClient)
+	f := fetcher.NewFetcher(b.gqlClient, b.metrics)
 
 	// Set up message bus parser
 	mbp, err := parser.NewMessageBusParser(b.db, messageBusContract.Address(), b.consumerFetcher, tokenPriceService)
 	Nil(b.T(), err)
 
 	// Test the first chain in the config file
-	chainBackfiller := backfill.NewChainBackfiller(b.db, bp, spMap, mbp, cp, *f, chainConfigs[0])
-	chainBackfillerV1 := backfill.NewChainBackfiller(b.db, bpv1, spMap, mbp, cp, *f, chainConfigsV1[0])
+	chainBackfiller := backfill.NewChainBackfiller(b.db, bp, spMap, mbp, cp, f, chainConfigs[0])
+	chainBackfillerV1 := backfill.NewChainBackfiller(b.db, bpv1, spMap, mbp, cp, f, chainConfigsV1[0])
 
 	// Backfill the blocks
 	var count int64

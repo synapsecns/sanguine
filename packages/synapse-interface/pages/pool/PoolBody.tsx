@@ -13,6 +13,8 @@ import { Address } from '@wagmi/core'
 import { useAccount, useSwitchNetwork } from 'wagmi'
 import { TransactionButton } from '@/components/buttons/TransactionButton'
 import { useConnectModal } from '@rainbow-me/rainbowkit'
+import { segmentAnalyticsEvent } from '@/contexts/SegmentAnalyticsProvider'
+import { useEffect } from 'react'
 
 const PoolBody = ({
   address,
@@ -29,6 +31,14 @@ const PoolBody = ({
   const { pool, poolAPYData } = useSelector(
     (state: RootState) => state.poolData
   )
+
+  useEffect(() => {
+    if (pool) {
+      segmentAnalyticsEvent(`[Pool] arrives at ${pool.name}`, {
+        poolName: pool.poolName,
+      })
+    }
+  }, [])
 
   return (
     <>

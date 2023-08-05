@@ -3,6 +3,8 @@ package metrics
 const (
 	// ChainID is the metric name for the chain ID.
 	ChainID = "chain_id"
+	// EOAAddress is the metric name for an eoa address.
+	EOAAddress = "eoa_address"
 	// ContractAddress is the metric name for the contract address.
 	ContractAddress = "contract_address"
 	// Origin is the metric name for the origin chain ID.

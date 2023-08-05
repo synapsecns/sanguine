@@ -6,6 +6,9 @@ import { useSpring, animated } from 'react-spring'
 import { ActionCardFooter } from '@components/ActionCardFooter'
 import { BRIDGE_PATH, HOW_TO_BRIDGE_URL } from '@/constants/urls'
 import BridgeWatcher from '@/pages/bridge/BridgeWatcher'
+import { useRouter } from 'next/router'
+import { segmentAnalyticsEvent } from '@/contexts/SegmentAnalyticsProvider'
+
 import {
   setFromToken,
   setToToken,
@@ -18,11 +21,10 @@ import {
   setSupportedToTokens,
   setFromChainIds,
   setToChainIds,
-  setSupportedFromTokenBalances,
   setDeadlineMinutes,
   setDestinationAddress,
   addBridgeTxHash,
-} from '@/slices/bridgeSlice'
+} from '@/slices/bridge/reducer'
 
 import {
   setShowDestinationAddress,
@@ -83,6 +85,23 @@ import ExplorerToastLink from '@/components/ExplorerToastLink'
 import { Address, zeroAddress } from 'viem'
 import { stringToBigInt } from '@/utils/bigint/format'
 import { Warning } from '@/components/Warning'
+import { useAppDispatch } from '@/store/hooks'
+import {
+  NetworkTokenBalancesAndAllowances,
+  sortTokensByBalanceDescending,
+} from '@/utils/actions/fetchPortfolioBalances'
+import {
+  fetchAndStorePortfolioBalances,
+  fetchAndStoreSingleNetworkPortfolioBalances,
+  fetchAndStoreSingleTokenAllowance,
+  fetchAndStoreSingleTokenBalance,
+} from '@/slices/portfolio/hooks'
+import {
+  usePortfolioBalances,
+  useFetchPortfolioBalances,
+} from '@/slices/portfolio/hooks'
+import { FetchState } from '@/slices/portfolio/actions'
+import { updateSingleTokenAllowance } from '@/slices/portfolio/actions'
 
 // NOTE: These are idle utility functions that will be re-written to
 // support sorting by desired mechanism
@@ -113,8 +132,11 @@ const StateManagedBridge = () => {
   const { synapseSDK } = useSynapseContext()
   const bridgeDisplayRef = useRef(null)
   const currentSDKRequestID = useRef(0)
-  let pendingPopup
-  let successPopup
+  const router = useRouter()
+  const { query, pathname } = router
+
+  const { balancesAndAllowances: portfolioBalances, status: portfolioStatus } =
+    useFetchPortfolioBalances()
 
   const {
     fromChainId,
@@ -125,7 +147,6 @@ const StateManagedBridge = () => {
     fromValue,
     isLoading,
     supportedFromTokens,
-    supportedFromTokenBalances,
     supportedToTokens,
     destinationAddress,
     bridgeTxHashes,
@@ -140,12 +161,24 @@ const StateManagedBridge = () => {
     showDestinationAddress,
   } = useSelector((state: RootState) => state.bridgeDisplay)
 
+  let pendingPopup
+  let successPopup
+
   const [isApproved, setIsApproved] = useState(false)
 
-  const dispatch = useDispatch()
+  const dispatch = useAppDispatch()
 
+  const fromTokens = BRIDGABLE_TOKENS[fromChainId]
   const fromChainIds = Object.keys(CHAINS_BY_ID).map((id) => Number(id))
   const toChainIds = Object.keys(CHAINS_BY_ID).map((id) => Number(id))
+
+  useEffect(() => {
+    segmentAnalyticsEvent(`[Bridge page] arrives`, {
+      fromChainId,
+      query,
+      pathname,
+    })
+  }, [query])
 
   // Commenting out for a bit to debug, but basic issue is we need
   // a mapping for allowable routes/tokens, and how we set them on
@@ -158,11 +191,11 @@ const StateManagedBridge = () => {
   // Can be smarter about breaking out which calls happen assoc with which
   // dependencies (like some stuff should only change on fromChainId changes)
   useEffect(() => {
-    let fromTokens = BRIDGABLE_TOKENS[fromChainId]
+    let fromTokens = BRIDGABLE_TOKENS[fromChainId] ?? []
     const toTokens = BRIDGABLE_TOKENS[toChainId]
 
     // Checking whether the selected fromToken exists in the BRIDGABLE_TOKENS for the chosen chain
-    if (!fromTokens.some((token) => token.symbol === fromToken.symbol)) {
+    if (!fromTokens.some((token) => token.symbol === fromToken?.symbol)) {
       // Sort the tokens based on priorityRank in ascending order
       const sortedTokens = fromTokens.sort(
         (a, b) => a.priorityRank - b.priorityRank
@@ -177,29 +210,23 @@ const StateManagedBridge = () => {
       findSupportedChainsAndTokens(
         fromToken,
         toChainId,
-        toToken.symbol,
+        toToken?.symbol,
         fromChainId
       )
 
     let bridgeableToChainId = toChainId
-    if (!bridgeableChainIds.includes(toChainId)) {
-      const sortedChainIds = bridgeableChainIds.sort((a, b) => {
+    if (!bridgeableChainIds?.includes(toChainId)) {
+      const sortedChainIds = bridgeableChainIds?.sort((a, b) => {
         const chainA = CHAINS_ARR.find((chain) => chain.id === a)
         const chainB = CHAINS_ARR.find((chain) => chain.id === b)
         return chainB.priorityRank - chainA.priorityRank
       })
-      bridgeableToChainId = sortedChainIds[0]
+      bridgeableToChainId = sortedChainIds?.[0]
     }
 
     dispatch(setSupportedToTokens(sortToTokens(bridgeableTokens)))
     dispatch(setToToken(bridgeableToken))
-
-    sortByTokenBalance(fromTokens, fromChainId, address).then((res) => {
-      const t = res.map((tokenAndBalances) => tokenAndBalances.token)
-      dispatch(setSupportedFromTokenBalances(res))
-      dispatch(setSupportedFromTokens(t))
-    })
-
+    dispatch(setSupportedFromTokens(portfolioBalances[fromChainId] ?? []))
     dispatch(setFromChainIds(fromChainIds))
     dispatch(setToChainIds(bridgeableChainIds))
 
@@ -207,17 +234,28 @@ const StateManagedBridge = () => {
       dispatch(setToChainId(bridgeableToChainId))
     }
 
-    console.log(`[useEffect] fromToken`, fromToken.symbol)
-    console.log(`[useEffect] toToken`, toToken.symbol)
+    console.log(`[useEffect] fromToken`, fromToken?.symbol)
+    console.log(`[useEffect] toToken`, toToken?.symbol)
     // TODO: Double serialization happening somewhere??
-    if (stringToBigInt(fromValue, fromToken.decimals[fromChainId]) > 0n) {
+    if (
+      fromToken?.decimals[fromChainId] &&
+      stringToBigInt(fromValue, fromToken.decimals[fromChainId]) > 0n
+    ) {
       console.log('trying to set bridge quote')
       getAndSetBridgeQuote()
     } else {
       dispatch(setBridgeQuote(EMPTY_BRIDGE_QUOTE_ZERO))
       dispatch(setIsLoading(false))
     }
-  }, [fromChainId, toChainId, fromToken, toToken, fromValue, address])
+  }, [
+    fromChainId,
+    toChainId,
+    fromToken,
+    toToken,
+    fromValue,
+    address,
+    portfolioBalances,
+  ])
 
   // don't like this, rewrite: could be custom hook
   useEffect(() => {
@@ -291,6 +329,17 @@ const StateManagedBridge = () => {
               spender: routerAddress,
             })
 
+      if (fromToken.addresses[fromChainId] !== zeroAddress && address) {
+        dispatch(
+          updateSingleTokenAllowance({
+            chainId: fromChainId,
+            allowance: allowance,
+            spender: routerAddress,
+            token: fromToken,
+          })
+        )
+      }
+
       const originMinWithSlippage = subtractSlippage(
         originQuery?.minAmountOut ?? 0n,
         'ONE_TENTH',
@@ -307,7 +356,6 @@ const StateManagedBridge = () => {
 
       let newDestQuery = { ...destQuery }
       newDestQuery.minAmountOut = destMinWithSlippage
-      console.log('here 4')
       if (thisRequestId === currentSDKRequestID.current) {
         dispatch(
           setBridgeQuote({
@@ -340,7 +388,7 @@ const StateManagedBridge = () => {
         toast.dismiss(quoteToast)
         const message = `Route found for bridging ${fromValue} ${fromToken.symbol} on ${CHAINS_BY_ID[fromChainId]?.name} to ${toToken.symbol} on ${CHAINS_BY_ID[toChainId]?.name}`
         console.log(message)
-        quoteToast = toast(message, { duration: 2000 })
+        quoteToast = toast(message, { duration: 3000 })
       }
     } catch (err) {
       console.log(err)
@@ -348,7 +396,7 @@ const StateManagedBridge = () => {
         toast.dismiss(quoteToast)
         const message = `No route found for bridging ${fromValue} ${fromToken.symbol} on ${CHAINS_BY_ID[fromChainId]?.name} to ${toToken.symbol} on ${CHAINS_BY_ID[toChainId]?.name}`
         console.log(message)
-        quoteToast = toast(message, { duration: 2000 })
+        quoteToast = toast(message, { duration: 3000 })
 
         dispatch(setBridgeQuote(EMPTY_BRIDGE_QUOTE_ZERO))
         return
@@ -366,7 +414,16 @@ const StateManagedBridge = () => {
         bridgeQuote?.routerAddress,
         fromChainId,
         fromToken?.addresses[fromChainId]
-      )
+      ).then(() => {
+        dispatch(
+          fetchAndStoreSingleTokenAllowance({
+            routerAddress: bridgeQuote?.routerAddress as Address,
+            tokenAddress: fromToken?.addresses[fromChainId] as Address,
+            address: address,
+            chainId: fromChainId,
+          })
+        )
+      })
 
       try {
         await tx
@@ -380,6 +437,14 @@ const StateManagedBridge = () => {
   }
 
   const executeBridge = async () => {
+    segmentAnalyticsEvent(`[Bridge] initiates bridge`, {
+      address,
+      originChainId: fromChainId,
+      destinationChainId: toChainId,
+      inputAmount: fromValue,
+      expectedReceivedAmount: bridgeQuote.outputAmountString,
+      slippage: bridgeQuote.exchangeRate,
+    })
     try {
       const wallet = await getWalletClient({
         chainId: fromChainId,
@@ -422,9 +487,15 @@ const StateManagedBridge = () => {
       )
 
       try {
-        // await tx.wait()
+        segmentAnalyticsEvent(`[Bridge] bridges successfully`, {
+          address,
+          originChainId: fromChainId,
+          destinationChainId: toChainId,
+          inputAmount: fromValue,
+          expectedReceivedAmount: bridgeQuote.outputAmountString,
+          slippage: bridgeQuote.exchangeRate,
+        })
         dispatch(addBridgeTxHash(tx))
-
         dispatch(setBridgeQuote(EMPTY_BRIDGE_QUOTE_ZERO))
         dispatch(setDestinationAddress(null))
         dispatch(setShowDestinationAddress(false))
@@ -450,12 +521,31 @@ const StateManagedBridge = () => {
 
         toast.dismiss(pendingPopup)
 
+        setTimeout(async () => {
+          await dispatch(
+            fetchAndStoreSingleTokenBalance({
+              token: fromToken,
+              routerAddress: bridgeQuote?.routerAddress as Address,
+              address: address,
+              chainId: fromChainId,
+            })
+          )
+        }, 2000)
+
         return tx
       } catch (error) {
+        segmentAnalyticsEvent(`[Bridge] error bridging`, {
+          address,
+          errorCode: error.code,
+        })
         console.log(`Transaction failed with error: ${error}`)
         toast.dismiss(pendingPopup)
       }
     } catch (error) {
+      segmentAnalyticsEvent(`[Bridge]  error bridging`, {
+        address,
+        errorCode: error.code,
+      })
       console.log('Error executing bridge', error)
       toast.dismiss(pendingPopup)
       return txErrorHandler(error)
@@ -497,7 +587,7 @@ const StateManagedBridge = () => {
         <Card
           divider={false}
           className={`
-                pt-5 pb-3 mt-5 overflow-hidden
+                px-2 pb-2 pt-2 md:px-6 md:pt-5 mt-5 overflow-hidden
                 transition-all duration-100 transform rounded-xl
                 bg-bgBase
               `}
@@ -508,9 +598,11 @@ const StateManagedBridge = () => {
                 <TokenSlideOver
                   key="fromBlock"
                   isOrigin={true}
-                  tokens={separateAndSortTokensWithBalances(
-                    supportedFromTokenBalances
-                  )}
+                  tokens={
+                    portfolioStatus === FetchState.VALID
+                      ? separateAndSortTokensWithBalances(supportedFromTokens)
+                      : sortByVisibilityRank(fromTokens)
+                  }
                   chainId={fromChainId}
                   selectedToken={fromToken}
                 />{' '}
@@ -578,7 +670,7 @@ const StateManagedBridge = () => {
                 destinationAddress={destinationAddress}
               />
             )}
-            <div className="mt-3 mb-3">
+            <div className="md:my-3">
               <BridgeTransactionButton
                 isApproved={isApproved}
                 approveTxn={approveTxn}
@@ -614,11 +706,11 @@ const getNewToChain = (positedToChain, fromChainId, bridgeableChains) => {
       : DEFAULT_TO_CHAIN
   // If newToChain is not a part of bridgeableChains, select a chain from bridgeableChains
   // that is different from fromChainId.
-  if (!bridgeableChains.includes(String(newToChain))) {
+  if (!bridgeableChains?.includes(String(newToChain))) {
     newToChain =
-      Number(bridgeableChains[0]) === fromChainId
-        ? Number(bridgeableChains[1])
-        : Number(bridgeableChains[0])
+      Number(bridgeableChains?.[0]) === fromChainId
+        ? Number(bridgeableChains?.[1])
+        : Number(bridgeableChains?.[0])
   }
   return newToChain
 }
@@ -627,8 +719,8 @@ const getNewToChain = (positedToChain, fromChainId, bridgeableChains) => {
 const getBridgeableChains = (token, fromChainId, swapExceptionsArr) => {
   // Filter out chains that are not bridgeable for the given token type.
   let bridgeableChains = BRIDGE_CHAINS_BY_TYPE[
-    String(token.swapableType)
-  ].filter((chainId) => Number(chainId) !== fromChainId)
+    String(token?.swapableType)
+  ]?.filter((chainId) => Number(chainId) !== fromChainId)
   // If there are swap exceptions, replace bridgeableChains with the chains from exceptions.
   if (swapExceptionsArr?.length > 0) {
     bridgeableChains = swapExceptionsArr.map((chainId) => String(chainId))
@@ -640,7 +732,7 @@ const getBridgeableChains = (token, fromChainId, swapExceptionsArr) => {
 const getBridgeableTokens = (newToChain, token, swapExceptionsArr) => {
   // Get tokens that are bridgeable on the new chain and of the same type as the given token.
   let bridgeableTokens: Token[] = sortToTokens(
-    BRIDGE_SWAPABLE_TOKENS_BY_TYPE[newToChain][String(token.swapableType)]
+    BRIDGE_SWAPABLE_TOKENS_BY_TYPE[newToChain]?.[String(token?.swapableType)]
   )
   // If there are swap exceptions, filter out tokens that have a different symbol from the given token.
   if (swapExceptionsArr?.length > 0) {
@@ -656,8 +748,8 @@ const getBridgeableToken = (bridgeableTokens, positedToToken) => {
   // If positedToToken is a part of bridgeableTokens, use it.
   // Otherwise, use the first token from bridgeableTokens.
   let bridgeableToken: Token = positedToToken
-  if (!bridgeableTokens.includes(positedToToken)) {
-    bridgeableToken = bridgeableTokens[0]
+  if (!bridgeableTokens?.includes(positedToToken)) {
+    bridgeableToken = bridgeableTokens?.[0]
   }
   return bridgeableToken
 }
@@ -687,7 +779,7 @@ const findSupportedChainsAndTokens = (
   // Determine the token to be used for the swap based on the posited symbol or the symbol of the given token.
   const positedToToken = positedToSymbol
     ? tokenSymbolToToken(newToChain, positedToSymbol)
-    : tokenSymbolToToken(newToChain, token.symbol)
+    : tokenSymbolToToken(newToChain, token?.symbol)
   // Determine which tokens are bridgeable on the new chain.
   const bridgeableTokens = getBridgeableTokens(
     newToChain,
@@ -699,7 +791,7 @@ const findSupportedChainsAndTokens = (
 
   // Return the bridgeable chains, bridgeable tokens, and the specific bridgeable token.
   return {
-    bridgeableChainIds: bridgeableChains.map((chainId: string) =>
+    bridgeableChainIds: bridgeableChains?.map((chainId: string) =>
       Number(chainId)
     ),
     bridgeableTokens,

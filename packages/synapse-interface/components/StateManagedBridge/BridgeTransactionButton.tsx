@@ -1,4 +1,5 @@
 import { useSelector } from 'react-redux'
+import { useMemo } from 'react'
 import { TransactionButton } from '@/components/buttons/TransactionButton'
 import { EMPTY_BRIDGE_QUOTE, EMPTY_BRIDGE_QUOTE_ZERO } from '@/constants/bridge'
 import { RootState } from '@/store/store'
@@ -59,12 +60,23 @@ export const BridgeTransactionButton = ({
 
   let buttonProperties
 
-  const fromValueBigInt = stringToBigInt(
-    fromValue,
-    fromToken.decimals[fromChainId]
-  )
+  const fromTokenDecimals: number | undefined =
+    fromToken && fromToken.decimals[fromChainId]
 
-  if (!isLoading && bridgeQuote?.feeAmount === 0n && fromValueBigInt > 0) {
+  const fromValueBigInt = useMemo(() => {
+    return fromTokenDecimals ? stringToBigInt(fromValue, fromTokenDecimals) : 0
+  }, [fromValue, fromTokenDecimals])
+
+  if (!fromToken) {
+    buttonProperties = {
+      label: `Unsupported Network`,
+      onClick: null,
+    }
+  } else if (
+    !isLoading &&
+    bridgeQuote?.feeAmount === 0n &&
+    fromValueBigInt > 0
+  ) {
     buttonProperties = {
       label: `Amount must be greater than fee`,
       onClick: null,
@@ -91,13 +103,13 @@ export const BridgeTransactionButton = ({
   } else if (!isApproved) {
     buttonProperties = {
       onClick: approveTxn,
-      label: `Approve ${fromToken.symbol}`,
+      label: `Approve ${fromToken?.symbol}`,
       pendingLabel: 'Approving',
     }
   } else {
     buttonProperties = {
       onClick: executeBridge,
-      label: `Bridge ${fromToken.symbol}`,
+      label: `Bridge ${fromToken?.symbol}`,
       pendingLabel: 'Bridging',
     }
   }
