@@ -120,61 +120,67 @@ export const InputContainer = () => {
       <div className="flex h-16 mb-2 space-x-2">
         <div
           className={`
-            flex flex-grow items-center
-            pl-3 sm:pl-4
+            flex flex-grow items-center justify-between
+            pl-3 
             w-full h-16
             rounded-xl
             border border-white border-opacity-20
           `}
         >
-          <FromTokenSelector />
-          <div className="flex flex-col ml-4">
-            <input
-              ref={inputRef}
-              pattern="^[0-9]*[.,]?[0-9]*$"
-              disabled={false}
-              className={`
-              focus:outline-none
-              focus:ring-0
-              focus:border-none
-              border-none
-              bg-transparent
-              p-0
-              max-w-[100px]
-              md:max-w-[160px]
-              placeholder:text-[#88818C]
-              text-white text-opacity-80 text-lg md:text-2xl font-medium
-            `}
-              placeholder="0.0000"
-              onChange={handleFromValueChange}
-              value={showValue}
-              name="inputRow"
-              autoComplete="off"
-              minLength={1}
-              maxLength={79}
-            />
+          <div className="flex items-center">
+            <FromTokenSelector />
+            <div className="flex flex-col justify-between ml-4">
+              <div style={{ display: 'table' }}>
+                <input
+                  ref={inputRef}
+                  pattern="^[0-9]*[.,]?[0-9]*$"
+                  disabled={false}
+                  className={`
+                    focus:outline-none
+                    focus:ring-0
+                    focus:border-none
+                    border-none
+                    bg-transparent
+                    max-w-[190px]
+                    p-0
+                    placeholder:text-[#88818C]
+                    text-white text-opacity-80 text-lg md:text-2xl font-medium
+                  `}
+                  placeholder="0.0000"
+                  onChange={handleFromValueChange}
+                  value={showValue}
+                  name="inputRow"
+                  autoComplete="off"
+                  minLength={1}
+                  maxLength={79}
+                  style={{ display: 'table-cell', width: '100%' }}
+                />
+              </div>
+              {hasMounted && isConnected && (
+                <label
+                  htmlFor="inputRow"
+                  className="hidden text-xs text-white transition-all duration-150 md:block transform-gpu hover:text-opacity-70 hover:cursor-pointer"
+                  onClick={onMaxBalance}
+                >
+                  {parsedBalance ?? '0.0'}
+                  <span className="text-opacity-50 text-secondaryTextColor">
+                    {' '}
+                    available
+                  </span>
+                </label>
+              )}
+            </div>
+          </div>
+          <div>
             {hasMounted && isConnected && (
-              <label
-                htmlFor="inputRow"
-                className="hidden text-xs text-white transition-all duration-150 md:block transform-gpu hover:text-opacity-70 hover:cursor-pointer"
-                onClick={onMaxBalance}
-              >
-                {parsedBalance ?? '0.0'}
-                <span className="text-opacity-50 text-secondaryTextColor">
-                  {' '}
-                  available
-                </span>
-              </label>
+              <div className="m">
+                <MiniMaxButton
+                  disabled={balance && balance === 0n}
+                  onClickBalance={onMaxBalance}
+                />
+              </div>
             )}
           </div>
-          {hasMounted && isConnected && (
-            <div className="m-auto">
-              <MiniMaxButton
-                disabled={balance && balance === 0n}
-                onClickBalance={onMaxBalance}
-              />
-            </div>
-          )}
         </div>
       </div>
     </div>

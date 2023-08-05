@@ -57,15 +57,14 @@ export const OutputContainer = ({}) => {
         <div
           className={`
             flex flex-grow items-center
-            pl-3 sm:pl-4
+            pl-3 
             w-full h-16
             rounded-xl
             border border-white border-opacity-20
           `}
         >
-          {/* <ToTokenSelect /> */}
           <ToTokenSelector />
-          <div className="flex ml-4 min-w-[190px]">
+          <div className="flex ml-4">
             {isLoading ? (
               <LoadingSpinner className="opacity-50" />
             ) : (
@@ -73,16 +72,16 @@ export const OutputContainer = ({}) => {
                 pattern="[0-9.]+"
                 disabled={true}
                 className={`
-                focus:outline-none
-                focus:ring-0
-                focus:border-none
-                border-none
-                p-0
-                bg-transparent
-                max-w-[190px]
-               placeholder:text-[#88818C]
-               text-white text-opacity-80 text-lg md:text-2xl lg:text-2xl font-medium
-              `}
+                  focus:outline-none
+                  focus:ring-0
+                  focus:border-none
+                  border-none
+                  p-0
+                  bg-transparent
+                  max-w-[190px]
+                placeholder:text-[#88818C]
+                text-white text-opacity-80 text-lg md:text-2xl font-medium
+                `}
                 placeholder="0.0000"
                 value={
                   bridgeQuote.outputAmountString === '0'

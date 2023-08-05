@@ -19,7 +19,7 @@ export const ToChainSelector = () => {
 
     buttonContent = (
       <div className="flex items-center space-x-3">
-        <div>
+        <div className="">
           <img src={src} alt={name} className="w-5 h-5" />
         </div>
         <div className="text-left">
