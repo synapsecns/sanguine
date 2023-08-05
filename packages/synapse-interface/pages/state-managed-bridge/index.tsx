@@ -229,6 +229,8 @@ const StateManagedBridge = () => {
       (token) => token !== fromToken
     )
 
+    // Update toChainId if the fromChainId switched into yields no possible route
+    // between newFromChainId and existing toChainId
     if (bridgeableChainIds?.includes(toChainId)) {
       isFromTokenCompatible.current = true
     } else {
@@ -236,6 +238,9 @@ const StateManagedBridge = () => {
       dispatch(setToToken(bridgeableToken))
     }
 
+    // If checked through all possible fromChainId token combos
+    // signal fromChainId and toChainid are imcompatible, so set
+    // new toChainId
     if (
       fromTokenAttemptRef.current >= sortedFromTokens.length &&
       isFromTokenCompatible.current === false
@@ -243,6 +248,7 @@ const StateManagedBridge = () => {
       dispatch(setToChainId(bridgeableChainIds[0]))
     }
 
+    // Reset ref when gone through entire list of fromTokens
     if (fromTokenAttemptRef.current + 1 > sortedFromTokens.length) {
       fromTokenAttemptRef.current = 0
     }
