@@ -235,11 +235,16 @@ const StateManagedBridge = () => {
       (token) => token !== fromToken
     )
 
+    if (fromTokenAttemptRef.current + 1 > sortedFromTokens.length) {
+      fromTokenAttemptRef.current = 0
+    }
+
     let bridgeableToChainId: number = toChainId
     let bridgeableNextFromTokenByPriority: Token =
       sortedFromTokens[fromTokenAttemptRef.current]
+
     // console.log('Number(fromTokenAttemptRef):', Number(fromTokenAttemptRef))
-    console.log('fromTokenAttemptRef.current]:', fromTokenAttemptRef.current)
+    // console.log('fromTokenAttemptRef.current]:', fromTokenAttemptRef.current)
     // console.log(
     //   'bridgeableNextFromTokenByPriority:',
     //   bridgeableNextFromTokenByPriority
