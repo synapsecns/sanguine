@@ -223,7 +223,10 @@ chains:
     contracts:
       - contract_type: bridge
         address: '0xf07d1C752fAb503E47FEF309bf14fbDD3E867089'
-        start_block: 1001137
+        start_block: -1
       - contract_type: swap
         address: '0x6223bD82010E2fB69F329933De20897e7a4C225f'
-        start_block: 1001141
+        start_block: -1
+      - contract_type: swap #ETH Pool
+        address: '0xa9E90579eb086bcdA910dD94041ffE041Fb4aC89'
+        start_block: 2055004
