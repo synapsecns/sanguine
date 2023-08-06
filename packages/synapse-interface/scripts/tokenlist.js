@@ -41,6 +41,9 @@ const providers = {
   8217: new ethers.providers.JsonRpcProvider(
     'https://klaytn.api.onfinality.io/public'
   ),
+  8453: new ethers.providers.JsonRpcProvider(
+    'https://developer-access-mainnet.base.org'
+  ),
 
   // Add more providers for the chains you want to support
 }
@@ -85,6 +88,7 @@ const tokens = {
     10: '0x0000000000000000000000000000000000000000',
     288: '0x0000000000000000000000000000000000000000',
     42161: '0x0000000000000000000000000000000000000000',
+    8453: '0x0000000000000000000000000000000000000000',
   },
   GOHM: {
     1: '0x0ab87046fBb341D058F17CBC4c1133F25a20a52f',
@@ -295,6 +299,7 @@ const tokens = {
     1313161554: '0xd80d8688b02B3FD3afb81cDb124F188BB5aD0445',
     2000: '0xDfA53EeBA61D69E1D2b56b36d78449368F0265c1',
     7700: '0x555982d2E211745b96736665e19D9308B615F78e',
+    8453: '0x432036208d2717394d2614d6697c46DF3Ed69540',
   },
   FRAX: {
     1: '0x853d955acef822db058eb8505911ed77f175b99e',
@@ -337,6 +342,7 @@ const tokens = {
     8217: '0xCD6f29dC9Ca217d0973d3D21bF58eDd3CA871a86',
     2000: '0x9F4614E4Ea4A0D7c4B1F946057eC030beE416cbB',
     7700: '0x09fEC30669d63A13c666d2129230dD5588E2e240',
+    8453: '0xb554A55358fF0382Fb21F0a478C3546d1106Be8c',
   },
   KLAYTN_WETH: {},
   1: {},
