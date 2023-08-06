@@ -294,7 +294,7 @@ export const BASE: Chain = {
   codeName: 'base',
   chainImg: baseImg,
   layer: 2,
-  rpc: 'https://developer-access-mainnet.base.org',
+  rpc: 'https://base.blockpi.network/v1/rpc/public',
   explorerUrl: 'https://basescan.org',
   blockTime: 5000,
   nativeCurrency: {
