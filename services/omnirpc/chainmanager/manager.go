@@ -74,6 +74,11 @@ func NewChainManagerFromConfig(configuration config.Config, handler metrics.Hand
 		}
 	}
 
+	err := cm.setupMetrics()
+	if err != nil {
+		logger.Errorf("could not setup metrics: %v", err)
+	}
+
 	return cm
 }
 
@@ -145,12 +150,6 @@ func (c *chainManager) RefreshRPCInfo(ctx context.Context, chainID uint32) {
 	c.mux.Lock()
 	c.chainList[chainID].rpcs = rpcInfoList
 	c.mux.Unlock()
-
-	// only setup callbacks after the first round
-	err := c.setupMetrics()
-	if err != nil {
-		logger.Errorf("could not setup metrics: %v", err)
-	}
 }
 
 const (
@@ -160,7 +159,7 @@ const (
 	blockAgeMetric    = "block_age"
 )
 
-// records metrics for various rpcs.
+// records metrics for various rpcs. Should only be called once.
 //
 // note: because of missing support for  https://github.com/open-telemetry/opentelemetry-specification/issues/2318
 // this is done from the struct rather than recorded at refresh time.
