@@ -84,7 +84,7 @@ import { BridgeTransactionButton } from '@/components/StateManagedBridge/BridgeT
 import ExplorerToastLink from '@/components/ExplorerToastLink'
 import { Address, zeroAddress } from 'viem'
 import { stringToBigInt } from '@/utils/bigint/format'
-import { Warning } from '@/components/Warning'
+import { Warning, WarningMessage } from '@/components/Warning'
 import { useAppDispatch } from '@/store/hooks'
 import {
   NetworkTokenBalancesAndAllowances,
@@ -597,6 +597,8 @@ const StateManagedBridge = () => {
 
   const springClass = 'fixed z-50 w-full h-full bg-opacity-50'
 
+  console.log('toToken: ', toToken)
+
   return (
     <div className="flex flex-col w-full max-w-lg mx-auto lg:mx-0">
       <div className="flex flex-col">
@@ -693,6 +695,11 @@ const StateManagedBridge = () => {
             </Transition>
             <InputContainer />
             <OutputContainer />
+            {!toToken && (
+              <WarningMessage
+                message={`No route exists between ${fromToken?.symbol} on ${CHAINS_BY_ID[fromChainId]?.name} to ${CHAINS_BY_ID[toChainId]?.name}.`}
+              />
+            )}
             <Warning
               originChainId={fromChainId}
               destinationChainId={toChainId}
