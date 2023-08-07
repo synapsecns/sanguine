@@ -202,16 +202,13 @@ const StateManagedBridge = () => {
         fromChainId
       )
 
+    dispatch(setSupportedFromTokens(portfolioBalances[fromChainId] ?? []))
     dispatch(setToChainIds(bridgeableChainIds))
 
-    console.log('bridgeableChainIds:', bridgeableChainIds)
-
     if (!bridgeableChainIds.includes(toChainId)) {
-      console.log('hit in here')
       dispatch(setToToken(null))
       dispatch(setSupportedToTokens([]))
     } else {
-      console.log('hit in second')
       dispatch(setToToken(bridgeableToken))
       dispatch(setSupportedToTokens(sortToTokens(bridgeableTokens)))
     }
@@ -436,7 +433,11 @@ const StateManagedBridge = () => {
       console.log(err)
       if (thisRequestId === currentSDKRequestID.current) {
         toast.dismiss(quoteToast)
-        const message = `No route found for bridging ${fromValue} ${fromToken.symbol} on ${CHAINS_BY_ID[fromChainId]?.name} to ${toToken.symbol} on ${CHAINS_BY_ID[toChainId]?.name}`
+        const message = `No route found for bridging ${fromValue} ${
+          fromToken?.symbol
+        } on ${CHAINS_BY_ID[fromChainId]?.name} to ${
+          toToken ? `${toToken?.symbol} on` : ``
+        } ${CHAINS_BY_ID[toChainId]?.name}`
         console.log(message)
         quoteToast = toast(message, { duration: 3000 })
 
