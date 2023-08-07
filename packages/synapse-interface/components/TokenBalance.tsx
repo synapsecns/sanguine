@@ -12,13 +12,15 @@ const TokenBalance = ({
   chainId: number
   tokenBalance: bigint
 }) => {
-  const formattedBalance = commify(
-    formatBigIntToString(
-      tokenBalance,
-      token?.decimals?.[chainId as keyof Token['decimals']],
-      3
+  const formattedBalance =
+    tokenBalance &&
+    commify(
+      formatBigIntToString(
+        tokenBalance,
+        token?.decimals?.[chainId as keyof Token['decimals']],
+        3
+      )
     )
-  )
   return (
     <div className="ml-auto mr-5 text-lg text-white">
       {!(tokenBalance === 0n) && (

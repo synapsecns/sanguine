@@ -55,9 +55,10 @@ spec:
           args:
             {{- tpl (toYaml .) $ | nindent 12 }}
           {{- end }}
-          {{- with .Values.server.ports }}
+          {{- range .Values.server.ports }}
           ports:
-            {{- toYaml . | nindent 12 }}
+            - containerPort: {{ .containerPort }}
+              name: {{ .name }}
           {{- end }}
           {{- if .Values.server.env }}
           env:

@@ -1,18 +1,16 @@
-import { PortfolioTabs } from './Portfolio'
+import { useAppDispatch } from '@/store/hooks'
+import { usePortfolioState } from '@/slices/portfolio/hooks'
+import { PortfolioTabs, setActiveTab } from '@/slices/portfolio/actions'
 import HomeSvg from '@icons/HomeIcon'
 
-type PortfolioTabManagerProps = {
-  activeTab: PortfolioTabs
-  setTab: React.Dispatch<React.SetStateAction<PortfolioTabs>>
-}
+export const PortfolioTabManager = () => {
+  const dispatch = useAppDispatch()
+  const { activeTab } = usePortfolioState()
 
-export const PortfolioTabManager = ({
-  activeTab,
-  setTab,
-}: PortfolioTabManagerProps) => {
   const handleTabChange = (newTab: PortfolioTabs) => {
-    setTab(newTab)
+    dispatch(setActiveTab(newTab))
   }
+
   return (
     <div data-test-id="portfolio-tab-manager" className="flex">
       <Tab

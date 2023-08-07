@@ -11,7 +11,10 @@ import {
   setShowDestinationAddress,
   setShowSettingsSlideOver,
 } from '@/slices/bridgeDisplaySlice'
-import { setDeadlineMinutes, setDestinationAddress } from '@/slices/bridgeSlice'
+import {
+  setDeadlineMinutes,
+  setDestinationAddress,
+} from '@/slices/bridge/reducer'
 import { RootState } from '@/store/store'
 
 const SettingsSlideOver = () => {

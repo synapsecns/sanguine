@@ -22,6 +22,8 @@ M-explorer-ui:
 M-synapse-interface:
   - any: ['packages/synapse-interface/**/*']
 
+M-Codeowners:
+  - any: ['CODEOWNERS']
 
 M-charts:
   - any: ['charts/**/*']

@@ -21,6 +21,5 @@ export const swapPoolCalculateAddLiquidity = async ({
     functionName: 'calculateAddLiquidity',
     args: [pool.swapAddresses[chainId], inputs],
   })
-
   return amount
 }

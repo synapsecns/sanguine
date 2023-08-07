@@ -18,18 +18,21 @@ func NewClient(cli *http.Client, baseURL string, options ...client.HTTPRequestOp
 }
 
 type Query struct {
-	Profile           *Profile      "json:\"profile\" graphql:\"profile\""
-	Profiles          []*Profile    "json:\"profiles\" graphql:\"profiles\""
-	AssistingAuction  *Auction      "json:\"assistingAuction\" graphql:\"assistingAuction\""
-	AssistingAuctions []*Auction    "json:\"assistingAuctions\" graphql:\"assistingAuctions\""
-	SaleAuction       *Auction      "json:\"saleAuction\" graphql:\"saleAuction\""
-	SaleAuctions      []*Auction    "json:\"saleAuctions\" graphql:\"saleAuctions\""
-	Hero              *Hero         "json:\"hero\" graphql:\"hero\""
-	Heroes            []*Hero       "json:\"heroes\" graphql:\"heroes\""
-	Pet               *Pet          "json:\"pet\" graphql:\"pet\""
-	Pets              []*Pet        "json:\"pets\" graphql:\"pets\""
-	PetAuction        *PetAuction   "json:\"petAuction\" graphql:\"petAuction\""
-	PetAuctions       []*PetAuction "json:\"petAuctions\" graphql:\"petAuctions\""
+	Profile            *Profile             "json:\"profile\" graphql:\"profile\""
+	Profiles           []*Profile           "json:\"profiles\" graphql:\"profiles\""
+	AssistingAuction   *Auction             "json:\"assistingAuction\" graphql:\"assistingAuction\""
+	AssistingAuctions  []*Auction           "json:\"assistingAuctions\" graphql:\"assistingAuctions\""
+	SaleAuction        *Auction             "json:\"saleAuction\" graphql:\"saleAuction\""
+	SaleAuctions       []*Auction           "json:\"saleAuctions\" graphql:\"saleAuctions\""
+	Hero               *Hero                "json:\"hero\" graphql:\"hero\""
+	Heroes             []*Hero              "json:\"heroes\" graphql:\"heroes\""
+	Pet                *Pet                 "json:\"pet\" graphql:\"pet\""
+	Pets               []*Pet               "json:\"pets\" graphql:\"pets\""
+	PetAuction         *PetAuction          "json:\"petAuction\" graphql:\"petAuction\""
+	PetAuctions        []*PetAuction        "json:\"petAuctions\" graphql:\"petAuctions\""
+	BazaarOrder        *BazaarOrder         "json:\"bazaarOrder\" graphql:\"bazaarOrder\""
+	BazaarOrders       []*BazaarOrder       "json:\"bazaarOrders\" graphql:\"bazaarOrders\""
+	BazaarTransactions []*BazaarTransaction "json:\"bazaarTransactions\" graphql:\"bazaarTransactions\""
 }
 type StuckHeroes struct {
 	Heroes []*struct {

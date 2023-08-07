@@ -45,7 +45,7 @@ func NewProxy(config config.Config, handler metrics.Handler) *RPCProxy {
 	}
 
 	return &RPCProxy{
-		chainManager:    chainmanager.NewChainManagerFromConfig(config),
+		chainManager:    chainmanager.NewChainManagerFromConfig(config, handler),
 		refreshInterval: time.Second * time.Duration(config.RefreshInterval),
 		port:            config.Port,
 		client:          omniHTTP.NewClient(omniHTTP.ClientTypeFromString(config.ClientType)),
@@ -60,7 +60,6 @@ func (r *RPCProxy) Run(ctx context.Context) {
 
 	router := ginhelper.New(logger)
 	router.Use(r.handler.Gin())
-	router.GET(ginhelper.MetricsEndpoint, gin.WrapH(r.handler.Handler()))
 
 	router.POST("/rpc/:id", func(c *gin.Context) {
 		chainID, err := strconv.Atoi(c.Param("id"))
@@ -121,23 +120,33 @@ func (r *RPCProxy) startProxyLoop(ctx context.Context) {
 		case <-ctx.Done():
 			return
 		case <-time.After(waitTime):
-			var wg sync.WaitGroup
-
-			for _, chainID := range r.chainManager.GetChainIDs() {
-				wg.Add(1)
-
-				go func(chainID uint32) {
-					r.chainManager.RefreshRPCInfo(ctx, chainID)
-
-					wg.Done()
-				}(chainID)
-			}
-
-			wg.Wait()
+			r.benchmarkProxies(ctx)
 
 			waitTime = scanInterval
 		}
 	}
+}
+
+// benchmarkProxies benchmarks all proxies.
+func (r *RPCProxy) benchmarkProxies(parentCtx context.Context) {
+	ctx, span := r.handler.Tracer().Start(parentCtx, "benchmarkProxies")
+	defer func() {
+		span.End()
+	}()
+
+	var wg sync.WaitGroup
+
+	for _, chainID := range r.chainManager.GetChainIDs() {
+		wg.Add(1)
+
+		go func(ctx context.Context, chainID uint32) {
+			r.chainManager.RefreshRPCInfo(ctx, chainID)
+
+			wg.Done()
+		}(ctx, chainID)
+	}
+
+	wg.Wait()
 }
 
 // Port gets the port the proxy is running on.
