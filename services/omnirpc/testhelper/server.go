@@ -10,9 +10,9 @@ import (
 	"github.com/synapsecns/sanguine/core/metrics/localmetrics"
 	"github.com/synapsecns/sanguine/core/testsuite"
 	"github.com/synapsecns/sanguine/ethergo/backends"
-	"github.com/synapsecns/sanguine/services/omnirpc/cmd"
 	"github.com/synapsecns/sanguine/services/omnirpc/config"
 	omniHTTP "github.com/synapsecns/sanguine/services/omnirpc/http"
+	"github.com/synapsecns/sanguine/services/omnirpc/metadata"
 	"github.com/synapsecns/sanguine/services/omnirpc/proxy"
 	"net/http"
 	"testing"
@@ -46,7 +46,7 @@ func NewOmnirpcServer(ctx context.Context, tb testing.TB, backends ...backends.S
 
 	localmetrics.SetupTestJaeger(ctx, tb)
 
-	handler, err := metrics.NewByType(ctx, cmd.BuildInfo(), metrics.Jaeger)
+	handler, err := metrics.NewByType(ctx, metadata.BuildInfo(), metrics.Jaeger)
 	assert.Nil(tb, err)
 
 	server := proxy.NewProxy(makeConfig(backends, omniHTTP.FastHTTP), handler)
