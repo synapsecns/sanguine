@@ -51,6 +51,7 @@ export const TokenSlideOver = ({
 
   tokenList = tokens
 
+  console.log('tokenList in TokenSlideOver:', tokenList)
   // Hiding this below for now bc its conflicting with tokens w/ balances
   // tokenList = sortTokens(tokenList)
 

@@ -201,76 +201,102 @@ const StateManagedBridge = () => {
         toToken?.symbol,
         fromChainId
       )
-  }, [fromChainId, toChainId, fromToken, toToken])
 
-  // Can be smarter about breaking out which calls happen assoc with which
-  // dependencies (like some stuff should only change on fromChainId changes)
-  useEffect(() => {
-    let fromTokens = BRIDGABLE_TOKENS[fromChainId] ?? []
-    const toTokens = BRIDGABLE_TOKENS[toChainId]
-
-    // Checking whether the selected fromToken exists in the BRIDGABLE_TOKENS for the chosen chain
-    if (!fromTokens.some((token) => token.symbol === fromToken?.symbol)) {
-      // Sort the tokens based on priorityRank in ascending order
-      const sortedTokens = fromTokens.sort(
-        (a, b) => a.priorityRank - b.priorityRank
-      )
-      // Select the token with the highest priority rank
-      dispatch(setFromToken(sortedTokens[0]))
-      // Update fromTokens for the selected fromToken
-      fromTokens = [fromToken]
-    }
-
-    let { bridgeableChainIds, bridgeableTokens, bridgeableToken } =
-      findSupportedChainsAndTokens(
-        fromToken,
-        toChainId,
-        toToken?.symbol,
-        fromChainId
-      )
-
-    let bridgeableToChainId = toChainId
-    if (!bridgeableChainIds?.includes(toChainId)) {
-      const sortedChainIds = bridgeableChainIds?.sort((a, b) => {
-        const chainA = CHAINS_ARR.find((chain) => chain.id === a)
-        const chainB = CHAINS_ARR.find((chain) => chain.id === b)
-        return chainB.priorityRank - chainA.priorityRank
-      })
-      bridgeableToChainId = sortedChainIds?.[0]
-    }
-
-    dispatch(setSupportedToTokens(sortToTokens(bridgeableTokens)))
-    dispatch(setToToken(bridgeableToken))
-    dispatch(setSupportedFromTokens(portfolioBalances[fromChainId] ?? []))
-    dispatch(setFromChainIds(fromChainIds))
     dispatch(setToChainIds(bridgeableChainIds))
 
-    if (bridgeableToChainId && bridgeableToChainId !== toChainId) {
-      dispatch(setToChainId(bridgeableToChainId))
-    }
+    console.log('bridgeableChainIds:', bridgeableChainIds)
 
-    console.log(`[useEffect] fromToken`, fromToken?.symbol)
-    console.log(`[useEffect] toToken`, toToken?.symbol)
-    // TODO: Double serialization happening somewhere??
+    if (!bridgeableChainIds.includes(toChainId)) {
+      console.log('hit in here')
+      dispatch(setToToken(null))
+      dispatch(setSupportedToTokens([]))
+    } else {
+      console.log('hit in second')
+      dispatch(setSupportedToTokens(sortToTokens(bridgeableTokens)))
+    }
+  }, [fromChainId, toChainId, fromToken, toToken])
+
+  // Retrieve bridge quotes every time fromValue updates
+  useEffect(() => {
     if (
       fromToken?.decimals[fromChainId] &&
       stringToBigInt(fromValue, fromToken.decimals[fromChainId]) > 0n
     ) {
-      console.log('trying to set bridge quote')
       getAndSetBridgeQuote()
     } else {
       dispatch(setBridgeQuote(EMPTY_BRIDGE_QUOTE_ZERO))
       dispatch(setIsLoading(false))
     }
-  }, [
-    fromChainId,
-    toChainId,
-    fromToken,
-    toToken,
-    fromValue,
-    address,
-    portfolioBalances,
-  ])
+  }, [fromChainId, toChainId, fromToken, toToken, fromValue])
+
+  // Can be smarter about breaking out which calls happen assoc with which
+  // dependencies (like some stuff should only change on fromChainId changes)
+  // useEffect(() => {
+  //   let fromTokens = BRIDGABLE_TOKENS[fromChainId] ?? []
+  //   const toTokens = BRIDGABLE_TOKENS[toChainId]
+
+  //   // Checking whether the selected fromToken exists in the BRIDGABLE_TOKENS for the chosen chain
+  //   if (!fromTokens.some((token) => token.symbol === fromToken?.symbol)) {
+  //     // Sort the tokens based on priorityRank in ascending order
+  //     const sortedTokens = fromTokens.sort(
+  //       (a, b) => a.priorityRank - b.priorityRank
+  //     )
+  //     // Select the token with the highest priority rank
+  //     dispatch(setFromToken(sortedTokens[0]))
+  //     // Update fromTokens for the selected fromToken
+  //     fromTokens = [fromToken]
+  //   }
+
+  //   let { bridgeableChainIds, bridgeableTokens, bridgeableToken } =
+  //     findSupportedChainsAndTokens(
+  //       fromToken,
+  //       toChainId,
+  //       toToken?.symbol,
+  //       fromChainId
+  //     )
+
+  //   let bridgeableToChainId = toChainId
+  //   if (!bridgeableChainIds?.includes(toChainId)) {
+  //     const sortedChainIds = bridgeableChainIds?.sort((a, b) => {
+  //       const chainA = CHAINS_ARR.find((chain) => chain.id === a)
+  //       const chainB = CHAINS_ARR.find((chain) => chain.id === b)
+  //       return chainB.priorityRank - chainA.priorityRank
+  //     })
+  //     bridgeableToChainId = sortedChainIds?.[0]
+  //   }
+
+  //   dispatch(setSupportedToTokens(sortToTokens(bridgeableTokens)))
+  //   dispatch(setToToken(bridgeableToken))
+  //   dispatch(setSupportedFromTokens(portfolioBalances[fromChainId] ?? []))
+  //   dispatch(setFromChainIds(fromChainIds))
+  //   dispatch(setToChainIds(bridgeableChainIds))
+
+  //   if (bridgeableToChainId && bridgeableToChainId !== toChainId) {
+  //     dispatch(setToChainId(bridgeableToChainId))
+  //   }
+
+  //   console.log(`[useEffect] fromToken`, fromToken?.symbol)
+  //   console.log(`[useEffect] toToken`, toToken?.symbol)
+  //   // TODO: Double serialization happening somewhere??
+  //   if (
+  //     fromToken?.decimals[fromChainId] &&
+  //     stringToBigInt(fromValue, fromToken.decimals[fromChainId]) > 0n
+  //   ) {
+  //     console.log('trying to set bridge quote')
+  //     getAndSetBridgeQuote()
+  //   } else {
+  //     dispatch(setBridgeQuote(EMPTY_BRIDGE_QUOTE_ZERO))
+  //     dispatch(setIsLoading(false))
+  //   }
+  // }, [
+  //   fromChainId,
+  //   toChainId,
+  //   fromToken,
+  //   toToken,
+  //   fromValue,
+  //   address,
+  //   portfolioBalances,
+  // ])
 
   // don't like this, rewrite: could be custom hook
   useEffect(() => {
