@@ -1,5 +1,4 @@
 import * as CHAINS from '@constants/chains/master'
-
 import synapseLogo from '@assets/icons/synapse.svg'
 import {
   BUSD,
@@ -767,4 +766,33 @@ export const HARMONY_JEWEL_SWAP_TOKEN = new Token({
   priorityPool: true,
   priorityRank: 6,
   chainId: CHAINS.HARMONY.id,
+})
+
+export const BASE_ETH_SWAP_TOKEN = new Token({
+  addresses: {
+    [CHAINS.BASE.id]: '0xC35b09c8fdefc90ec580B327d32DeAAda4f581Da',
+  },
+  decimals: 18,
+  symbol: 'nETH-LP',
+  name: 'Synapse Eth LP Token Base',
+  logo: synapseLogo,
+  poolName: 'Base ETH Pool',
+  routerIndex: 'baseethpool',
+  poolId: 0,
+  poolType: 'ETH',
+  swapAddresses: {
+    [CHAINS.BASE.id]: '0x6223bD82010E2fB69F329933De20897e7a4C225f',
+  },
+  swapEthAddresses: {
+    [CHAINS.BASE.id]: '0xa9E90579eb086bcdA910dD94041ffE041Fb4aC89',
+  },
+  poolTokens: [NETH, WETH],
+  nativeTokens: [NETH, ETH],
+  description: "Synapse's eth swap LP token on Base",
+  display: true,
+  priorityPool: true,
+  color: 'sky',
+  priceUnits: 'ETH',
+  priorityRank: 6,
+  chainId: CHAINS.BASE.id,
 })
