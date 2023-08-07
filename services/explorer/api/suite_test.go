@@ -190,7 +190,8 @@ func (g *APISuite) SetupSuite() {
 	var err error
 	g.scribeMetrics, err = metrics.NewByType(g.GetSuiteContext(), scribeMetadata.BuildInfo(), metrics.Jaeger)
 	g.Require().Nil(err)
-	g.explorerMetrics, err = metrics.NewByType(g.GetSuiteContext(), metadata.BuildInfo(), metrics.Jaeger)
+	// TODO: there may be an issue w/ syncer for local test nevs, investigate, but this probably comes from heavy load ending every span of every field synchronously
+	g.explorerMetrics, err = metrics.NewByType(g.GetSuiteContext(), metadata.BuildInfo(), metrics.Null)
 	g.Require().Nil(err)
 }
 
