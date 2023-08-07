@@ -12,6 +12,12 @@
   "__elements": {},
   "__requires": [
     {
+      "type": "panel",
+      "id": "bargauge",
+      "name": "Bar gauge",
+      "version": ""
+    },
+    {
       "type": "grafana",
       "id": "grafana",
       "name": "Grafana",
@@ -60,12 +66,343 @@
   "liveNow": false,
   "panels": [
     {
-      "collapsed": false,
       "gridPos": {
         "h": 1,
         "w": 24,
         "x": 0,
         "y": 0
+      },
+      "id": 13,
+      "title": "Omnirpc",
+      "type": "row"
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "${DS_PROMETHEUS}"
+      },
+      "description": "",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "red",
+                "value": 80
+              }
+            ]
+          },
+          "unit": "s"
+        },
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byValue",
+              "options": {
+                "op": "eq",
+                "reducer": "lastNotNull",
+                "value": 0
+              }
+            },
+            "properties": [
+              {
+                "id": "mappings",
+                "value": [
+                  {
+                    "options": {
+                      "0": {
+                        "color": "dark-red",
+                        "index": 0,
+                        "text": "Not Found"
+                      }
+                    },
+                    "type": "value"
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 0,
+        "y": 1
+      },
+      "id": 12,
+      "options": {
+        "displayMode": "gradient",
+        "minVizHeight": 10,
+        "minVizWidth": 0,
+        "orientation": "horizontal",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "showUnfilled": true,
+        "valueMode": "color"
+      },
+      "pluginVersion": "10.0.2",
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${DS_PROMETHEUS}"
+          },
+          "editorMode": "builder",
+          "exemplar": false,
+          "expr": "block_age",
+          "format": "time_series",
+          "instant": true,
+          "interval": "",
+          "legendFormat": "{{chain_id}}",
+          "range": false,
+          "refId": "A"
+        }
+      ],
+      "title": "Block Age",
+      "transformations": [
+        {
+          "id": "reduce",
+          "options": {
+            "includeTimeField": false,
+            "labelsToFields": false,
+            "mode": "seriesToRows",
+            "reducers": [
+              "lastNotNull"
+            ]
+          }
+        },
+        {
+          "id": "convertFieldType",
+          "options": {
+            "conversions": [
+              {
+                "destinationType": "number",
+                "targetField": "Field"
+              }
+            ],
+            "fields": {}
+          }
+        },
+        {
+          "id": "organize",
+          "options": {
+            "excludeByName": {},
+            "indexByName": {},
+            "renameByName": {
+              "Field": "Chain ID",
+              "Last *": "Block Age"
+            }
+          }
+        },
+        {
+          "id": "groupBy",
+          "options": {
+            "fields": {
+              "Block Age": {
+                "aggregations": [
+                  "lastNotNull"
+                ],
+                "operation": "aggregate"
+              },
+              "Chain ID": {
+                "aggregations": [],
+                "operation": "groupby"
+              },
+              "Gas Balance (Ether)": {
+                "aggregations": [
+                  "lastNotNull"
+                ],
+                "operation": "aggregate"
+              }
+            }
+          }
+        },
+        {
+          "id": "sortBy",
+          "options": {
+            "fields": {},
+            "sort": [
+              {
+                "desc": true,
+                "field": "Block Age (lastNotNull)"
+              }
+            ]
+          }
+        },
+        {
+          "id": "organize",
+          "options": {
+            "excludeByName": {},
+            "indexByName": {},
+            "renameByName": {
+              "Gas Balance (Ether) (lastNotNull)": "Gas Balance (Ether)"
+            }
+          }
+        },
+        {
+          "id": "extractFields",
+          "options": {
+            "format": "kvp",
+            "keepTime": false,
+            "replace": false,
+            "source": "Chain ID"
+          }
+        },
+        {
+          "id": "rowsToFields",
+          "options": {
+            "mappings": [
+              {
+                "fieldName": "Chain ID",
+                "handlerKey": "field.name"
+              },
+              {
+                "fieldName": "Block Age (lastNotNull)",
+                "handlerKey": "field.value"
+              }
+            ]
+          }
+        }
+      ],
+      "type": "bargauge"
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "${DS_PROMETHEUS}"
+      },
+      "description": "",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "red",
+                "value": 80
+              }
+            ]
+          },
+          "unit": "s"
+        },
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byValue",
+              "options": {
+                "op": "eq",
+                "reducer": "lastNotNull",
+                "value": 0
+              }
+            },
+            "properties": [
+              {
+                "id": "thresholds",
+                "value": {
+                  "mode": "absolute",
+                  "steps": [
+                    {
+                      "color": "green",
+                      "value": null
+                    },
+                    {
+                      "color": "red",
+                      "value": 0
+                    }
+                  ]
+                }
+              },
+              {
+                "id": "mappings",
+                "value": [
+                  {
+                    "options": {
+                      "0": {
+                        "color": "dark-red",
+                        "index": 0,
+                        "text": "Not Found"
+                      }
+                    },
+                    "type": "value"
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 12,
+        "y": 1
+      },
+      "id": 11,
+      "options": {
+        "displayMode": "basic",
+        "minVizHeight": 10,
+        "minVizWidth": 0,
+        "orientation": "horizontal",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "showUnfilled": true,
+        "valueMode": "color"
+      },
+      "pluginVersion": "10.0.2",
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${DS_PROMETHEUS}"
+          },
+          "editorMode": "builder",
+          "exemplar": false,
+          "expr": "min by(chain_id) (last_over_time(block_age[365d]))",
+          "instant": false,
+          "legendFormat": "{{chain_id}} ",
+          "range": true,
+          "refId": "A"
+        }
+      ],
+      "title": "Omnirpc Block Age",
+      "transformations": [],
+      "type": "bargauge"
+    },
+    {
+      "collapsed": false,
+      "gridPos": {
+        "h": 1,
+        "w": 24,
+        "x": 0,
+        "y": 9
       },
       "id": 5,
       "panels": [],
@@ -111,7 +448,7 @@
         "h": 8,
         "w": 12,
         "x": 0,
-        "y": 1
+        "y": 10
       },
       "id": 1,
       "options": {
@@ -283,7 +620,7 @@
         "h": 8,
         "w": 12,
         "x": 12,
-        "y": 1
+        "y": 10
       },
       "id": 2,
       "options": {
@@ -322,7 +659,7 @@
         "h": 1,
         "w": 24,
         "x": 0,
-        "y": 9
+        "y": 18
       },
       "id": 3,
       "panels": [],
@@ -390,7 +727,7 @@
         "h": 8,
         "w": 12,
         "x": 0,
-        "y": 10
+        "y": 19
       },
       "id": 4,
       "options": {
@@ -461,7 +798,7 @@
         "h": 8,
         "w": 12,
         "x": 12,
-        "y": 10
+        "y": 19
       },
       "id": 6,
       "options": {
@@ -478,7 +815,7 @@
         "sortBy": [
           {
             "desc": true,
-            "displayName": "Gas Balance (Ether)"
+            "displayName": "Chain ID"
           }
         ]
       },
@@ -491,7 +828,7 @@
           },
           "editorMode": "builder",
           "exemplar": false,
-          "expr": "gas_balance{name=\"messenger\"}",
+          "expr": "gas_balance{eoa_address=\"0xAA920f7b9039e556d2442113f1fd339e4927Dd9A\"}",
           "instant": false,
           "interval": "",
           "legendFormat": "{{chain_id}}",
@@ -638,7 +975,7 @@
         "h": 8,
         "w": 12,
         "x": 0,
-        "y": 18
+        "y": 27
       },
       "id": 8,
       "options": {
@@ -677,7 +1014,7 @@
         "h": 1,
         "w": 24,
         "x": 0,
-        "y": 26
+        "y": 35
       },
       "id": 7,
       "panels": [],
@@ -723,7 +1060,7 @@
         "h": 8,
         "w": 12,
         "x": 0,
-        "y": 27
+        "y": 36
       },
       "id": 9,
       "options": {
@@ -895,7 +1232,7 @@
         "h": 8,
         "w": 12,
         "x": 12,
-        "y": 27
+        "y": 36
       },
       "id": 10,
       "options": {
@@ -937,13 +1274,13 @@
     "list": []
   },
   "time": {
-    "from": "now-15m",
+    "from": "now-5m",
     "to": "now"
   },
   "timepicker": {},
   "timezone": "",
   "title": "Bridge",
   "uid": "e79ee84d-73cb-4645-a630-a34df143184b",
-  "version": 8,
+  "version": 12,
   "weekStart": ""
 }

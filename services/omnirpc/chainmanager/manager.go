@@ -157,6 +157,7 @@ const (
 	blockNumberMetric = "block_number"
 	latencyMetric     = "latency"
 	blockAgeMetric    = "block_age"
+	rpcError          = "rpc_error"
 )
 
 // records metrics for various rpcs. Should only be called once.
@@ -188,11 +189,12 @@ func (c *chainManager) setupMetrics() error {
 
 		for chainID, chainInfo := range c.chainList {
 			for _, rpc := range chainInfo.rpcs {
-				// TODO: figure out a better way to graph errors.
+				attributeSet := attribute.NewSet(attribute.Int64(metrics.ChainID, int64(chainID)), attribute.String("rpc_url", rpc.URL))
+
 				if rpc.HasError {
+
 					continue
 				}
-				attributeSet := attribute.NewSet(attribute.Int64(metrics.ChainID, int64(chainID)), attribute.String("rpc_url", rpc.URL))
 
 				o.ObserveInt64(blockGauge, int64(rpc.BlockNumber), metric.WithAttributeSet(attributeSet))
 				o.ObserveFloat64(latencyGauge, rpc.Latency.Seconds(), metric.WithAttributeSet(attributeSet))
