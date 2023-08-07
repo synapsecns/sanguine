@@ -5,11 +5,8 @@ import TokenMenuItem from '@pages/bridge/TokenMenuItem'
 import SlideSearchBox from '@pages/bridge/SlideSearchBox'
 import { DrawerButton } from '@components/buttons/DrawerButton'
 import { useAccount } from 'wagmi'
-import { sortTokens } from '@constants/tokens'
 import { Token } from '@/utils/types'
-import { useDispatch, useSelector } from 'react-redux'
-import { RootState } from '@/store/store'
-import { Zero } from '@ethersproject/constants'
+import { useDispatch } from 'react-redux'
 import { setFromToken, setToToken } from '@/slices/bridge/reducer'
 import {
   setShowFromTokenSlideOver,
@@ -18,6 +15,9 @@ import {
 import { segmentAnalyticsEvent } from '@/contexts/SegmentAnalyticsProvider'
 import { usePortfolioBalances } from '@/slices/portfolio/hooks'
 import { TokenWithBalanceAndAllowances } from '@/utils/actions/fetchPortfolioBalances'
+import { useBridgeState } from '@/slices/bridge/hooks'
+import { WarningMessage } from '../Warning'
+import { CHAINS_BY_ID } from '@/constants/chains'
 
 export const TokenSlideOver = ({
   isOrigin,
@@ -30,6 +30,7 @@ export const TokenSlideOver = ({
   chainId: number
   selectedToken: Token
 }) => {
+  const { fromToken, fromChainId, toToken, toChainId } = useBridgeState()
   const { address } = useAccount()
   let setToken
   let setShowSlideOver
@@ -149,6 +150,13 @@ export const TokenSlideOver = ({
           rounded-3xl
         `}
       >
+        {!isOrigin && !toToken && (
+          <WarningMessage
+            twClassName="!mt-0"
+            header={`Please select another origin asset.`}
+            message={`No route exists between ${fromToken?.symbol} on ${CHAINS_BY_ID[fromChainId]?.name} to ${CHAINS_BY_ID[toChainId]?.name}.`}
+          />
+        )}
         {tokenList.map((token, idx) => {
           const tokenBalanceAndAllowance =
             address &&
