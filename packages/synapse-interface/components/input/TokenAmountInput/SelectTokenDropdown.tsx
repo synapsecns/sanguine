@@ -65,7 +65,7 @@ const SelectTokenDropdown = ({
             </div>
           </div>
           <div className="text-left cursor-pointer">
-            <h4 className="w-24 text-lg font-medium text-white">
+            <h4 className="w-24 text-lg font-normal tracking-wide text-white">
               <span data-test-id={dataId}>
                 {selectedToken ? symbol : 'Select'}
               </span>
