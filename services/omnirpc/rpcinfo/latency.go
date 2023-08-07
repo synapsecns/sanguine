@@ -68,12 +68,6 @@ func GetRPCLatency(parentCtx context.Context, timeout time.Duration, rpcList []s
 func getLatency(ctx context.Context, rpcURL string, handler metrics.Handler) (l Result) {
 	l = Result{URL: rpcURL, HasError: true}
 
-	traceCtx, span := handler.Tracer().Start(ctx, "rpcinfo.GetRPCLatency.getLatency", trace.WithAttributes(attribute.StringSlice("rpc_url", rpcURL)))
-	defer func() {
-		metrics.EndSpan(span)
-		cancel()
-	}()
-
 	parsedURL, err := url.Parse(rpcURL)
 	if err != nil {
 		l.Error = fmt.Errorf("url invalid: %w", err)
