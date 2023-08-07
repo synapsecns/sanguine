@@ -188,6 +188,10 @@ func (c *chainManager) setupMetrics() error {
 
 		for chainID, chainInfo := range c.chainList {
 			for _, rpc := range chainInfo.rpcs {
+				// TODO: figure out a better way to graph errors.
+				if rpc.HasError {
+					continue
+				}
 				attributeSet := attribute.NewSet(attribute.Int64(metrics.ChainID, int64(chainID)), attribute.String("rpc_url", rpc.URL))
 
 				o.ObserveInt64(blockGauge, int64(rpc.BlockNumber), metric.WithAttributeSet(attributeSet))
