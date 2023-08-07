@@ -192,7 +192,6 @@ func InitDB(ctx context.Context, address string, readOnly bool, handler metrics.
 //
 // nolint:dupl,gocognit,cyclop,maintidx
 func RehydrateCache(parentCtx context.Context, client *gqlClient.Client, service cache.Service, handler metrics.Handler) (err error) {
-	return nil
 	traceCtx, span := handler.Tracer().Start(parentCtx, "RehydrateCache")
 	defer func() {
 		metrics.EndSpanWithErr(span, err)
