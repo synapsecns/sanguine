@@ -51,6 +51,7 @@ func TestHandleJSONDailyStat(t *testing.T) {
 			Harmony   *float64 "json:\"harmony\" graphql:\"harmony\""
 			Canto     *float64 "json:\"canto\" graphql:\"canto\""
 			Dogechain *float64 "json:\"dogechain\" graphql:\"dogechain\""
+			Base      *float64 "json:\"base\" graphql:\"base\""
 			Total     *float64 "json:\"total\" graphql:\"total\""
 		}{
 			{
