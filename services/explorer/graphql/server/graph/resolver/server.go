@@ -1289,7 +1289,7 @@ type UnknownType {
     reverted:       Boolean = false
     page:           Int = 1
   ): [MessageBusTransaction]
-
+  
 
   """
   Returns the COUNT of bridged transactions for a given chain. If direction of bridge transactions
@@ -9828,11 +9828,8 @@ func (ec *executionContext) _DateResultByChain(ctx context.Context, sel ast.Sele
 			out.Values[i] = ec._DateResultByChain_canto(ctx, field, obj)
 		case "dogechain":
 			out.Values[i] = ec._DateResultByChain_dogechain(ctx, field, obj)
-
 		case "base":
-
 			out.Values[i] = ec._DateResultByChain_base(ctx, field, obj)
-
 		case "total":
 			out.Values[i] = ec._DateResultByChain_total(ctx, field, obj)
 		default:
@@ -10065,15 +10062,10 @@ func (ec *executionContext) _PartialInfo(ctx context.Context, sel ast.SelectionS
 			out.Values[i] = ec._PartialInfo_time(ctx, field, obj)
 		case "formattedTime":
 			out.Values[i] = ec._PartialInfo_formattedTime(ctx, field, obj)
-
 		case "formattedEventType":
-
 			out.Values[i] = ec._PartialInfo_formattedEventType(ctx, field, obj)
-
 		case "eventType":
-
 			out.Values[i] = ec._PartialInfo_eventType(ctx, field, obj)
-
 		default:
 			panic("unknown field " + strconv.Quote(field.Name))
 		}
