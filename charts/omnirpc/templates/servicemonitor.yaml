@@ -16,5 +16,5 @@ spec:
   namespaceSelector:
     matchNames:
       - {{ .Release.Namespace }}
-  jobLabel: omnirpc
+  jobLabel: app.kubernetes.io/name
 {{- end }}
