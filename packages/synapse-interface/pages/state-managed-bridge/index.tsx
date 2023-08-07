@@ -192,8 +192,6 @@ const StateManagedBridge = () => {
   // origin chain and origin token. If no route exists, set
   // destination token to empty state
   useEffect(() => {
-    const fromTokens: Token[] = BRIDGABLE_TOKENS[fromChainId] ?? []
-
     const { bridgeableChainIds, bridgeableTokens, bridgeableToken } =
       findSupportedChainsAndTokens(
         fromToken,
@@ -215,6 +213,7 @@ const StateManagedBridge = () => {
   }, [fromChainId, toChainId, fromToken, toToken])
 
   // Retrieve bridge quotes every time fromValue updates
+  // Refetch as origin / destination network / tokens update
   useEffect(() => {
     if (
       fromToken?.decimals[fromChainId] &&
@@ -697,7 +696,8 @@ const StateManagedBridge = () => {
             <OutputContainer />
             {!toToken && (
               <WarningMessage
-                message={`No route exists between ${fromToken?.symbol} on ${CHAINS_BY_ID[fromChainId]?.name} to ${CHAINS_BY_ID[toChainId]?.name}. Please select another origin asset.`}
+                header={`Please select another origin asset.`}
+                message={`No route exists between ${fromToken?.symbol} on ${CHAINS_BY_ID[fromChainId]?.name} to ${CHAINS_BY_ID[toChainId]?.name}.`}
               />
             )}
             <Warning
