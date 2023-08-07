@@ -157,7 +157,6 @@ const (
 	blockNumberMetric = "block_number"
 	latencyMetric     = "latency"
 	blockAgeMetric    = "block_age"
-	rpcError          = "rpc_error"
 )
 
 // records metrics for various rpcs. Should only be called once.
