@@ -61,9 +61,7 @@ const SelectTokenDropdown = ({
                   className="rounded-md w-7 h-7"
                   src={selectedToken?.icon}
                 />
-              ) : (
-                <QuestionMarkCircleIcon className="w-6 h-6 text-white rounded-md" />
-              )}
+              ) : null}
             </div>
           </div>
           <div className="text-left cursor-pointer">
