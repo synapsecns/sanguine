@@ -184,6 +184,18 @@ const StateManagedBridge = () => {
   // origin chain and origin token. If no route exists, set
   // destination token to empty state
   useEffect(() => {
+    const fromTokens = BRIDGABLE_TOKENS[fromChainId] ?? []
+
+    // Checking whether the selected fromToken exists in the BRIDGABLE_TOKENS for the chosen chain
+    if (!fromTokens.some((token) => token.symbol === fromToken?.symbol)) {
+      // Sort the tokens based on priorityRank in ascending order
+      const sortedTokens = fromTokens.sort(
+        (a, b) => a.priorityRank - b.priorityRank
+      )
+      // Select the token with the highest priority rank
+      dispatch(setFromToken(sortedTokens[0]))
+    }
+
     const { bridgeableChainIds, bridgeableTokens, bridgeableToken } =
       findSupportedChainsAndTokens(
         fromToken,
